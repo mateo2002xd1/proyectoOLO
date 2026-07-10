@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { jwtVerify } from 'jose';
 import {
   AUTH_COOKIE_NAME,
   AUTH_ROLE_COOKIE_NAME,
@@ -7,16 +8,30 @@ import {
   AUTH_MUST_SETUP_SQ_COOKIE_NAME,
 } from '@/config/auth-cookies';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const hasSession = Boolean(request.cookies.get(AUTH_COOKIE_NAME)?.value);
+  const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
   const role = request.cookies.get(AUTH_ROLE_COOKIE_NAME)?.value;
   const mustChangePassword = Boolean(request.cookies.get(AUTH_MUST_CHANGE_PW_COOKIE_NAME)?.value);
   const mustSetupSecurityQuestions = Boolean(request.cookies.get(AUTH_MUST_SETUP_SQ_COOKIE_NAME)?.value);
 
+  // Validate session token if it exists
+  let hasValidSession = false;
+  if (token) {
+    try {
+      const secretStr = process.env.JWT_SECRET || 'dev-secret-change-me';
+      const secret = new TextEncoder().encode(secretStr);
+      await jwtVerify(token, secret);
+      hasValidSession = true;
+    } catch (error) {
+      console.error("[Middleware] Token verification failed:", error);
+      hasValidSession = false;
+    }
+  }
+
   // Login page: redirect to panel (or redirect param) if already logged in
-  if (pathname === '/admin/login') {
-    if (hasSession) {
+  if (pathname === '/login') {
+    if (hasValidSession) {
       const redirectTo = request.nextUrl.searchParams.get('redirect');
       const destination = redirectTo && redirectTo.startsWith('/') ? redirectTo : '/panel-general';
       return NextResponse.redirect(new URL(destination, request.url));
@@ -25,14 +40,20 @@ export function middleware(request: NextRequest) {
   }
 
   // Protected routes (/admin/* and /panel-general/*): require session
-  if (!hasSession) {
-    const redirectUrl = new URL('/admin/login', request.url);
+  if (!hasValidSession) {
+    const redirectUrl = new URL('/login', request.url);
     redirectUrl.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(redirectUrl);
+    const response = NextResponse.redirect(redirectUrl);
+    // Limpiar cookie inválida si existe
+    if (token) response.cookies.delete(AUTH_COOKIE_NAME);
+    return response;
   }
 
-  // /panel-general/* — cualquier rol autenticado puede acceder
+  // /panel-general/* — solo Superadmin y Administrador pueden acceder
   if (pathname.startsWith('/panel-general')) {
+    if (role !== 'Superadmin' && role !== 'Administrador') {
+      return NextResponse.redirect(new URL('/admin/sin-acceso', request.url));
+    }
     // Must change password or setup security questions
     if (mustChangePassword || mustSetupSecurityQuestions) {
       return NextResponse.redirect(new URL('/admin/cambiar-contrasena', request.url));
@@ -46,21 +67,26 @@ export function middleware(request: NextRequest) {
     if (role !== 'Superadmin' && role !== 'Administrador' && role !== 'Editor') {
       return NextResponse.redirect(new URL('/admin/sin-acceso', request.url));
     }
-  } else {
-    if (role !== 'Superadmin' && role !== 'Administrador') {
-      return NextResponse.redirect(new URL('/admin/sin-acceso', request.url));
+  } else if (pathname.startsWith('/admin')) {
+    // Excluir rutas de cambio de contraseña del check estricto de admin
+    if (!pathname.startsWith('/admin/cambiar-contrasena') && !pathname.startsWith('/admin/sin-acceso')) {
+      if (role !== 'Superadmin' && role !== 'Administrador') {
+        return NextResponse.redirect(new URL('/admin/sin-acceso', request.url));
+      }
     }
   }
 
   // Must change password or setup security questions
   if (mustChangePassword || mustSetupSecurityQuestions) {
-    return NextResponse.redirect(new URL('/admin/cambiar-contrasena', request.url));
+    if (!pathname.startsWith('/admin/cambiar-contrasena')) {
+      return NextResponse.redirect(new URL('/admin/cambiar-contrasena', request.url));
+    }
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  // Protege rutas admin y panel-general; excluye API routes y assets
-  matcher: ['/admin/:path*', '/panel-general/:path*'],
+  // Protege rutas admin, panel-general y maneja /login; excluye API routes y assets
+  matcher: ['/admin/:path*', '/panel-general/:path*', '/login'],
 };
