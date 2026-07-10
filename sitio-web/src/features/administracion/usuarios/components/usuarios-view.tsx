@@ -259,7 +259,7 @@ export default function UsuariosView() {
           )}
 
           <AlertActions>
-            <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
+            <Button type="button" plain onClick={handleCancel} disabled={isSubmitting}>
               Cancelar
             </Button>
             <Button type="submit" disabled={isSubmitting}>
@@ -298,7 +298,7 @@ export default function UsuariosView() {
         <AlertActions>
           <Button
             type="button"
-            variant="outline"
+            plain
             onClick={handleCloseCredentials}
             disabled={!copiedPassword}
           >
@@ -319,7 +319,7 @@ export default function UsuariosView() {
           Esta acción no se puede deshacer. El usuario perderá acceso al sistema permanentemente.
         </AlertDescription>
         <AlertActions>
-          <Button type="button" variant="outline" onClick={() => setDeleteConfirmId(null)}>
+          <Button type="button" plain onClick={() => setDeleteConfirmId(null)}>
             Cancelar
           </Button>
           <Button type="button" color="red" onClick={confirmDelete}>

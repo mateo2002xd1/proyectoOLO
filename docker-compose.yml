@@ -1,0 +1,97 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: olo_db
+      POSTGRES_USER: olo_user
+      POSTGRES_PASSWORD: olo_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./api-backend/src/infrastructure/db/migrations/script.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U olo_user -d olo_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api-backend:
+    build:
+      context: .
+      dockerfile: api-backend/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      PORT: 4000
+      DATABASE_URL: postgresql://olo_user:olo_password@db:5432/olo_db
+      DB_SSL: "false"
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: 8a7f5e9c2d1b4a6f3e8c5a9d2b7e1f4a8c3d6e9f2a5b8c1d4e7f0a3b6c9d2e5f
+      JWT_SITE_SECRET: 9b8e6f0d3c2a5b7e1f4a8c3d6e9f2a5b8c1d4e7f0a3b6c9d2e5f8a7b4c1d3e6f
+      JWT_EXPIRES_IN: 7d
+      FRONTEND_URL: http://localhost:3000
+      INTRANET_URL: http://localhost:3001
+      NODE_ENV: development
+      LOCAL_AUTH_EMAIL: olosuperadmin@sena.edu.co
+      LOCAL_AUTH_PASSWORD: "OloSuper2026!Admin.Sena"
+      LOCAL_AUTH_NAME: Superadmin
+      LOCAL_AUTH_ROLE: Superadmin
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  sitio-web:
+    build:
+      context: .
+      dockerfile: sitio-web/Dockerfile
+      args:
+        BACKEND_URL: http://api-backend:4000
+        NEXT_PUBLIC_API_URL: http://api-backend:4000
+        JWT_SECRET: 8a7f5e9c2d1b4a6f3e8c5a9d2b7e1f4a8c3d6e9f2a5b8c1d4e7f0a3b6c9d2e5f
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      BACKEND_URL: http://api-backend:4000
+      NEXT_PUBLIC_API_URL: http://api-backend:4000
+      JWT_SECRET: 8a7f5e9c2d1b4a6f3e8c5a9d2b7e1f4a8c3d6e9f2a5b8c1d4e7f0a3b6c9d2e5f
+    depends_on:
+      api-backend:
+        condition: service_started
+
+  intranet:
+    build:
+      context: .
+      dockerfile: intranet/Dockerfile
+      args:
+        API_BACKEND_URL: http://api-backend:4000
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      API_BACKEND_URL: http://api-backend:4000
+      NEXT_PUBLIC_API_URL: http://api-backend:4000
+      JWT_SECRET: 8a7f5e9c2d1b4a6f3e8c5a9d2b7e1f4a8c3d6e9f2a5b8c1d4e7f0a3b6c9d2e5f
+      NEXT_PUBLIC_SITIO_WEB_URL: http://localhost:3000
+    depends_on:
+      api-backend:
+        condition: service_started
+
+volumes:
+  pg_data:

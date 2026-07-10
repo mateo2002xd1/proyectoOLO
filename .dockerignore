@@ -1,0 +1,12 @@
+**/.git
+**/.next
+**/node_modules
+**/dist
+**/build
+**/.env
+**/.env.local
+**/deprecated
+**/.agents
+**/.agent
+**/openspec
+*.md
