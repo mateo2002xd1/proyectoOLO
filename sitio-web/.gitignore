@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Framework/build outputs
+.next/
+out/
+build/
+coverage/
+.turbo/
+
+# Environment and secrets
+.env.local
+.env.*
+!.env.example
+
+# Logs
+npm-debug.log*
+yarn-error.log*
+
+# Markdown files
+*.md
+*.MD
+
+# Tooling
+*.tsbuildinfo

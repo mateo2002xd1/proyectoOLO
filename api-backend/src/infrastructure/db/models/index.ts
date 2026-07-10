@@ -1,0 +1,54 @@
+import { User } from './User';
+import { Role } from './Role';
+import { Permission } from './Permission';
+import { RolePermission } from './RolePermission';
+import { SecurityQuestion } from './SecurityQuestion';
+import { Section } from './Section';
+import { Post } from './Post';
+import { Attachment } from './Attachment';
+import { ContentAuditLog } from './ContentAuditLog';
+import { SitioUser } from './SitioUser';
+import { Pagina } from './Pagina';
+import { PaginaVersion } from './PaginaVersion';
+
+Role.belongsToMany(Permission, { through: RolePermission, as: 'permissions', foreignKey: 'role_id', otherKey: 'permission_id' });
+Permission.belongsToMany(Role, { through: RolePermission, as: 'roles', foreignKey: 'permission_id', otherKey: 'role_id' });
+
+User.belongsTo(Role, { as: 'role', foreignKey: 'role_id' });
+Role.hasMany(User, { as: 'users', foreignKey: 'role_id' });
+
+SecurityQuestion.belongsTo(User, { as: 'user', foreignKey: 'user_id', onDelete: 'CASCADE' });
+User.hasMany(SecurityQuestion, { as: 'securityQuestions', foreignKey: 'user_id', onDelete: 'CASCADE' });
+
+Post.belongsTo(Section, { as: 'section', foreignKey: 'sectionId' });
+Section.hasMany(Post, { as: 'posts', foreignKey: 'sectionId' });
+
+Post.belongsTo(User, { as: 'author', foreignKey: 'authorId', onDelete: 'SET NULL' });
+User.hasMany(Post, { as: 'posts', foreignKey: 'authorId', onDelete: 'SET NULL' });
+
+Attachment.belongsTo(Post, { as: 'post', foreignKey: 'postId' });
+Post.hasMany(Attachment, { as: 'attachments', foreignKey: 'postId' });
+
+Pagina.belongsTo(User, { as: 'creador', foreignKey: 'creadoPor', onDelete: 'SET NULL' });
+User.hasMany(Pagina, { as: 'paginas', foreignKey: 'creadoPor', onDelete: 'SET NULL' });
+
+Pagina.hasMany(PaginaVersion, { as: 'versiones', foreignKey: 'paginaId' });
+PaginaVersion.belongsTo(Pagina, { as: 'pagina', foreignKey: 'paginaId' });
+
+PaginaVersion.belongsTo(User, { as: 'revisor', foreignKey: 'revisorId', onDelete: 'SET NULL' });
+PaginaVersion.belongsTo(User, { as: 'publicador', foreignKey: 'publicadoPor', onDelete: 'SET NULL' });
+
+export {
+  User,
+  Role,
+  Permission,
+  RolePermission,
+  SecurityQuestion,
+  Section,
+  Post,
+  Attachment,
+  ContentAuditLog,
+  SitioUser,
+  Pagina,
+  PaginaVersion,
+};
