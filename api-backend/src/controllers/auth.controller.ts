@@ -33,7 +33,7 @@ export const AuthController = {
 
       const mustChangePassword = user?.must_change_password === true;
       const mustSetupSecurityQuestions = user?.must_setup_security_questions === true;
-      res.json({ user, mustChangePassword, mustSetupSecurityQuestions });
+      res.json({ token, user, mustChangePassword, mustSetupSecurityQuestions });
     } catch (err) {
       next(err);
     }

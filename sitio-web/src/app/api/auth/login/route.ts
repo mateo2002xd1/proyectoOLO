@@ -32,13 +32,7 @@ export async function POST(request: NextRequest) {
 
   const data = await apiRes.json().catch(() => null);
 
-  // Extraer token de la cabecera Set-Cookie ya que el backend no lo envía en el JSON por seguridad
-  const setCookieHeader = apiRes.headers.get('set-cookie');
-  let token = null;
-  if (setCookieHeader) {
-    const match = setCookieHeader.match(/token=([^;]+)/);
-    if (match) token = match[1];
-  }
+  const token = data?.token;
 
   if (!apiRes.ok || !token) {
     return NextResponse.json(

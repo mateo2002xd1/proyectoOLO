@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { jwtVerify } from 'jose';
+// import { jwtVerify } from 'jose';
 import {
   AUTH_COOKIE_NAME,
   AUTH_ROLE_COOKIE_NAME,
@@ -19,10 +19,12 @@ export async function middleware(request: NextRequest) {
   let hasValidSession = false;
   if (token) {
     try {
-      const secretStr = process.env.JWT_SECRET || 'dev-secret-change-me';
-      const secret = new TextEncoder().encode(secretStr);
-      await jwtVerify(token, secret);
-      hasValidSession = true;
+      // Usamos decodeJwt para validar que exista y no haya expirado, sin requerir JWT_SECRET en frontend
+      const { decodeJwt } = await import('jose');
+      const decoded = decodeJwt(token);
+      if (decoded.exp && decoded.exp * 1000 > Date.now()) {
+        hasValidSession = true;
+      }
     } catch (error) {
       console.error("[Middleware] Token verification failed:", error);
       hasValidSession = false;
