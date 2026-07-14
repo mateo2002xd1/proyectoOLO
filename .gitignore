@@ -14,6 +14,15 @@ coverage/
 .env.*
 !.env.example
 
+# SSL Certificates
+nginx/ssl/*.pem
+nginx/ssl/*.key
+nginx/ssl/*.crt
+
+# Database backups
+*.sql
+!api-backend/src/infrastructure/db/migrations/script.sql
+
 # Logs
 npm-debug.log*
 yarn-error.log*
