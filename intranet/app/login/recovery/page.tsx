@@ -2,9 +2,11 @@
 
 import { useState, FormEvent } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { authApi } from '@/features/auth';
 
 export default function RecoveryPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [generalError, setGeneralError] = useState('');
@@ -37,7 +39,7 @@ export default function RecoveryPage() {
       if (data.questions && data.questions.length > 0) {
         sessionStorage.setItem('recoveryEmail', email);
         sessionStorage.setItem('recoveryQuestions', JSON.stringify(data.questions));
-        window.location.href = '/login/security-questions';
+        router.push('/login/security-questions');
       } else {
         setGeneralError('No se encontraron preguntas de seguridad para este correo.');
       }

@@ -2,15 +2,19 @@
 
 import { useState, FormEvent } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth';
 
 export default function LoginPage() {
   const { login } = useAuth();
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const validate = (): boolean => {
     const newErrors: typeof errors = {};
@@ -41,18 +45,22 @@ export default function LoginPage() {
     try {
       const data = await login(email, password);
 
-      if (data.mustSetupSecurityQuestions && data.mustChangePassword) {
-        window.location.href = '/login/first-login';
-      } else if (data.mustSetupSecurityQuestions) {
-        window.location.href = '/login/security-questions';
-      } else if (data.mustChangePassword) {
-        window.location.href = '/login/reset-password';
-      } else {
-        window.location.href = '/inicio';
-      }
+      setIsSuccess(true);
+
+      setTimeout(() => {
+        if (data.mustSetupSecurityQuestions && data.mustChangePassword) {
+          router.push('/login/first-login');
+        } else if (data.mustSetupSecurityQuestions) {
+          router.push('/login/security-questions');
+        } else if (data.mustChangePassword) {
+          router.push('/login/reset-password');
+        } else {
+          window.location.href = '/inicio';
+        }
+      }, 1200);
+
     } catch (error: any) {
       setErrors({ general: error.message || 'Error de conexión con el servidor' });
-    } finally {
       setIsLoading(false);
     }
   };
@@ -78,71 +86,78 @@ export default function LoginPage() {
       {/* Panel derecho — Login Card */}
       <div className="login-right">
         <div className="login-card">
-          <form onSubmit={handleSubmit} className="login-form">
-            <div className="login-field">
-              <label htmlFor="email" className="login-label">Correo SENA</label>
-              <input
-                id="email"
-                type="email"
-                placeholder="usuario@sena.edu.co"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={`login-input ${errors.email ? 'login-input-error' : ''}`}
-              />
-              {errors.email && <span className="login-error">{errors.email}</span>}
+          {isSuccess ? (
+            <div className="login-success-loader">
+              <div className="loader"></div>
+              <p>Preparando tu espacio...</p>
             </div>
-
-            <div className="login-field">
-              <label htmlFor="password" className="login-label">Contraseña</label>
-              <div className="login-password-wrap">
+          ) : (
+            <form onSubmit={handleSubmit} className="login-form">
+              <div className="login-field">
+                <label htmlFor="email" className="login-label">Correo SENA</label>
                 <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Mínimo 8 caracteres"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className={`login-input login-input-password ${errors.password ? 'login-input-error' : ''}`}
+                  id="email"
+                  type="email"
+                  placeholder="usuario@sena.edu.co"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={`login-input ${errors.email ? 'login-input-error' : ''}`}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="login-eye-btn"
-                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6c757d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    {showPassword ? (
-                      <>
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                        <circle cx="12" cy="12" r="3" />
-                      </>
-                    ) : (
-                      <>
-                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                        <line x1="1" y1="1" x2="23" y2="23" />
-                      </>
-                    )}
-                  </svg>
-                </button>
+                {errors.email && <span className="login-error">{errors.email}</span>}
               </div>
-              {errors.password && <span className="login-error">{errors.password}</span>}
-            </div>
 
-            {errors.general && (
-              <div className="login-general-error">{errors.general}</div>
-            )}
+              <div className="login-field">
+                <label htmlFor="password" className="login-label">Contraseña</label>
+                <div className="login-password-wrap">
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Mínimo 8 caracteres"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className={`login-input login-input-password ${errors.password ? 'login-input-error' : ''}`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="login-eye-btn"
+                    aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6c757d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      {showPassword ? (
+                        <>
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </>
+                      ) : (
+                        <>
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                          <line x1="1" y1="1" x2="23" y2="23" />
+                        </>
+                      )}
+                    </svg>
+                  </button>
+                </div>
+                {errors.password && <span className="login-error">{errors.password}</span>}
+              </div>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className={`login-submit ${isLoading ? 'login-submit-disabled' : ''}`}
-            >
-              {isLoading ? 'Ingresando...' : 'Ingresar'}
-            </button>
+              {errors.general && (
+                <div className="login-general-error">{errors.general}</div>
+              )}
 
-            <a href="/login/recovery" className="login-forgot">
-              ¿Olvidaste tu contraseña?
-            </a>
-          </form>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className={`login-submit ${isLoading ? 'login-submit-disabled' : ''}`}
+              >
+                {isLoading ? 'Ingresando...' : 'Ingresar'}
+              </button>
+
+              <Link href="/login/recovery" className="login-forgot">
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </form>
+          )}
         </div>
 
         <a href="http://localhost:3000" className="login-return">

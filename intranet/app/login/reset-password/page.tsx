@@ -2,10 +2,12 @@
 
 import { useState, FormEvent, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { authApi, useAuth } from '@/features/auth';
 
 export default function ResetPasswordPage() {
   const { user } = useAuth();
+  const router = useRouter();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -66,7 +68,7 @@ export default function ResetPasswordPage() {
         return;
       }
 
-      window.location.href = '/login/reset-success';
+      router.push('/login/reset-success');
     } catch (error: any) {
       setErrors({ general: error.message || 'Error de conexión con el servidor' });
     } finally {

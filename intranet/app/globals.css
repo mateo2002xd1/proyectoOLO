@@ -26,12 +26,42 @@
   --transition-fast: 150ms ease;
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { height: 100%; -webkit-font-smoothing: antialiased; }
-body { min-height: 100vh; font-family: var(--font-body); color: var(--color-text-primary); line-height: 1.5; }
-a { color: inherit; text-decoration: none; }
-button { cursor: pointer; border: none; background: none; font-family: inherit; }
-input { font-family: inherit; font-size: inherit; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  min-height: 100vh;
+  font-family: var(--font-body);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+
+input {
+  font-family: inherit;
+  font-size: inherit;
+}
 
 /* ============================================
    LOGIN PAGE — Full screen split layout
@@ -189,9 +219,19 @@ input { font-family: inherit; font-size: inherit; }
   margin-top: 0.25rem;
 }
 
-.login-submit:hover { background: #091729; transform: translateY(-1px); }
-.login-submit:active { transform: translateY(0); }
-.login-submit-disabled { opacity: 0.6; cursor: not-allowed; }
+.login-submit:hover {
+  background: #091729;
+  transform: translateY(-1px);
+}
+
+.login-submit:active {
+  transform: translateY(0);
+}
+
+.login-submit-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
 .login-forgot {
   font-size: clamp(0.8rem, 1.5vw, 0.875rem);
@@ -202,7 +242,9 @@ input { font-family: inherit; font-size: inherit; }
   transition: opacity 0.2s ease;
 }
 
-.login-forgot:hover { opacity: 0.7; }
+.login-forgot:hover {
+  opacity: 0.7;
+}
 
 .login-return {
   display: flex;
@@ -216,7 +258,10 @@ input { font-family: inherit; font-size: inherit; }
   transition: opacity 0.2s ease, transform 0.15s ease;
 }
 
-.login-return:hover { opacity: 1; transform: translateY(-1px); }
+.login-return:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+}
 
 /* ============================================
    INTRANET HOME — Banner, menu and footer
@@ -235,14 +280,16 @@ input { font-family: inherit; font-size: inherit; }
   justify-content: center;
   align-items: center;
   overflow: hidden;
+  min-height: clamp(150px, 30vw, 400px);
+  position: relative;
 }
 
 .intranet-hero-banner {
   display: block;
   width: 100%;
   max-width: 1240px;
-  height: auto;
-  object-fit: contain;
+  height: 100%;
+  object-fit: cover;
   border-radius: 0 0 16px 16px;
 }
 
@@ -315,11 +362,11 @@ input { font-family: inherit; font-size: inherit; }
   display: none;
 }
 
-.intranet-mobile-menu > summary {
+.intranet-mobile-menu>summary {
   list-style: none;
 }
 
-.intranet-mobile-menu > summary::-webkit-details-marker {
+.intranet-mobile-menu>summary::-webkit-details-marker {
   display: none;
 }
 
@@ -439,7 +486,7 @@ input { font-family: inherit; font-size: inherit; }
   line-height: 1.5;
 }
 
-.intranet-footer-col + .intranet-footer-col {
+.intranet-footer-col+.intranet-footer-col {
   border-left: 1px solid rgba(255, 255, 255, 0.3);
   padding-left: clamp(1rem, 2vw, 1.5rem);
 }
@@ -506,7 +553,7 @@ input { font-family: inherit; font-size: inherit; }
     grid-template-columns: 1fr;
   }
 
-  .intranet-footer-col + .intranet-footer-col {
+  .intranet-footer-col+.intranet-footer-col {
     border-left: none;
     border-top: 1px solid rgba(255, 255, 255, 0.3);
     padding-left: 0;
@@ -922,9 +969,19 @@ input { font-family: inherit; font-size: inherit; }
   margin-top: 0.25rem;
 }
 
-.recovery-submit:hover { background: #091729; transform: translateY(-1px); }
-.recovery-submit:active { transform: translateY(0); }
-.recovery-submit-disabled { opacity: 0.6; cursor: not-allowed; }
+.recovery-submit:hover {
+  background: #091729;
+  transform: translateY(-1px);
+}
+
+.recovery-submit:active {
+  transform: translateY(0);
+}
+
+.recovery-submit-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
 .recovery-login-link {
   font-size: clamp(0.8rem, 1.5vw, 0.875rem);
@@ -935,7 +992,9 @@ input { font-family: inherit; font-size: inherit; }
   transition: opacity 0.2s ease;
 }
 
-.recovery-login-link:hover { opacity: 0.7; }
+.recovery-login-link:hover {
+  opacity: 0.7;
+}
 
 /* --- Success State --- */
 .recovery-success {
@@ -992,7 +1051,10 @@ input { font-family: inherit; font-size: inherit; }
   transition: opacity 0.2s ease, transform 0.15s ease;
 }
 
-.recovery-return:hover { opacity: 1; transform: translateY(-1px); }
+.recovery-return:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+}
 
 /* ============================================
    SECURITY QUESTIONS PAGE — Identity validation
@@ -1180,9 +1242,19 @@ input { font-family: inherit; font-size: inherit; }
   margin-top: 0.25rem;
 }
 
-.sq-submit:hover { background: #091729; transform: translateY(-1px); }
-.sq-submit:active { transform: translateY(0); }
-.sq-submit-disabled { opacity: 0.6; cursor: not-allowed; }
+.sq-submit:hover {
+  background: #091729;
+  transform: translateY(-1px);
+}
+
+.sq-submit:active {
+  transform: translateY(0);
+}
+
+.sq-submit-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
 .sq-login-link {
   font-size: clamp(0.8rem, 1.5vw, 0.875rem);
@@ -1193,7 +1265,9 @@ input { font-family: inherit; font-size: inherit; }
   transition: opacity 0.2s ease;
 }
 
-.sq-login-link:hover { opacity: 0.7; }
+.sq-login-link:hover {
+  opacity: 0.7;
+}
 
 /* --- Return Link --- */
 .sq-return {
@@ -1208,7 +1282,10 @@ input { font-family: inherit; font-size: inherit; }
   transition: opacity 0.2s ease, transform 0.15s ease;
 }
 
-.sq-return:hover { opacity: 1; transform: translateY(-1px); }
+.sq-return:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+}
 
 /* ============================================
    RESET PASSWORD PAGE — New passcode form
@@ -1384,9 +1461,19 @@ input { font-family: inherit; font-size: inherit; }
   margin-top: 0.25rem;
 }
 
-.rp-submit:hover { background: #091729; transform: translateY(-1px); }
-.rp-submit:active { transform: translateY(0); }
-.rp-submit-disabled { opacity: 0.6; cursor: not-allowed; }
+.rp-submit:hover {
+  background: #091729;
+  transform: translateY(-1px);
+}
+
+.rp-submit:active {
+  transform: translateY(0);
+}
+
+.rp-submit-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
 .rp-login-link {
   font-size: clamp(0.8rem, 1.5vw, 0.875rem);
@@ -1397,7 +1484,9 @@ input { font-family: inherit; font-size: inherit; }
   transition: opacity 0.2s ease;
 }
 
-.rp-login-link:hover { opacity: 0.7; }
+.rp-login-link:hover {
+  opacity: 0.7;
+}
 
 .rp-return {
   display: flex;
@@ -1411,7 +1500,10 @@ input { font-family: inherit; font-size: inherit; }
   transition: opacity 0.2s ease, transform 0.15s ease;
 }
 
-.rp-return:hover { opacity: 1; transform: translateY(-1px); }
+.rp-return:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+}
 
 /* ============================================
    RESET SUCCESS PAGE — Full screen centered
@@ -1473,8 +1565,14 @@ input { font-family: inherit; font-size: inherit; }
   text-decoration: none;
 }
 
-.rs-login-btn:hover { opacity: 0.9; transform: translateY(-1px); }
-.rs-login-btn:active { transform: translateY(0); }
+.rs-login-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.rs-login-btn:active {
+  transform: translateY(0);
+}
 
 .rs-return {
   display: flex;
@@ -1488,7 +1586,10 @@ input { font-family: inherit; font-size: inherit; }
   transition: opacity 0.2s ease, transform 0.15s ease;
 }
 
-.rs-return:hover { opacity: 1; transform: translateY(-1px); }
+.rs-return:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+}
 
 /* ============================================
    FIRST LOGIN PAGE — Multi-step onboarding
@@ -1715,9 +1816,19 @@ input { font-family: inherit; font-size: inherit; }
   margin-top: 0.25rem;
 }
 
-.fl-submit:hover { background: #091729; transform: translateY(-1px); }
-.fl-submit:active { transform: translateY(0); }
-.fl-submit-disabled { opacity: 0.6; cursor: not-allowed; }
+.fl-submit:hover {
+  background: #091729;
+  transform: translateY(-1px);
+}
+
+.fl-submit:active {
+  transform: translateY(0);
+}
+
+.fl-submit-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
 .fl-login-link {
   font-size: clamp(0.8rem, 1.5vw, 0.875rem);
@@ -1728,7 +1839,9 @@ input { font-family: inherit; font-size: inherit; }
   transition: opacity 0.2s ease;
 }
 
-.fl-login-link:hover { opacity: 0.7; }
+.fl-login-link:hover {
+  opacity: 0.7;
+}
 
 /* --- Pagination --- */
 .fl-pagination {
@@ -1749,8 +1862,15 @@ input { font-family: inherit; font-size: inherit; }
   padding: 0.5rem;
 }
 
-.fl-pagination-btn:hover:not(:disabled) { opacity: 1; transform: translateY(-1px); }
-.fl-pagination-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.fl-pagination-btn:hover:not(:disabled) {
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+.fl-pagination-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
 
 .fl-pagination-num {
   width: 32px;
@@ -1765,7 +1885,10 @@ input { font-family: inherit; font-size: inherit; }
   transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease;
 }
 
-.fl-pagination-num:disabled { opacity: 0.3; cursor: not-allowed; }
+.fl-pagination-num:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
 
 .fl-pagination-active {
   background: var(--color-white);
@@ -1821,8 +1944,14 @@ input { font-family: inherit; font-size: inherit; }
   margin-top: 1rem;
 }
 
-.fl-success-btn:hover { opacity: 0.9; transform: translateY(-1px); }
-.fl-success-btn:active { transform: translateY(0); }
+.fl-success-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.fl-success-btn:active {
+  transform: translateY(0);
+}
 
 /* --- Return Link --- */
 .fl-return {
@@ -1837,7 +1966,10 @@ input { font-family: inherit; font-size: inherit; }
   transition: opacity 0.2s ease, transform 0.15s ease;
 }
 
-.fl-return:hover { opacity: 1; transform: translateY(-1px); }
+.fl-return:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+}
 
 /* ============================================
    RESPONSIVE — Mobile-first breakpoints
@@ -1845,6 +1977,7 @@ input { font-family: inherit; font-size: inherit; }
 
 /* Tablets竖屏 (768px - 900px) */
 @media (max-width: 900px) {
+
   .login-page,
   .recovery-page,
   .sq-page,
@@ -1876,6 +2009,7 @@ input { font-family: inherit; font-size: inherit; }
 
 /* Mobile (480px y menos) */
 @media (max-width: 480px) {
+
   .login-left,
   .recovery-left,
   .sq-left,
@@ -1918,6 +2052,7 @@ input { font-family: inherit; font-size: inherit; }
 
 /* Landscape mobile (altura limitada) */
 @media (max-height: 500px) and (orientation: landscape) {
+
   .login-page,
   .recovery-page,
   .sq-page,
@@ -1998,6 +2133,7 @@ input { font-family: inherit; font-size: inherit; }
 
 /* Landscape tablets y desktop anchos */
 @media (min-width: 901px) and (orientation: landscape) and (max-height: 600px) {
+
   .login-left,
   .recovery-left,
   .sq-left,
@@ -2038,6 +2174,7 @@ input { font-family: inherit; font-size: inherit; }
 
 /* Ultrawide / pantallas muy anchas (> 1600px) */
 @media (min-width: 1600px) {
+
   .login-left-content,
   .recovery-left-content,
   .sq-left-content,
@@ -2068,9 +2205,370 @@ input { font-family: inherit; font-size: inherit; }
   }
 }
 
+/* ============================================
+   AUTH PAGE TRANSITIONS — Slide & Stack Book Effect
+   ============================================ */
+
+/* --- Transition wrapper (from template.tsx) --- */
+.auth-page-transition {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* --- FORWARD: Card slides in from right --- */
+.auth-slide-forward .login-card,
+.auth-slide-forward .recovery-card,
+.auth-slide-forward .sq-card,
+.auth-slide-forward .rp-card,
+.auth-slide-forward .fl-card {
+  animation: authSlideInRight 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.auth-slide-forward .rs-content {
+  animation: authFadeInRight 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* --- BACKWARD: Card slides in from left --- */
+.auth-slide-backward .login-card,
+.auth-slide-backward .recovery-card,
+.auth-slide-backward .sq-card,
+.auth-slide-backward .rp-card,
+.auth-slide-backward .fl-card {
+  animation: authSlideInLeft 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.auth-slide-backward .rs-content {
+  animation: authFadeInLeft 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* --- Stacked pages effect (box-shadow layers) --- */
+.auth-slide-forward .login-card,
+.auth-slide-forward .recovery-card,
+.auth-slide-forward .sq-card,
+.auth-slide-forward .rp-card,
+.auth-slide-forward .fl-card,
+.auth-slide-backward .login-card,
+.auth-slide-backward .recovery-card,
+.auth-slide-backward .sq-card,
+.auth-slide-backward .rp-card,
+.auth-slide-backward .fl-card {
+  animation-fill-mode: both;
+}
+
+.auth-page-transition .login-card,
+.auth-page-transition .recovery-card,
+.auth-page-transition .sq-card,
+.auth-page-transition .rp-card,
+.auth-page-transition .fl-card {
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.25),
+    5px 5px 0 0 #d9e2ec,
+    5px 5px 10px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.4s ease;
+}
+
+/* Remove stacked effect on hover — feels like picking up the page */
+.auth-page-transition .login-card:hover,
+.auth-page-transition .recovery-card:hover,
+.auth-page-transition .sq-card:hover,
+.auth-page-transition .rp-card:hover,
+.auth-page-transition .fl-card:hover {
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.3),
+    3px 3px 0 0 #d9e2ec;
+}
+
+/* --- Left panel branding — fade up on entry --- */
+.auth-page-transition .login-left-content,
+.auth-page-transition .recovery-left-content,
+.auth-page-transition .sq-left-content,
+.auth-page-transition .rp-left-content,
+.auth-page-transition .fl-left-content {
+  animation: authBrandingFadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
+}
+
+/* --- Return link — staggered fade in --- */
+.auth-page-transition .login-return,
+.auth-page-transition .recovery-return,
+.auth-page-transition .sq-return,
+.auth-page-transition .rp-return,
+.auth-page-transition .fl-return,
+.auth-page-transition .rs-return {
+  animation: authBrandingFadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
+}
+
+/* --- Reset Success full-screen branding --- */
+.auth-page-transition .rs-content {
+  transform-origin: center center;
+}
+
+/* ============================================
+   AUTH TRANSITION KEYFRAMES
+   ============================================ */
+
+@keyframes authSlideInRight {
+  0% {
+    transform: translateX(70px) scale(0.97);
+    opacity: 0;
+    box-shadow:
+      -16px 0 32px rgba(0, 0, 0, 0.12),
+      0 0 0 0 transparent;
+  }
+
+  60% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.25),
+      5px 5px 0 0 #d9e2ec,
+      5px 5px 10px rgba(0, 0, 0, 0.06);
+  }
+}
+
+@keyframes authSlideInLeft {
+  0% {
+    transform: translateX(-70px) scale(0.97);
+    opacity: 0;
+    box-shadow:
+      16px 0 32px rgba(0, 0, 0, 0.12),
+      0 0 0 0 transparent;
+  }
+
+  60% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.25),
+      5px 5px 0 0 #d9e2ec,
+      5px 5px 10px rgba(0, 0, 0, 0.06);
+  }
+}
+
+@keyframes authBrandingFadeUp {
+  0% {
+    transform: translateY(18px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes authFadeInRight {
+  0% {
+    transform: translateX(70px) scale(0.97);
+    opacity: 0;
+  }
+
+  60% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes authFadeInLeft {
+  0% {
+    transform: translateX(-70px) scale(0.97);
+    opacity: 0;
+  }
+
+  60% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* ============================================
+   LOADING STATE
+   ============================================ */
+.login-success-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 0;
+  animation: authBrandingFadeUp 0.4s ease-out both;
+  gap: 1.5rem;
+  text-align: center;
+}
+
+.loader {
+  width: 65px;
+  aspect-ratio: 1;
+  position: relative;
+}
+
+.loader:before,
+.loader:after {
+  content: "";
+  position: absolute;
+  border-radius: 50px;
+  box-shadow: 0 0 0 3px inset #070144;
+  animation: l4 2.5s infinite;
+}
+
+.loader:after {
+  animation-delay: -1.25s;
+}
+
+@keyframes l4 {
+  0% {
+    inset: 0 35px 35px 0;
+  }
+
+  12.5% {
+    inset: 0 35px 0 0;
+  }
+
+  25% {
+    inset: 35px 35px 0 0;
+  }
+
+  37.5% {
+    inset: 35px 0 0 0;
+  }
+
+  50% {
+    inset: 35px 0 0 35px;
+  }
+
+  62.5% {
+    inset: 0 0 0 35px;
+  }
+
+  75% {
+    inset: 0 0 35px 35px;
+  }
+
+  87.5% {
+    inset: 0 0 35px 0;
+  }
+
+  100% {
+    inset: 0 35px 35px 0;
+  }
+}
+
+.login-success-loader p {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-navy-800);
+  margin: 0;
+  animation: pulseOpacity 1.5s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulseOpacity {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* ============================================
+   EYE BUTTON ANIMATIONS
+   ============================================ */
+
+.login-eye-btn,
+.rp-eye-btn,
+.fl-eye-btn {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease;
+  border-radius: 50%;
+}
+
+.login-eye-btn:hover,
+.rp-eye-btn:hover,
+.fl-eye-btn:hover {
+  transform: scale(1.15);
+  background-color: rgba(13, 31, 60, 0.05);
+}
+
+.login-eye-btn:active,
+.rp-eye-btn:active,
+.fl-eye-btn:active {
+  transform: scale(0.9);
+}
+
+/* Animate the inner SVG elements when they are toggled/mounted */
+@keyframes eyePopInOut {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.login-eye-btn svg path,
+.login-eye-btn svg circle,
+.login-eye-btn svg line,
+.rp-eye-btn svg path,
+.rp-eye-btn svg circle,
+.rp-eye-btn svg line,
+.fl-eye-btn svg path,
+.fl-eye-btn svg circle,
+.fl-eye-btn svg line {
+  transform-origin: center;
+  animation: eyePopInOut 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.login-eye-btn svg,
+.rp-eye-btn svg,
+.fl-eye-btn svg {
+  transition: stroke 0.3s ease;
+}
+
+.login-eye-btn:hover svg,
+.rp-eye-btn:hover svg,
+.fl-eye-btn:hover svg {
+  stroke: var(--color-navy-800);
+}
+
 /* Prefers reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+
+  *,
+  *::before,
+  *::after {
     transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
   }
 }

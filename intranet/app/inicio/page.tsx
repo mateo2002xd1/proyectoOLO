@@ -13,7 +13,7 @@ const menuItems = [
 ];
 
 export default function IntranetHomePage() {
-  const { logout, isLoading } = useAuth();
+	const { logout, isLoading } = useAuth();
 
 	return (
 		<main className="intranet-home">
@@ -51,14 +51,14 @@ export default function IntranetHomePage() {
 							</svg>
 						</button>
 
-						<button 
-              type="button" 
-              className="intranet-login-btn" 
-              aria-label="Cerrar sesion"
-              title="Cerrar sesión"
-              onClick={logout}
-              disabled={isLoading}
-            >
+						<button
+							type="button"
+							className="intranet-login-btn"
+							aria-label="Cerrar sesion"
+							title="Cerrar sesión"
+							onClick={logout}
+							disabled={isLoading}
+						>
 							<svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20">
 								<path
 									d="M15 8l4 4m0 0-4 4m4-4H9m4-9H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"

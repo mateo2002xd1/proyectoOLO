@@ -2,6 +2,7 @@
 
 import { useState, FormEvent, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { authApi } from '@/features/auth';
 
 interface SecurityQuestion {
@@ -9,6 +10,7 @@ interface SecurityQuestion {
   label: string;
 }
 export default function SecurityQuestionsPage() {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<string[]>(Array(3).fill(''));
   const [errors, setErrors] = useState<{ answer?: string; general?: string }>({});
@@ -24,7 +26,7 @@ export default function SecurityQuestionsPage() {
       setEmail(savedEmail);
       setQuestions(JSON.parse(savedQuestions));
     } else {
-      window.location.href = '/login/recovery';
+      router.push('/login/recovery');
     }
   }, []);
 
@@ -63,7 +65,7 @@ export default function SecurityQuestionsPage() {
       sessionStorage.setItem('recoveryAnswers', JSON.stringify(payload));
       // data.message = 'Respuestas correctas' en caso de éxito
       void data;
-      window.location.href = '/login/reset-password';
+      router.push('/login/reset-password');
     } catch (error: any) {
       setErrors({ general: error.message || 'Las respuestas no coinciden. Intenta de nuevo.' });
       setCurrentStep(0);
