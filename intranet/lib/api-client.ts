@@ -11,7 +11,7 @@ export class ApiError extends Error {
   }
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? (typeof window !== 'undefined' ? '/api-backend' : 'http://localhost:4000');
 const DEFAULT_TIMEOUT_MS = 10000;
 
 async function fetchWithTimeout(url: string, options: RequestInit = {}): Promise<Response> {
