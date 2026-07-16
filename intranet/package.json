@@ -11,6 +11,8 @@
   "dependencies": {
     "@headlessui/react": "^2.2.10",
     "@heroicons/react": "^2.2.0",
+    "@olo/blocks-renderer": "file:../packages/blocks-renderer",
+    "@puckeditor/core": "^0.22.2",
     "clsx": "^2.1.1",
     "jose": "^6.2.3",
     "next": "16.2.10",

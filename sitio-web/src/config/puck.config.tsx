@@ -6,6 +6,9 @@ import { ExternalPortals } from '@/lib/blocks/ExternalPortals';
 import { Footer } from '@/lib/blocks/Footer';
 import { Services } from '@/lib/blocks/Services';
 import { EditorjsWrapper } from '@/features/paginas/components/editorjs-wrapper';
+import { IntranetTopbar } from '@/lib/blocks/IntranetTopbar';
+import { IntranetHero } from '@/lib/blocks/IntranetHero';
+import { ImageUploaderField } from '@/features/paginas/components/image-uploader-field';
 import type { Config } from '@puckeditor/core';
 
 // ─── RichText block: Puck handles the layout slot, EditorJS handles the content ───
@@ -31,6 +34,9 @@ const RichTextBlock = {
 // ─── Puck Configuration: Single source of truth for editor + public rendering ───
 export const puckConfig: Config = {
   categories: {
+    'Intranet': {
+      components: ['IntranetTopbar', 'IntranetHero'],
+    },
     'Navegación': {
       components: ['Header'],
     },
@@ -45,6 +51,58 @@ export const puckConfig: Config = {
     },
   },
   components: {
+    IntranetTopbar: {
+      label: 'Intranet Topbar',
+      fields: {
+        brandText: { type: 'text', label: 'Texto de la Marca' },
+        logoUrl: {
+          type: 'custom',
+          render: ({ value, onChange }: any) => (
+            <ImageUploaderField value={value} onChange={onChange} />
+          ),
+        },
+        menuItems: {
+          type: 'array',
+          label: 'Menú de Navegación',
+          arrayFields: {
+            label: { type: 'text', label: 'Texto del enlace' },
+            href: { type: 'text', label: 'URL' },
+          },
+          getItemSummary: (item: any) => item.label || 'Enlace',
+        },
+      },
+      defaultProps: {
+        brandText: 'Intranet',
+        logoUrl: '/assets/svg/olo-logo-blanco.svg',
+        menuItems: [
+          { href: "/intranet", label: "Inicio" },
+          { href: "#", label: "Tasa de Vinculación y Empleabilidad" },
+          { href: "#", label: "Matriz de Pertinencia" },
+          { href: "#", label: "Encuestas" },
+          { href: "#", label: "Preguntas Frecuentes" },
+        ],
+      },
+      render: (props: any) => {
+        return <IntranetTopbar {...props} />;
+      },
+    },
+    IntranetHero: {
+      label: 'Intranet Banner Principal',
+      fields: {
+        imageSrc: {
+          type: 'custom',
+          render: ({ value, onChange }: any) => (
+            <ImageUploaderField value={value} onChange={onChange} />
+          ),
+        },
+        imageAlt: { type: 'text', label: 'Texto alternativo' },
+      },
+      defaultProps: {
+        imageSrc: '/assets/img/banner1.png',
+        imageAlt: 'Banner principal de la intranet',
+      },
+      render: (props: any) => <IntranetHero {...props} />,
+    },
     Header: {
       label: 'Header / Encabezado',
       fields: {

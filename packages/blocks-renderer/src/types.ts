@@ -1,4 +1,4 @@
-export type BlockType = 'header' | 'hero' | 'services' | 'external-portals' | 'footer';
+export type BlockType = 'header' | 'hero' | 'services' | 'external-portals' | 'footer' | 'IntranetTopbar' | 'IntranetHero';
 
 export interface BlockBase {
   id: string;
@@ -25,4 +25,12 @@ export interface FooterBlock extends BlockBase {
   type: 'footer';
 }
 
-export type Block = HeaderBlock | HeroBlock | ServicesBlock | ExternalPortalsBlock | FooterBlock;
+export interface IntranetTopbarBlock extends BlockBase {
+  type: 'IntranetTopbar';
+}
+
+export interface IntranetHeroBlock extends BlockBase {
+  type: 'IntranetHero';
+}
+
+export type Block = HeaderBlock | HeroBlock | ServicesBlock | ExternalPortalsBlock | FooterBlock | IntranetTopbarBlock | IntranetHeroBlock;

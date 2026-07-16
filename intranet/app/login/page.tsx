@@ -75,7 +75,7 @@ export default function LoginPage() {
           </h1>
           <Image
             src="/assets/svg/olo-logo-blanco.svg"
-            alt="OLO Logo"
+            alt="Logo intranet"
             width={180}
             height={180}
             className="login-logo"

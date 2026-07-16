@@ -305,12 +305,14 @@ export default function FirstLoginPage() {
   return (
     <div className="fl-page">
       {/* Panel izquierdo — Branding */}
-      <div className="fl-left">
-        <div className="fl-left-content">
-          <h1 className="fl-brand-title">{leftContent?.title}</h1>
-          <p className="fl-brand-subtitle">{leftContent?.subtitle}</p>
+      {currentStep !== 3 && (
+        <div className="fl-left">
+          <div className="fl-left-content">
+            <h1 className="fl-brand-title">{leftContent?.title}</h1>
+            <p className="fl-brand-subtitle">{leftContent?.subtitle}</p>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Panel derecho — Card / Content */}
       <div className="fl-right">

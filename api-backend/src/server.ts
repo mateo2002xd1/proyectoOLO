@@ -28,9 +28,9 @@ const start = async () => {
       }
     }
 
-    app.listen(config.port, () => {
+    app.listen(config.port, '127.0.0.1', () => {
       console.log(`OLO API Backend running on port ${config.port}`);
-      console.log(`Health check: http://localhost:${config.port}/health`);
+      console.log(`Health check: http://127.0.0.1:${config.port}/health`);
     });
   } catch (error) {
     console.error('Failed to start server:', error);

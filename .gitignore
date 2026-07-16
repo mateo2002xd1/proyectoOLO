@@ -14,15 +14,6 @@ coverage/
 .env.*
 !.env.example
 
-# SSL Certificates
-nginx/ssl/*.pem
-nginx/ssl/*.key
-nginx/ssl/*.crt
-
-# Database backups
-*.sql
-!api-backend/src/infrastructure/db/migrations/script.sql
-
 # Logs
 npm-debug.log*
 yarn-error.log*
@@ -30,6 +21,11 @@ yarn-error.log*
 # Markdown files
 ARQUITECTURA.md
 DIAGRAMA_ESTADO_ACTUAL.md
+
+# Database backups
+*.sql
+!api-backend/src/infrastructure/db/migrations/script.sql
+
 
 # Tooling
 #.tsbuildinfo

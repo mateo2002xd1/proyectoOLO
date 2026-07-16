@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@olo/blocks-renderer": ["../packages/blocks-renderer/src/index.ts"]
     }
   },
   "include": [
