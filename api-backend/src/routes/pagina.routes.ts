@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import { PaginaController } from '../controllers/pagina.controller';
 import { requireAuth } from '../middlewares/auth.middleware';
+import { cacheInterceptor } from '../middlewares/cache.middleware';
 
 const router = Router();
 
-router.get('/publica/:slug', PaginaController.obtenerPublica);
+router.get('/publica/:slug', cacheInterceptor(300), PaginaController.obtenerPublica);
 
 router.use(requireAuth);
 

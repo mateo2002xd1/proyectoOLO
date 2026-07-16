@@ -4,6 +4,7 @@ import sequelize from './config/database';
 
 // Import models to register associations
 import './infrastructure/db/models';
+import { setupWorker } from './infrastructure/redis/queue';
 
 process.on('unhandledRejection', (reason) => {
   console.error('UNHANDLED REJECTION — crashing:', reason);
@@ -18,6 +19,9 @@ const start = async () => {
 
     await sequelize.sync({ alter: true });
     console.log('Models synchronized.');
+
+    setupWorker();
+    console.log('Background worker started.');
 
     // Allow null on creado_por for local-auth development user (no valid UUID)
     if (process.env.NODE_ENV !== 'production') {

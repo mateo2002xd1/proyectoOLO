@@ -21,6 +21,7 @@ import auditRoutes from './routes/audit.routes';
 import sitioUserRoutes from './routes/sitioUser.routes';
 import securityQuestionRoutes from './routes/securityQuestion.routes';
 import paginaRoutes from './routes/pagina.routes';
+import jobRoutes from './routes/job.routes';
 
 const app = express();
 
@@ -46,6 +47,7 @@ app.use('/api/security-questions', securityQuestionRoutes);
 app.use('/api/sitio-users', sitioUserRoutes);
 app.use('/api/paginas', paginaRoutes);
 app.use('/api/audit-logs', auditRoutes);
+app.use('/api/jobs', jobRoutes);
 app.use('/api/posts/:postId/attachments', attachmentRoutes);
 app.delete('/api/attachments/:id', requireAuth, AttachmentController.delete);
 

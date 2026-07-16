@@ -34,5 +34,15 @@ User.init(
     failed_security_attempts: { type: DataTypes.INTEGER, defaultValue: 0 },
     locked_until: { type: DataTypes.DATE },
   },
-  { sequelize, tableName: 'users', timestamps: true, underscored: true }
+  {
+    sequelize,
+    tableName: 'users',
+    timestamps: true,
+    underscored: true,
+    indexes: [
+      { fields: ['email'] },
+      { fields: ['role_id'] },
+      { fields: ['status'] }
+    ]
+  }
 );

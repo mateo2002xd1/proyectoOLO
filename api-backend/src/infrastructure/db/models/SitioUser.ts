@@ -23,5 +23,14 @@ SitioUser.init(
     created_by: { type: DataTypes.UUID },
     last_login_at: { type: DataTypes.DATE },
   },
-  { sequelize, tableName: 'usuarios_sitio', timestamps: true, underscored: true }
+  {
+    sequelize,
+    tableName: 'usuarios_sitio',
+    timestamps: true,
+    underscored: true,
+    indexes: [
+      { fields: ['email'] },
+      { fields: ['status'] }
+    ]
+  }
 );

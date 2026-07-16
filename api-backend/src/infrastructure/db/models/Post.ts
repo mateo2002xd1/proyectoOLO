@@ -27,5 +27,16 @@ Post.init(
     authorId: { type: DataTypes.TEXT },
     publishedAt: { type: DataTypes.DATE },
   },
-  { sequelize, tableName: 'Post', timestamps: true, freezeTableName: true }
+  {
+    sequelize,
+    tableName: 'Post',
+    timestamps: true,
+    freezeTableName: true,
+    indexes: [
+      { fields: ['slug'] },
+      { fields: ['sectionId'] },
+      { fields: ['authorId'] },
+      { fields: ['publishedAt'] }
+    ]
+  }
 );

@@ -20,5 +20,14 @@ Pagina.init(
     versionPublicadaId: { type: DataTypes.UUID, allowNull: true },
     creadoPor: { type: DataTypes.UUID, allowNull: true },
   },
-  { sequelize, tableName: 'paginas', timestamps: true, underscored: true }
+  {
+    sequelize,
+    tableName: 'paginas',
+    timestamps: true,
+    underscored: true,
+    indexes: [
+      { fields: ['slug'] },
+      { fields: ['creado_por'] }
+    ]
+  }
 );
