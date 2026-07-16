@@ -5,6 +5,7 @@ import { Hero } from '@/lib/blocks/Hero';
 import { Services } from '@/lib/blocks/Services';
 import { ExternalPortals } from '@/lib/blocks/ExternalPortals';
 import { Footer } from '@/lib/blocks/Footer';
+import { IntranetFooter } from '@/lib/blocks/IntranetFooter';
 import { IntranetTopbarWrapper } from '@/lib/blocks/IntranetTopbarWrapper';
 import { IntranetHero } from '@/lib/blocks/IntranetHero';
 import type { Config } from '@puckeditor/core';
@@ -26,7 +27,7 @@ export const puckConfig: Config = {
       components: ['ExternalPortals'],
     },
     'Estructura': {
-      components: ['Footer'],
+      components: ['Footer', 'IntranetFooter'],
     },
   },
   components: {
@@ -131,6 +132,10 @@ export const puckConfig: Config = {
     Footer: {
       label: 'Footer / Pie de página',
       render: () => <Footer block={{ id: 'footer', type: 'footer' }} />,
+    },
+    IntranetFooter: {
+      label: 'Intranet Footer / Pie de página',
+      render: () => <IntranetFooter block={{ id: 'intranet-footer', type: 'IntranetFooter' }} />,
     },
   },
 };

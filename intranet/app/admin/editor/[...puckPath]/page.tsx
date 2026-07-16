@@ -24,7 +24,10 @@ export default function EditorPage({
           setInitialData(data);
         }
       })
-      .catch(() => setInitialData({}));
+      .catch((error) => {
+        console.error("Error loading editor data:", error);
+        setInitialData({});
+      });
   }, [slugPath]);
 
   const handlePublish = async (data: any) => {
