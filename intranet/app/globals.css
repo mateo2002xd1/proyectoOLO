@@ -2795,7 +2795,7 @@ input {
   color: #00324D;
   font-size: 1rem;
   line-height: 1.6;
-  text-align: left;
+  text-align: justify;
   margin-bottom: 2rem;
 }
 
@@ -2818,6 +2818,11 @@ input {
   height: auto;
   border-radius: 0.75rem;
   object-fit: contain;
+}
+.tasabanner-image {
+  width: 100%;
+  height: auto;
+
 }
 
 .tasa-dashboard-wrapper {

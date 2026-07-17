@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { IntranetTopbar } from "@/lib/blocks/IntranetTopbar";
-import { Footer } from "@/lib/blocks/Footer";
+import { IntranetFooter } from "@/lib/blocks/IntranetFooter";
 
 export default function TasaPage() {
     return (
@@ -17,7 +17,7 @@ export default function TasaPage() {
                         alt="Banner Tasa de Vinculación y Empleabilidad"
                         width={1920}
                         height={435}
-                        className="w-full h-auto"
+                        className="tasabanner-image"
                         priority
                     />
                 </div>
@@ -81,11 +81,11 @@ export default function TasaPage() {
                             Resultados de vinculación laboral formal (titulada), con una periodicidad semestral.
                             Genera un indicador de vinculación donde se relaciona el número de vinculados laboralmente en el mercado formal y el total de egresados, para un grupo de seguimiento particular.
                         </p>
-                        
+
                         <div className="tasa-iframe-wrapper">
                             <iframe
                                 title="Dashboard OLO - Vinculación"
-                                src="https://app.powerbi.com/view?r=eyJrIjoiMWIxNWMwYjItNzdhZS00ZGE1LWExMDktYzZhOTgwNjZkNTZmIiwidCI6ImNiYzJjMzgxLTJmMmUtNGQ5My05MWQxLTUwNmM5MzE2YWNlNyIsImMiOjR9&pageName=ReportSection3"
+                                src="https://app.powerbi.com/view?r=eyJrIjoiMWIxNWMwYjItNzdhZS00ZGE1LWExMDktYzZhOTgwNjZkNTZmIiwidCI6ImNiYzJjMzgxLTJmMmUtNGQ5My05MWQxLTUwNmM5MzE2YWNlNyIsImMiOjR9&pageName=ReportSection"
                                 allowFullScreen={true}
                                 className="tasa-iframe"
                             ></iframe>
@@ -115,7 +115,7 @@ export default function TasaPage() {
             </main>
 
             <div className="w-full mt-auto">
-                <Footer block={{ id: 'footer-1', type: 'Footer' } as any} />
+                <IntranetFooter block={{ id: 'footer-1', type: 'IntranetFooter' } as any} />
             </div>
         </div>
     );

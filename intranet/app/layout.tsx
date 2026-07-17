@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Intranet | Observatorio Laboral y Ocupacional SENA",
-  description: "Panel de administración y edición del Observatorio Laboral y Ocupacional - SENA",
+  description: "Información restringida para publico interno del Observatorio Laboral y Ocupacional - SENA",
   icons: {
     icon: "/assets/svg/favicon.svg",
   },
