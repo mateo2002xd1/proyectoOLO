@@ -47,7 +47,7 @@ export default function MatrizPage() {
       <div className="matriz-section-white">
         <div className="matriz-sabias-que">
           <img
-            src="/assets/img/SabiasQue.png"
+            src="/assets/img/Sabiasque.png"
             alt="Sabías que... La Matriz ofrece información desde 2011"
             className="w-full h-auto object-contain rounded-2xl shadow-sm"
           />
