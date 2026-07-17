@@ -2564,6 +2564,7 @@ input {
 
 /* Prefers reduced motion */
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
@@ -2572,196 +2573,170 @@ input {
   }
 }
 
-/* --- Footer --- */
-.olo-footer-wrapper {
-  background: linear-gradient(to bottom, transparent 120px, #001631 120px);
-  padding: 0 20px 40px 20px;
+/* Matriz Page - Global Sections */
+.matriz-section-gray {
+  width: 100%;
+  background-color: #F1F3F5;
+  padding: 4rem 2rem;
   display: flex;
   justify-content: center;
-  font-family: var(--font-body), system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
 }
 
-.olo-footer-card {
-  background-color: #ffffff;
-  border-radius: 6px;
+.matriz-section-white {
   width: 100%;
-  max-width: 1100px;
-  padding: 35px;
+  background-color: #FFFFFF;
+  padding: 3rem 0 0 0;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  justify-content: center;
+  overflow-x: hidden;
 }
 
-.olo-logos-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 10px;
+@media (min-width: 768px) {
+
+  .matriz-section-gray,
+  .matriz-section-white {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
 }
 
-.olo-logos-left {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.olo-logos-right {
-  display: flex;
-  align-items: center;
-}
-
-.olo-logo {
-  max-height: 80px;
-  object-fit: contain;
-}
-
-.olo-content-blocks {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.olo-block {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.olo-title-main {
-  color: #00324D;
-  font-size: 1.15rem;
-  font-weight: 700;
-  margin: 0 0 2px 0;
-}
-
-.olo-title {
-  color: #00324D;
-  font-size: 0.95rem;
-  font-weight: 700;
-  margin: 0;
-}
-
-.olo-text {
-  color: #4A5568;
-  font-size: 0.9rem;
-  margin: 0;
-  line-height: 1.3;
-}
-
-.olo-link {
-  color: #5b677a;
-  font-size: 0.9rem;
-  text-decoration: underline;
-  margin-top: 2px;
-}
-
-.olo-social-and-certs {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 10px;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-
-.olo-social-links {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  flex-wrap: wrap;
-}
-
-.olo-social-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.olo-social-icon {
-  width: 22px;
-  height: 22px;
-  object-fit: contain;
-  border-radius: 4px;
-}
-
-.olo-social-text {
-  color: #4A5568;
-  font-size: 0.85rem;
-}
-
-.olo-certifications {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.olo-cert-icon {
-  height: 40px;
-  object-fit: contain;
-}
-
-.olo-bottom-links {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.olo-links-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-
-.olo-links-row a {
-  color: #00324D;
-  font-size: 0.85rem;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.olo-links-row a:hover {
-  text-decoration: underline;
-}
-
-.olo-gov-banner-bottom {
+.matriz-sabias-que {
   width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  border-radius: 10px;
+  box-sizing: border-box;
+}
+
+.matriz-sabias-que img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 10px;
+}
+
+.matriz-content-container {
+  width: 100%;
+  max-width: 64rem; /* ~1024px, matches Tailwind max-w-5xl */
+  margin: 0 auto;
+  padding: 0 2rem;
+  box-sizing: border-box;
+}
+
+.matriz-content-container-wide {
+  width: 100%;
+  max-width: 1303px; /* For Dashboard */
+  margin: 0 auto;
+  padding: 0 2rem;
+  box-sizing: border-box;
+}
+
+.matriz-section-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: #0A1B3F;
+}
+
+.matriz-section-intro {
+  font-size: 1.125rem;
+  color: #1f2937;
+  /* gray-800 */
+  line-height: 1.625;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+
+.matriz-section-list {
+  font-size: 1.125rem;
+  color: #1E293B;
+  margin-bottom: 0.5rem;
+}
+
+.matriz-section-list p {
+  margin-bottom: 0.25rem;
+}
+
+.matriz-que-es-list {
+  font-size: 1.125rem;
+  color: #1E293B;
+  margin-bottom: 0.5rem;
+}
+
+.matriz-que-es-list p {
+  margin-bottom: 0.25rem;
+}
+
+/* Matriz Page - Carousel */
+.matriz-carousel-wrapper {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 0;
+  position: relative;
+}
+
+.matriz-carousel-track {
   display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 12px;
-  background-color: #0943B5;
-  padding: 14px 20px;
+  flex-direction: row;
   overflow: hidden;
+  gap: 1.5rem;
+  width: 100%;
 }
 
-.olo-co-logo {
-  height: 26px;
-  width: auto;
+.matriz-carousel-slide {
+  width: calc(33.3333% - 1rem);
+  /* 3 items with 1.5rem gap (total 3rem gap / 3 = 1rem) */
+  flex: none;
+}
+
+.matriz-carousel-img {
+  width: 100%;
+  height: auto;
   object-fit: contain;
+  transition: transform 0.3s ease;
 }
 
-@media (max-width: 850px) {
-  .olo-logos-top {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 20px;
-  }
-  .olo-social-and-certs {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 30px;
-  }
+.matriz-carousel-img:hover {
+  transform: scale(1.02);
 }
 
-@media (max-width: 600px) {
-  .olo-footer-card {
-    padding: 30px 20px;
+.matriz-carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #ffffff;
+  padding: 0.75rem;
+  border-radius: 9999px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  color: #0A1B3F;
+  border: 1px solid #f3f4f6;
+  z-index: 10;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.matriz-carousel-btn:hover {
+  background-color: #f9fafb;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.matriz-carousel-btn.prev {
+  left: 0;
+}
+
+.matriz-carousel-btn.next {
+  right: 0;
+}
+
+@media (min-width: 768px) {
+  .matriz-carousel-btn.prev {
+    left: -3rem;
   }
-  .olo-links-row {
-    flex-direction: column;
-    gap: 10px;
+
+  .matriz-carousel-btn.next {
+    right: -3rem;
   }
 }
-
