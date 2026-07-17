@@ -2603,7 +2603,7 @@ input {
 
 .matriz-sabias-que {
   width: 100%;
-  max-width: 700px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 0 1rem;
   border-radius: 10px;
@@ -2619,7 +2619,8 @@ input {
 
 .matriz-content-container {
   width: 100%;
-  max-width: 64rem; /* ~1024px, matches Tailwind max-w-5xl */
+  max-width: 64rem;
+  /* ~1024px, matches Tailwind max-w-5xl */
   margin: 0 auto;
   padding: 0 2rem;
   box-sizing: border-box;
@@ -2627,7 +2628,8 @@ input {
 
 .matriz-content-container-wide {
   width: 100%;
-  max-width: 1303px; /* For Dashboard */
+  max-width: 1303px;
+  /* For Dashboard */
   margin: 0 auto;
   padding: 0 2rem;
   box-sizing: border-box;
@@ -2674,7 +2676,8 @@ input {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem 0;
+  padding: 2rem 4rem;
+  /* Espacio horizontal para los botones */
   position: relative;
 }
 
@@ -2709,13 +2712,15 @@ input {
   transform: translateY(-50%);
   background-color: #ffffff;
   padding: 0.75rem;
-  border-radius: 9999px;
+  border-radius: 25px;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   color: #0A1B3F;
   border: 1px solid #f3f4f6;
   z-index: 10;
   cursor: pointer;
   transition: all 0.3s ease;
+  width: 50px;
+  height: 50px;
 }
 
 .matriz-carousel-btn:hover {
@@ -2725,6 +2730,7 @@ input {
 
 .matriz-carousel-btn.prev {
   left: 0;
+
 }
 
 .matriz-carousel-btn.next {
@@ -2733,11 +2739,11 @@ input {
 
 @media (min-width: 768px) {
   .matriz-carousel-btn.prev {
-    left: -3rem;
+    left: 0;
   }
 
   .matriz-carousel-btn.next {
-    right: -3rem;
+    right: 0;
   }
 }
 
@@ -2795,6 +2801,7 @@ input {
   border-radius: 0.75rem;
   object-fit: contain;
 }
+
 .tasabanner-image {
   width: 100%;
   height: auto;
