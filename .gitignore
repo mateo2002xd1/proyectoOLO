@@ -19,11 +19,6 @@ npm-debug.log*
 yarn-error.log*
 
 # Markdown files
-ARQUITECTURA.md
-DIAGRAMA_ESTADO_ACTUAL.md
-project_stack.md
-project_purpose.md
-reglas.md
 
 # Database backups
 *.sql
@@ -36,5 +31,6 @@ reglas.md
 #deprecated
 deprecated/
 .agents/
+.claude/
 .agent/
 openspec/
