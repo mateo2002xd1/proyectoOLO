@@ -1,1 +1,0 @@
-{"version":3,"file":"Section.d.ts","sourceRoot":"","sources":["../../../../src/infrastructure/db/models/Section.ts"],"names":[],"mappings":"AAAA,OAAO,EAAa,KAAK,EAAE,MAAM,WAAW,CAAC;AAG7C,qBAAa,OAAQ,SAAQ,KAAK;IACxB,EAAE,EAAE,MAAM,CAAC;IACX,IAAI,EAAE,MAAM,CAAC;IACb,IAAI,EAAE,MAAM,CAAC;IACb,WAAW,EAAE,MAAM,GAAG,IAAI,CAAC;IAC3B,SAAS,EAAE,IAAI,CAAC;IAChB,SAAS,EAAE,IAAI,CAAC;CACzB"}

@@ -1,1 +1,0 @@
-{"version":3,"file":"contenido-rechazado.event.d.ts","sourceRoot":"","sources":["../../../src/domain-events/paginas/contenido-rechazado.event.ts"],"names":[],"mappings":"AAGA,MAAM,WAAW,uBAAuB;IACtC,QAAQ,EAAE,MAAM,CAAC;IACjB,IAAI,EAAE,MAAM,CAAC;IACb,YAAY,EAAE,MAAM,CAAC;IACrB,MAAM,EAAE,MAAM,CAAC;IACf,KAAK,EAAE,IAAI,CAAC;CACb"}

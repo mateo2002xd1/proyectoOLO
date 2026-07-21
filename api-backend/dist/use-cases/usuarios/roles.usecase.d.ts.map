@@ -1,1 +1,0 @@
-{"version":3,"file":"roles.usecase.d.ts","sourceRoot":"","sources":["../../../src/use-cases/usuarios/roles.usecase.ts"],"names":[],"mappings":"AAEA,eAAO,MAAM,WAAW,gEAAiC,CAAC;AAE1D,eAAO,MAAM,WAAW,GAAU,IAAI,MAAM,2DAI3C,CAAC;AAEF,eAAO,MAAM,UAAU,GAAU,MAAM,GAAG,2DAIzC,CAAC;AAEF,eAAO,MAAM,UAAU,GAAU,IAAI,MAAM,EAAE,MAAM,GAAG,2DAKrD,CAAC;AAEF,eAAO,MAAM,UAAU,GAAU,IAAI,MAAM;;EAK1C,CAAC"}
