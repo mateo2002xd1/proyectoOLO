@@ -293,27 +293,30 @@ sitio-web/src/
 Contenido del proyecto en capa `intranet/src/`:
 
 ```
-intranet/
-├── app/
-│   ├── layout.tsx                    # Identidad visual PROPIA (distinta al público)
-│   ├── globals.css
-│   ├── login/                        # Flujo completo: recovery, first-login, security-questions
-│   ├── inicio/page.tsx
-│   ├── [...puckPath]/page.tsx        # Páginas dinámicas (con auth)
+intranet/src/
+├── app/                              # SOLO enrutamiento Next.js
+│   ├── layout.tsx                    # Root: fuentes, providers
+│   ├── globals.css                   # Estilos base
+│   ├── login/                       
+│   ├── inicio/page.tsx             
+│   ├── [...puckPath]/page.tsx       
 │   ├── editor/[slug]/                # Mesa de trabajo Puck
-│   ├── matriz/, tasa/                # Secciones propias (con Power BI — RF-08)
-│   ├── api/
-│   └── middleware.ts                 # TODO protegido excepto /login
+│   ├── matriz/, tasa/ 
+│   ├── api/                          # Route handlers delgados (delegan a la API :4000)
+│   └── middleware.ts                 # Auth gating (nombre exacto, no "proxy.ts") 
 │
-├── features/
-│   ├── auth/                         # Ya existe: login, tokens
+├── features/                         # Lógica por dominio
+│   ├── auth/                         # Flujo completo: recovery, first-login, security-questions
 │   ├── paginas/                      # CMS/Puck (mismo patrón que sitio-web)
 │   ├── directores/                   # NUEVO: espacio exclusivo (RF-15)
-│   └── edicion-concurrente/          # NUEVO: lock
+│   ├── edicion-concurrente/          # NUEVO: lock
+│   ├── matriz/                       # Matriz de formación (Power BI + integración + vistas UI)
+│   └── tasa/                         # Tasa de ocupación (Power BI + integración + vistas UI)
 │
 ├── shared/
 │   ├── ui/                           # Sistema de diseño PROPIO de intranet
 │   │   ├── atoms/ molecules/ organisms/ templates/
+│   │   │   └── Carousel/             # Componentes genéricos extraídos
 │   └── lib/
 │
 └── config/

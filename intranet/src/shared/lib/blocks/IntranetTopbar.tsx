@@ -12,9 +12,9 @@ interface IntranetTopbarProps {
 
 export function IntranetTopbar({
   menuItems = [
-    { href: "/intranet", label: "Inicio" },
-    { href: "#", label: "Tasa de Vinculación y Empleabilidad" },
-    { href: "#", label: "Matriz de Pertinencia" },
+    { href: "/inicio", label: "Inicio" },
+    { href: "/tasa", label: "Tasa de Vinculación y Empleabilidad" },
+    { href: "/matriz", label: "Matriz de Pertinencia" },
     { href: "#", label: "Encuestas" },
     { href: "#", label: "Preguntas Frecuentes" },
   ],

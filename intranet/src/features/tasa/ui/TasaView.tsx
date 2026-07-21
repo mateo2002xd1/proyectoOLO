@@ -1,8 +1,8 @@
 import Image from "next/image";
-import { IntranetTopbar } from "@/lib/blocks/IntranetTopbar";
-import { IntranetFooter } from "@/lib/blocks/IntranetFooter";
+import { IntranetTopbar } from "@/shared/lib/blocks/IntranetTopbar";
+import { IntranetFooter } from "@/shared/lib/blocks/IntranetFooter";
 
-export default function TasaPage() {
+export function TasaView() {
     return (
         <div className="w-full bg-white flex flex-col items-center min-h-screen">
             <div className="w-full sticky top-0 z-50">

@@ -1,14 +1,18 @@
 import React from 'react';
-import Carousel from './Carousel';
-import { IntranetTopbarWrapper } from '@/lib/blocks/IntranetTopbarWrapper';
-import { IntranetFooter } from '@/lib/blocks/IntranetFooter';
+import { Carousel } from '@/shared/ui/organisms/Carousel';
+import { IntranetTopbarWrapper } from '@/shared/lib/blocks/IntranetTopbarWrapper';
+import { IntranetFooter } from '@/shared/lib/blocks/IntranetFooter';
 
-export const metadata = {
-  title: 'Matriz de Pertinencia',
-  description: 'Matriz de Pertinencia - Herramienta estratégica del SENA',
-};
+const carouselImages = [
+  "/assets/img/Carrusel1.png",
+  "/assets/img/Carrusel2.png",
+  "/assets/img/Carrusel3.png",
+  "/assets/img/Carrusel4.png",
+  "/assets/img/Carrusel5.png",
+  "/assets/img/Carrusel6.png",
+];
 
-export default function MatrizPage() {
+export function MatrizView() {
   return (
     <div className="min-h-screen bg-[#F8F9FA] flex flex-col overflow-x-hidden">
       <IntranetTopbarWrapper />
@@ -57,7 +61,7 @@ export default function MatrizPage() {
       {/* Carousel Section */}
       <div className="matriz-section-white">
         <div className="matriz-content-container-wide max-w-[1200px]">
-          <Carousel />
+          <Carousel images={carouselImages} />
         </div>
       </div>
 
