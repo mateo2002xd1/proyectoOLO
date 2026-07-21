@@ -25,6 +25,9 @@ export const config = {
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
   intranetUrl: process.env.INTRANET_URL || 'http://localhost:3001',
   nodeEnv: process.env.NODE_ENV || 'development',
+  // Por defecto NO se altera el schema al arrancar — DATABASE_URL puede apuntar a una
+  // BD compartida (ej. Neon). Opt-in explícito solo para setup local contra una BD propia.
+  dbAutoAlter: process.env.DB_AUTO_ALTER === 'true',
   localAuth: {
     email: process.env.LOCAL_AUTH_EMAIL || '',
     password: process.env.LOCAL_AUTH_PASSWORD || '',

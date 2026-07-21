@@ -1,14 +1,7 @@
-import { Pagina, PaginaVersion, User } from '../../infrastructure/db/models';
+import { PaginaRepository } from '../../repositories/pagina.repository';
 
 export const listarEnRevision = async () => {
-  const versiones = await PaginaVersion.findAll({
-    where: { estado: 'en_revision' },
-    include: [
-      { model: Pagina, as: 'pagina' },
-      { model: User, as: 'publicador', attributes: ['id', 'nombre', 'email'] },
-    ],
-    order: [['creadoEn', 'DESC']],
-  });
+  const versiones = await PaginaRepository.listarEnRevision();
 
   return versiones.map((v) => ({
     id: v.id,

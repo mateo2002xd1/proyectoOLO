@@ -1,12 +1,12 @@
-import { Pagina, PaginaVersion } from '../../infrastructure/db/models';
+import { PaginaRepository } from '../../repositories/pagina.repository';
 
 export const obtenerPaginaPublica = async (slug: string) => {
-  const pagina = await Pagina.findOne({ where: { slug } });
+  const pagina = await PaginaRepository.findBySlug(slug);
   if (!pagina) return null;
 
   if (!pagina.versionPublicadaId) return null;
 
-  const version = await PaginaVersion.findByPk(pagina.versionPublicadaId);
+  const version = await PaginaRepository.findVersionPorId(pagina.versionPublicadaId);
   if (!version) return null;
 
   let contenido = version.contenido as any;

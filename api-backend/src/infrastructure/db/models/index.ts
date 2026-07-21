@@ -4,7 +4,7 @@ import { Permission } from './Permission';
 import { RolePermission } from './RolePermission';
 import { SecurityQuestion } from './SecurityQuestion';
 import { Section } from './Section';
-import { Post } from './Post';
+import { Contenido } from './Contenido';
 import { Attachment } from './Attachment';
 import { ContentAuditLog } from './ContentAuditLog';
 import { SitioUser } from './SitioUser';
@@ -20,14 +20,14 @@ Role.hasMany(User, { as: 'users', foreignKey: 'role_id' });
 SecurityQuestion.belongsTo(User, { as: 'user', foreignKey: 'user_id', onDelete: 'CASCADE' });
 User.hasMany(SecurityQuestion, { as: 'securityQuestions', foreignKey: 'user_id', onDelete: 'CASCADE' });
 
-Post.belongsTo(Section, { as: 'section', foreignKey: 'sectionId' });
-Section.hasMany(Post, { as: 'posts', foreignKey: 'sectionId' });
+Contenido.belongsTo(Section, { as: 'section', foreignKey: 'sectionId' });
+Section.hasMany(Contenido, { as: 'contenidos', foreignKey: 'sectionId' });
 
-Post.belongsTo(User, { as: 'author', foreignKey: 'authorId', onDelete: 'SET NULL' });
-User.hasMany(Post, { as: 'posts', foreignKey: 'authorId', onDelete: 'SET NULL' });
+Contenido.belongsTo(User, { as: 'author', foreignKey: 'authorId', onDelete: 'SET NULL' });
+User.hasMany(Contenido, { as: 'contenidos', foreignKey: 'authorId', onDelete: 'SET NULL' });
 
-Attachment.belongsTo(Post, { as: 'post', foreignKey: 'postId' });
-Post.hasMany(Attachment, { as: 'attachments', foreignKey: 'postId' });
+Attachment.belongsTo(Contenido, { as: 'contenido', foreignKey: 'postId' });
+Contenido.hasMany(Attachment, { as: 'attachments', foreignKey: 'postId' });
 
 Pagina.belongsTo(User, { as: 'creador', foreignKey: 'creadoPor', onDelete: 'SET NULL' });
 User.hasMany(Pagina, { as: 'paginas', foreignKey: 'creadoPor', onDelete: 'SET NULL' });
@@ -45,7 +45,7 @@ export {
   RolePermission,
   SecurityQuestion,
   Section,
-  Post,
+  Contenido,
   Attachment,
   ContentAuditLog,
   SitioUser,

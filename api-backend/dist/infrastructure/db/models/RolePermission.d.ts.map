@@ -1,0 +1,1 @@
+{"version":3,"file":"RolePermission.d.ts","sourceRoot":"","sources":["../../../../src/infrastructure/db/models/RolePermission.ts"],"names":[],"mappings":"AAAA,OAAO,EAAa,KAAK,EAAE,MAAM,WAAW,CAAC;AAG7C,qBAAa,cAAe,SAAQ,KAAK;IAC/B,OAAO,EAAE,MAAM,CAAC;IAChB,aAAa,EAAE,MAAM,CAAC;CAC/B"}

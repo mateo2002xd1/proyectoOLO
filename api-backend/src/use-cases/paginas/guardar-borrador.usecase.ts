@@ -1,27 +1,23 @@
-import { Pagina, PaginaVersion } from '../../infrastructure/db/models';
+import { PaginaRepository } from '../../repositories/pagina.repository';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const toUUID = (id: string) => (UUID_RE.test(id) ? id : null);
 
 export const guardarBorrador = async (slug: string, contenido: any, userId: string) => {
-  let pagina = await Pagina.findOne({ where: { slug } });
+  let pagina = await PaginaRepository.findBySlug(slug);
 
   if (!pagina) {
-    pagina = await Pagina.create({
+    pagina = await PaginaRepository.crear({
       slug,
       titulo: slug,
       creadoPor: toUUID(userId),
     });
   }
 
-  const ultimaVersion = await PaginaVersion.findOne({
-    where: { paginaId: pagina.id },
-    order: [['numeroVersion', 'DESC']],
-  });
-
+  const ultimaVersion = await PaginaRepository.findUltimaVersion(pagina.id);
   const numeroVersion = ultimaVersion ? ultimaVersion.numeroVersion + 1 : 1;
 
-  const version = await PaginaVersion.create({
+  const version = await PaginaRepository.crearVersion({
     paginaId: pagina.id,
     contenido,
     numeroVersion,

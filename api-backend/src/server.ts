@@ -17,8 +17,11 @@ const start = async () => {
     await sequelize.authenticate();
     console.log('Database connected.');
 
-    await sequelize.sync({ alter: true });
-    console.log('Models synchronized.');
+    // sync({ alter: true }) modifica columnas existentes — solo con opt-in explícito
+    // (DB_AUTO_ALTER=true), porque DATABASE_URL puede apuntar a una BD compartida.
+    // Sin la variable, sync() solo crea las tablas que falten, sin tocar las existentes.
+    await sequelize.sync(config.dbAutoAlter ? { alter: true } : undefined);
+    console.log(config.dbAutoAlter ? 'Models synchronized (alter).' : 'Models synchronized (create-only).');
 
     setupWorker();
     console.log('Background worker started.');

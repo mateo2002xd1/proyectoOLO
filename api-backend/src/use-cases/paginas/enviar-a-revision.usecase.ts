@@ -1,17 +1,13 @@
-import { Pagina, PaginaVersion } from '../../infrastructure/db/models';
+import { PaginaRepository } from '../../repositories/pagina.repository';
 
 export const enviarARevision = async (slug: string) => {
-  const pagina = await Pagina.findOne({ where: { slug } });
+  const pagina = await PaginaRepository.findBySlug(slug);
   if (!pagina) throw new Error('Página no encontrada');
 
-  const ultimaVersion = await PaginaVersion.findOne({
-    where: { paginaId: pagina.id, estado: 'borrador' },
-    order: [['numeroVersion', 'DESC']],
-  });
-
+  const ultimaVersion = await PaginaRepository.findVersionPorEstado(pagina.id, 'borrador');
   if (!ultimaVersion) throw new Error('No hay borrador para enviar a revisión');
 
-  await ultimaVersion.update({ estado: 'en_revision' });
+  await PaginaRepository.actualizarVersion(ultimaVersion, { estado: 'en_revision' });
 
   return { pagina, version: ultimaVersion };
 };

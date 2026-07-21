@@ -1,0 +1,1 @@
+{"version":3,"file":"Permission.d.ts","sourceRoot":"","sources":["../../../../src/infrastructure/db/models/Permission.ts"],"names":[],"mappings":"AAAA,OAAO,EAAa,KAAK,EAAE,MAAM,WAAW,CAAC;AAG7C,qBAAa,UAAW,SAAQ,KAAK;IAC3B,EAAE,EAAE,MAAM,CAAC;IACX,IAAI,EAAE,MAAM,CAAC;IACb,UAAU,EAAE,IAAI,CAAC;IACjB,UAAU,EAAE,IAAI,CAAC;CAC1B"}

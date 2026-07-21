@@ -1,0 +1,1 @@
+{"version":3,"file":"002-paginas.d.ts","sourceRoot":"","sources":["../../../../src/infrastructure/db/migrations/002-paginas.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,cAAc,EAAE,MAAM,WAAW,CAAC;AAE3C,wBAAsB,EAAE,CAAC,cAAc,EAAE,cAAc,GAAG,OAAO,CAAC,IAAI,CAAC,CAwBtE;AAED,wBAAsB,IAAI,CAAC,cAAc,EAAE,cAAc,GAAG,OAAO,CAAC,IAAI,CAAC,CAGxE"}

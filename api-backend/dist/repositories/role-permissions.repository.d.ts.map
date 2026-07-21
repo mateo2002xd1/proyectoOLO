@@ -1,0 +1,1 @@
+{"version":3,"file":"role-permissions.repository.d.ts","sourceRoot":"","sources":["../../src/repositories/role-permissions.repository.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,cAAc,EAAoB,MAAM,6BAA6B,CAAC;AAE/E,eAAO,MAAM,wBAAwB;;0BAGb,MAAM;sBAGV,MAAM,iBAAiB,MAAM;sBAG7B,MAAM,iBAAiB,MAAM;yBAG1B,MAAM;qCAGY,MAAM,KAAG,OAAO,CAAC,MAAM,EAAE,CAAC;CAclE,CAAC"}

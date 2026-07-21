@@ -1,0 +1,1 @@
+{"version":3,"file":"enviado-a-revision.event.d.ts","sourceRoot":"","sources":["../../../src/domain-events/paginas/enviado-a-revision.event.ts"],"names":[],"mappings":"AAGA,MAAM,WAAW,qBAAqB;IACpC,QAAQ,EAAE,MAAM,CAAC;IACjB,IAAI,EAAE,MAAM,CAAC;IACb,UAAU,EAAE,MAAM,CAAC;IACnB,KAAK,EAAE,IAAI,CAAC;CACb"}

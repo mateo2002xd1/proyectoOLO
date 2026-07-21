@@ -5,7 +5,7 @@ import {
   createSection,
   updateSection,
   deleteSection,
-} from '../use-cases/paginas/sections.usecase';
+} from '../use-cases/contenidos/secciones.usecase';
 
 export const SectionController = {
   async getAll(_req: Request, res: Response, next: NextFunction) {

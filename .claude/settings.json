@@ -6,7 +6,15 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/login)",
       "Bash(curl -s -o /dev/null -w \"%{http_code} -> %{redirect_url}\\\\n\" http://localhost:3000/dashboard)",
       "Bash(curl -s -o /dev/null -w \"%{http_code} -> %{redirect_url}\\\\n\" http://localhost:3000/usuarios)",
-      "Bash(curl -s -o /dev/null -w \"%{http_code} -> %{redirect_url}\\\\n\" http://localhost:3000/contenido/inicio/editor)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code} -> %{redirect_url}\\\\n\" http://localhost:3000/contenido/inicio/editor)",
+      "Read(//tmp/**)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:4000/health --max-time 3)",
+      "Bash(tasklist //FI \"IMAGENAME eq node.exe\")",
+      "Bash(netstat -ano)",
+      "Bash(taskkill //F //PID 10832)",
+      "Bash(awk '{print $5}')",
+      "Bash(xargs -r -I{} taskkill //F //PID {})",
+      "Bash(cd \"c:\\\\Users\\\\Lenovo LOQ\\\\Desktop\\\\OLO-proyect\" && git show HEAD:guia-del-proyecto.md > /tmp/old-guia.md 2>&1 && diff /tmp/old-guia.md 1-guia-del-proyecto.md | head -150)"
     ]
   }
 }
