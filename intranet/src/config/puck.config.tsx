@@ -1,13 +1,13 @@
 'use client';
 
-import { Header } from '@/lib/blocks/Header';
-import { Hero } from '@/lib/blocks/Hero';
-import { Services } from '@/lib/blocks/Services';
-import { ExternalPortals } from '@/lib/blocks/ExternalPortals';
-import { Footer } from '@/lib/blocks/Footer';
-import { IntranetFooter } from '@/lib/blocks/IntranetFooter';
-import { IntranetTopbarWrapper } from '@/lib/blocks/IntranetTopbarWrapper';
-import { IntranetHero } from '@/lib/blocks/IntranetHero';
+import { Header } from '@/shared/lib/blocks/Header';
+import { Hero } from '@/shared/lib/blocks/Hero';
+import { Services } from '@/shared/lib/blocks/Services';
+import { ExternalPortals } from '@/shared/lib/blocks/ExternalPortals';
+import { Footer } from '@/shared/lib/blocks/Footer';
+import { IntranetFooter } from '@/shared/lib/blocks/IntranetFooter';
+import { IntranetTopbarWrapper } from '@/shared/lib/blocks/IntranetTopbarWrapper';
+import { IntranetHero } from '@/shared/lib/blocks/IntranetHero';
 import type { Config } from '@puckeditor/core';
 import { ImageUploaderField } from '@/features/paginas/components/image-uploader-field';
 

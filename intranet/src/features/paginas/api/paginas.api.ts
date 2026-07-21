@@ -12,7 +12,7 @@
  * @see ARQUITECTURA_MAESTRA_OLO.md §5  (API :4000 es la única fuente de JWT/auth)
  */
 
-import { apiClient } from "@/lib/api-client";
+import { apiClient } from "@/shared/lib/api-client";
 import type { ContenidoPagina, PaginaVersion } from "../types/editor.types";
 
 // TODO: Fase 3 — import type { Pagina } from '@olo/types';
