@@ -20,13 +20,13 @@ npm-debug.log*
 yarn-error.log*
 
 # Markdown files
-# 1-guia-del-proyecto.md
-# 2-convenciones-del-proyecto.md
-# 3-seguridad-del-proyecto.md
-# 4-reglas.md
-# 5-tablerosBI.md
-# 6-auditoria.md
-# 7-despliegue.md
+1-guia-del-proyecto.md
+2-convenciones-del-proyecto.md
+3-seguridad-del-proyecto.md
+4-reglas.md
+5-tablerosBI.md
+6-auditoria.md
+7-despliegue.md
 
 # Database backups
 *.sql

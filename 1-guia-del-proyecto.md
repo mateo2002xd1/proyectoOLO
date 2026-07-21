@@ -41,7 +41,7 @@ La necesidad central, en sus propias palabras traducidas a requisitos:
 
 ## 2. Solución implementada
 
-Una plataforma de **tres piezas** bajo un modelo **CMS headless con composición visual**:
+Una plataforma de **tres capas** bajo un modelo **CMS headless con composición visual**:
 
 - **Dos capas frontend** (Next.js) en puertos distintos, cada una con su propia identidad visual y su propio despliegue:
   - **Sitio web público** (`:3000`): páginas dinámicas abiertas + panel administrativo interno.
