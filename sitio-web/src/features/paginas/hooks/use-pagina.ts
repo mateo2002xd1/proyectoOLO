@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Pagina, Bloque } from '../types';
-import { obtenerPagina, guardarBorrador, enviarARevision } from '../api/paginas.api';
+import { obtenerPagina, guardarBorrador, enviarARevision } from '../services/paginas.service';
 
 export function usePagina(slug: string) {
   const [pagina, setPagina] = useState<Pagina | null>(null);

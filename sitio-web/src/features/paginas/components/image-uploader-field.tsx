@@ -43,21 +43,21 @@ export function ImageUploaderField({ value, onChange }: ImageUploaderFieldProps)
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       {value && (
-        <img 
-          src={value} 
-          alt="Preview" 
-          style={{ width: '100%', maxHeight: '150px', objectFit: 'cover', borderRadius: '4px' }} 
+        <img
+          src={value}
+          alt="Preview"
+          style={{ width: '100%', maxHeight: '150px', objectFit: 'cover', borderRadius: '4px' }}
         />
       )}
-      <input 
-        type="text" 
-        value={value || ''} 
-        onChange={(e) => onChange(e.target.value)} 
+      <input
+        type="text"
+        value={value || ''}
+        onChange={(e) => onChange(e.target.value)}
         placeholder="URL de la imagen"
         style={{ padding: '8px', border: '1px solid #ccc', borderRadius: '4px', width: '100%' }}
       />
       <div style={{ position: 'relative', overflow: 'hidden', display: 'inline-block' }}>
-        <button 
+        <button
           type="button"
           disabled={isUploading}
           style={{
@@ -73,8 +73,8 @@ export function ImageUploaderField({ value, onChange }: ImageUploaderFieldProps)
         >
           {isUploading ? 'Subiendo...' : 'Subir Imagen Local'}
         </button>
-        <input 
-          type="file" 
+        <input
+          type="file"
           accept="image/*"
           onChange={handleFileChange}
           style={{

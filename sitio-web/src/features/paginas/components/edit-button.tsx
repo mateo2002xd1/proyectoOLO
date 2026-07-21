@@ -22,8 +22,8 @@ export default function EditButton({ slug }: EditButtonProps) {
     setHasSession(editableRoles.includes(role ?? ''));
   }, []);
 
-  const editHref = `/admin/editor/${slug}`;
-  const loginHref = `/login?redirect=/admin/editor/${slug}`;
+  const editHref = `/contenido/${slug}/editor`;
+  const loginHref = `/login?redirect=/contenido/${slug}/editor`;
 
   const href = hasSession ? editHref : loginHref;
   const title = hasSession ? 'Editar esta página' : 'Iniciar sesión para editar';
@@ -53,4 +53,3 @@ export default function EditButton({ slug }: EditButtonProps) {
     </a>
   );
 }
-

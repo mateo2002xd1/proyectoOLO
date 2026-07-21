@@ -2,21 +2,15 @@
 
 import React from 'react';
 
-export interface IntranetTopbarBlock {
-  type: 'IntranetTopbar';
-  props: {
-    menuItems: Array<{ label: string; href: string }>;
-  };
-}
-
 interface IntranetTopbarProps {
-  block?: IntranetTopbarBlock;
   menuItems?: Array<{ label: string; href: string }>;
+  brandText?: string;
+  logoUrl?: string;
   onLogout?: () => void;
   isLoading?: boolean;
 }
 
-export function IntranetTopbar({ 
+export function IntranetTopbar({
   menuItems = [
     { href: "/intranet", label: "Inicio" },
     { href: "#", label: "Tasa de Vinculación y Empleabilidad" },
@@ -24,20 +18,22 @@ export function IntranetTopbar({
     { href: "#", label: "Encuestas" },
     { href: "#", label: "Preguntas Frecuentes" },
   ],
+  brandText = "Intranet",
+  logoUrl = "/assets/svg/olo-logo-blanco.svg",
   onLogout,
-  isLoading = false
+  isLoading = false,
 }: IntranetTopbarProps) {
   return (
     <header className="intranet-topbar" aria-label="Navegacion principal">
       <div className="intranet-topbar-inner">
         <div className="intranet-brand">
           <img
-            src="/assets/svg/olo-logo-blanco.svg"
+            src={logoUrl}
             alt="Logo OLO"
             width={22}
             height={22}
           />
-          <span className="intranet-brand-text">Intranet</span>
+          <span className="intranet-brand-text">{brandText}</span>
         </div>
 
         <nav className="intranet-nav">

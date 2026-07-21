@@ -1,10 +1,30 @@
 import { Request, Response, NextFunction } from 'express';
 import { getRedis } from '../infrastructure/redis';
 
+/**
+ * Returns true when the Redis instance is connected and ready to accept commands.
+ * When Redis is down and maxRetriesPerRequest is null (BullMQ requirement),
+ * awaiting any command would hang forever, so we must check status first.
+ */
+function isRedisReady(): boolean {
+  try {
+    const redis = getRedis();
+    return redis.status === 'ready';
+  } catch {
+    return false;
+  }
+}
+
 export const cacheInterceptor = (ttlSeconds: number = 60) => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     // Only cache GET requests
     if (req.method !== 'GET') {
+      return next();
+    }
+
+    // If Redis is not connected, skip caching entirely to avoid hanging
+    if (!isRedisReady()) {
+      res.setHeader('X-Cache', 'BYPASS');
       return next();
     }
 
@@ -24,7 +44,7 @@ export const cacheInterceptor = (ttlSeconds: number = 60) => {
       const originalJson = res.json.bind(res);
       res.json = (body: any) => {
         // Only cache 2xx responses
-        if (res.statusCode >= 200 && res.statusCode < 300) {
+        if (res.statusCode >= 200 && res.statusCode < 300 && isRedisReady()) {
           redis.setex(cacheKey, ttlSeconds, JSON.stringify(body)).catch((err) => {
             console.error('Error setting cache:', err);
           });

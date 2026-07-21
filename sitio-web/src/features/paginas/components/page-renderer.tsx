@@ -1,8 +1,5 @@
 import React from 'react';
-import { Header } from '@/lib/blocks/Header';
-import { Hero } from '@/lib/blocks/Hero';
-import { ExternalPortals } from '@/lib/blocks/ExternalPortals';
-import { Footer } from '@/lib/blocks/Footer';
+import { Header, Hero, ExternalPortals, Footer } from '@olo/blocks-renderer';
 import type { Bloque } from '../types';
 
 /**

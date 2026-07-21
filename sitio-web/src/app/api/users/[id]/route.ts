@@ -1,4 +1,4 @@
-import { proxyToBackend } from '@/lib/backend-proxy';
+import { proxyToBackend } from '@/shared/lib/backend-proxy';
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

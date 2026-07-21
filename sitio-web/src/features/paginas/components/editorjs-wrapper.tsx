@@ -84,7 +84,7 @@ export function EditorjsWrapper({ data, onChange, readOnly = false }: EditorjsWr
   }, []);
 
   return (
-    <div 
+    <div
       ref={containerRef}
       style={{
         border: '1px solid #e5e7eb',

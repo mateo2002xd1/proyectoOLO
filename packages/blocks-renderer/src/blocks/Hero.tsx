@@ -2,24 +2,54 @@ import type { HeroBlock } from '../types';
 
 interface HeroProps {
   block: HeroBlock;
+  heading?: string;
+  searchPlaceholder?: string;
+  imageUrl?: string;
+  imageAlt?: string;
 }
 
-export function Hero({ block }: HeroProps) {
+const DEFAULT_HEADING = 'Explora las ocupaciones clave de los sectores productivos en Colombia.';
+const DEFAULT_SEARCH_PLACEHOLDER = 'Buscar ocupación, código o denominación';
+const DEFAULT_IMAGE_URL = '/asset/img/nos-ocupa-el-pais.png';
+const DEFAULT_IMAGE_ALT = 'Nos ocupa el país';
+
+export function Hero({
+  block,
+  heading = DEFAULT_HEADING,
+  searchPlaceholder = DEFAULT_SEARCH_PLACEHOLDER,
+  imageUrl = DEFAULT_IMAGE_URL,
+  imageAlt = DEFAULT_IMAGE_ALT,
+}: HeroProps) {
   return (
-    <section className="olo-hero" id="hero-section" aria-label="Banner principal" data-block-id={block.id}>
-      <div className="olo-hero-box">
-        <div className="olo-hero-content">
-          <div className="olo-hero-svg">
-            <svg width="290" height="147" viewBox="0 0 290 147" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="290" height="147" fill="url(#hero-pattern)"/>
-              <defs>
-                <pattern id="hero-pattern" patternContentUnits="objectBoundingBox" width="1" height="1">
-                  <use href="#hero-image" transform="scale(0.000383432 0.00075643)"/>
-                </pattern>
-                <image id="hero-image" width="2609" height="1322" preserveAspectRatio="none" href="data:image/png;base64,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"/>
-              </defs>
-            </svg>
+    <section className="bg-[#041121] w-[60%] rounded-[16px] mx-auto h-[400px] flex items-center justify-center" id="hero-section" aria-label="Banner principal" data-block-id={block.id}>
+      <div className="w-full px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col md:flex-row items-center justify-between py-12 md:py-16 gap-8">
+          
+          {/* Left Side: Image */}
+          <div className="w-full md:w-1/2 flex justify-center md:justify-start">
+            <img 
+              src={imageUrl} 
+              alt={imageAlt} 
+              className="w-[150px] h-auto object-contain"
+            />
           </div>
+          
+          {/* Right Side: Text & Search */}
+          <div className="w-full md:w-1/2 flex flex-col items-center md:items-start text-center md:text-left">
+            <h1 className="text-white text-2xl md:text-3xl lg:text-4xl font-bold mb-8 leading-snug">
+              {heading}
+            </h1>
+            
+            <div className="w-full max-w-lg">
+              <input 
+                type="text" 
+                placeholder={searchPlaceholder} 
+                className="w-full px-6 py-4 rounded-xl text-gray-800 bg-white shadow-lg focus:outline-none focus:ring-2 focus:ring-[#4fc3f7] text-base"
+                aria-label={searchPlaceholder}
+              />
+            </div>
+          </div>
+
         </div>
       </div>
     </section>

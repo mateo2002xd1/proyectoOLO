@@ -5,7 +5,7 @@ import {
   AUTH_USER_NAME_COOKIE_NAME,
   AUTH_MUST_CHANGE_PW_COOKIE_NAME,
   AUTH_MUST_SETUP_SQ_COOKIE_NAME,
-} from '@/config/auth-cookies';
+} from '@/shared/lib/auth-cookies';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000';
 const COOKIE_MAX_AGE = 7 * 24 * 60 * 60; // 7 días en segundos

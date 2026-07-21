@@ -21,6 +21,9 @@ yarn-error.log*
 # Markdown files
 ARQUITECTURA.md
 DIAGRAMA_ESTADO_ACTUAL.md
+project_stack.md
+project_purpose.md
+reglas.md
 
 # Database backups
 *.sql

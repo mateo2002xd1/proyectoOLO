@@ -6,7 +6,7 @@ import {
   AUTH_ROLE_COOKIE_NAME,
   AUTH_MUST_CHANGE_PW_COOKIE_NAME,
   AUTH_MUST_SETUP_SQ_COOKIE_NAME,
-} from '@/config/auth-cookies';
+} from '@/shared/lib/auth-cookies';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -35,13 +35,13 @@ export async function middleware(request: NextRequest) {
   if (pathname === '/login') {
     if (hasValidSession) {
       const redirectTo = request.nextUrl.searchParams.get('redirect');
-      const destination = redirectTo && redirectTo.startsWith('/') ? redirectTo : '/panel-general';
+      const destination = redirectTo && redirectTo.startsWith('/') ? redirectTo : '/dashboard';
       return NextResponse.redirect(new URL(destination, request.url));
     }
     return NextResponse.next();
   }
 
-  // Protected routes (/admin/* and /panel-general/*): require session
+  // Protected routes (/dashboard, /usuarios, /contenido/*): require session
   if (!hasValidSession) {
     const redirectUrl = new URL('/login', request.url);
     redirectUrl.searchParams.set('redirect', pathname);
@@ -51,37 +51,36 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  // /panel-general/* — solo Superadmin y Administrador pueden acceder
-  if (pathname.startsWith('/panel-general')) {
+  // /dashboard/* — solo Superadmin y Administrador pueden acceder
+  if (pathname.startsWith('/dashboard')) {
     if (role !== 'Superadmin' && role !== 'Administrador') {
-      return NextResponse.redirect(new URL('/admin/sin-acceso', request.url));
+      return NextResponse.redirect(new URL('/sin-acceso', request.url));
     }
     // Must change password or setup security questions
     if (mustChangePassword || mustSetupSecurityQuestions) {
-      return NextResponse.redirect(new URL('/admin/cambiar-contrasena', request.url));
+      return NextResponse.redirect(new URL('/cambiar-contrasena', request.url));
     }
     return NextResponse.next();
   }
 
-  // Role-based access for /admin/* routes
-  // Editor can access /admin/editor/* but not other admin routes
-  if (pathname.startsWith('/admin/editor')) {
-    if (role !== 'Superadmin' && role !== 'Administrador' && role !== 'Editor') {
-      return NextResponse.redirect(new URL('/admin/sin-acceso', request.url));
+  // /usuarios/* — solo Superadmin y Administrador pueden acceder (RF-04/RF-05)
+  if (pathname.startsWith('/usuarios')) {
+    if (role !== 'Superadmin' && role !== 'Administrador') {
+      return NextResponse.redirect(new URL('/sin-acceso', request.url));
     }
-  } else if (pathname.startsWith('/admin')) {
-    // Excluir rutas de cambio de contraseña del check estricto de admin
-    if (!pathname.startsWith('/admin/cambiar-contrasena') && !pathname.startsWith('/admin/sin-acceso')) {
-      if (role !== 'Superadmin' && role !== 'Administrador') {
-        return NextResponse.redirect(new URL('/admin/sin-acceso', request.url));
-      }
+  }
+
+  // /contenido/*/editor — Superadmin, Administrador y Editor pueden acceder
+  if (pathname.startsWith('/contenido')) {
+    if (role !== 'Superadmin' && role !== 'Administrador' && role !== 'Editor') {
+      return NextResponse.redirect(new URL('/sin-acceso', request.url));
     }
   }
 
   // Must change password or setup security questions
   if (mustChangePassword || mustSetupSecurityQuestions) {
-    if (!pathname.startsWith('/admin/cambiar-contrasena')) {
-      return NextResponse.redirect(new URL('/admin/cambiar-contrasena', request.url));
+    if (!pathname.startsWith('/cambiar-contrasena') && !pathname.startsWith('/sin-acceso')) {
+      return NextResponse.redirect(new URL('/cambiar-contrasena', request.url));
     }
   }
 
@@ -89,6 +88,8 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Protege rutas admin, panel-general y maneja /login; excluye API routes y assets
-  matcher: ['/admin/:path*', '/panel-general/:path*', '/login'],
+  // Protege dashboard, usuarios, contenido y maneja /login; excluye API routes y assets.
+  // TODO(RF-16): /sin-acceso y /cambiar-contrasena aún no tienen page.tsx — el middleware
+  // ya redirige a ellas, pero faltan por construir.
+  matcher: ['/dashboard/:path*', '/usuarios/:path*', '/contenido/:path*', '/login', '/sin-acceso', '/cambiar-contrasena'],
 };

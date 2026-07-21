@@ -2,16 +2,7 @@
 
 import React from 'react';
 
-export interface IntranetHeroBlock {
-  type: 'IntranetHero';
-  props: {
-    imageSrc: string;
-    imageAlt: string;
-  };
-}
-
 interface IntranetHeroProps {
-  block?: IntranetHeroBlock;
   imageSrc?: string;
   imageAlt?: string;
 }

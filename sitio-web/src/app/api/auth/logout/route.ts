@@ -5,7 +5,7 @@ import {
   AUTH_USER_NAME_COOKIE_NAME,
   AUTH_MUST_CHANGE_PW_COOKIE_NAME,
   AUTH_MUST_SETUP_SQ_COOKIE_NAME,
-} from '@/config/auth-cookies';
+} from '@/shared/lib/auth-cookies';
 
 export async function POST() {
   const response = NextResponse.json({ message: 'Sesión cerrada' });

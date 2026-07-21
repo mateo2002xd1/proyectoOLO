@@ -1,13 +1,7 @@
 'use client';
 
-import { Header } from '@/lib/blocks/Header';
-import { Hero } from '@/lib/blocks/Hero';
-import { ExternalPortals } from '@/lib/blocks/ExternalPortals';
-import { Footer } from '@/lib/blocks/Footer';
-import { Services } from '@/lib/blocks/Services';
+import { Header, Hero, ExternalPortals, Footer, Services, IntranetTopbar, IntranetHero } from '@olo/blocks-renderer';
 import { EditorjsWrapper } from '@/features/paginas/components/editorjs-wrapper';
-import { IntranetTopbar } from '@/lib/blocks/IntranetTopbar';
-import { IntranetHero } from '@/lib/blocks/IntranetHero';
 import { ImageUploaderField } from '@/features/paginas/components/image-uploader-field';
 import type { Config } from '@puckeditor/core';
 
@@ -107,24 +101,24 @@ export const puckConfig: Config = {
       label: 'Header / Encabezado',
       fields: {
         id: { type: 'text' },
-        govBannerEnabled: { 
-          type: 'radio', 
+        govBannerEnabled: {
+          type: 'radio',
           label: 'Mostrar franja superior GOV.CO',
-          options: [{ label: 'Sí', value: true }, { label: 'No', value: false }] 
+          options: [{ label: 'Sí', value: true }, { label: 'No', value: false }]
         },
-        govBannerImageUrl: { 
+        govBannerImageUrl: {
           type: 'text',
           label: 'URL Imagen Banner GOV.CO (Opcional: reemplaza la original)'
         },
-        mainLogoUrl: { 
+        mainLogoUrl: {
           type: 'text',
           label: 'URL Logo Principal (Opcional: reemplaza el logo SENA)'
         },
-        intranetText: { 
+        intranetText: {
           type: 'text',
           label: 'Texto botón intranet'
         },
-        intranetUrl: { 
+        intranetUrl: {
           type: 'text',
           label: 'Enlace botón intranet'
         },

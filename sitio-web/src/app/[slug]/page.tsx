@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation';
 import { ClientPuckRender } from '@/features/paginas/components/client-puck-render';
-import { puckConfig } from '@/config/puck.config';
 import EditButton from '@/features/paginas/components/edit-button';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000';
