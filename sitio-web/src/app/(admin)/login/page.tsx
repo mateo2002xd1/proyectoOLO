@@ -77,10 +77,7 @@ function LoginForm() {
             margin: '0 auto 12px',
           }}
         />
-        <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#111827' }}>
-          Panel de administración
-        </h1>
-        <p style={{ margin: '4px 0 0', fontSize: 14, color: '#6b7280' }}>
+        <p style={{ margin: 0, fontSize: 18, fontWeight: 300, color: '#111827' }}>
           Ingrese sus credenciales para continuar
         </p>
       </div>

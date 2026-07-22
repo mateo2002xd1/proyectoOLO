@@ -63,8 +63,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // /usuarios/* — solo Superadmin y Administrador pueden acceder (RF-04/RF-05)
-  if (pathname.startsWith('/usuarios')) {
+  // /users y /usuarios — solo Superadmin y Administrador pueden acceder (RF-04/RF-05)
+  if (pathname.startsWith('/users') || pathname.startsWith('/usuarios')) {
     if (role !== 'Superadmin' && role !== 'Administrador') {
       return NextResponse.redirect(new URL('/sin-acceso', request.url));
     }
@@ -88,8 +88,18 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Protege dashboard, usuarios, contenido y maneja /login; excluye API routes y assets.
+  // Protege dashboard, usuarios/users, contenido y maneja /login; excluye API routes y assets.
   // TODO(RF-16): /sin-acceso y /cambiar-contrasena aún no tienen page.tsx — el middleware
   // ya redirige a ellas, pero faltan por construir.
-  matcher: ['/dashboard/:path*', '/usuarios/:path*', '/contenido/:path*', '/login', '/sin-acceso', '/cambiar-contrasena'],
+  matcher: [
+    '/dashboard/:path*',
+    '/users/:path*',
+    '/users',
+    '/usuarios/:path*',
+    '/usuarios',
+    '/contenido/:path*',
+    '/login',
+    '/sin-acceso',
+    '/cambiar-contrasena',
+  ],
 };

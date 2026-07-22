@@ -5,9 +5,7 @@ import { IntranetFooter } from "@/shared/lib/blocks/IntranetFooter";
 export function TasaView() {
     return (
         <div className="w-full bg-white flex flex-col items-center min-h-screen">
-            <div className="w-full sticky top-0 z-50">
-                <IntranetTopbar />
-            </div>
+            <IntranetTopbar />
 
             <main className="w-full flex flex-col items-center flex-1 pb-0">
                 {/* Banner */}

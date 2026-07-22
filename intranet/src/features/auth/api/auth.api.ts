@@ -73,10 +73,10 @@ export const authApi = {
     return fetchAuth('/security-questions/catalog', { method: 'GET' });
   },
 
-  setupQuestions: async (answers: Array<{ questionKey: string; answer: string }>) => {
+  setupQuestions: async (questions: Array<{ key: string; answer: string }>) => {
     return fetchAuth('/security-questions/setup', {
       method: 'POST',
-      body: JSON.stringify({ answers }),
+      body: JSON.stringify({ questions }),
     });
   },
 

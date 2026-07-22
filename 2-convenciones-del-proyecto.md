@@ -1,6 +1,6 @@
 # Convenciones de Código — Proyecto OLO (SENA)
 
-> Documento complementario a `ARQUITECTURA_MAESTRA_OLO.md`. Define cómo se escribe el código, para que tres repos y varios desarrolladores mantengan un estilo único. Aplica desde la primera línea; no es negociable una vez adoptado.
+> Documento complementario a `1-guia-del-proyecto.md`. Define cómo se escribe el código, para que tres repos y varios desarrolladores mantengan un estilo único. Aplica desde la primera línea; no es negociable una vez adoptado.
 
 ---
 

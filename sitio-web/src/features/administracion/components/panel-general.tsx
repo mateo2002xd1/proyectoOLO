@@ -125,7 +125,7 @@ export function PanelGeneralLayout({ children, userProfile }: { children: React.
         <Sidebar>
           <SidebarHeader>
             <div className="flex items-center justify-between w-full">
-              <Avatar src="/asset/logos/olo-logo-none.svg" />
+              <img src="/asset/logos/olo-logo-horizontal.svg" className='h-13' />
               <button onClick={toggleTheme} className="p-2 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white" aria-label="Cambiar tema">
                 {isDark ? <SunIcon className="size-5" /> : <MoonIcon className="size-5" />}
               </button>
@@ -135,9 +135,9 @@ export function PanelGeneralLayout({ children, userProfile }: { children: React.
             <SidebarSection>
               <SidebarItem href="/dashboard">
                 <HomeIcon />
-                <SidebarLabel>Inicio</SidebarLabel>
+                <SidebarLabel>Dashboard</SidebarLabel>
               </SidebarItem>
-              <SidebarItem href="/dashboard/usuarios">
+              <SidebarItem href="/users">
                 <UserIcon />
                 <SidebarLabel>Usuarios</SidebarLabel>
               </SidebarItem>
@@ -255,9 +255,9 @@ export function PanelGeneralDashboard() {
   return (
     <div className="p-6 lg:p-8">
       <div className="mb-8">
-          <h1 className="text-2xl font-bold text-zinc-950 dark:text-white">Panel General</h1>
+        <h1 className="text-2xl font-bold text-zinc-950 dark:text-white">Dashboard</h1>
           <p className="mt-1 text-sm text-zinc-500">
-            Resumen del estado actual del observatorio
+            Resumen de tareas pendientes y gestión del observatorio.
           </p>
         </div>
 
@@ -265,21 +265,14 @@ export function PanelGeneralDashboard() {
         <div className="mb-8 grid gap-4 sm:grid-cols-2">
           <a
             href="/contenido/inicio/editor"
-            className="group flex items-center gap-4 rounded-xl border border-zinc-200 bg-white p-5 transition-all hover:border-zinc-300 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600"
+            className="group flex flex-col justify-center gap-1 rounded-xl border border-zinc-200 bg-white p-5 transition-all duration-200 ease-out hover:translate-x-1 hover:border-[#7DB829]/40 hover:bg-[#7DB829]/10 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-[#7DB829]/40 dark:hover:bg-[#7DB829]/10"
           >
-            <div className="flex size-12 shrink-0 items-center justify-center rounded-lg text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
-              <svg className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="font-semibold text-zinc-950 group-hover:text-blue-600 dark:text-white dark:group-hover:text-blue-400">
-                Editar Sitio Web
-              </h3>
-              <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                Abre el editor visual Puck para el sitio público principal
-              </p>
-            </div>
+            <h3 className="font-semibold text-zinc-950 group-hover:text-[#4C7A1C] dark:text-white dark:group-hover:text-[#9ED65C]">
+              Editar Sitio Web
+            </h3>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Abre el editor visual Puck para el sitio público principal
+            </p>
           </a>
 
           {/* TODO(intranet): confirmar si intranet adopta el mismo esquema de rutas sin prefijo /admin */}
@@ -287,47 +280,40 @@ export function PanelGeneralDashboard() {
             href="http://localhost:3001/admin/editor/inicio"
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex items-center gap-4 rounded-xl border border-zinc-200 bg-white p-5 transition-all hover:border-zinc-300 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600"
+            className="group flex flex-col justify-center gap-1 rounded-xl border border-zinc-200 bg-white p-5 transition-all duration-200 ease-out hover:translate-x-1 hover:border-[#011A39]/40 hover:bg-[#011A39]/10 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-[#011A39]/40 dark:hover:bg-[#011A39]/20"
           >
-            <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-              <svg className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="font-semibold text-zinc-950 group-hover:text-emerald-600 dark:text-white dark:group-hover:text-emerald-400">
-                Editar Intranet
-              </h3>
-              <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                Abre el editor visual Puck para el sistema de Intranet
-              </p>
-            </div>
+            <h3 className="font-semibold text-zinc-950 group-hover:text-[#011A39] dark:text-white dark:group-hover:text-[#8FA8C9]">
+              Editar Intranet
+            </h3>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Abre el editor visual Puck para el sistema de Intranet
+            </p>
           </a>
         </div>
 
         <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {statsEntries.length > 0 ? (
             statsEntries.map(([key, value]) => (
-              <div key={key} className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-800">
+              <div key={key} className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600">
                 <p className="text-sm text-zinc-500 dark:text-zinc-400">{statsLabels[key] || key}</p>
                 <p className="mt-1 text-2xl font-bold text-zinc-950 dark:text-white">{value}</p>
               </div>
             ))
           ) : (
             <>
-              <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-800">
+              <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600">
                 <p className="text-sm text-zinc-500 dark:text-zinc-400">Usuarios</p>
                 <p className="mt-1 text-2xl font-bold text-zinc-950 dark:text-white">0</p>
               </div>
-              <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-800">
+              <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600">
                 <p className="text-sm text-zinc-500 dark:text-zinc-400">Páginas</p>
                 <p className="mt-1 text-2xl font-bold text-zinc-950 dark:text-white">0</p>
               </div>
-              <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-800">
+              <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600">
                 <p className="text-sm text-zinc-500 dark:text-zinc-400">Alertas</p>
                 <p className="mt-1 text-2xl font-bold text-zinc-950 dark:text-white">0</p>
               </div>
-              <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-800">
+              <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600">
                 <p className="text-sm text-zinc-500 dark:text-zinc-400">Visitas</p>
                 <p className="mt-1 text-2xl font-bold text-zinc-950 dark:text-white">0</p>
               </div>
@@ -336,7 +322,7 @@ export function PanelGeneralDashboard() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-800">
+          <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600">
             <h2 className="mb-4 text-lg font-semibold text-zinc-950 dark:text-white">Actividad Reciente</h2>
             {data?.recentActivity && data.recentActivity.length > 0 ? (
               <div className="space-y-3">
@@ -363,7 +349,7 @@ export function PanelGeneralDashboard() {
             )}
           </div>
 
-          <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-800">
+          <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600">
             <h2 className="mb-4 text-lg font-semibold text-zinc-950 dark:text-white">Alertas</h2>
             {data?.alerts && data.alerts.length > 0 ? (
               <div className="space-y-3">

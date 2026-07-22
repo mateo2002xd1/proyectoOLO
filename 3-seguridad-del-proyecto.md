@@ -1,6 +1,6 @@
 # Seguridad — Proyecto OLO (SENA)
 
-> Documento complementario a `ARQUITECTURA_MAESTRA_OLO.md`. Modelo de amenazas por superficie y controles concretos. Como es un portal gubernamental que maneja datos personales (Ley 1581) y ofrece edición con roles, la seguridad no es opcional.
+> Documento complementario a `1-guia-del-proyecto.md`. Modelo de amenazas por superficie y controles concretos. Como es un portal gubernamental que maneja datos personales (Ley 1581) y ofrece edición con roles, la seguridad no es opcional.
 
 ---
 
