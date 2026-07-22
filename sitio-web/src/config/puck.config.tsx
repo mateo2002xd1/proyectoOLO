@@ -1,6 +1,6 @@
 'use client';
 
-import { Header, Hero, ExternalPortals, Footer, Services, IntranetTopbar, IntranetHero } from '@olo/blocks-renderer';
+import { Hero, ExternalPortals, Services, IntranetTopbar, IntranetHero } from '@olo/blocks-renderer';
 import { EditorjsWrapper } from '@/features/paginas/components/editorjs-wrapper';
 import { ImageUploaderField } from '@/features/paginas/components/image-uploader-field';
 import type { Config } from '@puckeditor/core';
@@ -31,17 +31,11 @@ export const puckConfig: Config = {
     'Intranet': {
       components: ['IntranetTopbar', 'IntranetHero'],
     },
-    'Navegación': {
-      components: ['Header'],
-    },
     'Contenido Principal': {
       components: ['Hero', 'Services', 'RichText'],
     },
     'Portales': {
       components: ['ExternalPortals'],
-    },
-    'Estructura': {
-      components: ['Footer'],
     },
   },
   components: {
@@ -96,61 +90,6 @@ export const puckConfig: Config = {
         imageAlt: 'Banner principal de la intranet',
       },
       render: (props: any) => <IntranetHero {...props} />,
-    },
-    Header: {
-      label: 'Header / Encabezado',
-      fields: {
-        id: { type: 'text' },
-        govBannerEnabled: {
-          type: 'radio',
-          label: 'Mostrar franja superior GOV.CO',
-          options: [{ label: 'Sí', value: true }, { label: 'No', value: false }]
-        },
-        govBannerImageUrl: {
-          type: 'text',
-          label: 'URL Imagen Banner GOV.CO (Opcional: reemplaza la original)'
-        },
-        mainLogoUrl: {
-          type: 'text',
-          label: 'URL Logo Principal (Opcional: reemplaza el logo SENA)'
-        },
-        intranetText: {
-          type: 'text',
-          label: 'Texto botón intranet'
-        },
-        intranetUrl: {
-          type: 'text',
-          label: 'Enlace botón intranet'
-        },
-        navLinks: {
-          type: 'array',
-          label: 'Enlaces de Navegación',
-          arrayFields: {
-            label: { type: 'text', label: 'Texto del enlace' },
-            href: { type: 'text', label: 'URL' },
-            active: { type: 'radio', label: 'Activo', options: [{ label: 'Sí', value: true }, { label: 'No', value: false }] },
-          },
-          getItemSummary: (item) => item.label || 'Enlace',
-        },
-      },
-      render: (props: any) => {
-        const { id, ...headerProps } = props;
-        return <Header block={{ id: id || 'header-preview', type: 'header' }} {...headerProps} />;
-      },
-      defaultProps: {
-        id: 'header-1',
-        govBannerEnabled: true,
-        intranetText: 'Intranet',
-        intranetUrl: 'http://localhost:3001/login',
-        navLinks: [
-          { label: 'Inicio', href: '/', active: true },
-          { label: 'Clasificaciones', href: '/clasificaciones' },
-          { label: 'Tendencias', href: '/tendencias' },
-          { label: 'Mercado Laboral', href: '/mercado-laboral' },
-          { label: 'Publicaciones', href: '/publicaciones' },
-          { label: 'APE', href: '/ape' },
-        ],
-      },
     },
     Hero: {
       label: 'Hero / Banner Principal',
@@ -341,15 +280,6 @@ export const puckConfig: Config = {
           portals={portals}
         />
       ),
-    },
-    Footer: {
-      label: 'Footer / Pie de Página',
-      render: ({ id }: { id: string }) => (
-        <Footer block={{ id: id || 'footer-preview', type: 'footer' }} />
-      ),
-      defaultProps: {
-        id: 'footer-1',
-      },
     },
     // Bloque de texto enriquecido — usa EditorJS internamente
     RichText: RichTextBlock,

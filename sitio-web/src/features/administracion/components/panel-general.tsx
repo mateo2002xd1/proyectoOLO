@@ -35,6 +35,7 @@ import {
   UserIcon,
 } from '@heroicons/react/16/solid';
 import {
+  ClipboardDocumentCheckIcon,
   Cog6ToothIcon,
   HomeIcon,
   InboxIcon,
@@ -140,6 +141,10 @@ export function PanelGeneralLayout({ children, userProfile }: { children: React.
               <SidebarItem href="/users">
                 <UserIcon />
                 <SidebarLabel>Usuarios</SidebarLabel>
+              </SidebarItem>
+              <SidebarItem href="/revision">
+                <ClipboardDocumentCheckIcon />
+                <SidebarLabel>Páginas en revisión</SidebarLabel>
               </SidebarItem>
               <SidebarItem href="/dashboard/auditoria">
                 <ShieldCheckIcon />
