@@ -1,16 +1,16 @@
 import type { ServicesBlock } from '../types';
-
+// Interfaz que define exactamente qué datos requiere cada tarjeta de servicio
 export interface ServiceItem {
   id: string;
   title: string;
   description: string;
   link: string;
 }
-
+// Interfaz que define las propiedades que recibe el componente visual de Puck
 interface ServicesProps {
   block: ServicesBlock;
-  sectionTitle?: string;
-  services?: ServiceItem[];
+  sectionTitle?: string;  // Propiedad opcional
+  services?: ServiceItem[]; // Arreglo del tipo ServiceItem definido arriba
 }
 
 const DEFAULT_SERVICES: ServiceItem[] = [

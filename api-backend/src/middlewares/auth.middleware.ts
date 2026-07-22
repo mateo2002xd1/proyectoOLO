@@ -3,9 +3,11 @@ import { config } from '../config';
 import { UserRepository } from '../repositories/usuarios.repository';
 import jwt from 'jsonwebtoken';
 
+// Middleware para verificar la autenticación del usuario mediante Token JWT
 export async function requireAuth(req: Request, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
   const tokenFromCookie = req.cookies?.token;
+  // Extrae el token priorizando el header Bearer o la cookie segura de sesión
   const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : tokenFromCookie;
 
   if (!token) {
@@ -25,7 +27,7 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
     req.user = decoded;
     return next();
   }
-
+  // Validación de seguridad de la cuenta: estado activo, bloqueos temporales y expiración
   try {
     const user = await UserRepository.findById(decoded.id);
     if (!user) return res.status(401).json({ error: 'Usuario no encontrado' });
