@@ -11,17 +11,21 @@ export { default as EditButton } from "./components/edit-button";
 export { PuckEditorWrapper } from "./components/puck-editor-wrapper";
 export { EditorjsWrapper } from "./components/editorjs-wrapper";
 export { ClientPuckRender } from "./components/client-puck-render";
+export { RevisionQueueView } from "./components/revision-queue-view";
 
 // Hooks
 export { usePagina } from "./hooks/use-pagina";
+export { useRevisionQueue } from "./hooks/use-revision-queue";
 
 // Services
 export {
   obtenerPagina,
+  obtenerPaginaInicio,
   guardarBorrador,
   enviarARevision,
   aprobarPagina,
   rechazarPagina,
+  listarEnRevision,
 } from "./services/paginas.service";
 
 // Lib

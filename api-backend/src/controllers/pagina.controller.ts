@@ -4,6 +4,7 @@ import { enviarARevision } from '../use-cases/paginas/enviar-a-revision.usecase'
 import { aprobarPagina } from '../use-cases/paginas/aprobar-pagina.usecase';
 import { rechazarPagina } from '../use-cases/paginas/rechazar-pagina.usecase';
 import { obtenerPaginaPublica } from '../use-cases/paginas/obtener-pagina-publica.usecase';
+import { obtenerVersionEditable } from '../use-cases/paginas/obtener-version-editable.usecase';
 import { listarEnRevision } from '../use-cases/paginas/listar-en-revision.usecase';
 
 export const PaginaController = {
@@ -12,6 +13,13 @@ export const PaginaController = {
       const pagina = await obtenerPaginaPublica(req.params.slug as string);
       if (!pagina) return res.status(404).json({ error: 'Página no encontrada' });
       res.json(pagina);
+    } catch (err) { next(err); }
+  },
+
+  async obtenerEditable(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await obtenerVersionEditable(req.params.slug as string);
+      res.json(result);
     } catch (err) { next(err); }
   },
 

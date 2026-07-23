@@ -3,10 +3,6 @@ import { Data } from '@puckeditor/core';
 export const homeFallbackData: Data = {
   content: [
     {
-      type: 'Header',
-      props: { id: 'header-static' },
-    },
-    {
       type: 'Hero',
       props: {
         id: 'hero-static',
@@ -46,10 +42,6 @@ export const homeFallbackData: Data = {
           },
         ],
       },
-    },
-    {
-      type: 'Footer',
-      props: { id: 'footer-static' },
     },
   ],
   root: {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Pagina, Bloque } from '../types';
-import { obtenerPagina, guardarBorrador, enviarARevision } from '../services/paginas.service';
+import { obtenerPaginaEditable, guardarBorrador, enviarARevision } from '../services/paginas.service';
 
 export function usePagina(slug: string) {
   const [pagina, setPagina] = useState<Pagina | null>(null);
@@ -13,7 +13,7 @@ export function usePagina(slug: string) {
     async function load() {
       try {
         setIsLoading(true);
-        const data = await obtenerPagina(slug);
+        const data = await obtenerPaginaEditable(slug);
         setPagina(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error al cargar página');

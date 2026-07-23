@@ -18,12 +18,15 @@ export function MatrizView() {
       <IntranetTopbarWrapper />
 
       {/* Banner */}
-      <section className="w-full max-w-full relative bg-[#041E42] overflow-hidden">
-        <img
+      <section className="w-full max-w-full relative overflow-hidden ">
+        <div className="bannerOficialMatriz">
+          <h1>Matriz <br /> <strong>de Pertinencia</strong></h1>
+          <img
           src="/assets/img/BannerOficial.png"
           alt="Matriz de Pertinencia Banner"
-          style={{ width: '100%', maxWidth: '100vw', height: 'auto', objectFit: 'cover' }}
-        />
+          style={{ width: '350px', maxWidth: '100vw', height: 'auto', objectFit: 'cover'}}
+          />
+        </div>
       </section>
 
       {/* Qué es */}

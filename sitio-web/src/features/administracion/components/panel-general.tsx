@@ -35,6 +35,7 @@ import {
   UserIcon,
 } from '@heroicons/react/16/solid';
 import {
+  ClipboardDocumentCheckIcon,
   Cog6ToothIcon,
   HomeIcon,
   InboxIcon,
@@ -140,6 +141,10 @@ export function PanelGeneralLayout({ children, userProfile }: { children: React.
               <SidebarItem href="/users">
                 <UserIcon />
                 <SidebarLabel>Usuarios</SidebarLabel>
+              </SidebarItem>
+              <SidebarItem href="/revision">
+                <ClipboardDocumentCheckIcon />
+                <SidebarLabel>Páginas en revisión</SidebarLabel>
               </SidebarItem>
               <SidebarItem href="/dashboard/auditoria">
                 <ShieldCheckIcon />
@@ -264,7 +269,7 @@ export function PanelGeneralDashboard() {
         {/* Action Buttons for Editors */}
         <div className="mb-8 grid gap-4 sm:grid-cols-2">
           <a
-            href="/contenido/inicio/editor"
+            href="/editor/inicio"
             className="group flex flex-col justify-center gap-1 rounded-xl border border-zinc-200 bg-white p-5 transition-all duration-200 ease-out hover:translate-x-1 hover:border-[#7DB829]/40 hover:bg-[#7DB829]/10 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-[#7DB829]/40 dark:hover:bg-[#7DB829]/10"
           >
             <h3 className="font-semibold text-zinc-950 group-hover:text-[#4C7A1C] dark:text-white dark:group-hover:text-[#9ED65C]">
@@ -275,9 +280,8 @@ export function PanelGeneralDashboard() {
             </p>
           </a>
 
-          {/* TODO(intranet): confirmar si intranet adopta el mismo esquema de rutas sin prefijo /admin */}
           <a
-            href="http://localhost:3001/admin/editor/inicio"
+            href="http://localhost:3001/editor/inicio"
             target="_blank"
             rel="noopener noreferrer"
             className="group flex flex-col justify-center gap-1 rounded-xl border border-zinc-200 bg-white p-5 transition-all duration-200 ease-out hover:translate-x-1 hover:border-[#011A39]/40 hover:bg-[#011A39]/10 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-[#011A39]/40 dark:hover:bg-[#011A39]/20"

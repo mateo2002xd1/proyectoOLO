@@ -9,16 +9,16 @@ export function TasaView() {
 
             <main className="w-full flex flex-col items-center flex-1 pb-0">
                 {/* Banner */}
-                <div className="w-full">
-                    <Image
-                        src="/assets/img/bannertasave.png"
-                        alt="Banner Tasa de Vinculación y Empleabilidad"
-                        width={1920}
-                        height={435}
-                        className="tasabanner-image"
-                        priority
-                    />
-                </div>
+                <section className="w-full max-w-full relative overflow-hidden ">
+                    <div className="bannerOficialMatriz">
+                        <h1>Tasa de<br /> <strong>Vinculación y Empleabilidad</strong></h1>
+                        <img
+                            src="/assets/img/BannerTasa.png"
+                            alt="Matriz de Pertinencia Banner"
+                            style={{ width: '310px', maxWidth: '100vw', height: 'auto', objectFit: 'cover' }}
+                        />
+                    </div>
+                </section>
 
                 {/* Sección: ¿Qué es la Tasa de Vinculación? */}
                 <section className="tasa-section-container pt-12">

@@ -24,6 +24,8 @@ interface UseEditorActionsOptions {
   slug: string;
   /** ID de la versión activa (se obtiene al guardar por primera vez) */
   initialVersionId?: string | null;
+  /** Estado editorial inicial de la versión cargada */
+  initialEstado?: EstadoPagina | null;
 }
 
 interface UseEditorActionsReturn {
@@ -44,12 +46,13 @@ interface UseEditorActionsReturn {
 export function useEditorActions({
   slug,
   initialVersionId = null,
+  initialEstado = null,
 }: UseEditorActionsOptions): UseEditorActionsReturn {
   const [isSaving, setIsSaving] = useState(false);
   const [isSendingToReview, setIsSendingToReview] = useState(false);
   const [versionId, setVersionId] = useState<string | null>(initialVersionId);
   const [estadoActual, setEstadoActual] = useState<EstadoPagina | null>(
-    initialVersionId ? "borrador" : null
+    initialEstado ?? (initialVersionId ? "borrador" : null)
   );
   const [error, setError] = useState<string | null>(null);
 
@@ -58,11 +61,10 @@ export function useEditorActions({
       setIsSaving(true);
       setError(null);
       try {
-        // TODO: Fase 6 — guardarBorrador estará activo
         const res = await guardarBorrador(slug, contenido);
         if (res?.versionId) {
           setVersionId(res.versionId);
-          setEstadoActual("borrador");
+          setEstadoActual(res.estado ?? "borrador");
         }
       } catch (err) {
         setError(
@@ -83,7 +85,6 @@ export function useEditorActions({
     setIsSendingToReview(true);
     setError(null);
     try {
-      // TODO: Fase 7 — enviarARevision estará activo
       const res = await enviarARevision(slug, versionId);
       if (res?.estado) {
         setEstadoActual(res.estado);
