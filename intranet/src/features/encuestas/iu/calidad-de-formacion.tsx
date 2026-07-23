@@ -11,25 +11,21 @@ export function CalidadFormacionView() {
       <IntranetTopbarWrapper />
 
       {/* Hero Section */}
-      <section className="bg-[#001631] text-white py-10 px-4 md:px-12 flex justify-center items-center overflow-hidden relative">
-        {/* Dashed line background */}
-        <div className="absolute left-0 right-0 top-1/2 border-t-[3px] border-dashed border-[#007aff] z-0 opacity-80" />
-        
-        <div className="max-w-4xl w-full flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12 relative z-10">
-          <div className="relative w-40 h-56 md:w-52 md:h-72 flex-shrink-0">
-            <div className="w-full h-full bg-contain bg-no-repeat bg-center" style={{ backgroundImage: "url('/assets/img/Banner-encuesta.png')" }}></div>
-          </div>
-          <div className="flex flex-col text-center md:text-left bg-[#001631] px-4">
-            <h2 className="text-xl md:text-2xl font-light tracking-wider mb-1">Encuesta de</h2>
-            <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold tracking-wide">CALIDAD DE LA FORMACIÓN</h1>
-          </div>
-        </div>
+      <section className="w-full bg-[#001631] relative">
+        <Image 
+          src="/assets/img/banner-encuesta.png" 
+          alt="Banner Encuesta" 
+          width={1920}
+          height={400}
+          className="w-full h-auto min-h-[250px] md:min-h-[400px] object-cover object-center"
+          priority
+        />
       </section>
 
       {/* Main Content Section */}
-      <section className="py-16 px-4 md:px-12 flex justify-center bg-[#f4f5f7]">
+      <section className="px-4 md:px-12 flex justify-center bg-[#f4f5f7]" style={{ paddingTop: '4rem', paddingBottom: '4rem' }}>
         <div className="max-w-7xl w-full">
-          <h2 className="text-3xl md:text-4xl text-[#002240] mb-4">
+          <h2 className="text-3xl md:text-4xl text-[#002240]" style={{ marginBottom: '2.5rem' }}>
             ¿Cuál es el <span className="font-bold">objetivo</span>?
           </h2>
           <p className="text-lg md:text-xl text-[#002240] mb-12 max-w-5xl">
@@ -79,9 +75,9 @@ export function CalidadFormacionView() {
       </section>
 
       {/* Video and Download Section */}
-      <section className="py-16 px-4 md:px-12 flex justify-center bg-gray-50">
+      <section className="px-4 md:px-12 flex justify-center bg-gray-50" style={{ paddingTop: '4rem', paddingBottom: '4rem' }}>
         <div className="max-w-4xl w-full flex flex-col items-center text-center">
-          <h2 className="text-3xl md:text-4xl text-[#002240] mb-8">
+          <h2 className="text-3xl md:text-4xl text-[#002240]" style={{ marginBottom: '3rem' }}>
             Aquí te <span className="font-bold">contamos</span> todo sobre la encuesta
           </h2>
           
@@ -101,18 +97,54 @@ export function CalidadFormacionView() {
             </div>
           </div>
 
-          <p className="text-xl text-[#002240] mb-6 font-medium">Descarga aquí los datos de la encuesta</p>
+          <p className="text-xl text-[#002240] font-medium" style={{ marginTop: '2.5rem', marginBottom: '2rem' }}>Descarga aquí los datos de la encuesta</p>
           
           <a 
-            href="#" 
-            className="inline-block bg-[#002240] text-white font-bold py-3 px-10 rounded-full hover:bg-[#001528] transition-colors shadow-md text-lg"
-            onClick={(e) => {
-              e.preventDefault();
-              alert('Funcionalidad de descarga en desarrollo');
+            href="/uploads/documents/Encuesta Calidad Formación datos.xlsx"
+            download
+            className="inline-block transition-colors"
+            style={{
+              backgroundColor: '#002240',
+              color: '#ffffff',
+              fontWeight: 'bold',
+              padding: '0.6rem 2.5rem',
+              borderRadius: '12px',
+              fontSize: '1.5rem',
+              textDecoration: 'none',
+              cursor: 'pointer'
             }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#001528'}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#002240'}
           >
             Descargar
           </a>
+        </div>
+      </section>
+
+      {/* Web Observatorio Laboral Section */}
+      <section className="px-4 md:px-12 flex justify-center bg-[#f4f5f7]" style={{ paddingTop: '4rem', paddingBottom: '4rem' }}>
+        <div className="max-w-6xl w-full flex flex-col md:flex-row gap-12 items-center justify-between">
+          {/* Left Column */}
+          <div className="flex-1 w-full md:max-w-xs">
+            <h2 className="text-xl md:text-2xl font-bold text-[#002240] mb-6">
+              Página Web Observatorio Laboral
+            </h2>
+            <ul className="list-disc pl-5 space-y-1 text-[#002240] text-base font-medium">
+              <li>Informes</li>
+              <li>Resultados</li>
+              <li>Boletines Tendencia</li>
+            </ul>
+          </div>
+          
+          {/* Right Column (Presentation) */}
+          <div className="flex-[2] w-full bg-white p-3 rounded-md shadow-sm min-h-[400px] flex items-center justify-center border border-gray-100">
+            {/* Placeholder for the presentation iframe/image */}
+            <div className="text-center text-gray-500">
+              <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+              <p className="font-medium">Espacio para Presentación / Informe</p>
+              <p className="text-sm mt-2">Inserta aquí el iframe o la imagen de la presentación.</p>
+            </div>
+          </div>
         </div>
       </section>
 
