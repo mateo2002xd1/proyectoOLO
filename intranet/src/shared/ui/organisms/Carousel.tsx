@@ -17,32 +17,32 @@ export function Carousel({
   autoplayInterval = 4000,
   showButtons = true,
 }: CarouselProps) {
-  const [currentPage, setCurrentPage] = useState(0);
-
-  const totalPages = Math.ceil(images.length / itemsPerPage);
+  const [startIndex, setStartIndex] = useState(0);
+  const totalItems = images.length;
+  const step = itemsPerPage;
 
   const prevPage = () => {
-    setCurrentPage((prev) => (prev > 0 ? prev - 1 : totalPages - 1));
+    setStartIndex((prev) => (prev - step + totalItems * step) % totalItems);
   };
 
   const nextPage = () => {
-    setCurrentPage((prev) => (prev < totalPages - 1 ? prev + 1 : 0));
+    setStartIndex((prev) => (prev + step) % totalItems);
   };
 
   useEffect(() => {
-    if (!autoplay || totalPages <= 1) return;
+    if (!autoplay || totalItems <= itemsPerPage) return;
 
     const timer = setInterval(() => {
-      setCurrentPage((prev) => (prev < totalPages - 1 ? prev + 1 : 0));
+      setStartIndex((prev) => (prev + step) % totalItems);
     }, autoplayInterval);
 
     return () => clearInterval(timer);
-  }, [autoplay, autoplayInterval, totalPages]);
+  }, [autoplay, autoplayInterval, totalItems, itemsPerPage, step]);
 
-  const currentSlides = images.slice(
-    currentPage * itemsPerPage,
-    currentPage * itemsPerPage + itemsPerPage
-  );
+  const currentSlides = [];
+  for (let i = 0; i < itemsPerPage; i++) {
+    currentSlides.push(images[(startIndex + i) % totalItems]);
+  }
 
   return (
     <div className={`matriz-carousel-wrapper ${!showButtons ? 'no-buttons' : ''}`}>

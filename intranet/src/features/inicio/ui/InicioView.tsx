@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { IntranetTopbarWrapper } from '@/shared/lib/blocks/IntranetTopbarWrapper';
 import { IntranetHero } from '@/shared/lib/blocks/IntranetHero';
 import { IntranetFooter } from '@/shared/lib/blocks/IntranetFooter';
@@ -17,7 +17,6 @@ const oloLeCuentaImages = [
 const datoOloSemanaImages = [
   '/assets/img/poster1.png',
   '/assets/img/poster2.png',
-  '/assets/img/poster3.png',
   '/assets/img/poster4.png',
 ];
 
@@ -25,7 +24,6 @@ const publicacionesData = [
   {
     id: 1,
     title: 'BOLETIN MERCADO LABORAL MAR 2026.pdf',
-    image: '/assets/img/poster1.png',
     pdfUrl: '/upload/BOLETIN%20MERCADO%20LABORAL%20MAR%202026.pdf',
     hashtag: '#OLOtecuenta',
     month: 'May',
@@ -34,7 +32,6 @@ const publicacionesData = [
   {
     id: 2,
     title: 'Guía de usuario SharePoint OLO.pdf',
-    image: '/assets/img/poster2.png',
     pdfUrl: '/upload/Gu%C3%ADa%20de%20usuario%20SharePoint%20OLO.pdf',
     hashtag: '#OLOtecuenta',
     month: 'May',
@@ -43,7 +40,6 @@ const publicacionesData = [
   {
     id: 3,
     title: 'La mujer en el Mercado Laboral Colombiano II-2025.pdf',
-    image: '/assets/img/poster3.png',
     pdfUrl: '/upload/La%20mujer%20en%20el%20Mercado%20Laboral%20Colombiano%20II-2025.pdf',
     hashtag: '#OLOtecuenta',
     month: 'May',
@@ -52,7 +48,6 @@ const publicacionesData = [
   {
     id: 4,
     title: 'Economía Popular.pdf',
-    image: '/assets/img/poster4.png',
     pdfUrl: '/upload/Econom%C3%ADa%20Popular.pdf',
     hashtag: '#OLOtecuenta',
     month: 'May',
@@ -61,7 +56,6 @@ const publicacionesData = [
   {
     id: 5,
     title: 'Catálogo de Ocp. Campesina, Familiar y Comunitaria-1.pdf',
-    image: '/assets/img/poster1.png',
     pdfUrl: '/upload/Cat%C3%A1logo%20de%20Ocp.%20Campesina%2C%20Familiar%20y%20Comunitaria-1.pdf',
     hashtag: '#OLOtecuenta',
     month: 'May',
@@ -70,7 +64,6 @@ const publicacionesData = [
   {
     id: 6,
     title: 'DICCIONARIO OLO.pdf',
-    image: '/assets/img/poster2.png',
     pdfUrl: '/upload/DICCIONARIO%20OLO.pdf',
     hashtag: '#OLOtecuenta',
     month: 'May',
@@ -79,13 +72,136 @@ const publicacionesData = [
   {
     id: 7,
     title: 'VINCULACIÓN VICTIMAS II- SEM.pdf',
-    image: '/assets/img/poster3.png',
     pdfUrl: '/upload/VINCULACI%C3%93N%20VICTIMAS%20II-%20SEM.pdf',
     hashtag: '#OLOtecuenta',
     month: 'May',
     day: '07',
   },
 ];
+
+const pdfThumbnailCache: Record<string, string> = {};
+
+async function renderPdfToDataUrl(pdfUrl: string): Promise<string | null> {
+  if (pdfThumbnailCache[pdfUrl]) {
+    return pdfThumbnailCache[pdfUrl];
+  }
+
+  try {
+    if (typeof window !== 'undefined') {
+      const stored = sessionStorage.getItem('pdf_thumb_' + pdfUrl);
+      if (stored) {
+        pdfThumbnailCache[pdfUrl] = stored;
+        return stored;
+      }
+    }
+  } catch (e) {
+    // Fallback if sessionStorage is disabled or full
+  }
+
+  try {
+    if (!(window as any).pdfjsLib) {
+      await new Promise<void>((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('Failed to load PDF.js'));
+        document.head.appendChild(script);
+      });
+    }
+
+    const pdfjsLib = (window as any).pdfjsLib;
+    if (!pdfjsLib) return null;
+
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    const loadingTask = pdfjsLib.getDocument({
+      url: pdfUrl,
+      cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+      cMapPacked: true,
+    });
+
+    const pdf = await loadingTask.promise;
+    const page = await pdf.getPage(1);
+
+    const unscaledViewport = page.getViewport({ scale: 1 });
+    const scale = 400 / unscaledViewport.width;
+    const viewport = page.getViewport({ scale });
+
+    const canvas = document.createElement('canvas');
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    const context = canvas.getContext('2d');
+
+    if (!context) return null;
+
+    await page.render({
+      canvasContext: context,
+      viewport: viewport,
+    }).promise;
+
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+    pdfThumbnailCache[pdfUrl] = dataUrl;
+
+    try {
+      sessionStorage.setItem('pdf_thumb_' + pdfUrl, dataUrl);
+    } catch (e) {
+      // Storage quota fallback
+    }
+
+    return dataUrl;
+  } catch (err) {
+    console.error('Error rendering PDF thumbnail:', pdfUrl, err);
+    return null;
+  }
+}
+
+function PdfThumbnail({ pdfUrl, title }: { pdfUrl: string; title: string }) {
+  const [imgSrc, setImgSrc] = useState<string | null>(pdfThumbnailCache[pdfUrl] || null);
+  const [loading, setLoading] = useState(!pdfThumbnailCache[pdfUrl]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    if (pdfThumbnailCache[pdfUrl]) {
+      setImgSrc(pdfThumbnailCache[pdfUrl]);
+      setLoading(false);
+      return;
+    }
+
+    renderPdfToDataUrl(pdfUrl).then((url) => {
+      if (isMounted && url) {
+        setImgSrc(url);
+        setLoading(false);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [pdfUrl]);
+
+  if (loading || !imgSrc) {
+    return (
+      <div className="w-full h-full bg-[#f3f4f6] flex flex-col items-center justify-center text-gray-400 p-4 text-center">
+        <svg className="w-8 h-8 mb-2 animate-spin text-gray-400" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span className="text-xs font-medium">Cargando PDF...</span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={imgSrc}
+      alt={title}
+      draggable={false}
+      className="publicaciones-card-img group-hover:scale-105 transition-transform duration-300"
+    />
+  );
+}
 
 function PublicacionesCarousel() {
   const [startIndex, setStartIndex] = useState(0);
@@ -103,6 +219,12 @@ function PublicacionesCarousel() {
   const nextPage = () => {
     setStartIndex((prev) => (prev + itemsPerPage) % totalItems);
   };
+
+  useEffect(() => {
+    publicacionesData.forEach((item) => {
+      renderPdfToDataUrl(item.pdfUrl);
+    });
+  }, []);
 
   useEffect(() => {
     if (totalItems <= itemsPerPage) return;
@@ -176,12 +298,7 @@ function PublicacionesCarousel() {
             >
               <div>
                 <div className="publicaciones-card-img-wrapper pointer-events-none">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    draggable={false}
-                    className="publicaciones-card-img group-hover:scale-105"
-                  />
+                  <PdfThumbnail pdfUrl={item.pdfUrl} title={item.title} />
                 </div>
                 <h3 className="publicaciones-card-title">
                   {item.title}
@@ -217,13 +334,13 @@ export function InicioView() {
       <IntranetHero />
 
       {/* OLO le cuenta (Carousel 1) */}
-      <div className="matriz-content-container-datoolo max-w-[1200px] w-full mx-auto flex flex-col md:flex-row items-center justify-between gap-8 py-12 md:py-16">
+      <div className="matriz-content-container-datoolo">
         {/* h2 a la izquierda */}
-        <h2 className="md:w-1/3 px-4 text-center text-3xl md:text-5xl text-[#001631] tracking-tight">
-          <strong>OLO</strong>tecuenta
+        <h2>
+          <strong className="font-extrabold">OLO</strong>tecuenta
         </h2>
         {/* Carrusel a la derecha */}
-        <div className="md:w-2/3">
+        <div className="w-full md:flex-1">
           <Carousel
             images={oloLeCuentaImages}
             itemsPerPage={1}
@@ -244,7 +361,7 @@ export function InicioView() {
             <img
               src="/assets/img/imginicioegresados.png"
               alt="#datoOLO - Egresados"
-              className="w-full max-w-[1000px] mx-auto h-auto rounded-xl shadow-sm"
+              className="w-full max-w-[1200px] mx-auto h-auto rounded-xl shadow-sm"
             />
           </div>
         </div>
@@ -275,7 +392,7 @@ export function InicioView() {
       {/* Últimas publicaciones (Custom Cards Carousel) */}
       <div className="matriz-section-white py-12 md:py-16 px-4 md:px-8">
         <div className="matriz-content-container-wide max-w-[1200px] w-full mx-auto text-center flex flex-col items-center">
-          <h2 className="text-3xl md:text-4xl text-[#001631] font-normal mb-8 text-center w-full">
+          <h2 className="matriz-section-title text-[#041E42] font-normal mb-8 text-center">
             <span className="font-extrabold">Ultimas</span> publicaciones
           </h2>
           <PublicacionesCarousel />
@@ -285,7 +402,7 @@ export function InicioView() {
       {/* Preguntas Frecuentes */}
       {/* Preguntas Frecuentes */}
       <div className="preguntas-section">
-        <div className="matriz-content-container-wide max-w-[1200px] w-full text-center flex flex-col items-center">
+        <div className="matriz-content-container-wide max-w-[1200px] w-full mx-auto text-center flex flex-col items-center">
           <h2 className="preguntas-title">
             <span className="preguntas-title-bold">Preguntas</span> Frecuentes
           </h2>

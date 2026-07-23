@@ -2757,23 +2757,45 @@ input {
 .matriz-content-container-wide {
   width: 100%;
   max-width: 1303px;
-  /* For Dashboard */
-  margin: 0 0 0 6%;
+  margin: 0 auto;
   padding: 2rem 0 2rem 0rem;
   box-sizing: border-box;
 }
 
 .matriz-content-container-datoolo {
   width: 100%;
-  max-width: auto;
+  max-width: 1200px;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  /* For Dashboard */
-  margin: 0 0 0 6%;
-  padding: 2rem 0 2rem 0rem;
+  justify-content: space-between;
+  gap: 2rem;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
   box-sizing: border-box;
+}
+
+.matriz-content-container-datoolo h2 {
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  color: #001631;
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .matriz-content-container-datoolo {
+    flex-direction: row;
+    gap: 3.5rem;
+    padding: 4rem 2rem;
+  }
+
+  .matriz-content-container-datoolo h2 {
+    text-align: left;
+    padding-right: 4rem;
+    padding-left: 1rem;
+    flex-shrink: 0;
+  }
 }
 
 
@@ -3323,6 +3345,11 @@ input {
   background-color: #ffffff;
   padding-top: 3rem;
   padding-bottom: 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
 }
 
 @media (min-width: 768px) {
