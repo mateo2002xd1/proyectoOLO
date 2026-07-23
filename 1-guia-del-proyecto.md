@@ -253,23 +253,38 @@ sitio-web/src/
 ├── app/                              # SOLO enrutamiento Next.js
 │   ├── layout.tsx                    # Root: fuentes, providers
 │   ├── globals.css                   # Estilos base (partir el monolito actual)
-│   ├── page.tsx                      # Inicio (incluye "Últimas publicaciones")
-│   ├── [slug]/page.tsx               # Páginas dinámicas públicas (ISR) — RF-11
-│   ├── login/page.tsx
-│   ├── admin/
-│   │   ├── layout.tsx                # Guard de rol
-│   │   └── editor/[slug]/page.tsx    # Mesa de trabajo Puck
-│   ├── panel-general/                # Dashboard admin, usuarios (RF-04)
-│   ├── api/                          # Route handlers delgados (delegan a la API :4000)
+│   ├── (admin)/
+│   |   ├── layout.tsx 
+│   │   ├── (shell)/
+│   │   │    ├── dashboard/           # Dashboard admin, usuarios (RF-04)  
+│   │   │    ├── revision/
+│   │   │    └── users/
+│   │   ├── contenido/
+│   │   └── login/page.tsx
+│   ├── (public)/
+│   │   ├── [slug]/page.tsx           # Mesa de trabajo Puck
+│   │   ├── clasificaciones/
+│   │   ├── mercado-laboral/
+│   │   ├── publicaciones/
+│   │   ├── tendencias/
+│   │   ├── alertas/
+│   │   └── programas/
+│   ├── api/                          # Route handlers delgados (delegan a la API :4000)                        
 │   └── middleware.ts                 # Auth gating (nombre exacto, no "proxy.ts")
 │
 ├── features/                         # Lógica por dominio
 │   ├── paginas/                      # CMS/Puck: render y edición de la maqueta
-│   ├── contenidos/                   # NUEVO: estudios/informes (buscador, listados) — RF-10
-│   ├── administracion/               # Panel: usuarios, roles
+│   ├── tendencias/                   # NUEVO: Tendencias, Descripción de las Tendencia de las ocupaciones
+│   ├── alertas/                      # NUEVO: Alertas Proyectos de Inversión
+│   ├── programas/                    # NUEVO: Programas + sobresalientes SENA, Descripción
+│   ├── dashboard/                    # Panel: usuarios, roles
+│   │   ├── dashboard.tsx            
+│   │   └── layout.tsx                
 │   ├── identidad-visual/             # NUEVO: config de marca (RF-03)
 │   ├── buscador-ocupaciones/         # NUEVO: CNO/CUOC vía API externa (RF-09)
-│   ├── edicion-concurrente/          # NUEVO: lock de edición
+│   ├── mercado-laboral/              # seccion de información acerca de mercado laboral
+│   ├── publicaciones/                # seccion para crear seccion de publicaciones
+│   ├── clasificaciones/              # seccion de información acerca de CNO /CUOC
 │   └── auth/                         # Consolidar cookies/sesión aquí
 │
 ├── shared/

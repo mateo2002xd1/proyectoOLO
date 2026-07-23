@@ -16,7 +16,6 @@ export function IntranetTopbar({
     { href: "/tasa", label: "Tasa de Vinculación y Empleabilidad" },
     { href: "/matriz", label: "Matriz de Pertinencia" },
     { href: "#", label: "Encuestas" },
-    { href: "#", label: "Preguntas Frecuentes" },
   ],
   brandText = "Intranet",
   logoUrl = "/assets/svg/olo-logo-blanco.svg",

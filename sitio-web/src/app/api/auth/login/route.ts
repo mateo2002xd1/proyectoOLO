@@ -58,11 +58,17 @@ export async function POST(request: NextRequest) {
   response.cookies.set(AUTH_ROLE_COOKIE_NAME, user.role || '', { ...base, httpOnly: false });
   response.cookies.set(AUTH_USER_NAME_COOKIE_NAME, user.name || '', { ...base, httpOnly: false });
 
+  // Setear o LIMPIAR según el estado actual — si no se limpian cuando son false,
+  // quedan pegadas y el middleware rebota todo a /cambiar-contrasena.
   if (mustChangePassword) {
     response.cookies.set(AUTH_MUST_CHANGE_PW_COOKIE_NAME, 'true', { ...base, httpOnly: false });
+  } else {
+    response.cookies.delete(AUTH_MUST_CHANGE_PW_COOKIE_NAME);
   }
   if (mustSetupSecurityQuestions) {
     response.cookies.set(AUTH_MUST_SETUP_SQ_COOKIE_NAME, 'true', { ...base, httpOnly: false });
+  } else {
+    response.cookies.delete(AUTH_MUST_SETUP_SQ_COOKIE_NAME);
   }
 
   return response;

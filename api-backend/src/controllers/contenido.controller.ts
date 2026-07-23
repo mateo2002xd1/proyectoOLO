@@ -10,6 +10,14 @@ import {
 import { logAudit } from '../use-cases/auditoria/audit.usecase';
 
 export const ContenidoController = {
+  async listarPublicados(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { Op } = require('sequelize');
+      const where: any = { publishedAt: { [Op.ne]: null } };
+      if (req.query.sectionId) where.sectionId = req.query.sectionId;
+      res.json(await obtenerContenidos(where));
+    } catch (err) { next(err); }
+  },
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const where: any = {};

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth';
 import { PasswordField } from '@/shared/ui/molecules/PasswordField';
 import { ReturnToSiteLink } from '@/shared/ui/molecules/ReturnToSiteLink';
+import { GooLoader } from '@/shared/ui/atoms/GooLoader';
 
 export function LoginView() {
   const { login } = useAuth();
@@ -89,8 +90,7 @@ export function LoginView() {
         <div className="login-card">
           {isSuccess ? (
             <div className="login-success-loader">
-              <div className="loader"></div>
-              <p>Preparando tu espacio...</p>
+              <GooLoader label="Preparando tu espacio..." />
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="login-form">
@@ -131,11 +131,11 @@ export function LoginView() {
               <Link href="/login/recovery" className="login-forgot">
                 ¿Olvidaste tu contraseña?
               </Link>
+
+              <ReturnToSiteLink classPrefix="login" />
             </form>
           )}
         </div>
-
-        <ReturnToSiteLink classPrefix="login" />
       </div>
     </div>
   );

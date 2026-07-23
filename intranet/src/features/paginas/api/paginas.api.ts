@@ -1,88 +1,69 @@
 /**
- * API client del módulo de páginas — funciones que consumen la API :4000.
+ * API client del módulo de páginas — consume la API :4000 vía el proxy /api-backend.
  *
- * Extiende el stub existente con los endpoints necesarios para el editor (Fase 6-7).
- *
- * Endpoints que necesita la API (§9.1):
- *   GET  /paginas/:slug/borrador-activo             → ObtenerBorrador use-case
- *   PUT  /paginas/:slug/versiones                   → GuardarBorrador use-case
- *   POST /paginas/:slug/versiones/:id/enviar-revision → EnviarARevision use-case
+ * Endpoints backend (unificados con sitio-web, almacenamiento en DB):
+ *   GET   /paginas/:slug/editable        → última versión editable (o vacío)
+ *   POST  /paginas/:slug/borrador        → guarda una nueva versión borrador
+ *   PATCH /paginas/:slug/enviar-revision → borrador → en_revision
  *
  * @see ARQUITECTURA_MAESTRA_OLO.md §9.1 (use-cases/paginas/)
  * @see ARQUITECTURA_MAESTRA_OLO.md §5  (API :4000 es la única fuente de JWT/auth)
  */
 
 import { apiClient } from "@/shared/lib/api-client";
-import type { ContenidoPagina, PaginaVersion } from "../types/editor.types";
+import type { ContenidoPagina, EstadoPagina } from "../types/editor.types";
 
-// TODO: Fase 3 — import type { Pagina } from '@olo/types';
+const EMPTY_CONTENIDO: ContenidoPagina = { content: [], root: {} };
 
-// ---------------------------------------------------------------------------
-// Lectura de páginas
-// ---------------------------------------------------------------------------
-
-export async function obtenerPagina(slug: string) {
-  // TODO: Fase 3 — return apiClient.get(`/paginas/${slug}`);
-  void apiClient;
-  void slug;
-  return null;
+export interface VersionEditable {
+  slug: string;
+  titulo: string;
+  contenido: ContenidoPagina;
+  estado: EstadoPagina | null;
+  versionId: string | null;
 }
 
 /**
- * Obtiene el borrador activo de una página (estado: borrador | rechazado).
- * Si no existe, devuelve null — el editor parte desde cero.
- *
- * TODO: Fase 6 — descomentar cuando el endpoint exista en la API
+ * Obtiene el contenido editable de una página (última versión, cualquier estado).
+ * Si la página aún no existe, el backend devuelve contenido vacío (no 404).
  */
-export async function obtenerBorradorActivo(
-  slug: string
-): Promise<PaginaVersion | null> {
-  // TODO: Fase 6 — descomentar:
-  // const res = await apiClient.get(`/paginas/${slug}/borrador-activo`);
-  // return res as PaginaVersion | null;
-  void slug;
-  return null;
+export async function obtenerVersionEditable(slug: string): Promise<VersionEditable> {
+  const res = await apiClient.get<Partial<VersionEditable>>(`/paginas/${slug}/editable`);
+  return {
+    slug: res.slug ?? slug,
+    titulo: res.titulo ?? slug,
+    contenido: res.contenido ?? EMPTY_CONTENIDO,
+    estado: res.estado ?? null,
+    versionId: res.versionId ?? null,
+  };
 }
 
-// ---------------------------------------------------------------------------
-// Escritura / flujo editorial
-// ---------------------------------------------------------------------------
-
 /**
- * Guarda o actualiza el borrador de una página.
- * Si ya existe un borrador, lo sobreescribe (misma versión).
- * Si no existe, crea una nueva versión con estado "borrador".
- *
- * TODO: Fase 6 — descomentar cuando el endpoint exista en la API
+ * Guarda el layout de Puck como una nueva versión borrador.
+ * El backend auto-crea la página si el slug no existe.
  */
 export async function guardarBorrador(
   slug: string,
   contenido: ContenidoPagina
-): Promise<{ versionId: string } | null> {
-  // TODO: Fase 6 — descomentar:
-  // const res = await apiClient.put(`/paginas/${slug}/versiones`, { contenido });
-  // return res as { versionId: string };
-  void slug;
-  void contenido;
-  return null;
+): Promise<{ versionId: string; estado: EstadoPagina } | null> {
+  const res = await apiClient.post<{ version?: { id: string; estado: EstadoPagina } }>(
+    `/paginas/${slug}/borrador`,
+    { contenido }
+  );
+  if (!res?.version?.id) return null;
+  return { versionId: res.version.id, estado: res.version.estado };
 }
 
 /**
- * Envía la versión activa a revisión (borrador → en_revision).
- * Dispara el Domain Event EnviadoARevision en la API → alerta al Administrador.
- *
- * TODO: Fase 7 — descomentar cuando el endpoint y el Domain Event existan
+ * Envía la versión borrador activa a revisión (borrador → en_revision).
  */
 export async function enviarARevision(
   slug: string,
-  versionId: string
-): Promise<{ estado: "en_revision" } | null> {
-  // TODO: Fase 7 — descomentar:
-  // const res = await apiClient.post(
-  //   `/paginas/${slug}/versiones/${versionId}/enviar-revision`
-  // );
-  // return res as { estado: "en_revision" };
-  void slug;
-  void versionId;
-  return null;
+  _versionId?: string
+): Promise<{ estado: EstadoPagina } | null> {
+  const res = await apiClient.patch<{ version?: { estado: EstadoPagina } }>(
+    `/paginas/${slug}/enviar-revision`
+  );
+  if (!res?.version?.estado) return null;
+  return { estado: res.version.estado };
 }

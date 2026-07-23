@@ -101,6 +101,17 @@ export const apiClient = {
     return handleResponse<T>(res);
   },
 
+  async patch<T>(path: string, body?: unknown, options?: RequestInit & { timeout?: number }): Promise<T> {
+    const res = await fetchWithTimeout(`${API_BASE_URL}${path}`, {
+      ...options,
+      method: 'PATCH',
+      credentials: 'include',
+      headers: getDefaultHeaders(options?.headers),
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    return handleResponse<T>(res);
+  },
+
   async delete<T>(path: string, options?: RequestInit & { timeout?: number }): Promise<T> {
     const res = await fetchWithTimeout(`${API_BASE_URL}${path}`, {
       ...options,
