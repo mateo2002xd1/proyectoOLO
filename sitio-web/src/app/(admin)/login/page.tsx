@@ -2,16 +2,29 @@
 
 import { Suspense, useState, FormEvent } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import { FirstLoginFlow } from '@/features/administracion/components/first-login-flow';
+
+const INTRANET_EDITOR_URL =
+  process.env.NEXT_PUBLIC_INTRANET_EDITOR_URL || 'http://localhost:3001/editor/inicio';
 
 function LoginForm() {
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('redirect') || '/dashboard';
+  const redirectParam = searchParams.get('redirect');
+  const redirectTo = redirectParam && redirectParam.startsWith('/') ? redirectParam : '/dashboard';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [editorChoice, setEditorChoice] = useState(false);
+  const [firstLogin, setFirstLogin] = useState<{ name?: string } | null>(null);
+
+  // Si el usuario venía a editar una página concreta del sitio, respetamos ese destino;
+  // si no, el editor del sitio abre la página de inicio.
+  const sitioEditorHref =
+    redirectParam && redirectParam.startsWith('/editor') ? redirectParam : '/editor/inicio';
 
   const validate = (): boolean => {
     const next: typeof errors = {};
@@ -44,17 +57,99 @@ function LoginForm() {
       }
 
       if (data.mustChangePassword || data.mustSetupSecurityQuestions) {
-        window.location.href = '/cambiar-contrasena';
+        setFirstLogin({ name: data.user?.name });
         return;
       }
 
-      window.location.href = redirectTo;
+      const role = data.user?.role ?? '';
+
+      if (role === 'Superadmin' || role === 'Administrador') {
+        window.location.href = redirectParam ? redirectTo : '/dashboard';
+        return;
+      }
+
+      if (role === 'Editor') {
+        setEditorChoice(true);
+        return;
+      }
+
+      setErrors({ general: 'Tu cuenta no tiene permisos de edición.' });
     } catch {
       setErrors({ general: 'Error de conexión. Verifique que la API esté activa.' });
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (firstLogin) {
+    return <FirstLoginFlow name={firstLogin.name} />;
+  }
+
+  if (editorChoice) {
+    return (
+      <div
+        style={{
+          background: 'white',
+          borderRadius: 12,
+          padding: '40px 36px',
+          width: '100%',
+          maxWidth: 400,
+          boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+        }}
+      >
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          <img
+            src="/asset/logos/olo-logo-none.svg"
+            alt="OLO Logo"
+            style={{ width: 60, height: 'auto', margin: '0 auto 12px' }}
+          />
+          <p style={{ margin: 0, fontSize: 18, fontWeight: 300, color: '#111827' }}>
+            ¿Qué deseas editar?
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <a
+            href={sitioEditorHref}
+            style={{
+              display: 'block',
+              padding: '16px 18px',
+              borderRadius: 10,
+              border: '1px solid #e5e7eb',
+              textDecoration: 'none',
+              transition: 'border-color 0.15s, background 0.15s',
+            }}
+          >
+            <span style={{ display: 'block', fontSize: 15, fontWeight: 600, color: '#111827' }}>
+              Editar sitio web
+            </span>
+            <span style={{ display: 'block', fontSize: 13, color: '#6b7280', marginTop: 2 }}>
+              Editor visual del sitio público
+            </span>
+          </a>
+
+          <a
+            href={INTRANET_EDITOR_URL}
+            style={{
+              display: 'block',
+              padding: '16px 18px',
+              borderRadius: 10,
+              border: '1px solid #e5e7eb',
+              textDecoration: 'none',
+              transition: 'border-color 0.15s, background 0.15s',
+            }}
+          >
+            <span style={{ display: 'block', fontSize: 15, fontWeight: 600, color: '#111827' }}>
+              Editar intranet
+            </span>
+            <span style={{ display: 'block', fontSize: 13, color: '#6b7280', marginTop: 2 }}>
+              Editor visual de la intranet
+            </span>
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -208,6 +303,37 @@ function LoginForm() {
         >
           {isLoading ? 'Iniciando sesión…' : 'Ingresar'}
         </button>
+
+        <div style={{ textAlign: 'center', marginTop: 16 }}>
+          <Link
+            href="/"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              color: '#4B5563',
+              fontSize: 14,
+              fontWeight: 500,
+              textDecoration: 'none',
+              transition: 'color 0.2s ease, transform 0.15s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = '#111827';
+              e.currentTarget.style.transform = 'translateY(-1px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = '#4B5563';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
+            Ir al sitio web
+          </Link>
+        </div>
       </form>
     </div>
   );

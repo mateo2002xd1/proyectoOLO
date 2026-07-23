@@ -7,10 +7,10 @@ import { usePagina } from '@/features/paginas/hooks/use-pagina';
 export default function EditorPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }) {
-  const { id } = use(params);
-  const { pagina, isLoading, error, saveDraft, submitForReview } = usePagina(id);
+  const { slug } = use(params);
+  const { pagina, isLoading, error, saveDraft, submitForReview } = usePagina(slug);
 
   if (isLoading) {
     return (

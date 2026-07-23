@@ -1,6 +1,7 @@
 'use client';
 
 import { Hero, ExternalPortals, Services, IntranetTopbar, IntranetHero } from '@olo/blocks-renderer';
+import { OcupacionSearchBanner } from '@/shared/ui/molecules/ocupacion-search-banner';
 import { EditorjsWrapper } from '@/features/paginas/components/editorjs-wrapper';
 import { ImageUploaderField } from '@/features/paginas/components/image-uploader-field';
 import type { Config } from '@puckeditor/core';
@@ -67,7 +68,6 @@ export const puckConfig: Config = {
           { href: "#", label: "Tasa de Vinculación y Empleabilidad" },
           { href: "#", label: "Matriz de Pertinencia" },
           { href: "#", label: "Encuestas" },
-          { href: "#", label: "Preguntas Frecuentes" },
         ],
       },
       render: (props: any) => {
@@ -92,12 +92,8 @@ export const puckConfig: Config = {
       render: (props: any) => <IntranetHero {...props} />,
     },
     Hero: {
-      label: 'Hero / Banner Principal',
+      label: 'Buscador de Ocupaciones (Banner)',
       fields: {
-        heading: {
-          type: 'textarea' as const,
-          label: 'Título principal',
-        },
         searchPlaceholder: {
           type: 'text' as const,
           label: 'Placeholder del buscador',
@@ -113,31 +109,26 @@ export const puckConfig: Config = {
       },
       defaultProps: {
         id: 'hero-1',
-        heading: 'Explora las ocupaciones clave de los sectores productivos en Colombia.',
         searchPlaceholder: 'Buscar ocupación, código o denominación',
         imageUrl: '/asset/img/nos-ocupa-el-pais.png',
         imageAlt: 'Nos ocupa el país',
       },
       render: ({
-        id,
-        heading,
         searchPlaceholder,
         imageUrl,
         imageAlt,
       }: {
-        id: string;
-        heading?: string;
         searchPlaceholder?: string;
         imageUrl?: string;
         imageAlt?: string;
       }) => (
-        <Hero
-          block={{ id: id || 'hero-preview', type: 'hero' }}
-          heading={heading}
-          searchPlaceholder={searchPlaceholder}
-          imageUrl={imageUrl}
-          imageAlt={imageAlt}
-        />
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+          <OcupacionSearchBanner
+            placeholder={searchPlaceholder}
+            logoSrc={imageUrl}
+            logoAlt={imageAlt}
+          />
+        </div>
       ),
     },
     Services: {

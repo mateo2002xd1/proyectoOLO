@@ -10,12 +10,18 @@ export function IntranetFooter({ block }: IntranetFooterProps) {
       <div className="intranet-footer-inner">
         <div className="intranet-footer-col intranet-footer-brand-col">
           <div className="intranet-footer-brand">
-            <span className="intranet-footer-sena">SENA</span>
             <img
-              src="/assets/svg/olo-logo-blanco.svg"
+              src="/assets/svg/logo-sena.svg"
               alt="Logo Observatorio"
               width={56}
               height={56}
+            />
+            <span>|</span>
+            <img
+              src="/assets/svg/olo-logo-horizontal.svg"
+              alt="Logo Observatorio"
+              width={150}
+              height={150}
             />
           </div>
         </div>

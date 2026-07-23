@@ -20,6 +20,20 @@ export async function obtenerPagina(slug: string): Promise<Pagina | null> {
   }
 }
 
+/**
+ * Contenido editable para el editor: última versión (borrador/en_revisión/
+ * publicado/rechazado), no solo la publicada. Nunca 404 — si la página aún no
+ * existe, el backend devuelve contenido vacío para arrancar en limpio.
+ */
+export async function obtenerPaginaEditable(slug: string): Promise<Pagina | null> {
+  try {
+    const { data } = await api.get(`/api/paginas/${slug}/editable`);
+    return data;
+  } catch {
+    return null;
+  }
+}
+
 export async function obtenerPaginaInicio(): Promise<Data> {
   try {
     const res = await fetch(`${BACKEND_URL}/api/paginas/publica/inicio`, {

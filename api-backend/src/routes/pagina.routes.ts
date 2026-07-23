@@ -9,6 +9,7 @@ router.get('/publica/:slug', cacheInterceptor(300), PaginaController.obtenerPubl
 
 router.use(requireAuth);
 
+router.get('/:slug/editable', PaginaController.obtenerEditable);
 router.post('/:slug/borrador', PaginaController.guardarBorrador);
 router.patch('/:slug/enviar-revision', PaginaController.enviarARevision);
 router.patch('/:slug/aprobar', PaginaController.aprobar);

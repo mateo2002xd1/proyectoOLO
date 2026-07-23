@@ -1,9 +1,10 @@
 /**
- * EditorClient — Componente cliente que monta el editor Puck + useEditorActions.
+ * EditorClient — Componente cliente que carga el contenido editable desde la
+ * API (:4000, DB) y monta el editor Puck real.
  *
- * Separado de page.tsx para cumplir la regla Server/Client de Next.js App Router:
- *   - page.tsx  → Server Component (carga datos, verifica permisos)
- *   - editor-client.tsx → Client Component (interacción, hooks, estado)
+ * Separado de page.tsx para cumplir la regla Server/Client de Next.js:
+ *   - page.tsx  → Server Component (routing)
+ *   - editor-client.tsx → Client Component (carga de datos + editor Puck)
  *
  * @see ARQUITECTURA_MAESTRA_OLO.md §9.3  (editor/[slug]/page.tsx)
  * @see ARQUITECTURA_MAESTRA_OLO.md §3    (Flujo editorial)
@@ -11,72 +12,108 @@
 
 "use client";
 
+import { useEffect, useState } from "react";
 import { PuckEditorWrapper } from "@/features/paginas";
 import { useEditorActions } from "@/features/paginas";
-import type { PaginaVersion } from "@/features/paginas";
+import { obtenerVersionEditable, type VersionEditable } from "@/features/paginas/api/paginas.api";
+import { GooLoader } from "@/shared/ui/atoms/GooLoader";
+import type { PaginaVersion } from "@/features/paginas/types/editor.types";
 
 interface EditorClientProps {
   slug: string;
-  versionActual: PaginaVersion | null;
 }
 
-export function EditorClient({ slug, versionActual }: EditorClientProps) {
+export function EditorClient({ slug }: EditorClientProps) {
+  const [editable, setEditable] = useState<VersionEditable | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    obtenerVersionEditable(slug)
+      .then((data) => { if (active) setEditable(data); })
+      .catch((err) => {
+        if (active) setLoadError(err instanceof Error ? err.message : "No se pudo cargar la página");
+      });
+    return () => { active = false; };
+  }, [slug]);
+
+  if (loadError) {
+    return (
+      <div style={{ padding: "2rem", textAlign: "center" }}>
+        <h1>No se pudo abrir el editor</h1>
+        <p>{loadError}</p>
+      </div>
+    );
+  }
+
+  if (!editable) {
+    return (
+      <div style={{ position: "fixed", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "#f0f2f5" }}>
+        <GooLoader label="Cargando editor..." />
+      </div>
+    );
+  }
+
+  return <EditorMounted slug={slug} editable={editable} />;
+}
+
+/**
+ * Se monta SOLO cuando el contenido ya está cargado, para que useEditorActions
+ * se inicialice con el versionId/estado reales (los hooks no releen sus valores
+ * iniciales tras el primer render).
+ */
+function EditorMounted({ slug, editable }: { slug: string; editable: VersionEditable }) {
   const {
     handleGuardarBorrador,
     handleEnviarRevision,
     isSaving,
     isSendingToReview,
-    error,
     estadoActual,
-    versionId,
+    error,
   } = useEditorActions({
     slug,
-    initialVersionId: versionActual?.id ?? null,
+    initialVersionId: editable.versionId,
+    initialEstado: editable.estado,
   });
 
+  const versionActual = {
+    estado: estadoActual ?? editable.estado ?? "borrador",
+    contenido: editable.contenido,
+    slug: editable.slug,
+    titulo: editable.titulo,
+  } as PaginaVersion;
+
   return (
-    <div className="editor-page">
+    <>
       {error && (
-        <div className="editor-error-banner" role="alert">
+        <div
+          role="alert"
+          style={{
+            position: "fixed",
+            top: 12,
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 10000,
+            background: "#fef2f2",
+            border: "1px solid #fca5a5",
+            color: "#dc2626",
+            borderRadius: 8,
+            padding: "8px 16px",
+            fontSize: 14,
+          }}
+        >
           {error}
         </div>
       )}
-
-      {estadoActual === "en_revision" && (
-        <div className="editor-status-banner editor-status-en-revision">
-          Esta versión está en revisión. Espera la aprobación del Administrador.
-        </div>
-      )}
-
-      {estadoActual === "publicado" && (
-        <div className="editor-status-banner editor-status-publicado">
-          Esta versión está publicada. Crea un nuevo borrador para editar.
-        </div>
-      )}
-
       <PuckEditorWrapper
         slug={slug}
-        initialData={versionActual?.contenido ?? null}
+        initialData={editable.contenido}
         onGuardarBorrador={handleGuardarBorrador}
         onEnviarRevision={handleEnviarRevision}
         isSaving={isSaving}
         isSendingToReview={isSendingToReview}
-        versionActual={
-          versionActual
-            ? { ...versionActual, estado: estadoActual ?? versionActual.estado }
-            : null
-        }
+        versionActual={versionActual}
       />
-
-      {/* Debug info — solo en desarrollo */}
-      {process.env.NODE_ENV === "development" && (
-        <details style={{ marginTop: "1rem", fontSize: "0.75rem" }}>
-          <summary>Debug estado editor</summary>
-          <pre>
-            {JSON.stringify({ slug, versionId, estadoActual }, null, 2)}
-          </pre>
-        </details>
-      )}
-    </div>
+    </>
   );
 }

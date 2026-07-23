@@ -19,11 +19,11 @@ export { useEditorActions } from "./hooks/use-editor-actions";
 
 // API
 export {
-  obtenerPagina,
-  obtenerBorradorActivo,
+  obtenerVersionEditable,
   guardarBorrador,
   enviarARevision,
 } from "./api/paginas.api";
+export type { VersionEditable } from "./api/paginas.api";
 
 // Types
 export type {

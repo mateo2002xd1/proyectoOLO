@@ -59,7 +59,6 @@ export const puckConfig: Config = {
           { href: "#", label: "Tasa de Vinculación y Empleabilidad" },
           { href: "#", label: "Matriz de Pertinencia" },
           { href: "#", label: "Encuestas" },
-          { href: "#", label: "Preguntas Frecuentes" },
         ],
       },
       render: (props: any) => {
