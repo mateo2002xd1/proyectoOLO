@@ -12,9 +12,9 @@ export function SeguimientoLaboralView() {
 
       {/* Hero Section */}
       <section className="w-full bg-[#001631]" style={{ minHeight: '200px' }}>
-        <div className="max-w-7xl mx-auto flex flex-row items-center justify-between px-8 md:px-16 py-8 md:py-10">
+        <div className="max-w-7xl mx-auto flex flex-row items-center justify-center gap-8 md:gap-16 pr-8 md:pr-16 pl-16 md:pl-32 py-8 md:py-10">
           {/* Texto */}
-          <div className="text-white flex-1" style={{ paddingLeft: '12%' }}>
+          <div className="text-white">
             <p className="text-base md:text-lg font-light tracking-wide mb-1">
               Encuesta de
             </p>
@@ -24,7 +24,7 @@ export function SeguimientoLaboralView() {
           </div>
 
           {/* Ilustración */}
-          <div className="flex-shrink-0 flex justify-end">
+          <div className="flex-shrink-0">
             <Image
               src="/assets/img/banner-seguimiento-laboral.png"
               alt="Ilustración Seguimiento Laboral"
@@ -115,9 +115,6 @@ export function SeguimientoLaboralView() {
           {/* Right Column (Video) */}
           <div className="flex-1 w-full max-w-2xl relative rounded-xl overflow-hidden shadow-lg bg-black flex justify-center items-center">
             <div className="w-full aspect-video bg-gray-800 flex items-center justify-center relative">
-              <div className="text-white text-xl">
-                [Video Portal de Aprendizaje]
-              </div>
               <Image
                 src="/assets/img/Seguimiento-laboral.png"
                 alt="Video Portal de Aprendizaje"
