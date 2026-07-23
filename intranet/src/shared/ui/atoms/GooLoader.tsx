@@ -7,7 +7,9 @@ interface GooLoaderProps {
 }
 
 export function GooLoader({ label }: GooLoaderProps) {
-  const filterId = useId();
+  // useId() genera ids con ":" (p. ej. ":r0:") que rompen `filter: url(#...)`
+  // y dejan invisible el contenedor. Sanitizamos a un id válido en CSS.
+  const filterId = `goo-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
 
   return (
     <div className="goo-loader">

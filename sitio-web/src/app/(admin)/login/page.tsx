@@ -146,6 +146,75 @@ function LoginForm() {
               Editor visual de la intranet
             </span>
           </a>
+
+          <button
+            type="button"
+            onClick={async () => {
+              await fetch('/api/auth/logout', { method: 'POST' });
+              window.location.href = '/login';
+            }}
+            style={{
+              width: '100%',
+              padding: '12px 16px',
+              background: '#7DB728',
+              color: 'white',
+              border: 'none',
+              borderRadius: 8,
+              fontSize: 15,
+              fontWeight: 600,
+              cursor: 'pointer',
+              marginTop: 4,
+              transition: 'background 0.15s',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#689b1c';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#7DB728';
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+            Cerrar sesión
+          </button>
+
+          <div style={{ textAlign: 'center', marginTop: 8 }}>
+            <Link
+              href="/"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                color: '#4B5563',
+                fontSize: 14,
+                fontWeight: 500,
+                textDecoration: 'none',
+                transition: 'color 0.2s ease, transform 0.15s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = '#111827';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = '#4B5563';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
+              Ir al sitio web
+            </Link>
+          </div>
         </div>
       </div>
     );

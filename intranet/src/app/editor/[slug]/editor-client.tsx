@@ -23,9 +23,20 @@ interface EditorClientProps {
   slug: string;
 }
 
+// Tiempo mínimo del loader para que la animación se complete antes de mostrar el editor.
+// Debe coincidir con el editor del sitio-web para que ambos se comporten igual.
+const MIN_LOADER_MS = 8000;
+
 export function EditorClient({ slug }: EditorClientProps) {
   const [editable, setEditable] = useState<VersionEditable | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+
+  // Mantiene el loader visible al menos MIN_LOADER_MS aunque los datos carguen antes.
+  const [minTimePassed, setMinTimePassed] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setMinTimePassed(true), MIN_LOADER_MS);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -46,9 +57,9 @@ export function EditorClient({ slug }: EditorClientProps) {
     );
   }
 
-  if (!editable) {
+  if (!editable || !minTimePassed) {
     return (
-      <div style={{ position: "fixed", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "#f0f2f5" }}>
+      <div className="editor-loading-overlay">
         <GooLoader label="Cargando editor..." />
       </div>
     );
