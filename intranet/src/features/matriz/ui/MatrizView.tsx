@@ -19,8 +19,10 @@ export function MatrizView() {
 
       {/* Banner */}
       <section className="w-full max-w-full relative overflow-hidden ">
-        <div className="bannerOficialMatriz">
-          <h1>Matriz <br /> <strong>de Pertinencia</strong></h1>
+        <div className="bannerOficialMatriz py-8 md:py-0">
+          <h1 className="text-white text-3xl md:text-[44px] font-bold uppercase tracking-wide leading-tight text-left mb-8 md:mb-0 mr-0 md:mr-16">
+            MATRIZ DE <br /> PERTINENCIA
+          </h1>
           <img
           src="/assets/img/BannerOficial.png"
           alt="Matriz de Pertinencia Banner"
@@ -30,15 +32,15 @@ export function MatrizView() {
       </section>
 
       {/* Qué es */}
-      <div className="matriz-section-gray">
-        <div className="matriz-content-container text-center">
-          <h2 className="matriz-section-title">¿Qué es?</h2>
-          <div className="matriz-section-intro">
-            La Matriz de Pertinencia es una herramienta estratégica del SENA, que permite a<br className="hidden md:block" />
-            través de sus 5 variables :
+      <div className="matriz-section-gray pt-12 md:pt-20 pb-8">
+        <div className="matriz-content-container text-left">
+          <h2 className="matriz-section-title !text-left mb-8">¿Qué es?</h2>
+          <div className="matriz-section-intro !text-left">
+            La Matriz de Pertinencia es una herramienta estratégica del SENA, que permite<br className="hidden md:block" />
+            a través de sus 5 variables :
           </div>
 
-          <div className="matriz-section-list">
+          <div className="matriz-section-list !text-left">
             <p><strong>i.</strong> vinculación laboral.</p>
             <p><strong>ii.</strong> tendencia de las ocupaciones.</p>
             <p><strong>iii.</strong> demanda social de los programas de oferta titulada.</p>
@@ -68,11 +70,35 @@ export function MatrizView() {
         </div>
       </div>
 
-      {/* Dashboard OLO - Vinculación */}
-      <div className="matriz-section-gray">
-        <div className="matriz-content-container-wide">
-          <h2 className="matriz-section-title text-center">Dashboard OLO - Vinculación</h2>
-          <div className="matriz-section-intro text-center mb-10">
+      {/* Video Section */}
+      <div className="matriz-section-white py-12">
+        <div className="w-full max-w-[650px] mx-auto text-left px-4">
+          <h2 className="text-[#1C2A48] text-2xl md:text-[32px] font-medium mb-4 leading-snug">
+            ¿Ya sabes como acceder a la matriz de pertinencia en <br className="hidden md:block" />
+            «CompromISO»?
+          </h2>
+          <p className="text-[#1C2A48] text-[20px] mb-6">
+            Mira nuestro video
+          </p>
+          <div className="w-full aspect-video rounded-xl overflow-hidden shadow-lg bg-gray-100">
+            <iframe
+              width="100%"
+              height="100%"
+              src="https://www.youtube.com/embed/4E7Sci4DAVQ"
+              title="Video Matriz de Pertinencia"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
+          </div>
+        </div>
+      </div>
+
+      {/* Dashboard OLO - Matriz */}
+      <div className="matriz-section-gray w-full flex justify-center py-10">
+        <div className="w-full max-w-[1303px] px-4 md:px-6 flex flex-col items-start">
+          <h2 className="text-[#0A1B3F] text-[32px] font-bold text-left mb-4">Dashboard OLO - Matriz</h2>
+          <div className="text-[#0A1B3F] text-lg text-left mb-16 md:mb-20 max-w-[900px]">
             Resultados de vinculación laboral formal (titulada), con una periodicidad semestral.<br className="hidden md:block" />
             Genera un indicador de vinculación donde se relaciona el número de vinculados<br className="hidden md:block" />
             laboralmente en el mercado formal y el total de egresados, para un grupo de<br className="hidden md:block" />
@@ -82,13 +108,42 @@ export function MatrizView() {
           <div className="w-full bg-white shadow-sm rounded-lg overflow-hidden flex justify-center">
             <iframe
               title="Dashboard Vinculación OLO"
-              width="1303"
+              width="100%"
               height="816"
               src="https://app.powerbi.com/view?r=eyJrIjoiMWIxNWMwYjItNzdhZS00ZGE1LWExMDktYzZhOTgwNjZkNTZmIiwidCI6ImNiYzJjMzgxLTJmMmUtNGQ5My05MWQxLTUwNmM5MzE2YWNlNyIsImMiOjR9&pageName=ReportSection14c82e0795ad03436073"
               frameBorder="0"
               allowFullScreen={true}
               className="w-full h-[600px] md:h-[816px] max-w-full"
             ></iframe>
+          </div>
+        </div>
+      </div>
+
+
+      {/* Descargas & Presentation */}
+      <div className="matriz-section-white py-16">
+        <div className="w-full max-w-[1303px] mx-auto px-4 md:px-6">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-start">
+            {/* Left Column: Descargas */}
+            <div className="md:col-span-4 lg:col-span-3">
+              <h3 className="text-[#0A1B3F] text-[28px] font-bold mb-6">Descargas</h3>
+              <ul className="list-disc pl-6 text-[#1C2A48] text-lg md:text-xl space-y-2 marker:text-[#0A1B3F]">
+                <li><a href="#" className="hover:underline transition-colors">Matriz de pertinencia 2025</a></li>
+                <li><a href="#" className="hover:underline transition-colors">Matriz de pertinencia 2024</a></li>
+              </ul>
+            </div>
+            
+            {/* Right Column: Presentation Viewer */}
+            <div className="md:col-span-8 lg:col-span-7">
+              <div className="w-full max-w-[850px] aspect-[1037/617] rounded-xl overflow-hidden shadow-sm border border-gray-200">
+                <iframe 
+                  src="/uploads/documents/Presentación1.pptx" 
+                  title="Presentación Matriz de Pertinencia" 
+                  className="w-full h-full"
+                  frameBorder="0"
+                ></iframe>
+              </div>
+            </div>
           </div>
         </div>
       </div>
