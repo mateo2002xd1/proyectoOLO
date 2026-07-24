@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { IntranetTopbar } from "@/shared/lib/blocks/IntranetTopbar";
 import { IntranetFooter } from "@/shared/lib/blocks/IntranetFooter";
+import { PptxViewer } from "./PptxViewer";
 
 export function TasaView() {
     return (
@@ -144,11 +145,7 @@ export function TasaView() {
                             </h2>
                         </div>
                         <div className="tasa-ppt-viewer-wrapper">
-                            <iframe 
-                                src="/assets/uploads/ptpexample.pptx" 
-                                className="tasa-ppt-iframe" 
-                                title="Presentación Tasa de Vinculación y Empleabilidad"
-                            ></iframe>
+                            <PptxViewer fileUrl="/uploads/documents/ptpexample.pptx" />
                         </div>
                     </div>
                 </section>
