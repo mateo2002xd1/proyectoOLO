@@ -68,6 +68,29 @@ export function TasaView() {
                     </div>
                 </section>
 
+                {/* Sección: Video Tasa de Vinculación y Empleabilidad */}
+                <section className="tasa-video-section">
+                    <div className="tasa-video-header">
+                        <h2 className="tasa-video-title">
+                            Aquí te contamos todo sobre la estrategia de Tasa de <br className="tasa-video-br" />
+                            <span>Vinculación y Empleabilidad</span>
+                        </h2>
+                        <p className="tasa-video-subtitle">
+                            Mira nuestro video
+                        </p>
+                    </div>
+                    <div className="tasa-video-wrapper">
+                        <iframe
+                            className="tasa-video-iframe"
+                            src="https://www.youtube.com/embed/4E7Sci4DAVQ"
+                            title="Tasa de Vinculación y Empleabilidad"
+                            frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                        ></iframe>
+                    </div>
+                </section>
+
                 {/* Sección: Dashboards OLO */}
                 <section className="tasa-dashboard-wrapper">
                     {/* Dashboard OLO - Vinculación */}
@@ -110,6 +133,26 @@ export function TasaView() {
                         </div>
                     </div>
                 </section>
+
+                {/* Sección: Presentación PPTX */}
+                <section className="tasa-ppt-section">
+                    <div className="tasa-ppt-container">
+                        <div className="tasa-ppt-text">
+                            <h2 className="tasa-ppt-title">
+                                Aquí podrás visualizar nuestra <br />
+                                <strong>presentación de Tasa de <br />Vinculación y Empleabilidad</strong>
+                            </h2>
+                        </div>
+                        <div className="tasa-ppt-viewer-wrapper">
+                            <iframe 
+                                src="/assets/uploads/ptpexample.pptx" 
+                                className="tasa-ppt-iframe" 
+                                title="Presentación Tasa de Vinculación y Empleabilidad"
+                            ></iframe>
+                        </div>
+                    </div>
+                </section>
+                
             </main>
 
             <div className="w-full mt-auto">
