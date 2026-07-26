@@ -2,6 +2,17 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* --- Brand Tokens ---
+   Van en @theme (no en :root) para que Tailwind genere las utilidades
+   correspondientes: bg-brand, text-brand, ring-brand, border-brand, etc.
+   Fuente única del verde institucional: no volver a escribirlo a mano. */
+@theme {
+  --color-brand: #7db728;
+  --color-brand-hover: #6da020;
+  --color-brand-focus: #39a900;
+  --color-brand-blue: #1face3;
+}
+
 /* --- CSS Custom Properties (Design Tokens) --- */
 :root {
   /* Primary Palette */
@@ -99,9 +110,10 @@
   --surface: #ffffff;
   --line: rgba(196, 199, 197, 0.4);
   --muted: rgba(68, 71, 70, 0.4);
-  --brand: #7db728;
-  --brand-hover: #6da020;
-  --brand-blue: #1face3;
+  /* Alias de los tokens de marca, para el CSS que ya usa var(--brand). */
+  --brand: var(--color-brand);
+  --brand-hover: var(--color-brand-hover);
+  --brand-blue: var(--color-brand-blue);
 }
 
 @supports (height: 100dvh) {
@@ -1308,7 +1320,7 @@ button.text-link,
 }
 
 .toggle-switch .toggle-input:checked + .toggle-label {
-  background-color: #7db728;
+  background-color: var(--color-brand);
 }
 
 .toggle-switch .toggle-input:checked + .toggle-label::before {
@@ -1515,7 +1527,7 @@ input[type="date"].olo-date-input[value=""] {
 }
 
 .goo-loader-dot3 {
-  background-color: #7DB728;
+  background-color: var(--color-brand);
   animation: gooDot3Move 2s ease infinite, gooLoaderIndex 6s ease infinite;
 }
 
@@ -1587,4 +1599,19 @@ input[type="date"].olo-date-input[value=""] {
   justify-content: center;
   background-color: #f0f2f5;
   z-index: 50;
+}
+
+/* ─── Primitivo de maquetación: Grid / Columnas (@olo/blocks-renderer) ───
+   El número de columnas y la separación llegan como variables CSS inline
+   desde el `render` del primitivo; aquí se aplican y se colapsan en móvil. */
+.olo-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--olo-grid-cols, 3), minmax(0, 1fr));
+  gap: var(--olo-grid-gap, 24px);
+  width: 100%;
+}
+@media (max-width: 640px) {
+  .olo-grid {
+    grid-template-columns: 1fr;
+  }
 }
