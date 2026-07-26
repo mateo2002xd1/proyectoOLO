@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Pagina, Bloque } from '../types';
+import { Pagina, PuckData, Bloque } from '../types';
 import { obtenerPaginaEditable, guardarBorrador, enviarARevision } from '../services/paginas.service';
+import { getPageSeed, isEmptyContent } from '../lib/page-seeds';
 
 export function usePagina(slug: string) {
   const [pagina, setPagina] = useState<Pagina | null>(null);
@@ -14,7 +15,18 @@ export function usePagina(slug: string) {
       try {
         setIsLoading(true);
         const data = await obtenerPaginaEditable(slug);
-        setPagina(data);
+        // Sin versión en BD → sembrar el editor con el contenido estático
+        // (copia editable) en lugar de abrir en blanco.
+        if (isEmptyContent(data?.contenido)) {
+          setPagina({
+            id: data?.id ?? '',
+            slug: data?.slug ?? slug,
+            titulo: data?.titulo ?? slug,
+            contenido: getPageSeed(slug),
+          });
+        } else {
+          setPagina(data);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error al cargar página');
       } finally {
@@ -24,7 +36,7 @@ export function usePagina(slug: string) {
     load();
   }, [slug]);
 
-  const saveDraft = useCallback(async (contenido: any) => {
+  const saveDraft = useCallback(async (contenido: PuckData | Bloque[]) => {
     try {
       const result = await guardarBorrador(slug, contenido);
       setPagina((prev) => prev ? { ...prev, contenido } : null);

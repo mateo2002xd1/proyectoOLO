@@ -51,7 +51,7 @@ export async function getSessionPermissionsSnapshot(): Promise<{ role: string | 
     if (!roleRes.ok) return { role: session.role, permissions: [] };
 
     const roleData = await roleRes.json();
-    const permissions = (roleData.permissions || []).map((p: any) => p.name).filter(Boolean);
+    const permissions = (roleData.permissions || []).map((p: { name?: string }) => p.name).filter(Boolean);
 
     return { role: session.role, permissions };
   } catch {

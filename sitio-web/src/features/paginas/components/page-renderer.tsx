@@ -8,6 +8,11 @@ import type { Bloque } from '../types';
  * Use `<Render config={puckConfig} data={pagina.contenido} />` en su lugar.
  */
 
+/* Registro heterogéneo: cada bloque espera su propio tipo de `block`
+   (HeaderBlock, HeroBlock, …), y un ComponentType común no puede representarlos
+   sin romper la contravarianza de props. Como este componente está deprecado y
+   se eliminará, se acepta `any` aquí en lugar de forzar una unión artificial. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const blockComponents: Record<string, React.ComponentType<any>> = {
   Header,
   Hero,
@@ -26,12 +31,9 @@ export function PageRenderer({ slug, blocks }: PageRendererProps) {
       {blocks.map((bloque, i) => {
         const BlockComponent = blockComponents[bloque.type];
         if (!BlockComponent) return null;
-        return (
-          <BlockComponent
-            key={bloque.props?.id || `block-${i}`}
-            block={{ id: bloque.props?.id || `block-${i}`, ...bloque }}
-          />
-        );
+        // `props` viene del CMS sin forma garantizada: normalizamos el id a string.
+        const id = typeof bloque.props?.id === 'string' ? bloque.props.id : `block-${i}`;
+        return <BlockComponent key={id} block={{ id, ...bloque }} />;
       })}
     </div>
   );

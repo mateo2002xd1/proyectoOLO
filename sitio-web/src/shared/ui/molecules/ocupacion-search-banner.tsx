@@ -53,6 +53,9 @@ export function OcupacionSearchBanner({
   return (
     <div className={`w-full rounded-[28px] bg-[#0b1b32] px-6 py-6 sm:rounded-[32px] sm:px-10 sm:py-8 ${className}`}>
       <div className="flex flex-col items-center gap-6 sm:flex-row sm:gap-10">
+        {/* logoSrc llega por prop y se dimensiona con clases (h-16 w-auto):
+            next/image requeriría width/height fijos o fill con contenedor posicionado. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={logoSrc} alt={logoAlt} className="h-16 w-auto shrink-0 object-contain sm:h-20" />
 
         <form onSubmit={handleSubmit} className="w-full flex-1">

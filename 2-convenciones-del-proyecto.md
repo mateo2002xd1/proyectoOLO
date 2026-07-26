@@ -141,12 +141,21 @@ export function TablaUsuarios({ filtroRol }: TablaUsuariosProps) {
 
 Estas convenciones no se vigilan a mano — se automatizan:
 
-- **ESLint** (config compartida en la raíz del monorepo): reglas de TypeScript, React Hooks, orden de imports, prohibición de `any` implícito y de imports que rompan la dirección de dependencia.
+- **ESLint: una configuración por frontend.** La arquitectura tiene **dos aplicaciones Next.js independientes** — `sitio-web/` y `intranet/` — cada una con su propio `package.json`, su propio build y su propio despliegue. Por eso cada una lleva su **`eslint.config.mjs` en su raíz**, no una config compartida en la raíz del monorepo:
+  - `sitio-web/eslint.config.mjs`
+  - `intranet/eslint.config.mjs`
+
+  Ambas extienden el mismo preset (`eslint-config-next/core-web-vitals` + `eslint-config-next/typescript`), así que las reglas son idénticas; lo que no se comparte es el archivo. Esto es lo que espera Next.js: el linter resuelve la config desde el directorio del proyecto, y una config en la raíz del monorepo no se aplicaría sin declarar workspaces de npm (hoy no existe un `package.json` raíz).
+
+  **Al tocar las reglas hay que actualizar los dos archivos.** Si divergen, la app que se quede corta deja de vigilar sus propias convenciones — que fue exactamente lo que pasó cuando `sitio-web` se quedó sin config y acumuló 74 problemas sin que nadie se enterara.
+
+  El paquete compartido `packages/blocks-renderer/` no es una app Next.js y hoy no se lintea por separado.
+
 - **Prettier**: formato único (comillas, comas finales, ancho de línea). Nadie discute estilo en los PR; lo decide Prettier.
 - **Husky + lint-staged**: corren ESLint y Prettier en pre-commit sobre los archivos tocados, para que no entre código sin formatear.
 - **`tsc --noEmit`** en CI: el build falla si hay error de tipos.
 
-> Recomendación: definir una sola config de ESLint/Prettier en la raíz y que cada proyecto la extienda, en vez de tres configuraciones que se desincronizan.
+> Estado real (2026-07-26): ESLint está configurado en las dos apps y `sitio-web` pasa limpio. **Prettier y Husky + lint-staged todavía no están instalados** en ningún proyecto; el checklist de la sección 9 los da por hechos, pero hoy hay que verificarlos a mano.
 
 ---
 

@@ -29,7 +29,7 @@ export async function POST(request: Request) {
       success: true, 
       url: `/uploads/${filename}` 
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error al subir archivo:', error);
     return NextResponse.json({ error: 'Error interno del servidor al procesar el archivo.' }, { status: 500 });
   }

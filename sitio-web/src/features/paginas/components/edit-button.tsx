@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useSyncExternalStore } from 'react';
 
 interface EditButtonProps {
   slug: string;
 }
+
+const EDITABLE_ROLES = ['Superadmin', 'Administrador', 'Editor'];
 
 function getCookie(name: string): string | null {
   if (typeof document === 'undefined') return null;
@@ -12,15 +14,25 @@ function getCookie(name: string): string | null {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
-export default function EditButton({ slug }: EditButtonProps) {
-  const [hasSession, setHasSession] = useState(false);
+/* La cookie es un sistema externo a React: la leemos con useSyncExternalStore
+   en vez de copiarla a un useState desde un efecto. No hay evento nativo de
+   cambio de cookie, así que la suscripción no re-consulta; basta con leerla
+   en cada render, que es cuando React pide el snapshot. */
+function subscribeToCookies() {
+  return () => {};
+}
 
-  useEffect(() => {
-    // 'role' es no-httpOnly → legible por JS (el token sí es httpOnly, no accesible aquí)
-    const role = getCookie('role');
-    const editableRoles = ['Superadmin', 'Administrador', 'Editor'];
-    setHasSession(editableRoles.includes(role ?? ''));
-  }, []);
+/** 'role' es no-httpOnly → legible por JS (el token sí es httpOnly, no accesible aquí). */
+const getSessionSnapshot = () => EDITABLE_ROLES.includes(getCookie('role') ?? '');
+/** En el servidor no hay document; asumimos sin sesión para que el HTML inicial coincida. */
+const getSessionServerSnapshot = () => false;
+
+export default function EditButton({ slug }: EditButtonProps) {
+  const hasSession = useSyncExternalStore(
+    subscribeToCookies,
+    getSessionSnapshot,
+    getSessionServerSnapshot,
+  );
 
   const editHref = `/editor/${slug}`;
   const loginHref = `/login?redirect=/editor/${slug}`;

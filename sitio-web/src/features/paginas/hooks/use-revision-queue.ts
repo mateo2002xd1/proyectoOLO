@@ -22,9 +22,28 @@ export function useRevisionQueue() {
     }
   }, []);
 
+  // Carga inicial. Va dentro de una función async propia (y no llamando a
+  // `cargar`) para no ejecutar setState de forma síncrona en el cuerpo del
+  // efecto, y para poder descartar la respuesta si el componente se desmonta.
   useEffect(() => {
-    cargar();
-  }, [cargar]);
+    let cancelado = false;
+    (async () => {
+      try {
+        const data = await listarEnRevision();
+        if (cancelado) return;
+        setPaginas(data);
+        setError(null);
+      } catch (err) {
+        if (cancelado) return;
+        setError(err instanceof Error ? err.message : 'Error al cargar páginas en revisión');
+      } finally {
+        if (!cancelado) setIsLoading(false);
+      }
+    })();
+    return () => {
+      cancelado = true;
+    };
+  }, []);
 
   const aprobar = useCallback(
     async (slug: string) => {
