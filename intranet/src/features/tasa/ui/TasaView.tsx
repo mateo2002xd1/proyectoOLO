@@ -156,7 +156,7 @@ export function TasaView() {
             </main>
 
             <div className="w-full mt-auto">
-                <IntranetFooter block={{ id: 'footer-1', type: 'IntranetFooter' } as any} />
+                <IntranetFooter block={{ id: 'footer-1', type: 'IntranetFooter' }} />
             </div>
         </div>
     );

@@ -1,45 +1,69 @@
 'use client';
 
-import { useState, FormEvent, useEffect } from 'react';
+import { useState, FormEvent, useEffect, useMemo, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authApi, useAuth } from '@/features/auth';
 import { ReturnToSiteLink } from '@/shared/ui/molecules/ReturnToSiteLink';
 import { QuestionPicker, type CatalogQuestion } from './QuestionPicker';
 import { AuthSuccessScreen } from './AuthSuccessScreen';
+import { mensajeDeError } from '@/shared/lib/errors';
 
 const TOTAL_SETUP_QUESTIONS = 3;
+
+/* sessionStorage es un sistema externo a React. Se lee con useSyncExternalStore
+   en vez de copiarlo a un useState desde un efecto: getServerSnapshot devuelve
+   null, asi que servidor e hidratacion coinciden, y tras montar el cliente ya
+   lee el valor real. No hay evento de cambio, de ahi la suscripcion vacia. */
+function subscribeToSessionStorage() {
+  return () => {};
+}
+
+const getModeSnapshot = (): 'verify' | 'setup' =>
+  sessionStorage.getItem('recoveryEmail') && sessionStorage.getItem('recoveryQuestions')
+    ? 'verify'
+    : 'setup';
+
+/** En el servidor no hay sessionStorage: sin modo aun. */
+const getModeServerSnapshot = (): null => null;
+
+/** Preguntas que dejo guardadas el paso anterior del flujo de recuperacion. */
+function leerPreguntasGuardadas(): CatalogQuestion[] {
+  try {
+    const crudas = sessionStorage.getItem('recoveryQuestions');
+    return crudas ? JSON.parse(crudas) : [];
+  } catch {
+    return [];
+  }
+}
 
 export function SecurityQuestionsView() {
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
-  const [mode, setMode] = useState<'verify' | 'setup' | null>(null);
+
+  const mode = useSyncExternalStore(
+    subscribeToSessionStorage,
+    getModeSnapshot,
+    getModeServerSnapshot,
+  );
 
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<string[]>(Array(3).fill(''));
   const [errors, setErrors] = useState<{ question?: string; answer?: string; general?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
 
-  // Modo verify (recuperación de contraseña)
-  const [questions, setQuestions] = useState<CatalogQuestion[]>([]);
-  const [email, setEmail] = useState('');
+  // Modo verify (recuperación de contraseña). Se derivan del modo en vez de
+  // copiarse a estado: mientras `mode` es null (servidor e hidratacion) no se
+  // toca sessionStorage, asi que no hay desajuste de hidratacion.
+  const questions = useMemo<CatalogQuestion[]>(
+    () => (mode === 'verify' ? leerPreguntasGuardadas() : []),
+    [mode],
+  );
 
   // Modo setup (primer inicio de sesión / preguntas pendientes)
   const [catalogQuestions, setCatalogQuestions] = useState<CatalogQuestion[]>([]);
   const [selectedKeys, setSelectedKeys] = useState<string[]>(Array(TOTAL_SETUP_QUESTIONS).fill(''));
   const [setupComplete, setSetupComplete] = useState(false);
-
-  useEffect(() => {
-    const savedEmail = sessionStorage.getItem('recoveryEmail');
-    const savedQuestions = sessionStorage.getItem('recoveryQuestions');
-    if (savedEmail && savedQuestions) {
-      setEmail(savedEmail);
-      setQuestions(JSON.parse(savedQuestions));
-      setMode('verify');
-    } else {
-      setMode('setup');
-    }
-  }, []);
 
   useEffect(() => {
     if (mode !== 'setup') return;
@@ -76,11 +100,12 @@ export function SecurityQuestionsView() {
     setErrors({});
 
     try {
-      await authApi.verifyAnswers(email, payload);
+      // El correo solo hace falta aquí, así que se lee directo del storage.
+      await authApi.verifyAnswers(sessionStorage.getItem('recoveryEmail') ?? '', payload);
       sessionStorage.setItem('recoveryAnswers', JSON.stringify(payload));
       router.push('/login/reset-password');
-    } catch (error: any) {
-      setErrors({ general: error.message || 'Las respuestas no coinciden. Intenta de nuevo.' });
+    } catch (error) {
+      setErrors({ general: mensajeDeError(error, 'Las respuestas no coinciden. Intenta de nuevo.') });
       setCurrentStep(0);
       setAnswers(Array(totalQuestions).fill(''));
     } finally {
@@ -95,8 +120,8 @@ export function SecurityQuestionsView() {
     try {
       await authApi.setupQuestions(payload);
       setSetupComplete(true);
-    } catch (error: any) {
-      setErrors({ general: error.message || 'Error de conexión con el servidor' });
+    } catch (error) {
+      setErrors({ general: mensajeDeError(error, 'Error de conexión con el servidor') });
     } finally {
       setIsLoading(false);
     }

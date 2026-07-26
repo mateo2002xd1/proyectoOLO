@@ -10,7 +10,13 @@ import { IntranetTopbarWrapper } from '@/shared/lib/blocks/IntranetTopbarWrapper
 import { IntranetHero } from '@/shared/lib/blocks/IntranetHero';
 import { primitiveComponents } from '@olo/blocks-renderer';
 import type { Config } from '@puckeditor/core';
+import type { ComponentProps } from 'react';
 import { ImageUploaderField } from '@/features/paginas/components/image-uploader-field';
+
+/** Props de un componente de Puck. `id` siempre viene inyectado y, al ser
+ *  obligatorio, evita que TypeScript trate el tipo como "weak" y rechace el
+ *  render por no compartir propiedades con el Config generico. */
+type BlockRender<T> = T & { id: string };
 
 // ─── Puck Configuration for Intranet ───
 export const puckConfig: Config = {
@@ -67,7 +73,7 @@ export const puckConfig: Config = {
           { href: "#", label: "Encuestas" },
         ],
       },
-      render: (props: any) => {
+      render: (props: BlockRender<ComponentProps<typeof IntranetTopbarWrapper>>) => {
         return <IntranetTopbarWrapper {...props} />;
       },
     },
@@ -86,7 +92,7 @@ export const puckConfig: Config = {
         imageSrc: '/assets/img/banner1.png',
         imageAlt: 'Banner principal de la intranet',
       },
-      render: (props: any) => <IntranetHero {...props} />,
+      render: (props: BlockRender<ComponentProps<typeof IntranetHero>>) => <IntranetHero {...props} />,
     },
     Header: {
       label: 'Header / Encabezado',
@@ -102,7 +108,7 @@ export const puckConfig: Config = {
         id: 'header-1',
         govBannerEnabled: true,
       },
-      render: (props: any) => {
+      render: (props: BlockRender<Omit<ComponentProps<typeof Header>, 'block'>>) => {
         const { id, ...headerProps } = props;
         return <Header block={{ id: id || 'header-preview', type: 'header' }} {...headerProps} />;
       },
@@ -116,7 +122,7 @@ export const puckConfig: Config = {
         id: 'hero-1',
         heading: 'Intranet OLO',
       },
-      render: (props: any) => (
+      render: (props: BlockRender<{ heading?: string }>) => (
         <Hero block={{ id: props.id || 'hero-preview', type: 'hero' }} heading={props.heading} />
       ),
     },
@@ -126,7 +132,7 @@ export const puckConfig: Config = {
         sectionTitle: { type: 'text', label: 'Título' },
       },
       defaultProps: { id: 'services-1', sectionTitle: 'Servicios de la Intranet' },
-      render: (props: any) => (
+      render: (props: BlockRender<{ sectionTitle?: string }>) => (
         <Services block={{ id: props.id || 'services-preview', type: 'services' }} sectionTitle={props.sectionTitle} services={[]} />
       ),
     },

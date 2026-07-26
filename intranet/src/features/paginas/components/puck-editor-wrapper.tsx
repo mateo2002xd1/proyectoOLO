@@ -12,7 +12,7 @@
 
 "use client";
 
-import { useRef, useCallback } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Puck, type Data } from "@puckeditor/core";
 import "@puckeditor/core/dist/index.css";
 import { puckConfig } from "@/config/puck.config";
@@ -37,9 +37,11 @@ export function PuckEditorWrapper({
   // Snapshot del layout actual — actualizado por onChange de Puck
   const currentDataRef = useRef<Data | null>(null);
 
-  // Ref estable de datos iniciales (evita re-montar Puck en cada render)
-  const initialPuckDataRef = useRef<Data>(
-    (initialData as Data) ?? { content: [], root: {} }
+  // Datos iniciales con identidad estable (evita re-montar Puck en cada render).
+  // Va en useState con inicializador diferido, no en useRef: los refs no deben
+  // leerse durante el render, y asi el objeto se construye una sola vez.
+  const [initialPuckData] = useState<Data>(
+    () => (initialData as Data) ?? { content: [], root: {} }
   );
 
   const estado = versionActual?.estado ?? "borrador";
@@ -51,9 +53,9 @@ export function PuckEditorWrapper({
   }, []);
 
   const handleSave = useCallback(async () => {
-    const data = currentDataRef.current ?? initialPuckDataRef.current;
+    const data = currentDataRef.current ?? initialPuckData;
     await onGuardarBorrador(data as ContenidoPagina);
-  }, [onGuardarBorrador]);
+  }, [onGuardarBorrador, initialPuckData]);
 
   const handleSend = useCallback(async () => {
     // Guardar antes de enviar (contenido siempre consistente)
@@ -65,7 +67,7 @@ export function PuckEditorWrapper({
     <div style={{ position: "fixed", inset: 0, background: "#fff", zIndex: 9999 }}>
       <Puck
         config={puckConfig}
-        data={initialPuckDataRef.current}
+        data={initialPuckData}
         onChange={handleChange}
         onPublish={handleSave}
         overrides={{

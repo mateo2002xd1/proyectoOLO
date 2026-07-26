@@ -51,7 +51,7 @@ export function OcupacionSearchBanner({
   }
 
   return (
-    <div className={`w-full rounded-[28px] bg-[#0b1b32] px-6 py-6 sm:rounded-[32px] sm:px-10 sm:py-8 ${className}`}>
+    <div className={`w-full rounded-[16px] bg-[#0b1b32] px-6 py-6 sm:rounded-[32px] sm:px-10 sm:py-8 ${className}`}>
       <div className="flex flex-col items-center gap-6 sm:flex-row sm:gap-10">
         {/* logoSrc llega por prop y se dimensiona con clases (h-16 w-auto):
             next/image requeriría width/height fijos o fill con contenedor posicionado. */}

@@ -67,6 +67,8 @@ export function Carousel({
             className="matriz-carousel-slide"
             style={{ width: itemsPerPage === 1 ? '100%' : `calc(${100 / itemsPerPage}% - ${(itemsPerPage - 1) * 1.5 / itemsPerPage}rem)` }}
           >
+            {/* src dinamico y tamano por CSS: next/image exigiria width/height fijos o remotePatterns */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={src}
               alt={`Imagen del carrusel ${index + 1}`}

@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useEffect, useRef } from 'react';
+import { useState } from 'react';
 
 /**
  * Page order map — used to determine slide direction.
@@ -18,24 +18,24 @@ const PAGE_ORDER: Record<string, number> = {
 
 export default function LoginTemplate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const directionRef = useRef<'forward' | 'backward'>('forward');
 
-  // Calculate direction BEFORE effect so it's available on first render
-  if (typeof window !== 'undefined') {
-    const prev = sessionStorage.getItem('auth-prev-path');
-    if (prev && prev !== pathname) {
-      const prevOrder = PAGE_ORDER[prev] ?? 0;
-      const currOrder = PAGE_ORDER[pathname] ?? 0;
-      directionRef.current = currOrder >= prevOrder ? 'forward' : 'backward';
-    }
+  // La dirección se deriva de la ruta anterior. Antes se guardaba en un ref
+  // leído durante el render y en sessionStorage; ambas cosas son incorrectas:
+  // los refs no deben leerse en render, y leer sessionStorage ahí hace que el
+  // servidor y el cliente rendericen clases distintas (error de hidratación).
+  // Este es el patrón de React para ajustar estado cuando cambia una prop.
+  const [rutaAnterior, setRutaAnterior] = useState(pathname);
+  const [direccion, setDireccion] = useState<'forward' | 'backward'>('forward');
+
+  if (pathname !== rutaAnterior) {
+    const ordenAnterior = PAGE_ORDER[rutaAnterior] ?? 0;
+    const ordenActual = PAGE_ORDER[pathname] ?? 0;
+    setRutaAnterior(pathname);
+    setDireccion(ordenActual >= ordenAnterior ? 'forward' : 'backward');
   }
 
-  useEffect(() => {
-    sessionStorage.setItem('auth-prev-path', pathname);
-  }, [pathname]);
-
   return (
-    <div className={`auth-page-transition auth-slide-${directionRef.current}`}>
+    <div className={`auth-page-transition auth-slide-${direccion}`}>
       {children}
     </div>
   );

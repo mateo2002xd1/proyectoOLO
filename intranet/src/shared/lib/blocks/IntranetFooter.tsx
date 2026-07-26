@@ -10,6 +10,8 @@ export function IntranetFooter({ block }: IntranetFooterProps) {
       <div className="intranet-footer-inner">
         <div className="intranet-footer-col intranet-footer-brand-col">
           <div className="intranet-footer-brand">
+            {/* SVG estatico: next/image no optimiza SVG */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/assets/svg/logo-sena.svg"
               alt="Logo Observatorio"
@@ -17,6 +19,8 @@ export function IntranetFooter({ block }: IntranetFooterProps) {
               height={56}
             />
             <span>|</span>
+            {/* SVG estatico: next/image no optimiza SVG */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/assets/svg/olo-logo-horizontal.svg"
               alt="Logo Observatorio"

@@ -8,6 +8,7 @@ import { useAuth } from '@/features/auth';
 import { PasswordField } from '@/shared/ui/molecules/PasswordField';
 import { ReturnToSiteLink } from '@/shared/ui/molecules/ReturnToSiteLink';
 import { GooLoader } from '@/shared/ui/atoms/GooLoader';
+import { mensajeDeError } from '@/shared/lib/errors';
 
 export function LoginView() {
   const { login } = useAuth();
@@ -61,8 +62,8 @@ export function LoginView() {
         }
       }, 1200);
 
-    } catch (error: any) {
-      setErrors({ general: error.message || 'Error de conexión con el servidor' });
+    } catch (error) {
+      setErrors({ general: mensajeDeError(error, 'Error de conexión con el servidor') });
       setIsLoading(false);
     }
   };

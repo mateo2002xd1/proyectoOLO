@@ -3,14 +3,19 @@ import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
 import clsx from 'clsx';
 import { ReactNode } from 'react';
 
-export function Listbox({
+/**
+ * El valor de un listbox puede ser de cualquier tipo, pero debe ser *el mismo*
+ * en `value` y en `onChange`. Con `any` eso no se verificaba; con un genérico
+ * TypeScript infiere el tipo desde el uso y detecta si no coinciden.
+ */
+export function Listbox<T>({
   value,
   onChange,
   children,
   className
 }: {
-  value: any;
-  onChange: (value: any) => void;
+  value: T;
+  onChange: (value: T) => void;
   children: ReactNode;
   className?: string;
 }) {
@@ -51,12 +56,12 @@ export function ListboxOptions({ children, className }: { children: ReactNode; c
   );
 }
 
-export function ListboxOption({
+export function ListboxOption<T>({
   value,
   children,
   disabled
 }: {
-  value: any;
+  value: T;
   children: ReactNode;
   disabled?: boolean;
 }) {

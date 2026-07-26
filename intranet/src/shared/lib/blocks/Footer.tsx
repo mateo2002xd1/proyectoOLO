@@ -11,8 +11,12 @@ export function Footer({ block }: FooterProps) {
         <div className="olo-footer-card">
           <div className="olo-logos-top">
             <div className="olo-logos-left">
+              {/* SVG estatico: next/image no optimiza SVG, no aporta nada aqui */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/asset/logos/logo-sena.svg" alt="Logotipo oficial del SENA con la palabra SENA y simbolo institucional en color verde, presentado en la cabecera del pie de pagina de un sitio gubernamental educativo" className="olo-logo" />
               <span className="olo-logo-separator">|</span>
+              {/* SVG estatico: next/image no optimiza SVG, no aporta nada aqui */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/asset/logos/olo-logo-horizontal.svg" alt="Logotipo horizontal del Observatorio Laboral y Ocupacional con el texto Observatorio Laboral y Ocupacional, ubicado junto al logo del SENA en la parte superior del pie de pagina" className="olo-logo" />
             </div>
             <div className="olo-logos-right">
