@@ -5,9 +5,9 @@
  * intranet. El layout se guarda en la API :4000 (DB) vía useEditorActions,
  * unificado con el sitio-web.
  *
- * @see ARQUITECTURA_MAESTRA_OLO.md §0.2  (@olo/blocks-renderer es única fuente de render)
- * @see ARQUITECTURA_MAESTRA_OLO.md §9.3  (puck-editor-wrapper.tsx)
- * @see ARQUITECTURA_MAESTRA_OLO.md §3    (Flujo editorial — estados)
+ * @see 1-guia-del-proyecto.md §4.4  (@olo/blocks-renderer es única fuente de render)
+ * @see 1-guia-del-proyecto.md §4.3  (puck-editor-wrapper.tsx)
+ * @see 8-ciclo-editorial.md §1    (Flujo editorial — estados)
  */
 
 "use client";

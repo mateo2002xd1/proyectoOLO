@@ -1,6 +1,8 @@
-# Arquitectura Maestra — Proyecto OLO (SENA)
+# Guía del Proyecto — OLO (SENA)
 
-> Observatorio Laboral y Ocupacional. Documento de referencia único: qué necesita el cliente, cómo se resuelve, cómo está arquitecturado el sistema y cómo se organiza el código.
+> Observatorio Laboral y Ocupacional. Documento de referencia de arquitectura: qué necesita el cliente, cómo se resuelve, cómo está arquitecturado el sistema y cómo se organiza el código.
+>
+> Reemplaza al antiguo `ARQUITECTURA_MAESTRA_OLO.md`. Si encuentras una referencia a ese nombre en el código o en otro documento, apunta aquí.
 
 ---
 
@@ -172,6 +174,23 @@ routes/ → controllers/ → use-cases/ → repositories/ → infra   (backend)
 
 `shared/` nunca importa de `features/`. `app/` nunca contiene lógica de negocio. En el backend, un `controller` nunca toca Sequelize directo — pasa por `use-case` → `repository`.
 
+### 4.0 Anatomía interna de una feature
+
+La regla de arriba define la arquitectura **entre** capas. La arquitectura **dentro** de una feature está definida en `8-ciclo-editorial.md` §3, y se resume así:
+
+```
+features/<dominio>/
+├── index.ts        # ÚNICA puerta pública del módulo
+├── components/     # UI del dominio          (nunca "ui/": ese nombre es del sistema de diseño)
+├── hooks/          # estado y efectos
+├── services/       # única capa que llama a la API  (nunca "api/": ese nombre es de app/api)
+└── types.ts        # contratos del dominio
+```
+
+**Excepción — dominios con ciclo de vida.** Si el dominio tiene estados con **actores, permisos o políticas de caché distintos**, se organiza por etapa del ciclo en vez de por tipo técnico. El caso de referencia es `paginas/` (borrador → revisión → publicado), detallado en `8-ciclo-editorial.md` §3.2.
+
+El motivo no es estético: agrupar por tipo técnico mete en un mismo archivo lecturas públicas cacheables y escrituras autenticadas, lo que hace fácil cachear por error una respuesta con credenciales. Separar por etapa convierte esa frontera en estructura y no en disciplina.
+
 ### 4.1 API Backend (`api-backend/`) Clean Architecture (arquitectura por capas con dependencia unidireccional)
 
 Contenido del proyecto en capa `api-backend/`:
@@ -250,42 +269,51 @@ Contenido del proyecto en capa `sitio-web/src/`:
 
 ```
 sitio-web/src/
+├── middleware.ts                     # Auth gating. Va en src/, NUNCA en src/app/
+│
 ├── app/                              # SOLO enrutamiento Next.js
 │   ├── layout.tsx                    # Root: fuentes, providers
 │   ├── globals.css                   # Estilos base (partir el monolito actual)
-│   ├── (admin)/
-│   |   ├── layout.tsx 
-│   │   ├── (shell)/
-│   │   │    ├── dashboard/           # Dashboard admin, usuarios (RF-04)  
-│   │   │    ├── revision/
-│   │   │    └── users/
-│   │   ├── contenido/
-│   │   └── login/page.tsx
-│   ├── (public)/
-│   │   ├── [slug]/page.tsx           # Mesa de trabajo Puck
-│   │   ├── clasificaciones/
+│   │
+│   ├── (admin)/                      # ZONA PROTEGIDA — gated por middleware
+│   │   ├── layout.tsx
+│   │   ├── (shell)/                  # las que comparten el chrome del panel
+│   │   │   ├── layout.tsx
+│   │   │   ├── dashboard/            # Dashboard admin (RF-04)
+│   │   │   ├── revision/             # Cola de gobernanza (RF-06)
+│   │   │   └── users/                # Gestión de usuarios y roles (RF-04)
+│   │   ├── editor/[slug]/            # Mesa de trabajo Puck
+│   │   ├── auditoria/                # Historial de cambios (RF-07)
+│   │   ├── cambiar-contrasena/
+│   │   └── login/
+│   │
+│   ├── (public)/                     # ZONA ABIERTA — ISR, sin credenciales
+│   │   ├── layout.tsx
+│   │   ├── page.tsx                  # Inicio
+│   │   ├── [slug]/page.tsx           # Página pública dinámica (render Puck)
+│   │   ├── clasificacion/            # CNO / CUOC
 │   │   ├── mercado-laboral/
-│   │   ├── publicaciones/
-│   │   ├── tendencias/
-│   │   ├── alertas/
-│   │   └── programas/
-│   ├── api/                          # Route handlers delgados (delegan a la API :4000)                        
-│   └── middleware.ts                 # Auth gating (nombre exacto, no "proxy.ts")
+│   │   └── publicaciones/
+│   │
+│   └── api/                          # Route handlers delgados (delegan a la API :4000)
+│       └── auth/ roles/ security-questions/ upload/ users/
 │
-├── features/                         # Lógica por dominio
-│   ├── paginas/                      # CMS/Puck: render y edición de la maqueta
-│   ├── tendencias/                   # NUEVO: Tendencias, Descripción de las Tendencia de las ocupaciones
-│   ├── alertas/                      # NUEVO: Alertas Proyectos de Inversión
-│   ├── programas/                    # NUEVO: Programas + sobresalientes SENA, Descripción
-│   ├── dashboard/                    # Panel: usuarios, roles
-│   │   ├── dashboard.tsx            
-│   │   └── layout.tsx                
-│   ├── identidad-visual/             # NUEVO: config de marca (RF-03)
-│   ├── buscador-ocupaciones/         # NUEVO: CNO/CUOC vía API externa (RF-09)
-│   ├── mercado-laboral/              # seccion de información acerca de mercado laboral
-│   ├── publicaciones/                # seccion para crear seccion de publicaciones
-│   ├── clasificaciones/              # seccion de información acerca de CNO /CUOC
-│   └── auth/                         # Consolidar cookies/sesión aquí
+├── features/                         # Lógica por dominio (anatomía interna: §4.0)
+│   ├── paginas/                      # CMS/Puck. Dominio CON ciclo de vida → se organiza
+│   │   ├── model/                    #   por etapa, no por tipo. Ver 8-ciclo-editorial.md §3.2
+│   │   ├── publicacion/              #   consumo público: servidor, anónimo, ISR
+│   │   ├── edicion/                  #   borrador: cliente, autenticado, sin caché
+│   │   └── revision/                 #   gobernanza: cliente, permiso de admin, sin caché
+│   ├── administracion/               # Usuarios, roles, panel, sesión (RF-04, RF-05)
+│   ├── contenidos/                   # Estudios/informes + buscador interno (RF-01, RF-10)
+│   ├── auditoria/                    # Historial de cambios (RF-07) — le falta index.ts
+│   ├── identidad-visual/             # Tipografías, colores, marca (RF-03)
+│   ├── buscador-ocupaciones/         # CNO/CUOC vía API externa (RF-09)
+│   ├── mercado-laboral/              # Sección de mercado laboral
+│   ├── inicio/                       # Composición de la portada pública
+│   ├── tendencias/                   # NUEVO: tendencias de las ocupaciones
+│   ├── alertas/                      # NUEVO: alertas de proyectos de inversión
+│   └── programas/                    # NUEVO: programas SENA sobresalientes
 │
 ├── shared/
 │   ├── ui/                           # EL SISTEMA DE DISEÑO INSTITUCIONAL
@@ -295,11 +323,13 @@ sitio-web/src/
 │   │   └── templates/                # Estructura de página base
 │   ├── lib/                          # api-client, backend-proxy, session
 │   ├── hooks/                        # Genéricos (useDebounce, useNotification)
-│   └── styles/
+│   └── animations/                   # Presets de animación compartidos
 │
 └── config/
     └── puck.config.tsx               # Catálogo de bloques (mapea shared/ui → editor)
 ```
+
+Las carpetas marcadas `NUEVO` en `features/` todavía no existen: son los dominios que faltan por construir, y su ruta en `(public)/` se crea junto con ellos. Todo lo demás está en disco hoy.
 
 **El punto crítico de este proyecto:** `shared/ui/{atoms,molecules,organisms}` tiene **doble rol**. Es el sistema de diseño del código Y el catálogo de piezas que el editor registra en Puck (vía `config/puck.config.tsx`). Por eso el editor solo puede componer con piezas que ya cumplen la identidad SENA y la accesibilidad — la conformidad es **por construcción**, no algo que se revisa después.
 
@@ -309,34 +339,53 @@ Contenido del proyecto en capa `intranet/src/`:
 
 ```
 intranet/src/
-├── app/                              # SOLO enrutamiento Next.js
-│   ├── layout.tsx                    # Root: fuentes, providers
-│   ├── globals.css                   # Estilos base
-│   ├── login/                       
-│   ├── inicio/page.tsx             
-│   ├── [...puckPath]/page.tsx       
-│   ├── editor/[slug]/                # Mesa de trabajo Puck
-│   ├── matriz/, tasa/ 
-│   ├── api/                          # Route handlers delgados (delegan a la API :4000)
-│   └── middleware.ts                 # Auth gating (nombre exacto, no "proxy.ts") 
+├── middleware.ts                     # Auth gating. Va en src/, NUNCA en src/app/
 │
-├── features/                         # Lógica por dominio
-│   ├── auth/                         # Flujo completo: recovery, first-login, security-questions
-│   ├── paginas/                      # CMS/Puck (mismo patrón que sitio-web)
+├── app/                              # SOLO enrutamiento Next.js. Sin route groups:
+│   ├── layout.tsx                    #   la app entera es zona protegida
+│   ├── globals.css                   # Estilos base
+│   ├── page.tsx
+│   ├── login/                        # login, first-login, recovery, reset-password,
+│   │                                 #   reset-success, security-questions
+│   ├── inicio/page.tsx
+│   ├── [...puckPath]/page.tsx        # Página interna dinámica (render Puck)
+│   ├── editor/[slug]/                # Mesa de trabajo Puck
+│   ├── encuestas/                    # calidad-de-formacion, seguimiento-laboral
+│   ├── matriz/, tasa/
+│   └── api/                          # Route handlers delgados (delegan a la API :4000)
+│
+├── features/                         # Lógica por dominio — misma anatomía que sitio-web (§4.0)
+│   ├── auth/                         # Flujo completo: login, recovery, first-login, security-questions
+│   │   ├── index.ts
+│   │   ├── components/               # las ocho vistas del flujo
+│   │   ├── hooks/                    # use-auth
+│   │   └── services/                 # auth.service.ts
+│   │
+│   ├── paginas/                      # CMS/Puck — dominio CON ciclo de vida, ver 8-ciclo-editorial.md §3.2
+│   │   ├── index.ts
+│   │   ├── model/                    # pagina.types.ts, estado.ts
+│   │   ├── publicacion/              # render de páginas ya publicadas
+│   │   ├── edicion/                  # mesa de trabajo Puck + Editor.js + uploader
+│   │   └── revision/                 # gobernanza — NO EXISTE AÚN, llega con la fase 6
+│   │
+│   ├── inicio/                       # Portada interna (visor PDF, recursos visuales)
+│   ├── encuestas/                    # Calidad de formación, seguimiento laboral
+│   ├── matriz/                       # Matriz de formación (Power BI + integración + vistas)
+│   ├── tasa/                         # Tasa de ocupación (Power BI + integración + vistas)
 │   ├── directores/                   # NUEVO: espacio exclusivo (RF-15)
-│   ├── edicion-concurrente/          # NUEVO: lock
-│   ├── matriz/                       # Matriz de formación (Power BI + integración + vistas UI)
-│   └── tasa/                         # Tasa de ocupación (Power BI + integración + vistas UI)
+│   └── edicion-concurrente/          # NUEVO: lock
 │
 ├── shared/
 │   ├── ui/                           # Sistema de diseño PROPIO de intranet
 │   │   ├── atoms/ molecules/ organisms/ templates/
-│   │   │   └── Carousel/             # Componentes genéricos extraídos
+│   │   │   └── carousel/             # Componentes genéricos extraídos (kebab-case, §4.3 de 8-ciclo)
 │   └── lib/
 │
 └── config/
     └── puck.config.tsx
 ```
+
+**Este árbol es el destino, no el estado actual.** La intranet se desvió de dos convenciones del proyecto: usa `ui/` donde va `components/` y `api/` donde va `services/`. Además `auth/` y `login/` son hoy dos features para un mismo dominio, partido por tipo técnico. Lo que **ya está alineado** es la puerta pública: las siete features tienen su `index.ts` y ningún archivo de `app/` importa rutas internas. El inventario exacto y los pasos restantes están en la **fase 4** de `8-ciclo-editorial.md` §5.
 
 ### 4.4 Paquetes compartidos (`packages/`)
 
@@ -350,6 +399,8 @@ packages/
 ```
 
 **Regla:** algo va a `packages/` solo si **ambos frontends** lo necesitan con el mismo comportamiento. El editor Puck es idéntico en los dos → `editor-core`. El sistema de diseño NO va aquí porque cada frontend tiene identidad visual distinta.
+
+**Costo de no haberlo hecho todavía, medido hoy:** ocho archivos están duplicados entre `sitio-web/src/features/paginas/` e `intranet/src/features/paginas/` (`client-puck-render`, `edit-button`, `editorjs-wrapper`, `image-uploader-field`, `page-renderer`, `puck-editor-wrapper`, `use-pagina`, `page-seeds`). Y ya divergieron: **la etapa de revisión existe solo en `sitio-web`**, así que la intranet no tiene gobernanza — justo lo que esta regla busca evitar. El alcance exacto de `editor-core` (qué se comparte y qué no) está en `8-ciclo-editorial.md` §4.4, y su extracción es la fase 6 del plan de migración.
 
 ---
 
@@ -385,3 +436,8 @@ packages/
 5. **Mover → verificar (build/typecheck) → recién entonces eliminar.** Nunca borrar lo viejo en el mismo paso que se crea lo nuevo.
 6. **El sistema de diseño es el catálogo del editor.** Todo bloque nuevo se construye desde `shared/ui`, garantizando identidad SENA y accesibilidad por construcción.
 7. **`packages/` solo para lo que ambos frontends comparten con el mismo comportamiento.**
+8. **Una feature se organiza igual en las dos apps.** `components/` (nunca `ui/`, que es el sistema de diseño) y `services/` (nunca `api/`, que son los route handlers de Next). Anatomía completa en §4.0 y `8-ciclo-editorial.md` §3.
+9. **Un dominio con ciclo de vida se organiza por etapas, no por tipo técnico.** Cada etapa queda con un público, un permiso y una política de caché únicos. Es lo que impide cachear por accidente una respuesta autenticada. Ver `8-ciclo-editorial.md` §2.
+10. **Lo que ve el ciudadano solo cambia al aprobar una versión.** Ningún borrador ni página en revisión puede alcanzar el sitio público. Ver `8-ciclo-editorial.md` §1.2.
+11. **Todo archivo se nombra en `kebab-case`; el identificador que exporta, en `PascalCase`.** Sin excepciones por tipo de archivo. Evita la clase de bug que solo aparece en producción, donde el sistema de archivos de Linux sí distingue mayúsculas y el de Windows no.
+12. **Solo `index.ts` es importable desde fuera de una feature.** Ninguna ruta interna de un módulo se importa desde otro.

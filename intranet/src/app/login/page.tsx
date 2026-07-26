@@ -1,4 +1,4 @@
-import { LoginView } from '@/features/login/ui/LoginView';
+import { LoginView } from '@/features/login';
 
 export const metadata = {
   title: 'Iniciar sesión | Intranet',

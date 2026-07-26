@@ -4,9 +4,9 @@
  * IMPORTANTE: Cuando @olo/types esté publicado (Fase 3), estos tipos
  * deben reemplazarse por los de '@olo/types'. No duplicar definiciones.
  *
- * @see ARQUITECTURA_MAESTRA_OLO.md §0.2 (@olo/types es la única fuente de tipos)
- * @see ARQUITECTURA_MAESTRA_OLO.md §3  (Flujo editorial — máquina de estados)
- * @see ARQUITECTURA_MAESTRA_OLO.md §10 (Modelo de datos — paginas_versiones.contenido JSONB)
+ * @see 1-guia-del-proyecto.md §4.4 (@olo/types es la única fuente de tipos)
+ * @see 8-ciclo-editorial.md §1  (Flujo editorial — máquina de estados)
+ * @see 1-guia-del-proyecto.md §2 (Modelo de datos — paginas_versiones.contenido JSONB)
  */
 
 // ---------------------------------------------------------------------------

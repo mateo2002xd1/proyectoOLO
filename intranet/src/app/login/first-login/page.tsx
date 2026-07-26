@@ -1,4 +1,4 @@
-import { FirstLoginView } from '@/features/login/ui/FirstLoginView';
+import { FirstLoginView } from '@/features/login';
 
 export const metadata = {
   title: 'Configuración inicial | Intranet',

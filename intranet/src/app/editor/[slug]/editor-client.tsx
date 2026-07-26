@@ -6,19 +6,23 @@
  *   - page.tsx  → Server Component (routing)
  *   - editor-client.tsx → Client Component (carga de datos + editor Puck)
  *
- * @see ARQUITECTURA_MAESTRA_OLO.md §9.3  (editor/[slug]/page.tsx)
- * @see ARQUITECTURA_MAESTRA_OLO.md §3    (Flujo editorial)
+ * @see 1-guia-del-proyecto.md §4.3  (editor/[slug]/page.tsx)
+ * @see 8-ciclo-editorial.md §1    (Flujo editorial)
  */
 
 "use client";
 
 import { useEffect, useState } from "react";
-import { PuckEditorWrapper } from "@/features/paginas";
-import { useEditorActions } from "@/features/paginas";
-import { obtenerVersionEditable, type VersionEditable } from "@/features/paginas/api/paginas.api";
-import { getPageSeed, isEmptyContent } from "@/features/paginas/lib/page-seeds";
+import {
+  PuckEditorWrapper,
+  useEditorActions,
+  obtenerVersionEditable,
+  getPageSeed,
+  isEmptyContent,
+  type VersionEditable,
+  type PaginaVersion,
+} from "@/features/paginas";
 import { GooLoader } from "@/shared/ui/atoms/GooLoader";
-import type { PaginaVersion } from "@/features/paginas/types/editor.types";
 
 interface EditorClientProps {
   slug: string;

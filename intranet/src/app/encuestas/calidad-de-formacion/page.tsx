@@ -1,5 +1,5 @@
 import React from 'react';
-import { CalidadFormacionView } from '@/features/encuestas/ui/calidad-de-formacion';
+import { CalidadFormacionView } from '@/features/encuestas';
 
 export const metadata = {
   title: 'Calidad de la Formación | Intranet',

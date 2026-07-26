@@ -12,15 +12,21 @@
 | Componentes React | `PascalCase` | `TablaUsuarios`, `BloqueContenido` |
 | Clases, modelos, tipos, interfaces | `PascalCase` | `Contenido`, `PaginaVersion`, `LockInfo` |
 | Constantes globales / de entorno | `UPPER_SNAKE_CASE` | `MAX_FILE_SIZE`, `JWT_SECRET` |
-| Archivos de componente React | `PascalCase.tsx` | `TablaUsuarios.tsx` |
-| Archivos de lógica (hooks, services, utils) | `kebab-case.ts` con sufijo | `use-pagina.ts`, `paginas.service.ts` |
+| **Todo archivo** (componentes, hooks, services, utils) | `kebab-case` | `tabla-usuarios.tsx`, `use-pagina.ts`, `paginas.service.ts` |
 | Archivos de rutas/config Next | nombre exacto de Next | `page.tsx`, `layout.tsx`, `middleware.ts` |
 | Carpetas | `kebab-case` | `edicion-concurrente/`, `buscador-ocupaciones/` |
 | Tablas en base de datos | `snake_case` plural | `content_audit_logs`, `paginas` |
 | Columnas en base de datos | `snake_case` | `content_id`, `created_at` |
 | Endpoints REST | `kebab-case` plural | `/api/paginas`, `/api/role-permissions` |
 
-**Regla base:** el *tipo* de cosa decide el caso, no la carpeta donde está. Un hook siempre es `use-algo.ts` aunque viva en una feature; un componente siempre es `PascalCase.tsx`.
+**Regla base:** el **archivo** siempre va en `kebab-case`; el **identificador que exporta** siempre en su caso natural. Archivo `tabla-usuarios.tsx` → componente `TablaUsuarios`. Archivo `use-pagina.ts` → hook `usePagina()`.
+
+> **Cambio respecto a la versión anterior de este documento.** Antes esta tabla pedía `PascalCase.tsx` para componentes. Se unificó todo en `kebab-case` por dos razones:
+>
+> 1. **Elimina una clase de bug que solo aparece en producción.** Se desarrolla en Windows, cuyo sistema de archivos no distingue mayúsculas, y se despliega en Docker sobre Linux, que sí. Un `import './userProfile'` cuando el archivo es `UserProfile.tsx` compila en la máquina del desarrollador y falla al desplegar. Con una única grafía válida en minúsculas, el error no se puede introducir.
+> 2. **La regla queda sin excepciones que recordar.** Antes había que distinguir "componentes en Pascal, lógica en kebab", y en la práctica se violaba más de lo que se cumplía.
+>
+> La migración de los archivos existentes está planificada en `8-ciclo-editorial.md` §5, fase 5, con la advertencia de que Git en Windows no detecta por defecto un renombre que solo cambia mayúsculas.
 
 ### Idioma
 - **Dominio en español** (es un proyecto SENA): `Pagina`, `Contenido`, `guardarBorrador`, `usuarioActual`. Los nombres de negocio se leen igual que los requerimientos.
@@ -32,14 +38,14 @@
 ## 2. Convenciones por tipo de archivo
 
 ### 2.1 Componentes React (`.tsx`)
-- Un componente por archivo; el archivo se llama igual que el componente.
+- Un componente por archivo; el archivo es la versión `kebab-case` del nombre del componente (`TablaUsuarios` → `tabla-usuarios.tsx`).
 - Props tipadas con una interface `PascalCase` + sufijo `Props`: `interface TablaUsuariosProps { ... }`.
 - Componentes de servidor por defecto (Next 16 App Router); marcar `'use client'` solo cuando se necesite estado/efectos/eventos.
 - Orden interno: imports → tipos/interfaces → componente → export.
 
 ```tsx
-// TablaUsuarios.tsx
-import { DataTable } from '@/shared/ui/organisms/DataTable';
+// tabla-usuarios.tsx
+import { DataTable } from '@/shared/ui/organisms/data-table';
 import { useUsuarios } from '../hooks/use-usuarios';
 
 interface TablaUsuariosProps {
@@ -58,10 +64,17 @@ export function TablaUsuarios({ filtroRol }: TablaUsuariosProps) {
 
 ### 2.3 Services (`*.service.ts`)
 - La única capa del frontend que llama a la API. Nombre por dominio: `paginas.service.ts`.
+- Viven en `services/`, **nunca** en `api/`: ese nombre está tomado por `app/api/`, los route handlers de Next que hacen de proxy hacia la API :4000. El proxy y el cliente que lo consume no deben compartir nombre.
 - Funciones `camelCase` que describen la acción de negocio: `obtenerPaginaPublica`, `guardarBorrador`.
 - Nunca meter JSX ni estado de React aquí — es lógica pura de datos.
+- **Un servicio no mezcla públicos.** Si unas funciones son anónimas y cacheables y otras exigen sesión, van en servicios distintos. Ver `8-ciclo-editorial.md` §2.
 
-### 2.4 Backend — capas (Clean Architecture)
+### 2.4 Carpetas de una feature
+- `components/` para la UI del dominio. **Nunca `ui/`**: en este proyecto `shared/ui/` es el sistema de diseño institucional y además el catálogo de bloques del editor. La misma palabra no puede significar dos cosas.
+- `hooks/`, `services/`, `types.ts`, `index.ts` según §4.0 de la guía.
+- Si el dominio tiene ciclo de vida (estados con actores o permisos distintos), se organiza por etapa. Ver `8-ciclo-editorial.md` §3.2.
+
+### 2.5 Backend — capas (Clean Architecture)
 - `*.controller.ts` → objeto `PascalCase` + `Controller`: `export const PaginaController = { ... }`. Métodos `camelCase`. Traduce `req/res`, no contiene lógica.
 - `*.usecase.ts` → funciones `camelCase` exportadas, una acción de negocio por función: `export const aprobarPagina = async (...) => { ... }`.
 - `*.repository.ts` → objeto `PascalCase` + `Repository`. Única capa que toca Sequelize.
@@ -155,16 +168,21 @@ Estas convenciones no se vigilan a mano — se automatizan:
 - **Husky + lint-staged**: corren ESLint y Prettier en pre-commit sobre los archivos tocados, para que no entre código sin formatear.
 - **`tsc --noEmit`** en CI: el build falla si hay error de tipos.
 
-> Estado real (2026-07-26): ESLint está configurado en las dos apps y `sitio-web` pasa limpio. **Prettier y Husky + lint-staged todavía no están instalados** en ningún proyecto; el checklist de la sección 9 los da por hechos, pero hoy hay que verificarlos a mano.
+> Estado real (2026-07-26): ESLint está configurado en las dos apps y **ambas pasan sin errores** — `sitio-web` limpio, `intranet` con 9 advertencias de `@next/next/no-img-element` sobre imágenes ráster estáticas, dejadas visibles a propósito hasta convertirlas a `next/image` con verificación visual. **Prettier y Husky + lint-staged todavía no están instalados** en ningún proyecto; el checklist de la sección 9 los da por hechos, pero hoy hay que verificarlos a mano.
 
 ---
 
 ## 9. Checklist rápido antes de un commit
 
-- [ ] Nombres siguen la tabla de la sección 1 (camelCase / PascalCase / kebab-case según el tipo).
+- [ ] Archivos en `kebab-case`; identificadores según la tabla de la sección 1.
 - [ ] Sin `any` implícito; tipos compartidos no duplicados.
 - [ ] Comentarios explican *por qué*, no *qué*; sin `TODO` anónimos.
 - [ ] `app/` sin lógica de negocio; `shared/` sin imports de `features/`.
+- [ ] La feature usa `components/` y `services/` (no `ui/` ni `api/`).
+- [ ] Nada se importa de una ruta interna de otra feature; solo de su `index.ts`.
+- [ ] Ninguna función anónima y cacheable comparte servicio con una que exige sesión.
 - [ ] Errores manejados y con mensaje en español sin filtrar internals.
 - [ ] Librerías pesadas con carga diferida.
-- [ ] Pasa ESLint, Prettier y `tsc --noEmit`.
+- [ ] Pasa ESLint y `tsc --noEmit`.
+
+> Nota de estado (2026-07-26): **Prettier y Husky + lint-staged aún no están instalados** en ningún proyecto, pese a lo que dice §8. Hasta que lo estén, las dos últimas casillas se verifican a mano corriendo `npx eslint .` y `npx tsc --noEmit` en el proyecto tocado.

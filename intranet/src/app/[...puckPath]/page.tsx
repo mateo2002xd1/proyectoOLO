@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { EditButton } from "@/features/paginas";
-import { ClientPuckRender } from '@/features/paginas/components/client-puck-render';
+import { ClientPuckRender } from '@/features/paginas';
 
 export default async function PaginaDinamica({
   params,

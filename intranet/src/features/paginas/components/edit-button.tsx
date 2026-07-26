@@ -7,8 +7,8 @@
  *
  * Lleva al usuario a /editor/[slug] donde vive el editor Puck + Editor.js.
  *
- * @see ARQUITECTURA_MAESTRA_OLO.md §0.11 (autorización siempre server-side)
- * @see ARQUITECTURA_MAESTRA_OLO.md §9.3  (edit-button.tsx — botón lápiz)
+ * @see 3-seguridad-del-proyecto.md §0.4 (autorización siempre server-side)
+ * @see 1-guia-del-proyecto.md §4.3  (edit-button.tsx — botón lápiz)
  */
 
 import Link from "next/link";

@@ -1,7 +1,7 @@
 /**
  * Cliente HTTP para comunicación con la API backend (:4000).
  *
- * @see ARQUITECTURA_MAESTRA_OLO.md §5 (La API es la única que emite y valida el JWT)
+ * @see 3-seguridad-del-proyecto.md §S3 (La API es la única que emite y valida el JWT)
  */
 
 export class ApiError extends Error {
