@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 import { PuckEditorWrapper } from "@/features/paginas";
 import { useEditorActions } from "@/features/paginas";
 import { obtenerVersionEditable, type VersionEditable } from "@/features/paginas/api/paginas.api";
+import { getPageSeed, isEmptyContent } from "@/features/paginas/lib/page-seeds";
 import { GooLoader } from "@/shared/ui/atoms/GooLoader";
 import type { PaginaVersion } from "@/features/paginas/types/editor.types";
 
@@ -41,7 +42,16 @@ export function EditorClient({ slug }: EditorClientProps) {
   useEffect(() => {
     let active = true;
     obtenerVersionEditable(slug)
-      .then((data) => { if (active) setEditable(data); })
+      .then((data) => {
+        if (!active) return;
+        // Sin versión en BD → sembrar el editor con el contenido estático
+        // (copia editable) en lugar de abrir en blanco.
+        if (isEmptyContent(data.contenido)) {
+          setEditable({ ...data, contenido: getPageSeed(slug) });
+        } else {
+          setEditable(data);
+        }
+      })
       .catch((err) => {
         if (active) setLoadError(err instanceof Error ? err.message : "No se pudo cargar la página");
       });

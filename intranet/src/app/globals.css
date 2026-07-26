@@ -3571,3 +3571,18 @@ input {
   line-height: 1.375;
   margin: 0;
 }
+
+/* ─── Primitivo de maquetación: Grid / Columnas (@olo/blocks-renderer) ───
+   El número de columnas y la separación llegan como variables CSS inline
+   desde el `render` del primitivo; aquí se aplican y se colapsan en móvil. */
+.olo-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--olo-grid-cols, 3), minmax(0, 1fr));
+  gap: var(--olo-grid-gap, 24px);
+  width: 100%;
+}
+@media (max-width: 640px) {
+  .olo-grid {
+    grid-template-columns: 1fr;
+  }
+}

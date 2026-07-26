@@ -8,6 +8,7 @@ import { Footer } from '@/shared/lib/blocks/Footer';
 import { IntranetFooter } from '@/shared/lib/blocks/IntranetFooter';
 import { IntranetTopbarWrapper } from '@/shared/lib/blocks/IntranetTopbarWrapper';
 import { IntranetHero } from '@/shared/lib/blocks/IntranetHero';
+import { primitiveComponents } from '@olo/blocks-renderer';
 import type { Config } from '@puckeditor/core';
 import { ImageUploaderField } from '@/features/paginas/components/image-uploader-field';
 
@@ -29,8 +30,13 @@ export const puckConfig: Config = {
     'Estructura': {
       components: ['Footer', 'IntranetFooter'],
     },
+    'Maquetación': {
+      components: ['Grid', 'Flex', 'Space'],
+    },
   },
   components: {
+    // Primitivos de maquetación compartidos (Grid / Flex / Space)
+    ...primitiveComponents,
     IntranetTopbar: {
       label: 'Intranet Topbar',
       fields: {
