@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { IntranetTopbar } from "@/shared/lib/blocks/IntranetTopbar";
 import { IntranetFooter } from "@/shared/lib/blocks/IntranetFooter";
+import { PptxViewer } from "./PptxViewer";
 
 export function TasaView() {
     return (
@@ -9,77 +10,83 @@ export function TasaView() {
 
             <main className="w-full flex flex-col items-center flex-1 pb-0">
                 {/* Banner */}
-                <section className="w-full max-w-full relative overflow-hidden ">
-                    <div className="bannerOficialMatriz">
-                        <h1>Tasa de<br /> <strong>Vinculación y Empleabilidad</strong></h1>
+                <section className="tasa-banner-wrapper">
+                    <div className="tasa-banner-content">
+                        <h1 className="tasa-banner-title">
+                            Tasa de<br /> <strong>Vinculación y Empleabilidad</strong>
+                        </h1>
                         <img
                             src="/assets/img/BannerTasa.png"
                             alt="Matriz de Pertinencia Banner"
-                            style={{ width: '310px', maxWidth: '100vw', height: 'auto', objectFit: 'cover' }}
+                            className="tasa-banner-image"
                         />
                     </div>
                 </section>
 
-                {/* Sección: ¿Qué es la Tasa de Vinculación? */}
-                <section className="tasa-section-container pt-12">
-                    <h2 className="tasa-section-title">
-                        ¿Qué es la Tasa de Vinculación?
-                    </h2>
-                    <p className="tasa-section-text">
-                        La Tasa de Vinculación consiste en medir cuál es el porcentaje de
-                        egresados certificados de formación titulada del SENA de un semestre
-                        (cohorte semestral) que logran vincularse a un empleo formal (que
-                        presentan aportes a seguridad social en PILA) en el siguiente
-                        semestre.
-                    </p>
+                <section className="tasa-concepts-wrapper">
+                    {/* Concept 1: Vinculación */}
+                    <div className="tasa-concept-row">
+                        <div className="tasa-concept-text">
+                            <h2 className="tasa-concept-title">
+                                ¿Qué es la Tasa de Vinculación?
+                            </h2>
+                            <p className="tasa-concept-desc">
+                                La Tasa de Vinculación consiste en medir cuál es el porcentaje de
+                                egresados certificados de formación titulada del SENA de un semestre
+                                (cohorte semestral) que logran vincularse a un empleo formal (que
+                                presentan aportes a seguridad social en PILA) en el siguiente
+                                semestre.
+                            </p>
+                        </div>
+                        <div className="tasa-concept-visual">
+                            <Image
+                                src="/assets/img/vinculacion.png"
+                                alt="Estadísticas de Tasa de Vinculación"
+                                width={1000}
+                                height={300}
+                                className="tasa-concept-image"
+                            />
+                        </div>
+                    </div>
 
-                    <div className="tasa-image-wrapper">
-                        <Image
-                            src="/assets/img/vinculacion.png"
-                            alt="Estadísticas de Tasa de Vinculación"
-                            width={1000}
-                            height={300}
-                            className="tasa-image"
-                        />
+                    {/* Concept 2: Empleabilidad (Reverse for Zig-Zag) */}
+                    <div className="tasa-concept-row reverse">
+                        <div className="tasa-concept-text">
+                            <h2 className="tasa-concept-title">
+                                ¿Qué es la Tasa de Empleabilidad?
+                            </h2>
+                            <p className="tasa-concept-desc">
+                                La Tasa de Empleabilidad consiste en medir cuál es el porcentaje de
+                                egresados certificados de formación complementaria del SENA y de
+                                certificados por competencias laborales de un año (cohorte anual)
+                                que se encuentran en un trabajo formal (que presentan aportes a
+                                seguridad social en PILA) durante algún momento del siguiente año.
+                            </p>
+                        </div>
+                        <div className="tasa-concept-visual">
+                            <Image
+                                src="/assets/img/sabiasque.png"
+                                alt="Estadísticas de Tasa de Empleabilidad"
+                                width={1000}
+                                height={350}
+                                className="tasa-concept-image"
+                            />
+                        </div>
                     </div>
                 </section>
 
-                {/* Sección: ¿Qué es la Tasa de Empleabilidad? */}
-                <section className="tasa-section-container">
-                    <h2 className="tasa-section-title">
-                        ¿Qué es la Tasa de Empleabilidad?
-                    </h2>
-                    <p className="tasa-section-text">
-                        La Tasa de Empleabilidad consiste en medir cuál es el porcentaje de
-                        egresados certificados de formación complementaria del SENA y de
-                        certificados por competencias laborales de un año (cohorte anual)
-                        que se encuentran en un trabajo formal (que presentan aportes a
-                        seguridad social en PILA) durante algún momento del siguiente año.
-                    </p>
-
-                    <div className="tasa-image-wrapper">
-                        <Image
-                            src="/assets/img/sabiasque.png"
-                            alt="Estadísticas de Tasa de Empleabilidad"
-                            width={1000}
-                            height={350}
-                            className="tasa-image"
-                        />
-                    </div>
-                </section>
-
-                {/* Sección: Video Tasa de Vinculación y Empleabilidad */}
-                <section className="tasa-video-section">
+                {/* Video Section */}
+                <section className="tasa-video-wrapper">
                     <div className="tasa-video-header">
                         <h2 className="tasa-video-title">
-                            Aquí te contamos todo sobre la estrategia de Tasa de <br className="tasa-video-br" />
+                            Aquí te contamos todo sobre la estrategia de Tasa de <br className="hidden md:block" />
                             <span>Vinculación y Empleabilidad</span>
                         </h2>
-                        <p className="tasa-video-subtitle">
+                        <p className="text-gray-300 text-lg">
                             Mira nuestro video
                         </p>
                     </div>
-                    <div className="tasa-video-wrapper">
+                    <div className="tasa-video-container">
                         <iframe
                             className="tasa-video-iframe"
                             src="https://www.youtube.com/embed/4E7Sci4DAVQ"
@@ -91,50 +98,52 @@ export function TasaView() {
                     </div>
                 </section>
 
-                {/* Sección: Dashboards OLO */}
-                <section className="tasa-dashboard-wrapper">
-                    {/* Dashboard OLO - Vinculación */}
-                    <div className="tasa-dashboard-item">
-                        <h2 className="tasa-section-title">
-                            Dashboard OLO - Vinculación
-                        </h2>
-                        <p className="tasa-section-text">
-                            Resultados de vinculación laboral formal (titulada), con una periodicidad semestral.
-                            Genera un indicador de vinculación donde se relaciona el número de vinculados laboralmente en el mercado formal y el total de egresados, para un grupo de seguimiento particular.
-                        </p>
-
-                        <div className="tasa-iframe-wrapper">
-                            <iframe
-                                title="Dashboard OLO - Vinculación"
-                                src="https://app.powerbi.com/view?r=eyJrIjoiMWIxNWMwYjItNzdhZS00ZGE1LWExMDktYzZhOTgwNjZkNTZmIiwidCI6ImNiYzJjMzgxLTJmMmUtNGQ5My05MWQxLTUwNmM5MzE2YWNlNyIsImMiOjR9&pageName=ReportSection"
-                                allowFullScreen={true}
-                                className="tasa-iframe"
-                            ></iframe>
+                {/* Dashboards */}
+                <section className="tasa-dashboards-section">
+                    <div className="tasa-dashboards-grid">
+                        <div className="tasa-dashboard-card">
+                            <div className="tasa-dashboard-header">
+                                <h2 className="tasa-dashboard-title">
+                                    Dashboard OLO - Vinculación
+                                </h2>
+                                <p className="tasa-dashboard-desc">
+                                    Resultados de vinculación laboral formal (titulada), con una periodicidad semestral.
+                                    Genera un indicador de vinculación donde se relaciona el número de vinculados laboralmente en el mercado formal y el total de egresados, para un grupo de seguimiento particular.
+                                </p>
+                            </div>
+                            <div className="tasa-dashboard-iframe-wrapper">
+                                <iframe
+                                    title="Dashboard OLO - Vinculación"
+                                    src="https://app.powerbi.com/view?r=eyJrIjoiMWIxNWMwYjItNzdhZS00ZGE1LWExMDktYzZhOTgwNjZkNTZmIiwidCI6ImNiYzJjMzgxLTJmMmUtNGQ5My05MWQxLTUwNmM5MzE2YWNlNyIsImMiOjR9&pageName=ReportSection"
+                                    allowFullScreen={true}
+                                    className="tasa-dashboard-iframe"
+                                ></iframe>
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Dashboard OLO - Empleabilidad */}
-                    <div className="tasa-dashboard-item">
-                        <h2 className="tasa-section-title">
-                            Dashboard OLO - Empleabilidad
-                        </h2>
-                        <p className="tasa-section-text">
-                            Resultados de empleabilidad formal (complementaria), con una periodicidad anual.
-                            Genera un indicador de empleabilidad donde se relaciona el número de vinculados laboralmente en el mercado formal y el total de egresados, para un grupo de seguimiento particular.
-                        </p>
-
-                        <div className="tasa-iframe-wrapper">
-                            <iframe
-                                title="Dashboard OLO - Empleabilidad"
-                                src="https://app.powerbi.com/view?r=eyJrIjoiMWIxNWMwYjItNzdhZS00ZGE1LWExMDktYzZhOTgwNjZkNTZmIiwidCI6ImNiYzJjMzgxLTJmMmUtNGQ5My05MWQxLTUwNmM5MzE2YWNlNyIsImMiOjR9&pageName=cfd70c690d894046a8d8"
-                                allowFullScreen={true}
-                                className="tasa-iframe"
-                            ></iframe>
+                        <div className="tasa-dashboard-card">
+                            <div className="tasa-dashboard-header">
+                                <h2 className="tasa-dashboard-title">
+                                    Dashboard OLO - Empleabilidad
+                                </h2>
+                                <p className="tasa-dashboard-desc">
+                                    Resultados de empleabilidad formal (complementaria), con una periodicidad anual.
+                                    Genera un indicador de empleabilidad donde se relaciona el número de vinculados laboralmente en el mercado formal y el total de egresados, para un grupo de seguimiento particular.
+                                </p>
+                            </div>
+                            <div className="tasa-dashboard-iframe-wrapper">
+                                <iframe
+                                    title="Dashboard OLO - Empleabilidad"
+                                    src="https://app.powerbi.com/view?r=eyJrIjoiMWIxNWMwYjItNzdhZS00ZGE1LWExMDktYzZhOTgwNjZkNTZmIiwidCI6ImNiYzJjMzgxLTJmMmUtNGQ5My05MWQxLTUwNmM5MzE2YWNlNyIsImMiOjR9&pageName=cfd70c690d894046a8d8"
+                                    allowFullScreen={true}
+                                    className="tasa-dashboard-iframe"
+                                ></iframe>
+                            </div>
                         </div>
                     </div>
                 </section>
 
-                {/* Sección: Presentación PPTX */}
+                {/* PPT Section */}
                 <section className="tasa-ppt-section">
                     <div className="tasa-ppt-container">
                         <div className="tasa-ppt-text">
@@ -144,15 +153,11 @@ export function TasaView() {
                             </h2>
                         </div>
                         <div className="tasa-ppt-viewer-wrapper">
-                            <iframe 
-                                src="/assets/uploads/ptpexample.pptx" 
-                                className="tasa-ppt-iframe" 
-                                title="Presentación Tasa de Vinculación y Empleabilidad"
-                            ></iframe>
+                            <PptxViewer fileUrl="/uploads/documents/tasa.pptx" />
                         </div>
                     </div>
                 </section>
-                
+
             </main>
 
             <div className="w-full mt-auto">
