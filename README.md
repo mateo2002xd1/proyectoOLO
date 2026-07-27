@@ -11,7 +11,7 @@ El OLO gestiona **datos del mercado laboral y la empleabilidad**, información q
 La necesidad central, traducida a requisitos:
 
 - El sitio parte de un **diseño base institucional** (identidad SENA, directrices MinTIC, colores, tipografía, accesibilidad).
-- Sobre ese diseño base, los editores deben poder **reorganizar la maqueta, agregar secciones y reutilizar componentes** — siempre **respetando la identidad visual**. No es edición libre: es **composición controlada dentro de un sistema de diseño institucional**.
+- Sobre ese diseño base, los editores deben poder **reorganizar la maqueta, agregar secciones y reutilizar componentes** — siempre **respetando la identidad visual y la accesibilidad** (Resolución 1519 de 2020, nivel AA). No es edición libre: es **composición controlada dentro de un sistema de diseño institucional**.
 - Debe existir un **flujo de gobernanza**: los editores proponen, un administrador aprueba, y solo entonces se publica.
 - El sitio público es abierto; existe además una **intranet privada** para directores y subdirectores.
 
@@ -80,6 +80,8 @@ Leer en este orden. Los tres primeros son de lectura obligatoria antes de tocar 
 | [8-ciclo-editorial.md](8-ciclo-editorial.md) | **Cómo se organiza por dentro un dominio.** El ciclo borrador → revisión → publicado, y el plan de migración por fases. |
 | [3-seguridad-del-proyecto.md](3-seguridad-del-proyecto.md) | Superficies de ataque y controles. |
 | [4-reglas.md](4-reglas.md) | Reglas operativas para mover o crear carpetas sin romper nada. |
+| [9-accesibilidad.md](9-accesibilidad.md) | **Nivel AA y Resolución 1519 de 2020.** Estado auditado, decisiones de paleta y plan por fases (RF-14). |
+| [10-backlog.md](10-backlog.md) | **Qué falta por hacer.** 21 épicas, 21 historias y 226 tareas con estado verificado, capa y nivel. Exportado también a `10-backlog.csv`. |
 | [5-tableros-bi.md](5-tableros-bi.md) | Tableros Power BI embebidos: URLs, dónde se usan y controles de seguridad (RF-08). |
 | [6-auditoria.md](6-auditoria.md) | Bitácora de sesiones de trabajo. |
 | [7-despliegue.md](7-despliegue.md) | Docker, Nginx, SSL, variables de entorno. |

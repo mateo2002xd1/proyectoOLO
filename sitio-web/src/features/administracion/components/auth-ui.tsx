@@ -23,7 +23,7 @@ export const authInputClass = (hasError: boolean) =>
     'transition-colors placeholder:text-gray-400 focus:outline-none focus:ring-2',
     hasError
       ? 'border-red-400 focus:border-red-500 focus:ring-red-500/30'
-      : 'border-gray-300 focus:border-brand focus:ring-brand/30',
+      : 'border-gray-300 focus:border-brand-focus focus:ring-brand-focus',
   ].join(' ');
 
 export const authErrorTextClass = 'mt-1 text-xs text-red-600';
@@ -122,7 +122,7 @@ export function PasswordField({
           type="button"
           onClick={() => setShow((v) => !v)}
           aria-label={show ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-          className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-gray-500 transition-colors hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+          className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-gray-500 transition-colors hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-focus"
         >
           <EyeIcon crossed={show} />
         </button>

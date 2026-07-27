@@ -29,7 +29,13 @@ function ProgressDots({ total, current }: { total: number; current: number }) {
         <span
           key={i}
           className={`size-2 rounded-full transition-colors ${
-            i === current ? 'bg-brand' : i < current ? 'bg-brand/50' : 'bg-gray-300'
+            // Indicador de estado: usa el token interactivo para que el paso
+            // actual se distinga del pendiente (SC 1.4.11).
+            i === current
+              ? 'bg-brand-interactive'
+              : i < current
+                ? 'bg-brand-interactive/50'
+                : 'bg-gray-300'
           }`}
         />
       ))}
@@ -146,7 +152,7 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
         </p>
         <Link
           href="/login"
-          className="block rounded-xl bg-brand px-4 py-2.5 text-center text-sm font-semibold text-white shadow-[0_2px_8px_-2px_rgba(125,183,40,0.4)] transition hover:bg-brand-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-focus/40"
+          className="block rounded-xl bg-brand-interactive px-4 py-2.5 text-center text-sm font-semibold text-white shadow-[0_2px_8px_-2px_rgba(42,125,0,0.4)] transition hover:bg-brand-interactive-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-focus"
         >
           Iniciar sesión
         </Link>

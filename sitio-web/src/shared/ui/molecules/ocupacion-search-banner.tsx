@@ -51,33 +51,36 @@ export function OcupacionSearchBanner({
   }
 
   return (
-    <div className={`w-full rounded-[16px] bg-[#0b1b32] px-6 py-6 sm:rounded-[32px] sm:px-10 sm:py-8 ${className}`}>
-      <div className="flex flex-col items-center gap-6 sm:flex-row sm:gap-10">
+    <div className={`w-[98%] h-[426px] flex justify-center items-center rounded-[16px] bg-[#0b1b32] px-6 py-6 sm:rounded-[16px] sm:px-10 sm:py-8 ${className}`}>
+      <div className="flex flex-col items-center gap-10 sm:flex-row sm:gap-10">
         {/* logoSrc llega por prop y se dimensiona con clases (h-16 w-auto):
             next/image requeriría width/height fijos o fill con contenedor posicionado. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={logoSrc} alt={logoAlt} className="h-16 w-auto shrink-0 object-contain sm:h-20" />
+        <img src={logoSrc} alt={logoAlt} className="h-16 w-[50%] shrink-0 object-contain sm:h-20" />
 
         <form onSubmit={handleSubmit} className="w-full flex-1">
           <label htmlFor={inputId} className="sr-only">
             {placeholder}
           </label>
-          <div className="relative">
-            <input
-              id={inputId}
-              type="search"
-              value={currentValue}
-              onChange={(event) => handleChange(event.target.value)}
-              placeholder={placeholder}
-              className="h-12 w-full rounded-2xl bg-white pl-5 pr-12 text-sm text-[#344054] shadow-sm outline-none transition placeholder:text-[#8a95ad] focus:ring-2 focus:ring-[#20abe3] sm:h-14 sm:text-base"
-            />
-            <button
-              type="submit"
-              aria-label="Buscar"
-              className="absolute top-1/2 right-1.5 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-[#8a95ad] transition hover:bg-[#f2f4f7] hover:text-[#20abe3] sm:h-11 sm:w-11"
-            >
-              <SearchIcon />
-            </button>
+          <div className="w-full relative">
+            <h2 className='text-white mb-3 text-[24px] font-bold'>Explora las ocupaciones clave <br /> de los sectores productivos en Colombia.</h2>
+            <div className="relative">
+              <input
+                id={inputId}
+                type="search"
+                value={currentValue}
+                onChange={(event) => handleChange(event.target.value)}
+                placeholder={placeholder}
+                className="h-12 w-full rounded-2xl bg-white pl-5 pr-12 text-sm text-[#344054] shadow-sm outline-none transition placeholder:text-[#8a95ad] focus:ring-2 focus:ring-[#20abe3] sm:h-14 sm:text-base"
+              />
+              <button
+                type="submit"
+                aria-label="Buscar"
+                className="absolute top-1/2 right-1.5 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-[#8a95ad] transition hover:bg-[#f2f4f7] hover:text-[#20abe3] sm:h-11 sm:w-11"
+              >
+                <SearchIcon />
+              </button>
+            </div>
           </div>
         </form>
       </div>

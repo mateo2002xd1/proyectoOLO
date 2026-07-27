@@ -13,12 +13,15 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 const variantStyles: Record<ButtonVariant, string> = {
   plain:
     "border border-[#d0d5dd] bg-white text-[#344054] hover:bg-[#f9fafb] dark:border-[#2d3649] dark:bg-transparent dark:text-[#b7c0d6] dark:hover:bg-[#252f47]",
+  // `brand-interactive` y no `brand`: estas variantes llevan texto blanco
+  // encima, y el verde de identidad da 2.42:1 contra el 4.5:1 que exige el
+  // nivel AA. Ver 9-accesibilidad.md §2.1.
   primary:
-    "bg-brand text-white shadow-[0_2px_8px_-2px_rgba(125,183,40,0.4)] hover:bg-brand-hover active:scale-95",
+    "bg-brand-interactive text-white shadow-[0_2px_8px_-2px_rgba(42,125,0,0.4)] hover:bg-brand-interactive-hover active:scale-95",
   danger:
     "bg-[#dc2626] text-white shadow-[0_2px_8px_-2px_rgba(220,38,38,0.4)] hover:bg-[#b91c1c] active:scale-95",
   success:
-    "bg-brand text-white shadow-[0_2px_8px_-2px_rgba(125,183,40,0.4)] hover:bg-brand-hover active:scale-95",
+    "bg-brand-interactive text-white shadow-[0_2px_8px_-2px_rgba(42,125,0,0.4)] hover:bg-brand-interactive-hover active:scale-95",
 };
 
 export function Button({
@@ -29,7 +32,9 @@ export function Button({
   ...props
 }: ButtonProps) {
   const base =
-    "inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-focus/40 disabled:opacity-50 disabled:cursor-not-allowed";
+    // El anillo va a opacidad plena: SC 1.4.11 exige 3:1 para el indicador
+    // de foco, y un `/40` lo dejaba muy por debajo.
+    "inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-focus disabled:opacity-50 disabled:cursor-not-allowed";
 
   const style = plain ? variantStyles.plain : variantStyles[variant];
 

@@ -183,6 +183,7 @@ Estas convenciones no se vigilan a mano — se automatizan:
 - [ ] Ninguna función anónima y cacheable comparte servicio con una que exige sesión.
 - [ ] Errores manejados y con mensaje en español sin filtrar internals.
 - [ ] Librerías pesadas con carga diferida.
+- [ ] Si tocaste `shared/ui`: contraste ≥4.5:1, operable con teclado, foco visible, `alt` en toda imagen. Checklist completo en `9-accesibilidad.md` §5.
 - [ ] Pasa ESLint y `tsc --noEmit`.
 
 > Nota de estado (2026-07-26): **Prettier y Husky + lint-staged aún no están instalados** en ningún proyecto, pese a lo que dice §8. Hasta que lo estén, las dos últimas casillas se verifican a mano corriendo `npx eslint .` y `npx tsc --noEmit` en el proyecto tocado.

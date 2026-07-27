@@ -56,7 +56,7 @@ Una plataforma de **tres capas** bajo un modelo **CMS headless con composición 
 | Necesidad | Cómo se resuelve |
 |---|---|
 | Editar sin desarrolladores | Editor visual (Puck) que compone páginas con un catálogo de bloques |
-| Respetar el diseño institucional | El catálogo de bloques ES el sistema de diseño (átomos/moléculas/organismos); el editor solo puede componer con piezas que ya cumplen la identidad SENA y la Res. 1519 **por construcción** |
+| Respetar el diseño institucional | El catálogo de bloques ES el sistema de diseño (átomos/moléculas/organismos); el editor solo puede componer con piezas que nosotros escribimos, así que la identidad SENA y la Res. 1519 se garantizan **en `shared/ui`, no en cada página**. La arquitectura lo hace posible; el estado real de la accesibilidad está auditado en `9-accesibilidad.md` §2 |
 | Contenido siempre actualizado | Todo el contenido es dinámico (JSONB en Postgres), servido por la API |
 | Gobernanza | Flujo `borrador → en revisión → publicado/rechazado`; solo el admin publica |
 | Rendimiento con tráfico alto | Páginas públicas con ISR + revalidación on-demand al publicar; caché Redis en la API |
@@ -331,7 +331,9 @@ sitio-web/src/
 
 Las carpetas marcadas `NUEVO` en `features/` todavía no existen: son los dominios que faltan por construir, y su ruta en `(public)/` se crea junto con ellos. Todo lo demás está en disco hoy.
 
-**El punto crítico de este proyecto:** `shared/ui/{atoms,molecules,organisms}` tiene **doble rol**. Es el sistema de diseño del código Y el catálogo de piezas que el editor registra en Puck (vía `config/puck.config.tsx`). Por eso el editor solo puede componer con piezas que ya cumplen la identidad SENA y la accesibilidad — la conformidad es **por construcción**, no algo que se revisa después.
+**El punto crítico de este proyecto:** `shared/ui/{atoms,molecules,organisms}` tiene **doble rol**. Es el sistema de diseño del código Y el catálogo de piezas que el editor registra en Puck (vía `config/puck.config.tsx`). Por eso el editor no puede escribir HTML crudo ni elegir colores arbitrarios: solo compone con piezas que nosotros controlamos.
+
+Esa es la palanca que permite que la conformidad sea **por construcción** — arreglar un átomo arregla todas las páginas, incluidas las que un editor cree mañana. Pero es una posibilidad, no un hecho consumado: hoy los propios átomos incumplen el contraste AA (`9-accesibilidad.md` §2.1 lo mide). La arquitectura habilita el cumplimiento; entregarlo es el plan del §4 de ese documento.
 
 ### 4.3 Intranet (`intranet/`) — repo independiente - Architecture Feature-based + App Router de Next.js
 
@@ -420,7 +422,7 @@ packages/
 | RF-11 navegación 3 clics | — | `shared/ui/organisms` (nav + breadcrumbs) |
 | RF-12 descarga pública | `Attachment`, ruta pública | enlaces de descarga |
 | RF-13 Habeas Data | registro de aceptación (nuevo) | componente de aviso |
-| RF-14 accesibilidad | — | `shared/ui` (por construcción) + alto contraste |
+| RF-14 accesibilidad | — | `shared/ui` + alto contraste. Estado y plan en `9-accesibilidad.md` |
 | RF-15 directores | `use-cases` + auditoría de acceso | `intranet/features/directores` |
 | RF-16 auth + caducidad | `auth`, `use-cases/usuarios/caducidad` (hoy STUB) | login |
 | RF-17 respaldos | BullMQ (cola + worker), UI de config | panel admin |
