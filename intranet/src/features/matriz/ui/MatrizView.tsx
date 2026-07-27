@@ -18,15 +18,15 @@ export function MatrizView() {
       <IntranetTopbarWrapper />
 
       {/* Banner */}
-      <section className="w-full max-w-full relative overflow-hidden ">
+      <section className="w-full  max-w-full relative overflow-hidden ">
         <div className="bannerOficialMatriz py-8 md:py-0">
           <h1 className="text-white text-3xl md:text-[44px] font-bold uppercase tracking-wide leading-tight text-left mb-8 md:mb-0 mr-0 md:mr-16">
             MATRIZ DE <br /> PERTINENCIA
           </h1>
           <img
-          src="/assets/img/BannerOficial.png"
-          alt="Matriz de Pertinencia Banner"
-          style={{ width: '350px', maxWidth: '100vw', height: 'auto', objectFit: 'cover'}}
+            src="/assets/img/BannerOficial.png"
+            alt="Matriz de Pertinencia Banner"
+            style={{ width: '350px', maxWidth: '100vw', height: 'auto', objectFit: 'cover' }}
           />
         </div>
       </section>
@@ -132,13 +132,13 @@ export function MatrizView() {
                 <li><a href="#" className="hover:underline transition-colors">Matriz de pertinencia 2024</a></li>
               </ul>
             </div>
-            
+
             {/* Right Column: Presentation Viewer */}
             <div className="md:col-span-8 lg:col-span-7">
               <div className="w-full max-w-[850px] aspect-[1037/617] rounded-xl overflow-hidden shadow-sm border border-gray-200">
-                <iframe 
-                  src="/uploads/documents/Presentación1.pptx" 
-                  title="Presentación Matriz de Pertinencia" 
+                <iframe
+                  src="/uploads/documents/"
+                  title="Presentación Matriz de Pertinencia"
                   className="w-full h-full"
                   frameBorder="0"
                 ></iframe>
