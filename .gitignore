@@ -19,14 +19,11 @@ coverage/
 npm-debug.log*
 yarn-error.log*
 
-# Markdown files
-1-guia-del-proyecto.md
-2-convenciones-del-proyecto.md
-3-seguridad-del-proyecto.md
-4-reglas.md
-5-tablerosBI.md
-6-auditoria.md
-7-despliegue.md
+# NOTA: aquí había un bloque "# Markdown files" que ignoraba los documentos
+# 1 a 7. No hacía nada —los siete ya estaban trackeados desde e07ccf5, y
+# .gitignore solo aplica a archivos sin trackear— pero era engañoso: daba a
+# entender que la documentación no se versiona, cuando es justo al revés.
+# Se eliminó. La documentación del proyecto SÍ va al repositorio.
 
 # Database backups
 *.sql
@@ -42,3 +39,5 @@ deprecated/
 .claude/
 .agent/
 openspec/
+10-backlog.csv
+10-backlog.md

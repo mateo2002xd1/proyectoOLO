@@ -1,19 +1,29 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import type EditorJSInstance from '@editorjs/editorjs';
+import type { OutputData } from '@editorjs/editorjs';
 
 interface EditorjsWrapperProps {
-  data?: any;
-  onChange?: (data: any) => void;
+  data?: OutputData;
+  onChange?: (data: OutputData) => void;
   readOnly?: boolean;
 }
 
 export function EditorjsWrapper({ data, onChange, readOnly = false }: EditorjsWrapperProps) {
-  const editorRef = useRef<any>(null);
+  const editorRef = useRef<EditorJSInstance | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // El editor se monta una sola vez, pero `onChange` puede cambiar de identidad
+  // en cada render del padre. Lo guardamos en un ref para que el callback del
+  // editor siempre llame a la versión actual y no a la capturada al montar.
+  const onChangeRef = useRef(onChange);
   useEffect(() => {
-    let editorInstance: any = null;
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  useEffect(() => {
+    let editorInstance: EditorJSInstance | null = null;
 
     const initEditor = async () => {
       if (!containerRef.current) return;
@@ -52,10 +62,10 @@ export function EditorjsWrapper({ data, onChange, readOnly = false }: EditorjsWr
             },
           },
           onChange: async () => {
-            if (onChange && editorRef.current) {
+            if (onChangeRef.current && editorRef.current) {
               try {
                 const outputData = await editorRef.current.save();
-                onChange(outputData);
+                onChangeRef.current(outputData);
               } catch (err) {
                 console.error('Error saving editor:', err);
               }
@@ -81,6 +91,10 @@ export function EditorjsWrapper({ data, onChange, readOnly = false }: EditorjsWr
         editorRef.current = null;
       }
     };
+    // Deliberadamente sin dependencias: el editor debe instanciarse una sola vez.
+    // Reinicializarlo al cambiar `data` o `readOnly` destruiría lo que el usuario
+    // esté escribiendo. `onChange` se lee desde onChangeRef, así que no queda obsoleto.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

@@ -148,8 +148,7 @@ export function MatrizView() {
         </div>
       </div>
 
-      {/* @ts-ignore - Bypass strict typing for static use case */}
-      <IntranetFooter block={{ id: 'static-footer' }} />
+      <IntranetFooter block={{ id: 'static-footer', type: 'IntranetFooter' }} />
     </div>
   );
 }

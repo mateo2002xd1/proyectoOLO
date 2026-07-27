@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authApi } from '@/features/auth';
 import { ReturnToSiteLink } from '@/shared/ui/molecules/ReturnToSiteLink';
+import { mensajeDeError } from '@/shared/lib/errors';
 
 export function RecoveryView() {
   const router = useRouter();
@@ -12,7 +13,7 @@ export function RecoveryView() {
   const [error, setError] = useState('');
   const [generalError, setGeneralError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+
 
   const validate = (): boolean => {
     if (!email.trim()) {
@@ -44,8 +45,8 @@ export function RecoveryView() {
       } else {
         setGeneralError('No se encontraron preguntas de seguridad para este correo.');
       }
-    } catch (error: any) {
-      setGeneralError(error.message || 'Error de conexión con el servidor');
+    } catch (error) {
+      setGeneralError(mensajeDeError(error, 'Error de conexión con el servidor'));
     } finally {
       setIsLoading(false);
     }
@@ -68,24 +69,7 @@ export function RecoveryView() {
       {/* Panel derecho — Recovery Card */}
       <div className="recovery-right">
         <div className="recovery-card">
-          {submitted ? (
-            <div className="recovery-success">
-              <div className="recovery-success-icon">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#0d9488" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                  <polyline points="22 4 12 14.01 9 11.01" />
-                </svg>
-              </div>
-              <h2 className="recovery-success-title">Correo enviado</h2>
-              <p className="recovery-success-text">
-                Si existe una cuenta asociada a <strong>{email}</strong>, recibirás un correo con las instrucciones para restablecer tu passcode.
-              </p>
-              <Link href="/login" className="recovery-success-link">
-                Volver al inicio de sesión
-              </Link>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="recovery-form">
+          <form onSubmit={handleSubmit} className="recovery-form">
               <h2 className="recovery-card-title">Ingresa tu correo SENA</h2>
 
               <div className="recovery-field">
@@ -115,8 +99,7 @@ export function RecoveryView() {
               <Link href="/login" className="recovery-login-link">
                 Iniciar sesión
               </Link>
-            </form>
-          )}
+          </form>
         </div>
 
         <ReturnToSiteLink classPrefix="recovery" />

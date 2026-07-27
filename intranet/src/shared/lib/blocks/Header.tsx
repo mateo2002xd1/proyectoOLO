@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useSyncExternalStore } from 'react';
+import Link from 'next/link';
 import type { HeaderBlock } from '../types';
 
 export interface NavItem {
@@ -25,6 +26,18 @@ function getCookie(name: string): string | null {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
+/* La cookie es un sistema externo a React: se lee con useSyncExternalStore en
+   vez de copiarla a un useState desde un efecto. No hay evento nativo de cambio
+   de cookie, así que la suscripción no re-consulta; basta con leerla cuando
+   React pide el snapshot. */
+function subscribeToCookies() {
+  return () => {};
+}
+
+const getSessionSnapshot = () => Boolean(getCookie('token'));
+/** En el servidor no hay document; asumimos sin sesión para que el HTML inicial coincida. */
+const getSessionServerSnapshot = () => false;
+
 export function Header({
   block,
   govBannerEnabled = true,
@@ -35,11 +48,11 @@ export function Header({
   intranetUrl = 'http://localhost:3001/login'
 }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [hasSession, setHasSession] = useState(false);
-
-  useEffect(() => {
-    setHasSession(Boolean(getCookie('token')));
-  }, []);
+  const hasSession = useSyncExternalStore(
+    subscribeToCookies,
+    getSessionSnapshot,
+    getSessionServerSnapshot,
+  );
 
   const editHref = hasSession ? '/panelAdministracion/panel-general' : '/login';
   const editTitle = hasSession ? 'Ir al panel de administración' : 'Iniciar sesión';
@@ -69,6 +82,8 @@ export function Header({
         </a>
         {govBannerEnabled && (
           govBannerImageUrl ? (
+            // src dinamico y tamano por CSS: next/image exigiria width/height fijos o remotePatterns
+            // eslint-disable-next-line @next/next/no-img-element
             <img src={govBannerImageUrl} alt="Banner Gobierno" style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover' }} />
           ) : (
             <svg width="100%" height="auto" viewBox="0 0 1920 44" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
@@ -89,8 +104,10 @@ export function Header({
       <header className="olo-header" id="main-header" data-block-id={block.id}>
         <div className="olo-header-inner">
           <div className="olo-logo-group">
-            <a href="/" className="olo-logo-mark" aria-label="Ir al inicio">
+            <Link href="/" className="olo-logo-mark" aria-label="Ir al inicio">
               {mainLogoUrl ? (
+                // src dinamico y tamano por CSS: next/image exigiria width/height fijos o remotePatterns
+                // eslint-disable-next-line @next/next/no-img-element
                 <img src={mainLogoUrl} alt="Logo SENA / Observatorio" style={{ maxHeight: 48, width: 'auto' }} />
               ) : (
                 <svg width="240" height="48" viewBox="0 0 290 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -105,7 +122,7 @@ export function Header({
                 <path d="M118.744 65.8105H118.795L118.77 65.8619L118.744 65.8105Z" fill="#8FD5F0" />
                 </svg>
               )}
-            </a>
+            </Link>
           </div>
 
           <nav className="olo-nav" aria-label="Navegacion principal">

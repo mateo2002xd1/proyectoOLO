@@ -13,6 +13,8 @@ export function IntranetHero({
 }: IntranetHeroProps) {
   return (
     <section className="intranet-hero" aria-label="Banner de la intranet">
+      {/* src dinamico y tamano por CSS: next/image exigiria width/height fijos o remotePatterns */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={imageSrc}
         alt={imageAlt}

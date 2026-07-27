@@ -1,4 +1,4 @@
-import { ResetSuccessView } from '@/features/login/ui/ResetSuccessView';
+import { ResetSuccessView } from '@/features/login';
 
 export const metadata = {
   title: 'Contraseña actualizada | Intranet',

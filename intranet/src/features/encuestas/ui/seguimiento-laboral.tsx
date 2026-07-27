@@ -128,8 +128,7 @@ export function SeguimientoLaboralView() {
         </div>
       </section>
 
-      {/* @ts-ignore - Bypass strict typing for static use case */}
-      <IntranetFooter block={{ id: 'footer-seguimiento-laboral' }} />
+      <IntranetFooter block={{ id: 'footer-seguimiento-laboral', type: 'IntranetFooter' }} />
     </main>
   );
 }

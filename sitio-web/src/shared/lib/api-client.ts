@@ -7,7 +7,7 @@
  *   - Adjuntar cookie/JWT de sesión automáticamente
  *   - Timeout y retry configurables
  *
- * @see ARQUITECTURA_MAESTRA_OLO.md §5 (La API es la única que emite y valida el JWT)
+ * @see 3-seguridad-del-proyecto.md §S3 (La API es la única que emite y valida el JWT)
  */
 
 const API_BASE_URL =

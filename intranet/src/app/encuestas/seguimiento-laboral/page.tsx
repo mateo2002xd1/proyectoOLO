@@ -1,5 +1,5 @@
 import React from 'react';
-import { SeguimientoLaboralView } from '@/features/encuestas/iu/seguimiento-laboral';
+import { SeguimientoLaboralView } from '@/features/encuestas';
 
 export const metadata = {
   title: 'Seguimiento Laboral | Intranet',

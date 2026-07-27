@@ -59,6 +59,8 @@ export function RecursosVisuales() {
             type="button"
           >
             <div className="rv-thumb-wrap">
+              {/* src dinamico y tamano por CSS: next/image exigiria width/height fijos o remotePatterns */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={getThumbnail(video)}
                 alt={video.title}

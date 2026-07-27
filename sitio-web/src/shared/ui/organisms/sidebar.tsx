@@ -1,17 +1,7 @@
 'use client';
 
-import { createContext, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import Link from 'next/link';
-
-interface SidebarContextType {
-  isOpen: boolean;
-  setIsOpen: (open: boolean) => void;
-}
-
-const SidebarContext = createContext<SidebarContextType>({
-  isOpen: false,
-  setIsOpen: () => {},
-});
 
 interface SidebarProps {
   children: ReactNode;

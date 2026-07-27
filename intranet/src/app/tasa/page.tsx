@@ -1,5 +1,5 @@
 import React from 'react';
-import { TasaView } from '@/features/tasa/ui/TasaView';
+import { TasaView } from '@/features/tasa';
 
 export const metadata = {
   title: 'Tasa de Vinculación y Empleabilidad',

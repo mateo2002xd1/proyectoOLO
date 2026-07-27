@@ -33,6 +33,8 @@ export function IntranetTopbar({
     <header className="intranet-topbar" aria-label="Navegacion principal">
       <div className="intranet-topbar-inner">
         <div className="intranet-brand">
+          {/* src dinamico y tamano por CSS: next/image exigiria width/height fijos o remotePatterns */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={logoUrl}
             alt="Logo OLO"

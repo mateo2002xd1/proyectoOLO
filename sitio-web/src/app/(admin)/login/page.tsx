@@ -2,11 +2,43 @@
 
 import { Suspense, useState, FormEvent } from 'react';
 import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
 import { FirstLoginFlow } from '@/features/administracion/components/first-login-flow';
+import {
+  AuthCardHeader,
+  AuthGeneralError,
+  AuthPageShell,
+  BackToSiteLink,
+  PasswordField,
+  authCardClass,
+  authErrorTextClass,
+  authInputClass,
+  authLabelClass,
+} from '@/features/administracion/components/auth-ui';
+import { Button } from '@/shared/ui/atoms/button';
 
 const INTRANET_EDITOR_URL =
   process.env.NEXT_PUBLIC_INTRANET_EDITOR_URL || 'http://localhost:3001/editor/inicio';
+
+/** Tarjeta de acceso a un editor, en la pantalla de elección. */
+function EditorChoiceLink({
+  href,
+  title,
+  description,
+}: {
+  href: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <a
+      href={href}
+      className="block rounded-[10px] border border-gray-200 px-[18px] py-4 transition-colors hover:border-brand hover:bg-gray-50"
+    >
+      <span className="block text-[15px] font-semibold text-gray-900">{title}</span>
+      <span className="mt-0.5 block text-[13px] text-gray-500">{description}</span>
+    </a>
+  );
+}
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -15,7 +47,6 @@ function LoginForm() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
   const [editorChoice, setEditorChoice] = useState(false);
@@ -87,187 +118,66 @@ function LoginForm() {
 
   if (editorChoice) {
     return (
-      <div
-        style={{
-          background: 'white',
-          borderRadius: 12,
-          padding: '40px 36px',
-          width: '100%',
-          maxWidth: 400,
-          boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
-        }}
-      >
-        <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <img
-            src="/asset/logos/olo-logo-none.svg"
-            alt="OLO Logo"
-            style={{ width: 60, height: 'auto', margin: '0 auto 12px' }}
-          />
-          <p style={{ margin: 0, fontSize: 18, fontWeight: 300, color: '#111827' }}>
-            ¿Qué deseas editar?
-          </p>
-        </div>
+      <div className={authCardClass}>
+        <AuthCardHeader className="mb-7">
+          <p className="text-lg font-light text-gray-900">¿Qué deseas editar?</p>
+        </AuthCardHeader>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <a
+        <div className="flex flex-col gap-3">
+          <EditorChoiceLink
             href={sitioEditorHref}
-            style={{
-              display: 'block',
-              padding: '16px 18px',
-              borderRadius: 10,
-              border: '1px solid #e5e7eb',
-              textDecoration: 'none',
-              transition: 'border-color 0.15s, background 0.15s',
-            }}
-          >
-            <span style={{ display: 'block', fontSize: 15, fontWeight: 600, color: '#111827' }}>
-              Editar sitio web
-            </span>
-            <span style={{ display: 'block', fontSize: 13, color: '#6b7280', marginTop: 2 }}>
-              Editor visual del sitio público
-            </span>
-          </a>
-
-          <a
+            title="Editar sitio web"
+            description="Editor visual del sitio público"
+          />
+          <EditorChoiceLink
             href={INTRANET_EDITOR_URL}
-            style={{
-              display: 'block',
-              padding: '16px 18px',
-              borderRadius: 10,
-              border: '1px solid #e5e7eb',
-              textDecoration: 'none',
-              transition: 'border-color 0.15s, background 0.15s',
-            }}
-          >
-            <span style={{ display: 'block', fontSize: 15, fontWeight: 600, color: '#111827' }}>
-              Editar intranet
-            </span>
-            <span style={{ display: 'block', fontSize: 13, color: '#6b7280', marginTop: 2 }}>
-              Editor visual de la intranet
-            </span>
-          </a>
+            title="Editar intranet"
+            description="Editor visual de la intranet"
+          />
 
-          <button
+          <Button
             type="button"
+            variant="success"
+            className="mt-1 w-full gap-2"
             onClick={async () => {
               await fetch('/api/auth/logout', { method: 'POST' });
               window.location.href = '/login';
             }}
-            style={{
-              width: '100%',
-              padding: '12px 16px',
-              background: '#7DB728',
-              color: 'white',
-              border: 'none',
-              borderRadius: 8,
-              fontSize: 15,
-              fontWeight: 600,
-              cursor: 'pointer',
-              marginTop: 4,
-              transition: 'background 0.15s',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#689b1c';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = '#7DB728';
-            }}
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
               <polyline points="16 17 21 12 16 7" />
               <line x1="21" y1="12" x2="9" y2="12" />
             </svg>
             Cerrar sesión
-          </button>
+          </Button>
 
-          <div style={{ textAlign: 'center', marginTop: 8 }}>
-            <Link
-              href="/"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                color: '#4B5563',
-                fontSize: 14,
-                fontWeight: 500,
-                textDecoration: 'none',
-                transition: 'color 0.2s ease, transform 0.15s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = '#111827';
-                e.currentTarget.style.transform = 'translateY(-1px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = '#4B5563';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                <polyline points="9 22 9 12 15 12 15 22" />
-              </svg>
-              Ir al sitio web
-            </Link>
-          </div>
+          <BackToSiteLink className="mt-2" />
         </div>
       </div>
     );
   }
 
   return (
-    <div
-      style={{
-        background: 'white',
-        borderRadius: 12,
-        padding: '40px 36px',
-        width: '100%',
-        maxWidth: 400,
-        boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
-      }}
-    >
-      <div style={{ textAlign: 'center', marginBottom: 32 }}>
-        <img
-          src="/asset/logos/olo-logo-none.svg"
-          alt="OLO Logo"
-          style={{
-            width: 60,
-            height: 'auto',
-            margin: '0 auto 12px',
-          }}
-        />
-        <p style={{ margin: 0, fontSize: 18, fontWeight: 300, color: '#111827' }}>
-          Ingrese sus credenciales para continuar
-        </p>
-      </div>
+    <div className={authCardClass}>
+      <AuthCardHeader className="mb-[30px]">
+        <p className="text-xl font-light text-[#757575]">¡Bienvenido de nuevo!</p>
+      </AuthCardHeader>
 
       <form onSubmit={handleSubmit} noValidate>
-        {errors.general && (
-          <div
-            style={{
-              background: '#fef2f2',
-              border: '1px solid #fca5a5',
-              color: '#dc2626',
-              borderRadius: 8,
-              padding: '10px 14px',
-              fontSize: 14,
-              marginBottom: 16,
-            }}
-          >
-            {errors.general}
-          </div>
-        )}
+        {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
 
-        <div style={{ marginBottom: 16 }}>
-          <label
-            htmlFor="email"
-            style={{ display: 'block', fontSize: 14, fontWeight: 500, color: '#374151', marginBottom: 6 }}
-          >
+        <div className="mb-4">
+          <label htmlFor="email" className={authLabelClass}>
             Correo SENA
           </label>
           <input
@@ -277,132 +187,26 @@ function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="usuario@sena.edu.co"
-            style={{
-              width: '100%',
-              padding: '10px 12px',
-              border: `1px solid ${errors.email ? '#f87171' : '#d1d5db'}`,
-              borderRadius: 8,
-              fontSize: 14,
-              outline: 'none',
-              boxSizing: 'border-box',
-              color: '#111827',
-            }}
+            className={authInputClass(!!errors.email)}
           />
-          {errors.email && (
-            <p style={{ margin: '4px 0 0', fontSize: 12, color: '#dc2626' }}>{errors.email}</p>
-          )}
+          {errors.email && <p className={authErrorTextClass}>{errors.email}</p>}
         </div>
 
-        <div style={{ marginBottom: 24 }}>
-          <label
-            htmlFor="password"
-            style={{ display: 'block', fontSize: 14, fontWeight: 500, color: '#374151', marginBottom: 6 }}
-          >
-            Passcode
-          </label>
-          <div style={{ position: 'relative' }}>
-            <input
-              id="password"
-              type={showPassword ? 'text' : 'password'}
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Mínimo 8 caracteres"
-              style={{
-                width: '100%',
-                padding: '10px 40px 10px 12px',
-                border: `1px solid ${errors.password ? '#f87171' : '#d1d5db'}`,
-                borderRadius: 8,
-                fontSize: 14,
-                outline: 'none',
-                boxSizing: 'border-box',
-                color: '#111827',
-              }}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword((v) => !v)}
-              aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-              style={{
-                position: 'absolute',
-                right: 10,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: 4,
-                color: '#6b7280',
-              }}
-            >
-              {showPassword ? (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-                  <line x1="1" y1="1" x2="23" y2="23" />
-                </svg>
-              ) : (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
-              )}
-            </button>
-          </div>
-          {errors.password && (
-            <p style={{ margin: '4px 0 0', fontSize: 12, color: '#dc2626' }}>{errors.password}</p>
-          )}
-        </div>
+        <PasswordField
+          id="password"
+          label="Passcode"
+          autoComplete="current-password"
+          value={password}
+          onChange={setPassword}
+          error={errors.password}
+          className="mb-6"
+        />
 
-        <button
-          type="submit"
-          disabled={isLoading}
-          style={{
-            width: '100%',
-            padding: '11px 16px',
-            background: isLoading ? '#689b1c' : '#7DB728',
-            color: 'white',
-            border: 'none',
-            borderRadius: 8,
-            fontSize: 15,
-            fontWeight: 600,
-            cursor: isLoading ? 'not-allowed' : 'pointer',
-            transition: 'background 0.15s',
-          }}
-        >
-          {isLoading ? 'Iniciando sesión…' : 'Ingresar'}
-        </button>
+        <Button type="submit" variant="success" disabled={isLoading} className="w-full">
+          {isLoading ? 'INICIANDO SESIÓN' : 'INGRESAR'}
+        </Button>
 
-        <div style={{ textAlign: 'center', marginTop: 16 }}>
-          <Link
-            href="/"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              color: '#4B5563',
-              fontSize: 14,
-              fontWeight: 500,
-              textDecoration: 'none',
-              transition: 'color 0.2s ease, transform 0.15s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = '#111827';
-              e.currentTarget.style.transform = 'translateY(-1px)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = '#4B5563';
-              e.currentTarget.style.transform = 'translateY(0)';
-            }}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-              <polyline points="9 22 9 12 15 12 15 22" />
-            </svg>
-            Ir al sitio web
-          </Link>
-        </div>
+        <BackToSiteLink className="mt-4" />
       </form>
     </div>
   );
@@ -410,19 +214,10 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: '#F3F3F3',
-        padding: 24,
-      }}
-    >
+    <AuthPageShell>
       <Suspense fallback={<div>Cargando...</div>}>
         <LoginForm />
       </Suspense>
-    </div>
+    </AuthPageShell>
   );
 }

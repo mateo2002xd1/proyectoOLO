@@ -1,4 +1,4 @@
-import { ResetPasswordView } from '@/features/login/ui/ResetPasswordView';
+import { ResetPasswordView } from '@/features/login';
 
 export const metadata = {
   title: 'Restablecer contraseña | Intranet',

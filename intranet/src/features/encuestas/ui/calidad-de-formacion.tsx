@@ -148,8 +148,7 @@ export function CalidadFormacionView() {
         </div>
       </section>
 
-      {/* @ts-ignore - Bypass strict typing for static use case */}
-      <IntranetFooter block={{ id: 'footer-calidad-formacion' }} />
+      <IntranetFooter block={{ id: 'footer-calidad-formacion', type: 'IntranetFooter' }} />
     </main>
   );
 }

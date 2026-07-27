@@ -47,6 +47,10 @@ export function Avatar({ src, alt, name = '', square = false, className = '' }: 
 
   if (src) {
     return (
+      // `src` es arbitrario (puede ser un host externo no declarado en
+      // next.config remotePatterns) y el tamaño lo fija una clase de Tailwind,
+      // no width/height. next/image fallaría o exigiría reescribir el dimensionado.
+      // eslint-disable-next-line @next/next/no-img-element
       <img
         src={src}
         alt={alt || name}

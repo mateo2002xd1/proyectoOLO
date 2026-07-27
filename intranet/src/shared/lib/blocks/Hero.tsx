@@ -27,6 +27,8 @@ export function Hero({
           
           {/* Left Side: Image */}
           <div className="w-full md:w-1/2 flex justify-center md:justify-start">
+            {/* src dinamico y tamano por CSS: next/image exigiria width/height fijos o remotePatterns */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
               src={imageUrl} 
               alt={imageAlt} 

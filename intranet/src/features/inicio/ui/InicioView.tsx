@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { IntranetTopbarWrapper } from '@/shared/lib/blocks/IntranetTopbarWrapper';
 import { IntranetHero } from '@/shared/lib/blocks/IntranetHero';
 import { IntranetFooter } from '@/shared/lib/blocks/IntranetFooter';
@@ -81,6 +81,34 @@ const publicacionesData = [
 
 const pdfThumbnailCache: Record<string, string> = {};
 
+/* PDF.js se carga por <script> desde un CDN, así que no trae tipos. Se declara
+   aquí la porción mínima de su API que este archivo usa, en vez de castear a
+   `any` y perder toda verificación sobre una librería externa. */
+interface PdfViewport {
+  width: number;
+  height: number;
+}
+
+interface PdfPage {
+  getViewport(opts: { scale: number }): PdfViewport;
+  render(opts: { canvasContext: CanvasRenderingContext2D; viewport: PdfViewport }): { promise: Promise<void> };
+}
+
+interface PdfDocument {
+  getPage(numero: number): Promise<PdfPage>;
+}
+
+interface PdfJsLib {
+  GlobalWorkerOptions: { workerSrc: string };
+  getDocument(opts: { url: string; cMapUrl?: string; cMapPacked?: boolean }): { promise: Promise<PdfDocument> };
+}
+
+declare global {
+  interface Window {
+    pdfjsLib?: PdfJsLib;
+  }
+}
+
 async function renderPdfToDataUrl(pdfUrl: string): Promise<string | null> {
   if (pdfThumbnailCache[pdfUrl]) {
     return pdfThumbnailCache[pdfUrl];
@@ -94,12 +122,12 @@ async function renderPdfToDataUrl(pdfUrl: string): Promise<string | null> {
         return stored;
       }
     }
-  } catch (e) {
+  } catch {
     // Fallback if sessionStorage is disabled or full
   }
 
   try {
-    if (!(window as any).pdfjsLib) {
+    if (!window.pdfjsLib) {
       await new Promise<void>((resolve, reject) => {
         const script = document.createElement('script');
         script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
@@ -109,7 +137,7 @@ async function renderPdfToDataUrl(pdfUrl: string): Promise<string | null> {
       });
     }
 
-    const pdfjsLib = (window as any).pdfjsLib;
+    const pdfjsLib = window.pdfjsLib;
     if (!pdfjsLib) return null;
 
     pdfjsLib.GlobalWorkerOptions.workerSrc =
@@ -145,7 +173,7 @@ async function renderPdfToDataUrl(pdfUrl: string): Promise<string | null> {
 
     try {
       sessionStorage.setItem('pdf_thumb_' + pdfUrl, dataUrl);
-    } catch (e) {
+    } catch {
       // Storage quota fallback
     }
 
@@ -157,18 +185,23 @@ async function renderPdfToDataUrl(pdfUrl: string): Promise<string | null> {
 }
 
 function PdfThumbnail({ pdfUrl, title }: { pdfUrl: string; title: string }) {
+  const [urlAnterior, setUrlAnterior] = useState(pdfUrl);
   const [imgSrc, setImgSrc] = useState<string | null>(pdfThumbnailCache[pdfUrl] || null);
   const [loading, setLoading] = useState(!pdfThumbnailCache[pdfUrl]);
+
+  // Si cambia el PDF, se reinicia al valor cacheado (o a "cargando") durante el
+  // render, sin esperar al efecto: así nunca se ve la miniatura del PDF anterior.
+  if (pdfUrl !== urlAnterior) {
+    setUrlAnterior(pdfUrl);
+    setImgSrc(pdfThumbnailCache[pdfUrl] || null);
+    setLoading(!pdfThumbnailCache[pdfUrl]);
+  }
 
   useEffect(() => {
     let isMounted = true;
 
-    if (pdfThumbnailCache[pdfUrl]) {
-      setImgSrc(pdfThumbnailCache[pdfUrl]);
-      setLoading(false);
-      return;
-    }
-
+    // No hace falta comprobar la caché aquí: renderPdfToDataUrl ya la consulta
+    // primero y devuelve el valor guardado sin volver a renderizar el PDF.
     renderPdfToDataUrl(pdfUrl).then((url) => {
       if (isMounted && url) {
         setImgSrc(url);
@@ -194,6 +227,8 @@ function PdfThumbnail({ pdfUrl, title }: { pdfUrl: string; title: string }) {
   }
 
   return (
+    // src dinamico y tamano por CSS: next/image exigiria width/height fijos o remotePatterns
+    // eslint-disable-next-line @next/next/no-img-element
     <img
       src={imgSrc}
       alt={title}
@@ -432,8 +467,7 @@ export function InicioView() {
         </div>
       </div>
 
-      {/* @ts-ignore - Bypass strict typing for static use case */}
-      <IntranetFooter block={{ id: 'static-footer' }} />
+      <IntranetFooter block={{ id: 'static-footer', type: 'IntranetFooter' }} />
     </div>
   );
 }

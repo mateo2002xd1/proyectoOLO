@@ -1,4 +1,4 @@
-import { RecoveryView } from '@/features/login/ui/RecoveryView';
+import { RecoveryView } from '@/features/login';
 
 export const metadata = {
   title: 'Recuperar acceso | Intranet',

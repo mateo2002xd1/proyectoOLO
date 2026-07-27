@@ -4,9 +4,9 @@
  * Server Component mínimo: resuelve el slug y monta <EditorClient>, que carga
  * el contenido editable desde la API (:4000, DB) y monta el editor Puck real.
  *
- * @see ARQUITECTURA_MAESTRA_OLO.md §9.3  (editor/[slug]/page.tsx)
- * @see ARQUITECTURA_MAESTRA_OLO.md §3    (Flujo editorial — Borrador → EnRevision)
- * @see ARQUITECTURA_MAESTRA_OLO.md §0.11 (autorización siempre server-side)
+ * @see 1-guia-del-proyecto.md §4.3  (editor/[slug]/page.tsx)
+ * @see 8-ciclo-editorial.md §1    (Flujo editorial — Borrador → EnRevision)
+ * @see 3-seguridad-del-proyecto.md §0.4 (autorización siempre server-side)
  */
 
 import { EditorClient } from "./editor-client";

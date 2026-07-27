@@ -1,36 +1,58 @@
 'use client';
 
-import { useState, FormEvent, useEffect } from 'react';
+import { useState, FormEvent, useEffect, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authApi, useAuth } from '@/features/auth';
 import { PasswordField } from '@/shared/ui/molecules/PasswordField';
 import { ReturnToSiteLink } from '@/shared/ui/molecules/ReturnToSiteLink';
+import { mensajeDeError } from '@/shared/lib/errors';
+
+/* sessionStorage es un sistema externo a React. Se lee con useSyncExternalStore
+   en vez de copiarlo a un useState desde un efecto: getServerSnapshot devuelve
+   null, asi que el servidor y la hidratacion coinciden, y tras montar el cliente
+   ya lee el valor real. El snapshot es un string primitivo, por lo que no hace
+   falta cachearlo. No hay evento de cambio, de ahi la suscripcion vacia. */
+function subscribeToSessionStorage() {
+  return () => {};
+}
+
+const getModeSnapshot = (): 'recovery' | 'forced' =>
+  sessionStorage.getItem('recoveryEmail') && sessionStorage.getItem('recoveryAnswers')
+    ? 'recovery'
+    : 'forced';
+
+/** En el servidor no hay sessionStorage: sin modo aun. */
+const getModeServerSnapshot = (): null => null;
+
+/** Datos de recuperacion guardados por el paso anterior del flujo. */
+function leerDatosDeRecuperacion(): { email: string; answers: Array<{ key: string; answer: string }> } {
+  const email = sessionStorage.getItem('recoveryEmail') ?? '';
+  const crudas = sessionStorage.getItem('recoveryAnswers');
+  try {
+    return { email, answers: crudas ? JSON.parse(crudas) : [] };
+  } catch {
+    return { email, answers: [] };
+  }
+}
 
 export function ResetPasswordView() {
   const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
-  const [mode, setMode] = useState<'recovery' | 'forced' | null>(null);
+
+  // Solo `mode` necesita ser reactivo: el correo y las respuestas se leen
+  // directamente al enviar, que es el unico sitio donde se usan.
+  const mode = useSyncExternalStore(
+    subscribeToSessionStorage,
+    getModeSnapshot,
+    getModeServerSnapshot,
+  );
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState<{ currentPassword?: string; password?: string; confirm?: string; general?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [recoveryEmail, setRecoveryEmail] = useState('');
-  const [recoveryAnswers, setRecoveryAnswers] = useState<Array<{ key: string; answer: string }>>([]);
-
-  useEffect(() => {
-    const savedEmail = sessionStorage.getItem('recoveryEmail');
-    const savedAnswers = sessionStorage.getItem('recoveryAnswers');
-    if (savedEmail && savedAnswers) {
-      setRecoveryEmail(savedEmail);
-      try { setRecoveryAnswers(JSON.parse(savedAnswers)); } catch { }
-      setMode('recovery');
-    } else {
-      setMode('forced');
-    }
-  }, []);
 
   useEffect(() => {
     if (mode === 'forced' && !authLoading && !user) {
@@ -70,7 +92,8 @@ export function ResetPasswordView() {
 
     try {
       if (mode === 'recovery') {
-        await authApi.recoverPassword(recoveryEmail, recoveryAnswers, password);
+        const { email, answers } = leerDatosDeRecuperacion();
+        await authApi.recoverPassword(email, answers, password);
         sessionStorage.removeItem('recoveryEmail');
         sessionStorage.removeItem('recoveryQuestions');
         sessionStorage.removeItem('recoveryAnswers');
@@ -79,8 +102,8 @@ export function ResetPasswordView() {
       }
 
       router.push('/login/reset-success');
-    } catch (error: any) {
-      setErrors({ general: error.message || 'Error de conexión con el servidor' });
+    } catch (error) {
+      setErrors({ general: mensajeDeError(error, 'Error de conexión con el servidor') });
     } finally {
       setIsLoading(false);
     }

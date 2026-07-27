@@ -6,7 +6,7 @@
  *   - Devolver contenido tipado con @olo/types (Pagina)
  *   - Manejar estados: borrador, en_revision, publicado, rechazado
  *
- * @see ARQUITECTURA_MAESTRA_OLO.md §10 (Modelo de datos — paginas/paginas_versiones)
+ * @see 1-guia-del-proyecto.md §2 (Modelo de datos — paginas/paginas_versiones)
  */
 
 // TODO: Fase 3 — import type { Pagina } from '@olo/types';

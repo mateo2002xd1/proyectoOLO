@@ -1,5 +1,5 @@
 import React from 'react';
-import { MatrizView } from '@/features/matriz/ui/MatrizView';
+import { MatrizView } from '@/features/matriz';
 
 export const metadata = {
   title: 'Matriz de Pertinencia',

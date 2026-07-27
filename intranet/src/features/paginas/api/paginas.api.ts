@@ -6,8 +6,8 @@
  *   POST  /paginas/:slug/borrador        → guarda una nueva versión borrador
  *   PATCH /paginas/:slug/enviar-revision → borrador → en_revision
  *
- * @see ARQUITECTURA_MAESTRA_OLO.md §9.1 (use-cases/paginas/)
- * @see ARQUITECTURA_MAESTRA_OLO.md §5  (API :4000 es la única fuente de JWT/auth)
+ * @see 1-guia-del-proyecto.md §4.1 (use-cases/paginas/)
+ * @see 3-seguridad-del-proyecto.md §S3  (API :4000 es la única fuente de JWT/auth)
  */
 
 import { apiClient } from "@/shared/lib/api-client";

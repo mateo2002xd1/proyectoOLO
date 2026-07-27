@@ -8,10 +8,13 @@
  *   - Hook useAuth() para componentes cliente
  *   - Tipos de usuario/sesión (importar de @olo/types cuando exista)
  *
- * Regla de oro §0.3: Otros módulos importan desde aquí, nunca archivos internos.
+ * Otros módulos importan desde aquí, nunca archivos internos.
  *
- * @see ARQUITECTURA_MAESTRA_OLO.md §5 (La API es la única que emite y valida el JWT)
- * @see ARQUITECTURA_MAESTRA_OLO.md §0.3 (Importar solo desde index público)
+ * NOTA: `features/login/` tiene las vistas de este mismo dominio. Se fusionan
+ * en la fase 4 de `8-ciclo-editorial.md` §5.
+ *
+ * @see 4-reglas.md regla 6
+ * @see 3-seguridad-del-proyecto.md (la API es la única que emite y valida el JWT)
  */
 
 export { authApi } from './api/auth.api';

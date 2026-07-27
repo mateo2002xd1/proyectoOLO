@@ -6,7 +6,7 @@
  *   - Itera cada bloque y delega al componente correspondiente de @olo/blocks-renderer
  *   - NO reimplementa renderizado de bloques localmente (Regla de oro §0.2)
  *
- * @see ARQUITECTURA_MAESTRA_OLO.md §0.2 (@olo/blocks-renderer es la única fuente de componentes de renderizado)
+ * @see 1-guia-del-proyecto.md §4.4 (@olo/blocks-renderer es la única fuente de componentes de renderizado)
  */
 
 // TODO: Fase 3 — import { BlockRenderer } from '@olo/blocks-renderer';
