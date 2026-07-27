@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
-import { Avatar } from '@/shared/ui/atoms/avatar';
+import Link from 'next/link';
 import {
   Dropdown,
   DropdownButton,
@@ -17,7 +17,6 @@ import {
   SidebarBody,
   SidebarFooter,
   SidebarHeader,
-  SidebarHeading,
   SidebarItem,
   SidebarLabel,
   SidebarSection,
@@ -26,28 +25,24 @@ import {
 import { SidebarLayout } from '@/shared/ui/organisms/sidebar-layout';
 import {
   ArrowRightStartOnRectangleIcon,
-  ChevronDownIcon,
   ChevronUpIcon,
   Cog8ToothIcon,
-  LightBulbIcon,
-  PlusIcon,
   ShieldCheckIcon,
   UserIcon,
 } from '@heroicons/react/16/solid';
 import {
   ClipboardDocumentCheckIcon,
-  Cog6ToothIcon,
   HomeIcon,
   InboxIcon,
   MagnifyingGlassIcon,
-  MegaphoneIcon,
   QuestionMarkCircleIcon,
-  SparklesIcon,
-  Square2StackIcon,
-  TicketIcon,
   SunIcon,
   MoonIcon,
 } from '@heroicons/react/20/solid';
+
+/** Editor de la intranet: configurable por entorno, nunca fijo a localhost. */
+const INTRANET_EDITOR_URL =
+  process.env.NEXT_PUBLIC_INTRANET_EDITOR_URL || 'http://localhost:3001/editor/inicio';
 
 type PanelData = {
   stats: Record<string, number>;
@@ -55,24 +50,29 @@ type PanelData = {
   recentActivity: { id: string; action: string; user: string; date: string; description: string }[];
 };
 
+/* ---------- Tema claro/oscuro ----------
+   La clase `dark` del <html> es la única fuente de verdad. En vez de
+   duplicarla en un useState y sincronizarla con un efecto, la leemos con
+   useSyncExternalStore: así el toggle no se desincroniza si algo más
+   cambia la clase, y no hay render extra al montar. */
+function subscribeToTheme(onChange: () => void) {
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+  return () => observer.disconnect();
+}
+
+const getThemeSnapshot = () => document.documentElement.classList.contains('dark');
+/** En el servidor no hay DOM; asumimos tema claro para que la marca inicial coincida. */
+const getThemeServerSnapshot = () => false;
+
 export function PanelGeneralLayout({ children, userProfile }: { children: React.ReactNode; userProfile?: { name: string; email: string } }) {
   const router = useRouter();
-  const [isDark, setIsDark] = useState(false);
-
-  useEffect(() => {
-    setIsDark(document.documentElement.classList.contains('dark'));
-  }, []);
+  const isDark = useSyncExternalStore(subscribeToTheme, getThemeSnapshot, getThemeServerSnapshot);
 
   const toggleTheme = () => {
-    const isDarkNow = !isDark;
-    setIsDark(isDarkNow);
-    if (isDarkNow) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('olo-theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('olo-theme', 'light');
-    }
+    const isDarkNow = !document.documentElement.classList.contains('dark');
+    document.documentElement.classList.toggle('dark', isDarkNow);
+    localStorage.setItem('olo-theme', isDarkNow ? 'dark' : 'light');
   };
 
   const handleLogout = useCallback(async () => {
@@ -126,7 +126,9 @@ export function PanelGeneralLayout({ children, userProfile }: { children: React.
         <Sidebar>
           <SidebarHeader>
             <div className="flex items-center justify-between w-full">
-              <img src="/asset/logos/olo-logo-horizontal.svg" className='h-13' />
+              {/* SVG estático servido desde /public: next/image no aporta optimización aquí. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/asset/logos/olo-logo-horizontal.svg" alt="OLO" className="h-13" />
               <button onClick={toggleTheme} className="p-2 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white" aria-label="Cambiar tema">
                 {isDark ? <SunIcon className="size-5" /> : <MoonIcon className="size-5" />}
               </button>
@@ -220,21 +222,19 @@ export function PanelGeneralDashboard() {
   const [data, setData] = useState<PanelData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchData = useCallback(async () => {
-    try {
-      // Simular carga de datos para evitar el 404 del endpoint de páginas públicas
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setData({ stats: { usuarios: 0, paginas: 0, alertas: 0, visitas: 0 }, alerts: [], recentActivity: [] });
-    } catch {
-      setData({ stats: { usuarios: 0, paginas: 0, alertas: 0, visitas: 0 }, alerts: [], recentActivity: [] });
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    let cancelado = false;
+    (async () => {
+      // Simular carga de datos para evitar el 404 del endpoint de páginas públicas
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      if (cancelado) return;
+      setData({ stats: { usuarios: 0, paginas: 0, alertas: 0, visitas: 0 }, alerts: [], recentActivity: [] });
+      setLoading(false);
+    })();
+    return () => {
+      cancelado = true;
+    };
+  }, []);
 
   if (loading) {
     return (
@@ -268,7 +268,7 @@ export function PanelGeneralDashboard() {
 
         {/* Action Buttons for Editors */}
         <div className="mb-8 grid gap-4 sm:grid-cols-2">
-          <a
+          <Link
             href="/editor/inicio"
             className="group flex flex-col justify-center gap-1 rounded-xl border border-zinc-200 bg-white p-5 transition-all duration-200 ease-out hover:translate-x-1 hover:border-[#7DB829]/40 hover:bg-[#7DB829]/10 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-[#7DB829]/40 dark:hover:bg-[#7DB829]/10"
           >
@@ -278,10 +278,10 @@ export function PanelGeneralDashboard() {
             <p className="text-sm text-zinc-500 dark:text-zinc-400">
               Abre el editor visual Puck para el sitio público principal
             </p>
-          </a>
+          </Link>
 
           <a
-            href="http://localhost:3001/editor/inicio"
+            href={INTRANET_EDITOR_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="group flex flex-col justify-center gap-1 rounded-xl border border-zinc-200 bg-white p-5 transition-all duration-200 ease-out hover:translate-x-1 hover:border-[#011A39]/40 hover:bg-[#011A39]/10 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-[#011A39]/40 dark:hover:bg-[#011A39]/20"

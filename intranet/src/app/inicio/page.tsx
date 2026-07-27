@@ -1,5 +1,5 @@
 import React from 'react';
-import { InicioView } from '@/features/inicio/ui/InicioView';
+import { InicioView } from '@/features/inicio';
 
 export const metadata = {
   title: 'Inicio | Intranet',

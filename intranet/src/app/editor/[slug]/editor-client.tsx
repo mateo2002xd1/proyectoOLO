@@ -6,18 +6,23 @@
  *   - page.tsx  → Server Component (routing)
  *   - editor-client.tsx → Client Component (carga de datos + editor Puck)
  *
- * @see ARQUITECTURA_MAESTRA_OLO.md §9.3  (editor/[slug]/page.tsx)
- * @see ARQUITECTURA_MAESTRA_OLO.md §3    (Flujo editorial)
+ * @see 1-guia-del-proyecto.md §4.3  (editor/[slug]/page.tsx)
+ * @see 8-ciclo-editorial.md §1    (Flujo editorial)
  */
 
 "use client";
 
 import { useEffect, useState } from "react";
-import { PuckEditorWrapper } from "@/features/paginas";
-import { useEditorActions } from "@/features/paginas";
-import { obtenerVersionEditable, type VersionEditable } from "@/features/paginas/api/paginas.api";
+import {
+  PuckEditorWrapper,
+  useEditorActions,
+  obtenerVersionEditable,
+  getPageSeed,
+  isEmptyContent,
+  type VersionEditable,
+  type PaginaVersion,
+} from "@/features/paginas";
 import { GooLoader } from "@/shared/ui/atoms/GooLoader";
-import type { PaginaVersion } from "@/features/paginas/types/editor.types";
 
 interface EditorClientProps {
   slug: string;
@@ -41,7 +46,16 @@ export function EditorClient({ slug }: EditorClientProps) {
   useEffect(() => {
     let active = true;
     obtenerVersionEditable(slug)
-      .then((data) => { if (active) setEditable(data); })
+      .then((data) => {
+        if (!active) return;
+        // Sin versión en BD → sembrar el editor con el contenido estático
+        // (copia editable) en lugar de abrir en blanco.
+        if (isEmptyContent(data.contenido)) {
+          setEditable({ ...data, contenido: getPageSeed(slug) });
+        } else {
+          setEditable(data);
+        }
+      })
       .catch((err) => {
         if (active) setLoadError(err instanceof Error ? err.message : "No se pudo cargar la página");
       });

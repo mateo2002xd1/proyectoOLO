@@ -1,10 +1,16 @@
 /**
  * Punto de entrada público del módulo de páginas.
  *
- * Regla de oro §0.3: Un módulo de dominio no importa archivos internos de otro módulo.
- * Todo lo que otros módulos necesiten de `features/paginas/` se exporta desde aquí.
+ * Un módulo de dominio no importa archivos internos de otro módulo. Todo lo que
+ * otros módulos necesiten de `features/paginas/` se exporta desde aquí.
  *
- * @see ARQUITECTURA_MAESTRA_OLO.md §0.3
+ * NOTA: este es un dominio CON ciclo de vida. Su estructura interna
+ * (`model/`, `publicacion/`, `edicion/`, `revision/`) está definida en
+ * `8-ciclo-editorial.md` §3.2 y se aplica en la fase 4 del §5. Las rutas
+ * internas de abajo cambian entonces; este archivo absorbe el movimiento.
+ *
+ * @see 4-reglas.md regla 6
+ * @see 8-ciclo-editorial.md §3.2
  */
 
 // Components
@@ -12,6 +18,10 @@ export { PageRenderer } from "./components/page-renderer";
 export { EditButton } from "./components/edit-button";
 export { PuckEditorWrapper } from "./components/puck-editor-wrapper";
 export { EditorJsWrapper } from "./components/editorjs-wrapper";
+export { ClientPuckRender } from "./components/client-puck-render";
+
+// Semillas de contenido inicial (mesa de trabajo)
+export { getPageSeed, isEmptyContent } from "./lib/page-seeds";
 
 // Hooks
 export { usePagina } from "./hooks/use-pagina";

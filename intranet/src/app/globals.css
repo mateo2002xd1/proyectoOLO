@@ -2745,6 +2745,7 @@ input {
   height: auto;
   display: block;
   border-radius: 10px;
+
 }
 
 .matriz-content-container {
@@ -2805,6 +2806,7 @@ input {
   font-size: 1.75rem;
   font-weight: 700;
   margin-bottom: 1.5rem;
+  margin-top: 30px;
   color: #0A1B3F;
 }
 
@@ -2831,6 +2833,7 @@ input {
   font-size: 1.125rem;
   color: #1E293B;
   margin-bottom: 0.5rem;
+  margin-top: 25 rem;
 }
 
 .matriz-que-es-list p {
@@ -3570,4 +3573,19 @@ input {
   color: #1f2937;
   line-height: 1.375;
   margin: 0;
+}
+
+/* ─── Primitivo de maquetación: Grid / Columnas (@olo/blocks-renderer) ───
+   El número de columnas y la separación llegan como variables CSS inline
+   desde el `render` del primitivo; aquí se aplican y se colapsan en móvil. */
+.olo-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--olo-grid-cols, 3), minmax(0, 1fr));
+  gap: var(--olo-grid-gap, 24px);
+  width: 100%;
+}
+@media (max-width: 640px) {
+  .olo-grid {
+    grid-template-columns: 1fr;
+  }
 }

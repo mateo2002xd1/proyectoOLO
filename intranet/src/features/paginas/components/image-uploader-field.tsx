@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { mensajeDeError } from '@/shared/lib/errors';
 
 interface ImageUploaderFieldProps {
   value: string;
@@ -33,8 +34,8 @@ export function ImageUploaderField({ value, onChange }: ImageUploaderFieldProps)
 
       const data = await res.json();
       onChange(data.url); // The API should return { url: '/uploads/filename.png' }
-    } catch (err: any) {
-      setError(err.message || 'Error desconocido');
+    } catch (err) {
+      setError(mensajeDeError(err, 'Error desconocido'));
     } finally {
       setIsUploading(false);
     }
@@ -43,6 +44,8 @@ export function ImageUploaderField({ value, onChange }: ImageUploaderFieldProps)
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       {value && (
+        // src dinamico y tamano por CSS: next/image exigiria width/height fijos o remotePatterns
+        // eslint-disable-next-line @next/next/no-img-element
         <img 
           src={value} 
           alt="Preview" 

@@ -18,15 +18,15 @@ export function MatrizView() {
       <IntranetTopbarWrapper />
 
       {/* Banner */}
-      <section className="w-full max-w-full relative overflow-hidden ">
-        <div className="bannerOficialMatriz py-8 md:py-0">
-          <h1 className="text-white text-3xl md:text-[44px] font-bold uppercase tracking-wide leading-tight text-left mb-8 md:mb-0 mr-0 md:mr-16">
-            MATRIZ DE <br /> PERTINENCIA
+      <section className="tasa-banner-wrapper">
+        <div className="tasa-banner-content">
+          <h1 className="tasa-banner-title">
+            Tasa de<br /> <strong>Vinculación y Empleabilidad</strong>
           </h1>
           <img
-          src="/assets/img/BannerOficial.png"
-          alt="Matriz de Pertinencia Banner"
-          style={{ width: '350px', maxWidth: '100vw', height: 'auto', objectFit: 'cover'}}
+            src="/assets/img/BannerTasa.png"
+            alt="Matriz de Pertinencia Banner"
+            className="tasa-banner-image"
           />
         </div>
       </section>
@@ -59,6 +59,7 @@ export function MatrizView() {
             src="/assets/img/Sabiasque.png"
             alt="Sabías que... La Matriz ofrece información desde 2011"
             className="w-full h-auto object-contain rounded-2xl shadow-sm"
+
           />
         </div>
       </div>
@@ -73,11 +74,10 @@ export function MatrizView() {
       {/* Video Section */}
       <div className="matriz-section-white py-12">
         <div className="w-full max-w-[650px] mx-auto text-left px-4">
-          <h2 className="text-[#1C2A48] text-2xl md:text-[32px] font-medium mb-4 leading-snug">
-            ¿Ya sabes como acceder a la matriz de pertinencia en <br className="hidden md:block" />
-            «CompromISO»?
+          <h2 className="text-[#1C2A48] text-2xl md:text-[34px] font-medium mb-4 leading-snug">
+            ¿Ya sabes como acceder a la matriz de pertinencia en «CompromISO»?
           </h2>
-          <p className="text-[#1C2A48] text-[20px] mb-6">
+          <p className="text-[#1C2A48] text-[20px]" style={{ marginTop: "10px", marginBottom: "25px" }}>
             Mira nuestro video
           </p>
           <div className="w-full aspect-video rounded-xl overflow-hidden shadow-lg bg-gray-100">
@@ -97,8 +97,8 @@ export function MatrizView() {
       {/* Dashboard OLO - Matriz */}
       <div className="matriz-section-gray w-full flex justify-center py-10">
         <div className="w-full max-w-[1303px] px-4 md:px-6 flex flex-col items-start">
-          <h2 className="text-[#0A1B3F] text-[32px] font-bold text-left mb-4">Dashboard OLO - Matriz</h2>
-          <div className="text-[#0A1B3F] text-lg text-left mb-16 md:mb-20 max-w-[900px]">
+          <h2 className="text-[#0A1B3F] text-[32px] font-bold text-left mb-4" style={{ marginTop: "8rem", marginBottom: "4rem" }}>Dashboard OLO - Matriz</h2>
+          <div className="text-[#0A1B3F] text-lg text-left mb-16 md:mb-20 max-w-[900px]" style={{ marginBottom: "4rem" }}>
             Resultados de vinculación laboral formal (titulada), con una periodicidad semestral.<br className="hidden md:block" />
             Genera un indicador de vinculación donde se relaciona el número de vinculados<br className="hidden md:block" />
             laboralmente en el mercado formal y el total de egresados, para un grupo de<br className="hidden md:block" />
@@ -123,22 +123,22 @@ export function MatrizView() {
       {/* Descargas & Presentation */}
       <div className="matriz-section-white py-16">
         <div className="w-full max-w-[1303px] mx-auto px-4 md:px-6">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-start">
+          <div className="flex flex-col md:flex-row items-start">
             {/* Left Column: Descargas */}
-            <div className="md:col-span-4 lg:col-span-3">
+            <div className="w-full md:w-1/3 mb-8 md:mb-0 md:pr-12">
               <h3 className="text-[#0A1B3F] text-[28px] font-bold mb-6">Descargas</h3>
               <ul className="list-disc pl-6 text-[#1C2A48] text-lg md:text-xl space-y-2 marker:text-[#0A1B3F]">
                 <li><a href="#" className="hover:underline transition-colors">Matriz de pertinencia 2025</a></li>
                 <li><a href="#" className="hover:underline transition-colors">Matriz de pertinencia 2024</a></li>
               </ul>
             </div>
-            
+
             {/* Right Column: Presentation Viewer */}
-            <div className="md:col-span-8 lg:col-span-7">
+            <div className="w-full md:w-2/3">
               <div className="w-full max-w-[850px] aspect-[1037/617] rounded-xl overflow-hidden shadow-sm border border-gray-200">
-                <iframe 
-                  src="/uploads/documents/Presentación1.pptx" 
-                  title="Presentación Matriz de Pertinencia" 
+                <iframe
+                  src="/uploads/documents/"
+                  title="Presentación Matriz de Pertinencia"
                   className="w-full h-full"
                   frameBorder="0"
                 ></iframe>
@@ -148,8 +148,7 @@ export function MatrizView() {
         </div>
       </div>
 
-      {/* @ts-ignore - Bypass strict typing for static use case */}
-      <IntranetFooter block={{ id: 'static-footer' }} />
+      <IntranetFooter block={{ id: 'static-footer', type: 'IntranetFooter' }} />
     </div>
   );
 }

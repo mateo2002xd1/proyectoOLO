@@ -6,6 +6,15 @@ export { Footer } from './blocks/Footer';
 export { IntranetTopbar } from './blocks/IntranetTopbar';
 export { IntranetHero } from './blocks/IntranetHero';
 
+// ─── Primitivos de maquetación para Puck (compartidos entre apps) ───
+export {
+  gridConfig,
+  flexConfig,
+  spaceConfig,
+  primitiveComponents,
+  PRIMITIVE_COMPONENT_NAMES,
+} from './primitives/layout-primitives';
+
 export type {
   Block,
   BlockType,

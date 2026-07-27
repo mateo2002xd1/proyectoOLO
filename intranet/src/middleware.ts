@@ -6,8 +6,8 @@ import type { NextRequest } from "next/server";
  * Middleware global de la intranet.
  * Intercepta TODAS las rutas — la intranet no tiene zona pública.
  *
- * @see ARQUITECTURA_MAESTRA_OLO.md §9.3 (middleware.ts — matcher: ['/:path*'] — TODO protegido)
- * @see ARQUITECTURA_MAESTRA_OLO.md §0.11 (La autorización SIEMPRE se verifica server-side)
+ * @see 1-guia-del-proyecto.md §4.3 (middleware.ts — matcher: ['/:path*'] — TODO protegido)
+ * @see 3-seguridad-del-proyecto.md §0.4 (La autorización SIEMPRE se verifica server-side)
  */
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

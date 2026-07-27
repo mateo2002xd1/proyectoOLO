@@ -1,4 +1,4 @@
-import { SecurityQuestionsView } from '@/features/login/ui/SecurityQuestionsView';
+import { SecurityQuestionsView } from '@/features/login';
 
 export const metadata = {
   title: 'Preguntas de seguridad | Intranet',

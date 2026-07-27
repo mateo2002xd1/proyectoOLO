@@ -26,7 +26,7 @@ async function fetchAuth(endpoint: string, options: RequestInit = {}) {
     try {
       const errorData = await res.json();
       message = errorData.error || errorData.message || message;
-    } catch (e) {
+    } catch {
       // Ignorar si no es JSON
     }
     throw new Error(message);

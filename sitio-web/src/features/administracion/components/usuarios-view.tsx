@@ -2,7 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { useUsuarios, User } from '../hooks/use-usuarios';
+import {
+  useUsuarios,
+  mensajeDeError,
+  type User,
+  type NuevoUsuario,
+  type CambiosUsuario,
+} from '../hooks/use-usuarios';
 import { Button } from '@/shared/ui/atoms/button';
 import { Notification } from '@/shared/ui/molecules/notification';
 import { Alert, AlertTitle, AlertDescription, AlertActions } from '@/shared/ui/molecules/alert';
@@ -44,14 +50,14 @@ export default function UsuariosView() {
     try {
       let response;
       if (editingUserId) {
-        const data: any = { name, email, role_id: roleId };
+        const data: CambiosUsuario = { name, email, role_id: roleId };
         if (expirationDate) data.expiration_date = expirationDate;
         if (resetPassword) data.reset_password = true;
         if (resetSecurityQuestions) data.reset_security_questions = true;
         response = await updateUser(editingUserId, data);
         setNotificationMsg({ title: 'Usuario actualizado', message: 'El usuario se ha actualizado exitosamente.', type: 'success' });
       } else {
-        const data: any = { name, email, role_id: roleId };
+        const data: NuevoUsuario = { name, email, role_id: roleId };
         if (expirationDate) data.expiration_date = expirationDate;
         response = await createUser(data);
         setNotificationMsg({ title: 'Usuario creado', message: 'El usuario se ha creado exitosamente.', type: 'success' });
@@ -75,8 +81,8 @@ export default function UsuariosView() {
         });
         setCopiedPassword(false);
       }
-    } catch (err: any) {
-      setNotificationMsg({ title: 'Error', message: err.message || 'Error al procesar la solicitud', type: 'error' });
+    } catch (err) {
+      setNotificationMsg({ title: 'Error', message: mensajeDeError(err) || 'Error al procesar la solicitud', type: 'error' });
       setShowNotification(true);
     } finally {
       setIsSubmitting(false);
@@ -97,8 +103,8 @@ export default function UsuariosView() {
          });
          setCopiedPassword(false);
        }
-    } catch (err: any) {
-       setNotificationMsg({ title: 'Error', message: err.message || 'No se pudo cambiar el estado', type: 'error' });
+    } catch (err) {
+       setNotificationMsg({ title: 'Error', message: mensajeDeError(err) || 'No se pudo cambiar el estado', type: 'error' });
        setShowNotification(true);
     }
   };
@@ -109,8 +115,8 @@ export default function UsuariosView() {
       await deleteUser(deleteConfirmId);
       setNotificationMsg({ title: 'Usuario eliminado', message: 'El usuario se eliminó exitosamente.', type: 'success' });
       setShowNotification(true);
-    } catch(err: any) {
-      setNotificationMsg({ title: 'Error', message: err.message || 'No se pudo eliminar el usuario', type: 'error' });
+    } catch (err) {
+      setNotificationMsg({ title: 'Error', message: mensajeDeError(err) || 'No se pudo eliminar el usuario', type: 'error' });
       setShowNotification(true);
     } finally {
       setDeleteConfirmId(null);

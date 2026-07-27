@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { authApi, useAuth } from '@/features/auth';
 import { PasswordField } from '@/shared/ui/molecules/PasswordField';
 import { ReturnToSiteLink } from '@/shared/ui/molecules/ReturnToSiteLink';
 import { QuestionPicker, type CatalogQuestion } from './QuestionPicker';
+import { mensajeDeError } from '@/shared/lib/errors';
 
 const TOTAL_QUESTIONS = 3;
 
@@ -109,8 +110,8 @@ export function FirstLoginView() {
       );
 
       setCurrentStep(3);
-    } catch (error: any) {
-      setErrors({ general: error.message || 'Error de conexión con el servidor' });
+    } catch (error) {
+      setErrors({ general: mensajeDeError(error, 'Error de conexión con el servidor') });
     } finally {
       setIsLoading(false);
     }
@@ -154,7 +155,17 @@ export function FirstLoginView() {
 
   const renderStep2 = () => (
     <div className="fl-card">
-      <form onSubmit={(e) => { e.preventDefault(); currentQuestion === TOTAL_QUESTIONS - 1 ? handleSubmitStep2() : handleNextQuestion(); }} className="fl-form">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (currentQuestion === TOTAL_QUESTIONS - 1) {
+            handleSubmitStep2();
+          } else {
+            handleNextQuestion();
+          }
+        }}
+        className="fl-form"
+      >
         <h2 className="fl-card-title">Escoge tus preguntas y respuestas</h2>
 
         <QuestionPicker

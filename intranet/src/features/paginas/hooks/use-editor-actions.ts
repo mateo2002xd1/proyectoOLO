@@ -7,8 +7,8 @@
  * Regla de oro §0.5: los Use Cases no conocen Express; aquí el hook
  * no conoce los detalles de transporte — solo llama funciones de api/.
  *
- * @see ARQUITECTURA_MAESTRA_OLO.md §3  (Flujo editorial — máquina de estados)
- * @see ARQUITECTURA_MAESTRA_OLO.md §9.3 (hooks/use-editor-actions.ts)
+ * @see 8-ciclo-editorial.md §1  (Flujo editorial — máquina de estados)
+ * @see 1-guia-del-proyecto.md §4.3 (hooks/use-editor-actions.ts)
  */
 
 "use client";

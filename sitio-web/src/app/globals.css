@@ -2,6 +2,42 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* --- Brand Tokens ---
+   Van en @theme (no en :root) para que Tailwind genere las utilidades
+   correspondientes: bg-brand, text-brand, ring-brand, border-brand, etc.
+   Fuente única del verde institucional: no volver a escribirlo a mano.
+
+   ESTAN SEPARADOS POR ROL, y la distinción no es estética:
+
+   · Los tokens de IDENTIDAD son los colores del manual de marca SENA. Su
+     contraste contra blanco es de 2.42:1 (verde) y 2.60:1 (azul), muy por
+     debajo del 4.5:1 que exige el nivel AA de la Resolución 1519 de 2020.
+     Sirven para superficies grandes, bordes y elementos decorativos.
+     NUNCA poner texto encima de ellos, ni usarlos como color de texto.
+
+   · Los tokens INTERACTIVOS son para lo que lleva texto o indica estado:
+     botones, enlaces, anillos de foco. Todos cumplen AA con texto blanco.
+
+   El ratio de contraste es simétrico: un par de colores sirve o no sirve,
+   sea cual sea el que hace de texto. Invertirlos no arregla nada.
+
+   Medición completa y criterios en 9-accesibilidad.md §2.1. */
+@theme {
+  /* Identidad — sin texto encima */
+  --color-brand: #7db728;                   /* 2.42:1 vs blanco */
+  --color-brand-hover: #6da020;             /* 3.13:1 */
+  --color-brand-blue: #1face3;              /* 2.60:1 */
+
+  /* Interactivo — cumplen AA con texto blanco */
+  --color-brand-interactive: #2a7d00;       /* 5.21:1 */
+  --color-brand-interactive-hover: #1f5c00; /* 8.11:1 */
+  --color-brand-blue-dark: #0b6d8f;         /* 5.84:1 */
+
+  /* Anillo de foco. SC 1.4.11 exige 3:1; se usa a opacidad plena,
+     nunca con /40 ni similares, porque la transparencia baja el ratio. */
+  --color-brand-focus: #2a7d00;             /* 5.21:1 */
+}
+
 /* --- CSS Custom Properties (Design Tokens) --- */
 :root {
   /* Primary Palette */
@@ -99,9 +135,13 @@
   --surface: #ffffff;
   --line: rgba(196, 199, 197, 0.4);
   --muted: rgba(68, 71, 70, 0.4);
-  --brand: #7db728;
-  --brand-hover: #6da020;
-  --brand-blue: #1face3;
+  /* Alias de los tokens de marca, para el CSS que ya usa var(--brand). */
+  --brand: var(--color-brand);
+  --brand-hover: var(--color-brand-hover);
+  --brand-blue: var(--color-brand-blue);
+  --brand-interactive: var(--color-brand-interactive);
+  --brand-interactive-hover: var(--color-brand-interactive-hover);
+  --brand-blue-dark: var(--color-brand-blue-dark);
 }
 
 @supports (height: 100dvh) {
@@ -951,13 +991,15 @@
   border: none;
 }
 
+/* Lleva texto blanco encima, así que usa el azul interactivo (5.84:1),
+   no el de identidad (2.60:1). Ver 9-accesibilidad.md §2.1. */
 .admin-btn-primary {
-  background: var(--brand-blue);
+  background: var(--brand-blue-dark);
   color: white;
 }
 
 .admin-btn-primary:hover {
-  background: #007BC4;
+  background: #085872;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 147, 233, 0.3);
 }
@@ -1308,7 +1350,7 @@ button.text-link,
 }
 
 .toggle-switch .toggle-input:checked + .toggle-label {
-  background-color: #7db728;
+  background-color: var(--color-brand);
 }
 
 .toggle-switch .toggle-input:checked + .toggle-label::before {
@@ -1515,7 +1557,7 @@ input[type="date"].olo-date-input[value=""] {
 }
 
 .goo-loader-dot3 {
-  background-color: #7DB728;
+  background-color: var(--color-brand);
   animation: gooDot3Move 2s ease infinite, gooLoaderIndex 6s ease infinite;
 }
 
@@ -1587,4 +1629,19 @@ input[type="date"].olo-date-input[value=""] {
   justify-content: center;
   background-color: #f0f2f5;
   z-index: 50;
+}
+
+/* ─── Primitivo de maquetación: Grid / Columnas (@olo/blocks-renderer) ───
+   El número de columnas y la separación llegan como variables CSS inline
+   desde el `render` del primitivo; aquí se aplican y se colapsan en móvil. */
+.olo-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--olo-grid-cols, 3), minmax(0, 1fr));
+  gap: var(--olo-grid-gap, 24px);
+  width: 100%;
+}
+@media (max-width: 640px) {
+  .olo-grid {
+    grid-template-columns: 1fr;
+  }
 }

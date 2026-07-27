@@ -19,8 +19,36 @@ export type User = {
   created_at: string;
 };
 
+/** Datos aceptados al crear un usuario. */
+export type NuevoUsuario = {
+  name: string;
+  email: string;
+  role_id: string;
+  expiration_date?: string;
+};
+
+/** Campos modificables de un usuario; todos opcionales (PATCH parcial). */
+export type CambiosUsuario = Partial<{
+  name: string;
+  email: string;
+  role_id: string;
+  status: string;
+  expiration_date: string;
+  reset_password: boolean;
+  reset_security_questions: boolean;
+}>;
+
+/** Respuesta de crear/actualizar: el backend devuelve la clave temporal solo
+ *  cuando se genera una nueva. */
+export type RespuestaUsuario = User & { temporaryPassword?: string };
+
 /** Opciones base para todas las peticiones al proxy de Next.js — necesario para enviar cookies HTTPOnly */
 const FETCH_OPTS: RequestInit = { credentials: 'include' };
+
+/** Mensaje legible de un error desconocido capturado en un catch. */
+export function mensajeDeError(err: unknown, porDefecto = ''): string {
+  return err instanceof Error ? err.message : porDefecto;
+}
 
 export function useUsuarios() {
   const [users, setUsers] = useState<User[]>([]);
@@ -36,8 +64,8 @@ export function useUsuarios() {
       if (!res.ok) throw new Error('Error al cargar usuarios');
       const data = await res.json();
       setUsers(data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(mensajeDeError(err, 'Error al cargar usuarios'));
     } finally {
       setLoading(false);
     }
@@ -49,60 +77,50 @@ export function useUsuarios() {
       if (!res.ok) throw new Error('Error al cargar roles');
       const data = await res.json();
       setRoles(data);
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
     }
   }, []);
 
-  const createUser = async (data: { name: string; email: string; role_id: string; expiration_date?: string }) => {
-    try {
-      const res = await fetch('/api/users', {
-        ...FETCH_OPTS,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || 'Error al crear usuario');
-      }
-      await fetchUsers(); // Refresh list
-      return await res.json();
-    } catch (err: any) {
-      throw err;
+  const createUser = async (data: NuevoUsuario): Promise<RespuestaUsuario> => {
+    const res = await fetch('/api/users', {
+      ...FETCH_OPTS,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const errData = await res.json();
+      throw new Error(errData.error || 'Error al crear usuario');
     }
+    const creado: RespuestaUsuario = await res.json();
+    await fetchUsers(); // Refresca la lista
+    return creado;
   };
 
-  const updateUser = async (id: string, data: any) => {
-    try {
-      const res = await fetch(`/api/users/${id}`, {
-        ...FETCH_OPTS,
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || 'Error al actualizar usuario');
-      }
-      await fetchUsers();
-      return await res.json();
-    } catch (err: any) {
-      throw err;
+  const updateUser = async (id: string, data: CambiosUsuario): Promise<RespuestaUsuario> => {
+    const res = await fetch(`/api/users/${id}`, {
+      ...FETCH_OPTS,
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const errData = await res.json();
+      throw new Error(errData.error || 'Error al actualizar usuario');
     }
+    const actualizado: RespuestaUsuario = await res.json();
+    await fetchUsers();
+    return actualizado;
   };
 
   const deleteUser = async (id: string) => {
-    try {
-      const res = await fetch(`/api/users/${id}`, { ...FETCH_OPTS, method: 'DELETE' });
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || 'Error al eliminar usuario');
-      }
-      await fetchUsers();
-    } catch (err: any) {
-      throw err;
+    const res = await fetch(`/api/users/${id}`, { ...FETCH_OPTS, method: 'DELETE' });
+    if (!res.ok) {
+      const errData = await res.json();
+      throw new Error(errData.error || 'Error al eliminar usuario');
     }
+    await fetchUsers();
   };
 
   return {

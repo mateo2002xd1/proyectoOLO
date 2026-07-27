@@ -136,15 +136,15 @@ export function CustomSelect({
                   }}
                   className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition duration-150 ${
                     isSelected
-                      ? "bg-[#7DB728]/5 text-[#7DB728]"
-                      : "text-[#57607b] hover:bg-[#7DB728]/5 hover:text-[#7DB728] dark:text-[#b7c0d6]"
+                      ? "bg-brand/5 text-brand-interactive"
+                      : "text-[#57607b] hover:bg-brand/5 hover:text-brand-interactive dark:text-[#b7c0d6]"
                   }`}
                   role="option"
                   aria-selected={isSelected}
                 >
                   <span className="font-medium">{opt.label}</span>
                   <span
-                    className={`h-2.5 w-2.5 rounded-full shrink-0 transition ${isSelected ? "bg-[#7DB728] shadow-[0_0_0_4px_rgba(125,183,40,0.12)]" : "bg-[#d8dde7]"}`}
+                    className={`h-2.5 w-2.5 rounded-full shrink-0 transition ${isSelected ? "bg-brand-interactive shadow-[0_0_0_4px_rgba(42,125,0,0.12)]" : "bg-[#d8dde7]"}`}
                   />
                 </button>
               );

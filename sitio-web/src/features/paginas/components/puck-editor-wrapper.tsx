@@ -9,8 +9,8 @@ import { Bloque, PuckData } from '../types';
 
 interface PuckEditorWrapperProps {
   initialData?: PuckData | Bloque[];
-  onSave: (contenido: PuckData) => Promise<any>;
-  onPublish?: () => Promise<any>;
+  onSave: (contenido: PuckData) => Promise<unknown>;
+  onPublish?: () => Promise<unknown>;
 }
 
 export function PuckEditorWrapper({
@@ -24,8 +24,10 @@ export function PuckEditorWrapper({
   // Snapshot del layout actual de Puck — actualizado por onChange
   const currentDataRef = useRef<Data | null>(null);
 
-  // Ref estable para los datos iniciales (evita re-render infinito)
-  const initialPuckDataRef = useRef<Data>(
+  // Datos iniciales con identidad estable (evita re-render infinito en Puck).
+  // Va en useState con inicializador diferido, no en useRef: los refs no deben
+  // leerse durante el render, y así el objeto se construye una sola vez.
+  const [initialPuckData] = useState<Data>(() =>
     Array.isArray(initialData)
       ? {
           content: initialData.map((bloque) => ({
@@ -42,14 +44,14 @@ export function PuckEditorWrapper({
   }, []);
 
   const handleSaveDraft = useCallback(async () => {
-    const data = currentDataRef.current ?? initialPuckDataRef.current;
+    const data = currentDataRef.current ?? initialPuckData;
     setIsSaving(true);
     try {
       await onSave(data as PuckData);
     } finally {
       setIsSaving(false);
     }
-  }, [onSave]);
+  }, [onSave, initialPuckData]);
 
   const handleSubmitForReview = useCallback(async () => {
     if (!onPublish) return;
@@ -69,7 +71,7 @@ export function PuckEditorWrapper({
     <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#fff', zIndex: 9999 }}>
       <Puck
         config={puckConfig}
-        data={initialPuckDataRef.current}
+        data={initialPuckData}
         onChange={handleChange}
         onPublish={handleSaveDraft}
         overrides={{

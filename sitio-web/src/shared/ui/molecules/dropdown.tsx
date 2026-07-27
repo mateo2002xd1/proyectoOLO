@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useRef, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useRef, useEffect, type ReactNode } from 'react';
 import Link from 'next/link';
 
 interface DropdownContextType {

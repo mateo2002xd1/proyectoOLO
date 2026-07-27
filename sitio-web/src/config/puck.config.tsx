@@ -1,28 +1,34 @@
 'use client';
 
-import { Hero, ExternalPortals, Services, IntranetTopbar, IntranetHero } from '@olo/blocks-renderer';
+import type { ComponentProps } from 'react';
+import { ExternalPortals, Services, IntranetTopbar, IntranetHero, primitiveComponents } from '@olo/blocks-renderer';
 import { OcupacionSearchBanner } from '@/shared/ui/molecules/ocupacion-search-banner';
 import { EditorjsWrapper } from '@/features/paginas/components/editorjs-wrapper';
 import { ImageUploaderField } from '@/features/paginas/components/image-uploader-field';
 import type { Config } from '@puckeditor/core';
+import type { OutputData } from '@editorjs/editorjs';
+
+/** Props que Puck inyecta en el render de un campo `custom`. */
+type CustomFieldRender<T> = { value: T; onChange: (val: T) => void };
+
+/** Props de un componente de Puck. `id` siempre viene inyectado y, al ser
+ *  obligatorio, evita que TypeScript trate el tipo como "weak" y rechace el
+ *  render por no compartir propiedades con el Config genérico. */
+type BlockRender<T> = T & { id: string };
 
 // ─── RichText block: Puck handles the layout slot, EditorJS handles the content ───
 const RichTextBlock = {
   fields: {
     content: {
       type: 'custom' as const,
-      render: ({
-        value,
-        onChange,
-      }: {
-        value: any;
-        onChange: (val: any) => void;
-      }) => <EditorjsWrapper data={value} onChange={onChange} />,
+      render: ({ value, onChange }: CustomFieldRender<OutputData>) => (
+        <EditorjsWrapper data={value} onChange={onChange} />
+      ),
     },
   },
   defaultProps: { content: { blocks: [] } },
-  render: (props: any) => (
-    <EditorjsWrapper data={props.content || { blocks: [] }} readOnly />
+  render: ({ content }: BlockRender<{ content?: OutputData }>) => (
+    <EditorjsWrapper data={content || { blocks: [] }} readOnly />
   ),
 };
 
@@ -38,15 +44,20 @@ export const puckConfig: Config = {
     'Portales': {
       components: ['ExternalPortals'],
     },
+    'Maquetación': {
+      components: ['Grid', 'Flex', 'Space'],
+    },
   },
   components: {
+    // Primitivos de maquetación compartidos (Grid / Flex / Space)
+    ...primitiveComponents,
     IntranetTopbar: {
       label: 'Intranet Topbar',
       fields: {
         brandText: { type: 'text', label: 'Texto de la Marca' },
         logoUrl: {
           type: 'custom',
-          render: ({ value, onChange }: any) => (
+          render: ({ value, onChange }: CustomFieldRender<string>) => (
             <ImageUploaderField value={value} onChange={onChange} />
           ),
         },
@@ -57,7 +68,7 @@ export const puckConfig: Config = {
             label: { type: 'text', label: 'Texto del enlace' },
             href: { type: 'text', label: 'URL' },
           },
-          getItemSummary: (item: any) => item.label || 'Enlace',
+          getItemSummary: (item: { label?: string }) => item.label || 'Enlace',
         },
       },
       defaultProps: {
@@ -70,7 +81,7 @@ export const puckConfig: Config = {
           { href: "#", label: "Encuestas" },
         ],
       },
-      render: (props: any) => {
+      render: (props: BlockRender<ComponentProps<typeof IntranetTopbar>>) => {
         return <IntranetTopbar {...props} />;
       },
     },
@@ -79,7 +90,7 @@ export const puckConfig: Config = {
       fields: {
         imageSrc: {
           type: 'custom',
-          render: ({ value, onChange }: any) => (
+          render: ({ value, onChange }: CustomFieldRender<string>) => (
             <ImageUploaderField value={value} onChange={onChange} />
           ),
         },
@@ -89,7 +100,7 @@ export const puckConfig: Config = {
         imageSrc: '/assets/img/banner1.png',
         imageAlt: 'Banner principal de la intranet',
       },
-      render: (props: any) => <IntranetHero {...props} />,
+      render: (props: BlockRender<ComponentProps<typeof IntranetHero>>) => <IntranetHero {...props} />,
     },
     Hero: {
       label: 'Buscador de Ocupaciones (Banner)',
@@ -117,11 +128,11 @@ export const puckConfig: Config = {
         searchPlaceholder,
         imageUrl,
         imageAlt,
-      }: {
+      }: BlockRender<{
         searchPlaceholder?: string;
         imageUrl?: string;
         imageAlt?: string;
-      }) => (
+      }>) => (
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           <OcupacionSearchBanner
             placeholder={searchPlaceholder}

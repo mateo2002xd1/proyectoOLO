@@ -34,7 +34,8 @@ export async function obtenerPaginaEditable(slug: string): Promise<Pagina | null
   }
 }
 
-export async function obtenerPaginaInicio(): Promise<Data> {
+export async function 
+obtenerPaginaInicio(): Promise<Data> {
   try {
     const res = await fetch(`${BACKEND_URL}/api/paginas/publica/inicio`, {
       next: { revalidate: 60 },
@@ -59,22 +60,22 @@ export async function obtenerPaginaInicio(): Promise<Data> {
   }
 }
 
-export async function guardarBorrador(slug: string, contenido: PuckData | Bloque[]): Promise<{ pagina: any; version: PaginaVersion }> {
+export async function guardarBorrador(slug: string, contenido: PuckData | Bloque[]): Promise<{ pagina: Pagina; version: PaginaVersion }> {
   const { data } = await api.post(`/api/paginas/${slug}/borrador`, { contenido });
   return data;
 }
 
-export async function enviarARevision(slug: string): Promise<{ pagina: any; version: PaginaVersion }> {
+export async function enviarARevision(slug: string): Promise<{ pagina: Pagina; version: PaginaVersion }> {
   const { data } = await api.patch(`/api/paginas/${slug}/enviar-revision`);
   return data;
 }
 
-export async function aprobarPagina(slug: string): Promise<{ pagina: any; version: PaginaVersion }> {
+export async function aprobarPagina(slug: string): Promise<{ pagina: Pagina; version: PaginaVersion }> {
   const { data } = await api.patch(`/api/paginas/${slug}/aprobar`);
   return data;
 }
 
-export async function rechazarPagina(slug: string, motivo: string): Promise<{ pagina: any; version: PaginaVersion }> {
+export async function rechazarPagina(slug: string, motivo: string): Promise<{ pagina: Pagina; version: PaginaVersion }> {
   const { data } = await api.patch(`/api/paginas/${slug}/rechazar`, { motivo });
   return data;
 }

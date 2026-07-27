@@ -33,8 +33,8 @@ export function ImageUploaderField({ value, onChange }: ImageUploaderFieldProps)
 
       const data = await res.json();
       onChange(data.url); // The API should return { url: '/uploads/filename.png' }
-    } catch (err: any) {
-      setError(err.message || 'Error desconocido');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error desconocido');
     } finally {
       setIsUploading(false);
     }
@@ -43,6 +43,9 @@ export function ImageUploaderField({ value, onChange }: ImageUploaderFieldProps)
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       {value && (
+        // Vista previa de un archivo recién subido: la URL es dinámica y el
+        // tamaño depende del contenedor, así que next/image no aplica aquí.
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={value}
           alt="Preview"

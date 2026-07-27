@@ -12,7 +12,7 @@
  *               @editorjs/list @editorjs/image @editorjs/quote
  *   npm install --save-dev @types/editorjs__editorjs (si existe)
  *
- * @see ARQUITECTURA_MAESTRA_OLO.md §9.3 (editorjs-wrapper.tsx)
+ * @see 1-guia-del-proyecto.md §4.3 (editorjs-wrapper.tsx)
  */
 
 "use client";
