@@ -362,6 +362,7 @@ input {
   color: white;
   row-gap: 0;
   column-gap: 190px;
+
 }
 
 .intranet-topbar-inner {
@@ -2542,39 +2543,99 @@ input {
 }
 
 @keyframes gooDot3Move {
-  20% { transform: scale(1); }
-  45% { transform: translateY(-13px) scale(0.45); }
-  60% { transform: translateY(-68px) scale(0.45); }
-  80% { transform: translateY(-68px) scale(0.45); }
-  100% { transform: translateY(0px) scale(1); }
+  20% {
+    transform: scale(1);
+  }
+
+  45% {
+    transform: translateY(-13px) scale(0.45);
+  }
+
+  60% {
+    transform: translateY(-68px) scale(0.45);
+  }
+
+  80% {
+    transform: translateY(-68px) scale(0.45);
+  }
+
+  100% {
+    transform: translateY(0px) scale(1);
+  }
 }
 
 @keyframes gooDot2Move {
-  20% { transform: scale(1); }
-  45% { transform: translate(-12px, 9px) scale(0.45); }
-  60% { transform: translate(-60px, 45px) scale(0.45); }
-  80% { transform: translate(-60px, 45px) scale(0.45); }
-  100% { transform: translateY(0px) scale(1); }
+  20% {
+    transform: scale(1);
+  }
+
+  45% {
+    transform: translate(-12px, 9px) scale(0.45);
+  }
+
+  60% {
+    transform: translate(-60px, 45px) scale(0.45);
+  }
+
+  80% {
+    transform: translate(-60px, 45px) scale(0.45);
+  }
+
+  100% {
+    transform: translateY(0px) scale(1);
+  }
 }
 
 @keyframes gooDot1Move {
-  20% { transform: scale(1); }
-  45% { transform: translate(12px, 9px) scale(0.45); }
-  60% { transform: translate(60px, 45px) scale(0.45); }
-  80% { transform: translate(60px, 45px) scale(0.45); }
-  100% { transform: translateY(0px) scale(1); }
+  20% {
+    transform: scale(1);
+  }
+
+  45% {
+    transform: translate(12px, 9px) scale(0.45);
+  }
+
+  60% {
+    transform: translate(60px, 45px) scale(0.45);
+  }
+
+  80% {
+    transform: translate(60px, 45px) scale(0.45);
+  }
+
+  100% {
+    transform: translateY(0px) scale(1);
+  }
 }
 
 @keyframes gooLoaderRotate {
-  55% { transform: rotate(0deg); }
-  80% { transform: rotate(360deg); }
-  100% { transform: rotate(360deg); }
+  55% {
+    transform: rotate(0deg);
+  }
+
+  80% {
+    transform: rotate(360deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes gooLoaderIndex {
-  0%, 100% { z-index: 3; }
-  33.3% { z-index: 2; }
-  66.6% { z-index: 1; }
+
+  0%,
+  100% {
+    z-index: 3;
+  }
+
+  33.3% {
+    z-index: 2;
+  }
+
+  66.6% {
+    z-index: 1;
+  }
 }
 
 .goo-loader-label {
@@ -2923,158 +2984,184 @@ input {
   }
 }
 
-/* --- Tasa de Vinculación y Empleabilidad --- */
-.tasa-section-container {
-  max-width: 1000px;
+/* --- Tasa de Vinculación y Empleabilidad Rediseño --- */
+
+/* 1. Banner */
+.tasa-banner-wrapper {
   width: 100%;
-  margin: 0 auto;
-  padding: 3rem 1.5rem 1rem 1.5rem;
-
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.tasa-section-title {
-  color: #00324D;
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 1.25rem;
-  text-align: left;
-}
-
-@media (min-width: 768px) {
-  .tasa-section-title {
-    font-size: 1.75rem;
-  }
-}
-
-.tasa-section-text {
-  color: #00324D;
-  font-size: 1rem;
-  line-height: 1.6;
-  text-align: justify;
-  margin-bottom: 2rem;
-}
-
-@media (min-width: 768px) {
-  .tasa-section-text {
-    font-size: 1.125rem;
-  }
-}
-
-.tasa-image-wrapper {
-  width: 100%;
+  background: linear-gradient(135deg, var(--color-left-panel, #001631) 0%, var(--color-right-panel, #001A39) 100%);
+  position: relative;
+  overflow: hidden;
   display: flex;
   justify-content: center;
-  border-radius: 0.75rem;
-  margin-bottom: 2rem;
+  padding: 4rem 1.5rem;
 }
 
-.tasa-image {
-  width: 100%;
-  height: auto;
-  border-radius: 0.75rem;
-  object-fit: contain;
-}
-
-.tasabanner-image {
-  width: 100%;
-  height: auto;
-
-}
-
-.tasa-dashboard-wrapper {
-  width: 100%;
-  background-color: #f4f4f4;
-  padding: 4rem 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.tasa-dashboard-item {
+.tasa-banner-content {
   max-width: 1200px;
   width: 100%;
-  padding: 0 1.5rem;
-  margin: 0 auto 4rem auto;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
+  text-align: center;
+  gap: 3rem;
+  z-index: 10;
 }
 
-.tasa-iframe-wrapper {
+@media (min-width: 900px) {
+  .tasa-banner-content {
+    flex-direction: row;
+    justify-content: space-between;
+    text-align: left;
+  }
+}
+
+.tasa-banner-title {
+  color: #ffffff;
+  font-size: 2.5rem;
+  line-height: 1.3;
+  font-weight: 400;
+}
+
+.tasa-banner-title strong {
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.tasa-banner-image {
   width: 100%;
+  max-width: 400px;
+  height: 195px;
+  object-fit: contain;
+  filter: drop-shadow(0 20px 25px rgba(0, 0, 0, 0.3));
+}
+
+/* 2. Conceptos (Zig-Zag) */
+.tasa-concepts-wrapper {
+  width: 100%;
+  background-color: #f8fafc;
+  padding: 6rem 1.5rem;
   display: flex;
-  justify-content: center;
-  margin-top: 1.5rem;
+  flex-direction: column;
+  align-items: center;
 }
 
-.tasa-iframe {
-  width: 100%;
-  height: 600px;
-  border: none;
-  border-radius: 0.75rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  background-color: #ffffff;
-}
-
-/* --- Video Section --- */
-.tasa-video-section {
+.tasa-concept-row {
+  max-width: 1200px;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2rem 1rem 3rem 1rem;
+  gap: 4rem;
+  margin-bottom: 6rem;
+}
+
+.tasa-concept-row:last-child {
+  margin-bottom: 0;
+}
+
+@media (min-width: 900px) {
+  .tasa-concept-row {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .tasa-concept-row.reverse {
+    flex-direction: row-reverse;
+  }
+}
+
+.tasa-concept-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.tasa-concept-title {
+  color: #001631;
+  font-size: 2.25rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.tasa-concept-title::after {
+  content: '';
+  position: absolute;
+  bottom: -0.75rem;
+  left: 0;
+  width: 60px;
+  height: 5px;
+  background-color: #00A650;
+  border-radius: 3px;
+}
+
+.tasa-concept-desc {
+  color: #475569;
+  font-size: 1.125rem;
+  line-height: 1.8;
+  text-align: justify;
+  margin-top: 1rem;
+}
+
+.tasa-concept-visual {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.tasa-concept-image {
+  width: 100%;
+  max-width: 520px;
+  border-radius: 1.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tasa-concept-image:hover {
+  transform: translateY(-8px);
+}
+
+/* 3. Video Section */
+.tasa-video-wrapper {
+  width: 100%;
+  background-color: #001631;
+  padding: 6rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #ffffff;
 }
 
 .tasa-video-header {
-  width: 100%;
+  text-align: center;
   max-width: 800px;
-  margin-bottom: 1.5rem;
+  margin-bottom: 4rem;
 }
 
 .tasa-video-title {
-  color: #00183a;
-  font-size: 1.5rem;
-  line-height: 1.25;
-  margin-bottom: 0.5rem;
-}
-
-@media (min-width: 768px) {
-  .tasa-video-title {
-    font-size: 28px;
-  }
+  font-size: 2.25rem;
+  font-weight: 400;
+  margin-bottom: 1rem;
+  line-height: 1.3;
 }
 
 .tasa-video-title span {
-  font-weight: 700;
+  font-weight: 800;
+  color: #38bdf8;
 }
 
-.tasa-video-br {
-  display: none;
-}
-
-@media (min-width: 768px) {
-  .tasa-video-br {
-    display: block;
-  }
-}
-
-.tasa-video-subtitle {
-  color: #00183a;
-  font-size: 1.125rem;
-}
-
-.tasa-video-wrapper {
+.tasa-video-container {
   width: 100%;
-  max-width: 950px; 
-  border-radius: 0.75rem;
+  max-width: 1000px;
+  border-radius: 1.5rem;
   overflow: hidden;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   background-color: #000;
   aspect-ratio: 16 / 9;
-  display: flex;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .tasa-video-iframe {
@@ -3083,73 +3170,122 @@ input {
   border: none;
 }
 
-/* --- PPT Section --- */
+/* 4. Dashboards */
+.tasa-dashboards-section {
+  width: 100%;
+  background-color: #f1f5f9;
+  padding: 6rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tasa-dashboards-grid {
+  max-width: 1200px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4rem;
+}
+
+.tasa-dashboard-card {
+  background-color: #ffffff;
+  border-radius: 1.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e2e8f0;
+}
+
+.tasa-dashboard-header {
+  margin-bottom: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.tasa-dashboard-title {
+  color: #001631;
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.tasa-dashboard-desc {
+  color: #64748b;
+  font-size: 1.125rem;
+  line-height: 1.7;
+}
+
+.tasa-dashboard-iframe-wrapper {
+  width: 100%;
+  height: 650px;
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+}
+
+.tasa-dashboard-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* 5. PPT Section */
 .tasa-ppt-section {
   width: 100%;
   background-color: #ffffff;
   display: flex;
   justify-content: center;
-  padding: 4rem 1.5rem;
+  padding: 6rem 1.5rem;
 }
 
 .tasa-ppt-container {
   width: 100%;
   max-width: 1200px;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 2rem;
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  gap: 4rem;
 }
 
 @media (min-width: 900px) {
   .tasa-ppt-container {
-    grid-template-columns: 1fr 2fr;
-    gap: 3rem;
+    flex-direction: row;
+    justify-content: space-between;
   }
 }
 
 .tasa-ppt-text {
-  display: flex;
-  flex-direction: column;
+  flex: 1;
+  max-width: 450px;
 }
 
 .tasa-ppt-title {
-  color: #00183a;
-  font-size: 1.25rem;
-  line-height: 1.4;
+  color: #001631;
+  font-size: 2.25rem;
+  line-height: 1.3;
   margin: 0;
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .tasa-ppt-title strong {
   font-weight: 800;
-}
-
-@media (min-width: 768px) {
-  .tasa-ppt-title {
-    font-size: 1.5rem;
-  }
+  color: #0ea5e9;
 }
 
 .tasa-ppt-viewer-wrapper {
+  flex: 1.5;
   width: 100%;
-  background-color: #f3f4f6;
-  border-radius: 1rem;
-  padding: 1rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  background-color: #f8fafc;
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
   aspect-ratio: 16 / 9;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   position: relative;
-  overflow: hidden;
-}
-
-.tasa-ppt-iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-  border-radius: 0.5rem;
 }
 
 /* ============================================
@@ -3581,6 +3717,7 @@ input {
   gap: var(--olo-grid-gap, 24px);
   width: 100%;
 }
+
 @media (max-width: 640px) {
   .olo-grid {
     grid-template-columns: 1fr;
