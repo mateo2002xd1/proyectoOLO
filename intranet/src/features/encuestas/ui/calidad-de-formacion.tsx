@@ -28,30 +28,31 @@ export function CalidadFormacionView() {
           <h2 className="text-3xl md:text-4xl text-[#002240]" style={{ marginBottom: '2.5rem' }}>
             ¿Cuál es el <span className="font-bold">objetivo</span>?
           </h2>
-          <p className="text-lg md:text-xl text-[#002240] mb-12 max-w-5xl">
-            El objetivo principal es <span className="font-bold">evaluar la percepción de los empresarios sobre la contribución de los aprendices en sus organizaciones.</span>
-          </p>
-
           <div className="flex flex-col lg:flex-row gap-12 items-start justify-between">
             {/* Left Column */}
             <div className="flex-1 space-y-10 max-w-3xl">
               <div>
+                <br ></br>
+                <p className="text-lg md:text-xl text-[#002240] mb-8 max-w-5xl text-justify">
+                  El objetivo principal es <span className="font-bold">evaluar la percepción de los empresarios sobre la contribución de los aprendices en sus organizaciones.</span>
+                </p>
+                <br/>
                 <h3 className="text-xl font-bold text-[#002240] mb-4">Puntos Específicos:</h3>
-                <ol className="space-y-4 text-[#002240] text-lg font-medium list-decimal pl-5">
-                  <li className="pl-2">Conocer las perspectivas de los empresarios frente al <span className="font-bold">rol de los aprendices</span> en sus labores.</li>
-                  <li className="pl-2">Valorar los conocimientos y habilidades <span className="font-bold">de los aprendices en un contexto laboral real.</span></li>
-                  <li className="pl-2"><span className="font-bold">Ofrecer información</span> sobre la <span className="font-bold">pertinencia de la formación</span> de los aprendices respecto a las demandas del mercado laboral.</li>
-                  <li className="pl-2">Evaluar la disposición de los empresarios a <span className="font-bold">contratar aprendices</span> una vez finalizado su periodo de formación.</li>
-                </ol>
+                <div className="space-y-4 text-[#002240] text-lg font-medium">
+                  <p className="text-justify">Conocer las perspectivas de los empresarios frente al <span className="font-bold">rol de los aprendices</span> en sus labores.</p>
+                  <p className="text-justify">Valorar los conocimientos y habilidades <span className="font-bold">de los aprendices en un contexto laboral real.</span></p>
+                  <p className="text-justify"><span className="font-bold">Ofrecer información</span> sobre la <span className="font-bold">pertinencia de la formación</span> de los aprendices respecto a las demandas del mercado laboral.</p>
+                  <p className="text-justify">Evaluar la disposición de los empresarios a <span className="font-bold">contratar aprendices</span> una vez finalizado su periodo de formación.</p>
+                </div>
               </div>
 
               <div>
                 <h3 className="text-xl font-bold text-[#002240] mb-4 italic">¿Qué encontrarás aquí?</h3>
-                <ul className="list-disc pl-5 space-y-2 text-[#002240] text-lg font-medium">
-                  <li className="pl-2">Una <span className="font-bold">explicación detallada de la metodología de la encuesta</span> realizada.</li>
-                  <li className="pl-2">Los <span className="font-bold">principales resultados</span> presentados de forma concisa y visual en una <span className="font-bold">presentación.</span></li>
-                  <li className="pl-2">El <span className="font-bold">conjunto de datos brutos</span> para que pueda realizar su propia exploración y análisis a profundidad.</li>
-                </ul>
+                <div className="space-y-2 text-[#002240] text-lg font-medium">
+                  <p className="text-justify">Una <span className="font-bold">explicación detallada de la metodología de la encuesta</span> realizada.</p>
+                  <p className="text-justify">Los <span className="font-bold">principales resultados</span> presentados de forma concisa y visual en una <span className="font-bold">presentación.</span></p>
+                  <p className="text-justify">El <span className="font-bold">conjunto de datos brutos</span> para que pueda realizar su propia exploración y análisis a profundidad.</p>
+                </div>
               </div>
             </div>
 
@@ -75,46 +76,41 @@ export function CalidadFormacionView() {
       </section>
 
       {/* Video and Download Section */}
-      <section className="px-4 md:px-12 flex justify-center bg-gray-50" style={{ paddingTop: '4rem', paddingBottom: '4rem' }}>
-        <div className="max-w-4xl w-full flex flex-col items-center text-center">
-          <h2 className="text-3xl md:text-4xl text-[#002240]" style={{ marginBottom: '3rem' }}>
-            Aquí te <span className="font-bold">contamos</span> todo sobre la encuesta
+      <section className="tasa-video-wrapper">
+        <div className="tasa-video-header">
+          <h2 className="tasa-video-title">
+            Aquí te contamos todo sobre la <br className="hidden md:block" />
+            <span>encuesta de calidad de la formación</span>
           </h2>
-          
-          <div className="relative w-full max-w-3xl mb-8 rounded-xl overflow-hidden shadow-lg group cursor-pointer flex justify-center">
-            <Image 
-              src="/assets/img/Video-encuesta.png" 
-              alt="Video explicativo de la encuesta" 
-              width={800}
-              height={450}
-              className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-105"
-            />
-            {/* Play Button Overlay */}
-            <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
-              <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center shadow-lg">
-                <div className="w-0 h-0 border-t-[12px] border-t-transparent border-l-[20px] border-l-[#002240] border-b-[12px] border-b-transparent ml-2"></div>
-              </div>
-            </div>
-          </div>
-
-          <p className="text-xl text-[#002240] font-medium" style={{ marginTop: '2.5rem', marginBottom: '2rem' }}>Descarga aquí los datos de la encuesta</p>
-          
-          <a 
+        </div>
+        <div className="tasa-video-container">
+          <iframe
+            className="tasa-video-iframe"
+            src="https://www.youtube.com/embed/4E7Sci4DAVQ"
+            title="Encuesta Calidad de la Formación"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          ></iframe>
+        </div>
+        <div style={{ marginTop: '3rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
+          <p className="text-gray-300 text-xl font-medium">Descarga aquí los datos de la encuesta</p>
+          <a
             href="/uploads/documents/Encuesta Calidad Formación datos.xlsx"
             download
             className="inline-block transition-colors"
             style={{
-              backgroundColor: '#002240',
-              color: '#ffffff',
+              backgroundColor: '#ffffff',
+              color: '#001631',
               fontWeight: 'bold',
               padding: '0.6rem 2.5rem',
               borderRadius: '12px',
-              fontSize: '1.5rem',
+              fontSize: '1.25rem',
               textDecoration: 'none',
               cursor: 'pointer'
             }}
-            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#001528'}
-            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#002240'}
+            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#e2e8f0')}
+            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#ffffff')}
           >
             Descargar
           </a>
