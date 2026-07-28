@@ -15,8 +15,8 @@ export function IntranetTopbar({
     { href: "/inicio", label: "Inicio" },
     { href: "/tasa", label: "Tasa de Vinculación y Empleabilidad" },
     { href: "/matriz", label: "Matriz de Pertinencia" },
-    { 
-      href: "#", 
+    {
+      href: "#",
       label: "Encuestas",
       children: [
         { href: "/encuestas/calidad-de-formacion", label: "Calidad de Formación" },
@@ -47,28 +47,27 @@ export function IntranetTopbar({
         <nav className="intranet-nav">
           {menuItems.map((item) => (
             item.children ? (
-                <div key={item.label} className="relative group">
-                  <a href={item.href} className="intranet-nav-link flex items-center gap-1.5">
-                    {item.label}
-                    <svg className="w-3.5 h-3.5 transition-transform duration-200 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                  </a>
-                  <div className="absolute left-0 top-full pt-2 w-44 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                    <div className="bg-[#002240] rounded-lg shadow-xl border border-white/10 overflow-hidden py-2">
-                      {item.children.map((child, idx) => (
-                        <a 
-                          key={child.label} 
-                          href={child.href} 
-                          className={`flex items-center gap-2 px-4 py-4 text-sm text-white/85 hover:text-white hover:bg-white/10 transition-colors${idx < item.children!.length - 1 ? ' border-b border-white/5' : ''}`}
-                        >
-                          <span className="w-1.5 h-1.5 rounded-full bg-white/40 flex-shrink-0"></span>
-                          {child.label}
-                        </a>
-                      ))}
-                    </div>
+              <div key={item.label} className="relative group">
+                <a href={item.href} className="intranet-nav-link flex items-center gap-1.5 px-4 py-2">
+                  {item.label}
+                  <svg className="w-3.5 h-3.5 transition-transform duration-200 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                </a>
+                <div className="intranet-dropdown-menu">
+                  <div className="intranet-dropdown-box">
+                    {item.children.map((child) => (
+                      <a
+                        key={child.label}
+                        href={child.href}
+                        className="intranet-dropdown-item"
+                      >
+                        {child.label}
+                      </a>
+                    ))}
                   </div>
                 </div>
+              </div>
             ) : (
-              <a key={item.label} href={item.href} className="intranet-nav-link">
+              <a key={item.label} href={item.href} className="intranet-nav-link flex items-center gap-1.5 px-4 py-2">
                 {item.label}
               </a>
             )
