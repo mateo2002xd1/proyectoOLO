@@ -32,9 +32,11 @@ export function CalidadFormacionView() {
             {/* Left Column */}
             <div className="flex-1 space-y-10 max-w-3xl">
               <div>
+                <br ></br>
                 <p className="text-lg md:text-xl text-[#002240] mb-8 max-w-5xl text-justify">
                   El objetivo principal es <span className="font-bold">evaluar la percepción de los empresarios sobre la contribución de los aprendices en sus organizaciones.</span>
                 </p>
+                <br/>
                 <h3 className="text-xl font-bold text-[#002240] mb-4">Puntos Específicos:</h3>
                 <div className="space-y-4 text-[#002240] text-lg font-medium">
                   <p className="text-justify">Conocer las perspectivas de los empresarios frente al <span className="font-bold">rol de los aprendices</span> en sus labores.</p>
