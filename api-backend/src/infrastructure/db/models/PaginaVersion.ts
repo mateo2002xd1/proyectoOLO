@@ -7,8 +7,10 @@ export class PaginaVersion extends Model {
   declare contenido: any;
   declare layout: any;
   declare numeroVersion: number;
-  declare estado: 'borrador' | 'en_revision' | 'publicado' | 'rechazado';
+  declare estado: 'borrador' | 'en_revision' | 'publicado' | 'rechazado' | 'archivado';
   declare motivoRechazo: string | null;
+  declare creadoPor: string | null;
+  declare revisadoEn: Date | null;
   declare revisorId: string | null;
   declare publicadoPor: string | null;
   declare publicadoEn: Date | null;
@@ -27,6 +29,10 @@ PaginaVersion.init(
     numeroVersion: { type: DataTypes.INTEGER, allowNull: false },
     estado: { type: DataTypes.STRING(20), defaultValue: 'borrador' },
     motivoRechazo: { type: DataTypes.TEXT },
+    // Quién escribió la versión. Antes solo se guardaba quién la revisó y quién la
+    // publicó, así que el historial de RF-07 no sabía decir quién editó.
+    creadoPor: { type: DataTypes.UUID },
+    revisadoEn: { type: DataTypes.DATE },
     revisorId: { type: DataTypes.UUID },
     publicadoPor: { type: DataTypes.UUID },
     publicadoEn: { type: DataTypes.DATE },

@@ -21,6 +21,14 @@ export const PaginaRepository = {
 
   crearVersion: (data: any) => PaginaVersion.create(data),
 
+  /**
+   * Archiva la versión publicada vigente de una página. Debe llamarse antes de
+   * publicar la siguiente: el índice `uq_pagina_version_publicada` solo admite una
+   * versión en estado 'publicado' por página.
+   */
+  archivarVersionPublicada: (paginaId: string) =>
+    PaginaVersion.update({ estado: 'archivado' }, { where: { paginaId, estado: 'publicado' } }),
+
   actualizarVersion: (version: PaginaVersion, data: any) => version.update(data),
 
   findVersionPorId: (id: string) => PaginaVersion.findByPk(id),

@@ -43,6 +43,8 @@ Una página nunca se edita en vivo. Recorre estados, y cada transición tiene un
 | 6 | **Consumo** | Ciudadano anónimo | `/` llama a `obtenerPaginaInicio()` → `/api/paginas/publica/inicio`. La API devuelve el JSON de la versión publicada activa. `<ClientPuckRender data={data} />` dibuja los bloques. | — |
 | 7 | **Nuevo ciclo** | Editor | Un nuevo borrador no afecta lo publicado hasta que se apruebe. | Ninguno hasta el paso 4. |
 
+**Quinto estado: `archivado`.** Al aprobar (paso 4), la versión que estaba publicada pasa a `archivado` — no desaparece, queda como historial. No es un estado al que el editor pueda llegar: es la consecuencia automática de que otra versión ocupe su lugar. La base de datos lo impone con un índice único parcial que solo admite una versión `publicado` por página; el detalle está en `11-base-de-datos.md` §5 (invariante I1).
+
 ### 1.2 La invariante que sostiene todo
 
 > **Lo que ve el ciudadano solo cambia en el paso 4.**

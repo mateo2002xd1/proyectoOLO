@@ -11,7 +11,9 @@ export class Permission extends Model {
 Permission.init(
   {
     id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
-    name: { type: DataTypes.TEXT, allowNull: false, unique: true },
+    // La columna es `clave`: es el identificador estable que compara el código
+    // (`paginas.aprobar`, `acceso.intranet`), no una etiqueta que se traduzca.
+    name: { type: DataTypes.TEXT, allowNull: false, unique: true, field: 'clave' },
   },
-  { sequelize, tableName: 'permissions', timestamps: true, underscored: true }
+  { sequelize, tableName: 'permisos', timestamps: true, underscored: true }
 );

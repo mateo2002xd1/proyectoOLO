@@ -2,13 +2,14 @@ import { AuditRepository } from '../../repositories/auditoria.repository';
 
 export const logAudit = (data: any) => {
   AuditRepository.create({
-    content_id: data.contentId,
-    content_type: data.contentType || 'post',
-    user_id: data.userId || null,
-    user_name: data.userName || null,
-    action_type: data.actionType,
-    modified_fields: data.modifiedFields || [],
-    created_at: new Date(),
+    entidad_id: data.contentId,
+    entidad_tipo: data.contentType || 'contenido',
+    usuario_id: data.userId || null,
+    usuario_nombre: data.userName || null,
+    accion: data.actionType,
+    campos_modificados: data.modifiedFields || [],
+    ip: data.ip || null,
+    user_agent: data.userAgent || null,
   });
 };
 

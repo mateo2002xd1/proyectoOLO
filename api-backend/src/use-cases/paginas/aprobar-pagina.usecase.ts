@@ -10,6 +10,10 @@ export const aprobarPagina = async (slug: string, userId: string) => {
   const versionEnRevision = await PaginaRepository.findVersionPorEstado(pagina.id, 'en_revision');
   if (!versionEnRevision) throw new Error('No hay versión en revisión');
 
+  // La versión que estaba publicada pasa a archivada antes de que entre la nueva:
+  // una página tiene como máximo una versión publicada, y la base lo impone.
+  await PaginaRepository.archivarVersionPublicada(pagina.id);
+
   await PaginaRepository.actualizarVersion(versionEnRevision, {
     estado: 'publicado',
     publicadoPor: toUUID(userId),

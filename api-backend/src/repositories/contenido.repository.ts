@@ -1,5 +1,5 @@
 import { Op } from 'sequelize';
-import { Contenido, Section, Attachment, User } from '../infrastructure/db/models';
+import { Contenido, Section, Archivo, User } from '../infrastructure/db/models';
 
 export const ContenidoRepository = {
   findAll: (where: any = {}) =>
@@ -13,7 +13,7 @@ export const ContenidoRepository = {
     Contenido.findByPk(id, {
       include: [
         { model: Section, as: 'section' },
-        { model: Attachment, as: 'attachments' },
+        { model: Archivo, as: 'attachments', through: { attributes: [] } },
       ],
     }),
 

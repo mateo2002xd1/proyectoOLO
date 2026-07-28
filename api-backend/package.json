@@ -7,7 +7,12 @@
     "dev": "ts-node src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "migrate": "ts-node scripts/migrate.ts up",
+    "migrate:status": "ts-node scripts/migrate.ts status",
+    "migrate:down": "ts-node scripts/migrate.ts down",
+    "db:verificar": "ts-node scripts/verificar-esquema.ts",
+    "respaldo": "ts-node scripts/respaldo.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
