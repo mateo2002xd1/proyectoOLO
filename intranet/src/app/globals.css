@@ -2806,6 +2806,7 @@ input {
   height: auto;
   display: block;
   border-radius: 10px;
+
 }
 
 .matriz-content-container {
@@ -2866,6 +2867,7 @@ input {
   font-size: 1.75rem;
   font-weight: 700;
   margin-bottom: 1.5rem;
+  margin-top: 30px;
   color: #0A1B3F;
 }
 
@@ -2892,6 +2894,7 @@ input {
   font-size: 1.125rem;
   color: #1E293B;
   margin-bottom: 0.5rem;
+  margin-top: 25 rem;
 }
 
 .matriz-que-es-list p {
