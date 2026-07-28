@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@aiden0z/pptx-renderer": "^1.2.4",
     "@headlessui/react": "^2.2.10",
     "@heroicons/react": "^2.2.0",
     "@olo/blocks-renderer": "file:../packages/blocks-renderer",
