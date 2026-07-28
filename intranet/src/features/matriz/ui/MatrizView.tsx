@@ -18,15 +18,15 @@ export function MatrizView() {
       <IntranetTopbarWrapper />
 
       {/* Banner */}
-      <section className="tasa-banner-wrapper">
-        <div className="tasa-banner-content">
-          <h1 className="tasa-banner-title">
-            Tasa de<br /> <strong>Vinculación y Empleabilidad</strong>
+      <section className="w-full  max-w-full relative overflow-hidden ">
+        <div className="bannerOficialMatriz py-8 md:py-0">
+          <h1 className="text-white text-3xl md:text-[44px] font-bold uppercase tracking-wide leading-tight text-left mb-8 md:mb-0 mr-0 md:mr-16">
+            MATRIZ DE <br /> PERTINENCIA
           </h1>
           <img
-            src="/assets/img/BannerTasa.png"
+            src="/assets/img/BannerOficial.png"
             alt="Matriz de Pertinencia Banner"
-            className="tasa-banner-image"
+            style={{ width: '350px', maxWidth: '100vw', height: 'auto', objectFit: 'cover' }}
           />
         </div>
       </section>

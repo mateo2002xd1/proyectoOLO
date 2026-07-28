@@ -22,11 +22,15 @@ export const crearContenido = async (data: any, authorId?: string) => {
   const contenido = await ContenidoRepository.create({ id, ...data, authorId });
 
   await AuditRepository.create({
-    content_id: id,
-    content_type: 'contenido',
-    user_id: authorId || null,
-    action_type: 'create',
-    modified_fields: Object.keys(data).map((k) => ({ field: k, old: null, new: data[k] })),
+    entidad_id: id,
+    entidad_tipo: 'contenido',
+    usuario_id: authorId || null,
+    accion: 'crear',
+    campos_modificados: Object.keys(data).map((campo) => ({
+      campo,
+      antes: null,
+      despues: data[campo],
+    })),
   });
 
   return contenido;
