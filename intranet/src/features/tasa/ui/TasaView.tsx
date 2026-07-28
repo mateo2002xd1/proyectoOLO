@@ -82,9 +82,7 @@ export function TasaView() {
                             Aquí te contamos todo sobre la estrategia de Tasa de <br className="hidden md:block" />
                             <span>Vinculación y Empleabilidad</span>
                         </h2>
-                        <p className="text-gray-300 text-lg">
-                            Mira nuestro video
-                        </p>
+                       
                     </div>
                     <div className="tasa-video-container">
                         <iframe

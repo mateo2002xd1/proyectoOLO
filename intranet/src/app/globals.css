@@ -3095,7 +3095,7 @@ input {
   left: 0;
   width: 60px;
   height: 5px;
-  background-color: #00A650;
+  background-color: #001836;
   border-radius: 3px;
 }
 
@@ -3276,7 +3276,7 @@ input {
 
 .tasa-ppt-title strong {
   font-weight: 800;
-  color: #0ea5e9;
+  color: #001631;
 }
 
 .tasa-ppt-viewer-wrapper {
