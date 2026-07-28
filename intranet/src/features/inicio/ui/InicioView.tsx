@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { IntranetTopbarWrapper } from '@/shared/lib/blocks/IntranetTopbarWrapper';
+
+import { IntranetTopbar } from '@/shared/lib/blocks/IntranetTopbar';
 import { IntranetHero } from '@/shared/lib/blocks/IntranetHero';
 import { IntranetFooter } from '@/shared/lib/blocks/IntranetFooter';
 import { Carousel } from '@/shared/ui/organisms/Carousel';
 import { RecursosVisuales } from './RecursosVisuales';
+
 
 const oloLeCuentaImages = [
   '/assets/img/iniciocar1.png',
@@ -363,8 +365,11 @@ function PublicacionesCarousel() {
 
 export function InicioView() {
   return (
-    <div className="min-h-screen bg-[#F8F9FA] flex flex-col overflow-x-hidden">
-      <IntranetTopbarWrapper />
+    
+    
+    <div className="w-full bg-white flex flex-col items-center min-h-screen">
+            <IntranetTopbar />
+
 
       <IntranetHero />
 
