@@ -78,6 +78,7 @@ Leer en este orden. Los tres primeros son de lectura obligatoria antes de tocar 
 | [1-guia-del-proyecto.md](1-guia-del-proyecto.md) | Arquitectura del sistema y de carpetas. Mapa requerimiento → dónde vive. Convenciones no negociables. |
 | [2-convenciones-del-proyecto.md](2-convenciones-del-proyecto.md) | Cómo se escribe el código: nomenclatura, tipos, errores, comentarios. |
 | [8-ciclo-editorial.md](8-ciclo-editorial.md) | **Cómo se organiza por dentro un dominio.** El ciclo borrador → revisión → publicado, y el plan de migración por fases. |
+| [11-base-de-datos.md](11-base-de-datos.md) | **El modelo de datos.** Las 20 tablas, por qué existe cada una, las invariantes que declara el esquema y lo que deliberadamente no es tabla. |
 | [3-seguridad-del-proyecto.md](3-seguridad-del-proyecto.md) | Superficies de ataque y controles. |
 | [4-reglas.md](4-reglas.md) | Reglas operativas para mover o crear carpetas sin romper nada. |
 | [9-accesibilidad.md](9-accesibilidad.md) | **Nivel AA y Resolución 1519 de 2020.** Estado auditado, decisiones de paleta y plan por fases (RF-14). |

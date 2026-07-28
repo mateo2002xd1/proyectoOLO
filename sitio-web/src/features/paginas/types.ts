@@ -1,4 +1,6 @@
-export type EstadoPagina = 'borrador' | 'en_revision' | 'publicado' | 'rechazado';
+// 'archivado' es la versión que estuvo publicada y fue reemplazada por otra:
+// no es borrador ni rechazada. Ver 11-base-de-datos.md §5, invariante I1.
+export type EstadoPagina = 'borrador' | 'en_revision' | 'publicado' | 'rechazado' | 'archivado';
 
 /** Props de un bloque: vienen del CMS, así que su forma la valida cada bloque. */
 export type BloqueProps = Record<string, unknown>;

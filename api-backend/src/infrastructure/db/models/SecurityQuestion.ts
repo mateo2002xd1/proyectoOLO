@@ -14,16 +14,10 @@ export class SecurityQuestion extends Model {
 SecurityQuestion.init(
   {
     id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
-    user_id: { type: DataTypes.UUID, allowNull: false },
-    question_key: { type: DataTypes.TEXT, allowNull: false },
-    answer_hash: { type: DataTypes.TEXT, allowNull: false },
-    sort_order: { type: DataTypes.INTEGER, defaultValue: 0 },
+    user_id: { type: DataTypes.UUID, allowNull: false, field: 'usuario_id' },
+    question_key: { type: DataTypes.TEXT, allowNull: false, field: 'pregunta_clave' },
+    answer_hash: { type: DataTypes.TEXT, allowNull: false, field: 'respuesta_hash' },
+    sort_order: { type: DataTypes.INTEGER, defaultValue: 0, field: 'orden' },
   },
-  {
-    sequelize,
-    tableName: 'security_questions',
-    timestamps: true,
-    underscored: true,
-    indexes: [{ unique: true, fields: ['user_id', 'question_key'] }],
-  }
+  { sequelize, tableName: 'preguntas_seguridad', timestamps: true, underscored: true }
 );

@@ -4,6 +4,7 @@ import sequelize from './config/database';
 
 // Import models to register associations
 import './infrastructure/db/models';
+import { listarPendientes } from './infrastructure/db/migrations';
 import { setupWorker } from './infrastructure/redis/queue';
 
 process.on('unhandledRejection', (reason) => {
@@ -17,23 +18,20 @@ const start = async () => {
     await sequelize.authenticate();
     console.log('Database connected.');
 
-    // sync({ alter: true }) modifica columnas existentes — solo con opt-in explícito
-    // (DB_AUTO_ALTER=true), porque DATABASE_URL puede apuntar a una BD compartida.
-    // Sin la variable, sync() solo crea las tablas que falten, sin tocar las existentes.
-    await sequelize.sync(config.dbAutoAlter ? { alter: true } : undefined);
-    console.log(config.dbAutoAlter ? 'Models synchronized (alter).' : 'Models synchronized (create-only).');
+    // El esquema lo definen las migraciones, nunca el arranque (convención #4 de
+    // 1-guia-del-proyecto.md). Aquí solo se verifica que la base esté al día: un
+    // servidor que arranca contra un esquema viejo falla de formas difíciles de leer.
+    const pendientes = await listarPendientes();
+    if (pendientes.length > 0) {
+      throw new Error(
+        `Hay ${pendientes.length} migración(es) sin aplicar: ${pendientes.join(', ')}. ` +
+          'Ejecutar `npm run migrate` antes de arrancar.'
+      );
+    }
+    console.log('Database schema up to date.');
 
     setupWorker();
     console.log('Background worker started.');
-
-    // Allow null on creado_por for local-auth development user (no valid UUID)
-    if (process.env.NODE_ENV !== 'production') {
-      try {
-        await sequelize.query('ALTER TABLE paginas ALTER COLUMN creado_por DROP NOT NULL');
-      } catch {
-        // Already nullable — ignore
-      }
-    }
 
     app.listen(config.port, '127.0.0.1', () => {
       console.log(`OLO API Backend running on port ${config.port}`);

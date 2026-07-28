@@ -13,11 +13,14 @@
 // Estados editoriales (§3 / §10)
 // ---------------------------------------------------------------------------
 
+// 'archivado' es la versión que estuvo publicada y fue reemplazada por otra:
+// no es borrador ni rechazada. Ver 11-base-de-datos.md §5, invariante I1.
 export type EstadoPagina =
   | "borrador"
   | "en_revision"
   | "publicado"
-  | "rechazado";
+  | "rechazado"
+  | "archivado";
 
 // ---------------------------------------------------------------------------
 // Bloque de contenido (unidad mínima que guarda Puck en contenido JSONB)
