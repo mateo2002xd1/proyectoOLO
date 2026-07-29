@@ -19,8 +19,8 @@ export function MatrizView() {
       <IntranetTopbarWrapper />
 
       {/* Banner */}
-      <section className="w-full  max-w-full relative overflow-hidden ">
-        <div className="bannerOficialMatriz py-8 md:py-0">
+      <section className="intranet-hero">
+        <div className="bannerOficialMatriz py-8 md:py-0" style={{ maxWidth: '1240px', width: '100%', borderRadius: '0 0 16px 16px' }}>
           <h1 className="tasa-banner-title text-left mb-8 md:mb-0 mr-0 md:mr-16">
             Matriz de <br /> <strong>PERTINENCIA</strong>
           </h1>
