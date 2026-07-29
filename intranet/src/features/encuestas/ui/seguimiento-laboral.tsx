@@ -11,16 +11,16 @@ export function SeguimientoLaboralView() {
       <IntranetTopbarWrapper />
 
       {/* Hero Section */}
-      <section className="w-full bg-[#001631]" style={{ minHeight: '200px' }}>
-        <div className="max-w-7xl mx-auto flex flex-row items-center justify-center gap-8 md:gap-16 pr-8 md:pr-16 pl-16 md:pl-32 py-8 md:py-10">
+      <section className="w-full bg-gradient-to-r from-[#001631] to-[#001A39] flex justify-center py-10 md:py-14 px-6 md:px-12">
+        <div className="max-w-5xl w-full flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12">
           {/* Texto */}
-          <div className="text-white">
-            <p className="text-base md:text-lg font-light tracking-wide mb-1">
+          <div className="text-white text-center md:text-left">
+            <p className="text-lg md:text-xl font-light tracking-wide mb-1 opacity-90">
               Encuesta de
             </p>
-            <p className="text-xl md:text-2xl font-bold tracking-wide whitespace-nowrap">
+            <h1 className="text-2xl md:text-4xl font-bold tracking-wide">
               SEGUIMIENTO LABORAL
-            </p>
+            </h1>
           </div>
 
           {/* Ilustración */}
@@ -41,35 +41,37 @@ export function SeguimientoLaboralView() {
       {/* Main Content Section */}
       <section className="px-4 md:px-12 flex justify-center bg-[#f4f5f7]" style={{ paddingTop: '4rem', paddingBottom: '4rem' }}>
         <div className="max-w-7xl w-full flex flex-col items-center">
-          <div className="w-full max-w-5xl">
+          <div className="w-full max-w-5xl px-4 md:px-8 text-justify">
             <h2 className="text-3xl md:text-4xl text-[#002240]" style={{ marginBottom: '2.5rem' }}>
               ¿Cuál es el <span className="font-bold">objetivo</span>?
             </h2>
-            <p className="text-lg md:text-xl text-[#002240] mb-8">
+            <p className="text-lg md:text-xl text-[#002240] mb-8 text-justify">
               Conocer la transición de nuestros egresados después de su certificación y hacer seguimiento un año después a su proceso de vinculación al mercado laboral
             </p>
-
+<br />
             <h3 className="text-xl md:text-2xl font-bold text-[#002240] mb-4">
               Puntos Específicos:
             </h3>
-            <ol className="list-decimal pl-6 text-lg text-[#002240] mb-8 space-y-2">
-              <li className="pl-2">Conocer las actividades en que se desempeñaron los egresados el último año.</li>
-              <li className="pl-2">Entender en que actividades productivas se encuentran laborando los egresados después de su certificación.</li>
-              <li className="pl-2">Saber como el aprendizaje impartido por el SENA ha contribuido a su vida e intereses en general.</li>
-            </ol>
+            <br />
+            <ul className="list-none pl-0 text-lg text-[#002240] mb-8 space-y-2 text-justify">
+              <li>Conocer las actividades en que se desempeñaron los egresados el último año.</li>
+              <li>Entender en que actividades productivas se encuentran laborando los egresados después de su certificación.</li>
+              <li>Saber como el aprendizaje impartido por el SENA ha contribuido a su vida e intereses en general.</li>
+            </ul>
 
             <h3 className="text-xl md:text-2xl font-bold text-[#002240] mb-4" style={{ marginTop: '2.5rem' }}>
               ¿Qué encontrarás aquí?
             </h3>
-            <ul className="list-disc pl-6 text-lg text-[#002240] mb-12 space-y-2">
-              <li className="pl-2">Una <span className="font-bold">explicación detallada de la metodología de la encuesta</span> realizada.</li>
-              <li className="pl-2">Los <span className="font-bold">principales resultados</span> presentados de forma concisa y visual en una <span className="font-bold">presentación</span>.</li>
-              <li className="pl-2">El <span className="font-bold">conjunto de datos brutos</span> para que pueda realizar su propia exploración y análisis a profundidad.</li>
+            <br />
+            <ul className="list-none pl-0 text-lg text-[#002240] space-y-3 text-justify" style={{ marginBottom: '3.5rem' }}>
+              <li>Una <span className="font-bold">explicación detallada de la metodología de la encuesta</span> realizada.</li>
+              <li>Los <span className="font-bold">principales resultados</span> presentados de forma concisa y visual en una <span className="font-bold">presentación</span>.</li>
+              <li>El <span className="font-bold">conjunto de datos brutos</span> para que pueda realizar su propia exploración y análisis a profundidad.</li>
             </ul>
           </div>
 
           {/* First Dashboard Image */}
-          <div className="w-full max-w-5xl flex justify-center mt-8">
+          <div className="w-full max-w-5xl flex justify-center" style={{ marginTop: '4rem' }}>
             <Image
               src="/assets/img/encuesta-seguimiento.png"
               alt="Resultados Encuesta"
@@ -98,17 +100,18 @@ export function SeguimientoLaboralView() {
       <section className="px-4 md:px-12 flex justify-center bg-[#f4f5f7]" style={{ paddingTop: '4rem', paddingBottom: '4rem' }}>
         <div className="max-w-6xl w-full flex flex-col md:flex-row gap-12 items-center justify-between">
           {/* Left Column */}
-          <div className="flex-1 w-full md:max-w-md">
+          <div className="flex-1 w-full md:max-w-md px-4 text-justify">
             <h2 className="text-2xl md:text-3xl font-bold text-[#002240] mb-6">
               Portal de aprendizaje
             </h2>
-            <ul className="list-disc pl-6 text-lg text-[#002240] space-y-2">
-              <li className="pl-2">Orientación a los nuevos empleados.</li>
-              <li className="pl-2">Rendimiento y desarrollo.</li>
-              <li className="pl-2">Habilidades y aprendizaje.</li>
-              <li className="pl-2">Promociones.</li>
-              <li className="pl-2">Trabajos internos y referencias.</li>
-              <li className="pl-2">Herramientas y métodos.</li>
+            <br />
+            <ul className="list-none pl-0 text-lg text-[#002240] space-y-2 text-justify">
+              <li>Orientación a los nuevos empleados.</li>
+              <li>Rendimiento y desarrollo.</li>
+              <li>Habilidades y aprendizaje.</li>
+              <li>Promociones.</li>
+              <li>Trabajos internos y referencias.</li>
+              <li>Herramientas y métodos.</li>
             </ul>
           </div>
 

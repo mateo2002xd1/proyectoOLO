@@ -19,10 +19,10 @@ export function MatrizView() {
       <IntranetTopbarWrapper />
 
       {/* Banner */}
-      <section className="w-full  max-w-full relative overflow-hidden ">
-        <div className="bannerOficialMatriz py-8 md:py-0">
-          <h1 className="text-white text-3xl md:text-[44px] font-bold uppercase tracking-wide leading-tight text-left mb-8 md:mb-0 mr-0 md:mr-16">
-            MATRIZ DE <br /> PERTINENCIA
+      <section className="intranet-hero">
+        <div className="bannerOficialMatriz py-8 md:py-0" style={{ maxWidth: '1240px', width: '100%', borderRadius: '0 0 16px 16px' }}>
+          <h1 className="tasa-banner-title text-left mb-8 md:mb-0 mr-0 md:mr-16">
+            Matriz de <br /> <strong>PERTINENCIA</strong>
           </h1>
           <img
             src="/assets/img/BannerOficial.png"
@@ -35,7 +35,7 @@ export function MatrizView() {
       {/* Qué es */}
       <div className="matriz-section-gray pt-12 md:pt-20 pb-8">
         <div className="matriz-content-container text-left">
-          <h2 className="matriz-section-title !text-left mb-8">¿Qué es?</h2>
+          <h2 className="tasa-concept-title !text-left mb-8" style={{ border: 'none' }}>¿Qué es?</h2>
           <div className="matriz-section-intro !text-left">
             La Matriz de Pertinencia es una herramienta estratégica del SENA, que permite<br className="hidden md:block" />
             a través de sus 5 variables :
@@ -46,7 +46,7 @@ export function MatrizView() {
             <p><strong>ii.</strong> tendencia de las ocupaciones.</p>
             <p><strong>iii.</strong> demanda social de los programas de oferta titulada.</p>
             <p><strong>iv.</strong> sector estratégico de los programas de formación</p>
-            <p><strong>v.</strong> contrato de aprendizaje; comprender que tan bien se ajustan los programas<br className="hidden md:block" />
+            <p style={{ marginBottom: '30px' }}><strong>v.</strong> contrato de aprendizaje; comprender que tan bien se ajustan los programas<br className="hidden md:block" />
               ofrecidos por los centros de formación a la realidad del mercado laboral<br className="hidden md:block" />
               colombiano.</p>
           </div>
@@ -122,7 +122,9 @@ export function MatrizView() {
       <section className="tasa-ppt-section">
         <div className="tasa-ppt-container">
           <div className="tasa-ppt-text">
-            <h3 className="text-[#0A1B3F] text-[28px] font-bold mb-6">Descargas</h3>
+            <h2 className="tasa-ppt-title" style={{ marginBottom: '1.5rem' }}>
+              <strong>Descargas</strong>
+            </h2>
             <ul className="list-disc pl-6 text-[#1C2A48] text-lg md:text-xl space-y-2 marker:text-[#0A1B3F]">
               <li><a href="#" className="hover:underline transition-colors">Matriz de pertinencia 2025</a></li>
               <li><a href="#" className="hover:underline transition-colors">Matriz de pertinencia 2024</a></li>
