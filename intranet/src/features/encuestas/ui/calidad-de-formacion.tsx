@@ -5,6 +5,7 @@ import { IntranetTopbarWrapper } from '@/shared/lib/blocks/IntranetTopbarWrapper
 import { IntranetFooter } from '@/shared/lib/blocks/IntranetFooter';
 import { IntranetHero } from '@/shared/lib/blocks/IntranetHero';
 import { PptxViewer } from '@/features/tasa/ui/PptxViewer';
+import Image from 'next/image';
 
 export function CalidadFormacionView() {
   return (
@@ -55,11 +56,21 @@ export function CalidadFormacionView() {
               </div>
             </div>
 
-            {/* Right Column (Presentation) */}
-            <div className="flex-1 w-full">
-              <div className="tasa-ppt-viewer-wrapper">
-                <PptxViewer fileUrl="/uploads/documents/Presentación1.pptx" />
+            {/* Right Column (Map Image) */}
+            <div className="flex-1 w-full flex flex-col items-center lg:items-end">
+              <div className="relative w-full max-w-lg h-auto rounded-xl overflow-hidden bg-white shadow-sm">
+                <Image 
+                  src="/assets/img/Resultado-de-encuesta.png" 
+                  alt="Resultado de encuesta - Mapa de disponibilidad a contratar" 
+                  width={600} 
+                  height={600}
+                  className="w-full h-auto object-contain"
+                />
               </div>
+              <br></br>
+              <p className="mt-4 text-[#2e7d32] font-bold text-center lg:text-right w-full max-w-lg pr-4">
+                Resultado de encuesta calidad de la Formación
+              </p>
             </div>
           </div>
         </div>
