@@ -21,37 +21,37 @@ export function CalidadFormacionView() {
       {/* Main Content Section */}
       <section className="px-4 md:px-12 flex justify-center bg-[#f4f5f7]" style={{ paddingTop: '4rem', paddingBottom: '4rem' }}>
         <div className="max-w-7xl w-full">
-          <h2 className="text-3xl md:text-4xl text-[#002240]" style={{ marginBottom: '2.5rem' }}>
-            ¿Cuál es el <span className="font-bold">objetivo</span>?
+          <h2 className="tasa-concept-title">
+            ¿Cuál es el <strong>objetivo</strong>?
           </h2>
           <div className="flex flex-col lg:flex-row gap-12 items-start justify-between">
             {/* Left Column */}
             <div className="flex-1 space-y-10 max-w-3xl">
               <div>
-                <br ></br>
-                <p className="text-lg md:text-xl text-[#002240] mb-8 max-w-5xl text-justify">
-                  El objetivo principal es <span className="font-bold">evaluar la percepción de los empresarios sobre la contribución de los aprendices en sus organizaciones.</span>
+
+                <p className="tasa-concept-desc">
+                  El objetivo principal es <strong>evaluar la percepción de los empresarios sobre la contribución de los aprendices en sus organizaciones.</strong>
                 </p>
-                <br/>
-                <h3 className="text-xl font-bold text-[#002240] mb-4">Puntos Específicos:</h3>
-                <br></br>
-                <div className="space-y-4 text-[#002240] text-lg font-medium">
-                  <p className="text-justify">Conocer las perspectivas de los empresarios frente al <span className="font-bold">rol de los aprendices</span> en sus labores.</p>
-                  <p className="text-justify">Valorar los conocimientos y habilidades <span className="font-bold">de los aprendices en un contexto laboral real.</span></p>
+             
+                <h3 className="tasa-concept-title" style={{ fontSize: '1.75rem', marginTop: '1.5rem' }}>Puntos Específicos:</h3>
+               
+                <div className="tasa-concept-desc space-y-4">
+                  <p>Conocer las perspectivas de los empresarios frente al <strong>rol de los aprendices</strong> en sus labores.</p>
+                  <p>Valorar los conocimientos y habilidades <strong>de los aprendices en un contexto laboral real.</strong></p>
                   
-                  <p className="text-justify"><span className="font-bold">Ofrecer información</span> sobre la <span className="font-bold">pertinencia de la formación</span> de los aprendices respecto a las demandas del mercado laboral.</p>
-                  <p className="text-justify">Evaluar la disposición de los empresarios a <span className="font-bold">contratar aprendices</span> una vez finalizado su periodo de formación.</p>
+                  <p><strong>Ofrecer información</strong> sobre la <strong>pertinencia de la formación</strong> de los aprendices respecto a las demandas del mercado laboral.</p>
+                  <p>Evaluar la disposición de los empresarios a <strong>contratar aprendices</strong> una vez finalizado su periodo de formación.</p>
                 </div>
               </div>
 
               <div>
-                <br ></br>
-                <h3 className="text-xl font-bold text-[#002240] mb-4 italic">¿Qué encontrarás aquí?</h3>
-                <br></br>
-                <div className="space-y-2 text-[#002240] text-lg font-medium">
-                  <p className="text-justify">Una <span className="font-bold">explicación detallada de la metodología de la encuesta</span> realizada.</p>
-                  <p className="text-justify">Los <span className="font-bold">principales resultados</span> presentados de forma concisa y visual en una <span className="font-bold">presentación.</span></p>
-                  <p className="text-justify">El <span className="font-bold">conjunto de datos brutos</span> para que pueda realizar su propia exploración y análisis a profundidad.</p>
+             
+                <h3 className="tasa-concept-title" style={{ fontSize: '1.75rem', marginTop: '1.5rem' }}>¿Qué encontrarás aquí?</h3>
+              
+                <div className="tasa-concept-desc space-y-4">
+                  <p>Una <strong>explicación detallada de la metodología de la encuesta</strong> realizada.</p>
+                  <p>Los <strong>principales resultados</strong> presentados de forma concisa y visual en una <strong>presentación.</strong></p>
+                  <p>El <strong>conjunto de datos brutos</strong> para que pueda realizar su propia exploración y análisis a profundidad.</p>
                 </div>
               </div>
             </div>
@@ -123,11 +123,11 @@ export function CalidadFormacionView() {
         <div className="max-w-6xl w-full flex flex-col md:flex-row gap-12 items-center justify-between">
           {/* Left Column */}
           <div className="flex-1 w-full md:max-w-xs">
-            <h2 className="text-xl md:text-2xl font-bold text-[#002240] mb-6">
+            <h2 className="tasa-concept-title" style={{ fontSize: '1.75rem' }}>
               Página Web Observatorio Laboral
             </h2>
             <br></br>
-            <ul className="list-disc pl-5 space-y-1 text-[#002240] text-base font-medium">
+            <ul className="tasa-concept-desc list-disc pl-6 space-y-2">
               <li>Informes</li>
               <li>Resultados</li>
               <li>Boletines Tendencia</li>

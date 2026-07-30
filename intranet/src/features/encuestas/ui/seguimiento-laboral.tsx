@@ -4,6 +4,7 @@ import React from 'react';
 import { IntranetTopbarWrapper } from '@/shared/lib/blocks/IntranetTopbarWrapper';
 import { IntranetFooter } from '@/shared/lib/blocks/IntranetFooter';
 import Image from 'next/image';
+import { PptxViewer } from '@/features/tasa/ui/PptxViewer';
 
 export function SeguimientoLaboralView() {
   return (
@@ -11,30 +12,17 @@ export function SeguimientoLaboralView() {
       <IntranetTopbarWrapper />
 
       {/* Hero Section */}
-      <section className="w-full bg-gradient-to-r from-[#001631] to-[#001A39] flex justify-center py-10 md:py-14 px-6 md:px-12">
-        <div className="max-w-5xl w-full flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12">
-          {/* Texto */}
-          <div className="text-white text-center md:text-left">
-            <p className="text-lg md:text-xl font-light tracking-wide mb-1 opacity-90">
-              Encuesta de
-            </p>
-            <h1 className="text-2xl md:text-4xl font-bold tracking-wide">
-              SEGUIMIENTO LABORAL
-            </h1>
-          </div>
-
-          {/* Ilustración */}
-          <div className="flex-shrink-0">
-            <Image
-              src="/assets/img/banner-seguimiento-laboral.png"
-              alt="Ilustración Seguimiento Laboral"
-              width={260}
-              height={200}
-              className="object-contain"
-              style={{ transform: 'scaleX(-1)' }}
-              priority
-            />
-          </div>
+      <section className="tasa-banner-wrapper">
+        <div className="tasa-banner-content">
+          <h1 className="tasa-banner-title">
+            Encuesta de<br /> <strong>SEGUIMIENTO LABORAL</strong>
+          </h1>
+          <img
+            src="/assets/img/banner-seguimiento-laboral.png"
+            alt="Ilustración Seguimiento Laboral"
+            className="tasa-banner-image"
+            style={{ transform: 'scaleX(-1)' }}
+          />
         </div>
       </section>
 
@@ -42,32 +30,33 @@ export function SeguimientoLaboralView() {
       <section className="px-4 md:px-12 flex justify-center bg-[#f4f5f7]" style={{ paddingTop: '4rem', paddingBottom: '4rem' }}>
         <div className="max-w-7xl w-full flex flex-col items-center">
           <div className="w-full max-w-5xl px-4 md:px-8 text-justify">
-            <h2 className="text-3xl md:text-4xl text-[#002240]" style={{ marginBottom: '2.5rem' }}>
-              ¿Cuál es el <span className="font-bold">objetivo</span>?
+            <h2 className="tasa-concept-title">
+              ¿Cuál es el <strong>objetivo</strong>?
             </h2>
-            <p className="text-lg md:text-xl text-[#002240] mb-8 text-justify">
+            <br />
+            <p className="tasa-concept-desc">
               Conocer la transición de nuestros egresados después de su certificación y hacer seguimiento un año después a su proceso de vinculación al mercado laboral
             </p>
 <br />
-            <h3 className="text-xl md:text-2xl font-bold text-[#002240] mb-4">
+            <h3 className="tasa-concept-title" style={{ fontSize: '1.75rem', marginTop: '1.5rem' }}>
               Puntos Específicos:
             </h3>
             <br />
-            <ul className="list-none pl-0 text-lg text-[#002240] mb-8 space-y-2 text-justify">
-              <li>Conocer las actividades en que se desempeñaron los egresados el último año.</li>
-              <li>Entender en que actividades productivas se encuentran laborando los egresados después de su certificación.</li>
-              <li>Saber como el aprendizaje impartido por el SENA ha contribuido a su vida e intereses en general.</li>
-            </ul>
+            <div className="tasa-concept-desc space-y-4">
+              <p>Conocer las actividades en que se desempeñaron los egresados el último año.</p>
+              <p>Entender en que actividades productivas se encuentran laborando los egresados después de su certificación.</p>
+              <p>Saber como el aprendizaje impartido por el SENA ha contribuido a su vida e intereses en general.</p>
+            </div>
 
-            <h3 className="text-xl md:text-2xl font-bold text-[#002240] mb-4" style={{ marginTop: '2.5rem' }}>
+            <h3 className="tasa-concept-title" style={{ fontSize: '1.75rem', marginTop: '2.5rem' }}>
               ¿Qué encontrarás aquí?
             </h3>
             <br />
-            <ul className="list-none pl-0 text-lg text-[#002240] space-y-3 text-justify" style={{ marginBottom: '3.5rem' }}>
-              <li>Una <span className="font-bold">explicación detallada de la metodología de la encuesta</span> realizada.</li>
-              <li>Los <span className="font-bold">principales resultados</span> presentados de forma concisa y visual en una <span className="font-bold">presentación</span>.</li>
-              <li>El <span className="font-bold">conjunto de datos brutos</span> para que pueda realizar su propia exploración y análisis a profundidad.</li>
-            </ul>
+            <div className="tasa-concept-desc space-y-4" style={{ marginBottom: '3.5rem' }}>
+              <p>Una <span className="font-bold">explicación detallada de la metodología de la encuesta</span> realizada.</p>
+              <p>Los <span className="font-bold">principales resultados</span> presentados de forma concisa y visual en una <span className="font-bold">presentación</span>.</p>
+              <p>El <span className="font-bold">conjunto de datos brutos</span> para que pueda realizar su propia exploración y análisis a profundidad.</p>
+            </div>
           </div>
 
           {/* First Dashboard Image */}
@@ -101,32 +90,23 @@ export function SeguimientoLaboralView() {
         <div className="max-w-6xl w-full flex flex-col md:flex-row gap-12 items-center justify-between">
           {/* Left Column */}
           <div className="flex-1 w-full md:max-w-md px-4 text-justify">
-            <h2 className="text-2xl md:text-3xl font-bold text-[#002240] mb-6">
+            <h2 className="tasa-concept-title" style={{ fontSize: '2rem' }}>
               Portal de aprendizaje
             </h2>
             <br />
-            <ul className="list-none pl-0 text-lg text-[#002240] space-y-2 text-justify">
-              <li>Orientación a los nuevos empleados.</li>
-              <li>Rendimiento y desarrollo.</li>
-              <li>Habilidades y aprendizaje.</li>
-              <li>Promociones.</li>
-              <li>Trabajos internos y referencias.</li>
-              <li>Herramientas y métodos.</li>
-            </ul>
+            <div className="tasa-concept-desc space-y-2">
+              <p>Orientación a los nuevos empleados.</p>
+              <p>Rendimiento y desarrollo.</p>
+              <p>Habilidades y aprendizaje.</p>
+              <p>Promociones.</p>
+              <p>Trabajos internos y referencias.</p>
+              <p>Herramientas y métodos.</p>
+            </div>
           </div>
 
-          {/* Right Column (Video) */}
-          <div className="flex-1 w-full max-w-2xl relative rounded-xl overflow-hidden shadow-lg bg-black flex justify-center items-center">
-            <div className="w-full aspect-video bg-gray-800 flex items-center justify-center relative">
-              <Image
-                src="/assets/img/Seguimiento-laboral.png"
-                alt="Video Portal de Aprendizaje"
-                layout="fill"
-                objectFit="cover"
-                className="z-10 opacity-80"
-                onError={(e) => e.currentTarget.style.display = 'none'}
-              />
-            </div>
+          {/* Right Column (Presentation) */}
+          <div className="tasa-ppt-viewer-wrapper">
+            <PptxViewer fileUrl="/uploads/documents/Presentación1.pptx" />
           </div>
         </div>
       </section>
