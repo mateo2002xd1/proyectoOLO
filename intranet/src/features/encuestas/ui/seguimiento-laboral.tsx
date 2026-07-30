@@ -20,7 +20,7 @@ export function SeguimientoLaboralView() {
           <img
             src="/assets/img/banner-seguimiento-laboral.png"
             alt="Ilustración Seguimiento Laboral"
-            className="tasa-banner-image"
+            className="tasa-banner-image survey-banner-image"
             style={{ transform: 'scaleX(-1)' }}
           />
         </div>
