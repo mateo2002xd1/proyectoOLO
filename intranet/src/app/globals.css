@@ -3065,7 +3065,7 @@ input {
   .tasa-banner-content {
     flex-direction: row;
     justify-content: center;
-    gap: clamp(4rem, 8vw, 10rem);
+    gap: clamp(2rem, 4vw, 5rem);
     text-align: left;
   }
 }
@@ -3088,6 +3088,11 @@ input {
   height: 195px;
   object-fit: contain;
   filter: drop-shadow(0 20px 25px rgba(0, 0, 0, 0.3));
+}
+
+.survey-banner-image {
+  max-width: 500px;
+  height: 280px;
 }
 
 /* 2. Conceptos (Zig-Zag) */

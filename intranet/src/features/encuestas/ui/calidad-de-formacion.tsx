@@ -3,7 +3,6 @@
 import React from 'react';
 import { IntranetTopbarWrapper } from '@/shared/lib/blocks/IntranetTopbarWrapper';
 import { IntranetFooter } from '@/shared/lib/blocks/IntranetFooter';
-import { IntranetHero } from '@/shared/lib/blocks/IntranetHero';
 import { PptxViewer } from '@/features/tasa/ui/PptxViewer';
 import Image from 'next/image';
 
@@ -13,10 +12,18 @@ export function CalidadFormacionView() {
       <IntranetTopbarWrapper />
 
       {/* Hero Section */}
-      <IntranetHero
-        imageSrc="/assets/img/banner-encuesta.png"
-        imageAlt="Banner Encuesta Calidad de la Formación"
-      />
+      <section className="tasa-banner-wrapper">
+        <div className="tasa-banner-content">
+          <img
+            src="/assets/img/banner-seguimiento-laboral.png"
+            alt="Ilustración Calidad de la Formación"
+            className="tasa-banner-image survey-banner-image"
+          />
+          <h1 className="tasa-banner-title text-left">
+            Encuesta de<br /> <strong>CALIDAD DE LA FORMACIÓN</strong>
+          </h1>
+        </div>
+      </section>
 
       {/* Main Content Section */}
       <section className="px-4 md:px-12 flex justify-center bg-[#f4f5f7]" style={{ paddingTop: '4rem', paddingBottom: '4rem' }}>
