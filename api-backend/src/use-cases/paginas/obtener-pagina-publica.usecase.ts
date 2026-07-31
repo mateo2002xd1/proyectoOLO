@@ -1,7 +1,8 @@
 import { PaginaRepository } from '../../repositories/pagina.repository';
+import type { Ambito } from '../../shared/ambito';
 
-export const obtenerPaginaPublica = async (slug: string) => {
-  const pagina = await PaginaRepository.findBySlug(slug);
+export const obtenerPaginaPublica = async (slug: string, ambito: Ambito) => {
+  const pagina = await PaginaRepository.findBySlug(slug, ambito);
   if (!pagina) return null;
 
   if (!pagina.versionPublicadaId) return null;

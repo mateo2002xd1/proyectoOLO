@@ -29,8 +29,8 @@
   --color-brand-blue: #1face3;              /* 2.60:1 */
 
   /* Interactivo — cumplen AA con texto blanco */
-  --color-brand-interactive: #2a7d00;       /* 5.21:1 */
-  --color-brand-interactive-hover: #1f5c00; /* 8.11:1 */
+  --color-brand-interactive: #7DB828;       /* 5.21:1 */
+  --color-brand-interactive-hover: #63a00d; /* 8.11:1 */
   --color-brand-blue-dark: #0b6d8f;         /* 5.84:1 */
 
   /* Anillo de foco. SC 1.4.11 exige 3:1; se usa a opacidad plena,
@@ -151,11 +151,21 @@
 }
 
 .dark {
-  --background: #0d1117;
-  --foreground: #e6e8f0;
-  --surface: #161b27;
-  --line: rgba(45, 54, 73, 0.7);
-  --muted: rgba(136, 150, 167, 0.4);
+  --background: #0b1121;
+  --foreground: #f6f6f6;
+  --surface: #131b2f;
+  --line: rgba(30, 41, 59, 0.7);
+  --muted: rgba(148, 163, 184, 0.4);
+}
+
+/* Fix browser autofill styling in dark mode */
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover, 
+.dark input:-webkit-autofill:focus, 
+.dark input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #0b1121 inset !important;
+  -webkit-text-fill-color: #f6f6f6 !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 /* --- Reset --- */

@@ -1,7 +1,11 @@
 import { Pagina, PaginaVersion, User } from '../infrastructure/db/models';
+import type { Ambito } from '../shared/ambito';
 
 export const PaginaRepository = {
-  findBySlug: (slug: string) => Pagina.findOne({ where: { slug } }),
+  // El slug solo identifica una página dentro de su ámbito: el sitio y la intranet
+  // tienen cada uno su `/inicio`. Buscar por slug a secas devolvía la página de la
+  // otra aplicación.
+  findBySlug: (slug: string, ambito: Ambito) => Pagina.findOne({ where: { slug, ambito } }),
 
   crear: (data: any) => Pagina.create(data),
 
@@ -31,13 +35,22 @@ export const PaginaRepository = {
 
   actualizarVersion: (version: PaginaVersion, data: any) => version.update(data),
 
+  eliminarVersion: (version: PaginaVersion) => version.destroy(),
+
+  contarVersiones: (paginaId: string) => PaginaVersion.count({ where: { paginaId } }),
+
+  eliminarPagina: (pagina: Pagina) => pagina.destroy(),
+
   findVersionPorId: (id: string) => PaginaVersion.findByPk(id),
 
+  // La cola de revisión es única para las dos aplicaciones: quien aprueba lo hace
+  // desde el panel del sitio y ahí debe ver también lo que llega de la intranet.
+  // Cada versión viaja con el ámbito de su página para saber sobre cuál se actúa.
   listarEnRevision: () =>
     PaginaVersion.findAll({
       where: { estado: 'en_revision' },
       include: [
-        { model: Pagina, as: 'pagina' },
+        { model: Pagina, as: 'pagina', required: true },
         { model: User, as: 'publicador', attributes: ['id', 'nombre', 'email'] },
       ],
       order: [['creadoEn', 'DESC']],

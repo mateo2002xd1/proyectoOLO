@@ -30,6 +30,12 @@ export {
 
 // Lib
 export { homeFallbackData } from "./lib/home-fallback-data";
+export {
+  enlaceAlEditor,
+  esRutaInternaSegura,
+  resolverRutaDeVuelta,
+  rutaPublicaDeSlug,
+} from "./lib/ruta-de-vuelta";
 
 // Types
 export type {

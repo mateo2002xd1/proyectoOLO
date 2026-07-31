@@ -8,6 +8,8 @@ import * as contenidos from './004-contenidos-secciones-archivos';
 import * as identidad from './005-identidad';
 import * as auditoria from './006-auditoria-unificada';
 import * as paginasAmbito from './007-paginas-ambito';
+import * as paginasSlugUnicoPorAmbito from './008-paginas-slug-unico-por-ambito';
+import * as limpiarRestriccionesDuplicadas from './009-limpiar-restricciones-duplicadas';
 
 export interface Migracion {
   nombre: string;
@@ -26,6 +28,8 @@ const migraciones: Migracion[] = [
   identidad,
   auditoria,
   paginasAmbito,
+  paginasSlugUnicoPorAmbito,
+  limpiarRestriccionesDuplicadas,
 ];
 
 const TABLA_CONTROL = 'migraciones_aplicadas';

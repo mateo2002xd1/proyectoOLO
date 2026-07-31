@@ -38,11 +38,16 @@ export interface PaginaVersion {
   creadoEn: string;
 }
 
+/** A qué aplicación pertenece una página: el mismo slug existe en las dos. */
+export type Ambito = 'sitio' | 'intranet';
+
 export interface PaginaEnRevision {
   id: string;
   paginaId: string;
   titulo: string;
   slug: string;
+  /** Sin esto no se sabe cuál de las dos páginas homónimas se aprueba. */
+  ambito: Ambito;
   numeroVersion: number;
   creadoEn: string;
   autor?: {

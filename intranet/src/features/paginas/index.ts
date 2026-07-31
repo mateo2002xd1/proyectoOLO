@@ -23,6 +23,9 @@ export { ClientPuckRender } from "./components/client-puck-render";
 // Semillas de contenido inicial (mesa de trabajo)
 export { getPageSeed, isEmptyContent } from "./lib/page-seeds";
 
+// Ruta de regreso al salir del editor
+export { enlaceAlEditor, esRutaInternaSegura, resolverRutaDeVuelta } from "./lib/ruta-de-vuelta";
+
 // Hooks
 export { usePagina } from "./hooks/use-pagina";
 export { useEditorActions } from "./hooks/use-editor-actions";
@@ -30,10 +33,11 @@ export { useEditorActions } from "./hooks/use-editor-actions";
 // API
 export {
   obtenerVersionEditable,
+  obtenerPaginaPublicada,
   guardarBorrador,
   enviarARevision,
 } from "./api/paginas.api";
-export type { VersionEditable } from "./api/paginas.api";
+export type { VersionEditable, PaginaPublicada } from "./api/paginas.api";
 
 // Types
 export type {

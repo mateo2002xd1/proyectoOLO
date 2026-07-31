@@ -34,7 +34,7 @@ export function Button({
   const base =
     // El anillo va a opacidad plena: SC 1.4.11 exige 3:1 para el indicador
     // de foco, y un `/40` lo dejaba muy por debajo.
-    "inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-focus disabled:opacity-50 disabled:cursor-not-allowed";
+    "inline-flex items-center justify-center rounded-[16px] px-4 py-2.5 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-focus disabled:opacity-50 disabled:cursor-not-allowed";
 
   const style = plain ? variantStyles.plain : variantStyles[variant];
 

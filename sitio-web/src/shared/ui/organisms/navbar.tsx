@@ -10,7 +10,7 @@ interface NavbarProps {
 export function Navbar({ children, className = '' }: NavbarProps) {
   return (
     <nav
-      className={`flex h-14 items-center gap-4 border-b border-zinc-200 bg-white px-4 dark:border-zinc-700 dark:bg-zinc-900 ${className}`}
+      className={`flex h-14 items-center gap-4 border-b border-zinc-200 bg-white px-4 dark:border-[#1e293b] dark:bg-[#131b2f] ${className}`}
     >
       {children}
     </nav>
@@ -40,7 +40,7 @@ interface NavbarItemProps {
 }
 
 export function NavbarItem({ href, children, className = '', ...props }: NavbarItemProps) {
-  const baseClasses = `group flex size-8 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white [&>svg]:size-5 [&>svg]:shrink-0 [&>svg]:fill-current ${className}`;
+  const baseClasses = `group flex size-8 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-[#94a3b8] dark:hover:bg-zinc-800 dark:hover:text-white [&>svg]:size-5 [&>svg]:shrink-0 [&>svg]:fill-current ${className}`;
 
   if (href) {
     return (

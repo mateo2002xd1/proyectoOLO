@@ -15,6 +15,7 @@ import {
   authLabelClass,
 } from '@/features/administracion/components/auth-ui';
 import { Button } from '@/shared/ui/atoms/button';
+import { ThemeToggle } from '@/shared/ui/molecules/theme-toggle';
 
 const INTRANET_EDITOR_URL =
   process.env.NEXT_PUBLIC_INTRANET_EDITOR_URL || 'http://localhost:3001/editor/inicio';
@@ -32,10 +33,10 @@ function EditorChoiceLink({
   return (
     <a
       href={href}
-      className="block rounded-[10px] border border-gray-200 px-[18px] py-4 transition-colors hover:border-brand hover:bg-gray-50"
+      className="block rounded-[10px] border border-gray-200 dark:border-[#1e293b] px-[18px] py-4 transition-colors hover:border-brand hover:bg-gray-50 dark:hover:bg-[#131b2f]/50"
     >
-      <span className="block text-[15px] font-semibold text-gray-900">{title}</span>
-      <span className="mt-0.5 block text-[13px] text-gray-500">{description}</span>
+      <span className="block text-[15px] font-semibold text-gray-900 dark:text-[#f6f6f6]">{title}</span>
+      <span className="mt-0.5 block text-[13px] text-gray-500 dark:text-slate-400">{description}</span>
     </a>
   );
 }
@@ -120,7 +121,7 @@ function LoginForm() {
     return (
       <div className={authCardClass}>
         <AuthCardHeader className="mb-7">
-          <p className="text-lg font-light text-gray-900">¿Qué deseas editar?</p>
+          <p className="text-lg font-light text-gray-900 dark:text-[#f6f6f6]">¿Qué deseas editar?</p>
         </AuthCardHeader>
 
         <div className="flex flex-col gap-3">
@@ -170,7 +171,7 @@ function LoginForm() {
   return (
     <div className={authCardClass}>
       <AuthCardHeader className="mb-[30px]">
-        <p className="text-xl font-light text-[#757575]">¡Bienvenido de nuevo!</p>
+        <p className="text-xl font-light text-[#757575] dark:text-slate-400">¡Bienvenido de nuevo!</p>
       </AuthCardHeader>
 
       <form onSubmit={handleSubmit} noValidate>
@@ -214,10 +215,13 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <AuthPageShell>
-      <Suspense fallback={<div>Cargando...</div>}>
-        <LoginForm />
-      </Suspense>
-    </AuthPageShell>
+    <>
+      <ThemeToggle />
+      <AuthPageShell>
+        <Suspense fallback={<div>Cargando...</div>}>
+          <LoginForm />
+        </Suspense>
+      </AuthPageShell>
+    </>
   );
 }

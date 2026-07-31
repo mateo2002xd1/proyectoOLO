@@ -12,6 +12,9 @@
     "migrate:status": "ts-node scripts/migrate.ts status",
     "migrate:down": "ts-node scripts/migrate.ts down",
     "db:verificar": "ts-node scripts/verificar-esquema.ts",
+    "ambito:auditar": "ts-node scripts/auditar-ambito.ts",
+    "ambito:verificar": "ts-node scripts/verificar-ambito.ts",
+    "permisos:verificar": "ts-node scripts/verificar-permisos.ts",
     "respaldo": "ts-node scripts/respaldo.ts"
   },
   "dependencies": {

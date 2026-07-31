@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 
-import { IntranetTopbar } from '@/shared/lib/blocks/IntranetTopbar';
+import { IntranetTopbarWrapper } from '@/shared/lib/blocks/IntranetTopbarWrapper';
 import { IntranetHero } from '@/shared/lib/blocks/IntranetHero';
 import { IntranetFooter } from '@/shared/lib/blocks/IntranetFooter';
 import { Carousel } from '@/shared/ui/organisms/Carousel';
@@ -368,7 +368,7 @@ export function InicioView() {
     
     
     <div className="w-full bg-white flex flex-col items-center min-h-screen">
-            <IntranetTopbar />
+            <IntranetTopbarWrapper />
 
 
       <IntranetHero />

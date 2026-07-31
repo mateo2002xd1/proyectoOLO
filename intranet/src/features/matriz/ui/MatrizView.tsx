@@ -57,7 +57,7 @@ export function MatrizView() {
       <div className="matriz-section-white">
         <div className="matriz-sabias-que">
           <img
-            src="/assets/img/Sabiasque.png"
+            src="/assets/img/matriz-1.png"
             alt="Sabías que... La Matriz ofrece información desde 2011"
             className="w-full h-auto object-contain rounded-2xl shadow-sm"
 

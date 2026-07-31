@@ -10,10 +10,32 @@
  * @see 3-seguridad-del-proyecto.md §S3  (API :4000 es la única fuente de JWT/auth)
  */
 
-import { apiClient } from "@/shared/lib/api-client";
+import { apiClient, ApiError } from "@/shared/lib/api-client";
 import type { ContenidoPagina, EstadoPagina } from "../types/editor.types";
 
 const EMPTY_CONTENIDO: ContenidoPagina = { content: [], root: {} };
+
+export interface PaginaPublicada {
+  slug: string;
+  titulo: string;
+  contenido: ContenidoPagina;
+}
+
+/**
+ * Contenido publicado de una página, para mostrarlo a quien la visita.
+ *
+ * Solo devuelve la versión aprobada: un borrador o algo pendiente de revisión no
+ * se ve aquí. Si la página no existe o todavía no tiene versión publicada, es
+ * `null` — no es un error, es que no hay nada que mostrar.
+ */
+export async function obtenerPaginaPublicada(slug: string): Promise<PaginaPublicada | null> {
+  try {
+    return await apiClient.get<PaginaPublicada>(`/paginas/publica/${slug}`);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) return null;
+    throw error;
+  }
+}
 
 export interface VersionEditable {
   slug: string;
@@ -27,8 +49,11 @@ export interface VersionEditable {
  * Obtiene el contenido editable de una página (última versión, cualquier estado).
  * Si la página aún no existe, el backend devuelve contenido vacío (no 404).
  */
-export async function obtenerVersionEditable(slug: string): Promise<VersionEditable> {
-  const res = await apiClient.get<Partial<VersionEditable>>(`/paginas/${slug}/editable`);
+export async function obtenerVersionEditable(
+  slug: string,
+  opciones?: RequestInit
+): Promise<VersionEditable> {
+  const res = await apiClient.get<Partial<VersionEditable>>(`/paginas/${slug}/editable`, opciones);
   return {
     slug: res.slug ?? slug,
     titulo: res.titulo ?? slug,

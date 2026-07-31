@@ -15,9 +15,9 @@ export function SeguimientoLaboralView() {
         <div className="max-w-5xl w-full flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12">
           {/* Texto */}
           <div className="text-white text-center md:text-left">
-            <p className="text-lg md:text-xl font-light tracking-wide mb-1 opacity-90">
+            <h1  className="text-lg md:text-xl font-light tracking-wide mb-1 opacity-90">
               Encuesta de
-            </p>
+            </h1>
             <h1 className="text-2xl md:text-4xl font-bold tracking-wide">
               SEGUIMIENTO LABORAL
             </h1>

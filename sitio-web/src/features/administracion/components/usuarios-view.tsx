@@ -161,8 +161,8 @@ export default function UsuariosView() {
     <div className="p-6">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Usuarios</h1>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          <h1 className="text-2xl font-bold text-zinc-900 dark:text-[#f6f6f6]">Usuarios</h1>
+          <p className="mt-1 text-sm text-zinc-500 dark:text-[#94a3b8]">
             Controla los usuarios que actúan en las diferentes plataformas
           </p>
         </div>
@@ -193,32 +193,32 @@ export default function UsuariosView() {
         </AlertDescription>
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Nombre completo</label>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">Nombre completo</label>
             <input
               type="text"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:text-white dark:focus:border-white dark:focus:ring-white"
+              className="w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:text-[#f6f6f6] dark:focus:border-white dark:focus:ring-white"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Correo electrónico</label>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">Correo electrónico</label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:text-white dark:focus:border-white dark:focus:ring-white"
+              className="w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:text-[#f6f6f6] dark:focus:border-white dark:focus:ring-white"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Rol</label>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">Rol</label>
             <select
               required
               value={roleId}
               onChange={(e) => setRoleId(e.target.value)}
-              className="w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:text-white dark:focus:border-white dark:focus:ring-white [&>option]:text-zinc-900"
+              className="w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:text-[#f6f6f6] dark:focus:border-white dark:focus:ring-white [&>option]:text-zinc-900"
             >
               <option value="" disabled>Selecciona un rol</option>
               {roles.map((r) => (
@@ -227,25 +227,25 @@ export default function UsuariosView() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Fecha de caducidad (Opcional)</label>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">Fecha de caducidad (Opcional)</label>
             <input type="date" value={expirationDate} onChange={e => setExpirationDate(e.target.value)} className="olo-date-input" />
           </div>
 
           <div className="pt-2">
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">Permisos de acceso (No funcional aún)</label>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-3">Permisos de acceso (No funcional aún)</label>
             <div className="space-y-3">
               <label className="flex items-start gap-3 cursor-pointer">
-                <input type="radio" name="permisos_tipo" defaultChecked className="mt-0.5 size-4 rounded-full border-zinc-300 text-zinc-900 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:checked:bg-white dark:focus:ring-white" />
+                <input type="radio" name="permisos_tipo" defaultChecked className="mt-0.5 size-4 rounded-full border-zinc-300 text-zinc-900 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:checked:bg-white dark:focus:ring-white" />
                 <div>
-                  <span className="block text-sm font-medium text-zinc-900 dark:text-white">Acceso a Intranet</span>
-                  <span className="block text-xs text-zinc-500 dark:text-zinc-400">Permite ver y consumir contenido, pero no administrarlo.</span>
+                  <span className="block text-sm font-medium text-zinc-900 dark:text-[#f6f6f6]">Acceso a Intranet</span>
+                  <span className="block text-xs text-zinc-500 dark:text-[#94a3b8]">Permite ver y consumir contenido, pero no administrarlo.</span>
                 </div>
               </label>
               <label className="flex items-start gap-3 cursor-pointer">
-                <input type="radio" name="permisos_tipo" className="mt-0.5 size-4 rounded-full border-zinc-300 text-zinc-900 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:checked:bg-white dark:focus:ring-white" />
+                <input type="radio" name="permisos_tipo" className="mt-0.5 size-4 rounded-full border-zinc-300 text-zinc-900 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:checked:bg-white dark:focus:ring-white" />
                 <div>
-                  <span className="block text-sm font-medium text-zinc-900 dark:text-white">Acceso al Panel Administrativo</span>
-                  <span className="block text-xs text-zinc-500 dark:text-zinc-400">Permite gestionar contenido, usuarios y configuraciones.</span>
+                  <span className="block text-sm font-medium text-zinc-900 dark:text-[#f6f6f6]">Acceso al Panel Administrativo</span>
+                  <span className="block text-xs text-zinc-500 dark:text-[#94a3b8]">Permite gestionar contenido, usuarios y configuraciones.</span>
                 </div>
               </label>
             </div>
@@ -254,12 +254,12 @@ export default function UsuariosView() {
           {editingUserId && (
              <div className="pt-2 flex flex-col gap-3">
                <div className="flex items-center gap-2">
-                 <input type="checkbox" id="reset_pwd" checked={resetPassword} onChange={e => setResetPassword(e.target.checked)} className="size-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:checked:bg-white dark:focus:ring-white" />
-                 <label htmlFor="reset_pwd" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Restablecer contraseña (generará una temporal)</label>
+                 <input type="checkbox" id="reset_pwd" checked={resetPassword} onChange={e => setResetPassword(e.target.checked)} className="size-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:checked:bg-white dark:focus:ring-white" />
+                 <label htmlFor="reset_pwd" className="text-sm font-medium text-zinc-700 dark:text-[#cbd5e1]">Restablecer contraseña (generará una temporal)</label>
                </div>
                <div className="flex items-center gap-2">
-                 <input type="checkbox" id="reset_sq" checked={resetSecurityQuestions} onChange={e => setResetSecurityQuestions(e.target.checked)} className="size-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:checked:bg-white dark:focus:ring-white" />
-                 <label htmlFor="reset_sq" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Restablecer preguntas de seguridad</label>
+                 <input type="checkbox" id="reset_sq" checked={resetSecurityQuestions} onChange={e => setResetSecurityQuestions(e.target.checked)} className="size-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:checked:bg-white dark:focus:ring-white" />
+                 <label htmlFor="reset_sq" className="text-sm font-medium text-zinc-700 dark:text-[#cbd5e1]">Restablecer preguntas de seguridad</label>
                </div>
              </div>
           )}
@@ -280,16 +280,16 @@ export default function UsuariosView() {
         <AlertDescription>
           {newUserCredentials && (
             <>
-              <p className="m-0 text-xs text-zinc-500 dark:text-zinc-400">
-                <span className="font-semibold text-zinc-900 dark:text-white">{newUserCredentials.name}</span>
+              <p className="m-0 text-xs text-zinc-500 dark:text-[#94a3b8]">
+                <span className="font-semibold text-zinc-900 dark:text-[#f6f6f6]">{newUserCredentials.name}</span>
                 {" · "}
                 {newUserCredentials.email}
               </p>
-              <p className="m-0 mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="m-0 mt-2 text-xs text-zinc-500 dark:text-[#94a3b8]">
                 Copia la contraseña antes de cerrar. No podrás verla de nuevo.
               </p>
-              <div className="mt-3 flex items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-900/50">
-                <span className="min-w-0 flex-1 truncate font-mono text-sm tracking-wide text-zinc-900 dark:text-white">
+              <div className="mt-3 flex items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-[#7db828]/30 dark:bg-[#0b1121]/50">
+                <span className="min-w-0 flex-1 truncate font-mono text-sm tracking-wide text-zinc-900 dark:text-[#f6f6f6]">
                   {newUserCredentials.password}
                 </span>
               </div>
@@ -334,24 +334,24 @@ export default function UsuariosView() {
         </AlertActions>
       </Alert>
 
-      <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-[#7db828]/30 dark:bg-[#0b1121]">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
             <thead>
-              <tr className="bg-zinc-50 dark:bg-zinc-900/50">
-                <th scope="col" className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+              <tr className="bg-zinc-50 dark:bg-[#0b1121]/50">
+                <th scope="col" className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-[#94a3b8]">
                   Nombre
                 </th>
-                <th scope="col" className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                <th scope="col" className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-[#94a3b8]">
                   Correo
                 </th>
-                <th scope="col" className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                <th scope="col" className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-[#94a3b8]">
                   Rol
                 </th>
-                <th scope="col" className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                <th scope="col" className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-[#94a3b8]">
                   Estado
                 </th>
-                <th scope="col" className="px-6 py-4 text-right text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                <th scope="col" className="px-6 py-4 text-right text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-[#94a3b8]">
                   Acciones
                 </th>
               </tr>
@@ -372,13 +372,13 @@ export default function UsuariosView() {
               ) : (
                 users.map((user) => (
                   <tr key={user.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-zinc-900 dark:text-white">
+                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-zinc-900 dark:text-[#f6f6f6]">
                       {user.name}
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-500 dark:text-zinc-400">
+                    <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-500 dark:text-[#94a3b8]">
                       {user.email}
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-500 dark:text-zinc-400">
+                    <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-500 dark:text-[#94a3b8]">
                       {user.role?.name || 'Sin rol'}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
@@ -387,12 +387,12 @@ export default function UsuariosView() {
                            checked={user.status === 'active'}
                            onChange={() => toggleStatus(user)}
                         />
-                        <span className="text-zinc-500 dark:text-zinc-400 text-xs">{user.status === 'active' ? 'Activo' : 'Inactivo'}</span>
+                        <span className="text-zinc-500 dark:text-[#94a3b8] text-xs">{user.status === 'active' ? 'Activo' : 'Inactivo'}</span>
                       </div>
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <button type="button" onClick={() => startEdit(user)} className="p-1.5 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors" title="Editar">
+                        <button type="button" onClick={() => startEdit(user)} className="p-1.5 text-zinc-500 hover:text-zinc-900 dark:text-[#94a3b8] dark:hover:text-white transition-colors" title="Editar">
                           <PencilIcon className="size-5" />
                         </button>
                         <button type="button" onClick={() => setDeleteConfirmId(user.id)} className="p-1.5 text-red-500 hover:text-red-600 dark:text-red-400 transition-colors" title="Eliminar">

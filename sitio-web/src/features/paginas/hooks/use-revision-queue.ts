@@ -1,8 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { aprobarPagina, listarEnRevision, rechazarPagina } from '../services/paginas.service';
-import type { PaginaEnRevision } from '../types';
+import {
+  aprobarPagina,
+  eliminarVersion,
+  listarEnRevision,
+  rechazarPagina,
+} from '../services/paginas.service';
+import type { PaginaEnRevision, Ambito } from '../types';
 
 export function useRevisionQueue() {
   const [paginas, setPaginas] = useState<PaginaEnRevision[]>([]);
@@ -46,20 +51,28 @@ export function useRevisionQueue() {
   }, []);
 
   const aprobar = useCallback(
-    async (slug: string) => {
-      await aprobarPagina(slug);
+    async (slug: string, ambito: Ambito) => {
+      await aprobarPagina(slug, ambito);
       await cargar();
     },
     [cargar],
   );
 
   const rechazar = useCallback(
-    async (slug: string, motivo: string) => {
-      await rechazarPagina(slug, motivo);
+    async (slug: string, motivo: string, ambito: Ambito) => {
+      await rechazarPagina(slug, motivo, ambito);
       await cargar();
     },
     [cargar],
   );
 
-  return { paginas, isLoading, error, aprobar, rechazar };
+  const eliminar = useCallback(
+    async (slug: string, versionId: string, ambito: Ambito) => {
+      await eliminarVersion(slug, versionId, ambito);
+      await cargar();
+    },
+    [cargar],
+  );
+
+  return { paginas, isLoading, error, aprobar, rechazar, eliminar };
 }

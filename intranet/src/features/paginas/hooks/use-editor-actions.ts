@@ -70,6 +70,10 @@ export function useEditorActions({
         setError(
           err instanceof Error ? err.message : "Error al guardar el borrador"
         );
+        // Se relanza además de mostrarlo: quien llama necesita distinguir un
+        // guardado real de uno fallido antes de enviar a revisión o de dejar
+        // salir del editor dando el contenido por guardado.
+        throw err;
       } finally {
         setIsSaving(false);
       }

@@ -1,19 +1,19 @@
 import Image from "next/image";
-import { IntranetTopbar } from "@/shared/lib/blocks/IntranetTopbar";
+import { IntranetTopbarWrapper } from "@/shared/lib/blocks/IntranetTopbarWrapper";
 import { IntranetFooter } from "@/shared/lib/blocks/IntranetFooter";
 import { PptxViewer } from "./PptxViewer";
 
 export function TasaView() {
     return (
         <div className="w-full bg-white flex flex-col items-center min-h-screen">
-            <IntranetTopbar />
+            <IntranetTopbarWrapper />
 
             <main className="w-full flex flex-col items-center flex-1 pb-0">
                 {/* Banner */}
                 <section className="tasa-banner-wrapper">
                     <div className="tasa-banner-content">
                         <h1 className="tasa-banner-title">
-                            Tasa de<br /> <strong>Vinculación y Empleabilidad</strong>
+                            Tasa de<br/> <strong>Vinculación y Empleabilidad</strong>
                         </h1>
                         <img
                             src="/assets/img/BannerTasa.png"
@@ -28,8 +28,9 @@ export function TasaView() {
                     <div className="tasa-concept-row">
                         <div className="tasa-concept-text">
                             <h2 className="tasa-concept-title">
-                                ¿Qué es la Tasa de Vinculación?
+                                ¿Qué es la Tasa de <strong> Vinculación</strong>?
                             </h2>
+
                             <p className="tasa-concept-desc">
                                 La Tasa de Vinculación consiste en medir cuál es el porcentaje de
                                 egresados certificados de formación titulada del SENA de un semestre
@@ -40,7 +41,7 @@ export function TasaView() {
                         </div>
                         <div className="tasa-concept-visual">
                             <Image
-                                src="/assets/img/vinculacion.png"
+                                src="/assets/img/vinculacion1.png"
                                 alt="Estadísticas de Tasa de Vinculación"
                                 width={1000}
                                 height={300}
@@ -53,7 +54,7 @@ export function TasaView() {
                     <div className="tasa-concept-row reverse">
                         <div className="tasa-concept-text">
                             <h2 className="tasa-concept-title">
-                                ¿Qué es la Tasa de Empleabilidad?
+                                ¿Qué es la Tasa de <strong>Empleabilidad</strong>?
                             </h2>
                             <p className="tasa-concept-desc">
                                 La Tasa de Empleabilidad consiste en medir cuál es el porcentaje de
@@ -65,7 +66,7 @@ export function TasaView() {
                         </div>
                         <div className="tasa-concept-visual">
                             <Image
-                                src="/assets/img/sabiasque.png"
+                                src="/assets/img/empleabilidad.png"
                                 alt="Estadísticas de Tasa de Empleabilidad"
                                 width={1000}
                                 height={350}
@@ -102,7 +103,7 @@ export function TasaView() {
                         <div className="tasa-dashboard-card">
                             <div className="tasa-dashboard-header">
                                 <h2 className="tasa-dashboard-title">
-                                    Dashboard OLO - Vinculación
+                                    Dashboard - Vinculación
                                 </h2>
                                 <p className="tasa-dashboard-desc">
                                     Resultados de vinculación laboral formal (titulada), con una periodicidad semestral.
@@ -122,7 +123,7 @@ export function TasaView() {
                         <div className="tasa-dashboard-card">
                             <div className="tasa-dashboard-header">
                                 <h2 className="tasa-dashboard-title">
-                                    Dashboard OLO - Empleabilidad
+                                    Dashboard - Empleabilidad
                                 </h2>
                                 <p className="tasa-dashboard-desc">
                                     Resultados de empleabilidad formal (complementaria), con una periodicidad anual.
@@ -145,10 +146,10 @@ export function TasaView() {
                 <section className="tasa-ppt-section">
                     <div className="tasa-ppt-container">
                         <div className="tasa-ppt-text">
-                            <h2 className="tasa-ppt-title">
+                            <h3 className="tasa-ppt-title">
                                 Aquí podrás visualizar nuestra <br />
                                 <strong>presentación de Tasa de <br />Vinculación y Empleabilidad</strong>
-                            </h2>
+                            </h3>
                         </div>
                         <div className="tasa-ppt-viewer-wrapper">
                             <PptxViewer fileUrl="/uploads/documents/tasa.pptx" />

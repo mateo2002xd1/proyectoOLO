@@ -2,6 +2,7 @@
 
 import { use, useState, useEffect } from 'react';
 import { PuckEditorWrapper } from '@/features/paginas/components/puck-editor-wrapper';
+import { rutaPublicaDeSlug } from '@/features/paginas/lib/ruta-de-vuelta';
 import { usePagina } from '@/features/paginas/hooks/use-pagina';
 import { GooLoader } from '@/shared/ui/atoms/GooLoader';
 
@@ -44,6 +45,7 @@ export default function EditorPage({
       initialData={pagina?.contenido}
       onSave={saveDraft}
       onPublish={submitForReview}
+      rutaPorDefecto={rutaPublicaDeSlug(slug)}
     />
   );
 }
