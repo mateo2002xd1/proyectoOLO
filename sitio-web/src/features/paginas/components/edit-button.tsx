@@ -34,12 +34,11 @@ export default function EditButton({ slug }: EditButtonProps) {
     getSessionServerSnapshot,
   );
 
-  const editHref = `/admin/editor/${slug}`;
-  const loginHref = `/admin/auth/login?redirect=/admin/editor/${slug}`;
+  if (!hasSession) return null;
 
-  const href = hasSession ? editHref : loginHref;
-  const title = hasSession ? 'Editar esta página' : 'Iniciar sesión para editar';
-  const label = hasSession ? 'Editar' : 'Acceder para editar';
+  const href = `/admin/editor/${slug}`;
+  const title = 'Editar esta página';
+  const label = 'Editar';
 
   return (
     <a
