@@ -3284,7 +3284,8 @@ input {
 @media (min-width: 900px) {
   .tasa-banner-content {
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: center;
+    gap: clamp(4rem, 8vw, 10rem);
     text-align: left;
   }
 }
