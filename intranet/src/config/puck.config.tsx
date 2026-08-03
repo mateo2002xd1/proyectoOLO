@@ -5,7 +5,11 @@ import { Hero } from '@/shared/lib/blocks/Hero';
 import { Services } from '@/shared/lib/blocks/Services';
 import { ExternalPortals } from '@/shared/lib/blocks/ExternalPortals';
 import { Footer } from '@/shared/lib/blocks/Footer';
-import { IntranetFooter } from '@/shared/lib/blocks/IntranetFooter';
+import {
+  IntranetFooter,
+  LOGOS_POR_DEFECTO,
+  COLUMNAS_POR_DEFECTO,
+} from '@/shared/lib/blocks/IntranetFooter';
 import { IntranetTopbarWrapper } from '@/shared/lib/blocks/IntranetTopbarWrapper';
 import { IntranetHero } from '@/shared/lib/blocks/IntranetHero';
 import { TasaBanner } from '@/shared/lib/blocks/TasaBanner';
@@ -576,7 +580,55 @@ const puckConfigBase: Config = {
     },
     IntranetFooter: {
       label: 'Pie de página',
-      render: () => <IntranetFooter block={{ id: 'intranet-footer', type: 'IntranetFooter' }} />,
+      // El pie no tenía ni un campo: se ponía o se quitaba y punto, y para cambiar
+      // un teléfono había que tocar el componente. Aquí está todo su contenido.
+      fields: {
+        logos: {
+          type: 'array',
+          label: 'Logos',
+          arrayFields: {
+            src: campoImagen('Imagen'),
+            alt: { type: 'text', label: 'Texto alternativo' },
+            ancho: { type: 'number', label: 'Ancho en píxeles' },
+          },
+          getItemSummary: (item) => item.alt || 'Logo',
+        },
+        columnas: {
+          type: 'array',
+          label: 'Columnas',
+          arrayFields: {
+            titulo: { type: 'text', label: 'Título de la columna' },
+            lineas: {
+              type: 'array',
+              label: 'Líneas',
+              arrayFields: {
+                texto: { type: 'textarea', label: 'Texto' },
+                url: { type: 'text', label: 'Enlace (déjalo vacío si es solo texto)' },
+                separada: {
+                  type: 'radio',
+                  label: 'Dejar aire encima',
+                  options: [
+                    { label: 'No', value: false },
+                    { label: 'Sí', value: true },
+                  ],
+                },
+              },
+              getItemSummary: (item) => item.texto || 'Línea',
+            },
+          },
+          getItemSummary: (item) => item.titulo || 'Columna',
+        },
+      },
+      // Repiten los valores por defecto del componente: el pie que se ve hoy. Sin
+      // esto, arrastrar el bloque al lienzo daría un pie vacío en vez de uno que
+      // ya trae el contenido bueno y solo hay que retocar.
+      defaultProps: {
+        logos: LOGOS_POR_DEFECTO,
+        columnas: COLUMNAS_POR_DEFECTO,
+      },
+      render: (props: BlockRender<ComponentProps<typeof IntranetFooter>>) => (
+        <IntranetFooter {...props} />
+      ),
     },
     // ─── Heredados del sitio público ───
     // Siguen registrados porque hay contenido guardado que los usa; no se ofrecen

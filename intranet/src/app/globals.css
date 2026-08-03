@@ -601,7 +601,10 @@ input {
   margin: 0 auto;
   padding: clamp(1.3rem, 2.5vw, 2rem) clamp(1rem, 2.2vw, 2.1rem);
   display: grid;
-  grid-template-columns: 180px 1fr 1fr;
+  /* Las columnas las decide el bloque, que sabe cuántas hay: quien edita el pie
+     puede añadir y quitar columnas y la rejilla las reparte sola. El valor de
+     reserva es la maqueta de siempre (logos + dos columnas). */
+  grid-template-columns: var(--intranet-footer-columnas, 180px 1fr 1fr);
   gap: clamp(1rem, 2.6vw, 2rem);
 }
 
@@ -4165,12 +4168,17 @@ input {
    PREVISUALIZACIÓN — Página sin publicar
    ============================================ */
 
+/* Columna, porque el marco de las secciones se pinta AQUÍ dentro —ya no al revés,
+   ver `app/preview/[slug]/page.tsx`— y `.intranet-contenido` necesita un padre
+   flexible para estirarse y dejar el pie abajo del todo. */
 .preview-page {
   min-height: 100vh;
   background: #ffffff;
+  display: flex;
+  flex-direction: column;
 }
 
-/* La vista previa vive dentro del marco de las secciones, así que hay dos barras
+/* La vista previa lleva el marco de las secciones, así que hay dos barras
    pegajosas peleando por `top: 0`: la navegación y el aviso. Manda el aviso —que
    la página no está publicada importa más que tener el menú siempre a mano—, y
    la navegación acompaña al contenido mientras se revisa. */
