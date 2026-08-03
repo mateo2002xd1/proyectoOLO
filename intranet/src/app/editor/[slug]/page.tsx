@@ -20,7 +20,7 @@ export default async function EditorPage({
 
   // TODO: Fase 4-5 — Verificar sesión y permiso "edit_post" server-side.
   //   const session = await getSession();
-  //   if (!session) redirect("/login");
+  //   if (!session) redirect("/auth");
   //   if (!(await verificarPermiso(session.userId, "edit_post"))) redirect(`/${slug}`);
 
   return <EditorClient slug={slug} />;

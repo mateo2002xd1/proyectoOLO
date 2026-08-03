@@ -46,7 +46,10 @@ export function IntranetTopbar({
 
         <nav className="intranet-nav">
           {menuItems.map((item) => (
-            item.children ? (
+            // `item.children?.length` y no `item.children`: desde el editor los
+            // enlaces sin submenú llegan con un array vacío, que es truthy y
+            // pintaría la flecha de desplegar sobre un menú sin nada dentro.
+            item.children?.length ? (
               <div key={item.label} className="relative group">
                 <a href={item.href} className="intranet-nav-link flex items-center gap-1.5 px-4 py-2">
                   {item.label}

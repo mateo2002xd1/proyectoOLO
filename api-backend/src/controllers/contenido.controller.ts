@@ -8,6 +8,18 @@ import {
   eliminarContenido,
 } from '../use-cases/contenidos/contenido.usecase';
 import { logAudit } from '../use-cases/auditoria/audit.usecase';
+import { datosDeAuditoria } from '../shared/auditoria-request';
+
+/**
+ * Convierte el cuerpo de la petición en la lista de campos modificados.
+ *
+ * `antes` va en `null` porque el controlador no tiene el estado anterior: para
+ * que diga de verdad "de X a Y" hace falta que el use-case devuelva la versión
+ * previa (T-07.6, pendiente). Se deja explícito en vez de omitirlo para que el
+ * hueco se vea en los datos y no se confunda con "no cambió nada".
+ */
+const camposDe = (body: Record<string, unknown>) =>
+  Object.keys(body ?? {}).map((campo) => ({ campo, antes: null, despues: body[campo] }));
 
 export const ContenidoController = {
   async listarPublicados(req: Request, res: Response, next: NextFunction) {
@@ -35,13 +47,12 @@ export const ContenidoController = {
   async create(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await crearContenido(req.body, req.user?.id);
-      logAudit({
-        contentId: (result as any).id,
-        contentType: 'contenido',
-        userId: req.user?.id,
-        userName: req.user?.name || req.user?.email,
-        actionType: 'create',
-        modifiedFields: Object.keys(req.body).map((k) => ({ field: k, old: null, new: req.body[k] })),
+      await logAudit({
+        ...datosDeAuditoria(req),
+        entidadId: (result as any).id,
+        entidadTipo: 'contenido',
+        accion: 'crear',
+        camposModificados: camposDe(req.body),
       });
       res.status(201).json(result);
     } catch (err) { next(err); }
@@ -49,13 +60,12 @@ export const ContenidoController = {
   async update(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await actualizarContenido(req.params.id as string, req.body);
-      logAudit({
-        contentId: req.params.id as string,
-        contentType: 'contenido',
-        userId: req.user?.id,
-        userName: req.user?.name || req.user?.email,
-        actionType: 'update',
-        modifiedFields: Object.keys(req.body).map((k) => ({ field: k, old: null, new: req.body[k] })),
+      await logAudit({
+        ...datosDeAuditoria(req),
+        entidadId: req.params.id as string,
+        entidadTipo: 'contenido',
+        accion: 'actualizar',
+        camposModificados: camposDe(req.body),
       });
       res.json(result);
     } catch (err) { next(err); }
@@ -66,13 +76,11 @@ export const ContenidoController = {
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await eliminarContenido(req.params.id as string);
-      logAudit({
-        contentId: req.params.id as string,
-        contentType: 'contenido',
-        userId: req.user?.id,
-        userName: req.user?.name || req.user?.email,
-        actionType: 'delete',
-        modifiedFields: [],
+      await logAudit({
+        ...datosDeAuditoria(req),
+        entidadId: req.params.id as string,
+        entidadTipo: 'contenido',
+        accion: 'eliminar',
       });
       res.json(result);
     } catch (err) { next(err); }

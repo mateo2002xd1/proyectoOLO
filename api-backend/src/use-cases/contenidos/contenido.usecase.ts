@@ -1,7 +1,6 @@
 import { randomUUID } from 'crypto';
 import { ContenidoRepository } from '../../repositories/contenido.repository';
 import { SectionRepository } from '../../repositories/secciones.repository';
-import { AuditRepository } from '../../repositories/auditoria.repository';
 
 export const obtenerContenidos = (filters: any = {}) => ContenidoRepository.findAll(filters);
 
@@ -21,18 +20,12 @@ export const crearContenido = async (data: any, authorId?: string) => {
   const id = randomUUID();
   const contenido = await ContenidoRepository.create({ id, ...data, authorId });
 
-  await AuditRepository.create({
-    entidad_id: id,
-    entidad_tipo: 'contenido',
-    usuario_id: authorId || null,
-    accion: 'crear',
-    campos_modificados: Object.keys(data).map((campo) => ({
-      campo,
-      antes: null,
-      despues: data[campo],
-    })),
-  });
-
+  // El registro de auditoría lo hace `ContenidoController.create`, no este
+  // use-case. Antes se escribía en los dos sitios: aquí con los valores buenos y
+  // allí con la acción en inglés, que el CHECK de la migración 006 rechazaba. Al
+  // arreglar el controlador, mantener ambos habría duplicado cada alta.
+  // Manda el controlador porque es el único que ve la petición, y sin ella no
+  // hay IP, user-agent ni nombre del usuario que guardar.
   return contenido;
 };
 

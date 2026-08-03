@@ -45,7 +45,7 @@ export function Header({
   mainLogoUrl,
   navLinks: customNavLinks,
   intranetText = 'Intranet',
-  intranetUrl = 'http://localhost:3001/login'
+  intranetUrl = 'http://localhost:3001/auth'
 }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const hasSession = useSyncExternalStore(
@@ -54,7 +54,7 @@ export function Header({
     getSessionServerSnapshot,
   );
 
-  const editHref = hasSession ? '/panelAdministracion/panel-general' : '/login';
+  const editHref = hasSession ? '/panelAdministracion/panel-general' : '/auth';
   const editTitle = hasSession ? 'Ir al panel de administración' : 'Iniciar sesión';
 
   const navLinks = customNavLinks || [

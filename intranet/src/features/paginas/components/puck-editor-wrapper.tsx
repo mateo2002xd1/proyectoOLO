@@ -12,19 +12,24 @@
 
 "use client";
 
-import { useState, useRef, useCallback, useMemo } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Puck, createUsePuck, type Data } from "@puckeditor/core";
 import "@puckeditor/core/dist/index.css";
-import { puckConfig } from "@/config/puck.config";
+import { configDeEdicion } from "@/config/puck.config";
 import { resolverRutaDeVuelta } from "../lib/ruta-de-vuelta";
 import type { PuckEditorWrapperProps, ContenidoPagina } from "../types/editor.types";
 
+/**
+ * Tonos claros a propósito: la cabecera del editor es azul marino (#001631) y
+ * los colores planos de estado —el ámbar #d97706, el azul #2563eb— quedaban
+ * casi ilegibles sobre ella.
+ */
 const estadoBadgeColor: Record<string, string> = {
-  borrador: "#d97706",
-  en_revision: "#2563eb",
-  publicado: "#16a34a",
-  rechazado: "#dc2626",
+  borrador: "#fbbf24",
+  en_revision: "#7dd3fc",
+  publicado: "#86efac",
+  rechazado: "#fca5a5",
 };
 
 /** Con selector, para no re-renderizar la cabecera ante cualquier cambio del editor. */
@@ -71,38 +76,24 @@ function AccionesCabecera({
   const hayCambiosSinGuardar = indiceHistoria !== indiceGuardado;
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-      <span style={{ fontSize: 13, color: "#6b7280" }}>/{slug}</span>
+    <div className="olo-editor-acciones">
+      <span className="olo-editor-ruta">/{slug}</span>
       <span
-        style={{
-          fontSize: 12,
-          fontWeight: 600,
-          textTransform: "capitalize",
-          color: estadoBadgeColor[estado] ?? "#666",
-        }}
+        className="olo-editor-estado"
+        style={{ color: estadoBadgeColor[estado] ?? "#cbd5e1" }}
       >
         {estado.replace("_", " ")}
       </span>
-      {hayCambiosSinGuardar && (
-        <span style={{ fontSize: 12, color: "#d97706" }}>Sin guardar</span>
-      )}
-      {/* Salir no es una acción sobre el contenido: se deja en gris para que no
-          compita con guardar y enviar. */}
+      {hayCambiosSinGuardar && <span className="olo-editor-aviso">Sin guardar</span>}
+      {/* Salir es la única acción que puede perder trabajo, así que va en rojo:
+          antes iba en gris para no competir con guardar y enviar, pero eso lo
+          dejaba a un clic de distancia sin que nada avisara del riesgo. */}
       <button
         type="button"
         onClick={() => onSalir(hayCambiosSinGuardar)}
         disabled={busy}
         title="Volver a la página sin publicar nada"
-        style={{
-          padding: "7px 16px",
-          background: "transparent",
-          color: "#374151",
-          border: "1px solid #d1d5db",
-          borderRadius: 6,
-          cursor: busy ? "not-allowed" : "pointer",
-          fontWeight: 500,
-          fontSize: 14,
-        }}
+        className="olo-editor-btn olo-editor-btn--salir"
       >
         Salir
       </button>
@@ -110,16 +101,7 @@ function AccionesCabecera({
         type="button"
         onClick={() => onGuardar(indiceHistoria)}
         disabled={busy}
-        style={{
-          padding: "7px 16px",
-          background: busy ? "#93c5fd" : "#3b82f6",
-          color: "white",
-          border: "none",
-          borderRadius: 6,
-          cursor: busy ? "not-allowed" : "pointer",
-          fontWeight: 500,
-          fontSize: 14,
-        }}
+        className="olo-editor-btn olo-editor-btn--guardar"
       >
         {isSaving ? "Guardando…" : "Guardar borrador"}
       </button>
@@ -127,20 +109,83 @@ function AccionesCabecera({
         type="button"
         onClick={() => onEnviar(indiceHistoria)}
         disabled={busy || bloqueado}
-        style={{
-          padding: "7px 16px",
-          background: busy || bloqueado ? "#6ee7b7" : "#10b981",
-          color: "white",
-          border: "none",
-          borderRadius: 6,
-          cursor: busy || bloqueado ? "not-allowed" : "pointer",
-          fontWeight: 500,
-          fontSize: 14,
-        }}
+        className="olo-editor-btn olo-editor-btn--enviar"
       >
         {isSendingToReview ? "Enviando…" : "Enviar a revisión"}
       </button>
     </div>
+  );
+}
+
+interface ModalSalirProps {
+  abierto: boolean;
+  onCancelar: () => void;
+  onConfirmar: () => void;
+}
+
+/**
+ * Confirmación antes de salir con cambios sin guardar.
+ *
+ * Es un `<dialog>` nativo y no un `<div>` flotante por dos razones prácticas: se
+ * pinta en la capa superior del navegador, así que no hay que pelear con el
+ * apilamiento del editor, y trae gratis el foco atrapado y el cierre con Escape.
+ * Sustituye a un `window.confirm`, que no se puede leer con calma ni distingue
+ * cuál de las dos opciones es la que destruye trabajo.
+ */
+function ModalSalir({ abierto, onCancelar, onConfirmar }: ModalSalirProps) {
+  const ref = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    const dialogo = ref.current;
+    if (!dialogo) return;
+    if (abierto && !dialogo.open) dialogo.showModal();
+    if (!abierto && dialogo.open) dialogo.close();
+  }, [abierto]);
+
+  return (
+    <dialog
+      ref={ref}
+      className="olo-modal"
+      aria-labelledby="olo-modal-titulo"
+      // Escape dispara `cancel`. Se corta el cierre por defecto para que el
+      // estado de React no se quede creyendo que el diálogo sigue abierto.
+      onCancel={(evento) => {
+        evento.preventDefault();
+        onCancelar();
+      }}
+      // Pulsar fuera de la tarjeta equivale a «seguir editando»: ante la duda,
+      // la opción que no borra nada.
+      onClick={(evento) => {
+        if (evento.target === ref.current) onCancelar();
+      }}
+    >
+      <div className="olo-modal-caja">
+        <h2 id="olo-modal-titulo" className="olo-modal-titulo">
+          Hay cambios sin guardar
+        </h2>
+        <p className="olo-modal-texto">
+          Si sales ahora, <strong>todo lo que hayas editado desde el último guardado se
+          pierde</strong> y no se puede recuperar. La página seguirá mostrando la última
+          versión publicada.
+        </p>
+        <p className="olo-modal-texto olo-modal-texto--apunte">
+          Si prefieres conservarlo, vuelve y pulsa «Guardar borrador»: el borrador queda
+          guardado sin publicarse.
+        </p>
+        <div className="olo-modal-acciones">
+          <button type="button" className="olo-modal-btn" onClick={onCancelar} autoFocus>
+            Seguir editando
+          </button>
+          <button
+            type="button"
+            className="olo-modal-btn olo-modal-btn--peligro"
+            onClick={onConfirmar}
+          >
+            Salir y perder los cambios
+          </button>
+        </div>
+      </div>
+    </dialog>
   );
 }
 
@@ -161,12 +206,20 @@ export function PuckEditorWrapper({
   // La historia arranca en 0; tras cada guardado exitoso se mueve al punto actual.
   const [indiceGuardado, setIndiceGuardado] = useState(0);
 
+  // Salida pedida con cambios sin guardar, a la espera de que se confirme.
+  const [salidaPendiente, setSalidaPendiente] = useState(false);
+
   // Datos iniciales con identidad estable (evita re-montar Puck en cada render).
   // Va en useState con inicializador diferido, no en useRef: los refs no deben
   // leerse durante el render, y asi el objeto se construye una sola vez.
   const [initialPuckData] = useState<Data>(
     () => (initialData as Data) ?? { content: [], root: {} }
   );
+
+  // El selector solo ofrece los bloques que tienen sentido en esta sección. Se
+  // memoriza porque Puck reconstruye su store cuando cambia la identidad de la
+  // config, y eso reiniciaría el editor en cada render.
+  const config = useMemo(() => configDeEdicion(slug), [slug]);
 
   const estado = versionActual?.estado ?? "borrador";
   const bloqueado = estado === "en_revision" || estado === "publicado";
@@ -207,19 +260,20 @@ export function PuckEditorWrapper({
    * Vuelve a la ruta desde la que se abrió el editor. Sin `?volver=` se usa la
    * propia página editada, que en la intranet es siempre `/{slug}`.
    */
+  const salir = useCallback(() => {
+    router.push(resolverRutaDeVuelta(`/${slug}`));
+  }, [router, slug]);
+
+  /** Sin cambios pendientes no hay nada que perder: se sale sin preguntar. */
   const handleSalir = useCallback(
     (hayCambiosSinGuardar: boolean) => {
-      if (
-        hayCambiosSinGuardar &&
-        !window.confirm(
-          "Hay cambios sin guardar.\n\nSi sales ahora se pierden. ¿Salir de todos modos?"
-        )
-      ) {
+      if (hayCambiosSinGuardar) {
+        setSalidaPendiente(true);
         return;
       }
-      router.push(resolverRutaDeVuelta(`/${slug}`));
+      salir();
     },
-    [router, slug]
+    [salir]
   );
 
   // Un onClick no puede devolver una promesa rechazada; el mensaje de error ya
@@ -272,15 +326,21 @@ export function PuckEditorWrapper({
   );
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "#fff", zIndex: 9999 }}>
+    <div className="olo-editor">
       <Puck
-        config={puckConfig}
+        config={config}
         data={initialPuckData}
         onChange={handleChange}
         // El botón "Publish" de serie no llega a dibujarse: `headerActions` lo
         // sustituye por Salir / Guardar / Enviar. `onPublish` queda como no-op.
         onPublish={() => undefined}
         overrides={overrides}
+      />
+
+      <ModalSalir
+        abierto={salidaPendiente}
+        onCancelar={() => setSalidaPendiente(false)}
+        onConfirmar={salir}
       />
     </div>
   );

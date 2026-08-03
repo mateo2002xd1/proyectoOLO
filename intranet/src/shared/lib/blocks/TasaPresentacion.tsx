@@ -1,6 +1,6 @@
 'use client';
 
-import { PptxViewer } from '@/features/tasa/ui/PptxViewer';
+import { PptxViewer } from './PptxViewer';
 
 /**
  * Texto a la izquierda y visor de la presentación a la derecha.

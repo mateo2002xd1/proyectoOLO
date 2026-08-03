@@ -8,5 +8,5 @@ import { redirect } from "next/navigation";
  * @see 1-guia-del-proyecto.md §4.3
  */
 export default function HomePage() {
-  redirect("/login");
+  redirect("/auth");
 }

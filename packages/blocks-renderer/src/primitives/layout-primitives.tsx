@@ -10,32 +10,44 @@
  * no duplicar la lógica de maquetación. Cada app los registra en su `puckConfig`
  * (ver `primitiveComponents` + categoría "Maquetación").
  *
+ * El espaciado exterior (padding, margen, ancho máximo) NO se define aquí: lo
+ * pone `conCaja()` desde `controles-de-caja.tsx`, igual que en cualquier otro
+ * bloque. Aquí solo vive lo que distingue a un contenedor de un bloque normal:
+ * cómo se colocan los hijos.
+ *
  * Estilos:
- *   - Flex y Space son 100% inline → funcionan sin CSS externo.
- *   - Grid usa la clase `.olo-grid` (definida en el `globals.css` de cada app)
- *     porque necesita media queries para colapsar en móvil, algo que un estilo
- *     inline no puede hacer. El número de columnas y la separación se inyectan
- *     como variables CSS para que la clase las consuma.
+ *   - Todo se resuelve con clases (`.olo-grid`, `.olo-flex`) que leen variables
+ *     CSS inline. Es la única forma de que el layout responda al tamaño de
+ *     pantalla: un estilo inline no puede llevar media queries, y tanto el
+ *     colapso de columnas como el apilado de filas en móvil las necesitan. Las
+ *     clases viven en el `globals.css` de cada app.
  */
 
-/**
- * Forma mínima de un `ComponentConfig` de Puck.
- *
- * Se define localmente a propósito: así `@olo/blocks-renderer` NO depende de
- * `@puckeditor/core` (el paquete no tiene su propio node_modules con esa
- * dependencia). Cada app tipa su `puckConfig` con el `Config` real de Puck; al
- * hacer spread de `primitiveComponents`, TypeScript valida la compatibilidad.
- */
-interface PuckLayoutConfig {
-  label: string;
-  fields: Record<string, unknown>;
-  defaultProps: Record<string, unknown>;
-  render: (props: any) => any;
-}
+import {
+  conCaja,
+  pixelesDeEspacio,
+  type ConfigDeBloque,
+} from './controles-de-caja';
+
+/** Opciones de separación entre elementos — la misma escala que el resto. */
+const OPCIONES_SEPARACION = [
+  { label: 'Pegados', value: 'ninguno' },
+  { label: 'Muy poco', value: 'minimo' },
+  { label: 'Poco', value: 'poco' },
+  { label: 'Medio', value: 'medio' },
+  { label: 'Amplio', value: 'amplio' },
+  { label: 'Muy amplio', value: 'maximo' },
+];
+
+/** Sí/No con el mismo texto en todos los contenedores. */
+const OPCIONES_SI_NO = [
+  { label: 'Sí', value: 'si' },
+  { label: 'No', value: 'no' },
+];
 
 // ─── Grid / Columnas ──────────────────────────────────────────────────────────
-export const gridConfig: PuckLayoutConfig = {
-  label: 'Grid / Columnas',
+export const gridConfig: ConfigDeBloque = {
+  label: 'Columnas',
   fields: {
     columns: {
       type: 'number',
@@ -44,74 +56,90 @@ export const gridConfig: PuckLayoutConfig = {
       max: 6,
     },
     gap: {
-      type: 'number',
-      label: 'Separación entre columnas (px)',
-      min: 0,
+      type: 'select',
+      label: 'Separación entre columnas',
+      options: OPCIONES_SEPARACION,
     },
+    alinearItems: {
+      type: 'select',
+      label: 'Alineación vertical del contenido',
+      options: [
+        { label: 'Misma altura', value: 'stretch' },
+        { label: 'Arriba', value: 'start' },
+        { label: 'Centrado', value: 'center' },
+        { label: 'Abajo', value: 'end' },
+      ],
+    },
+    // El slot es lo que convierte al bloque en contenedor: sin declararlo aquí,
+    // Puck no pinta zona donde soltar y el bloque queda inservible.
     items: { type: 'slot' },
   },
   defaultProps: {
     columns: 3,
-    gap: 24,
+    gap: 'medio',
+    alinearItems: 'stretch',
     items: [],
   },
-  render: ({ columns, gap, items: Items }: any) => (
+  render: ({ columns, gap, alinearItems, items: Items }: any) => (
     <Items
       className="olo-grid"
       style={{
         // Variables consumidas por `.olo-grid` en globals.css
         ['--olo-grid-cols' as string]: String(columns ?? 3),
-        ['--olo-grid-gap' as string]: `${gap ?? 24}px`,
+        ['--olo-grid-gap' as string]: `${pixelesDeEspacio(gap, 'medio')}px`,
+        ['--olo-grid-align' as string]: alinearItems ?? 'stretch',
       }}
     />
   ),
 };
 
 // ─── Flex / Fila ────────────────────────────────────────────────────────────
-export const flexConfig: PuckLayoutConfig = {
-  label: 'Flex / Fila flexible',
+export const flexConfig: ConfigDeBloque = {
+  label: 'Fila o columna flexible',
   fields: {
     direction: {
-      type: 'select',
+      type: 'radio',
       label: 'Dirección',
       options: [
-        { label: 'Fila (horizontal)', value: 'row' },
-        { label: 'Columna (vertical)', value: 'column' },
+        { label: 'En fila', value: 'row' },
+        { label: 'En columna', value: 'column' },
       ],
     },
     justify: {
       type: 'select',
-      label: 'Distribución horizontal',
+      label: 'Distribución en el eje principal',
       options: [
-        { label: 'Inicio', value: 'flex-start' },
-        { label: 'Centro', value: 'center' },
-        { label: 'Fin', value: 'flex-end' },
-        { label: 'Espacio entre', value: 'space-between' },
-        { label: 'Espacio alrededor', value: 'space-around' },
+        { label: 'Al inicio', value: 'flex-start' },
+        { label: 'Centrado', value: 'center' },
+        { label: 'Al final', value: 'flex-end' },
+        { label: 'Repartido con espacio entre medias', value: 'space-between' },
+        { label: 'Repartido con espacio alrededor', value: 'space-around' },
       ],
     },
     align: {
       type: 'select',
-      label: 'Alineación vertical',
+      label: 'Alineación en el otro eje',
       options: [
-        { label: 'Estirar', value: 'stretch' },
-        { label: 'Inicio', value: 'flex-start' },
-        { label: 'Centro', value: 'center' },
-        { label: 'Fin', value: 'flex-end' },
+        { label: 'Misma altura', value: 'stretch' },
+        { label: 'Al inicio', value: 'flex-start' },
+        { label: 'Centrado', value: 'center' },
+        { label: 'Al final', value: 'flex-end' },
       ],
     },
     gap: {
-      type: 'number',
-      label: 'Separación (px)',
-      min: 0,
+      type: 'select',
+      label: 'Separación entre elementos',
+      options: OPCIONES_SEPARACION,
     },
     wrap: {
       type: 'radio',
-      label: 'Ajuste de línea',
-      options: [
-        { label: 'Sí', value: 'wrap' },
-        { label: 'No', value: 'nowrap' },
-      ],
+      label: 'Saltar de línea cuando no quepan',
+      options: OPCIONES_SI_NO,
+    },
+    apilarEnMovil: {
+      type: 'radio',
+      label: 'Apilar en móvil',
+      options: OPCIONES_SI_NO,
     },
     items: { type: 'slot' },
   },
@@ -119,40 +147,44 @@ export const flexConfig: PuckLayoutConfig = {
     direction: 'row',
     justify: 'flex-start',
     align: 'stretch',
-    gap: 16,
-    wrap: 'wrap',
+    gap: 'poco',
+    wrap: 'si',
+    apilarEnMovil: 'si',
     items: [],
   },
-  render: ({ direction, justify, align, gap, wrap, items: Items }: any) => (
+  render: ({ direction, justify, align, gap, wrap, apilarEnMovil, items: Items }: any) => (
     <Items
+      // Apilar en móvil no puede ser un estilo inline: necesita una media query.
+      className={`olo-flex${apilarEnMovil !== 'no' ? ' olo-flex--apilar' : ''}`}
       style={{
-        display: 'flex',
-        flexDirection: direction ?? 'row',
-        justifyContent: justify ?? 'flex-start',
-        alignItems: align ?? 'stretch',
-        gap: `${gap ?? 16}px`,
-        flexWrap: wrap ?? 'wrap',
-        width: '100%',
+        ['--olo-flex-dir' as string]: direction ?? 'row',
+        ['--olo-flex-justify' as string]: justify ?? 'flex-start',
+        ['--olo-flex-align' as string]: align ?? 'stretch',
+        ['--olo-flex-gap' as string]: `${pixelesDeEspacio(gap, 'poco')}px`,
+        // `wrap` guardaba 'wrap'/'nowrap' antes de unificar el Sí/No; se acepta
+        // el valor antiguo para no cambiar el aspecto de lo ya maquetado.
+        ['--olo-flex-wrap' as string]:
+          wrap === 'no' || wrap === 'nowrap' ? 'nowrap' : 'wrap',
       }}
     />
   ),
 };
 
 // ─── Space / Separador ──────────────────────────────────────────────────────
-export const spaceConfig: PuckLayoutConfig = {
-  label: 'Espacio / Separador',
+export const spaceConfig: ConfigDeBloque = {
+  label: 'Espacio en blanco',
   fields: {
     size: {
-      type: 'number',
-      label: 'Altura del espacio (px)',
-      min: 0,
+      type: 'select',
+      label: 'Altura del espacio',
+      options: OPCIONES_SEPARACION.slice(1),
     },
   },
   defaultProps: {
-    size: 32,
+    size: 'amplio',
   },
   render: ({ size }: any) => (
-    <div aria-hidden style={{ width: '100%', height: `${size ?? 32}px` }} />
+    <div aria-hidden style={{ width: '100%', height: `${pixelesDeEspacio(size, 'amplio')}px` }} />
   ),
 };
 
@@ -160,9 +192,20 @@ export const spaceConfig: PuckLayoutConfig = {
 /** Nombres de los primitivos — usar para armar la categoría en cada puckConfig. */
 export const PRIMITIVE_COMPONENT_NAMES = ['Grid', 'Flex', 'Space'] as const;
 
-/** Mapa listo para hacer spread dentro de `components` del puckConfig de cada app. */
-export const primitiveComponents: Record<string, PuckLayoutConfig> = {
-  Grid: gridConfig,
-  Flex: flexConfig,
+/**
+ * Mapa listo para hacer spread dentro de `components` del puckConfig de cada app.
+ *
+ * Grid y Flex vienen ya envueltos con `conCaja` porque un contenedor sin
+ * relleno ni margen propio sirve de poco, y así el paquete es útil aunque la
+ * app no haga nada más. Que además cada app pase `conCajaEnTodos` por encima no
+ * duplica nada: `conCaja` es idempotente justo por este caso.
+ *
+ * `Space` se queda sin envolver aquí —es en sí mismo un hueco, y darle margen
+ * es otra forma de decir lo mismo—, pero tampoco se excluye en las apps: si el
+ * catálogo entero pasa por `conCajaEnTodos`, lo gana como los demás.
+ */
+export const primitiveComponents: Record<string, ConfigDeBloque> = {
+  Grid: conCaja(gridConfig),
+  Flex: conCaja(flexConfig),
   Space: spaceConfig,
 };

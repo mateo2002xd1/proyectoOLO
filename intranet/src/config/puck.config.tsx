@@ -13,7 +13,17 @@ import { TasaConceptos } from '@/shared/lib/blocks/TasaConceptos';
 import { TasaVideo } from '@/shared/lib/blocks/TasaVideo';
 import { TasaDashboards } from '@/shared/lib/blocks/TasaDashboards';
 import { TasaPresentacion } from '@/shared/lib/blocks/TasaPresentacion';
-import { primitiveComponents } from '@olo/blocks-renderer';
+import { MatrizBanner } from '@/shared/lib/blocks/MatrizBanner';
+import { EncuestaBanner } from '@/shared/lib/blocks/EncuestaBanner';
+import { SeccionCarrusel } from '@/shared/lib/blocks/SeccionCarrusel';
+import { ImagenDestacada } from '@/shared/lib/blocks/ImagenDestacada';
+import { TextoRico } from '@/shared/lib/blocks/TextoRico';
+import { TextoConImagen } from '@/shared/lib/blocks/TextoConImagen';
+import { DescargasConPresentacion } from '@/shared/lib/blocks/DescargasConPresentacion';
+import { RecursosVisualesBloque } from '@/shared/lib/blocks/RecursosVisualesBloque';
+import { Publicaciones } from '@/shared/lib/blocks/Publicaciones';
+import { PreguntasFrecuentes } from '@/shared/lib/blocks/PreguntasFrecuentes';
+import { primitiveComponents, conCajaEnTodos, BLOQUES_SIN_CAJA } from '@olo/blocks-renderer';
 import type { Config } from '@puckeditor/core';
 import type { ComponentProps } from 'react';
 import { ImageUploaderField } from '@/features/paginas/components/image-uploader-field';
@@ -24,68 +34,115 @@ import { ArchivoUploaderField } from '@/features/paginas/components/archivo-uplo
  *  render por no compartir propiedades con el Config generico. */
 type BlockRender<T> = T & { id: string };
 
+/** Campo de imagen con subida, que se repite en casi todos los bloques. */
+const campoImagen = (label: string) =>
+  ({
+    type: 'custom' as const,
+    label,
+    render: ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
+      <ImageUploaderField value={value} onChange={onChange} />
+    ),
+  });
+
+const campoFondo = {
+  type: 'radio' as const,
+  label: 'Fondo',
+  options: [
+    { label: 'Blanco', value: 'blanco' },
+    { label: 'Gris', value: 'gris' },
+  ],
+};
+
 // ─── Puck Configuration for Intranet ───
-export const puckConfig: Config = {
+/**
+ * El catálogo tal cual lo declara cada bloque.
+ *
+ * No se exporta: lo que consume la app es el `puckConfig` de más abajo, que es
+ * este mismo con los controles de «Espaciado y ancho» ya inyectados. Van por
+ * separado porque esos seis campos son idénticos en los veintitantos bloques y
+ * declararlos uno a uno solo serviría para que acabaran divergiendo.
+ */
+const puckConfigBase: Config = {
   categories: {
-    'Intranet': {
-      components: ['IntranetTopbar', 'IntranetHero'],
+    'Estructura': {
+      components: ['IntranetTopbar', 'IntranetHero', 'IntranetFooter'],
     },
-    'Tasa de Vinculación': {
+    'Texto e imagen': {
+      components: ['TextoRico', 'TextoConImagen', 'ImagenDestacada'],
+    },
+    'Multimedia': {
+      components: ['SeccionCarrusel', 'TasaVideo', 'RecursosVisualesBloque'],
+    },
+    'Datos y documentos': {
       components: [
-        'TasaBanner',
-        'TasaConceptos',
-        'TasaVideo',
         'TasaDashboards',
         'TasaPresentacion',
+        'DescargasConPresentacion',
+        'Publicaciones',
       ],
     },
-    'Navegación': {
-      components: ['Header'],
+    'Cabeceras de sección': {
+      components: ['TasaBanner', 'MatrizBanner', 'EncuestaBanner'],
     },
-    'Contenido Principal': {
-      components: ['Hero', 'Services'],
-    },
-    'Portales': {
-      components: ['ExternalPortals'],
-    },
-    'Estructura': {
-      components: ['Footer', 'IntranetFooter'],
+    'Bloques de una sección': {
+      components: ['TasaConceptos', 'PreguntasFrecuentes'],
     },
     'Maquetación': {
       components: ['Grid', 'Flex', 'Space'],
+    },
+    'Heredados del sitio público': {
+      components: ['Header', 'Hero', 'Services', 'ExternalPortals', 'Footer'],
     },
   },
   components: {
     // Primitivos de maquetación compartidos (Grid / Flex / Space)
     ...primitiveComponents,
     IntranetTopbar: {
-      label: 'Intranet Topbar',
+      label: 'Barra de navegación',
       fields: {
         brandText: { type: 'text', label: 'Texto de la Marca' },
-        logoUrl: {
-          type: 'custom',
-          render: ({ value, onChange }) => (
-            <ImageUploaderField value={value} onChange={onChange} />
-          ),
-        },
+        logoUrl: campoImagen('Logo'),
+        // `children` estaba sin declarar aquí y el componente sí lo pinta: por eso
+        // el desplegable de «Encuestas» desapareció al pasar el menú a la base.
+        // Un `array` dentro de otro `array` es válido en Puck y es lo que hace
+        // falta para que el submenú se pueda editar en vez de perderse.
         menuItems: {
           type: 'array',
           label: 'Menú de Navegación',
           arrayFields: {
             label: { type: 'text', label: 'Texto del enlace' },
-            href: { type: 'text', label: 'URL' },
+            href: { type: 'text', label: 'URL (usa # si solo abre el submenú)' },
+            children: {
+              type: 'array',
+              label: 'Submenú (déjalo vacío si no despliega)',
+              arrayFields: {
+                label: { type: 'text', label: 'Texto del enlace' },
+                href: { type: 'text', label: 'URL' },
+              },
+              getItemSummary: (item) => item.label || 'Enlace del submenú',
+            },
           },
-          getItemSummary: (item) => item.label || 'Enlace',
+          getItemSummary: (item) =>
+            item.label
+              ? `${item.label}${item.children?.length ? ` (${item.children.length})` : ''}`
+              : 'Enlace',
         },
       },
       defaultProps: {
         brandText: 'Intranet',
         logoUrl: '/assets/svg/olo-logo-blanco.svg',
         menuItems: [
-          { href: "/intranet", label: "Inicio" },
-          { href: "#", label: "Tasa de Vinculación y Empleabilidad" },
-          { href: "#", label: "Matriz de Pertinencia" },
-          { href: "#", label: "Encuestas" },
+          { href: '/inicio', label: 'Inicio', children: [] },
+          { href: '/tasa', label: 'Tasa de Vinculación y Empleabilidad', children: [] },
+          { href: '/matriz', label: 'Matriz de Pertinencia', children: [] },
+          {
+            href: '#',
+            label: 'Encuestas',
+            children: [
+              { href: '/encuestas/calidad-de-formacion', label: 'Calidad de Formación' },
+              { href: '/encuestas/seguimiento-laboral', label: 'Seguimiento Laboral' },
+            ],
+          },
         ],
       },
       render: (props: BlockRender<ComponentProps<typeof IntranetTopbarWrapper>>) => {
@@ -93,35 +150,26 @@ export const puckConfig: Config = {
       },
     },
     IntranetHero: {
-      label: 'Intranet Banner Principal',
+      label: 'Banner de imagen completa',
       fields: {
-        imageSrc: {
-          type: 'custom',
-          render: ({ value, onChange }) => (
-            <ImageUploaderField value={value} onChange={onChange} />
-          ),
-        },
+        imageSrc: campoImagen('Imagen'),
         imageAlt: { type: 'text', label: 'Texto alternativo' },
       },
       defaultProps: {
         imageSrc: '/assets/img/banner1.png',
         imageAlt: 'Banner principal de la intranet',
       },
-      render: (props: BlockRender<ComponentProps<typeof IntranetHero>>) => <IntranetHero {...props} />,
+      render: (props: BlockRender<ComponentProps<typeof IntranetHero>>) => (
+        <IntranetHero {...props} />
+      ),
     },
-    // ─── Secciones de Tasa de Vinculación y Empleabilidad ───
-    // Cada sección es un bloque suelto para poder reordenarlas arrastrando, y lo
-    // que cambia de verdad (textos, enlaces de Power BI, presentación) son campos.
+    // ─── Cabeceras propias de una sección ───
     TasaBanner: {
-      label: 'Tasa · Banner',
+      label: 'Cabecera · Tasa',
       fields: {
         tituloInicio: { type: 'text', label: 'Título (primera línea)' },
         tituloDestacado: { type: 'text', label: 'Título en negrita (segunda línea)' },
-        imagenSrc: {
-          type: 'custom',
-          label: 'Ilustración',
-          render: ({ value, onChange }) => <ImageUploaderField value={value} onChange={onChange} />,
-        },
+        imagenSrc: campoImagen('Ilustración'),
         imagenAlt: { type: 'text', label: 'Texto alternativo de la imagen' },
       },
       defaultProps: {
@@ -132,65 +180,234 @@ export const puckConfig: Config = {
       },
       render: (props: BlockRender<ComponentProps<typeof TasaBanner>>) => <TasaBanner {...props} />,
     },
-    TasaConceptos: {
-      label: 'Tasa · Conceptos (zig-zag)',
+    MatrizBanner: {
+      label: 'Cabecera · Matriz',
       fields: {
-        conceptos: {
-          type: 'array',
-          label: 'Conceptos',
-          arrayFields: {
-            titulo: { type: 'text', label: 'Título' },
-            descripcion: { type: 'textarea', label: 'Descripción' },
-            imagenSrc: {
-              type: 'custom',
-              label: 'Imagen',
-              render: ({ value, onChange }) => (
-                <ImageUploaderField value={value} onChange={onChange} />
-              ),
-            },
-            imagenAlt: { type: 'text', label: 'Texto alternativo' },
-          },
-          getItemSummary: (item) => item.titulo || 'Concepto',
+        titulo: { type: 'textarea', label: 'Título (usa ** para negrita, Intro para partir línea)' },
+        imagenSrc: campoImagen('Ilustración'),
+        imagenAlt: { type: 'text', label: 'Texto alternativo de la imagen' },
+      },
+      defaultProps: {
+        titulo: 'Matriz de \n**PERTINENCIA**',
+        imagenSrc: '/assets/img/BannerOficial.png',
+        imagenAlt: 'Matriz de Pertinencia',
+      },
+      render: (props: BlockRender<ComponentProps<typeof MatrizBanner>>) => (
+        <MatrizBanner {...props} />
+      ),
+    },
+    EncuestaBanner: {
+      label: 'Cabecera · Encuesta',
+      fields: {
+        antetitulo: { type: 'text', label: 'Línea superior' },
+        titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
+        imagenSrc: campoImagen('Ilustración'),
+        imagenAlt: { type: 'text', label: 'Texto alternativo de la imagen' },
+      },
+      defaultProps: {
+        antetitulo: 'Encuesta de',
+        titulo: 'SEGUIMIENTO LABORAL',
+        imagenSrc: '/assets/img/banner-seguimiento-laboral.png',
+        imagenAlt: 'Ilustración Seguimiento Laboral',
+      },
+      render: (props: BlockRender<ComponentProps<typeof EncuestaBanner>>) => (
+        <EncuestaBanner {...props} />
+      ),
+    },
+    // ─── Texto e imagen ───
+    TextoRico: {
+      label: 'Texto con formato',
+      fields: {
+        titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
+        contenido: { type: 'richtext', label: 'Contenido' },
+        fondo: campoFondo,
+        ancho: {
+          type: 'radio',
+          label: 'Ancho',
+          options: [
+            { label: 'Estrecho', value: 'estrecho' },
+            { label: 'Ancho', value: 'ancho' },
+          ],
         },
       },
       defaultProps: {
-        conceptos: [
-          {
-            titulo: '¿Qué es la Tasa de Vinculación?',
-            descripcion:
-              'La Tasa de Vinculación consiste en medir cuál es el porcentaje de egresados certificados de formación titulada del SENA de un semestre (cohorte semestral) que logran vincularse a un empleo formal (que presentan aportes a seguridad social en PILA) en el siguiente semestre.',
-            imagenSrc: '/assets/img/vinculacion.png',
-            imagenAlt: 'Estadísticas de Tasa de Vinculación',
-          },
-          {
-            titulo: '¿Qué es la Tasa de Empleabilidad?',
-            descripcion:
-              'La Tasa de Empleabilidad consiste en medir cuál es el porcentaje de egresados certificados de formación complementaria del SENA y de certificados por competencias laborales de un año (cohorte anual) que se encuentran en un trabajo formal (que presentan aportes a seguridad social en PILA) durante algún momento del siguiente año.',
-            imagenSrc: '/assets/img/sabiasque.png',
-            imagenAlt: 'Estadísticas de Tasa de Empleabilidad',
-          },
-        ],
+        titulo: '¿Qué es?',
+        contenido: '<p>Escribe aquí el contenido de la sección.</p>',
+        fondo: 'gris',
+        ancho: 'estrecho',
       },
-      render: (props: BlockRender<ComponentProps<typeof TasaConceptos>>) => (
-        <TasaConceptos {...props} />
+      render: (props: BlockRender<ComponentProps<typeof TextoRico>>) => <TextoRico {...props} />,
+    },
+    TextoConImagen: {
+      label: 'Texto con imagen al lado',
+      fields: {
+        titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
+        contenido: { type: 'richtext', label: 'Contenido' },
+        imagenSrc: campoImagen('Imagen'),
+        imagenAlt: { type: 'text', label: 'Texto alternativo' },
+        pieDeImagen: { type: 'text', label: 'Leyenda bajo la imagen' },
+        ladoImagen: {
+          type: 'radio',
+          label: 'Lado de la imagen',
+          options: [
+            { label: 'Derecha', value: 'derecha' },
+            { label: 'Izquierda', value: 'izquierda' },
+          ],
+        },
+        fondo: campoFondo,
+      },
+      defaultProps: {
+        titulo: '¿Cuál es el **objetivo**?',
+        contenido: '<p>Escribe aquí el contenido de la sección.</p>',
+        imagenSrc: '',
+        imagenAlt: '',
+        pieDeImagen: '',
+        ladoImagen: 'derecha',
+        fondo: 'gris',
+      },
+      render: (props: BlockRender<ComponentProps<typeof TextoConImagen>>) => (
+        <TextoConImagen {...props} />
+      ),
+    },
+    ImagenDestacada: {
+      label: 'Imagen destacada',
+      fields: {
+        titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
+        imagenSrc: campoImagen('Imagen'),
+        imagenAlt: { type: 'text', label: 'Texto alternativo' },
+        ancho: {
+          type: 'radio',
+          label: 'Ancho',
+          options: [
+            { label: 'Completo', value: 'completo' },
+            { label: 'Caja centrada', value: 'contenido' },
+          ],
+        },
+        fondo: campoFondo,
+      },
+      defaultProps: {
+        titulo: '',
+        imagenSrc: '',
+        imagenAlt: '',
+        ancho: 'completo',
+        fondo: 'blanco',
+      },
+      render: (props: BlockRender<ComponentProps<typeof ImagenDestacada>>) => (
+        <ImagenDestacada {...props} />
+      ),
+    },
+    // ─── Multimedia ───
+    SeccionCarrusel: {
+      label: 'Carrusel de imágenes',
+      fields: {
+        titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
+        imagenes: {
+          type: 'array',
+          label: 'Imágenes',
+          arrayFields: {
+            src: campoImagen('Imagen'),
+            alt: { type: 'text', label: 'Texto alternativo' },
+          },
+          getItemSummary: (item, indice) => item.alt || `Imagen ${(indice ?? 0) + 1}`,
+        },
+        imagenesPorPagina: { type: 'number', label: 'Imágenes visibles a la vez', min: 1, max: 6 },
+        autoplay: {
+          type: 'radio',
+          label: 'Pasar solas',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        mostrarBotones: {
+          type: 'radio',
+          label: 'Flechas',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        disposicion: {
+          type: 'radio',
+          label: 'Disposición',
+          options: [
+            { label: 'Título arriba', value: 'columna' },
+            { label: 'Título al lado', value: 'lado-a-lado' },
+          ],
+        },
+        fondo: campoFondo,
+      },
+      defaultProps: {
+        titulo: '',
+        imagenes: [],
+        imagenesPorPagina: 3,
+        autoplay: true,
+        mostrarBotones: true,
+        disposicion: 'columna',
+        fondo: 'blanco',
+      },
+      render: (props: BlockRender<ComponentProps<typeof SeccionCarrusel>>) => (
+        <SeccionCarrusel {...props} />
       ),
     },
     TasaVideo: {
-      label: 'Tasa · Video',
+      label: 'Video embebido',
       fields: {
         tituloInicio: { type: 'text', label: 'Título (primera parte)' },
         tituloDestacado: { type: 'text', label: 'Título en negrita' },
         videoUrl: { type: 'text', label: 'Enlace del video de YouTube' },
+        descargaTexto: { type: 'text', label: 'Texto sobre el botón de descarga (opcional)' },
+        descargaEtiqueta: { type: 'text', label: 'Texto del botón' },
+        descargaUrl: {
+          type: 'custom',
+          label: 'Archivo para descargar (opcional)',
+          render: ({ value, onChange }) => (
+            <ArchivoUploaderField
+              value={value}
+              onChange={onChange}
+              accept=".xlsx,.xls,.csv,.pdf"
+              etiquetaBoton="Subir archivo"
+            />
+          ),
+        },
       },
       defaultProps: {
         tituloInicio: 'Aquí te contamos todo sobre la estrategia de Tasa de',
         tituloDestacado: 'Vinculación y Empleabilidad',
         videoUrl: 'https://www.youtube.com/embed/4E7Sci4DAVQ',
+        descargaTexto: '',
+        descargaEtiqueta: 'Descargar',
+        descargaUrl: '',
       },
       render: (props: BlockRender<ComponentProps<typeof TasaVideo>>) => <TasaVideo {...props} />,
     },
+    RecursosVisualesBloque: {
+      label: 'Lista de videos',
+      fields: {
+        titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
+        videos: {
+          type: 'array',
+          label: 'Videos',
+          arrayFields: {
+            youtubeId: { type: 'text', label: 'Identificador de YouTube (los 11 caracteres)' },
+            titulo: { type: 'text', label: 'Título' },
+            canal: { type: 'text', label: 'Canal' },
+            miniatura: campoImagen('Miniatura propia (opcional)'),
+          },
+          getItemSummary: (item) => item.titulo || 'Video',
+        },
+      },
+      defaultProps: {
+        titulo: '**Recursos** visuales',
+        videos: [],
+      },
+      render: (props: BlockRender<ComponentProps<typeof RecursosVisualesBloque>>) => (
+        <RecursosVisualesBloque {...props} />
+      ),
+    },
+    // ─── Datos y documentos ───
     TasaDashboards: {
-      label: 'Tasa · Tableros Power BI',
+      label: 'Tableros Power BI',
       fields: {
         tableros: {
           type: 'array',
@@ -204,29 +421,14 @@ export const puckConfig: Config = {
         },
       },
       defaultProps: {
-        tableros: [
-          {
-            titulo: 'Dashboard OLO - Vinculación',
-            descripcion:
-              'Resultados de vinculación laboral formal (titulada), con una periodicidad semestral. Genera un indicador de vinculación donde se relaciona el número de vinculados laboralmente en el mercado formal y el total de egresados, para un grupo de seguimiento particular.',
-            urlPowerBi:
-              'https://app.powerbi.com/view?r=eyJrIjoiMWIxNWMwYjItNzdhZS00ZGE1LWExMDktYzZhOTgwNjZkNTZmIiwidCI6ImNiYzJjMzgxLTJmMmUtNGQ5My05MWQxLTUwNmM5MzE2YWNlNyIsImMiOjR9&pageName=ReportSection',
-          },
-          {
-            titulo: 'Dashboard OLO - Empleabilidad',
-            descripcion:
-              'Resultados de empleabilidad formal (complementaria), con una periodicidad anual. Genera un indicador de empleabilidad donde se relaciona el número de vinculados laboralmente en el mercado formal y el total de egresados, para un grupo de seguimiento particular.',
-            urlPowerBi:
-              'https://app.powerbi.com/view?r=eyJrIjoiMWIxNWMwYjItNzdhZS00ZGE1LWExMDktYzZhOTgwNjZkNTZmIiwidCI6ImNiYzJjMzgxLTJmMmUtNGQ5My05MWQxLTUwNmM5MzE2YWNlNyIsImMiOjR9&pageName=cfd70c690d894046a8d8',
-          },
-        ],
+        tableros: [],
       },
       render: (props: BlockRender<ComponentProps<typeof TasaDashboards>>) => (
         <TasaDashboards {...props} />
       ),
     },
     TasaPresentacion: {
-      label: 'Tasa · Presentación',
+      label: 'Presentación (PPTX)',
       fields: {
         tituloInicio: { type: 'text', label: 'Título (primera parte)' },
         tituloDestacado: { type: 'text', label: 'Título en negrita' },
@@ -252,14 +454,144 @@ export const puckConfig: Config = {
         <TasaPresentacion {...props} />
       ),
     },
+    DescargasConPresentacion: {
+      label: 'Descargas con presentación',
+      fields: {
+        titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
+        enlaces: {
+          type: 'array',
+          label: 'Enlaces',
+          arrayFields: {
+            etiqueta: { type: 'text', label: 'Texto del enlace' },
+            url: { type: 'text', label: 'URL' },
+          },
+          getItemSummary: (item) => item.etiqueta || 'Enlace',
+        },
+        archivoUrl: {
+          type: 'custom',
+          label: 'Presentación al lado (opcional)',
+          render: ({ value, onChange }) => (
+            <ArchivoUploaderField
+              value={value}
+              onChange={onChange}
+              accept=".pptx,.ppt"
+              etiquetaBoton="Subir presentación"
+            />
+          ),
+        },
+      },
+      defaultProps: {
+        titulo: '**Descargas**',
+        enlaces: [],
+        archivoUrl: '',
+      },
+      render: (props: BlockRender<ComponentProps<typeof DescargasConPresentacion>>) => (
+        <DescargasConPresentacion {...props} />
+      ),
+    },
+    Publicaciones: {
+      label: 'Últimas publicaciones',
+      fields: {
+        titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
+        publicaciones: {
+          type: 'array',
+          label: 'Publicaciones',
+          arrayFields: {
+            titulo: { type: 'text', label: 'Título' },
+            pdfUrl: {
+              type: 'custom',
+              label: 'Archivo PDF',
+              render: ({ value, onChange }) => (
+                <ArchivoUploaderField
+                  value={value}
+                  onChange={onChange}
+                  accept=".pdf"
+                  etiquetaBoton="Subir PDF"
+                />
+              ),
+            },
+            etiqueta: { type: 'text', label: 'Etiqueta (#OLOtecuenta)' },
+            mes: { type: 'text', label: 'Mes' },
+            dia: { type: 'text', label: 'Día' },
+          },
+          getItemSummary: (item) => item.titulo || 'Publicación',
+        },
+        porPagina: { type: 'number', label: 'Tarjetas visibles a la vez', min: 1, max: 6 },
+      },
+      defaultProps: {
+        titulo: '**Ultimas** publicaciones',
+        publicaciones: [],
+        porPagina: 4,
+      },
+      render: (props: BlockRender<ComponentProps<typeof Publicaciones>>) => (
+        <Publicaciones {...props} />
+      ),
+    },
+    // ─── Bloques de una sola sección ───
+    TasaConceptos: {
+      label: 'Conceptos en zig-zag',
+      fields: {
+        conceptos: {
+          type: 'array',
+          label: 'Conceptos',
+          arrayFields: {
+            titulo: { type: 'text', label: 'Título' },
+            descripcion: { type: 'textarea', label: 'Descripción' },
+            imagenSrc: campoImagen('Imagen'),
+            imagenAlt: { type: 'text', label: 'Texto alternativo' },
+          },
+          getItemSummary: (item) => item.titulo || 'Concepto',
+        },
+      },
+      defaultProps: {
+        conceptos: [],
+      },
+      render: (props: BlockRender<ComponentProps<typeof TasaConceptos>>) => (
+        <TasaConceptos {...props} />
+      ),
+    },
+    PreguntasFrecuentes: {
+      label: 'Preguntas frecuentes',
+      fields: {
+        titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
+        tarjetas: {
+          type: 'array',
+          label: 'Tarjetas',
+          arrayFields: {
+            imagenSrc: campoImagen('Imagen'),
+            imagenAlt: { type: 'text', label: 'Texto alternativo' },
+            texto: { type: 'textarea', label: 'Texto de la tarjeta' },
+            url: { type: 'text', label: 'Enlace (sin él, la tarjeta no es pulsable)' },
+          },
+          getItemSummary: (item) => item.texto || 'Tarjeta',
+        },
+      },
+      defaultProps: {
+        titulo: '**Preguntas** Frecuentes',
+        tarjetas: [],
+      },
+      render: (props: BlockRender<ComponentProps<typeof PreguntasFrecuentes>>) => (
+        <PreguntasFrecuentes {...props} />
+      ),
+    },
+    IntranetFooter: {
+      label: 'Pie de página',
+      render: () => <IntranetFooter block={{ id: 'intranet-footer', type: 'IntranetFooter' }} />,
+    },
+    // ─── Heredados del sitio público ───
+    // Siguen registrados porque hay contenido guardado que los usa; no se ofrecen
+    // en el selector de las secciones de la intranet (ver COMPONENTES_POR_SLUG).
     Header: {
       label: 'Header / Encabezado',
       fields: {
         id: { type: 'text' },
-        govBannerEnabled: { 
-          type: 'radio', 
+        govBannerEnabled: {
+          type: 'radio',
           label: 'Mostrar franja superior GOV.CO',
-          options: [{ label: 'Sí', value: true }, { label: 'No', value: false }] 
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
         },
       },
       defaultProps: {
@@ -291,7 +623,11 @@ export const puckConfig: Config = {
       },
       defaultProps: { id: 'services-1', sectionTitle: 'Servicios de la Intranet' },
       render: (props: BlockRender<{ sectionTitle?: string }>) => (
-        <Services block={{ id: props.id || 'services-preview', type: 'services' }} sectionTitle={props.sectionTitle} services={[]} />
+        <Services
+          block={{ id: props.id || 'services-preview', type: 'services' }}
+          sectionTitle={props.sectionTitle}
+          services={[]}
+        />
       ),
     },
     ExternalPortals: {
@@ -302,9 +638,112 @@ export const puckConfig: Config = {
       label: 'Footer / Pie de página',
       render: () => <Footer block={{ id: 'footer', type: 'footer' }} />,
     },
-    IntranetFooter: {
-      label: 'Intranet Footer / Pie de página',
-      render: () => <IntranetFooter block={{ id: 'intranet-footer', type: 'IntranetFooter' }} />,
-    },
   },
 };
+
+/**
+ * El catálogo que usa la app: el de arriba, con los controles de espaciado.
+ *
+ * Cada bloque gana un grupo «Espaciado y ancho» (relleno, separación con lo de
+ * arriba y lo de abajo, ancho máximo y posición) sin tener que declararlo. El
+ * envoltorio solo se pinta cuando hay algún valor puesto, así que las páginas ya
+ * publicadas producen exactamente el mismo HTML que antes hasta que alguien
+ * toque esos campos a propósito.
+ *
+ * La barra y el pie quedan fuera (`BLOQUES_SIN_CAJA`): la barra es
+ * `position: sticky` y encerrarla en un div que mide lo mismo que ella la
+ * dejaría sin recorrido donde pegarse al hacer scroll. Además las coloca la
+ * plantilla, no las secciones, así que nadie las va a espaciar desde aquí.
+ */
+export const puckConfig: Config = {
+  ...puckConfigBase,
+  components: conCajaEnTodos(puckConfigBase.components, { excepto: BLOQUES_SIN_CAJA }),
+};
+
+/**
+ * Qué bloques se ofrecen al editar cada sección.
+ *
+ * El catálogo es uno solo para toda la intranet, así que sin esto quien edita
+ * Inicio ve en el selector la cabecera de Tasa, la de Matriz y los bloques
+ * heredados del sitio público, ninguno de los cuales pinta nada ahí. El nombre
+ * del bloque es la única pista que tiene, y una lista larga de bloques que no
+ * vienen a cuento hace que el editor dé miedo tocarlo.
+ *
+ * Un slug que no esté aquí (una página nueva creada desde el comodín) recibe el
+ * catálogo completo, que es lo razonable cuando no se sabe qué va a contener.
+ *
+ * `IntranetTopbar` e `IntranetFooter` NO están en ninguna sección: los pinta
+ * `app/(secciones)/layout.tsx` a partir de la página `plantilla`, y ofrecerlos
+ * aquí dejaría volver a tener una barra distinta por sección, que es justo el
+ * problema que se acaba de quitar. Siguen registrados en `puckConfig` porque
+ * puede quedar contenido guardado que los use.
+ */
+const BLOQUES_COMUNES = [
+  'IntranetHero',
+  'TextoRico',
+  'TextoConImagen',
+  'ImagenDestacada',
+  'SeccionCarrusel',
+  'TasaVideo',
+  'Grid',
+  'Flex',
+  'Space',
+];
+
+const COMPONENTES_POR_SLUG: Record<string, string[]> = {
+  // La plantilla es lo contrario a una sección: solo la barra y el pie, que es
+  // justo lo que las secciones ya no pueden tocar.
+  plantilla: ['IntranetTopbar', 'IntranetFooter'],
+  inicio: [...BLOQUES_COMUNES, 'RecursosVisualesBloque', 'Publicaciones', 'PreguntasFrecuentes'],
+  tasa: [...BLOQUES_COMUNES, 'TasaBanner', 'TasaConceptos', 'TasaDashboards', 'TasaPresentacion'],
+  matriz: [
+    ...BLOQUES_COMUNES,
+    'MatrizBanner',
+    'TasaDashboards',
+    'TasaPresentacion',
+    'DescargasConPresentacion',
+  ],
+  'encuestas-calidad-de-formacion': [
+    ...BLOQUES_COMUNES,
+    'EncuestaBanner',
+    'DescargasConPresentacion',
+    'TasaDashboards',
+  ],
+  'encuestas-seguimiento-laboral': [
+    ...BLOQUES_COMUNES,
+    'EncuestaBanner',
+    'DescargasConPresentacion',
+    'TasaDashboards',
+  ],
+};
+
+/**
+ * Config para la mesa de trabajo de un slug.
+ *
+ * Solo la usa el editor. Para PINTAR una página hay que seguir usando
+ * `puckConfig` entero: si un bloque guardado no está en la config con la que se
+ * renderiza, Puck no sabe dibujarlo y la sección desaparece sin avisar.
+ */
+export function configDeEdicion(slug: string): Config {
+  const permitidos = COMPONENTES_POR_SLUG[slug];
+  if (!permitidos) return puckConfig;
+
+  const components = Object.fromEntries(
+    Object.entries(puckConfig.components).filter(([nombre]) => permitidos.includes(nombre))
+  ) as Config['components'];
+
+  const categories = Object.fromEntries(
+    Object.entries(puckConfig.categories ?? {})
+      .map(([nombre, categoria]) => [
+        nombre,
+        {
+          ...categoria,
+          components: (categoria.components ?? []).filter((c) => permitidos.includes(c)),
+        },
+      ])
+      // Una categoría que se queda sin bloques no debe salir como grupo vacío.
+      .filter(([, categoria]) => (categoria as { components: string[] }).components.length > 0)
+  ) as Config['categories'];
+
+  return { ...puckConfig, components, categories };
+}

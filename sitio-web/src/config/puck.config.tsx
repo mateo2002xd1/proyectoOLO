@@ -1,7 +1,15 @@
 'use client';
 
 import type { ComponentProps } from 'react';
-import { ExternalPortals, Services, IntranetTopbar, IntranetHero, primitiveComponents } from '@olo/blocks-renderer';
+import {
+  ExternalPortals,
+  Services,
+  IntranetTopbar,
+  IntranetHero,
+  primitiveComponents,
+  conCajaEnTodos,
+  BLOQUES_SIN_CAJA,
+} from '@olo/blocks-renderer';
 import { OcupacionSearchBanner } from '@/shared/ui/molecules/ocupacion-search-banner';
 import { EditorjsWrapper } from '@/features/paginas/components/editorjs-wrapper';
 import { ImageUploaderField } from '@/features/paginas/components/image-uploader-field';
@@ -33,7 +41,13 @@ const RichTextBlock = {
 };
 
 // ─── Puck Configuration: Single source of truth for editor + public rendering ───
-export const puckConfig: Config = {
+/**
+ * El catálogo tal cual lo declara cada bloque.
+ *
+ * No se exporta: lo que consume la app es el `puckConfig` de más abajo, que es
+ * este mismo con los controles de «Espaciado y ancho» ya inyectados.
+ */
+const puckConfigBase: Config = {
   categories: {
     'Intranet': {
       components: ['IntranetTopbar', 'IntranetHero'],
@@ -286,4 +300,22 @@ export const puckConfig: Config = {
     // Bloque de texto enriquecido — usa EditorJS internamente
     RichText: RichTextBlock,
   },
+};
+
+/**
+ * El catálogo que usa la app: el de arriba, con los controles de espaciado.
+ *
+ * Cada bloque gana un grupo «Espaciado y ancho» (relleno, separación con lo de
+ * arriba y lo de abajo, ancho máximo y posición) sin tener que declararlo. El
+ * envoltorio solo se pinta cuando hay algún valor puesto, así que las páginas ya
+ * publicadas producen exactamente el mismo HTML que antes hasta que alguien
+ * toque esos campos a propósito.
+ *
+ * La barra de la intranet queda fuera (`BLOQUES_SIN_CAJA`) porque es
+ * `position: sticky`: encerrarla en un div que mide lo mismo que ella la
+ * dejaría sin recorrido donde pegarse al hacer scroll.
+ */
+export const puckConfig: Config = {
+  ...puckConfigBase,
+  components: conCajaEnTodos(puckConfigBase.components, { excepto: BLOQUES_SIN_CAJA }),
 };

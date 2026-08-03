@@ -35,16 +35,16 @@ export async function middleware(request: NextRequest) {
 
   // Login page: solo auto-redirigimos a admins con sesión válida (van directo al dashboard).
   // Editores u otros roles ven el formulario/selector post-login (el propio page.tsx enruta).
-  if (pathname === '/login') {
+  if (pathname === '/admin/auth/login') {
     if (hasValidSession && isAdminRole) {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
+      return NextResponse.redirect(new URL('/admin/dashboard', request.url));
     }
     return NextResponse.next();
   }
 
-  // Protected routes (/dashboard, /usuarios, /editor/*): require session
+  // Protected routes (/admin/dashboard, /admin/usuarios, /admin/editor/*): require session
   if (!hasValidSession) {
-    const redirectUrl = new URL('/login', request.url);
+    const redirectUrl = new URL('/admin/auth/login', request.url);
     redirectUrl.searchParams.set('redirect', pathname);
     const response = NextResponse.redirect(redirectUrl);
     // Limpiar cookie inválida si existe
@@ -53,32 +53,32 @@ export async function middleware(request: NextRequest) {
   }
 
   const loginRedirect = () => {
-    const url = new URL('/login', request.url);
+    const url = new URL('/admin/auth/login', request.url);
     url.searchParams.set('redirect', pathname);
     return NextResponse.redirect(url);
   };
 
-  // /dashboard/* — solo Superadmin y Administrador pueden acceder
-  if (pathname.startsWith('/dashboard')) {
+  // /admin/dashboard/* — solo Superadmin y Administrador pueden acceder
+  if (pathname.startsWith('/admin/dashboard')) {
     if (!isAdminRole) {
       return loginRedirect();
     }
     // Must change password or setup security questions
     if (mustChangePassword || mustSetupSecurityQuestions) {
-      return NextResponse.redirect(new URL('/cambiar-contrasena', request.url));
+      return NextResponse.redirect(new URL('/admin/auth/cambiar-contrasena', request.url));
     }
     return NextResponse.next();
   }
 
-  // /users y /usuarios — solo Superadmin y Administrador pueden acceder (RF-04/RF-05)
-  if (pathname.startsWith('/users') || pathname.startsWith('/usuarios')) {
+  // /admin/users y /admin/usuarios — solo Superadmin y Administrador pueden acceder (RF-04/RF-05)
+  if (pathname.startsWith('/admin/users') || pathname.startsWith('/admin/usuarios')) {
     if (!isAdminRole) {
       return loginRedirect();
     }
   }
 
-  // /editor/* — Superadmin, Administrador y Editor pueden acceder
-  if (pathname.startsWith('/editor')) {
+  // /admin/editor/* — Superadmin, Administrador y Editor pueden acceder
+  if (pathname.startsWith('/admin/editor')) {
     if (!isAdminRole && role !== 'Editor') {
       return loginRedirect();
     }
@@ -86,8 +86,8 @@ export async function middleware(request: NextRequest) {
 
   // Must change password or setup security questions
   if (mustChangePassword || mustSetupSecurityQuestions) {
-    if (!pathname.startsWith('/cambiar-contrasena')) {
-      return NextResponse.redirect(new URL('/cambiar-contrasena', request.url));
+    if (!pathname.startsWith('/admin/auth/cambiar-contrasena')) {
+      return NextResponse.redirect(new URL('/admin/auth/cambiar-contrasena', request.url));
     }
   }
 
@@ -95,15 +95,15 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Protege dashboard, usuarios/users, editor y maneja /login y /cambiar-contrasena.
+  // Protege dashboard, usuarios/users, editor y maneja /admin/auth/login y /admin/auth/cambiar-contrasena.
   matcher: [
-    '/dashboard/:path*',
-    '/users/:path*',
-    '/users',
-    '/usuarios/:path*',
-    '/usuarios',
-    '/editor/:path*',
-    '/login',
-    '/cambiar-contrasena',
+    '/admin/dashboard/:path*',
+    '/admin/users/:path*',
+    '/admin/users',
+    '/admin/usuarios/:path*',
+    '/admin/usuarios',
+    '/admin/editor/:path*',
+    '/admin/auth/login',
+    '/admin/auth/cambiar-contrasena',
   ],
 };

@@ -20,7 +20,7 @@ export function esRutaInternaSegura(ruta: string | null | undefined): ruta is st
 
 /** Enlace al editor recordando desde dónde se abrió. */
 export function enlaceAlEditor(slug: string, volverA: string): string {
-  return `/editor/${slug}?${PARAM}=${encodeURIComponent(volverA)}`;
+  return `/admin/editor/${slug}?${PARAM}=${encodeURIComponent(volverA)}`;
 }
 
 /**

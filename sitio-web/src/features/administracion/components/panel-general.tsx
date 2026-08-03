@@ -55,7 +55,7 @@ export function PanelGeneralLayout({ children, userProfile }: { children: React.
 
   const handleLogout = useCallback(async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
-    router.push('/login');
+    router.push('/admin/auth/login');
   }, [router]);
 
   return (
@@ -65,10 +65,10 @@ export function PanelGeneralLayout({ children, userProfile }: { children: React.
       navbar={
         <Navbar>
           <NavbarSection>
-            <NavbarItem href="/dashboard/buscar" aria-label="Buscar">
+            <NavbarItem href="/admin/dashboard/buscar" aria-label="Buscar">
               <MagnifyingGlassIcon />
             </NavbarItem>
-            <NavbarItem href="/dashboard/inbox" aria-label="Bandeja de entrada">
+            <NavbarItem href="/admin/dashboard/inbox" aria-label="Bandeja de entrada">
               <InboxIcon />
             </NavbarItem>
           </NavbarSection>
@@ -76,16 +76,16 @@ export function PanelGeneralLayout({ children, userProfile }: { children: React.
           <NavbarSection>
             <Dropdown>
               <DropdownMenu className="min-w-64" anchor="bottom end">
-                <DropdownItem href="/dashboard/mi-perfil">
+                <DropdownItem href="/admin/dashboard/mi-perfil">
                   <UserIcon />
                   <DropdownLabel>Mi perfil</DropdownLabel>
                 </DropdownItem>
-                <DropdownItem href="/dashboard/configuracion">
+                <DropdownItem href="/admin/dashboard/configuracion">
                   <Cog8ToothIcon />
                   <DropdownLabel>Configuración</DropdownLabel>
                 </DropdownItem>
                 <DropdownDivider />
-                <DropdownItem href="/dashboard/privacidad">
+                <DropdownItem href="/admin/dashboard/privacidad">
                   <ShieldCheckIcon />
                   <DropdownLabel>Política de privacidad</DropdownLabel>
                 </DropdownItem>
@@ -110,26 +110,26 @@ export function PanelGeneralLayout({ children, userProfile }: { children: React.
           </SidebarHeader>
           <SidebarBody>
             <SidebarSection>
-              <SidebarItem href="/dashboard">
+              <SidebarItem href="/admin/dashboard">
                 <HomeIcon />
                 <SidebarLabel>Dashboard</SidebarLabel>
               </SidebarItem>
-              <SidebarItem href="/users">
+              <SidebarItem href="/admin/users">
                 <UserIcon />
                 <SidebarLabel>Usuarios</SidebarLabel>
               </SidebarItem>
-              <SidebarItem href="/revision">
+              <SidebarItem href="/admin/revision">
                 <ClipboardDocumentCheckIcon />
                 <SidebarLabel>Páginas en revisión</SidebarLabel>
               </SidebarItem>
-              <SidebarItem href="/dashboard/auditoria">
+              <SidebarItem href="/admin/auditoria">
                 <ShieldCheckIcon />
                 <SidebarLabel>Auditoría</SidebarLabel>
               </SidebarItem>
             </SidebarSection>
             <SidebarSpacer />
             <SidebarSection>
-              <SidebarItem href="/dashboard/soporte">
+              <SidebarItem href="/admin/dashboard/soporte">
                 <QuestionMarkCircleIcon />
                 <SidebarLabel>Soporte</SidebarLabel>
               </SidebarItem>
@@ -137,11 +137,11 @@ export function PanelGeneralLayout({ children, userProfile }: { children: React.
           </SidebarBody>
 
           <SidebarSection className="max-lg:hidden mx-2 mb">
-            <SidebarItem href="/dashboard/buscar">
+            <SidebarItem href="/admin/dashboard/buscar">
               <MagnifyingGlassIcon />
               <SidebarLabel>Buscar</SidebarLabel>
             </SidebarItem>
-            <SidebarItem href="/dashboard/inbox">
+            <SidebarItem href="/admin/dashboard/inbox">
               <InboxIcon />
               <SidebarLabel>Bandeja de entrada</SidebarLabel>
             </SidebarItem>
@@ -163,16 +163,16 @@ export function PanelGeneralLayout({ children, userProfile }: { children: React.
                 <ChevronUpIcon />
               </DropdownButton>
               <DropdownMenu className="min-w-64" anchor="top start">
-                <DropdownItem href="/dashboard/mi-perfil">
+                <DropdownItem href="/admin/dashboard/mi-perfil">
                   <UserIcon />
                   <DropdownLabel>Mi perfil</DropdownLabel>
                 </DropdownItem>
-                <DropdownItem href="/dashboard/configuracion">
+                <DropdownItem href="/admin/dashboard/configuracion">
                   <Cog8ToothIcon />
                   <DropdownLabel>Configuración</DropdownLabel>
                 </DropdownItem>
                 <DropdownDivider />
-                <DropdownItem href="/dashboard/privacidad">
+                <DropdownItem href="/admin/dashboard/privacidad">
                   <ShieldCheckIcon />
                   <DropdownLabel>Política de privacidad</DropdownLabel>
                 </DropdownItem>
@@ -244,7 +244,7 @@ export function PanelGeneralDashboard() {
         {/* Action Buttons for Editors */}
         <div className="mb-8 grid gap-4 sm:grid-cols-2">
           <Link
-            href={enlaceAlEditor('inicio', '/dashboard')}
+            href={enlaceAlEditor('inicio', '/admin/dashboard')}
             className="group flex flex-col justify-center gap-1 rounded-xl border border-zinc-200 bg-white p-5 transition-all duration-200 ease-out hover:translate-x-1 hover:border-[#7DB829]/40 hover:bg-[#7DB829]/10 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#7DB829]/40 dark:hover:bg-[#7DB829]/10"
           >
             <h3 className="font-semibold text-zinc-950 group-hover:text-[#4C7A1C] dark:text-[#f6f6f6] dark:group-hover:text-[#9ED65C]">

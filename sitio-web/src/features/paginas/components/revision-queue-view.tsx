@@ -16,7 +16,7 @@ const URL_INTRANET = process.env.NEXT_PUBLIC_INTRANET_URL || 'http://localhost:3
 function enlaceDeVistaPrevia(pagina: PaginaEnRevision): string {
   return pagina.ambito === 'intranet'
     ? `${URL_INTRANET}/preview/${pagina.slug}`
-    : `/preview/${pagina.slug}`;
+    : `/admin/preview/${pagina.slug}`;
 }
 
 const ETIQUETA_AMBITO: Record<Ambito, string> = {

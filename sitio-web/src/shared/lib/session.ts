@@ -85,11 +85,11 @@ export async function assertPagePermission(requiredPermission: string): Promise<
 
 export async function resolveFirstAccessibleRoute(role: string): Promise<string> {
   const roleRoutes: Record<string, string[]> = {
-    Superadmin: ['/dashboard'],
-    Administrador: ['/dashboard'],
-    Editor: ['/dashboard'],
-    Director: ['/dashboard'],
-    Subdirector: ['/dashboard'],
+    Superadmin: ['/admin/dashboard'],
+    Administrador: ['/admin/dashboard'],
+    Editor: ['/admin/dashboard'],
+    Director: ['/admin/dashboard'],
+    Subdirector: ['/admin/dashboard'],
   };
 
   const routes = roleRoutes[role] || ['/sin-acceso'];

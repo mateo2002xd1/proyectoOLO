@@ -7,52 +7,25 @@
  * lienzo en blanco. Al primer "Guardar Borrador" se crea la versión real y la
  * semilla deja de usarse.
  *
- * NOTA sobre el inicio: la home real (`features/inicio/ui/InicioView`) incluye
- * secciones bespoke (carruseles, publicaciones, render de PDFs) que todavía NO
- * son bloques Puck. La semilla trae el "chrome" editable disponible en el
- * catálogo (Topbar + Hero + Footer). Convertir esas secciones ricas en bloques
- * editables es trabajo aparte.
+ * Ahora mismo no hay ninguna, y es lo correcto: las secciones que existen
+ * (`inicio`, `tasa`, `matriz` y las dos encuestas) ya tienen su contenido en la
+ * base, sembrado por `sembrar-pagina-tasa.ts` y `sembrar-paginas-intranet.ts`,
+ * así que nunca llegan aquí. Antes había una semilla de `inicio` con tres
+ * bloques (barra, banner y pie) que no se parecía en nada a la página real de
+ * ocho secciones: abrir el editor con ella habría hecho creer que ese era el
+ * contenido de inicio.
  *
- * IMPORTANTE: cada semilla usa EXACTAMENTE los `type` registrados en
+ * El sitio de esto es una página NUEVA, creada desde el comodín `[...puckPath]`,
+ * si algún día conviene que arranque con una plantilla en vez de en blanco.
+ *
+ * IMPORTANTE: cada semilla debe usar EXACTAMENTE los `type` registrados en
  * `puck.config.tsx`; sus props replican los `defaultProps` de cada bloque.
  */
 import type { ContenidoPagina } from '../types/editor.types';
 
 const EMPTY_CONTENIDO: ContenidoPagina = { content: [], root: {} };
 
-export const pageSeeds: Record<string, ContenidoPagina> = {
-  inicio: {
-    content: [
-      {
-        type: 'IntranetTopbar',
-        props: {
-          id: 'seed-intranet-topbar',
-          brandText: 'Intranet',
-          logoUrl: '/assets/svg/olo-logo-blanco.svg',
-          menuItems: [
-            { href: '/intranet', label: 'Inicio' },
-            { href: '#', label: 'Tasa de Vinculación y Empleabilidad' },
-            { href: '#', label: 'Matriz de Pertinencia' },
-            { href: '#', label: 'Encuestas' },
-          ],
-        },
-      },
-      {
-        type: 'IntranetHero',
-        props: {
-          id: 'seed-intranet-hero',
-          imageSrc: '/assets/img/banner1.png',
-          imageAlt: 'Banner principal de la intranet',
-        },
-      },
-      {
-        type: 'IntranetFooter',
-        props: { id: 'seed-intranet-footer' },
-      },
-    ],
-    root: {},
-  },
-};
+export const pageSeeds: Record<string, ContenidoPagina> = {};
 
 /** Devuelve la semilla del slug, o contenido vacío si no hay semilla definida. */
 export function getPageSeed(slug: string): ContenidoPagina {

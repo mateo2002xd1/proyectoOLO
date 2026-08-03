@@ -29,7 +29,9 @@ const CONTENIDO = {
   root: { props: {} },
   zones: {},
   content: [
-    bloque('IntranetTopbar', 'tasa-topbar'),
+    // La barra de navegación y el pie ya no van aquí: eran una copia por sección
+    // y los menús acabaron divergiendo. Ahora viven en la página `plantilla` y los
+    // pinta el layout de la intranet. Ver `migrar-plantilla-intranet.ts`.
     bloque('TasaBanner', 'tasa-banner', {
       tituloInicio: 'Tasa de',
       tituloDestacado: 'Vinculación y Empleabilidad',
@@ -82,7 +84,6 @@ const CONTENIDO = {
       tituloDestacado: 'presentación de Tasa de Vinculación y Empleabilidad',
       archivoUrl: '/uploads/documents/tasa.pptx',
     }),
-    bloque('IntranetFooter', 'tasa-footer'),
   ],
 };
 

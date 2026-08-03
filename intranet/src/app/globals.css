@@ -354,6 +354,16 @@ input {
   z-index: 100;
 }
 
+/* El contenido de la sección, entre la barra y el pie. Crece para llenar el
+   hueco sobrante y así el pie queda abajo del todo incluso en páginas cortas.
+   Antes cada página lo resolvía con `min-h-screen`, que con el pie ya fuera del
+   contenido dejaba siempre una franja de más que obligaba a desplazarse. */
+.intranet-contenido {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
 .bannerOficialMatriz {
   width: 100%;
   display: flex;
@@ -922,6 +932,198 @@ input {
   font-size: 0.9rem;
 }
 
+/* ============================================
+   EDITOR VISUAL (Puck) — cabecera y barra oscuras
+   ============================================ */
+
+/* Puck expone su tema con variables propias, así que la cabecera y la barra de
+   complementos se tiñen sin tocar sus clases de CSS modules: esas llevan un hash
+   (`_PuckLayout-nav_mr27u_197`) que cambia en cuanto se actualiza el paquete y
+   dejaría los estilos colgando en silencio. */
+.olo-editor {
+  position: fixed;
+  inset: 0;
+  background: #fff;
+  z-index: 9999;
+
+  /* Cabecera */
+  --puck-header-color-bg: #001631;
+  --puck-header-color-text: #ffffff;
+
+  /* Barra lateral de complementos (el `_PuckLayout-nav`) */
+  --puck-pluginbar-color-bg: #001631;
+  --puck-pluginbar-color-text: rgba(255, 255, 255, 0.68);
+  --puck-pluginbar-color-text-hover: #ffffff;
+  --puck-pluginbar-color-text-selected: #ffffff;
+  --puck-pluginbar-color-bg-hover: rgba(255, 255, 255, 0.1);
+}
+
+/* Los iconos de plegar barras heredan `currentColor`, así que ya salen blancos;
+   lo que no encaja es el azul de serie al pasar por encima sobre el azul marino.
+   El selector va por subcadena para no depender del hash. */
+.olo-editor [class*="PuckHeader"] [class*="IconButton"]:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+/* Separador interno de la cabecera: gris claro sobre azul marino cortaba la
+   barra en dos de forma muy visible. */
+.olo-editor [class*="PuckHeader-inner"] {
+  border-left-color: rgba(255, 255, 255, 0.14);
+}
+
+.olo-editor-acciones {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.olo-editor-ruta {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.olo-editor-estado {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.olo-editor-aviso {
+  font-size: 12px;
+  color: #fbbf24;
+}
+
+.olo-editor-btn {
+  padding: 7px 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.olo-editor-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.olo-editor-btn:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+.olo-editor-btn--salir {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.olo-editor-btn--salir:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.olo-editor-btn--guardar {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+.olo-editor-btn--guardar:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+/* Verde institucional. El texto va en azul marino y no en blanco: blanco sobre
+   este verde queda en 2.4:1 —ilegible— y así sube a 7.6:1 sin cambiar el color
+   pedido. */
+.olo-editor-btn--enviar {
+  background: #7db828;
+  color: #001631;
+  font-weight: 600;
+}
+
+.olo-editor-btn--enviar:hover:not(:disabled) {
+  background: #8fcc32;
+}
+
+/* --- Confirmación de salida --- */
+
+.olo-modal {
+  border: none;
+  padding: 0;
+  background: transparent;
+  max-width: min(30rem, calc(100vw - 2rem));
+}
+
+.olo-modal::backdrop {
+  background: rgba(0, 22, 49, 0.55);
+}
+
+.olo-modal-caja {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+  color: #1f2937;
+}
+
+.olo-modal-titulo {
+  margin: 0 0 0.6rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #001631;
+}
+
+.olo-modal-texto {
+  margin: 0 0 0.75rem;
+  font-size: 0.925rem;
+  line-height: 1.5;
+}
+
+.olo-modal-texto--apunte {
+  color: #4b5563;
+  font-size: 0.875rem;
+  margin-bottom: 1.25rem;
+}
+
+.olo-modal-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+.olo-modal-btn {
+  padding: 0.55rem 1rem;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #374151;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.olo-modal-btn:hover {
+  background: #f3f4f6;
+}
+
+.olo-modal-btn--peligro {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+
+.olo-modal-btn--peligro:hover {
+  background: #b91c1c;
+  border-color: #b91c1c;
+}
+
+.olo-modal-btn:focus-visible {
+  outline: 2px solid #001631;
+  outline-offset: 2px;
+}
+
 /* --- Botón lápiz (edit-button) --- */
 
 .edit-button {
@@ -945,6 +1147,20 @@ input {
 .edit-button:hover {
   background: #0b2b58;
   transform: translateY(-2px);
+}
+
+/* Editar la plantilla afecta a las cinco secciones, no solo a la que se está
+   mirando: se apila encima del botón de la sección y en un tono más apagado para
+   que no se confunda con él. Apilado y no al lado, porque así no hay que ajustar
+   el desplazamiento cada vez que cambie el texto de un botón. */
+.edit-button--plantilla {
+  bottom: 4.6rem;
+  background: #334f78;
+  font-weight: 500;
+}
+
+.edit-button--plantilla:hover {
+  background: #45638f;
 }
 
 /* ============================================
@@ -3226,6 +3442,96 @@ input {
   border: none;
 }
 
+/* Descarga opcional bajo el video (encuesta de calidad de la formación).
+   Estaba resuelta con estilos en línea y handlers onMouseOver dentro del JSX;
+   al pasar la sección a bloque se trae aquí para que el hover sea CSS. */
+.tasa-video-descarga {
+  margin-top: 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.tasa-video-descarga p {
+  color: #d1d5db;
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+.tasa-video-descarga-boton {
+  display: inline-block;
+  background-color: #ffffff;
+  color: #001631;
+  font-weight: bold;
+  padding: 0.6rem 2.5rem;
+  border-radius: 12px;
+  font-size: 1.25rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.tasa-video-descarga-boton:hover {
+  background-color: #e2e8f0;
+}
+
+/* Contenido de los campos `richtext` de Puck, que lo entrega envuelto en
+   `.rich-text`. Hace falta porque el preflight de Tailwind quita los estilos por
+   defecto de listas y párrafos: sin esto, una lista escrita desde la barra de
+   formato del editor se ve como texto corrido y sin viñetas. */
+.rich-text> :first-child {
+  margin-top: 0;
+}
+
+.rich-text> :last-child {
+  margin-bottom: 0;
+}
+
+.rich-text p {
+  margin-bottom: 1rem;
+}
+
+.rich-text strong,
+.rich-text b {
+  font-weight: 700;
+}
+
+.rich-text em,
+.rich-text i {
+  font-style: italic;
+}
+
+.rich-text ul,
+.rich-text ol {
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+
+.rich-text ul {
+  list-style: disc;
+}
+
+.rich-text ol {
+  list-style: decimal;
+}
+
+.rich-text li {
+  margin-bottom: 0.25rem;
+}
+
+.rich-text a {
+  text-decoration: underline;
+}
+
+.rich-text h2,
+.rich-text h3,
+.rich-text h4 {
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
 /* 4. Dashboards */
 .tasa-dashboards-section {
   width: 100%;
@@ -3764,19 +4070,93 @@ input {
   margin: 0;
 }
 
-/* ─── Primitivo de maquetación: Grid / Columnas (@olo/blocks-renderer) ───
-   El número de columnas y la separación llegan como variables CSS inline
-   desde el `render` del primitivo; aquí se aplican y se colapsan en móvil. */
+/* ─── Maquetación del editor (@olo/blocks-renderer) ─────────────────────────
+   Las variables llegan inline desde el `render` de cada primitivo y desde
+   `conCaja()`; aquí solo se aplican. El reparto es a propósito: la app decide
+   cómo se ve cada medida en cada tamaño de pantalla, y el paquete se limita a
+   decir cuánto espacio pidió quien editó. Nada de esto se puede resolver con
+   estilos inline, porque el colapso en móvil necesita media queries.
+
+   Este bloque está duplicado en el globals.css de intranet y en el de
+   sitio-web: el paquete comparte componentes, no hojas de estilo. Si se toca
+   aquí, tocar también allí. */
+
+/* Espaciado y ancho de cualquier bloque (conCaja) */
+.olo-caja {
+  width: 100%;
+  padding-top: var(--olo-caja-interior-y, 0px);
+  padding-bottom: var(--olo-caja-interior-y, 0px);
+  padding-left: var(--olo-caja-interior-x, 0px);
+  padding-right: var(--olo-caja-interior-x, 0px);
+  margin-top: var(--olo-caja-superior, 0px);
+  margin-bottom: var(--olo-caja-inferior, 0px);
+  max-width: var(--olo-caja-ancho, none);
+  /* Sin ancho máximo estos `auto` no hacen nada; con él, centran, que es lo
+     que se espera al estrechar un bloque. */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.olo-caja--izquierda {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.olo-caja--derecha {
+  margin-left: auto;
+  margin-right: 0;
+}
+
+/* Un espaciado amplio en escritorio deja el contenido en una columna
+   asfixiada en móvil. Se reduce solo, en vez de pedir que se configure aparte
+   cada tamaño de pantalla. */
+@media (max-width: 640px) {
+  .olo-caja {
+    padding-top: calc(var(--olo-caja-interior-y, 0px) * 0.6);
+    padding-bottom: calc(var(--olo-caja-interior-y, 0px) * 0.6);
+    padding-left: calc(var(--olo-caja-interior-x, 0px) * 0.6);
+    padding-right: calc(var(--olo-caja-interior-x, 0px) * 0.6);
+    margin-top: calc(var(--olo-caja-superior, 0px) * 0.6);
+    margin-bottom: calc(var(--olo-caja-inferior, 0px) * 0.6);
+  }
+}
+
+/* Columnas (primitivo Grid) */
 .olo-grid {
   display: grid;
   grid-template-columns: repeat(var(--olo-grid-cols, 3), minmax(0, 1fr));
   gap: var(--olo-grid-gap, 24px);
+  align-items: var(--olo-grid-align, stretch);
   width: 100%;
 }
 
 @media (max-width: 640px) {
   .olo-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Fila o columna flexible (primitivo Flex) */
+.olo-flex {
+  display: flex;
+  width: 100%;
+  flex-direction: var(--olo-flex-dir, row);
+  justify-content: var(--olo-flex-justify, flex-start);
+  align-items: var(--olo-flex-align, stretch);
+  gap: var(--olo-flex-gap, 16px);
+  flex-wrap: var(--olo-flex-wrap, wrap);
+}
+
+/* Sin esto un hijo con texto largo se niega a encogerse por debajo de su
+   contenido y desborda la fila. */
+.olo-flex > * {
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .olo-flex--apilar {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 
@@ -3787,6 +4167,14 @@ input {
 .preview-page {
   min-height: 100vh;
   background: #ffffff;
+}
+
+/* La vista previa vive dentro del marco de las secciones, así que hay dos barras
+   pegajosas peleando por `top: 0`: la navegación y el aviso. Manda el aviso —que
+   la página no está publicada importa más que tener el menú siempre a mano—, y
+   la navegación acompaña al contenido mientras se revisa. */
+body:has(.preview-page) .intranet-topbar {
+  position: static;
 }
 
 /* Barra fija: la vista previa es la página entera, y sin este aviso siempre

@@ -8,12 +8,49 @@ import { obtenerVersionEditable } from '../use-cases/paginas/obtener-version-edi
 import { listarEnRevision } from '../use-cases/paginas/listar-en-revision.usecase';
 import { eliminarVersion } from '../use-cases/paginas/eliminar-version.usecase';
 import { AMBITO_HEADER, resolverAmbito } from '../shared/ambito';
+import { logAudit } from '../use-cases/auditoria/audit.usecase';
+import { datosDeAuditoria } from '../shared/auditoria-request';
 
 /**
  * A qué aplicación pertenece la página que se está pidiendo. Cada frontend lo
  * declara en su cliente HTTP; sin cabecera se asume el sitio público.
  */
 const ambitoDe = (req: Request) => resolverAmbito(req.header(AMBITO_HEADER));
+
+/**
+ * El id que se registra en la bitácora es el de la **página**, no el de la
+ * versión: RF-07 se consulta por "qué le ha pasado a esta página", y encadenar
+ * versiones para reconstruir su historia sería trabajo del que lee.
+ *
+ * El número de versión viaja en `camposModificados` porque es lo que de verdad
+ * cambió en ese paso del ciclo editorial, y así la pantalla puede decir "creó la
+ * versión 4" sin consultar otra tabla.
+ */
+const registrar = async (
+  req: Request,
+  accion: 'actualizar' | 'enviar_revision' | 'publicar' | 'rechazar' | 'eliminar',
+  resultado: { pagina?: { id?: string; slug?: string }; version?: { numeroVersion?: number } },
+  extra: { campo: string; antes: unknown; despues: unknown }[] = []
+) => {
+  const paginaId = resultado?.pagina?.id;
+  // Sin id no hay fila válida (`entidad_id` es NOT NULL). Es preferible no
+  // registrar a tumbar la petición que sí hizo su trabajo.
+  if (!paginaId) return;
+
+  await logAudit({
+    ...datosDeAuditoria(req),
+    entidadId: paginaId,
+    entidadTipo: 'pagina',
+    accion,
+    camposModificados: [
+      { campo: 'slug', antes: null, despues: resultado.pagina?.slug ?? req.params.slug },
+      ...(resultado.version?.numeroVersion !== undefined
+        ? [{ campo: 'version', antes: null, despues: resultado.version.numeroVersion }]
+        : []),
+      ...extra,
+    ],
+  });
+};
 
 export const PaginaController = {
   async obtenerPublica(req: Request, res: Response, next: NextFunction) {
@@ -40,6 +77,7 @@ export const PaginaController = {
         req.user?.id || '',
         ambitoDe(req)
       );
+      await registrar(req, 'actualizar', result);
       res.json(result);
     } catch (err) { next(err); }
   },
@@ -47,6 +85,7 @@ export const PaginaController = {
   async enviarARevision(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await enviarARevision(req.params.slug as string, ambitoDe(req));
+      await registrar(req, 'enviar_revision', result);
       res.json(result);
     } catch (err) { next(err); }
   },
@@ -54,6 +93,8 @@ export const PaginaController = {
   async aprobar(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await aprobarPagina(req.params.slug as string, req.user?.id || '', ambitoDe(req));
+      // Aprobar es publicar: la versión pasa a `publicado` y queda visible.
+      await registrar(req, 'publicar', result);
       res.json(result);
     } catch (err) { next(err); }
   },
@@ -67,6 +108,12 @@ export const PaginaController = {
         motivo,
         ambitoDe(req)
       );
+      // El motivo se guarda en la bitácora porque es la única explicación de por
+      // qué una versión volvió a borrador, y quien la lea semanas después no
+      // tiene otro sitio donde encontrarla.
+      await registrar(req, 'rechazar', result, [
+        { campo: 'motivo', antes: null, despues: motivo ?? null },
+      ]);
       res.json(result);
     } catch (err) { next(err); }
   },
