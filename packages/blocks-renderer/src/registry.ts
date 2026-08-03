@@ -8,12 +8,12 @@ import type { BlockType } from './types';
 import { IntranetTopbar } from './blocks/IntranetTopbar';
 import { IntranetHero } from './blocks/IntranetHero';
 
-export const blockRegistry: Record<BlockType, React.ComponentType<{ block: { id: string; type: BlockType } }>> = {
+export const blockRegistry: Record<BlockType, React.ComponentType<any>> = {
   'header': Header,
   'hero': Hero,
   'services': Services,
   'external-portals': ExternalPortals,
   'footer': Footer,
-  'IntranetTopbar': IntranetTopbar as any,
-  'IntranetHero': IntranetHero as any,
+  'IntranetTopbar': IntranetTopbar,
+  'IntranetHero': IntranetHero,
 };
