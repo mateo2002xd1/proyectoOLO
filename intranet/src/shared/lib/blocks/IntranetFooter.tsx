@@ -27,10 +27,12 @@ export interface LineaPie {
   url?: string;
   /** Deja aire encima. Es lo que separa hoy la línea de redes del resto. */
   separada?: boolean;
+  icono?: string;
 }
 
 export interface ColumnaPie {
   titulo?: string;
+  orientacionLineas?: 'column' | 'row';
   lineas?: LineaPie[];
 }
 
@@ -122,22 +124,40 @@ export function IntranetFooter({
         {columnas.map((columna, indice) => (
           <div className="intranet-footer-col" key={`${columna.titulo ?? 'columna'}-${indice}`}>
             {columna.titulo && <h2>{columna.titulo}</h2>}
-            {(columna.lineas ?? []).map((linea, indiceLinea) => {
-              const clave = `${linea.texto ?? 'linea'}-${indiceLinea}`;
-              const clase = linea.separada ? 'intranet-footer-social' : undefined;
+            <div 
+              className="flex gap-2" 
+              style={{ 
+                flexDirection: columna.orientacionLineas === 'row' ? 'row' : 'column',
+                flexWrap: columna.orientacionLineas === 'row' ? 'wrap' : 'nowrap',
+                alignItems: columna.orientacionLineas === 'row' ? 'center' : 'flex-start'
+              }}
+            >
+              {(columna.lineas ?? []).map((linea, indiceLinea) => {
+                const clave = `${linea.texto ?? 'linea'}-${indiceLinea}`;
+                const clase = linea.separada ? 'intranet-footer-social' : undefined;
 
-              // Sin URL es un dato, no un destino: se pinta como texto en vez de
-              // como un enlace que no lleva a ninguna parte.
-              return linea.url ? (
-                <a key={clave} href={linea.url} className={clase}>
-                  {linea.texto}
-                </a>
-              ) : (
-                <p key={clave} className={clase}>
-                  {linea.texto}
-                </p>
-              );
-            })}
+                const contenido = (
+                  <span className="flex items-center gap-1.5">
+                    {linea.icono && (
+                      <img src={linea.icono} alt="" className="w-5 h-5 object-contain" />
+                    )}
+                    {linea.texto && <span>{linea.texto}</span>}
+                  </span>
+                );
+
+                // Sin URL es un dato, no un destino: se pinta como texto en vez de
+                // como un enlace que no lleva a ninguna parte.
+                return linea.url ? (
+                  <a key={clave} href={linea.url} className={clase}>
+                    {contenido}
+                  </a>
+                ) : (
+                  <div key={clave} className={clase}>
+                    {contenido}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         ))}
       </div>

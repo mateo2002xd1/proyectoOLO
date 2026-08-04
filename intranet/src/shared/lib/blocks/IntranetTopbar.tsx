@@ -33,11 +33,48 @@ export function IntranetTopbar({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   
   const intranetContent = [
-    { title: "Inicio", description: "Página principal de la intranet", href: "/inicio" },
-    { title: "Tasa de Vinculación y Empleabilidad", description: "Indicadores y métricas de empleabilidad", href: "/tasa" },
-    { title: "Matriz de Pertinencia", description: "Matriz de pertinencia de los programas de formación", href: "/matriz" },
-    { title: "Calidad de Formación", description: "Encuestas sobre la calidad de los programas", href: "/encuestas/calidad-de-formacion" },
-    { title: "Seguimiento Laboral", description: "Encuestas de seguimiento a egresados", href: "/encuestas/seguimiento-laboral" }
+    { 
+      href: "/inicio", 
+      items: [
+        { type: "h1", text: "Inicio" },
+        { type: "p", text: "Página principal de la intranet" }
+      ]
+    },
+    { 
+      href: "/tasa", 
+      items: [
+        { type: "h1", text: "Tasa de Vinculación y Empleabilidad" },
+        { type: "h2", text: "Indicadores Generales" },
+        { type: "p", text: "Indicadores y métricas de empleabilidad de nuestros egresados." }
+      ]
+    },
+    { 
+      href: "/matriz", 
+      items: [
+        { type: "h1", text: "Matriz de Pertinencia" },
+        { type: "h2", text: "¿Qué es?" },
+        { type: "p", text: "La Matriz de Pertinencia es una herramienta estratégica del SENA, que permite a través de sus 5 variables:" },
+        { type: "span", text: "1. vinculación laboral." },
+        { type: "span", text: "2. tendencia de las ocupaciones." },
+        { type: "span", text: "3. demanda social de los programas de oferta titulada." },
+        { type: "span", text: "4. sector estratégico de los programas de formación." },
+        { type: "span", text: "5. contrato de aprendizaje; comprender que tan bien se ajustan los programas ofrecidos por los centros de formación a la realidad del mercado laboral colombiano." }
+      ]
+    },
+    { 
+      href: "/encuestas/calidad-de-formacion", 
+      items: [
+        { type: "h1", text: "Calidad de Formación" },
+        { type: "p", text: "Encuestas sobre la calidad de los programas impartidos." }
+      ]
+    },
+    { 
+      href: "/encuestas/seguimiento-laboral", 
+      items: [
+        { type: "h1", text: "Seguimiento Laboral" },
+        { type: "span", text: "Encuestas de seguimiento a egresados en su entorno laboral." }
+      ]
+    }
   ];
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,12 +83,25 @@ export function IntranetTopbar({
     setIsDropdownOpen(value.trim().length > 0);
   };
 
-  const filteredResults = searchQuery.trim() === "" 
-    ? [] 
-    : intranetContent.filter(item => 
-        item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        item.description.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+  const normalizeText = (text: string) => 
+    text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+  const filteredResults: Array<{href: string, type: string, text: string, context: string}> = [];
+  if (searchQuery.trim() !== "") {
+    const q = normalizeText(searchQuery);
+    intranetContent.forEach(page => {
+      page.items.forEach(item => {
+        if (normalizeText(item.text).includes(q)) {
+          filteredResults.push({
+            href: page.href,
+            type: item.type,
+            text: item.text,
+            context: page.items[0].text
+          });
+        }
+      });
+    });
+  }
 
   return (
     <header className="intranet-topbar" aria-label="Navegacion principal">
@@ -122,8 +172,13 @@ export function IntranetTopbar({
                 {filteredResults.length > 0 ? (
                   filteredResults.map((result, idx) => (
                     <a key={idx} href={result.href} className="intranet-search-result-item block text-inherit no-underline">
-                      <h2 className="intranet-search-result-title">{result.title}</h2>
-                      <p className="intranet-search-result-desc">{result.description}</p>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">{result.context}</span>
+                        {result.type === 'h1' && <h1 className="intranet-search-result-title text-lg font-bold">{result.text}</h1>}
+                        {result.type === 'h2' && <h2 className="intranet-search-result-title text-base font-semibold">{result.text}</h2>}
+                        {result.type === 'p' && <p className="intranet-search-result-desc text-sm">{result.text}</p>}
+                        {result.type === 'span' && <span className="intranet-search-result-desc text-xs text-gray-300">{result.text}</span>}
+                      </div>
                     </a>
                   ))
                 ) : (

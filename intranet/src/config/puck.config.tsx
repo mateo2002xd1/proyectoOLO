@@ -40,13 +40,13 @@ type BlockRender<T> = T & { id: string };
 
 /** Campo de imagen con subida, que se repite en casi todos los bloques. */
 const campoImagen = (label: string) =>
-  ({
-    type: 'custom' as const,
-    label,
-    render: ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
-      <ImageUploaderField value={value} onChange={onChange} />
-    ),
-  });
+({
+  type: 'custom' as const,
+  label,
+  render: ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
+    <ImageUploaderField value={value} onChange={onChange} />
+  ),
+});
 
 const campoFondo = {
   type: 'radio' as const,
@@ -598,12 +598,21 @@ const puckConfigBase: Config = {
           label: 'Columnas',
           arrayFields: {
             titulo: { type: 'text', label: 'Título de la columna' },
+            orientacionLineas: {
+              type: 'radio',
+              label: 'Orientación de las líneas',
+              options: [
+                { label: 'Vertical (Columna)', value: 'column' },
+                { label: 'Horizontal (Fila)', value: 'row' },
+              ],
+            },
             lineas: {
               type: 'array',
               label: 'Líneas',
               arrayFields: {
-                texto: { type: 'textarea', label: 'Texto' },
+                texto: { type: 'textarea', label: 'Texto (opcional si hay ícono)' },
                 url: { type: 'text', label: 'Enlace (déjalo vacío si es solo texto)' },
+                icono: { type: 'text', label: 'Ruta del ícono SVG (opcional)' },
                 separada: {
                   type: 'radio',
                   label: 'Dejar aire encima',
