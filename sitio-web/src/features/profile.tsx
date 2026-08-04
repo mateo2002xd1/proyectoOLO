@@ -1,25 +1,94 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useTransition } from 'react';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { getProfileData, updateProfileInfo, changePassword } from './profile.actions';
 
 export function ProfileForm() {
     const [isChangingPassword, setIsChangingPassword] = useState(false);
     const [showActual, setShowActual] = useState(false);
     const [showNueva, setShowNueva] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
+    const [userId, setUserId] = useState<string | null>(null);
+    const [isPending, startTransition] = useTransition();
+    const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+    const [formData, setFormData] = useState({
+        nombre: '',
+        apellidos: '',
+        correo: '',
+    });
+
+    useEffect(() => {
+        getProfileData().then((res) => {
+            if (res.success && res.data) {
+                setUserId(res.data.id);
+                
+                const parts = (res.data.name || '').split(' ');
+                const parsedNombre = parts[0] || '';
+                const parsedApellidos = parts.slice(1).join(' ') || '';
+
+                setFormData({
+                    nombre: parsedNombre,
+                    apellidos: parsedApellidos,
+                    correo: res.data.email || '',
+                });
+            }
+        });
+    }, []);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const formData = new FormData(e.currentTarget);
-        const data = Object.fromEntries(formData.entries());
-        console.log('Formulario guardado:', data);
-        alert('Cambios guardados exitosamente (ver consola).');
+        setMessage(null);
+        
+        const form = new FormData(e.currentTarget);
+        const data = Object.fromEntries(form.entries());
+        
+        startTransition(async () => {
+            if (isChangingPassword) {
+                if (data.password_nueva !== data.password_confirmacion) {
+                    setMessage({ type: 'error', text: 'Las contraseñas nuevas no coinciden' });
+                    return;
+                }
+                const res = await changePassword(data);
+                if (!res.success) {
+                    setMessage({ type: 'error', text: res.error || 'Error al cambiar contraseña' });
+                    return;
+                }
+                setMessage({ type: 'success', text: 'Contraseña actualizada exitosamente' });
+                setIsChangingPassword(false);
+            } else {
+                if (!userId) {
+                    setMessage({ type: 'error', text: 'No se pudo identificar el usuario' });
+                    return;
+                }
+                const res = await updateProfileInfo(userId, {
+                    nombre: data.nombre as string,
+                    apellidos: data.apellidos as string,
+                    correo: data.correo as string,
+                });
+                if (!res.success) {
+                    setMessage({ type: 'error', text: res.error || 'Error al actualizar perfil' });
+                    return;
+                }
+                setMessage({ type: 'success', text: 'Perfil actualizado exitosamente' });
+            }
+        });
     };
 
     return (
         <div >
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Mi Perfil</h2>
+
+            {message && (
+                <div className={`p-4 mb-6 rounded-lg text-sm ${message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
+                    {message.text}
+                </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Basic Information */}
@@ -32,6 +101,8 @@ export function ProfileForm() {
                             type="text"
                             id="nombre"
                             name="nombre"
+                            value={formData.nombre}
+                            onChange={handleChange}
                             required
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors"
                             placeholder="Tu nombre"
@@ -46,6 +117,8 @@ export function ProfileForm() {
                             type="text"
                             id="apellidos"
                             name="apellidos"
+                            value={formData.apellidos}
+                            onChange={handleChange}
                             required
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors"
                             placeholder="Tus apellidos"
@@ -60,6 +133,8 @@ export function ProfileForm() {
                             type="email"
                             id="correo"
                             name="correo"
+                            value={formData.correo}
+                            onChange={handleChange}
                             required
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors"
                             placeholder="tu@correo.com"
@@ -174,9 +249,10 @@ export function ProfileForm() {
                 <div className="pt-4 flex justify-end">
                     <button
                         type="submit"
-                        className="px-6 py-2 bg-[#7DB728] text-white font-medium rounded-lg hover:bg-[#7DB728] focus:outline-none focus:ring-2 focus:ring-[#1FACE3] focus:ring-offset-2 transition-colors shadow-sm"
+                        disabled={isPending}
+                        className={`px-6 py-2 bg-[#7DB728] text-white font-medium rounded-lg hover:bg-[#7DB728] focus:outline-none focus:ring-2 focus:ring-[#1FACE3] focus:ring-offset-2 transition-colors shadow-sm ${isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
-                        Guardar Cambios
+                        {isPending ? 'Guardando...' : 'Guardar Cambios'}
                     </button>
                 </div>
             </form>
