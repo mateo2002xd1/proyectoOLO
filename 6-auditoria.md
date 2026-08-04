@@ -5,6 +5,53 @@
 
 ---
 
+## sesión 04-08-2026: la pantalla `/admin/auditoria`, y dos administradores que no dejaban rastro
+
+La sesión anterior dejó la bitácora escribiendo y su lectura cerrada por rol, pero **sin pantalla**: el enlace «Auditoría» del sidebar llevaba a un 404. Esta sesión construye la pantalla y cierra los huecos de registro que la habrían dejado medio vacía.
+
+### 1. Lo que faltaba registrar (9 escrituras nuevas)
+
+- **Usuarios** (`crear`, `actualizar`, `eliminar`), **roles** (`crear`, `actualizar`, `eliminar`) y **permisos de rol** (`assign`/`revoke`, como `actualizar` sobre la entidad `rol`, que es la pregunta que se le hace a una auditoría). Nada de esto dejaba huella: se podía cambiar quién puede publicar sin que constara en ningún sitio.
+- **Eliminar una versión de página**, la única acción del ciclo editorial que destruye trabajo. No se podía registrar porque el use-case no devolvía el id de la página (`entidad_id` es NOT NULL); ahora devuelve `pagina` y `version` —cambio aditivo— y el controlador usa el `registrar(...)` que ya aceptaba `'eliminar'` sin que nadie lo invocara.
+
+### 2. Dos hallazgos que no estaban en ninguna lista
+
+- **`usuario_id` tiene clave foránea contra `usuarios`, `ON DELETE SET NULL`.** No era evidente hasta que una fila de prueba con un id inventado la hizo saltar. La consecuencia buena: borrar una cuenta **no** borra su rastro, y `usuario_nombre` (la única desnormalización del esquema) lo mantiene legible. Queda comprobado en el script para que nadie la cambie a `CASCADE` sin enterarse.
+- **La cuenta maestra local no dejaba rastro de nada.** `login.usecase.ts` la autentica con `id: 'local-auth'`, que no es un UUID ni existe en `usuarios`: cada INSERT de auditoría reventaba contra esa foránea y `logAudit` se lo tragaba (por diseño: la bitácora no debe tumbar la petición). O sea que el administrador con más poder del sistema era el único sin bitácora. Se vio **en ejecución**, con el log de la API delante: `[Auditoría] No se pudo registrar «crear» sobre usuario …`. Arreglado en `datosDeAuditoria`: si el id no es referenciable va `null`, y el nombre se conserva.
+
+### 3. Lo que se construyó
+
+- **`shared/auditoria-campos.ts`**: el `camposDe` que vivía dentro de `contenido.controller.ts`, ahora compartido y con **lista de campos sensibles**. Era obligatorio antes de auditar usuarios: `updateUser` acepta `password` en el cuerpo, y sin esto la primera vez que un administrador cambiara una contraseña la bitácora la habría guardado en claro. No se omite el campo —que alguien cambió la clave es justo lo que hay que saber—, se sustituye el valor.
+- **Repositorio**: filtros tipados (`FiltrosAuditoria`), **rango de fechas** y **tope de 200 filas por petición**. Antes `?limit=1000000` era una petición válida contra la tabla que más crece.
+- **`shared/auditoria-dto.ts`**: la fila en snake_case pasa a camelCase (`entidadTipo`, `camposModificados`, `userAgent`, `fecha`), como el resto de la API. Se hizo ahora porque esta pantalla es el **primer** consumidor de `/api/audit-logs` y era la última oportunidad sin romper a nadie. Incluye la validación del querystring: lo que no encaja se descarta, ni filtra ni revienta.
+- **`sitio-web/src/features/auditoria/`** (la feature que la guía listaba y no existía en disco) + **`app/admin/(shell)/auditoria/page.tsx`** + el proxy **`app/api/audit-logs/route.ts`**. Filtros por usuario, acción, entidad y fechas; paginación real; detalle en `<dialog>` nativo con campos modificados, IP y user-agent; exportación a CSV.
+- **`middleware.ts`**: `/admin/auditoria` **no estaba en el `matcher`**, así que ni sesión exigía. Ahora entra y se limita a Superadmin/Administrador, espejo de `auditoria.policies.ts`.
+
+### 4. Decisiones que no son obvias
+
+- **El CSV escapa las fórmulas.** Una celda que empieza por `=`, `+`, `-` o `@` la abre Excel como fórmula, y este archivo se arma con texto que escribieron usuarios (nombres, motivos de rechazo). Un archivo de evidencia no puede ejecutar nada al abrirse.
+- **La exportación recorre páginas (tope 4.000 filas) en vez de pedir una gigante.** Si no cabe, el aviso lo dice; no se miente por omisión.
+- **El desplegable de usuarios sale de `/api/users`, no del hook de `administracion`.** Un filtro no justifica arrastrar el CRUD de usuarios a esta feature.
+- **Se pasa por el proxy de Next y no por axios contra `:4000`** (el patrón de `paginas.service.ts`): el token vive en una cookie HTTPOnly que el proxy lee en servidor.
+- **`antes` sigue en `null`** (T-07.6): el detalle dice «sin registro» en vez de fingir un valor anterior.
+
+### 5. Verificación
+
+- **`npm run auditoria:verificar`: 50 comprobaciones contra Postgres real, todas OK.** Nuevas: que la contraseña no llega a la bitácora, que la cuenta local sí deja rastro, la validación del querystring, el DTO, los filtros de fecha, el tope de límite, la paginación y la clave foránea.
+- **En ejecución, contra la base real** (Neon; no hace falta Docker): la API responde el DTO nuevo, el tope de 200 se aplica, una acción inválida se descarta, un rango de 2020 devuelve 0, **Editor recibe 403 y un anónimo 401**. Se creó, editó y borró un usuario de prueba: las entradas quedaron con el nombre del administrador, con `password` como «valor omitido» y sin rastro de la contraseña en toda la tabla. Las filas de esa prueba se borraron después.
+- **La ruta, servida**: sin sesión y como Editor redirige a `/admin/auth/login?redirect=/admin/auditoria`; como Administrador responde 200 con la vista.
+- `tsc --noEmit` limpio en api-backend; `next build` correcto en sitio-web, con `/admin/auditoria` y `/api/audit-logs` en la tabla de rutas; ESLint limpio.
+
+### Pendiente al cierre
+
+- **No se abrió en un navegador de verdad.** La comprobación llegó hasta el HTML servido y el JSON de la API: falta ver la tabla pintada, abrir el detalle y descargar el CSV con una sesión real.
+- **`packages/blocks-renderer` no tenía `node_modules`** y por eso el build de sitio-web fallaba con 12 errores ajenos a este cambio; se instalaron sus dependencias. Conviene que quede en el arranque del proyecto.
+- **La API que corre en `:4000` en esta máquina es anterior a estos cambios**: hay que reiniciarla para que la pantalla lea el DTO nuevo.
+- **T-07.6** (`antes` con el valor real), **escritura transaccional**, **bitácora *append-only*** y **registro de inicios de sesión** (necesita migración de `auditoria_accesos`) siguen abiertos.
+- **Señalado, no tocado**: `/admin/revision` tampoco está en el `matcher` del middleware, y `/api/users` en el backend solo exige `requireAuth` sin filtro de rol — cualquier sesión puede listar usuarios.
+
+---
+
 ## sesión 03-08-2026: `(admin)` pierde los paréntesis en sitio-web — se corrigen las rutas que quedaron colgando
 
 El usuario quitó los paréntesis a la carpeta `(admin)` de `sitio-web` (ahora `app/admin/`), con lo que ese segmento pasa de ser un route group invisible a un tramo real de la URL: `/dashboard` pasó a vivir en `/admin/dashboard`, `/editor/[slug]` en `/admin/editor/[slug]`, etc. El cambio de carpeta no toca ningún string hardcodeado — así que todo lo que redirigía, enlazaba o protegía por la ruta vieja quedó apuntando a una URL que ya no existe.

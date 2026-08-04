@@ -11,8 +11,27 @@ import type { Request } from 'express';
  * los mandaba: las columnas existen desde la migración 006 y todas las filas las
  * habrían tenido en NULL.
  */
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * El id solo viaja si de verdad apunta a una fila de `usuarios`.
+ *
+ * `usuario_id` tiene clave foránea contra esa tabla, y la **cuenta maestra local**
+ * (`login.usecase.ts`) inicia sesión con `id: 'local-auth'`, que no está en la base
+ * ni es un UUID. Mandarlo hacía que el INSERT reventara contra la foránea y que
+ * `logAudit` se tragara el error: el administrador con más poder del sistema era
+ * justo el único que no dejaba rastro.
+ *
+ * Con el id en `null` la fila sí se escribe, y `usuario_nombre` —que se guarda
+ * precisamente para estos casos— deja dicho quién fue.
+ */
+const idReferenciable = (usuario: Request['user']) => {
+  if (!usuario || usuario.isLocal) return null;
+  return typeof usuario.id === 'string' && UUID.test(usuario.id) ? usuario.id : null;
+};
+
 export const datosDeAuditoria = (req: Request) => ({
-  usuarioId: req.user?.id ?? null,
+  usuarioId: idReferenciable(req.user),
   // El nombre se guarda junto al id a propósito (única desnormalización del
   // esquema): si el usuario se borra, la fila debe seguir siendo legible.
   usuarioNombre: req.user?.name ?? req.user?.email ?? null,

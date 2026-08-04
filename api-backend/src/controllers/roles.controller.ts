@@ -6,6 +6,30 @@ import {
   updateRole,
   deleteRole,
 } from '../use-cases/usuarios/roles.usecase';
+import { logAudit } from '../use-cases/auditoria/audit.usecase';
+import { datosDeAuditoria } from '../shared/auditoria-request';
+import { camposDe } from '../shared/auditoria-campos';
+
+/**
+ * Un rol define qué puede hacer cada persona en el sistema: cambiarlo tiene más
+ * alcance que editar cualquier página, y hasta ahora no dejaba ninguna huella.
+ */
+const registrarRol = (
+  req: Request,
+  accion: 'crear' | 'actualizar' | 'eliminar',
+  rolId: string | undefined,
+  campos = camposDe(req.body)
+) => {
+  if (!rolId) return Promise.resolve();
+
+  return logAudit({
+    ...datosDeAuditoria(req),
+    entidadId: rolId,
+    entidadTipo: 'rol',
+    accion,
+    camposModificados: campos,
+  });
+};
 
 export const RoleController = {
   async getAll(_req: Request, res: Response, next: NextFunction) {
@@ -15,12 +39,24 @@ export const RoleController = {
     try { res.json(await getRoleById(req.params.id as string)); } catch (err) { next(err); }
   },
   async create(req: Request, res: Response, next: NextFunction) {
-    try { res.status(201).json(await createRole(req.body)); } catch (err) { next(err); }
+    try {
+      const result = await createRole(req.body);
+      await registrarRol(req, 'crear', (result as any)?.id);
+      res.status(201).json(result);
+    } catch (err) { next(err); }
   },
   async update(req: Request, res: Response, next: NextFunction) {
-    try { res.json(await updateRole(req.params.id as string, req.body)); } catch (err) { next(err); }
+    try {
+      const result = await updateRole(req.params.id as string, req.body);
+      await registrarRol(req, 'actualizar', req.params.id as string);
+      res.json(result);
+    } catch (err) { next(err); }
   },
   async delete(req: Request, res: Response, next: NextFunction) {
-    try { res.json(await deleteRole(req.params.id as string)); } catch (err) { next(err); }
+    try {
+      const result = await deleteRole(req.params.id as string);
+      await registrarRol(req, 'eliminar', req.params.id as string, []);
+      res.json(result);
+    } catch (err) { next(err); }
   },
 };

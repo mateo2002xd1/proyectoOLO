@@ -1,0 +1,62 @@
+import { etiquetaDeAccion, etiquetaDeEntidad, type RegistroAuditoria } from '../types';
+
+const COLUMNAS = [
+  'Fecha',
+  'Usuario',
+  'Acción',
+  'Entidad',
+  'Id de la entidad',
+  'Campos modificados',
+  'IP',
+  'Navegador',
+];
+
+/**
+ * Escapa una celda para CSV.
+ *
+ * El apóstrofo delante de `= + - @` no es decoración: Excel y LibreOffice tratan
+ * una celda que empieza así como **fórmula**, y esta exportación sale de datos que
+ * escribió un usuario (nombres, motivos de rechazo). Sin esto, un archivo de
+ * evidencia puede ejecutar algo al abrirse.
+ */
+const celda = (valor: unknown): string => {
+  const texto = valor === null || valor === undefined ? '' : String(valor);
+  const seguro = /^[=+\-@\t\r]/.test(texto) ? `'${texto}` : texto;
+  return `"${seguro.replace(/"/g, '""')}"`;
+};
+
+const resumirCampos = (registro: RegistroAuditoria) =>
+  registro.camposModificados
+    .map(({ campo, despues }) => `${campo}: ${despues === null || despues === undefined ? '—' : JSON.stringify(despues)}`)
+    .join(' | ');
+
+export function aCsv(registros: RegistroAuditoria[]): string {
+  const filas = registros.map((r) =>
+    [
+      new Date(r.fecha).toLocaleString('es-CO'),
+      r.usuarioNombre ?? 'Sin usuario',
+      etiquetaDeAccion(r.accion),
+      etiquetaDeEntidad(r.entidadTipo),
+      r.entidadId,
+      resumirCampos(r),
+      r.ip ?? '',
+      r.userAgent ?? '',
+    ].map(celda).join(','),
+  );
+
+  // El BOM va delante para que Excel abra el archivo como UTF-8 y no parta los
+  // acentos ni la "ñ".
+  return `﻿${[COLUMNAS.map(celda).join(','), ...filas].join('\r\n')}`;
+}
+
+export function descargarCsv(nombre: string, contenido: string) {
+  const url = URL.createObjectURL(new Blob([contenido], { type: 'text/csv;charset=utf-8;' }));
+  const enlace = document.createElement('a');
+  enlace.href = url;
+  enlace.download = nombre;
+  enlace.click();
+  URL.revokeObjectURL(url);
+}
+
+export const nombreDeArchivo = () =>
+  `auditoria-${new Date().toISOString().slice(0, 10)}.csv`;
