@@ -9,7 +9,6 @@ import {
   IntranetFooter,
   LOGOS_POR_DEFECTO,
   COLUMNAS_POR_DEFECTO,
-  REDES_POR_DEFECTO,
 } from '@/shared/lib/blocks/IntranetFooter';
 import { IntranetTopbarWrapper } from '@/shared/lib/blocks/IntranetTopbarWrapper';
 import { IntranetHero } from '@/shared/lib/blocks/IntranetHero';
@@ -41,13 +40,13 @@ type BlockRender<T> = T & { id: string };
 
 /** Campo de imagen con subida, que se repite en casi todos los bloques. */
 const campoImagen = (label: string) =>
-  ({
-    type: 'custom' as const,
-    label,
-    render: ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
-      <ImageUploaderField value={value} onChange={onChange} />
-    ),
-  });
+({
+  type: 'custom' as const,
+  label,
+  render: ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
+    <ImageUploaderField value={value} onChange={onChange} />
+  ),
+});
 
 const campoFondo = {
   type: 'radio' as const,
@@ -599,11 +598,19 @@ const puckConfigBase: Config = {
           label: 'Columnas',
           arrayFields: {
             titulo: { type: 'text', label: 'Título de la columna' },
+            orientacionLineas: {
+              type: 'radio',
+              label: 'Orientación de las líneas',
+              options: [
+                { label: 'Vertical (Columna)', value: 'column' },
+                { label: 'Horizontal (Fila)', value: 'row' },
+              ],
+            },
             lineas: {
               type: 'array',
               label: 'Líneas',
               arrayFields: {
-                texto: { type: 'textarea', label: 'Texto' },
+                texto: { type: 'textarea', label: 'Texto (opcional si hay ícono)' },
                 url: { type: 'text', label: 'Enlace (déjalo vacío si es solo texto)' },
                 icono: { type: 'text', label: 'Ruta del ícono SVG (opcional)' },
                 separada: {
@@ -620,16 +627,6 @@ const puckConfigBase: Config = {
           },
           getItemSummary: (item) => item.titulo || 'Columna',
         },
-        redes: {
-          type: 'array',
-          label: 'Redes Sociales',
-          arrayFields: {
-            plataforma: { type: 'text', label: 'Nombre o @usuario' },
-            url: { type: 'text', label: 'Enlace' },
-            icono: { type: 'text', label: 'Ruta del ícono SVG' },
-          },
-          getItemSummary: (item) => item.plataforma || 'Red Social',
-        },
       },
       // Repiten los valores por defecto del componente: el pie que se ve hoy. Sin
       // esto, arrastrar el bloque al lienzo daría un pie vacío en vez de uno que
@@ -637,7 +634,6 @@ const puckConfigBase: Config = {
       defaultProps: {
         logos: LOGOS_POR_DEFECTO,
         columnas: COLUMNAS_POR_DEFECTO,
-        redes: REDES_POR_DEFECTO,
       },
       render: (props: BlockRender<ComponentProps<typeof IntranetFooter>>) => (
         <IntranetFooter {...props} />
