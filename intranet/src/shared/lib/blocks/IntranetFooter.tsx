@@ -21,12 +21,12 @@ import type { CSSProperties } from 'react';
  * pantalla de teléfono.
  */
 
-/** Una línea de una columna: párrafo suelto, o enlace si trae `url`. */
 export interface LineaPie {
   texto?: string;
   url?: string;
   /** Deja aire encima. Es lo que separa hoy la línea de redes del resto. */
   separada?: boolean;
+  icono?: string;
 }
 
 export interface ColumnaPie {
@@ -41,9 +41,16 @@ export interface LogoPie {
   ancho?: number;
 }
 
+export interface RedSocial {
+  plataforma?: string;
+  url?: string;
+  icono?: string;
+}
+
 export interface IntranetFooterProps {
   logos?: LogoPie[];
   columnas?: ColumnaPie[];
+  redes?: RedSocial[];
 }
 
 export const LOGOS_POR_DEFECTO: LogoPie[] = [
@@ -57,9 +64,9 @@ export const COLUMNAS_POR_DEFECTO: ColumnaPie[] = [
     lineas: [
       { texto: 'Dirección: Calle 57 No. 8 - 69 Bogotá D.C. (Cundinamarca), Colombia.' },
       { texto: 'Horario de atención: Lunes a viernes de 8:00 am a 5:30 pm' },
-      { texto: '@SENACOMUNICA @SENATV', separada: true },
+      { texto: '@senacomunica', url: 'https://www.instagram.com/senacomunica/', icono: '/assets/svg/instagram.svg', separada: true },
     ],
-  },
+  },  
   {
     titulo: 'Contacto:',
     lineas: [
@@ -70,6 +77,11 @@ export const COLUMNAS_POR_DEFECTO: ColumnaPie[] = [
       { texto: 'Mapa del sitio', url: '#' },
     ],
   },
+];
+
+export const REDES_POR_DEFECTO: RedSocial[] = [
+  { plataforma: '@senacomunica', url: 'https://www.instagram.com/senacomunica/', icono: '/assets/svg/instagram.svg' },
+  { plataforma: '@SENATV', url: 'https://www.youtube.com/@SENAComunica' },
 ];
 
 /**
@@ -86,13 +98,30 @@ function plantillaDeColumnas(conLogos: boolean, cuantasColumnas: number): string
 
 export function IntranetFooter({
   logos = LOGOS_POR_DEFECTO,
-  columnas = COLUMNAS_POR_DEFECTO,
+  columnas: propsColumnas,
+  redes = REDES_POR_DEFECTO,
 }: IntranetFooterProps) {
+  // Inyectar el ícono de Instagram automáticamente si los datos vienen de DB (propsColumnas)
+  // pero aún tienen el texto viejo "@SENACOMUNICA @SENATV" para mantener retrocompatibilidad
+  let columnas = propsColumnas ?? COLUMNAS_POR_DEFECTO;
+  if (propsColumnas) {
+    columnas = propsColumnas.map(col => {
+      if (col.lineas?.some(l => l.texto?.includes('@SENACOMUNICA @SENATV'))) {
+        return {
+          ...col,
+          lineas: col.lineas.filter(l => !l.texto?.includes('@SENACOMUNICA @SENATV'))
+        };
+      }
+      return col;
+    });
+  }
+
   // Un logo sin imagen no pinta nada y solo dejaría un hueco con el separador.
   const logosVisibles = logos.filter((logo) => logo.src);
+  const redesVisibles = redes.filter(red => red.plataforma || red.url);
 
   const estiloRejilla = {
-    '--intranet-footer-columnas': plantillaDeColumnas(logosVisibles.length > 0, columnas.length),
+    '--intranet-footer-columnas': plantillaDeColumnas(logosVisibles.length > 0, columnas.length + (redesVisibles.length > 0 ? 1 : 0)),
   } as CSSProperties;
 
   return (
@@ -126,20 +155,51 @@ export function IntranetFooter({
               const clave = `${linea.texto ?? 'linea'}-${indiceLinea}`;
               const clase = linea.separada ? 'intranet-footer-social' : undefined;
 
+              const contenido = (
+                <span className="flex items-center gap-1.5">
+                  {linea.icono && (
+                    <img src={linea.icono} alt="" className="w-5 h-5 object-contain" />
+                  )}
+                  <span>{linea.texto}</span>
+                </span>
+              );
+
               // Sin URL es un dato, no un destino: se pinta como texto en vez de
               // como un enlace que no lleva a ninguna parte.
               return linea.url ? (
                 <a key={clave} href={linea.url} className={clase}>
-                  {linea.texto}
+                  {contenido}
                 </a>
               ) : (
-                <p key={clave} className={clase}>
-                  {linea.texto}
-                </p>
+                <div key={clave} className={clase}>
+                  {contenido}
+                </div>
               );
             })}
           </div>
         ))}
+
+        {redesVisibles.length > 0 && (
+          <div className="intranet-footer-col">
+            <h2>Redes Sociales</h2>
+            <div className="flex flex-col gap-2 mt-1">
+              {redesVisibles.map((red, indice) => (
+                <a 
+                  key={indice} 
+                  href={red.url || '#'} 
+                  className="intranet-footer-social flex items-center gap-1.5"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {red.icono && (
+                    <img src={red.icono} alt="" className="w-5 h-5 object-contain" />
+                  )}
+                  <span>{red.plataforma}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </footer>
   );

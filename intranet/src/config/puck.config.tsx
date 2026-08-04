@@ -9,6 +9,7 @@ import {
   IntranetFooter,
   LOGOS_POR_DEFECTO,
   COLUMNAS_POR_DEFECTO,
+  REDES_POR_DEFECTO,
 } from '@/shared/lib/blocks/IntranetFooter';
 import { IntranetTopbarWrapper } from '@/shared/lib/blocks/IntranetTopbarWrapper';
 import { IntranetHero } from '@/shared/lib/blocks/IntranetHero';
@@ -604,6 +605,7 @@ const puckConfigBase: Config = {
               arrayFields: {
                 texto: { type: 'textarea', label: 'Texto' },
                 url: { type: 'text', label: 'Enlace (déjalo vacío si es solo texto)' },
+                icono: { type: 'text', label: 'Ruta del ícono SVG (opcional)' },
                 separada: {
                   type: 'radio',
                   label: 'Dejar aire encima',
@@ -618,6 +620,16 @@ const puckConfigBase: Config = {
           },
           getItemSummary: (item) => item.titulo || 'Columna',
         },
+        redes: {
+          type: 'array',
+          label: 'Redes Sociales',
+          arrayFields: {
+            plataforma: { type: 'text', label: 'Nombre o @usuario' },
+            url: { type: 'text', label: 'Enlace' },
+            icono: { type: 'text', label: 'Ruta del ícono SVG' },
+          },
+          getItemSummary: (item) => item.plataforma || 'Red Social',
+        },
       },
       // Repiten los valores por defecto del componente: el pie que se ve hoy. Sin
       // esto, arrastrar el bloque al lienzo daría un pie vacío en vez de uno que
@@ -625,6 +637,7 @@ const puckConfigBase: Config = {
       defaultProps: {
         logos: LOGOS_POR_DEFECTO,
         columnas: COLUMNAS_POR_DEFECTO,
+        redes: REDES_POR_DEFECTO,
       },
       render: (props: BlockRender<ComponentProps<typeof IntranetFooter>>) => (
         <IntranetFooter {...props} />
