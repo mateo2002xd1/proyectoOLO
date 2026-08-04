@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 
 interface IntranetTopbarProps {
   menuItems?: Array<{ label: string; href: string; children?: Array<{ label: string; href: string }> }>;
@@ -29,6 +29,30 @@ export function IntranetTopbar({
   onLogout,
   isLoading = false,
 }: IntranetTopbarProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  
+  const intranetContent = [
+    { title: "Inicio", description: "Página principal de la intranet", href: "/inicio" },
+    { title: "Tasa de Vinculación y Empleabilidad", description: "Indicadores y métricas de empleabilidad", href: "/tasa" },
+    { title: "Matriz de Pertinencia", description: "Matriz de pertinencia de los programas de formación", href: "/matriz" },
+    { title: "Calidad de Formación", description: "Encuestas sobre la calidad de los programas", href: "/encuestas/calidad-de-formacion" },
+    { title: "Seguimiento Laboral", description: "Encuestas de seguimiento a egresados", href: "/encuestas/seguimiento-laboral" }
+  ];
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    setIsDropdownOpen(value.trim().length > 0);
+  };
+
+  const filteredResults = searchQuery.trim() === "" 
+    ? [] 
+    : intranetContent.filter(item => 
+        item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        item.description.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+
   return (
     <header className="intranet-topbar" aria-label="Navegacion principal">
       <div className="intranet-topbar-inner">
@@ -88,7 +112,27 @@ export function IntranetTopbar({
               placeholder="Buscar"
               className="intranet-search-input"
               aria-label="Buscar"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              onFocus={() => { if (searchQuery.trim().length > 0) setIsDropdownOpen(true); }}
+              onBlur={() => setTimeout(() => setIsDropdownOpen(false), 200)}
             />
+            {isDropdownOpen && (
+              <div className="intranet-search-dropdown">
+                {filteredResults.length > 0 ? (
+                  filteredResults.map((result, idx) => (
+                    <a key={idx} href={result.href} className="intranet-search-result-item block text-inherit no-underline">
+                      <h2 className="intranet-search-result-title">{result.title}</h2>
+                      <p className="intranet-search-result-desc">{result.description}</p>
+                    </a>
+                  ))
+                ) : (
+                  <div className="intranet-search-result-item text-gray-500 text-sm">
+                    No se encontraron resultados
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <button
