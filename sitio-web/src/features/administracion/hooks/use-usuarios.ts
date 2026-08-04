@@ -2,10 +2,16 @@
 
 import { useState, useCallback } from 'react';
 
+export type Permission = {
+  id: string;
+  name: string; // la clave: e.g. 'edit_post', 'acceso.intranet'
+};
+
 export type Role = {
   id: string;
   name: string;
   description: string;
+  permissions?: Permission[];
 };
 
 export type User = {
@@ -25,6 +31,7 @@ export type NuevoUsuario = {
   email: string;
   role_id: string;
   expiration_date?: string;
+  permissions?: string[]; // lista de permission IDs a asignar al rol
 };
 
 /** Campos modificables de un usuario; todos opcionales (PATCH parcial). */
@@ -36,6 +43,7 @@ export type CambiosUsuario = Partial<{
   expiration_date: string;
   reset_password: boolean;
   reset_security_questions: boolean;
+  permissions?: string[]; // lista de permission IDs a asignar al rol
 }>;
 
 /** Respuesta de crear/actualizar: el backend devuelve la clave temporal solo
@@ -53,6 +61,7 @@ export function mensajeDeError(err: unknown, porDefecto = ''): string {
 export function useUsuarios() {
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
+  const [permissions, setPermissions] = useState<Permission[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -82,12 +91,70 @@ export function useUsuarios() {
     }
   }, []);
 
+  /** Carga todos los permisos disponibles en el sistema. */
+  const fetchPermissions = useCallback(async () => {
+    try {
+      const res = await fetch('/api/permissions', FETCH_OPTS);
+      if (!res.ok) throw new Error('Error al cargar permisos');
+      const data: Permission[] = await res.json();
+      setPermissions(data);
+      return data;
+    } catch (err) {
+      console.error(err);
+      return [] as Permission[];
+    }
+  }, []);
+
+  /** Carga los permisos actuales asignados a un rol específico. */
+  const fetchRolePermissions = useCallback(async (roleId: string): Promise<Permission[]> => {
+    try {
+      const res = await fetch(`/api/role-permissions/role/${roleId}`, FETCH_OPTS);
+      if (!res.ok) throw new Error('Error al cargar permisos del rol');
+      const data = await res.json();
+      // El backend devuelve RolePermission[], cada uno con permission_id.
+      // Necesitamos cruzar con los permisos para obtener el nombre.
+      return data as Permission[];
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  }, []);
+
+  /** Asigna un permiso a un rol. */
+  const assignPermissionToRole = useCallback(async (roleId: string, permissionId: string): Promise<void> => {
+    const res = await fetch('/api/role-permissions', {
+      ...FETCH_OPTS,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role_id: roleId, permission_id: permissionId }),
+    });
+    if (!res.ok) {
+      const errData = await res.json();
+      throw new Error(errData.error || 'Error al asignar permiso');
+    }
+  }, []);
+
+  /** Revoca un permiso de un rol. */
+  const revokePermissionFromRole = useCallback(async (roleId: string, permissionId: string): Promise<void> => {
+    const res = await fetch('/api/role-permissions', {
+      ...FETCH_OPTS,
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role_id: roleId, permission_id: permissionId }),
+    });
+    if (!res.ok) {
+      const errData = await res.json();
+      throw new Error(errData.error || 'Error al revocar permiso');
+    }
+  }, []);
+
   const createUser = async (data: NuevoUsuario): Promise<RespuestaUsuario> => {
+    const { permissions: _permissions, ...rest } = data;
     const res = await fetch('/api/users', {
       ...FETCH_OPTS,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+      body: JSON.stringify(rest),
     });
     if (!res.ok) {
       const errData = await res.json();
@@ -99,11 +166,12 @@ export function useUsuarios() {
   };
 
   const updateUser = async (id: string, data: CambiosUsuario): Promise<RespuestaUsuario> => {
+    const { permissions: _permissions, ...rest } = data;
     const res = await fetch(`/api/users/${id}`, {
       ...FETCH_OPTS,
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+      body: JSON.stringify(rest),
     });
     if (!res.ok) {
       const errData = await res.json();
@@ -126,10 +194,15 @@ export function useUsuarios() {
   return {
     users,
     roles,
+    permissions,
     loading,
     error,
     fetchUsers,
     fetchRoles,
+    fetchPermissions,
+    fetchRolePermissions,
+    assignPermissionToRole,
+    revokePermissionFromRole,
     createUser,
     updateUser,
     deleteUser,

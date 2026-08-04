@@ -33,6 +33,19 @@ export async function middleware(request: NextRequest) {
 
   const isAdminRole = role === 'Superadmin' || role === 'Administrador';
 
+  // Redirecciones automáticas para alias comunes de login hacia /admin/auth/login
+  if (
+    pathname === '/login' ||
+    pathname === '/admin/login' ||
+    pathname === '/auth/login' ||
+    pathname === '/admin/auth'
+  ) {
+    const redirectUrl = new URL('/admin/auth/login', request.url);
+    const search = request.nextUrl.search;
+    if (search) redirectUrl.search = search;
+    return NextResponse.redirect(redirectUrl);
+  }
+
   // Login page: solo auto-redirigimos a admins con sesión válida (van directo al dashboard).
   // Editores u otros roles ven el formulario/selector post-login (el propio page.tsx enruta).
   if (pathname === '/admin/auth/login') {
@@ -61,6 +74,9 @@ export async function middleware(request: NextRequest) {
   // /admin/dashboard/* — solo Superadmin y Administrador pueden acceder
   if (pathname.startsWith('/admin/dashboard')) {
     if (!isAdminRole) {
+      if (role === 'Editor') {
+        return NextResponse.redirect(new URL('/admin/editor', request.url));
+      }
       return loginRedirect();
     }
     // Must change password or setup security questions
@@ -90,6 +106,13 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/admin/auth/cambiar-contrasena', request.url));
     }
   }
+
+  // [INFRAESTRUCTURA] Permiso acceso.sitio
+  // Cuando el sitio web tenga rutas protegidas para usuarios de sitio
+  // (e.g. /portal/*, /mi-cuenta/*), agregar aquí la validación contra
+  // el JWT de sitio-user: el payload incluirá el campo 'permissions'
+  // o se comprobará contra el permiso 'acceso.sitio'.
+  // Por ahora el sitio web es enteramente público, no se aplica ningún bloqueo.
 
   return NextResponse.next();
 }

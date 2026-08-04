@@ -9,6 +9,30 @@ const nextConfig = {
   turbopack: {
     root: path.resolve(__dirname, '..')
   },
+  async redirects() {
+    return [
+      {
+        source: '/login',
+        destination: '/admin/auth/login',
+        permanent: false,
+      },
+      {
+        source: '/admin/login',
+        destination: '/admin/auth/login',
+        permanent: false,
+      },
+      {
+        source: '/auth/login',
+        destination: '/admin/auth/login',
+        permanent: false,
+      },
+      {
+        source: '/admin/auth',
+        destination: '/admin/auth/login',
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
