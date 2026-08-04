@@ -421,35 +421,19 @@ export default function UsuariosView() {
             <input type="date" value={expirationDate} onChange={e => setExpirationDate(e.target.value)} className="olo-date-input" />
           </div>
 
-          {/* Permisos asignados — tarjeta de configuración compacta (abre modal) */}
-          <div className="pt-2">
-            <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-3">Permisos de acceso (No funcional aún)</label>
-            <div className="space-y-3">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input type="radio" name="permisos_tipo" defaultChecked className="mt-0.5 size-4 rounded-full border-zinc-300 text-zinc-900 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:checked:bg-white dark:focus:ring-white" />
-                <div>
-                  <span className="block text-sm font-medium text-zinc-900 dark:text-[#f6f6f6]">Acceso a Intranet</span>
-                  <span className="block text-xs text-zinc-500 dark:text-[#94a3b8]">Permite ver y consumir contenido, pero no administrarlo.</span>
-                </div>
-              </label>
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input type="radio" name="permisos_tipo" className="mt-0.5 size-4 rounded-full border-zinc-300 text-zinc-900 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:checked:bg-white dark:focus:ring-white" />
-                <div>
-                  <span className="block text-sm font-medium text-zinc-900 dark:text-[#f6f6f6]">Acceso al Panel Administrativo</span>
-                  <span className="block text-xs text-zinc-500 dark:text-[#94a3b8]">Permite gestionar contenido, usuarios y configuraciones.</span>
-                </div>
-              </label>
-            </div>
-              <button
+          {/* Permisos asignados — abre modal */}
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">Permisos</label>
+            <div>
+              <Button
                 type="button"
                 onClick={() => setShowPermissionsModal(true)}
                 disabled={!roleId || loadingRolePerms}
-                className="flex items-center gap-1.5 rounded-full border border-[#bfe5c8] bg-[#eaf7ee] px-4 py-1.5 text-xs font-semibold text-emerald-900 shadow-xs transition-all hover:bg-[#ddf2e3] hover:border-[#a8dcb4] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed dark:border-emerald-700/80 dark:bg-[#162720] dark:text-emerald-300 dark:hover:bg-[#1a3328]"
               >
-                <span>Configurar</span>
-                <span className="text-sm font-bold">→</span>
-              </button>
+                Configurar
+              </Button>
             </div>
+          </div>
           
 
           {editingUserId && (
@@ -491,19 +475,11 @@ export default function UsuariosView() {
           >
             {/* Header del Modal */}
             <div className="flex items-center justify-between border-b border-zinc-100 px-6 py-5 dark:border-zinc-800/80">
-              <div className="flex items-center gap-3">
-                <div className="flex size-10 items-center justify-center rounded-xl border border-emerald-200/80 bg-[#f4fbf6] text-emerald-800 shadow-xs dark:border-emerald-800 dark:bg-[#11231a] dark:text-emerald-400">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-zinc-900 dark:text-[#f6f6f6]">Configurar Permisos</h3>
-                  <p className="text-xs text-zinc-500 dark:text-[#94a3b8]">
-                    Rol: <strong className="text-zinc-700 dark:text-zinc-300">"{selectedRoleName || 'Sin rol seleccionado'}"</strong>
-                  </p>
-                </div>
+              <div>
+                <h3 className="text-lg font-bold text-zinc-900 dark:text-[#f6f6f6]">Configurar Permisos</h3>
+                <p className="text-xs text-zinc-500 dark:text-[#94a3b8]">
+                  Rol: <strong className="text-zinc-700 dark:text-zinc-300">"{selectedRoleName || 'Sin rol seleccionado'}"</strong>
+                </p>
               </div>
 
               <div className="flex items-center gap-2">
@@ -556,7 +532,6 @@ export default function UsuariosView() {
                       {/* Cabecera de Categoría */}
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
-                          <span className="size-2 rounded-full bg-emerald-600 dark:bg-emerald-400" />
                           <span className="text-xs font-bold tracking-wider text-emerald-950 dark:text-emerald-300">
                             {category.name}
                           </span>
