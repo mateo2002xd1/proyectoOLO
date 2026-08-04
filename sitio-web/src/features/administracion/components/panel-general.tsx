@@ -76,7 +76,7 @@ export function PanelGeneralLayout({ children, userProfile }: { children: React.
           <NavbarSection>
             <Dropdown>
               <DropdownMenu className="min-w-64" anchor="bottom end">
-                <DropdownItem href="/admin/dashboard/mi-perfil">
+                <DropdownItem href="/admin/mi-perfil">
                   <UserIcon />
                   <DropdownLabel>Mi perfil</DropdownLabel>
                 </DropdownItem>
@@ -163,7 +163,7 @@ export function PanelGeneralLayout({ children, userProfile }: { children: React.
                 <ChevronUpIcon />
               </DropdownButton>
               <DropdownMenu className="min-w-64" anchor="top start">
-                <DropdownItem href="/admin/dashboard/mi-perfil">
+                <DropdownItem href="/admin/mi-perfil">
                   <UserIcon />
                   <DropdownLabel>Mi perfil</DropdownLabel>
                 </DropdownItem>

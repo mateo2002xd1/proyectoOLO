@@ -591,6 +591,12 @@ input {
   z-index: 1000;
   max-height: 300px;
   overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.intranet-search-dropdown::-webkit-scrollbar {
+  display: none;
 }
 
 .intranet-search-result-item {
