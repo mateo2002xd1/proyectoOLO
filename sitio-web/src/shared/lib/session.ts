@@ -35,7 +35,7 @@ export async function getSessionPermissionsSnapshot(): Promise<{ role: string | 
     const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
     if (!token) return { role: session.role, permissions: [] };
 
-    const res = await fetch(`${process.env.BACKEND_URL || 'http://localhost:4000'}/api/auth/me`, {
+    const res = await fetch(`${process.env.BACKEND_URL || 'http://localhost:4000'}/api/me`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
