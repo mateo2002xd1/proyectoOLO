@@ -79,6 +79,42 @@ const MENU = [
   },
 ];
 
+/**
+ * El pie tal como se ve hoy. Se escribe entero aquí por lo mismo que el menú: el
+ * layout lee estas props de la base sin pasar por Puck.
+ *
+ * Antes el bloque se guardaba SIN props porque su contenido estaba escrito a mano
+ * dentro del componente y no había nada que guardar. Ahora es editable, y dejarlo
+ * vacío haría que el editor abriera el pie con los campos en blanco aunque en
+ * pantalla se viera lleno (los valores por defecto del componente).
+ */
+const PIE = {
+  logos: [
+    { src: '/assets/svg/logo-sena.svg', alt: 'Logo SENA', ancho: 56 },
+    { src: '/assets/svg/olo-logo-horizontal.svg', alt: 'Logo Observatorio', ancho: 150 },
+  ],
+  columnas: [
+    {
+      titulo: 'Observatorio Laboral y Ocupacional SENA',
+      lineas: [
+        { texto: 'Dirección: Calle 57 No. 8 - 69 Bogotá D.C. (Cundinamarca), Colombia.' },
+        { texto: 'Horario de atención: Lunes a viernes de 8:00 am a 5:30 pm' },
+        { texto: '@SENACOMUNICA @SENATV', separada: true },
+      ],
+    },
+    {
+      titulo: 'Contacto:',
+      lineas: [
+        { texto: 'PBX (+57) 1 5461500 IP: 13037' },
+        { texto: 'olaboryocupacional@sena.edu.co' },
+        { texto: 'Política de seguridad y privacidad de la información', url: '#' },
+        { texto: 'Política de Tratamiento para Protección de Datos Personales', url: '#' },
+        { texto: 'Mapa del sitio', url: '#' },
+      ],
+    },
+  ],
+};
+
 const CONTENIDO_PLANTILLA: Contenido = {
   root: { props: {} },
   zones: {},
@@ -92,7 +128,7 @@ const CONTENIDO_PLANTILLA: Contenido = {
         menuItems: MENU,
       },
     },
-    { type: 'IntranetFooter', props: { id: 'plantilla-footer' } },
+    { type: 'IntranetFooter', props: { id: 'plantilla-footer', ...PIE } },
   ],
 };
 

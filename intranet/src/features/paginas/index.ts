@@ -20,6 +20,7 @@ export { PuckEditorWrapper } from "./components/puck-editor-wrapper";
 export { EditorJsWrapper } from "./components/editorjs-wrapper";
 export { ClientPuckRender } from "./components/client-puck-render";
 export { PlantillaEditButton } from "./components/plantilla-edit-button";
+export { MarcoSecciones } from "./components/marco-secciones";
 
 // Semillas de contenido inicial (mesa de trabajo)
 export { getPageSeed, isEmptyContent } from "./lib/page-seeds";

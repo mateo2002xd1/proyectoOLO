@@ -1,5 +1,10 @@
 import { notFound } from 'next/navigation';
-import { ClientPuckRender, obtenerVersionEditable } from '@/features/paginas';
+import {
+  ClientPuckRender,
+  MarcoSecciones,
+  obtenerVersionEditable,
+  SLUG_PLANTILLA,
+} from '@/features/paginas';
 import { puedeEditarPaginas, cabecerasConSesion } from '@/shared/lib/sesion';
 
 export const metadata = {
@@ -16,6 +21,11 @@ export const metadata = {
  *
  * Se entra desde el botón «Ver» de la cola de revisión del panel. No hace falta
  * volver a identificarse: la sesión es la misma para las dos aplicaciones.
+ *
+ * Vive fuera de `app/(secciones)/` para poder elegir si lleva marco o no. Dentro
+ * del grupo lo llevaba siempre, y previsualizar la plantilla salía con el menú y
+ * el pie duplicados: los publicados que ponía el layout, y dentro los del
+ * borrador que se estaba revisando.
  */
 export default async function PreviewPage({
   params,
@@ -33,6 +43,12 @@ export default async function PreviewPage({
   // todavía no se ve en la página real.
   const version = await obtenerVersionEditable(slug, await cabecerasConSesion());
 
+  // El borrador de la plantilla ES el menú y el pie: rodearlo del marco los
+  // pintaría dos veces y no se sabría cuál es el que se está revisando. Cualquier
+  // otra sección sí va dentro, que es como se verá una vez publicada.
+  const esPlantilla = slug === SLUG_PLANTILLA;
+  const contenido = <ClientPuckRender data={version.contenido} />;
+
   return (
     <div className="preview-page">
       <div className="preview-aviso">
@@ -42,11 +58,13 @@ export default async function PreviewPage({
           {version.estado ? ` · ${version.estado.replace('_', ' ')}` : ''}
         </span>
         <span className="preview-aviso-nota">
-          Así quedará la página. Para publicarla, vuelve a la cola de revisión.
+          {esPlantilla
+            ? 'Así quedarán el menú y el pie en todas las secciones.'
+            : 'Así quedará la página. Para publicarla, vuelve a la cola de revisión.'}
         </span>
       </div>
 
-      <ClientPuckRender data={version.contenido} />
+      {esPlantilla ? contenido : <MarcoSecciones>{contenido}</MarcoSecciones>}
     </div>
   );
 }
