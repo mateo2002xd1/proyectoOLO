@@ -29,8 +29,8 @@
   --color-brand-blue: #1face3;              /* 2.60:1 */
 
   /* Interactivo — cumplen AA con texto blanco */
-  --color-brand-interactive: #2a7d00;       /* 5.21:1 */
-  --color-brand-interactive-hover: #1f5c00; /* 8.11:1 */
+  --color-brand-interactive: #7DB828;       /* 5.21:1 */
+  --color-brand-interactive-hover: #63a00d; /* 8.11:1 */
   --color-brand-blue-dark: #0b6d8f;         /* 5.84:1 */
 
   /* Anillo de foco. SC 1.4.11 exige 3:1; se usa a opacidad plena,
@@ -151,11 +151,21 @@
 }
 
 .dark {
-  --background: #0d1117;
-  --foreground: #e6e8f0;
-  --surface: #161b27;
-  --line: rgba(45, 54, 73, 0.7);
-  --muted: rgba(136, 150, 167, 0.4);
+  --background: #0b1121;
+  --foreground: #f6f6f6;
+  --surface: #131b2f;
+  --line: rgba(30, 41, 59, 0.7);
+  --muted: rgba(148, 163, 184, 0.4);
+}
+
+/* Fix browser autofill styling in dark mode */
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover, 
+.dark input:-webkit-autofill:focus, 
+.dark input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #0b1121 inset !important;
+  -webkit-text-fill-color: #f6f6f6 !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 /* --- Reset --- */
@@ -1631,17 +1641,91 @@ input[type="date"].olo-date-input[value=""] {
   z-index: 50;
 }
 
-/* ─── Primitivo de maquetación: Grid / Columnas (@olo/blocks-renderer) ───
-   El número de columnas y la separación llegan como variables CSS inline
-   desde el `render` del primitivo; aquí se aplican y se colapsan en móvil. */
+/* ─── Maquetación del editor (@olo/blocks-renderer) ─────────────────────────
+   Las variables llegan inline desde el `render` de cada primitivo y desde
+   `conCaja()`; aquí solo se aplican. El reparto es a propósito: la app decide
+   cómo se ve cada medida en cada tamaño de pantalla, y el paquete se limita a
+   decir cuánto espacio pidió quien editó. Nada de esto se puede resolver con
+   estilos inline, porque el colapso en móvil necesita media queries.
+
+   Este bloque está duplicado en el globals.css de sitio-web y en el de
+   intranet: el paquete comparte componentes, no hojas de estilo. Si se toca
+   aquí, tocar también allí. */
+
+/* Espaciado y ancho de cualquier bloque (conCaja) */
+.olo-caja {
+  width: 100%;
+  padding-top: var(--olo-caja-interior-y, 0px);
+  padding-bottom: var(--olo-caja-interior-y, 0px);
+  padding-left: var(--olo-caja-interior-x, 0px);
+  padding-right: var(--olo-caja-interior-x, 0px);
+  margin-top: var(--olo-caja-superior, 0px);
+  margin-bottom: var(--olo-caja-inferior, 0px);
+  max-width: var(--olo-caja-ancho, none);
+  /* Sin ancho máximo estos `auto` no hacen nada; con él, centran, que es lo
+     que se espera al estrechar un bloque. */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.olo-caja--izquierda {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.olo-caja--derecha {
+  margin-left: auto;
+  margin-right: 0;
+}
+
+/* Un espaciado amplio en escritorio deja el contenido en una columna
+   asfixiada en móvil. Se reduce solo, en vez de pedir que se configure aparte
+   cada tamaño de pantalla. */
+@media (max-width: 640px) {
+  .olo-caja {
+    padding-top: calc(var(--olo-caja-interior-y, 0px) * 0.6);
+    padding-bottom: calc(var(--olo-caja-interior-y, 0px) * 0.6);
+    padding-left: calc(var(--olo-caja-interior-x, 0px) * 0.6);
+    padding-right: calc(var(--olo-caja-interior-x, 0px) * 0.6);
+    margin-top: calc(var(--olo-caja-superior, 0px) * 0.6);
+    margin-bottom: calc(var(--olo-caja-inferior, 0px) * 0.6);
+  }
+}
+
+/* Columnas (primitivo Grid) */
 .olo-grid {
   display: grid;
   grid-template-columns: repeat(var(--olo-grid-cols, 3), minmax(0, 1fr));
   gap: var(--olo-grid-gap, 24px);
+  align-items: var(--olo-grid-align, stretch);
   width: 100%;
 }
 @media (max-width: 640px) {
   .olo-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Fila o columna flexible (primitivo Flex) */
+.olo-flex {
+  display: flex;
+  width: 100%;
+  flex-direction: var(--olo-flex-dir, row);
+  justify-content: var(--olo-flex-justify, flex-start);
+  align-items: var(--olo-flex-align, stretch);
+  gap: var(--olo-flex-gap, 16px);
+  flex-wrap: var(--olo-flex-wrap, wrap);
+}
+
+/* Sin esto un hijo con texto largo se niega a encogerse por debajo de su
+   contenido y desborda la fila. */
+.olo-flex > * {
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .olo-flex--apilar {
+    flex-direction: column;
+    align-items: stretch;
   }
 }

@@ -11,7 +11,7 @@ interface SidebarProps {
 export function Sidebar({ children, className = '' }: SidebarProps) {
   return (
     <aside
-      className={`flex h-full w-64 flex-col border-r border-zinc-200 bg-[#F3F3F3] dark:border-zinc-700 dark:bg-zinc-900 ${className}`}
+      className={`flex h-full w-64 flex-col border-r border-zinc-200 bg-[#F3F3F3] dark:border-[#1e293b] dark:bg-[#131b2f] ${className}`}
     >
       {children}
     </aside>
@@ -25,7 +25,7 @@ interface SidebarHeaderProps {
 
 export function SidebarHeader({ children, className = '' }: SidebarHeaderProps) {
   return (
-    <div className={`border-b border-zinc-200 px-4 py-3 dark:border-zinc-700 ${className}`}>
+    <div className={`border-b border-zinc-200 px-4 py-3 dark:border-[#1e293b] ${className}`}>
       {children}
     </div>
   );
@@ -49,7 +49,7 @@ interface SidebarFooterProps {
 
 export function SidebarFooter({ children, className = '' }: SidebarFooterProps) {
   return (
-    <div className={`border-t border-zinc-200 px-3 py-3 dark:border-zinc-700 ${className}`}>
+    <div className={`border-t border-zinc-200 px-3 py-3 dark:border-[#1e293b] ${className}`}>
       {children}
     </div>
   );
@@ -72,8 +72,8 @@ export function SidebarItem({
 }: SidebarItemProps) {
   const baseClasses = `group flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition [&>svg]:size-5 [&>svg]:shrink-0 ${
     current
-      ? 'bg-zinc-100 font-semibold text-zinc-900 dark:bg-zinc-800 dark:text-white [&>svg]:text-zinc-900 dark:[&>svg]:text-white'
-      : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white [&>svg]:text-zinc-500 dark:[&>svg]:text-zinc-400 group-hover:[&>svg]:text-zinc-900 dark:group-hover:[&>svg]:text-white'
+      ? 'bg-zinc-100 font-semibold text-zinc-900 dark:bg-brand-interactive/20 dark:text-brand-interactive [&>svg]:text-zinc-900 dark:[&>svg]:text-brand-interactive'
+      : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive [&>svg]:text-zinc-500 dark:[&>svg]:text-slate-400 group-hover:[&>svg]:text-zinc-900 dark:group-hover:[&>svg]:text-brand-interactive'
   } ${className}`;
 
   if (href) {
@@ -117,7 +117,7 @@ interface SidebarHeadingProps {
 export function SidebarHeading({ children, className = '' }: SidebarHeadingProps) {
   return (
     <p
-      className={`px-3 pb-1 pt-4 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 ${className}`}
+      className={`px-3 pb-1 pt-4 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-[#94a3b8] ${className}`}
     >
       {children}
     </p>

@@ -41,7 +41,7 @@ La necesidad central, traducida a requisitos:
 
 ## La solución en una página
 
-Una plataforma de **tres capas** bajo un modelo **CMS headless con composición visual**:
+Una plataforma de **tres capas** bajo un modelo **composición visual**:
 
 | Capa | Qué es | Tecnología | Puerto |
 |---|---|---|---|

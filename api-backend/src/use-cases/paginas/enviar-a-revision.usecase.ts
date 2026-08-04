@@ -1,7 +1,8 @@
 import { PaginaRepository } from '../../repositories/pagina.repository';
+import type { Ambito } from '../../shared/ambito';
 
-export const enviarARevision = async (slug: string) => {
-  const pagina = await PaginaRepository.findBySlug(slug);
+export const enviarARevision = async (slug: string, ambito: Ambito) => {
+  const pagina = await PaginaRepository.findBySlug(slug, ambito);
   if (!pagina) throw new Error('Página no encontrada');
 
   const ultimaVersion = await PaginaRepository.findVersionPorEstado(pagina.id, 'borrador');

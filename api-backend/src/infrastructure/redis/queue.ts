@@ -1,9 +1,10 @@
 import { Queue, Worker, Job } from 'bullmq';
-import { getRedis } from './index';
+import { crearLoggerDeErrorConThrottle } from './index';
 
 const connection = {
   host: process.env.REDIS_HOST || '127.0.0.1',
   port: parseInt(process.env.REDIS_PORT || '6379', 10),
+  retryStrategy: (times: number) => Math.min(times * 500, 10000),
 };
 
 export const heavyJobsQueue = new Queue('heavy-jobs', { connection });
@@ -25,13 +26,9 @@ export const setupWorker = () => {
     console.error(`El trabajo ${job?.id} ha fallado:`, err);
   });
 
-  worker.on('error', (err) => {
-    console.error(`[Worker Error] (Posible fallo de Redis):`, err.message);
-  });
+  worker.on('error', crearLoggerDeErrorConThrottle('Worker Error'));
 
   return worker;
 };
 
-heavyJobsQueue.on('error', (err) => {
-  console.error(`[Queue Error] (Posible fallo de Redis):`, err.message);
-});
+heavyJobsQueue.on('error', crearLoggerDeErrorConThrottle('Queue Error'));

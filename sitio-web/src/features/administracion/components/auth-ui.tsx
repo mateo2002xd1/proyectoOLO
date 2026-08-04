@@ -13,17 +13,17 @@ import Link from 'next/link';
 
 /* ---------- Clases base ---------- */
 export const authCardClass =
-  'w-full max-w-[400px] rounded-xl bg-white px-9 py-10 shadow-[0_20px_60px_rgba(0,0,0,0.2)]';
+  'w-full max-w-[400px] rounded-xl bg-white dark:bg-[#131b2f] px-9 py-10 shadow-[0_20px_60px_rgba(0,0,0,0.2)] dark:shadow-none dark:border dark:border-[#1e293b]';
 
-export const authLabelClass = 'mb-1.5 block text-sm font-medium text-gray-700';
+export const authLabelClass = 'mb-1.5 block text-sm font-medium text-gray-700 dark:text-[#f6f6f6]';
 
 export const authInputClass = (hasError: boolean) =>
   [
-    'w-full rounded-lg border px-3 py-2.5 text-sm text-gray-900',
-    'transition-colors placeholder:text-gray-400 focus:outline-none focus:ring-2',
+    'w-full rounded-lg border px-3 py-2.5 text-sm text-gray-900 dark:text-[#f6f6f6] dark:bg-[#0b1121]',
+    'transition-colors placeholder:text-gray-400 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2',
     hasError
       ? 'border-red-400 focus:border-red-500 focus:ring-red-500/30'
-      : 'border-gray-300 focus:border-brand-focus focus:ring-brand-focus',
+      : 'border-gray-300 dark:border-[#1e293b] focus:border-brand-focus focus:ring-brand-focus',
   ].join(' ');
 
 export const authErrorTextClass = 'mt-1 text-xs text-red-600';
@@ -50,7 +50,7 @@ export function AuthCardHeader({
   return (
     <div className={`text-center ${className}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/asset/logos/olo-logo-none.svg" alt="OLO Logo" className="mx-auto mb-3 h-auto w-[60px]" />
+      <img src="/asset/logos/olo-logo-none.svg" alt="OLO Logo" className="mx-auto mb-3 h-auto w-[60px] dark:brightness-0 dark:invert dark:opacity-[0.96]" />
       {children}
     </div>
   );
@@ -59,7 +59,7 @@ export function AuthCardHeader({
 /** Banda roja para errores que no pertenecen a un campo concreto. */
 export function AuthGeneralError({ children }: { children: ReactNode }) {
   return (
-    <div className="mb-4 rounded-lg border border-red-300 bg-red-50 px-3.5 py-2.5 text-sm text-red-600">
+    <div className="mb-4 rounded-lg border border-red-300 bg-red-50 px-3.5 py-2.5 text-sm text-red-600 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-400">
       {children}
     </div>
   );
@@ -122,7 +122,7 @@ export function PasswordField({
           type="button"
           onClick={() => setShow((v) => !v)}
           aria-label={show ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-          className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-gray-500 transition-colors hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-focus"
+          className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-gray-500 dark:text-slate-400 transition-colors hover:text-gray-700 dark:hover:text-[#f6f6f6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-focus"
         >
           <EyeIcon crossed={show} />
         </button>
@@ -140,7 +140,7 @@ export function BackToSiteLink({ className = '' }: { className?: string }) {
     <div className={`text-center ${className}`}>
       <Link
         href="/"
-        className="inline-flex items-center justify-center gap-2 text-sm font-medium text-gray-600 transition hover:-translate-y-px hover:text-gray-900"
+        className="inline-flex items-center justify-center gap-2 text-sm font-medium text-gray-600 dark:text-slate-400 transition hover:-translate-y-px hover:text-gray-900 dark:hover:text-[#f6f6f6]"
       >
         <svg
           width="18"

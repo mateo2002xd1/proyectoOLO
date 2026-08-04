@@ -81,7 +81,7 @@ export function useAuth() {
       await authApi.logout();
     } finally {
       setUser(null);
-      router.push('/login');
+      router.push('/auth');
     }
   };
 

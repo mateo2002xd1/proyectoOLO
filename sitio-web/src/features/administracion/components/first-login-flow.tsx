@@ -151,7 +151,7 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
           olvidas tu clave en el futuro.
         </p>
         <Link
-          href="/login"
+          href="/admin/auth/login"
           className="block rounded-xl bg-brand-interactive px-4 py-2.5 text-center text-sm font-semibold text-white shadow-[0_2px_8px_-2px_rgba(42,125,0,0.4)] transition hover:bg-brand-interactive-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-focus"
         >
           Iniciar sesión

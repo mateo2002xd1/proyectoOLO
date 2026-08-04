@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useSyncExternalStore } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -36,9 +36,9 @@ import {
   InboxIcon,
   MagnifyingGlassIcon,
   QuestionMarkCircleIcon,
-  SunIcon,
-  MoonIcon,
 } from '@heroicons/react/20/solid';
+import { ThemeToggle } from '@/shared/ui/molecules/theme-toggle';
+import { enlaceAlEditor } from '@/features/paginas';
 
 /** Editor de la intranet: configurable por entorno, nunca fijo a localhost. */
 const INTRANET_EDITOR_URL =
@@ -50,65 +50,42 @@ type PanelData = {
   recentActivity: { id: string; action: string; user: string; date: string; description: string }[];
 };
 
-/* ---------- Tema claro/oscuro ----------
-   La clase `dark` del <html> es la única fuente de verdad. En vez de
-   duplicarla en un useState y sincronizarla con un efecto, la leemos con
-   useSyncExternalStore: así el toggle no se desincroniza si algo más
-   cambia la clase, y no hay render extra al montar. */
-function subscribeToTheme(onChange: () => void) {
-  const observer = new MutationObserver(onChange);
-  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-  return () => observer.disconnect();
-}
-
-const getThemeSnapshot = () => document.documentElement.classList.contains('dark');
-/** En el servidor no hay DOM; asumimos tema claro para que la marca inicial coincida. */
-const getThemeServerSnapshot = () => false;
-
 export function PanelGeneralLayout({ children, userProfile }: { children: React.ReactNode; userProfile?: { name: string; email: string } }) {
   const router = useRouter();
-  const isDark = useSyncExternalStore(subscribeToTheme, getThemeSnapshot, getThemeServerSnapshot);
-
-  const toggleTheme = () => {
-    const isDarkNow = !document.documentElement.classList.contains('dark');
-    document.documentElement.classList.toggle('dark', isDarkNow);
-    localStorage.setItem('olo-theme', isDarkNow ? 'dark' : 'light');
-  };
 
   const handleLogout = useCallback(async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
-    router.push('/login');
+    router.push('/admin/auth/login');
   }, [router]);
 
   return (
-    <SidebarLayout
+    <>
+      <ThemeToggle />
+      <SidebarLayout
       navbar={
         <Navbar>
           <NavbarSection>
-            <NavbarItem href="/dashboard/buscar" aria-label="Buscar">
+            <NavbarItem href="/admin/dashboard/buscar" aria-label="Buscar">
               <MagnifyingGlassIcon />
             </NavbarItem>
-            <NavbarItem href="/dashboard/inbox" aria-label="Bandeja de entrada">
+            <NavbarItem href="/admin/dashboard/inbox" aria-label="Bandeja de entrada">
               <InboxIcon />
             </NavbarItem>
-            <button onClick={toggleTheme} className="p-2 ml-2 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white" aria-label="Cambiar tema">
-              {isDark ? <SunIcon className="size-5" /> : <MoonIcon className="size-5" />}
-            </button>
           </NavbarSection>
           <NavbarSpacer />
           <NavbarSection>
             <Dropdown>
               <DropdownMenu className="min-w-64" anchor="bottom end">
-                <DropdownItem href="/dashboard/mi-perfil">
+                <DropdownItem href="/admin/dashboard/mi-perfil">
                   <UserIcon />
                   <DropdownLabel>Mi perfil</DropdownLabel>
                 </DropdownItem>
-                <DropdownItem href="/dashboard/configuracion">
+                <DropdownItem href="/admin/dashboard/configuracion">
                   <Cog8ToothIcon />
                   <DropdownLabel>Configuración</DropdownLabel>
                 </DropdownItem>
                 <DropdownDivider />
-                <DropdownItem href="/dashboard/privacidad">
+                <DropdownItem href="/admin/dashboard/privacidad">
                   <ShieldCheckIcon />
                   <DropdownLabel>Política de privacidad</DropdownLabel>
                 </DropdownItem>
@@ -128,34 +105,31 @@ export function PanelGeneralLayout({ children, userProfile }: { children: React.
             <div className="flex items-center justify-between w-full">
               {/* SVG estático servido desde /public: next/image no aporta optimización aquí. */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/asset/logos/olo-logo-horizontal.svg" alt="OLO" className="h-13" />
-              <button onClick={toggleTheme} className="p-2 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white" aria-label="Cambiar tema">
-                {isDark ? <SunIcon className="size-5" /> : <MoonIcon className="size-5" />}
-              </button>
+              <img src="/asset/logos/olo-logo-horizontal.svg" alt="OLO" className="h-13 pb-3 dark:brightness-0 dark:invert" />
             </div>
           </SidebarHeader>
           <SidebarBody>
             <SidebarSection>
-              <SidebarItem href="/dashboard">
+              <SidebarItem href="/admin/dashboard">
                 <HomeIcon />
                 <SidebarLabel>Dashboard</SidebarLabel>
               </SidebarItem>
-              <SidebarItem href="/users">
+              <SidebarItem href="/admin/users">
                 <UserIcon />
                 <SidebarLabel>Usuarios</SidebarLabel>
               </SidebarItem>
-              <SidebarItem href="/revision">
+              <SidebarItem href="/admin/revision">
                 <ClipboardDocumentCheckIcon />
                 <SidebarLabel>Páginas en revisión</SidebarLabel>
               </SidebarItem>
-              <SidebarItem href="/dashboard/auditoria">
+              <SidebarItem href="/admin/auditoria">
                 <ShieldCheckIcon />
                 <SidebarLabel>Auditoría</SidebarLabel>
               </SidebarItem>
             </SidebarSection>
             <SidebarSpacer />
             <SidebarSection>
-              <SidebarItem href="/dashboard/soporte">
+              <SidebarItem href="/admin/dashboard/soporte">
                 <QuestionMarkCircleIcon />
                 <SidebarLabel>Soporte</SidebarLabel>
               </SidebarItem>
@@ -163,11 +137,11 @@ export function PanelGeneralLayout({ children, userProfile }: { children: React.
           </SidebarBody>
 
           <SidebarSection className="max-lg:hidden mx-2 mb">
-            <SidebarItem href="/dashboard/buscar">
+            <SidebarItem href="/admin/dashboard/buscar">
               <MagnifyingGlassIcon />
               <SidebarLabel>Buscar</SidebarLabel>
             </SidebarItem>
-            <SidebarItem href="/dashboard/inbox">
+            <SidebarItem href="/admin/dashboard/inbox">
               <InboxIcon />
               <SidebarLabel>Bandeja de entrada</SidebarLabel>
             </SidebarItem>
@@ -178,10 +152,10 @@ export function PanelGeneralLayout({ children, userProfile }: { children: React.
               <DropdownButton as={SidebarItem}>
                 <span className="flex min-w-0 flex-1 items-center gap-3 text-left">
                   <span className="min-w-0">
-                    <span className="block truncate text-sm/5 font-medium text-zinc-950 dark:text-white">
+                    <span className="block truncate text-sm/5 font-medium text-zinc-950 dark:text-[#f6f6f6]">
                       {userProfile?.name || 'Usuario'}
                     </span>
-                    <span className="block truncate text-xs/5 font-normal text-zinc-500 dark:text-zinc-400">
+                    <span className="block truncate text-xs/5 font-normal text-zinc-500 dark:text-[#94a3b8]">
                       {userProfile?.email || 'cargando...'}
                     </span>
                   </span>
@@ -189,16 +163,16 @@ export function PanelGeneralLayout({ children, userProfile }: { children: React.
                 <ChevronUpIcon />
               </DropdownButton>
               <DropdownMenu className="min-w-64" anchor="top start">
-                <DropdownItem href="/dashboard/mi-perfil">
+                <DropdownItem href="/admin/dashboard/mi-perfil">
                   <UserIcon />
                   <DropdownLabel>Mi perfil</DropdownLabel>
                 </DropdownItem>
-                <DropdownItem href="/dashboard/configuracion">
+                <DropdownItem href="/admin/dashboard/configuracion">
                   <Cog8ToothIcon />
                   <DropdownLabel>Configuración</DropdownLabel>
                 </DropdownItem>
                 <DropdownDivider />
-                <DropdownItem href="/dashboard/privacidad">
+                <DropdownItem href="/admin/dashboard/privacidad">
                   <ShieldCheckIcon />
                   <DropdownLabel>Política de privacidad</DropdownLabel>
                 </DropdownItem>
@@ -215,6 +189,7 @@ export function PanelGeneralLayout({ children, userProfile }: { children: React.
     >
       {children}
     </SidebarLayout>
+    </>
   );
 }
 
@@ -238,7 +213,7 @@ export function PanelGeneralDashboard() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-100 dark:bg-zinc-950">
+      <div className="flex min-h-screen items-center justify-center bg-zinc-100 dark:bg-[#0b1121]">
         <div className="flex flex-col items-center gap-4">
           <div className="size-10 animate-spin rounded-full border-4 border-zinc-300 border-t-zinc-600" />
           <p className="text-sm text-zinc-500">Cargando panel general...</p>
@@ -260,7 +235,7 @@ export function PanelGeneralDashboard() {
   return (
     <div className="p-6 lg:p-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-zinc-950 dark:text-white">Dashboard</h1>
+        <h1 className="text-2xl font-bold text-zinc-950 dark:text-[#f6f6f6]">Dashboard</h1>
           <p className="mt-1 text-sm text-zinc-500">
             Resumen de tareas pendientes y gestión del observatorio.
           </p>
@@ -269,13 +244,13 @@ export function PanelGeneralDashboard() {
         {/* Action Buttons for Editors */}
         <div className="mb-8 grid gap-4 sm:grid-cols-2">
           <Link
-            href="/editor/inicio"
-            className="group flex flex-col justify-center gap-1 rounded-xl border border-zinc-200 bg-white p-5 transition-all duration-200 ease-out hover:translate-x-1 hover:border-[#7DB829]/40 hover:bg-[#7DB829]/10 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-[#7DB829]/40 dark:hover:bg-[#7DB829]/10"
+            href={enlaceAlEditor('inicio', '/admin/dashboard')}
+            className="group flex flex-col justify-center gap-1 rounded-xl border border-zinc-200 bg-white p-5 transition-all duration-200 ease-out hover:translate-x-1 hover:border-[#7DB829]/40 hover:bg-[#7DB829]/10 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#7DB829]/40 dark:hover:bg-[#7DB829]/10"
           >
-            <h3 className="font-semibold text-zinc-950 group-hover:text-[#4C7A1C] dark:text-white dark:group-hover:text-[#9ED65C]">
+            <h3 className="font-semibold text-zinc-950 group-hover:text-[#4C7A1C] dark:text-[#f6f6f6] dark:group-hover:text-[#9ED65C]">
               Editar Sitio Web
             </h3>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">
               Abre el editor visual Puck para el sitio público principal
             </p>
           </Link>
@@ -284,12 +259,12 @@ export function PanelGeneralDashboard() {
             href={INTRANET_EDITOR_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex flex-col justify-center gap-1 rounded-xl border border-zinc-200 bg-white p-5 transition-all duration-200 ease-out hover:translate-x-1 hover:border-[#011A39]/40 hover:bg-[#011A39]/10 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-[#011A39]/40 dark:hover:bg-[#011A39]/20"
+            className="group flex flex-col justify-center gap-1 rounded-xl border border-zinc-200 bg-white p-5 transition-all duration-200 ease-out hover:translate-x-1 hover:border-[#011A39]/40 hover:bg-[#011A39]/10 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#011A39]/40 dark:hover:bg-[#011A39]/20"
           >
-            <h3 className="font-semibold text-zinc-950 group-hover:text-[#011A39] dark:text-white dark:group-hover:text-[#8FA8C9]">
+            <h3 className="font-semibold text-zinc-950 group-hover:text-[#011A39] dark:text-[#f6f6f6] dark:group-hover:text-[#8FA8C9]">
               Editar Intranet
             </h3>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">
               Abre el editor visual Puck para el sistema de Intranet
             </p>
           </a>
@@ -298,63 +273,63 @@ export function PanelGeneralDashboard() {
         <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {statsEntries.length > 0 ? (
             statsEntries.map(([key, value]) => (
-              <div key={key} className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600">
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">{statsLabels[key] || key}</p>
-                <p className="mt-1 text-2xl font-bold text-zinc-950 dark:text-white">{value}</p>
+              <div key={key} className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
+                <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">{statsLabels[key] || key}</p>
+                <p className="mt-1 text-2xl font-bold text-zinc-950 dark:text-[#f6f6f6]">{value}</p>
               </div>
             ))
           ) : (
             <>
-              <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600">
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">Usuarios</p>
-                <p className="mt-1 text-2xl font-bold text-zinc-950 dark:text-white">0</p>
+              <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
+                <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">Usuarios</p>
+                <p className="mt-1 text-2xl font-bold text-zinc-950 dark:text-[#f6f6f6]">0</p>
               </div>
-              <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600">
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">Páginas</p>
-                <p className="mt-1 text-2xl font-bold text-zinc-950 dark:text-white">0</p>
+              <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
+                <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">Páginas</p>
+                <p className="mt-1 text-2xl font-bold text-zinc-950 dark:text-[#f6f6f6]">0</p>
               </div>
-              <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600">
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">Alertas</p>
-                <p className="mt-1 text-2xl font-bold text-zinc-950 dark:text-white">0</p>
+              <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
+                <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">Alertas</p>
+                <p className="mt-1 text-2xl font-bold text-zinc-950 dark:text-[#f6f6f6]">0</p>
               </div>
-              <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600">
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">Visitas</p>
-                <p className="mt-1 text-2xl font-bold text-zinc-950 dark:text-white">0</p>
+              <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
+                <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">Visitas</p>
+                <p className="mt-1 text-2xl font-bold text-zinc-950 dark:text-[#f6f6f6]">0</p>
               </div>
             </>
           )}
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600">
-            <h2 className="mb-4 text-lg font-semibold text-zinc-950 dark:text-white">Actividad Reciente</h2>
+          <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
+            <h2 className="mb-4 text-lg font-semibold text-zinc-950 dark:text-[#f6f6f6]">Actividad Reciente</h2>
             {data?.recentActivity && data.recentActivity.length > 0 ? (
               <div className="space-y-3">
                 {data.recentActivity.map((activity) => (
                   <div
                     key={activity.id}
-                    className="flex items-start gap-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-700"
+                    className="flex items-start gap-3 rounded-lg border border-zinc-200 p-3 dark:border-[#7db828]/30"
                   >
-                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-bold text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-bold text-zinc-600 dark:bg-[#1e293b] dark:text-[#cbd5e1]">
                       {activity.user?.charAt(0)?.toUpperCase() || '?'}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-zinc-950 dark:text-white">
+                      <p className="text-sm font-medium text-zinc-950 dark:text-[#f6f6f6]">
                         {activity.action}
                       </p>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">{activity.description}</p>
+                      <p className="text-xs text-zinc-500 dark:text-[#94a3b8]">{activity.description}</p>
                     </div>
-                    <span className="shrink-0 text-xs text-zinc-500 dark:text-zinc-400">{activity.date}</span>
+                    <span className="shrink-0 text-xs text-zinc-500 dark:text-[#94a3b8]">{activity.date}</span>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">No hay actividad reciente.</p>
+              <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">No hay actividad reciente.</p>
             )}
           </div>
 
-          <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600">
-            <h2 className="mb-4 text-lg font-semibold text-zinc-950 dark:text-white">Alertas</h2>
+          <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
+            <h2 className="mb-4 text-lg font-semibold text-zinc-950 dark:text-[#f6f6f6]">Alertas</h2>
             {data?.alerts && data.alerts.length > 0 ? (
               <div className="space-y-3">
                 {data.alerts.map((alert) => {
@@ -378,7 +353,7 @@ export function PanelGeneralDashboard() {
                 })}
               </div>
             ) : (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">No hay alertas activas.</p>
+              <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">No hay alertas activas.</p>
             )}
           </div>
         </div>

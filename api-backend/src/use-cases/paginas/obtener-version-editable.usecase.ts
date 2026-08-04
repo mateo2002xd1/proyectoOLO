@@ -1,4 +1,5 @@
 import { PaginaRepository } from '../../repositories/pagina.repository';
+import type { Ambito } from '../../shared/ambito';
 
 const EMPTY_CONTENIDO = { content: [], root: { props: {} } };
 
@@ -11,8 +12,8 @@ const EMPTY_CONTENIDO = { content: [], root: { props: {} } };
  * reciente. Si la página o la versión aún no existen, se devuelve un contenido
  * vacío (no null) para que el editor arranque en limpio en vez de fallar.
  */
-export const obtenerVersionEditable = async (slug: string) => {
-  const pagina = await PaginaRepository.findBySlug(slug);
+export const obtenerVersionEditable = async (slug: string, ambito: Ambito) => {
+  const pagina = await PaginaRepository.findBySlug(slug, ambito);
   if (!pagina) {
     return { slug, titulo: slug, contenido: EMPTY_CONTENIDO, estado: null, versionId: null };
   }

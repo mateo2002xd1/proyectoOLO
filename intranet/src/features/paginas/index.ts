@@ -19,9 +19,18 @@ export { EditButton } from "./components/edit-button";
 export { PuckEditorWrapper } from "./components/puck-editor-wrapper";
 export { EditorJsWrapper } from "./components/editorjs-wrapper";
 export { ClientPuckRender } from "./components/client-puck-render";
+export { PlantillaEditButton } from "./components/plantilla-edit-button";
+export { MarcoSecciones } from "./components/marco-secciones";
 
 // Semillas de contenido inicial (mesa de trabajo)
 export { getPageSeed, isEmptyContent } from "./lib/page-seeds";
+
+// Plantilla: la barra y el pie que comparten todas las secciones
+export { obtenerPlantilla, SLUG_PLANTILLA } from "./lib/plantilla";
+export type { Plantilla } from "./lib/plantilla";
+
+// Ruta de regreso al salir del editor
+export { enlaceAlEditor, esRutaInternaSegura, resolverRutaDeVuelta } from "./lib/ruta-de-vuelta";
 
 // Hooks
 export { usePagina } from "./hooks/use-pagina";
@@ -30,10 +39,11 @@ export { useEditorActions } from "./hooks/use-editor-actions";
 // API
 export {
   obtenerVersionEditable,
+  obtenerPaginaPublicada,
   guardarBorrador,
   enviarARevision,
 } from "./api/paginas.api";
-export type { VersionEditable } from "./api/paginas.api";
+export type { VersionEditable, PaginaPublicada } from "./api/paginas.api";
 
 // Types
 export type {

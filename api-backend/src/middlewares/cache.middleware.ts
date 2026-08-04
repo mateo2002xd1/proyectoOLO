@@ -15,11 +15,28 @@ function isRedisReady(): boolean {
   }
 }
 
-export const cacheInterceptor = (ttlSeconds: number = 60) => {
+interface CacheOptions {
+  /**
+   * Cabeceras que cambian la respuesta para una misma URL y por tanto deben entrar
+   * en la clave. Sin esto, dos apps que piden la misma ruta con distinto `X-Ambito`
+   * se leerían la respuesta la una a la otra.
+   */
+  varyBy?: string[];
+}
+
+export const cacheInterceptor = (ttlSeconds: number = 60, options: CacheOptions = {}) => {
+  const varyBy = options.varyBy ?? [];
+
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     // Only cache GET requests
     if (req.method !== 'GET') {
       return next();
+    }
+
+    // La respuesta depende de estas cabeceras aunque hoy no se cachee: quien esté
+    // por delante (navegador, proxy) necesita saberlo igual.
+    if (varyBy.length > 0) {
+      res.setHeader('Vary', varyBy.join(', '));
     }
 
     // If Redis is not connected, skip caching entirely to avoid hanging
@@ -29,7 +46,8 @@ export const cacheInterceptor = (ttlSeconds: number = 60) => {
     }
 
     const redis = getRedis();
-    const cacheKey = `cache:${req.originalUrl || req.url}`;
+    const variantes = varyBy.map((header) => `${header}=${req.header(header) ?? ''}`).join('|');
+    const cacheKey = `cache:${req.originalUrl || req.url}${variantes ? `|${variantes}` : ''}`;
 
     try {
       const cachedData = await redis.get(cacheKey);

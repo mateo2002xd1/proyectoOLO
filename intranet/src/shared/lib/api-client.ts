@@ -11,7 +11,17 @@ export class ApiError extends Error {
   }
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? (typeof window !== 'undefined' ? '/api-backend' : 'http://127.0.0.1:4000');
+/**
+ * En el navegador se pasa por el proxy `/api-backend`, que al reescribir ya añade
+ * el prefijo `/api` de la API (ver `next.config.ts`). En el servidor se llama a la
+ * API directamente, así que ese prefijo hay que ponerlo aquí: sin él las peticiones
+ * caían en el 404 de Express, que no responde JSON.
+ */
+const API_BASE_URL =
+  typeof window !== 'undefined'
+    ? process.env.NEXT_PUBLIC_API_URL ?? '/api-backend'
+    : `${process.env.API_BACKEND_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:4000'}/api`;
+
 const DEFAULT_TIMEOUT_MS = 10000;
 
 async function fetchWithTimeout(url: string, options: RequestInit = {}): Promise<Response> {
@@ -36,18 +46,22 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}): Promise
 async function handleResponse<T>(response: Response): Promise<T> {
   if (response.status === 401) {
     if (typeof window !== 'undefined') {
-      window.location.href = '/login';
+      window.location.href = '/auth';
     }
     throw new ApiError(401, 'No autenticado');
   }
 
   if (!response.ok) {
-    let message = 'Ocurrió un error inesperado';
+    // El cuerpo se lee una sola vez: intentar `json()` y luego `text()` sobre la
+    // misma respuesta rompe con "Body has already been read" y convierte un error
+    // legible de la API en un fallo genérico.
+    const cuerpo = await response.text().catch(() => '');
+    let message = cuerpo || 'Ocurrió un error inesperado';
     try {
-      const errorData = await response.json();
+      const errorData = JSON.parse(cuerpo);
       message = errorData.error || errorData.message || message;
     } catch {
-      message = await response.text();
+      // No era JSON: se queda el texto tal cual.
     }
     throw new ApiError(response.status, message);
   }
@@ -62,6 +76,10 @@ async function handleResponse<T>(response: Response): Promise<T> {
 function getDefaultHeaders(customHeaders?: HeadersInit) {
   return {
     'Content-Type': 'application/json',
+    // El sitio y la intranet comparten la tabla `paginas` y ambos tienen su
+    // `/inicio`. Esta cabecera es lo que le dice a la API a cuál de las dos
+    // pertenece lo que se pide o se guarda.
+    'X-Ambito': 'intranet',
     ...customHeaders,
   };
 }

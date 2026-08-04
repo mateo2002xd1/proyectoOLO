@@ -63,7 +63,7 @@ export function OcupacionSearchBanner({
             {placeholder}
           </label>
           <div className="w-full relative">
-            <h2 className='text-white mb-3 text-[24px] font-bold'>Explora las ocupaciones clave <br /> de los sectores productivos en Colombia.</h2>
+            <h2 className='text-white mb-6 text-[24px] font-bold'>Explora las ocupaciones clave de los sectores productivos en Colombia.</h2>
             <div className="relative">
               <input
                 id={inputId}

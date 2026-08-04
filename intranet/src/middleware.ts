@@ -11,30 +11,48 @@ import type { NextRequest } from "next/server";
  */
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  
-  if (pathname.startsWith('/login') || pathname.startsWith('/api-backend')) {
-    return NextResponse.next();
-  }
-
   const token = request.cookies.get('token')?.value;
 
-  if (!token) {
-    return NextResponse.redirect(new URL('/login', request.url));
+  let isTokenValid = false;
+  if (token) {
+    try {
+      const { decodeJwt } = await import('jose');
+      const decoded = decodeJwt(token);
+      if (!decoded.exp || decoded.exp * 1000 > Date.now()) {
+        isTokenValid = true;
+      }
+    } catch (error) {
+      console.error("[Middleware] Token verification failed:", error);
+    }
   }
 
-  try {
-    const { decodeJwt } = await import('jose');
-    const decoded = decodeJwt(token);
-    if (decoded.exp && decoded.exp * 1000 < Date.now()) {
-      throw new Error("Token expired");
+  // Rutas públicas / de login
+  if (pathname.startsWith('/auth') || pathname.startsWith('/api-backend')) {
+    // Si el usuario ya está logueado y trata de acceder a /auth, redirigir a /inicio
+    if (isTokenValid && pathname.startsWith('/auth')) {
+      return NextResponse.redirect(new URL('/inicio', request.url));
     }
+    
+    // Si hay un token inválido, lo limpiamos
+    if (token && !isTokenValid && pathname.startsWith('/auth')) {
+      const response = NextResponse.next();
+      response.cookies.delete('token');
+      return response;
+    }
+
     return NextResponse.next();
-  } catch (error) {
-    console.error("[Middleware] Token verification failed:", error);
-    const response = NextResponse.redirect(new URL('/login', request.url));
-    response.cookies.delete('token');
+  }
+
+  // Rutas protegidas (intranet)
+  if (!isTokenValid) {
+    const response = NextResponse.redirect(new URL('/auth', request.url));
+    if (token) {
+      response.cookies.delete('token');
+    }
     return response;
   }
+
+  return NextResponse.next();
 }
 
 export const config = {
