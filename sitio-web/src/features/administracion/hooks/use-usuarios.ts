@@ -17,6 +17,7 @@ export type Role = {
 export type User = {
   id: string;
   name: string;
+  apellidos?: string;
   email: string;
   role_id: string;
   role?: Role;
@@ -25,9 +26,9 @@ export type User = {
   created_at: string;
 };
 
-/** Datos aceptados al crear un usuario. */
 export type NuevoUsuario = {
   name: string;
+  apellidos: string;
   email: string;
   role_id: string;
   expiration_date?: string;
@@ -37,6 +38,7 @@ export type NuevoUsuario = {
 /** Campos modificables de un usuario; todos opcionales (PATCH parcial). */
 export type CambiosUsuario = Partial<{
   name: string;
+  apellidos: string;
   email: string;
   role_id: string;
   status: string;
