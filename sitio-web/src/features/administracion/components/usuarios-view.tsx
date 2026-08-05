@@ -141,6 +141,7 @@ export default function UsuariosView() {
 
   // Form state
   const [name, setName] = useState('');
+  const [apellidos, setApellidos] = useState('');
   const [email, setEmail] = useState('');
   const [roleId, setRoleId] = useState('');
   const [expirationDate, setExpirationDate] = useState('');
@@ -223,20 +224,20 @@ export default function UsuariosView() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email || !roleId) return;
+    if (!name || !apellidos || !email || !roleId) return;
 
     setIsSubmitting(true);
     try {
       let response;
       if (editingUserId) {
-        const data: CambiosUsuario = { name, email, role_id: roleId };
+        const data: CambiosUsuario = { name, apellidos, email, role_id: roleId };
         if (expirationDate) data.expiration_date = expirationDate;
         if (resetPassword) data.reset_password = true;
         if (resetSecurityQuestions) data.reset_security_questions = true;
         response = await updateUser(editingUserId, data);
         setNotificationMsg({ title: 'Usuario actualizado', message: 'El usuario se ha actualizado exitosamente.', type: 'success' });
       } else {
-        const data: NuevoUsuario = { name, email, role_id: roleId };
+        const data: NuevoUsuario = { name, apellidos, email, role_id: roleId };
         if (expirationDate) data.expiration_date = expirationDate;
         response = await createUser(data);
         setNotificationMsg({ title: 'Usuario creado', message: 'El usuario se ha creado exitosamente.', type: 'success' });
@@ -311,6 +312,7 @@ export default function UsuariosView() {
   const startEdit = async (user: User) => {
     setEditingUserId(user.id);
     setName(user.name);
+    setApellidos(user.apellidos || '');
     setEmail(user.email);
     setExpirationDate(user.expiration_date ? user.expiration_date.split('T')[0] : '');
     setResetPassword(false);
@@ -322,6 +324,7 @@ export default function UsuariosView() {
 
   function resetForm() {
     setName('');
+    setApellidos('');
     setEmail('');
     setRoleId('');
     setExpirationDate('');
@@ -383,12 +386,22 @@ export default function UsuariosView() {
         </AlertDescription>
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">Nombre completo</label>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">Nombres</label>
             <input
               type="text"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
+              className="w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:text-[#f6f6f6] dark:focus:border-white dark:focus:ring-white"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">Apellidos</label>
+            <input
+              type="text"
+              required
+              value={apellidos}
+              onChange={(e) => setApellidos(e.target.value)}
               className="w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:text-[#f6f6f6] dark:focus:border-white dark:focus:ring-white"
             />
           </div>
@@ -683,6 +696,9 @@ export default function UsuariosView() {
                   Nombre
                 </th>
                 <th scope="col" className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-[#94a3b8]">
+                  Apellidos
+                </th>
+                <th scope="col" className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-[#94a3b8]">
                   Correo
                 </th>
                 <th scope="col" className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-[#94a3b8]">
@@ -699,13 +715,13 @@ export default function UsuariosView() {
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
               {loading ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-sm text-zinc-500">
+                  <td colSpan={5} className="px-6 py-8 text-center text-sm text-zinc-500">
                     Cargando usuarios...
                   </td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-sm text-zinc-500">
+                  <td colSpan={5} className="px-6 py-8 text-center text-sm text-zinc-500">
                     No hay usuarios registrados.
                   </td>
                 </tr>
@@ -714,6 +730,9 @@ export default function UsuariosView() {
                   <tr key={user.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
                     <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-zinc-900 dark:text-[#f6f6f6]">
                       {user.name}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-500 dark:text-[#94a3b8]">
+                      {user.apellidos || '-'}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-500 dark:text-[#94a3b8]">
                       {user.email}
