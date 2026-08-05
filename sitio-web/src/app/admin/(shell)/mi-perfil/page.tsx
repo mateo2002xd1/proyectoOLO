@@ -1,4 +1,4 @@
-import { ProfileForm } from '@/features/profile';
+import { ProfileForm } from '@/features/mi-perfil/components/profile';
 
 export const metadata = {
   title: 'Mi Perfil - Observatorio Laboral y Ocupacional',

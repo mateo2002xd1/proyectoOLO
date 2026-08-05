@@ -3,6 +3,7 @@ import {
   AUTH_COOKIE_NAME,
   AUTH_ROLE_COOKIE_NAME,
   AUTH_USER_NAME_COOKIE_NAME,
+  AUTH_USER_EMAIL_COOKIE_NAME,
 } from '@/shared/lib/auth-cookies';
 
 export type AuthSession = {
@@ -71,7 +72,13 @@ export async function getAuthUserProfile(): Promise<{ name: string; email: strin
     const payloadString = Buffer.from(payloadBase64, 'base64').toString('utf-8');
     const payload = JSON.parse(payloadString);
 
-    return { name: payload.name || '', email: payload.email || '' };
+    const overrideName = cookieStore.get(AUTH_USER_NAME_COOKIE_NAME)?.value;
+    const overrideEmail = cookieStore.get(AUTH_USER_EMAIL_COOKIE_NAME)?.value;
+
+    return { 
+      name: overrideName || payload.name || '', 
+      email: overrideEmail || payload.email || '' 
+    };
   } catch (err) {
     console.error('Error decoding token for user profile:', err);
     return { name: '', email: '' };

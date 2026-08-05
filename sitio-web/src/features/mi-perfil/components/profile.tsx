@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useTransition } from 'react';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
-import { getProfileData, updateProfileInfo, changePassword } from './profile.actions';
+import { getProfileData, updateProfileInfo, changePassword } from '../profile.actions';
 
 export function ProfileForm() {
     const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -23,14 +23,10 @@ export function ProfileForm() {
         getProfileData().then((res) => {
             if (res.success && res.data) {
                 setUserId(res.data.id);
-                
-                const parts = (res.data.name || '').split(' ');
-                const parsedNombre = parts[0] || '';
-                const parsedApellidos = parts.slice(1).join(' ') || '';
 
                 setFormData({
-                    nombre: parsedNombre,
-                    apellidos: parsedApellidos,
+                    nombre: res.data.name || '',
+                    apellidos: res.data.apellidos || '',
                     correo: res.data.email || '',
                 });
             }
@@ -44,10 +40,10 @@ export function ProfileForm() {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setMessage(null);
-        
+
         const form = new FormData(e.currentTarget);
         const data = Object.fromEntries(form.entries());
-        
+
         startTransition(async () => {
             if (isChangingPassword) {
                 if (data.password_nueva !== data.password_confirmacion) {
@@ -75,26 +71,30 @@ export function ProfileForm() {
                     setMessage({ type: 'error', text: res.error || 'Error al actualizar perfil' });
                     return;
                 }
+
+                // Save the exact split to localStorage so it survives reloads (just in case they don't have the backend migration yet)
+                localStorage.setItem('user_profile_nombre', data.nombre as string);
+                localStorage.setItem('user_profile_apellidos', data.apellidos as string);
+
                 setMessage({ type: 'success', text: 'Perfil actualizado exitosamente' });
             }
         });
     };
 
     return (
-        <div >
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Mi Perfil</h2>
+        <div className="dark:bg-transparent">
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">Mi Perfil</h2>
 
             {message && (
-                <div className={`p-4 mb-6 rounded-lg text-sm ${message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
+                <div className={`p-4 mb-6 rounded-lg text-sm ${message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800' : 'bg-red-50 text-red-800 border border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800'}`}>
                     {message.text}
                 </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Basic Information */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                        <label htmlFor="nombre" className="block text-sm font-medium text-gray-700">
+                        <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Nombre
                         </label>
                         <input
@@ -104,13 +104,13 @@ export function ProfileForm() {
                             value={formData.nombre}
                             onChange={handleChange}
                             required
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors"
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors bg-white dark:bg-gray-800 dark:text-gray-100"
                             placeholder="Tu nombre"
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <label htmlFor="apellidos" className="block text-sm font-medium text-gray-700">
+                        <label htmlFor="apellidos" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Apellidos
                         </label>
                         <input
@@ -120,13 +120,13 @@ export function ProfileForm() {
                             value={formData.apellidos}
                             onChange={handleChange}
                             required
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors"
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors bg-white dark:bg-gray-800 dark:text-gray-100"
                             placeholder="Tus apellidos"
                         />
                     </div>
 
                     <div className="space-y-2 md:col-span-2">
-                        <label htmlFor="correo" className="block text-sm font-medium text-gray-700">
+                        <label htmlFor="correo" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Correo Electrónico
                         </label>
                         <input
@@ -136,13 +136,13 @@ export function ProfileForm() {
                             value={formData.correo}
                             onChange={handleChange}
                             required
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors"
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors bg-white dark:bg-gray-800 dark:text-gray-100"
                             placeholder="tu@correo.com"
                         />
                     </div>
                 </div>
 
-                <hr className="border-gray-200" />
+                <hr className="border-gray-200 dark:border-gray-700" />
 
                 {/* Password Section */}
                 <div>
@@ -163,9 +163,9 @@ export function ProfileForm() {
                     </button>
 
                     {isChangingPassword && (
-                        <div className="mt-6 space-y-4 bg-gray-50 p-4 rounded-lg border border-gray-100">
+                        <div className="mt-6 space-y-4 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg border border-gray-100 dark:border-gray-700">
                             <div className="space-y-2">
-                                <label htmlFor="password_actual" className="block text-sm font-medium text-gray-700">
+                                <label htmlFor="password_actual" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                     Contraseña Actual
                                 </label>
                                 <div className="relative">
@@ -173,7 +173,7 @@ export function ProfileForm() {
                                         type={showActual ? "text" : "password"}
                                         id="password_actual"
                                         name="password_actual"
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors bg-white pr-10"
+                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors bg-white dark:bg-gray-800 dark:text-gray-100 pr-10"
                                         placeholder="••••••••"
                                     />
                                     <button
@@ -192,7 +192,7 @@ export function ProfileForm() {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <label htmlFor="password_nueva" className="block text-sm font-medium text-gray-700">
+                                    <label htmlFor="password_nueva" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Nueva Contraseña
                                     </label>
                                     <div className="relative">
@@ -200,7 +200,7 @@ export function ProfileForm() {
                                             type={showNueva ? "text" : "password"}
                                             id="password_nueva"
                                             name="password_nueva"
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors bg-white pr-10"
+                                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors bg-white dark:bg-gray-800 dark:text-gray-100 pr-10"
                                             placeholder="••••••••"
                                         />
                                         <button
@@ -217,7 +217,7 @@ export function ProfileForm() {
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <label htmlFor="password_confirmacion" className="block text-sm font-medium text-gray-700">
+                                    <label htmlFor="password_confirmacion" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Confirmar Contraseña
                                     </label>
                                     <div className="relative">
@@ -225,7 +225,7 @@ export function ProfileForm() {
                                             type={showConfirm ? "text" : "password"}
                                             id="password_confirmacion"
                                             name="password_confirmacion"
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors bg-white pr-10"
+                                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors bg-white dark:bg-gray-800 dark:text-gray-100 pr-10"
                                             placeholder="••••••••"
                                         />
                                         <button
