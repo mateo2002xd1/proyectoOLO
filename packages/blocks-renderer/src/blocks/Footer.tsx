@@ -107,11 +107,11 @@ export function Footer({ block }: FooterProps) {
             </div>
             <div className="olo-links-row">
               <a href="#">Derechos de autor y/o autorizacion de uso sobre contenidos</a>
-              <a href="#">Politica de Tratamiento para Proteccion de Datos Personales</a>
+              <a href="/politica-de-privacidad">Politica de Tratamiento para Proteccion de Datos Personales</a>
             </div>
             <div className="olo-links-row">
               <a href="#">Mapa del sitio</a>
-              <a href="#">Politica de seguridad y privacidad de la informacion</a>
+              <a href="/politica-de-privacidad">Politica de seguridad y privacidad de la informacion</a>
             </div>
           </div>
         </div>

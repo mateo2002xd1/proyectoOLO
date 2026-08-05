@@ -67,8 +67,8 @@ export const COLUMNAS_POR_DEFECTO: ColumnaPie[] = [
     lineas: [
       { texto: 'PBX (+57) 1 5461500 IP: 13037' },
       { texto: 'olaboryocupacional@sena.edu.co' },
-      { texto: 'Política de seguridad y privacidad de la información', url: '#' },
-      { texto: 'Política de Tratamiento para Protección de Datos Personales', url: '#' },
+      { texto: 'Política de seguridad y privacidad de la información', url: '/politica-de-privacidad' },
+      { texto: 'Política de Tratamiento para Protección de Datos Personales', url: '/politica-de-privacidad' },
       { texto: 'Mapa del sitio', url: '#' },
     ],
   },

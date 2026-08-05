@@ -1,0 +1,261 @@
+'use client';
+
+import React, { useState, useEffect, useTransition } from 'react';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { getProfileData, updateProfileInfo, changePassword } from './profile.actions';
+
+export function ProfileForm() {
+    const [isChangingPassword, setIsChangingPassword] = useState(false);
+    const [showActual, setShowActual] = useState(false);
+    const [showNueva, setShowNueva] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [userId, setUserId] = useState<string | null>(null);
+    const [isPending, startTransition] = useTransition();
+    const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+    const [formData, setFormData] = useState({
+        nombre: '',
+        apellidos: '',
+        correo: '',
+    });
+
+    useEffect(() => {
+        getProfileData().then((res) => {
+            if (res.success && res.data) {
+                setUserId(res.data.id);
+                
+                const parts = (res.data.name || '').split(' ');
+                const parsedNombre = parts[0] || '';
+                const parsedApellidos = parts.slice(1).join(' ') || '';
+
+                setFormData({
+                    nombre: parsedNombre,
+                    apellidos: parsedApellidos,
+                    correo: res.data.email || '',
+                });
+            }
+        });
+    }, []);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    };
+
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setMessage(null);
+        
+        const form = new FormData(e.currentTarget);
+        const data = Object.fromEntries(form.entries());
+        
+        startTransition(async () => {
+            if (isChangingPassword) {
+                if (data.password_nueva !== data.password_confirmacion) {
+                    setMessage({ type: 'error', text: 'Las contraseñas nuevas no coinciden' });
+                    return;
+                }
+                const res = await changePassword(data);
+                if (!res.success) {
+                    setMessage({ type: 'error', text: res.error || 'Error al cambiar contraseña' });
+                    return;
+                }
+                setMessage({ type: 'success', text: 'Contraseña actualizada exitosamente' });
+                setIsChangingPassword(false);
+            } else {
+                if (!userId) {
+                    setMessage({ type: 'error', text: 'No se pudo identificar el usuario' });
+                    return;
+                }
+                const res = await updateProfileInfo(userId, {
+                    nombre: data.nombre as string,
+                    apellidos: data.apellidos as string,
+                    correo: data.correo as string,
+                });
+                if (!res.success) {
+                    setMessage({ type: 'error', text: res.error || 'Error al actualizar perfil' });
+                    return;
+                }
+                setMessage({ type: 'success', text: 'Perfil actualizado exitosamente' });
+            }
+        });
+    };
+
+    return (
+        <div >
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Mi Perfil</h2>
+
+            {message && (
+                <div className={`p-4 mb-6 rounded-lg text-sm ${message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
+                    {message.text}
+                </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Basic Information */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                        <label htmlFor="nombre" className="block text-sm font-medium text-gray-700">
+                            Nombre
+                        </label>
+                        <input
+                            type="text"
+                            id="nombre"
+                            name="nombre"
+                            value={formData.nombre}
+                            onChange={handleChange}
+                            required
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors"
+                            placeholder="Tu nombre"
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label htmlFor="apellidos" className="block text-sm font-medium text-gray-700">
+                            Apellidos
+                        </label>
+                        <input
+                            type="text"
+                            id="apellidos"
+                            name="apellidos"
+                            value={formData.apellidos}
+                            onChange={handleChange}
+                            required
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors"
+                            placeholder="Tus apellidos"
+                        />
+                    </div>
+
+                    <div className="space-y-2 md:col-span-2">
+                        <label htmlFor="correo" className="block text-sm font-medium text-gray-700">
+                            Correo Electrónico
+                        </label>
+                        <input
+                            type="email"
+                            id="correo"
+                            name="correo"
+                            value={formData.correo}
+                            onChange={handleChange}
+                            required
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors"
+                            placeholder="tu@correo.com"
+                        />
+                    </div>
+                </div>
+
+                <hr className="border-gray-200" />
+
+                {/* Password Section */}
+                <div>
+                    <button
+                        type="button"
+                        onClick={() => setIsChangingPassword(!isChangingPassword)}
+                        className="text-[#7DB728] font-medium hover:text-[#7DB728] transition-colors text-sm flex items-center gap-2"
+                    >
+                        <span>{isChangingPassword ? 'Cancelar cambio de contraseña' : 'Cambiar contraseña'}</span>
+                        <svg
+                            className={`w-4 h-4 transform transition-transform ${isChangingPassword ? 'rotate-180' : ''}`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+
+                    {isChangingPassword && (
+                        <div className="mt-6 space-y-4 bg-gray-50 p-4 rounded-lg border border-gray-100">
+                            <div className="space-y-2">
+                                <label htmlFor="password_actual" className="block text-sm font-medium text-gray-700">
+                                    Contraseña Actual
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type={showActual ? "text" : "password"}
+                                        id="password_actual"
+                                        name="password_actual"
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors bg-white pr-10"
+                                        placeholder="••••••••"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowActual(!showActual)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                                    >
+                                        {showActual ? (
+                                            <EyeSlashIcon className="w-5 h-5" />
+                                        ) : (
+                                            <EyeIcon className="w-5 h-5" />
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label htmlFor="password_nueva" className="block text-sm font-medium text-gray-700">
+                                        Nueva Contraseña
+                                    </label>
+                                    <div className="relative">
+                                        <input
+                                            type={showNueva ? "text" : "password"}
+                                            id="password_nueva"
+                                            name="password_nueva"
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors bg-white pr-10"
+                                            placeholder="••••••••"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowNueva(!showNueva)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                                        >
+                                            {showNueva ? (
+                                                <EyeSlashIcon className="w-5 h-5" />
+                                            ) : (
+                                                <EyeIcon className="w-5 h-5" />
+                                            )}
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <label htmlFor="password_confirmacion" className="block text-sm font-medium text-gray-700">
+                                        Confirmar Contraseña
+                                    </label>
+                                    <div className="relative">
+                                        <input
+                                            type={showConfirm ? "text" : "password"}
+                                            id="password_confirmacion"
+                                            name="password_confirmacion"
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors bg-white pr-10"
+                                            placeholder="••••••••"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowConfirm(!showConfirm)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                                        >
+                                            {showConfirm ? (
+                                                <EyeSlashIcon className="w-5 h-5" />
+                                            ) : (
+                                                <EyeIcon className="w-5 h-5" />
+                                            )}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                <div className="pt-4 flex justify-end">
+                    <button
+                        type="submit"
+                        disabled={isPending}
+                        className={`px-6 py-2 bg-[#7DB728] text-white font-medium rounded-lg hover:bg-[#7DB728] focus:outline-none focus:ring-2 focus:ring-[#1FACE3] focus:ring-offset-2 transition-colors shadow-sm ${isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                        {isPending ? 'Guardando...' : 'Guardar Cambios'}
+                    </button>
+                </div>
+            </form>
+        </div>
+    );
+}
