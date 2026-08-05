@@ -10,6 +10,7 @@ import * as auditoria from './006-auditoria-unificada';
 import * as paginasAmbito from './007-paginas-ambito';
 import * as paginasSlugUnicoPorAmbito from './008-paginas-slug-unico-por-ambito';
 import * as limpiarRestriccionesDuplicadas from './009-limpiar-restricciones-duplicadas';
+import * as agregarApellidosUsuarios from './010-agregar-apellidos-usuarios';
 
 export interface Migracion {
   nombre: string;
@@ -30,6 +31,7 @@ const migraciones: Migracion[] = [
   paginasAmbito,
   paginasSlugUnicoPorAmbito,
   limpiarRestriccionesDuplicadas,
+  agregarApellidosUsuarios,
 ];
 
 const TABLA_CONTROL = 'migraciones_aplicadas';

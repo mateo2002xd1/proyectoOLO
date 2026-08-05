@@ -44,8 +44,25 @@ export const AuthController = {
     res.json({ message: 'Sesión cerrada' });
   },
 
-  me(req: Request, res: Response) {
-    res.json({ user: req.user });
+  async me(req: Request, res: Response, next: NextFunction) {
+    try {
+      if (req.user?.isLocal) {
+        return res.json({ user: req.user });
+      }
+      const user: any = await UserRepository.findById(req.user?.id as string);
+      if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+      
+      res.json({ 
+        user: { 
+          ...req.user, 
+          name: user.name, 
+          apellidos: user.apellidos,
+          email: user.email 
+        } 
+      });
+    } catch (err) {
+      next(err);
+    }
   },
 
   async changePassword(req: Request, res: Response, next: NextFunction) {

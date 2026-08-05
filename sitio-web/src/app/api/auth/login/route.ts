@@ -3,6 +3,7 @@ import {
   AUTH_COOKIE_NAME,
   AUTH_ROLE_COOKIE_NAME,
   AUTH_USER_NAME_COOKIE_NAME,
+  AUTH_USER_EMAIL_COOKIE_NAME,
   AUTH_MUST_CHANGE_PW_COOKIE_NAME,
   AUTH_MUST_SETUP_SQ_COOKIE_NAME,
 } from '@/shared/lib/auth-cookies';
@@ -57,6 +58,7 @@ export async function POST(request: NextRequest) {
   // No httpOnly — el middleware y edit-button los leen sin red
   response.cookies.set(AUTH_ROLE_COOKIE_NAME, user.role || '', { ...base, httpOnly: false });
   response.cookies.set(AUTH_USER_NAME_COOKIE_NAME, user.name || '', { ...base, httpOnly: false });
+  response.cookies.set(AUTH_USER_EMAIL_COOKIE_NAME, user.email || '', { ...base, httpOnly: false });
 
   // Setear o LIMPIAR según el estado actual — si no se limpian cuando son false,
   // quedan pegadas y el middleware rebota todo a /auth/cambiar-contrasena.
