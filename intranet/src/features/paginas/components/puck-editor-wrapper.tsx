@@ -165,7 +165,7 @@ function ModalSalir({ abierto, onCancelar, onConfirmar }: ModalSalirProps) {
         </h2>
         <p className="olo-modal-texto">
           Si sales ahora, <strong>todo lo que hayas editado desde el último guardado se
-          pierde</strong> y no se puede recuperar. La página seguirá mostrando la última
+            pierde</strong> y no se puede recuperar. La página seguirá mostrando la última
           versión publicada.
         </p>
         <p className="olo-modal-texto olo-modal-texto--apunte">
