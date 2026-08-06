@@ -66,7 +66,7 @@ export function SeccionCarrusel({
     >
       <div className="matriz-content-container-wide max-w-[1200px] mx-auto text-center flex flex-col items-center">
         {titulo && (
-          <h2 className="matriz-section-title text-[#041E42] font-normal mb-6">
+          <h2 className="tasa-concept-title mb-6">
             {resaltar(titulo)}
           </h2>
         )}

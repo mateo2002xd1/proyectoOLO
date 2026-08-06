@@ -32,7 +32,7 @@ export function TextoConImagen({
   fondo = 'gris',
 }: TextoConImagenProps) {
   const columnaTexto = (
-    <div className="flex-1 space-y-6 max-w-3xl text-[#002240] text-lg md:text-xl text-justify">
+    <div className="flex-1 space-y-6 max-w-3xl tasa-concept-desc">
       {contenido}
     </div>
   );
@@ -59,7 +59,7 @@ export function TextoConImagen({
     >
       <div className="max-w-7xl w-full">
         {titulo && (
-          <h2 className="text-3xl md:text-4xl text-[#002240]" style={{ marginBottom: '2.5rem' }}>
+          <h2 className="tasa-concept-title">
             {resaltar(titulo)}
           </h2>
         )}

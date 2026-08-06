@@ -35,11 +35,11 @@ export function TextoRico({
         className={`${ancho === 'ancho' ? 'matriz-content-container-wide max-w-[1200px]' : 'matriz-content-container'} text-left`}
       >
         {titulo && (
-          <h2 className="tasa-concept-title !text-left mb-8" style={{ border: 'none' }}>
+          <h2 className="tasa-concept-title !text-left mb-8">
             {resaltar(titulo)}
           </h2>
         )}
-        <div className="matriz-section-intro !text-left">{contenido}</div>
+        <div className="tasa-concept-desc !text-left">{contenido}</div>
       </div>
     </div>
   );

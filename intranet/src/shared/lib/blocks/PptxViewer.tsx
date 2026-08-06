@@ -26,7 +26,7 @@ export function PptxViewer({ fileUrl }: PptxViewerProps) {
 
         const contentType = resp.headers.get("content-type");
         if (contentType && contentType.includes("text/html")) {
-            throw new Error(`El archivo no se encontró en la ruta ${fileUrl}. El servidor devolvió una página HTML en lugar del archivo PPTX.`);
+          throw new Error(`El archivo no se encontró en la ruta ${fileUrl}. El servidor devolvió una página HTML en lugar del archivo PPTX.`);
         }
 
         if (!resp.ok) {
@@ -54,7 +54,7 @@ export function PptxViewer({ fileUrl }: PptxViewerProps) {
         (viewer as any).destroy();
       }
       if (container) {
-          container.innerHTML = '';
+        container.innerHTML = '';
       }
     };
   }, [fileUrl]);
