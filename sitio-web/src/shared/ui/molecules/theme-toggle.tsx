@@ -12,11 +12,23 @@ function subscribeToTheme(onChange: () => void) {
 const getThemeSnapshot = () => document.documentElement.classList.contains('dark');
 const getThemeServerSnapshot = () => false;
 
+const getSnapPosition = (x: number, y: number) => {
+  if (typeof window === 'undefined') return { x: 0, y: 0 };
+  const minX = Math.min(-(window.innerWidth - 72), 0);
+  const maxY = Math.max(window.innerHeight - 72, 0);
+
+  const snapX = x < minX / 2 ? minX : 0;
+  const snapY = y > maxY / 2 ? maxY : 0;
+
+  return { x: snapX, y: snapY };
+};
+
 export function ThemeToggle() {
   const isDark = useSyncExternalStore(subscribeToTheme, getThemeSnapshot, getThemeServerSnapshot);
   const [mounted, setMounted] = useState(false);
   
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
+  const [isDraggingState, setIsDraggingState] = useState(false);
   const isDragging = useRef(false);
   const startPos = useRef({ x: 0, y: 0 });
   const hasMoved = useRef(false);
@@ -28,14 +40,7 @@ export function ThemeToggle() {
         try {
           const parsed = JSON.parse(saved);
           if (typeof parsed.x === 'number' && typeof parsed.y === 'number') {
-            const minX = -(window.innerWidth - 56);
-            const maxX = 16;
-            const minY = -16;
-            const maxY = window.innerHeight - 56;
-            setTranslate({
-              x: Math.max(minX, Math.min(parsed.x, maxX)),
-              y: Math.max(minY, Math.min(parsed.y, maxY))
-            });
+            setTranslate(getSnapPosition(parsed.x, parsed.y));
           }
         } catch (e) {
           // ignore
@@ -48,15 +53,9 @@ export function ThemeToggle() {
 
     const handleResize = () => {
       setTranslate(prev => {
-        const minX = -(window.innerWidth - 56);
-        const maxX = 16;
-        const minY = -16;
-        const maxY = window.innerHeight - 56;
-        const safeX = Math.max(minX, Math.min(prev.x, maxX));
-        const safeY = Math.max(minY, Math.min(prev.y, maxY));
+        const newPos = getSnapPosition(prev.x, prev.y);
         
-        if (safeX !== prev.x || safeY !== prev.y) {
-          const newPos = { x: safeX, y: safeY };
+        if (newPos.x !== prev.x || newPos.y !== prev.y) {
           localStorage.setItem('theme-toggle-pos', JSON.stringify(newPos));
           return newPos;
         }
@@ -77,6 +76,7 @@ export function ThemeToggle() {
 
   const handlePointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
     isDragging.current = true;
+    setIsDraggingState(true);
     hasMoved.current = false;
     startPos.current = { x: e.clientX - translate.x, y: e.clientY - translate.y };
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -92,22 +92,23 @@ export function ThemeToggle() {
       hasMoved.current = true;
     }
     
-    const minX = -(window.innerWidth - 56);
-    const maxX = 16;
-    const minY = -16;
-    const maxY = window.innerHeight - 56;
+    const minX = Math.min(-(window.innerWidth - 72), 0);
+    const maxY = Math.max(window.innerHeight - 72, 0);
     
-    newX = Math.max(minX, Math.min(newX, maxX));
-    newY = Math.max(minY, Math.min(newY, maxY));
+    newX = Math.max(minX, Math.min(newX, 0));
+    newY = Math.max(0, Math.min(newY, maxY));
     
     setTranslate({ x: newX, y: newY });
   };
 
   const handlePointerUp = (e: React.PointerEvent<HTMLButtonElement>) => {
     isDragging.current = false;
+    setIsDraggingState(false);
     e.currentTarget.releasePointerCapture(e.pointerId);
     if (hasMoved.current) {
-      localStorage.setItem('theme-toggle-pos', JSON.stringify(translate));
+      const snappedPos = getSnapPosition(translate.x, translate.y);
+      setTranslate(snappedPos);
+      localStorage.setItem('theme-toggle-pos', JSON.stringify(snappedPos));
     }
   };
 
@@ -125,7 +126,7 @@ export function ThemeToggle() {
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
       style={{ transform: `translate3d(${translate.x}px, ${translate.y}px, 0)` }}
-      className="fixed top-4 right-4 z-[100] p-2.5 rounded-full bg-white/80 dark:bg-[#1e293b]/80 backdrop-blur-md shadow-md border border-zinc-200 dark:border-[#1e293b] text-zinc-600 hover:text-zinc-900 dark:text-[#94a3b8] dark:hover:text-white transition-colors cursor-grab active:cursor-grabbing touch-none"
+      className={`fixed top-4 right-4 z-[100] p-2.5 rounded-full bg-white/80 dark:bg-[#1e293b]/80 backdrop-blur-md shadow-md border border-zinc-200 dark:border-[#1e293b] text-zinc-600 hover:text-zinc-900 dark:text-[#94a3b8] dark:hover:text-white cursor-grab touch-none ${isDraggingState ? 'active:cursor-grabbing transition-colors duration-200' : 'transition-all duration-300 ease-out'}`}
       aria-label="Cambiar tema"
     >
       <div className="pointer-events-none">
