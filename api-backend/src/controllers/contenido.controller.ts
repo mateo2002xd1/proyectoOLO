@@ -9,17 +9,10 @@ import {
 } from '../use-cases/contenidos/contenido.usecase';
 import { logAudit } from '../use-cases/auditoria/audit.usecase';
 import { datosDeAuditoria } from '../shared/auditoria-request';
-
-/**
- * Convierte el cuerpo de la petición en la lista de campos modificados.
- *
- * `antes` va en `null` porque el controlador no tiene el estado anterior: para
- * que diga de verdad "de X a Y" hace falta que el use-case devuelva la versión
- * previa (T-07.6, pendiente). Se deja explícito en vez de omitirlo para que el
- * hueco se vea en los datos y no se confunda con "no cambió nada".
- */
-const camposDe = (body: Record<string, unknown>) =>
-  Object.keys(body ?? {}).map((campo) => ({ campo, antes: null, despues: body[campo] }));
+// `camposDe` vivía aquí. Se movió a shared/ al empezar a auditar usuarios y roles:
+// esos cuerpos sí pueden traer contraseñas, y la lista de campos que no deben
+// guardarse tiene que ser una sola para todos los controladores.
+import { camposDe } from '../shared/auditoria-campos';
 
 export const ContenidoController = {
   async listarPublicados(req: Request, res: Response, next: NextFunction) {

@@ -457,7 +457,8 @@ input {
   align-items: center;
   width: 100%;
   box-sizing: border-box;
-  padding: 6px; /* <- Puedes modificar estos valores libremente (arriba/abajo, izquierda/derecha) */
+  padding: 6px;
+  /* <- Puedes modificar estos valores libremente (arriba/abajo, izquierda/derecha) */
   font-size: 0.875rem;
   font-weight: 500;
   color: #ffffff;
@@ -1151,6 +1152,8 @@ input {
   padding: 0;
   background: transparent;
   max-width: min(30rem, calc(100vw - 2rem));
+  width: 100%;
+  margin: auto;
 }
 
 .olo-modal::backdrop {
@@ -4254,7 +4257,7 @@ input {
 
 /* Sin esto un hijo con texto largo se niega a encogerse por debajo de su
    contenido y desborda la fila. */
-.olo-flex > * {
+.olo-flex>* {
   min-width: 0;
 }
 

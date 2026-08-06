@@ -1,6 +1,9 @@
 'use server';
 
 import { getAuthSessionSnapshot } from '@/shared/lib/session';
+import { cookies } from 'next/headers';
+import { revalidatePath } from 'next/cache';
+import { AUTH_USER_NAME_COOKIE_NAME, AUTH_USER_EMAIL_COOKIE_NAME } from '@/shared/lib/auth-cookies';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000';
 
@@ -44,7 +47,8 @@ export async function updateProfileInfo(id: string, data: { nombre: string; apel
         Authorization: `Bearer ${session.token}`,
       },
       body: JSON.stringify({
-        name: fullName,
+        name: data.nombre,
+        apellidos: data.apellidos,
         email: data.correo,
       }),
     });
@@ -53,6 +57,12 @@ export async function updateProfileInfo(id: string, data: { nombre: string; apel
       const err = await res.json().catch(() => ({}));
       return { success: false, error: err.message || err.error || 'Error al actualizar el perfil' };
     }
+
+    const cookieStore = await cookies();
+    cookieStore.set(AUTH_USER_NAME_COOKIE_NAME, fullName, { path: '/' });
+    cookieStore.set(AUTH_USER_EMAIL_COOKIE_NAME, data.correo, { path: '/' });
+
+    revalidatePath('/admin', 'layout');
 
     return { success: true };
   } catch (error) {

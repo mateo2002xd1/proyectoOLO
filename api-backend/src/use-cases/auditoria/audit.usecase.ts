@@ -1,6 +1,10 @@
-import { AuditRepository, type DatosAuditoria } from '../../repositories/auditoria.repository';
+import {
+  AuditRepository,
+  type DatosAuditoria,
+  type FiltrosAuditoria,
+} from '../../repositories/auditoria.repository';
 
-export type { DatosAuditoria };
+export type { DatosAuditoria, FiltrosAuditoria };
 
 /**
  * Registra una entrada en la bitácora (RF-07).
@@ -37,4 +41,4 @@ export const logAudit = async (datos: DatosAuditoria): Promise<void> => {
 export const getAuditByContentId = (contentId: string, contentType?: string) =>
   AuditRepository.findByContentId(contentId, contentType);
 
-export const getAllAudit = (params: any) => AuditRepository.findAll(params);
+export const getAllAudit = (filtros: FiltrosAuditoria) => AuditRepository.findAll(filtros);

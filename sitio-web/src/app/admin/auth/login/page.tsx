@@ -15,7 +15,6 @@ import {
   authLabelClass,
 } from '@/features/administracion/components/auth-ui';
 import { Button } from '@/shared/ui/atoms/button';
-import { ThemeToggle } from '@/shared/ui/molecules/theme-toggle';
 
 const INTRANET_EDITOR_URL =
   process.env.NEXT_PUBLIC_INTRANET_EDITOR_URL || 'http://localhost:3001/editor/inicio';
@@ -216,7 +215,6 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <>
-      <ThemeToggle />
       <AuthPageShell>
         <Suspense fallback={<div>Cargando...</div>}>
           <LoginForm />

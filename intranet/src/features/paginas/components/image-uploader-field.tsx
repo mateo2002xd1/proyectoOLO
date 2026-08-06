@@ -10,6 +10,7 @@ interface ImageUploaderFieldProps {
 
 export function ImageUploaderField({ value, onChange }: ImageUploaderFieldProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,16 +42,71 @@ export function ImageUploaderField({ value, onChange }: ImageUploaderFieldProps)
     }
   };
 
+  const handleDelete = async () => {
+    if (!value) return;
+
+    setIsDeleting(true);
+    setError(null);
+
+    try {
+      // Solo se borra del servidor si es un archivo que subimos nosotros;
+      // una URL externa (por ejemplo, pegada a mano) no se toca.
+      if (value.startsWith('/uploads/')) {
+        const res = await fetch('/api/upload', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: value }),
+        });
+
+        if (!res.ok) {
+          throw new Error('Error al eliminar el archivo');
+        }
+      }
+
+      onChange('');
+    } catch (err) {
+      setError(mensajeDeError(err, 'Error desconocido'));
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       {value && (
-        // src dinamico y tamano por CSS: next/image exigiria width/height fijos o remotePatterns
-        // eslint-disable-next-line @next/next/no-img-element
-        <img 
-          src={value} 
-          alt="Preview" 
-          style={{ width: '100%', maxHeight: '150px', objectFit: 'cover', borderRadius: '4px' }} 
-        />
+        <div style={{ position: 'relative' }}>
+          {/* src dinamico y tamano por CSS: next/image exigiria width/height fijos o remotePatterns */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={value}
+            alt="Preview"
+            style={{ width: '100%', maxHeight: '150px', objectFit: 'cover', borderRadius: '4px' }}
+          />
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={isDeleting}
+            title="Eliminar imagen"
+            style={{
+              position: 'absolute',
+              top: '4px',
+              right: '4px',
+              width: '24px',
+              height: '24px',
+              lineHeight: '24px',
+              textAlign: 'center',
+              padding: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.6)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '50%',
+              cursor: isDeleting ? 'not-allowed' : 'pointer',
+              opacity: isDeleting ? 0.7 : 1,
+            }}
+          >
+            ✕
+          </button>
+        </div>
       )}
       <input 
         type="text" 

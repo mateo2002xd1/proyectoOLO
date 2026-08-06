@@ -4,6 +4,7 @@ import sequelize from '../../../config/database';
 export class User extends Model {
   declare id: string;
   declare name: string;
+  declare apellidos: string;
   declare email: string;
   declare password_hash: string;
   declare role_id: string;
@@ -26,6 +27,7 @@ User.init(
   {
     id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     name: { type: DataTypes.TEXT, allowNull: false, field: 'nombre' },
+    apellidos: { type: DataTypes.TEXT, allowNull: true },
     email: { type: DataTypes.TEXT, allowNull: false, unique: true },
     password_hash: { type: DataTypes.TEXT },
     role_id: { type: DataTypes.UUID, allowNull: false, field: 'rol_id' },

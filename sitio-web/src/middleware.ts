@@ -93,6 +93,16 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // /admin/auditoria — solo Superadmin y Administrador (RF-07)
+  // Espejo de `auditoria.policies.ts` en la API, que es quien manda: la bitácora
+  // guarda IP y user-agent de cada editor, así que no la abre ni el propio editor.
+  // Aquí se corta antes para no llevar a nadie a una pantalla que solo puede dar 403.
+  if (pathname.startsWith('/admin/auditoria')) {
+    if (!isAdminRole) {
+      return loginRedirect();
+    }
+  }
+
   // /admin/editor/* — Superadmin, Administrador y Editor pueden acceder
   if (pathname.startsWith('/admin/editor')) {
     if (!isAdminRole && role !== 'Editor') {
@@ -118,13 +128,16 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Protege dashboard, usuarios/users, editor y maneja /admin/auth/login y /admin/auth/cambiar-contrasena.
+  // Protege dashboard, usuarios/users, auditoría, editor y maneja /admin/auth/login
+  // y /admin/auth/cambiar-contrasena.
   matcher: [
     '/admin/dashboard/:path*',
     '/admin/users/:path*',
     '/admin/users',
     '/admin/usuarios/:path*',
     '/admin/usuarios',
+    '/admin/auditoria/:path*',
+    '/admin/auditoria',
     '/admin/editor/:path*',
     '/admin/auth/login',
     '/admin/auth/cambiar-contrasena',

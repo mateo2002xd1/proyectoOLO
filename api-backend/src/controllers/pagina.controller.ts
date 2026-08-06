@@ -125,6 +125,11 @@ export const PaginaController = {
         req.params.versionId as string,
         ambitoDe(req)
       );
+      // Descartar una versión destruye trabajo sin publicar: si la página entera
+      // desaparece con ella, esta fila es lo único que queda de que existió.
+      await registrar(req, 'eliminar', result, [
+        { campo: 'paginaEliminada', antes: null, despues: result.paginaEliminada },
+      ]);
       res.json(result);
     } catch (err) { next(err); }
   },

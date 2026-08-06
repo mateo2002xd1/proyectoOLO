@@ -11,6 +11,12 @@ import type { Ambito } from '../../shared/ambito';
  * Si al borrarla la página se queda sin ninguna versión, se elimina también la
  * página: así el siguiente borrador vuelve a empezar por la versión 1 en vez de
  * seguir contando desde donde estaba.
+ *
+ * Devuelve además `pagina` y `version` porque **sin el id de la página el
+ * controlador no puede registrar nada**: `entidad_id` es NOT NULL, y esta era la
+ * única acción del ciclo editorial que destruye trabajo sin dejar huella. Es un
+ * añadido a la respuesta: quien solo lee `paginaEliminada` y `versionesRestantes`
+ * sigue funcionando igual.
  */
 export const eliminarVersion = async (slug: string, versionId: string, ambito: Ambito) => {
   const pagina = await PaginaRepository.findBySlug(slug, ambito);
@@ -28,13 +34,20 @@ export const eliminarVersion = async (slug: string, versionId: string, ambito: A
     );
   }
 
+  // Se copian antes de borrar: después de `eliminarPagina` la instancia deja de
+  // tener una fila detrás y lo que se registre saldría de un objeto huérfano.
+  const identidad = {
+    pagina: { id: pagina.id, slug: pagina.slug },
+    version: { numeroVersion: version.numeroVersion },
+  };
+
   await PaginaRepository.eliminarVersion(version);
 
   const restantes = await PaginaRepository.contarVersiones(pagina.id);
   if (restantes === 0) {
     await PaginaRepository.eliminarPagina(pagina);
-    return { eliminada: true, paginaEliminada: true, versionesRestantes: 0 };
+    return { ...identidad, eliminada: true, paginaEliminada: true, versionesRestantes: 0 };
   }
 
-  return { eliminada: true, paginaEliminada: false, versionesRestantes: restantes };
+  return { ...identidad, eliminada: true, paginaEliminada: false, versionesRestantes: restantes };
 };

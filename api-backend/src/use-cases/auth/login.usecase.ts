@@ -44,6 +44,7 @@ export const loginUseCase = async (email: string, password: string) => {
     id: user.id,
     email: user.email,
     name: user.name,
+    apellidos: (user as any).apellidos,
     role: user.role?.name,
     role_id: user.role_id,
     must_setup_security_questions: user.must_setup_security_questions,

@@ -25,12 +25,39 @@ export async function POST(request: Request) {
     const filePath = path.join(uploadDir, filename);
     fs.writeFileSync(filePath, buffer);
 
-    return NextResponse.json({ 
-      success: true, 
-      url: `/uploads/${filename}` 
+    return NextResponse.json({
+      success: true,
+      url: `/uploads/${filename}`
     });
   } catch (error) {
     console.error('Error al subir archivo:', error);
     return NextResponse.json({ error: 'Error interno del servidor al procesar el archivo.' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { url } = await request.json();
+
+    if (!url || typeof url !== 'string' || !url.startsWith('/uploads/')) {
+      return NextResponse.json({ error: 'Ruta de archivo inválida.' }, { status: 400 });
+    }
+
+    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+    const filePath = path.join(process.cwd(), 'public', url);
+
+    // El prefijo ya lo filtra, pero esto además bloquea ".." dentro de la ruta.
+    if (!filePath.startsWith(uploadDir)) {
+      return NextResponse.json({ error: 'Ruta de archivo inválida.' }, { status: 400 });
+    }
+
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error al eliminar archivo:', error);
+    return NextResponse.json({ error: 'Error interno del servidor al eliminar el archivo.' }, { status: 500 });
   }
 }
