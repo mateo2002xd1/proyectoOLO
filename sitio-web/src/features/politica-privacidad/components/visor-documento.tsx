@@ -11,16 +11,26 @@ import {
 interface VisorDocumentoProps {
   titulo: string;
   descripcion?: string;
+  /** URL del proxy interno (/api/docs/pdf?id=X) — usada por el iframe */
   url: string;
+  /**
+   * URL externa original en CompromISO SENA.
+   * Si se proporciona, se usa en los botones "Abrir en nueva pestaña" y
+   * "Descargar PDF". Si no, se usa la misma `url`.
+   */
+  urlExterna?: string;
 }
 
 export function VisorDocumento({
   titulo,
   descripcion,
-  url
+  url,
+  urlExterna,
 }: VisorDocumentoProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [hasFrameError, setHasFrameError] = useState(false);
+
+  /** URL que se muestra al usuario en acciones externas */
+  const urlAcciones = urlExterna ?? url;
 
   return (
     <div className="rounded-2xl border border-gray-200 dark:border-[#1e293b] bg-white dark:bg-[#131b2f] p-6 shadow-sm transition-all hover:shadow-md">
@@ -38,7 +48,7 @@ export function VisorDocumento({
         {/* Acciones Rápidas */}
         <div className="flex flex-wrap items-center gap-2">
           <a
-            href={url}
+            href={urlAcciones}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 dark:border-[#2d3649] bg-white dark:bg-[#0b1121] px-3.5 py-2 text-xs font-medium text-gray-700 dark:text-slate-200 shadow-sm transition hover:bg-gray-50 dark:hover:bg-[#1e2538] hover:text-[#00324D] dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-[#39A900]/30"
@@ -74,7 +84,6 @@ export function VisorDocumento({
           src={url}
           title={titulo}
           className="h-full w-full border-0"
-          onError={() => setHasFrameError(true)}
         />
 
         {/* Barra de pie de visualizador */}
@@ -83,7 +92,7 @@ export function VisorDocumento({
             Documento oficial alojado en CompromISO SENA
           </span>
           <a
-            href={url}
+            href={urlAcciones}
             target="_blank"
             rel="noopener noreferrer"
             className="text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 font-semibold underline text-xs"
@@ -109,7 +118,7 @@ export function VisorDocumento({
               </div>
               <div className="flex items-center gap-3">
                 <a
-                  href={url}
+                  href={urlAcciones}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-xs font-semibold text-[#00324D] dark:text-emerald-400 hover:underline"
