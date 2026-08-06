@@ -99,7 +99,8 @@ export function PoliticaPrivacidadView() {
             <VisorDocumento
               titulo="Política de Seguridad y Privacidad de la Información"
               descripcion="Documento oficial del Sistema Integrado de Gestión y Autocontrol CompromISO SENA. Lineamientos de seguridad digital y confidencialidad institucional."
-              url="https://compromiso.sena.edu.co/mapa/descarga.php?id=6701"
+              url="/api/docs/pdf?id=6701"
+              urlExterna="https://compromiso.sena.edu.co/mapa/descarga.php?id=6701"
             />
           )}
 
@@ -107,7 +108,8 @@ export function PoliticaPrivacidadView() {
             <VisorDocumento
               titulo="Política de Tratamiento para Protección de Datos Personales"
               descripcion="Régimen y garantías institucionales para el tratamiento, protección de datos personales y ejercicio de derechos de Habeas Data conforme a la Ley 1581 de 2012."
-              url="https://compromiso.sena.edu.co/mapa/descarga.php?id=6914"
+              url="/api/docs/pdf?id=6914"
+              urlExterna="https://compromiso.sena.edu.co/mapa/descarga.php?id=6914"
             />
           )}
 
@@ -130,31 +132,31 @@ export function PoliticaPrivacidadView() {
               Para ejercer sus derechos de conocer, actualizar, rectificar o suprimir sus datos personales, o para presentar cualquier consulta o reclamo relativo a la protección de datos, el SENA pone a disposición los siguientes canales oficiales:
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-              <div className="rounded-xl border border-slate-200 dark:border-[#1e293b] bg-slate-50 dark:bg-[#0b1121] p-4 transition-colors">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
+              <div>
                 <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Correo Electrónico</span>
-                <p className="font-semibold text-gray-900 dark:text-[#f6f6f6] text-xs mt-1.5 truncate">
+                <p className="font-semibold text-gray-900 dark:text-[#f6f6f6] text-xs mt-1 truncate">
                   servicioalciudadano@sena.edu.co
                 </p>
               </div>
 
-              <div className="rounded-xl border border-slate-200 dark:border-[#1e293b] bg-slate-50 dark:bg-[#0b1121] p-4 transition-colors">
+              <div>
                 <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Línea Gratuita Nacional</span>
-                <p className="font-semibold text-gray-900 dark:text-[#f6f6f6] text-xs mt-1.5">
+                <p className="font-semibold text-gray-900 dark:text-[#f6f6f6] text-xs mt-1">
                   01 8000 910270 • (601) 343 0111
                 </p>
               </div>
 
-              <div className="rounded-xl border border-slate-200 dark:border-[#1e293b] bg-slate-50 dark:bg-[#0b1121] p-4 transition-colors">
+              <div>
                 <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Dirección General</span>
-                <p className="font-semibold text-gray-900 dark:text-[#f6f6f6] text-xs mt-1.5">
+                <p className="font-semibold text-gray-900 dark:text-[#f6f6f6] text-xs mt-1">
                   Calle 57 No. 8 - 69, Bogotá D.C.
                 </p>
               </div>
 
-              <div className="rounded-xl border border-slate-200 dark:border-[#1e293b] bg-slate-50 dark:bg-[#0b1121] p-4 transition-colors">
+              <div>
                 <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Tiempos de Respuesta</span>
-                <p className="font-semibold text-gray-900 dark:text-[#f6f6f6] text-xs mt-1.5">
+                <p className="font-semibold text-gray-900 dark:text-[#f6f6f6] text-xs mt-1">
                   10 a 15 días hábiles (Ley 1581)
                 </p>
               </div>
