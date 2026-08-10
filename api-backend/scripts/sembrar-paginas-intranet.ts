@@ -362,9 +362,10 @@ const PAGINAS: Record<string, { titulo: string; content: ReturnType<typeof bloqu
           '<li>Trabajos internos y referencias.</li>' +
           '<li>Herramientas y métodos.</li>' +
           '</ul>',
-        imagenSrc: '/assets/img/Seguimiento-laboral.png',
-        imagenAlt: 'Portal de aprendizaje',
+        imagenSrc: '',
+        imagenAlt: '',
         pieDeImagen: '',
+        archivoUrl: '/uploads/documents/Presentación1.pptx',
         ladoImagen: 'derecha',
         fondo: 'gris',
       }),
