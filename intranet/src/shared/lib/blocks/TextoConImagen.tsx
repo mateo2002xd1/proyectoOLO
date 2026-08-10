@@ -1,8 +1,11 @@
+'use client';
+
 import type { ReactNode } from 'react';
 import { resaltar } from './resaltar';
+import { PptxViewer } from './PptxViewer';
 
 /**
- * Dos columnas: texto con formato a un lado, imagen al otro.
+ * Dos columnas: texto con formato a un lado, imagen (o visor de presentación) al otro.
  *
  * Es el montaje de «¿Cuál es el objetivo?» en la encuesta de calidad de la
  * formación y de «Portal de aprendizaje» en la de seguimiento laboral. El texto
@@ -11,6 +14,9 @@ import { resaltar } from './resaltar';
  *
  * `pieDeImagen` existe porque una de las dos lleva una leyenda verde debajo de
  * la captura; sin texto, no se pinta nada.
+ *
+ * `archivoUrl` es opcional: cuando se provee, el lado derecho muestra el visor
+ * de presentación PPTX en lugar de una imagen estática.
  */
 export interface TextoConImagenProps {
   titulo?: string;
@@ -18,6 +24,7 @@ export interface TextoConImagenProps {
   imagenSrc?: string;
   imagenAlt?: string;
   pieDeImagen?: string;
+  archivoUrl?: string;
   ladoImagen?: 'derecha' | 'izquierda';
   fondo?: 'gris' | 'blanco';
 }
@@ -28,6 +35,7 @@ export function TextoConImagen({
   imagenSrc,
   imagenAlt = '',
   pieDeImagen,
+  archivoUrl,
   ladoImagen = 'derecha',
   fondo = 'gris',
 }: TextoConImagenProps) {
@@ -37,7 +45,12 @@ export function TextoConImagen({
     </div>
   );
 
-  const columnaImagen = imagenSrc ? (
+  // Si hay archivoUrl, se muestra el visor de presentación; si no, la imagen estática.
+  const columnaImagen = archivoUrl ? (
+    <div className="tasa-ppt-viewer-wrapper">
+      <PptxViewer fileUrl={archivoUrl} />
+    </div>
+  ) : imagenSrc ? (
     <div className="flex-1 w-full flex flex-col items-center lg:items-end">
       <div className="relative w-full max-w-lg h-auto rounded-xl overflow-hidden bg-white shadow-sm">
         {/* src editable desde el editor: next/image exigiria dimensiones fijas */}
@@ -45,7 +58,10 @@ export function TextoConImagen({
         <img src={imagenSrc} alt={imagenAlt} className="w-full h-auto object-contain" />
       </div>
       {pieDeImagen && (
-        <p className="mt-4 text-[#2e7d32] font-bold text-center lg:text-right w-full max-w-lg pr-4">
+        <p
+          style={{ marginTop: '2rem' }}
+          className="text-[#2e7d32] font-bold text-center lg:text-right w-full max-w-lg pr-4"
+        >
           {pieDeImagen}
         </p>
       )}

@@ -247,12 +247,24 @@ const puckConfigBase: Config = {
       fields: {
         titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
         contenido: { type: 'richtext', label: 'Contenido' },
-        imagenSrc: campoImagen('Imagen'),
+        imagenSrc: campoImagen('Imagen (opcional si hay presentación)'),
         imagenAlt: { type: 'text', label: 'Texto alternativo' },
         pieDeImagen: { type: 'text', label: 'Leyenda bajo la imagen' },
+        archivoUrl: {
+          type: 'custom',
+          label: 'Presentación PPTX (reemplaza la imagen)',
+          render: ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
+            <ArchivoUploaderField
+              value={value}
+              onChange={onChange}
+              accept=".pptx,.ppt"
+              etiquetaBoton="Subir presentación"
+            />
+          ),
+        },
         ladoImagen: {
           type: 'radio',
-          label: 'Lado de la imagen',
+          label: 'Lado de la imagen / presentación',
           options: [
             { label: 'Derecha', value: 'derecha' },
             { label: 'Izquierda', value: 'izquierda' },
@@ -266,6 +278,7 @@ const puckConfigBase: Config = {
         imagenSrc: '',
         imagenAlt: '',
         pieDeImagen: '',
+        archivoUrl: '',
         ladoImagen: 'derecha',
         fondo: 'gris',
       },
