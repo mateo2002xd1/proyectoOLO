@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect, useTransition } from 'react';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { cumplePolitica, primerFallo } from '@olo/password-policy';
 import { getProfileData, updateProfileInfo, changePassword } from '../profile.actions';
+import { PasswordRequisitos } from '../../auth/components/auth-ui';
 
 export function ProfileForm() {
     const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -12,6 +14,7 @@ export function ProfileForm() {
     const [userId, setUserId] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const [passwordNueva, setPasswordNueva] = useState('');
 
     const [formData, setFormData] = useState({
         nombre: '',
@@ -48,6 +51,12 @@ export function ProfileForm() {
             if (isChangingPassword) {
                 if (data.password_nueva !== data.password_confirmacion) {
                     setMessage({ type: 'error', text: 'Las contraseñas nuevas no coinciden' });
+                    return;
+                }
+                // El servidor la exige igualmente; esto solo evita el viaje de ida y
+                // vuelta para decir lo que ya se ve en la lista de requisitos.
+                if (!cumplePolitica(data.password_nueva as string)) {
+                    setMessage({ type: 'error', text: primerFallo(data.password_nueva as string) ?? '' });
                     return;
                 }
                 const res = await changePassword(data);
@@ -200,6 +209,11 @@ export function ProfileForm() {
                                             type={showNueva ? "text" : "password"}
                                             id="password_nueva"
                                             name="password_nueva"
+                                            // Controlado solo para poder pintar los requisitos mientras se
+                                            // escribe; `name` se conserva porque el envío sigue leyéndose
+                                            // con FormData, como el resto del formulario.
+                                            value={passwordNueva}
+                                            onChange={(e) => setPasswordNueva(e.target.value)}
                                             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors bg-white dark:bg-gray-800 dark:text-gray-100 pr-10"
                                             placeholder="••••••••"
                                         />
@@ -215,6 +229,7 @@ export function ProfileForm() {
                                             )}
                                         </button>
                                     </div>
+                                    <PasswordRequisitos password={passwordNueva} className="" />
                                 </div>
                                 <div className="space-y-2">
                                     <label htmlFor="password_confirmacion" className="block text-sm font-medium text-gray-700 dark:text-gray-300">

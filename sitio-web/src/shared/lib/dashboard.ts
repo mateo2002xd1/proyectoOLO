@@ -1,5 +1,5 @@
 /**
- * Copia histórica de `features/administracion/services/dashboard.service.ts`.
+ * Copia histórica de `features/administracion/auth/services/dashboard.service.ts`.
  * Ningún módulo la importa; se deja como re-export para no duplicar la lógica
  * mientras se confirma que puede borrarse.
  */
@@ -9,4 +9,4 @@ export {
   type PanelStat,
   type PanelAlert,
   type PanelActivity,
-} from '@/features/administracion/services/dashboard.service';
+} from '@/features/administracion/auth/services/dashboard.service';

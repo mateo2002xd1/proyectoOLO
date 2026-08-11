@@ -3,9 +3,11 @@
 import { useState, useEffect, FormEvent } from 'react';
 import Link from 'next/link';
 import { Button } from '@/shared/ui/atoms/button';
+import { cumplePolitica, primerFallo } from '@olo/password-policy';
 import {
   AuthGeneralError,
   PasswordField,
+  PasswordRequisitos,
   authCardClass,
   authErrorTextClass,
   authInputClass,
@@ -69,10 +71,11 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
 
   const validateStep1 = (): boolean => {
     const e: Record<string, string> = {};
+    // La temporal se *comprueba*, no se elige: la emitió el sistema y ya cumple la
+    // política. Medirla contra §1 aquí solo podría rechazar una clave válida.
     if (!tempPassword) e.tempPassword = 'La contraseña temporal es requerida';
-    else if (tempPassword.length < 8) e.tempPassword = 'Mínimo 8 caracteres';
     if (!newPassword) e.newPassword = 'El nuevo passcode es requerido';
-    else if (newPassword.length < 8) e.newPassword = 'Mínimo 8 caracteres';
+    else if (!cumplePolitica(newPassword)) e.newPassword = primerFallo(newPassword) ?? '';
     if (!confirmPassword) e.confirmPassword = 'Confirma tu passcode';
     else if (newPassword !== confirmPassword) e.confirmPassword = 'Los passcodes no coinciden';
     setErrors(e);
@@ -188,7 +191,9 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
               value={newPassword}
               onChange={(v) => { setNewPassword(v); setErrors({}); }}
               error={errors.newPassword}
+              className="mb-2"
             />
+            <PasswordRequisitos password={newPassword} />
             <PasswordField
               id="confirm-password"
               label="Ingresa nuevamente el passcode"

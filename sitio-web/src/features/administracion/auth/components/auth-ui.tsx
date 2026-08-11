@@ -2,6 +2,7 @@
 
 import { useState, ReactNode } from 'react';
 import Link from 'next/link';
+import { LONGITUD_MINIMA, requisitosDe } from '@olo/password-policy';
 
 /**
  * Primitivas compartidas por las pantallas de autenticación
@@ -89,7 +90,7 @@ export function PasswordField({
   value,
   onChange,
   error,
-  placeholder = 'Mínimo 8 caracteres',
+  placeholder = `Mínimo ${LONGITUD_MINIMA} caracteres`,
   autoComplete,
   className = 'mb-4',
 }: {
@@ -129,6 +130,42 @@ export function PasswordField({
       </div>
       {error && <p className={authErrorTextClass}>{error}</p>}
     </div>
+  );
+}
+
+/**
+ * Lista de requisitos de §1, marcando cuáles cumple ya lo tecleado.
+ *
+ * Se pinta entera desde el principio —incluso con el campo vacío— en vez de ir
+ * soltando errores al enviar: con cuatro reglas, descubrirlas de una en una a base
+ * de rechazos es una forma segura de que alguien abandone en el primer intento.
+ *
+ * `aria-live` para que un lector de pantalla anuncie los que se van cumpliendo; sin
+ * eso la lista es información visual que no llega a todo el mundo.
+ */
+export function PasswordRequisitos({ password, className = 'mb-4' }: { password: string; className?: string }) {
+  const requisitos = requisitosDe(password);
+
+  return (
+    <ul className={`${className} space-y-1`} aria-live="polite">
+      {requisitos.map((requisito) => (
+        <li
+          key={requisito.id}
+          className={`flex items-start gap-1.5 text-xs ${
+            requisito.cumplido
+              ? 'text-green-700 dark:text-green-400'
+              : 'text-gray-500 dark:text-slate-400'
+          }`}
+        >
+          <span aria-hidden="true" className="mt-px leading-none">
+            {requisito.cumplido ? '✓' : '○'}
+          </span>
+          {/* El estado va también en texto: el color y el símbolo solos no lo dicen. */}
+          <span className="sr-only">{requisito.cumplido ? 'Cumplido:' : 'Pendiente:'}</span>
+          <span>{requisito.etiqueta}</span>
+        </li>
+      ))}
+    </ul>
   );
 }
 

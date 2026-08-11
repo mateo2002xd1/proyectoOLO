@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { UserRepository } from '../../repositories/usuarios.repository';
 import { SecurityQuestionRepository } from '../../repositories/security-questions.repository';
+import { hashearPassword, exigirPasswordValida } from '../../shared/password-policy';
 
 const SECURITY_QUESTIONS_CATALOG = [
   { key: 'pet_name', label: '¿Cuál es el nombre de tu primera mascota?' },
@@ -108,17 +109,25 @@ export const verifyAnswers = async (email: string, answersData: any[]) => {
 };
 
 export const recoverPassword = async (email: string, answersData: any[], newPassword: string) => {
-  if (!newPassword || newPassword.length < 8)
-    throw Object.assign(new Error('La nueva contraseña debe tener al menos 8 caracteres'), { status: 400 });
+  // Se valida **antes** de comprobar las respuestas: si la contraseña no cumple la
+  // política, gastar un intento de las preguntas —y arriesgar el bloqueo de §3— por
+  // un error de formato sería castigar al usuario por lo que no es.
+  // Consideración 4: el flujo de recuperación aplica exactamente las mismas reglas.
+  exigirPasswordValida(newPassword);
 
   const user = await verifyAnswers(email, answersData);
 
-  const passwordHash = await bcrypt.hash(newPassword, 12);
+  const passwordHash = await hashearPassword(newPassword);
   await UserRepository.update(user.id, {
     password_hash: passwordHash,
     failed_security_attempts: 0,
+    // Recuperar la contraseña con éxito también libera el bloqueo del login: es el
+    // camino que §3 deja abierto a quien se quedó fuera por intentos fallidos.
+    failed_login_attempts: 0,
     locked_until: null,
   });
 
-  return { message: 'Contraseña actualizada exitosamente' };
+  // El id sale para que el controlador pueda auditar el cambio: quien recupera no
+  // tiene sesión, así que no hay `req.user` de donde sacarlo.
+  return { message: 'Contraseña actualizada exitosamente', usuarioId: user.id };
 };

@@ -8,7 +8,6 @@ export const defaultIdentidadVisual: IdentidadVisual = {
     { label: 'Inicio', href: '/', active: true },
     { label: 'Clasificaciones', href: '/clasificacion' },
     { label: 'Tendencias', href: '/tendencias' },
-    { label: 'Mercado Laboral', href: '/mercado-laboral' },
     { label: 'Publicaciones', href: '/publicaciones' },
     { label: 'APE', href: '/ape' },
   ],

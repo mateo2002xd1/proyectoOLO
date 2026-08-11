@@ -3,6 +3,7 @@
 import { useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { validarEmail } from '@olo/email-policy';
 import { authApi } from '@/features/auth';
 import { ReturnToSiteLink } from '@/shared/ui/molecules/ReturnToSiteLink';
 import { mensajeDeError } from '@/shared/lib/errors';
@@ -16,12 +17,9 @@ export function RecoveryView() {
 
 
   const validate = (): boolean => {
-    if (!email.trim()) {
-      setError('El correo es requerido');
-      return false;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError('Ingrese un correo válido');
+    const fallo = validarEmail(email);
+    if (fallo) {
+      setError(fallo);
       return false;
     }
     return true;

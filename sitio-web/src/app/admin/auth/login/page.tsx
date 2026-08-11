@@ -2,7 +2,9 @@
 
 import { Suspense, useState, FormEvent } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { FirstLoginFlow } from '@/features/administracion/components/first-login-flow';
+import Link from 'next/link';
+import { validarEmail } from '@olo/email-policy';
+import { FirstLoginFlow } from '@/features/administracion/auth/components/first-login-flow';
 import {
   AuthCardHeader,
   AuthGeneralError,
@@ -13,7 +15,7 @@ import {
   authErrorTextClass,
   authInputClass,
   authLabelClass,
-} from '@/features/administracion/components/auth-ui';
+} from '@/features/administracion/auth/components/auth-ui';
 import { Button } from '@/shared/ui/atoms/button';
 
 const INTRANET_EDITOR_URL =
@@ -59,8 +61,11 @@ function LoginForm() {
 
   const validate = (): boolean => {
     const next: typeof errors = {};
-    if (!email.trim()) next.email = 'El correo es requerido';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) next.email = 'Ingrese un correo válido';
+    // Forma y dominio institucional, en una sola comprobación. El servidor lo exige
+    // igualmente; esto evita el viaje de ida y vuelta y, sobre todo, da el motivo
+    // real: el login responde 401 genérico a un dominio ajeno, a propósito.
+    const falloEmail = validarEmail(email);
+    if (falloEmail) next.email = falloEmail;
     if (!password) next.password = 'La contraseña es requerida';
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -199,8 +204,19 @@ function LoginForm() {
           value={password}
           onChange={setPassword}
           error={errors.password}
-          className="mb-6"
+          className="mb-2"
         />
+
+        {/* Va antes del botón y no al pie: quien no recuerda su contraseña lo busca
+            justo al lado del campo que no puede rellenar. */}
+        <div className="mb-6 text-right">
+          <Link
+            href="/admin/auth/recuperar"
+            className="text-xs text-brand-blue-dark hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-focus rounded"
+          >
+            ¿Olvidaste tu contraseña?
+          </Link>
+        </div>
 
         <Button type="submit" variant="success" disabled={isLoading} className="w-full">
           {isLoading ? 'INICIANDO SESIÓN' : 'INGRESAR'}

@@ -14,6 +14,7 @@ export class User extends Model {
   declare must_setup_security_questions: boolean;
   declare must_change_password: boolean;
   declare failed_security_attempts: number;
+  declare failed_login_attempts: number;
   declare locked_until: Date | null;
   declare created_by: string | null;
   declare created_at: Date;
@@ -45,10 +46,17 @@ User.init(
       defaultValue: false,
       field: 'debe_cambiar_password',
     },
+    // Cuenta los fallos de las *preguntas de seguridad* (3 intentos, 30 min). El
+    // login lleva el suyo aparte porque §3 le pide otro umbral.
     failed_security_attempts: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
       field: 'intentos_fallidos',
+    },
+    failed_login_attempts: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      field: 'intentos_fallidos_login',
     },
     locked_until: { type: DataTypes.DATE, field: 'bloqueado_hasta' },
     created_by: { type: DataTypes.UUID, field: 'creado_por' },

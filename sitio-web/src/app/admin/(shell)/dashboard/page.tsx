@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { PanelGeneralDashboard } from '@/features/administracion/components/panel-general';
+import { PanelGeneralDashboard } from '@/features/administracion/auth/components/panel-general';
 
 export const metadata: Metadata = {
   title: 'Panel Administrativo',

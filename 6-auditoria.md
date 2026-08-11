@@ -5,6 +5,92 @@
 
 ---
 
+## sesión 11-08-2026 (2.ª parte): dominio institucional y recuperación de contraseña en el sitio web
+
+### 1. Restricción a `@sena.edu.co`
+
+Autoridad en `api-backend/src/shared/email-policy.ts`, aplicada en **tres** puntos —login, alta y **cambio** de correo—. El tercero no estaba en el encargo pero sin él la regla no se sostiene: bastaría con crear la cuenta con un correo válido y cambiarlo después.
+
+- **La comparación es `endsWith('@sena.edu.co')`, no `includes`.** `atacante@sena.edu.co.dominio-falso.com` contiene el dominio sin pertenecer a él, y `alguien@nosena.edu.co` termina en `sena.edu.co`. La arroba es lo que descarta ambos. Los tres casos están en el script de verificación.
+- **En el login no se devuelve el motivo.** Un dominio ajeno recibe el mismo `401 Credenciales inválidas` que un usuario inexistente, y se rechaza antes de consultar la base. Decir «dominio no permitido» convertiría el login en un detector de dominios. En el alta sí se da el motivo real: quien la usa es un administrador autenticado.
+- **Antes de aplicarlo se comprobó a quién dejaba fuera.** Había un usuario `dd@dd.co` (rol Administrador, activo, con acceso ese mismo día) que habría quedado bloqueado. Se verificó que no tenía **ninguna** fila asociada en las 19 tablas con clave foránea contra `usuarios`, y se eliminó por decisión del responsable. La cuenta maestra (`LOCAL_AUTH_EMAIL`) sí cumple el dominio, así que no se vio afectada. Tras el cambio: 8 usuarios, todos institucionales.
+
+### 2. Recuperación de contraseña en `sitio-web` (RF-05)
+
+Existía en la intranet y no en el sitio. Se añadió `/admin/auth/recuperar` + el enlace «¿Olvidaste tu contraseña?» en el login, sin tocar el backend: los tres endpoints ya existían y solo faltaban los proxies (`user-questions`, `verify`, `recover-password`).
+
+- **Un componente con pasos internos, no cuatro rutas.** La intranet reparte el flujo en cuatro páginas y arrastra el estado por `sessionStorage` — **incluidas las respuestas de seguridad en claro**, que quedan escritas en el navegador. Aquí el estado vive en el componente: al salir desaparece solo. Es además el idioma que ya usaba `first-login-flow.tsx`.
+- **Las tres respuestas se verifican juntas, no una a una**, o la pantalla diría cuál se falló. Al fallar se vacía el cuestionario y se vuelve a la primera: dejar las respuestas puestas invitaría a ir cambiando una hasta acertar.
+- **`/admin/auth/recuperar` es pública sin tocar `middleware.ts`**, porque el `matcher` es una lista explícita y la ruta no entra en ella. Conviene saberlo: la protección de `/admin/*` no es por prefijo.
+
+### 3. Un aviso sobre cómo se verifica
+
+La primera tanda de pruebas contra `localhost:4000` **no probaba nada**: ese proceso se había arrancado antes de los cambios y `npm run dev` es `ts-node` sin watch, así que servía código viejo. Los cuatro correos de prueba no existían en la base, y el `401` idéntico que devolvía era el comportamiento de siempre. Se detectó porque un error de política que debía salir como 400 salió como 401. **Para probar cambios del backend hay que reiniciarlo**; aquí se levantó una segunda instancia en `:4001` para no tocar la del entorno.
+
+### 4. Verificación
+
+- **`npm run email:verificar` (script nuevo, 15 comprobaciones)**: dominio, normalización y las tres formas de evasión.
+- **En ejecución, contra la base real**: el error de política en recuperación sale como **400 con el motivo concreto**, y un correo inexistente con contraseña válida sigue dando el **401 genérico** — la excepción de `CODIGO_PASSWORD_INVALIDA` funciona sin romper la anti-enumeración.
+- **El bloqueo de §3, probado de punta a punta** con una cuenta temporal creada y borrada después: los intentos 1–4 incrementan el contador sin bloquear, el 5.º escribe `bloqueado_hasta`, y con la cuenta bloqueada **ni la contraseña correcta entra** (423). Esto cierra el pendiente «sin probar en ejecución» de la primera parte de la sesión.
+- **`createUser` rechaza** tanto el dominio ajeno como la evasión por subcadena.
+- `tsc --noEmit` limpio en los tres proyectos; `next build` correcto en ambas apps, con `/admin/auth/recuperar` y los tres proxies nuevos en la tabla de rutas.
+
+### Pendiente al cierre
+
+- **El flujo de recuperación no se ejerció desde el navegador**: se verificaron los endpoints y el build, no la pantalla con un usuario real que tenga preguntas configuradas.
+- **La intranet conserva las respuestas de seguridad en `sessionStorage`** (`RecoveryView` → `SecurityQuestionsView` → `ResetPasswordView`). No se tocó para no rehacer un flujo que funciona, pero es la misma debilidad que aquí se evitó.
+- **`@sena.edu.co` está escrito como constante en dos sitios** (backend y `@olo/email-policy`). Si algún día se admite otro dominio —`@misena.edu.co` para aprendices, por ejemplo— hay que cambiarlo en ambos.
+
+---
+
+## sesión 11-08-2026: la política de contraseñas, y un bloqueo por intentos que nunca podía dispararse
+
+Fase A de las Directivas de Contraseñas (§1 composición, §3 protección, y la trazabilidad de la consideración 2). §2 —historial de 5 y expiración a 90 días— queda fuera a propósito; el porqué está en «Pendiente al cierre».
+
+### 1. Lo que la política daba por hecho y no existía
+
+La auditoría previa importaba más que el código: tres de las cuatro afirmaciones de partida eran falsas contra el repositorio real.
+
+- **El bloqueo de §3 no existía, y no podía existir.** `login.usecase.ts` *leía* `bloqueado_hasta` pero **nunca lo escribía**: la comprobación estaba escrita y era inalcanzable, así que fallar mil veces seguidas no tenía ninguna consecuencia. Lo que sí había es un `rateLimit` **por IP** (10/15min) en `auth.routes.ts`, que es otro control —un atacante que rote direcciones lo esquiva y no protege una cuenta concreta— y que se confunde fácil con este.
+- **`intentos_fallidos` no era del login.** Es de las preguntas de seguridad (3 intentos, 30 minutos). Reutilizarla para §3 (5 intentos, 15 minutos) habría mezclado dos contadores con umbrales distintos y bloqueado a destiempo en ambos flujos. De ahí la columna aparte.
+- **El cron con el que la consideración 3 pedía integrarse no existe.** `revisar-caducidad.job.ts` y `usuario-caducado.event.ts` son stubs con TODOs, y `deactivateExpiredUsers()` está escrita pero **no la llama nadie**. No había dónde engancharse: habría que construirlo.
+- **Cinco caminos escribían un hash, con cinco criterios distintos.** Cuatro comprobaban `length < 8`; el quinto —`updateUser`, por donde un administrador fija la contraseña de otro— **no comprobaba absolutamente nada**, ni la longitud.
+
+### 2. Lo que se construyó
+
+- **`api-backend/src/shared/password-policy.ts`**, la autoridad única. Longitud, categorías, caracteres, normalización, hasheo, comparación y generación de temporales. Los cinco puntos de escritura pasan ahora por aquí.
+- **`packages/password-policy/`**, paquete compartido por las dos apps siguiendo el patrón de `blocks-renderer` (`main` a `src/index.ts`, sin build). Solo valida y explica: no importa `bcrypt` ni `crypto` porque corre en el navegador. Son dos copias con responsabilidades separadas —una decide, otra explica—, que es manejable; cinco que deciden, no.
+- **Migración `011-politica-passwords`**: la columna `intentos_fallidos_login` y el verbo `cambiar_password` en el CHECK de `auditoria_cambios`.
+- **`logCambioDePassword`** en el use-case de auditoría, con `via` (`primer-inicio` / `cambio-voluntario` / `recuperacion`). Los tres caminos por los que un usuario cambia su propia contraseña **no escribían ninguna fila**: se auditaba solo el cambio hecho por un administrador, por ser el único que pasaba por `usuarios.controller.ts` — justo al revés de lo que la Ley 1581 necesita.
+- **`PasswordRequisitos`** en las dos apps (Tailwind en `sitio-web`, convención `classPrefix` + CSS en `intranet`): la lista de §1 marcando lo que ya se cumple, visible desde el campo vacío.
+
+### 3. Decisiones que no son obvias
+
+- **El máximo real es 72 bytes, no los 256 que dice §1.** bcrypt ignora todo lo que pase de ahí: dos contraseñas que compartan los primeros 72 bytes abren la misma cuenta. Se valida el límite verdadero y se rechaza antes de hashear en vez de truncar en silencio. **§1 del documento de directivas debería corregirse**; la alternativa era migrar a argon2 (que §3 permite) y se descartó por el rehash progresivo que implica.
+- **Se admiten `ñ` y tildes, contra la letra de §1.** Prohibir Unicode entero rechazaría `Contraseña2026!` en un producto del SENA. Se bloquea lo que de verdad no se puede volver a teclear: emojis, categorías `\p{C}` (control, formato, ancho cero) y todo espacio que no sea U+0020 —un NBSP copiado desde Word es invisible y deja a alguien fuera de su cuenta sin explicación posible—.
+- **Se normaliza a NFC y se hashea la forma normalizada.** `exigirPasswordValida` **devuelve** la contraseña a propósito, para forzar a quien llama a hashear lo que salió y no lo que entró. `compararPassword` prueba primero el texto crudo y solo después el normalizado: las contraseñas anteriores a este módulo se hashearon sin normalizar, y comparar solo NFC habría dejado fuera a quien tuviera una tilde descompuesta guardada.
+- **Los formularios de *inicio de sesión* no validan la política.** Es el cambio más delicado de la sesión: `LoginView.tsx` de intranet exigía 8 caracteres, y subirlo a 12 habría dejado a **todos los usuarios actuales con contraseña de 8–11 caracteres sin poder ni enviar el formulario** —ni llegar a recuperación, que está detrás—. La política se aplica donde se *elige* contraseña. Por lo mismo, la contraseña temporal del primer ingreso tampoco se mide contra §1: se comprueba, no se elige.
+- **La recuperación devuelve el error de política tal cual.** `recoverPasswordCtrl` sustituye a propósito cualquier error por un mensaje genérico para no delatar si un correo existe. Un incumplimiento de §1 habla de lo que el usuario acaba de teclear y se valida **antes** de tocar la base, así que no revela nada de la cuenta; sin la excepción, quien eligiera una contraseña débil vería «verifica los datos» sin forma de saber qué corregir. De ahí `CODIGO_PASSWORD_INVALIDA`.
+- **Las temporales se generan y se comprueban.** `base64url` no garantiza 3 categorías por sí solo. Daba igual cuando nadie validaba; ahora una temporal que incumpla §1 sería una clave que el sistema emite y luego rechaza.
+- **Un restablecimiento y una recuperación con éxito limpian el bloqueo.** Devolver el acceso es justo su función: dejar la cuenta bloqueada haría inútil la contraseña recién emitida.
+
+### 4. Verificación
+
+- **`npm run password:verificar` (script nuevo, 18 comprobaciones, todas OK)**: los casos de §1 —incluidos `ñ`, tilde, emoji, NBSP, ancho cero y el desbordamiento de 72 bytes con 40 `ñ`—, 500 temporales generadas que cumplen la política, y el ida y vuelta de hasheo con la forma descompuesta.
+- **Migración aplicada contra la base real (Neon)** y comprobada después: `intentos_fallidos` e `intentos_fallidos_login` conviven como columnas separadas, y `ck_auditoria_accion` admite `cambiar_password`.
+- `tsc --noEmit` limpio en los tres proyectos; `next build` correcto en `sitio-web` e `intranet`.
+
+### Pendiente al cierre
+
+- **§2 entero, sin empezar**: historial de las últimas 5 (necesita tabla nueva), expiración a 90 días (necesita `password_changed_at` — **ojo: `expiration_date` es la caducidad de la *cuenta*, RF-16, no de la contraseña**; mezclarlas rompería RF-16) y el evento `ContrasenaPorExpirar`.
+- **El cron diario no existe** y hay que construirlo, no integrarse con él. `deactivateExpiredUsers()` ya está escrita y sin llamar: es el punto de partida.
+- **Sin probar en ejecución**: el bloqueo de 5 intentos y las tres escrituras nuevas de bitácora se verificaron por tipos y esquema, no ejerciendo los endpoints contra la base.
+- **Los roles son 6, no los 3 de la consideración 5**: falta decidir qué hacen `superadmin` y `visitante_interno` cuando se implemente la expiración de §2.
+
+*(Cerrado en esta misma sesión: `4-reglas.md` se actualizó para que las directivas digan lo que el sistema hace de verdad — el tope real de 72 bytes, la admisión de `ñ` y tildes, la distinción entre el bloqueo por cuenta y el límite por IP, dónde se aplica la política y dónde no, y la consideración 3 corregida: el cron no existe, hay que construirlo. Se añadió además §5 con el estado de implementación por sección.)*
+
+---
+
 ## sesión 04-08-2026: la pantalla `/admin/auditoria`, y dos administradores que no dejaban rastro
 
 La sesión anterior dejó la bitácora escribiendo y su lectura cerrada por rol, pero **sin pantalla**: el enlace «Auditoría» del sidebar llevaba a un 404. Esta sesión construye la pantalla y cierra los huecos de registro que la habrían dejado medio vacía.

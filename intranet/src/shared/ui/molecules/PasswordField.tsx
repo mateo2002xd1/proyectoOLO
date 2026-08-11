@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { LONGITUD_MINIMA } from '@olo/password-policy';
 
 interface PasswordFieldProps {
   id?: string;
@@ -17,7 +18,7 @@ export function PasswordField({
   classPrefix,
   value,
   onChange,
-  placeholder = 'mínimo 8 caracteres',
+  placeholder = `mínimo ${LONGITUD_MINIMA} caracteres`,
   error,
   label,
 }: PasswordFieldProps) {

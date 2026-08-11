@@ -1,8 +1,13 @@
-import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { UserRepository } from '../../repositories/usuarios.repository';
 import { RoleRepository } from '../../repositories/roles.repository';
 import { config } from '../../config';
+import {
+  generarPasswordTemporal,
+  hashearPassword,
+  BCRYPT_ROUNDS,
+} from '../../shared/password-policy';
+import { exigirEmailInstitucional } from '../../shared/email-policy';
 
 export const getAllUsers = () => UserRepository.findAll();
 
@@ -12,12 +17,11 @@ export const getUserById = async (id: string) => {
   return user;
 };
 
-const generateTemporaryPassword = () =>
-  crypto.randomBytes(12).toString('base64url').slice(0, 16);
-
 export const createUser = async (data: any) => {
   const { email, password, role_id, ...rest } = data;
-  const normalizedEmail = email.trim().toLowerCase();
+  // Aquí sí se devuelve el motivo real: quien crea usuarios es un administrador
+  // autenticado, así que decirle que el dominio no vale no revela nada a nadie.
+  const normalizedEmail = exigirEmailInstitucional(email);
 
   if (normalizedEmail === config.localAuth.email.toLowerCase()) {
     throw Object.assign(new Error('Este correo es reservado y está protegido por el sistema'), { status: 403 });
@@ -29,8 +33,10 @@ export const createUser = async (data: any) => {
   const role = await RoleRepository.findById(role_id);
   if (!role) throw Object.assign(new Error('Rol no encontrado'), { status: 404 });
 
-  const temporaryPassword = generateTemporaryPassword();
-  const password_hash = await bcrypt.hash(temporaryPassword, 12);
+  const temporaryPassword = generarPasswordTemporal();
+  // La temporal ya nace cumpliendo §1, así que se hashea directa: pasarla otra vez
+  // por el validador sería comprobar lo que el generador acaba de garantizar.
+  const password_hash = await bcrypt.hash(temporaryPassword, BCRYPT_ROUNDS);
   const user = await UserRepository.create({
     ...rest,
     email: normalizedEmail,
@@ -56,14 +62,19 @@ export const updateUser = async (id: string, data: any) => {
 
   const updateData: any = { ...rest };
   if (email) {
-    const normalizedEmail = email.trim().toLowerCase();
+    // Restringir solo el alta dejaría la puerta abierta a cambiar el correo después
+    // a uno de fuera del dominio, que es el mismo agujero por otra vía.
+    const normalizedEmail = exigirEmailInstitucional(email);
     if (normalizedEmail === config.localAuth.email.toLowerCase()) {
       throw Object.assign(new Error('Este correo es reservado y está protegido por el sistema'), { status: 403 });
     }
     updateData.email = normalizedEmail;
   }
-  if (password) updateData.password_hash = await bcrypt.hash(password, 12);
-  
+  // Este era el agujero grande de la consideración 1: por aquí un administrador
+  // fijaba la contraseña de cualquiera y era el único de los cinco caminos que no
+  // comprobaba absolutamente nada, ni siquiera la longitud.
+  if (password) updateData.password_hash = await hashearPassword(password);
+
   if (reset_security_questions === true) {
     updateData.must_setup_security_questions = true;
   }
@@ -72,9 +83,14 @@ export const updateUser = async (id: string, data: any) => {
   const shouldReset = reset_password || isReactivation;
 
   if (shouldReset) {
-    const temporaryPassword = generateTemporaryPassword();
-    updateData.password_hash = await bcrypt.hash(temporaryPassword, 12);
+    const temporaryPassword = generarPasswordTemporal();
+    updateData.password_hash = await bcrypt.hash(temporaryPassword, BCRYPT_ROUNDS);
     updateData.must_change_password = true;
+    // Un restablecimiento tiene que devolver el acceso: si la cuenta venía
+    // bloqueada por §3, dejarla bloqueada haría inútil la contraseña recién emitida.
+    updateData.failed_login_attempts = 0;
+    updateData.failed_security_attempts = 0;
+    updateData.locked_until = null;
 
     await UserRepository.update(id, updateData);
     const refreshed = await UserRepository.findById(id);
