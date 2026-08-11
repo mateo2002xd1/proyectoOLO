@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    // ES2018 y no ES2017 como `blocks-renderer`: las clases Unicode de las
+    // expresiones regulares (`\p{Lu}`, `\p{Extended_Pictographic}`) necesitan el
+    // flag `u`, que es de ES2018. Con ES2017 no compilan.
+    "target": "ES2018",
+    "lib": ["dom", "esnext"],
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "module": "esnext",
+    "esModuleInterop": true,
+    "moduleResolution": "bundler",
+    "isolatedModules": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules"]
+}

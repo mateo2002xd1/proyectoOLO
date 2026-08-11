@@ -5,6 +5,44 @@
 
 ---
 
+## sesión 11-08-2026 (2.ª parte): dominio institucional y recuperación de contraseña en el sitio web
+
+### 1. Restricción a `@sena.edu.co`
+
+Autoridad en `api-backend/src/shared/email-policy.ts`, aplicada en **tres** puntos —login, alta y **cambio** de correo—. El tercero no estaba en el encargo pero sin él la regla no se sostiene: bastaría con crear la cuenta con un correo válido y cambiarlo después.
+
+- **La comparación es `endsWith('@sena.edu.co')`, no `includes`.** `atacante@sena.edu.co.dominio-falso.com` contiene el dominio sin pertenecer a él, y `alguien@nosena.edu.co` termina en `sena.edu.co`. La arroba es lo que descarta ambos. Los tres casos están en el script de verificación.
+- **En el login no se devuelve el motivo.** Un dominio ajeno recibe el mismo `401 Credenciales inválidas` que un usuario inexistente, y se rechaza antes de consultar la base. Decir «dominio no permitido» convertiría el login en un detector de dominios. En el alta sí se da el motivo real: quien la usa es un administrador autenticado.
+- **Antes de aplicarlo se comprobó a quién dejaba fuera.** Había un usuario `dd@dd.co` (rol Administrador, activo, con acceso ese mismo día) que habría quedado bloqueado. Se verificó que no tenía **ninguna** fila asociada en las 19 tablas con clave foránea contra `usuarios`, y se eliminó por decisión del responsable. La cuenta maestra (`LOCAL_AUTH_EMAIL`) sí cumple el dominio, así que no se vio afectada. Tras el cambio: 8 usuarios, todos institucionales.
+
+### 2. Recuperación de contraseña en `sitio-web` (RF-05)
+
+Existía en la intranet y no en el sitio. Se añadió `/admin/auth/recuperar` + el enlace «¿Olvidaste tu contraseña?» en el login, sin tocar el backend: los tres endpoints ya existían y solo faltaban los proxies (`user-questions`, `verify`, `recover-password`).
+
+- **Un componente con pasos internos, no cuatro rutas.** La intranet reparte el flujo en cuatro páginas y arrastra el estado por `sessionStorage` — **incluidas las respuestas de seguridad en claro**, que quedan escritas en el navegador. Aquí el estado vive en el componente: al salir desaparece solo. Es además el idioma que ya usaba `first-login-flow.tsx`.
+- **Las tres respuestas se verifican juntas, no una a una**, o la pantalla diría cuál se falló. Al fallar se vacía el cuestionario y se vuelve a la primera: dejar las respuestas puestas invitaría a ir cambiando una hasta acertar.
+- **`/admin/auth/recuperar` es pública sin tocar `middleware.ts`**, porque el `matcher` es una lista explícita y la ruta no entra en ella. Conviene saberlo: la protección de `/admin/*` no es por prefijo.
+
+### 3. Un aviso sobre cómo se verifica
+
+La primera tanda de pruebas contra `localhost:4000` **no probaba nada**: ese proceso se había arrancado antes de los cambios y `npm run dev` es `ts-node` sin watch, así que servía código viejo. Los cuatro correos de prueba no existían en la base, y el `401` idéntico que devolvía era el comportamiento de siempre. Se detectó porque un error de política que debía salir como 400 salió como 401. **Para probar cambios del backend hay que reiniciarlo**; aquí se levantó una segunda instancia en `:4001` para no tocar la del entorno.
+
+### 4. Verificación
+
+- **`npm run email:verificar` (script nuevo, 15 comprobaciones)**: dominio, normalización y las tres formas de evasión.
+- **En ejecución, contra la base real**: el error de política en recuperación sale como **400 con el motivo concreto**, y un correo inexistente con contraseña válida sigue dando el **401 genérico** — la excepción de `CODIGO_PASSWORD_INVALIDA` funciona sin romper la anti-enumeración.
+- **El bloqueo de §3, probado de punta a punta** con una cuenta temporal creada y borrada después: los intentos 1–4 incrementan el contador sin bloquear, el 5.º escribe `bloqueado_hasta`, y con la cuenta bloqueada **ni la contraseña correcta entra** (423). Esto cierra el pendiente «sin probar en ejecución» de la primera parte de la sesión.
+- **`createUser` rechaza** tanto el dominio ajeno como la evasión por subcadena.
+- `tsc --noEmit` limpio en los tres proyectos; `next build` correcto en ambas apps, con `/admin/auth/recuperar` y los tres proxies nuevos en la tabla de rutas.
+
+### Pendiente al cierre
+
+- **El flujo de recuperación no se ejerció desde el navegador**: se verificaron los endpoints y el build, no la pantalla con un usuario real que tenga preguntas configuradas.
+- **La intranet conserva las respuestas de seguridad en `sessionStorage`** (`RecoveryView` → `SecurityQuestionsView` → `ResetPasswordView`). No se tocó para no rehacer un flujo que funciona, pero es la misma debilidad que aquí se evitó.
+- **`@sena.edu.co` está escrito como constante en dos sitios** (backend y `@olo/email-policy`). Si algún día se admite otro dominio —`@misena.edu.co` para aprendices, por ejemplo— hay que cambiarlo en ambos.
+
+---
+
 ## sesión 11-08-2026: la política de contraseñas, y un bloqueo por intentos que nunca podía dispararse
 
 Fase A de las Directivas de Contraseñas (§1 composición, §3 protección, y la trazabilidad de la consideración 2). §2 —historial de 5 y expiración a 90 días— queda fuera a propósito; el porqué está en «Pendiente al cierre».

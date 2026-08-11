@@ -16,6 +16,7 @@
     "@editorjs/quote": "^2.7.6",
     "@heroicons/react": "^2.2.0",
     "@olo/blocks-renderer": "file:../packages/blocks-renderer",
+    "@olo/email-policy": "file:../packages/email-policy",
     "@olo/password-policy": "file:../packages/password-policy",
     "@puckeditor/core": "^0.22.0",
     "axios": "^1.18.1",

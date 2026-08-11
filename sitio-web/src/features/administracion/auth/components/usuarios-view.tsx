@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { validarEmail } from '@olo/email-policy';
 import {
   useUsuarios,
   mensajeDeError,
@@ -225,6 +226,15 @@ export default function UsuariosView() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !apellidos || !email || !roleId) return;
+
+    // El servidor lo exige igualmente, tanto al crear como al editar. Aquí se avisa
+    // antes de enviar para no perder el formulario entero por el dominio del correo.
+    const falloEmail = validarEmail(email);
+    if (falloEmail) {
+      setNotificationMsg({ title: 'Correo no válido', message: falloEmail, type: 'error' });
+      setShowNotification(true);
+      return;
+    }
 
     setIsSubmitting(true);
     try {

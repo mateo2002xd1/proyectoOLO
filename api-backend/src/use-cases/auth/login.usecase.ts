@@ -6,6 +6,7 @@ import {
   INTENTOS_MAXIMOS_LOGIN,
   MINUTOS_BLOQUEO_LOGIN,
 } from '../../shared/password-policy';
+import { esDominioInstitucional, normalizarEmail } from '../../shared/email-policy';
 
 /**
  * Anota un intento fallido y bloquea al llegar al tope (§3: 5 intentos, 15 minutos).
@@ -33,7 +34,18 @@ const registrarFalloDeLogin = async (user: any): Promise<void> => {
 };
 
 export const loginUseCase = async (email: string, password: string) => {
-  const normalizedEmail = email.trim().toLowerCase();
+  const normalizedEmail = normalizarEmail(email ?? '');
+
+  /**
+   * El dominio se comprueba **antes** de buscar en la base y con el mismo error
+   * 401 genérico que un usuario inexistente. Devolver aquí un 400 con «dominio no
+   * permitido» convertiría el login en un detector de dominios: bastaría con probar
+   * correos para saber cuáles llegan siquiera a consultarse. Quien escribe mal el
+   * dominio lo ve avisado en el formulario, que para eso valida antes de enviar.
+   */
+  if (!esDominioInstitucional(normalizedEmail)) {
+    throw Object.assign(new Error('Credenciales inválidas'), { status: 401 });
+  }
 
   if (
     config.localAuth.email === normalizedEmail &&

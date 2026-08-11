@@ -7,6 +7,7 @@ import {
   hashearPassword,
   BCRYPT_ROUNDS,
 } from '../../shared/password-policy';
+import { exigirEmailInstitucional } from '../../shared/email-policy';
 
 export const getAllUsers = () => UserRepository.findAll();
 
@@ -18,7 +19,9 @@ export const getUserById = async (id: string) => {
 
 export const createUser = async (data: any) => {
   const { email, password, role_id, ...rest } = data;
-  const normalizedEmail = email.trim().toLowerCase();
+  // Aquí sí se devuelve el motivo real: quien crea usuarios es un administrador
+  // autenticado, así que decirle que el dominio no vale no revela nada a nadie.
+  const normalizedEmail = exigirEmailInstitucional(email);
 
   if (normalizedEmail === config.localAuth.email.toLowerCase()) {
     throw Object.assign(new Error('Este correo es reservado y está protegido por el sistema'), { status: 403 });
@@ -59,7 +62,9 @@ export const updateUser = async (id: string, data: any) => {
 
   const updateData: any = { ...rest };
   if (email) {
-    const normalizedEmail = email.trim().toLowerCase();
+    // Restringir solo el alta dejaría la puerta abierta a cambiar el correo después
+    // a uno de fuera del dominio, que es el mismo agujero por otra vía.
+    const normalizedEmail = exigirEmailInstitucional(email);
     if (normalizedEmail === config.localAuth.email.toLowerCase()) {
       throw Object.assign(new Error('Este correo es reservado y está protegido por el sistema'), { status: 403 });
     }

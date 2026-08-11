@@ -137,6 +137,32 @@ Basadas en el modelo de directivas de contraseñas de Microsoft, ajustadas a los
 > recuperación, que está detrás—. Por lo mismo, la contraseña **temporal** del primer
 > ingreso no se mide contra §1: se comprueba, no se elige.
 
+## 3 bis. Dominio institucional
+
+| Propiedad | Requisito |
+|---|---|
+| **Dominio admitido** | Únicamente `@sena.edu.co` |
+| **Dónde se aplica** | Inicio de sesión, alta de usuario y **cambio de correo** |
+| **Comparación** | Sobre el correo normalizado (`trim` + minúsculas), con `endsWith('@sena.edu.co')` |
+
+> **Por qué también en el cambio de correo.** Restringir solo el alta dejaría abierta
+> la vía de crear la cuenta con un correo válido y cambiarlo después a uno de fuera.
+>
+> **Por qué `endsWith` con la arroba y no `includes`.** `atacante@sena.edu.co.dominio-falso.com`
+> *contiene* el dominio sin pertenecer a él, y `alguien@nosena.edu.co` *termina* en
+> `sena.edu.co`. Incluir la arroba en la comparación es lo que descarta los dos casos.
+> Un subdominio (`x@sub.sena.edu.co`) tampoco se admite.
+>
+> **En el login el motivo no se devuelve.** Un dominio ajeno recibe el mismo
+> `401 Credenciales inválidas` que un usuario inexistente, y se rechaza **antes** de
+> consultar la base. Devolver «dominio no permitido» convertiría el login en un
+> detector de dominios. Quien se equivoca lo ve avisado en el formulario, que valida
+> antes de enviar. En el alta de usuarios sí se da el motivo real: quien la usa es un
+> administrador autenticado.
+
+Verificación: `npm run email:verificar` (15 comprobaciones, incluidas las tres formas
+de evasión).
+
 ## 4. Consideraciones específicas del proyecto OLO
 
 1. **Validación en backend, no solo frontend.** La auditoría del código original mostró

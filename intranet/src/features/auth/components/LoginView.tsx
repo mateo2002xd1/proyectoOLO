@@ -4,6 +4,7 @@ import { useState, FormEvent } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { validarEmail } from '@olo/email-policy';
 import { useAuth } from '@/features/auth';
 import { PasswordField } from '@/shared/ui/molecules/PasswordField';
 import { ReturnToSiteLink } from '@/shared/ui/molecules/ReturnToSiteLink';
@@ -22,10 +23,12 @@ export function LoginView() {
   const validate = (): boolean => {
     const newErrors: typeof errors = {};
 
-    if (!email.trim()) {
-      newErrors.email = 'El correo es requerido';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = 'Ingrese un correo válido';
+    // Forma y dominio institucional. El servidor responde 401 genérico a un dominio
+    // ajeno —a propósito, para no ser un detector de dominios—, así que el motivo
+    // real solo se ve si se comprueba aquí.
+    const falloEmail = validarEmail(email);
+    if (falloEmail) {
+      newErrors.email = falloEmail;
     }
 
     // Solo se comprueba que no esté vacía. Un formulario de *inicio de sesión* no
