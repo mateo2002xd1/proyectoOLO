@@ -12,8 +12,17 @@ import { mensajeDeError } from '@/shared/lib/errors';
 
 const TOTAL_QUESTIONS = 3;
 
+/**
+ * Qué le falta a la cuenta. `null` mientras se consulta.
+ *
+ * Lo dice el servidor: un administrador puede restablecer solo las preguntas, solo la
+ * contraseña, o ambas, y cada caso pide una pantalla distinta.
+ */
+type Pendiente = { debeCambiarPassword: boolean; debeConfigurarPreguntas: boolean };
+
 export function FirstLoginView() {
   const { user } = useAuth();
+  const [pendiente, setPendiente] = useState<Pendiente | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [currentQuestion, setCurrentQuestion] = useState(0);
 
@@ -34,6 +43,20 @@ export function FirstLoginView() {
     authApi.getCatalog()
       .then(setCatalogQuestions)
       .catch(() => setErrors({ general: 'No se pudieron cargar las preguntas de seguridad' }));
+  }, []);
+
+  // Qué falta de verdad, según la base. Si la contraseña ya está cambiada, el paso 1
+  // no tiene nada que pedir: no hay temporal que verificar, y obligar a cambiarla
+  // otra vez era justo el fallo que esto arregla.
+  useEffect(() => {
+    authApi.firstLoginStatus()
+      .then((estado) => {
+        setPendiente(estado);
+        if (!estado.debeCambiarPassword) setCurrentStep(2);
+      })
+      .catch(() =>
+        setErrors({ general: 'No se pudo comprobar el estado de tu cuenta. Vuelve a iniciar sesión.' })
+      );
   }, []);
 
   const validateStep1 = (): boolean => {
@@ -76,10 +99,16 @@ export function FirstLoginView() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleNextStep1 = () => {
+  const handleNextStep1 = async () => {
     if (!validateStep1()) return;
-    setCurrentStep(2);
     setErrors({});
+
+    // Si las preguntas ya están configuradas, no hay segundo paso que dar.
+    if (!pendiente?.debeConfigurarPreguntas) {
+      await enviar();
+      return;
+    }
+    setCurrentStep(2);
   };
 
   const handleNextQuestion = () => {
@@ -98,9 +127,14 @@ export function FirstLoginView() {
     }
   };
 
-  const handleSubmitStep2 = async () => {
-    if (!validateStep2()) return;
-
+  /**
+   * Envía lo pendiente.
+   *
+   * Se manda el cuerpo completo; el servidor usa solo lo que la cuenta tenga
+   * pendiente e ignora el resto. Los campos que no aplican van vacíos porque su paso
+   * ni siquiera se pintó.
+   */
+  const enviar = async () => {
     setIsLoading(true);
     setErrors({});
 
@@ -117,6 +151,11 @@ export function FirstLoginView() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSubmitStep2 = async () => {
+    if (!validateStep2()) return;
+    await enviar();
   };
 
   const renderStep1 = () => (
@@ -208,9 +247,12 @@ export function FirstLoginView() {
     <div className="fl-success">
       <h1 className="fl-success-title">¡Configuración completada con éxito!</h1>
       <p className="fl-success-subtitle">Tu cuenta ya es segura.</p>
-      <p className="fl-success-text">
-        Es muy importante que recuerdes o guardes tus respuestas en un lugar seguro, ya que serán el único método para validar tu identidad y permitirte cambiar tu clave en el futuro si llegas a olvidarla.
-      </p>
+      {/* El aviso sobre las respuestas solo tiene sentido si se acaban de elegir. */}
+      {pendiente?.debeConfigurarPreguntas && (
+        <p className="fl-success-text">
+          Es muy importante que recuerdes o guardes tus respuestas en un lugar seguro, ya que serán el único método para validar tu identidad y permitirte cambiar tu clave en el futuro si llegas a olvidarla.
+        </p>
+      )}
       <Link href="/auth" className="fl-success-btn">Iniciar sesión</Link>
     </div>
   );
@@ -225,7 +267,12 @@ export function FirstLoginView() {
     if (currentStep === 2) {
       return {
         title: 'Protege el acceso a tu cuenta',
-        subtitle: 'Elige 3 preguntas de seguridad de la lista y asigna una respuesta para cada una. Estas preguntas nos servirán para verificar tu identidad de forma segura en caso de que necesites recuperar tu cuenta.',
+        // El texto cambia según por qué se está aquí: a quien solo le restablecieron
+        // las preguntas hay que decírselo, o no entiende por qué se le piden otra vez
+        // ni si su contraseña sigue sirviendo.
+        subtitle: pendiente?.debeCambiarPassword
+          ? 'Elige 3 preguntas de seguridad de la lista y asigna una respuesta para cada una. Estas preguntas nos servirán para verificar tu identidad de forma segura en caso de que necesites recuperar tu cuenta.'
+          : 'Tus preguntas de seguridad fueron restablecidas. Elige 3 de la lista y asigna una respuesta para cada una. Tu contraseña actual no cambia.',
       };
     }
     if (currentStep === 3) {
@@ -238,6 +285,49 @@ export function FirstLoginView() {
   };
 
   const leftContent = getLeftContent();
+
+  /* ---------- Mientras se sabe qué falta ---------- */
+  if (!pendiente) {
+    return (
+      <div className="fl-page">
+        <div className="fl-right">
+          <div className="fl-card">
+            {errors.general ? (
+              <>
+                <div className="fl-general-error">{errors.general}</div>
+                <Link href="/auth" className="fl-success-btn">Volver a iniciar sesión</Link>
+              </>
+            ) : (
+              <p className="fl-card-title">Comprobando tu cuenta…</p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* ---------- Nada pendiente ---------- */
+  // Puede pasar si se llega por la URL, o si se completó en otra pestaña. Antes el
+  // formulario se pintaba igual y pedía una contraseña temporal que ya no existía.
+  if (!pendiente.debeCambiarPassword && !pendiente.debeConfigurarPreguntas && currentStep !== 3) {
+    return (
+      <div className="fl-page">
+        <div className="fl-right">
+          <div className="fl-success">
+            <h1 className="fl-success-title">Tu cuenta ya está configurada</h1>
+            <p className="fl-success-text">
+              No hay nada pendiente: tu contraseña y tus preguntas de seguridad están al día.
+            </p>
+            <Link href="/editor/inicio" className="fl-success-btn">Ir al editor</Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // El paso 1 (contraseñas) solo existe si hay contraseña que cambiar.
+  const primerPaso = pendiente.debeCambiarPassword ? 1 : 2;
+  const pasosVisibles = pendiente.debeCambiarPassword ? [1, 2, 3] : [2, 3];
 
   return (
     <div className="fl-page">
@@ -260,23 +350,27 @@ export function FirstLoginView() {
         </div>
 
         {/* Pagination */}
+        {/* Los pasos se acotan a los que aplican: sin `primerPaso`, quien solo tiene
+            que configurar preguntas podía retroceder al paso 1 y encontrarse otra vez
+            el formulario de contraseña temporal — el fallo que esto arregla, por la
+            puerta de atrás. Se numeran por posición para no mostrar un «2 3» suelto. */}
         <div className="fl-pagination">
           <button
             onClick={() => {
               if (currentStep === 2 && currentQuestion > 0) {
                 handlePrevQuestion();
-              } else if (currentStep > 1 && currentStep < 3) {
+              } else if (currentStep > primerPaso && currentStep < 3) {
                 if (currentStep === 2) setCurrentQuestion(0);
                 setCurrentStep(currentStep - 1);
               }
             }}
-            disabled={currentStep === 1}
+            disabled={currentStep === primerPaso}
             className="fl-pagination-btn"
           >
             ← Previous
           </button>
 
-          {[1, 2, 3].map((step) => (
+          {pasosVisibles.map((step, i) => (
             <button
               key={step}
               onClick={() => {
@@ -288,7 +382,7 @@ export function FirstLoginView() {
               disabled={step > currentStep}
               className={`fl-pagination-num ${step === currentStep ? 'fl-pagination-active' : ''}`}
             >
-              {step}
+              {i + 1}
             </button>
           ))}
 

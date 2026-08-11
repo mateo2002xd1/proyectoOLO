@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { AUTH_COOKIE_NAME } from '@/shared/lib/auth-cookies';
+import {
+  AUTH_COOKIE_NAME,
+  AUTH_MUST_CHANGE_PW_COOKIE_NAME,
+  AUTH_MUST_SETUP_SQ_COOKIE_NAME,
+} from '@/shared/lib/auth-cookies';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000';
 
@@ -44,5 +48,17 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  return NextResponse.json(data ?? { message: 'ok' });
+  /**
+   * Las banderas se borran aquí, no solo en la base.
+   *
+   * `middleware.ts` decide a quién manda a `/admin/auth/cambiar-contrasena` leyendo
+   * estas dos cookies, que se escriben al iniciar sesión y no se enteran de nada
+   * después. Sin borrarlas, un usuario que acaba de completar su configuración
+   * seguiría siendo devuelto a la misma pantalla en cada navegación — un bucle del
+   * que solo se sale cerrando sesión.
+   */
+  const response = NextResponse.json(data ?? { message: 'ok' });
+  response.cookies.delete(AUTH_MUST_CHANGE_PW_COOKIE_NAME);
+  response.cookies.delete(AUTH_MUST_SETUP_SQ_COOKIE_NAME);
+  return response;
 }

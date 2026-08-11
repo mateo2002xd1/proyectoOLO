@@ -124,9 +124,9 @@ export function IntranetFooter({
         {columnas.map((columna, indice) => (
           <div className="intranet-footer-col" key={`${columna.titulo ?? 'columna'}-${indice}`}>
             {columna.titulo && <h2>{columna.titulo}</h2>}
-            <div 
-              className="flex gap-2" 
-              style={{ 
+            <div
+              className="flex gap-2"
+              style={{
                 flexDirection: columna.orientacionLineas === 'row' ? 'row' : 'column',
                 flexWrap: columna.orientacionLineas === 'row' ? 'wrap' : 'nowrap',
                 alignItems: columna.orientacionLineas === 'row' ? 'center' : 'flex-start'

@@ -60,6 +60,23 @@ export const authApi = {
     });
   },
   
+  /**
+   * Qué le falta a la cuenta para estar operativa.
+   *
+   * Un administrador puede restablecer la contraseña, las preguntas, o ambas. El
+   * formulario tiene que saber cuál de los tres casos es antes de pintarse: pedir una
+   * contraseña temporal a quien no la tiene lo deja atascado.
+   *
+   * No sirve mirar el `must_change_password` del JWT ni de `/me`: se fijan al iniciar
+   * sesión y no se enteran de lo que se complete después.
+   */
+  firstLoginStatus: async (): Promise<{
+    debeCambiarPassword: boolean;
+    debeConfigurarPreguntas: boolean;
+  }> => {
+    return fetchAuth('/first-login/status', { method: 'GET' });
+  },
+
   firstLogin: async (tempPassword: string, newPassword: string, securityQuestions: Array<{ key: string; answer: string }>) => {
     return fetchAuth('/first-login', {
       method: 'POST',

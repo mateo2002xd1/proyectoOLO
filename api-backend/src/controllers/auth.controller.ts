@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { loginUseCase } from '../use-cases/auth/login.usecase';
-import { firstLoginUseCase } from '../use-cases/auth/first-login.usecase';
+import { firstLoginUseCase, estadoPrimerIngreso } from '../use-cases/auth/first-login.usecase';
 import { UserRepository } from '../repositories/usuarios.repository';
 import { updateUser } from '../use-cases/usuarios/listar-usuarios.usecase';
 import { logCambioDePassword } from '../use-cases/auditoria/audit.usecase';
@@ -8,16 +8,46 @@ import { datosDeAuditoria } from '../shared/auditoria-request';
 import { compararPassword, exigirPasswordValida } from '../shared/password-policy';
 
 export const AuthController = {
+  /**
+   * Qué le falta a la cuenta para estar operativa.
+   *
+   * El formulario lo consulta antes de pintarse para no pedir lo que ya está hecho:
+   * si un administrador restableció solo las preguntas, no hay contraseña temporal
+   * que pedir ni motivo para cambiar la contraseña otra vez.
+   */
+  async firstLoginStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user?.id;
+      if (!userId) return res.status(401).json({ error: 'No autorizado' });
+
+      // La cuenta maestra no vive en la base y nunca tiene nada pendiente.
+      if (req.user?.isLocal) {
+        return res.json({ debeCambiarPassword: false, debeConfigurarPreguntas: false });
+      }
+
+      res.json(await estadoPrimerIngreso(userId));
+    } catch (err) {
+      next(err);
+    }
+  },
+
   async firstLogin(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.user?.id;
       if (!userId) return res.status(401).json({ error: 'No autorizado' });
       
       const { tempPassword, newPassword, securityQuestions } = req.body;
-      
-      await firstLoginUseCase(userId, tempPassword, newPassword, securityQuestions);
-      await logCambioDePassword(datosDeAuditoria(req), userId, 'primer-inicio');
-      res.json({ message: 'Configuración completada exitosamente' });
+
+      const resultado = await firstLoginUseCase(userId, tempPassword, newPassword, securityQuestions);
+
+      // Solo se audita si de verdad hubo cambio de contraseña. Configurar únicamente
+      // las preguntas no lo es, y registrarlo como tal ensuciaría la bitácora que la
+      // Ley 1581 obliga a poder consultar.
+      if (resultado.cambioPassword) {
+        await logCambioDePassword(datosDeAuditoria(req), userId, 'primer-inicio');
+      }
+
+      res.json({ message: 'Configuración completada exitosamente', ...resultado });
     } catch (err) {
       next(err);
     }

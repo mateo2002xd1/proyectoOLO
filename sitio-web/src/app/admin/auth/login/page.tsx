@@ -212,7 +212,7 @@ function LoginForm() {
         <div className="mb-6 text-right">
           <Link
             href="/admin/auth/recuperar"
-            className="text-xs text-brand-blue-dark hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-focus rounded"
+            className="text-xs text-[#ffffff] hover:text-[#ffffff]/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-focus rounded"
           >
             ¿Olvidaste tu contraseña?
           </Link>
