@@ -72,3 +72,116 @@ Entrega un resumen y guardalo en `6-auditoria.md` con su fecha de sesion:
 - Qué imports se actualizaron
 - Qué quedó pendiente o con TODO
 - Resultado de build/typecheck
+
+
+# Directivas de Contraseñas — OLO (Observatorio Laboral y Ocupacional)
+ 
+Basadas en el modelo de directivas de contraseñas de Microsoft, ajustadas a los requisitos de autenticación y roles del proyecto OLO.
+ 
+## 1. Composición de la contraseña
+ 
+| Propiedad | Requisito |
+|---|---|
+| **Caracteres permitidos** | Mayúsculas (A-Z), minúsculas (a-z), números (0-9), símbolos `@ # $ % ^ & * - _ ! + = [ ] { } \| \ : ' , . ? / ` ~ " ( ) ; < >`, espacio en blanco **y letras acentuadas del español (`ñ`, `á`, `é`…)** |
+| **Caracteres no permitidos** | Emojis y pictogramas; caracteres de control, formato e invisibles (categoría Unicode `\p{C}`, incluye el de ancho cero); cualquier espacio que no sea el normal (U+0020) |
+| **Longitud mínima** | 12 caracteres |
+| **Longitud máxima** | **72 bytes en UTF-8** (las letras acentuadas ocupan 2) |
+| **Complejidad** | Mínimo 3 de las 4 categorías: mayúsculas, minúsculas, números, símbolos |
+
+> **Por qué 72 bytes y no 256 caracteres.** bcrypt —el algoritmo que §3 exige y que
+> el sistema usa— **ignora todo lo que pase de 72 bytes**. Anunciar 256 sería mentir
+> sobre lo que se comprueba: dos contraseñas que compartieran los primeros 72 bytes
+> abrirían la misma cuenta. Se valida el límite real y se rechaza antes de hashear,
+> en vez de truncar en silencio. Si algún día se migra a argon2, este tope desaparece.
+>
+> **Por qué se admiten `ñ` y tildes.** La redacción anterior prohibía «caracteres
+> Unicode», lo que dejaba fuera `Contraseña2026!` en un producto del SENA. Lo que de
+> verdad hay que bloquear no son los acentos, sino lo que nadie puede volver a
+> teclear igual: emojis, invisibles, y espacios que se ven como un espacio normal sin
+> serlo (un NBSP copiado desde Word deja a alguien fuera de su cuenta sin explicación
+> posible). Las contraseñas se normalizan a NFC antes de hashear y comparar, para que
+> la misma `ñ` escrita desde dos teclados distintos siga siendo la misma contraseña.
+ 
+## 2. Ciclo de vida de la contraseña
+ 
+| Propiedad | Requisito |
+|---|---|
+| **Historial de contraseñas** | No se permite repetir las últimas 5 contraseñas usadas |
+| **Expiración** | 90 días para roles Editor y Director/Subdirector |
+| **Expiración — Admin** | Sin expiración forzada; rotación recomendada cada 180 días |
+| **Notificación previa** | Aviso automático antes de la expiración (evento tipo `ContrasenaPorExpirar`) |
+ 
+## 3. Protección contra ataques
+ 
+| Propiedad | Requisito |
+|---|---|
+| **Intentos fallidos permitidos** | 5 intentos, **contados por cuenta** (columna `intentos_fallidos_login`) |
+| **Bloqueo por intentos fallidos** | Bloqueo temporal de 15 minutos tras exceder el límite |
+| **Almacenamiento** | Hash con bcrypt o argon2 (nunca texto plano, ni MD5/SHA1 solos). Hoy: bcrypt, coste 12 |
+
+> **El límite por IP no cuenta como este control.** `auth.routes.ts` tiene un
+> `rateLimit` de 10 intentos / 15 min **por dirección IP**, que es otra cosa: un
+> atacante que rote direcciones lo esquiva, y no protege una cuenta concreta. Los dos
+> conviven y ninguno sustituye al otro.
+>
+> **Este contador es distinto del de las preguntas de seguridad.** `intentos_fallidos`
+> (sin sufijo) es de la recuperación por preguntas: 3 intentos y 30 minutos. Son dos
+> flujos con umbrales distintos, y mezclarlos en una sola columna bloquearía a
+> destiempo en ambos. `bloqueado_hasta` sí es compartido: la cuenta está bloqueada o
+> no lo está, venga de donde venga.
+>
+> **Dónde se aplica la política y dónde no.** Se exige allí donde se *elige* una
+> contraseña. Un formulario de **inicio de sesión** solo comprueba que no esté vacía:
+> medir contra §1 una contraseña que ya existe dejaría fuera a todo el que la fijó
+> bajo las reglas anteriores —sin poder ni enviar el formulario, ni llegar a
+> recuperación, que está detrás—. Por lo mismo, la contraseña **temporal** del primer
+> ingreso no se mide contra §1: se comprueba, no se elige.
+
+## 4. Consideraciones específicas del proyecto OLO
+
+1. **Validación en backend, no solo frontend.** La auditoría del código original mostró
+   reglas (RBAC) definidas en base de datos pero no aplicadas en el código; la política
+   de contraseñas debe validarse siempre en el servidor, no confiar solo en el
+   formulario. La autoridad es `api-backend/src/shared/password-policy.ts`, y **los
+   cinco caminos que escriben un hash pasan por ella** (primer ingreso, cambio
+   voluntario, recuperación, alta de usuario y edición por administrador). El paquete
+   `packages/password-policy/` que consumen las dos apps solo explica los requisitos
+   mientras se escribe: no decide.
+2. **Trazabilidad (Ley 1581/2012).** Los cambios de contraseña quedan registrados en
+   `auditoria_cambios` con la acción `cambiar_password` y un campo `via`
+   (`primer-inicio` / `cambio-voluntario` / `recuperacion`), registrando usuario, fecha,
+   IP y agente — **nunca la contraseña**, ni siquiera redactada.
+3. **Cuentas caducadas.** ~~Debe integrarse con el cron diario que ya dispara el evento
+   `UsuarioCaducado`.~~ **Ese cron no existe.** `revisar-caducidad.job.ts` y
+   `usuario-caducado.event.ts` son stubs con TODOs, y `deactivateExpiredUsers()` está
+   escrita pero no la llama nadie. No hay dónde engancharse: **hay que construirlo**, y
+   esa función sin llamar es el punto de partida.
+4. **Flujo de recuperación.** El flujo de recovery / first-login / security-questions /
+   reset-password aplica exactamente las mismas reglas de complejidad al establecer una
+   nueva contraseña. **Hecho**, en las dos apps.
+5. **Roles alcanzados.** La política de §1 y §3 aplica a **todas** las cuentas. Ojo: los
+   roles reales son **seis**, no tres — `superadmin`, `administrador`, `editor`,
+   `director`, `subdirector` y `visitante_interno`. Falta decidir qué hacen `superadmin`
+   y `visitante_interno` cuando se implemente la expiración de §2.
+
+## 5. Estado de implementación
+
+| Sección | Estado |
+|---|---|
+| §1 Composición | **Implementada** — validador único en backend, requisitos en vivo en los formularios |
+| §2 Ciclo de vida | **Sin empezar** — ver abajo |
+| §3 Protección contra ataques | **Implementada** — bloqueo por cuenta, bcrypt coste 12 |
+| §4.1, §4.2, §4.4 | **Implementadas** |
+| §4.3, §4.5 | **Pendientes**, dependen de §2 |
+
+Lo que falta de **§2**, con su bloqueo real:
+
+- **Historial de las últimas 5**: no existe tabla ni columna. Hay que crearla.
+- **Expiración a 90 días**: falta una columna `password_changed_at`. **`expiration_date`
+  no sirve para esto**: es la caducidad de la *cuenta* (RF-16), no de la contraseña, y
+  mezclarlas rompería RF-16.
+- **Evento `ContrasenaPorExpirar`**: depende del cron de §4.3, que hay que construir.
+
+Verificación: `npm run password:verificar` en `api-backend` comprueba §1 y el hasheo
+contra el validador real (18 comprobaciones, sin tocar la base de datos).
+ 

@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import UsuariosView from '@/features/administracion/components/usuarios-view';
+import UsuariosView from '@/features/administracion/auth/components/usuarios-view';
 
 export const metadata: Metadata = {
   title: 'Usuarios | Panel Administrativo',

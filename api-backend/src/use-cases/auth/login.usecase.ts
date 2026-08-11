@@ -1,7 +1,36 @@
-import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { config } from '../../config';
 import { UserRepository } from '../../repositories/usuarios.repository';
+import {
+  compararPassword,
+  INTENTOS_MAXIMOS_LOGIN,
+  MINUTOS_BLOQUEO_LOGIN,
+} from '../../shared/password-policy';
+
+/**
+ * Anota un intento fallido y bloquea al llegar al tope (§3: 5 intentos, 15 minutos).
+ *
+ * Esto no existía. El login *leía* `bloqueado_hasta` pero nunca lo escribía, así que
+ * la comprobación de más abajo no podía dispararse nunca: fallar mil veces no tenía
+ * consecuencia. El límite por IP de `auth.routes.ts` es otro control y no cubre este
+ * — un atacante que rote direcciones lo esquiva, y no protege una cuenta concreta.
+ *
+ * El contador es `intentos_fallidos_login`, distinto del de las preguntas de
+ * seguridad: son dos flujos con umbrales distintos (5/15min contra 3/30min).
+ */
+const registrarFalloDeLogin = async (user: any): Promise<void> => {
+  const intentos = (user.failed_login_attempts || 0) + 1;
+  const cambios: Record<string, unknown> = { failed_login_attempts: intentos };
+
+  if (intentos >= INTENTOS_MAXIMOS_LOGIN) {
+    cambios.locked_until = new Date(Date.now() + MINUTOS_BLOQUEO_LOGIN * 60 * 1000);
+    // Se reinicia junto con el bloqueo para que, al expirar, el usuario tenga otra
+    // tanda completa en vez de quedar bloqueado en cada intento siguiente.
+    cambios.failed_login_attempts = 0;
+  }
+
+  await UserRepository.update(user.id, cambios);
+};
 
 export const loginUseCase = async (email: string, password: string) => {
   const normalizedEmail = email.trim().toLowerCase();
@@ -35,8 +64,17 @@ export const loginUseCase = async (email: string, password: string) => {
   if (user.expiration_date && new Date(user.expiration_date) < new Date())
     throw Object.assign(new Error('Cuenta expirada'), { status: 403 });
 
-  const valid = await bcrypt.compare(password, user.password_hash || '');
-  if (!valid) throw Object.assign(new Error('Credenciales inválidas'), { status: 401 });
+  const valid = await compararPassword(password, user.password_hash || '');
+  if (!valid) {
+    await registrarFalloDeLogin(user);
+    throw Object.assign(new Error('Credenciales inválidas'), { status: 401 });
+  }
+
+  // Un acierto cierra la racha. Si no se limpiara, los fallos se acumularían entre
+  // sesiones y acabarían bloqueando a alguien que sí sabe su contraseña.
+  if (user.failed_login_attempts > 0 || user.locked_until) {
+    await UserRepository.update(user.id, { failed_login_attempts: 0, locked_until: null });
+  }
 
   await UserRepository.updateLastAccess(user.id);
 

@@ -2,7 +2,7 @@
 
 import { Suspense, useState, FormEvent } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { FirstLoginFlow } from '@/features/administracion/components/first-login-flow';
+import { FirstLoginFlow } from '@/features/administracion/auth/components/first-login-flow';
 import {
   AuthCardHeader,
   AuthGeneralError,
@@ -13,7 +13,7 @@ import {
   authErrorTextClass,
   authInputClass,
   authLabelClass,
-} from '@/features/administracion/components/auth-ui';
+} from '@/features/administracion/auth/components/auth-ui';
 import { Button } from '@/shared/ui/atoms/button';
 
 const INTRANET_EDITOR_URL =

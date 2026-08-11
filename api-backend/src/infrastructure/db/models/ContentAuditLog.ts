@@ -19,7 +19,10 @@ export type AccionAuditable =
   | 'despublicar'
   | 'aprobar'
   | 'rechazar'
-  | 'enviar_revision';
+  | 'enviar_revision'
+  // Se distingue de 'actualizar' a propósito: la Ley 1581 obliga a poder responder
+  // «quién cambió contraseñas y cuándo» sin separarlo a mano del resto de ediciones.
+  | 'cambiar_password';
 
 export class ContentAuditLog extends Model {
   declare id: string;

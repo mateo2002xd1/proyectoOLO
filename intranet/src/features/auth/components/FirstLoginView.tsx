@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { authApi, useAuth } from '@/features/auth';
+import { cumplePolitica, primerFallo } from '@olo/password-policy';
 import { PasswordField } from '@/shared/ui/molecules/PasswordField';
+import { PasswordRequisitos } from '@/shared/ui/molecules/PasswordRequisitos';
 import { ReturnToSiteLink } from '@/shared/ui/molecules/ReturnToSiteLink';
 import { QuestionPicker, type CatalogQuestion } from './QuestionPicker';
 import { mensajeDeError } from '@/shared/lib/errors';
@@ -37,16 +39,16 @@ export function FirstLoginView() {
   const validateStep1 = (): boolean => {
     const newErrors: Record<string, string> = {};
 
+    // La temporal se *comprueba*, no se elige: la emitió el sistema y ya cumple la
+    // política. Medirla contra §1 aquí solo podría rechazar una clave válida.
     if (!tempPassword) {
       newErrors.tempPassword = 'La contraseña temporal es requerida';
-    } else if (tempPassword.length < 8) {
-      newErrors.tempPassword = 'Mínimo 8 caracteres';
     }
 
     if (!newPassword) {
       newErrors.newPassword = 'El nuevo passcode es requerido';
-    } else if (newPassword.length < 8) {
-      newErrors.newPassword = 'Mínimo 8 caracteres';
+    } else if (!cumplePolitica(newPassword)) {
+      newErrors.newPassword = primerFallo(newPassword) ?? '';
     }
 
     if (!confirmPassword) {
@@ -135,6 +137,7 @@ export function FirstLoginView() {
           onChange={(v) => { setNewPassword(v); setErrors({}); }}
           error={errors.newPassword}
         />
+        <PasswordRequisitos classPrefix="fl" password={newPassword} />
 
         <h2 className="fl-card-title">Ingresa nuevamente el passcode</h2>
         <PasswordField

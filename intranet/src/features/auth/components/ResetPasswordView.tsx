@@ -4,7 +4,9 @@ import { useState, FormEvent, useEffect, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authApi, useAuth } from '@/features/auth';
+import { cumplePolitica, primerFallo } from '@olo/password-policy';
 import { PasswordField } from '@/shared/ui/molecules/PasswordField';
+import { PasswordRequisitos } from '@/shared/ui/molecules/PasswordRequisitos';
 import { ReturnToSiteLink } from '@/shared/ui/molecules/ReturnToSiteLink';
 import { mensajeDeError } from '@/shared/lib/errors';
 
@@ -67,10 +69,13 @@ export function ResetPasswordView() {
       newErrors.currentPassword = 'La contraseña actual es requerida';
     }
 
+    // Consideración 4: recuperación y cambio forzado aplican exactamente las mismas
+    // reglas que el primer ingreso. `currentPassword` no se mide contra la política
+    // —es la que el usuario ya tiene, no la que está eligiendo—.
     if (!password) {
       newErrors.password = 'El passcode es requerido';
-    } else if (password.length < 8) {
-      newErrors.password = 'Mínimo 8 caracteres';
+    } else if (!cumplePolitica(password)) {
+      newErrors.password = primerFallo(password) ?? '';
     }
 
     if (!confirmPassword) {
@@ -164,6 +169,7 @@ export function ResetPasswordView() {
               onChange={(v) => { setPassword(v); setErrors({}); }}
               error={errors.password}
             />
+            <PasswordRequisitos classPrefix="rp" password={password} />
 
             <PasswordField
               id="confirmPassword"

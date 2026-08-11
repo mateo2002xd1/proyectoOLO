@@ -28,10 +28,13 @@ export function LoginView() {
       newErrors.email = 'Ingrese un correo válido';
     }
 
+    // Solo se comprueba que no esté vacía. Un formulario de *inicio de sesión* no
+    // debe medir la contraseña contra la política: quien la fijó cuando el mínimo
+    // era 8 no podría ni enviar el formulario —ni llegar a recuperación, que está
+    // detrás— y quedaría fuera de su cuenta sin haber hecho nada mal. La política
+    // se aplica donde se *elige* contraseña, y el servidor la exige al cambiarla.
     if (!password) {
       newErrors.password = 'La contraseña es requerida';
-    } else if (password.length < 8) {
-      newErrors.password = 'Mínimo 8 caracteres';
     }
 
     setErrors(newErrors);

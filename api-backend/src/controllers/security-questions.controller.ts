@@ -6,6 +6,9 @@ import {
   verifyAnswers,
   recoverPassword,
 } from '../use-cases/auth/security-questions.usecase';
+import { logCambioDePassword } from '../use-cases/auditoria/audit.usecase';
+import { datosDeAuditoria } from '../shared/auditoria-request';
+import { esErrorDePolitica } from '../shared/password-policy';
 
 export const SecurityQuestionController = {
   getCatalog(_req: Request, res: Response) {
@@ -44,9 +47,29 @@ export const SecurityQuestionController = {
   async recoverPasswordCtrl(req: Request, res: Response, next: NextFunction) {
     try {
       const { email, answers, newPassword } = req.body;
-      res.json(await recoverPassword(email, answers, newPassword));
+      const { message, usuarioId } = await recoverPassword(email, answers, newPassword);
+
+      // Quien recupera no tiene sesión, así que `datosDeAuditoria` deja el actor en
+      // null; aquí el actor y el afectado son la misma persona —acaba de demostrarlo
+      // respondiendo sus preguntas—, y sin esto la fila quedaría sin autor.
+      await logCambioDePassword(
+        { ...datosDeAuditoria(req), usuarioId, usuarioNombre: email },
+        usuarioId,
+        'recuperacion'
+      );
+
+      res.json({ message });
     } catch (err: any) {
       if (err.status === 423) return res.status(423).json({ error: err.message });
+
+      // Un incumplimiento de la política se devuelve tal cual. El mensaje genérico
+      // de abajo existe para no delatar si el correo existe o si las respuestas eran
+      // correctas; esto habla solo de la contraseña que el usuario acaba de teclear,
+      // y se comprueba antes de mirar la base, así que no revela nada de la cuenta.
+      // Sin esto, quien eligiera una contraseña débil vería «verifica los datos» y
+      // no tendría forma de averiguar qué corregir.
+      if (esErrorDePolitica(err)) return res.status(400).json({ error: err.message });
+
       const safeMessage = 'No fue posible recuperar la contraseña. Verifica los datos e intenta de nuevo.';
       const status = (err.status === 400 || err.status === 401 || err.status === 404) ? 401 : 500;
       res.status(status).json({ error: safeMessage });

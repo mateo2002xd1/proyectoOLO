@@ -2,20 +2,18 @@ import bcrypt from 'bcryptjs';
 import { UserRepository } from '../../repositories/usuarios.repository';
 import { SecurityQuestionRepository } from '../../repositories/security-questions.repository';
 import { config } from '../../config';
+import { compararPassword, hashearPassword } from '../../shared/password-policy';
 
 export const firstLoginUseCase = async (userId: string, tempPassword: string, newPassword: string, securityQuestions: any[]) => {
   const user = await UserRepository.findByIdWithPassword(userId);
   if (!user) throw Object.assign(new Error('Usuario no encontrado'), { status: 404 });
 
   // 1. Verify the temporary password
-  const valid = await bcrypt.compare(tempPassword, (user as any).password_hash || '');
+  const valid = await compararPassword(tempPassword, (user as any).password_hash || '');
   if (!valid) throw Object.assign(new Error('La contraseña temporal es incorrecta'), { status: 401 });
 
-  // 2. Hash the new password
-  if (!newPassword || newPassword.length < 8) {
-    throw Object.assign(new Error('La nueva contraseña debe tener al menos 8 caracteres'), { status: 400 });
-  }
-  const passwordHash = await bcrypt.hash(newPassword, 12);
+  // 2. Hash the new password — la política completa (§1), no solo la longitud.
+  const passwordHash = await hashearPassword(newPassword);
 
   // 3. Validate security questions
   if (!Array.isArray(securityQuestions) || securityQuestions.length !== 3) {

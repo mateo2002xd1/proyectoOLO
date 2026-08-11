@@ -24,18 +24,25 @@
    Medición completa y criterios en 9-accesibilidad.md §2.1. */
 @theme {
   /* Identidad — sin texto encima */
-  --color-brand: #7db728;                   /* 2.42:1 vs blanco */
-  --color-brand-hover: #6da020;             /* 3.13:1 */
-  --color-brand-blue: #1face3;              /* 2.60:1 */
+  --color-brand: #7db728;
+  /* 2.42:1 vs blanco */
+  --color-brand-hover: #6da020;
+  /* 3.13:1 */
+  --color-brand-blue: #1face3;
+  /* 2.60:1 */
 
   /* Interactivo — cumplen AA con texto blanco */
-  --color-brand-interactive: #7DB828;       /* 5.21:1 */
-  --color-brand-interactive-hover: #63a00d; /* 8.11:1 */
-  --color-brand-blue-dark: #0b6d8f;         /* 5.84:1 */
+  --color-brand-interactive: #7DB828;
+  /* 5.21:1 */
+  --color-brand-interactive-hover: #63a00d;
+  /* 8.11:1 */
+  --color-brand-blue-dark: #0b6d8f;
+  /* 5.84:1 */
 
   /* Anillo de foco. SC 1.4.11 exige 3:1; se usa a opacidad plena,
      nunca con /40 ni similares, porque la transparencia baja el ratio. */
-  --color-brand-focus: #2a7d00;             /* 5.21:1 */
+  --color-brand-focus: #7DB828;
+  /* 5.21:1 */
 }
 
 /* --- CSS Custom Properties (Design Tokens) --- */
@@ -160,8 +167,8 @@
 
 /* Fix browser autofill styling in dark mode */
 .dark input:-webkit-autofill,
-.dark input:-webkit-autofill:hover, 
-.dark input:-webkit-autofill:focus, 
+.dark input:-webkit-autofill:hover,
+.dark input:-webkit-autofill:focus,
 .dark input:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0 30px #0b1121 inset !important;
   -webkit-text-fill-color: #f6f6f6 !important;
@@ -170,6 +177,7 @@
 
 /* --- Reset --- */
 @layer base {
+
   *,
   *::before,
   *::after {
@@ -554,9 +562,17 @@
 }
 
 @media (max-width: 900px) {
-  .olo-nav { display: none; }
-  .olo-gov-btn { display: none; }
-  .olo-menu-btn { display: flex; }
+  .olo-nav {
+    display: none;
+  }
+
+  .olo-gov-btn {
+    display: none;
+  }
+
+  .olo-menu-btn {
+    display: flex;
+  }
 }
 
 /* --- Hero --- */
@@ -888,6 +904,7 @@
     align-items: flex-start;
     gap: 20px;
   }
+
   .olo-social-and-certs {
     flex-direction: column;
     align-items: flex-start;
@@ -899,6 +916,7 @@
   .olo-footer-card {
     padding: 30px 20px;
   }
+
   .olo-links-row {
     flex-direction: column;
     gap: 10px;
@@ -1229,7 +1247,7 @@
   .admin-sidebar {
     width: 20px !important;
   }
-  
+
   .admin-sidebar .nav-label,
   .admin-sidebar .sidebar-logo {
     display: none;
@@ -1314,8 +1332,15 @@ button.text-link,
 
 /* Skeleton loading */
 @keyframes skeleton-fade-in {
-  0% { opacity: 0; transform: translateY(8px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .skel-fade-in {
@@ -1359,11 +1384,11 @@ button.text-link,
   transition: transform 0.3s;
 }
 
-.toggle-switch .toggle-input:checked + .toggle-label {
+.toggle-switch .toggle-input:checked+.toggle-label {
   background-color: var(--color-brand);
 }
 
-.toggle-switch .toggle-input:checked + .toggle-label::before {
+.toggle-switch .toggle-input:checked+.toggle-label::before {
   transform: translateX(16px);
 }
 
@@ -1402,7 +1427,7 @@ button.text-link,
   transition: 0.3s;
 }
 
-.checkbox:checked ~ .slider {
+.checkbox:checked~.slider {
   background-color: var(--light);
 }
 
@@ -1421,7 +1446,7 @@ button.text-link,
   transition: 0.3s;
 }
 
-.checkbox:checked ~ .slider::before {
+.checkbox:checked~.slider::before {
   -webkit-transform: translateX(50px);
   -ms-transform: translateX(50px);
   transform: translateX(50px);
@@ -1432,9 +1457,20 @@ button.text-link,
 
 /* Bubble animation */
 @keyframes bubble {
-  0% { transform: scale(0.85); opacity: 0; }
-  60% { transform: scale(1.02); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+
+  60% {
+    transform: scale(1.02);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .animate-bubble {
@@ -1450,8 +1486,15 @@ button.text-link,
 
 /* ── Skeleton loading animations ── */
 @keyframes skeleton-fade-in {
-  0% { opacity: 0; transform: translateY(8px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .skel-fade-in {
@@ -1582,44 +1625,111 @@ input[type="date"].olo-date-input[value=""] {
 }
 
 @keyframes gooDot3Move {
-  20% { transform: scale(1); }
-  45% { transform: translateY(-13px) scale(0.45); }
-  60% { transform: translateY(-68px) scale(0.45); }
-  80% { transform: translateY(-68px) scale(0.45); }
-  100% { transform: translateY(0px) scale(1); }
+  20% {
+    transform: scale(1);
+  }
+
+  45% {
+    transform: translateY(-13px) scale(0.45);
+  }
+
+  60% {
+    transform: translateY(-68px) scale(0.45);
+  }
+
+  80% {
+    transform: translateY(-68px) scale(0.45);
+  }
+
+  100% {
+    transform: translateY(0px) scale(1);
+  }
 }
 
 @keyframes gooDot2Move {
-  20% { transform: scale(1); }
-  45% { transform: translate(-12px, 9px) scale(0.45); }
-  60% { transform: translate(-60px, 45px) scale(0.45); }
-  80% { transform: translate(-60px, 45px) scale(0.45); }
-  100% { transform: translateY(0px) scale(1); }
+  20% {
+    transform: scale(1);
+  }
+
+  45% {
+    transform: translate(-12px, 9px) scale(0.45);
+  }
+
+  60% {
+    transform: translate(-60px, 45px) scale(0.45);
+  }
+
+  80% {
+    transform: translate(-60px, 45px) scale(0.45);
+  }
+
+  100% {
+    transform: translateY(0px) scale(1);
+  }
 }
 
 @keyframes gooDot1Move {
-  20% { transform: scale(1); }
-  45% { transform: translate(12px, 9px) scale(0.45); }
-  60% { transform: translate(60px, 45px) scale(0.45); }
-  80% { transform: translate(60px, 45px) scale(0.45); }
-  100% { transform: translateY(0px) scale(1); }
+  20% {
+    transform: scale(1);
+  }
+
+  45% {
+    transform: translate(12px, 9px) scale(0.45);
+  }
+
+  60% {
+    transform: translate(60px, 45px) scale(0.45);
+  }
+
+  80% {
+    transform: translate(60px, 45px) scale(0.45);
+  }
+
+  100% {
+    transform: translateY(0px) scale(1);
+  }
 }
 
 @keyframes gooLoaderRotate {
-  55% { transform: rotate(0deg); }
-  80% { transform: rotate(360deg); }
-  100% { transform: rotate(360deg); }
+  55% {
+    transform: rotate(0deg);
+  }
+
+  80% {
+    transform: rotate(360deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes gooLoaderIndex {
-  0%, 100% { z-index: 3; }
-  33.3% { z-index: 2; }
-  66.6% { z-index: 1; }
+
+  0%,
+  100% {
+    z-index: 3;
+  }
+
+  33.3% {
+    z-index: 2;
+  }
+
+  66.6% {
+    z-index: 1;
+  }
 }
 
 @keyframes gooPulseOpacity {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.45; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.45;
+  }
 }
 
 .goo-loader-label {
@@ -1700,6 +1810,7 @@ input[type="date"].olo-date-input[value=""] {
   align-items: var(--olo-grid-align, stretch);
   width: 100%;
 }
+
 @media (max-width: 640px) {
   .olo-grid {
     grid-template-columns: 1fr;
@@ -1719,7 +1830,7 @@ input[type="date"].olo-date-input[value=""] {
 
 /* Sin esto un hijo con texto largo se niega a encogerse por debajo de su
    contenido y desborda la fila. */
-.olo-flex > * {
+.olo-flex>* {
   min-width: 0;
 }
 

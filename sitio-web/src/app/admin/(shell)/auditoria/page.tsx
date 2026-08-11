@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { AuditoriaView } from '@/features/auditoria';
+import { AuditoriaView } from '@/features/administracion/auditoria';
 
 export const metadata: Metadata = {
   title: 'Auditoría',
