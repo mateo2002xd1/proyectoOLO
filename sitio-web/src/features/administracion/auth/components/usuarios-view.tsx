@@ -706,9 +706,6 @@ export default function UsuariosView() {
                   Nombre
                 </th>
                 <th scope="col" className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-[#94a3b8]">
-                  Apellidos
-                </th>
-                <th scope="col" className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-[#94a3b8]">
                   Correo
                 </th>
                 <th scope="col" className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-[#94a3b8]">
@@ -739,10 +736,7 @@ export default function UsuariosView() {
                 users.map((user) => (
                   <tr key={user.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
                     <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-zinc-900 dark:text-[#f6f6f6]">
-                      {user.name}
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-500 dark:text-[#94a3b8]">
-                      {user.apellidos || '-'}
+                      {[user.name, user.apellidos].filter(Boolean).join(' ')}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-500 dark:text-[#94a3b8]">
                       {user.email}
