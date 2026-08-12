@@ -55,7 +55,7 @@ export function PanelGeneralLayout({ children, userProfile }: { children: React.
 
   const handleLogout = useCallback(async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
-    router.push('/admin/auth/login');
+    router.push('/admin/login');
   }, [router]);
 
   return (
@@ -105,7 +105,7 @@ export function PanelGeneralLayout({ children, userProfile }: { children: React.
               <div className="flex items-center justify-between w-full">
                 {/* SVG estático servido desde /public: next/image no aporta optimización aquí. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/asset/logos/olo-logo-horizontal.svg" alt="OLO" className="h-[4.5rem] pb-3 dark:brightness-0 dark:invert" />
+                <img src="/assets/logos/olo-logo-horizontal.svg" alt="OLO" className="h-[4.5rem] pb-3 dark:brightness-0 dark:invert" />
               </div>
             </SidebarHeader>
             <SidebarBody>

@@ -8,7 +8,7 @@ export const homeFallbackData: Data = {
         id: 'hero-static',
         heading: 'Explora las ocupaciones clave de los sectores productivos en Colombia.',
         searchPlaceholder: 'Buscar ocupación, código o denominación',
-        imageUrl: '/asset/img/nos-ocupa-el-pais.png',
+        imageUrl: '/assets/img/nos-ocupa-el-pais.png',
         imageAlt: 'Nos ocupa el país',
       },
     },

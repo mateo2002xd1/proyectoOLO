@@ -174,7 +174,7 @@ export function RecuperarPasswordFlow() {
         <p className="mb-6 text-sm text-gray-500 dark:text-slate-400">
           Ya puedes iniciar sesión con tu nuevo passcode.
         </p>
-        <Link href="/admin/auth/login" className="block">
+        <Link href="/admin/login" className="block">
           <Button type="button" variant="success" className="w-full">
             IR A INICIAR SESIÓN
           </Button>
@@ -318,7 +318,7 @@ export function RecuperarPasswordFlow() {
 
         <div className="mt-4 text-center">
           <Link
-            href="/admin/auth/login"
+            href="/admin/login"
             className="text-xs text-gray-500 dark:text-slate-400 hover:underline"
           >
             Volver a iniciar sesión

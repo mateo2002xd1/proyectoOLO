@@ -1,4 +1,4 @@
-import { PoliticaPrivacidadView } from '@/features/politica-privacidad';
+import { PoliticaPrivacidadView } from '@/features/sitio-web/politica-privacidad';
 
 export default function AdminPrivacidadPage() {
   return (

@@ -196,7 +196,7 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
         {errors.general ? (
           <>
             <AuthGeneralError>{errors.general}</AuthGeneralError>
-            <Link href="/admin/auth/login" className="text-sm text-brand-blue-dark hover:underline">
+            <Link href="/admin/login" className="text-sm text-brand-blue-dark hover:underline">
               Volver a iniciar sesión
             </Link>
           </>
@@ -244,7 +244,7 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
           </p>
         )}
         <Link
-          href="/admin/auth/login"
+          href="/admin/login"
           className="block rounded-xl bg-brand-interactive px-4 py-2.5 text-center text-sm font-semibold text-white shadow-[0_2px_8px_-2px_rgba(42,125,0,0.4)] transition hover:bg-brand-interactive-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-focus"
         >
           Iniciar sesión

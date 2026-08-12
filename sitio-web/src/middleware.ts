@@ -33,22 +33,15 @@ export async function middleware(request: NextRequest) {
 
   const isAdminRole = role === 'Superadmin' || role === 'Administrador';
 
-  // Redirecciones automáticas para alias comunes de login hacia /admin/auth/login
-  if (
-    pathname === '/login' ||
-    pathname === '/admin/login' ||
-    pathname === '/auth/login' ||
-    pathname === '/admin/auth'
-  ) {
-    const redirectUrl = new URL('/admin/auth/login', request.url);
-    const search = request.nextUrl.search;
-    if (search) redirectUrl.search = search;
-    return NextResponse.redirect(redirectUrl);
-  }
+  // Los alias de login (/login, /auth/login, /admin/auth...) los resuelve
+  // `next.config.mjs`, que además se evalúa antes que este middleware. Aquí había
+  // una copia de esa lista que nunca llegó a ejecutarse —el `matcher` de abajo no
+  // incluye ninguna de esas rutas— y que hoy sería peligrosa: `/admin/login` pasó
+  // a ser la ruta real del login, así que redirigirla desde aquí sería un bucle.
 
   // Login page: solo auto-redirigimos a admins con sesión válida (van directo al dashboard).
-  // Editores u otros roles ven el formulario/selector post-login (el propio page.tsx enruta).
-  if (pathname === '/admin/auth/login') {
+  // Editores u otros roles ven el formulario/selector post-login (el propio LoginView enruta).
+  if (pathname === '/admin/login') {
     if (hasValidSession && isAdminRole) {
       return NextResponse.redirect(new URL('/admin/dashboard', request.url));
     }
@@ -57,7 +50,7 @@ export async function middleware(request: NextRequest) {
 
   // Protected routes (/admin/dashboard, /admin/usuarios, /admin/editor/*): require session
   if (!hasValidSession) {
-    const redirectUrl = new URL('/admin/auth/login', request.url);
+    const redirectUrl = new URL('/admin/login', request.url);
     redirectUrl.searchParams.set('redirect', pathname);
     const response = NextResponse.redirect(redirectUrl);
     // Limpiar cookie inválida si existe
@@ -66,7 +59,7 @@ export async function middleware(request: NextRequest) {
   }
 
   const loginRedirect = () => {
-    const url = new URL('/admin/auth/login', request.url);
+    const url = new URL('/admin/login', request.url);
     url.searchParams.set('redirect', pathname);
     return NextResponse.redirect(url);
   };
@@ -81,7 +74,7 @@ export async function middleware(request: NextRequest) {
     }
     // Must change password or setup security questions
     if (mustChangePassword || mustSetupSecurityQuestions) {
-      return NextResponse.redirect(new URL('/admin/auth/cambiar-contrasena', request.url));
+      return NextResponse.redirect(new URL('/admin/cambiar-contrasena', request.url));
     }
     return NextResponse.next();
   }
@@ -112,8 +105,8 @@ export async function middleware(request: NextRequest) {
 
   // Must change password or setup security questions
   if (mustChangePassword || mustSetupSecurityQuestions) {
-    if (!pathname.startsWith('/admin/auth/cambiar-contrasena')) {
-      return NextResponse.redirect(new URL('/admin/auth/cambiar-contrasena', request.url));
+    if (!pathname.startsWith('/admin/cambiar-contrasena')) {
+      return NextResponse.redirect(new URL('/admin/cambiar-contrasena', request.url));
     }
   }
 
@@ -128,8 +121,11 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Protege dashboard, usuarios/users, auditoría, editor y maneja /admin/auth/login
-  // y /admin/auth/cambiar-contrasena.
+  // Protege dashboard, usuarios/users, auditoría, editor y maneja /admin/login
+  // y /admin/cambiar-contrasena.
+  //
+  // Es una lista explícita, no un prefijo: `/admin/recuperar` queda fuera a
+  // propósito, porque quien va a recuperar su contraseña no tiene sesión.
   matcher: [
     '/admin/dashboard/:path*',
     '/admin/users/:path*',
@@ -139,7 +135,7 @@ export const config = {
     '/admin/auditoria/:path*',
     '/admin/auditoria',
     '/admin/editor/:path*',
-    '/admin/auth/login',
-    '/admin/auth/cambiar-contrasena',
+    '/admin/login',
+    '/admin/cambiar-contrasena',
   ],
 };

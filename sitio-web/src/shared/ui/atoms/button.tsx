@@ -2,7 +2,7 @@
 
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
-type ButtonVariant = "plain" | "primary" | "danger" | "success";
+type ButtonVariant = "plain" | "primary" | "danger" | "success" | "navy";
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
@@ -22,6 +22,13 @@ const variantStyles: Record<ButtonVariant, string> = {
     "bg-[#dc2626] text-white shadow-[0_2px_8px_-2px_rgba(220,38,38,0.4)] hover:bg-[#b91c1c] active:scale-95",
   success:
     "bg-brand-interactive text-white shadow-[0_2px_8px_-2px_rgba(42,125,0,0.4)] hover:bg-brand-interactive-hover active:scale-95",
+  // Azul institucional oscuro (`--color-primary-darkest`, con `--color-primary-dark`
+  // al pasar por encima). Es la acción principal de la pantalla de acceso, donde el
+  // verde competiría con el fondo. Texto blanco encima: 18.2:1, muy por encima del
+  // 4.5:1 de AA. Va en hex porque estos dos tokens viven en `:root` y no en
+  // `@theme`, así que Tailwind no genera utilidad para ellos.
+  navy:
+    "bg-[#0d1526] text-white shadow-[0_2px_8px_-2px_rgba(13,21,38,0.4)] hover:bg-[#1a2340] active:scale-95",
 };
 
 export function Button({

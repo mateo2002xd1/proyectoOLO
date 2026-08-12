@@ -14,7 +14,7 @@ interface MapaProcesosProps {
 }
 
 export function MapaProcesos({
-  imageSrc = '/asset/img/VF_blanco_Mapa_de_Procesos_2026.png',
+  imageSrc = '/assets/img/VF_blanco_Mapa_de_Procesos_2026.png',
   className = ''
 }: MapaProcesosProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);

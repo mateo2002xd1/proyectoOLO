@@ -83,8 +83,8 @@
   --color-text-muted-on-dark: rgba(255, 255, 255, 0.7);
 
   /* Typography */
-  --font-heading: 'Montserrat', sans-serif;
-  --font-body: 'Work Sans', sans-serif;
+  --font-heading: 'Work Sans', sans-serif;
+  --font-body: Calibri, sans-serif;
 
   --fs-xs: 0.75rem;
   --fs-sm: 0.875rem;

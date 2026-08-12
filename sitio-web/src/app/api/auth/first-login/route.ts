@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
   /**
    * Las banderas se borran aquí, no solo en la base.
    *
-   * `middleware.ts` decide a quién manda a `/admin/auth/cambiar-contrasena` leyendo
+   * `middleware.ts` decide a quién manda a `/admin/cambiar-contrasena` leyendo
    * estas dos cookies, que se escriben al iniciar sesión y no se enteran de nada
    * después. Sin borrarlas, un usuario que acaba de completar su configuración
    * seguiría siendo devuelto a la misma pantalla en cada navegación — un bucle del
