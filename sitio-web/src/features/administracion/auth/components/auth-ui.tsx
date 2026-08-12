@@ -151,11 +151,10 @@ export function PasswordRequisitos({ password, className = 'mb-4' }: { password:
       {requisitos.map((requisito) => (
         <li
           key={requisito.id}
-          className={`flex items-start gap-1.5 text-xs ${
-            requisito.cumplido
+          className={`flex items-start gap-1.5 text-xs ${requisito.cumplido
               ? 'text-green-700 dark:text-green-400'
               : 'text-gray-500 dark:text-slate-400'
-          }`}
+            }`}
         >
           <span aria-hidden="true" className="mt-px leading-none">
             {requisito.cumplido ? '✓' : '○'}

@@ -106,6 +106,7 @@ export function LoginView() {
                 <input
                   id="email"
                   type="email"
+                  maxLength={100}
                   placeholder="usuario@sena.edu.co"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}

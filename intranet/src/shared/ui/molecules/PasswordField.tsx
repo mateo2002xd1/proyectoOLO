@@ -11,6 +11,7 @@ interface PasswordFieldProps {
   placeholder?: string;
   error?: string;
   label?: string;
+  maxLength?: number;
 }
 
 export function PasswordField({
@@ -21,6 +22,7 @@ export function PasswordField({
   placeholder = `mínimo ${LONGITUD_MINIMA} caracteres`,
   error,
   label,
+  maxLength = 50,
 }: PasswordFieldProps) {
   const [visible, setVisible] = useState(false);
 
@@ -35,6 +37,7 @@ export function PasswordField({
         <input
           id={id}
           type={visible ? 'text' : 'password'}
+          maxLength={maxLength}
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}

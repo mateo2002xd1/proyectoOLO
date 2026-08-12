@@ -38,7 +38,7 @@ function ProgressDots({ total, current }: { total: number; current: number }) {
               : i < current
                 ? 'bg-brand-interactive/50'
                 : 'bg-gray-300'
-          }`}
+            }`}
         />
       ))}
     </div>
@@ -174,12 +174,12 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
   const leftContent =
     step === 1
       ? {
-          title: `Hola ${name ? name.split(' ')[0] : ''}, actualiza tu seguridad.`,
-          subtitle:
-            'Has ingresado con un código temporal. Por tu seguridad, crea un nuevo código de acceso personal y privado que solo tú conozcas.',
-        }
+        title: `Hola ${name ? name.split(' ')[0] : ''}, actualiza tu seguridad.`,
+        subtitle:
+          'Has ingresado con un código temporal. Por tu seguridad, crea un nuevo código de acceso personal y privado que solo tú conozcas.',
+      }
       : step === 2
-      ? {
+        ? {
           title: 'Protege el acceso a tu cuenta',
           // El texto cambia según por qué se está aquí: a quien solo le restablecieron
           // las preguntas hay que decírselo, o no entiende por qué se le piden otra vez.
@@ -187,7 +187,7 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
             ? 'Elige 3 preguntas de seguridad y asigna una respuesta para cada una. Nos servirán para verificar tu identidad si necesitas recuperar tu cuenta.'
             : 'Tus preguntas de seguridad fueron restablecidas. Elige 3 y asigna una respuesta para cada una; tu contraseña actual no cambia.',
         }
-      : null;
+        : null;
 
   /* ---------- Mientras se sabe qué falta ---------- */
   if (!pendiente) {
@@ -375,8 +375,8 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
                 {isLoading
                   ? 'Guardando...'
                   : currentQuestion === TOTAL_QUESTIONS - 1
-                  ? 'Guardar'
-                  : 'Continuar'}
+                    ? 'Guardar'
+                    : 'Continuar'}
               </Button>
             </div>
           </form>
