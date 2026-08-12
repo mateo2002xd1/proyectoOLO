@@ -21,7 +21,7 @@ const TOTAL_QUESTIONS = 3;
 type Pendiente = { debeCambiarPassword: boolean; debeConfigurarPreguntas: boolean };
 
 export function FirstLoginView() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [pendiente, setPendiente] = useState<Pendiente | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -253,7 +253,7 @@ export function FirstLoginView() {
           Es muy importante que recuerdes o guardes tus respuestas en un lugar seguro, ya que serán el único método para validar tu identidad y permitirte cambiar tu clave en el futuro si llegas a olvidarla.
         </p>
       )}
-      <Link href="/auth" className="fl-success-btn">Iniciar sesión</Link>
+      <button type="button" onClick={() => logout()} className="fl-success-btn">Iniciar sesión</button>
     </div>
   );
 
@@ -318,7 +318,7 @@ export function FirstLoginView() {
             <p className="fl-success-text">
               No hay nada pendiente: tu contraseña y tus preguntas de seguridad están al día.
             </p>
-            <Link href="/editor/inicio" className="fl-success-btn">Ir al editor</Link>
+            <button type="button" onClick={() => logout()} className="fl-success-btn">Iniciar sesión</button>
           </div>
         </div>
       </div>
