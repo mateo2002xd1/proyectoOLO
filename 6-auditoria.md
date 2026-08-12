@@ -5,6 +5,45 @@
 
 ---
 
+## sesión 11-08-2026 (3.ª parte): el primer ingreso era todo-o-nada
+
+### El fallo
+
+Un administrador puede restablecer la contraseña, las preguntas de seguridad, o ambas. Pero `firstLoginUseCase` **exigía siempre las tres cosas**: contraseña temporal, contraseña nueva y tres preguntas.
+
+Con `reset_security_questions` sin `reset_password`, el usuario no tiene ninguna contraseña temporal —la suya sigue siendo válida— y aun así el formulario se la pedía, y le obligaba a cambiar la contraseña otra vez. Quedaba atascado en una pantalla que le pedía algo que no existe.
+
+### El arreglo: lo decide el servidor
+
+`firstLoginUseCase` ahora lee `must_change_password` y `must_setup_security_questions` **de la base** y exige exactamente lo pendiente. Que lo decida el servidor y no el formulario es lo que impide, de paso, que alguien se salte el cambio de contraseña simplemente no enviándolo. Es idempotente: sin nada pendiente no falla, informa.
+
+- **Endpoint nuevo `GET /api/first-login/status`** (+ su proxy). El formulario lo consulta antes de pintarse. **No se leen las cookies** `mustChangePassword` / `mustSetupSecurityQuestions`: se escriben al iniciar sesión y se quedan congeladas, así que después de completar un paso siguen diciendo lo de antes.
+- **Las preguntas se preparan antes de escribir nada.** Si vienen mal, no puede quedar la contraseña cambiada a medias y el usuario sin saber en qué estado está.
+- **Solo se audita `cambiar_password` si de verdad hubo cambio.** Configurar únicamente las preguntas no lo es.
+- **El proxy borra las dos cookies al terminar.** `middleware.ts` decide con ellas a quién manda a `/admin/auth/cambiar-contrasena`; sin borrarlas, quien acababa de completar su configuración volvía a la misma pantalla en cada navegación, en un bucle del que solo se salía cerrando sesión.
+- **La pantalla se adapta**: si solo faltan preguntas entra directo al paso 2, con un texto que explica por qué se le piden y aclara que su contraseña no cambia; si solo falta la contraseña, no hay segundo paso; si no falta nada (se llegó por URL, o se completó en otra pestaña) lo dice en vez de pintar el formulario.
+
+### Un fallo aparte, encontrado al revisar
+
+**`reset_security_questions` marcaba la bandera pero no borraba las preguntas.** Las viejas seguían sirviendo para recuperar la cuenta hasta que el usuario eligiera otras — y un administrador que las restablece suele hacerlo justo porque dejaron de ser de fiar. Ahora se borran: la recuperación queda cerrada hasta que configure las nuevas, que es lo correcto.
+
+### Verificación
+
+Script de escenario contra la base real (cuenta temporal creada y borrada), 15 comprobaciones, todas OK: alta con todo pendiente → primer ingreso completo → **restablecer solo preguntas** (la contraseña no cambia, las viejas se borran, se configuran las nuevas sin contraseña temporal) → **restablecer solo contraseña** (sin exigir preguntas, conserva las que tenía) → idempotencia. `tsc` limpio y `next build` correcto en las dos apps.
+
+### La intranet, alineada en la misma sesión
+
+Tenía el mismo fallo, y el arreglo del backend lo habría empeorado: con el servidor ignorando los campos de contraseña cuando no hay nada que cambiar, su formulario habría dicho «completado» sin cambiarla. Se le aplicó el mismo patrón (`firstLoginStatus`, pasos condicionales, guardas de carga y de «nada pendiente»).
+
+Un detalle que solo aparece allí: **la paginación permitía retroceder al paso 1**. Sin acotarla, quien solo tenía que configurar preguntas podía volver atrás y encontrarse otra vez el formulario de contraseña temporal — el mismo fallo por la puerta de atrás. Los pasos se acotan ahora al primero aplicable y se numeran por posición, para no mostrar un «2 3» suelto.
+
+### Pendiente al cierre
+
+- **No se ejerció desde el navegador** en ninguna de las dos apps: se verificó por use-case contra la base, por tipos y por build, no pulsando la pantalla.
+- **`GET /api/first-login/status` sí se comprobó servido**: responde 401 sin sesión (no 404), así que la ruta está montada y protegida.
+
+---
+
 ## sesión 11-08-2026 (2.ª parte): dominio institucional y recuperación de contraseña en el sitio web
 
 ### 1. Restricción a `@sena.edu.co`

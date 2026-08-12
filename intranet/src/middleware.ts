@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-// import { jwtVerify } from "jose";
 
 /**
  * Middleware global de la intranet.
@@ -14,23 +13,54 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
 
   let isTokenValid = false;
+  let isRestricted = false;
+  let mustChangePassword = false;
+  let mustSetupSecurityQuestions = false;
+
   if (token) {
     try {
       const { decodeJwt } = await import('jose');
       const decoded = decodeJwt(token);
       if (!decoded.exp || decoded.exp * 1000 > Date.now()) {
         isTokenValid = true;
+        mustChangePassword = Boolean(decoded.must_change_password);
+        mustSetupSecurityQuestions = Boolean(decoded.must_setup_security_questions);
+        isRestricted = mustChangePassword || mustSetupSecurityQuestions;
       }
     } catch (error) {
       console.error("[Middleware] Token verification failed:", error);
     }
   }
 
+  const getRestrictedRedirect = () => {
+    if (mustSetupSecurityQuestions && mustChangePassword) {
+      return NextResponse.redirect(new URL('/auth/first-login', request.url));
+    } else if (mustSetupSecurityQuestions) {
+      return NextResponse.redirect(new URL('/auth/security-questions', request.url));
+    } else if (mustChangePassword) {
+      return NextResponse.redirect(new URL('/auth/reset-password', request.url));
+    }
+    return NextResponse.redirect(new URL('/inicio', request.url)); // Fallback
+  };
+
   // Rutas públicas / de login
   if (pathname.startsWith('/auth') || pathname.startsWith('/api-backend')) {
-    // Si el usuario ya está logueado y trata de acceder a /auth, redirigir a /inicio
+    // Si el usuario ya está logueado y trata de acceder a /auth, redirigir
     if (isTokenValid && pathname.startsWith('/auth')) {
-      return NextResponse.redirect(new URL('/inicio', request.url));
+      if (isRestricted) {
+        const isAllowedRestrictedRoute = 
+          pathname === '/auth/first-login' || 
+          pathname === '/auth/reset-password' || 
+          pathname === '/auth/security-questions';
+          
+        if (isAllowedRestrictedRoute) {
+          return NextResponse.next();
+        } else {
+          return getRestrictedRedirect();
+        }
+      } else {
+        return NextResponse.redirect(new URL('/inicio', request.url));
+      }
     }
     
     // Si hay un token inválido, lo limpiamos
@@ -50,6 +80,10 @@ export async function middleware(request: NextRequest) {
       response.cookies.delete('token');
     }
     return response;
+  }
+
+  if (isRestricted) {
+    return getRestrictedRedirect();
   }
 
   return NextResponse.next();

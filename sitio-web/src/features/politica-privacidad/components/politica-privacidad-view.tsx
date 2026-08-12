@@ -11,8 +11,8 @@ export function PoliticaPrivacidadView() {
 
   return (
     <div className="bg-[#f8fafc] dark:bg-[#0b1121] text-gray-800 dark:text-[#f6f6f6] antialiased min-h-screen transition-colors duration-200">
-      {/* Banner de Encabezado Institucional con color azul oscuro sólido (#00324D) */}
-      <div className="relative overflow-hidden bg-[#00324D] py-12 text-white">
+      {/* Banner de Encabezado Institucional con color azul oscuro sólido (#002237) */}
+      <div className="relative overflow-hidden bg-[#002237] py-12 text-white">
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl">
             <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-white">
@@ -27,7 +27,7 @@ export function PoliticaPrivacidadView() {
 
       {/* Contenedor Principal */}
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
-        
+
         {/* 1. Presentación y Alcance */}
         <section className="rounded-2xl border border-gray-200 dark:border-[#1e293b] bg-white dark:bg-[#131b2f] p-6 shadow-sm transition-colors">
           <div className="border-b border-gray-100 dark:border-[#1e293b] pb-3 mb-3">
@@ -59,11 +59,10 @@ export function PoliticaPrivacidadView() {
               <button
                 type="button"
                 onClick={() => setTabActiva('pdf-seguridad')}
-                className={`rounded-lg px-3.5 py-1.5 transition ${
-                  tabActiva === 'pdf-seguridad'
-                    ? 'bg-white dark:bg-[#00324D] text-[#00324D] dark:text-white shadow-sm'
-                    : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white'
-                }`}
+                className={`rounded-lg px-3.5 py-1.5 transition ${tabActiva === 'pdf-seguridad'
+                  ? 'bg-white dark:bg-[#00324D] text-[#00324D] dark:text-white shadow-sm'
+                  : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white'
+                  }`}
               >
                 1. Seguridad y Privacidad (ID: 6701)
               </button>
@@ -71,11 +70,10 @@ export function PoliticaPrivacidadView() {
               <button
                 type="button"
                 onClick={() => setTabActiva('pdf-datos')}
-                className={`rounded-lg px-3.5 py-1.5 transition ${
-                  tabActiva === 'pdf-datos'
-                    ? 'bg-white dark:bg-[#00324D] text-[#00324D] dark:text-white shadow-sm'
-                    : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white'
-                }`}
+                className={`rounded-lg px-3.5 py-1.5 transition ${tabActiva === 'pdf-datos'
+                  ? 'bg-white dark:bg-[#00324D] text-[#00324D] dark:text-white shadow-sm'
+                  : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white'
+                  }`}
               >
                 2. Tratamiento de Datos (ID: 6914)
               </button>
@@ -83,11 +81,10 @@ export function PoliticaPrivacidadView() {
               <button
                 type="button"
                 onClick={() => setTabActiva('mapa-procesos')}
-                className={`rounded-lg px-3.5 py-1.5 transition ${
-                  tabActiva === 'mapa-procesos'
-                    ? 'bg-white dark:bg-[#00324D] text-[#00324D] dark:text-white shadow-sm'
-                    : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white'
-                }`}
+                className={`rounded-lg px-3.5 py-1.5 transition ${tabActiva === 'mapa-procesos'
+                  ? 'bg-white dark:bg-[#00324D] text-[#00324D] dark:text-white shadow-sm'
+                  : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white'
+                  }`}
               >
                 3. Mapa de Procesos 2026
               </button>

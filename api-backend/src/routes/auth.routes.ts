@@ -22,6 +22,7 @@ const logoutLimiter = rateLimit({
 const router = Router();
 
 router.post('/login', loginLimiter, AuthController.login);
+router.get('/first-login/status', requireAuth, AuthController.firstLoginStatus);
 router.post('/first-login', requireAuth, AuthController.firstLogin);
 router.post('/logout', logoutLimiter, AuthController.logout);
 router.get('/me', requireAuth, AuthController.me);

@@ -45,7 +45,17 @@ function ProgressDots({ total, current }: { total: number; current: number }) {
   );
 }
 
+/**
+ * Qué le falta a la cuenta. `null` mientras se consulta.
+ *
+ * Lo dice el servidor, no el formulario: un administrador puede restablecer solo las
+ * preguntas, solo la contraseña, o las dos cosas, y cada combinación pide una
+ * pantalla distinta.
+ */
+type Pendiente = { debeCambiarPassword: boolean; debeConfigurarPreguntas: boolean };
+
 export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
+  const [pendiente, setPendiente] = useState<Pendiente | null>(null);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [currentQuestion, setCurrentQuestion] = useState(0);
 
@@ -69,6 +79,23 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
       .catch(() => setErrors({ general: 'No se pudieron cargar las preguntas de seguridad' }));
   }, []);
 
+  // Qué falta de verdad. Se pregunta a la base en vez de mirar las cookies de sesión,
+  // que se escriben al iniciar sesión y no reflejan lo hecho después.
+  useEffect(() => {
+    fetch('/api/auth/first-login/status')
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((data: Pendiente) => {
+        setPendiente(data);
+        // Si la contraseña ya está cambiada, el paso 1 no tiene nada que pedir: no
+        // hay contraseña temporal que verificar y obligar a cambiarla otra vez sería
+        // justo el fallo que esto arregla.
+        if (!data.debeCambiarPassword) setStep(2);
+      })
+      .catch(() =>
+        setErrors({ general: 'No se pudo comprobar el estado de tu cuenta. Vuelve a iniciar sesión.' })
+      );
+  }, []);
+
   const validateStep1 = (): boolean => {
     const e: Record<string, string> = {};
     // La temporal se *comprueba*, no se elige: la emitió el sistema y ya cumple la
@@ -90,20 +117,14 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
     return Object.keys(e).length === 0;
   };
 
-  const handleStep1 = () => {
-    if (!validateStep1()) return;
-    setErrors({});
-    setStep(2);
-  };
-
-  const handleQuestionNext = async () => {
-    if (!validateQuestion()) return;
-    setErrors({});
-    if (currentQuestion < TOTAL_QUESTIONS - 1) {
-      setCurrentQuestion((q) => q + 1);
-      return;
-    }
-    // Última pregunta → enviar todo
+  /**
+   * Envía lo pendiente.
+   *
+   * Se manda siempre el cuerpo completo; el servidor usa solo lo que corresponda
+   * según lo que la cuenta tenga pendiente e ignora el resto. Los campos que no
+   * aplican van vacíos porque su paso ni siquiera se pintó.
+   */
+  const enviar = async () => {
     setIsLoading(true);
     try {
       const res = await fetch('/api/auth/first-login', {
@@ -128,6 +149,28 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
     }
   };
 
+  const handleStep1 = async () => {
+    if (!validateStep1()) return;
+    setErrors({});
+
+    // Si las preguntas ya están configuradas, no hay segundo paso que dar.
+    if (!pendiente?.debeConfigurarPreguntas) {
+      await enviar();
+      return;
+    }
+    setStep(2);
+  };
+
+  const handleQuestionNext = async () => {
+    if (!validateQuestion()) return;
+    setErrors({});
+    if (currentQuestion < TOTAL_QUESTIONS - 1) {
+      setCurrentQuestion((q) => q + 1);
+      return;
+    }
+    await enviar();
+  };
+
   const leftContent =
     step === 1
       ? {
@@ -138,10 +181,54 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
       : step === 2
       ? {
           title: 'Protege el acceso a tu cuenta',
-          subtitle:
-            'Elige 3 preguntas de seguridad y asigna una respuesta para cada una. Nos servirán para verificar tu identidad si necesitas recuperar tu cuenta.',
+          // El texto cambia según por qué se está aquí: a quien solo le restablecieron
+          // las preguntas hay que decírselo, o no entiende por qué se le piden otra vez.
+          subtitle: pendiente?.debeCambiarPassword
+            ? 'Elige 3 preguntas de seguridad y asigna una respuesta para cada una. Nos servirán para verificar tu identidad si necesitas recuperar tu cuenta.'
+            : 'Tus preguntas de seguridad fueron restablecidas. Elige 3 y asigna una respuesta para cada una; tu contraseña actual no cambia.',
         }
       : null;
+
+  /* ---------- Mientras se sabe qué falta ---------- */
+  if (!pendiente) {
+    return (
+      <div className={`${authCardClass} text-center`}>
+        {errors.general ? (
+          <>
+            <AuthGeneralError>{errors.general}</AuthGeneralError>
+            <Link href="/admin/auth/login" className="text-sm text-brand-blue-dark hover:underline">
+              Volver a iniciar sesión
+            </Link>
+          </>
+        ) : (
+          <p className="text-sm text-gray-500 dark:text-slate-400">Comprobando tu cuenta…</p>
+        )}
+      </div>
+    );
+  }
+
+  /* ---------- Nada pendiente ---------- */
+  // Puede pasar si alguien llega a esta pantalla por la URL, o si completó la
+  // configuración en otra pestaña. Antes el formulario se pintaba igual y pedía una
+  // contraseña temporal que ya no existía.
+  if (!pendiente.debeCambiarPassword && !pendiente.debeConfigurarPreguntas && step !== 3) {
+    return (
+      <div className={`${authCardClass} text-center`}>
+        <h1 className="mb-2 text-[22px] font-bold text-gray-900 dark:text-[#f6f6f6]">
+          Tu cuenta ya está configurada
+        </h1>
+        <p className="mb-6 text-[13px] leading-normal text-gray-500 dark:text-slate-400">
+          No hay nada pendiente: tu contraseña y tus preguntas de seguridad están al día.
+        </p>
+        <Link
+          href="/admin/dashboard"
+          className="block rounded-xl bg-brand-interactive px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-brand-interactive-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-focus"
+        >
+          Ir al panel
+        </Link>
+      </div>
+    );
+  }
 
   /* ---------- Paso 3: éxito ---------- */
   if (step === 3) {
@@ -149,10 +236,13 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
       <div className={`${authCardClass} text-center`}>
         <h1 className="mb-2 text-[22px] font-bold text-gray-900">¡Configuración completada!</h1>
         <p className="mb-3 text-[15px] text-gray-600">Tu cuenta ya es segura.</p>
-        <p className="mb-6 text-[13px] leading-normal text-gray-500">
-          Guarda tus respuestas en un lugar seguro: serán el único método para validar tu identidad si
-          olvidas tu clave en el futuro.
-        </p>
+        {/* El aviso sobre las respuestas solo tiene sentido si se acaban de elegir. */}
+        {pendiente.debeConfigurarPreguntas && (
+          <p className="mb-6 text-[13px] leading-normal text-gray-500">
+            Guarda tus respuestas en un lugar seguro: serán el único método para validar tu identidad si
+            olvidas tu clave en el futuro.
+          </p>
+        )}
         <Link
           href="/admin/auth/login"
           className="block rounded-xl bg-brand-interactive px-4 py-2.5 text-center text-sm font-semibold text-white shadow-[0_2px_8px_-2px_rgba(42,125,0,0.4)] transition hover:bg-brand-interactive-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-focus"

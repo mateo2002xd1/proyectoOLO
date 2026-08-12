@@ -8,6 +8,7 @@ import {
   BCRYPT_ROUNDS,
 } from '../../shared/password-policy';
 import { exigirEmailInstitucional } from '../../shared/email-policy';
+import { SecurityQuestionRepository } from '../../repositories/security-questions.repository';
 
 export const getAllUsers = () => UserRepository.findAll();
 
@@ -77,6 +78,12 @@ export const updateUser = async (id: string, data: any) => {
 
   if (reset_security_questions === true) {
     updateData.must_setup_security_questions = true;
+    // Se borran, no solo se marca la bandera. Si se dejaran, las preguntas viejas
+    // seguirían sirviendo para recuperar la cuenta hasta que el usuario eligiera
+    // otras — y un administrador que restablece preguntas suele hacerlo justo porque
+    // dejaron de ser de fiar. Sin preguntas, la recuperación queda cerrada hasta que
+    // el usuario configure las nuevas en su siguiente ingreso, que es lo correcto.
+    await SecurityQuestionRepository.deleteByUserId(id);
   }
 
   const isReactivation = updateData.status === 'active' && user.status === 'inactive';
