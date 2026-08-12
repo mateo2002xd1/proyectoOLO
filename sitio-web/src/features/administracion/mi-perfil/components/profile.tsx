@@ -37,7 +37,11 @@ export function ProfileForm() {
     }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+        let value = e.target.value;
+        if (e.target.name === 'nombre' || e.target.name === 'apellidos') {
+            value = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+        }
+        setFormData(prev => ({ ...prev, [e.target.name]: value }));
     };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -113,6 +117,7 @@ export function ProfileForm() {
                             value={formData.nombre}
                             onChange={handleChange}
                             required
+                            maxLength={50}
                             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors bg-white dark:bg-gray-800 dark:text-gray-100"
                             placeholder="Tu nombre"
                         />
@@ -129,6 +134,7 @@ export function ProfileForm() {
                             value={formData.apellidos}
                             onChange={handleChange}
                             required
+                            maxLength={50}
                             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors bg-white dark:bg-gray-800 dark:text-gray-100"
                             placeholder="Tus apellidos"
                         />
@@ -145,6 +151,7 @@ export function ProfileForm() {
                             value={formData.correo}
                             onChange={handleChange}
                             required
+                            maxLength={100}
                             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors bg-white dark:bg-gray-800 dark:text-gray-100"
                             placeholder="tu@correo.com"
                         />

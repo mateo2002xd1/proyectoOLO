@@ -399,9 +399,10 @@ export default function UsuariosView() {
             <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">Nombres</label>
             <input
               type="text"
+              maxLength={50}
               required
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => setName(e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, ''))}
               className="w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:text-[#f6f6f6] dark:focus:border-white dark:focus:ring-white"
             />
           </div>
@@ -409,9 +410,10 @@ export default function UsuariosView() {
             <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">Apellidos</label>
             <input
               type="text"
+              maxLength={50}
               required
               value={apellidos}
-              onChange={(e) => setApellidos(e.target.value)}
+              onChange={(e) => setApellidos(e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, ''))}
               className="w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:text-[#f6f6f6] dark:focus:border-white dark:focus:ring-white"
             />
           </div>
@@ -419,6 +421,7 @@ export default function UsuariosView() {
             <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">Correo electrónico</label>
             <input
               type="email"
+              maxLength={100}
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
