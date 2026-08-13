@@ -4,7 +4,7 @@ import {
   MarcoSecciones,
   obtenerVersionEditable,
   SLUG_PLANTILLA,
-} from '@/features/paginas';
+} from '@/features/gestor-secciones';
 import { puedeEditarPaginas, cabecerasConSesion } from '@/shared/lib/sesion';
 
 export const metadata = {

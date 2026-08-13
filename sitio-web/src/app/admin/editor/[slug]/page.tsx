@@ -1,63 +1,34 @@
-'use client';
+import { redirect } from 'next/navigation';
+import { rutaPublicaDeSlug } from '@/features/paginas';
+import { getAuthSessionSnapshot, puedeEditarPaginas } from '@/shared/lib/session';
+import { EditorClient } from './editor-client';
 
-import { use, useState, useEffect, useMemo } from 'react';
-import { PuckEditorWrapper } from '@/features/paginas/components/puck-editor-wrapper';
-import { rutaPublicaDeSlug } from '@/features/paginas/lib/ruta-de-vuelta';
-import { usePagina } from '@/features/paginas/hooks/use-pagina';
-import { GooLoader } from '@/shared/ui/atoms/GooLoader';
-
-// Tiempo mínimo del loader para que la animación se complete antes de mostrar el editor.
-const MIN_LOADER_MS = 8000;
-
-export default function EditorPage({
+/**
+ * El editor visual de una página.
+ *
+ * Los dos filtros van en el servidor, antes de mandar nada al navegador: hasta
+ * ahora toda esta pantalla era `'use client'` y sin ninguna comprobación, así que
+ * cualquiera que escribiera la URL se descargaba el editor entero y solo se
+ * enteraba de que no podía al intentar guardar.
+ */
+export default async function EditorPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  const { slug } = use(params);
-  const { pagina, isLoading, error, saveDraft, submitForReview } = usePagina(slug);
+  const { slug } = await params;
 
-  // Identidad estable: `overrides` de Puck depende de esto, y un objeto nuevo en
-  // cada render le haría reconstruir su store. Se memoriza sobre los valores
-  // sueltos —y no sobre `pagina`— para que guardar un borrador no lo recree.
-  const estado = pagina?.estado ?? null;
-  const motivo = pagina?.motivoRechazo ?? null;
-  const numeroVersion = pagina?.numeroVersion ?? null;
-  const rechazo = useMemo(
-    () => (estado === 'rechazado' ? { motivo, numeroVersion } : undefined),
-    [estado, motivo, numeroVersion],
-  );
-
-  // Mantiene el loader visible al menos MIN_LOADER_MS aunque los datos carguen antes.
-  const [minTimePassed, setMinTimePassed] = useState(false);
-  useEffect(() => {
-    const t = setTimeout(() => setMinTimePassed(true), MIN_LOADER_MS);
-    return () => clearTimeout(t);
-  }, []);
-
-  if (isLoading || !minTimePassed) {
-    return (
-      <div className="editor-loading-overlay">
-        <GooLoader label="Cargando editor..." />
-      </div>
-    );
+  const { hasSession } = await getAuthSessionSnapshot();
+  if (!hasSession) {
+    redirect(`/admin/login?redirect=${encodeURIComponent(`/admin/editor/${slug}`)}`);
   }
 
-  if (error) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <p style={{ color: 'red' }}>Error: {error}</p>
-      </div>
-    );
+  // Con sesión pero sin permiso no se manda al login: ya está identificado, y
+  // volver a pedirle credenciales sugiere que se equivocó de usuario. Se le
+  // devuelve a la página que quería editar.
+  if (!(await puedeEditarPaginas())) {
+    redirect(rutaPublicaDeSlug(slug));
   }
 
-  return (
-    <PuckEditorWrapper
-      initialData={pagina?.contenido}
-      onSave={saveDraft}
-      onPublish={submitForReview}
-      rutaPorDefecto={rutaPublicaDeSlug(slug)}
-      rechazo={rechazo}
-    />
-  );
+  return <EditorClient slug={slug} />;
 }

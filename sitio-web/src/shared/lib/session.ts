@@ -93,6 +93,24 @@ export async function assertPagePermission(requiredPermission: string): Promise<
   return permissions.includes(requiredPermission);
 }
 
+/** Quien puede abrir el editor de páginas. Mismo criterio que `admin/preview`. */
+const ROLES_QUE_EDITAN = ['superadmin', 'administrador', 'editor'];
+
+/**
+ * Si esta sesión puede editar páginas.
+ *
+ * Va por el rol de la cookie y no por `assertPagePermission('edit_post')` a
+ * propósito: el permiso real exige dos peticiones al backend sin caché y devuelve
+ * la lista vacía ante cualquier fallo, así que un backend lento dejaría a los
+ * editores sin botón. Esto se llama desde el layout público, o sea en cada
+ * request de cada página del sitio. La comprobación de verdad la hace el backend
+ * al guardar; esto solo decide si se pinta el botón.
+ */
+export async function puedeEditarPaginas(): Promise<boolean> {
+  const { role } = await getAuthSessionSnapshot();
+  return ROLES_QUE_EDITAN.includes((role ?? '').trim().toLowerCase());
+}
+
 export async function resolveFirstAccessibleRoute(role: string): Promise<string> {
   const roleRoutes: Record<string, string[]> = {
     Superadmin: ['/admin/dashboard'],

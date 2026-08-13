@@ -83,8 +83,8 @@
   --color-text-muted-on-dark: rgba(255, 255, 255, 0.7);
 
   /* Typography */
-  --font-heading: 'Work Sans', sans-serif;
-  --font-body: Calibri, sans-serif;
+  --font-heading: 'Open Sans', sans-serif;
+  --font-body: 'Poppins', sans-serif;
 
   --fs-xs: 0.75rem;
   --fs-sm: 0.875rem;
@@ -1192,6 +1192,22 @@
   color: #059669;
 }
 
+/* --- Admin Typography ---
+   Jerarquía única para títulos de página y subtítulos de sección/modal
+   en todo el panel admin. No fijan color: heredan el de la clase
+   Tailwind (text-zinc-950 dark:text-[...]) que ya trae cada elemento. */
+.admin-header {
+  font-family: var(--font-heading);
+  font-size: 30px;
+  font-weight: var(--fw-semibold);
+}
+
+.admin-subtitle {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: var(--fw-regular);
+}
+
 /* --- Admin Modal --- */
 .admin-modal-overlay {
   position: fixed;
@@ -1677,6 +1693,298 @@ button.text-link,
   justify-content: center;
   background-color: #f0f2f5;
   z-index: 50;
+}
+
+/* ============================================
+   EDITOR VISUAL (Puck) — cabecera y barra oscuras
+
+   Portado del editor de la intranet (intranet/src/style/globals.css) para que
+   quien edita las dos aplicaciones se encuentre la misma pantalla. Si se toca
+   algo aquí, conviene mirar allí también.
+
+   Va fuera de cualquier @layer a propósito: los selectores por subcadena de
+   abajo ya pelean con los estilos que trae Puck, y meterlos en una capa los
+   dejaría por debajo del CSS sin capa del propio paquete.
+   ============================================ */
+
+/* Puck expone su tema con variables propias, así que la cabecera y la barra de
+   complementos se tiñen sin tocar sus clases de CSS modules: esas llevan un hash
+   (`_PuckLayout-nav_mr27u_197`) que cambia en cuanto se actualiza el paquete y
+   dejaría los estilos colgando en silencio. */
+.olo-editor {
+  position: fixed;
+  inset: 0;
+  background: #fff;
+  z-index: 9999;
+
+  /* Cabecera */
+  --puck-header-color-bg: #001631;
+  --puck-header-color-text: #ffffff;
+
+  /* Barra lateral de complementos (el `_PuckLayout-nav`) */
+  --puck-pluginbar-color-bg: #001631;
+  --puck-pluginbar-color-text: rgba(255, 255, 255, 0.68);
+  --puck-pluginbar-color-text-hover: #ffffff;
+  --puck-pluginbar-color-text-selected: #ffffff;
+  --puck-pluginbar-color-bg-hover: rgba(255, 255, 255, 0.1);
+}
+
+/* Los iconos de plegar barras heredan `currentColor`, así que ya salen blancos;
+   lo que no encaja es el azul de serie al pasar por encima sobre el azul marino.
+   El selector va por subcadena para no depender del hash. */
+.olo-editor [class*="PuckHeader"] [class*="IconButton"]:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+/* Separador interno de la cabecera: gris claro sobre azul marino cortaba la
+   barra en dos de forma muy visible.
+
+   La cabecera de Puck es una rejilla de tres columnas —iconos de plegar, título
+   y herramientas— repartida como `1fr auto 1fr`, que deja el título flotando en
+   el centro. Aquí las dos primeras se ajustan a su contenido para que la
+   bandera de la página quede pegada a los iconos, formando un solo grupo a la
+   izquierda; las herramientas se quedan con todo el resto y siguen alineadas a
+   la derecha. */
+.olo-editor [class*="PuckHeader-inner"] {
+  border-left-color: rgba(255, 255, 255, 0.14);
+  grid-template-columns: auto auto 1fr;
+  align-items: center;
+}
+
+/* ── Bandera de la página ──────────────────────────────────────────────────
+   Ruta y estado en una sola etiqueta, al lado de los iconos de plegar barras.
+   Se pinta sobre el marcado que trae Puck (`headerTitle` y `headerPath`), así
+   que hay que llegar por CSS. Los selectores van por subcadena porque las
+   clases de Puck llevan un hash que cambia al actualizar el paquete. */
+.olo-editor [class*="PuckHeader-title"]>* {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 5px 4px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+}
+
+/* La mitad derecha de la bandera: el estado, en su propia pastilla. */
+.olo-editor [class*="PuckHeader-path"] {
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: #cbd5e1;
+  word-break: normal;
+}
+
+/* Tonos claros a propósito: sobre el azul marino (#001631) los colores planos
+   de estado —el ámbar #d97706, el azul #2563eb— quedaban casi ilegibles. */
+.olo-editor[data-estado="borrador"] [class*="PuckHeader-path"] {
+  background: rgba(251, 191, 36, 0.16);
+  color: #fbbf24;
+}
+
+.olo-editor[data-estado="en_revision"] [class*="PuckHeader-path"] {
+  background: rgba(125, 211, 252, 0.16);
+  color: #7dd3fc;
+}
+
+.olo-editor[data-estado="publicado"] [class*="PuckHeader-path"] {
+  background: rgba(134, 239, 172, 0.16);
+  color: #86efac;
+}
+
+.olo-editor[data-estado="rechazado"] [class*="PuckHeader-path"] {
+  background: rgba(252, 165, 165, 0.16);
+  color: #fca5a5;
+}
+
+.olo-editor-acciones {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.olo-editor-aviso {
+  font-size: 12px;
+  color: #fbbf24;
+}
+
+.olo-editor-btn {
+  padding: 7px 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.olo-editor-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.olo-editor-btn:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+.olo-editor-btn--salir {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.olo-editor-btn--salir:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.olo-editor-btn--guardar {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+.olo-editor-btn--guardar:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+/* Verde institucional. El texto va en azul marino y no en blanco: blanco sobre
+   este verde queda en 2.4:1 —ilegible— y así sube a 7.6:1 sin cambiar el color
+   pedido. */
+.olo-editor-btn--enviar {
+  background: #7db828;
+  color: #001631;
+  font-weight: 600;
+}
+
+.olo-editor-btn--enviar:hover:not(:disabled) {
+  background: #8fcc32;
+}
+
+/* --- Confirmación de salida --- */
+
+.olo-modal {
+  border: none;
+  padding: 0;
+  background: transparent;
+  max-width: min(30rem, calc(100vw - 2rem));
+  width: 100%;
+  margin: auto;
+}
+
+.olo-modal::backdrop {
+  background: rgba(0, 22, 49, 0.55);
+}
+
+.olo-modal-caja {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+  color: #1f2937;
+}
+
+.olo-modal-titulo {
+  margin: 0 0 0.6rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #001631;
+}
+
+.olo-modal-texto {
+  margin: 0 0 0.75rem;
+  font-size: 0.925rem;
+  line-height: 1.5;
+}
+
+.olo-modal-texto--apunte {
+  color: #4b5563;
+  font-size: 0.875rem;
+  margin-bottom: 1.25rem;
+}
+
+.olo-modal-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+.olo-modal-btn {
+  padding: 0.55rem 1rem;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #374151;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.olo-modal-btn:hover {
+  background: #f3f4f6;
+}
+
+.olo-modal-btn--peligro {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+
+.olo-modal-btn--peligro:hover {
+  background: #b91c1c;
+  border-color: #b91c1c;
+}
+
+.olo-modal-btn:focus-visible {
+  outline: 2px solid #001631;
+  outline-offset: 2px;
+}
+
+/* --- Botón lápiz (edit-button) --- */
+
+.edit-button {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1rem;
+  background: #00183a;
+  color: #fff;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.edit-button:hover {
+  background: #0b2b58;
+  transform: translateY(-2px);
+}
+
+/* Editar la plantilla afecta a todo el sitio, no solo a la página que se está
+   mirando: se apila encima del botón de la página y en un tono más apagado para
+   que no se confunda con él. Apilado y no al lado, porque así no hay que ajustar
+   el desplazamiento cada vez que cambie el texto de un botón. */
+.edit-button--plantilla {
+  bottom: 4.6rem;
+  background: #334f78;
+  font-weight: 500;
+}
+
+.edit-button--plantilla:hover {
+  background: #45638f;
 }
 
 /* ─── Maquetación del editor (@olo/blocks-renderer) ─────────────────────────

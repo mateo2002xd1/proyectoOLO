@@ -29,8 +29,8 @@ import {
  *
  * ## Por qué un componente con pasos y no cuatro rutas
  *
- * La intranet reparte este mismo flujo en `/auth/recovery`,
- * `/auth/security-questions`, `/auth/reset-password` y `/auth/reset-success`, y
+ * La intranet reparte este mismo flujo en `/login/recovery`,
+ * `/login/security-questions`, `/login/reset-password` y `/login/reset-success`, y
  * arrastra el estado entre ellas por `sessionStorage` — **incluidas las respuestas
  * en claro**, que se quedan escritas en el navegador hasta que algo las borra. Aquí
  * el estado vive en el componente: al salir de la pantalla desaparece solo, y no hay

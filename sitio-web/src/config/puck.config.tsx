@@ -2,14 +2,17 @@
 
 import type { ComponentProps } from 'react';
 import {
-  ExternalPortals,
-  Services,
-  IntranetTopbar,
-  IntranetHero,
   primitiveComponents,
   conCajaEnTodos,
   BLOQUES_SIN_CAJA,
 } from '@olo/blocks-renderer';
+import { ExternalPortals } from '@/shared/lib/blocks/ExternalPortals';
+import { Services } from '@/shared/lib/blocks/Services';
+import { Header } from '@/shared/lib/blocks/Header';
+import { Footer } from '@/shared/lib/blocks/Footer';
+import { IntranetTopbar } from '@/shared/lib/blocks/IntranetTopbar';
+import { IntranetHero } from '@/shared/lib/blocks/IntranetHero';
+import { defaultIdentidadVisual } from '@/features/identidad-visual/client';
 import { OcupacionSearchBanner } from '@/shared/ui/molecules/ocupacion-search-banner';
 import { EditorjsWrapper } from '@/features/paginas/components/editorjs-wrapper';
 import { ImageUploaderField } from '@/features/paginas/components/image-uploader-field';
@@ -49,6 +52,9 @@ const RichTextBlock = {
  */
 const puckConfigBase: Config = {
   categories: {
+    'Plantilla': {
+      components: ['Header', 'Footer'],
+    },
     'Intranet': {
       components: ['IntranetTopbar', 'IntranetHero'],
     },
@@ -65,6 +71,71 @@ const puckConfigBase: Config = {
   components: {
     // Primitivos de maquetación compartidos (Grid / Flex / Space)
     ...primitiveComponents,
+    // ─── Plantilla: la cabecera y el pie que rodean a todas las páginas ───
+    // Solo se ofrecen al editar el slug `plantilla` (ver COMPONENTES_POR_SLUG).
+    // Los pinta `app/(public)/layout.tsx` leyendo esa página, no el contenido de
+    // cada sección: así el menú es uno solo para todo el sitio.
+    Header: {
+      label: 'Cabecera / Menú',
+      fields: {
+        govBannerEnabled: {
+          type: 'radio',
+          label: 'Mostrar franja superior GOV.CO',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        govBannerImageUrl: {
+          type: 'custom',
+          label: 'Imagen de la franja (opcional)',
+          render: ({ value, onChange }: CustomFieldRender<string>) => (
+            <ImageUploaderField value={value} onChange={onChange} />
+          ),
+        },
+        mainLogoUrl: {
+          type: 'custom',
+          label: 'Logo principal (opcional)',
+          render: ({ value, onChange }: CustomFieldRender<string>) => (
+            <ImageUploaderField value={value} onChange={onChange} />
+          ),
+        },
+        navLinks: {
+          type: 'array',
+          label: 'Menú de navegación',
+          arrayFields: {
+            label: { type: 'text', label: 'Texto del enlace' },
+            href: { type: 'text', label: 'URL' },
+            active: {
+              type: 'radio',
+              label: 'Marcar como sección actual',
+              options: [
+                { label: 'No', value: false },
+                { label: 'Sí', value: true },
+              ],
+            },
+          },
+          getItemSummary: (item: { label?: string }) => item.label || 'Enlace',
+        },
+        intranetText: { type: 'text', label: 'Texto del botón de intranet' },
+        intranetUrl: { type: 'text', label: 'URL de la intranet' },
+      },
+      // Los mismos valores que sirve `identidad-visual` cuando no hay plantilla:
+      // arrastrar el bloque al lienzo da la cabecera que ya se ve hoy, no una vacía.
+      defaultProps: { ...defaultIdentidadVisual },
+      render: (props: BlockRender<Omit<ComponentProps<typeof Header>, 'block'>>) => (
+        <Header {...props} block={{ id: props.id || 'header-preview' }} />
+      ),
+    },
+    Footer: {
+      // Sin campos a propósito: el pie todavía tiene su contenido escrito en el
+      // JSX, así que aquí solo se decide si aparece o no. Parametrizarlo (como
+      // `IntranetFooter` en la intranet) es una tanda aparte.
+      label: 'Pie de página',
+      render: (props: BlockRender<unknown>) => (
+        <Footer block={{ id: props.id || 'footer-preview' }} />
+      ),
+    },
     IntranetTopbar: {
       label: 'Intranet Topbar',
       fields: {
@@ -214,7 +285,7 @@ const puckConfigBase: Config = {
         services?: { id: string; title: string; description: string; link: string }[];
       }) => (
         <Services
-          block={{ id: id || 'services-preview', type: 'services' }}
+          block={{ id: id || 'services-preview' }}
           sectionTitle={sectionTitle}
           services={services}
         />
@@ -290,7 +361,7 @@ const puckConfigBase: Config = {
         portals?: { id: string; label: string; description: string; href: string; gradient: string }[];
       }) => (
         <ExternalPortals
-          block={{ id: id || 'portals-preview', type: 'external-portals' }}
+          block={{ id: id || 'portals-preview' }}
           title={title}
           subtitle={subtitle}
           portals={portals}
@@ -319,3 +390,57 @@ export const puckConfig: Config = {
   ...puckConfigBase,
   components: conCajaEnTodos(puckConfigBase.components, { excepto: BLOQUES_SIN_CAJA }),
 };
+
+/**
+ * Qué bloques se ofrecen al editar cada slug.
+ *
+ * El catálogo es uno solo para todo el sitio, así que sin esto quien edita la
+ * portada ve en el selector la cabecera, el pie y los bloques de la intranet,
+ * ninguno de los cuales pinta nada ahí. El nombre del bloque es la única pista
+ * que tiene, y una lista larga de bloques que no vienen a cuento hace que el
+ * editor dé miedo tocarlo.
+ *
+ * Un slug que no esté aquí recibe el catálogo completo, que es lo razonable
+ * cuando no se sabe qué va a contener.
+ *
+ * `Header` y `Footer` NO están en `inicio`: los pinta `app/(public)/layout.tsx` a
+ * partir de la página `plantilla`, y ofrecerlos en una sección dejaría volver a
+ * tener una cabecera distinta por página, que es justo lo que se acaba de quitar.
+ */
+const COMPONENTES_POR_SLUG: Record<string, string[]> = {
+  // La plantilla es lo contrario a una página: solo la cabecera y el pie, que es
+  // justo lo que las páginas ya no pueden tocar.
+  plantilla: ['Header', 'Footer'],
+  inicio: ['Hero', 'Services', 'ExternalPortals', 'RichText', 'Grid', 'Flex', 'Space'],
+};
+
+/**
+ * Config para la mesa de trabajo de un slug.
+ *
+ * Solo la usa el editor. Para PINTAR una página hay que seguir usando
+ * `puckConfig` entero: si un bloque guardado no está en la config con la que se
+ * renderiza, Puck no sabe dibujarlo y la sección desaparece sin avisar.
+ */
+export function configDeEdicion(slug: string): Config {
+  const permitidos = COMPONENTES_POR_SLUG[slug];
+  if (!permitidos) return puckConfig;
+
+  const components = Object.fromEntries(
+    Object.entries(puckConfig.components).filter(([nombre]) => permitidos.includes(nombre))
+  ) as Config['components'];
+
+  const categories = Object.fromEntries(
+    Object.entries(puckConfig.categories ?? {})
+      .map(([nombre, categoria]) => [
+        nombre,
+        {
+          ...categoria,
+          components: (categoria.components ?? []).filter((c) => permitidos.includes(c)),
+        },
+      ])
+      // Una categoría que se queda sin bloques no debe salir como grupo vacío.
+      .filter(([, categoria]) => (categoria as { components: string[] }).components.length > 0)
+  ) as Config['categories'];
+
+  return { ...puckConfig, components, categories };
+}

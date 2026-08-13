@@ -34,25 +34,25 @@ export async function middleware(request: NextRequest) {
 
   const getRestrictedRedirect = () => {
     if (mustSetupSecurityQuestions && mustChangePassword) {
-      return NextResponse.redirect(new URL('/auth/first-login', request.url));
+      return NextResponse.redirect(new URL('/login/first-login', request.url));
     } else if (mustSetupSecurityQuestions) {
-      return NextResponse.redirect(new URL('/auth/security-questions', request.url));
+      return NextResponse.redirect(new URL('/login/security-questions', request.url));
     } else if (mustChangePassword) {
-      return NextResponse.redirect(new URL('/auth/reset-password', request.url));
+      return NextResponse.redirect(new URL('/login/reset-password', request.url));
     }
     return NextResponse.redirect(new URL('/inicio', request.url)); // Fallback
   };
 
   // Rutas públicas / de login
-  if (pathname.startsWith('/auth') || pathname.startsWith('/api-backend')) {
-    // Si el usuario ya está logueado y trata de acceder a /auth, redirigir
-    if (isTokenValid && pathname.startsWith('/auth')) {
+  if (pathname.startsWith('/login') || pathname.startsWith('/api-backend')) {
+    // Si el usuario ya está logueado y trata de acceder a /login, redirigir
+    if (isTokenValid && pathname.startsWith('/login')) {
       if (isRestricted) {
-        const isAllowedRestrictedRoute = 
-          pathname === '/auth/first-login' || 
-          pathname === '/auth/reset-password' || 
-          pathname === '/auth/security-questions';
-          
+        const isAllowedRestrictedRoute =
+          pathname === '/login/first-login' ||
+          pathname === '/login/reset-password' ||
+          pathname === '/login/security-questions';
+
         if (isAllowedRestrictedRoute) {
           return NextResponse.next();
         } else {
@@ -62,9 +62,9 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL('/inicio', request.url));
       }
     }
-    
+
     // Si hay un token inválido, lo limpiamos
-    if (token && !isTokenValid && pathname.startsWith('/auth')) {
+    if (token && !isTokenValid && pathname.startsWith('/login')) {
       const response = NextResponse.next();
       response.cookies.delete('token');
       return response;
@@ -75,7 +75,7 @@ export async function middleware(request: NextRequest) {
 
   // Rutas protegidas (intranet)
   if (!isTokenValid) {
-    const response = NextResponse.redirect(new URL('/auth', request.url));
+    const response = NextResponse.redirect(new URL('/login', request.url));
     if (token) {
       response.cookies.delete('token');
     }

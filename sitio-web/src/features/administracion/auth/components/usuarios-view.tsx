@@ -384,7 +384,7 @@ export default function UsuariosView() {
     <div className="p-6">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-[#f6f6f6]">Usuarios</h1>
+          <h1 className="admin-header text-zinc-900 dark:text-[#f6f6f6]">Usuarios</h1>
           <p className="mt-1 text-sm text-zinc-500 dark:text-[#94a3b8]">
             Controla los usuarios que actúan en las diferentes plataformas
           </p>
@@ -517,7 +517,7 @@ export default function UsuariosView() {
             {/* Header del Modal */}
             <div className="flex items-center justify-between border-b border-zinc-100 px-6 py-5 dark:border-zinc-800/80">
               <div>
-                <h3 className="text-lg font-bold text-zinc-900 dark:text-[#f6f6f6]">Configurar Permisos</h3>
+                <h3 className="admin-subtitle text-zinc-900 dark:text-[#f6f6f6]">Configurar Permisos</h3>
                 <p className="text-xs text-zinc-500 dark:text-[#94a3b8]">
                   Rol: <strong className="text-zinc-700 dark:text-zinc-300">"{selectedRoleName || 'Sin rol seleccionado'}"</strong>
                 </p>

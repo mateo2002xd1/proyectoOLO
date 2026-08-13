@@ -6,8 +6,8 @@
  */
 
 // Components
-export { PageRenderer } from "./components/page-renderer";
-export { default as EditButton } from "./components/edit-button";
+export { EditButton } from "./components/edit-button";
+export { PlantillaEditButton } from "./components/plantilla-edit-button";
 export { PuckEditorWrapper } from "./components/puck-editor-wrapper";
 export { EditorjsWrapper } from "./components/editorjs-wrapper";
 export { ClientPuckRender } from "./components/client-puck-render";
@@ -20,16 +20,21 @@ export { useRevisionQueue } from "./hooks/use-revision-queue";
 // Services
 export {
   obtenerPagina,
+  obtenerPaginaEditable,
+  obtenerPaginaPublicadaCacheada,
   obtenerPaginaInicio,
   guardarBorrador,
   enviarARevision,
   aprobarPagina,
   rechazarPagina,
+  eliminarVersion,
   listarEnRevision,
 } from "./services/paginas.service";
 
 // Lib
 export { homeFallbackData } from "./lib/home-fallback-data";
+export { obtenerPlantilla, SLUG_PLANTILLA } from "./lib/plantilla";
+export type { Plantilla } from "./lib/plantilla";
 export {
   enlaceAlEditor,
   esRutaInternaSegura,

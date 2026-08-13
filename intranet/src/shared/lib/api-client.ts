@@ -46,7 +46,7 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}): Promise
 async function handleResponse<T>(response: Response): Promise<T> {
   if (response.status === 401) {
     if (typeof window !== 'undefined') {
-      window.location.href = '/auth';
+      window.location.href = '/login';
     }
     throw new ApiError(401, 'No autenticado');
   }
