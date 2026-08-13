@@ -12,10 +12,14 @@ export { AuditoriaView } from './components/auditoria-view';
 export { useAuditoria } from './hooks/use-auditoria';
 
 // Services
-export { listarAuditoria, listarUsuariosDeFiltro } from './services/auditoria.service';
+export { listarAuditoria, listarUsuariosDeFiltro, ErrorAuditoria } from './services/auditoria.service';
 
 // Lib
 export { aCsv, descargarCsv } from './lib/csv';
+
+// Presentación compartida: el panel general resume la bitácora con las mismas
+// etiquetas y colores que la tabla de auditoría, para que no haya dos lenguajes.
+export { COLOR_ACCION, etiquetaDeAccion, etiquetaDeEntidad } from './types';
 
 // Types
 export type {

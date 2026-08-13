@@ -1,12 +1,14 @@
-'use client';
-
+import { AuthSplitShell } from '@/features/administracion/auth/components/auth-ui';
 import { FirstLoginFlow } from '@/features/administracion/auth/components/first-login-flow';
-import { AuthPageShell } from '@/features/administracion/auth/components/auth-ui';
+
+export const metadata = {
+  title: 'Configurar tu acceso | Observatorio Laboral y Ocupacional',
+};
 
 export default function CambiarContrasenaPage() {
   return (
-    <AuthPageShell>
+    <AuthSplitShell>
       <FirstLoginFlow />
-    </AuthPageShell>
+    </AuthSplitShell>
   );
 }

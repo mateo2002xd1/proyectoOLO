@@ -7,6 +7,7 @@ import '@puckeditor/core/dist/index.css';
 import { puckConfig } from '@/config/puck.config';
 import { resolverRutaDeVuelta } from '../lib/ruta-de-vuelta';
 import { Bloque, PuckData } from '../types';
+import { AvisoRechazo, type Rechazo } from './aviso-rechazo';
 
 
 interface PuckEditorWrapperProps {
@@ -15,6 +16,8 @@ interface PuckEditorWrapperProps {
   onPublish?: () => Promise<unknown>;
   /** A dónde vuelve "Salir" si no llegó un `?volver=` en la URL. */
   rutaPorDefecto: string;
+  /** Presente solo si la versión que se está editando fue rechazada. */
+  rechazo?: Rechazo;
 }
 
 /** Con selector, para no re-renderizar la cabecera ante cualquier cambio del editor. */
@@ -126,6 +129,7 @@ export function PuckEditorWrapper({
   onSave,
   onPublish,
   rutaPorDefecto,
+  rechazo,
 }: PuckEditorWrapperProps) {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
@@ -229,16 +233,20 @@ export function PuckEditorWrapper({
   const overrides = useMemo(
     () => ({
       headerActions: () => (
-        <AccionesCabecera
-          busy={busy}
-          isSaving={isSaving}
-          isSubmitting={isSubmitting}
-          puedeEnviar={!!onPublish}
-          indiceGuardado={indiceGuardado}
-          onGuardar={alPulsarGuardar}
-          onEnviar={alPulsarEnviar}
-          onSalir={handleSalir}
-        />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {/* Antes que las acciones: se lee el porqué antes de volver a tocar nada. */}
+          {rechazo && <AvisoRechazo {...rechazo} />}
+          <AccionesCabecera
+            busy={busy}
+            isSaving={isSaving}
+            isSubmitting={isSubmitting}
+            puedeEnviar={!!onPublish}
+            indiceGuardado={indiceGuardado}
+            onGuardar={alPulsarGuardar}
+            onEnviar={alPulsarEnviar}
+            onSalir={handleSalir}
+          />
+        </div>
       ),
     }),
     [
@@ -250,6 +258,7 @@ export function PuckEditorWrapper({
       alPulsarGuardar,
       alPulsarEnviar,
       handleSalir,
+      rechazo,
     ]
   );
 

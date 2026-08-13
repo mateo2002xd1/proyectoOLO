@@ -9,11 +9,10 @@ import { FirstLoginFlow } from './first-login-flow';
 import {
   AuthGeneralError,
   AuthSplitShell,
+  AuthTextField,
   PasswordField,
-  authErrorTextClass,
+  authQuietLinkClass,
   authSolidCardClass,
-  authSolidInputClass,
-  authSolidLabelClass,
 } from './auth-ui';
 
 /**
@@ -186,23 +185,18 @@ function LoginForm() {
   return (
     <div className={authSolidCardClass}>
       <form onSubmit={handleSubmit} noValidate>
-        {errors.general && <AuthGeneralError variant="solid">{errors.general}</AuthGeneralError>}
+        {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
 
-        <div className="mb-4">
-          <label htmlFor="email" className={authSolidLabelClass}>
-            Correo SENA
-          </label>
-          <input
-            id="email"
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="usuario@sena.edu.co"
-            className={authSolidInputClass(!!errors.email)}
-          />
-          {errors.email && <p className={authErrorTextClass}>{errors.email}</p>}
-        </div>
+        <AuthTextField
+          id="email"
+          type="email"
+          label="Correo SENA"
+          autoComplete="email"
+          value={email}
+          onChange={setEmail}
+          error={errors.email}
+          placeholder="usuario@sena.edu.co"
+        />
 
         <PasswordField
           id="password"
@@ -212,7 +206,6 @@ function LoginForm() {
           onChange={setPassword}
           error={errors.password}
           className="mb-5"
-          variant="solid"
         />
 
         {/* RF-13: el aviso va antes de enviar nada, no después. */}
@@ -233,10 +226,7 @@ function LoginForm() {
         </Button>
 
         <div className="mt-4 text-center">
-          <Link
-            href="/admin/recuperar"
-            className="rounded text-xs text-gray-500 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d1526]"
-          >
+          <Link href="/admin/recuperar" className={authQuietLinkClass}>
             ¿Olvidaste tu contraseña?
           </Link>
         </div>

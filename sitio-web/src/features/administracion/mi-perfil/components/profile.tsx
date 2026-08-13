@@ -165,7 +165,7 @@ export function ProfileForm() {
                     <button
                         type="button"
                         onClick={() => setIsChangingPassword(!isChangingPassword)}
-                        className="text-[#7DB728] font-medium hover:text-[#7DB728] transition-colors text-sm flex items-center gap-2"
+                        className="text-[#4C7A1C] font-medium hover:text-brand transition-colors text-sm flex items-center gap-2"
                     >
                         <span>{isChangingPassword ? 'Cancelar cambio de contraseña' : 'Cambiar contraseña'}</span>
                         <svg
@@ -272,7 +272,7 @@ export function ProfileForm() {
                     <button
                         type="submit"
                         disabled={isPending}
-                        className={`px-6 py-2 bg-[#7DB728] text-white font-medium rounded-lg hover:bg-[#7DB728] focus:outline-none focus:ring-2 focus:ring-[#1FACE3] focus:ring-offset-2 transition-colors shadow-sm ${isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`px-6 py-2 bg-brand-interactive text-white font-medium rounded-lg hover:bg-brand-interactive-hover focus:outline-none focus:ring-2 focus:ring-brand-focus focus:ring-offset-2 transition-colors shadow-sm ${isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                         {isPending ? 'Guardando...' : 'Guardar Cambios'}
                     </button>

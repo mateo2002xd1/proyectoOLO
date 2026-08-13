@@ -38,6 +38,23 @@ export interface PaginaVersion {
   creadoEn: string;
 }
 
+/**
+ * Lo que devuelve `/paginas/:slug/editable`: la última versión sea cual sea su
+ * estado, no la publicada. Es un contrato distinto al de `Pagina` porque trae el
+ * estado de revisión, y sin él el editor no puede avisar de un rechazo.
+ */
+export interface PaginaEditable {
+  id?: string;
+  slug: string;
+  titulo: string;
+  contenido: PuckData | Bloque[];
+  estado: EstadoPagina | null;
+  versionId: string | null;
+  numeroVersion: number | null;
+  /** Solo llega con contenido cuando la última versión está rechazada. */
+  motivoRechazo: string | null;
+}
+
 /** A qué aplicación pertenece una página: el mismo slug existe en las dos. */
 export type Ambito = 'sitio' | 'intranet';
 

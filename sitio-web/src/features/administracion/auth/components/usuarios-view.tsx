@@ -12,6 +12,8 @@ import {
   type CambiosUsuario,
 } from '../hooks/use-usuarios';
 import { Button } from '@/shared/ui/atoms/button';
+import { CustomSelect } from '@/shared/ui/molecules/custom-select';
+import { DatePicker } from '@/shared/ui/molecules/date-picker';
 import { Notification } from '@/shared/ui/molecules/notification';
 import { Alert, AlertTitle, AlertDescription, AlertActions } from '@/shared/ui/molecules/alert';
 import { Switch } from '@/shared/ui/atoms/switch';
@@ -225,7 +227,20 @@ export default function UsuariosView() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !apellidos || !email || !roleId) return;
+    if (!name || !apellidos || !email) return;
+
+    // El rol dejó de ser un `<select required>` —ahora es una lista propia— así que
+    // el navegador ya no bloquea el envío por él. Sin este aviso, guardar sin rol
+    // no haría nada y no se vería por qué.
+    if (!roleId) {
+      setNotificationMsg({
+        title: 'Falta el rol',
+        message: 'Selecciona el rol del usuario antes de guardar.',
+        type: 'error',
+      });
+      setShowNotification(true);
+      return;
+    }
 
     // El servidor lo exige igualmente, tanto al crear como al editar. Aquí se avisa
     // antes de enviar para no perder el formulario entero por el dominio del correo.
@@ -430,21 +445,21 @@ export default function UsuariosView() {
           </div>
           <div>
             <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">Rol</label>
-            <select
-              required
+            <CustomSelect
+              ariaLabel="Rol"
               value={roleId}
-              onChange={(e) => setRoleId(e.target.value)}
-              className="w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:text-[#f6f6f6] dark:focus:border-white dark:focus:ring-white [&>option]:text-zinc-900"
-            >
-              <option value="" disabled>Selecciona un rol</option>
-              {roles.map((r) => (
-                <option key={r.id} value={r.id}>{r.name}</option>
-              ))}
-            </select>
+              onChange={setRoleId}
+              placeholder="Selecciona un rol"
+              options={roles.map((r) => ({ value: r.id, label: r.name }))}
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">Fecha de caducidad (Opcional)</label>
-            <input type="date" value={expirationDate} onChange={e => setExpirationDate(e.target.value)} className="olo-date-input" />
+            <DatePicker
+              ariaLabel="Fecha de caducidad"
+              value={expirationDate}
+              onChange={setExpirationDate}
+            />
           </div>
 
           {/* Permisos asignados — abre modal */}
@@ -694,7 +709,7 @@ export default function UsuariosView() {
           <Button type="button" plain onClick={() => setDeleteConfirmId(null)}>
             Cancelar
           </Button>
-          <Button type="button" color="red" onClick={confirmDelete}>
+          <Button type="button" variant="danger" onClick={confirmDelete}>
             Eliminar
           </Button>
         </AlertActions>

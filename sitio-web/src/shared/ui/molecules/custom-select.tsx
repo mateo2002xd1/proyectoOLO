@@ -14,7 +14,18 @@ type CustomSelectProps = {
   placeholder?: string;
   disabled?: boolean;
   className?: string;
+  /** Necesario cuando la etiqueta visible no es un `<label>` asociado. */
+  ariaLabel?: string;
 };
+
+/**
+ * Desplegable con lista propia.
+ *
+ * El `<select>` nativo no sirve para esto: la lista de opciones la dibuja el
+ * navegador y no acepta ni esquinas, ni color de fondo al pasar por encima, ni
+ * tipografía. Por eso aquí la lista es un `listbox` de botones — es la única
+ * forma de que se vea como el resto del panel.
+ */
 
 function ChevronDownIcon({ isOpen }: { isOpen: boolean }) {
   return (
@@ -42,6 +53,7 @@ export function CustomSelect({
   placeholder = "Seleccionar...",
   disabled = false,
   className = "",
+  ariaLabel,
 }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
@@ -86,13 +98,14 @@ export function CustomSelect({
         type="button"
         disabled={disabled}
         onClick={() => !disabled && setIsOpen((current) => !current)}
-        className={`group flex h-11 w-full items-center justify-between rounded-xl border px-3 text-left outline-none transition duration-200 ${
+        className={`group flex h-11 w-full items-center justify-between rounded-[16px] border px-3 text-left outline-none transition duration-200 ${
           isOpen
-            ? "border-[#7DB729] bg-white shadow-[0_0_0_3px_rgba(57,169,0,0.12)]"
-            : "border-[#d0d5dd] bg-white hover:border-[#98a2b3]"
-        } ${disabled ? "opacity-60 cursor-not-allowed" : ""} dark:border-[#2d3649] dark:bg-[#252f47] dark:hover:border-[#3a4660] dark:hover:bg-[#2d3955]`}
+            ? "border-[#002237] bg-white shadow-[0_0_0_3px_rgba(0,34,55,0.12)] dark:bg-[#252f47]"
+            : "border-[#d0d5dd] bg-white hover:border-[#002237]/40 hover:bg-[#002237]/5 dark:border-[#2d3649] dark:bg-[#252f47] dark:hover:border-[#3a4660] dark:hover:bg-white/5"
+        } ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
+        aria-label={ariaLabel}
       >
         <span className="flex min-w-0 items-center gap-2">
           <span
@@ -108,9 +121,9 @@ export function CustomSelect({
         <span
           className={`flex h-7 w-7 items-center justify-center rounded-full transition ${
             isOpen
-              ? "bg-[#ecfdf3] text-[#7DB729]"
-              : "bg-[#f2f4f7] text-[#667085] group-hover:bg-[#eaecf0]"
-          } dark:bg-[#2f3a54] dark:text-[#a7b2cb] dark:group-hover:bg-[#374565]`}
+              ? "bg-[#002237]/10 text-[#002237] dark:bg-[#2f3a54] dark:text-[#a7b2cb]"
+              : "bg-[#f2f4f7] text-[#667085] group-hover:bg-[#002237]/10 group-hover:text-[#002237] dark:bg-[#2f3a54] dark:text-[#a7b2cb] dark:group-hover:bg-[#374565] dark:group-hover:text-[#a7b2cb]"
+          }`}
         >
           <ChevronDownIcon isOpen={isOpen} />
         </span>
@@ -121,7 +134,7 @@ export function CustomSelect({
           className="absolute top-full left-0 right-0 z-[200] mt-1"
         >
           <div
-            className="max-h-60 overflow-y-auto overflow-x-hidden rounded-xl border border-[#d0d5dd] bg-white p-1 shadow-[0_18px_30px_-12px_rgba(15,23,42,0.3)] dark:border-[#2d3649] dark:bg-[#1e2538]"
+            className="max-h-60 overflow-y-auto overflow-x-hidden rounded-[16px] border border-[#d0d5dd] bg-white p-1.5 shadow-[0_18px_30px_-12px_rgba(15,23,42,0.3)] dark:border-[#2d3649] dark:bg-[#1e2538]"
             role="listbox"
           >
             {normalizedOptions.map((opt) => {
@@ -134,17 +147,17 @@ export function CustomSelect({
                     onChange(opt.value);
                     setIsOpen(false);
                   }}
-                  className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition duration-150 ${
+                  className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm transition duration-150 ${
                     isSelected
-                      ? "bg-brand/5 text-brand-interactive"
-                      : "text-[#57607b] hover:bg-brand/5 hover:text-brand-interactive dark:text-[#b7c0d6]"
+                      ? "bg-[#002237]/5 text-[#002237] dark:bg-white/10 dark:text-[#e6e8f0]"
+                      : "text-[#57607b] hover:bg-[#002237]/5 hover:text-[#002237] dark:text-[#b7c0d6] dark:hover:bg-white/5 dark:hover:text-[#e6e8f0]"
                   }`}
                   role="option"
                   aria-selected={isSelected}
                 >
                   <span className="font-medium">{opt.label}</span>
                   <span
-                    className={`h-2.5 w-2.5 rounded-full shrink-0 transition ${isSelected ? "bg-brand-interactive shadow-[0_0_0_4px_rgba(42,125,0,0.12)]" : "bg-[#d8dde7]"}`}
+                    className={`h-2.5 w-2.5 rounded-full shrink-0 transition ${isSelected ? "bg-[#002237] shadow-[0_0_0_4px_rgba(0,34,55,0.12)] dark:bg-[#7c8db0]" : "bg-[#d8dde7] dark:bg-[#3a4660]"}`}
                   />
                 </button>
               );

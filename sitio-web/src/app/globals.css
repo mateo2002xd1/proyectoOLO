@@ -1501,83 +1501,11 @@ button.text-link,
   animation: skeleton-fade-in 0.45s ease-out both;
 }
 
-/* ── Premium Date/Calendar Input ── */
-input[type="date"].olo-date-input {
-  position: relative;
-  appearance: none;
-  -webkit-appearance: none;
-  width: 100%;
-  height: 2.75rem;
-  padding: 0 0.75rem;
-  border-radius: 0.75rem;
-  border: 1px solid #d0d5dd;
-  background-color: #fff;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #344054;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  outline: none;
-}
-
-input[type="date"].olo-date-input:hover {
-  border-color: #98a2b3;
-}
-
-input[type="date"].olo-date-input:focus {
-  border-color: #7DB729;
-  box-shadow: 0 0 0 3px rgba(57, 169, 0, 0.12);
-}
-
-/* Calendar icon override */
-input[type="date"].olo-date-input::-webkit-calendar-picker-indicator {
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 6px;
-  opacity: 0.6;
-  transition: opacity 0.2s ease, background-color 0.2s ease;
-}
-
-input[type="date"].olo-date-input::-webkit-calendar-picker-indicator:hover {
-  opacity: 1;
-  background-color: rgba(125, 183, 41, 0.08);
-}
-
-/* Empty state placeholder */
-input[type="date"].olo-date-input:invalid,
-input[type="date"].olo-date-input[value=""] {
-  color: #8a95ad;
-}
-
-/* Dark mode */
-:where(.dark, .dark *) input[type="date"].olo-date-input {
-  border-color: #2d3649;
-  background-color: #252f47;
-  color: #e6e8f0;
-}
-
-:where(.dark, .dark *) input[type="date"].olo-date-input:hover {
-  border-color: #3a4660;
-  background-color: #2d3955;
-}
-
-:where(.dark, .dark *) input[type="date"].olo-date-input:focus {
-  border-color: #7DB729;
-  box-shadow: 0 0 0 3px rgba(125, 183, 41, 0.15);
-}
-
-:where(.dark, .dark *) input[type="date"].olo-date-input::-webkit-calendar-picker-indicator {
-  filter: invert(0.7);
-}
-
-:where(.dark, .dark *) input[type="date"].olo-date-input::-webkit-calendar-picker-indicator:hover {
-  filter: invert(0.9);
-}
-
-:where(.dark, .dark *) input[type="date"].olo-date-input:invalid,
-:where(.dark, .dark *) input[type="date"].olo-date-input[value=""] {
-  color: #95a0b8;
-}
+/* La hoja de `.olo-date-input` vivía aquí: estilaba el `input[type="date"]` y su
+   icono, que es todo lo que CSS alcanza a tocar de un campo de fecha nativo — el
+   calendario que se abría seguía siendo el del navegador. Se retiró junto con el
+   último input nativo; la fecha la pone ahora `shared/ui/molecules/date-picker.tsx`,
+   que dibuja su propio calendario. */
 
 /* ============================================
    GOO LOADER (compartido con intranet)

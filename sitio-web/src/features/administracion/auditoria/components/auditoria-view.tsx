@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { CustomSelect } from '@/shared/ui/molecules/custom-select';
+import { DatePicker } from '@/shared/ui/molecules/date-picker';
 import { DetalleRegistro } from './detalle-registro';
 import { useAuditoria } from '../hooks/use-auditoria';
 import { aCsv, descargarCsv, nombreDeArchivo } from '../lib/csv';
@@ -13,11 +15,22 @@ import {
   type RegistroAuditoria,
 } from '../types';
 
-const CLASE_CAMPO =
-  'rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 dark:border-zinc-600 dark:bg-[#131b2f] dark:text-[#f6f6f6]';
-
+// Misma altura y mismas esquinas que los filtros, para que la fila se lea como
+// una sola banda de controles.
 const CLASE_BOTON =
-  'rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800';
+  'h-11 rounded-[16px] border border-[#d0d5dd] px-4 text-sm font-medium text-zinc-700 transition hover:border-[#002237]/40 hover:bg-[#002237]/5 hover:text-[#002237] disabled:opacity-60 dark:border-[#2d3649] dark:text-zinc-200 dark:hover:bg-white/5 dark:hover:text-[#f6f6f6]';
+
+// Acción principal de la pantalla: mismo verde que «Crear Usuario», vía el token
+// `brand-interactive` y no un hex suelto (regla de `globals.css`). El resto de
+// botones sigue en neutro: si todo es primario, no hay jerarquía que leer.
+const CLASE_BOTON_PRIMARIO =
+  'h-11 rounded-[16px] bg-brand-interactive px-4 text-sm font-semibold text-white transition hover:bg-brand-interactive-hover disabled:opacity-60';
+
+// Azul institucional: el mismo #002237 que ya usan el selector de fecha y los
+// desplegables de esta pantalla. Al hover se aclara con opacidad en vez de
+// inventar un segundo hex, porque este azul no tiene token con pareja.
+const CLASE_BOTON_NAVY =
+  'h-11 rounded-[16px] bg-[#002237] px-4 text-sm font-semibold text-white transition hover:bg-[#002237]/90 disabled:opacity-60';
 
 /** Una línea por campo; se corta en la tabla y se lee completo en el detalle. */
 const resumen = (registro: RegistroAuditoria) =>
@@ -27,12 +40,19 @@ const resumen = (registro: RegistroAuditoria) =>
     )
     .join(' · ');
 
+/**
+ * Etiqueta encima del control.
+ *
+ * Es un `div` y no un `label`: los filtros ya no son campos nativos sino
+ * botones que abren su propia lista, y un `label` no puede etiquetar a un
+ * botón. El nombre viaja por `ariaLabel` en cada control.
+ */
 function Campo({ etiqueta, children }: { etiqueta: string; children: React.ReactNode }) {
   return (
-    <label className="flex flex-col gap-1">
+    <div className="flex w-44 flex-col gap-1">
       <span className="text-xs font-medium text-zinc-500">{etiqueta}</span>
       {children}
-    </label>
+    </div>
   );
 }
 
@@ -98,67 +118,56 @@ export function AuditoriaView() {
 
       <div className="mb-4 flex flex-wrap items-end gap-3">
         <Campo etiqueta="Usuario">
-          <select
-            className={CLASE_CAMPO}
+          <CustomSelect
+            ariaLabel="Usuario"
             value={filtros.usuarioId}
-            onChange={(e) => cambiarFiltro('usuarioId', e.target.value)}
-          >
-            <option value="">Todos</option>
-            {usuarios.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.nombre}
-              </option>
-            ))}
-          </select>
+            onChange={(valor) => cambiarFiltro('usuarioId', valor)}
+            options={[
+              { value: '', label: 'Todos' },
+              ...usuarios.map((u) => ({ value: u.id, label: u.nombre })),
+            ]}
+          />
         </Campo>
 
         <Campo etiqueta="Acción">
-          <select
-            className={CLASE_CAMPO}
+          <CustomSelect
+            ariaLabel="Acción"
             value={filtros.accion}
-            onChange={(e) => cambiarFiltro('accion', e.target.value)}
-          >
-            <option value="">Todas</option>
-            {Object.entries(ETIQUETA_ACCION).map(([valor, etiqueta]) => (
-              <option key={valor} value={valor}>
-                {etiqueta}
-              </option>
-            ))}
-          </select>
+            onChange={(valor) => cambiarFiltro('accion', valor)}
+            options={[
+              { value: '', label: 'Todas' },
+              ...Object.entries(ETIQUETA_ACCION).map(([value, label]) => ({ value, label })),
+            ]}
+          />
         </Campo>
 
         <Campo etiqueta="Entidad">
-          <select
-            className={CLASE_CAMPO}
+          <CustomSelect
+            ariaLabel="Entidad"
             value={filtros.entidadTipo}
-            onChange={(e) => cambiarFiltro('entidadTipo', e.target.value)}
-          >
-            <option value="">Todas</option>
-            {Object.entries(ETIQUETA_ENTIDAD).map(([valor, etiqueta]) => (
-              <option key={valor} value={valor}>
-                {etiqueta}
-              </option>
-            ))}
-          </select>
+            onChange={(valor) => cambiarFiltro('entidadTipo', valor)}
+            options={[
+              { value: '', label: 'Todas' },
+              ...Object.entries(ETIQUETA_ENTIDAD).map(([value, label]) => ({ value, label })),
+            ]}
+          />
         </Campo>
 
         <Campo etiqueta="Desde">
-          <input
-            type="date"
-            className={CLASE_CAMPO}
+          <DatePicker
+            ariaLabel="Desde"
             value={filtros.desde}
             max={filtros.hasta || undefined}
-            onChange={(e) => cambiarFiltro('desde', e.target.value)}
+            onChange={(valor) => cambiarFiltro('desde', valor)}
           />
         </Campo>
 
         <Campo etiqueta="Hasta">
-          <input
-            type="date"
-            className={CLASE_CAMPO}
+          <DatePicker
+            ariaLabel="Hasta"
             value={filtros.hasta}
             min={filtros.desde || undefined}
-            onChange={(e) => cambiarFiltro('hasta', e.target.value)}
+            onChange={(valor) => cambiarFiltro('hasta', valor)}
           />
         </Campo>
 
@@ -168,7 +177,7 @@ export function AuditoriaView() {
           </button>
         )}
 
-        <button type="button" onClick={exportar} disabled={exportando} className={CLASE_BOTON}>
+        <button type="button" onClick={exportar} disabled={exportando} className={CLASE_BOTON_PRIMARIO}>
           {exportando ? 'Exportando…' : 'Exportar CSV'}
         </button>
       </div>
@@ -227,7 +236,7 @@ export function AuditoriaView() {
                       <button
                         type="button"
                         onClick={() => setSeleccionado(registro)}
-                        className={CLASE_BOTON}
+                        className={CLASE_BOTON_PRIMARIO}
                       >
                         Ver
                       </button>
@@ -255,7 +264,7 @@ export function AuditoriaView() {
                 type="button"
                 onClick={() => irAPagina(pagina + 1)}
                 disabled={pagina >= totalPaginas}
-                className={CLASE_BOTON}
+                className={CLASE_BOTON_NAVY}
               >
                 Siguiente
               </button>

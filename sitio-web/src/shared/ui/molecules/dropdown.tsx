@@ -100,7 +100,7 @@ export function DropdownMenu({
 
   return (
     <div
-      className={`absolute z-50 min-w-[16rem] rounded-xl border border-zinc-200 bg-white p-1 shadow-lg dark:border-[#1e293b] dark:bg-[#1e293b] ${positionClasses[anchor]} ${className}`}
+      className={`absolute z-50 min-w-[16rem] rounded-[16px] border border-zinc-200 bg-white p-1.5 shadow-lg dark:border-[#1e293b] dark:bg-[#1e293b] ${positionClasses[anchor]} ${className}`}
     >
       {children}
     </div>
@@ -122,7 +122,7 @@ export function DropdownItem({ href, children, className = '', onClick }: Dropdo
     onClick?.();
   };
 
-  const baseClasses = `group flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-700 transition hover:bg-zinc-100 dark:text-[#cbd5e1] dark:hover:bg-zinc-700 [&>svg]:size-5 [&>svg]:shrink-0 [&>svg]:text-zinc-400 group-hover:[&>svg]:text-zinc-500 dark:[&>svg]:text-zinc-500 dark:group-hover:[&>svg]:text-zinc-400 ${className}`;
+  const baseClasses = `group flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-zinc-700 transition hover:bg-[#002237]/5 hover:text-[#002237] dark:text-[#cbd5e1] dark:hover:bg-white/5 dark:hover:text-[#f6f6f6] [&>svg]:size-5 [&>svg]:shrink-0 [&>svg]:text-zinc-400 group-hover:[&>svg]:text-zinc-500 dark:[&>svg]:text-zinc-500 dark:group-hover:[&>svg]:text-zinc-400 ${className}`;
 
   if (href) {
     return (

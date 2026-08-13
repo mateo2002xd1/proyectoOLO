@@ -21,23 +21,25 @@ import { resolverRutaDeVuelta } from "../lib/ruta-de-vuelta";
 import type { PuckEditorWrapperProps, ContenidoPagina } from "../types/editor.types";
 
 /**
- * Tonos claros a propósito: la cabecera del editor es azul marino (#001631) y
- * los colores planos de estado —el ámbar #d97706, el azul #2563eb— quedaban
- * casi ilegibles sobre ella.
+ * Cómo se nombra cada estado en la bandera.
+ *
+ * Se escriben a mano en vez de sacarlos de la clave con un `replace("_", " ")`:
+ * así «en_revision» sale como «En revisión», con su tilde.
+ *
+ * El color de cada uno vive en `globals.css` y no aquí: la bandera se pinta
+ * sobre el marcado que trae Puck, al que solo se llega por CSS.
  */
-const estadoBadgeColor: Record<string, string> = {
-  borrador: "#fbbf24",
-  en_revision: "#7dd3fc",
-  publicado: "#86efac",
-  rechazado: "#fca5a5",
+const ETIQUETA_ESTADO: Record<string, string> = {
+  borrador: "Borrador",
+  en_revision: "En revisión",
+  publicado: "Publicado",
+  rechazado: "Rechazado",
 };
 
 /** Con selector, para no re-renderizar la cabecera ante cualquier cambio del editor. */
 const usePuckSel = createUsePuck();
 
 interface AccionesCabeceraProps {
-  slug: string;
-  estado: string;
   bloqueado: boolean;
   busy: boolean;
   isSaving: boolean;
@@ -51,17 +53,19 @@ interface AccionesCabeceraProps {
 }
 
 /**
- * Acciones de la cabecera del editor.
+ * Acciones de la cabecera del editor: solo lo que se puede pulsar.
  *
  * Vive dentro del árbol de Puck para poder leer su historia, que es la señal
  * fiable de "aquí se ha tocado algo": cada acción deshacible avanza el índice.
  * Comparar el JSON contra el contenido inicial no vale — Puck no emite `onChange`
  * al montar, así que el primer cambio de verdad se confundía con la línea base y
  * salir descartaba trabajo sin avisar.
+ *
+ * La ruta y el estado ya no están aquí: se fueron a la bandera de la izquierda,
+ * junto a los iconos de plegar las barras. Eran información, no acciones, y en
+ * este extremo se leían como una etiqueta más de la fila de botones.
  */
 function AccionesCabecera({
-  slug,
-  estado,
   bloqueado,
   busy,
   isSaving,
@@ -77,13 +81,6 @@ function AccionesCabecera({
 
   return (
     <div className="olo-editor-acciones">
-      <span className="olo-editor-ruta">/{slug}</span>
-      <span
-        className="olo-editor-estado"
-        style={{ color: estadoBadgeColor[estado] ?? "#cbd5e1" }}
-      >
-        {estado.replace("_", " ")}
-      </span>
       {hayCambiosSinGuardar && <span className="olo-editor-aviso">Sin guardar</span>}
       {/* Salir es la única acción que puede perder trabajo, así que va en rojo:
           antes iba en gris para no competir con guardar y enviar, pero eso lo
@@ -298,8 +295,6 @@ export function PuckEditorWrapper({
     () => ({
       headerActions: () => (
         <AccionesCabecera
-          slug={slug}
-          estado={estado}
           bloqueado={bloqueado}
           busy={busy}
           isSaving={isSaving}
@@ -312,8 +307,6 @@ export function PuckEditorWrapper({
       ),
     }),
     [
-      slug,
-      estado,
       bloqueado,
       busy,
       isSaving,
@@ -326,11 +319,18 @@ export function PuckEditorWrapper({
   );
 
   return (
-    <div className="olo-editor">
+    // El estado viaja en un `data-` porque quien lo pinta es el CSS: la bandera
+    // se monta sobre el marcado de la cabecera de Puck, que no es nuestro.
+    <div className="olo-editor" data-estado={estado}>
       <Puck
         config={config}
         data={initialPuckData}
         onChange={handleChange}
+        // Las dos mitades de la bandera. Son los únicos huecos que Puck deja en
+        // el centro de su cabecera, y `headerPath` es el único que se puede
+        // estilar aparte —lo saca en un `<code>`—, así que ahí va el estado.
+        headerTitle={`/${slug}`}
+        headerPath={ETIQUETA_ESTADO[estado] ?? estado}
         // El botón "Publish" de serie no llega a dibujarse: `headerActions` lo
         // sustituye por Salir / Guardar / Enviar. `onPublish` queda como no-op.
         onPublish={() => undefined}

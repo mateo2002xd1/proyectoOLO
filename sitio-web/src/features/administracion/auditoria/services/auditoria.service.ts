@@ -6,6 +6,22 @@ const FETCH_OPTS: RequestInit = { credentials: 'include' };
 /** Tope del backend (`MAX_POR_PAGINA`). Pedir más no devuelve más. */
 export const MAX_POR_PAGINA = 200;
 
+/**
+ * Fallo al leer la bitácora. `sinAcceso` marca el 403 por rol —que no es una
+ * avería sino la política de `auditoria.policies.ts`— para que quien la muestre
+ * de forma secundaria (el panel general) lo trate como una sección vedada y no
+ * como un error del sistema.
+ */
+export class ErrorAuditoria extends Error {
+  readonly sinAcceso: boolean;
+
+  constructor(mensaje: string, sinAcceso = false) {
+    super(mensaje);
+    this.name = 'ErrorAuditoria';
+    this.sinAcceso = sinAcceso;
+  }
+}
+
 const conFiltros = (filtros: Partial<FiltrosAuditoria>, pagina: number, porPagina: number) => {
   const params = new URLSearchParams({ pagina: String(pagina), porPagina: String(porPagina) });
 
@@ -28,10 +44,10 @@ export async function listarAuditoria(
   const res = await fetch(`/api/audit-logs?${conFiltros(filtros, pagina, porPagina)}`, FETCH_OPTS);
 
   if (res.status === 403) {
-    throw new Error('Tu rol no tiene acceso a la bitácora de auditoría.');
+    throw new ErrorAuditoria('Tu rol no tiene acceso a la bitácora de auditoría.', true);
   }
   if (!res.ok) {
-    throw new Error('No se pudo cargar la bitácora de auditoría.');
+    throw new ErrorAuditoria('No se pudo cargar la bitácora de auditoría.');
   }
 
   return res.json();

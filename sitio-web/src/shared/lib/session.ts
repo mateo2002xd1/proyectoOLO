@@ -75,9 +75,12 @@ export async function getAuthUserProfile(): Promise<{ name: string; email: strin
     const overrideName = cookieStore.get(AUTH_USER_NAME_COOKIE_NAME)?.value;
     const overrideEmail = cookieStore.get(AUTH_USER_EMAIL_COOKIE_NAME)?.value;
 
-    return { 
-      name: overrideName || payload.name || '', 
-      email: overrideEmail || payload.email || '' 
+    // El token trae nombre y apellidos por separado: el panel los muestra juntos.
+    const nombreCompleto = `${payload.name || ''} ${payload.apellidos || ''}`.trim();
+
+    return {
+      name: overrideName || nombreCompleto,
+      email: overrideEmail || payload.email || ''
     };
   } catch (err) {
     console.error('Error decoding token for user profile:', err);
