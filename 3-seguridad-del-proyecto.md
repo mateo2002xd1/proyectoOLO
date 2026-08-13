@@ -117,17 +117,17 @@ El contenido rico que crean los editores es HTML almacenado que luego se renderi
 
 ## 4. Checklist de seguridad por requerimiento
 
-| RF | Control obligatorio antes de producción |
-|---|---|
-| RF-01 | Sanitizar HTML de Editor.js en el servidor |
-| RF-02 | Validar magic bytes, sanitizar SVG, renombrar a UUID, tamaño en servidor, fuera del webroot |
-| RF-04/05/06 | Doble capa RBAC (ruta + policy) aplicada en TODA operación sensible |
-| RF-08 | Lista blanca de dominios de iframe + validación de URL en servidor + sandbox |
-| RF-09 | API key solo en backend, nunca expuesta al frontend |
-| RF-12 | Verificar estado `publicado` en el endpoint de descarga |
-| RF-13 | Aceptación registrada + sanitización + aviso Ley 1581 vigente |
-| RF-16 | Caducidad verificada en backend, cookies httpOnly/Secure, política de contraseña definida, rate limiting |
-| RF-17 | Respaldos cifrados, ubicación restringida, restauración probada |
+| RF | Control obligatorio antes de producción | Estado |
+|---|---|---|
+| RF-01 | Sanitizar HTML de Editor.js en el servidor | ✅ `sanitizarContenidoPuck()` en `guardar-borrador.usecase.ts` — 2026-08-11 |
+| RF-02 | Validar magic bytes, sanitizar SVG, renombrar a UUID, tamaño en servidor, fuera del webroot | ✅ `/api/upload` con `file-type`, lista blanca, UUID rename, límites — 2026-08-11 |
+| RF-04/05/06 | Doble capa RBAC (ruta + policy) aplicada en TODA operación sensible | ✅ `requierePermisoPagina` verificado activo en código — 2026-08-11 |
+| RF-08 | Lista blanca de dominios de iframe + validación de URL en servidor + sandbox | ⏳ Pendiente implementación completa |
+| RF-09 | API key solo en backend, nunca expuesta al frontend | ⏳ Pendiente al construir buscador CNO |
+| RF-12 | Verificar estado `publicado` en el endpoint de descarga | ⏳ Pendiente al implementar RF-12 |
+| RF-13 | Aceptación registrada + sanitización + aviso Ley 1581 vigente | ⏳ Pendiente al implementar formularios |
+| RF-16 | Caducidad verificada en backend, cookies httpOnly/Secure, política de contraseña definida, rate limiting | ✅ Rate limiting añadido a endpoints de escritura — 2026-08-11 |
+| RF-17 | Respaldos cifrados, ubicación restringida, restauración probada | ⏳ Pendiente implementación |
 
 ---
 

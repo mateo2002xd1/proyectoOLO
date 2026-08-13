@@ -18,6 +18,7 @@
     "@olo/password-policy": "file:../packages/password-policy",
     "@puckeditor/core": "^0.22.2",
     "clsx": "^2.1.1",
+    "file-type": "^22.0.1",
     "jose": "^6.2.3",
     "next": "^16.3.0",
     "react": "19.2.4",

@@ -1,5 +1,6 @@
 import { PaginaRepository } from '../../repositories/pagina.repository';
 import type { Ambito } from '../../shared/ambito';
+import { sanitizarContenidoPuck } from '../../shared/sanitizar-contenido';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const toUUID = (id: string) => (UUID_RE.test(id) ? id : null);
@@ -26,12 +27,18 @@ export const guardarBorrador = async (
   const ultimaVersion = await PaginaRepository.findUltimaVersion(pagina.id);
   const numeroVersion = ultimaVersion ? ultimaVersion.numeroVersion + 1 : 1;
 
+  // Sanitizar el contenido antes de persistirlo: elimina scripts, event handlers
+  // y URIs peligrosas de todos los campos HTML de los bloques Puck.
+  // @see 3-seguridad-del-proyecto.md §S2 — XSS del contenido (CRÍTICO)
+  const contenidoSanitizado = sanitizarContenidoPuck(contenido);
+
   const version = await PaginaRepository.crearVersion({
     paginaId: pagina.id,
-    contenido,
+    contenido: contenidoSanitizado,
     numeroVersion,
     estado: 'borrador',
   });
 
   return { pagina, version };
 };
+
