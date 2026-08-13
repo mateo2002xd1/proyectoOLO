@@ -159,7 +159,7 @@ Administrador aprueba
 | Datos | PostgreSQL 16 | 5432 |
 | Caché/Colas | Redis 7 (ioredis + BullMQ) | 6379 |
 | Proxy | Nginx (SSL/TLS en prod) | 80/443 |
-| Compartido | `@olo/blocks-renderer`, `@olo/editor-core` (planeado), `@olo/types` (planeado) | — |
+| Compartido | `@olo/blocks-renderer` (primitivos de maquetación y tipos de plantilla), `@olo/editor-core` (planeado) | — |
 
 ---
 
@@ -395,16 +395,16 @@ intranet/src/
 
 ```
 packages/
-├── blocks-renderer/          # YA EXISTE — bloques Puck compartidos (falta USARLO de verdad)
-│   └── src/blocks/, registry.ts, types.ts
+├── blocks-renderer/          # YA EXISTE — primitivos de maquetación (Grid/Flex/Space) y controles de caja
+│   └── src/primitives/
 ├── editor-core/              # PLANEADO — lógica del editor extraída (Puck+Editor.js+lock+autoguardado)
 │   └── src/components/, hooks/, lock/
 └── types/                    # PLANEADO — contratos compartidos (Pagina, Contenido, Usuario, Rol)
 ```
 
-**Regla:** algo va a `packages/` solo si **ambos frontends** lo necesitan con el mismo comportamiento. El editor Puck es idéntico en los dos → `editor-core`. El sistema de diseño NO va aquí porque cada frontend tiene identidad visual distinta.
+**Regla:** algo va a `packages/` solo si **ambos frontends** lo necesitan con el mismo comportamiento. El editor Puck es idéntico en los dos → `editor-core`. El sistema de diseño NO va aquí porque cada frontend tiene identidad visual distinta — por eso `blocks-renderer` ya no comparte los componentes de bloque (`Header`, `Footer`, `Services`...): cada app tiene los suyos en su propio `shared/lib/blocks/`, y el paquete solo aporta lo verdaderamente idéntico entre ambas (primitivos de maquetación, controles de espaciado y tipos de plantilla).
 
-**Costo de no haberlo hecho todavía, medido hoy:** ocho archivos están duplicados entre `sitio-web/src/features/paginas/` e `intranet/src/features/paginas/` (`client-puck-render`, `edit-button`, `editorjs-wrapper`, `image-uploader-field`, `page-renderer`, `puck-editor-wrapper`, `use-pagina`, `page-seeds`). Y ya divergieron: **la etapa de revisión existe solo en `sitio-web`**, así que la intranet no tiene gobernanza — justo lo que esta regla busca evitar. El alcance exacto de `editor-core` (qué se comparte y qué no) está en `8-ciclo-editorial.md` §4.4, y su extracción es la fase 6 del plan de migración.
+**Costo de no haberlo hecho todavía, medido hoy:** siete archivos están duplicados entre `sitio-web/src/features/paginas/` e `intranet/src/features/paginas/` (`client-puck-render`, `edit-button`, `editorjs-wrapper`, `image-uploader-field`, `puck-editor-wrapper`, `use-pagina`, `page-seeds`). Y ya divergieron: **la etapa de revisión existe solo en `sitio-web`**, así que la intranet no tiene gobernanza — justo lo que esta regla busca evitar. El alcance exacto de `editor-core` (qué se comparte y qué no) está en `8-ciclo-editorial.md` §4.4, y su extracción es la fase 6 del plan de migración.
 
 ---
 
