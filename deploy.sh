@@ -40,7 +40,7 @@ setup() {
         echo "nano .env"
         exit 0
     else
-        echo "✓ Archivo .env ya existe"
+        echo "Archivo .env ya existe"
     fi
     
     echo ""
@@ -105,7 +105,7 @@ restore() {
     fi
     
     echo "=== Restaurando backup: $1 ==="
-    echo "⚠️  Esto sobrescribirá la base de datos actual"
+    echo "Esto sobrescribirá la base de datos actual"
     read -p "¿Continuar? (s/n): " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Ss]$ ]]; then
