@@ -5,54 +5,144 @@ import Link from 'next/link';
 import { LONGITUD_MINIMA, requisitosDe } from '@olo/password-policy';
 
 /**
- * Primitivas compartidas por las pantallas de autenticación
- * (login, elección de editor y configuración de primer ingreso).
+ * Primitivas compartidas por las pantallas de autenticación del panel:
+ * acceso, primer ingreso y recuperación de contraseña.
  *
- * Antes cada pantalla repetía la misma tarjeta, los mismos inputs y
- * hasta los mismos SVGs del ojo. Todo lo común vive aquí.
+ * ## Un solo marco para las tres
+ *
+ * Las tres viven dentro de `AuthSplitShell` —identidad a la izquierda, tarjeta
+ * blanca sobre el azul institucional a la derecha— y comparten el mismo juego de
+ * estilos. Antes solo la de acceso lo hacía: primer ingreso y recuperación traían
+ * un juego con variantes `dark:`, pensado para una tarjeta que sigue el tema del
+ * panel. Dentro de este marco eso se rompía dos veces:
+ *
+ *   · el tema oscuro se activa también por preferencia del sistema operativo
+ *     (`layout.tsx` lo aplica antes de pintar), así que la tarjeta salía blanca
+ *     con etiquetas gris claro y texto gris azulado encima;
+ *   · los títulos de paso se pintaban fuera de la tarjeta, en `text-gray-900`,
+ *     es decir gris oscuro sobre el azul `#001631`: ilegibles.
+ *
+ * Por eso aquí no hay variantes `dark:` salvo en `PasswordRequisitos`, que además
+ * de estas pantallas sirve al perfil dentro del panel, donde sí hay tema.
  */
 
-/* ---------- Clases base ---------- */
-export const authCardClass =
-  'w-full max-w-[400px] rounded-xl bg-white dark:bg-[#131b2f] px-9 py-10 shadow-[0_20px_60px_rgba(0,0,0,0.2)] dark:shadow-none dark:border dark:border-[#1e293b]';
+/* ---------- Clases base ---------- *
+ * La tarjeta es siempre blanca y el marco pinta su propio fondo, así que estas
+ * clases no llevan tema oscuro: hacerlo dejaría un campo oscuro dentro de una
+ * tarjeta blanca. */
 
-export const authLabelClass = 'mb-1.5 block text-sm font-medium text-gray-700 dark:text-[#f6f6f6]';
+export const authSolidCardClass =
+  'w-full max-w-[380px] rounded-2xl bg-white px-9 py-10 shadow-[0_25px_60px_rgba(0,0,0,0.35)]';
 
-export const authInputClass = (hasError: boolean) =>
+export const authSolidLabelClass = 'mb-1.5 block text-sm font-semibold text-[#0d1526]';
+
+export const authSolidInputClass = (hasError: boolean) =>
   [
-    'w-full rounded-lg border px-3 py-2.5 text-sm text-gray-900 dark:text-[#f6f6f6] dark:bg-[#0b1121]',
-    'transition-colors placeholder:text-gray-400 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2',
+    'w-full rounded-lg border px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400',
+    'transition-colors focus:outline-none focus:ring-2',
     hasError
-      ? 'border-red-400 focus:border-red-500 focus:ring-red-500/30'
-      : 'border-gray-300 dark:border-[#1e293b] focus:border-brand-focus focus:ring-brand-focus',
+      ? 'border-red-400 focus:border-red-500 focus:ring-red-500'
+      : // El anillo va a opacidad plena por lo mismo que en `Button`: SC 1.4.11 pide
+      // 3:1 para el indicador de foco y cualquier `/20` lo hunde por debajo.
+      'border-gray-300 focus:border-[#0d1526] focus:ring-[#0d1526]',
   ].join(' ');
 
 export const authErrorTextClass = 'mt-1 text-xs text-red-600';
 
+/** Enlaces secundarios de una tarjeta: volver, ir al login, cambiar de paso. */
+export const authQuietLinkClass =
+  'rounded text-xs text-gray-500 transition-colors hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d1526]';
+
+/**
+ * Piel del botón principal cuando la acción es navegar y no enviar.
+ *
+ * Repite lo que `Button variant="navy"` da a un `<button>`, porque las pantallas
+ * de éxito terminan en un enlace. Meter un `<Button>` dentro de un `<Link>` sería
+ * anidar contenido interactivo, que es HTML inválido y confunde a los lectores de
+ * pantalla sobre qué se está activando.
+ */
+export const authNavyActionClass =
+  'inline-flex w-full items-center justify-center rounded-[16px] bg-[#0d1526] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_8px_-2px_rgba(13,21,38,0.4)] transition hover:bg-[#1a2340] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-focus';
+
 /* ---------- Contenedores ---------- */
 
-/** Fondo a pantalla completa que centra la tarjeta de autenticación. */
-export function AuthPageShell({ children }: { children: ReactNode }) {
+/**
+ * Marco partido de las pantallas de autenticación: identidad a la izquierda,
+ * tarjeta a la derecha sobre el azul institucional.
+ *
+ * El logo vive aquí y no dentro de la tarjeta porque el panel izquierdo ya lo
+ * sostiene. Por debajo de `md` ese panel se oculta, así que el marco repone una
+ * versión compacta arriba: si no, la pantalla de móvil se quedaría sin ninguna marca.
+ *
+ * El enlace de regreso al sitio también es del marco y no de cada pantalla: sale
+ * igual en el acceso, en la elección de editor, en el primer ingreso y en la
+ * recuperación.
+ */
+export function AuthSplitShell({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[var(--background)] p-6">
-      {children}
+    <div className="flex min-h-screen w-full bg-[#001631]">
+      {/* Panel izquierdo — identidad sobre blanco, con la esquina derecha redondeada. */}
+      <div className="hidden w-[35%] shrink-0 items-center justify-center bg-white rounded-r-[16px] md:flex">
+        <div className="text-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/assets/logos/olo-logo-none.svg" alt="OLO Logo" className="mx-auto w-[110px]" />
+          <p className="mt-6 text-2xl font-light text-[#0d1526]">Panel de</p>
+          {/* Es el título de la pantalla, así que va como encabezado y no como
+              párrafo: sin esto la página no tiene ningún `h1` que anunciar. Los
+              títulos de cada paso van dentro de la tarjeta como `h2`. */}
+          <h1 className="text-3xl font-bold leading-tight text-[#0d1526]">ADMINISTRACIÓN</h1>
+        </div>
+      </div>
+
+      <div className="flex flex-1 flex-col items-center justify-center gap-6 px-6 py-16">
+        {/* Marca compacta, solo mientras el panel izquierdo está oculto. Los dos
+            `h1` nunca coexisten: el que no toca está en `display:none` y no llega
+            al árbol de accesibilidad. */}
+        <div className="mb-2 text-center md:hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/assets/logos/olo-logo-none.svg"
+            alt="OLO Logo"
+            className="mx-auto mb-2 w-16 brightness-0 invert"
+          />
+          <h1 className="text-lg text-white">
+            Panel de <span className="font-bold">ADMINISTRACIÓN</span>
+          </h1>
+        </div>
+
+        {children}
+
+        <BackToSiteLink label="Regresar al sitio web del Observatorio" />
+      </div>
     </div>
   );
 }
 
-/** Cabecera con el logo institucional y una frase. */
-export function AuthCardHeader({
-  children,
-  className = '',
+/**
+ * Encabezado de una tarjeta: qué pantalla es y qué se espera de quien la ve.
+ *
+ * Va **dentro** de la tarjeta blanca. Fuera solo cabe lo que el marco pinta en
+ * blanco sobre el azul; cualquier texto oscuro ahí desaparece.
+ *
+ * Es `h2` porque el `h1` de la página lo pone el marco. La pantalla de acceso no
+ * lo usa: allí el panel izquierdo ya dice a dónde se está entrando y la tarjeta
+ * empieza directamente por el formulario.
+ */
+export function AuthCardTitle({
+  title,
+  description,
+  className = 'mb-6',
 }: {
-  children: ReactNode;
+  title: string;
+  description?: ReactNode;
   className?: string;
 }) {
   return (
-    <div className={`text-center ${className}`}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/asset/logos/olo-logo-none.svg" alt="OLO Logo" className="mx-auto mb-3 h-auto w-[60px] dark:brightness-0 dark:invert dark:opacity-[0.96]" />
-      {children}
+    <div className={className}>
+      <h2 className="text-[19px] font-bold leading-snug text-[#0d1526]">{title}</h2>
+      {description && (
+        <p className="mt-1.5 text-[13px] leading-relaxed text-gray-500">{description}</p>
+      )}
     </div>
   );
 }
@@ -60,13 +150,193 @@ export function AuthCardHeader({
 /** Banda roja para errores que no pertenecen a un campo concreto. */
 export function AuthGeneralError({ children }: { children: ReactNode }) {
   return (
-    <div className="mb-4 rounded-lg border border-red-300 bg-red-50 px-3.5 py-2.5 text-sm text-red-600 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-400">
+    <div
+      className="mb-4 rounded-lg border border-red-300 bg-red-50 px-3.5 py-2.5 text-sm text-red-600"
+      role="alert"
+    >
       {children}
     </div>
   );
 }
 
+/**
+ * Avance dentro de un cuestionario de varios pasos.
+ *
+ * Decorativo a propósito (`aria-hidden`): la posición se anuncia en texto —
+ * «Pregunta 2 de 3»— junto al campo, que es lo que de verdad sirve a quien no ve
+ * los puntos. El paso actual se distingue por forma *y* color, no solo por color.
+ */
+export function AuthProgressDots({
+  total,
+  current,
+  className = 'mb-5',
+}: {
+  total: number;
+  current: number;
+  className?: string;
+}) {
+  return (
+    <div className={`flex justify-center gap-1.5 ${className}`} aria-hidden="true">
+      {Array.from({ length: total }).map((_, i) => (
+        <span
+          key={i}
+          className={`h-1.5 rounded-full transition-all ${
+            i === current
+              ? 'w-6 bg-[#0d1526]'
+              : i < current
+                ? 'w-1.5 bg-[#0d1526]/45'
+                : 'w-1.5 bg-gray-300'
+            }`}
+        />
+      ))}
+    </div>
+  );
+}
+
+/** Marca de operación terminada, para las pantallas de cierre del flujo. */
+export function AuthSuccessBadge() {
+  return (
+    <div className="mx-auto mb-5 flex size-12 items-center justify-center rounded-full bg-[#0d1526]">
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="text-white"
+        aria-hidden="true"
+      >
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+    </div>
+  );
+}
+
 /* ---------- Campos ---------- */
+
+/** Campo de texto con etiqueta y error, la forma que tienen todos los de aquí. */
+export function AuthTextField({
+  id,
+  label,
+  value,
+  onChange,
+  error,
+  type = 'text',
+  placeholder,
+  autoComplete,
+  autoCapitalize,
+  autoCorrect,
+  className = 'mb-4',
+}: {
+  id: string;
+  label: ReactNode;
+  value: string;
+  onChange: (v: string) => void;
+  error?: string;
+  type?: 'text' | 'email';
+  placeholder?: string;
+  autoComplete?: string;
+  autoCapitalize?: 'none' | 'sentences';
+  autoCorrect?: 'on' | 'off';
+  className?: string;
+}) {
+  return (
+    <div className={className}>
+      <label htmlFor={id} className={authSolidLabelClass}>
+        {label}
+      </label>
+      <input
+        id={id}
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+        autoCapitalize={autoCapitalize}
+        autoCorrect={autoCorrect}
+        className={authSolidInputClass(!!error)}
+      />
+      {error && <p className={authErrorTextClass}>{error}</p>}
+    </div>
+  );
+}
+
+/**
+ * Desplegable con la misma piel que el resto de campos.
+ *
+ * `appearance-none` y flecha propia: el desplegable del sistema trae su borde y
+ * su tipografía, y dentro de esta tarjeta cantaba al lado de los demás campos.
+ */
+export function AuthSelectField({
+  id,
+  label,
+  value,
+  onChange,
+  error,
+  options,
+  placeholder = 'Selecciona una opción…',
+  className = 'mb-4',
+}: {
+  id: string;
+  label: ReactNode;
+  value: string;
+  onChange: (v: string) => void;
+  error?: string;
+  options: { value: string; label: string; disabled?: boolean }[];
+  placeholder?: string;
+  className?: string;
+}) {
+  return (
+    <div className={className}>
+      <label htmlFor={id} className={authSolidLabelClass}>
+        {label}
+      </label>
+      <div className="relative">
+        <select
+          id={id}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          // Sin valor el campo imita a un `placeholder`; las opciones vuelven al
+          // gris de texto porque en Windows heredan el color del `select`.
+          className={`${authSolidInputClass(!!error)} appearance-none pr-10 ${value ? '' : 'text-gray-400'
+            }`}
+        >
+          <option value="" disabled>
+            {placeholder}
+          </option>
+          {options.map((opcion) => (
+            <option
+              key={opcion.value}
+              value={opcion.value}
+              disabled={opcion.disabled}
+              className="text-gray-900"
+            >
+              {opcion.label}
+            </option>
+          ))}
+        </select>
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+          className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500"
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </div>
+      {error && <p className={authErrorTextClass}>{error}</p>}
+    </div>
+  );
+}
 
 function EyeIcon({ crossed }: { crossed: boolean }) {
   return crossed ? (
@@ -104,9 +374,10 @@ export function PasswordField({
   className?: string;
 }) {
   const [show, setShow] = useState(false);
+
   return (
     <div className={className}>
-      <label htmlFor={id} className={authLabelClass}>
+      <label htmlFor={id} className={authSolidLabelClass}>
         {label}
       </label>
       <div className="relative">
@@ -117,13 +388,13 @@ export function PasswordField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className={`${authInputClass(!!error)} pr-10`}
+          className={`${authSolidInputClass(!!error)} pr-10`}
         />
         <button
           type="button"
           onClick={() => setShow((v) => !v)}
           aria-label={show ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-          className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-gray-500 dark:text-slate-400 transition-colors hover:text-gray-700 dark:hover:text-[#f6f6f6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-focus"
+          className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-gray-500 transition-colors hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d1526]"
         >
           <EyeIcon crossed={show} />
         </button>
@@ -142,42 +413,67 @@ export function PasswordField({
  *
  * `aria-live` para que un lector de pantalla anuncie los que se van cumpliendo; sin
  * eso la lista es información visual que no llega a todo el mundo.
+ *
+ * Es la única primitiva con dos pieles, porque además de estas pantallas la usa
+ * el perfil dentro del panel, que sí tiene tema oscuro (`variant="panel"`).
  */
-export function PasswordRequisitos({ password, className = 'mb-4' }: { password: string; className?: string }) {
+export function PasswordRequisitos({
+  password,
+  className = 'mb-4',
+  variant = 'panel',
+}: {
+  password: string;
+  className?: string;
+  variant?: 'panel' | 'solid';
+}) {
   const requisitos = requisitosDe(password);
+  const esSolido = variant === 'solid';
 
   return (
     <ul className={`${className} space-y-1`} aria-live="polite">
-      {requisitos.map((requisito) => (
-        <li
-          key={requisito.id}
-          className={`flex items-start gap-1.5 text-xs ${
-            requisito.cumplido
-              ? 'text-green-700 dark:text-green-400'
-              : 'text-gray-500 dark:text-slate-400'
-          }`}
-        >
-          <span aria-hidden="true" className="mt-px leading-none">
-            {requisito.cumplido ? '✓' : '○'}
-          </span>
-          {/* El estado va también en texto: el color y el símbolo solos no lo dicen. */}
-          <span className="sr-only">{requisito.cumplido ? 'Cumplido:' : 'Pendiente:'}</span>
-          <span>{requisito.etiqueta}</span>
-        </li>
-      ))}
+      {requisitos.map((requisito) => {
+        const claseEstado = requisito.cumplido
+          ? esSolido
+            ? 'text-green-700'
+            : 'text-green-700 dark:text-green-400'
+          : esSolido
+            ? 'text-gray-500'
+            : 'text-gray-500 dark:text-slate-400';
+
+        return (
+          <li key={requisito.id} className={`flex items-start gap-1.5 text-xs ${claseEstado}`}>
+            <span aria-hidden="true" className="mt-px leading-none">
+              {requisito.cumplido ? '✓' : '○'}
+            </span>
+            {/* El estado va también en texto: el color y el símbolo solos no lo dicen. */}
+            <span className="sr-only">{requisito.cumplido ? 'Cumplido:' : 'Pendiente:'}</span>
+            <span>{requisito.etiqueta}</span>
+          </li>
+        );
+      })}
     </ul>
   );
 }
 
 /* ---------- Navegación ---------- */
 
-/** Enlace de regreso al sitio público. */
-export function BackToSiteLink({ className = '' }: { className?: string }) {
+/**
+ * Enlace de regreso al sitio público.
+ *
+ * Solo lo usa `AuthSplitShell`, que lo pone sobre el azul: de ahí el blanco fijo.
+ */
+export function BackToSiteLink({
+  className = '',
+  label = 'Ir al sitio web',
+}: {
+  className?: string;
+  label?: string;
+}) {
   return (
     <div className={`text-center ${className}`}>
       <Link
         href="/"
-        className="inline-flex items-center justify-center gap-2 text-sm font-medium text-gray-600 dark:text-slate-400 transition hover:-translate-y-px hover:text-gray-900 dark:hover:text-[#f6f6f6]"
+        className="inline-flex items-center justify-center gap-2 text-sm font-medium text-white/90 transition hover:-translate-y-px hover:text-white"
       >
         <svg
           width="18"
@@ -192,7 +488,7 @@ export function BackToSiteLink({ className = '' }: { className?: string }) {
           <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
           <polyline points="9 22 9 12 15 12 15 22" />
         </svg>
-        Ir al sitio web
+        {label}
       </Link>
     </div>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -33,29 +33,72 @@ import {
 import {
   ClipboardDocumentCheckIcon,
   HomeIcon,
-  InboxIcon,
   MagnifyingGlassIcon,
   QuestionMarkCircleIcon,
 } from '@heroicons/react/20/solid';
 import { ThemeToggle } from '@/shared/ui/molecules/theme-toggle';
-import { enlaceAlEditor } from '@/features/paginas';
+import { enlaceAlEditor, listarEnRevision, type PaginaEnRevision } from '@/features/paginas';
+import {
+  listarAuditoria,
+  ErrorAuditoria,
+  COLOR_ACCION,
+  etiquetaDeAccion,
+  etiquetaDeEntidad,
+  type RegistroAuditoria,
+} from '@/features/administracion/auditoria';
+import { useUsuarios, type User } from '../hooks/use-usuarios';
 
 /** Editor de la intranet: configurable por entorno, nunca fijo a localhost. */
 const INTRANET_EDITOR_URL =
   process.env.NEXT_PUBLIC_INTRANET_EDITOR_URL || 'http://localhost:3001/editor/inicio';
 
-type PanelData = {
-  stats: Record<string, number>;
-  alerts: { id: string; title: string; type: string; message: string; date: string }[];
-  recentActivity: { id: string; action: string; user: string; date: string; description: string }[];
-};
+/** Cambios que caben en la tarjeta del panel; el resto se lee en Auditoría. */
+const CAMBIOS_RECIENTES = 7;
+
+/** Solo los nombres de los campos tocados: el antes/después vive en la bitácora. */
+const camposTocados = (registro: RegistroAuditoria) =>
+  registro.camposModificados.map(({ campo }) => campo).join(', ');
+
+/**
+ * La cola de revisión exige permiso para publicar (`pagina.routes.ts`), así que a
+ * un editor le responde 403. Eso no es una avería: es que estas alertas no son
+ * suyas, y decírselo así evita que reporte un error que no existe.
+ */
+function mensajeDeRevision(err: unknown): string {
+  const status = (err as { response?: { status?: number } })?.response?.status;
+  return status === 403
+    ? 'Tu rol no aprueba páginas, así que no recibes estas alertas.'
+    : 'No se pudieron cargar las alertas de páginas en revisión.';
+}
+
+/** Fecha corta: la tarjeta es angosta y la hora exacta se consulta en Auditoría. */
+const fechaCorta = (iso: string) =>
+  new Date(iso).toLocaleString('es-CO', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+/** Usuarios agrupados por rol, de mayor a menor. Los que no tienen rol asignado
+ *  se agrupan aparte en vez de descartarse: si aparecen, es un dato a corregir. */
+function contarUsuariosPorRol(users: User[]): { rol: string; total: number }[] {
+  const conteo = new Map<string, number>();
+  for (const user of users) {
+    const rol = user.role?.name || 'Sin rol';
+    conteo.set(rol, (conteo.get(rol) ?? 0) + 1);
+  }
+  return [...conteo.entries()]
+    .map(([rol, total]) => ({ rol, total }))
+    .sort((a, b) => b.total - a.total || a.rol.localeCompare(b.rol, 'es'));
+}
 
 export function PanelGeneralLayout({ children, userProfile }: { children: React.ReactNode; userProfile?: { name: string; email: string } }) {
   const router = useRouter();
 
   const handleLogout = useCallback(async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
-    router.push('/admin/auth/login');
+    router.push('/admin/login');
   }, [router]);
 
   return (
@@ -67,9 +110,6 @@ export function PanelGeneralLayout({ children, userProfile }: { children: React.
             <NavbarSection>
               <NavbarItem href="/admin/dashboard/buscar" aria-label="Buscar">
                 <MagnifyingGlassIcon />
-              </NavbarItem>
-              <NavbarItem href="/admin/dashboard/inbox" aria-label="Bandeja de entrada">
-                <InboxIcon />
               </NavbarItem>
             </NavbarSection>
             <NavbarSpacer />
@@ -105,7 +145,7 @@ export function PanelGeneralLayout({ children, userProfile }: { children: React.
               <div className="flex items-center justify-between w-full">
                 {/* SVG estático servido desde /public: next/image no aporta optimización aquí. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/asset/logos/olo-logo-horizontal.svg" alt="OLO" className="h-[4.5rem] pb-3 dark:brightness-0 dark:invert" />
+                <img src="/assets/logos/olo-logo-horizontal.svg" alt="OLO" className="h-[4.5rem] pb-3 dark:brightness-0 dark:invert" />
               </div>
             </SidebarHeader>
             <SidebarBody>
@@ -140,10 +180,6 @@ export function PanelGeneralLayout({ children, userProfile }: { children: React.
               <SidebarItem href="/admin/dashboard/buscar">
                 <MagnifyingGlassIcon />
                 <SidebarLabel>Buscar</SidebarLabel>
-              </SidebarItem>
-              <SidebarItem href="/admin/dashboard/inbox">
-                <InboxIcon />
-                <SidebarLabel>Bandeja de entrada</SidebarLabel>
               </SidebarItem>
             </SidebarSection>
 
@@ -194,22 +230,49 @@ export function PanelGeneralLayout({ children, userProfile }: { children: React.
 }
 
 export function PanelGeneralDashboard() {
-  const [data, setData] = useState<PanelData | null>(null);
+  const { users, error, fetchUsers } = useUsuarios();
   const [loading, setLoading] = useState(true);
+  const [actividad, setActividad] = useState<RegistroAuditoria[]>([]);
+  const [errorActividad, setErrorActividad] = useState<Error | null>(null);
+  const [enRevision, setEnRevision] = useState<PaginaEnRevision[]>([]);
+  const [errorRevision, setErrorRevision] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelado = false;
     (async () => {
-      // Simular carga de datos para evitar el 404 del endpoint de páginas públicas
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // En paralelo: que una fuente lenta no retrase a las otras dos.
+      const [, registros, pendientes] = await Promise.all([
+        fetchUsers(),
+        listarAuditoria({}, 1, CAMBIOS_RECIENTES).then(
+          (respuesta) => respuesta.registros,
+          (err: unknown) => {
+            if (!cancelado) {
+              setErrorActividad(
+                err instanceof Error ? err : new Error('No se pudo cargar la actividad reciente.'),
+              );
+            }
+            return [] as RegistroAuditoria[];
+          },
+        ),
+        listarEnRevision().catch((err: unknown) => {
+          if (!cancelado) setErrorRevision(mensajeDeRevision(err));
+          return [] as PaginaEnRevision[];
+        }),
+      ]);
       if (cancelado) return;
-      setData({ stats: { usuarios: 0, paginas: 0, alertas: 0, visitas: 0 }, alerts: [], recentActivity: [] });
+      setActividad(registros);
+      setEnRevision(pendientes);
       setLoading(false);
     })();
     return () => {
       cancelado = true;
     };
-  }, []);
+  }, [fetchUsers]);
+
+  /** El 403 por rol no es una avería: se explica sin alarmar y sin enlace muerto. */
+  const sinAccesoAuditoria = errorActividad instanceof ErrorAuditoria && errorActividad.sinAcceso;
+
+  const usuariosPorRol = useMemo(() => contarUsuariosPorRol(users), [users]);
 
   if (loading) {
     return (
@@ -222,7 +285,11 @@ export function PanelGeneralDashboard() {
     );
   }
 
-  const statsEntries = data?.stats ? Object.entries(data.stats) : [];
+  const statsEntries = Object.entries({
+    usuarios: users.length,
+    paginas: 0,
+    visitas: 0,
+  });
   const statsLabels: Record<string, string> = {
     usuarios: 'Usuarios',
     paginas: 'Páginas',
@@ -245,7 +312,7 @@ export function PanelGeneralDashboard() {
       <div className="mb-8 grid gap-4 sm:grid-cols-2">
         <Link
           href={enlaceAlEditor('inicio', '/admin/dashboard')}
-          className="group flex flex-col justify-center gap-1 rounded-xl border border-zinc-200 bg-white p-5 transition-all duration-200 ease-out hover:translate-x-1 hover:border-[#7DB829]/40 hover:bg-[#7DB829]/10 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#7DB829]/40 dark:hover:bg-[#7DB829]/10"
+          className="group flex flex-col justify-center gap-1 rounded-xl border border-zinc-200 bg-white p-5 transition-all duration-200 ease-out hover:translate-x-1 hover:border-brand/40 hover:bg-brand/10 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-brand/40 dark:hover:bg-brand/10"
         >
           <h3 className="font-semibold text-zinc-950 group-hover:text-[#4C7A1C] dark:text-[#f6f6f6] dark:group-hover:text-[#9ED65C]">
             Editar Sitio Web
@@ -270,58 +337,94 @@ export function PanelGeneralDashboard() {
         </a>
       </div>
 
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {statsEntries.length > 0 ? (
-          statsEntries.map(([key, value]) => (
-            <div key={key} className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
-              <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">{statsLabels[key] || key}</p>
-              <p className="mt-1 text-2xl font-bold text-zinc-950 dark:text-[#f6f6f6]">{value}</p>
-            </div>
-          ))
-        ) : (
-          <>
-            <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
-              <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">Usuarios</p>
-              <p className="mt-1 text-2xl font-bold text-zinc-950 dark:text-[#f6f6f6]">0</p>
-            </div>
-            <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
-              <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">Páginas</p>
-              <p className="mt-1 text-2xl font-bold text-zinc-950 dark:text-[#f6f6f6]">0</p>
-            </div>
-            <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
-              <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">Alertas</p>
-              <p className="mt-1 text-2xl font-bold text-zinc-950 dark:text-[#f6f6f6]">0</p>
-            </div>
-            <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
-              <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">Visitas</p>
-              <p className="mt-1 text-2xl font-bold text-zinc-950 dark:text-[#f6f6f6]">0</p>
-            </div>
-          </>
-        )}
+      {error && (
+        <p className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
+          {error}
+        </p>
+      )}
+
+      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {statsEntries.map(([key, value]) => (
+          <div key={key} className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
+            <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">{statsLabels[key] || key}</p>
+            <p className="mt-1 text-2xl font-bold text-zinc-950 dark:text-[#f6f6f6]">{value}</p>
+            {key === 'usuarios' && usuariosPorRol.length > 0 && (
+              <ul className="mt-3 space-y-1 border-t border-zinc-100 pt-2 dark:border-[#7db828]/20">
+                {usuariosPorRol.map(({ rol, total }) => (
+                  <li key={rol} className="flex items-center justify-between gap-2 text-xs">
+                    <span className="truncate text-zinc-500 dark:text-[#94a3b8]">{rol}</span>
+                    <span className="font-semibold tabular-nums text-zinc-700 dark:text-[#cbd5e1]">{total}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ))}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
-          <h2 className="mb-4 text-lg font-semibold text-zinc-950 dark:text-[#f6f6f6]">Actividad Reciente</h2>
-          {data?.recentActivity && data.recentActivity.length > 0 ? (
-            <div className="space-y-3">
-              {data.recentActivity.map((activity) => (
-                <div
-                  key={activity.id}
-                  className="flex items-start gap-3 rounded-lg border border-zinc-200 p-3 dark:border-[#7db828]/30"
-                >
-                  <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-bold text-zinc-600 dark:bg-[#1e293b] dark:text-[#cbd5e1]">
-                    {activity.user?.charAt(0)?.toUpperCase() || '?'}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-zinc-950 dark:text-[#f6f6f6]">
-                      {activity.action}
-                    </p>
-                    <p className="text-xs text-zinc-500 dark:text-[#94a3b8]">{activity.description}</p>
-                  </div>
-                  <span className="shrink-0 text-xs text-zinc-500 dark:text-[#94a3b8]">{activity.date}</span>
-                </div>
-              ))}
+          <div className="mb-4 flex items-baseline justify-between gap-3">
+            <h2 className="text-lg font-semibold text-zinc-950 dark:text-[#f6f6f6]">Actividad Reciente</h2>
+            {!sinAccesoAuditoria && (
+              <Link
+                href="/admin/auditoria"
+                className="shrink-0 text-sm font-medium text-[#4C7A1C] hover:underline dark:text-[#9ED65C]"
+              >
+                Ver más
+              </Link>
+            )}
+          </div>
+          {errorActividad ? (
+            <p
+              className={
+                sinAccesoAuditoria
+                  ? 'text-sm text-zinc-500 dark:text-[#94a3b8]'
+                  : 'text-sm text-red-600 dark:text-red-300'
+              }
+            >
+              {errorActividad.message}
+            </p>
+          ) : actividad.length > 0 ? (
+            /* Mismas columnas que la bitácora, en versión angosta: la tarjeta ocupa
+               media pantalla, así que la tabla desborda a scroll en vez de apretarse. */
+            <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-[#7db828]/30">
+              <table className="w-full min-w-[34rem] text-left text-sm">
+                <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-[#131b2f]">
+                  <tr>
+                    <th scope="col" className="px-3 py-2 font-medium">Fecha y hora</th>
+                    <th scope="col" className="px-3 py-2 font-medium">Usuario</th>
+                    <th scope="col" className="px-3 py-2 font-medium">Acción</th>
+                    <th scope="col" className="px-3 py-2 font-medium">Cambios</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
+                  {actividad.map((registro) => (
+                    <tr key={registro.id}>
+                      <td className="whitespace-nowrap px-3 py-2 text-xs text-zinc-600 dark:text-zinc-300">
+                        {fechaCorta(registro.fecha)}
+                      </td>
+                      <td className="max-w-[9rem] truncate px-3 py-2 text-zinc-900 dark:text-[#f6f6f6]">
+                        {registro.usuarioNombre ?? <span className="text-zinc-500">Sin usuario</span>}
+                      </td>
+                      <td className="px-3 py-2">
+                        <span
+                          className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${COLOR_ACCION[registro.accion] ?? ''}`}
+                        >
+                          {etiquetaDeAccion(registro.accion)}
+                        </span>
+                      </td>
+                      <td
+                        className="max-w-[12rem] truncate px-3 py-2 text-zinc-500 dark:text-[#94a3b8]"
+                        title={camposTocados(registro)}
+                      >
+                        {etiquetaDeEntidad(registro.entidadTipo)}
+                        {camposTocados(registro) && ` · ${camposTocados(registro)}`}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           ) : (
             <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">No hay actividad reciente.</p>
@@ -330,30 +433,55 @@ export function PanelGeneralDashboard() {
 
         <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
           <h2 className="mb-4 text-lg font-semibold text-zinc-950 dark:text-[#f6f6f6]">Alertas</h2>
-          {data?.alerts && data.alerts.length > 0 ? (
-            <div className="space-y-3">
-              {data.alerts.map((alert) => {
-                const alertClasses =
-                  alert.type === 'warning'
-                    ? 'border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20'
-                    : alert.type === 'danger'
-                      ? 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20'
-                      : alert.type === 'success'
-                        ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20'
-                        : 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20';
-                return (
-                  <div key={alert.id} className={`rounded-lg border p-3 ${alertClasses}`}>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium">{alert.title}</p>
-                      <p className="mt-0.5 text-xs opacity-80">{alert.message}</p>
-                    </div>
-                    <span className="shrink-0 text-xs opacity-60">{alert.date}</span>
-                  </div>
-                );
-              })}
+          {errorRevision ? (
+            <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">{errorRevision}</p>
+          ) : enRevision.length > 0 ? (
+            /* Quién envió, qué ruta y qué versión: lo justo para decidir si abrir
+               la cola. Aprobar o rechazar se hace en Páginas en revisión. */
+            <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-[#7db828]/30">
+              <table className="w-full min-w-[30rem] text-left text-sm">
+                <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-[#131b2f]">
+                  <tr>
+                    <th scope="col" className="px-3 py-2 font-medium">Usuario</th>
+                    <th scope="col" className="px-3 py-2 font-medium">Ruta</th>
+                    <th scope="col" className="px-3 py-2 font-medium">Versión</th>
+                    <th scope="col" className="px-3 py-2 font-medium">
+                      <span className="sr-only">Revisar</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
+                  {enRevision.map((pagina) => (
+                    <tr key={pagina.id}>
+                      <td className="max-w-[9rem] truncate px-3 py-2 text-zinc-900 dark:text-[#f6f6f6]">
+                        {pagina.autor?.nombre ?? <span className="text-zinc-500">Sin autor</span>}
+                      </td>
+                      <td
+                        className="max-w-[10rem] truncate px-3 py-2 text-zinc-600 dark:text-zinc-300"
+                        title={`/${pagina.slug}`}
+                      >
+                        /{pagina.slug}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-2 tabular-nums text-zinc-600 dark:text-zinc-300">
+                        v{pagina.numeroVersion}
+                      </td>
+                      <td className="px-3 py-2 text-right">
+                        <Link
+                          href="/admin/revision"
+                          className="inline-flex items-center rounded-lg bg-brand-interactive px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-brand-interactive-hover"
+                        >
+                          Ver
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           ) : (
-            <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">No hay alertas activas.</p>
+            <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">
+              No hay páginas esperando revisión.
+            </p>
           )}
         </div>
       </div>

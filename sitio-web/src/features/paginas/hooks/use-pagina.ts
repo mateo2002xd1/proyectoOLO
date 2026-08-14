@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Pagina, PuckData, Bloque } from '../types';
+import { PaginaEditable, PuckData, Bloque } from '../types';
 import { obtenerPaginaEditable, guardarBorrador, enviarARevision } from '../services/paginas.service';
 import { getPageSeed, isEmptyContent } from '../lib/page-seeds';
 
 export function usePagina(slug: string) {
-  const [pagina, setPagina] = useState<Pagina | null>(null);
+  const [pagina, setPagina] = useState<PaginaEditable | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,6 +23,10 @@ export function usePagina(slug: string) {
             slug: data?.slug ?? slug,
             titulo: data?.titulo ?? slug,
             contenido: getPageSeed(slug),
+            estado: data?.estado ?? null,
+            versionId: data?.versionId ?? null,
+            numeroVersion: data?.numeroVersion ?? null,
+            motivoRechazo: data?.motivoRechazo ?? null,
           });
         } else {
           setPagina(data);
@@ -39,6 +43,9 @@ export function usePagina(slug: string) {
   const saveDraft = useCallback(async (contenido: PuckData | Bloque[]) => {
     try {
       const result = await guardarBorrador(slug, contenido);
+      // Se conserva el resto del estado a propósito: guardar crea una versión
+      // nueva en borrador, así que el backend ya no reportaría el rechazo. El
+      // aviso debe seguir visible mientras el editor corrige lo que le señalaron.
       setPagina((prev) => prev ? { ...prev, contenido } : null);
       return result;
     } catch (err) {

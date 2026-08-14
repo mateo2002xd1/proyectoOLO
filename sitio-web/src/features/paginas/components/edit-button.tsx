@@ -35,7 +35,7 @@ export default function EditButton({ slug }: EditButtonProps) {
   );
 
   const editHref = `/admin/editor/${slug}`;
-  const loginHref = `/admin/auth/login?redirect=/admin/editor/${slug}`;
+  const loginHref = `/admin/login?redirect=/admin/editor/${slug}`;
 
   const href = `/admin/editor/${slug}`;
   const title = 'Editar esta página';

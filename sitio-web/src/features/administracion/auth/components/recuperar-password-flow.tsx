@@ -6,15 +6,16 @@ import { validarEmail } from '@olo/email-policy';
 import { cumplePolitica, primerFallo } from '@olo/password-policy';
 import { Button } from '@/shared/ui/atoms/button';
 import {
-  AuthCardHeader,
+  AuthCardTitle,
   AuthGeneralError,
-  BackToSiteLink,
+  AuthProgressDots,
+  AuthSuccessBadge,
+  AuthTextField,
   PasswordField,
   PasswordRequisitos,
-  authCardClass,
-  authErrorTextClass,
-  authInputClass,
-  authLabelClass,
+  authNavyActionClass,
+  authQuietLinkClass,
+  authSolidCardClass,
 } from './auth-ui';
 import {
   obtenerPreguntas,
@@ -36,6 +37,10 @@ import {
  * nada que limpiar ni que se quede olvidado si el usuario abandona a medias.
  *
  * Es además el idioma que ya usa `first-login-flow.tsx` en esta app.
+ *
+ * El marco (`AuthSplitShell`) lo monta la ruta, igual que en el primer ingreso:
+ * aquí solo va la tarjeta, para que las tres pantallas de autenticación se vean
+ * como una sola cosa.
  */
 
 type Paso = 'correo' | 'preguntas' | 'password' | 'listo';
@@ -165,19 +170,15 @@ export function RecuperarPasswordFlow() {
 
   if (paso === 'listo') {
     return (
-      <div className={authCardClass}>
-        <AuthCardHeader className="mb-6">
-          <p className="text-lg font-light text-gray-900 dark:text-[#f6f6f6]">
-            Tu passcode se actualizó
-          </p>
-        </AuthCardHeader>
-        <p className="mb-6 text-sm text-gray-500 dark:text-slate-400">
-          Ya puedes iniciar sesión con tu nuevo passcode.
-        </p>
-        <Link href="/admin/auth/login" className="block">
-          <Button type="button" variant="success" className="w-full">
-            IR A INICIAR SESIÓN
-          </Button>
+      <div className={`${authSolidCardClass} text-center`}>
+        <AuthSuccessBadge />
+        <AuthCardTitle
+          className="mb-6"
+          title="Tu passcode se actualizó"
+          description="Ya puedes entrar al panel con tu nuevo passcode."
+        />
+        <Link href="/admin/login" className={authNavyActionClass}>
+          Ir a iniciar sesión
         </Link>
       </div>
     );
@@ -185,10 +186,11 @@ export function RecuperarPasswordFlow() {
 
   if (paso === 'password') {
     return (
-      <div className={authCardClass}>
-        <AuthCardHeader className="mb-7">
-          <p className="text-lg font-light text-gray-900 dark:text-[#f6f6f6]">Crea tu nuevo passcode</p>
-        </AuthCardHeader>
+      <div className={authSolidCardClass}>
+        <AuthCardTitle
+          title="Crea tu nuevo passcode"
+          description="Verificamos tu identidad. Elige una clave que no hayas usado antes."
+        />
 
         <form onSubmit={guardarPassword} noValidate>
           {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
@@ -202,7 +204,7 @@ export function RecuperarPasswordFlow() {
             error={errors.password}
             className="mb-2"
           />
-          <PasswordRequisitos password={password} />
+          <PasswordRequisitos password={password} variant="solid" />
 
           <PasswordField
             id="confirmar-password"
@@ -214,8 +216,8 @@ export function RecuperarPasswordFlow() {
             className="mb-6"
           />
 
-          <Button type="submit" variant="success" disabled={isLoading} className="w-full">
-            {isLoading ? 'GUARDANDO' : 'GUARDAR PASSCODE'}
+          <Button type="submit" variant="navy" disabled={isLoading} className="w-full">
+            {isLoading ? 'Guardando…' : 'Guardar passcode'}
           </Button>
         </form>
       </div>
@@ -227,55 +229,55 @@ export function RecuperarPasswordFlow() {
     const esUltima = preguntaActual === preguntas.length - 1;
 
     return (
-      <div className={authCardClass}>
-        <AuthCardHeader className="mb-7">
-          <p className="text-lg font-light text-gray-900 dark:text-[#f6f6f6]">
-            Verifica tu identidad
-          </p>
-          <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
-            Pregunta {preguntaActual + 1} de {preguntas.length}
-          </p>
-        </AuthCardHeader>
+      <div className={authSolidCardClass}>
+        <AuthCardTitle
+          title="Verifica tu identidad"
+          description={`Responde las ${preguntas.length} preguntas que elegiste al configurar tu cuenta.`}
+        />
 
         <form onSubmit={siguientePregunta} noValidate>
           {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
 
-          <div className="mb-4">
-            <label htmlFor="respuesta" className={authLabelClass}>
-              {pregunta?.label}
-            </label>
-            <input
-              id="respuesta"
-              type="text"
-              autoComplete="off"
-              // La respuesta se compara en minúsculas y sin espacios en el servidor,
-              // así que el autocorrector del móvil solo puede estorbar.
-              autoCapitalize="none"
-              autoCorrect="off"
-              value={respuestas[preguntaActual] ?? ''}
-              onChange={(e) => {
-                const copia = [...respuestas];
-                copia[preguntaActual] = e.target.value;
-                setRespuestas(copia);
-                setErrors({});
-              }}
-              className={authInputClass(!!errors.answer)}
-            />
-            {errors.answer && <p className={authErrorTextClass}>{errors.answer}</p>}
-          </div>
+          <AuthTextField
+            id="respuesta"
+            label={
+              <>
+                {/* `gray-500` y no `gray-400`: es texto, y el 400 se queda en 2.6:1
+                    contra el blanco de la tarjeta (9-accesibilidad.md §2.1). */}
+                <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-500">
+                  Pregunta {preguntaActual + 1} de {preguntas.length}
+                </span>
+                {pregunta?.label}
+              </>
+            }
+            value={respuestas[preguntaActual] ?? ''}
+            onChange={(valor) => {
+              const copia = [...respuestas];
+              copia[preguntaActual] = valor;
+              setRespuestas(copia);
+              setErrors({});
+            }}
+            error={errors.answer}
+            autoComplete="off"
+            // La respuesta se compara en minúsculas y sin espacios en el servidor,
+            // así que el autocorrector del móvil solo puede estorbar.
+            autoCapitalize="none"
+            autoCorrect="off"
+            className="mb-5"
+          />
 
-          <Button type="submit" variant="success" disabled={isLoading} className="w-full">
-            {isLoading ? 'VERIFICANDO' : esUltima ? 'VERIFICAR' : 'SIGUIENTE'}
+          <AuthProgressDots total={preguntas.length} current={preguntaActual} />
+
+          <Button type="submit" variant="navy" disabled={isLoading} className="w-full">
+            {isLoading ? 'Verificando…' : esUltima ? 'Verificar' : 'Siguiente'}
           </Button>
 
           {preguntaActual > 0 && (
-            <button
-              type="button"
-              onClick={anteriorPregunta}
-              className="mt-3 w-full text-xs text-gray-500 dark:text-slate-400 hover:underline"
-            >
-              Volver a la pregunta anterior
-            </button>
+            <div className="mt-4 text-center">
+              <button type="button" onClick={anteriorPregunta} className={authQuietLinkClass}>
+                Volver a la pregunta anterior
+              </button>
+            </div>
           )}
         </form>
       </div>
@@ -283,49 +285,36 @@ export function RecuperarPasswordFlow() {
   }
 
   return (
-    <div className={authCardClass}>
-      <AuthCardHeader className="mb-7">
-        <p className="text-lg font-light text-gray-900 dark:text-[#f6f6f6]">
-          ¿Olvidaste tu passcode?
-        </p>
-        <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
-          Escribe tu correo institucional y responde tus preguntas de seguridad.
-        </p>
-      </AuthCardHeader>
+    <div className={authSolidCardClass}>
+      <AuthCardTitle
+        title="¿Olvidaste tu passcode?"
+        description="Escribe tu correo institucional y te preguntaremos por tus preguntas de seguridad."
+      />
 
       <form onSubmit={enviarCorreo} noValidate>
         {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
 
-        <div className="mb-6">
-          <label htmlFor="email-recuperacion" className={authLabelClass}>
-            Correo SENA
-          </label>
-          <input
-            id="email-recuperacion"
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => { setEmail(e.target.value); setErrors({}); }}
-            placeholder="usuario@sena.edu.co"
-            className={authInputClass(!!errors.email)}
-          />
-          {errors.email && <p className={authErrorTextClass}>{errors.email}</p>}
-        </div>
+        <AuthTextField
+          id="email-recuperacion"
+          type="email"
+          label="Correo SENA"
+          placeholder="usuario@sena.edu.co"
+          autoComplete="email"
+          value={email}
+          onChange={(valor) => { setEmail(valor); setErrors({}); }}
+          error={errors.email}
+          className="mb-6"
+        />
 
-        <Button type="submit" variant="success" disabled={isLoading} className="w-full">
-          {isLoading ? 'BUSCANDO' : 'CONTINUAR'}
+        <Button type="submit" variant="navy" disabled={isLoading} className="w-full">
+          {isLoading ? 'Buscando…' : 'Continuar'}
         </Button>
 
         <div className="mt-4 text-center">
-          <Link
-            href="/admin/auth/login"
-            className="text-xs text-gray-500 dark:text-slate-400 hover:underline"
-          >
+          <Link href="/admin/login" className={authQuietLinkClass}>
             Volver a iniciar sesión
           </Link>
         </div>
-
-        <BackToSiteLink className="mt-2" />
       </form>
     </div>
   );

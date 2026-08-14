@@ -343,9 +343,11 @@ Contenido del proyecto en capa `intranet/src/`:
 intranet/src/
 ├── middleware.ts                     # Auth gating. Va en src/, NUNCA en src/app/
 │
+├── style/                            # Hojas de estilo globales (fuera de app/)
+│   └── globals.css                   # Estilos base
+│
 ├── app/                              # SOLO enrutamiento Next.js. Sin route groups:
 │   ├── layout.tsx                    #   la app entera es zona protegida
-│   ├── globals.css                   # Estilos base
 │   ├── page.tsx
 │   ├── login/                        # login, first-login, recovery, reset-password,
 │   │                                 #   reset-success, security-questions

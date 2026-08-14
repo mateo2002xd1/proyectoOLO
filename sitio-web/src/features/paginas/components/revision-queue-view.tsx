@@ -123,7 +123,7 @@ export function RevisionQueueView() {
                   type="button"
                   disabled={busySlug === pagina.slug}
                   onClick={() => handleAprobar(pagina)}
-                  className="rounded-lg bg-[#7DB829] px-3 py-1.5 text-sm font-medium text-white disabled:opacity-60"
+                  className="rounded-lg bg-brand-interactive px-3 py-1.5 text-sm font-medium text-white transition hover:bg-brand-interactive-hover disabled:opacity-60"
                 >
                   Aprobar
                 </button>

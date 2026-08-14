@@ -1,4 +1,4 @@
-import { AuthPageShell } from '@/features/administracion/auth/components/auth-ui';
+import { AuthSplitShell } from '@/features/administracion/auth/components/auth-ui';
 import { RecuperarPasswordFlow } from '@/features/administracion/auth/components/recuperar-password-flow';
 
 export const metadata = {
@@ -7,8 +7,8 @@ export const metadata = {
 
 export default function RecuperarPasswordPage() {
   return (
-    <AuthPageShell>
+    <AuthSplitShell>
       <RecuperarPasswordFlow />
-    </AuthPageShell>
+    </AuthSplitShell>
   );
 }

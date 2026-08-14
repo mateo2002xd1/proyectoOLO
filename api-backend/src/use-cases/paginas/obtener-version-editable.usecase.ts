@@ -15,7 +15,15 @@ const EMPTY_CONTENIDO = { content: [], root: { props: {} } };
 export const obtenerVersionEditable = async (slug: string, ambito: Ambito) => {
   const pagina = await PaginaRepository.findBySlug(slug, ambito);
   if (!pagina) {
-    return { slug, titulo: slug, contenido: EMPTY_CONTENIDO, estado: null, versionId: null };
+    return {
+      slug,
+      titulo: slug,
+      contenido: EMPTY_CONTENIDO,
+      estado: null,
+      versionId: null,
+      numeroVersion: null,
+      motivoRechazo: null,
+    };
   }
 
   const version = await PaginaRepository.findUltimaVersion(pagina.id);
@@ -26,6 +34,8 @@ export const obtenerVersionEditable = async (slug: string, ambito: Ambito) => {
       contenido: EMPTY_CONTENIDO,
       estado: null,
       versionId: null,
+      numeroVersion: null,
+      motivoRechazo: null,
     };
   }
 
@@ -42,5 +52,10 @@ export const obtenerVersionEditable = async (slug: string, ambito: Ambito) => {
     contenido,
     estado: version.estado,
     versionId: version.id,
+    numeroVersion: version.numeroVersion,
+    // El motivo viaja con la versión porque el editor tiene que leerlo justo
+    // aquí: es la única explicación de por qué su trabajo volvió a borrador, y
+    // la bitácora de auditoría —donde también queda— no la puede ver un editor.
+    motivoRechazo: version.estado === 'rechazado' ? version.motivoRechazo ?? null : null,
   };
 };

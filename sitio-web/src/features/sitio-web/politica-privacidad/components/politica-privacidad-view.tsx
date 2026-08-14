@@ -112,7 +112,7 @@ export function PoliticaPrivacidadView() {
 
           {tabActiva === 'mapa-procesos' && (
             <MapaProcesos
-              imageSrc="/asset/img/VF_blanco_Mapa_de_Procesos_2026.png"
+              imageSrc="/assets/img/VF_blanco_Mapa_de_Procesos_2026.png"
             />
           )}
         </section>

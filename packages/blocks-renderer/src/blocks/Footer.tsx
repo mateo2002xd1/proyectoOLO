@@ -11,12 +11,12 @@ export function Footer({ block }: FooterProps) {
         <div className="olo-footer-card">
           <div className="olo-logos-top">
             <div className="olo-logos-left">
-              <img src="/asset/logos/logo-sena.svg" alt="Logotipo oficial del SENA con la palabra SENA y simbolo institucional en color verde, presentado en la cabecera del pie de pagina de un sitio gubernamental educativo" className="olo-logo" />
+              <img src="/assets/logos/logo-sena.svg" alt="Logotipo oficial del SENA con la palabra SENA y simbolo institucional en color verde, presentado en la cabecera del pie de pagina de un sitio gubernamental educativo" className="olo-logo" />
               <span className="olo-logo-separator">|</span>
-              <img src="/asset/logos/olo-logo-horizontal.svg" alt="Logotipo horizontal del Observatorio Laboral y Ocupacional con el texto Observatorio Laboral y Ocupacional, ubicado junto al logo del SENA en la parte superior del pie de pagina" className="olo-logo" />
+              <img src="/assets/logos/olo-logo-horizontal.svg" alt="Logotipo horizontal del Observatorio Laboral y Ocupacional con el texto Observatorio Laboral y Ocupacional, ubicado junto al logo del SENA en la parte superior del pie de pagina" className="olo-logo" />
             </div>
             <div className="olo-logos-right">
-              <img src="/asset/img/mintrabajo.webp" alt="Logotipo del Ministerio del Trabajo de Colombia con texto institucional, mostrado en el extremo derecho de la franja superior del pie de pagina en un contexto oficial" className="olo-logo" />
+              <img src="/assets/img/mintrabajo.webp" alt="Logotipo del Ministerio del Trabajo de Colombia con texto institucional, mostrado en el extremo derecho de la franja superior del pie de pagina en un contexto oficial" className="olo-logo" />
             </div>
           </div>
           <div className="olo-content-blocks">
@@ -94,7 +94,7 @@ export function Footer({ block }: FooterProps) {
             </div>
 
             <div className="olo-certifications">
-              <img src="/asset/img/icontec.png" alt="Sello de certificacion ICONTEC con texto de certificacion visible, presentado en la seccion de certificaciones del pie de pagina para transmitir cumplimiento y confianza institucional" className="olo-cert-icon" style={{ width: '220px', height: 'auto' }} />
+              <img src="/assets/img/icontec.png" alt="Sello de certificacion ICONTEC con texto de certificacion visible, presentado en la seccion de certificaciones del pie de pagina para transmitir cumplimiento y confianza institucional" className="olo-cert-icon" style={{ width: '220px', height: 'auto' }} />
             </div>
           </div>
 
@@ -117,7 +117,7 @@ export function Footer({ block }: FooterProps) {
         </div>
       </footer>
       <div className="olo-gov-banner-bottom">
-        <img src="/asset/img/ruta-co-colombia.png" alt="Marca pais de Colombia con el texto CO Colombia, ubicada en la franja inferior del sitio junto al distintivo gov para identificar el entorno digital gubernamental" className="olo-co-logo" style={{ left: '250px' }} />
+        <img src="/assets/img/ruta-co-colombia.png" alt="Marca pais de Colombia con el texto CO Colombia, ubicada en la franja inferior del sitio junto al distintivo gov para identificar el entorno digital gubernamental" className="olo-co-logo" style={{ left: '250px' }} />
         <p style={{ color: '#fff' }}>|</p>
         <svg width="98" height="24" viewBox="0 0 98 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M27.7168 16.9303C22.9621 16.9303 19.7168 14.0746 19.7168 9.96517C19.7168 5.85572 22.8866 3 27.7168 3C32.547 3 35.7168 5.85572 35.7168 10.0348C35.7168 14.2139 32.547 17 27.7168 17M27.7168 5.22886C24.6979 5.22886 22.6602 7.1791 22.6602 9.96517C22.6602 12.7512 24.6979 14.7015 27.7168 14.7015C30.7357 14.7015 32.7734 12.8209 32.7734 9.96517C32.7734 7.10945 30.7357 5.22886 27.7168 5.22886Z" fill="white" />

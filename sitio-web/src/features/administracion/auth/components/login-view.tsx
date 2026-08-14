@@ -4,19 +4,33 @@ import { Suspense, useState, FormEvent } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { validarEmail } from '@olo/email-policy';
-import { FirstLoginFlow } from '@/features/administracion/auth/components/first-login-flow';
-import {
-  AuthCardHeader,
-  AuthGeneralError,
-  AuthPageShell,
-  BackToSiteLink,
-  PasswordField,
-  authCardClass,
-  authErrorTextClass,
-  authInputClass,
-  authLabelClass,
-} from '@/features/administracion/auth/components/auth-ui';
 import { Button } from '@/shared/ui/atoms/button';
+import { FirstLoginFlow } from './first-login-flow';
+import {
+  AuthGeneralError,
+  AuthSplitShell,
+  AuthTextField,
+  PasswordField,
+  authQuietLinkClass,
+  authSolidCardClass,
+} from './auth-ui';
+
+/**
+ * Pantalla de acceso al panel de administración.
+ *
+ * Toda la pantalla vive aquí y no en `app/`: la ruta solo la monta. Antes el
+ * `page.tsx` traía las tres vistas, la validación y la llamada a la API, con lo
+ * que la capa de enrutamiento acababa siendo la que decidía a dónde va cada rol.
+ *
+ * Son tres pantallas sobre el mismo marco, y cuál se pinta lo dice la respuesta
+ * del servidor, no la URL:
+ *   1. el formulario;
+ *   2. la configuración de primer ingreso, si la cuenta la debe;
+ *   3. la elección de editor, si quien entra es Editor y puede ir a dos sitios.
+ *
+ * @see 1-guia-del-proyecto.md §4.2  (app/ solo enrutamiento; la lógica en features/)
+ * @see 3-seguridad-del-proyecto.md  (la sesión la emite y valida la API :4000)
+ */
 
 const INTRANET_EDITOR_URL =
   process.env.NEXT_PUBLIC_INTRANET_EDITOR_URL || 'http://localhost:3001/editor/inicio';
@@ -34,10 +48,10 @@ function EditorChoiceLink({
   return (
     <a
       href={href}
-      className="block rounded-[10px] border border-gray-200 dark:border-[#1e293b] px-[18px] py-4 transition-colors hover:border-brand hover:bg-gray-50 dark:hover:bg-[#131b2f]/50"
+      className="block rounded-[10px] border border-gray-200 px-[18px] py-4 transition-colors hover:border-[#0d1526] hover:bg-gray-50"
     >
-      <span className="block text-[15px] font-semibold text-gray-900 dark:text-[#f6f6f6]">{title}</span>
-      <span className="mt-0.5 block text-[13px] text-gray-500 dark:text-slate-400">{description}</span>
+      <span className="block text-[15px] font-semibold text-gray-900">{title}</span>
+      <span className="mt-0.5 block text-[13px] text-gray-500">{description}</span>
     </a>
   );
 }
@@ -123,10 +137,8 @@ function LoginForm() {
 
   if (editorChoice) {
     return (
-      <div className={authCardClass}>
-        <AuthCardHeader className="mb-7">
-          <p className="text-lg font-light text-gray-900 dark:text-[#f6f6f6]">¿Qué deseas editar?</p>
-        </AuthCardHeader>
+      <div className={authSolidCardClass}>
+        <p className="mb-7 text-center text-lg font-light text-gray-900">¿Qué deseas editar?</p>
 
         <div className="flex flex-col gap-3">
           <EditorChoiceLink
@@ -142,11 +154,11 @@ function LoginForm() {
 
           <Button
             type="button"
-            variant="success"
+            plain
             className="mt-1 w-full gap-2"
             onClick={async () => {
               await fetch('/api/auth/logout', { method: 'POST' });
-              window.location.href = '/admin/auth/login';
+              window.location.href = '/admin/login';
             }}
           >
             <svg
@@ -165,37 +177,26 @@ function LoginForm() {
             </svg>
             Cerrar sesión
           </Button>
-
-          <BackToSiteLink className="mt-2" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className={authCardClass}>
-      <AuthCardHeader className="mb-[30px]">
-        <p className="text-xl font-light text-[#757575] dark:text-slate-400">¡Bienvenido de nuevo!</p>
-      </AuthCardHeader>
-
+    <div className={authSolidCardClass}>
       <form onSubmit={handleSubmit} noValidate>
         {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
 
-        <div className="mb-4">
-          <label htmlFor="email" className={authLabelClass}>
-            Correo SENA
-          </label>
-          <input
-            id="email"
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="usuario@sena.edu.co"
-            className={authInputClass(!!errors.email)}
-          />
-          {errors.email && <p className={authErrorTextClass}>{errors.email}</p>}
-        </div>
+        <AuthTextField
+          id="email"
+          type="email"
+          label="Correo SENA"
+          autoComplete="email"
+          value={email}
+          onChange={setEmail}
+          error={errors.email}
+          placeholder="usuario@sena.edu.co"
+        />
 
         <PasswordField
           id="password"
@@ -204,38 +205,44 @@ function LoginForm() {
           value={password}
           onChange={setPassword}
           error={errors.password}
-          className="mb-2"
+          className="mb-5"
         />
 
-        {/* Va antes del botón y no al pie: quien no recuerda su contraseña lo busca
-            justo al lado del campo que no puede rellenar. */}
-        <div className="mb-6 text-right">
-          <Link
-            href="/admin/auth/recuperar"
-            className="text-xs text-[#ffffff] hover:text-[#ffffff]/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-focus rounded"
-          >
+        {/* RF-13: el aviso va antes de enviar nada, no después. */}
+        <p className="mb-6 text-xs leading-relaxed text-gray-500">
+          Al ingresar a este sitio aceptas la{' '}
+          <Link href="/politica-de-privacidad" className="font-semibold text-gray-700 hover:underline">
+            política de privacidad
+          </Link>{' '}
+          y{' '}
+          <Link href="/privacidad" className="font-semibold text-gray-700 hover:underline">
+            protección de datos
+          </Link>
+          .
+        </p>
+
+        <Button type="submit" variant="navy" disabled={isLoading} className="w-full">
+          {isLoading ? 'Iniciando sesión…' : 'Ingresar'}
+        </Button>
+
+        <div className="mt-4 text-center">
+          <Link href="/admin/recuperar" className={authQuietLinkClass}>
             ¿Olvidaste tu contraseña?
           </Link>
         </div>
-
-        <Button type="submit" variant="success" disabled={isLoading} className="w-full">
-          {isLoading ? 'INICIANDO SESIÓN' : 'INGRESAR'}
-        </Button>
-
-        <BackToSiteLink className="mt-4" />
       </form>
     </div>
   );
 }
 
-export default function LoginPage() {
+export function LoginView() {
   return (
-    <>
-      <AuthPageShell>
-        <Suspense fallback={<div>Cargando...</div>}>
-          <LoginForm />
-        </Suspense>
-      </AuthPageShell>
-    </>
+    <AuthSplitShell>
+      {/* `useSearchParams` obliga a un límite de Suspense: sin él, la ruta entera
+          se renderiza en cliente. */}
+      <Suspense fallback={<div className={`${authSolidCardClass} text-center`}>Cargando…</div>}>
+        <LoginForm />
+      </Suspense>
+    </AuthSplitShell>
   );
 }

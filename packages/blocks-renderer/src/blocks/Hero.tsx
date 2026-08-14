@@ -9,7 +9,7 @@ interface HeroProps {
 }
 
 const DEFAULT_SEARCH_PLACEHOLDER = 'Buscar ocupación, código o denominación';
-const DEFAULT_IMAGE_URL = '/asset/img/nos-ocupa-el-pais.png';
+const DEFAULT_IMAGE_URL = '/assets/img/nos-ocupa-el-pais.png';
 const DEFAULT_IMAGE_ALT = 'Nos ocupa el país';
 
 function SearchIcon() {

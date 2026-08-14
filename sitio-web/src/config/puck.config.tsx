@@ -135,7 +135,7 @@ const puckConfigBase: Config = {
       defaultProps: {
         id: 'hero-1',
         searchPlaceholder: 'Buscar ocupación, código o denominación',
-        imageUrl: '/asset/img/nos-ocupa-el-pais.png',
+        imageUrl: '/assets/img/nos-ocupa-el-pais.png',
         imageAlt: 'Nos ocupa el país',
       },
       render: ({

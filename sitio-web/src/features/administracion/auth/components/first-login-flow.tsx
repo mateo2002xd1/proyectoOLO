@@ -5,44 +5,36 @@ import Link from 'next/link';
 import { Button } from '@/shared/ui/atoms/button';
 import { cumplePolitica, primerFallo } from '@olo/password-policy';
 import {
+  AuthCardTitle,
   AuthGeneralError,
+  AuthProgressDots,
+  AuthSelectField,
+  AuthSuccessBadge,
+  AuthTextField,
   PasswordField,
   PasswordRequisitos,
-  authCardClass,
-  authErrorTextClass,
-  authInputClass,
-  authLabelClass,
+  authNavyActionClass,
+  authQuietLinkClass,
+  authSolidCardClass,
 } from './auth-ui';
+
+/**
+ * Configuración obligatoria de primer ingreso: contraseña definitiva y preguntas
+ * de seguridad.
+ *
+ * Se pinta en dos sitios y en los dos va dentro de `AuthSplitShell`: dentro de la
+ * pantalla de acceso —cuando el login responde que la cuenta lo debe— y en
+ * `/admin/cambiar-contrasena`. Por eso el marco no se monta aquí: lo pone quien
+ * llama, y este componente aporta solo la tarjeta.
+ */
 
 const TOTAL_QUESTIONS = 3;
 
 type CatalogQuestion = { key: string; label: string };
 
 interface FirstLoginFlowProps {
-  /** Nombre del usuario para el saludo del panel izquierdo. */
+  /** Nombre del usuario, para saludar en el primer paso. */
   name?: string;
-}
-
-/* ---------- Puntos de progreso ---------- */
-function ProgressDots({ total, current }: { total: number; current: number }) {
-  return (
-    <div className="mb-[18px] mt-1 flex justify-center gap-2">
-      {Array.from({ length: total }).map((_, i) => (
-        <span
-          key={i}
-          className={`size-2 rounded-full transition-colors ${
-            // Indicador de estado: usa el token interactivo para que el paso
-            // actual se distinga del pendiente (SC 1.4.11).
-            i === current
-              ? 'bg-brand-interactive'
-              : i < current
-                ? 'bg-brand-interactive/50'
-                : 'bg-gray-300'
-          }`}
-        />
-      ))}
-    </div>
-  );
 }
 
 /**
@@ -171,37 +163,19 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
     await enviar();
   };
 
-  const leftContent =
-    step === 1
-      ? {
-          title: `Hola ${name ? name.split(' ')[0] : ''}, actualiza tu seguridad.`,
-          subtitle:
-            'Has ingresado con un código temporal. Por tu seguridad, crea un nuevo código de acceso personal y privado que solo tú conozcas.',
-        }
-      : step === 2
-      ? {
-          title: 'Protege el acceso a tu cuenta',
-          // El texto cambia según por qué se está aquí: a quien solo le restablecieron
-          // las preguntas hay que decírselo, o no entiende por qué se le piden otra vez.
-          subtitle: pendiente?.debeCambiarPassword
-            ? 'Elige 3 preguntas de seguridad y asigna una respuesta para cada una. Nos servirán para verificar tu identidad si necesitas recuperar tu cuenta.'
-            : 'Tus preguntas de seguridad fueron restablecidas. Elige 3 y asigna una respuesta para cada una; tu contraseña actual no cambia.',
-        }
-      : null;
-
   /* ---------- Mientras se sabe qué falta ---------- */
   if (!pendiente) {
     return (
-      <div className={`${authCardClass} text-center`}>
+      <div className={`${authSolidCardClass} text-center`}>
         {errors.general ? (
           <>
             <AuthGeneralError>{errors.general}</AuthGeneralError>
-            <Link href="/admin/auth/login" className="text-sm text-brand-blue-dark hover:underline">
+            <Link href="/admin/login" className={authQuietLinkClass}>
               Volver a iniciar sesión
             </Link>
           </>
         ) : (
-          <p className="text-sm text-gray-500 dark:text-slate-400">Comprobando tu cuenta…</p>
+          <p className="text-sm text-gray-500">Comprobando tu cuenta…</p>
         )}
       </div>
     );
@@ -213,17 +187,14 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
   // contraseña temporal que ya no existía.
   if (!pendiente.debeCambiarPassword && !pendiente.debeConfigurarPreguntas && step !== 3) {
     return (
-      <div className={`${authCardClass} text-center`}>
-        <h1 className="mb-2 text-[22px] font-bold text-gray-900 dark:text-[#f6f6f6]">
-          Tu cuenta ya está configurada
-        </h1>
-        <p className="mb-6 text-[13px] leading-normal text-gray-500 dark:text-slate-400">
-          No hay nada pendiente: tu contraseña y tus preguntas de seguridad están al día.
-        </p>
-        <Link
-          href="/admin/dashboard"
-          className="block rounded-xl bg-brand-interactive px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-brand-interactive-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-focus"
-        >
+      <div className={`${authSolidCardClass} text-center`}>
+        <AuthSuccessBadge />
+        <AuthCardTitle
+          className="mb-6"
+          title="Tu cuenta ya está configurada"
+          description="No hay nada pendiente: tu contraseña y tus preguntas de seguridad están al día."
+        />
+        <Link href="/admin/dashboard" className={authNavyActionClass}>
           Ir al panel
         </Link>
       </div>
@@ -233,155 +204,154 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
   /* ---------- Paso 3: éxito ---------- */
   if (step === 3) {
     return (
-      <div className={`${authCardClass} text-center`}>
-        <h1 className="mb-2 text-[22px] font-bold text-gray-900">¡Configuración completada!</h1>
-        <p className="mb-3 text-[15px] text-gray-600">Tu cuenta ya es segura.</p>
-        {/* El aviso sobre las respuestas solo tiene sentido si se acaban de elegir. */}
-        {pendiente.debeConfigurarPreguntas && (
-          <p className="mb-6 text-[13px] leading-normal text-gray-500">
-            Guarda tus respuestas en un lugar seguro: serán el único método para validar tu identidad si
-            olvidas tu clave en el futuro.
-          </p>
-        )}
-        <Link
-          href="/admin/auth/login"
-          className="block rounded-xl bg-brand-interactive px-4 py-2.5 text-center text-sm font-semibold text-white shadow-[0_2px_8px_-2px_rgba(42,125,0,0.4)] transition hover:bg-brand-interactive-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-focus"
-        >
+      <div className={`${authSolidCardClass} text-center`}>
+        <AuthSuccessBadge />
+        <AuthCardTitle
+          className="mb-6"
+          title="¡Configuración completada!"
+          description={
+            // El aviso sobre las respuestas solo tiene sentido si se acaban de elegir.
+            pendiente.debeConfigurarPreguntas
+              ? 'Guarda tus respuestas en un lugar seguro: serán el único método para validar tu identidad si olvidas tu clave en el futuro.'
+              : 'Tu cuenta ya es segura.'
+          }
+        />
+        <Link href="/admin/login" className={authNavyActionClass}>
           Iniciar sesión
         </Link>
       </div>
     );
   }
 
+  /* ---------- Paso 1 — contraseñas ---------- */
+  if (step === 1) {
+    return (
+      <div className={authSolidCardClass}>
+        <AuthCardTitle
+          title={name ? `Hola ${name.split(' ')[0]}, actualiza tu seguridad` : 'Actualiza tu seguridad'}
+          description="Ingresaste con un código temporal. Crea ahora un passcode personal que solo tú conozcas."
+        />
+
+        <form onSubmit={(e: FormEvent) => { e.preventDefault(); handleStep1(); }} noValidate>
+          {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
+
+          <PasswordField
+            id="temp-password"
+            label="Contraseña temporal"
+            placeholder="Tu contraseña temporal"
+            autoComplete="current-password"
+            value={tempPassword}
+            onChange={(v) => { setTempPassword(v); setErrors({}); }}
+            error={errors.tempPassword}
+          />
+          <PasswordField
+            id="new-password"
+            label="Nuevo passcode"
+            autoComplete="new-password"
+            value={newPassword}
+            onChange={(v) => { setNewPassword(v); setErrors({}); }}
+            error={errors.newPassword}
+            className="mb-2"
+          />
+          <PasswordRequisitos password={newPassword} variant="solid" />
+          <PasswordField
+            id="confirm-password"
+            label="Ingresa nuevamente el passcode"
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={(v) => { setConfirmPassword(v); setErrors({}); }}
+            error={errors.confirmPassword}
+            className="mb-6"
+          />
+
+          <Button type="submit" variant="navy" disabled={isLoading} className="w-full">
+            {isLoading ? 'Guardando…' : 'Continuar'}
+          </Button>
+        </form>
+      </div>
+    );
+  }
+
+  /* ---------- Paso 2 — preguntas de seguridad ---------- */
   return (
-    <div className="flex w-full flex-col items-center gap-5">
-      {leftContent && (
-        <div className="max-w-[400px] text-center">
-          <h1 className="mb-1.5 text-xl font-bold text-gray-900">{leftContent.title}</h1>
-          <p className="text-[13px] leading-normal text-gray-500">{leftContent.subtitle}</p>
-        </div>
-      )}
+    <div className={authSolidCardClass}>
+      <AuthCardTitle
+        title="Protege el acceso a tu cuenta"
+        // El texto cambia según por qué se está aquí: a quien solo le restablecieron
+        // las preguntas hay que decírselo, o no entiende por qué se le piden otra vez.
+        description={
+          pendiente.debeCambiarPassword
+            ? 'Elige 3 preguntas y asigna una respuesta a cada una. Con ellas verificaremos tu identidad si algún día necesitas recuperar tu cuenta.'
+            : 'Tus preguntas de seguridad fueron restablecidas. Elige 3 y asigna una respuesta a cada una; tu contraseña actual no cambia.'
+        }
+      />
 
-      {/* Paso 1 — contraseñas */}
-      {step === 1 && (
-        <div className={authCardClass}>
-          <form onSubmit={(e: FormEvent) => { e.preventDefault(); handleStep1(); }} noValidate>
-            {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
-            <PasswordField
-              id="temp-password"
-              label="Contraseña temporal"
-              placeholder="Tu contraseña temporal"
-              value={tempPassword}
-              onChange={(v) => { setTempPassword(v); setErrors({}); }}
-              error={errors.tempPassword}
-            />
-            <PasswordField
-              id="new-password"
-              label="Nuevo passcode"
-              value={newPassword}
-              onChange={(v) => { setNewPassword(v); setErrors({}); }}
-              error={errors.newPassword}
-              className="mb-2"
-            />
-            <PasswordRequisitos password={newPassword} />
-            <PasswordField
-              id="confirm-password"
-              label="Ingresa nuevamente el passcode"
-              value={confirmPassword}
-              onChange={(v) => { setConfirmPassword(v); setErrors({}); }}
-              error={errors.confirmPassword}
-            />
-            <Button type="submit" variant="success" className="w-full">
-              Continuar
+      <form
+        onSubmit={(e: FormEvent) => { e.preventDefault(); handleQuestionNext(); }}
+        noValidate
+      >
+        {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
+
+        <AuthSelectField
+          id="security-question"
+          label={`Pregunta ${currentQuestion + 1} de ${TOTAL_QUESTIONS}`}
+          value={selectedKeys[currentQuestion] || ''}
+          onChange={(valor) => {
+            const next = [...selectedKeys];
+            next[currentQuestion] = valor;
+            setSelectedKeys(next);
+            setErrors({});
+          }}
+          error={errors.question}
+          options={catalog.map((q) => ({
+            value: q.key,
+            label: q.label,
+            // Ya elegida en otro paso: se ve, pero no se puede repetir.
+            disabled: selectedKeys.includes(q.key) && selectedKeys[currentQuestion] !== q.key,
+          }))}
+        />
+
+        <AuthTextField
+          id="security-answer"
+          label="Respuesta"
+          placeholder="Tu respuesta"
+          value={answers[currentQuestion]}
+          onChange={(valor) => {
+            const next = [...answers];
+            next[currentQuestion] = valor;
+            setAnswers(next);
+            setErrors({});
+          }}
+          error={errors.answer}
+          // Se compara en minúsculas y sin espacios en el servidor, así que el
+          // autocorrector del móvil solo puede estorbar.
+          autoCapitalize="none"
+          autoCorrect="off"
+          className="mb-5"
+        />
+
+        <AuthProgressDots total={TOTAL_QUESTIONS} current={currentQuestion} />
+
+        <div className="flex gap-2.5">
+          {currentQuestion > 0 && (
+            <Button
+              type="button"
+              plain
+              onClick={() => { setCurrentQuestion((q) => q - 1); setErrors({}); }}
+              className="shrink-0"
+            >
+              Atrás
             </Button>
-          </form>
+          )}
+          <Button type="submit" variant="navy" disabled={isLoading} className="flex-1">
+            {isLoading
+              ? 'Guardando…'
+              : currentQuestion === TOTAL_QUESTIONS - 1
+                ? 'Guardar'
+                : 'Continuar'}
+          </Button>
         </div>
-      )}
-
-      {/* Paso 2 — preguntas de seguridad */}
-      {step === 2 && (
-        <div className={authCardClass}>
-          <form
-            onSubmit={(e: FormEvent) => { e.preventDefault(); handleQuestionNext(); }}
-            noValidate
-          >
-            <p className="mb-4 text-base font-semibold text-gray-900">
-              Escoge tus preguntas y respuestas
-            </p>
-
-            <div className="mb-4">
-              <label htmlFor="security-question" className={authLabelClass}>
-                Pregunta {currentQuestion + 1} de {TOTAL_QUESTIONS}
-              </label>
-              <select
-                id="security-question"
-                value={selectedKeys[currentQuestion] || ''}
-                onChange={(e) => {
-                  const next = [...selectedKeys];
-                  next[currentQuestion] = e.target.value;
-                  setSelectedKeys(next);
-                  setErrors({});
-                }}
-                className={`${authInputClass(!!errors.question)} appearance-auto`}
-              >
-                <option value="" disabled>Selecciona una opción...</option>
-                {catalog.map((q) => (
-                  <option
-                    key={q.key}
-                    value={q.key}
-                    disabled={selectedKeys.includes(q.key) && selectedKeys[currentQuestion] !== q.key}
-                  >
-                    {q.label}
-                  </option>
-                ))}
-              </select>
-              {errors.question && <p className={authErrorTextClass}>{errors.question}</p>}
-            </div>
-
-            <div className="mb-4">
-              <label htmlFor="security-answer" className={authLabelClass}>Respuesta</label>
-              <input
-                id="security-answer"
-                type="text"
-                placeholder="Tu respuesta"
-                value={answers[currentQuestion]}
-                onChange={(e) => {
-                  const next = [...answers];
-                  next[currentQuestion] = e.target.value;
-                  setAnswers(next);
-                  setErrors({});
-                }}
-                className={authInputClass(!!errors.answer)}
-              />
-              {errors.answer && <p className={authErrorTextClass}>{errors.answer}</p>}
-            </div>
-
-            <ProgressDots total={TOTAL_QUESTIONS} current={currentQuestion} />
-
-            {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
-
-            <div className="flex gap-2.5">
-              {currentQuestion > 0 && (
-                <Button
-                  type="button"
-                  plain
-                  onClick={() => { setCurrentQuestion((q) => q - 1); setErrors({}); }}
-                  className="shrink-0"
-                >
-                  Atrás
-                </Button>
-              )}
-              <Button type="submit" variant="success" disabled={isLoading} className="flex-1">
-                {isLoading
-                  ? 'Guardando...'
-                  : currentQuestion === TOTAL_QUESTIONS - 1
-                  ? 'Guardar'
-                  : 'Continuar'}
-              </Button>
-            </div>
-          </form>
-        </div>
-      )}
+      </form>
     </div>
   );
 }

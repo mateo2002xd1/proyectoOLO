@@ -31,7 +31,7 @@ export function OcupacionSearchBanner({
   onValueChange,
   onSearch,
   placeholder = 'Buscar ocupación, código o denominación',
-  logoSrc = '/asset/img/nos-ocupa-el-pais.png',
+  logoSrc = '/assets/img/nos-ocupa-el-pais.png',
   logoAlt = 'Nos ocupa el país',
   className = '',
 }: OcupacionSearchBannerProps) {

@@ -51,6 +51,7 @@ export function QuestionPicker({
       <div className={`${classPrefix}-field`}>
         <input
           type="text"
+          maxLength={255}
           placeholder="Respuesta"
           value={answers[currentIndex]}
           onChange={(e) => onAnswerChange(e.target.value)}

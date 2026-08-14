@@ -37,7 +37,11 @@ export function ProfileForm() {
     }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+        let value = e.target.value;
+        if (e.target.name === 'nombre' || e.target.name === 'apellidos') {
+            value = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+        }
+        setFormData(prev => ({ ...prev, [e.target.name]: value }));
     };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -113,6 +117,7 @@ export function ProfileForm() {
                             value={formData.nombre}
                             onChange={handleChange}
                             required
+                            maxLength={50}
                             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors bg-white dark:bg-gray-800 dark:text-gray-100"
                             placeholder="Tu nombre"
                         />
@@ -129,6 +134,7 @@ export function ProfileForm() {
                             value={formData.apellidos}
                             onChange={handleChange}
                             required
+                            maxLength={50}
                             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors bg-white dark:bg-gray-800 dark:text-gray-100"
                             placeholder="Tus apellidos"
                         />
@@ -145,6 +151,7 @@ export function ProfileForm() {
                             value={formData.correo}
                             onChange={handleChange}
                             required
+                            maxLength={100}
                             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors bg-white dark:bg-gray-800 dark:text-gray-100"
                             placeholder="tu@correo.com"
                         />
@@ -158,7 +165,7 @@ export function ProfileForm() {
                     <button
                         type="button"
                         onClick={() => setIsChangingPassword(!isChangingPassword)}
-                        className="text-[#7DB728] font-medium hover:text-[#7DB728] transition-colors text-sm flex items-center gap-2"
+                        className="text-[#4C7A1C] font-medium hover:text-brand transition-colors text-sm flex items-center gap-2"
                     >
                         <span>{isChangingPassword ? 'Cancelar cambio de contraseña' : 'Cambiar contraseña'}</span>
                         <svg
@@ -265,7 +272,7 @@ export function ProfileForm() {
                     <button
                         type="submit"
                         disabled={isPending}
-                        className={`px-6 py-2 bg-[#7DB728] text-white font-medium rounded-lg hover:bg-[#7DB728] focus:outline-none focus:ring-2 focus:ring-[#1FACE3] focus:ring-offset-2 transition-colors shadow-sm ${isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`px-6 py-2 bg-brand-interactive text-white font-medium rounded-lg hover:bg-brand-interactive-hover focus:outline-none focus:ring-2 focus:ring-brand-focus focus:ring-offset-2 transition-colors shadow-sm ${isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                         {isPending ? 'Guardando...' : 'Guardar Cambios'}
                     </button>

@@ -52,12 +52,15 @@ export async function POST(request: NextRequest) {
 
   const base = { secure: IS_PROD, sameSite: 'lax' as const, path: '/', maxAge: COOKIE_MAX_AGE };
 
+  // El panel muestra nombre y apellido; el backend los devuelve por separado.
+  const nombreCompleto = `${user.name || ''} ${user.apellidos || ''}`.trim();
+
   // httpOnly — el token nunca es accesible por JS del cliente (regla §0.11)
   response.cookies.set(AUTH_COOKIE_NAME, token, { ...base, httpOnly: true });
 
   // No httpOnly — el middleware y edit-button los leen sin red
   response.cookies.set(AUTH_ROLE_COOKIE_NAME, user.role || '', { ...base, httpOnly: false });
-  response.cookies.set(AUTH_USER_NAME_COOKIE_NAME, user.name || '', { ...base, httpOnly: false });
+  response.cookies.set(AUTH_USER_NAME_COOKIE_NAME, nombreCompleto, { ...base, httpOnly: false });
   response.cookies.set(AUTH_USER_EMAIL_COOKIE_NAME, user.email || '', { ...base, httpOnly: false });
 
   // Setear o LIMPIAR según el estado actual — si no se limpian cuando son false,

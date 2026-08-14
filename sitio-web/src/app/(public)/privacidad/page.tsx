@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { PoliticaPrivacidadView } from '@/features/politica-privacidad';
+import { PoliticaPrivacidadView } from '@/features/sitio-web/politica-privacidad';
 
 export const metadata: Metadata = {
   title: 'Política de Privacidad | SENA OLO',

@@ -42,6 +42,7 @@ export type {
   Pagina,
   Bloque,
   PaginaVersion,
+  PaginaEditable,
   PaginaEnRevision,
   EstadoPagina,
 } from "./types";

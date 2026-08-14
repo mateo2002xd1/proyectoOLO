@@ -1,6 +1,6 @@
 import axios from 'axios';
 import type { Data } from '@puckeditor/core';
-import { Pagina, PaginaVersion, PaginaEnRevision, Bloque, PuckData, Ambito } from '../types';
+import { Pagina, PaginaVersion, PaginaEditable, PaginaEnRevision, Bloque, PuckData, Ambito } from '../types';
 import { homeFallbackData } from '../lib/home-fallback-data';
 
 // El sitio y la intranet comparten la tabla `paginas` y ambos tienen su `/inicio`.
@@ -30,7 +30,7 @@ export async function obtenerPagina(slug: string): Promise<Pagina | null> {
  * publicado/rechazado), no solo la publicada. Nunca 404 — si la página aún no
  * existe, el backend devuelve contenido vacío para arrancar en limpio.
  */
-export async function obtenerPaginaEditable(slug: string): Promise<Pagina | null> {
+export async function obtenerPaginaEditable(slug: string): Promise<PaginaEditable | null> {
   try {
     const { data } = await api.get(`/api/paginas/${slug}/editable`);
     return data;

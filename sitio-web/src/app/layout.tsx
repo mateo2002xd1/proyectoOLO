@@ -1,20 +1,13 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
-import { Montserrat, Work_Sans } from 'next/font/google';
+import { Work_Sans } from 'next/font/google';
 import './globals.css';
 
-const montserrat = Montserrat({
+const workSans = Work_Sans({
   subsets: ['latin'],
   variable: '--font-heading',
   display: 'swap',
   weight: ['400', '500', '600', '700', '800'],
-});
-
-const workSans = Work_Sans({
-  subsets: ['latin'],
-  variable: '--font-body',
-  display: 'swap',
-  weight: ['400', '500', '600', '700'],
 });
 
 export const metadata: Metadata = {
@@ -30,7 +23,7 @@ export const metadata: Metadata = {
     'formación profesional',
   ],
   icons: {
-    icon: '/asset/logos/olo-logo-none.svg',
+    icon: '/assets/logos/olo-logo-none.svg',
   },
   openGraph: {
     title: 'Observatorio Laboral y Ocupacional',
@@ -48,7 +41,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={`${montserrat.variable} ${workSans.variable}`} suppressHydrationWarning>
+    <html lang="es" className={workSans.variable} suppressHydrationWarning>
       <head>
         <Script
           id="anti-flash-theme"

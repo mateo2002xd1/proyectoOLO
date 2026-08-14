@@ -1067,26 +1067,80 @@ input {
 }
 
 /* Separador interno de la cabecera: gris claro sobre azul marino cortaba la
-   barra en dos de forma muy visible. */
+   barra en dos de forma muy visible.
+
+   La cabecera de Puck es una rejilla de tres columnas —iconos de plegar, título
+   y herramientas— repartida como `1fr auto 1fr`, que deja el título flotando en
+   el centro. Aquí las dos primeras se ajustan a su contenido para que la
+   bandera de la página quede pegada a los iconos, formando un solo grupo a la
+   izquierda; las herramientas se quedan con todo el resto y siguen alineadas a
+   la derecha. */
 .olo-editor [class*="PuckHeader-inner"] {
   border-left-color: rgba(255, 255, 255, 0.14);
+  grid-template-columns: auto auto 1fr;
+  align-items: center;
+}
+
+/* ── Bandera de la página ──────────────────────────────────────────────────
+   Ruta y estado en una sola etiqueta, al lado de los iconos de plegar barras.
+   Antes esto vivía al otro extremo, entre los botones de guardar y enviar: era
+   información suelta en medio de una fila de acciones.
+
+   Se pinta sobre el marcado que trae Puck (`headerTitle` y `headerPath`), así
+   que hay que llegar por CSS. Los selectores van por subcadena porque las
+   clases de Puck llevan un hash que cambia al actualizar el paquete. */
+.olo-editor [class*="PuckHeader-title"] > * {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 5px 4px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+}
+
+/* La mitad derecha de la bandera: el estado, en su propia pastilla. */
+.olo-editor [class*="PuckHeader-path"] {
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: #cbd5e1;
+  word-break: normal;
+}
+
+/* Tonos claros a propósito: sobre el azul marino (#001631) los colores planos
+   de estado —el ámbar #d97706, el azul #2563eb— quedaban casi ilegibles. */
+.olo-editor[data-estado="borrador"] [class*="PuckHeader-path"] {
+  background: rgba(251, 191, 36, 0.16);
+  color: #fbbf24;
+}
+
+.olo-editor[data-estado="en_revision"] [class*="PuckHeader-path"] {
+  background: rgba(125, 211, 252, 0.16);
+  color: #7dd3fc;
+}
+
+.olo-editor[data-estado="publicado"] [class*="PuckHeader-path"] {
+  background: rgba(134, 239, 172, 0.16);
+  color: #86efac;
+}
+
+.olo-editor[data-estado="rechazado"] [class*="PuckHeader-path"] {
+  background: rgba(252, 165, 165, 0.16);
+  color: #fca5a5;
 }
 
 .olo-editor-acciones {
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-.olo-editor-ruta {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.62);
-}
-
-.olo-editor-estado {
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: capitalize;
 }
 
 .olo-editor-aviso {
