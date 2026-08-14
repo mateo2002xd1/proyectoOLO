@@ -65,9 +65,7 @@ input {
   font-size: inherit;
 }
 
-/* ============================================
-   LOGIN PAGE — Full screen split layout
-   ============================================ */
+/*LOGIN PAGE — Full screen split layout*/
 
 .login-page {
   display: flex;
@@ -76,7 +74,7 @@ input {
   width: 100%;
 }
 
-/* --- Left Panel — Branding --- */
+/*Left Panel — Branding*/
 .login-left {
   flex: 1 1 50%;
   display: flex;
@@ -112,7 +110,7 @@ input {
   height: auto;
 }
 
-/* --- Right Panel — Login Form --- */
+/*Right Panel — Login Form*/
 .login-right {
   flex: 1 1 50%;
   display: flex;
@@ -301,9 +299,7 @@ input {
   transform: translateY(-1px);
 }
 
-/* ============================================
-   INTRANET HOME — Banner, menu and footer
-   ============================================ */
+/*INTRANET HOME — Banner, menu and footer*/
 
 .intranet-home {
   min-height: 100vh;
@@ -354,10 +350,6 @@ input {
   z-index: 100;
 }
 
-/* El contenido de la sección, entre la barra y el pie. Crece para llenar el
-   hueco sobrante y así el pie queda abajo del todo incluso en páginas cortas.
-   Antes cada página lo resolvía con `min-h-screen`, que con el pie ya fuera del
-   contenido dejaba siempre una franja de más que obligaba a desplazarse. */
 .intranet-contenido {
   flex: 1;
   display: flex;
@@ -1089,7 +1081,7 @@ input {
    Se pinta sobre el marcado que trae Puck (`headerTitle` y `headerPath`), así
    que hay que llegar por CSS. Los selectores van por subcadena porque las
    clases de Puck llevan un hash que cambia al actualizar el paquete. */
-.olo-editor [class*="PuckHeader-title"] > * {
+.olo-editor [class*="PuckHeader-title"]>* {
   display: inline-flex;
   align-items: center;
   gap: 8px;

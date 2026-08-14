@@ -6,7 +6,7 @@ import {
   ClientPuckRender,
   obtenerPaginaPublicada,
   SLUG_PLANTILLA,
-} from '@/features/paginas';
+} from '@/features/gestor-secciones';
 import { puedeEditarPaginas } from '@/shared/lib/sesion';
 
 /**

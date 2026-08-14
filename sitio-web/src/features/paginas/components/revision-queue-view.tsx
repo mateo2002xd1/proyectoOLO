@@ -31,8 +31,8 @@ export function RevisionQueueView() {
   async function handleEliminar(pagina: PaginaEnRevision) {
     const confirmado = window.confirm(
       `¿Eliminar la versión ${pagina.numeroVersion} de /${pagina.slug}?\n\n` +
-        'Se descarta el trabajo sin publicar. Si es la única versión de la página, ' +
-        'la próxima edición empezará de nuevo desde la versión 1.',
+      'Se descarta el trabajo sin publicar. Si es la única versión de la página, ' +
+      'la próxima edición empezará de nuevo desde la versión 1.',
     );
     if (!confirmado) return;
 
@@ -75,7 +75,7 @@ export function RevisionQueueView() {
   return (
     <div className="p-6 lg:p-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-zinc-950 dark:text-[#f6f6f6]">Páginas en revisión</h1>
+        <h1 className="admin-header text-zinc-950 dark:text-[#f6f6f6]">Páginas en revisión</h1>
         <p className="mt-1 text-sm text-zinc-500">
           Borradores enviados por editores del sitio y de la intranet, pendientes de aprobación.
         </p>
@@ -96,11 +96,10 @@ export function RevisionQueueView() {
                     {pagina.titulo}
                   </p>
                   <span
-                    className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                      pagina.ambito === 'intranet'
+                    className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${pagina.ambito === 'intranet'
                         ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200'
                         : 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300'
-                    }`}
+                      }`}
                   >
                     {ETIQUETA_AMBITO[pagina.ambito] ?? pagina.ambito}
                   </span>

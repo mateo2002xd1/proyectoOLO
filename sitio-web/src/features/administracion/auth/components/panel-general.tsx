@@ -46,7 +46,8 @@ import {
   etiquetaDeEntidad,
   type RegistroAuditoria,
 } from '@/features/administracion/auditoria';
-import { useUsuarios, type User } from '../hooks/use-usuarios';
+import { useUsuarios, mensajeDeError, type User } from '../hooks/use-usuarios';
+import { listarAlertasCaducidad, type AlertaCaducidad } from '../services/alertas-caducidad.service';
 
 /** Editor de la intranet: configurable por entorno, nunca fijo a localhost. */
 const INTRANET_EDITOR_URL =
@@ -79,6 +80,14 @@ const fechaCorta = (iso: string) =>
     hour: '2-digit',
     minute: '2-digit',
   });
+
+/** Urgencia visual de una cuenta por vencer: lo inminente se distingue de un vistazo. */
+const colorDiasRestantes = (dias: number) =>
+  dias <= 3
+    ? 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200'
+    : dias <= 7
+      ? 'bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-200'
+      : 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300';
 
 /** Usuarios agrupados por rol, de mayor a menor. Los que no tienen rol asignado
  *  se agrupan aparte en vez de descartarse: si aparecen, es un dato a corregir. */
@@ -236,12 +245,14 @@ export function PanelGeneralDashboard() {
   const [errorActividad, setErrorActividad] = useState<Error | null>(null);
   const [enRevision, setEnRevision] = useState<PaginaEnRevision[]>([]);
   const [errorRevision, setErrorRevision] = useState<string | null>(null);
+  const [cuentasPorVencer, setCuentasPorVencer] = useState<AlertaCaducidad[]>([]);
+  const [errorCuentasPorVencer, setErrorCuentasPorVencer] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelado = false;
     (async () => {
-      // En paralelo: que una fuente lenta no retrase a las otras dos.
-      const [, registros, pendientes] = await Promise.all([
+      // En paralelo: que una fuente lenta no retrase a las demás.
+      const [, registros, pendientes, alertasCaducidad] = await Promise.all([
         fetchUsers(),
         listarAuditoria({}, 1, CAMBIOS_RECIENTES).then(
           (respuesta) => respuesta.registros,
@@ -258,10 +269,20 @@ export function PanelGeneralDashboard() {
           if (!cancelado) setErrorRevision(mensajeDeRevision(err));
           return [] as PaginaEnRevision[];
         }),
+        listarAlertasCaducidad().then(
+          (respuesta) => respuesta.alerts,
+          (err: unknown) => {
+            if (!cancelado) {
+              setErrorCuentasPorVencer(mensajeDeError(err, 'No se pudieron cargar las cuentas próximas a vencer.'));
+            }
+            return [] as AlertaCaducidad[];
+          },
+        ),
       ]);
       if (cancelado) return;
       setActividad(registros);
       setEnRevision(pendientes);
+      setCuentasPorVencer(alertasCaducidad);
       setLoading(false);
     })();
     return () => {
@@ -302,7 +323,7 @@ export function PanelGeneralDashboard() {
   return (
     <div className="p-6 lg:p-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-zinc-950 dark:text-[#f6f6f6]">Dashboard</h1>
+        <h1 className="admin-header text-zinc-950 dark:text-[#f6f6f6]">Dashboard</h1>
         <p className="mt-1 text-sm text-zinc-500">
           Resumen de tareas pendientes y gestión del observatorio.
         </p>
@@ -365,7 +386,7 @@ export function PanelGeneralDashboard() {
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
           <div className="mb-4 flex items-baseline justify-between gap-3">
-            <h2 className="text-lg font-semibold text-zinc-950 dark:text-[#f6f6f6]">Actividad Reciente</h2>
+            <h2 className="admin-subtitle text-zinc-950 dark:text-[#f6f6f6]">Actividad Reciente</h2>
             {!sinAccesoAuditoria && (
               <Link
                 href="/admin/auditoria"
@@ -432,7 +453,9 @@ export function PanelGeneralDashboard() {
         </div>
 
         <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
-          <h2 className="mb-4 text-lg font-semibold text-zinc-950 dark:text-[#f6f6f6]">Alertas</h2>
+          <h2 className="admin-subtitle mb-4 text-zinc-950 dark:text-[#f6f6f6]">Alertas</h2>
+
+          <h3 className="mb-2 text-sm font-medium text-zinc-700 dark:text-[#cbd5e1]">Páginas en revisión</h3>
           {errorRevision ? (
             <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">{errorRevision}</p>
           ) : enRevision.length > 0 ? (
@@ -481,6 +504,50 @@ export function PanelGeneralDashboard() {
           ) : (
             <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">
               No hay páginas esperando revisión.
+            </p>
+          )}
+
+          <h3 className="mb-2 mt-6 text-sm font-medium text-zinc-700 dark:text-[#cbd5e1]">
+            Cuentas próximas a vencer
+          </h3>
+          {errorCuentasPorVencer ? (
+            <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">{errorCuentasPorVencer}</p>
+          ) : cuentasPorVencer.length > 0 ? (
+            /* Quién, con qué correo y en cuántos días: lo justo para decidir si
+               renovar. Cambiar la fecha de caducidad se hace en Usuarios. */
+            <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-[#7db828]/30">
+              <table className="w-full min-w-[26rem] text-left text-sm">
+                <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-[#131b2f]">
+                  <tr>
+                    <th scope="col" className="px-3 py-2 font-medium">Usuario</th>
+                    <th scope="col" className="px-3 py-2 font-medium">Correo</th>
+                    <th scope="col" className="px-3 py-2 font-medium">Días faltantes</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
+                  {cuentasPorVencer.map((cuenta) => (
+                    <tr key={cuenta.userId}>
+                      <td className="max-w-[9rem] truncate px-3 py-2 text-zinc-900 dark:text-[#f6f6f6]">
+                        {cuenta.name}
+                      </td>
+                      <td className="max-w-[11rem] truncate px-3 py-2 text-zinc-600 dark:text-zinc-300" title={cuenta.email}>
+                        {cuenta.email}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-2">
+                        <span
+                          className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium tabular-nums ${colorDiasRestantes(cuenta.daysLeft)}`}
+                        >
+                          {cuenta.daysLeft} {cuenta.daysLeft === 1 ? 'día' : 'días'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">
+              No hay cuentas próximas a vencer.
             </p>
           )}
         </div>

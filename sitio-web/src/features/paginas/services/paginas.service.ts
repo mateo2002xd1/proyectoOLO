@@ -39,7 +39,30 @@ export async function obtenerPaginaEditable(slug: string): Promise<PaginaEditabl
   }
 }
 
-export async function 
+/**
+ * Una página publicada, leída con caché.
+ *
+ * `obtenerPagina` va por axios y no cachea nada, así que no sirve para lo que se
+ * lee en cada request de cada página del sitio —la plantilla—: serían tantas
+ * peticiones al backend como visitas. Esto usa `fetch` con `revalidate`, que Next
+ * sí deduplica y cachea, y corta a los 5s para que un backend lento no cuelgue el
+ * render. Devuelve `null` en cualquier fallo: quien llama decide qué pintar.
+ */
+export async function obtenerPaginaPublicadaCacheada(slug: string): Promise<Pagina | null> {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/paginas/publica/${slug}`, {
+      headers: AMBITO_HEADERS,
+      next: { revalidate: 60 },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function
 obtenerPaginaInicio(): Promise<Data> {
   try {
     const res = await fetch(`${BACKEND_URL}/api/paginas/publica/inicio`, {

@@ -1,37 +1,32 @@
 'use client';
 
-import { Header } from '@/shared/lib/blocks/Header';
-import { Hero } from '@/shared/lib/blocks/Hero';
-import { Services } from '@/shared/lib/blocks/Services';
-import { ExternalPortals } from '@/shared/lib/blocks/ExternalPortals';
-import { Footer } from '@/shared/lib/blocks/Footer';
 import {
   IntranetFooter,
   LOGOS_POR_DEFECTO,
   COLUMNAS_POR_DEFECTO,
-} from '@/shared/lib/blocks/IntranetFooter';
-import { IntranetTopbarWrapper } from '@/shared/lib/blocks/IntranetTopbarWrapper';
-import { IntranetHero } from '@/shared/lib/blocks/IntranetHero';
-import { TasaBanner } from '@/shared/lib/blocks/TasaBanner';
-import { TasaConceptos } from '@/shared/lib/blocks/TasaConceptos';
-import { TasaVideo } from '@/shared/lib/blocks/TasaVideo';
-import { TasaDashboards } from '@/shared/lib/blocks/TasaDashboards';
-import { TasaPresentacion } from '@/shared/lib/blocks/TasaPresentacion';
-import { MatrizBanner } from '@/shared/lib/blocks/MatrizBanner';
-import { EncuestaBanner } from '@/shared/lib/blocks/EncuestaBanner';
-import { SeccionCarrusel } from '@/shared/lib/blocks/SeccionCarrusel';
-import { ImagenDestacada } from '@/shared/lib/blocks/ImagenDestacada';
-import { TextoRico } from '@/shared/lib/blocks/TextoRico';
-import { TextoConImagen } from '@/shared/lib/blocks/TextoConImagen';
-import { DescargasConPresentacion } from '@/shared/lib/blocks/DescargasConPresentacion';
-import { RecursosVisualesBloque } from '@/shared/lib/blocks/RecursosVisualesBloque';
-import { Publicaciones } from '@/shared/lib/blocks/Publicaciones';
-import { PreguntasFrecuentes } from '@/shared/lib/blocks/PreguntasFrecuentes';
+} from '@/shared/lib/blocks/plantilla/IntranetFooter';
+import { IntranetTopbarWrapper } from '@/shared/lib/blocks/plantilla/IntranetTopbarWrapper';
+import { IntranetHero } from '@/shared/lib/blocks/compartidos/IntranetHero';
+import { TasaBanner } from '@/shared/lib/blocks/tasa/TasaBanner';
+import { TasaConceptos } from '@/shared/lib/blocks/tasa/TasaConceptos';
+import { TasaVideo } from '@/shared/lib/blocks/compartidos/TasaVideo';
+import { TasaDashboards } from '@/shared/lib/blocks/compartidos/TasaDashboards';
+import { TasaPresentacion } from '@/shared/lib/blocks/compartidos/TasaPresentacion';
+import { MatrizBanner } from '@/shared/lib/blocks/matriz/MatrizBanner';
+import { EncuestaBanner } from '@/shared/lib/blocks/encuestas/EncuestaBanner';
+import { SeccionCarrusel } from '@/shared/lib/blocks/compartidos/SeccionCarrusel';
+import { ImagenDestacada } from '@/shared/lib/blocks/compartidos/ImagenDestacada';
+import { TextoRico } from '@/shared/lib/blocks/compartidos/TextoRico';
+import { TextoConImagen } from '@/shared/lib/blocks/compartidos/TextoConImagen';
+import { DescargasConPresentacion } from '@/shared/lib/blocks/compartidos/DescargasConPresentacion';
+import { RecursosVisualesBloque } from '@/shared/lib/blocks/inicio/RecursosVisualesBloque';
+import { Publicaciones } from '@/shared/lib/blocks/inicio/Publicaciones';
+import { PreguntasFrecuentes } from '@/shared/lib/blocks/inicio/PreguntasFrecuentes';
 import { primitiveComponents, conCajaEnTodos, BLOQUES_SIN_CAJA } from '@olo/blocks-renderer';
 import type { Config } from '@puckeditor/core';
 import type { ComponentProps } from 'react';
-import { ImageUploaderField } from '@/features/paginas/components/image-uploader-field';
-import { ArchivoUploaderField } from '@/features/paginas/components/archivo-uploader-field';
+import { ImageUploaderField } from '@/features/gestor-secciones/components/image-uploader-field';
+import { ArchivoUploaderField } from '@/features/gestor-secciones/components/archivo-uploader-field';
 
 /** Props de un componente de Puck. `id` siempre viene inyectado y, al ser
  *  obligatorio, evita que TypeScript trate el tipo como "weak" y rechace el
@@ -93,9 +88,6 @@ const puckConfigBase: Config = {
     },
     'Maquetación': {
       components: ['Grid', 'Flex', 'Space'],
-    },
-    'Heredados del sitio público': {
-      components: ['Header', 'Hero', 'Services', 'ExternalPortals', 'Footer'],
     },
   },
   components: {
@@ -651,66 +643,6 @@ const puckConfigBase: Config = {
       render: (props: BlockRender<ComponentProps<typeof IntranetFooter>>) => (
         <IntranetFooter {...props} />
       ),
-    },
-    // ─── Heredados del sitio público ───
-    // Siguen registrados porque hay contenido guardado que los usa; no se ofrecen
-    // en el selector de las secciones de la intranet (ver COMPONENTES_POR_SLUG).
-    Header: {
-      label: 'Header / Encabezado',
-      fields: {
-        id: { type: 'text' },
-        govBannerEnabled: {
-          type: 'radio',
-          label: 'Mostrar franja superior GOV.CO',
-          options: [
-            { label: 'Sí', value: true },
-            { label: 'No', value: false },
-          ],
-        },
-      },
-      defaultProps: {
-        id: 'header-1',
-        govBannerEnabled: true,
-      },
-      render: (props: BlockRender<Omit<ComponentProps<typeof Header>, 'block'>>) => {
-        const { id, ...headerProps } = props;
-        return <Header block={{ id: id || 'header-preview', type: 'header' }} {...headerProps} />;
-      },
-    },
-    Hero: {
-      label: 'Hero / Banner Principal',
-      fields: {
-        heading: { type: 'textarea', label: 'Título principal' },
-      },
-      defaultProps: {
-        id: 'hero-1',
-        heading: 'Intranet OLO',
-      },
-      render: (props: BlockRender<{ heading?: string }>) => (
-        <Hero block={{ id: props.id || 'hero-preview', type: 'hero' }} heading={props.heading} />
-      ),
-    },
-    Services: {
-      label: 'Servicios',
-      fields: {
-        sectionTitle: { type: 'text', label: 'Título' },
-      },
-      defaultProps: { id: 'services-1', sectionTitle: 'Servicios de la Intranet' },
-      render: (props: BlockRender<{ sectionTitle?: string }>) => (
-        <Services
-          block={{ id: props.id || 'services-preview', type: 'services' }}
-          sectionTitle={props.sectionTitle}
-          services={[]}
-        />
-      ),
-    },
-    ExternalPortals: {
-      label: 'Portales Externos',
-      render: () => <ExternalPortals block={{ id: 'portals', type: 'external-portals' }} />,
-    },
-    Footer: {
-      label: 'Footer / Pie de página',
-      render: () => <Footer block={{ id: 'footer', type: 'footer' }} />,
     },
   },
 };

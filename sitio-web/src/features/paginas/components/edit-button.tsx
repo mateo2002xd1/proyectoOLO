@@ -1,53 +1,37 @@
-'use client';
-
-import { useSyncExternalStore } from 'react';
+/**
+ * Botón para editar el contenido de la página que se está mirando.
+ *
+ * Es un componente de servidor: el permiso llega ya resuelto desde la página que
+ * lo monta. Antes leía la cookie `role` en el navegador con `useSyncExternalStore`
+ * pero **descartaba el resultado y se pintaba siempre**, así que cualquier
+ * visitante veía un botón de editar que le llevaba a un login. Sin estado de
+ * cliente ese fallo no puede volver: sin permiso no se pinta nada.
+ *
+ * La comprobación de verdad la hace el backend al guardar; esto solo decide si el
+ * botón aparece.
+ */
+import Link from 'next/link';
+import { enlaceAlEditor } from '../lib/ruta-de-vuelta';
 
 interface EditButtonProps {
+  /** Slug de la página a editar. La portada usa `inicio`, aunque viva en `/`. */
   slug: string;
+  hasPermission: boolean;
+  /** A dónde vuelve el editor al salir. */
+  volverA: string;
 }
 
-const EDITABLE_ROLES = ['Superadmin', 'Administrador', 'Editor'];
-
-function getCookie(name: string): string | null {
-  if (typeof document === 'undefined') return null;
-  const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
-  return match ? decodeURIComponent(match[1]) : null;
-}
-
-/* La cookie es un sistema externo a React: la leemos con useSyncExternalStore
-   en vez de copiarla a un useState desde un efecto. No hay evento nativo de
-   cambio de cookie, así que la suscripción no re-consulta; basta con leerla
-   en cada render, que es cuando React pide el snapshot. */
-function subscribeToCookies() {
-  return () => {};
-}
-
-/** 'role' es no-httpOnly → legible por JS (el token sí es httpOnly, no accesible aquí). */
-const getSessionSnapshot = () => EDITABLE_ROLES.includes(getCookie('role') ?? '');
-/** En el servidor no hay document; asumimos sin sesión para que el HTML inicial coincida. */
-const getSessionServerSnapshot = () => false;
-
-export default function EditButton({ slug }: EditButtonProps) {
-  const hasSession = useSyncExternalStore(
-    subscribeToCookies,
-    getSessionSnapshot,
-    getSessionServerSnapshot,
-  );
-
-  const editHref = `/admin/editor/${slug}`;
-  const loginHref = `/admin/login?redirect=/admin/editor/${slug}`;
-
-  const href = `/admin/editor/${slug}`;
-  const title = 'Editar esta página';
-  const label = 'Editar';
+export function EditButton({ slug, hasPermission, volverA }: EditButtonProps) {
+  if (!hasPermission) return null;
 
   return (
-    <a
-      href={href}
-      className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full bg-[#0943B5] px-4 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:scale-105 hover:bg-[#072d8a]"
-      title={title}
-      aria-label={title}
+    <Link
+      href={enlaceAlEditor(slug, volverA)}
+      className="edit-button"
+      title="Editar esta página"
+      aria-label="Editar esta página"
     >
+      {/* Ícono de lápiz: se edita lo que hay debajo */}
       <svg
         aria-hidden="true"
         width="16"
@@ -61,7 +45,9 @@ export default function EditButton({ slug }: EditButtonProps) {
           fill="currentColor"
         />
       </svg>
-      <span>{label}</span>
-    </a>
+      <span>Editar</span>
+    </Link>
   );
 }
+
+export default EditButton;

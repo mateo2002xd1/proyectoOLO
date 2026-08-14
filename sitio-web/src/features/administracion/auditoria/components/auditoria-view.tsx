@@ -109,7 +109,7 @@ export function AuditoriaView() {
   return (
     <div className="p-6 lg:p-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-zinc-950 dark:text-[#f6f6f6]">Auditoría</h1>
+        <h1 className="admin-header text-zinc-950 dark:text-[#f6f6f6]">Auditoría</h1>
         <p className="mt-1 text-sm text-zinc-500">
           Registro de todo lo que administradores y editores hacen en el sistema: ciclo editorial
           de las páginas, contenidos, y gestión de usuarios, roles y permisos.

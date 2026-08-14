@@ -188,7 +188,7 @@ El **identificador** sigue siendo `PascalCase`: archivo `tabla-usuarios.tsx` →
 
 Ya estaba decidido en §4.4 de la guía ("`editor-core/` — PLANEADO"), con la regla: *algo va a `packages/` solo si ambos frontends lo necesitan con el mismo comportamiento*. Aquí se detalla el alcance.
 
-**Duplicación medida hoy** entre `sitio-web/src/features/paginas/` e `intranet/src/features/paginas/`: `client-puck-render`, `edit-button`, `editorjs-wrapper`, `image-uploader-field`, `page-renderer`, `puck-editor-wrapper`, `use-pagina`, `page-seeds`.
+**Duplicación medida hoy** entre `sitio-web/src/features/paginas/` e `intranet/src/features/paginas/`: `client-puck-render`, `edit-button`, `editorjs-wrapper`, `image-uploader-field`, `puck-editor-wrapper`, `use-pagina`, `page-seeds`.
 
 **Consecuencia ya observable de esa duplicación:** la etapa de revisión (`revision-queue-view`, `use-revision-queue`) **solo existe en `sitio-web`**. La intranet no tiene gobernanza. Es exactamente la divergencia que la regla de `packages/` busca evitar.
 
@@ -197,7 +197,7 @@ Ya estaba decidido en §4.4 de la guía ("`editor-core/` — PLANEADO"), con la 
 | `model/` (tipos y transiciones de estado) | `config/puck.config.tsx` — el catálogo de bloques es distinto por app |
 | Los tres servicios (parametrizados por cliente HTTP) | El sistema de diseño (`shared/ui`) — cada frontend tiene identidad visual propia |
 | El *shell* del editor (wrappers de Puck y Editor.js, uploader) | Las rutas (`app/`) |
-| Los hooks del ciclo (`use-pagina`, `use-revision-queue`) | Los bloques concretos (ya viven en `@olo/blocks-renderer`) |
+| Los hooks del ciclo (`use-pagina`, `use-revision-queue`) | Los bloques concretos — cada app tiene los suyos en su propio `shared/lib/blocks/`; `@olo/blocks-renderer` solo aporta primitivos de maquetación y tipos de plantilla |
 
 El editor recibe su `config` **por prop**; así el shell es común y el catálogo sigue siendo de cada app.
 

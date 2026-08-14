@@ -29,7 +29,7 @@ export default async function EditorPage({
   // Verificación de sesión server-side — sin sesión no se monta nada del editor.
   const sesion = await obtenerSesion();
   if (!sesion) {
-    redirect("/auth");
+    redirect("/login");
   }
 
   // Verificación de permiso de edición — directores/subdirectores tienen sesión

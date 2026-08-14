@@ -57,7 +57,7 @@ export function DetalleRegistro({
         <div className="flex max-h-[80vh] flex-col">
           <div className="flex items-start justify-between gap-4 border-b border-zinc-200 p-5 dark:border-zinc-700">
             <div>
-              <h2 className="text-lg font-bold">Detalle del registro</h2>
+              <h2 className="admin-subtitle">Detalle del registro</h2>
               <p className="mt-0.5 text-xs text-zinc-500">
                 {new Date(registro.fecha).toLocaleString('es-CO', { dateStyle: 'full', timeStyle: 'medium' })}
               </p>

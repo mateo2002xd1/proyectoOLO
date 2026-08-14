@@ -21,7 +21,7 @@ import {
   isEmptyContent,
   type VersionEditable,
   type PaginaVersion,
-} from "@/features/paginas";
+} from "@/features/gestor-secciones";
 import { GooLoader } from "@/shared/ui/atoms/GooLoader";
 
 interface EditorClientProps {
