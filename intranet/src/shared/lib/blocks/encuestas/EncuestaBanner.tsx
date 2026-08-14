@@ -1,8 +1,12 @@
 import { resaltar } from '../compartidos/resaltar';
 
 /**
- * Cabecera de la encuesta de seguimiento laboral: texto a la izquierda,
- * ilustración a la derecha, sobre el degradado azul institucional.
+ * Cabecera de la encuesta: texto a la izquierda, ilustración a la derecha,
+ * sobre el degradado azul institucional.
+ *
+ * Usa las mismas clases CSS que TasaBanner (.tasa-banner-wrapper,
+ * .tasa-banner-content) para garantizar márgenes, padding y max-width
+ * idénticos en todas las vistas de la intranet.
  *
  * La ilustración va espejada (`scaleX(-1)`) porque el original mira hacia fuera
  * de la página; se deja como decisión del bloque y no como campo para que nadie
@@ -22,15 +26,15 @@ export function EncuestaBanner({
   imagenAlt = 'Ilustración Seguimiento Laboral',
 }: EncuestaBannerProps) {
   return (
-    <section className="w-full bg-gradient-to-r from-[#001631] to-[#001A39] flex justify-center py-10 md:py-14 px-6 md:px-12">
-      <div className="max-w-5xl w-full flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12">
-        <div className="text-white text-center md:text-left">
+    <section className="tasa-banner-wrapper">
+      <div className="tasa-banner-content">
+        <div className="text-white">
           {antetitulo && (
             <p className="text-lg md:text-xl font-light tracking-wide mb-1 opacity-90">
               {antetitulo}
             </p>
           )}
-          <h1 className="text-2xl md:text-4xl font-bold tracking-wide">{resaltar(titulo)}</h1>
+          <h1 className="tasa-banner-title">{resaltar(titulo)}</h1>
         </div>
 
         {imagenSrc && (
@@ -40,8 +44,8 @@ export function EncuestaBanner({
             <img
               src={imagenSrc}
               alt={imagenAlt}
-              className="object-contain"
-              style={{ width: '260px', height: 'auto', transform: 'scaleX(-1)' }}
+              className="tasa-banner-image survey-banner-image"
+              style={{ transform: 'scaleX(-1)' }}
             />
           </div>
         )}
