@@ -3450,7 +3450,7 @@ input {
 }
 
 .tasa-banner-content {
-  max-width: 1200px;
+  max-width: 1240px;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -3463,7 +3463,7 @@ input {
 @media (min-width: 900px) {
   .tasa-banner-content {
     flex-direction: row;
-    justify-content: center;
+    justify-content: space-between;
     gap: clamp(2rem, 4vw, 5rem);
     text-align: left;
   }
@@ -3505,7 +3505,7 @@ input {
 }
 
 .tasa-concept-row {
-  max-width: 1200px;
+  max-width: 1240px;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -3565,8 +3565,12 @@ input {
   flex: 1;
   width: 100%;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
+}
+
+.tasa-concept-row.reverse .tasa-concept-visual {
+  justify-content: flex-start;
 }
 
 .tasa-concept-image {
@@ -3612,7 +3616,7 @@ input {
 
 .tasa-video-container {
   width: 100%;
-  max-width: 1000px;
+  max-width: 1240px;
   border-radius: 1.5rem;
   overflow: hidden;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
@@ -3728,7 +3732,7 @@ input {
 }
 
 .tasa-dashboards-grid {
-  max-width: 1200px;
+  max-width: 1240px;
   width: 100%;
   display: grid;
   grid-template-columns: 1fr;
@@ -3791,7 +3795,7 @@ input {
 
 .tasa-ppt-container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1240px;
   display: flex;
   flex-direction: column;
   align-items: center;
