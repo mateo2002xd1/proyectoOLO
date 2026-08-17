@@ -48,8 +48,8 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
      * semana seguía siendo Administrador para toda la API. Todas las policies leen
      * `req.user.role`, así que el arreglo tiene que estar aquí y no en cada una.
      *
-     * No cuesta una consulta extra: la fila ya está cargada tres líneas más arriba
-     * para comprobar estado, bloqueo y caducidad.
+     * No cuesta una consulta extra: la fila ya está cargada aquí arriba para
+     * comprobar estado, bloqueo y caducidad.
      */
     req.user = {
       ...decoded,
