@@ -13,6 +13,40 @@ export const homeFallbackData: Data = {
       },
     },
     {
+      type: 'Services',
+      props: {
+        id: 'services-static',
+        sectionTitle: '¿Qué hacemos?',
+        services: [
+          {
+            id: 'monitoreo',
+            title: 'Monitoreo del Mercado',
+            description: 'Seguimiento riguroso de fuentes de información laboral nacional',
+          },
+          {
+            id: 'orientacion',
+            title: 'Orientación y Formación',
+            description: 'Apoyo a la definición de acciones de capacitación, emprendimiento y empleo',
+          },
+          {
+            id: 'alertas',
+            title: 'Generación de Alertas',
+            description: 'Identificación de proyectos de inversión y alertas regionales y sectoriales',
+          },
+        ],
+      },
+    },
+    {
+      type: 'DatoOloSemana',
+      props: {
+        id: 'dato-olo-semana-static',
+        tituloResaltado: 'Dato OLO',
+        tituloNormal: 'de la semana',
+        imagenSrc: '/assets/img/dato-olo-semana.png',
+        imagenAlt: 'Dato OLO de la semana',
+      },
+    },
+    {
       type: 'ExternalPortals',
       props: {
         id: 'portals-static',

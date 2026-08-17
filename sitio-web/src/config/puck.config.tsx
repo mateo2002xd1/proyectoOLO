@@ -8,6 +8,7 @@ import {
 } from '@olo/blocks-renderer';
 import { ExternalPortals } from '@/shared/lib/blocks/ExternalPortals';
 import { Services } from '@/shared/lib/blocks/Services';
+import { DatoOloSemana } from '@/shared/lib/blocks/DatoOloSemana';
 import { Header } from '@/shared/lib/blocks/Header';
 import { Footer } from '@/shared/lib/blocks/Footer';
 import { IntranetTopbar } from '@/shared/lib/blocks/IntranetTopbar';
@@ -59,7 +60,7 @@ const puckConfigBase: Config = {
       components: ['IntranetTopbar', 'IntranetHero'],
     },
     'Contenido Principal': {
-      components: ['Hero', 'Services', 'RichText'],
+      components: ['Hero', 'Services', 'DatoOloSemana', 'RichText'],
     },
     'Portales': {
       components: ['ExternalPortals'],
@@ -250,37 +251,32 @@ const puckConfigBase: Config = {
             id: { type: 'text' as const, label: 'Identificador' },
             title: { type: 'text' as const, label: 'Título' },
             description: { type: 'textarea' as const, label: 'Descripción' },
-            link: { type: 'text' as const, label: 'Texto del enlace' },
           },
           defaultItemProps: {
             id: 'nuevo-servicio',
             title: 'Nuevo servicio',
             description: 'Descripción del servicio.',
-            link: 'Ver más',
           },
         },
       },
       defaultProps: {
         id: 'services-1',
-        sectionTitle: 'Que hacemos?',
+        sectionTitle: '¿Qué hacemos?',
         services: [
           {
-            id: 'platform',
-            title: 'Plataforma del Observatorio Laboral y Ocupacional',
-            description: 'Accede a datos actualizados del mercado laboral colombiano con herramientas interactivas de analisis y visualizacion.',
-            link: 'Explorar plataforma',
+            id: 'monitoreo',
+            title: 'Monitoreo del Mercado',
+            description: 'Seguimiento riguroso de fuentes de información laboral nacional',
           },
           {
-            id: 'materials',
-            title: 'Materiales y publicaciones',
-            description: 'Consulta informes, estudios sectoriales y boletines sobre tendencias del empleo y las ocupaciones en el pais.',
-            link: 'Ver publicaciones',
+            id: 'orientacion',
+            title: 'Orientación y Formación',
+            description: 'Apoyo a la definición de acciones de capacitación, emprendimiento y empleo',
           },
           {
-            id: 'knowledge',
-            title: 'Generacion de conocimiento',
-            description: 'Investigacion aplicada y analisis prospectivo sobre las necesidades del mercado laboral y formacion de capital humano.',
-            link: 'Conocer mas',
+            id: 'alertas',
+            title: 'Generación de Alertas',
+            description: 'Identificación de proyectos de inversión y alertas regionales y sectoriales',
           },
         ],
       },
@@ -291,12 +287,64 @@ const puckConfigBase: Config = {
       }: {
         id: string;
         sectionTitle?: string;
-        services?: { id: string; title: string; description: string; link: string }[];
+        services?: { id: string; title: string; description: string }[];
       }) => (
         <Services
           block={{ id: id || 'services-preview' }}
           sectionTitle={sectionTitle}
           services={services}
+        />
+      ),
+    },
+    DatoOloSemana: {
+      label: 'Dato OLO de la semana',
+      fields: {
+        tituloResaltado: {
+          type: 'text' as const,
+          label: 'Título (parte destacada)',
+        },
+        tituloNormal: {
+          type: 'text' as const,
+          label: 'Título (resto)',
+        },
+        imagenSrc: {
+          type: 'custom',
+          label: 'Infografía del dato',
+          render: ({ value, onChange }: CustomFieldRender<string>) => (
+            <ImageUploaderField value={value} onChange={onChange} />
+          ),
+        },
+        imagenAlt: {
+          type: 'text' as const,
+          label: 'Texto alternativo de la imagen',
+        },
+      },
+      defaultProps: {
+        id: 'dato-olo-semana-1',
+        tituloResaltado: 'Dato OLO',
+        tituloNormal: 'de la semana',
+        imagenSrc: '/assets/img/dato-olo-semana.png',
+        imagenAlt: 'Dato OLO de la semana',
+      },
+      render: ({
+        id,
+        tituloResaltado,
+        tituloNormal,
+        imagenSrc,
+        imagenAlt,
+      }: {
+        id: string;
+        tituloResaltado?: string;
+        tituloNormal?: string;
+        imagenSrc?: string;
+        imagenAlt?: string;
+      }) => (
+        <DatoOloSemana
+          block={{ id: id || 'dato-olo-semana-preview' }}
+          tituloResaltado={tituloResaltado}
+          tituloNormal={tituloNormal}
+          imagenSrc={imagenSrc}
+          imagenAlt={imagenAlt}
         />
       ),
     },
@@ -420,7 +468,7 @@ const COMPONENTES_POR_SLUG: Record<string, string[]> = {
   // La plantilla es lo contrario a una página: solo la cabecera y el pie, que es
   // justo lo que las páginas ya no pueden tocar.
   plantilla: ['Header', 'Footer'],
-  inicio: ['Hero', 'Services', 'ExternalPortals', 'RichText', 'Grid', 'Flex', 'Space'],
+  inicio: ['Hero', 'Services', 'DatoOloSemana', 'ExternalPortals', 'RichText', 'Grid', 'Flex', 'Space'],
 };
 
 /**
