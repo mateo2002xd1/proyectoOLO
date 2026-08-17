@@ -23,12 +23,46 @@
  * @see 3-seguridad-del-proyecto.md §S10
  */
 import 'dotenv/config';
+import express from 'express';
 import { QueryTypes } from 'sequelize';
 import sequelize from '../src/config/database';
-import { app } from '../src/app';
 import { usuariosPolicies } from '../src/policies/usuarios.policies';
 import { contenidosPolicies } from '../src/policies/contenidos.policies';
 import { detalleDeGuardia } from '../src/shared/autorizacion';
+
+/**
+ * Con qué prefijo se montó cada router.
+ *
+ * Express 5 dejó de guardarlo: su `Layer` construye los emparejadores a partir de la
+ * ruta y no conserva la cadena (`node_modules/router/lib/layer.js` — `this.path` nace
+ * `undefined` y solo se rellena al atender una petición). Sin el prefijo, media docena
+ * de routers distintos declaran `GET /:id` y no habría forma de distinguir el de
+ * contenidos del de usuarios.
+ *
+ * Así que se anota al vuelo: se envuelve `app.use` **antes** de cargar `app.ts` y se
+ * apunta con qué ruta entra cada router. Es código de verificación, vive solo aquí y
+ * se deshace en cuanto la aplicación termina de construirse.
+ */
+const prefijos = new Map<object, string>();
+const useOriginal = express.application.use;
+
+(express.application as any).use = function (this: unknown, ...args: any[]) {
+  const [primero, ...resto] = args;
+  if (typeof primero === 'string') {
+    for (const manejador of resto.flat()) {
+      if (typeof manejador === 'function' && (manejador as any).stack) {
+        prefijos.set(manejador, primero);
+      }
+    }
+  }
+  return (useOriginal as any).apply(this, args);
+};
+
+// `require` y no `import`: las importaciones se elevan y `app.ts` se cargaría antes
+// de que el envoltorio de arriba estuviera puesto.
+const { app } = require('../src/app') as typeof import('../src/app');
+
+(express.application as any).use = useOriginal;
 
 let fallos = 0;
 
@@ -96,31 +130,14 @@ const COMPROBACION_FUERA_DE_LA_RUTA: Record<string, string> = {
     'TrabajosController.consultarEstado → 404 si el job no es tuyo (dueño en job.data.usuarioId)',
   'GET /api/sections/:id':
     'la taxonomía es común a quien edita; no tiene dueño ni contenido reservado',
-  'GET /api/audit-logs/:contentType/:contentId':
-    'el router entero exige auditoriaPolicies.puedeVer antes de llegar aquí',
+  'GET /api/contenidos/:contenidoId/attachments/':
+    'getAttachmentsByPost → obtenerContenidoPorId hereda la visibilidad del contenido padre',
 };
 
 type Capa = {
   name?: string;
   handle?: any;
   route?: { path?: string; methods?: Record<string, boolean>; stack?: { handle?: any }[] };
-  regexp?: RegExp;
-  path?: string;
-};
-
-/** Reconstruye el prefijo con el que se montó un router a partir de su expresión. */
-const prefijoDe = (capa: Capa): string => {
-  if (typeof capa.path === 'string' && capa.path) return capa.path;
-
-  const fuente = capa.regexp?.source ?? '';
-  if (fuente === '^\\/?(?=\\/|$)') return '';
-
-  return fuente
-    .replace(/^\^/, '')
-    .replace(/\\\/\?\(\?=\\\/\|\$\)$/, '')
-    .replace(/\$$/, '')
-    .replace(/\\\//g, '/')
-    .replace(/\(\?:\(\[\^\\\/\]\+\?\)\)/g, ':param');
 };
 
 type RutaHallada = { metodo: string; ruta: string; guardias: string[]; autenticada: boolean };
@@ -145,14 +162,20 @@ const recorrer = (capas: Capa[], prefijo: string, encontradas: RutaHallada[], he
       continue;
     }
 
-    // `router.use(...)` de un sub-router: se baja con lo acumulado hasta aquí.
+    // Sub-router: se baja con el prefijo con el que se montó y lo acumulado hasta aquí.
     if (capa.handle?.stack) {
-      recorrer(capa.handle.stack, `${prefijo}${prefijoDe(capa)}`, encontradas, acumulados);
+      recorrer(
+        capa.handle.stack,
+        `${prefijo}${prefijos.get(capa.handle) ?? ''}`,
+        encontradas,
+        acumulados
+      );
       continue;
     }
 
-    // Middleware suelto montado con `use` sin ruta: aplica a todo lo que venga después.
-    if (typeof capa.handle === 'function' && prefijoDe(capa) === '') {
+    // Middleware suelto (`router.use(requireAuth)`): aplica a todo lo que venga después
+    // dentro de este router, así que se acumula para las capas siguientes.
+    if (typeof capa.handle === 'function') {
       acumulados.push(capa.handle);
     }
   }
