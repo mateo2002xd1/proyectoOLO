@@ -2,9 +2,10 @@
  * Lectura de la sesión en componentes de servidor.
  *
  * La cookie `token` es httpOnly, así que solo el servidor puede verla. La emite la
- * API :4000 al iniciar sesión y es la misma para el sitio y para la intranet: hay
- * una sola tabla `usuarios` y un solo `JWT_SECRET`. Por eso quien ya entró en el
- * sitio llega autenticado a la intranet sin volver a identificarse.
+ * API :4000 al iniciar sesión, sin nombre propio por app: sitio-web usa su propia
+ * cookie `sitio_token` (ver `sitio-web/src/shared/lib/auth-cookies.ts`) justamente
+ * para que iniciar o cerrar sesión aquí no afecte la sesión del sitio en el mismo
+ * navegador, aunque ambas compartan tabla `usuarios` y `JWT_SECRET`.
  *
  * Aquí el token se decodifica, no se valida criptográficamente: sirve para decidir
  * qué se pinta, no para conceder acceso. Quien manda es la API, que verifica la

@@ -6,7 +6,10 @@ import jwt from 'jsonwebtoken';
 // Middleware para verificar la autenticación del usuario mediante Token JWT
 export async function requireAuth(req: Request, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
-  const tokenFromCookie = req.cookies?.token;
+  // 'token' la usa la intranet (pasa la cookie de la API sin tocar); 'sitio_token'
+  // la emite sitio-web con nombre propio para no compartir sesión con la intranet
+  // en el mismo navegador — ver `sitio-web/src/shared/lib/auth-cookies.ts`.
+  const tokenFromCookie = req.cookies?.token ?? req.cookies?.sitio_token;
   // Extrae el token priorizando el header Bearer o la cookie segura de sesión
   const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : tokenFromCookie;
 
