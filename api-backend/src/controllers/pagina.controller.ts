@@ -7,7 +7,7 @@ import { obtenerPaginaPublica } from '../use-cases/paginas/obtener-pagina-public
 import { obtenerVersionEditable } from '../use-cases/paginas/obtener-version-editable.usecase';
 import { listarEnRevision } from '../use-cases/paginas/listar-en-revision.usecase';
 import { eliminarVersion } from '../use-cases/paginas/eliminar-version.usecase';
-import { AMBITO_HEADER, resolverAmbito } from '../shared/ambito';
+import { AMBITO_HEADER, exigirAmbito, resolverAmbito } from '../shared/ambito';
 import { logAudit } from '../use-cases/auditoria/audit.usecase';
 import { datosDeAuditoria } from '../shared/auditoria-request';
 
@@ -16,6 +16,18 @@ import { datosDeAuditoria } from '../shared/auditoria-request';
  * declara en su cliente HTTP; sin cabecera se asume el sitio público.
  */
 const ambitoDe = (req: Request) => resolverAmbito(req.header(AMBITO_HEADER));
+
+/**
+ * Igual, para las operaciones que escriben o que resuelven qué se está editando.
+ *
+ * Aquí no vale asumir: las dos aplicaciones comparten la tabla `paginas` y ambas
+ * tienen su `/inicio`, así que un ámbito equivocado no da error — da la página de la
+ * otra aplicación. Los dos clientes mandan la cabecera siempre
+ * (`intranet/src/shared/lib/api-client.ts`, `sitio-web/.../paginas.service.ts`), de
+ * modo que exigirla no rompe a nadie y convierte en 400 lo que antes era escribir en
+ * el sitio equivocado en silencio.
+ */
+const ambitoExigidoDe = (req: Request) => exigirAmbito(req.header(AMBITO_HEADER));
 
 /**
  * El id que se registra en la bitácora es el de la **página**, no el de la
@@ -63,7 +75,7 @@ export const PaginaController = {
 
   async obtenerEditable(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await obtenerVersionEditable(req.params.slug as string, ambitoDe(req));
+      const result = await obtenerVersionEditable(req.params.slug as string, ambitoExigidoDe(req));
       res.json(result);
     } catch (err) { next(err); }
   },
@@ -75,7 +87,7 @@ export const PaginaController = {
         req.params.slug as string,
         contenido,
         req.user?.id || '',
-        ambitoDe(req)
+        ambitoExigidoDe(req)
       );
       await registrar(req, 'actualizar', result);
       res.json(result);
@@ -84,7 +96,7 @@ export const PaginaController = {
 
   async enviarARevision(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await enviarARevision(req.params.slug as string, ambitoDe(req));
+      const result = await enviarARevision(req.params.slug as string, ambitoExigidoDe(req));
       await registrar(req, 'enviar_revision', result);
       res.json(result);
     } catch (err) { next(err); }
@@ -92,7 +104,11 @@ export const PaginaController = {
 
   async aprobar(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await aprobarPagina(req.params.slug as string, req.user?.id || '', ambitoDe(req));
+      const result = await aprobarPagina(
+        req.params.slug as string,
+        req.user?.id || '',
+        ambitoExigidoDe(req)
+      );
       // Aprobar es publicar: la versión pasa a `publicado` y queda visible.
       await registrar(req, 'publicar', result);
       res.json(result);
@@ -106,7 +122,7 @@ export const PaginaController = {
         req.params.slug as string,
         req.user?.id || '',
         motivo,
-        ambitoDe(req)
+        ambitoExigidoDe(req)
       );
       // El motivo se guarda en la bitácora porque es la única explicación de por
       // qué una versión volvió a borrador, y quien la lea semanas después no
@@ -123,7 +139,7 @@ export const PaginaController = {
       const result = await eliminarVersion(
         req.params.slug as string,
         req.params.versionId as string,
-        ambitoDe(req)
+        ambitoExigidoDe(req)
       );
       // Descartar una versión destruye trabajo sin publicar: si la página entera
       // desaparece con ella, esta fila es lo único que queda de que existió.

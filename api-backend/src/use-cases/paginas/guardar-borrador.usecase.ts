@@ -32,11 +32,17 @@ export const guardarBorrador = async (
   // @see 3-seguridad-del-proyecto.md §S2 — XSS del contenido (CRÍTICO)
   const contenidoSanitizado = sanitizarContenidoPuck(contenido);
 
+  // `creadoPor` se quedaba sin escribir aunque la columna existe y el `userId` ya
+  // estaba en la firma: el historial de RF-07 sabía quién revisó y quién publicó cada
+  // versión, pero no quién la escribió. Con la edición colaborativa esto no restringe
+  // nada —cualquier Editor sigue pudiendo retomar el borrador de otro—; es el dato sin
+  // el cual la bitácora no puede responder de quién era el trabajo.
   const version = await PaginaRepository.crearVersion({
     paginaId: pagina.id,
     contenido: contenidoSanitizado,
     numeroVersion,
     estado: 'borrador',
+    creadoPor: toUUID(userId),
   });
 
   return { pagina, version };

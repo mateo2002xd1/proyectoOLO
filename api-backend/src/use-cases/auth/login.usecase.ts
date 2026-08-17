@@ -73,8 +73,10 @@ export const loginUseCase = async (email: string, password: string) => {
   if (user.locked_until && new Date(user.locked_until) > new Date())
     throw Object.assign(new Error('Cuenta bloqueada temporalmente'), { status: 423 });
 
-  if (user.expiration_date && new Date(user.expiration_date) < new Date())
+  if (user.expiration_date && new Date(user.expiration_date) < new Date()) {
+    await UserRepository.update(user.id, { status: 'inactive' });
     throw Object.assign(new Error('Cuenta expirada'), { status: 403 });
+  }
 
   const valid = await compararPassword(password, user.password_hash || '');
   if (!valid) {

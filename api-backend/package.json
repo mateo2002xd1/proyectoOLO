@@ -15,6 +15,7 @@
     "ambito:auditar": "ts-node scripts/auditar-ambito.ts",
     "ambito:verificar": "ts-node scripts/verificar-ambito.ts",
     "permisos:verificar": "ts-node scripts/verificar-permisos.ts",
+    "propiedad:verificar": "ts-node scripts/verificar-propiedad.ts",
     "auditoria:verificar": "ts-node scripts/verificar-auditoria.ts",
     "password:verificar": "ts-node scripts/verificar-politica-password.ts",
     "sembrar:tasa": "ts-node scripts/sembrar-pagina-tasa.ts",

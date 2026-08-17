@@ -119,6 +119,10 @@ export const AuthController = {
       const valid = await compararPassword(currentPassword, (userWithPw as any).password_hash || '');
       if (!valid) return res.status(401).json({ error: 'Contraseña actual incorrecta' });
 
+      // Sin actor a propósito: este camino no es «editar una cuenta», es el cambio de
+      // contraseña de la propia sesión, y ya demostró quién es comparando la
+      // contraseña actual doce líneas más arriba. Pasar el actor lo haría chocar
+      // contra la lista blanca de autoservicio, que no admite `password`.
       await updateUser(userId!, { password: newPassword, must_change_password: false });
       await logCambioDePassword(datosDeAuditoria(req), userId!, 'cambio-voluntario');
       res.json({ message: 'Contraseña actualizada correctamente' });

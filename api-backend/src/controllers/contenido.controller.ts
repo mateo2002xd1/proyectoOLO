@@ -31,11 +31,15 @@ export const ContenidoController = {
         const { Op } = require('sequelize');
         where.publishedAt = { [Op.ne]: null };
       }
-      res.json(await obtenerContenidos(where));
+      // El actor decide si el listado puede incluir borradores; el querystring solo
+      // puede estrechar el resultado, nunca ampliarlo.
+      res.json(await obtenerContenidos(where, req.user));
     } catch (err) { next(err); }
   },
   async getById(req: Request, res: Response, next: NextFunction) {
-    try { res.json(await obtenerContenidoPorId(req.params.id as string)); } catch (err) { next(err); }
+    try {
+      res.json(await obtenerContenidoPorId(req.params.id as string, req.user));
+    } catch (err) { next(err); }
   },
   async create(req: Request, res: Response, next: NextFunction) {
     try {
@@ -68,7 +72,7 @@ export const ContenidoController = {
   },
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await eliminarContenido(req.params.id as string);
+      const result = await eliminarContenido(req.params.id as string, req.user);
       await logAudit({
         ...datosDeAuditoria(req),
         entidadId: req.params.id as string,

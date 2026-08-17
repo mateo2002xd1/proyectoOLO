@@ -6,6 +6,7 @@ import {
   updateUser,
   deleteUser,
   getExpirationAlerts,
+  deactivateExpiredUsers,
 } from '../use-cases/usuarios/listar-usuarios.usecase';
 import { logAudit } from '../use-cases/auditoria/audit.usecase';
 import { datosDeAuditoria } from '../shared/auditoria-request';
@@ -48,7 +49,10 @@ export const UserController = {
   },
 
   async getAll(_req: Request, res: Response, next: NextFunction) {
-    try { res.json(await getAllUsers()); } catch (err) { next(err); }
+    try {
+      await deactivateExpiredUsers();
+      res.json(await getAllUsers());
+    } catch (err) { next(err); }
   },
   async getById(req: Request, res: Response, next: NextFunction) {
     try { res.json(await getUserById(req.params.id as string)); } catch (err) { next(err); }
@@ -62,14 +66,17 @@ export const UserController = {
   },
   async update(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await updateUser(req.params.id as string, req.body);
+      // El actor viaja al caso de uso porque la ruta solo sabe *quién* llama, no *qué*
+      // trae en el cuerpo: que alguien pueda editar su cuenta no significa que pueda
+      // cambiarse el rol desde ella.
+      const result = await updateUser(req.params.id as string, req.body, req.user);
       await registrarUsuario(req, 'actualizar', req.params.id as string);
       res.json(result);
     } catch (err) { next(err); }
   },
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await deleteUser(req.params.id as string);
+      const result = await deleteUser(req.params.id as string, req.user);
       // En un borrado el cuerpo viene vacío; lo que importa es sobre quién se hizo,
       // y eso ya va en `entidad_id`.
       await registrarUsuario(req, 'eliminar', req.params.id as string, []);
