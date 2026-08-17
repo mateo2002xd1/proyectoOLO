@@ -460,7 +460,8 @@
   white-space: nowrap;
 }
 
-.olo-nav-link:hover {
+.olo-nav-link:hover,
+.olo-nav-item:hover .olo-nav-link-trigger {
   color: #002237;
   background: rgba(0, 0, 0, 0.06);
 }
@@ -468,6 +469,85 @@
 .olo-nav-link-active {
   color: #002237;
   font-weight: var(--fw-semibold);
+}
+
+.olo-nav-link:focus-visible,
+.olo-search-btn:focus-visible,
+.olo-menu-btn:focus-visible {
+  outline: 2px solid var(--color-brand-focus);
+  outline-offset: 2px;
+}
+
+.olo-nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.olo-nav-link-trigger {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.olo-nav-chevron {
+  transition: transform var(--transition-fast);
+}
+
+.olo-nav-chevron-open {
+  transform: rotate(180deg);
+}
+
+.olo-nav-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-xs);
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition: opacity var(--transition-fast), transform var(--transition-fast), visibility var(--transition-fast);
+}
+
+.olo-nav-dropdown-open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.olo-nav-dropdown-link {
+  display: block;
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: #002237;
+  line-height: 1.4;
+  white-space: normal;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.olo-nav-dropdown-link:hover {
+  color: #002237;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.olo-nav-dropdown-link:focus-visible {
+  outline: 2px solid var(--color-brand-focus);
+  outline-offset: -2px;
 }
 
 .olo-nav-actions {
@@ -559,6 +639,30 @@
 .olo-mobile-nav-link:hover {
   color: var(--color-primary-darkest);
   background: rgba(0, 0, 0, 0.06);
+}
+
+.olo-mobile-nav-link:focus-visible {
+  outline: 2px solid var(--color-brand-focus);
+  outline-offset: 2px;
+}
+
+.olo-mobile-nav-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.olo-mobile-nav-group-label {
+  padding: var(--space-md) var(--space-md) var(--space-xs);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--color-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.olo-mobile-nav-link-child {
+  padding-left: calc(var(--space-md) * 2);
+  font-size: var(--fs-sm);
 }
 
 @media (max-width: 900px) {

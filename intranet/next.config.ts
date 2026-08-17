@@ -24,12 +24,12 @@ const CSP_DIRECTIVAS = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   // Fuentes
   "font-src 'self' https://fonts.gstatic.com",
-  // Imágenes: mismo origen + data: para previews del editor
-  "img-src 'self' data: blob:",
+  // Imágenes: mismo origen + data: para previews del editor + miniaturas de YouTube
+  "img-src 'self' data: blob: https://img.youtube.com",
   // Conexiones XHR/fetch: solo al backend local
   `connect-src 'self' ${API_URL}`,
-  // Iframes: solo Power BI y dominios SENA (lista blanca mínima)
-  "frame-src 'self' https://app.powerbi.com https://*.sena.edu.co",
+  // Iframes: Power BI, dominios SENA y YouTube (bloques TasaVideo/RecursosVisuales)
+  "frame-src 'self' https://app.powerbi.com https://*.sena.edu.co https://www.youtube.com",
   // Protección de clickjacking: solo mismo origen
   "frame-ancestors 'self'",
   // Formularios: solo al mismo origen

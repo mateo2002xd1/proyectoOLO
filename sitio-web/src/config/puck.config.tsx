@@ -114,6 +114,15 @@ const puckConfigBase: Config = {
                 { label: 'Sí', value: true },
               ],
             },
+            children: {
+              type: 'array',
+              label: 'Submenú desplegable (opcional)',
+              arrayFields: {
+                label: { type: 'text', label: 'Texto del enlace' },
+                href: { type: 'text', label: 'URL' },
+              },
+              getItemSummary: (item: { label?: string }) => item.label || 'Enlace',
+            },
           },
           getItemSummary: (item: { label?: string }) => item.label || 'Enlace',
         },
