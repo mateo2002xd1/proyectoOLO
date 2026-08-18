@@ -32,7 +32,7 @@ export function TextoRico({
       className={`${fondo === 'gris' ? 'matriz-section-gray' : 'matriz-section-white'} pt-12 md:pt-20 pb-8`}
     >
       <div
-        className={`${ancho === 'ancho' ? 'matriz-content-container-wide max-w-[1200px]' : 'matriz-content-container'} text-left`}
+        className={`max-w-[1200px] w-full mx-auto px-6 text-left`}
       >
         {titulo && (
           <h2 className="tasa-concept-title !text-left mb-8">

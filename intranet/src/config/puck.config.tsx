@@ -199,12 +199,21 @@ const puckConfigBase: Config = {
         titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
         imagenSrc: campoImagen('Ilustración'),
         imagenAlt: { type: 'text', label: 'Texto alternativo de la imagen' },
+        imagenDerecha: {
+          type: 'radio',
+          label: 'Posición de la imagen',
+          options: [
+            { label: 'Izquierda', value: false },
+            { label: 'Derecha', value: true },
+          ],
+        },
       },
       defaultProps: {
         antetitulo: 'Encuesta de',
         titulo: 'SEGUIMIENTO LABORAL',
         imagenSrc: '/assets/img/banner-seguimiento-laboral.png',
-        imagenAlt: 'Ilustración Seguimiento Laboral',
+        imagenAlt: 'Ilustración encuesta',
+        imagenDerecha: false,
       },
       render: (props: BlockRender<ComponentProps<typeof EncuestaBanner>>) => (
         <EncuestaBanner {...props} />
