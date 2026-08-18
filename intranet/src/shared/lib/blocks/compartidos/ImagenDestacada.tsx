@@ -44,7 +44,7 @@ export function ImagenDestacada({
 
   return (
     <div className={`${clasesFondo} w-full py-12`}>
-      <div className="matriz-content-container-wide max-w-[1200px] mx-auto text-center flex flex-col items-center">
+      <div className="max-w-[1200px] w-full mx-auto px-6 text-center flex flex-col items-center">
         {titulo && (
           <h2 className="matriz-section-title text-[#041E42] font-bold mb-6">{resaltar(titulo)}</h2>
         )}

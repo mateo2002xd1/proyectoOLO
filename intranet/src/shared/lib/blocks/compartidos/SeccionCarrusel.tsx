@@ -67,9 +67,9 @@ export function SeccionCarrusel({
 
   return (
     <div
-      className={`${fondo === 'gris' ? 'matriz-section-gray' : 'matriz-section-white'} px-4 md:px-8`}
+      className={`${fondo === 'gris' ? 'matriz-section-gray' : 'matriz-section-white'} px-6`}
     >
-      <div className="matriz-content-container-wide max-w-[1200px] mx-auto text-center flex flex-col items-center">
+      <div className="max-w-[1200px] w-full mx-auto text-center flex flex-col items-center py-12">
         {titulo && (
           <h2 className="tasa-concept-title mb-6">
             {resaltar(titulo)}

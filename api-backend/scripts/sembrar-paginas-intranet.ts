@@ -261,9 +261,11 @@ const PAGINAS: Record<string, { titulo: string; content: ReturnType<typeof bloqu
   'encuestas-calidad-de-formacion': {
     titulo: 'Encuesta de Calidad de la Formación',
     content: [
-      bloque('IntranetHero', 'calidad-hero', {
-        imageSrc: '/assets/img/banner-encuesta.png',
-        imageAlt: 'Banner Encuesta Calidad de la Formación',
+      bloque('EncuestaBanner', 'calidad-banner', {
+        antetitulo: 'Encuesta de',
+        titulo: 'CALIDAD DE LA FORMACIÓN',
+        imagenSrc: '/assets/img/banner-seguimiento-laboral.png',
+        imagenAlt: 'Ilustración Calidad de la Formación',
       }),
       bloque('TextoConImagen', 'calidad-objetivo', {
         titulo: '¿Cuál es el **objetivo**?',
@@ -317,6 +319,7 @@ const PAGINAS: Record<string, { titulo: string; content: ReturnType<typeof bloqu
         titulo: 'SEGUIMIENTO LABORAL',
         imagenSrc: '/assets/img/banner-seguimiento-laboral.png',
         imagenAlt: 'Ilustración Seguimiento Laboral',
+        imagenDerecha: true,
       }),
       bloque('TextoRico', 'seguimiento-objetivo', {
         titulo: '¿Cuál es el **objetivo**?',
