@@ -15,6 +15,8 @@
     "ambito:auditar": "ts-node scripts/auditar-ambito.ts",
     "ambito:verificar": "ts-node scripts/verificar-ambito.ts",
     "permisos:verificar": "ts-node scripts/verificar-permisos.ts",
+    "propiedad:verificar": "ts-node scripts/verificar-propiedad.ts",
+    "sembrar:permisos": "ts-node scripts/sembrar-permisos-roles.ts",
     "auditoria:verificar": "ts-node scripts/verificar-auditoria.ts",
     "password:verificar": "ts-node scripts/verificar-politica-password.ts",
     "sembrar:tasa": "ts-node scripts/sembrar-pagina-tasa.ts",
@@ -25,6 +27,7 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
+    "@olo/accessibility-policy": "file:../packages/accessibility-policy",
     "bcryptjs": "^3.0.3",
     "bullmq": "^5.80.5",
     "cookie-parser": "^1.4.7",

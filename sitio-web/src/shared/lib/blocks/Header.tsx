@@ -1,11 +1,14 @@
 'use client';
 
-import { useState, useSyncExternalStore } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { AUTH_ROLE_COOKIE_NAME } from '@/shared/lib/auth-cookies';
 
 export interface NavItem {
   label: string;
   href: string;
   active?: boolean;
+  /** Submenú desplegable. Si trae elementos, el enlace se pinta como un dropdown. */
+  children?: NavItem[];
 }
 
 interface HeaderProps {
@@ -18,7 +21,10 @@ interface HeaderProps {
   intranetUrl?: string;
 }
 
-const EDITABLE_ROLES = ['Superadmin', 'Administrador', 'Editor'];
+/* En minúsculas y comparando en minúsculas: en la tabla `roles` los nombres van
+   capitalizados, pero basta con que uno llegue de otra forma para que la
+   comparación literal deje al usuario sin enlace al panel. */
+const EDITABLE_ROLES = ['superadmin', 'administrador', 'editor'];
 
 function getCookie(name: string): string | null {
   if (typeof document === 'undefined') return null;
@@ -30,7 +36,11 @@ function subscribeToCookies() {
   return () => { };
 }
 
-const getSessionSnapshot = () => EDITABLE_ROLES.includes(getCookie('role') ?? '');
+/* El nombre de la cookie sale de `auth-cookies.ts`: escrito a mano aquí se quedó
+   en `role` cuando se prefijaron con `sitio_`, y el enlace al panel dejó de
+   aparecer sin dar ningún error. */
+const getSessionSnapshot = () =>
+  EDITABLE_ROLES.includes((getCookie(AUTH_ROLE_COOKIE_NAME) ?? '').trim().toLowerCase());
 const getSessionServerSnapshot = () => false;
 
 export function Header({
@@ -43,20 +53,73 @@ export function Header({
   intranetUrl = 'http://localhost:3001'
 }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const dropdownRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const hasSession = useSyncExternalStore(
     subscribeToCookies,
     getSessionSnapshot,
     getSessionServerSnapshot,
   );
 
+  useEffect(() => {
+    if (!openDropdown) return;
+
+    function handlePointerDown(event: PointerEvent) {
+      const node = dropdownRefs.current.get(openDropdown as string);
+      if (node && !node.contains(event.target as Node)) {
+        setOpenDropdown(null);
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setOpenDropdown(null);
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [openDropdown]);
+
+  const [clock, setClock] = useState<string>('');
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('es-CO', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      });
+      const timeStr = now.toLocaleTimeString('es-CO', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true,
+      });
+      setClock(`${dateStr} | ${timeStr}`);
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   const editHref = hasSession ? '/admin/dashboard' : '/admin/login';
   const editTitle = hasSession ? 'Ir al panel de administración' : 'Iniciar sesión';
-  const editLabel = hasSession ? 'Editar' : 'Ingresar';
 
   const navLinks = customNavLinks || [
-    { label: 'Inicio', href: '/', active: true },
-    { label: 'Clasificaciones', href: '/clasificaciones' },
-    { label: 'Tendencias', href: '/tendencias' },
+    { label: 'Inicio', href: '/inicio', active: true },
+    {
+      label: 'Clasificaciones',
+      href: '/clasificacion',
+      children: [
+        { label: 'Clasificación Única de Ocupaciones para Colombia', href: '/clasificacion?tipo=cuoc' },
+        { label: 'Clasificación Nacional de Ocupaciones', href: '/clasificacion?tipo=cno' },
+      ],
+    },
+    { label: 'Tendencias de las Ocupaciones', href: '/tendencias' },
     { label: 'Mercado Laboral', href: '/mercado-laboral' },
     { label: 'Publicaciones', href: '/publicaciones' },
     { label: 'APE', href: '/ape' },
@@ -68,13 +131,10 @@ export function Header({
         <a
           href={editHref}
           className="olo-gov-banner-edit"
-          style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', gap: 6, color: 'white', textDecoration: 'none', fontSize: 13, opacity: 0.9, transition: 'opacity 0.2s' }}
+          style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', color: 'white', textDecoration: 'none', fontSize: 13, opacity: 0.9, transition: 'opacity 0.2s', fontWeight: 500 }}
           title={editTitle}
         >
-          <svg width="18" height="18" viewBox="0 0 25 23" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M17.474 3.60677L21.3889 7.5217C21.5538 7.68663 21.5538 7.95573 21.3889 8.12066L11.9097 17.5998L7.88195 18.0469C7.34375 18.1076 6.88802 17.6519 6.94879 17.1137L7.39583 13.0859L16.875 3.60677C17.0399 3.44184 17.309 3.44184 17.474 3.60677ZM24.5052 2.61285L22.3872 0.494792C21.7274 -0.164931 20.6554 -0.164931 19.9913 0.494792L18.4549 2.03125C18.2899 2.19618 18.2899 2.46528 18.4549 2.63021L22.3698 6.54514C22.5347 6.71007 22.8038 6.71007 22.9688 6.54514L24.5052 5.00868C25.1649 4.34462 25.1649 3.27257 24.5052 2.61285ZM16.6667 15.0217V19.4401H2.77778V5.55122H12.7517C12.8906 5.55122 13.0208 5.49479 13.1207 5.39931L14.8568 3.66319C15.1866 3.33333 14.9523 2.77344 14.4878 2.77344H2.08333C0.93316 2.77344 0 3.7066 0 4.85677V20.1345C0 21.2847 0.93316 22.2179 2.08333 22.2179H17.3611C18.5113 22.2179 19.4444 21.2847 19.4444 20.1345V13.2856C19.4444 12.8212 18.8846 12.5911 18.5547 12.9167L16.8186 14.6528C16.7231 14.7526 16.6667 14.8828 16.6667 15.0217Z" fill="white" />
-          </svg>
-          <span>{editLabel}</span>
+          <span>{clock}</span>
         </a>
         {govBannerEnabled && (
           govBannerImageUrl ? (
@@ -98,7 +158,7 @@ export function Header({
       <header className="olo-header" id="main-header" data-block-id={block.id}>
         <div className="olo-header-inner">
           <div className="olo-logo-group">
-            <a href="/" className="olo-logo-mark" aria-label="Ir al inicio">
+            <a href="/inicio" className="olo-logo-mark" aria-label="Ir al inicio">
               {mainLogoUrl ? (
                 <img src={mainLogoUrl} alt="Logo SENA / Observatorio" style={{ maxHeight: 48, width: 'auto' }} />
               ) : (
@@ -118,15 +178,70 @@ export function Header({
           </div>
 
           <nav className="olo-nav" aria-label="Navegacion principal">
-            {navLinks.map((link, index) => (
-              <a
-                key={`${link.label}-${index}`}
-                href={link.href}
-                className={`olo-nav-link ${link.active ? 'olo-nav-link-active' : ''}`}
-              >
-                {link.label}
-              </a>
-            ))}
+            {navLinks.map((link, index) => {
+              if (link.children && link.children.length > 0) {
+                const isOpen = openDropdown === link.label;
+                return (
+                  <div
+                    key={`${link.label}-${index}`}
+                    className="olo-nav-item"
+                    ref={(node) => {
+                      if (node) dropdownRefs.current.set(link.label, node);
+                      else dropdownRefs.current.delete(link.label);
+                    }}
+                    onMouseEnter={() => setOpenDropdown(link.label)}
+                    onMouseLeave={() => setOpenDropdown(null)}
+                  >
+                    <button
+                      type="button"
+                      className={`olo-nav-link olo-nav-link-trigger ${link.active ? 'olo-nav-link-active' : ''}`}
+                      aria-haspopup="true"
+                      aria-expanded={isOpen}
+                      onClick={() => setOpenDropdown(isOpen ? null : link.label)}
+                    >
+                      {link.label}
+                      <svg
+                        className={`olo-nav-chevron ${isOpen ? 'olo-nav-chevron-open' : ''}`}
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <polyline points="6 9 12 15 18 9" />
+                      </svg>
+                    </button>
+                    <div className={`olo-nav-dropdown ${isOpen ? 'olo-nav-dropdown-open' : ''}`} role="menu">
+                      {link.children.map((child, childIndex) => (
+                        <a
+                          key={`${child.label}-${childIndex}`}
+                          href={child.href}
+                          className="olo-nav-dropdown-link"
+                          role="menuitem"
+                          onClick={() => setOpenDropdown(null)}
+                        >
+                          {child.label}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
+                <a
+                  key={`${link.label}-${index}`}
+                  href={link.href}
+                  className={`olo-nav-link ${link.active ? 'olo-nav-link-active' : ''}`}
+                >
+                  {link.label}
+                </a>
+              );
+            })}
           </nav>
 
           <div className="olo-nav-actions">
@@ -164,11 +279,26 @@ export function Header({
         </div>
 
         <div className={`olo-mobile-menu ${mobileMenuOpen ? 'olo-mobile-menu-open' : ''}`} role="navigation" aria-label="Menu movil">
-          {navLinks.map((link, index) => (
-            <a key={`${link.label}-${index}`} href={link.href} className="olo-mobile-nav-link">
-              {link.label}
-            </a>
-          ))}
+          {navLinks.map((link, index) =>
+            link.children && link.children.length > 0 ? (
+              <div key={`${link.label}-${index}`} className="olo-mobile-nav-group">
+                <span className="olo-mobile-nav-group-label">{link.label}</span>
+                {link.children.map((child, childIndex) => (
+                  <a
+                    key={`${child.label}-${childIndex}`}
+                    href={child.href}
+                    className="olo-mobile-nav-link olo-mobile-nav-link-child"
+                  >
+                    {child.label}
+                  </a>
+                ))}
+              </div>
+            ) : (
+              <a key={`${link.label}-${index}`} href={link.href} className="olo-mobile-nav-link">
+                {link.label}
+              </a>
+            )
+          )}
         </div>
       </header>
     </>

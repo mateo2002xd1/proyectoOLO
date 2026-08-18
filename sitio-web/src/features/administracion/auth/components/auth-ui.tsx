@@ -82,10 +82,10 @@ export function AuthSplitShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen w-full bg-[#001631]">
       {/* Panel izquierdo — identidad sobre blanco, con la esquina derecha redondeada. */}
-      <div className="hidden w-[35%] shrink-0 items-center justify-center bg-white rounded-r-[16px] md:flex">
+      <div className="hidden w-[50%] shrink-0 items-center justify-center bg-white rounded-r-[16px] md:flex">
         <div className="text-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/assets/logos/olo-logo-none.svg" alt="OLO Logo" className="mx-auto w-[110px]" />
+          <img src="/assets/logos/olo-logo-none.svg" alt="OLO Logo" className="mx-auto w-[210px]" />
           <p className="mt-6 text-2xl font-light text-[#0d1526]">Panel de</p>
           {/* Es el título de la pantalla, así que va como encabezado y no como
               párrafo: sin esto la página no tiene ningún `h1` que anunciar. Los
@@ -153,6 +153,28 @@ export function AuthGeneralError({ children }: { children: ReactNode }) {
     <div
       className="mb-4 rounded-lg border border-red-300 bg-red-50 px-3.5 py-2.5 text-sm text-red-600"
       role="alert"
+    >
+      {children}
+    </div>
+  );
+}
+
+/**
+ * Aviso informativo sobre el formulario de acceso.
+ *
+ * Existe aparte de `AuthGeneralError` porque no todo lo que hay que contar en el login
+ * es un fallo. Cerrar la sesión tras quince minutos parado es el sistema haciendo su
+ * trabajo, y pintarlo en rojo —junto a «Correo o contraseña incorrectos», que es lo
+ * otro que aparece en este hueco— hace creer que uno se equivocó en algo.
+ *
+ * `role="status"` y no `"alert"`: se anuncia sin interrumpir lo que el lector de
+ * pantalla esté diciendo, que es lo apropiado para algo que solo informa.
+ */
+export function AuthGeneralNotice({ children }: { children: ReactNode }) {
+  return (
+    <div
+      className="mb-4 rounded-lg border border-blue-300 bg-blue-50 px-3.5 py-2.5 text-sm text-blue-800"
+      role="status"
     >
       {children}
     </div>
@@ -472,7 +494,7 @@ export function BackToSiteLink({
   return (
     <div className={`text-center ${className}`}>
       <Link
-        href="/"
+        href="/inicio"
         className="inline-flex items-center justify-center gap-2 text-sm font-medium text-white/90 transition hover:-translate-y-px hover:text-white"
       >
         <svg

@@ -26,6 +26,7 @@ import { usePathname } from 'next/navigation';
 import { useSyncExternalStore } from 'react';
 import { enlaceAlEditor } from '../lib/ruta-de-vuelta';
 import { SLUG_PLANTILLA } from '../lib/plantilla';
+import { AUTH_ROLE_COOKIE_NAME } from '@/shared/lib/auth-cookies';
 
 /** Mismos roles que `puedeEditarPaginas()` en `shared/lib/session.ts`. */
 const ROLES_QUE_EDITAN = ['superadmin', 'administrador', 'editor'];
@@ -44,8 +45,14 @@ function sinSuscripcion() {
   return () => {};
 }
 
+/* El nombre sale de `auth-cookies.ts` y no escrito a mano: cuando las cookies se
+   prefijaron con `sitio_` para no compartir sesión con la intranet, esta lectura
+   se quedó con el nombre viejo (`role`) y el botón desapareció para todo el
+   mundo — sin fallar en ningún sitio, que es lo que lo hizo difícil de ver.
+   Importando la constante, un renombrado futuro rompe la compilación en vez de
+   apagar el botón en silencio. */
 const leerPermiso = () =>
-  ROLES_QUE_EDITAN.includes((leerCookie('role') ?? '').trim().toLowerCase());
+  ROLES_QUE_EDITAN.includes((leerCookie(AUTH_ROLE_COOKIE_NAME) ?? '').trim().toLowerCase());
 
 /** En el servidor no hay `document`: sin botón, para que el HTML inicial coincida. */
 const leerPermisoEnServidor = () => false;

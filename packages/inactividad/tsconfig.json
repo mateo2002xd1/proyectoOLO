@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    // ES2018 por coherencia con `email-policy`. Aquí no hay expresiones regulares
+    // Unicode que lo exijan, pero tener dos paquetes hermanos compilando contra
+    // objetivos distintos solo invita a preguntarse por qué.
+    "target": "ES2018",
+    "lib": ["dom", "esnext"],
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "module": "esnext",
+    "esModuleInterop": true,
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "jsx": "react-jsx"
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": ["node_modules"]
+}

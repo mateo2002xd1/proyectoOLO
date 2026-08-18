@@ -6,8 +6,10 @@ import Link from 'next/link';
 import { validarEmail } from '@olo/email-policy';
 import { Button } from '@/shared/ui/atoms/button';
 import { FirstLoginFlow } from './first-login-flow';
+import { mensajeDeCierre } from '@/shared/lib/inactividad';
 import {
   AuthGeneralError,
+  AuthGeneralNotice,
   AuthSplitShell,
   AuthTextField,
   PasswordField,
@@ -60,6 +62,12 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const redirectParam = searchParams.get('redirect');
   const redirectTo = redirectParam && redirectParam.startsWith('/') ? redirectParam : '/admin/dashboard';
+
+  // Por qué se llegó aquí, si es que se llegó desde un cierre automático. El valor lo
+  // traduce `mensajeDeCierre`, que solo reconoce los motivos propios: el parámetro
+  // viene de la URL y pintarlo tal cual dejaría escribir cualquier texto sobre el
+  // formulario de acceso con solo preparar un enlace.
+  const avisoDeCierre = mensajeDeCierre(searchParams.get('motivo'));
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -185,6 +193,9 @@ function LoginForm() {
   return (
     <div className={authSolidCardClass}>
       <form onSubmit={handleSubmit} noValidate>
+        {/* Antes que el error: explica por qué se está aquí, no qué se hizo mal. Al
+            escribir credenciales nuevas el error lo sustituye visualmente. */}
+        {avisoDeCierre && <AuthGeneralNotice>{avisoDeCierre}</AuthGeneralNotice>}
         {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
 
         <AuthTextField

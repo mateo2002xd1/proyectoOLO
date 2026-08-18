@@ -5,9 +5,9 @@ import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import { config } from './config';
 import { requireAuth } from './middlewares/auth.middleware';
+import { requierePermisoUsuario } from './middlewares/permisos.middleware';
 import { errorHandler } from './middlewares/error.middleware';
 import { UserController } from './controllers/usuarios.controller';
-import { AttachmentController } from './controllers/adjuntos.controller';
 
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
@@ -36,7 +36,15 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/api', authRoutes);
-app.get('/api/alerts', requireAuth, UserController.getExpirationAlerts);
+
+// Las alertas de caducidad listan correo y fecha de vencimiento de toda la plantilla.
+// Con solo `requireAuth` las leía cualquier sesión; es un panel de administración.
+app.get(
+  '/api/alerts',
+  requireAuth,
+  requierePermisoUsuario('puedeAdministrarUsuarios'),
+  UserController.getExpirationAlerts
+);
 app.use('/api/users', userRoutes);
 app.use('/api/roles', roleRoutes);
 app.use('/api/permissions', permissionRoutes);
@@ -48,8 +56,10 @@ app.use('/api/sitio-users', sitioUserRoutes);
 app.use('/api/paginas', paginaRoutes);
 app.use('/api/audit-logs', auditRoutes);
 app.use('/api/jobs', jobRoutes);
+// El borrado de adjuntos vivía aparte, en `/api/attachments/:id`, sin el contenido al
+// que pertenecen en la ruta: no había padre contra el que comprobar nada. Ahora cuelga
+// de este mismo router, que sí lo recibe por `mergeParams`.
 app.use('/api/contenidos/:contenidoId/attachments', attachmentRoutes);
-app.delete('/api/attachments/:id', requireAuth, AttachmentController.delete);
 
 app.use(errorHandler);
 

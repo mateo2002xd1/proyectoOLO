@@ -1,6 +1,7 @@
 import React from 'react';
 import { MarcoSecciones, PlantillaEditButton } from '@/features/gestor-secciones';
 import { puedeEditarPaginas } from '@/shared/lib/sesion';
+import { VigilanteSesion } from '@/shared/lib/inactividad';
 
 /**
  * Marco común de las secciones de la intranet: menú arriba, pie abajo.
@@ -26,6 +27,9 @@ export default async function SeccionesLayout({
     <MarcoSecciones>
       {children}
       <PlantillaEditButton hasPermission={puedeEditar} />
+      {/* Cubre las cinco secciones de una vez. El editor y la vista previa cuelgan
+          fuera de este grupo de rutas y montan el suyo. */}
+      <VigilanteSesion />
     </MarcoSecciones>
   );
 }

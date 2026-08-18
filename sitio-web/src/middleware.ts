@@ -96,6 +96,16 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // /admin/revision — solo Superadmin y Administrador, espejo de
+  // `requierePermisoPagina('puedePublicar')` en `pagina.routes.ts`. Sin sesión
+  // válida caía en este mismo layout (la lista y la API sí devuelven 401, pero
+  // sin redirigir a login), mostrando el tablero vacío con un error en pantalla.
+  if (pathname.startsWith('/admin/revision')) {
+    if (!isAdminRole) {
+      return loginRedirect();
+    }
+  }
+
   // /admin/editor/* — Superadmin, Administrador y Editor pueden acceder
   if (pathname.startsWith('/admin/editor')) {
     if (!isAdminRole && role !== 'Editor') {
@@ -121,8 +131,8 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Protege dashboard, usuarios/users, auditoría, editor y maneja /admin/login
-  // y /admin/cambiar-contrasena.
+  // Protege dashboard, usuarios/users, auditoría, revisión, mi-perfil, editor y
+  // maneja /admin/login y /admin/cambiar-contrasena.
   //
   // Es una lista explícita, no un prefijo: `/admin/recuperar` queda fuera a
   // propósito, porque quien va a recuperar su contraseña no tiene sesión.
@@ -134,6 +144,10 @@ export const config = {
     '/admin/usuarios',
     '/admin/auditoria/:path*',
     '/admin/auditoria',
+    '/admin/revision/:path*',
+    '/admin/revision',
+    '/admin/mi-perfil/:path*',
+    '/admin/mi-perfil',
     '/admin/editor/:path*',
     '/admin/login',
     '/admin/cambiar-contrasena',

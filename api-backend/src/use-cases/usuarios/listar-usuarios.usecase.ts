@@ -9,6 +9,8 @@ import {
 } from '../../shared/password-policy';
 import { exigirEmailInstitucional } from '../../shared/email-policy';
 import { SecurityQuestionRepository } from '../../repositories/security-questions.repository';
+import { usuariosPolicies } from '../../policies/usuarios.policies';
+import { esDueno } from '../../shared/autorizacion';
 
 export const getAllUsers = () => UserRepository.findAll();
 
@@ -51,7 +53,17 @@ export const createUser = async (data: any) => {
   return userJson;
 };
 
-export const updateUser = async (id: string, data: any) => {
+/**
+ * Quién pide el cambio. Se pasa desde el controlador; los llamadores internos que ya
+ * demostraron la identidad por otra vía (el cambio de contraseña voluntario, que
+ * verifica la contraseña actual) lo omiten.
+ */
+type Actor = { id?: string; role?: string | null };
+
+/** Lo único que alguien puede cambiarse a sí mismo sin ser administrador. */
+const CAMPOS_DE_AUTOSERVICIO = ['name', 'apellidos', 'email'] as const;
+
+export const updateUser = async (id: string, data: any, actor?: Actor) => {
   const { password, email, reset_password, reset_security_questions, ...rest } = data;
 
   const user = await UserRepository.findById(id);
@@ -59,6 +71,61 @@ export const updateUser = async (id: string, data: any) => {
 
   if (user.email === config.localAuth.email.toLowerCase()) {
     throw Object.assign(new Error('No se puede modificar la cuenta maestra del sistema'), { status: 403 });
+  }
+
+  const esAdministrador = usuariosPolicies.puedeAdministrarUsuarios(actor?.role);
+  const seEditaASiMismo = actor?.id != null && esDueno(id, actor.id);
+
+  /**
+   * Autoservicio: la ruta ya dejó pasar a quien no administra **solo** sobre su propia
+   * cuenta, y aquí se limita lo que puede escribir. Sin esta lista, «Mi perfil» seguía
+   * siendo el mismo endpoint con el que uno se ascendía a Superadmin, se quitaba la
+   * caducidad o se pedía `reset_password` — solo que apuntando a su propio id.
+   */
+  if (actor && !esAdministrador) {
+    if (!seEditaASiMismo) {
+      throw Object.assign(new Error('No tienes permisos sobre esta cuenta'), { status: 403 });
+    }
+    const prohibidos = Object.keys(data).filter(
+      (campo) => !CAMPOS_DE_AUTOSERVICIO.includes(campo as (typeof CAMPOS_DE_AUTOSERVICIO)[number])
+    );
+    if (prohibidos.length > 0) {
+      throw Object.assign(
+        new Error(`Solo puedes modificar ${CAMPOS_DE_AUTOSERVICIO.join(', ')} de tu propia cuenta`),
+        { status: 403 }
+      );
+    }
+  }
+
+  /**
+   * Nadie se cambia su propio rol ni su propio estado, tenga el rol que tenga.
+   *
+   * Un Administrador que puede editar cuentas puede editar la suya, y ahí la
+   * comprobación de rol no dice nada: ya pasó. Esto es lo que impide que se ascienda
+   * a Superadmin por la puerta de al lado, y de paso que alguien se desactive solo.
+   */
+  if (seEditaASiMismo) {
+    if (rest.role_id && !esDueno(rest.role_id, user.role_id)) {
+      throw Object.assign(new Error('No puedes cambiar tu propio rol'), { status: 403 });
+    }
+    if (rest.status && rest.status !== user.status) {
+      throw Object.assign(new Error('No puedes cambiar el estado de tu propia cuenta'), { status: 403 });
+    }
+  }
+
+  // Degradar al último Superadmin activo deja el sistema sin nadie que pueda volver a
+  // nombrar uno: la cuenta maestra de `.env` es un rescate, no una silla ocupada.
+  if (rest.role_id && !esDueno(rest.role_id, user.role_id)) {
+    const rolActual = await RoleRepository.findById(user.role_id);
+    if ((rolActual?.name ?? '').trim().toLowerCase() === 'superadmin') {
+      const restantes = await UserRepository.contarActivosPorRol(user.role_id);
+      if (restantes <= 1) {
+        throw Object.assign(
+          new Error('No se puede degradar al único Superadmin activo del sistema'),
+          { status: 409 }
+        );
+      }
+    }
   }
 
   const updateData: any = { ...rest };
@@ -86,6 +153,14 @@ export const updateUser = async (id: string, data: any) => {
     await SecurityQuestionRepository.deleteByUserId(id);
   }
 
+  const targetExpiration = updateData.expiration_date !== undefined ? updateData.expiration_date : user.expiration_date;
+  if (updateData.status === 'active' && targetExpiration && new Date(targetExpiration) < new Date()) {
+    throw Object.assign(
+      new Error('No se puede activar una cuenta con fecha de vencimiento expirada. Actualiza la fecha de vencimiento primero.'),
+      { status: 400 }
+    );
+  }
+
   const isReactivation = updateData.status === 'active' && user.status === 'inactive';
   const shouldReset = reset_password || isReactivation;
 
@@ -111,14 +186,20 @@ export const updateUser = async (id: string, data: any) => {
   return UserRepository.findById(id);
 };
 
-export const deleteUser = async (id: string) => {
+export const deleteUser = async (id: string, actor?: Actor) => {
   const user = await UserRepository.findById(id);
   if (!user) throw Object.assign(new Error('Usuario no encontrado'), { status: 404 });
-  
+
   if (user.email === config.localAuth.email.toLowerCase()) {
     throw Object.assign(new Error('No se puede eliminar la cuenta maestra del sistema'), { status: 403 });
   }
-  
+
+  // Borrarse a uno mismo deja la sesión en curso sin sujeto y es indistinguible de un
+  // clic equivocado. Para irse está la desactivación, que es reversible.
+  if (actor?.id != null && esDueno(id, actor.id)) {
+    throw Object.assign(new Error('No puedes eliminar tu propia cuenta'), { status: 403 });
+  }
+
   try {
     await UserRepository.delete(id);
   } catch (err: any) {

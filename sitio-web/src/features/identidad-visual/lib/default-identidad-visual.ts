@@ -9,9 +9,16 @@ export const defaultIdentidadVisual: IdentidadVisual = {
   // sitio no puede leerla para decidirlo antes.
   intranetUrl: 'http://localhost:3001',
   navLinks: [
-    { label: 'Inicio', href: '/', active: true },
-    { label: 'Clasificaciones', href: '/clasificacion' },
-    { label: 'Tendencias', href: '/tendencias' },
+    { label: 'Inicio', href: '/inicio', active: true },
+    {
+      label: 'Clasificaciones',
+      href: '/clasificacion',
+      children: [
+        { label: 'Clasificación Única de Ocupaciones para Colombia', href: '/clasificacion?tipo=cuoc' },
+        { label: 'Clasificación Nacional de Ocupaciones', href: '/clasificacion?tipo=cno' },
+      ],
+    },
+    { label: 'Tendencias de las Ocupaciones', href: '/tendencias' },
     { label: 'Publicaciones', href: '/publicaciones' },
     { label: 'APE', href: '/ape' },
   ],

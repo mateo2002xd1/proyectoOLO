@@ -1,9 +1,13 @@
+import { resaltar } from './resaltar';
+
 export interface PortalItem {
   id: string;
   label: string;
   description: string;
   href: string;
   gradient: string;
+  /** Ilustración de fondo. Se pinta al 60% sobre el degradado. */
+  imagen?: string;
 }
 
 interface ExternalPortalsProps {
@@ -17,42 +21,58 @@ const DEFAULT_PORTALS: PortalItem[] = [
   {
     id: 'pqrs',
     label: 'PQRS',
-    description: 'Peticiones, quejas, reclamos y sugerencias. Tu opinion es importante para mejorar nuestros servicios.',
+    description:
+      '**Registrar tus peticiones, quejas, reclamos y sugerencias**. Tu participación es fundamental para seguir mejorando.',
     href: '#',
-    gradient: 'linear-gradient(135deg, #1a73e8 0%, #1557b0 100%)',
+    gradient: 'linear-gradient(135deg, #0b4ea2 0%, #0a2f6b 100%)',
+    imagen: '/assets/img/pqrs.png',
   },
   {
     id: 'denuncias',
-    label: 'Denuncias por corrupcion',
-    description: 'Canal seguro para reportar actos de corrupcion. Tu identidad sera protegida.',
+    label: 'Denuncias por corrupción',
+    description:
+      '**Reportar actos de corrupción** por un canal seguro. Tu identidad será protegida en todo momento.',
     href: '#',
     gradient: 'linear-gradient(135deg, #0d1526 0%, #1a2e50 100%)',
+    imagen: '/assets/img/corrupcion.png',
   },
   {
     id: 'transparencia',
     label: 'Transparencia',
-    description: 'Acceso a informacion publica, rendicion de cuentas y datos abiertos del observatorio.',
+    description:
+      '**Consultar información pública** y datos abiertos del observatorio, con rendición de cuentas al día.',
     href: '#',
-    gradient: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+    gradient: 'linear-gradient(135deg, #1478c6 0%, #0d4f8b 100%)',
+    imagen: '/assets/img/transparencia.png',
   },
 ];
 
+/**
+ * Los tres canales de atención a la ciudadanía, como tarjetas enlazadas.
+ *
+ * Cada tarjeta es un único `<a>` que envuelve todo su contenido: se puede pulsar
+ * en cualquier punto, no solo sobre un texto o una flecha. Antes llevaba además
+ * una flecha decorativa en una esquina, que sugería que *ese* era el botón —
+ * quitarla deja claro que la tarjeta entera es el destino.
+ *
+ * El fondo son dos capas: el degradado, que da el color y garantiza el contraste
+ * del texto blanco, y encima la ilustración al 60% de opacidad. La ilustración va
+ * como `background-image` en un div propio y no como `<img>` porque es decorativa
+ * —lo que dice la tarjeta ya está en el título y la descripción—, así un lector de
+ * pantalla la salta en vez de anunciar una imagen sin información (SC 1.1.1).
+ */
 export function ExternalPortals({
   block,
-  title = 'Portales externos',
-  subtitle = 'Accede a los servicios y canales oficiales del gobierno',
+  title = '**Portales externos** de la ciudadanía',
+  subtitle,
   portals = DEFAULT_PORTALS,
 }: ExternalPortalsProps) {
   return (
     <section className="olo-portals" id="external-portals" aria-label="Portales externos" data-block-id={block.id}>
       <div className="olo-portals-inner">
         <div className="olo-portals-header">
-          <h2 className="olo-portals-title">
-            {title}
-          </h2>
-          <p className="olo-portals-subtitle">
-            {subtitle}
-          </p>
+          {title && <h2 className="olo-portals-title">{resaltar(title)}</h2>}
+          {subtitle && <p className="olo-portals-subtitle">{subtitle}</p>}
         </div>
 
         <div className="olo-portals-grid">
@@ -64,34 +84,18 @@ export function ExternalPortals({
               id={`portal-${portal.id}`}
               style={{ background: portal.gradient }}
             >
-              <svg
-                className="olo-portal-image"
-                viewBox="0 0 400 300"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                preserveAspectRatio="xMidYMid slice"
-                aria-hidden="true"
-              >
-                <rect width="400" height="300" fill="transparent"/>
-                <circle cx="320" cy="60" r="80" fill="rgba(255,255,255,0.04)"/>
-                <circle cx="80" cy="240" r="100" fill="rgba(255,255,255,0.03)"/>
-                <circle cx="200" cy="150" r="50" fill="rgba(255,255,255,0.05)"/>
-                <line x1="0" y1="100" x2="400" y2="100" stroke="rgba(255,255,255,0.03)" strokeWidth="1"/>
-                <line x1="0" y1="200" x2="400" y2="200" stroke="rgba(255,255,255,0.03)" strokeWidth="1"/>
-                <line x1="133" y1="0" x2="133" y2="300" stroke="rgba(255,255,255,0.03)" strokeWidth="1"/>
-                <line x1="266" y1="0" x2="266" y2="300" stroke="rgba(255,255,255,0.03)" strokeWidth="1"/>
-              </svg>
+              {portal.imagen && (
+                <span
+                  className="olo-portal-bg"
+                  style={{ backgroundImage: `url(${portal.imagen})` }}
+                  aria-hidden="true"
+                />
+              )}
 
-              <div className="olo-portal-overlay">
+              <span className="olo-portal-content">
                 <span className="olo-portal-label">{portal.label}</span>
-                <p className="olo-portal-description">{portal.description}</p>
-                <span className="olo-portal-arrow" aria-hidden="true">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12"/>
-                    <polyline points="12 5 19 12 12 19"/>
-                  </svg>
-                </span>
-              </div>
+                <span className="olo-portal-description">{resaltar(portal.description)}</span>
+              </span>
             </a>
           ))}
         </div>

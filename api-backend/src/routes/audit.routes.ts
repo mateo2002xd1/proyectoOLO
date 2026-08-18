@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { AuditController } from '../controllers/auditoria.controller';
 import { requireAuth } from '../middlewares/auth.middleware';
 import { requierePermisoAuditoria } from '../middlewares/permisos.middleware';
+import { requirePermission } from '../middlewares/require-permission.middleware';
 
 const router = Router();
 
@@ -16,7 +17,7 @@ const router = Router();
  * El filtro va en el router y no en el controlador para que ninguna ruta nueva
  * pueda añadirse aquí por descuido sin pasar por él.
  */
-router.use(requireAuth, requierePermisoAuditoria('puedeVer'));
+router.use(requireAuth, requierePermisoAuditoria('puedeVer'), requirePermission('auditoria.ver'));
 
 router.get('/', AuditController.getAll);
 router.get('/:contentType/:contentId', AuditController.getByContentId);

@@ -653,3 +653,147 @@ Se verificó cada afirmación estructural contra el código. Corregido:
 - Se reescribieron e integraron las reglas clave arquitectónicas directamente en 1-guia-del-proyecto.md, 2-convenciones-del-proyecto.md, etc., eliminando los archivos duplicados o desactualizados (guia-del-proyecto.md, SEGURIDAD_OLO.md, CONVENCIONES_CODIGO_OLO.md).
 - Se detalló formalmente en la documentación la dependencia unidireccional del backend y el concepto de rutas "delgadas" para Next.js.
 - Todo quedó respaldado en GitHub bajo el mensaje: "Refactor: Limpieza de sitio-web y api-backend, consolidación de docs"
+
+---
+
+## sesión 17-08-2026: autorización a nivel de objeto (BOLA)
+
+Se cierra el hallazgo histórico «RBAC definido en BD pero nunca aplicado en código» para
+todo lo que quedaba fuera del dominio de páginas, y se añade la comprobación de propiedad
+que faltaba en toda la API. Detalle completo en `3-seguridad-del-proyecto.md` §S10.
+
+### Qué estaba abierto
+- `PATCH /api/users/:id` sin filtro de rol: cualquier sesión válida —un `visitante_interno`
+  incluido— cambiaba el `role_id` de cualquiera a Superadmin. Con `reset_password: true` la
+  respuesta devolvía además la contraseña temporal de la víctima.
+- `/api/roles`, `/api/permissions`, `/api/role-permissions`, `/api/sections`,
+  `/api/sitio-users` y `/api/alerts`: solo `requireAuth`.
+- `/api/jobs/:id`: **sin autenticación ninguna**, con ids secuenciales de BullMQ.
+- `DELETE /api/attachments/:id`: cargaba el archivo por id y hacía `fs.unlinkSync` sobre su
+  ruta sin comprobar de qué contenido era.
+- `GET /api/contenidos/:id` y `GET /api/contenidos`: devolvían borradores y material
+  rechazado a cualquier sesión.
+- El rol se leía del JWT (7 días de vida) y no de la fila, así que degradar a alguien no
+  tenía efecto hasta que caducara su token.
+
+### Qué se creó
+- `src/policies/usuarios.policies.ts` y `src/policies/contenidos.policies.ts`, con la forma
+  de `paginas.policies.ts`.
+- `src/shared/autorizacion.ts`: `esDueno`, `exigirPropiedad`, `exigirPertenencia` y la marca
+  que permite al verificador reconocer un guardia.
+- `scripts/verificar-propiedad.ts` + `npm run propiedad:verificar`.
+
+### Qué se modificó
+- `auth.middleware.ts`: el rol y el `role_id` salen de la fila del usuario, que ya estaba
+  cargada para comprobar estado y caducidad — sin consulta adicional. `requireRole`, que
+  comparaba literal y por eso no habría funcionado nunca, ahora normaliza.
+- `permisos.middleware.ts`: las cuatro fábricas de guardias, que tenían el mismo cuerpo
+  repetido, salen de un único `construirGuardia`.
+- Routers de `users`, `roles`, `permissions`, `role-permissions`, `sections`, `contenidos`,
+  `sitio-users`, `attachments`, `jobs` y `/api/alerts` en `app.ts`.
+- `listar-usuarios.usecase.ts`: lista blanca de autoservicio (`name`, `apellidos`, `email`),
+  nadie se cambia su propio rol ni su propio estado, no se degrada al último Superadmin
+  activo, nadie se borra a sí mismo.
+- `contenido.usecase.ts`, `adjuntos.usecase.ts`, `trabajos.controller.ts`: comprobación de
+  dueño y de pertenencia al padre.
+- `guardar-borrador.usecase.ts`: se escribe `creadoPor` en cada versión. La columna existía
+  desde la migración 007 y no la rellenaba nadie, así que RF-07 no sabía decir quién editó.
+- `shared/ambito.ts`: `exigirAmbito` para las rutas que escriben. Antes, una cabecera
+  `X-Ambito` ausente o mal escrita caía en silencio sobre el sitio público.
+
+### Decisiones
+- **La edición es colaborativa**: cualquier Editor trabaja sobre el borrador de otro. La
+  autoría se registra para la bitácora, no restringe. Lo que sí mira al dueño es borrar, la
+  cuenta propia, los adjuntos y los trabajos en cola.
+- **`puedeAdministrarSeguridad` incluye a Administrador**, no solo a Superadmin, porque el
+  panel de roles y permisos lo abren los dos (`sitio-web/src/middleware.ts`). Estrecharlo es
+  cambiar una lista en la policy.
+- **El ámbito no se gateó por `acceso.sitio`/`acceso.intranet`** como preveía el plan: la
+  cola de revisión es deliberadamente cruzada entre las dos aplicaciones, esos permisos solo
+  están sembrados para Editor, y todos los roles que editan editan en ambos ámbitos por
+  diseño. Gatearlo habría dejado al Administrador sin poder aprobar páginas de intranet sin
+  cerrar nada real.
+
+### Verificación
+- `npm run typecheck` limpio.
+- `npm run propiedad:verificar`: 28 comprobaciones de policy y 31 rutas barridas, todas con
+  guardia o con su comprobación declarada. Todo correcto.
+- `npm run permisos:verificar`, `password:verificar` y `email:verificar` siguen en verde.
+
+### Pendiente
+- Pruebas manuales con dos sesiones reales (tabla de comprobaciones en §S10) contra un
+  entorno con Redis levantado — el `propiedad:verificar` no ejerce la API, solo la inspecciona.
+- `GET /api/contenidos` ahora oculta lo no publicado a quien no puede verlo; conviene
+  confirmar que ninguna pantalla contaba con el comportamiento anterior.
+- El endpoint de descarga de fichero de RF-12 sigue sin existir; cuando se construya, hereda
+  la regla de S8.
+
+---
+
+## sesión 18-08-2026: cierre de sesión por inactividad
+
+Una sesión duraba 7 días y nada la cerraba por dejar de usarse: ni un `setTimeout`, ni un
+listener de actividad, ni una comprobación en la API. Un equipo compartido del SENA con el
+panel abierto quedaba accesible a quien pasara por ahí una semana después.
+
+### Qué se creó
+- **`packages/inactividad/`** — paquete nuevo, consumido por las dos apps. Dentro:
+  - `crearVigilanteDeInactividad()`: el reloj. Guarda **el instante** de la última
+    actividad y compara contra `Date.now()` en cada disparo, en vez de descontar con un
+    `setInterval` — así un portátil que estuvo dormido tres horas despierta con la sesión
+    ya vencida en lugar de con el contador a medias.
+  - La actividad se anota en `localStorage`, que se comparte entre pestañas. Sin eso,
+    trabajar en una cerraba la sesión desde la otra, y como la cookie es una sola se
+    llevaba las dos por delante.
+  - `ModalInactividad`: el diálogo del aviso. Vive en el paquete y no en cada app porque
+    las dos lo pintan igual (`.olo-modal*` existe en los dos `globals.css`); lo único que
+    difiere es a quién se llama para cerrar, y eso se queda en cada `vigilante-sesion.tsx`.
+  - No usa `mousemove` a propósito: un ratón apoyado en una mesa que tiembla mantendría la
+    sesión viva sin nadie delante, que es justo lo que esto evita.
+- **`{sitio-web,intranet}/src/shared/lib/inactividad/`** — el `VigilanteSesion` de cada app
+  y el traductor del motivo que llega por la URL.
+
+### Qué se modificó
+- `api-backend/src/middlewares/auth.middleware.ts`: **la mitad que de verdad cierra la
+  sesión.** `usuarios.ultimo_acceso_en` existía y solo se escribía al iniciar sesión, así
+  que no medía nada; ahora se compara en cada petición y se refresca como mucho una vez
+  por minuto —sin el freno sería un `UPDATE` por cada lectura del panel—.
+- `api-backend/src/shared/password-policy.ts`: los dos umbrales nuevos, junto a los de §3.
+- Los dos `puck-editor-wrapper.tsx`: puente para leer la historia de Puck desde fuera de su
+  árbol. Sin él, guardar antes de cerrar habría que hacerlo a ciegas, creando una versión
+  nueva en cada cierre aunque nadie hubiera tocado nada.
+- Los dos `LoginView`: leen `?motivo=` y pintan un aviso **informativo, no de error**.
+  Cerrar por inactividad es el sistema funcionando; en rojo, junto a «Credenciales
+  inválidas», hace creer que uno se equivocó. Se añadieron `AuthGeneralNotice`
+  (sitio-web) y `.login-general-notice` con tokens `--color-info-*` (intranet).
+- `intranet/.../LoginView.tsx` se partió en `LoginForm` + envoltorio con `Suspense`:
+  `useSearchParams` lo exige y sin él **el build fallaba** al prerenderizar `/login`.
+
+### Decisiones
+- **15 minutos en el cliente, 20 en la API.** No es un descuido: el navegador tiene que
+  cerrar siempre primero para que se vea el aviso en vez de un 401 seco a mitad de un clic.
+  La holgura absorbe relojes desfasados y pestañas de fondo, donde el navegador ralentiza
+  los temporizadores.
+- **En el editor se guarda el borrador antes de cerrar.** `PuckEditorWrapper` no tiene
+  autoguardado —`guardarBorrador` solo se dispara al pulsar el botón—, así que un cierre
+  sin guardar sería exactamente la pérdida contra la que avisa su propio `ModalSalir`.
+  Si el guardado falla, se cierra igual y el login lo dice con otro motivo.
+- **El motivo de la URL no se pinta tal cual.** `mensajeDeCierre` solo reconoce claves
+  propias; imprimir el parámetro dejaría poner cualquier texto sobre el formulario de
+  acceso con solo preparar un enlace.
+
+### Verificación
+- `npm run build` correcto en `sitio-web`.
+- `npm run typecheck` y `propiedad:verificar` / `permisos:verificar` correctos en `api-backend`.
+- La intranet **compila** (`✓ Compiled successfully`) pero su `next build` no termina: falla
+  el type check en `Carousel.tsx` / `SeccionCarrusel.tsx` por un desajuste de `CarouselImage`
+  que viene de trabajo en curso ajeno a esto, sin commitear.
+
+### Pendiente
+- Las pruebas manuales de la tabla de §S3: dos pestañas, suspender el equipo, y el caso del
+  editor con y sin cambios (que no debe crear versión si no se tocó nada).
+- Repasar el modal con teclado y lector de pantalla: la cuenta atrás se anuncia solo en los
+  múltiplos de diez y los últimos cinco segundos, para no dejar el lector hablando encima
+  de sí mismo.
+- El aviso no aparece en las pantallas de `login/*` ni en el sitio público, que no tienen
+  sesión que cerrar. Es lo correcto, pero conviene confirmarlo al probar.

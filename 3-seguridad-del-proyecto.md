@@ -57,7 +57,12 @@ El contenido rico que crean los editores es HTML almacenado que luego se renderi
 
 - **Contraseñas con bcrypt** (ya está) — coste de hashing adecuado (≥ 10 rounds).
 - **Política de complejidad concreta**: definir longitud mínima, mezcla de caracteres. Hoy el requerimiento la menciona pero no está especificada — hay que escribirla.
-- **JWT**: firma verificada solo en la API. Tokens con expiración corta. Guardar en cookie `httpOnly`, `Secure`, `SameSite` — nunca en `localStorage` (accesible por XSS).
+- **JWT**: firma verificada solo en la API. Guardar en cookie `httpOnly`, `Secure`, `SameSite` — nunca en `localStorage` (accesible por XSS). La firma dura 7 días; lo que acota la sesión de verdad es la inactividad, abajo.
+- **Cierre por inactividad — IMPLEMENTADO 2026-08-18.** Dos umbrales que hacen cosas distintas y por eso no coinciden:
+  - **15 minutos en el navegador** (`packages/inactividad/`): a los 14 aparece un aviso con cuenta atrás de 60 s; al agotarse se llama a `/logout` y se va al login con `?motivo=inactividad`. En la mesa de edición se guarda el borrador antes de cerrar — el editor no tiene autoguardado, así que sin eso el cierre destruiría trabajo. Esto es **experiencia de usuario**: quien robe la cookie no ejecuta nuestro JavaScript.
+  - **20 minutos en la API** (`requireAuth`, contra `usuarios.ultimo_acceso_en`): este es el control real. La columna existía y solo se escribía al iniciar sesión, así que no medía nada; ahora se refresca en cada petición, como mucho una vez por minuto para no convertir cada lectura en un `UPDATE`.
+  - **La ventana del servidor es más ancha a propósito.** El cliente tiene que cerrar siempre primero, para que la gente vea el aviso en vez de un 401 a mitad de un clic; los cinco minutos de holgura absorben relojes desfasados y pestañas de fondo, donde el navegador ralentiza los temporizadores.
+  - Entre pestañas la actividad se comparte por `localStorage`: sin eso, trabajar en una cerraba la sesión desde la otra — y la cookie es una sola, así que se llevaba las dos por delante.
 - **Rate limiting en login** (ya hay `express-rate-limit`): limitar intentos por IP/usuario para frenar fuerza bruta. Endpoints de recuperación y preguntas de seguridad también.
 - **Caducidad de cuentas (RF-16)**: hoy en STUB. Al implementar, la verificación de caducidad debe ocurrir en el login del backend, no en el frontend.
 - **First-login y preguntas de seguridad**: ya implementados; verificar que el flujo no permita saltarse el cambio de contraseña obligatorio.
@@ -94,6 +99,50 @@ El contenido rico que crean los editores es HTML almacenado que luego se renderi
 - **Solo documentos con estado `publicado`** son descargables públicamente. Un documento en borrador o revisión nunca debe ser accesible por URL directa.
 - **No confiar en URLs adivinables**: verificar el estado del contenido en el endpoint de descarga, no solo servir el archivo por path.
 
+### S10 — Autorización a nivel de objeto (BOLA) CERRADO 2026-08-17
+
+El JWT responde **quién eres**; no responde **sobre qué puedes actuar**. Durante toda la
+vida del proyecto `requireAuth` fue el único filtro de casi todas las rutas con `:id`: se
+verificaba la firma del token y la cuenta, y a partir de ahí cualquier sesión válida leía,
+modificaba o borraba objetos ajenos sin que el backend consultara jamás de quién eran.
+
+Lo que estaba abierto y ya no:
+
+| Ruta | Lo que permitía | Dónde se cierra ahora |
+|---|---|---|
+| `PATCH /api/users/:id` | Cambiar el `role_id` de cualquiera → **escalada a Superadmin**; con `reset_password` la respuesta devolvía la contraseña temporal de la víctima → **toma de cuenta** | `user.routes.ts` (administra o es su cuenta) + lista blanca de autoservicio en `updateUser` |
+| `/api/roles`, `/api/permissions`, `/api/role-permissions` | Concederse permisos a uno mismo | `requierePermisoUsuario('puedeAdministrarSeguridad')` |
+| `/api/sitio-users/:id` | Datos personales de ciudadanos (Ley 1581) | `requierePermisoUsuario('puedeAdministrarUsuarios')` |
+| `GET /api/jobs/:id` | **Sin autenticación**, con ids secuenciales de BullMQ: enumerar el resultado de exportaciones ajenas | `requireAuth` + dueño en `job.data.usuarioId`, con 404 |
+| `DELETE /api/attachments/:id` | Borrar del disco el fichero de cualquier contenido: se cargaba por id y se hacía `fs.unlinkSync` sin mirar el padre | Colgada de `/api/contenidos/:contenidoId/attachments/:id` + `exigirPertenencia` |
+| `GET /api/contenidos/:id` | Leer borradores y material rechazado con solo tener sesión | 404 salvo autor o `puedeVerNoPublicado` (cierra también **S8**) |
+| `/api/alerts` | Correo y caducidad de toda la plantilla | `puedeAdministrarUsuarios` |
+| Rol tomado del JWT | Degradar a alguien no surtía efecto durante 7 días | `auth.middleware.ts` lo lee de la fila, sin consulta extra |
+
+Reglas que deja fijadas:
+
+- **La comprobación de propiedad vive en el caso de uso, no en el middleware.** Es donde el
+  objeto ya está cargado y por donde pasan todos los caminos que llegan a él. El middleware
+  de ruta resuelve el rol; la fila resuelve el dueño. Las dos capas, como pide §0.2.
+- **404 en vez de 403 cuando el objeto no debería ser visible.** Un 403 confirma que ese id
+  existe y convierte el endpoint en un enumerador. Se usa 403 solo cuando la existencia del
+  objeto ya es conocida para esa sesión y lo que falta es el derecho a actuar.
+- **El dueño se toma de la sesión, nunca del cuerpo.** `subidoPor`, `usuarioId` de un job y
+  `creadoPor` de una versión salen de `req.user`.
+- **La edición es colaborativa por decisión de producto**: cualquier Editor trabaja sobre el
+  borrador de otro. La autoría se registra para RF-07, no para negar el paso. Lo que sí mira
+  al dueño es **borrar**, la cuenta propia, los adjuntos y los trabajos en cola.
+- **El ámbito no es una frontera de permisos** y no debe tratarse como tal mientras todos los
+  roles que editan editen en las dos aplicaciones y la cola de revisión sea cruzada. Lo que
+  sí se exige es que venga declarado al escribir (`exigirAmbito`), para que una cabecera
+  perdida no cree la página en el sitio equivocado.
+
+Verificación: `npm run propiedad:verificar` en `api-backend`. Comprueba las policies contra
+los nombres de rol reales de la tabla `roles` **y** recorre los routers de Express afirmando
+que ninguna ruta con parámetro de objeto llega al controlador solo con `requireAuth`. Las
+rutas cuya comprobación vive en el caso de uso se declaran en el propio script con su
+motivo, así que esa lista es además el inventario de dónde está cada comprobación.
+
 ### S9 — Respaldos (RF-17)
 
 - **Cifrar los respaldos** en reposo; contienen la base completa.
@@ -121,12 +170,12 @@ El contenido rico que crean los editores es HTML almacenado que luego se renderi
 |---|---|---|
 | RF-01 | Sanitizar HTML de Editor.js en el servidor | ✅ `sanitizarContenidoPuck()` en `guardar-borrador.usecase.ts` — 2026-08-11 |
 | RF-02 | Validar magic bytes, sanitizar SVG, renombrar a UUID, tamaño en servidor, fuera del webroot | ✅ `/api/upload` con `file-type`, lista blanca, UUID rename, límites — 2026-08-11 |
-| RF-04/05/06 | Doble capa RBAC (ruta + policy) aplicada en TODA operación sensible | ✅ `requierePermisoPagina` verificado activo en código — 2026-08-11 |
+| RF-04/05/06 | Doble capa RBAC (ruta + policy) aplicada en TODA operación sensible | ✅ Extendido a usuarios, roles, permisos, secciones, contenidos, adjuntos y trabajos; propiedad de objeto comprobada contra la BD — `npm run propiedad:verificar` — 2026-08-17 |
 | RF-08 | Lista blanca de dominios de iframe + validación de URL en servidor + sandbox | ⏳ Pendiente implementación completa |
 | RF-09 | API key solo en backend, nunca expuesta al frontend | ⏳ Pendiente al construir buscador CNO |
-| RF-12 | Verificar estado `publicado` en el endpoint de descarga | ⏳ Pendiente al implementar RF-12 |
+| RF-12 | Verificar estado `publicado` en el endpoint de descarga | 🟡 Parcial: `GET /api/contenidos/:id` y sus adjuntos ya devuelven 404 si no está publicado y no eres el autor — 2026-08-17. Falta el endpoint de descarga de fichero cuando exista |
 | RF-13 | Aceptación registrada + sanitización + aviso Ley 1581 vigente | ⏳ Pendiente al implementar formularios |
-| RF-16 | Caducidad verificada en backend, cookies httpOnly/Secure, política de contraseña definida, rate limiting | ✅ Rate limiting añadido a endpoints de escritura — 2026-08-11 |
+| RF-16 | Caducidad verificada en backend, cookies httpOnly/Secure, política de contraseña definida, rate limiting | ✅ Rate limiting — 2026-08-11. Cierre por inactividad 15 min cliente / 20 min API — 2026-08-18 |
 | RF-17 | Respaldos cifrados, ubicación restringida, restauración probada | ⏳ Pendiente implementación |
 
 ---

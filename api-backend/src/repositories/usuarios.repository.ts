@@ -25,6 +25,11 @@ export const UserRepository = {
       include: [{ model: Role, as: 'role' }],
     }),
 
+  /** Cuántas cuentas activas tiene un rol. Lo usa `updateUser` para no dejar el
+   *  sistema sin ningún Superadmin al degradar al último que quedaba. */
+  contarActivosPorRol: (role_id: string) =>
+    User.count({ where: { role_id, status: 'active' } }),
+
   create: (data: any) => User.create(data),
 
   update: (id: string, data: any) =>

@@ -6,6 +6,7 @@ import {
   SLUG_PLANTILLA,
 } from '@/features/gestor-secciones';
 import { puedeEditarPaginas, cabecerasConSesion } from '@/shared/lib/sesion';
+import { VigilanteSesion } from '@/shared/lib/inactividad';
 
 export const metadata = {
   title: 'Previsualización | Intranet',
@@ -65,6 +66,10 @@ export default async function PreviewPage({
       </div>
 
       {esPlantilla ? contenido : <MarcoSecciones>{contenido}</MarcoSecciones>}
+
+      {/* La vista previa cuelga fuera de `(secciones)`, así que no hereda su
+          vigilante. Sin `alExpirar`: aquí no hay nada que guardar, solo se mira. */}
+      <VigilanteSesion />
     </div>
   );
 }

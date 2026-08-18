@@ -21,6 +21,14 @@ export const AttachmentRepository = {
 
   findById: (id: string) => Archivo.findByPk(id),
 
+  /**
+   * El enlace entre un contenido y un archivo, o `null` si ese archivo no cuelga de
+   * ese contenido. Es lo que permite comprobar la pertenencia antes de borrar: la
+   * tabla `archivos` no sabe de qué contenido es cada fila, ese dato vive aquí.
+   */
+  findEnlace: (contenidoId: string, archivoId: string) =>
+    ContenidoArchivo.findOne({ where: { contenidoId, archivoId } }),
+
   /** Crea el archivo y lo enlaza al contenido en una sola operación. */
   create: async (data: any) => {
     const { contenidoId, orden = 0, rol = 'adjunto', ...archivo } = data;

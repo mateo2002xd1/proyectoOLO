@@ -22,6 +22,24 @@ const nextConfig = {
    */
   async redirects() {
     return [
+      /**
+       * La portada vive en `/inicio`, no en `/`.
+       *
+       * Hasta ahora las dos rutas servían el mismo contenido (ambas leían el slug
+       * `inicio`), o sea contenido duplicado bajo dos URLs. Se deja una sola, y la
+       * elegida es `/inicio` porque coincide con el slug real que se edita y con la
+       * ruta que usa la intranet para su portada.
+       *
+       * Redirige en vez de dar 404: la raíz de un sitio público es lo que la gente
+       * escribe y lo que enlazan desde fuera. `permanent: false` mientras el sitio
+       * no esté en producción — un 308 se queda cacheado en el navegador y volver
+       * atrás obligaría a limpiar la caché de cada visitante.
+       */
+      {
+        source: '/',
+        destination: '/inicio',
+        permanent: false,
+      },
       {
         source: '/login',
         destination: '/admin/login',

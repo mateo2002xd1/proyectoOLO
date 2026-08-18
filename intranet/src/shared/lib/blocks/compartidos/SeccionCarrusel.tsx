@@ -37,12 +37,17 @@ export function SeccionCarrusel({
   // El carrusel divide por el número de imágenes, así que sin ninguna se rompe.
   if (imagenes.length === 0) return null;
 
-  const fuentes = imagenes.map((imagen) => imagen.src ?? '').filter(Boolean);
-  if (fuentes.length === 0) return null;
+  // El alt viaja con la imagen: antes se descartaba aquí y el carrusel pintaba
+  // siempre "Imagen del carrusel N", así que lo que el editor escribía en el
+  // campo de texto alternativo nunca llegaba al HTML.
+  const imagenesConAlt = imagenes
+    .filter((imagen): imagen is { src: string; alt?: string } => Boolean(imagen.src))
+    .map((imagen) => ({ src: imagen.src, alt: imagen.alt ?? '' }));
+  if (imagenesConAlt.length === 0) return null;
 
   const carrusel = (
     <Carousel
-      images={fuentes}
+      images={imagenesConAlt}
       itemsPerPage={imagenesPorPagina}
       autoplay={autoplay}
       showButtons={mostrarBotones}

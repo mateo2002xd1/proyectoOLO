@@ -8,6 +8,9 @@ import {
 } from '@olo/blocks-renderer';
 import { ExternalPortals } from '@/shared/lib/blocks/ExternalPortals';
 import { Services } from '@/shared/lib/blocks/Services';
+import { DatoOloSemana } from '@/shared/lib/blocks/DatoOloSemana';
+import { RecursosVisualesBloque } from '@/shared/lib/blocks/RecursosVisualesBloque';
+import { Publicaciones } from '@/shared/lib/blocks/Publicaciones';
 import { Header } from '@/shared/lib/blocks/Header';
 import { Footer } from '@/shared/lib/blocks/Footer';
 import { IntranetTopbar } from '@/shared/lib/blocks/IntranetTopbar';
@@ -16,6 +19,7 @@ import { defaultIdentidadVisual } from '@/features/identidad-visual/client';
 import { OcupacionSearchBanner } from '@/shared/ui/molecules/ocupacion-search-banner';
 import { EditorjsWrapper } from '@/features/paginas/components/editorjs-wrapper';
 import { ImageUploaderField } from '@/features/paginas/components/image-uploader-field';
+import { ArchivoUploaderField } from '@/features/paginas/components/archivo-uploader-field';
 import type { Config } from '@puckeditor/core';
 import type { OutputData } from '@editorjs/editorjs';
 
@@ -59,7 +63,7 @@ const puckConfigBase: Config = {
       components: ['IntranetTopbar', 'IntranetHero'],
     },
     'Contenido Principal': {
-      components: ['Hero', 'Services', 'RichText'],
+      components: ['Hero', 'Services', 'DatoOloSemana', 'RecursosVisualesBloque', 'Publicaciones', 'RichText'],
     },
     'Portales': {
       components: ['ExternalPortals'],
@@ -113,6 +117,15 @@ const puckConfigBase: Config = {
                 { label: 'No', value: false },
                 { label: 'Sí', value: true },
               ],
+            },
+            children: {
+              type: 'array',
+              label: 'Submenú desplegable (opcional)',
+              arrayFields: {
+                label: { type: 'text', label: 'Texto del enlace' },
+                href: { type: 'text', label: 'URL' },
+              },
+              getItemSummary: (item: { label?: string }) => item.label || 'Enlace',
             },
           },
           getItemSummary: (item: { label?: string }) => item.label || 'Enlace',
@@ -241,37 +254,32 @@ const puckConfigBase: Config = {
             id: { type: 'text' as const, label: 'Identificador' },
             title: { type: 'text' as const, label: 'Título' },
             description: { type: 'textarea' as const, label: 'Descripción' },
-            link: { type: 'text' as const, label: 'Texto del enlace' },
           },
           defaultItemProps: {
             id: 'nuevo-servicio',
             title: 'Nuevo servicio',
             description: 'Descripción del servicio.',
-            link: 'Ver más',
           },
         },
       },
       defaultProps: {
         id: 'services-1',
-        sectionTitle: 'Que hacemos?',
+        sectionTitle: '¿Qué hacemos?',
         services: [
           {
-            id: 'platform',
-            title: 'Plataforma del Observatorio Laboral y Ocupacional',
-            description: 'Accede a datos actualizados del mercado laboral colombiano con herramientas interactivas de analisis y visualizacion.',
-            link: 'Explorar plataforma',
+            id: 'monitoreo',
+            title: 'Monitoreo del Mercado',
+            description: 'Seguimiento riguroso de fuentes de información laboral nacional',
           },
           {
-            id: 'materials',
-            title: 'Materiales y publicaciones',
-            description: 'Consulta informes, estudios sectoriales y boletines sobre tendencias del empleo y las ocupaciones en el pais.',
-            link: 'Ver publicaciones',
+            id: 'orientacion',
+            title: 'Orientación y Formación',
+            description: 'Apoyo a la definición de acciones de capacitación, emprendimiento y empleo',
           },
           {
-            id: 'knowledge',
-            title: 'Generacion de conocimiento',
-            description: 'Investigacion aplicada y analisis prospectivo sobre las necesidades del mercado laboral y formacion de capital humano.',
-            link: 'Conocer mas',
+            id: 'alertas',
+            title: 'Generación de Alertas',
+            description: 'Identificación de proyectos de inversión y alertas regionales y sectoriales',
           },
         ],
       },
@@ -282,7 +290,7 @@ const puckConfigBase: Config = {
       }: {
         id: string;
         sectionTitle?: string;
-        services?: { id: string; title: string; description: string; link: string }[];
+        services?: { id: string; title: string; description: string }[];
       }) => (
         <Services
           block={{ id: id || 'services-preview' }}
@@ -291,16 +299,163 @@ const puckConfigBase: Config = {
         />
       ),
     },
+    DatoOloSemana: {
+      label: 'Dato OLO de la semana',
+      fields: {
+        tituloResaltado: {
+          type: 'text' as const,
+          label: 'Título (parte destacada)',
+        },
+        tituloNormal: {
+          type: 'text' as const,
+          label: 'Título (resto)',
+        },
+        imagenSrc: {
+          type: 'custom',
+          label: 'Infografía del dato',
+          render: ({ value, onChange }: CustomFieldRender<string>) => (
+            <ImageUploaderField value={value} onChange={onChange} />
+          ),
+        },
+        imagenAlt: {
+          type: 'text' as const,
+          label: 'Texto alternativo de la imagen',
+        },
+      },
+      defaultProps: {
+        id: 'dato-olo-semana-1',
+        tituloResaltado: 'Dato OLO',
+        tituloNormal: 'de la semana',
+        imagenSrc: '/assets/img/dato-olo-semana.png',
+        imagenAlt: 'Dato OLO de la semana',
+      },
+      render: ({
+        id,
+        tituloResaltado,
+        tituloNormal,
+        imagenSrc,
+        imagenAlt,
+      }: {
+        id: string;
+        tituloResaltado?: string;
+        tituloNormal?: string;
+        imagenSrc?: string;
+        imagenAlt?: string;
+      }) => (
+        <DatoOloSemana
+          block={{ id: id || 'dato-olo-semana-preview' }}
+          tituloResaltado={tituloResaltado}
+          tituloNormal={tituloNormal}
+          imagenSrc={imagenSrc}
+          imagenAlt={imagenAlt}
+        />
+      ),
+    },
+    RecursosVisualesBloque: {
+      label: 'Recursos Visuales',
+      fields: {
+        titulo: { type: 'text' as const, label: 'Título (usa ** para negrita)' },
+        videos: {
+          type: 'array' as const,
+          label: 'Videos',
+          arrayFields: {
+            youtubeId: { type: 'text' as const, label: 'Identificador de YouTube (los 11 caracteres)' },
+            titulo: { type: 'text' as const, label: 'Título' },
+            canal: { type: 'text' as const, label: 'Canal' },
+            miniatura: {
+              type: 'custom',
+              label: 'Miniatura propia (opcional)',
+              render: ({ value, onChange }: CustomFieldRender<string>) => (
+                <ImageUploaderField value={value} onChange={onChange} />
+              ),
+            },
+          },
+          getItemSummary: (item: { titulo?: string }) => item.titulo || 'Video',
+        },
+      },
+      defaultProps: {
+        id: 'recursos-visuales-1',
+        titulo: '**Recursos** visuales',
+        videos: [],
+      },
+      render: ({
+        id,
+        titulo,
+        videos,
+      }: BlockRender<{
+        titulo?: string;
+        videos?: { youtubeId?: string; titulo?: string; canal?: string; miniatura?: string }[];
+      }>) => (
+        <RecursosVisualesBloque
+          block={{ id: id || 'recursos-visuales-preview' }}
+          titulo={titulo}
+          videos={videos}
+        />
+      ),
+    },
+    Publicaciones: {
+      label: 'Últimas publicaciones',
+      fields: {
+        titulo: { type: 'text' as const, label: 'Título (usa ** para negrita)' },
+        publicaciones: {
+          type: 'array' as const,
+          label: 'Publicaciones',
+          arrayFields: {
+            titulo: { type: 'text' as const, label: 'Título' },
+            pdfUrl: {
+              type: 'custom',
+              label: 'Archivo PDF',
+              render: ({ value, onChange }: CustomFieldRender<string>) => (
+                <ArchivoUploaderField
+                  value={value}
+                  onChange={onChange}
+                  accept=".pdf"
+                  etiquetaBoton="Subir PDF"
+                />
+              ),
+            },
+            etiqueta: { type: 'text' as const, label: 'Etiqueta (#OLOtecuenta)' },
+            mes: { type: 'text' as const, label: 'Mes' },
+            dia: { type: 'text' as const, label: 'Día' },
+          },
+          getItemSummary: (item: { titulo?: string }) => item.titulo || 'Publicación',
+        },
+        porPagina: { type: 'number' as const, label: 'Tarjetas visibles a la vez', min: 1, max: 6 },
+      },
+      defaultProps: {
+        id: 'publicaciones-1',
+        titulo: '**Ultimas** publicaciones',
+        publicaciones: [],
+        porPagina: 4,
+      },
+      render: ({
+        id,
+        titulo,
+        publicaciones,
+        porPagina,
+      }: BlockRender<{
+        titulo?: string;
+        publicaciones?: { titulo?: string; pdfUrl?: string; etiqueta?: string; mes?: string; dia?: string }[];
+        porPagina?: number;
+      }>) => (
+        <Publicaciones
+          block={{ id: id || 'publicaciones-preview' }}
+          titulo={titulo}
+          publicaciones={publicaciones}
+          porPagina={porPagina}
+        />
+      ),
+    },
     ExternalPortals: {
       label: 'Portales Externos',
       fields: {
         title: {
           type: 'text' as const,
-          label: 'Título de la sección',
+          label: 'Título de la sección (usa ** para negrita)',
         },
         subtitle: {
           type: 'text' as const,
-          label: 'Subtítulo',
+          label: 'Subtítulo (opcional)',
         },
         portals: {
           type: 'array' as const,
@@ -308,8 +463,15 @@ const puckConfigBase: Config = {
           arrayFields: {
             id: { type: 'text' as const, label: 'Identificador' },
             label: { type: 'text' as const, label: 'Etiqueta' },
-            description: { type: 'textarea' as const, label: 'Descripción' },
+            description: { type: 'textarea' as const, label: 'Descripción (usa ** para negrita)' },
             href: { type: 'text' as const, label: 'URL de destino' },
+            imagen: {
+              type: 'custom',
+              label: 'Ilustración de fondo (se pinta al 60%)',
+              render: ({ value, onChange }: CustomFieldRender<string>) => (
+                <ImageUploaderField value={value} onChange={onChange} />
+              ),
+            },
             gradient: { type: 'text' as const, label: 'Gradiente CSS' },
           },
           defaultItemProps: {
@@ -317,35 +479,43 @@ const puckConfigBase: Config = {
             label: 'Nuevo portal',
             description: 'Descripción del portal.',
             href: '#',
-            gradient: 'linear-gradient(135deg, #1a73e8 0%, #1557b0 100%)',
+            imagen: '',
+            gradient: 'linear-gradient(135deg, #0b4ea2 0%, #0a2f6b 100%)',
           },
+          getItemSummary: (item: { label?: string }) => item.label || 'Portal',
         },
       },
       defaultProps: {
         id: 'portals-1',
-        title: 'Portales externos',
-        subtitle: 'Accede a los servicios y canales oficiales del gobierno',
+        title: '**Portales externos** de la ciudadanía',
+        subtitle: '',
         portals: [
           {
             id: 'pqrs',
             label: 'PQRS',
-            description: 'Peticiones, quejas, reclamos y sugerencias. Tu opinion es importante para mejorar nuestros servicios.',
+            description:
+              '**Registrar tus peticiones, quejas, reclamos y sugerencias**. Tu participación es fundamental para seguir mejorando.',
             href: '#',
-            gradient: 'linear-gradient(135deg, #1a73e8 0%, #1557b0 100%)',
+            imagen: '/assets/img/pqrs.png',
+            gradient: 'linear-gradient(135deg, #0b4ea2 0%, #0a2f6b 100%)',
           },
           {
             id: 'denuncias',
-            label: 'Denuncias por corrupcion',
-            description: 'Canal seguro para reportar actos de corrupcion. Tu identidad sera protegida.',
+            label: 'Denuncias por corrupción',
+            description:
+              '**Reportar actos de corrupción** por un canal seguro. Tu identidad será protegida en todo momento.',
             href: '#',
+            imagen: '/assets/img/corrupcion.png',
             gradient: 'linear-gradient(135deg, #0d1526 0%, #1a2e50 100%)',
           },
           {
             id: 'transparencia',
             label: 'Transparencia',
-            description: 'Acceso a informacion publica, rendicion de cuentas y datos abiertos del observatorio.',
+            description:
+              '**Consultar información pública** y datos abiertos del observatorio, con rendición de cuentas al día.',
             href: '#',
-            gradient: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+            imagen: '/assets/img/transparencia.png',
+            gradient: 'linear-gradient(135deg, #1478c6 0%, #0d4f8b 100%)',
           },
         ],
       },
@@ -358,7 +528,14 @@ const puckConfigBase: Config = {
         id: string;
         title?: string;
         subtitle?: string;
-        portals?: { id: string; label: string; description: string; href: string; gradient: string }[];
+        portals?: {
+          id: string;
+          label: string;
+          description: string;
+          href: string;
+          gradient: string;
+          imagen?: string;
+        }[];
       }) => (
         <ExternalPortals
           block={{ id: id || 'portals-preview' }}
@@ -411,7 +588,7 @@ const COMPONENTES_POR_SLUG: Record<string, string[]> = {
   // La plantilla es lo contrario a una página: solo la cabecera y el pie, que es
   // justo lo que las páginas ya no pueden tocar.
   plantilla: ['Header', 'Footer'],
-  inicio: ['Hero', 'Services', 'ExternalPortals', 'RichText', 'Grid', 'Flex', 'Space'],
+  inicio: ['Hero', 'Services', 'DatoOloSemana', 'RecursosVisualesBloque', 'Publicaciones', 'ExternalPortals', 'RichText', 'Grid', 'Flex', 'Space'],
 };
 
 /**
