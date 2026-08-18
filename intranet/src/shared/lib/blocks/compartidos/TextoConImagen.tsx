@@ -70,10 +70,10 @@ export function TextoConImagen({
 
   return (
     <section
-      className={`px-4 md:px-12 flex justify-center ${fondo === 'gris' ? 'bg-[#f4f5f7]' : 'bg-white'}`}
+      className={`px-6 flex justify-center ${fondo === 'gris' ? 'bg-[#f4f5f7]' : 'bg-white'}`}
       style={{ paddingTop: '4rem', paddingBottom: '4rem' }}
     >
-      <div className="max-w-7xl w-full">
+      <div className="max-w-[1200px] w-full">
         {titulo && (
           <h2 className="tasa-concept-title">
             {resaltar(titulo)}
