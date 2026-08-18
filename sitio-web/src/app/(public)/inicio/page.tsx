@@ -4,19 +4,21 @@ import { EditButton, obtenerPaginaInicio } from '@/features/paginas';
 import { puedeEditarPaginas } from '@/shared/lib/session';
 
 /**
- * La portada, también accesible en `/inicio`.
+ * La portada del sitio.
  *
- * El contenido es el mismo que el de `/` —ambas leen el slug `inicio`—, así que
- * esto es contenido duplicado para un buscador. La canónica es `/`: es la que
- * enlaza el logo de la cabecera y la que devuelve `rutaPublicaDeSlug('inicio')`.
+ * Es la única: `/` redirige aquí (ver `next.config.mjs`). Antes las dos rutas
+ * servían este mismo contenido —ambas leen el slug `inicio`— y eso era contenido
+ * duplicado bajo dos URLs. Se quedó `/inicio` porque coincide con el slug real
+ * que se edita y con la ruta que la intranet usa para su portada.
  *
- * Existe porque el slug se llama `inicio` y escribir esa URL a mano es lo natural
- * cuando vienes de la intranet, donde la portada sí vive en `/inicio`. Un segmento
- * estático gana al comodín `[slug]`, así que esta ruta deja de resolverse por el
- * catch-all, que habría dado 404 al no encontrar una página con ese slug propio.
+ * Un segmento estático gana al comodín `[slug]`, así que esta ruta no se resuelve
+ * por el catch-all, que habría dado 404 al no encontrar una página con ese slug.
  */
 export const metadata: Metadata = {
-  alternates: { canonical: '/' },
+  title: 'Inicio | Observatorio Laboral y Ocupacional',
+  description:
+    'Observatorio Laboral y Ocupacional del SENA: monitoreo del mercado laboral, orientación y alertas sectoriales.',
+  alternates: { canonical: '/inicio' },
 };
 
 export default async function InicioPage() {

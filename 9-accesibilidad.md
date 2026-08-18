@@ -25,6 +25,8 @@ El motivo: la Resolución 1519 cuelga de la Ley 1712 de transparencia, que rige 
 
 Queda dicho el matiz para que nadie lo descubra tarde: si un director o subdirector tiene discapacidad visual, la intranet pasa a ser un asunto de accesibilidad **laboral** bajo la Ley 1618 de 2013. Ese caso no está cubierto aquí y habría que abrirlo como trabajo aparte.
 
+**Excepción, desde 2026-08-18:** los campos obligatorios de la Fase 5 (alt de imagen, título de iframe) sí se exigen en las dos aplicaciones — ver esa fase más abajo. El resto de este documento (contraste, teclado, alto contraste) sigue auditando solo sitio-web; ampliar esas otras fases a intranet sigue siendo trabajo aparte, no decidido todavía.
+
 > **Sobre las citas normativas:** los nombres y el nivel AA son firmes. Antes de una certificación formal, los artículos y numerales concretos deben verificarse contra el texto oficial publicado por MinTIC — este documento es la guía de ingeniería, no el dictamen jurídico.
 
 ### Por qué importa más aquí que en un sitio cualquiera
@@ -113,7 +115,7 @@ El amarillo de `warning` con texto blanco, a 1.48:1, era el peor contraste del s
 | Indicador de foco **por debajo de 3:1** | SC 1.4.11 | Ver §2.1 |
 | Borde de input a 1.47:1 | SC 1.4.11 | Solo importa donde el borde es el único indicador del campo |
 | Sin **modo de alto contraste** | RF-14 lo pide explícitamente | No existe hoy |
-| Bloques Puck sin **campo de texto alternativo obligatorio** | SC 1.1.1 | El editor puede publicar una imagen sin alt |
+| ~~Bloques Puck sin **campo de texto alternativo obligatorio**~~ | SC 1.1.1 | **Resuelto 2026-08-18** — ver Fase 5 |
 
 ---
 
@@ -211,6 +213,17 @@ Cambios aplicados:
 - Todo bloque Puck con imagen: campo de texto alternativo **obligatorio**, validado en la API.
 - Los bloques no exponen color libre: solo tokens del sistema, todos ya conformes.
 - Bloque de video/Power BI: `title` obligatorio en el iframe (se cruza con `5-tableros-bi.md` §4).
+
+**✅ HECHA (2026-08-18)**, para alt de imagen y título de iframe, en **sitio-web e intranet** (excepción explícita al alcance de §0 — ver ahí el porqué).
+
+Puck no tiene ningún concepto nativo de campo obligatorio, así que la regla se construyó a mano en `packages/accessibility-policy` — manifiesto por ámbito (qué bloque, qué campo de imagen exige qué campo de alt; qué bloque de iframe exige título) más la función que lo recorre. Se aplica dos veces con la misma fuente de verdad, no dos implementaciones distintas:
+
+- **Cliente** (`puck-editor-wrapper.tsx` de cada app): aviso inmediato al pulsar "Enviar a revisión", sin llamar a la API. No autoritativo.
+- **Servidor** (`api-backend/src/use-cases/paginas/enviar-a-revision.usecase.ts`): rechazo real con 400 y el detalle de qué falta. Esto es lo que de verdad impide publicar contenido inaccesible, aunque alguien llame a la API directo.
+
+**Decisión de producto tomada junto con el cambio:** el bloqueo es en "Enviar a revisión", no en "Guardar borrador" — un borrador a medio llenar se puede seguir guardando sin perder trabajo; lo que no puede pasar a `en_revision` es contenido incompleto.
+
+**Si agregás un bloque con imagen o iframe nuevo, sumalo al manifiesto de `packages/accessibility-policy` — no se detecta solo.**
 
 ### Fase 6 — Verificación
 **Riesgo: bajo, esfuerzo alto.**

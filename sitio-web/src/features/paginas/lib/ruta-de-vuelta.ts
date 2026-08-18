@@ -24,12 +24,15 @@ export function enlaceAlEditor(slug: string, volverA: string): string {
 }
 
 /**
- * La portada del sitio se edita con el slug `inicio`, pero vive en `/`, no en
- * `/inicio`. Sin esta traducción el botón de salir mandaría a una ruta que no
- * existe.
+ * La ruta pública de un slug.
+ *
+ * Ya no hay ninguna excepción: la portada vive en `/inicio`, igual que su slug.
+ * Antes había un caso especial que traducía `inicio` a `/` porque la portada
+ * estaba en la raíz, pero eso servía el mismo contenido bajo dos URLs; ahora `/`
+ * redirige a `/inicio` (ver `next.config.mjs`).
  */
 export function rutaPublicaDeSlug(slug: string): string {
-  return slug === 'inicio' ? '/' : `/${slug}`;
+  return `/${slug}`;
 }
 
 /**

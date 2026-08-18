@@ -2,9 +2,27 @@
 
 import { useState, useCallback } from 'react';
 
+/**
+ * Un permiso, tal y como lo devuelve `GET /api/permissions`.
+ *
+ * `name` es la clave que compara el servidor; el resto lo añade la API desde
+ * `catalogo-permisos.ts` para que el panel no tenga que traducir claves a lenguaje
+ * humano por su cuenta. Antes esa traducción vivía aquí, duplicada, y por eso se
+ * desviaba: nadie garantizaba que las dos listas dijeran lo mismo.
+ */
 export type Permission = {
   id: string;
-  name: string; // la clave: e.g. 'edit_post', 'acceso.intranet'
+  /** La clave: `acceso.intranet`, `editar.intranet.tasa`. La lee la máquina. */
+  name: string;
+  /** Cómo se llama en pantalla. La lee una persona. */
+  etiqueta: string;
+  descripcion: string;
+  /** Grupo del catálogo con el que el modal organiza la lista. */
+  grupo: string;
+  /** `false` cuando el permiso solo decide qué se pinta y la API no puede comprobarlo. */
+  esFrontera: boolean;
+  /** `false` si la clave está en la base pero ya no en el catálogo. */
+  enCatalogo: boolean;
 };
 
 export type Role = {

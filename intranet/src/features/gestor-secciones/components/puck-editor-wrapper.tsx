@@ -19,6 +19,7 @@ import "@puckeditor/core/dist/index.css";
 import { configDeEdicion } from "@/config/puck.config";
 import { resolverRutaDeVuelta } from "../lib/ruta-de-vuelta";
 import type { PuckEditorWrapperProps, ContenidoPagina } from "../types/editor.types";
+import { validarAccesibilidad, mensajeDeViolacion, type ViolacionAccesibilidad } from "@olo/accessibility-policy";
 
 /**
  * Cómo se nombra cada estado en la bandera.
@@ -37,6 +38,8 @@ const ETIQUETA_ESTADO: Record<string, string> = {
 };
 
 /** Con selector, para no re-renderizar la cabecera ante cualquier cambio del editor. */
+import { VigilanteSesion } from '@/shared/lib/inactividad';
+
 const usePuckSel = createUsePuck();
 
 interface AccionesCabeceraProps {
@@ -50,6 +53,15 @@ interface AccionesCabeceraProps {
   onGuardar: (indiceHistoria: number) => void;
   onEnviar: (indiceHistoria: number) => void;
   onSalir: (hayCambiosSinGuardar: boolean) => void;
+  /**
+   * Sube al wrapper el índice de la historia y si hay cambios pendientes.
+   *
+   * La historia de Puck solo se puede leer desde dentro de su árbol, y el cierre por
+   * inactividad se decide fuera. Sin este puente, guardar antes de cerrar tendría que
+   * hacerse a ciegas —creando una versión nueva en cada cierre aunque nadie hubiera
+   * tocado nada— o no hacerse.
+   */
+  onEstadoDeCambios: (indiceHistoria: number, hayCambiosSinGuardar: boolean) => void;
 }
 
 /**
@@ -74,10 +86,15 @@ function AccionesCabecera({
   onGuardar,
   onEnviar,
   onSalir,
+  onEstadoDeCambios,
 }: AccionesCabeceraProps) {
   const indiceHistoria = usePuckSel((s) => s.history.index);
   // Deshacer hasta el punto guardado vuelve a dejarlo limpio, y eso es correcto.
   const hayCambiosSinGuardar = indiceHistoria !== indiceGuardado;
+
+  useEffect(() => {
+    onEstadoDeCambios(indiceHistoria, hayCambiosSinGuardar);
+  }, [indiceHistoria, hayCambiosSinGuardar, onEstadoDeCambios]);
 
   return (
     <div className="olo-editor-acciones">
@@ -110,6 +127,41 @@ function AccionesCabecera({
       >
         {isSendingToReview ? "Enviando…" : "Enviar a revisión"}
       </button>
+    </div>
+  );
+}
+
+/**
+ * Por qué "Enviar a revisión" no hizo nada.
+ *
+ * `9-accesibilidad.md` Fase 5: alt de imagen y título de iframe son obligatorios
+ * para pasar a revisión, no solo para "Guardar borrador" (un borrador a medio
+ * llenar se puede seguir guardando). Este aviso es lo único que le dice al editor
+ * *qué* falta — sin él, el botón simplemente no responde y no hay forma de saber
+ * por qué.
+ */
+function AvisoAccesibilidad({ violaciones }: { violaciones: ViolacionAccesibilidad[] }) {
+  return (
+    <div
+      role="alert"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 4,
+        maxWidth: 360,
+        padding: "8px 12px",
+        background: "#fef2f2",
+        border: "1px solid #fca5a5",
+        borderRadius: 6,
+        color: "#b91c1c",
+        fontSize: 13,
+        lineHeight: 1.4,
+      }}
+    >
+      <strong>No se puede enviar a revisión:</strong>
+      {violaciones.map((v, indice) => (
+        <span key={indice}>{mensajeDeViolacion(v)}</span>
+      ))}
     </div>
   );
 }
@@ -206,6 +258,20 @@ export function PuckEditorWrapper({
   // Salida pedida con cambios sin guardar, a la espera de que se confirme.
   const [salidaPendiente, setSalidaPendiente] = useState(false);
 
+  const [avisosAccesibilidad, setAvisosAccesibilidad] = useState<ViolacionAccesibilidad[]>([]);
+
+  // Lo que `AccionesCabecera` ve de la historia de Puck, para poder consultarlo desde
+  // fuera de su árbol. En refs y no en estado: cambia con cada pulsación y solo se lee
+  // en el momento de cerrar por inactividad, así que provocar un render por cada tecla
+  // sería trabajo tirado.
+  const indiceHistoriaRef = useRef(0);
+  const hayCambiosSinGuardarRef = useRef(false);
+
+  const registrarEstadoDeCambios = useCallback((indice: number, hayCambios: boolean) => {
+    indiceHistoriaRef.current = indice;
+    hayCambiosSinGuardarRef.current = hayCambios;
+  }, []);
+
   // Datos iniciales con identidad estable (evita re-montar Puck en cada render).
   // Va en useState con inicializador diferido, no en useRef: los refs no deben
   // leerse durante el render, y asi el objeto se construye una sola vez.
@@ -239,8 +305,35 @@ export function PuckEditorWrapper({
     [onGuardarBorrador, initialPuckData]
   );
 
+  /**
+   * Lo que el vigilante de inactividad ejecuta antes de cerrar la sesión.
+   *
+   * Solo guarda si de verdad hay algo pendiente: el editor crea una versión nueva en
+   * cada guardado, y hacerlo a ciegas llenaría `paginas_versiones` de copias idénticas
+   * cada vez que alguien deja la pantalla abierta y se va.
+   *
+   * No se atrapa el error a propósito. Si el guardado falla, el vigilante lo recoge y
+   * cierra igual, pero cambiando el motivo para que el login lo diga: cerrar en
+   * silencio después de perder el trabajo sería lo peor de las dos opciones.
+   */
+  const guardarAntesDeCerrar = useCallback(async () => {
+    if (!hayCambiosSinGuardarRef.current) return;
+    await handleSave(indiceHistoriaRef.current);
+  }, [handleSave]);
+
   const handleSend = useCallback(
     async (indiceHistoria: number) => {
+      // Aviso de cliente, no autoritativo: evita el viaje de red en el caso común,
+      // pero el 400 de la API (mismo `@olo/accessibility-policy`) es quien manda de
+      // verdad — ver `enviar-a-revision.usecase.ts`.
+      const data = currentDataRef.current ?? initialPuckData;
+      const violaciones = validarAccesibilidad(data, "intranet");
+      if (violaciones.length > 0) {
+        setAvisosAccesibilidad(violaciones);
+        return;
+      }
+      setAvisosAccesibilidad([]);
+
       // Guardar antes de enviar (contenido siempre consistente). Si el guardado
       // falla no se envía nada a revisión: se quedaría pendiente la versión vieja.
       try {
@@ -250,7 +343,7 @@ export function PuckEditorWrapper({
       }
       await onEnviarRevision();
     },
-    [handleSave, onEnviarRevision]
+    [handleSave, onEnviarRevision, initialPuckData]
   );
 
   /**
@@ -294,16 +387,22 @@ export function PuckEditorWrapper({
   const overrides = useMemo(
     () => ({
       headerActions: () => (
-        <AccionesCabecera
-          bloqueado={bloqueado}
-          busy={busy}
-          isSaving={isSaving}
-          isSendingToReview={isSendingToReview}
-          indiceGuardado={indiceGuardado}
-          onGuardar={alPulsarGuardar}
-          onEnviar={alPulsarEnviar}
-          onSalir={handleSalir}
-        />
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {avisosAccesibilidad.length > 0 && (
+            <AvisoAccesibilidad violaciones={avisosAccesibilidad} />
+          )}
+          <AccionesCabecera
+            bloqueado={bloqueado}
+            busy={busy}
+            isSaving={isSaving}
+            isSendingToReview={isSendingToReview}
+            indiceGuardado={indiceGuardado}
+            onGuardar={alPulsarGuardar}
+            onEnviar={alPulsarEnviar}
+            onSalir={handleSalir}
+            onEstadoDeCambios={registrarEstadoDeCambios}
+          />
+        </div>
       ),
     }),
     [
@@ -315,6 +414,8 @@ export function PuckEditorWrapper({
       alPulsarGuardar,
       alPulsarEnviar,
       handleSalir,
+      registrarEstadoDeCambios,
+      avisosAccesibilidad,
     ]
   );
 
@@ -342,6 +443,10 @@ export function PuckEditorWrapper({
         onCancelar={() => setSalidaPendiente(false)}
         onConfirmar={salir}
       />
+
+      {/* Se monta aquí y no en la página: cuando este componente existe, el editor ya
+          está en pantalla, así que el reloj no cuenta el tiempo de carga. */}
+      <VigilanteSesion alExpirar={guardarAntesDeCerrar} />
     </div>
   );
 }

@@ -13,7 +13,7 @@ const ETIQUETAS_TIPO: Record<string, string> = {
 };
 
 const BREADCRUMB_BASE: BreadcrumbItem[] = [
-  { label: 'Inicio', href: '/' },
+  { label: 'Inicio', href: '/inicio' },
   { label: 'Clasificaciones' },
 ];
 
@@ -22,7 +22,7 @@ function ClasificacionBreadcrumb() {
   const etiquetaTipo = ETIQUETAS_TIPO[searchParams.get('tipo') ?? ''];
 
   const items: BreadcrumbItem[] = etiquetaTipo
-    ? [{ label: 'Inicio', href: '/' }, { label: 'Clasificaciones', href: '/clasificacion' }, { label: etiquetaTipo }]
+    ? [{ label: 'Inicio', href: '/inicio' }, { label: 'Clasificaciones', href: '/clasificacion' }, { label: etiquetaTipo }]
     : BREADCRUMB_BASE;
 
   return <Breadcrumb items={items} />;

@@ -12,6 +12,7 @@ import * as paginasSlugUnicoPorAmbito from './008-paginas-slug-unico-por-ambito'
 import * as limpiarRestriccionesDuplicadas from './009-limpiar-restricciones-duplicadas';
 import * as agregarApellidosUsuarios from './010-agregar-apellidos-usuarios';
 import * as politicaPasswords from './011-politica-passwords';
+import * as catalogoPermisos from './012-catalogo-permisos';
 
 export interface Migracion {
   nombre: string;
@@ -34,6 +35,7 @@ const migraciones: Migracion[] = [
   limpiarRestriccionesDuplicadas,
   agregarApellidosUsuarios,
   politicaPasswords,
+  catalogoPermisos,
 ];
 
 const TABLA_CONTROL = 'migraciones_aplicadas';

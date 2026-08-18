@@ -57,7 +57,12 @@ El contenido rico que crean los editores es HTML almacenado que luego se renderi
 
 - **Contraseñas con bcrypt** (ya está) — coste de hashing adecuado (≥ 10 rounds).
 - **Política de complejidad concreta**: definir longitud mínima, mezcla de caracteres. Hoy el requerimiento la menciona pero no está especificada — hay que escribirla.
-- **JWT**: firma verificada solo en la API. Tokens con expiración corta. Guardar en cookie `httpOnly`, `Secure`, `SameSite` — nunca en `localStorage` (accesible por XSS).
+- **JWT**: firma verificada solo en la API. Guardar en cookie `httpOnly`, `Secure`, `SameSite` — nunca en `localStorage` (accesible por XSS). La firma dura 7 días; lo que acota la sesión de verdad es la inactividad, abajo.
+- **Cierre por inactividad — IMPLEMENTADO 2026-08-18.** Dos umbrales que hacen cosas distintas y por eso no coinciden:
+  - **15 minutos en el navegador** (`packages/inactividad/`): a los 14 aparece un aviso con cuenta atrás de 60 s; al agotarse se llama a `/logout` y se va al login con `?motivo=inactividad`. En la mesa de edición se guarda el borrador antes de cerrar — el editor no tiene autoguardado, así que sin eso el cierre destruiría trabajo. Esto es **experiencia de usuario**: quien robe la cookie no ejecuta nuestro JavaScript.
+  - **20 minutos en la API** (`requireAuth`, contra `usuarios.ultimo_acceso_en`): este es el control real. La columna existía y solo se escribía al iniciar sesión, así que no medía nada; ahora se refresca en cada petición, como mucho una vez por minuto para no convertir cada lectura en un `UPDATE`.
+  - **La ventana del servidor es más ancha a propósito.** El cliente tiene que cerrar siempre primero, para que la gente vea el aviso en vez de un 401 a mitad de un clic; los cinco minutos de holgura absorben relojes desfasados y pestañas de fondo, donde el navegador ralentiza los temporizadores.
+  - Entre pestañas la actividad se comparte por `localStorage`: sin eso, trabajar en una cerraba la sesión desde la otra — y la cookie es una sola, así que se llevaba las dos por delante.
 - **Rate limiting en login** (ya hay `express-rate-limit`): limitar intentos por IP/usuario para frenar fuerza bruta. Endpoints de recuperación y preguntas de seguridad también.
 - **Caducidad de cuentas (RF-16)**: hoy en STUB. Al implementar, la verificación de caducidad debe ocurrir en el login del backend, no en el frontend.
 - **First-login y preguntas de seguridad**: ya implementados; verificar que el flujo no permita saltarse el cambio de contraseña obligatorio.
@@ -170,7 +175,7 @@ motivo, así que esa lista es además el inventario de dónde está cada comprob
 | RF-09 | API key solo en backend, nunca expuesta al frontend | ⏳ Pendiente al construir buscador CNO |
 | RF-12 | Verificar estado `publicado` en el endpoint de descarga | 🟡 Parcial: `GET /api/contenidos/:id` y sus adjuntos ya devuelven 404 si no está publicado y no eres el autor — 2026-08-17. Falta el endpoint de descarga de fichero cuando exista |
 | RF-13 | Aceptación registrada + sanitización + aviso Ley 1581 vigente | ⏳ Pendiente al implementar formularios |
-| RF-16 | Caducidad verificada en backend, cookies httpOnly/Secure, política de contraseña definida, rate limiting | ✅ Rate limiting añadido a endpoints de escritura — 2026-08-11 |
+| RF-16 | Caducidad verificada en backend, cookies httpOnly/Secure, política de contraseña definida, rate limiting | ✅ Rate limiting — 2026-08-11. Cierre por inactividad 15 min cliente / 20 min API — 2026-08-18 |
 | RF-17 | Respaldos cifrados, ubicación restringida, restauración probada | ⏳ Pendiente implementación |
 
 ---

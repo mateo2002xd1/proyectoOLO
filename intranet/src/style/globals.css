@@ -17,6 +17,11 @@
   --color-error-bg: #fff5f5;
   --color-error-border: #fed7d7;
   --color-error-text: #c53030;
+  /* Informativo: lo que hay que contar sin que sea culpa de nadie, como el cierre
+     de sesión por inactividad. Texto a 8.6:1 sobre su fondo, muy por encima de AA. */
+  --color-info-bg: #eff6ff;
+  --color-info-border: #bfdbfe;
+  --color-info-text: #1e40af;
 
   --font-heading: 'Montserrat', system-ui, sans-serif;
   --font-body: 'Work Sans', system-ui, sans-serif;
@@ -206,6 +211,20 @@ input {
   padding: 0.75rem 1rem;
   font-size: 0.875rem;
   color: var(--color-error-text);
+  text-align: center;
+}
+
+/* Gemelo del anterior para lo que informa en vez de fallar. Existe aparte porque
+   cerrar la sesión tras quince minutos parado es el sistema haciendo su trabajo, y
+   pintarlo en rojo —en el mismo hueco donde sale «Credenciales inválidas»— hace creer
+   que uno se equivocó en algo. */
+.login-general-notice {
+  background: var(--color-info-bg);
+  border: 1px solid var(--color-info-border);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: var(--color-info-text);
   text-align: center;
 }
 
@@ -1270,6 +1289,41 @@ input {
 .olo-modal-btn:focus-visible {
   outline: 2px solid #001631;
   outline-offset: 2px;
+}
+
+/* Acción recomendada del diálogo. En el aviso de inactividad es «Seguir trabajando»:
+   la que no interrumpe a nadie. Azul institucional con blanco encima a 9.4:1, muy por
+   encima del 4.5:1 que pide AA (ver 9-accesibilidad.md §3.1). */
+.olo-modal-btn--principal {
+  background: #001631;
+  border-color: #001631;
+  color: #ffffff;
+}
+
+.olo-modal-btn--principal:hover {
+  background: #002a5c;
+  border-color: #002a5c;
+}
+
+/* La cuenta atrás del aviso de inactividad. Tabular para que el número no baile de
+   ancho al pasar de 0:10 a 0:09 y arrastre el texto de al lado en cada segundo. */
+.olo-modal-cuenta {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Solo para lectores de pantalla. La usa el anuncio de la cuenta atrás, que no debe
+   duplicar en pantalla el número que ya está a la vista. El sitio público ya la tenía;
+   la intranet no, y el modal es compartido. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
 
 /* --- Botón lápiz (edit-button) --- */
@@ -2581,9 +2635,9 @@ input {
   .sq-card,
   .rp-card,
   .fl-card {
-    padding: 1.25rem;
-    box-shadow: none;
-    border-radius: 0;
+    padding: 1.5rem 1.25rem;
+    box-shadow: var(--shadow-card);
+    border-radius: var(--radius-lg);
     max-width: 100%;
   }
 }

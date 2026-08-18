@@ -2,8 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 
+export interface CarouselImage {
+  src: string;
+  alt: string;
+}
+
 export interface CarouselProps {
-  images: string[];
+  images: CarouselImage[];
   itemsPerPage?: number;
   autoplay?: boolean;
   autoplayInterval?: number;
@@ -61,7 +66,7 @@ export function Carousel({
 
       {/* Contenedor Flex (Fila estricta) */}
       <div className="matriz-carousel-track">
-        {currentSlides.map((src, index) => (
+        {currentSlides.map((imagen, index) => (
           <div
             key={index}
             className="matriz-carousel-slide"
@@ -70,8 +75,8 @@ export function Carousel({
             {/* src dinamico y tamano por CSS: next/image exigiria width/height fijos o remotePatterns */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={src}
-              alt={`Imagen del carrusel ${index + 1}`}
+              src={imagen.src}
+              alt={imagen.alt || `Imagen del carrusel ${index + 1}`}
               className="matriz-carousel-img rounded-2xl overflow-hidden"
             />
           </div>

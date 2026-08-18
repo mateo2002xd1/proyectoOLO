@@ -34,6 +34,29 @@ export const INTENTOS_MAXIMOS_LOGIN = 5;
 /** §3: duración del bloqueo temporal, en minutos. */
 export const MINUTOS_BLOQUEO_LOGIN = 15;
 
+/**
+ * Minutos sin usar la API antes de considerar la sesión abandonada.
+ *
+ * **20, no 15.** El navegador cierra a los 15 (`@olo/inactividad`), y esta ventana
+ * tiene que ser más ancha para que siempre gane el cliente: así la gente ve el aviso
+ * con su cuenta atrás en vez de un 401 seco a mitad de un clic. Los cinco minutos de
+ * holgura absorben relojes desfasados, latencia y pestañas de fondo cuyo temporizador
+ * el navegador ralentiza.
+ *
+ * Es este el control que de verdad cierra la sesión: el temporizador del navegador es
+ * cortesía, y quien robe la cookie no ejecuta nuestro JavaScript.
+ */
+export const MINUTOS_DE_INACTIVIDAD_API = 20;
+
+/**
+ * Cada cuánto se refresca `ultimo_acceso_en`.
+ *
+ * Sin este freno habría una escritura en base por cada petición autenticada, y una
+ * sola pantalla del panel hace varias. Con un minuto, el peor error posible en la
+ * medida de la inactividad es de un minuto sobre una ventana de veinte.
+ */
+export const MINUTOS_ENTRE_REFRESCOS_DE_ACCESO = 1;
+
 /** §3: coste de bcrypt. Es el que ya usaba todo el código; se centraliza aquí. */
 export const BCRYPT_ROUNDS = 12;
 

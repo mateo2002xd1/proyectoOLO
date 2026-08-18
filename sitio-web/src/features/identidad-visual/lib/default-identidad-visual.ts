@@ -9,7 +9,7 @@ export const defaultIdentidadVisual: IdentidadVisual = {
   // sitio no puede leerla para decidirlo antes.
   intranetUrl: 'http://localhost:3001',
   navLinks: [
-    { label: 'Inicio', href: '/', active: true },
+    { label: 'Inicio', href: '/inicio', active: true },
     {
       label: 'Clasificaciones',
       href: '/clasificacion',

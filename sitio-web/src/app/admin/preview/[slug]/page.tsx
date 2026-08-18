@@ -3,6 +3,7 @@ import { ClientPuckRender } from '@/features/paginas';
 import { getAuthSessionSnapshot } from '@/shared/lib/session';
 import { AUTH_COOKIE_NAME } from '@/shared/lib/auth-cookies';
 import { cookies } from 'next/headers';
+import { VigilanteSesion } from '@/shared/lib/inactividad';
 
 export const metadata = {
   title: 'Previsualización | OLO',
@@ -64,6 +65,10 @@ export default async function PreviewPage({
       </div>
 
       <ClientPuckRender data={contenido} />
+
+      {/* La vista previa cuelga fuera de `(shell)`, así que no hereda su vigilante.
+          Sin `alExpirar`: aquí no hay nada que guardar, solo se mira. */}
+      <VigilanteSesion />
     </div>
   );
 }

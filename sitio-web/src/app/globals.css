@@ -729,13 +729,14 @@
 .olo-portals-title {
   font-family: var(--font-heading);
   font-size: var(--fs-2xl);
-  font-weight: var(--fw-bold);
+  /* El peso base es el ligero: lo que va entre ** se pone en negrita. */
+  font-weight: var(--fw-regular);
   color: var(--color-primary-dark);
   margin-bottom: var(--space-sm);
 }
 
-.olo-portals-title-accent {
-  color: var(--color-accent-dark);
+.olo-portals-title strong {
+  font-weight: var(--fw-bold);
 }
 
 .olo-portals-subtitle {
@@ -749,12 +750,19 @@
   gap: var(--space-xl);
 }
 
+/* La tarjeta entera es el enlace: se pulsa en cualquier punto, no solo sobre el
+   texto. Por eso lleva aquí el `display: flex` y el contenido va en un `<span>`
+   por dentro — un `<a>` no puede envolver `<div>` sin marcado inválido. */
 .olo-portal-card {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
   border-radius: var(--radius-xl);
   overflow: hidden;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 4 / 5;
   cursor: pointer;
+  text-decoration: none;
   transition: transform var(--transition-slow), box-shadow var(--transition-slow);
 }
 
@@ -763,30 +771,36 @@
   box-shadow: var(--shadow-xl);
 }
 
-.olo-portal-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+/* El foco de teclado tiene que verse sobre el fondo oscuro de la tarjeta, así que
+   el anillo va por fuera del borde (SC 2.4.7 / 1.4.11). */
+.olo-portal-card:focus-visible {
+  outline: 3px solid var(--color-brand-focus);
+  outline-offset: 3px;
+}
+
+/* La ilustración, al 60% sobre el degradado que da el color de la tarjeta. */
+.olo-portal-bg {
+  position: absolute;
+  inset: 0;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  opacity: 0.6;
   transition: transform var(--transition-slow);
 }
 
-.olo-portal-card:hover .olo-portal-image {
+.olo-portal-card:hover .olo-portal-bg {
   transform: scale(1.05);
 }
 
-.olo-portal-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(13, 21, 38, 0.92) 0%, rgba(13, 21, 38, 0.5) 50%, rgba(13, 21, 38, 0.2) 100%);
+/* Vela oscura bajo el texto: la ilustración puede tener zonas claras y el texto
+   es blanco, así que sin esto el contraste depende de qué imagen se suba. */
+.olo-portal-content {
+  position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
   padding: var(--space-xl);
-  transition: background var(--transition-slow);
-}
-
-.olo-portal-card:hover .olo-portal-overlay {
-  background: linear-gradient(to top, rgba(13, 21, 38, 0.95) 0%, rgba(13, 21, 38, 0.6) 50%, rgba(13, 21, 38, 0.3) 100%);
+  background: linear-gradient(to top, rgba(6, 20, 44, 0.92) 0%, rgba(6, 20, 44, 0.72) 55%, rgba(6, 20, 44, 0) 100%);
 }
 
 .olo-portal-label {
@@ -794,34 +808,17 @@
   font-size: var(--fs-xl);
   font-weight: var(--fw-bold);
   color: var(--color-white);
-  margin-bottom: var(--space-xs);
+  margin-bottom: var(--space-sm);
 }
 
 .olo-portal-description {
   font-size: var(--fs-sm);
-  color: var(--color-text-muted-on-dark);
-  line-height: 1.5;
-  margin-bottom: var(--space-md);
-}
-
-.olo-portal-arrow {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-full);
   color: var(--color-white);
-  transition: all var(--transition-fast);
-  align-self: flex-start;
+  line-height: 1.5;
 }
 
-.olo-portal-card:hover .olo-portal-arrow {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  transform: translateX(4px);
+.olo-portal-description strong {
+  font-weight: var(--fw-bold);
 }
 
 @media (max-width: 900px) {
@@ -829,6 +826,23 @@
     grid-template-columns: 1fr;
     max-width: 500px;
     margin: 0 auto;
+  }
+}
+
+/* Quien pide menos movimiento no debería recibir el desplazamiento ni el zoom. */
+@media (prefers-reduced-motion: reduce) {
+
+  .olo-portal-card,
+  .olo-portal-bg {
+    transition: none;
+  }
+
+  .olo-portal-card:hover {
+    transform: none;
+  }
+
+  .olo-portal-card:hover .olo-portal-bg {
+    transform: none;
   }
 }
 
@@ -954,6 +968,477 @@
   .olo-dato-semana-frame {
     padding: var(--space-md);
   }
+}
+
+/* ============================================
+   RECURSOS VISUALES — Reproductor + lista
+   ============================================
+
+   Portado tal cual del global de la intranet (`intranet/src/style/globals.css`,
+   sección «RECURSOS VISUALES»): mismos valores literales, no los tokens de este
+   sitio, para que el bloque se vea idéntico en las dos aplicaciones. Las clases
+   `.rv-*` son las mismas; solo cambia el envoltorio, que allí reutiliza las
+   clases `.matriz-*` de la intranet y aquí lleva nombre propio.
+   ============================================ */
+
+.olo-recursos-visuales {
+  width: 100%;
+  background-color: #f6f6f6;
+  display: flex;
+  justify-content: center;
+  overflow-x: hidden;
+  padding: 0 1rem;
+}
+
+@media (min-width: 768px) {
+  .olo-recursos-visuales {
+    padding: 0 2rem;
+  }
+}
+
+.olo-recursos-visuales-inner {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.olo-recursos-visuales-title {
+  font-size: 1.75rem;
+  font-weight: 400;
+  margin-top: 30px;
+  margin-bottom: 1.5rem;
+  color: #041E42;
+}
+
+.olo-recursos-visuales-title strong {
+  font-weight: 700;
+}
+
+.olo-recursos-visuales-body {
+  width: 100%;
+  text-align: left;
+  padding: 0 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .olo-recursos-visuales-body {
+    padding: 0 1.5rem;
+  }
+}
+
+.rv-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  background: #ffffff;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  box-shadow: 0 4px 24px rgba(0, 22, 49, 0.08);
+}
+
+@media (min-width: 768px) {
+  .rv-container {
+    grid-template-columns: 1.8fr 1fr;
+    padding: 1.5rem;
+  }
+}
+
+/* --- Reproductor (izquierda) --- */
+.rv-player {
+  width: 100%;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: #001631;
+}
+
+.rv-player-inner {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%;
+  /* 16:9 */
+}
+
+.rv-iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 0.75rem;
+}
+
+/* --- Lista (derecha) --- */
+.rv-playlist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.rv-playlist::-webkit-scrollbar {
+  width: 4px;
+}
+
+.rv-playlist::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.rv-playlist::-webkit-scrollbar-thumb {
+  background: rgba(0, 22, 49, 0.15);
+  border-radius: 99px;
+}
+
+/* --- Cada tarjeta de la lista --- */
+.rv-playlist-item {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.6rem;
+  border-radius: 0.6rem;
+  background: #f8f9fb;
+  border: 1.5px solid transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  align-items: flex-start;
+}
+
+.rv-playlist-item:hover {
+  background: #eef2f7;
+  border-color: rgba(0, 22, 49, 0.12);
+}
+
+.rv-playlist-item--active {
+  background: #e8eef6;
+  border-color: #1a4d80;
+  box-shadow: 0 2px 8px rgba(0, 22, 49, 0.1);
+}
+
+/* --- Miniatura --- */
+.rv-thumb-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 110px;
+  min-height: 62px;
+  border-radius: 0.45rem;
+  overflow: hidden;
+  background: #d6dce5;
+}
+
+.rv-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.rv-play-icon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.rv-playlist-item:hover .rv-play-icon {
+  opacity: 1;
+}
+
+.rv-playlist-item--active .rv-play-icon {
+  opacity: 0;
+}
+
+/* --- Textos --- */
+.rv-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.rv-meta-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #0d1f3c;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 0;
+}
+
+.rv-meta-channel {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #4a5568;
+  margin-top: 0.1rem;
+}
+
+@media (max-width: 767px) {
+  .rv-playlist {
+    max-height: 300px;
+  }
+
+  .rv-thumb-wrap {
+    width: 90px;
+    min-height: 52px;
+  }
+}
+
+/* ============================================
+   ÚLTIMAS PUBLICACIONES — Carrusel de PDF
+   ============================================
+
+   Portado del global de la intranet (`intranet/src/style/globals.css`, sección
+   «PUBLICACIONES CAROUSEL») con sus valores literales, para que el bloque se vea
+   idéntico en las dos aplicaciones. Las clases `.publicaciones-*` son las mismas.
+
+   Lo que allí eran utilidades de Tailwind escritas en el JSX (cursor de arrastre,
+   zoom al pasar el ratón, `select-none`, `pointer-events`) está aquí como CSS: el
+   componente de este sitio no las lleva en el marcado, así que sin esto el
+   arrastre seleccionaría texto y las tarjetas no reaccionarían al ratón.
+   ============================================ */
+
+.olo-publicaciones {
+  width: 100%;
+  background-color: #ffffff;
+  padding: 3rem 1rem;
+  display: flex;
+  justify-content: center;
+  overflow-x: hidden;
+}
+
+@media (min-width: 768px) {
+  .olo-publicaciones {
+    padding: 4rem 2rem;
+  }
+}
+
+.olo-publicaciones-inner {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.olo-publicaciones-title {
+  font-size: 1.75rem;
+  font-weight: 400;
+  color: #041E42;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.olo-publicaciones-title strong {
+  font-weight: 700;
+}
+
+.olo-publicaciones-body {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (min-width: 768px) {
+  .olo-publicaciones-body {
+    padding: 0 2rem;
+  }
+}
+
+.publicaciones-container {
+  background-color: #EBEBEB;
+  border-radius: 32px;
+  padding: 1.5rem;
+  width: 100%;
+  overflow: hidden;
+  cursor: grab;
+}
+
+.publicaciones-container:active {
+  cursor: grabbing;
+}
+
+@media (min-width: 768px) {
+  .publicaciones-container {
+    padding: 2rem;
+  }
+}
+
+.publicaciones-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1.5rem;
+  /* Sin esto, arrastrar para pasar de página selecciona los títulos. */
+  user-select: none;
+}
+
+@media (min-width: 640px) {
+  .publicaciones-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .publicaciones-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.publicaciones-card {
+  background-color: #ffffff;
+  border-radius: 24px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  text-align: left;
+  height: 100%;
+  width: 100%;
+  text-decoration: none;
+  color: inherit;
+}
+
+.publicaciones-card-img-wrapper {
+  width: 100%;
+  aspect-ratio: 1/1;
+  border-radius: 18px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  background-color: #f3f4f6;
+  /* La portada no debe interceptar el arrastre: los eventos son del contenedor. */
+  pointer-events: none;
+}
+
+.publicaciones-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.publicaciones-card:hover .publicaciones-card-img {
+  transform: scale(1.05);
+}
+
+.publicaciones-card-cargando {
+  width: 100%;
+  height: 100%;
+  background-color: #f3f4f6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.publicaciones-spinner {
+  width: 2rem;
+  height: 2rem;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.publicaciones-card-title {
+  font-family: var(--font-body);
+  font-weight: 700;
+  color: #001631;
+  font-size: 0.875rem;
+  line-height: 1.25;
+  margin-bottom: 0.5rem;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .publicaciones-card-title {
+    font-size: 1rem;
+  }
+}
+
+.publicaciones-card-hashtag {
+  color: #39A900;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.publicaciones-card-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.publicaciones-date-badge {
+  background-color: #E5E7EB;
+  border-radius: 16px;
+  padding: 0.375rem 0.75rem;
+  min-width: 54px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.publicaciones-date-month {
+  font-size: 10px;
+  color: #6c757d;
+  font-weight: 500;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.publicaciones-date-day {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #001631;
+  line-height: 1;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0.4;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out forwards;
 }
 
 /* --- Footer --- */
@@ -2169,6 +2654,26 @@ button.text-link,
 .olo-modal-btn--peligro:hover {
   background: #b91c1c;
   border-color: #b91c1c;
+}
+
+/* Acción recomendada del diálogo. En el aviso de inactividad es «Seguir trabajando»:
+   la que no interrumpe a nadie. Usa el azul institucional, con blanco encima a
+   9.4:1 — muy por encima del 4.5:1 que pide AA (ver 9-accesibilidad.md §3.1). */
+.olo-modal-btn--principal {
+  background: #001631;
+  border-color: #001631;
+  color: #ffffff;
+}
+
+.olo-modal-btn--principal:hover {
+  background: #002a5c;
+  border-color: #002a5c;
+}
+
+/* La cuenta atrás del aviso de inactividad. Tabular para que el número no baile de
+   ancho al pasar de 0:10 a 0:09 y arrastre el texto de al lado en cada segundo. */
+.olo-modal-cuenta {
+  font-variant-numeric: tabular-nums;
 }
 
 .olo-modal-btn:focus-visible {

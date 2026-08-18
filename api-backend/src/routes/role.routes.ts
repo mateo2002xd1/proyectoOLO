@@ -2,6 +2,7 @@ import { Router, type Request, type Response, type NextFunction } from 'express'
 import { RoleController } from '../controllers/roles.controller';
 import { requireAuth } from '../middlewares/auth.middleware';
 import { requierePermisoUsuario } from '../middlewares/permisos.middleware';
+import { requirePermission } from '../middlewares/require-permission.middleware';
 import { usuariosPolicies } from '../policies/usuarios.policies';
 import { esDueno, marcarGuardia } from '../shared/autorizacion';
 
@@ -37,7 +38,7 @@ router.get('/:id', administraOEsSuRol, RoleController.getById);
 // El resto es la configuración de seguridad del sistema: quien crea roles o los edita
 // se concede a sí mismo cualquier otra cosa. Sin filtro alguno, como estaba, bastaba
 // una sesión cualquiera para fabricarse un rol con todos los permisos.
-router.use(requierePermisoUsuario('puedeAdministrarSeguridad'));
+router.use(requierePermisoUsuario('puedeAdministrarSeguridad'), requirePermission('usuarios.permisos'));
 
 router.get('/', RoleController.getAll);
 router.post('/', RoleController.create);

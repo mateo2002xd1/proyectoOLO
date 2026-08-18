@@ -4,6 +4,10 @@ import { PaginaController } from '../controllers/pagina.controller';
 import { requireAuth } from '../middlewares/auth.middleware';
 import { cacheInterceptor } from '../middlewares/cache.middleware';
 import { requierePermisoPagina } from '../middlewares/permisos.middleware';
+import {
+  requirePermission,
+  requierePermisoDeSeccion,
+} from '../middlewares/require-permission.middleware';
 import { AMBITO_HEADER } from '../shared/ambito';
 
 const router = Router();
@@ -39,14 +43,39 @@ router.get(
 
 router.use(requireAuth);
 
-// Estar autenticado no basta: dirección y subdirección entran a la intranet pero no
-// editan, y aprobar queda reservado a superadmin y administrador.
-router.get('/:slug/editable', requierePermisoPagina('puedeEditar'), PaginaController.obtenerEditable);
-router.post('/:slug/borrador', escrituraLimiter, requierePermisoPagina('puedeEditar'), PaginaController.guardarBorrador);
+/**
+ * Dos capas sobre cada operación de edición, y hacen cosas distintas:
+ *
+ *  - `requierePermisoPagina('puedeEditar')` — **si** esta persona edita. Va por rol:
+ *    dirección y subdirección entran a la intranet pero no editan.
+ *  - `requierePermisoDeSeccion()` — **qué** puede editar. Va por `roles_permisos`, con
+ *    la clave `editar.{ambito}.{slug}` construida desde la petición.
+ *
+ * La segunda es la que ata a un editor a secciones concretas, que es lo que el catálogo
+ * de permisos existe para poder decir. La primera se conserva porque sigue siendo cierta
+ * y porque un fallo en una no debe abrir la otra (§0.2 de 3-seguridad-del-proyecto.md).
+ */
+router.get(
+  '/:slug/editable',
+  requierePermisoPagina('puedeEditar'),
+  requierePermisoDeSeccion(),
+  PaginaController.obtenerEditable
+);
+router.post(
+  '/:slug/borrador',
+  escrituraLimiter,
+  requierePermisoPagina('puedeEditar'),
+  requierePermisoDeSeccion(),
+  PaginaController.guardarBorrador
+);
+// Enviar a revisión pide además el permiso propio: se puede querer que alguien redacte
+// borradores sin poder meterlos en la cola de aprobación.
 router.patch(
   '/:slug/enviar-revision',
   escrituraLimiter,
   requierePermisoPagina('puedeEditar'),
+  requierePermisoDeSeccion(),
+  requirePermission('editor.enviar-revision'),
   PaginaController.enviarARevision
 );
 // Descartar una versión sin publicar. Se pide el id de la versión y no solo el

@@ -2,6 +2,13 @@ import { Request, Response, NextFunction } from 'express';
 import { config } from '../config';
 import { UserRepository } from '../repositories/usuarios.repository';
 import jwt from 'jsonwebtoken';
+import {
+  MINUTOS_DE_INACTIVIDAD_API,
+  MINUTOS_ENTRE_REFRESCOS_DE_ACCESO,
+} from '../shared/password-policy';
+
+const MS_DE_INACTIVIDAD = MINUTOS_DE_INACTIVIDAD_API * 60 * 1000;
+const MS_ENTRE_REFRESCOS = MINUTOS_ENTRE_REFRESCOS_DE_ACCESO * 60 * 1000;
 
 // Middleware para verificar la autenticación del usuario mediante Token JWT
 export async function requireAuth(req: Request, res: Response, next: NextFunction) {
@@ -40,6 +47,41 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
     if ((user as any).expiration_date && new Date((user as any).expiration_date) < new Date()) {
       await UserRepository.update((user as any).id, { status: 'inactive' });
       return res.status(401).json({ error: 'Cuenta expirada' });
+    }
+
+    /**
+     * Inactividad: la sesión se cierra sola si la API lleva demasiado sin verte.
+     *
+     * Esto es lo que hace real el cierre por inactividad. El temporizador del
+     * navegador (`@olo/inactividad`) enseña el aviso y da la buena experiencia, pero
+     * quien robe la cookie no ejecuta ese código: sin esta comprobación el token
+     * seguiría sirviendo los siete días que dura su firma.
+     *
+     * `ultimo_acceso_en` ya existía y solo se escribía al iniciar sesión, así que no
+     * medía nada. Ahora se refresca aquí —con freno, ver abajo— y es la marca contra
+     * la que se compara.
+     *
+     * La ventana es más ancha que la del navegador a propósito, para que el cliente
+     * cierre siempre primero y nadie se encuentre un 401 en mitad de un clic.
+     */
+    const ultimoAcceso = (user as any).last_access_at;
+    if (ultimoAcceso) {
+      const inactivoDesdeHace = Date.now() - new Date(ultimoAcceso).getTime();
+      if (inactivoDesdeHace > MS_DE_INACTIVIDAD) {
+        return res.status(401).json({ error: 'Sesión cerrada por inactividad' });
+      }
+      // Se refresca como mucho una vez por minuto: cada pantalla del panel hace varias
+      // peticiones, y sin el freno esto sería un UPDATE por cada una.
+      if (inactivoDesdeHace > MS_ENTRE_REFRESCOS) {
+        // Sin await: la petición no depende del resultado y encadenarla añadiría el
+        // viaje de ida y vuelta a la base al tiempo de respuesta de *todo* el panel.
+        // Si falla, el peor efecto es que la marca se refresque en la siguiente.
+        UserRepository.updateLastAccess((user as any).id).catch(() => undefined);
+      }
+    } else {
+      // Cuentas anteriores a esta medida, o creadas sin pasar por el login: se les
+      // pone la marca ahora en vez de tratarlas como inactivas y echarlas.
+      UserRepository.updateLastAccess((user as any).id).catch(() => undefined);
     }
 
     /**

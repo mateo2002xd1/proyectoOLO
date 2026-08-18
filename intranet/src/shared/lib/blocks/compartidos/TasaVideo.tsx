@@ -49,7 +49,7 @@ export function TasaVideo({
         <iframe
           className="tasa-video-iframe"
           src={aUrlDeInsercion(videoUrl)}
-          title={tituloDestacado}
+          title={tituloDestacado || 'Video'}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
         />

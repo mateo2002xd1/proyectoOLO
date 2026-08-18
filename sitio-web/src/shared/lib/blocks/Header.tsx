@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { AUTH_ROLE_COOKIE_NAME } from '@/shared/lib/auth-cookies';
 
 export interface NavItem {
   label: string;
@@ -20,7 +21,10 @@ interface HeaderProps {
   intranetUrl?: string;
 }
 
-const EDITABLE_ROLES = ['Superadmin', 'Administrador', 'Editor'];
+/* En minúsculas y comparando en minúsculas: en la tabla `roles` los nombres van
+   capitalizados, pero basta con que uno llegue de otra forma para que la
+   comparación literal deje al usuario sin enlace al panel. */
+const EDITABLE_ROLES = ['superadmin', 'administrador', 'editor'];
 
 function getCookie(name: string): string | null {
   if (typeof document === 'undefined') return null;
@@ -32,7 +36,11 @@ function subscribeToCookies() {
   return () => { };
 }
 
-const getSessionSnapshot = () => EDITABLE_ROLES.includes(getCookie('role') ?? '');
+/* El nombre de la cookie sale de `auth-cookies.ts`: escrito a mano aquí se quedó
+   en `role` cuando se prefijaron con `sitio_`, y el enlace al panel dejó de
+   aparecer sin dar ningún error. */
+const getSessionSnapshot = () =>
+  EDITABLE_ROLES.includes((getCookie(AUTH_ROLE_COOKIE_NAME) ?? '').trim().toLowerCase());
 const getSessionServerSnapshot = () => false;
 
 export function Header({
@@ -102,7 +110,7 @@ export function Header({
   const editTitle = hasSession ? 'Ir al panel de administración' : 'Iniciar sesión';
 
   const navLinks = customNavLinks || [
-    { label: 'Inicio', href: '/', active: true },
+    { label: 'Inicio', href: '/inicio', active: true },
     {
       label: 'Clasificaciones',
       href: '/clasificacion',
@@ -150,7 +158,7 @@ export function Header({
       <header className="olo-header" id="main-header" data-block-id={block.id}>
         <div className="olo-header-inner">
           <div className="olo-logo-group">
-            <a href="/" className="olo-logo-mark" aria-label="Ir al inicio">
+            <a href="/inicio" className="olo-logo-mark" aria-label="Ir al inicio">
               {mainLogoUrl ? (
                 <img src={mainLogoUrl} alt="Logo SENA / Observatorio" style={{ maxHeight: 48, width: 'auto' }} />
               ) : (

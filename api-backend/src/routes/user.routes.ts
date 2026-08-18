@@ -2,6 +2,7 @@ import { Router, type Request, type Response, type NextFunction } from 'express'
 import { UserController } from '../controllers/usuarios.controller';
 import { requireAuth } from '../middlewares/auth.middleware';
 import { requierePermisoUsuario } from '../middlewares/permisos.middleware';
+import { requirePermission } from '../middlewares/require-permission.middleware';
 import { usuariosPolicies } from '../policies/usuarios.policies';
 import { esDueno, marcarGuardia } from '../shared/autorizacion';
 
@@ -34,15 +35,47 @@ const administraOEsSuCuenta = marcarGuardia(
   'usuarios.administraOEsSuCuenta'
 );
 
+/**
+ * Exige un permiso del catálogo, salvo cuando la persona actúa sobre su propia cuenta.
+ *
+ * Sin esta excepción, «Mi perfil» dejaría de funcionar para cualquiera que no tenga
+ * `usuarios.editar` — es decir, para todo el mundo menos los administradores. Editarse a
+ * uno mismo no es administrar usuarios, y lo que puede escribir ahí ya lo acota la lista
+ * blanca de `updateUser`.
+ */
+const exigePermisoSalvoCuentaPropia = (clave: string) =>
+  marcarGuardia(
+    (req: Request, res: Response, next: NextFunction) => {
+      if (esDueno(req.params.id, req.user?.id)) return next();
+      return requirePermission(clave)(req, res, next);
+    },
+    `permiso.${clave}|cuenta-propia`
+  );
+
 router.get('/', requierePermisoUsuario('puedeAdministrarUsuarios'), UserController.getAll);
-router.post('/', requierePermisoUsuario('puedeAdministrarUsuarios'), UserController.create);
+router.post(
+  '/',
+  requierePermisoUsuario('puedeAdministrarUsuarios'),
+  requirePermission('usuarios.crear'),
+  UserController.create
+);
 
 router.get('/:id', administraOEsSuCuenta, UserController.getById);
-router.patch('/:id', administraOEsSuCuenta, UserController.update);
+router.patch(
+  '/:id',
+  administraOEsSuCuenta,
+  exigePermisoSalvoCuentaPropia('usuarios.editar'),
+  UserController.update
+);
 
 // Darse de baja a uno mismo no es autoservicio: deja la cuenta que hizo la petición
 // sin sujeto y es indistinguible de un borrado por error. `deleteUser` lo rechaza
 // además en el caso de uso.
-router.delete('/:id', requierePermisoUsuario('puedeAdministrarUsuarios'), UserController.delete);
+router.delete(
+  '/:id',
+  requierePermisoUsuario('puedeAdministrarUsuarios'),
+  requirePermission('usuarios.eliminar'),
+  UserController.delete
+);
 
 export default router;

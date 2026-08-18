@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { guardarBorrador } from '../use-cases/paginas/guardar-borrador.usecase';
-import { enviarARevision } from '../use-cases/paginas/enviar-a-revision.usecase';
+import { enviarARevision, ErrorValidacionAccesibilidad } from '../use-cases/paginas/enviar-a-revision.usecase';
 import { aprobarPagina } from '../use-cases/paginas/aprobar-pagina.usecase';
 import { rechazarPagina } from '../use-cases/paginas/rechazar-pagina.usecase';
 import { obtenerPaginaPublica } from '../use-cases/paginas/obtener-pagina-publica.usecase';
@@ -99,7 +99,15 @@ export const PaginaController = {
       const result = await enviarARevision(req.params.slug as string, ambitoExigidoDe(req));
       await registrar(req, 'enviar_revision', result);
       res.json(result);
-    } catch (err) { next(err); }
+    } catch (err) {
+      // 400 con el detalle estructurado — el genérico de `errorHandler` solo
+      // reenvía `message`, y el editor necesita saber *cuáles* campos faltan
+      // para poder corregirlos sin adivinar.
+      if (err instanceof ErrorValidacionAccesibilidad) {
+        return res.status(400).json({ error: err.message, violaciones: err.violaciones });
+      }
+      next(err);
+    }
   },
 
   async aprobar(req: Request, res: Response, next: NextFunction) {

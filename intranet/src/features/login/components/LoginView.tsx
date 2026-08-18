@@ -1,19 +1,32 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { Suspense, useState, FormEvent } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { validarEmail } from '@olo/email-policy';
 import { useAuth } from '@/features/login';
 import { PasswordField } from '@/shared/ui/molecules/PasswordField';
 import { ReturnToSiteLink } from '@/shared/ui/molecules/ReturnToSiteLink';
 import { GooLoader } from '@/shared/ui/atoms/GooLoader';
 import { mensajeDeError } from '@/shared/lib/errors';
+import { mensajeDeCierre } from '@/shared/lib/inactividad';
 
-export function LoginView() {
+/**
+ * El formulario en sí. Se separó de `LoginView` al empezar a leer `?motivo=`:
+ * `useSearchParams` obliga a un límite de Suspense y, sin él, el prerender de `/login`
+ * falla en el build en vez de avisar en desarrollo.
+ */
+function LoginForm() {
   const { login } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Por qué se llegó aquí, si es que se llegó desde un cierre automático. El valor lo
+  // traduce `mensajeDeCierre`, que solo reconoce los motivos propios: el parámetro
+  // viene de la URL y pintarlo tal cual dejaría escribir cualquier texto sobre el
+  // formulario de acceso con solo preparar un enlace.
+  const avisoDeCierre = mensajeDeCierre(searchParams.get('motivo'));
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
@@ -79,16 +92,15 @@ export function LoginView() {
       {/* Panel izquierdo — Branding */}
       <div className="login-left">
         <div className="login-left-content">
-          <h1 className="login-brand-title">
-            Bienvenido a<br />nuestra Intranet
-          </h1>
-          <Image
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src="/assets/svg/olo-logo-blanco.svg"
             alt="Logo intranet"
-            width={180}
-            height={180}
-            className="login-logo"
+            className="mx-auto w-[210px]"
           />
+          <h1 className="text-4xl font-light text-white">
+            Bienvenido a <span className="font-bold"><br />nuestra Intranet</span>
+          </h1>
         </div>
       </div>
 
@@ -124,6 +136,11 @@ export function LoginView() {
                 error={errors.password}
               />
 
+              {/* Antes que el error: explica por qué se está aquí, no qué se hizo mal. */}
+              {avisoDeCierre && (
+                <div className="login-general-notice" role="status">{avisoDeCierre}</div>
+              )}
+
               {errors.general && (
                 <div className="login-general-error">{errors.general}</div>
               )}
@@ -146,5 +163,13 @@ export function LoginView() {
         </div>
       </div>
     </div>
+  );
+}
+
+export function LoginView() {
+  return (
+    <Suspense fallback={<div className="login-card" />}>
+      <LoginForm />
+    </Suspense>
   );
 }
