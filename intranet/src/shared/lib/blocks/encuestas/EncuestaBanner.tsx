@@ -1,54 +1,51 @@
-import { resaltar } from '../compartidos/resaltar';
 
 /**
- * Cabecera de la encuesta: texto a la izquierda, ilustración a la derecha,
- * sobre el degradado azul institucional.
- *
- * Usa las mismas clases CSS que TasaBanner (.tasa-banner-wrapper,
- * .tasa-banner-content) para garantizar márgenes, padding y max-width
- * idénticos en todas las vistas de la intranet.
- *
- * La ilustración va espejada (`scaleX(-1)`) porque el original mira hacia fuera
- * de la página; se deja como decisión del bloque y no como campo para que nadie
- * tenga que saberlo al editar.
+ * Cabecera de la encuesta: texto + ilustración sobre fondo azul institucional.
+ * La prop `imagenDerecha` controla el orden:
+ *   - false (por defecto): imagen izquierda, texto derecha
+ *   - true: texto izquierda, imagen derecha
  */
 export interface EncuestaBannerProps {
   antetitulo?: string;
   titulo?: string;
   imagenSrc?: string;
   imagenAlt?: string;
+  imagenDerecha?: boolean;
 }
 
 export function EncuestaBanner({
   antetitulo = 'Encuesta de',
   titulo = 'SEGUIMIENTO LABORAL',
   imagenSrc = '/assets/img/banner-seguimiento-laboral.png',
-  imagenAlt = 'Ilustración Seguimiento Laboral',
+  imagenAlt = 'Ilustración encuesta',
+  imagenDerecha = false,
 }: EncuestaBannerProps) {
+  const texto = (
+    <h1 className="tasa-banner-title text-white">
+      {antetitulo}
+      <br />
+      <strong>{titulo}</strong>
+    </h1>
+  );
+
+  const imagen = imagenSrc ? (
+    <div className="flex-shrink-0">
+      {/* src editable desde el editor: next/image exigiria dimensiones fijas */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={imagenSrc}
+        alt={imagenAlt}
+        className="tasa-banner-image survey-banner-image"
+        style={imagenDerecha ? { transform: 'scaleX(-1)' } : undefined}
+      />
+    </div>
+  ) : null;
+
   return (
     <section className="tasa-banner-wrapper">
-      <div className="tasa-banner-content">
-        <div className="text-white">
-          {antetitulo && (
-            <p className="text-lg md:text-xl font-light tracking-wide mb-1 opacity-90">
-              {antetitulo}
-            </p>
-          )}
-          <h1 className="tasa-banner-title">{resaltar(titulo)}</h1>
-        </div>
-
-        {imagenSrc && (
-          <div className="flex-shrink-0">
-            {/* src editable desde el editor: next/image exigiria dimensiones fijas */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={imagenSrc}
-              alt={imagenAlt}
-              className="tasa-banner-image survey-banner-image"
-              style={{ transform: 'scaleX(-1)' }}
-            />
-          </div>
-        )}
+      <div className="tasa-banner-content encuesta-banner-content">
+        {imagenDerecha ? texto : imagen}
+        {imagenDerecha ? imagen : texto}
       </div>
     </section>
   );

@@ -3544,8 +3544,21 @@ input {
 }
 
 .survey-banner-image {
-  max-width: 500px;
-  height: 280px;
+  max-width: 400px;
+  height: 240px;
+  object-fit: contain;
+  filter: none;
+}
+
+/* Ajuste de gap y alineación exclusivo para encuestas */
+.encuesta-banner-content {
+  max-width: 1200px;
+}
+
+@media (min-width: 900px) {
+  .encuesta-banner-content {
+    gap: clamp(2rem, 4vw, 5rem);
+  }
 }
 
 /* 2. Conceptos (Zig-Zag) */
