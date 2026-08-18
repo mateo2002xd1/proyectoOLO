@@ -38,7 +38,7 @@ El esquema anterior se generaba con `sequelize.sync()` al arrancar, con las migr
 | # | Qué pasaba | Resolución |
 |---|---|---|
 | 1 | El modelo `Contenido` escribía en una tabla llamada `"Post"` | Tabla `contenidos` |
-| 2 | **Dos tablas de usuarios** (`users`, `usuarios_sitio`) con la misma forma | Una sola `usuarios` (§2.1) |
+| 2 | **Dos tablas de usuarios** (`users`, `usuarios_sitio`) con la misma forma | Una sola `usuarios` (§2.1). `usuarios_sitio` se eliminó en `013-eliminar-usuarios-sitio` |
 | 3 | **Dos tablas de auditoría** divergentes: `content_audit_logs` (modelo) y `content_audit_log` (SQL), con columnas distintas | Una sola `auditoria_cambios` |
 | 4 | `Attachment` no coincidía consigo mismo: el modelo declaraba `fileName/filePath/sizeBytes`, el SQL `title/url/size` | `archivos` + `contenidos_archivos` (§4.3) |
 | 5 | **Índices duplicados** sobre columnas ya `UNIQUE` (`users.email`, `Post.slug`, `paginas.slug`, `usuarios_sitio.email`) — un `UNIQUE` ya crea su índice | Índice único, sin el suelto |
@@ -188,11 +188,10 @@ No se copia el texto de la política en cada consentimiento: se referencia la ve
 
 ### 4.9 Lo que hay en la base y no está en el inventario
 
-Tras aplicar las migraciones, `\dt` muestra veintitrés objetos. Los tres que no pertenecen al inventario están aquí para que nadie los tome por olvido:
+Tras aplicar las migraciones, `\dt` muestra veintidós objetos. Los dos que no pertenecen al inventario están aquí para que nadie los tome por olvido:
 
 | Tabla | Qué es | Hasta cuándo |
 |---|---|---|
-| `usuarios_sitio` | La segunda tabla de usuarios que el §2.1 dice que sobra. **No se fusionó**: tiene su propio login con otro secreto JWT, así que unificarla es un cambio de autenticación, no de nombres | Hasta E-16, junto con la caducidad de cuentas |
 | `_obsoleto_attachment` | La antigua `"Attachment"`, apartada con sus datos ya copiados a `archivos` + `contenidos_archivos`. No se borra en el mismo paso que se crea su reemplazo (regla 5 de `4-reglas.md`) | Hasta que `archivos` esté verificada en uso |
 | `migraciones_aplicadas` | La tabla de control del runner: qué migración se aplicó y cuándo. No es del dominio, es de la herramienta | Permanente |
 
@@ -293,7 +292,7 @@ Alinear también los nombres de atributo al español es un refactor de la API, c
 
 ### 8.3 Lo que sigue pendiente, y por qué
 
-- **`usuarios_sitio` no se fusionó.** Tiene su propio flujo de login con otro secreto JWT (`jwtSiteSecret`), así que unificarla no es renombrar: es cambiar la autenticación. Su sitio es E-16, junto con la caducidad de cuentas. Mientras tanto sigue funcionando igual.
+- **`usuarios_sitio` se eliminó** (`013-eliminar-usuarios-sitio`). Ya no es un renombrado pendiente: con la tabla se retiró su login propio (`/api/sitio-users`) y el segundo secreto JWT (`JWT_SITE_SECRET`) que solo firmaba esos tokens. Estaba vacía y ningún frontend la consumía — el panel del sitio siempre entró por `/api/auth/login`, que valida contra `usuarios`. `usuarios` es hoy la única identidad del sistema.
 - **`contenidos.cuerpo` sigue siendo `TEXT`.** El diseño lo quiere `JSONB` porque Editor.js produce JSON, pero convertir sin saber qué hay dentro de las filas existentes rompería la tabla. Necesita una revisión previa del contenido real.
 - **Verificación obligatoria.** El puente modelo↔columna son cadenas que ningún compilador valida. Por eso existe `npm run db:verificar`: contrasta cada atributo de cada modelo contra `information_schema` y falla nombrando el que no cuadre. **Ejecutarlo después de migrar no es opcional.**
 

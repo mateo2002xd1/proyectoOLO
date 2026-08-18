@@ -9,7 +9,6 @@ import { Archivo } from './Archivo';
 import { ContenidoArchivo } from './ContenidoArchivo';
 import { ContentAuditLog } from './ContentAuditLog';
 import { AuditoriaAcceso } from './AuditoriaAcceso';
-import { SitioUser } from './SitioUser';
 import { Pagina } from './Pagina';
 import { PaginaVersion } from './PaginaVersion';
 import { Configuracion } from './Configuracion';
@@ -97,7 +96,6 @@ export {
   ContenidoArchivo,
   ContentAuditLog,
   AuditoriaAcceso,
-  SitioUser,
   Pagina,
   PaginaVersion,
   Configuracion,

@@ -99,7 +99,7 @@ function LoginForm() {
             className="mx-auto w-[210px]"
           />
           <h1 className="text-4xl font-light text-white">
-            Bienvenido a <span className="font-bold"><br />nuestra Intranet</span>
+            Bienvenido a <span className="font-bold"><br />NUESTRA INTRANET</span>
           </h1>
         </div>
       </div>

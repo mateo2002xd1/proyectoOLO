@@ -112,7 +112,7 @@ Lo que estaba abierto y ya no:
 |---|---|---|
 | `PATCH /api/users/:id` | Cambiar el `role_id` de cualquiera → **escalada a Superadmin**; con `reset_password` la respuesta devolvía la contraseña temporal de la víctima → **toma de cuenta** | `user.routes.ts` (administra o es su cuenta) + lista blanca de autoservicio en `updateUser` |
 | `/api/roles`, `/api/permissions`, `/api/role-permissions` | Concederse permisos a uno mismo | `requierePermisoUsuario('puedeAdministrarSeguridad')` |
-| `/api/sitio-users/:id` | Datos personales de ciudadanos (Ley 1581) | `requierePermisoUsuario('puedeAdministrarUsuarios')` |
+| `/api/sitio-users/:id` | Datos personales de ciudadanos (Ley 1581) | Se cerró con `requierePermisoUsuario('puedeAdministrarUsuarios')`; desde `013-eliminar-usuarios-sitio` la ruta ya no existe |
 | `GET /api/jobs/:id` | **Sin autenticación**, con ids secuenciales de BullMQ: enumerar el resultado de exportaciones ajenas | `requireAuth` + dueño en `job.data.usuarioId`, con 404 |
 | `DELETE /api/attachments/:id` | Borrar del disco el fichero de cualquier contenido: se cargaba por id y se hacía `fs.unlinkSync` sin mirar el padre | Colgada de `/api/contenidos/:contenidoId/attachments/:id` + `exigirPertenencia` |
 | `GET /api/contenidos/:id` | Leer borradores y material rechazado con solo tener sesión | 404 salvo autor o `puedeVerNoPublicado` (cierra también **S8**) |
