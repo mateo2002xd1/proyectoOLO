@@ -441,7 +441,7 @@ input {
   left: 0;
   top: 100%;
   padding-top: 0.5rem;
-  min-width: 230px;
+  min-width: 180px;
   width: max-content;
   opacity: 0;
   visibility: hidden;
@@ -455,12 +455,13 @@ input {
 }
 
 .intranet-dropdown-box {
-  background-color: #002240;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  background-color: rgba(30, 42, 60, 0.95);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   overflow: hidden;
-  padding: 6px 0;
+  padding: 8px 0;
 }
 
 .intranet-dropdown-item {
@@ -468,9 +469,9 @@ input {
   align-items: center;
   width: 100%;
   box-sizing: border-box;
-  padding: 6px;
-  /* <- Puedes modificar estos valores libremente (arriba/abajo, izquierda/derecha) */
+  padding: 10px 16px;
   font-size: 0.875rem;
+  font-family: var(--font-body);
   font-weight: 500;
   color: #ffffff;
   text-decoration: none;
@@ -4415,6 +4416,54 @@ input {
   background: #ffffff;
   display: flex;
   flex-direction: column;
+}
+
+/* La vista previa lleva el marco de las secciones, así que hay dos barras
+   pegajosas peleando por `top: 0`: la navegación y el aviso. Manda el aviso —que
+   la página no está publicada importa más que tener el menú siempre a mano—, y
+   la navegación acompaña al contenido mientras se revisa. */
+body:has(.preview-page) .intranet-topbar {
+  position: static;
+}
+
+/* Barra fija: la vista previa es la página entera, y sin este aviso siempre
+   visible es fácil confundirla con la publicada. */
+.preview-aviso {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.7rem clamp(1rem, 2.4vw, 2.25rem);
+  background: #fef3c7;
+  border-bottom: 1px solid #fcd34d;
+  color: #78350f;
+  font-size: 0.85rem;
+}
+
+.preview-aviso-etiqueta {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.72rem;
+  background: #78350f;
+  color: #fef3c7;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+}
+
+.preview-aviso-nota {
+  margin-left: auto;
+  opacity: 0.85;
+}
+
+@media (max-width: 720px) {
+  .preview-aviso-nota {
+    margin-left: 0;
+    width: 100%;
+  }
 }
 
 /* La vista previa lleva el marco de las secciones, así que hay dos barras
