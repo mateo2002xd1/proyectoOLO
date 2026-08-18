@@ -20,23 +20,32 @@ export function MatrizBanner({
   imagenAlt = 'Matriz de Pertinencia',
 }: MatrizBannerProps) {
   return (
-    <section className="intranet-hero">
+    <section className="intranet-hero" style={{ display: 'flex', justifyContent: 'center', width: '100%', padding: '0 1.5rem' }}>
       <div
-        className="bannerOficialMatriz py-8 md:py-0"
-        style={{ maxWidth: '1240px', width: '100%', borderRadius: '0 0 16px 16px' }}
+        className="tasa-banner-wrapper"
+        style={{ 
+          maxWidth: '1240px', 
+          width: '100%', 
+          borderRadius: '0 0 16px 16px',
+          background: '#001631',
+          padding: '4rem 1.5rem',
+          margin: '0 auto'
+        }}
       >
-        <h1 className="tasa-banner-title text-left mb-8 md:mb-0 mr-0 md:mr-16">
-          {resaltar(titulo)}
-        </h1>
-        {imagenSrc && (
-          // src editable desde el editor: next/image exigiria dimensiones fijas
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={imagenSrc}
-            alt={imagenAlt}
-            style={{ width: '350px', maxWidth: '100vw', height: 'auto', objectFit: 'cover' }}
-          />
-        )}
+        <div className="tasa-banner-content" style={{ width: '100%', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', margin: '0 auto' }}>
+          <h1 className="tasa-banner-title text-left mb-8 md:mb-0 mr-0 md:mr-8" style={{ flex: '1', minWidth: '300px' }}>
+            {resaltar(titulo)}
+          </h1>
+          {imagenSrc && (
+            // src editable desde el editor: next/image exigiria dimensiones fijas
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={imagenSrc}
+              alt={imagenAlt}
+              style={{ width: '100%', maxWidth: '400px', height: '195px', objectFit: 'contain', filter: 'drop-shadow(0 20px 25px rgba(0, 0, 0, 0.3))' }}
+            />
+          )}
+        </div>
       </div>
     </section>
   );
