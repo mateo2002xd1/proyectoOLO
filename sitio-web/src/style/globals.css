@@ -375,11 +375,18 @@
   overflow: hidden;
 }
 
-.olo-gov-banner svg {
+.olo-gov-banner svg,
+.olo-gov-banner img {
   width: 100%;
   max-width: 1920px;
   height: auto;
   display: block;
+}
+
+/* Solo aplica a la imagen subida desde el editor: el SVG de respaldo ya define
+   su propio recorte en el `viewBox` y no necesita `object-fit`. */
+.olo-gov-banner img {
+  object-fit: cover;
 }
 
 .olo-header {
@@ -412,34 +419,6 @@
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-}
-
-.olo-logo-icon {
-  width: 32px;
-  height: 32px;
-}
-
-.olo-logo-divider {
-  width: 1px;
-  height: 28px;
-  background: rgba(0, 0, 0, 0.2);
-}
-
-.olo-logo-text {
-  font-family: var(--font-heading);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-  color: var(--color-white);
-  letter-spacing: 0.02em;
-  line-height: 1.2;
-}
-
-.olo-logo-text-small {
-  display: block;
-  font-size: var(--fs-xs);
-  font-weight: var(--fw-regular);
-  color: var(--color-text-muted-on-dark);
-  letter-spacing: 0.03em;
 }
 
 .olo-nav {
@@ -679,37 +658,6 @@
   }
 }
 
-/* --- Hero --- */
-.olo-hero {
-  background: #f4f4f4;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 60px 0;
-}
-
-.olo-hero-box {
-  width: 62rem;
-  height: 25rem;
-  background: #001631;
-  border-radius: 1.5rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.olo-hero-content {
-  width: 100%;
-  height: 100%;
-  display: flex;
-}
-
-.olo-hero-svg {
-  padding-left: 7rem;
-  display: flex;
-  align-items: flex-start;
-  padding-top: 2rem;
-}
-
 /* --- External Portals --- */
 .olo-portals {
   padding: var(--space-4xl) var(--space-lg);
@@ -728,7 +676,10 @@
 
 .olo-portals-title {
   font-family: var(--font-heading);
-  font-size: var(--fs-2xl);
+  /* Antes se quedaba en 2rem incluso en móvil, aunque la rejilla de abajo sí
+     colapsara a una columna en el mismo punto. El clamp() escala solo con el
+     ancho de la ventana, sin depender de un @media. */
+  font-size: clamp(1.5rem, 1.2rem + 1.5vw, var(--fs-2xl));
   /* El peso base es el ligero: lo que va entre ** se pone en negrita. */
   font-weight: var(--fw-regular);
   color: var(--color-primary-dark);
@@ -805,7 +756,7 @@
 
 .olo-portal-label {
   font-family: var(--font-heading);
-  font-size: var(--fs-xl);
+  font-size: clamp(1.125rem, 0.95rem + 1vw, var(--fs-xl));
   font-weight: var(--fw-bold);
   color: var(--color-white);
   margin-bottom: var(--space-sm);
@@ -859,7 +810,7 @@
 
 .olo-services-title {
   font-family: var(--font-heading);
-  font-size: var(--fs-2xl);
+  font-size: clamp(1.5rem, 1.2rem + 1.5vw, var(--fs-2xl));
   font-weight: var(--fw-bold);
   color: var(--color-primary-dark);
   text-align: center;
@@ -893,7 +844,7 @@
 
 .olo-service-icon-wrapper svg {
   display: block;
-  width: 64px;
+  width: clamp(40px, 5vw, 64px);
   height: auto;
 }
 
@@ -939,7 +890,7 @@
 
 .olo-dato-semana-title {
   font-family: var(--font-heading);
-  font-size: var(--fs-2xl);
+  font-size: clamp(1.5rem, 1.2rem + 1.5vw, var(--fs-2xl));
   font-weight: var(--fw-bold);
   color: var(--color-primary-dark);
   text-align: center;
@@ -1009,7 +960,7 @@
 }
 
 .olo-recursos-visuales-title {
-  font-size: 1.75rem;
+  font-size: clamp(1.375rem, 1.15rem + 1.2vw, 1.75rem);
   font-weight: 400;
   margin-top: 30px;
   margin-bottom: 1.5rem;
@@ -1125,8 +1076,8 @@
 .rv-thumb-wrap {
   position: relative;
   flex-shrink: 0;
-  width: 110px;
-  min-height: 62px;
+  width: clamp(90px, 5vw + 60px, 110px);
+  min-height: clamp(52px, 2.8vw + 34px, 62px);
   border-radius: 0.45rem;
   overflow: hidden;
   background: #d6dce5;
@@ -1189,11 +1140,6 @@
   .rv-playlist {
     max-height: 300px;
   }
-
-  .rv-thumb-wrap {
-    width: 90px;
-    min-height: 52px;
-  }
 }
 
 /* ============================================
@@ -1236,7 +1182,7 @@
 }
 
 .olo-publicaciones-title {
-  font-size: 1.75rem;
+  font-size: clamp(1.375rem, 1.15rem + 1.2vw, 1.75rem);
   font-weight: 400;
   color: #041E42;
   margin-bottom: 2rem;
@@ -1372,18 +1318,12 @@
   font-family: var(--font-body);
   font-weight: 700;
   color: #001631;
-  font-size: 0.875rem;
+  font-size: clamp(0.875rem, 0.8rem + 0.3vw, 1rem);
   line-height: 1.25;
   margin-bottom: 0.5rem;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-
-@media (min-width: 768px) {
-  .publicaciones-card-title {
-    font-size: 1rem;
-  }
 }
 
 .publicaciones-card-hashtag {
@@ -1481,7 +1421,7 @@
 }
 
 .olo-logo {
-  max-height: 80px;
+  max-height: clamp(40px, 6vw + 20px, 80px);
   object-fit: contain;
 }
 
@@ -1565,11 +1505,6 @@
   gap: 8px;
 }
 
-.olo-cert-icon {
-  height: 40px;
-  object-fit: contain;
-}
-
 .olo-bottom-links {
   display: flex;
   flex-direction: column;
@@ -1603,12 +1538,6 @@
   background-color: #0943B5;
   padding: 14px 20px;
   overflow: hidden;
-}
-
-.olo-co-logo {
-  height: 26px;
-  width: auto;
-  object-fit: contain;
 }
 
 @media (max-width: 850px) {
@@ -1988,7 +1917,7 @@
    ============================================ */
 
 ::selection {
-  background: rgba(125, 183, 40, 0.2);
+  background: #0064df28;
 }
 
 /* Hide global scrollbar */
@@ -2692,7 +2621,7 @@ button.text-link,
   align-items: center;
   gap: 0.4rem;
   padding: 0.55rem 1rem;
-  background: #00183a;
+  background: #002c46;
   color: #fff;
   border-radius: 999px;
   font-size: 0.875rem;
@@ -2702,22 +2631,17 @@ button.text-link,
 }
 
 .edit-button:hover {
-  background: #0b2b58;
+  background: #001a2a;
   transform: translateY(-2px);
 }
 
 /* Editar la plantilla afecta a todo el sitio, no solo a la página que se está
-   mirando: se apila encima del botón de la página y en un tono más apagado para
-   que no se confunda con él. Apilado y no al lado, porque así no hay que ajustar
-   el desplazamiento cada vez que cambie el texto de un botón. */
+   mirando: se apila encima del botón de la página. Apilado y no al lado, porque
+   así no hay que ajustar el desplazamiento cada vez que cambie el texto de un
+   botón. */
 .edit-button--plantilla {
   bottom: 4.6rem;
-  background: #334f78;
   font-weight: 500;
-}
-
-.edit-button--plantilla:hover {
-  background: #45638f;
 }
 
 /* ─── Maquetación del editor (@olo/blocks-renderer) ─────────────────────────
