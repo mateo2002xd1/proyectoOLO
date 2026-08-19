@@ -6,11 +6,14 @@ interface IntranetTopbarProps {
   menuItems?: Array<{ label: string; href: string; children?: Array<{ label: string; href: string }> }>;
   brandText?: string;
   logoUrl?: string;
+  /** Vacío usa el navy de `.intranet-topbar` en globals.css. */
+  fondo?: string;
   onLogout?: () => void;
   isLoading?: boolean;
 }
 
 export function IntranetTopbar({
+  fondo,
   menuItems = [
     { href: "/inicio", label: "Inicio" },
     { href: "/tasa", label: "Tasa de Vinculación y Empleabilidad" },
@@ -104,7 +107,11 @@ export function IntranetTopbar({
   }
 
   return (
-    <header className="intranet-topbar" aria-label="Navegacion principal">
+    <header
+      className="intranet-topbar"
+      aria-label="Navegacion principal"
+      style={fondo ? { backgroundColor: fondo } : undefined}
+    >
       <div className="intranet-topbar-inner">
         <div className="intranet-brand">
           {/* src dinamico y tamano por CSS: next/image exigiria width/height fijos o remotePatterns */}

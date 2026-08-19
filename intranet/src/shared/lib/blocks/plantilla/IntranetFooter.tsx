@@ -46,6 +46,8 @@ export interface LogoPie {
 export interface IntranetFooterProps {
   logos?: LogoPie[];
   columnas?: ColumnaPie[];
+  /** Vacío usa el navy de `.intranet-footer` en globals.css. */
+  fondo?: string;
 }
 
 export const LOGOS_POR_DEFECTO: LogoPie[] = [
@@ -89,6 +91,7 @@ function plantillaDeColumnas(conLogos: boolean, cuantasColumnas: number): string
 export function IntranetFooter({
   logos = LOGOS_POR_DEFECTO,
   columnas = COLUMNAS_POR_DEFECTO,
+  fondo,
 }: IntranetFooterProps) {
   // Un logo sin imagen no pinta nada y solo dejaría un hueco con el separador.
   const logosVisibles = logos.filter((logo) => logo.src);
@@ -98,7 +101,11 @@ export function IntranetFooter({
   } as CSSProperties;
 
   return (
-    <footer className="intranet-footer" aria-label="Pie de página">
+    <footer
+      className="intranet-footer"
+      aria-label="Pie de página"
+      style={fondo ? { backgroundColor: fondo } : undefined}
+    >
       <div className="intranet-footer-inner" style={estiloRejilla}>
         {logosVisibles.length > 0 && (
           <div className="intranet-footer-col intranet-footer-brand-col">

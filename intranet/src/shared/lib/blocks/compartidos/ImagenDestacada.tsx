@@ -11,12 +11,28 @@ import { resaltar } from './resaltar';
  * estrecha con esquinas redondeadas del «sabías que», y «completo» la imagen a
  * todo lo ancho del contenedor.
  */
+/** Solo se aplican en la variante «completo»: en «contenido» el redondeado ya
+ *  lo fija `.matriz-sabias-que img` en globals.css con más especificidad que
+ *  una clase de Tailwind, así que exponerlo ahí no haría nada. */
+const CLASES_AJUSTE: Record<string, string> = {
+  cover: 'object-cover',
+  contain: 'object-contain',
+};
+const CLASES_REDONDEADO: Record<string, string> = {
+  ninguno: '',
+  pequeno: 'rounded-md',
+  grande: 'rounded-xl',
+  circular: 'rounded-full',
+};
+
 export interface ImagenDestacadaProps {
   titulo?: string;
   imagenSrc?: string;
   imagenAlt?: string;
   ancho?: 'contenido' | 'completo';
   fondo?: 'blanco' | 'gris';
+  ajusteImagen?: 'cover' | 'contain';
+  redondeado?: 'ninguno' | 'pequeno' | 'grande' | 'circular';
 }
 
 export function ImagenDestacada({
@@ -25,6 +41,10 @@ export function ImagenDestacada({
   imagenAlt = '',
   ancho = 'completo',
   fondo = 'blanco',
+  // Mismos valores que llevaban las clases a mano en la variante «completo»:
+  // una página ya publicada sin estos campos se sigue viendo igual.
+  ajusteImagen = 'contain',
+  redondeado = 'grande',
 }: ImagenDestacadaProps) {
   if (!imagenSrc) return null;
 
@@ -54,7 +74,7 @@ export function ImagenDestacada({
           <img
             src={imagenSrc}
             alt={imagenAlt}
-            className="w-full max-w-[1200px] mx-auto h-auto rounded-xl shadow-sm"
+            className={`w-full max-w-[1200px] mx-auto h-auto shadow-sm ${CLASES_AJUSTE[ajusteImagen] ?? CLASES_AJUSTE.contain} ${CLASES_REDONDEADO[redondeado] ?? ''}`}
           />
         </div>
       </div>

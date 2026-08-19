@@ -19,6 +19,8 @@ export interface TextoRicoProps {
   contenido?: ReactNode;
   fondo?: 'blanco' | 'gris';
   ancho?: 'estrecho' | 'ancho';
+  /** Vacío conserva el color de marca de `.tasa-concept-title/-desc`. */
+  colorTexto?: string;
 }
 
 export function TextoRico({
@@ -26,7 +28,12 @@ export function TextoRico({
   contenido,
   fondo = 'gris',
   ancho = 'estrecho',
+  colorTexto,
 }: TextoRicoProps) {
+  // El estilo en línea gana siempre a las clases de `.tasa-concept-*`, así que
+  // basta con ponerlo solo cuando hay un color elegido.
+  const estiloColor = colorTexto ? { color: colorTexto } : undefined;
+
   return (
     <div
       className={`${fondo === 'gris' ? 'matriz-section-gray' : 'matriz-section-white'} pt-12 md:pt-20 pb-8`}
@@ -35,11 +42,11 @@ export function TextoRico({
         className={`max-w-[1200px] w-full mx-auto px-6 text-left`}
       >
         {titulo && (
-          <h2 className="tasa-concept-title !text-left mb-8">
+          <h2 className="tasa-concept-title !text-left mb-8" style={estiloColor}>
             {resaltar(titulo)}
           </h2>
         )}
-        <div className="tasa-concept-desc !text-left">{contenido}</div>
+        <div className="tasa-concept-desc !text-left" style={estiloColor}>{contenido}</div>
       </div>
     </div>
   );
