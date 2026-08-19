@@ -335,7 +335,6 @@ ${mermaid}
 function generarFilasTablas(tablas: any[]): string {
   const comentariosTablas: Record<string, string> = {
     usuarios: 'Usuarios administradores del sistema',
-    usuarios_sitio: 'Usuarios públicos del sitio web',
     paginas: 'Páginas publicables con versionado',
     paginas_versiones: 'Historial de versiones de páginas',
     contenidos: 'Artículos y posts con metadatos SEO',

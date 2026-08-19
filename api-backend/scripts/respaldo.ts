@@ -14,7 +14,6 @@ const TABLAS = [
   'security_questions',
   'paginas',
   'paginas_versiones',
-  'usuarios_sitio',
   'content_audit_logs',
   'Post',
   'Section',

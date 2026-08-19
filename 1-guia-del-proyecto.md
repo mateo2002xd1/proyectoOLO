@@ -196,7 +196,7 @@ El motivo no es estético: agrupar por tipo técnico mete en un mismo archivo le
 Contenido del proyecto en capa `api-backend/`:
 
 - **routes/** — solo define los endpoints (`router.get`, `router.post`). Cero lógica. Incluso las colas BullMQ (`job.routes.ts`) delegan a un controller — antes tenían el `try/catch` y las llamadas a Redis inline, violando esta regla.
-- **controllers/** — traduce HTTP (req/res) a una llamada de use-case. No sabe de SQL. Un controller por dominio o sub-recurso: `pagina.controller.ts` (maqueta Puck), `contenido.controller.ts` (estudios/informes), `secciones.controller.ts`, `adjuntos.controller.ts`, `auditoria.controller.ts`, `usuarios.controller.ts`, `roles.controller.ts`, `permisos.controller.ts`, `role-permissions.controller.ts`, `sitio-users.controller.ts`, `security-questions.controller.ts`, `auth.controller.ts`, `trabajos.controller.ts` (BullMQ).
+- **controllers/** — traduce HTTP (req/res) a una llamada de use-case. No sabe de SQL. Un controller por dominio o sub-recurso: `pagina.controller.ts` (maqueta Puck), `contenido.controller.ts` (estudios/informes), `secciones.controller.ts`, `adjuntos.controller.ts`, `auditoria.controller.ts`, `usuarios.controller.ts`, `roles.controller.ts`, `permisos.controller.ts`, `role-permissions.controller.ts`, `security-questions.controller.ts`, `auth.controller.ts`, `trabajos.controller.ts` (BullMQ).
 - **use-cases/** — la lógica de negocio real. Una acción = una función (`aprobarPagina`, `guardarBorrador`). Organizadas por dominio real, no por el modelo que tocan:
   - `paginas/` — gobernanza de la maqueta Puck: `guardar-borrador`, `enviar-a-revision`, `aprobar-pagina`, `rechazar-pagina`, `listar-en-revision`, `obtener-pagina-publica`. Todas pasan por `repositories/pagina.repository.ts` — antes tocaban `Pagina`/`PaginaVersion` (los modelos Sequelize) directo, sin repository, violando la regla de abajo.
   - `contenidos/` — estudios/informes y su soporte: `contenido.usecase.ts` (renombrado de `posts.usecase.ts`), `secciones.usecase.ts`, `adjuntos.usecase.ts`.
@@ -225,7 +225,7 @@ api-backend/src/
 │   ├── paginas/               # guardar-borrador, enviar-a-revision, aprobar-pagina,
 │   │                          # rechazar-pagina, listar-en-revision, obtener-pagina-publica
 │   ├── contenidos/            # contenido.usecase.ts (era "posts"), secciones, adjuntos
-│   ├── usuarios/               # crear, caducidad, roles, permisos, role-permissions, sitio-users
+│   ├── usuarios/               # crear, caducidad, roles, permisos, role-permissions
 │   └── auth/                  # login, first-login, security-questions
 ├── repositories/              # ÚNICA capa que consulta los modelos Sequelize
 │   ├── pagina.repository.ts    # Pagina/PaginaVersion — antes no existía

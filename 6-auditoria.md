@@ -5,6 +5,61 @@
 
 ---
 
+## sesión 18-08-2026 (2.ª parte): se elimina `usuarios_sitio` — `usuarios` queda como única identidad
+
+### Qué era y por qué se va
+
+`usuarios_sitio` era la segunda tabla de usuarios que el §2.1 de `11-base-de-datos.md` señalaba como sobrante desde la fase 4. No se había fusionado porque tenía **su propio login con un segundo secreto JWT** (`JWT_SITE_SECRET`), y eso convertía la unificación en un cambio de autenticación, no en un renombrado. Estaba agendada para E-16.
+
+La auditoría previa al borrado encontró que el argumento ya no se sostenía:
+
+- **La tabla estaba vacía** (0 filas). No había datos personales de ciudadanos que trasladar ni respaldar.
+- **Ningún frontend la consumía.** `grep` sobre `sitio-web/src` e `intranet/src` no devuelve una sola llamada a `/api/sitio-users`. El panel del sitio siempre entró por `/api/auth/login`, que valida contra `usuarios`.
+- **Su código era autocontenido**: modelo, repositorio, use-case, controller y router, sin una sola relación en `models/index.ts`.
+
+### Qué se eliminó
+
+| Capa | Qué |
+|---|---|
+| Base de datos | `013-eliminar-usuarios-sitio` — `DROP TABLE usuarios_sitio` |
+| Modelo | `infrastructure/db/models/SitioUser.ts` (+ su import y export en `models/index.ts`) |
+| Repositorio | `repositories/sitio-users.repository.ts` |
+| Use-case | `use-cases/usuarios/sitio-users.usecase.ts` |
+| Controller | `controllers/sitio-users.controller.ts` |
+| Rutas | `routes/sitioUser.routes.ts` (+ su import y `app.use('/api/sitio-users', …)` en `app.ts`) |
+| Configuración | `jwtSiteSecret` y la validación fatal de `JWT_SITE_SECRET` en `config/index.ts`; la variable en `.env.example`, `docker-compose.yml`, `docker-compose.prod.yml` y la tabla de `7-despliegue.md` |
+| Scripts | `usuarios_sitio` sale de `TABLAS` en `respaldo.ts` (habría fallado al consultar una tabla inexistente) y de los diccionarios de `generar-esquema-comentado.ts` y `generar-pdf-esquema.ts` |
+
+**La migración lleva guarda y no es decorativa.** Antes del `DROP` cuenta las filas y **aborta con `RAISE EXCEPTION` si hay alguna**: son datos personales bajo Ley 1581 y una migración no decide borrarlos. En un entorno donde la tabla tenga cuentas, esto falla y deja la base intacta. El `down` recrea la tabla vacía apuntando a `usuarios(id)`, no a `users(id)`, porque `005-identidad` ya renombró la tabla y una reversión no resucita el nombre viejo.
+
+### Lo que **no** se tocó, a propósito
+
+- **`001-esquema-base` sigue creando la tabla.** Las migraciones son historia y no se reescriben: sobre una base nueva, la 001 la crea y la 013 la elimina. Lo mismo con la mención en `003-restricciones-e-indices`, que es un `relname IN (…)` inofensivo cuando la tabla no existe.
+- **La fila 5 del §2.1 de `11-base-de-datos.md`** conserva `usuarios_sitio.email` porque describe lo que el esquema viejo *hacía*, no lo que hay hoy.
+- **El registro del BOLA en `3-seguridad-del-proyecto.md`** mantiene la fila de `/api/sitio-users/:id`; se le añadió que la ruta ya no existe. Borrar el hallazgo borraría la trazabilidad de su cierre.
+
+### Verificación
+
+| Comprobación | Resultado |
+|---|---|
+| `npm run typecheck` | limpio |
+| `npm run build` | limpio |
+| `npm run migrate` | `013-eliminar-usuarios-sitio` aplicada |
+| `npm run db:verificar` | **los 20 modelos** coinciden con las columnas reales (eran 21) |
+| `to_regclass('public.usuarios_sitio')` | `NULL` — la tabla no existe; `usuarios` conserva sus 6 filas |
+| `permisos` / `propiedad` / `auditoria` / `email` / `password` `:verificar` | los cinco «Todo correcto» |
+| Arranque real **sin `JWT_SITE_SECRET` en el entorno** | `/health` 200 · `GET /api/sitio-users` **404** · `POST /api/sitio-users/login` **404** · `GET /api/users` 401 |
+
+> **Aviso sobre la prueba de humo.** El primer intento respondió 401 y 500 en vez de 404, y no era un residuo: el puerto 4000 lo ocupaba un `ts-node src/server.ts` **anterior a los cambios**, sirviendo código viejo desde memoria. Repetida en el 4100 con `node dist/server.js`, las dos rutas dan 404. **Cualquier dev server que estuviera corriendo antes de esta sesión hay que reiniciarlo**, o seguirá respondiendo `relation "usuarios_sitio" does not exist`.
+
+### Pendiente al cierre
+
+- **`.env` local**: se le quitó `JWT_SITE_SECRET`. En despliegue, la variable puede retirarse del gestor de secretos — ya no la lee nadie y su ausencia no impide arrancar.
+- E-16 se queda **solo** con la caducidad de cuentas; la parte de unificar identidades está cerrada.
+- Los frontends no se recompilaron: ninguno de los dos referenciaba la tabla ni sus rutas.
+
+---
+
 ## sesión 11-08-2026 (3.ª parte): el primer ingreso era todo-o-nada
 
 ### El fallo

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Script de despliegue rápido para producción
+# Script de despliegue rápido para pruebas en servidor local
 # Uso: ./deploy.sh [comando]
 
 set -e
@@ -34,7 +34,7 @@ setup() {
     if [ ! -f .env ]; then
         echo "Copiando .env.example a .env..."
         cp .env.example .env
-        echo "✓ Archivo .env creado"
+        echo "Archivo .env creado"
         echo ""
         echo "IMPORTANTE: Edita el archivo .env con tus valores antes de continuar"
         echo "nano .env"

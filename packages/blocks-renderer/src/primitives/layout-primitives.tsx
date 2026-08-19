@@ -28,6 +28,7 @@ import {
   pixelesDeEspacio,
   type ConfigDeBloque,
 } from './controles-de-caja';
+import { campoColor } from './color-picker-field';
 
 /** Opciones de separación entre elementos — la misma escala que el resto. */
 const OPCIONES_SEPARACION = [
@@ -70,6 +71,7 @@ export const gridConfig: ConfigDeBloque = {
         { label: 'Abajo', value: 'end' },
       ],
     },
+    fondo: campoColor('Color de fondo (opcional)'),
     // El slot es lo que convierte al bloque en contenedor: sin declararlo aquí,
     // Puck no pinta zona donde soltar y el bloque queda inservible.
     items: { type: 'slot' },
@@ -78,9 +80,10 @@ export const gridConfig: ConfigDeBloque = {
     columns: 3,
     gap: 'medio',
     alinearItems: 'stretch',
+    fondo: '',
     items: [],
   },
-  render: ({ columns, gap, alinearItems, items: Items }: any) => (
+  render: ({ columns, gap, alinearItems, fondo, items: Items }: any) => (
     <Items
       className="olo-grid"
       style={{
@@ -88,6 +91,9 @@ export const gridConfig: ConfigDeBloque = {
         ['--olo-grid-cols' as string]: String(columns ?? 3),
         ['--olo-grid-gap' as string]: `${pixelesDeEspacio(gap, 'medio')}px`,
         ['--olo-grid-align' as string]: alinearItems ?? 'stretch',
+        // Sin fondo puesto no se añade la propiedad: mismo fondo transparente
+        // que tenía el bloque antes de que existiera este campo.
+        ...(fondo ? { backgroundColor: fondo } : {}),
       }}
     />
   ),
@@ -141,6 +147,7 @@ export const flexConfig: ConfigDeBloque = {
       label: 'Apilar en móvil',
       options: OPCIONES_SI_NO,
     },
+    fondo: campoColor('Color de fondo (opcional)'),
     items: { type: 'slot' },
   },
   defaultProps: {
@@ -150,9 +157,10 @@ export const flexConfig: ConfigDeBloque = {
     gap: 'poco',
     wrap: 'si',
     apilarEnMovil: 'si',
+    fondo: '',
     items: [],
   },
-  render: ({ direction, justify, align, gap, wrap, apilarEnMovil, items: Items }: any) => (
+  render: ({ direction, justify, align, gap, wrap, apilarEnMovil, fondo, items: Items }: any) => (
     <Items
       // Apilar en móvil no puede ser un estilo inline: necesita una media query.
       className={`olo-flex${apilarEnMovil !== 'no' ? ' olo-flex--apilar' : ''}`}
@@ -165,6 +173,9 @@ export const flexConfig: ConfigDeBloque = {
         // el valor antiguo para no cambiar el aspecto de lo ya maquetado.
         ['--olo-flex-wrap' as string]:
           wrap === 'no' || wrap === 'nowrap' ? 'nowrap' : 'wrap',
+        // Sin fondo puesto no se añade la propiedad: mismo fondo transparente
+        // que tenía el bloque antes de que existiera este campo.
+        ...(fondo ? { backgroundColor: fondo } : {}),
       }}
     />
   ),

@@ -60,8 +60,8 @@ export const requierePermisoAuditoria = construirGuardia<PermisoAuditoria>(
 /**
  * Exige permiso sobre cuentas o sobre la configuración de seguridad.
  *
- * Estas rutas (`/api/users`, `/api/roles`, `/api/permissions`, `/api/role-permissions`,
- * `/api/sitio-users`) no tenían **ningún** filtro después de `requireAuth`, que es el
+ * Estas rutas (`/api/users`, `/api/roles`, `/api/permissions`, `/api/role-permissions`)
+ * no tenían **ningún** filtro después de `requireAuth`, que es el
  * agujero más grave que había: por ahí cualquier sesión se ascendía a Superadmin y a
  * partir de ahí pasaba todos los demás controles.
  */

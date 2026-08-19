@@ -33,41 +33,78 @@
   --transition-fast: 150ms ease;
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+/* En `@layer base`: sin capa, estos resets le ganan a CUALQUIER utilidad de
+   Tailwind (viven en `@layer utilities`) sin importar especificidad, porque en
+   cascade layers una regla sin capa siempre gana sobre una con capa. Sin este
+   `@layer` aquí, `bg-*`/`border-*`/`text-*` de Tailwind sobre `button`, `a` o
+   `input` quedaban pisados por estos resets en toda la app — así se vio
+   invisible el botón "Ingresar" del login: `bg-[#0d1526]` perdía contra este
+   `background: none`. */
+@layer base {
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    height: 100%;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    min-height: 100vh;
+    font-family: var(--font-body);
+    color: var(--color-text-primary);
+    line-height: 1.5;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  button {
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-family: inherit;
+  }
+
+  input {
+    font-family: inherit;
+    font-size: inherit;
+  }
 }
 
-html {
-  height: 100%;
-  -webkit-font-smoothing: antialiased;
+/* ============================================
+   MIGRATED CMS UTILITIES
+   ============================================ */
+
+::selection {
+  background: #0064df28;
 }
 
-body {
-  min-height: 100vh;
-  font-family: var(--font-body);
-  color: var(--color-text-primary);
-  line-height: 1.5;
+/* Hide global scrollbar */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+*::-webkit-scrollbar {
+  display: none;
 }
 
-button {
-  cursor: pointer;
-  border: none;
-  background: none;
-  font-family: inherit;
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-input {
-  font-family: inherit;
-  font-size: inherit;
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 /*LOGIN PAGE — Full screen split layout*/
@@ -77,6 +114,7 @@ input {
   min-height: 100vh;
   min-height: 100dvh;
   width: 100%;
+  background-color: #001A39;
 }
 
 /*Left Panel — Branding*/
@@ -89,6 +127,7 @@ input {
   padding: clamp(1rem, 4vw, 3rem);
   min-height: 100vh;
   min-height: 100dvh;
+  border-radius: 0px 30px 30px 0px;
 }
 
 .login-left-content {
@@ -128,147 +167,6 @@ input {
   min-height: 100dvh;
 }
 
-/* --- Card --- */
-.login-card {
-  background: var(--color-white);
-  border-radius: var(--radius-lg);
-  padding: clamp(1.5rem, 4vw, 2.5rem);
-  width: 100%;
-  max-width: min(400px, 90vw);
-  box-shadow: var(--shadow-card);
-}
-
-/* --- Form --- */
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(0.875rem, 2vw, 1.25rem);
-}
-
-.login-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-}
-
-.login-label {
-  font-family: var(--font-body);
-  font-size: clamp(0.8rem, 1.5vw, 0.875rem);
-  font-weight: 600;
-  color: var(--color-navy-800);
-}
-
-.login-input {
-  width: 100%;
-  padding: clamp(0.625rem, 1.5vw, 0.75rem) 1rem;
-  font-size: clamp(0.85rem, 1.5vw, 0.9375rem);
-  color: var(--color-text-primary);
-  background: var(--color-white);
-  border: 1.5px solid var(--color-gray-200);
-  border-radius: var(--radius-md);
-  outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.login-input:focus {
-  border-color: var(--color-navy-800);
-  box-shadow: 0 0 0 3px rgba(13, 31, 60, 0.1);
-}
-
-.login-input-error {
-  border-color: var(--color-error);
-}
-
-.login-input-password {
-  padding-right: 3rem;
-}
-
-.login-password-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.login-eye-btn {
-  position: absolute;
-  right: 12px;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.login-error {
-  font-size: 0.75rem;
-  color: var(--color-error);
-  margin-top: 2px;
-}
-
-.login-general-error {
-  background: var(--color-error-bg);
-  border: 1px solid var(--color-error-border);
-  border-radius: var(--radius-md);
-  padding: 0.75rem 1rem;
-  font-size: 0.875rem;
-  color: var(--color-error-text);
-  text-align: center;
-}
-
-/* Gemelo del anterior para lo que informa en vez de fallar. Existe aparte porque
-   cerrar la sesión tras quince minutos parado es el sistema haciendo su trabajo, y
-   pintarlo en rojo —en el mismo hueco donde sale «Credenciales inválidas»— hace creer
-   que uno se equivocó en algo. */
-.login-general-notice {
-  background: var(--color-info-bg);
-  border: 1px solid var(--color-info-border);
-  border-radius: var(--radius-md);
-  padding: 0.75rem 1rem;
-  font-size: 0.875rem;
-  color: var(--color-info-text);
-  text-align: center;
-}
-
-.login-submit {
-  width: 100%;
-  padding: clamp(0.75rem, 1.5vw, 0.875rem);
-  font-size: clamp(0.9rem, 1.5vw, 1rem);
-  font-weight: 600;
-  color: var(--color-white);
-  background: var(--color-navy-800);
-  border: none;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: background 0.2s ease, transform 0.15s ease;
-  margin-top: 0.25rem;
-}
-
-.login-submit:hover {
-  background: #091729;
-  transform: translateY(-1px);
-}
-
-.login-submit:active {
-  transform: translateY(0);
-}
-
-.login-submit-disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.login-forgot {
-  font-size: clamp(0.8rem, 1.5vw, 0.875rem);
-  color: var(--color-navy-800);
-  text-align: center;
-  text-decoration: underline;
-  margin-top: -0.25rem;
-  transition: opacity 0.2s ease;
-}
-
-.login-forgot:hover {
-  opacity: 0.7;
-}
-
 .site-return-link,
 .login-return,
 .recovery-return,
@@ -301,21 +199,6 @@ input {
   color: #ffffff;
   transform: translateY(-2px);
   background: rgba(255, 255, 255, 0.1);
-}
-
-.login-card .site-return-link,
-.login-card .login-return {
-  color: #4b5563;
-  margin-top: 1.25rem;
-  padding: 0.5rem 0.8rem;
-  border-radius: 8px;
-}
-
-.login-card .site-return-link:hover,
-.login-card .login-return:hover {
-  color: #111827;
-  background: #f3f4f6;
-  transform: translateY(-1px);
 }
 
 /*INTRANET HOME — Banner, menu and footer*/
@@ -1338,7 +1221,7 @@ input {
   align-items: center;
   gap: 0.4rem;
   padding: 0.55rem 1rem;
-  background: #00183a;
+  background: #002c46;
   color: #fff;
   border-radius: 999px;
   font-size: 0.875rem;
@@ -1348,22 +1231,17 @@ input {
 }
 
 .edit-button:hover {
-  background: #0b2b58;
+  background: #001a2a;
   transform: translateY(-2px);
 }
 
 /* Editar la plantilla afecta a las cinco secciones, no solo a la que se está
-   mirando: se apila encima del botón de la sección y en un tono más apagado para
-   que no se confunda con él. Apilado y no al lado, porque así no hay que ajustar
-   el desplazamiento cada vez que cambie el texto de un botón. */
+   mirando: se apila encima del botón de la sección. Apilado y no al lado, porque
+   así no hay que ajustar el desplazamiento cada vez que cambie el texto de un
+   botón. */
 .edit-button--plantilla {
   bottom: 4.6rem;
-  background: #334f78;
   font-weight: 500;
-}
-
-.edit-button--plantilla:hover {
-  background: #45638f;
 }
 
 /* ============================================
@@ -1395,7 +1273,6 @@ input {
 }
 
 .recovery-brand-title {
-  font-family: var(--font-heading);
   font-size: clamp(1.5rem, 3.5vw, 2.5rem);
   font-weight: 700;
   color: var(--color-white);
@@ -1404,7 +1281,6 @@ input {
 }
 
 .recovery-brand-subtitle {
-  font-family: var(--font-body);
   font-size: clamp(0.85rem, 1.5vw, 1rem);
   color: var(--color-white);
   opacity: 0.8;
@@ -1427,11 +1303,11 @@ input {
 /* --- Card --- */
 .recovery-card {
   background: var(--color-white);
-  border-radius: var(--radius-lg);
-  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border-radius: 24px;
+  padding: 2.5rem 2.25rem;
   width: 100%;
-  max-width: min(400px, 90vw);
-  box-shadow: var(--shadow-card);
+  max-width: 380px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
 }
 
 /* --- Form --- */
@@ -1442,7 +1318,6 @@ input {
 }
 
 .recovery-card-title {
-  font-family: var(--font-heading);
   font-size: clamp(0.9rem, 1.5vw, 1rem);
   font-weight: 600;
   color: var(--color-navy-800);
@@ -1461,7 +1336,7 @@ input {
   color: var(--color-text-primary);
   background: var(--color-white);
   border: 1.5px solid var(--color-gray-200);
-  border-radius: var(--radius-md);
+  border-radius: 12px;
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -1484,7 +1359,7 @@ input {
 .recovery-general-error {
   background: var(--color-error-bg);
   border: 1px solid var(--color-error-border);
-  border-radius: var(--radius-md);
+  border-radius: 12px;
   padding: 0.75rem 1rem;
   font-size: 0.875rem;
   color: var(--color-error-text);
@@ -1499,7 +1374,7 @@ input {
   color: var(--color-white);
   background: var(--color-navy-800);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: 16px;
   cursor: pointer;
   transition: background 0.2s ease, transform 0.15s ease;
   margin-top: 0.25rem;
@@ -1549,7 +1424,6 @@ input {
 }
 
 .recovery-success-title {
-  font-family: var(--font-heading);
   font-size: clamp(1rem, 2vw, 1.25rem);
   font-weight: 700;
   color: var(--color-navy-800);
@@ -1621,7 +1495,6 @@ input {
 }
 
 .sq-brand-title {
-  font-family: var(--font-heading);
   font-size: clamp(1.5rem, 3.5vw, 2.5rem);
   font-weight: 700;
   color: var(--color-white);
@@ -1630,7 +1503,6 @@ input {
 }
 
 .sq-brand-subtitle {
-  font-family: var(--font-body);
   font-size: clamp(0.85rem, 1.5vw, 1rem);
   color: var(--color-white);
   opacity: 0.8;
@@ -1639,7 +1511,6 @@ input {
 }
 
 .sq-brand-hint {
-  font-family: var(--font-body);
   font-size: clamp(0.8rem, 1.3vw, 0.9rem);
   color: var(--color-white);
   opacity: 0.7;
@@ -1662,11 +1533,11 @@ input {
 /* --- Card --- */
 .sq-card {
   background: var(--color-white);
-  border-radius: var(--radius-lg);
-  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border-radius: 24px;
+  padding: 2.5rem 2.25rem;
   width: 100%;
-  max-width: min(400px, 90vw);
-  box-shadow: var(--shadow-card);
+  max-width: 380px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
 }
 
 /* --- Form --- */
@@ -1677,7 +1548,6 @@ input {
 }
 
 .sq-card-title {
-  font-family: var(--font-heading);
   font-size: clamp(0.9rem, 1.5vw, 1rem);
   font-weight: 600;
   color: var(--color-navy-800);
@@ -1690,7 +1560,6 @@ input {
 }
 
 .sq-label-question {
-  font-family: var(--font-body);
   font-size: clamp(0.85rem, 1.5vw, 0.9375rem);
   font-weight: 500;
   color: var(--color-text-primary);
@@ -1707,7 +1576,7 @@ input {
   color: var(--color-text-primary);
   background: var(--color-white);
   border: 1.5px solid var(--color-gray-200);
-  border-radius: var(--radius-md);
+  border-radius: 12px;
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -1721,7 +1590,6 @@ input {
   width: 100%;
   height: 2.75rem;
   padding: 0 2.75rem 0 1rem;
-  font-family: var(--font-body);
   font-size: clamp(0.85rem, 1.5vw, 0.9375rem);
   font-weight: 500;
   color: var(--color-text-primary);
@@ -1756,7 +1624,7 @@ input {
 .sq-general-error {
   background: var(--color-error-bg);
   border: 1px solid var(--color-error-border);
-  border-radius: var(--radius-md);
+  border-radius: 12px;
   padding: 0.75rem 1rem;
   font-size: 0.875rem;
   color: var(--color-error-text);
@@ -1798,7 +1666,7 @@ input {
   color: var(--color-white);
   background: var(--color-navy-800);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: 16px;
   cursor: pointer;
   transition: background 0.2s ease, transform 0.15s ease;
   margin-top: 0.25rem;
@@ -1878,7 +1746,6 @@ input {
 }
 
 .rp-brand-title {
-  font-family: var(--font-heading);
   font-size: clamp(1.5rem, 3.5vw, 2.5rem);
   font-weight: 700;
   color: var(--color-white);
@@ -1887,7 +1754,6 @@ input {
 }
 
 .rp-brand-subtitle {
-  font-family: var(--font-body);
   font-size: clamp(0.85rem, 1.5vw, 1rem);
   color: var(--color-white);
   opacity: 0.8;
@@ -1896,7 +1762,6 @@ input {
 }
 
 .rp-brand-hint {
-  font-family: var(--font-body);
   font-size: clamp(0.8rem, 1.3vw, 0.9rem);
   color: var(--color-white);
   opacity: 0.7;
@@ -1919,11 +1784,11 @@ input {
 /* --- Card --- */
 .rp-card {
   background: var(--color-white);
-  border-radius: var(--radius-lg);
-  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border-radius: 24px;
+  padding: 2.5rem 2.25rem;
   width: 100%;
-  max-width: min(400px, 90vw);
-  box-shadow: var(--shadow-card);
+  max-width: 380px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
 }
 
 /* --- Form --- */
@@ -1934,7 +1799,6 @@ input {
 }
 
 .rp-card-title {
-  font-family: var(--font-heading);
   font-size: clamp(0.9rem, 1.5vw, 1rem);
   font-weight: 600;
   color: var(--color-navy-800);
@@ -1978,7 +1842,6 @@ input {
 }
 
 .rp-label {
-  font-family: var(--font-body);
   font-size: clamp(0.8rem, 1.5vw, 0.875rem);
   font-weight: 600;
   color: var(--color-navy-800);
@@ -1991,7 +1854,7 @@ input {
   color: var(--color-text-primary);
   background: var(--color-white);
   border: 1.5px solid var(--color-gray-200);
-  border-radius: var(--radius-md);
+  border-radius: 12px;
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -2033,7 +1896,7 @@ input {
 .rp-general-error {
   background: var(--color-error-bg);
   border: 1px solid var(--color-error-border);
-  border-radius: var(--radius-md);
+  border-radius: 12px;
   padding: 0.75rem 1rem;
   font-size: 0.875rem;
   color: var(--color-error-text);
@@ -2048,7 +1911,7 @@ input {
   color: var(--color-white);
   background: var(--color-navy-800);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: 16px;
   cursor: pointer;
   transition: background 0.2s ease, transform 0.15s ease;
   margin-top: 0.25rem;
@@ -2119,7 +1982,6 @@ input {
 }
 
 .rs-title {
-  font-family: var(--font-heading);
   font-size: clamp(1.5rem, 3.5vw, 2.5rem);
   font-weight: 700;
   color: var(--color-white);
@@ -2128,7 +1990,6 @@ input {
 }
 
 .rs-subtitle {
-  font-family: var(--font-body);
   font-size: clamp(0.9rem, 1.5vw, 1.125rem);
   color: var(--color-white);
   opacity: 0.85;
@@ -2137,7 +1998,6 @@ input {
 }
 
 .rs-hint {
-  font-family: var(--font-body);
   font-size: clamp(0.85rem, 1.3vw, 1rem);
   color: var(--color-white);
   opacity: 0.75;
@@ -2213,7 +2073,6 @@ input {
 }
 
 .fl-brand-title {
-  font-family: var(--font-heading);
   font-size: clamp(1.5rem, 3.5vw, 2.5rem);
   font-weight: 700;
   color: var(--color-white);
@@ -2222,7 +2081,6 @@ input {
 }
 
 .fl-brand-subtitle {
-  font-family: var(--font-body);
   font-size: clamp(0.85rem, 1.5vw, 1rem);
   color: var(--color-white);
   opacity: 0.8;
@@ -2254,11 +2112,11 @@ input {
 /* --- Card --- */
 .fl-card {
   background: var(--color-white);
-  border-radius: var(--radius-lg);
-  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border-radius: 24px;
+  padding: 2.5rem 2.25rem;
   width: 100%;
-  max-width: min(400px, 90vw);
-  box-shadow: var(--shadow-card);
+  max-width: 380px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
   animation: scaleIn 0.4s ease-out;
 }
 
@@ -2270,7 +2128,6 @@ input {
 }
 
 .fl-card-title {
-  font-family: var(--font-heading);
   font-size: clamp(0.8rem, 1.3vw, 0.875rem);
   font-weight: 600;
   color: var(--color-navy-800);
@@ -2289,7 +2146,7 @@ input {
   color: var(--color-text-primary);
   background: var(--color-white);
   border: 1.5px solid var(--color-gray-200);
-  border-radius: var(--radius-md);
+  border-radius: 12px;
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -2326,7 +2183,6 @@ input {
   width: 100%;
   height: 2.75rem;
   padding: 0 2.75rem 0 1rem;
-  font-family: var(--font-body);
   font-size: clamp(0.85rem, 1.5vw, 0.9375rem);
   font-weight: 500;
   color: var(--color-text-primary);
@@ -2361,7 +2217,7 @@ input {
 .fl-general-error {
   background: var(--color-error-bg);
   border: 1px solid var(--color-error-border);
-  border-radius: var(--radius-md);
+  border-radius: 12px;
   padding: 0.75rem 1rem;
   font-size: 0.875rem;
   color: var(--color-error-text);
@@ -2403,7 +2259,7 @@ input {
   color: var(--color-white);
   background: var(--color-navy-800);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: 16px;
   cursor: pointer;
   transition: background 0.2s ease, transform 0.15s ease;
   margin-top: 0.25rem;
@@ -2501,7 +2357,6 @@ input {
 }
 
 .fl-success-title {
-  font-family: var(--font-heading);
   font-size: clamp(1.25rem, 3vw, 2rem);
   font-weight: 700;
   color: var(--color-white);
@@ -2631,7 +2486,6 @@ input {
     padding: 1.5rem 1rem;
   }
 
-  .login-card,
   .recovery-card,
   .sq-card,
   .rp-card,
@@ -2689,7 +2543,6 @@ input {
     padding: 1rem;
   }
 
-  .login-card,
   .recovery-card,
   .sq-card,
   .rp-card,
@@ -2697,7 +2550,6 @@ input {
     padding: 1rem;
   }
 
-  .login-form,
   .recovery-form,
   .sq-form,
   .rp-form,
@@ -2705,7 +2557,6 @@ input {
     gap: 0.625rem;
   }
 
-  .login-submit,
   .recovery-submit,
   .sq-submit,
   .rp-submit,
@@ -2756,7 +2607,6 @@ input {
     padding: 1.5rem;
   }
 
-  .login-card,
   .recovery-card,
   .sq-card,
   .rp-card,
@@ -2788,7 +2638,6 @@ input {
     width: 220px;
   }
 
-  .login-card,
   .recovery-card,
   .sq-card,
   .rp-card,
@@ -2809,86 +2658,52 @@ input {
   min-height: 100dvh;
 }
 
-/* --- FORWARD: Card slides in from right --- */
-.auth-slide-forward .login-card,
-.auth-slide-forward .recovery-card,
-.auth-slide-forward .sq-card,
-.auth-slide-forward .rp-card,
-.auth-slide-forward .fl-card {
-  animation: authSlideInRight 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.auth-slide-forward .rs-content {
-  animation: authFadeInRight 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-/* --- BACKWARD: Card slides in from left --- */
-.auth-slide-backward .login-card,
-.auth-slide-backward .recovery-card,
-.auth-slide-backward .sq-card,
-.auth-slide-backward .rp-card,
-.auth-slide-backward .fl-card {
-  animation: authSlideInLeft 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.auth-slide-backward .rs-content {
-  animation: authFadeInLeft 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-/* --- Stacked pages effect (box-shadow layers) --- */
-.auth-slide-forward .login-card,
+/* --- FORWARD & BACKWARD transitions (desactivadas) --- */
 .auth-slide-forward .recovery-card,
 .auth-slide-forward .sq-card,
 .auth-slide-forward .rp-card,
 .auth-slide-forward .fl-card,
-.auth-slide-backward .login-card,
 .auth-slide-backward .recovery-card,
 .auth-slide-backward .sq-card,
 .auth-slide-backward .rp-card,
 .auth-slide-backward .fl-card {
-  animation-fill-mode: both;
+  animation: none;
 }
 
-.auth-page-transition .login-card,
+.auth-slide-forward .rs-content,
+.auth-slide-backward .rs-content {
+  animation: none;
+}
+
 .auth-page-transition .recovery-card,
 .auth-page-transition .sq-card,
 .auth-page-transition .rp-card,
 .auth-page-transition .fl-card {
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.25),
-    5px 5px 0 0 #d9e2ec,
-    5px 5px 10px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
   transition: box-shadow 0.4s ease;
 }
 
-/* Remove stacked effect on hover — feels like picking up the page */
-.auth-page-transition .login-card:hover,
+/* Hover sin efecto 3D acumulativo */
 .auth-page-transition .recovery-card:hover,
 .auth-page-transition .sq-card:hover,
 .auth-page-transition .rp-card:hover,
 .auth-page-transition .fl-card:hover {
-  box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.3),
-    3px 3px 0 0 #d9e2ec;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
 }
 
-/* --- Left panel branding — fade up on entry --- */
+/* --- Left panel branding — sin animación --- */
 .auth-page-transition .login-left-content,
 .auth-page-transition .recovery-left-content,
 .auth-page-transition .sq-left-content,
 .auth-page-transition .rp-left-content,
-.auth-page-transition .fl-left-content {
-  animation: authBrandingFadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
-}
-
-/* --- Return link — staggered fade in --- */
+.auth-page-transition .fl-left-content,
 .auth-page-transition .login-return,
 .auth-page-transition .recovery-return,
 .auth-page-transition .sq-return,
 .auth-page-transition .rp-return,
 .auth-page-transition .fl-return,
 .auth-page-transition .rs-return {
-  animation: authBrandingFadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
+  animation: none;
 }
 
 /* --- Reset Success full-screen branding --- */
@@ -2904,9 +2719,7 @@ input {
   0% {
     transform: translateX(70px) scale(0.97);
     opacity: 0;
-    box-shadow:
-      -16px 0 32px rgba(0, 0, 0, 0.12),
-      0 0 0 0 transparent;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
   }
 
   60% {
@@ -2916,10 +2729,7 @@ input {
   100% {
     transform: translateX(0) scale(1);
     opacity: 1;
-    box-shadow:
-      0 8px 32px rgba(0, 0, 0, 0.25),
-      5px 5px 0 0 #d9e2ec,
-      5px 5px 10px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
   }
 }
 
@@ -2927,9 +2737,7 @@ input {
   0% {
     transform: translateX(-70px) scale(0.97);
     opacity: 0;
-    box-shadow:
-      16px 0 32px rgba(0, 0, 0, 0.12),
-      0 0 0 0 transparent;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
   }
 
   60% {
@@ -2939,10 +2747,7 @@ input {
   100% {
     transform: translateX(0) scale(1);
     opacity: 1;
-    box-shadow:
-      0 8px 32px rgba(0, 0, 0, 0.25),
-      5px 5px 0 0 #d9e2ec,
-      5px 5px 10px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
   }
 }
 
@@ -3143,7 +2948,6 @@ input {
 }
 
 .goo-loader-label {
-  font-family: var(--font-heading);
   font-size: 1.05rem;
   font-weight: 600;
   color: var(--color-navy-800);
@@ -3184,21 +2988,18 @@ input {
    EYE BUTTON ANIMATIONS
    ============================================ */
 
-.login-eye-btn,
 .rp-eye-btn,
 .fl-eye-btn {
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease;
   border-radius: 50%;
 }
 
-.login-eye-btn:hover,
 .rp-eye-btn:hover,
 .fl-eye-btn:hover {
   transform: scale(1.15);
   background-color: rgba(13, 31, 60, 0.05);
 }
 
-.login-eye-btn:active,
 .rp-eye-btn:active,
 .fl-eye-btn:active {
   transform: scale(0.9);
@@ -3222,9 +3023,6 @@ input {
   }
 }
 
-.login-eye-btn svg path,
-.login-eye-btn svg circle,
-.login-eye-btn svg line,
 .rp-eye-btn svg path,
 .rp-eye-btn svg circle,
 .rp-eye-btn svg line,
@@ -3235,13 +3033,11 @@ input {
   animation: eyePopInOut 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
-.login-eye-btn svg,
 .rp-eye-btn svg,
 .fl-eye-btn svg {
   transition: stroke 0.3s ease;
 }
 
-.login-eye-btn:hover svg,
 .rp-eye-btn:hover svg,
 .fl-eye-btn:hover svg {
   stroke: var(--color-navy-800);

@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
+import { poppins } from '@/shared/lib/fonts';
 
 /**
  * Page order map — used to determine slide direction.
@@ -35,7 +36,7 @@ export default function LoginTemplate({ children }: { children: React.ReactNode 
   }
 
   return (
-    <div className={`auth-page-transition auth-slide-${direccion}`}>
+    <div className={`${poppins.className} auth-page-transition auth-slide-${direccion}`}>
       {children}
     </div>
   );

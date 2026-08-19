@@ -102,7 +102,15 @@ function contarUsuariosPorRol(users: User[]): { rol: string; total: number }[] {
     .sort((a, b) => b.total - a.total || a.rol.localeCompare(b.rol, 'es'));
 }
 
-export function PanelGeneralLayout({ children, userProfile }: { children: React.ReactNode; userProfile?: { name: string; email: string } }) {
+export function PanelGeneralLayout({
+  children,
+  userProfile,
+  className,
+}: {
+  children: React.ReactNode;
+  userProfile?: { name: string; email: string };
+  className?: string;
+}) {
   const router = useRouter();
 
   const handleLogout = useCallback(async () => {
@@ -114,6 +122,7 @@ export function PanelGeneralLayout({ children, userProfile }: { children: React.
     <>
       <ThemeToggle />
       <SidebarLayout
+        className={className}
         navbar={
           <Navbar>
             <NavbarSection>

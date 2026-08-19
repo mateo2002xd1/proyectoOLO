@@ -7,6 +7,7 @@ import {
   ArrowsPointingOutIcon,
   ArrowsPointingInIcon
 } from '@heroicons/react/24/outline';
+import { poppins } from '@/shared/lib/fonts';
 
 interface VisorDocumentoProps {
   titulo: string;
@@ -37,7 +38,7 @@ export function VisorDocumento({
       {/* Encabezado del Visor */}
       <div className="mb-5 flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 dark:border-[#1e293b] pb-4">
         <div>
-          <h3 className="text-base font-bold text-gray-900 dark:text-[#f6f6f6]">{titulo}</h3>
+          <h3 className={`${poppins.className} text-base font-bold text-gray-900 dark:text-[#f6f6f6]`}>{titulo}</h3>
           {descripcion && (
             <p className="mt-1 text-xs text-gray-500 dark:text-slate-400 leading-relaxed max-w-2xl">
               {descripcion}
@@ -114,7 +115,7 @@ export function VisorDocumento({
           >
             <div className="flex items-center justify-between border-b border-gray-200 dark:border-[#1e293b] px-6 py-4 bg-gray-50 dark:bg-[#0b1121]">
               <div>
-                <h4 className="text-base font-bold text-gray-900 dark:text-[#f6f6f6]">{titulo}</h4>
+                <h4 className={`${poppins.className} text-base font-bold text-gray-900 dark:text-[#f6f6f6]`}>{titulo}</h4>
               </div>
               <div className="flex items-center gap-3">
                 <a

@@ -10,7 +10,6 @@ import * as fs from 'fs';
 
 const comentariosTablas: Record<string, string> = {
   usuarios: 'Usuarios administradores del sistema con control de acceso basado en roles',
-  usuarios_sitio: 'Usuarios públicos del sitio web con permisos limitados',
   roles: 'Definición de roles de acceso (administrador, editor, etc.)',
   permissions: 'Permisos granulares del sistema (acceso.sitio, acceso.intranet)',
   role_permissions: 'Relación muchos-a-muchos entre roles y permisos',
