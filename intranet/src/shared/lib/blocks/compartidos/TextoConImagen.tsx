@@ -40,7 +40,12 @@ export function TextoConImagen({
   fondo = 'gris',
 }: TextoConImagenProps) {
   const columnaTexto = (
-    <div className="flex-1 space-y-6 max-w-3xl tasa-concept-desc">
+    <div className="flex-1 space-y-6 max-w-3xl tasa-concept-desc md:mt-6">
+      {titulo && (
+        <h2 className="tasa-concept-title" style={{ marginTop: 0 }}>
+          {resaltar(titulo)}
+        </h2>
+      )}
       {contenido}
     </div>
   );
@@ -74,11 +79,6 @@ export function TextoConImagen({
       style={{ paddingTop: '4rem', paddingBottom: '4rem' }}
     >
       <div className="max-w-[1200px] w-full">
-        {titulo && (
-          <h2 className="tasa-concept-title">
-            {resaltar(titulo)}
-          </h2>
-        )}
         <div className="flex flex-col lg:flex-row gap-12 items-start justify-between">
           {ladoImagen === 'izquierda' ? (
             <>
