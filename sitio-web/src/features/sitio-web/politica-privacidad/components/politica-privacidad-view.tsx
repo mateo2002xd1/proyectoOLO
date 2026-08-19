@@ -2,25 +2,22 @@
 
 import React, { useState } from 'react';
 import { VisorDocumento } from './visor-documento';
-import { MapaProcesos } from './mapa-procesos';
+import { poppins } from '@/shared/lib/fonts';
 
-type TabTipo = 'pdf-seguridad' | 'pdf-datos' | 'mapa-procesos';
+type TabTipo = 'pdf-seguridad' | 'pdf-datos';
 
 export function PoliticaPrivacidadView() {
   const [tabActiva, setTabActiva] = useState<TabTipo>('pdf-seguridad');
 
   return (
-    <div className="bg-[#f8fafc] dark:bg-[#0b1121] text-gray-800 dark:text-[#f6f6f6] antialiased min-h-screen transition-colors duration-200">
-      {/* Banner de Encabezado Institucional con color azul oscuro sólido (#002237) */}
-      <div className="relative overflow-hidden bg-[#002237] py-12 text-white">
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div className={`${poppins.className} bg-white dark:bg-[#0b1121] text-gray-800 dark:text-[#f6f6f6] antialiased min-h-screen transition-colors duration-200`}>
+      {/* Banner de Encabezado Institucional */}
+      <div className="relative overflow-hidden bg-white dark:bg-[#0b1121] border-b border-gray-200 dark:border-[#1e293b]">
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
           <div className="max-w-4xl">
-            <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-white">
+            <h1 className={`${poppins.className} text-3xl font-extrabold tracking-tight sm:text-4xl text-gray-900 dark:text-white`}>
               Políticas de Seguridad, Privacidad y Tratamiento de Datos
             </h1>
-            <p className="mt-3 text-sm text-slate-200 leading-relaxed max-w-3xl">
-              Documentos normativos oficiales de seguridad de la información, protección de datos personales (Ley 1581 de 2012) y mapa institucional de macroprocesos del SENA - OLO.
-            </p>
           </div>
         </div>
       </div>
@@ -28,28 +25,21 @@ export function PoliticaPrivacidadView() {
       {/* Contenedor Principal */}
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
 
-        {/* 1. Presentación y Alcance */}
-        <section className="rounded-2xl border border-gray-200 dark:border-[#1e293b] bg-white dark:bg-[#131b2f] p-6 shadow-sm transition-colors">
-          <div className="border-b border-gray-100 dark:border-[#1e293b] pb-3 mb-3">
-            <h2 className="text-lg font-bold text-gray-900 dark:text-[#f6f6f6]">
-              Presentación y Alcance
-            </h2>
-          </div>
-          <div className="space-y-2.5 text-sm text-gray-600 dark:text-slate-300 leading-relaxed">
-            <p>
-              El <strong className="text-gray-900 dark:text-white">Servicio Nacional de Aprendizaje (SENA)</strong>, a través del <strong className="text-gray-900 dark:text-white">Observatorio Laboral y Ocupacional (OLO)</strong>, dispone para consulta ciudadana los lineamientos oficiales de la Política de Seguridad y Privacidad de la Información y la Política de Tratamiento para Protección de Datos Personales, en estricto cumplimiento de la Ley Estatutaria 1581 de 2012 (Habeas Data) y el Sistema de Gestión CompromISO.
-            </p>
-            <p>
-              A continuación, seleccione el documento normativo que desea consultar para leerlo directamente en formato PDF o descargar una copia oficial.
-            </p>
-          </div>
-        </section>
+        {/* 1. Presentación */}
+        <div className="space-y-2.5 text-sm text-gray-600 dark:text-slate-300 leading-relaxed">
+          <p>
+            El <strong className="text-gray-900 dark:text-white">Servicio Nacional de Aprendizaje SENA</strong>, a través del <strong className="text-gray-900 dark:text-white">Observatorio Laboral y Ocupacional</strong>, dispone para consulta ciudadana los lineamientos oficiales de la Política de Seguridad y Privacidad de la Información y la Política de Tratamiento para Protección de Datos Personales, en estricto cumplimiento de la Ley Estatutaria 1581 de 2012 (Habeas Data) y el Sistema de Gestión CompromISO.
+          </p>
+          <p>
+            A continuación, seleccione el documento normativo que desea consultar para leerlo directamente en formato PDF o descargar una copia oficial.
+          </p>
+        </div>
 
         {/* Selector de Documentos Oficiales */}
         <section className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 dark:border-[#1e293b] pb-3">
             <div>
-              <h2 className="text-lg font-bold text-gray-900 dark:text-[#f6f6f6]">
+              <h2 className={`${poppins.className} text-lg font-bold text-gray-900 dark:text-[#f6f6f6]`}>
                 Documentos y Recursos Normativos Oficiales
               </h2>
             </div>
@@ -77,17 +67,6 @@ export function PoliticaPrivacidadView() {
               >
                 2. Tratamiento de Datos (ID: 6914)
               </button>
-
-              <button
-                type="button"
-                onClick={() => setTabActiva('mapa-procesos')}
-                className={`rounded-lg px-3.5 py-1.5 transition ${tabActiva === 'mapa-procesos'
-                  ? 'bg-white dark:bg-[#00324D] text-[#00324D] dark:text-white shadow-sm'
-                  : 'text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white'
-                  }`}
-              >
-                3. Mapa de Procesos 2026
-              </button>
             </div>
           </div>
 
@@ -109,18 +88,12 @@ export function PoliticaPrivacidadView() {
               urlExterna="https://compromiso.sena.edu.co/mapa/descarga.php?id=6914"
             />
           )}
-
-          {tabActiva === 'mapa-procesos' && (
-            <MapaProcesos
-              imageSrc="/assets/img/VF_blanco_Mapa_de_Procesos_2026.png"
-            />
-          )}
         </section>
 
         {/* Canales de Atención y Ejercicio de Derechos */}
         <section className="rounded-2xl border border-gray-200 dark:border-[#1e293b] bg-white dark:bg-[#131b2f] p-6 shadow-sm transition-colors">
           <div className="border-b border-gray-100 dark:border-[#1e293b] pb-3 mb-4">
-            <h2 className="text-lg font-bold text-gray-900 dark:text-[#f6f6f6]">
+            <h2 className={`${poppins.className} text-lg font-bold text-gray-900 dark:text-[#f6f6f6]`}>
               Canales de Atención y Ejercicio de Derechos (Habeas Data)
             </h2>
           </div>
