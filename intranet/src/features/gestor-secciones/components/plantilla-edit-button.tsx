@@ -45,7 +45,7 @@ export function PlantillaEditButton({ hasPermission }: { hasPermission: boolean 
         <path d="m2 17 10 5 10-5" />
         <path d="m2 12 10 5 10-5" />
       </svg>
-      <span>Menú y pie</span>
+      <span>Editar menú y pie</span>
     </Link>
   );
 }
