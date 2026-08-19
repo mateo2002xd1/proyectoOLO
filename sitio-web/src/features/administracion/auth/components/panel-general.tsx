@@ -163,7 +163,9 @@ export function PanelGeneralLayout({
               <div className="flex items-center justify-between w-full">
                 {/* SVG estático servido desde /public: next/image no aporta optimización aquí. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/assets/logos/olo-logo-horizontal.svg" alt="OLO" className="h-[4.5rem] pb-3 dark:brightness-0 dark:invert" />
+                <Link href="/" className="group cursor-pointer" title="Ir al sitio web">
+                  <img src="/assets/logos/olo-logo-horizontal.svg" alt="OLO" className="h-[4.5rem] pb-3 transition-all duration-300 group-hover:scale-105 group-hover:drop-shadow-md dark:brightness-0 dark:invert cursor-pointer" />
+                </Link>
               </div>
             </SidebarHeader>
             <SidebarBody>

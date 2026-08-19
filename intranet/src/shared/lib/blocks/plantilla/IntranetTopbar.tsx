@@ -34,25 +34,25 @@ export function IntranetTopbar({
 }: IntranetTopbarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  
+
   const intranetContent = [
-    { 
-      href: "/inicio", 
+    {
+      href: "/inicio",
       items: [
         { type: "h1", text: "Inicio" },
         { type: "p", text: "Página principal de la intranet" }
       ]
     },
-    { 
-      href: "/tasa", 
+    {
+      href: "/tasa",
       items: [
         { type: "h1", text: "Tasa de Vinculación y Empleabilidad" },
         { type: "h2", text: "Indicadores Generales" },
         { type: "p", text: "Indicadores y métricas de empleabilidad de nuestros egresados." }
       ]
     },
-    { 
-      href: "/matriz", 
+    {
+      href: "/matriz",
       items: [
         { type: "h1", text: "Matriz de Pertinencia" },
         { type: "h2", text: "¿Qué es?" },
@@ -64,15 +64,15 @@ export function IntranetTopbar({
         { type: "span", text: "5. contrato de aprendizaje; comprender que tan bien se ajustan los programas ofrecidos por los centros de formación a la realidad del mercado laboral colombiano." }
       ]
     },
-    { 
-      href: "/encuestas/calidad-de-formacion", 
+    {
+      href: "/encuestas/calidad-de-formacion",
       items: [
         { type: "h1", text: "Calidad de Formación" },
         { type: "p", text: "Encuestas sobre la calidad de los programas impartidos." }
       ]
     },
-    { 
-      href: "/encuestas/seguimiento-laboral", 
+    {
+      href: "/encuestas/seguimiento-laboral",
       items: [
         { type: "h1", text: "Seguimiento Laboral" },
         { type: "span", text: "Encuestas de seguimiento a egresados en su entorno laboral." }
@@ -86,10 +86,10 @@ export function IntranetTopbar({
     setIsDropdownOpen(value.trim().length > 0);
   };
 
-  const normalizeText = (text: string) => 
+  const normalizeText = (text: string) =>
     text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-  const filteredResults: Array<{href: string, type: string, text: string, context: string}> = [];
+  const filteredResults: Array<{ href: string, type: string, text: string, context: string }> = [];
   if (searchQuery.trim() !== "") {
     const q = normalizeText(searchQuery);
     intranetContent.forEach(page => {
