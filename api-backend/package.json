@@ -22,6 +22,7 @@
     "sembrar:tasa": "ts-node scripts/sembrar-pagina-tasa.ts",
     "sembrar:intranet": "ts-node scripts/sembrar-paginas-intranet.ts",
     "migrar:plantilla": "ts-node scripts/migrar-plantilla-intranet.ts",
+    "sembrar:plantilla:sitio": "ts-node scripts/sembrar-plantilla-sitio.ts",
     "respaldo": "ts-node scripts/respaldo.ts",
     "email:verificar": "ts-node scripts/verificar-politica-email.ts"
   },

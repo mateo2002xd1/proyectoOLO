@@ -37,7 +37,6 @@ nano .env
 | `POSTGRES_PASSWORD` | Contraseña de PostgreSQL | `MiContraseña123!` |
 | `REDIS_PASSWORD` | Contraseña de Redis | `RedisSecret456!` |
 | `JWT_SECRET` | Secreto JWT (generar nuevo) | `openssl rand -hex 32` |
-| `JWT_SITE_SECRET` | Segundo secreto JWT | `openssl rand -hex 32` |
 | `LOCAL_AUTH_EMAIL` | Email del superadmin | `admin@tusitio.com` |
 | `LOCAL_AUTH_PASSWORD` | Password del superadmin | `AdminSeguro789!` |
 

@@ -7,6 +7,10 @@ export {
   PRIMITIVE_COMPONENT_NAMES,
 } from './primitives/layout-primitives';
 
+// ─── Campo de color (selector visual + hex) para cualquier bloque ───
+export { ColorPickerField, campoColor } from './primitives/color-picker-field';
+export type { ColorPickerFieldProps } from './primitives/color-picker-field';
+
 // ─── Controles de espaciado y ancho para cualquier bloque ───
 export {
   conCaja,

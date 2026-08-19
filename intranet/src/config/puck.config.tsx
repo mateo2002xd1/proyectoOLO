@@ -22,7 +22,7 @@ import { DescargasConPresentacion } from '@/shared/lib/blocks/compartidos/Descar
 import { RecursosVisualesBloque } from '@/shared/lib/blocks/inicio/RecursosVisualesBloque';
 import { Publicaciones } from '@/shared/lib/blocks/inicio/Publicaciones';
 import { PreguntasFrecuentes } from '@/shared/lib/blocks/inicio/PreguntasFrecuentes';
-import { primitiveComponents, conCajaEnTodos, BLOQUES_SIN_CAJA } from '@olo/blocks-renderer';
+import { primitiveComponents, conCajaEnTodos, BLOQUES_SIN_CAJA, campoColor } from '@olo/blocks-renderer';
 import type { Config } from '@puckeditor/core';
 import type { ComponentProps } from 'react';
 import { ImageUploaderField } from '@/features/gestor-secciones/components/image-uploader-field';
@@ -98,6 +98,7 @@ const puckConfigBase: Config = {
       fields: {
         brandText: { type: 'text', label: 'Texto de la Marca' },
         logoUrl: campoImagen('Logo'),
+        fondo: campoColor('Color de fondo (opcional)'),
         // `children` estaba sin declarar aquí y el componente sí lo pinta: por eso
         // el desplegable de «Encuestas» desapareció al pasar el menú a la base.
         // Un `array` dentro de otro `array` es válido en Puck y es lo que hace
@@ -127,6 +128,7 @@ const puckConfigBase: Config = {
       defaultProps: {
         brandText: 'Intranet',
         logoUrl: '/assets/svg/olo-logo-blanco.svg',
+        fondo: '',
         menuItems: [
           { href: '/inicio', label: 'Inicio', children: [] },
           { href: '/tasa', label: 'Tasa de Vinculación y Empleabilidad', children: [] },
@@ -226,6 +228,7 @@ const puckConfigBase: Config = {
         titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
         contenido: { type: 'richtext', label: 'Contenido' },
         fondo: campoFondo,
+        colorTexto: campoColor('Color del texto (opcional)'),
         ancho: {
           type: 'radio',
           label: 'Ancho',
@@ -239,6 +242,7 @@ const puckConfigBase: Config = {
         titulo: '¿Qué es?',
         contenido: '<p>Escribe aquí el contenido de la sección.</p>',
         fondo: 'gris',
+        colorTexto: '',
         ancho: 'estrecho',
       },
       render: (props: BlockRender<ComponentProps<typeof TextoRico>>) => <TextoRico {...props} />,
@@ -302,6 +306,26 @@ const puckConfigBase: Config = {
           ],
         },
         fondo: campoFondo,
+        // Solo tienen efecto visible en «Completo»: en «Caja centrada» el
+        // redondeado ya lo fija el CSS de esa caja con más especificidad.
+        ajusteImagen: {
+          type: 'radio',
+          label: 'Ajuste de la imagen (solo ancho «Completo»)',
+          options: [
+            { label: 'Cubrir el espacio', value: 'cover' },
+            { label: 'Verse completa', value: 'contain' },
+          ],
+        },
+        redondeado: {
+          type: 'select',
+          label: 'Bordes redondeados (solo ancho «Completo»)',
+          options: [
+            { label: 'Ninguno', value: 'ninguno' },
+            { label: 'Pequeño', value: 'pequeno' },
+            { label: 'Grande', value: 'grande' },
+            { label: 'Circular', value: 'circular' },
+          ],
+        },
       },
       defaultProps: {
         titulo: '',
@@ -309,6 +333,8 @@ const puckConfigBase: Config = {
         imagenAlt: '',
         ancho: 'completo',
         fondo: 'blanco',
+        ajusteImagen: 'contain',
+        redondeado: 'grande',
       },
       render: (props: BlockRender<ComponentProps<typeof ImagenDestacada>>) => (
         <ImagenDestacada {...props} />
@@ -597,6 +623,7 @@ const puckConfigBase: Config = {
       // El pie no tenía ni un campo: se ponía o se quitaba y punto, y para cambiar
       // un teléfono había que tocar el componente. Aquí está todo su contenido.
       fields: {
+        fondo: campoColor('Color de fondo (opcional)'),
         logos: {
           type: 'array',
           label: 'Logos',
@@ -646,6 +673,7 @@ const puckConfigBase: Config = {
       // esto, arrastrar el bloque al lienzo daría un pie vacío en vez de uno que
       // ya trae el contenido bueno y solo hay que retocar.
       defaultProps: {
+        fondo: '',
         logos: LOGOS_POR_DEFECTO,
         columnas: COLUMNAS_POR_DEFECTO,
       },

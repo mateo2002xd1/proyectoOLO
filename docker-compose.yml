@@ -41,7 +41,6 @@ services:
       DB_SSL: "false"
       REDIS_URL: redis://redis:6379
       JWT_SECRET: 8a7f5e9c2d1b4a6f3e8c5a9d2b7e1f4a8c3d6e9f2a5b8c1d4e7f0a3b6c9d2e5f
-      JWT_SITE_SECRET: 9b8e6f0d3c2a5b7e1f4a8c3d6e9f2a5b8c1d4e7f0a3b6c9d2e5f8a7b4c1d3e6f
       JWT_EXPIRES_IN: 7d
       FRONTEND_URL: http://localhost:3000
       INTRANET_URL: http://localhost:3001

@@ -1,16 +1,30 @@
 'use client';
 
 import { Suspense, useState, FormEvent } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { validarEmail } from '@olo/email-policy';
 import { useAuth } from '@/features/login';
-import { PasswordField } from '@/shared/ui/molecules/PasswordField';
 import { ReturnToSiteLink } from '@/shared/ui/molecules/ReturnToSiteLink';
 import { GooLoader } from '@/shared/ui/atoms/GooLoader';
 import { mensajeDeError } from '@/shared/lib/errors';
 import { mensajeDeCierre } from '@/shared/lib/inactividad';
+
+/** Ojo abierto/cerrado del campo de contraseña, igual al de la pantalla de acceso del panel. */
+function EyeIcon({ crossed }: { crossed: boolean }) {
+  return crossed ? (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+      <line x1="1" y1="1" x2="23" y2="23" />
+    </svg>
+  ) : (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
 
 /**
  * El formulario en sí. Se separó de `LoginView` al empezar a leer `?motivo=`:
@@ -29,6 +43,7 @@ function LoginForm() {
   const avisoDeCierre = mensajeDeCierre(searchParams.get('motivo'));
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -99,68 +114,127 @@ function LoginForm() {
             className="mx-auto w-[210px]"
           />
           <h1 className="text-4xl font-light text-white">
-            Bienvenido a <span className="font-bold"><br />nuestra Intranet</span>
+            Bienvenido a <span className="font-bold"><br />NUESTRA INTRANET</span>
           </h1>
         </div>
       </div>
 
       {/* Panel derecho — Login Card */}
       <div className="login-right">
-        <div className="login-card">
+        {/* Misma tarjeta que el login del panel de administración: clases de
+            Tailwind literales, no la hoja `.login-*` que tenía valores propios
+            y se desalineaba de sitio-web cada vez que uno de los dos cambiaba. */}
+        <div className="w-full max-w-[380px] rounded-[24px] bg-white px-9 py-10 shadow-[0_25px_60px_rgba(0,0,0,0.35)]">
           {isSuccess ? (
             <div className="login-success-loader">
               <GooLoader label="Preparando tu espacio..." />
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="login-form">
-              <div className="login-field">
-                <label htmlFor="email" className="login-label">Correo SENA</label>
+            <form onSubmit={handleSubmit} noValidate>
+              {/* Antes que el error: explica por qué se está aquí, no qué se hizo mal. */}
+              {avisoDeCierre && (
+                <div
+                  className="mb-4 rounded-lg border border-blue-300 bg-blue-50 px-3.5 py-2.5 text-sm text-blue-800"
+                  role="status"
+                >
+                  {avisoDeCierre}
+                </div>
+              )}
+
+              {errors.general && (
+                <div
+                  className="mb-4 rounded-lg border border-red-300 bg-red-50 px-3.5 py-2.5 text-sm text-red-600"
+                  role="alert"
+                >
+                  {errors.general}
+                </div>
+              )}
+
+              <div className="mb-4">
+                <label htmlFor="email" className="mb-1.5 block text-sm font-semibold text-[#0d1526]">
+                  Correo SENA
+                </label>
                 <input
                   id="email"
                   type="email"
                   maxLength={100}
                   placeholder="usuario@sena.edu.co"
+                  autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className={`login-input ${errors.email ? 'login-input-error' : ''}`}
+                  className={`w-full rounded-lg border px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:outline-none focus:ring-2 ${
+                    errors.email
+                      ? 'border-red-400 focus:border-red-500 focus:ring-red-500'
+                      : 'border-gray-300 focus:border-[#0d1526] focus:ring-[#0d1526]'
+                  }`}
                 />
-                {errors.email && <span className="login-error">{errors.email}</span>}
+                {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email}</p>}
               </div>
 
-              <PasswordField
-                id="password"
-                classPrefix="login"
-                label="Contraseña"
-                value={password}
-                onChange={setPassword}
-                error={errors.password}
-              />
+              <div className="mb-5">
+                <label htmlFor="password" className="mb-1.5 block text-sm font-semibold text-[#0d1526]">
+                  Passcode
+                </label>
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    maxLength={50}
+                    autoComplete="current-password"
+                    placeholder="Mínimo 12 caracteres"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className={`w-full rounded-lg border px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:outline-none focus:ring-2 pr-10 ${
+                      errors.password
+                        ? 'border-red-400 focus:border-red-500 focus:ring-red-500'
+                        : 'border-gray-300 focus:border-[#0d1526] focus:ring-[#0d1526]'
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-gray-500 transition-colors hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d1526]"
+                  >
+                    <EyeIcon crossed={showPassword} />
+                  </button>
+                </div>
+                {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password}</p>}
+              </div>
 
-              {/* Antes que el error: explica por qué se está aquí, no qué se hizo mal. */}
-              {avisoDeCierre && (
-                <div className="login-general-notice" role="status">{avisoDeCierre}</div>
-              )}
-
-              {errors.general && (
-                <div className="login-general-error">{errors.general}</div>
-              )}
+              {/* RF-13: aviso de políticas de privacidad y datos */}
+              <p className="mb-6 text-xs leading-relaxed text-gray-500">
+                Al ingresar a este sitio aceptas la{' '}
+                <Link href="/politica-de-privacidad" className="font-semibold text-gray-700 hover:underline">
+                  política de privacidad
+                </Link>{' '}
+                y{' '}
+                <Link href="/privacidad" className="font-semibold text-gray-700 hover:underline">
+                  protección de datos
+                </Link>
+                .
+              </p>
 
               <button
                 type="submit"
                 disabled={isLoading}
-                className={`login-submit ${isLoading ? 'login-submit-disabled' : ''}`}
+                className="inline-flex w-full items-center justify-center rounded-[16px] bg-[#0d1526] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_8px_-2px_rgba(13,21,38,0.4)] transition hover:bg-[#1a2340] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0d1526] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isLoading ? 'Ingresando...' : 'Ingresar'}
               </button>
 
-              <Link href="/login/recovery" className="login-forgot">
-                ¿Olvidaste tu contraseña?
-              </Link>
-
-              <ReturnToSiteLink classPrefix="login" />
+              <div className="mt-4 text-center">
+                <Link
+                  href="/login/recovery"
+                  className="rounded text-xs text-gray-500 transition-colors hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d1526]"
+                >
+                  ¿Olvidaste tu contraseña?
+                </Link>
+              </div>
             </form>
           )}
         </div>
+        <ReturnToSiteLink classPrefix="login" />
       </div>
     </div>
   );
@@ -168,7 +242,15 @@ function LoginForm() {
 
 export function LoginView() {
   return (
-    <Suspense fallback={<div className="login-card" />}>
+    <Suspense
+      fallback={
+        <div className="login-page">
+          <div className="login-right w-full">
+            <div className="w-full max-w-[380px] rounded-[24px] bg-white px-9 py-10 shadow-[0_25px_60px_rgba(0,0,0,0.35)]" />
+          </div>
+        </div>
+      }
+    >
       <LoginForm />
     </Suspense>
   );

@@ -7,11 +7,6 @@ function validateEnv() {
       'FATAL: JWT_SECRET es obligatoria. Defínela en el archivo .env'
     );
   }
-  if (!process.env.JWT_SITE_SECRET || process.env.JWT_SITE_SECRET.trim() === '') {
-    throw new Error(
-      'FATAL: JWT_SITE_SECRET es obligatoria. Defínela en el archivo .env'
-    );
-  }
 }
 
 validateEnv();
@@ -20,7 +15,6 @@ export const config = {
   port: parseInt(process.env.PORT || '4000', 10),
   databaseUrl: process.env.DATABASE_URL || '',
   jwtSecret: process.env.JWT_SECRET!,
-  jwtSiteSecret: process.env.JWT_SITE_SECRET!,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
   intranetUrl: process.env.INTRANET_URL || 'http://localhost:3001',
