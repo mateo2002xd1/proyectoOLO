@@ -170,9 +170,20 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
         {errors.general ? (
           <>
             <AuthGeneralError>{errors.general}</AuthGeneralError>
-            <Link href="/admin/login" className={authQuietLinkClass}>
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  await fetch('/api/auth/logout', { method: 'POST' });
+                } catch {
+                  // ignorar error de red
+                }
+                window.location.href = '/admin/login';
+              }}
+              className={authQuietLinkClass}
+            >
               Volver a iniciar sesión
-            </Link>
+            </button>
           </>
         ) : (
           <p className="text-sm text-gray-500">Comprobando tu cuenta…</p>
@@ -216,9 +227,20 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
               : 'Tu cuenta ya es segura.'
           }
         />
-        <Link href="/admin/login" className={authNavyActionClass}>
+        <button
+          type="button"
+          onClick={async () => {
+            try {
+              await fetch('/api/auth/logout', { method: 'POST' });
+            } catch {
+              // Si falla la petición de logout, igualmente forzar la navegación al login
+            }
+            window.location.href = '/admin/login';
+          }}
+          className={authNavyActionClass}
+        >
           Iniciar sesión
-        </Link>
+        </button>
       </div>
     );
   }

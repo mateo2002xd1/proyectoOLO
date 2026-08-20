@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { createHash, timingSafeEqual } from 'crypto';
 import { config } from '../../config';
 import { UserRepository } from '../../repositories/usuarios.repository';
 import {
@@ -33,6 +34,28 @@ const registrarFalloDeLogin = async (user: any): Promise<void> => {
   await UserRepository.update(user.id, cambios);
 };
 
+/**
+ * Compara dos cadenas sin que el tiempo delate cuánto coincidían.
+ *
+ * El resto de contraseñas del sistema pasan por bcrypt, que ya compara así. La cuenta
+ * maestra se comparaba con `===`, que corta en el primer carácter distinto: medir el
+ * tiempo de respuesta permite adivinarla carácter a carácter en vez de a fuerza bruta.
+ * Sobre una red real la señal es ruidosa, pero esta credencial no caduca, no se puede
+ * desactivar desde el panel y da Superadmin — no es la que conviene dejar barata.
+ *
+ * Se comparan los hashes y no las cadenas para que las longitudes distintas no fallen
+ * antes de tiempo, que sería la misma fuga por otra vía.
+ */
+const igualEnTiempoConstante = (a: string, b: string): boolean => {
+  const bufA = createHash('sha256').update(a, 'utf8').digest();
+  const bufB = createHash('sha256').update(b, 'utf8').digest();
+  return timingSafeEqual(bufA, bufB);
+};
+
+const esLaCuentaMaestra = (emailNormalizado: string, password: string): boolean =>
+  igualEnTiempoConstante(config.localAuth.email, emailNormalizado) &&
+  igualEnTiempoConstante(config.localAuth.password, password);
+
 export const loginUseCase = async (email: string, password: string) => {
   const normalizedEmail = normalizarEmail(email ?? '');
 
@@ -47,10 +70,7 @@ export const loginUseCase = async (email: string, password: string) => {
     throw Object.assign(new Error('Credenciales inválidas'), { status: 401 });
   }
 
-  if (
-    config.localAuth.email === normalizedEmail &&
-    config.localAuth.password === password
-  ) {
+  if (config.localAuth.habilitado && esLaCuentaMaestra(normalizedEmail, password)) {
     const payload = {
       id: 'local-auth',
       email: normalizedEmail,

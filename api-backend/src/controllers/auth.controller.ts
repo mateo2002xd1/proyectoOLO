@@ -6,6 +6,8 @@ import { updateUser } from '../use-cases/usuarios/listar-usuarios.usecase';
 import { logCambioDePassword } from '../use-cases/auditoria/audit.usecase';
 import { datosDeAuditoria } from '../shared/auditoria-request';
 import { compararPassword, exigirPasswordValida } from '../shared/password-policy';
+import { RolePermissionRepository } from '../repositories/role-permissions.repository';
+import { CLAVES_DEL_CATALOGO } from '../shared/catalogo-permisos';
 
 export const AuthController = {
   /**
@@ -77,21 +79,43 @@ export const AuthController = {
     res.json({ message: 'Sesión cerrada' });
   },
 
+  /**
+   * Quién es quien pregunta, y **qué puede hacer**.
+   *
+   * `permisos` se añadió porque los frontends no tenían forma honesta de decidir qué
+   * pintar: el token lleva el rol, no las claves, así que un botón como «Nueva
+   * sección» —que exige `secciones.crear`— solo se podía enseñar adivinando por rol.
+   * Adivinar de menos esconde acciones a quien sí puede; adivinar de más pinta
+   * botones que responden 403. Ahora se pregunta.
+   *
+   * Superadmin recibe el catálogo entero: su bypass vive en `resolverPermisos` y no
+   * en la tabla, así que sin esto el panel le enseñaría menos de lo que puede hacer.
+   *
+   * Devuelve **los permisos de quien llama**, nunca los de otro: la ruta va detrás de
+   * `requireAuth` y la clave se resuelve desde `req.user`.
+   */
   async me(req: Request, res: Response, next: NextFunction) {
     try {
+      const rol = req.user?.role ?? '';
+      const permisos =
+        rol.trim().toLowerCase() === 'superadmin'
+          ? CLAVES_DEL_CATALOGO
+          : await RolePermissionRepository.getPermissionsByRole(rol);
+
       if (req.user?.isLocal) {
-        return res.json({ user: req.user });
+        return res.json({ user: req.user, permisos });
       }
       const user: any = await UserRepository.findById(req.user?.id as string);
       if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
-      
-      res.json({ 
-        user: { 
-          ...req.user, 
-          name: user.name, 
+
+      res.json({
+        user: {
+          ...req.user,
+          name: user.name,
           apellidos: user.apellidos,
-          email: user.email 
-        } 
+          email: user.email
+        },
+        permisos
       });
     } catch (err) {
       next(err);

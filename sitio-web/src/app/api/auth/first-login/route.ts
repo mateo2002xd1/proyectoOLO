@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { conCabecerasDeCliente } from '@/shared/lib/reenviar-cliente';
 import { cookies } from 'next/headers';
 import {
   AUTH_COOKIE_NAME,
