@@ -10,7 +10,7 @@
  * borrador, su revisión y su aprobación, pero nunca se sembró la primera
  * versión. `obtenerPlantilla()` cae entonces en sus valores por defecto — el
  * sitio público se ve bien porque ese fallback existe — pero el editor
- * (`/admin/editor/plantilla`) y la vista previa abren en blanco: piden la
+ * (`/admin/editor/menu-y-pie`) y la vista previa abren en blanco: piden la
  * página `plantilla` y la API responde 404, porque la fila no existe.
  *
  * Este script crea esa primera versión con el contenido que ya se ve hoy
@@ -32,11 +32,9 @@ import { guardarBorrador } from '../src/use-cases/paginas/guardar-borrador.useca
 import { enviarARevision } from '../src/use-cases/paginas/enviar-a-revision.usecase';
 import { aprobarPagina } from '../src/use-cases/paginas/aprobar-pagina.usecase';
 import { PaginaRepository } from '../src/repositories/pagina.repository';
+import { SLUG_PLANTILLA } from '../src/shared/catalogo-permisos';
 
 const AMBITO = 'sitio' as const;
-
-/** Debe coincidir con `SLUG_PLANTILLA` de `sitio-web/src/features/paginas/lib/plantilla.ts`. */
-const SLUG_PLANTILLA = 'plantilla';
 
 /**
  * Los mismos valores que hoy sirve `defaultIdentidadVisual`
