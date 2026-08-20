@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { RolePermissionRepository } from '../repositories/role-permissions.repository';
 import { marcarGuardia } from '../shared/autorizacion';
-import { claveDeSeccion, esSeccionEditable } from '../shared/catalogo-permisos';
+import { claveDeSeccion } from '../shared/catalogo-permisos';
+import { esSeccionConocida } from '../use-cases/paginas/secciones.usecase';
 import { AMBITO_HEADER, resolverAmbito } from '../shared/ambito';
 
 /**
@@ -131,7 +132,10 @@ export function requierePermisoDeSeccion() {
         const ambito = resolverAmbito(req.header(AMBITO_HEADER));
         const slug = String(req.params.slug ?? '');
 
-        if (!esSeccionEditable(ambito, slug)) {
+        // Antes esto consultaba una lista fija en código. Ahora también mira `paginas`,
+        // porque una sección creada desde el editor existe sin estar en esa lista y su
+        // propio creador se comía un 404 al ir a llenarla.
+        if (!(await esSeccionConocida(ambito, slug))) {
           return res.status(404).json({ error: 'Sección no encontrada' });
         }
 

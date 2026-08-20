@@ -8,6 +8,9 @@
 // Components
 export { EditButton } from "./components/edit-button";
 export { PlantillaEditButton } from "./components/plantilla-edit-button";
+export { NuevaSeccionButton } from "./components/nueva-seccion-button";
+export { EliminarSeccionButton } from "./components/eliminar-seccion-button";
+export { AvisoSeccionNueva } from "./components/aviso-seccion-nueva";
 export { PuckEditorWrapper } from "./components/puck-editor-wrapper";
 export { EditorjsWrapper } from "./components/editorjs-wrapper";
 export { ClientPuckRender } from "./components/client-puck-render";
@@ -29,6 +32,15 @@ export {
   rechazarPagina,
   eliminarVersion,
   listarEnRevision,
+  crearSeccion,
+  permisosDeLaSesion,
+  analizarEliminacion,
+  eliminarSeccion,
+} from "./services/paginas.service";
+export type {
+  SeccionCreada,
+  SeccionEliminada,
+  AnalisisDeEliminacion,
 } from "./services/paginas.service";
 
 // Lib

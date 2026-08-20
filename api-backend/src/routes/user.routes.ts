@@ -3,8 +3,13 @@ import { UserController } from '../controllers/usuarios.controller';
 import { requireAuth } from '../middlewares/auth.middleware';
 import { requierePermisoUsuario } from '../middlewares/permisos.middleware';
 import { requirePermission } from '../middlewares/require-permission.middleware';
+import { validarCuerpo } from '../middlewares/validar.middleware';
 import { usuariosPolicies } from '../policies/usuarios.policies';
 import { esDueno, marcarGuardia } from '../shared/autorizacion';
+import {
+  crearUsuarioSchema,
+  actualizarUsuarioSchema,
+} from '../validators/usuarios.validators';
 
 const router = Router();
 router.use(requireAuth);
@@ -53,10 +58,14 @@ const exigePermisoSalvoCuentaPropia = (clave: string) =>
   );
 
 router.get('/', requierePermisoUsuario('puedeAdministrarUsuarios'), UserController.getAll);
+// `crearUsuarioSchema` es `.strict()` y ahí está lo que cierra: `createUser` le pasaba
+// a Sequelize todo lo que no desestructuraba, así que el cuerpo podía escribir
+// columnas que el caso de uso nunca pretendió exponer.
 router.post(
   '/',
   requierePermisoUsuario('puedeAdministrarUsuarios'),
   requirePermission('usuarios.crear'),
+  validarCuerpo(crearUsuarioSchema),
   UserController.create
 );
 
@@ -65,6 +74,7 @@ router.patch(
   '/:id',
   administraOEsSuCuenta,
   exigePermisoSalvoCuentaPropia('usuarios.editar'),
+  validarCuerpo(actualizarUsuarioSchema),
   UserController.update
 );
 

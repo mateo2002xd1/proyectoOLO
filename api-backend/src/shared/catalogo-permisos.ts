@@ -36,9 +36,9 @@ import { AMBITOS, type Ambito } from './ambito';
  * el de aquí quién puede ponerlos.
  */
 export const SECCIONES_POR_AMBITO: Record<Ambito, string[]> = {
-  sitio: ['plantilla', 'inicio'],
+  sitio: ['menu-y-pie', 'inicio'],
   intranet: [
-    'plantilla',
+    'menu-y-pie',
     'inicio',
     'tasa',
     'matriz',
@@ -50,15 +50,44 @@ export const SECCIONES_POR_AMBITO: Record<Ambito, string[]> = {
 /**
  * El slug de la plantilla, que no es una sección más.
  *
- * Editar `inicio` cambia una página. Editar `plantilla` cambia **la cabecera y el pie de
+ * Editar `inicio` cambia una página. Editar `menu-y-pie` cambia **la cabecera y el pie de
  * todas** las páginas de ese ámbito — es lo que `MarcoSecciones` pinta una sola vez para
  * las cinco secciones de la intranet. Se separa en el catálogo para que el panel pueda
  * agruparlo aparte y nadie lo conceda creyendo que es una sección cualquiera.
+ *
+ * El valor se llamó `plantilla` hasta la migración 014. El concepto sigue siendo ese —una
+ * plantilla que envuelve a las demás páginas— pero el slug acaba escrito en la bitácora
+ * como campo modificado de cada publicación, y ahí `plantilla` no le decía nada a quien
+ * audita. `menu-y-pie` sí. Cambiarlo obliga a tocar también la clave de permiso, porque
+ * `claveDeSeccion` la construye desde aquí: ver `014-renombrar-slug-menu-y-pie.ts`.
  */
-export const SLUG_PLANTILLA = 'plantilla';
+export const SLUG_PLANTILLA = 'menu-y-pie';
 
 /** Construye la clave de edición de una sección. Única fuente de ese formato. */
 export const claveDeSeccion = (ambito: Ambito, slug: string) => `editar.${ambito}.${slug}`;
+
+/**
+ * La operación inversa: de `editar.intranet.bolsa-de-empleo` a sus partes.
+ *
+ * Existe porque desde que las secciones se pueden crear desde el editor, el catálogo
+ * estático ya no las conoce todas. Sin esto, la clave de una sección nueva no se
+ * distingue de una clave basura: el panel la pintaría como «huérfana» y el sembrador
+ * la borraría por no estar en la lista. Devuelve `null` si la clave no tiene esta
+ * forma, que es justo lo que hace falta para poder distinguirlas.
+ *
+ * El slug puede llevar guiones pero **nunca puntos**, así que partir por el tercer
+ * punto es seguro: `editar` . `ambito` . `resto`.
+ */
+export const partesDeClaveDeSeccion = (
+  clave: string
+): { ambito: Ambito; slug: string } | null => {
+  const [prefijo, ambito, ...resto] = clave.split('.');
+  if (prefijo !== 'editar' || resto.length === 0) return null;
+  if (!AMBITOS.includes(ambito as Ambito)) return null;
+
+  const slug = resto.join('.');
+  return slug ? { ambito: ambito as Ambito, slug } : null;
+};
 
 /** Grupos con los que el panel organiza el catálogo. El orden es el de la pantalla. */
 export const GRUPOS_DE_PERMISO = [
@@ -129,6 +158,22 @@ const PERMISOS_FIJOS: PermisoDelCatalogo[] = [
     esFrontera: true,
   },
   {
+    clave: 'secciones.crear',
+    etiqueta: 'Crear secciones nuevas',
+    descripcion:
+      'Añadir páginas al portal. Cada una estrena una ruta y una clave de permiso, que se concede al rol de quien la crea.',
+    grupo: 'editor',
+    esFrontera: true,
+  },
+  {
+    clave: 'secciones.eliminar',
+    etiqueta: 'Eliminar secciones',
+    descripcion:
+      'Borrar páginas creadas desde el editor, con su contenido y su historial de versiones. No se puede deshacer. Las secciones del sistema nunca se pueden borrar.',
+    grupo: 'editor',
+    esFrontera: true,
+  },
+  {
     clave: 'usuarios.crear',
     etiqueta: 'Crear usuarios',
     descripcion: 'Dar de alta cuentas y emitir su contraseña temporal.',
@@ -169,7 +214,7 @@ const PERMISOS_FIJOS: PermisoDelCatalogo[] = [
 
 /** Cómo se nombra cada sección en la pantalla. Sin entrada, se usa el slug. */
 const ETIQUETAS_DE_SECCION: Record<string, string> = {
-  plantilla: 'Menú y pie de página',
+  'menu-y-pie': 'Menú y pie de página',
   inicio: 'Inicio',
   tasa: 'Tasa de vinculación',
   matriz: 'Matriz de tendencias',
@@ -182,17 +227,30 @@ const NOMBRE_DE_AMBITO: Record<Ambito, string> = {
   intranet: 'la intranet',
 };
 
-const permisoDeSeccion = (ambito: Ambito, slug: string): PermisoDelCatalogo => {
+/**
+ * El descriptor de catálogo para la clave de edición de una sección.
+ *
+ * `titulo` lo pasa quien conoce la sección de verdad. Las de fábrica están en
+ * `ETIQUETAS_DE_SECCION`, pero una sección creada desde el editor no puede estarlo:
+ * su nombre lo escribió alguien y vive en `paginas.titulo`. Sin ese parámetro, el
+ * panel enseñaría el slug crudo (`bolsa-de-empleo`) donde debería leerse «Bolsa de
+ * empleo», que es exactamente la traducción mental que este catálogo existe para
+ * ahorrar.
+ */
+export const permisoDeSeccion = (
+  ambito: Ambito,
+  slug: string,
+  titulo?: string
+): PermisoDelCatalogo => {
   const esPlantilla = slug === SLUG_PLANTILLA;
+  const nombre = titulo?.trim() || ETIQUETAS_DE_SECCION[slug] || slug;
 
   return {
     clave: claveDeSeccion(ambito, slug),
-    etiqueta: esPlantilla
-      ? `Menú y pie de ${NOMBRE_DE_AMBITO[ambito]}`
-      : (ETIQUETAS_DE_SECCION[slug] ?? slug),
+    etiqueta: esPlantilla ? `Menú y pie de ${NOMBRE_DE_AMBITO[ambito]}` : nombre,
     descripcion: esPlantilla
       ? `Editar la cabecera y el pie que comparten TODAS las páginas de ${NOMBRE_DE_AMBITO[ambito]}.`
-      : `Editar la sección «${ETIQUETAS_DE_SECCION[slug] ?? slug}» de ${NOMBRE_DE_AMBITO[ambito]}.`,
+      : `Editar la sección «${nombre}» de ${NOMBRE_DE_AMBITO[ambito]}.`,
     grupo: esPlantilla ? 'plantilla' : (`secciones-${ambito}` as GrupoDePermiso),
     esFrontera: true,
   };
@@ -212,6 +270,17 @@ export const CATALOGO_PERMISOS: PermisoDelCatalogo[] = [
 
 export const CLAVES_DEL_CATALOGO = CATALOGO_PERMISOS.map((p) => p.clave);
 
-/** Si un slug es editable en su ámbito. Lo usa el middleware antes de exigir permiso. */
-export const esSeccionEditable = (ambito: Ambito, slug: string) =>
+/**
+ * Si un slug es una sección **de fábrica** de ese ámbito.
+ *
+ * Ojo con usar esto como el portón del editor: desde que se pueden crear secciones
+ * desde el propio editor, esta lista ya no es la respuesta completa a «¿existe esta
+ * sección?». Lo que quiere saber el middleware es `esSeccionConocida()` de
+ * `use-cases/paginas/secciones.usecase.ts`, que mira además la tabla `paginas`.
+ *
+ * Sigue haciendo falta tal cual para construir el catálogo y para el sembrador: son
+ * las secciones que existen sin que nadie las haya creado, y por tanto las únicas
+ * cuyas claves de permiso se pueden declarar en código.
+ */
+export const esSeccionDeFabrica = (ambito: Ambito, slug: string) =>
   SECCIONES_POR_AMBITO[ambito].includes(slug);
