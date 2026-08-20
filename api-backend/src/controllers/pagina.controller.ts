@@ -7,6 +7,11 @@ import { obtenerPaginaPublica } from '../use-cases/paginas/obtener-pagina-public
 import { obtenerVersionEditable } from '../use-cases/paginas/obtener-version-editable.usecase';
 import { listarEnRevision } from '../use-cases/paginas/listar-en-revision.usecase';
 import { eliminarVersion } from '../use-cases/paginas/eliminar-version.usecase';
+import { crearSeccion } from '../use-cases/paginas/crear-seccion.usecase';
+import {
+  analizarEliminacion,
+  eliminarSeccion,
+} from '../use-cases/paginas/eliminar-seccion.usecase';
 import { AMBITO_HEADER, exigirAmbito, resolverAmbito } from '../shared/ambito';
 import { logAudit } from '../use-cases/auditoria/audit.usecase';
 import { datosDeAuditoria } from '../shared/auditoria-request';
@@ -40,7 +45,7 @@ const ambitoExigidoDe = (req: Request) => exigirAmbito(req.header(AMBITO_HEADER)
  */
 const registrar = async (
   req: Request,
-  accion: 'actualizar' | 'enviar_revision' | 'publicar' | 'rechazar' | 'eliminar',
+  accion: 'crear' | 'actualizar' | 'enviar_revision' | 'publicar' | 'rechazar' | 'eliminar',
   resultado: { pagina?: { id?: string; slug?: string }; version?: { numeroVersion?: number } },
   extra: { campo: string; antes: unknown; despues: unknown }[] = []
 ) => {
@@ -70,6 +75,102 @@ export const PaginaController = {
       const pagina = await obtenerPaginaPublica(req.params.slug as string, ambitoDe(req));
       if (!pagina) return res.status(404).json({ error: 'Página no encontrada' });
       res.json(pagina);
+    } catch (err) { next(err); }
+  },
+
+  /**
+   * Crea una sección: la fila en `paginas`, su clave de permiso y la asignación al
+   * rol de quien la crea. No publica nada — ver `crear-seccion.usecase.ts`.
+   *
+   * El ámbito se exige, no se asume: las dos aplicaciones comparten la tabla y crear
+   * la sección en la equivocada no daría error, daría una página en el otro portal.
+   */
+  async crearSeccion(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { titulo } = req.body;
+      const seccion = await crearSeccion(
+        titulo,
+        ambitoExigidoDe(req),
+        req.user?.id || '',
+        req.user?.role ?? null
+      );
+
+      // `registrar` espera el id de la página y aquí el use-case devuelve el slug, que
+      // es lo que interesa en la bitácora. Se escribe a mano para poder dejar también
+      // la clave de permiso concedida: es la parte de esta acción que reparte poder, y
+      // sin ella el registro contaría solo la mitad de lo que pasó.
+      await logAudit({
+        ...datosDeAuditoria(req),
+        entidadId: seccion.id,
+        entidadTipo: 'pagina',
+        accion: 'crear',
+        camposModificados: [
+          { campo: 'slug', antes: null, despues: seccion.slug },
+          { campo: 'titulo', antes: null, despues: seccion.titulo },
+          { campo: 'ambito', antes: null, despues: seccion.ambito },
+          { campo: 'permiso', antes: null, despues: seccion.clavePermiso },
+          { campo: 'permiso_concedido_a_rol', antes: null, despues: seccion.rolConcedido },
+        ],
+      });
+
+      res.status(201).json(seccion);
+    } catch (err) { next(err); }
+  },
+
+  /**
+   * Qué pasaría si se borrara esta sección, sin borrar nada.
+   *
+   * Lo consulta el diálogo antes de pedir confirmación: cuántas versiones se pierden,
+   * si está publicada, y sobre todo qué enlaces habría que quitar antes. Es una
+   * consulta, así que va con el permiso de eliminar y no con el de editar — enseñar
+   * dónde enlaza el portal a una ruta es información de administración.
+   */
+  async analizarEliminacion(req: Request, res: Response, next: NextFunction) {
+    try {
+      const analisis = await analizarEliminacion(
+        req.params.slug as string,
+        ambitoExigidoDe(req)
+      );
+      res.json(analisis);
+    } catch (err) { next(err); }
+  },
+
+  /**
+   * Borra una sección creada desde el editor.
+   *
+   * Las guardas —nunca una de fábrica, nada enlazando a ella, y el nombre tecleado—
+   * viven en el use-case y se comprueban ahí de nuevo, no aquí: esta ruta no es el
+   * único camino posible y una comprobación en el controlador se salta llamando a la
+   * API desde otro cliente.
+   */
+  async eliminarSeccion(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { confirmacion } = req.body;
+      const seccion = await eliminarSeccion(
+        req.params.slug as string,
+        ambitoExigidoDe(req),
+        confirmacion
+      );
+
+      // Se registra con el id que la página TENÍA. La fila ya no existe, pero la
+      // bitácora no tiene clave foránea contra `paginas` justamente para esto: el
+      // historial de una sección borrada sigue siendo consultable por su id.
+      await logAudit({
+        ...datosDeAuditoria(req),
+        entidadId: seccion.id,
+        entidadTipo: 'pagina',
+        accion: 'eliminar',
+        camposModificados: [
+          { campo: 'slug', antes: seccion.slug, despues: null },
+          { campo: 'titulo', antes: seccion.titulo, despues: null },
+          { campo: 'ambito', antes: seccion.ambito, despues: null },
+          { campo: 'versiones_eliminadas', antes: seccion.versionesEliminadas, despues: null },
+          { campo: 'permiso', antes: seccion.clavePermiso, despues: null },
+          { campo: 'permiso_retirado_a_roles', antes: seccion.rolesAfectados.join(', '), despues: null },
+        ],
+      });
+
+      res.json(seccion);
     } catch (err) { next(err); }
   },
 

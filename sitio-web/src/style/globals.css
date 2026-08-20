@@ -2644,6 +2644,220 @@ button.text-link,
   font-weight: 500;
 }
 
+/* Crear una página estrena una ruta del portal: es la acción menos frecuente y la
+   de mayor alcance de las tres, así que va la más arriba de la pila y en hueco, para
+   que no compita con «Editar página», que es lo que se usa a diario. */
+.edit-button--nueva {
+  bottom: 7.7rem;
+  background: transparent;
+  color: #002c46;
+  border: 1.5px solid #002c46;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
+}
+
+.edit-button--nueva:hover {
+  background: #002c46;
+  color: #fff;
+}
+
+/* --- Diálogo de «Nueva sección» --- */
+
+.nueva-seccion-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 60; /* por encima de los botones flotantes, que están en 50 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 20, 33, 0.55);
+}
+
+.nueva-seccion-caja {
+  width: 100%;
+  max-width: 27rem;
+  background: #fff;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.3);
+}
+
+.nueva-seccion-titulo {
+  margin: 0 0 1rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #002c46;
+}
+
+.nueva-seccion-etiqueta {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #33475b;
+}
+
+.nueva-seccion-campo {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #c7d0d9;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+  color: #12222f;
+}
+
+.nueva-seccion-campo:focus {
+  outline: 2px solid #002c46;
+  outline-offset: 1px;
+  border-color: transparent;
+}
+
+.nueva-seccion-campo:disabled {
+  background: #f1f4f7;
+}
+
+/* La ruta que se está generando. `code` para que se lea como lo que es —una
+   dirección— y no como parte de la frase. */
+.nueva-seccion-ruta {
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+  color: #52667a;
+}
+
+.nueva-seccion-ruta code {
+  padding: 0.1rem 0.35rem;
+  background: #eef2f6;
+  border-radius: 0.25rem;
+  font-size: 0.85rem;
+  color: #002c46;
+}
+
+.nueva-seccion-error {
+  margin: 0.6rem 0 0;
+  font-size: 0.85rem;
+  color: #b3261e;
+}
+
+.nueva-seccion-notas {
+  margin: 1rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: #52667a;
+}
+
+.nueva-seccion-notas li + li {
+  margin-top: 0.3rem;
+}
+
+.nueva-seccion-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1.35rem;
+}
+
+.nueva-seccion-boton {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #c7d0d9;
+  background: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #33475b;
+}
+
+.nueva-seccion-boton:hover:not(:disabled) {
+  background: #f1f4f7;
+}
+
+.nueva-seccion-boton--principal {
+  border-color: #002c46;
+  background: #002c46;
+  color: #fff;
+}
+
+.nueva-seccion-boton--principal:hover:not(:disabled) {
+  background: #001a2a;
+}
+
+.nueva-seccion-boton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* --- Aviso de sección recién creada, dentro del editor --- */
+
+.aviso-seccion-nueva {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 1rem;
+  background: #e8f1f8;
+  border-bottom: 1px solid #c2d8e8;
+  font-size: 0.875rem;
+  color: #002c46;
+}
+
+.aviso-seccion-nueva code {
+  padding: 0.15rem 0.4rem;
+  background: #fff;
+  border: 1px solid #c2d8e8;
+  border-radius: 0.25rem;
+}
+
+.aviso-seccion-nueva-copiar {
+  padding: 0.3rem 0.7rem;
+  border: 1px solid #002c46;
+  border-radius: 0.4rem;
+  background: transparent;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #002c46;
+}
+
+.aviso-seccion-nueva-copiar:hover {
+  background: #002c46;
+  color: #fff;
+}
+
+.aviso-seccion-nueva-nota {
+  flex-basis: 100%;
+  font-size: 0.8rem;
+  color: #40607a;
+}
+
+/* Eliminar es la acción de la que no se vuelve: va la más arriba de la pila, en rojo y
+   en hueco. El relleno se reserva para las acciones que se usan a diario — un botón
+   destructivo sólido y grande invita justo a lo que no se quiere invitar. */
+.edit-button--eliminar {
+  bottom: 10.8rem;
+  background: transparent;
+  color: #b3261e;
+  border: 1.5px solid #b3261e;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
+}
+
+.edit-button--eliminar:hover {
+  background: #b3261e;
+  color: #fff;
+}
+
+/* Botón de confirmar un borrado dentro del diálogo. Se deshabilita hasta que el nombre
+   tecleado coincide, así que la mayor parte del tiempo se ve apagado a propósito. */
+.nueva-seccion-boton--peligro {
+  border-color: #b3261e;
+  background: #b3261e;
+  color: #fff;
+}
+
+.nueva-seccion-boton--peligro:hover:not(:disabled) {
+  background: #8c1d18;
+}
+
 /* ─── Maquetación del editor (@olo/blocks-renderer) ─────────────────────────
    Las variables llegan inline desde el `render` de cada primitivo y desde
    `conCaja()`; aquí solo se aplican. El reparto es a propósito: la app decide
@@ -2732,4 +2946,89 @@ button.text-link,
     flex-direction: column;
     align-items: stretch;
   }
+}
+
+/* ─── Texto enriquecido (campos `richtext` de Puck) ───────────────────────
+   Copiado de la intranet, que ya lo tenía: Puck entrega el valor de un campo
+   `richtext` envuelto en `.rich-text`, y el preflight de Tailwind deja listas y
+   párrafos sin estilo. Sin esto, un título en negrita escrito desde la barra de
+   formato se ve exactamente igual que el texto normal — el editor parecería no
+   funcionar. */
+/* Contenido de los campos `richtext` de Puck, que lo entrega envuelto en
+   `.rich-text`. Hace falta porque el preflight de Tailwind quita los estilos por
+   defecto de listas y párrafos: sin esto, una lista escrita desde la barra de
+   formato del editor se ve como texto corrido y sin viñetas. */
+.rich-text> :first-child {
+  margin-top: 0;
+}
+
+.rich-text> :last-child {
+  margin-bottom: 0;
+}
+
+.rich-text p {
+  margin-bottom: 1rem;
+}
+
+.rich-text strong,
+.rich-text b {
+  font-weight: 700;
+}
+
+.rich-text em,
+.rich-text i {
+  font-style: italic;
+}
+
+.rich-text ul,
+.rich-text ol {
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+
+.rich-text ul {
+  list-style: disc;
+}
+
+.rich-text ol {
+  list-style: decimal;
+}
+
+.rich-text li {
+  margin-bottom: 0.25rem;
+}
+
+.rich-text a {
+  text-decoration: underline;
+}
+
+.rich-text h2,
+.rich-text h3,
+.rich-text h4 {
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Un título de sección es una sola línea, pero `.rich-text p` le pone el margen
+   inferior de un párrafo de texto corrido y descuadra la separación que ya
+   define cada bloque. Se anula solo dentro de los títulos. */
+.olo-titulo-rico .rich-text> :last-child {
+  margin-bottom: 0;
+}
+
+.olo-titulo-rico .rich-text p {
+  margin-bottom: 0;
+}
+
+/* La descripción de una tarjeta de portal cierra la tarjeta: el margen inferior
+   que .rich-text da a los párrafos deja un hueco muerto contra el borde. */
+.olo-portal-description .rich-text> :last-child {
+  margin-bottom: 0;
+}
+
+/* La descripción de una tarjeta de servicio cierra la tarjeta: el margen de
+   párrafo de .rich-text deja un hueco muerto contra el borde inferior. */
+.olo-service-description .rich-text> :last-child {
+  margin-bottom: 0;
 }

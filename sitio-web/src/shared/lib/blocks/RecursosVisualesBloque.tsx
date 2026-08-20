@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { resaltar } from './resaltar';
+import { useState, type ReactNode } from 'react';
+import { TituloRico } from './titulo-rico';
 
 /**
  * Reproductor con lista de videos al lado.
@@ -23,7 +23,8 @@ export interface VideoRecurso {
 
 export interface RecursosVisualesBloqueProps {
   block: { id: string };
-  titulo?: string;
+  /** Campo `richtext` de Puck: llega ya convertido en nodos, no como texto. */
+  titulo?: ReactNode;
   videos?: VideoRecurso[];
 }
 
@@ -32,7 +33,7 @@ const miniaturaDe = (video: VideoRecurso): string =>
 
 export function RecursosVisualesBloque({
   block,
-  titulo = '**Recursos** visuales',
+  titulo,
   videos = [],
 }: RecursosVisualesBloqueProps) {
   const [indiceActivo, setIndiceActivo] = useState(0);
@@ -47,7 +48,7 @@ export function RecursosVisualesBloque({
   return (
     <section className="olo-recursos-visuales" aria-label="Recursos visuales" data-block-id={block.id}>
       <div className="olo-recursos-visuales-inner">
-        {titulo && <h2 className="olo-recursos-visuales-title">{resaltar(titulo)}</h2>}
+        {titulo && <TituloRico className="olo-recursos-visuales-title">{titulo}</TituloRico>}
 
         <div className="olo-recursos-visuales-body">
           <div className="rv-container">

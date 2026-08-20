@@ -1,23 +1,21 @@
 /**
- * Route handler de subida de archivos — SEGURO.
+ * Route handler de subida de archivos de la intranet.
  *
- * Correcciones implementadas (ver specs/qa-intranet-upload-security/spec.md):
+ * Los cinco controles de §S1 siguen siendo los mismos, pero ya no viven aquí:
  *
  *   1. AUTENTICACIÓN: JWT verificado con firma criptográfica antes de cualquier
  *      operación de disco. Sin token válido → 401.
+ *   2. MAGIC BYTES: el tipo real se detecta con `file-type`, ignorando la extensión
+ *      del nombre y el Content-Type declarado, ambos falsificables.
+ *   3. LISTA BLANCA: solo PDF, XLSX, XLS, DOCX, DOC, PPT, PPTX, JPG/JPEG y PNG.
+ *      SVG excluido (puede contener <script> y ejecutar XSS).
+ *   4. LÍMITE DE TAMAÑO verificado en el servidor, no en el cliente.
+ *   5. UUID RENAME: el nombre del cliente nunca llega al disco.
  *
- *   2. MAGIC BYTES: el tipo real del archivo se detecta con `file-type`
- *      (inspección de cabeceras binarias), ignorando la extensión del nombre y
- *      el Content-Type declarado por el cliente, ambos falsificables.
- *
- *   3. LISTA BLANCA: solo PDF, XLSX, XLS, DOCX, DOC, JPG/JPEG, PNG son aceptados.
- *      SVG excluido explícitamente (puede contener <script> y ejecutar XSS).
- *
- *   4. LÍMITE DE TAMAÑO: imágenes ≤ 10 MB, documentos ≤ 50 MB, verificado en el
- *      servidor, no en el cliente.
- *
- *   5. UUID RENAME: el nombre del archivo nunca llega al disco. Se usa un UUID v4
- *      + la extensión canónica del tipo real. Previene path traversal.
+ * Del 2 al 5 los aplica ahora `@olo/upload-policy`, compartido con sitio-web. Estaban
+ * escritos aquí y **solo** aquí: el handler equivalente del sitio web no tenía
+ * ninguno. Con la política duplicada eso vuelve a pasar en cuanto se toque uno de los
+ * dos, así que ahora hay una sola copia y los dos handlers la llaman.
  *
  * Deuda técnica documentada: migrar este endpoint a la API :4000 centralizada
  * (ver 3-seguridad-del-proyecto.md §S1). El almacenamiento en public/uploads es
@@ -28,34 +26,19 @@
  */
 
 import { NextResponse } from 'next/server';
-import fs from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
 import { fileTypeFromBuffer } from 'file-type';
+import {
+  validarArchivoSubido,
+  fueRechazada,
+  esRutaDeSubidaSegura,
+  LIMITE_ABSOLUTO_BYTES,
+} from '@olo/upload-policy';
 import { verificarTokenDesdeRequest } from '@/shared/lib/auth-server';
 
-// ---------------------------------------------------------------------------
-// Lista blanca de tipos MIME aceptados con su extensión canónica y límite
-// ---------------------------------------------------------------------------
-
-interface TipoPermitido {
-  /** Extensión de archivo a usar en el nombre de salida (sin punto). */
-  ext: string;
-  /** Límite de tamaño en bytes. */
-  maxBytes: number;
-}
-
-const TIPOS_PERMITIDOS: Record<string, TipoPermitido> = {
-  'image/jpeg':                                                                  { ext: 'jpg',  maxBytes: 10 * 1024 * 1024 },
-  'image/png':                                                                   { ext: 'png',  maxBytes: 10 * 1024 * 1024 },
-  'application/pdf':                                                             { ext: 'pdf',  maxBytes: 50 * 1024 * 1024 },
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document':    { ext: 'docx', maxBytes: 50 * 1024 * 1024 },
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':          { ext: 'xlsx', maxBytes: 50 * 1024 * 1024 },
-  'application/msword':                                                          { ext: 'doc',  maxBytes: 50 * 1024 * 1024 },
-  'application/vnd.ms-excel':                                                   { ext: 'xls',  maxBytes: 50 * 1024 * 1024 },
-  'application/vnd.ms-powerpoint':                                              { ext: 'ppt',  maxBytes: 50 * 1024 * 1024 },
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation':  { ext: 'pptx', maxBytes: 50 * 1024 * 1024 },
-};
+const DIRECTORIO_DE_SUBIDAS = path.join(process.cwd(), 'public', 'uploads');
 
 // ---------------------------------------------------------------------------
 // POST /api/upload — Sube un archivo
@@ -73,61 +56,43 @@ export async function POST(request: Request) {
   }
 
   try {
-    const formData = await request.formData();
-    const file = formData.get('file') as File | null;
-
-    if (!file) {
-      return NextResponse.json({ error: 'No se envió ningún archivo.' }, { status: 400 });
-    }
-
-    const buffer = Buffer.from(await file.arrayBuffer());
-
-    // 2. Detección del tipo real por magic bytes (ignora extensión y Content-Type)
-    const tipoDetectado = await fileTypeFromBuffer(buffer);
-
-    if (!tipoDetectado) {
+    // El `Content-Length` se mira antes de leer el cuerpo: `formData()` carga el
+    // archivo entero en memoria, así que rechazar después de leerlo no evita el gasto.
+    const largoDeclarado = Number(request.headers.get('content-length') ?? 0);
+    if (largoDeclarado > LIMITE_ABSOLUTO_BYTES * 1.1) {
       return NextResponse.json(
-        { error: 'No se pudo determinar el tipo de archivo. Solo se permiten imágenes y documentos.' },
-        { status: 415 }
-      );
-    }
-
-    // 3. Verificación contra la lista blanca
-    const tipoPermitido = TIPOS_PERMITIDOS[tipoDetectado.mime];
-
-    if (!tipoPermitido) {
-      return NextResponse.json(
-        { error: `Tipo de archivo no permitido: ${tipoDetectado.mime}. Solo se aceptan: PDF, DOCX, XLSX, JPG, PNG y formatos compatibles.` },
-        { status: 415 }
-      );
-    }
-
-    // 4. Límite de tamaño verificado en el servidor
-    if (buffer.length > tipoPermitido.maxBytes) {
-      const limiteMB = tipoPermitido.maxBytes / (1024 * 1024);
-      return NextResponse.json(
-        { error: `El archivo supera el límite de ${limiteMB} MB para este tipo.` },
+        { error: 'El archivo supera el tamaño máximo permitido.' },
         { status: 413 }
       );
     }
 
-    // 5. Nombre UUID — el nombre original del cliente nunca llega al disco
-    const uuid = crypto.randomUUID();
-    const filename = `${uuid}.${tipoPermitido.ext}`;
+    const formData = await request.formData();
+    const file = formData.get('file');
 
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
+    if (!file || typeof file === 'string') {
+      return NextResponse.json({ error: 'No se envió ningún archivo.' }, { status: 400 });
     }
 
-    const filePath = path.join(uploadDir, filename);
-    fs.writeFileSync(filePath, buffer);
+    const datos = new Uint8Array(await file.arrayBuffer());
+
+    // 2-5. Magic bytes, lista blanca, límite por tipo y nombre UUID.
+    const resultado = await validarArchivoSubido(
+      datos,
+      fileTypeFromBuffer,
+      () => crypto.randomUUID()
+    );
+
+    if (fueRechazada(resultado)) {
+      return NextResponse.json({ error: resultado.error }, { status: resultado.status });
+    }
+
+    await fs.mkdir(DIRECTORIO_DE_SUBIDAS, { recursive: true });
+    await fs.writeFile(path.join(DIRECTORIO_DE_SUBIDAS, resultado.nombreArchivo), datos);
 
     return NextResponse.json({
       success: true,
-      url: `/uploads/${filename}`,
+      url: `/uploads/${resultado.nombreArchivo}`,
     });
-
   } catch (error) {
     console.error('[upload] Error al procesar archivo:', error);
     return NextResponse.json(
@@ -154,26 +119,16 @@ export async function DELETE(request: Request) {
 
   try {
     const { url } = await request.json();
+    const rutaResuelta = path.resolve(process.cwd(), 'public', `.${url}`);
 
-    if (!url || typeof url !== 'string' || !url.startsWith('/uploads/')) {
+    // Prefijo `/uploads/` + ruta ya resuelta dentro del directorio permitido.
+    if (!esRutaDeSubidaSegura(url, rutaResuelta, DIRECTORIO_DE_SUBIDAS, path.sep)) {
       return NextResponse.json({ error: 'Ruta de archivo inválida.' }, { status: 400 });
     }
 
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    const filePath = path.join(process.cwd(), 'public', url);
-
-    // Doble protección: prefijo '/uploads/' + verificación de que el path
-    // resuelto esté dentro del directorio de uploads (evita '..' residual).
-    if (!filePath.startsWith(uploadDir + path.sep) && filePath !== uploadDir) {
-      return NextResponse.json({ error: 'Ruta de archivo inválida.' }, { status: 400 });
-    }
-
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
+    await fs.rm(rutaResuelta, { force: true });
 
     return NextResponse.json({ success: true });
-
   } catch (error) {
     console.error('[upload] Error al eliminar archivo:', error);
     return NextResponse.json(

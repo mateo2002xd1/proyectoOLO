@@ -1,10 +1,11 @@
 'use client';
 
-import type { ComponentProps } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import {
   primitiveComponents,
   conCajaEnTodos,
   BLOQUES_SIN_CAJA,
+  campoColor,
 } from '@olo/blocks-renderer';
 import { ExternalPortals } from '@/shared/lib/blocks/ExternalPortals';
 import { Services } from '@/shared/lib/blocks/Services';
@@ -30,6 +31,22 @@ type CustomFieldRender<T> = { value: T; onChange: (val: T) => void };
  *  obligatorio, evita que TypeScript trate el tipo como "weak" y rechace el
  *  render por no compartir propiedades con el Config genérico. */
 type BlockRender<T> = T & { id: string };
+
+/**
+ * Campo de imagen con subida de archivo, en vez de pedir la URL a mano.
+ *
+ * Mismo helper que ya tenía la intranet. Aquí el bloque de subida estaba escrito
+ * siete veces con el mismo cuerpo, y el Hero ni siquiera lo usaba: pedía la ruta
+ * de la imagen en un campo de texto, que obliga a saber dónde vive el archivo y
+ * a escribirla sin equivocarse.
+ */
+const campoImagen = (label: string) => ({
+  type: 'custom' as const,
+  label,
+  render: ({ value, onChange }: CustomFieldRender<string>) => (
+    <ImageUploaderField value={value} onChange={onChange} />
+  ),
+});
 
 // ─── RichText block: Puck handles the layout slot, EditorJS handles the content ───
 const RichTextBlock = {
@@ -200,42 +217,77 @@ const puckConfigBase: Config = {
       },
       render: (props: BlockRender<ComponentProps<typeof IntranetHero>>) => <IntranetHero {...props} />,
     },
+    /**
+     * Banner de la portada.
+     *
+     * Tres cosas que el bloque pintaba y el editor no dejaba tocar: el titular
+     * —escrito a mano en el JSX de `OcupacionSearchBanner`—, la ilustración de
+     * fondo (`modelSrc`) y el color del banner. El JSON guardado llegó a llevar
+     * un prop `heading` con la frase del titular, pero no había campo que lo
+     * editara ni render que lo leyera: se guardaba y se ignoraba.
+     */
     Hero: {
       label: 'Buscador de Ocupaciones (Banner)',
       fields: {
+        titulo: {
+          type: 'richtext' as const,
+          label: 'Titular sobre el buscador',
+        },
         searchPlaceholder: {
           type: 'text' as const,
-          label: 'Placeholder del buscador',
+          label: 'Texto de ejemplo dentro del buscador',
         },
-        imageUrl: {
-          type: 'text' as const,
-          label: 'URL de la imagen',
-        },
+        imageUrl: campoImagen('Logo (esquina superior)'),
         imageAlt: {
           type: 'text' as const,
-          label: 'Texto alternativo de la imagen',
+          label: 'Texto alternativo del logo',
         },
+        modelSrc: campoImagen('Ilustración de fondo'),
+        modelAlt: {
+          type: 'text' as const,
+          label: 'Texto alternativo de la ilustración',
+        },
+        colorFondo: campoColor('Color del banner'),
       },
       defaultProps: {
         id: 'hero-1',
+        titulo:
+          '<p><em>Explora las ocupaciones clave de los</em> <strong>sectores productivos en Colombia.</strong></p>',
         searchPlaceholder: 'Buscar ocupación, código o denominación',
         imageUrl: '/assets/img/nos-ocupa-el-pais.png',
         imageAlt: 'Nos ocupa el país',
+        modelSrc: '/assets/img/modelo-uno.png',
+        modelAlt: 'Modelo',
+        colorFondo: '',
       },
       render: ({
+        titulo,
         searchPlaceholder,
         imageUrl,
         imageAlt,
+        modelSrc,
+        modelAlt,
+        colorFondo,
       }: BlockRender<{
+        // `ReactNode` y no `string`: Puck convierte los campos `richtext` a nodos
+        // antes de llamar al render, igual que en `TextoRico` de la intranet.
+        titulo?: ReactNode;
         searchPlaceholder?: string;
         imageUrl?: string;
         imageAlt?: string;
+        modelSrc?: string;
+        modelAlt?: string;
+        colorFondo?: string;
       }>) => (
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           <OcupacionSearchBanner
+            titulo={titulo}
             placeholder={searchPlaceholder}
             logoSrc={imageUrl}
             logoAlt={imageAlt}
+            modelSrc={modelSrc}
+            modelAlt={modelAlt}
+            colorFondo={colorFondo}
           />
         </div>
       ),
@@ -253,12 +305,12 @@ const puckConfigBase: Config = {
           arrayFields: {
             id: { type: 'text' as const, label: 'Identificador' },
             title: { type: 'text' as const, label: 'Título' },
-            description: { type: 'textarea' as const, label: 'Descripción' },
+            description: { type: 'richtext' as const, label: 'Descripción' },
           },
           defaultItemProps: {
             id: 'nuevo-servicio',
             title: 'Nuevo servicio',
-            description: 'Descripción del servicio.',
+            description: '<p>Descripción del servicio.</p>',
           },
         },
       },
@@ -269,17 +321,17 @@ const puckConfigBase: Config = {
           {
             id: 'monitoreo',
             title: 'Monitoreo del Mercado',
-            description: 'Seguimiento riguroso de fuentes de información laboral nacional',
+            description: '<p>Seguimiento riguroso de fuentes de información laboral nacional</p>',
           },
           {
             id: 'orientacion',
             title: 'Orientación y Formación',
-            description: 'Apoyo a la definición de acciones de capacitación, emprendimiento y empleo',
+            description: '<p>Apoyo a la definición de acciones de capacitación, emprendimiento y empleo</p>',
           },
           {
             id: 'alertas',
             title: 'Generación de Alertas',
-            description: 'Identificación de proyectos de inversión y alertas regionales y sectoriales',
+            description: '<p>Identificación de proyectos de inversión y alertas regionales y sectoriales</p>',
           },
         ],
       },
@@ -290,7 +342,7 @@ const puckConfigBase: Config = {
       }: {
         id: string;
         sectionTitle?: string;
-        services?: { id: string; title: string; description: string }[];
+        services?: { id: string; title: string; description: ReactNode }[];
       }) => (
         <Services
           block={{ id: id || 'services-preview' }}
@@ -354,7 +406,7 @@ const puckConfigBase: Config = {
     RecursosVisualesBloque: {
       label: 'Recursos Visuales',
       fields: {
-        titulo: { type: 'text' as const, label: 'Título (usa ** para negrita)' },
+        titulo: { type: 'richtext' as const, label: 'Título' },
         videos: {
           type: 'array' as const,
           label: 'Videos',
@@ -375,7 +427,7 @@ const puckConfigBase: Config = {
       },
       defaultProps: {
         id: 'recursos-visuales-1',
-        titulo: '**Recursos** visuales',
+        titulo: '<p><strong>Recursos</strong> visuales</p>',
         videos: [],
       },
       render: ({
@@ -383,7 +435,7 @@ const puckConfigBase: Config = {
         titulo,
         videos,
       }: BlockRender<{
-        titulo?: string;
+        titulo?: ReactNode;
         videos?: { youtubeId?: string; titulo?: string; canal?: string; miniatura?: string }[];
       }>) => (
         <RecursosVisualesBloque
@@ -396,7 +448,7 @@ const puckConfigBase: Config = {
     Publicaciones: {
       label: 'Últimas publicaciones',
       fields: {
-        titulo: { type: 'text' as const, label: 'Título (usa ** para negrita)' },
+        titulo: { type: 'richtext' as const, label: 'Título' },
         publicaciones: {
           type: 'array' as const,
           label: 'Publicaciones',
@@ -424,7 +476,7 @@ const puckConfigBase: Config = {
       },
       defaultProps: {
         id: 'publicaciones-1',
-        titulo: '**Ultimas** publicaciones',
+        titulo: '<p><strong>Ultimas</strong> publicaciones</p>',
         publicaciones: [],
         porPagina: 4,
       },
@@ -434,7 +486,7 @@ const puckConfigBase: Config = {
         publicaciones,
         porPagina,
       }: BlockRender<{
-        titulo?: string;
+        titulo?: ReactNode;
         publicaciones?: { titulo?: string; pdfUrl?: string; etiqueta?: string; mes?: string; dia?: string }[];
         porPagina?: number;
       }>) => (
@@ -450,8 +502,8 @@ const puckConfigBase: Config = {
       label: 'Portales Externos',
       fields: {
         title: {
-          type: 'text' as const,
-          label: 'Título de la sección (usa ** para negrita)',
+          type: 'richtext' as const,
+          label: 'Título de la sección',
         },
         subtitle: {
           type: 'text' as const,
@@ -463,59 +515,70 @@ const puckConfigBase: Config = {
           arrayFields: {
             id: { type: 'text' as const, label: 'Identificador' },
             label: { type: 'text' as const, label: 'Etiqueta' },
-            description: { type: 'textarea' as const, label: 'Descripción (usa ** para negrita)' },
+            description: { type: 'richtext' as const, label: 'Descripción' },
             href: { type: 'text' as const, label: 'URL de destino' },
-            imagen: {
-              type: 'custom',
-              label: 'Ilustración de fondo (se pinta al 60%)',
-              render: ({ value, onChange }: CustomFieldRender<string>) => (
-                <ImageUploaderField value={value} onChange={onChange} />
-              ),
-            },
-            gradient: { type: 'text' as const, label: 'Gradiente CSS' },
+            imagen: campoImagen('Ilustración de fondo (se pinta al 60%)'),
+            /**
+             * El degradado de la tarjeta, en dos colores en vez de una línea de CSS.
+             *
+             * Antes era un campo de texto donde había que escribir
+             * `linear-gradient(135deg, #0b4ea2 0%, #0a2f6b 100%)` a mano: sintaxis
+             * de programador en un panel que usa un funcionario, y un paréntesis
+             * mal cerrado deja la tarjeta sin fondo sin decir por qué.
+             *
+             * `gradient` se conserva como respaldo para las tarjetas ya guardadas
+             * que todavía no tengan los dos colores; ver `ExternalPortals.tsx`.
+             */
+            colorInicio: campoColor('Color del degradado · arriba'),
+            colorFin: campoColor('Color del degradado · abajo'),
+            gradient: { type: 'text' as const, label: 'Degradado CSS (heredado, opcional)' },
           },
           defaultItemProps: {
             id: 'nuevo-portal',
             label: 'Nuevo portal',
-            description: 'Descripción del portal.',
+            description: '<p>Descripción del portal.</p>',
             href: '#',
             imagen: '',
-            gradient: 'linear-gradient(135deg, #0b4ea2 0%, #0a2f6b 100%)',
+            colorInicio: '#0b4ea2',
+            colorFin: '#0a2f6b',
           },
           getItemSummary: (item: { label?: string }) => item.label || 'Portal',
         },
       },
       defaultProps: {
         id: 'portals-1',
-        title: '**Portales externos** de la ciudadanía',
+        title: '<p><strong>Portales externos</strong> de la ciudadanía</p>',
         subtitle: '',
         portals: [
           {
             id: 'pqrs',
             label: 'PQRS',
             description:
-              '**Registrar tus peticiones, quejas, reclamos y sugerencias**. Tu participación es fundamental para seguir mejorando.',
+              '<p><strong>Registrar tus peticiones, quejas, reclamos y sugerencias</strong>. Tu participación es fundamental para seguir mejorando.</p>',
             href: '#',
             imagen: '/assets/img/pqrs.png',
-            gradient: 'linear-gradient(135deg, #0b4ea2 0%, #0a2f6b 100%)',
+            colorInicio: '#0b4ea2',
+            colorFin: '#0a2f6b',
           },
           {
             id: 'denuncias',
             label: 'Denuncias por corrupción',
             description:
-              '**Reportar actos de corrupción** por un canal seguro. Tu identidad será protegida en todo momento.',
+              '<p><strong>Reportar actos de corrupción</strong> por un canal seguro. Tu identidad será protegida en todo momento.</p>',
             href: '#',
             imagen: '/assets/img/corrupcion.png',
-            gradient: 'linear-gradient(135deg, #0d1526 0%, #1a2e50 100%)',
+            colorInicio: '#0d1526',
+            colorFin: '#1a2e50',
           },
           {
             id: 'transparencia',
             label: 'Transparencia',
             description:
-              '**Consultar información pública** y datos abiertos del observatorio, con rendición de cuentas al día.',
+              '<p><strong>Consultar información pública</strong> y datos abiertos del observatorio, con rendición de cuentas al día.</p>',
             href: '#',
             imagen: '/assets/img/transparencia.png',
-            gradient: 'linear-gradient(135deg, #1478c6 0%, #0d4f8b 100%)',
+            colorInicio: '#1478c6',
+            colorFin: '#0d4f8b',
           },
         ],
       },
@@ -526,14 +589,16 @@ const puckConfigBase: Config = {
         portals,
       }: {
         id: string;
-        title?: string;
+        title?: ReactNode;
         subtitle?: string;
         portals?: {
           id: string;
           label: string;
-          description: string;
+          description: ReactNode;
           href: string;
-          gradient: string;
+          gradient?: string;
+          colorInicio?: string;
+          colorFin?: string;
           imagen?: string;
         }[];
       }) => (
@@ -587,9 +652,26 @@ export const puckConfig: Config = {
 const COMPONENTES_POR_SLUG: Record<string, string[]> = {
   // La plantilla es lo contrario a una página: solo la cabecera y el pie, que es
   // justo lo que las páginas ya no pueden tocar.
-  plantilla: ['Header', 'Footer'],
+  'menu-y-pie': ['Header', 'Footer'],
   inicio: ['Hero', 'Services', 'DatoOloSemana', 'RecursosVisualesBloque', 'Publicaciones', 'ExternalPortals', 'RichText', 'Grid', 'Flex', 'Space'],
 };
+
+/**
+ * Los slugs que existen sin que nadie los haya creado.
+ *
+ * Son las claves de `COMPONENTES_POR_SLUG`, y no una lista aparte, porque son lo mismo
+ * visto de dos maneras: una sección tiene catálogo recortado precisamente porque el
+ * código sabe qué va en ella. Es el espejo de `SECCIONES_POR_AMBITO` en la API, que es
+ * quien decide de verdad —aquí solo sirve para no pintar un botón de borrar que la API
+ * va a rechazar—.
+ */
+export const SLUGS_DE_FABRICA = Object.keys(COMPONENTES_POR_SLUG);
+
+/**
+ * Si un slug es de fábrica. Las de fábrica no se pueden eliminar: hay código que da por
+ * hecho que existen, y borrar `inicio` deja el portal sin portada.
+ */
+export const esSeccionDeFabrica = (slug: string): boolean => SLUGS_DE_FABRICA.includes(slug);
 
 /**
  * Config para la mesa de trabajo de un slug.

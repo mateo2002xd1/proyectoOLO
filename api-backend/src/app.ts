@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import { config } from './config';
+import { limitadorGlobal } from './middlewares/rate-limit.middleware';
 import { requireAuth } from './middlewares/auth.middleware';
 import { requierePermisoUsuario } from './middlewares/permisos.middleware';
 import { errorHandler } from './middlewares/error.middleware';
@@ -24,6 +25,20 @@ import jobRoutes from './routes/job.routes';
 
 const app = express();
 
+/**
+ * Express lee `X-Forwarded-For` en vez de la IP del socket.
+ *
+ * Sin esto `req.ip` era la IP de nginx —o la del contenedor de Next, para todo lo que
+ * pasa por el BFF del sitio web— y cualquier límite por IP se convertía en un cubo
+ * único compartido por toda la institución.
+ *
+ * El valor 1 significa «confía en un salto»: se toma la dirección más a la derecha de
+ * la cabecera, que es justamente la que escribe nginx con `$proxy_add_x_forwarded_for`.
+ * Las que el cliente haya podido inyectar quedan a su izquierda y se ignoran, así que
+ * activar esto no abre la puerta a falsificar la IP.
+ */
+app.set('trust proxy', 1);
+
 app.use(helmet());
 app.use(cors({ origin: [config.frontendUrl, config.intranetUrl], credentials: true }));
 app.use(morgan('dev'));
@@ -33,6 +48,11 @@ app.use(cookieParser());
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// Techo general de la API: ninguna ruta queda sin límite aunque su router no declare
+// el suyo. Va después de `/health` a propósito — nginx y Docker lo consultan en bucle
+// y no tiene sentido gastarles cupo.
+app.use(limitadorGlobal);
 
 app.use('/api', authRoutes);
 

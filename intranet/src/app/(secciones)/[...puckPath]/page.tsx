@@ -113,7 +113,7 @@ export default async function PaginaDinamica({
 
   // La plantilla es contenido, pero no una página que se visite: son el menú y el
   // pie que el layout ya está pintando alrededor de esto mismo. Sin este corte,
-  // `/plantilla` los mostraría otra vez, duplicados dentro del marco.
+  // `/menu-y-pie` los mostraría otra vez, duplicados dentro del marco.
   if (slug === SLUG_PLANTILLA) notFound();
 
   const [pagina, hasPermission] = await Promise.all([

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { resaltar } from './resaltar';
+import { useState, useEffect, type ReactNode } from 'react';
+import { TituloRico } from './titulo-rico';
 
 /**
  * Carrusel de publicaciones en PDF con la portada como miniatura.
@@ -32,7 +32,8 @@ export interface PublicacionItem {
 
 export interface PublicacionesProps {
   block: { id: string };
-  titulo?: string;
+  /** Campo `richtext` de Puck: llega ya convertido en nodos, no como texto. */
+  titulo?: ReactNode;
   publicaciones?: PublicacionItem[];
   porPagina?: number;
 }
@@ -198,7 +199,11 @@ function Portada({ pdfUrl, titulo }: { pdfUrl: string; titulo: string }) {
 
 export function Publicaciones({
   block,
-  titulo = '**Ultimas** publicaciones',
+  titulo = (
+    <>
+      <strong>Ultimas</strong> publicaciones
+    </>
+  ),
   publicaciones = [],
   porPagina = 4,
 }: PublicacionesProps) {
@@ -246,7 +251,7 @@ export function Publicaciones({
   return (
     <section className="olo-publicaciones" aria-label="Últimas publicaciones" data-block-id={block.id}>
       <div className="olo-publicaciones-inner">
-        {titulo && <h2 className="olo-publicaciones-title">{resaltar(titulo)}</h2>}
+        {titulo && <TituloRico className="olo-publicaciones-title">{titulo}</TituloRico>}
 
         <div className="olo-publicaciones-body">
           <div

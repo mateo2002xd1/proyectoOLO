@@ -7,7 +7,13 @@ import { requierePermisoContenido } from '../middlewares/permisos.middleware';
 const router = Router();
 
 // Público (RF-10, RF-12) — debe ir antes del requireAuth
-router.get('/publica', cacheInterceptor(300), ContenidoController.listarPublicados);
+// `sectionId` es el único parámetro que lee `listarPublicados`, así que es el único
+// que entra en la clave de caché. Ver `cache.middleware.ts`.
+router.get(
+  '/publica',
+  cacheInterceptor(300, { paramsPermitidos: ['sectionId'] }),
+  ContenidoController.listarPublicados
+);
 
 router.use(requireAuth);
 

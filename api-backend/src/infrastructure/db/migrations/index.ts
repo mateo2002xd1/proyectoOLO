@@ -14,6 +14,12 @@ import * as agregarApellidosUsuarios from './010-agregar-apellidos-usuarios';
 import * as politicaPasswords from './011-politica-passwords';
 import * as catalogoPermisos from './012-catalogo-permisos';
 import * as eliminarUsuariosSitio from './013-eliminar-usuarios-sitio';
+import * as renombrarSlugMenuYPie from './014-renombrar-slug-menu-y-pie';
+import * as inicioTextoEnriquecido from './015-inicio-texto-enriquecido';
+import * as permisoCrearSecciones from './016-permiso-crear-secciones';
+import * as tituloMenuYPie from './017-titulo-menu-y-pie';
+import * as revertirTitulosIntranet from './018-revertir-titulos-intranet';
+import * as permisoEliminarSecciones from './019-permiso-eliminar-secciones';
 
 export interface Migracion {
   nombre: string;
@@ -38,6 +44,12 @@ const migraciones: Migracion[] = [
   politicaPasswords,
   catalogoPermisos,
   eliminarUsuariosSitio,
+  renombrarSlugMenuYPie,
+  inicioTextoEnriquecido,
+  permisoCrearSecciones,
+  tituloMenuYPie,
+  revertirTitulosIntranet,
+  permisoEliminarSecciones,
 ];
 
 const TABLA_CONTROL = 'migraciones_aplicadas';

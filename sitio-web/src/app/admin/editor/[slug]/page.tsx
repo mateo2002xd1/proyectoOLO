@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { rutaPublicaDeSlug } from '@/features/paginas';
+import { AvisoSeccionNueva, rutaPublicaDeSlug } from '@/features/paginas';
 import { getAuthSessionSnapshot, puedeEditarPaginas } from '@/shared/lib/session';
 import { EditorClient } from './editor-client';
 
@@ -13,10 +13,12 @@ import { EditorClient } from './editor-client';
  */
 export default async function EditorPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ nueva?: string }>;
 }) {
-  const { slug } = await params;
+  const [{ slug }, { nueva }] = await Promise.all([params, searchParams]);
 
   const { hasSession } = await getAuthSessionSnapshot();
   if (!hasSession) {
@@ -30,5 +32,12 @@ export default async function EditorPage({
     redirect(rutaPublicaDeSlug(slug));
   }
 
-  return <EditorClient slug={slug} />;
+  return (
+    <>
+      {/* Solo al venir de «Nueva página»: es donde se entrega el enlace de la ruta
+          recién creada, que es lo que hay que pegar en el menú para poder llegar. */}
+      {nueva === '1' && <AvisoSeccionNueva slug={slug} />}
+      <EditorClient slug={slug} />
+    </>
+  );
 }

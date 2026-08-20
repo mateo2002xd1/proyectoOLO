@@ -40,7 +40,10 @@ export const TrabajosController = {
         failedReason
       });
     } catch (error) {
-      res.status(500).json({ message: 'Error fetching job status', error });
+      // El objeto de error no viaja al cliente: reenviarlo esquivaba `errorHandler`,
+      // que es quien sanea los 500 en producción, y podía filtrar detalles de Redis.
+      console.error('[trabajos] Error al consultar el estado del trabajo:', error);
+      res.status(500).json({ message: 'Error fetching job status' });
     }
   },
 
@@ -62,7 +65,8 @@ export const TrabajosController = {
         statusUrl: `/api/jobs/${job.id}`
       });
     } catch (error) {
-      res.status(500).json({ message: 'Error starting job', error });
+      console.error('[trabajos] Error al encolar el trabajo:', error);
+      res.status(500).json({ message: 'Error starting job' });
     }
   },
 };

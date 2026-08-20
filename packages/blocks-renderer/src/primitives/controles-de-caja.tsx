@@ -30,6 +30,8 @@
  * cada app.
  */
 
+import { campoColor } from './color-picker-field';
+
 // ─── Tipos mínimos de Puck ───────────────────────────────────────────────────
 /**
  * Forma mínima de un `ComponentConfig` de Puck.
@@ -157,6 +159,22 @@ export const campoCaja = {
         { label: 'Derecha', value: 'derecha' },
       ],
     },
+    /**
+     * El fondo pinta **la caja**, no la franja de pantalla.
+     *
+     * Con el ancho en «Todo el ancho» —que es lo que trae por defecto— las dos
+     * cosas coinciden y el color va de borde a borde, que es el caso normal. Si
+     * además se estrecha el bloque, el color se estrecha con él: sale un
+     * rectángulo de color con el contenido dentro, no una franja con el
+     * contenido centrado.
+     *
+     * Se deja así a propósito en vez de sacar el fondo a un `<div>` de fuera:
+     * eso cambiaría el DOM de todas las páginas ya guardadas —justo lo que la
+     * decisión 2 de la cabecera evita— y traería colapso de márgenes entre las
+     * dos capas. Y como el editor enseña el resultado mientras se elige, el
+     * comportamiento se ve, no hay que adivinarlo.
+     */
+    fondo: campoColor('Color de fondo'),
   },
 };
 
@@ -174,6 +192,10 @@ export const cajaPorDefecto = {
   inferior: 'ninguno',
   ancho: 'completo',
   alineacion: 'centro',
+  // Vacío y no un color: por la misma razón que los espacios en `ninguno`. Un
+  // bloque recién soltado tiene que verse igual que antes de que este campo
+  // existiera, y regalarle un fondo taparía el que ya trae su propio CSS.
+  fondo: '',
 };
 
 export interface ValoresCaja {
@@ -183,6 +205,8 @@ export interface ValoresCaja {
   inferior?: ClaveEspacio | number;
   ancho?: keyof typeof ANCHOS;
   alineacion?: 'centro' | 'izquierda' | 'derecha';
+  /** Color CSS. Vacío significa «sin fondo propio»: el bloque conserva el suyo. */
+  fondo?: string;
 }
 
 // ─── Resolución a estilos ────────────────────────────────────────────────────
@@ -216,6 +240,14 @@ export function estiloDeCaja(caja: ValoresCaja | undefined): EstiloDeCaja {
   if (superior) style['--olo-caja-superior'] = `${superior}px`;
   if (inferior) style['--olo-caja-inferior'] = `${inferior}px`;
   if (anchoMaximo) style['--olo-caja-ancho'] = anchoMaximo;
+
+  // El fondo va como propiedad y no como variable: no lo reduce ninguna media
+  // query, así que no necesita que la hoja de estilos haga ninguna cuenta.
+  // `trim()` porque el campo admite escribir el color a mano y un espacio
+  // suelto pintaría un `background-color: " "` que el navegador descarta en
+  // silencio, dejando el bloque sin fondo sin decir por qué.
+  const fondo = typeof valores.fondo === 'string' ? valores.fondo.trim() : '';
+  if (fondo) style.backgroundColor = fondo;
 
   // La alineación solo significa algo cuando el ancho está limitado: sin ancho
   // máximo la caja ocupa la fila entera y no hay hueco donde moverla.
