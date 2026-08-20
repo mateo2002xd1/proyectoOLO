@@ -14,10 +14,11 @@ COPY sitio-web/src ./src
 
 ARG BACKEND_URL=http://localhost:4000
 ARG NEXT_PUBLIC_API_URL=http://localhost:4000
-ARG JWT_SECRET=dev-secret-change-me
 ENV BACKEND_URL=$BACKEND_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-ENV JWT_SECRET=$JWT_SECRET
+# JWT_SECRET NO entra en el build: solo lo lee el route handler de subida en
+# ejecución, y como ARG quedaba grabado en la caché de capas sin necesidad alguna.
+# Se inyecta en ejecución desde docker-compose.
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 

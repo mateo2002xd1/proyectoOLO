@@ -46,10 +46,8 @@ services:
       FRONTEND_URL: https://${SITIO_WEB_DOMAIN}
       INTRANET_URL: https://${INTRANET_DOMAIN}
       NODE_ENV: production
-      LOCAL_AUTH_EMAIL: ${LOCAL_AUTH_EMAIL}
-      LOCAL_AUTH_PASSWORD: ${LOCAL_AUTH_PASSWORD}
-      LOCAL_AUTH_NAME: ${LOCAL_AUTH_NAME:-Superadmin}
-      LOCAL_AUTH_ROLE: ${LOCAL_AUTH_ROLE:-Superadmin}
+      # Sin LOCAL_AUTH_*: la cuenta maestra local es solo de desarrollo, y la API la
+      # desactiva sola con NODE_ENV=production (api-backend/src/config/index.ts).
     depends_on:
       db:
         condition: service_healthy
@@ -65,7 +63,6 @@ services:
       args:
         BACKEND_URL: http://api-backend:4000
         NEXT_PUBLIC_API_URL: https://${SITIO_WEB_DOMAIN}
-        JWT_SECRET: ${JWT_SECRET}
     restart: unless-stopped
     environment:
       BACKEND_URL: http://api-backend:4000
