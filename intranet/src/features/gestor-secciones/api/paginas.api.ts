@@ -92,3 +92,84 @@ export async function enviarARevision(
   if (!res?.version?.estado) return null;
   return { estado: res.version.estado };
 }
+
+export interface SeccionCreada {
+  id: string;
+  slug: string;
+  titulo: string;
+  ambito: "sitio" | "intranet";
+  /** La ruta lista para pegar en el menú, con la barra delante. */
+  ruta: string;
+  clavePermiso: string;
+  /** El rol que recibió el permiso de editarla, o `null` si era superadmin. */
+  rolConcedido: string | null;
+}
+
+/**
+ * Crea una sección nueva.
+ *
+ * Solo manda el nombre: **la ruta la decide el servidor** con `@olo/slug-policy`. El
+ * diálogo enseña una vista previa calculada con ese mismo paquete, así que coinciden,
+ * pero mandar el slug desde aquí sería dejar que el navegador eligiera la clave de
+ * permiso que se va a crear.
+ *
+ * La sección nace sin versión publicada: su ruta existe pero todavía no muestra nada
+ * hasta que se llene y alguien la apruebe.
+ */
+export async function crearSeccion(titulo: string): Promise<SeccionCreada> {
+  return apiClient.post<SeccionCreada>("/paginas", { titulo });
+}
+
+/** Un sitio del portal que enlaza a la sección que se quiere borrar. */
+export interface ReferenciaAEnlace {
+  slug: string;
+  titulo: string;
+  texto: string | null;
+}
+
+export interface AnalisisDeEliminacion {
+  id: string;
+  slug: string;
+  titulo: string;
+  ambito: "sitio" | "intranet";
+  puedeEliminarse: boolean;
+  motivo: "de-fabrica" | "tiene-enlaces" | null;
+  versiones: number;
+  publicada: boolean;
+  referencias: ReferenciaAEnlace[];
+}
+
+/**
+ * Qué pasaría al borrar esta sección, sin borrar nada.
+ *
+ * Lo pide el diálogo al abrirse: cuántas versiones se pierden, si la ruta está viva y
+ * —lo que de verdad decide— qué enlaces del portal apuntan ahí. El servidor lo vuelve
+ * a calcular al borrar, así que esto es para informar, no para autorizar.
+ */
+export async function analizarEliminacion(slug: string): Promise<AnalisisDeEliminacion> {
+  return apiClient.get<AnalisisDeEliminacion>(`/paginas/${slug}/eliminable`);
+}
+
+export interface SeccionEliminada {
+  id: string;
+  slug: string;
+  titulo: string;
+  versionesEliminadas: number;
+  clavePermiso: string;
+  rolesAfectados: string[];
+}
+
+/**
+ * Borra la sección. No se deshace.
+ *
+ * `confirmacion` es el título tecleado a mano; el servidor lo compara con el que tiene
+ * guardado y rechaza la petición si no coincide.
+ */
+export async function eliminarSeccion(
+  slug: string,
+  confirmacion: string
+): Promise<SeccionEliminada> {
+  return apiClient.delete<SeccionEliminada>(`/paginas/${slug}`, {
+    body: JSON.stringify({ confirmacion }),
+  });
+}

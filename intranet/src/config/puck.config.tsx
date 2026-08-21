@@ -736,7 +736,7 @@ const BLOQUES_COMUNES = [
 const COMPONENTES_POR_SLUG: Record<string, string[]> = {
   // La plantilla es lo contrario a una sección: solo la barra y el pie, que es
   // justo lo que las secciones ya no pueden tocar.
-  plantilla: ['IntranetTopbar', 'IntranetFooter'],
+  'menu-y-pie': ['IntranetTopbar', 'IntranetFooter'],
   inicio: [...BLOQUES_COMUNES, 'RecursosVisualesBloque', 'Publicaciones', 'PreguntasFrecuentes'],
   tasa: [...BLOQUES_COMUNES, 'TasaBanner', 'TasaConceptos', 'TasaDashboards', 'TasaPresentacion'],
   matriz: [
@@ -759,6 +759,23 @@ const COMPONENTES_POR_SLUG: Record<string, string[]> = {
     'TasaDashboards',
   ],
 };
+
+/**
+ * Los slugs que existen sin que nadie los haya creado.
+ *
+ * Son las claves de `COMPONENTES_POR_SLUG`, y no una lista aparte, porque son lo mismo
+ * visto de dos maneras: una sección tiene catálogo recortado precisamente porque el
+ * código sabe qué va en ella. Es el espejo de `SECCIONES_POR_AMBITO` en la API, que es
+ * quien decide de verdad —aquí solo sirve para no pintar un botón de borrar que la API
+ * va a rechazar—.
+ */
+export const SLUGS_DE_FABRICA = Object.keys(COMPONENTES_POR_SLUG);
+
+/**
+ * Si un slug es de fábrica. Las de fábrica no se pueden eliminar: hay código que da por
+ * hecho que existen, y borrar `inicio` deja el portal sin portada.
+ */
+export const esSeccionDeFabrica = (slug: string): boolean => SLUGS_DE_FABRICA.includes(slug);
 
 /**
  * Config para la mesa de trabajo de un slug.

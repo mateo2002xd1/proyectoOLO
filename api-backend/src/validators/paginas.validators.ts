@@ -1,13 +1,85 @@
-// Validators - Paginas
-// Stub: Implementar con Zod según §13.2 del ARQUITECTURA.md
+/**
+ * Esquemas de páginas.
+ *
+ * El stub anterior describía un formato que no existe (`{ titulo, slug, contenido:
+ * [{tipo, datos}] }`). Lo que el editor manda de verdad es el árbol de Puck bajo la
+ * clave `contenido` — ver `ContenidoPagina` en
+ * `intranet/src/features/gestor-secciones/types/editor.types.ts`.
+ *
+ * @see 3-seguridad-del-proyecto.md §3
+ */
 
 import { z } from 'zod';
 
-export const paginaSchema = z.object({
-  titulo: z.string().min(1),
-  slug: z.string().min(1),
-  contenido: z.array(z.object({
-    tipo: z.string(),
-    datos: z.record(z.unknown()),
-  })),
-});
+/**
+ * Un bloque de Puck: siempre trae `type` y `props`.
+ *
+ * `passthrough` porque `props` lo define cada bloque y el catálogo crece; enumerar
+ * aquí las propiedades de cada componente convertiría este archivo en algo que hay
+ * que tocar cada vez que se añade un bloque, y se quedaría desactualizado a la
+ * primera. Lo que este esquema fija es la **forma**, no el contenido de los campos:
+ * de limpiar el HTML de dentro se encarga `sanitizarContenidoPuck`, que recorre el
+ * árbol entero y es quien cierra §S2. Las dos capas hacen cosas distintas.
+ */
+const bloquePuckSchema = z
+  .object({
+    type: z.string().min(1).max(100),
+    props: z.record(z.unknown()).optional(),
+  })
+  .passthrough();
+
+/**
+ * Árbol de contenido de una página.
+ *
+ * El tope de bloques no es decorativo: `sanitizarContenidoPuck` recorre el árbol
+ * completo con jsdom y DOMPurify, así que el coste de guardar lo marca el número de
+ * nodos, no el tamaño del JSON. Con el límite de 1 MB de `express.json()` como única
+ * frontera, un cuerpo lleno de bloques diminutos daba decenas de miles de nodos que
+ * sanear en una sola petición.
+ */
+export const contenidoPaginaSchema = z
+  .object({
+    content: z.array(bloquePuckSchema).max(500),
+    root: z.record(z.unknown()).optional(),
+    zones: z.record(z.array(bloquePuckSchema).max(500)).optional(),
+  })
+  .passthrough();
+
+/** Cuerpo de `POST /api/paginas/:slug/borrador`. */
+export const guardarBorradorSchema = z
+  .object({
+    contenido: contenidoPaginaSchema,
+  })
+  .strict();
+
+/**
+ * Cuerpo de `POST /api/paginas`.
+ *
+ * Solo viaja el nombre: **el slug lo calcula el servidor**. Dejar que el cliente
+ * mandara la ruta sería dejarle elegir la clave de permiso que se va a crear
+ * (`editar.{ambito}.{slug}`), y eso no se negocia desde el navegador. El diálogo la
+ * enseña mientras se escribe con el mismo `@olo/slug-policy`, así que ve la de verdad.
+ *
+ * El tope de 120 caracteres es para el **título**, no para la ruta: el slug se recorta
+ * aparte a `LONGITUD_MAX_SLUG`. Un nombre largo es legítimo y se guarda entero en
+ * `paginas.titulo`, que es lo que se lee en el panel.
+ */
+export const crearSeccionSchema = z
+  .object({
+    titulo: z.string().trim().min(1, 'La sección necesita un nombre.').max(120),
+  })
+  .strict();
+
+/**
+ * Cuerpo de `DELETE /api/paginas/:slug`.
+ *
+ * `confirmacion` es el título de la sección, tecleado a mano. No es una formalidad del
+ * cliente: el use-case lo vuelve a comparar contra lo que hay en la base, así que
+ * saltarse el diálogo llamando a la API directamente no evita el paso — solo lo hace
+ * más incómodo, que es exactamente lo que se busca en una operación que no se deshace.
+ */
+export const eliminarSeccionSchema = z
+  .object({
+    confirmacion: z.string().trim().min(1, 'Escribe el nombre de la sección para confirmar.').max(120),
+  })
+  .strict();

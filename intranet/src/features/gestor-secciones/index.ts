@@ -19,6 +19,9 @@ export { PuckEditorWrapper } from "./components/puck-editor-wrapper";
 export { EditorJsWrapper } from "./components/editorjs-wrapper";
 export { ClientPuckRender } from "./components/client-puck-render";
 export { PlantillaEditButton } from "./components/plantilla-edit-button";
+export { NuevaSeccionButton } from "./components/nueva-seccion-button";
+export { EliminarSeccionButton } from "./components/eliminar-seccion-button";
+export { AvisoSeccionNueva } from "./components/aviso-seccion-nueva";
 export { MarcoSecciones } from "./components/marco-secciones";
 
 // Semillas de contenido inicial (mesa de trabajo)
@@ -41,8 +44,17 @@ export {
   obtenerPaginaPublicada,
   guardarBorrador,
   enviarARevision,
+  crearSeccion,
+  analizarEliminacion,
+  eliminarSeccion,
 } from "./api/paginas.api";
-export type { VersionEditable, PaginaPublicada } from "./api/paginas.api";
+export type {
+  VersionEditable,
+  PaginaPublicada,
+  SeccionCreada,
+  SeccionEliminada,
+  AnalisisDeEliminacion,
+} from "./api/paginas.api";
 
 // Types
 export type {

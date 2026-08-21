@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { conCabecerasDeCliente } from '@/shared/lib/reenviar-cliente';
 import {
   AUTH_COOKIE_NAME,
   AUTH_ROLE_COOKIE_NAME,
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
   try {
     apiRes = await fetch(`${BACKEND_URL}/api/login`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: conCabecerasDeCliente(request, { 'Content-Type': 'application/json' }),
       body: JSON.stringify({ email: body.email, password: body.password }),
     });
   } catch {

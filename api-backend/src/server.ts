@@ -6,6 +6,7 @@ import sequelize from './config/database';
 import './infrastructure/db/models';
 import { listarPendientes } from './infrastructure/db/migrations';
 import { setupWorker } from './infrastructure/redis/queue';
+import { cerrarClienteDeLimites } from './middlewares/rate-limit.middleware';
 
 process.on('unhandledRejection', (reason) => {
   console.error('UNHANDLED REJECTION — crashing:', reason);
@@ -33,10 +34,22 @@ const start = async () => {
     setupWorker();
     console.log('Background worker started.');
 
-    app.listen(config.port, '127.0.0.1', () => {
+    const servidor = app.listen(config.port, '127.0.0.1', () => {
       console.log(`OLO API Backend running on port ${config.port}`);
       console.log(`Health check: http://127.0.0.1:${config.port}/health`);
     });
+
+    // Los limitadores abren su propia conexión a Redis (ver `rate-limit.middleware.ts`).
+    // ioredis mantiene el socket vivo, así que sin cerrarla el proceso ignora la señal
+    // y `docker stop` acaba matándolo por timeout a los diez segundos.
+    const apagar = async (senal: string) => {
+      console.log(`${senal} recibida — cerrando servidor...`);
+      servidor.close();
+      await cerrarClienteDeLimites();
+      process.exit(0);
+    };
+    process.on('SIGTERM', () => void apagar('SIGTERM'));
+    process.on('SIGINT', () => void apagar('SIGINT'));
   } catch (error) {
     console.error('Failed to start server:', error);
     process.exit(1);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useState, type FormEvent } from 'react';
+import { useId, useState, type FormEvent, type ReactNode } from 'react';
 
 function SearchIcon() {
   return (
@@ -26,6 +26,22 @@ interface OcupacionSearchBannerProps {
   modelSrc?: string;
   modelAlt?: string;
   className?: string;
+  /**
+   * Titular sobre el buscador.
+   *
+   * Es `ReactNode` y no `string` porque el bloque de Puck lo alimenta con un
+   * campo `richtext`, y Puck entrega esos campos ya convertidos en nodos — el
+   * mismo criterio que `TextoRico` en la intranet.
+   *
+   * Estuvo escrito a mano en el JSX, partido en dos `<h2>`. El contenido de la
+   * portada sí viaja por base de datos, así que este texto era la única parte de
+   * la sección que el editor no podía tocar: aparecía en el JSON guardado como
+   * un prop `heading` que nadie leía. Quien quisiera cambiar la frase tenía que
+   * pedir un despliegue.
+   */
+  titulo?: ReactNode;
+  /** Color de fondo del banner. Vacío conserva el azul de marca. */
+  colorFondo?: string;
 }
 
 export function OcupacionSearchBanner({
@@ -38,6 +54,8 @@ export function OcupacionSearchBanner({
   modelSrc = '/assets/img/modelo-uno.png',
   modelAlt = 'Modelo',
   className = '',
+  titulo,
+  colorFondo,
 }: OcupacionSearchBannerProps) {
   const inputId = useId();
   const isControlled = value !== undefined;
@@ -55,7 +73,12 @@ export function OcupacionSearchBanner({
   }
 
   return (
-    <div className={`relative overflow-hidden w-[98%] min-h-[380px] sm:h-[426px] flex justify-center items-center rounded-[16px] bg-[#001631] px-4 py-6 sm:px-10 sm:py-8 ${className}`}>
+    <div
+      className={`relative overflow-hidden w-[98%] min-h-[380px] sm:h-[426px] flex justify-center items-center rounded-[16px] bg-[#001631] px-4 py-6 sm:px-10 sm:py-8 ${className}`}
+      // El estilo en línea gana a la clase, así que basta ponerlo cuando hay
+      // color elegido: sin él, el azul de marca de `bg-[#001631]` sigue mandando.
+      style={colorFondo ? { backgroundColor: colorFondo } : undefined}
+    >
       {/* Capa inferior: Modelo enmarcando el fondo en móvil y ajustado al 50% en desktop */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
@@ -80,8 +103,24 @@ export function OcupacionSearchBanner({
             {placeholder}
           </label>
           <div className="w-full max-w-[480px] relative">
-            <h2 className='text-white text-[16px] sm:text-[20px] md:text-[24px] font-light italic leading-tight'>Explora las ocupaciones clave de los</h2>
-            <h2 className='text-white mb-4 sm:mb-6 font-bold text-[16px] sm:text-[20px] md:text-[24px] leading-tight'>sectores productivos en Colombia.</h2>
+            {/* El titular editable sustituye a los dos `<h2>` que había aquí
+                escritos a mano. Se conservan como respaldo para quien usa este
+                banner fuera de la portada —`buscador-ocupaciones-view`, que no
+                pasa por Puck y no tiene de dónde sacar un titular—. */}
+            {titulo ? (
+              <div className="text-white mb-4 sm:mb-6 text-[16px] sm:text-[20px] md:text-[24px] leading-tight [&_p]:mb-0">
+                {titulo}
+              </div>
+            ) : (
+              <>
+                <h2 className="text-white text-[16px] sm:text-[20px] md:text-[24px] font-light italic leading-tight">
+                  Explora las ocupaciones clave de los
+                </h2>
+                <h2 className="text-white mb-4 sm:mb-6 font-bold text-[16px] sm:text-[20px] md:text-[24px] leading-tight">
+                  sectores productivos en Colombia.
+                </h2>
+              </>
+            )}
 
             <div className="relative w-full">
               <input

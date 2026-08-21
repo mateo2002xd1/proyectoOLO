@@ -164,23 +164,288 @@ motivo, así que esa lista es además el inventario de dónde está cada comprob
 
 ---
 
-## 4. Checklist de seguridad por requerimiento
+## 4. Seguridad implementada a hoy
+
+> **Qué es esta sección.** Las secciones 2 y 3 describen los controles que el proyecto
+> *debe* tener. Esta describe los que **ya tiene**, verificados contra el código el
+> 2026-08-20, con el archivo donde vive cada uno. Sirve para dos cosas: que nadie
+> reimplemente lo que ya está, y que nadie dé por supuesto lo que todavía no está.
+>
+> La regla de oro de §6 sigue mandando. Aparecer aquí significa "existe en el código y se
+> comprobó", no "el riesgo está cerrado". Lo que está escrito pero aún **no** protege se
+> recoge aparte en §4.8, a propósito: una lista de seguridad que solo enumera aciertos es
+> una forma elegante de mentir.
+
+### 4.1 La convención: qué es público y qué es secreto
+
+Todo el código de frontend se ejecuta en el dispositivo de quien visita el sitio. Está
+descargado en su navegador, se lee con el inspector y se puede ejecutar fuera de nuestra
+página. Minificar no es cifrar: un bundle ofuscado es tan público como el HTML. De ahí la
+única división que importa:
+
+- **Identificador público** — algo que no otorga acceso por sí mismo: una URL, un slug, el
+  id de un informe embebido, el nombre de una cookie. Puede ir al frontend.
+- **Secreto** — cualquier cosa con la que el backend *decide confiar*: el secreto de firma
+  del JWT, credenciales de base de datos, tokens de sesión, contraseñas de servicio, claves
+  de APIs externas. Vive en `.env`, solo en el proceso que lo necesita, y no cruza ni al
+  navegador ni al repositorio.
+
+En Next.js la frontera es literal y no es negociable: **`NEXT_PUBLIC_*` significa "esto se
+inyecta en el bundle del cliente"**. Una variable sin ese prefijo no llega al navegador,
+pero sí queda disponible en el servidor de esa aplicación, y eso no la vuelve secreta por
+sí solo. La pregunta correcta es la otra: *¿esta aplicación necesita este secreto?* Si no
+lo usa, no se le pasa. Un secreto repartido a un servicio que no lo necesita es una copia
+más que alguien puede robar, sin ninguna contrapartida.
+
+Inventario a hoy — **todo** lo que el proyecto expone al cliente:
+
+| Variable | Contenido | Por qué puede ser pública |
+|---|---|---|
+| `NEXT_PUBLIC_API_URL` | URL de la API | Es la dirección a la que el navegador ya va a llamar de todos modos |
+| `NEXT_PUBLIC_SITIO_WEB_URL` | URL del sitio | Enlace entre aplicaciones |
+| `NEXT_PUBLIC_INTRANET_URL`, `NEXT_PUBLIC_INTRANET_EDITOR_URL` | URL de la intranet | Enlace entre aplicaciones |
+| `NEXT_PUBLIC_SITE_URL` | URL canónica | Metadatos y enlaces absolutos |
+
+Las cuatro son direcciones. Ninguna otorga acceso: conocer la URL de la API no autoriza
+nada, porque quien autoriza es el JWT que la API verifica en cada petición (§S3). Ese es el
+criterio para admitir una variable nueva al bundle — no "¿es sensible?", sino **"¿le sirve
+de algo a quien la copie?"**.
+
+Y lo que nunca sale del backend: `JWT_SECRET`, `DATABASE_URL`, `REDIS_URL`, `LOCAL_AUTH_*`
+y la futura API key de CNO/CUOC (§S5).
+
+**Se comprueba, no se supone.** Un secreto filtrado al bundle es invisible en revisión de
+código y evidente en un `grep`. Desde la raíz del repositorio, esto no debe imprimir nada:
+
+```bash
+SECRETO=$(sed -n 's/^JWT_SECRET=//p' api-backend/.env | tr -d '"')
+grep -rl "$SECRETO" sitio-web/.next/static intranet/.next/static
+```
+
+### 4.2 Autenticación y sesión (§S3)
+
+| Control | Dónde vive |
+|---|---|
+| Contraseñas con bcrypt y política única compartida | `packages/password-policy/`, `api-backend/src/shared/password-policy` |
+| El JWT se firma y se verifica **solo** en la API | `use-cases/auth/login.usecase.ts`, `middlewares/auth.middleware.ts` |
+| Token en cookie `httpOnly`, `Secure` en producción, `SameSite=lax` — nunca en `localStorage` | `controllers/auth.controller.ts`, `sitio-web/src/app/api/auth/login/route.ts` |
+| Cookies de sesión separadas por aplicación (`sitio_token` / `token`) | `sitio-web/src/shared/lib/auth-cookies.ts`, aceptadas en `auth.middleware.ts` |
+| Bloqueo de cuenta a los 5 intentos fallidos, 15 minutos | `login.usecase.ts` → `registrarFalloDeLogin` |
+| Estado, bloqueo y caducidad revalidados en **cada** petición, no solo al entrar | `auth.middleware.ts` |
+| Cierre por inactividad verificado en el servidor (20 min) además del aviso del navegador (15 min) | `auth.middleware.ts` + `packages/inactividad/` |
+| Recuperación de contraseña limitada **por correo**, no por IP | `routes/securityQuestion.routes.ts` → `recoverPasswordLimiter` |
+
+Dos decisiones que conviene no deshacer sin entender por qué están:
+
+- **El rol se relee de la fila, nunca del claim del token.** El JWT dura 7 días y lleva
+  dentro el rol que había al iniciar sesión; confiar en él significaba que degradar a
+  alguien no surtía efecto durante una semana. `auth.middleware.ts` lo sustituye por el
+  valor de la base, aprovechando la fila que ya carga para comprobar estado y caducidad —
+  así que no cuesta una consulta extra.
+- **El login no distingue "dominio no institucional" de "usuario inexistente".** Los dos
+  caminos devuelven el mismo 401 genérico, y el del dominio se resuelve *antes* de tocar la
+  base. Diferenciarlos convertiría el formulario en un detector de cuentas.
+
+### 4.3 Autorización (§S4, §S10)
+
+- **Doble capa en toda operación sensible**: middleware de ruta (`requierePermiso*`,
+  `requirePermission`) más la comprobación en el caso de uso. Un fallo en una no abre la
+  otra.
+- **Propiedad de objeto comprobada contra la base** en usuarios, roles, permisos,
+  secciones, contenidos, adjuntos y trabajos en cola. El detalle completo, con la tabla de
+  lo que estaba abierto y dónde se cierra cada cosa, está en §S10.
+- **404 en vez de 403** cuando el objeto no debería ser visible, para no confirmar qué ids
+  existen.
+- **El dueño sale siempre de la sesión, nunca del cuerpo de la petición.**
+
+### 4.4 Contenido y archivos (§S1, §S2)
+
+- **Sanitización server-side del contenido Puck** con DOMPurify sobre jsdom, aplicada al
+  guardar y no al renderizar: `shared/sanitizar-contenido.ts`, invocada desde
+  `use-cases/paginas/guardar-borrador.usecase.ts`. Que el editor sanee también es una
+  segunda capa, no la primera.
+- **Las dos subidas** (`intranet/` y `sitio-web/src/app/api/upload/route.ts`) aplican los
+  cinco controles de §S1: autenticación con verificación **de firma** (`jwtVerify`, no
+  `decodeJwt`), detección de tipo por *magic bytes* ignorando extensión y `Content-Type`,
+  lista blanca con SVG excluido, límite de tamaño en el servidor y renombrado a UUID.
+- **Una sola copia de esa política**, en `packages/upload-policy`. Hasta el 2026-08-20
+  estaba escrita dentro del handler de la intranet y el del sitio no tenía **ninguno** de
+  los cinco: el endurecimiento se aplicó a una app y la otra quedó fuera de vista. Con la
+  política compartida, arreglar una y olvidar la otra deja de ser posible.
+- **Tope de cuerpo de petición**: 1 MB en Express, 10 MB en nginx.
+
+### 4.5 Límites de tasa y abuso automatizado
+
+Implementado el 2026-08-20. Antes de esa fecha había tres limitadores escritos y
+ninguno funcionaba, por un motivo que no se ve leyendo el código de las rutas: los tres
+contaban **por IP**, y la API no veía la IP de nadie.
+
+Dos saltos la borraban. Detrás de nginx el socket que ve Express es el de nginx, y
+faltaba `app.set('trust proxy')` para leer `X-Forwarded-For`. Además, las llamadas del
+sitio web pasan por sus propios route handlers, que abren una petición **nueva** desde
+el servidor: llegaban todas con la IP del contenedor de Next. El efecto no era «un
+límite flojo», era el contrario del que se buscaba — un cubo único compartido por toda
+la institución, donde diez intentos de login fallidos desde un portátil dejaban a todo
+el mundo sin poder entrar durante quince minutos, y a quien abusaba no lo frenaba nada.
+
+**Lo que hay ahora, y por qué cada clave es la que es:**
+
+| Ámbito | Ventana | Clave | Por qué esa clave |
+|---|---|---|---|
+| Techo general de la API | 300 / min | IP real | Suelo para que ninguna ruta quede abierta a un bucle |
+| Login | 10 / 15 min | **correo** | Atacar una cuenta solo penaliza a esa cuenta, y rotar IPs no lo esquiva |
+| Preguntas de seguridad | 10 / 15 min | correo | Mismo flujo, mismo sujeto a proteger |
+| Verificar respuestas | 5 / 15 min | correo | El umbral más bajo: se adivina cuenta por cuenta |
+| Recuperar contraseña | 3 / hora | correo | Ya era así, y era el único que funcionaba |
+| Escrituras del editor | 30 / min | **usuario** | Por IP, una sede entera tras el mismo NAT compartía cupo |
+| Encolar trabajos pesados | 10 / hora | usuario | Encolar cuesta una petición; ejecutar cuesta un worker |
+
+La regla que ordena la tabla: **donde hay sujeto conocido se cuenta por sujeto**, no
+por IP. Una IP no es una persona —se comparte tras un NAT y se rota con un proxy— así
+que como unidad de castigo es a la vez injusta y evitable. El correo y el id de sesión
+sí identifican a quien hay que frenar.
+
+Las tres piezas que hacen que esto funcione están separadas y **ninguna sirve sola**:
+
+1. `app.set('trust proxy', 1)` en `api-backend/src/app.ts`. El 1 significa «confía en
+   un salto»: se toma la dirección de más a la derecha de `X-Forwarded-For`, que es la
+   que escribe nginx con `$proxy_add_x_forwarded_for`. Lo que un visitante inyecte por
+   su cuenta queda a la izquierda y se ignora, así que activarlo no permite falsificar
+   la IP.
+2. Los route handlers del sitio reenvían esa cabecera **sin tocarla**
+   (`sitio-web/src/shared/lib/reenviar-cliente.ts`). Añadir una entrada propia correría
+   la posición y volvería a romper la cuenta.
+3. `api-backend/src/middlewares/rate-limit.middleware.ts` construye todos los
+   limitadores desde una sola fábrica. Estaban repetidos en tres routers, que es como
+   los tres acabaron compartiendo el mismo defecto.
+
+**Almacén en Redis, con conexión propia.** Los contadores se comparten entre réplicas y
+sobreviven a un reinicio; con el almacén en memoria, reiniciar el proceso limpiaba el
+castigo de quien estuviera abusando. La conexión es distinta de la que usan BullMQ y la
+caché a propósito: aquella se abre con `maxRetriesPerRequest: null` porque BullMQ lo
+exige, y con Redis caído encola los comandos para siempre en vez de fallar — un
+limitador montado encima colgaría la API entera al primer parpadeo de Redis. Esta falla
+rápido, y `passOnStoreError` deja pasar la petición: perder el límite es malo, convertir
+una caída de Redis en una caída de la API es peor.
+
+**Barrera en nginx, delante de Node** (`limit_req_zone` a 20 r/s con ráfaga de 40, más
+`limit_conn`). No sustituye a lo anterior: cuenta por IP, que es lo que aquí sí es
+fiable —nginx es el primer salto, no hay cabecera que falsificar— y su trabajo es que
+una inundación no llegue siquiera a despertar al proceso.
+
+**Amplificación por caché, cerrada.** `cacheInterceptor` construía la clave con
+`req.originalUrl` entera, querystring incluida, así que `?x=1`, `?x=2`… generaban claves
+distintas hasta el infinito: cada una era un fallo de caché —consulta a la base— y
+además una entrada nueva en Redis con su TTL. Un visitante anónimo convertía la caché en
+un amplificador contra la base de datos y en un agotamiento de memoria a la vez. Ahora
+la clave se construye desde la ruta más una **lista blanca** de parámetros declarada en
+cada uso, y lo desconocido se ignora: `?cachebust=N` resuelve a la misma entrada que la
+petición sin parámetros. A cambio, toda variable que lea un handler cacheado tiene que
+estar declarada, o dos respuestas distintas compartirían entrada.
+
+### 4.6 Transporte y cabeceras (§3)
+
+Helmet en la API; CORS restringido a los dos orígenes de los frontends con `credentials`,
+nunca `*`; y en nginx TLS 1.2/1.3 con suites modernas, redirección completa de 80 a 443,
+HSTS, `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff` y
+`Referrer-Policy: strict-origin-when-cross-origin`.
+
+### 4.7 Datos, errores y secretos en reposo
+
+- **Sin SQL crudo en las rutas.** Todo pasa por Sequelize con parámetros; las únicas
+  consultas literales están en las migraciones, sobre nombres de tabla constantes.
+- **Los 500 se sanean en producción** (`middlewares/error.middleware.ts`): el stack solo se
+  imprime fuera de producción.
+- **La paginación de auditoría tiene tope**, para que `?limit=1000000` no sea una petición
+  válida contra la tabla que más crece.
+- **`.env` en `.gitignore` y nunca commiteado** — verificado sobre el historial completo,
+  no solo sobre el árbol de trabajo.
+- **Ningún secreto en los archivos versionados.** Hasta el 2026-08-20 `docker-compose.yml`
+  llevaba en claro el `JWT_SECRET` real —el mismo del `.env`, con el que se firma cualquier
+  sesión— y la contraseña de la cuenta maestra. Los valores se rotaron y ahora se
+  interpolan desde el `.env` de la raíz (plantilla en `.env.example`). Los antiguos siguen
+  en el historial de git y están quemados: ver §4.8.
+- **Ningún secreto en argumentos de build.** `sitio-web/Dockerfile` recibía `JWT_SECRET`
+  como `ARG`, que queda grabado en la caché de capas. El build de Next no lo lee; solo lo
+  usa el handler de subida en ejecución, así que ahora se inyecta en ejecución y nada más.
+- **Validación de entrada con Zod** en el alta y edición de usuarios y en el guardado de
+  borradores (`middlewares/validar.middleware.ts`). Los esquemas son `.strict()`: `createUser`
+  pasaba a Sequelize todo lo que no desestructuraba, así que el cuerpo de la petición podía
+  escribir columnas que nadie pretendió exponer. Cobertura parcial, ver §4.8.
+
+### 4.8 Lo que sigue abierto
+
+Los seis puntos que ocupaban esta sección antes del 2026-08-20 están cerrados y
+repartidos por §4.1 a §4.7. Lo que queda, y por qué queda:
+
+- **La firma del secreto viejo sigue en el historial de git.** `JWT_SECRET`,
+  `LOCAL_AUTH_PASSWORD` y la contraseña de Postgres se rotaron y salieron de
+  `docker-compose.yml`, pero borrar un archivo no borra los commits anteriores.
+  Mientras el historial no se reescriba, cualquiera con acceso al repositorio puede
+  leer los valores antiguos: **están quemados y no deben reutilizarse en ningún
+  entorno**. Reescribir el historial es una decisión con coste —invalida los clones de
+  todo el equipo— y por eso no se hizo sin acordarlo.
+- **`/api/` de nginx tapa los route handlers de Next.** `location /api/` manda todo ese
+  prefijo a Express, que no conoce `/api/auth/login`, `/api/upload` ni `/api/users` — en
+  producción responderían 404. Hay que decidir el prefijo antes de desplegar (lo natural
+  es exponer la API como `/api-backend/`, que es lo que ya hace la intranet). Anotado en
+  `nginx/nginx.conf`.
+- **La API escucha en `127.0.0.1`.** Correcto si nginx corre en la misma máquina;
+  incompatible con la topología de `docker-compose`, donde los servicios se hablan por
+  nombre de red. Depende de cómo se despliegue de verdad, así que no se cambia a ciegas:
+  abrirlo a `0.0.0.0` amplía la exposición y esa decisión no es del código.
+- **`client_max_body_size` está en 10M y la política de subida admite 50 MB** para
+  documentos. Hoy nginx cortaría antes. Hay que igualar los dos números en la dirección
+  que se decida.
+- **Las subidas siguen dentro del webroot** (`public/uploads`). §S1 pide almacenarlas
+  fuera y servirlas por un endpoint controlado; sigue siendo la deuda técnica anotada en
+  los dos handlers. El riesgo inmediato —cualquiera subiendo cualquier cosa— está
+  cerrado; el estructural no.
+- **Zod cubre usuarios y borradores de página, no toda la API.** Es donde estaban el
+  *mass assignment* y la entrada más grande, pero §3 dice «todo endpoint que reciba
+  datos». Los que faltan siguen leyendo `req.body` directo.
+- **`middleware.ts` de Next usa `decodeJwt`, que no verifica la firma**, y el rol del
+  sitio sale de la cookie `sitio_role`, que no es `httpOnly`. Esto **es intencionado** y
+  no un pendiente: son decisiones de qué pantalla pintar, y §0.4 dice que quien autoriza
+  es la API. Está aquí para que nadie lo confunda con un control de acceso y le cuelgue
+  reglas nuevas — los route handlers que sí tienen efecto (`/api/upload` en las dos
+  apps) usan `jwtVerify` con firma comprobada, no esto.
+
+### 4.9 Cómo se verifica
+
+El proyecto comprueba sus propias reglas con scripts, no con memoria. Desde `api-backend/`:
+
+| Comando | Qué afirma |
+|---|---|
+| `npm run propiedad:verificar` | Que ninguna ruta con parámetro de objeto llegue al controlador solo con `requireAuth` |
+| `npm run permisos:verificar` | Que las policies coincidan con los nombres de rol reales de la tabla `roles` |
+| `npm run ambito:verificar` | Que toda escritura declare su ámbito |
+| `npm run auditoria:verificar` | Que las operaciones auditables dejen registro |
+| `npm run password:verificar` | Que la política de contraseñas se aplique en todos los caminos |
+| `npm run email:verificar` | Que el dominio institucional se exija donde debe |
+
+Un control que no tiene forma de comprobarse vuelve a romperse en el siguiente cambio. Al
+añadir uno nuevo a esta sección, añadir también cómo se verifica.
+
+---
+
+## 5. Checklist de seguridad por requerimiento
 
 | RF | Control obligatorio antes de producción | Estado |
 |---|---|---|
 | RF-01 | Sanitizar HTML de Editor.js en el servidor | ✅ `sanitizarContenidoPuck()` en `guardar-borrador.usecase.ts` — 2026-08-11 |
-| RF-02 | Validar magic bytes, sanitizar SVG, renombrar a UUID, tamaño en servidor, fuera del webroot | ✅ `/api/upload` con `file-type`, lista blanca, UUID rename, límites — 2026-08-11 |
+| RF-02 | Validar magic bytes, sanitizar SVG, renombrar a UUID, tamaño en servidor, fuera del webroot | 🟡 Parcial: la subida de la **intranet** cumple los cinco controles (`file-type`, lista blanca, UUID, límites, auth con firma) — 2026-08-11. La de **sitio-web** aplica los mismos desde 2026-08-20 vía `packages/upload-policy`. Ambas siguen escribiendo dentro del webroot — ver §4.8 |
 | RF-04/05/06 | Doble capa RBAC (ruta + policy) aplicada en TODA operación sensible | ✅ Extendido a usuarios, roles, permisos, secciones, contenidos, adjuntos y trabajos; propiedad de objeto comprobada contra la BD — `npm run propiedad:verificar` — 2026-08-17 |
 | RF-08 | Lista blanca de dominios de iframe + validación de URL en servidor + sandbox | ⏳ Pendiente implementación completa |
 | RF-09 | API key solo en backend, nunca expuesta al frontend | ⏳ Pendiente al construir buscador CNO |
 | RF-12 | Verificar estado `publicado` en el endpoint de descarga | 🟡 Parcial: `GET /api/contenidos/:id` y sus adjuntos ya devuelven 404 si no está publicado y no eres el autor — 2026-08-17. Falta el endpoint de descarga de fichero cuando exista |
 | RF-13 | Aceptación registrada + sanitización + aviso Ley 1581 vigente | ⏳ Pendiente al implementar formularios |
-| RF-16 | Caducidad verificada en backend, cookies httpOnly/Secure, política de contraseña definida, rate limiting | ✅ Rate limiting — 2026-08-11. Cierre por inactividad 15 min cliente / 20 min API — 2026-08-18 |
+| RF-16 | Caducidad verificada en backend, cookies httpOnly/Secure, política de contraseña definida, rate limiting | ✅ Caducidad, cookies y política. Cierre por inactividad 15 min cliente / 20 min API — 2026-08-18. Rate limiting operativo desde 2026-08-20: `trust proxy`, claves por correo y por usuario, almacén en Redis y barrera en nginx — ver §4.5 |
 | RF-17 | Respaldos cifrados, ubicación restringida, restauración probada | ⏳ Pendiente implementación |
 
 ---
 
-## 5. Prioridad de implementación (por severidad)
+## 6. Prioridad de implementación (por severidad)
 
 ```
 1. S1 Subida de archivos      → CRÍTICO, además hoy es un stub (bloquea RF-02 de forma segura)

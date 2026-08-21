@@ -3,7 +3,8 @@ import type { ComponentType, ReactNode } from 'react';
 export interface ServiceItem {
   id: string;
   title: string;
-  description: string;
+  /** Campo `richtext` de Puck: llega ya convertido en nodos, no como texto. */
+  description: ReactNode;
 }
 
 interface ServicesProps {
@@ -162,7 +163,7 @@ export function Services({
               </div>
               <div className="olo-service-body">
                 <h3 className="olo-service-title">{service.title}</h3>
-                <p className="olo-service-description">{service.description}</p>
+                <div className="olo-service-description">{service.description}</div>
               </div>
             </article>
           ))}

@@ -1,20 +1,45 @@
-import { resaltar } from './resaltar';
+import type { ReactNode } from 'react';
+import { TituloRico } from './titulo-rico';
 
 export interface PortalItem {
   id: string;
   label: string;
-  description: string;
+  /** Texto enriquecido: llega como nodos desde el campo `richtext` de Puck. */
+  description: ReactNode;
   href: string;
-  gradient: string;
+  /** Degradado en CSS. Heredado: lo sustituyen `colorInicio` y `colorFin`. */
+  gradient?: string;
+  colorInicio?: string;
+  colorFin?: string;
   /** Ilustración de fondo. Se pinta al 60% sobre el degradado. */
   imagen?: string;
 }
 
 interface ExternalPortalsProps {
   block: { id: string };
-  title?: string;
+  /** Campo `richtext` de Puck: llega ya convertido en nodos. */
+  title?: ReactNode;
   subtitle?: string;
   portals?: PortalItem[];
+}
+
+/**
+ * Fondo de una tarjeta.
+ *
+ * Los dos colores mandan cuando están puestos; si no, se usa el `gradient` que
+ * la tarjeta trajera escrito a mano. Ese respaldo es lo que permite añadir los
+ * selectores sin migrar las tarjetas ya guardadas de golpe: las viejas siguen
+ * pintándose igual hasta que alguien las abra y elija colores.
+ *
+ * Se mantiene el mismo ángulo de 135° que usaban todos los degradados escritos
+ * a mano, para que las tarjetas nuevas queden alineadas con las existentes.
+ */
+function fondoDePortal(portal: PortalItem): string | undefined {
+  const { colorInicio, colorFin, gradient } = portal;
+  if (colorInicio && colorFin) {
+    return `linear-gradient(135deg, ${colorInicio} 0%, ${colorFin} 100%)`;
+  }
+  return gradient;
 }
 
 const DEFAULT_PORTALS: PortalItem[] = [
@@ -22,7 +47,12 @@ const DEFAULT_PORTALS: PortalItem[] = [
     id: 'pqrs',
     label: 'PQRS',
     description:
-      '**Registrar tus peticiones, quejas, reclamos y sugerencias**. Tu participación es fundamental para seguir mejorando.',
+      (
+        <>
+          <strong>Registrar tus peticiones, quejas, reclamos y sugerencias</strong>. Tu
+          participación es fundamental para seguir mejorando.
+        </>
+      ),
     href: '#',
     gradient: 'linear-gradient(135deg, #0b4ea2 0%, #0a2f6b 100%)',
     imagen: '/assets/img/pqrs.png',
@@ -31,7 +61,12 @@ const DEFAULT_PORTALS: PortalItem[] = [
     id: 'denuncias',
     label: 'Denuncias por corrupción',
     description:
-      '**Reportar actos de corrupción** por un canal seguro. Tu identidad será protegida en todo momento.',
+      (
+        <>
+          <strong>Reportar actos de corrupción</strong> por un canal seguro. Tu identidad
+          será protegida en todo momento.
+        </>
+      ),
     href: '#',
     gradient: 'linear-gradient(135deg, #0d1526 0%, #1a2e50 100%)',
     imagen: '/assets/img/corrupcion.png',
@@ -40,7 +75,12 @@ const DEFAULT_PORTALS: PortalItem[] = [
     id: 'transparencia',
     label: 'Transparencia',
     description:
-      '**Consultar información pública** y datos abiertos del observatorio, con rendición de cuentas al día.',
+      (
+        <>
+          <strong>Consultar información pública</strong> y datos abiertos del
+          observatorio, con rendición de cuentas al día.
+        </>
+      ),
     href: '#',
     gradient: 'linear-gradient(135deg, #1478c6 0%, #0d4f8b 100%)',
     imagen: '/assets/img/transparencia.png',
@@ -63,7 +103,11 @@ const DEFAULT_PORTALS: PortalItem[] = [
  */
 export function ExternalPortals({
   block,
-  title = '**Portales externos** de la ciudadanía',
+  title = (
+    <>
+      <strong>Portales externos</strong> de la ciudadanía
+    </>
+  ),
   subtitle,
   portals = DEFAULT_PORTALS,
 }: ExternalPortalsProps) {
@@ -71,7 +115,7 @@ export function ExternalPortals({
     <section className="olo-portals" id="external-portals" aria-label="Portales externos" data-block-id={block.id}>
       <div className="olo-portals-inner">
         <div className="olo-portals-header">
-          {title && <h2 className="olo-portals-title">{resaltar(title)}</h2>}
+          {title && <TituloRico className="olo-portals-title">{title}</TituloRico>}
           {subtitle && <p className="olo-portals-subtitle">{subtitle}</p>}
         </div>
 
@@ -82,7 +126,7 @@ export function ExternalPortals({
               href={portal.href}
               className="olo-portal-card"
               id={`portal-${portal.id}`}
-              style={{ background: portal.gradient }}
+              style={{ background: fondoDePortal(portal) }}
             >
               {portal.imagen && (
                 <span
@@ -94,7 +138,7 @@ export function ExternalPortals({
 
               <span className="olo-portal-content">
                 <span className="olo-portal-label">{portal.label}</span>
-                <span className="olo-portal-description">{resaltar(portal.description)}</span>
+                <div className="olo-portal-description">{portal.description}</div>
               </span>
             </a>
           ))}

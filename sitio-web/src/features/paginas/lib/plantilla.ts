@@ -4,7 +4,7 @@
  * Hasta ahora los dos estaban escritos a mano en `app/(public)/layout.tsx`, así
  * que cambiar un enlace del menú era tocar código y desplegar. Ahora existe una
  * página, `plantilla`, que los guarda como bloques de Puck y se edita como
- * cualquier otra —en `/admin/editor/plantilla`, con su borrador, su revisión y su
+ * cualquier otra —en `/admin/editor/menu-y-pie`, con su borrador, su revisión y su
  * aprobación—: lo que se guarde ahí se ve en todo el sitio.
  *
  * Es el mismo modelo que la intranet (`intranet/src/features/gestor-secciones/
@@ -19,7 +19,7 @@ import { obtenerPaginaPublicadaCacheada } from '../services/paginas.service';
 import type { Bloque } from '../types';
 
 /** Slug de la página que guarda la cabecera y el pie comunes. */
-export const SLUG_PLANTILLA = 'plantilla';
+export const SLUG_PLANTILLA = 'menu-y-pie';
 
 /** `block` lo inyecta el layout para identificar el nodo, no se guarda. */
 type PropsCabecera = Omit<ComponentProps<typeof Header>, 'block'>;

@@ -14,7 +14,25 @@ export default async function PublicPage({
     puedeEditarPaginas(),
   ]);
 
-  if (!pagina || !pagina.contenido) notFound();
+  // Sin versión aprobada no hay nada que enseñar. A quien visita el sitio eso es un
+  // 404 y punto; a quien puede editar se le da la entrada al editor, porque el caso
+  // normal es una sección recién creada que todavía está vacía —y mandarla a un 404
+  // duro justo después de crearla es la peor manera de contarlo. Es el mismo trato
+  // que ya da el comodín de la intranet.
+  if (!pagina || !pagina.contenido) {
+    if (!puedeEditar) notFound();
+
+    return (
+      <div style={{ padding: '4rem 2rem', textAlign: 'center' }}>
+        <h1>Esta página todavía no tiene contenido</h1>
+        <p>
+          No se ha publicado nada en <code>/{slug}</code>. Cuando la llenes y se apruebe,
+          se verá aquí.
+        </p>
+        <EditButton slug={slug} hasPermission={puedeEditar} volverA={`/${slug}`} />
+      </div>
+    );
+  }
 
   // El contenido legado se guardaba como Bloque[] plano; Puck espera { content, root }
   const data: Data = Array.isArray(pagina.contenido)

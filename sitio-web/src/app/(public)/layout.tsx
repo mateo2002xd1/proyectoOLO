@@ -1,6 +1,11 @@
 import { Header } from '@/shared/lib/blocks/Header';
 import { Footer } from '@/shared/lib/blocks/Footer';
-import { obtenerPlantilla, PlantillaEditButton } from '@/features/paginas';
+import {
+  EliminarSeccionButton,
+  NuevaSeccionButton,
+  obtenerPlantilla,
+  PlantillaEditButton,
+} from '@/features/paginas';
 
 /**
  * Marco común de todo el sitio público: cabecera arriba, pie abajo.
@@ -28,6 +33,12 @@ export default async function PublicLayout({ children }: { children: React.React
       {plantilla.pie && <Footer block={{ id: 'footer-plantilla' }} />}
 
       <PlantillaEditButton />
+      {/* Resuelve su permiso en el cliente por lo mismo que el de arriba: leerlo aquí
+          volvería dinámicas todas las páginas del sitio. */}
+      <NuevaSeccionButton />
+      {/* Se esconde solo en las páginas de fábrica y sin el permiso: lo decide el propio
+          componente, que también resuelve el permiso en cliente. */}
+      <EliminarSeccionButton />
     </div>
   );
 }

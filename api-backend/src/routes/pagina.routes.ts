@@ -1,9 +1,15 @@
 import { Router } from 'express';
-import rateLimit from 'express-rate-limit';
 import { PaginaController } from '../controllers/pagina.controller';
 import { requireAuth } from '../middlewares/auth.middleware';
 import { cacheInterceptor } from '../middlewares/cache.middleware';
 import { requierePermisoPagina } from '../middlewares/permisos.middleware';
+import { limitadorDeEscritura } from '../middlewares/rate-limit.middleware';
+import { validarCuerpo } from '../middlewares/validar.middleware';
+import {
+  crearSeccionSchema,
+  eliminarSeccionSchema,
+  guardarBorradorSchema,
+} from '../validators/paginas.validators';
 import {
   requirePermission,
   requierePermisoDeSeccion,
@@ -13,25 +19,18 @@ import { AMBITO_HEADER } from '../shared/ambito';
 const router = Router();
 
 /**
- * Rate limiting para operaciones de escritura de páginas.
+ * Las escrituras del editor las limita `limitadorDeEscritura`, definido en
+ * `rate-limit.middleware.ts` junto a los demás.
  *
- * Los límites son generosos para no interferir con el autosave del editor
- * (que puede guardar cada pocos segundos), pero lo suficientemente bajos para
- * detectar abuso automatizado.
- *
- * Se aplica por IP. Para granularidad por usuario, añadir keyGenerator con
- * req.user?.id una vez que el middleware de auth haya corrido antes.
+ * El TODO que había aquí —«se aplica por IP; para granularidad por usuario, añadir
+ * keyGenerator con req.user?.id»— ya está hecho: la fábrica cuenta por sesión cuando
+ * la hay, y estas rutas van todas después del `requireAuth` de abajo, así que la hay.
+ * Contar por IP era especialmente malo justo en este endpoint: una sede entera detrás
+ * del mismo NAT compartía las treinta escrituras por minuto entre todos sus editores,
+ * y el autoguardado se las gastaba solo.
  *
  * @see openspec/changes/qa-seguridad-vistas-intranet/specs/qa-intranet-rbac-enforcement/spec.md
  */
-const escrituraLimiter = rateLimit({
-  windowMs: 60 * 1000,        // ventana de 1 minuto
-  max: 30,                     // máx 30 escrituras por minuto por IP
-  message: { error: 'Demasiadas solicitudes de escritura. Espera un momento antes de continuar.' },
-  standardHeaders: true,
-  legacyHeaders: false,
-  skip: (req) => req.user?.role?.toLowerCase() === 'superadmin', // superadmin no tiene límite
-});
 
 // El ámbito entra en la clave de caché: `/publica/inicio` devuelve una página
 // distinta según la pida el sitio o la intranet.
@@ -55,6 +54,50 @@ router.use(requireAuth);
  * de permisos existe para poder decir. La primera se conserva porque sigue siendo cierta
  * y porque un fallo en una no debe abrir la otra (§0.2 de 3-seguridad-del-proyecto.md).
  */
+/**
+ * Crear una sección.
+ *
+ * No lleva `requierePermisoDeSeccion()` —y no es un olvido—: ese middleware exige que
+ * la sección ya exista, así que aplicarlo aquí haría imposible crear la primera. El
+ * poder que reparte esta ruta lo controla `secciones.crear`, que es una clave fija y
+ * por tanto sí se puede exigir antes de saber de qué sección hablamos.
+ *
+ * Va antes que `/:slug/...` por costumbre de lectura, no por necesidad: Express
+ * distingue `POST /` de `POST /:slug/borrador` por la forma de la ruta, no por el
+ * orden.
+ */
+router.post(
+  '/',
+  limitadorDeEscritura,
+  requierePermisoPagina('puedeEditar'),
+  requirePermission('secciones.crear'),
+  validarCuerpo(crearSeccionSchema),
+  PaginaController.crearSeccion
+);
+
+/**
+ * Eliminar una sección, y su consulta previa.
+ *
+ * Van con `secciones.eliminar` y **no** con `requierePermisoDeSeccion()`, que sería lo
+ * natural pero aquí hace daño: ese middleware exige la clave `editar.{ambito}.{slug}`,
+ * que solo tiene el rol que creó la sección. Un administrador que llega a limpiar algo
+ * que no creó él se quedaría fuera de la única ruta que sirve para limpiarlo.
+ */
+router.get(
+  '/:slug/eliminable',
+  requierePermisoPagina('puedeEditar'),
+  requirePermission('secciones.eliminar'),
+  PaginaController.analizarEliminacion
+);
+router.delete(
+  '/:slug',
+  limitadorDeEscritura,
+  requierePermisoPagina('puedeEditar'),
+  requirePermission('secciones.eliminar'),
+  validarCuerpo(eliminarSeccionSchema),
+  PaginaController.eliminarSeccion
+);
+
 router.get(
   '/:slug/editable',
   requierePermisoPagina('puedeEditar'),
@@ -63,16 +106,20 @@ router.get(
 );
 router.post(
   '/:slug/borrador',
-  escrituraLimiter,
+  limitadorDeEscritura,
   requierePermisoPagina('puedeEditar'),
   requierePermisoDeSeccion(),
+  // La validación va después de los permisos y no antes: a quien no puede editar esta
+  // sección se le responde 403 sin mirarle el cuerpo, que es más barato y no le confirma
+  // qué forma espera el endpoint.
+  validarCuerpo(guardarBorradorSchema),
   PaginaController.guardarBorrador
 );
 // Enviar a revisión pide además el permiso propio: se puede querer que alguien redacte
 // borradores sin poder meterlos en la cola de aprobación.
 router.patch(
   '/:slug/enviar-revision',
-  escrituraLimiter,
+  limitadorDeEscritura,
   requierePermisoPagina('puedeEditar'),
   requierePermisoDeSeccion(),
   requirePermission('editor.enviar-revision'),

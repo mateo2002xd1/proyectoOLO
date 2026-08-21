@@ -17,14 +17,17 @@
 
 import { redirect } from "next/navigation";
 import { obtenerSesion, puedeEditarPaginas } from "@/shared/lib/sesion";
+import { AvisoSeccionNueva } from "@/features/gestor-secciones";
 import { EditorClient } from "./editor-client";
 
 export default async function EditorPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ nueva?: string }>;
 }) {
-  const { slug } = await params;
+  const [{ slug }, { nueva }] = await Promise.all([params, searchParams]);
 
   // Verificación de sesión server-side — sin sesión no se monta nada del editor.
   const sesion = await obtenerSesion();
@@ -39,5 +42,12 @@ export default async function EditorPage({
     redirect(`/${slug}`);
   }
 
-  return <EditorClient slug={slug} />;
+  return (
+    <>
+      {/* Solo al venir de «Nueva sección»: es donde se entrega el enlace de la ruta
+          recién creada, que es lo que hay que pegar en el menú para poder llegar. */}
+      {nueva === "1" && <AvisoSeccionNueva slug={slug} />}
+      <EditorClient slug={slug} />
+    </>
+  );
 }

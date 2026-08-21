@@ -20,6 +20,7 @@ import {
   CLAVES_DEL_CATALOGO,
   SECCIONES_POR_AMBITO,
   claveDeSeccion,
+  partesDeClaveDeSeccion,
 } from '../src/shared/catalogo-permisos';
 
 const clavesDeEdicion = (ambito: 'sitio' | 'intranet') =>
@@ -89,10 +90,29 @@ const sembrar = async (): Promise<void> => {
 
   // 2. Baja de lo que sobra. Es la mitad que faltaba: sin esto, una clave retirada del
   //    catálogo seguía viva en la base y el panel la seguía ofreciendo.
-  const sobrantes = await consultar<{ clave: string }>(
-    'SELECT clave FROM permisos WHERE clave NOT IN (:claves)',
-    { claves: CLAVES_DEL_CATALOGO }
+  //
+  //    Con una excepción que hay que respetar: las secciones creadas desde el editor.
+  //    Su clave `editar.{ambito}.{slug}` no puede estar en el catálogo —nadie la
+  //    escribió en código— y sin esta salvaguarda correr el sembrador borraba el
+  //    permiso de todas ellas, y con él (por el DELETE de `roles_permisos` de abajo)
+  //    las concesiones. Se conserva mientras su página siga existiendo; si la página
+  //    se borró, la clave sí sobra y se retira como cualquier otra.
+  const paginasVivas = await consultar<{ ambito: string; slug: string }>(
+    'SELECT ambito, slug FROM paginas'
   );
+  const seccionesVivas = new Set(
+    paginasVivas.map(({ ambito, slug }) => claveDeSeccion(ambito as 'sitio' | 'intranet', slug))
+  );
+
+  const esDeSeccionViva = (clave: string) =>
+    partesDeClaveDeSeccion(clave) !== null && seccionesVivas.has(clave);
+
+  const sobrantes = (
+    await consultar<{ clave: string }>('SELECT clave FROM permisos WHERE clave NOT IN (:claves)', {
+      claves: CLAVES_DEL_CATALOGO,
+    })
+  ).filter(({ clave }) => !esDeSeccionViva(clave));
+
   for (const { clave } of sobrantes) {
     await sequelize.query(
       `DELETE FROM roles_permisos WHERE permiso_id IN (SELECT id FROM permisos WHERE clave = :clave)`,
@@ -127,7 +147,12 @@ const sembrar = async (): Promise<void> => {
     const claveActual = new Set(actuales.map((f) => f.clave));
 
     const porAsignar = esperados.filter((c) => !claveActual.has(c));
-    const porRevocar = [...claveActual].filter((c) => !esperados.includes(c));
+    // Las secciones creadas desde el editor no se revocan: `PERMISOS_POR_ROL` no puede
+    // nombrarlas y tratarlas como sobrantes dejaría sin acceso, cada vez que se corre
+    // el sembrador, a quien creó una sección — incluido el rol que la estrenó.
+    const porRevocar = [...claveActual].filter(
+      (c) => !esperados.includes(c) && !esDeSeccionViva(c)
+    );
 
     console.log(`\n  [${nombre}]`);
     if (porAsignar.length === 0 && porRevocar.length === 0) {

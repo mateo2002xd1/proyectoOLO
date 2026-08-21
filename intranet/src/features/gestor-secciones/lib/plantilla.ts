@@ -12,7 +12,7 @@
  *
  * Ahora existe una sola página, `plantilla`, que los guarda una vez, y
  * `app/(secciones)/layout.tsx` los pinta alrededor de todas las secciones.
- * Se edita como cualquier otra página —en `/editor/plantilla`, con su borrador,
+ * Se edita como cualquier otra página —en `/editor/menu-y-pie`, con su borrador,
  * su revisión y su aprobación—, y lo que se guarde ahí se ve en las cinco.
  */
 import type { ComponentProps } from 'react';
@@ -21,7 +21,7 @@ import type { IntranetFooter } from '@/shared/lib/blocks/plantilla/IntranetFoote
 import { obtenerPaginaPublicada } from '../api/paginas.api';
 
 /** Slug de la página que guarda la barra y el pie comunes. */
-export const SLUG_PLANTILLA = 'plantilla';
+export const SLUG_PLANTILLA = 'menu-y-pie';
 
 /** `onLogout` e `isLoading` los inyecta `IntranetTopbarWrapper`, no se guardan. */
 type PropsTopbar = Omit<ComponentProps<typeof IntranetTopbar>, 'onLogout' | 'isLoading'>;

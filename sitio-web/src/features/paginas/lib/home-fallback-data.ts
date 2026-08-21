@@ -6,10 +6,14 @@ export const homeFallbackData: Data = {
       type: 'Hero',
       props: {
         id: 'hero-static',
-        heading: 'Explora las ocupaciones clave de los sectores productivos en Colombia.',
+        titulo:
+          '<p><em>Explora las ocupaciones clave de los</em> <strong>sectores productivos en Colombia.</strong></p>',
         searchPlaceholder: 'Buscar ocupación, código o denominación',
         imageUrl: '/assets/img/nos-ocupa-el-pais.png',
         imageAlt: 'Nos ocupa el país',
+        modelSrc: '/assets/img/modelo-uno.png',
+        modelAlt: 'Modelo',
+        colorFondo: '',
       },
     },
     {
@@ -21,17 +25,17 @@ export const homeFallbackData: Data = {
           {
             id: 'monitoreo',
             title: 'Monitoreo del Mercado',
-            description: 'Seguimiento riguroso de fuentes de información laboral nacional',
+            description: '<p>Seguimiento riguroso de fuentes de información laboral nacional</p>',
           },
           {
             id: 'orientacion',
             title: 'Orientación y Formación',
-            description: 'Apoyo a la definición de acciones de capacitación, emprendimiento y empleo',
+            description: '<p>Apoyo a la definición de acciones de capacitación, emprendimiento y empleo</p>',
           },
           {
             id: 'alertas',
             title: 'Generación de Alertas',
-            description: 'Identificación de proyectos de inversión y alertas regionales y sectoriales',
+            description: '<p>Identificación de proyectos de inversión y alertas regionales y sectoriales</p>',
           },
         ],
       },
@@ -50,7 +54,7 @@ export const homeFallbackData: Data = {
       type: 'RecursosVisualesBloque',
       props: {
         id: 'recursos-visuales-static',
-        titulo: '**Recursos** visuales',
+        titulo: '<p><strong>Recursos</strong> visuales</p>',
         videos: [
           {
             youtubeId: 'm1h4tcLAmEk',
@@ -91,7 +95,7 @@ export const homeFallbackData: Data = {
       type: 'Publicaciones',
       props: {
         id: 'publicaciones-static',
-        titulo: '**Ultimas** publicaciones',
+        titulo: '<p><strong>Ultimas</strong> publicaciones</p>',
         porPagina: 4,
         publicaciones: [
           {
@@ -143,35 +147,38 @@ export const homeFallbackData: Data = {
       type: 'ExternalPortals',
       props: {
         id: 'portals-static',
-        title: '**Portales externos** de la ciudadanía',
+        title: '<p><strong>Portales externos</strong> de la ciudadanía</p>',
         subtitle: '',
         portals: [
           {
             id: 'pqrs',
             label: 'PQRS',
             description:
-              '**Registrar tus peticiones, quejas, reclamos y sugerencias**. Tu participación es fundamental para seguir mejorando.',
+              '<p><strong>Registrar tus peticiones, quejas, reclamos y sugerencias</strong>. Tu participación es fundamental para seguir mejorando.</p>',
             href: '#',
             imagen: '/assets/img/pqrs.png',
-            gradient: 'linear-gradient(135deg, #0b4ea2 0%, #0a2f6b 100%)',
+            colorInicio: '#0b4ea2',
+            colorFin: '#0a2f6b',
           },
           {
             id: 'denuncias',
             label: 'Denuncias por corrupción',
             description:
-              '**Reportar actos de corrupción** por un canal seguro. Tu identidad será protegida en todo momento.',
+              '<p><strong>Reportar actos de corrupción</strong> por un canal seguro. Tu identidad será protegida en todo momento.</p>',
             href: '#',
             imagen: '/assets/img/corrupcion.png',
-            gradient: 'linear-gradient(135deg, #0d1526 0%, #1a2e50 100%)',
+            colorInicio: '#0d1526',
+            colorFin: '#1a2e50',
           },
           {
             id: 'transparencia',
             label: 'Transparencia',
             description:
-              '**Consultar información pública** y datos abiertos del observatorio, con rendición de cuentas al día.',
+              '<p><strong>Consultar información pública</strong> y datos abiertos del observatorio, con rendición de cuentas al día.</p>',
             href: '#',
             imagen: '/assets/img/transparencia.png',
-            gradient: 'linear-gradient(135deg, #1478c6 0%, #0d4f8b 100%)',
+            colorInicio: '#1478c6',
+            colorFin: '#0d4f8b',
           },
         ],
       },

@@ -15,7 +15,7 @@
  *   2. Quita esos dos bloques del contenido publicado de las cinco secciones.
  *
  * A partir de ahí las pinta `intranet/src/app/(secciones)/layout.tsx`, una sola
- * vez para todas, y se editan en `/editor/plantilla`.
+ * vez para todas, y se editan en `/editor/menu-y-pie`.
  *
  * Recorre el ciclo editorial normal (borrador → revisión → aprobación) en vez de
  * tocar filas a mano, para que cada cambio quede registrado como cualquier otro.
@@ -31,11 +31,9 @@ import { guardarBorrador } from '../src/use-cases/paginas/guardar-borrador.useca
 import { enviarARevision } from '../src/use-cases/paginas/enviar-a-revision.usecase';
 import { aprobarPagina } from '../src/use-cases/paginas/aprobar-pagina.usecase';
 import { PaginaRepository } from '../src/repositories/pagina.repository';
+import { SLUG_PLANTILLA } from '../src/shared/catalogo-permisos';
 
 const AMBITO = 'intranet' as const;
-
-/** Debe coincidir con `SLUG_PLANTILLA` de `intranet/src/features/paginas/lib/plantilla.ts`. */
-const SLUG_PLANTILLA = 'plantilla';
 
 /** Los bloques que dejan de vivir dentro de cada sección. */
 const BLOQUES_DE_PLANTILLA = ['IntranetTopbar', 'IntranetFooter'];

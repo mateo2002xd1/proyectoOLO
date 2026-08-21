@@ -7,7 +7,7 @@
  * como la acción secundaria que es.
  *
  * Es cliente solo para saber desde qué ruta se abrió y poder volver a ella al
- * salir del editor: `/plantilla` no es una página que se pueda visitar.
+ * salir del editor: `/menu-y-pie` no es una página que se pueda visitar.
  */
 'use client';
 

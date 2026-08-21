@@ -74,10 +74,30 @@ function sanitizarHtml(valor: unknown): unknown {
 /**
  * Lista de campos de props de bloque Puck que pueden contener HTML libre.
  * El resto de props (números, booleans, slugs) se dejan intactos.
+ *
+ * **Los nombres en español importan tanto como los ingleses, y son fáciles de
+ * olvidar.** Esta lista se escribió cuando los campos con HTML se llamaban
+ * `content` o `description`, pero los bloques del proyecto nombran sus props en
+ * español: un campo `richtext` llamado `titulo` o `contenido` no coincidía con
+ * ninguna entrada, caía en la rama de «otros strings» —que devuelve el valor tal
+ * cual, sin tocarlo— y su HTML se guardaba **sin sanear**. Como Puck pinta el
+ * texto enriquecido con `dangerouslySetInnerHTML`, eso es exactamente el vector
+ * de §S2: un editor con la cuenta comprometida escribe una etiqueta con `onerror`
+ * en un título y se ejecuta en el navegador de cada visitante.
+ *
+ * Al añadir un campo `richtext` a un bloque hay que comprobar que su nombre esté
+ * aquí. Añadir de más no rompe nada: sobre texto plano DOMPurify no cambia el
+ * valor, solo escapa los `<` sueltos, que en un campo de texto tampoco deberían
+ * llegar crudos a la página.
+ *
+ * @see 3-seguridad-del-proyecto.md §S2 (XSS del contenido — CRÍTICO)
  */
 const CAMPOS_HTML = new Set([
   'content', 'text', 'html', 'body', 'description', 'caption',
   'title', 'subtitle', 'label', 'heading', 'subheading',
+  // Nombres en español de los mismos campos, tal como los declaran los bloques.
+  'contenido', 'titulo', 'subtitulo', 'texto', 'cuerpo', 'descripcion',
+  'etiqueta', 'leyenda', 'piedeimagen',
 ]);
 
 /**

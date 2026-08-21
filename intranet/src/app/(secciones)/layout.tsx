@@ -1,6 +1,15 @@
 import React from 'react';
-import { MarcoSecciones, PlantillaEditButton } from '@/features/gestor-secciones';
-import { puedeEditarPaginas } from '@/shared/lib/sesion';
+import {
+  EliminarSeccionButton,
+  MarcoSecciones,
+  NuevaSeccionButton,
+  PlantillaEditButton,
+} from '@/features/gestor-secciones';
+import {
+  puedeCrearSecciones,
+  puedeEditarPaginas,
+  puedeEliminarSecciones,
+} from '@/shared/lib/sesion';
 import { VigilanteSesion } from '@/shared/lib/inactividad';
 
 /**
@@ -21,12 +30,24 @@ import { VigilanteSesion } from '@/shared/lib/inactividad';
 export default async function SeccionesLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const puedeEditar = await puedeEditarPaginas();
+  // Las tres van juntas: `permisosDeLaSesion` está cacheada por petición, así que las
+  // dos últimas comparten una sola llamada a la API.
+  const [puedeEditar, puedeCrear, puedeEliminar] = await Promise.all([
+    puedeEditarPaginas(),
+    puedeCrearSecciones(),
+    puedeEliminarSecciones(),
+  ]);
 
   return (
     <MarcoSecciones>
       {children}
       <PlantillaEditButton hasPermission={puedeEditar} />
+      {/* Va en el layout y no en la página: crear una sección se hace desde cualquiera,
+          y desde la pantalla de «no encontrada» del comodín también tiene sentido. */}
+      <NuevaSeccionButton hasPermission={puedeCrear} />
+      {/* Se esconde solo en las secciones de fábrica: lo decide el propio componente
+          a partir de la ruta, porque el layout no sabe en cuál está. */}
+      <EliminarSeccionButton hasPermission={puedeEliminar} />
       {/* Cubre las cinco secciones de una vez. El editor y la vista previa cuelgan
           fuera de este grupo de rutas y montan el suyo. */}
       <VigilanteSesion />

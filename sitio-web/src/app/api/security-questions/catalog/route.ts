@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { conCabecerasDeCliente } from '@/shared/lib/reenviar-cliente';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000';
 
@@ -6,11 +7,11 @@ const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000';
  * BFF: catálogo de preguntas de seguridad (endpoint público del backend).
  * Devuelve un array [{ key, label }].
  */
-export async function GET() {
+export async function GET(request: Request) {
   let apiRes: Response;
   try {
     apiRes = await fetch(`${BACKEND_URL}/api/security-questions/catalog`, {
-      headers: { 'Content-Type': 'application/json' },
+      headers: conCabecerasDeCliente(request, { 'Content-Type': 'application/json' }),
     });
   } catch {
     return NextResponse.json({ error: 'No se pudo conectar con el servidor' }, { status: 502 });
