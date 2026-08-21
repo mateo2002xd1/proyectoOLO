@@ -1,3 +1,13 @@
+# PLANTILLA, no configuracion final. La imagen `nginx:alpine` sustituye los
+# ${PLACEHOLDER} de /etc/nginx/templates/*.template al arrancar y escribe el
+# resultado donde diga NGINX_ENVSUBST_OUTPUT_DIR (ver docker-compose.prod.yml).
+#
+# Antes este archivo se montaba tal cual como /etc/nginx/nginx.conf, asi que
+# `server_name ${SITIO_WEB_DOMAIN};` llegaba literal: nginx arrancaba sin quejarse
+# pero ese bloque no casaba con ningun dominio real y todo caia en el server por
+# defecto. NGINX_ENVSUBST_FILTER limita la sustitucion a esas dos variables, para
+# que las propias de nginx ($host, $remote_addr, $binary_remote_addr...) se queden
+# intactas.
 events {
     worker_connections 1024;
 }
@@ -92,8 +102,8 @@ http {
         server_name ${SITIO_WEB_DOMAIN};
 
         # SSL (Let's Encrypt)
-        ssl_certificate     /etc/nginx/ssl/fullchain.pem;
-        ssl_certificate_key /etc/nginx/ssl/privkey.pem;
+        ssl_certificate     /etc/letsencrypt/live/${SITIO_WEB_DOMAIN}/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/${SITIO_WEB_DOMAIN}/privkey.pem;
 
         # SSL Security
         ssl_protocols TLSv1.2 TLSv1.3;
@@ -145,8 +155,8 @@ http {
         server_name ${INTRANET_DOMAIN};
 
         # SSL (Let's Encrypt)
-        ssl_certificate     /etc/nginx/ssl/fullchain.pem;
-        ssl_certificate_key /etc/nginx/ssl/privkey.pem;
+        ssl_certificate     /etc/letsencrypt/live/${INTRANET_DOMAIN}/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/${INTRANET_DOMAIN}/privkey.pem;
 
         # SSL Security
         ssl_protocols TLSv1.2 TLSv1.3;

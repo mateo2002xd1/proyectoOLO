@@ -247,6 +247,8 @@ const puckConfigBase: Config = {
           type: 'text' as const,
           label: 'Texto alternativo de la ilustración',
         },
+        // Campo personalizado que integra ColorPickerField para definir el color de fondo del banner 
+        // (si se deja vacío, conserva el estilo CSS por defecto).
         colorFondo: campoColor('Color del banner'),
       },
       defaultProps: {

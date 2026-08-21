@@ -1,19 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
-import { getRedis } from '../infrastructure/redis';
+import { getRedis, redisEstaListo } from '../infrastructure/redis';
 
-/**
- * Returns true when the Redis instance is connected and ready to accept commands.
- * When Redis is down and maxRetriesPerRequest is null (BullMQ requirement),
- * awaiting any command would hang forever, so we must check status first.
- */
-function isRedisReady(): boolean {
-  try {
-    const redis = getRedis();
-    return redis.status === 'ready';
-  } catch {
-    return false;
-  }
-}
+// `redisEstaListo` vive en `infrastructure/redis` y no aquí: la invalidación al
+// publicar necesita la misma comprobación, y dos copias de un predicado como este se
+// separan en cuanto alguien toca una.
+const isRedisReady = redisEstaListo;
 
 interface CacheOptions {
   /**

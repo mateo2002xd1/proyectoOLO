@@ -2,6 +2,7 @@ import axios from 'axios';
 import type { Data } from '@puckeditor/core';
 import { Pagina, PaginaVersion, PaginaEditable, PaginaEnRevision, Bloque, PuckData, Ambito } from '../types';
 import { homeFallbackData } from '../lib/home-fallback-data';
+import { etiquetaDePagina } from '../lib/etiquetas-cache';
 
 // El sitio y la intranet comparten la tabla `paginas` y ambos tienen su `/inicio`.
 // Esta cabecera es lo que le dice a la API a cuál de las dos pertenece cada página.
@@ -52,7 +53,11 @@ export async function obtenerPaginaPublicadaCacheada(slug: string): Promise<Pagi
   try {
     const res = await fetch(`${BACKEND_URL}/api/paginas/publica/${slug}`, {
       headers: AMBITO_HEADERS,
-      next: { revalidate: 60 },
+      // La etiqueta es lo que permite que aprobar una página se vea al instante: la API
+      // llama a `/api/revalidar` al publicar y esta entrada se tira ahí mismo. El
+      // `revalidate` se queda como red de seguridad para lo que cambie sin pasar por esa
+      // ruta (una edición directa en la base, un despliegue del backend sin secreto).
+      next: { revalidate: 60, tags: [etiquetaDePagina(slug)] },
       signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) return null;
@@ -67,7 +72,7 @@ obtenerPaginaInicio(): Promise<Data> {
   try {
     const res = await fetch(`${BACKEND_URL}/api/paginas/publica/inicio`, {
       headers: AMBITO_HEADERS,
-      next: { revalidate: 60 },
+      next: { revalidate: 60, tags: [etiquetaDePagina('inicio')] },
       signal: AbortSignal.timeout(5000), // 5s max — nunca bloquear el inicio
     });
     if (!res.ok) return homeFallbackData;

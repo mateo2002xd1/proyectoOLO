@@ -47,6 +47,11 @@ services:
       JWT_EXPIRES_IN: 7d
       FRONTEND_URL: http://localhost:3000
       INTRANET_URL: http://localhost:3001
+      # Con la que la API llama al sitio desde dentro de la red de Docker, para pedirle
+      # que revalide una pagina al aprobarla. No sirve FRONTEND_URL: esa es la URL del
+      # navegador (origen CORS), y aqui "localhost" seria el contenedor de la propia API.
+      SITIO_WEB_URL: http://sitio-web:3000
+      REVALIDAR_SECRET: ${REVALIDAR_SECRET}
       NODE_ENV: development
       LOCAL_AUTH_EMAIL: ${LOCAL_AUTH_EMAIL}
       LOCAL_AUTH_PASSWORD: ${LOCAL_AUTH_PASSWORD}
@@ -72,6 +77,8 @@ services:
       BACKEND_URL: http://api-backend:4000
       NEXT_PUBLIC_API_URL: http://api-backend:4000
       JWT_SECRET: ${JWT_SECRET}
+      # El mismo valor que en api-backend: es lo que autentica POST /api/revalidar.
+      REVALIDAR_SECRET: ${REVALIDAR_SECRET}
     depends_on:
       api-backend:
         condition: service_started

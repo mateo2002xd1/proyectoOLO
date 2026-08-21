@@ -82,7 +82,6 @@ Leer en este orden. Los tres primeros son de lectura obligatoria antes de tocar 
 | [3-seguridad-del-proyecto.md](3-seguridad-del-proyecto.md) | Superficies de ataque y controles. |
 | [4-reglas.md](4-reglas.md) | Reglas operativas para mover o crear carpetas sin romper nada. |
 | [9-accesibilidad.md](9-accesibilidad.md) | **Nivel AA y Resolución 1519 de 2020.** Estado auditado, decisiones de paleta y plan por fases (RF-14). |
-| [10-backlog.md](10-backlog.md) | **Qué falta por hacer.** 21 épicas, 21 historias y 226 tareas con estado verificado, capa y nivel. Exportado también a `10-backlog.csv`. |
 | [5-tableros-bi.md](5-tableros-bi.md) | Tableros Power BI embebidos: URLs, dónde se usan y controles de seguridad (RF-08). |
 | [6-auditoria.md](6-auditoria.md) | Bitácora de sesiones de trabajo. |
 | [7-despliegue.md](7-despliegue.md) | Docker, Nginx, SSL, variables de entorno. |

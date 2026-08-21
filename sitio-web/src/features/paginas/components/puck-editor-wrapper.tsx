@@ -301,7 +301,18 @@ export function PuckEditorWrapper({
   const config = useMemo(() => configDeEdicion(slug), [slug]);
 
   const estadoActual = estado ?? 'borrador';
-  const bloqueado = estadoActual === 'en_revision' || estadoActual === 'publicado';
+  /**
+   * Lo único que de verdad no se puede repetir: una versión que ya está esperando en
+   * la cola de aprobación. Mandarla otra vez la duplicaría para quien revisa.
+   *
+   * `publicado` estaba aquí también, y era lo que rompía el ciclo editorial:
+   * `/editable` devuelve la última versión sea cual sea su estado, así que toda
+   * página ya publicada —el caso normal de una página viva— abría el editor con
+   * «Enviar a revisión» desactivado, y solo se podían acumular borradores. Enviar
+   * desde `publicado` es correcto: `handleSubmitForReview` guarda antes un borrador
+   * nuevo y `enviar-a-revision.usecase.ts` toma justo ese, el de número más alto.
+   */
+  const bloqueado = estadoActual === 'en_revision';
 
   const handleChange = useCallback((data: Data) => {
     currentDataRef.current = data;

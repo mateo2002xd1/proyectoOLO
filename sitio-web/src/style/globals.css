@@ -342,6 +342,33 @@
   }
 }
 
+/* Transición de vista, ver RouteTransition.tsx: qué se anima al pasar de una
+   sección a otra. El key={pathname} del componente monta un nodo nuevo por cada
+   ruta, así que esto arranca solo, sin JS de por medio. */
+@keyframes olo-route-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.olo-route-transition {
+  animation: olo-route-in 320ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* Sin catch-all global de reduced-motion en este archivo (a diferencia de
+   intranet), así que esta regla es la que apaga el movimiento aquí. */
+@media (prefers-reduced-motion: reduce) {
+  .olo-route-transition {
+    animation: none;
+  }
+}
+
 /* --- Utility Classes --- */
 .container {
   width: 100%;

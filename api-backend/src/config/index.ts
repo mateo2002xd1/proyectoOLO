@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import type { Ambito } from '../shared/ambito';
 dotenv.config();
 
 const nodeEnv = process.env.NODE_ENV || 'development';
@@ -48,6 +49,38 @@ export const config = {
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
   intranetUrl: process.env.INTRANET_URL || 'http://localhost:3001',
+  /**
+   * Cómo avisar a los frontales de que el contenido publicado de una página cambió.
+   *
+   * Hace falta porque aprobar una página no la hacía visible: la base de datos quedaba
+   * bien, pero Next seguía sirviendo su copia (`next: { revalidate }`) y el propio
+   * `cacheInterceptor` la suya. Nadie tiraba ninguna de las dos — los oyentes de
+   * `domain-events/paginas/` existían como `console.log` que nadie importaba.
+   */
+  revalidacion: {
+    /**
+     * Secreto compartido con los frontales. Sin él no se manda nada: la ruta de
+     * revalidación es la única del sitio que no lleva sesión, y llamarla a ciegas
+     * dejaría que cualquiera vaciara la caché a voluntad.
+     */
+    secreto: process.env.REVALIDAR_SECRET || '',
+    urlPorAmbito: {
+      /**
+       * **No** es `frontendUrl`. Esa es la URL por la que el navegador llega al sitio y
+       * sirve de origen CORS; esta es con la que la API llama al front desde el
+       * servidor, que dentro de Docker es el nombre del servicio y no `localhost`.
+       */
+      sitio: process.env.SITIO_WEB_URL || process.env.FRONTEND_URL || 'http://localhost:3000',
+      /**
+       * Vacío a propósito: la intranet no guarda contenido publicado en la caché de
+       * Next —`apiClient.get` es un `fetch` sin `revalidate`, y desde Next 15 eso no se
+       * cachea—, así que allí no hay nada que revalidar y con vaciar Redis basta. El día
+       * que alguna de sus páginas pase a ISR, se define `INTRANET_REVALIDAR_URL` y el
+       * oyente empieza a llamarla sin tocar nada más.
+       */
+      intranet: process.env.INTRANET_REVALIDAR_URL || '',
+    } as Record<Ambito, string>,
+  },
   nodeEnv,
   esProduccion,
   localAuth: {

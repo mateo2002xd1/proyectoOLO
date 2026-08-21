@@ -1,0 +1,17 @@
+# Normalización de finales de línea.
+#
+# `core.autocrlf=true` (lo habitual al clonar en Windows) convierte a CRLF todo lo que
+# considera texto. Para un script de shell eso es fatal y silencioso: el `\r` acaba
+# pegado al intérprete del shebang y Linux responde `bad interpreter: /bin/bash^M`, que
+# no dice nada sobre la causa real. Los `.sh` de este repo ya habían caído en eso.
+#
+# `eol=lf` fuerza LF en el árbol de trabajo aunque el resto del repo siga en CRLF: son
+# archivos que solo se ejecutan dentro de contenedores Linux, nunca en Windows.
+* text=auto
+
+*.sh            text eol=lf
+Dockerfile      text eol=lf
+*.conf          text eol=lf
+*.template      text eol=lf
+.env.example    text eol=lf
+docker-compose*.yml text eol=lf
