@@ -1,8 +1,18 @@
+# Imagen del sitio web.
+#
+# El contexto de build es la RAIZ del repositorio (ver `context: .` en los
+# docker-compose): hacen falta tanto `sitio-web/` como `packages/`.
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-COPY packages/blocks-renderer ./packages/blocks-renderer
+# Los paquetes compartidos, los siete, en /packages y NO en /app/packages.
+#
+# Dos cosas estaban mal aqui. Se copiaba uno solo de los siete que declara el
+# package.json (`blocks-renderer`), y se copiaba a /app/packages: npm resuelve
+# `file:../packages/...` relativo a la carpeta del package.json, que es /app, asi que
+# la ruta buena es /packages. Con cualquiera de los dos fallos, `npm ci` no resuelve.
+COPY packages /packages
 
 COPY sitio-web/package.json sitio-web/package-lock.json ./
 RUN npm ci
