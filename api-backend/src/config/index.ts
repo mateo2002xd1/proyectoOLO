@@ -42,8 +42,46 @@ if (esProduccion && process.env.LOCAL_AUTH_EMAIL?.trim()) {
   );
 }
 
+/**
+ * La documentación interactiva de la API (Swagger UI) **no se publica sola en producción**.
+ *
+ * El documento OpenAPI describe la superficie entera: cada ruta, cada parámetro, qué
+ * permiso exige y qué forma tiene el cuerpo que acepta. Es exactamente lo que se quiere
+ * tener a mano mientras se desarrolla, y exactamente el mapa que no conviene regalar en
+ * un portal institucional expuesto a internet. Publicarla no abre ningún endpoint que no
+ * estuviera ya abierto —la autorización sigue viviendo en los middlewares—, pero ahorra
+ * a quien busque huecos el trabajo de enumerarlos.
+ *
+ * De ahí la asimetría, que es la misma de `localAuthHabilitado`: fuera de producción está
+ * encendida sin pedir nada, y en producción hay que decir que sí de forma explícita con
+ * `SWAGGER_HABILITADO=true`. Detrás de una VPN o de una autenticación de nginx es una
+ * decisión razonable; por eso se deja la puerta, en vez de apagarla de raíz.
+ *
+ * @see 3-seguridad-del-proyecto.md
+ * @see 7-despliegue.md
+ */
+const docsHabilitadas = esProduccion
+  ? process.env.SWAGGER_HABILITADO === 'true'
+  : process.env.SWAGGER_HABILITADO !== 'false';
+
 export const config = {
   port: parseInt(process.env.PORT || '4000', 10),
+  /**
+   * Interfaz en la que escucha la API.
+   *
+   * Sigue siendo `127.0.0.1` por defecto —solo el propio host—, que es lo correcto
+   * cuando nginx corre en la misma maquina y es lo que habia fijo en el codigo.
+   *
+   * Se hizo configurable porque dentro de un contenedor esa direccion significa "solo
+   * yo": nginx, el sitio y la intranet son contenedores distintos y la alcanzan por
+   * nombre de red, asi que con el valor por defecto no la ven y la pila entera queda
+   * incomunicada. Los docker-compose ponen `0.0.0.0` de forma explicita, y ahi es
+   * seguro porque ninguno de ellos publica el puerto 4000 al exterior: solo nginx
+   * publica puertos, y solo el 80 y el 443.
+   *
+   * @see 3-seguridad-del-proyecto.md 4.8 - "La API escucha en 127.0.0.1"
+   */
+  host: process.env.HOST || '127.0.0.1',
   databaseUrl: process.env.DATABASE_URL || '',
   jwtSecret: process.env.JWT_SECRET!,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
@@ -83,6 +121,12 @@ export const config = {
   },
   nodeEnv,
   esProduccion,
+  /** Documentación OpenAPI servida por la propia API. Ver `docsHabilitadas` arriba. */
+  docs: {
+    habilitadas: docsHabilitadas,
+    /** Punto de montaje de Swagger UI. El JSON crudo cuelga de aquí como `.json`. */
+    ruta: process.env.SWAGGER_RUTA || '/api/docs',
+  },
   localAuth: {
     habilitado: localAuthHabilitado,
     // Vacíos cuando está deshabilitada, para que ninguna comparación pueda acertar
