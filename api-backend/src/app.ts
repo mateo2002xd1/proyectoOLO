@@ -9,6 +9,7 @@ import { requireAuth } from './middlewares/auth.middleware';
 import { requierePermisoUsuario } from './middlewares/permisos.middleware';
 import { errorHandler } from './middlewares/error.middleware';
 import { UserController } from './controllers/usuarios.controller';
+import { montarDocumentacion } from './docs/montar-docs';
 
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
@@ -45,9 +46,37 @@ app.use(morgan('dev'));
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
 
+/**
+ * @openapi
+ * /health:
+ *   get:
+ *     tags: [Sistema]
+ *     summary: Estado del servicio
+ *     description: |
+ *       Sonda de vida. La consultan nginx y Docker en bucle para decidir si el
+ *       contenedor está sano, así que no toca la base de datos ni exige sesión: si
+ *       dependiera de Postgres, una base caída se llevaría por delante al propio
+ *       contenedor en vez de dejarlo responder que sigue en pie.
+ *     security: []
+ *     responses:
+ *       200:
+ *         description: El servicio responde.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status: { type: string, example: ok }
+ *                 timestamp: { type: string, format: date-time }
+ */
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// La documentación va aquí por lo mismo que `/health`: abrir el visor pide media docena
+// de archivos estáticos de golpe y no tiene sentido gastarle a nadie su cupo por minuto
+// leyendo documentación. Los endpoints que el visor prueba sí pasan por los límites.
+montarDocumentacion(app);
 
 // Techo general de la API: ninguna ruta queda sin límite aunque su router no declare
 // el suyo. Va después de `/health` a propósito — nginx y Docker lo consultan en bucle
@@ -56,6 +85,31 @@ app.use(limitadorGlobal);
 
 app.use('/api', authRoutes);
 
+/**
+ * @openapi
+ * /api/alerts:
+ *   get:
+ *     tags: [Usuarios]
+ *     summary: Cuentas próximas a caducar
+ *     description: |
+ *       Lista las cuentas cuya `expiration_date` se acerca (RF-16), para que
+ *       administración renueve antes de que alguien se quede fuera.
+ *
+ *       **Por qué no basta con tener sesión**: la respuesta trae correo y fecha de
+ *       vencimiento de toda la plantilla. Durante un tiempo solo llevó `requireAuth` y
+ *       cualquier cuenta podía leerla; es un panel de administración y exige
+ *       `puedeAdministrarUsuarios`.
+ *     responses:
+ *       200:
+ *         description: Cuentas por vencer.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items: { $ref: '#/components/schemas/AlertaCaducidad' }
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
+ */
 // Las alertas de caducidad listan correo y fecha de vencimiento de toda la plantilla.
 // Con solo `requireAuth` las leía cualquier sesión; es un panel de administración.
 app.get(
