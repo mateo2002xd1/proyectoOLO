@@ -35,6 +35,19 @@ aviso() { printf '\033[0;33m%s\033[0m\n' "$*"; }
 
 morir() { rojo "ERROR: $*"; exit 1; }
 
+# Todas las llamadas a docker compose pasan por aqui, por dos razones que solo se
+# notan en Windows:
+#
+#  1. MSYS_NO_PATHCONV. Git Bash reescribe cualquier argumento que parezca una ruta
+#     absoluta de Unix: `-w /var/www/certbot` le llega a Docker como
+#     `C:/Program Files/Git/var/www/certbot`. Esas rutas son del CONTENEDOR, no del
+#     host, asi que la conversion las destruye. En Linux y macOS la variable se ignora.
+#
+#  2. `-T` en run/exec. Sin el, Docker intenta reservar un TTY y la terminal de Git Bash
+#     (MinTTY) no se lo da: "the input device is not a TTY". Ningun comando de este
+#     script necesita terminal interactiva, asi que desactivarlo es gratis.
+componer() { MSYS_NO_PATHCONV=1 componer "$@"; }
+
 show_help() {
     cat <<'AYUDA'
 ============================================
@@ -51,6 +64,9 @@ Comandos:
   logs      - Ver logs en tiempo real
   status    - Ver estado de los servicios
   build     - Reconstruir imagenes
+  migrar    - Aplicar las migraciones de esquema pendientes
+  sembrar   - Cargar el contenido inicial (paginas, identidad visual)
+  crear-admin - Crear la primera cuenta de Superadmin (solo instalacion nueva)
   backup    - Backup de la base de datos
   restore   - Restaurar backup (uso: ./deploy.sh restore backup.sql)
   ssl       - Emitir certificado (uso: ./deploy.sh ssl dominio.com email@dominio.com)
@@ -182,7 +198,7 @@ setup() {
 
     echo ""
     echo "=== Construyendo imagenes ==="
-    docker compose -f "$COMPOSE_FILE" build
+    componer build
 
     echo ""
     verde "=== Setup completado ==="
@@ -195,8 +211,18 @@ setup() {
 start() {
     comprobar_requisitos
     comprobar_entorno
+
+    # Las migraciones van ANTES de levantar la API, no despues: `server.ts` aborta si
+    # encuentra alguna pendiente, y con `restart: unless-stopped` eso es un bucle de
+    # reinicio en vez de un error visible. Es idempotente -si no hay pendientes no hace
+    # nada-, asi que no molesta en los arranques siguientes.
+    echo "=== Aplicando migraciones de esquema ==="
+    componer up -d db
+    componer run --rm -T migraciones
+
+    echo ""
     echo "=== Iniciando servicios ==="
-    docker compose -f "$COMPOSE_FILE" up -d
+    componer up -d
     echo ""
     verde "Servicios iniciados. Verifica con: ./deploy.sh status"
 
@@ -204,7 +230,7 @@ start() {
     # sin certificado la pila queda arriba pero inalcanzable desde fuera. Avisarlo aqui
     # ahorra tener que deducirlo de un contenedor reiniciandose en bucle.
     if $ES_PRODUCCION; then
-        if ! docker compose -f "$COMPOSE_FILE" ps nginx 2>/dev/null | grep -qi "running\|up"; then
+        if ! componer ps nginx 2>/dev/null | grep -qi "running\|up"; then
             echo ""
             aviso "nginx no esta arriba. Si aun no has emitido el certificado:"
             aviso "  ./deploy.sh ssl $(leer_env SITIO_WEB_DOMAIN) tu-correo@dominio.com"
@@ -215,24 +241,90 @@ start() {
 stop() {
     comprobar_requisitos
     echo "=== Deteniendo servicios ==="
-    docker compose -f "$COMPOSE_FILE" down
+    componer down
 }
 
 restart() {
     comprobar_requisitos
     echo "=== Reiniciando servicios ==="
-    docker compose -f "$COMPOSE_FILE" restart
+    componer restart
 }
 
-logs()   { comprobar_requisitos; docker compose -f "$COMPOSE_FILE" logs -f; }
-status() { comprobar_requisitos; docker compose -f "$COMPOSE_FILE" ps; }
+logs()   { comprobar_requisitos; componer logs -f; }
+status() { comprobar_requisitos; componer ps; }
 
 build() {
     comprobar_requisitos
     echo "=== Reconstruyendo imagenes ==="
-    docker compose -f "$COMPOSE_FILE" build --no-cache
+    componer build --no-cache
     echo ""
     verde "Imagenes reconstruidas. Ejecuta: ./deploy.sh restart"
+}
+
+migrar() {
+    comprobar_requisitos
+    comprobar_entorno
+    echo "=== Aplicando migraciones de esquema ==="
+    # Necesita la base arriba y sana; `depends_on: service_healthy` del servicio se
+    # encarga de esperarla, pero si la pila esta parada hay que levantarla antes.
+    componer up -d db
+    componer run --rm -T migraciones
+    verde "Migraciones al dia"
+}
+
+SEED="api-backend/seed/contenido-inicial.sql"
+
+sembrar() {
+    comprobar_requisitos
+    comprobar_entorno
+
+    [ -f "$SEED" ] || morir "No existe '$SEED'. Regeneralo con: npm run seed:generar (en api-backend/)"
+
+    local usuario base
+    usuario=$(leer_env POSTGRES_USER)
+    base=$(leer_env POSTGRES_DB)
+
+    echo "=== Cargando contenido inicial ==="
+    # Va DESPUES de las migraciones: el archivo inserta filas en tablas que crean ellas.
+    # Es idempotente (ON CONFLICT DO NOTHING), asi que repetirlo no duplica nada, pero
+    # tampoco pisa lo que ya haya: para reemplazar contenido existente hay que vaciarlo
+    # antes a mano.
+    componer up -d db
+    componer exec -T db \
+        psql -v ON_ERROR_STOP=1 -U "$usuario" "$base" < "$SEED"
+    verde "Contenido inicial cargado"
+}
+
+crear_admin() {
+    comprobar_requisitos
+    comprobar_entorno
+
+    # En produccion esta es la UNICA puerta de entrada: la cuenta maestra de LOCAL_AUTH_*
+    # se apaga sola con NODE_ENV=production, y dar de alta usuarios por la API exige estar
+    # ya autenticado. Sin esto se despliega el sistema entero y no entra nadie.
+    echo "=== Primera cuenta de Superadmin ==="
+    echo "Solo funciona sobre una base sin usuarios. Las demas altas van por el panel."
+    echo ""
+
+    local correo clave clave2
+    read -r -p "Correo: " correo
+    [ -n "$correo" ] || morir "El correo es obligatorio."
+
+    # `-s` para que la contrasena no aparezca en pantalla ni en el historial del shell.
+    read -r -s -p "Contrasena (12+ caracteres, 3 de: mayuscula, minuscula, numero, simbolo): " clave
+    echo
+    read -r -s -p "Repitela: " clave2
+    echo
+    [ "$clave" = "$clave2" ] || morir "Las contrasenas no coinciden."
+
+    # Corre en la etapa `builder`, la unica con ts-node. La contrasena viaja como variable
+    # de entorno del contenedor: no queda en el historial, aunque durante los segundos que
+    # dura si seria visible en un `ps` para otro usuario del servidor.
+    componer up -d db
+    componer run --rm -T \
+        -e ADMIN_EMAIL="$correo" \
+        -e ADMIN_PASSWORD="$clave" \
+        migraciones npm run crear:superadmin
 }
 
 backup() {
@@ -251,7 +343,7 @@ backup() {
     echo "=== Creando backup: $archivo ==="
     # Sin `-T` docker asigna un pseudo-TTY y mete caracteres de control en el volcado,
     # que luego revienta al restaurarlo.
-    docker compose -f "$COMPOSE_FILE" exec -T db pg_dump -U "$usuario" "$base" > "$archivo"
+    componer exec -T db pg_dump -U "$usuario" "$base" > "$archivo"
     verde "Backup guardado en: $archivo"
 }
 
@@ -277,7 +369,7 @@ restore() {
 
     # `ON_ERROR_STOP=1` para que un volcado corrupto no deje la base a medio restaurar
     # informando de exito: sin esto psql sigue tras cada error y termina con codigo 0.
-    docker compose -f "$COMPOSE_FILE" exec -T db \
+    componer exec -T db \
         psql -v ON_ERROR_STOP=1 -U "$usuario" "$base" < "$1"
     verde "Backup restaurado"
 }
@@ -297,10 +389,10 @@ renovar() {
     comprobar_requisitos
     comprobar_entorno
     echo "=== Renovando certificados ==="
-    docker compose -f "$COMPOSE_FILE" run --rm certbot renew --webroot -w /var/www/certbot
+    componer run --rm -T certbot renew --webroot -w /var/www/certbot
     # nginx solo lee los certificados al arrancar o al recargar: sin esto seguiria
     # sirviendo el certificado viejo hasta el proximo reinicio.
-    docker compose -f "$COMPOSE_FILE" exec nginx nginx -s reload
+    componer exec -T nginx nginx -s reload
     verde "Certificados renovados y nginx recargado"
 }
 
@@ -312,6 +404,9 @@ case "${1:-help}" in
     logs)    logs ;;
     status)  status ;;
     build)   build ;;
+    migrar)  migrar ;;
+    sembrar) sembrar ;;
+    crear-admin) crear_admin ;;
     backup)  backup ;;
     restore) restore "${2:-}" ;;
     ssl)     shift; ssl "$@" ;;

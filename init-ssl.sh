@@ -35,7 +35,10 @@ done
 verde() { printf '\033[0;32m%s\033[0m\n' "$*"; }
 aviso() { printf '\033[0;33m%s\033[0m\n' "$*"; }
 
-componer() { docker compose -f "$COMPOSE_FILE" "$@"; }
+# MSYS_NO_PATHCONV: en Git Bash, rutas como /etc/letsencrypt/... llegarian a Docker
+# convertidas a C:/Program Files/Git/etc/letsencrypt/... Son rutas del contenedor, y
+# aqui hay muchas. `-T` evita que Docker pida un TTY que MinTTY no concede.
+componer() { MSYS_NO_PATHCONV=1 docker compose -f "$COMPOSE_FILE" "$@"; }
 
 RUTA_CERT="/etc/letsencrypt/live/$DOMINIO"
 
@@ -49,7 +52,7 @@ echo "=== Certificado SSL para $DOMINIO ==="
 # autofirmado de un dia: no vale para nadie, pero deja a nginx levantar.
 echo ""
 echo "[1/4] Certificado provisional (para que nginx pueda arrancar)..."
-componer run --rm --entrypoint sh certbot -c "
+componer run --rm -T --entrypoint sh certbot -c "
   if [ ! -f $RUTA_CERT/fullchain.pem ]; then
     mkdir -p $RUTA_CERT
     openssl req -x509 -nodes -newkey rsa:2048 -days 1 \
@@ -75,11 +78,11 @@ componer up -d nginx
 # recargar: sigue sirviendo el provisional en memoria hasta el paso 4.
 echo ""
 echo "[3/4] Solicitando certificado real a Let's Encrypt..."
-componer run --rm --entrypoint sh certbot -c "
+componer run --rm -T --entrypoint sh certbot -c "
   rm -rf $RUTA_CERT /etc/letsencrypt/archive/$DOMINIO /etc/letsencrypt/renewal/$DOMINIO.conf
 "
 
-componer run --rm certbot certonly \
+componer run --rm -T certbot certonly \
     --webroot \
     --webroot-path=/var/www/certbot \
     --email "$EMAIL" \
@@ -91,7 +94,7 @@ componer run --rm certbot certonly \
 # --- 4. Recargar ------------------------------------------------------------
 echo ""
 echo "[4/4] Recargando nginx con el certificado definitivo..."
-componer exec nginx nginx -s reload
+componer exec -T nginx nginx -s reload
 
 echo ""
 verde "Listo. SSL configurado para $DOMINIO"
