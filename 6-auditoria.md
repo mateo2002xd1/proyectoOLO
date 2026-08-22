@@ -9,7 +9,7 @@
 
 ### Qué era y por qué se va
 
-`usuarios_sitio` era la segunda tabla de usuarios que el §2.1 de `11-base-de-datos.md` señalaba como sobrante desde la fase 4. No se había fusionado porque tenía **su propio login con un segundo secreto JWT** (`JWT_SITE_SECRET`), y eso convertía la unificación en un cambio de autenticación, no en un renombrado. Estaba agendada para E-16.
+`usuarios_sitio` era la segunda tabla de usuarios que el §2.1 de `11-base-de-datos.md` señalaba como sobrante desde la fase 4. No se había fusionado porque tenía **su propio login con un segundo secreto JWT** (`JWT_SITE_SECRET`), y eso convertía la unificación en un cambio de autenticación, no en un renombrado, así que estaba aplazada.
 
 La auditoría previa al borrado encontró que el argumento ya no se sostenía:
 
@@ -55,7 +55,7 @@ La auditoría previa al borrado encontró que el argumento ya no se sostenía:
 ### Pendiente al cierre
 
 - **`.env` local**: se le quitó `JWT_SITE_SECRET`. En despliegue, la variable puede retirarse del gestor de secretos — ya no la lee nadie y su ausencia no impide arrancar.
-- E-16 se queda **solo** con la caducidad de cuentas; la parte de unificar identidades está cerrada.
+- De ese frente queda **solo** la caducidad de cuentas; la parte de unificar identidades está cerrada.
 - Los frontends no se recompilaron: ninguno de los dos referenciaba la tabla ni sus rutas.
 
 ---
@@ -213,7 +213,7 @@ La sesión anterior dejó la bitácora escribiendo y su lectura cerrada por rol,
 - **La exportación recorre páginas (tope 4.000 filas) en vez de pedir una gigante.** Si no cabe, el aviso lo dice; no se miente por omisión.
 - **El desplegable de usuarios sale de `/api/users`, no del hook de `administracion`.** Un filtro no justifica arrastrar el CRUD de usuarios a esta feature.
 - **Se pasa por el proxy de Next y no por axios contra `:4000`** (el patrón de `paginas.service.ts`): el token vive en una cookie HTTPOnly que el proxy lee en servidor.
-- **`antes` sigue en `null`** (T-07.6): el detalle dice «sin registro» en vez de fingir un valor anterior.
+- **`antes` sigue en `null`**: el detalle dice «sin registro» en vez de fingir un valor anterior.
 
 ### 5. Verificación
 
@@ -227,7 +227,7 @@ La sesión anterior dejó la bitácora escribiendo y su lectura cerrada por rol,
 - **No se abrió en un navegador de verdad.** La comprobación llegó hasta el HTML servido y el JSON de la API: falta ver la tabla pintada, abrir el detalle y descargar el CSV con una sesión real.
 - **`packages/blocks-renderer` no tenía `node_modules`** y por eso el build de sitio-web fallaba con 12 errores ajenos a este cambio; se instalaron sus dependencias. Conviene que quede en el arranque del proyecto.
 - **La API que corre en `:4000` en esta máquina es anterior a estos cambios**: hay que reiniciarla para que la pantalla lea el DTO nuevo.
-- **T-07.6** (`antes` con el valor real), **escritura transaccional**, **bitácora *append-only*** y **registro de inicios de sesión** (necesita migración de `auditoria_accesos`) siguen abiertos.
+- **`antes` con el valor real**, **escritura transaccional**, **bitácora *append-only*** y **registro de inicios de sesión** (necesita migración de `auditoria_accesos`) siguen abiertos.
 - **Señalado, no tocado**: `/admin/revision` tampoco está en el `matcher` del middleware, y `/api/users` en el backend solo exige `requireAuth` sin filtro de rol — cualquier sesión puede listar usuarios.
 
 ---
@@ -302,7 +302,7 @@ También se completó el renombrado de carpetas `login/` → `auth/` que quedó 
 
 ### 1. El diagnóstico, corregido
 
-El backlog daba E-07 por casi terminado («modelo, repositorio, listener, use-case y rutas están escritos y correctos»). Verificando contra el código, eso era falso por tres motivos distintos:
+El registro de cambios (RF-07) se daba por casi terminado —«modelo, repositorio, listener, use-case y rutas están escritos y correctos»—. Verificando contra el código, eso era falso por tres motivos distintos:
 
 - **`contenido.controller.ts` mandaba la acción en inglés** (`'create'`, `'update'`, `'delete'`), y la migración 006 dejó un `CHECK` que solo admite los verbos en español. Cada intento de registro violaba la restricción.
 - **Nadie esperaba la promesa del INSERT.** El `try/catch` que lo envolvía era código muerto: no puede atrapar lo que no espera. El rechazo se perdía como *unhandled rejection*, sin excepción, sin log y sin rastro. Las dos causas juntas explican por qué nadie se enteró en meses.
@@ -315,7 +315,7 @@ Y un hallazgo que no estaba en ninguna lista: **`/api/audit-logs` solo exigía `
 - **Se cerró la lectura.** `auditoria.policies.ts` nuevo (superadmin y administrador, nadie más) + `requierePermisoAuditoria` en `permisos.middleware.ts`, aplicado con `router.use` para que ninguna ruta que se añada después pueda saltárselo.
 - **`AuditRepository.create` dejó de recibir `any`.** `DatosAuditoria` ata `accion` a `AccionAuditable` y `entidadTipo` a `EntidadAuditable`. Mandar `'create'` en vez de `'crear'` **ya no compila**. La traducción a snake_case vive solo en el repositorio.
 - **`logAudit` es `async`, se espera, y su error se registra** con la acción y la entidad. No se relanza: si la bitácora falla, la publicación no debe caerse — pero deja de fallar en silencio.
-- **Las páginas registran por fin.** `guardarBorrador`, `enviarARevision`, `aprobar` y `rechazar` escriben su entrada (T-07.5). El rechazo guarda el motivo, que es la única explicación de por qué una versión volvió a borrador.
+- **Las páginas registran por fin.** `guardarBorrador`, `enviarARevision`, `aprobar` y `rechazar` escriben su entrada. El rechazo guarda el motivo, que es la única explicación de por qué una versión volvió a borrador.
 - **`ip` y `user_agent` se rellenan.** Las columnas existían desde la 006 y todas las filas las habrían tenido en NULL. `datosDeAuditoria(req)` las extrae en el borde; hacia los use-cases solo viajan datos, nunca el `Request`.
 - **Borrados** `auditoria.listener.ts` y `event-bus.ts`, comprobado antes que no los importaba nadie.
 - **Rutas `auth/` terminadas**: 30 referencias en 15 archivos. Intranet usa `/auth`, `/auth/recovery`…; sitio-web usa `/auth/login` y `/auth/cambiar-contrasena`, incluido el `matcher` del middleware.
@@ -336,7 +336,7 @@ Y un hallazgo que no estaba en ninguna lista: **`/api/audit-logs` solo exigía `
 ### Pendiente al cierre
 
 - **La pantalla `/auditoria`.** La carpeta `(admin)/(shell)/auditoria/` ya existe vacía y el enlace del sidebar apunta a `/dashboard/auditoria`, que es 404: al crear el `page.tsx` hay que corregir ese `href` (`panel-general.tsx:125`).
-- **T-07.6, campos modificados de verdad.** Hoy `antes` va en `null` porque el controlador no tiene el estado anterior; hace falta que el use-case devuelva la versión previa y comparar el JSONB por rama.
+- **Campos modificados de verdad.** Hoy `antes` va en `null` porque el controlador no tiene el estado anterior; hace falta que el use-case devuelva la versión previa y comparar el JSONB por rama.
 - **Escritura transaccional** de la bitácora (requiere que `PaginaRepository` acepte `transaction`).
 - **La bitácora no es *append-only*.** Si el rol de la aplicación puede `UPDATE`/`DELETE` sobre `auditoria_cambios`, no tiene valor probatorio. Falta revocar permisos o poner un trigger, y definir plazos de conservación.
 - **Visitas y accesos de directores** siguen sin existir. `auditoria_accesos` no admite registrar inicios de sesión: su `CHECK` limita `recurso_tipo` a `archivo|pagina_interna|tablero` y `accion` a `ver|descargar`, con `recurso_id` NOT NULL. Registrar logins ahí exige una migración, no «un INSERT».
@@ -559,7 +559,7 @@ Son 7 PDFs escritos a mano en `InicioView.tsx`, con miniaturas generadas por pdf
 → En esta migración entra como bloque **sin campos editables**, que pinta el componente actual tal cual. Conectarlo a `contenidos` es tarea aparte, y el bloque, una vez exista, se podrá poner en cualquier página.
 
 **(d) Orden: Matriz → Encuestas → Inicio.**
-Matriz primero porque es la única que no estrena ningún problema: valida el patrón, y de paso **cierra T-08.8** («Migrar el token del informe a dato configurable», hoy en *Falta*), cuyo criterio de aceptación es exactamente «no queda ninguna URL de Power BI literal en archivos `.tsx`». Encuestas después, las dos juntas porque comparten estructura, una vez probado `richtext`. Inicio al final y recortada.
+Matriz primero porque es la única que no estrena ningún problema: valida el patrón, y de paso **migra el token del informe a dato configurable**, con lo que deja de quedar ninguna URL de Power BI literal en archivos `.tsx`. Encuestas después, las dos juntas porque comparten estructura, una vez probado `richtext`. Inicio al final y recortada.
 
 **Corrección sobre (c) al implementar:** «Últimas publicaciones» sí quedó con la lista editable, en contra de lo decidido arriba. El motivo: dejarla sin campos mantenía el estado de hoy, donde publicar un boletín exige un desarrollador y un despliegue. Con el campo `array` pasa a exigir un funcionario y una aprobación, que es estrictamente mejor y no estorba a la integración con `contenidos` — cuando esa llegue, la lista queda como respaldo. El resto de la decisión (que la fuente real debe ser `contenidos`) sigue en pie.
 
@@ -568,7 +568,7 @@ Matriz primero porque es la única que no estrena ningún problema: valida el pa
 - `InicioView.tsx` tiene **`href="AQUI_VA_LINK_1"` y `href="AQUI_VA_LINK_2"`** en las tarjetas de Preguntas Frecuentes. Están así en producción.
 - `MatrizView.tsx` tiene **dos `href="#"`** en la sección «Descargas» (Matriz de pertinencia 2025 y 2024).
 - Sembrar esos marcadores tal cual sería heredar un botón roto con una interfaz bonita encima. Se piden los enlaces reales antes de sembrar; si no los hay, el bloque se siembra sin la tarjeta en vez de con un enlace muerto.
-- La migración es también el momento natural para **T-08.5** (`sandbox` en los iframes, hoy *Falta*) y **T-08.7** (`title` obligatorio en el iframe, hoy *Parcial* — el backlog ya apunta a `config/puck.config.tsx` y «el bloque nuevo»).
+- La migración es también el momento natural para los dos pendientes de accesibilidad de los iframes: **`sandbox`** (hoy sin aplicar) y **`title` obligatorio** (hoy a medias). Los dos se aplican en `config/puck.config.tsx` y en el bloque nuevo.
 
 ### 5. Riesgos y cabos sueltos detectados
 
@@ -626,7 +626,7 @@ Las cuatro rutas `/editor/<slug>` responden 200.
 - Conseguir los cuatro enlaces reales (2 de FAQ en inicio, 2 de descargas en matriz) y ponerlos desde el editor.
 - `app/editor/[slug]/page.tsx` sigue sin verificar permisos en servidor. Ahora son 5 páginas editables.
 - Conectar `Publicaciones` a la tabla `contenidos` (hoy la lista se mantiene a mano, aunque ya sin tocar código).
-- T-08.5 (`sandbox` en los iframes) y T-08.7 (`title` obligatorio) siguen sin hacerse; los iframes ahora viven en bloques, que es donde toca aplicarlos.
+- `sandbox` en los iframes y el `title` obligatorio siguen sin hacerse; los iframes ahora viven en bloques, que es donde toca aplicarlos.
 - Sigue abierto todo lo pendiente de la sesión del 26-07.
 
 ---

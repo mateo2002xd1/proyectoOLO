@@ -60,7 +60,9 @@ Es una ventaja arquitectónica enorme y hay que decir con claridad lo que implic
 
 WCAG AA exige **4.5:1** para texto normal, **3:1** para texto grande (≥24 px, o ≥18.7 px en negrita) y **3:1** para componentes de interfaz y estados de foco (SC 1.4.3 y 1.4.11).
 
-Ratios calculados sobre los tokens de `sitio-web/src/app/globals.css`:
+Ratios calculados sobre los tokens de marca de `sitio-web/src/style/globals.css` (el
+archivo salió de `app/` a `style/` en algún momento posterior a la auditoría original;
+si un enlace de este documento no abre, esa es la razón):
 
 | Token | Hex | vs. blanco | vs. negro | Veredicto |
 |---|---|---|---|---|
@@ -100,11 +102,19 @@ El amarillo de `warning` con texto blanco, a 1.48:1, era el peor contraste del s
 
 | Control | Estado |
 |---|---|
-| `<html lang="es">` | correcto en [layout.tsx:51](sitio-web/src/app/layout.tsx#L51) |
-| Landmarks `<main>`, `<nav>` | presentes en los layouts públicos y en `sidebar-layout` |
+| `<html lang="es">` | correcto en [layout.tsx:44](sitio-web/src/app/layout.tsx#L44) |
+| Landmarks `<main>`, `<nav>` | presentes en los layouts públicos y en el shell del panel |
 | Color de texto base | 10.46:1, muy por encima del mínimo |
 | Botón `danger` | 4.83:1, cumple |
-| `eslint-plugin-jsx-a11y` | disponible (viene con `eslint-config-next`) |
+| Botón `navy` (acceso al panel) | 18.22:1 con texto blanco |
+| `eslint-plugin-jsx-a11y` | disponible (viene con `eslint-config-next`), pero **sin el set recomendado activado** — ver fase 2 |
+
+> **La intranet declara `lang="en"`** en [layout.tsx:30](intranet/src/app/layout.tsx#L30)
+> y todo su contenido está en español. Es SC 3.1.1, nivel **A**, y hace que un lector de
+> pantalla pronuncie el español con fonética inglesa — el texto se vuelve casi
+> ininteligible. Está fuera del alcance declarado en §0, así que no bloquea nada aquí,
+> pero es una línea y se arregla sola: queda en §7 con los demás pendientes de la
+> intranet.
 
 ### 2.3 Lo que falta
 
@@ -116,6 +126,10 @@ El amarillo de `warning` con texto blanco, a 1.48:1, era el peor contraste del s
 | Borde de input a 1.47:1 | SC 1.4.11 | Solo importa donde el borde es el único indicador del campo |
 | Sin **modo de alto contraste** | RF-14 lo pide explícitamente | No existe hoy |
 | ~~Bloques Puck sin **campo de texto alternativo obligatorio**~~ | SC 1.1.1 | **Resuelto 2026-08-18** — ver Fase 5 |
+
+Las cinco filas que siguen abiertas se re-verificaron contra el código el **2026-08-21**
+y ninguna se ha cerrado. La del indicador de foco, que la fase 1 había resuelto, volvió
+a abrirse: ver el aviso de regresión en esa fase.
 
 ---
 
@@ -190,22 +204,104 @@ Cambios aplicados:
 3. `globals.css` — `.admin-btn-primary` pasa al azul interactivo.
 4. `custom-select.tsx`, `switch.tsx`, `auth-ui.tsx`, `first-login-flow.tsx` — texto verde, anillos con opacidad e indicadores de estado reclasificados.
 
-**Verificado:** `tsc --noEmit` limpio, `eslint` limpio, `npm run build` correcto, y las siete utilidades nuevas confirmadas en el CSS compilado. Barrido posterior sin combinaciones fallidas: cero `bg-brand` con `text-white`, cero `text-brand` como color de texto, cero anillos con opacidad.
+**Verificado en su momento:** `tsc --noEmit` limpio, `eslint` limpio, `npm run build` correcto, y las siete utilidades nuevas confirmadas en el CSS compilado. Barrido posterior sin combinaciones fallidas: cero `bg-brand` con `text-white`, cero `text-brand` como color de texto, cero anillos con opacidad.
 
-**Pendiente de la fase:** el paso 4 dejó `hover:border-brand` en `(admin)/login/page.tsx` y `bg-brand` en el interruptor de `globals.css`. Son bordes y superficies sin texto, que es exactamente para lo que existe el token de identidad — no son incumplimientos.
+**Pendiente de la fase:** el paso 4 dejó `hover:border-brand` en la pantalla de acceso y `bg-brand` en el interruptor de `globals.css`. Son bordes y superficies sin texto, que es exactamente para lo que existe el token de identidad — no son incumplimientos.
 
-### Fase 2 — Reglas de linter
+#### ⚠️ El valor se revirtió — verificado el 2026-08-21
+
+**La estructura de la fase 1 sigue en pie; los colores volvieron atrás.** Los tokens
+siguen separados por rol, `button.tsx` sigue usando `bg-brand-interactive` en lugar de
+`bg-brand`, `notification.tsx` sigue teniendo color de texto por variante y los anillos
+siguen a opacidad plena. Todo eso está bien y no hay que rehacerlo. Lo que cambió es el
+hex que hay detrás del token interactivo:
+
+| Token | Valor de la fase 1 | Valor hoy | Contraste real hoy | Lo que dice el comentario del CSS |
+|---|---|---|---|---|
+| `--color-brand-interactive` | `#2a7d00` (5.21:1) | **`#7DB828`** | **2.40:1** ❌ | `/* 5.21:1 */` |
+| `--color-brand-interactive-hover` | `#1f5c00` (8.11:1) | **`#63a00d`** | **3.20:1** ❌ | `/* 8.11:1 */` |
+| `--color-brand-focus` | `#2a7d00` (5.21:1) | **`#7DB828`** | **2.40:1** ❌ | `/* 5.21:1 */` |
+| `--color-brand-blue-dark` | `#0b6d8f` | `#0b6d8f` | 5.84:1 ✅ | correcto |
+
+`#7DB828` es, a un dígito de distancia, el verde de identidad `#7db728`. O sea que el
+token interactivo y el de identidad volvieron a ser el mismo color, que es exactamente
+la situación que la fase 1 fue a deshacer.
+
+**Lo peor no es el número, son los comentarios.** Siguen anunciando 5.21:1 y 8.11:1 al
+lado de valores que dan 2.40:1 y 3.20:1. Quien lea ese archivo para comprobar si la
+paleta cumple, leerá que sí. Un comentario que miente es peor que no tener comentario.
+
+Qué arrastra, porque el token no se usa en un solo sitio:
+
+- `Button` variantes `primary` y `success` — el botón principal del sitio, otra vez a 2.40:1.
+- El anillo de `focus-visible` de todos los botones: 2.40:1 contra el 3:1 que exige SC 1.4.11.
+- `Notification` variante `success`, que hereda `bg-brand-interactive` con texto blanco.
+
+**Qué hacer.** No es un refactor: son tres valores hex y sus tres comentarios en el
+bloque `@theme` de `sitio-web/src/style/globals.css`. Devolver `#2a7d00` / `#1f5c00`
+restaura el cumplimiento sin tocar un solo componente — que es justamente la ventaja de
+haber separado los tokens por rol, y la prueba de que separarlos valió la pena.
+
+Lo que **no** hay que hacer es cambiar el comentario para que coincida con el color. La
+opción C de la §3.1 sigue descartada.
+
+> **Antes de revertirlo conviene preguntar por qué se cambió.** Si alguien lo hizo
+> porque el verde oscuro se veía mal contra el diseño de la portada, la respuesta no es
+> volver a un verde que incumple: es usar el token de identidad para esa superficie
+> —para eso existe— y dejar el interactivo donde hay texto encima.
+
+#### Un acierto de la misma pasada: `prefers-reduced-motion`
+
+Las transiciones de ruta que se añadieron después (`RouteTransition.tsx` en las dos
+apps) traen su regla de `@media (prefers-reduced-motion: reduce)` que apaga la
+animación. Es SC 2.3.3 —nivel AAA, así que está por encima de lo exigido— y sobre todo
+evita el mareo a quien declara esa preferencia en su sistema.
+
+**Las dos apps lo resuelven de forma opuesta, y conviene saber cuál se está tocando:**
+
+| App | Cómo |
+|---|---|
+| `intranet` | Un **catch-all global**: `*, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important }`. Cubre todo, incluido lo que se escriba mañana |
+| `sitio-web` | **Reglas puntuales**, una por animación: la transición de ruta y las tarjetas del portal. No hay catch-all |
+
+La consecuencia práctica es que en `sitio-web` **cada animación nueva necesita su propia
+regla** o queda sin cubrir, y nadie lo va a notar — quien escribe la animación
+normalmente no tiene la preferencia activada. Adoptar el catch-all de la intranet sería
+una línea y cerraría la categoría entera; el argumento en contra es que un
+`!important` global es difícil de exceptuar el día que una animación sí deba
+sobrevivir. Sea cual sea la decisión, mejor tomarla a propósito que por omisión.
+
+### Fase 2 — Reglas de linter — ⏳ SIN EMPEZAR (verificado 2026-08-21)
+
 **Riesgo: bajo.** Activar `jsx-a11y` recomendado en las dos configs y corregir lo que destape. Es el paso que impide reintroducir los problemas.
 
-### Fase 3 — Navegación por teclado
+Los dos `eslint.config.mjs` son hoy idénticos y contienen `nextVitals` + `nextTs` más
+una única regla propia sobre variables sin usar. Ni una mención a `jsx-a11y`. El plugin
+está instalado —viene con `eslint-config-next`—, así que esto es literalmente añadir el
+set de reglas y arreglar lo que salga.
+
+**Esta fase habría atrapado la regresión de la fase 1.** No del todo: ninguna regla de
+`jsx-a11y` mide contraste, eso ninguna herramienta estática lo ve en un token de CSS.
+Pero sí es el hábito que falta — el proyecto no tiene hoy ninguna comprobación
+automática de accesibilidad, y por eso un cambio de tres hex pasó sin que nada chistara.
+Si se quiere una red de verdad contra ese fallo concreto, es un script que lea los
+tokens del `@theme` y calcule los ratios, en la línea de los `*:verificar` que ya tiene
+`api-backend` (`3-seguridad-del-proyecto.md` §4.9). Ese sí lo habría cazado.
+
+### Fase 3 — Navegación por teclado — ⏳ SIN EMPEZAR (verificado 2026-08-21)
+
 **Riesgo: bajo-medio.**
 
-- Enlace de salto al contenido (SC 2.4.1), visible al recibir foco.
+- Enlace de salto al contenido (SC 2.4.1), visible al recibir foco. Sigue sin existir: ni una coincidencia de `skip` ni de `saltar` en `sitio-web/src`.
 - Verificar orden de tabulación y que ningún elemento interactivo sea inalcanzable.
-- Foco visible en **todos** los controles, no solo en botones.
+- Foco visible en **todos** los controles, no solo en botones. Ojo con el punto anterior: hoy el anillo de foco está a 2.40:1, así que "visible" y "conforme" no son lo mismo.
 
-### Fase 4 — Alto contraste (RF-14)
+### Fase 4 — Alto contraste (RF-14) — ⏳ SIN EMPEZAR
+
 **Riesgo: medio.** Modo de alto contraste conmutable. Se apoya en el mismo mecanismo de tokens de la fase 1: si los colores son tokens, el modo es otro juego de valores, no otro CSS.
+
+Es la única fase que cubre una parte de RF-14 explícitamente pedida por el requerimiento
+y que hoy no existe de ninguna forma.
 
 ### Fase 5 — El editor no deja publicar contenido inaccesible
 **Riesgo: medio-alto. Es la fase que hace real la promesa de "por construcción".**
@@ -224,6 +320,15 @@ Puck no tiene ningún concepto nativo de campo obligatorio, así que la regla se
 **Decisión de producto tomada junto con el cambio:** el bloqueo es en "Enviar a revisión", no en "Guardar borrador" — un borrador a medio llenar se puede seguir guardando sin perder trabajo; lo que no puede pasar a `en_revision` es contenido incompleto.
 
 **Si agregás un bloque con imagen o iframe nuevo, sumalo al manifiesto de `packages/accessibility-policy` — no se detecta solo.**
+
+**Lo que cambió desde entonces y afecta a esta fase.** Las secciones dejaron de ser una
+lista fija: desde el 2026-08-20 cualquiera con `secciones.crear` estrena una página del
+portal desde el propio editor, y esa página recibe el catálogo **completo** de bloques.
+Antes, un bloque nuevo solo llegaba a producción por un despliegue, con su revisión de
+código de por medio; ahora el catálogo se compone en caliente. La regla no se rompe —el
+manifiesto es por tipo de bloque, no por página, así que una sección nueva hereda las
+validaciones de todos los bloques que use— pero el olvido sí se vuelve más fácil de
+cometer y más difícil de notar. Sigue siendo una lista a mano.
 
 ### Fase 6 — Verificación
 **Riesgo: bajo, esfuerzo alto.**
@@ -263,8 +368,31 @@ Estos se detectan usando el sitio con lector de pantalla, y esa prueba es parte 
 
 ## 7. Pendientes conocidos
 
-- **La decisión 3.1 necesita aprobación formal** de quien administra la identidad SENA. La fase 1 ya se ejecutó con esa opción, así que hoy el sitio usa `#2a7d00` en botones. Si el manual de marca exige otro valor, se cambia **un token** y todo el sistema lo hereda — ese es justamente el punto de haberlo separado por rol. Lo que no puede volver es a un verde que falle AA.
-- **Nadie ha probado el sitio con lector de pantalla** hasta hoy.
-- **Las 9 advertencias `no-img-element`** de la intranet son de rendimiento, no de accesibilidad — pero al convertir esas imágenes a `next/image` hay que revisar el `alt` de cada una.
-- **La intranet no está auditada** en este documento. Su paleta es propia y necesita el mismo cálculo de la §2.1. Es zona privada, pero RF-15 no exime de la Resolución.
-- **`5-tableros-bi.md` §4** registra que los iframes de Power BI no llevan `sandbox`; también les falta verificar `title`, que sí es criterio de accesibilidad (SC 4.1.2).
+- **El token interactivo volvió al verde de identidad** y los comentarios del CSS
+  siguen anunciando los ratios viejos. Es el pendiente más urgente del documento y el
+  más barato de cerrar: tres hex. Detalle en la fase 1.
+- **La decisión 3.1 sigue sin aprobación formal** de quien administra la identidad
+  SENA. Es probablemente lo que explica la regresión de arriba: una decisión de marca
+  que nunca se ratificó no aguanta la primera vez que alguien mira la pantalla y decide
+  que el verde se ve apagado. Cerrarla con quien corresponde vale más que volver a
+  cambiar el hex.
+- **Nadie ha probado el sitio con lector de pantalla** hasta hoy. Sigue siendo cierto.
+- **No hay ninguna comprobación automática de accesibilidad** en el proyecto: ni el set
+  de `jsx-a11y` (fase 2), ni `axe-core` en CI (fase 6), ni un verificador de contraste
+  sobre los tokens. El resto de reglas del proyecto sí se comprueban con scripts
+  (`3-seguridad-del-proyecto.md` §4.9); estas no.
+- **Las imágenes sin optimizar cambiaron de sitio, no de cantidad.** Las vistas
+  estáticas de la intranet (`InicioView`, `MatrizView`, `TasaView`…) se borraron al
+  migrar todo a contenido de base de datos, así que las advertencias
+  `no-img-element` que colgaban de ellas se fueron con ellas — pero quedan 17 `<img>`
+  en la intranet y 20 en el sitio, casi todos ya dentro de bloques Puck. Es de
+  rendimiento, no de accesibilidad; lo que sí es de accesibilidad es que al convertirlas
+  a `next/image` hay que revisar el `alt` de cada una, y los que vienen de un bloque los
+  escribe un editor, no un desarrollador.
+- **La intranet no está auditada** en este documento y ahora hay dos hallazgos
+  concretos esperando: su paleta propia necesita el mismo cálculo de la §2.1, y su
+  `<html>` declara `lang="en"` (SC 3.1.1, nivel A — ver §2.2). Es zona privada, pero
+  RF-15 no exime de la Resolución.
+- **`5-tableros-bi.md` §4** registra que los iframes de Power BI no llevan `sandbox`. El
+  `title` sí quedó cubierto por la fase 5, que lo exige en el servidor para los bloques
+  del manifiesto.
