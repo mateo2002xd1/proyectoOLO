@@ -13,7 +13,9 @@ services:
       - "5432:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
-      - ./api-backend/src/infrastructure/db/migrations/script.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      # Sin script de inicializacion: ese `script.sql` se movio a `migrations/_obsoletas/`
+      # y Docker no falla por un origen que no existe, crea un directorio vacio en su
+      # lugar. El esquema lo aplican las migraciones -- ver el servicio `migraciones`.
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
@@ -40,6 +42,11 @@ services:
       - "4000:4000"
     environment:
       PORT: 4000
+      # Dentro de un contenedor, 127.0.0.1 -el valor por defecto- significa "solo yo":
+      # nginx, el sitio y la intranet son contenedores distintos y no la alcanzarian.
+      # Aqui es seguro porque este servicio no publica el puerto 4000: solo nginx
+      # publica puertos, y solo el 80 y el 443.
+      HOST: 0.0.0.0
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       DB_SSL: "false"
       REDIS_URL: redis://redis:6379
@@ -63,19 +70,54 @@ services:
       redis:
         condition: service_healthy
 
+  # Aplica las migraciones de esquema. No arranca con `up` -tiene perfil-: se invoca
+  # con `./deploy.sh migrar`, que hace `docker compose run --rm migraciones`.
+  #
+  # Hace falta un paso propio porque el esquema lo definen las migraciones, nunca el
+  # arranque: `server.ts` comprueba que no haya pendientes y aborta si las hay. Sobre
+  # una base recien creada son 19, asi que sin esto la API entra en bucle de reinicio.
+  #
+  # Usa la etapa `builder` y no la imagen final: `npm run migrate` es
+  # `ts-node scripts/migrate.ts up`, y la final se construye con `npm ci --omit=dev`
+  # (sin ts-node) y solo lleva `dist/` (sin `scripts/`). El builder tiene las dos cosas.
+  migraciones:
+    build:
+      context: .
+      dockerfile: api-backend/Dockerfile
+      target: builder
+    profiles: ["tools"]
+    command: ["npm", "run", "migrate"]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      DB_SSL: "false"
+      # `scripts/migrate.ts` carga `src/config/database`, que a su vez importa la
+      # configuracion general, y esa aborta el proceso si falta JWT_SECRET.
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      db:
+        condition: service_healthy
+
   sitio-web:
     build:
       context: .
       dockerfile: sitio-web/Dockerfile
       args:
         BACKEND_URL: http://api-backend:4000
-        NEXT_PUBLIC_API_URL: http://api-backend:4000
+        # localhost, NO api-backend: esta URL la resuelve el NAVEGADOR, que corre en la
+        # maquina de quien despliega y no dentro de la red de Docker, donde ese nombre
+        # no existe. El puerto 4000 esta publicado justamente para esto.
+        #
+        # Va como ARG y no solo como variable de entorno porque Next incrusta las
+        # NEXT_PUBLIC_* en el bundle del navegador al compilar: definirla despues no
+        # cambia nada de lo que ya se compilo.
+        NEXT_PUBLIC_API_URL: http://localhost:4000
     restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
+      # Server-side (Next dentro del contenedor): aqui si vale el nombre de servicio.
       BACKEND_URL: http://api-backend:4000
-      NEXT_PUBLIC_API_URL: http://api-backend:4000
+      NEXT_PUBLIC_API_URL: http://localhost:4000
       JWT_SECRET: ${JWT_SECRET}
       # El mismo valor que en api-backend: es lo que autentica POST /api/revalidar.
       REVALIDAR_SECRET: ${REVALIDAR_SECRET}

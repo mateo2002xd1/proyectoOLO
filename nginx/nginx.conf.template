@@ -56,18 +56,22 @@ http {
     gzip_comp_level 6;
     gzip_types text/plain text/css text/xml application/json application/javascript application/xml+rss application/atom+xml image/svg+xml;
 
-    # ── PENDIENTE: /api/ eclipsa los route handlers de Next ─────────────────
+    # ── Reparto de prefijos: /api-backend/ es Express, /api/ es Next ────────
     #
-    # Los dos bloques de abajo mandan TODO /api/ al backend de Express, pero
-    # sitio-web tiene rutas propias bajo ese mismo prefijo (/api/auth/login,
-    # /api/upload, /api/users...) que Express no conoce: con esta configuración
-    # responden 404 en producción.
+    # Antes TODO /api/ iba a Express, y eso tumbaba el panel entero: sitio-web tiene
+    # diecinueve rutas propias bajo ese prefijo (/api/auth/login, /api/upload,
+    # /api/users, /api/roles...) que Express no conoce, así que respondían 404 —
+    # incluida la de iniciar sesión. Ahora la API vive bajo /api-backend/, que es el
+    # prefijo que la intranet ya usaba, y /api/ queda para cada aplicación.
     #
-    # Hay que decidir el prefijo antes de desplegar — por ejemplo exponer la API
-    # como /api-backend/ y dejar /api/ a Next, que es lo que ya hace la intranet.
+    # Al cambiar el prefijo hay que mover con él la baseURL de los clientes del sitio:
+    # `NEXT_PUBLIC_API_URL` pasa a incluir /api-backend en los docker-compose. Se inyecta
+    # como ARG del build porque Next incrusta las NEXT_PUBLIC_* en el bundle del
+    # navegador al compilar; ponerla solo en `environment:` no tendría efecto.
     #
-    # Nota relacionada: la política de subida admite documentos de hasta 50 MB y
-    # client_max_body_size está en 10M, así que nginx los cortaría antes.
+    # PENDIENTE, sin relación con lo anterior: la política de subida admite documentos
+    # de hasta 50 MB y client_max_body_size está en 10M, así que nginx los cortaría
+    # antes. Hay que igualar los dos números en la dirección que se decida.
     # Upstreams
     upstream sitio_web {
         server sitio-web:3000;
@@ -119,12 +123,20 @@ http {
         add_header Referrer-Policy "strict-origin-when-cross-origin" always;
         add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
 
-        # API proxy
-        location /api/ {
+        # API proxy -- bajo /api-backend/, no bajo /api/
+        #
+        # /api/ se queda para las rutas propias de Next del sitio: /api/auth/login,
+        # /api/upload, /api/users... son diecinueve, e incluyen el login del panel.
+        # Mandarlas a Express era un 404 garantizado: no las conoce.
+        #
+        # La barra final de proxy_pass es la que quita el prefijo: /api-backend/api/paginas
+        # llega a Express como /api/paginas, que es lo que los clientes del sitio piden
+        # (todos anteponen /api a la ruta, sobre la baseURL NEXT_PUBLIC_API_URL).
+        location /api-backend/ {
             limit_req  zone=api_general burst=40 nodelay;
             limit_conn conexiones 20;
 
-            proxy_pass http://api_backend/api/;
+            proxy_pass http://api_backend/;
             proxy_http_version 1.1;
             proxy_set_header Upgrade $http_upgrade;
             proxy_set_header Connection 'upgrade';
@@ -172,8 +184,14 @@ http {
         add_header Referrer-Policy "strict-origin-when-cross-origin" always;
         add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
 
-        # API proxy
-        location /api/ {
+        # API proxy -- bajo /api-backend/, no bajo /api/
+        #
+        # Igual que en el sitio: /api/ se reserva para las rutas propias de Next (la
+        # intranet tiene su /api/upload). La diferencia esta en el proxy_pass: el cliente
+        # de la intranet pide /api-backend/paginas/... SIN el /api, asi que aqui se anade.
+        # Es la misma traduccion que ya hacia el rewrite de su next.config.ts, hecha un
+        # salto antes.
+        location /api-backend/ {
             limit_req  zone=api_general burst=40 nodelay;
             limit_conn conexiones 20;
 
