@@ -1,11 +1,12 @@
 import { Queue, Worker, Job } from 'bullmq';
-import { crearLoggerDeErrorConThrottle } from './index';
+import { crearLoggerDeErrorConThrottle, getRedis } from './index';
 
-const connection = {
-  host: process.env.REDIS_HOST || '127.0.0.1',
-  port: parseInt(process.env.REDIS_PORT || '6379', 10),
-  retryStrategy: (times: number) => Math.min(times * 500, 10000),
-};
+// Misma conexión que `getRedis()` — ya se abre con `maxRetriesPerRequest: null`
+// porque BullMQ lo exige (ver el comentario en `./index`). Antes esto armaba su
+// propia conexión a partir de `REDIS_HOST`/`REDIS_PORT`, variables que nada en
+// el proyecto define (todo lo demás usa `REDIS_URL`), así que siempre caía en
+// el valor por defecto `127.0.0.1:6379` y nunca llegaba al Redis real.
+const connection = getRedis();
 
 export const heavyJobsQueue = new Queue('heavy-jobs', { connection });
 
