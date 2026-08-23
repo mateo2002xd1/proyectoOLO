@@ -59,6 +59,15 @@ const PERMISOS_POR_ROL: Record<string, string[]> = {
   visitante_interno: ['acceso.intranet'],
 };
 
+const ROLES_BASE = [
+  { nombre: 'Superadmin', descripcion: 'Control total del sistema y acceso a todas las configuraciones', es_sistema: true },
+  { nombre: 'Administrador', descripcion: 'Gestión de contenidos, usuarios, roles y autorizaciones', es_sistema: true },
+  { nombre: 'Editor', descripcion: 'Edición y redacción de contenidos para revisión', es_sistema: true },
+  { nombre: 'Director', descripcion: 'Consulta ejecutiva y dashboards de dirección', es_sistema: true },
+  { nombre: 'Subdirector', descripcion: 'Consulta y seguimiento de indicadores', es_sistema: true },
+  { nombre: 'visitante_interno', descripcion: 'Acceso de solo lectura a la intranet institucional', es_sistema: true },
+];
+
 const consultar = async <T>(
   sql: string,
   replacements: Record<string, unknown> = {}
@@ -71,6 +80,29 @@ const consultar = async <T>(
 
 const sembrar = async (): Promise<void> => {
   await sequelize.authenticate();
+
+  // 0. Alta de roles base si no existen
+  console.log('\n=== Roles del sistema ===\n');
+  for (const rol of ROLES_BASE) {
+    const [existe] = await consultar<{ id: string }>(
+      'SELECT id FROM roles WHERE nombre = :nombre LIMIT 1',
+      { nombre: rol.nombre }
+    );
+    if (!existe) {
+      await sequelize.query(
+        `INSERT INTO roles (id, nombre, descripcion, es_sistema, created_at, updated_at)
+         VALUES (gen_random_uuid(), :nombre, :descripcion, :es_sistema, now(), now())`,
+        { replacements: rol, logging: false }
+      );
+      console.log(`  [CREADO]  ${rol.nombre}`);
+    } else {
+      await sequelize.query(
+        `UPDATE roles SET es_sistema = true WHERE nombre = :nombre`,
+        { replacements: { nombre: rol.nombre }, logging: false }
+      );
+    }
+  }
+
   console.log('\n=== Catálogo de permisos ===\n');
 
   // 1. Alta de lo que falta
