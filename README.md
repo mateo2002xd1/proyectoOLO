@@ -93,17 +93,3 @@ crudo para Postman o para generar clientes. Las descripciones salen de comentari
 `@openapi` escritos junto a cada ruta, no de una lista aparte, para que no se
 desincronicen. En producción está apagada salvo que se encienda a mano: ver
 [7-despliegue.md](7-despliegue.md).
-
-
-## Directivas de contraseñas — OLO
-|Propiedad|Requisito |
-| Caracteres permitidos	Mayúsculas (A-Z), minúsculas (a-z), números (0-9), símbolos @ # $ % ^ & * - _ ! + = [ ] { } | \ : ' , . ? /  ~ " ( ) ; < >` y espacio en blanco
-Caracteres no permitidos	Caracteres Unicode (emojis, acentos sueltos fuera de estándar, etc.)
-Longitud mínima	12 caracteres (recomiendo subir el mínimo de Microsoft de 8 a 12, dado que es un sistema gubernamental con datos sensibles)
-Longitud máxima	256 caracteres
-Complejidad	Mínimo 3 de las 4 categorías: mayúsculas, minúsculas, números, símbolos
-Historial de contraseñas	No repetir las últimas 5 contraseñas usadas
-Expiración	90 días para Editor y Director/Subdirector (coherente con el requisito #16 de expiración de cuenta); Admin sin expiración forzada pero con rotación recomendada cada 180 días
-Bloqueo por intentos fallidos	5 intentos fallidos → bloqueo temporal de 15 min (protección contra fuerza bruta)
-Almacenamiento	Hash con bcrypt o argon2 (nunca texto plano ni MD5/SHA1 solo)
-
