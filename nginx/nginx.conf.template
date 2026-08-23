@@ -30,7 +30,7 @@ http {
     tcp_nodelay     on;
     keepalive_timeout 65;
     types_hash_max_size 2048;
-    client_max_body_size 10M;
+    client_max_body_size 50M;
 
     # ── Límites de tasa ─────────────────────────────────────────────────────
     #
@@ -69,9 +69,6 @@ http {
     # como ARG del build porque Next incrusta las NEXT_PUBLIC_* en el bundle del
     # navegador al compilar; ponerla solo en `environment:` no tendría efecto.
     #
-    # PENDIENTE, sin relación con lo anterior: la política de subida admite documentos
-    # de hasta 50 MB y client_max_body_size está en 10M, así que nginx los cortaría
-    # antes. Hay que igualar los dos números en la dirección que se decida.
     # Upstreams
     upstream sitio_web {
         server sitio-web:3000;
