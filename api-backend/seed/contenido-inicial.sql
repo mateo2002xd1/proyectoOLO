@@ -1,23 +1,35 @@
 -- Contenido inicial del OLO. GENERADO, no editar a mano.
 --
--- Qué lleva: las páginas del sitio y de la intranet con su versión PUBLICADA, y las
--- configuraciones de identidad visual. Es lo que hace falta para que el portal cargue
--- con contenido real en vez de con su respaldo estático.
+-- Qué lleva: las páginas del sitio y de la intranet con su versión PUBLICADA, el árbol
+-- de secciones, los contenidos (estudios/informes/banners), la identidad visual
+-- (marca_versiones) y las políticas de privacidad vigentes. Es lo que hace falta para
+-- que el portal cargue completo, con contenido real, en una instalación nueva.
 --
 -- Qué NO lleva, a propósito:
---   * usuarios, auditoria_cambios y preguntas_seguridad -> datos personales (Ley 1581).
---     Las columnas que apuntaban a un usuario (creado_por, revisor_id, publicado_por,
---     actualizado_por) se vuelcan como NULL: son trazabilidad, y la de otra instalación
---     no significa nada. El historial de quién editó qué se queda en la base de origen.
---   * roles, permisos y roles_permisos -> los siembran las migraciones 012, 016 y 019.
---   * las versiones en borrador, rechazadas o archivadas -> son trabajo a medias de la
---     instalación de origen. Solo viaja lo publicado, que es lo que se ve.
+--   * usuarios, auditoria_cambios, auditoria_accesos y preguntas_seguridad -> datos
+--     personales o historial de actividad de la instalación de origen (Ley 1581). Las
+--     columnas que apuntaban a un usuario (creado_por, revisor_id, publicado_por,
+--     actualizado_por, autor_id, revisado_por, aprobado_por) se vuelcan como NULL: son
+--     trazabilidad, y la de otra instalación no significa nada. Una instalación nueva
+--     nace sin usuarios; el único administrador se crea con `./deploy.sh crear-admin`.
+--   * roles, permisos y roles_permisos -> los siembran las migraciones 012, 016 y 019, y
+--     el reconciliador `npm run sembrar:permisos` (corre solo en cada deploy).
+--   * archivos, contenidos_archivos y _obsoleto_attachment -> metadatos de subidas con
+--     rutas de disco que no persisten en el contenedor de origen ni viajan con este
+--     archivo. Si `marca_versiones.tokens` referencia un logotipo por su archivo_id,
+--     esa referencia llega rota hasta que alguien lo vuelva a subir en la instalación
+--     nueva -- no es un bug de este script, es que los archivos no viajan.
+--   * consentimientos, respaldos, notificaciones y tableros_bi -> historial operativo o
+--     datos de prueba de la instalación de origen, no contenido del sitio.
+--   * las versiones de página y los contenidos en borrador, en revisión, rechazados o
+--     archivados -> son trabajo a medias de la instalación de origen. Solo viaja lo
+--     publicado, que es lo que se ve.
 --
 -- Se aplica DESPUÉS de las migraciones, con `./deploy.sh sembrar`. Es idempotente, así
 -- que ejecutarlo dos veces no duplica nada.
 --
 -- Regenerar desde una base al día:  npm run seed:generar
--- Generado el 2026-08-22T00:22:11.882Z
+-- Generado el 2026-08-23T17:19:30.231Z
 
 BEGIN;
 
@@ -67,5 +79,17 @@ INSERT INTO "configuraciones" ("clave", "valor", "descripcion", "actualizado_por
   ($olo$respaldos.frecuencia_cron$olo$, $olo$"0 3 * * *"$olo$::jsonb, $olo$Frecuencia configurable de los respaldos automáticos (RF-17)$olo$, NULL, '2026-07-28T09:00:59.453Z'),
   ($olo$respaldos.retencion_dias$olo$, $olo$30$olo$::jsonb, $olo$Días que se conserva un respaldo antes de rotarlo (RF-17)$olo$, NULL, '2026-07-28T09:00:59.453Z')
 ON CONFLICT DO NOTHING;
+
+-- 5. Secciones (árbol de navegación, padres antes que hijas)
+-- secciones: sin filas
+
+-- 6. Contenidos publicados (estudios, informes, estadísticas, banners)
+-- contenidos: sin filas
+
+-- 7. Identidad visual (marca_versiones)
+-- marca_versiones: sin filas
+
+-- 8. Políticas de privacidad vigentes
+-- politicas_privacidad: sin filas
 
 COMMIT;
