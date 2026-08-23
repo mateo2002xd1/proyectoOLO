@@ -16,7 +16,6 @@ import React from 'react';
 import { IntranetTopbarWrapper } from '@/shared/lib/blocks/plantilla/IntranetTopbarWrapper';
 import { IntranetFooter } from '@/shared/lib/blocks/plantilla/IntranetFooter';
 import { obtenerPlantilla } from '../lib/plantilla';
-import { RouteTransition } from '@/shared/ui/atoms/RouteTransition';
 
 export async function MarcoSecciones({
   children,
@@ -29,10 +28,8 @@ export async function MarcoSecciones({
 
       {/* Crece para ocupar el hueco sobrante y dejar el pie abajo del todo. Antes
           lo resolvía cada página con `min-h-screen`, pero con el pie ya fuera del
-          contenido eso obligaba a desplazarse siempre. `RouteTransition` reemplaza
-          al div plano de siempre y le pasa la misma clase, así que sigue creciendo
-          igual — solo se le suma la animación de cambio de vista. */}
-      <RouteTransition className="intranet-contenido">{children}</RouteTransition>
+          contenido eso obligaba a desplazarse siempre. */}
+      <div className="intranet-contenido">{children}</div>
 
       {plantilla.pie && <IntranetFooter {...plantilla.pie} />}
     </>
