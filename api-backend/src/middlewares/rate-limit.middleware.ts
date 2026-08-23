@@ -34,7 +34,24 @@ import { crearLoggerDeErrorConThrottle } from '../infrastructure/redis';
  * eso significa que con Redis caído los comandos se encolan **para siempre** en vez
  * de fallar. Un limitador montado sobre esa conexión colgaría todas las peticiones de
  * la API en cuanto Redis parpadee: la protección saldría más cara que el ataque. Esta
- * falla rápido y `passOnStoreError` deja pasar la petición.
+ * falla rápido —acotado por `maxRetriesPerRequest: 1`— y `passOnStoreError` deja pasar
+ * la petición.
+ *
+ * **`enableOfflineQueue` tiene que ser `true`, no `false`.** Los limitadores se crean
+ * a nivel de módulo (`export const limitadorGlobal = crearLimitador(...)`, más abajo),
+ * así que `RedisStore.init()` manda su primer comando (`SCRIPT LOAD`) en el mismo tick
+ * en el que se acaba de construir este cliente — antes de que el socket llegue a abrir,
+ * pase lo que pase de rápido que conteste Redis. Con la cola offline desactivada ese
+ * primer comando fallaba siempre con "Stream isn't writeable", y `rate-limit-redis` dejó
+ * la promesa de ese script en rechazada para siempre: cada petición volvía a intentar
+ * leerla, volvía a fallar, y `passOnStoreError` dejaba pasar todo sin contar nada. El
+ * limitador quedaba desactivado en silencio desde el primer arranque, sin ningún error
+ * después del de inicio que lo delatara. Con la cola offline activada ese primer
+ * comando simplemente espera a que abra el socket —en Docker, `depends_on: redis:
+ * condition: service_healthy` ya garantiza que Redis está arriba— y sigue fallando
+ * rápido si de verdad no hay Redis: `maxRetriesPerRequest: 1` vacía la cola con error
+ * en cuanto se agota el primer reintento, así que una caída real se sigue notando igual
+ * que antes.
  */
 let clienteDeLimites: Redis | null | undefined;
 
@@ -49,7 +66,7 @@ function obtenerClienteDeLimites(): Redis | null {
 
   const cliente = new Redis(url, {
     maxRetriesPerRequest: 1,
-    enableOfflineQueue: false,
+    enableOfflineQueue: true,
     retryStrategy: (intentos) => Math.min(intentos * 500, 10000),
   });
   cliente.on('error', crearLoggerDeErrorConThrottle('Rate limit Redis'));
