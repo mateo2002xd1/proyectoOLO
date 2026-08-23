@@ -46,7 +46,7 @@ morir() { rojo "ERROR: $*"; exit 1; }
 #  2. `-T` en run/exec. Sin el, Docker intenta reservar un TTY y la terminal de Git Bash
 #     (MinTTY) no se lo da: "the input device is not a TTY". Ningun comando de este
 #     script necesita terminal interactiva, asi que desactivarlo es gratis.
-componer() { MSYS_NO_PATHCONV=1 componer "$@"; }
+componer() { MSYS_NO_PATHCONV=1 docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" "$@"; }
 
 show_help() {
     cat <<'AYUDA'
@@ -145,6 +145,18 @@ comprobar_entorno() {
 
 # --- Comandos ---------------------------------------------------------------
 
+# Migra el esquema, valida que el mapeo modelo-columna siga correcto y reconcilia el
+# catalogo de permisos con el codigo. Los tres pasos son idempotentes -correrlos de mas
+# no hace nada-, asi que start() y migrar() comparten esta misma secuencia sin duplicarla.
+# Antes eran pasos manuales (ver 7-despliegue.md); van aqui para que ningun empaquetado
+# deje el esquema o los permisos desincronizados de lo que dice el codigo.
+aplicar_migraciones() {
+    componer up -d db
+    componer run --rm -T migraciones
+    componer run --rm -T migraciones npm run db:verificar
+    componer run --rm -T migraciones npm run sembrar:permisos
+}
+
 setup() {
     comprobar_requisitos
     echo "=== Configuracion inicial ==="
@@ -217,8 +229,7 @@ start() {
     # reinicio en vez de un error visible. Es idempotente -si no hay pendientes no hace
     # nada-, asi que no molesta en los arranques siguientes.
     echo "=== Aplicando migraciones de esquema ==="
-    componer up -d db
-    componer run --rm -T migraciones
+    aplicar_migraciones
 
     echo ""
     echo "=== Iniciando servicios ==="
@@ -267,12 +278,12 @@ migrar() {
     echo "=== Aplicando migraciones de esquema ==="
     # Necesita la base arriba y sana; `depends_on: service_healthy` del servicio se
     # encarga de esperarla, pero si la pila esta parada hay que levantarla antes.
-    componer up -d db
-    componer run --rm -T migraciones
+    aplicar_migraciones
     verde "Migraciones al dia"
 }
 
 SEED="api-backend/seed/contenido-inicial.sql"
+SEED_ROLES="api-backend/seed/roles-y-permisos.sql"
 
 sembrar() {
     comprobar_requisitos
@@ -284,15 +295,27 @@ sembrar() {
     usuario=$(leer_env POSTGRES_USER)
     base=$(leer_env POSTGRES_DB)
 
+    echo "=== Cargando roles y permisos iniciales ==="
+    componer up -d db
+    if [ -f "$SEED_ROLES" ]; then
+        componer exec -T db \
+            psql -v ON_ERROR_STOP=1 -U "$usuario" "$base" < "$SEED_ROLES"
+    fi
+
+    # El bootstrap SQL de arriba puede quedar desactualizado frente al catalogo real en
+    # codigo (src/shared/catalogo-permisos.ts). Correr el reconciliador justo despues
+    # corrige cualquier diferencia sin tener que mantener las dos fuentes sincronizadas a
+    # mano -- es el mismo paso que ya corre aplicar_migraciones() en start/migrar.
+    componer run --rm -T migraciones npm run sembrar:permisos
+
     echo "=== Cargando contenido inicial ==="
     # Va DESPUES de las migraciones: el archivo inserta filas en tablas que crean ellas.
     # Es idempotente (ON CONFLICT DO NOTHING), asi que repetirlo no duplica nada, pero
     # tampoco pisa lo que ya haya: para reemplazar contenido existente hay que vaciarlo
     # antes a mano.
-    componer up -d db
     componer exec -T db \
         psql -v ON_ERROR_STOP=1 -U "$usuario" "$base" < "$SEED"
-    verde "Contenido inicial cargado"
+    verde "Contenido y roles iniciales cargados"
 }
 
 crear_admin() {
