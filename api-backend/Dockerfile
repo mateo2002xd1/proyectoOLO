@@ -27,6 +27,12 @@ COPY api-backend/src ./src
 # `ts-node scripts/migrate.ts`, y sin esta copia esa etapa no tiene que ejecutar.
 COPY api-backend/scripts ./scripts
 
+RUN for pkg in /packages/*; do \
+      if [ -f "$pkg/tsconfig.json" ] && ! grep -q '"noEmit"[[:space:]]*:[[:space:]]*true' "$pkg/tsconfig.json"; then \
+        /app/node_modules/.bin/tsc --project "$pkg"; \
+      fi; \
+    done
+
 RUN npm run build
 
 # --- Imagen final ----------------------------------------------------------
@@ -39,13 +45,26 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY packages /packages
+COPY --from=builder /packages /packages
 
 COPY api-backend/package.json api-backend/package-lock.json ./
 RUN npm ci --omit=dev
+
+# npm ci crea symlinks para las dependencias `file:`. Los symlinks funcionan,
+# pero Node.js sigue la cadena real y acaba leyendo `src/index.ts` si el paquete
+# no tiene `dist/`. Reemplazamos los symlinks con copias fisicas del contenido
+# compilado para que Node siempre encuentre `dist/index.js`.
+RUN for pkg in /app/node_modules/@olo/*; do \
+      if [ -L "$pkg" ]; then \
+        target=$(readlink -f "$pkg"); \
+        rm "$pkg"; \
+        cp -r "$target" "$pkg"; \
+      fi; \
+    done
 
 COPY --from=builder /app/dist ./dist
 
 EXPOSE 4000
 
 CMD ["node", "dist/server.js"]
+
