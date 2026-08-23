@@ -39,7 +39,7 @@ function leerPreguntasGuardadas(): CatalogQuestion[] {
 
 export function SecurityQuestionsView() {
   const router = useRouter();
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading, logout } = useAuth();
 
   const mode = useSyncExternalStore(
     subscribeToSessionStorage,
@@ -259,9 +259,9 @@ export function SecurityQuestionsView() {
                   : 'Continuar'}
             </button>
 
-            <Link href="/login" className="sq-login-link">
+            <button type="button" onClick={() => logout()} className="sq-login-link">
               Iniciar sesión
-            </Link>
+            </button>
           </form>
         </div>
 

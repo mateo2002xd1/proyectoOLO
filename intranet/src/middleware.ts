@@ -45,6 +45,13 @@ export async function middleware(request: NextRequest) {
 
   // Rutas públicas / de login
   if (pathname.startsWith('/login') || pathname.startsWith('/api-backend')) {
+    // Si el usuario pide salir explícitamente a /login?logout=1
+    if (pathname === '/login' && request.nextUrl.searchParams.has('logout')) {
+      const response = NextResponse.redirect(new URL('/login', request.url));
+      response.cookies.delete('token');
+      return response;
+    }
+
     // Si el usuario ya está logueado y trata de acceder a /login, redirigir
     if (isTokenValid && pathname.startsWith('/login')) {
       if (isRestricted) {

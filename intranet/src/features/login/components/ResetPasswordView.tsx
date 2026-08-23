@@ -39,7 +39,7 @@ function leerDatosDeRecuperacion(): { email: string; answers: Array<{ key: strin
 }
 
 export function ResetPasswordView() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading, logout } = useAuth();
   const router = useRouter();
 
   // Solo `mode` necesita ser reactivo: el correo y las respuestas se leen
@@ -192,9 +192,9 @@ export function ResetPasswordView() {
               {isLoading ? 'Guardando...' : 'Guardar'}
             </button>
 
-            <Link href="/login" className="rp-login-link">
+            <button type="button" onClick={() => logout()} className="rp-login-link">
               Iniciar sesión
-            </Link>
+            </button>
           </form>
         </div>
 

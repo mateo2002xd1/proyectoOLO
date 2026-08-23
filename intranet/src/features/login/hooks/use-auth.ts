@@ -79,9 +79,14 @@ export function useAuth() {
   const logout = async () => {
     try {
       await authApi.logout();
+    } catch {
+      // Ignorar error de red al desloguear
     } finally {
       setUser(null);
-      router.push('/login');
+      if (typeof document !== 'undefined') {
+        document.cookie = 'token=; Max-Age=0; path=/;';
+      }
+      window.location.href = '/login?logout=1';
     }
   };
 
