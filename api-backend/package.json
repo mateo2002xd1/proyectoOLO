@@ -18,6 +18,7 @@
     "propiedad:verificar": "ts-node scripts/verificar-propiedad.ts",
     "sembrar:permisos": "ts-node scripts/sembrar-permisos-roles.ts",
     "auditoria:verificar": "ts-node scripts/verificar-auditoria.ts",
+    "caducidad:verificar": "ts-node scripts/verificar-caducidad-administradores.ts",
     "password:verificar": "ts-node scripts/verificar-politica-password.ts",
     "sembrar:tasa": "ts-node scripts/sembrar-pagina-tasa.ts",
     "sembrar:intranet": "ts-node scripts/sembrar-paginas-intranet.ts",
