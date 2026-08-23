@@ -2396,6 +2396,18 @@ button.text-link,
   --puck-pluginbar-color-text-hover: #ffffff;
   --puck-pluginbar-color-text-selected: #ffffff;
   --puck-pluginbar-color-bg-hover: rgba(255, 255, 255, 0.1);
+
+  /* Segmentación visual de cada bloque en el lienzo: Puck ya dibuja un
+     contorno al pasar el mouse o seleccionar, mediante estas mismas
+     variables (es su API de theming oficial) — aquí solo se refuerzan, para
+     que no se pierdan contra un bloque con fondo parecido. Hover y
+     seleccionado quedan en colores distintos para que se note cuál es cuál:
+     azul mientras se pasa por encima, azul marino de marca cuando ya está
+     elegido. */
+  --puck-color-selection-border: #2563eb;
+  --puck-color-selection-bg: rgba(37, 99, 235, 0.10);
+  --puck-slot-component-color-border-selected: #001631;
+  --puck-border-width-focus: 2px;
 }
 
 /* Los iconos de plegar barras heredan `currentColor`, así que ya salen blancos;
@@ -2945,10 +2957,54 @@ button.text-link,
   width: 100%;
 }
 
+/* Tablet: la cuenta de columnas es la que se configuró para ese tamaño, no la
+   de escritorio a la fuerza ni el 1-columna fijo de móvil. */
+@media (max-width: 1024px) {
+  .olo-grid {
+    grid-template-columns: repeat(var(--olo-grid-cols-tablet, 2), minmax(0, 1fr));
+  }
+}
+
+/* Móvil, además de su propia cuenta de columnas, reduce el espacio entre
+   ellas — mismo criterio de `.olo-caja` un poco más arriba: un `gap` amplio
+   en escritorio asfixia el contenido en una pantalla angosta. */
 @media (max-width: 640px) {
   .olo-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(var(--olo-grid-cols-movil, 1), minmax(0, 1fr));
+    gap: calc(var(--olo-grid-gap, 24px) * 0.6);
   }
+}
+
+/* Imagen de fondo de Grid en modo «en línea»/«personalizado»: es una `<img>`
+   real (no CSS), así que necesita quedar detrás del contenido a propósito —
+   ver `crearGridConfig` en `@olo/blocks-renderer`. */
+.olo-grid-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.olo-grid-wrapper>.olo-grid {
+  position: relative;
+  z-index: 1;
+}
+
+.olo-grid-imagen-fondo {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* «Personalizado»: el ancho lo fija el campo de la persona que edita (estilo
+   inline), así que aquí solo se retira el estiramiento a todo el bloque. */
+.olo-grid-imagen-fondo--personalizado {
+  inset: auto;
+  top: 0;
+  left: 0;
+  height: auto;
+  object-fit: contain;
 }
 
 /* Fila o columna flexible (primitivo Flex) */
