@@ -285,7 +285,10 @@ export function PuckEditorWrapper({
   const config = useMemo(() => configDeEdicion(slug), [slug]);
 
   const estado = versionActual?.estado ?? "borrador";
-  const bloqueado = estado === "en_revision" || estado === "publicado";
+  // Solo se bloquea lo que ya está en la cola de aprobación: reenviarlo lo duplicaría.
+  // `publicado` estaba aquí también y dejaba el editor sin salida en cuanto una página
+  // se publicaba una vez — ver el comentario largo en el equivalente de sitio-web.
+  const bloqueado = estado === "en_revision";
   const busy = isSaving || isSendingToReview;
 
   const handleChange = useCallback((data: Data) => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { PuckEditorWrapper } from '@/features/paginas/components/puck-editor-wrapper';
 import { rutaPublicaDeSlug } from '@/features/paginas/lib/ruta-de-vuelta';
 import { usePagina } from '@/features/paginas/hooks/use-pagina';
@@ -18,18 +18,14 @@ const MIN_LOADER_MS = 8000;
  * recibía el editor entero en el navegador, aunque luego no pudiera guardar.
  */
 export function EditorClient({ slug }: { slug: string }) {
-  const { pagina, isLoading, error, saveDraft, submitForReview } = usePagina(slug);
+  // `rechazo` viene del hook y no se deriva de `estado`: guardar un borrador cambia el
+  // estado a 'borrador' —eso es justo lo que vuelve a habilitar «Enviar a revisión»—,
+  // y el aviso tiene que sobrevivir a ese guardado para que se pueda leer mientras se
+  // corrige. Al venir de un `useState` su identidad ya es estable entre renders, que es
+  // lo que `overrides` de Puck necesita para no reconstruir su store en cada uno.
+  const { pagina, rechazo, isLoading, error, saveDraft, submitForReview } = usePagina(slug);
 
-  // Identidad estable: `overrides` de Puck depende de esto, y un objeto nuevo en
-  // cada render le haría reconstruir su store. Se memoriza sobre los valores
-  // sueltos —y no sobre `pagina`— para que guardar un borrador no lo recree.
   const estado = pagina?.estado ?? null;
-  const motivo = pagina?.motivoRechazo ?? null;
-  const numeroVersion = pagina?.numeroVersion ?? null;
-  const rechazo = useMemo(
-    () => (estado === 'rechazado' ? { motivo, numeroVersion } : undefined),
-    [estado, motivo, numeroVersion],
-  );
 
   // Mantiene el loader visible al menos MIN_LOADER_MS aunque los datos carguen antes.
   const [minTimePassed, setMinTimePassed] = useState(false);

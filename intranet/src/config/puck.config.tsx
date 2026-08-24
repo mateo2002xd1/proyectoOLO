@@ -22,7 +22,14 @@ import { DescargasConPresentacion } from '@/shared/lib/blocks/compartidos/Descar
 import { RecursosVisualesBloque } from '@/shared/lib/blocks/inicio/RecursosVisualesBloque';
 import { Publicaciones } from '@/shared/lib/blocks/inicio/Publicaciones';
 import { PreguntasFrecuentes } from '@/shared/lib/blocks/inicio/PreguntasFrecuentes';
-import { primitiveComponents, conCajaEnTodos, BLOQUES_SIN_CAJA, campoColor } from '@olo/blocks-renderer';
+import {
+  primitiveComponents,
+  crearGridConfig,
+  conCaja,
+  conCajaEnTodos,
+  BLOQUES_SIN_CAJA,
+  campoColor,
+} from '@olo/blocks-renderer';
 import type { Config } from '@puckeditor/core';
 import type { ComponentProps } from 'react';
 import { ImageUploaderField } from '@/features/gestor-secciones/components/image-uploader-field';
@@ -91,8 +98,11 @@ const puckConfigBase: Config = {
     },
   },
   components: {
-    // Primitivos de maquetación compartidos (Grid / Flex / Space)
+    // Primitivos de maquetación compartidos (Flex / Space)
     ...primitiveComponents,
+    // Grid necesita el campo de imagen de esta app inyectado (su fondo sube
+    // archivos contra la API de intranet) — ver `crearGridConfig`.
+    Grid: conCaja(crearGridConfig(campoImagen)),
     IntranetTopbar: {
       label: 'Barra de navegación',
       fields: {

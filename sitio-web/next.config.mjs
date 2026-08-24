@@ -6,6 +6,23 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
+  // DEBE coincidir con `turbopack.root` de abajo -- Next avisa en build si no
+  // coinciden y usa `outputFileTracingRoot`, lo que rompe la resolución de los
+  // paquetes @olo/* (verificado con un build real: sin esto Turbopack no encontraba
+  // `/packages`, que vive fuera de este directorio). Como la raíz de rastreo queda
+  // por encima de esta carpeta, el `standalone` output anida `server.js` bajo `app/`
+  // -- ver el comentario del Dockerfile en la copia final, ya no es un valor a
+  // adivinar.
+  outputFileTracingRoot: path.resolve(__dirname, '..'),
+  transpilePackages: [
+    '@olo/accessibility-policy',
+    '@olo/blocks-renderer',
+    '@olo/email-policy',
+    '@olo/inactividad',
+    '@olo/password-policy',
+    '@olo/slug-policy',
+    '@olo/upload-policy',
+  ],
   turbopack: {
     root: path.resolve(__dirname, '..')
   },

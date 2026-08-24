@@ -4,7 +4,7 @@ export const nombre = '003-restricciones-e-indices';
 
 /**
  * Declara en el esquema las invariantes de `11-base-de-datos.md` §5 y crea los
- * índices que el backlog pide (T-07.12, T-10.2).
+ * índices de la bitácora (RF-07) y del buscador de contenidos (RF-10).
  *
  * Va después de las tablas nuevas a propósito: los datos existentes deben cumplir
  * una invariante antes de que se pueda declarar. Donde hoy no la cumplen, esta

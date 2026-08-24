@@ -108,6 +108,14 @@ Las veinte tablas de este inventario existen en el esquema y **las veinte tienen
 
 Tener modelo no es tener la funcionalidad. Ocho de ellas —`auditoria_accesos`, `configuraciones`, `marca_versiones`, `tableros_bi`, `politicas_privacidad`, `consentimientos`, `respaldos`, `notificaciones`— todavía no tienen repositorio, caso de uso ni ruta: son la base sobre la que se construyen RF-03, RF-08, RF-13, RF-17 y la auditoría de acceso de RF-15. El modelo es el contrato con la tabla; lo que falta es la capa de aplicación encima.
 
+**Comprobado otra vez el 2026-08-21, y el número no se ha movido: siguen siendo ocho.**
+La forma de verlo es directa — el nombre de cada uno de esos modelos no aparece en un
+solo archivo de `api-backend/src` fuera de `infrastructure/db/models/`. Hay diez
+repositorios y ninguno es de esas tablas. Vale la pena tenerlo presente cuando se
+planifique: cinco requerimientos completos están esperando encima de tablas que ya
+existen y que nadie ha vuelto a tocar en meses. La base de datos va por delante del
+código, que es el orden menos malo, pero la distancia ya se nota.
+
 ### 4.1 Identidad y acceso — RF-04, RF-05, RF-16
 
 | Tabla | Qué guarda | Claves e invariantes |
@@ -118,14 +126,23 @@ Tener modelo no es tener la funcionalidad. Ocho de ellas —`auditoria_accesos`,
 | **`roles_permisos`** | Qué puede cada rol | PK compuesta `(rol_id, permiso_id)`, ambas `CASCADE`. Sin `id` propio: la pareja es la identidad |
 | **`preguntas_seguridad`** | Recuperación de cuenta | `UNIQUE(usuario_id, pregunta_clave)`. `CASCADE`: borrar el usuario borra sus preguntas |
 
-`usuarios.fecha_caducidad` en `NULL` significa *sin caducidad*, y es lo que RF-16 reserva al administrador. La verificación ocurre en el login del backend (T-16.13), nunca en el frontend.
+`usuarios.fecha_caducidad` en `NULL` significa *sin caducidad*, y es lo que RF-16 reserva al administrador. La verificación ocurre en el login del backend, nunca en el frontend.
+
+**Las cuatro columnas que `usuarios` ganó después del diseño**, porque cada una sostiene una regla que antes vivía solo en el código:
+
+| Columna | Migración | Qué sostiene |
+|---|---|---|
+| `apellidos` | 010 | Antes todo iba en `nombre`. El relleno de las filas existentes fue heurístico (la última palabra), así que los datos viejos pueden estar mal partidos |
+| `intentos_fallidos_login` | 011 | Los 5 intentos / 15 minutos del login. **Aparte** de `intentos_fallidos`, que es de las preguntas de seguridad y cuenta 3 / 30 minutos. Dos umbrales distintos en dos flujos distintos: una sola columna habría bloqueado a destiempo en los dos |
+| `bloqueado_hasta` | 011 | Ese sí es compartido: la cuenta está bloqueada o no, venga el bloqueo de donde venga |
+| `ultimo_acceso_en` | anterior, pero **antes no medía nada** | El cierre por inactividad de 20 minutos del servidor. La columna existía y solo se escribía al iniciar sesión; ahora se refresca en cada petición, como mucho una vez por minuto para no convertir cada lectura en un `UPDATE`. Ver `3-seguridad-del-proyecto.md` §S3 |
 
 ### 4.2 Contenido — RF-01, RF-10, RF-11
 
 | Tabla | Qué guarda | Claves e invariantes |
 |---|---|---|
 | **`secciones`** | El árbol de navegación del sitio | `padre_id` auto-referencia `RESTRICT`. `nivel` con `CHECK BETWEEN 1 AND 3` — **RF-11 (todo a tres clics) queda garantizado por el esquema**, no por la disciplina del editor. `UNIQUE(slug)` |
-| **`contenidos`** | Cada estudio, informe, estadística o banner como registro independiente y buscable | `estado` con el ciclo completo (T-01.14). `busqueda` es una columna `tsvector GENERATED ALWAYS AS ... STORED` sobre título y resumen con configuración `spanish`, con índice **GIN** — así RF-10 no necesita tabla de índice aparte (T-10.2). `CHECK`: `estado='publicado'` ⇒ `publicado_en NOT NULL` |
+| **`contenidos`** | Cada estudio, informe, estadística o banner como registro independiente y buscable | `estado` con el ciclo completo. `busqueda` es una columna `tsvector GENERATED ALWAYS AS ... STORED` sobre título y resumen con configuración `spanish`, con índice **GIN** — así RF-10 no necesita tabla de índice aparte. `CHECK`: `estado='publicado'` ⇒ `publicado_en NOT NULL` |
 
 `contenidos.cuerpo` es **`JSONB`**, no `TEXT`: Editor.js produce JSON, y guardarlo como texto obliga a parsear en cada lectura y hace imposible consultar por bloque.
 
@@ -135,7 +152,7 @@ Tener modelo no es tener la funcionalidad. Ocho de ellas —`auditoria_accesos`,
 
 | Tabla | Qué guarda | Claves e invariantes |
 |---|---|---|
-| **`archivos`** | Un archivo almacenado, con su metadato de seguridad | `hash_sha256` **UNIQUE**: el mismo PDF subido dos veces no crea dos filas ni dos copias en disco. `nombre_almacenado` UNIQUE (UUID generado — S1, evita path traversal). `nombre_original` se conserva solo para que la descarga tenga nombre legible (T-12.7). `ambito` `CHECK(publico\|interno)` separa RF-12 de RF-15 |
+| **`archivos`** | Un archivo almacenado, con su metadato de seguridad | `hash_sha256` **UNIQUE**: el mismo PDF subido dos veces no crea dos filas ni dos copias en disco. `nombre_almacenado` UNIQUE (UUID generado — S1, evita path traversal). `nombre_original` se conserva solo para que la descarga tenga nombre legible. `ambito` `CHECK(publico\|interno)` separa RF-12 de RF-15 |
 | **`contenidos_archivos`** | Qué archivo aparece en qué contenido | PK `(contenido_id, archivo_id)`. `CASCADE` en contenido, `RESTRICT` en archivo: borrar un contenido no borra un archivo que otro esté usando |
 
 **Por qué el archivo se separó del contenido.** El modelo anterior tenía `Attachment.postId NOT NULL`, así que **una imagen subida desde el editor Puck no tenía dónde guardarse**: no pertenece a ningún contenido, pertenece a un bloque. Con la tabla suelta, el bloque la referencia por `id` (D5), y el mismo archivo puede estar en un contenido, en un bloque y en la marca institucional sin triplicarse.
@@ -149,12 +166,35 @@ Tener modelo no es tener la funcionalidad. Ocho de ellas —`auditoria_accesos`,
 
 `paginas_versiones.creado_por` es nuevo. Antes solo se registraba quién revisó y quién publicó, así que **no se podía saber quién editó** — un hueco directo en RF-07.
 
+**`paginas` dejó de ser una lista fija (2026-08-20).** Hasta entonces sus filas las
+sembraba un script y correspondían una a una con rutas escritas en el código. Hoy
+cualquiera con el permiso `secciones.crear` añade una desde el editor, y cualquiera con
+`secciones.eliminar` la borra. Tres consecuencias que tocan directamente al esquema:
+
+- **Una sección viva son tres filas en tres tablas**: `paginas`, la clave
+  `editar.{ambito}.{slug}` en `permisos`, y su concesión en `roles_permisos`. Se crean
+  en una sola transacción — a medias quedaría una sección que existe y nadie puede
+  editar, o un permiso que no corresponde a ninguna página.
+- **Borrar cuesta dos `DELETE`, no cuatro**: `paginas_versiones` cae en cascada desde
+  `paginas` y `roles_permisos` desde `permisos`. Las cascadas del §5 no son decoración;
+  son lo que hace que esta operación no deje restos.
+- **`auditoria_cambios` sobrevive al borrado**, porque apunta por `entidad_tipo +
+  entidad_id` y **no tiene clave foránea** contra `paginas`. Lo que en el §3 se explica
+  como una decisión de modelado —una FK real exigiría una columna por tabla auditada—
+  resultó ser además lo que permite borrar una página sin perder el rastro de lo que
+  pasó en ella. RF-07 y la Ley 1581 siguen cubiertos aunque la página ya no exista.
+
+Y una regla que se aprendió por las malas en la 014: **renombrar un slug obliga a
+`UPDATE permisos SET clave`, nunca a borrar e insertar.** `roles_permisos` apunta por
+UUID, así que borrar la fila del permiso revoca los accesos en silencio, sin un solo
+error.
+
 ### 4.5 Auditoría — RF-07, RF-12, RF-15
 
 | Tabla | Qué guarda | Claves e invariantes |
 |---|---|---|
-| **`auditoria_cambios`** | Quién modificó qué entidad, qué campos y cuándo | `campos_modificados` `JSONB` con forma `[{campo, antes, despues}]` (T-07.6). Índices por `(entidad_tipo, entidad_id, created_at DESC)`, `usuario_id` y `created_at DESC` — **T-07.12**. `usuario_nombre` es la desnormalización de D6 |
-| **`auditoria_accesos`** | Quién vio o descargó qué recurso | `usuario_id` en `NULL` significa descarga pública anónima (RF-12). Cubre T-15.6 |
+| **`auditoria_cambios`** | Quién modificó qué entidad, qué campos y cuándo | `campos_modificados` `JSONB` con forma `[{campo, antes, despues}]`. Índices por `(entidad_tipo, entidad_id, created_at DESC)`, `usuario_id` y `created_at DESC`, para que consultar por entidad o por fecha no recorra la tabla entera. `usuario_nombre` es la desnormalización de D6 |
+| **`auditoria_accesos`** | Quién vio o descargó qué recurso | `usuario_id` en `NULL` significa descarga pública anónima (RF-12). Cubre el registro de accesos y descargas |
 
 **Están separadas a propósito.** Un cambio y un acceso tienen volumen, retención y columnas distintos: los accesos crecen mucho más rápido y no tienen "campos modificados". Fusionarlas dejaría media tabla en `NULL` en cada fila y obligaría a una retención común que a una de las dos le queda mal.
 
@@ -162,8 +202,8 @@ Tener modelo no es tener la funcionalidad. Ocho de ellas —`auditoria_accesos`,
 
 | Tabla | Qué guarda | Claves e invariantes |
 |---|---|---|
-| **`configuraciones`** | Ajustes escalares del sistema | La PK es **`clave TEXT`**, no un UUID: la clave *es* la identidad, un id sintético sería una columna que nadie usa. Cubre `archivos.tamano_maximo` (T-02.8), `powerbi.dominios_permitidos` (T-08.3) y `respaldos.frecuencia` (T-17.4) |
-| **`marca_versiones`** | Cada juego de colores, tipografías y logotipos (T-03.4) | `tokens` `JSONB`; los logotipos son `archivo_id`, no rutas copiadas. `UNIQUE(activa) WHERE activa = true` — **una sola marca activa, garantizado**. `contraste_validado` registra el resultado de T-03.8 |
+| **`configuraciones`** | Ajustes escalares del sistema | La PK es **`clave TEXT`**, no un UUID: la clave *es* la identidad, un id sintético sería una columna que nadie usa. Cubre `archivos.tamano_maximo`, `powerbi.dominios_permitidos` y `respaldos.frecuencia` |
+| **`marca_versiones`** | Cada juego de colores, tipografías y logotipos | `tokens` `JSONB`; los logotipos son `archivo_id`, no rutas copiadas. `UNIQUE(activa) WHERE activa = true` — **una sola marca activa, garantizado**. `contraste_validado` registra el resultado de la comprobación de contraste |
 | **`tableros_bi`** | Los informes Power BI embebibles (RF-08) | `UNIQUE(nombre)`. La URL se valida en el servidor contra la lista blanca antes de guardarse (S6) |
 
 `tableros_bi` cierra el §3.3 de `5-tableros-bi.md`: hoy el token del informe está escrito a mano en tres componentes. Al pasarlo a dato, **los bloques Puck guardan `tablero_id`** (D5), así que cambiar el informe se hace una vez y no en tres archivos.
@@ -172,8 +212,8 @@ Tener modelo no es tener la funcionalidad. Ocho de ellas —`auditoria_accesos`,
 
 | Tabla | Qué guarda | Claves e invariantes |
 |---|---|---|
-| **`politicas_privacidad`** | Cada versión del aviso de privacidad (T-13.6) | `version` UNIQUE. Una sola vigente a la vez, por índice parcial sobre `vigente_hasta IS NULL` |
-| **`consentimientos`** | Cada aceptación explícita (T-13.4, T-13.5) | `politica_id` con **`RESTRICT`**: una política con consentimientos registrados no se puede borrar — tiene valor probatorio. `CHECK (aceptado = true)`: solo se persiste la aceptación, nunca una casilla premarcada (S7) |
+| **`politicas_privacidad`** | Cada versión del aviso de privacidad | `version` UNIQUE. Una sola vigente a la vez, por índice parcial sobre `vigente_hasta IS NULL` |
+| **`consentimientos`** | Cada aceptación explícita | `politica_id` con **`RESTRICT`**: una política con consentimientos registrados no se puede borrar — tiene valor probatorio. `CHECK (aceptado = true)`: solo se persiste la aceptación, nunca una casilla premarcada (S7) |
 
 No se copia el texto de la política en cada consentimiento: se referencia la versión (D5). Es lo que permite demostrar *qué* aceptó exactamente el titular sin guardar el documento miles de veces.
 
@@ -181,7 +221,7 @@ No se copia el texto de la política en cada consentimiento: se referencia la ve
 
 | Tabla | Qué guarda | Claves e invariantes |
 |---|---|---|
-| **`respaldos`** | El historial de ejecuciones (T-17.5) | `estado CHECK(en_curso\|exitoso\|fallido)`, `checksum_sha256`, `cifrado` por defecto `true` (S9), `retencion_hasta` para la rotación de T-17.8. Es también la fuente de la alerta de T-17.12 |
+| **`respaldos`** | El historial de ejecuciones | `estado CHECK(en_curso\|exitoso\|fallido)`, `checksum_sha256`, `cifrado` por defecto `true` (S9), `retencion_hasta` para la rotación. Es también la fuente de la alerta de respaldo fallido |
 | **`notificaciones`** | Los avisos que se ven en el panel | `destinatario_id` `CASCADE`. `leida_en` es un `TIMESTAMPTZ` nullable en vez de un booleano: da el *cuándo* gratis. Índice `(destinatario_id, leida_en, created_at DESC)` para el contador de no leídas |
 
 `notificaciones` **no copia el motivo del rechazo**: guarda `tipo`, `entidad_tipo`, `entidad_id` y un `datos JSONB` con los parámetros del mensaje. El texto se compone en el frontend a partir del tipo. Así el motivo vive en un solo lugar (`paginas_versiones.motivo_rechazo`) y editarlo no deja una notificación mintiendo.
@@ -204,7 +244,7 @@ Cada una es una regla de negocio que **el código no puede violar por accidente*
 | # | Invariante | Cómo se declara | Qué protege |
 |---|---|---|---|
 | I1 | Una página tiene **como máximo una versión publicada** | `UNIQUE(pagina_id) WHERE estado='publicado'` | La invariante del §1.2 del ciclo editorial: lo que ve el ciudadano solo cambia al aprobar |
-| I2 | Una página tiene **como máximo una versión en revisión** | `UNIQUE(pagina_id) WHERE estado='en_revision'` | T-05.11: bloquear la edición mientras está en revisión |
+| I2 | Una página tiene **como máximo una versión en revisión** | `UNIQUE(pagina_id) WHERE estado='en_revision'` | Bloquear la edición mientras está en revisión |
 | I3 | No hay dos versiones con el mismo número | `UNIQUE(pagina_id, numero_version)` | Historial coherente |
 | I4 | Una versión rechazada **siempre tiene motivo** | `CHECK estado='rechazado' ⇒ motivo_rechazo NOT NULL` | RF-06: el editor sabe por qué |
 | I5 | Un contenido publicado **siempre tiene fecha** | `CHECK estado='publicado' ⇒ publicado_en NOT NULL` | RF-10 y "Últimas publicaciones" no pueden ordenar por `NULL` |
@@ -225,8 +265,10 @@ Y dos que protegen el borrado: `RESTRICT` en `roles`, `secciones`, `archivos` y 
 | Intentos de login / rate limiting | Redis (`express-rate-limit`) | Escritura por request fallido; en Postgres envenena el WAL sin dar nada a cambio |
 | Bloqueo de edición concurrente | Redis con TTL | Es efímero por definición: Redis lo expira solo, una tabla habría que barrerla con un job |
 | Caché de páginas públicas | Redis | Ya decidido en la guía §3.3 |
-| **Ocupaciones CNO / CUOC (RF-09)** | **Servicio externo consumido con API key + caché Redis (T-09.9)** | RF-09 dice "consultando **en línea** la BD del OLO". Replicarla localmente crearía una copia que envejece y una segunda fuente de verdad. La API key vive solo en el `.env` del backend (S5) |
+| **Ocupaciones CNO / CUOC (RF-09)** | **Servicio externo consumido con API key + caché Redis** | RF-09 dice "consultando **en línea** la BD del OLO". Replicarla localmente crearía una copia que envejece y una segunda fuente de verdad. La API key vive solo en el `.env` del backend (S5) |
 | Cola de respaldos | BullMQ sobre Redis | Solo el **historial** se persiste, en `respaldos` |
+| Contadores de límite de tasa | Redis, con **conexión propia** | Se comparten entre réplicas y sobreviven a un reinicio. La conexión es distinta de la de BullMQ a propósito: aquella se abre con `maxRetriesPerRequest: null` porque BullMQ lo exige, y con Redis caído encola comandos para siempre en vez de fallar — un limitador montado encima colgaría la API entera al primer parpadeo |
+| Permisos de cada rol, mientras se atiende | Memoria del proceso, con TTL y invalidación explícita | `roles_permisos` es la verdad; esto es una caché de un `JOIN` que se consultaría en **cada** petición autorizada. Se invalida al escribir (`invalidarPermisosDeRol`) y el TTL solo cubre el caso de varias réplicas, donde la escritura ocurre en un proceso y la caché está en otro |
 
 ---
 
@@ -271,6 +313,59 @@ Las migraciones viven en `api-backend/src/infrastructure/db/migrations/` y se ap
 | 6 | `006-auditoria-unificada` | `content_audit_logs`→`auditoria_cambios`, que deja de hablar solo de contenidos. Traduce también los valores y añade `ip`/`user_agent` | Medio | **Hecho** |
 | 7 | `007-paginas-ambito` | `ambito` en `paginas` con `UNIQUE(ambito, slug)`, y `creado_por` en `paginas_versiones` | Medio | **Hecho** |
 
+### 8.0 Lo que vino después del plan
+
+Las siete fases de arriba eran el plan; de la 008 en adelante son las migraciones que
+pidió el trabajo real. Ya no son «fases»: cada una responde a un cambio concreto, y por
+eso la tabla lleva el porqué en vez de un número de riesgo.
+
+| # | Migración | Por qué existe |
+|---|---|---|
+| 008 | `paginas-slug-unico-por-ambito` | **La 007 no funcionó.** Quiso quitar la unicidad vieja con `DROP CONSTRAINT IF EXISTS paginas_slug_key`, pero esa restricción no se llamaba así: había decenas de copias numeradas (`paginas_slug_key1`, `…key2`) que dejó `sequelize.sync({ alter: true })` de correr una y otra vez. El `IF EXISTS` no encontró ninguna y pasó de largo **sin error**, así que `ambito` no servía de nada. Aquí se borran por definición, no por nombre |
+| 009 | `limpiar-restricciones-duplicadas` | Lo mismo en el resto del esquema: más de sesenta copias de la misma `UNIQUE` por columna en `secciones`, `permisos`, `roles`, `contenidos`, `usuarios` y `FileStatuses`. No rompían nada, solo que cada copia es un índice más que mantener en cada escritura. De cada grupo se conserva la más antigua, que es la que referencian las foráneas |
+| 010 | `agregar-apellidos-usuarios` | Parte `usuarios.nombre` en `nombre` + `apellidos`. El relleno de los existentes es heurístico —la última palabra— y está anotado como tal |
+| 011 | `politica-passwords` | `intentos_fallidos_login` **aparte** de `intentos_fallidos`: el contador de las preguntas de seguridad bloquea a los 3 intentos por 30 min y el del login a los 5 por 15 min. Reutilizar la misma columna habría mezclado las dos cuentas. `bloqueado_hasta` sí se comparte: la cuenta está bloqueada o no lo está, venga de donde venga. Añade además el verbo `cambiar_password` al `CHECK` de la bitácora |
+| 012 | `catalogo-permisos` | Rehace el catálogo entero. Ver abajo |
+| 013 | `eliminar-usuarios-sitio` | `DROP TABLE usuarios_sitio`, con guarda: cuenta las filas y **aborta si hay alguna** — son datos personales bajo Ley 1581 y una migración no decide borrarlos |
+| 014 | `renombrar-slug-menu-y-pie` | `plantilla` → `menu-y-pie`. El slug se escribe en la bitácora como campo modificado, y quien auditaba leía `slug → plantilla` sin poder saber si eso fue tocar una página o cambiar la cabecera y el pie de **todas** |
+| 015 | `inicio-texto-enriquecido` | Los títulos de la portada del sitio pasan de «texto con `**`» a HTML (`type: 'richtext'`, que Puck 0.22 trae de serie) |
+| 016 | `permiso-crear-secciones` | Da de alta `secciones.crear` |
+| 017 | `titulo-menu-y-pie` | La 014 renombró el slug y dejó el `titulo` en `plantilla`, que es lo que pinta la cola de aprobación. Acotada por el título viejo: si alguien ya le puso nombre a mano, no se lo pisa |
+| 018 | `revertir-titulos-intranet` | Repara lo que la 015 rompió. Ver abajo |
+| 019 | `permiso-eliminar-secciones` | Da de alta `secciones.eliminar`, separado del de crear a propósito: crear añade, eliminar destruye y no se deshace |
+
+Tres lecciones de este tramo que vale más recordar que releer:
+
+**La 012 — un catálogo de permisos que no comprobaba nadie.** Había 21 claves y
+**ninguna ruta verificaba ninguna**: toda la autorización iba por rol. El panel dejaba
+mover interruptores que no hacían nada — se «revocaba» Eliminar Usuarios y esa persona
+seguía borrando. Había además claves indistinguibles (`view_audit` / `access_audit`) y
+otras que decían «editar contenido» sin decir *qué* contenido, que era justo la pregunta
+que había que responder. El catálogo nuevo deriva las claves de edición del slug de cada
+sección (`editar.{ambito}.{slug}`), que es lo que permite atar a un editor a un ámbito y
+a secciones concretas.
+
+**La 016 y la 019 — por qué un permiso entra por migración.** Las dos claves están en
+`CATALOGO_PERMISOS`, así que `npm run sembrar:permisos` las crearía. Pero el sembrador
+se corre a mano y nada obliga a hacerlo: `server.ts` exige que no haya migraciones
+pendientes para arrancar y no tiene un control equivalente para las siembras. Sin la
+migración, un despliegue normal deja a la API pidiendo un permiso que no existe en la
+tabla, y el botón no le aparece a nadie —salvo al superadmin, que pasa por bypass— sin
+que nada explique por qué.
+
+**La 018 — filtrar por tipo de bloque no es filtrar por aplicación.** La 015 elegía qué
+convertir según el `type` del bloque, y `RecursosVisualesBloque` y `Publicaciones`
+existen en las dos apps: en el sitio migraron a `richtext`, en la intranet siguen siendo
+`text` pintado con `resaltar()`. Resultado: `<p><strong>Recursos</strong> visuales</p>`
+se veía **literal, en pantalla**, en la portada de la intranet. Toda migración sobre
+`paginas_versiones` tiene que unir con `paginas` y filtrar por `ambito`.
+
+Y una regla de método que la 018 deja fijada: **una migración aplicada no se reescribe.**
+La 015 ya estaba anotada en `migraciones_aplicadas`; corregirla en su sitio habría dejado
+esta base con los datos mal y el registro diciendo que todo fue bien. Con las dos, los
+dos caminos convergen — sobre una base ya migrada la 018 repara, sobre una base nueva la
+015 (ya con filtro) no toca nada y la 018 no encuentra qué reparar.
+
 ### 8.1 La decisión que hace segura toda la fase 4
 
 > **Se renombra la columna, no el atributo del modelo.**
@@ -293,12 +388,13 @@ Alinear también los nombres de atributo al español es un refactor de la API, c
 ### 8.3 Lo que sigue pendiente, y por qué
 
 - **`usuarios_sitio` se eliminó** (`013-eliminar-usuarios-sitio`). Ya no es un renombrado pendiente: con la tabla se retiró su login propio (`/api/sitio-users`) y el segundo secreto JWT (`JWT_SITE_SECRET`) que solo firmaba esos tokens. Estaba vacía y ningún frontend la consumía — el panel del sitio siempre entró por `/api/auth/login`, que valida contra `usuarios`. `usuarios` es hoy la única identidad del sistema.
-- **`contenidos.cuerpo` sigue siendo `TEXT`.** El diseño lo quiere `JSONB` porque Editor.js produce JSON, pero convertir sin saber qué hay dentro de las filas existentes rompería la tabla. Necesita una revisión previa del contenido real.
+- **`contenidos.cuerpo` sigue siendo `TEXT`.** El diseño lo quiere `JSONB` porque Editor.js produce JSON, pero convertir sin saber qué hay dentro de las filas existentes rompería la tabla. Necesita una revisión previa del contenido real. Confirmado el 2026-08-21 en el modelo: `content: { type: DataTypes.TEXT, field: 'cuerpo' }`. Es de las pocas cosas del §4.2 que el esquema todavía no cumple, así que la frase de esa sección —«es `JSONB`, no `TEXT`»— describe el destino, no lo que hay.
+- **`script.sql` salió a `migrations/_obsoletas/`**, y los dos `docker-compose` lo siguen montando como script de inicialización de Postgres. No es un problema de la base sino del despliegue —está anotado en `7-despliegue.md`— pero conviene saberlo aquí también: **una base levantada con Docker no obtiene su esquema de ahí**. Lo obtiene de `npm run migrate`, como todas.
 - **Verificación obligatoria.** El puente modelo↔columna son cadenas que ningún compilador valida. Por eso existe `npm run db:verificar`: contrasta cada atributo de cada modelo contra `information_schema` y falla nombrando el que no cuadre. **Ejecutarlo después de migrar no es opcional.**
 
 ### 8.4 Resultado de la ejecución
 
-Las siete migraciones **están aplicadas** sobre la base de desarrollo (Neon). `npm run db:verificar` confirma que los 21 modelos coinciden con las columnas reales, y una lectura de prueba a través de los modelos devuelve los 5 usuarios con su rol, la página `inicio` con sus 6 versiones y las 5 configuraciones por defecto.
+Las siete migraciones del plan **están aplicadas** sobre la base de desarrollo (Neon), y con ellas las doce siguientes: hoy el manifiesto lleva **diecinueve**. `npm run db:verificar` confirma que los modelos coinciden con las columnas reales — eran 21 modelos cuando se escribió esto y hoy son **20**, porque `usuarios_sitio` se eliminó con su modelo en la 013.
 
 Cuatro cosas que solo se supieron al ejecutar, y que estaban mal supuestas en el diseño:
 
@@ -319,7 +415,7 @@ No es grave mientras las migraciones sean idempotentes (`IF NOT EXISTS`, `ON CON
 
 Un respaldo que no se ha probado a restaurar no es un respaldo (S9).
 
-### 8.1 Lo que la fase 3 tuvo que corregir en los datos
+### 8.6 Lo que la fase 3 tuvo que corregir en los datos
 
 Dos invariantes no se podían declarar sobre los datos existentes, así que la migración los normaliza antes y deja constancia:
 
@@ -331,5 +427,5 @@ Dos invariantes no se podían declarar sobre los datos existentes, así que la m
 ## 9. Decisiones abiertas
 
 - **Retención de auditoría.** `auditoria_accesos` crece sin techo. Cuando el volumen lo justifique, particionar por mes o archivar a almacenamiento frío. Hoy no hace falta y particionar de entrada sería complejidad sin dato que la respalde.
-- **`etiquetas` + `contenidos_etiquetas`.** El backlog menciona filtrar por "categoría" (T-10.3). Hoy se resuelve con `secciones` jerárquicas. Si aparece la necesidad de una clasificación transversal a las secciones, entran esas dos tablas — no antes.
+- **`etiquetas` + `contenidos_etiquetas`.** Filtrar por "categoría" hoy se resuelve con `secciones` jerárquicas. Si aparece la necesidad de una clasificación transversal a las secciones, entran esas dos tablas — no antes.
 - **`archivos.ambito`** distingue público de interno, pero no permite compartir un archivo interno con un subconjunto de directores. Si RF-15 llega a exigir eso, se resuelve con permisos, no con una columna más.

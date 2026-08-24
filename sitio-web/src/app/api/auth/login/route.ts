@@ -11,7 +11,6 @@ import {
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000';
 const COOKIE_MAX_AGE = 7 * 24 * 60 * 60; // 7 días en segundos
-const IS_PROD = process.env.NODE_ENV === 'production';
 
 export async function POST(request: NextRequest) {
   let body: { email: string; password: string };
@@ -51,7 +50,23 @@ export async function POST(request: NextRequest) {
     mustSetupSecurityQuestions: !!mustSetupSecurityQuestions,
   });
 
-  const base = { secure: IS_PROD, sameSite: 'lax' as const, path: '/', maxAge: COOKIE_MAX_AGE };
+  // `secure` NO puede salir de `NODE_ENV === 'production'`: `next start` (el server ya
+  // compilado, el que corre en Docker tanto en dev como en producción) deja
+  // `process.env.NODE_ENV` en `'production'` SIEMPRE — es un valor que fija el propio
+  // Next.js al arrancar el server compilado, no algo que dependa de cómo se desplegó.
+  // Con eso, en el docker-compose de desarrollo (sin nginx, todo por HTTP simple) estas
+  // cookies salían con `Secure`, y esa marca hace que el navegador las rechace en
+  // cualquier conexión que no sea HTTPS — se guardaba `sitio_token` (a veces; depende
+  // del navegador) pero `sitio_role`/`sitio_userName`/`sitio_userEmail` nunca llegaban a
+  // `document.cookie`, y de ahí que «Menú y pie» y «Nueva página» — que se resuelven en
+  // el cliente leyendo esa cookie — no aparecieran para nadie, en ningún rol.
+  //
+  // La señal correcta es si ESTA petición llegó por HTTPS de verdad: `nginx.conf.template`
+  // reenvía `X-Forwarded-Proto` con el esquema real en producción; sin nginx por delante
+  // (dev) esa cabecera no existe y `nextUrl.protocol` es el que ve Next.js.
+  const esHttps =
+    request.headers.get('x-forwarded-proto') === 'https' || request.nextUrl.protocol === 'https:';
+  const base = { secure: esHttps, sameSite: 'lax' as const, path: '/', maxAge: COOKIE_MAX_AGE };
 
   // El panel muestra nombre y apellido; el backend los devuelve por separado.
   const nombreCompleto = `${user.name || ''} ${user.apellidos || ''}`.trim();

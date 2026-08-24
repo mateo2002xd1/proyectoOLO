@@ -27,6 +27,7 @@ import {
   conCaja,
   pixelesDeEspacio,
   type ConfigDeBloque,
+  type FabricaCampoImagen,
 } from './controles-de-caja';
 import { campoColor } from './color-picker-field';
 
@@ -47,57 +48,169 @@ const OPCIONES_SI_NO = [
 ];
 
 // ─── Grid / Columnas ──────────────────────────────────────────────────────────
-export const gridConfig: ConfigDeBloque = {
-  label: 'Columnas',
-  fields: {
-    columns: {
-      type: 'number',
-      label: 'Número de columnas',
-      min: 1,
-      max: 6,
+/**
+ * Opciones de imagen de fondo del Grid.
+ *
+ * - `fondo`: `background-image` de CSS, cubre todo el bloque de borde a
+ *   borde. La opción de siempre para un fondo puramente decorativo.
+ * - `inline`: la imagen se pinta como una etiqueta `<img>` real (no CSS),
+ *   también a tamaño automático cubriendo el bloque. Sirve cuando la imagen
+ *   importa como contenido (SEO, lectores de pantalla vía `imagenFondoAlt`) y
+ *   no solo como decoración.
+ * - `personalizado`: igual que `inline` —una `<img>` real, no CSS— pero con
+ *   un ancho a medida en vez de cubrir todo el bloque.
+ */
+const OPCIONES_MODO_IMAGEN_FONDO = [
+  { label: 'Fondo (cubre todo el bloque)', value: 'fondo' },
+  { label: 'En línea (imagen real, tamaño automático)', value: 'inline' },
+  { label: 'Personalizado (imagen real, tamaño a tu medida)', value: 'personalizado' },
+];
+
+/**
+ * `Grid` necesita un campo de imagen para su fondo, y el paquete no puede
+ * traer uno propio: cada app sube archivos contra su propia API (ver el
+ * comentario de `color-picker-field.tsx`). Por eso es una fábrica que recibe
+ * `campoImagen` en vez de una config estática como `flexConfig`/`spaceConfig`.
+ */
+export function crearGridConfig(campoImagen: FabricaCampoImagen): ConfigDeBloque {
+  return {
+    label: 'Columnas',
+    fields: {
+      columns: {
+        type: 'number',
+        label: 'Número de columnas · escritorio',
+        min: 1,
+        max: 6,
+      },
+      columnasTablet: {
+        type: 'number',
+        label: 'Número de columnas · tablet',
+        min: 1,
+        max: 6,
+      },
+      columnasMovil: {
+        type: 'number',
+        label: 'Número de columnas · móvil',
+        min: 1,
+        max: 6,
+      },
+      gap: {
+        type: 'select',
+        label: 'Separación entre columnas',
+        options: OPCIONES_SEPARACION,
+      },
+      alinearItems: {
+        type: 'select',
+        label: 'Alineación vertical del contenido',
+        options: [
+          { label: 'Misma altura', value: 'stretch' },
+          { label: 'Arriba', value: 'start' },
+          { label: 'Centrado', value: 'center' },
+          { label: 'Abajo', value: 'end' },
+        ],
+      },
+      fondo: campoColor('Color de fondo (opcional)'),
+      imagenFondo: campoImagen('Imagen de fondo (opcional)'),
+      modoImagenFondo: {
+        type: 'radio',
+        label: 'Cómo se ve la imagen de fondo',
+        options: OPCIONES_MODO_IMAGEN_FONDO,
+      },
+      imagenFondoAlt: {
+        type: 'text',
+        label: 'Texto alternativo de la imagen de fondo',
+      },
+      anchoImagenFondo: {
+        type: 'text',
+        label: 'Ancho de la imagen (ej. 320px o 50%)',
+      },
+      // El slot es lo que convierte al bloque en contenedor: sin declararlo
+      // aquí, Puck no pinta zona donde soltar y el bloque queda inservible.
+      items: { type: 'slot' },
     },
-    gap: {
-      type: 'select',
-      label: 'Separación entre columnas',
-      options: OPCIONES_SEPARACION,
+    // `imagenFondoAlt` no aplica en modo «fondo» (es CSS decorativo, no hay
+    // `<img>` que lleve alt) y `anchoImagenFondo` solo tiene efecto en
+    // «personalizado» — ocultarlos evita un campo que no hace nada.
+    resolveFields: (data: any, { fields }: any) => {
+      const modo = data?.props?.modoImagenFondo ?? 'fondo';
+      return {
+        ...fields,
+        imagenFondoAlt: { ...fields.imagenFondoAlt, visible: modo !== 'fondo' },
+        anchoImagenFondo: { ...fields.anchoImagenFondo, visible: modo === 'personalizado' },
+      };
     },
-    alinearItems: {
-      type: 'select',
-      label: 'Alineación vertical del contenido',
-      options: [
-        { label: 'Misma altura', value: 'stretch' },
-        { label: 'Arriba', value: 'start' },
-        { label: 'Centrado', value: 'center' },
-        { label: 'Abajo', value: 'end' },
-      ],
+    defaultProps: {
+      columns: 3,
+      columnasTablet: 2,
+      columnasMovil: 1,
+      gap: 'medio',
+      alinearItems: 'stretch',
+      fondo: '',
+      imagenFondo: '',
+      modoImagenFondo: 'fondo',
+      imagenFondoAlt: '',
+      anchoImagenFondo: '',
+      items: [],
     },
-    fondo: campoColor('Color de fondo (opcional)'),
-    // El slot es lo que convierte al bloque en contenedor: sin declararlo aquí,
-    // Puck no pinta zona donde soltar y el bloque queda inservible.
-    items: { type: 'slot' },
-  },
-  defaultProps: {
-    columns: 3,
-    gap: 'medio',
-    alinearItems: 'stretch',
-    fondo: '',
-    items: [],
-  },
-  render: ({ columns, gap, alinearItems, fondo, items: Items }: any) => (
-    <Items
-      className="olo-grid"
-      style={{
+    render: ({
+      columns,
+      columnasTablet,
+      columnasMovil,
+      gap,
+      alinearItems,
+      fondo,
+      imagenFondo,
+      modoImagenFondo,
+      imagenFondoAlt,
+      anchoImagenFondo,
+      items: Items,
+    }: any) => {
+      const estiloGrid = {
         // Variables consumidas por `.olo-grid` en globals.css
         ['--olo-grid-cols' as string]: String(columns ?? 3),
+        ['--olo-grid-cols-tablet' as string]: String(columnasTablet ?? columns ?? 3),
+        ['--olo-grid-cols-movil' as string]: String(columnasMovil ?? 1),
         ['--olo-grid-gap' as string]: `${pixelesDeEspacio(gap, 'medio')}px`,
         ['--olo-grid-align' as string]: alinearItems ?? 'stretch',
         // Sin fondo puesto no se añade la propiedad: mismo fondo transparente
         // que tenía el bloque antes de que existiera este campo.
         ...(fondo ? { backgroundColor: fondo } : {}),
-      }}
-    />
-  ),
-};
+        // El modo «fondo» es el único que pinta la imagen como CSS: los otros
+        // dos la pintan como `<img>` real (ver más abajo), así que aquí no se
+        // añade `backgroundImage` para ellos.
+        ...(imagenFondo && modoImagenFondo !== 'inline' && modoImagenFondo !== 'personalizado'
+          ? {
+              backgroundImage: `url(${imagenFondo})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }
+          : {}),
+      };
+
+      const grid = (
+        <Items className="olo-grid" style={estiloGrid} />
+      );
+
+      const imagenEnLinea = imagenFondo && (modoImagenFondo === 'inline' || modoImagenFondo === 'personalizado');
+      // Sin imagen en línea no se añade el envoltorio: mismo DOM que antes de
+      // que existiera este campo, igual que hace `conCaja`.
+      if (!imagenEnLinea) return grid;
+
+      return (
+        <div className="olo-grid-wrapper">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={imagenFondo}
+            alt={imagenFondoAlt ?? ''}
+            className={`olo-grid-imagen-fondo${modoImagenFondo === 'personalizado' ? ' olo-grid-imagen-fondo--personalizado' : ''}`}
+            style={modoImagenFondo === 'personalizado' && anchoImagenFondo ? { width: anchoImagenFondo } : undefined}
+          />
+          {grid}
+        </div>
+      );
+    },
+  };
+}
 
 // ─── Flex / Fila ────────────────────────────────────────────────────────────
 export const flexConfig: ConfigDeBloque = {
@@ -206,17 +319,20 @@ export const PRIMITIVE_COMPONENT_NAMES = ['Grid', 'Flex', 'Space'] as const;
 /**
  * Mapa listo para hacer spread dentro de `components` del puckConfig de cada app.
  *
- * Grid y Flex vienen ya envueltos con `conCaja` porque un contenedor sin
- * relleno ni margen propio sirve de poco, y así el paquete es útil aunque la
- * app no haga nada más. Que además cada app pase `conCajaEnTodos` por encima no
- * duplica nada: `conCaja` es idempotente justo por este caso.
+ * Flex viene ya envuelto con `conCaja` porque un contenedor sin relleno ni
+ * margen propio sirve de poco, y así el paquete es útil aunque la app no haga
+ * nada más. Que además cada app pase `conCajaEnTodos` por encima no duplica
+ * nada: `conCaja` es idempotente justo por este caso.
  *
  * `Space` se queda sin envolver aquí —es en sí mismo un hueco, y darle margen
  * es otra forma de decir lo mismo—, pero tampoco se excluye en las apps: si el
  * catálogo entero pasa por `conCajaEnTodos`, lo gana como los demás.
+ *
+ * `Grid` NO está aquí: desde que tiene imagen de fondo necesita `campoImagen`
+ * inyectado (ver `crearGridConfig`), así que cada app lo registra aparte con
+ * `Grid: conCaja(crearGridConfig(campoImagen))`.
  */
 export const primitiveComponents: Record<string, ConfigDeBloque> = {
-  Grid: conCaja(gridConfig),
   Flex: conCaja(flexConfig),
   Space: spaceConfig,
 };

@@ -26,6 +26,8 @@
 | S7 | Formularios con datos personales (RF-13) | Incumplimiento Ley 1581, inyección | Alta |
 | S8 | Descarga pública (RF-12) | Acceso a documentos no publicados | Media |
 | S9 | Respaldos (RF-17) | Exposición de la copia completa de datos | Alta |
+| S10 | Autorización a nivel de objeto (BOLA) | Actuar sobre objetos ajenos con una sesión válida | **Crítica** — cerrada 2026-08-17 |
+| S11 | Ruta interna de revalidación de caché | Vaciado de caché a voluntad; amplificación contra la base | Media — cerrada 2026-08-21 |
 
 ---
 
@@ -99,6 +101,12 @@ El contenido rico que crean los editores es HTML almacenado que luego se renderi
 - **Solo documentos con estado `publicado`** son descargables públicamente. Un documento en borrador o revisión nunca debe ser accesible por URL directa.
 - **No confiar en URLs adivinables**: verificar el estado del contenido en el endpoint de descarga, no solo servir el archivo por path.
 
+### S9 — Respaldos (RF-17)
+
+- **Cifrar los respaldos** en reposo; contienen la base completa.
+- **Almacenar en ubicación separada y con acceso restringido** (no en el mismo servidor sin protección).
+- **Registrar y verificar** cada respaldo; probar la restauración periódicamente (un respaldo que no se puede restaurar no es un respaldo).
+
 ### S10 — Autorización a nivel de objeto (BOLA) CERRADO 2026-08-17
 
 El JWT responde **quién eres**; no responde **sobre qué puedes actuar**. Durante toda la
@@ -143,11 +151,36 @@ que ninguna ruta con parámetro de objeto llega al controlador solo con `require
 rutas cuya comprobación vive en el caso de uso se declaran en el propio script con su
 motivo, así que esa lista es además el inventario de dónde está cada comprobación.
 
-### S9 — Respaldos (RF-17)
+### S11 — Ruta interna de revalidación de caché CERRADA 2026-08-21
 
-- **Cifrar los respaldos** en reposo; contienen la base completa.
-- **Almacenar en ubicación separada y con acceso restringido** (no en el mismo servidor sin protección).
-- **Registrar y verificar** cada respaldo; probar la restauración periódicamente (un respaldo que no se puede restaurar no es un respaldo).
+Al aprobar una página, la API llama a `POST {SITIO_WEB_URL}/api/revalidar` para que el
+sitio tire su copia cacheada en vez de seguir sirviendo la versión anterior. Es la
+**única ruta del sitio web que no lleva sesión** —quien la llama es un servidor, no un
+navegador—, así que hay que decir explícitamente qué la protege y por qué basta.
+
+| Control | Cómo |
+|---|---|
+| **Secreto compartido propio**, distinto de `JWT_SECRET` | Cabecera `x-revalidar-secreto` contra `REVALIDAR_SECRET`. Separarlo limita el daño: filtrado, sirve para vaciar caché y para nada más |
+| **Sin secreto configurado, no se acepta nada** | Responde 503. Dejar la ruta abierta «hasta que se configure» sería dejar que cualquiera vacíe la caché del sitio a voluntad |
+| **Comparación en tiempo constante** | `timingSafeEqual` sobre los **hashes SHA-256**, no sobre las cadenas: `timingSafeEqual` exige búferes del mismo tamaño y lanza si no lo son, y esa excepción por sí sola ya revelaría la longitud del secreto |
+| **El slug se valida por forma** | `^[a-z0-9]+(?:-[a-z0-9]+)*$` y 255 caracteres de tope, antes de construir con él ninguna etiqueta |
+| **No es alcanzable desde internet** | La llamada va por la red privada de Docker, de `api-backend:4000` a `sitio-web:3000`. Nginx solo publica 80/443 y manda todo `/api/` al backend, así que esta ruta del sitio no se alcanza desde fuera ni adivinando el secreto |
+
+**El último control es el más fuerte y el más frágil a la vez.** Hoy la ruta es
+inalcanzable por un efecto colateral de la configuración de nginx —el mismo que rompe
+los otros route handlers del sitio, ver §4.8—. El día que se arregle ese prefijo,
+`/api/revalidar` **queda expuesta a internet** y pasa a depender solo del secreto. No es
+una catástrofe: el peor caso es que alguien invalide caché repetidamente y fuerce
+consultas a la base, que es exactamente el escenario que el límite de tasa de nginx
+(20 r/s por IP) está para contener. Pero conviene decidirlo a propósito y no descubrirlo
+después: lo natural al reordenar los prefijos es dejar `/api/revalidar` fuera de lo que
+nginx publica.
+
+Y una cosa que **no** es un agujero aunque lo parezca: la ruta la puede llamar cualquiera
+que tenga el secreto tantas veces como quiera, y no pasa nada grave. Revalidar no
+escribe, no borra contenido y no revela nada — lo único que hace es marcar una entrada de
+caché como caducada. El daño posible es de disponibilidad, no de confidencialidad ni de
+integridad, y por eso la severidad es media y no alta.
 
 ---
 
@@ -168,8 +201,9 @@ motivo, así que esa lista es además el inventario de dónde está cada comprob
 
 > **Qué es esta sección.** Las secciones 2 y 3 describen los controles que el proyecto
 > *debe* tener. Esta describe los que **ya tiene**, verificados contra el código el
-> 2026-08-20, con el archivo donde vive cada uno. Sirve para dos cosas: que nadie
-> reimplemente lo que ya está, y que nadie dé por supuesto lo que todavía no está.
+> 2026-08-20 y repasados el 2026-08-21, con el archivo donde vive cada uno. Sirve para
+> dos cosas: que nadie reimplemente lo que ya está, y que nadie dé por supuesto lo que
+> todavía no está.
 >
 > La regla de oro de §6 sigue mandando. Aparecer aquí significa "existe en el código y se
 > comprobó", no "el riesgo está cerrado". Lo que está escrito pero aún **no** protege se
@@ -211,8 +245,22 @@ nada, porque quien autoriza es el JWT que la API verifica en cada petición (§S
 criterio para admitir una variable nueva al bundle — no "¿es sensible?", sino **"¿le sirve
 de algo a quien la copie?"**.
 
-Y lo que nunca sale del backend: `JWT_SECRET`, `DATABASE_URL`, `REDIS_URL`, `LOCAL_AUTH_*`
-y la futura API key de CNO/CUOC (§S5).
+Y lo que nunca sale del backend: `JWT_SECRET`, `DATABASE_URL`, `REDIS_URL`, `LOCAL_AUTH_*`,
+`REVALIDAR_SECRET` y la futura API key de CNO/CUOC (§S5).
+
+**`REVALIDAR_SECRET` es el primer secreto que viven dos servicios a la vez**, y por eso
+merece su propia nota. Lo comparten la API y el sitio web —uno lo manda, el otro lo
+comprueba— y **no es una copia de `JWT_SECRET`**. La tentación de reutilizar el que ya
+hay es real y hay que resistirla: son dos niveles de confianza distintos. Con
+`JWT_SECRET` se firma cualquier sesión del sistema; con este solo se puede pedir que se
+vacíe una entrada de caché. Mantenerlos separados es lo que hace que una filtración del
+segundo no sea una filtración del primero. `deploy.sh setup` genera los dos por separado,
+precisamente para que nadie tenga que acordarse de esto.
+
+La intranet **no lo recibe**, y no es un olvido: no guarda contenido publicado en la
+caché de Next, así que no tiene nada que revalidar. Es la regla del párrafo anterior
+aplicada — un secreto repartido a un servicio que no lo necesita es una copia más que
+alguien puede robar, sin contrapartida.
 
 **Se comprueba, no se supone.** Un secreto filtrado al bundle es invisible en revisión de
 código y evidente en un `grep`. Desde la raíz del repositorio, esto no debe imprimir nada:
@@ -257,6 +305,33 @@ Dos decisiones que conviene no deshacer sin entender por qué están:
 - **404 en vez de 403** cuando el objeto no debería ser visible, para no confirmar qué ids
   existen.
 - **El dueño sale siempre de la sesión, nunca del cuerpo de la petición.**
+
+**Permisos que se crean solos, y por qué eso no rompe el modelo.** Desde el 2026-08-20
+una sección del portal se crea desde el editor, y con ella nace su clave
+`editar.{ambito}.{slug}` en `permisos` y su concesión en `roles_permisos`. Que el
+catálogo deje de ser estático suena a pérdida de control, así que conviene fijar lo que
+lo mantiene acotado:
+
+- **La clave se deriva del slug, no la escribe nadie.** `claveDeSeccion()` es la única
+  fuente de ese formato, y `requierePermisoDeSeccion` la reconstruye desde
+  `req.params.slug`. No hay tabla de traducción que pueda desincronizarse.
+- **Se concede al rol de quien crea, no a la persona.** El modelo es por rol y no existe
+  la concesión individual. La consecuencia hay que decirla en voz alta —si quien crea es
+  Editor, **todos** los Editores editarán esa sección— y el diálogo de creación la dice.
+- **Crear y eliminar son permisos distintos** (`secciones.crear`, `secciones.eliminar`),
+  ninguno de los dos del Editor por defecto. Separarlos permite dar el primero a más
+  gente sin dar el segundo: crear añade, eliminar destruye y no se deshace.
+- **`sembrar-permisos-roles.ts` borra lo que no esté en el catálogo.** Las claves creadas
+  en caliente están exentas **mientras su página exista**. Quien toque ese script tiene
+  que preservar esa exención, o una siembra rutinaria revoca en silencio el acceso a todo
+  lo que se haya creado desde el editor.
+
+Un permiso del catálogo está marcado `esFrontera: false` y merece mencionarse aquí:
+`editor.eliminar-bloques` **solo decide qué se pinta**. El servidor recibe el contenido
+final y no distingue «borró un bloque» de «guardó una página con menos bloques» sin
+comparar versiones. Está marcado en el propio catálogo para que el panel lo diga y nadie
+lo tome por un control de seguridad — es exactamente la distinción de §S4: *el frontend
+oculta, el backend prohíbe*, y aquí el backend no prohíbe.
 
 ### 4.4 Contenido y archivos (§S1, §S2)
 
@@ -389,7 +464,10 @@ repartidos por §4.1 a §4.7. Lo que queda, y por qué queda:
   prefijo a Express, que no conoce `/api/auth/login`, `/api/upload` ni `/api/users` — en
   producción responderían 404. Hay que decidir el prefijo antes de desplegar (lo natural
   es exponer la API como `/api-backend/`, que es lo que ya hace la intranet). Anotado en
-  `nginx/nginx.conf`.
+  `nginx/nginx.conf.template` — el archivo pasó a ser una plantilla que `envsubst`
+  procesa al arrancar el contenedor, así que ya no existe un `nginx.conf` que editar a
+  mano. **Al resolverlo, decidir a la vez qué pasa con `/api/revalidar`** (§S11): hoy
+  está protegida por este mismo efecto colateral.
 - **La API escucha en `127.0.0.1`.** Correcto si nginx corre en la misma máquina;
   incompatible con la topología de `docker-compose`, donde los servicios se hablan por
   nombre de red. Depende de cómo se despliegue de verdad, así que no se cambia a ciegas:
@@ -423,9 +501,23 @@ El proyecto comprueba sus propias reglas con scripts, no con memoria. Desde `api
 | `npm run auditoria:verificar` | Que las operaciones auditables dejen registro |
 | `npm run password:verificar` | Que la política de contraseñas se aplique en todos los caminos |
 | `npm run email:verificar` | Que el dominio institucional se exija donde debe |
+| `npm run db:verificar` | Que cada atributo de cada modelo exista de verdad como columna. No es de seguridad, pero un modelo que apunta a una columna inexistente hace que una comprobación falle abriendo, no cerrando |
+| `npm run ambito:auditar` | El inventario de escrituras y su ámbito declarado — el informe que `ambito:verificar` convierte en aprobado o suspenso |
 
 Un control que no tiene forma de comprobarse vuelve a romperse en el siguiente cambio. Al
 añadir uno nuevo a esta sección, añadir también cómo se verifica.
+
+**Estos seis scripts son la mejor costumbre que tiene el proyecto y conviene decir por
+qué funcionan:** ninguno comprueba que el código *haga* algo, comprueban que *no falte*.
+`propiedad:verificar` recorre los routers de Express afirmando que ninguna ruta con
+parámetro de objeto llega al controlador solo con `requireAuth`; las excepciones legítimas
+se declaran **en el propio script, con su motivo**, así que esa lista es a la vez el
+control y el inventario de dónde vive cada comprobación. Añadir una ruta insegura no
+requiere que alguien se acuerde de revisarla: rompe la suite.
+
+Donde esa costumbre todavía no llegó es a la accesibilidad, que no tiene ni un script
+equivalente — y se nota: un cambio de tres valores hex revirtió media fase de
+`9-accesibilidad.md` sin que nada avisara.
 
 ---
 
@@ -447,13 +539,20 @@ añadir uno nuevo a esta sección, añadir también cómo se verifica.
 
 ## 6. Prioridad de implementación (por severidad)
 
-```
-1. S1 Subida de archivos      → CRÍTICO, además hoy es un stub (bloquea RF-02 de forma segura)
-2. S2 XSS Editor.js           → CRÍTICO, cada contenido publicado es un vector potencial
-3. S4 RBAC aplicado de verdad → cerrar el hallazgo de auditoría
-4. S3 Auth + caducidad        → completar el stub de caducidad con verificación server-side
-5. S5 API key externa         → al construir el buscador CNO
-6. S7/S8/S6/S9                → conforme se implementen sus requerimientos
-```
+La lista original de este documento está casi entera cerrada. Lo que queda, en orden:
 
-> Regla de oro: ningún requerimiento se considera "terminado" hasta que pasa su fila del checklist de la sección 4. "Funciona" no es lo mismo que "es seguro".
+| # | Qué | Por qué sigue arriba |
+|---|---|---|
+| 1 | **Sacar las subidas del webroot** (§S1) | Los cinco controles de entrada están puestos en las dos apps vía `packages/upload-policy`, así que el riesgo inmediato —cualquiera subiendo cualquier cosa— está cerrado. El estructural no: siguen escribiéndose en `public/uploads` y sirviéndose por path, en vez de fuera del webroot y por un endpoint controlado. `api-backend/src/shared/storage/` sigue siendo el stub de tres funciones vacías donde eso debería vivir |
+| 2 | **Decidir el prefijo de nginx** (§4.8) | Bloquea el despliegue, y de paso decide si `/api/revalidar` (§S11) queda expuesta |
+| 3 | **Extender Zod al resto de la API** (§4.8) | Cubre usuarios y borradores de página, que es donde estaban el *mass assignment* y la entrada más grande. El resto sigue leyendo `req.body` directo |
+| 4 | **S6 Power BI** — lista blanca de dominios, validación de URL en servidor, `sandbox` | La tabla `tableros_bi` existe; falta toda la capa de aplicación encima. Hoy los tokens de informe están escritos a mano en tres componentes |
+| 5 | **S5 API key CNO/CUOC** | Al construir el buscador |
+| 6 | **S7 Habeas Data** y **S9 respaldos** | `politicas_privacidad`, `consentimientos` y `respaldos` tienen tabla y ni una línea de aplicación. Ver `11-base-de-datos.md` §4 |
+
+Cerrados y **no hay que rehacerlos**: S2 (sanitización server-side del contenido Puck),
+S3 (bloqueo por intentos, cookies, inactividad en las dos capas, caducidad revalidada en
+cada petición), S4 y S10 (doble capa y propiedad de objeto, con su verificador), S8 en su
+parte de contenidos, S11, y los límites de tasa completos.
+
+> Regla de oro: ningún requerimiento se considera "terminado" hasta que pasa su fila del checklist de la sección 5. "Funciona" no es lo mismo que "es seguro".

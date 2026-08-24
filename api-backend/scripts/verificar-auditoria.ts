@@ -2,8 +2,8 @@
  * Comprueba que la bitácora de RF-07 **escribe de verdad** y que solo la lee quien debe.
  *
  * Existe por un caso concreto: durante meses el modelo, el repositorio, el
- * use-case y las rutas de auditoría estuvieron completos y el backlog los daba
- * por terminados, pero la tabla no recibía una sola fila. Dos causas, ninguna
+ * use-case y las rutas de auditoría estuvieron completos y se daban por
+ * terminados, pero la tabla no recibía una sola fila. Dos causas, ninguna
  * visible desde fuera:
  *
  *   1. La migración 006 renombró las columnas al español y tradujo los verbos de

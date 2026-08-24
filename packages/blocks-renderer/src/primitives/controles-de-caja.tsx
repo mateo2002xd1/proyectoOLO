@@ -49,6 +49,22 @@ export interface ConfigDeBloque {
   [clave: string]: any;
 }
 
+/**
+ * Forma de `campoImagen(label)`, el campo de subida de imagen que cada app
+ * define localmente (llama a su propia API de subida — ver el comentario en
+ * `color-picker-field.tsx` sobre por qué eso NO puede vivir en este paquete).
+ *
+ * Un primitivo que necesita imagen (como `Grid` con su fondo) no puede traer
+ * su propio campo de imagen: recibe esta fábrica como parámetro y la usa para
+ * construir su `ConfigDeBloque`, igual que ya se hace con `campoColor` pero
+ * inyectado en vez de importado directamente.
+ */
+export type FabricaCampoImagen = (label: string) => {
+  type: 'custom';
+  label: string;
+  render: (props: { value: string; onChange: (value: string) => void }) => any;
+};
+
 // ─── Escala de espacio ───────────────────────────────────────────────────────
 /**
  * Escala compartida por padding, margen y separación entre elementos.

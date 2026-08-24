@@ -28,10 +28,44 @@ const router = Router();
  * Contar por IP era especialmente malo justo en este endpoint: una sede entera detrás
  * del mismo NAT compartía las treinta escrituras por minuto entre todos sus editores,
  * y el autoguardado se las gastaba solo.
- *
- * @see openspec/changes/qa-seguridad-vistas-intranet/specs/qa-intranet-rbac-enforcement/spec.md
  */
 
+/**
+ * @openapi
+ * /api/paginas/publica/{slug}:
+ *   get:
+ *     tags: [Páginas]
+ *     summary: Página publicada (público)
+ *     description: |
+ *       Devuelve el contenido **publicado** de una página, que es lo que pintan el
+ *       sitio y la intranet. No exige sesión.
+ *
+ *       **El ámbito entra en la clave de caché**, y tiene que hacerlo: el sitio y la
+ *       intranet comparten la tabla y ambos tienen su `/inicio`, así que sin separar
+ *       por `X-Ambito` una de las dos aplicaciones acabaría sirviendo la portada de la
+ *       otra. Buscar por slug a secas devolvía justo eso.
+ *
+ *       **Los slugs jerárquicos no existen**: es `encuestas-calidad-de-formacion`, con
+ *       guion, y no `encuestas/calidad-de-formacion`. Un parámetro de Express no cruza
+ *       una barra, así que un slug con barra no encontraría la ruta.
+ *
+ *       Respuesta cacheada 5 minutos. Aprobar una página invalida su entrada.
+ *     security: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/SlugEnRuta'
+ *       - $ref: '#/components/parameters/Ambito'
+ *     responses:
+ *       200:
+ *         description: La página publicada.
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Pagina' }
+ *       404:
+ *         description: No existe una página publicada con ese slug en ese ámbito.
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Error' }
+ */
 // El ámbito entra en la clave de caché: `/publica/inicio` devuelve una página
 // distinta según la pida el sitio o la intranet.
 router.get(
@@ -66,6 +100,55 @@ router.use(requireAuth);
  * distingue `POST /` de `POST /:slug/borrador` por la forma de la ruta, no por el
  * orden.
  */
+/**
+ * @openapi
+ * /api/paginas:
+ *   post:
+ *     tags: [Páginas]
+ *     summary: Crear una sección editable
+ *     description: |
+ *       Da de alta una página nueva del portal y siembra su clave de permiso
+ *       (`editar.{ambito}.{slug}`).
+ *
+ *       **Solo viaja el nombre: el slug lo calcula el servidor.** Dejar que el cliente
+ *       mandara la ruta sería dejarle elegir la clave de permiso que se va a crear, y
+ *       eso no se negocia desde el navegador. El diálogo del editor la muestra
+ *       mientras se escribe usando la misma política de slugs, así que quien crea ve la
+ *       de verdad antes de confirmar.
+ *
+ *       El tope de 120 caracteres es del **título**, no de la ruta: un nombre largo es
+ *       legítimo y se guarda entero; el slug se recorta aparte.
+ *
+ *       **No lleva `requierePermisoDeSeccion` y no es un olvido**: ese control exige que
+ *       la sección ya exista, así que aplicarlo aquí haría imposible crear la primera.
+ *       Lo que sí exige es `secciones.crear`, que es una clave fija.
+ *     parameters:
+ *       - $ref: '#/components/parameters/Ambito'
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               titulo:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 120
+ *                 example: Tasa de vinculación laboral
+ *             required: [titulo]
+ *             additionalProperties: false
+ *     responses:
+ *       201:
+ *         description: Sección creada, con el slug que calculó el servidor.
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Pagina' }
+ *       400: { $ref: '#/components/responses/CuerpoInvalido' }
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
+ *       429: { $ref: '#/components/responses/LimiteExcedido' }
+ */
 router.post(
   '/',
   limitadorDeEscritura,
@@ -83,12 +166,91 @@ router.post(
  * que solo tiene el rol que creó la sección. Un administrador que llega a limpiar algo
  * que no creó él se quedaría fuera de la única ruta que sirve para limpiarlo.
  */
+/**
+ * @openapi
+ * /api/paginas/{slug}/eliminable:
+ *   get:
+ *     tags: [Páginas]
+ *     summary: Comprobar si una sección se puede eliminar
+ *     description: |
+ *       Consulta previa al borrado: dice si la sección se puede eliminar y qué se
+ *       llevaría por delante, para que el diálogo lo enseñe antes de preguntar.
+ *
+ *       Las secciones **de fábrica** (`inicio`, `tasa`, `matriz` y las dos de
+ *       encuestas) no se eliminan: hay código que da por hecho que existen, y borrar
+ *       `inicio` deja el portal sin portada.
+ *     parameters:
+ *       - $ref: '#/components/parameters/SlugEnRuta'
+ *       - $ref: '#/components/parameters/Ambito'
+ *     responses:
+ *       200:
+ *         description: Veredicto y motivo.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 eliminable: { type: boolean }
+ *                 motivo: { type: string, nullable: true }
+ *                 versiones: { type: integer, description: Versiones que se borrarían. }
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
+ *       404: { $ref: '#/components/responses/NoEncontrado' }
+ */
 router.get(
   '/:slug/eliminable',
   requierePermisoPagina('puedeEditar'),
   requirePermission('secciones.eliminar'),
   PaginaController.analizarEliminacion
 );
+
+/**
+ * @openapi
+ * /api/paginas/{slug}:
+ *   delete:
+ *     tags: [Páginas]
+ *     summary: Eliminar una sección
+ *     description: |
+ *       Borra la sección, sus versiones y su clave de permiso. **No se deshace.**
+ *
+ *       **`confirmacion` es el título de la sección, tecleado a mano**, y no es una
+ *       formalidad del cliente: el servidor lo vuelve a comparar contra lo que hay en
+ *       la base. Saltarse el diálogo llamando a la API directamente no evita el paso,
+ *       solo lo hace más incómodo — que es exactamente lo que se busca en una
+ *       operación irreversible.
+ *
+ *       **Por qué exige `secciones.eliminar` y no el permiso de la sección**: el
+ *       permiso `editar.{ambito}.{slug}` solo lo tiene el rol que creó la sección, así
+ *       que un administrador que llega a limpiar algo que no creó él se quedaría fuera
+ *       de la única ruta que sirve para limpiarlo.
+ *     parameters:
+ *       - $ref: '#/components/parameters/SlugEnRuta'
+ *       - $ref: '#/components/parameters/Ambito'
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               confirmacion:
+ *                 type: string
+ *                 description: El título exacto de la sección. Se comprueba en el servidor.
+ *             required: [confirmacion]
+ *             additionalProperties: false
+ *     responses:
+ *       200:
+ *         description: Sección eliminada.
+ *       400:
+ *         description: La confirmación no coincide, o la sección es de fábrica.
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Error' }
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
+ *       404: { $ref: '#/components/responses/NoEncontrado' }
+ *       429: { $ref: '#/components/responses/LimiteExcedido' }
+ */
 router.delete(
   '/:slug',
   limitadorDeEscritura,
@@ -98,12 +260,89 @@ router.delete(
   PaginaController.eliminarSeccion
 );
 
+/**
+ * @openapi
+ * /api/paginas/{slug}/editable:
+ *   get:
+ *     tags: [Páginas]
+ *     summary: Abrir una página en el editor
+ *     description: |
+ *       Devuelve la versión sobre la que se trabaja —el borrador si lo hay, y si no lo
+ *       publicado— para cargarla en el editor visual.
+ *
+ *       **Aquí es donde actúan las dos capas de autorización**, y hacen cosas
+ *       distintas: `puedeEditar` decide **si** esta persona edita (dirección y
+ *       subdirección entran a la intranet pero no editan), y el permiso de sección
+ *       decide **qué** puede editar, con la clave `editar.{ambito}.{slug}` construida
+ *       desde la propia petición. La segunda es la que ata a un editor a secciones
+ *       concretas.
+ *     parameters:
+ *       - $ref: '#/components/parameters/SlugEnRuta'
+ *       - $ref: '#/components/parameters/Ambito'
+ *     responses:
+ *       200:
+ *         description: Contenido editable de la página.
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Pagina' }
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
+ *       404: { $ref: '#/components/responses/NoEncontrado' }
+ */
 router.get(
   '/:slug/editable',
   requierePermisoPagina('puedeEditar'),
   requierePermisoDeSeccion(),
   PaginaController.obtenerEditable
 );
+
+/**
+ * @openapi
+ * /api/paginas/{slug}/borrador:
+ *   post:
+ *     tags: [Páginas]
+ *     summary: Guardar borrador
+ *     description: |
+ *       Guarda el árbol de bloques del editor como versión en borrador (RF-01). Es la
+ *       ruta que dispara el autoguardado, así que es la que más tráfico recibe del
+ *       editor.
+ *
+ *       **El HTML de dentro se sanea en el servidor**, recorriendo el árbol entero. El
+ *       esquema de validación solo fija la *forma* (`type` y `props` por bloque); son
+ *       dos capas que hacen cosas distintas y ninguna sustituye a la otra.
+ *
+ *       **El tope de 500 bloques no es decorativo**: el saneado recorre todos los
+ *       nodos, así que el coste lo marca su número y no el tamaño del JSON. Con solo
+ *       el límite de 1 MB del cuerpo, una petición llena de bloques diminutos daba
+ *       decenas de miles de nodos que limpiar de una vez.
+ *
+ *       **La validación va después de los permisos, no antes**: a quien no puede
+ *       editar esta sección se le responde 403 sin mirarle el cuerpo. Es más barato y
+ *       no le confirma qué forma espera el endpoint.
+ *     parameters:
+ *       - $ref: '#/components/parameters/SlugEnRuta'
+ *       - $ref: '#/components/parameters/Ambito'
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               contenido: { $ref: '#/components/schemas/ContenidoPagina' }
+ *             required: [contenido]
+ *             additionalProperties: false
+ *     responses:
+ *       200:
+ *         description: Borrador guardado.
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Pagina' }
+ *       400: { $ref: '#/components/responses/CuerpoInvalido' }
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
+ *       429: { $ref: '#/components/responses/LimiteExcedido' }
+ */
 router.post(
   '/:slug/borrador',
   limitadorDeEscritura,
@@ -115,6 +354,33 @@ router.post(
   validarCuerpo(guardarBorradorSchema),
   PaginaController.guardarBorrador
 );
+
+/**
+ * @openapi
+ * /api/paginas/{slug}/enviar-revision:
+ *   patch:
+ *     tags: [Páginas]
+ *     summary: Enviar a revisión
+ *     description: |
+ *       Mete el borrador en la cola de aprobación (RF-06). El Editor propone; publicar
+ *       lo decide quien aprueba.
+ *
+ *       **Pide un permiso propio además del de edición** (`editor.enviar-revision`):
+ *       se puede querer que alguien redacte borradores sin poder meterlos en la cola.
+ *     parameters:
+ *       - $ref: '#/components/parameters/SlugEnRuta'
+ *       - $ref: '#/components/parameters/Ambito'
+ *     responses:
+ *       200:
+ *         description: Versión enviada a revisión.
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Pagina' }
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
+ *       404: { $ref: '#/components/responses/NoEncontrado' }
+ *       429: { $ref: '#/components/responses/LimiteExcedido' }
+ */
 // Enviar a revisión pide además el permiso propio: se puede querer que alguien redacte
 // borradores sin poder meterlos en la cola de aprobación.
 router.patch(
@@ -125,6 +391,40 @@ router.patch(
   requirePermission('editor.enviar-revision'),
   PaginaController.enviarARevision
 );
+
+/**
+ * @openapi
+ * /api/paginas/{slug}/versiones/{versionId}:
+ *   delete:
+ *     tags: [Páginas]
+ *     summary: Descartar una versión sin publicar
+ *     description: |
+ *       Elimina un borrador o una versión rechazada.
+ *
+ *       **Pide el id de la versión y no solo el slug** a propósito: una página acumula
+ *       versiones, y borrar «la del slug» borraría por error algo distinto de lo que
+ *       se está mirando en pantalla.
+ *
+ *       Lo hace quien publica, no quien edita: descartar es la otra mitad de aprobar.
+ *     parameters:
+ *       - $ref: '#/components/parameters/SlugEnRuta'
+ *       - name: versionId
+ *         in: path
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *       - $ref: '#/components/parameters/Ambito'
+ *     responses:
+ *       200:
+ *         description: Versión eliminada.
+ *       400:
+ *         description: La versión está publicada, o no pertenece a esa página.
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Error' }
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
+ *       404: { $ref: '#/components/responses/NoEncontrado' }
+ */
 // Descartar una versión sin publicar. Se pide el id de la versión y no solo el
 // slug para no borrar por error algo distinto de lo que se está mirando.
 router.delete(
@@ -133,12 +433,92 @@ router.delete(
   PaginaController.eliminarVersion
 );
 
+/**
+ * @openapi
+ * /api/paginas/{slug}/aprobar:
+ *   patch:
+ *     tags: [Páginas]
+ *     summary: Aprobar y publicar
+ *     description: |
+ *       Publica la versión que estaba en revisión (RF-06) y **avisa a los frontales
+ *       para que tiren su caché**.
+ *
+ *       Ese aviso no es un detalle: aprobar dejaba la base correcta pero la página no
+ *       cambiaba, porque el frontal seguía sirviendo su copia y la caché de la API la
+ *       suya. Sin invalidar las dos, publicar no publicaba nada visible.
+ *     parameters:
+ *       - $ref: '#/components/parameters/SlugEnRuta'
+ *       - $ref: '#/components/parameters/Ambito'
+ *     responses:
+ *       200:
+ *         description: Página publicada.
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Pagina' }
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
+ *       404: { $ref: '#/components/responses/NoEncontrado' }
+ */
 router.patch('/:slug/aprobar', requierePermisoPagina('puedePublicar'), PaginaController.aprobar);
+
+/**
+ * @openapi
+ * /api/paginas/{slug}/rechazar:
+ *   patch:
+ *     tags: [Páginas]
+ *     summary: Rechazar una versión en revisión
+ *     description: |
+ *       Devuelve la versión a quien la propuso. El contenido no se pierde: queda en
+ *       estado rechazado y se puede retomar.
+ *     parameters:
+ *       - $ref: '#/components/parameters/SlugEnRuta'
+ *       - $ref: '#/components/parameters/Ambito'
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               motivo: { type: string, description: Se muestra a quien propuso el cambio. }
+ *     responses:
+ *       200:
+ *         description: Versión rechazada.
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Pagina' }
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
+ *       404: { $ref: '#/components/responses/NoEncontrado' }
+ */
 router.patch('/:slug/rechazar', requierePermisoPagina('puedeRechazar'), PaginaController.rechazar);
 
+/**
+ * @openapi
+ * /api/paginas/en-revision:
+ *   get:
+ *     tags: [Páginas]
+ *     summary: Cola de revisión
+ *     description: |
+ *       Las versiones que esperan aprobación (RF-06). **La cola es deliberadamente
+ *       cruzada**: trae las del sitio y las de la intranet juntas, porque hoy los
+ *       mismos roles editan en las dos aplicaciones.
+ *
+ *       La ve quien puede publicar: esta pantalla existe para aprobar o rechazar, y
+ *       quien no puede hacer ninguna de las dos cosas no tiene nada que hacer en ella.
+ *     responses:
+ *       200:
+ *         description: Versiones pendientes de aprobación.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items: { $ref: '#/components/schemas/Pagina' }
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
+ */
 // La cola de revisión existe para aprobar o rechazar; quien no puede hacer ninguna
 // de las dos no tiene nada que hacer aquí.
 router.get('/en-revision', requierePermisoPagina('puedePublicar'), PaginaController.listarEnRevision);
 
 export default router;
-

@@ -27,7 +27,14 @@ yarn-error.log*
 
 # Database backups
 *.sql
+# La excepción de abajo apuntaba a `migrations/script.sql`, que ya no existe: se movió a
+# `migrations/_obsoletas/`. Se deja por si alguien vuelve a ponerlo, pero hoy no cubre nada.
 !api-backend/src/infrastructure/db/migrations/script.sql
+# La semilla de contenido SÍ se versiona: es lo que hace que una instalación nueva
+# arranque con las páginas cargadas en vez de con la base vacía. No es un backup —no
+# lleva usuarios, ni bitácora, ni datos personales—, es parte del proyecto.
+# Se regenera con `npm run seed:generar` desde api-backend/.
+!api-backend/seed/*.sql
 
 
 # Tooling

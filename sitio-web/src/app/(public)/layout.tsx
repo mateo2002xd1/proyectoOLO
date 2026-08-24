@@ -6,6 +6,7 @@ import {
   obtenerPlantilla,
   PlantillaEditButton,
 } from '@/features/paginas';
+import { RouteTransition } from '@/shared/ui/atoms/RouteTransition';
 
 /**
  * Marco común de todo el sitio público: cabecera arriba, pie abajo.
@@ -29,7 +30,9 @@ export default async function PublicLayout({ children }: { children: React.React
   return (
     <div className="publico-layout min-h-screen flex flex-col">
       {plantilla.cabecera && <Header block={{ id: 'header-plantilla' }} {...plantilla.cabecera} />}
-      <main className="flex-grow">{children}</main>
+      <main className="flex-grow">
+        <RouteTransition>{children}</RouteTransition>
+      </main>
       {plantilla.pie && <Footer block={{ id: 'footer-plantilla' }} />}
 
       <PlantillaEditButton />

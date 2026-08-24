@@ -63,6 +63,27 @@ type Actor = { id?: string; role?: string | null };
 /** Lo único que alguien puede cambiarse a sí mismo sin ser administrador. */
 const CAMPOS_DE_AUTOSERVICIO = ['name', 'apellidos', 'email'] as const;
 
+/**
+ * Cuántas cuentas activas administran usuarios ahora mismo (Superadmin o
+ * Administrador: los dos roles que cuentan como `puedeAdministrarUsuarios`), sin
+ * contar `excluirId`.
+ *
+ * La cuenta maestra de `.env` no aparece aquí —`UserRepository.findAll` ya la
+ * excluye— y no es una red de rescate real: `localAuthHabilitado` la apaga en
+ * producción (`config/index.ts`). Estas cuentas son la única puerta para volver a
+ * nombrar un administrador, así que ninguna de las tres formas de vaciarlas —bajar
+ * el rol, desactivar el estado o dejarlo caducar— puede dejar este número en cero.
+ */
+const contarAdministradoresActivos = async (excluirId?: string) => {
+  const usuarios = await UserRepository.findAll();
+  return (usuarios as any[]).filter(
+    (u) =>
+      u.id !== excluirId &&
+      u.status === 'active' &&
+      usuariosPolicies.puedeAdministrarUsuarios(u.role?.name)
+  ).length;
+};
+
 export const updateUser = async (id: string, data: any, actor?: Actor) => {
   const { password, email, reset_password, reset_security_questions, ...rest } = data;
 
@@ -113,15 +134,27 @@ export const updateUser = async (id: string, data: any, actor?: Actor) => {
     }
   }
 
-  // Degradar al último Superadmin activo deja el sistema sin nadie que pueda volver a
-  // nombrar uno: la cuenta maestra de `.env` es un rescate, no una silla ocupada.
-  if (rest.role_id && !esDueno(rest.role_id, user.role_id)) {
-    const rolActual = await RoleRepository.findById(user.role_id);
-    if ((rolActual?.name ?? '').trim().toLowerCase() === 'superadmin') {
-      const restantes = await UserRepository.contarActivosPorRol(user.role_id);
-      if (restantes <= 1) {
+  // Nadie deja el sistema sin ningún administrador activo, ni bajándole el rol ni
+  // desactivándolo. Comparar solo contra "Superadmin" se quedaba corto: Administrador
+  // también administra usuarios (`usuariosPolicies`), así que degradar al último
+  // Administrador activo dejaba pasar exactamente el mismo problema por el otro rol.
+  const cambiaRol = rest.role_id !== undefined && !esDueno(rest.role_id, user.role_id);
+  const cambiaEstado = rest.status !== undefined && rest.status !== user.status;
+
+  if (cambiaRol || cambiaEstado) {
+    const rolActual = (user as any).role;
+    const eraAdministradorActivo =
+      user.status === 'active' && usuariosPolicies.puedeAdministrarUsuarios(rolActual?.name);
+
+    if (eraAdministradorActivo) {
+      const rolResultante = cambiaRol ? await RoleRepository.findById(rest.role_id) : rolActual;
+      const estadoResultante = cambiaEstado ? rest.status : user.status;
+      const seguiraAdministrando =
+        estadoResultante === 'active' && usuariosPolicies.puedeAdministrarUsuarios(rolResultante?.name);
+
+      if (!seguiraAdministrando && (await contarAdministradoresActivos(id)) < 1) {
         throw Object.assign(
-          new Error('No se puede degradar al único Superadmin activo del sistema'),
+          new Error('No se puede quitar al último administrador activo del sistema'),
           { status: 409 }
         );
       }
@@ -200,6 +233,15 @@ export const deleteUser = async (id: string, actor?: Actor) => {
     throw Object.assign(new Error('No puedes eliminar tu propia cuenta'), { status: 403 });
   }
 
+  const esAdministradorActivo =
+    user.status === 'active' && usuariosPolicies.puedeAdministrarUsuarios((user as any).role?.name);
+  if (esAdministradorActivo && (await contarAdministradoresActivos(id)) < 1) {
+    throw Object.assign(
+      new Error('No se puede eliminar al último administrador activo del sistema'),
+      { status: 409 }
+    );
+  }
+
   try {
     await UserRepository.delete(id);
   } catch (err: any) {
@@ -213,15 +255,31 @@ export const deleteUser = async (id: string, actor?: Actor) => {
 };
 
 export const deactivateExpiredUsers = async () => {
-  const users = await UserRepository.findAll();
+  const users = await UserRepository.findAll() as any[];
   const now = new Date();
+
   const expiredActiveUsers = users.filter(
-    (u: any) => u.status === 'active' && u.expiration_date && new Date(u.expiration_date) < now
+    (u) => u.status === 'active' && u.expiration_date && new Date(u.expiration_date) < now
   );
+
+  let deactivated = 0;
+  const exentosPorRolAdministrador: string[] = [];
+
   for (const user of expiredActiveUsers) {
+    // El rol administrador queda fuera de la caducidad automática por completo: no es
+    // "mientras quede otro activo" (esa regla es aparte, para las acciones manuales en
+    // updateUser/deleteUser) — esta revisión no toca una cuenta administradora aunque
+    // haya diez más. Es lo que pide la historia: acceso temporal para editores e
+    // intranet, exceptuando al rol de administrador.
+    if (usuariosPolicies.puedeAdministrarUsuarios(user.role?.name)) {
+      exentosPorRolAdministrador.push(user.id);
+      continue;
+    }
     await UserRepository.update(user.id, { status: 'inactive' });
+    deactivated++;
   }
-  return { deactivated: expiredActiveUsers.length };
+
+  return { deactivated, exentosPorRolAdministrador };
 };
 
 export const getExpirationAlerts = async (windowDays = 7) => {

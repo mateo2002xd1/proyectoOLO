@@ -1,6 +1,6 @@
 // ─── Primitivos de maquetación para Puck (compartidos entre apps) ───
 export {
-  gridConfig,
+  crearGridConfig,
   flexConfig,
   spaceConfig,
   primitiveComponents,
@@ -28,4 +28,5 @@ export type {
   ValoresCaja,
   ClaveEspacio,
   EstiloDeCaja,
+  FabricaCampoImagen,
 } from './primitives/controles-de-caja';

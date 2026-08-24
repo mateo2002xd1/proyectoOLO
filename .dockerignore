@@ -1,7 +1,10 @@
 **/.git
 **/.next
 **/node_modules
-**/dist
+api-backend/dist
+sitio-web/dist
+intranet/dist
+packages/*/dist
 **/build
 **/.env
 **/.env.local

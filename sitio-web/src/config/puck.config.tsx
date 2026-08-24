@@ -3,6 +3,8 @@
 import type { ComponentProps, ReactNode } from 'react';
 import {
   primitiveComponents,
+  crearGridConfig,
+  conCaja,
   conCajaEnTodos,
   BLOQUES_SIN_CAJA,
   campoColor,
@@ -90,8 +92,11 @@ const puckConfigBase: Config = {
     },
   },
   components: {
-    // Primitivos de maquetación compartidos (Grid / Flex / Space)
+    // Primitivos de maquetación compartidos (Flex / Space)
     ...primitiveComponents,
+    // Grid necesita el campo de imagen de esta app inyectado (su fondo sube
+    // archivos contra la API de sitio-web) — ver `crearGridConfig`.
+    Grid: conCaja(crearGridConfig(campoImagen)),
     // ─── Plantilla: la cabecera y el pie que rodean a todas las páginas ───
     // Solo se ofrecen al editar el slug `plantilla` (ver COMPONENTES_POR_SLUG).
     // Los pinta `app/(public)/layout.tsx` leyendo esa página, no el contenido de
@@ -247,6 +252,8 @@ const puckConfigBase: Config = {
           type: 'text' as const,
           label: 'Texto alternativo de la ilustración',
         },
+        // Campo personalizado que integra ColorPickerField para definir el color de fondo del banner 
+        // (si se deja vacío, conserva el estilo CSS por defecto).
         colorFondo: campoColor('Color del banner'),
       },
       defaultProps: {

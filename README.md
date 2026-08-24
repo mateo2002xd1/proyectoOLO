@@ -82,21 +82,14 @@ Leer en este orden. Los tres primeros son de lectura obligatoria antes de tocar 
 | [3-seguridad-del-proyecto.md](3-seguridad-del-proyecto.md) | Superficies de ataque y controles. |
 | [4-reglas.md](4-reglas.md) | Reglas operativas para mover o crear carpetas sin romper nada. |
 | [9-accesibilidad.md](9-accesibilidad.md) | **Nivel AA y Resolución 1519 de 2020.** Estado auditado, decisiones de paleta y plan por fases (RF-14). |
-| [10-backlog.md](10-backlog.md) | **Qué falta por hacer.** 21 épicas, 21 historias y 226 tareas con estado verificado, capa y nivel. Exportado también a `10-backlog.csv`. |
 | [5-tableros-bi.md](5-tableros-bi.md) | Tableros Power BI embebidos: URLs, dónde se usan y controles de seguridad (RF-08). |
 | [6-auditoria.md](6-auditoria.md) | Bitácora de sesiones de trabajo. |
 | [7-despliegue.md](7-despliegue.md) | Docker, Nginx, SSL, variables de entorno. |
 
-
-## Directivas de contraseñas — OLO
-|Propiedad|Requisito |
-| Caracteres permitidos	Mayúsculas (A-Z), minúsculas (a-z), números (0-9), símbolos @ # $ % ^ & * - _ ! + = [ ] { } | \ : ' , . ? /  ~ " ( ) ; < >` y espacio en blanco
-Caracteres no permitidos	Caracteres Unicode (emojis, acentos sueltos fuera de estándar, etc.)
-Longitud mínima	12 caracteres (recomiendo subir el mínimo de Microsoft de 8 a 12, dado que es un sistema gubernamental con datos sensibles)
-Longitud máxima	256 caracteres
-Complejidad	Mínimo 3 de las 4 categorías: mayúsculas, minúsculas, números, símbolos
-Historial de contraseñas	No repetir las últimas 5 contraseñas usadas
-Expiración	90 días para Editor y Director/Subdirector (coherente con el requisito #16 de expiración de cuenta); Admin sin expiración forzada pero con rotación recomendada cada 180 días
-Bloqueo por intentos fallidos	5 intentos fallidos → bloqueo temporal de 15 min (protección contra fuerza bruta)
-Almacenamiento	Hash con bcrypt o argon2 (nunca texto plano ni MD5/SHA1 solo)
-
+**La API se documenta sola.** Con el backend levantado, `http://localhost:4000/api/docs`
+abre Swagger UI —los endpoints con sus parámetros, sus respuestas y el permiso que exige
+cada uno, y un botón para probarlos— y `/api/docs.json` devuelve el documento OpenAPI
+crudo para Postman o para generar clientes. Las descripciones salen de comentarios
+`@openapi` escritos junto a cada ruta, no de una lista aparte, para que no se
+desincronicen. En producción está apagada salvo que se encienda a mano: ver
+[7-despliegue.md](7-despliegue.md).

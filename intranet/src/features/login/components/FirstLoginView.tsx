@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { authApi, useAuth } from '@/features/login';
 import { cumplePolitica, primerFallo } from '@olo/password-policy';
 import { PasswordField } from '@/shared/ui/molecules/PasswordField';
@@ -190,7 +189,7 @@ export function FirstLoginView() {
 
         <button type="submit" className="fl-submit">Continuar</button>
 
-        <Link href="/login" className="fl-login-link">Iniciar sesión</Link>
+        <button type="button" onClick={() => logout()} className="fl-login-link">Iniciar sesión</button>
       </form>
     </div>
   );
@@ -238,7 +237,7 @@ export function FirstLoginView() {
           {isLoading ? 'Guardando...' : currentQuestion === TOTAL_QUESTIONS - 1 ? 'Guardar' : 'Continuar'}
         </button>
 
-        <Link href="/login" className="fl-login-link">Iniciar sesión</Link>
+        <button type="button" onClick={() => logout()} className="fl-login-link">Iniciar sesión</button>
       </form>
     </div>
   );
@@ -295,7 +294,7 @@ export function FirstLoginView() {
             {errors.general ? (
               <>
                 <div className="fl-general-error">{errors.general}</div>
-                <Link href="/login" className="fl-success-btn">Volver a iniciar sesión</Link>
+                <button type="button" onClick={() => logout()} className="fl-success-btn">Volver a iniciar sesión</button>
               </>
             ) : (
               <p className="fl-card-title">Comprobando tu cuenta…</p>

@@ -16,7 +16,7 @@
  */
 
 import { redirect } from "next/navigation";
-import { obtenerSesion, puedeEditarPaginas } from "@/shared/lib/sesion";
+import { obtenerSesion, puedeEditarPaginas, permisosDeLaSesion } from "@/shared/lib/sesion";
 import { AvisoSeccionNueva } from "@/features/gestor-secciones";
 import { EditorClient } from "./editor-client";
 
@@ -40,6 +40,22 @@ export default async function EditorPage({
   const puedeEditar = await puedeEditarPaginas();
   if (!puedeEditar) {
     redirect(`/${slug}`);
+  }
+
+  // Verificación GRANULAR por sección — el chequeo de arriba solo mira el rol, así
+  // que un Editor sin la llave `editar.intranet.{slug}` de ESTA sección llegaba a ver
+  // la carcasa vacía del editor tecleando la URL a mano (sin pasar por el botón), aunque
+  // ya no pudiera cargar contenido real ni guardar: eso lo rechaza la API con 403 vía
+  // `requierePermisoDeSeccion()`. Esto cierra esa rendija en vez de dejar que la API la
+  // tape sola. Superadmin tiene el mismo bypass que en el servidor (`require-permission
+  // .middleware.ts`): de lo contrario quedaría fuera de una sección creada por otro rol
+  // administrador, que no le concede la llave automáticamente.
+  const esSuperadmin = (sesion.rol ?? "").trim().toLowerCase() === "superadmin";
+  if (!esSuperadmin) {
+    const permisos = await permisosDeLaSesion();
+    if (!permisos.includes(`editar.intranet.${slug}`)) {
+      redirect(`/${slug}`);
+    }
   }
 
   return (

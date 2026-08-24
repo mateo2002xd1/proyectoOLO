@@ -34,9 +34,12 @@ const start = async () => {
     setupWorker();
     console.log('Background worker started.');
 
-    const servidor = app.listen(config.port, '127.0.0.1', () => {
-      console.log(`OLO API Backend running on port ${config.port}`);
-      console.log(`Health check: http://127.0.0.1:${config.port}/health`);
+    // La interfaz sale de la configuración y ya no está fija: sigue siendo 127.0.0.1
+    // por defecto, pero dentro de un contenedor eso deja a la API incomunicada de los
+    // demás. Ver el porqué completo en `config.host`.
+    const servidor = app.listen(config.port, config.host, () => {
+      console.log(`OLO API Backend running on ${config.host}:${config.port}`);
+      console.log(`Health check: http://${config.host}:${config.port}/health`);
     });
 
     // Los limitadores abren su propia conexión a Redis (ver `rate-limit.middleware.ts`).

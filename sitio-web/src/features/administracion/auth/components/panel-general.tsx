@@ -37,6 +37,7 @@ import {
   QuestionMarkCircleIcon,
 } from '@heroicons/react/20/solid';
 import { ThemeToggle } from '@/shared/ui/molecules/theme-toggle';
+import { RouteTransition } from '@/shared/ui/atoms/RouteTransition';
 import { enlaceAlEditor, listarEnRevision, type PaginaEnRevision } from '@/features/paginas';
 import {
   listarAuditoria,
@@ -243,7 +244,7 @@ export function PanelGeneralLayout({
           </Sidebar>
         }
       >
-        {children}
+        <RouteTransition>{children}</RouteTransition>
       </SidebarLayout>
     </>
   );
