@@ -15,7 +15,7 @@ import { puedeEditarPaginas } from '@/shared/lib/session';
  * por el catch-all, que habría dado 404 al no encontrar una página con ese slug.
  */
 export const metadata: Metadata = {
-  title: 'Inicio | Observatorio Laboral y Ocupacional',
+  title: 'Observatorio Laboral y Ocupacional',
   description:
     'Observatorio Laboral y Ocupacional del SENA: monitoreo del mercado laboral, orientación y alertas sectoriales.',
   alternates: { canonical: '/inicio' },
