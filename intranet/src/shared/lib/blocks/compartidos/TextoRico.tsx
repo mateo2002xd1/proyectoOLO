@@ -15,7 +15,7 @@ import { resaltar } from './resaltar';
  * convertido en nodos antes de llamar al render.
  */
 export interface TextoRicoProps {
-  titulo?: string;
+  titulo?: ReactNode;
   contenido?: ReactNode;
   fondo?: 'blanco' | 'gris';
   ancho?: 'estrecho' | 'ancho';
@@ -39,14 +39,14 @@ export function TextoRico({
       className={`${fondo === 'gris' ? 'matriz-section-gray' : 'matriz-section-white'} pt-12 md:pt-20 pb-8`}
     >
       <div
-        className={`max-w-[1200px] w-full mx-auto px-6 text-left`}
+        className={`max-w-[1200px] w-full px-6`}
       >
         {titulo && (
-          <h2 className="tasa-concept-title !text-left mb-8" style={estiloColor}>
-            {resaltar(titulo)}
+          <h2 className="tasa-concept-title mb-8" style={estiloColor}>
+            {titulo}
           </h2>
         )}
-        <div className="tasa-concept-desc !text-left" style={estiloColor}>{contenido}</div>
+        <div className="tasa-concept-desc" style={estiloColor}>{contenido}</div>
       </div>
     </div>
   );

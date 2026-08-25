@@ -235,7 +235,7 @@ const puckConfigBase: Config = {
     TextoRico: {
       label: 'Texto con formato',
       fields: {
-        titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
+        titulo: { type: 'richtext', label: 'Título' },
         contenido: { type: 'richtext', label: 'Contenido' },
         fondo: campoFondo,
         colorTexto: campoColor('Color del texto (opcional)'),
