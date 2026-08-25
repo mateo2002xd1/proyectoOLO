@@ -43,7 +43,7 @@ function slugDesdeParams(puckPath: string[]): string {
  */
 const METADATA_POR_SLUG: Record<string, Metadata> = {
   inicio: {
-    title: 'Inicio | Intranet',
+    title: 'Intranet | Observatorio Laboral y Ocupacional SENA',
     description: 'Inicio de la Intranet del Observatorio Laboral y Ocupacional SENA',
   },
   tasa: {
@@ -55,11 +55,11 @@ const METADATA_POR_SLUG: Record<string, Metadata> = {
     description: 'Matriz de Pertinencia - Herramienta estratégica del SENA',
   },
   'encuestas-calidad-de-formacion': {
-    title: 'Calidad de la Formación | Intranet',
+    title: 'Encuesta | Calidad de la Formación',
     description: 'Resultados de la encuesta de Calidad de la Formación',
   },
   'encuestas-seguimiento-laboral': {
-    title: 'Seguimiento Laboral | Intranet',
+    title: 'Encuesta | Seguimiento Laboral',
     description: 'Resultados de la encuesta de Seguimiento Laboral',
   },
 };

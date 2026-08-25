@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface IntranetTopbarProps {
   menuItems?: Array<{ label: string; href: string; children?: Array<{ label: string; href: string }> }>;
@@ -34,6 +34,11 @@ export function IntranetTopbar({
 }: IntranetTopbarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isDropdownOpen) searchInputRef.current?.focus();
+  }, [isDropdownOpen]);
 
   const intranetContent = [
     {
@@ -81,9 +86,7 @@ export function IntranetTopbar({
   ];
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchQuery(value);
-    setIsDropdownOpen(value.trim().length > 0);
+    setSearchQuery(e.target.value);
   };
 
   const normalizeText = (text: string) =>
@@ -159,43 +162,17 @@ export function IntranetTopbar({
         </nav>
 
         <div className="intranet-topbar-actions" aria-label="Acciones">
-          <div className="intranet-search-container">
-            <svg className="intranet-search-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <button
+            type="button"
+            className={`intranet-search-toggle${isDropdownOpen ? ' is-active' : ''}`}
+            aria-label="Buscar"
+            aria-expanded={isDropdownOpen}
+            onClick={() => setIsDropdownOpen((open) => !open)}
+          >
+            <svg width={18} height={18} viewBox="0 0 20 20" fill="#ffffff" aria-hidden="true">
               <path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clipRule="evenodd" />
             </svg>
-            <input
-              type="search"
-              name="search"
-              placeholder="Buscar"
-              className="intranet-search-input"
-              aria-label="Buscar"
-              value={searchQuery}
-              onChange={handleSearchChange}
-              onFocus={() => { if (searchQuery.trim().length > 0) setIsDropdownOpen(true); }}
-              onBlur={() => setTimeout(() => setIsDropdownOpen(false), 200)}
-            />
-            {isDropdownOpen && (
-              <div className="intranet-search-dropdown">
-                {filteredResults.length > 0 ? (
-                  filteredResults.map((result, idx) => (
-                    <a key={idx} href={result.href} className="intranet-search-result-item block text-inherit no-underline">
-                      <div className="flex flex-col gap-1">
-                        <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">{result.context}</span>
-                        {result.type === 'h1' && <h1 className="intranet-search-result-title text-lg font-bold">{result.text}</h1>}
-                        {result.type === 'h2' && <h2 className="intranet-search-result-title text-base font-semibold">{result.text}</h2>}
-                        {result.type === 'p' && <p className="intranet-search-result-desc text-sm">{result.text}</p>}
-                        {result.type === 'span' && <span className="intranet-search-result-desc text-xs text-gray-300">{result.text}</span>}
-                      </div>
-                    </a>
-                  ))
-                ) : (
-                  <div className="intranet-search-result-item text-gray-500 text-sm">
-                    No se encontraron resultados
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+          </button>
 
           <button
             type="button"
@@ -218,6 +195,49 @@ export function IntranetTopbar({
           </button>
         </div>
       </div>
+
+      {isDropdownOpen && (
+        <div className="intranet-search-modal" onClick={() => setIsDropdownOpen(false)}>
+          <div className="intranet-search-modal-inner" onClick={(e) => e.stopPropagation()}>
+            <div className="intranet-search-field">
+              <svg className="intranet-search-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clipRule="evenodd" />
+              </svg>
+              <input
+                ref={searchInputRef}
+                type="text"
+                name="search"
+                placeholder="Buscar"
+                className="intranet-search-input"
+                aria-label="Buscar"
+                value={searchQuery}
+                onChange={handleSearchChange}
+              />
+            </div>
+            <div className="intranet-search-results">
+              {searchQuery.trim() === "" ? (
+                <div className="intranet-search-empty">Escribe para buscar en la intranet</div>
+              ) : filteredResults.length > 0 ? (
+                filteredResults.map((result, idx) => (
+                  <a key={idx} href={result.href} className="intranet-search-result-item block text-inherit no-underline">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">{result.context}</span>
+                      {result.type === 'h1' && <h1 className="intranet-search-result-title text-lg font-bold">{result.text}</h1>}
+                      {result.type === 'h2' && <h2 className="intranet-search-result-title text-base font-semibold">{result.text}</h2>}
+                      {result.type === 'p' && <p className="intranet-search-result-desc text-sm">{result.text}</p>}
+                      {result.type === 'span' && <span className="intranet-search-result-desc text-xs text-gray-300">{result.text}</span>}
+                    </div>
+                  </a>
+                ))
+              ) : (
+                <div className="intranet-search-result-item text-gray-500 text-sm">
+                  No se encontraron resultados
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
