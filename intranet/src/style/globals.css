@@ -1266,7 +1266,8 @@
 .nueva-seccion-fondo {
   position: fixed;
   inset: 0;
-  z-index: 60; /* por encima de los botones flotantes, que están en 50 */
+  z-index: 60;
+  /* por encima de los botones flotantes, que están en 50 */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1347,7 +1348,7 @@
   color: #52667a;
 }
 
-.nueva-seccion-notas li + li {
+.nueva-seccion-notas li+li {
   margin-top: 0.3rem;
 }
 
@@ -4522,6 +4523,14 @@ body:has(.preview-page) .intranet-topbar {
 @media (max-width: 720px) {
   .preview-aviso-nota {
     margin-left: 0;
-    width: 100%;
   }
+}
+
+/* 
+  Fix para los menús desplegables del editor de Puck (Headings, Listas, Alineación).
+  Puck usa Radix UI Popovers para estos menús. Si el panel de Puck o alguna otra
+  capa tiene un z-index alto, los menús quedan ocultos o recortados.
+*/
+[data-radix-popper-content-wrapper] {
+  z-index: 9999 !important;
 }
