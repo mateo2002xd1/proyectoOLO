@@ -458,7 +458,7 @@
 .olo-nav-link {
   position: relative;
   padding: var(--space-sm) var(--space-md);
-  font-size: var(--fs-sm);
+  font-size: 0.9375rem; /* 15px (antes 14px / var(--fs-sm)) */
   font-weight: var(--fw-medium);
   color: #002237;
   border-radius: var(--radius-md);
@@ -537,7 +537,7 @@
 .olo-nav-dropdown-link {
   display: block;
   padding: var(--space-sm) var(--space-md);
-  font-size: var(--fs-sm);
+  font-size: 0.9375rem; /* 15px (antes 14px / var(--fs-sm)) */
   font-weight: var(--fw-medium);
   color: #002237;
   line-height: 1.4;
