@@ -31,6 +31,7 @@
  */
 
 import { campoColor } from './color-picker-field';
+import { campoIcono } from './icon-selector-field';
 
 // ─── Tipos mínimos de Puck ───────────────────────────────────────────────────
 /**
@@ -66,6 +67,29 @@ export type FabricaCampoImagen = (label: string) => {
 };
 
 // ─── Escala de espacio ───────────────────────────────────────────────────────
+
+function parsearFormatoLigero(texto: string) {
+  if (!texto) return null;
+  const lineas = texto.split('\n');
+  return lineas.map((linea, indexLinea) => {
+    const partes = linea.split(/(\*\*.*?\*\*|\*.*?\*)/g);
+    const lineaParseada = partes.map((parte, i) => {
+      if (parte.startsWith('**') && parte.endsWith('**')) {
+        return <strong key={i} style={{ fontStyle: 'italic', fontWeight: 800 }}>{parte.slice(2, -2)}</strong>;
+      }
+      if (parte.startsWith('*') && parte.endsWith('*')) {
+        return <em key={i} style={{ fontStyle: 'italic', fontWeight: 300 }}>{parte.slice(1, -1)}</em>;
+      }
+      return <span key={i}>{parte}</span>;
+    });
+
+    return [
+      ...lineaParseada,
+      indexLinea < lineas.length - 1 ? <br key={`br-${indexLinea}`} /> : null
+    ];
+  });
+}
+
 /**
  * Escala compartida por padding, margen y separación entre elementos.
  *
@@ -134,7 +158,7 @@ const ANCHOS: Record<string, string | null> = {
  */
 export const campoCaja = {
   type: 'object' as const,
-  label: 'Espaciado y ancho',
+  label: 'Espaciado y Ancho',
   objectFields: {
     interiorY: {
       type: 'select' as const,
@@ -194,6 +218,56 @@ export const campoCaja = {
   },
 };
 
+export const campoHashtag = {
+  type: 'object' as const,
+  label: 'Hashtag decorativo',
+  objectFields: {
+    texto: { type: 'textarea', label: 'Texto (usa **negrita** y *cursiva*)' },
+    tamano: {
+      type: 'select',
+      label: 'Tamaño del texto',
+      options: [
+        { label: 'Pequeño (14px)', value: '0.875rem' },
+        { label: 'Normal (16px)', value: '1rem' },
+        { label: 'Mediano (20px)', value: '1.25rem' },
+        { label: 'Grande (24px)', value: '1.5rem' },
+        { label: 'Extra Grande (32px)', value: '2rem' },
+        { label: 'Gigante (48px)', value: '3rem' },
+      ],
+    },
+    tamanoIcono: {
+      type: 'select',
+      label: 'Tamaño del icono',
+      options: [
+        { label: 'Pequeño (24px)', value: '1.5rem' },
+        { label: 'Normal (32px)', value: '2rem' },
+        { label: 'Mediano (40px)', value: '2.5rem' },
+        { label: 'Grande (48px)', value: '3rem' },
+        { label: 'Extra Grande (64px)', value: '4rem' },
+        { label: 'Gigante (96px)', value: '6rem' },
+      ],
+    },
+    color: campoColor('Color del texto'),
+    alineacion: {
+      type: 'radio' as const,
+      label: 'Alineación horizontal',
+      options: [
+        { label: 'Izquierda', value: 'flex-start' },
+        { label: 'Centro', value: 'center' },
+        { label: 'Derecha', value: 'flex-end' },
+      ],
+    },
+    posicionY: {
+      type: 'radio' as const,
+      label: 'Posición vertical',
+      options: [
+        { label: 'Arriba', value: 'arriba' },
+        { label: 'Abajo', value: 'abajo' },
+      ],
+    },
+  },
+};
+
 /**
  * Valores por defecto de la caja: todo neutro.
  *
@@ -208,10 +282,16 @@ export const cajaPorDefecto = {
   inferior: 'ninguno',
   ancho: 'completo',
   alineacion: 'centro',
-  // Vacío y no un color: por la misma razón que los espacios en `ninguno`. Un
-  // bloque recién soltado tiene que verse igual que antes de que este campo
-  // existiera, y regalarle un fondo taparía el que ya trae su propio CSS.
   fondo: '',
+};
+
+export const hashtagPorDefecto = {
+  texto: '',
+  tamano: '2rem',
+  tamanoIcono: '4rem',
+  color: '#333333',
+  alineacion: 'center',
+  posicionY: 'arriba',
 };
 
 export interface ValoresCaja {
@@ -221,25 +301,25 @@ export interface ValoresCaja {
   inferior?: ClaveEspacio | number;
   ancho?: keyof typeof ANCHOS;
   alineacion?: 'centro' | 'izquierda' | 'derecha';
-  /** Color CSS. Vacío significa «sin fondo propio»: el bloque conserva el suyo. */
   fondo?: string;
+}
+
+export interface ValoresHashtag {
+  texto?: string;
+  tamano?: string;
+  tamanoIcono?: string;
+  color?: string;
+  alineacion?: 'flex-start' | 'center' | 'flex-end';
+  posicionY?: 'arriba' | 'abajo';
 }
 
 // ─── Resolución a estilos ────────────────────────────────────────────────────
 export interface EstiloDeCaja {
   className: string;
   style: Record<string, string>;
-  /** `false` cuando no hay nada que aplicar: entonces no se pinta el envoltorio. */
   aplica: boolean;
 }
 
-/**
- * Traduce los valores de la caja a clase + variables CSS.
- *
- * Devuelve variables y no propiedades CSS finales porque `.olo-caja` necesita
- * poder reducir el espaciado en móvil, y para eso tiene que ser la hoja de
- * estilos quien haga la cuenta.
- */
 export function estiloDeCaja(caja: ValoresCaja | undefined): EstiloDeCaja {
   const valores = caja ?? {};
 
@@ -257,16 +337,9 @@ export function estiloDeCaja(caja: ValoresCaja | undefined): EstiloDeCaja {
   if (inferior) style['--olo-caja-inferior'] = `${inferior}px`;
   if (anchoMaximo) style['--olo-caja-ancho'] = anchoMaximo;
 
-  // El fondo va como propiedad y no como variable: no lo reduce ninguna media
-  // query, así que no necesita que la hoja de estilos haga ninguna cuenta.
-  // `trim()` porque el campo admite escribir el color a mano y un espacio
-  // suelto pintaría un `background-color: " "` que el navegador descarta en
-  // silencio, dejando el bloque sin fondo sin decir por qué.
   const fondo = typeof valores.fondo === 'string' ? valores.fondo.trim() : '';
   if (fondo) style.backgroundColor = fondo;
 
-  // La alineación solo significa algo cuando el ancho está limitado: sin ancho
-  // máximo la caja ocupa la fila entera y no hay hueco donde moverla.
   const claseAlineacion =
     anchoMaximo && alineacion !== 'centro' ? ` olo-caja--${alineacion}` : '';
 
@@ -278,24 +351,8 @@ export function estiloDeCaja(caja: ValoresCaja | undefined): EstiloDeCaja {
 }
 
 // ─── Envoltorio ──────────────────────────────────────────────────────────────
-/**
- * Marca de «esta config ya pasó por conCaja».
- *
- * Sin ella, envolver dos veces el mismo bloque —cosa que pasa en cuanto una app
- * aplica `conCajaEnTodos` sobre un catálogo que ya incluye los primitivos
- * envueltos— anida dos `<div>` leyendo el MISMO valor de `caja`, y el
- * espaciado sale duplicado sin que nada lo delate en el editor.
- */
 const YA_TIENE_CAJA = '__oloConCaja';
 
-/**
- * Añade los controles de caja a un bloque de Puck.
- *
- * Conserva el resto de la config tal cual (incluidos `resolveData`, `permissions`
- * y demás claves que Puck pueda traer), así que es seguro aplicarlo sobre
- * cualquier bloque existente. Es idempotente: aplicarlo dos veces devuelve lo
- * mismo que aplicarlo una.
- */
 export function conCaja<T extends ConfigDeBloque>(config: T): T {
   if (config[YA_TIENE_CAJA]) return config;
 
@@ -305,22 +362,81 @@ export function conCaja<T extends ConfigDeBloque>(config: T): T {
     fields: {
       ...(config.fields ?? {}),
       caja: campoCaja,
+      hashtag: campoHashtag,
     },
     defaultProps: {
       ...(config.defaultProps ?? {}),
-      caja: cajaPorDefecto,
+      caja: { ...cajaPorDefecto, ...config.defaultProps?.caja },
+      hashtag: { ...hashtagPorDefecto, ...config.defaultProps?.hashtag },
     },
     render: (props: any) => {
       const contenido = config.render(props);
-      const { className, style, aplica } = estiloDeCaja(props?.caja);
+      const { className, style } = estiloDeCaja(props?.caja);
 
-      // Sin nada configurado se devuelve el bloque pelado: mismo DOM que antes
-      // de que existieran estos controles.
-      if (!aplica) return contenido;
+      const aplica =
+        props?.caja &&
+        Object.keys(props.caja).some(
+          (k) =>
+            !['fondo', 'alineacion'].includes(k) &&
+            (props.caja as any)[k] !== 'ninguno' &&
+            (props.caja as any)[k] !== 'completo'
+        );
+
+      const textoHashtag = props?.hashtag?.texto;
+      const colorHashtag = props?.hashtag?.color || '#333333';
+      const tamanoHashtag = props?.hashtag?.tamano || '2rem';
+      const tamanoIcono = props?.hashtag?.tamanoIcono || '4rem';
+      const alineacionHashtag = props?.hashtag?.alineacion || 'center';
+      const posicionY = props?.hashtag?.posicionY || 'arriba';
+
+      const tieneHashtag = !!textoHashtag;
+
+      if (!aplica && !tieneHashtag) return contenido;
+
+      const nodoHashtag = tieneHashtag ? (
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: alineacionHashtag, 
+          width: '100%', 
+          padding: '24px', // Añade respiro general
+          marginBottom: posicionY === 'arriba' ? '16px' : '0', 
+          marginTop: posicionY === 'abajo' ? '16px' : '0' 
+        }}>
+          <div style={{ fontSize: tamanoHashtag, color: colorHashtag, textAlign: alineacionHashtag === 'center' ? 'center' : alineacionHashtag === 'flex-start' ? 'left' : 'right', lineHeight: 1.1 }}>
+            <span
+              style={{
+                float: 'left',
+                marginRight: '0.3em',
+                marginTop: '0.2em',
+              }}
+            >
+              <svg 
+                width={tamanoIcono}
+                height={tamanoIcono}
+                viewBox="0 0 24 24" 
+                fill="none" 
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g clipPath="url(#clip0_913_6185)">
+                  <path d="M23 7.00015H18.191L18.991 1.13515C19.0087 1.00501 19.0007 0.872656 18.9672 0.745638C18.9338 0.61862 18.8757 0.499428 18.7962 0.39487C18.7167 0.290311 18.6174 0.202432 18.504 0.136251C18.3905 0.0700693 18.2651 0.0268815 18.135 0.00915302C18.0049 -0.00857543 17.8725 -0.000497315 17.7455 0.0329261C17.6185 0.0663496 17.4993 0.124464 17.3947 0.203951C17.2902 0.283438 17.2023 0.382741 17.1361 0.49619C17.0699 0.609639 17.0267 0.735013 17.009 0.865153L16.173 7.00015H9.191L9.991 1.13515C10.0087 1.00501 10.0007 0.872656 9.96723 0.745638C9.9338 0.61862 9.87569 0.499428 9.7962 0.39487C9.71672 0.290311 9.61741 0.202432 9.50396 0.136251C9.39051 0.0700693 9.26514 0.0268815 9.135 0.00915305C9.00486 -0.00857541 8.8725 -0.000497289 8.74548 0.0329262C8.61847 0.0663496 8.49928 0.124464 8.39472 0.203951C8.29016 0.283438 8.20228 0.382741 8.1361 0.49619C8.06992 0.609639 8.02673 0.735013 8.009 0.865153L7.173 7.00015H2C1.73478 7.00015 1.48043 7.10551 1.29289 7.29305C1.10536 7.48058 1 7.73494 1 8.00015C1 8.26537 1.10536 8.51972 1.29289 8.70726C1.48043 8.8948 1.73478 9.00015 2 9.00015H6.9L6.082 15.0002H1C0.734784 15.0002 0.48043 15.1055 0.292893 15.293C0.105357 15.4806 0 15.7349 0 16.0002C0 16.2654 0.105357 16.5197 0.292893 16.7073C0.48043 16.8948 0.734784 17.0002 1 17.0002H5.809L5.009 22.8652C4.9732 23.128 5.04327 23.3943 5.2038 23.6054C5.36433 23.8166 5.60217 23.9553 5.865 23.9912C6.12783 24.027 6.39412 23.9569 6.60528 23.7964C6.81645 23.6358 6.9552 23.398 6.991 23.1352L7.827 17.0002H14.809L14.009 22.8652C13.9732 23.128 14.0433 23.3943 14.2038 23.6054C14.3643 23.8166 14.6022 23.9553 14.865 23.9912C15.1278 24.027 15.3941 23.9569 15.6053 23.7964C15.8165 23.6358 15.9552 23.398 15.991 23.1352L16.827 17.0002H22C22.2652 17.0002 22.5196 16.8948 22.7071 16.7073C22.8946 16.5197 23 16.2654 23 16.0002C23 15.7349 22.8946 15.4806 22.7071 15.293C22.5196 15.1055 22.2652 15.0002 22 15.0002H17.1L17.918 9.00015H23C23.2652 9.00015 23.5196 8.8948 23.7071 8.70726C23.8946 8.51972 24 8.26537 24 8.00015C24 7.73494 23.8946 7.48058 23.7071 7.29305C23.5196 7.10551 23.2652 7.00015 23 7.00015ZM15.082 15.0002H8.1L8.918 9.00015H15.9L15.082 15.0002Z" fill="#1dbaf6"/>
+                </g>
+                <defs>
+                  <clipPath id="clip0_913_6185">
+                    <rect width="24" height="24" fill="white"/>
+                  </clipPath>
+                </defs>
+              </svg>
+            </span>
+            {parsearFormatoLigero(textoHashtag.replace(/#/g, ''))}
+          </div>
+        </div>
+      ) : null;
 
       return (
-        <div className={className} style={style}>
+        <div className={className || undefined} style={style}>
+          {posicionY === 'arriba' && nodoHashtag}
           {contenido}
+          {posicionY === 'abajo' && nodoHashtag}
         </div>
       );
     },
