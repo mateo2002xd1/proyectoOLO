@@ -68,27 +68,7 @@ export type FabricaCampoImagen = (label: string) => {
 
 // ─── Escala de espacio ───────────────────────────────────────────────────────
 
-function parsearFormatoLigero(texto: string) {
-  if (!texto) return null;
-  const lineas = texto.split('\n');
-  return lineas.map((linea, indexLinea) => {
-    const partes = linea.split(/(\*\*.*?\*\*|\*.*?\*)/g);
-    const lineaParseada = partes.map((parte, i) => {
-      if (parte.startsWith('**') && parte.endsWith('**')) {
-        return <strong key={i} style={{ fontStyle: 'italic', fontWeight: 800 }}>{parte.slice(2, -2)}</strong>;
-      }
-      if (parte.startsWith('*') && parte.endsWith('*')) {
-        return <em key={i} style={{ fontStyle: 'italic', fontWeight: 300 }}>{parte.slice(1, -1)}</em>;
-      }
-      return <span key={i}>{parte}</span>;
-    });
 
-    return [
-      ...lineaParseada,
-      indexLinea < lineas.length - 1 ? <br key={`br-${indexLinea}`} /> : null
-    ];
-  });
-}
 
 /**
  * Escala compartida por padding, margen y separación entre elementos.
@@ -222,7 +202,15 @@ export const campoHashtag = {
   type: 'object' as const,
   label: 'Hashtag decorativo',
   objectFields: {
-    texto: { type: 'textarea', label: 'Texto (usa **negrita** y *cursiva*)' },
+    habilitar: {
+      type: 'radio',
+      label: 'Mostrar hashtag',
+      options: [
+        { label: 'Sí', value: 'si' },
+        { label: 'No', value: 'no' },
+      ],
+    },
+    texto: { type: 'richtext', label: 'Texto' },
     tamano: {
       type: 'select',
       label: 'Tamaño del texto',
@@ -286,6 +274,7 @@ export const cajaPorDefecto = {
 };
 
 export const hashtagPorDefecto = {
+  habilitar: 'no',
   texto: '',
   tamano: '2rem',
   tamanoIcono: '4rem',
@@ -305,7 +294,8 @@ export interface ValoresCaja {
 }
 
 export interface ValoresHashtag {
-  texto?: string;
+  habilitar?: 'si' | 'no';
+  texto?: any;
   tamano?: string;
   tamanoIcono?: string;
   color?: string;
@@ -382,6 +372,7 @@ export function conCaja<T extends ConfigDeBloque>(config: T): T {
             (props.caja as any)[k] !== 'completo'
         );
 
+      const habilitarHashtag = props?.hashtag?.habilitar === 'si';
       const textoHashtag = props?.hashtag?.texto;
       const colorHashtag = props?.hashtag?.color || '#333333';
       const tamanoHashtag = props?.hashtag?.tamano || '2rem';
@@ -389,7 +380,7 @@ export function conCaja<T extends ConfigDeBloque>(config: T): T {
       const alineacionHashtag = props?.hashtag?.alineacion || 'center';
       const posicionY = props?.hashtag?.posicionY || 'arriba';
 
-      const tieneHashtag = !!textoHashtag;
+      const tieneHashtag = habilitarHashtag && !!textoHashtag;
 
       if (!aplica && !tieneHashtag) return contenido;
 
@@ -402,14 +393,16 @@ export function conCaja<T extends ConfigDeBloque>(config: T): T {
           marginBottom: posicionY === 'arriba' ? '16px' : '0', 
           marginTop: posicionY === 'abajo' ? '16px' : '0' 
         }}>
-          <div style={{ fontSize: tamanoHashtag, color: colorHashtag, textAlign: alineacionHashtag === 'center' ? 'center' : alineacionHashtag === 'flex-start' ? 'left' : 'right', lineHeight: 1.1 }}>
-            <span
-              style={{
-                float: 'left',
-                marginRight: '0.3em',
-                marginTop: '0.2em',
-              }}
-            >
+          <div style={{ 
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.3em',
+            fontSize: tamanoHashtag, 
+            color: colorHashtag, 
+            textAlign: alineacionHashtag === 'center' ? 'center' : alineacionHashtag === 'flex-start' ? 'left' : 'right', 
+            lineHeight: 1.1 
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
               <svg 
                 width={tamanoIcono}
                 height={tamanoIcono}
@@ -426,8 +419,10 @@ export function conCaja<T extends ConfigDeBloque>(config: T): T {
                   </clipPath>
                 </defs>
               </svg>
-            </span>
-            {parsearFormatoLigero(textoHashtag.replace(/#/g, ''))}
+            </div>
+            <div>
+              {textoHashtag}
+            </div>
           </div>
         </div>
       ) : null;
