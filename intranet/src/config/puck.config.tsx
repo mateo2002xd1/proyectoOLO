@@ -358,7 +358,7 @@ const puckConfigBase: Config = {
     SeccionCarrusel: {
       label: 'Carrusel de imágenes',
       fields: {
-        titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
+        titulo: { type: 'richtext', label: 'Título' },
         imagenes: {
           type: 'array',
           label: 'Imágenes',
