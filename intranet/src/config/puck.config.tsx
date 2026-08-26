@@ -22,13 +22,17 @@ import { DescargasConPresentacion } from '@/shared/lib/blocks/compartidos/Descar
 import { RecursosVisualesBloque } from '@/shared/lib/blocks/inicio/RecursosVisualesBloque';
 import { Publicaciones } from '@/shared/lib/blocks/inicio/Publicaciones';
 import { PreguntasFrecuentes } from '@/shared/lib/blocks/inicio/PreguntasFrecuentes';
+import { IconoBloque } from '@/shared/lib/blocks/compartidos/IconoBloque';
 import {
   primitiveComponents,
   crearGridConfig,
+  flexConfig,
+  spaceConfig,
   conCaja,
   conCajaEnTodos,
   BLOQUES_SIN_CAJA,
   campoColor,
+  campoIcono,
 } from '@olo/blocks-renderer';
 import type { Config } from '@puckeditor/core';
 import type { ComponentProps } from 'react';
@@ -94,7 +98,7 @@ const puckConfigBase: Config = {
       components: ['TasaConceptos', 'PreguntasFrecuentes'],
     },
     'Maquetación': {
-      components: ['Grid', 'Flex', 'Space'],
+      components: ['Grid', 'Flex', 'Space', 'IconoBloque'],
     },
   },
   components: {
@@ -691,6 +695,34 @@ const puckConfigBase: Config = {
         <IntranetFooter {...props} />
       ),
     },
+    IconoBloque: {
+      label: 'Ícono SVG',
+      fields: {
+        icono: campoIcono('Ícono SVG'),
+        colorIcono: campoColor('Color del ícono'),
+        texto: { type: 'text', label: 'Texto descriptivo (opcional)' },
+        tamanoTexto: {
+          type: 'select',
+          label: 'Tamaño del texto',
+          options: [
+            { label: 'Pequeño (14px)', value: '0.875rem' },
+            { label: 'Normal (16px)', value: '1rem' },
+            { label: 'Mediano (20px)', value: '1.25rem' },
+            { label: 'Grande (24px)', value: '1.5rem' },
+            { label: 'Extra Grande (32px)', value: '2rem' },
+          ],
+        },
+        colorTexto: campoColor('Color del texto'),
+      },
+      defaultProps: {
+        icono: '',
+        colorIcono: '#002237',
+        texto: '',
+        tamanoTexto: '1rem',
+        colorTexto: '#333333',
+      },
+      render: (props: BlockRender<ComponentProps<typeof IconoBloque>>) => <IconoBloque {...props} />,
+    },
   },
 };
 
@@ -741,6 +773,7 @@ const BLOQUES_COMUNES = [
   'Grid',
   'Flex',
   'Space',
+  'IconoBloque',
 ];
 
 const COMPONENTES_POR_SLUG: Record<string, string[]> = {
