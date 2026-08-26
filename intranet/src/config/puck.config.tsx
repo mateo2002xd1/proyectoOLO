@@ -264,7 +264,7 @@ const puckConfigBase: Config = {
     TextoConImagen: {
       label: 'Texto con imagen al lado',
       fields: {
-        titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
+        titulo: { type: 'richtext', label: 'Título' },
         contenido: { type: 'richtext', label: 'Contenido' },
         imagenSrc: campoImagen('Imagen (opcional si hay presentación)'),
         imagenAlt: { type: 'text', label: 'Texto alternativo' },
@@ -292,7 +292,7 @@ const puckConfigBase: Config = {
         fondo: campoFondo,
       },
       defaultProps: {
-        titulo: '¿Cuál es el **objetivo**?',
+        titulo: '¿Cuál es el <strong>objetivo</strong>?',
         contenido: '<p>Escribe aquí el contenido de la sección.</p>',
         imagenSrc: '',
         imagenAlt: '',
