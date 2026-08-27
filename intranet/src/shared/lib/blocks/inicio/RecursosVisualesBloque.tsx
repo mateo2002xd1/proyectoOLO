@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
-import { resaltar } from '../compartidos/resaltar';
+import React, { useState, type ReactNode } from 'react';
 
 /**
  * Reproductor con lista de videos al lado.
@@ -21,7 +20,7 @@ export interface VideoRecurso {
 }
 
 export interface RecursosVisualesBloqueProps {
-  titulo?: string;
+  titulo?: ReactNode;
   videos?: VideoRecurso[];
 }
 
@@ -29,7 +28,7 @@ const miniaturaDe = (video: VideoRecurso): string =>
   video.miniatura || `https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`;
 
 export function RecursosVisualesBloque({
-  titulo = '**Recursos** visuales',
+  titulo,
   videos = [],
 }: RecursosVisualesBloqueProps) {
   const [indiceActivo, setIndiceActivo] = useState(0);
@@ -45,7 +44,7 @@ export function RecursosVisualesBloque({
     <div className="matriz-section-gray px-4 md:px-8">
       <div className="matriz-content-container-wide max-w-[1200px] mx-auto text-center flex flex-col items-center">
         {titulo && (
-          <h2 className="matriz-section-title text-[#041E42] font-bold mb-6">{resaltar(titulo)}</h2>
+          <h2 className="matriz-section-title text-[#041E42] font-bold mb-6">{titulo}</h2>
         )}
         <div className="w-full text-left px-2 md:px-6">
           <div className="rv-container">
