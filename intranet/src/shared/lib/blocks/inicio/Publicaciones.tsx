@@ -29,7 +29,7 @@ export interface PublicacionItem {
 }
 
 export interface PublicacionesProps {
-  titulo?: string;
+  titulo?: React.ReactNode;
   publicaciones?: PublicacionItem[];
   porPagina?: number;
 }
@@ -249,7 +249,7 @@ export function Publicaciones({
       <div className="matriz-content-container-wide max-w-[1200px] w-full mx-auto text-center flex flex-col items-center">
         {titulo && (
           <h2 className="matriz-section-title text-[#041E42] font-normal mb-8 text-center">
-            {resaltar(titulo)}
+            {typeof titulo === 'string' && titulo.includes('**') ? resaltar(titulo) : titulo}
           </h2>
         )}
         <div className="relative w-full max-w-[1200px] mx-auto group/carousel flex items-center justify-center px-4 md:px-8">

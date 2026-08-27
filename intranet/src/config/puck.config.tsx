@@ -471,11 +471,17 @@ const puckConfigBase: Config = {
           type: 'array',
           label: 'Tableros',
           arrayFields: {
-            titulo: { type: 'text', label: 'Título' },
-            descripcion: { type: 'textarea', label: 'Descripción' },
+            titulo: { type: 'richtext', label: 'Título' },
+            descripcion: { type: 'richtext', label: 'Descripción' },
             urlPowerBi: { type: 'text', label: 'Enlace de Power BI (Publicar en la web)' },
           },
-          getItemSummary: (item) => item.titulo || 'Tablero',
+          getItemSummary: (item) => {
+            if (typeof item.titulo === 'string') {
+              const limpio = item.titulo.replace(/<[^>]*>/g, '').trim();
+              return limpio || 'Tablero';
+            }
+            return 'Tablero';
+          },
         },
       },
       defaultProps: {
@@ -550,7 +556,7 @@ const puckConfigBase: Config = {
     Publicaciones: {
       label: 'Últimas publicaciones',
       fields: {
-        titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
+        titulo: { type: 'richtext', label: 'Título' },
         publicaciones: {
           type: 'array',
           label: 'Publicaciones',
@@ -577,7 +583,7 @@ const puckConfigBase: Config = {
         porPagina: { type: 'number', label: 'Tarjetas visibles a la vez', min: 1, max: 6 },
       },
       defaultProps: {
-        titulo: '**Ultimas** publicaciones',
+        titulo: '<p><strong>Ultimas</strong> publicaciones</p>',
         publicaciones: [],
         porPagina: 4,
       },
@@ -611,21 +617,27 @@ const puckConfigBase: Config = {
     PreguntasFrecuentes: {
       label: 'Preguntas frecuentes',
       fields: {
-        titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
+        titulo: { type: 'richtext', label: 'Título' },
         tarjetas: {
           type: 'array',
           label: 'Tarjetas',
           arrayFields: {
             imagenSrc: campoImagen('Imagen'),
             imagenAlt: { type: 'text', label: 'Texto alternativo' },
-            texto: { type: 'textarea', label: 'Texto de la tarjeta' },
+            texto: { type: 'richtext', label: 'Texto de la tarjeta' },
             url: { type: 'text', label: 'Enlace (sin él, la tarjeta no es pulsable)' },
           },
-          getItemSummary: (item) => item.texto || 'Tarjeta',
+          getItemSummary: (item) => {
+            if (typeof item.texto === 'string') {
+              const limpio = item.texto.replace(/<[^>]*>/g, '').trim();
+              return limpio || 'Tarjeta';
+            }
+            return 'Tarjeta';
+          },
         },
       },
       defaultProps: {
-        titulo: '**Preguntas** Frecuentes',
+        titulo: '<p><strong>Preguntas</strong> Frecuentes</p>',
         tarjetas: [],
       },
       render: (props: BlockRender<ComponentProps<typeof PreguntasFrecuentes>>) => (
