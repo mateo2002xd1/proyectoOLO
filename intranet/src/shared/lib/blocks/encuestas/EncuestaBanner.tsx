@@ -5,9 +5,11 @@
  *   - false (por defecto): imagen izquierda, texto derecha
  *   - true: texto izquierda, imagen derecha
  */
+import type { ReactNode } from 'react';
+
 export interface EncuestaBannerProps {
   antetitulo?: string;
-  titulo?: string;
+  titulo?: ReactNode;
   imagenSrc?: string;
   imagenAlt?: string;
   imagenDerecha?: boolean;
@@ -15,7 +17,7 @@ export interface EncuestaBannerProps {
 
 export function EncuestaBanner({
   antetitulo = 'Encuesta de',
-  titulo = 'SEGUIMIENTO LABORAL',
+  titulo,
   imagenSrc = '/assets/img/banner-seguimiento-laboral.png',
   imagenAlt = 'Ilustración encuesta',
   imagenDerecha = false,
@@ -24,7 +26,7 @@ export function EncuestaBanner({
     <h1 className="tasa-banner-title text-white">
       {antetitulo}
       <br />
-      <strong>{titulo}</strong>
+      {titulo}
     </h1>
   );
 

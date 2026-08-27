@@ -1,4 +1,4 @@
-import { resaltar } from '../compartidos/resaltar';
+import type { ReactNode } from 'react';
 
 /**
  * Franja de cabecera de la Matriz de Pertinencia.
@@ -9,13 +9,13 @@ import { resaltar } from '../compartidos/resaltar';
  * (`.tasa-banner-title`) y ahí acaba el parecido.
  */
 export interface MatrizBannerProps {
-  titulo?: string;
+  titulo?: ReactNode;
   imagenSrc?: string;
   imagenAlt?: string;
 }
 
 export function MatrizBanner({
-  titulo = 'Matriz de **PERTINENCIA**',
+  titulo,
   imagenSrc = '/assets/img/BannerOficial.png',
   imagenAlt = 'Matriz de Pertinencia',
 }: MatrizBannerProps) {
@@ -34,7 +34,7 @@ export function MatrizBanner({
       >
         <div className="tasa-banner-content" style={{ width: '100%', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', margin: '0 auto' }}>
           <h1 className="tasa-banner-title text-left mb-8 md:mb-0 mr-0 md:mr-8" style={{ flex: '1', minWidth: '300px' }}>
-            {resaltar(titulo)}
+            {titulo}
           </h1>
           {imagenSrc && (
             // src editable desde el editor: next/image exigiria dimensiones fijas

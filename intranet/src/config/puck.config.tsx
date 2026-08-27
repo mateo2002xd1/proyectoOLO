@@ -195,12 +195,12 @@ const puckConfigBase: Config = {
     MatrizBanner: {
       label: 'Cabecera · Matriz',
       fields: {
-        titulo: { type: 'textarea', label: 'Título (usa ** para negrita, Intro para partir línea)' },
+        titulo: { type: 'richtext', label: 'Título' },
         imagenSrc: campoImagen('Ilustración'),
         imagenAlt: { type: 'text', label: 'Texto alternativo de la imagen' },
       },
       defaultProps: {
-        titulo: 'Matriz de \n**PERTINENCIA**',
+        titulo: '<p>Matriz de <br/><strong>PERTINENCIA</strong></p>',
         imagenSrc: '/assets/img/BannerOficial.png',
         imagenAlt: 'Matriz de Pertinencia',
       },
@@ -212,7 +212,7 @@ const puckConfigBase: Config = {
       label: 'Cabecera · Encuesta',
       fields: {
         antetitulo: { type: 'text', label: 'Línea superior' },
-        titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
+        titulo: { type: 'richtext', label: 'Título' },
         imagenSrc: campoImagen('Ilustración'),
         imagenAlt: { type: 'text', label: 'Texto alternativo de la imagen' },
         imagenDerecha: {
@@ -226,7 +226,7 @@ const puckConfigBase: Config = {
       },
       defaultProps: {
         antetitulo: 'Encuesta de',
-        titulo: 'SEGUIMIENTO LABORAL',
+        titulo: '<p>SEGUIMIENTO LABORAL</p>',
         imagenSrc: '/assets/img/banner-seguimiento-laboral.png',
         imagenAlt: 'Ilustración encuesta',
         imagenDerecha: false,
@@ -308,7 +308,7 @@ const puckConfigBase: Config = {
     ImagenDestacada: {
       label: 'Imagen destacada',
       fields: {
-        titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
+        titulo: { type: 'richtext', label: 'Título' },
         imagenSrc: campoImagen('Imagen'),
         imagenAlt: { type: 'text', label: 'Texto alternativo' },
         ancho: {
@@ -442,7 +442,7 @@ const puckConfigBase: Config = {
     RecursosVisualesBloque: {
       label: 'Lista de videos',
       fields: {
-        titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
+        titulo: { type: 'richtext', label: 'Título' },
         videos: {
           type: 'array',
           label: 'Videos',
@@ -456,7 +456,7 @@ const puckConfigBase: Config = {
         },
       },
       defaultProps: {
-        titulo: '**Recursos** visuales',
+        titulo: '<p><strong>Recursos</strong> visuales</p>',
         videos: [],
       },
       render: (props: BlockRender<ComponentProps<typeof RecursosVisualesBloque>>) => (
@@ -521,7 +521,7 @@ const puckConfigBase: Config = {
     DescargasConPresentacion: {
       label: 'Descargas con presentación',
       fields: {
-        titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
+        titulo: { type: 'richtext', label: 'Título' },
         enlaces: {
           type: 'array',
           label: 'Enlaces',
@@ -545,7 +545,7 @@ const puckConfigBase: Config = {
         },
       },
       defaultProps: {
-        titulo: '**Descargas**',
+        titulo: '<p><strong>Descargas</strong></p>',
         enlaces: [],
         archivoUrl: '',
       },
@@ -599,12 +599,18 @@ const puckConfigBase: Config = {
           type: 'array',
           label: 'Conceptos',
           arrayFields: {
-            titulo: { type: 'text', label: 'Título' },
-            descripcion: { type: 'textarea', label: 'Descripción' },
+            titulo: { type: 'richtext', label: 'Título' },
+            descripcion: { type: 'richtext', label: 'Descripción' },
             imagenSrc: campoImagen('Imagen'),
             imagenAlt: { type: 'text', label: 'Texto alternativo' },
           },
-          getItemSummary: (item) => item.titulo || 'Concepto',
+          getItemSummary: (item) => {
+            if (typeof item.titulo === 'string') {
+              const limpio = item.titulo.replace(/<[^>]*>/g, '').trim();
+              return limpio || 'Concepto';
+            }
+            return 'Concepto';
+          },
         },
       },
       defaultProps: {
@@ -664,7 +670,7 @@ const puckConfigBase: Config = {
           type: 'array',
           label: 'Columnas',
           arrayFields: {
-            titulo: { type: 'text', label: 'Título de la columna' },
+            titulo: { type: 'richtext', label: 'Título de la columna' },
             orientacionLineas: {
               type: 'radio',
               label: 'Orientación de las líneas',
@@ -677,7 +683,7 @@ const puckConfigBase: Config = {
               type: 'array',
               label: 'Líneas',
               arrayFields: {
-                texto: { type: 'textarea', label: 'Texto (opcional si hay ícono)' },
+                texto: { type: 'richtext', label: 'Texto (opcional si hay ícono)' },
                 url: { type: 'text', label: 'Enlace (déjalo vacío si es solo texto)' },
                 icono: { type: 'text', label: 'Ruta del ícono SVG (opcional)' },
                 separada: {
@@ -689,10 +695,22 @@ const puckConfigBase: Config = {
                   ],
                 },
               },
-              getItemSummary: (item) => item.texto || 'Línea',
+              getItemSummary: (item) => {
+                if (typeof item.texto === 'string') {
+                  const limpio = item.texto.replace(/<[^>]*>/g, '').trim();
+                  return limpio || 'Línea';
+                }
+                return 'Línea';
+              },
             },
           },
-          getItemSummary: (item) => item.titulo || 'Columna',
+          getItemSummary: (item) => {
+            if (typeof item.titulo === 'string') {
+              const limpio = item.titulo.replace(/<[^>]*>/g, '').trim();
+              return limpio || 'Columna';
+            }
+            return 'Columna';
+          },
         },
       },
       // Repiten los valores por defecto del componente: el pie que se ve hoy. Sin
