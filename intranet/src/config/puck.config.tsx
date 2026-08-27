@@ -81,7 +81,7 @@ const puckConfigBase: Config = {
       components: ['TextoRico', 'TextoConImagen', 'ImagenDestacada'],
     },
     'Multimedia': {
-      components: ['SeccionCarrusel', 'TasaVideo', 'RecursosVisualesBloque'],
+      components: ['SeccionCarrusel', 'TasaVideo', 'RecursosVisualesBloque', 'IconoBloque'],
     },
     'Datos y documentos': {
       components: [
@@ -98,7 +98,7 @@ const puckConfigBase: Config = {
       components: ['TasaConceptos', 'PreguntasFrecuentes'],
     },
     'Maquetación': {
-      components: ['Grid', 'Flex', 'Space', 'IconoBloque'],
+      components: ['Grid', 'Flex', 'Space'],
     },
   },
   components: {
@@ -708,7 +708,7 @@ const puckConfigBase: Config = {
       ),
     },
     IconoBloque: {
-      label: 'Ícono SVG',
+      label: 'Icono y texto',
       fields: {
         icono: campoIcono('Ícono SVG'),
         colorIcono: campoColor('Color del ícono'),
@@ -791,7 +791,7 @@ const BLOQUES_COMUNES = [
 const COMPONENTES_POR_SLUG: Record<string, string[]> = {
   // La plantilla es lo contrario a una sección: solo la barra y el pie, que es
   // justo lo que las secciones ya no pueden tocar.
-  'menu-y-pie': ['IntranetTopbar', 'IntranetFooter'],
+  'menu-y-pie': ['IntranetTopbar', 'IntranetFooter', 'IconoBloque'],
   inicio: [...BLOQUES_COMUNES, 'RecursosVisualesBloque', 'Publicaciones', 'PreguntasFrecuentes'],
   tasa: [...BLOQUES_COMUNES, 'TasaBanner', 'TasaConceptos', 'TasaDashboards', 'TasaPresentacion'],
   matriz: [
