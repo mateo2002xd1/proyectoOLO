@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { MagnifyingGlassIcon, ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import { Switch } from '@/shared/ui/atoms/switch';
 import { Button } from '@/shared/ui/atoms/button';
@@ -127,7 +128,7 @@ export function ModalPermisos({
   );
   const hayCambios = anadidos.length > 0 || quitados.length > 0;
 
-  if (!abierto) return null;
+  if (!abierto || typeof document === 'undefined') return null;
 
   const alternar = (id: string) => {
     const siguiente = new Set(seleccionados);
@@ -147,7 +148,7 @@ export function ModalPermisos({
     items: visibles.filter((p) => p.grupo === grupo.id),
   })).filter((g) => g.items.length > 0);
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-[60] flex items-center justify-center bg-[#0f172a]/50 p-3 backdrop-blur-sm sm:p-6"
       onClick={(e) => {
@@ -335,6 +336,7 @@ export function ModalPermisos({
           </div>
         </footer>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
