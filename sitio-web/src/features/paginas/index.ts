@@ -14,11 +14,14 @@ export { AvisoSeccionNueva } from "./components/aviso-seccion-nueva";
 export { PuckEditorWrapper } from "./components/puck-editor-wrapper";
 export { EditorjsWrapper } from "./components/editorjs-wrapper";
 export { ClientPuckRender } from "./components/client-puck-render";
+export { AvisoEditorOcupado } from "./components/aviso-editor-ocupado";
 export { RevisionQueueView } from "./components/revision-queue-view";
 
 // Hooks
 export { usePagina } from "./hooks/use-pagina";
 export { useRevisionQueue } from "./hooks/use-revision-queue";
+export { useBloqueoDeEdicion } from "./hooks/use-bloqueo-de-edicion";
+export type { Bloqueo, EstadoDeBloqueo } from "./hooks/use-bloqueo-de-edicion";
 
 // Services
 export {
@@ -53,6 +56,7 @@ export {
   esRutaInternaSegura,
   resolverRutaDeVuelta,
   rutaPublicaDeSlug,
+  slugDeOrigen,
 } from "./lib/ruta-de-vuelta";
 
 // Types

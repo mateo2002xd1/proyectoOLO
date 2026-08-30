@@ -9,6 +9,8 @@
  * @see 1-guia-del-proyecto.md §2 (Modelo de datos — paginas_versiones.contenido JSONB)
  */
 
+import type { ContextoDeEdicion } from "@/config/puck.config";
+
 // ---------------------------------------------------------------------------
 // Estados editoriales (§3 / §10)
 // ---------------------------------------------------------------------------
@@ -77,6 +79,19 @@ export interface PuckEditorWrapperProps {
   isSaving?: boolean;
   isSendingToReview?: boolean;
   versionActual?: PaginaVersion | null;
+  /**
+   * El resto de la sección, para pintarlo inerte alrededor de lo editable.
+   * Lo resuelve el Server Component del editor; ver `configDeEdicion`.
+   */
+  contexto?: ContextoDeEdicion;
+  /**
+   * Nombre de quien nos quitó el candado de edición mientras trabajábamos.
+   *
+   * Con esto puesto el editor sigue en pantalla —para poder copiar lo que se llevara
+   * hecho— pero no deja guardar: quien tiene ahora la sección no debe recibir un
+   * borrador nuestro encima del suyo.
+   */
+  candadoPerdidoPor?: string | null;
 }
 
 export interface EditorJsWrapperProps {

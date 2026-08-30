@@ -23,7 +23,7 @@ import { OcupacionSearchBanner } from '@/shared/ui/molecules/ocupacion-search-ba
 import { EditorjsWrapper } from '@/features/paginas/components/editorjs-wrapper';
 import { ImageUploaderField } from '@/features/paginas/components/image-uploader-field';
 import { ArchivoUploaderField } from '@/features/paginas/components/archivo-uploader-field';
-import type { Config } from '@puckeditor/core';
+import { Render, type Config, type Data } from '@puckeditor/core';
 import type { OutputData } from '@editorjs/editorjs';
 
 /** Props que Puck inyecta en el render de un campo `custom`. */
@@ -683,10 +683,19 @@ export const puckConfig: Config = {
  * partir de la página `plantilla`, y ofrecerlos en una sección dejaría volver a
  * tener una cabecera distinta por página, que es justo lo que se acaba de quitar.
  */
+/**
+ * La página que guarda la cabecera y el pie comunes.
+ *
+ * Espejo de `SLUG_PLANTILLA` en `features/paginas/lib/plantilla.ts`. No se importa de
+ * allí para no atar el catálogo de bloques a una feature: aquí solo hace falta el
+ * literal, y si algún día cambia, cambia en los dos sitios.
+ */
+const SLUG_DE_PLANTILLA = 'menu-y-pie';
+
 const COMPONENTES_POR_SLUG: Record<string, string[]> = {
   // La plantilla es lo contrario a una página: solo la cabecera y el pie, que es
   // justo lo que las páginas ya no pueden tocar.
-  'menu-y-pie': ['Header', 'Footer'],
+  [SLUG_DE_PLANTILLA]: ['Header', 'Footer'],
   inicio: ['Hero', 'Services', 'DatoOloSemana', 'RecursosVisualesBloque', 'Publicaciones', 'ExternalPortals', 'RichText', 'Grid', 'Flex', 'Space'],
 };
 
@@ -708,32 +717,147 @@ export const SLUGS_DE_FABRICA = Object.keys(COMPONENTES_POR_SLUG);
 export const esSeccionDeFabrica = (slug: string): boolean => SLUGS_DE_FABRICA.includes(slug);
 
 /**
+ * Lo que el lienzo enseña alrededor de lo que se está editando.
+ *
+ * Son datos YA PUBLICADOS que se pintan de contexto: lo mismo que ve quien visita
+ * el sitio. Los resuelve el Server Component del editor y llegan hasta aquí por
+ * props — ver `app/admin/editor/[slug]/page.tsx`.
+ */
+export interface ContextoDeEdicion {
+  /** Cabecera y pie publicados. Se usa al editar una página normal. */
+  plantilla?: {
+    cabecera?: Omit<ComponentProps<typeof Header>, 'block'> | null;
+    /** El pie no tiene campos: solo se pone o se quita. */
+    pie?: boolean;
+  } | null;
+  /** Página publicada desde la que se abrió «Menú y pie». */
+  seccion?: { slug: string; contenido: unknown } | null;
+}
+
+/** El contenido legado se guardaba como array plano; Puck espera `{ content, root }`. */
+function datosDePuck(contenido: unknown): Data {
+  if (Array.isArray(contenido)) return { content: contenido, root: {} } as Data;
+  const objeto = (contenido ?? {}) as { content?: unknown; root?: unknown };
+  return { ...objeto, content: objeto.content ?? [], root: objeto.root ?? {} } as Data;
+}
+
+/**
+ * Envuelve un trozo del lienzo para que se vea pero no se pueda tocar.
+ *
+ * `inert` es lo que de verdad lo apaga —quita clic, foco y lectura por lectores de
+ * pantalla de una vez—; la clase solo lo atenúa para que se note a simple vista
+ * cuál es la parte que esta pantalla no edita.
+ */
+function Inerte({ etiqueta, children }: { etiqueta: string; children: ReactNode }) {
+  return (
+    <div className="olo-chrome-inerte-marco">
+      <span className="olo-chrome-inerte-etiqueta">{etiqueta}</span>
+      <div className="olo-chrome-inerte" inert>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/**
  * Config para la mesa de trabajo de un slug.
  *
- * Solo la usa el editor. Para PINTAR una página hay que seguir usando
- * `puckConfig` entero: si un bloque guardado no está en la config con la que se
- * renderiza, Puck no sabe dibujarlo y la sección desaparece sin avisar.
+ * Hace dos cosas. La primera, de siempre: recortar el catálogo a los bloques que
+ * tienen sentido en esta página. La segunda: pintar el RESTO de la página alrededor
+ * de lo editable, para poder juzgar un cambio viendo la página entera.
+ *
+ *  - Editando una página → cabecera y pie publicados, arriba y abajo, inertes.
+ *  - Editando `menu-y-pie` → la página publicada de la que se venía, inerte, entre
+ *    la cabecera y el pie (que aquí sí son lo editable).
+ *
+ * Nada de ese contexto entra en `data`: es decorado del config, así que lo que se
+ * guarda al pulsar «Guardar borrador» es exactamente lo de antes. Y por eso para
+ * PINTAR una página publicada hay que seguir usando `puckConfig` entero: si un
+ * bloque guardado no está en la config con la que se renderiza, Puck no sabe
+ * dibujarlo y la sección desaparece sin avisar.
  */
-export function configDeEdicion(slug: string): Config {
+export function configDeEdicion(slug: string, contexto: ContextoDeEdicion = {}): Config {
   const permitidos = COMPONENTES_POR_SLUG[slug];
-  if (!permitidos) return puckConfig;
 
-  const components = Object.fromEntries(
-    Object.entries(puckConfig.components).filter(([nombre]) => permitidos.includes(nombre))
-  ) as Config['components'];
+  // Una página creada a mano no está en `COMPONENTES_POR_SLUG` y se queda con el
+  // catálogo entero, pero el contexto de abajo le toca igual.
+  const recortada: Config = permitidos
+    ? {
+        ...puckConfig,
+        components: Object.fromEntries(
+          Object.entries(puckConfig.components).filter(([nombre]) => permitidos.includes(nombre))
+        ) as Config['components'],
+        categories: Object.fromEntries(
+          Object.entries(puckConfig.categories ?? {})
+            .map(([nombre, categoria]) => [
+              nombre,
+              {
+                ...categoria,
+                components: (categoria.components ?? []).filter((c) => permitidos.includes(c)),
+              },
+            ])
+            // Una categoría que se queda sin bloques no debe salir como grupo vacío.
+            .filter(([, categoria]) => (categoria as { components: string[] }).components.length > 0)
+        ) as Config['categories'],
+      }
+    : puckConfig;
 
-  const categories = Object.fromEntries(
-    Object.entries(puckConfig.categories ?? {})
-      .map(([nombre, categoria]) => [
-        nombre,
-        {
-          ...categoria,
-          components: (categoria.components ?? []).filter((c) => permitidos.includes(c)),
+  if (slug === SLUG_DE_PLANTILLA) {
+    const seccion = contexto.seccion;
+    if (!seccion) return recortada;
+
+    /**
+     * La página va ENTRE la cabecera y el pie, y `root.render` solo sabe envolver,
+     * no intercalar. Así que se cuelga del pie, que es por definición lo último de
+     * la página: «justo encima del pie» es donde vive el contenido.
+     *
+     * Efecto conocido: si alguien borra el bloque del pie mientras edita, el
+     * contexto desaparece hasta que lo vuelva a poner.
+     */
+    const pie = recortada.components.Footer;
+    if (!pie) return recortada;
+
+    return {
+      ...recortada,
+      components: {
+        ...recortada.components,
+        Footer: {
+          ...pie,
+          render: (props: Parameters<typeof pie.render>[0]) => (
+            <>
+              <Inerte etiqueta={`Página /${seccion.slug} · no editable aquí`}>
+                <Render config={puckConfig} data={datosDePuck(seccion.contenido)} />
+              </Inerte>
+              {pie.render(props)}
+            </>
+          ),
         },
-      ])
-      // Una categoría que se queda sin bloques no debe salir como grupo vacío.
-      .filter(([, categoria]) => (categoria as { components: string[] }).components.length > 0)
-  ) as Config['categories'];
+      },
+    };
+  }
 
-  return { ...puckConfig, components, categories };
+  const plantilla = contexto.plantilla;
+  if (!plantilla?.cabecera && !plantilla?.pie) return recortada;
+
+  return {
+    ...recortada,
+    root: {
+      ...recortada.root,
+      render: ({ children }: { children?: ReactNode }) => (
+        <>
+          {plantilla.cabecera && (
+            <Inerte etiqueta="Cabecera · se edita en «Menú y pie»">
+              <Header block={{ id: 'contexto-header' }} {...plantilla.cabecera} />
+            </Inerte>
+          )}
+          {children}
+          {plantilla.pie && (
+            <Inerte etiqueta="Pie · se edita en «Menú y pie»">
+              <Footer block={{ id: 'contexto-footer' }} />
+            </Inerte>
+          )}
+        </>
+      ),
+    } as Config['root'],
+  };
 }
