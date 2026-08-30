@@ -175,6 +175,30 @@ const puckConfigBase: Config = {
       label: 'Intranet Topbar',
       fields: {
         brandText: { type: 'text', label: 'Texto de la Marca' },
+        alineacionMarca: {
+          type: 'object',
+          label: 'Posición de la marca (logo + texto)',
+          objectFields: {
+            horizontal: {
+              type: 'radio',
+              label: 'Alineación horizontal',
+              options: [
+                { label: 'Izquierda', value: 'flex-start' },
+                { label: 'Centro', value: 'center' },
+                { label: 'Derecha', value: 'flex-end' },
+              ],
+            },
+            vertical: {
+              type: 'radio',
+              label: 'Alineación vertical',
+              options: [
+                { label: 'Arriba', value: 'flex-start' },
+                { label: 'Centro', value: 'center' },
+                { label: 'Abajo', value: 'flex-end' },
+              ],
+            },
+          },
+        },
         logoUrl: {
           type: 'custom',
           render: ({ value, onChange }: CustomFieldRender<string>) => (
@@ -193,6 +217,9 @@ const puckConfigBase: Config = {
       },
       defaultProps: {
         brandText: 'Intranet',
+        // Igual al comportamiento de hoy (`.intranet-brand` en globals.css):
+        // fila pegada a la izquierda, centrada verticalmente con el logo.
+        alineacionMarca: { horizontal: 'flex-start', vertical: 'center' },
         logoUrl: '/assets/svg/olo-logo-blanco.svg',
         menuItems: [
           { href: "/intranet", label: "Inicio" },
