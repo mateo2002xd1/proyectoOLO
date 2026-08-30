@@ -26,6 +26,16 @@ export const paginasPolicies = {
   puedePublicar: (rol?: string | null) => tieneRol(rol, ROLES_QUE_APRUEBAN),
 
   puedeRechazar: (rol?: string | null) => tieneRol(rol, ROLES_QUE_APRUEBAN),
+
+  /**
+   * Quitarle a otro el candado de edición que tiene abierto.
+   *
+   * Los mismos que aprueban, y por el mismo motivo: es una decisión sobre el trabajo
+   * ajeno. Sale con nombre propio en vez de reutilizar `puedePublicar` desde quien
+   * llama porque son dos permisos distintos que hoy coinciden; si mañana se separan,
+   * se separan aquí y no en el caso de uso.
+   */
+  puedeForzarBloqueo: (rol?: string | null) => tieneRol(rol, ROLES_QUE_APRUEBAN),
 };
 
 export type PermisoPagina = keyof typeof paginasPolicies;

@@ -83,3 +83,17 @@ export const eliminarSeccionSchema = z
     confirmacion: z.string().trim().min(1, 'Escribe el nombre de la sección para confirmar.').max(120),
   })
   .strict();
+
+/**
+ * Cuerpo de `POST /api/paginas/:slug/bloqueo`.
+ *
+ * `forzar` es «entrar de todos modos» y quitarle el candado a quien lo tenga. Pedirlo
+ * sin poder hacerlo no es un error de forma: el caso de uso comprueba el rol y, si no
+ * puede, trata la petición como un intento normal de coger el candado. Por eso el
+ * esquema lo acepta de cualquiera y la decisión vive en `adquirir-bloqueo.usecase.ts`.
+ */
+export const adquirirBloqueoSchema = z
+  .object({
+    forzar: z.boolean().optional(),
+  })
+  .strict();
