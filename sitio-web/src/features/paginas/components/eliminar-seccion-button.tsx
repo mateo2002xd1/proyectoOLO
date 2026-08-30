@@ -7,7 +7,9 @@
  *  - Solo si el rol tiene `secciones.eliminar`. Se resuelve **en el cliente**, igual
  *    que en `nueva-seccion-button.tsx` y por el mismo motivo: leerlo en el servidor
  *    volvería dinámicas todas las páginas del sitio. Primero filtra la cookie de rol
- *    en seco, y solo a quien la pasa se le consulta `/api/me`.
+ *    en seco, y solo a quien la pasa se le consulta `/api/me` — la revisión completa,
+ *    incluida la que se repite al recuperar foco, vive en `usePermisoDeSeccion`
+ *    (hooks/use-permiso-de-seccion.ts).
  *  - Solo en páginas **creadas desde el editor**. Las de fábrica (`inicio` y
  *    `menu-y-pie`) no se pueden borrar y no se ofrece la acción: un botón que siempre
  *    falla es peor que no tenerlo.
@@ -27,25 +29,15 @@
  */
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { esSeccionDeFabrica } from '@/config/puck.config';
 import {
   analizarEliminacion,
   eliminarSeccion,
-  permisosDeLaSesion,
   type AnalisisDeEliminacion,
 } from '../services/paginas.service';
-import { AUTH_ROLE_COOKIE_NAME } from '@/shared/lib/auth-cookies';
-
-/** Mismos roles que `puedeEditarPaginas()` en `shared/lib/session.ts`. */
-const ROLES_QUE_EDITAN = ['superadmin', 'administrador', 'editor'];
-
-function leerCookie(nombre: string): string | null {
-  if (typeof document === 'undefined') return null;
-  const coincidencia = document.cookie.match(new RegExp('(?:^|; )' + nombre + '=([^;]*)'));
-  return coincidencia ? decodeURIComponent(coincidencia[1]) : null;
-}
+import { usePermisoDeSeccion } from '../hooks/use-permiso-de-seccion';
 
 /** Las páginas del sitio cuelgan de la raíz: `/bolsa-de-empleo` → `bolsa-de-empleo`. */
 function slugDeRuta(ruta: string): string {
@@ -56,20 +48,7 @@ export function EliminarSeccionButton() {
   const router = useRouter();
   const rutaActual = usePathname();
   const slug = slugDeRuta(rutaActual ?? '');
-  const [hasPermission, setHasPermission] = useState(false);
-
-  useEffect(() => {
-    const rol = (leerCookie(AUTH_ROLE_COOKIE_NAME) ?? '').trim().toLowerCase();
-    if (!ROLES_QUE_EDITAN.includes(rol)) return;
-
-    let vigente = true;
-    permisosDeLaSesion().then((permisos) => {
-      if (vigente) setHasPermission(permisos.includes('secciones.eliminar'));
-    });
-    return () => {
-      vigente = false;
-    };
-  }, []);
+  const hasPermission = usePermisoDeSeccion('secciones.eliminar');
 
   const [abierto, setAbierto] = useState(false);
   const [analisis, setAnalisis] = useState<AnalisisDeEliminacion | null>(null);
