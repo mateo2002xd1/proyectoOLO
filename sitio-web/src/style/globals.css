@@ -2571,6 +2571,26 @@ button.text-link,
   color: #1f2937;
 }
 
+/* Variante del modal de inactividad: sin tarjeta blanca, solo el navy institucional
+   translúcido sobre el ::backdrop, con el texto en blanco para que siga contrastando. */
+.olo-modal-caja--inactividad {
+  background: rgba(0, 22, 49, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+}
+
+.olo-modal-caja--inactividad .olo-modal-titulo {
+  color: #ffffff;
+}
+
+.olo-modal-caja--inactividad .olo-modal-texto {
+  color: #ffffff;
+}
+
+.olo-modal-caja--inactividad .olo-modal-texto--apunte {
+  color: rgba(255, 255, 255, 0.8);
+}
+
 .olo-modal-titulo {
   margin: 0 0 0.6rem;
   font-size: 1.15rem;
