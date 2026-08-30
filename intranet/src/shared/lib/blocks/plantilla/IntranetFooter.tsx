@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import type { CSSProperties } from 'react';
 
 /**
@@ -23,15 +23,16 @@ import type { CSSProperties } from 'react';
 
 /** Una línea de una columna: párrafo suelto, o enlace si trae `url`. */
 export interface LineaPie {
-  texto?: string;
+  texto?: ReactNode;
   url?: string;
   /** Deja aire encima. Es lo que separa hoy la línea de redes del resto. */
   separada?: boolean;
   icono?: string;
+  colorIcono?: string;
 }
 
 export interface ColumnaPie {
-  titulo?: string;
+  titulo?: ReactNode;
   orientacionLineas?: 'column' | 'row';
   lineas?: LineaPie[];
 }
@@ -129,7 +130,7 @@ export function IntranetFooter({
         )}
 
         {columnas.map((columna, indice) => (
-          <div className="intranet-footer-col" key={`${columna.titulo ?? 'columna'}-${indice}`}>
+          <div className="intranet-footer-col" key={`columna-${indice}`}>
             {columna.titulo && <h2>{columna.titulo}</h2>}
             <div
               className="flex gap-2"
@@ -140,13 +141,29 @@ export function IntranetFooter({
               }}
             >
               {(columna.lineas ?? []).map((linea, indiceLinea) => {
-                const clave = `${linea.texto ?? 'linea'}-${indiceLinea}`;
+                const clave = `linea-${indiceLinea}`;
                 const clase = linea.separada ? 'intranet-footer-social' : undefined;
 
                 const contenido = (
                   <span className="flex items-center gap-1.5">
                     {linea.icono && (
-                      <img src={linea.icono} alt="" className="w-5 h-5 object-contain" />
+                      <span
+                        aria-hidden="true"
+                        style={{
+                          display: 'inline-block',
+                          width: '20px',
+                          height: '20px',
+                          backgroundColor: linea.colorIcono || 'currentColor',
+                          maskImage: `url(${linea.icono})`,
+                          maskSize: 'contain',
+                          maskRepeat: 'no-repeat',
+                          maskPosition: 'center',
+                          WebkitMaskImage: `url(${linea.icono})`,
+                          WebkitMaskSize: 'contain',
+                          WebkitMaskRepeat: 'no-repeat',
+                          WebkitMaskPosition: 'center',
+                        }}
+                      />
                     )}
                     {linea.texto && <span>{linea.texto}</span>}
                   </span>

@@ -1,7 +1,7 @@
 'use client';
 
 import { PptxViewer } from './PptxViewer';
-import { resaltar } from './resaltar';
+import type { ReactNode } from 'react';
 
 /**
  * Lista de enlaces a un lado y visor de presentación al otro.
@@ -19,13 +19,13 @@ export interface EnlaceDescarga {
 }
 
 export interface DescargasConPresentacionProps {
-  titulo?: string;
+  titulo?: ReactNode;
   enlaces?: EnlaceDescarga[];
   archivoUrl?: string;
 }
 
 export function DescargasConPresentacion({
-  titulo = '**Descargas**',
+  titulo,
   enlaces = [],
   archivoUrl,
 }: DescargasConPresentacionProps) {
@@ -39,7 +39,7 @@ export function DescargasConPresentacion({
       <div className="tasa-ppt-container">
         <div className="tasa-ppt-text">
           <h2 className="tasa-ppt-title" style={{ marginBottom: '1.5rem' }}>
-            {resaltar(titulo)}
+            {titulo}
           </h2>
           {elementos.length > 0 && (
             <ul className="list-disc pl-6 text-[#1C2A48] text-lg md:text-xl space-y-2 marker:text-[#0A1B3F]">

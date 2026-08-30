@@ -11,6 +11,9 @@ export {
 export { ColorPickerField, campoColor } from './primitives/color-picker-field';
 export type { ColorPickerFieldProps } from './primitives/color-picker-field';
 
+// ─── Campos para Icono y Color de Icono ───
+export { IconSelectorField, campoIcono } from './primitives/icon-selector-field';
+
 // ─── Controles de espaciado y ancho para cualquier bloque ───
 export {
   conCaja,

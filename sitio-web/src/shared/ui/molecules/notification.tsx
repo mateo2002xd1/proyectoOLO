@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 export type NotificationType = "success" | "error" | "warning" | "info";
 
@@ -76,7 +77,9 @@ export function Notification({
     setTimeout(onClose, 300);
   }
 
-  return (
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <div className="fixed bottom-6 right-6 z-[100] flex items-end justify-end pointer-events-none sm:bottom-8 sm:right-8">
       <div
         className={`pointer-events-auto w-[360px] max-w-[calc(100vw-3rem)] overflow-hidden rounded-2xl ${surface} ${text} shadow-[0_12px_40px_-8px_rgba(0,0,0,0.2)] transition-all duration-300 ease-out ${
@@ -114,6 +117,7 @@ export function Notification({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
