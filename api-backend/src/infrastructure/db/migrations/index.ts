@@ -20,6 +20,7 @@ import * as permisoCrearSecciones from './016-permiso-crear-secciones';
 import * as tituloMenuYPie from './017-titulo-menu-y-pie';
 import * as revertirTitulosIntranet from './018-revertir-titulos-intranet';
 import * as permisoEliminarSecciones from './019-permiso-eliminar-secciones';
+import * as depuracionYOptimizacionEsquema from './020-depuracion-y-optimizacion-esquema';
 
 export interface Migracion {
   nombre: string;
@@ -50,6 +51,7 @@ const migraciones: Migracion[] = [
   tituloMenuYPie,
   revertirTitulosIntranet,
   permisoEliminarSecciones,
+  depuracionYOptimizacionEsquema,
 ];
 
 const TABLA_CONTROL = 'migraciones_aplicadas';
