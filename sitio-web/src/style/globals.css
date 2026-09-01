@@ -932,6 +932,7 @@
   background: #F5F5F4;
   border-radius: var(--radius-xl);
   padding: var(--space-xl);
+  overflow: hidden;
 }
 
 .olo-dato-semana-img {

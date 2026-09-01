@@ -1043,50 +1043,208 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: #f1f5f9;
+  background: rgba(0, 22, 49, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  animation: fadeInModal 0.4s ease-out forwards;
+}
+
+@keyframes fadeInModal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUpModal {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .olo-ocupado-caja {
-  max-width: 460px;
-  padding: 32px;
-  border-radius: 14px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 10px 30px rgba(0, 22, 49, 0.1);
+  max-width: 500px;
+  width: 100%;
+  padding-top: 48px;
+  border-radius: 28px;
+  background: linear-gradient(160deg, #ffffff 0%, #f4f7fb 100%);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 
+    0 24px 48px rgba(0, 22, 49, 0.12),
+    0 4px 12px rgba(0, 22, 49, 0.04),
+    inset 0 2px 4px rgba(255, 255, 255, 1);
   text-align: center;
+  animation: slideUpModal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  position: relative;
+  overflow: hidden;
+}
+
+.olo-ocupado-caja::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, #3b82f6, #7db828, #3b82f6);
+  background-size: 200% 100%;
+  animation: gradientMove 3s ease infinite;
+}
+
+@keyframes gradientMove {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+.olo-ocupado-icono-wrapper {
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.12);
+}
+
+.olo-ocupado-icono-wrapper::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid rgba(59, 130, 246, 0.25);
+  animation: pulseRing 2.5s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+}
+
+@keyframes pulseRing {
+  0% { transform: scale(0.85); opacity: 1; }
+  100% { transform: scale(1.4); opacity: 0; }
 }
 
 .olo-ocupado-icono {
-  color: #001631;
-  margin-bottom: 12px;
+  color: #3b82f6;
+  width: 34px;
+  height: 34px;
+  animation: floatIcon 3s ease-in-out infinite;
+}
+
+@keyframes floatIcon {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.olo-ocupado-contenido {
+  padding: 0 40px 40px;
 }
 
 .olo-ocupado-titulo {
-  margin: 0 0 10px;
-  font-size: 20px;
-  font-weight: 700;
+  margin: 0 0 16px;
+  font-family: var(--font-heading), system-ui, sans-serif;
+  font-size: 26px;
+  font-weight: 800;
   color: #001631;
+  letter-spacing: -0.03em;
+  background: linear-gradient(90deg, #001631, #1e3a8a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .olo-ocupado-texto {
-  margin: 0 0 8px;
-  font-size: 14.5px;
-  line-height: 1.55;
-  color: #334155;
+  margin: 0 0 16px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #475569;
+}
+
+.olo-ocupado-texto strong {
+  color: #001631;
+  font-weight: 700;
+  background: rgba(59, 130, 246, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 
 .olo-ocupado-apunte {
-  margin: 0 0 22px;
-  font-size: 13px;
+  margin: 0 0 32px;
+  font-size: 13.5px;
   line-height: 1.5;
   color: #64748b;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
 }
 
 .olo-ocupado-acciones {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.olo-ocupado-acciones .olo-editor-btn {
+  width: 100%;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
   justify-content: center;
+  gap: 8px;
+}
+
+.olo-ocupado-acciones .olo-editor-btn:active {
+  transform: scale(0.98);
+}
+
+.olo-ocupado-acciones .olo-editor-btn--guardar {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.olo-ocupado-acciones .olo-editor-btn--guardar:hover:not(:disabled) {
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+  transform: translateY(-1px);
+}
+
+.olo-ocupado-acciones .olo-editor-btn--enviar {
+  background: linear-gradient(135deg, #8fcc32, #7db828);
+  box-shadow: 0 4px 12px rgba(125, 184, 40, 0.3);
+  color: #001631;
+}
+
+.olo-ocupado-acciones .olo-editor-btn--enviar:hover:not(:disabled) {
+  background: linear-gradient(135deg, #a3e635, #8fcc32);
+  box-shadow: 0 6px 16px rgba(125, 184, 40, 0.4);
+  transform: translateY(-1px);
+}
+
+.olo-ocupado-acciones .olo-editor-btn--salir {
+  background: #f1f5f9;
+  color: #475569;
+  box-shadow: none;
+}
+
+.olo-ocupado-acciones .olo-editor-btn--salir:hover:not(:disabled) {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+@media (min-width: 480px) {
+  .olo-ocupado-acciones {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  
+  .olo-ocupado-acciones .olo-editor-btn {
+    flex: 1;
+  }
+  
+  .olo-ocupado-acciones .olo-editor-btn--enviar {
+    flex: 100%;
+  }
 }
 
 /*
@@ -1113,8 +1271,18 @@
 
 /* La etiqueta va en el marco y no dentro de la parte atenuada: si heredara esa
    opacidad sería justo lo único de la pantalla que no se puede leer bien. */
+.olo-chrome-lienzo {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
 .olo-chrome-inerte-marco {
   position: relative;
+  clear: both;
+  display: flow-root;
+  width: 100%;
 }
 
 .olo-chrome-inerte {
