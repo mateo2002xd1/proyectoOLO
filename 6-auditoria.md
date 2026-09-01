@@ -5,6 +5,82 @@
 
 ---
 
+## sesión 30-08-2026: el editor enseña la página entera, y solo la edita una persona a la vez
+
+Dos frentes distintos de la mesa de trabajo, en `sitio-web` y en `intranet`.
+
+### 1. El lienzo mostraba un trozo suelto, no una página
+
+Al editar una sección no se veían el menú ni el pie; al editar `menu-y-pie` no se veía ninguna sección real. Quien editaba no podía juzgar cómo quedaba su cambio dentro de una página de verdad.
+
+**Un primer intento —un panel lateral de solo lectura— se descartó y se revirtió entero.** Conviene dejarlo escrito para que nadie lo vuelva a intentar: Puck fija el alto de su propio layout a `100dvh` en su CSS interno (`_PuckLayout`, en `@puckeditor/core/dist/index.css`), sin mirar cuánto espacio le deje su contenedor. Cualquier cosa apilada encima o debajo del editor queda tapada, y repartir el ancho en un panel lateral parte la pantalla en dos columnas estrechas que no se parecen a la página. **El contexto tiene que ir DENTRO del lienzo, no alrededor.**
+
+La solución es `config.root.render`, que envuelve el contenido del lienzo y **es decorado del config, no datos**: nada de lo que se pinta ahí entra en el JSON que se guarda. Ninguno de los dos `puck.config.tsx` definía `root`, así que el hueco estaba libre.
+
+| Qué se edita | Qué pinta el lienzo |
+|---|---|
+| Una sección | barra/cabecera publicada → **contenido editable** → pie publicado |
+| `menu-y-pie` | **barra editable** → sección publicada de la que se vino → **pie editable** |
+
+En el segundo caso la sección tiene que quedar **entre** los dos bloques editables, y `root.render` solo sabe envolver, no intercalar. Se resuelve envolviendo el `render` del bloque del pie —solo dentro de `configDeEdicion`, nunca en `puckConfig`—, porque el pie es por definición lo último de la página. **Efecto conocido y aceptado:** si alguien borra el bloque del pie mientras edita, el contexto desaparece hasta que lo vuelva a poner.
+
+De qué sección se trata sale del `?volver=` que el botón «Menú y pie» ya mandaba desde antes; sin él se cae a `inicio` (`slugDeOrigen`, en los dos `lib/ruta-de-vuelta.ts`).
+
+Lo no editable va en un `<div class="olo-chrome-inerte" inert>`. **Lo que de verdad lo apaga es el atributo `inert`** —quita clic, foco y lectura por lectores de pantalla de una vez—; la opacidad reducida y el gris son solo la señal visual, y la etiqueta de la esquina va fuera de esa capa para que no herede la opacidad.
+
+### 2. Dos personas podían editar lo mismo y pisarse
+
+El editor no guarda nada hasta que alguien pulsa «Guardar borrador», así que dos personas sobre la misma página producían dos versiones completas del contenido y la segunda en guardar borraba el trabajo de la primera sin que nadie se enterara.
+
+**Esto revierte una decisión de diseño anterior.** `permisos.middleware.ts` y `guardar-borrador.usecase.ts` decían «la edición es colaborativa a propósito»; los dos comentarios se actualizaron para no dejar la documentación contradiciendo el comportamiento.
+
+| Capa | Qué |
+|---|---|
+| Base de datos | `020-bloqueos-edicion` — tabla `bloqueos_edicion`, PK `(ambito, slug)` |
+| Modelo | `infrastructure/db/models/BloqueoEdicion.ts` (sin asociaciones, a propósito) |
+| Repositorio | `repositories/bloqueo-edicion.repository.ts` |
+| Use-cases | `use-cases/paginas/adquirir-bloqueo.usecase.ts`, `liberar-bloqueo.usecase.ts` |
+| Rutas | `POST` y `DELETE /api/paginas/:slug/bloqueo` |
+| Frontend | `use-bloqueo-de-edicion.ts` y `aviso-editor-ocupado.tsx` en cada app |
+
+Cuatro decisiones que no conviene deshacer sin querer:
+
+- **Va en Postgres, no en Redis.** Redis tiene TTL nativo y sería lo natural, pero aquí es opcional —la caché degrada a BYPASS cuando no está, y en desarrollo local no está—, y un candado que no cierra cuando falta Redis es peor que no tener candado: da una garantía que no se cumple justo cuando nadie mira.
+- **`usuario_id` es `TEXT` sin clave foránea.** La cuenta maestra de desarrollo (`LOCAL_AUTH_*`) no vive en `usuarios`: su token lleva `id: 'local-auth'`, que no es un UUID. Con `UUID REFERENCES usuarios(id)` el candado reventaría precisamente en el entorno donde más se prueba. `usuario_nombre` se desnormaliza por lo mismo: hay que poder decir quién está dentro sin un JOIN que para esa cuenta no existiría.
+- **Se adquiere con un único `INSERT ... ON CONFLICT ... WHERE`.** Comprobar primero y escribir después deja una ventana —corta, pero real— por la que dos personas leen «libre» y entran las dos, que es exactamente el problema que el candado existe para evitar.
+- **Dos minutos de vida, latido cada 45 segundos.** El margen es lo que impide que se le caiga a quien está trabajando, y lo que hace que una pestaña cerrada de golpe se libere sola. Al salir se suelta con `fetch(..., { keepalive: true })` desde `pagehide`; `sendBeacon` no sirve porque solo sabe hacer POST.
+
+**Toma de control:** `forzar: true` solo lo obedece quien puede aprobar (`paginasPolicies.puedeForzarBloqueo`, los mismos roles que `puedePublicar`). A quien le quitan el candado no se le echa de la pantalla —para que pueda copiarse lo que llevara— pero se le desactivan «Guardar borrador» y «Enviar a revisión», con un aviso en la cabecera diciendo quién tomó el control.
+
+### Verificación
+
+Se probó ejecutando de verdad las tres capas, no solo compilando.
+
+| Comprobación | Resultado |
+|---|---|
+| `tsc --noEmit` en `api-backend`, `sitio-web` e `intranet` | limpio |
+| `eslint` sobre lo tocado en las dos apps | limpio |
+| `npm run migrate` | `020-bloqueos-edicion` aplicada |
+| Editor de sección, las dos apps | 2 bloques inertes, etiquetas correctas, `inert` presente en los 2 |
+| Editor de `menu-y-pie` con `?volver=`, las dos apps | 1 bloque inerte con la sección real; barra y pie a todo color |
+| **Guardar en `menu-y-pie`** | el cuerpo enviado lleva **solo** `["IntranetTopbar","IntranetFooter"]` — el contexto inerte **no** se filtra al JSON |
+| Candado: adquirir / renovar / liberar / liberar dos veces | 200 · 200 · `liberado:true` · `liberado:false` |
+| Candado ajeno vigente | **409** con `bloqueadoPor.nombre` y `puedeForzar` |
+| `DELETE` de un candado ajeno | `liberado:false` — no lo suelta |
+| Candado ajeno **caducado**, sin forzar | 200, `propio:true` |
+| «Entrar de todos modos» en el navegador, las dos apps | pantalla de ocupado → editor montado |
+| Cierre del navegador con candado propio | la fila desaparece: el `pagehide` con `keepalive` llega |
+
+> **Aviso sobre Turbopack y el CSS.** Dos veces el dev server siguió sirviendo una versión vieja de `globals.css` después de editarlo: las reglas nuevas no estaban en la hoja servida aunque sí en el archivo, y la pantalla salía sin estilos. No es un bug del código. **Si un estilo recién añadido no aparece, reinicia el dev server (y borra `.next/cache`) antes de buscar la causa en otro sitio.**
+
+### Pendiente al cierre
+
+- **Sin commit.** Se dejaron los dos mensajes preparados: uno para `api-backend/` y otro para el frontend. No se pueden partir por etapa porque varios archivos del frontend (los `index.ts`, los `puck-editor-wrapper`, los `globals.css`) llevan código de los dos frentes.
+- **`AGENTS.md` y `CLAUDE.md` sin seguimiento** en `intranet/` y `sitio-web/`. Los genera `next dev` solo, no son de este trabajo: hay que decidir si se commitean o se ignoran.
+- El candado corta **en la puerta**: no hay fusión de cambios ni aviso en vivo a quien está dentro de que alguien quiere entrar. Si eso hiciera falta, es otra tanda.
+
+---
+
 ## sesión 18-08-2026 (2.ª parte): se elimina `usuarios_sitio` — `usuarios` queda como única identidad
 
 ### Qué era y por qué se va

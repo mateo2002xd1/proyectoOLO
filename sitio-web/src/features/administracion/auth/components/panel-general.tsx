@@ -12,6 +12,7 @@ import {
   DropdownMenu,
 } from '@/shared/ui/molecules/dropdown';
 import { Navbar, NavbarItem, NavbarSection, NavbarSpacer } from '@/shared/ui/organisms/navbar';
+import { BuscadorModal } from '@/features/administracion/buscador';
 import {
   Sidebar,
   SidebarBody,
@@ -113,6 +114,7 @@ export function PanelGeneralLayout({
   className?: string;
 }) {
   const router = useRouter();
+  const [isBuscarOpen, setIsBuscarOpen] = useState(false);
 
   const handleLogout = useCallback(async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
@@ -127,7 +129,7 @@ export function PanelGeneralLayout({
         navbar={
           <Navbar>
             <NavbarSection>
-              <NavbarItem href="/admin/dashboard/buscar" aria-label="Buscar">
+              <NavbarItem as="button" onClick={() => setIsBuscarOpen(true)} aria-label="Buscar">
                 <MagnifyingGlassIcon />
               </NavbarItem>
             </NavbarSection>
@@ -164,8 +166,8 @@ export function PanelGeneralLayout({
               <div className="flex items-center justify-between w-full">
                 {/* SVG estático servido desde /public: next/image no aporta optimización aquí. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <Link href="/" className="group cursor-pointer" title="Ir al sitio web">
-                  <img src="/assets/logos/olo-logo-horizontal.svg" alt="OLO" className="h-[4.5rem] pb-3 transition-all duration-300 group-hover:scale-105 group-hover:drop-shadow-md dark:brightness-0 dark:invert cursor-pointer" />
+                <Link href="/" className="group cursor-pointer pt-7" title="Ir al sitio web">
+                  <img src="/assets/logos/olo-logo-horizontal.svg" alt="OLO" className="h-16 transition-all duration-300 group-hover:scale-105 group-hover:drop-shadow-md dark:brightness-0 dark:invert cursor-pointer" />
                 </Link>
               </div>
             </SidebarHeader>
@@ -198,7 +200,7 @@ export function PanelGeneralLayout({
             </SidebarBody>
 
             <SidebarSection className="max-lg:hidden mx-2 mb">
-              <SidebarItem href="/admin/dashboard/buscar">
+              <SidebarItem as="button" onClick={() => setIsBuscarOpen(true)}>
                 <MagnifyingGlassIcon />
                 <SidebarLabel>Buscar</SidebarLabel>
               </SidebarItem>
@@ -246,6 +248,7 @@ export function PanelGeneralLayout({
       >
         <RouteTransition>{children}</RouteTransition>
       </SidebarLayout>
+      {isBuscarOpen && <BuscadorModal onClose={() => setIsBuscarOpen(false)} />}
     </>
   );
 }

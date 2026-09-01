@@ -17,7 +17,13 @@
 
 import { redirect } from "next/navigation";
 import { obtenerSesion, puedeEditarPaginas, permisosDeLaSesion } from "@/shared/lib/sesion";
-import { AvisoSeccionNueva } from "@/features/gestor-secciones";
+import {
+  AvisoSeccionNueva,
+  obtenerPlantilla,
+  obtenerPaginaPublicada,
+  SLUG_PLANTILLA,
+  slugDeOrigen,
+} from "@/features/gestor-secciones";
 import { EditorClient } from "./editor-client";
 
 export default async function EditorPage({
@@ -25,9 +31,9 @@ export default async function EditorPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ nueva?: string }>;
+  searchParams: Promise<{ nueva?: string; volver?: string }>;
 }) {
-  const [{ slug }, { nueva }] = await Promise.all([params, searchParams]);
+  const [{ slug }, { nueva, volver }] = await Promise.all([params, searchParams]);
 
   // Verificación de sesión server-side — sin sesión no se monta nada del editor.
   const sesion = await obtenerSesion();
@@ -58,12 +64,25 @@ export default async function EditorPage({
     }
   }
 
+  // Contexto de solo lectura alrededor del lienzo de Puck: barra/pie publicados
+  // al editar una sección, o la sección de origen (`?volver=`) al editar la
+  // plantilla. `obtenerPaginaPublicada` SÍ puede lanzar (a diferencia de
+  // `obtenerPlantilla`, que ya envuelve su propia llamada), así que se atrapa
+  // aquí: el editor no puede dejar de abrir porque el panel de contexto falló.
+  const esPlantilla = slug === SLUG_PLANTILLA;
+  const [plantilla, paginaDeReferencia] = await Promise.all([
+    esPlantilla ? Promise.resolve(null) : obtenerPlantilla(),
+    esPlantilla
+      ? obtenerPaginaPublicada(slugDeOrigen(volver)).catch(() => null)
+      : Promise.resolve(null),
+  ]);
+
   return (
     <>
       {/* Solo al venir de «Nueva sección»: es donde se entrega el enlace de la ruta
           recién creada, que es lo que hay que pegar en el menú para poder llegar. */}
       {nueva === "1" && <AvisoSeccionNueva slug={slug} />}
-      <EditorClient slug={slug} />
+      <EditorClient slug={slug} plantilla={plantilla} paginaDeReferencia={paginaDeReferencia} />
     </>
   );
 }

@@ -62,6 +62,8 @@ interface AccionesCabeceraProps {
    * tocado nada— o no hacerse.
    */
   onEstadoDeCambios: (indiceHistoria: number, hayCambiosSinGuardar: boolean) => void;
+  /** Nos quitaron el candado: se puede mirar y copiar, pero no guardar. */
+  sinCandado: boolean;
 }
 
 /**
@@ -87,6 +89,7 @@ function AccionesCabecera({
   onEnviar,
   onSalir,
   onEstadoDeCambios,
+  sinCandado,
 }: AccionesCabeceraProps) {
   const indiceHistoria = usePuckSel((s) => s.history.index);
   // Deshacer hasta el punto guardado vuelve a dejarlo limpio, y eso es correcto.
@@ -114,7 +117,8 @@ function AccionesCabecera({
       <button
         type="button"
         onClick={() => onGuardar(indiceHistoria)}
-        disabled={busy}
+        disabled={busy || sinCandado}
+        title={sinCandado ? "Ya no tienes esta sección reservada" : undefined}
         className="olo-editor-btn olo-editor-btn--guardar"
       >
         {isSaving ? "Guardando…" : "Guardar borrador"}
@@ -122,7 +126,8 @@ function AccionesCabecera({
       <button
         type="button"
         onClick={() => onEnviar(indiceHistoria)}
-        disabled={busy || bloqueado}
+        disabled={busy || bloqueado || sinCandado}
+        title={sinCandado ? "Ya no tienes esta sección reservada" : undefined}
         className="olo-editor-btn olo-editor-btn--enviar"
       >
         {isSendingToReview ? "Enviando…" : "Enviar a revisión"}
@@ -246,6 +251,8 @@ export function PuckEditorWrapper({
   isSaving = false,
   isSendingToReview = false,
   versionActual,
+  contexto,
+  candadoPerdidoPor,
 }: PuckEditorWrapperProps) {
   const router = useRouter();
 
@@ -279,10 +286,12 @@ export function PuckEditorWrapper({
     () => (initialData as Data) ?? { content: [], root: {} }
   );
 
-  // El selector solo ofrece los bloques que tienen sentido en esta sección. Se
-  // memoriza porque Puck reconstruye su store cuando cambia la identidad de la
-  // config, y eso reiniciaría el editor en cada render.
-  const config = useMemo(() => configDeEdicion(slug), [slug]);
+  // El selector solo ofrece los bloques que tienen sentido en esta sección, y la
+  // config trae además el resto de la página pintado inerte alrededor. Se memoriza
+  // porque Puck reconstruye su store cuando cambia la identidad de la config, y eso
+  // reiniciaría el editor en cada render; `contexto` viene de props del Server
+  // Component, así que su identidad es estable mientras el editor está montado.
+  const config = useMemo(() => configDeEdicion(slug, contexto), [slug, contexto]);
 
   const estado = versionActual?.estado ?? "borrador";
   // Solo se bloquea lo que ya está en la cola de aprobación: reenviarlo lo duplicaría.
@@ -391,6 +400,13 @@ export function PuckEditorWrapper({
     () => ({
       headerActions: () => (
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {/* Antes que nada: explica por qué los botones de guardar están apagados. */}
+          {candadoPerdidoPor && (
+            <span className="olo-editor-perdido" role="alert">
+              {candadoPerdidoPor} tomó el control. Copia lo que necesites: ya no se
+              puede guardar.
+            </span>
+          )}
           {avisosAccesibilidad.length > 0 && (
             <AvisoAccesibilidad violaciones={avisosAccesibilidad} />
           )}
@@ -404,6 +420,7 @@ export function PuckEditorWrapper({
             onEnviar={alPulsarEnviar}
             onSalir={handleSalir}
             onEstadoDeCambios={registrarEstadoDeCambios}
+            sinCandado={Boolean(candadoPerdidoPor)}
           />
         </div>
       ),
@@ -419,6 +436,7 @@ export function PuckEditorWrapper({
       handleSalir,
       registrarEstadoDeCambios,
       avisosAccesibilidad,
+      candadoPerdidoPor,
     ]
   );
 

@@ -20,7 +20,7 @@ import { buscarEnPanel, type DestinoPanel } from '../lib/indice-panel';
  * activo por `aria-activedescendant`. Aun así cada resultado es un enlace de verdad
  * (con `tabIndex={-1}`), para que el clic central y «copiar dirección» funcionen.
  */
-export function BuscadorModal() {
+export function BuscadorModal({ onClose }: { onClose?: () => void }) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const listaRef = useRef<HTMLUListElement>(null);
@@ -37,9 +37,13 @@ export function BuscadorModal() {
    * `back()` sacaría del sitio; en ese caso se vuelve al dashboard.
    */
   const cerrar = useCallback(() => {
-    if (window.history.length > 1) router.back();
-    else router.push('/admin/dashboard');
-  }, [router]);
+    if (onClose) {
+      onClose();
+    } else {
+      if (window.history.length > 1) router.back();
+      else router.push('/admin/dashboard');
+    }
+  }, [router, onClose]);
 
   // El campo recibe el foco al abrir. Se hace con `ref` y no con el atributo
   // `autoFocus`, que la configuración de accesibilidad del proyecto prohíbe (§154 de
@@ -68,9 +72,12 @@ export function BuscadorModal() {
 
   const irA = useCallback(
     (destino: DestinoPanel | undefined) => {
-      if (destino) router.push(destino.href);
+      if (destino) {
+        if (onClose) onClose();
+        router.push(destino.href);
+      }
     },
-    [router]
+    [router, onClose]
   );
 
   const alPulsarTecla = (evento: React.KeyboardEvent<HTMLInputElement>) => {
@@ -180,6 +187,9 @@ export function BuscadorModal() {
                   <Link
                     href={destino.href}
                     tabIndex={-1}
+                    onClick={() => {
+                      if (onClose) onClose();
+                    }}
                     className="block px-4 py-3 no-underline"
                   >
                     <span className="block text-base font-medium text-zinc-950 dark:text-[#f6f6f6]">

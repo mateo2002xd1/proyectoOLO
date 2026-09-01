@@ -1,5 +1,12 @@
 import { redirect } from 'next/navigation';
-import { AvisoSeccionNueva, rutaPublicaDeSlug } from '@/features/paginas';
+import {
+  AvisoSeccionNueva,
+  rutaPublicaDeSlug,
+  obtenerPlantilla,
+  obtenerPaginaPublicadaCacheada,
+  SLUG_PLANTILLA,
+  slugDeOrigen,
+} from '@/features/paginas';
 import { getAuthSessionSnapshot, puedeEditarPaginas, getSessionPermissionsSnapshot } from '@/shared/lib/session';
 import { EditorClient } from './editor-client';
 
@@ -16,9 +23,9 @@ export default async function EditorPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ nueva?: string }>;
+  searchParams: Promise<{ nueva?: string; volver?: string }>;
 }) {
-  const [{ slug }, { nueva }] = await Promise.all([params, searchParams]);
+  const [{ slug }, { nueva, volver }] = await Promise.all([params, searchParams]);
 
   const { hasSession, role } = await getAuthSessionSnapshot();
   if (!hasSession) {
@@ -47,12 +54,22 @@ export default async function EditorPage({
     }
   }
 
+  // Contexto de solo lectura alrededor del lienzo de Puck: cabecera/pie publicados
+  // al editar una sección, o la página de origen (`?volver=`) al editar la
+  // plantilla. Ninguna de las dos llamadas puede lanzar (ver `obtenerPlantilla` y
+  // `obtenerPaginaPublicadaCacheada`), así que el editor nunca se cae por esto.
+  const esPlantilla = slug === SLUG_PLANTILLA;
+  const [plantilla, paginaDeReferencia] = await Promise.all([
+    esPlantilla ? Promise.resolve(null) : obtenerPlantilla(),
+    esPlantilla ? obtenerPaginaPublicadaCacheada(slugDeOrigen(volver)) : Promise.resolve(null),
+  ]);
+
   return (
     <>
       {/* Solo al venir de «Nueva página»: es donde se entrega el enlace de la ruta
           recién creada, que es lo que hay que pegar en el menú para poder llegar. */}
       {nueva === '1' && <AvisoSeccionNueva slug={slug} />}
-      <EditorClient slug={slug} />
+      <EditorClient slug={slug} plantilla={plantilla} paginaDeReferencia={paginaDeReferencia} />
     </>
   );
 }

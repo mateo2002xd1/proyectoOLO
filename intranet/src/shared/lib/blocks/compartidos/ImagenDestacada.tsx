@@ -1,4 +1,4 @@
-import { resaltar } from './resaltar';
+import type { ReactNode } from 'react';
 
 /**
  * Una imagen ancha con título opcional.
@@ -26,7 +26,7 @@ const CLASES_REDONDEADO: Record<string, string> = {
 };
 
 export interface ImagenDestacadaProps {
-  titulo?: string;
+  titulo?: ReactNode;
   imagenSrc?: string;
   imagenAlt?: string;
   ancho?: 'contenido' | 'completo';
@@ -66,7 +66,7 @@ export function ImagenDestacada({
     <div className={`${clasesFondo} w-full py-12`}>
       <div className="max-w-[1200px] w-full mx-auto px-6 text-center flex flex-col items-center">
         {titulo && (
-          <h2 className="matriz-section-title text-[#041E42] font-bold mb-6">{resaltar(titulo)}</h2>
+          <h2 className="matriz-section-title text-[#041E42] font-bold mb-6">{titulo}</h2>
         )}
         <div className="w-full">
           {/* src editable desde el editor: next/image exigiria dimensiones fijas */}

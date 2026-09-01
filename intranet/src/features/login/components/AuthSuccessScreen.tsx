@@ -1,4 +1,6 @@
-import Link from 'next/link';
+'use client';
+
+import { useAuth } from '@/features/login';
 import { ReturnToSiteLink } from '@/shared/ui/molecules/ReturnToSiteLink';
 
 interface AuthSuccessScreenProps {
@@ -9,6 +11,8 @@ interface AuthSuccessScreenProps {
 }
 
 export function AuthSuccessScreen({ title, subtitle, hint, loginLabel = 'Iniciar sesión' }: AuthSuccessScreenProps) {
+  const { logout } = useAuth();
+
   return (
     <div className="rs-page">
       <div className="rs-content">
@@ -16,9 +20,9 @@ export function AuthSuccessScreen({ title, subtitle, hint, loginLabel = 'Iniciar
         <p className="rs-subtitle">{subtitle}</p>
         {hint && <p className="rs-hint">{hint}</p>}
 
-        <Link href="/login" className="rs-login-btn">
+        <button type="button" onClick={() => logout()} className="rs-login-btn">
           {loginLabel}
-        </Link>
+        </button>
 
         <ReturnToSiteLink classPrefix="rs" />
       </div>

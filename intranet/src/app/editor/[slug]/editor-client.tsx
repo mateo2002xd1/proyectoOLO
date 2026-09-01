@@ -12,29 +12,42 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   PuckEditorWrapper,
+  AvisoEditorOcupado,
   useEditorActions,
+  useBloqueoDeEdicion,
   obtenerVersionEditable,
   getPageSeed,
   isEmptyContent,
   type VersionEditable,
   type PaginaVersion,
+  type Plantilla,
+  type PaginaPublicada,
 } from "@/features/gestor-secciones";
+import type { ContextoDeEdicion } from "@/config/puck.config";
 import { GooLoader } from "@/shared/ui/atoms/GooLoader";
 
 interface EditorClientProps {
   slug: string;
+  /** Barra/pie publicados, para mostrarlos bloqueados alrededor de una sección. */
+  plantilla?: Plantilla | null;
+  /** La sección de la que venía quien edita, para mostrarla bloqueada bajo la plantilla. */
+  paginaDeReferencia?: PaginaPublicada | null;
 }
 
 // Tiempo mínimo del loader para que la animación se complete antes de mostrar el editor.
 // Debe coincidir con el editor del sitio-web para que ambos se comporten igual.
 const MIN_LOADER_MS = 8000;
 
-export function EditorClient({ slug }: EditorClientProps) {
+export function EditorClient({ slug, plantilla, paginaDeReferencia }: EditorClientProps) {
   const [editable, setEditable] = useState<VersionEditable | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+
+  // Se pide antes que nada: si la sección la tiene otra persona, no tiene sentido
+  // ni cargar su contenido.
+  const bloqueo = useBloqueoDeEdicion(slug);
 
   // Mantiene el loader visible al menos MIN_LOADER_MS aunque los datos carguen antes.
   const [minTimePassed, setMinTimePassed] = useState(false);
@@ -62,6 +75,18 @@ export function EditorClient({ slug }: EditorClientProps) {
     return () => { active = false; };
   }, [slug]);
 
+  // La tiene otra persona: se corta aquí, antes de montar nada del editor.
+  if (bloqueo.estado === "ajeno") {
+    return (
+      <AvisoEditorOcupado
+        nombre={bloqueo.bloqueadoPor ?? "Otra persona"}
+        puedeForzar={bloqueo.puedeForzar}
+        onReintentar={bloqueo.reintentar}
+        rutaDeVuelta={`/${slug}`}
+      />
+    );
+  }
+
   if (loadError) {
     return (
       <div style={{ padding: "2rem", textAlign: "center" }}>
@@ -71,7 +96,7 @@ export function EditorClient({ slug }: EditorClientProps) {
     );
   }
 
-  if (!editable || !minTimePassed) {
+  if (!editable || !minTimePassed || bloqueo.estado === "pidiendo") {
     return (
       <div className="editor-loading-overlay">
         <GooLoader label="Cargando editor..." />
@@ -79,7 +104,16 @@ export function EditorClient({ slug }: EditorClientProps) {
     );
   }
 
-  return <EditorMounted slug={slug} editable={editable} />;
+  return (
+    <EditorMounted
+      slug={slug}
+      editable={editable}
+      plantilla={plantilla}
+      paginaDeReferencia={paginaDeReferencia}
+      // Solo importa el caso «nos lo quitaron»: los otros ya se resolvieron arriba.
+      candadoPerdidoPor={bloqueo.estado === "perdido" ? bloqueo.bloqueadoPor : null}
+    />
+  );
 }
 
 /**
@@ -87,7 +121,20 @@ export function EditorClient({ slug }: EditorClientProps) {
  * se inicialice con el versionId/estado reales (los hooks no releen sus valores
  * iniciales tras el primer render).
  */
-function EditorMounted({ slug, editable }: { slug: string; editable: VersionEditable }) {
+function EditorMounted({
+  slug,
+  editable,
+  plantilla,
+  paginaDeReferencia,
+  candadoPerdidoPor,
+}: {
+  slug: string;
+  editable: VersionEditable;
+  plantilla?: Plantilla | null;
+  paginaDeReferencia?: PaginaPublicada | null;
+  /** Nombre de quien nos quitó el candado, si pasó. */
+  candadoPerdidoPor?: string | null;
+}) {
   const {
     handleGuardarBorrador,
     handleEnviarRevision,
@@ -107,6 +154,18 @@ function EditorMounted({ slug, editable }: { slug: string; editable: VersionEdit
     slug: editable.slug,
     titulo: editable.titulo,
   } as PaginaVersion;
+
+  // Identidad estable: si este objeto cambia, Puck reconstruye su store y el
+  // editor se reinicia con lo que se llevara sin guardar.
+  const contexto = useMemo<ContextoDeEdicion>(
+    () => ({
+      plantilla: plantilla ?? null,
+      seccion: paginaDeReferencia
+        ? { slug: paginaDeReferencia.slug, contenido: paginaDeReferencia.contenido }
+        : null,
+    }),
+    [plantilla, paginaDeReferencia]
+  );
 
   return (
     <>
@@ -138,6 +197,8 @@ function EditorMounted({ slug, editable }: { slug: string; editable: VersionEdit
         isSaving={isSaving}
         isSendingToReview={isSendingToReview}
         versionActual={versionActual}
+        contexto={contexto}
+        candadoPerdidoPor={candadoPerdidoPor}
       />
     </>
   );

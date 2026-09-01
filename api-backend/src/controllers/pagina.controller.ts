@@ -12,6 +12,8 @@ import {
   analizarEliminacion,
   eliminarSeccion,
 } from '../use-cases/paginas/eliminar-seccion.usecase';
+import { adquirirBloqueo } from '../use-cases/paginas/adquirir-bloqueo.usecase';
+import { liberarBloqueo } from '../use-cases/paginas/liberar-bloqueo.usecase';
 import { AMBITO_HEADER, exigirAmbito, resolverAmbito } from '../shared/ambito';
 import { logAudit } from '../use-cases/auditoria/audit.usecase';
 import { datosDeAuditoria } from '../shared/auditoria-request';
@@ -178,6 +180,53 @@ export const PaginaController = {
     try {
       const result = await obtenerVersionEditable(req.params.slug as string, ambitoExigidoDe(req));
       res.json(result);
+    } catch (err) { next(err); }
+  },
+
+  /**
+   * Pide o renueva el candado de edición de esta página.
+   *
+   * El 409 lleva dentro quién la tiene abierta: es lo que la pantalla necesita para
+   * decir «Fulano está editando» en vez de un error genérico. Mismo patrón de
+   * respuesta enriquecida que `ErrorValidacionAccesibilidad` más abajo.
+   *
+   * No pasa por la bitácora: se llama cada 45 segundos por cada persona que tenga el
+   * editor abierto, y llenar `auditoria_cambios` de latidos taparía lo que sí importa.
+   */
+  async adquirirBloqueo(req: Request, res: Response, next: NextFunction) {
+    try {
+      const resultado = await adquirirBloqueo({
+        slug: req.params.slug as string,
+        ambito: ambitoExigidoDe(req),
+        usuarioId: req.user?.id || '',
+        // El nombre es lo que se le enseña a quien se queda fuera; el correo sirve
+        // igual si la cuenta no tiene nombre puesto.
+        usuarioNombre: req.user?.name || req.user?.email || 'Otra persona',
+        rol: req.user?.role,
+        forzar: req.body?.forzar === true,
+      });
+
+      if (!resultado.propio) {
+        return res.status(409).json({
+          error: `${resultado.bloqueadoPor?.nombre} está editando esta página ahora mismo.`,
+          bloqueadoPor: resultado.bloqueadoPor,
+          expiraEn: resultado.expiraEn,
+          puedeForzar: resultado.puedeForzar,
+        });
+      }
+
+      res.json(resultado);
+    } catch (err) { next(err); }
+  },
+
+  async liberarBloqueo(req: Request, res: Response, next: NextFunction) {
+    try {
+      const resultado = await liberarBloqueo(
+        req.params.slug as string,
+        ambitoExigidoDe(req),
+        req.user?.id || ''
+      );
+      res.json(resultado);
     } catch (err) { next(err); }
   },
 

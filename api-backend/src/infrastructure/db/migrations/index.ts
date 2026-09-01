@@ -20,7 +20,11 @@ import * as permisoCrearSecciones from './016-permiso-crear-secciones';
 import * as tituloMenuYPie from './017-titulo-menu-y-pie';
 import * as revertirTitulosIntranet from './018-revertir-titulos-intranet';
 import * as permisoEliminarSecciones from './019-permiso-eliminar-secciones';
+<<<<<<< HEAD
 import * as depuracionYOptimizacionEsquema from './020-depuracion-y-optimizacion-esquema';
+=======
+import * as bloqueosEdicion from './020-bloqueos-edicion';
+>>>>>>> eba87860c16a12b2709822c41b2ab8c0bb2e0b27
 
 export interface Migracion {
   nombre: string;
@@ -51,7 +55,11 @@ const migraciones: Migracion[] = [
   tituloMenuYPie,
   revertirTitulosIntranet,
   permisoEliminarSecciones,
+<<<<<<< HEAD
   depuracionYOptimizacionEsquema,
+=======
+  bloqueosEdicion,
+>>>>>>> eba87860c16a12b2709822c41b2ab8c0bb2e0b27
 ];
 
 const TABLA_CONTROL = 'migraciones_aplicadas';

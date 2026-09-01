@@ -21,55 +21,32 @@
  *
  * Sin el paso 1 cada visita anónima haría una petición autenticada para acabar
  * recibiendo un 401; sin el paso 2 el botón se le pintaría a Editores que no tienen
- * la clave y responderían 403 al pulsarlo.
+ * la clave y responderían 403 al pulsarlo. Los dos pasos, más la revisión al
+ * recuperar foco, viven en `usePermisoDeSeccion` (hooks/use-permiso-de-seccion.ts).
  *
  * Esto NO es un control de acceso: quien decide es `POST /api/paginas`, que exige
  * `secciones.crear` sin mirar lo que crea el navegador.
  */
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   slugificar,
   motivoSlugInvalido,
   mensajeDeSlugInvalido,
 } from '@olo/slug-policy';
-import { crearSeccion, permisosDeLaSesion } from '../services/paginas.service';
+import { crearSeccion } from '../services/paginas.service';
 import { enlaceAlEditor, rutaPublicaDeSlug } from '../lib/ruta-de-vuelta';
-import { AUTH_ROLE_COOKIE_NAME } from '@/shared/lib/auth-cookies';
-
-/** Mismos roles que `puedeEditarPaginas()` en `shared/lib/session.ts`. */
-const ROLES_QUE_EDITAN = ['superadmin', 'administrador', 'editor'];
-
-function leerCookie(nombre: string): string | null {
-  if (typeof document === 'undefined') return null;
-  const coincidencia = document.cookie.match(new RegExp('(?:^|; )' + nombre + '=([^;]*)'));
-  return coincidencia ? decodeURIComponent(coincidencia[1]) : null;
-}
+import { usePermisoDeSeccion } from '../hooks/use-permiso-de-seccion';
 
 export function NuevaSeccionButton() {
   const router = useRouter();
-  const [puedeCrear, setPuedeCrear] = useState(false);
+  const puedeCrear = usePermisoDeSeccion('secciones.crear');
   const [abierto, setAbierto] = useState(false);
   const [nombre, setNombre] = useState('');
   const [creando, setCreando] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const rol = (leerCookie(AUTH_ROLE_COOKIE_NAME) ?? '').trim().toLowerCase();
-    if (!ROLES_QUE_EDITAN.includes(rol)) return;
-
-    let vigente = true;
-    permisosDeLaSesion().then((permisos) => {
-      // `vigente` evita escribir estado sobre un componente ya desmontado si la
-      // persona navega mientras la consulta está en vuelo.
-      if (vigente) setPuedeCrear(permisos.includes('secciones.crear'));
-    });
-    return () => {
-      vigente = false;
-    };
-  }, []);
 
   // La misma cuenta que hará el servidor, para que la ruta que se lee sea la de verdad.
   const slug = useMemo(() => slugificar(nombre), [nombre]);

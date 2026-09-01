@@ -44,3 +44,16 @@ export function resolverRutaDeVuelta(rutaPorDefecto: string): string {
   const volver = new URLSearchParams(window.location.search).get(PARAM);
   return esRutaInternaSegura(volver) ? volver : rutaPorDefecto;
 }
+
+/**
+ * El slug de la página desde la que se abrió "Menú y pie", a partir de `?volver=`.
+ *
+ * Se usa para traer esa página como contexto de solo lectura en el editor de la
+ * plantilla: sin `volver` válido (entrada directa a la URL, enlace copiado a mano)
+ * cae a `inicio`, que siempre existe.
+ */
+export function slugDeOrigen(volver: string | null | undefined): string {
+  if (!esRutaInternaSegura(volver)) return 'inicio';
+  const slug = volver.replace(/^\/+/, '').replace(/\/+$/, '');
+  return slug || 'inicio';
+}

@@ -16,7 +16,7 @@ export function SidebarLayout({
   className = '',
 }: SidebarLayoutProps) {
   return (
-    <div className={`flex h-screen bg-[#F3F3F3] dark:bg-[#0b1121] ${className}`}>
+    <div className={`flex h-screen bg-white dark:bg-[#0b1121] ${className}`}>
       <div className="hidden lg:flex lg:w-64 lg:flex-col">{sidebar}</div>
 
       <div className="flex min-w-0 flex-1 flex-col">

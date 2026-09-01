@@ -4,7 +4,7 @@ import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Puck, createUsePuck, Data } from '@puckeditor/core';
 import '@puckeditor/core/dist/index.css';
-import { configDeEdicion } from '@/config/puck.config';
+import { configDeEdicion, type ContextoDeEdicion } from '@/config/puck.config';
 import { resolverRutaDeVuelta } from '../lib/ruta-de-vuelta';
 import { Bloque, PuckData, EstadoPagina } from '../types';
 import { AvisoRechazo, type Rechazo } from './aviso-rechazo';
@@ -40,6 +40,19 @@ interface PuckEditorWrapperProps {
   estado?: EstadoPagina | null;
   /** Presente solo si la versión que se está editando fue rechazada. */
   rechazo?: Rechazo;
+  /**
+   * El resto de la página, para pintarlo inerte alrededor de lo editable.
+   * Lo resuelve el Server Component del editor; ver `configDeEdicion`.
+   */
+  contexto?: ContextoDeEdicion;
+  /**
+   * Nombre de quien nos quitó el candado de edición mientras trabajábamos.
+   *
+   * Con esto puesto el editor sigue en pantalla —para poder copiar lo que se llevara
+   * hecho— pero no deja guardar: quien tiene ahora la página no debe recibir un
+   * borrador nuestro encima del suyo.
+   */
+  candadoPerdidoPor?: string | null;
 }
 
 /** Con selector, para no re-renderizar la cabecera ante cualquier cambio del editor. */
@@ -66,6 +79,8 @@ interface AccionesCabeceraProps {
    * tocado nada— o no hacerse.
    */
   onEstadoDeCambios: (indiceHistoria: number, hayCambiosSinGuardar: boolean) => void;
+  /** Nos quitaron el candado: se puede mirar y copiar, pero no guardar. */
+  sinCandado: boolean;
 }
 
 /**
@@ -92,6 +107,7 @@ function AccionesCabecera({
   onEnviar,
   onSalir,
   onEstadoDeCambios,
+  sinCandado,
 }: AccionesCabeceraProps) {
   const indiceHistoria = usePuckSel((s) => s.history.index);
   // Deshacer hasta el punto guardado vuelve a dejarlo limpio, y eso es correcto.
@@ -119,7 +135,8 @@ function AccionesCabecera({
       <button
         type="button"
         onClick={() => onGuardar(indiceHistoria)}
-        disabled={busy}
+        disabled={busy || sinCandado}
+        title={sinCandado ? 'Ya no tienes esta página reservada' : undefined}
         className="olo-editor-btn olo-editor-btn--guardar"
       >
         {isSaving ? 'Guardando…' : 'Guardar borrador'}
@@ -128,7 +145,8 @@ function AccionesCabecera({
         <button
           type="button"
           onClick={() => onEnviar(indiceHistoria)}
-          disabled={busy || bloqueado}
+          disabled={busy || bloqueado || sinCandado}
+          title={sinCandado ? 'Ya no tienes esta página reservada' : undefined}
           className="olo-editor-btn olo-editor-btn--enviar"
         >
           {isSubmitting ? 'Enviando…' : 'Enviar a revisión'}
@@ -253,6 +271,8 @@ export function PuckEditorWrapper({
   rutaPorDefecto,
   estado,
   rechazo,
+  contexto,
+  candadoPerdidoPor,
 }: PuckEditorWrapperProps) {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
@@ -295,10 +315,12 @@ export function PuckEditorWrapper({
       : (initialData as Data) ?? { content: [], root: {} }
   );
 
-  // El selector solo ofrece los bloques que tienen sentido en esta página. Se
-  // memoriza porque Puck reconstruye su store cuando cambia la identidad de la
-  // config, y eso reiniciaría el editor en cada render.
-  const config = useMemo(() => configDeEdicion(slug), [slug]);
+  // El selector solo ofrece los bloques que tienen sentido en esta página, y la
+  // config trae además el resto de la página pintado inerte alrededor. Se memoriza
+  // porque Puck reconstruye su store cuando cambia la identidad de la config, y eso
+  // reiniciaría el editor en cada render; `contexto` viene de props del Server
+  // Component, así que su identidad es estable mientras el editor está montado.
+  const config = useMemo(() => configDeEdicion(slug, contexto), [slug, contexto]);
 
   const estadoActual = estado ?? 'borrador';
   /**
@@ -421,6 +443,13 @@ export function PuckEditorWrapper({
     () => ({
       headerActions: () => (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {/* Antes que nada: explica por qué los botones de guardar están apagados. */}
+          {candadoPerdidoPor && (
+            <span className="olo-editor-perdido" role="alert">
+              {candadoPerdidoPor} tomó el control. Copia lo que necesites: ya no se
+              puede guardar.
+            </span>
+          )}
           {/* Antes que las acciones: se lee el porqué antes de volver a tocar nada. */}
           {rechazo && <AvisoRechazo {...rechazo} />}
           {avisosAccesibilidad.length > 0 && (
@@ -437,11 +466,13 @@ export function PuckEditorWrapper({
             onEnviar={alPulsarEnviar}
             onSalir={handleSalir}
             onEstadoDeCambios={registrarEstadoDeCambios}
+            sinCandado={Boolean(candadoPerdidoPor)}
           />
         </div>
       ),
     }),
     [
+      candadoPerdidoPor,
       bloqueado,
       busy,
       isSaving,

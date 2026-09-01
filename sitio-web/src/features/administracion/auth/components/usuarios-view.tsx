@@ -367,7 +367,7 @@ export default function UsuariosView() {
             <CustomSelect
               ariaLabel="Rol"
               value={roleId}
-              onChange={setRoleId}
+              onChange={handleRoleChange}
               placeholder="Selecciona un rol"
               options={roles.map((r) => ({ value: r.id, label: r.name }))}
             />

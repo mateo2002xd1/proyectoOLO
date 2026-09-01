@@ -6,6 +6,7 @@ import { requierePermisoPagina } from '../middlewares/permisos.middleware';
 import { limitadorDeEscritura } from '../middlewares/rate-limit.middleware';
 import { validarCuerpo } from '../middlewares/validar.middleware';
 import {
+  adquirirBloqueoSchema,
   crearSeccionSchema,
   eliminarSeccionSchema,
   guardarBorradorSchema,
@@ -353,6 +354,68 @@ router.post(
   // qué forma espera el endpoint.
   validarCuerpo(guardarBorradorSchema),
   PaginaController.guardarBorrador
+);
+
+/**
+ * @openapi
+ * /api/paginas/{slug}/bloqueo:
+ *   post:
+ *     tags: [Páginas]
+ *     summary: Tomar o renovar el candado de edición
+ *     description: |
+ *       Reserva la página para quien la va a editar, de modo que nadie más pueda
+ *       abrirla al mismo tiempo y sobrescribirle el trabajo al guardar.
+ *
+ *       El editor la llama al abrirse y la repite cada 45 segundos como latido. El
+ *       candado dura dos minutos, así que una pestaña cerrada de golpe se libera sola.
+ *
+ *       Con `forzar: true` un Superadmin o Administrador le quita el candado a quien lo
+ *       tenga. A los demás roles se les ignora ese campo y la petición se trata como un
+ *       intento normal.
+ *     parameters:
+ *       - $ref: '#/components/parameters/SlugEnRuta'
+ *       - $ref: '#/components/parameters/Ambito'
+ *     responses:
+ *       200: { description: El candado es de quien lo pidió }
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
+ *       409: { description: Lo tiene otra persona; la respuesta dice quién }
+ *       429: { $ref: '#/components/responses/LimiteExcedido' }
+ */
+router.post(
+  '/:slug/bloqueo',
+  // Sin limitador de escritura: esto es un latido periódico de cada editor abierto,
+  // y treinta por minuto se agotarían solos. Lo que protege esta ruta es que exige
+  // sesión y permiso sobre la sección, y que no escribe contenido.
+  requierePermisoPagina('puedeEditar'),
+  requierePermisoDeSeccion(),
+  validarCuerpo(adquirirBloqueoSchema),
+  PaginaController.adquirirBloqueo
+);
+
+/**
+ * @openapi
+ * /api/paginas/{slug}/bloqueo:
+ *   delete:
+ *     tags: [Páginas]
+ *     summary: Soltar el candado de edición
+ *     description: |
+ *       La llama el editor al salir. Solo suelta el candado si es de quien lo pide, así
+ *       que quien acaba de perderlo en una toma de control no puede dejar sin candado a
+ *       quien se lo quitó.
+ *     parameters:
+ *       - $ref: '#/components/parameters/SlugEnRuta'
+ *       - $ref: '#/components/parameters/Ambito'
+ *     responses:
+ *       200: { description: Soltado, o no había nada que soltar }
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
+ */
+router.delete(
+  '/:slug/bloqueo',
+  requierePermisoPagina('puedeEditar'),
+  requierePermisoDeSeccion(),
+  PaginaController.liberarBloqueo
 );
 
 /**

@@ -11,7 +11,7 @@ interface SidebarProps {
 export function Sidebar({ children, className = '' }: SidebarProps) {
   return (
     <aside
-      className={`flex h-full w-64 flex-col border-r border-zinc-200 bg-[#F3F3F3] dark:border-[#1e293b] dark:bg-[#131b2f] ${className}`}
+      className={`flex h-full w-64 flex-col rounded-tr-2xl rounded-br-2xl border-r border-zinc-200 bg-[#F3F3F3] dark:border-[#1e293b] dark:bg-[#131b2f] ${className}`}
     >
       {children}
     </aside>
