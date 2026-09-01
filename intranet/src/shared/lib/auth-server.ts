@@ -31,7 +31,7 @@ export async function verificarTokenDesdeRequest(request: Request): Promise<Reco
   const token = tokenMatch?.slice('token='.length);
 
   if (!token) {
-    console.error('[auth-server] verificarTokenDesdeRequest: No se encontró la cookie token. Cookie header:', cookieHeader);
+    console.error('[auth-server] verificarTokenDesdeRequest: No se encontró la cookie token.'); // REGLA 95.3 BE: No imprimir cookieHeader
     throw new Error('Sin autenticación');
   }
 

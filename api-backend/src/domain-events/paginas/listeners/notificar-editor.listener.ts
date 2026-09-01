@@ -3,5 +3,5 @@
 
 export const notificarEditorListener = (data: any) => {
   // TODO: Notificar al editor cuando se rechaza contenido
-  console.log('Notificar editor:', data);
+  console.log('Notificar editor. [Datos omitidos por seguridad]'); // REGLA 95.3 BE
 };
