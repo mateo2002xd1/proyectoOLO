@@ -29,7 +29,7 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
   try {
     decoded = jwt.verify(token, config.jwtSecret);
   } catch (err: any) {
-    console.log('[Auth] Token verify failed:', err.message);
+    console.log('[Auth] Token verify failed:', err.name); // REGLA 95.3 BE: Solo imprimir el nombre del error, no el mensaje completo
     return res.status(401).json({ error: 'Token inválido o expirado' });
   }
 

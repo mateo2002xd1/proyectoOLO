@@ -28,7 +28,7 @@ export async function middleware(request: NextRequest) {
         isRestricted = mustChangePassword || mustSetupSecurityQuestions;
       }
     } catch (error) {
-      console.error("[Middleware] Token verification failed:", error);
+      console.error("[Middleware] Token verification failed:", (error as Error)?.name); // REGLA 95.3 BE
     }
   }
 
