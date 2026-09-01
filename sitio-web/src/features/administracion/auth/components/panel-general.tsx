@@ -295,9 +295,9 @@ export function PanelGeneralDashboard() {
         ),
       ]);
       if (cancelado) return;
-      setActividad(registros);
-      setEnRevision(pendientes);
-      setCuentasPorVencer(alertasCaducidad);
+      setActividad(registros || []);
+      setEnRevision(pendientes || []);
+      setCuentasPorVencer(alertasCaducidad || []);
       setLoading(false);
     })();
     return () => {
@@ -421,7 +421,7 @@ export function PanelGeneralDashboard() {
             >
               {errorActividad.message}
             </p>
-          ) : actividad.length > 0 ? (
+          ) : (actividad || []).length > 0 ? (
             /* Mismas columnas que la bitácora, en versión angosta: la tarjeta ocupa
                media pantalla, así que la tabla desborda a scroll en vez de apretarse. */
             <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-[#7db828]/30">
