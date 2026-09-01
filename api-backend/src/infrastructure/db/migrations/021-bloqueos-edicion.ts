@@ -1,6 +1,6 @@
 import { QueryInterface } from 'sequelize';
 
-export const nombre = '020-bloqueos-edicion';
+export const nombre = '021-bloqueos-edicion';
 
 /**
  * Un candado por página para que dos personas no editen lo mismo a la vez.
