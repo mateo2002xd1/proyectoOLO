@@ -8,9 +8,10 @@ import { Contenido } from './Contenido';
 import { Archivo } from './Archivo';
 import { ContenidoArchivo } from './ContenidoArchivo';
 import { ContentAuditLog } from './ContentAuditLog';
-import { AuditoriaAcceso } from './AuditoriaAcceso';
 import { Pagina } from './Pagina';
 import { PaginaVersion } from './PaginaVersion';
+<<<<<<< HEAD
+=======
 import { Configuracion } from './Configuracion';
 import { MarcaVersion } from './MarcaVersion';
 import { TableroBi } from './TableroBi';
@@ -21,6 +22,7 @@ import { Notificacion } from './Notificacion';
 // Sin asociaciones: `usuario_id` es texto libre a propósito (la cuenta maestra de
 // desarrollo no tiene fila en `usuarios`). Ver `020-bloqueos-edicion`.
 import { BloqueoEdicion } from './BloqueoEdicion';
+>>>>>>> eba87860c16a12b2709822c41b2ab8c0bb2e0b27
 
 Role.belongsToMany(Permission, { through: RolePermission, as: 'permissions', foreignKey: 'role_id', otherKey: 'permission_id' });
 Permission.belongsToMany(Role, { through: RolePermission, as: 'roles', foreignKey: 'permission_id', otherKey: 'role_id' });
@@ -68,24 +70,7 @@ PaginaVersion.belongsTo(User, { as: 'revisor', foreignKey: 'revisorId', onDelete
 PaginaVersion.belongsTo(User, { as: 'publicador', foreignKey: 'publicadoPor', onDelete: 'SET NULL' });
 PaginaVersion.belongsTo(User, { as: 'autor', foreignKey: 'creadoPor', onDelete: 'SET NULL' });
 
-// Un consentimiento apunta a la versión de la política que se aceptó; nunca copia su
-// texto. RESTRICT: una política con consentimientos registrados no se borra.
-Consentimiento.belongsTo(PoliticaPrivacidad, {
-  as: 'politica',
-  foreignKey: 'politicaId',
-  onDelete: 'RESTRICT',
-});
-PoliticaPrivacidad.hasMany(Consentimiento, { as: 'consentimientos', foreignKey: 'politicaId' });
 
-Notificacion.belongsTo(User, { as: 'destinatario', foreignKey: 'destinatarioId', onDelete: 'CASCADE' });
-User.hasMany(Notificacion, { as: 'notificaciones', foreignKey: 'destinatarioId', onDelete: 'CASCADE' });
-
-AuditoriaAcceso.belongsTo(User, { as: 'usuario', foreignKey: 'usuarioId', onDelete: 'SET NULL' });
-Respaldo.belongsTo(User, { as: 'usuario', foreignKey: 'usuarioId', onDelete: 'SET NULL' });
-Configuracion.belongsTo(User, { as: 'autor', foreignKey: 'actualizadoPor', onDelete: 'SET NULL' });
-TableroBi.belongsTo(User, { as: 'creador', foreignKey: 'creadoPor', onDelete: 'SET NULL' });
-MarcaVersion.belongsTo(User, { as: 'creador', foreignKey: 'creadoPor', onDelete: 'SET NULL' });
-MarcaVersion.belongsTo(User, { as: 'aprobador', foreignKey: 'aprobadoPor', onDelete: 'SET NULL' });
 
 export {
   User,
@@ -98,9 +83,10 @@ export {
   Archivo,
   ContenidoArchivo,
   ContentAuditLog,
-  AuditoriaAcceso,
   Pagina,
   PaginaVersion,
+<<<<<<< HEAD
+=======
   Configuracion,
   MarcaVersion,
   TableroBi,
@@ -109,4 +95,5 @@ export {
   Respaldo,
   Notificacion,
   BloqueoEdicion,
+>>>>>>> eba87860c16a12b2709822c41b2ab8c0bb2e0b27
 };

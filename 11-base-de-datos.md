@@ -10,7 +10,7 @@
 
 ## 0. Las tres preguntas que responde el diseño
 
-1. **¿Qué se guarda?** 20 tablas, agrupadas en ocho dominios (§4).
+1. **¿Qué se guarda?** 12 tablas, agrupadas en dominios esenciales (§4).
 2. **¿Qué NO se guarda en Postgres?** Seis necesidades que parecen tabla y no lo son (§6).
 3. **¿Qué impide que los datos queden inconsistentes?** Nueve invariantes declaradas en el esquema, no en el código (§5).
 
@@ -104,17 +104,9 @@ Las dos tablas de auditoría usan un par `tipo + id` en lugar de una FK, porque 
 
 ## 4. Inventario de tablas
 
-Las veinte tablas de este inventario existen en el esquema y **las veinte tienen modelo Sequelize**, así que `npm run db:verificar` las cubre todas.
+Las 12 tablas de este inventario existen en el esquema y **las 12 tienen modelo Sequelize**, así que `npm run db:verificar` las cubre todas.
 
-Tener modelo no es tener la funcionalidad. Ocho de ellas —`auditoria_accesos`, `configuraciones`, `marca_versiones`, `tableros_bi`, `politicas_privacidad`, `consentimientos`, `respaldos`, `notificaciones`— todavía no tienen repositorio, caso de uso ni ruta: son la base sobre la que se construyen RF-03, RF-08, RF-13, RF-17 y la auditoría de acceso de RF-15. El modelo es el contrato con la tabla; lo que falta es la capa de aplicación encima.
-
-**Comprobado otra vez el 2026-08-21, y el número no se ha movido: siguen siendo ocho.**
-La forma de verlo es directa — el nombre de cada uno de esos modelos no aparece en un
-solo archivo de `api-backend/src` fuera de `infrastructure/db/models/`. Hay diez
-repositorios y ninguno es de esas tablas. Vale la pena tenerlo presente cuando se
-planifique: cinco requerimientos completos están esperando encima de tablas que ya
-existen y que nadie ha vuelto a tocar en meses. La base de datos va por delante del
-código, que es el orden menos malo, pero la distancia ya se nota.
+> **Nota sobre depuración (Migración 020)**: Se eliminaron 8 tablas inactivas (`auditoria_accesos`, `configuraciones`, `marca_versiones`, `tableros_bi`, `politicas_privacidad`, `consentimientos`, `respaldos`, `notificaciones`) que habían sido diseñadas para fases futuras pero nunca tuvieron repositorios ni uso en el código. El esquema se redujo exclusivamente a los modelos con uso real.
 
 ### 4.1 Identidad y acceso — RF-04, RF-05, RF-16
 
@@ -194,39 +186,8 @@ error.
 | Tabla | Qué guarda | Claves e invariantes |
 |---|---|---|
 | **`auditoria_cambios`** | Quién modificó qué entidad, qué campos y cuándo | `campos_modificados` `JSONB` con forma `[{campo, antes, despues}]`. Índices por `(entidad_tipo, entidad_id, created_at DESC)`, `usuario_id` y `created_at DESC`, para que consultar por entidad o por fecha no recorra la tabla entera. `usuario_nombre` es la desnormalización de D6 |
-| **`auditoria_accesos`** | Quién vio o descargó qué recurso | `usuario_id` en `NULL` significa descarga pública anónima (RF-12). Cubre el registro de accesos y descargas |
 
-**Están separadas a propósito.** Un cambio y un acceso tienen volumen, retención y columnas distintos: los accesos crecen mucho más rápido y no tienen "campos modificados". Fusionarlas dejaría media tabla en `NULL` en cada fila y obligaría a una retención común que a una de las dos le queda mal.
-
-### 4.6 Configuración — RF-02, RF-03, RF-08, RF-17
-
-| Tabla | Qué guarda | Claves e invariantes |
-|---|---|---|
-| **`configuraciones`** | Ajustes escalares del sistema | La PK es **`clave TEXT`**, no un UUID: la clave *es* la identidad, un id sintético sería una columna que nadie usa. Cubre `archivos.tamano_maximo`, `powerbi.dominios_permitidos` y `respaldos.frecuencia` |
-| **`marca_versiones`** | Cada juego de colores, tipografías y logotipos | `tokens` `JSONB`; los logotipos son `archivo_id`, no rutas copiadas. `UNIQUE(activa) WHERE activa = true` — **una sola marca activa, garantizado**. `contraste_validado` registra el resultado de la comprobación de contraste |
-| **`tableros_bi`** | Los informes Power BI embebibles (RF-08) | `UNIQUE(nombre)`. La URL se valida en el servidor contra la lista blanca antes de guardarse (S6) |
-
-`tableros_bi` cierra el §3.3 de `5-tableros-bi.md`: hoy el token del informe está escrito a mano en tres componentes. Al pasarlo a dato, **los bloques Puck guardan `tablero_id`** (D5), así que cambiar el informe se hace una vez y no en tres archivos.
-
-### 4.7 Habeas Data — RF-13, Ley 1581/2012
-
-| Tabla | Qué guarda | Claves e invariantes |
-|---|---|---|
-| **`politicas_privacidad`** | Cada versión del aviso de privacidad | `version` UNIQUE. Una sola vigente a la vez, por índice parcial sobre `vigente_hasta IS NULL` |
-| **`consentimientos`** | Cada aceptación explícita | `politica_id` con **`RESTRICT`**: una política con consentimientos registrados no se puede borrar — tiene valor probatorio. `CHECK (aceptado = true)`: solo se persiste la aceptación, nunca una casilla premarcada (S7) |
-
-No se copia el texto de la política en cada consentimiento: se referencia la versión (D5). Es lo que permite demostrar *qué* aceptó exactamente el titular sin guardar el documento miles de veces.
-
-### 4.8 Operación — RF-17, RF-06
-
-| Tabla | Qué guarda | Claves e invariantes |
-|---|---|---|
-| **`respaldos`** | El historial de ejecuciones | `estado CHECK(en_curso\|exitoso\|fallido)`, `checksum_sha256`, `cifrado` por defecto `true` (S9), `retencion_hasta` para la rotación. Es también la fuente de la alerta de respaldo fallido |
-| **`notificaciones`** | Los avisos que se ven en el panel | `destinatario_id` `CASCADE`. `leida_en` es un `TIMESTAMPTZ` nullable en vez de un booleano: da el *cuándo* gratis. Índice `(destinatario_id, leida_en, created_at DESC)` para el contador de no leídas |
-
-`notificaciones` **no copia el motivo del rechazo**: guarda `tipo`, `entidad_tipo`, `entidad_id` y un `datos JSONB` con los parámetros del mensaje. El texto se compone en el frontend a partir del tipo. Así el motivo vive en un solo lugar (`paginas_versiones.motivo_rechazo`) y editarlo no deja una notificación mintiendo.
-
-### 4.9 Lo que hay en la base y no está en el inventario
+### 4.6 Lo que hay en la base y no está en el inventario
 
 Tras aplicar las migraciones, `\dt` muestra veintidós objetos. Los dos que no pertenecen al inventario están aquí para que nadie los tome por olvido:
 
