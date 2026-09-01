@@ -41,6 +41,7 @@ export function IntranetTopbar({
 }: IntranetTopbarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -147,14 +148,22 @@ export function IntranetTopbar({
           <span className="intranet-brand-text">{brandText}</span>
         </div>
 
-        <nav className="intranet-nav">
+        <nav className={`intranet-nav ${isMobileMenuOpen ? 'is-open' : ''}`}>
           {menuItems.map((item) => (
             // `item.children?.length` y no `item.children`: desde el editor los
             // enlaces sin submenú llegan con un array vacío, que es truthy y
             // pintaría la flecha de desplegar sobre un menú sin nada dentro.
             item.children?.length ? (
-              <div key={item.label} className="relative group">
-                <a href={item.href} className="intranet-nav-link flex items-center gap-1.5 px-4 py-2">
+              <div key={item.label} className="relative group w-full lg:w-auto">
+                <a 
+                  href={item.href} 
+                  className="intranet-nav-link flex items-center justify-between lg:justify-start gap-1.5 px-4 py-3 lg:py-2 w-full"
+                  onClick={(e) => {
+                    if (item.href === "#" || !item.href) {
+                      e.preventDefault();
+                    }
+                  }}
+                >
                   {item.label}
                   <svg className="w-3.5 h-3.5 transition-transform duration-200 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                 </a>
@@ -162,7 +171,7 @@ export function IntranetTopbar({
                   <div className="intranet-dropdown-box">
                     {item.children.map((child) => (
                       <a
-                        key={child.label}
+                         key={child.label}
                         href={child.href}
                         className="intranet-dropdown-item"
                       >
@@ -173,7 +182,7 @@ export function IntranetTopbar({
                 </div>
               </div>
             ) : (
-              <a key={item.label} href={item.href} className="intranet-nav-link flex items-center gap-1.5 px-4 py-2">
+              <a key={item.label} href={item.href} className="intranet-nav-link flex items-center gap-1.5 px-4 py-3 lg:py-2 w-full lg:w-auto">
                 {item.label}
               </a>
             )
@@ -181,6 +190,19 @@ export function IntranetTopbar({
         </nav>
 
         <div className="intranet-topbar-actions" aria-label="Acciones">
+          <button
+            type="button"
+            className="intranet-mobile-menu-trigger"
+            aria-label="Menú"
+            onClick={() => setIsMobileMenuOpen((open) => !open)}
+          >
+            {isMobileMenuOpen ? (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            )}
+          </button>
+
           <button
             type="button"
             className={`intranet-search-toggle${isDropdownOpen ? ' is-active' : ''}`}
