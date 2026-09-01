@@ -72,7 +72,7 @@ export function ModalInactividad({ msRestantes, onSeguir, onCerrarSesion }: Moda
         if (evento.target === ref.current) onSeguir();
       }}
     >
-      <div className="olo-modal-caja">
+      <div className="olo-modal-caja olo-modal-caja--inactividad">
         <h2 id="olo-inactividad-titulo" className="olo-modal-titulo">
           ¿Sigues ahí?
         </h2>

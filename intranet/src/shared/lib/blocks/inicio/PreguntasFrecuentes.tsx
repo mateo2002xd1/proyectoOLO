@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { resaltar } from '../compartidos/resaltar';
 
 /**
@@ -11,12 +12,12 @@ import { resaltar } from '../compartidos/resaltar';
 export interface TarjetaPregunta {
   imagenSrc?: string;
   imagenAlt?: string;
-  texto?: string;
+  texto?: ReactNode;
   url?: string;
 }
 
 export interface PreguntasFrecuentesProps {
-  titulo?: string;
+  titulo?: ReactNode;
   tarjetas?: TarjetaPregunta[];
 }
 
@@ -29,21 +30,31 @@ export function PreguntasFrecuentes({
   return (
     <div className="preguntas-section">
       <div className="matriz-content-container-wide max-w-[1200px] w-full mx-auto text-center flex flex-col items-center">
-        {titulo && <h2 className="preguntas-title">{resaltar(titulo)}</h2>}
+        {titulo && (
+          <h2 className="preguntas-title">
+            {typeof titulo === 'string' && titulo.includes('**') ? resaltar(titulo) : titulo}
+          </h2>
+        )}
         <div className="preguntas-grid">
           {tarjetas.map((tarjeta, indice) => {
+            const altText =
+              tarjeta.imagenAlt ??
+              (typeof tarjeta.texto === 'string'
+                ? tarjeta.texto.replace(/<[^>]*>/g, '').trim()
+                : '');
+
             const imagen = tarjeta.imagenSrc ? (
               // src editable desde el editor: next/image exigiria dimensiones fijas
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={tarjeta.imagenSrc}
-                alt={tarjeta.imagenAlt ?? tarjeta.texto ?? ''}
+                alt={altText}
                 className="preguntas-card-img"
               />
             ) : null;
 
             return (
-              <div className="preguntas-card" key={`${tarjeta.texto ?? 'tarjeta'}-${indice}`}>
+              <div className="preguntas-card" key={`pregunta-${indice}`}>
                 {tarjeta.url ? (
                   <a
                     href={tarjeta.url}
@@ -57,7 +68,7 @@ export function PreguntasFrecuentes({
                   <div className="preguntas-card-link">{imagen}</div>
                 )}
                 <div className="preguntas-card-content">
-                  <p className="preguntas-card-text">{tarjeta.texto}</p>
+                  <div className="preguntas-card-text">{tarjeta.texto}</div>
                 </div>
               </div>
             );
@@ -67,3 +78,4 @@ export function PreguntasFrecuentes({
     </div>
   );
 }
+

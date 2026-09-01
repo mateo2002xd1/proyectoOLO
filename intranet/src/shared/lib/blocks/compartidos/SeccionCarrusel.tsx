@@ -1,7 +1,7 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { Carousel } from '@/shared/ui/organisms/Carousel';
-import { resaltar } from './resaltar';
 
 /**
  * Un carrusel de imágenes con su título.
@@ -16,7 +16,7 @@ import { resaltar } from './resaltar';
  * como está OLOtecuenta.
  */
 export interface SeccionCarruselProps {
-  titulo?: string;
+  titulo?: ReactNode;
   imagenes?: { src?: string; alt?: string }[];
   imagenesPorPagina?: number;
   autoplay?: boolean;
@@ -58,7 +58,7 @@ export function SeccionCarrusel({
     return (
       <div className="matriz-section-datoOLO">
         <div className="matriz-content-container-datoolo">
-          {titulo && <h2>{resaltar(titulo)}</h2>}
+          {titulo && <h2>{titulo}</h2>}
           <div className="w-full md:flex-1">{carrusel}</div>
         </div>
       </div>
@@ -72,7 +72,7 @@ export function SeccionCarrusel({
       <div className="max-w-[1200px] w-full mx-auto text-center flex flex-col items-center py-12">
         {titulo && (
           <h2 className="tasa-concept-title mb-6">
-            {resaltar(titulo)}
+            {titulo}
           </h2>
         )}
         <div className="w-full px-2 md:px-6">{carrusel}</div>

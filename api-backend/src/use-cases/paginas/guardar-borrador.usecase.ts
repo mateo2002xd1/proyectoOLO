@@ -34,9 +34,13 @@ export const guardarBorrador = async (
 
   // `creadoPor` se quedaba sin escribir aunque la columna existe y el `userId` ya
   // estaba en la firma: el historial de RF-07 sabía quién revisó y quién publicó cada
-  // versión, pero no quién la escribió. Con la edición colaborativa esto no restringe
-  // nada —cualquier Editor sigue pudiendo retomar el borrador de otro—; es el dato sin
-  // el cual la bitácora no puede responder de quién era el trabajo.
+  // versión, pero no quién la escribió. Esto no restringe nada —cualquier Editor sigue
+  // pudiendo retomar el borrador de otro cuando le toque el turno—; es el dato sin el
+  // cual la bitácora no puede responder de quién era el trabajo.
+  //
+  // Quién puede tener la página abierta a la vez lo decide el candado de edición
+  // (`adquirir-bloqueo.usecase.ts`), no esta capa: aquí se sigue guardando lo que
+  // llegue, porque el candado ya cortó en la puerta.
   const version = await PaginaRepository.crearVersion({
     paginaId: pagina.id,
     contenido: contenidoSanitizado,

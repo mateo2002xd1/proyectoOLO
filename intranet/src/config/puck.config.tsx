@@ -6,6 +6,9 @@ import {
   COLUMNAS_POR_DEFECTO,
 } from '@/shared/lib/blocks/plantilla/IntranetFooter';
 import { IntranetTopbarWrapper } from '@/shared/lib/blocks/plantilla/IntranetTopbarWrapper';
+// La barra "pelada", sin el envoltorio que le inyecta la sesión: el contexto
+// inerte del editor no necesita un botón de cerrar sesión que no se puede pulsar.
+import { IntranetTopbar } from '@/shared/lib/blocks/plantilla/IntranetTopbar';
 import { IntranetHero } from '@/shared/lib/blocks/compartidos/IntranetHero';
 import { TasaBanner } from '@/shared/lib/blocks/tasa/TasaBanner';
 import { TasaConceptos } from '@/shared/lib/blocks/tasa/TasaConceptos';
@@ -22,16 +25,20 @@ import { DescargasConPresentacion } from '@/shared/lib/blocks/compartidos/Descar
 import { RecursosVisualesBloque } from '@/shared/lib/blocks/inicio/RecursosVisualesBloque';
 import { Publicaciones } from '@/shared/lib/blocks/inicio/Publicaciones';
 import { PreguntasFrecuentes } from '@/shared/lib/blocks/inicio/PreguntasFrecuentes';
+import { IconoBloque } from '@/shared/lib/blocks/compartidos/IconoBloque';
 import {
   primitiveComponents,
   crearGridConfig,
+  flexConfig,
+  spaceConfig,
   conCaja,
   conCajaEnTodos,
   BLOQUES_SIN_CAJA,
   campoColor,
+  campoIcono,
 } from '@olo/blocks-renderer';
-import type { Config } from '@puckeditor/core';
-import type { ComponentProps } from 'react';
+import { Render, type Config, type Data } from '@puckeditor/core';
+import type { ComponentProps, ReactNode } from 'react';
 import { ImageUploaderField } from '@/features/gestor-secciones/components/image-uploader-field';
 import { ArchivoUploaderField } from '@/features/gestor-secciones/components/archivo-uploader-field';
 
@@ -77,7 +84,7 @@ const puckConfigBase: Config = {
       components: ['TextoRico', 'TextoConImagen', 'ImagenDestacada'],
     },
     'Multimedia': {
-      components: ['SeccionCarrusel', 'TasaVideo', 'RecursosVisualesBloque'],
+      components: ['SeccionCarrusel', 'TasaVideo', 'RecursosVisualesBloque', 'IconoBloque'],
     },
     'Datos y documentos': {
       components: [
@@ -107,6 +114,30 @@ const puckConfigBase: Config = {
       label: 'Barra de navegación',
       fields: {
         brandText: { type: 'text', label: 'Texto de la Marca' },
+        alineacionMarca: {
+          type: 'object',
+          label: 'Posición de la marca (logo + texto)',
+          objectFields: {
+            horizontal: {
+              type: 'radio',
+              label: 'Alineación horizontal',
+              options: [
+                { label: 'Izquierda', value: 'flex-start' },
+                { label: 'Centro', value: 'center' },
+                { label: 'Derecha', value: 'flex-end' },
+              ],
+            },
+            vertical: {
+              type: 'radio',
+              label: 'Alineación vertical',
+              options: [
+                { label: 'Arriba', value: 'flex-start' },
+                { label: 'Centro', value: 'center' },
+                { label: 'Abajo', value: 'flex-end' },
+              ],
+            },
+          },
+        },
         logoUrl: campoImagen('Logo'),
         fondo: campoColor('Color de fondo (opcional)'),
         // `children` estaba sin declarar aquí y el componente sí lo pinta: por eso
@@ -137,6 +168,9 @@ const puckConfigBase: Config = {
       },
       defaultProps: {
         brandText: 'Intranet',
+        // Igual al comportamiento de hoy (`.intranet-brand` en globals.css):
+        // fila pegada a la izquierda, centrada verticalmente con el logo.
+        alineacionMarca: { horizontal: 'flex-start', vertical: 'center' },
         logoUrl: '/assets/svg/olo-logo-blanco.svg',
         fondo: '',
         menuItems: [
@@ -191,12 +225,12 @@ const puckConfigBase: Config = {
     MatrizBanner: {
       label: 'Cabecera · Matriz',
       fields: {
-        titulo: { type: 'textarea', label: 'Título (usa ** para negrita, Intro para partir línea)' },
+        titulo: { type: 'richtext', label: 'Título' },
         imagenSrc: campoImagen('Ilustración'),
         imagenAlt: { type: 'text', label: 'Texto alternativo de la imagen' },
       },
       defaultProps: {
-        titulo: 'Matriz de \n**PERTINENCIA**',
+        titulo: '<p>Matriz de <br/><strong>PERTINENCIA</strong></p>',
         imagenSrc: '/assets/img/BannerOficial.png',
         imagenAlt: 'Matriz de Pertinencia',
       },
@@ -208,7 +242,7 @@ const puckConfigBase: Config = {
       label: 'Cabecera · Encuesta',
       fields: {
         antetitulo: { type: 'text', label: 'Línea superior' },
-        titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
+        titulo: { type: 'richtext', label: 'Título' },
         imagenSrc: campoImagen('Ilustración'),
         imagenAlt: { type: 'text', label: 'Texto alternativo de la imagen' },
         imagenDerecha: {
@@ -222,7 +256,7 @@ const puckConfigBase: Config = {
       },
       defaultProps: {
         antetitulo: 'Encuesta de',
-        titulo: 'SEGUIMIENTO LABORAL',
+        titulo: '<p>SEGUIMIENTO LABORAL</p>',
         imagenSrc: '/assets/img/banner-seguimiento-laboral.png',
         imagenAlt: 'Ilustración encuesta',
         imagenDerecha: false,
@@ -235,7 +269,7 @@ const puckConfigBase: Config = {
     TextoRico: {
       label: 'Texto con formato',
       fields: {
-        titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
+        titulo: { type: 'richtext', label: 'Título' },
         contenido: { type: 'richtext', label: 'Contenido' },
         fondo: campoFondo,
         colorTexto: campoColor('Color del texto (opcional)'),
@@ -260,7 +294,7 @@ const puckConfigBase: Config = {
     TextoConImagen: {
       label: 'Texto con imagen al lado',
       fields: {
-        titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
+        titulo: { type: 'richtext', label: 'Título' },
         contenido: { type: 'richtext', label: 'Contenido' },
         imagenSrc: campoImagen('Imagen (opcional si hay presentación)'),
         imagenAlt: { type: 'text', label: 'Texto alternativo' },
@@ -288,7 +322,7 @@ const puckConfigBase: Config = {
         fondo: campoFondo,
       },
       defaultProps: {
-        titulo: '¿Cuál es el **objetivo**?',
+        titulo: '¿Cuál es el <strong>objetivo</strong>?',
         contenido: '<p>Escribe aquí el contenido de la sección.</p>',
         imagenSrc: '',
         imagenAlt: '',
@@ -304,7 +338,7 @@ const puckConfigBase: Config = {
     ImagenDestacada: {
       label: 'Imagen destacada',
       fields: {
-        titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
+        titulo: { type: 'richtext', label: 'Título' },
         imagenSrc: campoImagen('Imagen'),
         imagenAlt: { type: 'text', label: 'Texto alternativo' },
         ancho: {
@@ -354,7 +388,7 @@ const puckConfigBase: Config = {
     SeccionCarrusel: {
       label: 'Carrusel de imágenes',
       fields: {
-        titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
+        titulo: { type: 'richtext', label: 'Título' },
         imagenes: {
           type: 'array',
           label: 'Imágenes',
@@ -438,7 +472,7 @@ const puckConfigBase: Config = {
     RecursosVisualesBloque: {
       label: 'Lista de videos',
       fields: {
-        titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
+        titulo: { type: 'richtext', label: 'Título' },
         videos: {
           type: 'array',
           label: 'Videos',
@@ -452,7 +486,7 @@ const puckConfigBase: Config = {
         },
       },
       defaultProps: {
-        titulo: '**Recursos** visuales',
+        titulo: '<p><strong>Recursos</strong> visuales</p>',
         videos: [],
       },
       render: (props: BlockRender<ComponentProps<typeof RecursosVisualesBloque>>) => (
@@ -467,11 +501,17 @@ const puckConfigBase: Config = {
           type: 'array',
           label: 'Tableros',
           arrayFields: {
-            titulo: { type: 'text', label: 'Título' },
-            descripcion: { type: 'textarea', label: 'Descripción' },
+            titulo: { type: 'richtext', label: 'Título' },
+            descripcion: { type: 'richtext', label: 'Descripción' },
             urlPowerBi: { type: 'text', label: 'Enlace de Power BI (Publicar en la web)' },
           },
-          getItemSummary: (item) => item.titulo || 'Tablero',
+          getItemSummary: (item) => {
+            if (typeof item.titulo === 'string') {
+              const limpio = item.titulo.replace(/<[^>]*>/g, '').trim();
+              return limpio || 'Tablero';
+            }
+            return 'Tablero';
+          },
         },
       },
       defaultProps: {
@@ -511,7 +551,7 @@ const puckConfigBase: Config = {
     DescargasConPresentacion: {
       label: 'Descargas con presentación',
       fields: {
-        titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
+        titulo: { type: 'richtext', label: 'Título' },
         enlaces: {
           type: 'array',
           label: 'Enlaces',
@@ -535,7 +575,7 @@ const puckConfigBase: Config = {
         },
       },
       defaultProps: {
-        titulo: '**Descargas**',
+        titulo: '<p><strong>Descargas</strong></p>',
         enlaces: [],
         archivoUrl: '',
       },
@@ -546,7 +586,7 @@ const puckConfigBase: Config = {
     Publicaciones: {
       label: 'Últimas publicaciones',
       fields: {
-        titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
+        titulo: { type: 'richtext', label: 'Título' },
         publicaciones: {
           type: 'array',
           label: 'Publicaciones',
@@ -573,7 +613,7 @@ const puckConfigBase: Config = {
         porPagina: { type: 'number', label: 'Tarjetas visibles a la vez', min: 1, max: 6 },
       },
       defaultProps: {
-        titulo: '**Ultimas** publicaciones',
+        titulo: '<p><strong>Ultimas</strong> publicaciones</p>',
         publicaciones: [],
         porPagina: 4,
       },
@@ -589,12 +629,18 @@ const puckConfigBase: Config = {
           type: 'array',
           label: 'Conceptos',
           arrayFields: {
-            titulo: { type: 'text', label: 'Título' },
-            descripcion: { type: 'textarea', label: 'Descripción' },
+            titulo: { type: 'richtext', label: 'Título' },
+            descripcion: { type: 'richtext', label: 'Descripción' },
             imagenSrc: campoImagen('Imagen'),
             imagenAlt: { type: 'text', label: 'Texto alternativo' },
           },
-          getItemSummary: (item) => item.titulo || 'Concepto',
+          getItemSummary: (item) => {
+            if (typeof item.titulo === 'string') {
+              const limpio = item.titulo.replace(/<[^>]*>/g, '').trim();
+              return limpio || 'Concepto';
+            }
+            return 'Concepto';
+          },
         },
       },
       defaultProps: {
@@ -607,21 +653,27 @@ const puckConfigBase: Config = {
     PreguntasFrecuentes: {
       label: 'Preguntas frecuentes',
       fields: {
-        titulo: { type: 'text', label: 'Título (usa ** para negrita)' },
+        titulo: { type: 'richtext', label: 'Título' },
         tarjetas: {
           type: 'array',
           label: 'Tarjetas',
           arrayFields: {
             imagenSrc: campoImagen('Imagen'),
             imagenAlt: { type: 'text', label: 'Texto alternativo' },
-            texto: { type: 'textarea', label: 'Texto de la tarjeta' },
+            texto: { type: 'richtext', label: 'Texto de la tarjeta' },
             url: { type: 'text', label: 'Enlace (sin él, la tarjeta no es pulsable)' },
           },
-          getItemSummary: (item) => item.texto || 'Tarjeta',
+          getItemSummary: (item) => {
+            if (typeof item.texto === 'string') {
+              const limpio = item.texto.replace(/<[^>]*>/g, '').trim();
+              return limpio || 'Tarjeta';
+            }
+            return 'Tarjeta';
+          },
         },
       },
       defaultProps: {
-        titulo: '**Preguntas** Frecuentes',
+        titulo: '<p><strong>Preguntas</strong> Frecuentes</p>',
         tarjetas: [],
       },
       render: (props: BlockRender<ComponentProps<typeof PreguntasFrecuentes>>) => (
@@ -648,7 +700,7 @@ const puckConfigBase: Config = {
           type: 'array',
           label: 'Columnas',
           arrayFields: {
-            titulo: { type: 'text', label: 'Título de la columna' },
+            titulo: { type: 'richtext', label: 'Título de la columna' },
             orientacionLineas: {
               type: 'radio',
               label: 'Orientación de las líneas',
@@ -661,7 +713,7 @@ const puckConfigBase: Config = {
               type: 'array',
               label: 'Líneas',
               arrayFields: {
-                texto: { type: 'textarea', label: 'Texto (opcional si hay ícono)' },
+                texto: { type: 'richtext', label: 'Texto (opcional si hay ícono)' },
                 url: { type: 'text', label: 'Enlace (déjalo vacío si es solo texto)' },
                 icono: { type: 'text', label: 'Ruta del ícono SVG (opcional)' },
                 separada: {
@@ -673,10 +725,22 @@ const puckConfigBase: Config = {
                   ],
                 },
               },
-              getItemSummary: (item) => item.texto || 'Línea',
+              getItemSummary: (item) => {
+                if (typeof item.texto === 'string') {
+                  const limpio = item.texto.replace(/<[^>]*>/g, '').trim();
+                  return limpio || 'Línea';
+                }
+                return 'Línea';
+              },
             },
           },
-          getItemSummary: (item) => item.titulo || 'Columna',
+          getItemSummary: (item) => {
+            if (typeof item.titulo === 'string') {
+              const limpio = item.titulo.replace(/<[^>]*>/g, '').trim();
+              return limpio || 'Columna';
+            }
+            return 'Columna';
+          },
         },
       },
       // Repiten los valores por defecto del componente: el pie que se ve hoy. Sin
@@ -690,6 +754,34 @@ const puckConfigBase: Config = {
       render: (props: BlockRender<ComponentProps<typeof IntranetFooter>>) => (
         <IntranetFooter {...props} />
       ),
+    },
+    IconoBloque: {
+      label: 'Icono y texto',
+      fields: {
+        icono: campoIcono('Ícono SVG'),
+        colorIcono: campoColor('Color del ícono'),
+        texto: { type: 'text', label: 'Texto descriptivo (opcional)' },
+        tamanoTexto: {
+          type: 'select',
+          label: 'Tamaño del texto',
+          options: [
+            { label: 'Pequeño (14px)', value: '0.875rem' },
+            { label: 'Normal (16px)', value: '1rem' },
+            { label: 'Mediano (20px)', value: '1.25rem' },
+            { label: 'Grande (24px)', value: '1.5rem' },
+            { label: 'Extra Grande (32px)', value: '2rem' },
+          ],
+        },
+        colorTexto: campoColor('Color del texto'),
+      },
+      defaultProps: {
+        icono: '',
+        colorIcono: '#002237',
+        texto: '',
+        tamanoTexto: '1rem',
+        colorTexto: '#333333',
+      },
+      render: (props: BlockRender<ComponentProps<typeof IconoBloque>>) => <IconoBloque {...props} />,
     },
   },
 };
@@ -741,12 +833,22 @@ const BLOQUES_COMUNES = [
   'Grid',
   'Flex',
   'Space',
+  'IconoBloque',
 ];
+
+/**
+ * La sección que guarda la barra y el pie comunes.
+ *
+ * Espejo de `SLUG_PLANTILLA` en `features/gestor-secciones/lib/plantilla.ts`. No se
+ * importa de allí para no atar el catálogo de bloques a una feature: aquí solo hace
+ * falta el literal, y si algún día cambia, cambia en los dos sitios.
+ */
+const SLUG_DE_PLANTILLA = 'menu-y-pie';
 
 const COMPONENTES_POR_SLUG: Record<string, string[]> = {
   // La plantilla es lo contrario a una sección: solo la barra y el pie, que es
   // justo lo que las secciones ya no pueden tocar.
-  'menu-y-pie': ['IntranetTopbar', 'IntranetFooter'],
+  [SLUG_DE_PLANTILLA]: ['IntranetTopbar', 'IntranetFooter', 'IconoBloque'],
   inicio: [...BLOQUES_COMUNES, 'RecursosVisualesBloque', 'Publicaciones', 'PreguntasFrecuentes'],
   tasa: [...BLOQUES_COMUNES, 'TasaBanner', 'TasaConceptos', 'TasaDashboards', 'TasaPresentacion'],
   matriz: [
@@ -788,32 +890,147 @@ export const SLUGS_DE_FABRICA = Object.keys(COMPONENTES_POR_SLUG);
 export const esSeccionDeFabrica = (slug: string): boolean => SLUGS_DE_FABRICA.includes(slug);
 
 /**
+ * Lo que el lienzo enseña alrededor de lo que se está editando.
+ *
+ * Son datos YA PUBLICADOS que se pintan de contexto: lo mismo que ve quien
+ * visita la intranet. Los resuelve el Server Component del editor y llegan hasta
+ * aquí por props — ver `app/editor/[slug]/page.tsx`.
+ */
+export interface ContextoDeEdicion {
+  /** Barra y pie publicados. Se usa al editar una sección normal. */
+  plantilla?: {
+    topbar?: Omit<ComponentProps<typeof IntranetTopbar>, 'onLogout' | 'isLoading'> | null;
+    pie?: ComponentProps<typeof IntranetFooter> | null;
+  } | null;
+  /** Sección publicada desde la que se abrió «Menú y pie». */
+  seccion?: { slug: string; contenido: unknown } | null;
+}
+
+/** El contenido legado se guardaba como array plano; Puck espera `{ content, root }`. */
+function datosDePuck(contenido: unknown): Data {
+  if (Array.isArray(contenido)) return { content: contenido, root: {} } as Data;
+  const objeto = (contenido ?? {}) as { content?: unknown; root?: unknown };
+  return { ...objeto, content: objeto.content ?? [], root: objeto.root ?? {} } as Data;
+}
+
+/**
+ * Envuelve un trozo del lienzo para que se vea pero no se pueda tocar.
+ *
+ * `inert` es lo que de verdad lo apaga —quita clic, foco y lectura por lectores
+ * de pantalla de una vez—; la clase solo lo atenúa para que se note a simple
+ * vista cuál es la parte que esta pantalla no edita.
+ */
+function Inerte({ etiqueta, children }: { etiqueta: string; children: ReactNode }) {
+  return (
+    <div className="olo-chrome-inerte-marco">
+      <span className="olo-chrome-inerte-etiqueta">{etiqueta}</span>
+      <div className="olo-chrome-inerte" inert>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/**
  * Config para la mesa de trabajo de un slug.
  *
- * Solo la usa el editor. Para PINTAR una página hay que seguir usando
- * `puckConfig` entero: si un bloque guardado no está en la config con la que se
- * renderiza, Puck no sabe dibujarlo y la sección desaparece sin avisar.
+ * Hace dos cosas. La primera, de siempre: recortar el catálogo a los bloques que
+ * tienen sentido en esta sección. La segunda: pintar el RESTO de la página
+ * alrededor de lo editable, para que se pueda juzgar un cambio viendo la sección
+ * entera y no un trozo suelto.
+ *
+ *  - Editando una sección → barra y pie publicados, arriba y abajo, inertes.
+ *  - Editando `menu-y-pie` → la sección publicada de la que se venía, inerte,
+ *    entre la barra y el pie (que aquí sí son lo editable).
+ *
+ * Nada de ese contexto entra en `data`: es decorado del config, así que lo que se
+ * guarda al pulsar «Guardar borrador» es exactamente lo de antes. Y por eso para
+ * PINTAR una página publicada hay que seguir usando `puckConfig` entero: si un
+ * bloque guardado no está en la config con la que se renderiza, Puck no sabe
+ * dibujarlo y la sección desaparece sin avisar.
  */
-export function configDeEdicion(slug: string): Config {
+export function configDeEdicion(slug: string, contexto: ContextoDeEdicion = {}): Config {
   const permitidos = COMPONENTES_POR_SLUG[slug];
-  if (!permitidos) return puckConfig;
 
-  const components = Object.fromEntries(
-    Object.entries(puckConfig.components).filter(([nombre]) => permitidos.includes(nombre))
-  ) as Config['components'];
+  // Una sección creada a mano no está en `COMPONENTES_POR_SLUG` y se queda con el
+  // catálogo entero, pero el contexto de abajo le toca igual.
+  const recortada: Config = permitidos
+    ? {
+        ...puckConfig,
+        components: Object.fromEntries(
+          Object.entries(puckConfig.components).filter(([nombre]) => permitidos.includes(nombre))
+        ) as Config['components'],
+        categories: Object.fromEntries(
+          Object.entries(puckConfig.categories ?? {})
+            .map(([nombre, categoria]) => [
+              nombre,
+              {
+                ...categoria,
+                components: (categoria.components ?? []).filter((c) => permitidos.includes(c)),
+              },
+            ])
+            // Una categoría que se queda sin bloques no debe salir como grupo vacío.
+            .filter(([, categoria]) => (categoria as { components: string[] }).components.length > 0)
+        ) as Config['categories'],
+      }
+    : puckConfig;
 
-  const categories = Object.fromEntries(
-    Object.entries(puckConfig.categories ?? {})
-      .map(([nombre, categoria]) => [
-        nombre,
-        {
-          ...categoria,
-          components: (categoria.components ?? []).filter((c) => permitidos.includes(c)),
+  if (slug === SLUG_DE_PLANTILLA) {
+    const seccion = contexto.seccion;
+    if (!seccion) return recortada;
+
+    /**
+     * La sección va ENTRE la barra y el pie, y `root.render` solo sabe envolver,
+     * no intercalar. Así que se cuelga del pie, que es por definición lo último
+     * de la página: «justo encima del pie» es donde vive el contenido.
+     *
+     * Efecto conocido: si alguien borra el bloque del pie mientras edita, el
+     * contexto desaparece hasta que lo vuelva a poner.
+     */
+    const pie = recortada.components.IntranetFooter;
+    if (!pie) return recortada;
+
+    return {
+      ...recortada,
+      components: {
+        ...recortada.components,
+        IntranetFooter: {
+          ...pie,
+          render: (props: Parameters<typeof pie.render>[0]) => (
+            <>
+              <Inerte etiqueta={`Sección /${seccion.slug} · no editable aquí`}>
+                <Render config={puckConfig} data={datosDePuck(seccion.contenido)} />
+              </Inerte>
+              {pie.render(props)}
+            </>
+          ),
         },
-      ])
-      // Una categoría que se queda sin bloques no debe salir como grupo vacío.
-      .filter(([, categoria]) => (categoria as { components: string[] }).components.length > 0)
-  ) as Config['categories'];
+      },
+    };
+  }
 
-  return { ...puckConfig, components, categories };
+  const plantilla = contexto.plantilla;
+  if (!plantilla?.topbar && !plantilla?.pie) return recortada;
+
+  return {
+    ...recortada,
+    root: {
+      ...recortada.root,
+      render: ({ children }: { children?: ReactNode }) => (
+        <>
+          {plantilla.topbar && (
+            <Inerte etiqueta="Barra · se edita en «Menú y pie»">
+              <IntranetTopbar {...plantilla.topbar} />
+            </Inerte>
+          )}
+          {children}
+          {plantilla.pie && (
+            <Inerte etiqueta="Pie · se edita en «Menú y pie»">
+              <IntranetFooter {...plantilla.pie} />
+            </Inerte>
+          )}
+        </>
+      ),
+    } as Config['root'],
+  };
 }

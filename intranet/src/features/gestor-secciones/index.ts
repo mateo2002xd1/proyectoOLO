@@ -18,6 +18,7 @@ export { EditButton } from "./components/edit-button";
 export { PuckEditorWrapper } from "./components/puck-editor-wrapper";
 export { EditorJsWrapper } from "./components/editorjs-wrapper";
 export { ClientPuckRender } from "./components/client-puck-render";
+export { AvisoEditorOcupado } from "./components/aviso-editor-ocupado";
 export { PlantillaEditButton } from "./components/plantilla-edit-button";
 export { NuevaSeccionButton } from "./components/nueva-seccion-button";
 export { EliminarSeccionButton } from "./components/eliminar-seccion-button";
@@ -32,11 +33,18 @@ export { obtenerPlantilla, SLUG_PLANTILLA } from "./lib/plantilla";
 export type { Plantilla } from "./lib/plantilla";
 
 // Ruta de regreso al salir del editor
-export { enlaceAlEditor, esRutaInternaSegura, resolverRutaDeVuelta } from "./lib/ruta-de-vuelta";
+export {
+  enlaceAlEditor,
+  esRutaInternaSegura,
+  resolverRutaDeVuelta,
+  slugDeOrigen,
+} from "./lib/ruta-de-vuelta";
 
 // Hooks
 export { usePagina } from "./hooks/use-pagina";
 export { useEditorActions } from "./hooks/use-editor-actions";
+export { useBloqueoDeEdicion } from "./hooks/use-bloqueo-de-edicion";
+export type { Bloqueo, EstadoDeBloqueo } from "./hooks/use-bloqueo-de-edicion";
 
 // API
 export {

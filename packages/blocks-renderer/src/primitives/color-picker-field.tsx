@@ -75,7 +75,10 @@ export function campoColor(label: string) {
     type: 'custom' as const,
     label,
     render: ({ value, onChange }: { value?: string; onChange: (v: string) => void }) => (
-      <ColorPickerField value={value} onChange={onChange} />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <span style={{ fontSize: '14px', fontWeight: 500, color: '#333' }}>{label}</span>
+        <ColorPickerField value={value} onChange={onChange} />
+      </div>
     ),
   };
 }

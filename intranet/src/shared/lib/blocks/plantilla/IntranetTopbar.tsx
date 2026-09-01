@@ -2,9 +2,15 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 
+/** Valores de Puck para `justify-content`/`align-items` dentro de `.intranet-brand`. */
+type AlineacionFlex = 'flex-start' | 'center' | 'flex-end';
+
 interface IntranetTopbarProps {
   menuItems?: Array<{ label: string; href: string; children?: Array<{ label: string; href: string }> }>;
   brandText?: string;
+  /** Posición del logo + texto dentro de su contenedor. Por defecto, el
+   *  layout de siempre: pegado a la izquierda y centrado verticalmente. */
+  alineacionMarca?: { horizontal?: AlineacionFlex; vertical?: AlineacionFlex };
   logoUrl?: string;
   /** Vacío usa el navy de `.intranet-topbar` en globals.css. */
   fondo?: string;
@@ -14,6 +20,7 @@ interface IntranetTopbarProps {
 
 export function IntranetTopbar({
   fondo,
+  alineacionMarca,
   menuItems = [
     { href: "/inicio", label: "Inicio" },
     { href: "/tasa", label: "Tasa de Vinculación y Empleabilidad" },
@@ -85,6 +92,18 @@ export function IntranetTopbar({
     }
   ];
 
+  // `.intranet-brand` es `inline-flex` (ancho justo al contenido) — sin
+  // `minWidth` la alineación horizontal no tiene dónde moverse. Ese `minWidth`
+  // solo se aplica si alguien elige algo distinto de "Izquierda", para que las
+  // páginas ya guardadas (sin este campo) sigan viéndose pixel-igual que hoy.
+  const horizontalMarca = alineacionMarca?.horizontal ?? 'flex-start';
+  const verticalMarca = alineacionMarca?.vertical ?? 'center';
+  const estiloMarca: React.CSSProperties = { alignItems: verticalMarca };
+  if (horizontalMarca !== 'flex-start') {
+    estiloMarca.justifyContent = horizontalMarca;
+    estiloMarca.minWidth = '180px';
+  }
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
@@ -116,7 +135,7 @@ export function IntranetTopbar({
       style={fondo ? { backgroundColor: fondo } : undefined}
     >
       <div className="intranet-topbar-inner">
-        <div className="intranet-brand">
+        <div className="intranet-brand" style={estiloMarca}>
           {/* src dinamico y tamano por CSS: next/image exigiria width/height fijos o remotePatterns */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img

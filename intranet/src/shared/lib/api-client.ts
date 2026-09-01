@@ -5,7 +5,15 @@
  */
 
 export class ApiError extends Error {
-  constructor(public status: number, message: string) {
+  /**
+   * El cuerpo JSON de la respuesta, cuando lo hubo.
+   *
+   * Algunos errores traen datos que la pantalla necesita, no solo un mensaje: el 409
+   * del candado de edición dice quién está editando y si quien pregunta puede
+   * quitárselo. Sin esto habría que reventar el mensaje con una expresión regular
+   * para recuperar lo que la API ya mandaba estructurado.
+   */
+  constructor(public status: number, message: string, public body?: unknown) {
     super(message);
     this.name = 'ApiError';
   }
@@ -57,13 +65,15 @@ async function handleResponse<T>(response: Response): Promise<T> {
     // legible de la API en un fallo genérico.
     const cuerpo = await response.text().catch(() => '');
     let message = cuerpo || 'Ocurrió un error inesperado';
+    let datos: unknown;
     try {
       const errorData = JSON.parse(cuerpo);
+      datos = errorData;
       message = errorData.error || errorData.message || message;
     } catch {
       // No era JSON: se queda el texto tal cual.
     }
-    throw new ApiError(response.status, message);
+    throw new ApiError(response.status, message, datos);
   }
 
   if (response.status === 204) {

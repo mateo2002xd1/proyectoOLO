@@ -44,7 +44,14 @@ export function ArchivoUploaderField({
 
     try {
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
-      if (!res.ok) throw new Error('Error al subir el archivo');
+      if (!res.ok) {
+        let errorMsg = 'Error al subir el archivo';
+        try {
+          const errData = await res.json();
+          if (errData.error) errorMsg = errData.error;
+        } catch (_) {}
+        throw new Error(errorMsg);
+      }
 
       const data = await res.json();
       onChange(data.url);

@@ -30,7 +30,12 @@ export function ImageUploaderField({ value, onChange }: ImageUploaderFieldProps)
       });
 
       if (!res.ok) {
-        throw new Error('Error al subir el archivo');
+        let errorMsg = 'Error al subir el archivo';
+        try {
+          const errData = await res.json();
+          if (errData.error) errorMsg = errData.error;
+        } catch (_) {}
+        throw new Error(errorMsg);
       }
 
       const data = await res.json();
@@ -59,7 +64,12 @@ export function ImageUploaderField({ value, onChange }: ImageUploaderFieldProps)
         });
 
         if (!res.ok) {
-          throw new Error('Error al eliminar el archivo');
+          let errorMsg = 'Error al eliminar el archivo';
+          try {
+            const errData = await res.json();
+            if (errData.error) errorMsg = errData.error;
+          } catch (_) {}
+          throw new Error(errorMsg);
         }
       }
 

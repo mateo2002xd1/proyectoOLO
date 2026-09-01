@@ -58,6 +58,7 @@ export async function middleware(request: NextRequest) {
         const isAllowedRestrictedRoute =
           pathname === '/login/first-login' ||
           pathname === '/login/reset-password' ||
+          pathname === '/login/reset-success' ||
           pathname === '/login/security-questions';
 
         if (isAllowedRestrictedRoute) {

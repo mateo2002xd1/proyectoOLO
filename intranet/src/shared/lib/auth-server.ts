@@ -31,18 +31,24 @@ export async function verificarTokenDesdeRequest(request: Request): Promise<Reco
   const token = tokenMatch?.slice('token='.length);
 
   if (!token) {
+    console.error('[auth-server] verificarTokenDesdeRequest: No se encontró la cookie token. Cookie header:', cookieHeader);
     throw new Error('Sin autenticación');
   }
 
   const secret = process.env.JWT_SECRET;
   if (!secret) {
+    console.error('[auth-server] verificarTokenDesdeRequest: JWT_SECRET no está configurado');
     throw new Error('JWT_SECRET no configurado en el servidor');
   }
 
-  const { payload } = await jwtVerify(
-    token,
-    new TextEncoder().encode(secret)
-  );
-
-  return payload as Record<string, unknown>;
+  try {
+    const { payload } = await jwtVerify(
+      token,
+      new TextEncoder().encode(secret)
+    );
+    return payload as Record<string, unknown>;
+  } catch (error) {
+    console.error('[auth-server] verificarTokenDesdeRequest: jwtVerify falló:', error);
+    throw error;
+  }
 }

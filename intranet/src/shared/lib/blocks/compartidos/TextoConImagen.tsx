@@ -1,7 +1,6 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { resaltar } from './resaltar';
 import { PptxViewer } from './PptxViewer';
 
 /**
@@ -19,7 +18,7 @@ import { PptxViewer } from './PptxViewer';
  * de presentación PPTX en lugar de una imagen estática.
  */
 export interface TextoConImagenProps {
-  titulo?: string;
+  titulo?: ReactNode;
   contenido?: ReactNode;
   imagenSrc?: string;
   imagenAlt?: string;
@@ -43,7 +42,7 @@ export function TextoConImagen({
     <div className="flex-1 space-y-6 max-w-3xl tasa-concept-desc md:mt-6">
       {titulo && (
         <h2 className="tasa-concept-title" style={{ marginTop: 0 }}>
-          {resaltar(titulo)}
+          {titulo}
         </h2>
       )}
       {contenido}

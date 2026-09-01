@@ -93,6 +93,57 @@ export async function enviarARevision(
   return { estado: res.version.estado };
 }
 
+/** Lo que responde la API al pedir el candado de edición. */
+export interface EstadoDelBloqueo {
+  /** `true` si el candado quedó a nombre de quien lo pidió. */
+  propio: boolean;
+  /** Solo cuando no es propio: quién lo tiene abierto. */
+  bloqueadoPor: { nombre: string } | null;
+  /** Si a esta persona le sale «Entrar de todos modos». */
+  puedeForzar: boolean;
+}
+
+/**
+ * Pide o renueva el candado de edición de una sección.
+ *
+ * El 409 —«lo tiene otra persona»— no es un fallo que haya que propagar: es una de
+ * las dos respuestas normales, y trae dentro el nombre de quien está editando, que
+ * es justo lo que hay que enseñar. Por eso se traduce a un objeto y no a una
+ * excepción. Cualquier otro error sí sube, porque ahí sí pasa algo raro.
+ */
+export async function adquirirBloqueo(
+  slug: string,
+  forzar = false
+): Promise<EstadoDelBloqueo> {
+  try {
+    return await apiClient.post<EstadoDelBloqueo>(`/paginas/${slug}/bloqueo`, { forzar });
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 409) {
+      const cuerpo = (error.body ?? {}) as Partial<EstadoDelBloqueo>;
+      return {
+        propio: false,
+        bloqueadoPor: cuerpo.bloqueadoPor ?? { nombre: "Otra persona" },
+        puedeForzar: cuerpo.puedeForzar === true,
+      };
+    }
+    throw error;
+  }
+}
+
+/**
+ * Suelta el candado. No falla si ya no era suyo.
+ *
+ * `keepalive` es lo que permite que la petición sobreviva a la pestaña que la lanzó:
+ * esto se llama también desde `pagehide`, y sin esa marca el navegador cancelaría el
+ * DELETE al cerrar y la sección se quedaría bloqueada hasta que caducara sola.
+ * `sendBeacon` no sirve aquí porque solo sabe hacer POST.
+ */
+export async function liberarBloqueo(slug: string): Promise<void> {
+  await apiClient
+    .delete(`/paginas/${slug}/bloqueo`, { keepalive: true })
+    .catch(() => undefined);
+}
+
 export interface SeccionCreada {
   id: string;
   slug: string;

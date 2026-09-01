@@ -2,9 +2,15 @@
 
 import React from 'react';
 
+/** Valores de Puck para `justify-content`/`align-items` dentro de `.intranet-brand`. */
+type AlineacionFlex = 'flex-start' | 'center' | 'flex-end';
+
 interface IntranetTopbarProps {
   menuItems?: Array<{ label: string; href: string }>;
   brandText?: string;
+  /** Posición del logo + texto dentro de su contenedor. Por defecto, el
+   *  layout de siempre: pegado a la izquierda y centrado verticalmente. */
+  alineacionMarca?: { horizontal?: AlineacionFlex; vertical?: AlineacionFlex };
   logoUrl?: string;
   onLogout?: () => void;
   isLoading?: boolean;
@@ -18,14 +24,27 @@ export function IntranetTopbar({
     { href: "#", label: "Encuestas" },
   ],
   brandText = "Intranet",
+  alineacionMarca,
   logoUrl = "/assets/svg/olo-logo-blanco.svg",
   onLogout,
   isLoading = false,
 }: IntranetTopbarProps) {
+  // `.intranet-brand` es `inline-flex` (ancho justo al contenido) — sin
+  // `minWidth` la alineación horizontal no tiene dónde moverse. Ese `minWidth`
+  // solo se aplica si alguien elige algo distinto de "Izquierda", para que las
+  // páginas ya guardadas (sin este campo) sigan viéndose pixel-igual que hoy.
+  const horizontalMarca = alineacionMarca?.horizontal ?? 'flex-start';
+  const verticalMarca = alineacionMarca?.vertical ?? 'center';
+  const estiloMarca: React.CSSProperties = { alignItems: verticalMarca };
+  if (horizontalMarca !== 'flex-start') {
+    estiloMarca.justifyContent = horizontalMarca;
+    estiloMarca.minWidth = '180px';
+  }
+
   return (
     <header className="intranet-topbar" aria-label="Navegacion principal">
       <div className="intranet-topbar-inner">
-        <div className="intranet-brand">
+        <div className="intranet-brand" style={estiloMarca}>
           <img
             src={logoUrl}
             alt="Logo OLO"

@@ -989,6 +989,125 @@
    complementos se tiñen sin tocar sus clases de CSS modules: esas llevan un hash
    (`_PuckLayout-nav_mr27u_197`) que cambia en cuanto se actualiza el paquete y
    dejaría los estilos colgando en silencio. */
+/*
+ * Contexto inerte dentro del lienzo del editor.
+ *
+ * El lienzo muestra la sección ENTERA —barra arriba, contenido, pie abajo— para
+ * poder juzgar un cambio como se va a ver de verdad, pero solo se edita la parte
+ * que corresponde al botón por el que se entró. El resto se pinta con esta clase.
+ *
+ * Lo que de verdad lo hace intocable es el atributo `inert` del HTML, que quita
+ * el clic, el foco y la lectura por lectores de pantalla de golpe. El
+ * `pointer-events: none` va de más por si algún navegador se queda corto, y la
+ * opacidad es solo la señal visual de «esto no se edita aquí».
+ */
+/* --- Candado de edición: la sección la tiene abierta otra persona --- */
+.olo-ocupado {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: #f1f5f9;
+}
+
+.olo-ocupado-caja {
+  max-width: 460px;
+  padding: 32px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 30px rgba(0, 22, 49, 0.1);
+  text-align: center;
+}
+
+.olo-ocupado-icono {
+  color: #001631;
+  margin-bottom: 12px;
+}
+
+.olo-ocupado-titulo {
+  margin: 0 0 10px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #001631;
+}
+
+.olo-ocupado-texto {
+  margin: 0 0 8px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: #334155;
+}
+
+.olo-ocupado-apunte {
+  margin: 0 0 22px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+.olo-ocupado-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+/*
+ * Aviso de que nos han quitado el candado mientras editábamos.
+ *
+ * Va sobre la cabecera del editor y en rojo porque a partir de aquí nada de lo que
+ * se haga se va a poder guardar: los botones de guardar quedan desactivados para no
+ * pisar a quien ahora tiene la sección.
+ */
+.olo-editor-perdido {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 380px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #b91c1c;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+/* La etiqueta va en el marco y no dentro de la parte atenuada: si heredara esa
+   opacidad sería justo lo único de la pantalla que no se puede leer bien. */
+.olo-chrome-inerte-marco {
+  position: relative;
+}
+
+.olo-chrome-inerte {
+  opacity: 0.55;
+  filter: grayscale(0.25);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Discreta a propósito: una barra a lo ancho competía con el contenido real. */
+.olo-chrome-inerte-etiqueta {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(0, 22, 49, 0.82);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
 .olo-editor {
   position: fixed;
   inset: 0;
@@ -1169,6 +1288,26 @@
   padding: 1.5rem;
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
   color: #1f2937;
+}
+
+/* Variante del modal de inactividad: sin tarjeta blanca, solo el navy institucional
+   translúcido sobre el ::backdrop, con el texto en blanco para que siga contrastando. */
+.olo-modal-caja--inactividad {
+  background: rgba(0, 22, 49, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+}
+
+.olo-modal-caja--inactividad .olo-modal-titulo {
+  color: #ffffff;
+}
+
+.olo-modal-caja--inactividad .olo-modal-texto {
+  color: #ffffff;
+}
+
+.olo-modal-caja--inactividad .olo-modal-texto--apunte {
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .olo-modal-titulo {
@@ -3611,7 +3750,7 @@
 
 .survey-banner-image {
   max-width: 400px;
-  height: 195px;
+  height: 240px;
   object-fit: contain;
   filter: none;
 }
@@ -3681,6 +3820,57 @@
   line-height: 1.8;
   text-align: justify;
   margin-top: 1rem;
+}
+
+.tasa-concept-desc h1,
+.tasa-concept-desc h2,
+.tasa-concept-desc h3,
+.tasa-concept-desc h4,
+.tasa-concept-desc h5,
+.tasa-concept-desc h6 {
+  color: #001631;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  line-height: 1.3;
+  text-align: left;
+}
+
+.tasa-concept-desc h1 { font-size: 2.25rem; }
+.tasa-concept-desc h2 { font-size: 1.875rem; }
+.tasa-concept-desc h3 { font-size: 1.5rem; }
+.tasa-concept-desc h4 { font-size: 1.25rem; }
+.tasa-concept-desc h5 { font-size: 1.125rem; }
+.tasa-concept-desc h6 { font-size: 1rem; }
+
+.tasa-concept-desc p {
+  margin-bottom: 1rem;
+}
+
+.tasa-concept-desc p:last-child {
+  margin-bottom: 0;
+}
+
+.tasa-concept-desc ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.tasa-concept-desc ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.tasa-concept-desc strong {
+  font-weight: 700;
+}
+
+.tasa-concept-desc a {
+  color: #004d99;
+  text-decoration: underline;
 }
 
 .tasa-concept-visual {
