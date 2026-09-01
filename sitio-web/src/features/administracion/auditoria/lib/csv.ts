@@ -27,8 +27,8 @@ const celda = (valor: unknown): string => {
 
 const resumirCampos = (registro: RegistroAuditoria) =>
   registro.camposModificados
-    .map(({ campo, despues }) => `${campo}: ${despues === null || despues === undefined ? '—' : JSON.stringify(despues)}`)
-    .join(' | ');
+    .map(({ campo, despues }) => `${campo}: ${despues === null || despues === undefined ? '—' : typeof despues === 'string' ? despues : JSON.stringify(despues)}`)
+    .join('\n');
 
 export function aCsv(registros: RegistroAuditoria[]): string {
   const filas = registros.map((r) =>
@@ -45,8 +45,8 @@ export function aCsv(registros: RegistroAuditoria[]): string {
   );
 
   // El BOM va delante para que Excel abra el archivo como UTF-8 y no parta los
-  // acentos ni la "ñ".
-  return `﻿${[COLUMNAS.map(celda).join(','), ...filas].join('\r\n')}`;
+  // acentos ni la "ñ". 'sep=,' instruye a Excel a usar la coma como separador.
+  return `\uFEFFsep=,\r\n${[COLUMNAS.map(celda).join(','), ...filas].join('\r\n')}`;
 }
 
 export function descargarCsv(nombre: string, contenido: string) {
