@@ -10,19 +10,9 @@ import { ContenidoArchivo } from './ContenidoArchivo';
 import { ContentAuditLog } from './ContentAuditLog';
 import { Pagina } from './Pagina';
 import { PaginaVersion } from './PaginaVersion';
-<<<<<<< HEAD
-=======
-import { Configuracion } from './Configuracion';
-import { MarcaVersion } from './MarcaVersion';
-import { TableroBi } from './TableroBi';
-import { PoliticaPrivacidad } from './PoliticaPrivacidad';
-import { Consentimiento } from './Consentimiento';
-import { Respaldo } from './Respaldo';
-import { Notificacion } from './Notificacion';
 // Sin asociaciones: `usuario_id` es texto libre a propósito (la cuenta maestra de
 // desarrollo no tiene fila en `usuarios`). Ver `020-bloqueos-edicion`.
 import { BloqueoEdicion } from './BloqueoEdicion';
->>>>>>> eba87860c16a12b2709822c41b2ab8c0bb2e0b27
 
 Role.belongsToMany(Permission, { through: RolePermission, as: 'permissions', foreignKey: 'role_id', otherKey: 'permission_id' });
 Permission.belongsToMany(Role, { through: RolePermission, as: 'roles', foreignKey: 'permission_id', otherKey: 'role_id' });
@@ -85,15 +75,5 @@ export {
   ContentAuditLog,
   Pagina,
   PaginaVersion,
-<<<<<<< HEAD
-=======
-  Configuracion,
-  MarcaVersion,
-  TableroBi,
-  PoliticaPrivacidad,
-  Consentimiento,
-  Respaldo,
-  Notificacion,
   BloqueoEdicion,
->>>>>>> eba87860c16a12b2709822c41b2ab8c0bb2e0b27
 };

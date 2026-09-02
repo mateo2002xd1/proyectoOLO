@@ -1145,7 +1145,9 @@
   letter-spacing: -0.03em;
   background: linear-gradient(90deg, #001631, #1e3a8a);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
+  color: transparent;
 }
 
 .olo-ocupado-texto {
