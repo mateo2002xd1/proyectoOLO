@@ -133,9 +133,9 @@ export function PanelGeneralLayout({
         navbar={
           <Navbar>
             <NavbarSection>
-              <NavbarItem 
-                onClick={() => setIsMobileSidebarOpen(true)} 
-                aria-label="Abrir menú" 
+              <NavbarItem
+                onClick={() => setIsMobileSidebarOpen(true)}
+                aria-label="Abrir menú"
                 className="lg:hidden"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">

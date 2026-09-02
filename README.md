@@ -84,7 +84,7 @@ Leer en este orden. Los tres primeros son de lectura obligatoria antes de tocar 
 | [9-accesibilidad.md](9-accesibilidad.md) | **Nivel AA y Resolución 1519 de 2020.** Estado auditado, decisiones de paleta y plan por fases (RF-14). |
 | [5-tableros-bi.md](5-tableros-bi.md) | Tableros Power BI embebidos: URLs, dónde se usan y controles de seguridad (RF-08). |
 | [6-auditoria.md](6-auditoria.md) | Bitácora de sesiones de trabajo. |
-| [7-despliegue.md](7-despliegue.md) | Docker, Nginx, SSL, variables de entorno. |
+| [7-despliegue.md](docker/7-despliegue.md) | Docker, Nginx, SSL, variables de entorno. |
 
 **La API se documenta sola.** Con el backend levantado, `http://localhost:4000/api/docs`
 abre Swagger UI —los endpoints con sus parámetros, sus respuestas y el permiso que exige
@@ -92,4 +92,4 @@ cada uno, y un botón para probarlos— y `/api/docs.json` devuelve el documento
 crudo para Postman o para generar clientes. Las descripciones salen de comentarios
 `@openapi` escritos junto a cada ruta, no de una lista aparte, para que no se
 desincronicen. En producción está apagada salvo que se encienda a mano: ver
-[7-despliegue.md](7-despliegue.md).
+[7-despliegue.md](docker/7-despliegue.md).

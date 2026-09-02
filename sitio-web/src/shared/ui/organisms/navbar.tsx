@@ -36,8 +36,8 @@ interface NavbarItemProps {
   href?: string;
   children: ReactNode;
   className?: string;
-  'aria-label'?: string;
   onClick?: () => void;
+  'aria-label'?: string;
 }
 
 export function NavbarItem({ href, children, className = '', ...props }: NavbarItemProps) {
