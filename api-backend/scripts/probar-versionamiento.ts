@@ -173,6 +173,10 @@ async function ejecutarRestaurar(identificador: string | undefined, ambito: Ambi
     resultado.archivos.restaurados.forEach((a) => console.log(`      ✓ ${a} -> /uploads/`));
     console.log(`    - Archivos resguardados en backup: ${resultado.archivos.guardadosEnBackup.length}`);
     resultado.archivos.guardadosEnBackup.forEach((a) => console.log(`      ✓ ${a} -> backup/`));
+    if (resultado.archivos.purgadosDeBackup && resultado.archivos.purgadosDeBackup.length > 0) {
+      console.log(`    - Archivos obsoletos eliminados de backup: ${resultado.archivos.purgadosDeBackup.length}`);
+      resultado.archivos.purgadosDeBackup.forEach((a) => console.log(`      ✗ ${a} (eliminado de backup por no pertenecer a la versión)`));
+    }
 
     console.log(`\n✓ Evento de publicación e invalidación de caché emitido correctamente.\n`);
   } catch (error) {

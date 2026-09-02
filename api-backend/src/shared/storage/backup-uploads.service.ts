@@ -39,13 +39,14 @@ export function extraerRutasUploads(contenido: unknown): string[] {
     if (!nodo) return;
 
     if (typeof nodo === 'string') {
-      const coincidencias = nodo.match(/\/uploads\/[^\s"'<>?#]+/g);
+      const coincidencias = nodo.match(/\/uploads\/[^\s"'<>]+/g);
       if (coincidencias) {
         for (const m of coincidencias) {
+          const rutaLimpia = m.split(/[?#]/)[0].replace(/[\),;:.]+$/, '');
           try {
-            rutas.add(decodeURIComponent(m));
+            rutas.add(decodeURIComponent(rutaLimpia));
           } catch {
-            rutas.add(m);
+            rutas.add(rutaLimpia);
           }
         }
       }
@@ -88,18 +89,61 @@ function moverArchivoSeguro(origen: string, destino: string): void {
 }
 
 /**
+ * Elimina de forma recursiva cualquier archivo o subdirectorio en dirBackup
+ * que no pertenezca al conjunto de subRutasValidas de la versión archivada.
+ */
+function limpiarArchivosHuerfanosEnBackup(
+  dirBackup: string,
+  subRutasValidas: Set<string>
+): string[] {
+  if (!fs.existsSync(dirBackup)) return [];
+
+  const eliminados: string[] = [];
+
+  function limpiarRecursivo(directorioActual: string, rutaRelativaBase: string = '') {
+    const entradas = fs.readdirSync(directorioActual, { withFileTypes: true });
+
+    for (const entrada of entradas) {
+      const rutaRelativa = rutaRelativaBase ? `${rutaRelativaBase}/${entrada.name}` : entrada.name;
+      const rutaAbsoluta = path.join(directorioActual, entrada.name);
+
+      if (entrada.isDirectory()) {
+        limpiarRecursivo(rutaAbsoluta, rutaRelativa);
+        try {
+          if (fs.readdirSync(rutaAbsoluta).length === 0) {
+            fs.rmdirSync(rutaAbsoluta);
+          }
+        } catch {}
+      } else if (entrada.isFile()) {
+        const normalizada = rutaRelativa.replace(/\\/g, '/');
+        if (!subRutasValidas.has(normalizada)) {
+          try {
+            fs.unlinkSync(rutaAbsoluta);
+            eliminados.push(normalizada);
+          } catch {}
+        }
+      }
+    }
+  }
+
+  limpiarRecursivo(dirBackup);
+  return eliminados;
+}
+
+/**
  * Respalda los archivos `/uploads/` cuando una página se publica y la versión anterior pasa a `archivado`.
  *
  * Regla de integridad:
  *  - Si un archivo de la versión anterior también lo usa la nueva versión: se COPIA a backup (se mantiene en uploads).
  *  - Si un archivo de la versión anterior ya NO lo usa la nueva versión: se MUEVE a backup (se quita de uploads).
+ *  - Limpia cualquier archivo en backup que no pertenezca a la versión archivada.
  */
 export function respaldarArchivosAlPublicar(params: {
   paginaId: string;
   versionAnteriorContenido: unknown;
   versionNuevaContenido: unknown;
   ambito: Ambito;
-}): { respaldados: string[]; preservadosEnUploads: string[] } {
+}): { respaldados: string[]; preservadosEnUploads: string[]; purgadosDeBackup: string[] } {
   const { paginaId, versionAnteriorContenido, versionNuevaContenido, ambito } = params;
 
   const dirUploads = resolverDirectorioUploads(ambito);
@@ -131,7 +175,13 @@ export function respaldarArchivosAlPublicar(params: {
     }
   }
 
-  return { respaldados, preservadosEnUploads };
+  // Eliminar de backup cualquier archivo residual que no pertenezca a la versión archivada
+  const subRutasValidasArchivadas = new Set(
+    rutasAnteriores.map((r) => r.replace(/^\/?uploads\//, '').replace(/\\/g, '/'))
+  );
+  const purgadosDeBackup = limpiarArchivosHuerfanosEnBackup(dirBackup, subRutasValidasArchivadas);
+
+  return { respaldados, preservadosEnUploads, purgadosDeBackup };
 }
 
 /**
@@ -139,14 +189,15 @@ export function respaldarArchivosAlPublicar(params: {
  *
  * Regla de integridad:
  *  - Los archivos de `public/backend/{paginaId}/` se mueven de regreso a `/uploads/`.
- *  - Los archivos exclusivos de la versión que deja de ser publicada se mueven a `public/backend/{paginaId}/`.
+ *  - Los archivos de la versión que deja de ser publicada se mueven a `public/backend/{paginaId}/`.
+ *  - Se purga cualquier archivo en backup que no pertenezca a la versión que pasa a ser archivada.
  */
 export function restaurarArchivosDesdeBackup(params: {
   paginaId: string;
   versionRestaurarContenido: unknown;
   versionActualContenido: unknown;
   ambito: Ambito;
-}): { restaurados: string[]; guardadosEnBackup: string[] } {
+}): { restaurados: string[]; guardadosEnBackup: string[]; purgadosDeBackup: string[] } {
   const { paginaId, versionRestaurarContenido, versionActualContenido, ambito } = params;
 
   const dirUploads = resolverDirectorioUploads(ambito);
@@ -170,23 +221,34 @@ export function restaurarArchivosDesdeBackup(params: {
     }
   }
 
-  // 2. Mover a backup los archivos de la versión que se despublica (que no use la versión restaurada)
+  // 2. Mover a backup los archivos de la versión que se despublica (que ahora pasa a archivada)
   for (const rutaRelativa of rutasActuales) {
-    if (rutasRestaurar.includes(rutaRelativa)) {
-      continue;
-    }
-
     const subRuta = rutaRelativa.replace(/^\/?uploads\//, '');
     const rutaOrigenUploads = path.join(dirUploads, subRuta);
     const rutaDestinoBackup = path.join(dirBackup, subRuta);
 
-    if (fs.existsSync(rutaOrigenUploads)) {
-      moverArchivoSeguro(rutaOrigenUploads, rutaDestinoBackup);
-      guardadosEnBackup.push(subRuta);
+    if (rutasRestaurar.includes(rutaRelativa)) {
+      // Si la versión restaurada también la usa, se copia a backup (se mantiene en uploads)
+      if (fs.existsSync(rutaOrigenUploads)) {
+        copiarArchivoSeguro(rutaOrigenUploads, rutaDestinoBackup);
+        guardadosEnBackup.push(subRuta);
+      }
+    } else {
+      // Si la versión restaurada ya no la usa, se mueve a backup y se retira de uploads
+      if (fs.existsSync(rutaOrigenUploads)) {
+        moverArchivoSeguro(rutaOrigenUploads, rutaDestinoBackup);
+        guardadosEnBackup.push(subRuta);
+      }
     }
   }
 
-  return { restaurados, guardadosEnBackup };
+  // 3. Purgar de backup cualquier archivo residual que no pertenezca a la versión que quedó archivada
+  const subRutasValidasArchivadas = new Set(
+    Array.from(rutasActuales).map((r) => r.replace(/^\/?uploads\//, '').replace(/\\/g, '/'))
+  );
+  const purgadosDeBackup = limpiarArchivosHuerfanosEnBackup(dirBackup, subRutasValidasArchivadas);
+
+  return { restaurados, guardadosEnBackup, purgadosDeBackup };
 }
 
 /**
