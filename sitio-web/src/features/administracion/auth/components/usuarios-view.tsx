@@ -70,7 +70,7 @@ export default function UsuariosView() {
   const selectedRoleName = roles.find((r) => r.id === roleId)?.name ?? '';
 
   // Credentials state
-  const [newUserCredentials, setNewUserCredentials] = useState<{name: string, email: string, password: string} | null>(null);
+  const [newUserCredentials, setNewUserCredentials] = useState<{ name: string, email: string, password: string } | null>(null);
   const [copiedPassword, setCopiedPassword] = useState(false);
 
   useEffect(() => {
@@ -222,21 +222,21 @@ export default function UsuariosView() {
 
   const toggleStatus = async (user: User) => {
     try {
-       const newStatus = user.status === 'active' ? 'inactive' : 'active';
-       const res = await updateUser(user.id, { status: newStatus });
-       setNotificationMsg({ title: 'Estado actualizado', message: 'El estado se cambió exitosamente.', type: 'success' });
-       setShowNotification(true);
-       if (res && res.temporaryPassword) {
-         setNewUserCredentials({
-           name: res.name || user.name,
-           email: res.email || user.email,
-           password: res.temporaryPassword
-         });
-         setCopiedPassword(false);
-       }
+      const newStatus = user.status === 'active' ? 'inactive' : 'active';
+      const res = await updateUser(user.id, { status: newStatus });
+      setNotificationMsg({ title: 'Estado actualizado', message: 'El estado se cambió exitosamente.', type: 'success' });
+      setShowNotification(true);
+      if (res && res.temporaryPassword) {
+        setNewUserCredentials({
+          name: res.name || user.name,
+          email: res.email || user.email,
+          password: res.temporaryPassword
+        });
+        setCopiedPassword(false);
+      }
     } catch (err) {
-       setNotificationMsg({ title: 'Error', message: mensajeDeError(err) || 'No se pudo cambiar el estado', type: 'error' });
-       setShowNotification(true);
+      setNotificationMsg({ title: 'Error', message: mensajeDeError(err) || 'No se pudo cambiar el estado', type: 'error' });
+      setShowNotification(true);
     }
   };
 
@@ -394,19 +394,19 @@ export default function UsuariosView() {
               </Button>
             </div>
           </div>
-          
+
 
           {editingUserId && (
-             <div className="pt-2 flex flex-col gap-3">
-               <div className="flex items-center gap-2">
-                 <input type="checkbox" id="reset_pwd" checked={resetPassword} onChange={e => setResetPassword(e.target.checked)} className="size-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:checked:bg-white dark:focus:ring-white" />
-                 <label htmlFor="reset_pwd" className="text-sm font-medium text-zinc-700 dark:text-[#cbd5e1]">Restablecer contraseña (generará una temporal)</label>
-               </div>
-               <div className="flex items-center gap-2">
-                 <input type="checkbox" id="reset_sq" checked={resetSecurityQuestions} onChange={e => setResetSecurityQuestions(e.target.checked)} className="size-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:checked:bg-white dark:focus:ring-white" />
-                 <label htmlFor="reset_sq" className="text-sm font-medium text-zinc-700 dark:text-[#cbd5e1]">Restablecer preguntas de seguridad</label>
-               </div>
-             </div>
+            <div className="pt-2 flex flex-col gap-3">
+              <div className="flex items-center gap-2">
+                <input type="checkbox" id="reset_pwd" checked={resetPassword} onChange={e => setResetPassword(e.target.checked)} className="size-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:checked:bg-white dark:focus:ring-white" />
+                <label htmlFor="reset_pwd" className="text-sm font-medium text-zinc-700 dark:text-[#cbd5e1]">Restablecer contraseña (generará una temporal)</label>
+              </div>
+              <div className="flex items-center gap-2">
+                <input type="checkbox" id="reset_sq" checked={resetSecurityQuestions} onChange={e => setResetSecurityQuestions(e.target.checked)} className="size-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:checked:bg-white dark:focus:ring-white" />
+                <label htmlFor="reset_sq" className="text-sm font-medium text-zinc-700 dark:text-[#cbd5e1]">Restablecer preguntas de seguridad</label>
+              </div>
+            </div>
           )}
 
           <AlertActions>
@@ -494,9 +494,9 @@ export default function UsuariosView() {
 
       <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-[#7db828]/30 dark:bg-[#0b1121]">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
-            <thead>
-              <tr className="bg-zinc-50 dark:bg-[#0b1121]/50">
+          <table className="block md:table min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
+            <thead className="hidden md:table-header-group bg-zinc-50 dark:bg-[#0b1121]/50">
+              <tr>
                 <th scope="col" className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-[#94a3b8]">
                   Nombre
                 </th>
@@ -514,42 +514,47 @@ export default function UsuariosView() {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+            <tbody className="block md:table-row-group divide-y divide-zinc-200 dark:divide-zinc-800">
               {loading ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-sm text-zinc-500">
+                <tr className="block md:table-row">
+                  <td colSpan={5} className="block md:table-cell px-6 py-8 text-center text-sm text-zinc-500">
                     Cargando usuarios...
                   </td>
                 </tr>
               ) : users.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-sm text-zinc-500">
+                <tr className="block md:table-row">
+                  <td colSpan={5} className="block md:table-cell px-6 py-8 text-center text-sm text-zinc-500">
                     No hay usuarios registrados.
                   </td>
                 </tr>
               ) : (
                 users.map((user) => (
-                  <tr key={user.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-zinc-900 dark:text-[#f6f6f6]">
+                  <tr key={user.id} className="block md:table-row hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                    <td className="block md:table-cell px-6 py-3 md:py-4 text-sm font-medium text-zinc-900 dark:text-[#f6f6f6]">
+                      <span className="block md:hidden text-xs font-semibold text-zinc-500 dark:text-[#94a3b8] uppercase tracking-wider mb-1">Nombre</span>
                       {[user.name, user.apellidos].filter(Boolean).join(' ')}
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-500 dark:text-[#94a3b8]">
+                    <td className="block md:table-cell px-6 py-3 md:py-4 text-sm text-zinc-500 dark:text-[#94a3b8]">
+                      <span className="block md:hidden text-xs font-semibold text-zinc-500 dark:text-[#94a3b8] uppercase tracking-wider mb-1">Correo</span>
                       {user.email}
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-zinc-500 dark:text-[#94a3b8]">
+                    <td className="block md:table-cell px-6 py-3 md:py-4 text-sm text-zinc-500 dark:text-[#94a3b8]">
+                      <span className="block md:hidden text-xs font-semibold text-zinc-500 dark:text-[#94a3b8] uppercase tracking-wider mb-1">Rol</span>
                       {user.role?.name || 'Sin rol'}
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    <td className="block md:table-cell px-6 py-3 md:py-4 text-sm">
+                      <span className="block md:hidden text-xs font-semibold text-zinc-500 dark:text-[#94a3b8] uppercase tracking-wider mb-1">Estado</span>
                       <div className="flex items-center gap-2">
                         <Switch
-                           checked={user.status === 'active'}
-                           onChange={() => toggleStatus(user)}
+                          checked={user.status === 'active'}
+                          onChange={() => toggleStatus(user)}
                         />
                         <span className="text-zinc-500 dark:text-[#94a3b8] text-xs">{user.status === 'active' ? 'Activo' : 'Inactivo'}</span>
                       </div>
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-right">
-                      <div className="flex items-center justify-end gap-2">
+                    <td className="block md:table-cell px-6 py-3 md:py-4 text-sm md:text-right">
+                      <span className="block md:hidden text-xs font-semibold text-zinc-500 dark:text-[#94a3b8] uppercase tracking-wider mb-1">Acciones</span>
+                      <div className="flex items-center justify-start md:justify-end gap-2">
                         <button type="button" onClick={() => startEdit(user)} className="p-1.5 text-zinc-500 hover:text-zinc-900 dark:text-[#94a3b8] dark:hover:text-white transition-colors" title="Editar">
                           <PencilIcon className="size-5" />
                         </button>

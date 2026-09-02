@@ -1,12 +1,15 @@
 'use client';
 
-import { type ReactNode } from 'react';
+import { type ReactNode, useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 
 interface SidebarLayoutProps {
   sidebar: ReactNode;
   navbar?: ReactNode;
   children: ReactNode;
   className?: string;
+  isSidebarOpen?: boolean;
+  onCloseSidebar?: () => void;
 }
 
 export function SidebarLayout({
@@ -14,10 +17,41 @@ export function SidebarLayout({
   navbar,
   children,
   className = '',
+  isSidebarOpen = false,
+  onCloseSidebar,
 }: SidebarLayoutProps) {
+  const pathname = usePathname();
+  const onCloseSidebarRef = useRef(onCloseSidebar);
+
+  useEffect(() => {
+    onCloseSidebarRef.current = onCloseSidebar;
+  }, [onCloseSidebar]);
+
+  useEffect(() => {
+    if (onCloseSidebarRef.current) {
+      onCloseSidebarRef.current();
+    }
+  }, [pathname]);
+
   return (
     <div className={`flex h-screen bg-white dark:bg-[#0b1121] ${className}`}>
-      <div className="hidden lg:flex lg:w-64 lg:flex-col">{sidebar}</div>
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-zinc-900/80 lg:hidden"
+          onClick={onCloseSidebar}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Sidebar (Mobile Slide-in + Desktop Static) */}
+      <div 
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        {sidebar}
+      </div>
 
       <div className="flex min-w-0 flex-1 flex-col">
         {navbar && <div className="lg:hidden">{navbar}</div>}
