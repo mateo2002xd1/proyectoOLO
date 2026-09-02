@@ -1017,19 +1017,19 @@ export function configDeEdicion(slug: string, contexto: ContextoDeEdicion = {}):
     root: {
       ...recortada.root,
       render: ({ children }: { children?: ReactNode }) => (
-        <>
+        <div className="olo-chrome-lienzo">
           {plantilla.topbar && (
-            <Inerte etiqueta="Barra · se edita en «Menú y pie»">
+            <Inerte etiqueta="Barra - se edita en «Menú y pie»">
               <IntranetTopbar {...plantilla.topbar} />
             </Inerte>
           )}
           {children}
           {plantilla.pie && (
-            <Inerte etiqueta="Pie · se edita en «Menú y pie»">
+            <Inerte etiqueta="Pie - se edita en «Menú y pie»">
               <IntranetFooter {...plantilla.pie} />
             </Inerte>
           )}
-        </>
+        </div>
       ),
     } as Config['root'],
   };

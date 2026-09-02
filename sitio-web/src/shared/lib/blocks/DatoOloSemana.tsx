@@ -30,7 +30,16 @@ export function DatoOloSemana({
           <div className="olo-dato-semana-frame">
             {/* src editable desde el editor: next/image exigiria dimensiones fijas */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={imagenSrc} alt={imagenAlt} className="olo-dato-semana-img" />
+            <img 
+              src={imagenSrc} 
+              alt={imagenAlt} 
+              className="olo-dato-semana-img"
+              onLoad={() => {
+                if (typeof window !== 'undefined') {
+                  window.dispatchEvent(new Event('resize'));
+                }
+              }}
+            />
           </div>
         )}
       </div>

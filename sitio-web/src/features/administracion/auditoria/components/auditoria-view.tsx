@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
 import { DatePicker } from '@/shared/ui/molecules/date-picker';
 import { DetalleRegistro } from './detalle-registro';
+import { Download, AlertCircle } from 'lucide-react';
 import { useAuditoria } from '../hooks/use-auditoria';
 import { aCsv, descargarCsv, nombreDeArchivo } from '../lib/csv';
 import {
@@ -108,12 +109,23 @@ export function AuditoriaView() {
 
   return (
     <div className="p-6 lg:p-8">
-      <div className="mb-6">
-        <h1 className="admin-header text-zinc-950 dark:text-[#f6f6f6]">Auditoría</h1>
-        <p className="mt-1 text-sm text-zinc-500">
-          Registro de todo lo que administradores y editores hacen en el sistema: ciclo editorial
-          de las páginas, contenidos, y gestión de usuarios, roles y permisos.
-        </p>
+      <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+        <div>
+          <h1 className="admin-header text-zinc-950 dark:text-[#f6f6f6]">Auditoría</h1>
+          <p className="mt-1 text-sm text-zinc-500 max-w-2xl">
+            Registro de todo lo que administradores y editores hacen en el sistema: ciclo editorial
+            de las páginas, contenidos, y gestión de usuarios, roles y permisos.
+          </p>
+        </div>
+        <button 
+          type="button" 
+          onClick={exportar} 
+          disabled={exportando} 
+          className={`${CLASE_BOTON_PRIMARIO} flex shrink-0 items-center gap-2 shadow-sm`}
+        >
+          <Download size={16} />
+          {exportando ? 'Exportando…' : 'Exportar CSV'}
+        </button>
       </div>
 
       <div className="mb-4 flex flex-wrap items-end gap-3">
@@ -176,13 +188,14 @@ export function AuditoriaView() {
             Limpiar filtros
           </button>
         )}
-
-        <button type="button" onClick={exportar} disabled={exportando} className={CLASE_BOTON_PRIMARIO}>
-          {exportando ? 'Exportando…' : 'Exportar CSV'}
-        </button>
       </div>
 
-      {aviso && <p className="mb-3 text-sm text-amber-700 dark:text-amber-300">{aviso}</p>}
+      {aviso && (
+        <div className="mb-4 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-200">
+          <AlertCircle className="mt-0.5 shrink-0" size={16} />
+          <p>{aviso}</p>
+        </div>
+      )}
 
       {error ? (
         <p className="text-sm text-red-600">{error}</p>
