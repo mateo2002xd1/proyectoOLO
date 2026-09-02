@@ -57,7 +57,20 @@ export function RespaldosView() {
               {registros.map((registro) => (
                 <tr key={registro.id} className="bg-white dark:bg-[#0f1626]">
                   <td className="px-4 py-3">
-                    <p className="font-medium text-zinc-900 dark:text-[#f6f6f6]">{registro.titulo}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-zinc-900 dark:text-[#f6f6f6]">{registro.titulo}</p>
+                      {registro.ambito && (
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold ${
+                            registro.ambito === 'intranet'
+                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300'
+                              : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300'
+                          }`}
+                        >
+                          {registro.ambito === 'intranet' ? 'Intranet' : 'Sitio web'}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-zinc-500">/{registro.slug} · versión {registro.numeroVersion}</p>
                   </td>
                   <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">{registro.editadoPor.nombre}</td>
