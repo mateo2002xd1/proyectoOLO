@@ -3,7 +3,7 @@ import { getRedis, redisEstaListo } from '../infrastructure/redis';
 
 // `redisEstaListo` vive en `infrastructure/redis` y no aquí: la invalidación al
 // publicar necesita la misma comprobación, y dos copias de un predicado como este se
-// separan en cuanto alguien toca una.
+// separan en cuanto alguien toca una..
 const isRedisReady = redisEstaListo;
 
 interface CacheOptions {
