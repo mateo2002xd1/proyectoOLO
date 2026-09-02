@@ -458,7 +458,8 @@
 .olo-nav-link {
   position: relative;
   padding: var(--space-sm) var(--space-md);
-  font-size: 0.9375rem; /* 15px (antes 14px / var(--fs-sm)) */
+  font-size: 0.9375rem;
+  /* 15px (antes 14px / var(--fs-sm)) */
   font-weight: var(--fw-medium);
   color: #002237;
   border-radius: var(--radius-md);
@@ -537,7 +538,8 @@
 .olo-nav-dropdown-link {
   display: block;
   padding: var(--space-sm) var(--space-md);
-  font-size: 0.9375rem; /* 15px (antes 14px / var(--fs-sm)) */
+  font-size: 0.9375rem;
+  /* 15px (antes 14px / var(--fs-sm)) */
   font-weight: var(--fw-medium);
   color: #002237;
   line-height: 1.4;
@@ -2845,7 +2847,8 @@ button.text-link,
 .nueva-seccion-fondo {
   position: fixed;
   inset: 0;
-  z-index: 60; /* por encima de los botones flotantes, que están en 50 */
+  z-index: 60;
+  /* por encima de los botones flotantes, que están en 50 */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2926,7 +2929,7 @@ button.text-link,
   color: #52667a;
 }
 
-.nueva-seccion-notas li + li {
+.nueva-seccion-notas li+li {
   margin-top: 0.3rem;
 }
 
@@ -3257,8 +3260,13 @@ button.text-link,
 }
 
 @keyframes olo-search-modal-fade {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .olo-search-modal {
@@ -3369,4 +3377,3 @@ button.text-link,
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
