@@ -5,6 +5,186 @@
 
 ---
 
+## sesión 02-09-2026 (2.ª parte): todo lo de Docker/despliegue, junto en `docker/`
+
+Pedido explícito: sacar de la raíz del repo los `docker-compose*.yml`, `deploy.sh`,
+`init-ssl.sh`, `nginx/` y `7-despliegue.md`, y meterlos todos en `docker/` — evaluando
+antes que no rompiera nada.
+
+### Qué se movió
+
+`git mv` para los cinco archivos/carpetas versionados (quedan como rename, no
+borrar+crear) más un `mv` normal para `docker-compose.override.yml` (aún sin
+versionar):
+
+```
+docker-compose.yml          → docker/docker-compose.yml
+docker-compose.prod.yml     → docker/docker-compose.prod.yml
+docker-compose.override.yml → docker/docker-compose.override.yml
+deploy.sh                   → docker/deploy.sh
+init-ssl.sh                 → docker/init-ssl.sh
+nginx/                      → docker/nginx/
+7-despliegue.md             → docker/7-despliegue.md
+```
+
+`.env`, `.env.example`, `.dockerignore` y `.gitattributes` se quedan en la raíz a
+propósito: `.env`/`.env.example` porque `deploy.sh` y `init-ssl.sh` ya los leen ahí, y
+`.dockerignore` porque el contexto de build sigue siendo la raíz — moverlo con los
+compose no habría hecho nada, `.dockerignore` se lee del contexto, no de al lado del
+compose. `.gitattributes` no necesitaba tocarse: sus patrones (`*.sh`,
+`docker-compose*.yml`) son por nombre de archivo, sin ruta, y ya cazaban estos
+archivos en cualquier carpeta.
+
+### El problema técnico real, y cómo se resolvió sin tocar las rutas de los YAML
+
+Los tres compose tienen `context: .`, `env_file: - .env` y (el de producción) un
+volumen `./nginx/...` — todos pensados para un compose que vive en la raíz. Compose
+resuelve esas rutas relativas contra la carpeta **del propio archivo compose**, no
+contra el directorio desde el que se invoca `docker compose`: mover el archivo a
+`docker/` sin más habría hecho que `context: .` apuntara a `docker/` y el build dejara
+de encontrar `api-backend/`, `sitio-web/`, `packages/`, etc.
+
+Se evaluaron dos soluciones y se descartó una:
+
+- **Reescribir cada ruta a `../`** (`context: ..`, `env_file: - ../.env`...) — se
+  descartó: son ~15 líneas repartidas en los tres archivos, cada una un candidato a
+  error de tipeo, y además entra en conflicto con la otra ruta de invocación (ver
+  abajo): unas rutas sirven para "compose vive en `docker/`" y otras para "compose se
+  invoca con `--project-directory` a la raíz" — no pueden convivir en el mismo archivo
+  con las dos interpretaciones a la vez.
+- **`--project-directory <raíz>`** (la que se usó): le dice a Compose que resuelva
+  *todas* las rutas relativas contra la raíz, sin importar dónde viva el archivo
+  compose. Cero cambios de contenido en `docker-compose.yml`/`docker-compose.prod.yml`
+  salvo la única ruta que de verdad se movió (`./nginx/...` → `./docker/nginx/...`,
+  porque `nginx/` sí cambió de sitio).
+
+`deploy.sh` e `init-ssl.sh` ya lo hacen solos: los dos arrancan con
+`cd "$(dirname "${BASH_SOURCE[0]}")/.."` (funcionan igual invocados desde la raíz, desde
+dentro de `docker/` o desde cualquier otro sitio) y su `componer()` pasa
+`--project-directory .` de forma explícita. Para invocar Compose a mano (el modo
+hot-reload, que `deploy.sh` no cubre — pasa `-f` con un solo archivo) hace falta
+nombrar la bandera:
+
+```bash
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.override.yml up -d --build
+```
+
+Es más largo que el `docker compose up -d --build` de la sesión anterior — la carga
+automática del override sin `-f` solo pasaba porque el archivo vivía en la raíz. Se
+documentó así en `docker/7-despliegue.md` en vez de esconder la diferencia.
+
+### Verificación
+
+| Qué | Resultado |
+|---|---|
+| `docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.override.yml config` | Sin errores |
+| `docker compose --project-directory . -f docker/docker-compose.prod.yml config` | Sin errores |
+| `./docker/deploy.sh help` / `... status` desde la raíz | Corren bien, `status` lista los 5 contenedores reales |
+| Build completo (`builder` y también la imagen final de producción) de las tres apps, desde las rutas nuevas | Compila y exporta imagen |
+| Stack completo levantado con las rutas nuevas | Compose reconoce que ya coincide con lo que había (no recrea contenedores) — confirma que el movimiento es transparente |
+| `/health`, `/inicio`, `/login` tras el movimiento | 200 los tres |
+
+### Referencias actualizadas
+
+`README.md` (el link de la tabla de documentación), `11-base-de-datos.md` (una mención
+a `7-despliegue.md`) y el propio `docker/7-despliegue.md` (todos los ejemplos de
+comandos, la nota de verificación de arriba del todo y el árbol de "Estructura de
+archivos"). Se dejaron sin tocar las menciones sueltas a `deploy.sh`/`docker-compose`
+que son prosa o nombran el concepto sin ser un comando para copiar y pegar
+(`3-seguridad-del-proyecto.md`, `8-ciclo-editorial.md`, los `Dockerfile`, comentarios en
+código) — no son enlaces rotos, son texto descriptivo, y tocar todos habría sido
+alcance de más.
+
+### Segundo punto del pedido: imágenes al día
+
+No hay ningún commit hecho hoy (`git log` lo confirma) — todo el trabajo de la sesión,
+incluida esta reorganización, sigue sin commitear. Las imágenes en Docker sí están al
+día con el estado actual del working tree: se reconstruyeron las tres apps después de
+mover los archivos y Compose las encontró ya equivalentes a lo que tenía corriendo, sin
+necesidad de recrear contenedores.
+
+### Pendiente
+
+- Nada roto detectado. Si se prefiere volver a poder invocar `docker compose up` a
+  secas sin `--project-directory`, la alternativa sería reescribir las rutas a `../`
+  (la opción descartada arriba) — no se hizo porque complica más de lo que simplifica.
+
+## sesión 02-09-2026: Docker con hot-reload, y tres roturas de build que estaban esperando
+
+Se pidió que los contenedores reflejaran los cambios de código sin reconstruir la imagen
+en cada edición. Antes de poder probar eso hizo falta arreglar el build de Docker en sí,
+que llevaba roto desde hace días sin que nadie lo hubiera corrido de punta a punta.
+
+### 1. `docker-compose.override.yml`: hot-reload real, con `nodemon`/webpack a propósito
+
+Compose carga este archivo solo (comportamiento de fábrica sin `-f` explícito) y monta
+`src/` de cada app en vivo, con el comando cambiado a modo desarrollo (`nodemon` +
+`ts-node` en `api-backend`, `next dev --webpack` en `sitio-web`/`intranet`). No lo usan
+ni `./deploy.sh` ni `COMPOSE_FILE=docker-compose.yml ./deploy.sh start`: pasan `-f`
+explícito, que desactiva la carga automática.
+
+**Por qué `nodemon --legacy-watch` y no `node --watch`, y por qué `--webpack` y no
+Turbopack (el default de `next dev` en Next 16):** en Windows, el bind-mount de Docker
+Desktop no propaga los eventos de inotify hacia el contenedor. Se verificó con el stack
+real: `node --watch` no reiniciaba al tocar `server.ts` desde el host (`docker exec`
+confirmaba que el archivo SÍ cambiaba dentro del contenedor — el bind-mount funciona bien
+para lectura/escritura, solo no dispara el evento), y `next dev` con Turbopack tampoco
+recompilaba. El sondeo (`--legacy-watch`, `WATCHPACK_POLLING=true`) no depende de ese
+evento y sí detecta el cambio — confirmado editando `server.ts` (nodemon reinició el
+proceso hijo, PID distinto) y el `<title>` de `/inicio` (cambió en la respuesta HTTP tras
+editar `page.tsx`, sin tocar el contenedor).
+
+Los paquetes compartidos `packages/*` se recompilan una vez al arrancar el contenedor
+(`docker/dev-entrypoint.sh`, mismo criterio que ya usan los Dockerfile: salta los que
+tienen `"noEmit": true`) pero no se vigilan en caliente — tocar uno pide
+`docker compose restart <servicio>`.
+
+### 2. Tres roturas de build preexistentes, encontradas al intentar levantar el stack
+
+Ninguna las causó este cambio; las tres bloqueaban ya `docker compose build` en cualquier
+modo (dev u override), incluida la ruta de producción que `7-despliegue.md` daba por
+"verificada de punta a punta el 2026-08-23".
+
+| # | Dónde | Qué pasaba | Causa |
+|---|---|---|---|
+| 1 | `api-backend/package-lock.json` | `npm ci` fallaba: "Missing: @olo/accessibility-policy, @olo/slug-policy from lock file" | Commit `b83e474` (install-links para Windows) borró las entradas `"../packages/..."` de nivel superior que `npm ci` exige; `npm install` normal no las repone (solo `npm ci` las valida) |
+| 2 | `sitio-web/package-lock.json` e `intranet/package-lock.json` | Mismo error, con los 7 paquetes `@olo/*` | El mismo commit `b83e474` tocó los tres lockfiles por igual |
+| 3 | `api-backend/src/infrastructure/db/models/index.ts` | `tsc` fallaba: "Merge conflict marker encountered" — marcadores `<<<<<<<`/`=======`/`>>>>>>>` commiteados tal cual | El merge `a6d427d` ("fix-resolved: conflictos en index") no se resolvió de verdad: dejó los marcadores en el archivo |
+
+El fix de los lockfiles fue restaurar exactamente las entradas que `b83e474` quitó (están
+en su diff, `git show b83e474 -- <archivo>`). El de `index.ts` fue leer las dos ramas del
+merge (`1cb9654`, que borra 8 modelos inactivos, y `eba87860`, que trae `BloqueoEdicion`
+de la migración 021) y quedarse con las dos cosas: sin los 8 modelos borrados, con
+`BloqueoEdicion` importado y exportado.
+
+Un cuarto problema, ya no de Docker sino de tipos: `sitio-web/.../panel-general.tsx`
+pasaba `as="button"` a `NavbarItem`/`SidebarItem`, una prop que esos componentes locales
+nunca tuvieron (detectan botón vs. enlace por la presencia de `href`). `SidebarItem` ya
+declaraba `onClick`; `NavbarItem` no, así que se le agregó. Se quitó el `as="button"` de
+las dos llamadas, que no hacía nada.
+
+### Verificación
+
+| Qué | Resultado |
+|---|---|
+| `docker compose build` (las tres apps, target `builder`) | Compila y exporta imagen, las tres |
+| `api-backend` con `nodemon`, editando `server.ts` en vivo | `[nodemon] restarting due to changes...`, PID del proceso hijo cambia |
+| `sitio-web` con `next dev --webpack`, editando `page.tsx` de `/inicio` en vivo | El `<title>` de la respuesta HTTP cambia sin reiniciar el contenedor |
+| `docker compose run migraciones` sobre la base real | Aplicó `020-depuracion-y-optimizacion-esquema` y `021-bloqueos-edicion`, pendientes desde el 31-08 |
+| Stack completo (`api`, `sitio-web`, `intranet`, `db`, `redis`) | Los tres HTTP responden 200 (`/health`, `/inicio`, `/login`) ya en modo dev |
+
+> `api-backend/package.json` suma `nodemon` como devDependency (`^3.1.14`) — hace falta
+> para el sondeo; no se toca ninguna dependencia de producción.
+
+### Pendiente
+
+- `sitio-web` e `intranet` quedaron corriendo en modo dev (contenedores recreados sobre
+  el stack real, que ya estaba arriba con tráfico). Si se prefiere volver al build de
+  producción: `docker compose down && docker compose -f docker-compose.yml up -d --build`
+  (sin el override).
+- Se encontró (no se tocó) un `backlog.csv` borrado del working tree y un `pruebas-carga/`
+  movido a `test/pruebas-carga/`, ajenos a este trabajo — ver el aviso en el chat.
+
 ## sesión 30-08-2026: el editor enseña la página entera, y solo la edita una persona a la vez
 
 Dos frentes distintos de la mesa de trabajo, en `sitio-web` y en `intranet`.

@@ -1,0 +1,79 @@
+# Hot-reload para desarrollo local: monta el código fuente en vivo dentro de
+# los contenedores en vez de depender de la imagen ya construida.
+#
+# Este archivo vive junto a `docker-compose.yml`, no en la raíz del repo, así
+# que Compose NO lo carga solo con un `docker compose up` corrido desde
+# `docker/` a secas: sin `--project-directory`, `context: .` (abajo, heredado
+# de `docker-compose.yml`) apuntaría a esta carpeta en vez de a la raíz, donde
+# viven `api-backend/`, `sitio-web/`, etc. La invocación completa, desde la
+# raíz del repo:
+#
+#   docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.override.yml up -d --build
+#
+# NO se aplica a `./docker/deploy.sh` (ni a su variante
+# `COMPOSE_FILE=docker/docker-compose.yml ./docker/deploy.sh start`): ese pasa
+# `-f` de forma explícita (ver `componer()` en `deploy.sh`), y eso desactiva la
+# carga automática de este archivo. Esa ruta sigue construyendo la imagen
+# final tal cual queda en producción, que es lo que `docker/7-despliegue.md`
+# deja verificado de punta a punta.
+#
+# Qué SÍ recarga solo: los cambios en `api-backend/src`, `sitio-web/src` e
+# `intranet/src` (y `public/`) — no hace falta ni reiniciar el contenedor.
+# Verificado con el stack real: server.ts reiniciado por nodemon y /inicio
+# recompilado por Next tras editar en el host, ambos sin tocar el contenedor.
+#
+# Por qué todo corre con sondeo (`--legacy-watch` / `WATCHPACK_POLLING`) y no
+# con el watcher nativo de cada herramienta: en Windows, el bind-mount de
+# Docker Desktop no propaga los eventos de inotify hacia el contenedor. Se
+# comprobó con `node --watch` (no reiniciaba al tocar `server.ts`) y con
+# Turbopack (`next dev` sin `--webpack`, tampoco recompilaba) — en los dos
+# casos el archivo SÍ cambiaba dentro del contenedor (`docker exec` lo leía
+# bien), pero ningún evento de cambio llegaba al watcher. El sondeo evita el
+# problema porque no depende de ese evento.
+#
+# Qué NO recarga solo: los cambios dentro de `packages/*/src` (los siete
+# paquetes @olo/* compartidos). Se recompilan una vez al arrancar el
+# contenedor (ver `docker/dev-entrypoint.sh`) pero no se vigilan en caliente
+# — tras tocar un paquete compartido hace falta `docker compose restart
+# <servicio>`. Cambios en package.json o en los Dockerfile sí piden
+# `--build`, como siempre.
+services:
+  api-backend:
+    build:
+      target: builder # La imagen final no lleva ts-node ni las devDependencies.
+    command: ["sh", "/dev-entrypoint.sh", "node_modules/.bin/nodemon", "--legacy-watch", "--watch", "src", "--ext", "ts,json", "--exec", "node -r ts-node/register src/server.ts"]
+    volumes:
+      - ./docker/dev-entrypoint.sh:/dev-entrypoint.sh:ro
+      - ./packages:/packages
+      - ./api-backend/src:/app/src
+      - ./api-backend/scripts:/app/scripts
+      - ./api-backend/tsconfig.json:/app/tsconfig.json:ro
+
+  sitio-web:
+    build:
+      target: builder
+    command: ["sh", "/dev-entrypoint.sh", "node_modules/.bin/next", "dev", "-p", "3000", "--webpack"]
+    environment:
+      WATCHPACK_POLLING: "true"
+    volumes:
+      - ./docker/dev-entrypoint.sh:/dev-entrypoint.sh:ro
+      - ./packages:/packages
+      - ./sitio-web/src:/app/src
+      - ./sitio-web/public:/app/public
+      - ./sitio-web/next.config.mjs:/app/next.config.mjs:ro
+      - ./sitio-web/postcss.config.mjs:/app/postcss.config.mjs:ro
+
+  intranet:
+    build:
+      target: builder
+    command: ["sh", "/dev-entrypoint.sh", "node_modules/.bin/next", "dev", "-p", "3001", "--webpack"]
+    environment:
+      WATCHPACK_POLLING: "true"
+    volumes:
+      - ./docker/dev-entrypoint.sh:/dev-entrypoint.sh:ro
+      - ./packages:/packages
+      - ./intranet/src:/app/src
+      - ./intranet/public:/app/public
+      - ./intranet/data:/app/data
+      - ./intranet/next.config.ts:/app/next.config.ts:ro
+      - ./intranet/postcss.config.mjs:/app/postcss.config.mjs:ro

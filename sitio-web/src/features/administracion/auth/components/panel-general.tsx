@@ -129,7 +129,7 @@ export function PanelGeneralLayout({
         navbar={
           <Navbar>
             <NavbarSection>
-              <NavbarItem as="button" onClick={() => setIsBuscarOpen(true)} aria-label="Buscar">
+              <NavbarItem onClick={() => setIsBuscarOpen(true)} aria-label="Buscar">
                 <MagnifyingGlassIcon />
               </NavbarItem>
             </NavbarSection>
@@ -200,7 +200,7 @@ export function PanelGeneralLayout({
             </SidebarBody>
 
             <SidebarSection className="max-lg:hidden mx-2 mb">
-              <SidebarItem as="button" onClick={() => setIsBuscarOpen(true)}>
+              <SidebarItem onClick={() => setIsBuscarOpen(true)}>
                 <MagnifyingGlassIcon />
                 <SidebarLabel>Buscar</SidebarLabel>
               </SidebarItem>

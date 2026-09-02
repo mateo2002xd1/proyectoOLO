@@ -81,7 +81,7 @@ services:
         condition: service_healthy
 
   # Aplica las migraciones de esquema. No arranca con `up` -tiene perfil-: se invoca
-  # con `./deploy.sh migrar`, que hace `docker compose run --rm migraciones`.
+  # con `./docker/deploy.sh migrar`, que hace `docker compose run --rm migraciones`.
   #
   # Hace falta un paso propio porque el esquema lo definen las migraciones, nunca el
   # arranque: `server.ts` comprueba que no haya pendientes y aborta si las hay. Sobre

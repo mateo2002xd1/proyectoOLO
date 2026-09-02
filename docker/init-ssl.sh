@@ -1,25 +1,30 @@
 #!/usr/bin/env bash
 # Emite el certificado SSL de un dominio con Let's Encrypt.
-# Uso: ./init-ssl.sh <dominio> <email> [dominio-extra ...]
+# Uso: ./docker/init-ssl.sh <dominio> <email> [dominio-extra ...]
 #
 # Ejecutar una vez por dominio despues del primer despliegue. El sitio y la intranet
 # tienen dominios distintos, asi que son dos ejecuciones:
 #
-#   ./init-ssl.sh tusitio.com    admin@tusitio.com www.tusitio.com
-#   ./init-ssl.sh admin.tusitio.com admin@tusitio.com
+#   ./docker/init-ssl.sh tusitio.com    admin@tusitio.com www.tusitio.com
+#   ./docker/init-ssl.sh admin.tusitio.com admin@tusitio.com
 #
-# Para renovar despues: ./deploy.sh renovar
+# Para renovar despues: ./docker/deploy.sh renovar
+#
+# Normalmente lo invoca `./docker/deploy.sh ssl ...`, no directamente -- pero funciona
+# igual a mano, desde la raiz o desde dentro de `docker/`: ver el `cd` de abajo.
 
 set -Eeuo pipefail
 
-COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.prod.yml}"
+cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+COMPOSE_FILE="${COMPOSE_FILE:-docker/docker-compose.prod.yml}"
 
 DOMINIO="${1:-}"
 EMAIL="${2:-}"
 
 if [ -z "$DOMINIO" ] || [ -z "$EMAIL" ]; then
-    echo "Uso: ./init-ssl.sh <dominio> <email> [dominio-extra ...]"
-    echo "Ejemplo: ./init-ssl.sh tusitio.com admin@tusitio.com www.tusitio.com"
+    echo "Uso: ./docker/init-ssl.sh <dominio> <email> [dominio-extra ...]"
+    echo "Ejemplo: ./docker/init-ssl.sh tusitio.com admin@tusitio.com www.tusitio.com"
     exit 1
 fi
 
@@ -38,7 +43,10 @@ aviso() { printf '\033[0;33m%s\033[0m\n' "$*"; }
 # MSYS_NO_PATHCONV: en Git Bash, rutas como /etc/letsencrypt/... llegarian a Docker
 # convertidas a C:/Program Files/Git/etc/letsencrypt/... Son rutas del contenedor, y
 # aqui hay muchas. `-T` evita que Docker pida un TTY que MinTTY no concede.
-componer() { MSYS_NO_PATHCONV=1 docker compose -f "$COMPOSE_FILE" "$@"; }
+# `--project-directory .` y `--env-file .env`: el compose vive en `docker/`, pero sus
+# rutas relativas y sus `${VAR}` (los dominios de nginx, entre otros) estan pensados
+# para resolverse contra la raiz -- ver el mismo punto en `deploy.sh`.
+componer() { MSYS_NO_PATHCONV=1 docker compose --project-directory . --env-file .env -f "$COMPOSE_FILE" "$@"; }
 
 RUTA_CERT="/etc/letsencrypt/live/$DOMINIO"
 
@@ -98,5 +106,5 @@ componer exec -T nginx nginx -s reload
 
 echo ""
 verde "Listo. SSL configurado para $DOMINIO"
-aviso "Recuerda: el certificado caduca a los 90 dias. Renueva con ./deploy.sh renovar"
-aviso "(o programalo en cron: 0 3 * * 1 cd $(pwd) && ./deploy.sh renovar)"
+aviso "Recuerda: el certificado caduca a los 90 dias. Renueva con ./docker/deploy.sh renovar"
+aviso "(o programalo en cron: 0 3 * * 1 cd $(pwd) && ./docker/deploy.sh renovar)"
