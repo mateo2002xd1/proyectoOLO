@@ -32,6 +32,7 @@ import {
   UserIcon,
 } from '@heroicons/react/16/solid';
 import {
+  ArchiveBoxIcon,
   ClipboardDocumentCheckIcon,
   HomeIcon,
   MagnifyingGlassIcon,
@@ -200,6 +201,10 @@ export function PanelGeneralLayout({
                 <SidebarItem href="/admin/auditoria">
                   <ShieldCheckIcon />
                   <SidebarLabel>Auditoría</SidebarLabel>
+                </SidebarItem>
+                <SidebarItem href="/admin/respaldos">
+                  <ArchiveBoxIcon />
+                  <SidebarLabel>Respaldos</SidebarLabel>
                 </SidebarItem>
               </SidebarSection>
               <SidebarSpacer />
