@@ -1,15 +1,21 @@
 #!/usr/bin/env bash
 # Script de despliegue del OLO.
-# Uso: ./deploy.sh [comando]
+# Uso: ./docker/deploy.sh [comando]
 #
-# Por defecto opera sobre `docker-compose.prod.yml`. Para levantar la pila de
+# Por defecto opera sobre `docker/docker-compose.prod.yml`. Para levantar la pila de
 # desarrollo (sin nginx ni SSL, con los puertos publicados directamente):
 #
-#   COMPOSE_FILE=docker-compose.yml ./deploy.sh start
+#   COMPOSE_FILE=docker/docker-compose.yml ./docker/deploy.sh start
 
 set -Eeuo pipefail
 
-COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.prod.yml}"
+# Este script vive en docker/ pero todas las rutas de abajo (COMPOSE_FILE, ENV_FILE,
+# ./docker/init-ssl.sh) son relativas a la RAIZ del repo -- de ahi este cd, que hace que
+# invocarlo funcione igual desde la raiz (`./docker/deploy.sh`) que desde dentro de
+# `docker/` (`./deploy.sh`) o desde cualquier otro directorio.
+cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+COMPOSE_FILE="${COMPOSE_FILE:-docker/docker-compose.prod.yml}"
 ENV_FILE=".env"
 
 # `docker-compose.prod.yml` es el unico que monta nginx y por tanto el unico que
@@ -46,7 +52,14 @@ morir() { rojo "ERROR: $*"; exit 1; }
 #  2. `-T` en run/exec. Sin el, Docker intenta reservar un TTY y la terminal de Git Bash
 #     (MinTTY) no se lo da: "the input device is not a TTY". Ningun comando de este
 #     script necesita terminal interactiva, asi que desactivarlo es gratis.
-componer() { MSYS_NO_PATHCONV=1 docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" "$@"; }
+#
+#  3. `--project-directory .`. El archivo compose vive en `docker/`, no en la raiz, pero
+#     todas sus rutas relativas (`context: .`, `env_file: .env`, los volumenes de
+#     nginx) estan escritas como si vivieran en la raiz -- porque esta bandera hace
+#     que Compose las resuelva contra la raiz (el `cd` de arriba) en vez de contra la
+#     carpeta del propio archivo compose. Sin esto, `context: .` apuntaria a `docker/`
+#     y el build no encontraria `api-backend/`, `sitio-web/`, etc.
+componer() { MSYS_NO_PATHCONV=1 docker compose --project-directory . --env-file "$ENV_FILE" -f "$COMPOSE_FILE" "$@"; }
 
 show_help() {
     cat <<'AYUDA'
@@ -54,7 +67,7 @@ show_help() {
   OLO Proyect - Script de Despliegue
 ============================================
 
-Uso: ./deploy.sh [comando]
+Uso: ./docker/deploy.sh [comando]
 
 Comandos:
   setup     - Primera configuracion (crear .env, generar secretos, construir)
@@ -68,13 +81,13 @@ Comandos:
   sembrar   - Cargar el contenido inicial (paginas, identidad visual)
   crear-admin - Crear la primera cuenta de Superadmin (solo instalacion nueva)
   backup    - Backup de la base de datos
-  restore   - Restaurar backup (uso: ./deploy.sh restore backup.sql)
-  ssl       - Emitir certificado (uso: ./deploy.sh ssl dominio.com email@dominio.com)
+  restore   - Restaurar backup (uso: ./docker/deploy.sh restore backup.sql)
+  ssl       - Emitir certificado (uso: ./docker/deploy.sh ssl dominio.com email@dominio.com)
   renovar   - Renovar los certificados ya emitidos
   help      - Mostrar esta ayuda
 
 Variables de entorno:
-  COMPOSE_FILE   Archivo compose a usar (por defecto docker-compose.prod.yml)
+  COMPOSE_FILE   Archivo compose a usar (por defecto docker/docker-compose.prod.yml)
 AYUDA
 }
 
@@ -110,7 +123,7 @@ leer_env() {
 }
 
 comprobar_entorno() {
-    [ -f "$ENV_FILE" ] || morir "No existe '$ENV_FILE'. Ejecuta primero: ./deploy.sh setup"
+    [ -f "$ENV_FILE" ] || morir "No existe '$ENV_FILE'. Ejecuta primero: ./docker/deploy.sh setup"
 
     # Se compara el archivo contra si mismo sin retornos de carro: si difieren, los
     # tenia. No vale `grep "$(printf '\015')"` -la sustitucion de comando se come el
@@ -204,7 +217,7 @@ setup() {
         aviso "Faltan por rellenar a mano en $ENV_FILE:"
         printf '  - %s\n' "${pendientes[@]}"
         echo ""
-        echo "Editalo (nano $ENV_FILE) y vuelve a ejecutar: ./deploy.sh setup"
+        echo "Editalo (nano $ENV_FILE) y vuelve a ejecutar: ./docker/deploy.sh setup"
         exit 0
     fi
 
@@ -214,9 +227,9 @@ setup() {
 
     echo ""
     verde "=== Setup completado ==="
-    echo "Ejecuta: ./deploy.sh start"
+    echo "Ejecuta: ./docker/deploy.sh start"
     if $ES_PRODUCCION; then
-        echo "Y despues, para el certificado: ./deploy.sh ssl <dominio> <email>"
+        echo "Y despues, para el certificado: ./docker/deploy.sh ssl <dominio> <email>"
     fi
 }
 
@@ -235,7 +248,7 @@ start() {
     echo "=== Iniciando servicios ==="
     componer up -d
     echo ""
-    verde "Servicios iniciados. Verifica con: ./deploy.sh status"
+    verde "Servicios iniciados. Verifica con: ./docker/deploy.sh status"
 
     # nginx no arranca si `ssl_certificate` apunta a un archivo que no existe, asi que
     # sin certificado la pila queda arriba pero inalcanzable desde fuera. Avisarlo aqui
@@ -244,7 +257,7 @@ start() {
         if ! componer ps nginx 2>/dev/null | grep -qi "running\|up"; then
             echo ""
             aviso "nginx no esta arriba. Si aun no has emitido el certificado:"
-            aviso "  ./deploy.sh ssl $(leer_env SITIO_WEB_DOMAIN) tu-correo@dominio.com"
+            aviso "  ./docker/deploy.sh ssl $(leer_env SITIO_WEB_DOMAIN) tu-correo@dominio.com"
         fi
     fi
 }
@@ -269,7 +282,7 @@ build() {
     echo "=== Reconstruyendo imagenes ==="
     componer build --no-cache
     echo ""
-    verde "Imagenes reconstruidas. Ejecuta: ./deploy.sh restart"
+    verde "Imagenes reconstruidas. Ejecuta: ./docker/deploy.sh restart"
 }
 
 migrar() {
@@ -374,7 +387,7 @@ restore() {
     comprobar_requisitos
     comprobar_entorno
 
-    [ -n "${1:-}" ] || morir "Especifica el archivo de backup. Uso: ./deploy.sh restore backup.sql"
+    [ -n "${1:-}" ] || morir "Especifica el archivo de backup. Uso: ./docker/deploy.sh restore backup.sql"
     [ -f "$1" ] || morir "No se encontro el archivo '$1'"
 
     local usuario base respuesta
@@ -401,11 +414,11 @@ ssl() {
     comprobar_requisitos
     comprobar_entorno
     if [ -z "${1:-}" ] || [ -z "${2:-}" ]; then
-        echo "Uso: ./deploy.sh ssl <dominio> <email> [dominio-extra ...]"
-        echo "Ejemplo: ./deploy.sh ssl tusitio.com admin@tusitio.com www.tusitio.com"
+        echo "Uso: ./docker/deploy.sh ssl <dominio> <email> [dominio-extra ...]"
+        echo "Ejemplo: ./docker/deploy.sh ssl tusitio.com admin@tusitio.com www.tusitio.com"
         exit 1
     fi
-    ./init-ssl.sh "$@"
+    ./docker/init-ssl.sh "$@"
 }
 
 renovar() {

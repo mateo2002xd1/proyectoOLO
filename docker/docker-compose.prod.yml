@@ -78,7 +78,7 @@ services:
       - olo-network
 
   # Aplica las migraciones de esquema. No arranca con `up` -tiene perfil-: se invoca
-  # con `./deploy.sh migrar`, que hace `docker compose run --rm migraciones`.
+  # con `./docker/deploy.sh migrar`, que hace `docker compose run --rm migraciones`.
   #
   # Hace falta un paso propio porque el esquema lo definen las migraciones, nunca el
   # arranque: `server.ts` comprueba que no haya pendientes y aborta si las hay. Sobre
@@ -178,7 +178,7 @@ services:
       # que deben llegar intactas. El $$ es como compose escribe un $ literal.
       NGINX_ENVSUBST_FILTER: "^(SITIO_WEB_DOMAIN|INTRANET_DOMAIN)$$"
     volumes:
-      - ./nginx/nginx.conf.template:/etc/nginx/templates/nginx.conf.template:ro
+      - ./docker/nginx/nginx.conf.template:/etc/nginx/templates/nginx.conf.template:ro
       # Los certificados los escribe certbot en su volumen; nginx solo los lee.
       # Antes se montaba ./nginx/ssl, un directorio que no existe en el repo y que
       # nadie llenaba: nginx no llegaba a arrancar por no encontrar el certificado.
@@ -195,7 +195,7 @@ services:
       - olo-network
 
   # Emite y renueva los certificados. No arranca con `up` -tiene perfil-: es una
-  # herramienta de un solo uso que invocan `./init-ssl.sh` y `./deploy.sh renovar`
+  # herramienta de un solo uso que invocan `./docker/init-ssl.sh` y `./docker/deploy.sh renovar`
   # con `docker compose run --rm certbot ...`, y `run` activa el perfil solo.
   #
   # Sin `command` ni `entrypoint` a proposito: el entrypoint por defecto de la imagen
