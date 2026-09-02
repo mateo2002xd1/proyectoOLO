@@ -115,6 +115,7 @@ export function PanelGeneralLayout({
 }) {
   const router = useRouter();
   const [isBuscarOpen, setIsBuscarOpen] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const handleLogout = useCallback(async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
@@ -126,10 +127,21 @@ export function PanelGeneralLayout({
       <ThemeToggle />
       <SidebarLayout
         className={className}
+        isSidebarOpen={isMobileSidebarOpen}
+        onCloseSidebar={() => setIsMobileSidebarOpen(false)}
         navbar={
           <Navbar>
             <NavbarSection>
-              <NavbarItem as="button" onClick={() => setIsBuscarOpen(true)} aria-label="Buscar">
+              <NavbarItem 
+                onClick={() => setIsMobileSidebarOpen(true)} 
+                aria-label="Abrir menú" 
+                className="lg:hidden"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                </svg>
+              </NavbarItem>
+              <NavbarItem onClick={() => setIsBuscarOpen(true)} aria-label="Buscar">
                 <MagnifyingGlassIcon />
               </NavbarItem>
             </NavbarSection>
@@ -199,8 +211,8 @@ export function PanelGeneralLayout({
               </SidebarSection>
             </SidebarBody>
 
-            <SidebarSection className="max-lg:hidden mx-2 mb">
-              <SidebarItem as="button" onClick={() => setIsBuscarOpen(true)}>
+            <SidebarSection className="max-lg:hidden mx-2">
+              <SidebarItem onClick={() => setIsBuscarOpen(true)}>
                 <MagnifyingGlassIcon />
                 <SidebarLabel>Buscar</SidebarLabel>
               </SidebarItem>
@@ -399,7 +411,7 @@ export function PanelGeneralDashboard() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
+        <div className="min-w-0 rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
           <div className="mb-4 flex items-baseline justify-between gap-3">
             <h2 className="admin-subtitle text-zinc-950 dark:text-[#f6f6f6]">Actividad Reciente</h2>
             {!sinAccesoAuditoria && (
@@ -467,7 +479,7 @@ export function PanelGeneralDashboard() {
           )}
         </div>
 
-        <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
+        <div className="min-w-0 rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
           <h2 className="admin-subtitle mb-4 text-zinc-950 dark:text-[#f6f6f6]">Alertas</h2>
 
           <h3 className="mb-2 text-sm font-medium text-zinc-700 dark:text-[#cbd5e1]">Páginas en revisión</h3>
