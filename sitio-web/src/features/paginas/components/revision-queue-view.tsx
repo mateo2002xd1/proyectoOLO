@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FileCheck2, FileText, CheckCircle, XCircle, Trash2, ExternalLink } from 'lucide-react';
+import { CheckCircle, XCircle, Trash2, ExternalLink } from 'lucide-react';
 import { useRevisionQueue } from '../hooks/use-revision-queue';
 import type { Ambito, PaginaEnRevision } from '../types';
 
@@ -79,7 +79,10 @@ export function RevisionQueueView() {
         <div>
           <div className="flex items-center gap-3 mb-2">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-interactive/10 text-brand-interactive">
-              <FileText className="h-5 w-5" />
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15 8.00092H21.54C21.1909 7.0758 20.6485 6.2358 19.949 5.53694L16.465 2.05094C15.7653 1.35227 14.9251 0.81025 14 0.460938V7.00094C14 7.55317 14.4477 8.00092 15 8.00092Z" fill="currentColor"/>
+                <path d="M21.976 9.99998H15C13.3431 9.99998 12 8.65683 12 6.99998V0.024C11.839 0.0129844 11.678 0 11.515 0H6.99997C4.23992 0.00332812 2.00328 2.23997 2 5.00002V19C2.00328 21.76 4.23992 23.9967 6.99997 24H17C19.76 23.9967 21.9966 21.76 22 19V10.485C22 10.322 21.987 10.161 21.976 9.99998Z" fill="currentColor"/>
+              </svg>
             </div>
             <h1 className="text-2xl font-bold tracking-tight text-zinc-950 dark:text-[#f6f6f6]">
               Páginas en revisión
@@ -94,7 +97,9 @@ export function RevisionQueueView() {
       {paginas.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center rounded-3xl border border-zinc-200 bg-zinc-50/50 px-6 py-16 min-h-[50vh] text-center dark:border-[#2d3649] dark:bg-[#131b2f]/30">
           <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
-            <FileCheck2 className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+            <svg className="h-8 w-8 text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <path d="M14 7V0.46C14.9251 0.809335 15.7653 1.35131 16.465 2.05L19.949 5.536C20.6485 6.23488 21.1909 7.07489 21.54 8H15C14.7348 8 14.4804 7.89464 14.2929 7.70711C14.1054 7.51957 14 7.26522 14 7ZM22 10.485V19C21.9984 20.3256 21.4711 21.5964 20.5338 22.5338C19.5964 23.4711 18.3256 23.9984 17 24H7C5.67441 23.9984 4.40356 23.4711 3.46622 22.5338C2.52888 21.5964 2.00159 20.3256 2 19V5C2.00159 3.67441 2.52888 2.40356 3.46622 1.46622C4.40356 0.528882 5.67441 0.00158786 7 0L11.515 0C11.678 0 11.839 0.013 12 0.024V7C12 7.79565 12.3161 8.55871 12.8787 9.12132C13.4413 9.68393 14.2044 10 15 10H21.976C21.987 10.161 22 10.322 22 10.485ZM16.724 14.311C16.5412 14.1191 16.2897 14.0076 16.0247 14.0011C15.7598 13.9945 15.5031 14.0934 15.311 14.276L11.711 17.707C11.6148 17.8038 11.4998 17.8798 11.3731 17.9305C11.2465 17.9811 11.1107 18.0053 10.9744 18.0016C10.838 17.9979 10.7038 17.9662 10.5801 17.9087C10.4564 17.8511 10.3457 17.7689 10.255 17.667L8.666 16.253C8.5679 16.1655 8.45354 16.0983 8.32944 16.055C8.20534 16.0117 8.07393 15.9933 7.94272 16.0009C7.67774 16.016 7.42963 16.1359 7.253 16.334C7.16554 16.4321 7.09826 16.5465 7.055 16.6706C7.01173 16.7947 6.99334 16.9261 7.00086 17.0573C7.01605 17.3223 7.13588 17.5704 7.334 17.747L8.878 19.121C9.43767 19.6808 10.1959 19.9967 10.9875 19.9999C11.7791 20.0031 12.5398 19.6933 13.104 19.138L16.689 15.724C16.8809 15.5412 16.9924 15.2897 16.9989 15.0247C17.0055 14.7598 16.9066 14.5031 16.724 14.311Z" />
+            </svg>
           </div>
           <h3 className="mb-2 text-lg font-semibold text-zinc-900 dark:text-white">
             Todo al día
