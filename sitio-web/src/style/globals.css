@@ -932,6 +932,7 @@
   background: #F5F5F4;
   border-radius: var(--radius-xl);
   padding: var(--space-xl);
+  overflow: hidden;
 }
 
 .olo-dato-semana-img {
@@ -3254,3 +3255,118 @@ button.text-link,
 .olo-service-description .rich-text> :last-child {
   margin-bottom: 0;
 }
+
+@keyframes olo-search-modal-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.olo-search-modal {
+  position: fixed;
+  inset: 0;
+  background-color: #001631;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  animation: olo-search-modal-fade 0.2s ease;
+}
+
+.olo-search-modal-inner {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.olo-search-field {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.olo-search-field .olo-search-icon {
+  position: absolute;
+  left: 1.1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.25rem;
+  height: 1.25rem;
+  color: rgba(255, 255, 255, 0.7);
+  pointer-events: none;
+}
+
+.olo-search-input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.85rem 1.25rem 0.85rem 3rem;
+  font-size: 1.05rem;
+  color: #ffffff;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.olo-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.olo-search-input:focus {
+  background: rgba(255, 255, 255, 0.18);
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.olo-search-input::-webkit-search-cancel-button,
+.olo-search-input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.olo-search-results {
+  max-height: min(50vh, 360px);
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.olo-search-results::-webkit-scrollbar {
+  display: none;
+}
+
+.olo-search-empty {
+  padding: 10px 16px;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.olo-search-result-item {
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.olo-search-result-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.olo-search-result-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 2px;
+  font-family: var(--font-heading);
+}
+
+.olo-search-result-desc {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+

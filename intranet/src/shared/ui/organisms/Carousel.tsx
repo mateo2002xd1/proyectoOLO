@@ -78,6 +78,18 @@ export function Carousel({
               src={imagen.src}
               alt={imagen.alt || `Imagen del carrusel ${index + 1}`}
               className="matriz-carousel-img rounded-2xl overflow-hidden"
+              onLoad={() => {
+                if (typeof window !== 'undefined') {
+                  window.dispatchEvent(new Event('resize'));
+                }
+              }}
+              ref={(img) => {
+                if (img && img.complete) {
+                  if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new Event('resize'));
+                  }
+                }
+              }}
             />
           </div>
         ))}

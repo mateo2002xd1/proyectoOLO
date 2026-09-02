@@ -12,6 +12,7 @@ import {
   DropdownMenu,
 } from '@/shared/ui/molecules/dropdown';
 import { Navbar, NavbarItem, NavbarSection, NavbarSpacer } from '@/shared/ui/organisms/navbar';
+import { BuscadorModal } from '@/features/administracion/buscador';
 import {
   Sidebar,
   SidebarBody,
@@ -113,6 +114,7 @@ export function PanelGeneralLayout({
   className?: string;
 }) {
   const router = useRouter();
+  const [isBuscarOpen, setIsBuscarOpen] = useState(false);
 
   const handleLogout = useCallback(async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
@@ -127,7 +129,7 @@ export function PanelGeneralLayout({
         navbar={
           <Navbar>
             <NavbarSection>
-              <NavbarItem href="/admin/dashboard/buscar" aria-label="Buscar">
+              <NavbarItem as="button" onClick={() => setIsBuscarOpen(true)} aria-label="Buscar">
                 <MagnifyingGlassIcon />
               </NavbarItem>
             </NavbarSection>
@@ -198,7 +200,7 @@ export function PanelGeneralLayout({
             </SidebarBody>
 
             <SidebarSection className="max-lg:hidden mx-2 mb">
-              <SidebarItem href="/admin/dashboard/buscar">
+              <SidebarItem as="button" onClick={() => setIsBuscarOpen(true)}>
                 <MagnifyingGlassIcon />
                 <SidebarLabel>Buscar</SidebarLabel>
               </SidebarItem>
@@ -246,6 +248,7 @@ export function PanelGeneralLayout({
       >
         <RouteTransition>{children}</RouteTransition>
       </SidebarLayout>
+      {isBuscarOpen && <BuscadorModal onClose={() => setIsBuscarOpen(false)} />}
     </>
   );
 }
@@ -292,9 +295,9 @@ export function PanelGeneralDashboard() {
         ),
       ]);
       if (cancelado) return;
-      setActividad(registros);
-      setEnRevision(pendientes);
-      setCuentasPorVencer(alertasCaducidad);
+      setActividad(registros || []);
+      setEnRevision(pendientes || []);
+      setCuentasPorVencer(alertasCaducidad || []);
       setLoading(false);
     })();
     return () => {
@@ -418,7 +421,7 @@ export function PanelGeneralDashboard() {
             >
               {errorActividad.message}
             </p>
-          ) : actividad.length > 0 ? (
+          ) : (actividad || []).length > 0 ? (
             /* Mismas columnas que la bitácora, en versión angosta: la tarjeta ocupa
                media pantalla, así que la tabla desborda a scroll en vez de apretarse. */
             <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-[#7db828]/30">

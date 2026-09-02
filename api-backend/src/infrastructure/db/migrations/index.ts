@@ -20,7 +20,8 @@ import * as permisoCrearSecciones from './016-permiso-crear-secciones';
 import * as tituloMenuYPie from './017-titulo-menu-y-pie';
 import * as revertirTitulosIntranet from './018-revertir-titulos-intranet';
 import * as permisoEliminarSecciones from './019-permiso-eliminar-secciones';
-import * as bloqueosEdicion from './020-bloqueos-edicion';
+import * as depuracionYOptimizacionEsquema from './020-depuracion-y-optimizacion-esquema';
+import * as bloqueosEdicion from './021-bloqueos-edicion';
 
 export interface Migracion {
   nombre: string;
@@ -51,6 +52,7 @@ const migraciones: Migracion[] = [
   tituloMenuYPie,
   revertirTitulosIntranet,
   permisoEliminarSecciones,
+  depuracionYOptimizacionEsquema,
   bloqueosEdicion,
 ];
 
@@ -117,7 +119,7 @@ export const aplicarPendientes = async (): Promise<string[]> => {
       await transaccion.rollback();
       throw new Error(
         `[migraciones] falló ${migracion.nombre}: ${(error as Error).message}. ` +
-          'La base quedó en el estado previo a esta migración.'
+        'La base quedó en el estado previo a esta migración.'
       );
     }
   }

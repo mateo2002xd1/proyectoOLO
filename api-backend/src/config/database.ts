@@ -14,7 +14,7 @@ const sequelize = new Sequelize(config.databaseUrl, {
   dialect: 'postgres',
   protocol: 'postgres',
   ...(isNeon ? { dialectModule: neon } : {}),
-  logging: config.nodeEnv !== 'production' ? console.log : false,
+  logging: false, // REGLA 95.3 BE: Desactivado para evitar imprimir contraseñas o datos de formularios en sentencias SQL
   dialectOptions: useSSL && !isNeon
     ? { ssl: { require: true, rejectUnauthorized: false } }
     : {},

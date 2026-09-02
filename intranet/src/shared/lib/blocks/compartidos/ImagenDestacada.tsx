@@ -56,7 +56,16 @@ export function ImagenDestacada({
         <div className="matriz-sabias-que">
           {/* src editable desde el editor: next/image exigiria dimensiones fijas */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={imagenSrc} alt={imagenAlt} className="w-full h-auto object-contain" />
+          <img 
+            src={imagenSrc} 
+            alt={imagenAlt} 
+            className="w-full h-auto object-contain"
+            onLoad={() => {
+              if (typeof window !== 'undefined') {
+                window.dispatchEvent(new Event('resize'));
+              }
+            }}
+          />
         </div>
       </div>
     );
@@ -75,6 +84,11 @@ export function ImagenDestacada({
             src={imagenSrc}
             alt={imagenAlt}
             className={`w-full max-w-[1200px] mx-auto h-auto shadow-sm ${CLASES_AJUSTE[ajusteImagen] ?? CLASES_AJUSTE.contain} ${CLASES_REDONDEADO[redondeado] ?? ''}`}
+            onLoad={() => {
+              if (typeof window !== 'undefined') {
+                window.dispatchEvent(new Event('resize'));
+              }
+            }}
           />
         </div>
       </div>
