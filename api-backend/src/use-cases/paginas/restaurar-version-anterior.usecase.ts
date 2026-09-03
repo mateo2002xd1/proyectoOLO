@@ -13,7 +13,8 @@ const toUUID = (id?: string) => (id && UUID_RE.test(id) ? id : null);
 export async function restaurarVersionAnterior(
   slugOId: string,
   userId?: string,
-  ambito: Ambito = 'intranet'
+  ambito: Ambito = 'intranet',
+  criterioVersion?: { versionId?: string; numeroVersion?: number }
 ) {
   const esUUID = UUID_RE.test(slugOId);
   const pagina = esUUID
@@ -24,23 +25,32 @@ export async function restaurarVersionAnterior(
     throw new Error(`Página con identificador "${slugOId}" no encontrada en el ámbito "${ambito}"`);
   }
 
-  // 1. Obtener la versión actualmente publicada
+  // 1. Obtener la versión actualmente publicada de esta página
   const versionPublicada = await PaginaVersion.findOne({
     where: { paginaId: pagina.id, estado: 'publicado' },
   });
 
-  // 2. Obtener la última versión que estuvo publicada y ahora está archivada
+  // 2. Obtener la versión archivada usando las claves de la base de datos (paginaId, estado, numeroVersion o id)
+  const whereArchivada: any = {
+    paginaId: pagina.id,
+    estado: 'archivado',
+  };
+  if (criterioVersion?.versionId) {
+    whereArchivada.id = criterioVersion.versionId;
+  } else if (criterioVersion?.numeroVersion) {
+    whereArchivada.numeroVersion = criterioVersion.numeroVersion;
+  } else {
+    // Si no se especifica una versión puntual, se busca la última que estuvo publicada
+    whereArchivada.publicadoEn = { [Op.ne]: null };
+  }
+
   const versionArchivada = await PaginaVersion.findOne({
-    where: {
-      paginaId: pagina.id,
-      estado: 'archivado',
-      publicadoEn: { [Op.ne]: null },
-    },
-    order: [['publicadoEn', 'DESC']],
+    where: whereArchivada,
+    order: [['publicadoEn', 'DESC'], ['numeroVersion', 'DESC']],
   });
 
   if (!versionArchivada) {
-    throw new Error(`La página "${pagina.slug}" no tiene ninguna versión anterior archivada para restaurar.`);
+    throw new Error(`La página "${pagina.slug}" no tiene la versión anterior archivada solicitada para restaurar.`);
   }
 
   // 3. Sincronizar archivos de disco entre backup y uploads
@@ -57,6 +67,18 @@ export async function restaurarVersionAnterior(
     if (versionPublicada) {
       await versionPublicada.update({ estado: 'archivado' }, { transaction: t });
     }
+
+    // Cualquier borrador o versión pendiente anterior deja de ser vigente y se archiva
+    await PaginaVersion.update(
+      { estado: 'archivado' },
+      {
+        where: {
+          paginaId: pagina.id,
+          estado: { [Op.in]: ['borrador', 'en_revision', 'rechazado'] },
+        },
+        transaction: t,
+      }
+    );
 
     // La versión archivada pasa a ser la publicada
     await versionArchivada.update(

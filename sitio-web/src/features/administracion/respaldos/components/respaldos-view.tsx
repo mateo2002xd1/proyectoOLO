@@ -19,7 +19,7 @@ const fecha = (iso: string) => new Date(iso).toLocaleString('es-CO', { dateStyle
  * pantalla es solo el frontend, sin conexión a la base de datos todavía.
  */
 export function RespaldosView() {
-  const { registros, isLoading, error } = useRespaldos();
+  const { registros, isLoading, isRefreshing, error, recargar } = useRespaldos();
   const [seleccionado, setSeleccionado] = useState<RegistroRespaldo | null>(null);
 
   // Filtrar para que la lista únicamente contenga elementos con versión anterior disponible para restaurar
@@ -29,21 +29,28 @@ export function RespaldosView() {
 
   return (
     <div className="p-6 lg:p-8">
-      <div className="mb-6">
-        <h1 className="admin-header text-zinc-950 dark:text-[#f6f6f6]">Respaldos</h1>
-        <p className="mt-1 text-sm text-zinc-500 max-w-2xl">
-          Historial de publicaciones con versión anterior archivada: páginas con respaldo disponible para consultar y restaurar.
-        </p>
+      <div className="mb-6 flex items-start justify-between">
+        <div>
+          <h1 className="admin-header text-zinc-950 dark:text-[#f6f6f6]">Respaldos</h1>
+          <p className="mt-1 text-sm text-zinc-500 max-w-2xl">
+            Historial de publicaciones con versión anterior archivada: páginas con respaldo disponible para consultar y restaurar.
+          </p>
+        </div>
+        {isRefreshing && (
+          <span className="text-xs font-medium text-brand-interactive animate-pulse self-center">
+            Actualizando respaldos…
+          </span>
+        )}
       </div>
 
-      {error ? (
+      {error && !registros.length ? (
         <p className="text-sm text-red-600">{error}</p>
       ) : isLoading ? (
         <p className="text-sm text-zinc-500">Cargando respaldos…</p>
       ) : registrosRestaurables.length === 0 ? (
         <p className="text-sm text-zinc-500">No hay páginas con versiones anteriores disponibles para restaurar.</p>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-[#7db828]/30">
+        <div className={`overflow-x-auto rounded-xl border border-zinc-200 dark:border-[#7db828]/30 transition-opacity ${isRefreshing ? 'opacity-70' : 'opacity-100'}`}>
           <table className="w-full min-w-[56rem] text-left text-sm">
             <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-[#131b2f]">
               <tr>
@@ -101,7 +108,11 @@ export function RespaldosView() {
         </div>
       )}
 
-      <VistaPreviaVersion registro={seleccionado} onCerrar={() => setSeleccionado(null)} />
+      <VistaPreviaVersion
+        registro={seleccionado}
+        onCerrar={() => setSeleccionado(null)}
+        onRestaurado={recargar}
+      />
     </div>
   );
 }
