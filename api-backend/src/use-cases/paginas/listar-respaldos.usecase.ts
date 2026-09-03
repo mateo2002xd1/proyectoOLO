@@ -43,7 +43,8 @@ interface FilaConsulta {
 }
 
 /**
- * Lista las publicaciones actuales de páginas junto con su versión anterior archivada (si existe).
+ * Lista las publicaciones de páginas que tienen una versión anterior archivada disponible para respaldar y restaurar.
+ * Excluye aquellas páginas que no tienen versión previa para respaldar o restaurar.
  * Permite listar todas las páginas de forma global o filtrar por ámbito ('sitio' | 'intranet').
  */
 export async function listarRespaldos(ambito?: Ambito): Promise<RegistroRespaldoDTO[]> {
@@ -69,7 +70,7 @@ export async function listarRespaldos(ambito?: Ambito): Promise<RegistroRespaldo
     INNER JOIN paginas_versiones vp ON vp.id = p.version_publicada_id
     LEFT JOIN usuarios u_edit ON u_edit.id = vp.creado_por
     LEFT JOIN usuarios u_pub ON u_pub.id = vp.publicado_por
-    LEFT JOIN LATERAL (
+    INNER JOIN LATERAL (
       SELECT id, numero_version
       FROM paginas_versiones
       WHERE pagina_id = p.id

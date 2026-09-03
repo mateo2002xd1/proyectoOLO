@@ -22,13 +22,17 @@ export function RespaldosView() {
   const { registros, isLoading, error } = useRespaldos();
   const [seleccionado, setSeleccionado] = useState<RegistroRespaldo | null>(null);
 
+  // Filtrar para que la lista únicamente contenga elementos con versión anterior disponible para restaurar
+  const registrosRestaurables = registros.filter(
+    (registro) => registro.versionAnteriorNumero !== null && Boolean(registro.versionAnteriorId || registro.versionAnteriorNumero)
+  );
+
   return (
     <div className="p-6 lg:p-8">
       <div className="mb-6">
         <h1 className="admin-header text-zinc-950 dark:text-[#f6f6f6]">Respaldos</h1>
         <p className="mt-1 text-sm text-zinc-500 max-w-2xl">
-          Historial de publicaciones de página: quién editó, quién publicó, cuándo, y una vista
-          previa de la versión que cada publicación reemplazó.
+          Historial de publicaciones con versión anterior archivada: páginas con respaldo disponible para consultar y restaurar.
         </p>
       </div>
 
@@ -36,8 +40,8 @@ export function RespaldosView() {
         <p className="text-sm text-red-600">{error}</p>
       ) : isLoading ? (
         <p className="text-sm text-zinc-500">Cargando respaldos…</p>
-      ) : registros.length === 0 ? (
-        <p className="text-sm text-zinc-500">Todavía no hay publicaciones registradas.</p>
+      ) : registrosRestaurables.length === 0 ? (
+        <p className="text-sm text-zinc-500">No hay páginas con versiones anteriores disponibles para restaurar.</p>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-[#7db828]/30">
           <table className="w-full min-w-[56rem] text-left text-sm">
@@ -54,7 +58,7 @@ export function RespaldosView() {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
-              {registros.map((registro) => (
+              {registrosRestaurables.map((registro) => (
                 <tr key={registro.id} className="bg-white dark:bg-[#0f1626]">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
@@ -84,13 +88,7 @@ export function RespaldosView() {
                   <td className="px-4 py-3 text-right">
                     <button
                       type="button"
-                      disabled={registro.versionAnteriorNumero === null}
                       onClick={() => setSeleccionado(registro)}
-                      title={
-                        registro.versionAnteriorNumero === null
-                          ? 'Esta fue la primera versión publicada: no hay una anterior que ver'
-                          : undefined
-                      }
                       className={CLASE_BOTON_PRIMARIO}
                     >
                       Ver versión anterior

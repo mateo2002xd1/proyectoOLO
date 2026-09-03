@@ -5,6 +5,7 @@ import { PaginaRepository } from '../../repositories/pagina.repository';
 import { emitirContenidoPublicado } from '../../domain-events/paginas/contenido-publicado.event';
 import type { Ambito } from '../../shared/ambito';
 import { restaurarArchivosDesdeBackup } from '../../shared/storage/backup-uploads.service';
+import { logAudit } from '../auditoria/audit.usecase';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const toUUID = (id?: string) => (id && UUID_RE.test(id) ? id : null);
@@ -82,6 +83,34 @@ export async function restaurarVersionAnterior(
     versionId: versionArchivada.id,
     publicadoPor: toUUID(userId),
     fecha: new Date(),
+  });
+
+  // 6. Registrar en auditoría el archivado de la versión previa y la publicación de la restaurada
+  if (versionPublicada) {
+    await logAudit({
+      entidadId: pagina.id,
+      entidadTipo: 'pagina',
+      usuarioId: toUUID(userId),
+      accion: 'despublicar',
+      camposModificados: [
+        { campo: 'slug', antes: null, despues: pagina.slug },
+        { campo: 'version', antes: versionPublicada.numeroVersion, despues: versionPublicada.numeroVersion },
+        { campo: 'estado', antes: 'publicado', despues: 'archivado' },
+        { campo: 'motivo', antes: null, despues: `Archivada por restauración de versión ${versionArchivada.numeroVersion}` },
+      ],
+    });
+  }
+
+  await logAudit({
+    entidadId: pagina.id,
+    entidadTipo: 'pagina',
+    usuarioId: toUUID(userId),
+    accion: 'publicar',
+    camposModificados: [
+      { campo: 'slug', antes: null, despues: pagina.slug },
+      { campo: 'version', antes: null, despues: versionArchivada.numeroVersion },
+      { campo: 'motivo', antes: null, despues: `Restaurada versión anterior ${versionArchivada.numeroVersion}` },
+    ],
   });
 
   return {

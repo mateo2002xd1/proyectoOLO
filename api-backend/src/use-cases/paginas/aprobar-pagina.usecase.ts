@@ -52,5 +52,5 @@ export const aprobarPagina = async (slug: string, userId: string, ambito: Ambito
     fecha: new Date(),
   });
 
-  return { pagina, version: versionEnRevision };
+  return { pagina, version: versionEnRevision, versionArchivada: versionPublicadaAnterior };
 };

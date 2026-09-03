@@ -48,7 +48,7 @@ const ambitoExigidoDe = (req: Request) => exigirAmbito(req.header(AMBITO_HEADER)
  */
 const registrar = async (
   req: Request,
-  accion: 'crear' | 'actualizar' | 'enviar_revision' | 'publicar' | 'rechazar' | 'eliminar',
+  accion: 'crear' | 'actualizar' | 'enviar_revision' | 'publicar' | 'despublicar' | 'rechazar' | 'eliminar',
   resultado: { pagina?: { id?: string; slug?: string }; version?: { numeroVersion?: number } },
   extra: { campo: string; antes: unknown; despues: unknown }[] = []
 ) => {
@@ -268,6 +268,20 @@ export const PaginaController = {
         req.user?.id || '',
         ambitoExigidoDe(req)
       );
+
+      // Si existía una versión publicada que pasa a archivada, registrar en auditoría
+      if (result.versionArchivada) {
+        await registrar(
+          req,
+          'despublicar',
+          { pagina: result.pagina, version: result.versionArchivada },
+          [
+            { campo: 'estado', antes: 'publicado', despues: 'archivado' },
+            { campo: 'motivo', antes: null, despues: `Archivada al publicar versión ${result.version.numeroVersion}` },
+          ]
+        );
+      }
+
       // Aprobar es publicar: la versión pasa a `publicado` y queda visible.
       await registrar(req, 'publicar', result);
       res.json(result);
