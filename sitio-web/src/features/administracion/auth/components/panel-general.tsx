@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -33,6 +34,7 @@ import {
 } from '@heroicons/react/16/solid';
 import {
   ArchiveBoxIcon,
+  BellIcon,
   ClipboardDocumentCheckIcon,
   HomeIcon,
   MagnifyingGlassIcon,
@@ -52,9 +54,6 @@ import {
 import { useUsuarios, mensajeDeError, type User } from '../hooks/use-usuarios';
 import { listarAlertasCaducidad, type AlertaCaducidad } from '../services/alertas-caducidad.service';
 
-/** Editor de la intranet: configurable por entorno, nunca fijo a localhost. */
-const INTRANET_EDITOR_URL =
-  process.env.NEXT_PUBLIC_INTRANET_EDITOR_URL || 'http://localhost:3001/editor/inicio';
 
 /** Cambios que caben en la tarjeta del panel; el resto se lee en Auditoría. */
 const CAMBIOS_RECIENTES = 7;
@@ -105,6 +104,115 @@ function contarUsuariosPorRol(users: User[]): { rol: string; total: number }[] {
     .sort((a, b) => b.total - a.total || a.rol.localeCompare(b.rol, 'es'));
 }
 
+function ModalAlertas({
+  abierto,
+  onCerrar,
+  cuentasPorVencer,
+  enRevision,
+}: {
+  abierto: boolean;
+  onCerrar: () => void;
+  cuentasPorVencer: AlertaCaducidad[];
+  enRevision: PaginaEnRevision[];
+}) {
+  if (!abierto || typeof document === 'undefined') return null;
+  const total = cuentasPorVencer.length + enRevision.length;
+  
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-[#0f172a]/50 p-3 backdrop-blur-sm sm:p-6"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onCerrar();
+      }}
+    >
+      <div
+        className="flex max-h-[88vh] w-full max-w-lg flex-col overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-[#121824]"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="alertas-titulo"
+      >
+        <header className="border-b border-zinc-100 px-6 py-5 dark:border-zinc-800/80">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <h3 id="alertas-titulo" className="admin-subtitle text-zinc-900 dark:text-[#f6f6f6]">
+                Notificaciones
+              </h3>
+              <p className="mt-0.5 text-sm text-zinc-500 dark:text-[#94a3b8]">
+                Tienes {total} alerta{total !== 1 ? 's' : ''} pendiente{total !== 1 ? 's' : ''}.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onCerrar}
+              className="flex size-8 shrink-0 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+              aria-label="Cerrar"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <div className="flex-1 overflow-y-auto p-6">
+          {total === 0 ? (
+            <p className="py-8 text-center text-sm text-zinc-500 dark:text-[#94a3b8]">
+              No hay alertas pendientes en este momento.
+            </p>
+          ) : (
+            <div className="space-y-4">
+              {cuentasPorVencer.map((a) => (
+                <div
+                  key={a.userId || a.email}
+                  className="block rounded-xl border border-amber-100 bg-amber-50/50 p-4 dark:border-amber-900/30 dark:bg-amber-900/10"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-400">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-amber-800 dark:text-amber-200">
+                        Cuenta por vencer: {a.email}
+                      </p>
+                      <p className="mt-1 text-sm text-amber-700/80 dark:text-amber-300/70">
+                        Vence en {a.daysLeft} día{a.daysLeft !== 1 ? 's' : ''}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {enRevision.map((p) => (
+                <div
+                  key={p.id}
+                  className="block rounded-xl border border-blue-100 bg-blue-50/50 p-4 dark:border-blue-900/30 dark:bg-blue-900/10"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400">
+                      <ClipboardDocumentCheckIcon className="size-5" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-blue-800 dark:text-blue-200">
+                        Página en revisión
+                      </p>
+                      <p className="mt-1 truncate text-sm text-blue-700/80 dark:text-blue-300/70">
+                        {p.titulo}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 export function PanelGeneralLayout({
   children,
   userProfile,
@@ -117,6 +225,25 @@ export function PanelGeneralLayout({
   const router = useRouter();
   const [isBuscarOpen, setIsBuscarOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isAlertasOpen, setIsAlertasOpen] = useState(false);
+  const [alertasVistas, setAlertasVistas] = useState(false);
+  const [enRevision, setEnRevision] = useState<PaginaEnRevision[]>([]);
+  const [cuentasPorVencer, setCuentasPorVencer] = useState<AlertaCaducidad[]>([]);
+
+  useEffect(() => {
+    let cancelado = false;
+    Promise.all([
+      listarEnRevision().catch(() => [] as PaginaEnRevision[]),
+      listarAlertasCaducidad().then((r) => r.alerts, () => [] as AlertaCaducidad[])
+    ]).then(([pendientes, alertas]) => {
+      if (cancelado) return;
+      setEnRevision(pendientes);
+      setCuentasPorVencer(alertas);
+    });
+    return () => { cancelado = true; };
+  }, []);
+
+  const totalAlertas = cuentasPorVencer.length + enRevision.length;
 
   const handleLogout = useCallback(async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
@@ -144,6 +271,14 @@ export function PanelGeneralLayout({
               </NavbarItem>
               <NavbarItem onClick={() => setIsBuscarOpen(true)} aria-label="Buscar">
                 <MagnifyingGlassIcon />
+              </NavbarItem>
+              <NavbarItem onClick={() => { setIsAlertasOpen(true); setAlertasVistas(true); }} aria-label="Notificaciones" className="relative cursor-pointer">
+                <BellIcon className="size-5 text-zinc-500 dark:text-zinc-400" />
+                {totalAlertas > 0 && !alertasVistas && (
+                  <span className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                    {totalAlertas}
+                  </span>
+                )}
               </NavbarItem>
             </NavbarSection>
             <NavbarSpacer />
@@ -223,9 +358,9 @@ export function PanelGeneralLayout({
               </SidebarItem>
             </SidebarSection>
 
-            <SidebarFooter className="max-lg:hidden">
-              <Dropdown>
-                <DropdownButton as={SidebarItem}>
+            <SidebarFooter className="max-lg:hidden flex flex-row items-center gap-1">
+              <Dropdown className="flex-1 min-w-0">
+                <DropdownButton as={SidebarItem} className="w-full justify-between">
                   <span className="flex min-w-0 flex-1 items-center gap-3 text-left">
                     <span className="min-w-0">
                       <span className="block truncate text-sm/5 font-medium text-zinc-950 dark:text-[#f6f6f6]">
@@ -236,7 +371,7 @@ export function PanelGeneralLayout({
                       </span>
                     </span>
                   </span>
-                  <ChevronUpIcon />
+                  <ChevronUpIcon className="size-4 shrink-0 text-zinc-500" />
                 </DropdownButton>
                 <DropdownMenu className="min-w-64" anchor="top start">
                   <DropdownItem href="/admin/mi-perfil">
@@ -259,6 +394,22 @@ export function PanelGeneralLayout({
                   </DropdownItem>
                 </DropdownMenu>
               </Dropdown>
+
+              <button
+                type="button"
+                onClick={() => { setIsAlertasOpen(true); setAlertasVistas(true); }}
+                className="relative shrink-0 p-2 rounded-lg text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive transition-colors group focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-interactive"
+                aria-label="Notificaciones"
+              >
+                <div className="relative flex items-center justify-center">
+                  <BellIcon className="size-5" />
+                  {totalAlertas > 0 && !alertasVistas && (
+                    <span className="absolute -top-1 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-white dark:ring-[#121824]">
+                      {totalAlertas}
+                    </span>
+                  )}
+                </div>
+              </button>
             </SidebarFooter>
           </Sidebar>
         }
@@ -266,6 +417,12 @@ export function PanelGeneralLayout({
         <RouteTransition>{children}</RouteTransition>
       </SidebarLayout>
       {isBuscarOpen && <BuscadorModal onClose={() => setIsBuscarOpen(false)} />}
+      <ModalAlertas
+        abierto={isAlertasOpen}
+        onCerrar={() => setIsAlertasOpen(false)}
+        cuentasPorVencer={cuentasPorVencer}
+        enRevision={enRevision}
+      />
     </>
   );
 }
@@ -275,16 +432,13 @@ export function PanelGeneralDashboard() {
   const [loading, setLoading] = useState(true);
   const [actividad, setActividad] = useState<RegistroAuditoria[]>([]);
   const [errorActividad, setErrorActividad] = useState<Error | null>(null);
-  const [enRevision, setEnRevision] = useState<PaginaEnRevision[]>([]);
-  const [errorRevision, setErrorRevision] = useState<string | null>(null);
-  const [cuentasPorVencer, setCuentasPorVencer] = useState<AlertaCaducidad[]>([]);
-  const [errorCuentasPorVencer, setErrorCuentasPorVencer] = useState<string | null>(null);
+
 
   useEffect(() => {
     let cancelado = false;
     (async () => {
       // En paralelo: que una fuente lenta no retrase a las demás.
-      const [, registros, pendientes, alertasCaducidad] = await Promise.all([
+      const [, registros] = await Promise.all([
         fetchUsers(),
         listarAuditoria({}, 1, CAMBIOS_RECIENTES).then(
           (respuesta) => respuesta.registros,
@@ -297,24 +451,9 @@ export function PanelGeneralDashboard() {
             return [] as RegistroAuditoria[];
           },
         ),
-        listarEnRevision().catch((err: unknown) => {
-          if (!cancelado) setErrorRevision(mensajeDeRevision(err));
-          return [] as PaginaEnRevision[];
-        }),
-        listarAlertasCaducidad().then(
-          (respuesta) => respuesta.alerts,
-          (err: unknown) => {
-            if (!cancelado) {
-              setErrorCuentasPorVencer(mensajeDeError(err, 'No se pudieron cargar las cuentas próximas a vencer.'));
-            }
-            return [] as AlertaCaducidad[];
-          },
-        ),
       ]);
       if (cancelado) return;
       setActividad(registros || []);
-      setEnRevision(pendientes || []);
-      setCuentasPorVencer(alertasCaducidad || []);
       setLoading(false);
     })();
     return () => {
@@ -361,34 +500,7 @@ export function PanelGeneralDashboard() {
         </p>
       </div>
 
-      {/* Action Buttons for Editors */}
-      <div className="mb-8 grid gap-4 sm:grid-cols-2">
-        <Link
-          href={enlaceAlEditor('inicio', '/admin/dashboard')}
-          className="group flex flex-col justify-center gap-1 rounded-xl border border-zinc-200 bg-white p-5 transition-all duration-200 ease-out hover:translate-x-1 hover:border-brand/40 hover:bg-brand/10 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-brand/40 dark:hover:bg-brand/10"
-        >
-          <h3 className="font-semibold text-zinc-950 group-hover:text-[#4C7A1C] dark:text-[#f6f6f6] dark:group-hover:text-[#9ED65C]">
-            Editar Sitio Web
-          </h3>
-          <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">
-            Abre el editor visual Puck para el sitio público principal
-          </p>
-        </Link>
 
-        <a
-          href={INTRANET_EDITOR_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="group flex flex-col justify-center gap-1 rounded-xl border border-zinc-200 bg-white p-5 transition-all duration-200 ease-out hover:translate-x-1 hover:border-[#011A39]/40 hover:bg-[#011A39]/10 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#011A39]/40 dark:hover:bg-[#011A39]/20"
-        >
-          <h3 className="font-semibold text-zinc-950 group-hover:text-[#011A39] dark:text-[#f6f6f6] dark:group-hover:text-[#8FA8C9]">
-            Editar Intranet
-          </h3>
-          <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">
-            Abre el editor visual Puck para el sistema de Intranet
-          </p>
-        </a>
-      </div>
 
       {error && (
         <p className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
@@ -415,7 +527,7 @@ export function PanelGeneralDashboard() {
         ))}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="w-full">
         <div className="min-w-0 rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
           <div className="mb-4 flex items-baseline justify-between gap-3">
             <h2 className="admin-subtitle text-zinc-950 dark:text-[#f6f6f6]">Actividad Reciente</h2>
@@ -481,106 +593,6 @@ export function PanelGeneralDashboard() {
             </div>
           ) : (
             <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">No hay actividad reciente.</p>
-          )}
-        </div>
-
-        <div className="min-w-0 rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
-          <h2 className="admin-subtitle mb-4 text-zinc-950 dark:text-[#f6f6f6]">Alertas</h2>
-
-          <h3 className="mb-2 text-sm font-medium text-zinc-700 dark:text-[#cbd5e1]">Páginas en revisión</h3>
-          {errorRevision ? (
-            <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">{errorRevision}</p>
-          ) : enRevision.length > 0 ? (
-            /* Quién envió, qué ruta y qué versión: lo justo para decidir si abrir
-               la cola. Aprobar o rechazar se hace en Páginas en revisión. */
-            <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-[#7db828]/30">
-              <table className="w-full min-w-[30rem] text-left text-sm">
-                <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-[#131b2f]">
-                  <tr>
-                    <th scope="col" className="px-3 py-2 font-medium">Usuario</th>
-                    <th scope="col" className="px-3 py-2 font-medium">Ruta</th>
-                    <th scope="col" className="px-3 py-2 font-medium">Versión</th>
-                    <th scope="col" className="px-3 py-2 font-medium">
-                      <span className="sr-only">Revisar</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
-                  {enRevision.map((pagina) => (
-                    <tr key={pagina.id}>
-                      <td className="max-w-[9rem] truncate px-3 py-2 text-zinc-900 dark:text-[#f6f6f6]">
-                        {pagina.autor?.nombre ?? <span className="text-zinc-500">Sin autor</span>}
-                      </td>
-                      <td
-                        className="max-w-[10rem] truncate px-3 py-2 text-zinc-600 dark:text-zinc-300"
-                        title={`/${pagina.slug}`}
-                      >
-                        /{pagina.slug}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-2 tabular-nums text-zinc-600 dark:text-zinc-300">
-                        v{pagina.numeroVersion}
-                      </td>
-                      <td className="px-3 py-2 text-right">
-                        <Link
-                          href="/admin/revision"
-                          className="inline-flex items-center rounded-lg bg-brand-interactive px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-brand-interactive-hover"
-                        >
-                          Ver
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">
-              No hay páginas esperando revisión.
-            </p>
-          )}
-
-          <h3 className="mb-2 mt-6 text-sm font-medium text-zinc-700 dark:text-[#cbd5e1]">
-            Cuentas próximas a vencer
-          </h3>
-          {errorCuentasPorVencer ? (
-            <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">{errorCuentasPorVencer}</p>
-          ) : cuentasPorVencer.length > 0 ? (
-            /* Quién, con qué correo y en cuántos días: lo justo para decidir si
-               renovar. Cambiar la fecha de caducidad se hace en Usuarios. */
-            <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-[#7db828]/30">
-              <table className="w-full min-w-[26rem] text-left text-sm">
-                <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-[#131b2f]">
-                  <tr>
-                    <th scope="col" className="px-3 py-2 font-medium">Usuario</th>
-                    <th scope="col" className="px-3 py-2 font-medium">Correo</th>
-                    <th scope="col" className="px-3 py-2 font-medium">Días faltantes</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
-                  {cuentasPorVencer.map((cuenta) => (
-                    <tr key={cuenta.userId}>
-                      <td className="max-w-[9rem] truncate px-3 py-2 text-zinc-900 dark:text-[#f6f6f6]">
-                        {cuenta.name}
-                      </td>
-                      <td className="max-w-[11rem] truncate px-3 py-2 text-zinc-600 dark:text-zinc-300" title={cuenta.email}>
-                        {cuenta.email}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-2">
-                        <span
-                          className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium tabular-nums ${colorDiasRestantes(cuenta.daysLeft)}`}
-                        >
-                          {cuenta.daysLeft} {cuenta.daysLeft === 1 ? 'día' : 'días'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">
-              No hay cuentas próximas a vencer.
-            </p>
           )}
         </div>
       </div>
