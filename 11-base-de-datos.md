@@ -4,7 +4,7 @@
 > Define **el modelo de datos**: qué tabla existe, por qué existe, y qué regla de negocio sostiene cada una.
 > Cubre los 17 requerimientos en su dimensión de persistencia.
 
-**El DDL exacto no está aquí.** Vive en `api-backend/src/infrastructure/db/migrations/`. Este documento explica *la razón*; las migraciones son *la verdad*. Duplicar el `CREATE TABLE` en los dos sitios garantiza que uno de los dos quede desactualizado — es la misma regla que el README aplica al diagrama de capas.
+**El DDL exacto no está aquí.** Vive en `api-backend/src/infrastructure/db/migrations/`. Este documento explica *la razón*; las migraciones son *la verdad*. La ficha técnica exhaustiva campo a campo, tipos de datos, restricciones y relaciones está disponible en el [Diccionario de Datos](12-diccionario-de-datos.md).
 
 ---
 
