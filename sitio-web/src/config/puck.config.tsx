@@ -844,19 +844,21 @@ export function configDeEdicion(slug: string, contexto: ContextoDeEdicion = {}):
     root: {
       ...recortada.root,
       render: ({ children }: { children?: ReactNode }) => (
-        <>
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
           {plantilla.cabecera && (
             <Inerte etiqueta="Cabecera · se edita en «Menú y pie»">
               <Header block={{ id: 'contexto-header' }} {...plantilla.cabecera} />
             </Inerte>
           )}
-          {children}
+          <div style={{ flexGrow: 1 }}>
+            {children}
+          </div>
           {plantilla.pie && (
             <Inerte etiqueta="Pie · se edita en «Menú y pie»">
               <Footer block={{ id: 'contexto-footer' }} />
             </Inerte>
           )}
-        </>
+        </div>
       ),
     } as Config['root'],
   };
