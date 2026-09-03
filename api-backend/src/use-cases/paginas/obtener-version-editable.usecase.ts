@@ -2,6 +2,7 @@ import { Op } from 'sequelize';
 import { PaginaRepository } from '../../repositories/pagina.repository';
 import { PaginaVersion } from '../../infrastructure/db/models';
 import type { Ambito } from '../../shared/ambito';
+import { adaptarRutasParaVistaPreviaArchivada } from '../../shared/storage/backup-uploads.service';
 
 const EMPTY_CONTENIDO = { content: [], root: { props: {} } };
 
@@ -110,9 +111,17 @@ export const obtenerVersionEditable = async (
     contenido = EMPTY_CONTENIDO;
   }
 
+  // Si la versión devuelta es un respaldo archivado, validar los recursos físicos
+  // en la carpeta de backup (/public/backend/{paginaId}) y adaptar dinámicamente
+  // las rutas para que la vista previa cargue los archivos resguardados correctamente.
+  if (version.estado === 'archivado') {
+    contenido = adaptarRutasParaVistaPreviaArchivada(contenido, pagina.id, ambito);
+  }
+
   return {
     slug: pagina.slug,
     titulo: pagina.titulo,
+    paginaId: pagina.id,
     contenido,
     estado: version.estado,
     versionId: version.id,

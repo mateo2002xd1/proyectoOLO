@@ -45,6 +45,7 @@ export interface PaginaVersion {
  */
 export interface PaginaEditable {
   id?: string;
+  paginaId?: string;
   slug: string;
   titulo: string;
   contenido: PuckData | Bloque[];

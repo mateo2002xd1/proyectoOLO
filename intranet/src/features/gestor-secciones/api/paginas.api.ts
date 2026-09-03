@@ -38,6 +38,7 @@ export async function obtenerPaginaPublicada(slug: string): Promise<PaginaPublic
 }
 
 export interface VersionEditable {
+  paginaId?: string;
   slug: string;
   titulo: string;
   contenido: ContenidoPagina;
