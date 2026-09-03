@@ -57,11 +57,12 @@ export const ContenidoController = {
   async update(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await actualizarContenido(req.params.id as string, req.body);
+      const accion = req.body?.estado === 'archivado' ? 'despublicar' : 'actualizar';
       await logAudit({
         ...datosDeAuditoria(req),
         entidadId: req.params.id as string,
         entidadTipo: 'contenido',
-        accion: 'actualizar',
+        accion,
         camposModificados: camposDe(req.body),
       });
       res.json(result);

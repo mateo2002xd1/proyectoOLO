@@ -75,7 +75,7 @@ export const ETIQUETA_ACCION: Record<AccionAuditable, string> = {
   actualizar: 'Actualización',
   eliminar: 'Eliminación',
   publicar: 'Publicación',
-  despublicar: 'Despublicación',
+  despublicar: 'Archivado',
   aprobar: 'Aprobación',
   rechazar: 'Rechazo',
   enviar_revision: 'Envío a revisión',
