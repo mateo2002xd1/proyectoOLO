@@ -84,7 +84,12 @@ export const config = {
   host: process.env.HOST || '127.0.0.1',
   databaseUrl: process.env.DATABASE_URL || '',
   jwtSecret: process.env.JWT_SECRET!,
-  jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
+  // Una jornada, no una semana. Es el tiempo que un token robado sigue sirviendo, y
+  // quien entra al panel administra usuarios y lee la bitácora. El uso diario no lo
+  // nota: `@olo/inactividad` ya cierra la sesión a los 15 minutos sin actividad —esto
+  // es el techo de la jornada, no el de la sesión activa. Debe ir a la par del
+  // `COOKIE_MAX_AGE` del login de sitio-web.
+  jwtExpiresIn: process.env.JWT_EXPIRES_IN || '8h',
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
   intranetUrl: process.env.INTRANET_URL || 'http://localhost:3001',
   /**
