@@ -1616,6 +1616,24 @@
 
 /* --- Botón lápiz (edit-button) --- */
 
+/* Entrada corta al aparecer: los cuatro botones se resuelven en el servidor
+   aquí (ver `(secciones)/layout.tsx`), así que aparecen juntos, pero de golpe.
+   El `transform` va en el propio botón, no en un contenedor que lo envuelva:
+   ninguno de estos botones tiene descendientes con `position: fixed` propios, así
+   que no hay *containing block* que romper (a diferencia de `RouteTransition` en
+   sitio-web — ver el comentario equivalente en su `globals.css`). */
+@keyframes olo-boton-flotante-aparece {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .edit-button {
   position: fixed;
   bottom: 1.5rem;
@@ -1632,11 +1650,18 @@
   font-weight: 600;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
   transition: background 0.15s ease, transform 0.15s ease;
+  animation: olo-boton-flotante-aparece 180ms ease-out both;
 }
 
 .edit-button:hover {
   background: #001a2a;
   transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .edit-button {
+    animation: none !important;
+  }
 }
 
 /* Editar la plantilla afecta a las cinco secciones, no solo a la que se está

@@ -184,7 +184,7 @@ export interface AnalisisDeEliminacion {
   titulo: string;
   ambito: "sitio" | "intranet";
   puedeEliminarse: boolean;
-  motivo: "de-fabrica" | "tiene-enlaces" | null;
+  motivo: "tiene-enlaces" | null;
   versiones: number;
   publicada: boolean;
   referencias: ReferenciaAEnlace[];
