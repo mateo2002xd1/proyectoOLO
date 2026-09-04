@@ -109,15 +109,19 @@ function ModalAlertas({
   onCerrar,
   cuentasPorVencer,
   enRevision,
+  onDismissCuenta,
+  onDismissRevision,
 }: {
   abierto: boolean;
   onCerrar: () => void;
   cuentasPorVencer: AlertaCaducidad[];
   enRevision: PaginaEnRevision[];
+  onDismissCuenta: (email: string) => void;
+  onDismissRevision: (id: string) => void;
 }) {
   if (!abierto || typeof document === 'undefined') return null;
   const total = cuentasPorVencer.length + enRevision.length;
-  
+
   return createPortal(
     <div
       className="fixed inset-0 z-[60] flex items-center justify-center bg-[#0f172a]/50 p-3 backdrop-blur-sm sm:p-6"
@@ -164,8 +168,17 @@ function ModalAlertas({
               {cuentasPorVencer.map((a) => (
                 <div
                   key={a.userId || a.email}
-                  className="block rounded-xl border border-amber-100 bg-amber-50/50 p-4 dark:border-amber-900/30 dark:bg-amber-900/10"
+                  className="relative group block rounded-xl border border-amber-100 bg-amber-50/50 p-4 pr-12 dark:border-amber-900/30 dark:bg-amber-900/10"
                 >
+                  <button
+                    onClick={() => onDismissCuenta(a.email)}
+                    className="absolute top-1/2 -translate-y-1/2 right-3 p-1.5 rounded-md text-amber-500 hover:bg-amber-100 dark:hover:bg-amber-900/50 opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Marcar como solucionada"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                    </svg>
+                  </button>
                   <div className="flex items-center gap-3">
                     <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-400">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
@@ -187,8 +200,17 @@ function ModalAlertas({
               {enRevision.map((p) => (
                 <div
                   key={p.id}
-                  className="block rounded-xl border border-blue-100 bg-blue-50/50 p-4 dark:border-blue-900/30 dark:bg-blue-900/10"
+                  className="relative group block rounded-xl border border-blue-100 bg-blue-50/50 p-4 pr-12 dark:border-blue-900/30 dark:bg-blue-900/10"
                 >
+                  <button
+                    onClick={() => onDismissRevision(p.id)}
+                    className="absolute top-1/2 -translate-y-1/2 right-3 p-1.5 rounded-md text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/50 opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Marcar como solucionada"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                    </svg>
+                  </button>
                   <div className="flex items-center gap-3">
                     <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400">
                       <ClipboardDocumentCheckIcon className="size-5" />
@@ -229,6 +251,14 @@ export function PanelGeneralLayout({
   const [alertasVistas, setAlertasVistas] = useState(false);
   const [enRevision, setEnRevision] = useState<PaginaEnRevision[]>([]);
   const [cuentasPorVencer, setCuentasPorVencer] = useState<AlertaCaducidad[]>([]);
+
+  const handleDismissCuenta = useCallback((email: string) => {
+    setCuentasPorVencer((prev) => prev.filter((c) => c.email !== email));
+  }, []);
+
+  const handleDismissRevision = useCallback((id: string) => {
+    setEnRevision((prev) => prev.filter((p) => p.id !== id));
+  }, []);
 
   useEffect(() => {
     let cancelado = false;
@@ -272,7 +302,7 @@ export function PanelGeneralLayout({
               <NavbarItem onClick={() => setIsBuscarOpen(true)} aria-label="Buscar">
                 <MagnifyingGlassIcon />
               </NavbarItem>
-              <NavbarItem onClick={() => { setIsAlertasOpen(true); setAlertasVistas(true); }} aria-label="Notificaciones" className="relative cursor-pointer">
+              <NavbarItem onClick={() => setIsAlertasOpen(true)} aria-label="Notificaciones" className="relative cursor-pointer">
                 <BellIcon className="size-5 text-zinc-500 dark:text-zinc-400" />
                 {totalAlertas > 0 && !alertasVistas && (
                   <span className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
@@ -397,7 +427,7 @@ export function PanelGeneralLayout({
 
               <button
                 type="button"
-                onClick={() => { setIsAlertasOpen(true); setAlertasVistas(true); }}
+                onClick={() => setIsAlertasOpen(true)}
                 className="relative shrink-0 p-2 rounded-lg text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive transition-colors group focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-interactive"
                 aria-label="Notificaciones"
               >
@@ -419,9 +449,14 @@ export function PanelGeneralLayout({
       {isBuscarOpen && <BuscadorModal onClose={() => setIsBuscarOpen(false)} />}
       <ModalAlertas
         abierto={isAlertasOpen}
-        onCerrar={() => setIsAlertasOpen(false)}
+        onCerrar={() => {
+          setIsAlertasOpen(false);
+          setAlertasVistas(true);
+        }}
         cuentasPorVencer={cuentasPorVencer}
         enRevision={enRevision}
+        onDismissCuenta={handleDismissCuenta}
+        onDismissRevision={handleDismissRevision}
       />
     </>
   );

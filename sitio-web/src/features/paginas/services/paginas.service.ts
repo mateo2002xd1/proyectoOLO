@@ -68,7 +68,7 @@ export async function obtenerPaginaPublicadaCacheada(slug: string): Promise<Pagi
 }
 
 export async function
-obtenerPaginaInicio(): Promise<Data> {
+  obtenerPaginaInicio(): Promise<Data> {
   try {
     const res = await fetch(`${BACKEND_URL}/api/paginas/publica/inicio`, {
       headers: AMBITO_HEADERS,
