@@ -129,6 +129,24 @@ export function AuditoriaView() {
       </div>
 
       <div className="mb-4 flex flex-wrap items-end gap-3">
+        <Campo etiqueta="Desde">
+          <DatePicker
+            ariaLabel="Desde"
+            value={filtros.desde}
+            max={filtros.hasta || undefined}
+            onChange={(valor) => cambiarFiltro('desde', valor)}
+          />
+        </Campo>
+
+        <Campo etiqueta="Hasta">
+          <DatePicker
+            ariaLabel="Hasta"
+            value={filtros.hasta}
+            min={filtros.desde || undefined}
+            onChange={(valor) => cambiarFiltro('hasta', valor)}
+          />
+        </Campo>
+
         <Campo etiqueta="Usuario">
           <CustomSelect
             ariaLabel="Usuario"
@@ -162,24 +180,6 @@ export function AuditoriaView() {
               { value: '', label: 'Todas' },
               ...Object.entries(ETIQUETA_ENTIDAD).map(([value, label]) => ({ value, label })),
             ]}
-          />
-        </Campo>
-
-        <Campo etiqueta="Desde">
-          <DatePicker
-            ariaLabel="Desde"
-            value={filtros.desde}
-            max={filtros.hasta || undefined}
-            onChange={(valor) => cambiarFiltro('desde', valor)}
-          />
-        </Campo>
-
-        <Campo etiqueta="Hasta">
-          <DatePicker
-            ariaLabel="Hasta"
-            value={filtros.hasta}
-            min={filtros.desde || undefined}
-            onChange={(valor) => cambiarFiltro('hasta', valor)}
           />
         </Campo>
 

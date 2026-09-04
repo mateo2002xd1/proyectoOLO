@@ -165,10 +165,13 @@ export interface SeccionEliminada {
  * espacios de los extremos —quien lo teclea no está haciendo un dictado— pero por lo
  * demás tiene que coincidir: es una decisión, no un trámite.
  */
+import { Transaction } from 'sequelize';
+
 export const eliminarSeccion = async (
   slug: string,
   ambito: Ambito,
-  confirmacion: string
+  confirmacion: string,
+  tx?: Transaction
 ): Promise<SeccionEliminada> => {
   // Se vuelve a analizar aquí, ya con la intención de borrar: entre que el diálogo se
   // pintó y se pulsó el botón alguien pudo publicar un menú que enlaza a esta ruta.
@@ -195,7 +198,7 @@ export const eliminarSeccion = async (
 
   const clavePermiso = claveDeSeccion(ambito, slug);
 
-  const rolesAfectados = await sequelize.transaction(async (transaction) => {
+  const execute = async (transaction: Transaction) => {
     // Se leen ANTES de borrar: después, la cascada de `roles_permisos` ya se los llevó
     // y no habría a quién invalidarle la caché ni qué registrar en la bitácora.
     const [filas] = await sequelize.query(
@@ -213,7 +216,9 @@ export const eliminarSeccion = async (
     await Permission.destroy({ where: { name: clavePermiso }, transaction });
 
     return roles;
-  });
+  };
+
+  const rolesAfectados = tx ? await execute(tx) : await sequelize.transaction(execute);
 
   // Fuera de la transacción: la caché solo debe olvidar lo confirmado. Si no, un rol
   // seguiría creyendo hasta 30 s que puede editar una sección que ya no existe.

@@ -600,4 +600,25 @@ router.get('/en-revision', requierePermisoPagina('puedePublicar'), PaginaControl
  */
 router.get('/respaldos', requireAuth, PaginaController.listarRespaldos);
 
+/**
+ * @openapi
+ * /api/paginas/{slug}/restaurar:
+ *   post:
+ *     tags: [Páginas]
+ *     summary: Restaurar versión anterior archivada (respaldo)
+ *     description: |
+ *       Restaura la última versión archivada que estuvo publicada, intercambiándola
+ *       con la versión actualmente publicada y restaurando sus archivos de /uploads/.
+ *     parameters:
+ *       - $ref: '#/components/parameters/SlugEnRuta'
+ *       - $ref: '#/components/parameters/Ambito'
+ *     responses:
+ *       200:
+ *         description: Versión restaurada con éxito.
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
+ *       404: { $ref: '#/components/responses/NoEncontrado' }
+ */
+router.post('/:slug/restaurar', requierePermisoPagina('puedePublicar'), PaginaController.restaurar);
+
 export default router;

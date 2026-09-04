@@ -35,6 +35,6 @@ export const datosDeAuditoria = (req: Request) => ({
   // El nombre se guarda junto al id a propósito (única desnormalización del
   // esquema): si el usuario se borra, la fila debe seguir siendo legible.
   usuarioNombre: req.user?.name ?? req.user?.email ?? null,
-  ip: req.ip ?? null,
-  userAgent: req.headers['user-agent'] ?? null,
+  ip: req.ip ?? req.socket?.remoteAddress ?? null,
+  userAgent: (req.headers['user-agent'] as string) ?? null,
 });

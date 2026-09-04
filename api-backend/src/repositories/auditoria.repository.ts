@@ -1,4 +1,4 @@
-import { Op } from 'sequelize';
+import { Op, Transaction } from 'sequelize';
 import { ContentAuditLog } from '../infrastructure/db/models';
 import type { AccionAuditable, EntidadAuditable } from '../infrastructure/db/models/ContentAuditLog';
 
@@ -66,7 +66,7 @@ export const AuditRepository = {
    * La traducción vive aquí y no en quien llama para que haya un solo sitio que
    * tocar la próxima vez que una migración renombre algo.
    */
-  create: (datos: DatosAuditoria) =>
+  create: (datos: DatosAuditoria, tx?: Transaction) =>
     ContentAuditLog.create({
       entidad_id: datos.entidadId,
       entidad_tipo: datos.entidadTipo ?? 'contenido',
@@ -76,7 +76,7 @@ export const AuditRepository = {
       campos_modificados: datos.camposModificados ?? [],
       ip: datos.ip ?? null,
       user_agent: datos.userAgent ?? null,
-    }),
+    }, { transaction: tx }),
 
   findByContentId: (entidadId: string, entidadTipo?: string) => {
     const where: any = { entidad_id: entidadId };

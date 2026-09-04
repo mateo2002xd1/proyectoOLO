@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { COLOR_ACCION, etiquetaDeAccion, etiquetaDeEntidad, type RegistroAuditoria } from '../types';
+import { useEffect, useRef, useState } from 'react';
+import { COLOR_ACCION, etiquetaDeAccion, etiquetaDeEntidad, etiquetaDeCampo, type RegistroAuditoria } from '../types';
 
 /** Un valor del JSONB puede ser texto, número, booleano u objeto. */
 const comoTexto = (valor: unknown) => {
@@ -9,6 +9,20 @@ const comoTexto = (valor: unknown) => {
   if (typeof valor === 'string') return valor;
   return JSON.stringify(valor, null, 2);
 };
+
+/** Traduce valores de estados internos a texto legible. */
+const ETIQUETA_ESTADO: Record<string, string> = {
+  borrador: 'Borrador',
+  en_revision: 'En revisión',
+  publicado: 'Publicado',
+  archivado: 'Archivado',
+  rechazado: 'Rechazado',
+  active: 'Activo',
+  inactive: 'Inactivo',
+  suspended: 'Suspendido',
+};
+
+const traducirEstado = (v: string) => ETIQUETA_ESTADO[v] ?? v;
 
 function Dato({ etiqueta, children }: { etiqueta: string; children: React.ReactNode }) {
   return (
@@ -26,6 +40,21 @@ function Dato({ etiqueta, children }: { etiqueta: string; children: React.ReactN
  * foco atrapado, cierre con Escape y capa superior propia, sin librería ni pelea
  * con el apilamiento del panel.
  */
+function useNombresRoles() {
+  const [diccionario, setDiccionario] = useState<Record<string, string>>({});
+  useEffect(() => {
+    fetch('/api/roles', { headers: { 'Cache-Control': 'no-cache' } })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((roles) => {
+        const dict: Record<string, string> = {};
+        for (const r of roles) dict[r.id] = r.name;
+        setDiccionario(dict);
+      })
+      .catch(() => {});
+  }, []);
+  return diccionario;
+}
+
 export function DetalleRegistro({
   registro,
   onCerrar,
@@ -34,6 +63,7 @@ export function DetalleRegistro({
   onCerrar: () => void;
 }) {
   const dialogo = useRef<HTMLDialogElement>(null);
+  const nombresRoles = useNombresRoles();
 
   useEffect(() => {
     const el = dialogo.current;
@@ -99,28 +129,33 @@ export function DetalleRegistro({
             ) : (
               <>
                 <ul className="mt-2 divide-y divide-zinc-200 rounded-lg border border-zinc-200 dark:divide-zinc-700 dark:border-zinc-700">
-                  {registro.camposModificados.map(({ campo, antes, despues }, i) => (
-                    <li key={`${campo}-${i}`} className="p-3">
-                      <p className="text-xs font-medium text-zinc-500">{campo}</p>
-                      <div className="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                        <div>
-                          <p className="text-[11px] uppercase tracking-wide text-zinc-400">Antes</p>
-                          <p className="text-sm text-zinc-500">{comoTexto(antes) ?? 'sin registro'}</p>
+                  {registro.camposModificados.map(({ campo, antes, despues }, i) => {
+                    let antesStr = comoTexto(antes) ?? 'sin registro';
+                    let despuesStr = comoTexto(despues) ?? '—';
+                    if (campo === 'role_id') {
+                      if (antes && typeof antes === 'string' && nombresRoles[antes]) antesStr = nombresRoles[antes];
+                      if (despues && typeof despues === 'string' && nombresRoles[despues]) despuesStr = nombresRoles[despues];
+                    } else if (campo === 'estado' || campo === 'status') {
+                      if (antes && typeof antes === 'string') antesStr = traducirEstado(antes);
+                      if (despues && typeof despues === 'string') despuesStr = traducirEstado(despues);
+                    }
+                    return (
+                      <li key={`${campo}-${i}`} className="p-3">
+                        <p className="text-xs font-medium text-zinc-500">{etiquetaDeCampo(campo)}</p>
+                        <div className="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                          <div>
+                            <p className="text-xs font-medium text-zinc-400">Antes</p>
+                            <p className="text-sm text-zinc-500">{antesStr}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs font-medium text-zinc-400">Después</p>
+                            <pre className="whitespace-pre-wrap break-words text-sm">{despuesStr}</pre>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-[11px] uppercase tracking-wide text-zinc-400">Después</p>
-                          <pre className="whitespace-pre-wrap break-words text-sm">{comoTexto(despues) ?? '—'}</pre>
-                        </div>
-                      </div>
-                    </li>
-                  ))}
+                      </li>
+                    );
+                  })}
                 </ul>
-                {/* El hueco se enseña en vez de disimularse: hoy el backend no
-                    guarda el estado anterior (T-07.6). */}
-                <p className="mt-2 text-xs text-zinc-500">
-                  El sistema todavía no guarda el valor anterior de cada campo, por eso «Antes»
-                  aparece sin registro.
-                </p>
               </>
             )}
           </div>

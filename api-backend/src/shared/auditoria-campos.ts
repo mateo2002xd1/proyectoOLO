@@ -42,9 +42,14 @@ export const esCampoSensible = (campo: string) =>
  * alguien cambió la contraseña de una cuenta es exactamente lo que una auditoría
  * necesita saber; cuál es esa contraseña, no.
  */
-export const camposDe = (body: Record<string, unknown> | undefined | null): CampoModificado[] =>
+export const camposDe = (
+  body: Record<string, unknown> | undefined | null,
+  estadoAnterior?: Record<string, unknown> | null
+): CampoModificado[] =>
   Object.keys(body ?? {}).map((campo) => ({
     campo,
-    antes: null,
+    antes: estadoAnterior && campo in estadoAnterior
+      ? esCampoSensible(campo) ? VALOR_OMITIDO : (estadoAnterior as Record<string, unknown>)[campo]
+      : null,
     despues: esCampoSensible(campo) ? VALOR_OMITIDO : (body as Record<string, unknown>)[campo],
   }));

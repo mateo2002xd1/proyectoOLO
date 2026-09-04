@@ -26,20 +26,27 @@ const CONTENIDO_VACIO = { content: [], root: { props: {} } };
  */
 export default async function PreviewPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ versionId?: string }>;
 }) {
   const { slug } = await params;
+  const query = await searchParams;
+  const versionId = query?.versionId;
   const sesion = await getAuthSessionSnapshot();
 
   if (!ROLES_CON_ACCESO.includes((sesion.role ?? '').trim().toLowerCase())) {
     notFound();
   }
 
-  // La última versión, sea cual sea su estado: es la que está a revisión y todavía
-  // no aparece en la página publicada.
+  // Si viene versionId, busca esa versión específica (por ej. respaldo archivado);
+  // de lo contrario, busca la última versión editable para la cola de revisión.
   const token = (await cookies()).get(AUTH_COOKIE_NAME)?.value;
-  const res = await fetch(`${BACKEND_URL}/api/paginas/${slug}/editable`, {
+  const url = versionId
+    ? `${BACKEND_URL}/api/paginas/${slug}/editable?versionId=${encodeURIComponent(versionId)}`
+    : `${BACKEND_URL}/api/paginas/${slug}/editable`;
+  const res = await fetch(url, {
     headers: { Authorization: `Bearer ${token}`, 'X-Ambito': 'sitio' },
     cache: 'no-store',
   });
@@ -56,11 +63,13 @@ export default async function PreviewPage({
           Vista previa
         </span>
         <span>
-          /{slug} · versión sin publicar
+          /{slug} · {version?.numeroVersion ? `versión ${version.numeroVersion}` : 'versión sin publicar'}
           {version?.estado ? ` · ${String(version.estado).replace('_', ' ')}` : ''}
         </span>
         <span className="ml-auto opacity-85">
-          Así quedará la página. Para publicarla, vuelve a la cola de revisión.
+          {version?.estado === 'archivado'
+            ? 'Esta es una versión archivada (respaldo). Puedes restaurarla desde la sección de respaldos.'
+            : 'Así quedará la página. Para publicarla, vuelve a la cola de revisión.'}
         </span>
       </div>
 

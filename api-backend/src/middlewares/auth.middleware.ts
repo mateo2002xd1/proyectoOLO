@@ -98,6 +98,9 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
      */
     req.user = {
       ...decoded,
+      name: (user as any).name ?? decoded.name,
+      apellidos: (user as any).apellidos ?? decoded.apellidos,
+      email: (user as any).email ?? decoded.email,
       role: (user as any).role?.name ?? undefined,
       role_id: (user as any).role_id,
     };

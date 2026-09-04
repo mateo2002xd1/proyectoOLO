@@ -333,6 +333,26 @@ export function PuckEditorWrapper({
     await handleSave(indiceHistoriaRef.current);
   }, [handleSave]);
 
+  /**
+   * Vuelve a la ruta desde la que se abrió el editor. Sin `?volver=` se usa la
+   * propia página editada, que en la intranet es siempre `/{slug}`.
+   */
+  const salir = useCallback(() => {
+    router.push(resolverRutaDeVuelta(`/${slug}`));
+  }, [router, slug]);
+
+  /** Sin cambios pendientes no hay nada que perder: se sale sin preguntar. */
+  const handleSalir = useCallback(
+    (hayCambiosSinGuardar: boolean) => {
+      if (hayCambiosSinGuardar) {
+        setSalidaPendiente(true);
+        return;
+      }
+      salir();
+    },
+    [salir]
+  );
+
   const handleSend = useCallback(
     async (indiceHistoria: number) => {
       // Aviso de cliente, no autoritativo: evita el viaje de red en el caso común,
@@ -354,28 +374,9 @@ export function PuckEditorWrapper({
         return; // el mensaje ya lo muestra quien gestiona el error
       }
       await onEnviarRevision();
+      salir(); // Salir del editor tras enviar a revisión con éxito
     },
-    [handleSave, onEnviarRevision, initialPuckData]
-  );
-
-  /**
-   * Vuelve a la ruta desde la que se abrió el editor. Sin `?volver=` se usa la
-   * propia página editada, que en la intranet es siempre `/{slug}`.
-   */
-  const salir = useCallback(() => {
-    router.push(resolverRutaDeVuelta(`/${slug}`));
-  }, [router, slug]);
-
-  /** Sin cambios pendientes no hay nada que perder: se sale sin preguntar. */
-  const handleSalir = useCallback(
-    (hayCambiosSinGuardar: boolean) => {
-      if (hayCambiosSinGuardar) {
-        setSalidaPendiente(true);
-        return;
-      }
-      salir();
-    },
-    [salir]
+    [handleSave, onEnviarRevision, initialPuckData, salir]
   );
 
   // Un onClick no puede devolver una promesa rechazada; el mensaje de error ya
