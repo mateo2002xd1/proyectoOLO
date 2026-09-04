@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { verificarSesion } from "@/shared/lib/verificar-sesion";
 
 /**
  * Middleware global de la intranet.
@@ -12,25 +13,13 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get('token')?.value;
 
-  let isTokenValid = false;
-  let isRestricted = false;
-  let mustChangePassword = false;
-  let mustSetupSecurityQuestions = false;
-
-  if (token) {
-    try {
-      const { decodeJwt } = await import('jose');
-      const decoded = decodeJwt(token);
-      if (!decoded.exp || decoded.exp * 1000 > Date.now()) {
-        isTokenValid = true;
-        mustChangePassword = Boolean(decoded.must_change_password);
-        mustSetupSecurityQuestions = Boolean(decoded.must_setup_security_questions);
-        isRestricted = mustChangePassword || mustSetupSecurityQuestions;
-      }
-    } catch (error) {
-      console.error("[Middleware] Token verification failed:", (error as Error)?.name); // REGLA 95.3 BE
-    }
-  }
+  // Verificación CON FIRMA y exigiendo `exp` — ver `verificar-sesion.ts` para los dos
+  // agujeros que había aquí (firma sin comprobar, y tokens sin caducidad admitidos).
+  const sesion = await verificarSesion(token);
+  const isTokenValid = sesion !== null;
+  const mustChangePassword = sesion?.debeCambiarPassword ?? false;
+  const mustSetupSecurityQuestions = sesion?.debeConfigurarPreguntas ?? false;
+  const isRestricted = mustChangePassword || mustSetupSecurityQuestions;
 
   const getRestrictedRedirect = () => {
     if (mustSetupSecurityQuestions && mustChangePassword) {

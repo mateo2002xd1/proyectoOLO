@@ -1,35 +1,29 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-// import { jwtVerify } from 'jose';
 import {
   AUTH_COOKIE_NAME,
-  AUTH_ROLE_COOKIE_NAME,
-  AUTH_MUST_CHANGE_PW_COOKIE_NAME,
-  AUTH_MUST_SETUP_SQ_COOKIE_NAME,
+  AUTH_COOKIES,
+  PARAM_MOTIVO,
+  MOTIVO_SESION_EXPIRADA,
 } from '@/shared/lib/auth-cookies';
+import { verificarSesion } from '@/shared/lib/verificar-sesion';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
-  const role = request.cookies.get(AUTH_ROLE_COOKIE_NAME)?.value;
-  const mustChangePassword = Boolean(request.cookies.get(AUTH_MUST_CHANGE_PW_COOKIE_NAME)?.value);
-  const mustSetupSecurityQuestions = Boolean(request.cookies.get(AUTH_MUST_SETUP_SQ_COOKIE_NAME)?.value);
 
-  // Validate session token if it exists
-  let hasValidSession = false;
-  if (token) {
-    try {
-      // Usamos decodeJwt para validar que exista y no haya expirado, sin requerir JWT_SECRET en frontend
-      const { decodeJwt } = await import('jose');
-      const decoded = decodeJwt(token);
-      if (decoded.exp && decoded.exp * 1000 > Date.now()) {
-        hasValidSession = true;
-      }
-    } catch (error) {
-      console.error("[Middleware] Token verification failed:", error);
-      hasValidSession = false;
-    }
-  }
+  // La sesión se comprueba CONTRA LA FIRMA (ver `verificar-sesion.ts`). Antes se
+  // descodificaba sin verificar y, peor, el rol se leía de la cookie `sitio_role`,
+  // que no es HttpOnly: cualquiera podía escribir `sitio_role=Superadmin` en el
+  // navegador y abrir /admin/users o /admin/auditoria. La API nunca entregó datos
+  // así, pero las pantallas se abrían.
+  const sesion = await verificarSesion(token);
+  const hasValidSession = sesion !== null;
+
+  // Todo lo que decide acceso sale del token verificado, no de las cookies legibles.
+  const role = sesion?.rol;
+  const mustChangePassword = sesion?.debeCambiarPassword ?? false;
+  const mustSetupSecurityQuestions = sesion?.debeConfigurarPreguntas ?? false;
 
   const isAdminRole = role === 'Superadmin' || role === 'Administrador';
 
@@ -52,9 +46,15 @@ export async function middleware(request: NextRequest) {
   if (!hasValidSession) {
     const redirectUrl = new URL('/admin/login', request.url);
     redirectUrl.searchParams.set('redirect', pathname);
+    // Se distingue «nunca entraste» de «tu sesión dejó de valer»: sin esto el login
+    // aparecía igual en los dos casos y quien llevaba rato trabajando no entendía por
+    // qué volvía al formulario.
+    if (token) redirectUrl.searchParams.set(PARAM_MOTIVO, MOTIVO_SESION_EXPIRADA);
+
     const response = NextResponse.redirect(redirectUrl);
-    // Limpiar cookie inválida si existe
-    if (token) response.cookies.delete(AUTH_COOKIE_NAME);
+    // Se borran TODAS, no solo el token: `sitio_role` y compañía sobrevivían a la
+    // sesión y dejaban la interfaz afirmando un rol que ya no vale (ver `AUTH_COOKIES`).
+    if (token) for (const cookie of AUTH_COOKIES) response.cookies.delete(cookie);
     return response;
   }
 
