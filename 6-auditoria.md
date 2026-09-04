@@ -5,6 +5,373 @@
 
 ---
 
+## sesión 04-09-2026 (5.ª parte): entrada corta para los cuatro botones flotantes, en las dos apps
+
+Pregunta del usuario, a raíz de la parte anterior: por qué «Editar sección»
+"no se recarga como los otros botones" al recargar la página. Respuesta (no
+es por permisos — el suyo se resuelve en el servidor, es el más fiable de
+los cuatro): al vivir dentro de `RouteTransition` (única forma de que su
+permiso, calculado por página, llegue server-side), se desvanece con la
+animación de esa página; los otros tres, al vivir en el layout compartido de
+sitio-web, aparecen de golpe en cuanto resuelve la comprobación del cliente.
+Se ofrecieron dos salidas (igualarlo a los demás perdiendo su ventaja de
+venir listo en el HTML inicial, o dejarlo así) y el usuario pidió una
+tercera: que los cuatro tengan una animación de aparición corta, en sitio-web
+y en intranet.
+
+### Qué se añadió
+
+Un `@keyframes olo-boton-flotante-aparece` (opacidad 0→1 + `translateY(6px)→0`,
+180ms `ease-out`, `both`) aplicado directamente a `.edit-button` en el CSS
+global de las dos apps — cubre las cuatro variantes (`--plantilla`, `--nueva`,
+`--eliminar` heredan de la clase base). El `transform` va en el propio botón,
+no en un contenedor que lo envuelva: la lección de la parte 4.ª era que un
+`transform` en un **antepasado** de un `position: fixed` rompe su anclaje al
+viewport, pero estos botones no tienen descendientes `position: fixed`
+propios, así que animarse a sí mismos con `transform` es seguro — no hay
+ningún *containing block* que puedan corromper. `prefers-reduced-motion:
+reduce` la apaga, mismo criterio que ya usa `.olo-route-transition`.
+
+En sitio-web esto **suaviza además un salto que ya existía**: «Menú y pie»,
+«Nueva página» y «Eliminar página» aparecían de golpe en el DOM en cuanto
+`usePermisoDeSeccion`/la cookie de rol resolvían, sin ninguna transición — la
+animación nueva los hace entrar igual de suave que a «Editar sección». En
+intranet los cuatro botones ya se resolvían juntos en el servidor
+(`(secciones)/layout.tsx`), así que ahí el cambio es puramente estético: entran
+los cuatro a la vez, con el mismo desvanecido corto.
+
+### Verificación
+
+| Comprobación | Resultado |
+|---|---|
+| `tsc --noEmit` en `sitio-web` e `intranet` | Limpio en las dos |
+| `getComputedStyle(...).animationName` en los 4 botones de `/politica-de-privacidad` (sitio-web) | Los 4 llevan `olo-boton-flotante-aparece`, `0.18s` |
+| Posición (`getBoundingClientRect`) de los 4 botones tras el cambio, sitio-web e intranet | Sin cambios respecto a la parte 4.ª — misma pila, sin solaparse |
+
+---
+
+## sesión 04-09-2026 (4.ª parte): «Editar» pasa a «Editar sección», y un `transform` en `RouteTransition` lo tenía mal anclado
+
+Pedido: renombrar el botón «Editar» de sitio-web a «Editar sección» (para que
+coincida con el texto que ya usa intranet) y confirmar que queda por debajo
+del botón «Menú y pie» en la pila de botones flotantes.
+
+### El renombrado
+
+`sitio-web/src/features/paginas/components/edit-button.tsx`: `<span>Editar</span>`
+→ `<span>Editar sección</span>`, y `title`/`aria-label` de "Editar esta página" a
+"Editar esta sección", igual que ya dice `intranet/.../edit-button.tsx`.
+
+### El bug que apareció al verificar la posición
+
+El pedido de "que quede debajo de Menú y pie" ya lo cumplía el CSS
+(`.edit-button` tiene `bottom: 1.5rem`, menor que los `4.6rem` de
+`.edit-button--plantilla` — más cerca del borde inferior es más abajo en
+pantalla). Pero al medir la posición real con Playwright, el botón «Editar
+sección» aparecía en un punto **distinto en cada página** (a 3478px del tope en
+`/inicio`, a 1630px en `/politica-de-privacidad`), mientras los otros tres
+botones coincidían pixel a pixel en las dos.
+
+Causa: `EditButton` es el único de los cuatro que se monta **dentro** de
+`{children}` de `(public)/layout.tsx` (lo pinta cada `page.tsx`, no el layout
+compartido — a propósito, porque su permiso se resuelve en el servidor por
+página, ver el comentario del propio archivo). `{children}` pasa por
+`<RouteTransition>`, cuyo `.olo-route-transition` tiene una animación de
+entrada con `transform: translateY(...)`. Con `animation-fill-mode: both` ese
+`transform` se queda puesto —como `translateY(0)`, que **no** es `none`— para
+siempre, no solo mientras anima. Cualquier `transform` en un antepasado
+convierte a ese antepasado en el *containing block* de sus descendientes
+`position: fixed`: el botón dejó de anclarse a la ventana y pasó a anclarse al
+alto de esa página, que es justo lo que explica que variara según el
+contenido. Confirmado con `getComputedStyle(...).transform` → `matrix(1,0,0,1,0,0)`
+en reposo, no `none`.
+
+**Arreglo:** `sitio-web/src/style/globals.css`, `@keyframes olo-route-in`
+—`transform: translateY(8px) → translateY(0)`, cambiado a
+`margin-top: 8px → 0`. Mismo efecto visual de deslizamiento al entrar, sin
+`transform`, así que ya no atrapa ningún `position: fixed` de dentro. Afecta a
+`RouteTransition` entero (toda transición de página), no solo a este botón —
+era la única forma de arreglarlo sin convertir `EditButton` en un componente
+de cliente con portal, que habría sacrificado que se pinte en el HTML inicial
+(la razón por la que hoy es un Server Component, ver su propio comentario).
+
+### Verificación
+
+| Comprobación | Resultado |
+|---|---|
+| `tsc --noEmit` en `sitio-web` | Limpio |
+| Playwright, sesión real de Superadmin, `/inicio` y `/politica-de-privacidad`: posición (`getBoundingClientRect`) de los 4 botones | Idéntica en las dos páginas, sin solapar: Eliminar página (505–547) → Nueva página (555–597) → Menú y pie (606–646) → **Editar sección (656–696)**, de arriba a abajo |
+| Texto del botón | «Editar sección» en las dos páginas |
+
+### Pendiente al cierre
+
+- Sigue sin probarse con una sesión real de Administrador o Editor (arrastrado
+  de las partes 2.ª y 3.ª de hoy).
+- No se revisó si `.olo-route-transition` se usa también en `intranet` con el
+  mismo patrón de `transform` + `fill-mode: both` — si comparte el componente
+  o el CSS, podría tener el mismo bug latente ahí. No se tocó porque no se
+  pidió y no se confirmó que exista.
+
+---
+
+## sesión 04-09-2026 (3.ª parte): «Eliminar sección» ya no distingue páginas de fábrica
+
+Pedido explícito, tras confirmar el riesgo: que «Eliminar sección/página» aparezca en
+**todas** las páginas, incluidas las de fábrica (`inicio`, `menu-y-pie`,
+`politica-de-privacidad` en sitio-web; las 5 de intranet), en las dos apps.
+
+### Qué se quitó
+
+La guarda «nunca una sección de fábrica» tenía tres capas, ahora en dos:
+
+- **Backend** (`api-backend/src/use-cases/paginas/eliminar-seccion.usecase.ts`, **compartido
+  por las dos apps** — es ambito-agnóstico): se quitó la rama `esSeccionDeFabrica(...)` de
+  `analizarEliminacion` y el `throw` correspondiente en `eliminarSeccion`. El motivo
+  `'de-fabrica'` desapareció del tipo `AnalisisDeEliminacion` (ahora solo
+  `'tiene-enlaces' | null`) — se actualizó también en los dos clientes tipados
+  (`sitio-web/.../paginas.service.ts`, `intranet/.../paginas.api.ts`).
+- **Frontend** (`eliminar-seccion-button.tsx` en las dos apps): se quitó el filtro
+  `esSeccionDeFabrica(slug)` que ocultaba el botón, y la rama muerta del diálogo que
+  explicaba «es una página del sistema».
+- **`esSeccionDeFabrica`/`SLUGS_DE_FABRICA` del *frontend*** (`puck.config.tsx` de las dos
+  apps) quedaron sin ningún consumidor — se borraron enteros, no solo la llamada. (La
+  versión del *backend*, en `catalogo-permisos.ts`, sigue viva: la usa
+  `esSeccionConocida()` para otra cosa —el portón del editor—, ajena a esto.)
+
+Lo que **no** se tocó: la guarda de «nada puede estar enlazando a la ruta»
+(`buscarEnlacesA`) y la de «hay que teclear el título» siguen exactamente igual. Borrar
+`inicio` hoy sigue rechazándose, pero por la razón correcta: el menú (`menu-y-pie`) tiene
+un enlace «Inicio» apuntando ahí. Quitar ese enlace primero lo destraba.
+
+### El riesgo, con lo que de verdad pasa después
+
+- **`menu-y-pie` (las dos apps) e `inicio` (solo sitio-web)** tienen *fallback* de código:
+  si se borran, `obtenerPlantilla()`/`obtenerPaginaInicio()` devuelven los valores por
+  defecto (identidad visual sola / `homeFallbackData`) en vez de romper el árbol. El sitio
+  sigue de pie, solo que con el contenido de fábrica en vez del editado.
+- **`inicio` en intranet** y **`politica-de-privacidad`** (y cualquier otra página de
+  fábrica futura) **no tienen ese colchón**: si se borran, la ruta pasa a servir «sin
+  contenido» (404 para quien no puede editar, el aviso de siempre para quien sí) hasta que
+  alguien la vuelva a crear con «Nueva sección»/«Nueva página». El historial de versiones
+  se pierde (`paginas_versiones` cae en cascada), la bitácora no.
+
+### Verificación
+
+| Comprobación | Resultado |
+|---|---|
+| `tsc --noEmit` en `sitio-web`, `api-backend` e `intranet` (dentro de los contenedores) | Limpio en los tres |
+| `GET /api/paginas/{slug}/eliminable` con sesión de Superadmin, antes solo devolvía `puedeEliminarse:false, motivo:"de-fabrica"` para las de fábrica | Ahora: `menu-y-pie` y `politica-de-privacidad` (sitio) → `puedeEliminarse:true`; `inicio` (sitio e intranet) → `puedeEliminarse:false, motivo:"tiene-enlaces"` (el enlace real del menú, guarda intacta) |
+| Playwright, sesión real de Superadmin: botones visibles en `/inicio` y `/politica-de-privacidad` (sitio-web) y `/inicio` (intranet) | Los cuatro aparecen: Editar, Menú y pie, Nueva página/sección, **Eliminar página/sección** |
+| No se ejecutó ningún borrado real | A propósito — se verificó con el endpoint de análisis (`/eliminable`, de solo lectura) para no destruir contenido de verdad en la base compartida de desarrollo |
+
+### Pendiente al cierre
+
+- No se probó el flujo de borrado de punta a punta (abrir el diálogo, teclear el nombre,
+  confirmar) contra una página de fábrica real, para no perder contenido de la base de
+  desarrollo sin necesidad. El mecanismo se verificó por partes: el guard ya no bloquea
+  (`/eliminable`), el botón ya aparece, y el resto del flujo (`eliminarSeccion`,
+  confirmación por nombre, `buscarEnlacesA`) no se tocó y ya estaba probado antes.
+- Sigue pendiente lo de la 2.ª parte: confirmar con una sesión real de Administrador o
+  Editor (no solo Superadmin) que todo lo de hoy funciona igual para esos roles.
+
+---
+
+## sesión 04-09-2026 (2.ª parte): `politica-de-privacidad` pasa a ser una sección Puck editable
+
+Pedido: que el botón «Editar» (junto con Menú y pie / Nueva página / Eliminar
+página) aparezca en todas las rutas públicas de sitio-web, salvo el panel
+admin. Diagnóstico: tres de los cuatro botones ya aparecían en todas las
+rutas públicas (`(public)/layout.tsx`) y nunca en `/admin/*` — solo faltaba
+«Editar» por página, que solo tiene sentido donde hay contenido de la CMS
+detrás. De las cuatro rutas sin él, dos son herramientas con datos en vivo
+(`/clasificacion`, `/publicaciones` — quedan igual) y dos eran la misma
+página de texto legal duplicada bajo dos URLs (`/politica-de-privacidad`,
+`/privacidad`). El usuario eligió convertir esa página en una sección Puck
+editable de verdad.
+
+### Qué se construyó
+
+`politica-de-privacidad` pasa a ser una sección de fábrica (como `inicio` o
+`menu-y-pie`), con tres bloques Puck nuevos en
+`sitio-web/src/config/puck.config.tsx` (componentes en `shared/lib/blocks/`):
+
+- **`PoliticaPrivacidadEncabezado`** — título (`h1`) + intro, reemplaza el
+  banner hardcodeado.
+- **`VisorDocumentosNormativos`** — selector de pestañas + visor de PDF
+  (reutiliza `VisorDocumento`, movido de la feature a
+  `shared/ui/molecules/` porque ahora lo usa un bloque, no solo esa
+  pantalla). Las URLs (proxy interno y CompromISO externa) se calculan del
+  `documentoId` que teclea quien edita — no son un campo de texto libre, para
+  que nadie las escriba mal.
+- **`CanalesAtencion`** — tarjeta de contacto (Habeas Data), con un array de
+  canales editable.
+
+`TituloRico` (el envoltorio que evita meter un `<div>` de `richtext` dentro
+de un encabezado — ver su propio comentario) amplió su prop `nivel` de
+`2 | 3 | 4` a `1 | 2 | 3 | 4` para poder usarlo en el único `<h1>` de la
+página.
+
+### Catálogo, permisos y accesibilidad
+
+- `COMPONENTES_POR_SLUG` (frontend) y `SECCIONES_POR_AMBITO.sitio` +
+  `ETIQUETAS_DE_SECCION` (`catalogo-permisos.ts`, backend) — el mismo par que
+  documenta el código como mirror obligado.
+- Migración `022-permiso-politica-privacidad-sitio.ts`, calcada de `016`/`019`
+  pero con **`ROLES = ['Superadmin', 'Administrador', 'Editor']`** (no solo
+  los dos primeros): esto concede *editar la página*, como
+  `editar.sitio.inicio`, no *crear/eliminar secciones*. Copiar la lista de
+  aquellas dos sin pensarlo habría dejado al Editor sin poder tocarla.
+- `MANIFIESTO_SITIO` (`packages/accessibility-policy`) — regla
+  `titulo-array` para `VisorDocumentosNormativos`: cada documento pinta un
+  `<iframe title={titulo}>`, así que uno sin título no puede pasar a
+  revisión.
+
+### Contenido y rutas
+
+Script `sembrar-politica-privacidad-sitio.ts` (calcado de
+`sembrar-inicio-sitio.ts`: `guardarBorrador` → `enviarARevision` →
+`aprobarPagina`, no INSERTs a mano) publicó el contenido literal que antes
+estaba en el JSX. `(public)/politica-de-privacidad/page.tsx` se reescribió
+con el patrón de `[slug]/page.tsx` (`obtenerPaginaPublicadaCacheada` +
+`puedeEditarPaginas()` + `EditButton` + `ClientPuckRender`) conservando su
+`metadata` propia, más específica que la que da el comodín.
+`admin/(shell)/dashboard/privacidad/page.tsx` pasó a leer el mismo contenido
+publicado en vez de tener su propia copia hardcodeada — ya no pueden
+divergir. `/privacidad` (alias sin contenido propio) se borró y pasó a ser
+un `redirect` en `next.config.mjs` hacia la URL canónica, mismo estilo que
+`/` → `/inicio`.
+
+### Verificación
+
+| Comprobación | Resultado |
+|---|---|
+| `tsc --noEmit` en `sitio-web` y `api-backend` (dentro de los contenedores) | Limpio |
+| `npm run migrate` aplica la 022 | OK — `server.ts` la exigía antes de arrancar, como diseñado |
+| `npm run permisos:verificar` | Todo correcto (5 roles + casos límite) |
+| Seed script (`ts-node scripts/sembrar-politica-privacidad-sitio.ts`, dentro del contenedor `api`) | Publicó los 3 bloques; pasó `validarAccesibilidad` sin violaciones |
+| Playwright headless, sesión real de Superadmin: `/privacidad` → redirige a `/politica-de-privacidad` (200); contenido visualmente igual al original (título, intro, 2 pestañas de documentos, canales de contacto); footer y navegación intactos | OK — capturas revisadas |
+| Los tres botones que le tocan a esta página (Editar, Menú y pie, Nueva página) se apilan flotantes en la esquina inferior derecha sin superponerse; «Eliminar página» no aparece — mismo comportamiento que `/inicio` | OK |
+| Clic en «Editar» abre `/admin/editor/politica-de-privacidad`, paleta con exactamente los 3 bloques nuevos (nada de la portada ni de la intranet), lienzo con el contenido publicado | OK |
+| `/admin/dashboard/privacidad` (panel) muestra el mismo contenido que la ruta pública | OK |
+| Sin errores de consola/página en ningún caso de arriba | OK |
+
+> **No se probó con una sesión real de Administrador o Editor** (solo con
+> Superadmin, que pasa por bypass, y con la API de permisos). El único
+> usuario Administrador real de la base (`dtejada@sena.edu.co`) no tiene
+> contraseña conocida en esta sesión — mismo punto pendiente que quedó
+> abierto en la 1.ª parte de hoy con `/monitoreo`.
+
+### Pendiente al cierre
+
+- Confirmar de punta a punta con una sesión real de Administrador o Editor
+  (no solo con la API de permisos) que `/admin/editor/politica-de-privacidad`
+  abre y guarda correctamente.
+- `login-view.tsx` tiene dos enlaces de consentimiento separados —uno a
+  `/politica-de-privacidad`, otro a `/privacidad`—; el segundo ahora hace un
+  salto extra por el redirect. Funciona, pero se podría colapsar a la URL
+  canónica si alguien toca ese archivo por otro motivo.
+- Los cambios sin commitear que ya estaban en el working tree al empezar hoy
+  (Dockerfiles/`.npmrc`, borrado de `intranet_editor.html`) siguen ajenos a
+  este trabajo y se dejaron como estaban.
+
+---
+
+## sesión 04-09-2026: el botón «Editar» de `/monitoreo` no cargaba para Administrador ni Editor
+
+Pedido: "arregla el boton de editar seccion en sitio web que no aparece no carga".
+
+### Diagnóstico
+
+El botón sí se pinta (`EditButton` solo mira el rol vía `puedeEditarPaginas()`), y
+`/admin/editor/monitoreo` respondía 200. El fallo estaba un paso más adentro:
+`EditorPage` (`sitio-web/src/app/admin/editor/[slug]/page.tsx`) exige, para cualquier rol
+que no sea Superadmin, la clave granular `editar.sitio.{slug}` — y esa clave no existía
+en `permisos` para `monitoreo` (ni para `prueba`, una segunda página huérfana del mismo
+tipo, sin publicar). Sin la clave, cualquier Administrador o Editor que pulsara «Editar»
+recibía un `redirect(rutaPublicaDeSlug(slug))` silencioso: volvía a `/monitoreo` sin
+ningún aviso, indistinguible de "no carga".
+
+Confirmado en la base real (contenedor `db`, stack de `docker/docker-compose.yml` +
+`docker/docker-compose.override.yml`, ya arriba al empezar la sesión):
+
+- `paginas`: `monitoreo` (con `version_publicada_id` — publicada de verdad) y `prueba`
+  (sin publicar), ambas con `creado_por` en blanco y **sin fila en `permisos`** para
+  `editar.sitio.monitoreo` / `editar.sitio.prueba`.
+- Ninguna de las dos tiene entrada en `auditoria_cambios` con `entidad_tipo='seccion'`.
+- `SECCIONES_POR_AMBITO.sitio` (`catalogo-permisos.ts`) solo trae `['menu-y-pie',
+  'inicio']` — ni `monitoreo` ni `prueba` son de fábrica.
+
+Eso descarta las dos rutas normales de creación:
+
+- `crear-seccion.usecase.ts` (el botón «Nueva sección») crea `paginas` + `permisos` +
+  `roles_permisos` **en una sola transacción** — si la página existe, la clave también
+  existiría.
+- El *fallback* de `guardar-borrador.usecase.ts` (crea la fila de `paginas` si falta al
+  guardar el primer borrador) queda bloqueado por `requierePermisoDeSeccion()` en
+  `POST /:slug/borrador`: un slug que no es de fábrica y no tiene fila en `paginas`
+  responde 404 **antes** de llegar al use-case, para cualquier rol, Superadmin incluido.
+
+La única explicación que cuadra con los datos: la fila de `paginas` se insertó
+directamente en Postgres (fuera de la API), y el resto del ciclo editorial —borrador,
+envío a revisión, aprobación— se hizo con la cuenta local de Superadmin, que no pasa por
+`requierePermisoDeSeccion()` (bypass en `resolverPermisos`). Nadie lo notó porque esa
+cuenta nunca necesitó la clave granular.
+
+### El arreglo
+
+Dos `INSERT` idempotentes contra la base del contenedor `db` (aprobados por el usuario
+antes de correrlos — el classifier de auto mode bloqueó el primer intento por escribir
+directo a la base):
+
+```sql
+INSERT INTO permisos (id, clave, created_at, updated_at)
+SELECT gen_random_uuid(), 'editar.sitio.' || slug, now(), now()
+FROM paginas
+WHERE ambito = 'sitio' AND slug IN ('monitoreo','prueba')
+ON CONFLICT (clave) DO NOTHING;
+
+INSERT INTO roles_permisos (rol_id, permiso_id)
+SELECT r.id, p.id
+FROM roles r
+JOIN permisos p ON p.clave IN ('editar.sitio.monitoreo','editar.sitio.prueba')
+WHERE r.nombre IN ('Administrador','Editor')
+ON CONFLICT DO NOTHING;
+```
+
+Reproduce exactamente lo que `crear-seccion.usecase.ts` habría creado, concediendo a
+Administrador y Editor lo mismo que ya tienen sobre `inicio`/`menu-y-pie`. No se tocó
+código: el mecanismo de permisos ya funciona como debe (transaccional, con la excepción
+de `sembrar-permisos-roles.ts` que protege las claves de secciones creadas en caliente
+mientras su página exista) — lo que faltaba era solo el dato.
+
+### Verificación
+
+| Comprobación | Resultado |
+|---|---|
+| Login real vía UI (Playwright headless, cuenta `LOCAL_AUTH_*`) en `/inicio`, botón `.edit-button` presente, visible, clic navega a `/admin/editor/inicio` y Puck carga | OK — este flujo nunca estuvo roto, era específico de `monitoreo`/`prueba` |
+| `curl` con sesión de Superadmin a `/inicio`: HTML servido trae `class="edit-button"` con `href="/admin/editor/inicio?volver=%2Finicio"` | OK |
+| `SELECT` sobre `roles_permisos`/`permisos` tras el fix: `Administrador` y `Editor` listados en `editar.sitio.monitoreo` y `editar.sitio.prueba` | OK |
+| `GET /api/roles/{id}` (lo que consulta `getSessionPermissionsSnapshot`, el mismo chequeo que hace `EditorPage`) para el rol `Administrador`: `permissions` incluye `editar.sitio.monitoreo` y `editar.sitio.prueba` | OK |
+| Reproducir el clic como Administrador/Editor de verdad (sesión real, no solo el permiso en la API) | **No se hizo** — el único usuario `Administrador` en la base (`dtejada@sena.edu.co`) no tiene contraseña conocida en esta sesión |
+
+> **`prueba` sigue sin publicar y sin dueño.** Recibió el mismo arreglo que `monitoreo`
+> por consistencia (ambas nacieron huérfanas del mismo modo), pero probablemente sea un
+> resto de pruebas manuales de una sesión anterior. Queda pendiente decidir si se borra
+> con el botón «Eliminar sección» — no se tocó porque no era parte de lo pedido.
+
+### Pendiente al cierre
+
+- Verificar con una sesión real de Administrador o Editor (no solo con la API de
+  permisos) que `/admin/editor/monitoreo` abre el editor de punta a punta.
+- Decidir si `prueba` (página de sitio-web, sin publicar) se elimina.
+- Los cambios sin commitear que ya estaban en el working tree al empezar esta sesión
+  (`api-backend/Dockerfile`, `intranet/Dockerfile`, `sitio-web/Dockerfile` — el fix de
+  `install-links`/`.npmrc` para que `dist/` de los `@olo/*` llegue al `npm ci` final— y
+  el borrado de `intranet_editor.html`) son ajenos a este arreglo y se dejaron como
+  estaban.
+
+---
+
 ## sesión 02-09-2026 (2.ª parte): todo lo de Docker/despliegue, junto en `docker/`
 
 Pedido explícito: sacar de la raíz del repo los `docker-compose*.yml`, `deploy.sh`,
