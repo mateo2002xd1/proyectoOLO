@@ -1,3 +1,4 @@
+import { Transaction } from 'sequelize';
 import { PaginaRepository } from '../../repositories/pagina.repository';
 import type { Ambito } from '../../shared/ambito';
 
@@ -8,19 +9,22 @@ export const rechazarPagina = async (
   slug: string,
   userId: string,
   motivo: string,
-  ambito: Ambito
+  ambito: Ambito,
+  tx?: Transaction
 ) => {
-  const pagina = await PaginaRepository.findBySlug(slug, ambito);
+  const pagina = await PaginaRepository.findBySlug(slug, ambito, tx);
   if (!pagina) throw new Error('Página no encontrada');
+  const paginaAnterior = pagina.toJSON();
 
-  const versionEnRevision = await PaginaRepository.findVersionPorEstado(pagina.id, 'en_revision');
+  const versionEnRevision = await PaginaRepository.findVersionPorEstado(pagina.id, 'en_revision', tx);
   if (!versionEnRevision) throw new Error('No hay versión en revisión');
+  const versionAnterior = versionEnRevision.toJSON();
 
   await PaginaRepository.actualizarVersion(versionEnRevision, {
     estado: 'rechazado',
     motivoRechazo: motivo,
     revisorId: toUUID(userId),
-  });
+  }, tx);
 
-  return { pagina, version: versionEnRevision };
+  return { pagina, version: versionEnRevision, paginaAnterior, versionAnterior };
 };
