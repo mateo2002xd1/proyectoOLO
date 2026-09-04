@@ -68,7 +68,7 @@ export async function obtenerPaginaPublicadaCacheada(slug: string): Promise<Pagi
 }
 
 export async function
-obtenerPaginaInicio(): Promise<Data> {
+  obtenerPaginaInicio(): Promise<Data> {
   try {
     const res = await fetch(`${BACKEND_URL}/api/paginas/publica/inicio`, {
       headers: AMBITO_HEADERS,
@@ -139,11 +139,12 @@ export async function rechazarPagina(
 export async function eliminarVersion(
   slug: string,
   versionId: string,
+  motivo: string | null,
   ambito: Ambito = 'sitio'
 ): Promise<{ paginaEliminada: boolean; versionesRestantes: number }> {
   const { data } = await api.delete(
     `/api/paginas/${slug}/versiones/${versionId}`,
-    cabeceraDeAmbito(ambito)
+    { data: { motivo }, ...cabeceraDeAmbito(ambito) }
   );
   return data;
 }

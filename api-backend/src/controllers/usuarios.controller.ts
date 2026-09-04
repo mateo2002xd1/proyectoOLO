@@ -66,11 +66,26 @@ export const UserController = {
   },
   async update(req: Request, res: Response, next: NextFunction) {
     try {
+      const id = req.params.id as string;
+      // Recuperar estado anterior para auditar de qué a qué cambió
+      const modelAnterior = await getUserById(id).catch(() => null);
+      const estadoAnterior = modelAnterior ? (typeof (modelAnterior as any).toJSON === 'function' ? (modelAnterior as any).toJSON() : modelAnterior) : null;
+
       // El actor viaja al caso de uso porque la ruta solo sabe *quién* llama, no *qué*
       // trae en el cuerpo: que alguien pueda editar su cuenta no significa que pueda
       // cambiarse el rol desde ella.
-      const result = await updateUser(req.params.id as string, req.body, req.user);
-      await registrarUsuario(req, 'actualizar', req.params.id as string);
+      const result = await updateUser(id, req.body, req.user);
+      
+      console.log('--- DEBUG AUDITORIA ---');
+      console.log('BODY:', req.body);
+      console.log('ESTADO ANTERIOR:', estadoAnterior);
+      
+      const campos = camposDe(req.body, estadoAnterior as Record<string, unknown> | null);
+      
+      console.log('CAMPOS:', campos);
+      console.log('-----------------------');
+
+      await registrarUsuario(req, 'actualizar', id, campos);
       res.json(result);
     } catch (err) { next(err); }
   },

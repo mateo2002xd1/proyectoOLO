@@ -334,6 +334,7 @@ export const PaginaController = {
 
   async eliminarVersion(req: Request, res: Response, next: NextFunction) {
     try {
+      const { motivo } = req.body;
       const result = await sequelize.transaction(async (tx) => {
         const r = await eliminarVersion(
           req.params.slug as string,
@@ -345,6 +346,7 @@ export const PaginaController = {
         // desaparece con ella, esta fila es lo único que queda de que existió.
         await registrar(req, 'eliminar', r, [
           { campo: 'paginaEliminada', antes: null, despues: r.paginaEliminada },
+          { campo: 'motivo', antes: null, despues: motivo ?? null },
         ], tx);
         return r;
       });
