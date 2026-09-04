@@ -51,37 +51,20 @@ const ambitoExigidoDe = (req: Request) => exigirAmbito(req.header(AMBITO_HEADER)
  */
 const registrar = async (
   req: Request,
-  accion: 'crear' | 'actualizar' | 'enviar_revision' | 'publicar' | 'despublicar' | 'rechazar' | 'eliminar' | 'guardar_borrador',
+  accion: 'crear' | 'actualizar' | 'enviar_revision' | 'publicar' | 'despublicar' | 'aprobar' | 'rechazar' | 'eliminar' | 'guardar_borrador',
   resultado: any,
-  extra: { campo: string; antes: unknown; despues: unknown }[] = [],
+  campos: { campo: string; antes: unknown; despues: unknown }[],
   tx?: any
 ) => {
   const paginaId = resultado?.pagina?.id ?? resultado?.id;
   if (!paginaId) return;
-
-  const slugAntes = resultado?.paginaAnterior?.slug ?? null;
-  const versionAntes = resultado?.versionAnterior?.numeroVersion ?? null;
-
-  console.log('[DEBUG] registrar:', { 
-    accion, 
-    paginaAnterior: resultado?.paginaAnterior, 
-    versionAnterior: resultado?.versionAnterior,
-    slugAntes,
-    versionAntes
-  });
 
   await logAudit({
     ...datosDeAuditoria(req),
     entidadId: paginaId,
     entidadTipo: 'pagina',
     accion,
-    camposModificados: [
-      { campo: 'slug', antes: slugAntes, despues: resultado.pagina?.slug ?? resultado.slug ?? req.params.slug },
-      ...(resultado.version?.numeroVersion !== undefined
-        ? [{ campo: 'version', antes: versionAntes, despues: resultado.version.numeroVersion }]
-        : []),
-      ...extra,
-    ],
+    camposModificados: campos,
   }, tx);
 };
 
@@ -90,6 +73,7 @@ export const PaginaController = {
     try {
       const pagina = await obtenerPaginaPublica(req.params.slug as string, ambitoDe(req));
       if (!pagina) return res.status(404).json({ error: 'Página no encontrada' });
+      res.setHeader('Cache-Control', 'no-store, max-age=0');
       res.json(pagina);
     } catch (err) { next(err); }
   },
@@ -268,7 +252,15 @@ export const PaginaController = {
           ambitoExigidoDe(req),
           tx
         );
-        await registrar(req, 'guardar_borrador', r, [], tx);
+        // guardar_borrador: registra slug (puede ser primera vez que se crea la página) y la versión
+        const slugAntes = r.paginaAnterior?.slug ?? null;
+        const verAntes = r.versionAnterior?.numeroVersion ?? null;
+        const verDespues = r.version?.numeroVersion ?? null;
+        await registrar(req, 'guardar_borrador', r, [
+          { campo: 'slug', antes: slugAntes, despues: r.pagina?.slug ?? req.params.slug },
+          ...(verDespues !== undefined ? [{ campo: 'version', antes: verAntes, despues: verDespues }] : []),
+          { campo: 'estado', antes: r.versionAnterior?.estado ?? null, despues: 'borrador' },
+        ], tx);
         return r;
       });
       res.json(result);
@@ -279,7 +271,12 @@ export const PaginaController = {
     try {
       const result = await sequelize.transaction(async (tx) => {
         const r = await enviarARevision(req.params.slug as string, ambitoExigidoDe(req), tx);
-        await registrar(req, 'enviar_revision', r, [], tx);
+        // enviar_revision: lo que cambia es el estado de la versión (borrador → en_revision)
+        await registrar(req, 'enviar_revision', r, [
+          { campo: 'slug', antes: r.paginaAnterior?.slug ?? null, despues: r.pagina?.slug ?? req.params.slug },
+          { campo: 'version', antes: r.versionAnterior?.numeroVersion ?? null, despues: r.version?.numeroVersion ?? null },
+          { campo: 'estado', antes: r.versionAnterior?.estado ?? 'borrador', despues: 'en_revision' },
+        ], tx);
         return r;
       });
       res.json(result);
@@ -309,14 +306,20 @@ export const PaginaController = {
           'despublicar',
           { pagina: result.pagina, version: result.versionArchivada },
           [
+            { campo: 'slug', antes: result.pagina?.slug ?? null, despues: result.pagina?.slug ?? null },
+            { campo: 'version', antes: result.versionArchivada?.numeroVersion ?? null, despues: result.versionArchivada?.numeroVersion ?? null },
             { campo: 'estado', antes: 'publicado', despues: 'archivado' },
-            { campo: 'motivo', antes: null, despues: `Archivada al publicar versión ${result.version.numeroVersion}` },
+            { campo: 'motivo', antes: null, despues: `Archivada al publicar versión ${result.version?.numeroVersion}` },
           ]
         );
       }
 
       // Aprobar es publicar: la versión pasa a `publicado` y queda visible.
-      await registrar(req, 'publicar', result);
+      await registrar(req, 'aprobar', result, [
+        { campo: 'slug', antes: result.pagina?.slug ?? null, despues: result.pagina?.slug ?? null },
+        { campo: 'version', antes: result.versionAnterior?.numeroVersion ?? null, despues: result.version?.numeroVersion ?? null },
+        { campo: 'estado', antes: result.versionAnterior?.estado ?? 'en_revision', despues: 'publicado' },
+      ]);
       res.json(result);
     } catch (err) { next(err); }
   },
@@ -336,6 +339,9 @@ export const PaginaController = {
         // qué una versión volvió a borrador, y quien la lea semanas después no
         // tiene otro sitio donde encontrarla.
         await registrar(req, 'rechazar', r, [
+          { campo: 'slug', antes: r.paginaAnterior?.slug ?? null, despues: r.pagina?.slug ?? req.params.slug },
+          { campo: 'version', antes: r.versionAnterior?.numeroVersion ?? null, despues: r.version?.numeroVersion ?? null },
+          { campo: 'estado', antes: r.versionAnterior?.estado ?? 'en_revision', despues: 'rechazado' },
           { campo: 'motivo', antes: null, despues: motivo ?? null },
         ], tx);
         return r;
@@ -357,6 +363,8 @@ export const PaginaController = {
         // Descartar una versión destruye trabajo sin publicar: si la página entera
         // desaparece con ella, esta fila es lo único que queda de que existió.
         await registrar(req, 'eliminar', r, [
+          { campo: 'slug', antes: r.pagina?.slug ?? req.params.slug, despues: null },
+          { campo: 'version', antes: r.version?.numeroVersion ?? null, despues: null },
           { campo: 'paginaEliminada', antes: null, despues: r.paginaEliminada },
           { campo: 'motivo', antes: null, despues: motivo ?? null },
         ], tx);
