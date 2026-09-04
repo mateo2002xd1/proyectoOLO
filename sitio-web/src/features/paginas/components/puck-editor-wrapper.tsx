@@ -358,6 +358,23 @@ export function PuckEditorWrapper({
     [onSave, initialPuckData]
   );
 
+  /** Vuelve a la ruta desde la que se abrió el editor. */
+  const salir = useCallback(() => {
+    router.push(resolverRutaDeVuelta(rutaPorDefecto));
+  }, [router, rutaPorDefecto]);
+
+  /** Sin cambios pendientes no hay nada que perder: se sale sin preguntar. */
+  const handleSalir = useCallback(
+    (hayCambiosSinGuardar: boolean) => {
+      if (hayCambiosSinGuardar) {
+        setSalidaPendiente(true);
+        return;
+      }
+      salir();
+    },
+    [salir]
+  );
+
   const handleSubmitForReview = useCallback(
     async (indiceHistoria: number) => {
       if (!onPublish) return;
@@ -379,11 +396,12 @@ export function PuckEditorWrapper({
         // Si el guardado falla no se envía nada: quedaría pendiente la versión vieja.
         await handleSaveDraft(indiceHistoria);
         await onPublish();
+        salir(); // Salir del editor tras enviar a revisión con éxito
       } finally {
         setIsSubmitting(false);
       }
     },
-    [onPublish, handleSaveDraft, initialPuckData]
+    [onPublish, handleSaveDraft, initialPuckData, salir]
   );
 
   /**
@@ -403,23 +421,6 @@ export function PuckEditorWrapper({
   }, [handleSaveDraft]);
 
   const busy = isSaving || isSubmitting;
-
-  /** Vuelve a la ruta desde la que se abrió el editor. */
-  const salir = useCallback(() => {
-    router.push(resolverRutaDeVuelta(rutaPorDefecto));
-  }, [router, rutaPorDefecto]);
-
-  /** Sin cambios pendientes no hay nada que perder: se sale sin preguntar. */
-  const handleSalir = useCallback(
-    (hayCambiosSinGuardar: boolean) => {
-      if (hayCambiosSinGuardar) {
-        setSalidaPendiente(true);
-        return;
-      }
-      salir();
-    },
-    [salir]
-  );
 
   // Un onClick no puede devolver una promesa rechazada; el error de guardado lo
   // recoge `usePagina` y lo muestra la página del editor.

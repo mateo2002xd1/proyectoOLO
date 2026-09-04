@@ -67,8 +67,8 @@ export function useRevisionQueue() {
   );
 
   const eliminar = useCallback(
-    async (slug: string, versionId: string, ambito: Ambito) => {
-      await eliminarVersion(slug, versionId, ambito);
+    async (slug: string, versionId: string, motivo: string | null, ambito: Ambito) => {
+      await eliminarVersion(slug, versionId, motivo, ambito);
       await cargar();
     },
     [cargar],

@@ -47,8 +47,14 @@ export const RoleController = {
   },
   async update(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await updateRole(req.params.id as string, req.body);
-      await registrarRol(req, 'actualizar', req.params.id as string);
+      const id = req.params.id as string;
+      const modelAnterior = await getRoleById(id).catch(() => null);
+      const estadoAnterior = modelAnterior ? (typeof (modelAnterior as any).toJSON === 'function' ? (modelAnterior as any).toJSON() : modelAnterior) : null;
+      
+      const result = await updateRole(id, req.body);
+      
+      const campos = camposDe(req.body, estadoAnterior as Record<string, unknown> | null);
+      await registrarRol(req, 'actualizar', id, campos);
       res.json(result);
     } catch (err) { next(err); }
   },

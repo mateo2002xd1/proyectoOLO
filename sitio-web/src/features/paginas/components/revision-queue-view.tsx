@@ -30,17 +30,31 @@ export function RevisionQueueView() {
   const { paginas, isLoading, error, aprobar, rechazar, eliminar } = useRevisionQueue();
   const [busySlug, setBusySlug] = useState<string | null>(null);
 
-  async function handleEliminar(pagina: PaginaEnRevision) {
-    const confirmado = window.confirm(
-      `¿Eliminar la versión ${pagina.numeroVersion} de /${pagina.slug}?\n\n` +
-      'Se descarta el trabajo sin publicar. Si es la única versión de la página, ' +
-      'la próxima edición empezará de nuevo desde la versión 1.',
-    );
-    if (!confirmado) return;
+  const [modalState, setModalState] = useState<{
+    tipo: 'rechazar' | 'eliminar' | null;
+    pagina: PaginaEnRevision | null;
+  }>({ tipo: null, pagina: null });
 
+  function abrirRechazar(pagina: PaginaEnRevision) {
+    setModalState({ tipo: 'rechazar', pagina });
+  }
+
+  function abrirEliminar(pagina: PaginaEnRevision) {
+    setModalState({ tipo: 'eliminar', pagina });
+  }
+
+  async function confirmarModal(motivo: string) {
+    if (!modalState.pagina || !modalState.tipo) return;
+    const { pagina, tipo } = modalState;
+    setModalState({ tipo: null, pagina: null });
     setBusySlug(pagina.slug);
+    
     try {
-      await eliminar(pagina.slug, pagina.id, pagina.ambito);
+      if (tipo === 'rechazar') {
+        await rechazar(pagina.slug, motivo, pagina.ambito);
+      } else if (tipo === 'eliminar') {
+        await eliminar(pagina.slug, pagina.id, motivo, pagina.ambito);
+      }
     } finally {
       setBusySlug(null);
     }
@@ -50,17 +64,6 @@ export function RevisionQueueView() {
     setBusySlug(pagina.slug);
     try {
       await aprobar(pagina.slug, pagina.ambito);
-    } finally {
-      setBusySlug(null);
-    }
-  }
-
-  async function handleRechazar(pagina: PaginaEnRevision) {
-    const motivo = window.prompt('Motivo del rechazo:');
-    if (!motivo) return;
-    setBusySlug(pagina.slug);
-    try {
-      await rechazar(pagina.slug, motivo, pagina.ambito);
     } finally {
       setBusySlug(null);
     }
@@ -154,7 +157,7 @@ export function RevisionQueueView() {
                 <button
                   type="button"
                   disabled={busySlug === pagina.slug}
-                  onClick={() => handleRechazar(pagina)}
+                  onClick={() => abrirRechazar(pagina)}
                   className="flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-600 transition hover:border-red-300 hover:bg-red-100 disabled:opacity-60 dark:border-red-900/50 dark:bg-red-900/20 dark:hover:bg-red-900/40"
                 >
                   <XCircle className="h-4 w-4" />
@@ -165,7 +168,7 @@ export function RevisionQueueView() {
                 <button
                   type="button"
                   disabled={busySlug === pagina.slug}
-                  onClick={() => handleEliminar(pagina)}
+                  onClick={() => abrirEliminar(pagina)}
                   title="Descartar esta versión sin publicar"
                   className="flex items-center justify-center rounded-lg p-2 text-zinc-400 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-60 dark:hover:bg-red-900/30 dark:hover:text-red-400"
                 >
@@ -176,6 +179,92 @@ export function RevisionQueueView() {
           ))}
         </ul>
       )}
+
+      {modalState.tipo === 'rechazar' && modalState.pagina && (
+        <ModalAccionConMotivo
+          titulo={`Rechazar versión ${modalState.pagina.numeroVersion}`}
+          descripcion={`Se devolverá el borrador a su autor original (${modalState.pagina.autor?.nombre || 'desconocido'}) para que lo corrija.`}
+          textoAccion="Rechazar"
+          colorAccion="red"
+          onConfirmar={confirmarModal}
+          onCancelar={() => setModalState({ tipo: null, pagina: null })}
+        />
+      )}
+
+      {modalState.tipo === 'eliminar' && modalState.pagina && (
+        <ModalAccionConMotivo
+          titulo={`Eliminar versión ${modalState.pagina.numeroVersion} de /${modalState.pagina.slug}`}
+          descripcion="Se descarta el trabajo sin publicar. Si es la única versión de la página, la próxima edición empezará de nuevo desde la versión 1."
+          textoAccion="Eliminar"
+          colorAccion="red"
+          onConfirmar={confirmarModal}
+          onCancelar={() => setModalState({ tipo: null, pagina: null })}
+        />
+      )}
+    </div>
+  );
+}
+
+function ModalAccionConMotivo({
+  titulo,
+  descripcion,
+  textoAccion,
+  colorAccion = 'red',
+  onConfirmar,
+  onCancelar,
+  requiereMotivo = true,
+}: {
+  titulo: string;
+  descripcion: string;
+  textoAccion: string;
+  colorAccion?: 'red' | 'zinc';
+  onConfirmar: (motivo: string) => void;
+  onCancelar: () => void;
+  requiereMotivo?: boolean;
+}) {
+  const [motivo, setMotivo] = useState('');
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-zinc-900/40 backdrop-blur-sm" onClick={onCancelar}></div>
+      <div className="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl dark:bg-[#131b2f] border border-zinc-200 dark:border-[#2d3649]">
+        <h2 className="text-xl font-bold text-zinc-900 dark:text-white">{titulo}</h2>
+        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">{descripcion}</p>
+        {requiereMotivo && (
+          <div className="mt-4">
+            <label htmlFor="motivo" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              Motivo (obligatorio)
+            </label>
+            <textarea
+              id="motivo"
+              rows={3}
+              className="mt-1 block w-full rounded-xl border border-zinc-300 px-3 py-2 text-zinc-900 focus:border-brand-interactive focus:outline-none focus:ring-1 focus:ring-brand-interactive dark:border-zinc-700 dark:bg-[#1a233a] dark:text-white sm:text-sm"
+              placeholder="Explica la razón..."
+              value={motivo}
+              onChange={(e) => setMotivo(e.target.value)}
+              autoFocus
+            />
+          </div>
+        )}
+        <div className="mt-6 flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={onCancelar}
+            className="rounded-lg px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={() => onConfirmar(motivo)}
+            disabled={requiereMotivo && !motivo.trim()}
+            className={`rounded-lg px-4 py-2 text-sm font-medium text-white transition disabled:opacity-50 ${
+              colorAccion === 'red' ? 'bg-red-600 hover:bg-red-700' : 'bg-brand-interactive hover:bg-brand-interactive/90'
+            }`}
+          >
+            {textoAccion}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
