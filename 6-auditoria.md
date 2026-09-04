@@ -90,6 +90,110 @@ alcanza a nada más.
 
 ---
 
+## sesión 04-09-2026 (7.ª parte): «entro al panel y no carga nada» — el middleware no verificaba la firma
+
+Reporte: con los tres servicios en `npm run dev`, el panel administrativo dejaba entrar
+pero no cargaba usuarios ni auditoría, y en el sitio aparecía «Editar» pero no «Eliminar»
+ni «Nueva sección». Se sospechaba de la base de datos.
+
+No era la base. Reproducido de punta a punta: la API respondía `/health` 200, los
+secretos coincidían entre las tres aplicaciones, sin credenciales devolvía 401 y con una
+sesión buena entregaba los datos. El fallo estaba en cómo el frontend decide que hay
+sesión.
+
+### 1. Dos fuentes de verdad que se separan
+
+El login emite cuatro cookies con el mismo vencimiento: `sitio_token` (HttpOnly, la
+sesión real, la valida la API) y `sitio_role` / `sitio_userName` / `sitio_userEmail`
+(legibles por JavaScript, con las que se pinta la interfaz).
+
+El middleware daba la sesión por buena con `decodeJwt` —**descodifica sin comprobar la
+firma**— y solo miraba el `exp`. Cuando la API dejaba de aceptar el token, el middleware
+seguía viéndolo vigente: el caparazón del panel se pintaba, y cada petición de datos
+recibía un 401 que **nadie manejaba** (no había una sola rama de 401 en
+`features/administracion`). De ahí la pantalla muda.
+
+La asimetría de los botones es el mismo fallo visto de lado: «Editar» se decide con la
+cookie de rol —sigue ahí— y «Eliminar»/«Nueva sección» preguntan los permisos a la API
+—401—. Lo dice el propio comentario de `nueva-seccion-button.tsx`: *«`secciones.crear` no
+está en ninguna cookie»*.
+
+### 2. El agujero de seguridad que había debajo
+
+Como no se comprobaba la firma **y** el rol se leía de `sitio_role` —cookie no HttpOnly,
+que el usuario edita—, se probó contra la instancia local con un token de firma basura:
+
+| Prueba | Antes | Ahora |
+|---|---|---|
+| `/admin/users` con token forjado + `sitio_role=Superadmin` | **200** | 307 → login |
+| `/admin/auditoria` ídem | **200** | 307 → login |
+| intranet `/inicio` con token **sin `exp`** | **200** | 307 → login |
+| API `/api/users` con ese token | 401 | 401 |
+
+La API nunca entregó un dato —es quien de verdad autoriza y aguantó—, pero el control de
+acceso a las pantallas era decorativo: un Editor podía abrir usuarios y auditoría
+editando una cookie. La intranet tenía además `if (!decoded.exp || ...)`, que daba por
+válido un token **sin caducidad**.
+
+> **La razón que justificaba `decodeJwt` ya no existía.** El comentario decía «sin
+> requerir JWT_SECRET en frontend», pero `JWT_SECRET` sí está disponible en las dos
+> aplicaciones: lo declaran sus `.env.local` y lo inyectan los dos compose.
+
+### 3. Qué se hizo
+
+| Archivo | Cambio |
+|---|---|
+| `sitio-web/src/shared/lib/verificar-sesion.ts` · `intranet/…/verificar-sesion.ts` | **Nuevos.** `jwtVerify` con firma; exigen `exp`; **fallan cerrado** si no hay `JWT_SECRET` |
+| `sitio-web/src/middleware.ts` | Verifica firma; el rol sale del **token verificado**, no de la cookie; al invalidarse borra **todas** las cookies y añade `motivo=sesion-expirada` |
+| `intranet/src/middleware.ts` | Ídem; se elimina el `!decoded.exp` que admitía sesiones eternas |
+| `sitio-web/src/shared/lib/auth-cookies.ts` | Lista única `AUTH_COOKIES` + constantes del motivo |
+| `sitio-web/src/shared/lib/api-client.ts` | Era un **stub que devolvía `null`**. Ahora cliente real: 401 → cierra y va al login; 403 → se marca `sinPermiso` y **no** redirige |
+| `…/auth/logout/route.ts` | Usa la lista única: le faltaban `sitio_userEmail` y `sitio_refreshToken` |
+| `use-usuarios.ts`, `auditoria.service.ts`, `paginas.service.ts` | Pasan por el manejo central; en páginas públicas se cierra sesión **sin** redirigir |
+| `mensaje-de-cierre.ts` | Mensaje para `sesion-expirada`, por la vía segura que ya filtraba motivos |
+| `config/index.ts`, `.env`, `api-backend/.env`, ambos compose, `login/route.ts` | Sesión de **7 días → 8 horas** |
+
+**Por qué el 403 no redirige.** 401 es «no sé quién eres» y se arregla volviendo a
+entrar; 403 es «sé quién eres y esto no te toca», que no se arregla entrando otra vez —
+mandar al login ahí crea un bucle. Es el criterio que `auditoria.service.ts` ya aplicaba.
+
+**Por qué 8 horas y no menos.** `@olo/inactividad` ya cierra a los 15 minutos sin
+actividad; los 7 días no eran el tiempo de trabajo sino el tiempo que un token robado
+seguía sirviendo. 8 h es el techo de la jornada y no se nota en el uso diario.
+
+### Verificación ejecutada
+
+| Comprobación | Resultado |
+|---|---|
+| `tsc --noEmit` en las tres aplicaciones | limpio |
+| Token forjado contra `/admin/users`, `/admin/auditoria`, `/admin/dashboard` | 307 → login (antes 200) |
+| Token sin `exp` contra la intranet | 307 → login (antes 200) |
+| Login legítimo por sitio-web | 200 |
+| `/api/users`, `/api/audit-logs`, `/api/permissions`, `/api/roles` con sesión buena | 200 |
+| `/admin/users`, `/admin/auditoria` con sesión buena | 200 |
+| Intranet con token real / sin token | 200 / 307 → login |
+| `Max-Age` de la cookie de sesión | 28800 (8 h) |
+
+### Pendiente al cierre
+
+- **El API en marcha sigue emitiendo tokens de 7 días.** Cargó su `.env` al arrancar y no
+  lo ha releído: la cookie ya dura 8 h pero el token no. No es inseguro de inmediato —la
+  cookie caduca antes, así que el navegador deja de mandarlo— pero **hasta reiniciar el
+  proceso el token robado sigue valiendo una semana**.
+- **No se comprobó en un navegador real.** Todo se verificó con `curl` sobre el stack
+  vivo: falta ver el aviso «Tu sesión expiró» pintado en el login y la redirección
+  ocurriendo desde una pantalla del panel.
+- **Solo se migraron al cliente común los servicios del síntoma** (usuarios, auditoría,
+  permisos de sección). Los demás de `features/administracion` —dashboard, respaldos,
+  mi-perfil, alertas de caducidad— siguen con su `fetch` propio y sin manejo de 401.
+- **La intranet no tiene el equivalente del cliente común.** Se le arregló el middleware,
+  no el manejo de 401 en sus pantallas.
+- `NEXT_PUBLIC_INTRANET_URL` y `NEXT_PUBLIC_INTRANET_EDITOR_URL` las lee `sitio-web` pero
+  **no las define ninguna configuración**: caen siempre a `localhost:3001`, el mismo
+  fallo silencioso que se corrigió en `SITE_URL` en la 6.ª parte. Quedó sin tocar.
+
+---
+
 ## sesión 04-09-2026 (6.ª parte): la API no arrancaba tras el merge — y no era culpa del merge
 
 Encargo: revisar si el merge de `main` (`cd70e7e`) rompió algo, cruzando los cambios
