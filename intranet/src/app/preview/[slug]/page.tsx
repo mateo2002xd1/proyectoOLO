@@ -30,19 +30,23 @@ export const metadata = {
  */
 export default async function PreviewPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ versionId?: string }>;
 }) {
   const { slug } = await params;
+  const query = await searchParams;
+  const versionId = query?.versionId;
 
   // Quien no puede ni editar ni aprobar no tiene por qué ver borradores.
   if (!(await puedeEditarPaginas())) {
     notFound();
   }
 
-  // La última versión, sea cual sea su estado: es justo la que está a revisión y
-  // todavía no se ve en la página real.
-  const version = await obtenerVersionEditable(slug, await cabecerasConSesion());
+  // Si viene versionId, busca esa versión específica (por ej. respaldo archivado);
+  // de lo contrario, la última versión editable para la cola de revisión.
+  const version = await obtenerVersionEditable(slug, await cabecerasConSesion(), versionId);
 
   // El borrador de la plantilla ES el menú y el pie: rodearlo del marco los
   // pintaría dos veces y no se sabría cuál es el que se está revisando. Cualquier
@@ -55,11 +59,13 @@ export default async function PreviewPage({
       <div className="preview-aviso">
         <span className="preview-aviso-etiqueta">Vista previa</span>
         <span>
-          /{slug} · versión sin publicar
+          /{slug} · {version.versionId ? 'versión previsualizada' : 'versión sin publicar'}
           {version.estado ? ` · ${version.estado.replace('_', ' ')}` : ''}
         </span>
         <span className="preview-aviso-nota">
-          {esPlantilla
+          {version.estado === 'archivado'
+            ? 'Esta es una versión archivada (respaldo). Puedes restaurarla desde la sección de respaldos.'
+            : esPlantilla
             ? 'Así quedarán el menú y el pie en todas las secciones.'
             : 'Así quedará la página. Para publicarla, vuelve a la cola de revisión.'}
         </span>

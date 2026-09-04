@@ -7,31 +7,35 @@ import type { RegistroRespaldo } from '../types';
 export function useRespaldos() {
   const [registros, setRegistros] = useState<RegistroRespaldo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelado = false;
-
-    (async () => {
+  const cargar = async (silencioso = false) => {
+    if (!silencioso) {
       setIsLoading(true);
-      try {
-        const data = await listarRespaldos();
-        if (cancelado) return;
-        setRegistros(data);
-        setError(null);
-      } catch (err) {
-        if (cancelado) return;
-        setError(err instanceof Error ? err.message : 'Error al cargar los respaldos');
-        setRegistros([]);
-      } finally {
-        if (!cancelado) setIsLoading(false);
-      }
-    })();
+    } else {
+      setIsRefreshing(true);
+    }
+    try {
+      const data = await listarRespaldos();
+      setRegistros(data);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al cargar los respaldos');
+      if (!silencioso) setRegistros([]);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  };
 
-    return () => {
-      cancelado = true;
-    };
+  useEffect(() => {
+    cargar(false);
   }, []);
 
-  return { registros, isLoading, error };
+  const recargar = () => {
+    return cargar(true);
+  };
+
+  return { registros, isLoading, isRefreshing, error, recargar };
 }

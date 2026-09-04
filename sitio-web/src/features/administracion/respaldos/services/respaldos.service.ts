@@ -16,3 +16,19 @@ export async function listarRespaldos(ambito?: 'sitio' | 'intranet'): Promise<Re
   const { data } = await api.get<RegistroRespaldo[]>('/api/paginas/respaldos', { params });
   return data;
 }
+
+/**
+ * Restaura la versión anterior archivada de una página, publicándola de nuevo.
+ */
+export async function restaurarRespaldo(
+  slug: string,
+  ambito?: 'sitio' | 'intranet',
+  criterio?: { versionId?: string | null; numeroVersion?: number | null }
+): Promise<void> {
+  const headers = ambito ? { 'X-Ambito': ambito } : {};
+  const body = {
+    versionId: criterio?.versionId || undefined,
+    numeroVersion: criterio?.numeroVersion || undefined,
+  };
+  await api.post(`/api/paginas/${slug}/restaurar`, body, { headers });
+}

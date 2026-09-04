@@ -7,6 +7,7 @@ import { obtenerPaginaPublica } from '../use-cases/paginas/obtener-pagina-public
 import { obtenerVersionEditable } from '../use-cases/paginas/obtener-version-editable.usecase';
 import { listarEnRevision } from '../use-cases/paginas/listar-en-revision.usecase';
 import { listarRespaldos } from '../use-cases/paginas/listar-respaldos.usecase';
+import { restaurarVersionAnterior } from '../use-cases/paginas/restaurar-version-anterior.usecase';
 import { eliminarVersion } from '../use-cases/paginas/eliminar-version.usecase';
 import { crearSeccion } from '../use-cases/paginas/crear-seccion.usecase';
 import {
@@ -191,7 +192,8 @@ export const PaginaController = {
 
   async obtenerEditable(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await obtenerVersionEditable(req.params.slug as string, ambitoExigidoDe(req));
+      const versionId = typeof req.query.versionId === 'string' ? req.query.versionId : undefined;
+      const result = await obtenerVersionEditable(req.params.slug as string, ambitoExigidoDe(req), versionId);
       res.json(result);
     } catch (err) { next(err); }
   },
@@ -364,6 +366,24 @@ export const PaginaController = {
       const ambito = ambitoParam === 'intranet' || ambitoParam === 'sitio' ? ambitoParam : undefined;
       const result = await listarRespaldos(ambito);
       res.json(result);
+    } catch (err) { next(err); }
+  },
+
+  async restaurar(req: Request, res: Response, next: NextFunction) {
+    try {
+      const slug = req.params.slug as string;
+      const ambito = ambitoExigidoDe(req);
+      const versionId = typeof req.body?.versionId === 'string' ? req.body.versionId : undefined;
+      const numeroVersion = typeof req.body?.numeroVersion === 'number' ? req.body.numeroVersion : undefined;
+      const criterio = (versionId || numeroVersion) ? { versionId, numeroVersion } : undefined;
+      const resultado = await restaurarVersionAnterior(
+        slug,
+        req.user?.id,
+        ambito,
+        criterio,
+        datosDeAuditoria(req)
+      );
+      res.json(resultado);
     } catch (err) { next(err); }
   },
 };

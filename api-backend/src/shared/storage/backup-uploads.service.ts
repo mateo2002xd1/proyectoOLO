@@ -274,3 +274,78 @@ export function listarArchivosEnBackup(paginaId: string, ambito: Ambito): string
 
   return listarRecursivo(dirBackup);
 }
+
+/**
+ * Adapta recursivamente las URLs de `/uploads/...` en el contenido de una versión
+ * archivada para que apunten a `/backend/{paginaId}/...` si el recurso existe físicamente
+ * en la carpeta de resguardo (backup) de la página.
+ *
+ * Si el archivo no está en backup (o si continúa en uploads), mantiene la ruta `/uploads/...`.
+ * Esto asegura que la vista previa cargue siempre los recursos correctos con máxima fidelidad
+ * sin alterar el contenido almacenado en la base de datos.
+ */
+export function adaptarRutasParaVistaPreviaArchivada(
+  contenido: unknown,
+  paginaId: string,
+  ambito: Ambito
+): unknown {
+  if (!contenido) return contenido;
+
+  const dirBackup = resolverDirectorioBackup(paginaId, ambito);
+  if (!fs.existsSync(dirBackup)) {
+    return contenido;
+  }
+
+  // Caché de existencia por ejecución para evitar llamadas repetitivas a fs.existsSync
+  const cacheExiste = new Map<string, boolean>();
+
+  function existeEnBackup(subRuta: string): boolean {
+    if (cacheExiste.has(subRuta)) {
+      return cacheExiste.get(subRuta)!;
+    }
+    const rutaFisica = path.join(dirBackup, subRuta);
+    const existe = fs.existsSync(rutaFisica);
+    cacheExiste.set(subRuta, existe);
+    return existe;
+  }
+
+  function transformar(nodo: unknown): unknown {
+    if (!nodo) return nodo;
+
+    if (typeof nodo === 'string') {
+      if (!nodo.includes('/uploads/')) return nodo;
+
+      return nodo.replace(/\/uploads\/([^\s"'<>]+)/g, (coincidencia, subRutaConSufijo) => {
+        const subRutaLimpia = subRutaConSufijo.split(/[?#]/)[0].replace(/[\),;:.]+$/, '');
+        let subRutaFisica = subRutaLimpia;
+        try {
+          subRutaFisica = decodeURIComponent(subRutaLimpia);
+        } catch {}
+
+        if (existeEnBackup(subRutaFisica)) {
+          return coincidencia.replace(
+            `/uploads/${subRutaConSufijo}`,
+            `/backend/${paginaId}/${subRutaConSufijo}`
+          );
+        }
+        return coincidencia;
+      });
+    }
+
+    if (Array.isArray(nodo)) {
+      return nodo.map(transformar);
+    }
+
+    if (typeof nodo === 'object') {
+      const resultado: Record<string, unknown> = {};
+      for (const [clave, valor] of Object.entries(nodo as Record<string, unknown>)) {
+        resultado[clave] = transformar(valor);
+      }
+      return resultado;
+    }
+
+    return nodo;
+  }
+
+  return transformar(contenido);
+}
