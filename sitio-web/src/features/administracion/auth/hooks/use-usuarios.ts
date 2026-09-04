@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { pedirJson } from '@/shared/lib/api-client';
 
 /**
  * Un permiso, tal y como lo devuelve `GET /api/permissions`.
@@ -85,14 +86,14 @@ export function useUsuarios() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Las lecturas pasan por `pedirJson` para que el 401 se trate en un solo sitio: si la
+  // sesión dejó de valer, cierra y lleva al login en vez de dejar la tabla vacía sin
+  // explicación —que era justo el síntoma de «entro al panel y no carga nada»—.
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/users', FETCH_OPTS);
-      if (!res.ok) throw new Error('Error al cargar usuarios');
-      const data = await res.json();
-      setUsers(data);
+      setUsers(await pedirJson<User[]>('/api/users'));
     } catch (err) {
       setError(mensajeDeError(err, 'Error al cargar usuarios'));
     } finally {
@@ -100,12 +101,12 @@ export function useUsuarios() {
     }
   }, []);
 
+  // Roles y permisos alimentan desplegables dentro de la pantalla de usuarios. Su fallo
+  // se registra pero no se pinta como error propio: el de `fetchUsers` ya cuenta lo que
+  // pasó, y tres avisos del mismo 401 es ruido. `pedirJson` ya redirigió si tocaba.
   const fetchRoles = useCallback(async () => {
     try {
-      const res = await fetch('/api/roles', FETCH_OPTS);
-      if (!res.ok) throw new Error('Error al cargar roles');
-      const data = await res.json();
-      setRoles(data);
+      setRoles(await pedirJson<Role[]>('/api/roles'));
     } catch (err) {
       console.error(err);
     }
@@ -114,9 +115,7 @@ export function useUsuarios() {
   /** Carga todos los permisos disponibles en el sistema. */
   const fetchPermissions = useCallback(async () => {
     try {
-      const res = await fetch('/api/permissions', FETCH_OPTS);
-      if (!res.ok) throw new Error('Error al cargar permisos');
-      const data: Permission[] = await res.json();
+      const data = await pedirJson<Permission[]>('/api/permissions');
       setPermissions(data);
       return data;
     } catch (err) {
@@ -128,12 +127,9 @@ export function useUsuarios() {
   /** Carga los permisos actuales asignados a un rol específico. */
   const fetchRolePermissions = useCallback(async (roleId: string): Promise<Permission[]> => {
     try {
-      const res = await fetch(`/api/role-permissions/role/${roleId}`, FETCH_OPTS);
-      if (!res.ok) throw new Error('Error al cargar permisos del rol');
-      const data = await res.json();
       // El backend devuelve RolePermission[], cada uno con permission_id.
       // Necesitamos cruzar con los permisos para obtener el nombre.
-      return data as Permission[];
+      return await pedirJson<Permission[]>(`/api/role-permissions/role/${roleId}`);
     } catch (err) {
       console.error(err);
       return [];

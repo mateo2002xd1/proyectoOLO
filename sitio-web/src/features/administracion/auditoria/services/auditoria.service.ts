@@ -1,4 +1,5 @@
 import type { FiltrosAuditoria, RespuestaAuditoria } from '../types';
+import { alLoginPorSesionExpirada } from '@/shared/lib/api-client';
 
 /** Necesario para que el navegador mande la cookie de sesión al proxy de Next. */
 const FETCH_OPTS: RequestInit = { credentials: 'include' };
@@ -43,6 +44,14 @@ export async function listarAuditoria(
 ): Promise<RespuestaAuditoria> {
   const res = await fetch(`/api/audit-logs?${conFiltros(filtros, pagina, porPagina)}`, FETCH_OPTS);
 
+  // 401 antes que 403: son cosas distintas y se resuelven distinto. «No sé quién eres»
+  // se arregla volviendo a entrar, y de eso se encarga el cliente común; «no te toca»
+  // no se arregla entrando otra vez, así que se queda en pantalla y se explica.
+  // Sin esta rama, una sesión caducada dejaba la bitácora vacía sin decir por qué.
+  if (res.status === 401) {
+    alLoginPorSesionExpirada();
+    throw new ErrorAuditoria('Tu sesión expiró. Te llevamos al inicio de sesión.');
+  }
   if (res.status === 403) {
     throw new ErrorAuditoria('Tu rol no tiene acceso a la bitácora de auditoría.', true);
   }
