@@ -109,3 +109,41 @@ export const COLOR_ACCION: Record<AccionAuditable, string> = {
 
 export const etiquetaDeAccion = (accion: AccionAuditable) => ETIQUETA_ACCION[accion] ?? accion;
 export const etiquetaDeEntidad = (entidad: EntidadAuditable) => ETIQUETA_ENTIDAD[entidad] ?? entidad;
+
+export const ETIQUETA_CAMPO: Record<string, string> = {
+  name: 'Nombre',
+  apellidos: 'Apellidos',
+  email: 'Correo',
+  role_id: 'Rol',
+  status: 'Estado de cuenta',
+  expiration_date: 'Fecha de caducidad',
+  slug: 'Slug',
+  version: 'Versión',
+  estado: 'Estado',
+  motivo: 'Motivo',
+  titulo: 'Título',
+  ambito: 'Ámbito',
+  permiso: 'Permiso',
+  permiso_concedido_a_rol: 'Permiso concedido a rol',
+  permiso_retirado_a_roles: 'Permiso retirado a roles',
+  versiones_eliminadas: 'Versiones eliminadas',
+  paginaEliminada: 'Página eliminada',
+  password_hash: 'Contraseña',
+  permiso_asignado: 'Permiso asignado',
+  permiso_revocado: 'Permiso revocado',
+  debe_configurar_preguntas: 'Debe configurar preguntas',
+  debe_cambiar_password: 'Debe cambiar contraseña',
+  intentos_fallidos: 'Intentos fallidos',
+  intentos_fallidos_login: 'Intentos fallidos de login',
+  bloqueado_hasta: 'Bloqueado hasta',
+  creado_por: 'Creado por',
+  description: 'Descripción',
+  es_sistema: 'Es de sistema',
+};
+
+export const etiquetaDeCampo = (campo: string) => {
+  if (ETIQUETA_CAMPO[campo]) return ETIQUETA_CAMPO[campo];
+  const limpio = campo.replace(/_/g, ' ').trim();
+  if (!limpio) return campo;
+  return limpio.charAt(0).toUpperCase() + limpio.slice(1).toLowerCase();
+};
