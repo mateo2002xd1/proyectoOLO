@@ -61,11 +61,14 @@ export interface SeccionCreada {
   rolConcedido: string | null;
 }
 
+import { Transaction } from 'sequelize';
+
 export const crearSeccion = async (
   titulo: string,
   ambito: Ambito,
   userId: string,
-  rolDelCreador: string | null
+  rolDelCreador: string | null,
+  tx?: Transaction
 ): Promise<SeccionCreada> => {
   const nombre = (titulo ?? '').trim();
   if (!nombre) throw fallo('La sección necesita un nombre.', 400);
@@ -80,7 +83,7 @@ export const crearSeccion = async (
 
   const clavePermiso = claveDeSeccion(ambito, slug);
 
-  const resultado = await sequelize.transaction(async (transaction) => {
+  const execute = async (transaction: Transaction) => {
     // El índice único es `(ambito, slug)`, así que esto solo choca dentro del mismo
     // ámbito: el sitio y la intranet pueden tener cada uno su «Bolsa de empleo».
     const yaExiste = await Pagina.findOne({ where: { slug, ambito }, transaction });
@@ -118,7 +121,9 @@ export const crearSeccion = async (
     }
 
     return { pagina, rolConcedido };
-  });
+  };
+
+  const resultado = tx ? await execute(tx) : await sequelize.transaction(execute);
 
   // Fuera de la transacción a propósito: la caché solo se debe olvidar cuando el
   // cambio está confirmado. Sin esto, quien acaba de crear la sección arrastraría sus
