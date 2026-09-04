@@ -139,11 +139,12 @@ export async function rechazarPagina(
 export async function eliminarVersion(
   slug: string,
   versionId: string,
+  motivo: string | null,
   ambito: Ambito = 'sitio'
 ): Promise<{ paginaEliminada: boolean; versionesRestantes: number }> {
   const { data } = await api.delete(
     `/api/paginas/${slug}/versiones/${versionId}`,
-    cabeceraDeAmbito(ambito)
+    { data: { motivo }, ...cabeceraDeAmbito(ambito) }
   );
   return data;
 }

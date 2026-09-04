@@ -27,7 +27,13 @@ const registrarPermisoDeRol = (
     entidadId: rolId,
     entidadTipo: 'rol',
     accion: 'actualizar',
-    camposModificados: [{ campo, antes: null, despues: permiso }],
+    camposModificados: [
+      {
+        campo,
+        antes: campo === 'permiso_asignado' ? 'no asignado' : permiso,
+        despues: campo === 'permiso_asignado' ? permiso : 'no asignado',
+      },
+    ],
   });
 };
 
