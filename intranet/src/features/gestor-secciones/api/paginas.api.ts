@@ -227,3 +227,29 @@ export async function eliminarSeccion(
     body: JSON.stringify({ confirmacion }),
   });
 }
+
+export interface ItemTextoBusqueda {
+  type: 'h1' | 'h2' | 'p' | 'span';
+  text: string;
+  blockId?: string;
+}
+
+export interface PaginaIndiceBusqueda {
+  href: string;
+  slug: string;
+  titulo: string;
+  items: ItemTextoBusqueda[];
+}
+
+/**
+ * Obtiene el índice de búsqueda dinámico con los textos de todas las páginas publicadas.
+ */
+export async function obtenerIndiceBusqueda(): Promise<PaginaIndiceBusqueda[]> {
+  try {
+    return await apiClient.get<PaginaIndiceBusqueda[]>('/paginas/indice-busqueda');
+  } catch (error) {
+    console.error('Error al obtener índice dinámico de búsqueda:', error);
+    return [];
+  }
+}
+

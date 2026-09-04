@@ -5006,3 +5006,30 @@ body:has(.preview-page) .intranet-topbar {
 [data-radix-popper-content-wrapper] {
   z-index: 9999 !important;
 }
+
+/* Resaltado dinámico para resultados del buscador (Scroll y Flash Glow) */
+@keyframes destelloBusqueda {
+  0% {
+    box-shadow: 0 0 0 4px #0284c7, 0 0 28px rgba(56, 189, 248, 0.7) !important;
+    background-color: rgba(56, 189, 248, 0.25) !important;
+    border-radius: 8px;
+  }
+  35% {
+    box-shadow: 0 0 0 5px #0284c7, 0 0 32px rgba(56, 189, 248, 0.6) !important;
+    background-color: rgba(56, 189, 248, 0.22) !important;
+    border-radius: 8px;
+  }
+  70% {
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.4), 0 0 16px rgba(56, 189, 248, 0.3) !important;
+    background-color: rgba(56, 189, 248, 0.1) !important;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent !important;
+    background-color: transparent !important;
+  }
+}
+
+.resaltado-busqueda-anim {
+  animation: destelloBusqueda 2.8s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
+  scroll-margin-top: 110px !important;
+}

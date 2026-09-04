@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Controles de caja — espaciado y disposición para CUALQUIER bloque de Puck.
  *
@@ -428,7 +430,7 @@ export function conCaja<T extends ConfigDeBloque>(config: T): T {
       ) : null;
 
       return (
-        <div className={className || undefined} style={style}>
+        <div id={props?.id || undefined} className={className || undefined} style={style}>
           {posicionY === 'arriba' && nodoHashtag}
           {contenido}
           {posicionY === 'abajo' && nodoHashtag}

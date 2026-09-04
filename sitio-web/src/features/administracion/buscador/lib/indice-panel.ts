@@ -93,26 +93,10 @@ export const DESTINOS_PANEL: DestinoPanel[] = [
   {
     id: 'plantilla',
     titulo: 'Menú y pie de página',
-    descripcion: 'Editar la cabecera y el pie que comparten todas las páginas del sitio.',
+    descripcion: 'Configurar la cabecera y el pie que comparten todas las páginas del sitio.',
     href: '/admin/editor/menu-y-pie',
     grupo: 'Contenido',
     sinonimos: ['plantilla', 'cabecera', 'header', 'footer', 'navegacion', 'menu', 'enlaces'],
-  },
-  {
-    id: 'editor-inicio',
-    titulo: 'Editar Inicio (Sitio web)',
-    descripcion: 'Editor visual de la página de inicio pública del observatorio.',
-    href: '/admin/editor/inicio',
-    grupo: 'Contenido',
-    sinonimos: ['editar inicio', 'portada', 'banner principal', 'servicios', 'puck', 'bloques'],
-  },
-  {
-    id: 'editor-monitoreo',
-    titulo: 'Editar Monitoreo (Sitio web)',
-    descripcion: 'Editor visual de la página de monitoreo del mercado laboral.',
-    href: '/admin/editor/monitoreo',
-    grupo: 'Contenido',
-    sinonimos: ['monitoreo', 'mercado laboral', 'editar monitoreo', 'puck'],
   },
   {
     id: 'sitio-inicio',

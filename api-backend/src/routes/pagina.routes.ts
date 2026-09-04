@@ -75,6 +75,12 @@ router.get(
   PaginaController.obtenerPublica
 );
 
+router.get(
+  '/indice-busqueda',
+  cacheInterceptor(300, { varyBy: [AMBITO_HEADER] }),
+  PaginaController.obtenerIndiceBusqueda
+);
+
 router.use(requireAuth);
 
 /**

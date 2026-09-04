@@ -33,3 +33,14 @@ export type {
   EstiloDeCaja,
   FabricaCampoImagen,
 } from './primitives/controles-de-caja';
+
+// ─── Búsqueda, desplazamiento suave y resaltado (compartidos entre apps) ───
+export {
+  buscarElementoPorTexto,
+  aplicarDestello,
+  desplazarAElemento,
+  resaltarCoincidenciaTexto,
+} from './busqueda/busqueda-scroll';
+export { ResaltadorDeBusqueda } from './busqueda/ResaltadorDeBusqueda';
+export type { ResaltadorDeBusquedaProps } from './busqueda/ResaltadorDeBusqueda';
+

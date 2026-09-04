@@ -4,6 +4,7 @@ import { enviarARevision, ErrorValidacionAccesibilidad } from '../use-cases/pagi
 import { aprobarPagina } from '../use-cases/paginas/aprobar-pagina.usecase';
 import { rechazarPagina } from '../use-cases/paginas/rechazar-pagina.usecase';
 import { obtenerPaginaPublica } from '../use-cases/paginas/obtener-pagina-publica.usecase';
+import { obtenerIndiceBusqueda } from '../use-cases/paginas/obtener-indice-busqueda.usecase';
 import { obtenerVersionEditable } from '../use-cases/paginas/obtener-version-editable.usecase';
 import { listarEnRevision } from '../use-cases/paginas/listar-en-revision.usecase';
 import { listarRespaldos } from '../use-cases/paginas/listar-respaldos.usecase';
@@ -90,6 +91,17 @@ export const PaginaController = {
       const pagina = await obtenerPaginaPublica(req.params.slug as string, ambitoDe(req));
       if (!pagina) return res.status(404).json({ error: 'Página no encontrada' });
       res.json(pagina);
+    } catch (err) { next(err); }
+  },
+
+  /**
+   * Construye el índice dinámico de búsqueda para las páginas publicadas
+   * del ámbito solicitado ('intranet' o 'sitio').
+   */
+  async obtenerIndiceBusqueda(req: Request, res: Response, next: NextFunction) {
+    try {
+      const indice = await obtenerIndiceBusqueda(ambitoDe(req));
+      res.json(indice);
     } catch (err) { next(err); }
   },
 
