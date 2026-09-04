@@ -74,7 +74,11 @@ export function BuscadorModal({ onClose }: { onClose?: () => void }) {
     (destino: DestinoPanel | undefined) => {
       if (destino) {
         if (onClose) onClose();
-        router.push(destino.href);
+        if (destino.href.startsWith('http://') || destino.href.startsWith('https://')) {
+          window.location.href = destino.href;
+        } else {
+          router.push(destino.href);
+        }
       }
     },
     [router, onClose]
