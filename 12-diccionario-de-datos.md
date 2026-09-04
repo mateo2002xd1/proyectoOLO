@@ -3,7 +3,7 @@
 > **Documento Técnico de Referencia de Base de Datos**  
 > **Sistema Gestor:** PostgreSQL 16+ (Esquema `public`)  
 > **Proyecto:** Observatorio Laboral y Ocupacional (OLO) — SENA  
-> **Fecha de Generación:** 3 de septiembre de 2026  
+> **Fecha de Generación:** 4 de septiembre de 2026  
 > **Base de Integración:** Migraciones activas (`api-backend/src/infrastructure/db/migrations/`) y especificación técnica de persistencia ([11-base-de-datos.md](file:///c:/Users/Aprendiz/Documents/PROYECTOLO/OLO-proyect/11-base-de-datos.md)).
 
 ---
@@ -88,16 +88,16 @@ A continuación se detalla la ficha técnica y matriz de atributos para cada una
 | 1 | `id` | `UUID` | — | NO (NOT NULL) | **PK** | — | `gen_random_uuid()` | Identificador único del evento de auditoría (UUID). |
 | 2 | `entidad_id` | `UUID` | — | NO (NOT NULL) | Ninguna | — | — | Identificador UUID de la entidad modificada (referencia polimórfica sin FK dura). |
 | 3 | `entidad_tipo` | `TEXT` | — | SÍ | Ninguna | — | `'post'::text` | Nombre de la entidad auditada ('contenido', 'pagina', 'seccion', 'usuario', etc.). Restringido por CHECK. |
-| 4 | `usuario_id` | `UUID` | — | SÍ | **FK** | `usuarios.id` (ON DELETE SET NULL) | — | Clave foránea hacia el usuario que ejecutó la operación. |
-| 5 | `usuario_nombre` | `TEXT` | — | SÍ | Ninguna | — | — | Nombre desnormalizado del usuario para preservar trazabilidad histórica (D6). |
-| 6 | `accion` | `TEXT` | — | NO (NOT NULL) | Ninguna | — | — | Operación ejecutada ('crear', 'actualizar', 'eliminar', 'publicar', 'rechazar', etc.). Restringido por CHECK. |
+| 4 | `usuario_id` | `UUID` | — | SÍ | **FK** | `usuarios.id` (ON DELETE SET NULL) | — | Clave foránea hacia el usuario que ejecutó la operación (NULL si es cuenta maestra local o usuario eliminado). |
+| 5 | `usuario_nombre` | `TEXT` | — | SÍ | Ninguna | — | — | Nombre desnormalizado del usuario para preservar trazabilidad histórica (D6). Almacena el nombre del usuario (`name` o email de fallback), tanto en peticiones web como en procesos de respaldo (`despublicar` y `publicar`). |
+| 6 | `accion` | `TEXT` | — | NO (NOT NULL) | Ninguna | — | — | Operación ejecutada ('crear', 'actualizar', 'eliminar', 'publicar', 'despublicar', 'aprobar', 'rechazar', 'enviar_revision', 'cambiar_password', 'guardar_borrador'). Restringido por CHECK. |
 | 7 | `campos_modificados` | `JSONB` | — | SÍ | Ninguna | — | `'[]'::jsonb` | Detalle JSONB con los deltas de campos alterados: [{campo, antes, despues}]. |
 | 8 | `created_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | — | Marca temporal exacta del evento auditado. |
-| 10 | `ip` | `INET` | — | SÍ | Ninguna | — | — | Dirección de red INET desde la que se originó la petición. |
-| 11 | `user_agent` | `TEXT` | — | SÍ | Ninguna | — | — | Encabezado User-Agent del navegador o cliente HTTP. |
+| 9 | `ip` | `INET` | — | SÍ | Ninguna | — | — | Dirección de red INET (IPv4/IPv6) desde la que se originó la petición web, proceso editorial o restauración de respaldos. |
+| 10 | `user_agent` | `TEXT` | — | SÍ | Ninguna | — | — | Encabezado User-Agent del navegador o cliente HTTP que originó la operación (incluye peticiones web y restauración de respaldos). |
 
 **Restricciones de Integridad (CHECK) de `auditoria_cambios`:**
-- **`ck_auditoria_accion`**: `(accion = ANY (ARRAY['crear'::text, 'actualizar'::text, 'eliminar'::text, 'publicar'::text, 'despublicar'::text, 'aprobar'::text, 'rechazar'::text, 'enviar_revision'::text, 'cambiar_password'::text]))`
+- **`ck_auditoria_accion`**: `(accion = ANY (ARRAY['crear'::text, 'actualizar'::text, 'eliminar'::text, 'publicar'::text, 'despublicar'::text, 'aprobar'::text, 'rechazar'::text, 'enviar_revision'::text, 'cambiar_password'::text, 'guardar_borrador'::text]))`
 - **`ck_auditoria_entidad`**: `(entidad_tipo = ANY (ARRAY['contenido'::text, 'pagina'::text, 'seccion'::text, 'usuario'::text, 'rol'::text, 'marca'::text, 'configuracion'::text, 'archivo'::text]))`
 
 ---
@@ -338,16 +338,16 @@ A continuación se detalla la ficha técnica y matriz de atributos para cada una
 | 5 | `estado` | `TEXT` | — | NO (NOT NULL) | Ninguna | — | `'active'::text` | Estado de la cuenta ('active', 'inactive', 'locked', 'expired'). Restringido por CHECK. |
 | 6 | `fecha_caducidad` | `TIMESTAMPTZ` | — | SÍ | Ninguna | — | — | Fecha de expiración de la cuenta (RF-16). NULL indica que la cuenta no caduca. |
 | 7 | `ultimo_acceso_en` | `TIMESTAMPTZ` | — | SÍ | Ninguna | — | — | Marca temporal del último request autenticado. Soporta cierre por inactividad. |
-| 9 | `password_hash` | `TEXT` | — | SÍ | Ninguna | — | — | Hash criptográfico de la contraseña del usuario (Bcrypt / Argon2id). |
-| 10 | `created_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | — | Fecha y hora de creación del registro. |
-| 11 | `updated_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | — | Fecha y hora de la última modificación del registro. |
-| 12 | `debe_cambiar_password` | `BOOLEAN` | — | SÍ | Ninguna | — | `false` | Booleano que obliga al usuario a renovar su contraseña en el siguiente inicio de sesión. |
-| 13 | `debe_configurar_preguntas` | `BOOLEAN` | — | SÍ | Ninguna | — | `true` | Booleano que exige la configuración de preguntas de seguridad. |
-| 14 | `intentos_fallidos` | `INTEGER` | — | SÍ | Ninguna | — | `0` | Contador de intentos fallidos en preguntas de seguridad (3 intentos / 30 min). |
-| 15 | `bloqueado_hasta` | `TIMESTAMPTZ` | — | SÍ | Ninguna | — | — | Marca de tiempo hasta la cual la cuenta permanece bloqueada. |
-| 16 | `creado_por` | `UUID` | — | SÍ | **FK** | `usuarios.id` (ON DELETE SET NULL) | — | Usuario que registró esta cuenta en el sistema (auto-referencia). |
-| 17 | `apellidos` | `TEXT` | — | SÍ | Ninguna | — | — | Apellidos del usuario. |
-| 18 | `intentos_fallidos_login` | `INTEGER` | — | NO (NOT NULL) | Ninguna | — | `0` | Contador de intentos fallidos de login con contraseña (5 intentos / 15 min). |
+| 8 | `password_hash` | `TEXT` | — | SÍ | Ninguna | — | — | Hash criptográfico de la contraseña del usuario (Bcrypt / Argon2id). |
+| 9 | `created_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | — | Fecha y hora de creación del registro. |
+| 10 | `updated_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | — | Fecha y hora de la última modificación del registro. |
+| 11 | `debe_cambiar_password` | `BOOLEAN` | — | SÍ | Ninguna | — | `false` | Booleano que obliga al usuario a renovar su contraseña en el siguiente inicio de sesión. |
+| 12 | `debe_configurar_preguntas` | `BOOLEAN` | — | SÍ | Ninguna | — | `true` | Booleano que exige la configuración de preguntas de seguridad. |
+| 13 | `intentos_fallidos` | `INTEGER` | — | SÍ | Ninguna | — | `0` | Contador de intentos fallidos en preguntas de seguridad (3 intentos / 30 min). |
+| 14 | `bloqueado_hasta` | `TIMESTAMPTZ` | — | SÍ | Ninguna | — | — | Marca de tiempo hasta la cual la cuenta permanece bloqueada. |
+| 15 | `creado_por` | `UUID` | — | SÍ | **FK** | `usuarios.id` (ON DELETE SET NULL) | — | Usuario que registró esta cuenta en el sistema (auto-referencia). |
+| 16 | `apellidos` | `TEXT` | — | SÍ | Ninguna | — | — | Apellidos del usuario. |
+| 17 | `intentos_fallidos_login` | `INTEGER` | — | NO (NOT NULL) | Ninguna | — | `0` | Contador de intentos fallidos de login con contraseña (5 intentos / 15 min). |
 
 **Restricciones de Integridad (CHECK) de `usuarios`:**
 - **`ck_usuarios_estado`**: `(estado = ANY (ARRAY['active'::text, 'inactive'::text, 'locked'::text, 'expired'::text]))`
