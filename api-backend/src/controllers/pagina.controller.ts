@@ -349,7 +349,13 @@ export const PaginaController = {
       const versionId = typeof req.body?.versionId === 'string' ? req.body.versionId : undefined;
       const numeroVersion = typeof req.body?.numeroVersion === 'number' ? req.body.numeroVersion : undefined;
       const criterio = (versionId || numeroVersion) ? { versionId, numeroVersion } : undefined;
-      const resultado = await restaurarVersionAnterior(slug, req.user?.id, ambito, criterio);
+      const resultado = await restaurarVersionAnterior(
+        slug,
+        req.user?.id,
+        ambito,
+        criterio,
+        datosDeAuditoria(req)
+      );
       res.json(resultado);
     } catch (err) { next(err); }
   },

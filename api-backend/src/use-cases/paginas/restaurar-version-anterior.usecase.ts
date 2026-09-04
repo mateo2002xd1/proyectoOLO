@@ -1,20 +1,21 @@
 import { Op } from 'sequelize';
 import sequelize from '../../config/database';
-import { Pagina, PaginaVersion } from '../../infrastructure/db/models';
+import { Pagina, PaginaVersion, User } from '../../infrastructure/db/models';
 import { PaginaRepository } from '../../repositories/pagina.repository';
 import { emitirContenidoPublicado } from '../../domain-events/paginas/contenido-publicado.event';
 import type { Ambito } from '../../shared/ambito';
 import { restaurarArchivosDesdeBackup } from '../../shared/storage/backup-uploads.service';
-import { logAudit } from '../auditoria/audit.usecase';
+import { logAudit, type ContextoAuditoria } from '../auditoria/audit.usecase';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const toUUID = (id?: string) => (id && UUID_RE.test(id) ? id : null);
+const toUUID = (id?: string | null) => (id && UUID_RE.test(id) ? id : null);
 
 export async function restaurarVersionAnterior(
   slugOId: string,
   userId?: string,
   ambito: Ambito = 'intranet',
-  criterioVersion?: { versionId?: string; numeroVersion?: number }
+  criterioVersion?: { versionId?: string; numeroVersion?: number },
+  contextoAuditoria?: ContextoAuditoria
 ) {
   const esUUID = UUID_RE.test(slugOId);
   const pagina = esUUID
@@ -108,11 +109,37 @@ export async function restaurarVersionAnterior(
   });
 
   // 6. Registrar en auditoría el archivado de la versión previa y la publicación de la restaurada
+  let nombreUsuario = contextoAuditoria?.usuarioNombre ?? null;
+  const usuarioIdFinal = contextoAuditoria?.usuarioId !== undefined
+    ? contextoAuditoria.usuarioId
+    : toUUID(userId);
+
+  if (!nombreUsuario && userId) {
+    const idValido = toUUID(userId);
+    if (idValido) {
+      try {
+        const u = await User.findByPk(idValido, { attributes: ['name', 'email'] });
+        if (u) {
+          nombreUsuario = u.name || u.email || null;
+        }
+      } catch {
+        // En caso de error en la consulta de usuario, continuar sin romper el proceso
+      }
+    }
+  }
+
+  const datosAudit: ContextoAuditoria = {
+    usuarioId: usuarioIdFinal,
+    usuarioNombre: nombreUsuario,
+    ip: contextoAuditoria?.ip ?? null,
+    userAgent: contextoAuditoria?.userAgent ?? null,
+  };
+
   if (versionPublicada) {
     await logAudit({
+      ...datosAudit,
       entidadId: pagina.id,
       entidadTipo: 'pagina',
-      usuarioId: toUUID(userId),
       accion: 'despublicar',
       camposModificados: [
         { campo: 'slug', antes: null, despues: pagina.slug },
@@ -124,9 +151,9 @@ export async function restaurarVersionAnterior(
   }
 
   await logAudit({
+    ...datosAudit,
     entidadId: pagina.id,
     entidadTipo: 'pagina',
-    usuarioId: toUUID(userId),
     accion: 'publicar',
     camposModificados: [
       { campo: 'slug', antes: null, despues: pagina.slug },
