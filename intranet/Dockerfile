@@ -12,7 +12,7 @@ WORKDIR /app
 # `npm ci` no podia resolver las siete dependencias @olo/*.
 COPY packages /packages
 
-COPY intranet/package.json intranet/package-lock.json ./
+COPY intranet/package.json intranet/package-lock.json intranet/.npmrc ./
 RUN npm ci && ln -s /app/node_modules /node_modules && ln -s /app/node_modules /packages/node_modules
 
 # `main`/`types` de los packages @olo/* apuntan a `dist/`, no a `src/`: hace falta
@@ -23,6 +23,13 @@ RUN for pkg in /packages/*; do \
         /app/node_modules/.bin/tsc --project "$pkg"; \
       fi; \
     done
+
+# install-links=true (intranet/.npmrc) hace que el npm ci de arriba COPIE el
+# contenido de /packages/* en vez de enlazarlo -- necesario en Windows, donde
+# symlinks exige privilegios. Pero en ese momento /packages/* todavia no tenia
+# dist/ (se compila recien arriba), asi que esa copia quedo sin el. Se repite
+# npm ci ahora para que la copia sea la buena, con dist/ ya incluido.
+RUN npm ci
 
 COPY intranet/next.config.ts intranet/tsconfig.json intranet/postcss.config.mjs ./
 # `next-env.d.ts` esta en el `include` del tsconfig. Next lo regenera si falta, pero

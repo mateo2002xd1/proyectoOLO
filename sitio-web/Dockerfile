@@ -14,7 +14,7 @@ WORKDIR /app
 # la ruta buena es /packages. Con cualquiera de los dos fallos, `npm ci` no resuelve.
 COPY packages /packages
 
-COPY sitio-web/package.json sitio-web/package-lock.json ./
+COPY sitio-web/package.json sitio-web/package-lock.json sitio-web/.npmrc ./
 RUN npm ci && ln -s /app/node_modules /node_modules && ln -s /app/node_modules /packages/node_modules
 
 # `main`/`types` de los packages @olo/* apuntan a `dist/`, no a `src/`: hace falta
@@ -25,6 +25,13 @@ RUN for pkg in /packages/*; do \
         /app/node_modules/.bin/tsc --project "$pkg"; \
       fi; \
     done
+
+# install-links=true (sitio-web/.npmrc) hace que el npm ci de arriba COPIE el
+# contenido de /packages/* en vez de enlazarlo -- necesario en Windows, donde
+# symlinks exige privilegios. Pero en ese momento /packages/* todavia no tenia
+# dist/ (se compila recien arriba), asi que esa copia quedo sin el. Se repite
+# npm ci ahora para que la copia sea la buena, con dist/ ya incluido.
+RUN npm ci
 
 COPY sitio-web/next.config.mjs sitio-web/jsconfig.json sitio-web/tsconfig.json sitio-web/next-env.d.ts ./
 COPY sitio-web/postcss.config.mjs ./
