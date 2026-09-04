@@ -131,7 +131,13 @@ export function IntranetFooter({
 
         {columnas.map((columna, indice) => (
           <div className="intranet-footer-col" key={`columna-${indice}`}>
-            {columna.titulo && <h2>{columna.titulo}</h2>}
+            {columna.titulo && (
+              typeof columna.titulo === 'string' ? (
+                <h2 dangerouslySetInnerHTML={{ __html: columna.titulo }} />
+              ) : (
+                <h2>{columna.titulo}</h2>
+              )
+            )}
             <div
               className="flex gap-2"
               style={{
@@ -165,7 +171,13 @@ export function IntranetFooter({
                         }}
                       />
                     )}
-                    {linea.texto && <span>{linea.texto}</span>}
+                    {linea.texto && (
+                      typeof linea.texto === 'string' ? (
+                        <span dangerouslySetInnerHTML={{ __html: linea.texto }} />
+                      ) : (
+                        <span>{linea.texto}</span>
+                      )
+                    )}
                   </span>
                 );
 

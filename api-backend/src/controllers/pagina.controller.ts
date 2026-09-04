@@ -72,6 +72,7 @@ export const PaginaController = {
     try {
       const pagina = await obtenerPaginaPublica(req.params.slug as string, ambitoDe(req));
       if (!pagina) return res.status(404).json({ error: 'Página no encontrada' });
+      res.setHeader('Cache-Control', 'no-store, max-age=0');
       res.json(pagina);
     } catch (err) { next(err); }
   },
