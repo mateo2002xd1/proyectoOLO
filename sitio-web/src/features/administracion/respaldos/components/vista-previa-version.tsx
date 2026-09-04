@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ExternalLink, RotateCcw, AlertCircle, CheckCircle2 } from 'lucide-react';
 import type { RegistroRespaldo } from '../types';
 import { restaurarRespaldo } from '../services/respaldos.service';
+import { ModalConfirmarRestauracion } from './modal-confirmar-restauracion';
 
 const URL_INTRANET = process.env.NEXT_PUBLIC_INTRANET_URL || 'http://localhost:3001';
 
@@ -43,6 +44,7 @@ export function VistaPreviaVersion({
   const [restaurando, setRestaurando] = useState(false);
   const [errorRestaurar, setErrorRestaurar] = useState<string | null>(null);
   const [exitoRestaurar, setExitoRestaurar] = useState(false);
+  const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
 
   useEffect(() => {
     const el = dialogo.current;
@@ -57,13 +59,14 @@ export function VistaPreviaVersion({
     setRestaurando(false);
   }, [registro]);
 
-  async function handleRestaurar() {
+  function handleIntentarRestaurar() {
     if (!registro) return;
-    const confirmado = window.confirm(
-      `¿Restaurar la versión anterior ${registro.versionAnteriorNumero} de /${registro.slug}?\n\n` +
-      `Esta acción publicará nuevamente la versión ${registro.versionAnteriorNumero} y pasará la versión actual (${registro.numeroVersion}) al archivo histórico.`
-    );
-    if (!confirmado) return;
+    setMostrarConfirmacion(true);
+  }
+
+  async function handleRestaurarConfirmado() {
+    if (!registro) return;
+    setMostrarConfirmacion(false);
 
     setRestaurando(true);
     setErrorRestaurar(null);
@@ -150,7 +153,7 @@ export function VistaPreviaVersion({
               </a>
               <button
                 type="button"
-                onClick={handleRestaurar}
+                onClick={handleIntentarRestaurar}
                 disabled={restaurando || exitoRestaurar}
                 className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-brand-interactive px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-interactive-hover disabled:opacity-60"
               >
@@ -160,6 +163,17 @@ export function VistaPreviaVersion({
             </div>
           </div>
         </div>
+      )}
+      
+      {registro && (
+        <ModalConfirmarRestauracion
+          abierto={mostrarConfirmacion}
+          versionAnteriorNumero={registro.versionAnteriorNumero}
+          slug={registro.slug}
+          numeroVersionActual={registro.numeroVersion}
+          onConfirmar={handleRestaurarConfirmado}
+          onCancelar={() => setMostrarConfirmacion(false)}
+        />
       )}
     </dialog>
   );
