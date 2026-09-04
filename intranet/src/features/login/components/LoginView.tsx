@@ -9,6 +9,7 @@ import { ReturnToSiteLink } from '@/shared/ui/molecules/ReturnToSiteLink';
 import { GooLoader } from '@/shared/ui/atoms/GooLoader';
 import { mensajeDeError } from '@/shared/lib/errors';
 import { mensajeDeCierre } from '@/shared/lib/inactividad';
+import { SITE_URL } from '@/shared/lib/constants';
 
 /** Ojo abierto/cerrado del campo de contraseña, igual al de la pantalla de acceso del panel. */
 function EyeIcon({ crossed }: { crossed: boolean }) {
@@ -202,16 +203,22 @@ function LoginForm() {
                 {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password}</p>}
               </div>
 
-              {/* RF-13: aviso de políticas de privacidad y datos */}
+              {/* RF-13: aviso de políticas de privacidad y datos.
+
+                  Los dos enlaces apuntan al SITIO WEB, no a la intranet: la política es
+                  una sección del portal público y aquí no existe esa ruta. Eran
+                  relativas (`/politica-de-privacidad`, `/privacidad`), así que el
+                  middleware las tomaba por pantalla protegida y devolvía a quien las
+                  pulsara al propio login del que venía. */}
               <p className="mb-6 text-xs leading-relaxed text-gray-500">
                 Al ingresar a este sitio aceptas la{' '}
-                <Link href="/politica-de-privacidad" className="font-semibold text-gray-700 hover:underline">
+                <a href={`${SITE_URL}/politica-de-privacidad`} className="font-semibold text-gray-700 hover:underline">
                   política de privacidad
-                </Link>{' '}
+                </a>{' '}
                 y{' '}
-                <Link href="/privacidad" className="font-semibold text-gray-700 hover:underline">
+                <a href={`${SITE_URL}/politica-de-privacidad`} className="font-semibold text-gray-700 hover:underline">
                   protección de datos
-                </Link>
+                </a>
                 .
               </p>
 

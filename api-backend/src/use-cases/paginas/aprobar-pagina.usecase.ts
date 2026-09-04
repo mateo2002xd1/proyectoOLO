@@ -55,5 +55,18 @@ export const aprobarPagina = async (slug: string, userId: string, ambito: Ambito
     fecha: new Date(),
   });
 
-  return { pagina, version: versionEnRevision, versionArchivada: versionPublicadaAnterior };
+  // `paginaAnterior` y `versionAnterior` son las copias tomadas ARRIBA, antes de que
+  // `actualizarVersion` pusiera el estado en `publicado`: son lo único que conserva el
+  // `en_revision` de partida, y es lo que la bitácora registra como «antes». Se
+  // calculaban pero no se devolvían —el controlador ya las pedía—, y eso tumbaba la API
+  // entera al cargar: `ts-node` no compila un acceso a una propiedad que no existe.
+  // Los otros tres casos del ciclo editorial (`guardar-borrador`, `enviar-a-revision`,
+  // `rechazar-pagina`) devuelven este mismo par; aquí faltaba.
+  return {
+    pagina,
+    version: versionEnRevision,
+    paginaAnterior,
+    versionAnterior,
+    versionArchivada: versionPublicadaAnterior,
+  };
 };

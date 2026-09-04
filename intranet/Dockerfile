@@ -45,6 +45,12 @@ COPY intranet/src ./src
 
 ARG API_BACKEND_URL=http://localhost:4000
 ENV API_BACKEND_URL=$API_BACKEND_URL
+# Va como ARG y no solo como variable de entorno del contenedor por lo mismo que la
+# `NEXT_PUBLIC_API_URL` de sitio-web: Next incrusta las NEXT_PUBLIC_* en el bundle del
+# navegador AL COMPILAR, y definirla después no cambia lo ya compilado. La consumen los
+# enlaces de la intranet hacia el portal publico (`shared/lib/constants.ts`).
+ARG NEXT_PUBLIC_SITIO_WEB_URL=http://localhost:3000
+ENV NEXT_PUBLIC_SITIO_WEB_URL=$NEXT_PUBLIC_SITIO_WEB_URL
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 

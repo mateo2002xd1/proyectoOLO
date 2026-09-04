@@ -1,6 +1,6 @@
 import { QueryInterface } from 'sequelize';
 
-export const nombre = '022-permiso-politica-privacidad-sitio';
+export const nombre = '023-permiso-politica-privacidad-sitio';
 
 /** Debe coincidir con `claveDeSeccion('sitio', 'politica-de-privacidad')` en `catalogo-permisos.ts`. */
 const CLAVE = 'editar.sitio.politica-de-privacidad';

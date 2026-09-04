@@ -5,6 +5,110 @@
 
 ---
 
+## sesión 04-09-2026 (6.ª parte): la API no arrancaba tras el merge — y no era culpa del merge
+
+Encargo: revisar si el merge de `main` (`cd70e7e`) rompió algo, cruzando los cambios
+propios contra los que ya estaban publicados. La revisión encontró la API **caída**, más
+dos fallos que el merge no causó pero que estaban tapados.
+
+### 1. El bloqueante: `aprobar` pedía algo que su caso de uso no devolvía
+
+`pagina.controller.ts` (líneas 307-308) leía `result.versionAnterior`, y
+`aprobar-pagina.usecase.ts` devolvía solo `{ pagina, version, versionArchivada }`. Bajo
+`ts-node` —el modo de la pila de desarrollo— eso no es un aviso: el módulo no compila y
+el proceso muere al cargar. `nodemon` quedaba en «app crashed» y `/health` no respondía.
+
+**El merge no lo introdujo.** Los dos archivos son byte a byte idénticos a los del lado
+publicado (`git hash-object` de `cd70e7e:<archivo>` contra `cd70e7e^2:<archivo>`), y
+ninguno de los dos aparece entre los cambios propios. Llegó ya roto desde `main`.
+
+**El arreglo va en el caso de uso, no en el controlador.** Los otros tres pasos del ciclo
+editorial —`guardar-borrador`, `enviar-a-revision`, `rechazar-pagina`— devuelven
+`{ …, paginaAnterior, versionAnterior }`. `aprobar-pagina` **calculaba las dos copias**
+(líneas 13 y 17) y no las devolvía: era el único fuera del patrón, y el controlador
+estaba escrito dando por hecho que el patrón se cumplía.
+
+> **Se descartó** cambiar el controlador a `result.versionArchivada`, que era lo primero
+> que parecía. `versionArchivada` es la versión que **estaba publicada antes** y pasa a
+> archivada: su `estado` es el de *otra* versión. La bitácora habría registrado
+> «antes: publicado/archivado» donde la verdad es «antes: en_revision» — el estado de la
+> versión que se aprueba, que solo conserva el `toJSON()` tomado antes de mutarla.
+
+### 2. `migrate:status` mentía: decía «sin pendientes» habiendo dos
+
+La renumeración de la migración de política de privacidad (`022` → `023`, por colisión
+con la `022-auditoria-guardar-borrador` que traía `main`) estaba **bien hecha**: el
+`nombre` interno se actualizó junto con el archivo, que es lo que se suele olvidar.
+
+Lo que engañaba era la comprobación. El servicio `migraciones` **no está en
+`docker-compose.override.yml`**, así que no recibe el código montado: corre desde la
+imagen, y la imagen construida antes del merge solo conocía hasta `021`. Con todo lo que
+ella conocía ya aplicado, respondía «Sin migraciones pendientes». Reconstruida la imagen,
+aparecieron las dos reales.
+
+### 3. `SITE_URL` leía una variable que no define nadie
+
+`intranet/src/shared/lib/constants.ts` leía `NEXT_PUBLIC_SITE_URL`. Los dos compose
+inyectan `NEXT_PUBLIC_SITIO_WEB_URL`. Ese nombre no aparece en ningún compose, Dockerfile
+ni `.env` —solo en `3-seguridad-del-proyecto.md`—, así que `SITE_URL` caía **siempre** al
+valor por defecto. En desarrollo coincide con el bueno y el fallo pasaba inadvertido; en
+producción el enlace «Regresar al sitio web del Observatorio» habría mandado a cada
+visitante al `localhost` de su propia máquina.
+
+De paso, los dos enlaces de privacidad del login de la intranet eran relativos
+(`/politica-de-privacidad`, `/privacidad`): rutas que la intranet no tiene, así que el
+middleware devolvía al propio login del que se venía. Ahora salen al portal público por
+`SITE_URL`. Preexistentes los dos: ya estaban así en el merge-base.
+
+### Capas tocadas
+
+| Archivo | Qué cambió |
+|---|---|
+| `api-backend/src/use-cases/paginas/aprobar-pagina.usecase.ts` | Devuelve `paginaAnterior` y `versionAnterior`, como los otros tres del ciclo |
+| `intranet/src/shared/lib/constants.ts` | `NEXT_PUBLIC_SITE_URL` → `NEXT_PUBLIC_SITIO_WEB_URL` |
+| `intranet/src/features/login/components/LoginView.tsx` | Los dos enlaces de privacidad salen al portal por `SITE_URL` |
+| `intranet/Dockerfile` | `ARG`/`ENV NEXT_PUBLIC_SITIO_WEB_URL` antes del `npm run build` |
+| `docker/docker-compose.yml` · `docker-compose.prod.yml` | La misma variable como `build.args`, no solo como entorno |
+
+> **La trampa que cuesta tiempo:** `NEXT_PUBLIC_*` se incrusta en el bundle **al
+> compilar**. Ponerla solo en `environment:` llega tarde — el bundle ya se compiló con el
+> valor por defecto. Por eso va también en `build.args`, igual que la `NEXT_PUBLIC_API_URL`
+> de sitio-web, que ya lo documentaba en su comentario.
+
+### Verificación ejecutada
+
+| Comprobación | Resultado |
+|---|---|
+| `tsc --noEmit` api-backend | limpio (antes: 2 × TS2339) |
+| `tsc --noEmit` intranet | limpio |
+| `migrate:status` con imagen reconstruida | `Pendientes (2)` — antes mentía con «ninguna» |
+| `npm run migrate` | aplicadas `022-auditoria-guardar-borrador` y `023-permiso-politica-privacidad-sitio` |
+| `editar.sitio.politica-de-privacidad` en BD | existe, con 3 roles (Superadmin, Administrador, Editor) |
+| API `/health` | 200 (antes: sin respuesta) |
+| sitio `/politica-de-privacidad` · `/privacidad` | 200 · 307 → 200 |
+| intranet `/login` | 200, y el `href` renderiza `http://localhost:3000/politica-de-privacidad` |
+
+### Pendiente al cierre
+
+- **El fallo del controlador vive también en `main`.** Aquí quedó corregido, pero como
+  llegó desde publicado conviene que el arreglo suba, o el siguiente que integre `main`
+  se encuentra la API caída otra vez.
+- **`migraciones_aplicadas` tiene una fila huérfana**: `022-permiso-politica-privacidad-sitio`,
+  el nombre anterior a la renumeración. No corresponde a ningún archivo y no molesta al
+  runner —solo compara contra los nombres del código—, pero está de más. Solo afecta a
+  esta máquina; una instalación nueva no la tiene.
+- **El flujo de aprobación no se ejerció de punta a punta.** Se comprobó que compila,
+  arranca y responde, no que la bitácora de un `aprobar` real registre ahora
+  `antes: en_revision`. Hace falta una sesión con permisos y una página en revisión.
+- **El build de producción de la intranet no se corrió** con el `ARG` nuevo: se verificó
+  en la pila de desarrollo, donde `next dev` lee la variable del entorno del contenedor.
+- Los dos enlaces del login apuntan ahora a la **misma** página («política de privacidad»
+  y «protección de datos»). Es lo que ya ocurría de hecho —`/privacidad` redirige a
+  `/politica-de-privacidad`—, pero si se quieren dos destinos distintos hay que crear la
+  segunda página; es decisión de contenido, no técnica.
+
+---
+
 ## sesión 04-09-2026 (5.ª parte): entrada corta para los cuatro botones flotantes, en las dos apps
 
 Pregunta del usuario, a raíz de la parte anterior: por qué «Editar sección»
