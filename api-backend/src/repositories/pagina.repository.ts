@@ -1,4 +1,4 @@
-import { Transaction } from 'sequelize';
+import { Op, Transaction } from 'sequelize';
 import { Pagina, PaginaVersion, User } from '../infrastructure/db/models';
 import type { Ambito } from '../shared/ambito';
 
@@ -57,6 +57,26 @@ export const PaginaRepository = {
         { model: User, as: 'publicador', attributes: ['id', 'nombre', 'email'] },
       ],
       order: [['creadoEn', 'DESC']],
+      transaction: tx,
+    }),
+
+  /**
+   * Las páginas que están publicadas ahora mismo, de los dos ámbitos.
+   *
+   * El criterio es `versionPublicadaId != null` y no «tiene alguna versión en estado
+   * publicado»: esa columna es la que decide qué sirve el portal, y la base impone que
+   * haya como mucho una. Buscar por el estado de las versiones habría contado también
+   * las archivadas de páginas que ya no publican nada.
+   *
+   * Sin `include` a propósito: `versionPublicada` está declarado en el modelo pero **no
+   * tiene asociación** (`models/index.ts` solo define `versiones`), así que pedirlo
+   * reventaría en ejecución. Para contar y enlazar bastan slug, título y ámbito.
+   */
+  listarPublicadas: (tx?: Transaction) =>
+    Pagina.findAll({
+      where: { versionPublicadaId: { [Op.ne]: null } },
+      attributes: ['id', 'slug', 'titulo', 'ambito'],
+      order: [['ambito', 'ASC'], ['titulo', 'ASC']],
       transaction: tx,
     }),
 };
