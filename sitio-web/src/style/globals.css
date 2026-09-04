@@ -353,6 +353,19 @@
    dejaba de anclarse a la ventana y pasaba a anclarse al alto de la página: el
    botón «Editar sección» aparecía en un punto distinto según cuánto contenido
    tuviera cada página, en vez de fijo abajo a la derecha como los demás. */
+/* Se desplaza con `margin-top` y NO con `transform`, y no es un capricho de estilo:
+   `.olo-route-transition` envuelve el contenido de cada página, y ahí dentro va el
+   botón «Editar sección» (`.edit-button`, `position: fixed`).
+
+   Un `transform` distinto de `none` convierte al elemento en el marco de referencia de
+   sus descendientes `fixed`. Como la animación lleva `fill-mode: both`, el valor del
+   último fotograma se queda aplicado para siempre —incluso `translateY(0)`, que es la
+   identidad y parece inofensivo—, así que el botón dejaba de colocarse respecto a la
+   ventana y se pegaba al fondo del contenido: medido en el navegador, acababa 2.578 px
+   por debajo del borde inferior, fuera de la columna que forman los otros tres botones.
+
+   `margin-top` consigue el mismo desplazamiento sin crear ese marco de referencia.
+   Misma trampa que explica el comentario de `olo-boton-flotante-aparece` más abajo. */
 @keyframes olo-route-in {
   from {
     opacity: 0;
