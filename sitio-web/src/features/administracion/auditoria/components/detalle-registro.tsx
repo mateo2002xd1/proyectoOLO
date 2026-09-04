@@ -115,12 +115,6 @@ export function DetalleRegistro({
                     </li>
                   ))}
                 </ul>
-                {/* El hueco se enseña en vez de disimularse: hoy el backend no
-                    guarda el estado anterior (T-07.6). */}
-                <p className="mt-2 text-xs text-zinc-500">
-                  El sistema todavía no guarda el valor anterior de cada campo, por eso «Antes»
-                  aparece sin registro.
-                </p>
               </>
             )}
           </div>

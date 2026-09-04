@@ -1,3 +1,4 @@
+import { Transaction } from 'sequelize';
 import { PaginaRepository } from '../../repositories/pagina.repository';
 import { emitirContenidoPublicado } from '../../domain-events/paginas/contenido-publicado.event';
 import type { Ambito } from '../../shared/ambito';
@@ -6,15 +7,17 @@ import { respaldarArchivosAlPublicar } from '../../shared/storage/backup-uploads
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const toUUID = (id: string) => (UUID_RE.test(id) ? id : null);
 
-export const aprobarPagina = async (slug: string, userId: string, ambito: Ambito) => {
-  const pagina = await PaginaRepository.findBySlug(slug, ambito);
+export const aprobarPagina = async (slug: string, userId: string, ambito: Ambito, tx?: Transaction) => {
+  const pagina = await PaginaRepository.findBySlug(slug, ambito, tx);
   if (!pagina) throw new Error('Página no encontrada');
+  const paginaAnterior = pagina.toJSON();
 
-  const versionEnRevision = await PaginaRepository.findVersionPorEstado(pagina.id, 'en_revision');
+  const versionEnRevision = await PaginaRepository.findVersionPorEstado(pagina.id, 'en_revision', tx);
   if (!versionEnRevision) throw new Error('No hay versión en revisión');
+  const versionAnterior = versionEnRevision.toJSON();
 
   // 1. Obtener la versión que estaba publicada antes de archivarla para respaldar sus recursos
-  const versionPublicadaAnterior = await PaginaRepository.findVersionPorEstado(pagina.id, 'publicado');
+  const versionPublicadaAnterior = await PaginaRepository.findVersionPorEstado(pagina.id, 'publicado', tx);
   if (versionPublicadaAnterior) {
     respaldarArchivosAlPublicar({
       paginaId: pagina.id,
@@ -26,15 +29,15 @@ export const aprobarPagina = async (slug: string, userId: string, ambito: Ambito
 
   // La versión que estaba publicada pasa a archivada antes de que entre la nueva:
   // una página tiene como máximo una versión publicada, y la base lo impone.
-  await PaginaRepository.archivarVersionPublicada(pagina.id);
+  await PaginaRepository.archivarVersionPublicada(pagina.id, tx);
 
   await PaginaRepository.actualizarVersion(versionEnRevision, {
     estado: 'publicado',
     publicadoPor: toUUID(userId),
     publicadoEn: new Date(),
-  });
+  }, tx);
 
-  await PaginaRepository.actualizarPagina(pagina, { versionPublicadaId: versionEnRevision.id });
+  await PaginaRepository.actualizarPagina(pagina, { versionPublicadaId: versionEnRevision.id }, tx);
 
   // Hasta aquí la publicación es correcta en la base de datos, y aun así la página no
   // cambiaba: el sitio seguía sirviendo su copia cacheada y quien acababa de aprobar

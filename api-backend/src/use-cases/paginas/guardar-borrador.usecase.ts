@@ -1,3 +1,4 @@
+import { Transaction } from 'sequelize';
 import { PaginaRepository } from '../../repositories/pagina.repository';
 import type { Ambito } from '../../shared/ambito';
 import { sanitizarContenidoPuck } from '../../shared/sanitizar-contenido';
@@ -9,9 +10,11 @@ export const guardarBorrador = async (
   slug: string,
   contenido: any,
   userId: string,
-  ambito: Ambito
+  ambito: Ambito,
+  tx?: Transaction
 ) => {
-  let pagina = await PaginaRepository.findBySlug(slug, ambito);
+  let pagina = await PaginaRepository.findBySlug(slug, ambito, tx);
+  const paginaAnterior = pagina ? pagina.toJSON() : null;
 
   if (!pagina) {
     // Sin `ambito` explícito la columna caía en su default ('sitio') y la intranet
@@ -21,34 +24,48 @@ export const guardarBorrador = async (
       ambito,
       titulo: slug,
       creadoPor: toUUID(userId),
-    });
+    }, tx);
   }
 
-  const ultimaVersion = await PaginaRepository.findUltimaVersion(pagina.id);
-  const numeroVersion = ultimaVersion ? ultimaVersion.numeroVersion + 1 : 1;
-
+  const ultimaVersion = await PaginaRepository.findUltimaVersion(pagina.id, tx);
+  const versionAnterior = ultimaVersion ? ultimaVersion.toJSON() : null;
+  
   // Sanitizar el contenido antes de persistirlo: elimina scripts, event handlers
   // y URIs peligrosas de todos los campos HTML de los bloques Puck.
   // @see 3-seguridad-del-proyecto.md §S2 — XSS del contenido (CRÍTICO)
   const contenidoSanitizado = sanitizarContenidoPuck(contenido);
 
-  // `creadoPor` se quedaba sin escribir aunque la columna existe y el `userId` ya
-  // estaba en la firma: el historial de RF-07 sabía quién revisó y quién publicó cada
-  // versión, pero no quién la escribió. Esto no restringe nada —cualquier Editor sigue
-  // pudiendo retomar el borrador de otro cuando le toque el turno—; es el dato sin el
-  // cual la bitácora no puede responder de quién era el trabajo.
-  //
-  // Quién puede tener la página abierta a la vez lo decide el candado de edición
-  // (`adquirir-bloqueo.usecase.ts`), no esta capa: aquí se sigue guardando lo que
-  // llegue, porque el candado ya cortó en la puerta.
-  const version = await PaginaRepository.crearVersion({
-    paginaId: pagina.id,
-    contenido: contenidoSanitizado,
-    numeroVersion,
-    estado: 'borrador',
-    creadoPor: toUUID(userId),
-  });
+  let version;
 
-  return { pagina, version };
+  // Si la última versión ya existe y no está publicada, se actualiza en lugar de crear
+  // una nueva (para no llenar la base de datos de versiones por cada vez que se guarda
+  // en el editor).
+  if (ultimaVersion && ultimaVersion.estado !== 'publicado' && ultimaVersion.estado !== 'archivado') {
+    version = await PaginaRepository.actualizarVersion(
+      ultimaVersion,
+      {
+        contenido: contenidoSanitizado,
+        estado: 'borrador',
+        creadoPor: toUUID(userId),
+      },
+      tx
+    );
+  } else {
+    // Si no había versiones, o si la última ya está publicada/archivada,
+    // se arranca una versión nueva para este borrador.
+    const numeroVersion = ultimaVersion ? ultimaVersion.numeroVersion + 1 : 1;
+    version = await PaginaRepository.crearVersion(
+      {
+        paginaId: pagina.id,
+        contenido: contenidoSanitizado,
+        numeroVersion,
+        estado: 'borrador',
+        creadoPor: toUUID(userId),
+      },
+      tx
+    );
+  }
+
+  return { pagina, version, paginaAnterior, versionAnterior };
 };
 
