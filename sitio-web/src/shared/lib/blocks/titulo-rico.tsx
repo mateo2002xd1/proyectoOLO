@@ -4,8 +4,9 @@ interface TituloRicoProps {
   children: ReactNode;
   /** Clase del bloque (`olo-portals-title`, `olo-publicaciones-title`…). */
   className: string;
-  /** Nivel del encabezado. Los títulos de sección del cuerpo son de nivel 2. */
-  nivel?: 2 | 3 | 4;
+  /** Nivel del encabezado. Los títulos de sección del cuerpo son de nivel 2; el
+   *  único `<h1>` de una página (su encabezado principal) usa nivel 1. */
+  nivel?: 1 | 2 | 3 | 4;
 }
 
 /**

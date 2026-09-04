@@ -9,9 +9,11 @@
  * Resuelve el permiso EN EL CLIENTE, y eso es deliberado. Lo monta el layout
  * público, así que si lo resolviera el servidor —leyendo la cookie con
  * `puedeEditarPaginas()`— Next tendría que renderizar bajo demanda todas las
- * páginas del sitio, incluidas las que no cambian nunca: medido, `/clasificacion`,
- * `/publicaciones`, `/privacidad` y `/politica-de-privacidad` pasaban de estáticas
- * con ISR de un minuto a dinámicas. La cookie `role` es no-httpOnly justamente
+ * páginas del sitio, incluidas las que no cambian nunca: medido, `/clasificacion`
+ * y `/publicaciones` pasarían de estáticas con ISR de un minuto a dinámicas.
+ * (`/politica-de-privacidad` sí es dinámica desde que pasó a ser una sección Puck
+ * editable, igual que `inicio` — `/privacidad` ya no es una página, es un redirect.)
+ * La cookie `role` es no-httpOnly justamente
  * para esto. El precio es que el botón aparece al hidratar y no en el HTML
  * inicial, que para un control de administración sobre una página pública es el
  * lado correcto del trato.

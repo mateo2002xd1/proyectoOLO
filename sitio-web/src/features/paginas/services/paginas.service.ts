@@ -269,7 +269,7 @@ export interface AnalisisDeEliminacion {
   titulo: string;
   ambito: Ambito;
   puedeEliminarse: boolean;
-  motivo: 'de-fabrica' | 'tiene-enlaces' | null;
+  motivo: 'tiene-enlaces' | null;
   versiones: number;
   publicada: boolean;
   referencias: ReferenciaAEnlace[];

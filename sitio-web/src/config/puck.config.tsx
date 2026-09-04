@@ -14,6 +14,9 @@ import { Services } from '@/shared/lib/blocks/Services';
 import { DatoOloSemana } from '@/shared/lib/blocks/DatoOloSemana';
 import { RecursosVisualesBloque } from '@/shared/lib/blocks/RecursosVisualesBloque';
 import { Publicaciones } from '@/shared/lib/blocks/Publicaciones';
+import { PoliticaPrivacidadEncabezado } from '@/shared/lib/blocks/PoliticaPrivacidadEncabezado';
+import { VisorDocumentosNormativos, type DocumentoNormativo } from '@/shared/lib/blocks/VisorDocumentosNormativos';
+import { CanalesAtencion, type CanalDeAtencion } from '@/shared/lib/blocks/CanalesAtencion';
 import { Header } from '@/shared/lib/blocks/Header';
 import { Footer } from '@/shared/lib/blocks/Footer';
 import { IntranetTopbar } from '@/shared/lib/blocks/IntranetTopbar';
@@ -82,7 +85,17 @@ const puckConfigBase: Config = {
       components: ['IntranetTopbar', 'IntranetHero'],
     },
     'Contenido Principal': {
-      components: ['Hero', 'Services', 'DatoOloSemana', 'RecursosVisualesBloque', 'Publicaciones', 'RichText'],
+      components: [
+        'Hero',
+        'Services',
+        'DatoOloSemana',
+        'RecursosVisualesBloque',
+        'Publicaciones',
+        'RichText',
+        'PoliticaPrivacidadEncabezado',
+        'VisorDocumentosNormativos',
+        'CanalesAtencion',
+      ],
     },
     'Portales': {
       components: ['ExternalPortals'],
@@ -532,6 +545,126 @@ const puckConfigBase: Config = {
         />
       ),
     },
+    PoliticaPrivacidadEncabezado: {
+      label: 'Encabezado de política',
+      fields: {
+        titulo: { type: 'richtext' as const, label: 'Título (h1 de la página)' },
+        intro: { type: 'richtext' as const, label: 'Párrafos de introducción' },
+      },
+      defaultProps: {
+        id: 'politica-encabezado-1',
+        titulo: 'Políticas de Seguridad, Privacidad y Tratamiento de Datos',
+        intro:
+          '<p>El <strong>Servicio Nacional de Aprendizaje SENA</strong>, a través del <strong>Observatorio Laboral y Ocupacional</strong>, dispone para consulta ciudadana los lineamientos oficiales de la Política de Seguridad y Privacidad de la Información y la Política de Tratamiento para Protección de Datos Personales, en estricto cumplimiento de la Ley Estatutaria 1581 de 2012 (Habeas Data) y el Sistema de Gestión CompromISO.</p><p>A continuación, seleccione el documento normativo que desea consultar para leerlo directamente en formato PDF o descargar una copia oficial.</p>',
+      },
+      render: ({
+        id,
+        titulo,
+        intro,
+      }: BlockRender<{ titulo?: ReactNode; intro?: ReactNode }>) => (
+        <PoliticaPrivacidadEncabezado
+          block={{ id: id || 'politica-encabezado-preview' }}
+          titulo={titulo}
+          intro={intro}
+        />
+      ),
+    },
+    VisorDocumentosNormativos: {
+      label: 'Visor de documentos normativos',
+      fields: {
+        titulo: { type: 'richtext' as const, label: 'Título de la sección' },
+        documentos: {
+          type: 'array' as const,
+          label: 'Documentos',
+          arrayFields: {
+            etiquetaTab: { type: 'text' as const, label: 'Texto de la pestaña' },
+            titulo: { type: 'text' as const, label: 'Título del documento' },
+            descripcion: { type: 'text' as const, label: 'Descripción breve' },
+            documentoId: { type: 'text' as const, label: 'ID en CompromISO SENA (ej. 6701)' },
+          },
+          defaultItemProps: {
+            etiquetaTab: 'Nuevo documento',
+            titulo: 'Nuevo documento',
+            descripcion: '',
+            documentoId: '',
+          },
+          getItemSummary: (item: { titulo?: string }) => item.titulo || 'Documento',
+        },
+      },
+      defaultProps: {
+        id: 'visor-documentos-1',
+        titulo: 'Documentos y Recursos Normativos Oficiales',
+        documentos: [
+          {
+            etiquetaTab: '1. Seguridad y Privacidad (ID: 6701)',
+            titulo: 'Política de Seguridad y Privacidad de la Información',
+            descripcion:
+              'Documento oficial del Sistema Integrado de Gestión y Autocontrol CompromISO SENA. Lineamientos de seguridad digital y confidencialidad institucional.',
+            documentoId: '6701',
+          },
+          {
+            etiquetaTab: '2. Tratamiento de Datos (ID: 6914)',
+            titulo: 'Política de Tratamiento para Protección de Datos Personales',
+            descripcion:
+              'Régimen y garantías institucionales para el tratamiento, protección de datos personales y ejercicio de derechos de Habeas Data conforme a la Ley 1581 de 2012.',
+            documentoId: '6914',
+          },
+        ],
+      },
+      render: ({
+        id,
+        titulo,
+        documentos,
+      }: BlockRender<{ titulo?: ReactNode; documentos?: DocumentoNormativo[] }>) => (
+        <VisorDocumentosNormativos
+          block={{ id: id || 'visor-documentos-preview' }}
+          titulo={titulo}
+          documentos={documentos}
+        />
+      ),
+    },
+    CanalesAtencion: {
+      label: 'Canales de atención',
+      fields: {
+        titulo: { type: 'richtext' as const, label: 'Título de la sección' },
+        intro: { type: 'richtext' as const, label: 'Párrafo de introducción' },
+        canales: {
+          type: 'array' as const,
+          label: 'Canales',
+          arrayFields: {
+            etiqueta: { type: 'text' as const, label: 'Etiqueta' },
+            valor: { type: 'text' as const, label: 'Valor' },
+          },
+          defaultItemProps: { etiqueta: 'Nuevo canal', valor: '' },
+          getItemSummary: (item: { etiqueta?: string }) => item.etiqueta || 'Canal',
+        },
+      },
+      defaultProps: {
+        id: 'canales-atencion-1',
+        titulo: 'Canales de Atención y Ejercicio de Derechos (Habeas Data)',
+        intro:
+          '<p>Para ejercer sus derechos de conocer, actualizar, rectificar o suprimir sus datos personales, o para presentar cualquier consulta o reclamo relativo a la protección de datos, el SENA pone a disposición los siguientes canales oficiales:</p>',
+        canales: [
+          { etiqueta: 'Correo Electrónico', valor: 'servicioalciudadano@sena.edu.co' },
+          { etiqueta: 'Línea Gratuita Nacional', valor: '01 8000 910270 • (601) 343 0111' },
+          { etiqueta: 'Dirección General', valor: 'Calle 57 No. 8 - 69, Bogotá D.C.' },
+          { etiqueta: 'Tiempos de Respuesta', valor: '10 a 15 días hábiles (Ley 1581)' },
+        ],
+      },
+      render: ({
+        id,
+        titulo,
+        intro,
+        canales,
+      }: BlockRender<{ titulo?: ReactNode; intro?: ReactNode; canales?: CanalDeAtencion[] }>) => (
+        <CanalesAtencion
+          block={{ id: id || 'canales-atencion-preview' }}
+          titulo={titulo}
+          intro={intro}
+          canales={canales}
+        />
+      ),
+    },
     ExternalPortals: {
       label: 'Portales Externos',
       fields: {
@@ -697,24 +830,8 @@ const COMPONENTES_POR_SLUG: Record<string, string[]> = {
   // justo lo que las páginas ya no pueden tocar.
   [SLUG_DE_PLANTILLA]: ['Header', 'Footer'],
   inicio: ['Hero', 'Services', 'DatoOloSemana', 'RecursosVisualesBloque', 'Publicaciones', 'ExternalPortals', 'RichText', 'Grid', 'Flex', 'Space'],
+  'politica-de-privacidad': ['PoliticaPrivacidadEncabezado', 'VisorDocumentosNormativos', 'CanalesAtencion'],
 };
-
-/**
- * Los slugs que existen sin que nadie los haya creado.
- *
- * Son las claves de `COMPONENTES_POR_SLUG`, y no una lista aparte, porque son lo mismo
- * visto de dos maneras: una sección tiene catálogo recortado precisamente porque el
- * código sabe qué va en ella. Es el espejo de `SECCIONES_POR_AMBITO` en la API, que es
- * quien decide de verdad —aquí solo sirve para no pintar un botón de borrar que la API
- * va a rechazar—.
- */
-export const SLUGS_DE_FABRICA = Object.keys(COMPONENTES_POR_SLUG);
-
-/**
- * Si un slug es de fábrica. Las de fábrica no se pueden eliminar: hay código que da por
- * hecho que existen, y borrar `inicio` deja el portal sin portada.
- */
-export const esSeccionDeFabrica = (slug: string): boolean => SLUGS_DE_FABRICA.includes(slug);
 
 /**
  * Lo que el lienzo enseña alrededor de lo que se está editando.
