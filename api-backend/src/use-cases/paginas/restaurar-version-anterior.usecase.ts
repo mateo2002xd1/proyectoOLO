@@ -1,0 +1,181 @@
+import { Op } from 'sequelize';
+import sequelize from '../../config/database';
+import { Pagina, PaginaVersion, User } from '../../infrastructure/db/models';
+import { PaginaRepository } from '../../repositories/pagina.repository';
+import { emitirContenidoPublicado } from '../../domain-events/paginas/contenido-publicado.event';
+import type { Ambito } from '../../shared/ambito';
+import { restaurarArchivosDesdeBackup } from '../../shared/storage/backup-uploads.service';
+import { logAudit, type ContextoAuditoria } from '../auditoria/audit.usecase';
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const toUUID = (id?: string | null) => (id && UUID_RE.test(id) ? id : null);
+
+export async function restaurarVersionAnterior(
+  slugOId: string,
+  userId?: string,
+  ambito: Ambito = 'intranet',
+  criterioVersion?: { versionId?: string; numeroVersion?: number },
+  contextoAuditoria?: ContextoAuditoria
+) {
+  const esUUID = UUID_RE.test(slugOId);
+  const pagina = esUUID
+    ? await Pagina.findByPk(slugOId)
+    : await PaginaRepository.findBySlug(slugOId, ambito);
+
+  if (!pagina) {
+    throw new Error(`Página con identificador "${slugOId}" no encontrada en el ámbito "${ambito}"`);
+  }
+
+  // 1. Obtener la versión actualmente publicada de esta página
+  const versionPublicada = await PaginaVersion.findOne({
+    where: { paginaId: pagina.id, estado: 'publicado' },
+  });
+
+  // 2. Obtener la versión archivada usando las claves de la base de datos (paginaId, estado, numeroVersion o id)
+  const whereArchivada: any = {
+    paginaId: pagina.id,
+    estado: 'archivado',
+  };
+  if (criterioVersion?.versionId) {
+    whereArchivada.id = criterioVersion.versionId;
+  } else if (criterioVersion?.numeroVersion) {
+    whereArchivada.numeroVersion = criterioVersion.numeroVersion;
+  } else {
+    // Si no se especifica una versión puntual, se busca la última que estuvo publicada
+    whereArchivada.publicadoEn = { [Op.ne]: null };
+  }
+
+  const versionArchivada = await PaginaVersion.findOne({
+    where: whereArchivada,
+    order: [['publicadoEn', 'DESC'], ['numeroVersion', 'DESC']],
+  });
+
+  if (!versionArchivada) {
+    throw new Error(`La página "${pagina.slug}" no tiene la versión anterior archivada solicitada para restaurar.`);
+  }
+
+  // 3. Sincronizar archivos de disco entre backup y uploads
+  const resultadoArchivos = restaurarArchivosDesdeBackup({
+    paginaId: pagina.id,
+    versionRestaurarContenido: versionArchivada.contenido,
+    versionActualContenido: versionPublicada ? versionPublicada.contenido : null,
+    ambito,
+  });
+
+  // 4. Ejecutar el intercambio atómico en PostgreSQL
+  await sequelize.transaction(async (t) => {
+    // Si hay una versión actualmente publicada, pasa a archivado
+    if (versionPublicada) {
+      await versionPublicada.update({ estado: 'archivado' }, { transaction: t });
+    }
+
+    // Cualquier borrador o versión pendiente anterior deja de ser vigente y se archiva
+    await PaginaVersion.update(
+      { estado: 'archivado' },
+      {
+        where: {
+          paginaId: pagina.id,
+          estado: { [Op.in]: ['borrador', 'en_revision', 'rechazado'] },
+        },
+        transaction: t,
+      }
+    );
+
+    // La versión archivada pasa a ser la publicada
+    await versionArchivada.update(
+      {
+        estado: 'publicado',
+        publicadoEn: new Date(),
+        publicadoPor: toUUID(userId),
+      },
+      { transaction: t }
+    );
+
+    // Actualizar la referencia en la página
+    await pagina.update(
+      { versionPublicadaId: versionArchivada.id },
+      { transaction: t }
+    );
+  });
+
+  // 5. Invalidar caché en caliente (Redis + Next.js ISR)
+  await emitirContenidoPublicado({
+    paginaId: pagina.id,
+    slug: pagina.slug,
+    ambito,
+    versionId: versionArchivada.id,
+    publicadoPor: toUUID(userId),
+    fecha: new Date(),
+  });
+
+  // 6. Registrar en auditoría el archivado de la versión previa y la publicación de la restaurada
+  let nombreUsuario = contextoAuditoria?.usuarioNombre ?? null;
+  const usuarioIdFinal = contextoAuditoria?.usuarioId !== undefined
+    ? contextoAuditoria.usuarioId
+    : toUUID(userId);
+
+  if (!nombreUsuario && userId) {
+    const idValido = toUUID(userId);
+    if (idValido) {
+      try {
+        const u = await User.findByPk(idValido, { attributes: ['name', 'email'] });
+        if (u) {
+          nombreUsuario = u.name || u.email || null;
+        }
+      } catch {
+        // En caso de error en la consulta de usuario, continuar sin romper el proceso
+      }
+    }
+  }
+
+  const datosAudit: ContextoAuditoria = {
+    usuarioId: usuarioIdFinal,
+    usuarioNombre: nombreUsuario,
+    ip: contextoAuditoria?.ip ?? null,
+    userAgent: contextoAuditoria?.userAgent ?? null,
+  };
+
+  if (versionPublicada) {
+    await logAudit({
+      ...datosAudit,
+      entidadId: pagina.id,
+      entidadTipo: 'pagina',
+      accion: 'despublicar',
+      camposModificados: [
+        { campo: 'slug', antes: null, despues: pagina.slug },
+        { campo: 'version', antes: versionPublicada.numeroVersion, despues: versionPublicada.numeroVersion },
+        { campo: 'estado', antes: 'publicado', despues: 'archivado' },
+        { campo: 'motivo', antes: null, despues: `Archivada por restauración de versión ${versionArchivada.numeroVersion}` },
+      ],
+    });
+  }
+
+  await logAudit({
+    ...datosAudit,
+    entidadId: pagina.id,
+    entidadTipo: 'pagina',
+    accion: 'publicar',
+    camposModificados: [
+      { campo: 'slug', antes: null, despues: pagina.slug },
+      { campo: 'version', antes: null, despues: versionArchivada.numeroVersion },
+      { campo: 'motivo', antes: null, despues: `Restaurada versión anterior ${versionArchivada.numeroVersion}` },
+    ],
+  });
+
+  return {
+    pagina,
+    versionRestaurada: {
+      id: versionArchivada.id,
+      numeroVersion: versionArchivada.numeroVersion,
+      estado: 'publicado',
+    },
+    versionAnteriorArchivada: versionPublicada
+      ? {
+          id: versionPublicada.id,
+          numeroVersion: versionPublicada.numeroVersion,
+          estado: 'archivado',
+        }
+      : null,
+    archivos: resultadoArchivos,
+  };
+}

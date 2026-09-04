@@ -5,6 +5,7 @@ declare namespace Express {
       id: string;
       email: string;
       name: string;
+      apellidos?: string;
       role?: string;
       role_id?: string;
       isLocal?: boolean;

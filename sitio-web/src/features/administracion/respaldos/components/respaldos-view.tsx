@@ -19,27 +19,38 @@ const fecha = (iso: string) => new Date(iso).toLocaleString('es-CO', { dateStyle
  * pantalla es solo el frontend, sin conexión a la base de datos todavía.
  */
 export function RespaldosView() {
-  const { registros, isLoading, error } = useRespaldos();
+  const { registros, isLoading, isRefreshing, error, recargar } = useRespaldos();
   const [seleccionado, setSeleccionado] = useState<RegistroRespaldo | null>(null);
+
+  // Filtrar para que la lista únicamente contenga elementos con versión anterior disponible para restaurar
+  const registrosRestaurables = registros.filter(
+    (registro) => registro.versionAnteriorNumero !== null && Boolean(registro.versionAnteriorId || registro.versionAnteriorNumero)
+  );
 
   return (
     <div className="p-6 lg:p-8">
-      <div className="mb-6">
-        <h1 className="admin-header text-zinc-950 dark:text-[#f6f6f6]">Respaldos</h1>
-        <p className="mt-1 text-sm text-zinc-500 max-w-2xl">
-          Historial de publicaciones de página: quién editó, quién publicó, cuándo, y una vista
-          previa de la versión que cada publicación reemplazó.
-        </p>
+      <div className="mb-6 flex items-start justify-between">
+        <div>
+          <h1 className="admin-header text-zinc-950 dark:text-[#f6f6f6]">Respaldos</h1>
+          <p className="mt-1 text-sm text-zinc-500 max-w-2xl">
+            Historial de publicaciones con versión anterior archivada: páginas con respaldo disponible para consultar y restaurar.
+          </p>
+        </div>
+        {isRefreshing && (
+          <span className="text-xs font-medium text-brand-interactive animate-pulse self-center">
+            Actualizando respaldos…
+          </span>
+        )}
       </div>
 
-      {error ? (
+      {error && !registros.length ? (
         <p className="text-sm text-red-600">{error}</p>
       ) : isLoading ? (
         <p className="text-sm text-zinc-500">Cargando respaldos…</p>
-      ) : registros.length === 0 ? (
-        <p className="text-sm text-zinc-500">Todavía no hay publicaciones registradas.</p>
+      ) : registrosRestaurables.length === 0 ? (
+        <p className="text-sm text-zinc-500">No hay páginas con versiones anteriores disponibles para restaurar.</p>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-[#7db828]/30">
+        <div className={`overflow-x-auto rounded-xl border border-zinc-200 dark:border-[#7db828]/30 transition-opacity ${isRefreshing ? 'opacity-70' : 'opacity-100'}`}>
           <table className="w-full min-w-[56rem] text-left text-sm">
             <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-[#131b2f]">
               <tr>
@@ -54,10 +65,23 @@ export function RespaldosView() {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
-              {registros.map((registro) => (
+              {registrosRestaurables.map((registro) => (
                 <tr key={registro.id} className="bg-white dark:bg-[#0f1626]">
                   <td className="px-4 py-3">
-                    <p className="font-medium text-zinc-900 dark:text-[#f6f6f6]">{registro.titulo}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-zinc-900 dark:text-[#f6f6f6]">{registro.titulo}</p>
+                      {registro.ambito && (
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold ${
+                            registro.ambito === 'intranet'
+                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300'
+                              : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300'
+                          }`}
+                        >
+                          {registro.ambito === 'intranet' ? 'Intranet' : 'Sitio web'}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-zinc-500">/{registro.slug} · versión {registro.numeroVersion}</p>
                   </td>
                   <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">{registro.editadoPor.nombre}</td>
@@ -71,13 +95,7 @@ export function RespaldosView() {
                   <td className="px-4 py-3 text-right">
                     <button
                       type="button"
-                      disabled={registro.versionAnteriorNumero === null}
                       onClick={() => setSeleccionado(registro)}
-                      title={
-                        registro.versionAnteriorNumero === null
-                          ? 'Esta fue la primera versión publicada: no hay una anterior que ver'
-                          : undefined
-                      }
                       className={CLASE_BOTON_PRIMARIO}
                     >
                       Ver versión anterior
@@ -90,7 +108,11 @@ export function RespaldosView() {
         </div>
       )}
 
-      <VistaPreviaVersion registro={seleccionado} onCerrar={() => setSeleccionado(null)} />
+      <VistaPreviaVersion
+        registro={seleccionado}
+        onCerrar={() => setSeleccionado(null)}
+        onRestaurado={recargar}
+      />
     </div>
   );
 }

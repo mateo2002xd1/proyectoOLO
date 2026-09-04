@@ -60,7 +60,7 @@ const ENTIDADES: EntidadAuditable[] = [
 ];
 
 const ACCIONES: AccionAuditable[] = [
-  'crear', 'actualizar', 'eliminar', 'publicar', 'despublicar', 'aprobar', 'rechazar', 'enviar_revision',
+  'crear', 'actualizar', 'eliminar', 'publicar', 'despublicar', 'aprobar', 'rechazar', 'enviar_revision', 'guardar_borrador'
 ];
 
 const comoTexto = (valor: unknown) => (typeof valor === 'string' && valor.trim() ? valor.trim() : undefined);

@@ -142,6 +142,43 @@ Bastan dos `DELETE`: `paginas_versiones` cae en cascada desde `paginas`, y
 `auditoria_cambios` no tiene clave foránea contra `paginas` — a propósito, y es lo que
 permite borrar sin perder el rastro de lo que pasó (RF-07).
 
+### 1.5 Restauración de versiones y salvaguarda de uploads (2026-09-02)
+
+Hasta ahora el ciclo editorial era unidireccional: una versión solo avanzaba (`borrador → en_revision → publicado → archivado`). Si una publicación introducía un error, una errata o un recurso defectuoso, la única forma de resolverlo era editar un nuevo borrador desde cero, someterlo a revisión y volver a aprobarlo.
+
+Ahora el ciclo soporta **restaurar a la versión inmediatamente anterior**:
+
+1. **Intercambio atómico de estados en PostgreSQL (`restaurarVersionAnterior`):**
+   - La versión que estaba como `publicado` pasa a `archivado`.
+   - La última versión con `estado = 'archivado'` y `publicado_en IS NOT NULL` pasa a `publicado`.
+   - `paginas.version_publicada_id` se actualiza al ID de la versión restaurada.
+   - Todo se ejecuta dentro de una transacción Sequelize atómica; si algo falla, no queda ninguna página en estado inconsistente ni dos versiones publicadas simultáneamente.
+
+2. **Revalidación inmediata (Zero Downtime):**
+   - La restauración concluye disparando `emitirContenidoPublicado`.
+   - Al igual que en la aprobación ordinaria, se purga Redis y se revalida la etiqueta ISR en Next.js, por lo que el front refleja la versión recuperada en el acto.
+
+3. **Salvaguarda de recursos multimedia (`/uploads/` ↔ `/public/backend/{pagina_id}/`):**
+   - **El problema que resuelve:** En versiones anteriores, si un editor reemplazaba una imagen o archivo en Puck, el archivo viejo en `/uploads/` corría el riesgo de ser eliminado o quedar huérfano. Al restaurar la versión anterior, esa página se quedaba con enlaces rotos (error 404).
+   - **Ubicación de backup:** Implementado en `src/shared/storage/backup-uploads.service.ts`. Cada aplicación almacena los respaldos en su propia carpeta pública:
+     - Intranet: `intranet/public/backend/{pagina_id}/`
+     - Sitio Web: `sitio-web/public/backend/{pagina_id}/`
+   - **Regla de integridad al archivar / publicar (`respaldarArchivosAlPublicar`):**
+     - Si el archivo de la versión que se archiva **sigue en uso** por la nueva versión: se **copia** a backup (permanece en uploads).
+     - Si el archivo **ya no se usa** en la nueva versión: se **mueve** a backup (se retira de uploads).
+   - **Regla de integridad al restaurar (`restaurarArchivosDesdeBackup`):**
+     - Los archivos necesarios por la versión que vuelve a publicarse se **mueven de regreso a `/uploads/`**.
+     - Los archivos de la versión que deja de ser publicada se resguardan en backup.
+   - **Purga automática de archivos huérfanos (`limpiarArchivosHuerfanosEnBackup`):**
+     - La carpeta `public/backend/{pagina_id}/` solo conserva **los archivos que la versión archivada actual realmente utiliza**.
+     - Cada vez que se restaura o publica, cualquier archivo físico residual que no pertenezca a la versión archivada se elimina del disco, garantizando que no se acumule basura de versiones antiguas.
+
+4. **Herramienta de consola (CLI):**
+   - El script `api-backend/scripts/probar-versionamiento.ts` permite operar el ciclo de versionamiento directamente desde la terminal de forma multi-ámbito (`--ambito=intranet` o `--ambito=sitio`):
+     - `npx ts-node scripts/probar-versionamiento.ts listar [--ambito=intranet|sitio]`
+     - `npx ts-node scripts/probar-versionamiento.ts estado <slug|uuid> [--ambito=intranet|sitio]`
+     - `npx ts-node scripts/probar-versionamiento.ts restaurar <slug|uuid> [--ambito=intranet|sitio]`
+
 ---
 
 ## 2. La regla de oro

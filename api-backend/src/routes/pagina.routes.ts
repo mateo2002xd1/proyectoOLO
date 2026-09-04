@@ -584,4 +584,41 @@ router.patch('/:slug/rechazar', requierePermisoPagina('puedeRechazar'), PaginaCo
 // de las dos no tiene nada que hacer aquí.
 router.get('/en-revision', requierePermisoPagina('puedePublicar'), PaginaController.listarEnRevision);
 
+/**
+ * @openapi
+ * /api/paginas/respaldos:
+ *   get:
+ *     tags: [Páginas]
+ *     summary: Historial de publicaciones y respaldos de páginas
+ *     description: |
+ *       Lista las versiones actualmente publicadas junto con su versión anterior
+ *       archivada (respaldo) y los autores de cada una.
+ *     responses:
+ *       200:
+ *         description: Lista de respaldos de páginas.
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ */
+router.get('/respaldos', requireAuth, PaginaController.listarRespaldos);
+
+/**
+ * @openapi
+ * /api/paginas/{slug}/restaurar:
+ *   post:
+ *     tags: [Páginas]
+ *     summary: Restaurar versión anterior archivada (respaldo)
+ *     description: |
+ *       Restaura la última versión archivada que estuvo publicada, intercambiándola
+ *       con la versión actualmente publicada y restaurando sus archivos de /uploads/.
+ *     parameters:
+ *       - $ref: '#/components/parameters/SlugEnRuta'
+ *       - $ref: '#/components/parameters/Ambito'
+ *     responses:
+ *       200:
+ *         description: Versión restaurada con éxito.
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
+ *       404: { $ref: '#/components/responses/NoEncontrado' }
+ */
+router.post('/:slug/restaurar', requierePermisoPagina('puedePublicar'), PaginaController.restaurar);
+
 export default router;

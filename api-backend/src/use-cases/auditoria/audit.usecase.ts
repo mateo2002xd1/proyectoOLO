@@ -1,3 +1,4 @@
+import { Transaction } from 'sequelize';
 import {
   AuditRepository,
   type DatosAuditoria,
@@ -11,21 +12,18 @@ export type { DatosAuditoria, FiltrosAuditoria };
  *
  * **Es `async` y hay que esperarla.** Antes no lo era, y ese detalle es parte de
  * por qué la auditoría no dejaba rastro sin que nadie se enterara: al no esperar
- * la promesa, un INSERT rechazado se perdía como *unhandled rejection*. El otro
- * motivo era que quien la llamaba mandaba la acción en inglés (`'create'`), y la
- * migración 006 dejó un CHECK que solo admite los verbos en español.
+ * la promesa, un INSERT rechazado se perdía como *unhandled rejection*.
  *
- * El error se registra pero **no se relanza**: si la bitácora falla, la petición
- * que la originó —publicar una página, por ejemplo— debe terminar igual. Lo que
- * no puede seguir pasando es que falle en silencio.
- *
- * Nota para quien retome RF-07: lo correcto en una entidad pública es que la fila
- * de auditoría se escriba en la **misma transacción** que el cambio, para que no
- * pueda existir un cambio sin su evidencia. Hoy no es posible sin refactorizar
- * `PaginaRepository`, que no acepta `transaction` en ninguna de sus operaciones.
- * Queda como el siguiente paso de la épica, no como algo ya resuelto.
+ * Si se provee una transacción (`tx`), el error no se atrapa: una falla al auditar
+ * debe abortar la transacción principal. Si no se provee, se atrapa y se registra
+ * en la consola para no tumbar la petición original.
  */
-export const logAudit = async (datos: DatosAuditoria): Promise<void> => {
+export const logAudit = async (datos: DatosAuditoria, tx?: Transaction): Promise<void> => {
+  if (tx) {
+    await AuditRepository.create(datos, tx);
+    return;
+  }
+
   try {
     await AuditRepository.create(datos);
   } catch (error) {

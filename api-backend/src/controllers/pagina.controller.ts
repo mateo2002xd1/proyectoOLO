@@ -6,6 +6,8 @@ import { rechazarPagina } from '../use-cases/paginas/rechazar-pagina.usecase';
 import { obtenerPaginaPublica } from '../use-cases/paginas/obtener-pagina-publica.usecase';
 import { obtenerVersionEditable } from '../use-cases/paginas/obtener-version-editable.usecase';
 import { listarEnRevision } from '../use-cases/paginas/listar-en-revision.usecase';
+import { listarRespaldos } from '../use-cases/paginas/listar-respaldos.usecase';
+import { restaurarVersionAnterior } from '../use-cases/paginas/restaurar-version-anterior.usecase';
 import { eliminarVersion } from '../use-cases/paginas/eliminar-version.usecase';
 import { crearSeccion } from '../use-cases/paginas/crear-seccion.usecase';
 import {
@@ -17,6 +19,7 @@ import { liberarBloqueo } from '../use-cases/paginas/liberar-bloqueo.usecase';
 import { AMBITO_HEADER, exigirAmbito, resolverAmbito } from '../shared/ambito';
 import { logAudit } from '../use-cases/auditoria/audit.usecase';
 import { datosDeAuditoria } from '../shared/auditoria-request';
+import sequelize from '../config/database';
 
 /**
  * A qué aplicación pertenece la página que se está pidiendo. Cada frontend lo
@@ -47,14 +50,24 @@ const ambitoExigidoDe = (req: Request) => exigirAmbito(req.header(AMBITO_HEADER)
  */
 const registrar = async (
   req: Request,
-  accion: 'crear' | 'actualizar' | 'enviar_revision' | 'publicar' | 'rechazar' | 'eliminar',
-  resultado: { pagina?: { id?: string; slug?: string }; version?: { numeroVersion?: number } },
-  extra: { campo: string; antes: unknown; despues: unknown }[] = []
+  accion: 'crear' | 'actualizar' | 'enviar_revision' | 'publicar' | 'despublicar' | 'rechazar' | 'eliminar' | 'guardar_borrador',
+  resultado: any,
+  extra: { campo: string; antes: unknown; despues: unknown }[] = [],
+  tx?: any
 ) => {
-  const paginaId = resultado?.pagina?.id;
-  // Sin id no hay fila válida (`entidad_id` es NOT NULL). Es preferible no
-  // registrar a tumbar la petición que sí hizo su trabajo.
+  const paginaId = resultado?.pagina?.id ?? resultado?.id;
   if (!paginaId) return;
+
+  const slugAntes = resultado?.paginaAnterior?.slug ?? null;
+  const versionAntes = resultado?.versionAnterior?.numeroVersion ?? null;
+
+  console.log('[DEBUG] registrar:', { 
+    accion, 
+    paginaAnterior: resultado?.paginaAnterior, 
+    versionAnterior: resultado?.versionAnterior,
+    slugAntes,
+    versionAntes
+  });
 
   await logAudit({
     ...datosDeAuditoria(req),
@@ -62,13 +75,13 @@ const registrar = async (
     entidadTipo: 'pagina',
     accion,
     camposModificados: [
-      { campo: 'slug', antes: null, despues: resultado.pagina?.slug ?? req.params.slug },
+      { campo: 'slug', antes: slugAntes, despues: resultado.pagina?.slug ?? resultado.slug ?? req.params.slug },
       ...(resultado.version?.numeroVersion !== undefined
-        ? [{ campo: 'version', antes: null, despues: resultado.version.numeroVersion }]
+        ? [{ campo: 'version', antes: versionAntes, despues: resultado.version.numeroVersion }]
         : []),
       ...extra,
     ],
-  });
+  }, tx);
 };
 
 export const PaginaController = {
@@ -90,29 +103,29 @@ export const PaginaController = {
   async crearSeccion(req: Request, res: Response, next: NextFunction) {
     try {
       const { titulo } = req.body;
-      const seccion = await crearSeccion(
-        titulo,
-        ambitoExigidoDe(req),
-        req.user?.id || '',
-        req.user?.role ?? null
-      );
+      const seccion = await sequelize.transaction(async (tx) => {
+        const result = await crearSeccion(
+          titulo,
+          ambitoExigidoDe(req),
+          req.user?.id || '',
+          req.user?.role ?? null,
+          tx
+        );
 
-      // `registrar` espera el id de la página y aquí el use-case devuelve el slug, que
-      // es lo que interesa en la bitácora. Se escribe a mano para poder dejar también
-      // la clave de permiso concedida: es la parte de esta acción que reparte poder, y
-      // sin ella el registro contaría solo la mitad de lo que pasó.
-      await logAudit({
-        ...datosDeAuditoria(req),
-        entidadId: seccion.id,
-        entidadTipo: 'pagina',
-        accion: 'crear',
-        camposModificados: [
-          { campo: 'slug', antes: null, despues: seccion.slug },
-          { campo: 'titulo', antes: null, despues: seccion.titulo },
-          { campo: 'ambito', antes: null, despues: seccion.ambito },
-          { campo: 'permiso', antes: null, despues: seccion.clavePermiso },
-          { campo: 'permiso_concedido_a_rol', antes: null, despues: seccion.rolConcedido },
-        ],
+        await logAudit({
+          ...datosDeAuditoria(req),
+          entidadId: result.id,
+          entidadTipo: 'pagina',
+          accion: 'crear',
+          camposModificados: [
+            { campo: 'slug', antes: null, despues: result.slug },
+            { campo: 'titulo', antes: null, despues: result.titulo },
+            { campo: 'ambito', antes: null, despues: result.ambito },
+            { campo: 'permiso', antes: null, despues: result.clavePermiso },
+            { campo: 'permiso_concedido_a_rol', antes: null, despues: result.rolConcedido },
+          ],
+        }, tx);
+        return result;
       });
 
       res.status(201).json(seccion);
@@ -148,28 +161,29 @@ export const PaginaController = {
   async eliminarSeccion(req: Request, res: Response, next: NextFunction) {
     try {
       const { confirmacion } = req.body;
-      const seccion = await eliminarSeccion(
-        req.params.slug as string,
-        ambitoExigidoDe(req),
-        confirmacion
-      );
+      const seccion = await sequelize.transaction(async (tx) => {
+        const result = await eliminarSeccion(
+          req.params.slug as string,
+          ambitoExigidoDe(req),
+          confirmacion,
+          tx
+        );
 
-      // Se registra con el id que la página TENÍA. La fila ya no existe, pero la
-      // bitácora no tiene clave foránea contra `paginas` justamente para esto: el
-      // historial de una sección borrada sigue siendo consultable por su id.
-      await logAudit({
-        ...datosDeAuditoria(req),
-        entidadId: seccion.id,
-        entidadTipo: 'pagina',
-        accion: 'eliminar',
-        camposModificados: [
-          { campo: 'slug', antes: seccion.slug, despues: null },
-          { campo: 'titulo', antes: seccion.titulo, despues: null },
-          { campo: 'ambito', antes: seccion.ambito, despues: null },
-          { campo: 'versiones_eliminadas', antes: seccion.versionesEliminadas, despues: null },
-          { campo: 'permiso', antes: seccion.clavePermiso, despues: null },
-          { campo: 'permiso_retirado_a_roles', antes: seccion.rolesAfectados.join(', '), despues: null },
-        ],
+        await logAudit({
+          ...datosDeAuditoria(req),
+          entidadId: result.id,
+          entidadTipo: 'pagina',
+          accion: 'eliminar',
+          camposModificados: [
+            { campo: 'slug', antes: result.slug, despues: null },
+            { campo: 'titulo', antes: result.titulo, despues: null },
+            { campo: 'ambito', antes: result.ambito, despues: null },
+            { campo: 'versiones_eliminadas', antes: result.versionesEliminadas, despues: null },
+            { campo: 'permiso', antes: result.clavePermiso, despues: null },
+            { campo: 'permiso_retirado_a_roles', antes: result.rolesAfectados.join(', '), despues: null },
+          ],
+        }, tx);
+        return result;
       });
 
       res.json(seccion);
@@ -178,7 +192,8 @@ export const PaginaController = {
 
   async obtenerEditable(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await obtenerVersionEditable(req.params.slug as string, ambitoExigidoDe(req));
+      const versionId = typeof req.query.versionId === 'string' ? req.query.versionId : undefined;
+      const result = await obtenerVersionEditable(req.params.slug as string, ambitoExigidoDe(req), versionId);
       res.json(result);
     } catch (err) { next(err); }
   },
@@ -233,21 +248,28 @@ export const PaginaController = {
   async guardarBorrador(req: Request, res: Response, next: NextFunction) {
     try {
       const { contenido } = req.body;
-      const result = await guardarBorrador(
-        req.params.slug as string,
-        contenido,
-        req.user?.id || '',
-        ambitoExigidoDe(req)
-      );
-      await registrar(req, 'actualizar', result);
+      const result = await sequelize.transaction(async (tx) => {
+        const r = await guardarBorrador(
+          req.params.slug as string,
+          contenido,
+          req.user?.id || '',
+          ambitoExigidoDe(req),
+          tx
+        );
+        await registrar(req, 'guardar_borrador', r, [], tx);
+        return r;
+      });
       res.json(result);
     } catch (err) { next(err); }
   },
 
   async enviarARevision(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await enviarARevision(req.params.slug as string, ambitoExigidoDe(req));
-      await registrar(req, 'enviar_revision', result);
+      const result = await sequelize.transaction(async (tx) => {
+        const r = await enviarARevision(req.params.slug as string, ambitoExigidoDe(req), tx);
+        await registrar(req, 'enviar_revision', r, [], tx);
+        return r;
+      });
       res.json(result);
     } catch (err) {
       // 400 con el detalle estructurado — el genérico de `errorHandler` solo
@@ -267,6 +289,20 @@ export const PaginaController = {
         req.user?.id || '',
         ambitoExigidoDe(req)
       );
+
+      // Si existía una versión publicada que pasa a archivada, registrar en auditoría
+      if (result.versionArchivada) {
+        await registrar(
+          req,
+          'despublicar',
+          { pagina: result.pagina, version: result.versionArchivada },
+          [
+            { campo: 'estado', antes: 'publicado', despues: 'archivado' },
+            { campo: 'motivo', antes: null, despues: `Archivada al publicar versión ${result.version.numeroVersion}` },
+          ]
+        );
+      }
+
       // Aprobar es publicar: la versión pasa a `publicado` y queda visible.
       await registrar(req, 'publicar', result);
       res.json(result);
@@ -276,43 +312,78 @@ export const PaginaController = {
   async rechazar(req: Request, res: Response, next: NextFunction) {
     try {
       const { motivo } = req.body;
-      const result = await rechazarPagina(
-        req.params.slug as string,
-        req.user?.id || '',
-        motivo,
-        ambitoExigidoDe(req)
-      );
-      // El motivo se guarda en la bitácora porque es la única explicación de por
-      // qué una versión volvió a borrador, y quien la lea semanas después no
-      // tiene otro sitio donde encontrarla.
-      await registrar(req, 'rechazar', result, [
-        { campo: 'motivo', antes: null, despues: motivo ?? null },
-      ]);
+      const result = await sequelize.transaction(async (tx) => {
+        const r = await rechazarPagina(
+          req.params.slug as string,
+          req.user?.id || '',
+          motivo,
+          ambitoExigidoDe(req),
+          tx
+        );
+        // El motivo se guarda en la bitácora porque es la única explicación de por
+        // qué una versión volvió a borrador, y quien la lea semanas después no
+        // tiene otro sitio donde encontrarla.
+        await registrar(req, 'rechazar', r, [
+          { campo: 'motivo', antes: null, despues: motivo ?? null },
+        ], tx);
+        return r;
+      });
       res.json(result);
     } catch (err) { next(err); }
   },
 
   async eliminarVersion(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await eliminarVersion(
-        req.params.slug as string,
-        req.params.versionId as string,
-        ambitoExigidoDe(req)
-      );
-      // Descartar una versión destruye trabajo sin publicar: si la página entera
-      // desaparece con ella, esta fila es lo único que queda de que existió.
-      await registrar(req, 'eliminar', result, [
-        { campo: 'paginaEliminada', antes: null, despues: result.paginaEliminada },
-      ]);
+      const result = await sequelize.transaction(async (tx) => {
+        const r = await eliminarVersion(
+          req.params.slug as string,
+          req.params.versionId as string,
+          ambitoExigidoDe(req),
+          tx
+        );
+        // Descartar una versión destruye trabajo sin publicar: si la página entera
+        // desaparece con ella, esta fila es lo único que queda de que existió.
+        await registrar(req, 'eliminar', r, [
+          { campo: 'paginaEliminada', antes: null, despues: r.paginaEliminada },
+        ], tx);
+        return r;
+      });
       res.json(result);
     } catch (err) { next(err); }
   },
 
-  // Sin ámbito: la cola de aprobación reúne las dos aplicaciones en un solo sitio.
+  // Sin ámbito obligatorio: lista todas las páginas o permite filtrar por ámbito si se especifica
   async listarEnRevision(_req: Request, res: Response, next: NextFunction) {
     try {
       const result = await listarEnRevision();
       res.json(result);
+    } catch (err) { next(err); }
+  },
+
+  async listarRespaldos(req: Request, res: Response, next: NextFunction) {
+    try {
+      const ambitoParam = (req.query.ambito as string) || req.header(AMBITO_HEADER);
+      const ambito = ambitoParam === 'intranet' || ambitoParam === 'sitio' ? ambitoParam : undefined;
+      const result = await listarRespaldos(ambito);
+      res.json(result);
+    } catch (err) { next(err); }
+  },
+
+  async restaurar(req: Request, res: Response, next: NextFunction) {
+    try {
+      const slug = req.params.slug as string;
+      const ambito = ambitoExigidoDe(req);
+      const versionId = typeof req.body?.versionId === 'string' ? req.body.versionId : undefined;
+      const numeroVersion = typeof req.body?.numeroVersion === 'number' ? req.body.numeroVersion : undefined;
+      const criterio = (versionId || numeroVersion) ? { versionId, numeroVersion } : undefined;
+      const resultado = await restaurarVersionAnterior(
+        slug,
+        req.user?.id,
+        ambito,
+        criterio,
+        datosDeAuditoria(req)
+      );
+      res.json(resultado);
     } catch (err) { next(err); }
   },
 };

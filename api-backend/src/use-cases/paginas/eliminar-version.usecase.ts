@@ -18,14 +18,18 @@ import type { Ambito } from '../../shared/ambito';
  * añadido a la respuesta: quien solo lee `paginaEliminada` y `versionesRestantes`
  * sigue funcionando igual.
  */
-export const eliminarVersion = async (slug: string, versionId: string, ambito: Ambito) => {
-  const pagina = await PaginaRepository.findBySlug(slug, ambito);
-  if (!pagina) throw Object.assign(new Error('Página no encontrada'), { status: 404 });
+import { Transaction } from 'sequelize';
 
-  const version = await PaginaRepository.findVersionPorId(versionId);
+export const eliminarVersion = async (slug: string, versionId: string, ambito: Ambito, tx?: Transaction) => {
+  const pagina = await PaginaRepository.findBySlug(slug, ambito, tx);
+  if (!pagina) throw Object.assign(new Error('Página no encontrada'), { status: 404 });
+  const paginaAnterior = pagina.toJSON();
+
+  const version = await PaginaRepository.findVersionPorId(versionId, tx);
   if (!version || version.paginaId !== pagina.id) {
     throw Object.assign(new Error('Versión no encontrada'), { status: 404 });
   }
+  const versionAnterior = version.toJSON();
 
   if (version.estado === 'publicado' || pagina.versionPublicadaId === version.id) {
     throw Object.assign(
@@ -39,13 +43,15 @@ export const eliminarVersion = async (slug: string, versionId: string, ambito: A
   const identidad = {
     pagina: { id: pagina.id, slug: pagina.slug },
     version: { numeroVersion: version.numeroVersion },
+    paginaAnterior,
+    versionAnterior,
   };
 
-  await PaginaRepository.eliminarVersion(version);
+  await PaginaRepository.eliminarVersion(version, tx);
 
-  const restantes = await PaginaRepository.contarVersiones(pagina.id);
+  const restantes = await PaginaRepository.contarVersiones(pagina.id, tx);
   if (restantes === 0) {
-    await PaginaRepository.eliminarPagina(pagina);
+    await PaginaRepository.eliminarPagina(pagina, tx);
     return { ...identidad, eliminada: true, paginaEliminada: true, versionesRestantes: 0 };
   }
 

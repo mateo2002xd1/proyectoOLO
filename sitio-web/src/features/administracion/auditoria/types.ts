@@ -18,7 +18,8 @@ export type AccionAuditable =
   | 'despublicar'
   | 'aprobar'
   | 'rechazar'
-  | 'enviar_revision';
+  | 'enviar_revision'
+  | 'guardar_borrador';
 
 export interface CampoModificado {
   campo: string;
@@ -75,10 +76,11 @@ export const ETIQUETA_ACCION: Record<AccionAuditable, string> = {
   actualizar: 'Actualización',
   eliminar: 'Eliminación',
   publicar: 'Publicación',
-  despublicar: 'Despublicación',
+  despublicar: 'Archivado',
   aprobar: 'Aprobación',
   rechazar: 'Rechazo',
   enviar_revision: 'Envío a revisión',
+  guardar_borrador: 'Borrador',
 };
 
 export const ETIQUETA_ENTIDAD: Record<EntidadAuditable, string> = {
@@ -102,6 +104,7 @@ export const COLOR_ACCION: Record<AccionAuditable, string> = {
   aprobar: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200',
   rechazar: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200',
   enviar_revision: 'bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-200',
+  guardar_borrador: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300',
 };
 
 export const etiquetaDeAccion = (accion: AccionAuditable) => ETIQUETA_ACCION[accion] ?? accion;

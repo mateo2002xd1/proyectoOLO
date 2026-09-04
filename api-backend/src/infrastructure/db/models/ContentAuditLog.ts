@@ -20,6 +20,7 @@ export type AccionAuditable =
   | 'aprobar'
   | 'rechazar'
   | 'enviar_revision'
+  | 'guardar_borrador'
   // Se distingue de 'actualizar' a propósito: la Ley 1581 obliga a poder responder
   // «quién cambió contraseñas y cuándo» sin separarlo a mano del resto de ediciones.
   | 'cambiar_password';
