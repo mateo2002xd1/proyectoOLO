@@ -219,14 +219,19 @@ function LoginForm() {
           className="mb-5"
         />
 
-        {/* RF-13: el aviso va antes de enviar nada, no después. */}
+        {/* RF-13: el aviso va antes de enviar nada, no después.
+
+            Los dos enlaces van a `/politica-de-privacidad`, la ruta canónica. El de
+            «protección de datos» apuntaba a `/privacidad`, que ya no es una página sino
+            un alias que redirige aquí mismo (ver `next.config.mjs`): mandaba al mismo
+            sitio pagando un salto de más. */}
         <p className="mb-6 text-xs leading-relaxed text-gray-500">
           Al ingresar a este sitio aceptas la{' '}
           <Link href="/politica-de-privacidad" className="font-semibold text-gray-700 hover:underline">
             política de privacidad
           </Link>{' '}
           y{' '}
-          <Link href="/privacidad" className="font-semibold text-gray-700 hover:underline">
+          <Link href="/politica-de-privacidad" className="font-semibold text-gray-700 hover:underline">
             protección de datos
           </Link>
           .
