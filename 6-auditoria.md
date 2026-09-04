@@ -5,6 +5,91 @@
 
 ---
 
+## sesión 04-09-2026 (7.ª parte): `npm audit fix --force` había degradado Sequelize tres versiones mayores
+
+Encargo: corregir el resultado de un `npm audit fix --force` ejecutado en `api-backend`.
+Lo que ese comando dejó no era un arreglo: era una regresión mucho más grave que las
+vulnerabilidades que decía cerrar.
+
+### 1. El daño: de Sequelize 6 a Sequelize 3
+
+`--force` autoriza a npm a resolver avisos **retrocediendo** versiones. Aquí bajó
+`sequelize` de `^6.37.5` a `^3.30.0` —tres versiones mayores hacia atrás, una librería
+de 2016— y lo escribió en `package.json`. Sequelize 3 no tiene la API que usa todo el
+backend, así que el proyecto habría dejado de arrancar por completo.
+
+Y ni siquiera resolvía nada: el informe de vulnerabilidades que quedó a la vista
+(`lodash` crítico, `validator`, `dottie`) **lo causaba la propia degradación**, porque
+Sequelize 3 arrastra `lodash` 3.x y `validator` 3.x, que llevan años sin parches. El
+comando fabricó los agujeros que después informaba.
+
+`package-lock.json` del repositorio ya tenía la versión correcta y parcheada,
+`sequelize@6.37.8`. Bastó con devolver ambos archivos a su estado publicado
+(`git checkout --`) y reinstalar para deshacerlo.
+
+### 2. Lo que había de verdad, una vez restaurado
+
+Con Sequelize 6 de vuelta el informe real eran cuatro avisos, ninguno crítico:
+
+| Paquete | Aviso | Cómo entra |
+|---|---|---|
+| `fast-uri` 3.1.5 | confusión de anfitrión y SSRF (alta) | transitiva |
+| `qs` 6.15.3 | dos formas de denegación de servicio (media) | transitiva |
+| `uuid` 8.3.2 | falta de chequeo de límites en v3/v5/v6 (media) | vía `sequelize` |
+
+Los dos primeros los cierra `npm audit fix` **sin** `--force`: son actualizaciones de
+parche que no tocan ninguna versión mayor. Quedaron en `fast-uri` 3.1.7 y `qs` 6.16.0.
+
+### 3. El caso de `uuid`, que es el que tienta a usar `--force`
+
+Para `uuid` npm no ofrece camino limpio: su única propuesta era, otra vez, bajar
+`sequelize` a 3.30.0. La trampa está en que **el aviso ni siquiera es alcanzable aquí**:
+el fallo aparece al pasar un búfer propio a `uuid.v3/v5/v6`, y Sequelize solo llama a
+`v1()` y `v4()` sin argumentos, en cinco puntos del generador de consultas.
+
+Se resolvió con un `overrides` acotado en `package.json`, que fuerza `uuid` a `^11.1.1`
+solo dentro de Sequelize. Se comprobó antes que `uuid` 11 conserva los exports de
+CommonJS (`require('uuid').v1` y `.v4`) que Sequelize necesita: v9 quitó el export por
+defecto, pero no los nombrados, que son los únicos que se usan.
+
+`uuid` es dependencia de un solo paquete en todo el proyecto, así que el override no
+alcanza a nada más.
+
+### Qué se modificó
+- `api-backend/package.json`: se revirtió `sequelize` a `^6.37.5` y se añadió el bloque
+  `overrides` para `uuid`. Cinco líneas nuevas; nada más cambió.
+- `api-backend/package-lock.json`: tres subidas transitivas —`fast-uri` 3.1.5 → 3.1.7,
+  `qs` 6.15.3 → 6.16.0, `uuid` 8.3.2 → 11.1.1—. `sequelize` sigue en 6.37.8.
+
+### Decisiones
+- **No usar `--force` en este proyecto.** No es una versión más agresiva del arreglo: es
+  permiso para retroceder versiones mayores, y con dependencias antiguas eso suele
+  empeorar el recuento de vulnerabilidades en vez de bajarlo, además de romper el código.
+- **Override acotado a `sequelize`, no global.** Escrito como `{ sequelize: { uuid } }`
+  y no como `{ uuid }`, para que si mañana entra otro paquete que dependa de `uuid` no
+  se le imponga una versión mayor por la puerta de atrás.
+- **Se subió `uuid` aunque el fallo no fuese explotable.** Costaba un override y una
+  comprobación; dejar el aviso abierto obliga a volver a razonarlo en cada revisión.
+
+### Verificación
+- `npm audit`: **0 vulnerabilidades**.
+- `npm run typecheck` correcto en `api-backend`.
+- Prueba de humo de las rutas que tocan `uuid` dentro de Sequelize: se generaron
+  identificadores con `DataTypes.UUIDV4` y `DataTypes.UUIDV1` como valor por defecto de un
+  modelo, y un identificador de transacción con `generateTransactionId()`. Los tres
+  devuelven UUID válidos con `uuid` 11.
+- Generación de SQL correcta (`selectQuery` con un `Op.eq`), para descartar que el
+  override rompiera el generador de consultas.
+
+### Pendiente
+- Los cambios están en el árbol de trabajo, **sin commitear**.
+- `npm audit` en el resto de espacios del monorepo (`intranet`, `sitio-web`, `packages`):
+  esta revisión solo cubrió `api-backend`.
+- Al actualizar Sequelize en el futuro, revisar si ya declara `uuid` 11 o superior y
+  retirar entonces el `overrides`, que es un parche y conviene que no se quede fósil.
+
+---
+
 ## sesión 04-09-2026 (6.ª parte): la API no arrancaba tras el merge — y no era culpa del merge
 
 Encargo: revisar si el merge de `main` (`cd70e7e`) rompió algo, cruzando los cambios
