@@ -584,4 +584,20 @@ router.patch('/:slug/rechazar', requierePermisoPagina('puedeRechazar'), PaginaCo
 // de las dos no tiene nada que hacer aquí.
 router.get('/en-revision', requierePermisoPagina('puedePublicar'), PaginaController.listarEnRevision);
 
+/**
+ * @openapi
+ * /api/paginas/respaldos:
+ *   get:
+ *     tags: [Páginas]
+ *     summary: Historial de publicaciones y respaldos de páginas
+ *     description: |
+ *       Lista las versiones actualmente publicadas junto con su versión anterior
+ *       archivada (respaldo) y los autores de cada una.
+ *     responses:
+ *       200:
+ *         description: Lista de respaldos de páginas.
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ */
+router.get('/respaldos', requireAuth, PaginaController.listarRespaldos);
+
 export default router;

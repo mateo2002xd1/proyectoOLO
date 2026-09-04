@@ -2,6 +2,7 @@ import { Transaction } from 'sequelize';
 import { PaginaRepository } from '../../repositories/pagina.repository';
 import { emitirContenidoPublicado } from '../../domain-events/paginas/contenido-publicado.event';
 import type { Ambito } from '../../shared/ambito';
+import { respaldarArchivosAlPublicar } from '../../shared/storage/backup-uploads.service';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const toUUID = (id: string) => (UUID_RE.test(id) ? id : null);
@@ -14,6 +15,17 @@ export const aprobarPagina = async (slug: string, userId: string, ambito: Ambito
   const versionEnRevision = await PaginaRepository.findVersionPorEstado(pagina.id, 'en_revision', tx);
   if (!versionEnRevision) throw new Error('No hay versión en revisión');
   const versionAnterior = versionEnRevision.toJSON();
+
+  // 1. Obtener la versión que estaba publicada antes de archivarla para respaldar sus recursos
+  const versionPublicadaAnterior = await PaginaRepository.findVersionPorEstado(pagina.id, 'publicado', tx);
+  if (versionPublicadaAnterior) {
+    respaldarArchivosAlPublicar({
+      paginaId: pagina.id,
+      versionAnteriorContenido: versionPublicadaAnterior.contenido,
+      versionNuevaContenido: versionEnRevision.contenido,
+      ambito,
+    });
+  }
 
   // La versión que estaba publicada pasa a archivada antes de que entre la nueva:
   // una página tiene como máximo una versión publicada, y la base lo impone.
@@ -43,5 +55,5 @@ export const aprobarPagina = async (slug: string, userId: string, ambito: Ambito
     fecha: new Date(),
   });
 
-  return { pagina, version: versionEnRevision, paginaAnterior, versionAnterior };
+  return { pagina, version: versionEnRevision, versionArchivada: versionPublicadaAnterior };
 };

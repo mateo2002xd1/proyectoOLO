@@ -18,9 +18,11 @@ export interface RegistroRespaldo {
   paginaId: string;
   titulo: string;
   slug: string;
+  ambito?: 'sitio' | 'intranet';
   numeroVersion: number;
-  /** `null` cuando la versión publicada es la primera: no hay nada que respaldar. */
+  /** Número de la versión anterior archivada disponible para restaurar. */
   versionAnteriorNumero: number | null;
+  versionAnteriorId?: string | null;
   editadoPor: AutorRespaldo;
   publicadoPor: AutorRespaldo;
   /** ISO 8601. */

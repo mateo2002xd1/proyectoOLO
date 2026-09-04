@@ -6,6 +6,7 @@ import { rechazarPagina } from '../use-cases/paginas/rechazar-pagina.usecase';
 import { obtenerPaginaPublica } from '../use-cases/paginas/obtener-pagina-publica.usecase';
 import { obtenerVersionEditable } from '../use-cases/paginas/obtener-version-editable.usecase';
 import { listarEnRevision } from '../use-cases/paginas/listar-en-revision.usecase';
+import { listarRespaldos } from '../use-cases/paginas/listar-respaldos.usecase';
 import { eliminarVersion } from '../use-cases/paginas/eliminar-version.usecase';
 import { crearSeccion } from '../use-cases/paginas/crear-seccion.usecase';
 import {
@@ -48,7 +49,7 @@ const ambitoExigidoDe = (req: Request) => exigirAmbito(req.header(AMBITO_HEADER)
  */
 const registrar = async (
   req: Request,
-  accion: 'crear' | 'actualizar' | 'enviar_revision' | 'publicar' | 'rechazar' | 'eliminar' | 'guardar_borrador',
+  accion: 'crear' | 'actualizar' | 'enviar_revision' | 'publicar' | 'despublicar' | 'rechazar' | 'eliminar' | 'guardar_borrador',
   resultado: any,
   extra: { campo: string; antes: unknown; despues: unknown }[] = [],
   tx?: any
@@ -281,17 +282,27 @@ export const PaginaController = {
 
   async aprobar(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await sequelize.transaction(async (tx) => {
-        const r = await aprobarPagina(
-          req.params.slug as string,
-          req.user?.id || '',
-          ambitoExigidoDe(req),
-          tx
+      const result = await aprobarPagina(
+        req.params.slug as string,
+        req.user?.id || '',
+        ambitoExigidoDe(req)
+      );
+
+      // Si existía una versión publicada que pasa a archivada, registrar en auditoría
+      if (result.versionArchivada) {
+        await registrar(
+          req,
+          'despublicar',
+          { pagina: result.pagina, version: result.versionArchivada },
+          [
+            { campo: 'estado', antes: 'publicado', despues: 'archivado' },
+            { campo: 'motivo', antes: null, despues: `Archivada al publicar versión ${result.version.numeroVersion}` },
+          ]
         );
-        // Aprobar es publicar: la versión pasa a `publicado` y queda visible.
-        await registrar(req, 'publicar', r, [], tx);
-        return r;
-      });
+      }
+
+      // Aprobar es publicar: la versión pasa a `publicado` y queda visible.
+      await registrar(req, 'publicar', result);
       res.json(result);
     } catch (err) { next(err); }
   },
@@ -339,10 +350,19 @@ export const PaginaController = {
     } catch (err) { next(err); }
   },
 
-  // Sin ámbito: la cola de aprobación reúne las dos aplicaciones en un solo sitio.
+  // Sin ámbito obligatorio: lista todas las páginas o permite filtrar por ámbito si se especifica
   async listarEnRevision(_req: Request, res: Response, next: NextFunction) {
     try {
       const result = await listarEnRevision();
+      res.json(result);
+    } catch (err) { next(err); }
+  },
+
+  async listarRespaldos(req: Request, res: Response, next: NextFunction) {
+    try {
+      const ambitoParam = (req.query.ambito as string) || req.header(AMBITO_HEADER);
+      const ambito = ambitoParam === 'intranet' || ambitoParam === 'sitio' ? ambitoParam : undefined;
+      const result = await listarRespaldos(ambito);
       res.json(result);
     } catch (err) { next(err); }
   },
