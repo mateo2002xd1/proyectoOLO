@@ -15,25 +15,31 @@
  * registrado (RF-07, Ley 1581) aunque la página ya no exista. Encima de eso, el borrado
  * añade su propio registro.
  *
- * ## Las tres guardas, y por qué cada una
+ * ## Las dos guardas, y por qué cada una
  *
- * 1. **Nunca una sección de fábrica.** `inicio`, `tasa`, `matriz`, las encuestas y
- *    `menu-y-pie` las pinta código que da por hecho que existen; borrar `inicio` tumba
- *    el portal. Solo se pueden borrar las que alguien creó, que son justamente las que
- *    nadie más da por supuestas.
- *
- * 2. **Nada puede estar enlazando a la ruta.** Si el menú —o cualquier otra página—
+ * 1. **Nada puede estar enlazando a la ruta.** Si el menú —o cualquier otra página—
  *    apunta ahí, el borrado se rechaza y se dice dónde están los enlaces. Es lo que
  *    convierte «borrar» en una operación que no deja el portal peor de lo que estaba.
  *    Se comprueba contra el contenido **publicado**, que es el que ve la gente.
  *
- * 3. **Hay que escribir el nombre.** El borrado no se deshace. Teclear el título es la
+ * 2. **Hay que escribir el nombre.** El borrado no se deshace. Teclear el título es la
  *    diferencia entre decidirlo y que se te vaya el clic.
+ *
+ * ## Ya no hay guarda de «sección de fábrica»
+ *
+ * Hasta el 2026-09-04 esto rechazaba borrar `inicio`, `tasa`, `matriz`, las encuestas y
+ * `menu-y-pie` porque código en otros puntos da por hecho que existen. Se quitó a pedido
+ * explícito: quien borre una de estas páginas se queda sin ella, con lo que eso implica
+ * en cada caso —`inicio` y `menu-y-pie` caen al *fallback* de código
+ * (`homeFallbackData` / la identidad visual sola, ver `obtenerPaginaInicio` y
+ * `obtenerPlantilla`) en vez de romper el portal, pero las demás páginas de fábrica no
+ * tienen ese colchón y su ruta simplemente deja de servir contenido hasta que alguien la
+ * vuelva a crear.
  */
 import { Op } from 'sequelize';
 import sequelize from '../../config/database';
 import { Pagina, PaginaVersion, Permission } from '../../infrastructure/db/models';
-import { claveDeSeccion, esSeccionDeFabrica } from '../../shared/catalogo-permisos';
+import { claveDeSeccion } from '../../shared/catalogo-permisos';
 import { buscarEnlacesA, type EnlaceEncontrado } from '../../shared/enlaces-en-contenido';
 import { invalidarPermisosDeRol } from '../../middlewares/require-permission.middleware';
 import type { Ambito } from '../../shared/ambito';
@@ -61,7 +67,7 @@ export interface AnalisisDeEliminacion {
   ambito: Ambito;
   /** `false` cuando alguna guarda lo impide; `motivo` dice cuál. */
   puedeEliminarse: boolean;
-  motivo: 'de-fabrica' | 'tiene-enlaces' | null;
+  motivo: 'tiene-enlaces' | null;
   /** Cuántas versiones se van a destruir. */
   versiones: number;
   /** Si hay una versión publicada, es decir, si la ruta está viva ahora mismo. */
@@ -94,15 +100,6 @@ export const analizarEliminacion = async (
     versiones,
     publicada: Boolean(pagina.versionPublicadaId),
   };
-
-  if (esSeccionDeFabrica(ambito, slug)) {
-    return {
-      ...base,
-      puedeEliminarse: false,
-      motivo: 'de-fabrica' as const,
-      referencias: [],
-    };
-  }
 
   const referencias = await buscarReferencias(slug, ambito, pagina.id);
 
@@ -176,13 +173,6 @@ export const eliminarSeccion = async (
   // Se vuelve a analizar aquí, ya con la intención de borrar: entre que el diálogo se
   // pintó y se pulsó el botón alguien pudo publicar un menú que enlaza a esta ruta.
   const analisis = await analizarEliminacion(slug, ambito);
-
-  if (analisis.motivo === 'de-fabrica') {
-    throw fallo(
-      `«${analisis.titulo}» es una sección del sistema y no se puede eliminar.`,
-      409
-    );
-  }
 
   if (analisis.motivo === 'tiene-enlaces') {
     const donde = analisis.referencias
