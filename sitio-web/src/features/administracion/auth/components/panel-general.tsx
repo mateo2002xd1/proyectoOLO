@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
   Dropdown,
@@ -27,6 +27,7 @@ import {
 import { SidebarLayout } from '@/shared/ui/organisms/sidebar-layout';
 import {
   ArrowRightStartOnRectangleIcon,
+  ChevronDownIcon,
   ChevronUpIcon,
   Cog8ToothIcon,
   ShieldCheckIcon,
@@ -60,6 +61,61 @@ import {
 } from '@/features/administracion/auditoria';
 import { useUsuarios, mensajeDeError, type User } from '../hooks/use-usuarios';
 import { listarAlertasCaducidad, type AlertaCaducidad } from '../services/alertas-caducidad.service';
+
+/**
+ * Grupo colapsable del sidebar con animación de acordeón.
+ * Se abre automáticamente si la ruta activa empieza con alguno de los `prefixes`.
+ * Pasa el `pathname` actual a los hijos vía render prop para que calculen `current`
+ * sin violar las reglas de hooks.
+ */
+function SidebarGroup({
+  label,
+  icon: Icon,
+  prefixes,
+  children,
+}: {
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  prefixes: string[];
+  children: (pathname: string) => React.ReactNode;
+}) {
+  const pathname = usePathname();
+  const isActive = prefixes.some((p) => pathname.startsWith(p));
+  const [open, setOpen] = useState(isActive);
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition [&>svg]:size-5 [&>svg]:shrink-0 ${
+          isActive
+            ? 'bg-zinc-100 font-semibold text-zinc-900 dark:bg-brand-interactive/20 dark:text-brand-interactive [&>svg]:text-zinc-900 dark:[&>svg]:text-brand-interactive'
+            : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive [&>svg]:text-zinc-500 dark:[&>svg]:text-slate-400'
+        }`}
+        aria-expanded={open}
+      >
+        <Icon className="shrink-0" />
+        <span className="flex-1 truncate text-left">{label}</span>
+        <ChevronDownIcon
+          className={`size-4 shrink-0 text-zinc-400 transition-transform duration-200 ${
+            open ? 'rotate-180' : ''
+          }`}
+        />
+      </button>
+
+      {/* Acordeón: grid-template-rows 0fr → 1fr */}
+      <div
+        className="grid transition-[grid-template-rows] duration-200 ease-out"
+        style={{ gridTemplateRows: open ? '1fr' : '0fr' }}
+      >
+        <div className="overflow-hidden">
+          <div className="flex flex-col gap-0.5 pb-1 pt-0.5">{children(pathname)}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 
 /** Cambios que caben en la tarjeta del panel; el resto se lee en Auditoría. */
@@ -357,10 +413,30 @@ export function PanelGeneralLayout({
                   <HomeIcon />
                   <SidebarLabel>Dashboard</SidebarLabel>
                 </SidebarItem>
-                <SidebarItem href="/admin/users">
-                  <UserIcon />
-                  <SidebarLabel>Usuarios</SidebarLabel>
-                </SidebarItem>
+                <SidebarGroup
+                  label="Usuarios"
+                  icon={UserIcon}
+                  prefixes={['/admin/users', '/admin/roles']}
+                >
+                  {(pathname) => (
+                    <>
+                      <SidebarItem
+                        href="/admin/users"
+                        current={pathname.startsWith('/admin/users')}
+                        className="pl-9"
+                      >
+                        <SidebarLabel>Usuarios</SidebarLabel>
+                      </SidebarItem>
+                      <SidebarItem
+                        href="/admin/roles"
+                        current={pathname.startsWith('/admin/roles')}
+                        className="pl-9"
+                      >
+                        <SidebarLabel>Roles y Permisos</SidebarLabel>
+                      </SidebarItem>
+                    </>
+                  )}
+                </SidebarGroup>
                 <SidebarItem href="/admin/revision">
                   <ClipboardDocumentCheckIcon />
                   <SidebarLabel>Páginas en revisión</SidebarLabel>

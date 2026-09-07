@@ -83,7 +83,7 @@ export function useUsuarios() {
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [permissions, setPermissions] = useState<Permission[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Las lecturas pasan por `pedirJson` para que el 401 se trate en un solo sitio: si la

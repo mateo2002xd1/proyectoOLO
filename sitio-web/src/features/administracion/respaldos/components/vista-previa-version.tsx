@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { ExternalLink, RotateCcw, AlertCircle, CheckCircle2 } from 'lucide-react';
 import type { RegistroRespaldo } from '../types';
-import { restaurarRespaldo } from '../services/respaldos.service';
+import { restaurarRespaldo, verificarBloqueo } from '../services/respaldos.service';
 import { ModalConfirmarRestauracion } from './modal-confirmar-restauracion';
+import { ModalBloqueoRestauracion } from './modal-bloqueo-restauracion';
 
 const URL_INTRANET = process.env.NEXT_PUBLIC_INTRANET_URL || 'http://localhost:3001';
 
@@ -45,6 +46,8 @@ export function VistaPreviaVersion({
   const [errorRestaurar, setErrorRestaurar] = useState<string | null>(null);
   const [exitoRestaurar, setExitoRestaurar] = useState(false);
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
+  const [mostrarBloqueo, setMostrarBloqueo] = useState(false);
+  const [errorBloqueo, setErrorBloqueo] = useState<string | null>(null);
 
   useEffect(() => {
     const el = dialogo.current;
@@ -59,9 +62,25 @@ export function VistaPreviaVersion({
     setRestaurando(false);
   }, [registro]);
 
-  function handleIntentarRestaurar() {
+  async function handleIntentarRestaurar() {
     if (!registro) return;
-    setMostrarConfirmacion(true);
+    
+    setRestaurando(true);
+    try {
+      const { bloqueadoPor } = await verificarBloqueo(registro.slug, registro.ambito);
+      if (bloqueadoPor) {
+        setErrorBloqueo(`No se puede restaurar la página porque está siendo editada por ${bloqueadoPor.usuario_nombre}`);
+        setMostrarBloqueo(true);
+      } else {
+        setMostrarConfirmacion(true);
+      }
+    } catch (err: any) {
+      console.error('Error al verificar el bloqueo', err);
+      // Fallback a mostrar la confirmación si la verificación falla
+      setMostrarConfirmacion(true);
+    } finally {
+      setRestaurando(false);
+    }
   }
 
   async function handleRestaurarConfirmado() {
@@ -81,9 +100,16 @@ export function VistaPreviaVersion({
         onCerrar();
       }, 1200);
     } catch (err: any) {
-      setErrorRestaurar(
-        err?.response?.data?.error || err?.message || 'Error al restaurar la versión anterior.'
-      );
+      // El backend seguirá protegiendo la acción por si el candado se adquiere 
+      // entre el click al botón verde y la confirmación final.
+      if (err?.response?.status === 409 && err?.response?.data?.code === 'PAGE_LOCKED') {
+        setErrorBloqueo(err.response.data.error || err.message);
+        setMostrarBloqueo(true);
+      } else {
+        setErrorRestaurar(
+          err?.response?.data?.error || err?.message || 'Error al restaurar la versión anterior.'
+        );
+      }
     } finally {
       setRestaurando(false);
     }
@@ -164,7 +190,7 @@ export function VistaPreviaVersion({
           </div>
         </div>
       )}
-      
+
       {registro && (
         <ModalConfirmarRestauracion
           abierto={mostrarConfirmacion}
@@ -175,6 +201,12 @@ export function VistaPreviaVersion({
           onCancelar={() => setMostrarConfirmacion(false)}
         />
       )}
+
+      <ModalBloqueoRestauracion
+        abierto={mostrarBloqueo}
+        mensajeBloqueo={errorBloqueo}
+        onCerrar={() => setMostrarBloqueo(false)}
+      />
     </dialog>
   );
 }
