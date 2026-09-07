@@ -186,44 +186,66 @@ export function buscarElementoPorTexto(texto: string): HTMLElement | null {
   return mejorElemento;
 }
 
+interface TemporizadoresElemento {
+  fadeTimer: ReturnType<typeof setTimeout>;
+  cleanupTimer: ReturnType<typeof setTimeout>;
+}
+
+const temporizadoresDestello = new WeakMap<HTMLElement, TemporizadoresElemento>();
+
 /**
- * Aplica un destello de acento visual (glow pulsante y fondo luminoso) temporal sobre el elemento encontrado.
- * Garantiza visibilidad en cualquier tema (claro/oscuro) mediante estilos reactivos de alto contraste.
+ * Aplica un destello de acento visual (halo luminoso azul difuso y fondo suave) temporal sobre el elemento encontrado.
+ * - Sin borde sólido exterior (sin 0 0 0 4px).
+ * - Sin alterar el border-radius original del elemento.
+ * - Idempotente: cancela cualquier temporizador anterior sobre el mismo elemento.
+ * - Limpieza total garantizada: remueve completamente los estilos inline al finalizar.
  */
 export function aplicarDestello(elemento: HTMLElement): void {
   if (!elemento) return;
 
-  // Guardar estilos previos inline para restauración limpia
-  const prevTransition = elemento.style.transition;
-  const prevBoxShadow = elemento.style.boxShadow;
-  const prevBackgroundColor = elemento.style.backgroundColor;
-  const prevBorderRadius = elemento.style.borderRadius;
-
-  // Aplicar halo brillante y fondo de acento
-  elemento.style.transition = 'all 0.35s cubic-bezier(0.22, 1, 0.36, 1)';
-  elemento.style.boxShadow = '0 0 0 4px #0284c7, 0 0 28px rgba(56, 189, 248, 0.65)';
-  elemento.style.backgroundColor = 'rgba(56, 189, 248, 0.22)';
-  if (!prevBorderRadius) {
-    elemento.style.borderRadius = '8px';
+  // 1. Si ya existía un temporizador activo para este elemento, cancelarlo limpiamente
+  const timerPrevio = temporizadoresDestello.get(elemento);
+  if (timerPrevio) {
+    clearTimeout(timerPrevio.fadeTimer);
+    clearTimeout(timerPrevio.cleanupTimer);
+    temporizadoresDestello.delete(elemento);
   }
 
-  // Clase CSS complementaria
+  // 2. Aplicar halo brillante difuso azul (sin borde sólido ni border-radius) y fondo suave
+  elemento.style.transition = 'box-shadow 0.35s ease, background-color 0.35s ease';
+  elemento.style.boxShadow =
+    '0 0 32px 8px rgba(56, 189, 248, 0.85), 0 0 14px 2px rgba(2, 132, 199, 0.65)';
+  elemento.style.backgroundColor = 'rgba(56, 189, 248, 0.22)';
+
+  // Reiniciar clase de animación de apoyo CSS
+  elemento.classList.remove('resaltado-busqueda-anim');
+  void elemento.offsetWidth;
   elemento.classList.add('resaltado-busqueda-anim');
 
-  // Mantener el halo visible durante 2.6 segundos y desvanecerlo suavemente
-  setTimeout(() => {
-    elemento.style.boxShadow = '0 0 0 0 transparent';
+  // 3. A los 2.4s, desvanecer suavemente a transparente
+  const fadeTimer = setTimeout(() => {
+    elemento.style.boxShadow = 'none';
     elemento.style.backgroundColor = 'transparent';
 
-    setTimeout(() => {
-      // Restaurar estado original exacto
-      elemento.style.transition = prevTransition;
-      elemento.style.boxShadow = prevBoxShadow;
-      elemento.style.backgroundColor = prevBackgroundColor;
-      elemento.style.borderRadius = prevBorderRadius;
+    // 4. Tras los 450ms de transición suave, remover completamente los estilos inline y clase
+    const cleanupTimer = setTimeout(() => {
+      elemento.style.removeProperty('box-shadow');
+      elemento.style.removeProperty('background-color');
+      elemento.style.removeProperty('transition');
       elemento.classList.remove('resaltado-busqueda-anim');
-    }, 400);
-  }, 2600);
+      temporizadoresDestello.delete(elemento);
+    }, 450);
+
+    const actual = temporizadoresDestello.get(elemento);
+    if (actual) {
+      actual.cleanupTimer = cleanupTimer;
+    }
+  }, 2400);
+
+  temporizadoresDestello.set(elemento, {
+    fadeTimer,
+    cleanupTimer: fadeTimer,
+  });
 }
 
 /**

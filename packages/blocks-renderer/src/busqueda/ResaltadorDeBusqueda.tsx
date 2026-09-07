@@ -26,6 +26,9 @@ export function ResaltadorDeBusqueda({ pathname, delayMs = 120 }: ResaltadorDeBu
     if (!texto && !hash) return;
 
     let cancelado = false;
+    let t1: ReturnType<typeof setTimeout>;
+    let t2: ReturnType<typeof setTimeout>;
+    let t3: ReturnType<typeof setTimeout>;
 
     const ejecutar = () => {
       if (cancelado) return;
@@ -34,17 +37,21 @@ export function ResaltadorDeBusqueda({ pathname, delayMs = 120 }: ResaltadorDeBu
         texto: texto || undefined,
       });
 
-      if (exito && texto) {
-        const url = new URL(window.location.href);
-        url.searchParams.delete('resaltar');
-        window.history.replaceState({}, '', url.pathname + url.search + url.hash);
+      if (exito) {
+        clearTimeout(t2);
+        clearTimeout(t3);
+        if (texto) {
+          const url = new URL(window.location.href);
+          url.searchParams.delete('resaltar');
+          window.history.replaceState({}, '', url.pathname + url.search + url.hash);
+        }
       }
       return exito;
     };
 
-    const t1 = setTimeout(ejecutar, delayMs);
-    const t2 = setTimeout(ejecutar, delayMs + 260);
-    const t3 = setTimeout(ejecutar, delayMs + 650);
+    t1 = setTimeout(ejecutar, delayMs);
+    t2 = setTimeout(ejecutar, delayMs + 260);
+    t3 = setTimeout(ejecutar, delayMs + 650);
 
     return () => {
       cancelado = true;

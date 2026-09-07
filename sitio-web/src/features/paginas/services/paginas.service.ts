@@ -1,7 +1,8 @@
 import axios from 'axios';
 import type { Data } from '@puckeditor/core';
-import { Pagina, PaginaVersion, PaginaEditable, PaginaEnRevision, Bloque, PuckData, Ambito } from '../types';
+import { Pagina, PaginaVersion, PaginaEditable, PaginaEnRevision, Bloque, PuckData, Ambito, PaginaIndiceBusqueda } from '../types';
 import { homeFallbackData } from '../lib/home-fallback-data';
+import { SITIO_ESTATICO_FALLBACK } from '../lib/sitio-busqueda-fallback';
 import { etiquetaDePagina } from '../lib/etiquetas-cache';
 import { cerrarSesionLocal, pedirJson } from '@/shared/lib/api-client';
 
@@ -345,3 +346,21 @@ export async function eliminarSeccion(
   const { data } = await api.delete(`/api/paginas/${slug}`, { data: { confirmacion } });
   return data;
 }
+
+/**
+ * Obtiene el índice de búsqueda de páginas públicas del sitio web.
+ * Usa fallback estático en caso de desconexión o fallo de red.
+ */
+export async function obtenerIndiceBusqueda(): Promise<PaginaIndiceBusqueda[]> {
+  try {
+    const { data } = await api.get<PaginaIndiceBusqueda[]>('/api/paginas/indice-busqueda');
+    if (Array.isArray(data) && data.length > 0) {
+      return data;
+    }
+    return SITIO_ESTATICO_FALLBACK;
+  } catch (error) {
+    console.warn('[sitio-web] No se pudo obtener índice dinámico de búsqueda, usando fallback:', error);
+    return SITIO_ESTATICO_FALLBACK;
+  }
+}
+

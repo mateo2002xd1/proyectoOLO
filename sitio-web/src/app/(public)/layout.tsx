@@ -7,6 +7,7 @@ import {
   PlantillaEditButton,
 } from '@/features/paginas';
 import { RouteTransition } from '@/shared/ui/atoms/RouteTransition';
+import { ResaltadorBusquedaClient } from '@/shared/ui/atoms/ResaltadorBusquedaClient';
 
 /**
  * Marco común de todo el sitio público: cabecera arriba, pie abajo.
@@ -42,6 +43,7 @@ export default async function PublicLayout({ children }: { children: React.React
       {/* Se esconde solo en las páginas de fábrica y sin el permiso: lo decide el propio
           componente, que también resuelve el permiso en cliente. */}
       <EliminarSeccionButton />
+      <ResaltadorBusquedaClient />
     </div>
   );
 }

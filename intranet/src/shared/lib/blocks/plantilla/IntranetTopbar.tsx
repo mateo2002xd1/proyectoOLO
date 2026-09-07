@@ -163,6 +163,9 @@ export function IntranetTopbar({
     if (!texto && !hash) return;
 
     let cancelado = false;
+    let t1: ReturnType<typeof setTimeout>;
+    let t2: ReturnType<typeof setTimeout>;
+    let t3: ReturnType<typeof setTimeout>;
 
     const intentar = () => {
       if (cancelado) return;
@@ -171,17 +174,21 @@ export function IntranetTopbar({
         texto: texto || undefined,
       });
 
-      if (exito && texto) {
-        const url = new URL(window.location.href);
-        url.searchParams.delete('resaltar');
-        window.history.replaceState({}, '', url.pathname + url.search + url.hash);
+      if (exito) {
+        clearTimeout(t2);
+        clearTimeout(t3);
+        if (texto) {
+          const url = new URL(window.location.href);
+          url.searchParams.delete('resaltar');
+          window.history.replaceState({}, '', url.pathname + url.search + url.hash);
+        }
       }
       return exito;
     };
 
-    const t1 = setTimeout(intentar, 90);
-    const t2 = setTimeout(intentar, 350);
-    const t3 = setTimeout(intentar, 750);
+    t1 = setTimeout(intentar, 90);
+    t2 = setTimeout(intentar, 350);
+    t3 = setTimeout(intentar, 750);
 
     return () => {
       cancelado = true;

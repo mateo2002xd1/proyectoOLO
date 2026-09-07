@@ -1,7 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { AUTH_ROLE_COOKIE_NAME } from '@/shared/lib/auth-cookies';
+import { desplazarAElemento } from '@olo/blocks-renderer';
+import { obtenerIndiceBusqueda, type PaginaIndiceBusqueda } from '@/features/paginas';
+import { BuscadorSitioModal } from './BuscadorSitioModal';
 
 export interface NavItem {
   label: string;
@@ -55,6 +59,65 @@ export function Header({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const dropdownRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const router = useRouter();
+  const pathname = usePathname();
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [indiceBusqueda, setIndiceBusqueda] = useState<PaginaIndiceBusqueda[]>([]);
+
+  useEffect(() => {
+    let activo = true;
+    obtenerIndiceBusqueda()
+      .then((datos) => {
+        if (activo && datos && datos.length > 0) {
+          setIndiceBusqueda(datos);
+        }
+      })
+      .catch((err) => {
+        console.warn('No se pudo cargar el índice de búsqueda en Header:', err);
+      });
+    return () => {
+      activo = false;
+    };
+  }, []);
+
+  const irA = useCallback(
+    (href: string, blockId?: string, texto?: string) => {
+      setIsSearchOpen(false);
+
+      if (typeof window === 'undefined') {
+        router.push(href);
+        return;
+      }
+
+      const limpiarRuta = (r: string) => {
+        const limpia = (r || '').split('?')[0].split('#')[0].replace(/\/+$/, '') || '/';
+        return limpia === '/inicio' ? '/' : limpia;
+      };
+
+      const rutaActual = limpiarRuta(pathname || window.location.pathname);
+      const rutaDestino = limpiarRuta(href);
+
+      // Si ya estamos en la misma página, desplazarse de inmediato sin recarga
+      if (rutaActual === rutaDestino) {
+        setTimeout(() => {
+          desplazarAElemento({ blockId, texto });
+        }, 50);
+        return;
+      }
+
+      // Si es una página distinta, navegar pasando el anchor y el texto
+      const url = new URL(href, window.location.origin);
+      if (blockId) {
+        url.hash = blockId;
+      }
+      if (texto) {
+        url.searchParams.set('resaltar', texto.slice(0, 60));
+      }
+
+      router.push(url.pathname + url.search + url.hash);
+    },
+    [router, pathname]
+  );
   const hasSession = useSyncExternalStore(
     subscribeToCookies,
     getSessionSnapshot,
@@ -249,7 +312,13 @@ export function Header({
           </nav>
 
           <div className="olo-nav-actions">
-            <button className="olo-search-btn" aria-label="Buscar" id="header-search-btn">
+            <button
+              className="olo-search-btn"
+              aria-label="Buscar en el sitio web"
+              id="header-search-btn"
+              type="button"
+              onClick={() => setIsSearchOpen(true)}
+            >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="8" />
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -304,6 +373,13 @@ export function Header({
             )
           )}
         </div>
+
+        <BuscadorSitioModal
+          isOpen={isSearchOpen}
+          onClose={() => setIsSearchOpen(false)}
+          indice={indiceBusqueda}
+          onNavigate={irA}
+        />
       </header>
     </>
   );

@@ -74,3 +74,25 @@ export interface PaginaEnRevision {
     email: string;
   };
 }
+
+export interface ItemTextoBusqueda {
+  type: 'h1' | 'h2' | 'p' | 'span';
+  text: string;
+  blockId?: string;
+}
+
+export interface PaginaIndiceBusqueda {
+  href: string;
+  slug?: string;
+  titulo?: string;
+  items: ItemTextoBusqueda[];
+}
+
+export interface ResultadoBusqueda {
+  href: string;
+  type: string;
+  text: string;
+  context: string;
+  blockId?: string;
+}
+

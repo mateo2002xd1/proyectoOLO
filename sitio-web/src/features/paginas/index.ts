@@ -42,6 +42,7 @@ export {
   permisosDeLaSesion,
   analizarEliminacion,
   eliminarSeccion,
+  obtenerIndiceBusqueda,
 } from "./services/paginas.service";
 export type {
   SeccionCreada,
@@ -70,4 +71,7 @@ export type {
   PaginaEditable,
   PaginaEnRevision,
   EstadoPagina,
+  PaginaIndiceBusqueda,
+  ItemTextoBusqueda,
+  ResultadoBusqueda,
 } from "./types";
