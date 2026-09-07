@@ -56,6 +56,14 @@ export const DESTINOS_PANEL: DestinoPanel[] = [
     ],
   },
   {
+    id: 'roles',
+    titulo: 'Roles y Permisos',
+    descripcion: 'Gestión de roles y asignación de permisos del panel administrativo.',
+    href: '/admin/roles',
+    grupo: 'Gestión',
+    sinonimos: ['roles', 'permisos', 'rbac', 'privilegios', 'administrador', 'editor', 'superadmin'],
+  },
+  {
     id: 'revision',
     titulo: 'Páginas en revisión',
     descripcion: 'Cola editorial: aprobar o rechazar los cambios enviados a revisión.',
