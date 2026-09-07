@@ -86,6 +86,13 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // /admin/roles — solo Superadmin y Administrador pueden gestionar roles y permisos
+  if (pathname.startsWith('/admin/roles')) {
+    if (!isAdminRole) {
+      return loginRedirect();
+    }
+  }
+
   // /admin/auditoria — solo Superadmin y Administrador (RF-07)
   // Espejo de `auditoria.policies.ts` en la API, que es quien manda: la bitácora
   // guarda IP y user-agent de cada editor, así que no la abre ni el propio editor.
@@ -144,6 +151,8 @@ export const config = {
     '/admin/usuarios',
     '/admin/auditoria/:path*',
     '/admin/auditoria',
+    '/admin/roles/:path*',
+    '/admin/roles',
     '/admin/revision/:path*',
     '/admin/revision',
     '/admin/mi-perfil/:path*',

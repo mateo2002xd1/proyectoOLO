@@ -7,7 +7,6 @@ import {
   useUsuarios,
   mensajeDeError,
   type User,
-  type Permission,
   type NuevoUsuario,
   type CambiosUsuario,
 } from '../hooks/use-usuarios';
@@ -17,7 +16,6 @@ import { DatePicker } from '@/shared/ui/molecules/date-picker';
 import { Notification } from '@/shared/ui/molecules/notification';
 import { Alert, AlertTitle, AlertDescription, AlertActions } from '@/shared/ui/molecules/alert';
 import { Switch } from '@/shared/ui/atoms/switch';
-import { ModalPermisos } from './modal-permisos';
 
 /**
  * Las etiquetas, descripciones y grupos de los permisos ya **no viven aquí**.
@@ -35,11 +33,11 @@ import { ModalPermisos } from './modal-permisos';
 
 export default function UsuariosView() {
   const {
-    users, roles, permissions, loading, error,
-    fetchUsers, fetchRoles, fetchPermissions, fetchRolePermissions,
-    assignPermissionToRole, revokePermissionFromRole,
+    users, roles, loading, error,
+    fetchUsers, fetchRoles,
     createUser, updateUser, deleteUser,
   } = useUsuarios();
+
 
   const [isCreating, setIsCreating] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
@@ -59,15 +57,6 @@ export default function UsuariosView() {
   const [resetSecurityQuestions, setResetSecurityQuestions] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Permissions state — IDs de permisos actualmente seleccionados para el rol
-  const [selectedPermissionIds, setSelectedPermissionIds] = useState<Set<string>>(new Set());
-  const [originalPermissionIds, setOriginalPermissionIds] = useState<Set<string>>(new Set());
-  const [loadingRolePerms, setLoadingRolePerms] = useState(false);
-  const [showPermissionsModal, setShowPermissionsModal] = useState(false);
-
-  // Se declara aquí y no más abajo porque `guardarPermisos` lo nombra en su mensaje de
-  // confirmación, y esa función tiene que existir antes de pasarse al modal.
-  const selectedRoleName = roles.find((r) => r.id === roleId)?.name ?? '';
 
   // Credentials state
   const [newUserCredentials, setNewUserCredentials] = useState<{ name: string, email: string, password: string } | null>(null);
@@ -76,81 +65,11 @@ export default function UsuariosView() {
   useEffect(() => {
     fetchUsers();
     fetchRoles();
-    fetchPermissions();
-  }, [fetchUsers, fetchRoles, fetchPermissions]);
+  }, [fetchUsers, fetchRoles]);
 
-  /** Cuando cambia el rol en el formulario, precarga los permisos de ese rol. */
-  const handleRoleChange = useCallback(async (newRoleId: string) => {
+  const handleRoleChange = useCallback((newRoleId: string) => {
     setRoleId(newRoleId);
-    if (!newRoleId) {
-      setSelectedPermissionIds(new Set());
-      setOriginalPermissionIds(new Set());
-      return;
-    }
-    setLoadingRolePerms(true);
-    try {
-      const rolePerms = await fetchRolePermissions(newRoleId);
-      // El backend devuelve registros de roles_permisos con permission_id
-      const ids = new Set(rolePerms.map((rp: any) => rp.permission_id || rp.id));
-      setSelectedPermissionIds(new Set(ids));
-      setOriginalPermissionIds(new Set(ids));
-    } catch (err) {
-      console.error('Error cargando permisos del rol:', err);
-    } finally {
-      setLoadingRolePerms(false);
-    }
-  }, [fetchRolePermissions]);
-
-  const [guardandoPermisos, setGuardandoPermisos] = useState(false);
-
-  /**
-   * Guarda los permisos del rol, sin pasar por el formulario de usuario.
-   *
-   * Antes esto vivía dentro de `handleSubmit`: los permisos se sincronizaban como efecto
-   * secundario de guardar una cuenta, así que crear *un* usuario reescribía los permisos
-   * de *todos* los que compartían su rol, y para tocar solo permisos había que rellenar y
-   * enviar el formulario entero. Son dos operaciones distintas sobre entidades distintas.
-   */
-  const guardarPermisos = useCallback(async () => {
-    if (!roleId) return;
-    setGuardandoPermisos(true);
-    try {
-      const aAsignar = [...selectedPermissionIds].filter((id) => !originalPermissionIds.has(id));
-      const aRevocar = [...originalPermissionIds].filter((id) => !selectedPermissionIds.has(id));
-
-      await Promise.all([
-        ...aAsignar.map((permId) => assignPermissionToRole(roleId, permId)),
-        ...aRevocar.map((permId) => revokePermissionFromRole(roleId, permId)),
-      ]);
-
-      // La nueva línea base es lo que acaba de guardarse: si no se actualiza, el modal
-      // seguiría ofreciendo «se añade» sobre cambios que ya están en la base.
-      setOriginalPermissionIds(new Set(selectedPermissionIds));
-      setShowPermissionsModal(false);
-      setNotificationMsg({
-        title: 'Permisos actualizados',
-        message: `Se aplicaron a todas las personas con el rol «${selectedRoleName}».`,
-        type: 'success',
-      });
-      setShowNotification(true);
-    } catch (err) {
-      setNotificationMsg({
-        title: 'Error',
-        message: mensajeDeError(err) || 'No se pudieron guardar los permisos.',
-        type: 'error',
-      });
-      setShowNotification(true);
-    } finally {
-      setGuardandoPermisos(false);
-    }
-  }, [
-    roleId,
-    selectedPermissionIds,
-    originalPermissionIds,
-    assignPermissionToRole,
-    revokePermissionFromRole,
-    selectedRoleName,
-  ]);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -259,12 +178,11 @@ export default function UsuariosView() {
     setName(user.name);
     setApellidos(user.apellidos || '');
     setEmail(user.email);
+    setRoleId(user.role_id);
     setExpirationDate(user.expiration_date ? user.expiration_date.split('T')[0] : '');
     setResetPassword(false);
     setResetSecurityQuestions(false);
     setIsCreating(true);
-    // Cargar permisos del rol del usuario
-    await handleRoleChange(user.role_id);
   };
 
   function resetForm() {
@@ -275,8 +193,6 @@ export default function UsuariosView() {
     setExpirationDate('');
     setResetPassword(false);
     setResetSecurityQuestions(false);
-    setSelectedPermissionIds(new Set());
-    setOriginalPermissionIds(new Set());
   }
 
   const handleCancel = () => {
@@ -381,21 +297,6 @@ export default function UsuariosView() {
             />
           </div>
 
-          {/* Permisos asignados — abre modal */}
-          <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">Permisos</label>
-            <div>
-              <Button
-                type="button"
-                onClick={() => setShowPermissionsModal(true)}
-                disabled={!roleId || loadingRolePerms}
-              >
-                Configurar
-              </Button>
-            </div>
-          </div>
-
-
           {editingUserId && (
             <div className="pt-2 flex flex-col gap-3">
               <div className="flex items-center gap-2">
@@ -419,19 +320,6 @@ export default function UsuariosView() {
           </AlertActions>
         </form>
       </Alert>
-
-      {/* Modal de Configuración de Permisos (Categorizados con Switches) */}
-      <ModalPermisos
-        abierto={showPermissionsModal}
-        onCerrar={() => setShowPermissionsModal(false)}
-        rol={roleId ? { id: roleId, nombre: selectedRoleName } : null}
-        permisos={permissions}
-        originales={originalPermissionIds}
-        seleccionados={selectedPermissionIds}
-        onCambiarSeleccion={setSelectedPermissionIds}
-        onGuardar={guardarPermisos}
-        guardando={guardandoPermisos}
-      />
 
       <Alert open={!!newUserCredentials} onClose={handleCloseCredentials}>
         <AlertTitle>Contraseña temporal generada</AlertTitle>
