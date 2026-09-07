@@ -10,6 +10,7 @@ import { listarPaginasPublicadas } from '../use-cases/paginas/listar-publicadas.
 import { listarRespaldos } from '../use-cases/paginas/listar-respaldos.usecase';
 import { restaurarVersionAnterior } from '../use-cases/paginas/restaurar-version-anterior.usecase';
 import { eliminarVersion } from '../use-cases/paginas/eliminar-version.usecase';
+import { BloqueoEdicionRepository } from '../repositories/bloqueo-edicion.repository';
 import { crearSeccion } from '../use-cases/paginas/crear-seccion.usecase';
 import {
   analizarEliminacion,
@@ -227,6 +228,13 @@ export const PaginaController = {
         req.user?.id || ''
       );
       res.json(resultado);
+    } catch (err) { next(err); }
+  },
+
+  async consultarBloqueo(req: Request, res: Response, next: NextFunction) {
+    try {
+      const dueño = await BloqueoEdicionRepository.vigente(ambitoExigidoDe(req), req.params.slug as string);
+      res.json({ bloqueadoPor: dueño });
     } catch (err) { next(err); }
   },
 

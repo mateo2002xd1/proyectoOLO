@@ -14,5 +14,8 @@ export function errorHandler(err: any, req: Request, res: Response, _next: NextF
     }
   }
 
-  res.status(status).json({ error: message });
+  res.status(status).json({ 
+    error: message,
+    ...(err.code && { code: err.code }) 
+  });
 }

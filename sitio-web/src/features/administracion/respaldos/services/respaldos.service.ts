@@ -32,3 +32,12 @@ export async function restaurarRespaldo(
   };
   await api.post(`/api/paginas/${slug}/restaurar`, body, { headers });
 }
+
+/**
+ * Consulta si la página actual tiene un candado de edición activo.
+ */
+export async function verificarBloqueo(slug: string, ambito?: 'sitio' | 'intranet'): Promise<{ bloqueadoPor: any | null }> {
+  const headers = ambito ? { 'X-Ambito': ambito } : {};
+  const { data } = await api.get<{ bloqueadoPor: any | null }>(`/api/paginas/${slug}/bloqueo`, { headers });
+  return data;
+}

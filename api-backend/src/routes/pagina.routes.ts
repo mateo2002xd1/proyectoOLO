@@ -420,6 +420,25 @@ router.delete(
 
 /**
  * @openapi
+ * /api/paginas/{slug}/bloqueo:
+ *   get:
+ *     tags: [Páginas]
+ *     summary: Consultar quién tiene el candado de edición
+ *     description: Retorna quién está editando la página en este momento, si hay alguien.
+ *     parameters:
+ *       - $ref: '#/components/parameters/SlugEnRuta'
+ *       - $ref: '#/components/parameters/Ambito'
+ *     responses:
+ *       200: { description: Información del candado si existe }
+ */
+router.get(
+  '/:slug/bloqueo',
+  requireAuth,
+  PaginaController.consultarBloqueo
+);
+
+/**
+ * @openapi
  * /api/paginas/{slug}/enviar-revision:
  *   patch:
  *     tags: [Páginas]
