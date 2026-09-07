@@ -6,6 +6,7 @@ import { emitirContenidoPublicado } from '../../domain-events/paginas/contenido-
 import type { Ambito } from '../../shared/ambito';
 import { restaurarArchivosDesdeBackup } from '../../shared/storage/backup-uploads.service';
 import { logAudit, type ContextoAuditoria } from '../auditoria/audit.usecase';
+import { BloqueoEdicionRepository } from '../../repositories/bloqueo-edicion.repository';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const toUUID = (id?: string | null) => (id && UUID_RE.test(id) ? id : null);
@@ -24,6 +25,15 @@ export async function restaurarVersionAnterior(
 
   if (!pagina) {
     throw new Error(`Página con identificador "${slugOId}" no encontrada en el ámbito "${ambito}"`);
+  }
+
+  // 0. Verificar que nadie está editando la página en este momento
+  const dueño = await BloqueoEdicionRepository.vigente(ambito, pagina.slug);
+  if (dueño) {
+    const error = new Error(`No se puede restaurar la página porque está siendo editada por ${dueño.usuario_nombre}`);
+    (error as any).status = 409;
+    (error as any).code = 'PAGE_LOCKED';
+    throw error;
   }
 
   // 1. Obtener la versión actualmente publicada de esta página
@@ -171,10 +181,10 @@ export async function restaurarVersionAnterior(
     },
     versionAnteriorArchivada: versionPublicada
       ? {
-          id: versionPublicada.id,
-          numeroVersion: versionPublicada.numeroVersion,
-          estado: 'archivado',
-        }
+        id: versionPublicada.id,
+        numeroVersion: versionPublicada.numeroVersion,
+        estado: 'archivado',
+      }
       : null,
     archivos: resultadoArchivos,
   };
