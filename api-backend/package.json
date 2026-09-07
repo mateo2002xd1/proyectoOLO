@@ -25,6 +25,7 @@
     "migrar:plantilla": "ts-node scripts/migrar-plantilla-intranet.ts",
     "sembrar:plantilla:sitio": "ts-node scripts/sembrar-plantilla-sitio.ts",
     "sembrar:inicio:sitio": "ts-node scripts/sembrar-inicio-sitio.ts",
+    "sembrar:politica-privacidad:sitio": "ts-node scripts/sembrar-politica-privacidad-sitio.ts",
     "respaldo": "ts-node scripts/respaldo.ts",
     "email:verificar": "ts-node scripts/verificar-politica-email.ts",
     "seed:generar": "ts-node scripts/generar-seed-contenido.ts",
@@ -73,5 +74,10 @@
     "nodemon": "^3.1.14",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.2"
+  },
+  "overrides": {
+    "sequelize": {
+      "uuid": "^11.1.1"
+    }
   }
 }

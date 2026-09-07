@@ -167,14 +167,6 @@ export const DESTINOS_PANEL: DestinoPanel[] = [
     grupo: 'Cuenta',
     sinonimos: ['contrasena', 'clave', 'password', 'mis datos', 'correo', 'cuenta'],
   },
-  {
-    id: 'privacidad',
-    titulo: 'Política de privacidad',
-    descripcion: 'Tratamiento de datos personales del Observatorio.',
-    href: '/admin/dashboard/privacidad',
-    grupo: 'Cuenta',
-    sinonimos: ['datos personales', 'habeas data', 'tratamiento', 'proteccion de datos', 'legal'],
-  },
 ];
 
 /**

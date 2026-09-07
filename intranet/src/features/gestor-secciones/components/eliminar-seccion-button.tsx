@@ -5,13 +5,22 @@
  * solo donde tiene sentido, que es en bastantes menos sitios de los que parece:
  *
  *  - Solo si el rol tiene `secciones.eliminar` (lo resuelve el servidor, en el layout).
- *  - Solo en secciones **creadas desde el editor**. Las de fábrica (`inicio`, `tasa`,
- *    `matriz`, las encuestas y `menu-y-pie`) no se pueden borrar y no se ofrece la
- *    acción: un botón que siempre falla es peor que no tenerlo.
  *
  * El slug sale de la ruta y no de una prop porque esto lo monta el layout, que no lo
  * conoce. Se arma igual que en el comodín `[...puckPath]`: uniendo los segmentos con
  * guiones, porque el slug nunca lleva barra.
+ *
+ * ## Ya no distingue secciones de fábrica
+ *
+ * Hasta el 2026-09-04 se ocultaba en `inicio`, `tasa`, `matriz`, las encuestas y
+ * `menu-y-pie` porque código en otros puntos da por hecho que existen. Se quitó a
+ * pedido explícito, con el riesgo aceptado: `menu-y-pie` tiene un *fallback* de
+ * código si se borra (`obtenerPlantilla` vuelve a `PLANTILLA_POR_DEFECTO`, no se
+ * queda el sitio sin barra ni pie), pero `inicio` y las demás NO tienen uno propio
+ * en esta app —a diferencia de sitio-web, que sí tiene `homeFallbackData`— y su ruta
+ * simplemente deja de servir contenido hasta que alguien la vuelva a crear. El
+ * backend (`eliminar-seccion.usecase.ts`, compartido con sitio-web) ya no rechaza
+ * el borrado por este motivo.
  *
  * ## El diálogo pregunta antes de dejar borrar
  *
@@ -27,7 +36,6 @@
 
 import { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { esSeccionDeFabrica } from '@/config/puck.config';
 import {
   analizarEliminacion,
   eliminarSeccion,
@@ -53,7 +61,7 @@ export function EliminarSeccionButton({ hasPermission }: { hasPermission: boolea
 
   // Regla §0.11 — sin permiso no se pinta. Y sin slug tampoco: en una ruta rara no hay
   // nada que borrar.
-  if (!hasPermission || !slug || esSeccionDeFabrica(slug)) return null;
+  if (!hasPermission || !slug) return null;
 
   const abrir = async () => {
     setAbierto(true);
@@ -146,30 +154,22 @@ export function EliminarSeccionButton({ hasPermission }: { hasPermission: boolea
 
             {!cargando && analisis && !analisis.puedeEliminarse && (
               <>
-                {analisis.motivo === 'de-fabrica' ? (
-                  <p className="nueva-seccion-error">
-                    «{analisis.titulo}» es una sección del sistema y no se puede eliminar.
-                  </p>
-                ) : (
-                  <>
-                    <p className="nueva-seccion-error">
-                      Todavía no se puede borrar: hay {analisis.referencias.length} enlace(s)
-                      apuntando a <code>/{analisis.slug}</code>.
-                    </p>
-                    <ul className="nueva-seccion-notas">
-                      {analisis.referencias.map((referencia, indice) => (
-                        <li key={`${referencia.slug}-${indice}`}>
-                          <strong>{referencia.titulo}</strong>
-                          {referencia.texto ? ` → «${referencia.texto}»` : ''}
-                        </li>
-                      ))}
-                    </ul>
-                    <p className="nueva-seccion-ruta">
-                      Quítalos primero (los del menú, desde «Editar menú y pie») y vuelve a
-                      intentarlo. Así el portal no queda con enlaces a ninguna parte.
-                    </p>
-                  </>
-                )}
+                <p className="nueva-seccion-error">
+                  Todavía no se puede borrar: hay {analisis.referencias.length} enlace(s)
+                  apuntando a <code>/{analisis.slug}</code>.
+                </p>
+                <ul className="nueva-seccion-notas">
+                  {analisis.referencias.map((referencia, indice) => (
+                    <li key={`${referencia.slug}-${indice}`}>
+                      <strong>{referencia.titulo}</strong>
+                      {referencia.texto ? ` → «${referencia.texto}»` : ''}
+                    </li>
+                  ))}
+                </ul>
+                <p className="nueva-seccion-ruta">
+                  Quítalos primero (los del menú, desde «Editar menú y pie») y vuelve a
+                  intentarlo. Así el portal no queda con enlaces a ninguna parte.
+                </p>
               </>
             )}
 

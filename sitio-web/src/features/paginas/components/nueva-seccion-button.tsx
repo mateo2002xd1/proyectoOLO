@@ -9,9 +9,9 @@
  *
  * Aquí el botón lo monta el layout **público**. Si el permiso se resolviera en el
  * servidor, Next tendría que renderizar bajo demanda todas las páginas del sitio,
- * incluidas las que no cambian nunca (`/clasificacion`, `/publicaciones`,
- * `/privacidad`…). Es exactamente el trato que ya documenta `plantilla-edit-button.tsx`
- * y se mantiene: el botón aparece al hidratar, no en el HTML inicial.
+ * incluidas las que no cambian nunca (`/clasificacion`, `/publicaciones`…). Es
+ * exactamente el trato que ya documenta `plantilla-edit-button.tsx` y se
+ * mantiene: el botón aparece al hidratar, no en el HTML inicial.
  *
  * Va en dos pasos porque `secciones.crear` no está en ninguna cookie:
  *

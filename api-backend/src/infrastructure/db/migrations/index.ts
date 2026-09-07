@@ -23,6 +23,7 @@ import * as permisoEliminarSecciones from './019-permiso-eliminar-secciones';
 import * as depuracionYOptimizacionEsquema from './020-depuracion-y-optimizacion-esquema';
 import * as bloqueosEdicion from './021-bloqueos-edicion';
 import * as auditoriaGuardarBorrador from './022-auditoria-guardar-borrador';
+import * as permisoPoliticaPrivacidadSitio from './023-permiso-politica-privacidad-sitio';
 
 export interface Migracion {
   nombre: string;
@@ -56,6 +57,7 @@ const migraciones: Migracion[] = [
   depuracionYOptimizacionEsquema,
   bloqueosEdicion,
   auditoriaGuardarBorrador,
+  permisoPoliticaPrivacidadSitio,
 ];
 
 const TABLA_CONTROL = 'migraciones_aplicadas';

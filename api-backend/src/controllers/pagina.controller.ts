@@ -7,6 +7,7 @@ import { obtenerPaginaPublica } from '../use-cases/paginas/obtener-pagina-public
 import { obtenerIndiceBusqueda } from '../use-cases/paginas/obtener-indice-busqueda.usecase';
 import { obtenerVersionEditable } from '../use-cases/paginas/obtener-version-editable.usecase';
 import { listarEnRevision } from '../use-cases/paginas/listar-en-revision.usecase';
+import { listarPaginasPublicadas } from '../use-cases/paginas/listar-publicadas.usecase';
 import { listarRespaldos } from '../use-cases/paginas/listar-respaldos.usecase';
 import { restaurarVersionAnterior } from '../use-cases/paginas/restaurar-version-anterior.usecase';
 import { eliminarVersion } from '../use-cases/paginas/eliminar-version.usecase';
@@ -379,6 +380,12 @@ export const PaginaController = {
     try {
       const result = await listarEnRevision();
       res.json(result);
+    } catch (err) { next(err); }
+  },
+
+  async listarPublicadas(_req: Request, res: Response, next: NextFunction) {
+    try {
+      res.json(await listarPaginasPublicadas());
     } catch (err) { next(err); }
   },
 

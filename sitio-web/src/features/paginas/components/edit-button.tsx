@@ -28,8 +28,8 @@ export function EditButton({ slug, hasPermission, volverA }: EditButtonProps) {
     <Link
       href={enlaceAlEditor(slug, volverA)}
       className="edit-button"
-      title="Editar esta página"
-      aria-label="Editar esta página"
+      title="Editar esta sección"
+      aria-label="Editar esta sección"
     >
       {/* Ícono de lápiz: se edita lo que hay debajo */}
       <svg
@@ -45,7 +45,7 @@ export function EditButton({ slug, hasPermission, volverA }: EditButtonProps) {
           fill="currentColor"
         />
       </svg>
-      <span>Editar</span>
+      <span>Editar sección</span>
     </Link>
   );
 }

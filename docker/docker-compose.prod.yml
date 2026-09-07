@@ -58,7 +58,7 @@ services:
       DB_SSL: "false"
       REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
       JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
       FRONTEND_URL: https://${SITIO_WEB_DOMAIN}
       INTRANET_URL: https://${INTRANET_DOMAIN}
       # Interna, por la red de Docker: revalidar al publicar es servidor a servidor y no
@@ -143,6 +143,10 @@ services:
       dockerfile: intranet/Dockerfile
       args:
         API_BACKEND_URL: http://api-backend:4000
+        # La resuelve el NAVEGADOR (enlaces de la intranet al portal público). Va como
+        # ARG porque Next la incrusta en el bundle al compilar: como solo variable de
+        # entorno llegaba tarde, y los enlaces salían al `localhost` de cada visitante.
+        NEXT_PUBLIC_SITIO_WEB_URL: https://${SITIO_WEB_DOMAIN}
     container_name: intranet
     restart: unless-stopped
     env_file:

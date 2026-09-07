@@ -608,6 +608,30 @@ router.get('/respaldos', requireAuth, PaginaController.listarRespaldos);
 
 /**
  * @openapi
+ * /api/paginas/publicadas:
+ *   get:
+ *     tags: [Páginas]
+ *     summary: Recuento de páginas publicadas, separado por aplicación
+ *     description: |
+ *       Las páginas visibles ahora mismo, agrupadas en `sitio` e `intranet`, con el
+ *       total. Cada una trae `slug` y `titulo` para poder enlazarla.
+ *     responses:
+ *       200:
+ *         description: Recuento y detalle de lo publicado.
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ */
+// Solo `requireAuth`, sin permiso de publicación: esto no descubre nada reservado
+// —son justo las páginas que cualquiera ve en el portal— y lo consume el panel
+// general, al que entra todo el personal con acceso al administrador.
+//
+// Comparte forma con `/en-revision` y `/respaldos`: una ruta literal entre las de
+// `/:slug/...`. Hoy no hay ningún `GET /:slug` a secas que pudiera tragársela (el
+// comodín suelto es un `DELETE`), pero si algún día se añade, tiene que declararse
+// DESPUÉS de estas tres o se las comerá tomándolas por slugs.
+router.get('/publicadas', requireAuth, PaginaController.listarPublicadas);
+
+/**
+ * @openapi
  * /api/paginas/{slug}/restaurar:
  *   post:
  *     tags: [Páginas]

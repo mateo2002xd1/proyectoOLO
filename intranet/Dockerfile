@@ -12,7 +12,7 @@ WORKDIR /app
 # `npm ci` no podia resolver las siete dependencias @olo/*.
 COPY packages /packages
 
-COPY intranet/package.json intranet/package-lock.json ./
+COPY intranet/package.json intranet/package-lock.json intranet/.npmrc ./
 RUN npm ci && ln -s /app/node_modules /node_modules && ln -s /app/node_modules /packages/node_modules
 
 # `main`/`types` de los packages @olo/* apuntan a `dist/`, no a `src/`: hace falta
@@ -23,6 +23,13 @@ RUN for pkg in /packages/*; do \
         /app/node_modules/.bin/tsc --project "$pkg"; \
       fi; \
     done
+
+# install-links=true (intranet/.npmrc) hace que el npm ci de arriba COPIE el
+# contenido de /packages/* en vez de enlazarlo -- necesario en Windows, donde
+# symlinks exige privilegios. Pero en ese momento /packages/* todavia no tenia
+# dist/ (se compila recien arriba), asi que esa copia quedo sin el. Se repite
+# npm ci ahora para que la copia sea la buena, con dist/ ya incluido.
+RUN npm ci
 
 COPY intranet/next.config.ts intranet/tsconfig.json intranet/postcss.config.mjs ./
 # `next-env.d.ts` esta en el `include` del tsconfig. Next lo regenera si falta, pero
@@ -38,6 +45,12 @@ COPY intranet/src ./src
 
 ARG API_BACKEND_URL=http://localhost:4000
 ENV API_BACKEND_URL=$API_BACKEND_URL
+# Va como ARG y no solo como variable de entorno del contenedor por lo mismo que la
+# `NEXT_PUBLIC_API_URL` de sitio-web: Next incrusta las NEXT_PUBLIC_* en el bundle del
+# navegador AL COMPILAR, y definirla después no cambia lo ya compilado. La consumen los
+# enlaces de la intranet hacia el portal publico (`shared/lib/constants.ts`).
+ARG NEXT_PUBLIC_SITIO_WEB_URL=http://localhost:3000
+ENV NEXT_PUBLIC_SITIO_WEB_URL=$NEXT_PUBLIC_SITIO_WEB_URL
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 

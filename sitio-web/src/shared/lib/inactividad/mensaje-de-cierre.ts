@@ -3,6 +3,7 @@ import {
   MOTIVO_INACTIVIDAD,
   MOTIVO_INACTIVIDAD_SIN_GUARDAR,
 } from '@olo/inactividad';
+import { MOTIVO_SESION_EXPIRADA } from '../auth-cookies';
 
 /**
  * Qué decirle a quien acaba de llegar al login desde un cierre por inactividad.
@@ -19,6 +20,12 @@ export const mensajeDeCierre = (motivo: string | null): string | null => {
       return `Cerramos tu sesión porque estuviste ${MINUTOS_DE_INACTIVIDAD} minutos sin actividad. Vuelve a entrar para continuar.`;
     case MOTIVO_INACTIVIDAD_SIN_GUARDAR:
       return `Cerramos tu sesión por inactividad, pero no pudimos guardar los últimos cambios del editor. Revisa la página antes de seguir.`;
+    // No es lo mismo que la inactividad: aquí la sesión dejó de ser válida por su
+    // cuenta —caducó, o la API dejó de aceptar el token—, sin que la persona hiciera
+    // nada. Antes esto no llegaba a decirse: el panel se quedaba vacío y en silencio,
+    // y quien lo veía suponía que la base de datos estaba caída.
+    case MOTIVO_SESION_EXPIRADA:
+      return 'Tu sesión expiró. Vuelve a entrar para continuar donde estabas.';
     default:
       return null;
   }

@@ -344,16 +344,37 @@
 
 /* Transición de vista, ver RouteTransition.tsx: qué se anima al pasar de una
    sección a otra. El key={pathname} del componente monta un nodo nuevo por cada
-   ruta, así que esto arranca solo, sin JS de por medio. */
+   ruta, así que esto arranca solo, sin JS de por medio.
+   `margin-top` y no `transform: translateY()` a propósito: cualquier `transform`
+   en este contenedor —incluso en reposo, con `animation-fill-mode: both` deja
+   `translateY(0)` puesto para siempre, que no es `none`— vuelve a este `<div>` el
+   *containing block* de sus descendientes `position: fixed`. `EditButton` vive
+   dentro de `{children}`, o sea dentro de este contenedor, así que con `transform`
+   dejaba de anclarse a la ventana y pasaba a anclarse al alto de la página: el
+   botón «Editar sección» aparecía en un punto distinto según cuánto contenido
+   tuviera cada página, en vez de fijo abajo a la derecha como los demás. */
+/* Se desplaza con `margin-top` y NO con `transform`, y no es un capricho de estilo:
+   `.olo-route-transition` envuelve el contenido de cada página, y ahí dentro va el
+   botón «Editar sección» (`.edit-button`, `position: fixed`).
+
+   Un `transform` distinto de `none` convierte al elemento en el marco de referencia de
+   sus descendientes `fixed`. Como la animación lleva `fill-mode: both`, el valor del
+   último fotograma se queda aplicado para siempre —incluso `translateY(0)`, que es la
+   identidad y parece inofensivo—, así que el botón dejaba de colocarse respecto a la
+   ventana y se pegaba al fondo del contenido: medido en el navegador, acababa 2.578 px
+   por debajo del borde inferior, fuera de la columna que forman los otros tres botones.
+
+   `margin-top` consigue el mismo desplazamiento sin crear ese marco de referencia.
+   Misma trampa que explica el comentario de `olo-boton-flotante-aparece` más abajo. */
 @keyframes olo-route-in {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    margin-top: 8px;
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
+    margin-top: 0;
   }
 }
 
@@ -2793,6 +2814,25 @@ button.text-link,
 
 /* --- Botón lápiz (edit-button) --- */
 
+/* Entrada corta al aparecer: sea que el botón ya venga en el HTML del servidor
+   (`.edit-button` base, EditButton) o que se pinte después de resolver el permiso
+   en el cliente (los tres con modificador), antes aparecía de golpe, sin aviso.
+   El `transform` va en el propio botón, no en un contenedor que lo envuelva —a
+   diferencia del que tenía `.olo-route-transition` y rompía el `position: fixed`
+   de EditButton (ver ese comentario): aquí el botón no tiene descendientes con
+   `position: fixed` propios, así que no hay *containing block* que romper. */
+@keyframes olo-boton-flotante-aparece {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .edit-button {
   position: fixed;
   bottom: 1.5rem;
@@ -2809,11 +2849,18 @@ button.text-link,
   font-weight: 600;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
   transition: background 0.15s ease, transform 0.15s ease;
+  animation: olo-boton-flotante-aparece 180ms ease-out both;
 }
 
 .edit-button:hover {
   background: #001a2a;
   transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .edit-button {
+    animation: none !important;
+  }
 }
 
 /* Editar la plantilla afecta a todo el sitio, no solo a la página que se está

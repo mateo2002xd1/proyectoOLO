@@ -1,22 +1,13 @@
 import { NextResponse } from 'next/server';
-import {
-  AUTH_COOKIE_NAME,
-  AUTH_ROLE_COOKIE_NAME,
-  AUTH_USER_NAME_COOKIE_NAME,
-  AUTH_MUST_CHANGE_PW_COOKIE_NAME,
-  AUTH_MUST_SETUP_SQ_COOKIE_NAME,
-} from '@/shared/lib/auth-cookies';
+import { AUTH_COOKIES } from '@/shared/lib/auth-cookies';
 
 export async function POST() {
   const response = NextResponse.json({ message: 'Sesión cerrada' });
 
-  for (const name of [
-    AUTH_COOKIE_NAME,
-    AUTH_ROLE_COOKIE_NAME,
-    AUTH_USER_NAME_COOKIE_NAME,
-    AUTH_MUST_CHANGE_PW_COOKIE_NAME,
-    AUTH_MUST_SETUP_SQ_COOKIE_NAME,
-  ]) {
+  // La lista va en `auth-cookies.ts` y no repetida aquí: esta copia se había quedado
+  // corta —le faltaban `sitio_userEmail` y `sitio_refreshToken`—, así que cerrar sesión
+  // dejaba el correo del último usuario en el navegador.
+  for (const name of AUTH_COOKIES) {
     response.cookies.set(name, '', { maxAge: 0, path: '/' });
   }
 

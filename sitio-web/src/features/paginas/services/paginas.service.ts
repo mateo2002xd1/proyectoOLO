@@ -3,6 +3,7 @@ import type { Data } from '@puckeditor/core';
 import { Pagina, PaginaVersion, PaginaEditable, PaginaEnRevision, Bloque, PuckData, Ambito } from '../types';
 import { homeFallbackData } from '../lib/home-fallback-data';
 import { etiquetaDePagina } from '../lib/etiquetas-cache';
+import { cerrarSesionLocal, pedirJson } from '@/shared/lib/api-client';
 
 // El sitio y la intranet comparten la tabla `paginas` y ambos tienen su `/inicio`.
 // Esta cabecera es lo que le dice a la API a cuál de las dos pertenece cada página.
@@ -154,6 +155,31 @@ export async function listarEnRevision(): Promise<PaginaEnRevision[]> {
   return data;
 }
 
+/** Una página publicada, con lo justo para contarla y enlazarla. */
+export interface PaginaPublicada {
+  id: string;
+  slug: string;
+  titulo: string;
+}
+
+/** Lo que devuelve `GET /api/paginas/publicadas`, ya separado por aplicación. */
+export interface ResumenPaginasPublicadas {
+  total: number;
+  sitio: PaginaPublicada[];
+  intranet: PaginaPublicada[];
+}
+
+/**
+ * Cuántas páginas están publicadas ahora mismo, en el sitio y en la intranet.
+ *
+ * Va por `pedirJson` y no por `api` (axios) para heredar el manejo central del 401: si
+ * la sesión caducó, cierra y lleva al login en vez de dejar el panel con un cero que
+ * parece un dato real.
+ */
+export async function resumenDePaginasPublicadas(): Promise<ResumenPaginasPublicadas> {
+  return pedirJson<ResumenPaginasPublicadas>('/api/paginas/publicadas');
+}
+
 export interface SeccionCreada {
   id: string;
   slug: string;
@@ -189,13 +215,22 @@ export async function crearSeccion(titulo: string): Promise<SeccionCreada> {
  * si pintarse— dice el rol, no las claves, y `secciones.crear` se concede aparte: un
  * Editor puede tenerlo o no. Devuelve lista vacía ante cualquier fallo, incluido el
  * 401 de no haber sesión, que aquí es lo normal y no un error.
+ *
+ * Ante un 401 **además** se cierra la sesión localmente, y esa parte sí importa: esta
+ * función se llama desde páginas públicas, donde el middleware no pasa y por tanto nadie
+ * limpia una cookie de rol que sobrevivió a su token. Sin ese cierre quedaba la interfaz
+ * a medias —«Editar» visible porque lo decide la cookie, «Eliminar» y «Nueva sección»
+ * ocultos porque los decide esta llamada—, que es exactamente el desconcierto que se
+ * reportó. No se redirige a nadie: aquí un 401 puede ser simplemente un visitante.
  */
 export async function permisosDeLaSesion(): Promise<string[]> {
   try {
     // `/api/me`, no `/api/auth/me`: `authRoutes` se monta en `/api` a secas.
     const { data } = await api.get('/api/me');
     return Array.isArray(data?.permisos) ? data.permisos.map(String) : [];
-  } catch {
+  } catch (error) {
+    const estado = (error as { response?: { status?: number } })?.response?.status;
+    if (estado === 401) void cerrarSesionLocal();
     return [];
   }
 }
@@ -270,7 +305,7 @@ export interface AnalisisDeEliminacion {
   titulo: string;
   ambito: Ambito;
   puedeEliminarse: boolean;
-  motivo: 'de-fabrica' | 'tiene-enlaces' | null;
+  motivo: 'tiene-enlaces' | null;
   versiones: number;
   publicada: boolean;
   referencias: ReferenciaAEnlace[];

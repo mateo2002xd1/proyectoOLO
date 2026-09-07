@@ -42,7 +42,14 @@ import {
 } from '@heroicons/react/20/solid';
 import { ThemeToggle } from '@/shared/ui/molecules/theme-toggle';
 import { RouteTransition } from '@/shared/ui/atoms/RouteTransition';
-import { enlaceAlEditor, listarEnRevision, type PaginaEnRevision } from '@/features/paginas';
+import {
+  enlaceAlEditor,
+  listarEnRevision,
+  resumenDePaginasPublicadas,
+  type PaginaEnRevision,
+  type ResumenPaginasPublicadas,
+} from '@/features/paginas';
+import { TarjetaPaginasPublicadas } from './tarjeta-paginas-publicadas';
 import {
   listarAuditoria,
   ErrorAuditoria,
@@ -324,11 +331,6 @@ export function PanelGeneralLayout({
                     <DropdownLabel>Configuración</DropdownLabel>
                   </DropdownItem>
                   <DropdownDivider />
-                  <DropdownItem href="/admin/dashboard/privacidad">
-                    <ShieldCheckIcon />
-                    <DropdownLabel>Política de privacidad</DropdownLabel>
-                  </DropdownItem>
-                  <DropdownDivider />
                   <DropdownItem onClick={handleLogout}>
                     <ArrowRightStartOnRectangleIcon />
                     <DropdownLabel>Cerrar sesión</DropdownLabel>
@@ -413,11 +415,6 @@ export function PanelGeneralLayout({
                     <DropdownLabel>Configuración</DropdownLabel>
                   </DropdownItem>
                   <DropdownDivider />
-                  <DropdownItem href="/admin/dashboard/privacidad">
-                    <ShieldCheckIcon />
-                    <DropdownLabel>Política de privacidad</DropdownLabel>
-                  </DropdownItem>
-                  <DropdownDivider />
                   <DropdownItem onClick={handleLogout}>
                     <ArrowRightStartOnRectangleIcon />
                     <DropdownLabel>Cerrar sesión</DropdownLabel>
@@ -467,13 +464,15 @@ export function PanelGeneralDashboard() {
   const [loading, setLoading] = useState(true);
   const [actividad, setActividad] = useState<RegistroAuditoria[]>([]);
   const [errorActividad, setErrorActividad] = useState<Error | null>(null);
+  const [paginasPublicadas, setPaginasPublicadas] = useState<ResumenPaginasPublicadas | null>(null);
+  const [errorPaginas, setErrorPaginas] = useState<string | null>(null);
 
 
   useEffect(() => {
     let cancelado = false;
     (async () => {
       // En paralelo: que una fuente lenta no retrase a las demás.
-      const [, registros] = await Promise.all([
+      const [, registros, publicadas] = await Promise.all([
         fetchUsers(),
         listarAuditoria({}, 1, CAMBIOS_RECIENTES).then(
           (respuesta) => respuesta.registros,
@@ -486,9 +485,23 @@ export function PanelGeneralDashboard() {
             return [] as RegistroAuditoria[];
           },
         ),
+        // El recuento de páginas no es crítico para el panel: si falla, su tarjeta lo
+        // dice sola y el resto del dashboard se pinta igual.
+        resumenDePaginasPublicadas().then(
+          (resumen) => resumen,
+          (err: unknown) => {
+            if (!cancelado) {
+              setErrorPaginas(
+                err instanceof Error ? err.message : 'No se pudo cargar el recuento de páginas.',
+              );
+            }
+            return null;
+          },
+        ),
       ]);
       if (cancelado) return;
       setActividad(registros || []);
+      setPaginasPublicadas(publicadas);
       setLoading(false);
     })();
     return () => {
@@ -512,9 +525,11 @@ export function PanelGeneralDashboard() {
     );
   }
 
+  // `paginas` sale de aquí: tiene tarjeta propia (`TarjetaPaginasPublicadas`) porque
+  // además del total despliega el detalle por aplicación con enlace a cada página.
+  // Hasta ahora valía `0` escrito a mano, que se leía como un dato real y no lo era.
   const statsEntries = Object.entries({
     usuarios: users.length,
-    paginas: 0,
     visitas: 0,
   });
   const statsLabels: Record<string, string> = {
@@ -544,6 +559,7 @@ export function PanelGeneralDashboard() {
       )}
 
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <TarjetaPaginasPublicadas resumen={paginasPublicadas} error={errorPaginas} />
         {statsEntries.map(([key, value]) => (
           <div key={key} className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
             <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">{statsLabels[key] || key}</p>

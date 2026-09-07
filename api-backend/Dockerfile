@@ -18,7 +18,7 @@ WORKDIR /app
 # Van antes que el `npm ci` porque este los necesita presentes para instalarlos.
 COPY packages /packages
 
-COPY api-backend/package.json api-backend/package-lock.json ./
+COPY api-backend/package.json api-backend/package-lock.json api-backend/.npmrc ./
 RUN npm ci
 
 COPY api-backend/tsconfig.json ./
@@ -32,6 +32,13 @@ RUN for pkg in /packages/*; do \
         /app/node_modules/.bin/tsc --project "$pkg"; \
       fi; \
     done
+
+# install-links=true (api-backend/.npmrc) hace que el npm ci de arriba COPIE el
+# contenido de /packages/* en vez de enlazarlo -- necesario en Windows, donde
+# symlinks exige privilegios. Pero en ese momento /packages/* todavia no tenia
+# dist/ (se compila recien arriba), asi que esa copia quedo sin el. Se repite
+# npm ci ahora para que la copia sea la buena, con dist/ ya incluido.
+RUN npm ci
 
 RUN npm run build
 
@@ -47,7 +54,7 @@ WORKDIR /app
 
 COPY --from=builder /packages /packages
 
-COPY api-backend/package.json api-backend/package-lock.json ./
+COPY api-backend/package.json api-backend/package-lock.json api-backend/.npmrc ./
 RUN npm ci --omit=dev
 
 # npm ci crea symlinks para las dependencias `file:`. Los symlinks funcionan,

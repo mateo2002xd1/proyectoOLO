@@ -61,7 +61,7 @@ services:
       DB_SSL: "false"
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRES_IN: 7d
+      JWT_EXPIRES_IN: 8h
       FRONTEND_URL: http://localhost:3000
       INTRANET_URL: http://localhost:3001
       # Con la que la API llama al sitio desde dentro de la red de Docker, para pedirle
@@ -146,6 +146,10 @@ services:
       dockerfile: intranet/Dockerfile
       args:
         API_BACKEND_URL: http://api-backend:4000
+        # La resuelve el NAVEGADOR (enlaces de la intranet al portal público), no la red
+        # de Docker: por eso localhost y no `sitio-web`. Va como ARG porque Next la
+        # incrusta en el bundle al compilar.
+        NEXT_PUBLIC_SITIO_WEB_URL: http://localhost:3000
     container_name: intranet
     restart: unless-stopped
     ports:

@@ -10,7 +10,20 @@ import {
 } from '@/shared/lib/auth-cookies';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000';
-const COOKIE_MAX_AGE = 7 * 24 * 60 * 60; // 7 días en segundos
+/**
+ * Techo absoluto de la sesión: una jornada.
+ *
+ * Debe ir a la par de `JWT_EXPIRES_IN` en la API (`8h`), que es quien decide de verdad
+ * — la cookie solo transporta el token. Si la cookie durase más, el navegador seguiría
+ * mandando un token ya caducado y el panel se abriría para no cargar nada.
+ *
+ * Eran 7 días. No es el tiempo que alguien está trabajando, sino el tiempo que un token
+ * robado sigue sirviendo, y para un panel que administra usuarios y lee la bitácora de
+ * auditoría eso era demasiado. Bajarlo casi no se nota en el uso diario porque el cierre
+ * por inactividad de `@olo/inactividad` ya corta a los 15 minutos: esto es el tope de la
+ * jornada, no el de la sesión activa.
+ */
+const COOKIE_MAX_AGE = 8 * 60 * 60; // 8 horas en segundos
 
 export async function POST(request: NextRequest) {
   let body: { email: string; password: string };

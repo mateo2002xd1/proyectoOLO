@@ -58,6 +58,19 @@ const nextConfig = {
         permanent: false,
       },
       {
+        /**
+         * `/privacidad` era un alias que servía el mismo componente que
+         * `/politica-de-privacidad` bajo otra URL — contenido duplicado bajo dos
+         * rutas. Ahora que `politica-de-privacidad` es una sección Puck editable
+         * de verdad (con su propia fila en `paginas`), el alias no tiene contenido
+         * propio que editar: redirige a la canónica en vez de mostrar una copia
+         * que nunca se actualizaría con lo que se publique.
+         */
+        source: '/privacidad',
+        destination: '/politica-de-privacidad',
+        permanent: false,
+      },
+      {
         source: '/login',
         destination: '/admin/login',
         permanent: false,

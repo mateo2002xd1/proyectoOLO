@@ -36,7 +36,7 @@ import { AMBITOS, type Ambito } from './ambito';
  * el de aquí quién puede ponerlos.
  */
 export const SECCIONES_POR_AMBITO: Record<Ambito, string[]> = {
-  sitio: ['menu-y-pie', 'inicio'],
+  sitio: ['menu-y-pie', 'inicio', 'politica-de-privacidad'],
   intranet: [
     'menu-y-pie',
     'inicio',
@@ -216,6 +216,7 @@ const PERMISOS_FIJOS: PermisoDelCatalogo[] = [
 const ETIQUETAS_DE_SECCION: Record<string, string> = {
   'menu-y-pie': 'Menú y pie de página',
   inicio: 'Inicio',
+  'politica-de-privacidad': 'Política de privacidad',
   tasa: 'Tasa de vinculación',
   matriz: 'Matriz de tendencias',
   'encuestas-calidad-de-formacion': 'Encuestas de calidad de la formación',

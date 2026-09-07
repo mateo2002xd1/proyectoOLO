@@ -10,12 +10,19 @@
  *    en seco, y solo a quien la pasa se le consulta `/api/me` — la revisión completa,
  *    incluida la que se repite al recuperar foco, vive en `usePermisoDeSeccion`
  *    (hooks/use-permiso-de-seccion.ts).
- *  - Solo en páginas **creadas desde el editor**. Las de fábrica (`inicio` y
- *    `menu-y-pie`) no se pueden borrar y no se ofrece la acción: un botón que siempre
- *    falla es peor que no tenerlo.
  *
  * El slug sale de la ruta y no de una prop porque esto lo monta el layout público, que
  * no lo conoce.
+ *
+ * ## Ya no distingue páginas de fábrica
+ *
+ * Hasta el 2026-09-04 se ocultaba en `inicio` y `menu-y-pie` porque código en otros
+ * puntos da por hecho que existen. Se quitó a pedido explícito, con el riesgo aceptado:
+ * `inicio` y `menu-y-pie` tienen un *fallback* de código si se borran (`homeFallbackData`
+ * / la identidad visual sola — ver `obtenerPaginaInicio` y `obtenerPlantilla`), pero
+ * cualquier otra página de fábrica que se borre deja de servir contenido hasta que
+ * alguien la vuelva a crear. El backend (`eliminar-seccion.usecase.ts`) ya no rechaza
+ * el borrado por este motivo.
  *
  * ## El diálogo pregunta antes de dejar borrar
  *
@@ -31,7 +38,6 @@
 
 import { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { esSeccionDeFabrica } from '@/config/puck.config';
 import {
   analizarEliminacion,
   eliminarSeccion,
@@ -59,7 +65,7 @@ export function EliminarSeccionButton() {
 
   // Regla §0.11 — sin permiso no se pinta. Y sin slug tampoco: en una ruta rara no hay
   // nada que borrar.
-  if (!hasPermission || !slug || esSeccionDeFabrica(slug)) return null;
+  if (!hasPermission || !slug) return null;
 
   const abrir = async () => {
     setAbierto(true);
@@ -155,30 +161,22 @@ export function EliminarSeccionButton() {
 
             {!cargando && analisis && !analisis.puedeEliminarse && (
               <>
-                {analisis.motivo === 'de-fabrica' ? (
-                  <p className="nueva-seccion-error">
-                    «{analisis.titulo}» es una página del sistema y no se puede eliminar.
-                  </p>
-                ) : (
-                  <>
-                    <p className="nueva-seccion-error">
-                      Todavía no se puede borrar: hay {analisis.referencias.length} enlace(s)
-                      apuntando a <code>/{analisis.slug}</code>.
-                    </p>
-                    <ul className="nueva-seccion-notas">
-                      {analisis.referencias.map((referencia, indice) => (
-                        <li key={`${referencia.slug}-${indice}`}>
-                          <strong>{referencia.titulo}</strong>
-                          {referencia.texto ? ` → «${referencia.texto}»` : ''}
-                        </li>
-                      ))}
-                    </ul>
-                    <p className="nueva-seccion-ruta">
-                      Quítalos primero (los del menú, desde «Menú y pie») y vuelve a
-                      intentarlo. Así el portal no queda con enlaces a ninguna parte.
-                    </p>
-                  </>
-                )}
+                <p className="nueva-seccion-error">
+                  Todavía no se puede borrar: hay {analisis.referencias.length} enlace(s)
+                  apuntando a <code>/{analisis.slug}</code>.
+                </p>
+                <ul className="nueva-seccion-notas">
+                  {analisis.referencias.map((referencia, indice) => (
+                    <li key={`${referencia.slug}-${indice}`}>
+                      <strong>{referencia.titulo}</strong>
+                      {referencia.texto ? ` → «${referencia.texto}»` : ''}
+                    </li>
+                  ))}
+                </ul>
+                <p className="nueva-seccion-ruta">
+                  Quítalos primero (los del menú, desde «Menú y pie») y vuelve a
+                  intentarlo. Así el portal no queda con enlaces a ninguna parte.
+                </p>
               </>
             )}
 

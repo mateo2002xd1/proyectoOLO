@@ -100,6 +100,12 @@ const MANIFIESTO_SITIO: Manifiesto = {
     etiqueta: 'Últimas publicaciones',
     reglas: [{ tipo: 'alt-array', campoArray: 'publicaciones', campoImagen: 'pdfUrl', campoAlt: 'titulo' }],
   },
+  /* Cada documento pinta un `<iframe title={titulo}>`: sin título el iframe
+     queda mudo para un lector de pantalla. */
+  VisorDocumentosNormativos: {
+    etiqueta: 'Visor de documentos normativos',
+    reglas: [{ tipo: 'titulo-array', campoArray: 'documentos', campoTitulo: 'titulo' }],
+  },
 };
 
 const MANIFIESTO_INTRANET: Manifiesto = {
