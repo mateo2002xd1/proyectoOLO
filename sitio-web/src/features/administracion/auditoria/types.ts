@@ -19,7 +19,8 @@ export type AccionAuditable =
   | 'aprobar'
   | 'rechazar'
   | 'enviar_revision'
-  | 'guardar_borrador';
+  | 'guardar_borrador'
+  | 'cambiar_password';
 
 export interface CampoModificado {
   campo: string;
@@ -77,10 +78,11 @@ export const ETIQUETA_ACCION: Record<AccionAuditable, string> = {
   eliminar: 'Eliminación',
   publicar: 'Publicación',
   despublicar: 'Archivado',
-  aprobar: 'Aprobación',
+  aprobar: 'Publicación',
   rechazar: 'Rechazo',
   enviar_revision: 'Envío a revisión',
   guardar_borrador: 'Borrador',
+  cambiar_password: 'Cambio de contraseña',
 };
 
 export const ETIQUETA_ENTIDAD: Record<EntidadAuditable, string> = {
@@ -128,10 +130,11 @@ export const COLOR_ACCION: Record<AccionAuditable, string> = {
   eliminar: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200',
   publicar: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200',
   despublicar: 'bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-200',
-  aprobar: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200',
+  aprobar: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200',
   rechazar: 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-200',
   enviar_revision: 'bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-200',
   guardar_borrador: 'bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-200',
+  cambiar_password: 'bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-900/40 dark:text-fuchsia-200',
 };
 
 export const etiquetaDeAccion = (accion: AccionAuditable) => ETIQUETA_ACCION[accion] ?? accion;

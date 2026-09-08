@@ -166,7 +166,9 @@ export function AuditoriaView() {
             onChange={(valor) => cambiarFiltro('accion', valor)}
             options={[
               { value: '', label: 'Todas' },
-              ...Object.entries(ETIQUETA_ACCION).map(([value, label]) => ({ value, label })),
+              ...Array.from(
+                new Map(Object.entries(ETIQUETA_ACCION).map(([value, label]) => [label, { value, label }])).values()
+              ),
             ]}
           />
         </Campo>
@@ -230,7 +232,7 @@ export function AuditoriaView() {
                       {new Date(registro.fecha).toLocaleString('es-CO')}
                     </td>
                     <td className="px-4 py-3 text-zinc-900 dark:text-[#f6f6f6]">
-                      {registro.usuarioNombre ?? <span className="text-zinc-500">Sin usuario</span>}
+                      {(registro.usuarioId ? usuarios.find(u => u.id === registro.usuarioId)?.nombre : null) ?? registro.usuarioNombre ?? <span className="text-zinc-500">Sin usuario</span>}
                     </td>
                     <td className="px-4 py-3">
                       <span
@@ -286,7 +288,7 @@ export function AuditoriaView() {
         </>
       )}
 
-      <DetalleRegistro registro={seleccionado} onCerrar={() => setSeleccionado(null)} />
+      <DetalleRegistro registro={seleccionado} usuarios={usuarios} onCerrar={() => setSeleccionado(null)} />
     </div>
   );
 }

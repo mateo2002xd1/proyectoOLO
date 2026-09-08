@@ -81,9 +81,9 @@ export async function listarUsuariosDeFiltro(): Promise<UsuarioDeFiltro[]> {
     if (!Array.isArray(usuarios)) return [];
 
     return usuarios
-      .map((u: { id: string; name?: string; email?: string }) => ({
+      .map((u: { id: string; name?: string; apellidos?: string; email?: string }) => ({
         id: u.id,
-        nombre: u.name || u.email || u.id,
+        nombre: [u.name, u.apellidos].filter(Boolean).join(' ') || u.email || u.id,
       }))
       .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
   } catch {

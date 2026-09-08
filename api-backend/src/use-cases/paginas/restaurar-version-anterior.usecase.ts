@@ -128,9 +128,9 @@ export async function restaurarVersionAnterior(
     const idValido = toUUID(userId);
     if (idValido) {
       try {
-        const u = await User.findByPk(idValido, { attributes: ['name', 'email'] });
+        const u = await User.findByPk(idValido, { attributes: ['name', 'apellidos', 'email'] });
         if (u) {
-          nombreUsuario = u.name || u.email || null;
+          nombreUsuario = u.name ? (u.apellidos ? `${u.name} ${u.apellidos}` : u.name) : (u.email || null);
         }
       } catch {
         // En caso de error en la consulta de usuario, continuar sin romper el proceso
@@ -152,7 +152,7 @@ export async function restaurarVersionAnterior(
       entidadTipo: 'pagina',
       accion: 'despublicar',
       camposModificados: [
-        { campo: 'slug', antes: null, despues: pagina.slug },
+        { campo: 'slug', antes: pagina.slug, despues: pagina.slug },
         { campo: 'version', antes: versionPublicada.numeroVersion, despues: versionPublicada.numeroVersion },
         { campo: 'estado', antes: 'publicado', despues: 'archivado' },
         { campo: 'motivo', antes: null, despues: `Archivada por restauración de versión ${versionArchivada.numeroVersion}` },
@@ -166,8 +166,8 @@ export async function restaurarVersionAnterior(
     entidadTipo: 'pagina',
     accion: 'publicar',
     camposModificados: [
-      { campo: 'slug', antes: null, despues: pagina.slug },
-      { campo: 'version', antes: null, despues: versionArchivada.numeroVersion },
+      { campo: 'slug', antes: pagina.slug, despues: pagina.slug },
+      { campo: 'version', antes: versionPublicada ? versionPublicada.numeroVersion : null, despues: versionArchivada.numeroVersion },
       { campo: 'motivo', antes: null, despues: `Restaurada versión anterior ${versionArchivada.numeroVersion}` },
     ],
   });
