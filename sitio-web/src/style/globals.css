@@ -3221,6 +3221,50 @@ button.text-link,
   }
 }
 
+/* ─── Pestañas Laterales (primitivo Tabs / SeccionPestanasLaterales) ─────────
+   Estilos específicos para Sitio Web: Identidad SENA / C.N.O.
+   Botones en gris carbón (#404040) y pestaña activa en verde SENA (#39A900). */
+.olo-tabs-btn {
+  background-color: #404040;
+  color: #ffffff;
+  border: 1px solid #404040;
+}
+
+.olo-tabs-btn:hover {
+  background-color: #4f4f4f;
+  border-color: #4f4f4f;
+}
+
+.olo-tabs-btn--active {
+  background-color: #39A900 !important;
+  color: #ffffff !important;
+  border-color: #39A900 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+:is(.dark .olo-tabs-btn) {
+  background-color: #2b2b2b;
+  border-color: #383838;
+  color: #f3f4f6;
+}
+
+:is(.dark .olo-tabs-btn:hover) {
+  background-color: #383838;
+}
+
+:is(.dark .olo-tabs-btn--active) {
+  background-color: #39A900 !important;
+  border-color: #39A900 !important;
+  color: #ffffff !important;
+}
+
+/* Variante azul explícita para sitio web */
+.olo-tabs--azul .olo-tabs-btn--active {
+  background-color: #001A39 !important;
+  border-color: #001A39 !important;
+  color: #ffffff !important;
+}
+
 /* ─── Texto enriquecido (campos `richtext` de Puck) ───────────────────────
    Copiado de la intranet, que ya lo tenía: Puck entrega el valor de un campo
    `richtext` envuelto en `.rich-text`, y el preflight de Tailwind deja listas y

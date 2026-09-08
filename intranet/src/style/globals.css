@@ -4914,6 +4914,53 @@
   }
 }
 
+/* ─── Pestañas Laterales (primitivo Tabs / SeccionPestanasLaterales) ─────────
+   Estilos específicos para Intranet: Identidad Corporativa OLO (Azul Marino)
+   Botones en gris suave (#f1f3f5) y pestaña activa en azul profundo (#001A39 / #00324D). */
+.olo-tabs-btn {
+  background-color: #f1f3f5;
+  color: #1a2b4c;
+  border: 1px solid #dee2e6;
+}
+
+.olo-tabs-btn:hover {
+  background-color: #e2e8f0;
+  color: #001631;
+  border-color: #cbd5e1;
+}
+
+.olo-tabs-btn--active {
+  background-color: #001A39 !important;
+  color: #ffffff !important;
+  border-color: #001A39 !important;
+  box-shadow: 0 2px 4px rgba(0, 26, 57, 0.25);
+}
+
+:is(.dark .olo-tabs-btn) {
+  background-color: #0d1f3c;
+  border-color: #1e293b;
+  color: #cbd5e1;
+}
+
+:is(.dark .olo-tabs-btn:hover) {
+  background-color: #1e293b;
+  color: #ffffff;
+}
+
+:is(.dark .olo-tabs-btn--active) {
+  background-color: #00324D !important;
+  border-color: #00324D !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 4px rgba(0, 50, 77, 0.4);
+}
+
+/* Variante verde explícita para intranet si se selecciona */
+.olo-tabs--verde .olo-tabs-btn--active {
+  background-color: #39A900 !important;
+  border-color: #39A900 !important;
+  color: #ffffff !important;
+}
+
 /* ============================================
    PREVISUALIZACIÓN — Página sin publicar
    ============================================ */
