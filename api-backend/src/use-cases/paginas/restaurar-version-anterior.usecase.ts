@@ -152,7 +152,7 @@ export async function restaurarVersionAnterior(
       entidadTipo: 'pagina',
       accion: 'despublicar',
       camposModificados: [
-        { campo: 'slug', antes: null, despues: pagina.slug },
+        { campo: 'slug', antes: pagina.slug, despues: pagina.slug },
         { campo: 'version', antes: versionPublicada.numeroVersion, despues: versionPublicada.numeroVersion },
         { campo: 'estado', antes: 'publicado', despues: 'archivado' },
         { campo: 'motivo', antes: null, despues: `Archivada por restauración de versión ${versionArchivada.numeroVersion}` },
@@ -166,8 +166,8 @@ export async function restaurarVersionAnterior(
     entidadTipo: 'pagina',
     accion: 'publicar',
     camposModificados: [
-      { campo: 'slug', antes: null, despues: pagina.slug },
-      { campo: 'version', antes: null, despues: versionArchivada.numeroVersion },
+      { campo: 'slug', antes: pagina.slug, despues: pagina.slug },
+      { campo: 'version', antes: versionPublicada ? versionPublicada.numeroVersion : null, despues: versionArchivada.numeroVersion },
       { campo: 'motivo', antes: null, despues: `Restaurada versión anterior ${versionArchivada.numeroVersion}` },
     ],
   });
