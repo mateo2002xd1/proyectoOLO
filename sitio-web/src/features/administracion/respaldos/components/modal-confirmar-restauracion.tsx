@@ -34,14 +34,14 @@ export function ModalConfirmarRestauracion({
       onClick={(e) => {
         if (e.target === dialogo.current) onCancelar();
       }}
-      className="m-auto w-full max-w-md rounded-xl border border-zinc-200 bg-white p-0 text-zinc-900 shadow-xl backdrop:bg-black/50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-[#f6f6f6]"
+      className="m-auto w-full max-w-md rounded-xl border border-zinc-200 bg-white p-0 text-zinc-900 backdrop:bg-black/50 dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:text-[#f6f6f6]"
     >
       <div className="flex flex-col p-6">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-500">
             <AlertTriangle className="h-5 w-5" />
           </div>
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+          <h2 className="text-lg font-semibold text-zinc-900 dark:text-[#f6f6f6]">
             ¿Restaurar versión anterior?
           </h2>
         </div>
