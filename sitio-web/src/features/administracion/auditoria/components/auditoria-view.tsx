@@ -166,7 +166,9 @@ export function AuditoriaView() {
             onChange={(valor) => cambiarFiltro('accion', valor)}
             options={[
               { value: '', label: 'Todas' },
-              ...Object.entries(ETIQUETA_ACCION).map(([value, label]) => ({ value, label })),
+              ...Array.from(
+                new Map(Object.entries(ETIQUETA_ACCION).map(([value, label]) => [label, { value, label }])).values()
+              ),
             ]}
           />
         </Campo>
