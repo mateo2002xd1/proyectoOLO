@@ -214,7 +214,7 @@ export const PaginaController = {
         usuarioId: req.user?.id || '',
         // El nombre es lo que se le enseña a quien se queda fuera; el correo sirve
         // igual si la cuenta no tiene nombre puesto.
-        usuarioNombre: req.user?.name || req.user?.email || 'Otra persona',
+        usuarioNombre: req.user?.name ? (req.user.apellidos ? `${req.user.name} ${req.user.apellidos}` : req.user.name) : (req.user?.email || 'Otra persona'),
         rol: req.user?.role,
         forzar: req.body?.forzar === true,
       });

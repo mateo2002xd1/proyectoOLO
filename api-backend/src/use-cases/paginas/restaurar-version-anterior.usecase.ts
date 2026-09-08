@@ -128,9 +128,9 @@ export async function restaurarVersionAnterior(
     const idValido = toUUID(userId);
     if (idValido) {
       try {
-        const u = await User.findByPk(idValido, { attributes: ['name', 'email'] });
+        const u = await User.findByPk(idValido, { attributes: ['name', 'apellidos', 'email'] });
         if (u) {
-          nombreUsuario = u.name || u.email || null;
+          nombreUsuario = u.name ? (u.apellidos ? `${u.name} ${u.apellidos}` : u.name) : (u.email || null);
         }
       } catch {
         // En caso de error en la consulta de usuario, continuar sin romper el proceso

@@ -55,11 +55,15 @@ function useNombresRoles() {
   return diccionario;
 }
 
+import type { UsuarioDeFiltro } from '../services/auditoria.service';
+
 export function DetalleRegistro({
   registro,
+  usuarios = [],
   onCerrar,
 }: {
   registro: RegistroAuditoria | null;
+  usuarios?: UsuarioDeFiltro[];
   onCerrar: () => void;
 }) {
   const dialogo = useRef<HTMLDialogElement>(null);
@@ -104,7 +108,7 @@ export function DetalleRegistro({
           <div className="overflow-y-auto p-5">
             <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Dato etiqueta="Usuario">
-                {registro.usuarioNombre ?? <span className="text-zinc-500">Sin usuario registrado</span>}
+                {(registro?.usuarioId ? usuarios?.find(u => u.id === registro.usuarioId)?.nombre : null) ?? registro?.usuarioNombre ?? <span className="text-zinc-500">Sin usuario registrado</span>}
               </Dato>
               <Dato etiqueta="Acción">
                 <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${COLOR_ACCION[registro.accion] ?? ''}`}>
