@@ -106,28 +106,28 @@ const PAGINAS: Record<string, { titulo: string; content: ReturnType<typeof bloqu
         publicaciones: [
           {
             titulo: 'BOLETIN MERCADO LABORAL MAR 2026.pdf',
-            pdfUrl: '/upload/BOLETIN%20MERCADO%20LABORAL%20MAR%202026.pdf',
+            pdfUrl: '/uploads/BOLETIN%20MERCADO%20LABORAL%20MAR%202026.pdf',
             etiqueta: '#OLOtecuenta',
             mes: 'May',
             dia: '07',
           },
           {
             titulo: 'Guía de usuario SharePoint OLO.pdf',
-            pdfUrl: '/upload/Gu%C3%ADa%20de%20usuario%20SharePoint%20OLO.pdf',
+            pdfUrl: '/uploads/Gu%C3%ADa%20de%20usuario%20SharePoint%20OLO.pdf',
             etiqueta: '#OLOtecuenta',
             mes: 'May',
             dia: '07',
           },
           {
             titulo: 'La mujer en el Mercado Laboral Colombiano II-2025.pdf',
-            pdfUrl: '/upload/La%20mujer%20en%20el%20Mercado%20Laboral%20Colombiano%20II-2025.pdf',
+            pdfUrl: '/uploads/La%20mujer%20en%20el%20Mercado%20Laboral%20Colombiano%20II-2025.pdf',
             etiqueta: '#OLOtecuenta',
             mes: 'May',
             dia: '07',
           },
           {
             titulo: 'Economía Popular.pdf',
-            pdfUrl: '/upload/Econom%C3%ADa%20Popular.pdf',
+            pdfUrl: '/uploads/Econom%C3%ADa%20Popular.pdf',
             etiqueta: '#OLOtecuenta',
             mes: 'May',
             dia: '07',
@@ -135,21 +135,21 @@ const PAGINAS: Record<string, { titulo: string; content: ReturnType<typeof bloqu
           {
             titulo: 'Catálogo de Ocp. Campesina, Familiar y Comunitaria-1.pdf',
             pdfUrl:
-              '/upload/Cat%C3%A1logo%20de%20Ocp.%20Campesina%2C%20Familiar%20y%20Comunitaria-1.pdf',
+              '/uploads/Cat%C3%A1logo%20de%20Ocp.%20Campesina%2C%20Familiar%20y%20Comunitaria-1.pdf',
             etiqueta: '#OLOtecuenta',
             mes: 'May',
             dia: '07',
           },
           {
             titulo: 'DICCIONARIO OLO.pdf',
-            pdfUrl: '/upload/DICCIONARIO%20OLO.pdf',
+            pdfUrl: '/uploads/DICCIONARIO%20OLO.pdf',
             etiqueta: '#OLOtecuenta',
             mes: 'May',
             dia: '07',
           },
           {
             titulo: 'VINCULACIÓN VICTIMAS II- SEM.pdf',
-            pdfUrl: '/upload/VINCULACI%C3%93N%20VICTIMAS%20II-%20SEM.pdf',
+            pdfUrl: '/uploads/VINCULACI%C3%93N%20VICTIMAS%20II-%20SEM.pdf',
             etiqueta: '#OLOtecuenta',
             mes: 'May',
             dia: '07',
