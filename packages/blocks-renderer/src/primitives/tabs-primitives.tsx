@@ -99,6 +99,23 @@ export function TabsRender({
     ? tabActivaSlot
     : primerSlotId;
 
+  // Estados para feedback visual de descarga
+  const [descargandoSlot, setDescargandoSlot] = useState<string | null>(null);
+  const [mensajeToast, setMensajeToast] = useState<string | null>(null);
+
+  const dispararDescarga = (tab: TabItem, url: string) => {
+    const slot = tab.slotId || null;
+    setDescargandoSlot(slot);
+    const nombre = url.split('/').pop() || 'archivo';
+    setMensajeToast(`Descargando archivo: ${decodeURIComponent(nombre)}`);
+    setTimeout(() => {
+      setDescargandoSlot((actual) => (actual === slot ? null : actual));
+    }, 2500);
+    setTimeout(() => {
+      setMensajeToast(null);
+    }, 3500);
+  };
+
   const tieneSidebar = mostrarSidebar === 'si' && tabsConSlots.length > 0;
   const esSuperior = posicionMenu === 'superior';
   const anchoPx = Number(anchoSidebar) || 280;
@@ -183,6 +200,7 @@ export function TabsRender({
                   boxSizing: 'border-box',
                 };
 
+                const estaDescargando = descargandoSlot === tab.slotId;
                 const contenidoBoton = (
                   <span
                     style={{
@@ -194,7 +212,7 @@ export function TabsRender({
                       flex: 1,
                     }}
                   >
-                    {tab.titulo || `Pestaña ${idx + 1}`}
+                    {estaDescargando ? 'Descargando...' : tab.titulo || `Pestaña ${idx + 1}`}
                   </span>
                 );
 
@@ -225,8 +243,12 @@ export function TabsRender({
                       download
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`olo-tabs-btn ${estaActiva ? 'olo-tabs-btn--active' : ''}`}
-                      style={estiloBotonComun}
+                      className={`olo-tabs-btn ${estaActiva || estaDescargando ? 'olo-tabs-btn--active' : ''}`}
+                      style={{
+                        ...estiloBotonComun,
+                        ...(estaDescargando ? { opacity: 0.85 } : {}),
+                      }}
+                      onClick={() => dispararDescarga(tab, urlArchivo)}
                     >
                       {contenidoBoton}
                     </a>
@@ -340,6 +362,7 @@ export function TabsRender({
               // Si es descarga de archivo
               if (tipoDestino === 'archivo') {
                 if (!puck?.isEditing) return null;
+                const estaDescargando = descargandoSlot === tab.slotId;
                 return (
                   <div
                     key={tab.slotId}
@@ -374,6 +397,31 @@ export function TabsRender({
                       <p style={{ margin: 0, fontSize: '12px', color: '#6b7280' }}>
                         Por ser una descarga directa, esta pestaña no admite bloques ni contenido interno.
                       </p>
+                      {urlArchivo && (
+                        <div style={{ marginTop: '14px' }}>
+                          <a
+                            href={urlArchivo}
+                            download
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => dispararDescarga(tab, urlArchivo)}
+                            style={{
+                              display: 'inline-block',
+                              padding: '6px 14px',
+                              fontSize: '13px',
+                              color: '#0033a0',
+                              border: '1px solid #0033a0',
+                              borderRadius: '4px',
+                              textDecoration: 'none',
+                              backgroundColor: '#ffffff',
+                              fontWeight: 500,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {estaDescargando ? 'Descargando...' : 'Probar descarga'}
+                          </a>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -403,6 +451,33 @@ export function TabsRender({
           )}
         </main>
       </div>
+
+      {/* Notificación Toast flotante al descargar archivo (estilo corporativo Intranet) */}
+      {mensajeToast && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '24px',
+            right: '24px',
+            zIndex: 9999,
+            backgroundColor: '#001A39',
+            color: '#ffffff',
+            padding: '10px 18px',
+            borderRadius: '4px',
+            fontSize: '13px',
+            fontWeight: 500,
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            pointerEvents: 'none',
+          }}
+          role="status"
+          aria-live="polite"
+        >
+          <span>{mensajeToast}</span>
+        </div>
+      )}
     </div>
   );
 }
