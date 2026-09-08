@@ -74,7 +74,11 @@ export function BuscadorModal({ onClose }: { onClose?: () => void }) {
     (destino: DestinoPanel | undefined) => {
       if (destino) {
         if (onClose) onClose();
-        router.push(destino.href);
+        if (destino.href.startsWith('http://') || destino.href.startsWith('https://')) {
+          window.location.href = destino.href;
+        } else {
+          router.push(destino.href);
+        }
       }
     },
     [router, onClose]
@@ -120,7 +124,7 @@ export function BuscadorModal({ onClose }: { onClose?: () => void }) {
         <XMarkIcon className="size-6" />
       </button>
 
-      <div className="mx-auto flex min-h-[100dvh] w-full max-w-2xl flex-col justify-center px-4 py-20">
+      <div className="mx-auto flex w-full max-w-2xl flex-col px-4 pt-20 pb-20 sm:pt-28">
         <label htmlFor="buscador-panel" className="sr-only">
           Buscar en el panel
         </label>

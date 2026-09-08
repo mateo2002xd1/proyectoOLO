@@ -27,6 +27,8 @@ export interface DestinoPanel {
   sinonimos: string[];
 }
 
+const URL_INTRANET = process.env.NEXT_PUBLIC_INTRANET_URL || 'http://localhost:3001';
+
 export const DESTINOS_PANEL: DestinoPanel[] = [
   {
     id: 'dashboard',
@@ -54,6 +56,14 @@ export const DESTINOS_PANEL: DestinoPanel[] = [
     ],
   },
   {
+    id: 'roles',
+    titulo: 'Roles y Permisos',
+    descripcion: 'Gestión de roles y asignación de permisos del panel administrativo.',
+    href: '/admin/roles',
+    grupo: 'Gestión',
+    sinonimos: ['roles', 'permisos', 'rbac', 'privilegios', 'administrador', 'editor', 'superadmin'],
+  },
+  {
     id: 'revision',
     titulo: 'Páginas en revisión',
     descripcion: 'Cola editorial: aprobar o rechazar los cambios enviados a revisión.',
@@ -70,12 +80,92 @@ export const DESTINOS_PANEL: DestinoPanel[] = [
     sinonimos: ['bitacora', 'historial', 'registros', 'trazabilidad', 'log', 'csv', 'seguimiento'],
   },
   {
+    id: 'respaldos',
+    titulo: 'Respaldos',
+    descripcion: 'Historial de versiones, copias de seguridad y restauración de páginas.',
+    href: '/admin/respaldos',
+    grupo: 'Gestión',
+    sinonimos: [
+      'backup',
+      'backups',
+      'restaurar',
+      'restauracion',
+      'versiones',
+      'recuperar',
+      'copias de seguridad',
+      'historial de versiones',
+      'rollback',
+      'version anterior',
+    ],
+  },
+  {
     id: 'plantilla',
     titulo: 'Menú y pie de página',
-    descripcion: 'Editar la cabecera y el pie que comparten todas las páginas del sitio.',
+    descripcion: 'Configurar la cabecera y el pie que comparten todas las páginas del sitio.',
     href: '/admin/editor/menu-y-pie',
     grupo: 'Contenido',
     sinonimos: ['plantilla', 'cabecera', 'header', 'footer', 'navegacion', 'menu', 'enlaces'],
+  },
+  {
+    id: 'sitio-inicio',
+    titulo: 'Ver Sitio Web',
+    descripcion: 'Página de inicio pública del Observatorio Laboral y Ocupacional.',
+    href: '/inicio',
+    grupo: 'Sitio Público',
+    sinonimos: ['portal', 'portal web', 'ver sitio', 'sitio publico', 'frontend', 'portada'],
+  },
+  {
+    id: 'sitio-publicaciones',
+    titulo: 'Publicaciones y Estudios',
+    descripcion: 'Repositorio de boletines, catálogos e informes del observatorio.',
+    href: '/publicaciones',
+    grupo: 'Sitio Público',
+    sinonimos: ['boletines', 'informes', 'documentos', 'estudios', 'pdf', 'descargas'],
+  },
+  {
+    id: 'sitio-clasificacion',
+    titulo: 'Clasificación de Ocupaciones',
+    descripcion: 'Consulta interactiva de clasificaciones ocupacionales CUOC y CNO.',
+    href: '/clasificacion',
+    grupo: 'Sitio Público',
+    sinonimos: ['cuoc', 'cno', 'ocupaciones', 'empleos', 'perfiles', 'clasificaciones'],
+  },
+  {
+    id: 'intranet-portal',
+    titulo: 'Portal Intranet',
+    descripcion: 'Acceso a la intranet institucional: Tasa, Matriz de Pertinencia y Encuestas.',
+    href: `${URL_INTRANET}/inicio`,
+    grupo: 'Intranet',
+    sinonimos: [
+      'intranet',
+      'portal intranet',
+      'acceso intranet',
+      'institucional',
+    ],
+  },
+  {
+    id: 'intranet-tasa',
+    titulo: 'Tasa de Vinculación y Empleabilidad',
+    descripcion: 'Indicadores y métricas de empleabilidad de egresados SENA.',
+    href: `${URL_INTRANET}/tasa`,
+    grupo: 'Intranet',
+    sinonimos: ['tasa', 'vinculacion', 'empleabilidad', 'egresados', 'metricas', 'indicadores'],
+  },
+  {
+    id: 'intranet-matriz',
+    titulo: 'Matriz de Pertinencia',
+    descripcion: 'Herramienta estratégica de pertinencia de programas SENA.',
+    href: `${URL_INTRANET}/matriz`,
+    grupo: 'Intranet',
+    sinonimos: ['matriz', 'pertinencia', 'programas', 'demanda social', 'ocupaciones'],
+  },
+  {
+    id: 'intranet-encuestas',
+    titulo: 'Encuestas Intranet',
+    descripcion: 'Encuestas de Calidad de Formación y Seguimiento Laboral.',
+    href: `${URL_INTRANET}/encuestas/calidad-de-formacion`,
+    grupo: 'Intranet',
+    sinonimos: ['encuestas', 'calidad de formacion', 'seguimiento laboral', 'empresarios'],
   },
   {
     id: 'mi-perfil',

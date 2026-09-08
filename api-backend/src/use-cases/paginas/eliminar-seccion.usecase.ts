@@ -42,6 +42,7 @@ import { Pagina, PaginaVersion, Permission } from '../../infrastructure/db/model
 import { claveDeSeccion } from '../../shared/catalogo-permisos';
 import { buscarEnlacesA, type EnlaceEncontrado } from '../../shared/enlaces-en-contenido';
 import { invalidarPermisosDeRol } from '../../middlewares/require-permission.middleware';
+import { borrarClavesPorPatron } from '../../infrastructure/redis';
 import type { Ambito } from '../../shared/ambito';
 
 const fallo = (mensaje: string, status: number) =>
@@ -223,6 +224,10 @@ export const eliminarSeccion = async (
   // Fuera de la transacción: la caché solo debe olvidar lo confirmado. Si no, un rol
   // seguiría creyendo hasta 30 s que puede editar una sección que ya no existe.
   rolesAfectados.forEach(invalidarPermisosDeRol);
+  void Promise.all([
+    borrarClavesPorPatron(`cache:/api/paginas/publica/${slug}|*`),
+    borrarClavesPorPatron('cache:/api/paginas/indice-busqueda|*'),
+  ]).catch(() => {});
 
   return {
     id: analisis.id,
