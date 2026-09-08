@@ -34,7 +34,7 @@ export const datosDeAuditoria = (req: Request) => ({
   usuarioId: idReferenciable(req.user),
   // El nombre se guarda junto al id a propósito (única desnormalización del
   // esquema): si el usuario se borra, la fila debe seguir siendo legible.
-  usuarioNombre: req.user?.name ?? req.user?.email ?? null,
+  usuarioNombre: req.user?.name ? (req.user.apellidos ? `${req.user.name} ${req.user.apellidos}` : req.user.name) : (req.user?.email ?? null),
   ip: req.ip ?? req.socket?.remoteAddress ?? null,
   userAgent: (req.headers['user-agent'] as string) ?? null,
 });
