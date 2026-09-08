@@ -1,6 +1,6 @@
 'use client';
 
-import type { ComponentProps, ReactNode } from 'react';
+import { useState, useEffect, useRef, type ComponentProps, type ReactNode } from 'react';
 import {
   primitiveComponents,
   crearGridConfig,
@@ -876,23 +876,91 @@ function Inerte({ etiqueta, children }: { etiqueta: string; children: ReactNode 
   );
 }
 
-/**
- * Config para la mesa de trabajo de un slug.
- *
- * Hace dos cosas. La primera, de siempre: recortar el catálogo a los bloques que
- * tienen sentido en esta página. La segunda: pintar el RESTO de la página alrededor
- * de lo editable, para poder juzgar un cambio viendo la página entera.
- *
- *  - Editando una página → cabecera y pie publicados, arriba y abajo, inertes.
- *  - Editando `menu-y-pie` → la página publicada de la que se venía, inerte, entre
- *    la cabecera y el pie (que aquí sí son lo editable).
- *
- * Nada de ese contexto entra en `data`: es decorado del config, así que lo que se
- * guarda al pulsar «Guardar borrador» es exactamente lo de antes. Y por eso para
- * PINTAR una página publicada hay que seguir usando `puckConfig` entero: si un
- * bloque guardado no está en la config con la que se renderiza, Puck no sabe
- * dibujarlo y la sección desaparece sin avisar.
- */
+function PlantillaEditorLayout({
+  seccion,
+  config,
+  etiqueta,
+  children,
+}: {
+  seccion: { slug: string; contenido: unknown };
+  config: Config;
+  etiqueta: string;
+  children?: ReactNode;
+}) {
+  const [alturaPreview, setAlturaPreview] = useState<number>(0);
+  const [alturaCabecera, setAlturaCabecera] = useState<number>(72);
+  const contenedorRef = useRef<HTMLDivElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const previewEl = previewRef.current;
+    if (!previewEl) return;
+
+    const actualizarAlturas = () => {
+      if (previewEl.offsetHeight > 0) {
+        setAlturaPreview(previewEl.offsetHeight);
+      }
+      const contenedor = contenedorRef.current;
+      if (contenedor) {
+        const cabeceraEl = contenedor.querySelector<HTMLElement>(
+          '[data-puck-component*="Header"], [data-puck-component*="IntranetTopbar"], header, nav'
+        );
+        if (cabeceraEl && cabeceraEl.offsetHeight > 0) {
+          setAlturaCabecera(cabeceraEl.offsetHeight);
+        }
+      }
+    };
+
+    actualizarAlturas();
+
+    const ro = new ResizeObserver(() => {
+      actualizarAlturas();
+    });
+
+    ro.observe(previewEl);
+    if (contenedorRef.current) {
+      ro.observe(contenedorRef.current);
+    }
+
+    return () => ro.disconnect();
+  }, [seccion]);
+
+  return (
+    <div
+      ref={contenedorRef}
+      className="olo-editor-plantilla-layout"
+      style={{
+        position: 'relative',
+        width: '100%',
+        minHeight: '100vh',
+        ['--olo-preview-altura' as string]: `${alturaPreview}px`,
+      }}
+    >
+      <div className="olo-editor-plantilla-lienzo">
+        {children}
+      </div>
+      <div
+        ref={previewRef}
+        className="olo-editor-plantilla-preview"
+        style={{
+          position: 'absolute',
+          top: `${alturaCabecera}px`,
+          left: 0,
+          right: 0,
+          width: '100%',
+          pointerEvents: 'auto',
+          userSelect: 'none',
+          zIndex: 0,
+        }}
+      >
+        <Inerte etiqueta={etiqueta}>
+          <Render config={config} data={datosDePuck(seccion.contenido)} />
+        </Inerte>
+      </div>
+    </div>
+  );
+}
+
 export function configDeEdicion(slug: string, contexto: ContextoDeEdicion = {}): Config {
   const permitidos = COMPONENTES_POR_SLUG[slug];
 
@@ -900,56 +968,43 @@ export function configDeEdicion(slug: string, contexto: ContextoDeEdicion = {}):
   // catálogo entero, pero el contexto de abajo le toca igual.
   const recortada: Config = permitidos
     ? {
-        ...puckConfig,
-        components: Object.fromEntries(
-          Object.entries(puckConfig.components).filter(([nombre]) => permitidos.includes(nombre))
-        ) as Config['components'],
-        categories: Object.fromEntries(
-          Object.entries(puckConfig.categories ?? {})
-            .map(([nombre, categoria]) => [
-              nombre,
-              {
-                ...categoria,
-                components: (categoria.components ?? []).filter((c) => permitidos.includes(c)),
-              },
-            ])
-            // Una categoría que se queda sin bloques no debe salir como grupo vacío.
-            .filter(([, categoria]) => (categoria as { components: string[] }).components.length > 0)
-        ) as Config['categories'],
-      }
+      ...puckConfig,
+      components: Object.fromEntries(
+        Object.entries(puckConfig.components).filter(([nombre]) => permitidos.includes(nombre))
+      ) as Config['components'],
+      categories: Object.fromEntries(
+        Object.entries(puckConfig.categories ?? {})
+          .map(([nombre, categoria]) => [
+            nombre,
+            {
+              ...categoria,
+              components: (categoria.components ?? []).filter((c) => permitidos.includes(c)),
+            },
+          ])
+          // Una categoría que se queda sin bloques no debe salir como grupo vacío.
+          .filter(([, categoria]) => (categoria as { components: string[] }).components.length > 0)
+      ) as Config['categories'],
+    }
     : puckConfig;
 
   if (slug === SLUG_DE_PLANTILLA) {
     const seccion = contexto.seccion;
     if (!seccion) return recortada;
 
-    /**
-     * La página va ENTRE la cabecera y el pie, y `root.render` solo sabe envolver,
-     * no intercalar. Así que se cuelga del pie, que es por definición lo último de
-     * la página: «justo encima del pie» es donde vive el contenido.
-     *
-     * Efecto conocido: si alguien borra el bloque del pie mientras edita, el
-     * contexto desaparece hasta que lo vuelva a poner.
-     */
-    const pie = recortada.components.Footer;
-    if (!pie) return recortada;
-
     return {
       ...recortada,
-      components: {
-        ...recortada.components,
-        Footer: {
-          ...pie,
-          render: (props: Parameters<typeof pie.render>[0]) => (
-            <>
-              <Inerte etiqueta={`Página /${seccion.slug} · no editable aquí`}>
-                <Render config={puckConfig} data={datosDePuck(seccion.contenido)} />
-              </Inerte>
-              {pie.render(props)}
-            </>
-          ),
-        },
-      },
+      root: {
+        ...recortada.root,
+        render: ({ children }: { children?: ReactNode }) => (
+          <PlantillaEditorLayout
+            seccion={seccion}
+            config={puckConfig}
+            etiqueta={`Página /${seccion.slug} · no editable aquí`}
+          >
+            {children}
+          </PlantillaEditorLayout>
+        ),
+      } as Config['root'],
     };
   }
 
