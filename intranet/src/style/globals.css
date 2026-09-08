@@ -1319,6 +1319,29 @@
   white-space: nowrap;
 }
 
+/* Layout del editor de plantilla (menu-y-pie): el preview va intercalado entre cabecera y pie */
+.olo-editor-plantilla-layout {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.olo-editor-plantilla-lienzo [data-puck-dropzone] > *:first-child,
+.olo-editor-plantilla-lienzo [data-puck-component*="IntranetTopbar"],
+.olo-editor-plantilla-lienzo [data-puck-component*="Header"] {
+  margin-bottom: var(--olo-preview-altura, 0px) !important;
+}
+
+.olo-editor-plantilla-preview {
+  position: absolute;
+  left: 0;
+  right: 0;
+  width: 100%;
+  pointer-events: auto;
+  user-select: none;
+  z-index: 0;
+}
+
 .olo-editor {
   position: fixed;
   inset: 0;
