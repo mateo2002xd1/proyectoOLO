@@ -52,9 +52,11 @@ export function VistaPreviaVersion({
   useEffect(() => {
     const el = dialogo.current;
     if (!el) return;
-    if (registro && !el.open) el.showModal();
-    if (!registro && el.open) el.close();
-  }, [registro]);
+    const debeEstarAbierto = !!registro && !mostrarConfirmacion && !mostrarBloqueo;
+    
+    if (debeEstarAbierto && !el.open) el.showModal();
+    if (!debeEstarAbierto && el.open) el.close();
+  }, [registro, mostrarConfirmacion, mostrarBloqueo]);
 
   useEffect(() => {
     setErrorRestaurar(null);
@@ -116,16 +118,23 @@ export function VistaPreviaVersion({
   }
 
   return (
-    <dialog
-      ref={dialogo}
-      onClose={onCerrar}
-      onClick={(e) => {
-        if (e.target === dialogo.current && !restaurando) onCerrar();
-      }}
-      className="m-auto w-full max-w-2xl rounded-xl border border-zinc-200 bg-white p-0 text-zinc-900 backdrop:bg-black/50 dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:text-[#f6f6f6]"
-    >
-      {registro && (
-        <div className="flex max-h-[80vh] flex-col">
+    <>
+      <dialog
+        ref={dialogo}
+        onClose={() => {
+          if (!mostrarConfirmacion && !mostrarBloqueo) {
+            onCerrar();
+          }
+        }}
+        onClick={(e) => {
+          if (e.target === dialogo.current && !restaurando) {
+            if (!mostrarConfirmacion && !mostrarBloqueo) onCerrar();
+          }
+        }}
+        className="m-auto w-full max-w-2xl rounded-xl border border-zinc-200 bg-white p-0 text-zinc-900 backdrop:bg-black/50 dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:text-[#f6f6f6]"
+      >
+        {registro && (
+          <div className="flex max-h-[80vh] flex-col">
           <div className="flex items-start justify-between gap-4 border-b border-zinc-200 p-5 dark:border-zinc-700">
             <div>
               <h2 className="admin-subtitle">Versión anterior de {registro.titulo}</h2>
@@ -187,9 +196,10 @@ export function VistaPreviaVersion({
                 {restaurando ? 'Restaurando…' : exitoRestaurar ? '¡Restaurada!' : 'Restaurar versión'}
               </button>
             </div>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </dialog>
 
       {registro && (
         <ModalConfirmarRestauracion
@@ -207,6 +217,6 @@ export function VistaPreviaVersion({
         mensajeBloqueo={errorBloqueo}
         onCerrar={() => setMostrarBloqueo(false)}
       />
-    </dialog>
+    </>
   );
 }
