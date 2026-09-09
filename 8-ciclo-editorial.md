@@ -158,11 +158,11 @@ Ahora el ciclo soporta **restaurar a la versión inmediatamente anterior**:
    - La restauración concluye disparando `emitirContenidoPublicado`.
    - Al igual que en la aprobación ordinaria, se purga Redis y se revalida la etiqueta ISR en Next.js, por lo que el front refleja la versión recuperada en el acto.
 
-3. **Salvaguarda de recursos multimedia (`/uploads/` ↔ `/public/backend/{pagina_id}/`):**
+3. **Salvaguarda de recursos multimedia (`/uploads/` ↔ `/public/backup/{pagina_id}/`):**
    - **El problema que resuelve:** En versiones anteriores, si un editor reemplazaba una imagen o archivo en Puck, el archivo viejo en `/uploads/` corría el riesgo de ser eliminado o quedar huérfano. Al restaurar la versión anterior, esa página se quedaba con enlaces rotos (error 404).
    - **Ubicación de backup:** Implementado en `src/shared/storage/backup-uploads.service.ts`. Cada aplicación almacena los respaldos en su propia carpeta pública:
-     - Intranet: `intranet/public/backend/{pagina_id}/`
-     - Sitio Web: `sitio-web/public/backend/{pagina_id}/`
+     - Intranet: `intranet/public/backup/{pagina_id}/`
+     - Sitio Web: `sitio-web/public/backup/{pagina_id}/`
    - **Regla de integridad al archivar / publicar (`respaldarArchivosAlPublicar`):**
      - Si el archivo de la versión que se archiva **sigue en uso** por la nueva versión: se **copia** a backup (permanece en uploads).
      - Si el archivo **ya no se usa** en la nueva versión: se **mueve** a backup (se retira de uploads).
@@ -170,7 +170,7 @@ Ahora el ciclo soporta **restaurar a la versión inmediatamente anterior**:
      - Los archivos necesarios por la versión que vuelve a publicarse se **mueven de regreso a `/uploads/`**.
      - Los archivos de la versión que deja de ser publicada se resguardan en backup.
    - **Purga automática de archivos huérfanos (`limpiarArchivosHuerfanosEnBackup`):**
-     - La carpeta `public/backend/{pagina_id}/` solo conserva **los archivos que la versión archivada actual realmente utiliza**.
+     - La carpeta `public/backup/{pagina_id}/` solo conserva **los archivos que la versión archivada actual realmente utiliza**.
      - Cada vez que se restaura o publica, cualquier archivo físico residual que no pertenezca a la versión archivada se elimina del disco, garantizando que no se acumule basura de versiones antiguas.
 
 4. **Herramienta de consola (CLI):**

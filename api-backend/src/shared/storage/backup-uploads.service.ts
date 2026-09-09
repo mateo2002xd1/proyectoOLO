@@ -15,13 +15,39 @@ export function resolverDirectorioUploads(ambito: Ambito): string {
 
 /**
  * Resuelve la ruta física absoluta de la carpeta de backup para una página dada.
- * Ubicación: /{aplicacion}/public/backend/{paginaId}/
+ * Ubicación: /{aplicacion}/public/backup/{paginaId}/
  * Crea el directorio si aún no existe y garantiza que permanezca creado.
  */
 export function resolverDirectorioBackup(paginaId: string, ambito: Ambito): string {
   const raizProyecto = path.resolve(__dirname, '../../../../');
   const carpetaApp = ambito === 'sitio' ? 'sitio-web' : 'intranet';
-  const dirBackup = path.join(raizProyecto, carpetaApp, 'public', 'backend', paginaId);
+  const dirBackup = path.join(raizProyecto, carpetaApp, 'public', 'backup', paginaId);
+  const dirBackendAntiguo = path.join(raizProyecto, carpetaApp, 'public', 'backend', paginaId);
+
+  // Si existe la carpeta histórica `backend/{paginaId}`, migrarla automáticamente a `backup/{paginaId}`
+  if (fs.existsSync(dirBackendAntiguo)) {
+    try {
+      if (!fs.existsSync(dirBackup)) {
+        fs.mkdirSync(path.dirname(dirBackup), { recursive: true });
+        fs.renameSync(dirBackendAntiguo, dirBackup);
+      } else {
+        const entradas = fs.readdirSync(dirBackendAntiguo);
+        for (const entrada of entradas) {
+          const origen = path.join(dirBackendAntiguo, entrada);
+          const destino = path.join(dirBackup, entrada);
+          if (!fs.existsSync(destino)) {
+            fs.renameSync(origen, destino);
+          }
+        }
+        try {
+          fs.rmdirSync(dirBackendAntiguo);
+        } catch {}
+      }
+    } catch {
+      // Si rename o movimiento falla por bloqueo, continúa con dirBackup
+    }
+  }
+
   if (!fs.existsSync(dirBackup)) {
     fs.mkdirSync(dirBackup, { recursive: true });
   }
@@ -39,6 +65,16 @@ export function extraerRutasUploads(contenido: unknown): string[] {
     if (!nodo) return;
 
     if (typeof nodo === 'string') {
+      const nodoTrim = nodo.trim();
+      if (nodoTrim.startsWith('/uploads/') && !nodoTrim.includes('"') && !nodoTrim.includes('\n')) {
+        const rutaLimpia = nodoTrim.split(/[?#]/)[0].replace(/[\),;:.]+$/, '');
+        try {
+          rutas.add(decodeURIComponent(rutaLimpia));
+        } catch {
+          rutas.add(rutaLimpia);
+        }
+      }
+
       const coincidencias = nodo.match(/\/uploads\/[^\s"'<>]+/g);
       if (coincidencias) {
         for (const m of coincidencias) {
@@ -188,8 +224,8 @@ export function respaldarArchivosAlPublicar(params: {
  * Restaura los archivos de backup hacia `/uploads/` cuando se revierte a una versión archivada.
  *
  * Regla de integridad:
- *  - Los archivos de `public/backend/{paginaId}/` se mueven de regreso a `/uploads/`.
- *  - Los archivos de la versión que deja de ser publicada se mueven a `public/backend/{paginaId}/`.
+ *  - Los archivos de `public/backup/{paginaId}/` se mueven de regreso a `/uploads/`.
+ *  - Los archivos de la versión que deja de ser publicada se mueven a `public/backup/{paginaId}/`.
  *  - Se purga cualquier archivo en backup que no pertenezca a la versión que pasa a ser archivada.
  */
 export function restaurarArchivosDesdeBackup(params: {
@@ -277,7 +313,7 @@ export function listarArchivosEnBackup(paginaId: string, ambito: Ambito): string
 
 /**
  * Adapta recursivamente las URLs de `/uploads/...` en el contenido de una versión
- * archivada para que apunten a `/backend/{paginaId}/...` si el recurso existe físicamente
+ * archivada para que apunten a `/backup/{paginaId}/...` si el recurso existe físicamente
  * en la carpeta de resguardo (backup) de la página.
  *
  * Si el archivo no está en backup (o si continúa en uploads), mantiene la ruta `/uploads/...`.
@@ -313,23 +349,44 @@ export function adaptarRutasParaVistaPreviaArchivada(
     if (!nodo) return nodo;
 
     if (typeof nodo === 'string') {
-      if (!nodo.includes('/uploads/')) return nodo;
+      let nuevoNodo = nodo;
 
-      return nodo.replace(/\/uploads\/([^\s"'<>]+)/g, (coincidencia, subRutaConSufijo) => {
-        const subRutaLimpia = subRutaConSufijo.split(/[?#]/)[0].replace(/[\),;:.]+$/, '');
-        let subRutaFisica = subRutaLimpia;
-        try {
-          subRutaFisica = decodeURIComponent(subRutaLimpia);
-        } catch {}
+      // Si por alguna razón histórica el contenido trae /backend/{paginaId}/, normalizar a /backup/{paginaId}/
+      if (nuevoNodo.includes(`/backend/${paginaId}/`)) {
+        nuevoNodo = nuevoNodo.split(`/backend/${paginaId}/`).join(`/backup/${paginaId}/`);
+      }
 
-        if (existeEnBackup(subRutaFisica)) {
-          return coincidencia.replace(
-            `/uploads/${subRutaConSufijo}`,
-            `/backend/${paginaId}/${subRutaConSufijo}`
-          );
+      if (nuevoNodo.includes('/uploads/')) {
+        const nodoTrim = nuevoNodo.trim();
+        if (nodoTrim.startsWith('/uploads/') && !nodoTrim.includes('"') && !nodoTrim.includes('\n')) {
+          const subRuta = nodoTrim.replace(/^\/?uploads\//, '').split(/[?#]/)[0].replace(/[\),;:.]+$/, '');
+          let subRutaFisica = subRuta;
+          try {
+            subRutaFisica = decodeURIComponent(subRuta);
+          } catch {}
+          if (existeEnBackup(subRutaFisica)) {
+            nuevoNodo = nuevoNodo.replace(`/uploads/${subRuta}`, `/backup/${paginaId}/${subRuta}`);
+          }
         }
-        return coincidencia;
-      });
+
+        nuevoNodo = nuevoNodo.replace(/\/uploads\/([^\s"'<>]+)/g, (coincidencia, subRutaConSufijo) => {
+          const subRutaLimpia = subRutaConSufijo.split(/[?#]/)[0].replace(/[\),;:.]+$/, '');
+          let subRutaFisica = subRutaLimpia;
+          try {
+            subRutaFisica = decodeURIComponent(subRutaLimpia);
+          } catch {}
+
+          if (existeEnBackup(subRutaFisica)) {
+            return coincidencia.replace(
+              `/uploads/${subRutaConSufijo}`,
+              `/backup/${paginaId}/${subRutaConSufijo}`
+            );
+          }
+          return coincidencia;
+        });
+      }
+
+      return nuevoNodo;
     }
 
     if (Array.isArray(nodo)) {

@@ -141,7 +141,7 @@ async function ejecutarEstado(identificador: string | undefined, ambito: Ambito)
 
   const enBackupFisico = listarArchivosEnBackup(pagina.id, ambito);
   const carpetaApp = ambito === 'sitio' ? 'sitio-web' : 'intranet';
-  console.log(`\n3. Archivos físicos en ${carpetaApp}/public/backend/${pagina.id}/:`);
+  console.log(`\n3. Archivos físicos en ${carpetaApp}/public/backup/${pagina.id}/:`);
   if (enBackupFisico.length === 0) {
     console.log(`   (Carpeta creada, sin archivos actualmente)`);
   } else {
