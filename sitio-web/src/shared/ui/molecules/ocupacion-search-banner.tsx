@@ -129,7 +129,7 @@ export function OcupacionSearchBanner({
                 value={currentValue}
                 onChange={(event) => handleChange(event.target.value)}
                 placeholder={placeholder}
-                className="h-12 w-full rounded-[16px] bg-white pl-5 pr-12 text-sm text-[#344054] shadow-sm outline-none transition placeholder:text-[#8a95ad] focus:ring-2 focus:ring-[#697B8C] sm:h-14 sm:text-base"
+                className="olo-sin-boton-limpiar h-12 w-full rounded-[16px] bg-white pl-5 pr-12 text-sm text-[#344054] shadow-sm outline-none transition placeholder:text-[#8a95ad] focus:ring-2 focus:ring-[#697B8C] sm:h-14 sm:text-base"
               />
               <button
                 type="submit"

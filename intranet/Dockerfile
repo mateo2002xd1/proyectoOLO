@@ -52,6 +52,17 @@ ENV API_BACKEND_URL=$API_BACKEND_URL
 ARG NEXT_PUBLIC_SITIO_WEB_URL=http://localhost:3000
 ENV NEXT_PUBLIC_SITIO_WEB_URL=$NEXT_PUBLIC_SITIO_WEB_URL
 ENV NEXT_TELEMETRY_DISABLED=1
+
+# `npm run build` dispara el `prebuild` del package.json, que sincroniza la copia
+# de los @olo/* en node_modules (ver scripts/sincronizar-paquetes-locales.mjs).
+# Aqui no debe hacer nada -- el doble `npm ci` de arriba ya dejo la copia buena, y
+# reinstalar tocaria el package-lock -- pero el archivo tiene que existir igual, o
+# `node ../scripts/...` aborta el build. De ahi la copia y el interruptor.
+# Va a /scripts y no a /app/scripts por lo mismo que /packages: npm resuelve las
+# rutas relativas desde /app, la carpeta del package.json.
+COPY scripts /scripts
+ENV OLO_SKIP_SYNC=1
+
 RUN npm run build
 
 FROM node:20-alpine

@@ -4,6 +4,9 @@
   "description": "API Backend - Observatorio Laboral y Ocupacional (OLO)",
   "main": "dist/server.js",
   "scripts": {
+    "sync:paquetes": "node ../scripts/sincronizar-paquetes-locales.mjs",
+    "predev": "npm run sync:paquetes",
+    "prebuild": "npm run sync:paquetes",
     "dev": "ts-node src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",

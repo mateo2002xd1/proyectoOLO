@@ -1,4 +1,4 @@
-# OLO — Observatorio Laboral y Ocupacional (SENA)
+# Observatorio Laboral y Ocupacional (SENA)
 
 Portal del Observatorio Laboral y Ocupacional: sitio público editable sin desarrolladores, intranet para directores, y una API que es la única puerta a los datos.
 
@@ -14,30 +14,6 @@ La necesidad central, traducida a requisitos:
 - Sobre ese diseño base, los editores deben poder **reorganizar la maqueta, agregar secciones y reutilizar componentes** — siempre **respetando la identidad visual y la accesibilidad** (Resolución 1519 de 2020, nivel AA). No es edición libre: es **composición controlada dentro de un sistema de diseño institucional**.
 - Debe existir un **flujo de gobernanza**: los editores proponen, un administrador aprueba, y solo entonces se publica.
 - El sitio público es abierto; existe además una **intranet privada** para directores y subdirectores.
-
-### Requerimientos funcionales (17)
-
-| # | Requerimiento | Norma / Nota |
-|---|---|---|
-| RF-01 | Crear, editar, publicar y despublicar contenidos (estudios, informes, estadísticas, banners) desde el panel, sin desarrolladores | — |
-| RF-02 | Cargar y gestionar documentos (PDF, xlsx, JPG, PNG, SVG) con validación de tipo y tamaño configurable, más enlaces de video/Power BI | — |
-| RF-03 | Configurar tipografías, colores institucionales y elementos de marca desde el panel | Manual de identidad SENA |
-| RF-04 | Crear, configurar y asignar roles (editores, visitantes internos); Administrador con control total | RBAC |
-| RF-05 | Restringir al Editor la publicación directa; visitantes solo visualizan | — |
-| RF-06 | Flujo de aprobación: contenido de Editor pasa a "En revisión" hasta que el Administrador apruebe | — |
-| RF-07 | Historial de cambios por contenido: usuario, campos modificados, fecha y hora | — |
-| RF-08 | Insertar tableros Power BI y analítica mediante contenedores configurables desde el CMS, sin código | — |
-| RF-09 | Buscador de ocupaciones basado en CNO con correlación CUOC, consultando en línea la BD del OLO | Fuente externa |
-| RF-10 | Buscador interno que filtra contenidos | — |
-| RF-11 | Navegación jerárquica: cualquier contenido en máximo 3 clics desde el inicio | — |
-| RF-12 | Descarga directa de documentos publicados sin registro ni autenticación | — |
-| RF-13 | Aviso de privacidad con aceptación explícita en formularios que recopilen datos personales | Ley 1581/2012 |
-| RF-14 | Accesibilidad para discapacidad visual: lectores de pantalla y alto contraste | Resolución 1519/2020 |
-| RF-15 | Espacio exclusivo para directores: visualizar y descargar información interna del OLO | — |
-| RF-16 | Autenticación (usuario/contraseña) para todos los roles; fecha de caducidad para todos excepto el administrador | — |
-| RF-17 | Respaldos automáticos periódicos de la BD con frecuencia configurable | — |
-
----
 
 ## La solución en una página
 

@@ -40,6 +40,16 @@ RUN for pkg in /packages/*; do \
 # npm ci ahora para que la copia sea la buena, con dist/ ya incluido.
 RUN npm ci
 
+# `npm run build` dispara el `prebuild` del package.json, que sincroniza la copia
+# de los @olo/* en node_modules (ver scripts/sincronizar-paquetes-locales.mjs).
+# Aqui no debe hacer nada -- el `npm ci` de arriba ya dejo la copia buena, y
+# reinstalar tocaria el package-lock -- pero el archivo tiene que existir igual, o
+# `node ../scripts/...` aborta el build. De ahi la copia y el interruptor.
+# Ojo: /scripts NO es /app/scripts (los scripts de migracion del backend). Son dos
+# carpetas distintas; npm resuelve `../scripts` desde /app, que es la raiz.
+COPY scripts /scripts
+ENV OLO_SKIP_SYNC=1
+
 RUN npm run build
 
 # --- Imagen final ----------------------------------------------------------
