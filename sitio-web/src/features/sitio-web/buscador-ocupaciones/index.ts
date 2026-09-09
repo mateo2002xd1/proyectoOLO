@@ -3,16 +3,25 @@
  *
  * Regla de oro §0.3: Un módulo de dominio no importa archivos internos de otro módulo.
  * Todo lo que otros módulos necesiten de `features/buscador-ocupaciones/` se exporta desde aquí.
+ *
+ * `lib/catalogo-cno-temporal.ts` queda deliberadamente fuera: usa `fs` y solo
+ * pueden importarlo los route handlers de `app/api/ocupaciones/`. Si se
+ * reexportara aquí, cualquier componente de cliente podría arrastrarlo a su
+ * bundle sin darse cuenta.
  */
 
 // Components
 export { BuscadorOcupacionesView } from './components/buscador-ocupaciones-view';
+export { DetalleOcupacion } from './components/detalle-ocupacion';
+export { ModalOcupaciones } from './components/modal-ocupaciones';
+export { ResultadosOcupaciones } from './components/resultados-ocupaciones';
 
 // Hooks
 export { useBuscadorOcupaciones } from './hooks/use-buscador-ocupaciones';
+export { useDetalleOcupacion } from './hooks/use-detalle-ocupacion';
 
 // Services
-export { buscarOcupaciones } from './services/buscador-ocupaciones.service';
+export { buscarOcupaciones, obtenerDetalleOcupacion } from './services/buscador-ocupaciones.service';
 
 // Types
-export type { Ocupacion } from './types';
+export type { DetalleOcupacion as DetalleOcupacionData, OcupacionRelacionada, ResultadoOcupacion } from './types';
