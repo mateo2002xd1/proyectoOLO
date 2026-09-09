@@ -20,7 +20,10 @@ export class ErrorValidacionAccesibilidad extends Error {
   }
 }
 
-export const enviarARevision = async (slug: string, ambito: Ambito, tx?: Transaction) => {
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const toUUID = (id?: string) => (id && UUID_RE.test(id) ? id : null);
+
+export const enviarARevision = async (slug: string, userId: string, ambito: Ambito, tx?: Transaction) => {
   const pagina = await PaginaRepository.findBySlug(slug, ambito, tx);
   if (!pagina) throw new Error('Página no encontrada');
   const paginaAnterior = pagina.toJSON();
@@ -34,7 +37,12 @@ export const enviarARevision = async (slug: string, ambito: Ambito, tx?: Transac
   const violaciones = validarAccesibilidad(ultimaVersion.contenido, ambito);
   if (violaciones.length > 0) throw new ErrorValidacionAccesibilidad(violaciones);
 
-  await PaginaRepository.actualizarVersion(ultimaVersion, { estado: 'en_revision' }, tx);
+  const datosActualizacion: any = { estado: 'en_revision' };
+  const autorId = toUUID(userId);
+  if (autorId && !ultimaVersion.creadoPor) {
+    datosActualizacion.creadoPor = autorId;
+  }
+  await PaginaRepository.actualizarVersion(ultimaVersion, datosActualizacion, tx);
 
   return { pagina, version: ultimaVersion, paginaAnterior, versionAnterior };
 };

@@ -1319,27 +1319,22 @@
   white-space: nowrap;
 }
 
-/* Layout del editor de plantilla (menu-y-pie): el preview va intercalado entre cabecera y pie */
-.olo-editor-plantilla-layout {
+/* Para el editor de plantilla (menu-y-pie): el overlay de selección/hover de Puck en la cabecera solo cubre los ~72px del nav */
+[data-puck-entry][data-puck-preview-mode="edit"] [data-puck-component*="topbar" i] > [class*="overlayWrapper"],
+[data-puck-entry][data-puck-preview-mode="edit"] [data-puck-component*="header" i] > [class*="overlayWrapper"],
+[data-puck-entry][data-puck-preview-mode="edit"] [data-puck-component="plantilla-topbar"] > [class*="overlayWrapper"],
+[data-puck-entry][data-puck-preview-mode="edit"] [data-puck-component="plantilla-header"] > [class*="overlayWrapper"],
+[data-puck-entry][data-puck-preview-mode="edit"] [data-puck-dropzone] > *:first-child [class*="overlayWrapper"] {
+  height: 72px !important;
+  max-height: 72px !important;
+}
+
+.olo-preview-intercalado-no-hover {
   position: relative;
   width: 100%;
-  min-height: 100vh;
-}
-
-.olo-editor-plantilla-lienzo [data-puck-dropzone] > *:first-child,
-.olo-editor-plantilla-lienzo [data-puck-component*="IntranetTopbar"],
-.olo-editor-plantilla-lienzo [data-puck-component*="Header"] {
-  margin-bottom: var(--olo-preview-altura, 0px) !important;
-}
-
-.olo-editor-plantilla-preview {
-  position: absolute;
-  left: 0;
-  right: 0;
-  width: 100%;
-  pointer-events: auto;
+  pointer-events: auto !important;
+  cursor: default !important;
   user-select: none;
-  z-index: 0;
 }
 
 .olo-editor {

@@ -5,12 +5,23 @@ import { permisosDeLaSesion } from '../services/paginas.service';
 import { AUTH_ROLE_COOKIE_NAME } from '@/shared/lib/auth-cookies';
 
 /** Mismos roles que `puedeEditarPaginas()` en `shared/lib/session.ts`. */
-const ROLES_QUE_EDITAN = ['superadmin', 'administrador', 'editor'];
+const ROLES_QUE_EDITAN = ['superadmin', 'administrador', 'editor', 'admin'];
 
 function leerCookie(nombre: string): string | null {
   if (typeof document === 'undefined') return null;
   const coincidencia = document.cookie.match(new RegExp('(?:^|; )' + nombre + '=([^;]*)'));
-  return coincidencia ? decodeURIComponent(coincidencia[1]) : null;
+  if (!coincidencia || !coincidencia[1]) return null;
+  return decodeURIComponent(coincidencia[1]).replace(/^["']|["']$/g, '').trim().toLowerCase();
+}
+
+function leerRolActual(): string {
+  return (
+    leerCookie(AUTH_ROLE_COOKIE_NAME) ||
+    leerCookie('role') ||
+    leerCookie('rol') ||
+    leerCookie('sitio_role') ||
+    ''
+  );
 }
 
 /**
@@ -21,26 +32,36 @@ function leerCookie(nombre: string): string | null {
  *
  * Se revisa al montar y otra vez cada vez que la pestaña recupera el foco, no
  * solo al montar: estos botones viven en páginas públicas que la gente deja
- * abiertas en segundo plano durante días. Sin la revisión al recuperar foco,
- * una pestaña que estuvo dormida mientras la sesión caducaba seguía mostrando
- * el botón hasta que alguien la recargaba a mano — el botón no concede nada
- * por sí solo (lo vuelve a comprobar el backend al enviar), pero mostrarlo sin
- * que sirva para nada es una mala señal para quien lo ve.
+ * abiertas en segundo plano durante días.
  */
 export function usePermisoDeSeccion(clave: string): boolean {
-  const [tienePermiso, setTienePermiso] = useState(false);
+  const [tienePermiso, setTienePermiso] = useState(() => {
+    const rol = leerRolActual();
+    return rol === 'superadmin' || rol === 'administrador';
+  });
 
   useEffect(() => {
     let vigente = true;
 
     const revisar = () => {
-      const rol = (leerCookie(AUTH_ROLE_COOKIE_NAME) ?? '').trim().toLowerCase();
-      if (!ROLES_QUE_EDITAN.includes(rol)) {
+      const rol = leerRolActual();
+      if (!rol || !ROLES_QUE_EDITAN.includes(rol)) {
         setTienePermiso(false);
         return;
       }
+
+      if (rol === 'superadmin') {
+        setTienePermiso(true);
+      }
+
       permisosDeLaSesion().then((permisos) => {
-        if (vigente) setTienePermiso(permisos.includes(clave));
+        if (vigente) {
+          if (rol === 'superadmin') {
+            setTienePermiso(true);
+          } else {
+            setTienePermiso(permisos.includes(clave));
+          }
+        }
       });
     };
 
