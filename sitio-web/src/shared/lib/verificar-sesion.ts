@@ -33,6 +33,7 @@ export interface SesionVerificada {
   correo: string;
   debeCambiarPassword: boolean;
   debeConfigurarPreguntas: boolean;
+  permisos: string[];
 }
 
 const claveSecreta = (): Uint8Array | null => {
@@ -68,6 +69,7 @@ export async function verificarSesion(token: string | undefined): Promise<Sesion
       correo: typeof payload.email === 'string' ? payload.email : '',
       debeCambiarPassword: Boolean(payload.must_change_password),
       debeConfigurarPreguntas: Boolean(payload.must_setup_security_questions),
+      permisos: Array.isArray(payload.permisos) ? payload.permisos : [],
     };
   } catch {
     // Sin detalle en el registro a propósito: el mensaje de `jose` distingue entre

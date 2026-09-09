@@ -46,17 +46,7 @@ const GRUPOS: { id: string; titulo: string; ayuda: string; sensible?: boolean }[
     titulo: 'Qué puede hacer dentro del editor',
     ayuda: 'Se aplica a todas las secciones que tenga concedidas.',
   },
-  {
-    id: 'personas',
-    titulo: 'Personas y permisos',
-    ayuda: 'Quien puede gestionar permisos puede concederse todo lo demás.',
-    sensible: true,
-  },
-  {
-    id: 'auditoria',
-    titulo: 'Bitácora',
-    ayuda: 'El registro guarda la IP y el navegador de cada persona.',
-  },
+
   {
     id: 'huerfanos',
     titulo: 'Sin catálogo',
@@ -110,9 +100,11 @@ export function ModalPermisos({
   const [busqueda, setBusqueda] = useState('');
 
   const visibles = useMemo(() => {
+    // Ocultar acceso.panel porque es solo para administradores
+    const filtrados = permisos.filter((p) => p.name !== 'acceso.panel');
     const q = normalizar(busqueda);
-    if (!q) return permisos;
-    return permisos.filter((p) =>
+    if (!q) return filtrados;
+    return filtrados.filter((p) =>
       normalizar(`${p.etiqueta} ${p.descripcion} ${p.name}`).includes(q)
     );
   }, [permisos, busqueda]);

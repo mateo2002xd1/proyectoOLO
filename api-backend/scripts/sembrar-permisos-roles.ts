@@ -48,7 +48,6 @@ const PERMISOS_POR_ROL: Record<string, string[]> = {
     'acceso.panel',
     ...clavesDeEdicion('sitio'),
     ...clavesDeEdicion('intranet'),
-    'editor.eliminar-bloques',
     'editor.enviar-revision',
   ],
 

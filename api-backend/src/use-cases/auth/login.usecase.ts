@@ -8,6 +8,8 @@ import {
   MINUTOS_BLOQUEO_LOGIN,
 } from '../../shared/password-policy';
 import { esDominioInstitucional, normalizarEmail } from '../../shared/email-policy';
+import { RolePermissionRepository } from '../../repositories/role-permissions.repository';
+import { CLAVES_DEL_CATALOGO } from '../../shared/catalogo-permisos';
 
 /**
  * Anota un intento fallido y bloquea al llegar al tope (§3: 5 intentos, 15 minutos).
@@ -79,6 +81,7 @@ export const loginUseCase = async (email: string, password: string) => {
       isLocal: true,
       must_setup_security_questions: false,
       must_change_password: false,
+      permisos: CLAVES_DEL_CATALOGO,
     };
     const token = jwt.sign(payload as any, config.jwtSecret, { expiresIn: config.jwtExpiresIn as any });
     return { token, user: payload };
@@ -121,6 +124,9 @@ export const loginUseCase = async (email: string, password: string) => {
     role_id: user.role_id,
     must_setup_security_questions: user.must_setup_security_questions,
     must_change_password: user.must_change_password,
+    permisos: user.role?.name?.trim().toLowerCase() === 'superadmin' 
+      ? CLAVES_DEL_CATALOGO 
+      : await RolePermissionRepository.getPermissionsByRole(user.role?.name || ''),
   };
 
   const token = jwt.sign(payload as any, config.jwtSecret, { expiresIn: config.jwtExpiresIn as any });
