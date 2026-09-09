@@ -102,11 +102,11 @@ const puckConfigBase: Config = {
       components: ['ExternalPortals'],
     },
     'Maquetación': {
-      components: ['Grid', 'Flex', 'Space'],
+      components: ['Grid', 'Flex', 'Space', 'SeccionPestanasLaterales'],
     },
   },
   components: {
-    // Primitivos de maquetación compartidos (Flex / Space)
+    // Primitivos de maquetación compartidos (Flex / Space / SeccionPestanasLaterales)
     ...primitiveComponents,
     // Grid necesita el campo de imagen de esta app inyectado (su fondo sube
     // archivos contra la API de sitio-web) — ver `crearGridConfig`.
@@ -830,7 +830,7 @@ const COMPONENTES_POR_SLUG: Record<string, string[]> = {
   // La plantilla es lo contrario a una página: solo la cabecera y el pie, que es
   // justo lo que las páginas ya no pueden tocar.
   [SLUG_DE_PLANTILLA]: ['Header', 'Footer'],
-  inicio: ['Hero', 'Services', 'DatoOloSemana', 'RecursosVisualesBloque', 'Publicaciones', 'ExternalPortals', 'RichText', 'Grid', 'Flex', 'Space'],
+  inicio: ['Hero', 'Services', 'DatoOloSemana', 'RecursosVisualesBloque', 'Publicaciones', 'ExternalPortals', 'RichText', 'Grid', 'Flex', 'Space', 'SeccionPestanasLaterales'],
   'politica-de-privacidad': ['PoliticaPrivacidadEncabezado', 'VisorDocumentosNormativos', 'CanalesAtencion'],
 };
 

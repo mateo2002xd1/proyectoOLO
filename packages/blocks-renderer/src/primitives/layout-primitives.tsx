@@ -312,15 +312,22 @@ export const spaceConfig: ConfigDeBloque = {
   ),
 };
 
+import { tabsConfig } from './tabs-primitives';
+
 // ─── Registro agregado para consumir desde cada app ─────────────────────────
 /** Nombres de los primitivos — usar para armar la categoría en cada puckConfig. */
-export const PRIMITIVE_COMPONENT_NAMES = ['Grid', 'Flex', 'Space'] as const;
+export const PRIMITIVE_COMPONENT_NAMES = [
+  'Grid',
+  'Flex',
+  'Space',
+  'SeccionPestanasLaterales',
+] as const;
 
 /**
  * Mapa listo para hacer spread dentro de `components` del puckConfig de cada app.
  *
- * Flex viene ya envuelto con `conCaja` porque un contenedor sin relleno ni
- * margen propio sirve de poco, y así el paquete es útil aunque la app no haga
+ * Flex y SeccionPestanasLaterales vienen ya envueltos con `conCaja` porque un contenedor
+ * sin relleno ni margen propio sirve de poco, y así el paquete es útil aunque la app no haga
  * nada más. Que además cada app pase `conCajaEnTodos` por encima no duplica
  * nada: `conCaja` es idempotente justo por este caso.
  *
@@ -335,4 +342,6 @@ export const PRIMITIVE_COMPONENT_NAMES = ['Grid', 'Flex', 'Space'] as const;
 export const primitiveComponents: Record<string, ConfigDeBloque> = {
   Flex: conCaja(flexConfig),
   Space: spaceConfig,
+  SeccionPestanasLaterales: conCaja(tabsConfig),
+  Tabs: conCaja(tabsConfig),
 };

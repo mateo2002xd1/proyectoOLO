@@ -112,7 +112,7 @@ export const obtenerVersionEditable = async (
   }
 
   // Si la versión devuelta es un respaldo archivado, validar los recursos físicos
-  // en la carpeta de backup (/public/backend/{paginaId}) y adaptar dinámicamente
+  // en la carpeta de backup (/public/backup/{paginaId}) y adaptar dinámicamente
   // las rutas para que la vista previa cargue los archivos resguardados correctamente.
   if (version.estado === 'archivado') {
     contenido = adaptarRutasParaVistaPreviaArchivada(contenido, pagina.id, ambito);

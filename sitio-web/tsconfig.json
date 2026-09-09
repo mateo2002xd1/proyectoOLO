@@ -18,9 +18,8 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"],
+      "@olo/blocks-renderer": ["../packages/blocks-renderer/src/index.ts"]
     },
     "plugins": [
       {
