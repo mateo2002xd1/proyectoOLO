@@ -3448,6 +3448,21 @@ button.text-link,
   appearance: none;
 }
 
+/* La «×» que Chrome, Edge y Safari pintan dentro de un `input[type="search"]` en
+   cuanto tiene texto. Se quita donde el buscador ya trae su propio botón pegado
+   al borde derecho —el banner de ocupaciones—: la «×» nativa se le monta encima
+   y ofrece una segunda forma de vaciar el campo que no pasa por el formulario,
+   así que el estado del buscador y lo que se ve dejan de coincidir.
+
+   El tipo sigue siendo `search` y no `text` a propósito: es lo que hace que el
+   teclado móvil ofrezca la tecla «Buscar» y que los lectores de pantalla lo
+   anuncien como campo de búsqueda. Lo que sobra es el adorno, no la semántica. */
+.olo-sin-boton-limpiar::-webkit-search-cancel-button,
+.olo-sin-boton-limpiar::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 .olo-search-results {
   max-height: min(50vh, 360px);
   overflow-y: auto;

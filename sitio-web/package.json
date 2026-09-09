@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "sync:paquetes": "node ../scripts/sincronizar-paquetes-locales.mjs",
+    "predev": "npm run sync:paquetes",
+    "prebuild": "npm run sync:paquetes",
     "dev": "next dev -p 3000",
     "build": "next build",
     "start": "next start",

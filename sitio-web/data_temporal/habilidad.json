@@ -1,0 +1,207 @@
+[
+  {
+    "cod_hab_dest": "1",
+    "nomb_hab_dest": "Comprensión de lectura",
+    "desc_hab_dest": "Entender oraciones y párrafos escritos en documentos relacionados con el trabajo."
+  },
+  {
+    "cod_hab_dest": "2",
+    "nomb_hab_dest": "Escucha activa",
+    "desc_hab_dest": "Prestar toda la tención a lo que dicen otras personas, tomándose el tiempo necesario para entender los argumentos expuestos, hacer preguntas según sea apropiado, y no interrumpir en momentos inapropiados."
+  },
+  {
+    "cod_hab_dest": "3",
+    "nomb_hab_dest": "Redacción de textos",
+    "desc_hab_dest": "Comunicarse eficazmente por escrito y de acuerdo con las necesidades de los lectores."
+  },
+  {
+    "cod_hab_dest": "4",
+    "nomb_hab_dest": "Comunicación asertiva",
+    "desc_hab_dest": "Comunicarse con otros para transmitir la información eficazmente."
+  },
+  {
+    "cod_hab_dest": "5",
+    "nomb_hab_dest": "Lógica matemática",
+    "desc_hab_dest": "Aplicar las matemáticas para resolver problemas."
+  },
+  {
+    "cod_hab_dest": "6",
+    "nomb_hab_dest": "Pensamiento crítico",
+    "desc_hab_dest": "Identificar las virtudes y defectos de diversas situaciones de forma crítica."
+  },
+  {
+    "cod_hab_dest": "7",
+    "nomb_hab_dest": "Aprendizaje aplicado",
+    "desc_hab_dest": "Aplicar nueva información para resolver problemas y tomar decisiones en el presente y en el futuro."
+  },
+  {
+    "cod_hab_dest": "8",
+    "nomb_hab_dest": "Estrategias para el aprendizaje",
+    "desc_hab_dest": "Seleccionar y utilizar métodos para facilitar el proceso de aprender o enseñar cosas nuevas."
+  },
+  {
+    "cod_hab_dest": "9",
+    "nomb_hab_dest": "Evaluación y control de actividades",
+    "desc_hab_dest": "Supervisar, evaluar y tomar acciones correctivas en cuanto al desempeño laboral propio o de otros."
+  },
+  {
+    "cod_hab_dest": "10",
+    "nomb_hab_dest": "Relaciones interpersonales",
+    "desc_hab_dest": "Aceptar las diferencias y trabajar en contextos multiculturales."
+  },
+  {
+    "cod_hab_dest": "11",
+    "nomb_hab_dest": "Trabajo en equipo",
+    "desc_hab_dest": "Trabajar en equipo para alcanzar metas comunes."
+  },
+  {
+    "cod_hab_dest": "12",
+    "nomb_hab_dest": "Persuasión",
+    "desc_hab_dest": "Persuadir a otros para que cambien su forma de pensar o su comportamiento."
+  },
+  {
+    "cod_hab_dest": "13",
+    "nomb_hab_dest": "Conciliación",
+    "desc_hab_dest": "Unir a otros y tratar de conciliar las diferencias."
+  },
+  {
+    "cod_hab_dest": "14",
+    "nomb_hab_dest": "Transmisión de conocimiento",
+    "desc_hab_dest": "Enseñar a otros sobre cómo hacer algo."
+  },
+  {
+    "cod_hab_dest": "15",
+    "nomb_hab_dest": "Orientación al Servicio",
+    "desc_hab_dest": "Buscar activamente formas para ayudar a otras personas."
+  },
+  {
+    "cod_hab_dest": "16",
+    "nomb_hab_dest": "Resolución de problemas complejos",
+    "desc_hab_dest": "Identificar problemas complejos y revisar la información relacionada para desarrollar y evaluar opciones e implementar soluciones."
+  },
+  {
+    "cod_hab_dest": "17",
+    "nomb_hab_dest": "Análisis de necesidades",
+    "desc_hab_dest": "Analizar las necesidades y proveer soluciones para suplirlas."
+  },
+  {
+    "cod_hab_dest": "18",
+    "nomb_hab_dest": "Diseño de Tecnología",
+    "desc_hab_dest": "Diseñar o adaptar equipos y/o tecnologías que cubran las necesidades del usuario."
+  },
+  {
+    "cod_hab_dest": "19",
+    "nomb_hab_dest": "Selección de equipo",
+    "desc_hab_dest": null
+  },
+  {
+    "cod_hab_dest": "20",
+    "nomb_hab_dest": "Instalación",
+    "desc_hab_dest": "Instalar equipos, máquinas, sistema de cableados o programas que cumplan con las especificaciones requeridas."
+  },
+  {
+    "cod_hab_dest": "21",
+    "nomb_hab_dest": "Programación",
+    "desc_hab_dest": "Escribir programas de computación para varios propósitos."
+  },
+  {
+    "cod_hab_dest": "22",
+    "nomb_hab_dest": "Análisis de Control de Calidad",
+    "desc_hab_dest": "Realizar pruebas e inspecciones de productos, servicios, o procesos para evaluar su calidad o funcionamiento."
+  },
+  {
+    "cod_hab_dest": "23",
+    "nomb_hab_dest": "Vigilancia de las operaciones",
+    "desc_hab_dest": "Verificar indicadores u otros instrumentos para asegurarse que una máquina está funcionando correctamente."
+  },
+  {
+    "cod_hab_dest": "24",
+    "nomb_hab_dest": "Mantenimiento de Equipos",
+    "desc_hab_dest": "Dar mantenimiento a equipos de manera constante, determinando cuándo y qué tipo de mantenimiento se requiere."
+  },
+  {
+    "cod_hab_dest": "25",
+    "nomb_hab_dest": "Manejo de imprevistos",
+    "desc_hab_dest": "Determinar las causas de imprevistos y errores en la operación, y decidir qué hacer al respecto."
+  },
+  {
+    "cod_hab_dest": "26",
+    "nomb_hab_dest": "Reparación",
+    "desc_hab_dest": "Reparar máquinas o sistemas utilizando las herramientas necesarias."
+  },
+  {
+    "cod_hab_dest": "27",
+    "nomb_hab_dest": "Análisis de procesos",
+    "desc_hab_dest": "Determinar cómo debe trabajar óptimamente un proceso, y cómo los cambios en las condiciones y en el ambiente afectarán los resultados."
+  },
+  {
+    "cod_hab_dest": "28",
+    "nomb_hab_dest": "Criterio y Toma de Decisiones",
+    "desc_hab_dest": "Comparar los costos y los beneficios relativos de diferentes alternativas para así elegir la más apropiada."
+  },
+  {
+    "cod_hab_dest": "29",
+    "nomb_hab_dest": "Gestión del Tiempo",
+    "desc_hab_dest": "Administrar el tiempo de uno mismo y el tiempo de otros."
+  },
+  {
+    "cod_hab_dest": "30",
+    "nomb_hab_dest": "Gestión de recursos financieros",
+    "desc_hab_dest": null
+  },
+  {
+    "cod_hab_dest": "31",
+    "nomb_hab_dest": "Gestión de Recursos Materiales",
+    "desc_hab_dest": "Obtener y asegurar el uso apropiado del equipo, instalaciones y materiales que se requieren para hacer cierto tipo de trabajo."
+  },
+  {
+    "cod_hab_dest": "32",
+    "nomb_hab_dest": "Gestión de Recursos de Personal",
+    "desc_hab_dest": "Motivar, dirigir y promover el desarrollo de los empleados, identificando a los mejores candidatos para realizar determinado trabajo."
+  },
+  {
+    "cod_hab_dest": "33",
+    "nomb_hab_dest": "Liderazgo",
+    "desc_hab_dest": "Capacidad de delegar, tomar la iniciativa, gestionar, convocar, promover, incentivar, motivar y evaluar un proyecto, de forma eficaz y eficiente, sea éste personal, gerencial o institucional dentro del proceso administrativo de la organización."
+  },
+  {
+    "cod_hab_dest": "34",
+    "nomb_hab_dest": "Trabajo bajo presión",
+    "desc_hab_dest": "Trabajo que se realiza bajo condiciones adversas de tiempo o de sobrecarga de tareas, y que demanda mantener la eficiencia y no cometer más errores de lo habitual."
+  },
+  {
+    "cod_hab_dest": "35",
+    "nomb_hab_dest": "Flexibilidad y adaptabilidad",
+    "desc_hab_dest": "Capacidad para aceptar con facilidad y enfrentarse con flexibilidad y versatilidad a situaciones,personas nuevas y para aceptar los cambios positiva y constructivamente."
+  },
+  {
+    "cod_hab_dest": "36",
+    "nomb_hab_dest": "Ensamble",
+    "desc_hab_dest": "Acoplar, encajar, empalmar, enlazar, articular, unir, juntar piezas, equipos, maquinas, entre otras."
+  },
+  {
+    "cod_hab_dest": "37",
+    "nomb_hab_dest": "Proactividad",
+    "desc_hab_dest": "Actitud en la que el sujeto u organización asume el pleno control de su conducta de modo activo, lo que implica la toma de iniciativa en el desarrollo de acciones creativas y audaces para generar mejoras, haciendo prevalecer la libertad de elección sobre"
+  },
+  {
+    "cod_hab_dest": "38",
+    "nomb_hab_dest": "Seguir instrucciones",
+    "desc_hab_dest": "Seguir instrucciones al pie con el fin de alcanzar el objetivo y trabajo propuesto."
+  },
+  {
+    "cod_hab_dest": "39",
+    "nomb_hab_dest": "Creatividad",
+    "desc_hab_dest": "Capacidad de generar nuevas ideas o conceptos, de nuevas asociaciones entre ideas y conceptos conocidos, que habitualmente producen soluciones originales."
+  },
+  {
+    "cod_hab_dest": "40",
+    "nomb_hab_dest": "Interpretación",
+    "desc_hab_dest": "Capacidad de decifrar y usar diferentes códigos sonoros y gráficos (verbales o no para el caso de una partitura) para recombinarlos y crear o producir obras originales o innovadoras."
+  },
+  {
+    "cod_hab_dest": "41",
+    "nomb_hab_dest": "Pensamiento Sistemico",
+    "desc_hab_dest": null
+  }
+]

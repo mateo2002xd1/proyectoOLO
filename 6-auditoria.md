@@ -5,6 +5,379 @@
 
 ---
 
+## sesión 08-09-2026: dos retoques en el panel — el modal de alertas y la actividad reciente
+
+Dos encargos pequeños sobre capturas del panel administrativo, ambos en el mismo archivo:
+`sitio-web/src/features/administracion/auth/components/panel-general.tsx`.
+
+### A. «Actividad Reciente»: más registros y sin el marco de la tabla
+
+- **De 7 a 15 registros.** Es la constante `CAMBIOS_RECIENTES`, que viaja como tercer
+  argumento de `listarAuditoria(filtros, pagina, porPagina)`. Se comprobó antes de subirla que
+  la API lo admite: `audit.routes.ts` documenta el parámetro como `minimum: 1, maximum: 200,
+  default: 50`, así que 15 entra de sobra y no hace falta tocar el backend.
+- **Fuera el marco de la tabla interna**: el contenedor pierde `border border-zinc-200
+  dark:border-[#7db828]/30` y se queda con `overflow-x-auto rounded-lg`. El scroll horizontal
+  y el redondeo siguen, que son los que evitan que la tabla se apriete en pantallas estrechas.
+- **Las líneas entre filas se quedan.** El `divide-y` del `<tbody>` no es «el borde de la
+  tabla»: es lo que separa un registro del siguiente, y sin él quince filas seguidas se leen
+  como un bloque. Si la idea era dejarlo completamente liso, es un cambio de una clase.
+
+Efecto lateral que conviene mirar: en modo oscuro la cabecera de la tabla usa `bg-[#131b2f]`,
+el mismo color que la tarjeta. Con el marco puesto se notaba dónde empezaba la tabla; sin él,
+la cabecera queda a ras del fondo. Es exactamente lo pedido, pero se anota por si al verlo se
+prefiere otra cosa.
+
+### B. El modal de alertas, más grande y sin el triángulo
+
+Encargo, sobre una captura del modal «Notificaciones» del panel administrativo: agrandarlo y
+quitar el icono de alerta.
+
+Vive en `sitio-web/src/features/administracion/auth/components/panel-general.tsx`, en el
+componente del diálogo de alertas. Cambios, todos de clases de Tailwind salvo el borrado del
+icono:
+
+- **Ancho** de `max-w-lg` a `max-w-2xl` (de 32 a 42 rem), y `min-h-[22rem]`. Lo segundo es
+  por lo que se ve en la captura: con una sola alerta el diálogo quedaba tan bajo que parecía
+  cortado. El `max-h-[88vh]` y el scroll interno siguen igual, así que con muchas alertas se
+  comporta como antes.
+- **Aire y tamaños**: cabecera `px-6 py-5` → `px-8 py-6`, cuerpo `p-6` → `p-8`, tarjetas
+  `p-4` → `p-5`. Título a `text-xl` y los rótulos de cada tarjeta a `text-base`; la línea
+  secundaria («Vence en N días») se queda en `text-sm` para que siga leyéndose como
+  subordinada y no compita con el titular.
+- **Fuera el triángulo de advertencia** de la tarjeta ámbar: se quitaron el `<span>` del
+  círculo y su `<svg>`, y con ellos el envoltorio `flex items-center gap-3` que ya no tenía
+  nada que alinear. El texto pasa a ocupar todo el ancho.
+- El botón de descartar («Marcar como solucionada») no se tocó, pero su hueco reservado pasa
+  de `pr-12` a `pr-14` para acompañar el nuevo `p-5`.
+
+### Decisiones
+- **Solo se quitó el icono de la tarjeta ámbar.** El diálogo tiene un segundo tipo de tarjeta,
+  la azul de «Página en revisión», que lleva un `ClipboardDocumentCheckIcon`. Ése no es un
+  icono de alerta, así que se dejó; sí se le igualaron el relleno y el tamaño de letra para
+  que las dos tarjetas midan lo mismo. Queda pendiente de confirmar con quien lo pidió: ahora
+  una tarjeta tiene círculo con icono y la otra no.
+
+### Verificación (de los dos retoques)
+- `npx tsc --noEmit` en `sitio-web`: sin errores.
+- `npx eslint` sobre el archivo: 0 errores. Los 6 avisos que salen (`colorDiasRestantes`,
+  `mensajeDeRevision`, `enlaceAlEditor` sin usar, y el `<img>`) **ya estaban en `HEAD`**; se
+  comprobó contra la versión publicada para no atribuirlos a estos cambios.
+- El tope de la API se leyó en `api-backend/src/routes/audit.routes.ts` antes de subir el
+  límite, en vez de suponerlo.
+- **No se revisó ninguno en el navegador**: las dos pantallas están detrás del login del panel.
+  Son cambios de clases de Tailwind y una constante, pero el aspecto final conviene mirarlo —
+  sobre todo cuántas de las 15 filas caben sin que la tarjeta crezca de más.
+
+---
+
+## sesión 08-09-2026: el buscador de ocupaciones ya consulta el catálogo CNO (2.ª parte)
+
+Encargo: con el archivo maestro de la Clasificación Nacional de Ocupaciones volcado a JSON
+en `sitio-web/data_temporal/`, montar las dos vistas de consulta —la tabla de resultados y
+el detalle ampliado— y hacer que el banner de `/clasificacion` consulte de verdad esos
+datos.
+
+### 1. Lo que había: un buscador que no podía encontrar nada
+
+`/clasificacion` pintaba el banner y, debajo, una lista de tarjetas. Nunca mostró una sola:
+el service llamaba por `axios` a `http://localhost:4000/api/ocupaciones/buscar`, un endpoint
+que **el backend no tiene** —no existe módulo de ocupaciones en `api-backend/`—, y el
+`catch` devolvía `[]`. El tipo `Ocupacion` (`codigoCno`, `codigoCuoc`, `denominacion`) era
+una maqueta, no el contrato del archivo maestro.
+
+### 2. Dónde se resuelven las uniones, y por qué ahí
+
+El volcado son once hojas de Excel, ~6 MB de JSON, con los encabezados literales de la hoja:
+`cod_ocupacion_cno` en unas tablas y `"Código de la ocupación - C.N.O."` —con espacios,
+tildes y puntos— en `relacionada_cno` y `conocimientos_cno`. Las uniones se resuelven **en
+el servidor**, dentro de un route handler de Next (`app/api/ocupaciones/`), leyendo los JSON
+con `fs`.
+
+Se descartaron dos alternativas más cortas:
+
+- **Importar los JSON con `import datos from '…/ocupaciones.json'`** (`resolveJsonModule` ya
+  está activo en el `tsconfig`). Obliga a mover la carpeta dentro de `src/` y mete los 6 MB
+  en el grafo de módulos, donde cualquier import descuidado desde un componente de cliente
+  se los lleva al bundle del navegador.
+- **Servirlos desde `public/`.** Publica el archivo maestro entero y obliga al navegador a
+  descargar 6 MB para resolver una búsqueda que en el servidor cuesta un recorrido de 611
+  ocupaciones.
+
+El handler devuelve ya la forma final (`ResultadoOcupacion`, `DetalleOcupacion`), en
+`camelCase` y con las uniones hechas. Es el contrato que consumirá la UI cuando el catálogo
+esté en la base de datos: ese día cambia el origen dentro del handler —pasa a ser un
+`proxyToBackend`— y no cambia nada del hook hacia arriba.
+
+El catálogo se lee una vez por proceso y se cachea la **promesa**, no el resultado, para que
+dos peticiones simultáneas durante el arranque compartan la misma lectura. Si la lectura
+falla, la promesa cacheada se descarta: sin eso, un JSON ausente dejaría el buscador roto
+hasta reiniciar el servidor.
+
+### 3. Las dos vistas
+
+Un **único** diálogo modal que cambia de contenido, no dos apilados. Dos diálogos a la vez
+se disputan el foco y el bloqueo del scroll, y el de atrás sigue siendo alcanzable con el
+tabulador aunque no se vea; con uno solo, "volver a los resultados" es un cambio de estado.
+Colores de marca (`#001631` en el encabezado, `#7DB828` en acentos y foco) y esquinas de
+16px, las mismas del banner.
+
+Un diálogo que cambia de contenido tiene una trampa que uno que se desmonta no tiene: la
+fila que abre el detalle desaparece en el mismo instante en que se pulsa, el foco cae al
+`<body>` y a partir de ahí ni el tabulador ni Escape llegan al diálogo. Por eso
+`ModalOcupaciones` recibe una `claveContenido` y devuelve el foco al panel cada vez que
+cambia. El "foco previo" que se restaura al cerrar se guarda en un efecto aparte, atado solo
+a `abierto`: si dependiera también del contenido, guardaría como previo un elemento del
+propio diálogo.
+
+El diálogo salió con `z-50` de Tailwind y la cabecera lo recortaba por arriba: `.olo-header`
+es `sticky` con **`z-index: 1000`**, y `z-50` son 50. Se subió a `z-[2000]`, la misma capa
+que ya usa `.olo-search-modal` para ponerse sobre la cabecera, y además se pinta con
+`createPortal` colgando de `<body>`. El portal no es redundante con el `z-index`: el diálogo
+se escribe dentro de `<main>`, y ahí cualquier antepasado con `transform`, `filter` u
+`opacity < 1` se vuelve el marco de referencia de sus descendientes `fixed` y los encierra en
+su apilamiento —exactamente lo que le pasó al botón «Editar sección» con
+`.olo-route-transition`, contado en `globals.css`—. Sacarlo del árbol de la página es lo que
+impide que vuelva a pasar cuando alguien añada una animación al contenido.
+
+**Tamaño del panel: `sm:w-[75vw]` y `sm:max-h-[80dvh]`.** Las dos vistas comparten medida;
+antes cada una traía la suya (`max-w-3xl` los resultados, `max-w-4xl` el detalle) por un prop
+`ancho` que se eliminó, y el panel daba un salto de anchura al pasar de una a otra. El 75%
+arranca en `sm`: por debajo, el panel ocupa todo lo que el relleno del fondo le deja, porque
+tres cuartos de la pantalla de un móvil dejan la tabla de resultados en una columna
+inservible. El alto es un **máximo** y no una altura fija —una búsqueda con dos resultados no
+tiene por qué pintar un panel medio vacío— y va en `dvh`, no en `vh`, para que la barra del
+navegador móvil no lo desborde. Sin tope superior: en un monitor muy ancho el panel crece con
+la ventana, que es lo que se pidió.
+
+Los contadores de cada apartado plegable pasaron a 32px de alto con `rounded-[16px]`, a
+juego con el resto del diálogo. **No parecen tener 16px y los tienen**: el radio se recorta a
+la mitad de la dimensión menor, y en una cápsula de 32px de alto esa mitad son justo 16px, así
+que el resultado es una píldora. Para que se viera como un rectángulo redondeado habría que
+subir la altura por encima de 32px, y un contador de dos cifras no lo justifica. Llevan
+`min-w-10` porque van apilados y con el ancho ajustado al contenido el borde derecho de la
+pila queda dentado; y el `<summary>` lleva `min-h-14` para que los apartados sin contador
+—normas asociadas, correlativa CUOC— no queden más bajos que los demás.
+
+El "¿ya estoy en el navegador?" que necesita el portal va con `useSyncExternalStore` y no
+con el `useState(false)` + `useEffect(setMontado(true))` de costumbre: la regla
+`react-hooks/set-state-in-effect` que trae la configuración de ESLint del proyecto lo
+rechaza como error, no como aviso.
+
+| Vista | Muestra |
+|---|---|
+| 1 · Resultados | Dos columnas: **Ocupación** (`cod_ocupacion_cno` + `nomb_ocupacion_cno`) y **Denominación** (`descr_denominacion_cno` unidas por el código). Cada fila es un `<button>` que abre la vista 2. Iba con una flecha «›» al final de cada fila; se quitó por petición del usuario, así que el único indicio visual de que la fila se puede pulsar es el cambio de fondo al pasar el ratón —el `<button>` y su `aria-label` siguen ahí, de modo que con teclado y con lector de pantalla no cambia nada |
+| 2 · Detalle | Título `cod` + `nomb`; **Descripción** (`desc_ocupacion_cno`); **Ubicación en la estructura** (área de desempeño, nivel de cualificación, área ocupacional, campo ocupacional); **Ampliar información** (funciones, normas asociadas, denominaciones, ocupaciones relacionadas, habilidades, conocimientos, correlativa CUOC) |
+
+Los cuatro apartados que el archivo maestro no puede llenar —área ocupacional, campo
+ocupacional, normas asociadas y correlativa CUOC— se pintan con su rótulo y el aviso de que
+no hay datos, en vez de omitirse: la estructura de la clasificación tiene que verse completa
+y quien consulta necesita saber que ese apartado existe.
+
+### 4. Capas tocadas
+
+| Capa | Archivo | Qué |
+|---|---|---|
+| Datos (temporal) | `sitio-web/src/features/sitio-web/buscador-ocupaciones/lib/catalogo-cno-temporal.ts` | Nuevo. Lee los once JSON, indexa por `cod_ocupacion_cno` y resuelve las uniones |
+| API | `sitio-web/src/app/api/ocupaciones/route.ts` | Nuevo. `GET ?q=` — búsqueda por código, nombre o denominación |
+| API | `sitio-web/src/app/api/ocupaciones/[codigo]/route.ts` | Nuevo. `GET` — detalle con todas las uniones; 404 si no existe |
+| Service | `…/services/buscador-ocupaciones.service.ts` | Reescrito: apunta a `/api/ocupaciones` (ruta relativa), sin `withCredentials` — el catálogo es público |
+| Hooks | `…/hooks/use-buscador-ocupaciones.ts` | Reescrito: guarda el término consultado y protege contra respuestas fuera de orden |
+| Hooks | `…/hooks/use-detalle-ocupacion.ts` | Nuevo |
+| UI | `…/components/modal-ocupaciones.tsx` | Nuevo. Diálogo común: Escape, foco encerrado y devuelto, scroll bloqueado |
+| UI | `…/components/resultados-ocupaciones.tsx` | Nuevo. Vista 1 |
+| UI | `…/components/detalle-ocupacion.tsx` | Nuevo. Vista 2 |
+| UI | `…/components/buscador-ocupaciones-view.tsx` | Orquesta banner + diálogo |
+| UI | `sitio-web/src/shared/ui/molecules/ocupacion-search-banner.tsx` y `src/style/globals.css` | Clase `.olo-sin-boton-limpiar`: quita la «×» nativa del `input[type="search"]`, que se montaba sobre el botón de lupa. El `type` sigue siendo `search` —teclado móvil y lectores de pantalla—; lo que se quita es el adorno |
+| Contratos | `…/types.ts`, `…/index.ts` | `ResultadoOcupacion`, `DetalleOcupacion`, `OcupacionRelacionada`. `lib/` **no** se reexporta: usa `fs` |
+
+### 5. Verificación
+
+| Comprobación | Resultado |
+|---|---|
+| `npx tsc --noEmit` en `sitio-web` | Sin errores |
+| `npx eslint` sobre los archivos nuevos | Sin avisos |
+| `GET /api/ocupaciones?q=alcalde` | 1 ocupación (`0011`), 15 denominaciones, `Alcalde` marcada como coincidente |
+| `GET /api/ocupaciones?q=2141` | Encuentra por código |
+| `GET /api/ocupaciones?q=diseno grafico` | Encuentra sin tildes: la normalización NFD funciona |
+| `GET /api/ocupaciones/0011` | Descripción, área, nivel, 5 funciones, 15 denominaciones, 5 habilidades, 5 conocimientos |
+| `GET /api/ocupaciones/0012` | 4 ocupaciones relacionadas — confirma la unión por `"Código de la ocupación - C.N.O."` |
+| `GET /api/ocupaciones/9999` | 404 |
+| `GET /clasificacion?tipo=cno` | HTTP 200 |
+| Diálogo por encima de la cabecera | El usuario reportó el recorte en el navegador; se corrigió con `z-[2000]` + portal. **La corrección está sin confirmar visualmente** |
+| `.olo-sin-boton-limpiar` llega al navegador | Sí: la clase aparece en el HTML de `/clasificacion` y las dos reglas `::-webkit-search-cancel-button` / `::-webkit-search-decoration` están en la hoja servida |
+| Resto de la revisión visual del diálogo | **No se hizo por mi parte.** No hay Playwright ni Puppeteer en el proyecto y no se instaló nada por esto |
+
+> **Aviso 1 — `data_temporal/` no está versionada ni se despliega.** Vive fuera de `public/`
+> y fuera de `src/`, sin seguimiento en Git. En cuanto el sitio se construya en Docker sin
+> copiar esa carpeta, los dos endpoints responden 500 con `[api/ocupaciones] No se pudo leer
+> el catálogo CNO temporal` en el log. Es deliberado: el origen definitivo es la base de
+> datos.
+
+> **Aviso 2 — el nivel de cualificación que se muestra es el que trae el archivo, y está
+> mal en origen.** La hoja `nivel_cualificacion` tiene en `nombre_cualificacion_cno` los
+> nombres de las **áreas de desempeño** (Dirección y Gerencia, Finanzas y Administración…),
+> no los de los niveles; por eso el nivel `0` describe "Ocupaciones de direccion y gerencia".
+> La unión es correcta —`ocupaciones.cod_cualificacion_cno` → `nivel_cualificacion`—; lo que
+> está descuadrado es la hoja. Además, las 611 ocupaciones solo usan seis códigos de nivel
+> (0–4 y 6) de los diez que define la tabla. Antes de conectar el catálogo real hay que
+> pedir la hoja corregida.
+
+> **Aviso 3 — hay una columna duplicada en `ocupaciones`.** La hoja trae dos columnas
+> llamadas `cod_cualificacion_cno`; el volcado renombró la segunda a `cod_cualificacion_cno.1`
+> y **contiene un nombre, no un código**. La unión usa la primera. Si alguien reordena el
+> Excel, ese `.1` cambia de sitio en silencio.
+
+### 6. Pendiente al cierre
+
+- **El módulo de ocupaciones en `api-backend/`.** Migración, modelos, repositorio y
+  `/api/ocupaciones`. Hecho eso, `app/api/ocupaciones/*/route.ts` pasa a `proxyToBackend` y
+  `lib/catalogo-cno-temporal.ts` se borra.
+- **Los cuatro apartados vacíos.** Área ocupacional, campo ocupacional, normas asociadas y
+  correlativa CUOC no tienen tabla de origen en el archivo maestro. Hay que pedir esas hojas
+  o decidir que no van.
+- **CUOC.** `/clasificacion?tipo=cuoc` sigue mostrando el mismo buscador que `?tipo=cno`; el
+  `tipo` solo cambia la ruta de navegación. Cuando exista el catálogo CUOC habrá que filtrar
+  por él.
+- **Filas no activas.** Se descartan las 21 ocupaciones, 380 denominaciones y 52 funciones
+  con `activa_* = false`, por ser material retirado de la clasificación. Si el negocio
+  quiere consultarlas, es un filtro en `cargarCatalogo()`.
+- **Sin caché HTTP.** Los dos endpoints van con `dynamic = 'force-dynamic'`. Para el
+  catálogo real conviene `cache.middleware.ts` o `revalidate`: es contenido público que
+  cambia una vez al año.
+
+---
+
+## sesión 08-09-2026: el paquete local se quedó congelado en `node_modules`, y tres avisos de npm
+
+Encargo: arreglar un `Build Error` de `sitio-web` y cerrar los tres avisos de seguridad
+(2 altos, 1 crítico) que salían al instalar en las dos apps.
+
+### 1. El error: un export que sí existía
+
+El mensaje era desconcertante porque señalaba a algo cierto y falso a la vez:
+
+```
+Export ResaltadorDeBusqueda doesn't exist in target module
+  ./sitio-web/src/shared/ui/atoms/ResaltadorBusquedaClient.tsx
+  → sitio-web/node_modules/@olo/blocks-renderer/src/index.ts
+```
+
+`packages/blocks-renderer/src/index.ts` **sí** exporta `ResaltadorDeBusqueda`. Lo que no lo
+exportaba era la copia dentro de `node_modules`, y esa es la que lee el compilador: fíjese en
+que la ruta del error no es la del paquete, es la de la copia.
+
+La causa está en el `.npmrc` de cada app, con `install-links=true`. Esa opción se puso a
+propósito —en Windows, sin modo desarrollador, npm no puede crear el symlink de un
+`file:../packages/*` y deja la carpeta vacía—, pero tiene un efecto que hasta ahora no había
+mordido: npm **copia** el paquete en lugar de enlazarlo, y solo vuelve a copiarlo cuando
+cambia la versión declarada. `@olo/blocks-renderer` sigue en `0.1.0` desde siempre, así que
+npm da el árbol por bueno y responde `up to date` sin mirar el contenido.
+
+Resultado: la copia se quedó fija en el 03-09 mientras el paquete seguía creciendo. Le
+faltaba entera la carpeta `src/busqueda/` (el `ResaltadorDeBusqueda` y `busqueda-scroll`) y
+tenía versiones viejas de `index.ts` y `controles-de-caja.tsx`. Por eso `npm install
+../packages/blocks-renderer` no arreglaba nada: para npm no había nada que hacer.
+
+No era solo `blocks-renderer` ni solo `sitio-web`. También estaba desfasado
+`@olo/accessibility-policy`, y ambas apps tenían las dos copias viejas.
+
+**Arreglo:** borrar `node_modules/@olo` y reinstalar, en `sitio-web` y en `intranet`. Al no
+existir la carpeta, npm se ve obligado a copiar de nuevo desde `packages/`.
+
+### 2. Los tres avisos de npm
+
+Ninguno venía de código propio; los tres entran por dependencias de Next.
+
+| Paquete | Aviso | Cómo entra |
+|---|---|---|
+| `next` 16.3.0 | **crítico**, dos avisos: ejecución remota de código sin autenticar en servidores Windows (recorrido de rutas, CVSS 9.0) y otra por la API de optimización de imágenes al procesar archivos AVIF | directa |
+| `sharp` <0.35.4 | **alto**, desbordamiento de memoria en `libheif` al decodificar HEIF/AVIF | transitiva, vía `next` |
+| `js-yaml` 4.0.0–4.3.1 | **alto**, denegación de servicio: `maxTotalMergeKeys` no frena el consumo de CPU cuando las claves de fusión vienen vacías | transitiva |
+
+Los dos primeros son la misma historia contada dos veces: el decodificador de AVIF. `next`
+optimiza imágenes con `sharp`, `sharp` decodifica AVIF/HEIF con `libheif`, y una imagen
+preparada a mano puede corromper memoria ahí. El aviso crítico de Windows además nos toca de
+cerca, porque el desarrollo se hace justamente en Windows.
+
+**Arreglo:** `npm audit fix` **sin** `--force`. Los tres parches caen dentro del rango que ya
+declara `package.json` (`next: ^16.3.0` → 16.3.4, `sharp` → 0.35.4), así que no hay cambio de
+versión mayor ni nada que reescribir a mano. Se usó la versión sin `--force` a conciencia,
+por lo que pasó el 04-09 en `api-backend`: `--force` autoriza a npm a *retroceder* versiones
+y allí degradó Sequelize tres mayores.
+
+### 3. La automatización, para que no vuelva a pasar
+
+Reinstalar a mano cierra el incidente pero no la causa: el mismo despiste vuelve con la
+siguiente edición de `packages/`. Se añadió **`scripts/sincronizar-paquetes-locales.mjs`**,
+enganchado como `predev` y `prebuild` en las tres apps.
+
+Compara el **contenido real** de cada paquete con el de su copia —sha1 archivo a archivo— y
+solo si difieren borra `node_modules/@olo` y reinstala. Se descartó la alternativa de guardar
+una huella en un archivo de estado: comparar de verdad acierta también tras un `git pull`, un
+cambio de rama o un borrado manual de `node_modules`, y no hay estado que se desincronice.
+Cuando todo coincide cuesta unos 130 ms y no imprime nada.
+
+Tres detalles que no son adorno:
+
+- **Los enlaces se quitan con `unlink`, nunca con borrado recursivo.** En Linux, o en Windows
+  con modo desarrollador, esas entradas son symlinks a `packages/`: un `rm -rf` los seguiría
+  y borraría el código fuente del repositorio.
+- **Avisa, pero no compila, cuando `dist/` está más viejo que `src/`.** Cinco de los siete
+  paquetes se consumen por `dist/`, y ahí una copia vieja **no** da error: la app arranca y
+  ejecuta la lógica anterior, que es mucho peor que un fallo ruidoso. No se compila solo
+  porque `dist/` está en `.gitignore` y haría falta instalar antes las dependencias del
+  paquete; el aviso lleva el comando exacto.
+- **Comprueba que la reinstalación sirvió.** Si tras reinstalar la copia sigue sin coincidir,
+  sale con error en vez de dejar arrancar la app contra la copia vieja.
+
+En Docker no debe correr: el Dockerfile ya deja la copia buena compilando los `dist/` y
+repitiendo `npm ci`, y un `npm install` ahí dentro tocaría el `package-lock` y rompería el
+determinismo de `npm ci`. Los tres Dockerfiles fijan `OLO_SKIP_SYNC=1`, y además copian
+`scripts` a `/scripts` —la misma razón por la que `packages` va a `/packages`: npm resuelve
+las rutas relativas desde `/app`—, porque sin el archivo `node ../scripts/...` abortaría el
+build de la imagen aunque el interruptor esté puesto.
+
+### Qué se modificó
+- **`scripts/sincronizar-paquetes-locales.mjs`** — nuevo, sin dependencias.
+- Los tres `package.json` (`sitio-web`, `intranet`, `api-backend`): `sync:paquetes` para
+  lanzarlo a mano, más `predev` y `prebuild` que lo llaman.
+- Los tres `Dockerfile`: `COPY scripts /scripts` y `ENV OLO_SKIP_SYNC=1` antes del
+  `RUN npm run build`.
+- Los dos `package-lock.json` de las apps web: 10 paquetes actualizados en cada una
+  (`next` 16.3.0 → 16.3.4, `sharp` → 0.35.4, `js-yaml` → 4.3.2, y sus arrastres).
+- **Ningún `package.json` cambió por el parcheo de seguridad**, y esa es la señal de que fue
+  limpio: `^16.3.0` ya admitía 16.3.4, así que no hubo que ampliar ningún rango.
+- No se tocó ningún archivo de código de las apps. El error de compilación no estaba en el
+  código.
+
+### Verificación
+- `npm run build` correcto en `sitio-web`. Se comprobó con el build completo y no solo con
+  `tsc --noEmit` (que también pasa limpio) porque el error original lo daba el empaquetador
+  al resolver el módulo, no el chequeo de tipos: son dos cosas distintas.
+- `npm audit` en las dos apps: `found 0 vulnerabilities`.
+- `src/busqueda/` presente en las dos copias de `node_modules`, y `diff -rq` contra
+  `packages/` sin diferencias en `blocks-renderer` ni en `accessibility-policy`.
+- El script se probó en los cuatro casos, no solo en el bueno: sin cambios (calla, 130 ms);
+  con `api-backend` de verdad desfasado (detectó `@olo/accessibility-policy` y lo arregló);
+  con una edición inventada en `packages/blocks-renderer/src/index.ts` y revertida después
+  (detectó los dos sentidos del cambio); y con `OLO_SKIP_SYNC=1` (sale sin hacer nada).
+- La prueba de punta a punta fue un `npm run build` real de `sitio-web` con `packages/`
+  editado: el `prebuild` saltó, resincronizó y el build terminó correcto.
+- `git status packages/` limpio al acabar: las ediciones de prueba no quedaron en el árbol.
+
+### Pendiente
+- `api-backend` tenía **también** su copia de `@olo/accessibility-policy` desfasada, y salió a
+  la luz al probar el script. Conviene mirar si algo de lo que se dio por probado allí corrió
+  contra la versión vieja.
+- No se ejecutó `next build` completo en `intranet`; sigue en pie el fallo de type check en
+  `Carousel.tsx` / `SeccionCarrusel.tsx` anotado el 04-09.
+- Los `Dockerfile` se modificaron pero **no se construyó ninguna imagen** para comprobarlo: no
+  se probó `docker compose build`. El cambio son dos líneas por archivo y sigue el patrón que
+  ya usaba `COPY packages /packages`, pero conviene confirmarlo en el próximo despliegue.
+
+---
+
 ## sesión 04-09-2026 (7.ª parte): `npm audit fix --force` había degradado Sequelize tres versiones mayores
 
 Encargo: corregir el resultado de un `npm audit fix --force` ejecutado en `api-backend`.

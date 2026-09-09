@@ -1,0 +1,52 @@
+[
+  {
+    "cod_cualificacion_cno": "0",
+    "nombre_cualificacion_cno": "Dirección y Gerencia",
+    "descrip_nivel_cualificacion_cno": "Ocupaciones de direccion y gerencia"
+  },
+  {
+    "cod_cualificacion_cno": "1",
+    "nombre_cualificacion_cno": "Finanzas y Administración",
+    "descrip_nivel_cualificacion_cno": "Nivel 1 (A):     Las funciones de estas ocupaciones suelen ser muy variadas y complejas, su desempeño exige un alto grado de autonomía, responsabilidad por el trabajde otros y ocasionalmente por la asignación de recursos; se requiere generalmente haber cumplido un programa de estudios universitarios a nivel de postgrado."
+  },
+  {
+    "cod_cualificacion_cno": "2",
+    "nombre_cualificacion_cno": "Ciencias Naturales, Aplicadas y Relacionadas",
+    "descrip_nivel_cualificacion_cno": "Nivel 2 (B):     Las funciones de las ocupaciones de este nivel son por lo general muy variadas, demandan responsabilidad de supervisión, un apreciable grado de autonomía y juicio evaluativo; se requiere generalmente de estudios técnicos o tecnológicos."
+  },
+  {
+    "cod_cualificacion_cno": "3",
+    "nombre_cualificacion_cno": "Salud",
+    "descrip_nivel_cualificacion_cno": "Nivel 3,4 (C): Las funciones de estas ocupaciones combinan actividades físicas e intelectuales, en algunos casos variadas y complejas, con algún nivel de autonomía para su desempeño; por lo general se requiere haber cumplido un programa de aprendizaje para el trabajo, educación básica secundaria más cursos de capacitación, entrenamiento en el trabajo o experiencia."
+  },
+  {
+    "cod_cualificacion_cno": "4",
+    "nombre_cualificacion_cno": "Ciencias Sociales, Educación, Gobierno y Religión",
+    "descrip_nivel_cualificacion_cno": "Nivel 3,4 (C):     Las funciones de estas ocupaciones combinan actividades físicas e intelectuales, en algunos casos variadas y complejas, con algún nivel de autonomía para su desempeño; por lo general se requiere haber cumplido un programa de aprendizaje para el trabajo, educación básica secundaria más cursos de capacitación, entrenamiento en el trabajo o experiencia."
+  },
+  {
+    "cod_cualificacion_cno": "5",
+    "nombre_cualificacion_cno": "Arte, Cultura, Esparcimiento y Deporte",
+    "descrip_nivel_cualificacion_cno": "Nivel 3,4 (C):     Las funciones de estas ocupaciones combinan actividades físicas e intelectuales, en algunos casos variadas y complejas, con algún nivel de autonomía para su desempeño; por lo general se requiere haber cumplido un programa de aprendizaje para el trabajo, educación básica secundaria más cursos de capacitación, entrenamiento en el trabajo o experiencia."
+  },
+  {
+    "cod_cualificacion_cno": "6",
+    "nombre_cualificacion_cno": "Ventas y Servicios",
+    "descrip_nivel_cualificacion_cno": "Nivel 6 (D):     Las funciones de estas ocupaciones son sencillas y repetitivas y se desempeñan en actividades fundamentalmente de carácter físico, con alto nivel de subordinación; la experiencia laboral requerida es mínima o no se exige; se requiere, por lo general, educación básica primaria."
+  },
+  {
+    "cod_cualificacion_cno": "7",
+    "nombre_cualificacion_cno": "Explotación primaria y extractiva",
+    "descrip_nivel_cualificacion_cno": "Nivel 6 (D):     Las funciones de estas ocupaciones son sencillas y repetitivas y se desempeñan en actividades fundamentalmente de carácter físico, con alto nivel de subordinación; la experiencia laboral requerida es mínima o no se exige; se requiere, por lo general, educación básica primaria."
+  },
+  {
+    "cod_cualificacion_cno": "8",
+    "nombre_cualificacion_cno": "Operación de Equipos, Transporte y Oficios",
+    "descrip_nivel_cualificacion_cno": "Nivel 6 (D):     Las funciones de estas ocupaciones son sencillas y repetitivas y se desempeñan en actividades fundamentalmente de carácter físico, con alto nivel de subordinación; la experiencia laboral requerida es mínima o no se exige; se requiere, por lo general, educación básica primaria."
+  },
+  {
+    "cod_cualificacion_cno": "9",
+    "nombre_cualificacion_cno": "Procesamiento, Fabricación y Ensamble",
+    "descrip_nivel_cualificacion_cno": "Nivel 6 (D):     Las funciones de estas ocupaciones son sencillas y repetitivas y se desempeñan en actividades fundamentalmente de carácter físico, con alto nivel de subordinación; la experiencia laboral requerida es mínima o no se exige; se requiere, por lo general, educación básica primaria."
+  }
+]
