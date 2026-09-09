@@ -7,6 +7,16 @@ export {
   PRIMITIVE_COMPONENT_NAMES,
 } from './primitives/layout-primitives';
 
+export {
+  tabsConfig,
+  TabsRender,
+  MAX_TABS,
+} from './primitives/tabs-primitives';
+export type { TabsProps, TabItem } from './primitives/tabs-primitives';
+
+export { DestinoTabField } from './primitives/destino-tab-field';
+export type { DestinoTabConfig } from './primitives/destino-tab-field';
+
 // ─── Campo de color (selector visual + hex) para cualquier bloque ───
 export { ColorPickerField, campoColor } from './primitives/color-picker-field';
 export type { ColorPickerFieldProps } from './primitives/color-picker-field';

@@ -101,7 +101,7 @@ const puckConfigBase: Config = {
       components: ['TasaConceptos', 'PreguntasFrecuentes'],
     },
     'Maquetación': {
-      components: ['Grid', 'Flex', 'Space'],
+      components: ['Grid', 'Flex', 'Space', 'SeccionPestanasLaterales'],
     },
   },
   components: {
@@ -834,6 +834,7 @@ const BLOQUES_COMUNES = [
   'Flex',
   'Space',
   'IconoBloque',
+  'SeccionPestanasLaterales',
 ];
 
 /**
