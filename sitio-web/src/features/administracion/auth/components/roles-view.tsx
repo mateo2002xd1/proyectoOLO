@@ -16,101 +16,118 @@ import { ModalPermisos } from './modal-permisos';
 
 const ITEMS_POR_PAGINA = 5;
 
-function ModalRol({
+function ModalNuevoEditor({
   open,
   onClose,
   onGuardar,
   guardando,
+  permisos,
 }: {
   open: boolean;
   onClose: () => void;
-  onGuardar: (nombre: string, descripcion: string) => Promise<void>;
+  onGuardar: (nombre: string, descripcion: string, permisosIds: string[]) => Promise<void>;
   guardando: boolean;
+  permisos: Permission[];
 }) {
-  const [nombre, setNombre] = useState('');
+  const [nombreExtra, setNombreExtra] = useState('');
   const [descripcion, setDescripcion] = useState('');
+  const [selecionados, setSeleccionados] = useState<Set<string>>(new Set());
+  const [mostrandoPermisos, setMostrandoPermisos] = useState(false);
 
   useEffect(() => {
     if (open) {
-      setNombre('');
+      setNombreExtra('');
       setDescripcion('');
+      setSeleccionados(new Set());
+      setMostrandoPermisos(false);
     }
   }, [open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nombre.trim()) return;
-    await onGuardar(nombre.trim(), descripcion.trim());
+    if (!nombreExtra.trim()) return;
+    const nombreFinal = `Editor ${nombreExtra.trim()}`;
+    await onGuardar(nombreFinal, descripcion.trim(), Array.from(selecionados));
   };
 
   return (
-    <Alert open={open} onClose={() => !guardando && onClose()}>
-      <AlertTitle>Nuevo Rol</AlertTitle>
-      <AlertDescription>
-        Completa los campos para crear un nuevo rol.
-      </AlertDescription>
-      <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">
-            Nombre del rol
-          </label>
-          <input
-            type="text"
-            required
-            maxLength={80}
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            className="w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:text-[#f6f6f6] dark:focus:border-white dark:focus:ring-white"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">
-            Descripcion
-          </label>
-          <textarea
-            maxLength={200}
-            rows={3}
-            value={descripcion}
-            onChange={(e) => setDescripcion(e.target.value)}
-            className="w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:text-[#f6f6f6] dark:focus:border-white dark:focus:ring-white"
-          />
-        </div>
-
-        <AlertActions>
-          <Button type="button" plain onClick={onClose} disabled={guardando}>
-            Cancelar
-          </Button>
-          <Button type="submit" disabled={guardando}>
-            {guardando ? 'Guardando...' : 'Guardar'}
-          </Button>
-        </AlertActions>
-      </form>
-    </Alert>
-  );
-}
-
-function ModalVerRol({
-  rol,
-  onClose,
-}: {
-  rol: Role | null;
-  onClose: () => void;
-}) {
-  return (
-    <Alert open={!!rol} onClose={onClose}>
-      <AlertTitle>Detalle del rol</AlertTitle>
-      <AlertDescription>
-        {rol && (
-          <div className="mt-2 space-y-2 text-sm text-zinc-700 dark:text-[#cbd5e1]">
-            <p><span className="font-semibold">Nombre:</span> {rol.name}</p>
-            <p><span className="font-semibold">Descripcion:</span> {rol.description || 'No especificada'}</p>
+    <>
+      <Alert open={open && !mostrandoPermisos} onClose={() => !guardando && onClose()}>
+        <AlertTitle>Nuevo Editor</AlertTitle>
+        <AlertDescription>
+          Completa los campos para crear un nuevo rol de editor.
+        </AlertDescription>
+        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">
+              Nombre del rol
+            </label>
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-2 text-sm bg-zinc-100 border border-zinc-300 rounded-lg dark:bg-[#0f1624] dark:border-zinc-800 text-zinc-500 font-medium">Editor</span>
+              <input
+                type="text"
+                required
+                maxLength={70}
+                placeholder="ej: Inicio"
+                value={nombreExtra}
+                onChange={(e) => setNombreExtra(e.target.value)}
+                className="w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:text-[#f6f6f6] dark:focus:border-white dark:focus:ring-white"
+              />
+            </div>
           </div>
-        )}
-      </AlertDescription>
-      <AlertActions>
-        <Button type="button" onClick={onClose}>Cerrar</Button>
-      </AlertActions>
-    </Alert>
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">
+              Descripcion
+            </label>
+            <textarea
+              maxLength={200}
+              rows={3}
+              value={descripcion}
+              onChange={(e) => setDescripcion(e.target.value)}
+              className="w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:text-[#f6f6f6] dark:focus:border-white dark:focus:ring-white"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">
+              Permisos
+            </label>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setMostrandoPermisos(true)}
+                className="rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 shadow-sm hover:bg-zinc-50 dark:border-zinc-700 dark:bg-[#131b2f] dark:text-zinc-300 dark:hover:bg-zinc-800/50"
+              >
+                Añadir permisos
+              </button>
+              <span className="text-sm text-zinc-500 dark:text-[#94a3b8]">
+                {selecionados.size} seleccionados
+              </span>
+            </div>
+          </div>
+
+          <AlertActions>
+            <Button type="button" plain onClick={onClose} disabled={guardando}>
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={guardando}>
+              {guardando ? 'Guardando...' : 'Guardar'}
+            </Button>
+          </AlertActions>
+        </form>
+      </Alert>
+
+      <ModalPermisos
+        abierto={mostrandoPermisos}
+        onCerrar={() => setMostrandoPermisos(false)}
+        rol={null}
+        permisos={permisos}
+        originales={new Set()}
+        seleccionados={selecionados}
+        onCambiarSeleccion={setSeleccionados}
+        onGuardar={async () => { setMostrandoPermisos(false); }}
+        guardando={false}
+      />
+    </>
   );
 }
 
@@ -140,7 +157,6 @@ export default function RolesView() {
   const [rolEditando, setRolEditando] = useState<Role | null>(null);
   const [guardandoRol, setGuardandoRol] = useState(false);
 
-  const [rolViendo, setRolViendo] = useState<Role | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const [rolPermisos, setRolPermisos] = useState<Role | null>(null);
@@ -180,7 +196,7 @@ export default function RolesView() {
     setShowNotification(true);
   };
 
-  const handleGuardarRol = async (nombre: string, descripcion: string) => {
+  const handleGuardarRol = async (nombre: string, descripcion: string, permisosIds?: string[]) => {
     setGuardandoRol(true);
     try {
       if (rolEditando) {
@@ -200,7 +216,14 @@ export default function RolesView() {
           body: JSON.stringify({ name: nombre, description: descripcion }),
         });
         if (!res.ok) throw new Error((await res.json()).error || 'Error al crear');
-        notificar('Rol creado', 'El nuevo rol esta listo para asignar permisos.');
+        
+        const data = await res.json();
+        
+        if (permisosIds && permisosIds.length > 0) {
+          await Promise.all(permisosIds.map(permId => assignPermissionToRole(data.id, permId)));
+        }
+
+        notificar('Rol creado', 'El nuevo rol se creo y configuro correctamente.');
       }
       setModalRolAbierto(false);
       setRolEditando(null);
@@ -275,6 +298,11 @@ export default function RolesView() {
             Administra los roles del sistema y configura sus permisos
           </p>
         </div>
+        <div>
+          <Button onClick={() => setModalRolAbierto(true)}>
+            Nuevo Editor
+          </Button>
+        </div>
       </div>
 
       <div className="mb-6">
@@ -313,6 +341,7 @@ export default function RolesView() {
             ) : (
               rolesPagina.map((rol) => {
                 const numPermisos = rol.permissions?.length ?? 0;
+                const esRolPrincipal = ['Administrador', 'Editor', 'Subdirector', 'Director'].includes(rol.name);
                 return (
                   <tr key={rol.id} className="transition-colors hover:bg-zinc-50 dark:hover:bg-[#0f1624]/60">
                     <td className="px-5 py-3.5">
@@ -337,6 +366,19 @@ export default function RolesView() {
                           title="Editar permisos"
                         >
                           <PencilIcon className="size-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => !esRolPrincipal && setDeleteConfirmId(rol.id)}
+                          disabled={esRolPrincipal}
+                          className={`rounded-lg p-1.5 transition-colors ${
+                            esRolPrincipal
+                              ? 'cursor-not-allowed text-zinc-300 dark:text-zinc-600'
+                              : 'text-red-400 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-900/30 dark:hover:text-red-300'
+                          }`}
+                          title={esRolPrincipal ? 'No se puede eliminar un rol principal' : 'Eliminar rol'}
+                        >
+                          <TrashIcon className="size-4" />
                         </button>
                       </div>
                     </td>
@@ -369,13 +411,13 @@ export default function RolesView() {
         )}
       </div>
 
-      <ModalRol
+      <ModalNuevoEditor
         open={modalRolAbierto}
         onClose={() => setModalRolAbierto(false)}
         onGuardar={handleGuardarRol}
         guardando={guardandoRol}
+        permisos={permissions}
       />
-      <ModalVerRol rol={rolViendo} onClose={() => setRolViendo(null)} />
 
       <Alert open={!!deleteConfirmId} onClose={() => setDeleteConfirmId(null)}>
         <AlertTitle>Eliminar este rol?</AlertTitle>
