@@ -8,6 +8,8 @@ import {
   conCajaEnTodos,
   BLOQUES_SIN_CAJA,
   campoColor,
+  TextoRico,
+  ImagenDestacada,
 } from '@olo/blocks-renderer';
 import { ExternalPortals } from '@/shared/lib/blocks/ExternalPortals';
 import { Services } from '@/shared/lib/blocks/Services';
@@ -53,6 +55,15 @@ const campoImagen = (label: string) => ({
   ),
 });
 
+const campoFondo = {
+  type: 'radio' as const,
+  label: 'Fondo',
+  options: [
+    { label: 'Blanco', value: 'blanco' },
+    { label: 'Gris', value: 'gris' },
+  ],
+};
+
 // ─── RichText block: Puck handles the layout slot, EditorJS handles the content ───
 const RichTextBlock = {
   fields: {
@@ -96,6 +107,9 @@ const puckConfigBase: Config = {
         'VisorDocumentosNormativos',
         'CanalesAtencion',
       ],
+    },
+    'Texto e imagen': {
+      components: ['TextoRico', 'ImagenDestacada'],
     },
     'Portales': {
       components: ['ExternalPortals'],
@@ -777,6 +791,79 @@ const puckConfigBase: Config = {
         />
       ),
     },
+    // ─── Texto e imagen ───
+    TextoRico: {
+      label: 'Texto con formato',
+      fields: {
+        titulo: { type: 'richtext', label: 'Título' },
+        contenido: { type: 'richtext', label: 'Contenido' },
+        fondo: campoFondo,
+        colorTexto: campoColor('Color del texto (opcional)'),
+        ancho: {
+          type: 'radio',
+          label: 'Ancho',
+          options: [
+            { label: 'Estrecho', value: 'estrecho' },
+            { label: 'Ancho', value: 'ancho' },
+          ],
+        },
+      },
+      defaultProps: {
+        titulo: '¿Qué es?',
+        contenido: '<p>Escribe aquí el contenido de la sección.</p>',
+        fondo: 'gris',
+        colorTexto: '',
+        ancho: 'estrecho',
+      },
+      render: (props: BlockRender<ComponentProps<typeof TextoRico>>) => <TextoRico {...props} />,
+    },
+    ImagenDestacada: {
+      label: 'Imagen destacada',
+      fields: {
+        titulo: { type: 'richtext', label: 'Título' },
+        imagenSrc: campoImagen('Imagen'),
+        imagenAlt: { type: 'text', label: 'Texto alternativo' },
+        ancho: {
+          type: 'radio',
+          label: 'Ancho',
+          options: [
+            { label: 'Completo', value: 'completo' },
+            { label: 'Caja centrada', value: 'contenido' },
+          ],
+        },
+        fondo: campoFondo,
+        ajusteImagen: {
+          type: 'radio',
+          label: 'Ajuste de la imagen (solo ancho «Completo»)',
+          options: [
+            { label: 'Cubrir el espacio', value: 'cover' },
+            { label: 'Verse completa', value: 'contain' },
+          ],
+        },
+        redondeado: {
+          type: 'select',
+          label: 'Bordes redondeados (solo ancho «Completo»)',
+          options: [
+            { label: 'Ninguno', value: 'ninguno' },
+            { label: 'Pequeño', value: 'pequeno' },
+            { label: 'Grande', value: 'grande' },
+            { label: 'Circular', value: 'circular' },
+          ],
+        },
+      },
+      defaultProps: {
+        titulo: '',
+        imagenSrc: '',
+        imagenAlt: '',
+        ancho: 'completo',
+        fondo: 'blanco',
+        ajusteImagen: 'contain',
+        redondeado: 'grande',
+      },
+      render: (props: BlockRender<ComponentProps<typeof ImagenDestacada>>) => (
+        <ImagenDestacada {...props} />
+      ),
+    },
     // Bloque de texto enriquecido — usa EditorJS internamente
     RichText: RichTextBlock,
   },
@@ -829,7 +916,21 @@ const COMPONENTES_POR_SLUG: Record<string, string[]> = {
   // La plantilla es lo contrario a una página: solo la cabecera y el pie, que es
   // justo lo que las páginas ya no pueden tocar.
   [SLUG_DE_PLANTILLA]: ['Header', 'Footer'],
-  inicio: ['Hero', 'Services', 'DatoOloSemana', 'RecursosVisualesBloque', 'Publicaciones', 'ExternalPortals', 'RichText', 'Grid', 'Flex', 'Space', 'SeccionPestanasLaterales'],
+  inicio: [
+    'Hero',
+    'Services',
+    'DatoOloSemana',
+    'RecursosVisualesBloque',
+    'Publicaciones',
+    'ExternalPortals',
+    'RichText',
+    'TextoRico',
+    'ImagenDestacada',
+    'Grid',
+    'Flex',
+    'Space',
+    'SeccionPestanasLaterales',
+  ],
   'politica-de-privacidad': ['PoliticaPrivacidadEncabezado', 'VisorDocumentosNormativos', 'CanalesAtencion'],
 };
 

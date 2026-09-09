@@ -3572,3 +3572,177 @@ button.text-link,
   animation: destelloBusqueda 2.8s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
   scroll-margin-top: 110px !important;
 }
+
+/* ==========================================================================
+   COMPONENTES COMPARTIDOS (TextoRico e ImagenDestacada)
+   ==========================================================================
+   Estilos para los bloques compartidos con intranet vía @olo/blocks-renderer.
+   Adaptados a la identidad visual de sitio-web: fuentes (--font-heading /
+   --font-body), paleta de colores y modo oscuro.
+   ========================================================================== */
+
+/* Secciones globales de fondo */
+.matriz-section-gray {
+  width: 100%;
+  background-color: #f8f9fa;
+  display: flex;
+  justify-content: center;
+  overflow-x: hidden;
+  padding: 0 1rem;
+}
+
+.matriz-section-white {
+  width: 100%;
+  background-color: #ffffff;
+  display: flex;
+  justify-content: center;
+  overflow-x: hidden;
+  padding: 0 1rem;
+}
+
+@media (min-width: 768px) {
+  .matriz-section-gray,
+  .matriz-section-white {
+    padding: 0 2rem;
+  }
+}
+
+/* Texto con formato (TextoRico) */
+.tasa-concept-title {
+  color: #001631;
+  font-family: var(--font-heading);
+  font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.25rem);
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  position: relative;
+  line-height: 1.25;
+}
+
+.tasa-concept-desc {
+  color: #343a40;
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  text-align: left;
+}
+
+.tasa-concept-desc h1,
+.tasa-concept-desc h2,
+.tasa-concept-desc h3,
+.tasa-concept-desc h4,
+.tasa-concept-desc h5,
+.tasa-concept-desc h6 {
+  color: #001631;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  line-height: 1.3;
+  text-align: left;
+}
+
+.tasa-concept-desc h1 { font-size: 2rem; }
+.tasa-concept-desc h2 { font-size: 1.75rem; }
+.tasa-concept-desc h3 { font-size: 1.5rem; }
+.tasa-concept-desc h4 { font-size: 1.25rem; }
+.tasa-concept-desc h5 { font-size: 1.125rem; }
+.tasa-concept-desc h6 { font-size: 1rem; }
+
+.tasa-concept-desc p {
+  margin-bottom: 1rem;
+}
+
+.tasa-concept-desc p:last-child {
+  margin-bottom: 0;
+}
+
+.tasa-concept-desc ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.tasa-concept-desc ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.tasa-concept-desc li {
+  margin-bottom: 0.25rem;
+}
+
+.tasa-concept-desc strong {
+  font-weight: 700;
+  color: #0d1526;
+}
+
+.tasa-concept-desc a {
+  color: var(--color-brand-blue-dark, #0b6d8f);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color var(--transition-fast, 150ms ease);
+}
+
+.tasa-concept-desc a:hover {
+  color: var(--color-brand-hover, #6da020);
+}
+
+/* Imagen destacada (ImagenDestacada) */
+.matriz-sabias-que {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  border-radius: var(--radius-xl, 16px);
+  box-sizing: border-box;
+}
+
+.matriz-sabias-que img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--radius-xl, 16px);
+}
+
+.matriz-section-title {
+  font-family: var(--font-heading);
+  font-size: clamp(1.5rem, 1.2rem + 1vw, 1.75rem);
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  margin-top: 1.5rem;
+  color: #001631;
+}
+
+/* Modo oscuro para bloques compartidos */
+.dark .matriz-section-gray {
+  background-color: var(--surface, #131b2f);
+}
+
+.dark .matriz-section-white {
+  background-color: var(--background, #0b1121);
+}
+
+.dark .tasa-concept-title,
+.dark .matriz-section-title,
+.dark .tasa-concept-desc h1,
+.dark .tasa-concept-desc h2,
+.dark .tasa-concept-desc h3,
+.dark .tasa-concept-desc h4,
+.dark .tasa-concept-desc h5,
+.dark .tasa-concept-desc h6,
+.dark .tasa-concept-desc strong {
+  color: var(--foreground, #f6f6f6);
+}
+
+.dark .tasa-concept-desc {
+  color: #cbd5e1;
+}
+
+.dark .tasa-concept-desc a {
+  color: var(--color-accent, #4fc3f7);
+}
+
+.dark .tasa-concept-desc a:hover {
+  color: var(--color-accent-light, #81d4fa);
+}
