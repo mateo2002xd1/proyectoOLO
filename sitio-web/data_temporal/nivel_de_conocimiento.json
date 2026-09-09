@@ -1,0 +1,392 @@
+[
+  {
+    "cod_conocimiento_cno": "1",
+    "nomb_conocimiento_cno": "Administración y gerencia",
+    "desc_conocimiento_cno": "Conocimiento de principios de negocios y de administración que se utilizan en la planeación estratégica, asignación de recursos, modelos de recursos humanos, técnicas de liderazgo, métodos de producción, y coordinación de personas y de recursos."
+  },
+  {
+    "cod_conocimiento_cno": "2",
+    "nomb_conocimiento_cno": "Servicios de oficina y administrativos",
+    "desc_conocimiento_cno": "Conocimiento de administración y procedimientos de oficina y de sistemas tales como manejo de archivos y documentos, trascripción, diseño de formatos, y otros procedimientos y terminología propios de una oficina."
+  },
+  {
+    "cod_conocimiento_cno": "3",
+    "nomb_conocimiento_cno": "Economía y contabilidad",
+    "desc_conocimiento_cno": "Conocimiento de principios y prácticas de economía y contabilidad, de mercados financieros, de banca y análisis y reportes de información financiera."
+  },
+  {
+    "cod_conocimiento_cno": "4",
+    "nomb_conocimiento_cno": "Mercadotecnia y ventas",
+    "desc_conocimiento_cno": "Conocimiento de principios y métodos para mostrar, promover y vender productos o servicios. Esto incluye estrategias y tácticas de mercadotecnia, demostración del producto, técnicas de ventas y sistemas de control de ventas."
+  },
+  {
+    "cod_conocimiento_cno": "5",
+    "nomb_conocimiento_cno": "Servicio al cliente",
+    "desc_conocimiento_cno": "Conocimiento de principios y procesos para proporcionar al cliente con servicios personales. Esto incluye analizar las necesidades del cliente, cumplir con los estándares de calidad de los servicios y evaluar la satisfacción del cliente."
+  },
+  {
+    "cod_conocimiento_cno": "6",
+    "nomb_conocimiento_cno": "Recursos humanos y de personal",
+    "desc_conocimiento_cno": "Conocimiento de principios y procedimientos para buscar, seleccionar y capacitar al personal. Conocimientos sobre compensación y beneficios, relaciones y negociaciones laborales, y sistemas de información de recursos humanos."
+  },
+  {
+    "cod_conocimiento_cno": "7",
+    "nomb_conocimiento_cno": "Producción y procesamiento",
+    "desc_conocimiento_cno": "Conocimiento de materias primas, procesos de producción, control de calidad, costos, y otras técnicas para maximizar la producción y distribución efectiva de productos."
+  },
+  {
+    "cod_conocimiento_cno": "8",
+    "nomb_conocimiento_cno": "Producción de alimentos",
+    "desc_conocimiento_cno": "Conocimiento de técnicas y de equipo para plantar, crecer y cosechar productos alimenticios (vegetal y animal) para el consumo, incluyendo técnicas de almacenamiento/manejo."
+  },
+  {
+    "cod_conocimiento_cno": "9",
+    "nomb_conocimiento_cno": "Computadoras y electrónica",
+    "desc_conocimiento_cno": "Conocimiento de tableros de circuito, procesadores, chips, equipo electrónico, hardware y software, incluyendo aplicaciones y programación."
+  },
+  {
+    "cod_conocimiento_cno": "10",
+    "nomb_conocimiento_cno": "Ingeniería y tecnología",
+    "desc_conocimiento_cno": "Conocimiento sobre la aplicación práctica de ingeniería y tecnología. Esto incluye aplicar técnicas, procedimientos y equipos al diseño y producción de diferentes productos y servicios."
+  },
+  {
+    "cod_conocimiento_cno": "11",
+    "nomb_conocimiento_cno": "Diseño",
+    "desc_conocimiento_cno": "Conocimiento de técnicas de diseño, herramientas y principios que se utilizan en la producción de planes técnicos de precisión, planos, dibujos y modelos."
+  },
+  {
+    "cod_conocimiento_cno": "12",
+    "nomb_conocimiento_cno": "Construcción",
+    "desc_conocimiento_cno": "Conocimiento  conceptual y desarrollo prácticos  de materiales, métodos y herramientas que se utilizan para construir o reparar casas, edificios u otras estructuras tales como carreteras y caminos  e infraestructura de transporte  portuaria, aeroportuaria"
+  },
+  {
+    "cod_conocimiento_cno": "13",
+    "nomb_conocimiento_cno": "Mecánica",
+    "desc_conocimiento_cno": "Conocimiento de máquinas y herramientas, incluyendo sus diseños, usos, reparación y mantenimiento."
+  },
+  {
+    "cod_conocimiento_cno": "14",
+    "nomb_conocimiento_cno": "Matemáticas",
+    "desc_conocimiento_cno": "Conocimiento de aritmética, álgebra, geometría, cálculo y estadística, y sus distintas aplicaciones."
+  },
+  {
+    "cod_conocimiento_cno": "15",
+    "nomb_conocimiento_cno": "Física",
+    "desc_conocimiento_cno": "Conocimiento y predicción de principios físicos, leyes, sus interrelaciones y aplicaciones para entender las dinámicas de fluido, materiales y atmosféricas, y estructuras y procesos mecánicos, eléctricos, atómicos y sub-atómicos."
+  },
+  {
+    "cod_conocimiento_cno": "16",
+    "nomb_conocimiento_cno": "Química",
+    "desc_conocimiento_cno": "Conocimiento de la composición química, estructura y propiedades de substancias y de procesos químicos y de las transformaciones que estos sufren. Eso incluye el uso de químicos y sus interacciones, signos de peligro, técnicas de producción y eliminación"
+  },
+  {
+    "cod_conocimiento_cno": "17",
+    "nomb_conocimiento_cno": "Biología",
+    "desc_conocimiento_cno": "Conocimiento de plantas y organismos animales, sus tejidos, células, funciones, interdependencias e interacciones entre sí y el medio ambiente."
+  },
+  {
+    "cod_conocimiento_cno": "18",
+    "nomb_conocimiento_cno": "Sicología",
+    "desc_conocimiento_cno": "Conocimiento de la conducta y el comportamiento humano, diferencias individuales y colectivas respecto a la aptitud, personalidad, e intereses, aprendizaje y motivación, métodos de investigación sicológica, evaluación y tratamiento de desórdenes afectivos"
+  },
+  {
+    "cod_conocimiento_cno": "19",
+    "nomb_conocimiento_cno": "Sociología y antropología",
+    "desc_conocimiento_cno": "Conocimiento de la conducta y dinámicas de grupo, tendencias e influencias sociales, migraciones humanas, etnia, orígenes e historia de las culturas."
+  },
+  {
+    "cod_conocimiento_cno": "20",
+    "nomb_conocimiento_cno": "Geografía y Territorio",
+    "desc_conocimiento_cno": "Conocimiento de principios y métodos para describir las características de la tierra, del mar y de las masas de aire, incluyendo sus características físicas, ubicaciones, interrelaciones y distribución de la vida vegetal, animal y humana, de acuerdo a la"
+  },
+  {
+    "cod_conocimiento_cno": "21",
+    "nomb_conocimiento_cno": "Medicina y odontología",
+    "desc_conocimiento_cno": "Conocimiento de la información y técnicas que se nevesitan para diagnosticar y tratar lesiones humanas, enfermedades y deformidades. Esto incluye síntomas, tratamientos alternativos, propiedades e interacciones de los medicamentos y medidas preventivas pa"
+  },
+  {
+    "cod_conocimiento_cno": "22",
+    "nomb_conocimiento_cno": "Educación y capacitación",
+    "desc_conocimiento_cno": "Conocimiento de principios y métodos para el diseño e implementación de programas y acciones de capacitación, enseñanza e instrucción, dirigidas a personas, familias o grupos, y la evaluación de la efectividad de las mismas."
+  },
+  {
+    "cod_conocimiento_cno": "23",
+    "nomb_conocimiento_cno": "Idioma extranjero",
+    "desc_conocimiento_cno": "Conocimiento de la estructura y contenido de un idioma extranjero, incluyendo el significado y la ortografía de las palabras, reglas de redacción y gramática."
+  },
+  {
+    "cod_conocimiento_cno": "24",
+    "nomb_conocimiento_cno": "Bellas artes",
+    "desc_conocimiento_cno": "Conocimiento de la teoría y técnicas que se requieren para componer, producir y realizar trabajos de música, danza, artes visulaes, teatro y escultura."
+  },
+  {
+    "cod_conocimiento_cno": "25",
+    "nomb_conocimiento_cno": "Historia y arqueología",
+    "desc_conocimiento_cno": "Conocimiento de sucesos históricos y sus causas, sus indicadores y sus efectos en las civilizaciones y cuturas."
+  },
+  {
+    "cod_conocimiento_cno": "26",
+    "nomb_conocimiento_cno": "Filosofía y teología",
+    "desc_conocimiento_cno": "Conocimiento de diferentes sistemas filosóficos y religiones. Esto incluye sus principios básicos, valores, ética, maneras de pensar, costumbres, prácticas y su impacto en la cultura humana."
+  },
+  {
+    "cod_conocimiento_cno": "27",
+    "nomb_conocimiento_cno": "Seguridad pública",
+    "desc_conocimiento_cno": "Conocimiento del equipo, las regulaciones, los procedimientos y las estrategias importantes para promover eficazmente las operaciones de seguridad a nivel local, departamental o nacional para la protección de las personas, la información, la propiedad y l"
+  },
+  {
+    "cod_conocimiento_cno": "28",
+    "nomb_conocimiento_cno": "Leyes y gobierno",
+    "desc_conocimiento_cno": "Conocimiento de leyes, códigos legales, procedimientos judiciales, jurisprudencia, regulaciones gubernamentales, órdenes de poder ejecutivo, reglas de dependencias gubernamentales o ministerios, y el proceso político democrático."
+  },
+  {
+    "cod_conocimiento_cno": "29",
+    "nomb_conocimiento_cno": "Telecomunicación",
+    "desc_conocimiento_cno": "Conocimiento respecto de la transmisión, radiodifusión, interruptoes, control y funcionamiento de los sistemas de telecomunicaciones."
+  },
+  {
+    "cod_conocimiento_cno": "30",
+    "nomb_conocimiento_cno": "Comunicación y medios de comunicación",
+    "desc_conocimiento_cno": "Conocimiento de la producción de los medios de comunicación, y técnicas y métodos de diseminación. Esto incluye formas alternativas para informar y entretener por escrito, oral y visualmente."
+  },
+  {
+    "cod_conocimiento_cno": "31",
+    "nomb_conocimiento_cno": "Transporte",
+    "desc_conocimiento_cno": "Conocimiento de principios y métodos para transportar a personas o productos por aire, ferrocarril, mar o caminos, incluyendo los costos relativos y los beneficios."
+  },
+  {
+    "cod_conocimiento_cno": "32",
+    "nomb_conocimiento_cno": "Normas de contabilidad e información financiera, auditoria y aseguramiento de la Información, tributaria y demás del sector privado y/o público",
+    "desc_conocimiento_cno": "Conocimiento de normas de Contabilidad e Información Financiera, auditoria y aseguramiento de la Información, tributaria y demás del sector privado y/o público."
+  },
+  {
+    "cod_conocimiento_cno": "33",
+    "nomb_conocimiento_cno": "Finanzas",
+    "desc_conocimiento_cno": "Conocimiento de principios y prácticas en finanzas."
+  },
+  {
+    "cod_conocimiento_cno": "34",
+    "nomb_conocimiento_cno": "Herramientas de simulación  y diseño",
+    "desc_conocimiento_cno": "Conocimiento y utilización de herramientas de simulación  y diseño."
+  },
+  {
+    "cod_conocimiento_cno": "35",
+    "nomb_conocimiento_cno": "Interpretación de planos",
+    "desc_conocimiento_cno": "Conocimiento e interpretación de planos arquitectónicos, estructurales, electrónicos, ente otros."
+  },
+  {
+    "cod_conocimiento_cno": "36",
+    "nomb_conocimiento_cno": "Manejo de las TIC",
+    "desc_conocimiento_cno": "Conocimiento y manejo de las Tecnologías de la Información y la Comunicación,  con el fin de almacenar y recuperar información, enviar y recibir información de un sitio a otro, o procesar información para poder calcular resultados y elaborar informes."
+  },
+  {
+    "cod_conocimiento_cno": "37",
+    "nomb_conocimiento_cno": "Manipulación de alimentos",
+    "desc_conocimiento_cno": "Conocimiento en seguridad y salubridad de los alimentos para su respectiva manipulación."
+  },
+  {
+    "cod_conocimiento_cno": "38",
+    "nomb_conocimiento_cno": "Mantenimiento",
+    "desc_conocimiento_cno": "Conocimiento en conservación y prevención de una cosa, herramienta, equipo, etc.  en buen estado o en una situación determinada para evitar su deterioro o degradación."
+  },
+  {
+    "cod_conocimiento_cno": "39",
+    "nomb_conocimiento_cno": "Tanatopraxia",
+    "desc_conocimiento_cno": "Conocimiento de técnicas y prácticas que se realizan sobre un cadáver o restos humanos, aplicando métodos de higienización, preservación temporal, reconstrucción y presentación estética."
+  },
+  {
+    "cod_conocimiento_cno": "40",
+    "nomb_conocimiento_cno": "Anatomía",
+    "desc_conocimiento_cno": "Conocimiento de la estructura del cuerpo humano."
+  },
+  {
+    "cod_conocimiento_cno": "41",
+    "nomb_conocimiento_cno": "Primeros auxilios",
+    "desc_conocimiento_cno": "Conocimiento y tècnicas bàsicas de asistencia en caso de accidente o enfermedad repentina."
+  },
+  {
+    "cod_conocimiento_cno": "42",
+    "nomb_conocimiento_cno": "Primera infancia",
+    "desc_conocimiento_cno": "Conocimiento de la educación inicial, trabajo con comunidades, desarrollo infantil, ambientes seguros y protectores y garantía de derecho."
+  },
+  {
+    "cod_conocimiento_cno": "43",
+    "nomb_conocimiento_cno": "Patrimonio cultural",
+    "desc_conocimiento_cno": "Conocimiento del  patrimonio  cultural  de  la  Nación,  está  constituido  por  todos  los   bienes  y  valores  culturales  que  son  expresión  de  la  nacionalidad  colombiana,  tales  como  la   tradición,   las   costumbres   y   los   hábitos,   as"
+  },
+  {
+    "cod_conocimiento_cno": "44",
+    "nomb_conocimiento_cno": "Patrimonio natural",
+    "desc_conocimiento_cno": "Conocimiento de Lugares  o  zonas  naturales  estrictamente  delimitadas  constituidas  por   formaciones  físicas  y  biológicas  o  por  grupos  de  esas  formaciones  que  tengan  un  valor   excepcional  desde  el  punto  de  vista  estético  o  cient"
+  },
+  {
+    "cod_conocimiento_cno": "45",
+    "nomb_conocimiento_cno": "Gestión del riesgo de desastres",
+    "desc_conocimiento_cno": "Conocimientos en tipos, causas, fuentes, procedimientos de manejo, normatividad, criterios de seguridad, metodologías de análisis e identificación de riesgos de desastres."
+  },
+  {
+    "cod_conocimiento_cno": "46",
+    "nomb_conocimiento_cno": "Armonía y composición",
+    "desc_conocimiento_cno": "Conocimiento de técnicas para la construcción, enlace, calidad y progresiones de acordes, así como para la creación de piézas musicales"
+  },
+  {
+    "cod_conocimiento_cno": "47",
+    "nomb_conocimiento_cno": "Ejecución Instrumental",
+    "desc_conocimiento_cno": "Conocimiento de técnicas, teorías y principios para ejecutar en un instrumento obras musicales de compositores de distintos períodos y estilos, conjugando el conocimiento del lenguaje musical, el dominio técnico y sonoro del instrumento y la sensibilidad,"
+  },
+  {
+    "cod_conocimiento_cno": "48",
+    "nomb_conocimiento_cno": "Instrumentos musicales",
+    "desc_conocimiento_cno": "Conocmiento sobre teorías, técnicas, prácticas y usos de instrumentos musicales"
+  },
+  {
+    "cod_conocimiento_cno": "49",
+    "nomb_conocimiento_cno": "Atención integral en salud",
+    "desc_conocimiento_cno": "Conocimiento de la conducta y el comportamiento humano, diferencias individuales y colectivas respecto a la aptitud, personalidad, e intereses, aprendizaje y motivación, métodos de investigación sicológica, evaluación y tratamiento de desórdenes afectivos"
+  },
+  {
+    "cod_conocimiento_cno": "50",
+    "nomb_conocimiento_cno": "Servicio a la persona y humanización",
+    "desc_conocimiento_cno": "Conocimiento de principios y procesos para proporcionar a las personas, servicios de salud humanizados. Esto incluye analizar las necesidades de las personas y sus familias, cumplir con los estándares de calidad de los servicios y evaluar la satisfacción"
+  },
+  {
+    "cod_conocimiento_cno": "51",
+    "nomb_conocimiento_cno": "Medicinas y terapias alternativas y complementarias",
+    "desc_conocimiento_cno": "Conocimiento en los principios y fundamentos de las medicinas y terapias alternativas y complementarias, en el ámbito de su disciplina."
+  },
+  {
+    "cod_conocimiento_cno": "52",
+    "nomb_conocimiento_cno": "Moda y belleza",
+    "desc_conocimiento_cno": "Conocimientos en morfología, visagismo, técnica de color, diversidad cultural y tendencias."
+  },
+  {
+    "cod_conocimiento_cno": "53",
+    "nomb_conocimiento_cno": "Producción agrícola y pecuaria",
+    "desc_conocimiento_cno": "Conocimiento de sembrar, mantener y cosechar cultivos y pastos, pastoreo, manejo de animales.  La gestión y el mantenimiento de las granjas y la producción de productos vegetales y animales no procesados."
+  },
+  {
+    "cod_conocimiento_cno": "54",
+    "nomb_conocimiento_cno": "Gestión y control ambiental",
+    "desc_conocimiento_cno": "Conocimiento en el manejo adecuado de materiales y sustancias previniendo la generación de focos o fuentes de contaminación en el entorno, las medidas correctivas, y de mitigacion para las mismas."
+  },
+  {
+    "cod_conocimiento_cno": "55",
+    "nomb_conocimiento_cno": "Salud y seguridad en el trabajo",
+    "desc_conocimiento_cno": "Conocimiento del reconocimiento, la evaluación y el control de factores ambientales asociados con el lugar de trabajo."
+  },
+  {
+    "cod_conocimiento_cno": "56",
+    "nomb_conocimiento_cno": "Metodología de investigación",
+    "desc_conocimiento_cno": "Conocimiento del conjunto sistemático de estratégias, procedimientos, técnicas, pasos y tareas que se siguen para recolectar información y abordar su análisis para la obtención de nuevos conocimientos o, ampliar estos su aplicación para la solución a prob"
+  },
+  {
+    "cod_conocimiento_cno": "57",
+    "nomb_conocimiento_cno": "Principios éticos",
+    "desc_conocimiento_cno": "Conocimiento de las normas que regulan el comportamiento de la persona dentro de una empresa,  organización o el lugar en donde se desempeña."
+  },
+  {
+    "cod_conocimiento_cno": "58",
+    "nomb_conocimiento_cno": "Diseño de sistemas agroecológicos",
+    "desc_conocimiento_cno": "Conocimiento de la disciplina científica agroecológica, el conjunto de prácticas y las etnociencias para diseñar, implementar, manejar y evaluar sistemas agrícolas sostenibles que optimicen y estabilicen la producción."
+  },
+  {
+    "cod_conocimiento_cno": "59",
+    "nomb_conocimiento_cno": "Corporalidad",
+    "desc_conocimiento_cno": "Conocimiento técnico, teórico y práctico del cuerpo humano en estado de reposo y/o movimiento que permita su expresión, de acuerdo con los aspectos físicos, motores, intelectuales, sociales, y afectivos y con sus diferentes técnicas"
+  },
+  {
+    "cod_conocimiento_cno": "60",
+    "nomb_conocimiento_cno": "Técnica de tatuaje",
+    "desc_conocimiento_cno": "Capacidad de introducir en la dermis y epidermis tintas en diferentes zonas del cuerpo, con técnicas específicas para crear texturas y colores, según la representación y diseño a elaborar, asegurando así un resultado permanente."
+  },
+  {
+    "cod_conocimiento_cno": "61",
+    "nomb_conocimiento_cno": "Ciencias políticas y educación cívica",
+    "desc_conocimiento_cno": "Conocimiento del gobierno y los principios o la práctica política"
+  },
+  {
+    "cod_conocimiento_cno": "62",
+    "nomb_conocimiento_cno": "Derecho",
+    "desc_conocimiento_cno": "Conocimiento de los principios, las normas y los procedimientos para mantener formalmente el orden social"
+  },
+  {
+    "cod_conocimiento_cno": "63",
+    "nomb_conocimiento_cno": "Trabajo social",
+    "desc_conocimiento_cno": "Conocimiento de referentes epistemológico, ontológico, teórico-conceptual, metodológico y ético-político para la intervención de problemas y necesidades sociales, concebida esta como un proceso compuesto por la investigación y la acción profesional para la transformación de las realidades sociales en distintos contextos sociohistóricos."
+  },
+  {
+    "cod_conocimiento_cno": "64",
+    "nomb_conocimiento_cno": "Diseño y administración de redes y bases de datos",
+    "desc_conocimiento_cno": "Conocimiento del diseño, el mantenimiento y la integración de aplicaciones de software. También incluye las aplicaciones de medios informáticos"
+  },
+  {
+    "cod_conocimiento_cno": "65",
+    "nomb_conocimiento_cno": "Bibliotecología, información y archivología",
+    "desc_conocimiento_cno": "Conocimiento de los métodos de selección, adquisición, organización y almacenamiento de las colecciones de información para facilitar el uso de la información."
+  },
+  {
+    "cod_conocimiento_cno": "66",
+    "nomb_conocimiento_cno": "Materiales (vidrio, papel, plástico y madera)",
+    "desc_conocimiento_cno": "Conocimiento de la fabricación de productos en vidrio, papel, plástico, madera u otros materiales como la piedra, arcilla, materiales artificiales, etc."
+  },
+  {
+    "cod_conocimiento_cno": "67",
+    "nomb_conocimiento_cno": "Bioquímica",
+    "desc_conocimiento_cno": "Conocimiento de los procesos químicos en los organismos vivos."
+  },
+  {
+    "cod_conocimiento_cno": "68",
+    "nomb_conocimiento_cno": "Estadística",
+    "desc_conocimiento_cno": "Conocimiento de la recolección, la descripción, la organización y el análisis de datos numéricos."
+  },
+  {
+    "cod_conocimiento_cno": "69",
+    "nomb_conocimiento_cno": "Deportes",
+    "desc_conocimiento_cno": "Conocimiento de técnicas y habilidades en un deporte elegido"
+  },
+  {
+    "cod_conocimiento_cno": "70",
+    "nomb_conocimiento_cno": "Salud enfoque intercultural",
+    "desc_conocimiento_cno": "Prestación de servicios de atención integral de las enfermedades, a partir del reconocimiento de los saberes, prácticas y medios tradicionales, alternativos y complementarios para la recuperación de la salud en el ámbito global."
+  },
+  {
+    "cod_conocimiento_cno": "71",
+    "nomb_conocimiento_cno": "Atención a adultos, adultos mayores con o sin discapacidad",
+    "desc_conocimiento_cno": "Conocimiento de la atención integral, individual y colectiva no clínica de los adultos, adultos mayores con o sin discapacidad."
+  },
+  {
+    "cod_conocimiento_cno": "72",
+    "nomb_conocimiento_cno": "Atención, protección y servicios a la infancia, adolescencia y juventud",
+    "desc_conocimiento_cno": "Conocimiento de la educación inicial, desarrollo integral, la protección, ambiente seguros y garantía de derecho, la atención no clínica de niños, niñas, adolescentes y jóvenes. Así como el estudio de las actividades recreativas, ocio y tiempo libre como un servicio social para estos grupos."
+  },
+  {
+    "cod_conocimiento_cno": "73",
+    "nomb_conocimiento_cno": "Silvicultura y Producción Forestal",
+    "desc_conocimiento_cno": "Conocimiento del establecimiento, cultivo, cosecha y gestión de bosques."
+  },
+  {
+    "cod_conocimiento_cno": "74",
+    "nomb_conocimiento_cno": "Cadena de suministro",
+    "desc_conocimiento_cno": "Conocimiento de aquellos procesos involucrados de manera directa o indirecta en la acción de satisfacer las necesidades de suministro. Incluye a los proveedores, los almacenes de materia prima, la línea de producción, almacenes de productos terminados, canales de distribución, mayoristas, minoristas y el cliente final."
+  },
+  {
+    "cod_conocimiento_cno": "75",
+    "nomb_conocimiento_cno": "Medio Ambiente natural y Vida silvestre",
+    "desc_conocimiento_cno": "Conocimiento de las relaciones entre los organismos vivos en entornos naturales con el fin de proteger la naturaleza y la vida silvestre."
+  },
+  {
+    "cod_conocimiento_cno": "76",
+    "nomb_conocimiento_cno": "Computadoras, Electrónica y automatización",
+    "desc_conocimiento_cno": "Conocimiento de planeación, diseño, desarrollo, mantenimiento y control de equipos electrónicos, maquinaria y sistemas, tableros de circuito, procesadores, chips, hardware y software, incluyendo aplicaciones y programación."
+  },
+  {
+    "cod_conocimiento_cno": "77",
+    "nomb_conocimiento_cno": "Mecánica e ingeniería de vehículos, barcos y aeronaves de motor",
+    "desc_conocimiento_cno": "Conocimiento del diseño, el desarrollo, la producción, el mantenimiento, el diagnóstico de fallas y la reparación de vehículos de motor."
+  },
+  {
+    "cod_conocimiento_cno": "78",
+    "nomb_conocimiento_cno": "Minería y Extracción",
+    "desc_conocimiento_cno": "Conocimiento de la evaluación, la planificación, el desarrollo y la dirección de la extracción de minerales, petróleo y gas."
+  }
+]
