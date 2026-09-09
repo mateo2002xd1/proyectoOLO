@@ -68,7 +68,7 @@ function ModalNuevoEditor({
                 type="text"
                 required
                 maxLength={70}
-                placeholder="Ej. Deportes"
+                placeholder="ej: Inicio"
                 value={nombreExtra}
                 onChange={(e) => setNombreExtra(e.target.value)}
                 className="w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:text-[#f6f6f6] dark:focus:border-white dark:focus:ring-white"
@@ -131,31 +131,6 @@ function ModalNuevoEditor({
   );
 }
 
-function ModalVerRol({
-  rol,
-  onClose,
-}: {
-  rol: Role | null;
-  onClose: () => void;
-}) {
-  return (
-    <Alert open={!!rol} onClose={onClose}>
-      <AlertTitle>Detalle del rol</AlertTitle>
-      <AlertDescription>
-        {rol && (
-          <div className="mt-2 space-y-2 text-sm text-zinc-700 dark:text-[#cbd5e1]">
-            <p><span className="font-semibold">Nombre:</span> {rol.name}</p>
-            <p><span className="font-semibold">Descripcion:</span> {rol.description || 'No especificada'}</p>
-          </div>
-        )}
-      </AlertDescription>
-      <AlertActions>
-        <Button type="button" onClick={onClose}>Cerrar</Button>
-      </AlertActions>
-    </Alert>
-  );
-}
-
 export default function RolesView() {
   const {
     roles,
@@ -182,7 +157,6 @@ export default function RolesView() {
   const [rolEditando, setRolEditando] = useState<Role | null>(null);
   const [guardandoRol, setGuardandoRol] = useState(false);
 
-  const [rolViendo, setRolViendo] = useState<Role | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const [rolPermisos, setRolPermisos] = useState<Role | null>(null);
@@ -387,30 +361,25 @@ export default function RolesView() {
                       <div className="flex items-center justify-end gap-1">
                         <button
                           type="button"
-                          onClick={() => setRolViendo(rol)}
-                          className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
-                          title="Ver detalle"
-                        >
-                          <EyeIcon className="size-4" />
-                        </button>
-                        <button
-                          type="button"
                           onClick={() => abrirModalPermisos(rol)}
                           className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
                           title="Editar permisos"
                         >
                           <PencilIcon className="size-4" />
                         </button>
-                        {!esRolPrincipal && (
-                          <button
-                            type="button"
-                            onClick={() => setDeleteConfirmId(rol.id)}
-                            className="rounded-lg p-1.5 text-red-400 transition-colors hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-900/30 dark:hover:text-red-300"
-                            title="Eliminar rol"
-                          >
-                            <TrashIcon className="size-4" />
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() => !esRolPrincipal && setDeleteConfirmId(rol.id)}
+                          disabled={esRolPrincipal}
+                          className={`rounded-lg p-1.5 transition-colors ${
+                            esRolPrincipal
+                              ? 'cursor-not-allowed text-zinc-300 dark:text-zinc-600'
+                              : 'text-red-400 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-900/30 dark:hover:text-red-300'
+                          }`}
+                          title={esRolPrincipal ? 'No se puede eliminar un rol principal' : 'Eliminar rol'}
+                        >
+                          <TrashIcon className="size-4" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -449,7 +418,6 @@ export default function RolesView() {
         guardando={guardandoRol}
         permisos={permissions}
       />
-      <ModalVerRol rol={rolViendo} onClose={() => setRolViendo(null)} />
 
       <Alert open={!!deleteConfirmId} onClose={() => setDeleteConfirmId(null)}>
         <AlertTitle>Eliminar este rol?</AlertTitle>
