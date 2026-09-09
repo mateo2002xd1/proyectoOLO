@@ -94,6 +94,18 @@ const nextConfig = {
       },
     ];
   },
+  async rewrites() {
+    return [
+      /**
+       * Retrocompatibilidad transparente: si un navegador o vista previa solicita
+       * una ruta histórica /backend/..., Next.js la sirve directamente desde /backup/...
+       */
+      {
+        source: '/backend/:path*',
+        destination: '/backup/:path*',
+      },
+    ];
+  },
 };
 
 export default nextConfig;
