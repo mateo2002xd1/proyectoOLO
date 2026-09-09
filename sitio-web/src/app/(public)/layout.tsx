@@ -1,10 +1,8 @@
 import { Header } from '@/shared/lib/blocks/Header';
 import { Footer } from '@/shared/lib/blocks/Footer';
 import {
-  EliminarSeccionButton,
-  NuevaSeccionButton,
   obtenerPlantilla,
-  PlantillaEditButton,
+  PaginasFabSpeedDial,
 } from '@/features/paginas';
 import { RouteTransition } from '@/shared/ui/atoms/RouteTransition';
 import { ResaltadorBusquedaClient } from '@/shared/ui/atoms/ResaltadorBusquedaClient';
@@ -17,10 +15,9 @@ import { ResaltadorBusquedaClient } from '@/shared/ui/atoms/ResaltadorBusquedaCl
  * página `plantilla` (ver `features/paginas/lib/plantilla.ts`), que se edita desde
  * el botón «Menú y pie» y se aplica a todas las páginas a la vez.
  *
- * Aquí NO se lee la cookie de sesión a propósito: `PlantillaEditButton` resuelve
- * su permiso en el cliente. Leerla en este layout marcaría como dinámicas todas
- * las páginas del sitio, incluidas las que no cambian nunca. El comentario largo
- * está en el propio botón.
+ * Las acciones de administración de página (editar contenido, editar plantilla,
+ * nueva página y eliminar página) se unifican en el menú flotante `PaginasFabSpeedDial`,
+ * que resuelve los permisos en el cliente para mantener el renderizado estático/ISR.
  *
  * El editor, la vista previa y el panel quedan fuera: viven en `app/admin/`, fuera
  * de este grupo de rutas, y no deben llevar la navegación del sitio encima.
@@ -36,13 +33,7 @@ export default async function PublicLayout({ children }: { children: React.React
       </main>
       {plantilla.pie && <Footer block={{ id: 'footer-plantilla' }} />}
 
-      <PlantillaEditButton />
-      {/* Resuelve su permiso en el cliente por lo mismo que el de arriba: leerlo aquí
-          volvería dinámicas todas las páginas del sitio. */}
-      <NuevaSeccionButton />
-      {/* Se esconde solo en las páginas de fábrica y sin el permiso: lo decide el propio
-          componente, que también resuelve el permiso en cliente. */}
-      <EliminarSeccionButton />
+      <PaginasFabSpeedDial />
       <ResaltadorBusquedaClient />
     </div>
   );

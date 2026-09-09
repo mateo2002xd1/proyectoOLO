@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation';
 import type { Data } from '@puckeditor/core';
 import type { Metadata } from 'next';
-import { ClientPuckRender, EditButton, obtenerPaginaPublicadaCacheada } from '@/features/paginas';
+import Link from 'next/link';
+import { ClientPuckRender, obtenerPaginaPublicadaCacheada, enlaceAlEditor } from '@/features/paginas';
 import { puedeEditarPaginas } from '@/shared/lib/session';
 
 /**
@@ -39,7 +40,14 @@ export default async function PoliticaPrivacidadPage() {
           No se ha publicado nada en <code>/{SLUG}</code>. Cuando la llenes y se apruebe,
           se verá aquí.
         </p>
-        <EditButton slug={SLUG} hasPermission={puedeEditar} volverA={`/${SLUG}`} />
+        <p style={{ marginTop: '1rem' }}>
+          <Link
+            href={enlaceAlEditor(SLUG, `/${SLUG}`)}
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#002c46] rounded-full hover:bg-[#001a2a]"
+          >
+            Editar sección
+          </Link>
+        </p>
       </div>
     );
   }
@@ -48,10 +56,5 @@ export default async function PoliticaPrivacidadPage() {
     ? { content: pagina.contenido, root: {} }
     : pagina.contenido;
 
-  return (
-    <>
-      <EditButton slug={SLUG} hasPermission={puedeEditar} volverA={`/${SLUG}`} />
-      <ClientPuckRender data={data} />
-    </>
-  );
+  return <ClientPuckRender data={data} />;
 }
