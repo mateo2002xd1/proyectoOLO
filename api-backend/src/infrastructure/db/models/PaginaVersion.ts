@@ -18,6 +18,7 @@ export class PaginaVersion extends Model {
   declare pagina?: any;
   declare revisor?: any;
   declare publicador?: any;
+  declare autor?: any;
 }
 
 PaginaVersion.init(
