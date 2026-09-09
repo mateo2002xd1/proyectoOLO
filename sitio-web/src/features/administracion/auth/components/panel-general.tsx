@@ -119,7 +119,7 @@ function SidebarGroup({
 
 
 /** Cambios que caben en la tarjeta del panel; el resto se lee en Auditoría. */
-const CAMBIOS_RECIENTES = 7;
+const CAMBIOS_RECIENTES = 15;
 
 /** Solo los nombres de los campos tocados: el antes/después vive en la bitácora. */
 const camposTocados = (registro: RegistroAuditoria) =>
@@ -193,18 +193,18 @@ function ModalAlertas({
       }}
     >
       <div
-        className="flex max-h-[88vh] w-full max-w-lg flex-col overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-[#121824]"
+        className="flex max-h-[88vh] min-h-[22rem] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-[#121824]"
         role="dialog"
         aria-modal="true"
         aria-labelledby="alertas-titulo"
       >
-        <header className="border-b border-zinc-100 px-6 py-5 dark:border-zinc-800/80">
+        <header className="border-b border-zinc-100 px-8 py-6 dark:border-zinc-800/80">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <h3 id="alertas-titulo" className="admin-subtitle text-zinc-900 dark:text-[#f6f6f6]">
+              <h3 id="alertas-titulo" className="admin-subtitle text-xl text-zinc-900 dark:text-[#f6f6f6]">
                 Notificaciones
               </h3>
-              <p className="mt-0.5 text-sm text-zinc-500 dark:text-[#94a3b8]">
+              <p className="mt-1 text-base text-zinc-500 dark:text-[#94a3b8]">
                 Tienes {total} alerta{total !== 1 ? 's' : ''} pendiente{total !== 1 ? 's' : ''}.
               </p>
             </div>
@@ -221,9 +221,9 @@ function ModalAlertas({
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-8">
           {total === 0 ? (
-            <p className="py-8 text-center text-sm text-zinc-500 dark:text-[#94a3b8]">
+            <p className="py-12 text-center text-base text-zinc-500 dark:text-[#94a3b8]">
               No hay alertas pendientes en este momento.
             </p>
           ) : (
@@ -231,7 +231,7 @@ function ModalAlertas({
               {cuentasPorVencer.map((a) => (
                 <div
                   key={a.userId || a.email}
-                  className="relative group block rounded-xl border border-amber-100 bg-amber-50/50 p-4 pr-12 dark:border-amber-900/30 dark:bg-amber-900/10"
+                  className="relative group block rounded-xl border border-amber-100 bg-amber-50/50 p-5 pr-14 dark:border-amber-900/30 dark:bg-amber-900/10"
                 >
                   <button
                     onClick={() => onDismissCuenta(a.email)}
@@ -242,20 +242,13 @@ function ModalAlertas({
                       <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                     </svg>
                   </button>
-                  <div className="flex items-center gap-3">
-                    <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-400">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                      </svg>
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-amber-800 dark:text-amber-200">
-                        Cuenta por vencer: {a.email}
-                      </p>
-                      <p className="mt-1 text-sm text-amber-700/80 dark:text-amber-300/70">
-                        Vence en {a.daysLeft} día{a.daysLeft !== 1 ? 's' : ''}
-                      </p>
-                    </div>
+                  <div className="min-w-0">
+                    <p className="truncate text-base font-semibold text-amber-800 dark:text-amber-200">
+                      Cuenta por vencer: {a.email}
+                    </p>
+                    <p className="mt-1 text-sm text-amber-700/80 dark:text-amber-300/70">
+                      Vence en {a.daysLeft} día{a.daysLeft !== 1 ? 's' : ''}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -263,7 +256,7 @@ function ModalAlertas({
               {enRevision.map((p) => (
                 <div
                   key={p.id}
-                  className="relative group block rounded-xl border border-blue-100 bg-blue-50/50 p-4 pr-12 dark:border-blue-900/30 dark:bg-blue-900/10"
+                  className="relative group block rounded-xl border border-blue-100 bg-blue-50/50 p-5 pr-14 dark:border-blue-900/30 dark:bg-blue-900/10"
                 >
                   <button
                     onClick={() => onDismissRevision(p.id)}
@@ -279,7 +272,7 @@ function ModalAlertas({
                       <ClipboardDocumentCheckIcon className="size-5" />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-blue-800 dark:text-blue-200">
+                      <p className="truncate text-base font-semibold text-blue-800 dark:text-blue-200">
                         Página en revisión
                       </p>
                       <p className="mt-1 truncate text-sm text-blue-700/80 dark:text-blue-300/70">
@@ -680,7 +673,7 @@ export function PanelGeneralDashboard() {
           ) : (actividad || []).length > 0 ? (
             /* Mismas columnas que la bitácora, en versión angosta: la tarjeta ocupa
                media pantalla, así que la tabla desborda a scroll en vez de apretarse. */
-            <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-[#7db828]/30">
+            <div className="overflow-x-auto rounded-lg">
               <table className="w-full min-w-[34rem] text-left text-sm">
                 <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-[#131b2f]">
                   <tr>

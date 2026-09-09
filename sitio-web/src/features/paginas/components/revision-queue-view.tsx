@@ -82,10 +82,7 @@ export function RevisionQueueView() {
       <div className="mb-8 flex items-start justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-interactive/10 text-brand-interactive">
-              <ClipboardDocumentCheckIcon className="h-6 w-6" />
-            </div>
-            <h1 className="text-2xl font-bold tracking-tight text-zinc-950 dark:text-[#f6f6f6]">
+            <h1 className="admin-header font-bold tracking-tight text-zinc-950 dark:text-[#f6f6f6]">
               Páginas en revisión
             </h1>
           </div>
