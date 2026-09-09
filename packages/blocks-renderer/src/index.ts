@@ -54,3 +54,10 @@ export {
 export { ResaltadorDeBusqueda } from './busqueda/ResaltadorDeBusqueda';
 export type { ResaltadorDeBusquedaProps } from './busqueda/ResaltadorDeBusqueda';
 
+// ─── Bloques de contenido compartidos ───
+export { TextoRico } from './blocks/texto-rico';
+export type { TextoRicoProps } from './blocks/texto-rico';
+
+export { ImagenDestacada } from './blocks/imagen-destacada';
+export type { ImagenDestacadaProps } from './blocks/imagen-destacada';
+
