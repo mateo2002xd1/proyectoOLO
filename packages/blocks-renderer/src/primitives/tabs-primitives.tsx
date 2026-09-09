@@ -99,18 +99,12 @@ export function TabsRender({
     ? tabActivaSlot
     : primerSlotId;
 
-  // Estados para feedback visual de descarga
-  const [descargandoSlot, setDescargandoSlot] = useState<string | null>(null);
+  // Estado para feedback visual de descarga (alerta)
   const [mensajeToast, setMensajeToast] = useState<string | null>(null);
 
   const dispararDescarga = (tab: TabItem, url: string) => {
-    const slot = tab.slotId || null;
-    setDescargandoSlot(slot);
     const nombre = url.split('/').pop() || 'archivo';
     setMensajeToast(`Descargando archivo: ${decodeURIComponent(nombre)}`);
-    setTimeout(() => {
-      setDescargandoSlot((actual) => (actual === slot ? null : actual));
-    }, 2500);
     setTimeout(() => {
       setMensajeToast(null);
     }, 3500);
@@ -128,79 +122,80 @@ export function TabsRender({
       : '';
 
   return (
-    <div
-      className={`olo-tabs${varianteClase} w-full`}
+    <section
+      className={`olo-tabs-section olo-tabs${varianteClase} w-full`}
       style={{ width: '100%' }}
     >
-      <div
-        className="olo-tabs-layout w-full"
-        style={{
-          display: tieneSidebar ? 'flex' : 'block',
-          flexDirection: esSuperior ? 'column' : 'row',
-          alignItems: 'flex-start',
-          gap: '24px',
-          width: '100%',
-        }}
-      >
-        {/* Columna Izquierda: Barra de pestañas */}
-        {tieneSidebar && (
-          <aside
-            role="tablist"
-            aria-label="Pestañas de la sección"
-            data-puck-overlay-portal=""
-            className="olo-tabs-sidebar shrink-0"
-            style={{
-              width: esSuperior ? '100%' : `${anchoPx}px`,
-              minWidth: esSuperior ? '100%' : `${anchoPx}px`,
-              maxWidth: esSuperior ? '100%' : `${anchoPx}px`,
-              flexShrink: 0,
-              pointerEvents: 'auto',
-            }}
-          >
-            <div
-              className="olo-tabs-nav"
+      <div className="olo-tabs-container">
+        <div
+          className={`olo-tabs-layout ${
+            esSuperior ? 'olo-tabs-layout--superior' : 'olo-tabs-layout--lateral'
+          } w-full`}
+          style={{
+            display: tieneSidebar ? 'flex' : 'block',
+            flexDirection: esSuperior ? 'column' : 'row',
+            alignItems: 'flex-start',
+            gap: esSuperior ? '16px' : '28px',
+            width: '100%',
+          }}
+        >
+          {/* Columna Izquierda: Barra de pestañas */}
+          {tieneSidebar && (
+            <aside
+              role="tablist"
+              aria-label="Pestañas de la sección"
+              data-puck-overlay-portal=""
+              className="olo-tabs-sidebar shrink-0"
               style={{
-                display: 'flex',
-                flexDirection: esSuperior ? 'row' : 'column',
-                flexWrap: esSuperior ? 'wrap' : 'nowrap',
-                gap: '10px',
-                width: '100%',
+                width: esSuperior ? '100%' : `${anchoPx}px`,
+                minWidth: esSuperior ? '100%' : `${anchoPx}px`,
+                maxWidth: esSuperior ? '100%' : `${anchoPx}px`,
+                flexShrink: 0,
+                pointerEvents: 'auto',
               }}
             >
-              {tabsConSlots.map((tab, idx) => {
-                const estaActiva = tab.slotId === slotActivoReal;
-                const tabButtonId = `tab-btn-${baseId}-${tab.slotId}`;
-                const tabpanelId = `tab-panel-${baseId}-${tab.slotId}`;
-
-                const destino: DestinoTabConfig = tab.destino || { tipo: 'contenido' };
-                const tipoDestino = destino.tipo || tab.tipoDestino || 'contenido';
-                const urlEnlace = destino.urlEnlace || tab.urlEnlace || '';
-                const abrirNuevaPestana = destino.abrirNuevaPestana || tab.abrirNuevaPestana || 'si';
-                const urlArchivo = destino.urlArchivo || tab.urlArchivo || '';
-
-                const esEnlace = tipoDestino === 'enlace';
-                const esArchivo = tipoDestino === 'archivo';
-
-                const estiloBotonComun: React.CSSProperties = {
-                  pointerEvents: 'auto',
-                  textAlign: 'left',
-                  width: esSuperior ? 'auto' : '100%',
+              <div
+                className="olo-tabs-nav"
+                style={{
                   display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  cursor: 'pointer',
-                  borderRadius: '6px',
-                  padding: '12px 16px',
-                  fontWeight: 600,
-                  fontSize: '14px',
-                  lineHeight: '1.3',
-                  transition: 'all 150ms ease',
-                  outline: 'none',
-                  textDecoration: 'none',
-                  boxSizing: 'border-box',
-                };
+                  flexDirection: esSuperior ? 'row' : 'column',
+                  flexWrap: esSuperior ? 'wrap' : 'nowrap',
+                  gap: '10px',
+                  width: '100%',
+                }}
+              >
+                {tabsConSlots.map((tab, idx) => {
+                  const estaActiva = tab.slotId === slotActivoReal;
+                  const tabButtonId = `tab-btn-${baseId}-${tab.slotId}`;
+                  const tabpanelId = `tab-panel-${baseId}-${tab.slotId}`;
 
-                const estaDescargando = descargandoSlot === tab.slotId;
+                  const destino: DestinoTabConfig = tab.destino || { tipo: 'contenido' };
+                  const tipoDestino = destino.tipo || tab.tipoDestino || 'contenido';
+                  const urlEnlace = destino.urlEnlace || tab.urlEnlace || '';
+                  const abrirNuevaPestana = destino.abrirNuevaPestana || tab.abrirNuevaPestana || 'si';
+                  const urlArchivo = destino.urlArchivo || tab.urlArchivo || '';
+
+                  const esEnlace = tipoDestino === 'enlace';
+                  const esArchivo = tipoDestino === 'archivo';
+
+                  const estiloBotonComun: React.CSSProperties = {
+                    pointerEvents: 'auto',
+                    textAlign: 'left',
+                    width: esSuperior ? 'auto' : '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    cursor: 'pointer',
+                    padding: '12px 16px',
+                    fontWeight: 600,
+                    fontSize: '14px',
+                    lineHeight: '1.3',
+                    transition: 'all 150ms ease',
+                    outline: 'none',
+                    textDecoration: 'none',
+                    boxSizing: 'border-box',
+                  };
+
                 const contenidoBoton = (
                   <span
                     style={{
@@ -212,7 +207,7 @@ export function TabsRender({
                       flex: 1,
                     }}
                   >
-                    {estaDescargando ? 'Descargando...' : tab.titulo || `Pestaña ${idx + 1}`}
+                    {tab.titulo || `Pestaña ${idx + 1}`}
                   </span>
                 );
 
@@ -243,11 +238,8 @@ export function TabsRender({
                       download
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`olo-tabs-btn ${estaActiva || estaDescargando ? 'olo-tabs-btn--active' : ''}`}
-                      style={{
-                        ...estiloBotonComun,
-                        ...(estaDescargando ? { opacity: 0.85 } : {}),
-                      }}
+                      className={`olo-tabs-btn ${estaActiva ? 'olo-tabs-btn--active' : ''}`}
+                      style={estiloBotonComun}
                       onClick={() => dispararDescarga(tab, urlArchivo)}
                     >
                       {contenidoBoton}
@@ -362,7 +354,6 @@ export function TabsRender({
               // Si es descarga de archivo
               if (tipoDestino === 'archivo') {
                 if (!puck?.isEditing) return null;
-                const estaDescargando = descargandoSlot === tab.slotId;
                 return (
                   <div
                     key={tab.slotId}
@@ -418,7 +409,7 @@ export function TabsRender({
                               cursor: 'pointer',
                             }}
                           >
-                            {estaDescargando ? 'Descargando...' : 'Probar descarga'}
+                            Probar descarga
                           </a>
                         </div>
                       )}
@@ -451,34 +442,53 @@ export function TabsRender({
           )}
         </main>
       </div>
+    </div>
 
-      {/* Notificación Toast flotante al descargar archivo (estilo corporativo Intranet) */}
+      {/* Notificación Toast flotante al descargar archivo (alerta abajo a la izquierda) */}
       {mensajeToast && (
         <div
           style={{
             position: 'fixed',
             bottom: '24px',
-            right: '24px',
+            left: '24px',
             zIndex: 9999,
             backgroundColor: '#001A39',
             color: '#ffffff',
-            padding: '10px 18px',
-            borderRadius: '4px',
-            fontSize: '13px',
+            padding: '12px 20px',
+            borderRadius: '8px',
+            fontSize: '13.5px',
             fontWeight: 500,
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25)',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
+            gap: '10px',
             pointerEvents: 'none',
+            maxWidth: 'calc(100vw - 48px)',
           }}
           role="status"
           aria-live="polite"
         >
-          <span>{mensajeToast}</span>
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{ flexShrink: 0 }}
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {mensajeToast}
+          </span>
         </div>
       )}
-    </div>
+    </section>
   );
 }
 
