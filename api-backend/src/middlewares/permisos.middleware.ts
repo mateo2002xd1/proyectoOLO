@@ -21,14 +21,14 @@ import { marcarGuardia } from '../shared/autorizacion';
  */
 const construirGuardia = <P extends string>(
   familia: string,
-  policies: Record<P, (rol?: string | null) => boolean>
+  policies: Record<P, (user?: any) => boolean>
 ) => {
   return (permiso: P) =>
     marcarGuardia(
       (req: Request, res: Response, next: NextFunction) => {
         if (!req.user) return res.status(401).json({ error: 'No autenticado' });
 
-        if (!policies[permiso](req.user.role)) {
+        if (!policies[permiso](req.user)) {
           return res.status(403).json({ error: 'No tienes permisos para esta acción' });
         }
 

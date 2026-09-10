@@ -19,13 +19,13 @@ const tieneRol = (rol: string | undefined | null, permitidos: string[]) =>
   permitidos.includes(normalizar(rol));
 
 export const paginasPolicies = {
-  puedeVer: (rol?: string | null) => tieneRol(rol, ROLES_QUE_VEN),
+  puedeVer: (user?: any) => tieneRol(user?.role, ROLES_QUE_VEN) || !!user?.permisos?.includes('acceso.intranet'),
 
-  puedeEditar: (rol?: string | null) => tieneRol(rol, ROLES_QUE_EDITAN),
+  puedeEditar: (user?: any) => tieneRol(user?.role, ROLES_QUE_EDITAN) || !!user?.permisos?.some((p: string) => p.startsWith('editar.') || p.startsWith('secciones.') || p.startsWith('editor.')),
 
-  puedePublicar: (rol?: string | null) => tieneRol(rol, ROLES_QUE_APRUEBAN),
+  puedePublicar: (user?: any) => tieneRol(user?.role, ROLES_QUE_APRUEBAN),
 
-  puedeRechazar: (rol?: string | null) => tieneRol(rol, ROLES_QUE_APRUEBAN),
+  puedeRechazar: (user?: any) => tieneRol(user?.role, ROLES_QUE_APRUEBAN),
 
   /**
    * Quitarle a otro el candado de edición que tiene abierto.
@@ -35,7 +35,7 @@ export const paginasPolicies = {
    * llama porque son dos permisos distintos que hoy coinciden; si mañana se separan,
    * se separan aquí y no en el caso de uso.
    */
-  puedeForzarBloqueo: (rol?: string | null) => tieneRol(rol, ROLES_QUE_APRUEBAN),
+  puedeForzarBloqueo: (user?: any) => tieneRol(user?.role, ROLES_QUE_APRUEBAN),
 };
 
 export type PermisoPagina = keyof typeof paginasPolicies;

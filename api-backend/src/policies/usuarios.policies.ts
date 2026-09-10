@@ -26,10 +26,10 @@ const tieneRol = (rol: string | undefined | null, permitidos: string[]) =>
 
 export const usuariosPolicies = {
   /** Alta, edición, baja y consulta de cuentas ajenas, y las alertas de caducidad. */
-  puedeAdministrarUsuarios: (rol?: string | null) => tieneRol(rol, ROLES_QUE_ADMINISTRAN_USUARIOS),
+  puedeAdministrarUsuarios: (user?: any) => tieneRol(user?.role, ROLES_QUE_ADMINISTRAN_USUARIOS) || !!user?.permisos?.some((p: string) => p.startsWith('usuarios.')),
 
   /** Roles, permisos y su asignación: quien puede esto puede concederse lo demás. */
-  puedeAdministrarSeguridad: (rol?: string | null) => tieneRol(rol, ROLES_QUE_ADMINISTRAN_SEGURIDAD),
+  puedeAdministrarSeguridad: (user?: any) => tieneRol(user?.role, ROLES_QUE_ADMINISTRAN_SEGURIDAD) || !!user?.permisos?.includes('usuarios.permisos'),
 };
 
 export type PermisoUsuario = keyof typeof usuariosPolicies;
