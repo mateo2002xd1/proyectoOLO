@@ -34,7 +34,7 @@ export function ModalConfirmarRestauracion({
       onClick={(e) => {
         if (e.target === dialogo.current) onCancelar();
       }}
-      className="m-auto w-full max-w-md rounded-xl border border-zinc-200 bg-white p-0 text-zinc-900 backdrop:bg-black/50 dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:text-[#f6f6f6]"
+      className="m-auto w-full max-w-md rounded-xl border border-zinc-200 bg-white p-0 text-zinc-900 backdrop:bg-[#0f172a]/50 backdrop:backdrop-blur-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:text-[#f6f6f6]"
     >
       <div className="flex flex-col p-6">
         <div className="flex items-center gap-3">
