@@ -2,12 +2,10 @@ import { cache } from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import {
-  EditButton,
   ClientPuckRender,
   obtenerPaginaPublicada,
   SLUG_PLANTILLA,
 } from '@/features/gestor-secciones';
-import { puedeEditarPaginas } from '@/shared/lib/sesion';
 
 /**
  * Páginas de la intranet creadas desde el editor visual.
@@ -116,19 +114,14 @@ export default async function PaginaDinamica({
   // `/menu-y-pie` los mostraría otra vez, duplicados dentro del marco.
   if (slug === SLUG_PLANTILLA) notFound();
 
-  const [pagina, hasPermission] = await Promise.all([
-    obtenerPaginaCacheada(slug),
-    puedeEditarPaginas(),
-  ]);
+  const pagina = await obtenerPaginaCacheada(slug);
 
-  // Sin versión aprobada no hay nada que mostrar, pero quien puede editar sí debe
-  // poder entrar a crearla.
+  // Sin versión aprobada no hay nada que mostrar
   if (!pagina) {
     return (
       <div style={{ padding: '2rem', textAlign: 'center' }}>
         <h1>Página no encontrada</h1>
         <p>No se ha publicado contenido para la ruta: /{puckPath.join('/')}</p>
-        <EditButton slug={slug} hasPermission={hasPermission} />
       </div>
     );
   }
@@ -137,7 +130,6 @@ export default async function PaginaDinamica({
 
   return (
     <Tag className={className}>
-      <EditButton slug={slug} hasPermission={hasPermission} />
       <ClientPuckRender data={pagina.contenido} />
     </Tag>
   );
