@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Script from 'next/script';
 import { Work_Sans } from 'next/font/google';
 import '@/style/globals.css';
 
@@ -43,15 +42,16 @@ export default function RootLayout({
   return (
     <html lang="es" className={workSans.variable} suppressHydrationWarning data-scroll-behavior="smooth">
       <head>
-        <Script
+        <script
           id="anti-flash-theme"
-          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var c=document.documentElement.classList;c.add('no-transition');var s=localStorage.getItem('olo-theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;if(s==='dark'||(s===null&&d)){c.add('dark');}requestAnimationFrame(function(){requestAnimationFrame(function(){c.remove('no-transition');});});}catch(e){}})();`,
           }}
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+      </body>
     </html>
   );
 }

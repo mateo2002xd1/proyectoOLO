@@ -35,10 +35,7 @@ function leerRolActual(): string {
  * abiertas en segundo plano durante días.
  */
 export function usePermisoDeSeccion(clave: string): boolean {
-  const [tienePermiso, setTienePermiso] = useState(() => {
-    const rol = leerRolActual();
-    return rol === 'superadmin' || rol === 'administrador';
-  });
+  const [tienePermiso, setTienePermiso] = useState(false);
 
   useEffect(() => {
     let vigente = true;
