@@ -1905,7 +1905,7 @@
 .admin-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(15, 23, 42, 0.5);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -2721,7 +2721,8 @@ button.text-link,
 }
 
 .olo-modal::backdrop {
-  background: rgba(0, 22, 49, 0.55);
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(4px);
 }
 
 .olo-modal-caja {
@@ -3099,7 +3100,8 @@ button.text-link,
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  background: rgba(0, 20, 33, 0.55);
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(4px);
 }
 
 .nueva-seccion-caja {

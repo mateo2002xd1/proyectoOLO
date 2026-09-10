@@ -85,7 +85,7 @@ export function DetalleRegistro({
       onClick={(e) => {
         if (e.target === dialogo.current) onCerrar();
       }}
-      className="m-auto w-full max-w-2xl rounded-xl border border-zinc-200 bg-white p-0 text-zinc-900 backdrop:bg-black/50 dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:text-[#f6f6f6]"
+      className="m-auto w-full max-w-2xl rounded-xl border border-zinc-200 bg-white p-0 text-zinc-900 backdrop:bg-[#0f172a]/50 backdrop:backdrop-blur-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:text-[#f6f6f6]"
     >
       {registro && (
         <div className="flex max-h-[80vh] flex-col">
