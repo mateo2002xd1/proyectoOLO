@@ -36,9 +36,9 @@ function puedeEditarSincrono(): boolean {
   return ROLES_QUE_EDITAN.includes(rol);
 }
 
-function sinSuscripcion() {
-  return () => {};
-}
+const sinSuscripcion = () => () => {};
+const enCliente = () => true;
+const enServidor = () => false;
 
 function slugDeRuta(ruta: string): string {
   const limpio = (ruta || '').split('?')[0].split('#')[0];
@@ -51,13 +51,7 @@ export function PaginasFabSpeedDial() {
   const rutaActual = usePathname() ?? '/';
   const slug = slugDeRuta(rutaActual);
 
-  // Lectura síncrona en cliente con useSyncExternalStore (evita parpadeos y retrasos)
-  const rolValidoPorCookie = useSyncExternalStore(
-    sinSuscripcion,
-    puedeEditarSincrono,
-    () => false
-  );
-
+  const montado = useSyncExternalStore(sinSuscripcion, enCliente, enServidor);
   const [rolDeApiValido, setRolDeApiValido] = useState(false);
   const puedeCrear = usePermisoDeSeccion('secciones.crear');
   const puedeEliminar = usePermisoDeSeccion('secciones.eliminar');
@@ -77,6 +71,7 @@ export function PaginasFabSpeedDial() {
     };
   }, []);
 
+  const rolValidoPorCookie = montado ? puedeEditarSincrono() : false;
   const rolPuedeEditar = rolValidoPorCookie || rolDeApiValido;
   const puedeEditarSeccion = rolPuedeEditar && Boolean(slug);
   const puedeEditarPlantilla = rolPuedeEditar;
@@ -138,8 +133,9 @@ export function PaginasFabSpeedDial() {
     };
   }, [abierto, cerrarMenu]);
 
-  // Si el usuario no tiene permisos para ninguna acción, no se pinta nada
-  if (!tieneAlgunaAccion) return null;
+  // Durante SSR y primera hidratación en cliente no se pinta para evitar mismatch de hidratación.
+  // Una vez montado en cliente, si el usuario no tiene permisos para ninguna acción, tampoco se pinta nada.
+  if (!montado || !tieneAlgunaAccion) return null;
 
   return (
     <>
