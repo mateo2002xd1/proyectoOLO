@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, type ComponentProps, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import {
   primitiveComponents,
   crearGridConfig,
@@ -977,87 +978,71 @@ function Inerte({ etiqueta, children }: { etiqueta: string; children: ReactNode 
   );
 }
 
-function PlantillaEditorLayout({
+function PreviewIntercalado({
   seccion,
   config,
   etiqueta,
-  children,
 }: {
   seccion: { slug: string; contenido: unknown };
   config: Config;
   etiqueta: string;
-  children?: ReactNode;
 }) {
-  const [alturaPreview, setAlturaPreview] = useState<number>(0);
-  const [alturaCabecera, setAlturaCabecera] = useState<number>(72);
-  const contenedorRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const previewEl = previewRef.current;
-    if (!previewEl) return;
+    const el = previewRef.current;
+    if (!el) return;
 
-    const actualizarAlturas = () => {
-      if (previewEl.offsetHeight > 0) {
-        setAlturaPreview(previewEl.offsetHeight);
-      }
-      const contenedor = contenedorRef.current;
-      if (contenedor) {
-        const cabeceraEl = contenedor.querySelector<HTMLElement>(
-          '[data-puck-component*="Header"], [data-puck-component*="IntranetTopbar"], header, nav'
-        );
-        if (cabeceraEl && cabeceraEl.offsetHeight > 0) {
-          setAlturaCabecera(cabeceraEl.offsetHeight);
-        }
-      }
+    const detenerNativo = (e: Event) => {
+      e.stopPropagation();
+      e.stopImmediatePropagation();
     };
 
-    actualizarAlturas();
+    const eventos = [
+      'mouseover',
+      'mouseout',
+      'mouseenter',
+      'mouseleave',
+      'pointerover',
+      'pointerout',
+      'pointerenter',
+      'pointerleave',
+      'mousemove',
+      'pointermove',
+      'mousedown',
+      'mouseup',
+      'click',
+      'contextmenu',
+    ];
 
-    const ro = new ResizeObserver(() => {
-      actualizarAlturas();
-    });
-
-    ro.observe(previewEl);
-    if (contenedorRef.current) {
-      ro.observe(contenedorRef.current);
+    for (const ev of eventos) {
+      el.addEventListener(ev, detenerNativo, true);
+      el.addEventListener(ev, detenerNativo, false);
     }
 
-    return () => ro.disconnect();
-  }, [seccion]);
+    return () => {
+      for (const ev of eventos) {
+        el.removeEventListener(ev, detenerNativo, true);
+        el.removeEventListener(ev, detenerNativo, false);
+      }
+    };
+  }, []);
 
   return (
     <div
-      ref={contenedorRef}
-      className="olo-editor-plantilla-layout"
+      ref={previewRef}
+      className="olo-preview-intercalado-no-hover"
       style={{
         position: 'relative',
         width: '100%',
-        minHeight: '100vh',
-        ['--olo-preview-altura' as string]: `${alturaPreview}px`,
+        pointerEvents: 'auto',
+        cursor: 'default',
+        userSelect: 'none',
       }}
     >
-      <div className="olo-editor-plantilla-lienzo">
-        {children}
-      </div>
-      <div
-        ref={previewRef}
-        className="olo-editor-plantilla-preview"
-        style={{
-          position: 'absolute',
-          top: `${alturaCabecera}px`,
-          left: 0,
-          right: 0,
-          width: '100%',
-          pointerEvents: 'auto',
-          userSelect: 'none',
-          zIndex: 0,
-        }}
-      >
-        <Inerte etiqueta={etiqueta}>
-          <Render config={config} data={datosDePuck(seccion.contenido)} />
-        </Inerte>
-      </div>
+      <Inerte etiqueta={etiqueta}>
+        <Render config={config} data={datosDePuck(seccion.contenido)} />
+      </Inerte>
     </div>
   );
 }
@@ -1092,20 +1077,27 @@ export function configDeEdicion(slug: string, contexto: ContextoDeEdicion = {}):
     const seccion = contexto.seccion;
     if (!seccion) return recortada;
 
+    const cabecera = recortada.components.Header;
+    if (!cabecera) return recortada;
+
     return {
       ...recortada,
-      root: {
-        ...recortada.root,
-        render: ({ children }: { children?: ReactNode }) => (
-          <PlantillaEditorLayout
-            seccion={seccion}
-            config={puckConfig}
-            etiqueta={`Página /${seccion.slug} · no editable aquí`}
-          >
-            {children}
-          </PlantillaEditorLayout>
-        ),
-      } as Config['root'],
+      components: {
+        ...recortada.components,
+        Header: {
+          ...cabecera,
+          render: (props: Parameters<typeof cabecera.render>[0]) => (
+            <>
+              {cabecera.render(props)}
+              <PreviewIntercalado
+                seccion={seccion}
+                config={puckConfig}
+                etiqueta={`Página /${seccion.slug} · no editable aquí`}
+              />
+            </>
+          ),
+        },
+      },
     };
   }
 

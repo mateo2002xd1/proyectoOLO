@@ -142,14 +142,7 @@ const PERMISOS_FIJOS: PermisoDelCatalogo[] = [
     grupo: 'acceso',
     esFrontera: true,
   },
-  {
-    clave: 'editor.eliminar-bloques',
-    etiqueta: 'Eliminar bloques',
-    descripcion: 'Quitar bloques de una página en el editor, no solo añadir y reordenar.',
-    grupo: 'editor',
-    // Ver la nota de `esFrontera`: esto oculta la acción en Puck, no la impide en la API.
-    esFrontera: false,
-  },
+
   {
     clave: 'editor.enviar-revision',
     etiqueta: 'Enviar a revisión',

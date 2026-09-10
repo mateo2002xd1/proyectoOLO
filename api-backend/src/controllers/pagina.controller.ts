@@ -279,7 +279,7 @@ export const PaginaController = {
   async enviarARevision(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await sequelize.transaction(async (tx) => {
-        const r = await enviarARevision(req.params.slug as string, ambitoExigidoDe(req), tx);
+        const r = await enviarARevision(req.params.slug as string, req.user?.id || '', ambitoExigidoDe(req), tx);
         // enviar_revision: lo que cambia es el estado de la versión (borrador → en_revision)
         await registrar(req, 'enviar_revision', r, [
           { campo: 'slug', antes: r.paginaAnterior?.slug ?? null, despues: r.pagina?.slug ?? req.params.slug },

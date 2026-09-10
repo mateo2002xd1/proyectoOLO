@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import type { Data } from '@puckeditor/core';
-import { ClientPuckRender, EditButton, obtenerPagina } from '@/features/paginas';
+import Link from 'next/link';
+import { ClientPuckRender, obtenerPagina, enlaceAlEditor } from '@/features/paginas';
 import { puedeEditarPaginas } from '@/shared/lib/session';
 
 export default async function PublicPage({
@@ -29,7 +30,14 @@ export default async function PublicPage({
           No se ha publicado nada en <code>/{slug}</code>. Cuando la llenes y se apruebe,
           se verá aquí.
         </p>
-        <EditButton slug={slug} hasPermission={puedeEditar} volverA={`/${slug}`} />
+        <p style={{ marginTop: '1rem' }}>
+          <Link
+            href={enlaceAlEditor(slug, `/${slug}`)}
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#002c46] rounded-full hover:bg-[#001a2a]"
+          >
+            Editar sección
+          </Link>
+        </p>
       </div>
     );
   }
@@ -39,10 +47,5 @@ export default async function PublicPage({
     ? { content: pagina.contenido, root: {} }
     : pagina.contenido;
 
-  return (
-    <>
-      <EditButton slug={slug} hasPermission={puedeEditar} volverA={`/${slug}`} />
-      <ClientPuckRender data={data} />
-    </>
-  );
+  return <ClientPuckRender data={data} />;
 }

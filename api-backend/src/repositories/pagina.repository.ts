@@ -53,8 +53,15 @@ export const PaginaRepository = {
     PaginaVersion.findAll({
       where: { estado: 'en_revision' },
       include: [
-        { model: Pagina, as: 'pagina', required: true },
-        { model: User, as: 'publicador', attributes: ['id', 'nombre', 'email'] },
+        {
+          model: Pagina,
+          as: 'pagina',
+          required: true,
+          include: [
+            { model: User, as: 'creador', attributes: ['id', 'name', 'apellidos', 'email'] },
+          ],
+        },
+        { model: User, as: 'autor', attributes: ['id', 'name', 'apellidos', 'email'] },
       ],
       order: [['creadoEn', 'DESC']],
       transaction: tx,

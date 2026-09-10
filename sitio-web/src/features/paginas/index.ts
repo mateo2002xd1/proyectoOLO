@@ -6,6 +6,9 @@
  */
 
 // Components
+export { PaginasFabSpeedDial } from "./components/paginas-fab-speed-dial";
+export { ModalNuevaSeccion } from "./components/modal-nueva-seccion";
+export { ModalEliminarSeccion } from "./components/modal-eliminar-seccion";
 export { EditButton } from "./components/edit-button";
 export { PlantillaEditButton } from "./components/plantilla-edit-button";
 export { NuevaSeccionButton } from "./components/nueva-seccion-button";

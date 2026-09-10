@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { InicioView } from '@/features/sitio-web/inicio';
-import { EditButton, obtenerPaginaInicio } from '@/features/paginas';
-import { puedeEditarPaginas } from '@/shared/lib/session';
+import { obtenerPaginaInicio } from '@/features/paginas';
 
 /**
  * La portada del sitio.
@@ -22,15 +21,7 @@ export const metadata: Metadata = {
 };
 
 export default async function InicioPage() {
-  const [data, puedeEditar] = await Promise.all([
-    obtenerPaginaInicio(),
-    puedeEditarPaginas(),
-  ]);
+  const data = await obtenerPaginaInicio();
 
-  return (
-    <>
-      <EditButton slug="inicio" hasPermission={puedeEditar} volverA="/inicio" />
-      <InicioView data={data} />
-    </>
-  );
+  return <InicioView data={data} />;
 }

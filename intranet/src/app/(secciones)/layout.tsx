@@ -1,9 +1,7 @@
 import React from 'react';
 import {
-  EliminarSeccionButton,
   MarcoSecciones,
-  NuevaSeccionButton,
-  PlantillaEditButton,
+  PaginasFabSpeedDial,
 } from '@/features/gestor-secciones';
 import {
   puedeCrearSecciones,
@@ -41,13 +39,11 @@ export default async function SeccionesLayout({
   return (
     <MarcoSecciones>
       {children}
-      <PlantillaEditButton hasPermission={puedeEditar} />
-      {/* Va en el layout y no en la página: crear una sección se hace desde cualquiera,
-          y desde la pantalla de «no encontrada» del comodín también tiene sentido. */}
-      <NuevaSeccionButton hasPermission={puedeCrear} />
-      {/* Se esconde solo en las secciones de fábrica: lo decide el propio componente
-          a partir de la ruta, porque el layout no sabe en cuál está. */}
-      <EliminarSeccionButton hasPermission={puedeEliminar} />
+      <PaginasFabSpeedDial
+        puedeEditar={puedeEditar}
+        puedeCrear={puedeCrear}
+        puedeEliminar={puedeEliminar}
+      />
       {/* Cubre las cinco secciones de una vez. El editor y la vista previa cuelgan
           fuera de este grupo de rutas y montan el suyo. */}
       <VigilanteSesion />

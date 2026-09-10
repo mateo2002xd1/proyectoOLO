@@ -1905,7 +1905,7 @@
 .admin-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(15, 23, 42, 0.5);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -2523,27 +2523,22 @@ button.text-link,
   white-space: nowrap;
 }
 
-/* Layout del editor de plantilla (menu-y-pie): el preview va intercalado entre cabecera y pie */
-.olo-editor-plantilla-layout {
+/* Para el editor de plantilla (menu-y-pie): el overlay de selección/hover de Puck en la cabecera solo cubre los ~72px del nav */
+[data-puck-entry][data-puck-preview-mode="edit"] [data-puck-component*="header" i] > [class*="overlayWrapper"],
+[data-puck-entry][data-puck-preview-mode="edit"] [data-puck-component*="topbar" i] > [class*="overlayWrapper"],
+[data-puck-entry][data-puck-preview-mode="edit"] [data-puck-component="plantilla-header"] > [class*="overlayWrapper"],
+[data-puck-entry][data-puck-preview-mode="edit"] [data-puck-component="plantilla-topbar"] > [class*="overlayWrapper"],
+[data-puck-entry][data-puck-preview-mode="edit"] [data-puck-dropzone] > *:first-child [class*="overlayWrapper"] {
+  height: 72px !important;
+  max-height: 72px !important;
+}
+
+.olo-preview-intercalado-no-hover {
   position: relative;
   width: 100%;
-  min-height: 100vh;
-}
-
-.olo-editor-plantilla-lienzo [data-puck-dropzone] > *:first-child,
-.olo-editor-plantilla-lienzo [data-puck-component*="Header"],
-.olo-editor-plantilla-lienzo [data-puck-component*="IntranetTopbar"] {
-  margin-bottom: var(--olo-preview-altura, 0px) !important;
-}
-
-.olo-editor-plantilla-preview {
-  position: absolute;
-  left: 0;
-  right: 0;
-  width: 100%;
-  pointer-events: auto;
+  pointer-events: auto !important;
+  cursor: default !important;
   user-select: none;
-  z-index: 0;
 }
 
 .olo-editor {
@@ -2726,7 +2721,8 @@ button.text-link,
 }
 
 .olo-modal::backdrop {
-  background: rgba(0, 22, 49, 0.55);
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(4px);
 }
 
 .olo-modal-caja {
@@ -2835,15 +2831,203 @@ button.text-link,
   outline-offset: 2px;
 }
 
-/* --- Botón lápiz (edit-button) --- */
+/* --- Menú Flotante FAB / Speed Dial (fab-speed-dial) --- */
 
-/* Entrada corta al aparecer: sea que el botón ya venga en el HTML del servidor
-   (`.edit-button` base, EditButton) o que se pinte después de resolver el permiso
-   en el cliente (los tres con modificador), antes aparecía de golpe, sin aviso.
-   El `transform` va en el propio botón, no en un contenedor que lo envuelva —a
-   diferencia del que tenía `.olo-route-transition` y rompía el `position: fixed`
-   de EditButton (ver ese comentario): aquí el botón no tiene descendientes con
-   `position: fixed` propios, así que no hay *containing block* que romper. */
+.fab-speed-dial {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.fab-speed-dial__trigger {
+  pointer-events: auto;
+  position: relative;
+  z-index: 2;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 9999px;
+  background: #002c46;
+  color: #ffffff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14), 0 2px 4px rgba(0, 0, 0, 0.08);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+}
+
+.fab-speed-dial__trigger:hover {
+  background: #001a2a;
+  transform: scale(1.06);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.fab-speed-dial__trigger:focus-visible {
+  outline: 2px solid #7db828;
+  outline-offset: 3px;
+}
+
+.fab-speed-dial__icono-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fab-speed-dial__trigger--activo .fab-speed-dial__icono-wrapper {
+  transform: rotate(90deg);
+}
+
+/* Submenú de acciones posicionado absolutamente encima del disparador (abre hacia arriba) */
+.fab-speed-dial__acciones {
+  position: absolute;
+  bottom: calc(100% + 0.85rem);
+  right: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 0.75rem;
+  opacity: 0;
+  transform: translateY(16px) scale(0.85);
+  transform-origin: bottom center;
+  pointer-events: none;
+  visibility: hidden;
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s;
+}
+
+.fab-speed-dial__acciones--visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+  visibility: visible;
+}
+
+.fab-speed-dial__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fab-speed-dial__btn {
+  pointer-events: auto;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  outline: none;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.16);
+}
+
+.fab-speed-dial__btn:focus-visible {
+  outline: 2px solid #7db828;
+  outline-offset: 2px;
+}
+
+.fab-speed-dial__btn--editar {
+  background: #002c46;
+  color: #ffffff;
+  border: 1.5px solid #002c46;
+}
+
+.fab-speed-dial__btn--editar:hover {
+  background: #001a2a;
+  border-color: #001a2a;
+  transform: scale(1.08);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.fab-speed-dial__btn--plantilla {
+  background: #0a4060;
+  color: #ffffff;
+  border: 1.5px solid #0a4060;
+}
+
+.fab-speed-dial__btn--plantilla:hover {
+  background: #002c46;
+  border-color: #002c46;
+  transform: scale(1.08);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.fab-speed-dial__btn--nueva {
+  background: #ffffff;
+  color: #002c46;
+  border: 1.5px solid #002c46;
+}
+
+.fab-speed-dial__btn--nueva:hover {
+  background: #002c46;
+  color: #ffffff;
+  transform: scale(1.08);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.fab-speed-dial__btn--eliminar {
+  background: #ffffff;
+  color: #b3261e;
+  border: 1.5px solid #b3261e;
+}
+
+.fab-speed-dial__btn--eliminar:hover {
+  background: #b3261e;
+  color: #ffffff;
+  border-color: #b3261e;
+  transform: scale(1.08);
+  box-shadow: 0 4px 14px rgba(179, 38, 30, 0.3);
+}
+
+/* Tooltip accesible flotante a la izquierda del botón */
+.fab-speed-dial__tooltip {
+  position: absolute;
+  right: calc(100% + 0.65rem);
+  background: #0f172a;
+  color: #ffffff;
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(6px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  user-select: none;
+}
+
+.fab-speed-dial__item:hover .fab-speed-dial__tooltip,
+.fab-speed-dial__item:focus-within .fab-speed-dial__tooltip {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fab-speed-dial__trigger,
+  .fab-speed-dial__icono-wrapper,
+  .fab-speed-dial__acciones,
+  .fab-speed-dial__btn,
+  .fab-speed-dial__tooltip {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* --- Botón lápiz legado (edit-button) --- */
+
 @keyframes olo-boton-flotante-aparece {
   from {
     opacity: 0;
@@ -2886,18 +3070,11 @@ button.text-link,
   }
 }
 
-/* Editar la plantilla afecta a todo el sitio, no solo a la página que se está
-   mirando: se apila encima del botón de la página. Apilado y no al lado, porque
-   así no hay que ajustar el desplazamiento cada vez que cambie el texto de un
-   botón. */
 .edit-button--plantilla {
   bottom: 4.6rem;
   font-weight: 500;
 }
 
-/* Crear una página estrena una ruta del portal: es la acción menos frecuente y la
-   de mayor alcance de las tres, así que va la más arriba de la pila y en hueco, para
-   que no compita con «Editar página», que es lo que se usa a diario. */
 .edit-button--nueva {
   bottom: 7.7rem;
   background: transparent;
@@ -2923,7 +3100,8 @@ button.text-link,
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  background: rgba(0, 20, 33, 0.55);
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(4px);
 }
 
 .nueva-seccion-caja {
