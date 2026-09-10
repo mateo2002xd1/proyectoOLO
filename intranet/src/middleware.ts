@@ -83,8 +83,6 @@ export async function middleware(request: NextRequest) {
     return getRestrictedRedirect();
   }
 
-  console.log('Intranet middleware checking permissions:', sesion?.permisos);
-
   if (!sesion?.permisos.includes('acceso.intranet')) {
     console.log('Acceso denegado a intranet, redirigiendo...');
     const response = NextResponse.redirect(new URL('/login?error=acceso_denegado', request.url));
