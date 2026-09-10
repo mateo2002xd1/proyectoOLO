@@ -78,8 +78,11 @@ const campoFondo = {
  */
 const puckConfigBase: Config = {
   categories: {
-    'Estructura': {
-      components: ['IntranetTopbar', 'IntranetHero', 'IntranetFooter'],
+    'Plantilla': {
+      components: ['IntranetTopbar', 'IntranetFooter'],
+    },
+    'Banner': {
+      components: ['IntranetHero'],
     },
     'Texto e imagen': {
       components: ['TextoRico', 'TextoConImagen', 'ImagenDestacada'],
@@ -985,31 +988,39 @@ function PreviewIntercalado({
   );
 }
 
-export function configDeEdicion(slug: string, contexto: ContextoDeEdicion = {}): Config {
-  const permitidos = COMPONENTES_POR_SLUG[slug];
+const BLOQUES_SECCION_INTRANET_DEFECTO: string[] = [
+  ...BLOQUES_COMUNES,
+  'RecursosVisualesBloque',
+  'Publicaciones',
+  'PreguntasFrecuentes',
+  'TasaDashboards',
+  'TasaPresentacion',
+  'DescargasConPresentacion',
+];
 
-  // Una sección creada a mano no está en `COMPONENTES_POR_SLUG` y se queda con el
-  // catálogo entero, pero el contexto de abajo le toca igual.
-  const recortada: Config = permitidos
-    ? {
-      ...puckConfig,
-      components: Object.fromEntries(
-        Object.entries(puckConfig.components).filter(([nombre]) => permitidos.includes(nombre))
-      ) as Config['components'],
-      categories: Object.fromEntries(
-        Object.entries(puckConfig.categories ?? {})
-          .map(([nombre, categoria]) => [
-            nombre,
-            {
-              ...categoria,
-              components: (categoria.components ?? []).filter((c) => permitidos.includes(c)),
-            },
-          ])
-          // Una categoría que se queda sin bloques no debe salir como grupo vacío.
-          .filter(([, categoria]) => (categoria as { components: string[] }).components.length > 0)
-      ) as Config['categories'],
-    }
-    : puckConfig;
+export function configDeEdicion(slug: string, contexto: ContextoDeEdicion = {}): Config {
+  // Las secciones creadas a mano reciben el catálogo de bloques comunes de intranet,
+  // nunca los bloques de 'Plantilla' (IntranetTopbar/IntranetFooter), que solo se ofrecen en 'menu-y-pie'.
+  const permitidos = COMPONENTES_POR_SLUG[slug] ?? BLOQUES_SECCION_INTRANET_DEFECTO;
+
+  const recortada: Config = {
+    ...puckConfig,
+    components: Object.fromEntries(
+      Object.entries(puckConfig.components).filter(([nombre]) => permitidos.includes(nombre))
+    ) as Config['components'],
+    categories: Object.fromEntries(
+      Object.entries(puckConfig.categories ?? {})
+        .map(([nombre, categoria]) => [
+          nombre,
+          {
+            ...categoria,
+            components: (categoria.components ?? []).filter((c) => permitidos.includes(c)),
+          },
+        ])
+        // Una categoría que se queda sin bloques no debe salir como grupo vacío.
+        .filter(([, categoria]) => (categoria as { components: string[] }).components.length > 0)
+    ) as Config['categories'],
+  };
 
   if (slug === SLUG_DE_PLANTILLA) {
     const seccion = contexto.seccion;

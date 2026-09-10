@@ -15,6 +15,7 @@ export { BuscadorOcupacionesView } from './components/buscador-ocupaciones-view'
 export { DetalleOcupacion } from './components/detalle-ocupacion';
 export { ModalOcupaciones } from './components/modal-ocupaciones';
 export { ResultadosOcupaciones } from './components/resultados-ocupaciones';
+export { HeroBuscadorOcupaciones } from './components/hero-buscador-ocupaciones';
 
 // Hooks
 export { useBuscadorOcupaciones } from './hooks/use-buscador-ocupaciones';

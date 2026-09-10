@@ -25,7 +25,7 @@ import { Footer } from '@/shared/lib/blocks/Footer';
 import { IntranetTopbar } from '@/shared/lib/blocks/IntranetTopbar';
 import { IntranetHero } from '@/shared/lib/blocks/IntranetHero';
 import { defaultIdentidadVisual } from '@/features/identidad-visual/client';
-import { OcupacionSearchBanner } from '@/shared/ui/molecules/ocupacion-search-banner';
+import { HeroBuscadorOcupaciones } from '@/features/sitio-web/buscador-ocupaciones';
 import { EditorjsWrapper } from '@/features/paginas/components/editorjs-wrapper';
 import { ImageUploaderField } from '@/features/paginas/components/image-uploader-field';
 import { ArchivoUploaderField } from '@/features/paginas/components/archivo-uploader-field';
@@ -92,9 +92,6 @@ const puckConfigBase: Config = {
   categories: {
     'Plantilla': {
       components: ['Header', 'Footer'],
-    },
-    'Intranet': {
-      components: ['IntranetTopbar', 'IntranetHero'],
     },
     'Contenido Principal': {
       components: [
@@ -341,17 +338,15 @@ const puckConfigBase: Config = {
         modelAlt?: string;
         colorFondo?: string;
       }>) => (
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-          <OcupacionSearchBanner
-            titulo={titulo}
-            placeholder={searchPlaceholder}
-            logoSrc={imageUrl}
-            logoAlt={imageAlt}
-            modelSrc={modelSrc}
-            modelAlt={modelAlt}
-            colorFondo={colorFondo}
-          />
-        </div>
+        <HeroBuscadorOcupaciones
+          titulo={titulo}
+          searchPlaceholder={searchPlaceholder}
+          imageUrl={imageUrl}
+          imageAlt={imageAlt}
+          modelSrc={modelSrc}
+          modelAlt={modelAlt}
+          colorFondo={colorFondo}
+        />
       ),
     },
     Services: {
@@ -913,6 +908,25 @@ export const puckConfig: Config = {
  */
 const SLUG_DE_PLANTILLA = 'menu-y-pie';
 
+const BLOQUES_PAGINA_SITIO_DEFECTO: string[] = [
+  'Hero',
+  'Services',
+  'DatoOloSemana',
+  'RecursosVisualesBloque',
+  'Publicaciones',
+  'RichText',
+  'PoliticaPrivacidadEncabezado',
+  'VisorDocumentosNormativos',
+  'CanalesAtencion',
+  'TextoRico',
+  'ImagenDestacada',
+  'ExternalPortals',
+  'Grid',
+  'Flex',
+  'Space',
+  'SeccionPestanasLaterales',
+];
+
 const COMPONENTES_POR_SLUG: Record<string, string[]> = {
   // La plantilla es lo contrario a una página: solo la cabecera y el pie, que es
   // justo lo que las páginas ya no pueden tocar.
@@ -1048,30 +1062,28 @@ function PreviewIntercalado({
 }
 
 export function configDeEdicion(slug: string, contexto: ContextoDeEdicion = {}): Config {
-  const permitidos = COMPONENTES_POR_SLUG[slug];
+  // Las páginas creadas a mano reciben el catálogo de bloques de contenido de sitio,
+  // nunca los bloques de 'Plantilla' (Header/Footer), que solo se ofrecen en 'menu-y-pie'.
+  const permitidos = COMPONENTES_POR_SLUG[slug] ?? BLOQUES_PAGINA_SITIO_DEFECTO;
 
-  // Una página creada a mano no está en `COMPONENTES_POR_SLUG` y se queda con el
-  // catálogo entero, pero el contexto de abajo le toca igual.
-  const recortada: Config = permitidos
-    ? {
-      ...puckConfig,
-      components: Object.fromEntries(
-        Object.entries(puckConfig.components).filter(([nombre]) => permitidos.includes(nombre))
-      ) as Config['components'],
-      categories: Object.fromEntries(
-        Object.entries(puckConfig.categories ?? {})
-          .map(([nombre, categoria]) => [
-            nombre,
-            {
-              ...categoria,
-              components: (categoria.components ?? []).filter((c) => permitidos.includes(c)),
-            },
-          ])
-          // Una categoría que se queda sin bloques no debe salir como grupo vacío.
-          .filter(([, categoria]) => (categoria as { components: string[] }).components.length > 0)
-      ) as Config['categories'],
-    }
-    : puckConfig;
+  const recortada: Config = {
+    ...puckConfig,
+    components: Object.fromEntries(
+      Object.entries(puckConfig.components).filter(([nombre]) => permitidos.includes(nombre))
+    ) as Config['components'],
+    categories: Object.fromEntries(
+      Object.entries(puckConfig.categories ?? {})
+        .map(([nombre, categoria]) => [
+          nombre,
+          {
+            ...categoria,
+            components: (categoria.components ?? []).filter((c) => permitidos.includes(c)),
+          },
+        ])
+        // Una categoría que se queda sin bloques no debe salir como grupo vacío.
+        .filter(([, categoria]) => (categoria as { components: string[] }).components.length > 0)
+    ) as Config['categories'],
+  };
 
   if (slug === SLUG_DE_PLANTILLA) {
     const seccion = contexto.seccion;
