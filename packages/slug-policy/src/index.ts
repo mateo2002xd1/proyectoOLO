@@ -49,6 +49,7 @@ export const SLUGS_RESERVADOS: readonly string[] = [
   '_next',
   'assets',
   'uploads',
+  'storage',
 ];
 
 /**

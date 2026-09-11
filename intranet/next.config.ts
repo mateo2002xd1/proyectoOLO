@@ -98,9 +98,29 @@ const nextConfig: NextConfig = {
         source: "/api-backend/:path*",
         destination: `${API_URL}/api/:path*`,
       },
+      /**
+       * `uploads` y `backup` viven físicamente en `public/storage/` (unificados ahí
+       * para no desparramar carpetas de almacenamiento en la raíz de `public`), pero
+       * la URL pública sigue siendo la de siempre: `/uploads/...` y `/backup/...`.
+       * Así el contenido ya publicado (que guarda esas rutas literales en la BD) no
+       * necesita ninguna migración.
+       */
+      {
+        source: "/uploads/:path*",
+        destination: "/storage/uploads/:path*",
+      },
+      {
+        source: "/backup/:path*",
+        destination: "/storage/backup/:path*",
+      },
+      /**
+       * Retrocompatibilidad transparente: si un navegador o vista previa solicita
+       * una ruta histórica /backend/..., Next.js la sirve directamente desde el
+       * backup real.
+       */
       {
         source: "/backend/:path*",
-        destination: "/backup/:path*",
+        destination: "/storage/backup/:path*",
       },
     ];
   },

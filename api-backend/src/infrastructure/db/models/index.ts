@@ -13,6 +13,7 @@ import { PaginaVersion } from './PaginaVersion';
 // Sin asociaciones: `usuario_id` es texto libre a propósito (la cuenta maestra de
 // desarrollo no tiene fila en `usuarios`). Ver `020-bloqueos-edicion`.
 import { BloqueoEdicion } from './BloqueoEdicion';
+import { SubidaPendiente } from './SubidaPendiente';
 
 Role.belongsToMany(Permission, { through: RolePermission, as: 'permissions', foreignKey: 'role_id', otherKey: 'permission_id' });
 Permission.belongsToMany(Role, { through: RolePermission, as: 'roles', foreignKey: 'permission_id', otherKey: 'role_id' });
@@ -76,4 +77,5 @@ export {
   Pagina,
   PaginaVersion,
   BloqueoEdicion,
+  SubidaPendiente,
 };

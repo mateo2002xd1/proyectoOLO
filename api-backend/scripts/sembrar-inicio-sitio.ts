@@ -150,42 +150,42 @@ const CONTENIDO_INICIO = {
           "publicaciones": [
             {
               "titulo": "Boletín Mercado Laboral — Marzo 2026",
-              "pdfUrl": "/uploads/BOLETIN%20MERCADO%20LABORAL%20MAR%202026.pdf",
+              "pdfUrl": "/uploads/pdf/BOLETIN%20MERCADO%20LABORAL%20MAR%202026.pdf",
               "etiqueta": "#OLOtecuenta",
               "mes": "May",
               "dia": "07"
             },
             {
               "titulo": "Catálogo de Ocupaciones Campesina, Familiar y Comunitaria",
-              "pdfUrl": "/uploads/Cat%C3%A1logo%20de%20Ocp.%20Campesina%2C%20Familiar%20y%20Comunitaria-1.pdf",
+              "pdfUrl": "/uploads/pdf/Cat%C3%A1logo%20de%20Ocp.%20Campesina%2C%20Familiar%20y%20Comunitaria-1.pdf",
               "etiqueta": "#OLOtecuenta",
               "mes": "May",
               "dia": "07"
             },
             {
               "titulo": "Diccionario OLO",
-              "pdfUrl": "/uploads/DICCIONARIO%20OLO.pdf",
+              "pdfUrl": "/uploads/pdf/DICCIONARIO%20OLO.pdf",
               "etiqueta": "#OLOtecuenta",
               "mes": "May",
               "dia": "07"
             },
             {
               "titulo": "Informe Catálogo Economía Popular",
-              "pdfUrl": "/uploads/Econom%C3%ADa%20Popular.pdf",
+              "pdfUrl": "/uploads/pdf/Econom%C3%ADa%20Popular.pdf",
               "etiqueta": "#OLOtecuenta",
               "mes": "May",
               "dia": "07"
             },
             {
               "titulo": "La mujer en el Mercado Laboral Colombiano II-2025",
-              "pdfUrl": "/uploads/La%20mujer%20en%20el%20Mercado%20Laboral%20Colombiano%20II-2025.pdf",
+              "pdfUrl": "/uploads/pdf/La%20mujer%20en%20el%20Mercado%20Laboral%20Colombiano%20II-2025.pdf",
               "etiqueta": "#OLOtecuenta",
               "mes": "May",
               "dia": "07"
             },
             {
               "titulo": "Vinculación Víctimas II Semestre",
-              "pdfUrl": "/uploads/VINCULACI%C3%93N%20VICTIMAS%20II-%20SEM.pdf",
+              "pdfUrl": "/uploads/pdf/VINCULACI%C3%93N%20VICTIMAS%20II-%20SEM.pdf",
               "etiqueta": "#OLOtecuenta",
               "mes": "May",
               "dia": "07"

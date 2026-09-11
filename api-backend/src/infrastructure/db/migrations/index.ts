@@ -24,6 +24,7 @@ import * as depuracionYOptimizacionEsquema from './020-depuracion-y-optimizacion
 import * as bloqueosEdicion from './021-bloqueos-edicion';
 import * as auditoriaGuardarBorrador from './022-auditoria-guardar-borrador';
 import * as permisoPoliticaPrivacidadSitio from './023-permiso-politica-privacidad-sitio';
+import * as subidasPendientes from './024-subidas-pendientes';
 
 export interface Migracion {
   nombre: string;
@@ -58,6 +59,7 @@ const migraciones: Migracion[] = [
   bloqueosEdicion,
   auditoriaGuardarBorrador,
   permisoPoliticaPrivacidadSitio,
+  subidasPendientes,
 ];
 
 const TABLA_CONTROL = 'migraciones_aplicadas';

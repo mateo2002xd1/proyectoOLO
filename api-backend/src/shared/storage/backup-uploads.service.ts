@@ -4,54 +4,41 @@ import type { Ambito } from '../ambito';
 
 /**
  * Resuelve la ruta física absoluta de la carpeta `uploads` según el ámbito.
+ *
+ * Vive bajo `public/storage/uploads`, pero se sigue sirviendo en la URL pública
+ * `/uploads/...` de siempre: el rewrite en next.config es el que traduce una cosa
+ * en la otra, así que el contenido ya publicado (con esa URL guardada en la BD)
+ * no necesita tocarse.
  */
 export function resolverDirectorioUploads(ambito: Ambito): string {
   const raizProyecto = path.resolve(__dirname, '../../../../');
-  if (ambito === 'sitio') {
-    return path.join(raizProyecto, 'sitio-web', 'public', 'uploads');
-  }
-  return path.join(raizProyecto, 'intranet', 'public', 'uploads');
+  const carpetaApp = ambito === 'sitio' ? 'sitio-web' : 'intranet';
+  return path.join(raizProyecto, carpetaApp, 'public', 'storage', 'uploads');
 }
 
 /**
  * Resuelve la ruta física absoluta de la carpeta de backup para una página dada.
- * Ubicación: /{aplicacion}/public/backup/{paginaId}/
+ * Ubicación física: /{aplicacion}/public/storage/backup/{paginaId}/ — servida en la
+ * URL pública `/backup/{paginaId}/...` vía rewrite (ver next.config).
  * Crea el directorio si aún no existe y garantiza que permanezca creado.
  */
 export function resolverDirectorioBackup(paginaId: string, ambito: Ambito): string {
   const raizProyecto = path.resolve(__dirname, '../../../../');
   const carpetaApp = ambito === 'sitio' ? 'sitio-web' : 'intranet';
-  const dirBackup = path.join(raizProyecto, carpetaApp, 'public', 'backup', paginaId);
-  const dirBackendAntiguo = path.join(raizProyecto, carpetaApp, 'public', 'backend', paginaId);
-
-  // Si existe la carpeta histórica `backend/{paginaId}`, migrarla automáticamente a `backup/{paginaId}`
-  if (fs.existsSync(dirBackendAntiguo)) {
-    try {
-      if (!fs.existsSync(dirBackup)) {
-        fs.mkdirSync(path.dirname(dirBackup), { recursive: true });
-        fs.renameSync(dirBackendAntiguo, dirBackup);
-      } else {
-        const entradas = fs.readdirSync(dirBackendAntiguo);
-        for (const entrada of entradas) {
-          const origen = path.join(dirBackendAntiguo, entrada);
-          const destino = path.join(dirBackup, entrada);
-          if (!fs.existsSync(destino)) {
-            fs.renameSync(origen, destino);
-          }
-        }
-        try {
-          fs.rmdirSync(dirBackendAntiguo);
-        } catch {}
-      }
-    } catch {
-      // Si rename o movimiento falla por bloqueo, continúa con dirBackup
-    }
-  }
+  const dirBackup = path.join(raizProyecto, carpetaApp, 'public', 'storage', 'backup', paginaId);
 
   if (!fs.existsSync(dirBackup)) {
     fs.mkdirSync(dirBackup, { recursive: true });
   }
   return dirBackup;
+}
+
+/**
+ * Nombre con el que un archivo de `uploads/{tipo}/...` se guarda en backup: suelto en
+ * la carpeta de la página, sin la subcarpeta de tipo. Conserva un `?`/`#` final si lo trae.
+ */
+function nombreEnBackup(subRuta: string): string {
+  return subRuta.split('/').pop() ?? subRuta;
 }
 
 /**
@@ -126,11 +113,11 @@ function moverArchivoSeguro(origen: string, destino: string): void {
 
 /**
  * Elimina de forma recursiva cualquier archivo o subdirectorio en dirBackup
- * que no pertenezca al conjunto de subRutasValidas de la versión archivada.
+ * que no pertenezca al conjunto de nombres válidos de la versión archivada.
  */
 function limpiarArchivosHuerfanosEnBackup(
   dirBackup: string,
-  subRutasValidas: Set<string>
+  nombresValidos: Set<string>
 ): string[] {
   if (!fs.existsSync(dirBackup)) return [];
 
@@ -152,7 +139,7 @@ function limpiarArchivosHuerfanosEnBackup(
         } catch {}
       } else if (entrada.isFile()) {
         const normalizada = rutaRelativa.replace(/\\/g, '/');
-        if (!subRutasValidas.has(normalizada)) {
+        if (!nombresValidos.has(normalizada)) {
           try {
             fs.unlinkSync(rutaAbsoluta);
             eliminados.push(normalizada);
@@ -194,7 +181,7 @@ export function respaldarArchivosAlPublicar(params: {
   for (const rutaRelativa of rutasAnteriores) {
     const subRuta = rutaRelativa.replace(/^\/?uploads\//, '');
     const rutaOrigenFisica = path.join(dirUploads, subRuta);
-    const rutaDestinoFisica = path.join(dirBackup, subRuta);
+    const rutaDestinoFisica = path.join(dirBackup, nombreEnBackup(subRuta));
 
     if (!fs.existsSync(rutaOrigenFisica)) {
       continue;
@@ -212,10 +199,10 @@ export function respaldarArchivosAlPublicar(params: {
   }
 
   // Eliminar de backup cualquier archivo residual que no pertenezca a la versión archivada
-  const subRutasValidasArchivadas = new Set(
-    rutasAnteriores.map((r) => r.replace(/^\/?uploads\//, '').replace(/\\/g, '/'))
+  const nombresValidosArchivados = new Set(
+    rutasAnteriores.map((r) => nombreEnBackup(r.replace(/^\/?uploads\//, '')))
   );
-  const purgadosDeBackup = limpiarArchivosHuerfanosEnBackup(dirBackup, subRutasValidasArchivadas);
+  const purgadosDeBackup = limpiarArchivosHuerfanosEnBackup(dirBackup, nombresValidosArchivados);
 
   return { respaldados, preservadosEnUploads, purgadosDeBackup };
 }
@@ -224,8 +211,8 @@ export function respaldarArchivosAlPublicar(params: {
  * Restaura los archivos de backup hacia `/uploads/` cuando se revierte a una versión archivada.
  *
  * Regla de integridad:
- *  - Los archivos de `public/backup/{paginaId}/` se mueven de regreso a `/uploads/`.
- *  - Los archivos de la versión que deja de ser publicada se mueven a `public/backup/{paginaId}/`.
+ *  - Los archivos de `backup/{paginaId}/` vuelven a su carpeta de tipo en `uploads/`.
+ *  - Los archivos de la versión que deja de ser publicada se mueven a `backup/{paginaId}/`.
  *  - Se purga cualquier archivo en backup que no pertenezca a la versión que pasa a ser archivada.
  */
 export function restaurarArchivosDesdeBackup(params: {
@@ -248,7 +235,7 @@ export function restaurarArchivosDesdeBackup(params: {
   // 1. Mover hacia uploads los archivos necesarios para la versión que se restaura
   for (const rutaRelativa of rutasRestaurar) {
     const subRuta = rutaRelativa.replace(/^\/?uploads\//, '');
-    const rutaOrigenBackup = path.join(dirBackup, subRuta);
+    const rutaOrigenBackup = path.join(dirBackup, nombreEnBackup(subRuta));
     const rutaDestinoUploads = path.join(dirUploads, subRuta);
 
     if (fs.existsSync(rutaOrigenBackup)) {
@@ -261,7 +248,7 @@ export function restaurarArchivosDesdeBackup(params: {
   for (const rutaRelativa of rutasActuales) {
     const subRuta = rutaRelativa.replace(/^\/?uploads\//, '');
     const rutaOrigenUploads = path.join(dirUploads, subRuta);
-    const rutaDestinoBackup = path.join(dirBackup, subRuta);
+    const rutaDestinoBackup = path.join(dirBackup, nombreEnBackup(subRuta));
 
     if (rutasRestaurar.includes(rutaRelativa)) {
       // Si la versión restaurada también la usa, se copia a backup (se mantiene en uploads)
@@ -279,10 +266,10 @@ export function restaurarArchivosDesdeBackup(params: {
   }
 
   // 3. Purgar de backup cualquier archivo residual que no pertenezca a la versión que quedó archivada
-  const subRutasValidasArchivadas = new Set(
-    Array.from(rutasActuales).map((r) => r.replace(/^\/?uploads\//, '').replace(/\\/g, '/'))
+  const nombresValidosArchivados = new Set(
+    Array.from(rutasActuales).map((r) => nombreEnBackup(r.replace(/^\/?uploads\//, '')))
   );
-  const purgadosDeBackup = limpiarArchivosHuerfanosEnBackup(dirBackup, subRutasValidasArchivadas);
+  const purgadosDeBackup = limpiarArchivosHuerfanosEnBackup(dirBackup, nombresValidosArchivados);
 
   return { restaurados, guardadosEnBackup, purgadosDeBackup };
 }
@@ -339,7 +326,7 @@ export function adaptarRutasParaVistaPreviaArchivada(
     if (cacheExiste.has(subRuta)) {
       return cacheExiste.get(subRuta)!;
     }
-    const rutaFisica = path.join(dirBackup, subRuta);
+    const rutaFisica = path.join(dirBackup, nombreEnBackup(subRuta));
     const existe = fs.existsSync(rutaFisica);
     cacheExiste.set(subRuta, existe);
     return existe;
@@ -365,7 +352,7 @@ export function adaptarRutasParaVistaPreviaArchivada(
             subRutaFisica = decodeURIComponent(subRuta);
           } catch {}
           if (existeEnBackup(subRutaFisica)) {
-            nuevoNodo = nuevoNodo.replace(`/uploads/${subRuta}`, `/backup/${paginaId}/${subRuta}`);
+            nuevoNodo = nuevoNodo.replace(`/uploads/${subRuta}`, `/backup/${paginaId}/${nombreEnBackup(subRuta)}`);
           }
         }
 
@@ -379,7 +366,7 @@ export function adaptarRutasParaVistaPreviaArchivada(
           if (existeEnBackup(subRutaFisica)) {
             return coincidencia.replace(
               `/uploads/${subRutaConSufijo}`,
-              `/backup/${paginaId}/${subRutaConSufijo}`
+              `/backup/${paginaId}/${nombreEnBackup(subRutaConSufijo)}`
             );
           }
           return coincidencia;

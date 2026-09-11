@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { permisosDeLaSesion } from '../services/paginas.service';
 import { AUTH_ROLE_COOKIE_NAME } from '@/shared/lib/auth-cookies';
 
@@ -24,6 +24,15 @@ function leerRolActual(): string {
   );
 }
 
+function tienePermisoPorCookieSincrono(): boolean {
+  const rol = leerRolActual();
+  return rol === 'superadmin' || rol === 'administrador';
+}
+
+function sinSuscripcion() {
+  return () => {};
+}
+
 /**
  * Si la sesión actual tiene una clave de permiso concreta (`secciones.crear`,
  * `secciones.eliminar`...). Filtra primero por la cookie de rol —para no
@@ -35,7 +44,17 @@ function leerRolActual(): string {
  * abiertas en segundo plano durante días.
  */
 export function usePermisoDeSeccion(clave: string): boolean {
-  const [tienePermiso, setTienePermiso] = useState(false);
+  // Lectura síncrona de la cookie con useSyncExternalStore: el snapshot de servidor
+  // es siempre `false` (el servidor no ve la cookie del navegador), así la primera
+  // pasada del cliente coincide con el HTML del servidor y no rompe la hidratación.
+  // React reconcilia con el valor real justo después de montar, sin esperar a /api/me.
+  const tienePermisoPorCookie = useSyncExternalStore(
+    sinSuscripcion,
+    tienePermisoPorCookieSincrono,
+    () => false
+  );
+
+  const [tienePermisoPorApi, setTienePermisoPorApi] = useState(false);
 
   useEffect(() => {
     let vigente = true;
@@ -43,21 +62,13 @@ export function usePermisoDeSeccion(clave: string): boolean {
     const revisar = () => {
       const rol = leerRolActual();
       if (!rol || !ROLES_QUE_EDITAN.includes(rol)) {
-        setTienePermiso(false);
+        setTienePermisoPorApi(false);
         return;
-      }
-
-      if (rol === 'superadmin') {
-        setTienePermiso(true);
       }
 
       permisosDeLaSesion().then((permisos) => {
         if (vigente) {
-          if (rol === 'superadmin') {
-            setTienePermiso(true);
-          } else {
-            setTienePermiso(permisos.includes(clave));
-          }
+          setTienePermisoPorApi(rol === 'superadmin' || permisos.includes(clave));
         }
       });
     };
@@ -77,5 +88,5 @@ export function usePermisoDeSeccion(clave: string): boolean {
     };
   }, [clave]);
 
-  return tienePermiso;
+  return tienePermisoPorCookie || tienePermisoPorApi;
 }

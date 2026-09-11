@@ -11,6 +11,7 @@
  */
 
 // Components
+export { BuscadorOcupacionesBanner } from './components/buscador-ocupaciones-banner';
 export { BuscadorOcupacionesView } from './components/buscador-ocupaciones-view';
 export { DetalleOcupacion } from './components/detalle-ocupacion';
 export { ModalOcupaciones } from './components/modal-ocupaciones';

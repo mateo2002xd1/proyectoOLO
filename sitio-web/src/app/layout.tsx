@@ -44,6 +44,7 @@ export default function RootLayout({
       <head>
         <script
           id="anti-flash-theme"
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var c=document.documentElement.classList;c.add('no-transition');var s=localStorage.getItem('olo-theme');if(s==='dark'){c.add('dark');}else{c.remove('dark');}requestAnimationFrame(function(){requestAnimationFrame(function(){c.remove('no-transition');});});}catch(e){}})();`,
           }}

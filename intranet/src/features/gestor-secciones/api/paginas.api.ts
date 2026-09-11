@@ -147,6 +147,14 @@ export async function liberarBloqueo(slug: string): Promise<void> {
     .catch(() => undefined);
 }
 
+/**
+ * Anota que `ruta` se subió para esta página, para que al publicarla se borre si
+ * ninguna versión la usa. Si falla, la subida sigue sirviendo igual.
+ */
+export async function registrarSubidaPendiente(slug: string, ruta: string): Promise<void> {
+  await apiClient.post(`/paginas/${slug}/subidas`, { ruta }).catch(() => undefined);
+}
+
 export interface SeccionCreada {
   id: string;
   slug: string;

@@ -18,6 +18,7 @@ import { Puck, createUsePuck, type Data } from "@puckeditor/core";
 import "@puckeditor/core/dist/index.css";
 import { configDeEdicion } from "@/config/puck.config";
 import { resolverRutaDeVuelta } from "../lib/ruta-de-vuelta";
+import { PaginaEnEdicionContext } from "../lib/pagina-en-edicion";
 import type { PuckEditorWrapperProps, ContenidoPagina } from "../types/editor.types";
 import { validarAccesibilidad, mensajeDeViolacion, type ViolacionAccesibilidad } from "@olo/accessibility-policy";
 
@@ -445,20 +446,22 @@ export function PuckEditorWrapper({
     // El estado viaja en un `data-` porque quien lo pinta es el CSS: la bandera
     // se monta sobre el marcado de la cabecera de Puck, que no es nuestro.
     <div className="olo-editor" data-estado={estado}>
-      <Puck
-        config={config}
-        data={initialPuckData}
-        onChange={handleChange}
-        // Las dos mitades de la bandera. Son los únicos huecos que Puck deja en
-        // el centro de su cabecera, y `headerPath` es el único que se puede
-        // estilar aparte —lo saca en un `<code>`—, así que ahí va el estado.
-        headerTitle={`/${slug}`}
-        headerPath={ETIQUETA_ESTADO[estado] ?? estado}
-        // El botón "Publish" de serie no llega a dibujarse: `headerActions` lo
-        // sustituye por Salir / Guardar / Enviar. `onPublish` queda como no-op.
-        onPublish={() => undefined}
-        overrides={overrides}
-      />
+      <PaginaEnEdicionContext.Provider value={slug}>
+        <Puck
+          config={config}
+          data={initialPuckData}
+          onChange={handleChange}
+          // Las dos mitades de la bandera. Son los únicos huecos que Puck deja en
+          // el centro de su cabecera, y `headerPath` es el único que se puede
+          // estilar aparte —lo saca en un `<code>`—, así que ahí va el estado.
+          headerTitle={`/${slug}`}
+          headerPath={ETIQUETA_ESTADO[estado] ?? estado}
+          // El botón "Publish" de serie no llega a dibujarse: `headerActions` lo
+          // sustituye por Salir / Guardar / Enviar. `onPublish` queda como no-op.
+          onPublish={() => undefined}
+          overrides={overrides}
+        />
+      </PaginaEnEdicionContext.Provider>
 
       <ModalSalir
         abierto={salidaPendiente}
