@@ -70,10 +70,10 @@ export function SidebarItem({
   current = false,
   onClick,
 }: SidebarItemProps) {
-  const baseClasses = `group flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition [&>svg]:size-5 [&>svg]:shrink-0 ${
+  const baseClasses = `group flex items-center gap-3 rounded-lg px-3 py-2 text-base transition [&>svg]:size-5 [&>svg]:shrink-0 ${
     current
       ? 'bg-zinc-100 font-semibold text-zinc-900 dark:bg-brand-interactive/20 dark:text-brand-interactive [&>svg]:text-zinc-900 dark:[&>svg]:text-brand-interactive'
-      : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive [&>svg]:text-zinc-500 dark:[&>svg]:text-slate-400 group-hover:[&>svg]:text-zinc-900 dark:group-hover:[&>svg]:text-brand-interactive'
+      : 'text-zinc-600 hover:bg-[#001631]/10 hover:text-zinc-900 dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive [&>svg]:text-zinc-500 dark:[&>svg]:text-slate-400 group-hover:[&>svg]:text-zinc-900 dark:group-hover:[&>svg]:text-brand-interactive'
   } ${className}`;
 
   if (href) {
@@ -97,7 +97,10 @@ interface SidebarLabelProps {
 }
 
 export function SidebarLabel({ children, className = '' }: SidebarLabelProps) {
-  return <span className={`flex-1 truncate ${className}`}>{children}</span>;
+  // `text-left` explícito: cuando el item es un `<button>` (sin `href`), el estilo por
+  // defecto del navegador centra su texto, y como este span hereda esa propiedad al
+  // estirarse con `flex-1`, el texto quedaba flotando lejos del icono.
+  return <span className={`flex-1 truncate text-left ${className}`}>{children}</span>;
 }
 
 interface SidebarSectionProps {

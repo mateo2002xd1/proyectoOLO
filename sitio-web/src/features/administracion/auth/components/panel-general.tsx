@@ -42,11 +42,13 @@ import {
   QuestionMarkCircleIcon,
 } from '@heroicons/react/20/solid';
 import { ThemeToggle } from '@/shared/ui/molecules/theme-toggle';
+import { Paginador } from '@/shared/ui/molecules/paginador';
 import { RouteTransition } from '@/shared/ui/atoms/RouteTransition';
 import {
   enlaceAlEditor,
   listarEnRevision,
   resumenDePaginasPublicadas,
+  SLUG_PLANTILLA,
   type PaginaEnRevision,
   type ResumenPaginasPublicadas,
 } from '@/features/paginas';
@@ -88,10 +90,10 @@ function SidebarGroup({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition [&>svg]:size-5 [&>svg]:shrink-0 ${
+        className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-base font-semibold transition [&>svg]:size-5 [&>svg]:shrink-0 ${
           isActive
-            ? 'bg-zinc-100 font-semibold text-zinc-900 dark:bg-brand-interactive/20 dark:text-brand-interactive [&>svg]:text-zinc-900 dark:[&>svg]:text-brand-interactive'
-            : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive [&>svg]:text-zinc-500 dark:[&>svg]:text-slate-400'
+            ? 'bg-zinc-100 text-zinc-900 dark:bg-brand-interactive/20 dark:text-brand-interactive [&>svg]:text-zinc-900 dark:[&>svg]:text-brand-interactive'
+            : 'text-zinc-600 hover:bg-[#001631]/10 hover:text-zinc-900 dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive [&>svg]:text-zinc-500 dark:[&>svg]:text-slate-400'
         }`}
         aria-expanded={open}
       >
@@ -118,8 +120,22 @@ function SidebarGroup({
 }
 
 
-/** Cambios que caben en la tarjeta del panel; el resto se lee en Auditoría. */
-const CAMBIOS_RECIENTES = 15;
+/** Cuántos registros se traen del servidor para paginar en la tarjeta; el resto
+ *  (más allá de esta ventana) se lee en Auditoría. Se alinea con la opción más
+ *  grande del selector de filas por página para que "100" no muestre menos. */
+const CAMBIOS_RECIENTES = 100;
+
+/**
+ * La plantilla (`menu-y-pie`, cabecera y pie comunes) sale del recuento de «Páginas
+ * publicadas»: no es una página de contenido, así que ni cuenta ni aparece en el
+ * listado por aplicación. El total se recalcula sobre lo que queda, no se resta 1 a
+ * mano, para no desincronizarse si algún día son más las páginas de plantilla.
+ */
+function sinPlantilla(resumen: ResumenPaginasPublicadas): ResumenPaginasPublicadas {
+  const sitio = resumen.sitio.filter((p) => p.slug !== SLUG_PLANTILLA);
+  const intranet = resumen.intranet.filter((p) => p.slug !== SLUG_PLANTILLA);
+  return { sitio, intranet, total: sitio.length + intranet.length };
+}
 
 /** Solo los nombres de los campos tocados: el antes/después vive en la bitácora. */
 const camposTocados = (registro: RegistroAuditoria) =>
@@ -402,7 +418,7 @@ export function PanelGeneralLayout({
             </SidebarHeader>
             <SidebarBody>
               <SidebarSection>
-                <SidebarItem href="/admin/dashboard">
+                <SidebarItem href="/admin/dashboard" className="font-semibold">
                   <HomeIcon />
                   <SidebarLabel>Dashboard</SidebarLabel>
                 </SidebarItem>
@@ -430,22 +446,22 @@ export function PanelGeneralLayout({
                     </>
                   )}
                 </SidebarGroup>
-                <SidebarItem href="/admin/revision">
+                <SidebarItem href="/admin/revision" className="font-semibold">
                   <ClipboardDocumentCheckIcon />
                   <SidebarLabel>Páginas en revisión</SidebarLabel>
                 </SidebarItem>
-                <SidebarItem href="/admin/auditoria">
+                <SidebarItem href="/admin/auditoria" className="font-semibold">
                   <ShieldCheckIcon />
                   <SidebarLabel>Auditoría</SidebarLabel>
                 </SidebarItem>
-                <SidebarItem href="/admin/respaldos">
+                <SidebarItem href="/admin/respaldos" className="font-semibold">
                   <ArchiveBoxIcon />
                   <SidebarLabel>Respaldos</SidebarLabel>
                 </SidebarItem>
               </SidebarSection>
               <SidebarSpacer />
               <SidebarSection>
-                <SidebarItem href="/admin/dashboard/soporte">
+                <SidebarItem href="/admin/dashboard/soporte" className="font-semibold">
                   <QuestionMarkCircleIcon />
                   <SidebarLabel>Soporte</SidebarLabel>
                 </SidebarItem>
@@ -494,7 +510,7 @@ export function PanelGeneralLayout({
               <button
                 type="button"
                 onClick={() => setIsAlertasOpen(true)}
-                className="relative shrink-0 p-2 rounded-lg text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive transition-colors group focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-interactive"
+                className="relative shrink-0 p-2 rounded-lg text-zinc-500 hover:bg-[#001631]/10 hover:text-zinc-900 dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive transition-colors group focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-interactive"
                 aria-label="Notificaciones"
               >
                 <div className="relative flex items-center justify-center">
@@ -533,6 +549,10 @@ export function PanelGeneralDashboard() {
   const [loading, setLoading] = useState(true);
   const [actividad, setActividad] = useState<RegistroAuditoria[]>([]);
   const [errorActividad, setErrorActividad] = useState<Error | null>(null);
+  const [paginaActividad, setPaginaActividad] = useState(1);
+  // Solo en el dashboard: 12 en vez de los 15 de Roles/Usuarios/Auditoría, para que
+  // la tarjeta de Actividad Reciente no crezca más que las demás del mismo grid.
+  const [itemsPorPaginaActividad, setItemsPorPaginaActividad] = useState(12);
   const [paginasPublicadas, setPaginasPublicadas] = useState<ResumenPaginasPublicadas | null>(null);
   const [errorPaginas, setErrorPaginas] = useState<string | null>(null);
 
@@ -557,7 +577,7 @@ export function PanelGeneralDashboard() {
         // El recuento de páginas no es crítico para el panel: si falla, su tarjeta lo
         // dice sola y el resto del dashboard se pinta igual.
         resumenDePaginasPublicadas().then(
-          (resumen) => resumen,
+          (resumen) => sinPlantilla(resumen),
           (err: unknown) => {
             if (!cancelado) {
               setErrorPaginas(
@@ -582,6 +602,13 @@ export function PanelGeneralDashboard() {
   const sinAccesoAuditoria = errorActividad instanceof ErrorAuditoria && errorActividad.sinAcceso;
 
   const usuariosPorRol = useMemo(() => contarUsuariosPorRol(users), [users]);
+
+  const totalPaginasActividad = Math.max(1, Math.ceil(actividad.length / itemsPorPaginaActividad));
+  const paginaActualActividad = Math.min(paginaActividad, totalPaginasActividad);
+  const actividadPaginada = actividad.slice(
+    (paginaActualActividad - 1) * itemsPorPaginaActividad,
+    paginaActualActividad * itemsPorPaginaActividad,
+  );
 
   if (loading) {
     return (
@@ -671,46 +698,66 @@ export function PanelGeneralDashboard() {
               {errorActividad.message}
             </p>
           ) : (actividad || []).length > 0 ? (
-            /* Mismas columnas que la bitácora, en versión angosta: la tarjeta ocupa
-               media pantalla, así que la tabla desborda a scroll en vez de apretarse. */
-            <div className="overflow-x-auto rounded-lg">
-              <table className="w-full min-w-[34rem] text-left text-sm">
-                <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-[#131b2f]">
-                  <tr>
-                    <th scope="col" className="px-3 py-2 font-medium">Fecha y hora</th>
-                    <th scope="col" className="px-3 py-2 font-medium">Usuario</th>
-                    <th scope="col" className="px-3 py-2 font-medium">Acción</th>
-                    <th scope="col" className="px-3 py-2 font-medium">Cambios</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
-                  {actividad.map((registro) => (
-                    <tr key={registro.id}>
-                      <td className="whitespace-nowrap px-3 py-2 text-xs text-zinc-600 dark:text-zinc-300">
-                        {fechaCorta(registro.fecha)}
-                      </td>
-                      <td className="max-w-[9rem] truncate px-3 py-2 text-zinc-900 dark:text-[#f6f6f6]">
-                        {registro.usuarioNombre ?? <span className="text-zinc-500">Sin usuario</span>}
-                      </td>
-                      <td className="px-3 py-2">
-                        <span
-                          className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${COLOR_ACCION[registro.accion] ?? ''}`}
-                        >
-                          {etiquetaDeAccion(registro.accion)}
-                        </span>
-                      </td>
-                      <td
-                        className="max-w-[12rem] truncate px-3 py-2 text-zinc-500 dark:text-[#94a3b8]"
-                        title={camposTocados(registro)}
-                      >
-                        {etiquetaDeEntidad(registro.entidadTipo)}
-                        {camposTocados(registro) && ` · ${camposTocados(registro)}`}
-                      </td>
+            <>
+              {/* Mismas columnas que la bitácora, en versión angosta: la tarjeta ocupa
+                  media pantalla, así que la tabla desborda a scroll en vez de apretarse.
+                  `overflow-y-hidden` junto al `-x-auto` es lo que hace falta para que el
+                  redondeo del contenedor recorte el encabezado en las cuatro esquinas:
+                  con un solo eje explícito, algunos navegadores no lo clipan igual. */}
+              <div className="overflow-x-auto overflow-y-hidden rounded-lg">
+                <table className="w-full min-w-[34rem] text-left text-sm">
+                  <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-[#131b2f]">
+                    <tr>
+                      <th scope="col" className="px-3 py-2 font-medium">Fecha y hora</th>
+                      <th scope="col" className="px-3 py-2 font-medium">Usuario</th>
+                      <th scope="col" className="px-3 py-2 font-medium">Acción</th>
+                      <th scope="col" className="px-3 py-2 font-medium">Cambios</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
+                    {actividadPaginada.map((registro) => (
+                      <tr key={registro.id}>
+                        <td className="whitespace-nowrap px-3 py-3 text-xs text-zinc-600 dark:text-zinc-300">
+                          {fechaCorta(registro.fecha)}
+                        </td>
+                        <td className="max-w-[9rem] truncate px-3 py-3 text-zinc-900 dark:text-[#f6f6f6]">
+                          {registro.usuarioNombre ?? <span className="text-zinc-500">Sin usuario</span>}
+                        </td>
+                        <td className="px-3 py-3">
+                          <span
+                            className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${COLOR_ACCION[registro.accion] ?? ''}`}
+                          >
+                            {etiquetaDeAccion(registro.accion)}
+                          </span>
+                        </td>
+                        <td
+                          className="max-w-[12rem] truncate px-3 py-3 text-zinc-500 dark:text-[#94a3b8]"
+                          title={camposTocados(registro)}
+                        >
+                          {etiquetaDeEntidad(registro.entidadTipo)}
+                          {camposTocados(registro) && ` · ${camposTocados(registro)}`}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <Paginador
+                pagina={paginaActualActividad}
+                totalPaginas={totalPaginasActividad}
+                onCambiarPagina={setPaginaActividad}
+                total={actividad.length}
+                porPagina={itemsPorPaginaActividad}
+                onCambiarPorPagina={(n) => {
+                  setItemsPorPaginaActividad(n);
+                  setPaginaActividad(1);
+                }}
+                etiqueta="registros"
+                opciones={[12, 30, 60, 100]}
+                className="mt-1 px-0"
+              />
+            </>
           ) : (
             <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">No hay actividad reciente.</p>
           )}
