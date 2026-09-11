@@ -43,6 +43,16 @@ export async function middleware(request: NextRequest) {
 
     // Si el usuario ya está logueado y trata de acceder a /login, redirigir
     if (isTokenValid && pathname.startsWith('/login')) {
+      // Bloquear si tiene sesión pero no permisos para intranet (p. ej. si llega directo
+      // a /login/first-login saltándose la vista de login, o redirigido desde el inicio)
+      if (!sesion?.permisos.includes('acceso.intranet')) {
+        const response = NextResponse.redirect(new URL('/login?error=acceso_denegado', request.url));
+        if (token) {
+          response.cookies.delete('token');
+        }
+        return response;
+      }
+
       if (isRestricted) {
         const isAllowedRestrictedRoute =
           pathname === '/login/first-login' ||

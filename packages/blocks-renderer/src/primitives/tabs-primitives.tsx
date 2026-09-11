@@ -5,7 +5,7 @@ import type { ConfigDeBloque } from './controles-de-caja';
 import { DestinoTabField, type DestinoTabConfig } from './destino-tab-field';
 
 export interface TabItem {
-  titulo: string;
+  titulo: React.ReactNode | string;
   slotId?: string;
   tipoDestino?: 'contenido' | 'enlace' | 'archivo';
   urlEnlace?: string;
@@ -547,6 +547,7 @@ export const tabsConfig: ConfigDeBloque = {
         titulo: {
           type: 'text',
           label: 'Texto visible del botón',
+          contentEditable: true,
         },
         destino: {
           type: 'custom',

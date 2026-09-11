@@ -2,14 +2,14 @@ import type { ComponentType, ReactNode } from 'react';
 
 export interface ServiceItem {
   id: string;
-  title: string;
+  title: ReactNode;
   /** Campo `richtext` de Puck: llega ya convertido en nodos, no como texto. */
   description: ReactNode;
 }
 
 interface ServicesProps {
   block: { id: string };
-  sectionTitle?: string;
+  sectionTitle?: ReactNode;
   services?: ServiceItem[];
 }
 
@@ -133,7 +133,8 @@ function iconoDelServicio(id: string): ReactNode {
 }
 
 /** Envuelve la última palabra del título en cursiva, como en el mockup ("¿Qué *hacemos*?"). */
-function tituloConAcento(title: string): ReactNode {
+function tituloConAcento(title?: ReactNode): ReactNode {
+  if (typeof title !== 'string') return title;
   const trimmed = title.trim();
   const lastSpace = trimmed.lastIndexOf(' ');
   if (lastSpace === -1) return trimmed;

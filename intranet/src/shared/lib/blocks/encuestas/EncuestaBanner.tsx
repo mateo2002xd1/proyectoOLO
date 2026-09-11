@@ -8,7 +8,7 @@
 import type { ReactNode } from 'react';
 
 export interface EncuestaBannerProps {
-  antetitulo?: string;
+  antetitulo?: ReactNode;
   titulo?: ReactNode;
   imagenSrc?: string;
   imagenAlt?: string;

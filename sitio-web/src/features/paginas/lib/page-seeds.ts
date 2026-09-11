@@ -1,5 +1,7 @@
 import type { Data } from '@puckeditor/core';
 import { homeFallbackData } from './home-fallback-data';
+import { plantillaFallbackData } from './plantilla-fallback-data';
+import { SLUG_PLANTILLA } from './plantilla';
 
 /**
  * Semillas por slug.
@@ -19,6 +21,7 @@ import { homeFallbackData } from './home-fallback-data';
  */
 export const pageSeeds: Record<string, Data> = {
   inicio: homeFallbackData,
+  [SLUG_PLANTILLA]: plantillaFallbackData,
 };
 
 /** Página vacía en formato Puck (fallback cuando un slug no tiene semilla). */

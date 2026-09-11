@@ -10,8 +10,8 @@ import {
 import { poppins } from '@/shared/lib/fonts';
 
 interface VisorDocumentoProps {
-  titulo: string;
-  descripcion?: string;
+  titulo: React.ReactNode;
+  descripcion?: React.ReactNode;
   /** URL del proxy interno (/api/docs/pdf?id=X) — usada por el iframe */
   url: string;
   /**
@@ -83,7 +83,7 @@ export function VisorDocumento({
       <div className="relative h-[650px] w-full overflow-hidden rounded-xl border border-gray-200 dark:border-[#1e293b] bg-slate-100 dark:bg-[#0b1121] shadow-inner">
         <iframe
           src={url}
-          title={titulo}
+          title={typeof titulo === 'string' ? titulo : 'Documento'}
           className="h-full w-full border-0"
         />
 
@@ -140,7 +140,7 @@ export function VisorDocumento({
             <div className="flex-1 bg-slate-200 dark:bg-[#0b1121]">
               <iframe
                 src={url}
-                title={`${titulo} - Pantalla Completa`}
+                title={`${typeof titulo === 'string' ? titulo : 'Documento'} - Pantalla Completa`}
                 className="h-full w-full border-0"
               />
             </div>

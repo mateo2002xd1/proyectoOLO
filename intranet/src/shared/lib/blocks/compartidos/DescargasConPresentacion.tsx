@@ -14,7 +14,7 @@ import type { ReactNode } from 'react';
  * en vez de dejar un hueco con un visor vacío.
  */
 export interface EnlaceDescarga {
-  etiqueta?: string;
+  etiqueta?: ReactNode;
   url?: string;
 }
 
@@ -32,7 +32,7 @@ export function DescargasConPresentacion({
   // Sin URL el elemento se pinta como texto, no como enlace. Antes se ponía `#`
   // y quedaba algo que parecía pulsable y no llevaba a ninguna parte; y hay
   // listas, como la de la encuesta de calidad, que nunca fueron enlaces.
-  const elementos = enlaces.filter((enlace) => enlace.etiqueta);
+  const elementos = enlaces.filter((enlace) => Boolean(enlace.etiqueta));
 
   return (
     <section className="tasa-ppt-section">
@@ -44,7 +44,7 @@ export function DescargasConPresentacion({
           {elementos.length > 0 && (
             <ul className="list-disc pl-6 text-[#1C2A48] text-lg md:text-xl space-y-2 marker:text-[#0A1B3F]">
               {elementos.map((elemento, indice) => (
-                <li key={`${elemento.etiqueta}-${indice}`}>
+                <li key={typeof elemento.etiqueta === 'string' ? `${elemento.etiqueta}-${indice}` : `enlace-${indice}`}>
                   {elemento.url ? (
                     <a
                       href={elemento.url}
