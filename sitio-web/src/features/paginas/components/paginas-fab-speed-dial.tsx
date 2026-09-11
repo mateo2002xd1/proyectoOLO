@@ -10,6 +10,7 @@ import { permisosDeLaSesion } from '../services/paginas.service';
 import { AUTH_ROLE_COOKIE_NAME } from '@/shared/lib/auth-cookies';
 import { ModalNuevaSeccion } from './modal-nueva-seccion';
 import { ModalEliminarSeccion } from './modal-eliminar-seccion';
+import { Pencil, X } from 'lucide-react';
 
 const ROLES_QUE_EDITAN = ['superadmin', 'administrador', 'editor', 'admin'];
 
@@ -35,9 +36,9 @@ function puedeEditarSincrono(): boolean {
   return ROLES_QUE_EDITAN.includes(rol);
 }
 
-function sinSuscripcion() {
-  return () => {};
-}
+const sinSuscripcion = () => () => {};
+const enCliente = () => true;
+const enServidor = () => false;
 
 function slugDeRuta(ruta: string): string {
   const limpio = (ruta || '').split('?')[0].split('#')[0];
@@ -50,13 +51,7 @@ export function PaginasFabSpeedDial() {
   const rutaActual = usePathname() ?? '/';
   const slug = slugDeRuta(rutaActual);
 
-  // Lectura síncrona en cliente con useSyncExternalStore (evita parpadeos y retrasos)
-  const rolValidoPorCookie = useSyncExternalStore(
-    sinSuscripcion,
-    puedeEditarSincrono,
-    () => false
-  );
-
+  const montado = useSyncExternalStore(sinSuscripcion, enCliente, enServidor);
   const [rolDeApiValido, setRolDeApiValido] = useState(false);
   const puedeCrear = usePermisoDeSeccion('secciones.crear');
   const puedeEliminar = usePermisoDeSeccion('secciones.eliminar');
@@ -76,6 +71,7 @@ export function PaginasFabSpeedDial() {
     };
   }, []);
 
+  const rolValidoPorCookie = montado ? puedeEditarSincrono() : false;
   const rolPuedeEditar = rolValidoPorCookie || rolDeApiValido;
   const puedeEditarSeccion = rolPuedeEditar && Boolean(slug);
   const puedeEditarPlantilla = rolPuedeEditar;
@@ -137,8 +133,9 @@ export function PaginasFabSpeedDial() {
     };
   }, [abierto, cerrarMenu]);
 
-  // Si el usuario no tiene permisos para ninguna acción, no se pinta nada
-  if (!tieneAlgunaAccion) return null;
+  // Durante SSR y primera hidratación en cliente no se pinta para evitar mismatch de hidratación.
+  // Una vez montado en cliente, si el usuario no tiene permisos para ninguna acción, tampoco se pinta nada.
+  if (!montado || !tieneAlgunaAccion) return null;
 
   return (
     <>
@@ -171,17 +168,18 @@ export function PaginasFabSpeedDial() {
                 tabIndex={abierto ? 0 : -1}
               >
                 <svg
-                  viewBox="0 0 25 23"
+                  viewBox="0 0 24 24"
                   width={18}
                   height={18}
                   aria-hidden="true"
                   fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 >
-                  <path
-                    d="M17.474 3.607L21.389 7.522a.5.5 0 0 1 0 .707L11.91 17.6l-4.028.447a.5.5 0 0 1-.552-.552l.447-4.028L16.875 3.607a.5.5 0 0 1 .6 0ZM24.505 2.613L22.387.494a2.083 2.083 0 0 0-2.396 0L18.455 2.03a.5.5 0 0 0 0 .708l3.915 3.915a.5.5 0 0 0 .707 0l1.429-1.429a2.083 2.083 0 0 0 0-2.61ZM16.667 15.022V19.44H2.778V5.551h9.974a.5.5 0 0 0 .355-.148l1.736-1.736c.33-.33.096-.89-.442-.89H2.083A2.083 2.083 0 0 0 0 4.857v15.277c0 1.15.933 2.083 2.083 2.083h15.278c1.15 0 2.083-.933 2.083-2.083v-6.849c0-.464-.56-.694-.889-.364l-1.736 1.736a.5.5 0 0 0-.152.365Z"
-                    fill="currentColor"
-                  />
+                  <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                  <path d="m15 5 4 4" />
                 </svg>
               </Link>
             </div>
@@ -309,21 +307,11 @@ export function PaginasFabSpeedDial() {
           title={abierto ? 'Cerrar menú de acciones' : 'Acciones de página'}
         >
           <span className="fab-speed-dial__icono-wrapper">
-            <svg
-              className="fab-speed-dial__icono"
-              viewBox="0 0 24 24"
-              width={22}
-              height={22}
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2.2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
+            {abierto ? (
+              <X className="fab-speed-dial__icono" size={22} strokeWidth={2.2} aria-hidden="true" />
+            ) : (
+              <Pencil className="fab-speed-dial__icono" size={20} strokeWidth={2.2} aria-hidden="true" />
+            )}
           </span>
         </button>
       </div>

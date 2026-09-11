@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import { mensajeDeError } from '@/shared/lib/errors';
+import { registrarSubidaPendiente } from '../api/paginas.api';
+import { usePaginaEnEdicion } from '../lib/pagina-en-edicion';
 
 interface ImageUploaderFieldProps {
   value: string;
@@ -9,8 +11,8 @@ interface ImageUploaderFieldProps {
 }
 
 export function ImageUploaderField({ value, onChange }: ImageUploaderFieldProps) {
+  const slug = usePaginaEnEdicion();
   const [isUploading, setIsUploading] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,44 +42,11 @@ export function ImageUploaderField({ value, onChange }: ImageUploaderFieldProps)
 
       const data = await res.json();
       onChange(data.url); // The API should return { url: '/uploads/filename.png' }
+      if (slug) void registrarSubidaPendiente(slug, data.url);
     } catch (err) {
       setError(mensajeDeError(err, 'Error desconocido'));
     } finally {
       setIsUploading(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!value) return;
-
-    setIsDeleting(true);
-    setError(null);
-
-    try {
-      // Solo se borra del servidor si es un archivo que subimos nosotros;
-      // una URL externa (por ejemplo, pegada a mano) no se toca.
-      if (value.startsWith('/uploads/')) {
-        const res = await fetch('/api/upload', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url: value }),
-        });
-
-        if (!res.ok) {
-          let errorMsg = 'Error al eliminar el archivo';
-          try {
-            const errData = await res.json();
-            if (errData.error) errorMsg = errData.error;
-          } catch (_) {}
-          throw new Error(errorMsg);
-        }
-      }
-
-      onChange('');
-    } catch (err) {
-      setError(mensajeDeError(err, 'Error desconocido'));
-    } finally {
-      setIsDeleting(false);
     }
   };
 
@@ -94,9 +63,9 @@ export function ImageUploaderField({ value, onChange }: ImageUploaderFieldProps)
           />
           <button
             type="button"
-            onClick={handleDelete}
-            disabled={isDeleting}
-            title="Eliminar imagen"
+            // Solo vacía el campo. Borrar el archivo aquí rompía la página publicada que todavía lo usa.
+            onClick={() => onChange('')}
+            title="Quitar imagen"
             style={{
               position: 'absolute',
               top: '4px',
@@ -110,8 +79,7 @@ export function ImageUploaderField({ value, onChange }: ImageUploaderFieldProps)
               color: 'white',
               border: 'none',
               borderRadius: '50%',
-              cursor: isDeleting ? 'not-allowed' : 'pointer',
-              opacity: isDeleting ? 0.7 : 1,
+              cursor: 'pointer',
             }}
           >
             ✕

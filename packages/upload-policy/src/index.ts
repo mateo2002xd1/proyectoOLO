@@ -54,6 +54,35 @@ export const LIMITE_ABSOLUTO_BYTES = Object.values(TIPOS_PERMITIDOS).reduce(
   0
 );
 
+/**
+ * Subcarpeta de `uploads/` según la extensión canónica (la de `TIPOS_PERMITIDOS`,
+ * ya verificada por magic bytes — nunca la que declaró el cliente).
+ *
+ * Agrupada por categoría y no por extensión exacta: jpg/png van juntas a
+ * `imagenes` porque casi siempre se consultan como grupo ("dame las imágenes"),
+ * no una extensión a la vez.
+ */
+export const CARPETA_POR_EXTENSION: Record<string, string> = {
+  pdf: 'pdf',
+  jpg: 'img',
+  png: 'img',
+  doc: 'word',
+  docx: 'word',
+  xls: 'excel',
+  xlsx: 'excel',
+  ppt: 'presentaciones',
+  pptx: 'presentaciones',
+};
+
+/**
+ * Resuelve la subcarpeta de `uploads/` para una extensión ya validada.
+ * Si la extensión no está en el mapa (no debería pasar: viene de
+ * `TIPOS_PERMITIDOS`), cae a `otros` en vez de reventar.
+ */
+export function resolverCarpetaPorExtension(ext: string): string {
+  return CARPETA_POR_EXTENSION[ext.toLowerCase()] ?? 'otros';
+}
+
 /** Lo que devuelve `fileTypeFromBuffer` y es lo único que necesitamos de él. */
 export type DetectorDeTipo = (
   datos: Uint8Array

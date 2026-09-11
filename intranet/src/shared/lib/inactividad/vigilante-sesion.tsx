@@ -110,11 +110,5 @@ export function VigilanteSesion({ activo = true, alExpirar }: VigilanteSesionPro
     vigilanteRef.current?.registrarActividad();
   }, []);
 
-  return (
-    <ModalInactividad
-      msRestantes={msRestantes}
-      onSeguir={seguir}
-      onCerrarSesion={() => void cerrarSesion(MOTIVO_INACTIVIDAD)}
-    />
-  );
+  return <ModalInactividad msRestantes={msRestantes} onSeguir={seguir} />;
 }

@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
+import { registrarSubidaPendiente } from '../services/paginas.service';
+import { usePaginaEnEdicion } from '../lib/pagina-en-edicion';
 
 interface ArchivoUploaderFieldProps {
   value: string;
@@ -16,8 +18,7 @@ interface ArchivoUploaderFieldProps {
  * Es el equivalente de `ImageUploaderField` para lo que no es una imagen: sube al
  * mismo endpoint (`/api/upload`, que no filtra por tipo) y guarda la ruta
  * resultante, pero sin previsualización y dejando elegir qué extensiones se
- * admiten. La ruta también se puede escribir a mano, que es lo práctico cuando el
- * archivo ya está en el servidor.
+ * admiten.
  *
  * Copiado de `intranet/src/features/gestor-secciones/components/archivo-uploader-field.tsx`,
  * con el mensaje de error resuelto en línea porque aquí no existe el helper
@@ -29,6 +30,7 @@ export function ArchivoUploaderField({
   accept = '.pdf,.pptx,.ppt,.xlsx,.xls,.docx,.doc',
   etiquetaBoton = 'Subir archivo',
 }: ArchivoUploaderFieldProps) {
+  const slug = usePaginaEnEdicion();
   const [subiendo, setSubiendo] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -55,6 +57,7 @@ export function ArchivoUploaderField({
 
       const data = await res.json();
       onChange(data.url);
+      if (slug) void registrarSubidaPendiente(slug, data.url);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
     } finally {
@@ -71,13 +74,6 @@ export function ArchivoUploaderField({
           Archivo actual: {nombreVisible}
         </span>
       )}
-      <input
-        type="text"
-        value={value || ''}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Ruta del archivo"
-        style={{ padding: '8px', border: '1px solid #ccc', borderRadius: '4px', width: '100%' }}
-      />
       <div style={{ position: 'relative', overflow: 'hidden', display: 'inline-block' }}>
         <button
           type="button"

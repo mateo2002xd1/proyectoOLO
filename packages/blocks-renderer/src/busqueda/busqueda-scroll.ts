@@ -194,7 +194,7 @@ interface TemporizadoresElemento {
 const temporizadoresDestello = new WeakMap<HTMLElement, TemporizadoresElemento>();
 
 /**
- * Aplica un destello de acento visual (halo luminoso azul difuso y fondo suave) temporal sobre el elemento encontrado.
+ * Aplica un destello de acento visual (halo difuso #fed754 al 25% de opacidad y fondo suave) temporal sobre el elemento encontrado.
  * - Sin borde sólido exterior (sin 0 0 0 4px).
  * - Sin alterar el border-radius original del elemento.
  * - Idempotente: cancela cualquier temporizador anterior sobre el mismo elemento.
@@ -211,11 +211,10 @@ export function aplicarDestello(elemento: HTMLElement): void {
     temporizadoresDestello.delete(elemento);
   }
 
-  // 2. Aplicar halo brillante difuso azul (sin borde sólido ni border-radius) y fondo suave
-  elemento.style.transition = 'box-shadow 0.35s ease, background-color 0.35s ease';
-  elemento.style.boxShadow =
-    '0 0 32px 8px rgba(56, 189, 248, 0.85), 0 0 14px 2px rgba(2, 132, 199, 0.65)';
-  elemento.style.backgroundColor = 'rgba(56, 189, 248, 0.22)';
+  // 2. Aplicar resaltado de fondo estilo selección de texto con color #fff201 (sin sombra exterior)
+  elemento.style.transition = 'background-color 0.35s ease';
+  elemento.style.removeProperty('box-shadow');
+  elemento.style.backgroundColor = '#fff201';
 
   // Reiniciar clase de animación de apoyo CSS
   elemento.classList.remove('resaltado-busqueda-anim');
@@ -224,7 +223,6 @@ export function aplicarDestello(elemento: HTMLElement): void {
 
   // 3. A los 2.4s, desvanecer suavemente a transparente
   const fadeTimer = setTimeout(() => {
-    elemento.style.boxShadow = 'none';
     elemento.style.backgroundColor = 'transparent';
 
     // 4. Tras los 450ms de transición suave, remover completamente los estilos inline y clase
