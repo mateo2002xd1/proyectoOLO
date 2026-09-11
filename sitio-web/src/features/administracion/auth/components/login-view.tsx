@@ -119,19 +119,23 @@ function LoginForm() {
         return;
       }
 
-      const role = data.user?.role ?? '';
+      const permisos = data.user?.permisos || [];
+      const hasAccesoPanel = permisos.includes('acceso.panel');
+      const hasPermisosEdicion = permisos.some((p: string) => 
+        p.startsWith('editar.') || p.startsWith('secciones.') || p.startsWith('editor.')
+      );
 
-      if (role === 'Superadmin' || role === 'Administrador') {
+      if (hasAccesoPanel) {
         window.location.href = redirectParam ? redirectTo : '/admin/dashboard';
         return;
       }
 
-      if (role === 'Editor') {
+      if (hasPermisosEdicion) {
         setEditorChoice(true);
         return;
       }
 
-      setErrors({ general: 'Tu cuenta no tiene permisos de edición.' });
+      setErrors({ general: 'Tu cuenta no tiene permisos de edición ni de acceso al panel.' });
     } catch {
       setErrors({ general: 'Error de conexión. Verifique que la API esté activa.' });
     } finally {

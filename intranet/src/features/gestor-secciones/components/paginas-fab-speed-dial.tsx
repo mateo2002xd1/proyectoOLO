@@ -16,23 +16,24 @@ function slugDeRuta(ruta: string): string {
 }
 
 export interface PaginasFabSpeedDialProps {
-  puedeEditar?: boolean;
-  puedeCrear?: boolean;
-  puedeEliminar?: boolean;
+  esSuperadmin?: boolean;
+  permisosActivos?: string[];
 }
 
 export function PaginasFabSpeedDial({
-  puedeEditar = true,
-  puedeCrear = false,
-  puedeEliminar = false,
+  esSuperadmin = false,
+  permisosActivos = [],
 }: PaginasFabSpeedDialProps) {
   const rutaActual = usePathname() ?? '/inicio';
   const slug = slugDeRuta(rutaActual);
 
-  const puedeEditarSeccion = Boolean(puedeEditar && slug);
-  const puedeEditarPlantilla = Boolean(puedeEditar);
-  const puedeCrearSeccion = Boolean(puedeCrear);
-  const puedeEliminarSeccion = Boolean(puedeEliminar && slug);
+  const tienePermisoEditarSeccion = permisosActivos.includes(`editar.intranet.${slug}`);
+  const tienePermisoEditarPlantilla = permisosActivos.includes('editar.intranet.menu-y-pie');
+
+  const puedeEditarSeccion = Boolean(slug) && (esSuperadmin || tienePermisoEditarSeccion);
+  const puedeEditarPlantilla = esSuperadmin || tienePermisoEditarPlantilla;
+  const puedeCrearSeccion = esSuperadmin || permisosActivos.includes('secciones.crear');
+  const puedeEliminarSeccion = Boolean(slug) && (esSuperadmin || permisosActivos.includes('secciones.eliminar'));
 
   const tieneAlgunaAccion =
     puedeEditarSeccion || puedeEditarPlantilla || puedeCrearSeccion || puedeEliminarSeccion;
