@@ -26,7 +26,7 @@ const ROLES_QUE_AUDITAN = ['superadmin', 'administrador'];
 const normalizar = (rol: string | undefined | null) => (rol ?? '').trim().toLowerCase();
 
 export const auditoriaPolicies = {
-  puedeVer: (rol?: string | null) => ROLES_QUE_AUDITAN.includes(normalizar(rol)),
+  puedeVer: (user?: any) => ROLES_QUE_AUDITAN.includes(normalizar(user?.role)) || !!user?.permisos?.includes('auditoria.ver'),
 };
 
 export type PermisoAuditoria = keyof typeof auditoriaPolicies;

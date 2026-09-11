@@ -28,19 +28,19 @@ const tieneRol = (rol: string | undefined | null, permitidos: string[]) =>
 
 export const contenidosPolicies = {
   /** Crear y modificar contenido, sea de quien sea. */
-  puedeEditar: (rol?: string | null) => tieneRol(rol, ROLES_QUE_EDITAN),
+  puedeEditar: (user?: any) => tieneRol(user?.role, ROLES_QUE_EDITAN) || !!user?.permisos?.some((p: string) => p.startsWith('editar.') || p.startsWith('secciones.') || p.startsWith('editor.')),
 
   /** Borrar contenido ajeno. El autor puede con el suyo aunque esto sea `false`. */
-  puedeEliminar: (rol?: string | null) => tieneRol(rol, ROLES_QUE_APRUEBAN),
+  puedeEliminar: (user?: any) => tieneRol(user?.role, ROLES_QUE_APRUEBAN),
 
   /** Leer borradores, contenido en revisión, rechazado o archivado. */
-  puedeVerNoPublicado: (rol?: string | null) => tieneRol(rol, ROLES_QUE_VEN_NO_PUBLICADO),
+  puedeVerNoPublicado: (user?: any) => tieneRol(user?.role, ROLES_QUE_VEN_NO_PUBLICADO) || !!user?.permisos?.some((p: string) => p.startsWith('editar.') || p.startsWith('secciones.') || p.startsWith('editor.') || p === 'acceso.panel'),
 
   /**
    * Las secciones son la taxonomía del sitio: cambiarlas reordena el portal entero,
    * así que no acompaña a `puedeEditar` sino a quien responde por la estructura.
    */
-  puedeAdministrarSecciones: (rol?: string | null) => tieneRol(rol, ROLES_QUE_APRUEBAN),
+  puedeAdministrarSecciones: (user?: any) => tieneRol(user?.role, ROLES_QUE_APRUEBAN) || !!user?.permisos?.includes('secciones.crear') || !!user?.permisos?.includes('secciones.eliminar'),
 };
 
 export type PermisoContenido = keyof typeof contenidosPolicies;

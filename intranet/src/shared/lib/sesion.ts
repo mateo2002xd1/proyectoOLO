@@ -52,7 +52,18 @@ export async function obtenerSesion(): Promise<Sesion | null> {
  */
 export async function puedeEditarPaginas(): Promise<boolean> {
   const sesion = await obtenerSesion();
-  return ROLES_QUE_EDITAN.includes((sesion?.rol ?? '').trim().toLowerCase());
+  const lowerRole = (sesion?.rol ?? '').trim().toLowerCase();
+
+  if (ROLES_QUE_EDITAN.includes(lowerRole)) {
+    return true;
+  }
+
+  if (!sesion) {
+    return false;
+  }
+
+  const permisos = await permisosDeLaSesion();
+  return permisos.some(p => p.startsWith('editar.intranet.') || p === 'secciones.crear');
 }
 
 /**

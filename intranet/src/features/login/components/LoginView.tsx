@@ -45,7 +45,13 @@ function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>(() => {
+    const initialErrors: any = {};
+    if (searchParams.get('error') === 'acceso_denegado') {
+      initialErrors.general = 'No tienes permisos para ingresar a la intranet.';
+    }
+    return initialErrors;
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -82,6 +88,17 @@ function LoginForm() {
 
     try {
       const data = await login(email, password);
+
+      // Verificamos si el usuario realmente tiene permiso para entrar a la intranet.
+      // Si no lo tiene, cerramos la sesión que la API acaba de abrir y mostramos el error.
+      if (!data.user.permisos?.includes('acceso.intranet')) {
+        try {
+          await fetch('/api-backend/logout', { method: 'POST' });
+        } catch {}
+        setErrors({ general: 'No tienes permisos para ingresar a la intranet.' });
+        setIsLoading(false);
+        return;
+      }
 
       setIsSuccess(true);
 

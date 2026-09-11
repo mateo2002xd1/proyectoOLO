@@ -41,12 +41,7 @@ export default async function EditorPage({
     redirect("/login");
   }
 
-  // Verificación de permiso de edición — directores/subdirectores tienen sesión
-  // pero no pueden editar: se les devuelve a la vista de la página.
-  const puedeEditar = await puedeEditarPaginas();
-  if (!puedeEditar) {
-    redirect(`/${slug}`);
-  }
+  // La verificación de si puede acceder al editor visual ahora se hace de forma granular abajo.
 
   // Verificación GRANULAR por sección — el chequeo de arriba solo mira el rol, así
   // que un Editor sin la llave `editar.intranet.{slug}` de ESTA sección llegaba a ver

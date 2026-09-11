@@ -21,11 +21,14 @@ export async function middleware(request: NextRequest) {
   const hasValidSession = sesion !== null;
 
   // Todo lo que decide acceso sale del token verificado, no de las cookies legibles.
-  const role = sesion?.rol;
+  const permisos = sesion?.permisos || [];
+  const hasAccesoPanel = permisos.includes('acceso.panel');
+  const hasPermisosEdicion = permisos.some((p: string) => 
+    p.startsWith('editar.') || p.startsWith('secciones.') || p.startsWith('editor.')
+  );
+  
   const mustChangePassword = sesion?.debeCambiarPassword ?? false;
   const mustSetupSecurityQuestions = sesion?.debeConfigurarPreguntas ?? false;
-
-  const isAdminRole = role === 'Superadmin' || role === 'Administrador';
 
   // Los alias de login (/login, /auth/login, /admin/auth...) los resuelve
   // `next.config.mjs`, que además se evalúa antes que este middleware. Aquí había
@@ -36,7 +39,7 @@ export async function middleware(request: NextRequest) {
   // Login page: solo auto-redirigimos a admins con sesión válida (van directo al dashboard).
   // Editores u otros roles ven el formulario/selector post-login (el propio LoginView enruta).
   if (pathname === '/admin/login') {
-    if (hasValidSession && isAdminRole) {
+    if (hasValidSession && hasAccesoPanel) {
       return NextResponse.redirect(new URL('/admin/dashboard', request.url));
     }
     return NextResponse.next();
@@ -64,10 +67,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   };
 
-  // /admin/dashboard/* — solo Superadmin y Administrador pueden acceder
+  // /admin/dashboard/* — requiere acceso al panel
   if (pathname.startsWith('/admin/dashboard')) {
-    if (!isAdminRole) {
-      if (role === 'Editor') {
+    if (!hasAccesoPanel) {
+      if (hasPermisosEdicion) {
         return NextResponse.redirect(new URL('/admin/editor', request.url));
       }
       return loginRedirect();
@@ -79,43 +82,37 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // /admin/users y /admin/usuarios — solo Superadmin y Administrador pueden acceder (RF-04/RF-05)
+  // /admin/users y /admin/usuarios — requiere acceso al panel
   if (pathname.startsWith('/admin/users') || pathname.startsWith('/admin/usuarios')) {
-    if (!isAdminRole) {
+    if (!hasAccesoPanel) {
       return loginRedirect();
     }
   }
 
-  // /admin/roles — solo Superadmin y Administrador pueden gestionar roles y permisos
+  // /admin/roles — requiere acceso al panel
   if (pathname.startsWith('/admin/roles')) {
-    if (!isAdminRole) {
+    if (!hasAccesoPanel) {
       return loginRedirect();
     }
   }
 
-  // /admin/auditoria — solo Superadmin y Administrador (RF-07)
-  // Espejo de `auditoria.policies.ts` en la API, que es quien manda: la bitácora
-  // guarda IP y user-agent de cada editor, así que no la abre ni el propio editor.
-  // Aquí se corta antes para no llevar a nadie a una pantalla que solo puede dar 403.
+  // /admin/auditoria — requiere acceso al panel
   if (pathname.startsWith('/admin/auditoria')) {
-    if (!isAdminRole) {
+    if (!hasAccesoPanel) {
       return loginRedirect();
     }
   }
 
-  // /admin/revision — solo Superadmin y Administrador, espejo de
-  // `requierePermisoPagina('puedePublicar')` en `pagina.routes.ts`. Sin sesión
-  // válida caía en este mismo layout (la lista y la API sí devuelven 401, pero
-  // sin redirigir a login), mostrando el tablero vacío con un error en pantalla.
+  // /admin/revision — requiere acceso al panel
   if (pathname.startsWith('/admin/revision')) {
-    if (!isAdminRole) {
+    if (!hasAccesoPanel) {
       return loginRedirect();
     }
   }
 
-  // /admin/editor/* — Superadmin, Administrador y Editor pueden acceder
+  // /admin/editor/* — cualquiera con permisos de edición
   if (pathname.startsWith('/admin/editor')) {
-    if (!isAdminRole && role !== 'Editor') {
+    if (!hasAccesoPanel && !hasPermisosEdicion) {
       return loginRedirect();
     }
   }
