@@ -59,6 +59,10 @@ export function asegurarSlotsEnTabs(tabs: TabItem[] = []): Array<TabItem & { slo
 
 export interface TabsProps {
   id?: string;
+  titulo?: React.ReactNode | string;
+  mostrarTitulo?: boolean;
+  alineacionTitulo?: 'izquierda' | 'centro' | 'derecha';
+  subtitulo?: React.ReactNode | string;
   mostrarSidebar?: 'si' | 'no';
   posicionMenu?: 'lateral' | 'superior';
   anchoSidebar?: '240' | '280' | '320';
@@ -77,6 +81,10 @@ export interface TabsProps {
  * - Descarga de archivo: Descarga directa de documento adjunto (no admite bloques internos).
  */
 export function TabsRender({
+  titulo = '',
+  mostrarTitulo = true,
+  alineacionTitulo = 'izquierda',
+  subtitulo = '',
   mostrarSidebar = 'si',
   posicionMenu = 'lateral',
   anchoSidebar = '280',
@@ -121,12 +129,31 @@ export function TabsRender({
       ? ' olo-tabs--azul'
       : '';
 
+  const claseAlineacion =
+    alineacionTitulo === 'centro'
+      ? 'text-center items-center'
+      : alineacionTitulo === 'derecha'
+      ? 'text-right items-end'
+      : 'text-left items-start';
+
   return (
     <section
       className={`olo-tabs-section olo-tabs${varianteClase} w-full`}
       style={{ width: '100%' }}
     >
       <div className="olo-tabs-container">
+        {mostrarTitulo && titulo && (
+          <div className={`olo-tabs-header mb-6 flex flex-col ${claseAlineacion} w-full`}>
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#002237] tracking-tight mb-2 w-full">
+              {titulo}
+            </h2>
+            {subtitulo && (
+              <div className="text-sm sm:text-base text-gray-600 max-w-3xl w-full">
+                {subtitulo}
+              </div>
+            )}
+          </div>
+        )}
         <div
           className={`olo-tabs-layout ${
             esSuperior ? 'olo-tabs-layout--superior' : 'olo-tabs-layout--lateral'
@@ -200,9 +227,10 @@ export function TabsRender({
                   <span
                     style={{
                       display: 'block',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
+                      whiteSpace: 'normal',
+                      wordBreak: 'break-word',
+                      overflowWrap: 'break-word',
+                      lineHeight: '1.35',
                       pointerEvents: 'none',
                       flex: 1,
                     }}
@@ -496,6 +524,32 @@ export function TabsRender({
 export const tabsConfig: ConfigDeBloque = {
   label: 'Sección con Pestañas',
   fields: {
+    mostrarTitulo: {
+      type: 'radio',
+      label: 'Mostrar título de la sección',
+      options: [
+        { label: 'Sí', value: true },
+        { label: 'No', value: false },
+      ],
+    },
+    titulo: {
+      type: 'text',
+      label: 'Título de la sección (opcional)',
+      contentEditable: true,
+    },
+    alineacionTitulo: {
+      type: 'radio',
+      label: 'Alineación del título',
+      options: [
+        { label: 'Izquierda', value: 'izquierda' },
+        { label: 'Centro', value: 'centro' },
+        { label: 'Derecha', value: 'derecha' },
+      ],
+    },
+    subtitulo: {
+      type: 'textarea',
+      label: 'Descripción / Subtítulo (opcional)',
+    },
     mostrarSidebar: {
       type: 'radio',
       label: 'Mostrar barra de pestañas',
@@ -561,6 +615,10 @@ export const tabsConfig: ConfigDeBloque = {
     ...slotFields,
   },
   defaultProps: {
+    mostrarTitulo: true,
+    titulo: '',
+    alineacionTitulo: 'izquierda',
+    subtitulo: '',
     mostrarSidebar: 'si',
     posicionMenu: 'lateral',
     anchoSidebar: '280',

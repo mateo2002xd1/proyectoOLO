@@ -517,6 +517,14 @@ const puckConfigBase: Config = {
     Publicaciones: {
       label: 'Últimas publicaciones',
       fields: {
+        mostrarTitulo: {
+          type: 'radio',
+          label: 'Mostrar título',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
         titulo: { type: 'richtext' as const, label: 'Título', contentEditable: true },
         publicaciones: {
           type: 'array' as const,
@@ -545,6 +553,7 @@ const puckConfigBase: Config = {
       },
       defaultProps: {
         id: 'publicaciones-1',
+        mostrarTitulo: true,
         titulo: '<p><strong>Ultimas</strong> publicaciones</p>',
         publicaciones: [],
         porPagina: 4,
@@ -552,16 +561,19 @@ const puckConfigBase: Config = {
       render: ({
         id,
         titulo,
+        mostrarTitulo,
         publicaciones,
         porPagina,
       }: BlockRender<{
         titulo?: ReactNode;
+        mostrarTitulo?: boolean;
         publicaciones?: { titulo?: ReactNode; pdfUrl?: string; etiqueta?: ReactNode; mes?: ReactNode; dia?: ReactNode }[];
         porPagina?: number;
       }>) => (
         <Publicaciones
           block={{ id: id || 'publicaciones-preview' }}
           titulo={titulo}
+          mostrarTitulo={mostrarTitulo}
           publicaciones={publicaciones}
           porPagina={porPagina}
         />
@@ -805,6 +817,14 @@ const puckConfigBase: Config = {
     TextoRico: {
       label: 'Texto con formato',
       fields: {
+        mostrarTitulo: {
+          type: 'radio',
+          label: 'Mostrar título',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
         titulo: { type: 'richtext', label: 'Título', contentEditable: true },
         contenido: { type: 'richtext', label: 'Contenido', contentEditable: true },
         fondo: campoFondo,
@@ -819,6 +839,7 @@ const puckConfigBase: Config = {
         },
       },
       defaultProps: {
+        mostrarTitulo: true,
         titulo: '¿Qué es?',
         contenido: '<p>Escribe aquí el contenido de la sección.</p>',
         fondo: 'gris',
@@ -830,6 +851,14 @@ const puckConfigBase: Config = {
     ImagenDestacada: {
       label: 'Imagen destacada',
       fields: {
+        mostrarTitulo: {
+          type: 'radio',
+          label: 'Mostrar título',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
         titulo: { type: 'richtext', label: 'Título', contentEditable: true },
         imagenSrc: campoImagen('Imagen'),
         imagenAlt: { type: 'text', label: 'Texto alternativo' },
@@ -862,6 +891,7 @@ const puckConfigBase: Config = {
         },
       },
       defaultProps: {
+        mostrarTitulo: true,
         titulo: '',
         imagenSrc: '',
         imagenAlt: '',
@@ -949,7 +979,24 @@ const puckConfigBase: Config = {
     SeccionBotonesIcono: {
       label: 'Sección de botones con íconos',
       fields: {
+        mostrarTitulo: {
+          type: 'radio',
+          label: 'Mostrar título',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
         titulo: { type: 'text', label: 'Título de la sección (opcional)', contentEditable: true },
+        alineacionTitulo: {
+          type: 'radio',
+          label: 'Alineación del título',
+          options: [
+            { label: 'Izquierda', value: 'izquierda' },
+            { label: 'Centro', value: 'centro' },
+            { label: 'Derecha', value: 'derecha' },
+          ],
+        },
         subtitulo: { type: 'textarea', label: 'Descripción / Subtítulo (opcional)' },
         columnas: {
           type: 'radio',
@@ -967,7 +1014,9 @@ const puckConfigBase: Config = {
         },
       },
       defaultProps: {
+        mostrarTitulo: true,
         titulo: '',
+        alineacionTitulo: 'centro',
         subtitulo: '',
         columnas: 3,
         items: [],

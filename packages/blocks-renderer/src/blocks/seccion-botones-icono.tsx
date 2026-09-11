@@ -20,6 +20,8 @@ export interface ItemBotonSeccion {
 export interface SeccionBotonesIconoProps {
   id?: string;
   titulo?: ReactNode;
+  mostrarTitulo?: boolean;
+  alineacionTitulo?: 'izquierda' | 'centro' | 'derecha';
   subtitulo?: ReactNode;
   columnas?: 1 | 2 | 3 | 4;
   botones?: ItemBotonSeccion[];
@@ -30,6 +32,8 @@ export interface SeccionBotonesIconoProps {
 
 export function SeccionBotonesIcono({
   titulo = '',
+  mostrarTitulo = true,
+  alineacionTitulo = 'centro',
   subtitulo = '',
   columnas = 3,
   botones = [],
@@ -46,6 +50,13 @@ export function SeccionBotonesIcono({
       ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
       : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
 
+  const claseAlineacionTitulo =
+    alineacionTitulo === 'izquierda'
+      ? 'text-left items-start'
+      : alineacionTitulo === 'derecha'
+      ? 'text-right items-end'
+      : 'text-center items-center';
+
   const estiloGrid: React.CSSProperties = {
     ['--olo-grid-cols' as string]: String(columnas ?? 3),
     display: 'grid',
@@ -59,14 +70,14 @@ export function SeccionBotonesIcono({
 
   return (
     <section className={`olo-seccion-botones w-full py-8 px-4 sm:px-6 lg:px-8 ${className}`} style={style}>
-      <div className="max-w-6xl mx-auto flex flex-col items-center w-full">
-        {titulo ? (
-          <h2 className="text-2xl sm:text-3xl font-bold text-center text-[#002237] mb-2 tracking-tight">
+      <div className={`max-w-6xl mx-auto flex flex-col ${claseAlineacionTitulo} w-full`}>
+        {mostrarTitulo && titulo ? (
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#002237] mb-2 tracking-tight w-full">
             {titulo}
           </h2>
         ) : null}
-        {subtitulo ? (
-          <div className="text-sm sm:text-base text-center text-gray-600 mb-6 max-w-2xl">
+        {mostrarTitulo && subtitulo ? (
+          <div className="text-sm sm:text-base text-gray-600 mb-6 max-w-2xl w-full">
             {subtitulo}
           </div>
         ) : null}

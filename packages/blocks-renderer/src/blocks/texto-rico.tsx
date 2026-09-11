@@ -12,6 +12,7 @@ import type { ReactNode } from 'react';
 export interface TextoRicoProps {
   id?: string;
   titulo?: ReactNode;
+  mostrarTitulo?: boolean;
   contenido?: ReactNode;
   fondo?: 'blanco' | 'gris';
   ancho?: 'estrecho' | 'ancho';
@@ -22,6 +23,7 @@ export interface TextoRicoProps {
 
 export function TextoRico({
   titulo,
+  mostrarTitulo = true,
   contenido,
   fondo = 'gris',
   ancho = 'estrecho',
@@ -39,7 +41,7 @@ export function TextoRico({
       <div
         className="max-w-[1200px] w-full mx-auto px-6"
       >
-        {titulo && (
+        {mostrarTitulo && titulo && (
           <h2 className="tasa-concept-title mb-8" style={estiloColor}>
             {titulo}
           </h2>

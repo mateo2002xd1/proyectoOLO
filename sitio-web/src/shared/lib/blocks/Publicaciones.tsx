@@ -34,6 +34,7 @@ export interface PublicacionesProps {
   block: { id: string };
   /** Campo `richtext` de Puck: llega ya convertido en nodos, no como texto. */
   titulo?: ReactNode;
+  mostrarTitulo?: boolean;
   publicaciones?: PublicacionItem[];
   porPagina?: number;
 }
@@ -204,6 +205,7 @@ export function Publicaciones({
       <strong>Ultimas</strong> publicaciones
     </>
   ),
+  mostrarTitulo = true,
   publicaciones = [],
   porPagina = 4,
 }: PublicacionesProps) {
@@ -251,7 +253,7 @@ export function Publicaciones({
   return (
     <section className="olo-publicaciones" aria-label="Últimas publicaciones" data-block-id={block.id}>
       <div className="olo-publicaciones-inner">
-        {titulo && <TituloRico className="olo-publicaciones-title">{titulo}</TituloRico>}
+        {mostrarTitulo && titulo && <TituloRico className="olo-publicaciones-title">{titulo}</TituloRico>}
 
         <div className="olo-publicaciones-body">
           <div
