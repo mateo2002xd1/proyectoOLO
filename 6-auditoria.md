@@ -5,6 +5,119 @@
 
 ---
 
+## sesión 11-09-2026: reset a `OLO/main` y el `dist/` desactualizado que dejó
+
+Sesión con dos partes encadenadas: primero poner el `main` local igual al remoto sin perder
+trabajo propio, y después diagnosticar un 500 al subir archivos que el propio reset provocó.
+
+### 1. `main` local = `OLO/main`, sin perder los 3 commits propios
+
+Un `git pull` había dejado un merge a medias (cientos de archivos auto-fusionados más un
+conflicto real en `sitio-web/src/features/paginas/components/revision-queue-view.tsx`), con
+`main` local y remoto divergidos en 3 commits propios contra 41 del remoto. A pedido
+explícito de traer todo el remoto y descartar la estructura local, sin perder nada:
+
+1. `git merge --abort` — vuelve al estado justo antes del pull.
+2. `git branch backup-local-2026-09-11` — conserva los 3 commits propios (`46f2e5d` y
+   anteriores) para revisión posterior; no se ha vuelto a tocar esa rama.
+3. `git stash` no encontró nada que guardar: los cambios sueltos que aparecían en el estado
+   inicial de la sesión (`revision-queue-view.tsx`, `sidebar.tsx`) ya estaban commiteados en
+   `46f2e5d`.
+4. `git reset --hard OLO/main` — deja `main` en `ce9725f`.
+5. Limpieza de 3 carpetas huérfanas que el checkout no borra solo por quedar vacías
+   (`sitio-web/public/backend/`, `sitio-web/src/shared/animations/`,
+   `sitio-web/src/shared/ui/templates/`): confirmado que no tenían contenido antes de
+   borrarlas, no eran `código muerto` con datos, solo directorios vacíos.
+
+No se tocó nada bajo `.gitignore` (`node_modules`, `.next`, `dist`, `.env*`): son artefactos
+de build y configuración local de cada máquina, no carpetas «muertas» del proyecto.
+
+### 2. El 500 al subir el PDF en el bloque «Publicaciones» — causa raíz
+
+Reportado en `/admin/editor/inicio`: `POST /api/upload` devolvía `Error interno del servidor
+al procesar el archivo.` para cualquier archivo.
+
+`sitio-web/src/app/api/upload/route.ts` llama a `resolverCarpetaPorExtension()` de
+`@olo/upload-policy`. Esa función existe en `packages/upload-policy/src/index.ts`, pero no en
+`packages/upload-policy/dist/index.js` (el build de 04-09-2026, once días más viejo que el
+`src/` que trajo el reset) — `dist/` está en `.gitignore`, así que el reset cambió el fuente
+y dejó el compilado intacto. El `TypeError` resultante caía en el `catch` genérico de la ruta
+y salía como 500 sin pista de la causa real.
+
+Agravante encontrado de paso: en las tres apps, `@olo/*` se instala como `file:../packages/*`
+con `install-links=true` (ver comentario en `scripts/sincronizar-paquetes-locales.mjs`), que
+copia en vez de enlazar — así que ni reconstruir el paquete alcanza: hay que refrescar
+también la copia dentro de cada `node_modules`. `packages/slug-policy` tenía el mismo
+problema (`src/` del reset, `dist/` sin recompilar); `accessibility-policy`, `email-policy` y
+`password-policy` sí estaban al día.
+
+### 3. Por qué volvería a pasar: `sincronizar-paquetes-locales.mjs` solo avisaba
+
+El script ya existe y ya corre solo como `predev`/`prebuild` en las tres apps — es
+infraestructura del propio equipo (commit `9e27647`), no algo nuevo de esta sesión. Pero su
+paso 3 original, al detectar `src/` más nuevo que `dist/`, **solo imprimía un `AVISO`** por
+consola y seguía. Entre el resto del log de arranque de Next, pasó desapercibido: exactamente
+lo que le ocurrió al bug de esta sesión.
+
+Se cambió esa parte para que compile en vez de avisar: si detecta `src/` más nuevo que
+`dist/` (o `dist/` ausente), instala las `devDependencies` propias del paquete si hace falta
+(`node_modules` no existía en ninguno de los 5 paquetes que compilan a `dist/`) y corre su
+`npm run build`, **antes** de comparar copia contra origen — si se recompilara después de
+comparar, la resincronización de esa misma vuelta no vería el `dist/` nuevo. Si el paquete no
+declara `build`, o la compilación falla, corta con `process.exit(1)` en vez de dejar
+arrancar la app contra una copia que ya sabe que está mal — mismo criterio de «fallo ruidoso»
+que ya usaba el resto del script para el paso de resincronización.
+
+No hace falta ningún comando nuevo de parte del equipo: con el `predev`/`prebuild` ya
+enganchado, alcanza con `npm run dev` como siempre. El primer `npm install` dentro de cada
+`packages/*` (para tener `typescript`) es un costo único por paquete y por máquina.
+
+**Descartado:** pasar `@olo/*` a symlinks reales (`npm workspaces`, o exigir modo
+desarrollador de Windows) para que este problema no pueda repetirse estructuralmente. No se
+intentó: es un cambio de infraestructura mayor —afecta cómo instalan las tres apps y el
+`Dockerfile`— fuera del alcance de un arreglo de sesión: queda anotado para quien quiera
+evaluarlo con más tiempo.
+
+### Inventario de lo tocado
+
+| Archivo | Cambio |
+|---|---|
+| `scripts/sincronizar-paquetes-locales.mjs` | Paso 3 pasa de avisar a compilar (`npm install` + `npm run build` por paquete si `dist/` está viejo), antes del diff de sincronización. |
+| `packages/upload-policy/dist/` | Recompilado; ya exporta `resolverCarpetaPorExtension`. |
+| `packages/slug-policy/dist/` | Recompilado (mismo síntoma, sin bug reportado todavía). |
+| `sitio-web/node_modules/@olo/{upload-policy,slug-policy}` | Copia resincronizada a mano primero, y verificada luego por el script ya corregido. |
+| `intranet/`, `api-backend/` node_modules equivalentes | Igual. |
+
+### Verificación
+- `node ../scripts/sincronizar-paquetes-locales.mjs` corrido a mano desde `sitio-web`,
+  `intranet` y `api-backend`: las tres salen limpias (`exit 0`, sin diferencias pendientes).
+- Prueba deliberada del camino nuevo: se tocó el `mtime` de `packages/upload-policy/src/index.ts`
+  para simular un `dist/` desactualizado y se volvió a correr el script — detectó la
+  desactualización, instaló `typescript` en el paquete, compiló y confirmó la copia al día.
+  Una segunda corrida inmediata no hizo nada (camino rápido intacto).
+- `resolverCarpetaPorExtension` confirmado presente en los tres `dist/index.js` copiados
+  (`grep` directo, no solo lectura del build log).
+- **No se probó en el navegador.** Quedó pendiente que alguien reinicie su `next dev` (Next no
+  recarga `node_modules` en caliente) y repita la subida del PDF en el bloque Publicaciones
+  para confirmar el flujo completo end-to-end.
+
+> Trampa para quien lea esto después: si un paquete de `packages/` empieza a fallar con un
+> export que «debería estar» y no está, mirar primero `node_modules/@olo/<paquete>/dist/` en
+> la app que falla, no `packages/<paquete>/src/`. El error casi nunca señala esa ruta.
+
+### Pendiente al cierre
+- Confirmar en el navegador que la subida de PDF en «Publicaciones» funciona tras reiniciar
+  `next dev`.
+- `packages/upload-policy/package-lock.json` quedó modificado por el `npm install` que le
+  agregó `typescript` como dependencia instalada (antes tenía el lockfile sin `node_modules`
+  correspondiente). Nada más cambió en él; falta decidir si se commitea junto con el resto.
+- La rama `backup-local-2026-09-11` con los 3 commits que reemplazó el reset sigue sin
+  revisar.
+- Nada de esta sesión se ha commiteado todavía — se dejó así a propósito, a la espera de
+  confirmación.
+
+---
+
 ## sesión 08-09-2026: dos retoques en el panel — el modal de alertas y la actividad reciente
 
 Dos encargos pequeños sobre capturas del panel administrativo, ambos en el mismo archivo:

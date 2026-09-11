@@ -29,6 +29,17 @@
  * eso acierta también después de un `git pull`, un cambio de rama o un borrado
  * manual de `node_modules`, y por eso dentro de Docker no hace nada — allí el
  * Dockerfile ya deja la copia buena con su doble `npm ci`.
+ *
+ * ── `dist/` desactualizado ────────────────────────────────────────────────────
+ * Cinco paquetes se consumen por `dist/` y no por `src/`, y `dist/` está en
+ * `.gitignore`: un `git pull` cambia `src/` pero jamás lo recompila. Copiar un
+ * `dist` viejo no da error de compilación — la app arranca y ejecuta la lógica
+ * anterior, que es bastante peor que un fallo ruidoso. Por eso, antes de comparar
+ * copia contra origen, este script recompila cualquier paquete cuyo `src/` sea
+ * más nuevo que su `dist/` (instalando antes sus propias `devDependencies` si
+ * hace falta). Si el paquete no declara `build`, o la compilación falla, corta
+ * la ejecución con un error explícito en vez de dejar arrancar la app contra una
+ * copia que sabe estar mal.
  */
 
 import { execFileSync } from 'node:child_process';
@@ -152,23 +163,20 @@ function vaciarCarpetaOlo(dirOlo) {
   }
 }
 
-function reinstalar() {
-  // `npm_execpath` lo pone npm al lanzar el script y apunta a su propio JS. Usarlo
-  // evita invocar `npm.cmd`, que en Windows las versiones recientes de Node se
-  // niegan a ejecutar sin shell.
+// `npm_execpath` lo pone npm al lanzar el script y apunta a su propio JS. Usarlo
+// evita invocar `npm.cmd`, que en Windows las versiones recientes de Node se
+// niegan a ejecutar sin shell.
+function ejecutarNpm(argumentos, cwd) {
   const cliNpm = process.env.npm_execpath;
   if (cliNpm && cliNpm.endsWith('.js')) {
-    execFileSync(process.execPath, [cliNpm, 'install', '--no-audit', '--no-fund'], {
-      cwd: dirApp,
-      stdio: 'inherit',
-    });
+    execFileSync(process.execPath, [cliNpm, ...argumentos], { cwd, stdio: 'inherit' });
   } else {
-    execFileSync('npm', ['install', '--no-audit', '--no-fund'], {
-      cwd: dirApp,
-      stdio: 'inherit',
-      shell: true,
-    });
+    execFileSync('npm', argumentos, { cwd, stdio: 'inherit', shell: true });
   }
+}
+
+function reinstalar() {
+  ejecutarNpm(['install', '--no-audit', '--no-fund'], dirApp);
 }
 
 // ── 1. Qué paquetes locales declara esta app ──────────────────────────────────
@@ -187,33 +195,43 @@ const paquetes = Object.entries(dependencias)
 
 if (paquetes.length === 0) process.exit(0);
 
-// ── 2. ¿Alguno difiere de su copia? ───────────────────────────────────────────
-const desincronizados = [];
-for (const paquete of paquetes) {
-  const cambios = diferencias(huellaDeArbol(paquete.origen), huellaDeArbol(paquete.copia));
-  if (cambios.length > 0) desincronizados.push({ ...paquete, cambios });
-}
-
-// ── 3. Aviso aparte: `dist/` sin recompilar ───────────────────────────────────
-// Cinco paquetes se consumen por `dist/` y no por `src/`. Copiar un `dist` viejo
-// no da error de compilación: la app arranca y ejecuta la lógica anterior, que es
-// bastante peor que un fallo ruidoso. Aquí solo se avisa, no se compila: `dist/`
-// está en .gitignore y compilarlo exige instalar antes las dependencias del paquete.
+// ── 2. Recompilar `dist/` desactualizado ──────────────────────────────────────
+// Antes de comparar: si no se recompila primero, el paso 3 puede ver origen y
+// copia "iguales" (ambos con el mismo dist viejo) y no tocar nada.
 for (const paquete of paquetes) {
   const suPkg = leerJson(path.join(paquete.origen, 'package.json'));
   const main = typeof suPkg?.main === 'string' ? suPkg.main : '';
   if (!main.startsWith('dist/')) continue;
 
   const dirDist = path.join(paquete.origen, 'dist');
-  const relativo = path.relative(path.dirname(dirApp), paquete.origen).split(path.sep).join('/');
+  const dirSrc = path.join(paquete.origen, 'src');
+  const desactualizado = !fs.existsSync(dirDist) || masReciente(dirSrc) > masReciente(dirDist);
+  if (!desactualizado) continue;
 
-  if (!fs.existsSync(dirDist)) {
-    console.warn(`[olo] AVISO  ${paquete.nombre} no tiene dist/ compilado, y la app lee dist/.`);
-    console.warn(`[olo]        npm --prefix ${relativo} install && npm --prefix ${relativo} run build`);
-  } else if (masReciente(path.join(paquete.origen, 'src')) > masReciente(dirDist)) {
-    console.warn(`[olo] AVISO  ${paquete.nombre} tiene src/ más nuevo que dist/, y la app lee dist/.`);
-    console.warn(`[olo]        npm --prefix ${relativo} run build`);
+  const comandoBuild = suPkg?.scripts?.build;
+  if (!comandoBuild) {
+    console.warn(`[olo] AVISO  ${paquete.nombre} tiene src/ más nuevo que dist/ y no declara "build".`);
+    continue;
   }
+
+  console.log(`[olo] ${paquete.nombre}: dist/ desactualizado, recompilando...`);
+  try {
+    if (!fs.existsSync(path.join(paquete.origen, 'node_modules'))) {
+      ejecutarNpm(['install', '--no-audit', '--no-fund'], paquete.origen);
+    }
+    ejecutarNpm(['run', 'build'], paquete.origen);
+  } catch (error) {
+    console.error(`[olo] ERROR  no se pudo compilar ${paquete.nombre}:`);
+    console.error(error.message ?? error);
+    process.exit(1);
+  }
+}
+
+// ── 3. ¿Alguno difiere de su copia? ───────────────────────────────────────────
+const desincronizados = [];
+for (const paquete of paquetes) {
+  const cambios = diferencias(huellaDeArbol(paquete.origen), huellaDeArbol(paquete.copia));
+  if (cambios.length > 0) desincronizados.push({ ...paquete, cambios });
 }
 
 if (desincronizados.length === 0) process.exit(0);
