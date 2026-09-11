@@ -91,7 +91,7 @@ function LoginForm() {
 
       // Verificamos si el usuario realmente tiene permiso para entrar a la intranet.
       // Si no lo tiene, cerramos la sesión que la API acaba de abrir y mostramos el error.
-      if (!data.user.permisos?.includes('acceso.intranet')) {
+      if (!(data.user as any).permisos?.includes('acceso.intranet')) {
         try {
           await fetch('/api-backend/logout', { method: 'POST' });
         } catch {}
