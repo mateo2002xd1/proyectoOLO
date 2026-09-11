@@ -23,7 +23,7 @@ export interface SeccionBotonesIconoProps {
   mostrarTitulo?: boolean;
   alineacionTitulo?: 'izquierda' | 'centro' | 'derecha';
   subtitulo?: ReactNode;
-  columnas?: 1 | 2 | 3 | 4;
+  columnas?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
   botones?: ItemBotonSeccion[];
   items?: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
   className?: string;
@@ -46,8 +46,18 @@ export function SeccionBotonesIcono({
       ? 'grid-cols-1'
       : columnas === 2
       ? 'grid-cols-1 sm:grid-cols-2'
+      : columnas === 3
+      ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
       : columnas === 4
       ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
+      : columnas === 5
+      ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5'
+      : columnas === 6
+      ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6'
+      : columnas === 7
+      ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7'
+      : columnas === 8
+      ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-8'
       : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
 
   const claseAlineacionTitulo =
@@ -57,20 +67,22 @@ export function SeccionBotonesIcono({
       ? 'text-right items-end'
       : 'text-center items-center';
 
+  const gapGrid = columnas >= 6 ? '10px 12px' : columnas >= 4 ? '12px 16px' : '16px 20px';
   const estiloGrid: React.CSSProperties = {
     ['--olo-grid-cols' as string]: String(columnas ?? 3),
     display: 'grid',
-    gridTemplateColumns: `repeat(${columnas}, minmax(0, 1fr))`,
-    gap: '16px 20px',
+    gridTemplateColumns: `repeat(${columnas ?? 3}, minmax(0, 1fr))`,
+    gap: gapGrid,
     width: '100%',
     alignItems: 'stretch',
   };
 
+  const anchoMaximo = columnas >= 6 ? 'max-w-7xl' : 'max-w-6xl';
   const tieneBotonesArray = Array.isArray(botones) && botones.length > 0;
 
   return (
-    <section className={`olo-seccion-botones w-full py-8 px-4 sm:px-6 lg:px-8 ${className}`} style={style}>
-      <div className={`max-w-6xl mx-auto flex flex-col ${claseAlineacionTitulo} w-full`}>
+    <section className={`olo-seccion-botones w-full py-5 sm:py-6 px-4 sm:px-6 lg:px-8 ${className}`} style={style}>
+      <div className={`${anchoMaximo} mx-auto flex flex-col ${claseAlineacionTitulo} w-full`}>
         {mostrarTitulo && titulo ? (
           <h2 className="text-2xl sm:text-3xl font-bold text-[#002237] mb-2 tracking-tight w-full">
             {titulo}
