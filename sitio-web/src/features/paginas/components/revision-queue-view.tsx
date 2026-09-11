@@ -1,7 +1,10 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import { CheckCircle, XCircle, Trash2, ExternalLink } from 'lucide-react';
+import { CustomSelect } from '@/shared/ui/molecules/custom-select';
+import { DatePicker } from '@/shared/ui/molecules/date-picker';
+import { Paginador } from '@/shared/ui/molecules/paginador';
 import { useRevisionQueue } from '../hooks/use-revision-queue';
 import type { Ambito, PaginaEnRevision } from '../types';
 
@@ -37,9 +40,65 @@ const fecha = (iso: string) => {
   }
 };
 
+const normalizar = (t: string) =>
+  t.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
+
+/** Misma etiqueta-encima-del-control que Auditoría y Respaldos. */
+function Campo({ etiqueta, children }: { etiqueta: string; children: React.ReactNode }) {
+  return (
+    <div className="flex w-44 flex-col gap-1">
+      <span className="text-xs font-medium text-zinc-500">{etiqueta}</span>
+      {children}
+    </div>
+  );
+}
+
+const FILTROS_VACIOS = { busqueda: '', ambito: '', autor: '', desde: '', hasta: '' };
+
 export function RevisionQueueView() {
   const { paginas, isLoading, error, aprobar, rechazar, eliminar } = useRevisionQueue();
   const [busySlug, setBusySlug] = useState<string | null>(null);
+  const [filtros, setFiltros] = useState(FILTROS_VACIOS);
+  // Nombrado "numeroPagina" y no "pagina": ese nombre ya lo usa cada fila de la
+  // tabla para la página-contenido (`PaginaEnRevision`), y las dos cosas conviven
+  // en este mismo archivo.
+  const [numeroPagina, setNumeroPagina] = useState(1);
+  const [itemsPorPagina, setItemsPorPagina] = useState(15);
+
+  const cambiarFiltro = (campo: keyof typeof FILTROS_VACIOS, valor: string) => {
+    setFiltros((previos) => ({ ...previos, [campo]: valor }));
+    setNumeroPagina(1);
+  };
+
+  // El autor sale de lo ya cargado, no de un catálogo aparte: esta cola no tiene
+  // (todavía) un endpoint propio de usuarios como sí tiene Auditoría.
+  const autores = useMemo(
+    () => [...new Set(paginas.map((p) => p.autor?.nombre).filter((n): n is string => Boolean(n)))].sort((a, b) => a.localeCompare(b, 'es')),
+    [paginas]
+  );
+
+  const paginasFiltradas = useMemo(() => {
+    const q = normalizar(filtros.busqueda);
+    return paginas.filter((p) => {
+      if (q && !normalizar(`${p.titulo} ${p.slug}`).includes(q)) return false;
+      if (filtros.ambito && p.ambito !== filtros.ambito) return false;
+      if (filtros.autor && p.autor?.nombre !== filtros.autor) return false;
+      // Comparación de texto sobre `YYYY-MM-DD...`: válida porque la fecha es la
+      // parte más significativa al principio del ISO, sin necesidad de parsear.
+      if (filtros.desde && p.creadoEn.slice(0, 10) < filtros.desde) return false;
+      if (filtros.hasta && p.creadoEn.slice(0, 10) > filtros.hasta) return false;
+      return true;
+    });
+  }, [paginas, filtros]);
+
+  const hayFiltros = Object.values(filtros).some(Boolean);
+
+  const totalPaginas = Math.max(1, Math.ceil(paginasFiltradas.length / itemsPorPagina));
+  const paginaActual = Math.min(numeroPagina, totalPaginas);
+  const paginasPagina = paginasFiltradas.slice(
+    (paginaActual - 1) * itemsPorPagina,
+    paginaActual * itemsPorPagina
+  );
 
   const [modalState, setModalState] = useState<{
     tipo: 'rechazar' | 'eliminar' | null;
@@ -91,6 +150,70 @@ export function RevisionQueueView() {
         </div>
       </div>
 
+      {!isLoading && paginas.length > 0 && (
+        <div className="mb-4 flex flex-wrap items-end gap-3">
+          <Campo etiqueta="Página">
+            <input
+              type="search"
+              value={filtros.busqueda}
+              onChange={(e) => cambiarFiltro('busqueda', e.target.value)}
+              placeholder="Título o slug…"
+              className="h-11 w-full rounded-[16px] border border-[#d0d5dd] bg-white px-3 text-sm text-zinc-900 placeholder:text-[#8a95ad] focus:border-[#002237] focus:outline-none focus:ring-2 focus:ring-[#002237]/20 dark:border-[#2d3649] dark:bg-[#252f47] dark:text-[#e6e8f0]"
+            />
+          </Campo>
+
+          <Campo etiqueta="Ámbito">
+            <CustomSelect
+              ariaLabel="Ámbito"
+              value={filtros.ambito}
+              onChange={(valor) => cambiarFiltro('ambito', valor)}
+              options={[
+                { value: '', label: 'Todos' },
+                { value: 'sitio', label: 'Sitio web' },
+                { value: 'intranet', label: 'Intranet' },
+              ]}
+            />
+          </Campo>
+
+          <Campo etiqueta="Autor">
+            <CustomSelect
+              ariaLabel="Autor"
+              value={filtros.autor}
+              onChange={(valor) => cambiarFiltro('autor', valor)}
+              options={[{ value: '', label: 'Todos' }, ...autores.map((n) => ({ value: n, label: n }))]}
+            />
+          </Campo>
+
+          <Campo etiqueta="Enviado desde">
+            <DatePicker
+              ariaLabel="Enviado desde"
+              value={filtros.desde}
+              max={filtros.hasta || undefined}
+              onChange={(valor) => cambiarFiltro('desde', valor)}
+            />
+          </Campo>
+
+          <Campo etiqueta="Enviado hasta">
+            <DatePicker
+              ariaLabel="Enviado hasta"
+              value={filtros.hasta}
+              min={filtros.desde || undefined}
+              onChange={(valor) => cambiarFiltro('hasta', valor)}
+            />
+          </Campo>
+
+          {hayFiltros && (
+            <button
+              type="button"
+              onClick={() => setFiltros(FILTROS_VACIOS)}
+              className="h-11 rounded-[16px] border border-[#d0d5dd] px-4 text-sm font-medium text-zinc-700 transition hover:border-[#002237]/40 hover:bg-[#002237]/5 hover:text-[#002237] dark:border-[#2d3649] dark:text-zinc-200 dark:hover:bg-white/5 dark:hover:text-[#f6f6f6]"
+            >
+              Limpiar filtros
+            </button>
+          )}
+        </div>
+      )}
+
       {error ? (
         <p className="text-sm text-red-600">Error: {error}</p>
       ) : isLoading ? (
@@ -99,6 +222,8 @@ export function RevisionQueueView() {
         <p className="text-sm text-zinc-500">
           No hay páginas pendientes de revisión. Cuando los editores envíen borradores, aparecerán aquí para tu aprobación.
         </p>
+      ) : paginasFiltradas.length === 0 ? (
+        <p className="text-sm text-zinc-500">Ninguna página coincide con los filtros aplicados.</p>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-[#7db828]/30">
           <table className="w-full min-w-[56rem] text-left text-sm">
@@ -114,7 +239,7 @@ export function RevisionQueueView() {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
-              {paginas.map((pagina) => (
+              {paginasPagina.map((pagina) => (
                 <tr key={pagina.id} className="bg-white dark:bg-[#0f1626] transition-colors hover:bg-zinc-50/60 dark:hover:bg-[#131b2f]/50">
                   <td className="px-4 py-3">
                     <p className="font-medium text-zinc-900 dark:text-[#f6f6f6]">{pagina.titulo}</p>
@@ -184,6 +309,20 @@ export function RevisionQueueView() {
               ))}
             </tbody>
           </table>
+
+          <Paginador
+            pagina={paginaActual}
+            totalPaginas={totalPaginas}
+            onCambiarPagina={setNumeroPagina}
+            total={paginasFiltradas.length}
+            porPagina={itemsPorPagina}
+            onCambiarPorPagina={(n) => {
+              setItemsPorPagina(n);
+              setNumeroPagina(1);
+            }}
+            etiqueta="páginas"
+            className="px-4"
+          />
         </div>
       )}
 

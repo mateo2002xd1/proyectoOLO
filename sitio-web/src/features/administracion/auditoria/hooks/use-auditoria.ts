@@ -14,7 +14,7 @@ import {
   type RespuestaAuditoria,
 } from '../types';
 
-const POR_PAGINA = 25;
+const POR_PAGINA_INICIAL = 15;
 
 /**
  * Tope de la exportación: 20 páginas de 200 filas.
@@ -28,6 +28,7 @@ const MAX_PAGINAS_EXPORTACION = 20;
 export function useAuditoria() {
   const [filtros, setFiltros] = useState<FiltrosAuditoria>(FILTROS_VACIOS);
   const [pagina, setPagina] = useState(1);
+  const [porPagina, setPorPagina] = useState(POR_PAGINA_INICIAL);
   const [datos, setDatos] = useState<RespuestaAuditoria | null>(null);
   const [usuarios, setUsuarios] = useState<UsuarioDeFiltro[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,7 +43,7 @@ export function useAuditoria() {
     (async () => {
       setIsLoading(true);
       try {
-        const data = await listarAuditoria(filtros, pagina, POR_PAGINA);
+        const data = await listarAuditoria(filtros, pagina, porPagina);
         if (cancelado) return;
         setDatos(data);
         setError(null);
@@ -58,7 +59,7 @@ export function useAuditoria() {
     return () => {
       cancelado = true;
     };
-  }, [filtros, pagina]);
+  }, [filtros, pagina, porPagina]);
 
   useEffect(() => {
     let cancelado = false;
@@ -86,6 +87,13 @@ export function useAuditoria() {
     [datos?.totalPaginas],
   );
 
+  const cambiarPorPagina = useCallback((nuevo: number) => {
+    setPorPagina(nuevo);
+    // Igual que al filtrar: en la página 5 de 25, cambiar a 100 por página puede
+    // dejar una página que ya no existe.
+    setPagina(1);
+  }, []);
+
   /** Devuelve todo lo que cumple el filtro actual, no solo la página visible. */
   const obtenerParaExportar = useCallback(async (): Promise<{
     registros: RegistroAuditoria[];
@@ -109,7 +117,7 @@ export function useAuditoria() {
     total: datos?.total ?? 0,
     pagina: datos?.pagina ?? pagina,
     totalPaginas: datos?.totalPaginas ?? 1,
-    porPagina: datos?.porPagina ?? POR_PAGINA,
+    porPagina: datos?.porPagina ?? porPagina,
     usuarios,
     filtros,
     hayFiltros,
@@ -118,6 +126,7 @@ export function useAuditoria() {
     cambiarFiltro,
     limpiarFiltros,
     irAPagina,
+    cambiarPorPagina,
     obtenerParaExportar,
   };
 }
