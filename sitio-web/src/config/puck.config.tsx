@@ -11,6 +11,10 @@ import {
   campoColor,
   TextoRico,
   ImagenDestacada,
+  BotonPersonalizado,
+  SeccionBotonesIcono,
+  campoIcono,
+  campoDestinoBoton,
 } from '@olo/blocks-renderer';
 import { ExternalPortals } from '@/shared/lib/blocks/ExternalPortals';
 import { Services } from '@/shared/lib/blocks/Services';
@@ -108,6 +112,9 @@ const puckConfigBase: Config = {
     },
     'Texto e imagen': {
       components: ['TextoRico', 'ImagenDestacada'],
+    },
+    'Botones y enlaces': {
+      components: ['BotonPersonalizado', 'SeccionBotonesIcono'],
     },
     'Portales': {
       components: ['ExternalPortals'],
@@ -867,6 +874,108 @@ const puckConfigBase: Config = {
         <ImagenDestacada {...props} />
       ),
     },
+    // ─── Botones y Enlaces ───
+    BotonPersonalizado: {
+      label: 'Botón personalizado',
+      fields: {
+        texto: { type: 'text', label: 'Texto del botón', contentEditable: true },
+        tamano: {
+          type: 'select',
+          label: 'Tamaño del botón (altura y texto)',
+          options: [
+            { label: 'Pequeño (sm)', value: 'pequeno' },
+            { label: 'Mediano (md - Estilo OLO)', value: 'mediano' },
+            { label: 'Grande (lg)', value: 'grande' },
+            { label: 'Extra grande (xl)', value: 'extraGrande' },
+          ],
+        },
+        alineacion: {
+          type: 'radio',
+          label: 'Alineación horizontal',
+          options: [
+            { label: 'Centrado', value: 'centro' },
+            { label: 'Izquierda', value: 'izquierda' },
+            { label: 'Derecha', value: 'derecha' },
+          ],
+        },
+        ancho: {
+          type: 'radio',
+          label: 'Ancho del botón',
+          options: [
+            { label: 'Ajustado al texto (Auto)', value: 'auto' },
+            { label: 'Mediano (320px)', value: 'mediano' },
+            { label: 'Grande (480px)', value: 'grande' },
+            { label: 'Ancho completo (100%)', value: 'completo' },
+          ],
+        },
+        colorFondo: campoColor('Color de fondo (por defecto blanco)'),
+        colorTexto: campoColor('Color del texto (por defecto color del título #002237)'),
+        icono: campoIcono('Ícono del botón'),
+        posicionIcono: {
+          type: 'radio',
+          label: 'Posición del ícono',
+          options: [
+            { label: 'Izquierda', value: 'izquierda' },
+            { label: 'Derecha', value: 'derecha' },
+            { label: 'No mostrar ícono', value: 'ninguno' },
+          ],
+        },
+        destino: campoDestinoBoton('Destino del botón (Enlace o Archivo)'),
+        resaltado: {
+          type: 'radio',
+          label: 'Resaltar botón',
+          options: [
+            { label: 'Normal', value: false },
+            { label: 'Resaltado (Verde SENA)', value: true },
+          ],
+        },
+      },
+      defaultProps: {
+        texto: 'Nuevo botón',
+        tamano: 'mediano',
+        alineacion: 'centro',
+        ancho: 'mediano',
+        colorFondo: '#ffffff',
+        colorTexto: '#002237',
+        icono: '',
+        posicionIcono: 'izquierda',
+        destino: { tipo: 'enlace', urlEnlace: '' },
+        resaltado: false,
+      },
+      render: (props: BlockRender<ComponentProps<typeof BotonPersonalizado>>) => (
+        <BotonPersonalizado {...props} />
+      ),
+    },
+    SeccionBotonesIcono: {
+      label: 'Sección de botones con íconos',
+      fields: {
+        titulo: { type: 'text', label: 'Título de la sección (opcional)', contentEditable: true },
+        subtitulo: { type: 'textarea', label: 'Descripción / Subtítulo (opcional)' },
+        columnas: {
+          type: 'radio',
+          label: 'Columnas en escritorio',
+          options: [
+            { label: '1 columna', value: 1 },
+            { label: '2 columnas', value: 2 },
+            { label: '3 columnas', value: 3 },
+            { label: '4 columnas', value: 4 },
+          ],
+        },
+        items: {
+          type: 'slot',
+          allow: ['BotonPersonalizado'],
+        },
+      },
+      defaultProps: {
+        titulo: '',
+        subtitulo: '',
+        columnas: 3,
+        items: [],
+      },
+      render: (props: BlockRender<ComponentProps<typeof SeccionBotonesIcono>>) => (
+        <SeccionBotonesIcono {...props} />
+      ),
+    },
     // Bloque de texto enriquecido — usa EditorJS internamente
     RichText: RichTextBlock,
   },
@@ -932,6 +1041,8 @@ const BLOQUES_PAGINA_SITIO_DEFECTO: string[] = [
   'Flex',
   'Space',
   'SeccionPestanasLaterales',
+  'BotonPersonalizado',
+  'SeccionBotonesIcono',
 ];
 
 const COMPONENTES_POR_SLUG: Record<string, string[]> = {
@@ -952,6 +1063,8 @@ const COMPONENTES_POR_SLUG: Record<string, string[]> = {
     'Flex',
     'Space',
     'SeccionPestanasLaterales',
+    'BotonPersonalizado',
+    'SeccionBotonesIcono',
   ],
   'politica-de-privacidad': ['PoliticaPrivacidadEncabezado', 'VisorDocumentosNormativos', 'CanalesAtencion'],
 };
