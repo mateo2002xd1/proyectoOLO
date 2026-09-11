@@ -36,6 +36,9 @@ import {
   BLOQUES_SIN_CAJA,
   campoColor,
   campoIcono,
+  BotonPersonalizado,
+  SeccionBotonesIcono,
+  campoDestinoBoton,
 } from '@olo/blocks-renderer';
 import { Render, type Config, type Data } from '@puckeditor/core';
 import { useState, useEffect, useRef, type ComponentProps, type ReactNode } from 'react';
@@ -78,11 +81,17 @@ const campoFondo = {
  */
 const puckConfigBase: Config = {
   categories: {
-    'Estructura': {
-      components: ['IntranetTopbar', 'IntranetHero', 'IntranetFooter'],
+    'Plantilla': {
+      components: ['IntranetTopbar', 'IntranetFooter'],
+    },
+    'Banner': {
+      components: ['IntranetHero'],
     },
     'Texto e imagen': {
       components: ['TextoRico', 'TextoConImagen', 'ImagenDestacada'],
+    },
+    'Botones y enlaces': {
+      components: ['BotonPersonalizado', 'SeccionBotonesIcono'],
     },
     'Multimedia': {
       components: ['SeccionCarrusel', 'TasaVideo', 'RecursosVisualesBloque', 'IconoBloque'],
@@ -270,6 +279,14 @@ const puckConfigBase: Config = {
     TextoRico: {
       label: 'Texto con formato',
       fields: {
+        mostrarTitulo: {
+          type: 'radio',
+          label: 'Mostrar título',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
         titulo: { type: 'richtext', label: 'Título', contentEditable: true },
         contenido: { type: 'richtext', label: 'Contenido', contentEditable: true },
         fondo: campoFondo,
@@ -284,6 +301,7 @@ const puckConfigBase: Config = {
         },
       },
       defaultProps: {
+        mostrarTitulo: true,
         titulo: '¿Qué es?',
         contenido: '<p>Escribe aquí el contenido de la sección.</p>',
         fondo: 'gris',
@@ -295,6 +313,14 @@ const puckConfigBase: Config = {
     TextoConImagen: {
       label: 'Texto con imagen al lado',
       fields: {
+        mostrarTitulo: {
+          type: 'radio',
+          label: 'Mostrar título',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
         titulo: { type: 'richtext', label: 'Título', contentEditable: true },
         contenido: { type: 'richtext', label: 'Contenido', contentEditable: true },
         imagenSrc: campoImagen('Imagen (opcional si hay presentación)'),
@@ -323,6 +349,7 @@ const puckConfigBase: Config = {
         fondo: campoFondo,
       },
       defaultProps: {
+        mostrarTitulo: true,
         titulo: '¿Cuál es el <strong>objetivo</strong>?',
         contenido: '<p>Escribe aquí el contenido de la sección.</p>',
         imagenSrc: '',
@@ -339,6 +366,14 @@ const puckConfigBase: Config = {
     ImagenDestacada: {
       label: 'Imagen destacada',
       fields: {
+        mostrarTitulo: {
+          type: 'radio',
+          label: 'Mostrar título',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
         titulo: { type: 'richtext', label: 'Título', contentEditable: true },
         imagenSrc: campoImagen('Imagen'),
         imagenAlt: { type: 'text', label: 'Texto alternativo' },
@@ -373,6 +408,7 @@ const puckConfigBase: Config = {
         },
       },
       defaultProps: {
+        mostrarTitulo: true,
         titulo: '',
         imagenSrc: '',
         imagenAlt: '',
@@ -383,6 +419,131 @@ const puckConfigBase: Config = {
       },
       render: (props: BlockRender<ComponentProps<typeof ImagenDestacada>>) => (
         <ImagenDestacada {...props} />
+      ),
+    },
+    // ─── Botones y Enlaces ───
+    BotonPersonalizado: {
+      label: 'Botón personalizado',
+      fields: {
+        texto: { type: 'text', label: 'Texto del botón', contentEditable: true },
+        tamano: {
+          type: 'select',
+          label: 'Tamaño del botón (altura y texto)',
+          options: [
+            { label: 'Pequeño (sm)', value: 'pequeno' },
+            { label: 'Mediano (md - Estilo Intranet)', value: 'mediano' },
+            { label: 'Grande (lg)', value: 'grande' },
+            { label: 'Extra grande (xl)', value: 'extraGrande' },
+          ],
+        },
+        alineacion: {
+          type: 'radio',
+          label: 'Alineación horizontal',
+          options: [
+            { label: 'Centrado', value: 'centro' },
+            { label: 'Izquierda', value: 'izquierda' },
+            { label: 'Derecha', value: 'derecha' },
+          ],
+        },
+        ancho: {
+          type: 'radio',
+          label: 'Ancho del botón',
+          options: [
+            { label: 'Ajustado al texto (Auto)', value: 'auto' },
+            { label: 'Mediano (320px)', value: 'mediano' },
+            { label: 'Grande (480px)', value: 'grande' },
+            { label: 'Ancho completo (100%)', value: 'completo' },
+          ],
+        },
+        colorFondo: campoColor('Color de fondo (por defecto blanco)'),
+        colorTexto: campoColor('Color del texto (por defecto color del título #002237)'),
+        icono: campoIcono('Ícono del botón'),
+        posicionIcono: {
+          type: 'radio',
+          label: 'Posición del ícono',
+          options: [
+            { label: 'Izquierda', value: 'izquierda' },
+            { label: 'Derecha', value: 'derecha' },
+            { label: 'No mostrar ícono', value: 'ninguno' },
+          ],
+        },
+        destino: campoDestinoBoton('Destino del botón (Enlace o Archivo)'),
+        resaltado: {
+          type: 'radio',
+          label: 'Resaltar botón',
+          options: [
+            { label: 'Normal', value: false },
+            { label: 'Resaltado (Verde SENA)', value: true },
+          ],
+        },
+      },
+      defaultProps: {
+        texto: 'Nuevo botón',
+        tamano: 'mediano',
+        alineacion: 'centro',
+        ancho: 'mediano',
+        colorFondo: '#ffffff',
+        colorTexto: '#002237',
+        icono: '',
+        posicionIcono: 'izquierda',
+        destino: { tipo: 'enlace', urlEnlace: '' },
+        resaltado: false,
+      },
+      render: (props: BlockRender<ComponentProps<typeof BotonPersonalizado>>) => (
+        <BotonPersonalizado {...props} />
+      ),
+    },
+    SeccionBotonesIcono: {
+      label: 'Sección de botones con íconos',
+      fields: {
+        mostrarTitulo: {
+          type: 'radio',
+          label: 'Mostrar título',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        titulo: { type: 'text', label: 'Título de la sección (opcional)', contentEditable: true },
+        alineacionTitulo: {
+          type: 'radio',
+          label: 'Alineación del título',
+          options: [
+            { label: 'Izquierda', value: 'izquierda' },
+            { label: 'Centro', value: 'centro' },
+            { label: 'Derecha', value: 'derecha' },
+          ],
+        },
+        subtitulo: { type: 'textarea', label: 'Descripción / Subtítulo (opcional)' },
+        columnas: {
+          type: 'radio',
+          label: 'Columnas en escritorio',
+          options: [
+            { label: '1', value: 1 },
+            { label: '2', value: 2 },
+            { label: '3', value: 3 },
+            { label: '4', value: 4 },
+            { label: '5', value: 5 },
+            { label: '6', value: 6 },
+            { label: '7', value: 7 },
+            { label: '8', value: 8 },
+          ],
+        },
+        items: {
+          type: 'slot',
+          allow: ['BotonPersonalizado'],
+        },
+      },
+      defaultProps: {
+        mostrarTitulo: true,
+        titulo: '',
+        alineacionTitulo: 'centro',
+        subtitulo: '',
+        columnas: 3,
+        items: [],
+      },
+      render: (props: BlockRender<ComponentProps<typeof SeccionBotonesIcono>>) => (
+        <SeccionBotonesIcono {...props} />
       ),
     },
     // ─── Multimedia ───
@@ -829,6 +990,8 @@ const BLOQUES_COMUNES = [
   'TextoRico',
   'TextoConImagen',
   'ImagenDestacada',
+  'BotonPersonalizado',
+  'SeccionBotonesIcono',
   'SeccionCarrusel',
   'TasaVideo',
   'Grid',
@@ -985,31 +1148,39 @@ function PreviewIntercalado({
   );
 }
 
-export function configDeEdicion(slug: string, contexto: ContextoDeEdicion = {}): Config {
-  const permitidos = COMPONENTES_POR_SLUG[slug];
+const BLOQUES_SECCION_INTRANET_DEFECTO: string[] = [
+  ...BLOQUES_COMUNES,
+  'RecursosVisualesBloque',
+  'Publicaciones',
+  'PreguntasFrecuentes',
+  'TasaDashboards',
+  'TasaPresentacion',
+  'DescargasConPresentacion',
+];
 
-  // Una sección creada a mano no está en `COMPONENTES_POR_SLUG` y se queda con el
-  // catálogo entero, pero el contexto de abajo le toca igual.
-  const recortada: Config = permitidos
-    ? {
-      ...puckConfig,
-      components: Object.fromEntries(
-        Object.entries(puckConfig.components).filter(([nombre]) => permitidos.includes(nombre))
-      ) as Config['components'],
-      categories: Object.fromEntries(
-        Object.entries(puckConfig.categories ?? {})
-          .map(([nombre, categoria]) => [
-            nombre,
-            {
-              ...categoria,
-              components: (categoria.components ?? []).filter((c) => permitidos.includes(c)),
-            },
-          ])
-          // Una categoría que se queda sin bloques no debe salir como grupo vacío.
-          .filter(([, categoria]) => (categoria as { components: string[] }).components.length > 0)
-      ) as Config['categories'],
-    }
-    : puckConfig;
+export function configDeEdicion(slug: string, contexto: ContextoDeEdicion = {}): Config {
+  // Las secciones creadas a mano reciben el catálogo de bloques comunes de intranet,
+  // nunca los bloques de 'Plantilla' (IntranetTopbar/IntranetFooter), que solo se ofrecen en 'menu-y-pie'.
+  const permitidos = COMPONENTES_POR_SLUG[slug] ?? BLOQUES_SECCION_INTRANET_DEFECTO;
+
+  const recortada: Config = {
+    ...puckConfig,
+    components: Object.fromEntries(
+      Object.entries(puckConfig.components).filter(([nombre]) => permitidos.includes(nombre))
+    ) as Config['components'],
+    categories: Object.fromEntries(
+      Object.entries(puckConfig.categories ?? {})
+        .map(([nombre, categoria]) => [
+          nombre,
+          {
+            ...categoria,
+            components: (categoria.components ?? []).filter((c) => permitidos.includes(c)),
+          },
+        ])
+        // Una categoría que se queda sin bloques no debe salir como grupo vacío.
+        .filter(([, categoria]) => (categoria as { components: string[] }).components.length > 0)
+    ) as Config['categories'],
+  };
 
   if (slug === SLUG_DE_PLANTILLA) {
     const seccion = contexto.seccion;

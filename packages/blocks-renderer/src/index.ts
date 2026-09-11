@@ -22,7 +22,12 @@ export { ColorPickerField, campoColor } from './primitives/color-picker-field';
 export type { ColorPickerFieldProps } from './primitives/color-picker-field';
 
 // ─── Campos para Icono y Color de Icono ───
-export { IconSelectorField, campoIcono } from './primitives/icon-selector-field';
+export { IconSelectorField, campoIcono, IconoRenderer, ICONOS_DISPONIBLES } from './primitives/icon-selector-field';
+export type { IconSelectorFieldProps } from './primitives/icon-selector-field';
+
+// ─── Selector de Destino para Botón (Enlace o Archivo) ───
+export { SelectorDestinoBotonField, campoDestinoBoton } from './primitives/selector-destino-boton-field';
+export type { DestinoBotonConfig } from './primitives/selector-destino-boton-field';
 
 // ─── Controles de espaciado y ancho para cualquier bloque ───
 export {
@@ -60,4 +65,20 @@ export type { TextoRicoProps } from './blocks/texto-rico';
 
 export { ImagenDestacada } from './blocks/imagen-destacada';
 export type { ImagenDestacadaProps } from './blocks/imagen-destacada';
+
+export { BotonPersonalizado } from './blocks/boton-personalizado';
+export type {
+  BotonPersonalizadoProps,
+  TamanoBoton,
+  PosicionIcono,
+  AlineacionBoton,
+  AnchoBoton,
+} from './blocks/boton-personalizado';
+
+export { SeccionBotonesIcono } from './blocks/seccion-botones-icono';
+export type {
+  SeccionBotonesIconoProps,
+  ItemBotonSeccion,
+} from './blocks/seccion-botones-icono';
+
 

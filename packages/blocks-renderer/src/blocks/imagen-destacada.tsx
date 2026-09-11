@@ -24,6 +24,7 @@ const CLASES_REDONDEADO: Record<string, string> = {
 export interface ImagenDestacadaProps {
   id?: string;
   titulo?: ReactNode;
+  mostrarTitulo?: boolean;
   imagenSrc?: string;
   imagenAlt?: string;
   ancho?: 'contenido' | 'completo';
@@ -35,6 +36,7 @@ export interface ImagenDestacadaProps {
 
 export function ImagenDestacada({
   titulo,
+  mostrarTitulo = true,
   imagenSrc,
   imagenAlt = '',
   ancho = 'completo',
@@ -70,7 +72,7 @@ export function ImagenDestacada({
   return (
     <div className={`${clasesFondo} w-full py-12 ${className}`.trim()}>
       <div className="max-w-[1200px] w-full mx-auto px-6 text-center flex flex-col items-center">
-        {titulo && (
+        {mostrarTitulo && titulo && (
           <h2 className="matriz-section-title text-[#041E42] font-bold mb-6">{titulo}</h2>
         )}
         <div className="w-full">

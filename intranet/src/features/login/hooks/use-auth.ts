@@ -10,6 +10,7 @@ export interface User {
   email: string;
   roles?: string[];
   permissions?: string[];
+  permisos?: string[];
   must_change_password?: boolean;
   must_setup_security_questions?: boolean;
 }

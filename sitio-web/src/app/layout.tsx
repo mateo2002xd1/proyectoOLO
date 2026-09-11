@@ -46,7 +46,7 @@ export default function RootLayout({
           id="anti-flash-theme"
           suppressHydrationWarning
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var c=document.documentElement.classList;c.add('no-transition');var s=localStorage.getItem('olo-theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;if(s==='dark'||(s===null&&d)){c.add('dark');}requestAnimationFrame(function(){requestAnimationFrame(function(){c.remove('no-transition');});});}catch(e){}})();`,
+            __html: `(function(){try{var c=document.documentElement.classList;c.add('no-transition');var s=localStorage.getItem('olo-theme');if(s==='dark'){c.add('dark');}else{c.remove('dark');}requestAnimationFrame(function(){requestAnimationFrame(function(){c.remove('no-transition');});});}catch(e){}})();`,
           }}
         />
       </head>

@@ -2561,6 +2561,7 @@ button.text-link,
   inset: 0;
   background: #fff;
   z-index: 9999;
+  color-scheme: light;
 
   /* Cabecera */
   --puck-header-color-bg: #001631;
@@ -2726,6 +2727,58 @@ button.text-link,
 .olo-editor-btn--enviar:hover:not(:disabled) {
   background: #8fcc32;
 }
+
+/* ── Panel lateral del inspector de bloques en Puck ────────────────────────
+   Cuando un bloque está anidado (por ejemplo, dentro de Seccion con Pestañas
+   o Grid), Puck renderiza una miga de pan junto con el título del bloque en la
+   cabecera del inspector. Si se mantienen en la misma fila sin envolver, ambos
+   textos colisionan y se sobreponen. Al organizarlos en columna con salto de línea,
+   la miga queda arriba y el título abajo con espacio limpio y legible. */
+.olo-editor [class*="SidebarSection-breadcrumbs"] {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 6px !important;
+  width: 100% !important;
+}
+
+.olo-editor [class*="Breadcrumbs"] {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 4px !important;
+  width: 100% !important;
+  font-size: 12px !important;
+}
+
+.olo-editor [class*="Breadcrumbs-breadcrumbLabel"],
+.olo-editor [class*="SidebarSection-breadcrumbLabel"] {
+  color: #0b6d8f !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  white-space: normal !important;
+  text-align: left !important;
+  line-height: 1.3 !important;
+}
+
+.olo-editor [class*="Breadcrumbs-breadcrumbLabel"]:hover,
+.olo-editor [class*="SidebarSection-breadcrumbLabel"]:hover {
+  text-decoration: underline !important;
+}
+
+.olo-editor [class*="SidebarSection-heading"] {
+  width: 100% !important;
+  padding-inline-end: 0 !important;
+}
+
+.olo-editor [class*="SidebarSection-heading"] [class*="Heading"] {
+  font-size: 15px !important;
+  line-height: 1.35 !important;
+  word-break: break-word !important;
+  color: #001631 !important;
+}
+
 
 /* --- Confirmación de salida --- */
 
@@ -3942,35 +3995,71 @@ button.text-link,
   color: #001631;
 }
 
-/* Modo oscuro para bloques compartidos */
-.dark .matriz-section-gray {
-  background-color: var(--surface, #131b2f);
+/* ══════════════════════════════════════════════════════════════════════════════
+   COMPONENTES COMPARTIDOS: Botón Personalizado y Sección de Botones con Íconos
+   ══════════════════════════════════════════════════════════════════════════════ */
+.olo-btn-dinamico:hover {
+  filter: brightness(0.97);
+  transform: translateY(-1px);
 }
 
-.dark .matriz-section-white {
-  background-color: var(--background, #0b1121);
+.olo-btn-dinamico:active {
+  transform: translateY(0);
 }
 
-.dark .tasa-concept-title,
-.dark .matriz-section-title,
-.dark .tasa-concept-desc h1,
-.dark .tasa-concept-desc h2,
-.dark .tasa-concept-desc h3,
-.dark .tasa-concept-desc h4,
-.dark .tasa-concept-desc h5,
-.dark .tasa-concept-desc h6,
-.dark .tasa-concept-desc strong {
-  color: var(--foreground, #f6f6f6);
+.olo-btn-resaltado {
+  border-color: #7db828 !important;
+  box-shadow: 0 0 0 3px rgba(125, 184, 40, 0.28), 0 4px 10px rgba(0, 0, 0, 0.08) !important;
 }
 
-.dark .tasa-concept-desc {
-  color: #cbd5e1;
+.olo-sectorial-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--olo-grid-cols, 3), minmax(0, 1fr));
+  gap: 12px 16px;
+  width: 100%;
+  align-items: stretch;
 }
 
-.dark .tasa-concept-desc a {
-  color: var(--color-accent, #4fc3f7);
+.olo-sectorial-grid > * {
+  width: 100%;
+  display: flex !important;
+  justify-content: center;
 }
 
-.dark .tasa-concept-desc a:hover {
-  color: var(--color-accent-light, #81d4fa);
+@media (max-width: 1200px) {
+  .olo-sectorial-grid {
+    grid-template-columns: repeat(min(var(--olo-grid-cols, 3), 4), minmax(0, 1fr)) !important;
+  }
 }
+
+@media (max-width: 768px) {
+  .olo-sectorial-grid {
+    grid-template-columns: repeat(min(var(--olo-grid-cols, 3), 2), minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .olo-sectorial-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Indicador en el editor cuando la sección aún no tiene botones */
+.olo-seccion-botones [data-puck-dropzone]:empty::after {
+  content: '➕ Arrastra botones personalizados aquí (solo admite botones)';
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 56px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 10px;
+  background-color: #f8fafc;
+  padding: 10px 16px;
+  text-align: center;
+}
+
+

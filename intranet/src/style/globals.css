@@ -5365,3 +5365,70 @@ body:has(.preview-page) .intranet-topbar {
   scroll-margin-top: 110px !important;
   box-shadow: none !important;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   COMPONENTES COMPARTIDOS: Botón Personalizado y Sección de Botones con Íconos
+   ══════════════════════════════════════════════════════════════════════════════ */
+.olo-btn-dinamico:hover {
+  filter: brightness(0.97);
+  transform: translateY(-1px);
+}
+
+.olo-btn-dinamico:active {
+  transform: translateY(0);
+}
+
+.olo-btn-resaltado {
+  border-color: #7db828 !important;
+  box-shadow: 0 0 0 3px rgba(125, 184, 40, 0.28), 0 4px 10px rgba(0, 0, 0, 0.08) !important;
+}
+
+.olo-sectorial-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--olo-grid-cols, 3), minmax(0, 1fr));
+  gap: 12px 16px;
+  width: 100%;
+  align-items: stretch;
+}
+
+.olo-sectorial-grid > * {
+  width: 100%;
+  display: flex !important;
+  justify-content: center;
+}
+
+@media (max-width: 1200px) {
+  .olo-sectorial-grid {
+    grid-template-columns: repeat(min(var(--olo-grid-cols, 3), 4), minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .olo-sectorial-grid {
+    grid-template-columns: repeat(min(var(--olo-grid-cols, 3), 2), minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .olo-sectorial-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Indicador en el editor cuando la sección aún no tiene botones */
+.olo-seccion-botones [data-puck-dropzone]:empty::after {
+  content: '➕ Arrastra botones personalizados aquí (solo admite botones)';
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 56px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 10px;
+  background-color: #f8fafc;
+  padding: 10px 16px;
+  text-align: center;
+}

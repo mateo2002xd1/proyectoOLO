@@ -19,6 +19,7 @@ import { PptxViewer } from './PptxViewer';
  */
 export interface TextoConImagenProps {
   titulo?: ReactNode;
+  mostrarTitulo?: boolean;
   contenido?: ReactNode;
   imagenSrc?: string;
   imagenAlt?: string;
@@ -30,6 +31,7 @@ export interface TextoConImagenProps {
 
 export function TextoConImagen({
   titulo,
+  mostrarTitulo = true,
   contenido,
   imagenSrc,
   imagenAlt = '',
@@ -40,7 +42,7 @@ export function TextoConImagen({
 }: TextoConImagenProps) {
   const columnaTexto = (
     <div className="flex-1 space-y-6 max-w-3xl tasa-concept-desc md:mt-6">
-      {titulo && (
+      {mostrarTitulo && titulo && (
         <h2 className="tasa-concept-title" style={{ marginTop: 0 }}>
           {titulo}
         </h2>
