@@ -19,6 +19,7 @@ import {
   enviarARevision,
 } from "../api/paginas.api";
 import type { ContenidoPagina, EstadoPagina } from "../types/editor.types";
+import type { Rechazo } from "../components/aviso-rechazo";
 
 interface UseEditorActionsOptions {
   slug: string;
@@ -26,6 +27,8 @@ interface UseEditorActionsOptions {
   initialVersionId?: string | null;
   /** Estado editorial inicial de la versión cargada */
   initialEstado?: EstadoPagina | null;
+  /** Por qué volvió a borrador, si la versión cargada estaba rechazada. */
+  initialRechazo?: Rechazo;
 }
 
 interface UseEditorActionsReturn {
@@ -39,6 +42,14 @@ interface UseEditorActionsReturn {
   estadoActual: EstadoPagina | null;
   /** ID de la versión activa (necesario para enviar a revisión) */
   versionId: string | null;
+  /**
+   * El rechazo que hay que seguir enseñando, guardado aparte de `estadoActual`.
+   *
+   * Si se dedujera de `estadoActual === "rechazado"`, guardar un borrador (que
+   * deja la versión en "borrador") borraría el aviso a mitad de la corrección,
+   * justo cuando más hace falta. Solo se apaga al enviar a revisión con éxito.
+   */
+  rechazo?: Rechazo;
   /** Último error ocurrido, null si no hay */
   error: string | null;
 }
@@ -47,6 +58,7 @@ export function useEditorActions({
   slug,
   initialVersionId = null,
   initialEstado = null,
+  initialRechazo,
 }: UseEditorActionsOptions): UseEditorActionsReturn {
   const [isSaving, setIsSaving] = useState(false);
   const [isSendingToReview, setIsSendingToReview] = useState(false);
@@ -54,6 +66,7 @@ export function useEditorActions({
   const [estadoActual, setEstadoActual] = useState<EstadoPagina | null>(
     initialEstado ?? (initialVersionId ? "borrador" : null)
   );
+  const [rechazo, setRechazo] = useState<Rechazo | undefined>(initialRechazo);
   const [error, setError] = useState<string | null>(null);
 
   const handleGuardarBorrador = useCallback(
@@ -93,6 +106,10 @@ export function useEditorActions({
       if (res?.estado) {
         setEstadoActual(res.estado);
       }
+      // La corrección ya está enviada: el rechazo anterior deja de tener que avisar
+      // de nada, y dejarlo puesto haría creer que la versión recién mandada también
+      // se rechazó.
+      setRechazo(undefined);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Error al enviar a revisión"
@@ -109,6 +126,7 @@ export function useEditorActions({
     isSendingToReview,
     estadoActual,
     versionId,
+    rechazo,
     error,
   };
 }

@@ -44,6 +44,9 @@ export interface VersionEditable {
   contenido: ContenidoPagina;
   estado: EstadoPagina | null;
   versionId: string | null;
+  numeroVersion: number | null;
+  /** Por qué volvió a borrador. Solo trae algo cuando `estado === "rechazado"`. */
+  motivoRechazo: string | null;
 }
 
 /**
@@ -63,6 +66,8 @@ export async function obtenerVersionEditable(
     contenido: res.contenido ?? EMPTY_CONTENIDO,
     estado: res.estado ?? null,
     versionId: res.versionId ?? null,
+    numeroVersion: res.numeroVersion ?? null,
+    motivoRechazo: res.motivoRechazo ?? null,
   };
 }
 
