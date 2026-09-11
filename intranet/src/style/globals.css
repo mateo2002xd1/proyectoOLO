@@ -1320,11 +1320,11 @@
 }
 
 /* Para el editor de plantilla (menu-y-pie): el overlay de selección/hover de Puck en la cabecera solo cubre los ~72px del nav */
-[data-puck-entry][data-puck-preview-mode="edit"] [data-puck-component*="topbar" i] > [class*="overlayWrapper"],
-[data-puck-entry][data-puck-preview-mode="edit"] [data-puck-component*="header" i] > [class*="overlayWrapper"],
-[data-puck-entry][data-puck-preview-mode="edit"] [data-puck-component="plantilla-topbar"] > [class*="overlayWrapper"],
-[data-puck-entry][data-puck-preview-mode="edit"] [data-puck-component="plantilla-header"] > [class*="overlayWrapper"],
-[data-puck-entry][data-puck-preview-mode="edit"] [data-puck-dropzone] > *:first-child [class*="overlayWrapper"] {
+[data-puck-entry][data-puck-preview-mode="edit"] [data-puck-component*="topbar" i]>[class*="overlayWrapper"],
+[data-puck-entry][data-puck-preview-mode="edit"] [data-puck-component*="header" i]>[class*="overlayWrapper"],
+[data-puck-entry][data-puck-preview-mode="edit"] [data-puck-component="plantilla-topbar"]>[class*="overlayWrapper"],
+[data-puck-entry][data-puck-preview-mode="edit"] [data-puck-component="plantilla-header"]>[class*="overlayWrapper"],
+[data-puck-entry][data-puck-preview-mode="edit"] [data-puck-dropzone]>*:first-child [class*="overlayWrapper"] {
   height: 72px !important;
   max-height: 72px !important;
 }
@@ -1520,24 +1520,43 @@
   color: #1f2937;
 }
 
-/* Variante del modal de inactividad: sin tarjeta blanca, solo el navy institucional
-   translúcido sobre el ::backdrop, con el texto en blanco para que siga contrastando. */
+/* El aviso de inactividad no es una tarjeta flotante: cubre la pantalla entera con el
+   navy institucional y centra el texto encima, sin bordes ni sombra de caja. */
+.olo-modal--inactividad::backdrop {
+  background: rgba(0, 48, 77, 0.75);
+  backdrop-filter: blur(4px);
+}
+
 .olo-modal-caja--inactividad {
-  background: rgba(0, 22, 49, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  text-align: center;
   color: #ffffff;
 }
 
 .olo-modal-caja--inactividad .olo-modal-titulo {
   color: #ffffff;
+  font-size: 2.25rem;
+  margin-bottom: 1.5rem;
 }
 
 .olo-modal-caja--inactividad .olo-modal-texto {
   color: #ffffff;
+  font-size: 1.25rem;
+  white-space: nowrap;
+  margin-bottom: 2.5rem;
 }
 
-.olo-modal-caja--inactividad .olo-modal-texto--apunte {
-  color: rgba(255, 255, 255, 0.8);
+.olo-modal-caja--inactividad .olo-modal-acciones {
+  justify-content: center;
+}
+
+.olo-modal-caja--inactividad .olo-modal-btn {
+  padding: 1rem 2.5rem;
+  border-radius: 60px;
+  border: none;
+  font-size: 1.1rem;
 }
 
 .olo-modal-titulo {
@@ -1810,6 +1829,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .fab-speed-dial__trigger,
   .fab-speed-dial__icono-wrapper,
   .fab-speed-dial__acciones,
@@ -5149,6 +5169,7 @@
   .olo-tabs-layout--lateral {
     flex-direction: column !important;
   }
+
   .olo-tabs-layout--lateral .olo-tabs-sidebar {
     width: 100% !important;
     min-width: 100% !important;
@@ -5323,27 +5344,21 @@ body:has(.preview-page) .intranet-topbar {
   z-index: 9999 !important;
 }
 
-/* Resaltado dinámico para resultados del buscador (Scroll y Flash Glow) */
+/* Resaltado dinámico para resultados del buscador (estilo selección de texto con color #fff201) */
 @keyframes destelloBusqueda {
-  0% {
-    box-shadow: 0 0 32px 8px rgba(56, 189, 248, 0.85), 0 0 14px 2px rgba(2, 132, 199, 0.65) !important;
-    background-color: rgba(56, 189, 248, 0.22) !important;
-  }
-  30% {
-    box-shadow: 0 0 35px 10px rgba(56, 189, 248, 0.9), 0 0 16px 2px rgba(2, 132, 199, 0.7) !important;
-    background-color: rgba(56, 189, 248, 0.22) !important;
-  }
+
+  0%,
   70% {
-    box-shadow: 0 0 18px 4px rgba(56, 189, 248, 0.45), 0 0 8px 1px rgba(2, 132, 199, 0.35) !important;
-    background-color: rgba(56, 189, 248, 0.1) !important;
+    background-color: #fff201 !important;
   }
+
   100% {
-    box-shadow: none !important;
     background-color: transparent !important;
   }
 }
 
 .resaltado-busqueda-anim {
-  animation: destelloBusqueda 2.8s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
+  animation: destelloBusqueda 2.3s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
   scroll-margin-top: 110px !important;
+  box-shadow: none !important;
 }
