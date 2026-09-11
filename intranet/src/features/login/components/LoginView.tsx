@@ -42,6 +42,18 @@ function LoginForm() {
   // viene de la URL y pintarlo tal cual dejaría escribir cualquier texto sobre el
   // formulario de acceso con solo preparar un enlace.
   const avisoDeCierre = mensajeDeCierre(searchParams.get('motivo'));
+
+  // A dónde volver tras un cierre por inactividad. Se exige que empiece por `/` y
+  // no por `//`: lo primero descarta una URL absoluta a otro origen colada en el
+  // parámetro, lo segundo un `//host` que el navegador interpretaría como tal pese
+  // a "empezar por barra". Sin ninguna de las dos validaciones, un enlace armado a
+  // mano con `?redirect=` sería una redirección abierta.
+  const redirectParam = searchParams.get('redirect');
+  const rutaDeVuelta =
+    redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//')
+      ? redirectParam
+      : '/inicio';
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -93,7 +105,7 @@ function LoginForm() {
         } else if (data.mustChangePassword) {
           router.push('/login/reset-password');
         } else {
-          window.location.href = '/inicio';
+          window.location.href = rutaDeVuelta;
         }
       }, 1200);
 

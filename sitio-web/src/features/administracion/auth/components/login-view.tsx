@@ -61,7 +61,12 @@ function EditorChoiceLink({
 function LoginForm() {
   const searchParams = useSearchParams();
   const redirectParam = searchParams.get('redirect');
-  const redirectTo = redirectParam && redirectParam.startsWith('/') ? redirectParam : '/admin/dashboard';
+  // `//host-ajeno` también "empieza por barra" y el navegador lo trata como URL
+  // absoluta a otro origen: sin descartarlo, `redirect` sería una redirección
+  // abierta armable a mano.
+  const esRutaSegura = (r: string | null): r is string =>
+    !!r && r.startsWith('/') && !r.startsWith('//');
+  const redirectTo = esRutaSegura(redirectParam) ? redirectParam : '/admin/dashboard';
 
   // Por qué se llegó aquí, si es que se llegó desde un cierre automático. El valor lo
   // traduce `mensajeDeCierre`, que solo reconoce los motivos propios: el parámetro
