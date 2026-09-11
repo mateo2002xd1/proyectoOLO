@@ -21,6 +21,44 @@ import { resolverRutaDeVuelta } from "../lib/ruta-de-vuelta";
 import { PaginaEnEdicionContext } from "../lib/pagina-en-edicion";
 import type { PuckEditorWrapperProps, ContenidoPagina } from "../types/editor.types";
 import { validarAccesibilidad, mensajeDeViolacion, type ViolacionAccesibilidad } from "@olo/accessibility-policy";
+import { AvisoRechazo } from "./aviso-rechazo";
+
+/**
+ * Íconos de las tres acciones de la cabecera, en blanco fijo.
+ *
+ * Reemplazan el texto de los botones: son los únicos SVG de este toolbar sin
+ * texto acompañante, así que el nombre de la acción se mueve entero a
+ * `aria-label`/`title` del botón — nada se pierde para quien usa lector de
+ * pantalla, solo deja de estar escrito en pantalla. Mismos SVG que sitio-web
+ * (`puck-editor-wrapper.tsx`), para que los dos editores se vean idénticos.
+ */
+function IconoDetener() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M6.5 0C5.57174 0 4.6815 0.368749 4.02513 1.02513C3.36875 1.6815 3 2.57174 3 3.5V20.5C3 21.4283 3.36875 22.3185 4.02513 22.9749C4.6815 23.6313 5.57174 24 6.5 24C7.42826 24 8.3185 23.6313 8.97487 22.9749C9.63125 22.3185 10 21.4283 10 20.5V3.5C10 2.57174 9.63125 1.6815 8.97487 1.02513C8.3185 0.368749 7.42826 0 6.5 0Z" fill="#fff" />
+      <path d="M17.5 0C16.5717 0 15.6815 0.368749 15.0251 1.02513C14.3687 1.6815 14 2.57174 14 3.5V20.5C14 21.4283 14.3687 22.3185 15.0251 22.9749C15.6815 23.6313 16.5717 24 17.5 24C18.4283 24 19.3185 23.6313 19.9749 22.9749C20.6313 22.3185 21 21.4283 21 20.5V3.5C21 2.57174 20.6313 1.6815 19.9749 1.02513C19.3185 0.368749 18.4283 0 17.5 0Z" fill="#fff" />
+    </svg>
+  );
+}
+
+function IconoGuardar() {
+  return (
+    <svg width="19" height="20" viewBox="0 0 34 35" fill="none" aria-hidden="true">
+      <path d="M13 27.3691V33.1464C13 33.3728 13.0899 33.5899 13.25 33.75C13.4101 33.9101 13.6272 34 13.8536 34H19.1716C19.702 34 20.2107 33.7893 20.5858 33.4142L26.0858 27.9142C26.8668 27.1332 26.8668 25.8668 26.0858 25.0858L21.8663 20.8663C21.1042 20.1042 19.8753 20.083 19.0874 20.8184L13.6354 25.907C13.2301 26.2852 13 26.8147 13 27.3691Z" fill="#fff" stroke="#fff" />
+      <path d="M9.62617 5V1.5H20V5C20 6.10457 19.1046 7 18 7H11.6262C10.5216 7 9.62617 6.10457 9.62617 5Z" fill="#fff" />
+      <path d="M20.5 13.9999H9C7.89543 13.9999 7 14.8954 7 15.9999V31.5M9.62617 31.5H7C5.16667 31.1667 1.5 29.9 1.5 27.5C1.5 25.1169 1.5 11.6913 1.5 5.13862C1.5 5.04398 1.50609 4.95345 1.52181 4.86013C1.72447 3.65697 2.46166 1.5 4 1.5C4.6217 1.5 6.82366 1.5 9.62617 1.5M30 11V7.9276C30 7.3393 29.741 6.78083 29.2919 6.40083L24.0593 1.97323C23.6982 1.66767 23.2405 1.5 22.7675 1.5C21.93 1.5 20.9945 1.5 20 1.5M9.62617 1.5V5C9.62617 6.10457 10.5216 7 11.6262 7H18C19.1046 7 20 6.10457 20 5V1.5M9.62617 1.5C12.7886 1.5 16.7158 1.5 20 1.5" stroke="#fff" strokeWidth="3" strokeLinecap="round" />
+      <path d="M28.5663 24.1194C26.6294 22.5491 22.5325 19.0455 23.0438 17.895C23.7105 16.395 28.0438 12.3968 32.0438 15.8973C34.9471 19.2155 32.4603 22.6466 30.5767 24.1957C29.9854 24.6819 29.161 24.6015 28.5663 24.1194Z" fill="#fff" stroke="#fff" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function IconoEnviar() {
+  return (
+    <svg width="19" height="18" viewBox="0 0 33 31" fill="none" aria-hidden="true">
+      <path d="M15.9294 28.262L12.8702 17.9991C12.6962 17.4153 12.2655 16.9426 11.7004 16.7151L1.75305 12.7106C0.00411272 12.0065 0.111537 9.49512 1.9142 8.94295L29.177 0.592166C30.8384 0.0832753 32.3138 1.78922 31.5706 3.35985L19.6539 28.5461C18.8694 30.204 16.4533 30.0197 15.9294 28.262Z" fill="#fff" stroke="#fff" />
+    </svg>
+  );
+}
 
 /**
  * Cómo se nombra cada estado en la bandera.
@@ -110,28 +148,31 @@ function AccionesCabecera({
         type="button"
         onClick={() => onSalir(hayCambiosSinGuardar)}
         disabled={busy}
+        aria-label="Salir"
         title="Volver a la página sin publicar nada"
         className="olo-editor-btn olo-editor-btn--salir"
       >
-        Salir
+        <IconoDetener />
       </button>
       <button
         type="button"
         onClick={() => onGuardar(indiceHistoria)}
         disabled={busy || sinCandado}
-        title={sinCandado ? "Ya no tienes esta sección reservada" : undefined}
+        aria-label={isSaving ? "Guardando…" : "Guardar borrador"}
+        title={sinCandado ? "Ya no tienes esta sección reservada" : (isSaving ? "Guardando…" : "Guardar borrador")}
         className="olo-editor-btn olo-editor-btn--guardar"
       >
-        {isSaving ? "Guardando…" : "Guardar borrador"}
+        <IconoGuardar />
       </button>
       <button
         type="button"
         onClick={() => onEnviar(indiceHistoria)}
         disabled={busy || bloqueado || sinCandado}
-        title={sinCandado ? "Ya no tienes esta sección reservada" : undefined}
+        aria-label={isSendingToReview ? "Enviando…" : "Enviar a revisión"}
+        title={sinCandado ? "Ya no tienes esta sección reservada" : (isSendingToReview ? "Enviando…" : "Enviar a revisión")}
         className="olo-editor-btn olo-editor-btn--enviar"
       >
-        {isSendingToReview ? "Enviando…" : "Enviar a revisión"}
+        <IconoEnviar />
       </button>
     </div>
   );
@@ -176,6 +217,71 @@ interface ModalSalirProps {
   abierto: boolean;
   onCancelar: () => void;
   onConfirmar: () => void;
+}
+
+interface ModalConfirmarAccionProps {
+  contenido: { titulo: string; descripcion: string; textoConfirmar: string } | null;
+  onCancelar: () => void;
+  onConfirmar: () => void;
+}
+
+/**
+ * Confirmación antes de «Guardar borrador» o «Enviar a revisión».
+ *
+ * `ModalSalir` ya avisaba antes de la única acción que pierde trabajo; estas dos
+ * no pierden nada, pero tienen consecuencias que conviene leer antes del clic —
+ * sobre todo enviar, que le llega al administrador. Un solo componente para las
+ * dos en vez de copiar `ModalSalir`: mismo `<dialog>`, mismas clases, el texto es
+ * lo único que cambia según `contenido`.
+ *
+ * Gemela de la de sitio-web.
+ */
+function ModalConfirmarAccion({ contenido, onCancelar, onConfirmar }: ModalConfirmarAccionProps) {
+  const ref = useRef<HTMLDialogElement>(null);
+  const abierto = contenido !== null;
+
+  useEffect(() => {
+    const dialogo = ref.current;
+    if (!dialogo) return;
+    if (abierto && !dialogo.open) dialogo.showModal();
+    if (!abierto && dialogo.open) dialogo.close();
+  }, [abierto]);
+
+  return (
+    <dialog
+      ref={ref}
+      className="olo-modal"
+      aria-labelledby="olo-modal-confirmar-titulo"
+      onCancel={(evento) => {
+        evento.preventDefault();
+        onCancelar();
+      }}
+      onClick={(evento) => {
+        if (evento.target === ref.current) onCancelar();
+      }}
+    >
+      {contenido && (
+        <div className="olo-modal-caja">
+          <h2 id="olo-modal-confirmar-titulo" className="olo-modal-titulo">
+            {contenido.titulo}
+          </h2>
+          <p className="olo-modal-texto">{contenido.descripcion}</p>
+          <div className="olo-modal-acciones">
+            <button type="button" className="olo-modal-btn" onClick={onCancelar} autoFocus>
+              Cancelar
+            </button>
+            <button
+              type="button"
+              className="olo-modal-btn olo-modal-btn--principal"
+              onClick={onConfirmar}
+            >
+              {contenido.textoConfirmar}
+            </button>
+          </div>
+        </div>
+      )}
+    </dialog>
+  );
 }
 
 /**
@@ -244,6 +350,82 @@ function ModalSalir({ abierto, onCancelar, onConfirmar }: ModalSalirProps) {
   );
 }
 
+/**
+ * Pantalla completa que confirma el envío a revisión.
+ *
+ * A pantalla completa y no un modal chico a propósito: es el último paso del
+ * ciclo del editor, no un aviso de paso, y quien la ve ya no tiene nada más que
+ * hacer aquí — solo volver a la página desde la que entró a editar, que es
+ * justo lo que hace la `x`. No se cierra sola ni con Escape/clic afuera: que
+ * quien acaba de enviar decida cuándo salir, no un timer.
+ *
+ * Gemela de la de sitio-web (`features/paginas/components/puck-editor-wrapper.tsx`).
+ */
+function PantallaEnvioExitoso({
+  abierto,
+  onCerrar,
+}: {
+  abierto: boolean;
+  onCerrar: () => void;
+}) {
+  if (!abierto) return null;
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Envío a revisión exitoso"
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 999999,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 24,
+        background: "#fff",
+      }}
+    >
+      <button
+        type="button"
+        onClick={onCerrar}
+        aria-label="Cerrar e ir a la página desde la que editaste"
+        style={{
+          position: "absolute",
+          top: 20,
+          right: 20,
+          width: 36,
+          height: 36,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "transparent",
+          border: "none",
+          borderRadius: 8,
+          color: "#374151",
+          cursor: "pointer",
+          fontSize: 20,
+        }}
+      >
+        ✕
+      </button>
+
+      <div style={{ maxWidth: 440, textAlign: "center" }}>
+        <div>
+          <p>aquí va manolo</p>
+        </div>
+
+        <h2 style={{ margin: "20px 0 0", fontSize: 22, fontWeight: 700, color: "#111827" }}>
+          Tu edición se envió con éxito
+        </h2>
+        <p style={{ margin: "12px 0 0", fontSize: 15, lineHeight: 1.6, color: "#4b5563" }}>
+          Comunícale al administrador tu avance para que apruebe y publique tu trabajo en el sitio.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export function PuckEditorWrapper({
   slug,
   initialData,
@@ -254,6 +436,7 @@ export function PuckEditorWrapper({
   versionActual,
   contexto,
   candadoPerdidoPor,
+  rechazo,
 }: PuckEditorWrapperProps) {
   const router = useRouter();
 
@@ -265,6 +448,10 @@ export function PuckEditorWrapper({
 
   // Salida pedida con cambios sin guardar, a la espera de que se confirme.
   const [salidaPendiente, setSalidaPendiente] = useState(false);
+
+  // Se llegó a mostrar la pantalla de «enviado con éxito»: reemplaza la salida
+  // automática de antes, que sacaba del editor sin dar tiempo a leer nada.
+  const [envioExitoso, setEnvioExitoso] = useState(false);
 
   const [avisosAccesibilidad, setAvisosAccesibilidad] = useState<ViolacionAccesibilidad[]>([]);
 
@@ -375,55 +562,97 @@ export function PuckEditorWrapper({
         return; // el mensaje ya lo muestra quien gestiona el error
       }
       await onEnviarRevision();
-      salir(); // Salir del editor tras enviar a revisión con éxito
+      // Ya no sale sola: muestra la pantalla de éxito y espera a que la cierren.
+      setEnvioExitoso(true);
     },
-    [handleSave, onEnviarRevision, initialPuckData, salir]
+    [handleSave, onEnviarRevision, initialPuckData]
   );
+
+  // Qué botón se pulsó y con qué índice de historia, a la espera de que se
+  // confirme en `ModalConfirmarAccion`. El índice se captura en el momento del
+  // clic y no en el de confirmar: si se sigue editando con el modal abierto, la
+  // acción debe corresponder a lo que había cuando se pidió, no a lo último.
+  const [accionPendiente, setAccionPendiente] = useState<
+    { tipo: "guardar"; indiceHistoria: number } | { tipo: "enviar"; indiceHistoria: number } | null
+  >(null);
+
+  const alPulsarGuardar = useCallback((indiceHistoria: number) => {
+    setAccionPendiente({ tipo: "guardar", indiceHistoria });
+  }, []);
+
+  const alPulsarEnviar = useCallback((indiceHistoria: number) => {
+    setAccionPendiente({ tipo: "enviar", indiceHistoria });
+  }, []);
 
   // Un onClick no puede devolver una promesa rechazada; el mensaje de error ya
   // se muestra sobre el editor.
-  const alPulsarGuardar = useCallback(
-    (indiceHistoria: number) => {
+  const confirmarAccionPendiente = useCallback(() => {
+    if (!accionPendiente) return;
+    const { tipo, indiceHistoria } = accionPendiente;
+    setAccionPendiente(null);
+    if (tipo === "guardar") {
       void handleSave(indiceHistoria).catch(() => undefined);
-    },
-    [handleSave]
-  );
-
-  const alPulsarEnviar = useCallback(
-    (indiceHistoria: number) => {
+    } else {
       void handleSend(indiceHistoria).catch(() => undefined);
-    },
-    [handleSend]
-  );
+    }
+  }, [accionPendiente, handleSave, handleSend]);
+
+  const contenidoConfirmacion = !accionPendiente
+    ? null
+    : accionPendiente.tipo === "guardar"
+      ? {
+          titulo: "¿Guardar como borrador?",
+          descripcion:
+            "Se guarda tu progreso actual. Todavía no se envía a revisión ni se publica en el sitio.",
+          textoConfirmar: "Guardar borrador",
+        }
+      : {
+          titulo: "¿Enviar a revisión?",
+          descripcion:
+            "El administrador recibirá tu trabajo para revisarlo, aprobarlo y publicarlo en el sitio.",
+          textoConfirmar: "Enviar a revisión",
+        };
 
   // Memorizado porque Puck reconstruye su store cada vez que cambia la identidad
   // de `overrides`.
   const overrides = useMemo(
     () => ({
       headerActions: () => (
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          {/* Antes que nada: explica por qué los botones de guardar están apagados. */}
-          {candadoPerdidoPor && (
-            <span className="olo-editor-perdido" role="alert">
-              {candadoPerdidoPor} tomó el control. Copia lo que necesites: ya no se
-              puede guardar.
-            </span>
-          )}
-          {avisosAccesibilidad.length > 0 && (
-            <AvisoAccesibilidad violaciones={avisosAccesibilidad} />
-          )}
-          <AccionesCabecera
-            bloqueado={bloqueado}
-            busy={busy}
-            isSaving={isSaving}
-            isSendingToReview={isSendingToReview}
-            indiceGuardado={indiceGuardado}
-            onGuardar={alPulsarGuardar}
-            onEnviar={alPulsarEnviar}
-            onSalir={handleSalir}
-            onEstadoDeCambios={registrarEstadoDeCambios}
-            sinCandado={Boolean(candadoPerdidoPor)}
-          />
+        // Puck envuelve esto en su propio `PuckHeader-tools`, que es
+        // `display:flex; justify-content:flex-end` — un `marginRight:auto` interno
+        // no alcanza porque este `<div>` no ocupaba ese ancho, solo el de su
+        // contenido. Con `width:100%` sí lo ocupa, y `space-between` entre los DOS
+        // grupos (campana / resto) manda la campana al extremo izquierdo de esta
+        // columna, justo donde termina la bandera del estado.
+        <div style={{ display: "flex", alignItems: "center", width: "100%", justifyContent: "space-between", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            {rechazo && <AvisoRechazo {...rechazo} />}
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {/* Antes que nada: explica por qué los botones de guardar están apagados. */}
+            {candadoPerdidoPor && (
+              <span className="olo-editor-perdido" role="alert">
+                {candadoPerdidoPor} tomó el control. Copia lo que necesites: ya no se
+                puede guardar.
+              </span>
+            )}
+            {avisosAccesibilidad.length > 0 && (
+              <AvisoAccesibilidad violaciones={avisosAccesibilidad} />
+            )}
+            <AccionesCabecera
+              bloqueado={bloqueado}
+              busy={busy}
+              isSaving={isSaving}
+              isSendingToReview={isSendingToReview}
+              indiceGuardado={indiceGuardado}
+              onGuardar={alPulsarGuardar}
+              onEnviar={alPulsarEnviar}
+              onSalir={handleSalir}
+              onEstadoDeCambios={registrarEstadoDeCambios}
+              sinCandado={Boolean(candadoPerdidoPor)}
+            />
+          </div>
         </div>
       ),
     }),
@@ -439,6 +668,7 @@ export function PuckEditorWrapper({
       registrarEstadoDeCambios,
       avisosAccesibilidad,
       candadoPerdidoPor,
+      rechazo,
     ]
   );
 
@@ -468,6 +698,14 @@ export function PuckEditorWrapper({
         onCancelar={() => setSalidaPendiente(false)}
         onConfirmar={salir}
       />
+
+      <ModalConfirmarAccion
+        contenido={contenidoConfirmacion}
+        onCancelar={() => setAccionPendiente(null)}
+        onConfirmar={confirmarAccionPendiente}
+      />
+
+      <PantallaEnvioExitoso abierto={envioExitoso} onCerrar={salir} />
 
       {/* Se monta aquí y no en la página: cuando este componente existe, el editor ya
           está en pantalla, así que el reloj no cuenta el tiempo de carga. */}

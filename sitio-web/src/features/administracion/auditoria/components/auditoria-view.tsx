@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
 import { DatePicker } from '@/shared/ui/molecules/date-picker';
+import { Paginador } from '@/shared/ui/molecules/paginador';
 import { DetalleRegistro } from './detalle-registro';
-import { Download, AlertCircle } from 'lucide-react';
+import { Download, AlertCircle, Eye } from 'lucide-react';
 import { useAuditoria } from '../hooks/use-auditoria';
 import { aCsv, descargarCsv, nombreDeArchivo } from '../lib/csv';
 import {
@@ -26,12 +27,6 @@ const CLASE_BOTON =
 // botones sigue en neutro: si todo es primario, no hay jerarquía que leer.
 const CLASE_BOTON_PRIMARIO =
   'h-11 rounded-[16px] bg-brand-interactive px-4 text-sm font-semibold text-white transition hover:bg-brand-interactive-hover disabled:opacity-60';
-
-// Azul institucional: el mismo #002237 que ya usan el selector de fecha y los
-// desplegables de esta pantalla. Al hover se aclara con opacidad en vez de
-// inventar un segundo hex, porque este azul no tiene token con pareja.
-const CLASE_BOTON_NAVY =
-  'h-11 rounded-[16px] bg-[#002237] px-4 text-sm font-semibold text-white transition hover:bg-[#002237]/90 disabled:opacity-60';
 
 /** Una línea por campo; se corta en la tabla y se lee completo en el detalle. */
 const resumen = (registro: RegistroAuditoria) =>
@@ -70,6 +65,7 @@ export function AuditoriaView() {
     total,
     pagina,
     totalPaginas,
+    porPagina,
     usuarios,
     filtros,
     hayFiltros,
@@ -78,6 +74,7 @@ export function AuditoriaView() {
     cambiarFiltro,
     limpiarFiltros,
     irAPagina,
+    cambiarPorPagina,
     obtenerParaExportar,
   } = useAuditoria();
 
@@ -228,32 +225,34 @@ export function AuditoriaView() {
               <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
                 {registros.map((registro) => (
                   <tr key={registro.id} className="bg-white dark:bg-[#0f1626]">
-                    <td className="whitespace-nowrap px-4 py-3 text-zinc-600 dark:text-zinc-300">
+                    <td className="whitespace-nowrap px-4 py-1.5 text-zinc-600 dark:text-zinc-300">
                       {new Date(registro.fecha).toLocaleString('es-CO')}
                     </td>
-                    <td className="px-4 py-3 text-zinc-900 dark:text-[#f6f6f6]">
+                    <td className="px-4 py-1.5 text-zinc-900 dark:text-[#f6f6f6]">
                       {(registro.usuarioId ? usuarios.find(u => u.id === registro.usuarioId)?.nombre : null) ?? registro.usuarioNombre ?? <span className="text-zinc-500">Sin usuario</span>}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-1.5">
                       <span
                         className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${COLOR_ACCION[registro.accion] ?? ''}`}
                       >
                         {etiquetaDeAccion(registro.accion)}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
+                    <td className="px-4 py-1.5 text-zinc-600 dark:text-zinc-300">
                       {etiquetaDeEntidad(registro.entidadTipo)}
                     </td>
-                    <td className="max-w-xs truncate px-4 py-3 text-zinc-500" title={resumen(registro)}>
+                    <td className="max-w-xs truncate px-4 py-1.5 text-zinc-500" title={resumen(registro)}>
                       {resumen(registro) || '—'}
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-4 py-1.5 text-right">
                       <button
                         type="button"
                         onClick={() => setSeleccionado(registro)}
-                        className={CLASE_BOTON_PRIMARIO}
+                        aria-label="Ver detalle"
+                        title="Ver detalle"
+                        className="rounded-lg p-1.5 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-[#94a3b8] dark:hover:bg-white/5 dark:hover:text-white"
                       >
-                        Ver
+                        <Eye size={18} />
                       </button>
                     </td>
                   </tr>
@@ -262,29 +261,16 @@ export function AuditoriaView() {
             </table>
           </div>
 
-          <div className="mt-4 flex items-center justify-between gap-4">
-            <p className="text-sm text-zinc-500">
-              {total} {total === 1 ? 'registro' : 'registros'} · página {pagina} de {totalPaginas}
-            </p>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => irAPagina(pagina - 1)}
-                disabled={pagina <= 1}
-                className={CLASE_BOTON}
-              >
-                Anterior
-              </button>
-              <button
-                type="button"
-                onClick={() => irAPagina(pagina + 1)}
-                disabled={pagina >= totalPaginas}
-                className={CLASE_BOTON_NAVY}
-              >
-                Siguiente
-              </button>
-            </div>
-          </div>
+          <Paginador
+            pagina={pagina}
+            totalPaginas={totalPaginas}
+            onCambiarPagina={irAPagina}
+            total={total}
+            porPagina={porPagina}
+            onCambiarPorPagina={cambiarPorPagina}
+            etiqueta="registros"
+            className="mt-4 rounded-xl border border-zinc-200 px-4 dark:border-[#7db828]/30"
+          />
         </>
       )}
 
