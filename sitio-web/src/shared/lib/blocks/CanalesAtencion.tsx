@@ -3,8 +3,8 @@ import { TituloRico } from './titulo-rico';
 import { poppins } from '@/shared/lib/fonts';
 
 export interface CanalDeAtencion {
-  etiqueta?: string;
-  valor?: string;
+  etiqueta?: ReactNode;
+  valor?: ReactNode;
 }
 
 interface CanalesAtencionProps {

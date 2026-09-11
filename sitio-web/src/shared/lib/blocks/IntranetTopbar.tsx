@@ -6,8 +6,8 @@ import React from 'react';
 type AlineacionFlex = 'flex-start' | 'center' | 'flex-end';
 
 interface IntranetTopbarProps {
-  menuItems?: Array<{ label: string; href: string }>;
-  brandText?: string;
+  menuItems?: Array<{ label: React.ReactNode; href: string }>;
+  brandText?: React.ReactNode;
   /** Posición del logo + texto dentro de su contenedor. Por defecto, el
    *  layout de siempre: pegado a la izquierda y centrado verticalmente. */
   alineacionMarca?: { horizontal?: AlineacionFlex; vertical?: AlineacionFlex };
@@ -55,8 +55,8 @@ export function IntranetTopbar({
         </div>
 
         <nav className="intranet-nav">
-          {menuItems.map((item) => (
-            <a key={item.label} href={item.href} className="intranet-nav-link">
+          {menuItems.map((item, index) => (
+            <a key={`topbar-item-${index}`} href={item.href} className="intranet-nav-link">
               {item.label}
             </a>
           ))}

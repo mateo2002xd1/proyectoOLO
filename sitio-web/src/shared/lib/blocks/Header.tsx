@@ -7,8 +7,10 @@ import { desplazarAElemento } from '@olo/blocks-renderer';
 import { obtenerIndiceBusqueda, type PaginaIndiceBusqueda } from '@/features/paginas';
 import { BuscadorSitioModal } from './BuscadorSitioModal';
 
+import type { ReactNode } from 'react';
+
 export interface NavItem {
-  label: string;
+  label: ReactNode;
   href: string;
   active?: boolean;
   /** Submenú desplegable. Si trae elementos, el enlace se pinta como un dropdown. */
@@ -21,7 +23,7 @@ interface HeaderProps {
   govBannerImageUrl?: string;
   mainLogoUrl?: string;
   navLinks?: NavItem[];
-  intranetText?: string;
+  intranetText?: ReactNode;
   intranetUrl?: string;
 }
 
@@ -246,17 +248,18 @@ export function Header({
 
           <nav className="olo-nav" aria-label="Navegacion principal">
             {navLinks.map((link, index) => {
+              const dropdownKey = typeof link.label === 'string' ? link.label : `nav-item-${index}`;
               if (link.children && link.children.length > 0) {
-                const isOpen = openDropdown === link.label;
+                const isOpen = openDropdown === dropdownKey;
                 return (
                   <div
-                    key={`${link.label}-${index}`}
+                    key={`nav-link-${index}`}
                     className="olo-nav-item"
                     ref={(node) => {
-                      if (node) dropdownRefs.current.set(link.label, node);
-                      else dropdownRefs.current.delete(link.label);
+                      if (node) dropdownRefs.current.set(dropdownKey, node);
+                      else dropdownRefs.current.delete(dropdownKey);
                     }}
-                    onMouseEnter={() => setOpenDropdown(link.label)}
+                    onMouseEnter={() => setOpenDropdown(dropdownKey)}
                     onMouseLeave={() => setOpenDropdown(null)}
                   >
                     <button
@@ -264,7 +267,7 @@ export function Header({
                       className={`olo-nav-link olo-nav-link-trigger ${link.active ? 'olo-nav-link-active' : ''}`}
                       aria-haspopup="true"
                       aria-expanded={isOpen}
-                      onClick={() => setOpenDropdown(isOpen ? null : link.label)}
+                      onClick={() => setOpenDropdown(isOpen ? null : dropdownKey)}
                     >
                       {link.label}
                       <svg
@@ -285,7 +288,7 @@ export function Header({
                     <div className={`olo-nav-dropdown ${isOpen ? 'olo-nav-dropdown-open' : ''}`} role="menu">
                       {link.children.map((child, childIndex) => (
                         <a
-                          key={`${child.label}-${childIndex}`}
+                          key={`child-${childIndex}`}
                           href={child.href}
                           className="olo-nav-dropdown-link"
                           role="menuitem"
@@ -301,7 +304,7 @@ export function Header({
 
               return (
                 <a
-                  key={`${link.label}-${index}`}
+                  key={`nav-link-${index}`}
                   href={link.href}
                   className={`olo-nav-link ${link.active ? 'olo-nav-link-active' : ''}`}
                 >
@@ -354,11 +357,11 @@ export function Header({
         <div className={`olo-mobile-menu ${mobileMenuOpen ? 'olo-mobile-menu-open' : ''}`} role="navigation" aria-label="Menu movil">
           {navLinks.map((link, index) =>
             link.children && link.children.length > 0 ? (
-              <div key={`${link.label}-${index}`} className="olo-mobile-nav-group">
+              <div key={`m-nav-${index}`} className="olo-mobile-nav-group">
                 <span className="olo-mobile-nav-group-label">{link.label}</span>
                 {link.children.map((child, childIndex) => (
                   <a
-                    key={`${child.label}-${childIndex}`}
+                    key={`m-child-${childIndex}`}
                     href={child.href}
                     className="olo-mobile-nav-link olo-mobile-nav-link-child"
                   >
@@ -367,7 +370,7 @@ export function Header({
                 ))}
               </div>
             ) : (
-              <a key={`${link.label}-${index}`} href={link.href} className="olo-mobile-nav-link">
+              <a key={`m-nav-${index}`} href={link.href} className="olo-mobile-nav-link">
                 {link.label}
               </a>
             )

@@ -6,12 +6,9 @@ import { VisorDocumento } from '@/shared/ui/molecules/visor-documento';
 import { poppins } from '@/shared/lib/fonts';
 
 export interface DocumentoNormativo {
-  etiquetaTab?: string;
-  titulo?: string;
-  /** Texto plano, no `richtext`: `VisorDocumento` lo pinta dentro de un `<p>`,
-   *  y un campo `richtext` de Puck envuelve su salida en un `<div>` — dentro
-   *  de un `<p>` es HTML inválido, mismo motivo que documenta `titulo-rico.tsx`. */
-  descripcion?: string;
+  etiquetaTab?: ReactNode;
+  titulo?: ReactNode;
+  descripcion?: ReactNode;
   /** ID del documento en CompromISO SENA (ej. "6701"). De ahí salen las dos URLs. */
   documentoId?: string;
 }

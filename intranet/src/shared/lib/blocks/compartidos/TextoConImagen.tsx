@@ -22,7 +22,7 @@ export interface TextoConImagenProps {
   contenido?: ReactNode;
   imagenSrc?: string;
   imagenAlt?: string;
-  pieDeImagen?: string;
+  pieDeImagen?: ReactNode;
   archivoUrl?: string;
   ladoImagen?: 'derecha' | 'izquierda';
   fondo?: 'gris' | 'blanco';

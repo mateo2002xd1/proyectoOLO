@@ -3,7 +3,7 @@ import { TituloRico } from './titulo-rico';
 
 export interface PortalItem {
   id: string;
-  label: string;
+  label: ReactNode;
   /** Texto enriquecido: llega como nodos desde el campo `richtext` de Puck. */
   description: ReactNode;
   href: string;
@@ -19,7 +19,7 @@ interface ExternalPortalsProps {
   block: { id: string };
   /** Campo `richtext` de Puck: llega ya convertido en nodos. */
   title?: ReactNode;
-  subtitle?: string;
+  subtitle?: ReactNode;
   portals?: PortalItem[];
 }
 
