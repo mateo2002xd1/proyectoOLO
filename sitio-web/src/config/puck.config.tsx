@@ -25,7 +25,7 @@ import { Footer } from '@/shared/lib/blocks/Footer';
 import { IntranetTopbar } from '@/shared/lib/blocks/IntranetTopbar';
 import { IntranetHero } from '@/shared/lib/blocks/IntranetHero';
 import { defaultIdentidadVisual } from '@/features/identidad-visual/client';
-import { OcupacionSearchBanner } from '@/shared/ui/molecules/ocupacion-search-banner';
+import { BuscadorOcupacionesBanner } from '@/features/sitio-web/buscador-ocupaciones';
 import { EditorjsWrapper } from '@/features/paginas/components/editorjs-wrapper';
 import { ImageUploaderField } from '@/features/paginas/components/image-uploader-field';
 import { ArchivoUploaderField } from '@/features/paginas/components/archivo-uploader-field';
@@ -342,7 +342,7 @@ const puckConfigBase: Config = {
         colorFondo?: string;
       }>) => (
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-          <OcupacionSearchBanner
+          <BuscadorOcupacionesBanner
             titulo={titulo}
             placeholder={searchPlaceholder}
             logoSrc={imageUrl}
