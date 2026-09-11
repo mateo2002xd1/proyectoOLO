@@ -38,21 +38,15 @@ export async function getSessionPermissionsSnapshot(): Promise<{ role: string | 
 
     const res = await fetch(`${process.env.BACKEND_URL || 'http://localhost:4000'}/api/me`, {
       headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
     });
 
     if (!res.ok) return { role: session.role, permissions: [] };
 
-    const { user } = await res.json();
-    if (!user?.role_id) return { role: session.role, permissions: [] };
-
-    const roleRes = await fetch(`${process.env.BACKEND_URL || 'http://localhost:4000'}/api/roles/${user.role_id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (!roleRes.ok) return { role: session.role, permissions: [] };
-
-    const roleData = await roleRes.json();
-    const permissions = (roleData.permissions || []).map((p: { name?: string }) => p.name).filter(Boolean);
+    const { user, permisos } = await res.json();
+    
+    // /api/me devuelve el array de permisos en la raíz de la respuesta, no dentro de user
+    const permissions = permisos || [];
 
     return { role: session.role, permissions };
   } catch {

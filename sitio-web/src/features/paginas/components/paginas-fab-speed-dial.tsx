@@ -30,9 +30,9 @@ function leerRolActual(): string {
   );
 }
 
-function puedeEditarSincrono(): boolean {
+function esSuperadminSincrono(): boolean {
   const rol = leerRolActual();
-  return ROLES_QUE_EDITAN.includes(rol);
+  return rol === 'superadmin';
 }
 
 function sinSuscripcion() {
@@ -51,13 +51,14 @@ export function PaginasFabSpeedDial() {
   const slug = slugDeRuta(rutaActual);
 
   // Lectura síncrona en cliente con useSyncExternalStore (evita parpadeos y retrasos)
-  const rolValidoPorCookie = useSyncExternalStore(
+  const esSuperadminPorCookie = useSyncExternalStore(
     sinSuscripcion,
-    puedeEditarSincrono,
+    esSuperadminSincrono,
     () => false
   );
 
   const [rolDeApiValido, setRolDeApiValido] = useState(false);
+  const [permisosActivos, setPermisosActivos] = useState<string[]>([]);
   const puedeCrear = usePermisoDeSeccion('secciones.crear');
   const puedeEliminar = usePermisoDeSeccion('secciones.eliminar');
 
@@ -66,8 +67,11 @@ export function PaginasFabSpeedDial() {
 
     // Verificación de respaldo con /api/me para asegurar que sesiones activas siempre reciban el FAB
     permisosDeLaSesion().then((permisos) => {
-      if (vigente && (permisos.length > 0 || puedeEditarSincrono())) {
-        setRolDeApiValido(true);
+      if (vigente) {
+        setPermisosActivos(permisos || []);
+        if ((permisos || []).length > 0 || esSuperadminSincrono()) {
+          setRolDeApiValido(true);
+        }
       }
     });
 
@@ -76,11 +80,15 @@ export function PaginasFabSpeedDial() {
     };
   }, []);
 
-  const rolPuedeEditar = rolValidoPorCookie || rolDeApiValido;
-  const puedeEditarSeccion = rolPuedeEditar && Boolean(slug);
-  const puedeEditarPlantilla = rolPuedeEditar;
-  const puedeCrearSeccion = puedeCrear || rolPuedeEditar;
-  const puedeEliminarSeccion = (puedeEliminar || rolPuedeEditar) && Boolean(slug);
+  const esSuperadmin = esSuperadminPorCookie; 
+
+  const tienePermisoEditarSeccion = permisosActivos.includes(`editar.sitio.${slug}`);
+  const tienePermisoEditarPlantilla = permisosActivos.includes('editar.sitio.menu-y-pie');
+
+  const puedeEditarSeccion = Boolean(slug) && (esSuperadmin || tienePermisoEditarSeccion);
+  const puedeEditarPlantilla = esSuperadmin || tienePermisoEditarPlantilla;
+  const puedeCrearSeccion = puedeCrear || esSuperadmin;
+  const puedeEliminarSeccion = Boolean(slug) && (puedeEliminar || esSuperadmin);
 
   const tieneAlgunaAccion =
     puedeEditarSeccion || puedeEditarPlantilla || puedeCrearSeccion || puedeEliminarSeccion;
