@@ -15,8 +15,8 @@ import { desplazarAElemento, resaltarCoincidenciaTexto } from '@olo/blocks-rende
 type AlineacionFlex = 'flex-start' | 'center' | 'flex-end';
 
 interface IntranetTopbarProps {
-  menuItems?: Array<{ label: string; href: string; children?: Array<{ label: string; href: string }> }>;
-  brandText?: string;
+  menuItems?: Array<{ label?: React.ReactNode; href?: string; children?: Array<{ label?: React.ReactNode; href?: string }> }>;
+  brandText?: React.ReactNode;
   /** Posición del logo + texto dentro de su contenedor. Por defecto, el
    *  layout de siempre: pegado a la izquierda y centrado verticalmente. */
   alineacionMarca?: { horizontal?: AlineacionFlex; vertical?: AlineacionFlex };
@@ -350,12 +350,12 @@ export function IntranetTopbar({
         </div>
 
         <nav className={`intranet-nav ${isMobileMenuOpen ? 'is-open' : ''}`}>
-          {menuItems.map((item) => (
+          {menuItems.map((item, index) => (
             // `item.children?.length` y no `item.children`: desde el editor los
             // enlaces sin submenú llegan con un array vacío, que es truthy y
             // pintaría la flecha de desplegar sobre un menú sin nada dentro.
             item.children?.length ? (
-              <div key={item.label} className="relative group w-full lg:w-auto">
+              <div key={typeof item.label === 'string' ? `${item.label}-${index}` : `nav-${index}`} className="relative group w-full lg:w-auto">
                 <a 
                   href={item.href} 
                   className="intranet-nav-link flex items-center justify-between lg:justify-start gap-1.5 px-4 py-3 lg:py-2 w-full"
@@ -370,9 +370,9 @@ export function IntranetTopbar({
                 </a>
                 <div className="intranet-dropdown-menu">
                   <div className="intranet-dropdown-box">
-                    {item.children.map((child) => (
+                    {item.children.map((child, childIndex) => (
                       <a
-                         key={child.label}
+                        key={typeof child.label === 'string' ? `${child.label}-${childIndex}` : `child-${childIndex}`}
                         href={child.href}
                         className="intranet-dropdown-item"
                       >
@@ -383,7 +383,7 @@ export function IntranetTopbar({
                 </div>
               </div>
             ) : (
-              <a key={item.label} href={item.href} className="intranet-nav-link flex items-center gap-1.5 px-4 py-3 lg:py-2 w-full lg:w-auto">
+              <a key={typeof item.label === 'string' ? `${item.label}-${index}` : `nav-${index}`} href={item.href} className="intranet-nav-link flex items-center gap-1.5 px-4 py-3 lg:py-2 w-full lg:w-auto">
                 {item.label}
               </a>
             )

@@ -10,12 +10,14 @@
  * datos comparten la misma franja azul). Sin `descargaUrl` no se pinta nada, así
  * que las secciones que solo tienen video no cambian.
  */
+import type { ReactNode } from 'react';
+
 export interface TasaVideoProps {
-  tituloInicio?: string;
-  tituloDestacado?: string;
+  tituloInicio?: ReactNode;
+  tituloDestacado?: ReactNode;
   videoUrl?: string;
-  descargaTexto?: string;
-  descargaEtiqueta?: string;
+  descargaTexto?: ReactNode;
+  descargaEtiqueta?: ReactNode;
   descargaUrl?: string;
 }
 
@@ -49,7 +51,7 @@ export function TasaVideo({
         <iframe
           className="tasa-video-iframe"
           src={aUrlDeInsercion(videoUrl)}
-          title={tituloDestacado || 'Video'}
+          title={typeof tituloDestacado === 'string' ? tituloDestacado : 'Video'}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
         />

@@ -23,11 +23,11 @@ import { TituloRico } from './titulo-rico';
  * funciona igual.
  */
 export interface PublicacionItem {
-  titulo?: string;
+  titulo?: ReactNode;
   pdfUrl?: string;
-  etiqueta?: string;
-  mes?: string;
-  dia?: string;
+  etiqueta?: ReactNode;
+  mes?: ReactNode;
+  dia?: ReactNode;
 }
 
 export interface PublicacionesProps {
@@ -285,7 +285,10 @@ export function Publicaciones({
                 >
                   <div>
                     <div className="publicaciones-card-img-wrapper">
-                      <Portada pdfUrl={publicacion.pdfUrl!} titulo={publicacion.titulo ?? ''} />
+                      <Portada
+                        pdfUrl={publicacion.pdfUrl!}
+                        titulo={typeof publicacion.titulo === 'string' ? publicacion.titulo : ''}
+                      />
                     </div>
                     <h3 className="publicaciones-card-title">{publicacion.titulo}</h3>
                     <p className="publicaciones-card-hashtag">{publicacion.etiqueta}</p>

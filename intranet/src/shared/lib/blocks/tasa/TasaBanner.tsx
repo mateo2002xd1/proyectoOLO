@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 /**
  * Franja azul de cabecera de Tasa: un título en dos partes y una ilustración.
  *
@@ -5,8 +7,8 @@
  * va en negrita: así quien edita escribe texto plano y el estilo lo pone el bloque.
  */
 export interface TasaBannerProps {
-  tituloInicio?: string;
-  tituloDestacado?: string;
+  tituloInicio?: ReactNode;
+  tituloDestacado?: ReactNode;
   imagenSrc?: string;
   imagenAlt?: string;
 }

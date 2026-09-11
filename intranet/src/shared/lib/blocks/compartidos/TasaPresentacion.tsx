@@ -2,6 +2,8 @@
 
 import { PptxViewer } from './PptxViewer';
 
+import type { ReactNode } from 'react';
+
 /**
  * Texto a la izquierda y visor de la presentación a la derecha.
  *
@@ -10,8 +12,8 @@ import { PptxViewer } from './PptxViewer';
  * el DOM.
  */
 export interface TasaPresentacionProps {
-  tituloInicio?: string;
-  tituloDestacado?: string;
+  tituloInicio?: ReactNode;
+  tituloDestacado?: ReactNode;
   archivoUrl?: string;
 }
 

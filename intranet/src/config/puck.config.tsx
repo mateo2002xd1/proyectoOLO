@@ -114,7 +114,7 @@ const puckConfigBase: Config = {
     IntranetTopbar: {
       label: 'Barra de navegación',
       fields: {
-        brandText: { type: 'text', label: 'Texto de la Marca' },
+        brandText: { type: 'text', label: 'Texto de la Marca', contentEditable: true },
         alineacionMarca: {
           type: 'object',
           label: 'Posición de la marca (logo + texto)',
@@ -149,13 +149,13 @@ const puckConfigBase: Config = {
           type: 'array',
           label: 'Menú de Navegación',
           arrayFields: {
-            label: { type: 'text', label: 'Texto del enlace' },
+            label: { type: 'text', label: 'Texto del enlace', contentEditable: true },
             href: { type: 'text', label: 'URL (usa # si solo abre el submenú)' },
             children: {
               type: 'array',
               label: 'Submenú (déjalo vacío si no despliega)',
               arrayFields: {
-                label: { type: 'text', label: 'Texto del enlace' },
+                label: { type: 'text', label: 'Texto del enlace', contentEditable: true },
                 href: { type: 'text', label: 'URL' },
               },
               getItemSummary: (item) => item.label || 'Enlace del submenú',
@@ -210,8 +210,8 @@ const puckConfigBase: Config = {
     TasaBanner: {
       label: 'Cabecera · Tasa',
       fields: {
-        tituloInicio: { type: 'text', label: 'Título (primera línea)' },
-        tituloDestacado: { type: 'text', label: 'Título en negrita (segunda línea)' },
+        tituloInicio: { type: 'text', label: 'Título (primera línea)', contentEditable: true },
+        tituloDestacado: { type: 'text', label: 'Título en negrita (segunda línea)', contentEditable: true },
         imagenSrc: campoImagen('Ilustración'),
         imagenAlt: { type: 'text', label: 'Texto alternativo de la imagen' },
       },
@@ -226,7 +226,7 @@ const puckConfigBase: Config = {
     MatrizBanner: {
       label: 'Cabecera · Matriz',
       fields: {
-        titulo: { type: 'richtext', label: 'Título' },
+        titulo: { type: 'richtext', label: 'Título', contentEditable: true },
         imagenSrc: campoImagen('Ilustración'),
         imagenAlt: { type: 'text', label: 'Texto alternativo de la imagen' },
       },
@@ -242,8 +242,8 @@ const puckConfigBase: Config = {
     EncuestaBanner: {
       label: 'Cabecera · Encuesta',
       fields: {
-        antetitulo: { type: 'text', label: 'Línea superior' },
-        titulo: { type: 'richtext', label: 'Título' },
+        antetitulo: { type: 'text', label: 'Línea superior', contentEditable: true },
+        titulo: { type: 'richtext', label: 'Título', contentEditable: true },
         imagenSrc: campoImagen('Ilustración'),
         imagenAlt: { type: 'text', label: 'Texto alternativo de la imagen' },
         imagenDerecha: {
@@ -270,8 +270,8 @@ const puckConfigBase: Config = {
     TextoRico: {
       label: 'Texto con formato',
       fields: {
-        titulo: { type: 'richtext', label: 'Título' },
-        contenido: { type: 'richtext', label: 'Contenido' },
+        titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+        contenido: { type: 'richtext', label: 'Contenido', contentEditable: true },
         fondo: campoFondo,
         colorTexto: campoColor('Color del texto (opcional)'),
         ancho: {
@@ -295,11 +295,11 @@ const puckConfigBase: Config = {
     TextoConImagen: {
       label: 'Texto con imagen al lado',
       fields: {
-        titulo: { type: 'richtext', label: 'Título' },
-        contenido: { type: 'richtext', label: 'Contenido' },
+        titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+        contenido: { type: 'richtext', label: 'Contenido', contentEditable: true },
         imagenSrc: campoImagen('Imagen (opcional si hay presentación)'),
         imagenAlt: { type: 'text', label: 'Texto alternativo' },
-        pieDeImagen: { type: 'text', label: 'Leyenda bajo la imagen' },
+        pieDeImagen: { type: 'text', label: 'Leyenda bajo la imagen', contentEditable: true },
         archivoUrl: {
           type: 'custom',
           label: 'Presentación PPTX (reemplaza la imagen)',
@@ -339,7 +339,7 @@ const puckConfigBase: Config = {
     ImagenDestacada: {
       label: 'Imagen destacada',
       fields: {
-        titulo: { type: 'richtext', label: 'Título' },
+        titulo: { type: 'richtext', label: 'Título', contentEditable: true },
         imagenSrc: campoImagen('Imagen'),
         imagenAlt: { type: 'text', label: 'Texto alternativo' },
         ancho: {
@@ -389,7 +389,7 @@ const puckConfigBase: Config = {
     SeccionCarrusel: {
       label: 'Carrusel de imágenes',
       fields: {
-        titulo: { type: 'richtext', label: 'Título' },
+        titulo: { type: 'richtext', label: 'Título', contentEditable: true },
         imagenes: {
           type: 'array',
           label: 'Imágenes',
@@ -442,11 +442,11 @@ const puckConfigBase: Config = {
     TasaVideo: {
       label: 'Video embebido',
       fields: {
-        tituloInicio: { type: 'text', label: 'Título (primera parte)' },
-        tituloDestacado: { type: 'text', label: 'Título en negrita' },
+        tituloInicio: { type: 'text', label: 'Título (primera parte)', contentEditable: true },
+        tituloDestacado: { type: 'text', label: 'Título en negrita', contentEditable: true },
         videoUrl: { type: 'text', label: 'Enlace del video de YouTube' },
-        descargaTexto: { type: 'text', label: 'Texto sobre el botón de descarga (opcional)' },
-        descargaEtiqueta: { type: 'text', label: 'Texto del botón' },
+        descargaTexto: { type: 'text', label: 'Texto sobre el botón de descarga (opcional)', contentEditable: true },
+        descargaEtiqueta: { type: 'text', label: 'Texto del botón', contentEditable: true },
         descargaUrl: {
           type: 'custom',
           label: 'Archivo para descargar (opcional)',
@@ -473,14 +473,14 @@ const puckConfigBase: Config = {
     RecursosVisualesBloque: {
       label: 'Lista de videos',
       fields: {
-        titulo: { type: 'richtext', label: 'Título' },
+        titulo: { type: 'richtext', label: 'Título', contentEditable: true },
         videos: {
           type: 'array',
           label: 'Videos',
           arrayFields: {
             youtubeId: { type: 'text', label: 'Identificador de YouTube (los 11 caracteres)' },
-            titulo: { type: 'text', label: 'Título' },
-            canal: { type: 'text', label: 'Canal' },
+            titulo: { type: 'text', label: 'Título', contentEditable: true },
+            canal: { type: 'text', label: 'Canal', contentEditable: true },
             miniatura: campoImagen('Miniatura propia (opcional)'),
           },
           getItemSummary: (item) => item.titulo || 'Video',
@@ -502,8 +502,8 @@ const puckConfigBase: Config = {
           type: 'array',
           label: 'Tableros',
           arrayFields: {
-            titulo: { type: 'richtext', label: 'Título' },
-            descripcion: { type: 'richtext', label: 'Descripción' },
+            titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+            descripcion: { type: 'richtext', label: 'Descripción', contentEditable: true },
             urlPowerBi: { type: 'text', label: 'Enlace de Power BI (Publicar en la web)' },
           },
           getItemSummary: (item) => {
@@ -525,8 +525,8 @@ const puckConfigBase: Config = {
     TasaPresentacion: {
       label: 'Presentación (PPTX)',
       fields: {
-        tituloInicio: { type: 'text', label: 'Título (primera parte)' },
-        tituloDestacado: { type: 'text', label: 'Título en negrita' },
+        tituloInicio: { type: 'text', label: 'Título (primera parte)', contentEditable: true },
+        tituloDestacado: { type: 'text', label: 'Título en negrita', contentEditable: true },
         archivoUrl: {
           type: 'custom',
           label: 'Archivo de presentación',
@@ -552,12 +552,12 @@ const puckConfigBase: Config = {
     DescargasConPresentacion: {
       label: 'Descargas con presentación',
       fields: {
-        titulo: { type: 'richtext', label: 'Título' },
+        titulo: { type: 'richtext', label: 'Título', contentEditable: true },
         enlaces: {
           type: 'array',
           label: 'Enlaces',
           arrayFields: {
-            etiqueta: { type: 'text', label: 'Texto del enlace' },
+            etiqueta: { type: 'text', label: 'Texto del enlace', contentEditable: true },
             url: { type: 'text', label: 'URL' },
           },
           getItemSummary: (item) => item.etiqueta || 'Enlace',
@@ -587,12 +587,12 @@ const puckConfigBase: Config = {
     Publicaciones: {
       label: 'Últimas publicaciones',
       fields: {
-        titulo: { type: 'richtext', label: 'Título' },
+        titulo: { type: 'richtext', label: 'Título', contentEditable: true },
         publicaciones: {
           type: 'array',
           label: 'Publicaciones',
           arrayFields: {
-            titulo: { type: 'text', label: 'Título' },
+            titulo: { type: 'text', label: 'Título', contentEditable: true },
             pdfUrl: {
               type: 'custom',
               label: 'Archivo PDF',
@@ -605,9 +605,9 @@ const puckConfigBase: Config = {
                 />
               ),
             },
-            etiqueta: { type: 'text', label: 'Etiqueta (#OLOtecuenta)' },
-            mes: { type: 'text', label: 'Mes' },
-            dia: { type: 'text', label: 'Día' },
+            etiqueta: { type: 'text', label: 'Etiqueta (#OLOtecuenta)', contentEditable: true },
+            mes: { type: 'text', label: 'Mes', contentEditable: true },
+            dia: { type: 'text', label: 'Día', contentEditable: true },
           },
           getItemSummary: (item) => item.titulo || 'Publicación',
         },
@@ -630,8 +630,8 @@ const puckConfigBase: Config = {
           type: 'array',
           label: 'Conceptos',
           arrayFields: {
-            titulo: { type: 'richtext', label: 'Título' },
-            descripcion: { type: 'richtext', label: 'Descripción' },
+            titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+            descripcion: { type: 'richtext', label: 'Descripción', contentEditable: true },
             imagenSrc: campoImagen('Imagen'),
             imagenAlt: { type: 'text', label: 'Texto alternativo' },
           },
@@ -654,14 +654,14 @@ const puckConfigBase: Config = {
     PreguntasFrecuentes: {
       label: 'Preguntas frecuentes',
       fields: {
-        titulo: { type: 'richtext', label: 'Título' },
+        titulo: { type: 'richtext', label: 'Título', contentEditable: true },
         tarjetas: {
           type: 'array',
           label: 'Tarjetas',
           arrayFields: {
             imagenSrc: campoImagen('Imagen'),
             imagenAlt: { type: 'text', label: 'Texto alternativo' },
-            texto: { type: 'richtext', label: 'Texto de la tarjeta' },
+            texto: { type: 'richtext', label: 'Texto de la tarjeta', contentEditable: true },
             url: { type: 'text', label: 'Enlace (sin él, la tarjeta no es pulsable)' },
           },
           getItemSummary: (item) => {
@@ -701,7 +701,7 @@ const puckConfigBase: Config = {
           type: 'array',
           label: 'Columnas',
           arrayFields: {
-            titulo: { type: 'richtext', label: 'Título de la columna' },
+            titulo: { type: 'richtext', label: 'Título de la columna', contentEditable: true },
             orientacionLineas: {
               type: 'radio',
               label: 'Orientación de las líneas',
@@ -714,7 +714,7 @@ const puckConfigBase: Config = {
               type: 'array',
               label: 'Líneas',
               arrayFields: {
-                texto: { type: 'richtext', label: 'Texto (opcional si hay ícono)' },
+                texto: { type: 'richtext', label: 'Texto (opcional si hay ícono)', contentEditable: true },
                 url: { type: 'text', label: 'Enlace (déjalo vacío si es solo texto)' },
                 icono: { type: 'text', label: 'Ruta del ícono SVG (opcional)' },
                 separada: {
@@ -761,7 +761,7 @@ const puckConfigBase: Config = {
       fields: {
         icono: campoIcono('Ícono SVG'),
         colorIcono: campoColor('Color del ícono'),
-        texto: { type: 'text', label: 'Texto descriptivo (opcional)' },
+        texto: { type: 'text', label: 'Texto descriptivo (opcional)', contentEditable: true },
         tamanoTexto: {
           type: 'select',
           label: 'Tamaño del texto',

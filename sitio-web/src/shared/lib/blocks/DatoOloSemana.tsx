@@ -1,7 +1,9 @@
+import type { ReactNode } from 'react';
+
 interface DatoOloSemanaProps {
   block: { id: string };
-  tituloResaltado?: string;
-  tituloNormal?: string;
+  tituloResaltado?: ReactNode;
+  tituloNormal?: ReactNode;
   imagenSrc?: string;
   imagenAlt?: string;
 }
