@@ -3,7 +3,7 @@ import React from 'react';
 export interface IconoBloqueProps {
   icono?: string;
   colorIcono?: string;
-  texto?: string;
+  texto?: React.ReactNode;
   tamanoTexto?: string;
   colorTexto?: string;
 }

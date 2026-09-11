@@ -21,11 +21,11 @@ import { resaltar } from '../compartidos/resaltar';
  * página funciona igual.
  */
 export interface PublicacionItem {
-  titulo?: string;
+  titulo?: React.ReactNode;
   pdfUrl?: string;
-  etiqueta?: string;
-  mes?: string;
-  dia?: string;
+  etiqueta?: React.ReactNode;
+  mes?: React.ReactNode;
+  dia?: React.ReactNode;
 }
 
 export interface PublicacionesProps {
@@ -284,7 +284,7 @@ export function Publicaciones({
                 >
                   <div>
                     <div className="publicaciones-card-img-wrapper pointer-events-none">
-                      <Portada pdfUrl={publicacion.pdfUrl!} titulo={publicacion.titulo ?? ''} />
+                      <Portada pdfUrl={publicacion.pdfUrl!} titulo={typeof publicacion.titulo === 'string' ? publicacion.titulo : ''} />
                     </div>
                     <h3 className="publicaciones-card-title">{publicacion.titulo}</h3>
                     <p className="publicaciones-card-hashtag">{publicacion.etiqueta}</p>

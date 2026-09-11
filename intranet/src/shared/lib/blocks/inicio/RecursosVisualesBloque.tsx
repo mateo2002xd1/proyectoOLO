@@ -14,8 +14,8 @@ import React, { useState, type ReactNode } from 'react';
  */
 export interface VideoRecurso {
   youtubeId?: string;
-  titulo?: string;
-  canal?: string;
+  titulo?: ReactNode;
+  canal?: ReactNode;
   miniatura?: string;
 }
 
@@ -56,7 +56,7 @@ export function RecursosVisualesBloque({
                   src={`https://www.youtube.com/embed/${activo.youtubeId}?autoplay=0`}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
-                  title={activo.titulo || 'Recurso visual'}
+                  title={typeof activo.titulo === 'string' ? activo.titulo : 'Recurso visual'}
                 />
               </div>
             </div>
@@ -72,7 +72,7 @@ export function RecursosVisualesBloque({
                   <div className="rv-thumb-wrap">
                     {/* src dinamico y tamano por CSS: next/image exigiria width/height fijos o remotePatterns */}
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={miniaturaDe(video)} alt={video.titulo ?? ''} className="rv-thumb" />
+                    <img src={miniaturaDe(video)} alt={typeof video.titulo === 'string' ? video.titulo : ''} className="rv-thumb" />
                     <span className="rv-play-icon" aria-hidden="true">
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M8 5v14l11-7z" />

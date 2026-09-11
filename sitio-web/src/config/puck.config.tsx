@@ -177,7 +177,7 @@ const puckConfigBase: Config = {
           },
           getItemSummary: (item: { label?: string }) => item.label || 'Enlace',
         },
-        intranetText: { type: 'text', label: 'Texto del botón de intranet' },
+        intranetText: { type: 'text', label: 'Texto del botón de intranet', contentEditable: true },
         intranetUrl: { type: 'text', label: 'URL de la intranet' },
       },
       // Los mismos valores que sirve `identidad-visual` cuando no hay plantilla:
@@ -199,7 +199,7 @@ const puckConfigBase: Config = {
     IntranetTopbar: {
       label: 'Intranet Topbar',
       fields: {
-        brandText: { type: 'text', label: 'Texto de la Marca' },
+        brandText: { type: 'text', label: 'Texto de la Marca', contentEditable: true },
         alineacionMarca: {
           type: 'object',
           label: 'Posición de la marca (logo + texto)',
@@ -234,7 +234,7 @@ const puckConfigBase: Config = {
           type: 'array',
           label: 'Menú de Navegación',
           arrayFields: {
-            label: { type: 'text', label: 'Texto del enlace' },
+            label: { type: 'text', label: 'Texto del enlace', contentEditable: true },
             href: { type: 'text', label: 'URL' },
           },
           getItemSummary: (item: { label?: string }) => item.label || 'Enlace',
@@ -289,10 +289,12 @@ const puckConfigBase: Config = {
         titulo: {
           type: 'richtext' as const,
           label: 'Titular sobre el buscador',
+          contentEditable: true,
         },
         searchPlaceholder: {
           type: 'text' as const,
           label: 'Texto de ejemplo dentro del buscador',
+          contentEditable: true,
         },
         imageUrl: campoImagen('Logo (esquina superior)'),
         imageAlt: {
@@ -355,14 +357,15 @@ const puckConfigBase: Config = {
         sectionTitle: {
           type: 'text' as const,
           label: 'Título de la sección',
+          contentEditable: true,
         },
         services: {
           type: 'array' as const,
           label: 'Lista de servicios',
           arrayFields: {
             id: { type: 'text' as const, label: 'Identificador' },
-            title: { type: 'text' as const, label: 'Título' },
-            description: { type: 'richtext' as const, label: 'Descripción' },
+            title: { type: 'text' as const, label: 'Título', contentEditable: true },
+            description: { type: 'richtext' as const, label: 'Descripción', contentEditable: true },
           },
           defaultItemProps: {
             id: 'nuevo-servicio',
@@ -398,8 +401,8 @@ const puckConfigBase: Config = {
         services,
       }: {
         id: string;
-        sectionTitle?: string;
-        services?: { id: string; title: string; description: ReactNode }[];
+        sectionTitle?: ReactNode;
+        services?: { id: string; title: ReactNode; description: ReactNode }[];
       }) => (
         <Services
           block={{ id: id || 'services-preview' }}
@@ -414,10 +417,12 @@ const puckConfigBase: Config = {
         tituloResaltado: {
           type: 'text' as const,
           label: 'Título (parte destacada)',
+          contentEditable: true,
         },
         tituloNormal: {
           type: 'text' as const,
           label: 'Título (resto)',
+          contentEditable: true,
         },
         imagenSrc: {
           type: 'custom',
@@ -446,8 +451,8 @@ const puckConfigBase: Config = {
         imagenAlt,
       }: {
         id: string;
-        tituloResaltado?: string;
-        tituloNormal?: string;
+        tituloResaltado?: ReactNode;
+        tituloNormal?: ReactNode;
         imagenSrc?: string;
         imagenAlt?: string;
       }) => (
@@ -463,14 +468,14 @@ const puckConfigBase: Config = {
     RecursosVisualesBloque: {
       label: 'Recursos Visuales',
       fields: {
-        titulo: { type: 'richtext' as const, label: 'Título' },
+        titulo: { type: 'richtext' as const, label: 'Título', contentEditable: true },
         videos: {
           type: 'array' as const,
           label: 'Videos',
           arrayFields: {
             youtubeId: { type: 'text' as const, label: 'Identificador de YouTube (los 11 caracteres)' },
-            titulo: { type: 'text' as const, label: 'Título' },
-            canal: { type: 'text' as const, label: 'Canal' },
+            titulo: { type: 'text' as const, label: 'Título', contentEditable: true },
+            canal: { type: 'text' as const, label: 'Canal', contentEditable: true },
             miniatura: {
               type: 'custom',
               label: 'Miniatura propia (opcional)',
@@ -493,7 +498,7 @@ const puckConfigBase: Config = {
         videos,
       }: BlockRender<{
         titulo?: ReactNode;
-        videos?: { youtubeId?: string; titulo?: string; canal?: string; miniatura?: string }[];
+        videos?: { youtubeId?: string; titulo?: ReactNode; canal?: ReactNode; miniatura?: string }[];
       }>) => (
         <RecursosVisualesBloque
           block={{ id: id || 'recursos-visuales-preview' }}
@@ -505,12 +510,12 @@ const puckConfigBase: Config = {
     Publicaciones: {
       label: 'Últimas publicaciones',
       fields: {
-        titulo: { type: 'richtext' as const, label: 'Título' },
+        titulo: { type: 'richtext' as const, label: 'Título', contentEditable: true },
         publicaciones: {
           type: 'array' as const,
           label: 'Publicaciones',
           arrayFields: {
-            titulo: { type: 'text' as const, label: 'Título' },
+            titulo: { type: 'text' as const, label: 'Título', contentEditable: true },
             pdfUrl: {
               type: 'custom',
               label: 'Archivo PDF',
@@ -523,9 +528,9 @@ const puckConfigBase: Config = {
                 />
               ),
             },
-            etiqueta: { type: 'text' as const, label: 'Etiqueta (#OLOtecuenta)' },
-            mes: { type: 'text' as const, label: 'Mes' },
-            dia: { type: 'text' as const, label: 'Día' },
+            etiqueta: { type: 'text' as const, label: 'Etiqueta (#OLOtecuenta)', contentEditable: true },
+            mes: { type: 'text' as const, label: 'Mes', contentEditable: true },
+            dia: { type: 'text' as const, label: 'Día', contentEditable: true },
           },
           getItemSummary: (item: { titulo?: string }) => item.titulo || 'Publicación',
         },
@@ -544,7 +549,7 @@ const puckConfigBase: Config = {
         porPagina,
       }: BlockRender<{
         titulo?: ReactNode;
-        publicaciones?: { titulo?: string; pdfUrl?: string; etiqueta?: string; mes?: string; dia?: string }[];
+        publicaciones?: { titulo?: ReactNode; pdfUrl?: string; etiqueta?: ReactNode; mes?: ReactNode; dia?: ReactNode }[];
         porPagina?: number;
       }>) => (
         <Publicaciones
@@ -558,8 +563,8 @@ const puckConfigBase: Config = {
     PoliticaPrivacidadEncabezado: {
       label: 'Encabezado de política',
       fields: {
-        titulo: { type: 'richtext' as const, label: 'Título (h1 de la página)' },
-        intro: { type: 'richtext' as const, label: 'Párrafos de introducción' },
+        titulo: { type: 'richtext' as const, label: 'Título (h1 de la página)', contentEditable: true },
+        intro: { type: 'richtext' as const, label: 'Párrafos de introducción', contentEditable: true },
       },
       defaultProps: {
         id: 'politica-encabezado-1',
@@ -582,14 +587,14 @@ const puckConfigBase: Config = {
     VisorDocumentosNormativos: {
       label: 'Visor de documentos normativos',
       fields: {
-        titulo: { type: 'richtext' as const, label: 'Título de la sección' },
+        titulo: { type: 'richtext' as const, label: 'Título de la sección', contentEditable: true },
         documentos: {
           type: 'array' as const,
           label: 'Documentos',
           arrayFields: {
-            etiquetaTab: { type: 'text' as const, label: 'Texto de la pestaña' },
-            titulo: { type: 'text' as const, label: 'Título del documento' },
-            descripcion: { type: 'text' as const, label: 'Descripción breve' },
+            etiquetaTab: { type: 'text' as const, label: 'Texto de la pestaña', contentEditable: true },
+            titulo: { type: 'text' as const, label: 'Título del documento', contentEditable: true },
+            descripcion: { type: 'text' as const, label: 'Descripción breve', contentEditable: true },
             documentoId: { type: 'text' as const, label: 'ID en CompromISO SENA (ej. 6701)' },
           },
           defaultItemProps: {
@@ -636,14 +641,14 @@ const puckConfigBase: Config = {
     CanalesAtencion: {
       label: 'Canales de atención',
       fields: {
-        titulo: { type: 'richtext' as const, label: 'Título de la sección' },
-        intro: { type: 'richtext' as const, label: 'Párrafo de introducción' },
+        titulo: { type: 'richtext' as const, label: 'Título de la sección', contentEditable: true },
+        intro: { type: 'richtext' as const, label: 'Párrafo de introducción', contentEditable: true },
         canales: {
           type: 'array' as const,
           label: 'Canales',
           arrayFields: {
-            etiqueta: { type: 'text' as const, label: 'Etiqueta' },
-            valor: { type: 'text' as const, label: 'Valor' },
+            etiqueta: { type: 'text' as const, label: 'Etiqueta', contentEditable: true },
+            valor: { type: 'text' as const, label: 'Valor', contentEditable: true },
           },
           defaultItemProps: { etiqueta: 'Nuevo canal', valor: '' },
           getItemSummary: (item: { etiqueta?: string }) => item.etiqueta || 'Canal',
@@ -681,18 +686,20 @@ const puckConfigBase: Config = {
         title: {
           type: 'richtext' as const,
           label: 'Título de la sección',
+          contentEditable: true,
         },
         subtitle: {
           type: 'text' as const,
           label: 'Subtítulo (opcional)',
+          contentEditable: true,
         },
         portals: {
           type: 'array' as const,
           label: 'Lista de portales',
           arrayFields: {
             id: { type: 'text' as const, label: 'Identificador' },
-            label: { type: 'text' as const, label: 'Etiqueta' },
-            description: { type: 'richtext' as const, label: 'Descripción' },
+            label: { type: 'text' as const, label: 'Etiqueta', contentEditable: true },
+            description: { type: 'richtext' as const, label: 'Descripción', contentEditable: true },
             href: { type: 'text' as const, label: 'URL de destino' },
             imagen: campoImagen('Ilustración de fondo (se pinta al 60%)'),
             /**
@@ -767,10 +774,10 @@ const puckConfigBase: Config = {
       }: {
         id: string;
         title?: ReactNode;
-        subtitle?: string;
+        subtitle?: ReactNode;
         portals?: {
           id: string;
-          label: string;
+          label: ReactNode;
           description: ReactNode;
           href: string;
           gradient?: string;
@@ -791,8 +798,8 @@ const puckConfigBase: Config = {
     TextoRico: {
       label: 'Texto con formato',
       fields: {
-        titulo: { type: 'richtext', label: 'Título' },
-        contenido: { type: 'richtext', label: 'Contenido' },
+        titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+        contenido: { type: 'richtext', label: 'Contenido', contentEditable: true },
         fondo: campoFondo,
         colorTexto: campoColor('Color del texto (opcional)'),
         ancho: {
@@ -816,7 +823,7 @@ const puckConfigBase: Config = {
     ImagenDestacada: {
       label: 'Imagen destacada',
       fields: {
-        titulo: { type: 'richtext', label: 'Título' },
+        titulo: { type: 'richtext', label: 'Título', contentEditable: true },
         imagenSrc: campoImagen('Imagen'),
         imagenAlt: { type: 'text', label: 'Texto alternativo' },
         ancho: {
