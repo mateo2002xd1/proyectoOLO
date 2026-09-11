@@ -7,6 +7,7 @@ import { enlaceAlEditor } from '../lib/ruta-de-vuelta';
 import { SLUG_PLANTILLA } from '../lib/plantilla';
 import { ModalNuevaSeccion } from './modal-nueva-seccion';
 import { ModalEliminarSeccion } from './modal-eliminar-seccion';
+import { apiClient } from '@/shared/lib/api-client';
 
 function slugDeRuta(ruta: string): string {
   const limpio = (ruta || '').split('?')[0].split('#')[0];
@@ -22,18 +23,38 @@ export interface PaginasFabSpeedDialProps {
 
 export function PaginasFabSpeedDial({
   esSuperadmin = false,
-  permisosActivos = [],
+  permisosActivos: permisosIniciales = [],
 }: PaginasFabSpeedDialProps) {
   const rutaActual = usePathname() ?? '/inicio';
   const slug = slugDeRuta(rutaActual);
 
+  const [montado, setMontado] = useState(false);
+  const [permisosActivos, setPermisosActivos] = useState<string[]>(permisosIniciales);
+
+  useEffect(() => {
+    setMontado(true);
+    let vigente = true;
+    apiClient.get<{ permisos?: string[] }>('/me')
+      .then((datos) => {
+        if (vigente && Array.isArray(datos.permisos)) {
+          setPermisosActivos(datos.permisos.map(String));
+        }
+      })
+      .catch(() => {
+        if (vigente) setPermisosActivos([]);
+      });
+    return () => {
+      vigente = false;
+    };
+  }, []);
+
   const tienePermisoEditarSeccion = permisosActivos.includes(`editar.intranet.${slug}`);
   const tienePermisoEditarPlantilla = permisosActivos.includes('editar.intranet.menu-y-pie');
 
-  const puedeEditarSeccion = Boolean(slug) && (esSuperadmin || tienePermisoEditarSeccion);
-  const puedeEditarPlantilla = esSuperadmin || tienePermisoEditarPlantilla;
-  const puedeCrearSeccion = esSuperadmin || permisosActivos.includes('secciones.crear');
-  const puedeEliminarSeccion = Boolean(slug) && (esSuperadmin || permisosActivos.includes('secciones.eliminar'));
+  const puedeEditarSeccion = Boolean(slug) && tienePermisoEditarSeccion;
+  const puedeEditarPlantilla = tienePermisoEditarPlantilla;
+  const puedeCrearSeccion = permisosActivos.includes('secciones.crear');
+  const puedeEliminarSeccion = Boolean(slug) && permisosActivos.includes('secciones.eliminar');
 
   const tieneAlgunaAccion =
     puedeEditarSeccion || puedeEditarPlantilla || puedeCrearSeccion || puedeEliminarSeccion;
@@ -89,6 +110,9 @@ export function PaginasFabSpeedDial({
       window.removeEventListener('keydown', manejarTeclaEscape);
     };
   }, [abierto, cerrarMenu]);
+
+  // Durante SSR y primera hidratación en cliente no se pinta para evitar mismatch de hidratación.
+  if (!montado) return null;
 
   // Si no tiene permisos para ninguna acción, no se pinta nada
   if (!tieneAlgunaAccion) return null;

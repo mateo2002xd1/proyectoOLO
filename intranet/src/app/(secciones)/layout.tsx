@@ -5,7 +5,6 @@ import {
 } from '@/features/gestor-secciones';
 import {
   obtenerSesion,
-  permisosDeLaSesion,
 } from '@/shared/lib/sesion';
 import { VigilanteSesion } from '@/shared/lib/inactividad';
 
@@ -27,10 +26,7 @@ import { VigilanteSesion } from '@/shared/lib/inactividad';
 export default async function SeccionesLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const [sesion, permisos] = await Promise.all([
-    obtenerSesion(),
-    permisosDeLaSesion(),
-  ]);
+  const sesion = await obtenerSesion();
   const esSuperadmin = (sesion?.rol ?? "").trim().toLowerCase() === "superadmin";
 
   return (
@@ -38,7 +34,6 @@ export default async function SeccionesLayout({
       {children}
       <PaginasFabSpeedDial
         esSuperadmin={esSuperadmin}
-        permisosActivos={permisos}
       />
       {/* Cubre las cinco secciones de una vez. El editor y la vista previa cuelgan
           fuera de este grupo de rutas y montan el suyo. */}
