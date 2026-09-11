@@ -58,7 +58,6 @@ export function PaginasFabSpeedDial() {
     () => false
   );
   const montado = useSyncExternalStore(sinSuscripcion, enCliente, enServidor);
-  const [rolDeApiValido, setRolDeApiValido] = useState(false);
   const [permisosActivos, setPermisosActivos] = useState<string[]>([]);
   const puedeCrear = usePermisoDeSeccion('secciones.crear');
   const puedeEliminar = usePermisoDeSeccion('secciones.eliminar');
@@ -66,13 +65,10 @@ export function PaginasFabSpeedDial() {
   useEffect(() => {
     let vigente = true;
 
-    // Verificación de respaldo con /api/me para asegurar que sesiones activas siempre reciban el FAB
+    // Obtenemos los permisos específicos de la sesión actual
     permisosDeLaSesion().then((permisos) => {
       if (vigente) {
         setPermisosActivos(permisos || []);
-        if ((permisos || []).length > 0 || esSuperadminSincrono()) {
-          setRolDeApiValido(true);
-        }
       }
     });
 
@@ -81,7 +77,7 @@ export function PaginasFabSpeedDial() {
     };
   }, []);
 
-  const esSuperadmin = esSuperadminPorCookie || rolDeApiValido;
+  const esSuperadmin = esSuperadminPorCookie;
 
   const tienePermisoEditarSeccion = permisosActivos.includes(`editar.sitio.${slug}`);
   const tienePermisoEditarPlantilla = permisosActivos.includes('editar.sitio.menu-y-pie');

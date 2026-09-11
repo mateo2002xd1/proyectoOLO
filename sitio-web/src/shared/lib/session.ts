@@ -102,7 +102,21 @@ const ROLES_QUE_EDITAN = ['superadmin', 'administrador', 'editor'];
  */
 export async function puedeEditarPaginas(): Promise<boolean> {
   const { role } = await getAuthSessionSnapshot();
-  return ROLES_QUE_EDITAN.includes((role ?? '').trim().toLowerCase());
+  const lowerRole = (role ?? '').trim().toLowerCase();
+  
+  // Roles estándar: se asume que pueden editar para ahorrar la llamada a la API
+  if (ROLES_QUE_EDITAN.includes(lowerRole)) {
+    return true;
+  }
+
+  // Si no hay rol (no autenticado), no puede editar
+  if (!role) {
+    return false;
+  }
+
+  // Para roles personalizados, verificamos si tienen algún permiso de edición en el backend
+  const { permissions } = await getSessionPermissionsSnapshot();
+  return permissions.some(p => p.startsWith('editar.sitio.') || p === 'secciones.crear');
 }
 
 export async function resolveFirstAccessibleRoute(role: string): Promise<string> {

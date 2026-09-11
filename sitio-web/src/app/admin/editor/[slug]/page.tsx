@@ -32,12 +32,7 @@ export default async function EditorPage({
     redirect(`/admin/login?redirect=${encodeURIComponent(`/admin/editor/${slug}`)}`);
   }
 
-  // Con sesión pero sin permiso no se manda al login: ya está identificado, y
-  // volver a pedirle credenciales sugiere que se equivocó de usuario. Se le
-  // devuelve a la página que quería editar.
-  if (!(await puedeEditarPaginas())) {
-    redirect(rutaPublicaDeSlug(slug));
-  }
+  // La verificación de si puede acceder al editor visual ahora se hace de forma granular abajo.
 
   // Verificación GRANULAR por página — el chequeo de arriba solo mira el rol, así
   // que un Editor sin la llave `editar.sitio.{slug}` de ESTA página llegaba a ver la
