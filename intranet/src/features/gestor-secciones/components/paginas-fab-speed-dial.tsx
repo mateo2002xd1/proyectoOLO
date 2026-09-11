@@ -51,10 +51,10 @@ export function PaginasFabSpeedDial({
   const tienePermisoEditarSeccion = permisosActivos.includes(`editar.intranet.${slug}`);
   const tienePermisoEditarPlantilla = permisosActivos.includes('editar.intranet.menu-y-pie');
 
-  const puedeEditarSeccion = Boolean(slug) && (esSuperadmin || tienePermisoEditarSeccion);
-  const puedeEditarPlantilla = esSuperadmin || tienePermisoEditarPlantilla;
-  const puedeCrearSeccion = esSuperadmin || permisosActivos.includes('secciones.crear');
-  const puedeEliminarSeccion = Boolean(slug) && (esSuperadmin || permisosActivos.includes('secciones.eliminar'));
+  const puedeEditarSeccion = Boolean(slug) && tienePermisoEditarSeccion;
+  const puedeEditarPlantilla = tienePermisoEditarPlantilla;
+  const puedeCrearSeccion = permisosActivos.includes('secciones.crear');
+  const puedeEliminarSeccion = Boolean(slug) && permisosActivos.includes('secciones.eliminar');
 
   const tieneAlgunaAccion =
     puedeEditarSeccion || puedeEditarPlantilla || puedeCrearSeccion || puedeEliminarSeccion;
