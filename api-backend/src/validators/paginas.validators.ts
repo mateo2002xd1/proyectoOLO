@@ -97,3 +97,17 @@ export const adquirirBloqueoSchema = z
     forzar: z.boolean().optional(),
   })
   .strict();
+
+/**
+ * Solo acepta lo que genera `/api/upload`: un UUID dentro de su carpeta de tipo. Así
+ * nadie puede anotar un archivo sembrado o escrito a mano para que se borre al publicar.
+ */
+const RUTA_SUBIDA_RE =
+  /^\/uploads\/(pdf|img|word|excel|presentaciones)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(pdf|jpg|png|doc|docx|xls|xlsx|ppt|pptx)$/;
+
+/** Cuerpo de `POST /api/paginas/:slug/subidas`. */
+export const registrarSubidaSchema = z
+  .object({
+    ruta: z.string().regex(RUTA_SUBIDA_RE, 'Ruta de subida inválida.'),
+  })
+  .strict();

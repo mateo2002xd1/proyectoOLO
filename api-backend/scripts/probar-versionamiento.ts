@@ -132,7 +132,7 @@ async function ejecutarEstado(identificador: string | undefined, ambito: Ambito)
     archivosArchivados.forEach((a) => {
       const subRuta = a.replace(/^\/?uploads\//, '');
       const existeUploads = fs.existsSync(path.join(dirUploads, subRuta));
-      const existeBackup = fs.existsSync(path.join(dirBackup, subRuta));
+      const existeBackup = fs.existsSync(path.join(dirBackup, path.basename(subRuta)));
       console.log(`     - ${a} [En uploads: ${existeUploads ? 'SÍ' : 'NO'} | En backup: ${existeBackup ? 'SÍ ✓' : 'NO'}]`);
     });
   } else {

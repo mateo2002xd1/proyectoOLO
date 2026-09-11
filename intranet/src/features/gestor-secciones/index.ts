@@ -14,6 +14,9 @@
  */
 
 // Components
+export { PaginasFabSpeedDial } from "./components/paginas-fab-speed-dial";
+export { ModalNuevaSeccion } from "./components/modal-nueva-seccion";
+export { ModalEliminarSeccion } from "./components/modal-eliminar-seccion";
 export { EditButton } from "./components/edit-button";
 export { PuckEditorWrapper } from "./components/puck-editor-wrapper";
 export { EditorJsWrapper } from "./components/editorjs-wrapper";

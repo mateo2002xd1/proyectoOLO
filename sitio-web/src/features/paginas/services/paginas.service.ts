@@ -101,6 +101,14 @@ export async function guardarBorrador(slug: string, contenido: PuckData | Bloque
   return data;
 }
 
+/**
+ * Anota que `ruta` se subió para esta página, para que al publicarla se borre si
+ * ninguna versión la usa. Si falla, la subida sigue sirviendo igual.
+ */
+export async function registrarSubidaPendiente(slug: string, ruta: string): Promise<void> {
+  await api.post(`/api/paginas/${slug}/subidas`, { ruta }).catch(() => undefined);
+}
+
 export async function enviarARevision(slug: string): Promise<{ pagina: Pagina; version: PaginaVersion }> {
   const { data } = await api.patch(`/api/paginas/${slug}/enviar-revision`);
   return data;

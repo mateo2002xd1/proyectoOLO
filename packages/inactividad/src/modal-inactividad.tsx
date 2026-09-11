@@ -7,7 +7,6 @@ interface ModalInactividadProps {
   /** Milisegundos que faltan para el cierre, o `null` si no hay aviso en curso. */
   msRestantes: number | null;
   onSeguir: () => void;
-  onCerrarSesion: () => void;
 }
 
 /**
@@ -24,10 +23,10 @@ interface ModalInactividadProps {
  * quién se llama para cerrar y a dónde se va después, y eso se queda en cada
  * `vigilante-sesion.tsx`.
  *
- * El foco arranca en «Seguir trabajando»: ante un modal que aparece solo, la tecla
- * Intro por reflejo no debe cerrar la sesión de nadie.
+ * El foco arranca en «Seguir trabajando», el único botón: ante un modal que aparece
+ * solo, la tecla Intro por reflejo no debe cerrar la sesión de nadie.
  */
-export function ModalInactividad({ msRestantes, onSeguir, onCerrarSesion }: ModalInactividadProps) {
+export function ModalInactividad({ msRestantes, onSeguir }: ModalInactividadProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const abierto = msRestantes !== null;
 
@@ -56,7 +55,7 @@ export function ModalInactividad({ msRestantes, onSeguir, onCerrarSesion }: Moda
   return (
     <dialog
       ref={ref}
-      className="olo-modal"
+      className="olo-modal olo-modal--inactividad"
       aria-labelledby="olo-inactividad-titulo"
       aria-describedby="olo-inactividad-texto"
       // Escape equivale a «seguir trabajando»: es la opción que no interrumpe a nadie.
@@ -78,12 +77,8 @@ export function ModalInactividad({ msRestantes, onSeguir, onCerrarSesion }: Moda
         </h2>
         <p id="olo-inactividad-texto" className="olo-modal-texto">
           Tu sesión se cerrará en{' '}
-          <strong className="olo-modal-cuenta">{formatearCuentaAtras(msRestantes)}</strong> por
-          inactividad.
-        </p>
-        <p className="olo-modal-texto olo-modal-texto--apunte">
-          Cerramos las sesiones inactivas para que nadie más pueda usar tu cuenta si dejas el
-          equipo desatendido.
+          <strong className="olo-modal-cuenta">{formatearCuentaAtras(msRestantes)}</strong>{' '}
+          por inactividad
         </p>
 
         {/* La cuenta atrás para lectores de pantalla, separada de la visible. */}
@@ -92,9 +87,6 @@ export function ModalInactividad({ msRestantes, onSeguir, onCerrarSesion }: Moda
         </span>
 
         <div className="olo-modal-acciones">
-          <button type="button" className="olo-modal-btn" onClick={onCerrarSesion}>
-            Cerrar sesión
-          </button>
           <button
             type="button"
             className="olo-modal-btn olo-modal-btn--principal"
