@@ -60,6 +60,7 @@ services:
       - ./packages:/packages
       - ./sitio-web/src:/app/src
       - ./sitio-web/public:/app/public
+      - ./sitio-web/data_temporal:/app/data_temporal
       - ./sitio-web/next.config.mjs:/app/next.config.mjs:ro
       - ./sitio-web/postcss.config.mjs:/app/postcss.config.mjs:ro
 

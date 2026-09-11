@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
+import { registrarSubidaPendiente } from '../services/paginas.service';
+import { usePaginaEnEdicion } from '../lib/pagina-en-edicion';
 
 interface ImageUploaderFieldProps {
   value: string;
@@ -8,6 +10,7 @@ interface ImageUploaderFieldProps {
 }
 
 export function ImageUploaderField({ value, onChange }: ImageUploaderFieldProps) {
+  const slug = usePaginaEnEdicion();
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,6 +41,7 @@ export function ImageUploaderField({ value, onChange }: ImageUploaderFieldProps)
 
       const data = await res.json();
       onChange(data.url); // The API should return { url: '/uploads/filename.png' }
+      if (slug) void registrarSubidaPendiente(slug, data.url);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
     } finally {

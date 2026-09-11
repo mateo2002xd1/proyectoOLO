@@ -23,11 +23,14 @@ import {
   validarArchivoSubido,
   fueRechazada,
   esRutaDeSubidaSegura,
+  resolverCarpetaPorExtension,
   LIMITE_ABSOLUTO_BYTES,
 } from '@olo/upload-policy';
 import { verificarTokenDesdeRequest } from '@/shared/lib/auth-server';
 
-const DIRECTORIO_DE_SUBIDAS = path.join(process.cwd(), 'public', 'uploads');
+// Físicamente vive en `public/storage/uploads`; la URL pública sigue siendo
+// `/uploads/...` de siempre (el rewrite en next.config traduce una en la otra).
+const DIRECTORIO_DE_SUBIDAS = path.join(process.cwd(), 'public', 'storage', 'uploads');
 
 export async function POST(request: Request) {
   // 1. Autenticación con firma verificada, antes de tocar nada.
@@ -72,12 +75,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: resultado.error }, { status: resultado.status });
     }
 
-    await fs.mkdir(DIRECTORIO_DE_SUBIDAS, { recursive: true });
-    await fs.writeFile(path.join(DIRECTORIO_DE_SUBIDAS, resultado.nombreArchivo), datos);
+    // Subcarpeta por tipo (pdf, imagenes, word, excel, presentaciones) para que
+    // el listado de `uploads/` no quede todo mezclado en la raíz.
+    const carpeta = resolverCarpetaPorExtension(resultado.ext);
+    const directorioDestino = path.join(DIRECTORIO_DE_SUBIDAS, carpeta);
+    await fs.mkdir(directorioDestino, { recursive: true });
+    await fs.writeFile(path.join(directorioDestino, resultado.nombreArchivo), datos);
 
     return NextResponse.json({
       success: true,
-      url: `/uploads/${resultado.nombreArchivo}`,
+      url: `/uploads/${carpeta}/${resultado.nombreArchivo}`,
     });
   } catch (error) {
     console.error('[upload] Error al procesar archivo:', error);
@@ -100,7 +107,10 @@ export async function DELETE(request: Request) {
 
   try {
     const { url } = await request.json();
-    const rutaResuelta = path.resolve(process.cwd(), 'public', `.${url}`);
+    // `url` sigue trayendo el prefijo público `/uploads/...`; el archivo físico
+    // vive en `DIRECTORIO_DE_SUBIDAS` (storage/uploads), no en `public/uploads`.
+    const nombreArchivo = typeof url === 'string' ? url.replace(/^\/uploads\//, '') : '';
+    const rutaResuelta = path.join(DIRECTORIO_DE_SUBIDAS, nombreArchivo);
 
     if (!esRutaDeSubidaSegura(url, rutaResuelta, DIRECTORIO_DE_SUBIDAS, path.sep)) {
       return NextResponse.json({ error: 'Ruta de archivo inválida.' }, { status: 400 });

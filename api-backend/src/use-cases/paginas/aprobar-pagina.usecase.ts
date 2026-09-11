@@ -3,6 +3,7 @@ import { PaginaRepository } from '../../repositories/pagina.repository';
 import { emitirContenidoPublicado } from '../../domain-events/paginas/contenido-publicado.event';
 import type { Ambito } from '../../shared/ambito';
 import { respaldarArchivosAlPublicar } from '../../shared/storage/backup-uploads.service';
+import { limpiarSubidasPendientes } from './limpiar-subidas-pendientes.usecase';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const toUUID = (id: string) => (UUID_RE.test(id) ? id : null);
@@ -38,6 +39,9 @@ export const aprobarPagina = async (slug: string, userId: string, ambito: Ambito
   }, tx);
 
   await PaginaRepository.actualizarPagina(pagina, { versionPublicadaId: versionEnRevision.id }, tx);
+
+  // Los archivos que se subieron y se reemplazaron antes de publicar no los mira nadie más.
+  await limpiarSubidasPendientes({ paginaId: pagina.id, slug: pagina.slug, ambito, usuarioId: userId });
 
   // Hasta aquí la publicación es correcta en la base de datos, y aun así la página no
   // cambiaba: el sitio seguía sirviendo su copia cacheada y quien acababa de aprobar

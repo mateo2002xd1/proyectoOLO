@@ -19,6 +19,7 @@ import {
 } from '../use-cases/paginas/eliminar-seccion.usecase';
 import { adquirirBloqueo } from '../use-cases/paginas/adquirir-bloqueo.usecase';
 import { liberarBloqueo } from '../use-cases/paginas/liberar-bloqueo.usecase';
+import { registrarSubidaPendiente } from '../use-cases/paginas/registrar-subida-pendiente.usecase';
 import { AMBITO_HEADER, exigirAmbito, resolverAmbito } from '../shared/ambito';
 import { logAudit } from '../use-cases/auditoria/audit.usecase';
 import { datosDeAuditoria } from '../shared/auditoria-request';
@@ -298,6 +299,13 @@ export const PaginaController = {
       }
       next(err);
     }
+  },
+
+  async registrarSubida(req: Request, res: Response, next: NextFunction) {
+    try {
+      await registrarSubidaPendiente(req.params.slug as string, req.body.ruta, ambitoExigidoDe(req));
+      res.json({ registrada: true });
+    } catch (err) { next(err); }
   },
 
   async aprobar(req: Request, res: Response, next: NextFunction) {

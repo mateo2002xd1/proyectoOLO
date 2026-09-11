@@ -10,6 +10,7 @@ import {
   crearSeccionSchema,
   eliminarSeccionSchema,
   guardarBorradorSchema,
+  registrarSubidaSchema,
 } from '../validators/paginas.validators';
 import {
   requirePermission,
@@ -360,6 +361,33 @@ router.post(
   // qué forma espera el endpoint.
   validarCuerpo(guardarBorradorSchema),
   PaginaController.guardarBorrador
+);
+
+/**
+ * @openapi
+ * /api/paginas/{slug}/subidas:
+ *   post:
+ *     tags: [Páginas]
+ *     summary: Anotar un archivo subido desde el editor
+ *     description: |
+ *       Registra que el archivo se subió para esta página. Al publicarla, los
+ *       archivos anotados que ninguna versión usa se borran de `uploads/`.
+ *     parameters:
+ *       - $ref: '#/components/parameters/SlugEnRuta'
+ *       - $ref: '#/components/parameters/Ambito'
+ *     responses:
+ *       200: { description: Anotado }
+ *       400: { $ref: '#/components/responses/CuerpoInvalido' }
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
+ */
+router.post(
+  '/:slug/subidas',
+  // Sin `limitadorDeEscritura`: una subida que no queda anotada no se limpia al publicar.
+  requierePermisoPagina('puedeEditar'),
+  requierePermisoDeSeccion(),
+  validarCuerpo(registrarSubidaSchema),
+  PaginaController.registrarSubida
 );
 
 /**
