@@ -15,6 +15,7 @@ import { CustomSelect } from '@/shared/ui/molecules/custom-select';
 import { DatePicker } from '@/shared/ui/molecules/date-picker';
 import { Notification } from '@/shared/ui/molecules/notification';
 import { Alert, AlertTitle, AlertDescription, AlertActions } from '@/shared/ui/molecules/alert';
+import { Paginador } from '@/shared/ui/molecules/paginador';
 import { Switch } from '@/shared/ui/atoms/switch';
 
 /**
@@ -46,6 +47,8 @@ export default function UsuariosView() {
   // Additional Actions state
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [paginaUsuarios, setPaginaUsuarios] = useState(1);
+  const [itemsPorPaginaUsuarios, setItemsPorPaginaUsuarios] = useState(15);
 
   // Form state
   const [name, setName] = useState('');
@@ -214,6 +217,13 @@ export default function UsuariosView() {
   }
 
   // Determina el nombre del rol seleccionado para mostrar el aviso
+
+  const totalPaginasUsuarios = Math.max(1, Math.ceil(users.length / itemsPorPaginaUsuarios));
+  const paginaActualUsuarios = Math.min(paginaUsuarios, totalPaginasUsuarios);
+  const usuariosPaginados = users.slice(
+    (paginaActualUsuarios - 1) * itemsPorPaginaUsuarios,
+    paginaActualUsuarios * itemsPorPaginaUsuarios,
+  );
 
   return (
     <div className="p-6">
@@ -416,7 +426,7 @@ export default function UsuariosView() {
                   </td>
                 </tr>
               ) : (
-                users.map((user) => (
+                usuariosPaginados.map((user) => (
                   <tr key={user.id} className="block md:table-row hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
                     <td className="block md:table-cell px-6 py-3 md:py-4 text-sm font-medium text-zinc-900 dark:text-[#f6f6f6]">
                       <span className="block md:hidden text-xs font-semibold text-zinc-500 dark:text-[#94a3b8] uppercase tracking-wider mb-1">Nombre</span>
@@ -457,6 +467,20 @@ export default function UsuariosView() {
             </tbody>
           </table>
         </div>
+
+        <Paginador
+          pagina={paginaActualUsuarios}
+          totalPaginas={totalPaginasUsuarios}
+          onCambiarPagina={setPaginaUsuarios}
+          total={users.length}
+          porPagina={itemsPorPaginaUsuarios}
+          onCambiarPorPagina={(n) => {
+            setItemsPorPaginaUsuarios(n);
+            setPaginaUsuarios(1);
+          }}
+          etiqueta="usuarios"
+          className="px-6"
+        />
       </div>
 
       {showNotification && (

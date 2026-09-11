@@ -12,9 +12,8 @@ import { Button } from '@/shared/ui/atoms/button';
 import { Switch } from '@/shared/ui/atoms/switch';
 import { Notification } from '@/shared/ui/molecules/notification';
 import { Alert, AlertTitle, AlertDescription, AlertActions } from '@/shared/ui/molecules/alert';
+import { Paginador } from '@/shared/ui/molecules/paginador';
 import { ModalPermisos } from './modal-permisos';
-
-const ITEMS_POR_PAGINA = 5;
 
 function ModalNuevoEditor({
   open,
@@ -152,6 +151,7 @@ export default function RolesView() {
 
   const [busqueda, setBusqueda] = useState('');
   const [pagina, setPagina] = useState(1);
+  const [itemsPorPagina, setItemsPorPagina] = useState(15);
 
   const [modalRolAbierto, setModalRolAbierto] = useState(false);
   const [rolEditando, setRolEditando] = useState<Role | null>(null);
@@ -184,11 +184,11 @@ export default function RolesView() {
     );
   }, [roles, busqueda]);
 
-  const totalPaginas = Math.max(1, Math.ceil(rolesFiltrados.length / ITEMS_POR_PAGINA));
+  const totalPaginas = Math.max(1, Math.ceil(rolesFiltrados.length / itemsPorPagina));
   const paginaActual = Math.min(pagina, totalPaginas);
   const rolesPagina = rolesFiltrados.slice(
-    (paginaActual - 1) * ITEMS_POR_PAGINA,
-    paginaActual * ITEMS_POR_PAGINA
+    (paginaActual - 1) * itemsPorPagina,
+    paginaActual * itemsPorPagina
   );
 
   const notificar = (title: string, message: string, type: 'success' | 'error' = 'success') => {
@@ -389,26 +389,19 @@ export default function RolesView() {
           </tbody>
         </table>
 
-        {totalPaginas > 1 && (
-          <div className="flex items-center justify-between border-t border-zinc-100 px-5 py-3 dark:border-zinc-800">
-            <span className="text-xs text-zinc-500 dark:text-[#94a3b8]">
-              Mostrando {(paginaActual - 1) * ITEMS_POR_PAGINA + 1}-{Math.min(paginaActual * ITEMS_POR_PAGINA, rolesFiltrados.length)} de {rolesFiltrados.length} roles
-            </span>
-            <div className="flex items-center gap-1">
-              <button type="button" disabled={paginaActual === 1} onClick={() => setPagina((p) => p - 1)} className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 disabled:opacity-30 dark:hover:bg-zinc-800">
-                &lsaquo;
-              </button>
-              {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((n) => (
-                <button key={n} type="button" onClick={() => setPagina(n)} className={`min-w-[2rem] rounded-lg px-2 py-1 text-xs font-medium transition-colors ${n === paginaActual ? 'bg-brand-interactive text-white' : 'text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800'}`}>
-                  {n}
-                </button>
-              ))}
-              <button type="button" disabled={paginaActual === totalPaginas} onClick={() => setPagina((p) => p + 1)} className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 disabled:opacity-30 dark:hover:bg-zinc-800">
-                &rsaquo;
-              </button>
-            </div>
-          </div>
-        )}
+        <Paginador
+          pagina={paginaActual}
+          totalPaginas={totalPaginas}
+          onCambiarPagina={setPagina}
+          total={rolesFiltrados.length}
+          porPagina={itemsPorPagina}
+          onCambiarPorPagina={(n) => {
+            setItemsPorPagina(n);
+            setPagina(1);
+          }}
+          etiqueta="roles"
+          className="px-5"
+        />
       </div>
 
       <ModalNuevoEditor

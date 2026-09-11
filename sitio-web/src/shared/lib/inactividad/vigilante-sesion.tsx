@@ -62,9 +62,16 @@ export function VigilanteSesion({ activo = true, alExpirar }: VigilanteSesionPro
       // inactividad de todos modos. Navegar es lo importante: deja de haber panel.
     }
 
+    // Dónde estaba parado cuando expiró, para volver ahí al reingresar. El login ya
+    // sabe leer `redirect` (lo usa quien entra desde un enlace protegido); esto solo
+    // lo alimenta también para el cierre por inactividad. `pathname + search` y no
+    // la URL completa: un `origin` distinto no tendría sentido después de loguear.
+    const ruta = `${window.location.pathname}${window.location.search}`;
+    const destino = `/admin/login?motivo=${motivo}&redirect=${encodeURIComponent(ruta)}`;
+
     // `replace` y no `push`: el botón «atrás» no debe devolver a una pantalla del
     // panel que ya no tiene sesión detrás.
-    window.location.replace(`/admin/login?motivo=${motivo}`);
+    window.location.replace(destino);
   }, []);
 
   const expirar = useCallback(async () => {

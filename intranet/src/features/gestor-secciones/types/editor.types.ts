@@ -10,6 +10,7 @@
  */
 
 import type { ContextoDeEdicion } from "@/config/puck.config";
+import type { Rechazo } from "../components/aviso-rechazo";
 
 // ---------------------------------------------------------------------------
 // Estados editoriales (§3 / §10)
@@ -79,6 +80,8 @@ export interface PuckEditorWrapperProps {
   isSaving?: boolean;
   isSendingToReview?: boolean;
   versionActual?: PaginaVersion | null;
+  /** Presente solo si la versión que se está editando fue rechazada. */
+  rechazo?: Rechazo;
   /**
    * El resto de la sección, para pintarlo inerte alrededor de lo editable.
    * Lo resuelve el Server Component del editor; ver `configDeEdicion`.

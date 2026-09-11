@@ -4,29 +4,29 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/20/solid';
-import { buscarEnPanel, type DestinoPanel } from '../lib/indice-panel';
+import { buscarEnPanel } from '../lib/indice-panel';
 
 /**
- * Buscador del panel: una capa que tapa la pantalla entera con el campo al centro.
+ * Buscador del panel: una capa que tapa la pantalla entera con el campo al centro,
+ * en vertical y en horizontal cuando está vacío.
  *
  * Ocupa el 100 % del alto y del ancho —blanco en modo claro, azul oscuro
  * (`#0b1121`, el mismo `--background` que ya usa el panel) en oscuro— en vez de ser
  * una caja flotante: al buscar no hay nada del panel que mirar de fondo, y una capa
  * opaca evita el bizqueo entre lo de detrás y lo de delante.
  *
- * Sigue el patrón `combobox` de ARIA en vez de dejar los resultados en el orden de
- * tabulación: el foco no se mueve nunca del campo —se sigue escribiendo mientras se
- * recorre la lista con las flechas— y quien usa lector de pantalla oye el resultado
- * activo por `aria-activedescendant`. Aun así cada resultado es un enlace de verdad
- * (con `tabIndex={-1}`), para que el clic central y «copiar dirección» funcionen.
+ * La lista de resultados solo aparece con algo escrito —vacío no muestra el mapa
+ * completo del panel, que era ruido antes de buscar nada—; `buscarEnPanel` ya
+ * busca por título, descripción, grupo y sinónimos, así que cada resultado es una
+ * relación real con lo tecleado, no una coincidencia de texto literal. Cada uno es
+ * un enlace de verdad (para clic central y «copiar dirección»), y `Enter` lleva
+ * directo al primero sin necesidad de bajar el mouse hasta la lista.
  */
 export function BuscadorModal({ onClose }: { onClose?: () => void }) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
-  const listaRef = useRef<HTMLUListElement>(null);
 
   const [consulta, setConsulta] = useState('');
-  const [activo, setActivo] = useState(0);
 
   const resultados = useMemo(() => buscarEnPanel(consulta), [consulta]);
 
@@ -62,23 +62,14 @@ export function BuscadorModal({ onClose }: { onClose?: () => void }) {
     };
   }, []);
 
-  // Acompaña con el desplazamiento al resultado activo cuando se recorre con el
-  // teclado y la lista es más larga que su caja.
-  useEffect(() => {
-    listaRef.current
-      ?.querySelector('[data-activo="true"]')
-      ?.scrollIntoView({ block: 'nearest' });
-  }, [activo]);
-
   const irA = useCallback(
-    (destino: DestinoPanel | undefined) => {
-      if (destino) {
-        if (onClose) onClose();
-        if (destino.href.startsWith('http://') || destino.href.startsWith('https://')) {
-          window.location.href = destino.href;
-        } else {
-          router.push(destino.href);
-        }
+    (href: string | undefined) => {
+      if (!href) return;
+      if (onClose) onClose();
+      if (href.startsWith('http://') || href.startsWith('https://')) {
+        window.location.href = href;
+      } else {
+        router.push(href);
       }
     },
     [router, onClose]
@@ -88,30 +79,18 @@ export function BuscadorModal({ onClose }: { onClose?: () => void }) {
     if (evento.key === 'Escape') {
       evento.preventDefault();
       cerrar();
-      return;
-    }
-    if (resultados.length === 0) return;
-
-    if (evento.key === 'ArrowDown') {
-      evento.preventDefault();
-      setActivo((i) => (i + 1) % resultados.length);
-    } else if (evento.key === 'ArrowUp') {
-      evento.preventDefault();
-      setActivo((i) => (i - 1 + resultados.length) % resultados.length);
     } else if (evento.key === 'Enter') {
       evento.preventDefault();
-      irA(resultados[activo]);
+      irA(resultados[0]?.href);
     }
   };
-
-  const idActivo = resultados[activo] ? `buscador-opcion-${resultados[activo].id}` : undefined;
 
   return (
     <div
       role="dialog"
       aria-modal="true"
       aria-label="Buscar en el panel"
-      className="fixed inset-0 z-50 h-[100dvh] w-screen overflow-y-auto bg-white dark:bg-[#0b1121]"
+      className="fixed inset-0 z-50 flex h-[100dvh] w-screen items-center justify-center overflow-y-auto bg-white px-4 dark:bg-[#0b1121]"
     >
       {/* Se aparta del borde derecho para no caer debajo del conmutador de tema, que
           está fijo en `top-4 right-4` con un z-index mayor. */}
@@ -124,7 +103,7 @@ export function BuscadorModal({ onClose }: { onClose?: () => void }) {
         <XMarkIcon className="size-6" />
       </button>
 
-      <div className="mx-auto flex w-full max-w-2xl flex-col px-4 pt-20 pb-20 sm:pt-28">
+      <div className="mx-auto w-full max-w-2xl">
         <label htmlFor="buscador-panel" className="sr-only">
           Buscar en el panel
         </label>
@@ -135,66 +114,40 @@ export function BuscadorModal({ onClose }: { onClose?: () => void }) {
             ref={inputRef}
             id="buscador-panel"
             type="search"
-            role="combobox"
-            aria-expanded={resultados.length > 0}
-            aria-controls="buscador-resultados"
-            aria-activedescendant={idActivo}
-            aria-autocomplete="list"
             autoComplete="off"
             placeholder="Buscar en el panel…"
             value={consulta}
-            // La selección vuelve arriba con cada cambio de consulta: conservar el
-            // índice anterior dejaría marcado un resultado que ya no está en la lista.
-            onChange={(e) => {
-              setConsulta(e.target.value);
-              setActivo(0);
-            }}
+            onChange={(e) => setConsulta(e.target.value)}
             onKeyDown={alPulsarTecla}
-            className="h-16 w-full rounded-[16px] border border-zinc-200 bg-white pr-5 pl-14 text-lg text-zinc-950 shadow-sm transition-colors outline-none placeholder:text-zinc-400 focus:border-transparent focus:ring-2 focus:ring-[var(--color-brand-focus)] dark:border-[#1e293b] dark:bg-[#131b2f] dark:text-[#f6f6f6] dark:placeholder:text-[#94a3b8]"
+            // `type="search"` trae de fábrica una "x" para vaciar el campo (WebKit)
+            // o un ojo/borrador (Edge/IE): se apagan a mano, el campo ya tiene su
+            // propia forma de vaciarse (seleccionar y borrar, o Escape para cerrar).
+            className="h-16 w-full rounded-[16px] border border-zinc-200 bg-white pr-5 pl-14 text-lg text-zinc-950 shadow-sm transition-colors outline-none placeholder:text-zinc-400 focus:border-transparent focus:ring-2 focus:ring-[var(--color-brand-focus)] [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none [&::-ms-clear]:hidden [&::-ms-reveal]:hidden dark:border-[#1e293b] dark:bg-[#131b2f] dark:text-[#f6f6f6] dark:placeholder:text-[#94a3b8]"
           />
         </div>
 
         {/* El recuento se anuncia solo al cambiar; sin esto, quien no ve la lista no
             sabe si lo que escribe encuentra algo. */}
         <p aria-live="polite" className="sr-only">
-          {resultados.length === 0
-            ? 'Sin resultados'
-            : `${resultados.length} ${resultados.length === 1 ? 'resultado' : 'resultados'}`}
+          {consulta.trim() &&
+            (resultados.length === 0
+              ? 'Sin resultados'
+              : `${resultados.length} ${resultados.length === 1 ? 'resultado' : 'resultados'}`)}
         </p>
 
-        {resultados.length === 0 ? (
-          <p className="mt-8 text-center text-sm text-zinc-500 dark:text-[#94a3b8]">
-            No hay nada en el panel que coincida con «{consulta.trim()}».
-          </p>
-        ) : (
-          <ul
-            ref={listaRef}
-            id="buscador-resultados"
-            role="listbox"
-            aria-label="Resultados"
-            className="mt-6 max-h-[45vh] space-y-1 overflow-y-auto"
-          >
-            {resultados.map((destino, indice) => {
-              const seleccionado = indice === activo;
-              return (
-                <li
-                  key={destino.id}
-                  id={`buscador-opcion-${destino.id}`}
-                  role="option"
-                  aria-selected={seleccionado}
-                  data-activo={seleccionado}
-                  onMouseEnter={() => setActivo(indice)}
-                  className={`rounded-[16px] ${
-                    seleccionado ? 'bg-zinc-100 dark:bg-[#131b2f]' : ''
-                  }`}
-                >
+        {consulta.trim() &&
+          (resultados.length === 0 ? (
+            <p className="mt-6 text-center text-sm text-zinc-500 dark:text-[#94a3b8]">
+              No hay nada en el panel que coincida con «{consulta.trim()}».
+            </p>
+          ) : (
+            <ul aria-label="Resultados" className="mt-6 max-h-[45vh] space-y-1 overflow-y-auto">
+              {resultados.map((destino) => (
+                <li key={destino.id} className="rounded-[16px]">
                   <Link
                     href={destino.href}
-                    tabIndex={-1}
-                    onClick={() => {
-                      if (onClose) onClose();
-                    }}
-                    className="block px-4 py-3 no-underline"
+                    onClick={() => onClose?.()}
+                    className="block rounded-[16px] px-4 py-3 no-underline transition-colors hover:bg-zinc-100 dark:hover:bg-[#131b2f]"
                   >
                     <span className="block text-base font-medium text-zinc-950 dark:text-[#f6f6f6]">
                       {destino.titulo}
@@ -207,10 +160,9 @@ export function BuscadorModal({ onClose }: { onClose?: () => void }) {
                     </span>
                   </Link>
                 </li>
-              );
-            })}
-          </ul>
-        )}
+              ))}
+            </ul>
+          ))}
       </div>
     </div>
   );

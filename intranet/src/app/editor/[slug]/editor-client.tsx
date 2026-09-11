@@ -141,11 +141,16 @@ function EditorMounted({
     isSaving,
     isSendingToReview,
     estadoActual,
+    rechazo,
     error,
   } = useEditorActions({
     slug,
     initialVersionId: editable.versionId,
     initialEstado: editable.estado,
+    initialRechazo:
+      editable.estado === "rechazado"
+        ? { motivo: editable.motivoRechazo, numeroVersion: editable.numeroVersion }
+        : undefined,
   });
 
   const versionActual = {
@@ -196,6 +201,7 @@ function EditorMounted({
         onEnviarRevision={handleEnviarRevision}
         isSaving={isSaving}
         isSendingToReview={isSendingToReview}
+        rechazo={rechazo}
         versionActual={versionActual}
         contexto={contexto}
         candadoPerdidoPor={candadoPerdidoPor}

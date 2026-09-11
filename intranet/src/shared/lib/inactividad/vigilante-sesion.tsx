@@ -65,10 +65,16 @@ export function VigilanteSesion({ activo = true, alExpirar }: VigilanteSesionPro
       // inactividad de todos modos. Navegar es lo importante: deja de haber intranet.
     }
 
+    // Dónde estaba parado cuando expiró, para volver ahí al reingresar. `pathname +
+    // search` y no la URL completa: un `origin` distinto no tendría sentido después
+    // de loguear.
+    const ruta = `${window.location.pathname}${window.location.search}`;
+    const destino = `/login?motivo=${motivo}&redirect=${encodeURIComponent(ruta)}`;
+
     // `window.location` y no `router.push`: hace falta que el navegador descarte el
     // árbol de React entero, y `replace` evita que «atrás» devuelva a una pantalla
     // que ya no tiene sesión detrás.
-    window.location.replace(`/login?motivo=${motivo}`);
+    window.location.replace(destino);
   }, []);
 
   const expirar = useCallback(async () => {

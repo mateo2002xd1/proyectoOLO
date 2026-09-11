@@ -82,7 +82,12 @@ export async function middleware(request: NextRequest) {
 
   // Rutas protegidas (intranet)
   if (!isTokenValid) {
-    const response = NextResponse.redirect(new URL('/login', request.url));
+    // Con `redirect` para volver aquí después de loguear — mismo parámetro que usa
+    // el cierre por inactividad (`vigilante-sesion.tsx`), así que `LoginView` no
+    // necesita distinguir de dónde vino el redirect.
+    const destino = new URL('/login', request.url);
+    destino.searchParams.set('redirect', pathname + request.nextUrl.search);
+    const response = NextResponse.redirect(destino);
     if (token) {
       response.cookies.delete('token');
     }
