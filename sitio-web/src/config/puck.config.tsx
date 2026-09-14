@@ -28,6 +28,7 @@ import { Header } from '@/shared/lib/blocks/Header';
 import { Footer } from '@/shared/lib/blocks/Footer';
 import { IntranetTopbar } from '@/shared/lib/blocks/IntranetTopbar';
 import { IntranetHero } from '@/shared/lib/blocks/IntranetHero';
+import { ImportadorExcelBloque } from '@/shared/lib/blocks/ImportadorExcelBloque';
 import { defaultIdentidadVisual } from '@/features/identidad-visual/client';
 import { HeroBuscadorOcupaciones } from '@/features/sitio-web/buscador-ocupaciones';
 import { EditorjsWrapper } from '@/features/paginas/components/editorjs-wrapper';
@@ -113,6 +114,9 @@ const puckConfigBase: Config = {
     'Texto e imagen': {
       components: ['TextoRico', 'ImagenDestacada'],
     },
+    'Administración': {
+      components: ['ImportadorExcelBloque'],
+    },
     'Botones y enlaces': {
       components: ['BotonPersonalizado', 'SeccionBotonesIcono'],
     },
@@ -124,6 +128,18 @@ const puckConfigBase: Config = {
     },
   },
   components: {
+    ImportadorExcelBloque: {
+      label: 'Importador Excel',
+      fields: {
+        titulo: { type: 'text', label: 'Título del bloque' },
+        descripcion: { type: 'text', label: 'Descripción' }
+      },
+      defaultProps: {
+        titulo: 'Importar Programas Sobresalientes',
+        descripcion: 'Selecciona un archivo Excel .xlsx para procesarlo en memoria e importarlo al observatorio.',
+      },
+      render: (props: any) => <ImportadorExcelBloque {...props} />
+    },
     // Primitivos de maquetación compartidos (Flex / Space / SeccionPestanasLaterales)
     ...primitiveComponents,
     // Grid necesita el campo de imagen de esta app inyectado (su fondo sube
