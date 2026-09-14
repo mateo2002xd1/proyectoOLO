@@ -177,13 +177,13 @@ export function ModalOcupaciones({
         <header className="flex items-start gap-4 bg-[#001631] px-5 py-4 text-white sm:px-7 sm:py-5">
           <div className="min-w-0 flex-1">
             {antetitulo && (
-              <p className="text-[11px] font-semibold tracking-[0.14em] text-white/60 uppercase">
+              <p className="text-[11px] tracking-[0.14em] text-white/60 uppercase">
                 {antetitulo}
               </p>
             )}
             <h2
               id="modal-ocupaciones-titulo"
-              className="mt-1 text-base leading-snug font-semibold text-balance sm:text-lg"
+              className="mt-1 text-base leading-snug text-balance sm:text-lg"
             >
               {titulo}
             </h2>

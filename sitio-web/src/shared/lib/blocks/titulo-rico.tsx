@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 interface TituloRicoProps {
   children: ReactNode;
@@ -7,6 +7,7 @@ interface TituloRicoProps {
   /** Nivel del encabezado. Los títulos de sección del cuerpo son de nivel 2; el
    *  único `<h1>` de una página (su encabezado principal) usa nivel 1. */
   nivel?: 1 | 2 | 3 | 4;
+  style?: CSSProperties;
 }
 
 /**
@@ -27,9 +28,9 @@ interface TituloRicoProps {
  * Las clases del bloque se conservan tal cual, así que el aspecto no cambia:
  * el estilo de estos títulos siempre vino de la clase, no de la etiqueta.
  */
-export function TituloRico({ children, className, nivel = 2 }: TituloRicoProps) {
+export function TituloRico({ children, className, nivel = 2, style }: TituloRicoProps) {
   return (
-    <div className={`olo-titulo-rico ${className}`} role="heading" aria-level={nivel}>
+    <div className={`olo-titulo-rico ${className}`} role="heading" aria-level={nivel} style={style}>
       {children}
     </div>
   );

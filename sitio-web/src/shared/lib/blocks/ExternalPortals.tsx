@@ -20,6 +20,8 @@ interface ExternalPortalsProps {
   /** Campo `richtext` de Puck: llega ya convertido en nodos. */
   title?: ReactNode;
   subtitle?: ReactNode;
+  colorTitle?: string;
+  colorSubtitle?: string;
   portals?: PortalItem[];
 }
 
@@ -77,8 +79,8 @@ const DEFAULT_PORTALS: PortalItem[] = [
     description:
       (
         <>
-          <strong>Consultar información pública</strong> y datos abiertos del
-          observatorio, con rendición de cuentas al día.
+          <strong>Consultar información pública</strong> y datos abiertos del observatorio,
+          con rendición de cuentas al día.
         </>
       ),
     href: '#',
@@ -88,15 +90,9 @@ const DEFAULT_PORTALS: PortalItem[] = [
 ];
 
 /**
- * Los tres canales de atención a la ciudadanía, como tarjetas enlazadas.
+ * Rejilla de portales externos.
  *
- * Cada tarjeta es un único `<a>` que envuelve todo su contenido: se puede pulsar
- * en cualquier punto, no solo sobre un texto o una flecha. Antes llevaba además
- * una flecha decorativa en una esquina, que sugería que *ese* era el botón —
- * quitarla deja claro que la tarjeta entera es el destino.
- *
- * El fondo son dos capas: el degradado, que da el color y garantiza el contraste
- * del texto blanco, y encima la ilustración al 60% de opacidad. La ilustración va
+ * Cada tarjeta lleva un degradado y una ilustración de fondo opcional. La imagen va
  * como `background-image` en un div propio y no como `<img>` porque es decorativa
  * —lo que dice la tarjeta ya está en el título y la descripción—, así un lector de
  * pantalla la salta en vez de anunciar una imagen sin información (SC 1.1.1).
@@ -109,14 +105,30 @@ export function ExternalPortals({
     </>
   ),
   subtitle,
+  colorTitle,
+  colorSubtitle,
   portals = DEFAULT_PORTALS,
 }: ExternalPortalsProps) {
   return (
     <section className="olo-portals" id="external-portals" aria-label="Portales externos" data-block-id={block.id}>
       <div className="olo-portals-inner">
         <div className="olo-portals-header">
-          {title && <TituloRico className="olo-portals-title">{title}</TituloRico>}
-          {subtitle && <p className="olo-portals-subtitle">{subtitle}</p>}
+          {title && (
+            <TituloRico
+              className="olo-portals-title"
+              style={colorTitle ? { color: colorTitle } : undefined}
+            >
+              {title}
+            </TituloRico>
+          )}
+          {subtitle && (
+            <p
+              className="olo-portals-subtitle"
+              style={colorSubtitle ? { color: colorSubtitle } : undefined}
+            >
+              {subtitle}
+            </p>
+          )}
         </div>
 
         <div className="olo-portals-grid">
