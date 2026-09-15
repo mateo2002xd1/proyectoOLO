@@ -143,7 +143,10 @@ export function ModalPermisos({
   return createPortal(
     <div
       className="fixed inset-0 z-[60] flex items-center justify-center bg-[#0f172a]/50 p-3 backdrop-blur-sm sm:p-6"
-      onClick={(e) => {
+      // Usamos `onMouseDown` y no `onClick`: si el usuario selecciona texto dentro
+      // del panel y suelta el ratón fuera, el clic se contabiliza en el fondo y
+      // el panel se cerraba en mitad de la selección.
+      onMouseDown={(e) => {
         if (e.target === e.currentTarget && !guardando) onCerrar();
       }}
     >

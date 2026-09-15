@@ -81,8 +81,11 @@ export function DetalleRegistro({
       ref={dialogo}
       onClose={onCerrar}
       // Clic en el fondo = cerrar. El `<dialog>` recibe el clic del backdrop como
-      // propio, así que se compara el objetivo con el propio diálogo.
-      onClick={(e) => {
+      // propio, así que se compara el objetivo con el propio diálogo. Usamos
+      // `onMouseDown` y no `onClick`: si el usuario selecciona texto dentro del
+      // diálogo y suelta el ratón fuera, el clic se contabiliza en el fondo y el
+      // diálogo se cerraba en mitad de la selección.
+      onMouseDown={(e) => {
         if (e.target === dialogo.current) onCerrar();
       }}
       className="m-auto w-full max-w-2xl rounded-xl border border-zinc-200 bg-white p-0 text-zinc-900 backdrop:bg-[#0f172a]/50 backdrop:backdrop-blur-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:text-[#f6f6f6]"

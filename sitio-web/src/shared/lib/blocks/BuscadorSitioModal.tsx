@@ -125,7 +125,10 @@ export function BuscadorSitioModal({
       aria-modal="true"
       aria-label="Buscar en el sitio web"
       className="fixed inset-0 z-50 h-[100dvh] w-screen overflow-y-auto bg-[#001631]/95 backdrop-blur-md"
-      onClick={handleCerrar}
+      // Usamos `onMouseDown` y no `onClick`: si el usuario selecciona texto en el
+      // buscador y suelta el ratón fuera, el clic se contabiliza en el fondo y
+      // el buscador se cerraba en mitad de la selección.
+      onMouseDown={handleCerrar}
     >
       <button
         type="button"
@@ -138,7 +141,7 @@ export function BuscadorSitioModal({
 
       <div
         className="mx-auto flex w-full max-w-2xl flex-col px-4 pt-20 pb-20 sm:pt-28"
-        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
       >
         <label htmlFor="buscador-sitio" className="sr-only">
           Buscar en el sitio web

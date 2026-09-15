@@ -107,11 +107,14 @@ export function VisorDocumento({
       {isFullscreen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
-          onClick={() => setIsFullscreen(false)}
+          // Usamos `onMouseDown` y no `onClick`: si el usuario selecciona texto
+          // dentro del visor y suelta el ratón fuera, el clic se contabiliza en
+          // el fondo y el visor se cerraba en mitad de la selección.
+          onMouseDown={() => setIsFullscreen(false)}
         >
           <div
             className="relative flex h-[94vh] w-full max-w-6xl flex-col rounded-2xl bg-white dark:bg-[#131b2f] shadow-2xl overflow-hidden border border-transparent dark:border-[#1e293b]"
-            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-gray-200 dark:border-[#1e293b] px-6 py-4 bg-gray-50 dark:bg-[#0b1121]">
               <div>

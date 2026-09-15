@@ -92,19 +92,17 @@ function SidebarGroup({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-base font-semibold transition [&>svg]:size-5 [&>svg]:shrink-0 ${
-          isActive
-            ? 'bg-zinc-100 text-zinc-900 dark:bg-brand-interactive/20 dark:text-brand-interactive [&>svg]:text-zinc-900 dark:[&>svg]:text-brand-interactive'
-            : 'text-zinc-600 hover:bg-[#001631]/10 hover:text-zinc-900 dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive [&>svg]:text-zinc-500 dark:[&>svg]:text-slate-400'
-        }`}
+        className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-base font-semibold transition [&>svg]:size-5 [&>svg]:shrink-0 ${isActive
+          ? 'bg-zinc-100 text-zinc-900 dark:bg-brand-interactive/20 dark:text-brand-interactive [&>svg]:text-zinc-900 dark:[&>svg]:text-brand-interactive'
+          : 'text-zinc-600 hover:bg-[#001631]/10 hover:text-zinc-900 dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive [&>svg]:text-zinc-500 dark:[&>svg]:text-slate-400'
+          }`}
         aria-expanded={open}
       >
         <Icon className="shrink-0" />
         <span className="flex-1 truncate text-left">{label}</span>
         <ChevronDownIcon
-          className={`size-4 shrink-0 text-zinc-400 transition-transform duration-200 ${
-            open ? 'rotate-180' : ''
-          }`}
+          className={`size-4 shrink-0 text-zinc-400 transition-transform duration-200 ${open ? 'rotate-180' : ''
+            }`}
         />
       </button>
 
@@ -193,7 +191,10 @@ function ModalAlertas({
   return createPortal(
     <div
       className="fixed inset-0 z-[60] flex items-center justify-center bg-[#0f172a]/50 p-3 backdrop-blur-sm sm:p-6"
-      onClick={(e) => {
+      // Usamos `onMouseDown` y no `onClick`: si el usuario selecciona texto dentro
+      // del panel y suelta el ratón fuera, el clic se contabiliza en el fondo y
+      // el panel se cerraba en mitad de la selección.
+      onMouseDown={(e) => {
         if (e.target === e.currentTarget) onCerrar();
       }}
     >
@@ -421,14 +422,14 @@ export function PanelGeneralLayout({
                       <SidebarItem
                         href="/admin/users"
                         current={pathname.startsWith('/admin/users')}
-                        className="pl-9"
+                        className="pl-11"
                       >
                         <SidebarLabel>Usuarios</SidebarLabel>
                       </SidebarItem>
                       <SidebarItem
                         href="/admin/roles"
                         current={pathname.startsWith('/admin/roles')}
-                        className="pl-9"
+                        className="pl-11"
                       >
                         <SidebarLabel>Roles y Permisos</SidebarLabel>
                       </SidebarItem>

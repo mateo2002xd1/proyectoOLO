@@ -119,9 +119,12 @@ export function NuevaSeccionButton() {
           role="dialog"
           aria-modal="true"
           aria-labelledby="nueva-seccion-titulo"
-          // Cerrar al pulsar fuera, pero solo si el clic empezó y acabó en el fondo:
+          // Cerrar al pulsar fuera, pero solo si el clic empieza en el fondo:
           // arrastrar desde dentro del diálogo hasta soltarlo fuera no debe cerrarlo.
-          onClick={(evento) => {
+          // (usamos `onMouseDown`, no `onClick`: si el `mousedown` empieza dentro
+          // del diálogo, el `click` resultante puede terminar teniendo como
+          // `target` el propio fondo aunque el arrastre haya salido de él).
+          onMouseDown={(evento) => {
             if (evento.target === evento.currentTarget) cerrar();
           }}
           onKeyDown={(evento) => {
