@@ -3,6 +3,7 @@ import { Footer } from '@/shared/lib/blocks/Footer';
 import {
   obtenerPlantilla,
   PaginasFabSpeedDial,
+  RastreadorVisitas,
 } from '@/features/paginas';
 import { RouteTransition } from '@/shared/ui/atoms/RouteTransition';
 import { ResaltadorBusquedaClient } from '@/shared/ui/atoms/ResaltadorBusquedaClient';
@@ -35,6 +36,7 @@ export default async function PublicLayout({ children }: { children: React.React
 
       <PaginasFabSpeedDial />
       <ResaltadorBusquedaClient />
+      <RastreadorVisitas ambito="sitio" />
     </div>
   );
 }
