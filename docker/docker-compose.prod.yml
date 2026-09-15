@@ -121,6 +121,10 @@ services:
         # NEXT_PUBLIC_* en el bundle del navegador al compilar: definirla despues no
         # cambia nada de lo que ya se compilo.
         NEXT_PUBLIC_API_URL: https://${SITIO_WEB_DOMAIN}/api-backend
+        # El botón de Intranet del header lo resuelve el NAVEGADOR: sin esto, el
+        # fallback embebido en el bundle se queda en localhost:3001 y el botón no
+        # lleva a ningún lado en producción.
+        NEXT_PUBLIC_INTRANET_URL: https://${INTRANET_DOMAIN}
     container_name: sitio-web
     restart: unless-stopped
     env_file:
@@ -129,6 +133,7 @@ services:
       # Server-side, por la red interna: aqui no pasa por nginx y no lleva prefijo.
       BACKEND_URL: http://api-backend:4000
       NEXT_PUBLIC_API_URL: https://${SITIO_WEB_DOMAIN}/api-backend
+      NEXT_PUBLIC_INTRANET_URL: https://${INTRANET_DOMAIN}
       JWT_SECRET: ${JWT_SECRET}
       # El mismo valor que en api-backend: es lo que autentica POST /api/revalidar.
       REVALIDAR_SECRET: ${REVALIDAR_SECRET}

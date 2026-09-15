@@ -123,6 +123,7 @@ services:
         # NEXT_PUBLIC_* en el bundle del navegador al compilar: definirla despues no
         # cambia nada de lo que ya se compilo.
         NEXT_PUBLIC_API_URL: http://localhost:4000
+        NEXT_PUBLIC_INTRANET_URL: http://localhost:3001
     container_name: sitio-web
     restart: unless-stopped
     ports:
@@ -133,6 +134,7 @@ services:
       # Server-side (Next dentro del contenedor): aqui si vale el nombre de servicio.
       BACKEND_URL: http://api-backend:4000
       NEXT_PUBLIC_API_URL: http://localhost:4000
+      NEXT_PUBLIC_INTRANET_URL: http://localhost:3001
       JWT_SECRET: ${JWT_SECRET}
       # El mismo valor que en api-backend: es lo que autentica POST /api/revalidar.
       REVALIDAR_SECRET: ${REVALIDAR_SECRET}

@@ -41,3 +41,36 @@ export async function verificarBloqueo(slug: string, ambito?: 'sitio' | 'intrane
   const { data } = await api.get<{ bloqueadoPor: any | null }>(`/api/paginas/${slug}/bloqueo`, { headers });
   return data;
 }
+
+/**
+ * Analiza cuántas versiones archivadas se eliminarían y cuántos bytes se liberarían según los filtros.
+ */
+export async function analizarDepuracion(filtros: import('../types').FiltrosDepuracion): Promise<import('../types').AnalisisDepuracionDTO> {
+  const params: Record<string, any> = {
+    fechaCorte: filtros.fechaCorte,
+    conservarUltimoRespaldo: filtros.conservarUltimoRespaldo !== false,
+  };
+  if (filtros.ambito) params.ambito = filtros.ambito;
+  if (filtros.paginaId) params.paginaId = filtros.paginaId;
+
+  const { data } = await api.get<import('../types').AnalisisDepuracionDTO>('/api/paginas/respaldos/analizar-depuracion', { params });
+  return data;
+}
+
+/**
+ * Ejecuta la depuración masiva de versiones antiguas archivadas.
+ */
+export async function ejecutarDepuracion(filtros: import('../types').FiltrosDepuracion): Promise<import('../types').ResultadoDepuracionDTO> {
+  const headers = filtros.ambito ? { 'X-Ambito': filtros.ambito } : {};
+  const { data } = await api.post<import('../types').ResultadoDepuracionDTO>(
+    '/api/paginas/respaldos/depurar',
+    {
+      ambito: filtros.ambito,
+      paginaId: filtros.paginaId,
+      fechaCorte: filtros.fechaCorte,
+      conservarUltimoRespaldo: filtros.conservarUltimoRespaldo !== false,
+    },
+    { headers }
+  );
+  return data;
+}

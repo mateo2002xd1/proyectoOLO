@@ -10,6 +10,8 @@ import { listarEnRevision } from '../use-cases/paginas/listar-en-revision.usecas
 import { listarPaginasPublicadas } from '../use-cases/paginas/listar-publicadas.usecase';
 import { registrarVisita } from '../use-cases/paginas/registrar-visita.usecase';
 import { listarRespaldos } from '../use-cases/paginas/listar-respaldos.usecase';
+import { analizarDepuracionVersiones } from '../use-cases/paginas/analizar-depuracion-versiones.usecase';
+import { depurarVersiones } from '../use-cases/paginas/depurar-versiones.usecase';
 import { restaurarVersionAnterior } from '../use-cases/paginas/restaurar-version-anterior.usecase';
 import { eliminarVersion } from '../use-cases/paginas/eliminar-version.usecase';
 import { BloqueoEdicionRepository } from '../repositories/bloqueo-edicion.repository';
@@ -439,6 +441,45 @@ export const PaginaController = {
         req.user?.id,
         ambito,
         criterio,
+        datosDeAuditoria(req)
+      );
+      res.json(resultado);
+    } catch (err) { next(err); }
+  },
+
+  async analizarDepuracion(req: Request, res: Response, next: NextFunction) {
+    try {
+      const ambitoParam = (req.query.ambito as string) || req.header(AMBITO_HEADER);
+      const ambito = ambitoParam === 'intranet' || ambitoParam === 'sitio' ? ambitoParam : undefined;
+      const paginaId = typeof req.query.paginaId === 'string' && req.query.paginaId ? req.query.paginaId : undefined;
+      const fechaCorte = req.query.fechaCorte as string;
+      const conservarUltimoRespaldo = req.query.conservarUltimoRespaldo !== 'false';
+
+      const analisis = await analizarDepuracionVersiones({
+        ambito,
+        paginaId,
+        fechaCorte,
+        conservarUltimoRespaldo,
+      });
+      res.json(analisis);
+    } catch (err) { next(err); }
+  },
+
+  async depurarVersiones(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { ambito: ambitoBody, paginaId, fechaCorte, conservarUltimoRespaldo } = req.body;
+      const ambitoHeader = req.header(AMBITO_HEADER);
+      const ambito = (ambitoBody || ambitoHeader) === 'intranet' || (ambitoBody || ambitoHeader) === 'sitio'
+        ? (ambitoBody || ambitoHeader)
+        : undefined;
+
+      const resultado = await depurarVersiones(
+        {
+          ambito,
+          paginaId: typeof paginaId === 'string' && paginaId ? paginaId : undefined,
+          fechaCorte,
+          conservarUltimoRespaldo: conservarUltimoRespaldo !== false,
+        },
         datosDeAuditoria(req)
       );
       res.json(resultado);

@@ -23,6 +23,7 @@ import auditRoutes from './routes/audit.routes';
 import securityQuestionRoutes from './routes/securityQuestion.routes';
 import paginaRoutes from './routes/pagina.routes';
 import jobRoutes from './routes/job.routes';
+import observatorioRoutes from './routes/observatorio.routes';
 
 const app = express();
 
@@ -128,6 +129,7 @@ app.use('/api/security-questions', securityQuestionRoutes);
 app.use('/api/paginas', paginaRoutes);
 app.use('/api/audit-logs', auditRoutes);
 app.use('/api/jobs', jobRoutes);
+app.use('/api/observatorio', observatorioRoutes);
 // El borrado de adjuntos vivía aparte, en `/api/attachments/:id`, sin el contenido al
 // que pertenecen en la ruta: no había padre contra el que comprobar nada. Ahora cuelga
 // de este mismo router, que sí lo recibe por `mergeParams`.

@@ -239,7 +239,7 @@ const CONTENIDO_INICIO = {
 
 const publicarInicio = async (): Promise<void> => {
   await guardarBorrador(SLUG, CONTENIDO_INICIO, '', AMBITO);
-  await enviarARevision(SLUG, AMBITO);
+  await enviarARevision(SLUG, '', AMBITO);
   await aprobarPagina(SLUG, '', AMBITO);
 
   const guardada = await PaginaRepository.findBySlug(SLUG, AMBITO);

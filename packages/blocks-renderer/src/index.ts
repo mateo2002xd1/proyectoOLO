@@ -53,6 +53,7 @@ export type {
 export {
   buscarElementoPorTexto,
   aplicarDestello,
+  activarPestanaDeElemento,
   desplazarAElemento,
   resaltarCoincidenciaTexto,
 } from './busqueda/busqueda-scroll';

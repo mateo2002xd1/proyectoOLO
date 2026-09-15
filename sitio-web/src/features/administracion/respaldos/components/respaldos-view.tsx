@@ -1,11 +1,12 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Eye } from 'lucide-react';
+import { Eye, Trash2 } from 'lucide-react';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
 import { DatePicker } from '@/shared/ui/molecules/date-picker';
 import { useRespaldos } from '../hooks/use-respaldos';
 import { VistaPreviaVersion } from './vista-previa-version';
+import { ModalDepurarVersiones } from './modal-depurar-versiones';
 import type { RegistroRespaldo } from '../types';
 
 const fecha = (iso: string) => new Date(iso).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' });
@@ -39,6 +40,7 @@ const FILTROS_VACIOS = { busqueda: '', ambito: '', editor: '', publicador: '', d
 export function RespaldosView() {
   const { registros, isLoading, isRefreshing, error, recargar } = useRespaldos();
   const [seleccionado, setSeleccionado] = useState<RegistroRespaldo | null>(null);
+  const [modalDepurarAbierto, setModalDepurarAbierto] = useState(false);
   const [filtros, setFiltros] = useState(FILTROS_VACIOS);
 
   const cambiarFiltro = (campo: keyof typeof FILTROS_VACIOS, valor: string) =>
@@ -79,18 +81,28 @@ export function RespaldosView() {
 
   return (
     <div className="p-6 lg:p-8">
-      <div className="mb-6 flex items-start justify-between">
+      <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h1 className="admin-header text-zinc-950 dark:text-[#f6f6f6]">Respaldos</h1>
           <p className="mt-1 text-sm text-zinc-500 max-w-2xl">
             Historial de publicaciones con versión anterior archivada: páginas con respaldo disponible para consultar y restaurar.
           </p>
         </div>
-        {isRefreshing && (
-          <span className="text-xs font-medium text-brand-interactive animate-pulse self-center">
-            Actualizando respaldos…
-          </span>
-        )}
+        <div className="flex items-center gap-3 shrink-0">
+          {isRefreshing && (
+            <span className="text-xs font-medium text-brand-interactive animate-pulse">
+              Actualizando respaldos…
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={() => setModalDepurarAbierto(true)}
+            className="flex h-11 shrink-0 items-center gap-2 rounded-[16px] bg-red-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 active:bg-red-800"
+          >
+            <Trash2 size={16} />
+            Depurar versiones antiguas
+          </button>
+        </div>
       </div>
 
       {!isLoading && registrosRestaurables.length > 0 && (
@@ -237,6 +249,16 @@ export function RespaldosView() {
         registro={seleccionado}
         onCerrar={() => setSeleccionado(null)}
         onRestaurado={recargar}
+      />
+
+      <ModalDepurarVersiones
+        abierto={modalDepurarAbierto}
+        registros={registros}
+        onCerrar={() => setModalDepurarAbierto(false)}
+        onExito={() => {
+          setModalDepurarAbierto(false);
+          recargar();
+        }}
       />
     </div>
   );

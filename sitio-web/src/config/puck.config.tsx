@@ -28,11 +28,13 @@ import { Header } from '@/shared/lib/blocks/Header';
 import { Footer } from '@/shared/lib/blocks/Footer';
 import { IntranetTopbar } from '@/shared/lib/blocks/IntranetTopbar';
 import { IntranetHero } from '@/shared/lib/blocks/IntranetHero';
+import { ImportadorExcelBloque } from '@/shared/lib/blocks/ImportadorExcelBloque';
 import { defaultIdentidadVisual } from '@/features/identidad-visual/client';
 import { HeroBuscadorOcupaciones } from '@/features/sitio-web/buscador-ocupaciones';
 import { EditorjsWrapper } from '@/features/paginas/components/editorjs-wrapper';
 import { ImageUploaderField } from '@/features/paginas/components/image-uploader-field';
 import { ArchivoUploaderField } from '@/features/paginas/components/archivo-uploader-field';
+import { ImportadorExcelUploaderField } from '@/features/paginas/components/importador-excel-uploader-field';
 import { Render, type Config, type Data } from '@puckeditor/core';
 import type { OutputData } from '@editorjs/editorjs';
 
@@ -113,6 +115,9 @@ const puckConfigBase: Config = {
     'Texto e imagen': {
       components: ['TextoRico', 'ImagenDestacada'],
     },
+    'Administración': {
+      components: ['ImportadorExcelBloque'],
+    },
     'Botones y enlaces': {
       components: ['BotonPersonalizado', 'SeccionBotonesIcono'],
     },
@@ -124,6 +129,21 @@ const puckConfigBase: Config = {
     },
   },
   components: {
+    ImportadorExcelBloque: {
+      label: 'Importador Excel',
+      fields: {
+        estadoImportacion: {
+          type: 'custom',
+          label: 'Importar Archivo Excel',
+          render: ({ value, onChange }) => (
+            <ImportadorExcelUploaderField value={value} onChange={onChange} />
+          ),
+        },
+      },
+      render: (props: any) => (
+        <ImportadorExcelBloque {...props} block={{ id: props.id || 'importador-excel' }} />
+      ),
+    },
     // Primitivos de maquetación compartidos (Flex / Space / SeccionPestanasLaterales)
     ...primitiveComponents,
     // Grid necesita el campo de imagen de esta app inyectado (su fondo sube
@@ -526,6 +546,15 @@ const puckConfigBase: Config = {
           ],
         },
         titulo: { type: 'richtext' as const, label: 'Título', contentEditable: true },
+        mostrarSubtitulo: {
+          type: 'radio',
+          label: 'Mostrar subtítulo',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        subtitulo: { type: 'richtext' as const, label: 'Subtítulo', contentEditable: true },
         publicaciones: {
           type: 'array' as const,
           label: 'Publicaciones',
@@ -555,6 +584,8 @@ const puckConfigBase: Config = {
         id: 'publicaciones-1',
         mostrarTitulo: true,
         titulo: '<p><strong>Ultimas</strong> publicaciones</p>',
+        mostrarSubtitulo: false,
+        subtitulo: '',
         publicaciones: [],
         porPagina: 4,
       },
@@ -562,11 +593,15 @@ const puckConfigBase: Config = {
         id,
         titulo,
         mostrarTitulo,
+        subtitulo,
+        mostrarSubtitulo,
         publicaciones,
         porPagina,
       }: BlockRender<{
         titulo?: ReactNode;
         mostrarTitulo?: boolean;
+        subtitulo?: ReactNode;
+        mostrarSubtitulo?: boolean;
         publicaciones?: { titulo?: ReactNode; pdfUrl?: string; etiqueta?: ReactNode; mes?: ReactNode; dia?: ReactNode }[];
         porPagina?: number;
       }>) => (
@@ -574,6 +609,8 @@ const puckConfigBase: Config = {
           block={{ id: id || 'publicaciones-preview' }}
           titulo={titulo}
           mostrarTitulo={mostrarTitulo}
+          subtitulo={subtitulo}
+          mostrarSubtitulo={mostrarSubtitulo}
           publicaciones={publicaciones}
           porPagina={porPagina}
         />
@@ -826,6 +863,15 @@ const puckConfigBase: Config = {
           ],
         },
         titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+        mostrarSubtitulo: {
+          type: 'radio',
+          label: 'Mostrar subtítulo',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        subtitulo: { type: 'richtext', label: 'Subtítulo', contentEditable: true },
         contenido: { type: 'richtext', label: 'Contenido', contentEditable: true },
         fondo: campoFondo,
         colorTexto: campoColor('Color del texto (opcional)'),
@@ -841,6 +887,8 @@ const puckConfigBase: Config = {
       defaultProps: {
         mostrarTitulo: true,
         titulo: '¿Qué es?',
+        mostrarSubtitulo: false,
+        subtitulo: '',
         contenido: '<p>Escribe aquí el contenido de la sección.</p>',
         fondo: 'gris',
         colorTexto: '',
@@ -860,6 +908,15 @@ const puckConfigBase: Config = {
           ],
         },
         titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+        mostrarSubtitulo: {
+          type: 'radio',
+          label: 'Mostrar subtítulo',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        subtitulo: { type: 'richtext', label: 'Subtítulo', contentEditable: true },
         imagenSrc: campoImagen('Imagen'),
         imagenAlt: { type: 'text', label: 'Texto alternativo' },
         ancho: {
@@ -893,6 +950,8 @@ const puckConfigBase: Config = {
       defaultProps: {
         mostrarTitulo: true,
         titulo: '',
+        mostrarSubtitulo: false,
+        subtitulo: '',
         imagenSrc: '',
         imagenAlt: '',
         ancho: 'completo',
@@ -997,6 +1056,14 @@ const puckConfigBase: Config = {
             { label: 'Derecha', value: 'derecha' },
           ],
         },
+        mostrarSubtitulo: {
+          type: 'radio',
+          label: 'Mostrar subtítulo',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
         subtitulo: { type: 'textarea', label: 'Descripción / Subtítulo (opcional)' },
         columnas: {
           type: 'radio',
@@ -1021,6 +1088,7 @@ const puckConfigBase: Config = {
         mostrarTitulo: true,
         titulo: '',
         alineacionTitulo: 'centro',
+        mostrarSubtitulo: true,
         subtitulo: '',
         columnas: 3,
         items: [],
@@ -1096,6 +1164,7 @@ const BLOQUES_PAGINA_SITIO_DEFECTO: string[] = [
   'SeccionPestanasLaterales',
   'BotonPersonalizado',
   'SeccionBotonesIcono',
+  'ImportadorExcelBloque',
 ];
 
 const COMPONENTES_POR_SLUG: Record<string, string[]> = {
@@ -1118,6 +1187,7 @@ const COMPONENTES_POR_SLUG: Record<string, string[]> = {
     'SeccionPestanasLaterales',
     'BotonPersonalizado',
     'SeccionBotonesIcono',
+    'ImportadorExcelBloque',
   ],
   'politica-de-privacidad': ['PoliticaPrivacidadEncabezado', 'VisorDocumentosNormativos', 'CanalesAtencion'],
 };

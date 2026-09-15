@@ -91,7 +91,7 @@ const sembrar = async (): Promise<void> => {
   await sequelize.authenticate();
 
   await guardarBorrador(SLUG, CONTENIDO, '', AMBITO);
-  await enviarARevision(SLUG, AMBITO);
+  await enviarARevision(SLUG, '', AMBITO);
   await aprobarPagina(SLUG, '', AMBITO);
 
   const pagina = await PaginaRepository.findBySlug(SLUG, AMBITO);

@@ -2,12 +2,19 @@
 
 // Components
 export { RespaldosView } from './components/respaldos-view';
+export { ModalDepurarVersiones } from './components/modal-depurar-versiones';
 
 // Hooks
 export { useRespaldos } from './hooks/use-respaldos';
 
 // Services
-export { listarRespaldos } from './services/respaldos.service';
+export { listarRespaldos, analizarDepuracion, ejecutarDepuracion } from './services/respaldos.service';
 
 // Types
-export type { RegistroRespaldo, AutorRespaldo } from './types';
+export type {
+  RegistroRespaldo,
+  AutorRespaldo,
+  FiltrosDepuracion,
+  AnalisisDepuracionDTO,
+  ResultadoDepuracionDTO,
+} from './types';
