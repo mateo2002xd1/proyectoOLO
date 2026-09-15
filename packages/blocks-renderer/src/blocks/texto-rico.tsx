@@ -20,6 +20,8 @@ export interface TextoRicoProps {
   ancho?: 'estrecho' | 'ancho';
   /** Vacío conserva el color de marca de `.tasa-concept-title/-desc`. */
   colorTexto?: string;
+  colorTitulo?: string;
+  colorContenido?: string;
   className?: string;
 }
 
@@ -32,11 +34,16 @@ export function TextoRico({
   fondo = 'gris',
   ancho = 'estrecho',
   colorTexto,
+  colorTitulo,
+  colorContenido,
   className = '',
 }: TextoRicoProps) {
-  // El estilo en línea gana siempre a las clases de `.tasa-concept-*`, así que
-  // basta con ponerlo solo cuando hay un color elegido.
-  const estiloColor = colorTexto ? { color: colorTexto } : undefined;
+  // El estilo en línea gana siempre a las clases de `.tasa-concept-*`.
+  // Si no se define color individual, usa colorTexto como respaldo.
+  const colorFinalTitulo = colorTitulo || colorTexto;
+  const colorFinalContenido = colorContenido || colorTexto;
+  const estiloTitulo = colorFinalTitulo ? { color: colorFinalTitulo } : undefined;
+  const estiloContenido = colorFinalContenido ? { color: colorFinalContenido } : undefined;
 
   return (
     <div
@@ -48,17 +55,17 @@ export function TextoRico({
         {mostrarTitulo && titulo && (
           <h2
             className={`tasa-concept-title ${mostrarSubtitulo && subtitulo ? 'mb-3' : 'mb-8'}`}
-            style={estiloColor}
+            style={estiloTitulo}
           >
             {titulo}
           </h2>
         )}
         {mostrarSubtitulo && subtitulo && (
-          <div className="tasa-concept-subtitle text-base sm:text-lg text-gray-600 font-medium mb-8" style={estiloColor}>
+          <div className="tasa-concept-subtitle text-base sm:text-lg text-gray-600 font-medium mb-8">
             {subtitulo}
           </div>
         )}
-        <div className="tasa-concept-desc" style={estiloColor}>{contenido}</div>
+        <div className="tasa-concept-desc" style={estiloContenido}>{contenido}</div>
       </div>
     </div>
   );

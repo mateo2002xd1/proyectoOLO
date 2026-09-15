@@ -386,6 +386,7 @@ const puckConfigBase: Config = {
           label: 'Título de la sección',
           contentEditable: true,
         },
+        colorTitle: campoColor('Color del título (opcional)'),
         services: {
           type: 'array' as const,
           label: 'Lista de servicios',
@@ -404,6 +405,7 @@ const puckConfigBase: Config = {
       defaultProps: {
         id: 'services-1',
         sectionTitle: '¿Qué hacemos?',
+        colorTitle: '',
         services: [
           {
             id: 'monitoreo',
@@ -425,15 +427,18 @@ const puckConfigBase: Config = {
       render: ({
         id,
         sectionTitle,
+        colorTitle,
         services,
       }: {
         id: string;
         sectionTitle?: ReactNode;
+        colorTitle?: string;
         services?: { id: string; title: ReactNode; description: ReactNode }[];
       }) => (
         <Services
           block={{ id: id || 'services-preview' }}
           sectionTitle={sectionTitle}
+          colorTitle={colorTitle}
           services={services}
         />
       ),
@@ -621,22 +626,35 @@ const puckConfigBase: Config = {
       fields: {
         titulo: { type: 'richtext' as const, label: 'Título (h1 de la página)', contentEditable: true },
         intro: { type: 'richtext' as const, label: 'Párrafos de introducción', contentEditable: true },
+        colorTitulo: campoColor('Color del título (opcional)'),
+        colorContenido: campoColor('Color de la introducción / contenido (opcional)'),
       },
       defaultProps: {
         id: 'politica-encabezado-1',
         titulo: 'Políticas de Seguridad, Privacidad y Tratamiento de Datos',
         intro:
           '<p>El <strong>Servicio Nacional de Aprendizaje SENA</strong>, a través del <strong>Observatorio Laboral y Ocupacional</strong>, dispone para consulta ciudadana los lineamientos oficiales de la Política de Seguridad y Privacidad de la Información y la Política de Tratamiento para Protección de Datos Personales, en estricto cumplimiento de la Ley Estatutaria 1581 de 2012 (Habeas Data) y el Sistema de Gestión CompromISO.</p><p>A continuación, seleccione el documento normativo que desea consultar para leerlo directamente en formato PDF o descargar una copia oficial.</p>',
+        colorTitulo: '',
+        colorContenido: '',
       },
       render: ({
         id,
         titulo,
         intro,
-      }: BlockRender<{ titulo?: ReactNode; intro?: ReactNode }>) => (
+        colorTitulo,
+        colorContenido,
+      }: BlockRender<{
+        titulo?: ReactNode;
+        intro?: ReactNode;
+        colorTitulo?: string;
+        colorContenido?: string;
+      }>) => (
         <PoliticaPrivacidadEncabezado
           block={{ id: id || 'politica-encabezado-preview' }}
           titulo={titulo}
           intro={intro}
+          colorTitulo={colorTitulo}
+          colorContenido={colorContenido}
         />
       ),
     },
@@ -644,6 +662,7 @@ const puckConfigBase: Config = {
       label: 'Visor de documentos normativos',
       fields: {
         titulo: { type: 'richtext' as const, label: 'Título de la sección', contentEditable: true },
+        colorTitulo: campoColor('Color del título (opcional)'),
         documentos: {
           type: 'array' as const,
           label: 'Documentos',
@@ -665,6 +684,7 @@ const puckConfigBase: Config = {
       defaultProps: {
         id: 'visor-documentos-1',
         titulo: 'Documentos y Recursos Normativos Oficiales',
+        colorTitulo: '',
         documentos: [
           {
             etiquetaTab: '1. Seguridad y Privacidad (ID: 6701)',
@@ -685,11 +705,13 @@ const puckConfigBase: Config = {
       render: ({
         id,
         titulo,
+        colorTitulo,
         documentos,
-      }: BlockRender<{ titulo?: ReactNode; documentos?: DocumentoNormativo[] }>) => (
+      }: BlockRender<{ titulo?: ReactNode; colorTitulo?: string; documentos?: DocumentoNormativo[] }>) => (
         <VisorDocumentosNormativos
           block={{ id: id || 'visor-documentos-preview' }}
           titulo={titulo}
+          colorTitulo={colorTitulo}
           documentos={documentos}
         />
       ),
@@ -699,6 +721,8 @@ const puckConfigBase: Config = {
       fields: {
         titulo: { type: 'richtext' as const, label: 'Título de la sección', contentEditable: true },
         intro: { type: 'richtext' as const, label: 'Párrafo de introducción', contentEditable: true },
+        colorTitulo: campoColor('Color del título (opcional)'),
+        colorContenido: campoColor('Color del contenido / introducción (opcional)'),
         canales: {
           type: 'array' as const,
           label: 'Canales',
@@ -715,6 +739,8 @@ const puckConfigBase: Config = {
         titulo: 'Canales de Atención y Ejercicio de Derechos (Habeas Data)',
         intro:
           '<p>Para ejercer sus derechos de conocer, actualizar, rectificar o suprimir sus datos personales, o para presentar cualquier consulta o reclamo relativo a la protección de datos, el SENA pone a disposición los siguientes canales oficiales:</p>',
+        colorTitulo: '',
+        colorContenido: '',
         canales: [
           { etiqueta: 'Correo Electrónico', valor: 'servicioalciudadano@sena.edu.co' },
           { etiqueta: 'Línea Gratuita Nacional', valor: '01 8000 910270 • (601) 343 0111' },
@@ -726,12 +752,22 @@ const puckConfigBase: Config = {
         id,
         titulo,
         intro,
+        colorTitulo,
+        colorContenido,
         canales,
-      }: BlockRender<{ titulo?: ReactNode; intro?: ReactNode; canales?: CanalDeAtencion[] }>) => (
+      }: BlockRender<{
+        titulo?: ReactNode;
+        intro?: ReactNode;
+        colorTitulo?: string;
+        colorContenido?: string;
+        canales?: CanalDeAtencion[];
+      }>) => (
         <CanalesAtencion
           block={{ id: id || 'canales-atencion-preview' }}
           titulo={titulo}
           intro={intro}
+          colorTitulo={colorTitulo}
+          colorContenido={colorContenido}
           canales={canales}
         />
       ),
@@ -749,6 +785,8 @@ const puckConfigBase: Config = {
           label: 'Subtítulo (opcional)',
           contentEditable: true,
         },
+        colorTitle: campoColor('Color del título (opcional)'),
+        colorSubtitle: campoColor('Color del subtítulo (opcional)'),
         portals: {
           type: 'array' as const,
           label: 'Lista de portales',
@@ -789,6 +827,8 @@ const puckConfigBase: Config = {
         id: 'portals-1',
         title: '<p><strong>Portales externos</strong> de la ciudadanía</p>',
         subtitle: '',
+        colorTitle: '',
+        colorSubtitle: '',
         portals: [
           {
             id: 'pqrs',
@@ -826,11 +866,15 @@ const puckConfigBase: Config = {
         id,
         title,
         subtitle,
+        colorTitle,
+        colorSubtitle,
         portals,
       }: {
         id: string;
         title?: ReactNode;
         subtitle?: ReactNode;
+        colorTitle?: string;
+        colorSubtitle?: string;
         portals?: {
           id: string;
           label: ReactNode;
@@ -846,6 +890,8 @@ const puckConfigBase: Config = {
           block={{ id: id || 'portals-preview' }}
           title={title}
           subtitle={subtitle}
+          colorTitle={colorTitle}
+          colorSubtitle={colorSubtitle}
           portals={portals}
         />
       ),
@@ -874,6 +920,8 @@ const puckConfigBase: Config = {
         subtitulo: { type: 'richtext', label: 'Subtítulo', contentEditable: true },
         contenido: { type: 'richtext', label: 'Contenido', contentEditable: true },
         fondo: campoFondo,
+        colorTitulo: campoColor('Color del título (opcional)'),
+        colorContenido: campoColor('Color del contenido (opcional)'),
         colorTexto: campoColor('Color del texto (opcional)'),
         ancho: {
           type: 'radio',
@@ -891,6 +939,8 @@ const puckConfigBase: Config = {
         subtitulo: '',
         contenido: '<p>Escribe aquí el contenido de la sección.</p>',
         fondo: 'gris',
+        colorTitulo: '',
+        colorContenido: '',
         colorTexto: '',
         ancho: 'estrecho',
       },
@@ -908,15 +958,6 @@ const puckConfigBase: Config = {
           ],
         },
         titulo: { type: 'richtext', label: 'Título', contentEditable: true },
-        mostrarSubtitulo: {
-          type: 'radio',
-          label: 'Mostrar subtítulo',
-          options: [
-            { label: 'Sí', value: true },
-            { label: 'No', value: false },
-          ],
-        },
-        subtitulo: { type: 'richtext', label: 'Subtítulo', contentEditable: true },
         imagenSrc: campoImagen('Imagen'),
         imagenAlt: { type: 'text', label: 'Texto alternativo' },
         ancho: {
@@ -950,8 +991,6 @@ const puckConfigBase: Config = {
       defaultProps: {
         mostrarTitulo: true,
         titulo: '',
-        mostrarSubtitulo: false,
-        subtitulo: '',
         imagenSrc: '',
         imagenAlt: '',
         ancho: 'completo',
@@ -1065,6 +1104,8 @@ const puckConfigBase: Config = {
           ],
         },
         subtitulo: { type: 'textarea', label: 'Descripción / Subtítulo (opcional)' },
+        colorTitulo: campoColor('Color del título (opcional)'),
+        colorSubtitulo: campoColor('Color del subtítulo / contenido (opcional)'),
         columnas: {
           type: 'radio',
           label: 'Columnas en escritorio',
@@ -1090,6 +1131,8 @@ const puckConfigBase: Config = {
         alineacionTitulo: 'centro',
         mostrarSubtitulo: true,
         subtitulo: '',
+        colorTitulo: '',
+        colorSubtitulo: '',
         columnas: 3,
         items: [],
       },

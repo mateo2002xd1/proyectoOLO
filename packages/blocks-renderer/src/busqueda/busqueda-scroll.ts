@@ -28,7 +28,7 @@ function normalizar(texto: string): string {
 export function resaltarCoincidenciaTexto(
   texto: string,
   consulta: string,
-  claseResaltado = 'bg-sky-400/25 text-sky-200 font-semibold px-0.5 rounded not-italic underline decoration-sky-400/50 underline-offset-2'
+  claseResaltado = 'bg-sky-400/25 text-sky-200 px-0.5 rounded not-italic underline decoration-sky-400/50 underline-offset-2'
 ): React.ReactNode {
   if (!texto || !consulta || !consulta.trim()) return texto;
 

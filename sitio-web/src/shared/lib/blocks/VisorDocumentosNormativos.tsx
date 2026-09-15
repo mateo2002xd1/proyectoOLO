@@ -16,6 +16,7 @@ export interface DocumentoNormativo {
 interface VisorDocumentosNormativosProps {
   block: { id: string };
   titulo?: ReactNode;
+  colorTitulo?: string;
   documentos?: DocumentoNormativo[];
 }
 
@@ -29,6 +30,7 @@ interface VisorDocumentosNormativosProps {
 export function VisorDocumentosNormativos({
   block,
   titulo,
+  colorTitulo,
   documentos = [],
 }: VisorDocumentosNormativosProps) {
   const [tabActiva, setTabActiva] = useState(0);
@@ -39,10 +41,17 @@ export function VisorDocumentosNormativos({
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <section className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 dark:border-[#1e293b] pb-3">
-            {titulo && <TituloRico className="text-lg font-bold text-gray-900 dark:text-[#f6f6f6]">{titulo}</TituloRico>}
+            {titulo && (
+              <TituloRico
+                className="text-lg text-gray-900 dark:text-[#f6f6f6]"
+                style={colorTitulo ? { color: colorTitulo } : undefined}
+              >
+                {titulo}
+              </TituloRico>
+            )}
 
             {documentos.length > 0 && (
-              <div className="flex flex-wrap items-center gap-1.5 rounded-xl bg-gray-200/80 dark:bg-[#1e293b] p-1 text-xs font-semibold">
+              <div className="flex flex-wrap items-center gap-1.5 rounded-xl bg-gray-200/80 dark:bg-[#1e293b] p-1 text-xs">
                 {documentos.map((documento, indice) => (
                   <button
                     key={indice}

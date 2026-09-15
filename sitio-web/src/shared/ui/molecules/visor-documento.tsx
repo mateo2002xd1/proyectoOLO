@@ -38,7 +38,7 @@ export function VisorDocumento({
       {/* Encabezado del Visor */}
       <div className="mb-5 flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 dark:border-[#1e293b] pb-4">
         <div>
-          <h3 className={`${poppins.className} text-base font-bold text-gray-900 dark:text-[#f6f6f6]`}>{titulo}</h3>
+          <h3 className={`${poppins.className} text-base text-gray-900 dark:text-[#f6f6f6]`}>{titulo}</h3>
           {descripcion && (
             <p className="mt-1 text-xs text-gray-500 dark:text-slate-400 leading-relaxed max-w-2xl">
               {descripcion}
@@ -61,7 +61,7 @@ export function VisorDocumento({
           <a
             href={url}
             download
-            className="inline-flex items-center gap-1.5 rounded-lg bg-[#39A900] px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[#329200] focus:outline-none focus:ring-2 focus:ring-[#39A900]/40"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[#39A900] px-3.5 py-2 text-xs text-white shadow-sm transition hover:bg-[#329200] focus:outline-none focus:ring-2 focus:ring-[#39A900]/40"
           >
             <ArrowDownTrayIcon className="h-4 w-4" />
             <span>Descargar PDF</span>
@@ -96,7 +96,7 @@ export function VisorDocumento({
             href={urlAcciones}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 font-semibold underline text-xs"
+            className="text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 underline text-xs"
           >
             ¿Problemas para visualizar? Haga clic aquí para abrir directamente
           </a>
@@ -115,14 +115,14 @@ export function VisorDocumento({
           >
             <div className="flex items-center justify-between border-b border-gray-200 dark:border-[#1e293b] px-6 py-4 bg-gray-50 dark:bg-[#0b1121]">
               <div>
-                <h4 className={`${poppins.className} text-base font-bold text-gray-900 dark:text-[#f6f6f6]`}>{titulo}</h4>
+                <h4 className={`${poppins.className} text-base text-gray-900 dark:text-[#f6f6f6]`}>{titulo}</h4>
               </div>
               <div className="flex items-center gap-3">
                 <a
                   href={urlAcciones}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-[#00324D] dark:text-emerald-400 hover:underline"
+                  className="inline-flex items-center gap-1 text-xs text-[#00324D] dark:text-emerald-400 hover:underline"
                 >
                   <ArrowTopRightOnSquareIcon className="h-4 w-4" />
                   Abrir link

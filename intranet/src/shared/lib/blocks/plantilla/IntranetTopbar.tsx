@@ -537,7 +537,7 @@ export function IntranetTopbar({
                         className="block px-4 py-3 no-underline text-inherit cursor-pointer"
                       >
                         <div className="flex items-center justify-between gap-2 mb-1">
-                          <span className="text-[11px] font-semibold tracking-wider text-sky-400 uppercase">
+                          <span className="text-[11px] tracking-wider text-sky-400 uppercase">
                             {resaltarCoincidenciaTexto(result.context, searchQuery)}
                           </span>
                           <span className="text-[10px] text-white/50 px-1.5 py-0.5 rounded bg-white/10">
@@ -549,7 +549,7 @@ export function IntranetTopbar({
                           </span>
                         </div>
                         {result.type === 'h1' || result.type === 'h2' ? (
-                          <span className="block text-base font-semibold text-white leading-snug">
+                          <span className="block text-base text-white leading-snug">
                             {resaltarCoincidenciaTexto(result.text, searchQuery)}
                           </span>
                         ) : (
