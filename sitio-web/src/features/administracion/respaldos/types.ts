@@ -30,3 +30,34 @@ export interface RegistroRespaldo {
   /** ISO 8601. */
   publicadoEn: string;
 }
+
+export interface FiltrosDepuracion {
+  ambito?: 'sitio' | 'intranet';
+  paginaId?: string;
+  fechaCorte: string; // ISO YYYY-MM-DD
+  conservarUltimoRespaldo?: boolean;
+}
+
+export interface DetallePaginaDepuracion {
+  paginaId: string;
+  slug: string;
+  titulo: string;
+  ambito: 'sitio' | 'intranet';
+  cantidadVersiones: number;
+  bytesEstimados: number;
+}
+
+export interface AnalisisDepuracionDTO {
+  totalVersiones: number;
+  totalPaginas: number;
+  bytesEstimados: number;
+  fechaCorteLimite: string;
+  limiteMaximo?: number;
+  paginasAfectadas: DetallePaginaDepuracion[];
+}
+
+export interface ResultadoDepuracionDTO {
+  eliminadas: number;
+  paginasAfectadas: number;
+  bytesLiberados: number;
+}
