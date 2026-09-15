@@ -30,6 +30,9 @@ export interface PublicacionItem {
 
 export interface PublicacionesProps {
   titulo?: React.ReactNode;
+  mostrarTitulo?: boolean;
+  subtitulo?: React.ReactNode;
+  mostrarSubtitulo?: boolean;
   publicaciones?: PublicacionItem[];
   porPagina?: number;
 }
@@ -200,6 +203,9 @@ function Portada({ pdfUrl, titulo }: { pdfUrl: string; titulo: string }) {
 
 export function Publicaciones({
   titulo = '**Ultimas** publicaciones',
+  mostrarTitulo = true,
+  subtitulo,
+  mostrarSubtitulo = true,
   publicaciones = [],
   porPagina = 4,
 }: PublicacionesProps) {
@@ -247,10 +253,15 @@ export function Publicaciones({
   return (
     <div className="matriz-section-white py-12 md:py-16 px-4 md:px-8">
       <div className="matriz-content-container-wide max-w-[1200px] w-full mx-auto text-center flex flex-col items-center">
-        {titulo && (
-          <h2 className="matriz-section-title text-[#041E42] font-normal mb-8 text-center">
+        {mostrarTitulo && titulo && (
+          <h2 className={`matriz-section-title text-[#041E42] font-normal text-center ${mostrarSubtitulo && subtitulo ? 'mb-3' : 'mb-8'}`}>
             {typeof titulo === 'string' && titulo.includes('**') ? resaltar(titulo) : titulo}
           </h2>
+        )}
+        {mostrarSubtitulo && subtitulo && (
+          <div className="text-gray-600 mb-8 text-sm sm:text-base max-w-2xl mx-auto">
+            {subtitulo}
+          </div>
         )}
         <div className="relative w-full max-w-[1200px] mx-auto group/carousel flex items-center justify-center px-4 md:px-8">
           <div

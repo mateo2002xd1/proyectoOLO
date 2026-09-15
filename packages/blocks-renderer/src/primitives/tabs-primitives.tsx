@@ -63,6 +63,7 @@ export interface TabsProps {
   mostrarTitulo?: boolean;
   alineacionTitulo?: 'izquierda' | 'centro' | 'derecha';
   subtitulo?: React.ReactNode | string;
+  mostrarSubtitulo?: boolean;
   mostrarSidebar?: 'si' | 'no';
   posicionMenu?: 'lateral' | 'superior';
   anchoSidebar?: '240' | '280' | '320';
@@ -85,6 +86,7 @@ export function TabsRender({
   mostrarTitulo = true,
   alineacionTitulo = 'izquierda',
   subtitulo = '',
+  mostrarSubtitulo = true,
   mostrarSidebar = 'si',
   posicionMenu = 'lateral',
   anchoSidebar = '280',
@@ -142,12 +144,14 @@ export function TabsRender({
       style={{ width: '100%' }}
     >
       <div className="olo-tabs-container">
-        {mostrarTitulo && titulo && (
+        {((mostrarTitulo && titulo) || (mostrarSubtitulo && subtitulo)) && (
           <div className={`olo-tabs-header mb-6 flex flex-col ${claseAlineacion} w-full`}>
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#002237] tracking-tight mb-2 w-full">
-              {titulo}
-            </h2>
-            {subtitulo && (
+            {mostrarTitulo && titulo && (
+              <h2 className="text-2xl sm:text-3xl font-bold text-[#002237] tracking-tight mb-2 w-full">
+                {titulo}
+              </h2>
+            )}
+            {mostrarSubtitulo && subtitulo && (
               <div className="text-sm sm:text-base text-gray-600 max-w-3xl w-full">
                 {subtitulo}
               </div>
@@ -550,6 +554,14 @@ export const tabsConfig: ConfigDeBloque = {
       type: 'textarea',
       label: 'Descripción / Subtítulo (opcional)',
     },
+    mostrarSubtitulo: {
+      type: 'radio',
+      label: 'Mostrar subtítulo',
+      options: [
+        { label: 'Sí', value: true },
+        { label: 'No', value: false },
+      ],
+    },
     mostrarSidebar: {
       type: 'radio',
       label: 'Mostrar barra de pestañas',
@@ -618,6 +630,7 @@ export const tabsConfig: ConfigDeBloque = {
     mostrarTitulo: true,
     titulo: '',
     alineacionTitulo: 'izquierda',
+    mostrarSubtitulo: true,
     subtitulo: '',
     mostrarSidebar: 'si',
     posicionMenu: 'lateral',

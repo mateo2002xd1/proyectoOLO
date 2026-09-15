@@ -546,6 +546,15 @@ const puckConfigBase: Config = {
           ],
         },
         titulo: { type: 'richtext' as const, label: 'Título', contentEditable: true },
+        mostrarSubtitulo: {
+          type: 'radio',
+          label: 'Mostrar subtítulo',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        subtitulo: { type: 'richtext' as const, label: 'Subtítulo', contentEditable: true },
         publicaciones: {
           type: 'array' as const,
           label: 'Publicaciones',
@@ -575,6 +584,8 @@ const puckConfigBase: Config = {
         id: 'publicaciones-1',
         mostrarTitulo: true,
         titulo: '<p><strong>Ultimas</strong> publicaciones</p>',
+        mostrarSubtitulo: false,
+        subtitulo: '',
         publicaciones: [],
         porPagina: 4,
       },
@@ -582,11 +593,15 @@ const puckConfigBase: Config = {
         id,
         titulo,
         mostrarTitulo,
+        subtitulo,
+        mostrarSubtitulo,
         publicaciones,
         porPagina,
       }: BlockRender<{
         titulo?: ReactNode;
         mostrarTitulo?: boolean;
+        subtitulo?: ReactNode;
+        mostrarSubtitulo?: boolean;
         publicaciones?: { titulo?: ReactNode; pdfUrl?: string; etiqueta?: ReactNode; mes?: ReactNode; dia?: ReactNode }[];
         porPagina?: number;
       }>) => (
@@ -594,6 +609,8 @@ const puckConfigBase: Config = {
           block={{ id: id || 'publicaciones-preview' }}
           titulo={titulo}
           mostrarTitulo={mostrarTitulo}
+          subtitulo={subtitulo}
+          mostrarSubtitulo={mostrarSubtitulo}
           publicaciones={publicaciones}
           porPagina={porPagina}
         />
@@ -846,6 +863,15 @@ const puckConfigBase: Config = {
           ],
         },
         titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+        mostrarSubtitulo: {
+          type: 'radio',
+          label: 'Mostrar subtítulo',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        subtitulo: { type: 'richtext', label: 'Subtítulo', contentEditable: true },
         contenido: { type: 'richtext', label: 'Contenido', contentEditable: true },
         fondo: campoFondo,
         colorTexto: campoColor('Color del texto (opcional)'),
@@ -861,6 +887,8 @@ const puckConfigBase: Config = {
       defaultProps: {
         mostrarTitulo: true,
         titulo: '¿Qué es?',
+        mostrarSubtitulo: false,
+        subtitulo: '',
         contenido: '<p>Escribe aquí el contenido de la sección.</p>',
         fondo: 'gris',
         colorTexto: '',
@@ -880,6 +908,15 @@ const puckConfigBase: Config = {
           ],
         },
         titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+        mostrarSubtitulo: {
+          type: 'radio',
+          label: 'Mostrar subtítulo',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        subtitulo: { type: 'richtext', label: 'Subtítulo', contentEditable: true },
         imagenSrc: campoImagen('Imagen'),
         imagenAlt: { type: 'text', label: 'Texto alternativo' },
         ancho: {
@@ -913,6 +950,8 @@ const puckConfigBase: Config = {
       defaultProps: {
         mostrarTitulo: true,
         titulo: '',
+        mostrarSubtitulo: false,
+        subtitulo: '',
         imagenSrc: '',
         imagenAlt: '',
         ancho: 'completo',
@@ -1017,6 +1056,14 @@ const puckConfigBase: Config = {
             { label: 'Derecha', value: 'derecha' },
           ],
         },
+        mostrarSubtitulo: {
+          type: 'radio',
+          label: 'Mostrar subtítulo',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
         subtitulo: { type: 'textarea', label: 'Descripción / Subtítulo (opcional)' },
         columnas: {
           type: 'radio',
@@ -1041,6 +1088,7 @@ const puckConfigBase: Config = {
         mostrarTitulo: true,
         titulo: '',
         alineacionTitulo: 'centro',
+        mostrarSubtitulo: true,
         subtitulo: '',
         columnas: 3,
         items: [],

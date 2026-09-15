@@ -288,6 +288,15 @@ const puckConfigBase: Config = {
           ],
         },
         titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+        mostrarSubtitulo: {
+          type: 'radio',
+          label: 'Mostrar subtítulo',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        subtitulo: { type: 'richtext', label: 'Subtítulo', contentEditable: true },
         contenido: { type: 'richtext', label: 'Contenido', contentEditable: true },
         fondo: campoFondo,
         colorTexto: campoColor('Color del texto (opcional)'),
@@ -303,6 +312,8 @@ const puckConfigBase: Config = {
       defaultProps: {
         mostrarTitulo: true,
         titulo: '¿Qué es?',
+        mostrarSubtitulo: false,
+        subtitulo: '',
         contenido: '<p>Escribe aquí el contenido de la sección.</p>',
         fondo: 'gris',
         colorTexto: '',
@@ -322,6 +333,15 @@ const puckConfigBase: Config = {
           ],
         },
         titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+        mostrarSubtitulo: {
+          type: 'radio',
+          label: 'Mostrar subtítulo',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        subtitulo: { type: 'richtext', label: 'Subtítulo', contentEditable: true },
         contenido: { type: 'richtext', label: 'Contenido', contentEditable: true },
         imagenSrc: campoImagen('Imagen (opcional si hay presentación)'),
         imagenAlt: { type: 'text', label: 'Texto alternativo' },
@@ -351,6 +371,8 @@ const puckConfigBase: Config = {
       defaultProps: {
         mostrarTitulo: true,
         titulo: '¿Cuál es el <strong>objetivo</strong>?',
+        mostrarSubtitulo: false,
+        subtitulo: '',
         contenido: '<p>Escribe aquí el contenido de la sección.</p>',
         imagenSrc: '',
         imagenAlt: '',
@@ -375,6 +397,15 @@ const puckConfigBase: Config = {
           ],
         },
         titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+        mostrarSubtitulo: {
+          type: 'radio',
+          label: 'Mostrar subtítulo',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        subtitulo: { type: 'richtext', label: 'Subtítulo', contentEditable: true },
         imagenSrc: campoImagen('Imagen'),
         imagenAlt: { type: 'text', label: 'Texto alternativo' },
         ancho: {
@@ -410,6 +441,8 @@ const puckConfigBase: Config = {
       defaultProps: {
         mostrarTitulo: true,
         titulo: '',
+        mostrarSubtitulo: false,
+        subtitulo: '',
         imagenSrc: '',
         imagenAlt: '',
         ancho: 'completo',
@@ -514,6 +547,14 @@ const puckConfigBase: Config = {
             { label: 'Derecha', value: 'derecha' },
           ],
         },
+        mostrarSubtitulo: {
+          type: 'radio',
+          label: 'Mostrar subtítulo',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
         subtitulo: { type: 'textarea', label: 'Descripción / Subtítulo (opcional)' },
         columnas: {
           type: 'radio',
@@ -538,6 +579,7 @@ const puckConfigBase: Config = {
         mostrarTitulo: true,
         titulo: '',
         alineacionTitulo: 'centro',
+        mostrarSubtitulo: true,
         subtitulo: '',
         columnas: 3,
         items: [],
@@ -748,7 +790,24 @@ const puckConfigBase: Config = {
     Publicaciones: {
       label: 'Últimas publicaciones',
       fields: {
+        mostrarTitulo: {
+          type: 'radio',
+          label: 'Mostrar título',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
         titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+        mostrarSubtitulo: {
+          type: 'radio',
+          label: 'Mostrar subtítulo',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        subtitulo: { type: 'richtext', label: 'Subtítulo', contentEditable: true },
         publicaciones: {
           type: 'array',
           label: 'Publicaciones',
@@ -775,7 +834,10 @@ const puckConfigBase: Config = {
         porPagina: { type: 'number', label: 'Tarjetas visibles a la vez', min: 1, max: 6 },
       },
       defaultProps: {
+        mostrarTitulo: true,
         titulo: '<p><strong>Ultimas</strong> publicaciones</p>',
+        mostrarSubtitulo: false,
+        subtitulo: '',
         publicaciones: [],
         porPagina: 4,
       },

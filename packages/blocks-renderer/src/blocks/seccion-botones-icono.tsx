@@ -23,6 +23,7 @@ export interface SeccionBotonesIconoProps {
   mostrarTitulo?: boolean;
   alineacionTitulo?: 'izquierda' | 'centro' | 'derecha';
   subtitulo?: ReactNode;
+  mostrarSubtitulo?: boolean;
   columnas?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
   botones?: ItemBotonSeccion[];
   items?: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
@@ -35,6 +36,7 @@ export function SeccionBotonesIcono({
   mostrarTitulo = true,
   alineacionTitulo = 'centro',
   subtitulo = '',
+  mostrarSubtitulo = true,
   columnas = 3,
   botones = [],
   items: Items,
@@ -88,7 +90,7 @@ export function SeccionBotonesIcono({
             {titulo}
           </h2>
         ) : null}
-        {mostrarTitulo && subtitulo ? (
+        {mostrarSubtitulo && subtitulo ? (
           <div className="text-sm sm:text-base text-gray-600 mb-6 max-w-2xl w-full">
             {subtitulo}
           </div>

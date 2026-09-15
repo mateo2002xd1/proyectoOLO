@@ -20,6 +20,8 @@ import { PptxViewer } from './PptxViewer';
 export interface TextoConImagenProps {
   titulo?: ReactNode;
   mostrarTitulo?: boolean;
+  subtitulo?: ReactNode;
+  mostrarSubtitulo?: boolean;
   contenido?: ReactNode;
   imagenSrc?: string;
   imagenAlt?: string;
@@ -32,6 +34,8 @@ export interface TextoConImagenProps {
 export function TextoConImagen({
   titulo,
   mostrarTitulo = true,
+  subtitulo,
+  mostrarSubtitulo = true,
   contenido,
   imagenSrc,
   imagenAlt = '',
@@ -46,6 +50,11 @@ export function TextoConImagen({
         <h2 className="tasa-concept-title" style={{ marginTop: 0 }}>
           {titulo}
         </h2>
+      )}
+      {mostrarSubtitulo && subtitulo && (
+        <div className="text-gray-600 text-sm sm:text-base font-medium -mt-2 mb-2">
+          {subtitulo}
+        </div>
       )}
       {contenido}
     </div>
