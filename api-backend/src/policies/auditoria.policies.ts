@@ -21,12 +21,15 @@
  * `paginas.policies.ts`: en la tabla `roles` están capitalizados ('Administrador'),
  * el JWT los lleva tal cual, y comparar literal dejaría fuera a todo el mundo.
  */
+import { rolDeActor, permisosDeActor, type ActorDePolicy } from '../shared/autorizacion';
+
 const ROLES_QUE_AUDITAN = ['superadmin', 'administrador'];
 
 const normalizar = (rol: string | undefined | null) => (rol ?? '').trim().toLowerCase();
 
 export const auditoriaPolicies = {
-  puedeVer: (user?: any) => ROLES_QUE_AUDITAN.includes(normalizar(user?.role)) || !!user?.permisos?.includes('auditoria.ver'),
+  puedeVer: (actor?: ActorDePolicy) =>
+    ROLES_QUE_AUDITAN.includes(normalizar(rolDeActor(actor))) || !!permisosDeActor(actor)?.includes('auditoria.ver'),
 };
 
 export type PermisoAuditoria = keyof typeof auditoriaPolicies;
