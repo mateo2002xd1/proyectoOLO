@@ -15,7 +15,7 @@ const SIN_INFORMACION = 'Sin información disponible.';
 function Seccion({ titulo, children }: { titulo: string; children: ReactNode }) {
   return (
     <section className="mt-7 first:mt-0">
-      <h3 className="flex items-center gap-2.5 text-sm font-semibold tracking-wide text-[#001631] uppercase">
+      <h3 className="flex items-center gap-2.5 text-sm tracking-wide text-[#001631] uppercase">
         <span aria-hidden="true" className="h-4 w-1 shrink-0 rounded-full bg-[#7DB828]" />
         {titulo}
       </h3>
@@ -28,7 +28,7 @@ function Seccion({ titulo, children }: { titulo: string; children: ReactNode }) 
 function Campo({ titulo, children }: { titulo: string; children: ReactNode }) {
   return (
     <div className="rounded-[16px] border border-[#eaecf0] bg-[#f8f9fa] px-4 py-3">
-      <h4 className="text-xs font-semibold tracking-[0.08em] text-[#667085] uppercase">{titulo}</h4>
+      <h4 className="text-xs tracking-[0.08em] text-[#667085] uppercase">{titulo}</h4>
       <div className="mt-1.5 text-sm text-[#344054]">{children}</div>
     </div>
   );
@@ -64,14 +64,14 @@ function CampoPlegable({
           aria-hidden="true"
           className="size-4 shrink-0 text-[#98a2b3] transition-transform group-open:rotate-180"
         />
-        <h4 className="flex-1 text-xs font-semibold tracking-[0.08em] text-[#344054] uppercase">
+        <h4 className="flex-1 text-xs tracking-[0.08em] text-[#344054] uppercase">
           {titulo}
         </h4>
         {typeof cantidad === 'number' && cantidad > 0 && (
           // `min-w-10` para que el contador de un dígito y el de tres midan lo
           // mismo: van uno debajo de otro y con el ancho al contenido el borde
           // derecho de la pila queda dentado.
-          <span className="inline-flex h-8 min-w-10 items-center justify-center rounded-[16px] bg-[#001631]/8 px-2.5 text-xs font-semibold text-[#001631] tabular-nums">
+          <span className="inline-flex h-8 min-w-10 items-center justify-center rounded-[16px] bg-[#001631]/8 px-2.5 text-xs text-[#001631] tabular-nums">
             {cantidad}
           </span>
         )}
@@ -126,7 +126,7 @@ function ListaRelacionadas({ valores }: { valores: OcupacionRelacionada[] }) {
     <ul className="flex flex-col gap-2">
       {valores.map((relacionada) => (
         <li key={relacionada.codigo} className="flex items-start gap-2.5">
-          <span className="mt-0.5 shrink-0 rounded-[8px] bg-[#001631] px-2 py-1 font-mono text-[11px] font-semibold text-white tabular-nums">
+          <span className="mt-0.5 shrink-0 rounded-[8px] bg-[#001631] px-2 py-1 font-mono text-[11px] text-white tabular-nums">
             {relacionada.codigo}
           </span>
           <span className="text-sm text-[#344054]">{relacionada.nombre}</span>
