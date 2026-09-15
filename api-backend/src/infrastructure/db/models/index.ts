@@ -15,6 +15,12 @@ import { PaginaVersion } from './PaginaVersion';
 import { BloqueoEdicion } from './BloqueoEdicion';
 import { SubidaPendiente } from './SubidaPendiente';
 
+import Departamento from './Departamento';
+import CentroFormacion from './CentroFormacion';
+import NivelFormacion from './NivelFormacion';
+import ProgramaFormacion from './ProgramaFormacion';
+import ProgramaSobresaliente from './ProgramaSobresaliente';
+
 Role.belongsToMany(Permission, { through: RolePermission, as: 'permissions', foreignKey: 'role_id', otherKey: 'permission_id' });
 Permission.belongsToMany(Role, { through: RolePermission, as: 'roles', foreignKey: 'permission_id', otherKey: 'role_id' });
 
@@ -62,6 +68,17 @@ PaginaVersion.belongsTo(User, { as: 'publicador', foreignKey: 'publicadoPor', on
 PaginaVersion.belongsTo(User, { as: 'autor', foreignKey: 'creadoPor', onDelete: 'SET NULL' });
 
 
+// Relaciones Observatorio
+Departamento.hasMany(CentroFormacion, { as: 'centros', foreignKey: 'departamento_id' });
+CentroFormacion.belongsTo(Departamento, { as: 'departamento', foreignKey: 'departamento_id' });
+
+NivelFormacion.hasMany(ProgramaFormacion, { as: 'programas', foreignKey: 'nivel_formacion_id' });
+ProgramaFormacion.belongsTo(NivelFormacion, { as: 'nivelFormacion', foreignKey: 'nivel_formacion_id' });
+
+ProgramaSobresaliente.belongsTo(Departamento, { as: 'departamento', foreignKey: 'departamento_id' });
+ProgramaSobresaliente.belongsTo(CentroFormacion, { as: 'centro', foreignKey: 'centro_id' });
+ProgramaSobresaliente.belongsTo(NivelFormacion, { as: 'nivelFormacion', foreignKey: 'nivel_formacion_id' });
+ProgramaSobresaliente.belongsTo(ProgramaFormacion, { as: 'programa', foreignKey: 'programa_id' });
 
 export {
   User,
@@ -78,4 +95,9 @@ export {
   PaginaVersion,
   BloqueoEdicion,
   SubidaPendiente,
+  Departamento,
+  CentroFormacion,
+  NivelFormacion,
+  ProgramaFormacion,
+  ProgramaSobresaliente,
 };

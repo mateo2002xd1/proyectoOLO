@@ -329,9 +329,22 @@ Ya estaba decidido en §4.4 de la guía ("`editor-core/` — PLANEADO"), con la 
 
 El editor recibe su `config` **por prop**; así el shell es común y el catálogo sigue siendo de cada app.
 
+### 4.5 Bloques de Acción en Puck: Separación Canvas vs. Barra Lateral (Sidebar)
+
+Con la integración de herramientas de ingesta de datos en el editor visual (caso de referencia: `ImportadorExcelBloque` para el Observatorio Laboral), se establece una regla arquitectónica estricta para bloques con interactividad o carga de archivos:
+
+#### Regla 1: La interacción pesada y subida de archivos vive en el Sidebar, nunca en el Canvas
+- **El Canvas es exclusivamente para representación visual:** Los componentes renderizados en el lienzo de Puck representan lo que el usuario final verá, o una tarjeta indicativa de estado en modo borrador. No deben contener formularios de subida complejos ni botones de acción transaccional directa, ya que los eventos del DOM (`click`, `dragover`) interfieren con la selección, arrastre y reordenamiento de bloques de Puck.
+- **Los controles de mutación residen en Custom Fields:** Cualquier lógica de selección de archivos (`<input type="file">`), drag & drop de subida y llamadas HTTP a endpoints de ingesta (como `/api/observatorio/importar`) se implementa como un campo de formulario en la barra lateral del bloque (`puck.config.tsx` -> `fields.<campo>.type = 'custom'` -> `render: ({ value, onChange }) => <ImportadorExcelUploaderField ... />`).
+
+#### Regla 2: Separación estricta de contextos visuales y estilos
+- **No importar componentes ni estilos de la Intranet en el Sitio Web:** Cada aplicación posee su propia paleta y sistema de diseño. Los bloques del `sitio-web` deben emplear las clases y tokens institucionales del portal público, eliminando clases innecesarias (como estilos `dark:` heredados de la intranet si no forman parte del tema público).
+- **Enfoque de responsabilidad única:** Si un bloque tiene un propósito único (ej. ingesta de estadísticas del Observatorio), su esquema de props debe ser limpio y no incluir campos redundantes de títulos o descripciones editables que desvíen la atención del flujo de datos.
+
 ---
 
 ## 5. Plan de migración por fases
+
 
 Cada fase deja el proyecto compilable y verificable, según la regla 2 de `4-reglas.md`.
 

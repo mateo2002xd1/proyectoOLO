@@ -2254,3 +2254,40 @@ panel abierto quedaba accesible a quien pasara por ahí una semana después.
   de sí mismo.
 - El aviso no aparece en las pantallas de `login/*` ni en el sitio público, que no tienen
   sesión que cerrar. Es lo correcto, pero conviene confirmarlo al probar.
+
+---
+
+## Sesión: Ingesta del Observatorio, Bloques de Acción en Puck y Actualización Integral de Documentación (2026-09-15)
+
+### Contexto
+Se requirió integrar un componente Puck para la carga masiva de estadísticas laborales en el portal del Observatorio, resolver la arquitectura de interacción dentro del editor visual, y alinear exhaustivamente la documentación técnica del proyecto que presentaba divergencias históricas tras las migraciones 020 a 025.
+
+### Qué se implementó y modificó
+
+1. **Arquitectura de Bloques Puck y Carga de Archivos (`sitio-web`):**
+   - **`sitio-web/src/features/paginas/components/importador-excel-uploader-field.tsx`**: Componente de formulario para la barra lateral (sidebar) de Puck. Maneja la selección de archivos `.xlsx`, validación de tipo MIME y tamaño, retroalimentación de carga/error y envío en buffer crudo (`application/octet-stream`) hacia `/api/observatorio/importar`.
+   - **`sitio-web/src/shared/lib/blocks/ImportadorExcelBloque.tsx`**: Refactorizado para actuar exclusivamente como representación visual e indicador de estado en el lienzo (canvas). Se eliminaron formularios interactivos que colisionaban con los eventos drag-and-drop de Puck, se suprimieron clases `dark:` no correspondientes al contexto público de `sitio-web` y se ajustó a los tokens institucionales.
+   - **`sitio-web/src/config/puck.config.tsx`**: Integración del uploader como `custom field` en el panel lateral del bloque, eliminando campos redundantes de títulos y descripciones editables para concentrar la funcionalidad estrictamente en la ingesta de datos.
+
+2. **Actualización de `11-base-de-datos.md`:**
+   - Sincronización del inventario con la base real: paso de 12 a **19 tablas del dominio** con modelos Sequelize activos (20 tablas totales incluyendo `migraciones_aplicadas`).
+   - Actualización del mapa de relaciones ASCII con el esquema en copo de nieve (Snowflake) del Observatorio (`departamentos`, `centros_formacion`, `niveles_formacion`, `programas_formacion`, `programas_sobresalientes`) y las tablas de gobernanza/concurrencia (`bloqueos_edicion`, `subidas_pendientes`).
+   - Incorporación de las invariantes I10 a I15 en el esquema (idempotencia en `(centro_id, programa_id, sexo)`, consistencia `vinculados <= certificados`, acotamiento de tasas, restricciones estrictas de género y reglas de cascada).
+   - Documentación de las migraciones 020 a 025 y actualización del balance de ejecución a 25 migraciones aplicadas.
+
+3. **Actualización de `12-diccionario-de-datos.md`:**
+   - Métricas globales actualizadas: 20 tablas base, 152 columnas, 26 llaves foráneas y 20 restricciones CHECK en motor.
+   - Inclusión de la ficha técnica de `subidas_pendientes` (§3.15) con su estrategia de recolección de basura de archivos en borradores de páginas.
+   - Especificación detallada de catálogos y tabla central de hechos del Observatorio (§3.16).
+   - Actualización de la matriz de integridad referencial (Foreign Keys) incorporando las relaciones de las tablas de Observatorio y subidas pendientes con sus políticas `RESTRICT` y `CASCADE`.
+
+4. **Actualización de `8-ciclo-editorial.md`:**
+   - Incorporación de la **Sección 4.5 ("Bloques de Acción en Puck: Separación Canvas vs. Barra Lateral")**: define la regla de desarrollo de aislar formularios y botones transaccionales en custom fields del sidebar para prevenir interferencias con los overlays de Puck, y respetar la segregación de estilos por contexto (`sitio-web` vs `intranet`).
+
+5. **Actualización de `1-guia-del-proyecto.md`:**
+   - Sincronización de la estructura de `api-backend/`: 13 rutas, 13 controladores (incluyendo `observatorio.controller.ts`), 6 dominios de casos de uso (con `observatorio/importar-programas-excel.usecase.ts`), 11 repositorios y 19 modelos Sequelize activos sobre 25 migraciones aplicadas.
+
+### Verificación
+- Tipado TypeScript verificado en `sitio-web` (`npx tsc --noEmit` exitoso sin errores).
+- Verificación del esquema de base de datos (`node check-tables.js` confirmando las 20 tablas presentes en PostgreSQL).
+
