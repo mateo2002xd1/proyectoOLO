@@ -35,6 +35,8 @@ export interface PublicacionesProps {
   /** Campo `richtext` de Puck: llega ya convertido en nodos, no como texto. */
   titulo?: ReactNode;
   mostrarTitulo?: boolean;
+  subtitulo?: ReactNode;
+  mostrarSubtitulo?: boolean;
   publicaciones?: PublicacionItem[];
   porPagina?: number;
 }
@@ -206,6 +208,8 @@ export function Publicaciones({
     </>
   ),
   mostrarTitulo = true,
+  subtitulo,
+  mostrarSubtitulo = true,
   publicaciones = [],
   porPagina = 4,
 }: PublicacionesProps) {
@@ -253,7 +257,20 @@ export function Publicaciones({
   return (
     <section className="olo-publicaciones" aria-label="Últimas publicaciones" data-block-id={block.id}>
       <div className="olo-publicaciones-inner">
-        {mostrarTitulo && titulo && <TituloRico className="olo-publicaciones-title">{titulo}</TituloRico>}
+        {((mostrarTitulo && titulo) || (mostrarSubtitulo && subtitulo)) && (
+          <div className="olo-publicaciones-header mb-6 text-center">
+            {mostrarTitulo && titulo && (
+              <TituloRico className={`olo-publicaciones-title ${mostrarSubtitulo && subtitulo ? '!mb-2' : ''}`.trim()}>
+                {titulo}
+              </TituloRico>
+            )}
+            {mostrarSubtitulo && subtitulo && (
+              <div className="olo-publicaciones-subtitle text-sm sm:text-base text-gray-600 max-w-2xl mx-auto">
+                {subtitulo}
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="olo-publicaciones-body">
           <div

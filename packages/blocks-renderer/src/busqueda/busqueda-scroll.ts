@@ -165,10 +165,20 @@ export function buscarElementoPorTexto(texto: string): HTMLElement | null {
     }
 
     if (puntuacion > 0) {
-      // Solo para los elementos que coinciden en texto (1 o 2 en toda la página),
-      // comprobamos visibilidad con getBoundingClientRect()
-      const rect = el.getBoundingClientRect();
-      if (rect.width === 0 && rect.height === 0) continue;
+      // Si el elemento está dentro de un panel de pestañas, puede estar temporalmente
+      // oculto (display: none). No lo descartamos por dimensiones cero.
+      const panelPestana = el.closest('[role="tabpanel"]');
+      const estaEnPestanaOculta = !!panelPestana && (
+        (panelPestana as HTMLElement).style.display === 'none' ||
+        panelPestana.hasAttribute('hidden')
+      );
+
+      if (!estaEnPestanaOculta) {
+        // Solo para los elementos que coinciden en texto (1 o 2 en toda la página),
+        // comprobamos visibilidad con getBoundingClientRect()
+        const rect = el.getBoundingClientRect();
+        if (rect.width === 0 && rect.height === 0) continue;
+      }
 
       // Si tiene mayor puntuación, o misma puntuación pero menor longitud (es más específico),
       // lo elegimos como mejor coincidencia
@@ -211,25 +221,34 @@ export function aplicarDestello(elemento: HTMLElement): void {
     temporizadoresDestello.delete(elemento);
   }
 
-  // 2. Aplicar resaltado de fondo estilo selección de texto con color #fff201 (sin sombra exterior)
-  elemento.style.transition = 'background-color 0.35s ease';
+  // 2. Aplicar resaltado de alta visibilidad (fondo amarillo + contorno brillante dorado)
+  elemento.style.transition = 'all 0.35s ease';
   elemento.style.removeProperty('box-shadow');
   elemento.style.backgroundColor = '#fff201';
+  elemento.style.color = '#001631';
+  elemento.style.outline = '3px solid #facc15';
+  elemento.style.outlineOffset = '3px';
+  elemento.style.borderRadius = elemento.style.borderRadius || '4px';
 
   // Reiniciar clase de animación de apoyo CSS
   elemento.classList.remove('resaltado-busqueda-anim');
   void elemento.offsetWidth;
   elemento.classList.add('resaltado-busqueda-anim');
 
-  // 3. A los 2.4s, desvanecer suavemente a transparente
+  // 3. A los 3.2s, desvanecer suavemente
   const fadeTimer = setTimeout(() => {
     elemento.style.backgroundColor = 'transparent';
+    elemento.style.removeProperty('outline');
+    elemento.style.removeProperty('outline-offset');
 
     // 4. Tras los 450ms de transición suave, remover completamente los estilos inline y clase
     const cleanupTimer = setTimeout(() => {
       elemento.style.removeProperty('box-shadow');
       elemento.style.removeProperty('background-color');
+      elemento.style.removeProperty('color');
       elemento.style.removeProperty('transition');
+      elemento.style.removeProperty('outline');
+      elemento.style.removeProperty('outline-offset');
       elemento.classList.remove('resaltado-busqueda-anim');
       temporizadoresDestello.delete(elemento);
     }, 450);
@@ -238,7 +257,7 @@ export function aplicarDestello(elemento: HTMLElement): void {
     if (actual) {
       actual.cleanupTimer = cleanupTimer;
     }
-  }, 2400);
+  }, 3200);
 
   temporizadoresDestello.set(elemento, {
     fadeTimer,
@@ -247,8 +266,80 @@ export function aplicarDestello(elemento: HTMLElement): void {
 }
 
 /**
+ * Detecta si el elemento encontrado reside dentro de una pestaña (o es el botón de una pestaña)
+ * y ejecuta la activación de la pestaña correspondiente mediante click() en el botón selector.
+ * Admite anidamiento de pestañas activando de forma secuencial de padre a hijo.
+ * Devuelve true si se disparó la activación de alguna pestaña.
+ */
+export function activarPestanaDeElemento(elemento: HTMLElement): boolean {
+  if (typeof window === 'undefined' || typeof document === 'undefined' || !elemento) {
+    return false;
+  }
+
+  let seActivo = false;
+
+  // Caso 1: El elemento encontrado es el botón de la pestaña o un texto/icono dentro del botón
+  const botonTab = elemento.closest<HTMLElement>('[role="tab"], .olo-tabs-btn');
+  if (botonTab) {
+    const yaActivo =
+      botonTab.getAttribute('aria-selected') === 'true' ||
+      botonTab.classList.contains('olo-tabs-btn--active');
+    if (!yaActivo) {
+      botonTab.click();
+      seActivo = true;
+    }
+  }
+
+  // Caso 2: El elemento reside dentro de uno o varios paneles de pestañas ([role="tabpanel"])
+  const panelesParaActivar: HTMLElement[] = [];
+  let actual: HTMLElement | null = elemento;
+
+  while (actual) {
+    const panel = actual.closest<HTMLElement>('[role="tabpanel"]');
+    if (!panel) break;
+    panelesParaActivar.unshift(panel); // Guardar del más externo al más interno
+    actual = panel.parentElement;
+  }
+
+  for (const panel of panelesParaActivar) {
+    const botonId = panel.getAttribute('aria-labelledby');
+    let boton: HTMLElement | null = botonId ? document.getElementById(botonId) : null;
+
+    if (!boton && panel.id) {
+      boton = document.querySelector<HTMLElement>(
+        `[role="tab"][aria-controls="${panel.id}"], button[aria-controls="${panel.id}"], .olo-tabs-btn[aria-controls="${panel.id}"]`
+      );
+    }
+
+    if (!boton) {
+      const slotId = panel.getAttribute('data-slot-id');
+      if (slotId) {
+        boton = document.querySelector<HTMLElement>(
+          `button[data-slot-id="${slotId}"], [role="tab"][data-slot-id="${slotId}"]`
+        );
+      }
+    }
+
+    if (boton) {
+      const yaActivo =
+        boton.getAttribute('aria-selected') === 'true' ||
+        boton.classList.contains('olo-tabs-btn--active');
+      const panelVisible = panel.style.display !== 'none' && !panel.hasAttribute('hidden');
+
+      if (!yaActivo || !panelVisible) {
+        boton.click();
+        seActivo = true;
+      }
+    }
+  }
+
+  return seActivo;
+}
+
+/**
  * Desplaza la vista suavemente hasta el bloque o elemento correspondiente,
  * respetando la barra superior fija (topbar) y aplicando el resaltado de acento.
+ * Si el elemento pertenece a una pestaña inactiva, la activa automáticamente antes del scroll.
  */
 export function desplazarAElemento(opciones: {
   blockId?: string;
@@ -270,32 +361,75 @@ export function desplazarAElemento(opciones: {
 
   // 2. Si no encontró por texto o no había, intentar por el id del bloque Puck
   if (!el && opciones.blockId) {
-    el = document.getElementById(opciones.blockId);
+    el = document.getElementById(opciones.blockId) || document.querySelector<HTMLElement>(`[data-block-id="${opciones.blockId}"]`);
   }
 
   if (el) {
-    const rect = el.getBoundingClientRect();
-    const alturaVentana = window.innerHeight || document.documentElement.clientHeight || 800;
-    const alturaEncabezado = 80; // Altura de la barra superior fija
+    // Si el elemento pertenece a una pestaña o es una pestaña, activarla primero
+    const seActivoPestana = activarPestanaDeElemento(el);
 
-    // Centro del área útil visible entre la barra superior y la base de la pantalla
-    const centroObjetivo = alturaEncabezado + (alturaVentana - alturaEncabezado) / 2;
+    const intentarDesplazarYResaltar = (intentosRestantes = 5) => {
+      let target: HTMLElement | null = el;
 
-    // Posición absoluta del elemento en el documento
-    const posicionElemento = window.pageYOffset + rect.top;
+      // Si el elemento se desconectó del DOM (por re-render de React al cambiar de pestaña)
+      // o no se encuentra conectado, volver a buscarlo en el árbol DOM actualizado:
+      if (!target || !document.body.contains(target)) {
+        if (opciones.texto) {
+          const reEncontrado = buscarElementoPorTexto(opciones.texto);
+          if (reEncontrado) target = reEncontrado;
+        }
+        if ((!target || !document.body.contains(target)) && opciones.blockId) {
+          const reEncontrado = document.getElementById(opciones.blockId) || document.querySelector<HTMLElement>(`[data-block-id="${opciones.blockId}"]`);
+          if (reEncontrado) target = reEncontrado;
+        }
+      }
 
-    // Para elementos pequeños (h1-h6, p, li) tomamos su centro; para bloques altos,
-    // priorizamos su inicio con un margen cómodo para que el título quede visible
-    const compensacionAlto = Math.min(Math.max(rect.height / 2, 20), 120);
-    const posicionTop = Math.max(0, posicionElemento + compensacionAlto - centroObjetivo);
+      if (target && document.body.contains(target)) {
+        const rect = target.getBoundingClientRect();
 
-    window.scrollTo({
-      top: posicionTop,
-      behavior: 'smooth',
-    });
+        // Si la pestaña aún está abriéndose o no ha terminado el layout (altura 0)
+        if (rect.height === 0 && intentosRestantes > 0) {
+          setTimeout(() => intentarDesplazarYResaltar(intentosRestantes - 1), 70);
+          return;
+        }
 
-    // Resaltar visualmente
-    aplicarDestello(el);
+        const alturaVentana = window.innerHeight || document.documentElement.clientHeight || 800;
+        const alturaEncabezado = 80; // Altura de la barra superior fija
+
+        // Centro del área útil visible entre la barra superior y la base de la pantalla
+        const centroObjetivo = alturaEncabezado + (alturaVentana - alturaEncabezado) / 2;
+
+        // Posición absoluta del elemento en el documento
+        const posicionElemento = window.pageYOffset + rect.top;
+
+        // Para elementos pequeños (h1-h6, p, li) tomamos su centro; para bloques altos,
+        // priorizamos su inicio con un margen cómodo para que el título quede visible
+        const compensacionAlto = Math.min(Math.max(rect.height / 2, 20), 120);
+        const posicionTop = Math.max(0, posicionElemento + compensacionAlto - centroObjetivo);
+
+        window.scrollTo({
+          top: posicionTop,
+          behavior: 'smooth',
+        });
+
+        // Resaltar visualmente con destello
+        aplicarDestello(target);
+        return;
+      }
+
+      // Si aún no está en el DOM y quedan intentos (el componente está montándose), reintentar
+      if (intentosRestantes > 0) {
+        setTimeout(() => intentarDesplazarYResaltar(intentosRestantes - 1), 70);
+      }
+    };
+
+    if (seActivoPestana) {
+      // Esperar un ciclo inicial para que React procese el click y monte el contenido de la pestaña
+      setTimeout(() => intentarDesplazarYResaltar(5), 70);
+    } else {
+      intentarDesplazarYResaltar(1);
+    }
+
     return true;
   }
 

@@ -25,6 +25,8 @@ export interface ImagenDestacadaProps {
   id?: string;
   titulo?: ReactNode;
   mostrarTitulo?: boolean;
+  subtitulo?: ReactNode;
+  mostrarSubtitulo?: boolean;
   imagenSrc?: string;
   imagenAlt?: string;
   ancho?: 'contenido' | 'completo';
@@ -37,6 +39,8 @@ export interface ImagenDestacadaProps {
 export function ImagenDestacada({
   titulo,
   mostrarTitulo = true,
+  subtitulo,
+  mostrarSubtitulo = true,
   imagenSrc,
   imagenAlt = '',
   ancho = 'completo',
@@ -73,7 +77,10 @@ export function ImagenDestacada({
     <div className={`${clasesFondo} w-full py-12 ${className}`.trim()}>
       <div className="max-w-[1200px] w-full mx-auto px-6 text-center flex flex-col items-center">
         {mostrarTitulo && titulo && (
-          <h2 className="matriz-section-title text-[#041E42] font-bold mb-6">{titulo}</h2>
+          <h2 className={`matriz-section-title text-[#041E42] font-bold ${mostrarSubtitulo && subtitulo ? 'mb-3' : 'mb-6'}`}>{titulo}</h2>
+        )}
+        {mostrarSubtitulo && subtitulo && (
+          <div className="text-gray-600 mb-6 text-sm sm:text-base max-w-2xl mx-auto">{subtitulo}</div>
         )}
         <div className="w-full">
           {/* eslint-disable-next-line @next/next/no-img-element */}
