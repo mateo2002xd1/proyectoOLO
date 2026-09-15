@@ -82,6 +82,7 @@ export interface TabsProps {
  * - Descarga de archivo: Descarga directa de documento adjunto (no admite bloques internos).
  */
 export function TabsRender({
+  id,
   titulo = '',
   mostrarTitulo = true,
   alineacionTitulo = 'izquierda',
@@ -138,8 +139,12 @@ export function TabsRender({
       ? 'text-right items-end'
       : 'text-left items-start';
 
+  const sectionId = restProps.id || id;
+
   return (
     <section
+      id={sectionId}
+      data-block-id={sectionId}
       className={`olo-tabs-section olo-tabs${varianteClase} w-full`}
       style={{ width: '100%' }}
     >
@@ -288,6 +293,8 @@ export function TabsRender({
                     type="button"
                     aria-selected={estaActiva}
                     aria-controls={tabpanelId}
+                    data-slot-id={tab.slotId}
+                    data-tab-title={typeof tab.titulo === 'string' ? tab.titulo : undefined}
                     tabIndex={estaActiva ? 0 : -1}
                     data-puck-overlay-portal=""
                     style={estiloBotonComun}
@@ -460,6 +467,8 @@ export function TabsRender({
                   id={tabpanelId}
                   role="tabpanel"
                   aria-labelledby={tabButtonId}
+                  data-slot-id={tab.slotId}
+                  data-tab-title={typeof tab.titulo === 'string' ? tab.titulo : undefined}
                   style={{
                     display: estaActiva ? 'block' : 'none',
                     width: '100%',
