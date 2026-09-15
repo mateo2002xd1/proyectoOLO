@@ -8,6 +8,7 @@ import { obtenerIndiceBusqueda } from '../use-cases/paginas/obtener-indice-busqu
 import { obtenerVersionEditable } from '../use-cases/paginas/obtener-version-editable.usecase';
 import { listarEnRevision } from '../use-cases/paginas/listar-en-revision.usecase';
 import { listarPaginasPublicadas } from '../use-cases/paginas/listar-publicadas.usecase';
+import { registrarVisita } from '../use-cases/paginas/registrar-visita.usecase';
 import { listarRespaldos } from '../use-cases/paginas/listar-respaldos.usecase';
 import { analizarDepuracionVersiones } from '../use-cases/paginas/analizar-depuracion-versiones.usecase';
 import { depurarVersiones } from '../use-cases/paginas/depurar-versiones.usecase';
@@ -404,6 +405,18 @@ export const PaginaController = {
   async listarPublicadas(_req: Request, res: Response, next: NextFunction) {
     try {
       res.json(await listarPaginasPublicadas());
+    } catch (err) { next(err); }
+  },
+
+  async registrarVisita(req: Request, res: Response, next: NextFunction) {
+    try {
+      const slug = (req.body?.slug || req.params?.slug || '').trim();
+      const ambitoBody = req.body?.ambito;
+      const ambitoHeader = req.header(AMBITO_HEADER);
+      const ambito = (ambitoBody === 'intranet' || ambitoHeader === 'intranet') ? 'intranet' : 'sitio';
+
+      const resultado = await registrarVisita({ slug, ambito });
+      res.json(resultado);
     } catch (err) { next(err); }
   },
 

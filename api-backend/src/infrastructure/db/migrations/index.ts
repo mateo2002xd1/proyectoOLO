@@ -25,7 +25,8 @@ import * as bloqueosEdicion from './021-bloqueos-edicion';
 import * as auditoriaGuardarBorrador from './022-auditoria-guardar-borrador';
 import * as permisoPoliticaPrivacidadSitio from './023-permiso-politica-privacidad-sitio';
 import * as subidasPendientes from './024-subidas-pendientes';
-import * as observatorioSobresalientes from './025-observatorio-programas-sobresalientes';
+import * as visitasPaginas from './025-visitas-paginas';
+
 export interface Migracion {
   nombre: string;
   up: (queryInterface: QueryInterface) => Promise<void>;
@@ -60,7 +61,7 @@ const migraciones: Migracion[] = [
   auditoriaGuardarBorrador,
   permisoPoliticaPrivacidadSitio,
   subidasPendientes,
-  observatorioSobresalientes,
+  visitasPaginas,
 ];
 
 const TABLA_CONTROL = 'migraciones_aplicadas';

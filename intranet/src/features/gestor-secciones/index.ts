@@ -27,6 +27,7 @@ export { NuevaSeccionButton } from "./components/nueva-seccion-button";
 export { EliminarSeccionButton } from "./components/eliminar-seccion-button";
 export { AvisoSeccionNueva } from "./components/aviso-seccion-nueva";
 export { MarcoSecciones } from "./components/marco-secciones";
+export { RastreadorVisitas } from "./components/rastreador-visitas";
 
 // Semillas de contenido inicial (mesa de trabajo)
 export { getPageSeed, isEmptyContent } from "./lib/page-seeds";
