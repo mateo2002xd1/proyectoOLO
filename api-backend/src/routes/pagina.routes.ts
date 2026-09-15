@@ -652,6 +652,8 @@ router.get('/en-revision', requierePermisoPagina('puedePublicar'), PaginaControl
  *       401: { $ref: '#/components/responses/NoAutenticado' }
  */
 router.get('/respaldos', requireAuth, PaginaController.listarRespaldos);
+router.get('/respaldos/analizar-depuracion', requireAuth, PaginaController.analizarDepuracion);
+router.post('/respaldos/depurar', requireAuth, requierePermisoPagina('puedePublicar'), PaginaController.depurarVersiones);
 
 /**
  * @openapi

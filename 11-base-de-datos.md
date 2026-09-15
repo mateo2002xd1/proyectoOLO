@@ -10,9 +10,9 @@
 
 ## 0. Las tres preguntas que responde el diseño
 
-1. **¿Qué se guarda?** 12 tablas, agrupadas en dominios esenciales (§4).
+1. **¿Qué se guarda?** 19 tablas de dominio (20 incluyendo la tabla de control del runner de migraciones), agrupadas en 6 dominios esenciales (§4).
 2. **¿Qué NO se guarda en Postgres?** Seis necesidades que parecen tabla y no lo son (§6).
-3. **¿Qué impide que los datos queden inconsistentes?** Nueve invariantes declaradas en el esquema, no en el código (§5).
+3. **¿Qué impide que los datos queden inconsistentes?** Catorce invariantes declaradas en el esquema, no en el código (§5).
 
 ---
 
@@ -89,24 +89,43 @@ El middleware de cada frontend exige el suyo. Un director no entra al panel del 
 ┌──────────┐  1:N   ┌────────────────────┐  │
 │ paginas  │───────▶│ paginas_versiones  │──┘
 └────┬─────┘        └────────────────────┘
-     └── version_publicada_id ──▲  (FK circular, DEFERRABLE)
+     │ 1:N          version_publicada_id ──▲  (FK circular, DEFERRABLE)
+     ▼
+┌──────────────────────┐   ┌──────────────────────┐
+│  subidas_pendientes  │   │   bloqueos_edicion   │ (concurrencia pesimista en Puck,
+│ (recolección basura) │   │ (lease con TTL)      │  PK: ambito + slug)
+└──────────────────────┘   └──────────────────────┘
 
   auditoria_cambios ── entidad_tipo + entidad_id ──▶ (contenidos | paginas | usuarios | ...)
-  auditoria_accesos ── recurso_tipo + recurso_id ──▶ (archivos | paginas | tableros_bi)
 
-  politicas_privacidad ──1:N──▶ consentimientos       marca_versiones
-  configuraciones (clave/valor)   tableros_bi          respaldos    notificaciones
+  ─── Módulo: Observatorio Laboral y Ocupacional (Datos Dinámicos / Snowflake) ───
+  ┌─────────────────┐ 1:N  ┌───────────────────┐
+  │  departamentos  │─────▶│ centros_formacion │
+  └────────┬────────┘      └─────────┬─────────┘
+           │ 1:N                     │ 1:N
+           │   ┌─────────────────────┘
+           ▼   ▼
+  ┌──────────────────────────────────────────────────┐
+  │             programas_sobresalientes             │ (Hechos / Métricas)
+  │ (PK UUID, UNIQUE: centro_id + programa_id + sexo)│
+  └──────────────────────────────────────────────────┘
+           ▲   ▲
+           │   └─────────────────────┐
+           │ 1:N                     │ 1:N
+  ┌────────┴────────┐ 1:N  ┌─────────┴─────────┐
+  │niveles_formacion│─────▶│programas_formacion│
+  └─────────────────┘      └───────────────────┘
 ```
 
-Las dos tablas de auditoría usan un par `tipo + id` en lugar de una FK, porque apuntan a entidades de tablas distintas. Es la única relación no declarada en el esquema, y es deliberada: una FK real exigiría una columna por tabla auditada, casi todas en `NULL`.
+La tabla de auditoría usa un par `tipo + id` en lugar de una FK, porque apunta a entidades de tablas distintas. Es la única relación polimórfica no declarada con FK rígida en el motor, y es deliberada: una FK real exigiría una columna por tabla auditada, casi todas en `NULL`.
 
 ---
 
 ## 4. Inventario de tablas
 
-Las 12 tablas de este inventario existen en el esquema y **las 12 tienen modelo Sequelize**, así que `npm run db:verificar` las cubre todas.
+Las 19 tablas de este inventario existen en el esquema y **las 19 tienen modelo Sequelize**, así que `npm run db:verificar` las cubre todas (más `migraciones_aplicadas` como tabla técnica del runner de migraciones).
 
-> **Nota sobre depuración (Migración 020)**: Se eliminaron 8 tablas inactivas (`auditoria_accesos`, `configuraciones`, `marca_versiones`, `tableros_bi`, `politicas_privacidad`, `consentimientos`, `respaldos`, `notificaciones`) que habían sido diseñadas para fases futuras pero nunca tuvieron repositorios ni uso en el código. El esquema se redujo exclusivamente a los modelos con uso real.
+> **Nota sobre depuración (Migración 020) y expansión (021 a 025)**: Se eliminaron 8 tablas inactivas (`auditoria_accesos`, `configuraciones`, `marca_versiones`, `tableros_bi`, `politicas_privacidad`, `consentimientos`, `respaldos`, `notificaciones`) que habían sido diseñadas para fases futuras pero nunca tuvieron repositorios ni uso en el código. Posteriormente, el esquema incorporó `bloqueos_edicion` (021) para control de concurrencia pesimista en edición visual, `subidas_pendientes` (024) para la recolección de basura de archivos no confirmados en Puck, y el módulo de **Observatorio Laboral y Ocupacional** (025) compuesto por 5 tablas (`departamentos`, `centros_formacion`, `niveles_formacion`, `programas_formacion`, `programas_sobresalientes`).
 
 ### 4.1 Identidad y acceso — RF-04, RF-05, RF-16
 
@@ -149,12 +168,14 @@ Las 12 tablas de este inventario existen en el esquema y **las 12 tienen modelo 
 
 **Por qué el archivo se separó del contenido.** El modelo anterior tenía `Attachment.postId NOT NULL`, así que **una imagen subida desde el editor Puck no tenía dónde guardarse**: no pertenece a ningún contenido, pertenece a un bloque. Con la tabla suelta, el bloque la referencia por `id` (D5), y el mismo archivo puede estar en un contenido, en un bloque y en la marca institucional sin triplicarse.
 
-### 4.4 Maqueta y gobernanza — RF-01, RF-06
+### 4.4 Maqueta, gobernanza y concurrencia — RF-01, RF-06
 
 | Tabla | Qué guarda | Claves e invariantes |
 |---|---|---|
 | **`paginas`** | El lienzo editable: slug, título y cuál es su versión viva | `ambito` `CHECK(sitio\|intranet)` y **`UNIQUE(ambito, slug)`** — las dos apps comparten tabla y sin el ámbito sus slugs colisionan. `version_publicada_id` es una FK circular, `DEFERRABLE INITIALLY DEFERRED` y `ON DELETE SET NULL` |
 | **`paginas_versiones`** | Cada versión del árbol Puck, con su estado en el ciclo | Ver §5: tres invariantes del ciclo editorial viven aquí |
+| **`bloqueos_edicion`** | Concurrencia pesimista (lease / lock) para edición visual en Puck | PK compuesta `(ambito, slug)`. `expira_en` gestiona la expiración automática del bloqueo. `usuario_id` y `usuario_nombre` identifican al editor activo. `CHECK (ambito IN ('sitio', 'intranet'))` |
+| **`subidas_pendientes`** | Archivos multimedia cargados en borradores que aún no han sido publicados | PK compuesta `(pagina_id, ruta)`. `pagina_id` FK a `paginas.id` con `ON DELETE CASCADE`. Permite recolectar basura y purgar archivos huérfanos al publicar o descartar |
 
 `paginas_versiones.creado_por` es nuevo. Antes solo se registraba quién revisó y quién publicó, así que **no se podía saber quién editó** — un hueco directo en RF-07.
 
@@ -187,14 +208,30 @@ error.
 |---|---|---|
 | **`auditoria_cambios`** | Quién modificó qué entidad, qué campos y cuándo | `campos_modificados` `JSONB` con forma `[{campo, antes, despues}]`. Índices por `(entidad_tipo, entidad_id, created_at DESC)`, `usuario_id` y `created_at DESC`, para que consultar por entidad o por fecha no recorra la tabla entera. `usuario_nombre` es la desnormalización de D6 |
 
-### 4.6 Lo que hay en la base y no está en el inventario
+### 4.6 Observatorio Laboral y Ocupacional — RF-08, RF-09, Tableros Dinámicos
 
-Tras aplicar las migraciones, `\dt` muestra veintidós objetos. Los dos que no pertenecen al inventario están aquí para que nadie los tome por olvido:
+Estructura en copo de nieve (Snowflake) que almacena los catálogos y las estadísticas del mercado laboral extraídas de reportes Excel cargados mediante el bloque `ImportadorExcelBloque` y el endpoint `/api/observatorio/importar`.
+
+| Tabla | Qué guarda | Claves e invariantes |
+|---|---|---|
+| **`departamentos`** | Catálogo de regiones / departamentos de Colombia | `nombre` VARCHAR(100) UNIQUE (`uq_departamentos_nombre`). `codigo_dane` VARCHAR(10) opcional |
+| **`centros_formacion`** | Sedes o centros del SENA pertenecientes a cada regional | `departamento_id` FK a `departamentos.id` (`ON DELETE RESTRICT, ON UPDATE CASCADE`). Restricción única compuesta `UNIQUE(departamento_id, nombre)` (`uq_centros_formacion_depto_nombre`) |
+| **`niveles_formacion`** | Niveles académicos ofrecidos (Técnico, Tecnólogo, Especialización, etc.) | `nombre` VARCHAR(50) UNIQUE (`uq_niveles_formacion_nombre`) |
+| **`programas_formacion`** | Oferta educativa del SENA ligada a su nivel | `nivel_formacion_id` FK a `niveles_formacion.id` (`ON DELETE RESTRICT, ON UPDATE CASCADE`). Restricción única compuesta `UNIQUE(nivel_formacion_id, nombre)` (`uq_programas_formacion_nivel_nombre`) |
+| **`programas_sobresalientes`** | Tabla transaccional de hechos que consolida los indicadores de vinculación laboral y egresados | FKs a `departamentos.id`, `centros_formacion.id`, `programas_formacion.id`, `niveles_formacion.id` (`RESTRICT`/`CASCADE`). Restricciones numéricas: `certificados >= 0`, `0 <= vinculados <= certificados`, `0 <= tasa_vinculacion <= 1`, `salario_promedio >= 0`. `CHECK (sexo IN ('M', 'F'))`. **Clave única de idempotencia: `UNIQUE(centro_id, programa_id, sexo)`** |
+
+**Ingesta y procesamiento atómico de Excel:**
+El backend procesa los archivos `.xlsx` en memoria mediante streaming (`exceljs`), validando encabezados y tipos. Para garantizar idempotencia y evitar duplicación de métricas, la carga se ejecuta en una única transacción de base de datos (`transaction.commit()` / `rollback()`). Primero asegura la existencia de las dimensiones de catálogo (`departamentos`, `centros_formacion`, `niveles_formacion`, `programas_formacion`) y finalmente realiza un `upsert` sobre `programas_sobresalientes` utilizando la tupla única `(centro_id, programa_id, sexo)`.
+
+### 4.7 Lo que hay en la base y no está en el inventario
+
+Tras aplicar las migraciones, la base contiene los 19 modelos activos más la tabla técnica de control:
 
 | Tabla | Qué es | Hasta cuándo |
 |---|---|---|
-| `_obsoleto_attachment` | La antigua `"Attachment"`, apartada con sus datos ya copiados a `archivos` + `contenidos_archivos`. No se borra en el mismo paso que se crea su reemplazo (regla 5 de `4-reglas.md`) | Hasta que `archivos` esté verificada en uso |
 | `migraciones_aplicadas` | La tabla de control del runner: qué migración se aplicó y cuándo. No es del dominio, es de la herramienta | Permanente |
+
+*(Nota: Las tablas obsoletas legacy `_obsoleto_attachment` y `FileStatuses` fueron purgadas formalmente en la migración 020).*
 
 ---
 
@@ -213,8 +250,14 @@ Cada una es una regla de negocio que **el código no puede violar por accidente*
 | I7 | **Una sola marca activa** | `UNIQUE(activa) WHERE activa = true` | RF-03: el sitio no puede tener dos identidades |
 | I8 | **Una sola política de privacidad vigente** | Índice parcial sobre `vigente_hasta IS NULL` | RF-13: se sabe sin ambigüedad qué se está aceptando |
 | I9 | **Solo se registran aceptaciones** | `CHECK (aceptado = true)` | Ley 1581: el consentimiento es explícito o no existe |
+| I10 | **Idempotencia en programas sobresalientes** | `UNIQUE(centro_id, programa_id, sexo)` | Permite re-subir archivos Excel actualizados sin duplicar filas de estadísticas ni corromper agregaciones |
+| I11 | **Consistencia de egresados y vinculados** | `CHECK (vinculados >= 0 AND vinculados <= certificados)` | No pueden existir más aprendices vinculados que certificados en una cohorte |
+| I12 | **Tasa de vinculación acotada** | `CHECK (tasa_vinculacion >= 0 AND tasa_vinculacion <= 1)` | Consistencia matemática del ratio porcentual (0.0000 a 1.0000) |
+| I13 | **Validación estricta de género** | `CHECK (sexo IN ('M', 'F'))` | Evita registros no tipificados en las estadísticas oficiales del Observatorio |
+| I14 | **Ámbito de bloqueos de edición** | `CHECK (ambito IN ('sitio', 'intranet'))` | Garantiza que los bloqueos de concurrencia pesimista solo apliquen a los ámbitos válidos del sistema |
+| I15 | **Limpieza e integridad de subidas pendientes** | `PRIMARY KEY (pagina_id, ruta)` + `ON DELETE CASCADE` hacia `paginas.id` | Al eliminar una página o publicar una versión, los archivos temporales no confirmados se purgan sin dejar registros huérfanos |
 
-Y dos que protegen el borrado: `RESTRICT` en `roles`, `secciones`, `archivos` y `politicas_privacidad` (no se borra algo en uso), `SET NULL` en las autorías (borrar un usuario no borra su trabajo), `CASCADE` solo donde el hijo no tiene sentido sin el padre (preguntas de seguridad, versiones de página).
+Y las reglas que protegen el borrado: `RESTRICT` en `roles`, `secciones`, `archivos`, `departamentos`, `centros_formacion`, `niveles_formacion` y `programas_formacion` (no se borra un catálogo ni un archivo en uso), `SET NULL` en las autorías (borrar un usuario no borra su trabajo), `CASCADE` solo donde el hijo no tiene sentido sin el padre (preguntas de seguridad, versiones de página, subidas pendientes).
 
 ---
 
@@ -224,7 +267,7 @@ Y dos que protegen el borrado: `RESTRICT` en `roles`, `secciones`, `archivos` y 
 |---|---|---|
 | Sesiones / JWT | Cookie `httpOnly` + Redis | El token es corto y firmado; una tabla de sesiones no aporta nada que la firma no dé, y añade una escritura por request |
 | Intentos de login / rate limiting | Redis (`express-rate-limit`) | Escritura por request fallido; en Postgres envenena el WAL sin dar nada a cambio |
-| Bloqueo de edición concurrente | Redis con TTL | Es efímero por definición: Redis lo expira solo, una tabla habría que barrerla con un job |
+| Bloqueo de edición concurrente | Tabla `bloqueos_edicion` con lease / `expira_en` | Formalizado en Postgres en migración 021 para persistir el estado entre reinicios y auditar bloqueos activos sin depender de infraestructura externa |
 | Caché de páginas públicas | Redis | Ya decidido en la guía §3.3 |
 | **Ocupaciones CNO / CUOC (RF-09)** | **Servicio externo consumido con API key + caché Redis** | RF-09 dice "consultando **en línea** la BD del OLO". Replicarla localmente crearía una copia que envejece y una segunda fuente de verdad. La API key vive solo en el `.env` del backend (S5) |
 | Cola de respaldos | BullMQ sobre Redis | Solo el **historial** se persiste, en `respaldos` |
@@ -237,23 +280,23 @@ Y dos que protegen el borrado: `RESTRICT` en `roles`, `secciones`, `archivos` y 
 
 | RF | Tablas |
 |---|---|
-| RF-01 contenidos | `contenidos`, `secciones`, `paginas`, `paginas_versiones` |
-| RF-02 documentos | `archivos`, `contenidos_archivos`, `configuraciones` (tamaño y tipos) |
-| RF-03 identidad visual | `marca_versiones`, `archivos` (logotipos) |
+| RF-01 contenidos | `contenidos`, `secciones`, `paginas`, `paginas_versiones`, `bloqueos_edicion`, `subidas_pendientes` |
+| RF-02 documentos | `archivos`, `contenidos_archivos` |
+| RF-03 identidad visual | `archivos` (logotipos institucionales) |
 | RF-04 roles | `usuarios`, `roles`, `permisos`, `roles_permisos` |
 | RF-05 restricción al editor | `roles_permisos` + policies |
-| RF-06 aprobación | `paginas_versiones` (I1–I4), `notificaciones` |
+| RF-06 aprobación | `paginas_versiones` (I1–I4) |
 | RF-07 historial | `auditoria_cambios` |
-| RF-08 Power BI | `tableros_bi`, `configuraciones` (dominios permitidos) |
-| RF-09 CNO/CUOC | **ninguna** — servicio externo (§6) |
+| RF-08 Power BI y datos dinámicos | `departamentos`, `centros_formacion`, `niveles_formacion`, `programas_formacion`, `programas_sobresalientes` (importación Excel) |
+| RF-09 CNO/CUOC | Catálogos del Observatorio + servicio externo en línea (§6) |
 | RF-10 buscador interno | `contenidos.busqueda` (tsvector + GIN) |
 | RF-11 navegación 3 clics | `secciones.nivel` (I6) |
-| RF-12 descarga pública | `archivos` (`ambito='publico'`, `estado='disponible'`), `auditoria_accesos` |
-| RF-13 Habeas Data | `politicas_privacidad`, `consentimientos` |
-| RF-14 accesibilidad | `archivos.texto_alternativo`, `marca_versiones.contraste_validado` |
-| RF-15 directores | `archivos` (`ambito='interno'`), `auditoria_accesos`, permiso `acceso.intranet` |
+| RF-12 descarga pública | `archivos` (`ambito='publico'`, `estado='disponible'`), `auditoria_cambios` |
+| RF-13 Habeas Data | `auditoria_cambios` |
+| RF-14 accesibilidad | `archivos.texto_alternativo` |
+| RF-15 directores | `archivos` (`ambito='interno'`), permiso `acceso.intranet` |
 | RF-16 auth y caducidad | `usuarios.fecha_caducidad`, `preguntas_seguridad` |
-| RF-17 respaldos | `respaldos`, `configuraciones` (frecuencia) |
+| RF-17 respaldos | Procesamiento vía scripts y almacenamiento externo |
 
 ---
 
@@ -294,6 +337,12 @@ eso la tabla lleva el porqué en vez de un número de riesgo.
 | 017 | `titulo-menu-y-pie` | La 014 renombró el slug y dejó el `titulo` en `plantilla`, que es lo que pinta la cola de aprobación. Acotada por el título viejo: si alguien ya le puso nombre a mano, no se lo pisa |
 | 018 | `revertir-titulos-intranet` | Repara lo que la 015 rompió. Ver abajo |
 | 019 | `permiso-eliminar-secciones` | Da de alta `secciones.eliminar`, separado del de crear a propósito: crear añade, eliminar destruye y no se deshace |
+| 020 | `depuracion-y-optimizacion-esquema` | Purgado formal de 8 tablas inactivas sin uso (`auditoria_accesos`, `configuraciones`, `marca_versiones`, `tableros_bi`, `politicas_privacidad`, `consentimientos`, `respaldos`, `notificaciones`) y tablas huérfanas legacy (`_obsoleto_attachment`, `FileStatuses`) |
+| 021 | `bloqueos-edicion` | Crea la tabla `bloqueos_edicion` con clave compuesta `(ambito, slug)` y marca temporal `expira_en` para control de concurrencia pesimista con lease/TTL al editar páginas en Puck |
+| 022 | `auditoria-guardar-borrador` | Añade `'guardar_borrador'` a la restricción `ck_auditoria_accion` de `auditoria_cambios` |
+| 023 | `permiso-politica-privacidad-sitio` | Da de alta el permiso `politica-privacidad.editar` en el catálogo de permisos |
+| 024 | `subidas-pendientes` | Crea la tabla `subidas_pendientes` con clave `(pagina_id, ruta)` y `ON DELETE CASCADE` para recolectar y purgar archivos subidos en borradores no publicados |
+| 025 | `observatorio-programas-sobresalientes` | Crea las 5 tablas del esquema snowflake del Observatorio: catálogos (`departamentos`, `centros_formacion`, `niveles_formacion`, `programas_formacion`) y tabla transaccional de hechos `programas_sobresalientes` con clave de idempotencia `(centro_id, programa_id, sexo)` e índices de cobertura |
 
 Tres lecciones de este tramo que vale más recordar que releer:
 
@@ -333,7 +382,7 @@ dos caminos convergen — sobre una base ya migrada la 018 repara, sobre una bas
 
 `Contenido.title` sigue llamándose `title` en el modelo y en el JSON de la API; la columna es `titulo`, y `field: 'titulo'` une las dos. Lo mismo con `sectionId`→`seccion_id`, `User.name`→`nombre` y el resto.
 
-Sin esto, renombrar una columna obligaría a cambiar el modelo, el repositorio, el caso de uso, el controlador **y los dos frontends** en el mismo despliegue. Con esto, la base adopta la convención del proyecto y **ningún frontend se entera**: `sitio-web/src/features/contenidos/types.ts` y el panel de usuarios siguen recibiendo exactamente los mismos campos.
+Sin esto, renombrar una columna obligaría a cambiar el modelo, el repositorio, el caso de uso, el controlador **y los dos frontends** en el mismo despliegue. Con esto, la base adopta la convención del proyecto y **ningún frontend se entera**: `sitio-web/src/features/contenidos/types.ts` and el panel de usuarios siguen recibiendo exactamente los mismos campos.
 
 Por el mismo motivo **tampoco se traducen los valores**: `usuarios.estado` sigue guardando `'active'`/`'inactive'` porque el panel de usuarios los compara y los escribe tal cual. La única excepción es `auditoria_cambios`, donde sí se tradujeron nombres y valores — ningún frontend consume todavía esos campos, así que no había contrato que romper.
 
@@ -355,7 +404,7 @@ Alinear también los nombres de atributo al español es un refactor de la API, c
 
 ### 8.4 Resultado de la ejecución
 
-Las siete migraciones del plan **están aplicadas** sobre la base de desarrollo (Neon), y con ellas las doce siguientes: hoy el manifiesto lleva **diecinueve**. `npm run db:verificar` confirma que los modelos coinciden con las columnas reales — eran 21 modelos cuando se escribió esto y hoy son **20**, porque `usuarios_sitio` se eliminó con su modelo en la 013.
+Las siete migraciones del plan y las dieciocho sucesivas **están aplicadas**: hoy el manifiesto lleva **veinticinco migraciones (`001` a `025`)**. `npm run db:verificar` confirma que los **19 modelos Sequelize activos** coinciden exactamente con las columnas reales de PostgreSQL (más la tabla de control `migraciones_aplicadas`).
 
 Cuatro cosas que solo se supieron al ejecutar, y que estaban mal supuestas en el diseño:
 
@@ -364,7 +413,7 @@ Cuatro cosas que solo se supieron al ejecutar, y que estaban mal supuestas en el
 | `"Post".id`, `"Section".id`, `"Attachment".id` eran `TEXT`, como declaraban los modelos | Ya eran **`uuid`**. Sobraban todas las conversiones de tipo, y los pre-chequeos con `!~*` habrían fallado: no es un operador válido sobre `uuid` |
 | `permissions.created_at` tendría `DEFAULT now()` | `NOT NULL` **sin default**: el valor lo ponía Sequelize desde JavaScript, así que un `INSERT` en SQL plano no tenía quien lo rellenara |
 | Las filas del driver llegan como objeto | Llegan como **array posicional**. Leerlas de una sola forma hacía que el verificador diera un informe falso y que el runner creyera que ninguna migración se había aplicado |
-| El esquema solo contenía tablas conocidas | Existe una tabla huérfana **`FileStatuses`** (0 filas) que no aparece en ningún modelo, migración ni documento. Se dejó intacta |
+| El esquema contenía tablas obsoletas y stubs | Existían tablas como `FileStatuses` y `_obsoleto_attachment`, que fueron depuradas en la migración 020 junto con los stubs sin uso de desarrollo |
 
 La lección para las siguientes: **el esquema real manda sobre lo que declara el modelo.** Antes de escribir una migración que convierta tipos, hay que mirar `information_schema`, no el `DataTypes` del modelo.
 
