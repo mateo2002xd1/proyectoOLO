@@ -10,13 +10,13 @@
 
 ## 1. Resumen Ejecutivo del Esquema
 
-El modelo de datos del Observatorio Laboral y Ocupacional (OLO) está implementado en **PostgreSQL** bajo el esquema `public`. Fue diseñado siguiendo principios de normalización relacional (3FN), segregación estricta de responsabilidades (RBAC), gobernanza de contenido mediante versionamiento inmutable y trazabilidad integral requerida por la **Ley 1581 de 2012 (Habeas Data)**.
+El modelo de datos del Observatorio Laboral y Ocupacional (OLO) está implementado en **PostgreSQL** bajo el esquema `public`. Fue diseñado siguiendo principios de normalización relacional (3FN), segregación estricta de responsabilidades (RBAC), gobernanza de contenido mediante versionamiento inmutable, concurrencia pesimista en maquetación visual y trazabilidad integral requerida por la **Ley 1581 de 2012 (Habeas Data)**.
 
 ### Métricas Generales del Esquema:
-- **Total de Tablas Base:** 14 tablas activas.
-- **Total de Columnas:** 121 atributos documentados.
-- **Total de Llaves Foráneas (FK):** 19 relaciones de integridad referencial activas.
-- **Total de Restricciones CHECK:** 14 restricciones de dominio y reglas de negocio en motor.
+- **Total de Tablas Base:** 20 tablas documentadas (19 tablas del dominio con modelos Sequelize + 1 tabla técnica de control `migraciones_aplicadas`).
+- **Total de Columnas:** 152 atributos documentados y tipificados.
+- **Total de Llaves Foráneas (FK):** 26 relaciones de integridad referencial activas con políticas declarativas `RESTRICT`, `CASCADE` y `SET NULL`.
+- **Total de Restricciones CHECK:** 20 restricciones de dominio y reglas de negocio validadas en el motor de base de datos.
 - **Estrategia de Identificadores (PK):** UUID versión 4 (`DEFAULT gen_random_uuid()`) en todas las entidades del dominio, garantizando unicidad global y previniendo enumeración secuencial maliciosa.
 - **Control de Estados:** Implementado mediante restricciones `CHECK` con tipos de texto nativos en lugar de `ENUM` de PostgreSQL, permitiendo modificaciones y mantenimientos no bloqueantes.
 
@@ -28,17 +28,17 @@ En respuesta a la verificación de componentes adicionales del motor PostgreSQL:
 
 | Tipo de Objeto | Cantidad | Estado / Detalle |
 |---|---|---|
-| **Tablas Base (`BASE TABLE`)** | **14** | Activas en producción y desarrollo. Cubren los 17 Requerimientos Funcionales (RF). |
+| **Tablas Base (`BASE TABLE`)** | **20** | Activas en producción y desarrollo (19 de dominio + 1 de control). Cubren los 17 Requerimientos Funcionales (RF). |
 | **Vistas (`VIEW`)** | **0** | No se utilizan vistas estándar. Las proyecciones se realizan mediante Sequelize / QueryBuilder. |
-| **Vistas Materializadas (`MATERIALIZED VIEW`)** | **0** | Las agregaciones analíticas se delegan a Power BI (RF-08) y caché en memoria Redis. |
-| **Procedimientos Almacenados (`PROCEDURE`)** | **0** | La lógica transaccional reside en la capa de servicios de la API (Node.js/TypeScript). |
+| **Vistas Materializadas (`MATERIALIZED VIEW`)** | **0** | Las agregaciones analíticas se delegan a Power BI (RF-08), datos dinámicos del Observatorio y caché en memoria Redis. |
+| **Procedimientos Almacenados (`PROCEDURE`)** | **0** | La lógica transaccional reside en la capa de servicios y casos de uso de la API (Node.js/TypeScript). |
 | **Funciones de Negocio (`FUNCTION`)** | **0** | No hay funciones PL/pgSQL propietarias. El motor ejecuta exclusivamente las funciones criptográficas provistas por la extensión `pgcrypto`. |
 | **Disparadores (`TRIGGER`)** | **0** | La auditoría y reglas de negocio se aplican por software y restricciones declarativas (`CHECK`, `UNIQUE`, `FK`), evitando efectos colaterales ocultos en BD. |
 | **Paquetes (`PACKAGE`)** | **No aplica** | PostgreSQL no soporta paquetes estilo Oracle. La modularización se logra a nivel de esquemas y módulos de software. |
 | **Extensiones (`EXTENSION`)** | **2** | `plpgsql` (v1.0) y `pgcrypto` (v1.4 - soporte para `gen_random_uuid()` y hashing). |
 | **Tipos Personalizados / `ENUM`** | **0** | Decisión de diseño D4: se utilizan tipos primitivos (`text`, `varchar`) con restricciones `CHECK`. |
 | **Secuencias (`SEQUENCE`)** | **0** | No se utilizan secuencias auto-incrementales; todas las llaves primarias son UUID. |
-| **Índices Secundarios** | **48** | Índices B-Tree en llaves foráneas, restricciones de unicidad y un índice **GIN** especializado en `contenidos.busqueda` para búsqueda de texto completo (`tsvector`). |
+| **Índices Secundarios** | **56** | Índices B-Tree en llaves foráneas, restricciones de unicidad, índices compuestos y un índice **GIN** especializado en `contenidos.busqueda` para búsqueda de texto completo (`tsvector`). |
 
 ---
 
@@ -354,6 +354,60 @@ A continuación se detalla la ficha técnica y matriz de atributos para cada una
 
 ---
 
+### 3.15. Tabla: `subidas_pendientes`
+
+- **Módulo / Dominio:** Gobernanza Editorial y Gestión de Archivos Temporales
+- **Requerimientos Asociados:** RF-01, RF-02, RF-06
+- **Propósito General:** Registra los archivos multimedia subidos durante una sesión de edición visual en Puck que aún no han sido confirmados en una versión publicada. Permite la recolección automática de basura para eliminar del almacenamiento físico aquellos archivos que fueron reemplazados o descartados antes de publicar la página.
+
+| No. | Campo | Tipo de Dato | Longitud | Permite Nulos | Tipo Llave | Referencia / Restricción | Valor por Defecto | Descripción y Reglas de Negocio |
+|:---:|:---|:---|:---:|:---:|:---:|:---|:---|:---|
+| 1 | `pagina_id` | `UUID` | — | NO (NOT NULL) | **PK / FK** | `paginas.id` (ON DELETE CASCADE) | — | Identificador de la página para la cual se cargó el archivo temporal. |
+| 2 | `ruta` | `TEXT` | — | NO (NOT NULL) | **PK** | — | — | Ruta relativa del archivo cargado en el sistema de almacenamiento. |
+| 3 | `creado_en` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | `now()` | Marca temporal de la carga del archivo para tareas de depuración. |
+
+---
+
+### 3.16. Módulo: Observatorio Laboral y Ocupacional (Datos Dinámicos)
+
+- **Módulo / Dominio:** Análisis Estadístico y Empleabilidad
+- **Requerimientos Asociados:** RF-02, RF-08, RF-09
+- **Propósito General:** Estructura en copo de nieve (Snowflake) que consolida los datos importados de Excel a través del bloque Puck `ImportadorExcelBloque` y el endpoint `/api/observatorio/importar`. Se compone de tablas maestras autogeneradas (catálogos o dimensiones) y una tabla central de hechos transaccional (`programas_sobresalientes`) que agrupa estadísticas laborales con garantía de idempotencia.
+
+#### Catálogos Dinámicos (Dimensiones)
+
+1. **`departamentos`:** 
+   - Campos: `id` (UUID PK, `DEFAULT gen_random_uuid()`), `nombre` (VARCHAR 100, NOT NULL, Único `uq_departamentos_nombre`), `codigo_dane` (VARCHAR 10, Opcional), `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ).
+2. **`centros_formacion`:** 
+   - Campos: `id` (UUID PK, `DEFAULT gen_random_uuid()`), `departamento_id` (UUID FK -> `departamentos.id`, ON DELETE RESTRICT, ON UPDATE CASCADE), `nombre` (VARCHAR 255, NOT NULL), `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ). Llave única compuesta: `(departamento_id, nombre)` (`uq_centros_formacion_depto_nombre`).
+3. **`niveles_formacion`:** 
+   - Campos: `id` (UUID PK, `DEFAULT gen_random_uuid()`), `nombre` (VARCHAR 50, NOT NULL, Único `uq_niveles_formacion_nombre`), `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ).
+4. **`programas_formacion`:** 
+   - Campos: `id` (UUID PK, `DEFAULT gen_random_uuid()`), `nivel_formacion_id` (UUID FK -> `niveles_formacion.id`, ON DELETE RESTRICT, ON UPDATE CASCADE), `nombre` (VARCHAR 255, NOT NULL), `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ). Llave única compuesta: `(nivel_formacion_id, nombre)` (`uq_programas_formacion_nivel_nombre`).
+
+#### Tabla Central: `programas_sobresalientes` (Hechos)
+
+| No. | Campo | Tipo de Dato | Longitud | Permite Nulos | Tipo Llave | Referencia / Restricción | Valor por Defecto | Descripción y Reglas de Negocio |
+|:---:|:---|:---|:---:|:---:|:---:|:---|:---|:---|
+| 1 | `id` | `UUID` | — | NO | **PK** | — | `gen_random_uuid()` | Identificador único universal del registro estadístico. |
+| 2 | `departamento_id` | `UUID` | — | NO | **FK** | `departamentos.id` (ON DELETE RESTRICT, ON UPDATE CASCADE) | — | Dimensión de departamento / regional SENA. |
+| 3 | `centro_id` | `UUID` | — | NO | **FK** | `centros_formacion.id` (ON DELETE RESTRICT, ON UPDATE CASCADE) | — | Dimensión de centro de formación. |
+| 4 | `programa_id` | `UUID` | — | NO | **FK** | `programas_formacion.id` (ON DELETE RESTRICT, ON UPDATE CASCADE) | — | Dimensión de programa de formación SENA. |
+| 5 | `nivel_formacion_id` | `UUID` | — | NO | **FK** | `niveles_formacion.id` (ON DELETE RESTRICT, ON UPDATE CASCADE) | — | Dimensión de nivel de formación (Técnico, Tecnólogo, etc). |
+| 6 | `sexo` | `CHAR` | 1 | NO | Ninguna | `CHECK (sexo IN ('M','F'))` | — | Género ('M' o 'F'). Restricción estricta de dominio en base de datos. |
+| 7 | `certificados` | `INTEGER` | — | NO | Ninguna | `CHECK (certificados >= 0)` | — | Cantidad total de aprendices certificados en el periodo. |
+| 8 | `vinculados` | `INTEGER` | — | NO | Ninguna | `CHECK (vinculados >= 0 AND vinculados <= certificados)` | — | Cantidad total de egresados vinculados al mercado laboral formal. |
+| 9 | `tasa_vinculacion` | `DECIMAL(6,4)` | — | NO | Ninguna | `CHECK (tasa_vinculacion >= 0 AND tasa_vinculacion <= 1)` | — | Ratio estadístico acotado entre 0.0000 y 1.0000. |
+| 10 | `salario_promedio` | `DECIMAL(12,2)`| — | NO | Ninguna | `CHECK (salario_promedio >= 0)` | — | Salario promedio devengado por los egresados en COP. |
+| 11 | `created_at` | `TIMESTAMPTZ` | — | NO | Ninguna | — | `now()` | Fecha y hora de ingestión de la fila. |
+| 12 | `updated_at` | `TIMESTAMPTZ` | — | NO | Ninguna | — | `now()` | Fecha y hora de última actualización del registro. |
+
+**Índices y Restricciones del Observatorio:**
+- **Restricción de Idempotencia:** `uq_sobresalientes_registro UNIQUE (centro_id, programa_id, sexo)`. Garantiza que ejecuciones sucesivas del importador de Excel actualicen las métricas existentes sin duplicar filas.
+- **Índices de Cobertura:** `idx_sobresalientes_departamento`, `idx_sobresalientes_nivel`, `idx_sobresalientes_sexo` e `idx_sobresalientes_tasa`.
+
+---
+
 ## 4. Matriz de Relaciones e Integridad Referencial (Foreign Keys)
 
 | Tabla Origen | Columna Local | Tabla Destino | Columna Referenciada | Regla ON DELETE | Regla ON UPDATE |
@@ -377,6 +431,13 @@ A continuación se detalla la ficha técnica y matriz de atributos para cada una
 | `paginas_versiones` | `revisor_id` | `usuarios` | `id` | `SET NULL` | `CASCADE` |
 | `paginas_versiones` | `publicado_por` | `usuarios` | `id` | `SET NULL` | `CASCADE` |
 | `paginas` | `creado_por` | `usuarios` | `id` | `SET NULL` | `CASCADE` |
+| `subidas_pendientes` | `pagina_id` | `paginas` | `id` | `CASCADE` | `CASCADE` |
+| `centros_formacion` | `departamento_id` | `departamentos` | `id` | `RESTRICT` | `CASCADE` |
+| `programas_formacion` | `nivel_formacion_id` | `niveles_formacion` | `id` | `RESTRICT` | `CASCADE` |
+| `programas_sobresalientes` | `departamento_id` | `departamentos` | `id` | `RESTRICT` | `CASCADE` |
+| `programas_sobresalientes` | `centro_id` | `centros_formacion` | `id` | `RESTRICT` | `CASCADE` |
+| `programas_sobresalientes` | `programa_id` | `programas_formacion` | `id` | `RESTRICT` | `CASCADE` |
+| `programas_sobresalientes` | `nivel_formacion_id` | `niveles_formacion` | `id` | `RESTRICT` | `CASCADE` |
 
 ---
 
@@ -387,5 +448,5 @@ A continuación se detalla la ficha técnica y matriz de atributos para cada una
 - **JSONB:** Formato binario indexable de JSON de PostgreSQL para estructuras dinámicas (bloques Puck y Editor.js).
 - **TSVECTOR & GIN:** Vector léxico de búsqueda y su índice invertido generalizado para consultas de lenguaje natural sin motores externos.
 - **ON DELETE RESTRICT:** Bloquea la eliminación del registro padre si tiene dependientes activos (protección de datos).
-- **ON DELETE CASCADE:** Elimina automáticamente registros subordinados que no tienen razón de existir sin el padre (ej. versiones de páginas).
+- **ON DELETE CASCADE:** Elimina automáticamente registros subordinados que no tienen razón de existir sin el padre (ej. versiones de páginas, subidas temporales pendientes).
 - **ON DELETE SET NULL:** Preserva el registro subordinado desvinculando al autor si el usuario es eliminado del sistema.

@@ -34,6 +34,7 @@ import { HeroBuscadorOcupaciones } from '@/features/sitio-web/buscador-ocupacion
 import { EditorjsWrapper } from '@/features/paginas/components/editorjs-wrapper';
 import { ImageUploaderField } from '@/features/paginas/components/image-uploader-field';
 import { ArchivoUploaderField } from '@/features/paginas/components/archivo-uploader-field';
+import { ImportadorExcelUploaderField } from '@/features/paginas/components/importador-excel-uploader-field';
 import { Render, type Config, type Data } from '@puckeditor/core';
 import type { OutputData } from '@editorjs/editorjs';
 
@@ -131,14 +132,17 @@ const puckConfigBase: Config = {
     ImportadorExcelBloque: {
       label: 'Importador Excel',
       fields: {
-        titulo: { type: 'text', label: 'Título del bloque' },
-        descripcion: { type: 'text', label: 'Descripción' }
+        estadoImportacion: {
+          type: 'custom',
+          label: 'Importar Archivo Excel',
+          render: ({ value, onChange }) => (
+            <ImportadorExcelUploaderField value={value} onChange={onChange} />
+          ),
+        },
       },
-      defaultProps: {
-        titulo: 'Importar Programas Sobresalientes',
-        descripcion: 'Selecciona un archivo Excel .xlsx para procesarlo en memoria e importarlo al observatorio.',
-      },
-      render: (props: any) => <ImportadorExcelBloque {...props} />
+      render: (props: any) => (
+        <ImportadorExcelBloque {...props} block={{ id: props.id || 'importador-excel' }} />
+      ),
     },
     // Primitivos de maquetación compartidos (Flex / Space / SeccionPestanasLaterales)
     ...primitiveComponents,
@@ -1112,6 +1116,7 @@ const BLOQUES_PAGINA_SITIO_DEFECTO: string[] = [
   'SeccionPestanasLaterales',
   'BotonPersonalizado',
   'SeccionBotonesIcono',
+  'ImportadorExcelBloque',
 ];
 
 const COMPONENTES_POR_SLUG: Record<string, string[]> = {
@@ -1134,6 +1139,7 @@ const COMPONENTES_POR_SLUG: Record<string, string[]> = {
     'SeccionPestanasLaterales',
     'BotonPersonalizado',
     'SeccionBotonesIcono',
+    'ImportadorExcelBloque',
   ],
   'politica-de-privacidad': ['PoliticaPrivacidadEncabezado', 'VisorDocumentosNormativos', 'CanalesAtencion'],
 };
