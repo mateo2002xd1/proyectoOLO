@@ -169,11 +169,15 @@ export interface PaginaPublicada {
   id: string;
   slug: string;
   titulo: string;
+  visitas?: number;
 }
 
 /** Lo que devuelve `GET /api/paginas/publicadas`, ya separado por aplicación. */
 export interface ResumenPaginasPublicadas {
   total: number;
+  totalVisitas?: number;
+  visitasSitio?: number;
+  visitasIntranet?: number;
   sitio: PaginaPublicada[];
   intranet: PaginaPublicada[];
 }
@@ -187,6 +191,26 @@ export interface ResumenPaginasPublicadas {
  */
 export async function resumenDePaginasPublicadas(): Promise<ResumenPaginasPublicadas> {
   return pedirJson<ResumenPaginasPublicadas>('/api/paginas/publicadas');
+}
+
+/**
+ * Registra una visita en el backend de forma segura y no bloqueante.
+ */
+export async function registrarVisita(slug: string, ambito: 'sitio' | 'intranet' = 'sitio'): Promise<void> {
+  try {
+    const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/paginas/visitas/registrar`;
+    await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Ambito': ambito,
+      },
+      body: JSON.stringify({ slug, ambito }),
+      keepalive: true,
+    });
+  } catch {
+    // Falla silenciosamente para no alterar la experiencia del usuario
+  }
 }
 
 export interface SeccionCreada {

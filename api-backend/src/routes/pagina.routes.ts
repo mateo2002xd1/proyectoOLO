@@ -82,6 +82,8 @@ router.get(
   PaginaController.obtenerIndiceBusqueda
 );
 
+router.post('/visitas/registrar', PaginaController.registrarVisita);
+
 router.use(requireAuth);
 
 /**
