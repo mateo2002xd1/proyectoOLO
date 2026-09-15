@@ -186,9 +186,10 @@ de evasión).
    reset-password aplica exactamente las mismas reglas de complejidad al establecer una
    nueva contraseña. **Hecho**, en las dos apps.
 5. **Roles alcanzados.** La política de §1 y §3 aplica a **todas** las cuentas. Ojo: los
-   roles reales son **seis**, no tres — `superadmin`, `administrador`, `editor`,
-   `director`, `subdirector` y `visitante_interno`. Falta decidir qué hacen `superadmin`
-   y `visitante_interno` cuando se implemente la expiración de §2.
+   roles reales son **cuatro**, no tres — `superadmin`, `administrador`, `editor` y
+   `director/subdirector` (dirección y subdirección comparten un único rol, de solo
+   lectura sobre la intranet). Falta decidir qué hace `superadmin` cuando se
+   implemente la expiración de §2.
 
 ## 5. Estado de implementación
 

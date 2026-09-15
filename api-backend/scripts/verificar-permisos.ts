@@ -16,8 +16,7 @@ const ESPERADO: Record<string, [boolean, boolean, boolean]> = {
   Superadmin: [true, true, true],
   Administrador: [true, true, true],
   Editor: [true, true, false],
-  Director: [true, false, false],
-  Subdirector: [true, false, false],
+  'Director/Subdirector': [true, false, false],
 };
 
 let fallos = 0;

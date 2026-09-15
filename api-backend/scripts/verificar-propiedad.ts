@@ -81,9 +81,7 @@ const ESPERADO: Record<string, [boolean, boolean, boolean, boolean]> = {
   Superadmin: [true, true, true, true],
   Administrador: [true, true, true, true],
   Editor: [false, false, true, false],
-  Director: [false, false, false, false],
-  Subdirector: [false, false, false, false],
-  Visitante_interno: [false, false, false, false],
+  'Director/Subdirector': [false, false, false, false],
 };
 
 const verificarPolicies = async () => {

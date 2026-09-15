@@ -1,5 +1,11 @@
 import { RoleRepository } from '../../repositories/roles.repository';
 import { invalidarPermisosDeRol } from '../../middlewares/require-permission.middleware';
+import { esRolProtegido } from '../../shared/roles-protegidos';
+
+const errorRolProtegido = () =>
+  Object.assign(new Error('Este rol lo define el sistema y no se puede modificar desde el panel'), {
+    status: 403,
+  });
 
 export const getAllRoles = () => RoleRepository.findAll();
 
@@ -18,6 +24,7 @@ export const createRole = async (data: any) => {
 export const updateRole = async (id: string, data: any) => {
   const role = await RoleRepository.findById(id);
   if (!role) throw Object.assign(new Error('Rol no encontrado'), { status: 404 });
+  if (esRolProtegido((role as any).name)) throw errorRolProtegido();
 
   const nombreAnterior = (role as any).name;
   const [, updated] = await RoleRepository.update(id, data);
@@ -35,6 +42,7 @@ export const updateRole = async (id: string, data: any) => {
 export const deleteRole = async (id: string) => {
   const role = await RoleRepository.findById(id);
   if (!role) throw Object.assign(new Error('Rol no encontrado'), { status: 404 });
+  if (esRolProtegido((role as any).name)) throw errorRolProtegido();
   await RoleRepository.delete(id);
 
   invalidarPermisosDeRol((role as any).name);

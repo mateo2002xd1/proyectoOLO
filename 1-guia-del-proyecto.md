@@ -220,7 +220,7 @@ Contenido del proyecto en capa `api-backend/`:
   - `auth/` — login, first-login, security-questions.
   - `auditoria/` — `audit.usecase.ts`.
 - **repositories/** — única capa que toca Sequelize. Si cambias de ORM, solo tocas aquí. Once repositorios activos: `adjuntos`, `auditoria`, `bloqueo-edicion` (el más nuevo), `contenido` (renombrado de `paginas.repository.ts`, que pese al nombre exportaba `PostRepository`), `pagina`, `permisos`, `role-permissions`, `roles`, `secciones`, `security-questions`, `usuarios`.
-- **infrastructure/db/** — diecinueve modelos Sequelize activos y veinticinco migraciones (`001` a `025`). La migración 020 eliminó 8 modelos inactivos que no tenían uso en código. Las migraciones 021 a 025 incorporaron `BloqueoEdicion`, `SubidaPendiente` y el módulo completo de Observatorio (`Departamento`, `CentroFormacion`, `NivelFormacion`, `ProgramaFormacion`, `ProgramaSobresaliente`). De los 19, solo **`SubidaPendiente` no tiene repositorio propio** — se importa directo desde dos use-cases (`registrar-subida-pendiente`, `limpiar-subidas-pendientes`), saltándose la capa de repositorio. Inventario completo en `11-base-de-datos.md` §4.
+- **infrastructure/db/** — diecinueve modelos Sequelize activos y veintiséis migraciones (`001` a `026`). La migración 020 eliminó 8 modelos inactivos que no tenían uso en código. Las migraciones 021 a 026 incorporaron `BloqueoEdicion`, `SubidaPendiente`, el contador de visitas de `Pagina` (025) y el módulo completo de Observatorio (`Departamento`, `CentroFormacion`, `NivelFormacion`, `ProgramaFormacion`, `ProgramaSobresaliente`, migración 026). De los 19, solo **`SubidaPendiente` no tiene repositorio propio** — se importa directo desde dos use-cases (`registrar-subida-pendiente`, `limpiar-subidas-pendientes`), saltándose la capa de repositorio. Inventario completo en `11-base-de-datos.md` §4.
 - **infrastructure/redis/** — conexión, colas BullMQ (respaldos, caducidad) y los ayudantes de invalidación (`redisEstaListo`, `borrarClavesPorPatron`).
 - **domain-events/** — efectos secundarios desacoplados. Evita que los use-cases se vuelvan gigantes: aprobar solo emite un evento y los oyentes reaccionan. `ContenidoPublicado` **está cableado y funcionando** (invalidar caché + revalidar ISR) — lo emiten `aprobar-pagina` y, desde que existe, también `restaurar-version-anterior`. `EnviadoARevision`, `ContenidoRechazado` y `UsuarioCaducado` siguen siendo solo una interfaz TS marcada "Stub"; el oyente `notificar-editor` está escrito pero nadie lo importa. Ninguno de los cuatro está cableado.
 - **policies/** — reglas de autorización por acción (quién puede aprobar). Cuatro: páginas, contenidos, usuarios, auditoría. **Comparan el nombre de rol en minúsculas a propósito** — en la tabla `roles` están capitalizados, y comparar literal deja a todo el mundo fuera sin lanzar un solo error. Lo cubre `npm run permisos:verificar`.
@@ -269,7 +269,7 @@ api-backend/src/
 │   │   │   ├── BloqueoEdicion.ts, SubidaPendiente.ts   # concurrencia y subidas pendientes
 │   │   │   ├── Section.ts, SecurityQuestion.ts
 │   │   │   └── Departamento, CentroFormacion, NivelFormacion, ProgramaFormacion, ProgramaSobresaliente # Observatorio OLO (RF-08, RF-09)
-│   │   ├── migrations/        # 25 (001-025), en un manifiesto explícito (index.ts)
+│   │   ├── migrations/        # 26 (001-026), en un manifiesto explícito (index.ts)
 │   │   └── migrations/_obsoletas/   # incluida script.sql — el esquema ya no sale de ahí
 │   └── redis/                # Conexión + colas BullMQ + invalidación por patrón
 │

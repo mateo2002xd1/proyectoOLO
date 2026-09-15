@@ -56,10 +56,10 @@ Lo que sí difiere es **a qué aplicación puede entrar cada quien**, y eso es a
 
 | Permiso | Quién lo tiene |
 |---|---|
-| `acceso.sitio` | superadmin, administrador, editor, visitante_interno |
-| `acceso.intranet` | superadmin, administrador, director, subdirector |
+| `acceso.sitio` | superadmin, administrador, editor |
+| `acceso.intranet` | superadmin, administrador, director/subdirector |
 
-El middleware de cada frontend exige el suyo. Un director no entra al panel del sitio; un superadmin entra a los dos.
+El middleware de cada frontend exige el suyo. Un director/subdirector no entra al panel del sitio; un superadmin entra a los dos.
 
 **Alternativas descartadas:** una columna `ambito` en `usuarios` la repetiría en cada fila y quedaría desincronizada del rol; una columna `ambito` en `roles` obligaría a clonar el rol "editor" el día que uno necesite entrar también a la intranet. Con permisos, el administrador lo compone desde el panel sin tocar código — que es literalmente lo que pide RF-04.
 
@@ -132,7 +132,7 @@ Las 19 tablas de este inventario existen en el esquema y **las 19 tienen modelo 
 | Tabla | Qué guarda | Claves e invariantes |
 |---|---|---|
 | **`usuarios`** | Toda persona con credenciales, del sitio o de la intranet (§2.1) | `UNIQUE(lower(email))` — la normalización a minúsculas ya la hace el repositorio, aquí se garantiza. `rol_id` `RESTRICT`: no se borra un rol con usuarios. `creado_por` auto-referencia `SET NULL` |
-| **`roles`** | superadmin, administrador, editor, director, subdirector, visitante_interno | `nombre` UNIQUE. `es_sistema` impide borrar los roles base desde el panel |
+| **`roles`** | superadmin, administrador, editor, director/subdirector, y los `Editor <algo>` que se creen desde `/admin/roles` | `nombre` UNIQUE. `es_sistema` impide borrar los roles base desde el panel |
 | **`permisos`** | La acción autorizable: `paginas.aprobar`, `contenidos.publicar`, `acceso.intranet` | `clave` UNIQUE. Se llama `clave` y no `nombre` porque es un identificador estable que el código compara, no una etiqueta que se traduce |
 | **`roles_permisos`** | Qué puede cada rol | PK compuesta `(rol_id, permiso_id)`, ambas `CASCADE`. Sin `id` propio: la pareja es la identidad |
 | **`preguntas_seguridad`** | Recuperación de cuenta | `UNIQUE(usuario_id, pregunta_clave)`. `CASCADE`: borrar el usuario borra sus preguntas |
@@ -342,7 +342,8 @@ eso la tabla lleva el porqué en vez de un número de riesgo.
 | 022 | `auditoria-guardar-borrador` | Añade `'guardar_borrador'` a la restricción `ck_auditoria_accion` de `auditoria_cambios` |
 | 023 | `permiso-politica-privacidad-sitio` | Da de alta el permiso `politica-privacidad.editar` en el catálogo de permisos |
 | 024 | `subidas-pendientes` | Crea la tabla `subidas_pendientes` con clave `(pagina_id, ruta)` y `ON DELETE CASCADE` para recolectar y purgar archivos subidos en borradores no publicados |
-| 025 | `observatorio-programas-sobresalientes` | Crea las 5 tablas del esquema snowflake del Observatorio: catálogos (`departamentos`, `centros_formacion`, `niveles_formacion`, `programas_formacion`) y tabla transaccional de hechos `programas_sobresalientes` con clave de idempotencia `(centro_id, programa_id, sexo)` e índices de cobertura |
+| 025 | `visitas-paginas` | Añade la columna `visitas` (entero, default 0) a `paginas` y siembra conteos iniciales para las páginas publicadas existentes |
+| 026 | `observatorio-programas-sobresalientes` | Crea las 5 tablas del esquema snowflake del Observatorio: catálogos (`departamentos`, `centros_formacion`, `niveles_formacion`, `programas_formacion`) y tabla transaccional de hechos `programas_sobresalientes` con clave de idempotencia `(centro_id, programa_id, sexo)` e índices de cobertura |
 
 Tres lecciones de este tramo que vale más recordar que releer:
 
@@ -404,7 +405,7 @@ Alinear también los nombres de atributo al español es un refactor de la API, c
 
 ### 8.4 Resultado de la ejecución
 
-Las siete migraciones del plan y las dieciocho sucesivas **están aplicadas**: hoy el manifiesto lleva **veinticinco migraciones (`001` a `025`)**. `npm run db:verificar` confirma que los **19 modelos Sequelize activos** coinciden exactamente con las columnas reales de PostgreSQL (más la tabla de control `migraciones_aplicadas`).
+Las siete migraciones del plan y las diecinueve sucesivas **están aplicadas**: hoy el manifiesto lleva **veintiséis migraciones (`001` a `026`)**. `npm run db:verificar` confirma que los **19 modelos Sequelize activos** coinciden exactamente con las columnas reales de PostgreSQL (más la tabla de control `migraciones_aplicadas`).
 
 Cuatro cosas que solo se supieron al ejecutar, y que estaban mal supuestas en el diseño:
 

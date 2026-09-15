@@ -1,6 +1,6 @@
 import { QueryInterface, DataTypes } from 'sequelize';
 
-export const nombre = '025-observatorio-programas-sobresalientes';
+export const nombre = '026-observatorio-programas-sobresalientes';
 
 export async function up(queryInterface: QueryInterface): Promise<void> {
   const transaction = await queryInterface.sequelize.transaction();
