@@ -387,7 +387,7 @@ const sembrarUna = async (slug: string): Promise<void> => {
   const contenido = { root: { props: {} }, zones: {}, content: pagina.content };
 
   await guardarBorrador(slug, contenido, '', AMBITO);
-  await enviarARevision(slug, AMBITO);
+  await enviarARevision(slug, '', AMBITO);
   await aprobarPagina(slug, '', AMBITO);
 
   const guardada = await PaginaRepository.findBySlug(slug, AMBITO);

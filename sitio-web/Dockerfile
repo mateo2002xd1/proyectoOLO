@@ -44,8 +44,10 @@ COPY sitio-web/data_temporal ./data_temporal
 
 ARG BACKEND_URL=http://localhost:4000
 ARG NEXT_PUBLIC_API_URL=http://localhost:4000
+ARG NEXT_PUBLIC_INTRANET_URL=http://localhost:3001
 ENV BACKEND_URL=$BACKEND_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_INTRANET_URL=$NEXT_PUBLIC_INTRANET_URL
 # JWT_SECRET NO entra en el build: solo lo lee el route handler de subida en
 # ejecución, y como ARG quedaba grabado en la caché de capas sin necesidad alguna.
 # Se inyecta en ejecución desde docker-compose.

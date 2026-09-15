@@ -56,7 +56,7 @@ export function Header({
   mainLogoUrl,
   navLinks: customNavLinks,
   intranetText = 'Intranet',
-  intranetUrl = 'http://localhost:3001'
+  intranetUrl = process.env.NEXT_PUBLIC_INTRANET_URL || 'http://localhost:3001'
 }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);

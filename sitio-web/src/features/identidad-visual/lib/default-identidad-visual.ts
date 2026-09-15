@@ -7,7 +7,7 @@ export const defaultIdentidadVisual: IdentidadVisual = {
   // intranet (app/page.tsx) la que decide, server-side, si redirige a `/inicio`
   // (sesión activa) o a `/login`, porque la cookie `token` es httpOnly y este
   // sitio no puede leerla para decidirlo antes.
-  intranetUrl: 'http://localhost:3001',
+  intranetUrl: process.env.NEXT_PUBLIC_INTRANET_URL || 'http://localhost:3001',
   navLinks: [
     { label: 'Inicio', href: '/inicio', active: true },
     {
