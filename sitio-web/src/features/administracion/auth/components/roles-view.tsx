@@ -130,6 +130,19 @@ function ModalNuevoEditor({
   );
 }
 
+/**
+ * Este panel es solo para roles de Editor. `Superadmin`, `Administrador` y
+ * `Director/Subdirector` reciben sus permisos de `sembrar-permisos-roles.ts` en el
+ * backend, no de un formulario — ver `api-backend/src/shared/roles-protegidos.ts`,
+ * que además hace que el servidor rechace cualquier intento de tocarlos aunque se
+ * salte esta pantalla. Filtrar aquí solo evita ofrecer un control que de todos
+ * modos respondería 403.
+ */
+const esRolDeEditor = (nombre: string) => {
+  const n = nombre.trim().toLowerCase();
+  return n === 'editor' || n.startsWith('editor ');
+};
+
 export default function RolesView() {
   const {
     roles,
@@ -176,13 +189,15 @@ export default function RolesView() {
   const normalizar = (t: string) =>
     t.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
 
+  const rolesDeVista = useMemo(() => roles.filter((r) => esRolDeEditor(r.name)), [roles]);
+
   const rolesFiltrados = useMemo(() => {
     const q = normalizar(busqueda);
-    if (!q) return roles;
-    return roles.filter((r) =>
+    if (!q) return rolesDeVista;
+    return rolesDeVista.filter((r) =>
       normalizar(`${r.name} ${r.description ?? ''}`).includes(q)
     );
-  }, [roles, busqueda]);
+  }, [rolesDeVista, busqueda]);
 
   const totalPaginas = Math.max(1, Math.ceil(rolesFiltrados.length / itemsPorPagina));
   const paginaActual = Math.min(pagina, totalPaginas);
@@ -341,7 +356,7 @@ export default function RolesView() {
             ) : (
               rolesPagina.map((rol) => {
                 const numPermisos = rol.permissions?.length ?? 0;
-                const esRolPrincipal = ['Administrador', 'Editor', 'Subdirector', 'Director'].includes(rol.name);
+                const noEliminable = rol.name === 'Editor';
                 return (
                   <tr key={rol.id} className="transition-colors hover:bg-zinc-50 dark:hover:bg-[#0f1624]/60">
                     <td className="px-5 py-3.5">
@@ -369,14 +384,14 @@ export default function RolesView() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => !esRolPrincipal && setDeleteConfirmId(rol.id)}
-                          disabled={esRolPrincipal}
+                          onClick={() => !noEliminable && setDeleteConfirmId(rol.id)}
+                          disabled={noEliminable}
                           className={`rounded-lg p-1.5 transition-colors ${
-                            esRolPrincipal
+                            noEliminable
                               ? 'cursor-not-allowed text-zinc-300 dark:text-zinc-600'
                               : 'text-red-400 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-900/30 dark:hover:text-red-300'
                           }`}
-                          title={esRolPrincipal ? 'No se puede eliminar un rol principal' : 'Eliminar rol'}
+                          title={noEliminable ? 'No se puede eliminar el rol base de Editor' : 'Eliminar rol'}
                         >
                           <TrashIcon className="size-4" />
                         </button>

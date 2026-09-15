@@ -116,7 +116,7 @@ export function OcupacionSearchBanner({
                 <h2 className="text-white text-[16px] sm:text-[20px] md:text-[24px] font-light italic leading-tight">
                   Explora las ocupaciones clave de los
                 </h2>
-                <h2 className="text-white mb-4 sm:mb-6 font-bold text-[16px] sm:text-[20px] md:text-[24px] leading-tight">
+                <h2 className="text-white mb-4 sm:mb-6 text-[16px] sm:text-[20px] md:text-[24px] leading-tight">
                   sectores productivos en Colombia.
                 </h2>
               </>

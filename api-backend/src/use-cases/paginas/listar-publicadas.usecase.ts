@@ -6,10 +6,11 @@ export interface PaginaPublicada {
   id: string;
   slug: string;
   titulo: string;
+  visitas: number;
 }
 
 /**
- * El recuento de páginas publicadas, separado por aplicación.
+ * El recuento de páginas publicadas, separado por aplicación y con métricas de visitas.
  *
  * Se devuelve ya agrupado y con su total en vez de una lista plana: quien lo pinta es un
  * panel que muestra «Sitio web: 4 · Intranet: 6» y despliega el detalle debajo. Agrupar
@@ -18,6 +19,9 @@ export interface PaginaPublicada {
  */
 export interface ResumenPaginasPublicadas {
   total: number;
+  totalVisitas: number;
+  visitasSitio: number;
+  visitasIntranet: number;
   sitio: PaginaPublicada[];
   intranet: PaginaPublicada[];
 }
@@ -36,10 +40,25 @@ export const listarPaginasPublicadas = async (): Promise<ResumenPaginasPublicada
   const porAmbito = (ambito: Ambito): PaginaPublicada[] =>
     paginas
       .filter((p) => p.ambito === ambito)
-      .map((p) => ({ id: p.id, slug: p.slug, titulo: p.titulo }));
+      .map((p) => ({
+        id: p.id,
+        slug: p.slug,
+        titulo: p.titulo,
+        visitas: Number(p.visitas ?? 0),
+      }));
 
   const sitio = porAmbito('sitio');
   const intranet = porAmbito('intranet');
 
-  return { total: sitio.length + intranet.length, sitio, intranet };
+  const visitasSitio = sitio.reduce((acc, p) => acc + p.visitas, 0);
+  const visitasIntranet = intranet.reduce((acc, p) => acc + p.visitas, 0);
+
+  return {
+    total: sitio.length + intranet.length,
+    totalVisitas: visitasSitio + visitasIntranet,
+    visitasSitio,
+    visitasIntranet,
+    sitio,
+    intranet,
+  };
 };

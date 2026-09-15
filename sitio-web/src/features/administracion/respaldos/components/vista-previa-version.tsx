@@ -126,7 +126,10 @@ export function VistaPreviaVersion({
             onCerrar();
           }
         }}
-        onClick={(e) => {
+        // Usamos `onMouseDown` y no `onClick`: si el usuario selecciona texto
+        // dentro del diálogo y suelta el ratón fuera, el clic se contabiliza en
+        // el fondo y el diálogo se cerraba en mitad de la selección.
+        onMouseDown={(e) => {
           if (e.target === dialogo.current && !restaurando) {
             if (!mostrarConfirmacion && !mostrarBloqueo) onCerrar();
           }

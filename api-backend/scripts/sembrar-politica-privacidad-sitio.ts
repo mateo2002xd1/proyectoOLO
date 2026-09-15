@@ -88,7 +88,7 @@ const CONTENIDO_POLITICA_PRIVACIDAD = {
 
 const publicarPoliticaPrivacidad = async (): Promise<void> => {
   await guardarBorrador(SLUG, CONTENIDO_POLITICA_PRIVACIDAD, '', AMBITO);
-  await enviarARevision(SLUG, AMBITO);
+  await enviarARevision(SLUG, '', AMBITO);
   await aprobarPagina(SLUG, '', AMBITO);
 
   const guardada = await PaginaRepository.findBySlug(SLUG, AMBITO);

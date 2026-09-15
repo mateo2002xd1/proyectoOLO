@@ -6,6 +6,9 @@ interface PoliticaPrivacidadEncabezadoProps {
   block: { id: string };
   titulo?: ReactNode;
   intro?: ReactNode;
+  colorTitulo?: string;
+  colorContenido?: string;
+  colorIntro?: string;
 }
 
 /**
@@ -19,15 +22,21 @@ export function PoliticaPrivacidadEncabezado({
   block,
   titulo,
   intro,
+  colorTitulo,
+  colorContenido,
+  colorIntro,
 }: PoliticaPrivacidadEncabezadoProps) {
+  const colorFinalIntro = colorContenido || colorIntro;
+
   return (
     <div className={`${poppins.className} bg-white dark:bg-[#0b1121]`} data-block-id={block.id}>
       <div className="relative overflow-hidden border-b border-gray-200 dark:border-[#1e293b]">
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
           <div className="max-w-4xl">
             <TituloRico
-              className="text-3xl font-extrabold tracking-tight sm:text-4xl text-gray-900 dark:text-white"
+              className="text-3xl tracking-tight sm:text-4xl text-gray-900 dark:text-white"
               nivel={1}
+              style={colorTitulo ? { color: colorTitulo } : undefined}
             >
               {titulo}
             </TituloRico>
@@ -35,7 +44,10 @@ export function PoliticaPrivacidadEncabezado({
         </div>
       </div>
       {intro && (
-        <div className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8 text-sm text-gray-600 dark:text-slate-300 leading-relaxed [&_p]:mb-2.5 [&_p:last-child]:mb-0">
+        <div
+          className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8 text-sm text-gray-600 dark:text-slate-300 leading-relaxed [&_p]:mb-2.5 [&_p:last-child]:mb-0"
+          style={colorFinalIntro ? { color: colorFinalIntro } : undefined}
+        >
           {intro}
         </div>
       )}

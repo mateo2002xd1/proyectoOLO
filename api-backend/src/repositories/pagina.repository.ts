@@ -82,8 +82,22 @@ export const PaginaRepository = {
   listarPublicadas: (tx?: Transaction) =>
     Pagina.findAll({
       where: { versionPublicadaId: { [Op.ne]: null } },
-      attributes: ['id', 'slug', 'titulo', 'ambito'],
+      attributes: ['id', 'slug', 'titulo', 'ambito', 'visitas'],
       order: [['ambito', 'ASC'], ['titulo', 'ASC']],
       transaction: tx,
     }),
+
+  /**
+   * Incrementa el contador de visitas de una página según su slug y ámbito.
+   */
+  incrementarVisitas: async (slug: string, ambito: string, tx?: Transaction): Promise<number | null> => {
+    const pagina = await Pagina.findOne({
+      where: { slug, ambito },
+      transaction: tx,
+    });
+    if (!pagina) return null;
+    await pagina.increment('visitas', { by: 1, transaction: tx });
+    await pagina.reload({ transaction: tx });
+    return pagina.visitas;
+  },
 };

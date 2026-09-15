@@ -53,6 +53,8 @@ import {
   type ResumenPaginasPublicadas,
 } from '@/features/paginas';
 import { TarjetaPaginasPublicadas } from './tarjeta-paginas-publicadas';
+import { TarjetaVisitas } from './tarjeta-visitas';
+import { TarjetaUsuarios } from './tarjeta-usuarios';
 import {
   listarAuditoria,
   ErrorAuditoria,
@@ -90,19 +92,17 @@ function SidebarGroup({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-base font-semibold transition [&>svg]:size-5 [&>svg]:shrink-0 ${
-          isActive
-            ? 'bg-zinc-100 text-zinc-900 dark:bg-brand-interactive/20 dark:text-brand-interactive [&>svg]:text-zinc-900 dark:[&>svg]:text-brand-interactive'
-            : 'text-zinc-600 hover:bg-[#001631]/10 hover:text-zinc-900 dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive [&>svg]:text-zinc-500 dark:[&>svg]:text-slate-400'
-        }`}
+        className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-base font-semibold transition [&>svg]:size-5 [&>svg]:shrink-0 ${isActive
+          ? 'bg-zinc-100 text-zinc-900 dark:bg-brand-interactive/20 dark:text-brand-interactive [&>svg]:text-zinc-900 dark:[&>svg]:text-brand-interactive'
+          : 'text-zinc-600 hover:bg-[#001631]/10 hover:text-zinc-900 dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive [&>svg]:text-zinc-500 dark:[&>svg]:text-slate-400'
+          }`}
         aria-expanded={open}
       >
         <Icon className="shrink-0" />
         <span className="flex-1 truncate text-left">{label}</span>
         <ChevronDownIcon
-          className={`size-4 shrink-0 text-zinc-400 transition-transform duration-200 ${
-            open ? 'rotate-180' : ''
-          }`}
+          className={`size-4 shrink-0 text-zinc-400 transition-transform duration-200 ${open ? 'rotate-180' : ''
+            }`}
         />
       </button>
 
@@ -170,19 +170,6 @@ const colorDiasRestantes = (dias: number) =>
       ? 'bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-200'
       : 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300';
 
-/** Usuarios agrupados por rol, de mayor a menor. Los que no tienen rol asignado
- *  se agrupan aparte en vez de descartarse: si aparecen, es un dato a corregir. */
-function contarUsuariosPorRol(users: User[]): { rol: string; total: number }[] {
-  const conteo = new Map<string, number>();
-  for (const user of users) {
-    const rol = user.role?.name || 'Sin rol';
-    conteo.set(rol, (conteo.get(rol) ?? 0) + 1);
-  }
-  return [...conteo.entries()]
-    .map(([rol, total]) => ({ rol, total }))
-    .sort((a, b) => b.total - a.total || a.rol.localeCompare(b.rol, 'es'));
-}
-
 function ModalAlertas({
   abierto,
   onCerrar,
@@ -204,7 +191,10 @@ function ModalAlertas({
   return createPortal(
     <div
       className="fixed inset-0 z-[60] flex items-center justify-center bg-[#0f172a]/50 p-3 backdrop-blur-sm sm:p-6"
-      onClick={(e) => {
+      // Usamos `onMouseDown` y no `onClick`: si el usuario selecciona texto dentro
+      // del panel y suelta el ratón fuera, el clic se contabiliza en el fondo y
+      // el panel se cerraba en mitad de la selección.
+      onMouseDown={(e) => {
         if (e.target === e.currentTarget) onCerrar();
       }}
     >
@@ -432,14 +422,14 @@ export function PanelGeneralLayout({
                       <SidebarItem
                         href="/admin/users"
                         current={pathname.startsWith('/admin/users')}
-                        className="pl-9"
+                        className="pl-11"
                       >
                         <SidebarLabel>Usuarios</SidebarLabel>
                       </SidebarItem>
                       <SidebarItem
                         href="/admin/roles"
                         current={pathname.startsWith('/admin/roles')}
-                        className="pl-9"
+                        className="pl-11"
                       >
                         <SidebarLabel>Roles y Permisos</SidebarLabel>
                       </SidebarItem>
@@ -601,8 +591,6 @@ export function PanelGeneralDashboard() {
   /** El 403 por rol no es una avería: se explica sin alarmar y sin enlace muerto. */
   const sinAccesoAuditoria = errorActividad instanceof ErrorAuditoria && errorActividad.sinAcceso;
 
-  const usuariosPorRol = useMemo(() => contarUsuariosPorRol(users), [users]);
-
   const totalPaginasActividad = Math.max(1, Math.ceil(actividad.length / itemsPorPaginaActividad));
   const paginaActualActividad = Math.min(paginaActividad, totalPaginasActividad);
   const actividadPaginada = actividad.slice(
@@ -621,22 +609,6 @@ export function PanelGeneralDashboard() {
     );
   }
 
-  // `paginas` sale de aquí: tiene tarjeta propia (`TarjetaPaginasPublicadas`) porque
-  // además del total despliega el detalle por aplicación con enlace a cada página.
-  // Hasta ahora valía `0` escrito a mano, que se leía como un dato real y no lo era.
-  const statsEntries = Object.entries({
-    usuarios: users.length,
-    visitas: 0,
-  });
-  const statsLabels: Record<string, string> = {
-    usuarios: 'Usuarios',
-    paginas: 'Páginas',
-    alertas: 'Alertas',
-    visitas: 'Visitas',
-    publicaciones: 'Publicaciones',
-    revisiones: 'Revisiones',
-  };
-
   return (
     <div className="p-6 lg:p-8">
       <div className="mb-8">
@@ -646,8 +618,6 @@ export function PanelGeneralDashboard() {
         </p>
       </div>
 
-
-
       {error && (
         <p className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
           {error}
@@ -656,22 +626,8 @@ export function PanelGeneralDashboard() {
 
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <TarjetaPaginasPublicadas resumen={paginasPublicadas} error={errorPaginas} />
-        {statsEntries.map(([key, value]) => (
-          <div key={key} className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
-            <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">{statsLabels[key] || key}</p>
-            <p className="mt-1 text-2xl font-bold text-zinc-950 dark:text-[#f6f6f6]">{value}</p>
-            {key === 'usuarios' && usuariosPorRol.length > 0 && (
-              <ul className="mt-3 space-y-1 border-t border-zinc-100 pt-2 dark:border-[#7db828]/20">
-                {usuariosPorRol.map(({ rol, total }) => (
-                  <li key={rol} className="flex items-center justify-between gap-2 text-xs">
-                    <span className="truncate text-zinc-500 dark:text-[#94a3b8]">{rol}</span>
-                    <span className="font-semibold tabular-nums text-zinc-700 dark:text-[#cbd5e1]">{total}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        ))}
+        <TarjetaVisitas resumen={paginasPublicadas} error={errorPaginas} />
+        <TarjetaUsuarios users={users} loading={loading} />
       </div>
 
       <div className="w-full">

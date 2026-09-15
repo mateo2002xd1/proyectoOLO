@@ -20,7 +20,11 @@ import { PptxViewer } from './PptxViewer';
 export interface TextoConImagenProps {
   titulo?: ReactNode;
   mostrarTitulo?: boolean;
+  subtitulo?: ReactNode;
+  mostrarSubtitulo?: boolean;
   contenido?: ReactNode;
+  colorTitulo?: string;
+  colorContenido?: string;
   imagenSrc?: string;
   imagenAlt?: string;
   pieDeImagen?: ReactNode;
@@ -32,7 +36,11 @@ export interface TextoConImagenProps {
 export function TextoConImagen({
   titulo,
   mostrarTitulo = true,
+  subtitulo,
+  mostrarSubtitulo = true,
   contenido,
+  colorTitulo,
+  colorContenido,
   imagenSrc,
   imagenAlt = '',
   pieDeImagen,
@@ -43,11 +51,21 @@ export function TextoConImagen({
   const columnaTexto = (
     <div className="flex-1 space-y-6 max-w-3xl tasa-concept-desc md:mt-6">
       {mostrarTitulo && titulo && (
-        <h2 className="tasa-concept-title" style={{ marginTop: 0 }}>
+        <h2
+          className="tasa-concept-title"
+          style={{ marginTop: 0, ...(colorTitulo ? { color: colorTitulo } : {}) }}
+        >
           {titulo}
         </h2>
       )}
-      {contenido}
+      {mostrarSubtitulo && subtitulo && (
+        <div className="text-gray-600 text-sm sm:text-base font-medium -mt-2 mb-2">
+          {subtitulo}
+        </div>
+      )}
+      <div style={colorContenido ? { color: colorContenido } : undefined}>
+        {contenido}
+      </div>
     </div>
   );
 
@@ -66,7 +84,7 @@ export function TextoConImagen({
       {pieDeImagen && (
         <p
           style={{ marginTop: '2rem' }}
-          className="text-[#2e7d32] font-bold text-center lg:text-right w-full max-w-lg pr-4"
+          className="text-[#2e7d32] text-center lg:text-right w-full max-w-lg pr-4"
         >
           {pieDeImagen}
         </p>

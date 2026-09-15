@@ -2,6 +2,13 @@ import { RolePermissionRepository } from '../../repositories/role-permissions.re
 import { RoleRepository } from '../../repositories/roles.repository';
 import { PermissionRepository } from '../../repositories/permisos.repository';
 import { invalidarPermisosDeRol } from '../../middlewares/require-permission.middleware';
+import { esRolProtegido } from '../../shared/roles-protegidos';
+
+const errorRolProtegido = () =>
+  Object.assign(
+    new Error('Los permisos de este rol los define el sistema y no se pueden modificar desde el panel'),
+    { status: 403 }
+  );
 
 export const getAllRolePermissions = () => RolePermissionRepository.findAll();
 
@@ -19,6 +26,7 @@ export const getByRole = async (roleId: string) => {
 export const assignPermission = async (role_id: string, permission_id: string) => {
   const role = await RoleRepository.findById(role_id);
   if (!role) throw Object.assign(new Error('Rol no encontrado'), { status: 404 });
+  if (esRolProtegido((role as any).name)) throw errorRolProtegido();
 
   const perm = await PermissionRepository.findById(permission_id);
   if (!perm) throw Object.assign(new Error('Permiso no encontrado'), { status: 404 });
@@ -38,6 +46,7 @@ export const revokePermission = async (role_id: string, permission_id: string) =
   // permiso en la bitácora, y quedarse sin nombre no debe impedir revocarlo.
   const perm = await PermissionRepository.findById(permission_id).catch(() => null);
   const role = await RoleRepository.findById(role_id).catch(() => null);
+  if (role && esRolProtegido((role as any).name)) throw errorRolProtegido();
 
   const deleted = await RolePermissionRepository.revoke(role_id, permission_id);
   if (!deleted) throw Object.assign(new Error('Asignación no encontrada'), { status: 404 });

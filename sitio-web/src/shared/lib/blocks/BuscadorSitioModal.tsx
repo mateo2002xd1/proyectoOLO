@@ -125,7 +125,10 @@ export function BuscadorSitioModal({
       aria-modal="true"
       aria-label="Buscar en el sitio web"
       className="fixed inset-0 z-50 h-[100dvh] w-screen overflow-y-auto bg-[#001631]/95 backdrop-blur-md"
-      onClick={handleCerrar}
+      // Usamos `onMouseDown` y no `onClick`: si el usuario selecciona texto en el
+      // buscador y suelta el ratón fuera, el clic se contabiliza en el fondo y
+      // el buscador se cerraba en mitad de la selección.
+      onMouseDown={handleCerrar}
     >
       <button
         type="button"
@@ -138,7 +141,7 @@ export function BuscadorSitioModal({
 
       <div
         className="mx-auto flex w-full max-w-2xl flex-col px-4 pt-20 pb-20 sm:pt-28"
-        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
       >
         <label htmlFor="buscador-sitio" className="sr-only">
           Buscar en el sitio web
@@ -213,7 +216,7 @@ export function BuscadorSitioModal({
                     className="block px-4 py-3 no-underline text-inherit cursor-pointer"
                   >
                     <div className="flex items-center justify-between gap-2 mb-1">
-                      <span className="text-[11px] font-semibold tracking-wider text-sky-400 uppercase">
+                      <span className="text-[11px] tracking-wider text-sky-400 uppercase">
                         {resaltarCoincidenciaTexto(result.context, searchQuery)}
                       </span>
                       <span className="text-[10px] text-white/50 px-1.5 py-0.5 rounded bg-white/10">
@@ -225,7 +228,7 @@ export function BuscadorSitioModal({
                       </span>
                     </div>
                     {result.type === 'h1' || result.type === 'h2' ? (
-                      <span className="block text-base font-semibold text-white leading-snug">
+                      <span className="block text-base text-white leading-snug">
                         {resaltarCoincidenciaTexto(result.text, searchQuery)}
                       </span>
                     ) : (

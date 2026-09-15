@@ -10,6 +10,7 @@ export interface ServiceItem {
 interface ServicesProps {
   block: { id: string };
   sectionTitle?: ReactNode;
+  colorTitle?: string;
   services?: ServiceItem[];
 }
 
@@ -149,12 +150,18 @@ function tituloConAcento(title?: ReactNode): ReactNode {
 export function Services({
   block,
   sectionTitle = '¿Qué hacemos?',
+  colorTitle,
   services = DEFAULT_SERVICES,
 }: ServicesProps) {
   return (
     <section className="olo-services" id="services-section" aria-label="Qué hacemos" data-block-id={block.id}>
       <div className="olo-services-inner">
-        <h2 className="olo-services-title">{tituloConAcento(sectionTitle)}</h2>
+        <h2
+          className="olo-services-title"
+          style={colorTitle ? { color: colorTitle } : undefined}
+        >
+          {tituloConAcento(sectionTitle)}
+        </h2>
 
         <div className="olo-services-grid">
           {services.map((service) => (

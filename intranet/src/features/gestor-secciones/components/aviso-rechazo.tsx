@@ -87,7 +87,9 @@ export function AvisoRechazo({ motivo, numeroVersion }: Rechazo) {
         createPortal(
           <div
             role="presentation"
-            onClick={(evento) => {
+            // Cerrar al pulsar fuera, pero solo si el clic empieza en el fondo:
+            // arrastrar desde dentro del diálogo hasta soltarlo fuera no debe cerrarlo.
+            onMouseDown={(evento) => {
               if (evento.target === evento.currentTarget) setAbierto(false);
             }}
             style={{

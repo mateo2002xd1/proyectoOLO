@@ -210,23 +210,24 @@ El motivo no es estético: agrupar por tipo técnico mete en un mismo archivo le
 
 Contenido del proyecto en capa `api-backend/`:
 
-- **routes/** — solo define los endpoints (`router.get`, `router.post`). Cero lógica. Incluso las colas BullMQ (`job.routes.ts`) delegan a un controller — antes tenían el `try/catch` y las llamadas a Redis inline, violando esta regla. Doce archivos: `attachment`, `audit`, `auth`, `contenido`, `job`, `pagina`, `permission`, `role`, `rolePermission`, `section`, `securityQuestion`, `user`.
-- **controllers/** — traduce HTTP (req/res) a una llamada de use-case. No sabe de SQL. Doce, uno por dominio o sub-recurso: `pagina.controller.ts` (maqueta Puck), `contenido.controller.ts` (estudios/informes), `secciones.controller.ts`, `adjuntos.controller.ts`, `auditoria.controller.ts`, `usuarios.controller.ts`, `roles.controller.ts`, `permisos.controller.ts`, `role-permissions.controller.ts`, `security-questions.controller.ts`, `auth.controller.ts`, `trabajos.controller.ts` (BullMQ).
-- **use-cases/** — la lógica de negocio real. Una acción = una función (`aprobarPagina`, `guardarBorrador`). Organizadas por dominio real, no por el modelo que tocan:
-  - `paginas/` — **20 archivos**, la carpeta que más creció desde que se escribió esta sección: a la gobernanza original de la maqueta Puck (`guardar-borrador`, `enviar-a-revision`, `aprobar-pagina`, `rechazar-pagina`, `listar-en-revision`, `obtener-pagina-publica`, `obtener-version-editable`, `eliminar-version`, `crear-seccion`, `eliminar-seccion`) se sumaron el bloqueo de edición (`adquirir-bloqueo`, `liberar-bloqueo`), las subidas pendientes (`registrar-subida-pendiente`, `limpiar-subidas-pendientes`) y varios listados/soporte (`listar-publicadas`, `listar-respaldos`, `listar-versiones-archivadas`, `obtener-indice-busqueda`, `restaurar-version-anterior`, `secciones.usecase.ts`). Todas pasan por `repositories/pagina.repository.ts`.
+- **routes/** — solo define los endpoints (`router.get`, `router.post`). Cero lógica. Incluso las colas BullMQ (`job.routes.ts`) delegan a un controller — antes tenían el `try/catch` y las llamadas a Redis inline, violando esta regla. Trece archivos: `pagina.routes.ts`, `contenido.routes.ts`, `observatorio.routes.ts`, `attachment.routes.ts`, `audit.routes.ts`, `auth.routes.ts`, `user.routes.ts`, `role.routes.ts`, `permission.routes.ts`, `rolePermission.routes.ts`, `section.routes.ts`, `securityQuestion.routes.ts`, `job.routes.ts`.
+- **controllers/** — traduce HTTP (req/res) a una llamada de use-case. No sabe de SQL. Trece, uno por dominio o sub-recurso: `pagina.controller.ts` (maqueta Puck), `contenido.controller.ts` (estudios/informes), `observatorio.controller.ts` (importación Excel y estadísticas OLO), `secciones.controller.ts`, `adjuntos.controller.ts`, `auditoria.controller.ts`, `usuarios.controller.ts`, `roles.controller.ts`, `permisos.controller.ts`, `role-permissions.controller.ts`, `security-questions.controller.ts`, `auth.controller.ts`, `trabajos.controller.ts` (BullMQ).
+- **use-cases/** — la lógica de negocio real. Una acción = una función (`aprobarPagina`, `guardarBorrador`, `importarProgramasExcel`). Organizadas por dominio real, no por el modelo que tocan:
+  - `paginas/` — **22 archivos**, la carpeta que más creció desde que se escribió esta sección: a la gobernanza original de la maqueta Puck (`guardar-borrador`, `enviar-a-revision`, `aprobar-pagina`, `rechazar-pagina`, `listar-en-revision`, `obtener-pagina-publica`, `obtener-version-editable`, `eliminar-version`, `crear-seccion`, `eliminar-seccion`) se sumaron el bloqueo de edición (`adquirir-bloqueo`, `liberar-bloqueo`), las subidas pendientes (`registrar-subida-pendiente`, `limpiar-subidas-pendientes`) y varios listados/soporte (`listar-publicadas`, `listar-respaldos`, `listar-versiones-archivadas`, `obtener-indice-busqueda`, `restaurar-version-anterior`, `secciones.usecase.ts`). Todas pasan por `repositories/pagina.repository.ts`.
+  - `observatorio/` — ingesta e importación masiva de estadísticas laborales: `importar-programas-excel.usecase.ts` (procesamiento por stream en memoria con ExcelJS, resolución de catálogos e inserción atómica e idempotente).
   - `contenidos/` — estudios/informes y su soporte: `contenido.usecase.ts` (renombrado de `posts.usecase.ts`), `secciones.usecase.ts`, `adjuntos.usecase.ts`.
   - `usuarios/` — 7: crear, caducidad, roles, permisos, role-permissions.
   - `auth/` — login, first-login, security-questions.
-  - `auditoria/` — `audit.usecase.ts`. No estaba nombrada en esta sección; sí se ve en el controller y la policy del mismo dominio.
-- **repositories/** — única capa que toca Sequelize. Si cambias de ORM, solo tocas aquí. **Once** hoy (antes diez, cuando se escribió esta sección): `adjuntos`, `auditoria`, `bloqueo-edicion` (el más nuevo), `contenido` (renombrado de `paginas.repository.ts`, que pese al nombre exportaba `PostRepository`), `pagina`, `permisos`, `role-permissions`, `roles`, `secciones`, `security-questions`, `usuarios`.
-- **infrastructure/db/** — **14 modelos** (`Pagina`, `PaginaVersion`, `Contenido`, `ContenidoArchivo`, `Archivo`, `ContentAuditLog`, `User`, `Role`, `Permission`, `RolePermission`, `Section`, `SecurityQuestion`, `BloqueoEdicion`, `SubidaPendiente`) y **24 migraciones** (001 a 024), todas en el manifiesto de `migrations/index.ts`. De los 14, solo **`SubidaPendiente` no tiene repositorio propio** — se importa directo desde dos use-cases (`registrar-subida-pendiente`, `limpiar-subidas-pendientes`), saltándose la capa de repositorio. Las cinco tablas que el §5 ya marca sin capa de aplicación (`marca_versiones`, `tableros_bi`, `politicas_privacidad`, `consentimientos`, `respaldos`, para RF-03/08/13/17) no llegaron a tener modelo Sequelize: no están entre estos 14. Inventario completo en `11-base-de-datos.md` §4.
+  - `auditoria/` — `audit.usecase.ts`.
+- **repositories/** — única capa que toca Sequelize. Si cambias de ORM, solo tocas aquí. Once repositorios activos: `adjuntos`, `auditoria`, `bloqueo-edicion` (el más nuevo), `contenido` (renombrado de `paginas.repository.ts`, que pese al nombre exportaba `PostRepository`), `pagina`, `permisos`, `role-permissions`, `roles`, `secciones`, `security-questions`, `usuarios`.
+- **infrastructure/db/** — diecinueve modelos Sequelize activos y veintiséis migraciones (`001` a `026`). La migración 020 eliminó 8 modelos inactivos que no tenían uso en código. Las migraciones 021 a 026 incorporaron `BloqueoEdicion`, `SubidaPendiente`, el contador de visitas de `Pagina` (025) y el módulo completo de Observatorio (`Departamento`, `CentroFormacion`, `NivelFormacion`, `ProgramaFormacion`, `ProgramaSobresaliente`, migración 026). De los 19, solo **`SubidaPendiente` no tiene repositorio propio** — se importa directo desde dos use-cases (`registrar-subida-pendiente`, `limpiar-subidas-pendientes`), saltándose la capa de repositorio. Inventario completo en `11-base-de-datos.md` §4.
 - **infrastructure/redis/** — conexión, colas BullMQ (respaldos, caducidad) y los ayudantes de invalidación (`redisEstaListo`, `borrarClavesPorPatron`).
 - **domain-events/** — efectos secundarios desacoplados. Evita que los use-cases se vuelvan gigantes: aprobar solo emite un evento y los oyentes reaccionan. `ContenidoPublicado` **está cableado y funcionando** (invalidar caché + revalidar ISR) — lo emiten `aprobar-pagina` y, desde que existe, también `restaurar-version-anterior`. `EnviadoARevision`, `ContenidoRechazado` y `UsuarioCaducado` siguen siendo solo una interfaz TS marcada "Stub"; el oyente `notificar-editor` está escrito pero nadie lo importa. Ninguno de los cuatro está cableado.
 - **policies/** — reglas de autorización por acción (quién puede aprobar). Cuatro: páginas, contenidos, usuarios, auditoría. **Comparan el nombre de rol en minúsculas a propósito** — en la tabla `roles` están capitalizados, y comparar literal deja a todo el mundo fuera sin lanzar un solo error. Lo cubre `npm run permisos:verificar`.
-- **middlewares/** — siete, no seis: auth (verifica firma JWT, relee rol/estado/caducidad de la fila), cache, error, `permisos` (arma el middleware de "exigir permiso" a partir de las 4 policies — no estaba nombrado aquí), require-permission (lo mismo pero consultando `roles_permisos` en BD), rate-limit y validar (Zod).
+- **middlewares/** — siete: auth (verifica firma JWT, relee rol/estado/caducidad de la fila), cache, error, `permisos` (arma el middleware de "exigir permiso" a partir de las 4 policies), require-permission (lo mismo pero consultando `roles_permisos` en BD), rate-limit y validar (Zod).
 - **validators/** — esquemas Zod de entrada, todos `.strict()`: `paginas.validators.ts`, `usuarios.validators.ts`.
-- **shared/** — utilidades transversales: ámbito, catálogo de permisos, autorización, campos/DTO de auditoría, sanitización de contenido, extracción de enlaces y de texto de bloques Puck, políticas de correo y contraseña, caché y errores compartidos. Y `storage/`, donde conviven **dos cosas distintas**: `index.ts` sigue siendo el stub de tres funciones vacías que este documento siempre mencionó, pero junto a él vive `backup-uploads.service.ts` (396 líneas) con la implementación real de RF-02 — respalda y restaura los archivos físicos de una página al publicar o revertir una versión. El stub no se usa; el trabajo real ya está, solo que en otro archivo del mismo directorio.
-- **docs/** — `openapi.ts` + `montar-docs.ts`: sirve la documentación Swagger/OpenAPI generada desde anotaciones `@openapi` en el propio código. No estaba documentada en esta sección.
+- **shared/** — utilidades transversales: ámbito, catálogo de permisos, autorización, campos/DTO de auditoría, sanitización de contenido, extracción de enlaces y de texto de bloques Puck, políticas de correo y contraseña, caché y errores compartidos. Y `storage/`, donde conviven **dos cosas distintas**: `index.ts` sigue siendo el stub de tres funciones vacías, pero junto a él vive `backup-uploads.service.ts` con la implementación real de RF-02 — respalda y restaura los archivos físicos de una página al publicar o revertir una versión. El stub no se usa; el trabajo real ya está, solo que en otro archivo del mismo directorio.
+- **docs/** — `openapi.ts` + `montar-docs.ts`: sirve la documentación Swagger/OpenAPI generada desde anotaciones `@openapi` en el propio código.
 
 ```
 api-backend/src/
@@ -236,18 +237,19 @@ api-backend/src/
 ├── config/                   # Variables de entorno, conexión DB
 ├── docs/                     # openapi.ts + montar-docs.ts — Swagger vía anotaciones @openapi
 │
-├── routes/                   # SOLO define endpoints, cero lógica — 12 archivos
-│   └── *.routes.ts           # attachment, audit, auth, contenido, job, pagina, permission,
-│                              #   role, rolePermission, section, securityQuestion, user
-├── controllers/               # HTTP → use-case. Traduce req/res, no sabe de SQL — 12 archivos
+├── routes/                   # SOLO define endpoints, cero lógica — 13 archivos
+│   └── *.routes.ts           # pagina, contenido, observatorio, section, attachment, audit,
+│                              #   job, auth, user, role, permission, rolePermission, securityQuestion
+├── controllers/               # HTTP → use-case. Traduce req/res, no sabe de SQL — 13 archivos
 │   └── *.controller.ts
 ├── use-cases/                # La lógica de negocio real vive aquí
-│   ├── paginas/               # 20 archivos: gobernanza Puck + bloqueo de edición +
+│   ├── paginas/               # 22 archivos: gobernanza Puck + bloqueo de edición +
 │   │                          #   subidas pendientes + listados/búsqueda/restaurar versión
+│   ├── observatorio/          # importar-programas-excel.usecase.ts (ExcelJS stream + upsert atómico)
 │   ├── contenidos/            # contenido.usecase.ts (era "posts"), secciones, adjuntos
 │   ├── usuarios/               # 7: crear, caducidad, roles, permisos, role-permissions
-│   ├── auth/                  # login, first-login, security-questions
-│   └── auditoria/             # audit.usecase.ts
+│   ├── auditoria/             # audit.usecase.ts
+│   └── auth/                  # login, first-login, security-questions
 ├── repositories/              # ÚNICA capa que consulta los modelos Sequelize — 11 archivos
 │   ├── pagina.repository.ts    # Pagina/PaginaVersion
 │   ├── bloqueo-edicion.repository.ts   # el más nuevo
@@ -257,15 +259,17 @@ api-backend/src/
 │
 ├── infrastructure/
 │   ├── db/
-│   │   ├── models/            # 14 modelos Sequelize + index.ts (asociaciones)
+│   │   ├── models/            # 19 modelos Sequelize + index.ts (asociaciones)
 │   │   │   ├── Pagina.ts, PaginaVersion.ts        # maqueta Puck
-│   │   │   ├── Contenido.ts   # (era Post.ts) — tabla `contenidos` desde la migración 004
+│   │   │   ├── BloqueoEdicion.ts, SubidaPendiente.ts # concurrencia y recolección de archivos
+│   │   │   ├── Contenido.ts                       # tabla `contenidos`
 │   │   │   ├── ContentAuditLog.ts                 # historial (RF-07), tabla `auditoria_cambios`
-│   │   │   ├── User, Role, Permission, RolePermission   # RBAC (RF-04)
+│   │   │   ├── User, Role, Permission, RolePermission # RBAC (RF-04)
 │   │   │   ├── Archivo.ts, ContenidoArchivo.ts     # archivos (RF-02, RF-12)
-│   │   │   ├── BloqueoEdicion.ts, SubidaPendiente.ts   # los dos modelos más recientes
-│   │   │   └── Section.ts, SecurityQuestion.ts
-│   │   ├── migrations/        # 24 (001-024), en un manifiesto explícito (index.ts)
+│   │   │   ├── BloqueoEdicion.ts, SubidaPendiente.ts   # concurrencia y subidas pendientes
+│   │   │   ├── Section.ts, SecurityQuestion.ts
+│   │   │   └── Departamento, CentroFormacion, NivelFormacion, ProgramaFormacion, ProgramaSobresaliente # Observatorio OLO (RF-08, RF-09)
+│   │   ├── migrations/        # 26 (001-026), en un manifiesto explícito (index.ts)
 │   │   └── migrations/_obsoletas/   # incluida script.sql — el esquema ya no sale de ahí
 │   └── redis/                # Conexión + colas BullMQ + invalidación por patrón
 │

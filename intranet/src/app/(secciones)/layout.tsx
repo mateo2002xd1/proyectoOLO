@@ -2,6 +2,7 @@ import React from 'react';
 import {
   MarcoSecciones,
   PaginasFabSpeedDial,
+  RastreadorVisitas,
 } from '@/features/gestor-secciones';
 import {
   obtenerSesion,
@@ -35,6 +36,7 @@ export default async function SeccionesLayout({
       <PaginasFabSpeedDial
         esSuperadmin={esSuperadmin}
       />
+      <RastreadorVisitas ambito="intranet" />
       {/* Cubre las cinco secciones de una vez. El editor y la vista previa cuelgan
           fuera de este grupo de rutas y montan el suyo. */}
       <VigilanteSesion />

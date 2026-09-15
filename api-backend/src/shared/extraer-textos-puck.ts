@@ -79,12 +79,21 @@ export function extraerTextosPuck(contenido: any, tituloPagina?: string): ItemTe
 
   if (!contenido) return items;
 
-  // Normalizar array de bloques
+  // Normalizar array de bloques principales
   const bloques: any[] = Array.isArray(contenido)
-    ? contenido
+    ? [...contenido]
     : Array.isArray(contenido.content)
-      ? contenido.content
+      ? [...contenido.content]
       : [];
+
+  // Incluir bloques anidados en zonas/slots de Puck (por ejemplo, bloques dentro de pestañas)
+  if (contenido?.zones && typeof contenido.zones === 'object') {
+    for (const zoneList of Object.values(contenido.zones)) {
+      if (Array.isArray(zoneList)) {
+        bloques.push(...zoneList);
+      }
+    }
+  }
 
   for (const bloque of bloques) {
     const props = bloque?.props || bloque;

@@ -19,6 +19,7 @@ export { EditorjsWrapper } from "./components/editorjs-wrapper";
 export { ClientPuckRender } from "./components/client-puck-render";
 export { AvisoEditorOcupado } from "./components/aviso-editor-ocupado";
 export { RevisionQueueView } from "./components/revision-queue-view";
+export { RastreadorVisitas } from "./components/rastreador-visitas";
 
 // Hooks
 export { usePagina } from "./hooks/use-pagina";
@@ -39,6 +40,7 @@ export {
   eliminarVersion,
   listarEnRevision,
   resumenDePaginasPublicadas,
+  registrarVisita,
   type PaginaPublicada,
   type ResumenPaginasPublicadas,
   crearSeccion,

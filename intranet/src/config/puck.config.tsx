@@ -288,8 +288,19 @@ const puckConfigBase: Config = {
           ],
         },
         titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+        mostrarSubtitulo: {
+          type: 'radio',
+          label: 'Mostrar subtítulo',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        subtitulo: { type: 'richtext', label: 'Subtítulo', contentEditable: true },
         contenido: { type: 'richtext', label: 'Contenido', contentEditable: true },
         fondo: campoFondo,
+        colorTitulo: campoColor('Color del título (opcional)'),
+        colorContenido: campoColor('Color del contenido (opcional)'),
         colorTexto: campoColor('Color del texto (opcional)'),
         ancho: {
           type: 'radio',
@@ -303,8 +314,12 @@ const puckConfigBase: Config = {
       defaultProps: {
         mostrarTitulo: true,
         titulo: '¿Qué es?',
+        mostrarSubtitulo: false,
+        subtitulo: '',
         contenido: '<p>Escribe aquí el contenido de la sección.</p>',
         fondo: 'gris',
+        colorTitulo: '',
+        colorContenido: '',
         colorTexto: '',
         ancho: 'estrecho',
       },
@@ -322,7 +337,18 @@ const puckConfigBase: Config = {
           ],
         },
         titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+        mostrarSubtitulo: {
+          type: 'radio',
+          label: 'Mostrar subtítulo',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        subtitulo: { type: 'richtext', label: 'Subtítulo', contentEditable: true },
         contenido: { type: 'richtext', label: 'Contenido', contentEditable: true },
+        colorTitulo: campoColor('Color del título (opcional)'),
+        colorContenido: campoColor('Color del contenido (opcional)'),
         imagenSrc: campoImagen('Imagen (opcional si hay presentación)'),
         imagenAlt: { type: 'text', label: 'Texto alternativo' },
         pieDeImagen: { type: 'text', label: 'Leyenda bajo la imagen', contentEditable: true },
@@ -351,7 +377,11 @@ const puckConfigBase: Config = {
       defaultProps: {
         mostrarTitulo: true,
         titulo: '¿Cuál es el <strong>objetivo</strong>?',
+        mostrarSubtitulo: false,
+        subtitulo: '',
         contenido: '<p>Escribe aquí el contenido de la sección.</p>',
+        colorTitulo: '',
+        colorContenido: '',
         imagenSrc: '',
         imagenAlt: '',
         pieDeImagen: '',
@@ -375,6 +405,16 @@ const puckConfigBase: Config = {
           ],
         },
         titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+        colorTitulo: campoColor('Color del título (opcional)'),
+        mostrarSubtitulo: {
+          type: 'radio',
+          label: 'Mostrar subtítulo',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        subtitulo: { type: 'richtext', label: 'Subtítulo', contentEditable: true },
         imagenSrc: campoImagen('Imagen'),
         imagenAlt: { type: 'text', label: 'Texto alternativo' },
         ancho: {
@@ -410,6 +450,9 @@ const puckConfigBase: Config = {
       defaultProps: {
         mostrarTitulo: true,
         titulo: '',
+        colorTitulo: '',
+        mostrarSubtitulo: false,
+        subtitulo: '',
         imagenSrc: '',
         imagenAlt: '',
         ancho: 'completo',
@@ -514,7 +557,17 @@ const puckConfigBase: Config = {
             { label: 'Derecha', value: 'derecha' },
           ],
         },
+        mostrarSubtitulo: {
+          type: 'radio',
+          label: 'Mostrar subtítulo',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
         subtitulo: { type: 'textarea', label: 'Descripción / Subtítulo (opcional)' },
+        colorTitulo: campoColor('Color del título (opcional)'),
+        colorSubtitulo: campoColor('Color del subtítulo / contenido (opcional)'),
         columnas: {
           type: 'radio',
           label: 'Columnas en escritorio',
@@ -538,7 +591,10 @@ const puckConfigBase: Config = {
         mostrarTitulo: true,
         titulo: '',
         alineacionTitulo: 'centro',
+        mostrarSubtitulo: true,
         subtitulo: '',
+        colorTitulo: '',
+        colorSubtitulo: '',
         columnas: 3,
         items: [],
       },
@@ -748,7 +804,24 @@ const puckConfigBase: Config = {
     Publicaciones: {
       label: 'Últimas publicaciones',
       fields: {
+        mostrarTitulo: {
+          type: 'radio',
+          label: 'Mostrar título',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
         titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+        mostrarSubtitulo: {
+          type: 'radio',
+          label: 'Mostrar subtítulo',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        subtitulo: { type: 'richtext', label: 'Subtítulo', contentEditable: true },
         publicaciones: {
           type: 'array',
           label: 'Publicaciones',
@@ -775,7 +848,10 @@ const puckConfigBase: Config = {
         porPagina: { type: 'number', label: 'Tarjetas visibles a la vez', min: 1, max: 6 },
       },
       defaultProps: {
+        mostrarTitulo: true,
         titulo: '<p><strong>Ultimas</strong> publicaciones</p>',
+        mostrarSubtitulo: false,
+        subtitulo: '',
         publicaciones: [],
         porPagina: 4,
       },
@@ -792,7 +868,9 @@ const puckConfigBase: Config = {
           label: 'Conceptos',
           arrayFields: {
             titulo: { type: 'richtext', label: 'Título', contentEditable: true },
+            colorTitulo: campoColor('Color del título (opcional)'),
             descripcion: { type: 'richtext', label: 'Descripción', contentEditable: true },
+            colorDescripcion: campoColor('Color de la descripción / contenido (opcional)'),
             imagenSrc: campoImagen('Imagen'),
             imagenAlt: { type: 'text', label: 'Texto alternativo' },
           },

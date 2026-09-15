@@ -32,6 +32,23 @@ import { Switch } from '@/shared/ui/atoms/switch';
  * junto a quien comprueba la clave, que es la API.
  */
 
+/**
+ * `locked_until` es el mismo campo que usan tanto el login como las preguntas de
+ * seguridad (§3): mientras está en el futuro, el backend rechaza ambos caminos por
+ * igual, así que un solo indicador cubre los dos casos sin necesidad de adivinar cuál
+ * de los dos disparó el bloqueo.
+ */
+function infoBloqueo(user: User, ahora: number): string | null {
+  if (!user.locked_until) return null;
+  const msRestante = new Date(user.locked_until).getTime() - ahora;
+  if (msRestante <= 0) return null;
+
+  const minutos = Math.floor(msRestante / 60000);
+  const segundos = Math.floor((msRestante % 60000) / 1000);
+  const tiempo = minutos > 0 ? `${minutos} min` : `${segundos} s`;
+  return `Bloqueada · ${tiempo} restantes`;
+}
+
 export default function UsuariosView() {
   const {
     users, roles, loading, error,
@@ -69,6 +86,13 @@ export default function UsuariosView() {
     fetchUsers();
     fetchRoles();
   }, [fetchUsers, fetchRoles]);
+
+  // Refresca la cuenta regresiva del bloqueo sin volver a pedir la lista al servidor.
+  const [ahora, setAhora] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setAhora(Date.now()), 15000);
+    return () => clearInterval(id);
+  }, []);
 
   const handleRoleChange = useCallback((newRoleId: string) => {
     setRoleId(newRoleId);
@@ -407,6 +431,9 @@ export default function UsuariosView() {
                 <th scope="col" className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-[#94a3b8]">
                   Estado
                 </th>
+                <th scope="col" className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-[#94a3b8]">
+                  Bloqueo
+                </th>
                 <th scope="col" className="px-6 py-4 text-right text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-[#94a3b8]">
                   Acciones
                 </th>
@@ -415,13 +442,13 @@ export default function UsuariosView() {
             <tbody className="block md:table-row-group divide-y divide-zinc-200 dark:divide-zinc-800">
               {loading ? (
                 <tr className="block md:table-row">
-                  <td colSpan={5} className="block md:table-cell px-6 py-8 text-center text-sm text-zinc-500">
+                  <td colSpan={6} className="block md:table-cell px-6 py-8 text-center text-sm text-zinc-500">
                     Cargando usuarios...
                   </td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr className="block md:table-row">
-                  <td colSpan={5} className="block md:table-cell px-6 py-8 text-center text-sm text-zinc-500">
+                  <td colSpan={6} className="block md:table-cell px-6 py-8 text-center text-sm text-zinc-500">
                     No hay usuarios registrados.
                   </td>
                 </tr>
@@ -449,6 +476,22 @@ export default function UsuariosView() {
                         />
                         <span className="text-zinc-500 dark:text-[#94a3b8] text-xs">{user.status === 'active' ? 'Activo' : 'Inactivo'}</span>
                       </div>
+                    </td>
+                    <td className="block md:table-cell px-6 py-3 md:py-4 text-sm">
+                      <span className="block md:hidden text-xs font-semibold text-zinc-500 dark:text-[#94a3b8] uppercase tracking-wider mb-1">Bloqueo</span>
+                      {(() => {
+                        const bloqueo = infoBloqueo(user, ahora);
+                        return bloqueo ? (
+                          <span
+                            title="Login y preguntas de seguridad bloqueados por intentos fallidos"
+                            className="inline-flex rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-medium text-red-800 dark:bg-red-900/40 dark:text-red-200"
+                          >
+                            {bloqueo}
+                          </span>
+                        ) : (
+                          <span className="text-zinc-400 dark:text-zinc-600">—</span>
+                        );
+                      })()}
                     </td>
                     <td className="block md:table-cell px-6 py-3 md:py-4 text-sm md:text-right">
                       <span className="block md:hidden text-xs font-semibold text-zinc-500 dark:text-[#94a3b8] uppercase tracking-wider mb-1">Acciones</span>

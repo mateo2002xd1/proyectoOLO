@@ -43,6 +43,11 @@ export type User = {
   status: string;
   expiration_date?: string;
   created_at: string;
+  /** Fecha hasta la que el login y las preguntas de seguridad quedan bloqueados por
+   *  intentos fallidos (§3 de la política de contraseñas); `null`/ausente si no hay bloqueo. */
+  locked_until?: string | null;
+  failed_login_attempts?: number;
+  failed_security_attempts?: number;
 };
 
 export type NuevoUsuario = {
