@@ -2,7 +2,20 @@
 
 > Documento de trabajo, no forma parte de la documentación numerada (`1-guia-del-proyecto.md` … `11-base-de-datos.md`) del proyecto. Registra el análisis y las decisiones tomadas en sesión de planeación, para retomar el trabajo desde cualquier máquina sin repetir el análisis.
 >
-> Última decisión registrada: 2026-09-15. Nada de este documento está implementado todavía — es el plan, no el estado del código. Antes de actuar sobre algo aquí, verificar contra el código real (puede haber avanzado desde que se escribió esto).
+> Última decisión registrada: 2026-09-15. **Implementado el mismo día**, y **reconciliado
+> horas después** con una versión paralela que Mateo construyó sin coordinar — ver, en
+> orden, las dos entradas de `6-auditoria.md` (2026-09-15): "módulo Programa +
+> Sobresalientes completo" y, más abajo (posterior), "se reconcilia con el observatorio de
+> Mateo". Esa segunda entrada **cambia los nombres de tabla, modelo y ruta** que aparecen
+> en este documento — donde diga `formacion_sobresalientes` / `FormacionSobresaliente` /
+> `/api/formacion-sobresalientes`, el nombre real hoy es **`programas_sobresalientes`**
+> (tabla de Mateo, sin tocar) / **`ProgramaSobresaliente`** / **`/api/observatorio`**. La
+> arquitectura (D1-D10 de abajo) y las Historia/Criterios/Tareas siguen vigentes tal cual.
+> **D11 sí cambió de fondo, no solo de nombre**: no hay `carga_id` en la tabla de hechos
+> ni vista `v_formacion_actual` — nunca se construyeron. El mecanismo real es
+> vaciar-y-recargar (Mateo), ver nota bajo D11 y §3.1. §3.1, §3.2 y §5 quedaron con rutas,
+> nombres de migración y de script viejos — corregidos in situ el 2026-09-15. El código es
+> la verdad sobre el estado actual; antes de actuar sobre algo aquí, verificar contra él.
 
 ---
 
@@ -98,23 +111,34 @@ Sexo: solo `M`/`F`.
 | D10 | Catálogos ganan columna `codigo VARCHAR UNIQUE` (junto al `UUID` que sigue siendo PK) | Cambiar la PK a código natural | Preserva la convención D3 del proyecto ("UUID en toda clave primaria") y las FKs existentes; el código sirve para upsert idempotente por fila del Excel |
 | D11 | Tabla de hechos **append-only** por `carga_id`; una vista `v_formacion_actual` filtra por la última carga `completado` | Staging schema separado + swap físico | Más simple: una carga mala nunca se "revierte", simplemente no llega a `completado` y la vista sigue mostrando la anterior |
 
+> **D11 superada en la reconciliación con Mateo (2026-09-15):** su tabla `programas_sobresalientes`
+> ya traía `UNIQUE(centro_id, programa_id, sexo)`, así que en vez de append-only + vista se
+> adoptó su mecanismo **vaciar y recargar**: cada carga hace `destroy({where:{}})` + `bulkCreate`
+> dentro de una sola transacción (`use-cases/observatorio/importar-programas-excel.usecase.ts`).
+> No hay `carga_id` en la tabla de hechos ni vista `v_formacion_actual` — la tabla completa
+> **es** "lo vigente", porque no puede haber dos versiones a la vez. `cargas_datos` (auditoría)
+> queda sin FK hacia la tabla de hechos por esto mismo. Ventaja: una carga a medias nunca es
+> visible (vive dentro de la transacción); desventaja frente al plan original: no queda
+> histórico de datos por carga, solo el registro de auditoría (fecha/quién/resultado).
+
 ---
 
 ## 3. Arquitectura objetivo
 
 ### 3.1 Base de datos (migraciones nuevas bajo `api-backend/src/infrastructure/db/migrations/`, siguiendo el runner — nunca a mano en Neon)
 
-1. **`025-corregir-catalogos-formacion.ts`** — `DROP` de las dos `UNIQUE` rotas (§1.4); añade `codigo VARCHAR UNIQUE` a `departamentos`, `centros_formacion`, `niveles_formacion`, `programas_formacion`; promueve `departamentos.codigo_dane` a `NOT NULL UNIQUE`.
-2. **`026-formacion-sobresalientes.ts`** — tabla de hechos: FKs `UUID` a las 4 dimensiones + `sexo CHECK IN ('M','F')` + `certificados`/`vinculados`/`tasa_vinculacion`/`salario_promedio` + `carga_id`.
-3. **`027-cargas-datos.ts`** — `archivo_id` (FK a `archivos`, no duplicar metadatos de archivo), `estado CHECK IN ('procesando','completado','error')` (sin estado de aprobación — D5), `subido_por` (FK `usuarios`), `filas_procesadas`, `filas_error`, `mensaje`, `creado_en`, `completado_en`.
-4. Vista `v_formacion_actual` — hechos de la carga `completado` más reciente.
+> **Actualizado 2026-09-15 tras la reconciliación con Mateo** — reemplaza lo escrito originalmente aquí (una `025-corregir-catalogos-formacion.ts` separada, `carga_id` en la tabla de hechos y una vista `v_formacion_actual`; ninguna de las tres existe). Lo real:
+
+1. **`026-observatorio-programas-sobresalientes.ts`** (de Mateo, nombre y esquema sin tocar) — crea `departamentos`, `centros_formacion` (`UNIQUE(departamento_id, nombre)` — ya permite varios centros por departamento, distintos nombres), `niveles_formacion`, `programas_formacion` (`UNIQUE(nivel_formacion_id, nombre)` — ya permite varios programas por nivel) y la tabla de hechos `programas_sobresalientes` (FKs `UUID` a las 4 dimensiones, `sexo CHECK IN ('M','F')`, `certificados`/`vinculados`/`tasa_vinculacion` (fracción 0-1, no `carga_id`) `/salario_promedio`, `UNIQUE(centro_id, programa_id, sexo)`).
+2. **`027-cargas-datos.ts`** (mía) — pura auditoría, sin FK hacia la tabla de hechos: `archivo_id` (FK `archivos`), `estado CHECK IN ('procesando','completado','error')` (sin estado de aprobación — D5), `subido_por` (FK `usuarios`), `filas_procesadas`, `mensaje`, `creado_en`, `completado_en`. No tiene `filas_error`: al ser vaciar-y-recargar transaccional, una fila mala revierte toda la carga, no deja "parcialmente cargada".
+3. Sin vista: ver nota bajo D11 — la tabla de hechos completa es siempre "lo vigente".
 
 ### 3.2 Backend (`api-backend/`, patrón controllers → use-cases → repositories, igual que `paginas/` y `trabajos.controller.ts`)
 
 - `repositories/formacion-sobresalientes.repository.ts` — única capa que toca los modelos Sequelize nuevos.
 - `use-cases/formacion-sobresalientes/`: `cargarExcel` (parsea con `exceljs`, valida, upsert transaccional), `obtenerActual` (lee la vista).
 - Worker: extiende (o usa) `heavy-jobs` — lee **solo** la hoja "Superan el margen", hace upsert de catálogos por `codigo` + insert masivo de hechos con el nuevo `carga_id`, todo en una transacción. Si falla cualquier fila: rollback completo, `estado='error'`, mensaje con la fila/columna exacta.
-- Rutas: `POST /api/formacion-sobresalientes/cargas` (solo Administrador, sube y dispara el proceso de inmediato), `GET /api/formacion-sobresalientes/cargas` (historial), `GET /api/formacion-sobresalientes` (**pública**, sin auth, cacheable Redis — la que reemplaza el fixture).
+- Rutas reales (`/api/observatorio`, no `/api/formacion-sobresalientes` — nombre alineado con la tabla de Mateo): `POST /cargas` (solo Administrador/Superadmin, sube y dispara el proceso de inmediato), `GET /cargas` y `GET /cargas/:id` (historial), `GET /programas-sobresalientes` (**pública**, sin auth — la que reemplaza el fixture; sin caché Redis todavía, pendiente si el volumen lo justifica).
 
 ### 3.3 Admin (frontend, `sitio-web`)
 
@@ -169,8 +193,26 @@ Sexo: solo `M`/`F`.
 
 ---
 
-## 5. Próximo paso
+## 5. Estado — 2026-09-15
 
-Empezar por el **Criterio 1** (migraciones 025-027 + vista), porque todo lo demás depende de que el esquema de base de datos esté correcto.
+**Código escrito para los 5 criterios de la Historia 1.** `tsc --noEmit` limpio en
+`api-backend` y `sitio-web`. Detalle de archivos en la entrada de `6-auditoria.md` de esta
+fecha.
 
-Pendiente fuera de esta historia: especificar el Excel/esquema de los otros 3 módulos de "Actualizaciones" (Alertas de inversión, Fuentes futuras de empleo, Criterios de clasificación de resultados) antes de construirlos.
+**Lo que falta para que funcione en un ambiente real (nadie lo ejecutó desde aquí):**
+
+1. `cd api-backend && npm run migrate` — aplica `026-observatorio-programas-sobresalientes`
+   (de Mateo) y `027-cargas-datos` (mía) contra Neon. `npm run migrate:status` antes, para
+   confirmar qué falta.
+2. `npm run db:verificar` — confirma que los modelos nuevos coinciden con las columnas
+   reales (la lección de `11-base-de-datos.md` §8.4: el esquema real manda).
+3. Probar con el Excel real de SENA: `npm run probar:carga-observatorio -- <ruta-al-excel.xlsx>`
+   (script nuevo, no pasa por HTTP ni por Redis) o, ya con el backend y el worker
+   corriendo, subiendo el archivo de verdad desde `/admin/actualizaciones`.
+4. Confirmar que `NEXT_PUBLIC_API_URL` está seteada en `sitio-web` (la usan tanto el
+   servicio público nuevo como el de administración).
+
+Pendiente fuera de esta historia: especificar el Excel/esquema de los otros 3 módulos de
+"Actualizaciones" (Alertas de inversión, Fuentes futuras de empleo, Criterios de
+clasificación de resultados) antes de construirlos — hoy son tarjetas "Próximamente" sin
+lógica detrás.

@@ -5,6 +5,154 @@
 
 ---
 
+## sesión 15-09-2026 (3.ª parte): layout mapa+tabla del observatorio, y loader real de progreso para la carga de Excel
+
+**Layout de `/programas-sobresalientes`** (`sitio-web/src/features/sitio-web/programas-sobresalientes/`): pedido en varias vueltas — mapa a la izquierda fijo (sticky) al hacer scroll, más grande, sin cortarse con el header del sitio, y la tabla de resultados con sus 8 columnas visibles sin scroll horizontal. Encontrado en el camino: `.olo-header` es `sticky top:0` con `z-index:1000` y 90px de alto (`globals.css`), así que un `top` menor que eso queda tapado — se ajustó a `top-[104px]`. Y con `whitespace-nowrap` en los encabezados de la tabla (sin `table-layout:fixed`) el navegador expande las columnas para que el texto quepa en una línea, aunque haya `min-width` explícito — de ahí el scroll horizontal que se pidió quitar. Se resolvió dejando envolver el texto de encabezados y de "Formación Académica" (puede traer "Profundización Técnica"), y moviendo el punto donde aparece el layout de dos columnas de `lg` (1024px) a `2xl` (1536px): por debajo de eso, mapa arriba a ancho completo y tabla debajo a ancho completo (nunca compiten por espacio); de ahí para arriba, mapa fijo de 440px a la izquierda. Verificado sin scroll horizontal en 1024, 1280, 1366, 1440, 1536 y 1920px con capturas vía Chromium headless (CDP) — no había `chromium-cli` disponible en este entorno.
+
+**Loader real de progreso en "Actualizaciones" → Programa + Sobresalientes** (pedido explícito: "un loader real que me diga cuánto va de porcentaje", no simulado). El worker de `heavy-jobs` ahora reporta avance real en dos fases de `importarProgramasExcel` (`api-backend/src/use-cases/observatorio/importar-programas-excel.usecase.ts`): 0-60% leyendo y validando las filas del Excel (cada 100 filas), 60-100% escribiéndolas en `programas_sobresalientes` en lotes de 2.000 (antes un único `bulkCreate` con todas las filas de golpe, sin forma de medir avance). `procesar-carga.usecase.ts` recibe ese callback y escribe en `cargas_datos` sin esperar (`.catch` sin `await`) y sin más seguido que cada 500ms, para no saturar la base en un archivo de 100.000 filas.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| DB | `migrations/028-cargas-datos-progreso.ts` | Columnas `progreso` (0-100, `CHECK`) y `filas_totales` en `cargas_datos` |
+| Backend | `importar-programas-excel.usecase.ts` | `onProgreso` opcional; lectura por fila, escritura por lote de 2.000 |
+| Backend | `procesar-carga.usecase.ts` | Throttle de escritura (500ms) hacia `cargas_datos`, fuera de la transacción grande |
+| Backend | `repositories/observatorio.repository.ts` | `actualizarProgreso()`; `marcarCargaCompletada` ahora fija `progreso:100` |
+| Frontend | `actualizaciones/hooks/use-cargas-programa-sobresalientes.ts` | Sondeo de 3s → 1s; expone `cargaEnProceso` |
+| Frontend | `actualizaciones/components/carga-programa-sobresalientes.tsx` | Barra de progreso real (`role="progressbar"`, "N de M filas") |
+| Frontend | `actualizaciones/components/historial-cargas-grid.tsx` | "Procesando... N%" en la grilla de historial |
+
+> **Trampa para quien retome esto:** Redis no estaba corriendo en este entorno de desarrollo (nada en el puerto 6379) — sin él, `heavyJobsQueue.add()` se queda esperando para siempre y cualquier carga de Excel se cuelga en "procesando" al 0%, sin importar qué tan bien esté el loader. Se resolvió por esta sesión con un contenedor suelto (`docker run -d --name olo-redis-dev -p 6379:6379 --restart unless-stopped redis:7-alpine`, arrancando primero Docker Desktop) — no forma parte de ningún script del proyecto y no sobrevive a un reinicio de Windows si Docker Desktop no arranca solo. Detalle completo en memoria (`redis-no-arranca-solo-en-dev`).
+
+**Verificado:** `tsc --noEmit` limpio en `api-backend` y `sitio-web` tras todos los cambios. Migración `028` aplicada contra la base real (`npm run migrate`). Backend reiniciado (usa `ts-node` plano, sin recarga automática) y confirmado arriba con el worker conectado a Redis (`connected_clients:7` en el contenedor). **No verificado todavía:** una carga real de Excel de punta a punta — quedó lista la infraestructura (Redis, migración, backend reiniciado) justo cuando el usuario iba a intentarlo.
+
+**Pendiente al cierre:** confirmar con una carga real que el porcentaje avanza como se espera y que el resultado final coincide con `filasCargadas`; decidir si el contenedor Redis suelto se reemplaza por el `docker-compose.yml` del proyecto (ya trae su propio servicio `redis`) para no depender de un contenedor creado a mano.
+
+---
+
+## sesión 15-09-2026 (cont.): se reconcilia con el "observatorio" de Mateo, que llegó en paralelo
+
+Mismo día, después de la entrada de abajo: al bajar cambios de `dev`, apareció un `git
+stash pop` con conflicto real en 4 archivos (`app.ts`, `migrations/index.ts`,
+`models/index.ts`, `package-lock.json`) — Mateo había construido, en paralelo y sin
+coordinar, su propia versión completa del mismo módulo: migración
+`026-observatorio-programas-sobresalientes` (tablas `departamentos`, `centros_formacion`,
+`niveles_formacion`, `programas_formacion`, **`programas_sobresalientes`** — no
+`formacion_sobresalientes` como se había nombrado aquí), modelos Sequelize, un use-case de
+importación (`importar-programas-excel.usecase.ts`), controller, rutas bajo
+`/api/observatorio`, y hasta un campo de subida **dentro de un bloque Puck**
+(`ImportadorExcelBloque` + `ImportadorExcelUploaderField`), con su propio proxy en
+`sitio-web/src/app/api/observatorio/importar/route.ts`.
+
+**Decisión (pedida explícitamente):** se adopta el nombre de tabla/modelo de Mateo
+(`programas_sobresalientes` / `ProgramaSobresaliente`, sin tocar su migración) para no
+generar un choque de nombres con su rama, y se organiza todo lo demás bajo ese mismo
+paraguas de nombres (`/api/observatorio`, `use-cases/observatorio/`,
+`policies/observatorio.policies.ts`). Se retiran por completo las piezas con nombre
+`formacion-sobresalientes` de la sesión anterior (migraciones 025-027 viejas, modelos
+`FormacionSobresaliente`/`FormacionActual`, controller, rutas, repositorio) — quedaban
+duplicadas y con un diseño (`carga_id` + vista `v_formacion_actual`) que ya no aplica: la
+tabla de Mateo tiene `UNIQUE(centro_id, programa_id, sexo)` sin columna de carga, así que
+la estrategia correcta es la que él ya había implementado — **vaciar y recargar completo
+en cada importación**, no versionar por carga.
+
+**Se mantiene la arquitectura acordada en sesión (D1-D11 de `plan-programa-sobresalientes.md`), no la de Mateo, donde chocan:**
+- Sin campo de Excel dentro de un bloque Puck — se borra `ImportadorExcelBloque`, su
+  campo, y el proxy de Next. El bloque Puck sigue siendo de solo lectura.
+- Solo Administrador/Superadmin sube, no cualquiera con `contenidos.editar` (que es lo que
+  dejaba subir la versión de Mateo).
+- Subida validada por magic bytes vía `@olo/upload-policy` (antes: `express.raw` de
+  cualquier `application/octet-stream`, sin comprobar que fuera real un Excel).
+- Procesamiento asíncrono en `heavy-jobs` (antes: síncrono, bloqueando la respuesta HTTP).
+- Auditoría de cada carga en `cargas_datos` (tabla nueva, sin relación de esquema con
+  `programas_sobresalientes` — pura bitácora de quién subió qué y con qué resultado).
+
+**Dos errores reales corregidos en la lógica de importación de Mateo** (su propio código,
+nunca antes probado contra el archivo real — se detectaron al portar la lógica de parseo
+ya verificada contra la estructura real del Excel):
+1. Leía `worksheets[0]` (la primera hoja) en vez de buscar la hoja **"Superan el margen"**
+   por nombre. El archivo real tiene 31 hojas ("Mujer", "Hombre", 28 por departamento);
+   nada garantiza que la correcta sea la primera.
+2. Leía las columnas por **posición fija** (A=Regional, B=Centro...), asumiendo 9 columnas
+   sin las de código. La estructura real tiene 13 columnas con pares código+nombre
+   intercalados (`Cod. Regional, Regional, Cod. Centro, Centro...`) — la lectura posicional
+   habría leído columnas equivocadas en cada fila. Se corrigió a lectura por **nombre de
+   encabezado**, igual que ya estaba verificado en la sesión anterior.
+
+**Ambigüedad marcada, no adivinada:** el `CHECK` de Mateo exige `tasa_vinculacion` como
+fracción (0-1), pero ninguna versión (ni la suya ni la nuestra) sabe con certeza si el
+Excel real trae el valor ya como fracción o como porcentaje entero. Se normalizó de forma
+defensiva (`> 1` ⇒ dividir entre 100) en vez de asumir un formato — más barato que fallar
+en producción por una fila con dato válido. **Queda pendiente confirmar contra el archivo
+real** la primera vez que alguien lo cargue.
+
+**Verificado:** `tsc --noEmit` limpio en las dos apps tras la reconciliación completa; los
+4 archivos en conflicto se resolvieron y quedaron en `git add` (sin commit — no se pidió).
+
+---
+
+## sesión 15-09-2026: módulo "Programa + Sobresalientes" completo — de la evaluación al código
+
+Implementado de punta a punta el plan acordado en `plan-programa-sobresalientes.md` (el
+propio documento de planeación, creado en esta misma sesión, tiene el detalle completo de
+hallazgos y decisiones — aquí solo el resumen de lo que quedó escrito en el repo).
+
+**Hallazgo que arrancó todo:** las 5 tablas de catálogo (`departamentos`, `centros_formacion`,
+`niveles_formacion`, `programas_formacion`, y la de hechos que en realidad no existía) se
+habían creado a mano en Neon, fuera del runner de migraciones — invisibles para
+`11-base-de-datos.md`, para `db:verificar` y para cualquiera que levante una base nueva desde
+cero. Dos de sus restricciones (`centros_formacion.departamento_id UNIQUE`,
+`programas_formacion.nivel_formacion_id UNIQUE`) además impedían cargar el Excel real, que
+trae varios centros por departamento y varios programas por nivel.
+
+**Base de datos** (`api-backend/src/infrastructure/db/migrations/025` a `027`): las dos
+restricciones rotas se localizan y eliminan por `information_schema`, no por nombre
+adivinado — este proyecto ya se quemó una vez con eso (008/009). Los 4 catálogos ganan una
+columna `codigo` (llave natural del Excel, único aparte del `UUID` que sigue siendo PK — D3
+del proyecto no se toca). Tablas nuevas: `cargas_datos` (auditoría de cada carga, con
+columna `modulo` pensada para las otras 3 tarjetas de "Actualizaciones" cuando se
+especifiquen) y `formacion_sobresalientes` (hechos, append-only por `carga_id`), más la
+vista `v_formacion_actual` (última carga `completado`).
+
+**Backend**: modelos Sequelize + `repositories/formacion-sobresalientes.repository.ts` +
+`use-cases/formacion-sobresalientes/` (ingesta con `exceljs`, transaccional, upsert de
+catálogos por código; consulta pública; historial). La ingesta corre en `heavy-jobs`
+(BullMQ) — subir el archivo ya no bloquea la respuesta HTTP. Nuevo endpoint público
+`GET /api/formacion-sobresalientes` y endpoints de administración bajo
+`/api/formacion-sobresalientes/cargas` (solo Administrador/Superadmin,
+`policies/formacion-sobresalientes.policies.ts`). Dependencias nuevas en `api-backend`:
+`exceljs`, `multer`, `@olo/upload-policy` (antes solo la usaban los frontends —
+completa la promesa de "política única" a las tres apps), `file-type@16` fijado así
+—no `^22` como en `sitio-web`— porque desde la v17 el paquete es ESM puro y este backend
+compila a CommonJS.
+
+**Decisión de sesión que simplificó todo:** sin editor en este flujo. Solo el Administrador
+sube el Excel y la base se actualiza de inmediato — se descartó el flujo
+editor-sube/admin-aprueba (sin `pendiente_aprobacion`, sin `motivo_rechazo`).
+
+**Admin (`sitio-web`)**: el enlace "Soporte" del sidebar (`/admin/dashboard/soporte`, un 404
+disfrazado de item de menú — no tenía página real detrás) se repurpuso como
+"Actualizaciones" (`/admin/actualizaciones`, ícono `ArrowUpTrayIcon`). Cuatro tarjetas; solo
+"Programa + Sobresalientes" es funcional (sube, ve el historial en una grilla de
+`handsontable` — dependencia instalada desde antes sin un solo uso real). Las otras tres
+(Alertas de inversión, Fuentes futuras de empleo, Criterios de clasificación de resultados)
+quedan "Próximamente": no tienen Excel ni esquema de datos especificado todavía.
+
+**Público (`sitio-web`)**: `use-programas-sobresalientes.ts` deja de leer el fixture
+(`programas-sobresalientes-temporal.ts`, borrado — quedó muerto) y llama al endpoint real.
+Se quitó el filtro de Centro (sigue en la tabla de resultados, ya no como selector); los 5
+niveles de formación se corrigieron a los reales (traía "Especialización", el Excel real
+dice "Profundización Técnica"). El bloque Puck `ProgramasSobresalientes` quedó de solo
+lectura, sin campo de archivo — se registra en `puck.config.tsx` igual que `Footer` (sin
+`fields`), porque los datos viven en Postgres, no en el JSON de la página.
+
+**Verificado:** `tsc --noEmit` limpio en las dos apps. **No verificado / pendiente para quien
+retome:** correr `npm run migrate` contra el Neon real (las migraciones no se ejecutaron
+desde aquí — no hay acceso a la base), y probar la carga con el Excel real de SENA
+(`npm run probar:carga-formacion -- <ruta>`, script nuevo que corre la ingesta sin pasar por
+HTTP ni por la cola, para revisar rápido sin depender de Redis).
+
+---
+
 ## sesión 11-09-2026: reset a `OLO/main` y el `dist/` desactualizado que dejó
 
 Sesión con dos partes encadenadas: primero poner el `main` local igual al remoto sin perder
