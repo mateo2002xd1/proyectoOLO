@@ -5,7 +5,7 @@ import type { Ambito } from '../../shared/ambito';
 export interface FiltrosAnalisisDepuracion {
   ambito?: Ambito;
   paginaId?: string;
-  fechaCorte: string; // ISO YYYY-MM-DD
+  fechaCorte?: string; // ISO YYYY-MM-DD opcional
   conservarUltimoRespaldo?: boolean;
 }
 
@@ -22,37 +22,20 @@ export interface ResultadoAnalisisDepuracion {
   totalVersiones: number;
   totalPaginas: number;
   bytesEstimados: number;
-  fechaCorteLimite: string;
+  fechaCorteLimite?: string;
   limiteMaximo?: number;
   paginasAfectadas: DetallePaginaDepuracion[];
 }
 
-const LIMITE_DIAS_SEGURIDAD = 30;
-
 export async function analizarDepuracionVersiones(
   filtros: FiltrosAnalisisDepuracion
 ): Promise<ResultadoAnalisisDepuracion> {
-  const ahora = new Date();
-  const fechaLimite = new Date(ahora.getTime() - LIMITE_DIAS_SEGURIDAD * 24 * 60 * 60 * 1000);
-  const fechaLimiteIso = fechaLimite.toISOString().slice(0, 10);
-
-  if (!filtros.fechaCorte) {
-    throw Object.assign(new Error('La fecha de corte es obligatoria.'), { status: 400 });
-  }
-
-  // Comprobar estrictamente en formato YYYY-MM-DD
-  if (filtros.fechaCorte > fechaLimiteIso) {
-    throw Object.assign(
-      new Error(
-        `Por seguridad, el historial del último mes está protegido. La fecha debe ser igual o anterior a ${fechaLimiteIso}.`
-      ),
-      { status: 400 }
-    );
-  }
-
-  const fechaCorteDate = new Date(`${filtros.fechaCorte}T23:59:59.999Z`);
-  if (isNaN(fechaCorteDate.getTime())) {
-    throw Object.assign(new Error('Formato de fecha de corte inválido.'), { status: 400 });
+  let fechaCorteIso: string | null = null;
+  if (filtros.fechaCorte) {
+    const fechaCorteDate = new Date(`${filtros.fechaCorte}T23:59:59.999Z`);
+    if (!isNaN(fechaCorteDate.getTime())) {
+      fechaCorteIso = fechaCorteDate.toISOString();
+    }
   }
 
   // Regla invariable: SIEMPRE se conserva la última versión archivada para permitir rollback
@@ -85,7 +68,7 @@ export async function analizarDepuracionVersiones(
         AND pv.id != COALESCE(p.version_publicada_id, '00000000-0000-0000-0000-000000000000'::uuid)
         AND (:ambito::text IS NULL OR p.ambito = :ambito)
         AND (:paginaId::uuid IS NULL OR p.id = :paginaId)
-        AND pv.creado_en <= :fechaCorte
+        AND (:fechaCorte::timestamptz IS NULL OR pv.creado_en <= :fechaCorte)
         AND pv.id NOT IN (SELECT id FROM ultima_archivada)
     )
     SELECT
@@ -111,7 +94,7 @@ export async function analizarDepuracionVersiones(
     replacements: {
       ambito: filtros.ambito || null,
       paginaId: filtros.paginaId || null,
-      fechaCorte: fechaCorteDate.toISOString(),
+      fechaCorte: fechaCorteIso,
     },
     type: QueryTypes.SELECT,
   });
@@ -133,7 +116,7 @@ export async function analizarDepuracionVersiones(
     totalVersiones,
     totalPaginas,
     bytesEstimados,
-    fechaCorteLimite: fechaLimiteIso,
+    fechaCorteLimite: filtros.fechaCorte,
     paginasAfectadas,
   };
 }
