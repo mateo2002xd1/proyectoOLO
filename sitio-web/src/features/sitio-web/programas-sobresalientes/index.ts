@@ -18,7 +18,7 @@ export { useProgramasSobresalientes } from './hooks/use-programas-sobresalientes
 
 // Types
 export type {
-  DepartamentoFormacion,
+  DepartamentoConDatos,
   FiltrosFormacion,
   NivelFormacion,
   RegistroConDepartamento,
