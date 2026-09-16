@@ -25,7 +25,7 @@ import { PoliticaPrivacidadEncabezado } from '@/shared/lib/blocks/politica-priva
 import { VisorDocumentosNormativos, type DocumentoNormativo } from '@/shared/lib/blocks/visor-documentos-normativos';
 import { CanalesAtencion, type CanalDeAtencion } from '@/shared/lib/blocks/canales-atencion';
 import { Header } from '@/shared/lib/blocks/header';
-import { Footer } from '@/shared/lib/blocks/footer';
+import { Footer, VALORES_PIE_POR_DEFECTO } from '@/shared/lib/blocks/footer';
 import { IntranetTopbar } from '@/shared/lib/blocks/intranet-topbar';
 import { IntranetHero } from '@/shared/lib/blocks/intranet-hero';
 import { defaultIdentidadVisual } from '@/features/identidad-visual/client';
@@ -197,12 +197,109 @@ const puckConfigBase: Config = {
       ),
     },
     Footer: {
-      // Sin campos a propósito: el pie todavía tiene su contenido escrito en el
-      // JSX, así que aquí solo se decide si aparece o no. Parametrizarlo (como
-      // `IntranetFooter` en la intranet) es una tanda aparte.
       label: 'Pie de página',
-      render: (props: BlockRender<unknown>) => (
-        <Footer block={{ id: props.id || 'footer-preview' }} />
+      fields: {
+        // Logos superiores
+        logoSenaUrl: campoImagen('Logo SENA'),
+        logoSenaAlt: { type: 'text', label: 'Texto alternativo - Logo SENA' },
+        logoOloUrl: campoImagen('Logo OLO horizontal'),
+        logoOloAlt: { type: 'text', label: 'Texto alternativo - Logo OLO' },
+        logoMintrabajoUrl: campoImagen('Logo Ministerio del Trabajo'),
+        logoMintrabajoAlt: { type: 'text', label: 'Texto alternativo - Logo MinTrabajo' },
+
+        // Bloques de información institucional y contacto
+        nombreEntidad: { type: 'text', label: 'Nombre de la entidad', contentEditable: true },
+        direccion: { type: 'text', label: 'Dirección física', contentEditable: true },
+        atencionPresencial: { type: 'text', label: 'Atención presencial', contentEditable: true },
+        puntosAtencionTexto: { type: 'text', label: 'Texto de puntos de atención', contentEditable: true },
+        puntosAtencionUrl: { type: 'text', label: 'URL puntos de atención' },
+
+        whatsappTitulo: { type: 'text', label: 'Título WhatsApp', contentEditable: true },
+        whatsappNumero: { type: 'text', label: 'Número WhatsApp', contentEditable: true },
+
+        lineasAtencionTitulo: { type: 'text', label: 'Título líneas de atención / PQRS', contentEditable: true },
+        lineasAtencionTexto: { type: 'textarea', label: 'Líneas de atención y teléfonos', contentEditable: true },
+
+        mesaAyudaTitulo: { type: 'text', label: 'Título mesa de ayuda', contentEditable: true },
+        mesaAyudaTelefono: { type: 'text', label: 'Teléfono / PBX mesa de ayuda', contentEditable: true },
+        mesaAyudaEmail: { type: 'text', label: 'Correo mesa de ayuda', contentEditable: true },
+
+        horarioTitulo: { type: 'text', label: 'Título horario de atención', contentEditable: true },
+        horarioTexto: { type: 'text', label: 'Horario de atención', contentEditable: true },
+
+        // Redes sociales
+        redesSociales: {
+          type: 'array',
+          label: 'Redes sociales',
+          arrayFields: {
+            red: {
+              type: 'select',
+              label: 'Red social / Ícono',
+              options: [
+                { label: 'X (Twitter)', value: 'x' },
+                { label: 'Facebook', value: 'facebook' },
+                { label: 'Instagram', value: 'instagram' },
+                { label: 'YouTube', value: 'youtube' },
+                { label: 'LinkedIn', value: 'linkedin' },
+                { label: 'Radio SENA', value: 'radio' },
+                { label: 'Otro / Personalizado', value: 'otro' },
+              ],
+            },
+            nombre: { type: 'text', label: 'Nombre o usuario (@...)' },
+            url: { type: 'text', label: 'URL del perfil' },
+            iconoPersonalizado: { type: 'text', label: 'URL/Ruta ícono personalizado (si es Otro)' },
+          },
+          getItemSummary: (item: { nombre?: string; red?: string }) => item.nombre || item.red || 'Red social',
+        },
+
+        // Certificación
+        certificacionImgUrl: campoImagen('Sello de certificación'),
+        certificacionImgAlt: { type: 'text', label: 'Texto alternativo - Certificación' },
+
+        // Enlaces inferiores (filas)
+        enlacesFila1: {
+          type: 'array',
+          label: 'Enlaces inferiores · Fila 1',
+          arrayFields: {
+            texto: { type: 'text', label: 'Texto del enlace' },
+            url: { type: 'text', label: 'URL' },
+          },
+          getItemSummary: (item: { texto?: string }) => item.texto || 'Enlace',
+        },
+        enlacesFila2: {
+          type: 'array',
+          label: 'Enlaces inferiores · Fila 2',
+          arrayFields: {
+            texto: { type: 'text', label: 'Texto del enlace' },
+            url: { type: 'text', label: 'URL' },
+          },
+          getItemSummary: (item: { texto?: string }) => item.texto || 'Enlace',
+        },
+        enlacesFila3: {
+          type: 'array',
+          label: 'Enlaces inferiores · Fila 3',
+          arrayFields: {
+            texto: { type: 'text', label: 'Texto del enlace' },
+            url: { type: 'text', label: 'URL' },
+          },
+          getItemSummary: (item: { texto?: string }) => item.texto || 'Enlace',
+        },
+
+        // Franja GOV.CO inferior
+        mostrarFranjaGov: {
+          type: 'radio',
+          label: 'Mostrar franja inferior GOV.CO',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        rutaCoImgUrl: campoImagen('Distintivo Colombia (franja inferior)'),
+        rutaCoImgAlt: { type: 'text', label: 'Texto alternativo - Distintivo Colombia' },
+      },
+      defaultProps: { ...VALORES_PIE_POR_DEFECTO },
+      render: (props: BlockRender<Omit<ComponentProps<typeof Footer>, 'block'>>) => (
+        <Footer {...props} block={{ id: props.id || 'footer-preview' }} />
       ),
     },
     IntranetTopbar: {
@@ -1314,8 +1411,8 @@ export interface ContextoDeEdicion {
   /** Cabecera y pie publicados. Se usa al editar una página normal. */
   plantilla?: {
     cabecera?: Omit<ComponentProps<typeof Header>, 'block'> | null;
-    /** El pie no tiene campos: solo se pone o se quita. */
-    pie?: boolean;
+    /** Props del pie publicado. `null` si la plantilla no lleva pie. */
+    pie?: Omit<ComponentProps<typeof Footer>, 'block'> | boolean | null;
   } | null;
   /** Página publicada desde la que se abrió «Menú y pie». */
   seccion?: { slug: string; contenido: unknown } | null;
@@ -1486,7 +1583,10 @@ export function configDeEdicion(slug: string, contexto: ContextoDeEdicion = {}):
           </div>
           {plantilla.pie && (
             <Inerte etiqueta="Pie · se edita en «Menú y pie»">
-              <Footer block={{ id: 'contexto-footer' }} />
+              <Footer
+                block={{ id: 'contexto-footer' }}
+                {...(typeof plantilla.pie === 'object' ? plantilla.pie : {})}
+              />
             </Inerte>
           )}
         </div>
