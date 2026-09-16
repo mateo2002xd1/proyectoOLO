@@ -109,8 +109,15 @@ export async function registrarSubidaPendiente(slug: string, ruta: string): Prom
   await api.post(`/api/paginas/${slug}/subidas`, { ruta }).catch(() => undefined);
 }
 
+export function notificarRevisionActualizada(detail?: { slug?: string; id?: string }) {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('olo:revision-actualizada', { detail }));
+  }
+}
+
 export async function enviarARevision(slug: string): Promise<{ pagina: Pagina; version: PaginaVersion }> {
   const { data } = await api.patch(`/api/paginas/${slug}/enviar-revision`);
+  notificarRevisionActualizada({ slug });
   return data;
 }
 
@@ -126,6 +133,7 @@ export async function aprobarPagina(
   ambito: Ambito = 'sitio'
 ): Promise<{ pagina: Pagina; version: PaginaVersion }> {
   const { data } = await api.patch(`/api/paginas/${slug}/aprobar`, undefined, cabeceraDeAmbito(ambito));
+  notificarRevisionActualizada({ slug });
   return data;
 }
 
@@ -139,6 +147,7 @@ export async function rechazarPagina(
     { motivo },
     cabeceraDeAmbito(ambito)
   );
+  notificarRevisionActualizada({ slug });
   return data;
 }
 
@@ -156,6 +165,7 @@ export async function eliminarVersion(
     `/api/paginas/${slug}/versiones/${versionId}`,
     { data: { motivo }, ...cabeceraDeAmbito(ambito) }
   );
+  notificarRevisionActualizada({ slug, id: versionId });
   return data;
 }
 

@@ -362,13 +362,6 @@ const puckConfigBase: Config = {
     },
     // Sin campos a propósito (mismo caso que `Footer`): los datos no viven en el
     // JSON de la página, viven en `formacion_sobresalientes` (Postgres). El
-    // Excel se carga desde "Actualizaciones" en el panel de administración —
-    // ver `features/administracion/actualizaciones/` — nunca desde este bloque.
-    // Este componente solo consulta y muestra; nunca sube ni modifica nada.
-    ProgramasSobresalientes: {
-      label: 'Programas + Sobresalientes (mapa por departamento)',
-      render: () => <ProgramasSobresalientesView />,
-    },
     Services: {
       label: 'Servicios',
       fields: {

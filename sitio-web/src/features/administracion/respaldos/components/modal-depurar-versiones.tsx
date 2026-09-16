@@ -154,7 +154,7 @@ export function ModalDepurarVersiones({
   };
 
   const totalEncontradas = analisis?.totalVersiones ?? 0;
-  const cantidadABorrar = Math.min(totalEncontradas, 10);
+  const cantidadABorrar = totalEncontradas;
 
   return (
     <div
@@ -171,17 +171,12 @@ export function ModalDepurarVersiones({
               <Trash2 size={20} />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2
-                  id="titulo-modal-depuracion"
-                  className="text-lg font-bold text-zinc-900 dark:text-[#f6f6f6]"
-                >
-                  Depurar versiones antiguas
-                </h2>
-                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
-                  Pruebas: máx. 10 registros
-                </span>
-              </div>
+              <h2
+                id="titulo-modal-depuracion"
+                className="text-lg font-bold text-zinc-900 dark:text-[#f6f6f6]"
+              >
+                Depurar versiones antiguas
+              </h2>
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
                 Libera espacio en la base de datos eliminando versiones archivadas obsoletas.
               </p>
@@ -285,11 +280,11 @@ export function ModalDepurarVersiones({
                 </p>
               </div>
 
-              {/* Información fija de conservación de rollback */}
+              {/* Información fija de conservación de respaldo */}
               <div className="flex items-start gap-2.5 rounded-xl border border-blue-100 bg-blue-50/60 p-3 text-xs text-blue-900 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-200">
                 <Info size={16} className="mt-0.5 shrink-0 text-blue-600 dark:text-blue-400" />
                 <p className="leading-relaxed">
-                  <strong>Rollback siempre protegido:</strong> La versión archivada más reciente de cada página
+                  <strong>Respaldo siempre protegido:</strong> La versión archivada más reciente de cada página
                   se conserva siempre de forma automática para asegurar que nunca se pierda el punto de restauración.
                 </p>
               </div>
@@ -383,8 +378,7 @@ export function ModalDepurarVersiones({
               {confirmando && (
                 <div className="rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-xs text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200 animate-in fade-in duration-150">
                   <p className="font-semibold">
-                    ¿Estás seguro de que deseas eliminar permanentemente{' '}
-                    {totalEncontradas > 10 ? `las primeras 10 versiones archivadas (de ${totalEncontradas} encontradas)` : `estas ${totalEncontradas} versiones archivadas`}?
+                    ¿Estás seguro de que deseas eliminar permanentemente estas {totalEncontradas} versiones archivadas?
                   </p>
                   <p className="mt-1 text-[11px] leading-relaxed text-amber-800/90 dark:text-amber-300/80">
                     Esta acción es irreversible y quedará registrada en la auditoría del sistema con tu
@@ -423,8 +417,6 @@ export function ModalDepurarVersiones({
                 <Trash2 size={16} />
                 {cargandoAnalisis
                   ? 'Calculando…'
-                  : totalEncontradas > 10
-                  ? `Depurar primeras 10 versiones (de ${totalEncontradas})`
                   : totalEncontradas > 0
                   ? `Depurar ${totalEncontradas} versiones`
                   : 'Sin versiones para depurar'}
