@@ -447,6 +447,11 @@ documento marcaba como código muerto que duplicaba `administracion/auditoria`, 
 eliminó** — pero apareció un caso equivalente sin detectar: `administracion/hooks/use-usuarios.ts`,
 un archivo huérfano que duplica a `auth/hooks/use-usuarios.ts` y que nada importa.
 
+Ese huérfano **ya se eliminó** (2026-09-16): era la versión anterior del hook, con `fetch`
+crudo en vez de `pedirJson` —sin el manejo único del 401— y un `Permission` sin
+`etiqueta`/`grupo`/`esFrontera`. Quien lo importara por autocompletado se llevaba el panel
+roto en silencio, que es exactamente el riesgo de dejar una copia divergente a la vista.
+
 **`paginas/` sigue organizado por tipo técnico, no por etapa del ciclo.** El §4.0 y
 `8-ciclo-editorial.md` §3.2 describen `model/ publicacion/ edicion/ revision/` como la
 forma correcta para un dominio con ciclo de vida, y esa sigue siendo la referencia. **No

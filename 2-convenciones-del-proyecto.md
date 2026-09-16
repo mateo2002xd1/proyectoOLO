@@ -168,7 +168,24 @@ Estas convenciones no se vigilan a mano — se automatizan:
 - **Husky + lint-staged**: corren ESLint y Prettier en pre-commit sobre los archivos tocados, para que no entre código sin formatear.
 - **`tsc --noEmit`** en CI: el build falla si hay error de tipos.
 
-> Estado real (2026-07-26): ESLint está configurado en las dos apps y **ambas pasan sin errores** — `sitio-web` limpio, `intranet` con 9 advertencias de `@next/next/no-img-element` sobre imágenes ráster estáticas, dejadas visibles a propósito hasta convertirlas a `next/image` con verificación visual. **Prettier y Husky + lint-staged todavía no están instalados** en ningún proyecto; el checklist de la sección 9 los da por hechos, pero hoy hay que verificarlos a mano.
+> Estado real (2026-09-16): `sitio-web` **no está limpio** — quedan **11 errores** y 31
+> advertencias. Los 11 se reparten en solo dos reglas, y ninguna se arregla archivo por
+> archivo:
+>
+> - **8 × `react-hooks/set-state-in-effect`**: el patrón "pedir datos al montar" y el de
+>   "resetear el estado del modal cuando se abre", repetidos por todo el panel. El segundo
+>   se resuelve remontando con `key` desde el componente padre, así que es una decisión de
+>   convención, no un parche suelto.
+> - **3 × `@next/next/no-html-link-for-pages`**: `<a href="/…">` en `Header.tsx` y
+>   `Footer.tsx`. **Es deliberado**: ninguno de los bloques Puck usa `next/link`, porque la
+>   navegación client-side dentro del lienzo del editor se llevaría al editor por delante.
+>   Lo que corresponde es declarar la excepción en la config, no convertirlos.
+>
+> `intranet` mantiene sus 9 advertencias de `@next/next/no-img-element` sobre imágenes
+> ráster estáticas, dejadas visibles a propósito hasta convertirlas a `next/image` con
+> verificación visual. **Prettier y Husky + lint-staged todavía no están instalados** en
+> ningún proyecto; el checklist de la sección 9 los da por hechos, pero hoy hay que
+> verificarlos a mano.
 
 ---
 

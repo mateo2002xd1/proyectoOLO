@@ -33,9 +33,11 @@
 
 ## 2. Controles por superficie
 
-### S1 — Subida de archivos CRÍTICO (hoy el `storage` es un stub)
+### S1 — Subida de archivos CRÍTICO (controles de entrada puestos; el almacenamiento sigue en el webroot)
 
-Este es el vector más peligroso del proyecto y está sin implementar. Al construir `shared/storage`:
+Este es el vector más peligroso del proyecto. **Los cinco controles de entrada ya están**
+en las dos apps vía `packages/upload-policy` (ver §4.4); lo que sigue abierto es dónde se
+guarda lo subido. Al mover el almacenamiento a `shared/storage`:
 
 - **Validar el tipo real, no la extensión ni el `Content-Type`** declarado (ambos se falsifican). Inspeccionar los *magic bytes* del archivo.
 - **Lista blanca estricta** de tipos permitidos (PDF, xlsx, JPG, PNG, SVG) — nunca lista negra.
@@ -543,7 +545,7 @@ La lista original de este documento está casi entera cerrada. Lo que queda, en 
 
 | # | Qué | Por qué sigue arriba |
 |---|---|---|
-| 1 | **Sacar las subidas del webroot** (§S1) | Los cinco controles de entrada están puestos en las dos apps vía `packages/upload-policy`, así que el riesgo inmediato —cualquiera subiendo cualquier cosa— está cerrado. El estructural no: siguen escribiéndose en `public/uploads` y sirviéndose por path, en vez de fuera del webroot y por un endpoint controlado. `api-backend/src/shared/storage/` sigue siendo el stub de tres funciones vacías donde eso debería vivir |
+| 1 | **Sacar las subidas del webroot** (§S1) | Los cinco controles de entrada están puestos en las dos apps vía `packages/upload-policy`, así que el riesgo inmediato —cualquiera subiendo cualquier cosa— está cerrado. El estructural no: siguen escribiéndose en `public/uploads` y sirviéndose por path, en vez de fuera del webroot y por un endpoint controlado. `api-backend/src/shared/storage/` **ya no es un stub** (2026-09-16): hoy contiene `backup-uploads.service.ts` y los resolutores de ruta de `index.ts`, que trabajan sobre `public/storage/uploads` — es decir, la carpeta existe y tiene código real, pero sigue apuntando dentro del webroot. Es ahí donde debe vivir el cambio |
 | 2 | **Decidir el prefijo de nginx** (§4.8) | Bloquea el despliegue, y de paso decide si `/api/revalidar` (§S11) queda expuesta |
 | 3 | **Extender Zod al resto de la API** (§4.8) | Cubre usuarios y borradores de página, que es donde estaban el *mass assignment* y la entrada más grande. El resto sigue leyendo `req.body` directo |
 | 4 | **S6 Power BI** — lista blanca de dominios, validación de URL en servidor, `sandbox` | La tabla `tableros_bi` existe; falta toda la capa de aplicación encima. Hoy los tokens de informe están escritos a mano en tres componentes |
