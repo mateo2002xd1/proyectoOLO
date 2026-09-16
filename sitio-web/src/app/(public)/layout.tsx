@@ -32,7 +32,7 @@ export default async function PublicLayout({ children }: { children: React.React
       <main className="flex-grow">
         <RouteTransition>{children}</RouteTransition>
       </main>
-      {plantilla.pie && <Footer block={{ id: 'footer-plantilla' }} {...plantilla.pie} />}
+      {plantilla.pie && <Footer block={{ id: 'footer-plantilla' }} />}
 
       <PaginasFabSpeedDial />
       <ResaltadorBusquedaClient />

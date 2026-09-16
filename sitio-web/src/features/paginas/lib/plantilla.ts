@@ -22,14 +22,13 @@ import type { Bloque } from '../types';
 export const SLUG_PLANTILLA = 'menu-y-pie';
 
 /** `block` lo inyecta el layout para identificar el nodo, no se guarda. */
-export type PropsCabecera = Omit<ComponentProps<typeof Header>, 'block'>;
-export type PropsPie = Omit<ComponentProps<typeof Footer>, 'block'>;
+type PropsCabecera = Omit<ComponentProps<typeof Header>, 'block'>;
 
 export interface Plantilla {
   /** Props de la cabecera. `null` si la plantilla no lleva cabecera. */
   cabecera: PropsCabecera | null;
-  /** Props del pie de página. `null` si la plantilla no lleva pie. */
-  pie: PropsPie | null;
+  /** El pie no tiene campos: solo se pone o se quita. */
+  pie: boolean;
 }
 
 /**
@@ -60,7 +59,7 @@ export async function obtenerPlantilla(): Promise<Plantilla> {
   const identidad = await obtenerIdentidadVisual();
 
   const pagina = await obtenerPaginaPublicadaCacheada(SLUG_PLANTILLA);
-  if (!pagina) return { cabecera: identidad, pie: {} as PropsPie };
+  if (!pagina) return { cabecera: identidad, pie: true };
 
   const contenido = pagina.contenido;
   const bloques: Bloque[] = Array.isArray(contenido) ? contenido : (contenido?.content ?? []);
@@ -75,6 +74,6 @@ export async function obtenerPlantilla(): Promise<Plantilla> {
     cabecera: bloqueCabecera
       ? ({ ...identidad, ...propsDelBloque(bloqueCabecera.props) } as PropsCabecera)
       : null,
-    pie: bloquePie ? (propsDelBloque(bloquePie.props) as PropsPie) : null,
+    pie: Boolean(bloquePie),
   };
 }

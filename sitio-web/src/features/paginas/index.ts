@@ -59,7 +59,7 @@ export type {
 export { homeFallbackData } from "./lib/home-fallback-data";
 export { etiquetaDePagina } from "./lib/etiquetas-cache";
 export { obtenerPlantilla, SLUG_PLANTILLA } from "./lib/plantilla";
-export type { Plantilla, PropsCabecera, PropsPie } from "./lib/plantilla";
+export type { Plantilla } from "./lib/plantilla";
 export {
   enlaceAlEditor,
   esRutaInternaSegura,
