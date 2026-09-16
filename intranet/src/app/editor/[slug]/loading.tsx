@@ -1,4 +1,4 @@
-import { GooLoader } from '@/shared/ui/atoms/GooLoader';
+import { GooLoader } from '@/shared/ui/atoms/goo-loader';
 
 export default function EditorLoading() {
   return (

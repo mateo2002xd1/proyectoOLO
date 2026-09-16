@@ -13,8 +13,8 @@
  * está publicado hoy, no el del borrador.
  */
 import React from 'react';
-import { IntranetTopbarWrapper } from '@/shared/lib/blocks/plantilla/IntranetTopbarWrapper';
-import { IntranetFooter } from '@/shared/lib/blocks/plantilla/IntranetFooter';
+import { IntranetTopbarWrapper } from '@/shared/lib/blocks/plantilla/intranet-topbar-wrapper';
+import { IntranetFooter } from '@/shared/lib/blocks/plantilla/intranet-footer';
 import { obtenerPlantilla } from '../lib/plantilla';
 
 export async function MarcoSecciones({

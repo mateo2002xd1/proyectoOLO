@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/features/login';
-import { ReturnToSiteLink } from '@/shared/ui/molecules/ReturnToSiteLink';
+import { ReturnToSiteLink } from '@/shared/ui/molecules/return-to-site-link';
 
 interface AuthSuccessScreenProps {
   title: string;

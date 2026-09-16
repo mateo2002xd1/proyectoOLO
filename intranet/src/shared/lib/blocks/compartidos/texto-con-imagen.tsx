@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { PptxViewer } from './PptxViewer';
+import { PptxViewer } from './pptx-viewer';
 
 /**
  * Dos columnas: texto con formato a un lado, imagen (o visor de presentación) al otro.

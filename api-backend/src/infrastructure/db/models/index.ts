@@ -1,31 +1,31 @@
-import { User } from './User';
-import { Role } from './Role';
-import { Permission } from './Permission';
-import { RolePermission } from './RolePermission';
-import { SecurityQuestion } from './SecurityQuestion';
-import { Section } from './Section';
-import { Contenido } from './Contenido';
-import { Archivo } from './Archivo';
-import { ContenidoArchivo } from './ContenidoArchivo';
-import { ContentAuditLog } from './ContentAuditLog';
-import { Pagina } from './Pagina';
-import { PaginaVersion } from './PaginaVersion';
+import { User } from './user';
+import { Role } from './role';
+import { Permission } from './permission';
+import { RolePermission } from './role-permission';
+import { SecurityQuestion } from './security-question';
+import { Section } from './section';
+import { Contenido } from './contenido';
+import { Archivo } from './archivo';
+import { ContenidoArchivo } from './contenido-archivo';
+import { ContentAuditLog } from './content-audit-log';
+import { Pagina } from './pagina';
+import { PaginaVersion } from './pagina-version';
 // Sin asociaciones: `usuario_id` es texto libre a propósito (la cuenta maestra de
 // desarrollo no tiene fila en `usuarios`). Ver `020-bloqueos-edicion`.
-import { BloqueoEdicion } from './BloqueoEdicion';
-import { SubidaPendiente } from './SubidaPendiente';
-import { CargaDatos } from './CargaDatos';
+import { BloqueoEdicion } from './bloqueo-edicion';
+import { SubidaPendiente } from './subida-pendiente';
+import { CargaDatos } from './carga-datos';
 
 // Catálogos del observatorio ("Programa + sobresalientes") — tablas y modelos de
 // Mateo (migración `026-observatorio-programas-sobresalientes`), con exportación
 // `default` y atributos en snake_case tal como él los declaró. No se tocan sus
 // archivos de modelo; `CargaDatos` (arriba) es la única pieza que agregamos
 // nosotros, y es un archivo aparte, sin relación de esquema con estos.
-import Departamento from './Departamento';
-import CentroFormacion from './CentroFormacion';
-import NivelFormacion from './NivelFormacion';
-import ProgramaFormacion from './ProgramaFormacion';
-import ProgramaSobresaliente from './ProgramaSobresaliente';
+import Departamento from './departamento';
+import CentroFormacion from './centro-formacion';
+import NivelFormacion from './nivel-formacion';
+import ProgramaFormacion from './programa-formacion';
+import ProgramaSobresaliente from './programa-sobresaliente';
 
 Role.belongsToMany(Permission, { through: RolePermission, as: 'permissions', foreignKey: 'role_id', otherKey: 'permission_id' });
 Permission.belongsToMany(Role, { through: RolePermission, as: 'roles', foreignKey: 'permission_id', otherKey: 'role_id' });

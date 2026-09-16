@@ -13,7 +13,7 @@
  * como valores por defecto. La plantilla solo pisa los campos que traiga.
  */
 import type { ComponentProps } from 'react';
-import type { Header } from '@/shared/lib/blocks/Header';
+import type { Header } from '@/shared/lib/blocks/header';
 import { obtenerIdentidadVisual } from '@/features/identidad-visual';
 import { obtenerPaginaPublicadaCacheada } from '../services/paginas.service';
 import type { Bloque } from '../types';

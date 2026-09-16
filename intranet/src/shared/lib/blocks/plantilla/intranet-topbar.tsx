@@ -163,10 +163,10 @@ export function IntranetTopbar({
     if (!texto && !hash) return;
 
     let cancelado = false;
-    let t1: ReturnType<typeof setTimeout>;
-    let t2: ReturnType<typeof setTimeout>;
-    let t3: ReturnType<typeof setTimeout>;
 
+    // `intentar` nombra a `t2` y `t3` antes de que existan, y es correcto: no se ejecuta
+    // hasta que lo llama un `setTimeout`, cuando ya están asignados. Por eso pueden ser
+    // `const` declaradas después, en vez de `let` reservadas arriba.
     const intentar = () => {
       if (cancelado) return;
       const exito = desplazarAElemento({
@@ -186,9 +186,9 @@ export function IntranetTopbar({
       return exito;
     };
 
-    t1 = setTimeout(intentar, 90);
-    t2 = setTimeout(intentar, 350);
-    t3 = setTimeout(intentar, 750);
+    const t1 = setTimeout(intentar, 90);
+    const t2 = setTimeout(intentar, 350);
+    const t3 = setTimeout(intentar, 750);
 
     return () => {
       cancelado = true;

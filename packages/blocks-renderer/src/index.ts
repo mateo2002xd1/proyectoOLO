@@ -57,8 +57,8 @@ export {
   desplazarAElemento,
   resaltarCoincidenciaTexto,
 } from './busqueda/busqueda-scroll';
-export { ResaltadorDeBusqueda } from './busqueda/ResaltadorDeBusqueda';
-export type { ResaltadorDeBusquedaProps } from './busqueda/ResaltadorDeBusqueda';
+export { ResaltadorDeBusqueda } from './busqueda/resaltador-de-busqueda';
+export type { ResaltadorDeBusquedaProps } from './busqueda/resaltador-de-busqueda';
 
 // ─── Bloques de contenido compartidos ───
 export { TextoRico } from './blocks/texto-rico';

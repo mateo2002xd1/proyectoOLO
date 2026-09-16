@@ -1,6 +1,6 @@
 'use client';
 
-import { PptxViewer } from './PptxViewer';
+import { PptxViewer } from './pptx-viewer';
 
 import type { ReactNode } from 'react';
 

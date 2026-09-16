@@ -17,9 +17,9 @@ export { authApi } from './api/auth.api';
 export { useAuth } from './hooks/use-auth';
 export type { User } from './hooks/use-auth';
 
-export { LoginView } from './components/LoginView';
-export { FirstLoginView } from './components/FirstLoginView';
-export { RecoveryView } from './components/RecoveryView';
-export { ResetPasswordView } from './components/ResetPasswordView';
-export { ResetSuccessView } from './components/ResetSuccessView';
-export { SecurityQuestionsView } from './components/SecurityQuestionsView';
+export { LoginView } from './components/login-view';
+export { FirstLoginView } from './components/first-login-view';
+export { RecoveryView } from './components/recovery-view';
+export { ResetPasswordView } from './components/reset-password-view';
+export { ResetSuccessView } from './components/reset-success-view';
+export { SecurityQuestionsView } from './components/security-questions-view';

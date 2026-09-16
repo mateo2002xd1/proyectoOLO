@@ -1,6 +1,6 @@
 import { Op, Transaction } from 'sequelize';
 import { ContentAuditLog } from '../infrastructure/db/models';
-import type { AccionAuditable, EntidadAuditable } from '../infrastructure/db/models/ContentAuditLog';
+import type { AccionAuditable, EntidadAuditable } from '../infrastructure/db/models/content-audit-log';
 
 /** Un campo que cambió, con su valor anterior y el nuevo (RF-07). */
 export interface CampoModificado {

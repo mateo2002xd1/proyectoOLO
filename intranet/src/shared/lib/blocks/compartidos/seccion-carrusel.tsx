@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { Carousel } from '@/shared/ui/organisms/Carousel';
+import { Carousel } from '@/shared/ui/organisms/carousel';
 
 /**
  * Un carrusel de imágenes con su título.

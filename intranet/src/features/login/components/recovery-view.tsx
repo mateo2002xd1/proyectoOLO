@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { validarEmail } from '@olo/email-policy';
 import { authApi } from '@/features/login';
-import { ReturnToSiteLink } from '@/shared/ui/molecules/ReturnToSiteLink';
+import { ReturnToSiteLink } from '@/shared/ui/molecules/return-to-site-link';
 import { mensajeDeError } from '@/shared/lib/errors';
 
 export function RecoveryView() {

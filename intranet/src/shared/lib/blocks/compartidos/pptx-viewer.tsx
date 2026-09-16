@@ -38,9 +38,9 @@ export function PptxViewer({ fileUrl }: PptxViewerProps) {
         container.innerHTML = ''; // Limpiar si había algo previo
 
         viewer = await AidenPptxViewer.open(data, container);
-      } catch (err: any) {
+      } catch (err) {
         console.error("Error loading PPTX:", err);
-        setError(err.message || "Error al cargar la presentación");
+        setError(err instanceof Error ? err.message : "Error al cargar la presentación");
       } finally {
         setLoading(false);
       }
@@ -49,9 +49,12 @@ export function PptxViewer({ fileUrl }: PptxViewerProps) {
     loadPptx();
 
     return () => {
-      // Limpieza de recursos
-      if (viewer && typeof (viewer as any).destroy === 'function') {
-        (viewer as any).destroy();
+      // Limpieza de recursos. `@aiden0z/pptx-renderer` no declara `destroy()` en sus
+      // tipos aunque la versión instalada lo expone, así que se comprueba en tiempo de
+      // ejecución antes de llamarlo en vez de forzar el tipo.
+      const conDestroy = viewer as { destroy?: () => void } | null;
+      if (typeof conDestroy?.destroy === 'function') {
+        conDestroy.destroy();
       }
       if (container) {
         container.innerHTML = '';
