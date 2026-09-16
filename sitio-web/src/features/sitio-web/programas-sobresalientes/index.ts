@@ -12,4 +12,7 @@
  * internas de esa vista: si otro módulo llega a necesitar una, se agrega aquí.
  */
 
-export { ProgramasSobresalientesView } from './components/programas-sobresalientes-view';
+export {
+  ProgramasSobresalientesView,
+  type ProgramasSobresalientesViewProps,
+} from './components/programas-sobresalientes-view';

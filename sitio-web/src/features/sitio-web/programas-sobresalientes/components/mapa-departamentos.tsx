@@ -53,10 +53,10 @@ export function MapaDepartamentos({
             <path
               key={departamento.codigoDane}
               d={departamento.path}
-              role="button"
-              tabIndex={deshabilitado ? -1 : 0}
-              aria-disabled={deshabilitado}
-              aria-pressed={estaSeleccionado}
+              role={tieneDatos ? 'button' : undefined}
+              tabIndex={tieneDatos ? 0 : -1}
+              aria-disabled={deshabilitado ? true : undefined}
+              aria-pressed={tieneDatos ? estaSeleccionado : undefined}
               aria-label={
                 tieneDatos
                   ? `Ver registros de formación de ${departamento.nombre}`
@@ -72,17 +72,17 @@ export function MapaDepartamentos({
               }}
               onMouseEnter={() => setEnFoco(departamento.codigoDane)}
               onMouseLeave={() => setEnFoco((actual) => (actual === departamento.codigoDane ? null : actual))}
-              onFocus={() => setEnFoco(departamento.codigoDane)}
+              onFocus={() => tieneDatos && setEnFoco(departamento.codigoDane)}
               onBlur={() => setEnFoco((actual) => (actual === departamento.codigoDane ? null : actual))}
               fill={tieneDatos ? COLOR_CON_DATOS : COLOR_SIN_DATOS}
               fillOpacity={tieneDatos && codigoSeleccionado !== 'todos' && !estaSeleccionado ? 0.45 : 1}
               stroke="#ffffff"
               strokeWidth={estaSeleccionado ? 2.5 : 1}
-              className={
+              className={`outline-none focus:outline-none focus-visible:outline-none ${
                 tieneDatos
-                  ? 'cursor-pointer transition-[fill-opacity,stroke-width] duration-150 outline-none focus-visible:stroke-[#7DB828]'
+                  ? 'cursor-pointer transition-[fill-opacity,stroke-width] duration-150 focus-visible:stroke-[#7DB828]'
                   : 'cursor-default'
-              }
+              }`}
             />
           );
         })}

@@ -1133,6 +1133,90 @@ const puckConfigBase: Config = {
     },
     // Bloque de texto enriquecido — usa EditorJS internamente
     RichText: RichTextBlock,
+    ProgramasSobresalientes: {
+      label: 'Programas Sobresalientes',
+      fields: {
+        mostrarTitulo: {
+          type: 'radio',
+          label: 'Mostrar título',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        titulo: {
+          type: 'text',
+          label: 'Título',
+          contentEditable: true,
+        },
+        alineacionTitulo: {
+          type: 'radio',
+          label: 'Alineación del título',
+          options: [
+            { label: 'Izquierda', value: 'izquierda' },
+            { label: 'Centro', value: 'centro' },
+            { label: 'Derecha', value: 'derecha' },
+          ],
+        },
+        colorTitulo: campoColor('Color del título (opcional)'),
+        mostrarDescripcion: {
+          type: 'radio',
+          label: 'Mostrar descripción',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        descripcion: {
+          type: 'textarea',
+          label: 'Descripción',
+          contentEditable: true,
+        },
+        alineacionDescripcion: {
+          type: 'radio',
+          label: 'Alineación de la descripción',
+          options: [
+            { label: 'Izquierda', value: 'izquierda' },
+            { label: 'Centro', value: 'centro' },
+            { label: 'Derecha', value: 'derecha' },
+          ],
+        },
+        colorDescripcion: campoColor('Color de la descripción (opcional)'),
+      },
+      defaultProps: {
+        mostrarTitulo: true,
+        titulo: 'Programas + sobresalientes SENA',
+        alineacionTitulo: 'centro',
+        colorTitulo: '',
+        mostrarDescripcion: true,
+        descripcion: 'Consulte los programas de formación con mayor tasa de vinculación laboral por departamento y centro.',
+        alineacionDescripcion: 'centro',
+        colorDescripcion: '',
+      },
+      render: (
+        props: BlockRender<{
+          mostrarTitulo?: boolean;
+          titulo?: string;
+          alineacionTitulo?: 'izquierda' | 'centro' | 'derecha';
+          colorTitulo?: string;
+          mostrarDescripcion?: boolean;
+          descripcion?: string;
+          alineacionDescripcion?: 'izquierda' | 'centro' | 'derecha';
+          colorDescripcion?: string;
+        }>
+      ) => (
+        <ProgramasSobresalientesView
+          mostrarTitulo={props.mostrarTitulo}
+          titulo={props.titulo}
+          alineacionTitulo={props.alineacionTitulo}
+          colorTitulo={props.colorTitulo}
+          mostrarDescripcion={props.mostrarDescripcion}
+          descripcion={props.descripcion}
+          alineacionDescripcion={props.alineacionDescripcion}
+          colorDescripcion={props.colorDescripcion}
+        />
+      ),
+    },
   },
 };
 
@@ -1198,6 +1282,7 @@ const BLOQUES_PAGINA_SITIO_DEFECTO: string[] = [
   'SeccionPestanasLaterales',
   'BotonPersonalizado',
   'SeccionBotonesIcono',
+  'ProgramasSobresalientes',
 ];
 
 const COMPONENTES_POR_SLUG: Record<string, string[]> = {
@@ -1220,6 +1305,7 @@ const COMPONENTES_POR_SLUG: Record<string, string[]> = {
     'SeccionPestanasLaterales',
     'BotonPersonalizado',
     'SeccionBotonesIcono',
+    'ProgramasSobresalientes',
   ],
   'politica-de-privacidad': ['PoliticaPrivacidadEncabezado', 'VisorDocumentosNormativos', 'CanalesAtencion'],
 };
