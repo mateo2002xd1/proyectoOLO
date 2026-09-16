@@ -1,9 +1,9 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../../../config/database';
-import Departamento from './Departamento';
-import CentroFormacion from './CentroFormacion';
-import NivelFormacion from './NivelFormacion';
-import ProgramaFormacion from './ProgramaFormacion';
+import Departamento from './departamento';
+import CentroFormacion from './centro-formacion';
+import NivelFormacion from './nivel-formacion';
+import ProgramaFormacion from './programa-formacion';
 
 class ProgramaSobresaliente extends Model {
   declare id: string;

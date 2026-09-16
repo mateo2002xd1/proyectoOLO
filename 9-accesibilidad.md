@@ -252,7 +252,7 @@ opción C de la §3.1 sigue descartada.
 
 #### Un acierto de la misma pasada: `prefers-reduced-motion`
 
-Las transiciones de ruta que se añadieron después (`RouteTransition.tsx` en las dos
+Las transiciones de ruta que se añadieron después (`route-transition.tsx` en las dos
 apps) traen su regla de `@media (prefers-reduced-motion: reduce)` que apaga la
 animación. Es SC 2.3.3 —nivel AAA, así que está por encima de lo exigido— y sobre todo
 evita el mareo a quien declara esa preferencia en su sistema.

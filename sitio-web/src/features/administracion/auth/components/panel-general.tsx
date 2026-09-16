@@ -43,7 +43,7 @@ import {
 } from '@heroicons/react/20/solid';
 import { ThemeToggle } from '@/shared/ui/molecules/theme-toggle';
 import { Paginador } from '@/shared/ui/molecules/paginador';
-import { RouteTransition } from '@/shared/ui/atoms/RouteTransition';
+import { RouteTransition } from '@/shared/ui/atoms/route-transition';
 import {
   enlaceAlEditor,
   listarEnRevision,

@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import { authApi, useAuth } from '@/features/login';
 import { cumplePolitica, primerFallo } from '@olo/password-policy';
-import { PasswordField } from '@/shared/ui/molecules/PasswordField';
-import { PasswordRequisitos } from '@/shared/ui/molecules/PasswordRequisitos';
-import { ReturnToSiteLink } from '@/shared/ui/molecules/ReturnToSiteLink';
-import { QuestionPicker, type CatalogQuestion } from './QuestionPicker';
+import { PasswordField } from '@/shared/ui/molecules/password-field';
+import { PasswordRequisitos } from '@/shared/ui/molecules/password-requisitos';
+import { ReturnToSiteLink } from '@/shared/ui/molecules/return-to-site-link';
+import { QuestionPicker, type CatalogQuestion } from './question-picker';
 import { mensajeDeError } from '@/shared/lib/errors';
 
 const TOTAL_QUESTIONS = 3;

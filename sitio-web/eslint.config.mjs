@@ -20,6 +20,18 @@ const eslintConfig = defineConfig([
       ],
     },
   },
+  {
+    // Los bloques de Puck se pintan dentro del lienzo del editor, no solo en el sitio
+    // publicado. Ahí un `<Link>` navegaría del lado del cliente y se llevaría por
+    // delante el editor entero con el borrador sin guardar; el `<a href>` recarga, que
+    // dentro del editor es el fallo seguro. Es deliberado en los 14 bloques.
+    // Si algún día se quiere navegación rápida en el sitio público, el arreglo no es
+    // quitar esta excepción sino que el bloque consulte el modo edición de Puck y elija.
+    files: ["src/shared/lib/blocks/**/*.tsx"],
+    rules: {
+      "@next/next/no-html-link-for-pages": "off",
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

@@ -31,6 +31,7 @@
     "sembrar:politica-privacidad:sitio": "ts-node scripts/sembrar-politica-privacidad-sitio.ts",
     "respaldo": "ts-node scripts/respaldo.ts",
     "probar:carga-observatorio": "ts-node scripts/probar-carga-observatorio.ts",
+    "probar:versionamiento": "ts-node scripts/probar-versionamiento.ts",
     "email:verificar": "ts-node scripts/verificar-politica-email.ts",
     "seed:generar": "ts-node scripts/generar-seed-contenido.ts",
     "crear:superadmin": "ts-node scripts/crear-superadmin.ts"

@@ -1,7 +1,7 @@
 'use client';
 
 import type { ComponentProps } from 'react';
-import { IntranetTopbar } from './IntranetTopbar';
+import { IntranetTopbar } from './intranet-topbar';
 import { useAuth } from '@/features/login';
 
 /** El wrapper inyecta `onLogout` e `isLoading` desde useAuth, asi que los

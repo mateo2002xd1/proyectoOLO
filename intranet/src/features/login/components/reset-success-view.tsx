@@ -1,4 +1,4 @@
-import { AuthSuccessScreen } from './AuthSuccessScreen';
+import { AuthSuccessScreen } from './auth-success-screen';
 
 export function ResetSuccessView() {
   return (

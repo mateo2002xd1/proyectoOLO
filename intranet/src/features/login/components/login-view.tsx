@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { validarEmail } from '@olo/email-policy';
 import { useAuth } from '@/features/login';
-import { ReturnToSiteLink } from '@/shared/ui/molecules/ReturnToSiteLink';
-import { GooLoader } from '@/shared/ui/atoms/GooLoader';
+import { ReturnToSiteLink } from '@/shared/ui/molecules/return-to-site-link';
+import { GooLoader } from '@/shared/ui/atoms/goo-loader';
 import { mensajeDeError } from '@/shared/lib/errors';
 import { mensajeDeCierre } from '@/shared/lib/inactividad';
 import { SITE_URL } from '@/shared/lib/constants';
@@ -25,6 +25,16 @@ function EyeIcon({ crossed }: { crossed: boolean }) {
       <circle cx="12" cy="12" r="3" />
     </svg>
   );
+}
+
+/**
+ * Mensajes de error del formulario, por campo. `general` es el del servidor, que no
+ * pertenece a ningún campo concreto (credenciales inválidas, falta de permiso).
+ */
+interface ErroresLogin {
+  email?: string;
+  password?: string;
+  general?: string;
 }
 
 /**
@@ -57,8 +67,8 @@ function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>(() => {
-    const initialErrors: any = {};
+  const [errors, setErrors] = useState<ErroresLogin>(() => {
+    const initialErrors: ErroresLogin = {};
     if (searchParams.get('error') === 'acceso_denegado') {
       initialErrors.general = 'No tienes permisos para ingresar a la intranet.';
     }
@@ -103,7 +113,7 @@ function LoginForm() {
 
       // Verificamos si el usuario realmente tiene permiso para entrar a la intranet.
       // Si no lo tiene, cerramos la sesión que la API acaba de abrir y mostramos el error.
-      if (!(data.user as any).permisos?.includes('acceso.intranet')) {
+      if (!data.user.permisos?.includes('acceso.intranet')) {
         try {
           await fetch('/api-backend/logout', { method: 'POST' });
         } catch {}

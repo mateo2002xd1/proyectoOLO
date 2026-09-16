@@ -16,8 +16,8 @@
  * su revisión y su aprobación—, y lo que se guarde ahí se ve en las cinco.
  */
 import type { ComponentProps } from 'react';
-import type { IntranetTopbar } from '@/shared/lib/blocks/plantilla/IntranetTopbar';
-import type { IntranetFooter } from '@/shared/lib/blocks/plantilla/IntranetFooter';
+import type { IntranetTopbar } from '@/shared/lib/blocks/plantilla/intranet-topbar';
+import type { IntranetFooter } from '@/shared/lib/blocks/plantilla/intranet-footer';
 import { obtenerPaginaPublicada } from '../api/paginas.api';
 
 /** Slug de la página que guarda la barra y el pie comunes. */

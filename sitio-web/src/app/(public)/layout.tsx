@@ -1,12 +1,12 @@
-import { Header } from '@/shared/lib/blocks/Header';
-import { Footer } from '@/shared/lib/blocks/Footer';
+import { Header } from '@/shared/lib/blocks/header';
+import { Footer } from '@/shared/lib/blocks/footer';
 import {
   obtenerPlantilla,
   PaginasFabSpeedDial,
   RastreadorVisitas,
 } from '@/features/paginas';
-import { RouteTransition } from '@/shared/ui/atoms/RouteTransition';
-import { ResaltadorBusquedaClient } from '@/shared/ui/atoms/ResaltadorBusquedaClient';
+import { RouteTransition } from '@/shared/ui/atoms/route-transition';
+import { ResaltadorBusquedaClient } from '@/shared/ui/atoms/resaltador-busqueda-client';
 
 /**
  * Marco común de todo el sitio público: cabecera arriba, pie abajo.

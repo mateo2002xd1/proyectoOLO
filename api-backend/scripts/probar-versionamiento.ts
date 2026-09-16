@@ -74,7 +74,7 @@ async function ejecutarListar(ambito: Ambito) {
     }
   }
   console.log(`\nPara restaurar una de estas páginas, ejecuta:`);
-  console.log(`  npx ts-node scripts/probar-versionamiento.ts restaurar <slug> --ambito=${ambito}\n`);
+  console.log(`  npm run probar:versionamiento -- restaurar <slug> --ambito=${ambito}\n`);
 }
 
 async function ejecutarEstado(identificador: string | undefined, ambito: Ambito) {
@@ -204,15 +204,15 @@ async function main() {
         console.log(`
 Uso del CLI de Versionamiento y Respaldo de Uploads:
 
-  npx ts-node scripts/probar-versionamiento.ts listar [--ambito=intranet|sitio]
-  npx ts-node scripts/probar-versionamiento.ts estado <slug> [--ambito=intranet|sitio]
-  npx ts-node scripts/probar-versionamiento.ts restaurar <slug> [--ambito=intranet|sitio]
+  npm run probar:versionamiento -- listar [--ambito=intranet|sitio]
+  npm run probar:versionamiento -- estado <slug> [--ambito=intranet|sitio]
+  npm run probar:versionamiento -- restaurar <slug> [--ambito=intranet|sitio]
 
 Ejemplos:
-  npx ts-node scripts/probar-versionamiento.ts listar
-  npx ts-node scripts/probar-versionamiento.ts estado inicio
-  npx ts-node scripts/probar-versionamiento.ts restaurar inicio
-  npx ts-node scripts/probar-versionamiento.ts listar --ambito=sitio
+  npm run probar:versionamiento -- listar
+  npm run probar:versionamiento -- estado inicio
+  npm run probar:versionamiento -- restaurar inicio
+  npm run probar:versionamiento -- listar --ambito=sitio
         `);
         break;
     }

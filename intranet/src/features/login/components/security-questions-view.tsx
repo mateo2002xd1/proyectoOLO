@@ -4,9 +4,9 @@ import { useState, FormEvent, useEffect, useMemo, useSyncExternalStore } from 'r
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authApi, useAuth } from '@/features/login';
-import { ReturnToSiteLink } from '@/shared/ui/molecules/ReturnToSiteLink';
-import { QuestionPicker, type CatalogQuestion } from './QuestionPicker';
-import { AuthSuccessScreen } from './AuthSuccessScreen';
+import { ReturnToSiteLink } from '@/shared/ui/molecules/return-to-site-link';
+import { QuestionPicker, type CatalogQuestion } from './question-picker';
+import { AuthSuccessScreen } from './auth-success-screen';
 import { mensajeDeError } from '@/shared/lib/errors';
 
 const TOTAL_SETUP_QUESTIONS = 3;

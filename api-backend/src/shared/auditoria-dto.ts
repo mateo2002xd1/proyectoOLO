@@ -1,4 +1,4 @@
-import type { AccionAuditable, EntidadAuditable } from '../infrastructure/db/models/ContentAuditLog';
+import type { AccionAuditable, EntidadAuditable } from '../infrastructure/db/models/content-audit-log';
 import type { CampoModificado, FiltrosAuditoria } from '../repositories/auditoria.repository';
 
 /**

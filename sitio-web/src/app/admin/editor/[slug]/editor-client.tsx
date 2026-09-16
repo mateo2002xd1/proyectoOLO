@@ -7,7 +7,7 @@ import { rutaPublicaDeSlug } from '@/features/paginas/lib/ruta-de-vuelta';
 import { usePagina } from '@/features/paginas/hooks/use-pagina';
 import { useBloqueoDeEdicion } from '@/features/paginas/hooks/use-bloqueo-de-edicion';
 import { AvisoEditorOcupado } from '@/features/paginas/components/aviso-editor-ocupado';
-import { GooLoader } from '@/shared/ui/atoms/GooLoader';
+import { GooLoader } from '@/shared/ui/atoms/goo-loader';
 import type { Plantilla } from '@/features/paginas/lib/plantilla';
 import type { Pagina } from '@/features/paginas/types';
 

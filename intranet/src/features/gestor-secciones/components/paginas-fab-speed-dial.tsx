@@ -31,7 +31,12 @@ export function PaginasFabSpeedDial({
   const [montado, setMontado] = useState(false);
   const [permisosActivos, setPermisosActivos] = useState<string[]>(permisosIniciales);
 
+  // `montado` marca que ya estamos en el navegador —el FAB no debe pintarse en el HTML
+  // del servidor— y a continuación se piden los permisos reales de la sesión. Los dos
+  // son información que no existe durante el render: la primera solo la sabe el efecto,
+  // la segunda llega por red. Ver §9 de 2-convenciones-del-proyecto.md.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMontado(true);
     let vigente = true;
     apiClient.get<{ permisos?: string[] }>('/me')

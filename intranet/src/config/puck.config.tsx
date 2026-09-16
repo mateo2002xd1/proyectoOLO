@@ -4,28 +4,28 @@ import {
   IntranetFooter,
   LOGOS_POR_DEFECTO,
   COLUMNAS_POR_DEFECTO,
-} from '@/shared/lib/blocks/plantilla/IntranetFooter';
-import { IntranetTopbarWrapper } from '@/shared/lib/blocks/plantilla/IntranetTopbarWrapper';
+} from '@/shared/lib/blocks/plantilla/intranet-footer';
+import { IntranetTopbarWrapper } from '@/shared/lib/blocks/plantilla/intranet-topbar-wrapper';
 // La barra "pelada", sin el envoltorio que le inyecta la sesión: el contexto
 // inerte del editor no necesita un botón de cerrar sesión que no se puede pulsar.
-import { IntranetTopbar } from '@/shared/lib/blocks/plantilla/IntranetTopbar';
-import { IntranetHero } from '@/shared/lib/blocks/compartidos/IntranetHero';
-import { TasaBanner } from '@/shared/lib/blocks/tasa/TasaBanner';
-import { TasaConceptos } from '@/shared/lib/blocks/tasa/TasaConceptos';
-import { TasaVideo } from '@/shared/lib/blocks/compartidos/TasaVideo';
-import { TasaDashboards } from '@/shared/lib/blocks/compartidos/TasaDashboards';
-import { TasaPresentacion } from '@/shared/lib/blocks/compartidos/TasaPresentacion';
-import { MatrizBanner } from '@/shared/lib/blocks/matriz/MatrizBanner';
-import { EncuestaBanner } from '@/shared/lib/blocks/encuestas/EncuestaBanner';
-import { SeccionCarrusel } from '@/shared/lib/blocks/compartidos/SeccionCarrusel';
-import { ImagenDestacada } from '@/shared/lib/blocks/compartidos/ImagenDestacada';
-import { TextoRico } from '@/shared/lib/blocks/compartidos/TextoRico';
-import { TextoConImagen } from '@/shared/lib/blocks/compartidos/TextoConImagen';
-import { DescargasConPresentacion } from '@/shared/lib/blocks/compartidos/DescargasConPresentacion';
-import { RecursosVisualesBloque } from '@/shared/lib/blocks/inicio/RecursosVisualesBloque';
-import { Publicaciones } from '@/shared/lib/blocks/inicio/Publicaciones';
-import { PreguntasFrecuentes } from '@/shared/lib/blocks/inicio/PreguntasFrecuentes';
-import { IconoBloque } from '@/shared/lib/blocks/compartidos/IconoBloque';
+import { IntranetTopbar } from '@/shared/lib/blocks/plantilla/intranet-topbar';
+import { IntranetHero } from '@/shared/lib/blocks/compartidos/intranet-hero';
+import { TasaBanner } from '@/shared/lib/blocks/tasa/tasa-banner';
+import { TasaConceptos } from '@/shared/lib/blocks/tasa/tasa-conceptos';
+import { TasaVideo } from '@/shared/lib/blocks/compartidos/tasa-video';
+import { TasaDashboards } from '@/shared/lib/blocks/compartidos/tasa-dashboards';
+import { TasaPresentacion } from '@/shared/lib/blocks/compartidos/tasa-presentacion';
+import { MatrizBanner } from '@/shared/lib/blocks/matriz/matriz-banner';
+import { EncuestaBanner } from '@/shared/lib/blocks/encuestas/encuesta-banner';
+import { SeccionCarrusel } from '@/shared/lib/blocks/compartidos/seccion-carrusel';
+import { ImagenDestacada } from '@/shared/lib/blocks/compartidos/imagen-destacada';
+import { TextoRico } from '@/shared/lib/blocks/compartidos/texto-rico';
+import { TextoConImagen } from '@/shared/lib/blocks/compartidos/texto-con-imagen';
+import { DescargasConPresentacion } from '@/shared/lib/blocks/compartidos/descargas-con-presentacion';
+import { RecursosVisualesBloque } from '@/shared/lib/blocks/inicio/recursos-visuales-bloque';
+import { Publicaciones } from '@/shared/lib/blocks/inicio/publicaciones';
+import { PreguntasFrecuentes } from '@/shared/lib/blocks/inicio/preguntas-frecuentes';
+import { IconoBloque } from '@/shared/lib/blocks/compartidos/icono-bloque';
 import {
   primitiveComponents,
   crearGridConfig,

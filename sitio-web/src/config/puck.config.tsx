@@ -16,18 +16,18 @@ import {
   campoIcono,
   campoDestinoBoton,
 } from '@olo/blocks-renderer';
-import { ExternalPortals } from '@/shared/lib/blocks/ExternalPortals';
-import { Services } from '@/shared/lib/blocks/Services';
-import { DatoOloSemana } from '@/shared/lib/blocks/DatoOloSemana';
-import { RecursosVisualesBloque } from '@/shared/lib/blocks/RecursosVisualesBloque';
-import { Publicaciones } from '@/shared/lib/blocks/Publicaciones';
-import { PoliticaPrivacidadEncabezado } from '@/shared/lib/blocks/PoliticaPrivacidadEncabezado';
-import { VisorDocumentosNormativos, type DocumentoNormativo } from '@/shared/lib/blocks/VisorDocumentosNormativos';
-import { CanalesAtencion, type CanalDeAtencion } from '@/shared/lib/blocks/CanalesAtencion';
-import { Header } from '@/shared/lib/blocks/Header';
-import { Footer, VALORES_PIE_POR_DEFECTO } from '@/shared/lib/blocks/Footer';
-import { IntranetTopbar } from '@/shared/lib/blocks/IntranetTopbar';
-import { IntranetHero } from '@/shared/lib/blocks/IntranetHero';
+import { ExternalPortals } from '@/shared/lib/blocks/external-portals';
+import { Services } from '@/shared/lib/blocks/services';
+import { DatoOloSemana } from '@/shared/lib/blocks/dato-olo-semana';
+import { RecursosVisualesBloque } from '@/shared/lib/blocks/recursos-visuales-bloque';
+import { Publicaciones } from '@/shared/lib/blocks/publicaciones';
+import { PoliticaPrivacidadEncabezado } from '@/shared/lib/blocks/politica-privacidad-encabezado';
+import { VisorDocumentosNormativos, type DocumentoNormativo } from '@/shared/lib/blocks/visor-documentos-normativos';
+import { CanalesAtencion, type CanalDeAtencion } from '@/shared/lib/blocks/canales-atencion';
+import { Header } from '@/shared/lib/blocks/header';
+import { Footer } from '@/shared/lib/blocks/footer';
+import { IntranetTopbar } from '@/shared/lib/blocks/intranet-topbar';
+import { IntranetHero } from '@/shared/lib/blocks/intranet-hero';
 import { defaultIdentidadVisual } from '@/features/identidad-visual/client';
 import { HeroBuscadorOcupaciones } from '@/features/sitio-web/buscador-ocupaciones';
 import { ProgramasSobresalientesView } from '@/features/sitio-web/programas-sobresalientes';

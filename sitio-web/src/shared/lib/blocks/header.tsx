@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { AUTH_ROLE_COOKIE_NAME } from '@/shared/lib/auth-cookies';
 import { desplazarAElemento } from '@olo/blocks-renderer';
 import { obtenerIndiceBusqueda, type PaginaIndiceBusqueda } from '@/features/paginas';
-import { BuscadorSitioModal } from './BuscadorSitioModal';
+import { BuscadorSitioModal } from './buscador-sitio-modal';
 
 import type { ReactNode } from 'react';
 

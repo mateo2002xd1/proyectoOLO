@@ -1,29 +1,29 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../../../config/database';
-import Departamento from './Departamento';
+import NivelFormacion from './nivel-formacion';
 
-class CentroFormacion extends Model {
+class ProgramaFormacion extends Model {
   declare id: string;
-  declare departamento_id: string;
+  declare nivel_formacion_id: string;
   declare nombre: string;
   declare readonly created_at: Date;
   declare readonly updated_at: Date;
   
-  declare departamento?: Departamento;
+  declare nivelFormacion?: NivelFormacion;
 }
 
-CentroFormacion.init(
+ProgramaFormacion.init(
   {
     id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    departamento_id: {
+    nivel_formacion_id: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
-        model: Departamento,
+        model: NivelFormacion,
         key: 'id',
       },
     },
@@ -44,18 +44,18 @@ CentroFormacion.init(
   },
   {
     sequelize,
-    tableName: 'centros_formacion',
+    tableName: 'programas_formacion',
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at',
     indexes: [
       {
         unique: true,
-        fields: ['departamento_id', 'nombre'],
-        name: 'uq_centros_formacion_depto_nombre',
+        fields: ['nivel_formacion_id', 'nombre'],
+        name: 'uq_programas_formacion_nivel_nombre',
       },
     ],
   }
 );
 
-export default CentroFormacion;
+export default ProgramaFormacion;

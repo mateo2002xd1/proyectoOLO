@@ -33,14 +33,10 @@ function ModalNuevoEditor({
   const [selecionados, setSeleccionados] = useState<Set<string>>(new Set());
   const [mostrandoPermisos, setMostrandoPermisos] = useState(false);
 
-  useEffect(() => {
-    if (open) {
-      setNombreExtra('');
-      setDescripcion('');
-      setSeleccionados(new Set());
-      setMostrandoPermisos(false);
-    }
-  }, [open]);
+  // Aquí no hay efecto que limpie el formulario al abrir: el padre cambia la `key` en
+  // cada apertura, así que este componente se monta de cero y el estado ya nace vacío.
+  // Limpiarlo con un efecto obligaba a pintar una vez con los datos del rol anterior
+  // antes de borrarlos (`react-hooks/set-state-in-effect`).
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -167,6 +163,11 @@ export default function RolesView() {
   const [itemsPorPagina, setItemsPorPagina] = useState(15);
 
   const [modalRolAbierto, setModalRolAbierto] = useState(false);
+  // Contador de aperturas usado como `key` de `ModalNuevoEditor`: cambia al abrir —y
+  // solo al abrir— para que React lo monte limpio en vez de que el modal se vacíe a sí
+  // mismo con un efecto. Si cambiara también al cerrar, el `Alert` se desmontaría de
+  // golpe y se perdería su animación de salida.
+  const [aperturaModalRol, setAperturaModalRol] = useState(0);
   const [rolEditando, setRolEditando] = useState<Role | null>(null);
   const [guardandoRol, setGuardandoRol] = useState(false);
 
@@ -319,7 +320,12 @@ export default function RolesView() {
           </p>
         </div>
         <div>
-          <Button onClick={() => setModalRolAbierto(true)}>
+          <Button
+            onClick={() => {
+              setAperturaModalRol((n) => n + 1);
+              setModalRolAbierto(true);
+            }}
+          >
             Nuevo Editor
           </Button>
         </div>
@@ -425,6 +431,7 @@ export default function RolesView() {
       </div>
 
       <ModalNuevoEditor
+        key={aperturaModalRol}
         open={modalRolAbierto}
         onClose={() => setModalRolAbierto(false)}
         onGuardar={handleGuardarRol}

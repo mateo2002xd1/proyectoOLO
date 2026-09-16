@@ -22,10 +22,14 @@ export function ModalEliminarSeccion({ slug, abierto, alCerrar }: ModalEliminarS
   const [borrando, setBorrando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Consulta el impacto de borrar la sección al abrir el modal. Marcar «cargando» y
+  // guardar el resultado son `setState` dentro de un efecto, pero el dato viene de la
+  // API: no puede estar en el estado inicial. Ver §9 de 2-convenciones-del-proyecto.md.
   useEffect(() => {
     if (!abierto || !slug) return;
 
     let vigente = true;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCargando(true);
     setError(null);
     setConfirmacion('');

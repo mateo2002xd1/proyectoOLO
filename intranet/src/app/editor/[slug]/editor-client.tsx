@@ -27,7 +27,7 @@ import {
   type PaginaPublicada,
 } from "@/features/gestor-secciones";
 import type { ContextoDeEdicion } from "@/config/puck.config";
-import { GooLoader } from "@/shared/ui/atoms/GooLoader";
+import { GooLoader } from "@/shared/ui/atoms/goo-loader";
 
 interface EditorClientProps {
   slug: string;
