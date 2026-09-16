@@ -246,11 +246,10 @@ export const importarProgramasExcel = async (
     // anteriores a este fix, o creados a mano) se completan aquí si el nombre
     // resuelve a uno conocido — sin esto, el mapa público nunca los colorea
     // aunque sus datos sí estén cargados.
-    for (const d of deptosExistentes as any[]) {
-      if (!d.codigo_dane) {
-        const codigo = resolverCodigoDane(d.nombre);
-        if (codigo) await d.update({ codigo_dane: codigo }, { transaction });
-      }
+    for (const departamento of deptosExistentes) {
+      if (departamento.codigo_dane) continue;
+      const codigo = resolverCodigoDane(departamento.nombre);
+      if (codigo) await departamento.update({ codigo_dane: codigo }, { transaction });
     }
 
     const deptosFaltantes = Array.from(deptosSet).filter((d) => !deptosMap.has(d));

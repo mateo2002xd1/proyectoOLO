@@ -12,7 +12,6 @@ export interface CargaDatos {
   progreso: number;
   filasProcesadas: number;
   filasTotales: number | null;
-  filasError: number;
   mensaje: string | null;
   subidoPor: string | null;
   creadoEn: string;

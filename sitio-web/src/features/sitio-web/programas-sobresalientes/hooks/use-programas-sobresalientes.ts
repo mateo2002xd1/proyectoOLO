@@ -36,9 +36,10 @@ export function useProgramasSobresalientes() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Sin `setCargando(true)` al entrar: el estado ya nace en `true` y este efecto corre
+  // una sola vez (`[]`), así que ponerlo de nuevo era un render de más por nada.
   useEffect(() => {
     let cancelado = false;
-    setCargando(true);
     obtenerProgramasSobresalientesActual()
       .then((registros) => {
         if (!cancelado) setTodosLosRegistros(registros);
@@ -130,8 +131,6 @@ export function useProgramasSobresalientes() {
     setFiltros((actual) => ({ ...actual, programa }));
   }, []);
 
-  const limpiarFiltros = useCallback(() => setFiltros(FILTROS_INICIALES), []);
-
   return {
     filtros,
     cargando,
@@ -149,6 +148,5 @@ export function useProgramasSobresalientes() {
     seleccionarNivelFormacion,
     seleccionarSexo,
     seleccionarPrograma,
-    limpiarFiltros,
   };
 }

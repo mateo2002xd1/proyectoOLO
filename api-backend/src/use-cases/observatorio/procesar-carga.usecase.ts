@@ -59,11 +59,25 @@ export async function procesarCargaObservatorio(cargaId: string, rutaAbsoluta: s
  * que ir a los logs del servidor a adivinar qué pasó.
  */
 function describirError(error: unknown): string {
-  if (error && typeof error === 'object' && Array.isArray((error as any).errors) && (error as any).errors.length > 0) {
-    const detalles = (error as any).errors
-      .map((item: { message?: string; path?: string }) => item.message ?? item.path)
-      .filter(Boolean);
-    if (detalles.length > 0) return detalles.join('; ');
-  }
+  const detalles = extraerDetallesDeValidacion(error);
+  if (detalles.length > 0) return detalles.join('; ');
+
   return error instanceof Error ? error.message : 'Error desconocido al procesar el archivo.';
+}
+
+/** Forma mínima de `ValidationErrorItem` de Sequelize: lo único que se lee de cada error. */
+interface DetalleDeValidacion {
+  message?: string;
+  path?: string;
+}
+
+function extraerDetallesDeValidacion(error: unknown): string[] {
+  if (typeof error !== 'object' || error === null || !('errors' in error)) return [];
+
+  const { errors } = error as { errors: unknown };
+  if (!Array.isArray(errors)) return [];
+
+  return errors
+    .map((item: DetalleDeValidacion) => item?.message ?? item?.path)
+    .filter((detalle): detalle is string => Boolean(detalle));
 }

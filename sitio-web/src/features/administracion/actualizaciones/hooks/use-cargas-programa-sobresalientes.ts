@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   eliminarCargaProgramaSobresalientes,
   listarCargasProgramaSobresalientes,
+  mensajeDeError,
   obtenerCargaProgramaSobresalientes,
   subirExcelProgramaSobresalientes,
 } from '../services/observatorio.service';
@@ -78,8 +79,8 @@ export function useCargasProgramaSobresalientes() {
         const { cargaId } = await subirExcelProgramaSobresalientes(archivo);
         await refrescar();
         sondearHastaResolver(cargaId);
-      } catch (err: any) {
-        setError(err?.response?.data?.error ?? 'Error al subir el archivo.');
+      } catch (err) {
+        setError(mensajeDeError(err, 'Error al subir el archivo.'));
       } finally {
         setSubiendo(false);
       }
@@ -98,8 +99,8 @@ export function useCargasProgramaSobresalientes() {
       setCargas((actual) => actual.filter((c) => c.id !== id));
       try {
         await eliminarCargaProgramaSobresalientes(id);
-      } catch (err: any) {
-        setError(err?.response?.data?.error ?? 'No se pudo eliminar la carga.');
+      } catch (err) {
+        setError(mensajeDeError(err, 'No se pudo eliminar la carga.'));
         await refrescar();
       }
     },

@@ -141,7 +141,7 @@ export function HistorialCargasGrid({ cargas, onEliminar }: HistorialCargasGridP
           {cargaAEliminar?.estado === 'procesando' && (
             <>
               {' '}
-              Esta carga todavía figura como "procesando": si de verdad se sigue ejecutando, borrarla
+              Esta carga todavía figura como «procesando»: si de verdad se sigue ejecutando, borrarla
               no la detiene, solo hace que deje de verse aquí.
             </>
           )}

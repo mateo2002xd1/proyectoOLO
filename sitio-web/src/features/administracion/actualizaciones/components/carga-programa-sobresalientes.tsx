@@ -71,7 +71,7 @@ export function CargaProgramaSobresalientes({ puedeActualizar }: CargaProgramaSo
     <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 ease-out hover:translate-x-1 hover:border-gray-300 hover:shadow-md">
       <h2 className="font-semibold text-[#001631]">Programa + Sobresalientes</h2>
       <p className="mt-1 text-sm text-gray-500">
-        Sube la hoja "Superan el margen" del Excel de SENA para actualizar el mapa de
+        Sube la hoja «Superan el margen» del Excel de SENA para actualizar el mapa de
         formación por departamento.
       </p>
 
