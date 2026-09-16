@@ -60,7 +60,9 @@ export function ModalNuevaSeccion({ abierto, alCerrar }: ModalNuevaSeccionProps)
       role="dialog"
       aria-modal="true"
       aria-labelledby="nueva-seccion-titulo"
-      onClick={(evento) => {
+      // Cerrar al pulsar fuera, pero solo si el clic empieza en el fondo:
+      // arrastrar desde dentro del diálogo hasta soltarlo fuera no debe cerrarlo.
+      onMouseDown={(evento) => {
         if (evento.target === evento.currentTarget) cerrar();
       }}
       onKeyDown={(evento) => {

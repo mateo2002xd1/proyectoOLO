@@ -1,25 +1,77 @@
-import { Request, Response, NextFunction } from 'express';
-import { importarProgramasExcel } from '../use-cases/observatorio/importar-programas-excel.usecase';
+import { Request, Response } from 'express';
+import { iniciarCargaObservatorio, ErrorDeSubida } from '../use-cases/observatorio/iniciar-carga.usecase';
+import { listarCargasObservatorio, obtenerCargaObservatorio } from '../use-cases/observatorio/listar-cargas.usecase';
+import { eliminarCargaObservatorio, ErrorAlEliminarCarga } from '../use-cases/observatorio/eliminar-carga.usecase';
+import { consultarObservatorioActual } from '../use-cases/observatorio/consultar-actual.usecase';
 
 export const ObservatorioController = {
-  async importar(req: Request, res: Response, next: NextFunction) {
+  /** Sube el Excel y arranca la carga de inmediato — sin paso de aprobación. */
+  async subir(req: Request, res: Response) {
     try {
-      // Validar que el cuerpo es un Buffer (vía express.raw)
-      if (!Buffer.isBuffer(req.body)) {
-        return res.status(400).json({ error: 'El cuerpo de la petición debe ser binario (application/octet-stream)' });
+      const archivo = (req as any).file as Express.Multer.File | undefined;
+      if (!archivo) {
+        return res.status(400).json({ error: 'No se envió ningún archivo.' });
       }
 
-      if (req.body.length === 0) {
-        return res.status(400).json({ error: 'El archivo enviado está vacío.' });
-      }
+      const { cargaId } = await iniciarCargaObservatorio(
+        archivo.buffer,
+        archivo.originalname,
+        req.user?.id ?? null
+      );
 
-      const result = await importarProgramasExcel(req.body);
-      res.json(result);
-    } catch (err: any) {
-      console.error('[ObservatorioController.importar] Error:', err);
-      // Extraemos el mensaje original lanzado por la lógica del use-case si es conocido
-      const mensaje = err instanceof Error ? err.message : 'Error interno al importar el archivo.';
-      res.status(400).json({ error: mensaje });
+      res.status(202).json({ cargaId, message: 'Archivo recibido, procesando...' });
+    } catch (error) {
+      if (error instanceof ErrorDeSubida) {
+        return res.status(error.status).json({ error: error.message });
+      }
+      console.error('[observatorio] Error al subir el archivo:', error);
+      res.status(500).json({ error: 'Error al procesar el archivo.' });
+    }
+  },
+
+  /** Historial de cargas — para el listado de la tarjeta "Programa + Sobresalientes". */
+  async listarCargas(_req: Request, res: Response) {
+    try {
+      res.json(await listarCargasObservatorio());
+    } catch (error) {
+      console.error('[observatorio] Error al listar cargas:', error);
+      res.status(500).json({ error: 'Error al listar las cargas.' });
+    }
+  },
+
+  /** Estado de una carga puntual — para que el admin vea el resultado sin refrescar la lista. */
+  async obtenerCarga(req: Request, res: Response) {
+    try {
+      const carga = await obtenerCargaObservatorio(req.params.id as string);
+      if (!carga) return res.status(404).json({ error: 'Carga no encontrada.' });
+      res.json(carga);
+    } catch (error) {
+      console.error('[observatorio] Error al consultar la carga:', error);
+      res.status(500).json({ error: 'Error al consultar la carga.' });
+    }
+  },
+
+  /** Borra la carga y, si nadie más comparte el archivo, también el Excel de disco. */
+  async eliminarCarga(req: Request, res: Response) {
+    try {
+      await eliminarCargaObservatorio(req.params.id as string);
+      res.status(204).send();
+    } catch (error) {
+      if (error instanceof ErrorAlEliminarCarga) {
+        return res.status(error.status).json({ error: error.message });
+      }
+      console.error('[observatorio] Error al eliminar la carga:', error);
+      res.status(500).json({ error: 'Error al eliminar la carga.' });
+    }
+  },
+
+  /** Datos vigentes — público, sin sesión. Lo consume el mapa del sitio. */
+  async obtenerActual(_req: Request, res: Response) {
+    try {
+      res.json(await consultarObservatorioActual());
+    } catch (error) {
+      console.error('[observatorio] Error al consultar los datos actuales:', error);
+      res.status(500).json({ error: 'Error al consultar los datos.' });
     }
   },
 };

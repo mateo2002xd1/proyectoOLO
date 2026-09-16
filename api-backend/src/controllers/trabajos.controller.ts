@@ -22,7 +22,7 @@ export const TrabajosController = {
         return res.status(404).json({ message: 'Job not found' });
       }
 
-      const esAdministrador = usuariosPolicies.puedeAdministrarUsuarios(req.user?.role);
+      const esAdministrador = usuariosPolicies.puedeAdministrarUsuarios(req.user);
       if (!esAdministrador && !esDueno(job.data?.usuarioId, req.user?.id)) {
         return res.status(404).json({ message: 'Job not found' });
       }

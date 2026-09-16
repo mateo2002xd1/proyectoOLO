@@ -1,22 +1,26 @@
 /**
  * Contratos del panel de indicadores de formación por departamento.
  *
- * El modelo sigue el esquema estrella acordado para `formacion_indicadores`:
- * departamento, centro, nivel de formación, programa y sexo son las
- * dimensiones; certificados, vinculados, tasa de vinculación y salario
- * promedio son las métricas de la tabla de hechos. Aquí es solo de
- * frontend — los datos vienen de `lib/programas-sobresalientes-temporal.ts`,
- * un fixture estático (sin backend ni base de datos). El día que exista la
- * tabla real, solo cambia esa fuente — nada de aquí hacia arriba.
+ * El modelo sigue el esquema estrella de `programas_sobresalientes` (tabla de
+ * Mateo, migración `026-observatorio-programas-sobresalientes`): departamento,
+ * centro, nivel de formación, programa y sexo son las dimensiones; certificados,
+ * vinculados, tasa de vinculación y salario promedio son las métricas de la tabla
+ * de hechos. Los datos vienen de `GET /api/observatorio/programas-sobresalientes`
+ * (`services/programas-sobresalientes.service.ts`) — cada carga vacía y recarga la
+ * tabla entera, ver `api-backend/src/use-cases/observatorio/`.
  */
 
-/** Nivel de formación, tal como lo clasifica el SENA (`niveles_formacion.nombre`). */
-export type NivelFormacion = 'Técnico' | 'Tecnólogo' | 'Especialización' | 'Operario' | 'Auxiliar';
+/**
+ * Nivel de formación, verificado contra el Excel real de SENA (hoja
+ * "Superan el margen"). Antes decía "Especialización" en vez de
+ * "Profundización Técnica", que es el nombre real.
+ */
+export type NivelFormacion = 'Técnico' | 'Tecnólogo' | 'Profundización Técnica' | 'Operario' | 'Auxiliar';
 
-/** `sexo` en el esquema real es un `ENUM ('M', 'F')`; aquí se conserva el mismo código. */
+/** `sexo` en el esquema real es un `CHECK IN ('M', 'F')` (nunca `ENUM` — convención D4 del proyecto). */
 export type Sexo = 'M' | 'F';
 
-/** Una fila de `formacion_indicadores`: un cruce centro + programa + nivel + sexo. */
+/** Una fila de `formacion_sobresalientes`: un cruce centro + programa + nivel + sexo. */
 export interface RegistroFormacion {
   id: string;
   centro: string;
@@ -31,26 +35,28 @@ export interface RegistroFormacion {
   salarioPromedio: number;
 }
 
-/** Un departamento con al menos un registro de formación. */
-export interface DepartamentoFormacion {
-  /** Código DANE; debe coincidir con `DepartamentoGeo.codigoDane`. */
-  codigoDane: string;
-  nombre: string;
-  registros: RegistroFormacion[];
-}
-
 /** Fila de resultados: un registro ya resuelto contra su departamento. */
 export interface RegistroConDepartamento extends RegistroFormacion {
   codigoDane: string;
   departamento: string;
 }
 
-/** Estado de los filtros de consulta: departamento (mapa) + centro + nivel + sexo + programa. */
+/** Un departamento con al menos un registro de formación — para pintar el mapa. */
+export interface DepartamentoConDatos {
+  codigoDane: string;
+  nombre: string;
+}
+
+/**
+ * Estado de los filtros de consulta: departamento (mapa) + formación académica +
+ * género + programa.
+ *
+ * Sin filtro de Centro a propósito (decisión de sesión): el centro se sigue
+ * mostrando en la tabla de resultados, pero dejó de ser un selector.
+ */
 export interface FiltrosFormacion {
   /** Código DANE del departamento elegido desde el mapa, o `'todos'`. */
   codigoDane: string;
-  /** Nombre del centro elegido, o `'todos'`. */
-  centro: string;
   /** `NivelFormacion` elegido, o `'todos'`. */
   nivelFormacion: string;
   /** `Sexo` elegido, o `'todos'`. */

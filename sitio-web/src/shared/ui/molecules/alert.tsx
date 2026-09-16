@@ -15,7 +15,10 @@ export function Alert({ open, onClose, children }: AlertProps) {
   return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-end justify-center sm:items-center bg-[#0f172a]/40 backdrop-blur-sm p-4"
-      onClick={(event) => {
+      // Usamos `onMouseDown` y no `onClick`: si el usuario selecciona texto dentro
+      // del cuadro y suelta el ratón fuera, el clic se contabiliza en el fondo y
+      // el cuadro se cerraba en mitad de la selección.
+      onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose(false);
       }}
     >

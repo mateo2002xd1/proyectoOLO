@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useId, type ComponentType, type ReactElement } from 'react';
 import type { ConfigDeBloque } from './controles-de-caja';
 import { DestinoTabField, type DestinoTabConfig } from './destino-tab-field';
+import { campoColor } from './color-picker-field';
 
 export interface TabItem {
   titulo: React.ReactNode | string;
@@ -64,6 +65,8 @@ export interface TabsProps {
   alineacionTitulo?: 'izquierda' | 'centro' | 'derecha';
   subtitulo?: React.ReactNode | string;
   mostrarSubtitulo?: boolean;
+  colorTitulo?: string;
+  colorSubtitulo?: string;
   mostrarSidebar?: 'si' | 'no';
   posicionMenu?: 'lateral' | 'superior';
   anchoSidebar?: '240' | '280' | '320';
@@ -88,6 +91,8 @@ export function TabsRender({
   alineacionTitulo = 'izquierda',
   subtitulo = '',
   mostrarSubtitulo = true,
+  colorTitulo,
+  colorSubtitulo,
   mostrarSidebar = 'si',
   posicionMenu = 'lateral',
   anchoSidebar = '280',
@@ -152,12 +157,18 @@ export function TabsRender({
         {((mostrarTitulo && titulo) || (mostrarSubtitulo && subtitulo)) && (
           <div className={`olo-tabs-header mb-6 flex flex-col ${claseAlineacion} w-full`}>
             {mostrarTitulo && titulo && (
-              <h2 className="text-2xl sm:text-3xl font-bold text-[#002237] tracking-tight mb-2 w-full">
+              <h2
+                className="text-2xl sm:text-3xl font-bold text-[#002237] tracking-tight mb-2 w-full"
+                style={colorTitulo ? { color: colorTitulo } : undefined}
+              >
                 {titulo}
               </h2>
             )}
             {mostrarSubtitulo && subtitulo && (
-              <div className="text-sm sm:text-base text-gray-600 max-w-3xl w-full">
+              <div
+                className="text-sm sm:text-base text-gray-600 max-w-3xl w-full"
+                style={colorSubtitulo ? { color: colorSubtitulo } : undefined}
+              >
                 {subtitulo}
               </div>
             )}
@@ -571,6 +582,8 @@ export const tabsConfig: ConfigDeBloque = {
         { label: 'No', value: false },
       ],
     },
+    colorTitulo: campoColor('Color del título (opcional)'),
+    colorSubtitulo: campoColor('Color del subtítulo / descripción (opcional)'),
     mostrarSidebar: {
       type: 'radio',
       label: 'Mostrar barra de pestañas',
@@ -641,6 +654,8 @@ export const tabsConfig: ConfigDeBloque = {
     alineacionTitulo: 'izquierda',
     mostrarSubtitulo: true,
     subtitulo: '',
+    colorTitulo: '',
+    colorSubtitulo: '',
     mostrarSidebar: 'si',
     posicionMenu: 'lateral',
     anchoSidebar: '280',

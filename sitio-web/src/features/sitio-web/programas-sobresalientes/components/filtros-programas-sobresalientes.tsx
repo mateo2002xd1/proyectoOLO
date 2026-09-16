@@ -3,45 +3,36 @@
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
 import type { FiltrosFormacion } from '../types';
 
-/** Etiquetas de presentación para el `ENUM` de sexo del esquema real. */
+/** Etiquetas de presentación para el `CHECK` de sexo del esquema real. */
 const ETIQUETA_SEXO: Record<string, string> = { M: 'Masculino', F: 'Femenino' };
 
 interface FiltrosProgramasSobresalientesProps {
   filtros: FiltrosFormacion;
-  centrosDisponibles: string[];
   nivelesDisponibles: string[];
   sexos: string[];
   programasDisponibles: string[];
-  onSeleccionarCentro: (centro: string) => void;
   onSeleccionarNivelFormacion: (nivelFormacion: string) => void;
   onSeleccionarSexo: (sexo: string) => void;
   onSeleccionarPrograma: (programa: string) => void;
 }
 
 /**
- * Barra de filtros de consulta: Centro + Formación Académica + Género + Programa.
+ * Barra de filtros de consulta: Formación Académica + Género + Programa.
  *
  * El departamento no tiene select propio: se elige directamente en el mapa
- * (`MapaDepartamentos`), que comparte el mismo estado de filtros. Sin tarjeta
- * de fondo: los controles quedan sueltos sobre el fondo de la página, cada
- * uno con su propio borde.
+ * (`MapaDepartamentos`), que comparte el mismo estado de filtros. Sin filtro de
+ * Centro a propósito (decisión de sesión) — el centro se sigue mostrando en la
+ * tabla de resultados, pero dejó de ser un criterio de búsqueda.
  */
 export function FiltrosProgramasSobresalientes({
   filtros,
-  centrosDisponibles,
   nivelesDisponibles,
   sexos,
   programasDisponibles,
-  onSeleccionarCentro,
   onSeleccionarNivelFormacion,
   onSeleccionarSexo,
   onSeleccionarPrograma,
 }: FiltrosProgramasSobresalientesProps) {
-  const opcionesCentro = [
-    { value: 'todos', label: 'Centro' },
-    ...centrosDisponibles.map((centro) => ({ value: centro, label: centro })),
-  ];
-
   const opcionesNivel = [
     { value: 'todos', label: 'Formación Académica' },
     ...nivelesDisponibles.map((nivel) => ({ value: nivel, label: nivel })),
@@ -59,14 +50,6 @@ export function FiltrosProgramasSobresalientes({
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
-      <CustomSelect
-        value={filtros.centro}
-        onChange={onSeleccionarCentro}
-        options={opcionesCentro}
-        ariaLabel="Filtrar por centro"
-        className="sm:w-64"
-      />
-
       <CustomSelect
         value={filtros.nivelFormacion}
         onChange={onSeleccionarNivelFormacion}

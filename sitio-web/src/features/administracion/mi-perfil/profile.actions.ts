@@ -71,7 +71,15 @@ export async function updateProfileInfo(id: string, data: { nombre: string; apel
   }
 }
 
-export async function changePassword(data: any) {
+/**
+ * Campos del formulario de cambio de contraseña, tal como llegan de un
+ * `Object.fromEntries(formData)`: valores sin tipar, porque eso es lo que da un
+ * formulario. Se convierten a texto aquí y la política real la aplica el backend
+ * (`packages/password-policy`) — esta capa solo transporta.
+ */
+type DatosCambioPassword = Record<string, FormDataEntryValue>;
+
+export async function changePassword(data: DatosCambioPassword) {
   const session = await getAuthSessionSnapshot();
   if (!session.token) {
     return { success: false, error: 'No autorizado' };
@@ -85,9 +93,9 @@ export async function changePassword(data: any) {
         Authorization: `Bearer ${session.token}`,
       },
       body: JSON.stringify({
-        currentPassword: data.password_actual,
-        newPassword: data.password_nueva,
-        confirmPassword: data.password_confirmacion,
+        currentPassword: String(data.password_actual ?? ''),
+        newPassword: String(data.password_nueva ?? ''),
+        confirmPassword: String(data.password_confirmacion ?? ''),
       }),
     });
 

@@ -24,6 +24,8 @@ export interface SeccionBotonesIconoProps {
   alineacionTitulo?: 'izquierda' | 'centro' | 'derecha';
   subtitulo?: ReactNode;
   mostrarSubtitulo?: boolean;
+  colorTitulo?: string;
+  colorSubtitulo?: string;
   columnas?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
   botones?: ItemBotonSeccion[];
   items?: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
@@ -37,6 +39,8 @@ export function SeccionBotonesIcono({
   alineacionTitulo = 'centro',
   subtitulo = '',
   mostrarSubtitulo = true,
+  colorTitulo,
+  colorSubtitulo,
   columnas = 3,
   botones = [],
   items: Items,
@@ -86,12 +90,18 @@ export function SeccionBotonesIcono({
     <section className={`olo-seccion-botones w-full py-5 sm:py-6 px-4 sm:px-6 lg:px-8 ${className}`} style={style}>
       <div className={`${anchoMaximo} mx-auto flex flex-col ${claseAlineacionTitulo} w-full`}>
         {mostrarTitulo && titulo ? (
-          <h2 className="text-2xl sm:text-3xl font-bold text-[#002237] mb-2 tracking-tight w-full">
+          <h2
+            className="text-2xl sm:text-3xl text-[#002237] mb-2 tracking-tight w-full"
+            style={colorTitulo ? { color: colorTitulo } : undefined}
+          >
             {titulo}
           </h2>
         ) : null}
         {mostrarSubtitulo && subtitulo ? (
-          <div className="text-sm sm:text-base text-gray-600 mb-6 max-w-2xl w-full">
+          <div
+            className="text-sm sm:text-base text-gray-600 mb-6 max-w-2xl w-full"
+            style={colorSubtitulo ? { color: colorSubtitulo } : undefined}
+          >
             {subtitulo}
           </div>
         ) : null}

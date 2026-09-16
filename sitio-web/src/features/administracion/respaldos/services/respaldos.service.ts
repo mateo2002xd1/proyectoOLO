@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { RegistroRespaldo } from '../types';
+import type { BloqueoVigente, RegistroRespaldo } from '../types';
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000',
@@ -36,9 +36,15 @@ export async function restaurarRespaldo(
 /**
  * Consulta si la página actual tiene un candado de edición activo.
  */
-export async function verificarBloqueo(slug: string, ambito?: 'sitio' | 'intranet'): Promise<{ bloqueadoPor: any | null }> {
+export async function verificarBloqueo(
+  slug: string,
+  ambito?: 'sitio' | 'intranet'
+): Promise<{ bloqueadoPor: BloqueoVigente | null }> {
   const headers = ambito ? { 'X-Ambito': ambito } : {};
-  const { data } = await api.get<{ bloqueadoPor: any | null }>(`/api/paginas/${slug}/bloqueo`, { headers });
+  const { data } = await api.get<{ bloqueadoPor: BloqueoVigente | null }>(
+    `/api/paginas/${slug}/bloqueo`,
+    { headers }
+  );
   return data;
 }
 
@@ -46,7 +52,7 @@ export async function verificarBloqueo(slug: string, ambito?: 'sitio' | 'intrane
  * Analiza cuántas versiones archivadas se eliminarían y cuántos bytes se liberarían según los filtros.
  */
 export async function analizarDepuracion(filtros: import('../types').FiltrosDepuracion): Promise<import('../types').AnalisisDepuracionDTO> {
-  const params: Record<string, any> = {
+  const params: Record<string, string | boolean | undefined> = {
     fechaCorte: filtros.fechaCorte,
     conservarUltimoRespaldo: filtros.conservarUltimoRespaldo !== false,
   };

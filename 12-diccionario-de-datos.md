@@ -272,7 +272,7 @@ A continuación se detalla la ficha técnica y matriz de atributos para cada una
 
 - **Módulo / Dominio:** Identidad y Autorización (RBAC)
 - **Requerimientos Asociados:** RF-04, RF-05
-- **Propósito General:** Catálogo de roles predefinidos y personalizados en el sistema (superadmin, administrador, editor, director, subdirector, visitante_interno). La bandera `es_sistema` impide la eliminación accidental de roles basales desde el panel de control.
+- **Propósito General:** Catálogo de roles predefinidos y personalizados en el sistema (superadmin, administrador, editor, director/subdirector). La bandera `es_sistema` impide la eliminación accidental de roles basales desde el panel de control.
 
 | No. | Campo | Tipo de Dato | Longitud | Permite Nulos | Tipo Llave | Referencia / Restricción | Valor por Defecto | Descripción y Reglas de Negocio |
 |:---:|:---|:---|:---:|:---:|:---:|:---|:---|:---|

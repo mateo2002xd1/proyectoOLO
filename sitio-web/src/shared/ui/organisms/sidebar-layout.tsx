@@ -34,7 +34,7 @@ export function SidebarLayout({
   }, [pathname]);
 
   return (
-    <div className={`flex h-screen bg-white dark:bg-[#0b1121] ${className}`}>
+    <div className={`flex h-screen bg-white dark:bg-[#131B2E] ${className}`}>
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div 
@@ -46,7 +46,7 @@ export function SidebarLayout({
 
       {/* Sidebar (Mobile Slide-in + Desktop Static) */}
       <div 
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -56,7 +56,7 @@ export function SidebarLayout({
       <div className="flex min-w-0 flex-1 flex-col">
         {navbar && <div className="lg:hidden">{navbar}</div>}
 
-        <main className="flex-1 overflow-y-auto bg-[#FFFFFF] dark:bg-[#131b2f]">
+        <main className="flex-1 overflow-y-auto bg-[#FFFFFF] dark:bg-[#131B2E]">
           {children}
         </main>
       </div>

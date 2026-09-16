@@ -110,6 +110,13 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // /admin/actualizaciones — requiere acceso al panel (antes "Soporte", sin uso real)
+  if (pathname.startsWith('/admin/actualizaciones')) {
+    if (!hasAccesoPanel) {
+      return loginRedirect();
+    }
+  }
+
   // /admin/editor/* — cualquiera con permisos de edición
   if (pathname.startsWith('/admin/editor')) {
     if (!hasAccesoPanel && !hasPermisosEdicion) {
@@ -152,6 +159,8 @@ export const config = {
     '/admin/roles',
     '/admin/revision/:path*',
     '/admin/revision',
+    '/admin/actualizaciones/:path*',
+    '/admin/actualizaciones',
     '/admin/mi-perfil/:path*',
     '/admin/mi-perfil',
     '/admin/editor/:path*',

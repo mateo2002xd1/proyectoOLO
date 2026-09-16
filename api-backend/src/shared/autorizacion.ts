@@ -43,6 +43,31 @@ export const esDueno = (duenoId: unknown, actorId: unknown): boolean =>
   duenoId != null && actorId != null && String(duenoId) === String(actorId);
 
 /**
+ * Lo que reciben las policies de `policies/*.ts` para decidir si un rol puede algo:
+ * el nombre del rol a secas, o el objeto `{ role, permisos }` con el que
+ * `req.user` (armado en `auth.middleware.ts`) y algunos casos de uso lo llevan.
+ *
+ * Existe porque las policies aceptaban antes solo un string, y al añadirles el
+ * respaldo por `permisos` (para roles personalizados sin nombre fijo) pasaron a
+ * esperar `{ role, permisos }` — pero no todas las llamadas se actualizaron. La
+ * mitad del código seguía pasando el string suelto: `actor?.role`, `user.role?.name`,
+ * `rolActual?.name`. Cada una de esas llamadas leía entonces `"Administrador".role`
+ * (`undefined`) y la policy devolvía `false` en silencio, sin lanzar ningún error —
+ * el mismo patrón que ya rompió `paginas.policies.ts` una vez (ver su comentario) y
+ * que aquí volvió a colarse porque el cambio de forma no tocó todas las llamadas.
+ * Normalizar aquí, en un solo sitio, es lo que hace que dé igual qué forma llegue.
+ */
+export type ActorDePolicy = string | null | undefined | { role?: string | null; permisos?: string[] | null };
+
+/** El nombre de rol, venga el actor como string o como `{ role, permisos }`. */
+export const rolDeActor = (actor: ActorDePolicy): string | null | undefined =>
+  typeof actor === 'string' || actor == null ? actor : actor.role;
+
+/** Los permisos del actor, o `undefined` si llegó como string suelto (no los lleva). */
+export const permisosDeActor = (actor: ActorDePolicy): string[] | null | undefined =>
+  typeof actor === 'string' || actor == null ? undefined : actor.permisos;
+
+/**
  * Exige que el actor sea el dueño del recurso, salvo que un permiso lo exima.
  *
  * `ocultar` decide entre 403 y 404. Un 403 confirma que el objeto existe, lo que

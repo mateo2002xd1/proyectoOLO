@@ -3,6 +3,7 @@ import { paginasPolicies, type PermisoPagina } from '../policies/paginas.policie
 import { auditoriaPolicies, type PermisoAuditoria } from '../policies/auditoria.policies';
 import { usuariosPolicies, type PermisoUsuario } from '../policies/usuarios.policies';
 import { contenidosPolicies, type PermisoContenido } from '../policies/contenidos.policies';
+import { observatorioPolicies, type PermisoObservatorio } from '../policies/observatorio.policies';
 import { marcarGuardia } from '../shared/autorizacion';
 
 /**
@@ -82,4 +83,13 @@ export const requierePermisoUsuario = construirGuardia<PermisoUsuario>(
 export const requierePermisoContenido = construirGuardia<PermisoContenido>(
   'contenidos',
   contenidosPolicies
+);
+
+/**
+ * Exige permiso sobre las cargas de datos de "Actualizaciones" (panel de
+ * administración). Solo Administrador y Superadmin — no hay editor en este flujo.
+ */
+export const requierePermisoObservatorio = construirGuardia<PermisoObservatorio>(
+  'observatorio',
+  observatorioPolicies
 );

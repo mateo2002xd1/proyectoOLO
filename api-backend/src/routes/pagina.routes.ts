@@ -469,7 +469,17 @@ router.delete(
  */
 router.get(
   '/:slug/bloqueo',
-  requireAuth,
+  // Quien no puede editar no tiene por qué saber quién está editando: con solo
+  // `requireAuth` cualquier sesión válida —Director/Subdirector incluidos, que ven
+  // pero no editan— enumeraba quién trabaja sobre qué página. Es el caso que §S10
+  // describe y lo que `propiedad:verificar` marcaba en rojo.
+  //
+  // A diferencia del POST y el DELETE de esta misma ruta, **no** lleva
+  // `requierePermisoDeSeccion()`: ese exige la clave `editar.{ambito}.{slug}` salvo
+  // para superadmin, y esta lectura la usa el flujo de restauración de respaldos
+  // (`respaldos.service.ts`), donde un Administrador sin esa clave concreta se
+  // llevaría un 403 al comprobar si la página está bloqueada antes de restaurar.
+  requierePermisoPagina('puedeEditar'),
   PaginaController.consultarBloqueo
 );
 

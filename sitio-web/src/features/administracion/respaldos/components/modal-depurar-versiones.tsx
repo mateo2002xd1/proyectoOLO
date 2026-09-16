@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
 import { DatePicker } from '@/shared/ui/molecules/date-picker';
+import { mensajeDeErrorApi } from '@/shared/lib/errores-api';
 import { analizarDepuracion, ejecutarDepuracion } from '../services/respaldos.service';
 import type { AnalisisDepuracionDTO, FiltrosDepuracion, RegistroRespaldo } from '../types';
 
@@ -104,11 +105,9 @@ export function ModalDepurarVersiones({
           setAnalisis(data);
           setErrorAnalisis(null);
         }
-      } catch (err: any) {
+      } catch (err) {
         if (!cancelado) {
-          setErrorAnalisis(
-            err.response?.data?.error || err.message || 'Error al calcular el impacto de la depuración.'
-          );
+          setErrorAnalisis(mensajeDeErrorApi(err, 'Error al calcular el impacto de la depuración.'));
           setAnalisis(null);
         }
       } finally {
@@ -154,10 +153,8 @@ export function ModalDepurarVersiones({
       setTimeout(() => {
         onExito();
       }, 1600);
-    } catch (err: any) {
-      setErrorEjecucion(
-        err.response?.data?.error || err.message || 'No se pudo completar la depuración de versiones.'
-      );
+    } catch (err) {
+      setErrorEjecucion(mensajeDeErrorApi(err, 'No se pudo completar la depuración de versiones.'));
       setConfirmando(false);
     } finally {
       setEjecutando(false);

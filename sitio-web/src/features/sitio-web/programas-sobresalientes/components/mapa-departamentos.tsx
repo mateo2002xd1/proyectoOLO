@@ -41,7 +41,7 @@ export function MapaDepartamentos({
         role="group"
         aria-labelledby={tituloId}
         viewBox={VIEWBOX_COLOMBIA}
-        className="mx-auto h-auto w-full max-w-[520px]"
+        className="mx-auto h-auto w-full max-w-[640px]"
       >
         <title id={tituloId}>Mapa de Colombia por departamento</title>
         {DEPARTAMENTOS_COLOMBIA.map((departamento) => {

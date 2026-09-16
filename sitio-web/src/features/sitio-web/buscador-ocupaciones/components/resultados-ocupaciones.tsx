@@ -15,7 +15,7 @@ interface ResultadosOcupacionesProps {
 const DENOMINACIONES_VISIBLES = 6;
 
 /** Verde institucional sobre fondo claro: el resaltado por defecto del paquete es para fondo oscuro. */
-const CLASE_RESALTADO = 'rounded bg-[#7DB828]/30 px-0.5 font-semibold text-[#001631]';
+const CLASE_RESALTADO = 'rounded bg-[#7DB828]/30 px-0.5 text-[#001631]';
 
 /**
  * Vista 1 — tabla de resultados.
@@ -67,10 +67,10 @@ export function ResultadosOcupaciones({
       <div className="overflow-hidden rounded-[16px] border border-[#eaecf0]">
         {/* Los rótulos de columna se ocultan en móvil, donde cada celda lleva el suyo propio. */}
         <div className="hidden bg-[#f8f9fa] sm:grid sm:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] sm:gap-4 sm:px-4 sm:py-2.5">
-          <span className="text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
+          <span className="text-[11px] tracking-[0.12em] text-[#667085] uppercase">
             Ocupación
           </span>
-          <span className="text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
+          <span className="text-[11px] tracking-[0.12em] text-[#667085] uppercase">
             Denominación
           </span>
         </div>
@@ -92,7 +92,7 @@ export function ResultadosOcupaciones({
                   className="grid w-full cursor-pointer grid-cols-1 gap-3 px-4 py-3.5 text-left transition-colors hover:bg-[#f8f9fa] focus:outline-none focus-visible:bg-[#f8f9fa] focus-visible:ring-2 focus-visible:ring-[#7DB828] focus-visible:ring-inset sm:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] sm:gap-4"
                 >
                   <span className="flex items-start gap-2.5">
-                    <span className="mt-0.5 shrink-0 rounded-[8px] bg-[#001631] px-2 py-1 font-mono text-[11px] font-semibold text-white tabular-nums">
+                    <span className="mt-0.5 shrink-0 rounded-[8px] bg-[#001631] px-2 py-1 font-mono text-[11px] text-white tabular-nums">
                       {resaltarCoincidenciaTexto(
                         ocupacion.codigoOcupacion,
                         termino,
@@ -109,7 +109,7 @@ export function ResultadosOcupaciones({
                   </span>
 
                   <span className="min-w-0">
-                    <span className="mb-1 block text-[11px] font-semibold tracking-[0.12em] text-[#98a2b3] uppercase sm:hidden">
+                    <span className="mb-1 block text-[11px] tracking-[0.12em] text-[#98a2b3] uppercase sm:hidden">
                       Denominación
                     </span>
 

@@ -28,7 +28,7 @@ function normalizar(texto: string): string {
 export function resaltarCoincidenciaTexto(
   texto: string,
   consulta: string,
-  claseResaltado = 'bg-sky-400/25 text-sky-200 font-semibold px-0.5 rounded not-italic underline decoration-sky-400/50 underline-offset-2'
+  claseResaltado = 'bg-sky-400/25 text-sky-200 px-0.5 rounded not-italic underline decoration-sky-400/50 underline-offset-2'
 ): React.ReactNode {
   if (!texto || !consulta || !consulta.trim()) return texto;
 
@@ -295,7 +295,10 @@ export function activarPestanaDeElemento(elemento: HTMLElement): boolean {
   let actual: HTMLElement | null = elemento;
 
   while (actual) {
-    const panel = actual.closest<HTMLElement>('[role="tabpanel"]');
+    // Anotado a mano: `actual` se reasigna con `panel.parentElement` más abajo, así que
+    // sin este tipo TS entra en una inferencia circular (TS7022) y `panel` cae a `any`
+    // implícito — que §4 de las convenciones prohíbe y rompía el `tsc` de la intranet.
+    const panel: HTMLElement | null = actual.closest<HTMLElement>('[role="tabpanel"]');
     if (!panel) break;
     panelesParaActivar.unshift(panel); // Guardar del más externo al más interno
     actual = panel.parentElement;

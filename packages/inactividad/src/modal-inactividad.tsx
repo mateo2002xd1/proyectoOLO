@@ -55,7 +55,7 @@ export function ModalInactividad({ msRestantes, onSeguir }: ModalInactividadProp
   return (
     <dialog
       ref={ref}
-      className="olo-modal olo-modal--inactividad"
+      className="olo-modal"
       aria-labelledby="olo-inactividad-titulo"
       aria-describedby="olo-inactividad-texto"
       // Escape equivale a «seguir trabajando»: es la opción que no interrumpe a nadie.
@@ -71,14 +71,18 @@ export function ModalInactividad({ msRestantes, onSeguir }: ModalInactividadProp
         if (evento.target === ref.current) onSeguir();
       }}
     >
-      <div className="olo-modal-caja olo-modal-caja--inactividad">
+      <div className="olo-modal-caja">
         <h2 id="olo-inactividad-titulo" className="olo-modal-titulo">
           ¿Sigues ahí?
         </h2>
         <p id="olo-inactividad-texto" className="olo-modal-texto">
           Tu sesión se cerrará en{' '}
           <strong className="olo-modal-cuenta">{formatearCuentaAtras(msRestantes)}</strong>{' '}
-          por inactividad
+          por inactividad.
+        </p>
+        <p className="olo-modal-texto olo-modal-texto--apunte">
+          Cerramos las sesiones inactivas para que nadie más pueda usar tu cuenta si dejas el
+          equipo desatendido.
         </p>
 
         {/* La cuenta atrás para lectores de pantalla, separada de la visible. */}

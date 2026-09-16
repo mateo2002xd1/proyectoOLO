@@ -14,7 +14,13 @@ import { PaginaVersion } from './PaginaVersion';
 // desarrollo no tiene fila en `usuarios`). Ver `020-bloqueos-edicion`.
 import { BloqueoEdicion } from './BloqueoEdicion';
 import { SubidaPendiente } from './SubidaPendiente';
+import { CargaDatos } from './CargaDatos';
 
+// Catálogos del observatorio ("Programa + sobresalientes") — tablas y modelos de
+// Mateo (migración `026-observatorio-programas-sobresalientes`), con exportación
+// `default` y atributos en snake_case tal como él los declaró. No se tocan sus
+// archivos de modelo; `CargaDatos` (arriba) es la única pieza que agregamos
+// nosotros, y es un archivo aparte, sin relación de esquema con estos.
 import Departamento from './Departamento';
 import CentroFormacion from './CentroFormacion';
 import NivelFormacion from './NivelFormacion';
@@ -67,8 +73,9 @@ PaginaVersion.belongsTo(User, { as: 'revisor', foreignKey: 'revisorId', onDelete
 PaginaVersion.belongsTo(User, { as: 'publicador', foreignKey: 'publicadoPor', onDelete: 'SET NULL' });
 PaginaVersion.belongsTo(User, { as: 'autor', foreignKey: 'creadoPor', onDelete: 'SET NULL' });
 
-
-// Relaciones Observatorio
+// Catálogos del observatorio — foreignKey en snake_case porque los atributos de
+// estos modelos ya se llaman así (sin `field:` mapping, a diferencia del resto del
+// proyecto). Ver `026-observatorio-programas-sobresalientes`.
 Departamento.hasMany(CentroFormacion, { as: 'centros', foreignKey: 'departamento_id' });
 CentroFormacion.belongsTo(Departamento, { as: 'departamento', foreignKey: 'departamento_id' });
 
@@ -79,6 +86,11 @@ ProgramaSobresaliente.belongsTo(Departamento, { as: 'departamento', foreignKey: 
 ProgramaSobresaliente.belongsTo(CentroFormacion, { as: 'centro', foreignKey: 'centro_id' });
 ProgramaSobresaliente.belongsTo(NivelFormacion, { as: 'nivelFormacion', foreignKey: 'nivel_formacion_id' });
 ProgramaSobresaliente.belongsTo(ProgramaFormacion, { as: 'programa', foreignKey: 'programa_id' });
+
+// Auditoría de cargas de "Actualizaciones" (nuestra, sin relación de esquema con
+// las tablas de arriba — ver `027-cargas-datos`).
+CargaDatos.belongsTo(Archivo, { as: 'archivo', foreignKey: 'archivoId', onDelete: 'SET NULL' });
+CargaDatos.belongsTo(User, { as: 'subidoPorUsuario', foreignKey: 'subidoPor', onDelete: 'SET NULL' });
 
 export {
   User,
@@ -95,6 +107,7 @@ export {
   PaginaVersion,
   BloqueoEdicion,
   SubidaPendiente,
+  CargaDatos,
   Departamento,
   CentroFormacion,
   NivelFormacion,

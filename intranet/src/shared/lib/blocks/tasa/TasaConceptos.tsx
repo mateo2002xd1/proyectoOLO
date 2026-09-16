@@ -10,6 +10,8 @@ import type { ReactNode } from 'react';
 export interface ConceptoTasa {
   titulo?: ReactNode;
   descripcion?: ReactNode;
+  colorTitulo?: string;
+  colorDescripcion?: string;
   imagenSrc?: string;
   imagenAlt?: string;
 }
@@ -29,8 +31,18 @@ export function TasaConceptos({ conceptos = [] }: TasaConceptosProps) {
           className={`tasa-concept-row${indice % 2 === 1 ? ' reverse' : ''}`}
         >
           <div className="tasa-concept-text">
-            <h2 className="tasa-concept-title">{concepto.titulo}</h2>
-            <div className="tasa-concept-desc">{concepto.descripcion}</div>
+            <h2
+              className="tasa-concept-title"
+              style={concepto.colorTitulo ? { color: concepto.colorTitulo } : undefined}
+            >
+              {concepto.titulo}
+            </h2>
+            <div
+              className="tasa-concept-desc"
+              style={concepto.colorDescripcion ? { color: concepto.colorDescripcion } : undefined}
+            >
+              {concepto.descripcion}
+            </div>
           </div>
           {concepto.imagenSrc && (
             <div className="tasa-concept-visual">

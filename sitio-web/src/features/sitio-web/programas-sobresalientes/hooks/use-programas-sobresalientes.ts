@@ -1,19 +1,18 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
-import { PROGRAMAS_POR_DEPARTAMENTO } from '../lib/programas-sobresalientes-temporal';
-import { aplanarProgramas, filtrarProgramas } from '../lib/filtrar-programas';
-import type { FiltrosFormacion } from '../types';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { obtenerProgramasSobresalientesActual } from '../services/programas-sobresalientes.service';
+import { filtrarProgramas } from '../lib/filtrar-programas';
+import type { DepartamentoConDatos, FiltrosFormacion, RegistroConDepartamento } from '../types';
 
 const FILTROS_INICIALES: FiltrosFormacion = {
   codigoDane: 'todos',
-  centro: 'todos',
   nivelFormacion: 'todos',
   sexo: 'todos',
   programa: 'todos',
 };
 
-/** Sexo es un conjunto cerrado (`ENUM ('M','F')` en el esquema real): no depende de qué haya en el fixture. */
+/** Sexo es un conjunto cerrado (`CHECK IN ('M','F')` en el esquema real). */
 const SEXOS = ['M', 'F'];
 
 /** Filas por página en la tabla de resultados. */
@@ -22,16 +21,40 @@ const TAMANIO_PAGINA = 6;
 /**
  * Estado del panel de indicadores de formación por departamento.
  *
- * Todo es síncrono y en memoria: no hay `service` porque no hay API que
- * consultar (el esquema `formacion_indicadores` aún no existe en Postgres,
- * ver `lib/programas-sobresalientes-temporal.ts`). El filtrado se recalcula
- * con `useMemo` en vez de guardarse en estado para que los filtros
- * —departamento (mapa), centro, nivel de formación, sexo y programa— nunca
- * queden desincronizados entre sí.
+ * Los datos vienen de `GET /api/observatorio/programas-sobresalientes` (la tabla
+ * `programas_sobresalientes` completa — cada carga la vacía y recarga entera, así
+ * que esto siempre refleja la última que terminó bien) — ya no del fixture
+ * estático. El filtrado se
+ * recalcula con `useMemo` en vez de guardarse en estado para que los filtros
+ * —departamento (mapa), nivel de formación, sexo y programa— nunca queden
+ * desincronizados entre sí.
  */
 export function useProgramasSobresalientes() {
   const [filtros, setFiltros] = useState<FiltrosFormacion>(FILTROS_INICIALES);
   const [pagina, setPagina] = useState(1);
+  const [todosLosRegistros, setTodosLosRegistros] = useState<RegistroConDepartamento[]>([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Sin `setCargando(true)` al entrar: el estado ya nace en `true` y este efecto corre
+  // una sola vez (`[]`), así que ponerlo de nuevo era un render de más por nada.
+  useEffect(() => {
+    let cancelado = false;
+    obtenerProgramasSobresalientesActual()
+      .then((registros) => {
+        if (!cancelado) setTodosLosRegistros(registros);
+      })
+      .catch(() => {
+        if (!cancelado) setError('No se pudieron cargar los datos de formación. Intenta de nuevo más tarde.');
+      })
+      .finally(() => {
+        if (!cancelado) setCargando(false);
+      });
+    return () => {
+      cancelado = true;
+    };
+  }, []);
+
   /** Detecta un cambio de filtros durante el render, sin useEffect, para volver a la página 1. */
   const [filtrosAnteriores, setFiltrosAnteriores] = useState(filtros);
   if (filtrosAnteriores !== filtros) {
@@ -39,16 +62,15 @@ export function useProgramasSobresalientes() {
     setPagina(1);
   }
 
-  const todosLosRegistros = useMemo(() => aplanarProgramas(PROGRAMAS_POR_DEPARTAMENTO), []);
-
-  const departamentosConDatos = useMemo(
-    () =>
-      PROGRAMAS_POR_DEPARTAMENTO.map((departamento) => ({
-        codigoDane: departamento.codigoDane,
-        nombre: departamento.nombre,
-      })).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')),
-    [],
-  );
+  const departamentosConDatos = useMemo<DepartamentoConDatos[]>(() => {
+    const vistos = new Map<string, string>();
+    for (const registro of todosLosRegistros) {
+      if (!vistos.has(registro.codigoDane)) vistos.set(registro.codigoDane, registro.departamento);
+    }
+    return Array.from(vistos, ([codigoDane, nombre]) => ({ codigoDane, nombre })).sort((a, b) =>
+      a.nombre.localeCompare(b.nombre, 'es'),
+    );
+  }, [todosLosRegistros]);
 
   /** Registros del departamento activo (o de todos, si no hay ninguno elegido en el mapa). */
   const registrosDelDepartamento = useMemo(() => {
@@ -57,11 +79,6 @@ export function useProgramasSobresalientes() {
   }, [todosLosRegistros, filtros.codigoDane]);
 
   /** Cada select solo ofrece valores presentes en el departamento activo, para no llevar a un resultado vacío. */
-  const centrosDisponibles = useMemo(
-    () => Array.from(new Set(registrosDelDepartamento.map((r) => r.centro))).sort((a, b) => a.localeCompare(b, 'es')),
-    [registrosDelDepartamento],
-  );
-
   const nivelesDisponibles = useMemo(
     () => Array.from(new Set(registrosDelDepartamento.map((r) => r.nivelFormacion))).sort(),
     [registrosDelDepartamento],
@@ -97,14 +114,9 @@ export function useProgramasSobresalientes() {
     setFiltros((actual) => ({
       ...actual,
       codigoDane,
-      centro: 'todos',
       nivelFormacion: 'todos',
       programa: 'todos',
     }));
-  }, []);
-
-  const seleccionarCentro = useCallback((centro: string) => {
-    setFiltros((actual) => ({ ...actual, centro }));
   }, []);
 
   const seleccionarNivelFormacion = useCallback((nivelFormacion: string) => {
@@ -119,12 +131,11 @@ export function useProgramasSobresalientes() {
     setFiltros((actual) => ({ ...actual, programa }));
   }, []);
 
-  const limpiarFiltros = useCallback(() => setFiltros(FILTROS_INICIALES), []);
-
   return {
     filtros,
+    cargando,
+    error,
     departamentosConDatos,
-    centrosDisponibles,
     nivelesDisponibles,
     sexos: SEXOS,
     programasDisponibles,
@@ -134,10 +145,8 @@ export function useProgramasSobresalientes() {
     totalPaginas,
     irAPagina,
     seleccionarDepartamento,
-    seleccionarCentro,
     seleccionarNivelFormacion,
     seleccionarSexo,
     seleccionarPrograma,
-    limpiarFiltros,
   };
 }

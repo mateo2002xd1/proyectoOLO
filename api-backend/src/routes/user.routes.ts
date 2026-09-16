@@ -32,7 +32,7 @@ const administraOEsSuCuenta = marcarGuardia(
   (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) return res.status(401).json({ error: 'No autenticado' });
 
-    if (usuariosPolicies.puedeAdministrarUsuarios(req.user.role)) return next();
+    if (usuariosPolicies.puedeAdministrarUsuarios(req.user)) return next();
     if (esDueno(req.params.id, req.user.id)) return next();
 
     return res.status(403).json({ error: 'No tienes permisos para esta acción' });

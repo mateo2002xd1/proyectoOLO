@@ -386,7 +386,10 @@ function ModalAccionConMotivo({
     <dialog
       ref={dialogo}
       onClose={onCancelar}
-      onClick={(e) => {
+      // Usamos `onMouseDown` y no `onClick`: si el usuario selecciona texto
+      // dentro del diálogo y suelta el ratón fuera, el clic se contabiliza en
+      // el fondo y el diálogo se cerraba en mitad de la selección.
+      onMouseDown={(e) => {
         if (e.target === dialogo.current) onCancelar();
       }}
       className="m-auto w-full max-w-md rounded-xl border border-zinc-200 bg-white p-0 text-zinc-900 backdrop:bg-[#0f172a]/50 backdrop:backdrop-blur-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:text-[#f6f6f6]"

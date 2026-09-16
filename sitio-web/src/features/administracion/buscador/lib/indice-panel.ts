@@ -7,8 +7,10 @@
  * un destino es añadir una entrada aquí.
  *
  * **Solo se indexan rutas que existen.** El menú lateral enlaza además a
- * `/admin/dashboard/configuracion` y `/admin/dashboard/soporte`, que hoy no tienen
- * página; ofrecerlas aquí sería mandar a un 404 desde un resultado de búsqueda.
+ * `/admin/dashboard/configuracion`, que hoy no tiene página; ofrecerla aquí sería
+ * mandar a un 404 desde un resultado de búsqueda. `/admin/dashboard/soporte` era el
+ * otro caso, pero ya no: se repurpuso como `/admin/actualizaciones` (ver
+ * `features/administracion/actualizaciones/`).
  */
 
 export interface DestinoPanel {
@@ -166,6 +168,14 @@ export const DESTINOS_PANEL: DestinoPanel[] = [
     href: `${URL_INTRANET}/encuestas/calidad-de-formacion`,
     grupo: 'Intranet',
     sinonimos: ['encuestas', 'calidad de formacion', 'seguimiento laboral', 'empresarios'],
+  },
+  {
+    id: 'actualizaciones',
+    titulo: 'Actualizaciones',
+    descripcion: 'Carga de archivos que actualizan datos públicos del sitio.',
+    href: '/admin/actualizaciones',
+    grupo: 'Gestión',
+    sinonimos: ['excel', 'cargar', 'carga', 'programas sobresalientes', 'datos', 'soporte'],
   },
   {
     id: 'mi-perfil',

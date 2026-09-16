@@ -52,19 +52,19 @@ const PERMISOS_POR_ROL: Record<string, string[]> = {
   ],
 
   // Dirección y subdirección entran a la intranet y leen. No editan: así lo fija
-  // `paginas.policies.ts`, y el catálogo no debe contradecirlo.
-  Director: ['acceso.intranet'],
-  Subdirector: ['acceso.intranet'],
-  visitante_interno: ['acceso.intranet'],
+  // `paginas.policies.ts`, y el catálogo no debe contradecirlo. Comparten un único
+  // rol —tenían los mismos permisos siendo dos filas separadas, y se fundieron en
+  // una para que no se pudieran editar por separado desde el panel. Es también el
+  // único rol de solo-lectura de la intranet: `visitante_interno` cubría el mismo
+  // caso con una segunda fila y se retiró para no duplicarlo.
+  'Director/Subdirector': ['acceso.intranet'],
 };
 
 const ROLES_BASE = [
   { nombre: 'Superadmin', descripcion: 'Control total del sistema y acceso a todas las configuraciones', es_sistema: true },
   { nombre: 'Administrador', descripcion: 'Gestión de contenidos, usuarios, roles y autorizaciones', es_sistema: true },
   { nombre: 'Editor', descripcion: 'Edición y redacción de contenidos para revisión', es_sistema: true },
-  { nombre: 'Director', descripcion: 'Consulta ejecutiva y dashboards de dirección', es_sistema: true },
-  { nombre: 'Subdirector', descripcion: 'Consulta y seguimiento de indicadores', es_sistema: true },
-  { nombre: 'visitante_interno', descripcion: 'Acceso de solo lectura a la intranet institucional', es_sistema: true },
+  { nombre: 'Director/Subdirector', descripcion: 'Consulta ejecutiva de la intranet: dirección y subdirección', es_sistema: true },
 ];
 
 const consultar = async <T>(

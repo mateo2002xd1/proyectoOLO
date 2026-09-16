@@ -25,7 +25,7 @@ const administraOEsSuRol = marcarGuardia(
   (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) return res.status(401).json({ error: 'No autenticado' });
 
-    if (usuariosPolicies.puedeAdministrarSeguridad(req.user.role)) return next();
+    if (usuariosPolicies.puedeAdministrarSeguridad(req.user)) return next();
     if (esDueno(req.params.id, req.user.role_id)) return next();
 
     return res.status(403).json({ error: 'No tienes permisos para esta acción' });

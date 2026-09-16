@@ -52,9 +52,7 @@ const verificarPermisos = () => {
   comprobar("'Administrador' puede", auditoriaPolicies.puedeVer('Administrador'), true);
   comprobar("'administrador' (minúsculas) puede", auditoriaPolicies.puedeVer('administrador'), true);
   comprobar("'Editor' NO puede", auditoriaPolicies.puedeVer('Editor'), false);
-  comprobar("'Director' NO puede", auditoriaPolicies.puedeVer('Director'), false);
-  comprobar("'Subdirector' NO puede", auditoriaPolicies.puedeVer('Subdirector'), false);
-  comprobar("'visitante_interno' NO puede", auditoriaPolicies.puedeVer('visitante_interno'), false);
+  comprobar("'Director/Subdirector' NO puede", auditoriaPolicies.puedeVer('Director/Subdirector'), false);
   comprobar('sin rol NO puede', auditoriaPolicies.puedeVer(undefined), false);
 };
 
