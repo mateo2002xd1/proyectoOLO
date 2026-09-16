@@ -29,7 +29,12 @@ export function useRespaldos() {
     }
   };
 
+  // Lectura inicial del listado de respaldos: el `setState` real ocurre tras el `await`
+  // de `cargar`, no durante el render. La regla no distingue un caso del otro y aquí no
+  // hay alternativa sin subir la lectura al servidor. Ver §9 de
+  // 2-convenciones-del-proyecto.md.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     cargar(false);
   }, []);
 

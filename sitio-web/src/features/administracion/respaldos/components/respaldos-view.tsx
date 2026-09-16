@@ -41,6 +41,10 @@ export function RespaldosView() {
   const { registros, isLoading, isRefreshing, error, recargar } = useRespaldos();
   const [seleccionado, setSeleccionado] = useState<RegistroRespaldo | null>(null);
   const [modalDepurarAbierto, setModalDepurarAbierto] = useState(false);
+  // Contador de aperturas usado como `key` del modal de depuración: cambiarlo al abrir
+  // lo monta de cero, que es la forma de que los filtros y el resultado empiecen
+  // limpios sin un efecto que los borre después del primer pintado.
+  const [aperturaDepurar, setAperturaDepurar] = useState(0);
   const [filtros, setFiltros] = useState(FILTROS_VACIOS);
 
   const cambiarFiltro = (campo: keyof typeof FILTROS_VACIOS, valor: string) =>
@@ -96,7 +100,10 @@ export function RespaldosView() {
           )}
           <button
             type="button"
-            onClick={() => setModalDepurarAbierto(true)}
+            onClick={() => {
+              setAperturaDepurar((n) => n + 1);
+              setModalDepurarAbierto(true);
+            }}
             className="flex h-11 shrink-0 items-center gap-2 rounded-[16px] bg-red-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 active:bg-red-800"
           >
             <Trash2 size={16} />
@@ -245,13 +252,21 @@ export function RespaldosView() {
         </div>
       )}
 
+      {/*
+        `key` por versión seleccionada: cada respaldo estrena modal, así el error o el
+        éxito de la restauración anterior no se ve un instante al abrir el siguiente.
+        Con `'cerrado'` al no haber selección se evita además arrastrar ese estado
+        entre una apertura y la siguiente.
+      */}
       <VistaPreviaVersion
+        key={seleccionado?.id ?? 'cerrado'}
         registro={seleccionado}
         onCerrar={() => setSeleccionado(null)}
         onRestaurado={recargar}
       />
 
       <ModalDepurarVersiones
+        key={aperturaDepurar}
         abierto={modalDepurarAbierto}
         registros={registros}
         onCerrar={() => setModalDepurarAbierto(false)}

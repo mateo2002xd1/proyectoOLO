@@ -59,11 +59,9 @@ export function VistaPreviaVersion({
     if (!debeEstarAbierto && el.open) el.close();
   }, [registro, mostrarConfirmacion, mostrarBloqueo]);
 
-  useEffect(() => {
-    setErrorRestaurar(null);
-    setExitoRestaurar(false);
-    setRestaurando(false);
-  }, [registro]);
+  // El estado de la restauración (error, éxito, «restaurando») no se limpia con un
+  // efecto al cambiar de registro: `respaldos-view` monta este componente con una `key`
+  // por versión, así que cada respaldo abre un modal nuevo y ese estado ya nace vacío.
 
   async function handleIntentarRestaurar() {
     if (!registro) return;

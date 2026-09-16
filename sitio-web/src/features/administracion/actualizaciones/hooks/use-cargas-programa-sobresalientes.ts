@@ -38,7 +38,12 @@ export function useCargasProgramaSobresalientes() {
     }
   }, []);
 
+  // Lectura inicial del historial. La regla marca cualquier `setState` alcanzable desde
+  // un efecto, incluido el que ocurre *después* del `await` — y aquí no hay otra forma:
+  // este es un panel de cliente, el dato llega por red y el estado no puede existir
+  // antes que la respuesta. Ver §9 de 2-convenciones-del-proyecto.md.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void refrescar();
   }, [refrescar]);
 

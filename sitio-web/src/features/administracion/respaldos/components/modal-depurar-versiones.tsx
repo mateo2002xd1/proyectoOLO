@@ -90,11 +90,14 @@ export function ModalDepurarVersiones({
     ];
   }, [registros, filtros.ambito]);
 
-  // Ejecutar análisis dinámico con debounce
+  // Análisis dinámico con debounce: cada vez que cambian los filtros se pregunta al
+  // backend cuántas versiones se borrarían. El `setState` sale de esa respuesta, así que
+  // no hay estado inicial que lo evite. Ver §9 de 2-convenciones-del-proyecto.md.
   useEffect(() => {
     if (!abierto) return;
 
     let cancelado = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCargandoAnalisis(true);
     setErrorAnalisis(null);
 
@@ -123,22 +126,11 @@ export function ModalDepurarVersiones({
     };
   }, [abierto, filtros]);
 
-  // Resetear estado al abrir
-  useEffect(() => {
-    if (abierto) {
-      setConfirmando(false);
-      setEjecutando(false);
-      setErrorEjecucion(null);
-      setResultadoExito(null);
-      setFiltros({
-        ambito: undefined,
-        paginaId: undefined,
-        fechaCorte: fechaMaximaPermitida,
-        conservarUltimoRespaldo: true,
-      });
-    }
-  }, [abierto, fechaMaximaPermitida]);
-
+  // No hay efecto que resetee el estado al abrir: el padre cambia la `key` en cada
+  // apertura y este componente se monta de cero, con los `useState` de arriba —que ya
+  // son exactamente los valores del reset— y con `fechaMaximaPermitida` recalculada al
+  // día de hoy, que el efecto anterior no hacía (su `useMemo` sin dependencias se
+  // quedaba con la fecha del primer montaje).
   if (!abierto) return null;
 
   const handleEjecutar = async () => {

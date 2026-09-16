@@ -326,7 +326,9 @@ export function RevisionQueueView() {
         </div>
       )}
 
+      {/* `key` por versión: cada página abre un modal nuevo, con el motivo en blanco. */}
       <ModalAccionConMotivo
+        key={`rechazar-${modalState.pagina?.id ?? 'cerrado'}`}
         abierto={modalState.tipo === 'rechazar'}
         titulo={modalState.pagina ? `Rechazar versión ${modalState.pagina.numeroVersion}` : ''}
         descripcion={`Se devolverá el borrador a su autor original (${modalState.pagina?.autor?.nombre || 'desconocido'}) para que lo corrija.`}
@@ -337,6 +339,7 @@ export function RevisionQueueView() {
       />
 
       <ModalAccionConMotivo
+        key={`eliminar-${modalState.pagina?.id ?? 'cerrado'}`}
         abierto={modalState.tipo === 'eliminar'}
         titulo={modalState.pagina ? `Eliminar versión ${modalState.pagina.numeroVersion} de /${modalState.pagina.slug}` : ''}
         descripcion="Se descarta el trabajo sin publicar. Si es la única versión de la página, la próxima edición empezará de nuevo desde la versión 1."
@@ -371,11 +374,13 @@ function ModalAccionConMotivo({
   const dialogo = useRef<HTMLDialogElement>(null);
   const [motivo, setMotivo] = useState('');
 
+  // Solo abre y cierra el `<dialog>`; no vacía `motivo`. De eso se encarga la `key` por
+  // página que pone el padre: cada versión estrena modal y el campo nace vacío, en vez
+  // de mostrar durante un frame el motivo escrito para la página anterior.
   useEffect(() => {
     const el = dialogo.current;
     if (!el) return;
     if (abierto) {
-      setMotivo('');
       if (!el.open) el.showModal();
     } else if (el.open) {
       el.close();
