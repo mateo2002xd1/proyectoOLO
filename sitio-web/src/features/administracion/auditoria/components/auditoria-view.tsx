@@ -5,9 +5,10 @@ import { CustomSelect } from '@/shared/ui/molecules/custom-select';
 import { DatePicker } from '@/shared/ui/molecules/date-picker';
 import { Paginador } from '@/shared/ui/molecules/paginador';
 import { DetalleRegistro } from './detalle-registro';
-import { Download, AlertCircle, Eye } from 'lucide-react';
+import { ModalDepurarAuditoria } from './modal-depurar-auditoria';
+import { Eye, Trash2 } from 'lucide-react';
 import { useAuditoria } from '../hooks/use-auditoria';
-import { aCsv, descargarCsv, nombreDeArchivo } from '../lib/csv';
+
 import {
   COLOR_ACCION,
   ETIQUETA_ACCION,
@@ -21,12 +22,6 @@ import {
 // una sola banda de controles.
 const CLASE_BOTON =
   'h-11 rounded-[16px] border border-[#d0d5dd] px-4 text-sm font-medium text-zinc-700 transition hover:border-[#002237]/40 hover:bg-[#002237]/5 hover:text-[#002237] disabled:opacity-60 dark:border-[#2d3649] dark:text-zinc-200 dark:hover:bg-white/5 dark:hover:text-[#f6f6f6]';
-
-// Acción principal de la pantalla: mismo verde que «Crear Usuario», vía el token
-// `brand-interactive` y no un hex suelto (regla de `globals.css`). El resto de
-// botones sigue en neutro: si todo es primario, no hay jerarquía que leer.
-const CLASE_BOTON_PRIMARIO =
-  'h-11 rounded-[16px] bg-brand-interactive px-4 text-sm font-semibold text-white transition hover:bg-brand-interactive-hover disabled:opacity-60';
 
 /** Una línea por campo; se corta en la tabla y se lee completo en el detalle. */
 const resumen = (registro: RegistroAuditoria) =>
@@ -75,36 +70,14 @@ export function AuditoriaView() {
     limpiarFiltros,
     irAPagina,
     cambiarPorPagina,
-    obtenerParaExportar,
+    recargar,
   } = useAuditoria();
 
   const [seleccionado, setSeleccionado] = useState<RegistroAuditoria | null>(null);
-  const [exportando, setExportando] = useState(false);
-  const [aviso, setAviso] = useState<string | null>(null);
-
-  async function exportar() {
-    setExportando(true);
-    setAviso(null);
-    try {
-      const { registros: todos, truncado } = await obtenerParaExportar();
-      if (todos.length === 0) {
-        setAviso('No hay registros que exportar con los filtros actuales.');
-        return;
-      }
-      descargarCsv(nombreDeArchivo(), aCsv(todos));
-      if (truncado) {
-        setAviso(
-          `La exportación se limitó a los ${todos.length} registros más recientes. Acota el rango de fechas para incluir el resto.`,
-        );
-      }
-    } catch {
-      setAviso('No se pudo generar la exportación.');
-    } finally {
-      setExportando(false);
-    }
-  }
+  const [modalDepurarAbierto, setModalDepurarAbierto] = useState(false);
 
   return (
+
     <div className="p-6 lg:p-8">
       <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
@@ -116,14 +89,15 @@ export function AuditoriaView() {
         </div>
         <button 
           type="button" 
-          onClick={exportar} 
-          disabled={exportando} 
-          className={`${CLASE_BOTON_PRIMARIO} flex shrink-0 items-center gap-2 shadow-sm`}
+          onClick={() => setModalDepurarAbierto(true)} 
+          className="flex h-11 shrink-0 items-center gap-2 rounded-[16px] bg-red-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 active:bg-red-800"
         >
-          <Download size={16} />
-          {exportando ? 'Exportando…' : 'Exportar CSV'}
+          <Trash2 size={16} />
+          Depurar auditoría
         </button>
       </div>
+
+
 
       <div className="mb-4 flex flex-wrap items-end gap-3">
         <Campo etiqueta="Desde">
@@ -189,12 +163,6 @@ export function AuditoriaView() {
         )}
       </div>
 
-      {aviso && (
-        <div className="mb-4 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-200">
-          <AlertCircle className="mt-0.5 shrink-0" size={16} />
-          <p>{aviso}</p>
-        </div>
-      )}
 
       {error ? (
         <p className="text-sm text-red-600">{error}</p>
@@ -275,6 +243,19 @@ export function AuditoriaView() {
       )}
 
       <DetalleRegistro registro={seleccionado} usuarios={usuarios} onCerrar={() => setSeleccionado(null)} />
+
+      {modalDepurarAbierto && (
+        <ModalDepurarAuditoria
+          abierto={modalDepurarAbierto}
+          onCerrar={() => setModalDepurarAbierto(false)}
+          onExito={() => {
+            setModalDepurarAbierto(false);
+            recargar();
+          }}
+        />
+      )}
+
     </div>
   );
 }
+

@@ -34,6 +34,9 @@ export function useAuditoria() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [versionRecarga, setVersionRecarga] = useState(0);
+  const recargar = useCallback(() => setVersionRecarga((v) => v + 1), []);
+
   // Se descarta la respuesta si el componente se desmonta o si los filtros
   // cambian antes de que llegue: sin esto, una consulta lenta puede pisar el
   // resultado de otra más nueva.
@@ -59,7 +62,8 @@ export function useAuditoria() {
     return () => {
       cancelado = true;
     };
-  }, [filtros, pagina, porPagina]);
+  }, [filtros, pagina, porPagina, versionRecarga]);
+
 
   useEffect(() => {
     let cancelado = false;
@@ -128,5 +132,7 @@ export function useAuditoria() {
     irAPagina,
     cambiarPorPagina,
     obtenerParaExportar,
+    recargar,
   };
 }
+
