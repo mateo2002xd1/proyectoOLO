@@ -1,5 +1,6 @@
 import { Queue, Worker, Job } from 'bullmq';
 import { crearLoggerDeErrorConThrottle, getRedis } from './index';
+import { procesarCargaObservatorio } from '../../use-cases/observatorio/procesar-carga.usecase';
 
 // Misma conexión que `getRedis()` — ya se abre con `maxRetriesPerRequest: null`
 // porque BullMQ lo exige (ver el comentario en `./index`). Antes esto armaba su
@@ -13,7 +14,19 @@ export const heavyJobsQueue = new Queue('heavy-jobs', { connection });
 export const setupWorker = () => {
   const worker = new Worker('heavy-jobs', async (job: Job) => {
     console.log(`[Worker] Procesando trabajo asíncrono ${job.id}:`, job.name);
-    // Simular trabajo pesado
+
+    // Observatorio ("Programa + Sobresalientes"): parsear el Excel y hacer el
+    // vaciado+recarga transaccional no debe bloquear la respuesta HTTP de la
+    // subida — por eso corre aquí y no en el controller.
+    // `procesarCargaObservatorio` deja su propio resultado (completado/error)
+    // escrito en `cargas_datos`; el worker no necesita más.
+    if (job.name === 'importar-observatorio-excel') {
+      const { cargaId, rutaAbsoluta } = job.data as { cargaId: string; rutaAbsoluta: string };
+      await procesarCargaObservatorio(cargaId, rutaAbsoluta);
+      return { success: true, processedAt: new Date().toISOString() };
+    }
+
+    // Simular trabajo pesado (proof-of-concept original de la cola).
     await new Promise((resolve) => setTimeout(resolve, 5000));
     console.log(`[Worker] Trabajo asíncrono ${job.id} completado.`);
     return { success: true, processedAt: new Date().toISOString() };

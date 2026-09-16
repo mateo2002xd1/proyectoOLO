@@ -1,4 +1,5 @@
 import * as ExcelJS from 'exceljs';
+import { Transaction } from 'sequelize';
 import sequelize from '../../config/database';
 import {
   Departamento,
@@ -7,15 +8,36 @@ import {
   ProgramaFormacion,
   ProgramaSobresaliente,
 } from '../../infrastructure/db/models';
-import { Transaction } from 'sequelize';
+import { resolverCodigoDane } from './departamentos-dane';
 
 const MAX_ROWS_LIMIT = 100000;
+
+/** Nombre exacto de la única hoja que se carga — el archivo real trae 31 hojas en
+ * total: "Mujer" y "Hombre" (dataset crudo de cálculo de margen, no se cargan) y
+ * 28 hojas por departamento que repiten esta misma información partida por
+ * regional (verificadas fila por fila, redundantes, tampoco se cargan). */
+const HOJA_A_CARGAR = 'Superan el margen';
+
+/** Encabezados reales de la hoja, tal como los trae el Excel de SENA. */
+const COLUMNAS = {
+  regional: 'Regional',
+  centro: 'Centro',
+  nivel: 'Nivel de Formación',
+  programa: 'Programa',
+  sexo: 'Sexo',
+  certificados: 'Certificados',
+  vinculados: 'Vinculados',
+  tasaVinculacion: 'Tasa de vinculación',
+  salarioPromedio: 'Salario promedio',
+} as const;
 
 export interface ImportarExcelResult {
   exito: boolean;
   mensaje: string;
   estadisticas: {
     filasCargadas: number;
+    /** Filas del Excel que compartían centro+programa+sexo con otra y se sumaron en una sola. */
+    filasCombinadas: number;
     nuevosDepartamentos: number;
     nuevosCentros: number;
     nuevosProgramas: number;
@@ -23,238 +45,320 @@ export interface ImportarExcelResult {
   };
 }
 
-export const importarProgramasExcel = async (fileBuffer: any): Promise<ImportarExcelResult> => {
+export interface ProgresoImportacion {
+  /** 0-100. 0-60 es leer y validar el Excel; 60-100 es escribirlo en la base. */
+  porcentaje: number;
+  filasProcesadas: number;
+  filasTotales: number;
+}
+
+export type OnProgresoImportacion = (progreso: ProgresoImportacion) => void;
+
+/** Filas por lote al insertar en `programas_sobresalientes` — además de repartir el
+ * progreso entre 60 y 100%, evita mandar un único `INSERT` con decenas de miles de
+ * filas de golpe. */
+const TAMANO_LOTE_INSERCION = 2000;
+
+class ErrorDeFila extends Error {
+  constructor(fila: number, mensaje: string) {
+    super(`Fila ${fila}: ${mensaje}`);
+  }
+}
+
+const comoTexto = (celda: ExcelJS.Cell): string => (celda.text ?? '').toString().trim();
+
+const comoNumero = (celda: ExcelJS.Cell, fila: number, columna: string): number => {
+  const crudo = celda.type === ExcelJS.ValueType.Formula ? (celda as any).result : celda.text;
+  const numero = Number(String(crudo ?? '').replace(',', '.').replace('%', '').trim());
+  if (!Number.isFinite(numero)) {
+    throw new ErrorDeFila(fila, `la columna "${columna}" no es un número válido (llegó "${crudo}")`);
+  }
+  return numero;
+};
+
+/**
+ * Normaliza la tasa de vinculación a fracción (0-1), que es lo que exige el
+ * `CHECK` de `programas_sobresalientes` (`ck_sobresalientes_tasa`).
+ *
+ * El Excel puede traer el valor como porcentaje entero (90) o ya como fracción
+ * (0.9) según cómo esté formateada la celda — no hay forma de saberlo de
+ * antemano sin abrir el archivo real cada vez. Cualquier tasa de vinculación
+ * legítima en este dataset es mayor a 1 en su forma "porcentaje", así que la
+ * regla es segura: si el valor crudo es mayor a 1, se asume porcentaje y se
+ * divide entre 100; si no, ya viene como fracción.
+ */
+const normalizarTasa = (valorCrudo: number): number => (valorCrudo > 1 ? valorCrudo / 100 : valorCrudo);
+
+/**
+ * Carga el Excel de "Programa + sobresalientes": lee **solo** la hoja
+ * "Superan el margen", valida cada fila y reemplaza por completo
+ * `programas_sobresalientes` dentro de una única transacción (vaciar + recargar:
+ * si algo falla, no queda la tabla a medias ni con datos mezclados de dos cargas).
+ *
+ * Catálogos (`departamentos`, `centros_formacion`, `niveles_formacion`,
+ * `programas_formacion`) se resuelven por nombre exacto — no tienen columna de
+ * código — y se crean los que falten en la misma transacción.
+ */
+export const importarProgramasExcel = async (
+  fileBuffer: Buffer,
+  onProgreso?: OnProgresoImportacion
+): Promise<ImportarExcelResult> => {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.load(fileBuffer as any);
 
-  const worksheet = workbook.worksheets[0];
-  if (!worksheet) {
-    throw new Error('El archivo Excel no contiene hojas.');
+  const hoja = workbook.getWorksheet(HOJA_A_CARGAR);
+  if (!hoja) {
+    throw new Error(`No se encontró la hoja "${HOJA_A_CARGAR}" en el archivo.`);
   }
 
-  const rowCount = worksheet.rowCount;
-  if (rowCount > MAX_ROWS_LIMIT) {
+  if (hoja.rowCount > MAX_ROWS_LIMIT) {
     throw new Error(`El archivo excede el límite permitido de filas (${MAX_ROWS_LIMIT}).`);
   }
 
-  // 1. Leer y extraer únicos
-  const deptosSet = new Set<string>();
-  const nivelesSet = new Set<string>();
-  const centrosMap = new Map<string, string>(); 
-  const centrosSet = new Set<string>(); // "depto|centro"
-  const programasSet = new Set<string>(); // "nivel|programa"
+  // Total estimado para el loader: filas de datos antes de descartar las que
+  // marcan el fin del rango usado por Excel (ver el `continue` más abajo). Se
+  // conoce de una vez, así que el progreso de lectura (0-60%) no salta de total.
+  const filasTotalesEstimadas = Math.max(hoja.rowCount - 1, 1);
 
-  // Estructura para almacenar las filas validadas en memoria
-  const rowsData: any[] = [];
-
-  let headerRowIndex = 1;
-  const headerRow = worksheet.getRow(headerRowIndex);
-  let hasHeaders = false;
-  
-  // Buscar encabezados (por si hay filas vacías al inicio)
-  for (let i = 1; i <= Math.min(10, rowCount); i++) {
-    const row = worksheet.getRow(i);
-    const firstCell = row.getCell(1).text?.trim().toLowerCase();
-    if (firstCell === 'regional') {
-      headerRowIndex = i;
-      hasHeaders = true;
-      break;
-    }
-  }
-
-  if (!hasHeaders) {
-    throw new Error('No se encontraron las cabeceras requeridas (ej. "Regional" en la primera columna).');
-  }
-
-  // Procesar filas (saltando la cabecera)
-  worksheet.eachRow((row, rowNumber) => {
-    if (rowNumber <= headerRowIndex) return;
-
-    // A: Regional, B: Centro, C: Nivel de Formación, D: Programa, E: Sexo, F: Certificados, G: Vinculados, H: Tasa vinculación, I: Salario promedio
-    const regional = row.getCell(1).text?.trim();
-    const centro = row.getCell(2).text?.trim();
-    const nivel = row.getCell(3).text?.trim();
-    const programa = row.getCell(4).text?.trim();
-    const sexo = row.getCell(5).text?.trim().toUpperCase();
-    const certificados = parseInt(row.getCell(6).text || '0', 10);
-    const vinculados = parseInt(row.getCell(7).text || '0', 10);
-    
-    // Tasas y salarios pueden ser resultados de fórmulas o textos numéricos
-    let tasa_vinculacion = 0;
-    const tasaCell = row.getCell(8);
-    if (tasaCell.type === ExcelJS.ValueType.Formula) {
-      tasa_vinculacion = parseFloat(tasaCell.result?.toString() || '0');
-    } else {
-      tasa_vinculacion = parseFloat(tasaCell.text || '0');
-    }
-
-    let salario_promedio = 0;
-    const salarioCell = row.getCell(9);
-    if (salarioCell.type === ExcelJS.ValueType.Formula) {
-      salario_promedio = parseFloat(salarioCell.result?.toString() || '0');
-    } else {
-      salario_promedio = parseFloat(salarioCell.text || '0');
-    }
-
-    if (!regional || !centro || !nivel || !programa || !sexo) {
-      // Omitir filas vacías
-      return;
-    }
-
-    if (sexo !== 'M' && sexo !== 'F') {
-      throw new Error(`Error en fila ${rowNumber}: Sexo debe ser 'M' o 'F' (encontrado: ${sexo}).`);
-    }
-
-    if (isNaN(certificados) || isNaN(vinculados) || isNaN(tasa_vinculacion) || isNaN(salario_promedio)) {
-       throw new Error(`Error en fila ${rowNumber}: Existen valores numéricos inválidos.`);
-    }
-
-    const deptoNorm = regional;
-    const centroNorm = centro;
-    const nivelNorm = nivel;
-    const programaNorm = programa;
-
-    deptosSet.add(deptoNorm);
-    nivelesSet.add(nivelNorm);
-    centrosSet.add(`${deptoNorm}|${centroNorm}`);
-    programasSet.add(`${nivelNorm}|${programaNorm}`);
-
-    rowsData.push({
-      deptoNorm,
-      centroNorm,
-      nivelNorm,
-      programaNorm,
-      sexo,
-      certificados,
-      vinculados,
-      tasa_vinculacion,
-      salario_promedio
-    });
+  const filaEncabezado = hoja.getRow(1);
+  const indicePorColumna = new Map<string, number>();
+  filaEncabezado.eachCell((celda, indice) => {
+    indicePorColumna.set(celda.text?.toString().trim() ?? '', indice);
   });
 
-  if (rowsData.length === 0) {
-    throw new Error('El archivo Excel no contiene datos válidos para procesar.');
+  const columnaFaltante = Object.values(COLUMNAS).find((nombre) => !indicePorColumna.has(nombre));
+  if (columnaFaltante) {
+    throw new Error(`Falta la columna "${columnaFaltante}" en la hoja "${HOJA_A_CARGAR}".`);
   }
 
-  // 2. Transacción Atómica
-  const result = await sequelize.transaction(async (transaction: Transaction) => {
-    
+  const leer = (fila: ExcelJS.Row, columna: string) => fila.getCell(indicePorColumna.get(columna)!);
+
+  const deptosSet = new Set<string>();
+  const nivelesSet = new Set<string>();
+  const centrosSet = new Set<string>(); // "depto|centro"
+  const programasSet = new Set<string>(); // "nivel|programa"
+  const rowsData: {
+    depto: string; centro: string; nivel: string; programa: string; sexo: string;
+    certificados: number; vinculados: number; tasaVinculacion: number; salarioPromedio: number;
+  }[] = [];
+
+  for (let numeroFila = 2; numeroFila <= hoja.rowCount; numeroFila++) {
+    const fila = hoja.getRow(numeroFila);
+    const depto = comoTexto(leer(fila, COLUMNAS.regional));
+    if (fila.cellCount === 0 || !depto) continue; // fin del rango usado por Excel, no un dato
+
+    const centro = comoTexto(leer(fila, COLUMNAS.centro));
+    const nivel = comoTexto(leer(fila, COLUMNAS.nivel));
+    const programa = comoTexto(leer(fila, COLUMNAS.programa));
+    const sexo = comoTexto(leer(fila, COLUMNAS.sexo)).toUpperCase();
+
+    if (sexo !== 'M' && sexo !== 'F') {
+      throw new ErrorDeFila(numeroFila, `"Sexo" debe ser M o F (llegó "${sexo}")`);
+    }
+
+    const certificados = comoNumero(leer(fila, COLUMNAS.certificados), numeroFila, COLUMNAS.certificados);
+    const vinculados = comoNumero(leer(fila, COLUMNAS.vinculados), numeroFila, COLUMNAS.vinculados);
+    const tasaVinculacion = normalizarTasa(
+      comoNumero(leer(fila, COLUMNAS.tasaVinculacion), numeroFila, COLUMNAS.tasaVinculacion)
+    );
+    const salarioPromedio = comoNumero(leer(fila, COLUMNAS.salarioPromedio), numeroFila, COLUMNAS.salarioPromedio);
+
+    // Mismo `CHECK` que la base (`ck_sobresalientes_vinculados`) — se valida aquí
+    // también para que el error señale la fila exacta, no un fallo genérico de
+    // Postgres al insertar el lote completo.
+    if (vinculados > certificados) {
+      throw new ErrorDeFila(numeroFila, `"Vinculados" (${vinculados}) no puede superar a "Certificados" (${certificados})`);
+    }
+
+    deptosSet.add(depto);
+    nivelesSet.add(nivel);
+    centrosSet.add(`${depto}|${centro}`);
+    programasSet.add(`${nivel}|${programa}`);
+
+    rowsData.push({ depto, centro, nivel, programa, sexo, certificados, vinculados, tasaVinculacion, salarioPromedio });
+
+    // Cada 100 filas alcanza para que el loader se vea vivo sin llamar al
+    // callback (y de ahí escribir en la base) en cada una de hasta 100.000 filas.
+    if (onProgreso && (numeroFila % 100 === 0 || numeroFila === hoja.rowCount)) {
+      onProgreso({
+        porcentaje: Math.min(60, Math.round((numeroFila / filasTotalesEstimadas) * 60)),
+        filasProcesadas: rowsData.length,
+        filasTotales: filasTotalesEstimadas,
+      });
+    }
+  }
+
+  if (rowsData.length === 0) {
+    throw new Error(`La hoja "${HOJA_A_CARGAR}" no tiene filas de datos.`);
+  }
+
+  // El Excel real trae centro+programa+sexo repetido alguna vez (varias cohortes
+  // del mismo programa reportadas en filas separadas) — y `programas_sobresalientes`
+  // exige esa combinación única (`uq_sobresalientes_registro`). En vez de fallar la
+  // carga completa o descartar filas, se fusionan: certificados y vinculados se
+  // suman, la tasa se recalcula sobre esos totales y el salario se pondera por
+  // certificados — así no se pierde ningún dato, solo se consolida.
+  const filasAgregadas = new Map<
+    string,
+    { depto: string; centro: string; nivel: string; programa: string; sexo: string;
+      certificados: number; vinculados: number; salarioPonderado: number; filasOriginales: number }
+  >();
+  for (const fila of rowsData) {
+    const clave = `${fila.depto}|||${fila.centro}|||${fila.nivel}|||${fila.programa}|||${fila.sexo}`;
+    const existente = filasAgregadas.get(clave);
+    const salarioPonderado = fila.salarioPromedio * fila.certificados;
+    if (existente) {
+      existente.certificados += fila.certificados;
+      existente.vinculados += fila.vinculados;
+      existente.salarioPonderado += salarioPonderado;
+      existente.filasOriginales += 1;
+    } else {
+      filasAgregadas.set(clave, { ...fila, salarioPonderado, filasOriginales: 1 });
+    }
+  }
+
+  const filasFinales = Array.from(filasAgregadas.values()).map((f) => ({
+    depto: f.depto,
+    centro: f.centro,
+    nivel: f.nivel,
+    programa: f.programa,
+    sexo: f.sexo,
+    certificados: f.certificados,
+    vinculados: f.vinculados,
+    tasaVinculacion: f.certificados > 0 ? f.vinculados / f.certificados : 0,
+    salarioPromedio: f.certificados > 0 ? f.salarioPonderado / f.certificados : 0,
+  }));
+
+  const filasCombinadas = rowsData.length - filasFinales.length;
+
+  const resultado = await sequelize.transaction(async (transaction: Transaction) => {
     let nuevosDepartamentos = 0;
     let nuevosCentros = 0;
     let nuevosNiveles = 0;
     let nuevosProgramas = 0;
 
-    // --- A. Resolver Departamentos ---
-    const deptosMap = new Map<string, string>(); // norm -> id
+    // --- Departamentos ---
+    const deptosMap = new Map<string, string>(); // nombre -> id
     const deptosExistentes = await Departamento.findAll({ transaction });
-    deptosExistentes.forEach(d => deptosMap.set(d.nombre, d.id));
+    deptosExistentes.forEach((d: any) => deptosMap.set(d.nombre, d.id));
 
-    const deptosFaltantes = Array.from(deptosSet).filter(d => !deptosMap.has(d));
+    // Autocorrección: departamentos que ya existían sin `codigo_dane` (cargas
+    // anteriores a este fix, o creados a mano) se completan aquí si el nombre
+    // resuelve a uno conocido — sin esto, el mapa público nunca los colorea
+    // aunque sus datos sí estén cargados.
+    for (const d of deptosExistentes as any[]) {
+      if (!d.codigo_dane) {
+        const codigo = resolverCodigoDane(d.nombre);
+        if (codigo) await d.update({ codigo_dane: codigo }, { transaction });
+      }
+    }
+
+    const deptosFaltantes = Array.from(deptosSet).filter((d) => !deptosMap.has(d));
     if (deptosFaltantes.length > 0) {
       const creados = await Departamento.bulkCreate(
-        deptosFaltantes.map(nombre => ({ nombre })),
-        { transaction, returning: true }
+        deptosFaltantes.map((nombre) => ({ nombre, codigo_dane: resolverCodigoDane(nombre) })),
+        { transaction }
       );
-      creados.forEach(d => deptosMap.set(d.nombre, d.id));
+      creados.forEach((d: any) => deptosMap.set(d.nombre, d.id));
       nuevosDepartamentos = creados.length;
     }
 
-    // --- B. Resolver Niveles ---
-    const nivelesMap = new Map<string, string>(); // norm -> id
-    const nivelesExistentes = await NivelFormacion.findAll({ transaction });
-    nivelesExistentes.forEach(n => nivelesMap.set(n.nombre, n.id));
-
-    const nivelesFaltantes = Array.from(nivelesSet).filter(n => !nivelesMap.has(n));
+    // --- Niveles de formación ---
+    const nivelesMap = new Map<string, string>();
+    (await NivelFormacion.findAll({ transaction })).forEach((n: any) => nivelesMap.set(n.nombre, n.id));
+    const nivelesFaltantes = Array.from(nivelesSet).filter((n) => !nivelesMap.has(n));
     if (nivelesFaltantes.length > 0) {
-      const creados = await NivelFormacion.bulkCreate(
-        nivelesFaltantes.map(nombre => ({ nombre })),
-        { transaction, returning: true }
-      );
-      creados.forEach(n => nivelesMap.set(n.nombre, n.id));
+      const creados = await NivelFormacion.bulkCreate(nivelesFaltantes.map((nombre) => ({ nombre })), { transaction });
+      creados.forEach((n: any) => nivelesMap.set(n.nombre, n.id));
       nuevosNiveles = creados.length;
     }
 
-    // --- C. Resolver Centros ---
-    const centrosIdMap = new Map<string, string>(); // "deptoId|centroNorm" -> id
-    const centrosExistentes = await CentroFormacion.findAll({ transaction });
-    centrosExistentes.forEach(c => centrosIdMap.set(`${c.departamento_id}|${c.nombre}`, c.id));
-
-    const centrosFaltantesData: { departamento_id: string, nombre: string }[] = [];
-    Array.from(centrosSet).forEach(item => {
+    // --- Centros de formación ---
+    const centrosIdMap = new Map<string, string>(); // "deptoId|nombre" -> id
+    (await CentroFormacion.findAll({ transaction })).forEach((c: any) =>
+      centrosIdMap.set(`${c.departamento_id}|${c.nombre}`, c.id)
+    );
+    const centrosFaltantes: { departamento_id: string; nombre: string }[] = [];
+    for (const item of centrosSet) {
       const [depto, centro] = item.split('|');
-      const deptoId = deptosMap.get(depto)!;
-      const key = `${deptoId}|${centro}`;
+      const key = `${deptosMap.get(depto)}|${centro}`;
       if (!centrosIdMap.has(key)) {
-        centrosFaltantesData.push({ departamento_id: deptoId, nombre: centro });
-        centrosIdMap.set(key, 'PENDING'); 
+        centrosFaltantes.push({ departamento_id: deptosMap.get(depto)!, nombre: centro });
+        centrosIdMap.set(key, 'PENDIENTE');
       }
-    });
-
-    if (centrosFaltantesData.length > 0) {
-      const creados = await CentroFormacion.bulkCreate(centrosFaltantesData, { transaction, returning: true });
-      creados.forEach(c => centrosIdMap.set(`${c.departamento_id}|${c.nombre}`, c.id));
+    }
+    if (centrosFaltantes.length > 0) {
+      const creados = await CentroFormacion.bulkCreate(centrosFaltantes, { transaction });
+      creados.forEach((c: any) => centrosIdMap.set(`${c.departamento_id}|${c.nombre}`, c.id));
       nuevosCentros = creados.length;
     }
 
-    // --- D. Resolver Programas ---
-    const programasIdMap = new Map<string, string>(); // "nivelId|programaNorm" -> id
-    const programasExistentes = await ProgramaFormacion.findAll({ transaction });
-    programasExistentes.forEach(p => programasIdMap.set(`${p.nivel_formacion_id}|${p.nombre}`, p.id));
-
-    const programasFaltantesData: { nivel_formacion_id: string, nombre: string }[] = [];
-    Array.from(programasSet).forEach(item => {
+    // --- Programas de formación ---
+    const programasIdMap = new Map<string, string>(); // "nivelId|nombre" -> id
+    (await ProgramaFormacion.findAll({ transaction })).forEach((p: any) =>
+      programasIdMap.set(`${p.nivel_formacion_id}|${p.nombre}`, p.id)
+    );
+    const programasFaltantes: { nivel_formacion_id: string; nombre: string }[] = [];
+    for (const item of programasSet) {
       const [nivel, programa] = item.split('|');
-      const nivelId = nivelesMap.get(nivel)!;
-      const key = `${nivelId}|${programa}`;
+      const key = `${nivelesMap.get(nivel)}|${programa}`;
       if (!programasIdMap.has(key)) {
-        programasFaltantesData.push({ nivel_formacion_id: nivelId, nombre: programa });
-        programasIdMap.set(key, 'PENDING');
+        programasFaltantes.push({ nivel_formacion_id: nivelesMap.get(nivel)!, nombre: programa });
+        programasIdMap.set(key, 'PENDIENTE');
       }
-    });
-
-    if (programasFaltantesData.length > 0) {
-      const creados = await ProgramaFormacion.bulkCreate(programasFaltantesData, { transaction, returning: true });
-      creados.forEach(p => programasIdMap.set(`${p.nivel_formacion_id}|${p.nombre}`, p.id));
+    }
+    if (programasFaltantes.length > 0) {
+      const creados = await ProgramaFormacion.bulkCreate(programasFaltantes, { transaction });
+      creados.forEach((p: any) => programasIdMap.set(`${p.nivel_formacion_id}|${p.nombre}`, p.id));
       nuevosProgramas = creados.length;
     }
 
-    // 3. Vaciar hechos (Truncate & Reload)
+    // --- Hechos: vaciar y recargar completo ---
     await ProgramaSobresaliente.destroy({ where: {}, transaction });
 
-    // 4. Mapear y cargar nuevos hechos
-    const recordsToInsert = rowsData.map(row => {
-      const deptoId = deptosMap.get(row.deptoNorm)!;
-      const centroId = centrosIdMap.get(`${deptoId}|${row.centroNorm}`)!;
-      const nivelId = nivelesMap.get(row.nivelNorm)!;
-      const progId = programasIdMap.get(`${nivelId}|${row.programaNorm}`)!;
-
+    const registros = filasFinales.map((fila) => {
+      const departamentoId = deptosMap.get(fila.depto)!;
+      const nivelFormacionId = nivelesMap.get(fila.nivel)!;
       return {
-        departamento_id: deptoId,
-        centro_id: centroId,
-        nivel_formacion_id: nivelId,
-        programa_id: progId,
-        sexo: row.sexo,
-        certificados: row.certificados,
-        vinculados: row.vinculados,
-        tasa_vinculacion: row.tasa_vinculacion,
-        salario_promedio: row.salario_promedio
+        departamento_id: departamentoId,
+        centro_id: centrosIdMap.get(`${departamentoId}|${fila.centro}`)!,
+        nivel_formacion_id: nivelFormacionId,
+        programa_id: programasIdMap.get(`${nivelFormacionId}|${fila.programa}`)!,
+        sexo: fila.sexo,
+        certificados: fila.certificados,
+        vinculados: fila.vinculados,
+        tasa_vinculacion: fila.tasaVinculacion,
+        salario_promedio: fila.salarioPromedio,
       };
     });
 
-    await ProgramaSobresaliente.bulkCreate(recordsToInsert, { transaction });
+    onProgreso?.({ porcentaje: 60, filasProcesadas: 0, filasTotales: registros.length });
+
+    for (let inicio = 0; inicio < registros.length; inicio += TAMANO_LOTE_INSERCION) {
+      const lote = registros.slice(inicio, inicio + TAMANO_LOTE_INSERCION);
+      await ProgramaSobresaliente.bulkCreate(lote, { transaction });
+
+      const insertados = Math.min(inicio + TAMANO_LOTE_INSERCION, registros.length);
+      onProgreso?.({
+        porcentaje: 60 + Math.round((insertados / registros.length) * 40),
+        filasProcesadas: insertados,
+        filasTotales: registros.length,
+      });
+    }
 
     return {
       exito: true,
       mensaje: 'Base de datos actualizada con éxito',
       estadisticas: {
-        filasCargadas: recordsToInsert.length,
+        filasCargadas: registros.length,
+        filasCombinadas,
         nuevosDepartamentos,
         nuevosCentros,
         nuevosNiveles,
-        nuevosProgramas
-      }
+        nuevosProgramas,
+      },
     };
   });
 
-  return result;
+  return resultado;
 };
