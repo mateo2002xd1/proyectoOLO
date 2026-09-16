@@ -295,7 +295,10 @@ export function activarPestanaDeElemento(elemento: HTMLElement): boolean {
   let actual: HTMLElement | null = elemento;
 
   while (actual) {
-    const panel = actual.closest<HTMLElement>('[role="tabpanel"]');
+    // Anotado a mano: `actual` se reasigna con `panel.parentElement` más abajo, así que
+    // sin este tipo TS entra en una inferencia circular (TS7022) y `panel` cae a `any`
+    // implícito — que §4 de las convenciones prohíbe y rompía el `tsc` de la intranet.
+    const panel: HTMLElement | null = actual.closest<HTMLElement>('[role="tabpanel"]');
     if (!panel) break;
     panelesParaActivar.unshift(panel); // Guardar del más externo al más interno
     actual = panel.parentElement;
