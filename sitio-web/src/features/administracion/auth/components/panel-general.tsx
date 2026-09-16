@@ -37,9 +37,9 @@ import {
   ArchiveBoxIcon,
   BellIcon,
   ClipboardDocumentCheckIcon,
+  ArrowUpTrayIcon,
   HomeIcon,
   MagnifyingGlassIcon,
-  QuestionMarkCircleIcon,
 } from '@heroicons/react/20/solid';
 import { ThemeToggle } from '@/shared/ui/molecules/theme-toggle';
 import { Paginador } from '@/shared/ui/molecules/paginador';
@@ -93,8 +93,8 @@ function SidebarGroup({
         type="button"
         onClick={() => setOpen((v) => !v)}
         className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-base font-semibold transition [&>svg]:size-5 [&>svg]:shrink-0 ${isActive
-          ? 'bg-zinc-100 text-zinc-900 dark:bg-brand-interactive/20 dark:text-brand-interactive [&>svg]:text-zinc-900 dark:[&>svg]:text-brand-interactive'
-          : 'text-zinc-600 hover:bg-[#001631]/10 hover:text-zinc-900 dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive [&>svg]:text-zinc-500 dark:[&>svg]:text-slate-400'
+          ? 'bg-zinc-100 text-[#7DB728] dark:bg-brand-interactive/20 dark:text-brand-interactive [&>svg]:text-[#7DB728] dark:[&>svg]:text-brand-interactive'
+          : 'text-zinc-600 hover:bg-[#001631]/10 hover:text-[#7DB728] dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive [&>svg]:text-zinc-500 dark:[&>svg]:text-slate-400'
           }`}
         aria-expanded={open}
       >
@@ -170,6 +170,16 @@ const colorDiasRestantes = (dias: number) =>
       ? 'bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-200'
       : 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300';
 
+/** Contador rojo tipo campanita, para marcar cambios pendientes junto a un item del sidebar. */
+function ContadorSidebar({ cantidad }: { cantidad: number }) {
+  if (cantidad <= 0) return null;
+  return (
+    <span className="ml-auto flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+      {cantidad}
+    </span>
+  );
+}
+
 function ModalAlertas({
   abierto,
   onCerrar,
@@ -233,59 +243,55 @@ function ModalAlertas({
               No hay alertas pendientes en este momento.
             </p>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {cuentasPorVencer.map((a) => (
                 <div
                   key={a.userId || a.email}
-                  className="relative group block rounded-xl border border-amber-100 bg-amber-50/50 p-5 pr-14 dark:border-amber-900/30 dark:bg-amber-900/10"
+                  className="group flex h-11 w-full items-center gap-2 rounded-full border border-amber-200 bg-amber-50 pl-1.5 pr-2 dark:border-amber-900/40 dark:bg-amber-900/15"
                 >
+                  <span className="shrink-0 rounded-full bg-amber-200/80 px-2.5 py-1 text-xs font-semibold text-amber-900 dark:bg-amber-800/60 dark:text-amber-100">
+                    Por vencer
+                  </span>
+                  <p className="min-w-0 flex-1 truncate text-sm text-amber-800 dark:text-amber-200">
+                    <Link href="/admin/users" className="font-medium underline hover:no-underline">
+                      {a.email}
+                    </Link>
+                    {' '}vence en {a.daysLeft} día{a.daysLeft !== 1 ? 's' : ''}
+                  </p>
                   <button
                     onClick={() => onDismissCuenta(a.email)}
-                    className="absolute top-1/2 -translate-y-1/2 right-3 p-1.5 rounded-md text-amber-500 hover:bg-amber-100 dark:hover:bg-amber-900/50 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="flex size-7 shrink-0 items-center justify-center rounded-full text-amber-600 hover:bg-amber-200/70 dark:text-amber-300 dark:hover:bg-amber-900/50"
                     title="Marcar como solucionada"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-4">
                       <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                     </svg>
                   </button>
-                  <div className="min-w-0">
-                    <p className="truncate text-base font-semibold text-amber-800 dark:text-amber-200">
-                      Cuenta por vencer: {a.email}
-                    </p>
-                    <p className="mt-1 text-sm text-amber-700/80 dark:text-amber-300/70">
-                      Vence en {a.daysLeft} día{a.daysLeft !== 1 ? 's' : ''}
-                    </p>
-                  </div>
                 </div>
               ))}
 
               {enRevision.map((p) => (
                 <div
                   key={p.id}
-                  className="relative group block rounded-xl border border-blue-100 bg-blue-50/50 p-5 pr-14 dark:border-blue-900/30 dark:bg-blue-900/10"
+                  className="group flex h-11 w-full items-center gap-2 rounded-full border border-blue-200 bg-blue-50 pl-1.5 pr-2 dark:border-blue-900/40 dark:bg-blue-900/15"
                 >
+                  <span className="shrink-0 rounded-full bg-blue-200/80 px-2.5 py-1 text-xs font-semibold text-blue-900 dark:bg-blue-800/60 dark:text-blue-100">
+                    En revisión
+                  </span>
+                  <p className="min-w-0 flex-1 truncate text-sm text-blue-800 dark:text-blue-200">
+                    <Link href="/admin/revision" className="font-medium underline hover:no-underline">
+                      {p.titulo}
+                    </Link>
+                  </p>
                   <button
                     onClick={() => onDismissRevision(p.id)}
-                    className="absolute top-1/2 -translate-y-1/2 right-3 p-1.5 rounded-md text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/50 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="flex size-7 shrink-0 items-center justify-center rounded-full text-blue-600 hover:bg-blue-200/70 dark:text-blue-300 dark:hover:bg-blue-900/50"
                     title="Marcar como solucionada"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-4">
                       <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                     </svg>
                   </button>
-                  <div className="flex items-center gap-3">
-                    <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400">
-                      <ClipboardDocumentCheckIcon className="size-5" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-base font-semibold text-blue-800 dark:text-blue-200">
-                        Página en revisión
-                      </p>
-                      <p className="mt-1 truncate text-sm text-blue-700/80 dark:text-blue-300/70">
-                        {p.titulo}
-                      </p>
-                    </div>
-                  </div>
                 </div>
               ))}
             </div>
@@ -307,6 +313,7 @@ export function PanelGeneralLayout({
   className?: string;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isBuscarOpen, setIsBuscarOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isAlertasOpen, setIsAlertasOpen] = useState(false);
@@ -344,7 +351,6 @@ export function PanelGeneralLayout({
 
   return (
     <>
-      <ThemeToggle />
       <SidebarLayout
         className={className}
         isSidebarOpen={isMobileSidebarOpen}
@@ -364,6 +370,7 @@ export function PanelGeneralLayout({
               <NavbarItem onClick={() => setIsBuscarOpen(true)} aria-label="Buscar">
                 <MagnifyingGlassIcon />
               </NavbarItem>
+              <ThemeToggle />
               <NavbarItem onClick={() => setIsAlertasOpen(true)} aria-label="Notificaciones" className="relative cursor-pointer">
                 <BellIcon className="size-5 text-zinc-500 dark:text-zinc-400" />
                 {totalAlertas > 0 && !alertasVistas && (
@@ -408,7 +415,11 @@ export function PanelGeneralLayout({
             </SidebarHeader>
             <SidebarBody>
               <SidebarSection>
-                <SidebarItem href="/admin/dashboard" className="font-semibold">
+                <SidebarItem
+                  href="/admin/dashboard"
+                  current={pathname.startsWith('/admin/dashboard')}
+                  className="font-semibold"
+                >
                   <HomeIcon />
                   <SidebarLabel>Dashboard</SidebarLabel>
                 </SidebarItem>
@@ -436,34 +447,52 @@ export function PanelGeneralLayout({
                     </>
                   )}
                 </SidebarGroup>
-                <SidebarItem href="/admin/revision" className="font-semibold">
+                <SidebarItem
+                  href="/admin/revision"
+                  current={pathname.startsWith('/admin/revision')}
+                  className="font-semibold"
+                >
                   <ClipboardDocumentCheckIcon />
                   <SidebarLabel>Páginas en revisión</SidebarLabel>
+                  <ContadorSidebar cantidad={enRevision.length} />
                 </SidebarItem>
-                <SidebarItem href="/admin/auditoria" className="font-semibold">
+                <SidebarItem
+                  href="/admin/auditoria"
+                  current={pathname.startsWith('/admin/auditoria')}
+                  className="font-semibold"
+                >
                   <ShieldCheckIcon />
                   <SidebarLabel>Auditoría</SidebarLabel>
                 </SidebarItem>
-                <SidebarItem href="/admin/respaldos" className="font-semibold">
+                <SidebarItem
+                  href="/admin/respaldos"
+                  current={pathname.startsWith('/admin/respaldos')}
+                  className="font-semibold"
+                >
                   <ArchiveBoxIcon />
                   <SidebarLabel>Respaldos</SidebarLabel>
                 </SidebarItem>
               </SidebarSection>
               <SidebarSpacer />
               <SidebarSection>
-                <SidebarItem href="/admin/dashboard/soporte" className="font-semibold">
-                  <QuestionMarkCircleIcon />
-                  <SidebarLabel>Soporte</SidebarLabel>
+                <SidebarItem
+                  href="/admin/actualizaciones"
+                  current={pathname.startsWith('/admin/actualizaciones')}
+                  className="font-semibold"
+                >
+                  <ArrowUpTrayIcon />
+                  <SidebarLabel>Actualizaciones</SidebarLabel>
                 </SidebarItem>
               </SidebarSection>
             </SidebarBody>
 
-            <SidebarSection className="max-lg:hidden mx-2">
-              <SidebarItem onClick={() => setIsBuscarOpen(true)}>
+            <div className="max-lg:hidden mx-2 flex flex-row items-center gap-1">
+              <SidebarItem onClick={() => setIsBuscarOpen(true)} className="flex-1">
                 <MagnifyingGlassIcon />
                 <SidebarLabel>Buscar</SidebarLabel>
               </SidebarItem>
-            </SidebarSection>
+              <ThemeToggle className="shrink-0 flex size-9 items-center justify-center rounded-lg text-zinc-500 hover:bg-[#001631]/10 hover:text-zinc-900 dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive transition-colors [&>svg]:size-5" />
+            </div>
 
             <SidebarFooter className="max-lg:hidden flex flex-row items-center gap-1">
               <Dropdown className="flex-1 min-w-0">

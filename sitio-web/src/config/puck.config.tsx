@@ -28,13 +28,12 @@ import { Header } from '@/shared/lib/blocks/Header';
 import { Footer } from '@/shared/lib/blocks/Footer';
 import { IntranetTopbar } from '@/shared/lib/blocks/IntranetTopbar';
 import { IntranetHero } from '@/shared/lib/blocks/IntranetHero';
-import { ImportadorExcelBloque } from '@/shared/lib/blocks/ImportadorExcelBloque';
 import { defaultIdentidadVisual } from '@/features/identidad-visual/client';
 import { HeroBuscadorOcupaciones } from '@/features/sitio-web/buscador-ocupaciones';
+import { ProgramasSobresalientesView } from '@/features/sitio-web/programas-sobresalientes';
 import { EditorjsWrapper } from '@/features/paginas/components/editorjs-wrapper';
 import { ImageUploaderField } from '@/features/paginas/components/image-uploader-field';
 import { ArchivoUploaderField } from '@/features/paginas/components/archivo-uploader-field';
-import { ImportadorExcelUploaderField } from '@/features/paginas/components/importador-excel-uploader-field';
 import { Render, type Config, type Data } from '@puckeditor/core';
 import type { OutputData } from '@editorjs/editorjs';
 
@@ -110,13 +109,11 @@ const puckConfigBase: Config = {
         'PoliticaPrivacidadEncabezado',
         'VisorDocumentosNormativos',
         'CanalesAtencion',
+        'ProgramasSobresalientes',
       ],
     },
     'Texto e imagen': {
       components: ['TextoRico', 'ImagenDestacada'],
-    },
-    'Administración': {
-      components: ['ImportadorExcelBloque'],
     },
     'Botones y enlaces': {
       components: ['BotonPersonalizado', 'SeccionBotonesIcono'],
@@ -129,21 +126,6 @@ const puckConfigBase: Config = {
     },
   },
   components: {
-    ImportadorExcelBloque: {
-      label: 'Importador Excel',
-      fields: {
-        estadoImportacion: {
-          type: 'custom',
-          label: 'Importar Archivo Excel',
-          render: ({ value, onChange }) => (
-            <ImportadorExcelUploaderField value={value} onChange={onChange} />
-          ),
-        },
-      },
-      render: (props: any) => (
-        <ImportadorExcelBloque {...props} block={{ id: props.id || 'importador-excel' }} />
-      ),
-    },
     // Primitivos de maquetación compartidos (Flex / Space / SeccionPestanasLaterales)
     ...primitiveComponents,
     // Grid necesita el campo de imagen de esta app inyectado (su fondo sube
@@ -377,6 +359,15 @@ const puckConfigBase: Config = {
           colorFondo={colorFondo}
         />
       ),
+    },
+    // Sin campos a propósito (mismo caso que `Footer`): los datos no viven en el
+    // JSON de la página, viven en `formacion_sobresalientes` (Postgres). El
+    // Excel se carga desde "Actualizaciones" en el panel de administración —
+    // ver `features/administracion/actualizaciones/` — nunca desde este bloque.
+    // Este componente solo consulta y muestra; nunca sube ni modifica nada.
+    ProgramasSobresalientes: {
+      label: 'Programas + Sobresalientes (mapa por departamento)',
+      render: () => <ProgramasSobresalientesView />,
     },
     Services: {
       label: 'Servicios',
@@ -1207,7 +1198,6 @@ const BLOQUES_PAGINA_SITIO_DEFECTO: string[] = [
   'SeccionPestanasLaterales',
   'BotonPersonalizado',
   'SeccionBotonesIcono',
-  'ImportadorExcelBloque',
 ];
 
 const COMPONENTES_POR_SLUG: Record<string, string[]> = {
@@ -1230,7 +1220,6 @@ const COMPONENTES_POR_SLUG: Record<string, string[]> = {
     'SeccionPestanasLaterales',
     'BotonPersonalizado',
     'SeccionBotonesIcono',
-    'ImportadorExcelBloque',
   ],
   'politica-de-privacidad': ['PoliticaPrivacidadEncabezado', 'VisorDocumentosNormativos', 'CanalesAtencion'],
 };

@@ -11,7 +11,7 @@ interface SidebarProps {
 export function Sidebar({ children, className = '' }: SidebarProps) {
   return (
     <aside
-      className={`flex h-full w-64 flex-col rounded-tr-2xl rounded-br-2xl border-r border-zinc-200 bg-[#F3F3F3] dark:border-[#1e293b] dark:bg-[#131b2f] ${className}`}
+      className={`flex h-full w-72 flex-col rounded-tr-2xl rounded-br-2xl border-r border-zinc-200 bg-[#F3F3F3] dark:border-[#1e293b] dark:bg-[#0B1121] ${className}`}
     >
       {children}
     </aside>
@@ -72,8 +72,8 @@ export function SidebarItem({
 }: SidebarItemProps) {
   const baseClasses = `group flex items-center gap-3 rounded-lg px-3 py-2 text-base transition [&>svg]:size-5 [&>svg]:shrink-0 ${
     current
-      ? 'bg-zinc-100 font-semibold text-zinc-900 dark:bg-brand-interactive/20 dark:text-brand-interactive [&>svg]:text-zinc-900 dark:[&>svg]:text-brand-interactive'
-      : 'text-zinc-600 hover:bg-[#001631]/10 hover:text-zinc-900 dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive [&>svg]:text-zinc-500 dark:[&>svg]:text-slate-400 group-hover:[&>svg]:text-zinc-900 dark:group-hover:[&>svg]:text-brand-interactive'
+      ? 'bg-zinc-100 font-semibold text-[#7DB728] dark:bg-brand-interactive/20 dark:text-brand-interactive [&>svg]:text-[#7DB728] dark:[&>svg]:text-brand-interactive'
+      : 'text-zinc-600 hover:bg-[#001631]/10 hover:text-[#7DB728] dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive [&>svg]:text-zinc-500 dark:[&>svg]:text-slate-400 group-hover:[&>svg]:text-[#7DB728] dark:group-hover:[&>svg]:text-brand-interactive'
   } ${className}`;
 
   if (href) {
