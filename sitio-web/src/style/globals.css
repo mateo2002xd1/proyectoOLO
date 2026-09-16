@@ -417,24 +417,78 @@
 /* --- Header --- */
 .olo-gov-banner {
   width: 100%;
-  display: flex;
-  justify-content: center;
   background-color: #0943B5;
-  overflow: hidden;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1001;
 }
 
-.olo-gov-banner svg,
-.olo-gov-banner img {
+.olo-gov-banner-container {
   width: 100%;
   max-width: 1920px;
-  height: auto;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 clamp(16px, 4vw, 40px);
+  box-sizing: border-box;
+}
+
+.olo-gov-banner-brand {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  line-height: 0;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+.olo-gov-banner-brand:hover {
+  opacity: 0.85;
+}
+
+.olo-gov-banner-brand svg {
+  height: 20px;
+  width: auto;
   display: block;
 }
 
-/* Solo aplica a la imagen subida desde el editor: el SVG de respaldo ya define
-   su propio recorte en el `viewBox` y no necesita `object-fit`. */
-.olo-gov-banner img {
-  object-fit: cover;
+.olo-gov-banner-edit {
+  display: flex;
+  align-items: center;
+  color: white;
+  text-decoration: none;
+  font-size: 13px;
+  opacity: 0.9;
+  transition: opacity 0.2s ease;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.olo-gov-banner-edit:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+.olo-gov-banner-custom-img {
+  max-height: 32px;
+  width: auto;
+  object-fit: contain;
+}
+
+@media (max-width: 640px) {
+  .olo-gov-banner {
+    height: 36px;
+  }
+  .olo-gov-banner-edit {
+    font-size: 11px;
+  }
+  .olo-gov-banner-brand svg {
+    height: 18px;
+  }
 }
 
 .olo-header {
