@@ -17,7 +17,29 @@ import { ResultadosProgramasSobresalientes } from './resultados-programas-sobres
  * en el panel de administración) — de solo lectura: este componente nunca sube
  * ni modifica nada.
  */
-export function ProgramasSobresalientesView() {
+export interface ProgramasSobresalientesViewProps {
+  mostrarTitulo?: boolean;
+  titulo?: string;
+  alineacionTitulo?: 'izquierda' | 'centro' | 'derecha';
+  colorTitulo?: string;
+  mostrarDescripcion?: boolean;
+  descripcion?: string;
+  alineacionDescripcion?: 'izquierda' | 'centro' | 'derecha';
+  colorDescripcion?: string;
+  ocultarEncabezado?: boolean;
+}
+
+export function ProgramasSobresalientesView({
+  mostrarTitulo = true,
+  titulo = 'Programas + sobresalientes SENA',
+  alineacionTitulo = 'centro',
+  colorTitulo,
+  mostrarDescripcion = true,
+  descripcion,
+  alineacionDescripcion = 'centro',
+  colorDescripcion,
+  ocultarEncabezado = false,
+}: ProgramasSobresalientesViewProps = {}) {
   const {
     filtros,
     cargando,
@@ -47,11 +69,49 @@ export function ProgramasSobresalientesView() {
       ? null
       : (departamentosConDatos.find((d) => d.codigoDane === filtros.codigoDane)?.nombre ?? null);
 
+  const claseAlineacionTitulo =
+    alineacionTitulo === 'izquierda'
+      ? 'text-left'
+      : alineacionTitulo === 'derecha'
+      ? 'text-right'
+      : 'text-center';
+
+  const claseAlineacionDescripcion =
+    alineacionDescripcion === 'izquierda'
+      ? 'text-left'
+      : alineacionDescripcion === 'derecha'
+      ? 'text-right'
+      : 'text-center';
+
+  const estiloTitulo = colorTitulo ? { color: colorTitulo } : undefined;
+  const estiloDescripcion = colorDescripcion ? { color: colorDescripcion } : undefined;
+
+  const hayCabecera =
+    !ocultarEncabezado &&
+    ((mostrarTitulo && Boolean(titulo)) || (mostrarDescripcion && Boolean(descripcion)));
+
   return (
     <div className="mx-auto flex max-w-[1920px] flex-col gap-6 px-4 py-10 sm:px-6 lg:px-8">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-[#001631] sm:text-3xl">Programas + sobresalientes SENA</h1>
-      </div>
+      {hayCabecera && (
+        <div className="flex flex-col gap-2">
+          {mostrarTitulo && titulo && (
+            <h1
+              className={`text-2xl font-bold sm:text-3xl text-[#001631] ${claseAlineacionTitulo}`}
+              style={estiloTitulo}
+            >
+              {titulo}
+            </h1>
+          )}
+          {mostrarDescripcion && descripcion && (
+            <p
+              className={`text-base text-[#475467] ${claseAlineacionDescripcion}`}
+              style={estiloDescripcion}
+            >
+              {descripcion}
+            </p>
+          )}
+        </div>
+      )}
 
       {error ? (
         <div className="rounded-[20px] border border-[#eaecf0] bg-white py-10 text-center" aria-live="polite">

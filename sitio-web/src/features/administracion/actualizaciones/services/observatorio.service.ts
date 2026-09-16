@@ -20,6 +20,7 @@ export async function subirExcelProgramaSobresalientes(archivo: File): Promise<{
   formData.append('file', archivo);
   const { data } = await api.post('/api/observatorio/cargas', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 60000,
   });
   return data;
 }

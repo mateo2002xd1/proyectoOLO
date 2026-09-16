@@ -9,7 +9,9 @@ import crypto from 'crypto';
 import { fromBuffer as detectarTipoDeArchivo } from 'file-type';
 import { validarArchivoSubido, fueRechazada } from '@olo/upload-policy';
 import { ObservatorioRepository as Repo } from '../../repositories/observatorio.repository';
+import { redisEstaListo } from '../../infrastructure/redis';
 import { heavyJobsQueue } from '../../infrastructure/redis/queue';
+import { procesarCargaObservatorio } from './procesar-carga.usecase';
 
 /**
  * El Excel de carga no se sirve nunca al público — a diferencia de `archivos` de
@@ -68,10 +70,27 @@ export async function iniciarCargaObservatorio(
   const carga = await Repo.crearCarga(archivo.get('id') as string, subidoPor);
   const cargaId = carga.get('id') as string;
 
-  await heavyJobsQueue.add('importar-observatorio-excel', {
-    cargaId,
-    rutaAbsoluta: path.join(process.cwd(), archivo.get('rutaRelativa') as string),
-  });
+  const rutaAbsoluta = path.join(process.cwd(), archivo.get('rutaRelativa') as string);
+
+  if (redisEstaListo()) {
+    try {
+      await heavyJobsQueue.add('importar-observatorio-excel', {
+        cargaId,
+        rutaAbsoluta,
+      });
+    } catch (error) {
+      console.warn('[observatorio] Error al encolar en BullMQ, procesando en segundo plano local:', error);
+      setImmediate(() => {
+        void procesarCargaObservatorio(cargaId, rutaAbsoluta);
+      });
+    }
+  } else {
+    // Si Redis no está disponible (ej. en desarrollo local sin Redis levantado),
+    // procesamos en segundo plano con setImmediate sin bloquear la respuesta HTTP.
+    setImmediate(() => {
+      void procesarCargaObservatorio(cargaId, rutaAbsoluta);
+    });
+  }
 
   return { cargaId };
 }
