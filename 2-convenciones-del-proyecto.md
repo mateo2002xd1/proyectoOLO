@@ -26,7 +26,7 @@
 > 1. **Elimina una clase de bug que solo aparece en producción.** Se desarrolla en Windows, cuyo sistema de archivos no distingue mayúsculas, y se despliega en Docker sobre Linux, que sí. Un `import './userProfile'` cuando el archivo es `UserProfile.tsx` compila en la máquina del desarrollador y falla al desplegar. Con una única grafía válida en minúsculas, el error no se puede introducir.
 > 2. **La regla queda sin excepciones que recordar.** Antes había que distinguir "componentes en Pascal, lógica en kebab", y en la práctica se violaba más de lo que se cumplía.
 >
-> La migración de los archivos existentes está planificada en `8-ciclo-editorial.md` §5, fase 5, con la advertencia de que Git en Windows no detecta por defecto un renombre que solo cambia mayúsculas.
+> **La migración se completó el 2026-09-16**: 72 archivos renombrados —los bloques Puck de las dos apps, las vistas de `login/`, los átomos y moléculas de `shared/ui/`, `blocks-renderer` y los 20 modelos Sequelize del backend— y 102 referencias reescritas. No queda ningún archivo `.ts`/`.tsx` en PascalCase. Los renombres se hicieron con `git mv` en dos pasos porque Git en Windows no detecta un cambio que solo altera mayúsculas. **La clave de cada bloque en `puck.config.tsx` no se tocó**: el contenido guardado en `paginas_versiones` lleva `type: "TasaVideo"` escrito dentro. Ver `8-ciclo-editorial.md` §5, fase 5.
 
 ### Idioma
 - **Dominio en español** (es un proyecto SENA): `Pagina`, `Contenido`, `guardarBorrador`, `usuarioActual`. Los nombres de negocio se leen igual que los requerimientos.
@@ -168,24 +168,27 @@ Estas convenciones no se vigilan a mano — se automatizan:
 - **Husky + lint-staged**: corren ESLint y Prettier en pre-commit sobre los archivos tocados, para que no entre código sin formatear.
 - **`tsc --noEmit`** en CI: el build falla si hay error de tipos.
 
-> Estado real (2026-09-16): `sitio-web` **no está limpio** — quedan **11 errores** y 31
-> advertencias. Los 11 se reparten en solo dos reglas, y ninguna se arregla archivo por
-> archivo:
->
-> - **8 × `react-hooks/set-state-in-effect`**: el patrón "pedir datos al montar" y el de
->   "resetear el estado del modal cuando se abre", repetidos por todo el panel. El segundo
->   se resuelve remontando con `key` desde el componente padre, así que es una decisión de
->   convención, no un parche suelto.
-> - **3 × `@next/next/no-html-link-for-pages`**: `<a href="/…">` en `Header.tsx` y
->   `Footer.tsx`. **Es deliberado**: ninguno de los bloques Puck usa `next/link`, porque la
->   navegación client-side dentro del lienzo del editor se llevaría al editor por delante.
->   Lo que corresponde es declarar la excepción en la config, no convertirlos.
->
-> `intranet` mantiene sus 9 advertencias de `@next/next/no-img-element` sobre imágenes
+> Estado real (2026-09-16): **las dos apps están en 0 errores.** `sitio-web` deja 31
+> advertencias y `intranet` 9, casi todas `@next/next/no-img-element` sobre imágenes
 > ráster estáticas, dejadas visibles a propósito hasta convertirlas a `next/image` con
 > verificación visual. **Prettier y Husky + lint-staged todavía no están instalados** en
 > ningún proyecto; el checklist de la sección 9 los da por hechos, pero hoy hay que
 > verificarlos a mano.
+>
+> **Dos excepciones quedaron declaradas, y conviene saber por qué:**
+>
+> - **`react-hooks/set-state-in-effect`** está silenciada línea a línea —nunca a nivel de
+>   regla— en los cinco efectos que arrancan una petición. La regla marca cualquier
+>   `setState` alcanzable desde un efecto, incluido el que ocurre *después* del `await`, y
+>   un dato que llega por red no puede estar en el estado inicial. Cada `eslint-disable`
+>   lleva el motivo escrito al lado; uno sin motivo es un error de revisión.
+>   El otro patrón que la disparaba —"vaciar el modal cuando se abre"— **sí se corrigió**:
+>   el padre cambia la `key` en cada apertura y el modal se monta limpio, sin efecto y sin
+>   el frame en que se veían los datos de la vez anterior.
+> - **`@next/next/no-html-link-for-pages`** está apagada para `src/shared/lib/blocks/**`
+>   en las dos configs. Los bloques Puck se pintan dentro del lienzo del editor, donde una
+>   navegación client-side se llevaría el editor por delante con el borrador sin guardar;
+>   la recarga del `<a href>` es ahí el fallo seguro.
 
 ---
 

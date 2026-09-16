@@ -5,6 +5,90 @@
 
 ---
 
+## sesión 16-09-2026: se cierran las cinco deudas que quedaban abiertas del repaso de código muerto
+
+Continuación del repaso de la víspera (commits `4e9e5e6`…`52d7975`: el BOLA del candado
+de página, `errores-api.ts`, la ref de `vigilante-sesion`, la copia vieja de
+`use-usuarios` y cuatro huérfanos de intranet). Aquella tanda dejó cinco cosas señaladas
+y **sin tocar**, cada una porque pedía una decisión antes que un parche. Esta sesión las
+cierra todas.
+
+**1. Los 8 `react-hooks/set-state-in-effect` de `sitio-web` no eran un solo problema.**
+Cuatro eran efectos que arrancan una petición: ahí el `setState` sale de la respuesta y
+no puede estar en el estado inicial, así que llevan `eslint-disable-next-line` **con el
+motivo escrito al lado** (`use-cargas-programa-sobresalientes`, `use-respaldos`,
+`modal-eliminar-seccion`, el debounce de `modal-depurar-versiones`). Los otros cuatro
+eran «vaciar el modal cuando se abre», y eso sí se corrigió de raíz: el padre cambia la
+`key` en cada apertura y el modal se monta limpio.
+
+| Modal | Padre que ahora pone la `key` | Forma de la `key` |
+|---|---|---|
+| `ModalNuevoEditor` (roles) | `roles-view.tsx` | Contador de aperturas — cambia al abrir, no al cerrar, para no cortar la animación de salida del `Alert` |
+| `ModalDepurarVersiones` | `respaldos-view.tsx` | Contador de aperturas |
+| `VistaPreviaVersion` | `respaldos-view.tsx` | `seleccionado?.id ?? 'cerrado'` |
+| `ModalAccionConMotivo` ×2 | `revision-queue-view.tsx` | `` `${accion}-${modalState.pagina?.id ?? 'cerrado'}` `` |
+
+Efecto lateral que no se buscaba pero se gana: `ModalDepurarVersiones` recalcula
+`fechaMaximaPermitida` en cada apertura. Antes su `useMemo` sin dependencias se quedaba
+con la fecha del primer montaje, así que en una pestaña abierta varios días la fecha de
+corte envejecía sola.
+
+**2. `@next/next/no-html-link-for-pages`**: excepción declarada para
+`src/shared/lib/blocks/**` en **las dos** configs de ESLint (§8 exige que no diverjan).
+Los bloques Puck se pintan dentro del lienzo del editor; un `<Link>` ahí navegaría del
+lado del cliente y se llevaría el editor por delante con el borrador sin guardar.
+
+**3. `ambito:verificar` fallaba, y no era código.** Su bloque C daba por hecho que la
+página `inicio` de intranet «arranca vacía», y esa página ya tiene contenido real en
+`en_revision`. La prueba medía el estado de la base, no el aislamiento por ámbito. Ahora
+se crea su propio dato (`__prueba-solo-en-sitio__`) en un solo ámbito y comprueba que no
+se filtra al otro, que es lo que siempre quiso demostrar. De paso se quitaron sus cuatro
+`as any` (§4). **Pasa.**
+
+**4. `listar-versiones-archivadas.usecase.ts` no era código muerto.** Lo consume
+`scripts/probar-versionamiento.ts`, un CLI real con `listar`/`estado`/`restaurar`. Lo que
+no tenía era entrada en `package.json`, así que nadie podía encontrarlo. Se registró como
+`probar:versionamiento` y se corrigió su texto de ayuda, que seguía diciendo
+`npx ts-node scripts/…`.
+
+**5. La migración a kebab-case (fase 5 de `8-ciclo-editorial.md`) se completó.**
+72 archivos renombrados y 102 referencias reescritas en 31 archivos. El alcance real fue
+mayor que los ~45 previstos: al recuento original le faltaban los 20 modelos Sequelize
+del backend. Los renombres van con `git mv` en dos pasos porque Git en Windows no detecta
+un cambio que solo altera mayúsculas.
+
+> **Lo que había que no romper, y no se rompió:** la **clave** de cada bloque en
+> `puck.config.tsx` (`TasaVideo`, `IntranetTopbar`…). El contenido ya guardado en
+> `paginas_versiones` lleva `type: "TasaVideo"` escrito dentro, y el renderizador
+> devuelve `null` ante un tipo desconocido en un punto y revienta en otro. Se comprobó
+> explícitamente que el diff de los dos `puck.config.tsx` **solo** contiene líneas de
+> `import`. Igual sigue en pie el selector `[data-puck-component*="IntranetTopbar"]` de
+> `globals.css`, que también depende de la clave y no del archivo.
+
+**De paso, intranet tenía 11 errores propios de ESLint que nadie había contado** (la nota
+de §8 solo hablaba de `sitio-web`). Se arreglaron: el `any` de `LoginView` sobraba porque
+`User` ya declara `permisos`; el de `PptxViewer` se cambió por una comprobación en tiempo
+de ejecución de `destroy()`, que la librería no declara en sus tipos; los tres
+`prefer-const` de `IntranetTopbar` eran tres `setTimeout` que solo se asignan una vez; y
+su `vigilante-sesion.tsx` tenía la misma escritura de ref en render que ya se había
+corregido en `sitio-web` la víspera —la copia que no se tocó cuando se tocó la otra, que
+es exactamente el motivo por el que existe `packages/`—.
+
+**Verificado, en este orden:** `tsc --noEmit` limpio en los cuatro proyectos
+(`api-backend`, `sitio-web`, `intranet`, `blocks-renderer`); ESLint **0 errores** en las
+dos apps (antes 11 y 11; quedan 31 y 9 advertencias, casi todas `no-img-element`);
+`npm run build` de producción correcto en las dos apps —que es donde aparecería el fallo
+de mayúsculas al desplegar sobre Linux—; y los cinco scripts del backend
+(`db:`, `propiedad:`, `permisos:`, `auditoria:`, `ambito:verificar`) en verde, los cinco,
+por primera vez.
+
+**Pendiente al cierre:** sigue sin contestar el volumen persistente para
+`api-backend/uploads/` en el compose de producción — hoy no monta ninguno, así que las
+subidas se pierden en cada redespliegue. Y la fase 6 (`packages/editor-core`) sigue sin
+empezar; la duplicación entre las dos apps no bajó, se movió.
+
+---
+
 ## sesión 15-09-2026 (3.ª parte): layout mapa+tabla del observatorio, y loader real de progreso para la carga de Excel
 
 **Layout de `/programas-sobresalientes`** (`sitio-web/src/features/sitio-web/programas-sobresalientes/`): pedido en varias vueltas — mapa a la izquierda fijo (sticky) al hacer scroll, más grande, sin cortarse con el header del sitio, y la tabla de resultados con sus 8 columnas visibles sin scroll horizontal. Encontrado en el camino: `.olo-header` es `sticky top:0` con `z-index:1000` y 90px de alto (`globals.css`), así que un `top` menor que eso queda tapado — se ajustó a `top-[104px]`. Y con `whitespace-nowrap` en los encabezados de la tabla (sin `table-layout:fixed`) el navegador expande las columnas para que el texto quepa en una línea, aunque haya `min-width` explícito — de ahí el scroll horizontal que se pidió quitar. Se resolvió dejando envolver el texto de encabezados y de "Formación Académica" (puede traer "Profundización Técnica"), y moviendo el punto donde aparece el layout de dos columnas de `lg` (1024px) a `2xl` (1536px): por debajo de eso, mapa arriba a ancho completo y tabla debajo a ancho completo (nunca compiten por espacio); de ahí para arriba, mapa fijo de 440px a la izquierda. Verificado sin scroll horizontal en 1024, 1280, 1366, 1440, 1536 y 1920px con capturas vía Chromium headless (CDP) — no había `chromium-cli` disponible en este entorno.

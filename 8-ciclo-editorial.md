@@ -296,6 +296,9 @@ Motivo adicional: `api/` colisiona con `app/api/`, que en este proyecto son los 
 
 ### 4.3 Nombre de archivo de componente: `kebab-case.tsx`
 
+Conteo del día en que se tomó la decisión, ya histórico — desde el 2026-09-16 la columna
+`PascalCase` es 0 en todas partes (ver fase 5 de §5):
+
 | Ubicación | PascalCase | kebab-case |
 |---|---|---|
 | `sitio-web` | 1 | 26 |
@@ -363,7 +366,7 @@ antes de aplicarla.
 | 2 | Repartir componentes y hooks por etapa | ❌ Sin empezar. `paginas/` sigue con `components/ hooks/ services/ lib/ types.ts` |
 | 3 | Extraer `model/` | ❌ Sin empezar |
 | 4 | Alinear la intranet | 🟡 Ocurrió otra cosa: pasó de 7 features a 2. Ver abajo |
-| 5 | Todo a kebab-case | 🟡 Parcial. Quedan las ocho vistas de `login/components` de la intranet y casi todos los bloques Puck de las dos apps |
+| 5 | Todo a kebab-case | ✅ Cerrada el 2026-09-16. 72 archivos renombrados, 102 referencias reescritas, cero archivos en PascalCase |
 | 6 | Extraer `packages/editor-core` | ❌ Sin empezar — aunque `packages/` creció a siete paquetes por otros motivos |
 
 **Lo que sí sigue siendo cierto es el diagnóstico.** El síntoma del §2.1 —tres públicos
@@ -458,21 +461,32 @@ lista de lo que otros pueden usar, no un volcado de todo lo que contiene.
 
 **Verificación:** `npx tsc --noEmit`, `npx eslint .`, `npm run build` dentro de `intranet/`.
 
-### Fase 5 — Unificar nombres de archivo a kebab-case — 🟡 parcial
+### Fase 5 — Unificar nombres de archivo a kebab-case — ✅ cerrada el 2026-09-16
 
-**Riesgo: medio, y es el paso más delicado en Windows.**
+**Riesgo: medio, y era el paso más delicado en Windows.**
 
-Lo que queda hoy en PascalCase, contado el 2026-08-21 — unos 45 archivos, y **no están
-repartidos al azar**, lo que hace la fase más fácil de lo que el número sugiere:
+Se renombraron **72 archivos** y se reescribieron **102 referencias** en 31 archivos. El
+alcance real fue mayor que los ~45 previstos el 2026-08-21, porque el recuento original
+solo miraba los frontends:
 
 | Dónde | Cuántos | Nota |
 |---|---|---|
-| `intranet/src/features/login/components/` | 8 | Las vistas del flujo de acceso. Es lo único que queda en PascalCase dentro de una feature; el resto de la intranet ya migró |
-| `*/src/shared/lib/blocks/` (las dos apps) | ~28 | Los bloques Puck. Ojo: el **nombre de archivo** se puede cambiar, pero la **clave del componente** en la config de Puck no — el JSON guardado lleva `type: "TasaVideo"` dentro |
-| `*/src/shared/ui/` (las dos apps) | ~7 | `GooLoader`, `RouteTransition`, `Carousel`, `PasswordField`… |
+| `intranet/src/features/login/components/` | 8 | Las vistas del flujo de acceso |
+| `*/src/shared/lib/blocks/` (las dos apps) | 28 | Los bloques Puck. El **nombre de archivo** cambió; la **clave del componente** en la config de Puck **no** — el JSON guardado lleva `type: "TasaVideo"` dentro |
+| `*/src/shared/ui/` (las dos apps) | 7 | `GooLoader`, `RouteTransition`, `Carousel`, `PasswordField`… |
+| `api-backend/src/infrastructure/db/models/` | 20 | No estaban en el recuento original, pero §1 de convenciones dice «todo archivo» sin excepción |
+| `packages/blocks-renderer/` | 1 | `ResaltadorDeBusqueda` |
 
-**La trampa de los bloques merece un aviso propio.** Renombrar `TasaVideo.tsx` a
-`tasa-video.tsx` es inofensivo. Renombrar la clave con la que se registra en
+**Cómo se verificó**, en este orden: `tsc --noEmit` en los cuatro proyectos, `eslint` en
+las dos apps (0 errores), `npm run build` de producción en ambas —que es donde aparecería
+el fallo de mayúsculas— y los cinco scripts de verificación del backend
+(`db:`, `propiedad:`, `permisos:`, `auditoria:`, `ambito:verificar`), que importan los
+modelos renombrados. Además se comprobó que el diff de los dos `puck.config.tsx`
+**solo** contiene líneas de `import`: ninguna clave de bloque cambió.
+
+**La trampa de los bloques merece un aviso propio, y sigue vigente aunque la fase esté
+cerrada** — vale para cualquier retoque futuro sobre un bloque. Renombrar `TasaVideo.tsx`
+a `tasa-video.tsx` es inofensivo, y es lo que se hizo. Renombrar la clave con la que se registra en
 `puck.config.tsx` **no**: el contenido ya guardado en `paginas_versiones` lleva
 `type: "TasaVideo"` escrito dentro, y el renderizador devuelve `null` ante un tipo
 desconocido en un punto y revienta en otro. Lo que el funcionario lee en el editor es el
@@ -481,14 +495,18 @@ una clave, es una migración sobre `paginas_versiones` — y esa migración tien
 filtrar por `ambito`, porque los dos frontends comparten nombres de bloque sin compartir
 el tipo de sus campos (pasó con la 015 y lo reparó la 018).
 
-Git en Windows no detecta por defecto un cambio que solo altera mayúsculas. Cada renombre debe hacerse con `git mv` explícito, en dos pasos si es necesario:
+Git en Windows no detecta por defecto un cambio que solo altera mayúsculas. Cada renombre
+se hizo con `git mv` explícito en dos pasos, que es lo que hay que repetir para cualquier
+renombre futuro:
 
 ```
 git mv InicioView.tsx tmp-inicio-view.tsx
 git mv tmp-inicio-view.tsx inicio-view.tsx
 ```
 
-Alternativa recomendada: activar `git config core.ignorecase false` en el repo antes de empezar la fase.
+Se hizo así, y **no** tocando `git config core.ignorecase`: el repo sigue en `true`. Los
+dos pasos bastan, son locales al renombre y no cambian cómo se comporta Git en la máquina
+de nadie más.
 
 ### Fase 6 — Extraer `packages/editor-core/`
 

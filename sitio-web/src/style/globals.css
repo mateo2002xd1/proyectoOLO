@@ -342,7 +342,7 @@
   }
 }
 
-/* Transición de vista, ver RouteTransition.tsx: qué se anima al pasar de una
+/* Transición de vista, ver route-transition.tsx: qué se anima al pasar de una
    sección a otra. El key={pathname} del componente monta un nodo nuevo por cada
    ruta, así que esto arranca solo, sin JS de por medio.
    `margin-top` y no `transform: translateY()` a propósito: cualquier `transform`
