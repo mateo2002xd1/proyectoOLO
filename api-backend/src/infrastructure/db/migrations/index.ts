@@ -27,6 +27,8 @@ import * as permisoPoliticaPrivacidadSitio from './023-permiso-politica-privacid
 import * as subidasPendientes from './024-subidas-pendientes';
 import * as visitasPaginas from './025-visitas-paginas';
 import * as observatorioProgramasSobresalientes from './026-observatorio-programas-sobresalientes';
+import * as cargasDatos from './027-cargas-datos';
+import * as cargasDatosProgreso from './028-cargas-datos-progreso';
 
 export interface Migracion {
   nombre: string;
@@ -64,6 +66,8 @@ const migraciones: Migracion[] = [
   subidasPendientes,
   visitasPaginas,
   observatorioProgramasSobresalientes,
+  cargasDatos,
+  cargasDatosProgreso,
 ];
 
 const TABLA_CONTROL = 'migraciones_aplicadas';
