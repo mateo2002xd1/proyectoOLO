@@ -41,8 +41,16 @@ export function VigilanteSesion({ activo = true, alExpirar }: VigilanteSesionPro
   // En refs y no en dependencias del efecto: `alExpirar` cambia de identidad en cada
   // render del editor, y meterlo en las dependencias reiniciaría el reloj a cada
   // pulsación de tecla — con lo que la sesión no caducaría nunca.
+  //
+  // La asignación va dentro de un efecto y no suelta en el cuerpo del componente:
+  // escribir una ref durante el render rompe las garantías de React (`react-hooks/refs`)
+  // y con renderizado concurrente puede quedarse con el valor de un render descartado.
+  // Aquí es seguro hacerlo después del pintado porque `alExpirarRef.current` solo se
+  // lee dentro de `expirar()`, que corre desde el temporizador y nunca durante el render.
   const alExpirarRef = useRef(alExpirar);
-  alExpirarRef.current = alExpirar;
+  useEffect(() => {
+    alExpirarRef.current = alExpirar;
+  }, [alExpirar]);
 
   const vigilanteRef = useRef<Vigilante | null>(null);
   const cerrandoRef = useRef(false);
