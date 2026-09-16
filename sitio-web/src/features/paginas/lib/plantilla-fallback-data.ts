@@ -1,4 +1,5 @@
 import { Data } from '@puckeditor/core';
+import { VALORES_PIE_POR_DEFECTO } from '@/shared/lib/blocks/footer';
 
 export const plantillaFallbackData: Data = {
   content: [
@@ -12,6 +13,7 @@ export const plantillaFallbackData: Data = {
       type: 'Footer',
       props: {
         id: 'footer-static',
+        ...VALORES_PIE_POR_DEFECTO,
       },
     },
   ],
