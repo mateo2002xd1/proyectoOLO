@@ -331,16 +331,44 @@ export function PanelGeneralLayout({
 
   useEffect(() => {
     let cancelado = false;
-    Promise.all([
-      listarEnRevision().catch(() => [] as PaginaEnRevision[]),
-      listarAlertasCaducidad().then((r) => r.alerts, () => [] as AlertaCaducidad[])
-    ]).then(([pendientes, alertas]) => {
+
+    const cargar = () => {
+      Promise.all([
+        listarEnRevision().catch(() => [] as PaginaEnRevision[]),
+        listarAlertasCaducidad().then((r) => r.alerts, () => [] as AlertaCaducidad[]),
+      ]).then(([pendientes, alertas]) => {
+        if (cancelado) return;
+        setEnRevision(pendientes);
+        setCuentasPorVencer(alertas);
+      });
+    };
+
+    cargar();
+
+    const handleRevisionActualizada = (e: Event) => {
       if (cancelado) return;
-      setEnRevision(pendientes);
-      setCuentasPorVencer(alertas);
-    });
-    return () => { cancelado = true; };
-  }, []);
+      const custom = e as CustomEvent<{ slug?: string; id?: string }>;
+      if (custom.detail?.slug || custom.detail?.id) {
+        setEnRevision((prev) =>
+          prev.filter((p) => {
+            if (custom.detail?.id && p.id === custom.detail.id) return false;
+            if (custom.detail?.slug && p.slug === custom.detail.slug) return false;
+            return true;
+          })
+        );
+      }
+      cargar();
+    };
+
+    window.addEventListener('olo:revision-actualizada', handleRevisionActualizada);
+    window.addEventListener('focus', cargar);
+
+    return () => {
+      cancelado = true;
+      window.removeEventListener('olo:revision-actualizada', handleRevisionActualizada);
+      window.removeEventListener('focus', cargar);
+    };
+  }, [pathname]);
 
   const totalAlertas = cuentasPorVencer.length + enRevision.length;
 

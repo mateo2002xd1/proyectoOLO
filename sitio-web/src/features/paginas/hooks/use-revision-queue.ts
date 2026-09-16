@@ -5,6 +5,7 @@ import {
   aprobarPagina,
   eliminarVersion,
   listarEnRevision,
+  notificarRevisionActualizada,
   rechazarPagina,
 } from '../services/paginas.service';
 import type { PaginaEnRevision, Ambito } from '../types';
@@ -54,6 +55,7 @@ export function useRevisionQueue() {
     async (slug: string, ambito: Ambito) => {
       await aprobarPagina(slug, ambito);
       await cargar();
+      notificarRevisionActualizada({ slug });
     },
     [cargar],
   );
@@ -62,6 +64,7 @@ export function useRevisionQueue() {
     async (slug: string, motivo: string, ambito: Ambito) => {
       await rechazarPagina(slug, motivo, ambito);
       await cargar();
+      notificarRevisionActualizada({ slug });
     },
     [cargar],
   );
@@ -70,6 +73,7 @@ export function useRevisionQueue() {
     async (slug: string, versionId: string, motivo: string | null, ambito: Ambito) => {
       await eliminarVersion(slug, versionId, motivo, ambito);
       await cargar();
+      notificarRevisionActualizada({ slug, id: versionId });
     },
     [cargar],
   );

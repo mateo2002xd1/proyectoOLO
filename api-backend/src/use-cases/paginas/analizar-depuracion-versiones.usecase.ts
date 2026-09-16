@@ -23,12 +23,11 @@ export interface ResultadoAnalisisDepuracion {
   totalPaginas: number;
   bytesEstimados: number;
   fechaCorteLimite: string;
-  limiteMaximo: number;
+  limiteMaximo?: number;
   paginasAfectadas: DetallePaginaDepuracion[];
 }
 
 const LIMITE_DIAS_SEGURIDAD = 30;
-export const LIMITE_REGISTROS_DEPURACION = 10;
 
 export async function analizarDepuracionVersiones(
   filtros: FiltrosAnalisisDepuracion
@@ -135,7 +134,6 @@ export async function analizarDepuracionVersiones(
     totalPaginas,
     bytesEstimados,
     fechaCorteLimite: fechaLimiteIso,
-    limiteMaximo: LIMITE_REGISTROS_DEPURACION,
     paginasAfectadas,
   };
 }

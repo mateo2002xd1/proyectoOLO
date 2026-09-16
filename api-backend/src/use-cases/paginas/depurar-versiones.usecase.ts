@@ -15,11 +15,11 @@ export interface ResultadoDepuracion {
   eliminadas: number;
   paginasAfectadas: number;
   bytesLiberados: number;
+  pesoTablaAntes?: number;
+  pesoTablaDespues?: number;
 }
 
 const LIMITE_DIAS_SEGURIDAD = 30;
-// Límite quemado solicitado para pruebas seguras
-export const LIMITE_REGISTROS_DEPURACION = 10;
 
 export async function depurarVersiones(
   params: ParametrosDepuracionVersiones,
@@ -80,7 +80,6 @@ export async function depurarVersiones(
         AND pv.creado_en <= :fechaCorte
         AND pv.id NOT IN (SELECT id FROM ultima_archivada)
       ORDER BY pv.creado_en ASC
-      LIMIT :limiteRegistros
       FOR UPDATE OF pv;
     `;
 
@@ -95,7 +94,6 @@ export async function depurarVersiones(
         ambito: params.ambito || null,
         paginaId: params.paginaId || null,
         fechaCorte: fechaCorteDate.toISOString(),
-        limiteRegistros: LIMITE_REGISTROS_DEPURACION,
       },
       type: QueryTypes.SELECT,
       transaction: tx,
@@ -122,10 +120,32 @@ export async function depurarVersiones(
       }
     }
 
+function formatearBytes(bytes: number): string {
+  if (!bytes || bytes <= 0) return '0 B';
+  const k = 1024;
+  const dm = 2;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+}
+
     const idsParaEliminar = filas.map((f) => f.version_id);
     const bytesTotales = filas.reduce((acc, f) => acc + Number(f.bytes), 0);
 
-    // 3. Ejecutar eliminación
+    // 3. Medir el peso total de los datos de la tabla antes de la depuración
+    const [pesoAntesRow] = await sequelize.query<{ bytes: string }>(
+      `SELECT COALESCE(SUM(
+        pg_column_size(pv.contenido) +
+        COALESCE(pg_column_size(pv.layout), 0) +
+        COALESCE(pg_column_size(pv.motivo_rechazo), 0) +
+        64
+      ), 0)::bigint AS bytes
+      FROM paginas_versiones pv;`,
+      { type: QueryTypes.SELECT, transaction: tx }
+    );
+    const bytesTablaAntes = Number(pesoAntesRow?.bytes || 0);
+
+    // 4. Ejecutar eliminación
     await sequelize.query(
       `DELETE FROM paginas_versiones WHERE id IN (:ids);`,
       {
@@ -135,7 +155,9 @@ export async function depurarVersiones(
       }
     );
 
-    // 4. Registrar en la bitácora de auditoría
+    const bytesTablaDespues = Math.max(0, bytesTablaAntes - bytesTotales);
+
+    // 5. Registrar en la bitácora de auditoría solo el peso antes y el peso resultante de la tabla
     if (contextoAuditoria) {
       await logAudit(
         {
@@ -145,16 +167,9 @@ export async function depurarVersiones(
           accion: 'eliminar',
           camposModificados: [
             {
-              campo: 'depuracion_versiones_antiguas',
-              antes: {
-                totalVersiones: idsParaEliminar.length,
-                paginasAfectadas: paginasUnicas.length,
-                bytesLiberados: bytesTotales,
-                fechaCorte: params.fechaCorte,
-                ambito: params.ambito ?? 'todos',
-                conservarUltimoRespaldo: conservarUltimo,
-              },
-              despues: null,
+              campo: 'peso_tabla',
+              antes: formatearBytes(bytesTablaAntes),
+              despues: formatearBytes(bytesTablaDespues),
             },
           ],
         },
@@ -166,6 +181,8 @@ export async function depurarVersiones(
       eliminadas: idsParaEliminar.length,
       paginasAfectadas: paginasUnicas.length,
       bytesLiberados: bytesTotales,
+      pesoTablaAntes: bytesTablaAntes,
+      pesoTablaDespues: bytesTablaDespues,
     };
   });
 }

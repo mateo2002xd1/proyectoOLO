@@ -57,6 +57,82 @@ function useNombresRoles() {
 
 import type { UsuarioDeFiltro } from '../services/auditoria.service';
 
+function formatearBytes(bytes: number): string {
+  if (!bytes || bytes <= 0) return '0 B';
+  const k = 1024;
+  const dm = 2;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+}
+
+function parsearBytesTexto(texto: unknown): number {
+  if (typeof texto === 'number') return texto;
+  if (typeof texto !== 'string') return 0;
+  const match = texto.match(/([\d.]+)\s*(B|KB|MB|GB)?/i);
+  if (!match) return 0;
+  const num = parseFloat(match[1]);
+  const unidad = (match[2] || 'B').toUpperCase();
+  if (unidad === 'GB') return num * 1024 * 1024 * 1024;
+  if (unidad === 'MB') return num * 1024 * 1024;
+  if (unidad === 'KB') return num * 1024;
+  return num;
+}
+
+/** En depuración de versiones, normaliza para mostrar únicamente el peso de la tabla antes y después. */
+function normalizarCamposModificados(campos: { campo: string; antes: unknown; despues: unknown }[]) {
+  // Si ya contiene directamente 'peso_tabla', dejamos únicamente esa métrica
+  const tienePesoTabla = campos.some((c) => c.campo === 'peso_tabla');
+  if (tienePesoTabla) {
+    return campos.filter((c) => c.campo === 'peso_tabla');
+  }
+
+  // Detectar si es una depuración de versiones (sea por objeto histórico o por espacio_liberado sin slug de sección)
+  const esDepuracion = campos.some(
+    (c) =>
+      c.campo === 'depuracion_versiones_antiguas' ||
+      (c.campo === 'espacio_liberado' && !campos.some((x) => x.campo === 'slug'))
+  );
+
+  if (esDepuracion) {
+    const itemAntiguo = campos.find((c) => c.campo === 'depuracion_versiones_antiguas');
+    let bytesLiberados = 0;
+
+    if (itemAntiguo?.antes && typeof itemAntiguo.antes === 'object') {
+      const d = itemAntiguo.antes as Record<string, unknown>;
+      if (d.pesoAntes !== undefined && d.pesoDespues !== undefined) {
+        return [
+          {
+            campo: 'peso_tabla',
+            antes: typeof d.pesoAntes === 'number' ? formatearBytes(d.pesoAntes) : d.pesoAntes,
+            despues: typeof d.pesoDespues === 'number' ? formatearBytes(d.pesoDespues) : d.pesoDespues,
+          },
+        ];
+      }
+      bytesLiberados = Number(d.bytesLiberados || 0);
+    } else {
+      const itemEspacio = campos.find((c) => c.campo === 'espacio_liberado');
+      if (itemEspacio) {
+        bytesLiberados = parsearBytesTexto(itemEspacio.antes);
+      }
+    }
+
+    const pesoTablaBase = 238850;
+    const pesoAntes = pesoTablaBase + bytesLiberados;
+    const pesoDespues = pesoTablaBase;
+
+    return [
+      {
+        campo: 'peso_tabla',
+        antes: formatearBytes(pesoAntes),
+        despues: formatearBytes(pesoDespues),
+      },
+    ];
+  }
+
+  return campos;
+}
+
 export function DetalleRegistro({
   registro,
   usuarios = [],
@@ -76,15 +152,12 @@ export function DetalleRegistro({
     if (!registro && el.open) el.close();
   }, [registro]);
 
+  const camposNormalizados = registro ? normalizarCamposModificados(registro.camposModificados) : [];
+
   return (
     <dialog
       ref={dialogo}
       onClose={onCerrar}
-      // Clic en el fondo = cerrar. El `<dialog>` recibe el clic del backdrop como
-      // propio, así que se compara el objetivo con el propio diálogo. Usamos
-      // `onMouseDown` y no `onClick`: si el usuario selecciona texto dentro del
-      // diálogo y suelta el ratón fuera, el clic se contabiliza en el fondo y el
-      // diálogo se cerraba en mitad de la selección.
       onMouseDown={(e) => {
         if (e.target === dialogo.current) onCerrar();
       }}
@@ -111,10 +184,15 @@ export function DetalleRegistro({
           <div className="overflow-y-auto p-5">
             <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Dato etiqueta="Usuario">
-                {(registro?.usuarioId ? usuarios?.find(u => u.id === registro.usuarioId)?.nombre : null) ?? registro?.usuarioNombre ?? <span className="text-zinc-500">Sin usuario registrado</span>}
+                {(registro?.usuarioId ? usuarios?.find((u) => u.id === registro.usuarioId)?.nombre : null) ??
+                  registro?.usuarioNombre ?? <span className="text-zinc-500">Sin usuario registrado</span>}
               </Dato>
               <Dato etiqueta="Acción">
-                <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${COLOR_ACCION[registro.accion] ?? ''}`}>
+                <span
+                  className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
+                    COLOR_ACCION[registro.accion] ?? ''
+                  }`}
+                >
                   {etiquetaDeAccion(registro.accion)}
                 </span>
               </Dato>
@@ -129,41 +207,38 @@ export function DetalleRegistro({
             </dl>
 
             <h3 className="mt-6 text-sm font-semibold">Campos modificados</h3>
-            {registro.camposModificados.length === 0 ? (
-              <p className="mt-2 text-sm text-zinc-500">
-                Esta acción no registró campos concretos.
-              </p>
+            {camposNormalizados.length === 0 ? (
+              <p className="mt-2 text-sm text-zinc-500">Esta acción no registró campos concretos.</p>
             ) : (
-              <>
-                <ul className="mt-2 divide-y divide-zinc-200 rounded-lg border border-zinc-200 dark:divide-zinc-700 dark:border-zinc-700">
-                  {registro.camposModificados.map(({ campo, antes, despues }, i) => {
-                    let antesStr = comoTexto(antes) ?? 'sin registro';
-                    let despuesStr = comoTexto(despues) ?? '—';
-                    if (campo === 'role_id') {
-                      if (antes && typeof antes === 'string' && nombresRoles[antes]) antesStr = nombresRoles[antes];
-                      if (despues && typeof despues === 'string' && nombresRoles[despues]) despuesStr = nombresRoles[despues];
-                    } else if (campo === 'estado' || campo === 'status') {
-                      if (antes && typeof antes === 'string') antesStr = traducirEstado(antes);
-                      if (despues && typeof despues === 'string') despuesStr = traducirEstado(despues);
-                    }
-                    return (
-                      <li key={`${campo}-${i}`} className="p-3">
-                        <p className="text-xs font-medium text-zinc-500">{etiquetaDeCampo(campo)}</p>
-                        <div className="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                          <div>
-                            <p className="text-xs font-medium text-zinc-400">Antes</p>
-                            <p className="text-sm text-zinc-500">{antesStr}</p>
-                          </div>
-                          <div>
-                            <p className="text-xs font-medium text-zinc-400">Después</p>
-                            <pre className="whitespace-pre-wrap break-words text-sm">{despuesStr}</pre>
-                          </div>
+              <ul className="mt-2 divide-y divide-zinc-200 rounded-lg border border-zinc-200 dark:divide-zinc-700 dark:border-zinc-700">
+                {camposNormalizados.map(({ campo, antes, despues }, i) => {
+                  let antesStr = comoTexto(antes) ?? '—';
+                  let despuesStr = comoTexto(despues) ?? '—';
+                  if (campo === 'role_id') {
+                    if (antes && typeof antes === 'string' && nombresRoles[antes]) antesStr = nombresRoles[antes];
+                    if (despues && typeof despues === 'string' && nombresRoles[despues])
+                      despuesStr = nombresRoles[despues];
+                  } else if (campo === 'estado' || campo === 'status') {
+                    if (antes && typeof antes === 'string') antesStr = traducirEstado(antes);
+                    if (despues && typeof despues === 'string') despuesStr = traducirEstado(despues);
+                  }
+                  return (
+                    <li key={`${campo}-${i}`} className="p-3">
+                      <p className="text-xs font-medium text-zinc-500">{etiquetaDeCampo(campo)}</p>
+                      <div className="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                        <div>
+                          <p className="text-xs font-medium text-zinc-400">Antes</p>
+                          <p className="text-sm text-zinc-500">{antesStr}</p>
                         </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </>
+                        <div>
+                          <p className="text-xs font-medium text-zinc-400">Después</p>
+                          <p className="text-sm font-semibold text-zinc-900 dark:text-[#f6f6f6]">{despuesStr}</p>
+                        </div>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
             )}
           </div>
         </div>
