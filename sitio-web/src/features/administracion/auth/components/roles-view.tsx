@@ -274,7 +274,12 @@ export default function RolesView() {
     setLoadingRolePerms(true);
     try {
       const rolePerms = await fetchRolePermissions(rol.id);
-      const ids = new Set<string>(rolePerms.map((rp: any) => rp.permission_id || rp.id));
+      // `permission_id` no está en `Permission`: la API devuelve la fila de
+      // `roles_permisos` en algunos caminos y el permiso ya resuelto en otros. Se leen
+      // los dos en vez de asumir uno, y el tipo lo dice en lugar de taparlo con `any`.
+      const ids = new Set<string>(
+        rolePerms.map((rp: Permission & { permission_id?: string }) => rp.permission_id ?? rp.id)
+      );
       setSelectedPermissionIds(new Set(ids));
       setOriginalPermissionIds(new Set(ids));
     } catch (err) {

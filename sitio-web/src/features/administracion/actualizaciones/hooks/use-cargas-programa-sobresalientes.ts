@@ -1,10 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { mensajeDeErrorApi } from '@/shared/lib/errores-api';
 import {
   eliminarCargaProgramaSobresalientes,
   listarCargasProgramaSobresalientes,
-  mensajeDeError,
   obtenerCargaProgramaSobresalientes,
   subirExcelProgramaSobresalientes,
 } from '../services/observatorio.service';
@@ -80,7 +80,7 @@ export function useCargasProgramaSobresalientes() {
         await refrescar();
         sondearHastaResolver(cargaId);
       } catch (err) {
-        setError(mensajeDeError(err, 'Error al subir el archivo.'));
+        setError(mensajeDeErrorApi(err, 'Error al subir el archivo.'));
       } finally {
         setSubiendo(false);
       }
@@ -100,7 +100,7 @@ export function useCargasProgramaSobresalientes() {
       try {
         await eliminarCargaProgramaSobresalientes(id);
       } catch (err) {
-        setError(mensajeDeError(err, 'No se pudo eliminar la carga.'));
+        setError(mensajeDeErrorApi(err, 'No se pudo eliminar la carga.'));
         await refrescar();
       }
     },

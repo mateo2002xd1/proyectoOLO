@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { ExternalLink, RotateCcw, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { codigoDeError, estadoHttp, mensajeDeErrorApi } from '@/shared/lib/errores-api';
 import type { RegistroRespaldo } from '../types';
 import { restaurarRespaldo, verificarBloqueo } from '../services/respaldos.service';
 import { ModalConfirmarRestauracion } from './modal-confirmar-restauracion';
@@ -76,7 +77,7 @@ export function VistaPreviaVersion({
       } else {
         setMostrarConfirmacion(true);
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error al verificar el bloqueo', err);
       // Fallback a mostrar la confirmación si la verificación falla
       setMostrarConfirmacion(true);
@@ -101,16 +102,14 @@ export function VistaPreviaVersion({
         onRestaurado?.();
         onCerrar();
       }, 1200);
-    } catch (err: any) {
-      // El backend seguirá protegiendo la acción por si el candado se adquiere 
+    } catch (err) {
+      // El backend seguirá protegiendo la acción por si el candado se adquiere
       // entre el click al botón verde y la confirmación final.
-      if (err?.response?.status === 409 && err?.response?.data?.code === 'PAGE_LOCKED') {
-        setErrorBloqueo(err.response.data.error || err.message);
+      if (estadoHttp(err) === 409 && codigoDeError(err) === 'PAGE_LOCKED') {
+        setErrorBloqueo(mensajeDeErrorApi(err, 'La página está siendo editada por otra persona.'));
         setMostrarBloqueo(true);
       } else {
-        setErrorRestaurar(
-          err?.response?.data?.error || err?.message || 'Error al restaurar la versión anterior.'
-        );
+        setErrorRestaurar(mensajeDeErrorApi(err, 'Error al restaurar la versión anterior.'));
       }
     } finally {
       setRestaurando(false);

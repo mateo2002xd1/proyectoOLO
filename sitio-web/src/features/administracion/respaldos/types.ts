@@ -13,6 +13,23 @@ export interface AutorRespaldo {
   email: string;
 }
 
+/**
+ * Candado de edición vigente sobre una página, tal como lo devuelve
+ * `GET /api/paginas/{slug}/bloqueo`.
+ *
+ * Campos en `snake_case` porque el backend sirve la fila de `bloqueos_edicion` tal
+ * cual (ver `FilaBloqueo` en `bloqueo-edicion.repository.ts`); las fechas llegan como
+ * texto ISO, no como `Date`, por pasar por JSON.
+ */
+export interface BloqueoVigente {
+  ambito: string;
+  slug: string;
+  usuario_id: string;
+  usuario_nombre: string;
+  adquirido_en: string;
+  expira_en: string;
+}
+
 export interface RegistroRespaldo {
   id: string;
   paginaId: string;

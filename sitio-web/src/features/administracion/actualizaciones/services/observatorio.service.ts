@@ -13,23 +13,6 @@ const api = axios.create({
   timeout: 15000,
 });
 
-/**
- * Mensaje que la API manda en `{ error }` para un fallo controlado, o el de respaldo.
- *
- * Vive aquí y no en el hook porque la forma del error es de axios, y §2.3 deja la
- * conversación con la API dentro del servicio: el hook no tiene por qué saber que
- * debajo hay un `response.data`. Nunca devuelve el error crudo — §6 pide mensaje en
- * español y sin filtrar internals.
- */
-export function mensajeDeError(error: unknown, porDefecto: string): string {
-  if (axios.isAxiosError(error)) {
-    const detalle = error.response?.data;
-    if (detalle && typeof detalle === 'object' && typeof (detalle as { error?: unknown }).error === 'string') {
-      return (detalle as { error: string }).error;
-    }
-  }
-  return porDefecto;
-}
 
 /** Sube el Excel y arranca la carga de inmediato — sin paso de aprobación (decisión de sesión). */
 export async function subirExcelProgramaSobresalientes(archivo: File): Promise<{ cargaId: string }> {
