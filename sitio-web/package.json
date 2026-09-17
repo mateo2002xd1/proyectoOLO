@@ -28,6 +28,7 @@
     "@puckeditor/core": "^0.22.0",
     "axios": "^1.18.1",
     "docx-preview": "^0.4.0",
+    "echarts": "^6.1.0",
     "file-type": "^22.0.2",
     "framer-motion": "^12.42.2",
     "handsontable": "^18.0.0",
