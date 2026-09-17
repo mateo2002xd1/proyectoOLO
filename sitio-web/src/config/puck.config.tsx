@@ -1137,12 +1137,11 @@ const puckConfigBase: Config = {
       defaultProps: {
         imagenSrc: '/docs/images/blog/image-1.jpg',
         imagenAlt: 'Ilustración del artículo',
-        titulo: 'Optimiza y agiliza tus procesos hoy mismo',
-        descripcion:
-          'En el entorno digital actual, impulsando una colaboración fluida entre equipos de desarrollo y operaciones.',
+        titulo: 'Ingresa texto',
+        descripcion: 'Ingresa descripción',
         enlace: '#',
         mostrarBoton: true,
-        textoBoton: 'Leer más',
+        textoBoton: 'Ingresa texto',
         enlaceBoton: '#',
         abrirEnNuevaPestana: false,
         ancho: 'fijo',
