@@ -1,9 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Handsontable from 'handsontable';
-import 'handsontable/styles/handsontable.min.css';
-import 'handsontable/styles/ht-theme-main.min.css';
+import { useState } from 'react';
+import { TrashIcon } from '@heroicons/react/20/solid';
 import { Alert, AlertActions, AlertDescription, AlertTitle } from '@/shared/ui/molecules/alert';
 import { Button } from '@/shared/ui/atoms/button';
 import type { CargaDatos } from '../types';
@@ -15,122 +13,104 @@ interface HistorialCargasGridProps {
 }
 
 const ETIQUETA_ESTADO: Record<CargaDatos['estado'], string> = {
-  procesando: 'Procesando...',
+  procesando: 'Procesando',
   completado: 'Completado',
   error: 'Error',
 };
 
-const COLUMNA_ACCIONES = 4;
+/** Mismo criterio que `COLOR_ACCION` en auditoría: la píldora nunca depende solo
+ *  del color, siempre lleva su etiqueta al lado (`9-accesibilidad.md`). */
+const COLOR_ESTADO: Record<CargaDatos['estado'], string> = {
+  completado: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200',
+  procesando: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200',
+  error: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200',
+};
 
 const etiquetaEstado = (carga: CargaDatos) =>
-  carga.estado === 'procesando' ? `Procesando... ${carga.progreso}%` : ETIQUETA_ESTADO[carga.estado];
+  carga.estado === 'procesando' ? `${ETIQUETA_ESTADO.procesando} · ${carga.progreso}%` : ETIQUETA_ESTADO[carga.estado];
 
 const formatearFecha = (iso: string | null) =>
   iso ? new Date(iso).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' }) : '—';
 
-/** Cuadrito "✕" para borrar. También disponible en "procesando": si el worker
- * de verdad la sigue escribiendo no pasa nada al borrarla (la actualización de
- * progreso solo deja de encontrar la fila), y es la única forma de quitar una
- * carga que quedó colgada ahí para siempre (por ejemplo, tras un reinicio del
- * servidor a mitad de camino). */
-const renderizarAcciones: Handsontable.renderers.BaseRenderer = (instance, td) => {
-  td.textContent = '✕';
-  td.style.textAlign = 'center';
-  td.style.fontWeight = '600';
-  td.style.color = '#dc2626';
-  td.style.cursor = 'pointer';
-  return td;
-};
-
 /**
- * Historial de cargas en una grilla — primer uso real de `handsontable`, que
- * estaba instalado (`sitio-web/package.json`) desde antes sin que ningún archivo
- * lo importara.
- *
- * Se usa la API vanilla (sin `@handsontable/react`, que no está instalado): se
- * instancia sobre un `<div>` por `ref` y se destruye al desmontar. Es de solo
- * lectura para los datos (`readOnly: true`) — la única interacción es la
- * columna "Acciones", resuelta a mano con `afterOnCellMouseDown` porque un
- * renderer de Handsontable no es un `<button>` de React con su propio `onClick`.
+ * Historial de cargas: tabla nativa con los mismos colores y densidad que el
+ * resto del panel (auditoría, actividad reciente). Reemplaza una primera
+ * versión con `handsontable` — una grilla de hoja de cálculo completa era
+ * mucho para 4 columnas de solo lectura, no tenía modo oscuro y su scroll
+ * interno recortaba la columna de borrar en tarjetas angostas.
  */
 export function HistorialCargasGrid({ cargas, onEliminar }: HistorialCargasGridProps) {
-  const contenedorRef = useRef<HTMLDivElement>(null);
-  const instanciaRef = useRef<Handsontable | null>(null);
-  const cargasRef = useRef<CargaDatos[]>(cargas);
   const [cargaAEliminar, setCargaAEliminar] = useState<CargaDatos | null>(null);
-
-  useEffect(() => {
-    cargasRef.current = cargas;
-  }, [cargas]);
-
-  // Se crea una sola vez (montar/desmontar) y desde entonces solo recibe datos
-  // nuevos con `loadData`. Recrearla en cada cambio de `cargas` —que pasa cada
-  // segundo mientras hay una carga "procesando"— destruiría y reconstruiría la
-  // grilla entera en cada sondeo.
-  useEffect(() => {
-    if (!contenedorRef.current) return;
-
-    const columnas = onEliminar
-      ? ['Fecha', 'Estado', 'Filas cargadas', 'Mensaje', '']
-      : ['Fecha', 'Estado', 'Filas cargadas', 'Mensaje'];
-    const anchos = onEliminar ? [160, 110, 110, 280, 36] : [160, 110, 110, 300];
-
-    instanciaRef.current = new Handsontable(contenedorRef.current, {
-      data: [],
-      colHeaders: columnas,
-      columns: onEliminar
-        ? [{}, {}, { type: 'numeric' }, {}, { renderer: renderizarAcciones }]
-        : [{}, {}, { type: 'numeric' }, {}],
-      colWidths: anchos,
-      readOnly: true,
-      disableVisualSelection: true,
-      licenseKey: 'non-commercial-and-evaluation',
-      height: 'auto',
-      width: '100%',
-      stretchH: 'all',
-      afterOnCellMouseDown: (_event, coords) => {
-        if (!onEliminar || coords.col !== COLUMNA_ACCIONES || coords.row < 0) return;
-        const carga = cargasRef.current[coords.row];
-        if (!carga) return;
-        setCargaAEliminar(carga);
-      },
-    });
-
-    return () => {
-      instanciaRef.current?.destroy();
-      instanciaRef.current = null;
-    };
-  }, [onEliminar]);
-
-  useEffect(() => {
-    const datos = cargas.map((c) => {
-      const fila = [
-        formatearFecha(c.creadoEn),
-        etiquetaEstado(c),
-        c.estado === 'error' ? '—' : c.filasProcesadas,
-        c.mensaje ?? '—',
-      ];
-      if (onEliminar) fila.push('✕');
-      return fila;
-    });
-    instanciaRef.current?.loadData(datos);
-  }, [cargas, onEliminar]);
 
   const confirmarEliminar = () => {
     if (cargaAEliminar) onEliminar?.(cargaAEliminar.id);
     setCargaAEliminar(null);
   };
 
+  if (cargas.length === 0) {
+    return (
+      <p className="rounded-lg border border-dashed border-zinc-200 px-4 py-6 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:text-[#94a3b8]">
+        Todavía no se ha hecho ninguna carga.
+      </p>
+    );
+  }
+
   return (
-    // El contenedor se renderiza siempre — si estuviera detrás de un `if
-    // (cargas.length === 0) return ...` el `ref` nunca llegaría a montarse a
-    // tiempo para el efecto que crea la instancia, y la grilla no aparecería
-    // luego aunque llegaran cargas.
     <div>
-      {cargas.length === 0 && (
-        <p className="mb-2 text-sm text-gray-500">Todavía no se ha hecho ninguna carga.</p>
-      )}
-      <div ref={contenedorRef} className="ht-theme-main" hidden={cargas.length === 0} />
+      <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-700">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-zinc-800/60 dark:text-zinc-400">
+            <tr>
+              <th scope="col" className="px-3 py-2 font-medium">Fecha</th>
+              <th scope="col" className="px-3 py-2 font-medium">Estado</th>
+              <th scope="col" className="px-3 py-2 font-medium">Filas</th>
+              <th scope="col" className="px-3 py-2 font-medium">Mensaje</th>
+              {onEliminar && (
+                <th scope="col" className="px-3 py-2 font-medium">
+                  <span className="sr-only">Acciones</span>
+                </th>
+              )}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
+            {cargas.map((carga) => (
+              <tr key={carga.id} className="transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/40">
+                <td className="whitespace-nowrap px-3 py-3 text-xs text-zinc-600 dark:text-zinc-300">
+                  {formatearFecha(carga.creadoEn)}
+                </td>
+                <td className="whitespace-nowrap px-3 py-3">
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium ${COLOR_ESTADO[carga.estado]}`}
+                  >
+                    {carga.estado === 'procesando' && (
+                      <span className="size-1.5 shrink-0 animate-pulse rounded-full bg-current" />
+                    )}
+                    {etiquetaEstado(carga)}
+                  </span>
+                </td>
+                <td className="whitespace-nowrap px-3 py-3 tabular-nums text-zinc-700 dark:text-zinc-300">
+                  {carga.estado === 'error' ? '—' : carga.filasProcesadas.toLocaleString('es-CO')}
+                </td>
+                <td className="px-3 py-3 text-zinc-500 dark:text-[#94a3b8]">
+                  {carga.mensaje ?? '—'}
+                </td>
+                {onEliminar && (
+                  <td className="whitespace-nowrap px-3 py-3 text-right">
+                    <button
+                      type="button"
+                      onClick={() => setCargaAEliminar(carga)}
+                      className="rounded-full p-1.5 text-zinc-400 transition-colors hover:bg-red-50 hover:text-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                      aria-label={`Eliminar la carga del ${formatearFecha(carga.creadoEn)}`}
+                    >
+                      <TrashIcon className="size-4" />
+                    </button>
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       <Alert open={cargaAEliminar !== null} onClose={(open) => !open && setCargaAEliminar(null)}>
         <AlertTitle>¿Eliminar esta carga?</AlertTitle>
