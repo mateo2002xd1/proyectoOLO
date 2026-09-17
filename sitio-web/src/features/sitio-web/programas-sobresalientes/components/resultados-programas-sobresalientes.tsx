@@ -24,10 +24,26 @@ const FORMATO_MONEDA = new Intl.NumberFormat('es-CO', {
 });
 
 /**
- * Resultados de la consulta: tabla de `formacion_indicadores` que cumple los
- * filtros activos (departamento, centro, formación académica, género y
- * programa), debajo del mapa y del buscador. Paginada para no obligar a
- * hacer scroll por decenas de filas.
+ * Resultados de la consulta: las filas de `programas_sobresalientes` que cumplen
+ * los filtros activos (departamento, modalidad, género y programa). Paginada para
+ * no obligar a hacer scroll por decenas de filas.
+ *
+ * Los encabezados usan el vocabulario del observatorio, no el del Excel de SENA:
+ *
+ * | Encabezado             | Campo              | Columna del Excel      |
+ * |------------------------|--------------------|------------------------|
+ * | Modalidad              | `nivelFormacion`   | Nivel de Formación     |
+ * | Egresados              | `certificados`     | Certificados           |
+ * | Vinculación %          | `tasaVinculacion`  | Tasa de vinculación    |
+ * | Promedio de Salario $  | `salarioPromedio`  | Salario promedio       |
+ *
+ * Los campos conservan el nombre del Excel a propósito: así el importador lo lee
+ * uno a uno y nadie tiene que recordar una traducción al subir el archivo. La
+ * traducción vive solo aquí, en la presentación.
+ *
+ * `vinculados` llega en cada fila pero no se muestra: la vinculación ya se lee en
+ * porcentaje, y la tasa se calcula a partir de ese dato al importar, así que se
+ * sigue guardando.
  */
 export function ResultadosProgramasSobresalientes({
   resultados,
@@ -43,7 +59,7 @@ export function ResultadosProgramasSobresalientes({
         <p className="text-sm font-medium text-[#344054]">
           No hay registros{departamentoActivo ? ` en ${departamentoActivo}` : ' para este filtro'}.
         </p>
-        <p className="mt-1 text-sm text-[#667085]">Prueba con otro departamento, centro, formación o programa.</p>
+        <p className="mt-1 text-sm text-[#667085]">Prueba con otro departamento, modalidad, género o programa.</p>
       </div>
     );
   }
@@ -65,10 +81,13 @@ export function ResultadosProgramasSobresalientes({
           <thead>
             <tr className="bg-[#f8f9fa]">
               <th className="px-3 py-2.5 text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
+                Departamento
+              </th>
+              <th className="px-3 py-2.5 text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
                 Centro
               </th>
               <th className="px-3 py-2.5 text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
-                Formación Académica
+                Modalidad
               </th>
               <th className="px-3 py-2.5 text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
                 Programa
@@ -77,28 +96,24 @@ export function ResultadosProgramasSobresalientes({
                 Género
               </th>
               <th className="px-3 py-2.5 text-right text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
-                Certificados
+                Egresados
+              </th>
+              {/* Espacio duro (` `) entre la palabra y la unidad: los encabezados
+                  pueden partirse en dos líneas —así la tabla no se ensancha—, pero el
+                  «%» o el «$» solos en una línea no se leen como parte del título. */}
+              <th className="px-3 py-2.5 text-right text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
+                {'Vinculación %'}
               </th>
               <th className="px-3 py-2.5 text-right text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
-                Vinculados
-              </th>
-              <th className="px-3 py-2.5 text-right text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
-                Tasa de Vinculación
-              </th>
-              <th className="px-3 py-2.5 text-right text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
-                Salario Promedio
+                {'Promedio de Salario $'}
               </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#eaecf0]">
             {resultados.map((registro) => (
               <tr key={registro.id} className="transition-colors hover:bg-[#f8f9fa]">
-                <td className="px-3 py-3 text-[#344054]">
-                  {registro.centro}
-                  {!departamentoActivo && (
-                    <span className="mt-0.5 block text-xs font-normal text-[#98a2b3]">{registro.departamento}</span>
-                  )}
-                </td>
+                <td className="px-3 py-3 text-[#344054]">{registro.departamento}</td>
+                <td className="px-3 py-3 text-[#344054]">{registro.centro}</td>
                 <td className="px-3 py-3 text-[#344054]">{registro.nivelFormacion}</td>
                 <td className="px-3 py-3 font-medium text-[#344054]">{registro.programa}</td>
                 <td className="px-3 py-3 text-[#344054] whitespace-nowrap">
@@ -106,9 +121,6 @@ export function ResultadosProgramasSobresalientes({
                 </td>
                 <td className="px-3 py-3 text-right tabular-nums text-[#344054]">
                   {registro.certificados.toLocaleString('es-CO')}
-                </td>
-                <td className="px-3 py-3 text-right tabular-nums text-[#344054]">
-                  {registro.vinculados.toLocaleString('es-CO')}
                 </td>
                 <td className="px-3 py-3 text-right font-semibold tabular-nums text-[#7DB828] whitespace-nowrap">
                   {registro.tasaVinculacion.toFixed(1)}%

@@ -17,7 +17,11 @@ interface FiltrosProgramasSobresalientesProps {
 }
 
 /**
- * Barra de filtros de consulta: Formación Académica + Género + Programa.
+ * Barra de filtros de consulta: Modalidad + Género + Programa.
+ *
+ * «Modalidad» filtra por `nivelFormacion` (la columna "Nivel de Formación" del
+ * Excel). Se llama igual que la columna de la tabla de resultados para que quien
+ * filtra reconozca en la tabla lo que eligió.
  *
  * El departamento no tiene select propio: se elige directamente en el mapa
  * (`MapaDepartamentos`), que comparte el mismo estado de filtros. Sin filtro de
@@ -34,7 +38,7 @@ export function FiltrosProgramasSobresalientes({
   onSeleccionarPrograma,
 }: FiltrosProgramasSobresalientesProps) {
   const opcionesNivel = [
-    { value: 'todos', label: 'Formación Académica' },
+    { value: 'todos', label: 'Modalidad' },
     ...nivelesDisponibles.map((nivel) => ({ value: nivel, label: nivel })),
   ];
 
@@ -54,7 +58,7 @@ export function FiltrosProgramasSobresalientes({
         value={filtros.nivelFormacion}
         onChange={onSeleccionarNivelFormacion}
         options={opcionesNivel}
-        ariaLabel="Filtrar por formación académica"
+        ariaLabel="Filtrar por modalidad"
         className="sm:w-56"
       />
 

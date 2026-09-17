@@ -20,14 +20,22 @@ export type NivelFormacion = 'Técnico' | 'Tecnólogo' | 'Profundización Técni
 /** `sexo` en el esquema real es un `CHECK IN ('M', 'F')` (nunca `ENUM` — convención D4 del proyecto). */
 export type Sexo = 'M' | 'F';
 
-/** Una fila de `formacion_sobresalientes`: un cruce centro + programa + nivel + sexo. */
+/**
+ * Una fila de `programas_sobresalientes`: un cruce centro + programa + nivel + sexo.
+ *
+ * Los campos llevan el nombre de la columna del Excel de SENA, no el que se ve en la
+ * página — la traducción está en `resultados-programas-sobresalientes.tsx`.
+ */
 export interface RegistroFormacion {
   id: string;
   centro: string;
+  /** Se muestra como «Modalidad». En el Excel: "Nivel de Formación". */
   nivelFormacion: NivelFormacion;
   programa: string;
   sexo: Sexo;
+  /** Se muestra como «Egresados». En el Excel se llama "Certificados". */
   certificados: number;
+  /** No se muestra; se conserva porque la tasa de vinculación se calcula con él. */
   vinculados: number;
   /** Porcentaje (0-100); `NUMERIC(5,2)` en el esquema real. */
   tasaVinculacion: number;
@@ -48,8 +56,8 @@ export interface DepartamentoConDatos {
 }
 
 /**
- * Estado de los filtros de consulta: departamento (mapa) + formación académica +
- * género + programa.
+ * Estado de los filtros de consulta: departamento (mapa) + modalidad (nivel de
+ * formación) + género + programa.
  *
  * Sin filtro de Centro a propósito (decisión de sesión): el centro se sigue
  * mostrando en la tabla de resultados, pero dejó de ser un selector.
