@@ -1409,6 +1409,35 @@ const puckConfigBase: Config = {
             { label: 'No', value: false },
           ],
         },
+        mostrarTotales: {
+          type: 'radio',
+          label: 'Mostrar fila de totales (inscritos y vacantes)',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        mostrarBannerDepartamento: {
+          type: 'radio',
+          label: 'Mostrar sección de información / departamento',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        tituloBanner: {
+          type: 'text',
+          label: 'Título de la sección (vacío = toma departamento seleccionado)',
+        },
+        subtituloBanner: {
+          type: 'text',
+          label: 'Subtítulo (opcional)',
+        },
+        descripcionBanner: {
+          type: 'textarea',
+          label: 'Descripción (opcional)',
+        },
+        colorBanner: campoColor('Color de énfasis (opcional, por defecto verde SENA)'),
         mostrarTitulo: {
           type: 'radio',
           label: 'Mostrar título',
@@ -1479,6 +1508,12 @@ const puckConfigBase: Config = {
       defaultProps: {
         tipoTendencia: 'mas-menos',
         mostrarDefiniciones: true,
+        mostrarTotales: false,
+        mostrarBannerDepartamento: false,
+        tituloBanner: '',
+        subtituloBanner: '',
+        descripcionBanner: '',
+        colorBanner: '',
         mostrarTitulo: true,
         titulo: TITULOS_TENDENCIA['mas-menos'],
         alineacionTitulo: 'centro',
@@ -1496,13 +1531,38 @@ const puckConfigBase: Config = {
         const tipo = (data.props.tipoTendencia as TipoTendenciaOcupacional) || 'mas-menos';
         const tituloSugerido = TITULOS_TENDENCIA[tipo] || TITULOS_TENDENCIA['mas-menos'];
 
-        if (params.changed.tipoTendencia || !data.props.titulo || !data.props.titulo.trim()) {
+        let propsActualizadas = { ...data.props };
+        let huboCambios = false;
+
+        if (propsActualizadas.mostrarTotales === undefined) {
+          propsActualizadas.mostrarTotales = false;
+          huboCambios = true;
+        }
+
+        if (propsActualizadas.mostrarBannerDepartamento === undefined) {
+          propsActualizadas.mostrarBannerDepartamento = false;
+          huboCambios = true;
+        }
+
+        if (propsActualizadas.mostrarDefiniciones === undefined) {
+          propsActualizadas.mostrarDefiniciones = true;
+          huboCambios = true;
+        }
+
+        if (propsActualizadas.mostrarTitulo === undefined) {
+          propsActualizadas.mostrarTitulo = true;
+          huboCambios = true;
+        }
+
+        if (params.changed.tipoTendencia || !propsActualizadas.titulo || !propsActualizadas.titulo.trim()) {
+          propsActualizadas.titulo = tituloSugerido;
+          huboCambios = true;
+        }
+
+        if (huboCambios) {
           return {
             ...data,
-            props: {
-              ...data.props,
-              titulo: tituloSugerido,
-            },
+            props: propsActualizadas,
           };
         }
 
@@ -1512,6 +1572,12 @@ const puckConfigBase: Config = {
         props: BlockRender<{
           tipoTendencia?: TipoTendenciaOcupacional;
           mostrarDefiniciones?: boolean;
+          mostrarTotales?: boolean;
+          mostrarBannerDepartamento?: boolean;
+          tituloBanner?: string;
+          subtituloBanner?: string;
+          descripcionBanner?: string;
+          colorBanner?: string;
           mostrarTitulo?: boolean;
           titulo?: string;
           alineacionTitulo?: 'izquierda' | 'centro' | 'derecha';
@@ -1529,6 +1595,12 @@ const puckConfigBase: Config = {
         <TendenciaOcupacionalView
           tipoTendencia={props.tipoTendencia}
           mostrarDefiniciones={props.mostrarDefiniciones ?? true}
+          mostrarTotales={props.mostrarTotales ?? false}
+          mostrarBannerDepartamento={props.mostrarBannerDepartamento ?? false}
+          tituloBanner={props.tituloBanner}
+          subtituloBanner={props.subtituloBanner}
+          descripcionBanner={props.descripcionBanner}
+          colorBanner={props.colorBanner}
           mostrarTitulo={props.mostrarTitulo}
           titulo={props.titulo}
           alineacionTitulo={props.alineacionTitulo}
@@ -1540,6 +1612,7 @@ const puckConfigBase: Config = {
           mostrarDescripcion={props.mostrarDescripcion}
           descripcion={props.descripcion}
           alineacionDescripcion={props.alineacionDescripcion}
+          colorDescripcion={props.colorDescripcion}
         />
       ),
     },

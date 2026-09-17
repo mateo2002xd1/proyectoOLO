@@ -7,6 +7,7 @@ import {
 } from '../data/base-tendencia-datos';
 import { obtenerTendenciaOcupacionalActual } from '../services/tendencia-ocupacional.service';
 import { FiltrosTendencia } from './filtros-tendencia';
+import { BannerDepartamento } from './banner-departamento';
 import { DefinicionesNivelOcupacional } from './definiciones-nivel-ocupacional';
 import { TablaTendencia } from './tabla-tendencia';
 import type {
@@ -42,6 +43,12 @@ function renderizarTituloConResalte(texto: unknown): React.ReactNode {
 export function TendenciaOcupacionalView({
   tipoTendencia = 'mas-menos',
   mostrarDefiniciones = true,
+  mostrarTotales = false,
+  mostrarBannerDepartamento = false,
+  tituloBanner,
+  subtituloBanner = '',
+  descripcionBanner = '',
+  colorBanner,
   mostrarTitulo = true,
   titulo,
   alineacionTitulo = 'centro',
@@ -195,6 +202,18 @@ export function TendenciaOcupacionalView({
   const totalResultados = registrosFiltrados.length;
   const totalPaginas = Math.max(1, Math.ceil(totalResultados / FILAS_POR_PAGINA));
 
+  // Totales acumulados de todos los registros que cumplen los filtros actuales
+  const totales = useMemo(() => {
+    return registrosFiltrados.reduce(
+      (acc, item) => {
+        acc.totalInscritos += Number(item.totalInscritos) || 0;
+        acc.totalVacantes += Number(item.totalVacantes) || 0;
+        return acc;
+      },
+      { totalInscritos: 0, totalVacantes: 0 }
+    );
+  }, [registrosFiltrados]);
+
   // Filas para la página actual
   const resultadosPaginados = useMemo(() => {
     const inicio = (pagina - 1) * FILAS_POR_PAGINA;
@@ -309,6 +328,17 @@ export function TendenciaOcupacionalView({
         hayFiltrosActivos={hayFiltrosActivos}
       />
 
+      {/* Sección informativa / Banner de Departamento */}
+      {mostrarBannerDepartamento && (
+        <BannerDepartamento
+          departamento={filtros.departamento}
+          titulo={tituloBanner}
+          subtitulo={subtituloBanner}
+          descripcion={descripcionBanner}
+          colorFondo={colorBanner}
+        />
+      )}
+
       {mostrarDefiniciones && <DefinicionesNivelOcupacional definiciones={definicionesNivel} />}
 
       {cargando ? (
@@ -326,6 +356,8 @@ export function TendenciaOcupacionalView({
           pagina={pagina}
           totalPaginas={totalPaginas}
           onCambiarPagina={setPagina}
+          totales={totales}
+          mostrarTotales={mostrarTotales}
         />
       )}
     </div>

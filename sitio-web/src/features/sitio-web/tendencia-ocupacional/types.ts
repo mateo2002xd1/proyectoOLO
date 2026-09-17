@@ -33,6 +33,12 @@ export type TipoTendenciaOcupacional =
 export interface TendenciaOcupacionalViewProps {
   tipoTendencia?: TipoTendenciaOcupacional;
   mostrarDefiniciones?: boolean;
+  mostrarTotales?: boolean;
+  mostrarBannerDepartamento?: boolean;
+  tituloBanner?: string;
+  subtituloBanner?: string;
+  descripcionBanner?: string;
+  colorBanner?: string;
   mostrarTitulo?: boolean;
   titulo?: string;
   alineacionTitulo?: 'izquierda' | 'centro' | 'derecha';
