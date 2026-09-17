@@ -11,6 +11,7 @@ import {
   campoColor,
   TextoRico,
   ImagenDestacada,
+  TarjetaArticulo,
   BotonPersonalizado,
   SeccionBotonesIcono,
   campoIcono,
@@ -119,7 +120,7 @@ const puckConfigBase: Config = {
       ],
     },
     'Texto e imagen': {
-      components: ['TextoRico', 'ImagenDestacada'],
+      components: ['TextoRico', 'ImagenDestacada', 'TarjetaArticulo'],
     },
     'Botones y enlaces': {
       components: ['BotonPersonalizado', 'SeccionBotonesIcono'],
@@ -1089,6 +1090,68 @@ const puckConfigBase: Config = {
         <ImagenDestacada {...props} />
       ),
     },
+    TarjetaArticulo: {
+      label: 'Tarjeta de artículo',
+      fields: {
+        imagenSrc: campoImagen('Imagen'),
+        imagenAlt: { type: 'text', label: 'Texto alternativo de la imagen' },
+        titulo: { type: 'text', label: 'Título', contentEditable: true },
+        descripcion: { type: 'textarea', label: 'Descripción / Resumen', contentEditable: true },
+        enlace: { type: 'text', label: 'Enlace de la tarjeta / título' },
+        mostrarBoton: {
+          type: 'radio',
+          label: 'Mostrar botón',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        textoBoton: { type: 'text', label: 'Texto del botón' },
+        enlaceBoton: { type: 'text', label: 'Enlace del botón (opcional)' },
+        abrirEnNuevaPestana: {
+          type: 'radio',
+          label: 'Abrir enlace en nueva pestaña',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        ancho: {
+          type: 'radio',
+          label: 'Ancho de la tarjeta',
+          options: [
+            { label: 'Estándar (max-w-sm)', value: 'fijo' },
+            { label: 'Ancho completo', value: 'completo' },
+          ],
+        },
+        alineacion: {
+          type: 'radio',
+          label: 'Alineación horizontal',
+          options: [
+            { label: 'Izquierda', value: 'izquierda' },
+            { label: 'Centro', value: 'centro' },
+            { label: 'Derecha', value: 'derecha' },
+          ],
+        },
+      },
+      defaultProps: {
+        imagenSrc: '/docs/images/blog/image-1.jpg',
+        imagenAlt: 'Ilustración del artículo',
+        titulo: 'Optimiza y agiliza tus procesos hoy mismo',
+        descripcion:
+          'En el entorno digital actual, impulsando una colaboración fluida entre equipos de desarrollo y operaciones.',
+        enlace: '#',
+        mostrarBoton: true,
+        textoBoton: 'Leer más',
+        enlaceBoton: '#',
+        abrirEnNuevaPestana: false,
+        ancho: 'fijo',
+        alineacion: 'izquierda',
+      },
+      render: (props: BlockRender<ComponentProps<typeof TarjetaArticulo>>) => (
+        <TarjetaArticulo {...props} />
+      ),
+    },
     // ─── Botones y Enlaces ───
     BotonPersonalizado: {
       label: 'Botón personalizado',
@@ -1538,6 +1601,7 @@ const BLOQUES_PAGINA_SITIO_DEFECTO: string[] = [
   'CanalesAtencion',
   'TextoRico',
   'ImagenDestacada',
+  'TarjetaArticulo',
   'ExternalPortals',
   'Grid',
   'Flex',
@@ -1563,6 +1627,7 @@ const COMPONENTES_POR_SLUG: Record<string, string[]> = {
     'RichText',
     'TextoRico',
     'ImagenDestacada',
+    'TarjetaArticulo',
     'Grid',
     'Flex',
     'Space',
