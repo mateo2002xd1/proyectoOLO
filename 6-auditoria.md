@@ -5,6 +5,144 @@
 
 ---
 
+## sesión 17-09-2026 (3.ª parte): la carga de Excel vuelve a exigir Redis, y avisa cuando no está
+
+Al apagar el contenedor `olo-redis-dev`, la carga de Excel siguió funcionando. La causa:
+el commit `c69ee32` (Mateo, 16-09) había cambiado `iniciar-carga.usecase.ts` para
+preguntar `redisEstaListo()` antes de encolar y, si Redis no respondía, procesar el
+archivo dentro del mismo proceso con `setImmediate` —sin pasar por BullMQ—.
+
+**Decisión (pedida explícitamente): se revierte ese cambio** y el archivo vuelve a la
+versión de `c6ddc1e`, que encola siempre en `heavy-jobs`. Se restauró solo ese archivo
+(`git restore --source=c69ee32^`); el resto del commit de Mateo —mapa, vista, config de
+Puck— no se tocó. Era el único cambio que el archivo había tenido desde entonces.
+
+Lo que el respaldo sin Redis perdía, y por lo que se prefiere exigirlo: un trabajo que
+solo vive en memoria desaparece si el backend se reinicia a mitad de carga, y sin la cola
+dos cargas simultáneas no se ponen en fila —corren a la vez, y como cada una vacía y
+recarga la tabla, pueden pisarse—.
+
+**Y se le añadió un rechazo claro (pedido a continuación).** La versión de `c6ddc1e`, con
+Redis caído, no fallaba: **se colgaba**. Con `maxRetriesPerRequest: null` (lo exige
+BullMQ) el `heavyJobsQueue.add()` espera para siempre, y como `crearCarga` ya se había
+ejecutado, en el historial quedaba una fila en «procesando 0 %» que no avanzaba nunca —la
+trampa que ya describe la entrada del 15-09 (3.ª parte)—. Ahora lo **primero** que hace
+`iniciarCargaObservatorio` es preguntar `redisEstaListo()`, y si no lo está lanza
+`ErrorDeSubida` con 503 y el mensaje «Redis no está disponible. La carga no se puede
+procesar en este momento; inténtalo de nuevo cuando el servicio esté activo.». Va antes de
+validar, de escribir el archivo y de crear la carga, así que un rechazo no deja nada a
+medias. El controller ya traducía `ErrorDeSubida` a `{ error }` con su status, y la
+tarjeta de carga ya mostraba ese campo (`mensajeDeErrorApi`): no hubo que tocar el
+frontend.
+
+> **Sobre §6 («sin filtrar detalles internos»):** el mensaje nombra a Redis a propósito,
+> y así quedó comentado en el código. El endpoint solo lo usa un Administrador
+> autenticado, y lo que necesita es saber qué servicio levantar. §6 prohíbe stack
+> traces, nombres de tabla y errores crudos de Sequelize; esto es un aviso operativo
+> redactado a mano.
+>
+> **Queda un hueco pequeño:** si Redis se cae justo entre la comprobación y el `add()`,
+> ese `add()` se sigue colgando. Cerrarlo pediría ponerle un tiempo límite al encolado.
+
+**Verificado**, llamando al use-case directamente y sin tocar el backend en marcha:
+
+| Redis | Resultado |
+|---|---|
+| Caído (proceso de prueba apuntado a un puerto vacío con `REDIS_URL`) | `ErrorDeSubida` 503 en 2 ms, el mensaje exacto, y cargas/archivos en la base 1/1 antes y 1/1 después: no se creó nada |
+| Encendido (el contenedor real) | La comprobación deja pasar, y el rechazo lo da la validación del archivo (415, se mandaron bytes que no son un Excel) |
+
+`tsc --noEmit` limpio. **No verificado en pantalla:** el backend en marcha arrancó 18 s
+antes del cambio y corre con `ts-node` sin recarga automática, así que no lo tiene hasta
+reiniciarlo. Durante la verificación apareció un segundo proceso en el puerto 6379
+(`wslrelay.exe`): no es otro Redis, es el reenvío de Docker Desktop hacia `::1`.
+
+---
+
+## sesión 17-09-2026 (cont.): el paginador de `/programas-sobresalientes` deja de listar todas las páginas
+
+Con el Excel completo de nuevo cargado (671 registros, 112 páginas), el paginador pintaba
+los 112 números seguidos y la fila se salía del ancho de la tabla hasta meterse bajo el
+mapa. `components/paginador.tsx` listaba `Array.from({ length: totalPaginas })` sin
+recorte.
+
+Ahora muestra **siete posiciones fijas** entre las flechas: primera y última página, la
+actual con sus vecinas, y `…` en los huecos (`‹ 1 … 6 [7] 8 … 112 ›`).
+
+**Por qué no se reutilizó el `Paginador` del panel** (`shared/ui/molecules/paginador.tsx`,
+que ya recorta con `…`): su recorte varía de ancho —cuatro números en la página 1, siete
+en la 5— y en el panel no importa, pero en una tabla pública en la que se avanza a golpe
+de flecha, la flecha «siguiente» se corría bajo el cursor y el siguiente clic caía en otro
+botón. Además trae el selector «Filas por página» y la estética del panel. El de aquí
+fija el número de posiciones, y un `…` nunca tapa una sola página. Los números llevan
+`aria-label="Página N"` y los `…` son `aria-hidden`.
+
+De paso, en los encabezados de la víspera el «%» de «Vinculación %» quedaba solo en una
+segunda línea: la unidad va ahora unida a la palabra con un espacio duro.
+
+**Verificado en el navegador** (Chromium headless contra el servidor de desarrollo, a
+1920, 1366 y 375px), pulsando de verdad: página 1, seis veces «siguiente», la última y
+«anterior». En los tres anchos son siempre 9 elementos, la flecha «siguiente» no cambia
+de coordenada entre páginas, la página no desborda y el paginador queda dentro del ancho
+de la tabla. A 375px los botones bajan a 32px y la fila ocupa 343px de los 343 útiles.
+`tsc --noEmit` y ESLint limpios.
+
+---
+
+## sesión 17-09-2026: la tabla de `/programas-sobresalientes` pasa al vocabulario del observatorio
+
+Pedido: la tabla mostraba `Centro · Formación Académica · Programa · Género · Certificados ·
+Vinculados · Tasa de Vinculación · Salario Promedio` y debe mostrar `Departamento · Centro ·
+Modalidad · Programa · Género · Egresados · Vinculación % · Promedio de Salario $`. Los
+«certificados» del Excel son en realidad los egresados, y «vinculados» no debe verse.
+
+**Antes de tocar nada se abrió el Excel real.** No trae columnas «Modalidad» ni
+«Egresados»: sus encabezados son `Regional · Centro · Nivel de Formación · Programa · Sexo ·
+Certificados · Vinculados · Tasa de vinculación · Salario promedio`. Así que el cambio es
+**solo de presentación** — no hay dato nuevo que importar ni dato que se pierda:
+
+| Se muestra | Campo | Columna del Excel |
+|---|---|---|
+| Departamento | `departamento` | Regional |
+| Modalidad | `nivelFormacion` | Nivel de Formación |
+| Egresados | `certificados` | Certificados |
+| Vinculación % | `tasaVinculacion` | Tasa de vinculación |
+| Promedio de Salario $ | `salarioPromedio` | Salario promedio |
+
+**Decisión: los campos conservan el nombre del Excel.** Renombrar `certificados` a
+`egresados` en la base y en la API obligaría a una migración y a que el importador
+tradujera un encabezado que SENA sigue llamando "Certificados". La traducción vive en un
+solo sitio, `resultados-programas-sobresalientes.tsx`, con la tabla de equivalencias en su
+comentario. `vinculados` se sigue importando y guardando —la tasa se calcula con él—, solo
+deja de mostrarse. Departamento pasa de ser una línea gris bajo el centro (y solo sin
+filtro activo) a columna propia, siempre visible. El filtro «Formación Académica» se
+renombró a «Modalidad» para que se llame igual que la columna que filtra.
+
+| Archivo | Cambio |
+|---|---|
+| `components/resultados-programas-sobresalientes.tsx` | Encabezados nuevos, columna Departamento, fuera Vinculados |
+| `components/filtros-programas-sobresalientes.tsx` | Etiqueta y `aria-label` → «Modalidad» |
+| `types.ts` | Cada campo documenta con qué nombre se muestra |
+
+**Verificado:** `tsc --noEmit` y ESLint limpios; en el navegador (Chromium headless contra
+el servidor de desarrollo) los ocho encabezados salen en el orden pedido, sin scroll
+horizontal ni a 1920 ni a 1366px.
+
+> **Lo que se vio al verificar, y no es un fallo:** la página muestra **un solo
+> registro**. La última carga (17-09, 00:04, `5cf44955-….xlsx`) trae una fila de datos, y
+> cada carga vacía y recarga la tabla entera. Ese archivo, además, viene en un formato
+> nuevo con columnas de código (`Cod. Regional`, `Cod. Centro`, `Cod. Nivel de formación`,
+> `Cod. Programa`) — el importador lo aceptó porque busca los encabezados por nombre e
+> ignora los que no conoce. Esos códigos **no se guardan** hoy.
+
+**Pendiente al cierre:** volver a subir el Excel completo para que la página vuelva a
+mostrar todos los registros. Si
+el formato con códigos es el que va a llegar de ahora en adelante, decidir si se guardan
+—serían la clave natural para cruzar con otras fuentes del SENA, más fiable que el nombre—.
+Y `api-backend/uploads/` no está en `.gitignore`: los Excel subidos aparecen en `git status`
+y uno ya llegó a estar versionado.
+
+---
+
 ## sesión 16-09-2026: se cierran las cinco deudas que quedaban abiertas del repaso de código muerto
 
 Continuación del repaso de la víspera (commits `4e9e5e6`…`52d7975`: el BOLA del candado
