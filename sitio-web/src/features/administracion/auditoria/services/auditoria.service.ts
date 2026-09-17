@@ -90,3 +90,58 @@ export async function listarUsuariosDeFiltro(): Promise<UsuarioDeFiltro[]> {
     return [];
   }
 }
+
+export interface AnalisisDepuracionAuditoriaDTO {
+  totalEncontrados: number;
+  fechaCorte: string;
+  pesoEstimadoBytes: number;
+  pesoTablaBytes: number;
+  registros: import('../types').RegistroAuditoria[];
+}
+
+
+export interface ResultadoDepuracionAuditoriaDTO {
+  eliminadas: number;
+  bytesLiberados: number;
+  pesoTablaAntes: number;
+  pesoTablaDespues: number;
+}
+
+export async function analizarDepuracionAuditoria(): Promise<AnalisisDepuracionAuditoriaDTO> {
+  const res = await fetch('/api/audit-logs/depurar/analizar', FETCH_OPTS);
+  if (res.status === 401) {
+    alLoginPorSesionExpirada();
+    throw new ErrorAuditoria('Tu sesión expiró. Te llevamos al inicio de sesión.');
+  }
+  if (res.status === 403) {
+    throw new ErrorAuditoria('Tu rol no tiene acceso para depurar la bitácora.', true);
+  }
+  if (!res.ok) {
+    throw new ErrorAuditoria('No se pudo analizar la depuración de auditoría.');
+  }
+  return res.json();
+}
+
+export async function ejecutarDepuracionAuditoria(ids: string[]): Promise<ResultadoDepuracionAuditoriaDTO> {
+  const res = await fetch('/api/audit-logs/depurar', {
+    ...FETCH_OPTS,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ ids }),
+  });
+  if (res.status === 401) {
+    alLoginPorSesionExpirada();
+    throw new ErrorAuditoria('Tu sesión expiró. Te llevamos al inicio de sesión.');
+  }
+  if (res.status === 403) {
+    throw new ErrorAuditoria('Tu rol no tiene acceso para depurar la bitácora.', true);
+  }
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new ErrorAuditoria(data.error || 'No se pudo completar la depuración de auditoría.');
+  }
+  return res.json();
+}
+

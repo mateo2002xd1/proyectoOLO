@@ -7,7 +7,7 @@ import { BloqueoEdicionRepository } from '../../repositories/bloqueo-edicion.rep
 export interface ParametrosDepuracionVersiones {
   ambito?: Ambito;
   paginaId?: string;
-  fechaCorte: string; // ISO YYYY-MM-DD
+  fechaCorte?: string; // ISO YYYY-MM-DD opcional
   conservarUltimoRespaldo?: boolean;
 }
 
@@ -19,33 +19,16 @@ export interface ResultadoDepuracion {
   pesoTablaDespues?: number;
 }
 
-const LIMITE_DIAS_SEGURIDAD = 30;
-
 export async function depurarVersiones(
   params: ParametrosDepuracionVersiones,
   contextoAuditoria?: ContextoAuditoria
 ): Promise<ResultadoDepuracion> {
-  const ahora = new Date();
-  const fechaLimite = new Date(ahora.getTime() - LIMITE_DIAS_SEGURIDAD * 24 * 60 * 60 * 1000);
-  const fechaLimiteIso = fechaLimite.toISOString().slice(0, 10);
-
-  if (!params.fechaCorte) {
-    throw Object.assign(new Error('La fecha de corte es obligatoria.'), { status: 400 });
-  }
-
-  // Comprobar estrictamente en formato YYYY-MM-DD
-  if (params.fechaCorte > fechaLimiteIso) {
-    throw Object.assign(
-      new Error(
-        `Por seguridad, el historial del último mes está protegido. La fecha debe ser igual o anterior a ${fechaLimiteIso}.`
-      ),
-      { status: 400 }
-    );
-  }
-
-  const fechaCorteDate = new Date(`${params.fechaCorte}T23:59:59.999Z`);
-  if (isNaN(fechaCorteDate.getTime())) {
-    throw Object.assign(new Error('Formato de fecha de corte inválido.'), { status: 400 });
+  let fechaCorteIso: string | null = null;
+  if (params.fechaCorte) {
+    const fechaCorteDate = new Date(`${params.fechaCorte}T23:59:59.999Z`);
+    if (!isNaN(fechaCorteDate.getTime())) {
+      fechaCorteIso = fechaCorteDate.toISOString();
+    }
   }
 
   // Regla invariable: SIEMPRE se conserva la última versión archivada para permitir rollback
@@ -77,7 +60,7 @@ export async function depurarVersiones(
         AND pv.id != COALESCE(p.version_publicada_id, '00000000-0000-0000-0000-000000000000'::uuid)
         AND (:ambito::text IS NULL OR p.ambito = :ambito)
         AND (:paginaId::uuid IS NULL OR p.id = :paginaId)
-        AND pv.creado_en <= :fechaCorte
+        AND (:fechaCorte::timestamptz IS NULL OR pv.creado_en <= :fechaCorte)
         AND pv.id NOT IN (SELECT id FROM ultima_archivada)
       ORDER BY pv.creado_en ASC
       FOR UPDATE OF pv;
@@ -93,7 +76,7 @@ export async function depurarVersiones(
       replacements: {
         ambito: params.ambito || null,
         paginaId: params.paginaId || null,
-        fechaCorte: fechaCorteDate.toISOString(),
+        fechaCorte: fechaCorteIso,
       },
       type: QueryTypes.SELECT,
       transaction: tx,

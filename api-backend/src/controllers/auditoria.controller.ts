@@ -1,9 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import { getAllAudit, getAuditByContentId } from '../use-cases/auditoria/audit.usecase';
 import { aRegistroAuditoria, filtrosDesdeQuery } from '../shared/auditoria-dto';
+import { analizarDepuracionAuditoria } from '../use-cases/auditoria/analizar-depuracion-auditoria.usecase';
+import { ejecutarDepuracionAuditoria } from '../use-cases/auditoria/ejecutar-depuracion-auditoria.usecase';
+import { datosDeAuditoria } from '../shared/auditoria-request';
 
 /**
- * Lectura de la bitácora (RF-07).
+ * Lectura y depuración de la bitácora (RF-07).
  *
  * El controlador es quien traduce en las dos direcciones: el querystring a filtros
  * tipados (`filtrosDesdeQuery`) y las filas a la forma que consume la pantalla
@@ -31,4 +34,21 @@ export const AuditController = {
       res.json(filas.map((fila) => aRegistroAuditoria(fila.toJSON())));
     } catch (err) { next(err); }
   },
+
+  async analizarDepuracion(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const resultado = await analizarDepuracionAuditoria();
+      res.json(resultado);
+    } catch (err) { next(err); }
+  },
+
+  async ejecutarDepuracion(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { ids } = req.body;
+      const contexto = datosDeAuditoria(req);
+      const resultado = await ejecutarDepuracionAuditoria({ ids }, contexto);
+      res.json(resultado);
+    } catch (err) { next(err); }
+  },
 };
+
