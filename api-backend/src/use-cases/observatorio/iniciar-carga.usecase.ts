@@ -11,7 +11,6 @@ import { validarArchivoSubido, fueRechazada } from '@olo/upload-policy';
 import { ObservatorioRepository as Repo } from '../../repositories/observatorio.repository';
 import { redisEstaListo } from '../../infrastructure/redis';
 import { heavyJobsQueue } from '../../infrastructure/redis/queue';
-import { procesarCargaObservatorio } from './procesar-carga.usecase';
 
 /**
  * El Excel de carga no se sirve nunca al público — a diferencia de `archivos` de
@@ -31,12 +30,33 @@ export class ErrorDeSubida extends Error {
  * Sobresalientes". Devuelve de inmediato el id de la carga — el procesamiento real
  * corre en `heavy-jobs` (ver `infrastructure/redis/queue.ts`), sin paso de
  * aprobación: el Administrador sube y la carga arranca sola.
+ *
+ * Redis es obligatorio: sin la cola no hay carga. No se procesa "en local" como
+ * respaldo porque un trabajo que solo vive en memoria se pierde si el backend se
+ * reinicia a mitad, y sin la cola dos cargas simultáneas no se ponen en fila —cada
+ * una vacía y recarga la tabla, así que se pisarían—.
  */
 export async function iniciarCargaObservatorio(
   datos: Buffer,
   nombreOriginal: string,
   subidoPor: string | null
 ): Promise<{ cargaId: string }> {
+  // Lo primero, antes de guardar el archivo o crear la carga. Con Redis caído,
+  // `heavyJobsQueue.add()` no falla: se queda esperando para siempre
+  // (`maxRetriesPerRequest: null`, que BullMQ exige), así que sin esta comprobación la
+  // subida se colgaba y dejaba en el historial una carga en «procesando 0 %» que no
+  // avanzaba nunca. Así se rechaza en el acto, sin dejar nada a medias.
+  //
+  // El mensaje nombra a Redis a propósito, pese a §6: este endpoint solo lo usa un
+  // Administrador, y lo que necesita saber es qué hay que levantar, no un «inténtalo
+  // más tarde» que no dice qué está fallando.
+  if (!redisEstaListo()) {
+    throw new ErrorDeSubida(
+      'Redis no está disponible. La carga no se puede procesar en este momento; inténtalo de nuevo cuando el servicio esté activo.',
+      503
+    );
+  }
+
   const resultado = await validarArchivoSubido(datos, detectarTipoDeArchivo, () => crypto.randomUUID());
 
   if (fueRechazada(resultado)) {
@@ -70,27 +90,10 @@ export async function iniciarCargaObservatorio(
   const carga = await Repo.crearCarga(archivo.get('id') as string, subidoPor);
   const cargaId = carga.get('id') as string;
 
-  const rutaAbsoluta = path.join(process.cwd(), archivo.get('rutaRelativa') as string);
-
-  if (redisEstaListo()) {
-    try {
-      await heavyJobsQueue.add('importar-observatorio-excel', {
-        cargaId,
-        rutaAbsoluta,
-      });
-    } catch (error) {
-      console.warn('[observatorio] Error al encolar en BullMQ, procesando en segundo plano local:', error);
-      setImmediate(() => {
-        void procesarCargaObservatorio(cargaId, rutaAbsoluta);
-      });
-    }
-  } else {
-    // Si Redis no está disponible (ej. en desarrollo local sin Redis levantado),
-    // procesamos en segundo plano con setImmediate sin bloquear la respuesta HTTP.
-    setImmediate(() => {
-      void procesarCargaObservatorio(cargaId, rutaAbsoluta);
-    });
-  }
+  await heavyJobsQueue.add('importar-observatorio-excel', {
+    cargaId,
+    rutaAbsoluta: path.join(process.cwd(), archivo.get('rutaRelativa') as string),
+  });
 
   return { cargaId };
 }
