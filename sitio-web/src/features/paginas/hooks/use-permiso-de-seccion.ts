@@ -61,7 +61,7 @@ export function usePermisoDeSeccion(clave: string): boolean {
 
     const revisar = () => {
       const rol = leerRolActual();
-      if (!rol || !ROLES_QUE_EDITAN.includes(rol)) {
+      if (!rol) {
         setTienePermisoPorApi(false);
         return;
       }

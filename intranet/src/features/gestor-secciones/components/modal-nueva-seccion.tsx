@@ -45,11 +45,10 @@ export function ModalNuevaSeccion({ abierto, alCerrar }: ModalNuevaSeccionProps)
       const seccion = await crearSeccion(nombre.trim());
       cerrar();
       router.push(
-        `${enlaceAlEditor(seccion.slug, `/${seccion.slug}`)}&nueva=1`
+        `${enlaceAlEditor(seccion.slug, seccion.ruta)}&nueva=1`
       );
     } catch (fallo) {
-      const respuesta = (fallo as { body?: { error?: string }; message?: string })?.body;
-      setError(respuesta?.error ?? 'No se pudo crear la página.');
+      setError(fallo instanceof Error ? fallo.message : 'No se pudo crear la sección.');
       setCreando(false);
     }
   };

@@ -21,15 +21,14 @@ import type { Permission } from '../hooks/use-usuarios';
 const GRUPOS: { id: string; titulo: string; ayuda: string; sensible?: boolean }[] = [
   {
     id: 'acceso',
-    titulo: 'Dónde puede entrar',
+    titulo: 'Acceso',
     ayuda: 'Las puertas del sistema. Sin esto, lo demás no llega a usarse.',
   },
   {
     id: 'plantilla',
-    titulo: 'Menú y pie de página',
+    titulo: 'Editar',
     ayuda:
       'Cambia la cabecera y el pie de TODAS las páginas de esa aplicación, no de una sección.',
-    sensible: true,
   },
   {
     id: 'secciones-sitio',
@@ -162,9 +161,6 @@ export function ModalPermisos({
               <h3 id="permisos-titulo" className="admin-subtitle text-zinc-900 dark:text-[#f6f6f6]">
                 Permisos del rol {rol ? `«${rol.nombre}»` : ''}
               </h3>
-              <p className="mt-0.5 text-xs text-zinc-500 dark:text-[#94a3b8]">
-                Define qué puede hacer cualquier persona con este rol.
-              </p>
             </div>
             <button
               type="button"
@@ -230,9 +226,6 @@ export function ModalPermisos({
                         {activos}/{ids.length}
                       </span>
                     </h4>
-                    <p className="mt-0.5 text-[11px] text-zinc-500 dark:text-[#94a3b8]">
-                      {grupo.ayuda}
-                    </p>
                   </div>
                   {conAtajo && (
                     <button
@@ -281,9 +274,6 @@ export function ModalPermisos({
                                   solo interfaz
                                 </span>
                               )}
-                            </span>
-                            <span className="mt-0.5 block text-[11px] leading-snug text-zinc-500 dark:text-[#94a3b8]">
-                              {permiso.descripcion}
                             </span>
                           </span>
                           <Switch

@@ -39,17 +39,36 @@ export function PaginasFabSpeedDial({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMontado(true);
     let vigente = true;
-    apiClient.get<{ permisos?: string[] }>('/me')
-      .then((datos) => {
-        if (vigente && Array.isArray(datos.permisos)) {
-          setPermisosActivos(datos.permisos.map(String));
-        }
-      })
-      .catch(() => {
-        if (vigente) setPermisosActivos([]);
-      });
+
+    const actualizarPermisos = () => {
+      apiClient.get<{ permisos?: string[] }>('/me')
+        .then((datos) => {
+          if (vigente && Array.isArray(datos.permisos)) {
+            setPermisosActivos(datos.permisos.map(String));
+          }
+        })
+        .catch(() => {
+          if (vigente) setPermisosActivos([]);
+        });
+    };
+
+    // Carga inicial
+    actualizarPermisos();
+
+    // Revalidar cuando la pestaña recupera el foco o se hace visible
+    const alCambiarVisibilidad = () => {
+      if (document.visibilityState === 'visible') {
+        actualizarPermisos();
+      }
+    };
+
+    window.addEventListener('focus', actualizarPermisos);
+    document.addEventListener('visibilitychange', alCambiarVisibilidad);
+
     return () => {
       vigente = false;
+      window.removeEventListener('focus', actualizarPermisos);
+      document.removeEventListener('visibilitychange', alCambiarVisibilidad);
     };
   }, []);
 
