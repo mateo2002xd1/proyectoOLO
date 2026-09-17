@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import type { User } from '../hooks/use-usuarios';
+import { GraficoEcharts, useEsOscuro, type OpcionGrafico } from '@/shared/ui/molecules/grafico-echarts';
 
 interface Props {
   users: User[];
@@ -32,6 +33,7 @@ function contarUsuariosPorRol(users: User[]): { rol: string; total: number }[] {
 export function TarjetaUsuarios({ users, loading }: Props) {
   const totalUsuarios = users.length;
   const usuariosPorRol = useMemo(() => contarUsuariosPorRol(users), [users]);
+  const esOscuro = useEsOscuro();
 
   // Construir el conic-gradient de forma compatible (sin double-position color stops)
   const gradientStops = useMemo(() => {
@@ -63,35 +65,8 @@ export function TarjetaUsuarios({ users, loading }: Props) {
       </div>
 
       {!loading && usuariosPorRol.length > 0 && (
-        <div className="mt-3 border-t border-zinc-100 pt-5 dark:border-[#7db828]/20 flex-1 flex flex-col justify-center">
-          <div className="flex items-center gap-6">
-            {/* Gráfico de Torta (Donut) */}
-            <div className="relative size-32 shrink-0">
-              <div 
-                className="absolute inset-0 rounded-full transition-all duration-500 ease-out"
-                style={{ background: `conic-gradient(${gradientStops})` }}
-              />
-              <div className="absolute inset-4 rounded-full bg-white dark:bg-[#131b2f]" />
-            </div>
-
-            {/* Leyenda */}
-            <div className="flex-1 space-y-2.5">
-              {usuariosPorRol.map((item, index) => {
-                const color = COLORES[index % COLORES.length];
-                return (
-                  <div key={item.rol} className="flex items-center justify-between gap-2 text-xs">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: color }} />
-                      <span className="truncate font-medium text-zinc-600 dark:text-zinc-300">{item.rol}</span>
-                    </div>
-                    <span className="font-semibold tabular-nums text-zinc-800 dark:text-zinc-200">
-                      {item.total}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+        <div className="mt-3 border-t border-zinc-100 pt-2 dark:border-[#7db828]/20 flex-1 flex flex-col justify-center">
+          <GraficoEcharts option={opcion} alto={144} />
         </div>
       )}
     </div>

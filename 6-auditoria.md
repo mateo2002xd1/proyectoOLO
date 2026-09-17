@@ -5,6 +5,97 @@
 
 ---
 
+## sesión 17-09-2026 (4.ª parte): buscador, sidebar «Accesos», gráficos con ECharts y carga de Excel sin Handsontable
+
+Cuatro cambios de UI en el panel administrativo, pedidos en la misma sesión:
+
+**Buscador del panel** (`buscador/components/buscador-modal.tsx`). El botón de cerrar
+usaba `XMarkIcon` de Heroicons; se cambió por el SVG de flecha que trajo el usuario. Al
+abrir el buscador, la flecha entra deslizándose de izquierda a derecha
+(`transition-transform`, arranca en `-translate-x-2` y se suelta a `translate-x-0` en el
+siguiente frame tras montar). No lleva efecto de hover: se pidió quitarlo dos veces —
+primero el desplazamiento al pasar el mouse, después el fondo/color de hover del botón—,
+así que el único movimiento es el de entrada.
+
+**Sidebar** (`auth/components/panel-general.tsx`). El grupo que agrupa `/admin/users` y
+`/admin/roles` pasó de llamarse «Usuarios» a **«Accesos»**; sigue conteniendo los mismos
+dos ítems («Usuarios» y «Roles y Permisos»).
+
+**Gráficos del dashboard y del modal de visitas.** Se agregó `echarts` (`^6.1.0`) como
+dependencia de `sitio-web` y un envoltorio propio en
+`shared/ui/molecules/grafico-echarts.tsx`: crea/destruye la instancia sobre un `<div>`,
+la redimensiona con `ResizeObserver` (no con la ventana, porque vive dentro de tarjetas y
+modales que cambian de tamaño solos) y expone `useEsOscuro()` —mismo mecanismo que
+`ThemeToggle`, un `MutationObserver` sobre la clase `dark` de `<html>`— porque los colores
+de ECharts no son CSS y no heredan el tema solos. Se usó en tres sitios:
+- El donut de «Usuarios» del dashboard (antes `conic-gradient` a mano + leyenda hecha con
+  `<div>`s) → pie/donut de ECharts con tooltip y leyenda nativa.
+- La tarjeta «Visitas» del dashboard (antes barras CSS por página) → línea suavizada con
+  área degradada (verde Sitio / azul Intranet). No hay serie temporal real detrás —sigue
+  siendo «visitas por página»— solo cambió la forma de dibujarlo, a pedido explícito
+  aunque no hubiera dato de tiempo que lo justificara del todo.
+- El modal de diagrama de visitas (antes barras de progreso CSS) → barras horizontales de
+  ECharts con degradado y tooltip (slug + % del total). De paso se quitó la tarjeta KPI
+  «Más Concurrida», el badge «N páginas» de cada gráfico, el botón ❌ de cerrar del header
+  (queda «Cerrar ventana», clic fuera del panel y Escape) y el texto del header se
+  reemplazó por «Flujo de visitas a las páginas públicas del portal y de intranet.».
+
+**Se descartó** usar ECharts para el mapa de Colombia por departamento
+(`sitio-web/programas-sobresalientes/components/mapa-departamentos.tsx`): cada
+departamento es un `<path>` con `role="button"`, `tabIndex` y navegación por teclado real
+(§9 accesibilidad), y ECharts pinta todo en canvas sin dar eso gratis — habría que
+reconstruir la accesibilidad a mano igual, y de paso convertir los 33 `path` ya calculados
+a GeoJSON. Queda como está; se revisita solo si el dato pasa de binario (tiene/no tiene
+datos) a un conteo continuo por departamento.
+
+**Panel de carga de Excel** (`actualizaciones/components/*`). El historial de cargas
+usaba `handsontable` —una grilla de hoja de cálculo completa para 4 columnas de solo
+lectura—: sin modo oscuro, y su scroll interno recortaba la columna de borrar en tarjetas
+angostas. Se reemplazó por una tabla nativa con el mismo estilo que Auditoría/Actividad
+Reciente (píldoras de estado con color y etiqueta, según §9 el color nunca es el único
+indicador) y un botón de borrar con `TrashIcon` de Heroicons en vez del `✕` de texto que
+traía el renderer de Handsontable. Se le agregó **modo oscuro a toda la sección
+«Actualizaciones»**, que no tenía ninguna clase `dark:` en ningún archivo (quedaba una
+caja blanca deslavada con el resto del panel en oscuro). El botón de subir ganó un ícono
+(`ArrowUpTrayIcon`) y el texto suelto «Formato admitido: .xlsx» pasó a una píldora azul de
+mensaje de estado (con `flex w-fit`, no `inline-flex`, para que quede en su propia línea
+debajo del botón y no compita por espacio con él).
+
+> **`handsontable` queda instalado sin que nada lo importe** — vuelve al mismo estado en
+> que estaba antes de que esta función lo empezara a usar. No se desinstaló por si se
+> tenía reservado para otra cosa; pendiente decidir.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Frontend | `buscador/components/buscador-modal.tsx` | Ícono de cerrar (SVG flecha) + animación de entrada, sin hover |
+| Frontend | `auth/components/panel-general.tsx` | Grupo del sidebar «Usuarios» → «Accesos» |
+| Frontend | `shared/ui/molecules/grafico-echarts.tsx` (nuevo) | Envoltorio de ECharts + `useEsOscuro()` |
+| Frontend | `auth/components/tarjeta-usuarios.tsx` | Donut CSS → pie de ECharts |
+| Frontend | `auth/components/tarjeta-visitas.tsx` | Barras CSS → línea de ECharts |
+| Frontend | `auth/components/modal-diagrama-visitas.tsx` | Barras CSS → barras de ECharts; KPI y botones quitados |
+| Frontend | `actualizaciones/components/historial-cargas-grid.tsx` | Handsontable → tabla nativa + `TrashIcon` |
+| Frontend | `actualizaciones/components/carga-programa-sobresalientes.tsx` | Modo oscuro, ícono de subida, píldora de estado |
+| Frontend | `actualizaciones/components/actualizaciones-view.tsx` | Modo oscuro |
+| Dependencias | `sitio-web/package.json` | `+ echarts ^6.1.0` |
+
+**Verificado:** `tsc --noEmit` limpio y `eslint` limpio sobre cada archivo tocado (varias
+veces, después de cada tanda de cambios); `npm run build` de producción con exit code 0,
+dos veces (antes y después de quitar `handsontable` de `historial-cargas-grid.tsx`), sin
+errores de bundling con las importaciones ESM de `echarts/core`.
+
+**No verificado en pantalla:** ninguno de estos cambios se abrió en un navegador durante
+la sesión —ni el buscador, ni los gráficos, ni el panel de carga—; toda la verificación
+fue tipos + lint + build. Falta la pasada visual (claro/oscuro, hover, responsive) antes
+de darlo por cerrado del todo.
+
+**Pendiente al cierre:**
+- Verificación visual en navegador de los cinco puntos de esta entrada.
+- Decidir si se desinstala `handsontable` (sin uso de nuevo) o se deja para otra función.
+- Los commits de este bloque quedaron sin subir a pedido del usuario («yo copio los
+  commits, no tú») — ver mensajes sugeridos en la conversación, no reproducidos aquí.
+
+---
+
 ## sesión 17-09-2026 (3.ª parte): la carga de Excel vuelve a exigir Redis, y avisa cuando no está
 
 Al apagar el contenedor `olo-redis-dev`, la carga de Excel siguió funcionando. La causa:

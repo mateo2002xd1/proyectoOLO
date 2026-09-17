@@ -11,6 +11,7 @@ import {
   campoColor,
   TextoRico,
   ImagenDestacada,
+  TarjetaArticulo,
   BotonPersonalizado,
   SeccionBotonesIcono,
   campoIcono,
@@ -31,6 +32,11 @@ import { IntranetHero } from '@/shared/lib/blocks/intranet-hero';
 import { defaultIdentidadVisual } from '@/features/identidad-visual/client';
 import { HeroBuscadorOcupaciones } from '@/features/sitio-web/buscador-ocupaciones';
 import { ProgramasSobresalientesView } from '@/features/sitio-web/programas-sobresalientes';
+import {
+  TendenciaOcupacionalView,
+  TITULOS_TENDENCIA,
+  type TipoTendenciaOcupacional,
+} from '@/features/sitio-web/tendencia-ocupacional';
 import { EditorjsWrapper } from '@/features/paginas/components/editorjs-wrapper';
 import { ImageUploaderField } from '@/features/paginas/components/image-uploader-field';
 import { ArchivoUploaderField } from '@/features/paginas/components/archivo-uploader-field';
@@ -110,10 +116,11 @@ const puckConfigBase: Config = {
         'VisorDocumentosNormativos',
         'CanalesAtencion',
         'ProgramasSobresalientes',
+        'TendenciaOcupacional',
       ],
     },
     'Texto e imagen': {
-      components: ['TextoRico', 'ImagenDestacada'],
+      components: ['TextoRico', 'ImagenDestacada', 'TarjetaArticulo'],
     },
     'Botones y enlaces': {
       components: ['BotonPersonalizado', 'SeccionBotonesIcono'],
@@ -1083,6 +1090,68 @@ const puckConfigBase: Config = {
         <ImagenDestacada {...props} />
       ),
     },
+    TarjetaArticulo: {
+      label: 'Tarjeta de artículo',
+      fields: {
+        imagenSrc: campoImagen('Imagen'),
+        imagenAlt: { type: 'text', label: 'Texto alternativo de la imagen' },
+        titulo: { type: 'text', label: 'Título', contentEditable: true },
+        descripcion: { type: 'textarea', label: 'Descripción / Resumen', contentEditable: true },
+        enlace: { type: 'text', label: 'Enlace de la tarjeta / título' },
+        mostrarBoton: {
+          type: 'radio',
+          label: 'Mostrar botón',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        textoBoton: { type: 'text', label: 'Texto del botón' },
+        enlaceBoton: { type: 'text', label: 'Enlace del botón (opcional)' },
+        abrirEnNuevaPestana: {
+          type: 'radio',
+          label: 'Abrir enlace en nueva pestaña',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        ancho: {
+          type: 'radio',
+          label: 'Ancho de la tarjeta',
+          options: [
+            { label: 'Estándar (max-w-sm)', value: 'fijo' },
+            { label: 'Ancho completo', value: 'completo' },
+          ],
+        },
+        alineacion: {
+          type: 'radio',
+          label: 'Alineación horizontal',
+          options: [
+            { label: 'Izquierda', value: 'izquierda' },
+            { label: 'Centro', value: 'centro' },
+            { label: 'Derecha', value: 'derecha' },
+          ],
+        },
+      },
+      defaultProps: {
+        imagenSrc: '/docs/images/blog/image-1.jpg',
+        imagenAlt: 'Ilustración del artículo',
+        titulo: 'Optimiza y agiliza tus procesos hoy mismo',
+        descripcion:
+          'En el entorno digital actual, impulsando una colaboración fluida entre equipos de desarrollo y operaciones.',
+        enlace: '#',
+        mostrarBoton: true,
+        textoBoton: 'Leer más',
+        enlaceBoton: '#',
+        abrirEnNuevaPestana: false,
+        ancho: 'fijo',
+        alineacion: 'izquierda',
+      },
+      render: (props: BlockRender<ComponentProps<typeof TarjetaArticulo>>) => (
+        <TarjetaArticulo {...props} />
+      ),
+    },
     // ─── Botones y Enlaces ───
     BotonPersonalizado: {
       label: 'Botón personalizado',
@@ -1307,6 +1376,173 @@ const puckConfigBase: Config = {
         />
       ),
     },
+    TendenciaOcupacional: {
+      label: 'Tendencia Ocupacional',
+      fields: {
+        tipoTendencia: {
+          type: 'select',
+          label: 'Cuadrante / Recurso de Tendencia',
+          options: [
+            {
+              label: 'Más solicitadas por empresarios / Menos registradas por buscadores (+ / -)',
+              value: 'mas-menos',
+            },
+            {
+              label: 'Más solicitadas por empresarios / Más registradas por buscadores (+ / +)',
+              value: 'mas-mas',
+            },
+            {
+              label: 'Menos solicitadas por empresarios / Menos registradas por buscadores (- / -)',
+              value: 'menos-menos',
+            },
+            {
+              label: 'Menos solicitadas por empresarios / Más registradas por buscadores (- / +)',
+              value: 'menos-mas',
+            },
+          ],
+        },
+        mostrarDefiniciones: {
+          type: 'radio',
+          label: 'Mostrar caja de definiciones de niveles',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        mostrarTitulo: {
+          type: 'radio',
+          label: 'Mostrar título',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        titulo: {
+          type: 'text',
+          label: 'Título',
+        },
+        alineacionTitulo: {
+          type: 'radio',
+          label: 'Alineación del título',
+          options: [
+            { label: 'Izquierda', value: 'izquierda' },
+            { label: 'Centro', value: 'centro' },
+            { label: 'Derecha', value: 'derecha' },
+          ],
+        },
+        colorTitulo: campoColor('Color del título (opcional)'),
+        mostrarSubtitulo: {
+          type: 'radio',
+          label: 'Mostrar subtítulo',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        subtitulo: {
+          type: 'text',
+          label: 'Subtítulo (opcional)',
+        },
+        alineacionSubtitulo: {
+          type: 'radio',
+          label: 'Alineación del subtítulo',
+          options: [
+            { label: 'Izquierda', value: 'izquierda' },
+            { label: 'Centro', value: 'centro' },
+            { label: 'Derecha', value: 'derecha' },
+          ],
+        },
+        colorSubtitulo: campoColor('Color del subtítulo (opcional)'),
+        mostrarDescripcion: {
+          type: 'radio',
+          label: 'Mostrar descripción',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        descripcion: {
+          type: 'textarea',
+          label: 'Descripción',
+        },
+        alineacionDescripcion: {
+          type: 'radio',
+          label: 'Alineación de la descripción',
+          options: [
+            { label: 'Izquierda', value: 'izquierda' },
+            { label: 'Centro', value: 'centro' },
+            { label: 'Derecha', value: 'derecha' },
+          ],
+        },
+        colorDescripcion: campoColor('Color de la descripción (opcional)'),
+      },
+      defaultProps: {
+        tipoTendencia: 'mas-menos',
+        mostrarDefiniciones: true,
+        mostrarTitulo: true,
+        titulo: TITULOS_TENDENCIA['mas-menos'],
+        alineacionTitulo: 'centro',
+        colorTitulo: '',
+        mostrarSubtitulo: false,
+        subtitulo: '',
+        alineacionSubtitulo: 'centro',
+        colorSubtitulo: '',
+        mostrarDescripcion: false,
+        descripcion: '',
+        alineacionDescripcion: 'centro',
+        colorDescripcion: '',
+      },
+      resolveData: async (data, params) => {
+        const tipo = (data.props.tipoTendencia as TipoTendenciaOcupacional) || 'mas-menos';
+        const tituloSugerido = TITULOS_TENDENCIA[tipo] || TITULOS_TENDENCIA['mas-menos'];
+
+        if (params.changed.tipoTendencia || !data.props.titulo || !data.props.titulo.trim()) {
+          return {
+            ...data,
+            props: {
+              ...data.props,
+              titulo: tituloSugerido,
+            },
+          };
+        }
+
+        return data;
+      },
+      render: (
+        props: BlockRender<{
+          tipoTendencia?: TipoTendenciaOcupacional;
+          mostrarDefiniciones?: boolean;
+          mostrarTitulo?: boolean;
+          titulo?: string;
+          alineacionTitulo?: 'izquierda' | 'centro' | 'derecha';
+          colorTitulo?: string;
+          mostrarSubtitulo?: boolean;
+          subtitulo?: string;
+          alineacionSubtitulo?: 'izquierda' | 'centro' | 'derecha';
+          colorSubtitulo?: string;
+          mostrarDescripcion?: boolean;
+          descripcion?: string;
+          alineacionDescripcion?: 'izquierda' | 'centro' | 'derecha';
+          colorDescripcion?: string;
+        }>
+      ) => (
+        <TendenciaOcupacionalView
+          tipoTendencia={props.tipoTendencia}
+          mostrarDefiniciones={props.mostrarDefiniciones ?? true}
+          mostrarTitulo={props.mostrarTitulo}
+          titulo={props.titulo}
+          alineacionTitulo={props.alineacionTitulo}
+          colorTitulo={props.colorTitulo}
+          mostrarSubtitulo={props.mostrarSubtitulo}
+          subtitulo={props.subtitulo}
+          alineacionSubtitulo={props.alineacionSubtitulo}
+          colorSubtitulo={props.colorSubtitulo}
+          mostrarDescripcion={props.mostrarDescripcion}
+          descripcion={props.descripcion}
+          alineacionDescripcion={props.alineacionDescripcion}
+        />
+      ),
+    },
   },
 };
 
@@ -1365,6 +1601,7 @@ const BLOQUES_PAGINA_SITIO_DEFECTO: string[] = [
   'CanalesAtencion',
   'TextoRico',
   'ImagenDestacada',
+  'TarjetaArticulo',
   'ExternalPortals',
   'Grid',
   'Flex',
@@ -1373,6 +1610,7 @@ const BLOQUES_PAGINA_SITIO_DEFECTO: string[] = [
   'BotonPersonalizado',
   'SeccionBotonesIcono',
   'ProgramasSobresalientes',
+  'TendenciaOcupacional',
 ];
 
 const COMPONENTES_POR_SLUG: Record<string, string[]> = {
@@ -1389,6 +1627,7 @@ const COMPONENTES_POR_SLUG: Record<string, string[]> = {
     'RichText',
     'TextoRico',
     'ImagenDestacada',
+    'TarjetaArticulo',
     'Grid',
     'Flex',
     'Space',
@@ -1396,6 +1635,7 @@ const COMPONENTES_POR_SLUG: Record<string, string[]> = {
     'BotonPersonalizado',
     'SeccionBotonesIcono',
     'ProgramasSobresalientes',
+    'TendenciaOcupacional',
   ],
   'politica-de-privacidad': ['PoliticaPrivacidadEncabezado', 'VisorDocumentosNormativos', 'CanalesAtencion'],
 };

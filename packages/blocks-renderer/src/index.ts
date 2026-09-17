@@ -82,4 +82,10 @@ export type {
   ItemBotonSeccion,
 } from './blocks/seccion-botones-icono';
 
+export { TarjetaArticulo } from './blocks/tarjeta-articulo';
+export type {
+  TarjetaArticuloProps,
+  AlineacionTarjeta,
+} from './blocks/tarjeta-articulo';
+
 
