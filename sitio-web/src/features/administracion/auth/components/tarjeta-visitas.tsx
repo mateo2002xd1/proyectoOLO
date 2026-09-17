@@ -3,15 +3,21 @@
 import { useState, useMemo } from 'react';
 import { type ResumenPaginasPublicadas } from '@/features/paginas';
 import { ModalDiagramaVisitas } from './modal-diagrama-visitas';
+import { GraficoEcharts, useEsOscuro, type OpcionGrafico } from '@/shared/ui/molecules/grafico-echarts';
 
 interface Props {
   resumen: ResumenPaginasPublicadas | null;
   error: string | null;
 }
 
+/** Trunca el título de la página para que quepa como etiqueta del eje sin
+ *  aplastar el resto del gráfico; el título completo va en el tooltip. */
+const acortar = (texto: string, limite = 12) =>
+  texto.length > limite ? `${texto.slice(0, limite - 1)}…` : texto;
+
 /**
  * Tarjeta de Visitas para el Dashboard.
- * Contiene 2 diagramas de barras interactivos (Sitio Web e Intranet) con sus páginas correspondientes,
+ * Contiene 2 gráficos de líneas interactivos (Sitio Web e Intranet) con sus páginas correspondientes,
  * y permite abrir la ventana modal completa con métricas detalladas.
  */
 export function TarjetaVisitas({ resumen, error }: Props) {
@@ -33,11 +39,61 @@ export function TarjetaVisitas({ resumen, error }: Props) {
 
   const paginasMostradas = pestanaActiva === 'sitio' ? paginasSitio : paginasIntranet;
   const esIntranet = pestanaActiva === 'intranet';
+  const esOscuro = useEsOscuro();
 
-  const maxVisitas = useMemo(
-    () => Math.max(1, ...paginasMostradas.map((p) => p.visitas ?? 0)),
-    [paginasMostradas]
-  );
+  const opcion: OpcionGrafico = useMemo(() => {
+    const colorEje = esOscuro ? '#94a3b8' : '#a1a1aa';
+    const colorLinea = esIntranet ? '#0284c7' : '#4C7A1C';
+    const colorAreaTope = esIntranet ? 'rgba(2,132,199,0.35)' : 'rgba(76,122,28,0.35)';
+    const colorAreaFondo = esIntranet ? 'rgba(2,132,199,0)' : 'rgba(76,122,28,0)';
+
+    return {
+      grid: { left: 4, right: 8, top: 16, bottom: 22, containLabel: true },
+      tooltip: {
+        trigger: 'axis',
+        backgroundColor: esOscuro ? '#1e293b' : '#ffffff',
+        borderColor: esOscuro ? '#334155' : '#e4e4e7',
+        textStyle: { color: esOscuro ? '#f6f6f6' : '#18181b' },
+        formatter: (parametros) => {
+          const punto = Array.isArray(parametros) ? parametros[0] : parametros;
+          const pagina = paginasMostradas[punto.dataIndex as number];
+          const visitas = (punto.value as number).toLocaleString('es-CO');
+          return `<strong>${pagina?.titulo ?? punto.name}</strong><br/>${visitas} visitas`;
+        },
+      },
+      xAxis: {
+        type: 'category',
+        data: paginasMostradas.map((p) => acortar(p.titulo)),
+        axisLine: { lineStyle: { color: esOscuro ? '#334155' : '#e4e4e7' } },
+        axisTick: { show: false },
+        axisLabel: { color: colorEje, fontSize: 10 },
+      },
+      yAxis: { type: 'value', show: false },
+      series: [
+        {
+          type: 'line',
+          data: paginasMostradas.map((p) => p.visitas ?? 0),
+          smooth: true,
+          symbolSize: 6,
+          lineStyle: { width: 3, color: colorLinea },
+          itemStyle: { color: colorLinea },
+          areaStyle: {
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [
+                { offset: 0, color: colorAreaTope },
+                { offset: 1, color: colorAreaFondo },
+              ],
+            },
+          },
+        },
+      ],
+    };
+  }, [paginasMostradas, esIntranet, esOscuro]);
 
   return (
     <>
@@ -90,45 +146,12 @@ export function TarjetaVisitas({ resumen, error }: Props) {
                 </button>
               </div>
 
-              {/* Diagrama de barras correspondiente al gráfico seleccionado */}
-              <div className="space-y-2">
-                {paginasMostradas.length === 0 ? (
-                  <p className="py-3 text-center text-xs text-zinc-400">Sin páginas registradas</p>
-                ) : (
-                  paginasMostradas.map((pagina) => {
-                    const visitas = pagina.visitas ?? 0;
-                    const pct = Math.round((visitas / maxVisitas) * 100);
-
-                    return (
-                      <div key={pagina.id} className="text-xs">
-                        <div className="mb-0.5 flex items-center justify-between gap-1.5">
-                          <span
-                            className="truncate text-zinc-600 transition-colors dark:text-zinc-300"
-                            title={pagina.titulo}
-                          >
-                            {pagina.titulo}
-                          </span>
-                          <span className="font-semibold tabular-nums text-zinc-800 dark:text-zinc-200">
-                            {visitas.toLocaleString('es-CO')}
-                          </span>
-                        </div>
-
-                        {/* Barra del diagrama */}
-                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
-                          <div
-                            className={`h-full rounded-full transition-all duration-300 ${
-                              esIntranet
-                                ? 'bg-gradient-to-r from-[#002c46] to-[#0284c7]'
-                                : 'bg-gradient-to-r from-[#4C7A1C] to-[#7db828]'
-                            }`}
-                            style={{ width: `${Math.max(4, pct)}%` }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
+              {/* Tendencia de visitas por página del ámbito seleccionado */}
+              {paginasMostradas.length === 0 ? (
+                <p className="py-3 text-center text-xs text-zinc-400">Sin páginas registradas</p>
+              ) : (
+                <GraficoEcharts option={opcion} alto={160} />
+              )}
             </div>
           )}
         </div>
