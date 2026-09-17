@@ -274,6 +274,7 @@ export default function RolesView() {
     setOriginalPermissionIds(new Set());
     setLoadingRolePerms(true);
     try {
+      await fetchPermissions();
       const rolePerms = await fetchRolePermissions(rol.id);
       // `permission_id` no está en `Permission`: la API devuelve la fila de
       // `roles_permisos` en algunos caminos y el permiso ya resuelto en otros. Se leen
@@ -321,7 +322,8 @@ export default function RolesView() {
         </div>
         <div>
           <Button
-            onClick={() => {
+            onClick={async () => {
+              await fetchPermissions();
               setAperturaModalRol((n) => n + 1);
               setModalRolAbierto(true);
             }}

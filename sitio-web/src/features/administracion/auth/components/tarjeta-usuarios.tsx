@@ -33,17 +33,17 @@ export function TarjetaUsuarios({ users, loading }: Props) {
   const totalUsuarios = users.length;
   const usuariosPorRol = useMemo(() => contarUsuariosPorRol(users), [users]);
 
-  // Construir el conic-gradient
+  // Construir el conic-gradient de forma compatible (sin double-position color stops)
   const gradientStops = useMemo(() => {
-    if (totalUsuarios === 0) return 'transparent 0deg 360deg';
-    let currentDegree = 0;
+    if (totalUsuarios === 0) return 'transparent 0% 100%';
+    let currentPercent = 0;
     return usuariosPorRol.map((item, index) => {
-      const percentage = (item.total / totalUsuarios) * 360;
+      const percentage = (item.total / totalUsuarios) * 100;
       const color = COLORES[index % COLORES.length];
-      const start = currentDegree;
-      const end = currentDegree + percentage;
-      currentDegree = end;
-      return `${color} ${start}deg ${end}deg`;
+      const start = currentPercent;
+      const end = currentPercent + percentage;
+      currentPercent = end;
+      return `${color} ${start}%, ${color} ${end}%`;
     }).join(', ');
   }, [usuariosPorRol, totalUsuarios]);
 
