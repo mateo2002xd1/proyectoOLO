@@ -25,8 +25,8 @@ const MODULOS_PROXIMAMENTE = [
 export function ActualizacionesView({ puedeActualizar }: ActualizacionesViewProps) {
   return (
     <div className="w-full p-6 lg:p-8">
-      <h1 className="text-2xl font-bold text-[#001631]">Actualizaciones</h1>
-      <p className="mt-1 mb-6 text-sm text-gray-600">
+      <h1 className="admin-header text-[#001631] dark:text-[#f6f6f6]">Actualizaciones</h1>
+      <p className="mt-1 mb-6 text-sm text-gray-600 dark:text-[#94a3b8]">
         Cargas de archivos que actualizan datos públicos del sitio.
       </p>
 
@@ -36,10 +36,10 @@ export function ActualizacionesView({ puedeActualizar }: ActualizacionesViewProp
         {MODULOS_PROXIMAMENTE.map((nombre) => (
           <div
             key={nombre}
-            className="rounded-xl border border-gray-200 bg-gray-50 p-6 opacity-60 transition-all duration-200 ease-out hover:translate-x-1 hover:shadow-sm"
+            className="rounded-xl border border-gray-200 bg-gray-50 p-6 opacity-60 transition-all duration-200 ease-out hover:translate-x-1 hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-900/40"
           >
-            <h2 className="font-semibold text-[#001631]">{nombre}</h2>
-            <p className="mt-2 text-sm text-gray-500">Próximamente</p>
+            <h2 className="font-semibold text-[#001631] dark:text-[#f6f6f6]">{nombre}</h2>
+            <p className="mt-2 text-sm text-gray-500 dark:text-[#94a3b8]">Próximamente</p>
           </div>
         ))}
       </div>

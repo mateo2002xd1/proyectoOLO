@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
+import { ArrowUpTrayIcon, InformationCircleIcon } from '@heroicons/react/20/solid';
 import { useCargasProgramaSobresalientes } from '../hooks/use-cargas-programa-sobresalientes';
 import { HistorialCargasGrid } from './historial-cargas-grid';
 import type { CargaDatos } from '../types';
@@ -19,12 +20,12 @@ function BarraDeProgreso({ carga }: { carga: CargaDatos }) {
 
   return (
     <div className="mt-3 w-full max-w-sm" aria-live="polite">
-      <div className="flex items-baseline justify-between text-xs text-gray-500">
+      <div className="flex items-baseline justify-between text-xs text-gray-500 dark:text-[#94a3b8]">
         <span>{etiquetaFase(porcentaje)}</span>
-        <span className="font-medium text-[#001631]">{porcentaje}%</span>
+        <span className="font-medium text-[#001631] dark:text-[#f6f6f6]">{porcentaje}%</span>
       </div>
       <div
-        className="mt-1 h-2 w-full overflow-hidden rounded-full bg-gray-200"
+        className="mt-1 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-zinc-700"
         role="progressbar"
         aria-valuenow={porcentaje}
         aria-valuemin={0}
@@ -36,7 +37,7 @@ function BarraDeProgreso({ carga }: { carga: CargaDatos }) {
         />
       </div>
       {carga.filasTotales !== null && (
-        <p className="mt-1 text-xs text-gray-500">
+        <p className="mt-1 text-xs text-gray-500 dark:text-[#94a3b8]">
           {carga.filasProcesadas.toLocaleString('es-CO')} de {carga.filasTotales.toLocaleString('es-CO')} filas
         </p>
       )}
@@ -68,17 +69,18 @@ export function CargaProgramaSobresalientes({ puedeActualizar }: CargaProgramaSo
   };
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 ease-out hover:translate-x-1 hover:border-gray-300 hover:shadow-md">
-      <h2 className="font-semibold text-[#001631]">Programa + Sobresalientes</h2>
+    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 ease-out hover:translate-x-1 hover:border-gray-300 hover:shadow-md dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
+      <h2 className="font-semibold text-[#001631] dark:text-[#f6f6f6]">Programa + Sobresalientes</h2>
       {puedeActualizar ? (
         <div className="mt-4">
           <label
-            className={`inline-block rounded-md px-4 py-2 text-sm font-medium text-white ${
+            className={`inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium text-white transition-colors ${
               procesando
                 ? 'cursor-not-allowed bg-brand-interactive/60'
                 : 'cursor-pointer bg-brand-interactive hover:bg-brand-interactive-hover'
             }`}
           >
+            <ArrowUpTrayIcon className="size-4" />
             {subiendo ? 'Subiendo...' : cargaEnProceso ? 'Procesando...' : 'Cargar archivo Excel'}
             <input
               ref={inputRef}
@@ -89,19 +91,23 @@ export function CargaProgramaSobresalientes({ puedeActualizar }: CargaProgramaSo
               className="hidden"
             />
           </label>
-          {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+          <p className="mt-2 flex w-fit items-center gap-1.5 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900/40 dark:text-blue-200">
+            <InformationCircleIcon className="size-3.5 shrink-0" />
+            Formato admitido: .xlsx
+          </p>
+          {error && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>}
           {cargaEnProceso && <BarraDeProgreso carga={cargaEnProceso} />}
         </div>
       ) : (
-        <p className="mt-4 text-sm text-gray-500">
+        <p className="mt-4 text-sm text-gray-500 dark:text-[#94a3b8]">
           Solo un Administrador puede cargar este archivo.
         </p>
       )}
 
       <div className="mt-6">
-        <h3 className="mb-2 text-sm font-medium text-gray-700">Historial de cargas</h3>
+        <h3 className="mb-2 text-sm font-medium text-gray-700 dark:text-zinc-300">Historial de cargas</h3>
         {cargando ? (
-          <p className="text-sm text-gray-500">Cargando historial...</p>
+          <p className="text-sm text-gray-500 dark:text-[#94a3b8]">Cargando historial...</p>
         ) : (
           <HistorialCargasGrid cargas={cargas} onEliminar={puedeActualizar ? eliminarCarga : undefined} />
         )}

@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import type { User } from '../hooks/use-usuarios';
+import { GraficoEcharts, useEsOscuro, type OpcionGrafico } from '@/shared/ui/molecules/grafico-echarts';
 
 interface Props {
   users: User[];
@@ -32,20 +33,50 @@ function contarUsuariosPorRol(users: User[]): { rol: string; total: number }[] {
 export function TarjetaUsuarios({ users, loading }: Props) {
   const totalUsuarios = users.length;
   const usuariosPorRol = useMemo(() => contarUsuariosPorRol(users), [users]);
+  const esOscuro = useEsOscuro();
 
-  // Construir el conic-gradient
-  const gradientStops = useMemo(() => {
-    if (totalUsuarios === 0) return 'transparent 0deg 360deg';
-    let currentDegree = 0;
-    return usuariosPorRol.map((item, index) => {
-      const percentage = (item.total / totalUsuarios) * 360;
-      const color = COLORES[index % COLORES.length];
-      const start = currentDegree;
-      const end = currentDegree + percentage;
-      currentDegree = end;
-      return `${color} ${start}deg ${end}deg`;
-    }).join(', ');
-  }, [usuariosPorRol, totalUsuarios]);
+  const opcion: OpcionGrafico = useMemo(
+    () => ({
+      tooltip: {
+        trigger: 'item',
+        backgroundColor: esOscuro ? '#1e293b' : '#ffffff',
+        borderColor: esOscuro ? '#334155' : '#e4e4e7',
+        textStyle: { color: esOscuro ? '#f6f6f6' : '#18181b' },
+        valueFormatter: (valor) => `${valor} usuario${valor === 1 ? '' : 's'}`,
+      },
+      legend: {
+        orient: 'vertical',
+        right: 4,
+        top: 'middle',
+        itemWidth: 10,
+        itemHeight: 10,
+        icon: 'circle',
+        textStyle: { color: esOscuro ? '#cbd5e1' : '#52525b', fontSize: 12 },
+      },
+      series: [
+        {
+          type: 'pie',
+          radius: ['62%', '88%'],
+          center: ['34%', '50%'],
+          avoidLabelOverlap: false,
+          label: { show: false },
+          labelLine: { show: false },
+          emphasis: { scaleSize: 6 },
+          itemStyle: {
+            borderRadius: 5,
+            borderColor: esOscuro ? '#131b2f' : '#ffffff',
+            borderWidth: 3,
+          },
+          data: usuariosPorRol.map((item, index) => ({
+            name: item.rol,
+            value: item.total,
+            itemStyle: { color: COLORES[index % COLORES.length] },
+          })),
+        },
+      ],
+    }),
+    [usuariosPorRol, esOscuro]
+  );
 
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155] flex flex-col h-full">
@@ -63,35 +94,8 @@ export function TarjetaUsuarios({ users, loading }: Props) {
       </div>
 
       {!loading && usuariosPorRol.length > 0 && (
-        <div className="mt-3 border-t border-zinc-100 pt-5 dark:border-[#7db828]/20 flex-1 flex flex-col justify-center">
-          <div className="flex items-center gap-6">
-            {/* Gráfico de Torta (Donut) */}
-            <div className="relative size-32 shrink-0">
-              <div 
-                className="absolute inset-0 rounded-full transition-all duration-500 ease-out"
-                style={{ background: `conic-gradient(${gradientStops})` }}
-              />
-              <div className="absolute inset-4 rounded-full bg-white dark:bg-[#131b2f]" />
-            </div>
-
-            {/* Leyenda */}
-            <div className="flex-1 space-y-2.5">
-              {usuariosPorRol.map((item, index) => {
-                const color = COLORES[index % COLORES.length];
-                return (
-                  <div key={item.rol} className="flex items-center justify-between gap-2 text-xs">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: color }} />
-                      <span className="truncate font-medium text-zinc-600 dark:text-zinc-300">{item.rol}</span>
-                    </div>
-                    <span className="font-semibold tabular-nums text-zinc-800 dark:text-zinc-200">
-                      {item.total}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+        <div className="mt-3 border-t border-zinc-100 pt-2 dark:border-[#7db828]/20 flex-1 flex flex-col justify-center">
+          <GraficoEcharts option={opcion} alto={144} />
         </div>
       )}
     </div>
