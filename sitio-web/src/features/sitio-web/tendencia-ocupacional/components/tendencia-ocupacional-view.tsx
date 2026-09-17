@@ -2,8 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import {
-  DATOS_TENDENCIA_BASE,
-  DEFINICIONES_NIVELES_OCUPACIONALES,
   TITULOS_TENDENCIA,
   SUBTITULOS_TENDENCIA,
 } from '../data/base-tendencia-datos';
@@ -12,9 +10,11 @@ import { FiltrosTendencia } from './filtros-tendencia';
 import { DefinicionesNivelOcupacional } from './definiciones-nivel-ocupacional';
 import { TablaTendencia } from './tabla-tendencia';
 import type {
+  DefinicionNivel,
   FiltrosTendencia as IFiltrosTendencia,
   RegistroTendenciaOcupacional,
   TendenciaOcupacionalViewProps,
+  TipoTendenciaOcupacional,
 } from '../types';
 
 const FILAS_POR_PAGINA = 20;
@@ -132,10 +132,39 @@ export function TendenciaOcupacionalView({
     [datos]
   );
 
+  const definicionesNivel = useMemo<DefinicionNivel[]>(() => {
+    const mapa = new Map<string, DefinicionNivel>();
+
+    for (const item of datos) {
+      const raw = (item.nivelOcupacional || '').trim();
+      if (!raw) continue;
+
+      const codigo = item.nivelCodigo || raw;
+      if (mapa.has(codigo)) continue;
+
+      if (raw.includes(':')) {
+        const idx = raw.indexOf(':');
+        const tit = raw.substring(0, idx).trim();
+        const desc = raw.substring(idx + 1).trim();
+        mapa.set(codigo, {
+          codigo,
+          titulo: tit,
+          descripcion: desc,
+        });
+      } else {
+        mapa.set(codigo, {
+          codigo,
+          titulo: raw,
+          descripcion: '',
+        });
+      }
+    }
+
+    return Array.from(mapa.values()).sort((a, b) => a.codigo.localeCompare(b.codigo));
+  }, [datos]);
+
   const nivelesDisponibles = useMemo(() => {
-    const codigosDefinidos = DEFINICIONES_NIVELES_OCUPACIONALES.map((d) => d.codigo);
-    const codigosDatos = datos.map((d) => d.nivelCodigo).filter(Boolean);
-    return Array.from(new Set([...codigosDefinidos, ...codigosDatos]));
+    return Array.from(new Set(datos.map((d) => d.nivelCodigo).filter(Boolean))).sort();
   }, [datos]);
 
   // Filtrado de registros en memoria
@@ -280,7 +309,7 @@ export function TendenciaOcupacionalView({
         hayFiltrosActivos={hayFiltrosActivos}
       />
 
-      {mostrarDefiniciones && <DefinicionesNivelOcupacional />}
+      {mostrarDefiniciones && <DefinicionesNivelOcupacional definiciones={definicionesNivel} />}
 
       {cargando ? (
         <div

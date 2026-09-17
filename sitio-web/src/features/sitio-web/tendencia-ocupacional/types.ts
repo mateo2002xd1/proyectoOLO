@@ -11,6 +11,12 @@ export interface RegistroTendenciaOcupacional {
   periodo: string;
 }
 
+export interface DefinicionNivel {
+  codigo: string;
+  titulo: string;
+  descripcion: string;
+}
+
 export interface FiltrosTendencia {
   departamento: string;
   anio: string;

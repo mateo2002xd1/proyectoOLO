@@ -1,10 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import { DEFINICIONES_NIVELES_OCUPACIONALES } from '../data/base-tendencia-datos';
+import type { DefinicionNivel } from '../types';
 
-export function DefinicionesNivelOcupacional() {
+export interface DefinicionesNivelOcupacionalProps {
+  definiciones?: DefinicionNivel[];
+}
+
+export function DefinicionesNivelOcupacional({
+  definiciones = [],
+}: DefinicionesNivelOcupacionalProps) {
   const [mostrarDefiniciones, setMostrarDefiniciones] = useState(true);
+
+  if (!definiciones.length) {
+    return null;
+  }
 
   return (
     <div className="sticky top-[96px] z-20 rounded-[16px] border border-[#eaecf0] bg-white/95 px-4 py-3 text-xs shadow-md backdrop-blur-md transition-all text-[#475467]">
@@ -54,15 +64,16 @@ export function DefinicionesNivelOcupacional() {
 
       {mostrarDefiniciones && (
         <div className="mt-2.5 space-y-1.5 border-t border-[#eaecf0] pt-2.5">
-          {DEFINICIONES_NIVELES_OCUPACIONALES.map((item) => (
+          {definiciones.map((item) => (
             <p
               key={item.codigo}
               className="text-[11px] leading-relaxed text-[#475467] sm:text-xs"
             >
               <strong className="font-semibold text-[#344054]">
-                {item.titulo}:{' '}
+                {item.titulo}
+                {item.descripcion ? ': ' : ''}
               </strong>
-              <span>{item.descripcion}</span>
+              {item.descripcion && <span>{item.descripcion}</span>}
             </p>
           ))}
         </div>
