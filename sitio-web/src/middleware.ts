@@ -45,7 +45,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Protected routes (/admin/dashboard, /admin/usuarios, /admin/editor/*): require session
+  // Protected routes (/admin/dashboard, /admin/usuarios, /editor/*): require session
   if (!hasValidSession) {
     const redirectUrl = new URL('/admin/login', request.url);
     redirectUrl.searchParams.set('redirect', pathname);
@@ -71,7 +71,7 @@ export async function middleware(request: NextRequest) {
   if (pathname.startsWith('/admin/dashboard')) {
     if (!hasAccesoPanel) {
       if (hasPermisosEdicion) {
-        return NextResponse.redirect(new URL('/admin/editor', request.url));
+        return NextResponse.redirect(new URL('/editor', request.url));
       }
       return loginRedirect();
     }
@@ -117,8 +117,9 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // /admin/editor/* — cualquiera con permisos de edición
-  if (pathname.startsWith('/admin/editor')) {
+  // /editor/* — cualquiera con permisos de edición. Vive fuera de /admin desde el
+  // 2026-09-18; /admin/editor/* redirige aquí desde next.config.mjs.
+  if (pathname.startsWith('/editor')) {
     if (!hasAccesoPanel && !hasPermisosEdicion) {
       return loginRedirect();
     }
@@ -163,7 +164,7 @@ export const config = {
     '/admin/actualizaciones',
     '/admin/mi-perfil/:path*',
     '/admin/mi-perfil',
-    '/admin/editor/:path*',
+    '/editor/:path*',
     '/admin/login',
     '/admin/cambiar-contrasena',
   ],
