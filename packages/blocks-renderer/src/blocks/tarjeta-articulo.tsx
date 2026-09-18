@@ -112,16 +112,22 @@ export function TarjetaArticulo({
       )}
 
       {titulo && (
-        <a
-          href={urlEnlace || '#'}
-          onClick={handleLinkClick(urlEnlace)}
-          {...propsTarget}
-          className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 rounded"
-        >
-          <h5 className="olo-tarjeta-articulo-titulo mt-2 mb-2 text-2xl font-semibold tracking-tight text-heading text-neutral-900 dark:text-neutral-100 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors">
+        urlEnlace && urlEnlace !== '#' ? (
+          <a
+            href={urlEnlace}
+            onClick={handleLinkClick(urlEnlace)}
+            {...propsTarget}
+            className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 rounded"
+          >
+            <h5 className="olo-tarjeta-articulo-titulo mt-2 mb-2 text-2xl font-semibold tracking-tight text-heading text-neutral-900 dark:text-neutral-100 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors">
+              {titulo}
+            </h5>
+          </a>
+        ) : (
+          <h5 className="olo-tarjeta-articulo-titulo mt-2 mb-2 text-2xl font-semibold tracking-tight text-heading text-neutral-900 dark:text-neutral-100 transition-colors">
             {titulo}
           </h5>
-        </a>
+        )
       )}
 
       {descripcion && (
