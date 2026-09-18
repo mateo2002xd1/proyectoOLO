@@ -1,11 +1,18 @@
 import { etiquetaDeAccion, etiquetaDeEntidad, type RegistroAuditoria } from '../types';
+import { resumenDeCambios } from './cambios';
 
+/**
+ * «Cambios» es lo mismo que enseña la tabla (el comentario de cambios y el motivo);
+ * «Campos modificados» sigue saliendo entero porque este archivo es el respaldo que
+ * se descarga antes de depurar la bitácora, y como evidencia no puede perder datos.
+ */
 const COLUMNAS = [
   'Fecha',
   'Usuario',
   'Acción',
   'Entidad',
   'Id de la entidad',
+  'Cambios',
   'Campos modificados',
   'IP',
   'Navegador',
@@ -38,6 +45,7 @@ export function aCsv(registros: RegistroAuditoria[]): string {
       etiquetaDeAccion(r.accion),
       etiquetaDeEntidad(r.entidadTipo),
       r.entidadId,
+      resumenDeCambios(r, '\n'),
       resumirCampos(r),
       r.ip ?? '',
       r.userAgent ?? '',

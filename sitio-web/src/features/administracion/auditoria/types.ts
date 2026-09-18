@@ -151,6 +151,7 @@ export const ETIQUETA_CAMPO: Record<string, string> = {
   version: 'Versión',
   estado: 'Estado',
   motivo: 'Motivo',
+  comentario: 'Comentario de cambios',
   titulo: 'Título',
   ambito: 'Ámbito',
   permiso: 'Permiso',
