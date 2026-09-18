@@ -251,11 +251,11 @@ function LoginForm() {
                   pulsara al propio login del que venía. */}
               <p className="mb-6 text-xs leading-relaxed text-gray-500">
                 Al ingresar a este sitio aceptas la{' '}
-                <a href={`${SITE_URL}/politica-de-privacidad`} className="font-semibold text-gray-700 hover:underline">
+                <a href={`${SITE_URL}/inicio/politica-de-privacidad`} className="font-semibold text-gray-700 hover:underline">
                   política de privacidad
                 </a>{' '}
                 y{' '}
-                <a href={`${SITE_URL}/politica-de-privacidad`} className="font-semibold text-gray-700 hover:underline">
+                <a href={`${SITE_URL}/inicio/politica-de-privacidad`} className="font-semibold text-gray-700 hover:underline">
                   protección de datos
                 </a>
                 .
