@@ -143,6 +143,13 @@ export function requierePermisoDeSeccion() {
         if (resultado === null) return;
         if (resultado === 'superadmin') return next();
 
+        const permisoAcceso = ambito === 'sitio' ? 'acceso.sitio' : 'acceso.intranet';
+        if (!resultado.perms.includes(permisoAcceso)) {
+          return res.status(403).json({
+            error: `No tienes acceso a ${ambito}, por tanto no puedes editar sus secciones.`,
+          });
+        }
+
         if (!resultado.perms.includes(claveDeSeccion(ambito, slug))) {
           return res.status(403).json({
             error: 'No tienes permiso para editar esta sección',

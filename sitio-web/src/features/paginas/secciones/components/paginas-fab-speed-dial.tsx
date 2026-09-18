@@ -82,17 +82,20 @@ export function PaginasFabSpeedDial() {
       window.removeEventListener('focus', actualizarPermisos);
       document.removeEventListener('visibilitychange', alCambiarVisibilidad);
     };
-  }, []);
+  }, [slug]);
 
   const esSuperadmin = esSuperadminPorCookie;
+
+  const tieneAccesoSitio = permisosActivos.includes('acceso.sitio');
+  const tienePermisoGlobal = esSuperadmin || tieneAccesoSitio;
 
   const tienePermisoEditarSeccion = permisosActivos.includes(`editar.sitio.${slug}`);
   const tienePermisoEditarPlantilla = permisosActivos.includes('editar.sitio.menu-y-pie');
 
-  const puedeEditarSeccion = Boolean(slug) && (esSuperadmin || tienePermisoEditarSeccion);
-  const puedeEditarPlantilla = esSuperadmin || tienePermisoEditarPlantilla;
-  const puedeCrearSeccion = puedeCrear || esSuperadmin;
-  const puedeEliminarSeccion = Boolean(slug) && (puedeEliminar || esSuperadmin);
+  const puedeEditarSeccion = tienePermisoGlobal && Boolean(slug) && (esSuperadmin || tienePermisoEditarSeccion);
+  const puedeEditarPlantilla = tienePermisoGlobal && (esSuperadmin || tienePermisoEditarPlantilla);
+  const puedeCrearSeccion = tienePermisoGlobal && (puedeCrear || esSuperadmin);
+  const puedeEliminarSeccion = tienePermisoGlobal && Boolean(slug) && (puedeEliminar || esSuperadmin);
 
   const tieneAlgunaAccion =
     puedeEditarSeccion || puedeEditarPlantilla || puedeCrearSeccion || puedeEliminarSeccion;

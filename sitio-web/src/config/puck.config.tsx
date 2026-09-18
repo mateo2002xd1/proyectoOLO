@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, type ComponentProps, type ReactNode } from 'react';
-import { createPortal } from 'react-dom';
+import { useEffect, useRef, type ComponentProps, type ReactNode } from 'react';
 import {
   primitiveComponents,
   crearGridConfig,
@@ -78,17 +77,32 @@ const campoFondo = {
 
 // ─── RichText block: Puck handles the layout slot, EditorJS handles the content ───
 const RichTextBlock = {
+  label: 'Texto enriquecido',
   fields: {
     content: {
       type: 'custom' as const,
+      label: 'Contenido enriquecido',
       render: ({ value, onChange }: CustomFieldRender<OutputData>) => (
         <EditorjsWrapper data={value} onChange={onChange} />
       ),
     },
   },
-  defaultProps: { content: { blocks: [] } },
+  defaultProps: {
+    content: {
+      blocks: [
+        {
+          type: 'paragraph',
+          data: {
+            text: 'Escribe aquí tu contenido enriquecido. Puedes añadir encabezados, párrafos, listas y citas desde el panel lateral derecho.',
+          },
+        },
+      ],
+    },
+  },
   render: ({ content }: BlockRender<{ content?: OutputData }>) => (
-    <EditorjsWrapper data={content || { blocks: [] }} readOnly />
+    <div className="w-full max-w-[1200px] mx-auto px-6 py-6 rich-text">
+      <EditorjsWrapper data={content} readOnly />
+    </div>
   ),
 };
 
@@ -407,7 +421,6 @@ const puckConfigBase: Config = {
         searchPlaceholder: {
           type: 'text' as const,
           label: 'Texto de ejemplo dentro del buscador',
-          contentEditable: true,
         },
         imageUrl: campoImagen('Logo (esquina superior)'),
         imageAlt: {
@@ -679,7 +692,36 @@ const puckConfigBase: Config = {
         titulo: '<p><strong>Ultimas</strong> publicaciones</p>',
         mostrarSubtitulo: false,
         subtitulo: '',
-        publicaciones: [],
+        publicaciones: [
+          {
+            titulo: 'Boletín Mercado Laboral — Edición 2026',
+            pdfUrl: '/storage/uploads/pdf/1567f705-93ee-4839-88b1-055c0891c69e.pdf',
+            etiqueta: '#OLOtecuenta',
+            mes: 'Mar',
+            dia: '15',
+          },
+          {
+            titulo: 'Catálogo de Ocupaciones Campesina y Familiar',
+            pdfUrl: '/storage/uploads/pdf/4ea611c8-c6a0-47e3-b7ff-3410a2eb01c9.pdf',
+            etiqueta: '#OLOtecuenta',
+            mes: 'Abr',
+            dia: '02',
+          },
+          {
+            titulo: 'Diccionario Ocupacional y Metodologías OLO',
+            pdfUrl: '/storage/uploads/pdf/50a120cc-1171-48c8-a9fc-03f1ddf44a34.pdf',
+            etiqueta: '#OLOtecuenta',
+            mes: 'May',
+            dia: '07',
+          },
+          {
+            titulo: 'Informe Economía Popular y Mercado de Trabajo',
+            pdfUrl: '/storage/uploads/pdf/6baad355-af7b-41de-941f-f9b6cbdd849f.pdf',
+            etiqueta: '#OLOtecuenta',
+            mes: 'Jun',
+            dia: '18',
+          },
+        ],
         porPagina: 4,
       },
       render: ({
@@ -690,6 +732,7 @@ const puckConfigBase: Config = {
         mostrarSubtitulo,
         publicaciones,
         porPagina,
+        puck,
       }: BlockRender<{
         titulo?: ReactNode;
         mostrarTitulo?: boolean;
@@ -697,6 +740,7 @@ const puckConfigBase: Config = {
         mostrarSubtitulo?: boolean;
         publicaciones?: { titulo?: ReactNode; pdfUrl?: string; etiqueta?: ReactNode; mes?: ReactNode; dia?: ReactNode }[];
         porPagina?: number;
+        puck?: { isEditing?: boolean };
       }>) => (
         <Publicaciones
           block={{ id: id || 'publicaciones-preview' }}
@@ -706,6 +750,7 @@ const puckConfigBase: Config = {
           mostrarSubtitulo={mostrarSubtitulo}
           publicaciones={publicaciones}
           porPagina={porPagina}
+          esEdicion={Boolean(puck?.isEditing)}
         />
       ),
     },
@@ -1400,9 +1445,25 @@ const puckConfigBase: Config = {
             },
           ],
         },
+        modoSeleccionDepartamento: {
+          type: 'radio',
+          label: 'Modo de selección de departamento',
+          options: [
+            { label: 'Por lista', value: 'lista' },
+            { label: 'Por mapa', value: 'mapa' },
+          ],
+        },
         mostrarDefiniciones: {
           type: 'radio',
           label: 'Mostrar caja de definiciones de niveles',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        mostrarTotales: {
+          type: 'radio',
+          label: 'Mostrar fila de totales (inscritos y vacantes)',
           options: [
             { label: 'Sí', value: true },
             { label: 'No', value: false },
@@ -1477,7 +1538,9 @@ const puckConfigBase: Config = {
       },
       defaultProps: {
         tipoTendencia: 'mas-menos',
+        modoSeleccionDepartamento: 'lista',
         mostrarDefiniciones: true,
+        mostrarTotales: false,
         mostrarTitulo: true,
         titulo: TITULOS_TENDENCIA['mas-menos'],
         alineacionTitulo: 'centro',
@@ -1495,13 +1558,43 @@ const puckConfigBase: Config = {
         const tipo = (data.props.tipoTendencia as TipoTendenciaOcupacional) || 'mas-menos';
         const tituloSugerido = TITULOS_TENDENCIA[tipo] || TITULOS_TENDENCIA['mas-menos'];
 
-        if (params.changed.tipoTendencia || !data.props.titulo || !data.props.titulo.trim()) {
+        let propsActualizadas = { ...data.props };
+        let huboCambios = false;
+
+        if (propsActualizadas.mostrarTotales === undefined) {
+          propsActualizadas.mostrarTotales = false;
+          huboCambios = true;
+        }
+
+        if (!propsActualizadas.modoSeleccionDepartamento) {
+          propsActualizadas.modoSeleccionDepartamento = 'lista';
+          huboCambios = true;
+        }
+
+        if (propsActualizadas.mostrarBannerDepartamento === undefined) {
+          propsActualizadas.mostrarBannerDepartamento = false;
+          huboCambios = true;
+        }
+
+        if (propsActualizadas.mostrarDefiniciones === undefined) {
+          propsActualizadas.mostrarDefiniciones = true;
+          huboCambios = true;
+        }
+
+        if (propsActualizadas.mostrarTitulo === undefined) {
+          propsActualizadas.mostrarTitulo = true;
+          huboCambios = true;
+        }
+
+        if (params.changed.tipoTendencia || !propsActualizadas.titulo || !propsActualizadas.titulo.trim()) {
+          propsActualizadas.titulo = tituloSugerido;
+          huboCambios = true;
+        }
+
+        if (huboCambios) {
           return {
             ...data,
-            props: {
-              ...data.props,
-              titulo: tituloSugerido,
-            },
+            props: propsActualizadas,
           };
         }
 
@@ -1511,6 +1604,13 @@ const puckConfigBase: Config = {
         props: BlockRender<{
           tipoTendencia?: TipoTendenciaOcupacional;
           mostrarDefiniciones?: boolean;
+          mostrarTotales?: boolean;
+          modoSeleccionDepartamento?: 'lista' | 'mapa';
+          mostrarBannerDepartamento?: boolean;
+          tituloBanner?: string;
+          subtituloBanner?: string;
+          descripcionBanner?: string;
+          colorBanner?: string;
           mostrarTitulo?: boolean;
           titulo?: string;
           alineacionTitulo?: 'izquierda' | 'centro' | 'derecha';
@@ -1528,6 +1628,13 @@ const puckConfigBase: Config = {
         <TendenciaOcupacionalView
           tipoTendencia={props.tipoTendencia}
           mostrarDefiniciones={props.mostrarDefiniciones ?? true}
+          mostrarTotales={props.mostrarTotales ?? false}
+          modoSeleccionDepartamento={props.modoSeleccionDepartamento ?? 'lista'}
+          mostrarBannerDepartamento={props.mostrarBannerDepartamento ?? false}
+          tituloBanner={props.tituloBanner}
+          subtituloBanner={props.subtituloBanner}
+          descripcionBanner={props.descripcionBanner}
+          colorBanner={props.colorBanner}
           mostrarTitulo={props.mostrarTitulo}
           titulo={props.titulo}
           alineacionTitulo={props.alineacionTitulo}
@@ -1539,6 +1646,7 @@ const puckConfigBase: Config = {
           mostrarDescripcion={props.mostrarDescripcion}
           descripcion={props.descripcion}
           alineacionDescripcion={props.alineacionDescripcion}
+          colorDescripcion={props.colorDescripcion}
         />
       ),
     },

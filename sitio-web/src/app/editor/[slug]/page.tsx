@@ -44,6 +44,9 @@ export default async function EditorPage({
   // automáticamente.
   if ((role ?? '').trim().toLowerCase() !== 'superadmin') {
     const { permissions } = await getSessionPermissionsSnapshot();
+    if (!permissions.includes('acceso.sitio')) {
+      redirect('/');
+    }
     if (!permissions.includes(`editar.sitio.${slug}`)) {
       if (slug === SLUG_PLANTILLA) {
         redirect('/');
