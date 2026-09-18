@@ -12,7 +12,6 @@ import {
   X,
 } from 'lucide-react';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
-import { DatePicker } from '@/shared/ui/molecules/date-picker';
 import { mensajeDeErrorApi } from '@/shared/lib/errores-api';
 import { analizarDepuracion, ejecutarDepuracion } from '../services/respaldos.service';
 import type { AnalisisDepuracionDTO, FiltrosDepuracion, RegistroRespaldo } from '../types';
@@ -22,14 +21,6 @@ interface ModalDepurarVersionesProps {
   registros: RegistroRespaldo[];
   onCerrar: () => void;
   onExito: () => void;
-}
-
-const DIAS_SEGURIDAD = 30;
-
-function obtenerFechaHaceUnMesIso(): string {
-  const ahora = new Date();
-  const hace30Dias = new Date(ahora.getTime() - DIAS_SEGURIDAD * 24 * 60 * 60 * 1000);
-  return hace30Dias.toISOString().slice(0, 10);
 }
 
 function formatearBytes(bytes: number): string {
@@ -47,12 +38,9 @@ export function ModalDepurarVersiones({
   onCerrar,
   onExito,
 }: ModalDepurarVersionesProps) {
-  const fechaMaximaPermitida = useMemo(() => obtenerFechaHaceUnMesIso(), []);
-
   const [filtros, setFiltros] = useState<FiltrosDepuracion>({
     ambito: undefined,
     paginaId: undefined,
-    fechaCorte: fechaMaximaPermitida,
     conservarUltimoRespaldo: true,
   });
 
@@ -254,30 +242,6 @@ export function ModalDepurarVersiones({
                     options={opcionesPaginas}
                   />
                 </div>
-              </div>
-
-              <div>
-                <div className="mb-1.5 flex items-center justify-between">
-                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-                    Eliminar versiones archivadas anteriores al
-                  </label>
-                  <span className="text-[11px] font-medium text-amber-600 dark:text-amber-400">
-                    Último mes protegido
-                  </span>
-                </div>
-                <DatePicker
-                  ariaLabel="Fecha de corte para depuración"
-                  value={filtros.fechaCorte}
-                  max={fechaMaximaPermitida}
-                  onChange={(val) => {
-                    const fechaAjustada = val && val > fechaMaximaPermitida ? fechaMaximaPermitida : val;
-                    setFiltros((prev) => ({ ...prev, fechaCorte: fechaAjustada }));
-                  }}
-                />
-                <p className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400">
-                  Por seguridad, solo se permite seleccionar fechas con al menos 30 días de
-                  antigüedad ({fechaMaximaPermitida} o anteriores).
-                </p>
               </div>
 
               {/* Información fija de conservación de respaldo */}

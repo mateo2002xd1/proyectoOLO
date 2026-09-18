@@ -48,7 +48,6 @@ const PERMISOS_POR_ROL: Record<string, string[]> = {
     'acceso.panel',
     ...clavesDeEdicion('sitio'),
     ...clavesDeEdicion('intranet'),
-    'editor.enviar-revision',
   ],
 
   // Dirección y subdirección entran a la intranet y leen. No editan: así lo fija

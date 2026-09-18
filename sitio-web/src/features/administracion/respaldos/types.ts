@@ -51,7 +51,7 @@ export interface RegistroRespaldo {
 export interface FiltrosDepuracion {
   ambito?: 'sitio' | 'intranet';
   paginaId?: string;
-  fechaCorte: string; // ISO YYYY-MM-DD
+  fechaCorte?: string; // ISO YYYY-MM-DD opcional
   conservarUltimoRespaldo?: boolean;
 }
 

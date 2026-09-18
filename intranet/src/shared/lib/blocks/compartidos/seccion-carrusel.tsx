@@ -25,6 +25,12 @@ export interface SeccionCarruselProps {
   fondo?: 'blanco' | 'gris';
 }
 
+const IMAGENES_PREVIEW_DEFECTO = [
+  { src: '/assets/img/Carrusel1.png', alt: 'Vista previa carrusel 1' },
+  { src: '/assets/img/Carrusel2.png', alt: 'Vista previa carrusel 2' },
+  { src: '/assets/img/Carrusel3.png', alt: 'Vista previa carrusel 3' },
+];
+
 export function SeccionCarrusel({
   titulo,
   imagenes = [],
@@ -34,31 +40,38 @@ export function SeccionCarrusel({
   disposicion = 'columna',
   fondo = 'blanco',
 }: SeccionCarruselProps) {
-  // El carrusel divide por el número de imágenes, así que sin ninguna se rompe.
-  if (imagenes.length === 0) return null;
-
   // El alt viaja con la imagen: antes se descartaba aquí y el carrusel pintaba
   // siempre "Imagen del carrusel N", así que lo que el editor escribía en el
   // campo de texto alternativo nunca llegaba al HTML.
-  const imagenesConAlt = imagenes
-    .filter((imagen): imagen is { src: string; alt?: string } => Boolean(imagen.src))
+  const imagenesConAlt = (imagenes || [])
+    .filter((imagen): imagen is { src: string; alt?: string } => Boolean(imagen && imagen.src && imagen.src.trim()))
     .map((imagen) => ({ src: imagen.src, alt: imagen.alt ?? '' }));
-  if (imagenesConAlt.length === 0) return null;
+
+  const esVistaPrevia = imagenesConAlt.length === 0;
+  const listaFinal = esVistaPrevia ? IMAGENES_PREVIEW_DEFECTO : imagenesConAlt;
 
   const carrusel = (
-    <Carousel
-      images={imagenesConAlt}
-      itemsPerPage={imagenesPorPagina}
-      autoplay={autoplay}
-      showButtons={mostrarBotones}
-    />
+    <div className="w-full relative">
+      {esVistaPrevia && (
+        <div className="w-full text-center py-1.5 px-3 mb-3 bg-blue-50/90 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 text-xs font-medium rounded-lg flex items-center justify-center gap-2">
+          <span>🖼️</span>
+          <span>Vista previa del carrusel — Añade o edita imágenes desde el panel lateral</span>
+        </div>
+      )}
+      <Carousel
+        images={listaFinal}
+        itemsPerPage={Math.min(imagenesPorPagina, listaFinal.length)}
+        autoplay={autoplay}
+        showButtons={mostrarBotones}
+      />
+    </div>
   );
 
   if (disposicion === 'lado-a-lado') {
     return (
       <div className="matriz-section-datoOLO">
         <div className="matriz-content-container-datoolo">
-          {titulo && <h2>{titulo}</h2>}
+          {titulo ? <h2>{titulo}</h2> : esVistaPrevia ? <h2>Título del carrusel</h2> : null}
           <div className="w-full md:flex-1">{carrusel}</div>
         </div>
       </div>
@@ -70,13 +83,18 @@ export function SeccionCarrusel({
       className={`${fondo === 'gris' ? 'matriz-section-gray' : 'matriz-section-white'} px-6`}
     >
       <div className="max-w-[1200px] w-full mx-auto text-center flex flex-col items-center py-12">
-        {titulo && (
+        {titulo ? (
           <h2 className="tasa-concept-title mb-6">
             {titulo}
           </h2>
-        )}
+        ) : esVistaPrevia ? (
+          <h2 className="tasa-concept-title mb-6 text-gray-400 dark:text-gray-500 italic">
+            Título del carrusel
+          </h2>
+        ) : null}
         <div className="w-full px-2 md:px-6">{carrusel}</div>
       </div>
     </div>
   );
 }
+

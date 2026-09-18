@@ -11,6 +11,7 @@ import { Bloque, PuckData, EstadoPagina } from '../types';
 import { AvisoRechazo, type Rechazo } from './aviso-rechazo';
 import { VigilanteSesion } from '@/shared/lib/inactividad';
 import { validarAccesibilidad, mensajeDeViolacion, type ViolacionAccesibilidad } from '@olo/accessibility-policy';
+import { TITULOS_TENDENCIA, type TipoTendenciaOcupacional } from '@/features/sitio-web/tendencia-ocupacional';
 
 /**
  * Íconos de las tres acciones de la cabecera, en blanco fijo.
@@ -499,8 +500,8 @@ export function PuckEditorWrapper({
   // Datos iniciales con identidad estable (evita re-render infinito en Puck).
   // Va en useState con inicializador diferido, no en useRef: los refs no deben
   // leerse durante el render, y así el objeto se construye una sola vez.
-  const [initialPuckData] = useState<Data>(() =>
-    Array.isArray(initialData)
+  const [initialPuckData] = useState<Data>(() => {
+    const raw = Array.isArray(initialData)
       ? {
           content: initialData.map((bloque) => ({
             type: bloque.type,
@@ -508,8 +509,49 @@ export function PuckEditorWrapper({
           })),
           root: {},
         }
-      : (initialData as Data) ?? { content: [], root: {} }
-  );
+      : (initialData as Data) ?? { content: [], root: {} };
+
+    const contentNormalizado = (raw.content ?? []).map((item: any, idx: number) => {
+      const id = item.props?.id || `${item.type || 'bloque'}-${idx + 1}`;
+
+      if (item.type === 'TendenciaOcupacional') {
+        const tipo = (item.props?.tipoTendencia as TipoTendenciaOcupacional) || 'mas-menos';
+        const tituloPorDefecto = TITULOS_TENDENCIA[tipo] || TITULOS_TENDENCIA['mas-menos'];
+        const tieneTitulo = typeof item.props?.titulo === 'string' && item.props.titulo.trim() !== '';
+
+        const esSubtituloAntiguo =
+          item.props?.subtitulo === 'Demanda laboral y ocupaciones más solicitadas';
+
+        return {
+          ...item,
+          props: {
+            ...item.props,
+            id,
+            tipoTendencia: tipo,
+            mostrarDefiniciones: item.props?.mostrarDefiniciones ?? true,
+            titulo: tieneTitulo ? item.props.titulo : tituloPorDefecto,
+            mostrarSubtitulo: esSubtituloAntiguo ? false : Boolean(item.props?.mostrarSubtitulo),
+            subtitulo: esSubtituloAntiguo ? '' : (item.props?.subtitulo || ''),
+            mostrarDescripcion: false,
+            descripcion: '',
+          },
+        };
+      }
+
+      return {
+        ...item,
+        props: {
+          ...item.props,
+          id,
+        },
+      };
+    });
+
+    return {
+      ...raw,
+      content: contentNormalizado,
+    };
+  });
 
   // El selector solo ofrece los bloques que tienen sentido en esta página, y la
   // config trae además el resto de la página pintado inerte alrededor. Se memoriza

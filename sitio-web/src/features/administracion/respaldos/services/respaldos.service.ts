@@ -53,9 +53,9 @@ export async function verificarBloqueo(
  */
 export async function analizarDepuracion(filtros: import('../types').FiltrosDepuracion): Promise<import('../types').AnalisisDepuracionDTO> {
   const params: Record<string, string | boolean | undefined> = {
-    fechaCorte: filtros.fechaCorte,
     conservarUltimoRespaldo: filtros.conservarUltimoRespaldo !== false,
   };
+  if (filtros.fechaCorte) params.fechaCorte = filtros.fechaCorte;
   if (filtros.ambito) params.ambito = filtros.ambito;
   if (filtros.paginaId) params.paginaId = filtros.paginaId;
 
@@ -73,7 +73,7 @@ export async function ejecutarDepuracion(filtros: import('../types').FiltrosDepu
     {
       ambito: filtros.ambito,
       paginaId: filtros.paginaId,
-      fechaCorte: filtros.fechaCorte,
+      fechaCorte: filtros.fechaCorte || undefined,
       conservarUltimoRespaldo: filtros.conservarUltimoRespaldo !== false,
     },
     { headers }

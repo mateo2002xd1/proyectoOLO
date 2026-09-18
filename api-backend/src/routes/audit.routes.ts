@@ -80,6 +80,12 @@ router.use(requireAuth, requierePermisoAuditoria('puedeVer'), requirePermission(
 router.get('/', AuditController.getAll);
 
 /**
+ * Endpoints de depuración de la tabla de auditoría
+ */
+router.get('/depurar/analizar', AuditController.analizarDepuracion);
+router.post('/depurar', AuditController.ejecutarDepuracion);
+
+/**
  * @openapi
  * /api/audit-logs/{contentType}/{contentId}:
  *   get:

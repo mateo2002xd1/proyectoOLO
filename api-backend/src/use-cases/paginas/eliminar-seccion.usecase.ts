@@ -211,10 +211,13 @@ export const eliminarSeccion = async (
     );
     const roles = (filas as { nombre: string }[]).map((f) => f.nombre);
 
-    // `paginas_versiones` cae en cascada con la página, y `roles_permisos` con el
-    // permiso: por eso aquí solo hay dos borrados y no cuatro.
     await Pagina.destroy({ where: { slug, ambito }, transaction });
-    await Permission.destroy({ where: { name: clavePermiso }, transaction });
+    const permiso = await Permission.findOne({ where: { name: clavePermiso }, transaction });
+    if (permiso) {
+      const { RolePermission } = require('../../infrastructure/db/models');
+      await RolePermission.destroy({ where: { permission_id: permiso.id }, transaction });
+      await permiso.destroy({ transaction });
+    }
 
     return roles;
   };

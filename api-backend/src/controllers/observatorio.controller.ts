@@ -3,6 +3,7 @@ import { iniciarCargaObservatorio, ErrorDeSubida } from '../use-cases/observator
 import { listarCargasObservatorio, obtenerCargaObservatorio } from '../use-cases/observatorio/listar-cargas.usecase';
 import { eliminarCargaObservatorio, ErrorAlEliminarCarga } from '../use-cases/observatorio/eliminar-carga.usecase';
 import { consultarObservatorioActual } from '../use-cases/observatorio/consultar-actual.usecase';
+import { consultarTendenciaOcupacionalActual } from '../use-cases/observatorio/consultar-tendencia-actual.usecase';
 
 export const ObservatorioController = {
   /** Sube el Excel y arranca la carga de inmediato — sin paso de aprobación. */
@@ -72,6 +73,18 @@ export const ObservatorioController = {
     } catch (error) {
       console.error('[observatorio] Error al consultar los datos actuales:', error);
       res.status(500).json({ error: 'Error al consultar los datos.' });
+    }
+  },
+
+  /** Datos de tendencia ocupacional leídos según el tipo/cuadrante — público, sin sesión. */
+  async obtenerTendenciaOcupacional(req: Request, res: Response) {
+    try {
+      const tipo = (req.query.tipo as string) || 'mas-menos';
+      const datos = await consultarTendenciaOcupacionalActual(tipo);
+      res.json(datos);
+    } catch (error) {
+      console.error('[observatorio] Error al consultar la tendencia ocupacional:', error);
+      res.status(500).json({ error: 'Error al consultar los datos de tendencia ocupacional.' });
     }
   },
 };

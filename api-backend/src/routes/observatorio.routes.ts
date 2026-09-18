@@ -36,6 +36,7 @@ const subidaEnMemoria = multer({
  *         description: Registros vigentes.
  */
 router.get('/programas-sobresalientes', ObservatorioController.obtenerActual);
+router.get('/tendencia-ocupacional', ObservatorioController.obtenerTendenciaOcupacional);
 
 router.use(requireAuth);
 router.use(requierePermisoObservatorio('puedeActualizarDatos'));

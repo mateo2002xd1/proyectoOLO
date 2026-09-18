@@ -491,10 +491,7 @@ router.get(
  *     summary: Enviar a revisión
  *     description: |
  *       Mete el borrador en la cola de aprobación (RF-06). El Editor propone; publicar
- *       lo decide quien aprueba.
- *
- *       **Pide un permiso propio además del de edición** (`editor.enviar-revision`):
- *       se puede querer que alguien redacte borradores sin poder meterlos en la cola.
+ *       Envía un borrador a la cola de revisión.
  *     parameters:
  *       - $ref: '#/components/parameters/SlugEnRuta'
  *       - $ref: '#/components/parameters/Ambito'
@@ -509,14 +506,11 @@ router.get(
  *       404: { $ref: '#/components/responses/NoEncontrado' }
  *       429: { $ref: '#/components/responses/LimiteExcedido' }
  */
-// Enviar a revisión pide además el permiso propio: se puede querer que alguien redacte
-// borradores sin poder meterlos en la cola de aprobación.
 router.patch(
   '/:slug/enviar-revision',
   limitadorDeEscritura,
   requierePermisoPagina('puedeEditar'),
   requierePermisoDeSeccion(),
-  requirePermission('editor.enviar-revision'),
   PaginaController.enviarARevision
 );
 

@@ -36,6 +36,7 @@ import {
   BLOQUES_SIN_CAJA,
   campoColor,
   campoIcono,
+  TarjetaArticulo,
   BotonPersonalizado,
   SeccionBotonesIcono,
   campoDestinoBoton,
@@ -88,7 +89,7 @@ const puckConfigBase: Config = {
       components: ['IntranetHero'],
     },
     'Texto e imagen': {
-      components: ['TextoRico', 'TextoConImagen', 'ImagenDestacada'],
+      components: ['TextoRico', 'TextoConImagen', 'ImagenDestacada', 'TarjetaArticulo'],
     },
     'Botones y enlaces': {
       components: ['BotonPersonalizado', 'SeccionBotonesIcono'],
@@ -464,6 +465,67 @@ const puckConfigBase: Config = {
         <ImagenDestacada {...props} />
       ),
     },
+    TarjetaArticulo: {
+      label: 'Tarjeta de artículo',
+      fields: {
+        imagenSrc: campoImagen('Imagen'),
+        imagenAlt: { type: 'text', label: 'Texto alternativo de la imagen' },
+        titulo: { type: 'text', label: 'Título', contentEditable: true },
+        descripcion: { type: 'textarea', label: 'Descripción / Resumen', contentEditable: true },
+        enlace: { type: 'text', label: 'Enlace de la tarjeta / título' },
+        mostrarBoton: {
+          type: 'radio',
+          label: 'Mostrar botón',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        textoBoton: { type: 'text', label: 'Texto del botón' },
+        enlaceBoton: { type: 'text', label: 'Enlace del botón (opcional)' },
+        abrirEnNuevaPestana: {
+          type: 'radio',
+          label: 'Abrir enlace en nueva pestaña',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        ancho: {
+          type: 'radio',
+          label: 'Ancho de la tarjeta',
+          options: [
+            { label: 'Estándar (max-w-sm)', value: 'fijo' },
+            { label: 'Ancho completo', value: 'completo' },
+          ],
+        },
+        alineacion: {
+          type: 'radio',
+          label: 'Alineación horizontal',
+          options: [
+            { label: 'Izquierda', value: 'izquierda' },
+            { label: 'Centro', value: 'centro' },
+            { label: 'Derecha', value: 'derecha' },
+          ],
+        },
+      },
+      defaultProps: {
+        imagenSrc: '/docs/images/blog/image-1.jpg',
+        imagenAlt: 'Ilustración del artículo',
+        titulo: 'Ingresa texto',
+        descripcion: 'Ingresa descripción',
+        enlace: '#',
+        mostrarBoton: true,
+        textoBoton: 'Ingresa texto',
+        enlaceBoton: '#',
+        abrirEnNuevaPestana: false,
+        ancho: 'fijo',
+        alineacion: 'izquierda',
+      },
+      render: (props: BlockRender<ComponentProps<typeof TarjetaArticulo>>) => (
+        <TarjetaArticulo {...props} />
+      ),
+    },
     // ─── Botones y Enlaces ───
     BotonPersonalizado: {
       label: 'Botón personalizado',
@@ -644,8 +706,12 @@ const puckConfigBase: Config = {
         fondo: campoFondo,
       },
       defaultProps: {
-        titulo: '',
-        imagenes: [],
+        titulo: 'Título del carrusel',
+        imagenes: [
+          { src: '/assets/img/Carrusel1.png', alt: 'Carrusel 1' },
+          { src: '/assets/img/Carrusel2.png', alt: 'Carrusel 2' },
+          { src: '/assets/img/Carrusel3.png', alt: 'Carrusel 3' },
+        ],
         imagenesPorPagina: 3,
         autoplay: true,
         mostrarBotones: true,
@@ -1068,6 +1134,7 @@ const BLOQUES_COMUNES = [
   'TextoRico',
   'TextoConImagen',
   'ImagenDestacada',
+  'TarjetaArticulo',
   'BotonPersonalizado',
   'SeccionBotonesIcono',
   'SeccionCarrusel',

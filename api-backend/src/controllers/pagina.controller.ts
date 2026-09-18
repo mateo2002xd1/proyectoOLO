@@ -124,7 +124,7 @@ export const PaginaController = {
             { campo: 'titulo', antes: null, despues: result.titulo },
             { campo: 'ambito', antes: null, despues: result.ambito },
             { campo: 'permiso', antes: null, despues: result.clavePermiso },
-            { campo: 'permiso_concedido_a_rol', antes: null, despues: result.rolConcedido },
+            { campo: 'roles_concedidos', antes: null, despues: result.rolesConcedidos.join(', ') },
           ],
         }, tx);
         return result;
@@ -452,7 +452,7 @@ export const PaginaController = {
       const ambitoParam = (req.query.ambito as string) || req.header(AMBITO_HEADER);
       const ambito = ambitoParam === 'intranet' || ambitoParam === 'sitio' ? ambitoParam : undefined;
       const paginaId = typeof req.query.paginaId === 'string' && req.query.paginaId ? req.query.paginaId : undefined;
-      const fechaCorte = req.query.fechaCorte as string;
+      const fechaCorte = typeof req.query.fechaCorte === 'string' && req.query.fechaCorte ? req.query.fechaCorte : undefined;
       const conservarUltimoRespaldo = req.query.conservarUltimoRespaldo !== 'false';
 
       const analisis = await analizarDepuracionVersiones({
@@ -477,7 +477,7 @@ export const PaginaController = {
         {
           ambito,
           paginaId: typeof paginaId === 'string' && paginaId ? paginaId : undefined,
-          fechaCorte,
+          fechaCorte: typeof fechaCorte === 'string' && fechaCorte ? fechaCorte : undefined,
           conservarUltimoRespaldo: conservarUltimoRespaldo !== false,
         },
         datosDeAuditoria(req)

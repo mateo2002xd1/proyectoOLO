@@ -35,48 +35,19 @@ export function TarjetaUsuarios({ users, loading }: Props) {
   const usuariosPorRol = useMemo(() => contarUsuariosPorRol(users), [users]);
   const esOscuro = useEsOscuro();
 
-  const opcion: OpcionGrafico = useMemo(
-    () => ({
-      tooltip: {
-        trigger: 'item',
-        backgroundColor: esOscuro ? '#1e293b' : '#ffffff',
-        borderColor: esOscuro ? '#334155' : '#e4e4e7',
-        textStyle: { color: esOscuro ? '#f6f6f6' : '#18181b' },
-        valueFormatter: (valor) => `${valor} usuario${valor === 1 ? '' : 's'}`,
-      },
-      legend: {
-        orient: 'vertical',
-        right: 4,
-        top: 'middle',
-        itemWidth: 10,
-        itemHeight: 10,
-        icon: 'circle',
-        textStyle: { color: esOscuro ? '#cbd5e1' : '#52525b', fontSize: 12 },
-      },
-      series: [
-        {
-          type: 'pie',
-          radius: ['62%', '88%'],
-          center: ['34%', '50%'],
-          avoidLabelOverlap: false,
-          label: { show: false },
-          labelLine: { show: false },
-          emphasis: { scaleSize: 6 },
-          itemStyle: {
-            borderRadius: 5,
-            borderColor: esOscuro ? '#131b2f' : '#ffffff',
-            borderWidth: 3,
-          },
-          data: usuariosPorRol.map((item, index) => ({
-            name: item.rol,
-            value: item.total,
-            itemStyle: { color: COLORES[index % COLORES.length] },
-          })),
-        },
-      ],
-    }),
-    [usuariosPorRol, esOscuro]
-  );
+  // Construir el conic-gradient de forma compatible (sin double-position color stops)
+  const gradientStops = useMemo(() => {
+    if (totalUsuarios === 0) return 'transparent 0% 100%';
+    let currentPercent = 0;
+    return usuariosPorRol.map((item, index) => {
+      const percentage = (item.total / totalUsuarios) * 100;
+      const color = COLORES[index % COLORES.length];
+      const start = currentPercent;
+      const end = currentPercent + percentage;
+      currentPercent = end;
+      return `${color} ${start}%, ${color} ${end}%`;
+    }).join(', ');
+  }, [usuariosPorRol, totalUsuarios]);
 
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155] flex flex-col h-full">

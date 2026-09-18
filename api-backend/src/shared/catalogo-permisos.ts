@@ -144,13 +144,6 @@ const PERMISOS_FIJOS: PermisoDelCatalogo[] = [
   },
 
   {
-    clave: 'editor.enviar-revision',
-    etiqueta: 'Enviar a revisión',
-    descripcion: 'Mandar lo editado a la cola de aprobación. Sin esto solo guarda borradores.',
-    grupo: 'editor',
-    esFrontera: true,
-  },
-  {
     clave: 'secciones.crear',
     etiqueta: 'Crear secciones nuevas',
     descripcion:
