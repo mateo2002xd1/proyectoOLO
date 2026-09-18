@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useId, useRef, useEffect, useState } from 'react';
 import { DEPARTAMENTOS_COLOMBIA, VIEWBOX_COLOMBIA } from '../lib/departamentos-colombia';
 
 interface MapaDepartamentosProps {
@@ -32,11 +32,30 @@ export function MapaDepartamentos({
 }: MapaDepartamentosProps) {
   const [enFoco, setEnFoco] = useState<string | null>(null);
   const tituloId = useId();
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Permite interactuar con el mapa dentro del editor Puck sin disparar el drag and drop del bloque
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const stop = (e: Event) => e.stopPropagation();
+    el.addEventListener('pointerdown', stop, { capture: true });
+    return () => {
+      el.removeEventListener('pointerdown', stop, { capture: true });
+    };
+  }, []);
 
   const departamentoActivo = DEPARTAMENTOS_COLOMBIA.find((d) => d.codigoDane === enFoco);
 
   return (
-    <div className="relative overflow-hidden rounded-[20px] border border-[#eaecf0] bg-[#f8f9fa] p-4 sm:p-6">
+    <div
+      ref={containerRef}
+      data-mapa-interactivo="true"
+      data-puck-overlay-portal="true"
+      onPointerDown={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
+      className="relative overflow-hidden rounded-[20px] border border-[#eaecf0] bg-[#f8f9fa] p-4 sm:p-6"
+    >
       <svg
         role="group"
         aria-labelledby={tituloId}
@@ -62,7 +81,10 @@ export function MapaDepartamentos({
                   ? `Ver registros de formación de ${departamento.nombre}`
                   : `${departamento.nombre}, sin registros de formación`
               }
-              onClick={() => tieneDatos && onSeleccionar(estaSeleccionado ? 'todos' : departamento.codigoDane)}
+              onClick={() => {
+                if (!tieneDatos) return;
+                onSeleccionar(estaSeleccionado ? 'todos' : departamento.codigoDane);
+              }}
               onKeyDown={(event) => {
                 if (!tieneDatos) return;
                 if (event.key === 'Enter' || event.key === ' ') {
