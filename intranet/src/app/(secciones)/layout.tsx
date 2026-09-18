@@ -18,8 +18,8 @@ import { VigilanteSesion } from '@/shared/lib/inactividad';
  * divergiendo. Ahora se pintan una sola vez, en `MarcoSecciones`, con lo que
  * guarda la página `plantilla` (ver `features/paginas/menu-y-pie/menu-y-pie.ts`).
  *
- * El login, el editor y la vista previa quedan fuera a propósito: viven en
- * `app/login/`, `app/editor/` y `app/preview/`, fuera de este grupo de rutas. Los
+ * El acceso, el editor y la vista previa quedan fuera a propósito: viven en
+ * `app/(auth)/`, `app/editor/` y `app/preview/`, fuera de este grupo de rutas. Los
  * dos primeros no deben llevar navegación; la vista previa sí, pero decide ella
  * cuándo —previsualizar la plantilla dentro del marco mostraría el menú y el pie
  * dos veces, el publicado fuera y el del borrador dentro.

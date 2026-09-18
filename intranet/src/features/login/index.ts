@@ -3,7 +3,7 @@
  *
  * Fusiona lo que antes eran dos features del mismo dominio partidas por tipo
  * técnico (`auth/` con el cliente HTTP y el hook, `login/` con las vistas).
- * Solo se exportan las seis vistas que enruta `app/login/`. `QuestionPicker`
+ * Solo se exportan las seis vistas que enruta `app/(auth)/`. `QuestionPicker`
  * y `AuthSuccessScreen` quedan sin exportar a propósito: son piezas que
  * componen esas vistas, no puntos de entrada del módulo.
  *

@@ -106,7 +106,7 @@ export function ResetPasswordView() {
         await authApi.changePassword(currentPassword, password);
       }
 
-      router.push('/login/reset-success');
+      router.push('/reset-success');
     } catch (error) {
       setErrors({ general: mensajeDeError(error, 'Error de conexión con el servidor') });
     } finally {

@@ -39,7 +39,7 @@ export function RecoveryView() {
       if (data.questions && data.questions.length > 0) {
         sessionStorage.setItem('recoveryEmail', email);
         sessionStorage.setItem('recoveryQuestions', JSON.stringify(data.questions));
-        router.push('/login/security-questions');
+        router.push('/security-questions');
       } else {
         setGeneralError('No se encontraron preguntas de seguridad para este correo.');
       }
