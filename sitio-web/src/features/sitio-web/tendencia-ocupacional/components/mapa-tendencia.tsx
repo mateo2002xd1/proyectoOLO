@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useMemo, useState } from 'react';
+import { useId, useMemo, useRef, useEffect, useState } from 'react';
 import {
   DEPARTAMENTOS_COLOMBIA,
   VIEWBOX_COLOMBIA,
@@ -50,6 +50,18 @@ export function MapaTendencia({
 }: MapaTendenciaProps) {
   const [enFoco, setEnFoco] = useState<string | null>(null);
   const tituloId = useId();
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Permite interactuar con el mapa dentro del editor Puck sin disparar el drag and drop del bloque
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const stop = (e: Event) => e.stopPropagation();
+    el.addEventListener('pointerdown', stop, { capture: true });
+    return () => {
+      el.removeEventListener('pointerdown', stop, { capture: true });
+    };
+  }, []);
 
   const esNacional =
     !departamentoSeleccionado ||
@@ -71,7 +83,14 @@ export function MapaTendencia({
   const departamentoActivo = DEPARTAMENTOS_COLOMBIA.find((d) => d.codigoDane === enFoco);
 
   return (
-    <div className="relative overflow-hidden rounded-[20px] border border-[#eaecf0] bg-[#f8f9fa] p-4 sm:p-6">
+    <div
+      ref={containerRef}
+      data-mapa-interactivo="true"
+      data-puck-overlay-portal="true"
+      onPointerDown={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
+      className="relative overflow-hidden rounded-[20px] border border-[#eaecf0] bg-[#f8f9fa] p-4 sm:p-6"
+    >
       {/* SVG del mapa de Colombia con los 33 departamentos */}
       <svg
         role="group"

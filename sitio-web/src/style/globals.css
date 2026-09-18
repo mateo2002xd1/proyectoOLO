@@ -4192,5 +4192,26 @@ button.text-link,
   box-shadow: 0 0 0 4px rgba(229, 231, 235, 0.7);
 }
 
+/* ==========================================================================
+   Editor Puck: Interacción con mapas en componentes interactivos
+   (Tendencia Ocupacional, Fuentes Futuras de Empleo, Programas Sobresalientes)
+   ========================================================================== */
+[data-puck-component] [data-mapa-interactivo],
+[data-puck-component] [data-mapa-interactivo] * {
+  pointer-events: auto !important;
+  user-select: auto !important;
+  -webkit-user-select: auto !important;
+}
+
+[data-mapa-interactivo] path[role="button"] {
+  cursor: pointer !important;
+}
+
+/* Evitar el recuadro punteado de Puck en hover/focus del portal del mapa */
+[data-puck-entry][data-puck-preview-mode="edit"] [data-mapa-interactivo][data-puck-overlay-portal]:hover,
+[data-puck-entry][data-puck-preview-mode="edit"] [data-mapa-interactivo][data-puck-overlay-portal]:focus-within {
+  outline: none !important;
+}
+
 
 
