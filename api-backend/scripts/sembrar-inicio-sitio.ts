@@ -30,7 +30,7 @@
  * ## De dónde sale el contenido
  *
  * Es una copia literal de `homeFallbackData`
- * (`sitio-web/src/features/paginas/lib/home-fallback-data.ts`), generada desde ese
+ * (`sitio-web/src/features/paginas/model/home-fallback-data.ts`), generada desde ese
  * archivo para que no puedan discrepar. Si se toca el fallback, hay que regenerar
  * esto; y al revés, lo que se edite desde el panel ya no vuelve al fallback.
  *
