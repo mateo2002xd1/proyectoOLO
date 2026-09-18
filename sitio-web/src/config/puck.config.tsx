@@ -36,6 +36,10 @@ import {
   TITULOS_TENDENCIA,
   type TipoTendenciaOcupacional,
 } from '@/features/sitio-web/tendencia-ocupacional';
+import {
+  FuentesFuturasEmpleoView,
+  CampoDescripcionConVariables,
+} from '@/features/sitio-web/fuentes-futuras-empleo';
 import { EditorjsWrapper } from '@/features/paginas/edicion/components/editorjs-wrapper';
 import { ImageUploaderField } from '@/features/paginas/edicion/components/image-uploader-field';
 import { ArchivoUploaderField } from '@/features/paginas/edicion/components/archivo-uploader-field';
@@ -131,6 +135,7 @@ const puckConfigBase: Config = {
         'CanalesAtencion',
         'ProgramasSobresalientes',
         'TendenciaOcupacional',
+        'FuentesFuturasEmpleo',
       ],
     },
     'Texto e imagen': {
@@ -1384,9 +1389,18 @@ const puckConfigBase: Config = {
             { label: 'Derecha', value: 'derecha' },
           ],
         },
+        modoSeleccionDepartamento: {
+          type: 'radio',
+          label: 'Modo de selección de departamento',
+          options: [
+            { label: 'Por lista', value: 'lista' },
+            { label: 'Por mapa', value: 'mapa' },
+          ],
+        },
         colorDescripcion: campoColor('Color de la descripción (opcional)'),
       },
       defaultProps: {
+        modoSeleccionDepartamento: 'mapa',
         mostrarTitulo: true,
         titulo: 'Programas + sobresalientes SENA',
         alineacionTitulo: 'centro',
@@ -1398,6 +1412,7 @@ const puckConfigBase: Config = {
       },
       render: (
         props: BlockRender<{
+          modoSeleccionDepartamento?: 'lista' | 'mapa';
           mostrarTitulo?: boolean;
           titulo?: string;
           alineacionTitulo?: 'izquierda' | 'centro' | 'derecha';
@@ -1409,6 +1424,7 @@ const puckConfigBase: Config = {
         }>
       ) => (
         <ProgramasSobresalientesView
+          modoSeleccionDepartamento={props.modoSeleccionDepartamento ?? 'mapa'}
           mostrarTitulo={props.mostrarTitulo}
           titulo={props.titulo}
           alineacionTitulo={props.alineacionTitulo}
@@ -1650,6 +1666,246 @@ const puckConfigBase: Config = {
         />
       ),
     },
+    FuentesFuturasEmpleo: {
+      label: 'Fuentes futuras de empleo',
+      fields: {
+        modoSeleccionDepartamento: {
+          type: 'radio',
+          label: 'Modo de selección de departamento',
+          options: [
+            { label: 'Por lista', value: 'lista' },
+            { label: 'Por mapa', value: 'mapa' },
+          ],
+        },
+        mostrarTotales: {
+          type: 'radio',
+          label: 'Mostrar fila de totales',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        mostrarBannerDepartamento: {
+          type: 'radio',
+          label: 'Mostrar información por departamento',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        subtituloInfoDepto: {
+          type: 'text',
+          label: 'Subtítulo info departamento',
+        },
+        descripcionInfoDepto: {
+          type: 'custom',
+          label: 'Descripción info departamento',
+          render: ({ value, onChange }: CustomFieldRender<string>) => (
+            <CampoDescripcionConVariables value={value} onChange={onChange} />
+          ),
+        },
+        colorBanner: campoColor('Color de acento información departamento (opcional)'),
+        mostrarTitulo: {
+          type: 'radio',
+          label: 'Mostrar título',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        titulo: {
+          type: 'text',
+          label: 'Título',
+        },
+        alineacionTitulo: {
+          type: 'radio',
+          label: 'Alineación del título',
+          options: [
+            { label: 'Izquierda', value: 'izquierda' },
+            { label: 'Centro', value: 'centro' },
+            { label: 'Derecha', value: 'derecha' },
+          ],
+        },
+        colorTitulo: campoColor('Color del título (opcional)'),
+        mostrarSubtitulo: {
+          type: 'radio',
+          label: 'Mostrar subtítulo',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        subtitulo: {
+          type: 'text',
+          label: 'Subtítulo (opcional)',
+        },
+        alineacionSubtitulo: {
+          type: 'radio',
+          label: 'Alineación del subtítulo',
+          options: [
+            { label: 'Izquierda', value: 'izquierda' },
+            { label: 'Centro', value: 'centro' },
+            { label: 'Derecha', value: 'derecha' },
+          ],
+        },
+        colorSubtitulo: campoColor('Color del subtítulo (opcional)'),
+        mostrarDescripcion: {
+          type: 'radio',
+          label: 'Mostrar descripción',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        descripcion: {
+          type: 'textarea',
+          label: 'Descripción',
+        },
+        alineacionDescripcion: {
+          type: 'radio',
+          label: 'Alineación de la descripción',
+          options: [
+            { label: 'Izquierda', value: 'izquierda' },
+            { label: 'Centro', value: 'centro' },
+            { label: 'Derecha', value: 'derecha' },
+          ],
+        },
+        colorDescripcion: campoColor('Color de la descripción (opcional)'),
+      },
+      defaultProps: {
+        modoSeleccionDepartamento: 'mapa',
+        mostrarTotales: true,
+        mostrarTitulo: true,
+        titulo: 'Fuentes futuras de empleo',
+        alineacionTitulo: 'centro',
+        colorTitulo: '',
+        mostrarSubtitulo: false,
+        subtitulo: '',
+        alineacionSubtitulo: 'centro',
+        colorSubtitulo: '',
+        mostrarDescripcion: false,
+        descripcion: '',
+        alineacionDescripcion: 'centro',
+        colorDescripcion: '',
+        mostrarBannerDepartamento: true,
+        subtituloInfoDepto: 'Proyectos de inversión nuevos y/o en expansión potencialmente generadores de empleo.',
+        descripcionInfoDepto: 'En lo corrido del año se han detectado {proyectos} proyectos, con una participación del {porcentaje}% sobre el total nacional.',
+        colorBanner: '',
+      },
+      resolveData: async (data) => {
+        let propsActualizadas = { ...data.props };
+        let huboCambios = false;
+
+        if (!propsActualizadas.titulo || !propsActualizadas.titulo.trim()) {
+          propsActualizadas.titulo = 'Fuentes futuras de empleo';
+          huboCambios = true;
+        }
+
+        if (!propsActualizadas.modoSeleccionDepartamento) {
+          propsActualizadas.modoSeleccionDepartamento = 'mapa';
+          huboCambios = true;
+        }
+
+        const propsCualquiera = propsActualizadas as Record<string, unknown>;
+        if (
+          propsCualquiera.subtituloBanner !== undefined ||
+          propsCualquiera.tituloBanner !== undefined ||
+          propsCualquiera.descripcionBanner !== undefined
+        ) {
+          delete propsCualquiera.subtituloBanner;
+          delete propsCualquiera.tituloBanner;
+          delete propsCualquiera.descripcionBanner;
+          huboCambios = true;
+        }
+
+        if (propsActualizadas.mostrarTotales === undefined) {
+          propsActualizadas.mostrarTotales = true;
+          huboCambios = true;
+        }
+
+        if (propsActualizadas.mostrarTitulo === undefined) {
+          propsActualizadas.mostrarTitulo = true;
+          huboCambios = true;
+        }
+
+        if (propsActualizadas.mostrarSubtitulo === undefined) {
+          propsActualizadas.mostrarSubtitulo = false;
+          huboCambios = true;
+        }
+
+        if (propsActualizadas.mostrarDescripcion === undefined) {
+          propsActualizadas.mostrarDescripcion = false;
+          huboCambios = true;
+        }
+
+        if (propsActualizadas.mostrarBannerDepartamento === undefined) {
+          propsActualizadas.mostrarBannerDepartamento = true;
+          huboCambios = true;
+        }
+
+        if (propsActualizadas.subtituloInfoDepto === undefined) {
+          propsActualizadas.subtituloInfoDepto = 'Proyectos de inversión nuevos y/o en expansión potencialmente generadores de empleo.';
+          huboCambios = true;
+        }
+
+        if (propsActualizadas.descripcionInfoDepto === undefined) {
+          propsActualizadas.descripcionInfoDepto = 'En lo corrido del año se han detectado {proyectos} proyectos, con una participación del {porcentaje}% sobre el total nacional.';
+          huboCambios = true;
+        }
+
+        if (huboCambios) {
+          return {
+            ...data,
+            props: propsActualizadas,
+          };
+        }
+
+        return data;
+      },
+      render: (
+        props: BlockRender<{
+          modoSeleccionDepartamento?: 'lista' | 'mapa';
+          mostrarBannerDepartamento?: boolean;
+          subtituloInfoDepto?: string;
+          descripcionInfoDepto?: string;
+          colorBanner?: string;
+          mostrarTotales?: boolean;
+          mostrarTitulo?: boolean;
+          titulo?: string;
+          alineacionTitulo?: 'izquierda' | 'centro' | 'derecha';
+          colorTitulo?: string;
+          mostrarSubtitulo?: boolean;
+          subtitulo?: string;
+          alineacionSubtitulo?: 'izquierda' | 'centro' | 'derecha';
+          colorSubtitulo?: string;
+          mostrarDescripcion?: boolean;
+          descripcion?: string;
+          alineacionDescripcion?: 'izquierda' | 'centro' | 'derecha';
+          colorDescripcion?: string;
+        }>
+      ) => (
+        <FuentesFuturasEmpleoView
+          modoSeleccionDepartamento={props.modoSeleccionDepartamento ?? 'mapa'}
+          mostrarBannerDepartamento={props.mostrarBannerDepartamento ?? true}
+          subtituloInfoDepto={props.subtituloInfoDepto}
+          descripcionInfoDepto={props.descripcionInfoDepto}
+          colorBanner={props.colorBanner}
+          mostrarTotales={props.mostrarTotales ?? true}
+          mostrarTitulo={props.mostrarTitulo}
+          titulo={props.titulo}
+          alineacionTitulo={props.alineacionTitulo}
+          colorTitulo={props.colorTitulo}
+          mostrarSubtitulo={props.mostrarSubtitulo}
+          subtitulo={props.subtitulo}
+          alineacionSubtitulo={props.alineacionSubtitulo}
+          colorSubtitulo={props.colorSubtitulo}
+          mostrarDescripcion={props.mostrarDescripcion}
+          descripcion={props.descripcion}
+          alineacionDescripcion={props.alineacionDescripcion}
+          colorDescripcion={props.colorDescripcion}
+        />
+      ),
+    },
   },
 };
 
@@ -1718,6 +1974,7 @@ const BLOQUES_PAGINA_SITIO_DEFECTO: string[] = [
   'SeccionBotonesIcono',
   'ProgramasSobresalientes',
   'TendenciaOcupacional',
+  'FuentesFuturasEmpleo',
 ];
 
 const COMPONENTES_POR_SLUG: Record<string, string[]> = {
@@ -1743,6 +2000,7 @@ const COMPONENTES_POR_SLUG: Record<string, string[]> = {
     'SeccionBotonesIcono',
     'ProgramasSobresalientes',
     'TendenciaOcupacional',
+    'FuentesFuturasEmpleo',
   ],
   'politica-de-privacidad': ['PoliticaPrivacidadEncabezado', 'VisorDocumentosNormativos', 'CanalesAtencion'],
 };

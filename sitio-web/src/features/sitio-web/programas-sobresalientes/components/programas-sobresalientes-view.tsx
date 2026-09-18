@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useProgramasSobresalientes } from '../hooks/use-programas-sobresalientes';
 import { FiltrosProgramasSobresalientes } from './filtros-programas-sobresalientes';
 import { MapaDepartamentos } from './mapa-departamentos';
@@ -9,15 +9,13 @@ import { ResultadosProgramasSobresalientes } from './resultados-programas-sobres
 /**
  * Panel "Programa + sobresalientes SENA".
  *
- * Mapa de Colombia a la izquierda (elige el departamento, y queda fijo al
- * hacer scroll en pantallas grandes) y a la derecha los filtros —Formación
+ * Permite seleccionar el departamento vía Mapa interactivo o Lista desplegable.
+ * A la derecha (o debajo en modo lista) se ubican los filtros —Formación
  * Académica, Género y Programa— y la tabla de resultados, todo conectado al
- * mismo estado. Los datos vienen de `GET /api/observatorio/programas-sobresalientes` (la
- * última carga `completado` del Excel de SENA, cargado desde "Actualizaciones"
- * en el panel de administración) — de solo lectura: este componente nunca sube
- * ni modifica nada.
+ * mismo estado. Los datos vienen de `GET /api/observatorio/programas-sobresalientes`.
  */
 export interface ProgramasSobresalientesViewProps {
+  modoSeleccionDepartamento?: 'lista' | 'mapa';
   mostrarTitulo?: boolean;
   titulo?: string;
   alineacionTitulo?: 'izquierda' | 'centro' | 'derecha';
@@ -30,6 +28,7 @@ export interface ProgramasSobresalientesViewProps {
 }
 
 export function ProgramasSobresalientesView({
+  modoSeleccionDepartamento = 'mapa',
   mostrarTitulo = true,
   titulo = 'Programas + sobresalientes SENA',
   alineacionTitulo = 'centro',
@@ -57,7 +56,19 @@ export function ProgramasSobresalientesView({
     seleccionarNivelFormacion,
     seleccionarSexo,
     seleccionarPrograma,
+    limpiarFiltros,
+    hayFiltrosActivos,
   } = useProgramasSobresalientes();
+
+  const [modoSeleccion, setModoSeleccion] = useState<'lista' | 'mapa'>(
+    modoSeleccionDepartamento || 'mapa',
+  );
+
+  useEffect(() => {
+    if (modoSeleccionDepartamento) {
+      setModoSeleccion(modoSeleccionDepartamento);
+    }
+  }, [modoSeleccionDepartamento]);
 
   const codigosConDatos = useMemo(
     () => new Set(departamentosConDatos.map((d) => d.codigoDane)),
@@ -121,9 +132,9 @@ export function ProgramasSobresalientesView({
         <div className="rounded-[20px] border border-[#eaecf0] bg-[#f8f9fa] py-16 text-center" aria-live="polite">
           <p className="text-sm text-[#667085]">Cargando datos de formación...</p>
         </div>
-      ) : (
+      ) : modoSeleccion === 'mapa' ? (
         <div className="flex flex-col gap-6 2xl:flex-row 2xl:items-start">
-          <div className="2xl:sticky 2xl:top-[104px] 2xl:w-[440px] 2xl:flex-shrink-0">
+          <div className="w-full 2xl:sticky 2xl:top-[104px] 2xl:w-[440px] 2xl:flex-shrink-0">
             <MapaDepartamentos
               codigosConDatos={codigosConDatos}
               codigoSeleccionado={filtros.codigoDane}
@@ -134,12 +145,18 @@ export function ProgramasSobresalientesView({
           <div className="flex min-w-0 flex-1 flex-col gap-6">
             <FiltrosProgramasSobresalientes
               filtros={filtros}
+              departamentosDisponibles={departamentosConDatos}
               nivelesDisponibles={nivelesDisponibles}
               sexos={sexos}
               programasDisponibles={programasDisponibles}
+              modoSeleccionDepartamento={modoSeleccion}
+              onCambiarModoSeleccion={setModoSeleccion}
+              onSeleccionarDepartamento={seleccionarDepartamento}
               onSeleccionarNivelFormacion={seleccionarNivelFormacion}
               onSeleccionarSexo={seleccionarSexo}
               onSeleccionarPrograma={seleccionarPrograma}
+              onLimpiarFiltros={limpiarFiltros}
+              hayFiltrosActivos={hayFiltrosActivos}
             />
 
             <ResultadosProgramasSobresalientes
@@ -151,6 +168,33 @@ export function ProgramasSobresalientesView({
               onCambiarPagina={irAPagina}
             />
           </div>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-6">
+          <FiltrosProgramasSobresalientes
+            filtros={filtros}
+            departamentosDisponibles={departamentosConDatos}
+            nivelesDisponibles={nivelesDisponibles}
+            sexos={sexos}
+            programasDisponibles={programasDisponibles}
+            modoSeleccionDepartamento={modoSeleccion}
+            onCambiarModoSeleccion={setModoSeleccion}
+            onSeleccionarDepartamento={seleccionarDepartamento}
+            onSeleccionarNivelFormacion={seleccionarNivelFormacion}
+            onSeleccionarSexo={seleccionarSexo}
+            onSeleccionarPrograma={seleccionarPrograma}
+            onLimpiarFiltros={limpiarFiltros}
+            hayFiltrosActivos={hayFiltrosActivos}
+          />
+
+          <ResultadosProgramasSobresalientes
+            resultados={resultados}
+            totalResultados={totalResultados}
+            departamentoActivo={departamentoActivo}
+            pagina={pagina}
+            totalPaginas={totalPaginas}
+            onCambiarPagina={irAPagina}
+          />
         </div>
       )}
     </div>

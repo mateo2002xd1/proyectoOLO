@@ -1,6 +1,6 @@
 'use client';
 
-import { useSyncExternalStore } from 'react';
+import { useSyncExternalStore, useEffect } from 'react';
 import { SunIcon, MoonIcon } from '@heroicons/react/20/solid';
 
 function subscribeToTheme(onChange: () => void) {
@@ -19,6 +19,15 @@ interface ThemeToggleProps {
 
 export function ThemeToggle({ className }: ThemeToggleProps) {
   const isDark = useSyncExternalStore(subscribeToTheme, getThemeSnapshot, getThemeServerSnapshot);
+
+  useEffect(() => {
+    const s = localStorage.getItem('olo-theme');
+    if (s === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else if (s === 'light') {
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
 
   const toggleTheme = () => {
     const isDarkNow = !document.documentElement.classList.contains('dark');

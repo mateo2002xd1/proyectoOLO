@@ -626,6 +626,62 @@ export function PuckEditorWrapper({
         };
       }
 
+      if (item.type === 'FuentesFuturasEmpleo') {
+        const tieneTitulo = typeof item.props?.titulo === 'string' && item.props.titulo.trim() !== '';
+
+        return {
+          ...item,
+          props: {
+            ...item.props,
+            id,
+            modoSeleccionDepartamento: item.props?.modoSeleccionDepartamento || 'mapa',
+            mostrarBannerDepartamento: item.props?.mostrarBannerDepartamento ?? true,
+            subtituloInfoDepto:
+              item.props?.subtituloInfoDepto !== undefined
+                ? item.props.subtituloInfoDepto
+                : 'Proyectos de inversión nuevos y/o en expansión potencialmente generadores de empleo.',
+            descripcionInfoDepto:
+              item.props?.descripcionInfoDepto !== undefined
+                ? item.props.descripcionInfoDepto
+                : 'En lo corrido del año se han detectado {proyectos} proyectos, con una participación del {porcentaje}% sobre el total nacional.',
+            colorBanner: item.props?.colorBanner || '',
+            mostrarTotales: item.props?.mostrarTotales ?? true,
+            mostrarTitulo: item.props?.mostrarTitulo ?? true,
+            titulo: tieneTitulo ? item.props.titulo : 'Fuentes futuras de empleo',
+            alineacionTitulo: item.props?.alineacionTitulo || 'centro',
+            mostrarSubtitulo: item.props?.mostrarSubtitulo ?? false,
+            subtitulo: item.props?.subtitulo || '',
+            alineacionSubtitulo: item.props?.alineacionSubtitulo || 'centro',
+            colorSubtitulo: item.props?.colorSubtitulo || '',
+            mostrarDescripcion: item.props?.mostrarDescripcion ?? false,
+            descripcion: item.props?.descripcion || '',
+            alineacionDescripcion: item.props?.alineacionDescripcion || 'centro',
+            colorDescripcion: item.props?.colorDescripcion || '',
+          },
+        };
+      }
+
+      if (item.type === 'ProgramasSobresalientes') {
+        return {
+          ...item,
+          props: {
+            ...item.props,
+            id,
+            modoSeleccionDepartamento: item.props?.modoSeleccionDepartamento || 'mapa',
+            mostrarTitulo: item.props?.mostrarTitulo ?? true,
+            titulo: item.props?.titulo ?? 'Programas + sobresalientes SENA',
+            alineacionTitulo: item.props?.alineacionTitulo || 'centro',
+            colorTitulo: item.props?.colorTitulo || '',
+            mostrarDescripcion: item.props?.mostrarDescripcion ?? true,
+            descripcion:
+              item.props?.descripcion ??
+              'Consulte los programas de formación con mayor tasa de vinculación laboral por departamento.',
+            alineacionDescripcion: item.props?.alineacionDescripcion || 'centro',
+            colorDescripcion: item.props?.colorDescripcion || '',
+          },
+        };
+      }
+
       return {
         ...item,
         props: {
