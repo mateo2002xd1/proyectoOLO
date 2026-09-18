@@ -5,6 +5,76 @@
 
 ---
 
+## sesión 18-09-2026 (15.ª parte): un solo diseño de paginación en todas las tablas
+
+El usuario pegó un paginador de Flowbite y pidió aplicarlo a todas las tablas con
+los colores actuales, no con los del ejemplo. El ejemplo es un grupo de casillas
+unidas (Previous, números, Next) y un campo «Go to [ ] page».
+
+**Qué había.** De las 9 tablas del sitio, 7 paginan, y lo hacían con tres componentes:
+- `shared/ui/molecules/paginador.tsx`: el del panel. Lo usan Roles, Usuarios, Actividad
+  Reciente, Auditoría y Revisión.
+- `programas-sobresalientes/components/paginador.tsx` y
+  `tendencia-ocupacional/components/paginador.tsx`: copias idénticas para las tablas
+  públicas (la segunda, sin los comentarios).
+
+Las otras dos tablas no tienen paginador y no se tocaron. **Respaldos** filtra en memoria
+lo ya cargado; el **historial de cargas** es corto.
+
+**Qué se hizo.**
+- **Un componente nuevo, `shared/ui/molecules/paginacion.tsx` (`Paginacion`)**, con el
+  diseño pedido:
+  - casillas unidas (`-space-x-px`) con «Anterior» y «Siguiente» en los extremos;
+  - el campo «Ir a la página [ ] de N».
+  La paleta sale de la prop `tono`, que conserva los colores de cada zona:
+  - `panel`: grises zinc con tema oscuro, y la página actual en `brand-interactive`, como
+    antes;
+  - `publico`: `#344054`, bordes `#d0d5dd`, hover `#f2f4f7`, y la página actual en
+    `#001631`, como antes.
+- **`Paginador` (panel)** conserva «Mostrando X-Y de Z» y las filas por página. La
+  paginación de la derecha pasa a ser `Paginacion`.
+- **Las dos copias públicas se borran**, y sus tablas usan `Paginacion` directamente.
+  Mantener tres implementaciones del mismo diseño era garantizar que divergieran.
+
+**Diferencias con el ejemplo, a propósito.**
+- **Foco visible.** El ejemplo pone `focus:outline-none` y nada a cambio. Aquí va el
+  anillo `brand-focus` (3:1, SC 1.4.11, `9-accesibilidad.md`), con `z-10` para que las
+  casillas vecinas no lo tapen.
+- **Móvil.** Por debajo de `sm`, «Anterior» y «Siguiente» se vuelven flechas y las
+  casillas miden 32px. Con los textos, la fila no cabía en un teléfono de 375px.
+- **El campo.** Es de texto numérico y no `type="number"`, porque sus flechas no caben en
+  ese ancho. Lleva `w-12` en vez de `w-10`, para que quepan tres cifras (Auditoría puede
+  pasar de cien páginas). Si el número está fuera de rango, se va al extremo más cercano.
+- **Qué números se ven en el panel.** Antes, con más de 7 páginas, el panel mostraba una
+  cantidad de casillas que variaba según la página actual. Ahora usa el criterio que ya
+  tenían las tablas públicas: siempre 7 posiciones, para que las flechas no se muevan
+  bajo el cursor.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Frontend | `shared/ui/molecules/paginacion.tsx` | Nuevo: el diseño, con `tono` `panel` / `publico` |
+| Frontend | `shared/ui/molecules/paginador.tsx` | Usa `Paginacion`; se va `rangoDePaginas` |
+| Frontend | `programas-sobresalientes/components/paginador.tsx`, `tendencia-ocupacional/components/paginador.tsx` | Se borran |
+| Frontend | `resultados-programas-sobresalientes.tsx`, `tabla-tendencia.tsx` | Usan `Paginacion` con `tono="publico"` |
+| Frontend | `programas-sobresalientes/index.ts` | Comentario: el paginador ya no es pieza propia |
+| Docs | `1-guia-del-proyecto.md` | Árbol de `shared/ui/molecules/`: eran 11 y decía 10; ahora 12 |
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` en `sitio-web` | exit 0 |
+| `eslint` de los archivos tocados | sin avisos |
+| `Paginacion` pintada a HTML con `react-dom/server` | 3 páginas: las 3. 112 páginas en la 1, la 5, la 110 y la 112: siempre 7 posiciones. «Anterior» desactivada en la primera y «Siguiente» en la última; el campo dice «de 112» |
+| Tono `panel` | página actual en `bg-brand-interactive`, clases `dark:` presentes, anillo de foco presente |
+| `curl /programas-sobresalientes` en desarrollo | 200, sin errores de compilación |
+| `next build` en una copia aparte | exit 0 |
+
+**Pendiente al cierre:**
+- **Mirarlo en el navegador** (no se pudo desde aquí): una tabla del panel en tema claro y
+  oscuro, Programas Sobresalientes y Tendencia Ocupacional en escritorio y a 375px, y
+  recorrer la paginación con Tab para ver el anillo de foco.
+- El bloque «Publicaciones» (`shared/lib/blocks/publicaciones.tsx`) tiene su propia
+  paginación de tarjetas. No es una tabla y no se tocó.
+
 ## sesión 18-09-2026 (14.ª parte): pantallas de acceso en `app/(auth)/`, con las mismas carpetas en la intranet y en el sitio-web
 
 El usuario pidió renombrar `intranet/src/app/login/` a `app/(auth)/`, con el login y las

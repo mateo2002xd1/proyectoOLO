@@ -442,9 +442,12 @@ sitio-web/src/
 │   ├── ui/                           # EL SISTEMA DE DISEÑO INSTITUCIONAL
 │   │   ├── atoms/                    #   6: GooLoader, ResaltadorBusquedaClient,
 │   │   │                             #   RouteTransition, avatar, button, switch
-│   │   ├── molecules/                #   10: alert, breadcrumb, custom-select, date-picker,
-│   │   │                             #   dropdown, notification, ocupacion-search-banner,
-│   │   │                             #   paginador, theme-toggle, visor-documento
+│   │   ├── molecules/                #   12: alert, breadcrumb, custom-select, date-picker,
+│   │   │                             #   dropdown, grafico-echarts, notification,
+│   │   │                             #   ocupacion-search-banner, paginacion (la de TODAS
+│   │   │                             #   las tablas, panel y sitio público), paginador (el
+│   │   │                             #   pie de las tablas del panel, que la usa),
+│   │   │                             #   theme-toggle, visor-documento
 │   │   ├── organisms/                #   3: navbar, sidebar-layout, sidebar
 │   │   └── templates/                #   no existe todavía, ni vacía
 │   ├── lib/
