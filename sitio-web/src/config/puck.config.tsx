@@ -1401,6 +1401,14 @@ const puckConfigBase: Config = {
             },
           ],
         },
+        modoSeleccionDepartamento: {
+          type: 'radio',
+          label: 'Modo de selección de departamento',
+          options: [
+            { label: 'Por lista', value: 'lista' },
+            { label: 'Por mapa', value: 'mapa' },
+          ],
+        },
         mostrarDefiniciones: {
           type: 'radio',
           label: 'Mostrar caja de definiciones de niveles',
@@ -1417,27 +1425,6 @@ const puckConfigBase: Config = {
             { label: 'No', value: false },
           ],
         },
-        mostrarBannerDepartamento: {
-          type: 'radio',
-          label: 'Mostrar sección de información / departamento',
-          options: [
-            { label: 'Sí', value: true },
-            { label: 'No', value: false },
-          ],
-        },
-        tituloBanner: {
-          type: 'text',
-          label: 'Título de la sección (vacío = toma departamento seleccionado)',
-        },
-        subtituloBanner: {
-          type: 'text',
-          label: 'Subtítulo (opcional)',
-        },
-        descripcionBanner: {
-          type: 'textarea',
-          label: 'Descripción (opcional)',
-        },
-        colorBanner: campoColor('Color de énfasis (opcional, por defecto verde SENA)'),
         mostrarTitulo: {
           type: 'radio',
           label: 'Mostrar título',
@@ -1507,13 +1494,9 @@ const puckConfigBase: Config = {
       },
       defaultProps: {
         tipoTendencia: 'mas-menos',
+        modoSeleccionDepartamento: 'lista',
         mostrarDefiniciones: true,
         mostrarTotales: false,
-        mostrarBannerDepartamento: false,
-        tituloBanner: '',
-        subtituloBanner: '',
-        descripcionBanner: '',
-        colorBanner: '',
         mostrarTitulo: true,
         titulo: TITULOS_TENDENCIA['mas-menos'],
         alineacionTitulo: 'centro',
@@ -1536,6 +1519,11 @@ const puckConfigBase: Config = {
 
         if (propsActualizadas.mostrarTotales === undefined) {
           propsActualizadas.mostrarTotales = false;
+          huboCambios = true;
+        }
+
+        if (!propsActualizadas.modoSeleccionDepartamento) {
+          propsActualizadas.modoSeleccionDepartamento = 'lista';
           huboCambios = true;
         }
 
@@ -1573,6 +1561,7 @@ const puckConfigBase: Config = {
           tipoTendencia?: TipoTendenciaOcupacional;
           mostrarDefiniciones?: boolean;
           mostrarTotales?: boolean;
+          modoSeleccionDepartamento?: 'lista' | 'mapa';
           mostrarBannerDepartamento?: boolean;
           tituloBanner?: string;
           subtituloBanner?: string;
@@ -1596,6 +1585,7 @@ const puckConfigBase: Config = {
           tipoTendencia={props.tipoTendencia}
           mostrarDefiniciones={props.mostrarDefiniciones ?? true}
           mostrarTotales={props.mostrarTotales ?? false}
+          modoSeleccionDepartamento={props.modoSeleccionDepartamento ?? 'lista'}
           mostrarBannerDepartamento={props.mostrarBannerDepartamento ?? false}
           tituloBanner={props.tituloBanner}
           subtituloBanner={props.subtituloBanner}

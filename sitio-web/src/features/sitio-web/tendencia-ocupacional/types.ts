@@ -35,6 +35,7 @@ export interface TendenciaOcupacionalViewProps {
   mostrarDefiniciones?: boolean;
   mostrarTotales?: boolean;
   mostrarBannerDepartamento?: boolean;
+  modoSeleccionDepartamento?: 'lista' | 'mapa';
   tituloBanner?: string;
   subtituloBanner?: string;
   descripcionBanner?: string;
