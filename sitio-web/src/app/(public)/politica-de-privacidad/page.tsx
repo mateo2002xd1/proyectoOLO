@@ -1,9 +1,6 @@
-import { notFound } from 'next/navigation';
 import type { Data } from '@puckeditor/core';
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { ClientPuckRender, obtenerPaginaPublicadaCacheada, enlaceAlEditor } from '@/features/paginas';
-import { puedeEditarPaginas } from '@/shared/lib/session';
+import { ClientPuckRender, obtenerPaginaPublicadaCacheada } from '@/features/paginas';
 
 /**
  * Política de Seguridad, Privacidad y Tratamiento de Datos.
@@ -25,29 +22,13 @@ export const metadata: Metadata = {
 const SLUG = 'politica-de-privacidad';
 
 export default async function PoliticaPrivacidadPage() {
-  const [pagina, puedeEditar] = await Promise.all([
-    obtenerPaginaPublicadaCacheada(SLUG),
-    puedeEditarPaginas(),
-  ]);
+  const pagina = await obtenerPaginaPublicadaCacheada(SLUG);
 
   if (!pagina || !pagina.contenido) {
-    if (!puedeEditar) notFound();
-
     return (
-      <div style={{ padding: '4rem 2rem', textAlign: 'center' }}>
-        <h1>Esta página todavía no tiene contenido</h1>
-        <p>
-          No se ha publicado nada en <code>/{SLUG}</code>. Cuando la llenes y se apruebe,
-          se verá aquí.
-        </p>
-        <p style={{ marginTop: '1rem' }}>
-          <Link
-            href={enlaceAlEditor(SLUG, `/${SLUG}`)}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#002c46] rounded-full hover:bg-[#001a2a]"
-          >
-            Editar sección
-          </Link>
-        </p>
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <h1>Página no encontrada</h1>
+        <p>No se ha publicado contenido para la ruta: /{SLUG}</p>
       </div>
     );
   }
