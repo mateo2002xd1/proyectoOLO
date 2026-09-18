@@ -1400,9 +1400,25 @@ const puckConfigBase: Config = {
             },
           ],
         },
+        modoSeleccionDepartamento: {
+          type: 'radio',
+          label: 'Modo de selección de departamento',
+          options: [
+            { label: 'Por lista', value: 'lista' },
+            { label: 'Por mapa', value: 'mapa' },
+          ],
+        },
         mostrarDefiniciones: {
           type: 'radio',
           label: 'Mostrar caja de definiciones de niveles',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        mostrarTotales: {
+          type: 'radio',
+          label: 'Mostrar fila de totales (inscritos y vacantes)',
           options: [
             { label: 'Sí', value: true },
             { label: 'No', value: false },
@@ -1477,7 +1493,9 @@ const puckConfigBase: Config = {
       },
       defaultProps: {
         tipoTendencia: 'mas-menos',
+        modoSeleccionDepartamento: 'lista',
         mostrarDefiniciones: true,
+        mostrarTotales: false,
         mostrarTitulo: true,
         titulo: TITULOS_TENDENCIA['mas-menos'],
         alineacionTitulo: 'centro',
@@ -1495,13 +1513,43 @@ const puckConfigBase: Config = {
         const tipo = (data.props.tipoTendencia as TipoTendenciaOcupacional) || 'mas-menos';
         const tituloSugerido = TITULOS_TENDENCIA[tipo] || TITULOS_TENDENCIA['mas-menos'];
 
-        if (params.changed.tipoTendencia || !data.props.titulo || !data.props.titulo.trim()) {
+        let propsActualizadas = { ...data.props };
+        let huboCambios = false;
+
+        if (propsActualizadas.mostrarTotales === undefined) {
+          propsActualizadas.mostrarTotales = false;
+          huboCambios = true;
+        }
+
+        if (!propsActualizadas.modoSeleccionDepartamento) {
+          propsActualizadas.modoSeleccionDepartamento = 'lista';
+          huboCambios = true;
+        }
+
+        if (propsActualizadas.mostrarBannerDepartamento === undefined) {
+          propsActualizadas.mostrarBannerDepartamento = false;
+          huboCambios = true;
+        }
+
+        if (propsActualizadas.mostrarDefiniciones === undefined) {
+          propsActualizadas.mostrarDefiniciones = true;
+          huboCambios = true;
+        }
+
+        if (propsActualizadas.mostrarTitulo === undefined) {
+          propsActualizadas.mostrarTitulo = true;
+          huboCambios = true;
+        }
+
+        if (params.changed.tipoTendencia || !propsActualizadas.titulo || !propsActualizadas.titulo.trim()) {
+          propsActualizadas.titulo = tituloSugerido;
+          huboCambios = true;
+        }
+
+        if (huboCambios) {
           return {
             ...data,
-            props: {
-              ...data.props,
-              titulo: tituloSugerido,
-            },
+            props: propsActualizadas,
           };
         }
 
@@ -1511,6 +1559,13 @@ const puckConfigBase: Config = {
         props: BlockRender<{
           tipoTendencia?: TipoTendenciaOcupacional;
           mostrarDefiniciones?: boolean;
+          mostrarTotales?: boolean;
+          modoSeleccionDepartamento?: 'lista' | 'mapa';
+          mostrarBannerDepartamento?: boolean;
+          tituloBanner?: string;
+          subtituloBanner?: string;
+          descripcionBanner?: string;
+          colorBanner?: string;
           mostrarTitulo?: boolean;
           titulo?: string;
           alineacionTitulo?: 'izquierda' | 'centro' | 'derecha';
@@ -1528,6 +1583,13 @@ const puckConfigBase: Config = {
         <TendenciaOcupacionalView
           tipoTendencia={props.tipoTendencia}
           mostrarDefiniciones={props.mostrarDefiniciones ?? true}
+          mostrarTotales={props.mostrarTotales ?? false}
+          modoSeleccionDepartamento={props.modoSeleccionDepartamento ?? 'lista'}
+          mostrarBannerDepartamento={props.mostrarBannerDepartamento ?? false}
+          tituloBanner={props.tituloBanner}
+          subtituloBanner={props.subtituloBanner}
+          descripcionBanner={props.descripcionBanner}
+          colorBanner={props.colorBanner}
           mostrarTitulo={props.mostrarTitulo}
           titulo={props.titulo}
           alineacionTitulo={props.alineacionTitulo}
@@ -1539,6 +1601,7 @@ const puckConfigBase: Config = {
           mostrarDescripcion={props.mostrarDescripcion}
           descripcion={props.descripcion}
           alineacionDescripcion={props.alineacionDescripcion}
+          colorDescripcion={props.colorDescripcion}
         />
       ),
     },

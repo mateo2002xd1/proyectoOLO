@@ -9,6 +9,8 @@ interface FiltrosTendenciaProps {
   aniosDisponibles: number[];
   periodosDisponibles: string[];
   nivelesDisponibles: string[];
+  modoSeleccionDepartamento?: 'lista' | 'mapa';
+  onCambiarModoSeleccion?: (modo: 'lista' | 'mapa') => void;
   onSeleccionarDepartamento: (depto: string) => void;
   onSeleccionarAnio: (anio: string) => void;
   onSeleccionarPeriodo: (periodo: string) => void;
@@ -23,6 +25,8 @@ export function FiltrosTendencia({
   aniosDisponibles,
   periodosDisponibles,
   nivelesDisponibles,
+  modoSeleccionDepartamento = 'lista',
+  onCambiarModoSeleccion,
   onSeleccionarDepartamento,
   onSeleccionarAnio,
   onSeleccionarPeriodo,
@@ -30,7 +34,6 @@ export function FiltrosTendencia({
   onLimpiarFiltros,
   hayFiltrosActivos = false,
 }: FiltrosTendenciaProps) {
-
   const opcionesDepartamento = [
     { value: 'Nacional', label: 'Nacional' },
     ...departamentosDisponibles
@@ -54,15 +57,97 @@ export function FiltrosTendencia({
   ];
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3 rounded-[16px] border border-[#eaecf0] bg-white p-4 shadow-sm">
+      {/* Selector de modo: Por lista vs Por mapa */}
+      {onCambiarModoSeleccion && (
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#eaecf0] pb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-[#344054]">
+              Seleccionar departamento por:
+            </span>
+            <div className="inline-flex rounded-xl bg-[#f2f4f7] p-1 text-xs">
+              <button
+                type="button"
+                onClick={() => onCambiarModoSeleccion('lista')}
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1 font-medium transition ${
+                  modoSeleccionDepartamento === 'lista'
+                    ? 'bg-white text-[#002237] shadow-sm font-semibold'
+                    : 'text-[#667085] hover:text-[#344054]'
+                }`}
+                aria-pressed={modoSeleccionDepartamento === 'lista'}
+              >
+                <svg
+                  className="h-3.5 w-3.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  aria-hidden="true"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+                Lista
+              </button>
+              <button
+                type="button"
+                onClick={() => onCambiarModoSeleccion('mapa')}
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1 font-medium transition ${
+                  modoSeleccionDepartamento === 'mapa'
+                    ? 'bg-white text-[#002237] shadow-sm font-semibold'
+                    : 'text-[#667085] hover:text-[#344054]'
+                }`}
+                aria-pressed={modoSeleccionDepartamento === 'mapa'}
+              >
+                <svg
+                  className="h-3.5 w-3.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                  />
+                </svg>
+                Mapa
+              </button>
+            </div>
+          </div>
+
+          {modoSeleccionDepartamento === 'mapa' && filtros.departamento !== 'Nacional' && (
+            <div className="flex items-center gap-1.5 text-xs text-[#344054]">
+              <span className="text-[#667085]">Elegido en mapa:</span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-[#e8f5e9] px-2.5 py-0.5 font-semibold text-[#2e7d32]">
+                {filtros.departamento}
+                <button
+                  type="button"
+                  onClick={() => onSeleccionarDepartamento('Nacional')}
+                  className="ml-1 hover:text-red-600 focus:outline-none"
+                  title="Quitar filtro de departamento"
+                  aria-label="Quitar filtro de departamento"
+                >
+                  ×
+                </button>
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Fila de controles de filtro */}
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
-        <CustomSelect
-          value={filtros.departamento}
-          onChange={onSeleccionarDepartamento}
-          options={opcionesDepartamento}
-          ariaLabel="Filtrar por departamento"
-          className="sm:w-56"
-        />
+        {modoSeleccionDepartamento === 'lista' && (
+          <CustomSelect
+            value={filtros.departamento}
+            onChange={onSeleccionarDepartamento}
+            options={opcionesDepartamento}
+            ariaLabel="Filtrar por departamento"
+            className="sm:w-56"
+          />
+        )}
 
         <CustomSelect
           value={filtros.anio}

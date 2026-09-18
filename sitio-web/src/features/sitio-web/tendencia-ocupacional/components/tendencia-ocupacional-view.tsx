@@ -7,7 +7,9 @@ import {
 } from '../data/base-tendencia-datos';
 import { obtenerTendenciaOcupacionalActual } from '../services/tendencia-ocupacional.service';
 import { FiltrosTendencia } from './filtros-tendencia';
+import { BannerDepartamento } from './banner-departamento';
 import { DefinicionesNivelOcupacional } from './definiciones-nivel-ocupacional';
+import { MapaTendencia } from './mapa-tendencia';
 import { TablaTendencia } from './tabla-tendencia';
 import type {
   DefinicionNivel,
@@ -42,6 +44,13 @@ function renderizarTituloConResalte(texto: unknown): React.ReactNode {
 export function TendenciaOcupacionalView({
   tipoTendencia = 'mas-menos',
   mostrarDefiniciones = true,
+  mostrarTotales = false,
+  mostrarBannerDepartamento = false,
+  modoSeleccionDepartamento = 'lista',
+  tituloBanner,
+  subtituloBanner = '',
+  descripcionBanner = '',
+  colorBanner,
   mostrarTitulo = true,
   titulo,
   alineacionTitulo = 'centro',
@@ -58,6 +67,16 @@ export function TendenciaOcupacionalView({
 }: TendenciaOcupacionalViewProps = {}) {
   const [datos, setDatos] = useState<RegistroTendenciaOcupacional[]>([]);
   const [cargando, setCargando] = useState(true);
+  const [modoSeleccion, setModoSeleccion] = useState<'lista' | 'mapa'>(
+    modoSeleccionDepartamento || 'lista'
+  );
+
+  useEffect(() => {
+    if (modoSeleccionDepartamento) {
+      setModoSeleccion(modoSeleccionDepartamento);
+    }
+  }, [modoSeleccionDepartamento]);
+
   const [filtros, setFiltros] = useState<IFiltrosTendencia>({
     departamento: 'Nacional',
     anio: 'todos',
@@ -195,6 +214,18 @@ export function TendenciaOcupacionalView({
   const totalResultados = registrosFiltrados.length;
   const totalPaginas = Math.max(1, Math.ceil(totalResultados / FILAS_POR_PAGINA));
 
+  // Totales acumulados de todos los registros que cumplen los filtros actuales
+  const totales = useMemo(() => {
+    return registrosFiltrados.reduce(
+      (acc, item) => {
+        acc.totalInscritos += Number(item.totalInscritos) || 0;
+        acc.totalVacantes += Number(item.totalVacantes) || 0;
+        return acc;
+      },
+      { totalInscritos: 0, totalVacantes: 0 }
+    );
+  }, [registrosFiltrados]);
+
   // Filas para la página actual
   const resultadosPaginados = useMemo(() => {
     const inicio = (pagina - 1) * FILAS_POR_PAGINA;
@@ -295,38 +326,120 @@ export function TendenciaOcupacionalView({
         </div>
       )}
 
-      <FiltrosTendencia
-        filtros={filtros}
-        departamentosDisponibles={departamentosDisponibles}
-        aniosDisponibles={aniosDisponibles}
-        periodosDisponibles={periodosDisponibles}
-        nivelesDisponibles={nivelesDisponibles}
-        onSeleccionarDepartamento={handleSeleccionarDepartamento}
-        onSeleccionarAnio={handleSeleccionarAnio}
-        onSeleccionarPeriodo={handleSeleccionarPeriodo}
-        onSeleccionarNivel={handleSeleccionarNivel}
-        onLimpiarFiltros={limpiarFiltros}
-        hayFiltrosActivos={hayFiltrosActivos}
-      />
+      {modoSeleccion === 'mapa' ? (
+        <div className="flex flex-col gap-6 2xl:flex-row 2xl:items-start">
+          <div className="w-full 2xl:sticky 2xl:top-[104px] 2xl:w-[440px] 2xl:flex-shrink-0">
+            <MapaTendencia
+              departamentosConDatos={departamentosDisponibles}
+              departamentoSeleccionado={filtros.departamento}
+              onSeleccionar={handleSeleccionarDepartamento}
+            />
+          </div>
 
-      {mostrarDefiniciones && <DefinicionesNivelOcupacional definiciones={definicionesNivel} />}
+          <div className="flex min-w-0 flex-1 flex-col gap-4">
+            <FiltrosTendencia
+              filtros={filtros}
+              departamentosDisponibles={departamentosDisponibles}
+              aniosDisponibles={aniosDisponibles}
+              periodosDisponibles={periodosDisponibles}
+              nivelesDisponibles={nivelesDisponibles}
+              modoSeleccionDepartamento={modoSeleccion}
+              onCambiarModoSeleccion={setModoSeleccion}
+              onSeleccionarDepartamento={handleSeleccionarDepartamento}
+              onSeleccionarAnio={handleSeleccionarAnio}
+              onSeleccionarPeriodo={handleSeleccionarPeriodo}
+              onSeleccionarNivel={handleSeleccionarNivel}
+              onLimpiarFiltros={limpiarFiltros}
+              hayFiltrosActivos={hayFiltrosActivos}
+            />
 
-      {cargando ? (
-        <div
-          className="rounded-[20px] border border-[#eaecf0] bg-[#f8f9fa] py-16 text-center"
-          aria-live="polite"
-        >
-          <p className="text-sm text-[#667085]">Cargando datos de tendencia ocupacional...</p>
+            {mostrarBannerDepartamento && (
+              <BannerDepartamento
+                departamento={filtros.departamento}
+                titulo={tituloBanner}
+                subtitulo={subtituloBanner}
+                descripcion={descripcionBanner}
+                colorFondo={colorBanner}
+              />
+            )}
+
+            {mostrarDefiniciones && (
+              <DefinicionesNivelOcupacional definiciones={definicionesNivel} />
+            )}
+
+            {cargando ? (
+              <div
+                className="rounded-[20px] border border-[#eaecf0] bg-[#f8f9fa] py-16 text-center"
+                aria-live="polite"
+              >
+                <p className="text-sm text-[#667085]">Cargando datos de tendencia ocupacional...</p>
+              </div>
+            ) : (
+              <TablaTendencia
+                resultados={resultadosPaginados}
+                totalResultados={totalResultados}
+                departamentoActivo={departamentoActivo}
+                pagina={pagina}
+                totalPaginas={totalPaginas}
+                onCambiarPagina={setPagina}
+                totales={totales}
+                mostrarTotales={mostrarTotales}
+              />
+            )}
+          </div>
         </div>
       ) : (
-        <TablaTendencia
-          resultados={resultadosPaginados}
-          totalResultados={totalResultados}
-          departamentoActivo={departamentoActivo}
-          pagina={pagina}
-          totalPaginas={totalPaginas}
-          onCambiarPagina={setPagina}
-        />
+        <div className="flex flex-col gap-4">
+          <FiltrosTendencia
+            filtros={filtros}
+            departamentosDisponibles={departamentosDisponibles}
+            aniosDisponibles={aniosDisponibles}
+            periodosDisponibles={periodosDisponibles}
+            nivelesDisponibles={nivelesDisponibles}
+            modoSeleccionDepartamento={modoSeleccion}
+            onCambiarModoSeleccion={setModoSeleccion}
+            onSeleccionarDepartamento={handleSeleccionarDepartamento}
+            onSeleccionarAnio={handleSeleccionarAnio}
+            onSeleccionarPeriodo={handleSeleccionarPeriodo}
+            onSeleccionarNivel={handleSeleccionarNivel}
+            onLimpiarFiltros={limpiarFiltros}
+            hayFiltrosActivos={hayFiltrosActivos}
+          />
+
+          {mostrarBannerDepartamento && (
+            <BannerDepartamento
+              departamento={filtros.departamento}
+              titulo={tituloBanner}
+              subtitulo={subtituloBanner}
+              descripcion={descripcionBanner}
+              colorFondo={colorBanner}
+            />
+          )}
+
+          {mostrarDefiniciones && (
+            <DefinicionesNivelOcupacional definiciones={definicionesNivel} />
+          )}
+
+          {cargando ? (
+            <div
+              className="rounded-[20px] border border-[#eaecf0] bg-[#f8f9fa] py-16 text-center"
+              aria-live="polite"
+            >
+              <p className="text-sm text-[#667085]">Cargando datos de tendencia ocupacional...</p>
+            </div>
+          ) : (
+            <TablaTendencia
+              resultados={resultadosPaginados}
+              totalResultados={totalResultados}
+              departamentoActivo={departamentoActivo}
+              pagina={pagina}
+              totalPaginas={totalPaginas}
+              onCambiarPagina={setPagina}
+              totales={totales}
+              mostrarTotales={mostrarTotales}
+            />
+          )}
+        </div>
       )}
     </div>
   );

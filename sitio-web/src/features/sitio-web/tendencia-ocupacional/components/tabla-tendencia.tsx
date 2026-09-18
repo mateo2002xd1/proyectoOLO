@@ -1,7 +1,13 @@
 'use client';
 
+import { useMemo } from 'react';
 import { Paginador } from './paginador';
 import type { RegistroTendenciaOcupacional } from '../types';
+
+interface TotalesTendencia {
+  totalInscritos: number;
+  totalVacantes: number;
+}
 
 interface TablaTendenciaProps {
   resultados: RegistroTendenciaOcupacional[];
@@ -10,6 +16,8 @@ interface TablaTendenciaProps {
   pagina: number;
   totalPaginas: number;
   onCambiarPagina: (pagina: number) => void;
+  totales?: TotalesTendencia;
+  mostrarTotales?: boolean;
 }
 
 export function TablaTendencia({
@@ -19,7 +27,20 @@ export function TablaTendencia({
   pagina,
   totalPaginas,
   onCambiarPagina,
+  totales,
+  mostrarTotales = false,
 }: TablaTendenciaProps) {
+  const subtotalPagina = useMemo(() => {
+    return resultados.reduce(
+      (acc, r) => {
+        acc.totalInscritos += Number(r.totalInscritos) || 0;
+        acc.totalVacantes += Number(r.totalVacantes) || 0;
+        return acc;
+      },
+      { totalInscritos: 0, totalVacantes: 0 }
+    );
+  }, [resultados]);
+
   if (totalResultados === 0) {
     return (
       <div
@@ -36,6 +57,8 @@ export function TablaTendencia({
     );
   }
 
+  const hayTotales = mostrarTotales && totales;
+
   return (
     <div>
       <p className="mb-4 text-sm text-[#667085]" aria-live="polite">
@@ -48,7 +71,7 @@ export function TablaTendencia({
         )}
       </p>
 
-      <div className="overflow-x-auto rounded-[16px] border border-[#eaecf0] bg-white">
+      <div className="overflow-x-auto rounded-[16px] border border-[#eaecf0] bg-white shadow-sm">
         <table className="w-full min-w-[760px] border-collapse text-left text-sm">
           <thead>
             <tr className="border-b border-[#eaecf0] bg-[#f8f9fa]">
@@ -93,6 +116,38 @@ export function TablaTendencia({
               </tr>
             ))}
           </tbody>
+
+          {hayTotales && (
+            <tfoot className="border-t-2 border-[#d0d5dd] bg-[#f8f9fa]">
+              {totalPaginas > 1 && (
+                <tr className="border-b border-[#eaecf0] text-xs text-[#475467]">
+                  <td colSpan={3} className="px-4 py-2 text-left font-medium">
+                    Subtotal esta página ({resultados.length} registros)
+                  </td>
+                  <td className="px-4 py-2 text-right tabular-nums font-semibold text-[#344054]">
+                    {subtotalPagina.totalInscritos.toLocaleString('es-CO')}
+                  </td>
+                  <td className="px-4 py-2 text-right tabular-nums font-semibold text-[#39a900]">
+                    {subtotalPagina.totalVacantes.toLocaleString('es-CO')}
+                  </td>
+                </tr>
+              )}
+              <tr className="bg-[#f0f4f8]">
+                <td
+                  colSpan={3}
+                  className="px-4 py-3.5 text-left text-xs font-bold uppercase tracking-wider text-[#001631]"
+                >
+                  Total general {totalPaginas > 1 ? `(${totalResultados.toLocaleString('es-CO')} registros)` : ''}
+                </td>
+                <td className="px-4 py-3.5 text-right font-bold tabular-nums text-sm text-[#001631]">
+                  {totales.totalInscritos.toLocaleString('es-CO')}
+                </td>
+                <td className="px-4 py-3.5 text-right font-bold tabular-nums text-sm text-[#39a900]">
+                  {totales.totalVacantes.toLocaleString('es-CO')}
+                </td>
+              </tr>
+            </tfoot>
+          )}
         </table>
       </div>
 
