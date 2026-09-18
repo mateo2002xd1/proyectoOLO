@@ -37,6 +37,6 @@ export const AUTH_COOKIES = [
   AUTH_MUST_SETUP_SQ_COOKIE_NAME,
 ] as const;
 
-/** Motivo con el que `/admin/login` explica por qué se cortó la sesión. */
+/** Motivo con el que `/login` explica por qué se cortó la sesión. */
 export const PARAM_MOTIVO = 'motivo';
 export const MOTIVO_SESION_EXPIRADA = 'sesion-expirada';

@@ -27,12 +27,13 @@ const nextConfig = {
     root: path.resolve(__dirname, '..')
   },
   /**
-   * Alias hacia las pantallas de acceso, que viven en `app/(auth)/admin/`.
+   * Alias hacia las pantallas de acceso, que viven en `app/(auth)/`.
    *
-   * `(auth)` es un grupo de rutas: agrupa las tres pantallas sin sesión bajo una
-   * carpeta, pero NO añade segmento a la URL. Por eso la ruta real es
-   * `/admin/login` y no `/admin/auth/login` — que fue la canónica hasta el rename
-   * y sigue aquí como alias para los enlaces ya repartidos.
+   * `(auth)` es un grupo de rutas: agrupa las pantallas de acceso bajo una carpeta,
+   * pero NO añade segmento a la URL. Por eso la ruta real es `/login` y no
+   * `/auth/login`. Hasta el 2026-09-18 vivían en `app/(auth)/admin/`
+   * (`/admin/login`, `/admin/recuperar`, `/admin/cambiar-contrasena`) y antes en
+   * `/admin/auth/...`: todas siguen aquí como alias para los enlaces ya repartidos.
    *
    * Se evalúan en orden y gana la primera: `/admin/auth` a secas va antes que el
    * comodín, porque con él daría `/admin/`, que no existe.
@@ -96,23 +97,37 @@ const nextConfig = {
         permanent: false,
       },
       {
-        source: '/login',
-        destination: '/admin/login',
+        // Mismas carpetas y mismas rutas que la intranet desde el 2026-09-18.
+        source: '/admin/login',
+        destination: '/login',
+        permanent: false,
+      },
+      {
+        // Era una sola pantalla con los cuatro pasos; ahora cada paso es una ruta y
+        // esta es la primera.
+        source: '/admin/recuperar',
+        destination: '/recovery',
+        permanent: false,
+      },
+      {
+        source: '/admin/cambiar-contrasena',
+        destination: '/first-login',
         permanent: false,
       },
       {
         source: '/auth/login',
-        destination: '/admin/login',
+        destination: '/login',
         permanent: false,
       },
       {
         source: '/admin/auth',
-        destination: '/admin/login',
+        destination: '/login',
         permanent: false,
       },
       {
         // Cubre /admin/auth/login, /admin/auth/recuperar y
-        // /admin/auth/cambiar-contrasena de una sola vez.
+        // /admin/auth/cambiar-contrasena de una sola vez: van a /admin/<pantalla>, y
+        // de ahí las reglas de arriba los llevan a la ruta actual.
         source: '/admin/auth/:path*',
         destination: '/admin/:path*',
         permanent: false,

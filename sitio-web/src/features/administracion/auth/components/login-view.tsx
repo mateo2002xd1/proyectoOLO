@@ -1,16 +1,14 @@
 'use client';
 
 import { Suspense, useState, FormEvent } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { validarEmail } from '@olo/email-policy';
 import { Button } from '@/shared/ui/atoms/button';
-import { FirstLoginFlow } from './first-login-flow';
 import { mensajeDeCierre } from '@/shared/lib/inactividad';
 import {
   AuthGeneralError,
   AuthGeneralNotice,
-  AuthSplitShell,
   AuthTextField,
   PasswordField,
   authQuietLinkClass,
@@ -18,17 +16,16 @@ import {
 } from './auth-ui';
 
 /**
- * Pantalla de acceso al panel de administración.
+ * Pantalla de acceso al panel de administración (`/login`).
  *
  * Toda la pantalla vive aquí y no en `app/`: la ruta solo la monta. Antes el
- * `page.tsx` traía las tres vistas, la validación y la llamada a la API, con lo
- * que la capa de enrutamiento acababa siendo la que decidía a dónde va cada rol.
+ * `page.tsx` traía las vistas, la validación y la llamada a la API, con lo que la
+ * capa de enrutamiento acababa siendo la que decidía a dónde va cada rol.
  *
- * Son tres pantallas sobre el mismo marco, y cuál se pinta lo dice la respuesta
- * del servidor, no la URL:
- *   1. el formulario;
- *   2. la configuración de primer ingreso, si la cuenta la debe;
- *   3. la elección de editor, si quien entra es Editor y puede ir a dos sitios.
+ * Solo pinta el formulario. Si la cuenta debe la configuración de primer ingreso,
+ * manda a `/first-login` —hasta el 2026-09-18 la pintaba aquí mismo—, y el
+ * «¿Olvidaste tu contraseña?» lleva a `/recovery`. El marco (`AuthSplitShell`) lo
+ * pone `app/(auth)/layout.tsx`, común a todas esas pantallas.
  *
  * @see 1-guia-del-proyecto.md §4.2  (app/ solo enrutamiento; la lógica en features/)
  * @see 3-seguridad-del-proyecto.md  (la sesión la emite y valida la API :4000)
@@ -37,6 +34,7 @@ import {
 
 
 function LoginForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const redirectParam = searchParams.get('redirect');
   // `//host-ajeno` también "empieza por barra" y el navegador lo trata como URL
@@ -56,7 +54,6 @@ function LoginForm() {
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [firstLogin, setFirstLogin] = useState<{ name?: string } | null>(null);
 
   const validate = (): boolean => {
     const next: typeof errors = {};
@@ -92,7 +89,7 @@ function LoginForm() {
       }
 
       if (data.mustChangePassword || data.mustSetupSecurityQuestions) {
-        setFirstLogin({ name: data.user?.name });
+        router.push('/first-login');
         return;
       }
 
@@ -119,12 +116,6 @@ function LoginForm() {
       setIsLoading(false);
     }
   };
-
-  if (firstLogin) {
-    return <FirstLoginFlow name={firstLogin.name} />;
-  }
-
-
 
   return (
     <div className={authSolidCardClass}>
@@ -177,7 +168,7 @@ function LoginForm() {
         </Button>
 
         <div className="mt-4 text-center">
-          <Link href="/admin/recuperar" className={authQuietLinkClass}>
+          <Link href="/recovery" className={authQuietLinkClass}>
             ¿Olvidaste tu contraseña?
           </Link>
         </div>
@@ -188,12 +179,10 @@ function LoginForm() {
 
 export function LoginView() {
   return (
-    <AuthSplitShell>
-      {/* `useSearchParams` obliga a un límite de Suspense: sin él, la ruta entera
-          se renderiza en cliente. */}
-      <Suspense fallback={<div className={`${authSolidCardClass} text-center`}>Cargando…</div>}>
-        <LoginForm />
-      </Suspense>
-    </AuthSplitShell>
+    // `useSearchParams` obliga a un límite de Suspense: sin él, la ruta entera se
+    // renderiza en cliente.
+    <Suspense fallback={<div className={`${authSolidCardClass} text-center`}>Cargando…</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }

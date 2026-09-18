@@ -374,7 +374,7 @@ export function PanelGeneralLayout({
 
   const handleLogout = useCallback(async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
-    router.push('/admin/login');
+    router.push('/login');
   }, [router]);
 
   return (

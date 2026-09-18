@@ -73,7 +73,7 @@ const crear = async (): Promise<void> => {
   });
 
   console.log(`Cuenta de ${ROL} creada para ${email}.`);
-  console.log('Entra en /admin/login y configura las preguntas de seguridad.');
+  console.log('Entra en /login del sitio web y configura las preguntas de seguridad.');
 };
 
 crear()

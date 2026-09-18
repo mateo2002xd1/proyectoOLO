@@ -30,15 +30,15 @@ export async function middleware(request: NextRequest) {
   const mustChangePassword = sesion?.debeCambiarPassword ?? false;
   const mustSetupSecurityQuestions = sesion?.debeConfigurarPreguntas ?? false;
 
-  // Los alias de login (/login, /auth/login, /admin/auth...) los resuelve
+  // Los alias de login (/admin/login, /auth/login, /admin/auth...) los resuelve
   // `next.config.mjs`, que además se evalúa antes que este middleware. Aquí había
   // una copia de esa lista que nunca llegó a ejecutarse —el `matcher` de abajo no
-  // incluye ninguna de esas rutas— y que hoy sería peligrosa: `/admin/login` pasó
-  // a ser la ruta real del login, así que redirigirla desde aquí sería un bucle.
+  // incluye ninguna de esas rutas— y que además sería peligrosa: incluía `/login`,
+  // que hoy es la ruta real del login, así que redirigirla desde aquí sería un bucle.
 
   // Login page: solo auto-redirigimos a admins con sesión válida (van directo al dashboard).
   // Editores u otros roles ven el formulario/selector post-login (el propio LoginView enruta).
-  if (pathname === '/admin/login') {
+  if (pathname === '/login') {
     if (hasValidSession && hasAccesoPanel) {
       return NextResponse.redirect(new URL('/admin/dashboard', request.url));
     }
@@ -47,7 +47,7 @@ export async function middleware(request: NextRequest) {
 
   // Protected routes (/admin/dashboard, /admin/usuarios, /editor/*): require session
   if (!hasValidSession) {
-    const redirectUrl = new URL('/admin/login', request.url);
+    const redirectUrl = new URL('/login', request.url);
     redirectUrl.searchParams.set('redirect', pathname);
     // Se distingue «nunca entraste» de «tu sesión dejó de valer»: sin esto el login
     // aparecía igual en los dos casos y quien llevaba rato trabajando no entendía por
@@ -62,7 +62,7 @@ export async function middleware(request: NextRequest) {
   }
 
   const loginRedirect = () => {
-    const url = new URL('/admin/login', request.url);
+    const url = new URL('/login', request.url);
     url.searchParams.set('redirect', pathname);
     return NextResponse.redirect(url);
   };
@@ -77,7 +77,7 @@ export async function middleware(request: NextRequest) {
     }
     // Must change password or setup security questions
     if (mustChangePassword || mustSetupSecurityQuestions) {
-      return NextResponse.redirect(new URL('/admin/cambiar-contrasena', request.url));
+      return NextResponse.redirect(new URL('/first-login', request.url));
     }
     return NextResponse.next();
   }
@@ -127,8 +127,8 @@ export async function middleware(request: NextRequest) {
 
   // Must change password or setup security questions
   if (mustChangePassword || mustSetupSecurityQuestions) {
-    if (!pathname.startsWith('/admin/cambiar-contrasena')) {
-      return NextResponse.redirect(new URL('/admin/cambiar-contrasena', request.url));
+    if (!pathname.startsWith('/first-login')) {
+      return NextResponse.redirect(new URL('/first-login', request.url));
     }
   }
 
@@ -144,10 +144,11 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   // Protege dashboard, usuarios/users, auditoría, revisión, mi-perfil, editor y
-  // maneja /admin/login y /admin/cambiar-contrasena.
+  // maneja /login y /first-login.
   //
-  // Es una lista explícita, no un prefijo: `/admin/recuperar` queda fuera a
-  // propósito, porque quien va a recuperar su contraseña no tiene sesión.
+  // Es una lista explícita, no un prefijo: los pasos de la recuperación
+  // (`/recovery`, `/security-questions`, `/reset-password`, `/reset-success`) quedan
+  // fuera a propósito, porque quien va a recuperar su contraseña no tiene sesión.
   matcher: [
     '/admin/dashboard/:path*',
     '/admin/users/:path*',
@@ -165,7 +166,7 @@ export const config = {
     '/admin/mi-perfil/:path*',
     '/admin/mi-perfil',
     '/editor/:path*',
-    '/admin/login',
-    '/admin/cambiar-contrasena',
+    '/login',
+    '/first-login',
   ],
 };

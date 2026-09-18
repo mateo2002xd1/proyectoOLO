@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
   response.cookies.set(AUTH_USER_EMAIL_COOKIE_NAME, user.email || '', { ...base, httpOnly: false });
 
   // Setear o LIMPIAR según el estado actual — si no se limpian cuando son false,
-  // quedan pegadas y el middleware rebota todo a /auth/cambiar-contrasena.
+  // quedan pegadas y el middleware rebota todo a /first-login.
   if (mustChangePassword) {
     response.cookies.set(AUTH_MUST_CHANGE_PW_COOKIE_NAME, 'true', { ...base, httpOnly: false });
   } else {

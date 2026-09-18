@@ -29,7 +29,7 @@ export default async function EditorPage({
 
   const { hasSession, role } = await getAuthSessionSnapshot();
   if (!hasSession) {
-    redirect(`/admin/login?redirect=${encodeURIComponent(`/editor/${slug}`)}`);
+    redirect(`/login?redirect=${encodeURIComponent(`/editor/${slug}`)}`);
   }
 
   // La verificación de si puede acceder al editor visual ahora se hace de forma granular abajo.

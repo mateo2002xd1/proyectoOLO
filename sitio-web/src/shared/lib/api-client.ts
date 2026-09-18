@@ -70,7 +70,7 @@ export function alLoginPorSesionExpirada(): void {
   if (redirigiendo) return;
   redirigiendo = true;
 
-  const destino = new URL('/admin/login', window.location.origin);
+  const destino = new URL('/login', window.location.origin);
   destino.searchParams.set('redirect', window.location.pathname);
   destino.searchParams.set(PARAM_MOTIVO, MOTIVO_SESION_EXPIRADA);
 

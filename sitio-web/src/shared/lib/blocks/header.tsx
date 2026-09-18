@@ -171,7 +171,7 @@ export function Header({
     return () => clearInterval(interval);
   }, []);
 
-  const editHref = hasSession ? '/admin/dashboard' : '/admin/login';
+  const editHref = hasSession ? '/admin/dashboard' : '/login';
   const editTitle = hasSession ? 'Ir al panel de administración' : 'Iniciar sesión';
 
   const navLinks = customNavLinks || [
