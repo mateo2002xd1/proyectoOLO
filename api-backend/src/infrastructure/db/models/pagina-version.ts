@@ -9,6 +9,7 @@ export class PaginaVersion extends Model {
   declare numeroVersion: number;
   declare estado: 'borrador' | 'en_revision' | 'publicado' | 'rechazado' | 'archivado';
   declare motivoRechazo: string | null;
+  declare comentarioCambios: string | null;
   declare creadoPor: string | null;
   declare revisadoEn: Date | null;
   declare revisorId: string | null;
@@ -30,6 +31,9 @@ PaginaVersion.init(
     numeroVersion: { type: DataTypes.INTEGER, allowNull: false },
     estado: { type: DataTypes.STRING(20), defaultValue: 'borrador' },
     motivoRechazo: { type: DataTypes.TEXT },
+    // El «commit» de la versión: qué cambió, en palabras de quien la envió a revisión.
+    // Obligatorio para pasar a `en_revision` (migración 029, `ck_paginas_versiones_comentario`).
+    comentarioCambios: { type: DataTypes.STRING(100) },
     // Quién escribió la versión. Antes solo se guardaba quién la revisó y quién la
     // publicó, así que el historial de RF-07 no sabía decir quién editó.
     creadoPor: { type: DataTypes.UUID },

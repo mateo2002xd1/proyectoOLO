@@ -91,7 +91,7 @@ const sembrar = async (): Promise<void> => {
   await sequelize.authenticate();
 
   await guardarBorrador(SLUG, CONTENIDO, '', AMBITO);
-  await enviarARevision(SLUG, '', AMBITO);
+  await enviarARevision(SLUG, '', AMBITO, 'Página de la tasa sembrada por script');
   await aprobarPagina(SLUG, '', AMBITO);
 
   const pagina = await PaginaRepository.findBySlug(SLUG, AMBITO);

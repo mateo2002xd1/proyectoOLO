@@ -64,6 +64,9 @@ export const listarEnRevision = async () => {
       slug: v.pagina?.slug,
       ambito: v.pagina?.ambito,
       numeroVersion: v.numeroVersion,
+      // Lo que quien editó dice que cambió: es lo primero que necesita leer quien
+      // va a aprobar o rechazar, antes incluso de abrir la vista previa.
+      comentario: v.comentarioCambios ?? null,
       creadoEn: v.creadoEn,
       autor: nombreCompleto
         ? {

@@ -20,11 +20,21 @@ export const rechazarPagina = async (
   if (!versionEnRevision) throw new Error('No hay versión en revisión');
   const versionAnterior = versionEnRevision.toJSON();
 
+  // Rechazar no toca lo publicado, pero la bitácora lo pone al lado del comentario
+  // rechazado para que se lea qué se quería cambiar y desde dónde.
+  const versionPublicada = await PaginaRepository.findVersionPorEstado(pagina.id, 'publicado', tx);
+
   await PaginaRepository.actualizarVersion(versionEnRevision, {
     estado: 'rechazado',
     motivoRechazo: motivo,
     revisorId: toUUID(userId),
   }, tx);
 
-  return { pagina, version: versionEnRevision, paginaAnterior, versionAnterior };
+  return {
+    pagina,
+    version: versionEnRevision,
+    paginaAnterior,
+    versionAnterior,
+    comentarioAnterior: versionPublicada?.comentarioCambios ?? null,
+  };
 };

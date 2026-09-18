@@ -239,7 +239,7 @@ const CONTENIDO_INICIO = {
 
 const publicarInicio = async (): Promise<void> => {
   await guardarBorrador(SLUG, CONTENIDO_INICIO, '', AMBITO);
-  await enviarARevision(SLUG, '', AMBITO);
+  await enviarARevision(SLUG, '', AMBITO, 'Portada del sitio sembrada por script');
   await aprobarPagina(SLUG, '', AMBITO);
 
   const guardada = await PaginaRepository.findBySlug(SLUG, AMBITO);

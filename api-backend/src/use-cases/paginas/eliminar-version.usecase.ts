@@ -38,13 +38,18 @@ export const eliminarVersion = async (slug: string, versionId: string, ambito: A
     );
   }
 
+  // El comentario de lo publicado es el «antes» de la bitácora; el de la versión
+  // descartada, el «después». Se lee antes de borrar nada.
+  const versionPublicada = await PaginaRepository.findVersionPorEstado(pagina.id, 'publicado', tx);
+
   // Se copian antes de borrar: después de `eliminarPagina` la instancia deja de
   // tener una fila detrás y lo que se registre saldría de un objeto huérfano.
   const identidad = {
     pagina: { id: pagina.id, slug: pagina.slug },
-    version: { numeroVersion: version.numeroVersion },
+    version: { numeroVersion: version.numeroVersion, comentarioCambios: version.comentarioCambios },
     paginaAnterior,
     versionAnterior,
+    comentarioAnterior: versionPublicada?.comentarioCambios ?? null,
   };
 
   await PaginaRepository.eliminarVersion(version, tx);

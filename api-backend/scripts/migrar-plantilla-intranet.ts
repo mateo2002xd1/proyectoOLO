@@ -133,7 +133,7 @@ const CONTENIDO_PLANTILLA: Contenido = {
 /** Publica un contenido pasando por borrador → revisión → aprobación. */
 const publicar = async (slug: string, contenido: Contenido): Promise<void> => {
   await guardarBorrador(slug, contenido, '', AMBITO);
-  await enviarARevision(slug, '', AMBITO);
+  await enviarARevision(slug, '', AMBITO, 'Plantilla de la intranet migrada por script');
   await aprobarPagina(slug, '', AMBITO);
 };
 

@@ -135,7 +135,7 @@ const CONTENIDO_PLANTILLA = {
 
 const publicarPlantilla = async (): Promise<void> => {
   await guardarBorrador(SLUG_PLANTILLA, CONTENIDO_PLANTILLA, '', AMBITO);
-  await enviarARevision(SLUG_PLANTILLA, '', AMBITO);
+  await enviarARevision(SLUG_PLANTILLA, '', AMBITO, 'Cabecera y pie del sitio sembrados por script');
   await aprobarPagina(SLUG_PLANTILLA, '', AMBITO);
 
   const guardada = await PaginaRepository.findBySlug(SLUG_PLANTILLA, AMBITO);

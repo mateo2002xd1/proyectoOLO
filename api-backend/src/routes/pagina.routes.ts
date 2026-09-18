@@ -9,6 +9,7 @@ import {
   adquirirBloqueoSchema,
   crearSeccionSchema,
   eliminarSeccionSchema,
+  enviarARevisionSchema,
   guardarBorradorSchema,
   registrarSubidaSchema,
 } from '../validators/paginas.validators';
@@ -491,16 +492,38 @@ router.get(
  *     summary: Enviar a revisión
  *     description: |
  *       Mete el borrador en la cola de aprobación (RF-06). El Editor propone; publicar
- *       Envía un borrador a la cola de revisión.
+ *       es cosa de quien aprueba.
+ *
+ *       **Exige el comentario de cambios** (el «commit» del envío, de 10 a 100
+ *       caracteres). Se guarda en la versión y la bitácora lo registra en el envío y
+ *       otra vez al aprobar, rechazar o descartar esa versión.
  *     parameters:
  *       - $ref: '#/components/parameters/SlugEnRuta'
  *       - $ref: '#/components/parameters/Ambito'
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [comentario]
+ *             properties:
+ *               comentario:
+ *                 type: string
+ *                 minLength: 10
+ *                 maxLength: 100
+ *                 description: Qué cambió, en una línea. Lo lee quien aprueba y queda en la bitácora.
  *     responses:
  *       200:
  *         description: Versión enviada a revisión.
  *         content:
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Pagina' }
+ *       400:
+ *         description: Falta el comentario, es muy corto o muy largo, o el contenido no cumple accesibilidad.
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Error' }
  *       401: { $ref: '#/components/responses/NoAutenticado' }
  *       403: { $ref: '#/components/responses/SinPermiso' }
  *       404: { $ref: '#/components/responses/NoEncontrado' }
@@ -511,6 +534,7 @@ router.patch(
   limitadorDeEscritura,
   requierePermisoPagina('puedeEditar'),
   requierePermisoDeSeccion(),
+  validarCuerpo(enviarARevisionSchema),
   PaginaController.enviarARevision
 );
 
