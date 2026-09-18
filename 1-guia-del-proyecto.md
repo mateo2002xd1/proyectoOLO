@@ -332,11 +332,17 @@ sitio-web/src/
 │   │   └── dashboard/ (+ buscar, configuracion, soporte), users/, roles/,
 │   │       revision/, auditoria/, respaldos/, actualizaciones/, mi-perfil/
 │   │
-│   ├── (auth)/admin/                 # Pantallas sin sesión → /admin/login,
-│   │   │                             #   /admin/recuperar, /admin/cambiar-contrasena.
-│   │   │                             #   Misma URL que el panel, pero en otra rama del
-│   │   │                             #   árbol para que admin/layout.tsx no las envuelva
-│   │   └── login/ recuperar/ cambiar-contrasena/   (layout.tsx del grupo: Poppins)
+│   ├── (auth)/                       # Pantallas de acceso: MISMAS carpetas y rutas que
+│   │   │                             #   la intranet. El grupo no añade segmento a la URL
+│   │   ├── layout.tsx                #   Poppins + AuthSplitShell + el proveedor de
+│   │   │                             #   flujo-de-recuperacion.tsx (lo que un paso deja
+│   │   │                             #   al siguiente, en memoria, no en sessionStorage)
+│   │   ├── login/                    #   → /login
+│   │   ├── first-login/              #   → /first-login (contraseña y/o preguntas pendientes)
+│   │   └── recovery/ security-questions/ reset-password/ reset-success/
+│   │                                 #   → los 4 pasos de la recuperación (RF-05).
+│   │                                 #   /admin/login, /admin/recuperar y
+│   │                                 #   /admin/cambiar-contrasena redirigen aquí
 │   │
 │   ├── editor/[slug]/                # Mesa de trabajo Puck → /editor/<slug>. Fuera del
 │   │                                 #   panel: no lleva su barra lateral. Misma ruta
@@ -472,7 +478,7 @@ ruta de `app/`) la manda a `/inicio`, porque cuando las dos rutas servían el mi
 sitio tenía contenido duplicado bajo dos URLs. Ese mismo archivo resuelve `/privacidad` y
 `/politica-de-privacidad` → `/inicio/politica-de-privacidad`, `/cno` y `/cuoc` →
 `/clasificacion/cno` y `/clasificacion/cuoc` (por eso el árbol no lista esas carpetas en
-la raíz) y varios alias más (`/login`, `/admin/auth`, `/uploads/:path*`…). **Cuando el
+la raíz) y varios alias más (`/admin/login`, `/admin/auth`, `/uploads/:path*`…). **Cuando el
 contenido sale de la base de datos, el enrutador tiene que decir explícitamente qué filas
 no son páginas — y cuando una URL es solo un alias, ese trabajo lo hace la config de Next,
 no una carpeta.**
@@ -607,8 +613,13 @@ intranet/src/
 │   ├── (secciones)/[...puckPath]/    # TODA sección interna, render Puck desde BD
 │   ├── editor/[slug]/                # Mesa de trabajo Puck
 │   ├── preview/[slug]/               # Vista previa de una versión en revisión
-│   ├── login/                        # login, first-login, recovery, reset-password,
-│   │                                 #   reset-success, security-questions
+│   ├── (auth)/                       # Pantallas de acceso, hermanas y no hijas de login:
+│   │   │                             #   /login, /first-login, /recovery,
+│   │   │                             #   /security-questions, /reset-password,
+│   │   │                             #   /reset-success. Mismas carpetas que el sitio-web.
+│   │   │                             #   /login/<paso> redirige aquí (next.config.ts)
+│   │   ├── template.tsx              #   la animación de deslizamiento entre pasos
+│   │   └── login/ first-login/ recovery/ security-questions/ reset-password/ reset-success/
 │   └── api/upload/                   # El único route handler propio
 │
 ├── features/                         # Solo dos, y es lo correcto para lo que hace la app
@@ -767,7 +778,7 @@ checklist de `3-seguridad-del-proyecto.md` §5; para la persistencia, `11-base-d
 | RF-13 Habeas Data | `politicas_privacidad`, `consentimientos`, **sin capa de aplicación** | `features/sitio-web/politica-privacidad` | 🟡 la página existe; el registro de aceptación no |
 | RF-14 accesibilidad | `@olo/accessibility-policy` en `enviar-a-revision` | `shared/ui` + alto contraste (falta). Estado real en `9-accesibilidad.md` | 🟡 con una regresión abierta |
 | RF-15 directores | permiso `acceso.intranet`; auditoría de acceso sin implementar | la intranet entera | 🟡 |
-| RF-16 auth + caducidad | `auth`, caducidad revalidada en **cada** petición, bloqueo por intentos, inactividad en dos capas. El job programado `revisar-caducidad` sigue siendo un stub | `admin/(auth)`, `login/` de la intranet | ✅ la caducidad se aplica; avisar antes de que ocurra, no |
+| RF-16 auth + caducidad | `auth`, caducidad revalidada en **cada** petición, bloqueo por intentos, inactividad en dos capas. El job programado `revisar-caducidad` sigue siendo un stub | `app/(auth)/` en las dos apps | ✅ la caducidad se aplica; avisar antes de que ocurra, no |
 | RF-17 respaldos | `scripts/respaldo.ts` (a mano) + tabla `respaldos` | UI de config (falta) | ⏳ |
 
 > **La cola BullMQ está montada pero vacía.** `setupWorker()` arranca un worker sobre

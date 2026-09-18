@@ -5,6 +5,117 @@
 
 ---
 
+## sesión 18-09-2026 (14.ª parte): pantallas de acceso en `app/(auth)/`, con las mismas carpetas en la intranet y en el sitio-web
+
+El usuario pidió renombrar `intranet/src/app/login/` a `app/(auth)/`, con el login y las
+demás carpetas dentro, y que el sitio-web quedara igual a nivel de carpetas: le parecía que
+el sitio no tenía ese flujo. Sí lo tenía, pero en dos pantallas con pasos internos:
+`/admin/recuperar` hacía lo de `recovery`, `security-questions`, `reset-password` y
+`reset-success`, y `/admin/cambiar-contrasena` lo de `first-login`.
+
+**Lo que se le preguntó y lo que eligió.**
+- *Intranet:* ¿los pasos quedan como hermanos de `login/` o dentro de él? **Hermanos.**
+  `(auth)` es un grupo de rutas y no añade segmento a la URL, así que `/login/recovery`
+  pasa a ser `/recovery`, y lo mismo con los otros cuatro pasos. `/login` no cambia.
+- *Sitio-web:* ¿una pantalla por paso, solo renombrar las dos que había, o dejarlo? **Una
+  pantalla por paso, y en `(auth)/` sin el segmento `admin`**, con las mismas carpetas que
+  la intranet. El login pasa de `/admin/login` a `/login`.
+
+**Intranet.** Solo cambian las carpetas y las rutas; la lógica queda igual.
+- `app/login/*` pasa a `app/(auth)/*`: la página del login a `(auth)/login/`, el
+  `template.tsx` (la animación de deslizamiento) a la raíz del grupo, y los cinco pasos al
+  lado del login.
+- **El middleware ya no puede mirar el prefijo `/login`**, que era como distinguía las
+  pantallas públicas. Sin cambiarlo, quien va a `/recovery` sin sesión habría rebotado al
+  login. Ahora usa dos listas explícitas: las 6 pantallas de acceso, y las 4 que se pueden
+  abrir con una configuración pendiente.
+- `next.config.ts` estrena `redirects()`: `/login/<paso>` → `/<paso>`. El `<paso>` sale de
+  una lista cerrada de los cinco, no de un comodín, que habría mandado cualquier
+  `/login/<algo>` a la raíz, donde el comodín de secciones podría servir una página.
+
+**Sitio-web.** Aquí sí cambió la forma: de 2 pantallas con pasos se pasa a 6 rutas.
+- **Los datos de un paso al siguiente viven en memoria, no en `sessionStorage`.** La
+  intranet se pasa el correo, las preguntas y **las respuestas de seguridad en claro** por
+  `sessionStorage`. Por eso el sitio tenía el flujo en una sola pantalla. Para partirlo sin
+  heredar ese problema, `flujo-de-recuperacion.tsx` guarda el estado en un contexto que
+  monta `app/(auth)/layout.tsx`. Next conserva un layout mientras se navega entre sus
+  páginas, así que los datos sobreviven al cambio de ruta y se pierden solos al salir o
+  recargar. Es un estado por etapas (`preguntas` → `nueva-contrasena` → `terminada`), y
+  al terminar suelta el correo y las respuestas.
+- **Cada paso comprueba que le toca.** `security-questions`, `reset-password` y
+  `reset-success` abiertos sueltos (a mano o tras recargar) devuelven a `/recovery`. Sin
+  eso, `reset-success` diría que se cambió una contraseña que nadie tocó.
+- **`recuperar-password-flow.tsx` se reparte en 4 vistas** (`recovery-view`,
+  `security-questions-view`, `reset-password-view`, `reset-success-view`), con los mismos
+  textos y reglas. Se mantienen dos: se verifican las tres respuestas de golpe y no de una
+  en una, y un fallo vuelve a la primera pregunta.
+- **`/first-login` sigue resolviendo todas las combinaciones pendientes** (contraseña,
+  preguntas o las dos), con el `FirstLoginFlow` de antes. En la intranet, cuando solo falta
+  una cosa, se usan `security-questions` y `reset-password` en «modo configuración». En el
+  sitio esas dos rutas son solo pasos de la recuperación. Las carpetas son las mismas, pero
+  el reparto no es idéntico, a propósito: no se reescribió lógica que ya funcionaba.
+- **El login ya no pinta el primer ingreso dentro de su pantalla**: navega a `/first-login`.
+  El saludo («Hola …») sale ahora de la cookie `sitio_userName`, que el login ya escribía,
+  así que aguanta una recarga. Antes solo aparecía cuando se llegaba desde el login.
+- **`AuthSplitShell` pasa al layout del grupo.** Antes lo montaba cada pantalla. Así queda
+  uno solo y no parpadea entre pasos (se comprobó que el `h1` del marco sale una sola vez).
+- `next.config.mjs`: se quita `/login` → `/admin/login`, que ahora sería un bucle. Se
+  añaden `/admin/login` → `/login`, `/admin/recuperar` → `/recovery` y
+  `/admin/cambiar-contrasena` → `/first-login`. `/auth/login` y `/admin/auth` van a
+  `/login`.
+- `middleware.ts`: el login y la configuración pendiente pasan a `/login` y `/first-login`,
+  también en el `matcher`. Los cuatro pasos de la recuperación quedan fuera a propósito,
+  porque quien recupera su contraseña no tiene sesión.
+
+**Slugs reservados.** Los cinco pasos ocupan ahora la raíz en las dos apps, y en Next una
+carpeta concreta le gana al comodín de secciones. Por eso se añadieron a
+`SLUGS_RESERVADOS` de `@olo/slug-policy`. Su `dist/` no está en git: se recompiló y se
+copió a los `node_modules/@olo/slug-policy` de las tres apps (`install-links=true` hace
+copias, no enlaces).
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Frontend (intranet) | `app/login/*` | Pasa a `app/(auth)/*`; la página del login, a `(auth)/login/` |
+| Frontend (intranet) | `(auth)/template.tsx`, `login-view`, `recovery-view`, `security-questions-view`, `reset-password-view` | Rutas sin `/login/` delante |
+| Frontend (intranet) | `middleware.ts` | Listas `RUTAS_DE_ACCESO` y `RUTAS_DE_CONFIGURACION_PENDIENTE` en vez del prefijo `/login` |
+| Frontend (intranet) | `next.config.ts` | `redirects()`: `/login/<paso>` → `/<paso>` |
+| Frontend (sitio) | `app/(auth)/admin/login/` | Pasa a `app/(auth)/login/` |
+| Frontend (sitio) | `app/(auth)/admin/recuperar/`, `cambiar-contrasena/` | Se borran; en su lugar `(auth)/recovery`, `security-questions`, `reset-password`, `reset-success` y `first-login` |
+| Frontend (sitio) | `app/(auth)/layout.tsx` | Monta `AuthSplitShell` y `FlujoDeRecuperacionProvider` |
+| Frontend (sitio) | `auth/components/recuperar-password-flow.tsx` | Se borra; se reparte en `flujo-de-recuperacion.tsx` y las 4 vistas nuevas |
+| Frontend (sitio) | `login-view.tsx`, `first-login-flow.tsx`, `auth/index.ts` | Navega a `/first-login`; sin marco propio; exporta las vistas nuevas |
+| Frontend (sitio) | `middleware.ts`, `next.config.mjs` | Rutas y alias nuevos |
+| Frontend (sitio) | `editor/[slug]/page.tsx`, `api-client.ts`, `vigilante-sesion.tsx`, `header.tsx`, `panel-general.tsx` | Enlaces a `/login` |
+| Paquete | `@olo/slug-policy` | 5 slugs reservados más |
+| Comentarios | `admin/layout.tsx`, `(secciones)/layout.tsx`, `features/login/index.ts`, `auth-cookies.ts`, `api/auth/login` y `api/auth/first-login`, `@olo/inactividad`, `crear-superadmin.ts` | Rutas nuevas |
+| Docs | `1-guia-del-proyecto.md` (los dos árboles de `app/`, alias, RF-16), `4-reglas.md` (regla 8) | Estructura nueva. La regla 8 decía que la intranet no usaba grupos de rutas: ya no era cierto con `(secciones)` |
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` en las dos apps, tras `next typegen` | exit 0 |
+| `eslint` de los archivos tocados | 0 errores; los avisos son todos de código anterior (imports sin usar en `panel-general`, `roles-view`, `reset-password-view`…) |
+| `next build` en una copia aparte, las dos apps | exit 0. Intranet: `/login`, `/first-login`, `/recovery`, `/security-questions`, `/reset-password`, `/reset-success`, estáticas. Sitio: las mismas; `/first-login` es dinámica (lee la cookie del nombre) |
+| `curl` sitio: las 6 pantallas | 200; `/first-login` sin sesión, 307 a `/login?redirect=/first-login` |
+| `curl` sitio: `/admin/login?redirect=/admin/users`, `/admin/recuperar`, `/admin/cambiar-contrasena`, `/admin/auth`, `/auth/login` | 307 a `/login` (conservando la query), `/recovery` y `/first-login` |
+| `curl` sitio: `/admin/dashboard`, `/editor/inicio` sin sesión | 307 a `/login?redirect=…` |
+| `curl` intranet: las 6 pantallas sin sesión | 200 (públicas, como antes) |
+| `curl` intranet: `/login/recovery` y los otros cuatro | 307 a `/recovery`, etc. `/login/otra-cosa` va al login como cualquier ruta protegida |
+| HTML del sitio | el marco sale una vez por página; `/security-questions` sin datos no pinta tarjeta |
+| Finales de línea | ninguno mezclado. `sed -i` había pasado a LF los archivos CRLF que tocó; se devolvieron a CRLF |
+
+**Pendiente al cierre:**
+- **Probar en el navegador con una cuenta real** (no se pudo desde aquí). En el sitio: la
+  recuperación entera por las 4 pantallas, el botón «Atrás» del navegador entre pasos, y
+  entrar con una cuenta que deba el primer ingreso para confirmar que el login lleva a
+  `/first-login` con el saludo. En la intranet: los mismos flujos por sus rutas nuevas.
+- **Reiniciar la API** (ts-node sin *watch*): hasta entonces sigue con la lista vieja de
+  slugs reservados y dejaría crear una sección llamada `recovery`.
+- **Avisar al equipo:** tras el `pull`, cada quien debe correr `npm install` en
+  `sitio-web`, `intranet` y `api-backend` (o recompilar `packages/slug-policy`). Además,
+  el login del sitio ahora es `/login`, no `/admin/login`.
+- La intranet sigue guardando las respuestas de seguridad en `sessionStorage`. No se tocó
+  porque no se pidió, pero el sitio ya muestra cómo evitarlo.
+
 ## sesión 18-09-2026 (13.ª parte): `app/admin` sin `(shell)`, y el editor y la vista previa fuera de `/admin`
 
 El usuario pidió dos cosas en `sitio-web/src/app`:
