@@ -583,6 +583,27 @@ export function PuckEditorWrapper({
         };
       }
 
+      if (item.type === 'ProgramasSobresalientes') {
+        return {
+          ...item,
+          props: {
+            ...item.props,
+            id,
+            modoSeleccionDepartamento: item.props?.modoSeleccionDepartamento || 'mapa',
+            mostrarTitulo: item.props?.mostrarTitulo ?? true,
+            titulo: item.props?.titulo ?? 'Programas + sobresalientes SENA',
+            alineacionTitulo: item.props?.alineacionTitulo || 'centro',
+            colorTitulo: item.props?.colorTitulo || '',
+            mostrarDescripcion: item.props?.mostrarDescripcion ?? true,
+            descripcion:
+              item.props?.descripcion ??
+              'Consulte los programas de formación con mayor tasa de vinculación laboral por departamento.',
+            alineacionDescripcion: item.props?.alineacionDescripcion || 'centro',
+            colorDescripcion: item.props?.colorDescripcion || '',
+          },
+        };
+      }
+
       return {
         ...item,
         props: {

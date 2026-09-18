@@ -1389,9 +1389,18 @@ const puckConfigBase: Config = {
             { label: 'Derecha', value: 'derecha' },
           ],
         },
+        modoSeleccionDepartamento: {
+          type: 'radio',
+          label: 'Modo de selección de departamento',
+          options: [
+            { label: 'Por lista', value: 'lista' },
+            { label: 'Por mapa', value: 'mapa' },
+          ],
+        },
         colorDescripcion: campoColor('Color de la descripción (opcional)'),
       },
       defaultProps: {
+        modoSeleccionDepartamento: 'mapa',
         mostrarTitulo: true,
         titulo: 'Programas + sobresalientes SENA',
         alineacionTitulo: 'centro',
@@ -1403,6 +1412,7 @@ const puckConfigBase: Config = {
       },
       render: (
         props: BlockRender<{
+          modoSeleccionDepartamento?: 'lista' | 'mapa';
           mostrarTitulo?: boolean;
           titulo?: string;
           alineacionTitulo?: 'izquierda' | 'centro' | 'derecha';
@@ -1414,6 +1424,7 @@ const puckConfigBase: Config = {
         }>
       ) => (
         <ProgramasSobresalientesView
+          modoSeleccionDepartamento={props.modoSeleccionDepartamento ?? 'mapa'}
           mostrarTitulo={props.mostrarTitulo}
           titulo={props.titulo}
           alineacionTitulo={props.alineacionTitulo}
