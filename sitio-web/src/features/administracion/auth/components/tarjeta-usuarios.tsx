@@ -35,19 +35,38 @@ export function TarjetaUsuarios({ users, loading }: Props) {
   const usuariosPorRol = useMemo(() => contarUsuariosPorRol(users), [users]);
   const esOscuro = useEsOscuro();
 
-  // Construir el conic-gradient de forma compatible (sin double-position color stops)
-  const gradientStops = useMemo(() => {
-    if (totalUsuarios === 0) return 'transparent 0% 100%';
-    let currentPercent = 0;
-    return usuariosPorRol.map((item, index) => {
-      const percentage = (item.total / totalUsuarios) * 100;
-      const color = COLORES[index % COLORES.length];
-      const start = currentPercent;
-      const end = currentPercent + percentage;
-      currentPercent = end;
-      return `${color} ${start}%, ${color} ${end}%`;
-    }).join(', ');
-  }, [usuariosPorRol, totalUsuarios]);
+  const opcion: OpcionGrafico = useMemo(() => {
+    return {
+      tooltip: {
+        trigger: 'item',
+        backgroundColor: esOscuro ? '#1e293b' : '#ffffff',
+        borderColor: esOscuro ? '#334155' : '#e4e4e7',
+        textStyle: { color: esOscuro ? '#f6f6f6' : '#18181b' },
+        formatter: (parametros: any) => {
+          return `<strong>${parametros.name}</strong><br/>${parametros.value} usuarios (${parametros.percent}%)`;
+        },
+      },
+      series: [
+        {
+          type: 'pie',
+          radius: ['50%', '90%'],
+          avoidLabelOverlap: false,
+          itemStyle: {
+            borderRadius: 4,
+            borderColor: esOscuro ? '#131b2f' : '#fff',
+            borderWidth: 2,
+          },
+          label: { show: false },
+          labelLine: { show: false },
+          data: usuariosPorRol.map((item, index) => ({
+            value: item.total,
+            name: item.rol,
+            itemStyle: { color: COLORES[index % COLORES.length] },
+          })),
+        },
+      ],
+    };
+  }, [usuariosPorRol, esOscuro]);
 
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155] flex flex-col h-full">

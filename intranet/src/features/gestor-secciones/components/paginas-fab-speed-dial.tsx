@@ -70,15 +70,18 @@ export function PaginasFabSpeedDial({
       window.removeEventListener('focus', actualizarPermisos);
       document.removeEventListener('visibilitychange', alCambiarVisibilidad);
     };
-  }, []);
+  }, [slug]);
+
+  const tieneAccesoIntranet = permisosActivos.includes('acceso.intranet');
+  const tienePermisoGlobal = esSuperadmin || tieneAccesoIntranet;
 
   const tienePermisoEditarSeccion = permisosActivos.includes(`editar.intranet.${slug}`);
   const tienePermisoEditarPlantilla = permisosActivos.includes('editar.intranet.menu-y-pie');
 
-  const puedeEditarSeccion = Boolean(slug) && tienePermisoEditarSeccion;
-  const puedeEditarPlantilla = tienePermisoEditarPlantilla;
-  const puedeCrearSeccion = permisosActivos.includes('secciones.crear');
-  const puedeEliminarSeccion = Boolean(slug) && permisosActivos.includes('secciones.eliminar');
+  const puedeEditarSeccion = tienePermisoGlobal && Boolean(slug) && (esSuperadmin || tienePermisoEditarSeccion);
+  const puedeEditarPlantilla = tienePermisoGlobal && (esSuperadmin || tienePermisoEditarPlantilla);
+  const puedeCrearSeccion = tienePermisoGlobal && (esSuperadmin || permisosActivos.includes('secciones.crear'));
+  const puedeEliminarSeccion = tienePermisoGlobal && Boolean(slug) && (esSuperadmin || permisosActivos.includes('secciones.eliminar'));
 
   const tieneAlgunaAccion =
     puedeEditarSeccion || puedeEditarPlantilla || puedeCrearSeccion || puedeEliminarSeccion;
