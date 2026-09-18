@@ -5,6 +5,116 @@
 
 ---
 
+## sesión 18-09-2026 (16.ª parte): comentario de cambios obligatorio al enviar a revisión, y la auditoría lo muestra
+
+**Qué era.** La columna «Cambios» de Auditoría enseñaba `slug: inicio · version: 7 ·
+estado: en_revision`, y el detalle («Campos modificados») la misma lista con antes y
+después. Todo correcto y nada útil: no decía **qué** se había cambiado. El usuario pidió
+un flujo tipo GitHub, en cuatro puntos:
+
+1. Al enviar a revisión, el editor escribe sí o sí el comentario de los cambios
+   (el «commit»), específico y de máximo 100 caracteres.
+2. En los dos editores, el modal de confirmación lleva un textarea y el botón no se
+   activa sin el comentario.
+3. Se apruebe o no, todo queda en la columna «Cambios» de la auditoría.
+4. En el detalle, «Campos modificados» muestra «Comentario anterior» y «Comentario
+   después» en lugar de lo que mostraba.
+
+**Decisión principal: el comentario va en la versión, no solo en la bitácora.** Columna
+nueva `paginas_versiones.comentario_cambios VARCHAR(100)` (migración 029). Aprobar,
+rechazar y descartar pasan después, las hace otra persona y cada una escribe su propia
+fila en `auditoria_cambios`; con el comentario en la versión lo registran de primera
+mano. **Descartado:** guardarlo solo en la fila de `enviar_revision` y que aprobar lo
+buscara en la bitácora — depende de que el último envío de esa página sea el de esa
+versión, y un rechazo seguido de reenvío ya rompe esa suposición.
+
+**Qué significan «anterior» y «después».** Un sentido fijo para todas las acciones, para
+que la pantalla no tenga que interpretar cada una:
+
+| Acción | Comentario anterior | Comentario después |
+|---|---|---|
+| `enviar_revision` | el de lo publicado en ese momento | el que se acaba de escribir |
+| `aprobar` | el de la versión que se reemplaza | el de la que se publica |
+| `despublicar` (automático al aprobar o restaurar) | el de la que se archiva | el de la que la sustituye |
+| `rechazar` / `eliminar` (descartar) | el de lo que sigue publicado | el de la versión rechazada o descartada |
+| `publicar` (restaurar) | el de lo publicado | el de la versión restaurada |
+
+La columna «Cambios» muestra el comentario de la versión de la que habla la fila (en
+`despublicar`, el de la archivada) y, detrás, el motivo si lo hay. El detalle enseña una
+línea que explica los dos lados según la acción: sin ella, un rechazo se leía como si el
+comentario rechazado hubiera quedado publicado.
+
+**Regla del comentario.** De 10 a 100 caracteres, normalizado a una línea (saltos y
+espacios dobles se juntan, se quitan caracteres de control), contado en caracteres y no
+en unidades UTF-16 — así cuenta PostgreSQL el `VARCHAR`. El mínimo de 10 no lo pidió el
+usuario: es la forma barata de que «ok» o «cambios» no pasen por «específico». Está en
+una constante (`COMENTARIO_MIN`) si hay que moverlo.
+
+### Capas tocadas
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| DB | `migrations/029-comentario-cambios-versiones.ts` (nuevo) + `index.ts` | Columna, relleno de las que estuvieran en revisión y `CHECK ck_paginas_versiones_comentario` (invariante I14) |
+| Modelo | `models/pagina-version.ts` | `comentarioCambios` |
+| Regla | `shared/comentario-cambios.ts` (nuevo) | Topes, normalización y mensajes; la usan Zod y el caso de uso |
+| Ruta | `pagina.routes.ts`, `validators/paginas.validators.ts` | `validarCuerpo(enviarARevisionSchema)`, `.strict()`; OpenAPI con `requestBody` y el 400 |
+| Casos de uso | `enviar-a-revision`, `rechazar-pagina`, `eliminar-version`, `restaurar-version-anterior`, `listar-en-revision` | Guardan o devuelven el comentario; los que registran leen el de lo publicado para el «antes» |
+| Controlador | `pagina.controller.ts` | `campoComentario()` en `enviar_revision`, `aprobar`, `despublicar`, `rechazar` y `eliminar` |
+| Depuración | `analizar-depuracion-versiones`, `depurar-versiones` | La columna nueva entra en la suma del peso por fila |
+| Scripts | los 6 `sembrar-*`/`migrar-plantilla-intranet` | Pasan un comentario que dice que la versión la sembró un script |
+| sitio-web editor | `puck-editor-wrapper.tsx`, `use-pagina.ts`, `edicion.service.ts`, `globals.css` | Textarea en el modal con contador, botón apagado hasta que vale, Enter envía; el error de la API se enseña con su motivo y no con el «Request failed…» de axios |
+| intranet editor | `puck-editor-wrapper.tsx`, `use-editor-actions.ts`, `edicion.service.ts`, `globals.css` | Lo mismo |
+| Cola de revisión | `revision-queue-view.tsx`, `pagina.types.ts` | El comentario bajo el título; el buscador también lo encuentra |
+| Auditoría | `lib/cambios.ts` (nuevo), `auditoria-view.tsx`, `detalle-registro.tsx`, `csv.ts`, `types.ts` | Columna «Cambios», detalle con comentario anterior/después y motivo; el CSV suma la columna «Cambios» y conserva «Campos modificados» entera (es el respaldo previo a depurar) |
+
+**Dos arreglos de paso en la intranet**, los dos en `use-editor-actions.ts`:
+- `handleEnviarRevision` se tragaba el error y el editor enseñaba «Tu edición se envió
+  con éxito» aunque la API lo hubiera rechazado. Ahora lo relanza, como ya hacía
+  `handleGuardarBorrador`.
+- La guarda `if (!versionId)` leía un `versionId` del render anterior: en una sección
+  nueva, guardar y enviar van en el mismo clic, así que el primer envío se cortaba en
+  silencio. Se quitó; si no hay borrador, lo dice la API.
+
+**Qué no cambió a propósito.** Los registros que no son del ciclo editorial (usuarios,
+roles, depuraciones, `guardar_borrador`, crear o eliminar secciones) siguen enseñando
+su lista de campos: ahí no hay comentario que mostrar y quitarla dejaría el detalle
+vacío. Los registros editoriales anteriores a esta sesión dicen «Sin comentario
+(registro anterior a los comentarios obligatorios)» en vez de la lista vieja. El JSON
+de la bitácora sigue guardando `slug`, `version` y `estado`: la pantalla no los
+enseña, pero siguen ahí para consultas y para el CSV.
+
+### Verificación
+
+| Qué | Resultado |
+|---|---|
+| `tsc --noEmit` en api-backend (src) y en los 6 scripts de siembra | Sin errores |
+| `tsc --noEmit` en sitio-web e intranet | Sin errores |
+| ESLint en los archivos tocados | Intranet limpio. sitio-web: 1 error y 1 aviso que **ya estaban en `HEAD`** (`item: any` en `puck-editor-wrapper.tsx`, `Ambito` sin usar en `revision-queue-view.tsx`) |
+| Esquema Zod con 11 casos (sin cuerpo, vacío, espacios, 7 caracteres, saltos de línea, 100, 101, 100 emojis, número, campo extra) | Cada uno da lo esperado; «  Actualicé   las cifras\n de agosto  » se guarda como «Actualicé las cifras de agosto» |
+| SQL de la 029 sobre una tabla **temporal** clonada de `paginas_versiones` (solo de la sesión, sin tocar la real) | Relleno aplicado; el `CHECK` rechaza `en_revision` sin comentario, con solo espacios y el paso `borrador → en_revision` sin comentario; 101 caracteres los rechaza el `VARCHAR` |
+| `lib/cambios.ts` con 8 registros de ejemplo (nuevos, antiguos y de usuarios) | Columna, detalle y línea de ayuda correctos; de aquí salió el ajuste de `despublicar` |
+| Recorrido completo en el navegador | **No se hizo**: la migración no está aplicada (ver aviso) |
+
+> **La 029 no está aplicada, a propósito.** La API apunta a la base de Neon, que
+> comparte el equipo. Con el `CHECK` puesto, quien siga con el código anterior no puede
+> enviar a revisión (su petición no manda comentario y la base la rechaza). Aplicarla
+> cuando esto esté en `dev`: `npm run migrate` en `api-backend` y reiniciar
+> `npm run dev` (no recarga solo). Hoy no hay ninguna versión en `en_revision`, así que
+> el relleno no toca filas. `migrate:status` la da como la única pendiente.
+
+**Pendiente al cierre:**
+- Aplicar la 029 y probar el recorrido completo: enviar desde sitio-web y desde la
+  intranet, aprobar uno, rechazar otro, descartar un tercero, y mirar las cuatro filas en
+  Auditoría.
+- El resumen «Actividad reciente» de `panel-general.tsx` sigue listando nombres de campo
+  (`comentario, slug, version, estado`); podría enseñar `resumenDeCambios` como la tabla.
+- Respaldos lista versiones archivadas sin su comentario; sería el «git log» natural de
+  cada página.
+- Los topes 10/100 están en la API y repetidos en los dos editores. Si se tocan, son
+  tres sitios (lo dice el comentario de `shared/comentario-cambios.ts`).
+
+---
+
 ## sesión 18-09-2026 (15.ª parte): un solo diseño de paginación en todas las tablas
 
 El usuario pegó un paginador de Flowbite y pidió aplicarlo a todas las tablas con

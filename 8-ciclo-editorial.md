@@ -36,8 +36,8 @@ Una página nunca se edita en vivo. Recorre estados, y cada transición tiene un
 | # | Etapa | Actor | Qué ocurre | Efecto en el sitio público |
 |---|---|---|---|---|
 | 1 | **Edición** | Editor | Entra a `/editor/<slug>`, modifica bloques. Al guardar, la API crea o actualiza un registro en `PaginaVersion` con estado `borrador`. | **Ninguno.** Sigue mostrando la versión publicada. |
-| 2 | **Envío a revisión** | Editor | La versión pasa a `en_revision`. Queda bloqueada para edición. | Ninguno. |
-| 3 | **Revisión** | Administrador | Entra a `/revision`, previsualiza y decide. | Ninguno. |
+| 2 | **Envío a revisión** | Editor | Escribe el **comentario de cambios** (obligatorio, 10–100 caracteres; ver §1.6). La versión pasa a `en_revision` con ese comentario. Queda bloqueada para edición. | Ninguno. |
+| 3 | **Revisión** | Administrador | Entra a `/revision`, lee el comentario, previsualiza y decide. | Ninguno. |
 | 4 | **Aprobación** | Administrador | La `PaginaVersion` se marca como la versión `publicado` activa. Se dispara revalidación de caché (ISR + Redis). | **Ahora sí cambia.** |
 | 5 | **Rechazo** | Administrador | Pasa a `rechazado` con motivo. Vuelve a ser editable. | Ninguno. |
 | 6 | **Consumo** | Ciudadano anónimo | `/` llama a `obtenerPaginaInicio()` → `/api/paginas/publica/inicio`. La API devuelve el JSON de la versión publicada activa. `<ClientPuckRender data={data} />` dibuja los bloques. | — |
@@ -178,6 +178,39 @@ Ahora el ciclo soporta **restaurar a la versión inmediatamente anterior**:
      - `npx ts-node scripts/probar-versionamiento.ts listar [--ambito=intranet|sitio]`
      - `npx ts-node scripts/probar-versionamiento.ts estado <slug|uuid> [--ambito=intranet|sitio]`
      - `npx ts-node scripts/probar-versionamiento.ts restaurar <slug|uuid> [--ambito=intranet|sitio]`
+
+### 1.6 El comentario de cambios: el «commit» de cada envío (2026-09-18)
+
+Enviar a revisión exige describir qué cambió, como el mensaje de un commit. Antes la
+bitácora solo decía `slug · version · estado`, y ni quien aprobaba ni quien auditaba
+podía saber **qué** traía una versión sin abrirla y compararla a ojo.
+
+| Regla | Dónde vive |
+|---|---|
+| Obligatorio, de **10 a 100 caracteres**, en una línea (los saltos y espacios dobles se juntan) | `api-backend/src/shared/comentario-cambios.ts` — lo aplican el esquema Zod de la ruta y el caso de uso |
+| Se guarda **en la versión**, no solo en la bitácora | `paginas_versiones.comentario_cambios` (migración 029) |
+| Una versión no puede estar `en_revision` sin comentario | `CHECK ck_paginas_versiones_comentario` — invariante I14 de `11-base-de-datos.md` §5 |
+| El botón «Enviar a revisión» del modal no se activa sin él | `ModalConfirmarAccion` en los dos `puck-editor-wrapper.tsx` (los topes están repetidos ahí) |
+| Quien aprueba lo lee en la cola, bajo el título de la página | `revision-queue-view.tsx` |
+
+**Por qué en la versión y no solo en la bitácora.** Aprobar, rechazar y descartar
+ocurren después, las hace otra persona, y cada una deja su propia fila en
+`auditoria_cambios`. Con el comentario en la versión, cada una lo registra de primera
+mano; sin él, tendría que buscar en la bitácora el último envío de la página y confiar
+en que fuera el de esa versión.
+
+**Qué registra la bitácora.** Toda acción que decide sobre una versión (enviar,
+aprobar, rechazar, descartar, restaurar, y el archivado automático de la anterior)
+lleva el campo `comentario` con un sentido fijo:
+
+- `antes`: el comentario de la versión que estaba **publicada** en ese momento.
+- `despues`: el de la versión **sobre la que se actuó**. En el archivado automático es
+  la que sustituye a la archivada, para que esa fila y la de `aprobar` cuenten la
+  misma transición.
+
+La pantalla de auditoría enseña ese comentario en la columna «Cambios» y, en el
+detalle, «Comentario anterior» / «Comentario después» en lugar de la lista de campos
+internos (`lib/cambios.ts` de `features/administracion/auditoria/`).
 
 ---
 

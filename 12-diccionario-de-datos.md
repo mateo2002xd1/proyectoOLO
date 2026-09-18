@@ -229,9 +229,11 @@ A continuación se detalla la ficha técnica y matriz de atributos para cada una
 | 11 | `creado_en` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | — | Fecha y hora de creación de la versión. |
 | 12 | `creado_por` | `UUID` | — | SÍ | **FK** | `usuarios.id` (ON DELETE SET NULL) | — | Usuario autor que redactó o modificó esta versión. |
 | 13 | `revisado_en` | `TIMESTAMPTZ` | — | SÍ | Ninguna | — | — | Fecha y hora de la evaluación editorial. |
+| 14 | `comentario_cambios` | `VARCHAR(100)` | 100 | SÍ | Ninguna | `CHECK ck_paginas_versiones_comentario` | — | «Commit» de la versión: qué cambió, escrito por el editor al enviarla a revisión (10 a 100 caracteres, en una línea). Obligatorio para estar en `en_revision`; la bitácora lo registra al enviar, aprobar, rechazar, descartar y restaurar. Nulo en borradores nunca enviados y en versiones anteriores a la migración 029. |
 
 **Restricciones de Integridad (CHECK) de `paginas_versiones`:**
 - **`ck_paginas_versiones_estado`**: `((estado)::text = ANY ((ARRAY['borrador'::character varying, 'en_revision'::character varying, 'publicado'::character varying, 'rechazado'::character varying, 'archivado'::character varying])::text[]))`
+- **`ck_paginas_versiones_comentario`**: `((estado)::text <> 'en_revision'::text OR btrim(COALESCE(comentario_cambios, ''::character varying)::text) <> ''::text)`
 
 ---
 

@@ -173,7 +173,7 @@ Las 19 tablas de este inventario existen en el esquema y **las 19 tienen modelo 
 | Tabla | Qué guarda | Claves e invariantes |
 |---|---|---|
 | **`paginas`** | El lienzo editable: slug, título y cuál es su versión viva | `ambito` `CHECK(sitio\|intranet)` y **`UNIQUE(ambito, slug)`** — las dos apps comparten tabla y sin el ámbito sus slugs colisionan. `version_publicada_id` es una FK circular, `DEFERRABLE INITIALLY DEFERRED` y `ON DELETE SET NULL` |
-| **`paginas_versiones`** | Cada versión del árbol Puck, con su estado en el ciclo | Ver §5: tres invariantes del ciclo editorial viven aquí |
+| **`paginas_versiones`** | Cada versión del árbol Puck, con su estado en el ciclo y su comentario de cambios | Ver §5: cuatro invariantes del ciclo editorial viven aquí (I1–I4 e I14) |
 | **`bloqueos_edicion`** | Concurrencia pesimista (lease / lock) para edición visual en Puck | PK compuesta `(ambito, slug)`. `expira_en` gestiona la expiración automática del bloqueo. `usuario_id` y `usuario_nombre` identifican al editor activo. `CHECK (ambito IN ('sitio', 'intranet'))` |
 | **`subidas_pendientes`** | Archivos multimedia cargados en borradores que aún no han sido publicados | PK compuesta `(pagina_id, ruta)`. `pagina_id` FK a `paginas.id` con `ON DELETE CASCADE`. Permite recolectar basura y purgar archivos huérfanos al publicar o descartar |
 
@@ -254,6 +254,7 @@ Cada una es una regla de negocio que **el código no puede violar por accidente*
 | I11 | **Consistencia de egresados y vinculados** | `CHECK (vinculados >= 0 AND vinculados <= certificados)` | No pueden existir más aprendices vinculados que certificados en una cohorte |
 | I12 | **Tasa de vinculación acotada** | `CHECK (tasa_vinculacion >= 0 AND tasa_vinculacion <= 1)` | Consistencia matemática del ratio porcentual (0.0000 a 1.0000) |
 | I13 | **Validación estricta de género** | `CHECK (sexo IN ('M', 'F'))` | Evita registros no tipificados en las estadísticas oficiales del Observatorio |
+| I14 | Una versión en revisión **siempre dice qué cambió** | `CHECK estado='en_revision' ⇒ btrim(comentario_cambios) <> ''` (`ck_paginas_versiones_comentario`, migración 029) | RF-06/RF-07: quien aprueba y quien audita leen el «commit» del envío. Gemela de la I4 |
 | I14 | **Ámbito de bloqueos de edición** | `CHECK (ambito IN ('sitio', 'intranet'))` | Garantiza que los bloqueos de concurrencia pesimista solo apliquen a los ámbitos válidos del sistema |
 | I15 | **Limpieza e integridad de subidas pendientes** | `PRIMARY KEY (pagina_id, ruta)` + `ON DELETE CASCADE` hacia `paginas.id` | Al eliminar una página o publicar una versión, los archivos temporales no confirmados se purgan sin dejar registros huérfanos |
 
@@ -344,6 +345,7 @@ eso la tabla lleva el porqué en vez de un número de riesgo.
 | 024 | `subidas-pendientes` | Crea la tabla `subidas_pendientes` con clave `(pagina_id, ruta)` y `ON DELETE CASCADE` para recolectar y purgar archivos subidos en borradores no publicados |
 | 025 | `visitas-paginas` | Añade la columna `visitas` (entero, default 0) a `paginas` y siembra conteos iniciales para las páginas publicadas existentes |
 | 026 | `observatorio-programas-sobresalientes` | Crea las 5 tablas del esquema snowflake del Observatorio: catálogos (`departamentos`, `centros_formacion`, `niveles_formacion`, `programas_formacion`) y tabla transaccional de hechos `programas_sobresalientes` con clave de idempotencia `(centro_id, programa_id, sexo)` e índices de cobertura |
+| 029 | `comentario-cambios-versiones` | `paginas_versiones.comentario_cambios VARCHAR(100)`: el «commit» obligatorio al enviar a revisión. Va en la versión y no solo en la bitácora porque aprobar, rechazar y descartar también lo registran, y las hace otra persona después. Añade la invariante I14; las versiones que ya estuvieran en revisión se rellenan con «Enviada antes de que el comentario fuera obligatorio» en vez de dejar el `CHECK` en `NOT VALID` |
 
 Tres lecciones de este tramo que vale más recordar que releer:
 
