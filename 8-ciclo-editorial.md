@@ -220,7 +220,7 @@ features/<dominio>/
 └── types.ts              # contratos del dominio
 ```
 
-Ejemplos actuales que ya siguen esta forma: `administracion/`, `contenidos/`, `buscador-ocupaciones/`.
+Ejemplos actuales que ya siguen esta forma: `administracion/`, `buscador-ocupaciones/`.
 
 ### 3.2 Dominio con ciclo de vida (`paginas/`)
 
@@ -228,29 +228,85 @@ Ejemplos actuales que ya siguen esta forma: `administracion/`, `contenidos/`, `b
 features/paginas/
 ├── index.ts                        # ÚNICA puerta pública del módulo (§0.3)
 │
-├── model/                          # vocabulario compartido por las tres etapas
-│   ├── pagina.types.ts             # Pagina, PaginaVersion, Bloque, PuckData
-│   └── estado.ts                   # EstadoPagina + transiciones válidas
+├── client.ts                       # segunda puerta, sin axios (CABECERA_POR_DEFECTO)
+│
+├── model/                          # lo que comparten las etapas
+│   ├── pagina.types.ts             # Pagina, PaginaVersion, Bloque, PuckData, EstadoPagina
+│   ├── rutas.ts                    # RUTAS_PROPIAS, slug ↔ URL, ruta de vuelta del editor
+│   ├── ambito.ts                   # cabecera X-Ambito: sitio
+│   ├── api-con-sesion.ts           # axios withCredentials — nunca desde publicacion/
+│   ├── eventos.ts                  # notificarRevisionActualizada
+│   └── home-fallback-data.ts       # portada de respaldo (publicación) y semilla (edición)
 │
 ├── publicacion/                    # ETAPA 6 — consumo público
-│   ├── publicacion.service.ts      # fetch + ISR, SIN credenciales
+│   ├── publicacion.service.ts      # fetch + ISR y axios SIN credenciales
 │   ├── client-puck-render.tsx
-│   └── home-fallback-data.ts
+│   ├── pagina-puck-fija.tsx
+│   ├── rastreador-visitas.tsx
+│   ├── etiquetas-cache.ts
+│   └── sitio-busqueda-fallback.ts
 │
 ├── edicion/                        # ETAPA 1 — borrador
-│   ├── edicion.service.ts          # obtenerPaginaEditable, guardarBorrador, enviarARevision
+│   ├── edicion.service.ts          # editable, borrador, subidas, enviar a revisión, candado
 │   ├── use-pagina.ts
+│   ├── use-bloqueo-de-edicion.ts
 │   ├── puck-editor-wrapper.tsx
 │   ├── editorjs-wrapper.tsx
 │   ├── image-uploader-field.tsx
-│   ├── page-seeds.ts
-│   └── edit-button.tsx
+│   ├── archivo-uploader-field.tsx
+│   ├── aviso-rechazo.tsx
+│   ├── aviso-editor-ocupado.tsx
+│   ├── pagina-en-edicion.tsx
+│   └── page-seeds.ts
 │
-└── revision/                       # ETAPAS 3 a 5 — gobernanza
-    ├── revision.service.ts         # listarEnRevision, aprobarPagina, rechazarPagina
-    ├── use-revision-queue.ts
-    └── revision-queue-view.tsx
+├── revision/                       # ETAPAS 3 a 5 — gobernanza
+│   ├── revision.service.ts         # listarEnRevision, aprobarPagina, rechazarPagina, eliminarVersion
+│   ├── use-revision-queue.ts
+│   └── revision-queue-view.tsx
+│
+├── secciones/                      # crear y eliminar páginas (no es etapa)
+│   ├── secciones.service.ts        # crear, analizar y hacer el borrado, permisos, resumen del panel
+│   ├── paginas-fab-speed-dial.tsx  # el botón flotante de acciones
+│   ├── modal-nueva-seccion.tsx
+│   ├── modal-eliminar-seccion.tsx
+│   ├── aviso-seccion-nueva.tsx
+│   └── use-permiso-de-seccion.ts
+│
+└── menu-y-pie/                     # la cabecera y el pie de todo el sitio (no es etapa)
+    ├── menu-y-pie.ts               # obtenerPlantilla, SLUG_PLANTILLA
+    ├── cabecera-por-defecto.ts     # ex features/identidad-visual
+    └── menu-y-pie-fallback-data.ts # semilla del editor
 ```
+
+Así está el módulo desde el 2026-09-18, por etapa. **Dentro de cada etapa los archivos
+van, además, en subcarpetas por tipo**, con la misma anatomía de §3.1: `components/`,
+`hooks/`, `services/` y `lib/` (por ejemplo `edicion/services/edicion.service.ts`,
+`edicion/components/puck-editor-wrapper.tsx`, `edicion/lib/page-seeds.ts`). El árbol de
+arriba lista qué va en cada etapa, no la subcarpeta. `model/` y `menu-y-pie/` son planas,
+porque solo tienen un tipo de archivo. El árbol original de este documento proponía
+además `model/estado.ts` (transiciones válidas de `EstadoPagina`) y `edicion/edit-button.tsx`;
+el primero no se creó porque todavía no hay transiciones que modelar en el cliente, y el
+segundo ya no existía (lo reemplazó el botón flotante de `secciones/`).
+
+> **Actualización 2026-09-18.** A este árbol se sumaron `secciones/` (crear y eliminar
+> sección, que no existía cuando se escribió) y `menu-y-pie/` (la página que guarda la
+> cabecera y el pie). Se aplica por fases, cada una con su commit: 1) `menu-y-pie/`,
+> **hecha**; 2) `model/` y `publicacion/`, **hecha**; 3) `edicion/`, **hecha**; 4)
+> `revision/` y `secciones/`, **hecha** (con el borrado de los cuatro componentes sin uso). En la fase 2 `model/` quedó con `pagina.types.ts`, `rutas.ts` (ex
+> `lib/ruta-de-vuelta.ts`) y `ambito.ts`; no se creó `estado.ts` porque todavía no hay
+> transiciones que modelar en el cliente (`EstadoPagina` sigue en `pagina.types.ts`).
+> `publicacion/` sumó `pagina-puck-fija.tsx`, `rastreador-visitas.tsx`,
+> `etiquetas-cache.ts` y `sitio-busqueda-fallback.ts`.
+> `menu-y-pie/` y `secciones/` no son etapas del ciclo sino partes del dominio, y las
+> reglas de abajo (pensadas para etapas) no se les aplican tal cual. `menu-y-pie/` usa
+> `publicacion/`, y la semilla del editor (`edicion/page-seeds.ts`) usa `menu-y-pie/`.
+>
+> **Un choque del árbol de arriba, resuelto en la fase 3:** ponía `home-fallback-data`
+> en `publicacion/` y `page-seeds` en `edicion/`, pero la semilla usa la portada de
+> respaldo, y eso haría a una etapa importar de otra (regla 2). Como la usan las dos
+> etapas, subió a `model/home-fallback-data.ts`, aplicando la propia regla 2. Por el
+> mismo motivo subieron a `model/` el cliente con sesión (`api-con-sesion.ts`, que usan
+> `edicion/` y `services/`) y el aviso de cola de revisión (`eventos.ts`).
 
 **Reglas internas:**
 
@@ -362,12 +418,17 @@ antes de aplicarla.
 
 | Fase | Qué pedía | Estado |
 |---|---|---|
-| 1 | Partir `paginas.service.ts` en tres | ❌ Sin empezar. El archivo sigue siendo uno solo, con los tres públicos dentro |
-| 2 | Repartir componentes y hooks por etapa | ❌ Sin empezar. `paginas/` sigue con `components/ hooks/ services/ lib/ types.ts` |
-| 3 | Extraer `model/` | ❌ Sin empezar |
-| 4 | Alinear la intranet | 🟡 Ocurrió otra cosa: pasó de 7 features a 2. Ver abajo |
+| 1 | Partir `paginas.service.ts` en tres | ✅ Cerrada el 2026-09-18, en cuatro (`publicacion`, `edicion`, `revision`, `secciones`) |
+| 2 | Repartir componentes y hooks por etapa | ✅ Cerrada el 2026-09-18, con subcarpetas por tipo dentro de cada etapa (§3.2) |
+| 3 | Extraer `model/` | ✅ Cerrada el 2026-09-18, sin `estado.ts` (§3.2 explica por qué) |
+| 4 | Alinear la intranet | ✅ Cerrada el 2026-09-18. Ver abajo |
 | 5 | Todo a kebab-case | ✅ Cerrada el 2026-09-16. 72 archivos renombrados, 102 referencias reescritas, cero archivos en PascalCase |
 | 6 | Extraer `packages/editor-core` | ❌ Sin empezar — aunque `packages/` creció a siete paquetes por otros motivos |
+
+> **Actualización 2026-09-18.** Las fases 1 a 4 se hicieron el mismo día: primero en el
+> sitio y después en la intranet, que quedó con el mismo árbol salvo `revision/`. El
+> párrafo siguiente es el diagnóstico de agosto, y se deja porque explica por qué había
+> que hacerlo. Lo que describe ya no es cierto: `paginas.service.ts` ya no existe.
 
 **Lo que sí sigue siendo cierto es el diagnóstico.** El síntoma del §2.1 —tres públicos
 incompatibles en un archivo, dos transportes distintos— no solo persiste: el archivo
@@ -402,7 +463,7 @@ Repartir según §3.2. Eliminar `page-renderer.tsx`, que ya está marcado `@depr
 
 Separar `types.ts` en `model/pagina.types.ts` y `model/estado.ts`. En `estado.ts`, además de `EstadoPagina`, declarar explícitamente las transiciones válidas del §1, para que el diagrama viva en el código y no solo en este documento.
 
-### Fase 4 — Alinear la intranet — 🟡 la mitad ocurrió, por otro camino
+### Fase 4 — Alinear la intranet — ✅ cerrada el 2026-09-18
 
 **Riesgo: medio.** Muchos renombres. Es donde más deuda se acumuló: de las tres decisiones del §4, la intranet se desvió en las tres.
 
@@ -419,8 +480,8 @@ Estado hoy — 2 features:
 
 | Feature | Carpetas | Qué es |
 |---|---|---|
-| `gestor-secciones/` | `api/ components/ hooks/ lib/ types/ index.ts` | El antiguo `paginas/`, renombrado. Todo el editor: Puck, uploaders, botones de crear/eliminar sección, y `MarcoSecciones` |
-| `login/` | `api/ components/ hooks/ index.ts` | Absorbió a `auth/`: el hook `use-auth` y `auth.api.ts` viven aquí junto a las ocho vistas del flujo |
+| `paginas/` | `model/ publicacion/ edicion/ secciones/ menu-y-pie/ index.ts client.ts` | La gemela de `sitio-web/src/features/paginas/`, con el mismo árbol (§3.2) salvo `revision/`. Se llamó `gestor-secciones/` hasta el 2026-09-18 |
+| `login/` | `services/ components/ hooks/ index.ts` | Absorbió a `auth/`: el hook `use-auth` y `auth.service.ts` viven aquí junto a las ocho vistas del flujo |
 
 Traducido a los pasos originales:
 
@@ -429,32 +490,41 @@ Traducido a los pasos originales:
 | 1 | Crear los `index.ts` que faltaban | ✅ Hecho, y sigue en pie: ningún archivo de `app/` importa rutas internas |
 | 2 | `ui/` → `components/` | ✅ Hecho — las dos features usan `components/` |
 | 4 | Fusionar `login/` y `auth/` | ✅ Hecho, **en la dirección contraria**: sobrevivió `login/`, no `auth/`. Da igual cuál gane; lo que importaba era que dejaran de ser dos |
-| 3 | `api/` → `services/` | ❌ Pendiente. Las dos features siguen con `api/` |
-| 5 | Aplicar §3.2 a `paginas/` | ❌ Pendiente, ahora sobre `gestor-secciones/` |
+| 3 | `api/` → `services/` | ✅ Hecho el 2026-09-18. `paginas.api.ts` no pasó a un `paginas.service.ts` único sino que se partió por etapa, como en el sitio |
+| 5 | Aplicar §3.2 a `paginas/` | ✅ Hecho el 2026-09-18 |
 
-**El renombre `paginas/` → `gestor-secciones/` no estaba en el plan y conviene decir qué
-implica.** El nombre describe mejor lo que hace hoy —gestionar secciones, no solo
-editarlas— pero rompe la simetría con `sitio-web/src/features/paginas/`, que es su
-gemela y sigue llamándose así. La convención 8 de la guía dice que una feature se
-organiza igual en las dos apps; llamarse igual es parte de eso. Hay que elegir un
-nombre y usarlo en las dos, sobre todo si algún día se extrae `editor-core`.
+#### Cómo se cerró
 
-#### Los pasos que quedan
+**El nombre: `paginas/`, en las dos.** La feature se había renombrado a
+`gestor-secciones/` fuera del plan. El nombre describía bien lo que hace, pero rompía la
+simetría con su gemela del sitio. Se eligió `paginas/` porque es el nombre que ya usan
+el sitio, `use-cases/paginas/` en la API y la tabla `paginas`, así que renombrar la
+intranet tocaba una sola carpeta y renombrar el resto tocaba tres capas.
 
-Solo dos de los cinco originales, y los dos son internos a cada feature —su `index.ts`
-absorbe el movimiento—, así que el riesgo de esta fase bajó de medio a bajo:
+**El árbol, con las mismas decisiones que en el sitio:**
 
-1. **`api/` → `services/`** en las dos features, con los archivos: `auth.api.ts` →
-   `auth.service.ts`, `paginas.api.ts` → `paginas.service.ts` (§4.2). Recordar el motivo,
-   que no es cosmético: `api/` colisiona con `app/api/`, que son los *route handlers* de
-   Next. El proxy y el cliente que lo consume no deben compartir nombre.
-2. **Aplicar §3.2 a `gestor-secciones/`**: `types/editor.types.ts` →
-   `model/pagina.types.ts` + `model/estado.ts`; `lib/page-seeds.ts` →
-   `edicion/page-seeds.ts`; el resto de `components/` y `hooks/` se reparte entre
-   `publicacion/` y `edicion/`. La etapa `revision/` no se crea vacía: llega en la fase
-   6, junto con la lógica que la llena.
+- `types/editor.types.ts` → `model/pagina.types.ts`. Sin `model/estado.ts`, por lo mismo
+  que en el sitio. Las props de `PuckEditorWrapper` y `EditorJsWrapper` pasaron a su
+  propio componente: estaban en `model/` e importaban `Rechazo` de un componente del
+  editor, que es justo lo que prohíbe la regla 1.
+- `paginas.api.ts` se partió en `publicacion/services/`, `edicion/services/` y
+  `secciones/services/`. `publicacion/` usa el mismo `apiClient` con sesión que el resto,
+  porque la intranet no tiene zona pública (la regla 3 no aplica aquí).
+- `lib/ruta-de-vuelta.ts` → `model/rutas.ts`, que ahora concentra la regla URL ↔ slug.
+  El rastreador y el botón flotante tenían cada uno su copia. Además, `slugDeOrigen` no
+  unía los segmentos con `-`: al abrir «Menú y pie» desde
+  `/encuestas/calidad-de-formacion` pedía el slug `encuestas/calidad-de-formacion`, que
+  no existe.
+- `lib/plantilla.ts` y `components/marco-secciones.tsx` → `menu-y-pie/`.
+- `client.ts`, segunda puerta, para la barra de navegación, que es un bloque de
+  `puck.config` y leía el índice de búsqueda directo de `api/paginas.api.ts`.
+- Se borraron los mismos cuatro botones sin uso que en el sitio, con sus estilos
+  `.edit-button*`.
 
-**Qué se exporta y qué no.** Los `index.ts` exportan solo lo que `app/` enruta.
+La etapa `revision/` no se crea vacía: llega en la fase 6, junto con la lógica que la
+llena.
+
+**Qué se exporta y qué no.** En `login/`, el `index.ts` exporta solo lo que `app/` enruta.
 `QuestionPicker` y `AuthSuccessScreen` siguen deliberadamente sin exportar: son piezas
 que componen otras vistas, no puntos de entrada. La puerta pública de un módulo es la
 lista de lo que otros pueden usar, no un volcado de todo lo que contiene.
@@ -525,14 +595,16 @@ importa por dos motivos:
   endurecimiento de la subida se aplicó a la intranet y el sitio se quedó sin **ninguno**
   de los cinco controles durante meses, hasta que la política pasó a ser una sola copia.
 - **La duplicación de `paginas/` no bajó, se movió.** Los archivos duplicados entre las
-  dos apps siguen ahí (`client-puck-render`, `edit-button`, `puck-editor-wrapper`,
+  dos apps siguen ahí (`client-puck-render`, `puck-editor-wrapper`,
   `image-uploader-field`, `editorjs-wrapper`, `use-pagina`, `page-seeds`) y se les
-  sumaron los nuevos: `nueva-seccion-button`, `eliminar-seccion-button`,
-  `aviso-seccion-nueva`, `plantilla-edit-button`, `plantilla.ts`, `ruta-de-vuelta.ts`.
-  Cada funcionalidad nueva del editor se escribe dos veces.
+  sumaron los nuevos: crear y eliminar sección, menú y pie, ruta de vuelta, candado.
+  Cada funcionalidad nueva del editor se escribe dos veces. Desde el 2026-09-18, con las
+  dos features alineadas (fase 4), la lista exacta sale de comparar los dos árboles:
+  **22 archivos están en la misma ruta en las dos apps**. Es el inventario de partida
+  de esta fase.
 
 Y la divergencia que la regla buscaba evitar sigue exactamente donde estaba: **la cola de
-revisión existe solo en `sitio-web`** (`app/admin/(shell)/revision/`, que ya distingue
+revisión existe solo en `sitio-web`** (`app/admin/revision/`, que ya distingue
 ámbito y abre la vista previa contra la intranet). La intranet no tiene gobernanza
 propia; sus cambios se aprueban desde el panel del sitio.
 
@@ -578,5 +650,5 @@ Revisados uno a uno el 2026-08-21.
   `grep`.
 - **Prettier y Husky + lint-staged siguen sin instalar**, pese a que el checklist de
   convenciones §9 los da por hechos. Ningún `package.json` los declara y no hay `.husky/`.
-- **`gestor-secciones/` (intranet) y `paginas/` (sitio) son la misma feature con dos
-  nombres.** Ver la fase 4.
+- ~~**`gestor-secciones/` (intranet) y `paginas/` (sitio) son la misma feature con dos
+  nombres.**~~ Resuelto el 2026-09-18: las dos se llaman `paginas/` (fase 4).

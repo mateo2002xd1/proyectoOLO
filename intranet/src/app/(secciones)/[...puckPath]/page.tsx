@@ -5,7 +5,7 @@ import {
   ClientPuckRender,
   obtenerPaginaPublicada,
   SLUG_PLANTILLA,
-} from '@/features/gestor-secciones';
+} from '@/features/paginas';
 
 /**
  * Páginas de la intranet creadas desde el editor visual.
@@ -21,7 +21,11 @@ import {
  * `/paginas/publica/:slug` y un parámetro de Express no cruza una barra. Por eso
  * el slug se arma uniendo los segmentos con `-`, no con `/` — así
  * `/encuestas/calidad-de-formacion` da `encuestas-calidad-de-formacion`, que es
- * el slug real guardado en BD, y `/matriz` da `matriz` igual que antes.
+ * el slug real guardado en BD, y `/matriz` da `matriz` igual que antes. Es la
+ * misma regla que `slugDeRutaPublica` (`features/paginas/model/rutas.ts`) aplica a
+ * una URL entera para el rastreador de visitas y el botón flotante; aquí los
+ * segmentos ya llegan separados (y decodificados: un `%3F` es un `?` literal, que
+ * no debe cortar nada), así que solo se unen.
  *
  * El contenido sale de la API, de la misma tabla `paginas` que usa el sitio pero
  * bajo `ambito='intranet'` — el cliente HTTP manda esa cabecera.

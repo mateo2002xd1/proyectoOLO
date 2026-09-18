@@ -347,24 +347,15 @@
    `margin-top` y no `transform: translateY()` a propósito: cualquier `transform`
    en este contenedor —incluso en reposo, con `animation-fill-mode: both` deja
    `translateY(0)` puesto para siempre, que no es `none`— vuelve a este `<div>` el
-   *containing block* de sus descendientes `position: fixed`. `EditButton` vive
-   dentro de `{children}`, o sea dentro de este contenedor, así que con `transform`
-   dejaba de anclarse a la ventana y pasaba a anclarse al alto de la página: el
-   botón «Editar sección» aparecía en un punto distinto según cuánto contenido
-   tuviera cada página, en vez de fijo abajo a la derecha como los demás. */
-/* Se desplaza con `margin-top` y NO con `transform`, y no es un capricho de estilo:
-   `.olo-route-transition` envuelve el contenido de cada página, y ahí dentro va el
-   botón «Editar sección» (`.edit-button`, `position: fixed`).
+   *containing block* de sus descendientes `position: fixed`. Cualquier elemento fijo
+   que viva dentro de `{children}` dejaría de anclarse a la ventana y pasaría a
+   anclarse al alto de la página.
 
-   Un `transform` distinto de `none` convierte al elemento en el marco de referencia de
-   sus descendientes `fixed`. Como la animación lleva `fill-mode: both`, el valor del
-   último fotograma se queda aplicado para siempre —incluso `translateY(0)`, que es la
-   identidad y parece inofensivo—, así que el botón dejaba de colocarse respecto a la
-   ventana y se pegaba al fondo del contenido: medido en el navegador, acababa 2.578 px
-   por debajo del borde inferior, fuera de la columna que forman los otros tres botones.
-
-   `margin-top` consigue el mismo desplazamiento sin crear ese marco de referencia.
-   Misma trampa que explica el comentario de `olo-boton-flotante-aparece` más abajo. */
+   Se aprendió con el antiguo botón «Editar sección» (`EditButton`, `.edit-button`,
+   borrado el 2026-09-18; hoy lo reemplaza `PaginasFabSpeedDial`, que el layout monta
+   FUERA de este contenedor): con `transform`, medido en el navegador, acababa 2.578 px
+   por debajo del borde inferior en vez de fijo abajo a la derecha. `margin-top`
+   consigue el mismo desplazamiento sin crear ese marco de referencia. */
 @keyframes olo-route-in {
   from {
     opacity: 0;
@@ -3232,69 +3223,6 @@ button.text-link,
   }
 }
 
-/* --- Botón lápiz legado (edit-button) --- */
-
-@keyframes olo-boton-flotante-aparece {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.edit-button {
-  position: fixed;
-  bottom: 1.5rem;
-  right: 1.5rem;
-  z-index: 50;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.55rem 1rem;
-  background: #002c46;
-  color: #fff;
-  border-radius: 999px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
-  transition: background 0.15s ease, transform 0.15s ease;
-  animation: olo-boton-flotante-aparece 180ms ease-out both;
-}
-
-.edit-button:hover {
-  background: #001a2a;
-  transform: translateY(-2px);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .edit-button {
-    animation: none !important;
-  }
-}
-
-.edit-button--plantilla {
-  bottom: 4.6rem;
-  font-weight: 500;
-}
-
-.edit-button--nueva {
-  bottom: 7.7rem;
-  background: transparent;
-  color: #002c46;
-  border: 1.5px solid #002c46;
-  font-weight: 500;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
-}
-
-.edit-button--nueva:hover {
-  background: #002c46;
-  color: #fff;
-}
-
 /* --- Diálogo de «Nueva sección» --- */
 
 .nueva-seccion-fondo {
@@ -3463,23 +3391,6 @@ button.text-link,
   flex-basis: 100%;
   font-size: 0.8rem;
   color: #40607a;
-}
-
-/* Eliminar es la acción de la que no se vuelve: va la más arriba de la pila, en rojo y
-   en hueco. El relleno se reserva para las acciones que se usan a diario — un botón
-   destructivo sólido y grande invita justo a lo que no se quiere invitar. */
-.edit-button--eliminar {
-  bottom: 10.8rem;
-  background: transparent;
-  color: #b3261e;
-  border: 1.5px solid #b3261e;
-  font-weight: 500;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
-}
-
-.edit-button--eliminar:hover {
-  background: #b3261e;
-  color: #fff;
 }
 
 /* Botón de confirmar un borrado dentro del diálogo. Se deshabilita hasta que el nombre

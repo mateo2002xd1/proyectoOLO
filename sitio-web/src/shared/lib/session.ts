@@ -87,7 +87,7 @@ export async function assertPagePermission(requiredPermission: string): Promise<
   return permissions.includes(requiredPermission);
 }
 
-/** Quien puede abrir el editor de páginas. Mismo criterio que `admin/preview`. */
+/** Quien puede abrir el editor de páginas. Mismo criterio que `app/preview/`. */
 const ROLES_QUE_EDITAN = ['superadmin', 'administrador', 'editor'];
 
 /**

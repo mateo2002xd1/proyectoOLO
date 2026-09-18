@@ -13,15 +13,16 @@ import { ResaltadorBusquedaClient } from '@/shared/ui/atoms/resaltador-busqueda-
  *
  * Hasta ahora los dos estaban escritos aquí a mano y la única forma de cambiar un
  * enlace del menú era tocar este archivo. Ahora se pintan con lo que guarda la
- * página `plantilla` (ver `features/paginas/lib/plantilla.ts`), que se edita desde
+ * página `plantilla` (ver `features/paginas/menu-y-pie/menu-y-pie.ts`), que se edita desde
  * el botón «Menú y pie» y se aplica a todas las páginas a la vez.
  *
  * Las acciones de administración de página (editar contenido, editar plantilla,
  * nueva página y eliminar página) se unifican en el menú flotante `PaginasFabSpeedDial`,
  * que resuelve los permisos en el cliente para mantener el renderizado estático/ISR.
  *
- * El editor, la vista previa y el panel quedan fuera: viven en `app/admin/`, fuera
- * de este grupo de rutas, y no deben llevar la navegación del sitio encima.
+ * El editor, la vista previa y el panel quedan fuera: viven en `app/editor/`,
+ * `app/preview/` y `app/admin/`, fuera de este grupo de rutas, y no deben llevar la
+ * navegación del sitio encima.
  */
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const plantilla = await obtenerPlantilla();

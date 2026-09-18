@@ -13,7 +13,7 @@
  * @see 3-seguridad-del-proyecto.md (la API es la única que emite y valida el JWT)
  */
 
-export { authApi } from './api/auth.api';
+export { authApi } from './services/auth.service';
 export { useAuth } from './hooks/use-auth';
 export type { User } from './hooks/use-auth';
 

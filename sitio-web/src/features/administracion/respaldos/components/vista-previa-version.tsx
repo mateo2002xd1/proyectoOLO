@@ -14,7 +14,7 @@ function enlaceDeVistaPrevia(registro: RegistroRespaldo): string {
   const paramVersion = registro.versionAnteriorId ? `?versionId=${registro.versionAnteriorId}` : '';
   return registro.ambito === 'intranet'
     ? `${URL_INTRANET}/preview/${registro.slug}${paramVersion}`
-    : `/admin/preview/${registro.slug}${paramVersion}`;
+    : `/preview/${registro.slug}${paramVersion}`;
 }
 
 function Dato({ etiqueta, children }: { etiqueta: string; children: React.ReactNode }) {

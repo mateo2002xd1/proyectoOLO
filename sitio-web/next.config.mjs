@@ -27,7 +27,7 @@ const nextConfig = {
     root: path.resolve(__dirname, '..')
   },
   /**
-   * Alias hacia las pantallas de acceso, que viven en `app/admin/(auth)/`.
+   * Alias hacia las pantallas de acceso, que viven en `app/(auth)/admin/`.
    *
    * `(auth)` es un grupo de rutas: agrupa las tres pantallas sin sesión bajo una
    * carpeta, pero NO añade segmento a la URL. Por eso la ruta real es
@@ -67,7 +67,32 @@ const nextConfig = {
          * que nunca se actualizaría con lo que se publique.
          */
         source: '/privacidad',
-        destination: '/politica-de-privacidad',
+        destination: '/inicio/politica-de-privacidad',
+        permanent: false,
+      },
+      {
+        /**
+         * La política se movió bajo `/inicio`. Sin este redirect la URL vieja no daría
+         * 404: la atraparía el comodín `[slug]`, que busca por slug y el slug no
+         * cambió, así que serviría la misma página por segunda vez y sin su metadata.
+         * También es la red para los enlaces que no se pueden corregir en el código:
+         * los que ya están guardados en el pie publicado de la base de datos.
+         */
+        source: '/politica-de-privacidad',
+        destination: '/inicio/politica-de-privacidad',
+        permanent: false,
+      },
+      {
+        // CNO y CUOC se movieron bajo `/clasificacion`, junto al buscador. Mismo motivo
+        // que el de arriba: sin esto el comodín `[slug]` las seguiría sirviendo en la
+        // raíz, y el menú publicado en la base todavía enlaza `/cno` y `/cuoc`.
+        source: '/cno',
+        destination: '/clasificacion/cno',
+        permanent: false,
+      },
+      {
+        source: '/cuoc',
+        destination: '/clasificacion/cuoc',
         permanent: false,
       },
       {
@@ -90,6 +115,20 @@ const nextConfig = {
         // /admin/auth/cambiar-contrasena de una sola vez.
         source: '/admin/auth/:path*',
         destination: '/admin/:path*',
+        permanent: false,
+      },
+      {
+        // El editor y la vista previa salieron de `/admin` el 2026-09-18: no son parte
+        // del panel (no llevan su barra lateral) y así quedan en la misma ruta que en
+        // la intranet. Esto cubre marcadores, enlaces copiados y el `?redirect=` de un
+        // login que se quedara a medias con la URL vieja.
+        source: '/admin/editor/:path*',
+        destination: '/editor/:path*',
+        permanent: false,
+      },
+      {
+        source: '/admin/preview/:path*',
+        destination: '/preview/:path*',
         permanent: false,
       },
     ];

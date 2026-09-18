@@ -25,7 +25,7 @@ import {
   type PaginaVersion,
   type Plantilla,
   type PaginaPublicada,
-} from "@/features/gestor-secciones";
+} from "@/features/paginas";
 import type { ContextoDeEdicion } from "@/config/puck.config";
 import { GooLoader } from "@/shared/ui/atoms/goo-loader";
 

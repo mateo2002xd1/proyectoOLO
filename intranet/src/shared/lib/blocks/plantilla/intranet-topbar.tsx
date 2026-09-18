@@ -8,7 +8,7 @@ import {
   obtenerIndiceBusqueda,
   type PaginaIndiceBusqueda,
   type ItemTextoBusqueda,
-} from '@/features/gestor-secciones/api/paginas.api';
+} from '@/features/paginas/client';
 import { desplazarAElemento, resaltarCoincidenciaTexto } from '@olo/blocks-renderer';
 
 /** Valores de Puck para `justify-content`/`align-items` dentro de `.intranet-brand`. */

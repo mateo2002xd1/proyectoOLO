@@ -41,6 +41,7 @@ import sequelize from '../../config/database';
 import { Pagina, PaginaVersion, Permission } from '../../infrastructure/db/models';
 import { claveDeSeccion } from '../../shared/catalogo-permisos';
 import { buscarEnlacesA, type EnlaceEncontrado } from '../../shared/enlaces-en-contenido';
+import { resolverHref } from '../../shared/extraer-textos-puck';
 import { invalidarPermisosDeRol } from '../../middlewares/require-permission.middleware';
 import { borrarClavesPorPatron } from '../../infrastructure/redis';
 import type { Ambito } from '../../shared/ambito';
@@ -133,12 +134,18 @@ async function buscarReferencias(
   });
 
   const referencias: ReferenciaAEnlace[] = [];
+  // Una página movida a una subcarpeta (`/inicio/politica-de-privacidad`) se enlaza por
+  // su ruta nueva, pero el contenido ya publicado puede seguir usando `/{slug}`, que
+  // redirige ahí. Las dos cuentan como enlace vivo.
+  const rutas = [...new Set([`/${slug}`, resolverHref(slug, ambito)])];
 
   for (const otra of otras) {
     const version = await PaginaVersion.findByPk(otra.versionPublicadaId as string);
     if (!version) continue;
 
-    const enlaces: EnlaceEncontrado[] = buscarEnlacesA(version.contenido, `/${slug}`);
+    const enlaces: EnlaceEncontrado[] = rutas.flatMap((ruta) =>
+      buscarEnlacesA(version.contenido, ruta)
+    );
     for (const enlace of enlaces) {
       referencias.push({ slug: otra.slug, titulo: otra.titulo, texto: enlace.texto });
     }

@@ -5,7 +5,11 @@ import { useSearchParams } from 'next/navigation';
 import { Breadcrumb, type BreadcrumbItem } from '@/shared/ui/molecules/breadcrumb';
 import { BuscadorOcupacionesBanner } from './buscador-ocupaciones-banner';
 
-/** Rótulo del tercer nivel de la ruta según `?tipo=`, el mismo valor que enlaza el dropdown de "Clasificaciones" en el menú. */
+/**
+ * Rótulo del tercer nivel de la ruta según `?tipo=`. El menú ya no enlaza así —CNO y
+ * CUOC tienen página propia en `/clasificacion/cno` y `/clasificacion/cuoc`—; se
+ * conserva para los enlaces con `?tipo=` que ya estén repartidos.
+ */
 const ETIQUETAS_TIPO: Record<string, string> = {
   cuoc: 'Clasificación Única de Ocupaciones para Colombia',
   cno: 'Clasificación Nacional de Ocupaciones',

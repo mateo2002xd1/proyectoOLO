@@ -5,6 +5,859 @@
 
 ---
 
+## sesión 18-09-2026 (13.ª parte): `app/admin` sin `(shell)`, y el editor y la vista previa fuera de `/admin`
+
+El usuario pidió dos cosas en `sitio-web/src/app`:
+- subir el contenido de `admin/(shell)/` (páginas y `layout.tsx`) a `admin/` y borrar el grupo;
+- sacar `admin/editor/` y `admin/preview/` a la raíz de `app/`.
+
+**El choque con el login, y cómo se resolvió.** `(shell)/layout.tsx` es el marco del panel:
+barra lateral, sesión y vigilante de inactividad. En Next un `layout.tsx` envuelve todo lo
+que cuelga de su carpeta, y una página no puede saltárselo. Si se subía a
+`admin/layout.tsx` tal cual, envolvía también `admin/(auth)/`: el login, recuperar y
+cambiar contraseña habrían salido con la barra lateral y con el vigilante, sin sesión. Se
+le plantearon tres salidas: sacar `(auth)` a la raíz, mover el login fuera de `/admin`
+(cambia su URL y todo lo que la usa) o dejar `(shell)` como estaba. **Eligió la primera**:
+las pantallas de acceso pasan a `app/(auth)/admin/…`. La URL no cambia (`/admin/login`),
+pero quedan en otra rama del árbol y el marco del panel no las alcanza. Next acepta que
+`app/admin/` y `app/(auth)/admin/` compartan el segmento `admin` porque ninguna ruta
+completa se repite; se comprobó con el build.
+
+**Editor y vista previa.** Pasan de `/admin/editor/<slug>` y `/admin/preview/<slug>` a
+`/editor/<slug>` y `/preview/<slug>`, la misma ruta que en la intranet. Antes de moverlos
+se comprobó:
+- las cookies de sesión llevan `path: '/'`, así que siguen llegando fuera de `/admin`;
+- `editor` y `preview` ya eran slugs reservados en `@olo/slug-policy`, así que no chocan
+  con el comodín público `[slug]`;
+- el login acepta volver a cualquier ruta interna, no solo a `/admin`.
+
+`next.config.mjs` redirige lo viejo a lo nuevo y conserva la query (`?volver=`). El
+`middleware.ts` protege ahora `/editor/:path*`. `/preview` sigue sin estar en su lista,
+como antes: la propia página devuelve 404 a quien no puede editar.
+
+**Cómo se movió.** Renombrar las carpetas falló con `Permission denied`: el servidor de
+desarrollo las tenía abiertas. Un script copió cada archivo, comprobó que la copia fuera
+idéntica byte a byte, y solo entonces borró los originales y las carpetas vacías. Solo
+podía sobrescribir `admin/layout.tsx`, y solo si era el `<>{children}</>` que había.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Frontend | `app/admin/(shell)/*` | Pasa a `app/admin/*`; su `layout.tsx` sustituye al passthrough de `admin/` |
+| Frontend | `app/admin/(auth)/*` | Pasa a `app/(auth)/admin/*` (el `layout.tsx` del grupo, a `app/(auth)/`) |
+| Frontend | `app/admin/editor/`, `app/admin/preview/` | Pasan a `app/editor/`, `app/preview/` |
+| Frontend | `middleware.ts` | Regla y `matcher` de `/editor`; la redirección de un editor sin panel apunta a `/editor` |
+| Frontend | `next.config.mjs` | Redirecciones `/admin/editor/*` → `/editor/*` y `/admin/preview/*` → `/preview/*` |
+| Frontend | `paginas/model/rutas.ts`, `revision-queue-view.tsx`, `vista-previa-version.tsx`, `buscador/lib/indice-panel.ts`, `editor/[slug]/page.tsx` | Enlaces a las rutas nuevas |
+| Frontend y API | Comentarios en 10 archivos (los tres `layout.tsx` de `app/`, `preview/[slug]/page.tsx`, `(public)/[slug]/page.tsx`, `puck.config.tsx`, `menu-y-pie.ts`, `session.ts`, `sembrar-permisos-roles.ts`, `sembrar-plantilla-sitio.ts`) | Rutas y estructura nuevas |
+| Docs | `1-guia-del-proyecto.md` (árbol de `app/`), `4-reglas.md` (regla 8), `8-ciclo-editorial.md` | Estructura nueva |
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` en `sitio-web` tras `next typegen` | exit 0 |
+| `eslint` de los archivos tocados | 2 avisos, **anteriores** (`puedeEditarPaginas` y `Ambito` sin usar) |
+| `next build` | exit 0. Rutas: `/(auth)/admin/login` → `/admin/login` y sus dos hermanas, estáticas (no leen la sesión del panel); las 11 del panel, dinámicas; `/editor/[slug]` y `/preview/[slug]` |
+| `curl` `/admin/login`, `/admin/recuperar` | 200, **sin** marcas del panel en el HTML («Cerrar sesión») |
+| `curl` `/admin/dashboard`, `/admin/revision`, `/admin/cambiar-contrasena`, `/editor/inicio` sin sesión | 307 al login, con `?redirect=` a la ruta pedida |
+| `curl` `/admin/editor/inicio`, `/admin/editor/menu-y-pie?volver=%2Finicio`, `/admin/preview/inicio` | 307 a `/editor/…` y `/preview/…`, con la query intacta |
+| Simulación del `pull` con `OLO/dev` | sin conflictos; el cambio de Samuel (`acceso.sitio`) y el de Mateo (`setError`) caen en `app/editor/[slug]/` |
+| Finales de línea de los 125 archivos cambiados | ninguno mezclado |
+
+> **Error que ya existía.** Si alguien con permisos de edición pero sin `acceso.panel` entra a
+> `/admin/dashboard`, el middleware lo manda al editor **sin slug**. Esa ruta nunca tuvo
+> página: antes daba 404 en `/admin/editor` y ahora lo da en `/editor`. Se tradujo la ruta
+> sin cambiar el comportamiento, porque decidir a dónde debe ir esa persona es una
+> decisión aparte.
+
+**Pendiente al cierre:**
+- Tras el `pull`, `shared/lib/blocks/publicaciones.tsx` (de Diego) todavía busca
+  `/admin/editor` en la URL. Es un respaldo que no se usa, porque `puck.config` siempre
+  le pasa `esEdicion`, pero hay que cambiarlo a `/editor`.
+- Con sesión: entrar al panel y comprobar la barra lateral en cada sección; abrir el
+  editor desde el botón flotante y salir con «Salir»; abrir «Ver» en la cola de revisión.
+
+---
+
+## sesión 18-09-2026 (12.ª parte): revisión de lo que subió a `dev` (PR #110, #112 y #113)
+
+Con la reorganización todavía sin commitear, entraron a `OLO/dev` tres pull requests:
+Mateo (#110, tendencia ocupacional y editor), Samuel (#112, permisos) y Diego (#113,
+errores del editor). El usuario pidió revisar si dañaban o sobrescribían algo que ya
+funcionaba.
+
+**Cómo se comprobó sin tocar la rama del usuario.** Se armó en memoria un commit con el
+trabajo sin commitear: un índice temporal (`GIT_INDEX_FILE`), `write-tree` y
+`commit-tree`, sin mover ninguna rama. Después se mezcló con `git merge-tree
+--write-tree` contra `OLO/dev`. El resultado se extrajo con `git archive` a una carpeta
+temporal y ahí se compilaron las tres apps.
+
+**Resultado: la mezcla es limpia.** Git reconoció los movimientos de carpeta y metió cada
+cambio de los compañeros en la ruta nueva: el botón flotante de Samuel en
+`paginas/secciones/components/` de las dos apps, el `editorjs-wrapper` de Diego y el
+`use-pagina` de Mateo en `edicion/`. No reapareció ninguna carpeta vieja. Nadie añadió
+imports a rutas internas antiguas. El arreglo del donut de `tarjeta-usuarios.tsx` que
+trae `dev` es **idéntico** al restaurado en la 1.ª parte, así que ese commit ya no hace
+falta.
+
+**Hallazgos (nada roto hoy, tres cosas que decidir):**
+
+- **Permisos (Samuel).** Editar pasa a exigir `acceso.sitio` / `acceso.intranet`, en la
+  API (`requierePermisoDeSeccion`), en las dos páginas del editor y en los dos botones
+  flotantes. En la base, Administrador y Editor tienen las dos llaves. El rol **«Editor
+  inicio»** (1 usuario, creado desde el panel) no tiene ninguna y tiene
+  `editar.sitio.menu-y-pie`. En la intranet ya no entraba (su `middleware.ts` exige
+  `acceso.intranet`), pero en el sitio `/admin/editor` sí lo dejaba pasar: **pierde la
+  edición del «Menú y pie» del sitio**. Si es intencional, no hay nada que hacer; si no,
+  hay que darle `acceso.sitio` desde el panel. El comentario de
+  `api-backend/src/shared/ambito.ts` que desaconsejaba esta comprobación («dejaría fuera
+  al Administrador») ya no describe la base: hoy el Administrador sí tiene las dos llaves.
+- **Texto enriquecido (Diego).** En modo lectura, que es también como se pinta en el sitio
+  público, un bloque vacío muestra «Escribe o edita el contenido desde el panel lateral
+  derecho». Hoy no afecta a nadie: hay 0 bloques `RichText` en las 14 páginas publicadas
+  (consulta de solo lectura). Además, los bloques nuevos de texto enriquecido y
+  «Publicaciones» nacen con contenido de ejemplo (un párrafo y 4 PDF, que sí existen en
+  el repo); si se publican sin editar, ese ejemplo sale al público.
+- **Archivos subidos por error (Mateo).** Tres PNG de `sitio-web/public/storage/backup/`
+  (respaldos que genera la app; `storage/` no está en `.gitignore`) y `next-env.d.ts`, que
+  Next reescribe solo. Ninguno rompe nada. `mostrarBannerDepartamento` se fuerza a `false`
+  y no tiene campo en el editor, así que el banner nuevo no se puede activar todavía.
+
+| Verificación | Resultado |
+|---|---|
+| `git merge-tree --write-tree` (trabajo local + `OLO/dev`) | sin conflictos |
+| Rutas viejas en el árbol mezclado (`gestor-secciones`, `paginas/components`, `login/api`…) | ninguna |
+| `tsc --noEmit` sobre el árbol mezclado | exit 0 en `sitio-web`, `intranet` y `api-backend` |
+| `next build` sobre el árbol mezclado | exit 0 en `sitio-web` e `intranet` |
+| Roles y llaves `acceso.*` en la base (solo lectura) | Administrador y Editor: las dos; «Editor inicio»: ninguna |
+| Bloques `RichText` publicados vacíos (solo lectura) | 0 de 0 |
+
+> **Trampa de la simulación.** Turbopack rechaza un `node_modules` que sea un *junction*
+> hacia fuera de la raíz del proyecto («Symlink … points out of the filesystem root»).
+> En la copia temporal hubo que apuntar `turbopack.root` y `outputFileTracingRoot` a un
+> ancestro común. El build `standalone` **copia los junctions** dentro de `.next/`; antes
+> de borrar la carpeta temporal hay que quitar todos los enlaces (se hizo con
+> `DirectoryInfo.Delete()` y comprobando que no quedara ninguno), o el borrado recursivo
+> podría entrar en el `node_modules` real.
+
+**Pendiente al cierre:**
+- Decidir si «Editor inicio» debe conservar la edición del menú del sitio.
+- Pedir a Diego que el aviso de bloque vacío solo salga dentro del editor.
+- Tras el `push`, avisar al equipo de que `gestor-secciones/` pasó a `paginas/` y de que
+  `features/paginas` del sitio está por etapa: una rama que cree un archivo nuevo en una
+  carpeta vieja la haría reaparecer.
+
+---
+
+## sesión 18-09-2026 (11.ª parte): la intranet copia el orden del sitio (`gestor-secciones/` → `paginas/`)
+
+El usuario pidió analizar la intranet y aplicarle la misma lógica que al sitio. Las rutas
+no necesitaban cambios: el comodín `(secciones)/[...puckPath]` sirve cualquier
+profundidad (`/encuestas/calidad-de-formacion` llega entero) y ya cortaba `/menu-y-pie`
+con un 404. El sitio necesitó carpetas para `clasificacion/cno` porque su comodín
+`[slug]` solo cubre un segmento; la intranet no. El trabajo estaba en `features/`: era
+la fase 4 de `8-ciclo-editorial.md` §5, anotada como pendiente desde agosto.
+
+**Nombre: `paginas/`.** `gestor-secciones/` era la gemela de `sitio-web/.../paginas/` con
+otro nombre, y la guía pedía elegir uno para las dos. Se eligió `paginas/` porque ya lo
+usan el sitio, `use-cases/paginas/` y la tabla `paginas`: renombrar la intranet tocaba
+una carpeta; renombrar el resto, tres capas.
+
+**Árbol, con las mismas decisiones que el sitio:** `model/` (plana), `publicacion/`,
+`edicion/` y `secciones/` con subcarpetas por tipo, `menu-y-pie/` (plana), `index.ts` y
+`client.ts`. No hay `revision/`: la intranet se aprueba desde el panel del sitio.
+
+- `api/paginas.api.ts` se partió por etapa: `publicacion.service.ts` (publicada, índice
+  de búsqueda y `registrarVisita`, que antes era un `fetch` dentro de
+  `rastreador-visitas.tsx`; es la misma petición que hace el sitio),
+  `edicion.service.ts` (editable, borrador, enviar a revisión, candado, subidas) y
+  `secciones.service.ts` (crear, analizar y borrar, y `pedirPermisosDeLaSesion`, que
+  antes era un `apiClient.get('/me')` dentro del botón flotante). Se llama distinto de
+  `permisosDeLaSesion` de `shared/lib/sesion.ts`, que lee cookies y solo sirve en el
+  servidor, para no confundir las dos.
+- `types/editor.types.ts` → `model/pagina.types.ts`, al que subieron también
+  `PaginaPublicada`, `VersionEditable` y los tipos del índice de búsqueda. Las props de
+  `PuckEditorWrapper` y `EditorJsWrapper` pasaron a su propio componente. `model/`
+  importaba `Rechazo` de un componente del editor, y eso rompe la regla 1 de §3.2.
+- `lib/ruta-de-vuelta.ts` → `model/rutas.ts`, con `slugDeRutaPublica` (URL → slug) y
+  `rutaPublicaDeSlug` (slug → URL, espejo de la rama intranet de `resolverHref` en la
+  API: `encuestas-*` cuelga de `/encuestas/`). El rastreador y el botón flotante
+  dejaron su copia local de la regla. El editor, al salir sin `?volver=`, va a la ruta
+  canónica y no a `/{slug}`.
+- `lib/plantilla.ts` → `menu-y-pie/menu-y-pie.ts`; `components/marco-secciones.tsx` →
+  `menu-y-pie/marco-secciones.tsx`.
+- `client.ts` nuevo: la barra (`intranet-topbar.tsx`) es un bloque de `puck.config` y
+  leía el índice de búsqueda directo de `api/paginas.api.ts`. Por el `index.ts` cerraría
+  el ciclo `index` → `ClientPuckRender` → `puck.config` → barra; `client.ts` no depende
+  de `puck.config`. Es el mismo arreglo del sitio.
+- `login/api/auth.api.ts` → `login/services/auth.service.ts` (convención 8).
+- Borrados los mismos cuatro botones sin uso que en el sitio (`edit-button`,
+  `plantilla-edit-button`, `nueva-seccion-button`, `eliminar-seccion-button`), el tipo
+  `EditButtonProps` y sus estilos: `.edit-button`, `--plantilla`, `--nueva`,
+  `--eliminar`, sus `:hover` y `olo-boton-flotante-aparece` (2.721 caracteres de
+  `globals.css`).
+
+**Bug corregido de paso.** `slugDeOrigen` quitaba las barras de los extremos pero no unía
+los segmentos. Al abrir «Menú y pie» desde `/encuestas/calidad-de-formacion` pedía el slug
+`encuestas/calidad-de-formacion`. Ese slug no existe (la API lo expone como
+`/paginas/publica/:slug`, que no cruza barras), y el editor de la plantilla se abría sin
+la sección de referencia debajo. Con `?volver=/tasa?x=1` pasaba lo mismo. Ahora usa
+`slugDeRutaPublica`.
+
+**Una decisión que se deshizo en la misma sesión.** Se probó que el comodín
+`[...puckPath]` usara también `slugDeRutaPublica`. Se volvió a `puckPath.join('-')`:
+Next entrega los segmentos ya decodificados, así que `/inicio%3Fx` llegaría como
+`inicio?x`, la función cortaría en el `?` y mostraría `/inicio`. El comentario del
+archivo explica por qué es la misma regla aunque no llame a la función.
+
+**Cómo.** Un script de Node, adaptado del de la 10.ª parte, movió 24 archivos (23 de la
+feature y `auth.api.ts`) y reescribió 51 imports, relativos y con `@/`, después de
+correrlo en seco. Las únicas 4 líneas que no resolvió fueron las del `index.ts` que
+apuntaban a los botones ya borrados; el `index.ts` se reescribió entero. El servicio se
+partió a mano.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Frontend | `intranet/src/features/gestor-secciones/` | Pasa a `features/paginas/`, por etapa y tipo |
+| Frontend | `paginas/{publicacion,edicion,secciones}/services/*.service.ts` | Nuevos, desde `api/paginas.api.ts` |
+| Frontend | `paginas/model/pagina.types.ts`, `model/rutas.ts` | Tipos de datos únicamente; regla URL ↔ slug; `slugDeOrigen` corregido |
+| Frontend | `paginas/client.ts` | Nuevo, para la barra de navegación |
+| Frontend | `paginas/index.ts` | Reescrito, agrupado por carpeta |
+| Frontend | 4 componentes sin uso | Borrados |
+| Frontend | `features/login/services/auth.service.ts` | Antes `api/auth.api.ts` |
+| Frontend | `app/(secciones)/layout.tsx`, `[...puckPath]/page.tsx`, `editor/[slug]/*`, `preview/[slug]/page.tsx` | Import a `@/features/paginas`; comentarios |
+| Frontend | `config/puck.config.tsx`, `shared/lib/blocks/plantilla/intranet-topbar.tsx`, `shared/lib/inactividad/vigilante-sesion.tsx` | Rutas de import nuevas |
+| Frontend | `style/globals.css` | Sin `.edit-button*` ni su animación |
+| Docs | `1-guia-del-proyecto.md` | §4.3 con el árbol nuevo; convenciones 8 y 9 pasan a ✅; duplicación medida (22 archivos en la misma ruta en las dos apps) |
+| Docs | `8-ciclo-editorial.md` | §5.0: fases 1 a 4 cerradas (la tabla seguía de agosto); fase 4 reescrita con cómo se cerró |
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` en `intranet` | exit 0 |
+| Reglas de dependencia | `model` → etapas: 0; `edicion` ↔ `publicacion`: 0; imports internos desde fuera: solo `puck.config` (uploaders), la barra (`client.ts`) y `vigilante-sesion` (`auth.service`, ya era así) |
+| `eslint src` | 0 errores, 9 avisos, **todos anteriores** (comprobados contra `HEAD`: `esSuperadmin` sin usar en el FAB, imports sin usar en `puck.config`, `login` y `editor/[slug]/page.tsx`) |
+| `npm run build` | exit 0; `next-env.d.ts` sin cambios |
+| Prueba de `model/rutas.ts` con `tsx` | 15/15, incluido el caso del bug |
+| Llaves de `globals.css` | 766 `{` / 766 `}` |
+| Finales de línea de los 39 archivos de la intranet que existen tras el cambio | ninguno mezclado |
+| `curl` a la intranet en `:3001` sin sesión | `/login` 200; `/`, `/inicio`, `/encuestas/calidad-de-formacion`, `/menu-y-pie`, `/editor/tasa`, `/preview/tasa` → 307 al login |
+
+**Pendiente al cierre:**
+- Con el backend levantado y sesión en la intranet: abrir `/inicio` y una encuesta,
+  buscar en la barra, editar una sección (guardar, subir imagen, enviar a revisión),
+  abrir «Menú y pie» desde `/encuestas/calidad-de-formacion` y comprobar que la encuesta
+  aparece debajo, y crear y eliminar una sección desde el botón flotante.
+- `vigilante-sesion.tsx` puede importar `authApi` desde `@/features/login`, que ya lo
+  exporta. No se cambió porque no hacía falta para esto.
+- `use-pagina.ts` y `editorjs-wrapper.tsx` de la intranet son esqueletos sin uso (`TODO:
+  Fase 3/6`). Se conservaron porque en el sitio siguen vivos y son parte de la lista de
+  `editor-core`.
+
+---
+
+## sesión 18-09-2026 (10.ª parte): subcarpetas por tipo dentro de cada etapa de `paginas/`
+
+Con las cuatro fases hechas, el usuario preguntó si convenía separar dentro de cada etapa
+los `.tsx`, los `.ts` y los `.service.ts`. Se le recomendó no hacerlo todavía, por tres
+motivos: las etapas tienen 3 a 11 archivos, en `revision/` quedarían tres carpetas de un
+archivo cada una, y el sufijo del nombre (`*.service.ts`, `use-*.ts`, `*.tsx`) ya dice el
+tipo. Se le aclaró también que lo hecho no es Clean Architecture (esa es la del backend),
+sino organización por etapa dentro de un frontend *feature-based*. **Decidió organizarlo
+igual**, y se aplicó.
+
+**Qué quedó.** `publicacion/`, `edicion/`, `revision/` y `secciones/` tienen dentro
+`components/`, `hooks/`, `services/` y `lib/` (la anatomía de §4.0, con `lib/` para lógica y
+datos que no son servicio). `model/` y `menu-y-pie/` quedaron planas, porque solo tienen
+archivos `.ts` de un mismo tipo. `pagina-en-edicion.tsx` fue a `edicion/lib/` y no a
+`components/`: es un contexto de React, no algo que se pinte.
+
+**Cómo.** Un script de Node movió los 26 archivos y reescribió los 72 imports afectados,
+tanto relativos como con alias `@/`. Para cada import resolvía el archivo real al que
+apuntaba (probando `.ts`, `.tsx` e `index`) y calculaba la ruta nueva desde la nueva
+ubicación del archivo que importa. Se corrió primero en seco para revisar la lista. Solo
+quedó un comentario con la ruta vieja (`model/api-con-sesion.ts`), que se corrigió a mano.
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` en `sitio-web` | exit 0 |
+| Reglas de dependencia con la nueva profundidad | etapas entre sí: 0; `publicacion` → `api-con-sesion`: 0; `model` → fuera: 0 |
+| `eslint` sobre `features/paginas` y `puck.config.tsx` | los mismos 6 hallazgos anteriores, ninguno nuevo |
+| `npx next build` | exit 0 |
+| `curl` `/inicio`, `/clasificacion/cno`, `/inicio/politica-de-privacidad` | 200 |
+| `curl` `/menu-y-pie` y `/admin/editor/tendencias` | 404 y 307 al login |
+
+**Pendiente al cierre:** el mismo de la 9.ª parte. Levantar el backend y probar de punta a
+punta: `/tendencias`, el buscador, el editor, la cola de revisión y el botón flotante.
+
+---
+
+## sesión 18-09-2026 (9.ª parte): fase 4 de `paginas/` (`revision/` y `secciones/`) y borrado de los cuatro componentes sin uso
+
+Última fase del reordenamiento por etapa. Con ella desaparecen `components/`, `hooks/` y
+`services/`, y `features/paginas` queda exactamente como el árbol de
+`8-ciclo-editorial.md` §3.2, que se reescribió con la estructura real.
+
+**`revision/`**: `revision.service.ts` (`listarEnRevision`, `aprobarPagina`,
+`rechazarPagina`, `eliminarVersion` y su helper `cabeceraDeAmbito`),
+`revision-queue-view.tsx` y `use-revision-queue.ts`.
+
+**`secciones/`**: `secciones.service.ts` (`crearSeccion`, `analizarEliminacion`,
+`eliminarSeccion`, `permisosDeLaSesion` y `resumenDePaginasPublicadas` con sus tipos),
+`paginas-fab-speed-dial.tsx`, `modal-nueva-seccion.tsx`, `modal-eliminar-seccion.tsx`,
+`aviso-seccion-nueva.tsx` y `use-permiso-de-seccion.ts`. `resumenDePaginasPublicadas`
+podía ir a `revision/` o a `secciones/`: se puso en `secciones/` porque cuenta y enlaza las
+secciones publicadas, no las versiones pendientes.
+
+El servicio viejo se partió con el mismo script de la fase 3, cortando el texto exacto
+entre dos marcadores, y después se borró. `index.ts` quedó agrupado por carpeta, sin
+bloque de pendientes.
+
+**Borrado, a pedido del usuario:** `edit-button.tsx`, `plantilla-edit-button.tsx`,
+`nueva-seccion-button.tsx` y `eliminar-seccion-button.tsx`, sin uso desde `40d4508`
+(09-09-2026, los reemplazó el botón flotante), junto con sus cuatro exportaciones del
+`index.ts`. También se quitaron sus estilos, que quedaron sin ningún uso: `.edit-button`,
+`--plantilla`, `--nueva`, `--eliminar`, sus `:hover` y la animación
+`olo-boton-flotante-aparece`, unos 1.700 caracteres de `globals.css`. Los
+`.nueva-seccion-*` se conservan: los usan los modales del botón flotante. El comentario
+de `globals.css` que explicaba, con `.edit-button` de ejemplo, por qué la transición de
+ruta anima con `margin-top` y no con `transform`, se reescribió como regla general, con
+el caso del botón como antecedente.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Frontend | `features/paginas/revision/` (nueva) | `revision.service.ts` + 2 movidos |
+| Frontend | `features/paginas/secciones/` (nueva) | `secciones.service.ts` + 5 movidos |
+| Frontend | `features/paginas/components/`, `hooks/`, `services/` | Eliminadas (vacías) |
+| Frontend | 4 componentes sin uso | Borrados |
+| Frontend | `features/paginas/index.ts` | Grupos `revision/` y `secciones/`; sin los 4 borrados |
+| Frontend | `style/globals.css` | Sin `.edit-button*` ni su animación; comentario de la transición generalizado |
+| Frontend | `app/api/auth/login/route.ts`, `administracion/actualizaciones/services/observatorio.service.ts`, `paginas/client.ts`, `model/*`, `publicacion/publicacion.service.ts` | Comentarios que citaban rutas o componentes que ya no existen |
+| Docs | `1-guia-del-proyecto.md` | Árbol final de `paginas/` y párrafo del reordenamiento terminado |
+| Docs | `8-ciclo-editorial.md` | §3.2 con el árbol real; §3.1 sin `contenidos/` |
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` en `sitio-web` | exit 0 |
+| Reglas de dependencia (búsqueda de imports) | `revision` → `publicacion`/`edicion`: 0; `edicion` → `revision`/`secciones`: 0; `publicacion` → cualquier otra carpeta: 0; `publicacion` → `api-con-sesion`: 0; `model` → fuera de `model`: 0 |
+| `.edit-button*` en ts/tsx tras el borrado | 0 menciones (tampoco armadas con texto dinámico) |
+| Llaves de `globals.css` | 595 `{` / 595 `}` |
+| `eslint` sobre `features/paginas` y los comentarios tocados | 1 error y 3 avisos, **anteriores** (`any` en `puck-editor-wrapper`, `Ambito` sin usar en `revision-queue-view`, `ROLES_QUE_EDITAN` en el FAB y en `use-permiso-de-seccion`) |
+| `npx next build` | exit 0. En el registro: «Failed to fetch home page data» (el backend estaba apagado; la portada cae a su respaldo, como está previsto) y «Error decoding token for user profile», que viene de un `catch` de `shared/lib/session.ts` (no tocado; imprime el aviso normal de Next cuando una ruta lee cookies) |
+| `curl` `/inicio`, `/clasificacion/cno`, `/inicio/politica-de-privacidad` | 200 con menú y pie |
+| `curl` `/menu-y-pie` | 404 |
+| `curl` `/admin/revision`, `/admin/editor/tendencias` sin sesión | 307 → login |
+| `curl /tendencias` | 404: **el backend sigue apagado** (`:4000` sin conexión) |
+
+> **Line endings.** `1-guia-del-proyecto.md` se guarda con LF en Git y en la copia de
+> trabajo está en CRLF (`core.autocrlf`). Un reemplazo hecho con un script de Node metió
+> 40 líneas solo con LF y dejó el archivo mezclado; se normalizó a CRLF y se revisaron
+> los 63 archivos cambiados: ninguno quedó mezclado. Al editar por script, conservar el
+> salto de línea del archivo.
+
+**Pendiente al cierre:**
+- Levantar el backend y comprobar `/tendencias`, el índice de búsqueda con las rutas nuevas
+  y el editor de punta a punta con sesión: abrir, guardar borrador, subir imagen, enviar
+  a revisión, aprobar desde `/admin/revision`, crear y eliminar una sección desde el botón
+  flotante.
+
+---
+
+## sesión 18-09-2026 (8.ª parte): fase 3 de `paginas/`, `edicion/`
+
+Tercera fase del reordenamiento por etapa (`8-ciclo-editorial.md` §3.2).
+
+**`edicion/`** reúne el editor y todo lo que usa. Se movieron 10 archivos:
+- de `components/`: `puck-editor-wrapper`, `editorjs-wrapper`, `image-uploader-field`,
+  `archivo-uploader-field`, `aviso-rechazo` y `aviso-editor-ocupado`;
+- de `hooks/`: `use-pagina` y `use-bloqueo-de-edicion`;
+- de `lib/`: `page-seeds` y `pagina-en-edicion`. `lib/` quedó vacía y se borró.
+
+Además, un servicio nuevo, `edicion.service.ts`, con `obtenerPaginaEditable`,
+`guardarBorrador`, `registrarSubidaPendiente`, `enviarARevision` y el candado
+(`EstadoDelBloqueo`, `adquirirBloqueo`, `liberarBloqueo`). Esas funciones se cortaron de
+`services/paginas.service.ts` con un script que copia el texto exacto, sin reescribirlo a
+mano; el servicio viejo pasó de 306 a 204 líneas.
+
+**Tres piezas subieron a `model/`** porque las usan dos etapas y la regla 2 del plan
+prohíbe que una etapa importe de otra:
+
+| Pieza | La usan | Antes |
+|---|---|---|
+| `api-con-sesion.ts` (axios `withCredentials`) | `edicion/` y `services/` | constante privada del servicio |
+| `eventos.ts` (`notificarRevisionActualizada`) | `edicion/` (enviar), `services/` y `hooks/use-revision-queue` (aprobar, rechazar, descartar) | exportada por el servicio |
+| `home-fallback-data.ts` | `publicacion/` (portada de respaldo) y `edicion/page-seeds` (semilla) | `publicacion/` |
+
+La última resuelve el choque que el propio árbol del plan tenía y que se anotó en la 7.ª
+parte.
+
+**Los cuatro componentes sin uso** siguen en `components/`, sin mover ni borrar: el
+usuario no ha decidido todavía. `edit-button` y `plantilla-edit-button` habrían ido a
+`edicion/`, pero no tiene sentido mudar código que no se ejecuta.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Frontend | `features/paginas/edicion/` (nueva) | `edicion.service.ts` + 10 archivos movidos |
+| Frontend | `features/paginas/model/` | `+ api-con-sesion.ts`, `+ eventos.ts`, `+ home-fallback-data.ts` (desde `publicacion/`) |
+| Frontend | `features/paginas/services/paginas.service.ts` | Sin lo de edición; usa `model/` |
+| Frontend | `features/paginas/hooks/use-revision-queue.ts`, `publicacion/publicacion.service.ts` | Imports a `model/` |
+| Frontend | `features/paginas/index.ts` | Grupo `edicion/`; mismas exportaciones |
+| Frontend | `config/puck.config.tsx` | Los tres campos del editor desde `features/paginas/edicion/` |
+| Backend | `scripts/sembrar-inicio-sitio.ts` | Comentario con la ruta nueva |
+| Docs | `1-guia-del-proyecto.md`, `8-ciclo-editorial.md` | Árbol, fases, choque resuelto y por qué `puck.config` no puede usar el `index.ts` |
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` en `sitio-web` | exit 0 |
+| Reglas de dependencia (búsqueda de imports) | `edicion` → `publicacion`: 0; `publicacion` → `edicion`: 0; `model` → cualquier otra carpeta: 0; `publicacion` → `api-con-sesion`: 0 |
+| `eslint` sobre `features/paginas`, `app/admin/editor` y `puck.config.tsx` | 1 error y 6 avisos, **todos anteriores** (comprobados contra `HEAD`: `any` en `puck-editor-wrapper`, y variables o imports sin usar en `editor/[slug]/page.tsx`, `puck.config.tsx`, el FAB, `revision-queue-view` y `use-permiso-de-seccion`) |
+| `npx next build` de producción | exit 0; compila todas las rutas, `/admin/editor/[slug]` y `/admin/preview/[slug]` incluidas. Es lo que cubre el editor, que con `curl` no se puede abrir sin sesión. `next-env.d.ts` restaurado después |
+| `curl` `/inicio`, `/clasificacion/cno` | 200 |
+| `curl /tendencias` | **404, porque el backend no responde** (`:4000/health` → sin conexión). Sin backend, `obtenerPagina` devuelve `null` y el comodín da 404; `/inicio` y `/clasificacion/cno` siguen en 200 por su respaldo y su caché. No viene de esta fase |
+
+> **`next build` y `next dev` pueden convivir en Next 16.** El servidor de desarrollo
+> escribe en `.next/dev/` y el build en `.next/`, así que compilar para producción no tumba
+> el dev server. Solo reescribe `next-env.d.ts`; hay que restaurarlo.
+
+**Pendiente al cierre:**
+- Levantar el backend y comprobar `/tendencias` (200) y el índice de búsqueda con las rutas
+  nuevas (`/clasificacion/cno`, `/clasificacion/cuoc`, `/inicio/politica-de-privacidad`).
+- Probar el editor con sesión: abrir, guardar borrador, subir una imagen y enviar a
+  revisión. El build garantiza que compila, no que funcione de punta a punta.
+- Fase 4 (`revision/` y `secciones/`).
+- Decidir si se borran los cuatro componentes sin uso.
+
+---
+
+## sesión 18-09-2026 (7.ª parte): fase 2 de `paginas/`, `model/` y `publicacion/`
+
+Segunda fase del reordenamiento de `features/paginas` por etapa del ciclo editorial
+(`8-ciclo-editorial.md` §3.2).
+
+**`model/`**, el vocabulario que comparten las etapas:
+- `pagina.types.ts`, antes `types.ts`.
+- `rutas.ts`, antes `lib/ruta-de-vuelta.ts`. El nombre viejo ya no alcanzaba: además de la
+  ruta de vuelta del editor, guarda `RUTAS_PROPIAS` y la traducción slug ↔ URL.
+- `ambito.ts` (nuevo), con la cabecera `X-Ambito: sitio`, que antes era una constante
+  privada del servicio y ahora la usan los dos servicios.
+
+No se creó el `estado.ts` que proponía el plan: todavía no hay transiciones que modelar
+en el cliente.
+
+**`publicacion/`**, lo que ve quien visita. Tiene un servicio nuevo,
+`publicacion.service.ts`, con las cinco lecturas públicas que estaban mezcladas en
+`services/paginas.service.ts`: `obtenerPagina`, `obtenerPaginaPublicadaCacheada`,
+`obtenerPaginaInicio`, `registrarVisita` y `obtenerIndiceBusqueda`. Se sumaron
+`client-puck-render`, `pagina-puck-fija` y `rastreador-visitas` (antes en `components/`) y
+`home-fallback-data`, `sitio-busqueda-fallback` y `etiquetas-cache` (antes en `lib/`).
+`services/paginas.service.ts` pasó de 408 a 306 líneas y quedó **solo** con llamadas que
+van con sesión.
+
+**Un cambio de comportamiento, deliberado.** `obtenerPagina` y `obtenerIndiceBusqueda` iban
+por el axios con `withCredentials: true`. En `publicacion/` van por un axios **sin**
+credenciales, como pide la regla 3 del plan («publicación nunca usa el cliente
+autenticado»). Antes se comprobó que no rompe nada:
+- `/api/paginas/publica/:slug` y `/api/paginas/indice-busqueda` están declaradas antes del
+  `requireAuth` de `pagina.routes.ts`.
+- `curl` sin cookies y con `Origin: http://localhost:3000` → 200 con
+  `Access-Control-Allow-Origin` correcto.
+
+**De paso,** `app/admin/editor/[slug]/editor-client.tsx` importaba seis cosas del módulo
+por rutas internas (`@/features/paginas/components/…`, `/hooks/…`, `/lib/…`, `/types`),
+contra la regla §0.3. Dos de esas rutas dejaban de existir; ahora las seis entran por el
+`index.ts`, y la fase 3 ya no tendrá que tocar este archivo. `index.ts` se reescribió
+agrupado por carpeta, **con las mismas exportaciones** (no se quitó ninguna, tampoco las
+de los cuatro componentes sin uso).
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Frontend | `features/paginas/model/` (nueva) | `pagina.types.ts`, `rutas.ts`, `ambito.ts` |
+| Frontend | `features/paginas/publicacion/` (nueva) | `publicacion.service.ts` + 6 archivos movidos |
+| Frontend | `features/paginas/services/paginas.service.ts` | Sin las lecturas públicas; usa `model/` |
+| Frontend | `features/paginas/index.ts` | Reescrito por carpeta, mismas exportaciones |
+| Frontend | `components/*`, `hooks/*`, `lib/page-seeds.ts`, `menu-y-pie/menu-y-pie.ts` | Imports a `model/` y `publicacion/` |
+| Frontend | `app/admin/editor/[slug]/editor-client.tsx` | Todo por el `index.ts` |
+| Frontend | `app/(public)/…` (política, CNO, CUOC) | Comentarios con la ruta nueva de `rutas.ts` |
+| Backend | `shared/extraer-textos-puck.ts`, `scripts/sembrar-inicio-sitio.ts` | Comentarios con las rutas nuevas |
+| Docs | `1-guia-del-proyecto.md`, `8-ciclo-editorial.md` | Árbol, fases y el conflicto de dependencias de la fase 3 |
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` en `sitio-web` (tras `next typegen`; `next-env.d.ts` restaurado) | exit 0 |
+| `eslint` sobre `model/`, `publicacion/`, `services/`, `menu-y-pie/`, `lib/`, `hooks/`, `index.ts`, `editor-client.tsx` y `app/(public)` | 0 errores; 1 aviso anterior (`ROLES_QUE_EDITAN` sin usar en el FAB) |
+| `curl` `/inicio`, `/tendencias`, `/clasificacion/cno`, `/inicio/politica-de-privacidad` | 200 con menú y pie |
+| `curl` `/menu-y-pie`, `/no-existe-xyz` | 404 |
+| `curl /admin/editor/tendencias` sin sesión | 307 → `/admin/login?redirect=…` |
+| `curl /api/paginas/indice-busqueda` (proxy del sitio) | 200, siete páginas |
+
+> **El backend de desarrollo no recarga solo.** `npm run dev` es `ts-node src/server.ts`,
+> sin modo vigilancia: los cambios de la API de la 2.ª y la 3.ª parte (`resolverHref` y el
+> análisis de borrado) no están activos hasta reiniciarlo. Se notó porque el índice de
+> búsqueda seguía devolviendo `/cno`, `/cuoc` y `/politica-de-privacidad` con
+> `X-Cache: BYPASS`, así que no era la caché de Redis. Los redirects cubren esos enlaces
+> mientras tanto.
+
+**Pendiente al cierre:**
+- Reiniciar el backend de desarrollo y comprobar que el índice de búsqueda devuelve
+  `/clasificacion/cno`, `/clasificacion/cuoc` e `/inicio/politica-de-privacidad`.
+- Fases 3 (`edicion/`) y 4 (`revision/` y `secciones/`), con el conflicto de
+  dependencias de `page-seeds` anotado en `8-ciclo-editorial.md`.
+- Decidir si se borran los cuatro componentes sin uso.
+
+---
+
+## sesión 18-09-2026 (6.ª parte): `paginas/menu-y-pie/` y fin de `identidad-visual`
+
+El usuario aprobó reorganizar `features/paginas` **por etapa del ciclo editorial**, como
+ya proponía `8-ciclo-editorial.md` §3.2 y nunca se aplicó, más dos carpetas que ese plan
+no tenía: `secciones/` y `menu-y-pie/`. Pidió que la carpeta de la cabecera y el pie se
+llamara `menu-y-pie` (en la propuesta figuraba como `plantilla/`). Se aplica en cuatro
+fases, cada una con su commit. Esta es la **fase 1**.
+
+**Qué se hizo.** Se creó `features/paginas/menu-y-pie/` con tres archivos:
+
+- `menu-y-pie.ts`, antes `lib/plantilla.ts` (`obtenerPlantilla`, `SLUG_PLANTILLA` y los tipos).
+- `menu-y-pie-fallback-data.ts`, antes `lib/plantilla-fallback-data.ts`.
+- `cabecera-por-defecto.ts`, que une los tipos y los valores de la antigua
+  `identidad-visual`.
+
+`features/sitio-web/identidad-visual/` se borró entera, **incluido su servicio**, el que
+pedía la ruta inexistente `GET /api/identidad-visual` (404) cada vez que el servidor
+armaba una página. Ahora `obtenerPlantilla` parte de la constante `CABECERA_POR_DEFECTO`
+y no hace esa petición. El papel de `identidad-visual/client.ts` (dar los valores por
+defecto a `puck.config.tsx` sin cargar axios en el navegador) lo toma
+`features/paginas/client.ts`.
+
+**Nombres que no cambiaron, a propósito.** `obtenerPlantilla`, `SLUG_PLANTILLA`,
+`Plantilla`, `PropsCabecera` y `PropsPie` siguen igual: la API y la intranet comparten el
+concepto «plantilla» y en la 4.ª parte se decidió no renombrarlo. Cambiaron la carpeta,
+los nombres de archivo y los de la antigua `identidad-visual`, que no usaba nadie más:
+`defaultIdentidadVisual` → `CABECERA_POR_DEFECTO`, `IdentidadVisual` → `CabeceraPorDefecto`
+y `plantillaFallbackData` → `menuYPieFallbackData`. De paso, `editor-client.tsx` importa el
+tipo `Plantilla` por el `index.ts` del módulo y no por su ruta interna.
+
+**Hallazgo: cuatro componentes sin uso.** `edit-button`, `plantilla-edit-button`,
+`nueva-seccion-button` y `eliminar-seccion-button` solo se nombran en su propio archivo y
+en `index.ts`. Los reemplazó el botón flotante (`paginas-fab-speed-dial` +
+`modal-nueva-seccion` + `modal-eliminar-seccion`) en `40d4508` (09-09-2026).
+**No se borraron**: queda a decisión del usuario. `plantilla-edit-button` tampoco se movió
+a `menu-y-pie/`, porque no tiene sentido mudar código muerto.
+
+> **Corrección a la 2.ª parte.** La tabla de «lo que se rompía» listaba
+> `eliminar-seccion-button.tsx` como el botón de eliminar. Ese componente es uno de los
+> cuatro sin uso: el borrado real pasa por el botón flotante, que sí se corrigió en esa
+> misma parte. No hubo daño, pero ese renglón describía código que no se ejecuta.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Frontend | `features/paginas/menu-y-pie/` (nueva) | `menu-y-pie.ts`, `menu-y-pie-fallback-data.ts`, `cabecera-por-defecto.ts` |
+| Frontend | `features/paginas/client.ts` (nuevo) | Segunda puerta sin axios: `CABECERA_POR_DEFECTO` |
+| Frontend | `features/sitio-web/identidad-visual/` | Borrada (servicio al 404 incluido) |
+| Frontend | `features/paginas/index.ts`, `lib/page-seeds.ts`, `components/paginas-fab-speed-dial.tsx`, `components/plantilla-edit-button.tsx` | Imports a `menu-y-pie/` |
+| Frontend | `config/puck.config.tsx`, `app/admin/editor/[slug]/editor-client.tsx`, `app/(public)/layout.tsx` | Imports y comentarios |
+| Backend | `scripts/sembrar-plantilla-sitio.ts` | Comentarios con el nombre y la ruta nuevos |
+| Docs | `1-guia-del-proyecto.md` | Árbol de `paginas/` y de `sitio-web/` (vuelve a cuatro hijas), párrafo del reordenamiento por fases, fila RF-03 |
+| Docs | `8-ciclo-editorial.md` §3.2 | Estructura objetivo con `secciones/` y `menu-y-pie/`, y el plan de cuatro fases |
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` en `sitio-web` | exit 0 |
+| `eslint` sobre los archivos nuevos o tocados | 0 errores; 2 avisos anteriores (`useState` y `createPortal` sin usar en `puck.config.tsx`, ya estaban en `HEAD`) |
+| `curl` `/inicio`, `/tendencias`, `/clasificacion/cno`, `/inicio/politica-de-privacidad` | 200, con menú («Clasificaciones»), enlace a la intranet y pie |
+| `curl /menu-y-pie` | 404 |
+
+**Pendiente al cierre:**
+- Fases 2 a 4 del reordenamiento.
+- Decidir si se borran los cuatro componentes sin uso.
+- El menú por defecto sigue copiado en tres sitios: `cabecera-por-defecto.ts`, el
+  respaldo interno de `shared/lib/blocks/header.tsx` y la siembra del backend.
+  `header.tsx` no puede importar de `features/` (la dependencia va de `features` a
+  `shared`, no al revés), así que unificarlo pide mover la constante a `shared/`.
+
+---
+
+## sesión 18-09-2026 (5.ª parte): `identidad-visual` pasa a `features/sitio-web/`
+
+`features/identidad-visual/` estaba en la raíz de `features/`, al mismo nivel que
+`paginas/`, y la guía la describía como «tipografías, colores, marca (RF-03)». Revisada,
+**no contiene nada de eso**: son los valores por defecto de la cabecera del sitio público
+(franja gov.co, texto y URL de la intranet, enlaces del menú). Los usan dos sitios:
+`paginas/lib/plantilla.ts`, como base sobre la que se aplica el bloque `Header` guardado
+en «Menú y pie», y `config/puck.config.tsx`, como `defaultProps` del bloque. La intranet
+tiene su propia cabecera. A pedido del usuario se movió a
+`features/sitio-web/identidad-visual/`, el agrupador de lo público.
+
+**Hallazgo, sin tocar:** el servicio pide `GET /api/identidad-visual` y **esa ruta no
+existe en la API**: devuelve 404 en local y no aparece en `api-backend/src/routes`. El
+`catch` cae siempre al valor por defecto, así que el sitio funciona, pero
+`obtenerPlantilla()` hace esa petición inútil cada vez que el servidor arma una página
+pública. Tampoco existe la tabla de RF-03: `marca_versiones` se eliminó en la migración
+020 sin haberse usado. Se le propuso al usuario que el servicio devuelva el valor por
+defecto sin llamar a la API; queda pendiente de su decisión.
+
+**Guía al día.** El árbol decía que `features/sitio-web/` tenía «solo dos hijas»; tiene
+**cinco**: `inicio/`, `buscador-ocupaciones/`, `programas-sobresalientes/` y
+`tendencia-ocupacional/` (estas dos sin documentar hasta hoy), más `identidad-visual/`.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Frontend | `features/identidad-visual/` → `features/sitio-web/identidad-visual/` | Movida sin cambios de contenido, salvo la ruta que cita su `index.ts` |
+| Frontend | `config/puck.config.tsx`, `features/paginas/lib/plantilla.ts` | Import a la ruta nueva |
+| Backend | `scripts/sembrar-plantilla-sitio.ts` | Comentario con la ruta nueva |
+| Docs | `1-guia-del-proyecto.md` | Árbol de `features/` (cinco hijas de `sitio-web/`), párrafo de los dos niveles y fila RF-03 del mapa |
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` en `sitio-web` | exit 0 |
+| `eslint` sobre `identidad-visual/` y `plantilla.ts` | limpio |
+| `curl` `/inicio`, `/tendencias`, `/clasificacion/cno` | 200, con el menú «Clasificaciones» en la cabecera |
+| `curl` `:4000/api/identidad-visual` | 404 (el hallazgo de arriba) |
+
+> **`npx next typegen` reescribe `sitio-web/next-env.d.ts`** (sus imports pasan de
+> `.next/dev/types/…` a `.next/types/…`). Es un archivo versionado que Next alterna solo
+> entre `dev` y `build`; se restauró con `git restore` para no ensuciar el commit.
+
+---
+
+## sesión 18-09-2026 (4.ª parte): el corte de `/menu-y-pie` pasa de carpeta al comodín
+
+`menu-y-pie` es una fila real de `paginas` que guarda la cabecera y el pie de todo el
+sitio. Si alguien visitara `/menu-y-pie`, el comodín `[slug]` la encontraría en la base y la
+mostraría como una página, con cabecera y pie duplicados. Hasta ahora lo impedía una carpeta
+`app/(public)/menu-y-pie/` cuyo `page.tsx` solo llamaba a `notFound()`: una ruta fija le
+gana al comodín.
+
+Se quitó la carpeta y el corte pasó a la primera línea de `(public)/[slug]/page.tsx`
+(`if (slug === SLUG_PLANTILLA) notFound()`), antes de consultar la API. El efecto es el
+mismo, pero la regla queda junto al código que causa el problema, `app/(public)/` solo
+tiene carpetas que son páginas, y el sitio queda igual que el comodín de la intranet, que
+ya lo hacía así. `/admin/preview/menu-y-pie` no cambia: vive fuera de `(public)`.
+
+**Se descartó en esta misma parte** renombrar `menu-y-pie`. Se relevó el alcance: el slug
+vive en la base en los dos ámbitos, en las claves de permiso `editar.{ambito}.menu-y-pie`,
+en `SLUG_PLANTILLA` de la API y de los dos frontends, y en `@olo/slug-policy`; además el
+código llama «plantilla» al mismo concepto (`obtenerPlantilla`, `PlantillaEditButton`,
+`plantilla.ts`…). En total, 118 apariciones en 41 archivos, más una migración como la 014
+(`UPDATE permisos SET clave`, nunca borrar e insertar). El usuario decidió omitirlo.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Frontend | `app/(public)/[slug]/page.tsx` | `notFound()` para `SLUG_PLANTILLA` antes de pedir la página |
+| Frontend | `app/(public)/menu-y-pie/page.tsx` | Borrado |
+| Docs | `1-guia-del-proyecto.md` | Árbol de `(public)/` y párrafo de las rutas que no sirven nada |
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` en `sitio-web` | exit 0. El primer intento falló en `.next/types/validator.ts`: son tipos generados que aún referenciaban la carpeta borrada. Se regeneraron con `npx next typegen` (`.next/` está en `.gitignore`) |
+| `eslint` sobre `[slug]/page.tsx` | limpio |
+| `curl /menu-y-pie` | 404. Sin el corte habría dado 200, porque la fila existe y está publicada |
+| `curl /tendencias`, `/clasificacion/cno`, `/inicio` | 200 |
+
+> Después de borrar o mover una carpeta de `app/`, `tsc` puede fallar en
+> `.next/types/validator.ts` por una ruta que ya no existe, aunque el servidor de
+> desarrollo esté corriendo: Next no regenera esos tipos al instante. No es un error del
+> código; `npx next typegen` los regenera.
+
+---
+
+## sesión 18-09-2026 (3.ª parte): CNO y CUOC pasan a `/clasificacion/cno` y `/clasificacion/cuoc`
+
+Segundo paso del reordenamiento de rutas del `sitio-web`. `cno` y `cuoc` eran páginas de
+Puck sin carpeta (las servía el comodín `[slug]` en `/cno` y `/cuoc`); ahora viven junto al
+buscador de ocupaciones, bajo `/clasificacion/`. Se aplicó el mecanismo `RUTAS_PROPIAS` de
+la 2.ª parte: los slugs no cambian y la base de datos no se toca.
+
+**Se descartó `/clasificacion?tipo=cno`.** El usuario lo planteó como alternativa. En el
+buscador, `?tipo=` solo cambia dos rótulos (el tercer nivel de la ruta de navegación y el
+título de la ventana de resultados); la búsqueda es idéntica. Usarlo habría dejado
+huérfanas las páginas de Puck `cno` y `cuoc` —texto y pestañas laterales, que es lo que
+enlaza el menú publicado—, y el botón de editar habría apuntado a `clasificacion`, que no
+es una página de la base. También se descartaron un comodín `clasificacion/[slug]` (hay
+que blindarlo para que `/clasificacion/tendencias` no sirva cualquier página) y renombrar
+los slugs a `clasificacion-cno` con comodín multinivel (exige migración de slugs,
+permisos y concesiones; solo compensa si se van a anidar muchas páginas).
+
+**`PaginaPuckFija`.** Con CNO y CUOC habría tres `page.tsx` casi idénticos (política, CNO,
+CUOC). Se sacó el cuerpo común a `features/paginas/components/pagina-puck-fija.tsx`:
+lee la versión publicada del slug y, si no hay, da 404 a quien visita o la entrada al
+editor a quien puede editar. Cada `page.tsx` queda en su `metadata` y una línea.
+`puedeEditar` lo pasa la página y no lo resuelve el componente porque `puedeEditarPaginas()`
+lee cookies con `next/headers`, y el componente sale por el `index.ts` del módulo, que
+también importan componentes de cliente.
+
+**Menús de respaldo.** `header.tsx`, `default-identidad-visual.ts` y la siembra
+`sembrar-plantilla-sitio.ts` enlazaban CNO y CUOC como `/clasificacion?tipo=…`. Pasan a
+las rutas nuevas, para que el menú de respaldo y el publicado lleven al mismo sitio. La
+lógica de `?tipo=` del buscador se conserva por los enlaces ya repartidos.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Frontend | `app/(public)/clasificacion/cno/page.tsx`, `…/cuoc/page.tsx` (nuevos) | Metadata propia + `PaginaPuckFija` |
+| Frontend | `features/paginas/components/pagina-puck-fija.tsx` (nuevo), `index.ts` | Cuerpo común de las páginas Puck con carpeta propia |
+| Frontend | `app/(public)/inicio/politica-de-privacidad/page.tsx` | Pasa a usar `PaginaPuckFija` |
+| Frontend | `features/paginas/lib/ruta-de-vuelta.ts` | `cno` y `cuoc` en `RUTAS_PROPIAS` |
+| Frontend | `next.config.mjs` | Redirects `/cno` y `/cuoc` → `/clasificacion/…` |
+| Frontend | `shared/lib/blocks/header.tsx`, `identidad-visual/lib/default-identidad-visual.ts` | Menú de respaldo a las rutas nuevas |
+| Frontend | `buscador-ocupaciones/components/buscador-ocupaciones-view.tsx` | Comentario de `?tipo=` al día |
+| Backend | `shared/extraer-textos-puck.ts` | `cno` y `cuoc` en `RUTAS_PROPIAS_SITIO` |
+| Backend | `scripts/sembrar-plantilla-sitio.ts` | Menú sembrado a las rutas nuevas |
+| Docs | `1-guia-del-proyecto.md` | Árbol de `(public)/` según el plan acordado; nueva §4.2.1 (cómo se arma una URL, las tres clases de página, los cuatro pasos para anidar, ruta frente a parámetro) |
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` en `sitio-web` y `api-backend` | exit 0 los dos |
+| `eslint` sobre los 8 archivos nuevos o tocados del sitio en esta parte | limpio |
+| Script con 10 casos (`rutaPublicaDeSlug`, `slugDeRutaPublica`, `slugDeOrigen`, `resolverHref`) | 10/10 |
+| `curl` `/cno`, `/cuoc` | 307 → `/clasificacion/cno`, `/clasificacion/cuoc` |
+| `curl` `/clasificacion/cno`, `/clasificacion/cuoc` | 200 con su `<title>` propio y contenido publicado |
+| `curl` `/clasificacion` | 200, sigue siendo el buscador |
+| `curl` `/inicio/politica-de-privacidad` tras pasar a `PaginaPuckFija` | 200 con su `<title>` y contenido |
+| `curl` `/clasificacion/tendencias` | 404: la carpeta no abre la puerta a otras páginas |
+
+**Pendiente al cierre:**
+- El menú **publicado** en la base enlaza `/cno` y `/cuoc`. Los redirects lo cubren;
+  conviene corregirlo desde el editor de «Menú y pie» para quitar el salto.
+- Nada de esto está en un commit (el usuario commitea; ver la lista entregada en la
+  sesión).
+
+---
+
+## sesión 18-09-2026 (2.ª parte): la política de privacidad pasa a `/inicio/politica-de-privacidad`
+
+Primer paso de una sesión dedicada a ordenar carpetas y rutas del `sitio-web`. Se movió
+`app/(public)/politica-de-privacidad/` a `app/(public)/inicio/politica-de-privacidad/`,
+así que la URL pasa a ser `/inicio/politica-de-privacidad`.
+
+**Lo que el `git mv` no resolvía solo.** En Next la URL la da la carpeta, pero en este
+sitio **el slug de una página se deduce de la URL** en cuatro sitios distintos, y los
+cuatro usaban la misma regla (segmentos unidos con guion: `/encuestas/tasa` →
+`encuestas-tasa`). Con la ruta nueva calculaban `inicio-politica-de-privacidad`, una
+página que no existe:
+
+| Dónde | Qué se rompía |
+|---|---|
+| `paginas-fab-speed-dial.tsx` (botón flotante) | Comprobaba `editar.sitio.inicio-politica-de-privacidad`: sin botón de editar, o el editor abría una página vacía |
+| `eliminar-seccion-button.tsx` | Analizaba el borrado de un slug inexistente |
+| `rastreador-visitas.tsx` | Las visitas de la política dejaban de sumarse a su fila |
+| `slugDeOrigen` (editor de menú y pie) | Daba `inicio/politica-de-privacidad`, con barra, y no cargaba la página de fondo |
+
+Además, la URL vieja **no daba 404**: la atrapaba el comodín `[slug]`, que busca por
+slug y el slug no cambió, así que servía la misma página por segunda vez y sin su
+metadata.
+
+**Decisión: el slug no cambia, la URL sí.** El slug es la llave del contenido en
+`paginas`, del permiso `editar.sitio.{slug}`, de las visitas y de la etiqueta de caché.
+Renombrarlo a `inicio-politica-de-privacidad` para que encajara con la regla habría
+exigido una migración de datos (página, permiso, concesiones), y además **no alcanzaba**:
+el camino inverso (slug → URL) seguiría siendo ambiguo, porque el guion también existe
+dentro de los slugs. Se descartó.
+
+En su lugar hay una tabla `RUTAS_PROPIAS` (slug → URL) en
+`features/paginas/lib/ruta-de-vuelta.ts`, con su inversa `slugDeRutaPublica()`. Los cuatro
+cálculos sueltos se reemplazaron por esa función. **Mover otra página a una subcarpeta es
+añadir una línea a esa tabla**, más su copia en la API (ver aviso abajo) y su redirect.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Frontend | `app/(public)/inicio/politica-de-privacidad/page.tsx` | Movido (por el usuario). El enlace al editor y el aviso de «sin contenido» usan la ruta nueva |
+| Frontend | `features/paginas/lib/ruta-de-vuelta.ts` | `RUTAS_PROPIAS`, `rutaPublicaDeSlug` la consulta, nueva `slugDeRutaPublica`; `slugDeOrigen` la usa |
+| Frontend | `paginas-fab-speed-dial.tsx`, `eliminar-seccion-button.tsx`, `rastreador-visitas.tsx` | Su cálculo propio de slug → `slugDeRutaPublica` |
+| Frontend | `puck-editor-wrapper.tsx` | La cabecera del editor muestra la URL real, no `/{slug}` |
+| Frontend | `next.config.mjs` | Redirect `/politica-de-privacidad` → `/inicio/politica-de-privacidad`; `/privacidad` va directo a la nueva, sin doble salto |
+| Frontend | `login-view.tsx` (sitio e intranet), `footer.tsx`, `sitio-busqueda-fallback.ts` | Enlaces a la ruta nueva |
+| Backend | `shared/extraer-textos-puck.ts` | `resolverHref` (enlaces del buscador) conoce la ruta nueva |
+| Backend | `use-cases/paginas/eliminar-seccion.usecase.ts` | Al comprobar si algo enlaza a la página que se quiere borrar, busca `/{slug}` **y** su ruta real. Antes solo `/{slug}`, así que no habría visto los enlaces nuevos del pie |
+| Backend | `scripts/sembrar-plantilla-sitio.ts` | Enlaces del pie sembrado a la ruta nueva |
+| Docs | `1-guia-del-proyecto.md` | Árbol de `(public)/` y párrafo de alias |
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` en `sitio-web`, `api-backend` e `intranet` | exit 0 los tres |
+| `eslint` sobre los 11 archivos tocados del sitio | 1 error y 7 avisos, **todos anteriores** a este cambio (comprobado contra `HEAD`: `any` en `puck-editor-wrapper.tsx:514`, `ROLES_QUE_EDITAN` sin uso, `<img>` en `footer.tsx`) |
+| Script con 13 casos sobre `rutaPublicaDeSlug`, `slugDeRutaPublica`, `slugDeOrigen` y `resolverHref` | 13/13 |
+| `curl` al dev server: `/politica-de-privacidad` y `/privacidad` | 307 → `/inicio/politica-de-privacidad` |
+| `curl` a `/inicio/politica-de-privacidad` | 200, `<title>` propio, contenido real de la política, 2 enlaces del pie a la ruta nueva y 0 a la vieja |
+
+> **La tabla `RUTAS_PROPIAS` está en dos repositorios:** en `sitio-web` (`ruta-de-vuelta.ts`)
+> y en la API (`RUTAS_PROPIAS_SITIO` en `extraer-textos-puck.ts`), porque los enlaces del
+> buscador se arman en la API. Si se actualiza solo una, el buscador enlaza la URL vieja.
+> El redirect lo tapa (funciona, con un salto de más), así que el síntoma no se ve: hay
+> que acordarse.
+
+**Pendiente al cierre:**
+- El pie **ya publicado en la base** puede seguir enlazando `/politica-de-privacidad`. El
+  redirect lo cubre; se corrige editando «Menú y pie» cuando se quiera.
+- `intranet-footer.tsx` enlaza `/politica-de-privacidad` como ruta **relativa**, o sea a
+  la intranet, donde esa página no existe. El error ya estaba antes de este cambio (el
+  login de la intranet ya lo había corregido con `SITE_URL`); no se tocó.
+- El árbol de `(public)/` en la guía todavía lista `publicaciones/`, que no existe, y no
+  lista `programas-sobresalientes/`. Se dejó así por decisión del usuario.
+
+### Borrado de `sitio-web/src/features/contenidos/`
+
+Un módulo de 5 archivos (vista «Publicaciones», hook, servicio contra
+`GET /api/contenidos/publica` y tipo `Contenido`) creado el 22-07-2026 (`ac6157b`) y
+nunca conectado: **ninguna ruta ni componente lo importaba**. Antes de borrarlo se
+comprobó que ningún archivo de `sitio-web`, `intranet`, `packages` ni `api-backend` lo
+importaba, y que `tsc --noEmit` pasaba sin la carpeta. Lo borró el usuario; se limpiaron
+las referencias que quedaban:
+
+| Archivo | Cambio |
+|---|---|
+| `1-guia-del-proyecto.md` | Sale del árbol de `features/` y de las filas RF-01 y RF-10 del mapa RF → código (RF-10 queda sin frontend) |
+| `11-base-de-datos.md` | El ejemplo de «frontend que no se entera» ya no cita su `types.ts` |
+| `api-backend/.../models/contenido.ts` | El comentario sobre el contrato en inglés cita la API, no el archivo borrado |
+
+`GET /api/contenidos/publica` **se queda**: hoy no lo consume ningún frontend, pero es
+parte de la API documentada y es lo que usaría el bloque «Publicaciones» el día que lea de
+la tabla `contenidos` en vez de su lista a mano. Si se necesita el módulo, se recupera
+desde `ac6157b`.
+
+Verificado: `tsc --noEmit` en `sitio-web` con la carpeta ya borrada → exit 0.
+
+---
+
+## sesión 18-09-2026: donut de «Usuarios» roto por un merge (`opcion is not defined`)
+
+Al hacer `git pull` de `dev` (entraron los PR #108 y #109), el dashboard de `sitio-web`
+reventó en runtime con `ReferenceError: opcion is not defined` en
+`auth/components/tarjeta-usuarios.tsx`.
+
+**Causa.** Dos cambios paralelos sobre el mismo bloque del mismo archivo:
+- `9cf385e` (ingdave, 17-09) reemplazó el donut hecho con `conic-gradient` por un pie de
+  ECharts: borró `gradientStops` y agregó el objeto `opcion` que recibe `<GraficoEcharts>`.
+- `76916a9` (Samuel, 17-09, en la rama `samuel`, que aún tenía la versión vieja) ajustó ese
+  mismo `gradientStops` para que el `conic-gradient` fuera compatible (porcentajes en vez
+  de grados, sin paradas de color de doble posición).
+
+En el merge `930eb35` («Merge branch 'dev' into samuel»), el conflicto se resolvió
+quedándose con el `gradientStops` de `samuel` arriba y el JSX de `dev` abajo: se perdió la
+definición de `opcion`, pero se mantuvo el `<GraficoEcharts option={opcion} />` que la
+usa. Así entró a `dev` con el PR #108.
+
+**Arreglo.** Se restauró el archivo a la versión de `9cf385e`
+(`git restore --source=9cf385e`). Se comparó antes con la versión rota: la única diferencia
+era ese bloque, y el ajuste de Samuel solo tenía sentido para el `conic-gradient`, que ya
+no existe. No se pierde nada de su trabajo.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Frontend | `sitio-web/src/features/administracion/auth/components/tarjeta-usuarios.tsx` | Vuelve la definición de `opcion` (pie de ECharts); sale el `gradientStops` sin uso |
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` en `sitio-web` | exit 0 |
+| `tsc --noEmit` en `intranet` | exit 0 |
+| `eslint` sobre `tarjeta-usuarios.tsx` | exit 0 |
+
+> **Al resolver un conflicto, no mezclar la mitad de cada lado.** Este archivo quedó con el
+> cálculo de una versión y el dibujo de la otra. Git lo aceptó porque ya no quedaban
+> marcas `<<<<<<<`, pero el código no funcionaba. Correr `tsc --noEmit` antes de cerrar el
+> merge lo habría detectado (`Cannot find name 'opcion'`).
+
+**Pendiente al cierre:** no se ha hecho push. En `dev` quedan el merge del pull
+(`d58727d`) y este arreglo sin commitear. No se revisó `api-backend` con `tsc`: el mismo
+pull trajo cambios de permisos y de secciones.
+
+---
+
 ## sesión 17-09-2026 (4.ª parte): buscador, sidebar «Accesos», gráficos con ECharts y carga de Excel sin Handsontable
 
 Cuatro cambios de UI en el panel administrativo, pedidos en la misma sesión:

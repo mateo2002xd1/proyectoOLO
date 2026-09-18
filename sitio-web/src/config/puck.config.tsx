@@ -28,7 +28,7 @@ import { Header } from '@/shared/lib/blocks/header';
 import { Footer, VALORES_PIE_POR_DEFECTO } from '@/shared/lib/blocks/footer';
 import { IntranetTopbar } from '@/shared/lib/blocks/intranet-topbar';
 import { IntranetHero } from '@/shared/lib/blocks/intranet-hero';
-import { defaultIdentidadVisual } from '@/features/identidad-visual/client';
+import { CABECERA_POR_DEFECTO } from '@/features/paginas/client';
 import { HeroBuscadorOcupaciones } from '@/features/sitio-web/buscador-ocupaciones';
 import { ProgramasSobresalientesView } from '@/features/sitio-web/programas-sobresalientes';
 import {
@@ -40,9 +40,9 @@ import {
   FuentesFuturasEmpleoView,
   CampoDescripcionConVariables,
 } from '@/features/sitio-web/fuentes-futuras-empleo';
-import { EditorjsWrapper } from '@/features/paginas/components/editorjs-wrapper';
-import { ImageUploaderField } from '@/features/paginas/components/image-uploader-field';
-import { ArchivoUploaderField } from '@/features/paginas/components/archivo-uploader-field';
+import { EditorjsWrapper } from '@/features/paginas/edicion/components/editorjs-wrapper';
+import { ImageUploaderField } from '@/features/paginas/edicion/components/image-uploader-field';
+import { ArchivoUploaderField } from '@/features/paginas/edicion/components/archivo-uploader-field';
 import { Render, type Config, type Data } from '@puckeditor/core';
 import type { OutputData } from '@editorjs/editorjs';
 
@@ -215,9 +215,9 @@ const puckConfigBase: Config = {
         intranetText: { type: 'text', label: 'Texto del botón de intranet', contentEditable: true },
         intranetUrl: { type: 'text', label: 'URL de la intranet' },
       },
-      // Los mismos valores que sirve `identidad-visual` cuando no hay plantilla:
+      // Los mismos valores que usa la cabecera cuando no hay «Menú y pie» guardado:
       // arrastrar el bloque al lienzo da la cabecera que ya se ve hoy, no una vacía.
-      defaultProps: { ...defaultIdentidadVisual },
+      defaultProps: { ...CABECERA_POR_DEFECTO },
       render: (props: BlockRender<Omit<ComponentProps<typeof Header>, 'block'>>) => (
         <Header {...props} block={{ id: props.id || 'header-preview' }} />
       ),
@@ -1946,7 +1946,7 @@ export const puckConfig: Config = {
 /**
  * La página que guarda la cabecera y el pie comunes.
  *
- * Espejo de `SLUG_PLANTILLA` en `features/paginas/lib/plantilla.ts`. No se importa de
+ * Espejo de `SLUG_PLANTILLA` en `features/paginas/menu-y-pie/menu-y-pie.ts`. No se importa de
  * allí para no atar el catálogo de bloques a una feature: aquí solo hace falta el
  * literal, y si algún día cambia, cambia en los dos sitios.
  */
@@ -2010,7 +2010,7 @@ const COMPONENTES_POR_SLUG: Record<string, string[]> = {
  *
  * Son datos YA PUBLICADOS que se pintan de contexto: lo mismo que ve quien visita
  * el sitio. Los resuelve el Server Component del editor y llegan hasta aquí por
- * props — ver `app/admin/editor/[slug]/page.tsx`.
+ * props — ver `app/editor/[slug]/page.tsx`.
  */
 export interface ContextoDeEdicion {
   /** Cabecera y pie publicados. Se usa al editar una página normal. */
