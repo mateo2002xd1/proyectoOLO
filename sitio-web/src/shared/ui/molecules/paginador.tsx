@@ -1,5 +1,7 @@
 'use client';
 
+import { Paginacion } from './paginacion';
+
 /** Tamaños de página que ofrece el desplegable, en todas las tablas del panel. */
 export const OPCIONES_POR_PAGINA = [15, 30, 60, 100] as const;
 
@@ -18,28 +20,9 @@ interface PaginadorProps {
   className?: string;
 }
 
-/**
- * Con pocas páginas se listan todas (Roles, Usuarios, Actividad Reciente rara vez
- * pasan de 3-4). Auditoría puede acumular cientos: ahí listar cada número volvería
- * la fila un muro de botones, así que a partir de 8 páginas se recorta a un entorno
- * de la actual más primera y última, con `…` en los huecos.
- */
-function rangoDePaginas(actual: number, total: number): (number | '…')[] {
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-
-  const relevantes = new Set([1, 2, total - 1, total, actual - 1, actual, actual + 1]);
-  const ordenadas = [...relevantes].filter((p) => p >= 1 && p <= total).sort((a, b) => a - b);
-
-  const resultado: (number | '…')[] = [];
-  ordenadas.forEach((p, i) => {
-    if (i > 0 && p - ordenadas[i - 1] > 1) resultado.push('…');
-    resultado.push(p);
-  });
-  return resultado;
-}
-
-/** Paginador con selector de filas por página, reutilizado en Roles, Usuarios,
- *  Actividad Reciente y Auditoría — mismo aspecto en las cuatro tablas. */
+/** Pie de las tablas del panel: «Mostrando X-Y de Z», filas por página y, a la
+ *  derecha, `Paginacion` (la misma de las tablas públicas, con la paleta del
+ *  panel). Lo usan Roles, Usuarios, Actividad Reciente, Auditoría y Revisión. */
 export function Paginador({
   pagina,
   totalPaginas,
@@ -85,44 +68,13 @@ export function Paginador({
       </div>
 
       {totalPaginas > 1 && (
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            disabled={pagina === 1}
-            onClick={() => onCambiarPagina(pagina - 1)}
-            className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 disabled:opacity-30 dark:hover:bg-zinc-800"
-          >
-            &lsaquo;
-          </button>
-          {rangoDePaginas(pagina, totalPaginas).map((p, i) =>
-            p === '…' ? (
-              <span key={`e${i}`} className="px-1 text-xs text-zinc-400">
-                …
-              </span>
-            ) : (
-              <button
-                key={p}
-                type="button"
-                onClick={() => onCambiarPagina(p)}
-                className={`min-w-[2rem] rounded-lg px-2 py-1 text-xs font-medium transition-colors ${
-                  p === pagina
-                    ? 'bg-brand-interactive text-white'
-                    : 'text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800'
-                }`}
-              >
-                {p}
-              </button>
-            ),
-          )}
-          <button
-            type="button"
-            disabled={pagina === totalPaginas}
-            onClick={() => onCambiarPagina(pagina + 1)}
-            className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 disabled:opacity-30 dark:hover:bg-zinc-800"
-          >
-            &rsaquo;
-          </button>
-        </div>
+        <Paginacion
+          pagina={pagina}
+          totalPaginas={totalPaginas}
+          onCambiarPagina={onCambiarPagina}
+          tono="panel"
+          ariaLabel={`Paginación de ${etiqueta}`}
+        />
       )}
     </div>
   );

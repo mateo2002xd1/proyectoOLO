@@ -1,6 +1,6 @@
 'use client';
 
-import { Paginador } from './paginador';
+import { Paginacion } from '@/shared/ui/molecules/paginacion';
 import type { RegistroConDepartamento } from '../types';
 
 interface ResultadosProgramasSobresalientesProps {
@@ -135,7 +135,14 @@ export function ResultadosProgramasSobresalientes({
       </div>
 
       {totalPaginas > 1 && (
-        <Paginador paginaActual={pagina} totalPaginas={totalPaginas} onCambiarPagina={onCambiarPagina} />
+        <Paginacion
+          pagina={pagina}
+          totalPaginas={totalPaginas}
+          onCambiarPagina={onCambiarPagina}
+          tono="publico"
+          ariaLabel="Paginación de resultados"
+          className="mt-4"
+        />
       )}
     </div>
   );

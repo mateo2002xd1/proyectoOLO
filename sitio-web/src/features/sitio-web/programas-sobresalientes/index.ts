@@ -8,8 +8,9 @@
  *
  * Hoy los únicos consumidores externos son `config/puck.config.tsx` y
  * `app/(public)/programas-sobresalientes/page.tsx`, y ambos montan la vista
- * completa. El mapa, los filtros, la tabla, el paginador y el hook son piezas
- * internas de esa vista: si otro módulo llega a necesitar una, se agrega aquí.
+ * completa. El mapa, los filtros, la tabla y el hook son piezas internas de esa
+ * vista: si otro módulo llega a necesitar una, se agrega aquí. (El paginador ya no
+ * es propio: es `Paginacion`, de `shared/ui`, el mismo de todas las tablas.)
  */
 
 export {
