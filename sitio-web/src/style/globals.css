@@ -3027,6 +3027,79 @@ button.text-link,
   outline-offset: 2px;
 }
 
+/* «Enviar a revisión» se apaga hasta que hay comentario de cambios. Sin este estado
+   el botón se veía igual de activo y el clic simplemente no hacía nada. */
+.olo-modal-btn:disabled,
+.olo-modal-btn:disabled:hover {
+  background: #e5e7eb;
+  border-color: #d1d5db;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+/* --- Comentario de cambios del envío a revisión (el «commit») --- */
+
+.olo-modal-comentario {
+  margin: 0 0 1.25rem;
+}
+
+.olo-modal-comentario-etiqueta {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #001631;
+}
+
+.olo-modal-comentario-obligatorio {
+  font-weight: 400;
+  color: #4b5563;
+}
+
+.olo-modal-comentario-campo {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 0.925rem;
+  line-height: 1.45;
+  color: #1f2937;
+  background: #ffffff;
+  resize: none;
+}
+
+.olo-modal-comentario-campo::placeholder {
+  color: #6b7280;
+}
+
+.olo-modal-comentario-campo:focus-visible {
+  outline: 2px solid #001631;
+  outline-offset: 1px;
+  border-color: #001631;
+}
+
+.olo-modal-comentario-campo[aria-invalid='true'] {
+  border-color: #b45309;
+}
+
+/* Ayuda a la izquierda, cuenta a la derecha. Gris #4b5563 sobre blanco: 7.6:1. */
+.olo-modal-comentario-pie {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  color: #4b5563;
+}
+
+.olo-modal-comentario-cuenta {
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
 /* --- Menú Flotante FAB / Speed Dial (fab-speed-dial) --- */
 
 .fab-speed-dial {

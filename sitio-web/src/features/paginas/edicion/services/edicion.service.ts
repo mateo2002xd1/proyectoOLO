@@ -37,8 +37,15 @@ export async function registrarSubidaPendiente(slug: string, ruta: string): Prom
   await api.post(`/api/paginas/${slug}/subidas`, { ruta }).catch(() => undefined);
 }
 
-export async function enviarARevision(slug: string): Promise<{ pagina: Pagina; version: PaginaVersion }> {
-  const { data } = await api.patch(`/api/paginas/${slug}/enviar-revision`);
+/**
+ * `comentario` es el «commit» del envío: la API lo exige (10 a 100 caracteres), lo
+ * guarda con la versión y lo deja en la bitácora de auditoría.
+ */
+export async function enviarARevision(
+  slug: string,
+  comentario: string
+): Promise<{ pagina: Pagina; version: PaginaVersion }> {
+  const { data } = await api.patch(`/api/paginas/${slug}/enviar-revision`, { comentario });
   notificarRevisionActualizada({ slug });
   return data;
 }

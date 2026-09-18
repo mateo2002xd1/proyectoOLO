@@ -67,6 +67,8 @@ export interface PaginaEnRevision {
   /** Sin esto no se sabe cuál de las dos páginas homónimas se aprueba. */
   ambito: Ambito;
   numeroVersion: number;
+  /** El «commit» con el que se envió: qué cambió, en palabras de quien editó. */
+  comentario: string | null;
   creadoEn: string;
   autor?: {
     id: string;

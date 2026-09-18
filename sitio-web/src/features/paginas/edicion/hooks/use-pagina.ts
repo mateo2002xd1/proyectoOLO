@@ -6,6 +6,17 @@ import type { Rechazo } from '../components/aviso-rechazo';
 import { obtenerPaginaEditable, guardarBorrador, enviarARevision } from '../services/edicion.service';
 import { getPageSeed, isEmptyContent } from '../lib/page-seeds';
 
+/**
+ * Lo que la API explica del fallo, en vez del «Request failed with status code 400»
+ * de axios. El validador de la ruta manda el motivo concreto en `detalles` (p. ej.
+ * «El comentario es muy corto…») y un `error` genérico; el caso de uso, solo `error`.
+ */
+function mensajeDeLaApi(err: unknown): string | null {
+  const datos = (err as { response?: { data?: { error?: string; detalles?: { mensaje?: string }[] } } })
+    ?.response?.data;
+  return datos?.detalles?.[0]?.mensaje ?? datos?.error ?? (err instanceof Error ? err.message : null);
+}
+
 export function usePagina(slug: string) {
   const [pagina, setPagina] = useState<PaginaEditable | null>(null);
   /**
@@ -87,9 +98,9 @@ export function usePagina(slug: string) {
     }
   }, [slug]);
 
-  const submitForReview = useCallback(async () => {
+  const submitForReview = useCallback(async (comentario: string) => {
     try {
-      const result = await enviarARevision(slug);
+      const result = await enviarARevision(slug, comentario);
       setPagina((prev) =>
         prev
           ? {
@@ -106,7 +117,7 @@ export function usePagina(slug: string) {
       setRechazo(undefined);
       return result;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al enviar a revisión');
+      setError(mensajeDeLaApi(err) ?? 'Error al enviar a revisión');
       throw err;
     }
   }, [slug]);
