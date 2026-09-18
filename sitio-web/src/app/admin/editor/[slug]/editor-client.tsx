@@ -36,7 +36,7 @@ export function EditorClient({ slug, plantilla, paginaDeReferencia }: EditorClie
   // y el aviso tiene que sobrevivir a ese guardado para que se pueda leer mientras se
   // corrige. Al venir de un `useState` su identidad ya es estable entre renders, que es
   // lo que `overrides` de Puck necesita para no reconstruir su store en cada uno.
-  const { pagina, rechazo, isLoading, error, saveDraft, submitForReview } = usePagina(slug);
+  const { pagina, rechazo, isLoading, error, setError, saveDraft, submitForReview } = usePagina(slug);
 
   // Se pide antes que nada: si la página la tiene otra persona, no tiene sentido
   // ni cargar su contenido.
@@ -83,7 +83,7 @@ export function EditorClient({ slug, plantilla, paginaDeReferencia }: EditorClie
     );
   }
 
-  if (error) {
+  if (error && !pagina) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         <p style={{ color: 'red' }}>Error: {error}</p>
@@ -92,17 +92,58 @@ export function EditorClient({ slug, plantilla, paginaDeReferencia }: EditorClie
   }
 
   return (
-    <PuckEditorWrapper
-      slug={slug}
-      initialData={pagina?.contenido}
-      onSave={saveDraft}
-      onPublish={submitForReview}
-      rutaPorDefecto={rutaPublicaDeSlug(slug)}
-      estado={estado}
-      rechazo={rechazo}
-      contexto={contexto}
-      // Solo importa el caso «nos lo quitaron»: los otros ya se resolvieron arriba.
-      candadoPerdidoPor={bloqueo.estado === 'perdido' ? bloqueo.bloqueadoPor : null}
-    />
+    <>
+      {error && pagina && (
+        <div
+          role="alert"
+          style={{
+            position: 'fixed',
+            top: 16,
+            right: 16,
+            zIndex: 99999,
+            backgroundColor: '#fee4e2',
+            color: '#b42318',
+            border: '1px solid #fda29b',
+            borderRadius: 8,
+            padding: '10px 16px',
+            fontSize: 13,
+            boxShadow: '0 4px 12px rgba(16, 24, 40, 0.15)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            maxWidth: '90vw',
+          }}
+        >
+          <span>{error}</span>
+          <button
+            type="button"
+            onClick={() => setError(null)}
+            style={{
+              border: 'none',
+              background: 'transparent',
+              color: '#b42318',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              fontSize: 14,
+            }}
+            aria-label="Cerrar aviso de error"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+      <PuckEditorWrapper
+        slug={slug}
+        initialData={pagina?.contenido}
+        onSave={saveDraft}
+        onPublish={submitForReview}
+        rutaPorDefecto={rutaPublicaDeSlug(slug)}
+        estado={estado}
+        rechazo={rechazo}
+        contexto={contexto}
+        // Solo importa el caso «nos lo quitaron»: los otros ya se resolvieron arriba.
+        candadoPerdidoPor={bloqueo.estado === 'perdido' ? bloqueo.bloqueadoPor : null}
+      />
+    </>
   );
 }

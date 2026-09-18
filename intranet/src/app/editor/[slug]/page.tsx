@@ -54,6 +54,9 @@ export default async function EditorPage({
   const esSuperadmin = (sesion.rol ?? "").trim().toLowerCase() === "superadmin";
   if (!esSuperadmin) {
     const permisos = await permisosDeLaSesion();
+    if (!permisos.includes("acceso.intranet")) {
+      redirect("/");
+    }
     if (!permisos.includes(`editar.intranet.${slug}`)) {
       redirect(`/${slug}`);
     }

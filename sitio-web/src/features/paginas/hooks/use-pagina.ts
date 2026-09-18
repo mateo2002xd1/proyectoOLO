@@ -111,5 +111,5 @@ export function usePagina(slug: string) {
     }
   }, [slug]);
 
-  return { pagina, rechazo, isLoading, error, saveDraft, submitForReview };
+  return { pagina, rechazo, isLoading, error, setError, saveDraft, submitForReview };
 }
