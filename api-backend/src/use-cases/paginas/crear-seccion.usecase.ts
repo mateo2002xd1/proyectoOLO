@@ -21,13 +21,12 @@
  * reconoce. Esta es la razón de que la funcionalidad quepa en un use-case y no en una
  * generación de código.
  *
+ *
  * ## El permiso que se concede
  *
- * La clave nueva se asigna **al rol de quien crea**, no a la persona: el modelo de
- * permisos es por rol (`roles_permisos`) y no existe la concesión individual. La
- * consecuencia hay que decirla en voz alta, y el diálogo la dice: si quien crea es
- * «Editor», todos los Editores podrán editar esa sección. La alternativa —no conceder
- * nada— dejaba a su creador con un 403 en la página que acababa de crear.
+ * La clave nueva se crea en el catálogo y se asigna automáticamente al rol 'admin', 'editor'
+ * y al rol de quien crea la sección (para que puedan empezar a editarla sin tener que ir al
+ * panel de administración a asignársela).
  */
 import {
   slugificar,
@@ -55,10 +54,10 @@ export interface SeccionCreada {
   ambito: Ambito;
   /** La ruta en la app correspondiente, lista para pegar en un menú. */
   ruta: string;
-  /** La clave que se creó y se concedió. Se devuelve para poder auditarla. */
+  /** La clave que se creó. Se devuelve para poder auditarla. */
   clavePermiso: string;
-  /** El rol que recibió la clave, o `null` si no hizo falta tocar ninguno. */
-  rolConcedido: string | null;
+  /** Los roles a los que se les concedió el permiso automáticamente. */
+  rolesConcedidos: string[];
 }
 
 import { Transaction } from 'sequelize';
@@ -105,30 +104,38 @@ export const crearSeccion = async (
       transaction,
     });
 
-    // Superadmin pasa por bypass en `resolverPermisos`, así que no necesita la fila; y
-    // un rol que no esté en la tabla no se inventa. En ambos casos la sección queda
-    // creada y quien la creó puede editarla.
-    let rolConcedido: string | null = null;
-    if (rolDelCreador && rolDelCreador.trim().toLowerCase() !== 'superadmin') {
-      const rol = await Role.findOne({ where: { name: rolDelCreador }, transaction });
-      if (rol) {
-        await RolePermission.findOrCreate({
-          where: { role_id: rol.id, permission_id: permiso.id },
-          transaction,
-        });
-        rolConcedido = rolDelCreador;
+    // Asignar el permiso automáticamente al creador, admin y editor
+    const nombresRoles = ['admin', 'administrador', 'editor'];
+    if (rolDelCreador && !nombresRoles.includes(rolDelCreador.toLowerCase())) {
+      nombresRoles.push(rolDelCreador.toLowerCase());
+    }
+
+    const todosLosRoles = await Role.findAll({ transaction });
+    const rolesParaAsignar = todosLosRoles.filter(rol => 
+      nombresRoles.includes(rol.name.toLowerCase())
+    );
+
+    if (rolesParaAsignar.length > 0) {
+      await RolePermission.bulkCreate(
+        rolesParaAsignar.map(rol => ({
+          role_id: rol.id,
+          permission_id: permiso.id,
+        })),
+        { ignoreDuplicates: true, transaction }
+      );
+
+      for (const rol of rolesParaAsignar) {
+        invalidarPermisosDeRol(rol.name);
       }
     }
 
-    return { pagina, rolConcedido };
+    return { 
+      pagina,
+      rolesConcedidos: rolesParaAsignar.map(r => r.name)
+    };
   };
 
   const resultado = tx ? await execute(tx) : await sequelize.transaction(execute);
-
-  // Fuera de la transacción a propósito: la caché solo se debe olvidar cuando el
-  // cambio está confirmado. Sin esto, quien acaba de crear la sección arrastraría sus
-  // permisos viejos hasta 30 segundos y se comería un 403 en su propia página.
-  if (resultado.rolConcedido) invalidarPermisosDeRol(resultado.rolConcedido);
 
   return {
     id: resultado.pagina.id,
@@ -137,6 +144,6 @@ export const crearSeccion = async (
     ambito,
     ruta: `/${slug}`,
     clavePermiso,
-    rolConcedido: resultado.rolConcedido,
+    rolesConcedidos: resultado.rolesConcedidos,
   };
 };

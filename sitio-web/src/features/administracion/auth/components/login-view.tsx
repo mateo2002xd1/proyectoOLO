@@ -34,29 +34,7 @@ import {
  * @see 3-seguridad-del-proyecto.md  (la sesión la emite y valida la API :4000)
  */
 
-const INTRANET_EDITOR_URL =
-  process.env.NEXT_PUBLIC_INTRANET_EDITOR_URL || 'http://localhost:3001/editor/inicio';
 
-/** Tarjeta de acceso a un editor, en la pantalla de elección. */
-function EditorChoiceLink({
-  href,
-  title,
-  description,
-}: {
-  href: string;
-  title: string;
-  description: string;
-}) {
-  return (
-    <a
-      href={href}
-      className="block rounded-[10px] border border-gray-200 px-[18px] py-4 transition-colors hover:border-[#0d1526] hover:bg-gray-50"
-    >
-      <span className="block text-[15px] font-semibold text-gray-900">{title}</span>
-      <span className="mt-0.5 block text-[13px] text-gray-500">{description}</span>
-    </a>
-  );
-}
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -78,13 +56,7 @@ function LoginForm() {
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [editorChoice, setEditorChoice] = useState(false);
   const [firstLogin, setFirstLogin] = useState<{ name?: string } | null>(null);
-
-  // Si el usuario venía a editar una página concreta del sitio, respetamos ese destino;
-  // si no, el editor del sitio abre la página de inicio.
-  const sitioEditorHref =
-    redirectParam && redirectParam.startsWith('/admin/editor') ? redirectParam : '/admin/editor/inicio';
 
   const validate = (): boolean => {
     const next: typeof errors = {};
@@ -136,7 +108,7 @@ function LoginForm() {
       }
 
       if (hasPermisosEdicion) {
-        setEditorChoice(true);
+        window.location.href = redirectParam ? redirectTo : '/';
         return;
       }
 
@@ -152,52 +124,7 @@ function LoginForm() {
     return <FirstLoginFlow name={firstLogin.name} />;
   }
 
-  if (editorChoice) {
-    return (
-      <div className={authSolidCardClass}>
-        <p className="mb-7 text-center text-lg font-light text-gray-900">¿Qué deseas editar?</p>
 
-        <div className="flex flex-col gap-3">
-          <EditorChoiceLink
-            href={sitioEditorHref}
-            title="Editar sitio web"
-            description="Editor visual del sitio público"
-          />
-          <EditorChoiceLink
-            href={INTRANET_EDITOR_URL}
-            title="Editar intranet"
-            description="Editor visual de la intranet"
-          />
-
-          <Button
-            type="button"
-            plain
-            className="mt-1 w-full gap-2"
-            onClick={async () => {
-              await fetch('/api/auth/logout', { method: 'POST' });
-              window.location.href = '/admin/login';
-            }}
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <polyline points="16 17 21 12 16 7" />
-              <line x1="21" y1="12" x2="9" y2="12" />
-            </svg>
-            Cerrar sesión
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className={authSolidCardClass}>

@@ -65,15 +65,29 @@ export function PaginasFabSpeedDial() {
   useEffect(() => {
     let vigente = true;
 
-    // Obtenemos los permisos específicos de la sesión actual
-    permisosDeLaSesion().then((permisos) => {
-      if (vigente) {
-        setPermisosActivos(permisos || []);
+    const actualizarPermisos = () => {
+      permisosDeLaSesion().then((permisos) => {
+        if (vigente) {
+          setPermisosActivos(permisos || []);
+        }
+      });
+    };
+
+    actualizarPermisos();
+
+    const alCambiarVisibilidad = () => {
+      if (document.visibilityState === 'visible') {
+        actualizarPermisos();
       }
-    });
+    };
+
+    window.addEventListener('focus', actualizarPermisos);
+    document.addEventListener('visibilitychange', alCambiarVisibilidad);
 
     return () => {
       vigente = false;
+      window.removeEventListener('focus', actualizarPermisos);
+      document.removeEventListener('visibilitychange', alCambiarVisibilidad);
     };
   }, []);
 

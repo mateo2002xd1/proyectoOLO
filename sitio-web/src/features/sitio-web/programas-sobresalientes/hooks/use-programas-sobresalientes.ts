@@ -45,7 +45,7 @@ export function useProgramasSobresalientes() {
         if (!cancelado) setTodosLosRegistros(registros);
       })
       .catch(() => {
-        if (!cancelado) setError('No se pudieron cargar los datos de formación. Intenta de nuevo más tarde.');
+        if (!cancelado) setError('No se pudieron cargar los datos. Intenta de nuevo más tarde.');
       })
       .finally(() => {
         if (!cancelado) setCargando(false);

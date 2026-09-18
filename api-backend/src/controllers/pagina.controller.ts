@@ -124,7 +124,7 @@ export const PaginaController = {
             { campo: 'titulo', antes: null, despues: result.titulo },
             { campo: 'ambito', antes: null, despues: result.ambito },
             { campo: 'permiso', antes: null, despues: result.clavePermiso },
-            { campo: 'permiso_concedido_a_rol', antes: null, despues: result.rolConcedido },
+            { campo: 'roles_concedidos', antes: null, despues: result.rolesConcedidos.join(', ') },
           ],
         }, tx);
         return result;
