@@ -22,8 +22,8 @@ export class Contenido extends Model {
   declare attachments?: any[];
 }
 
-// Los nombres de atributo se mantienen en inglés a propósito: son el contrato que ya
-// consumen los frontends (`sitio-web/src/features/contenidos/types.ts`). La columna sí
+// Los nombres de atributo se mantienen en inglés a propósito: son el contrato público de
+// `/api/contenidos` (documentado en Swagger). La columna sí
 // sigue la convención del proyecto, y `field` es el puente entre las dos. Alinear
 // también los atributos sería un refactor de la API, no de la base de datos.
 Contenido.init(
