@@ -39,9 +39,42 @@ export interface PublicacionesProps {
   mostrarSubtitulo?: boolean;
   publicaciones?: PublicacionItem[];
   porPagina?: number;
+  esEdicion?: boolean;
 }
 
 const cacheDeMiniaturas: Record<string, string> = {};
+
+/** Publicaciones demostrativas que se muestran en el lienzo de edición cuando la lista está vacía */
+const PUBLICACIONES_EJEMPLO: PublicacionItem[] = [
+  {
+    titulo: 'Boletín Mercado Laboral — Edición 2026',
+    pdfUrl: '/storage/uploads/pdf/1567f705-93ee-4839-88b1-055c0891c69e.pdf',
+    etiqueta: '#OLOtecuenta',
+    mes: 'Mar',
+    dia: '15',
+  },
+  {
+    titulo: 'Catálogo de Ocupaciones Campesina y Familiar',
+    pdfUrl: '/storage/uploads/pdf/4ea611c8-c6a0-47e3-b7ff-3410a2eb01c9.pdf',
+    etiqueta: '#OLOtecuenta',
+    mes: 'Abr',
+    dia: '02',
+  },
+  {
+    titulo: 'Diccionario Ocupacional y Metodologías OLO',
+    pdfUrl: '/storage/uploads/pdf/50a120cc-1171-48c8-a9fc-03f1ddf44a34.pdf',
+    etiqueta: '#OLOtecuenta',
+    mes: 'May',
+    dia: '07',
+  },
+  {
+    titulo: 'Informe Economía Popular y Mercado de Trabajo',
+    pdfUrl: '/storage/uploads/pdf/6baad355-af7b-41de-941f-f9b6cbdd849f.pdf',
+    etiqueta: '#OLOtecuenta',
+    mes: 'Jun',
+    dia: '18',
+  },
+];
 
 /* PDF.js se carga por <script> desde un CDN, así que no trae tipos. Se declara
    aquí la porción mínima de su API que este archivo usa, en vez de castear a
@@ -79,6 +112,7 @@ declare global {
 }
 
 async function dibujarPortada(pdfUrl: string): Promise<string | null> {
+  if (!pdfUrl) return null;
   if (cacheDeMiniaturas[pdfUrl]) return cacheDeMiniaturas[pdfUrl];
 
   try {
@@ -139,38 +173,75 @@ async function dibujarPortada(pdfUrl: string): Promise<string | null> {
 
     return dataUrl;
   } catch (err) {
-    console.error('No se pudo dibujar la portada del PDF:', pdfUrl, err);
+    console.warn('No se pudo dibujar la portada del PDF:', pdfUrl, err);
     return null;
   }
 }
 
-function Portada({ pdfUrl, titulo }: { pdfUrl: string; titulo: string }) {
-  const [urlAnterior, setUrlAnterior] = useState(pdfUrl);
-  const [src, setSrc] = useState<string | null>(cacheDeMiniaturas[pdfUrl] || null);
-  const [cargando, setCargando] = useState(!cacheDeMiniaturas[pdfUrl]);
+/**
+ * Portada de respaldo elegante con diseño de documento PDF cuando la miniatura
+ * aún no se ha generado, no hay PDF cargado o falló la carga remota.
+ */
+function PortadaFallback({ titulo }: { titulo?: ReactNode }) {
+  const textoTitulo = typeof titulo === 'string' ? titulo : 'Documento PDF';
+  return (
+    <div className="publicaciones-card-fallback">
+      <div className="publicaciones-card-fallback-doc">
+        <span className="publicaciones-card-fallback-tag">PDF</span>
+        <div className="publicaciones-card-fallback-lines">
+          <div className="w-[85%] h-1 bg-slate-300 rounded" />
+          <div className="w-full h-1 bg-slate-200 rounded" />
+          <div className="w-[70%] h-1 bg-slate-200 rounded" />
+        </div>
+        <svg
+          className="w-5 h-5 text-[#39A900]"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          />
+        </svg>
+      </div>
+      <span className="publicaciones-card-fallback-text" title={textoTitulo}>
+        {textoTitulo}
+      </span>
+    </div>
+  );
+}
 
-  // Si cambia el PDF, se reinicia al valor cacheado (o a "cargando") durante el
-  // render, sin esperar al efecto: así nunca se ve la portada del PDF anterior.
+function Portada({ pdfUrl, titulo }: { pdfUrl?: string; titulo?: ReactNode }) {
+  const [urlAnterior, setUrlAnterior] = useState(pdfUrl);
+  const [src, setSrc] = useState<string | null>(pdfUrl ? cacheDeMiniaturas[pdfUrl] || null : null);
+  const [cargando, setCargando] = useState(Boolean(pdfUrl && !cacheDeMiniaturas[pdfUrl]));
+
   if (pdfUrl !== urlAnterior) {
     setUrlAnterior(pdfUrl);
-    setSrc(cacheDeMiniaturas[pdfUrl] || null);
-    setCargando(!cacheDeMiniaturas[pdfUrl]);
+    setSrc(pdfUrl ? cacheDeMiniaturas[pdfUrl] || null : null);
+    setCargando(Boolean(pdfUrl && !cacheDeMiniaturas[pdfUrl]));
   }
 
   useEffect(() => {
     let montado = true;
+    if (!pdfUrl) return;
+
     dibujarPortada(pdfUrl).then((url) => {
-      if (montado && url) {
-        setSrc(url);
+      if (montado) {
+        if (url) setSrc(url);
         setCargando(false);
       }
     });
+
     return () => {
       montado = false;
     };
   }, [pdfUrl]);
 
-  if (cargando || !src) {
+  if (cargando) {
     return (
       <div className="publicaciones-card-cargando">
         <svg className="publicaciones-spinner" fill="none" viewBox="0 0 24 24" aria-hidden="true">
@@ -193,10 +264,18 @@ function Portada({ pdfUrl, titulo }: { pdfUrl: string; titulo: string }) {
     );
   }
 
+  if (!src) {
+    return <PortadaFallback titulo={titulo} />;
+  }
+
   return (
-    // src dinamico y tamano por CSS: next/image exigiria width/height fijos o remotePatterns
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={src} alt={titulo} draggable={false} className="publicaciones-card-img" />
+    <img
+      src={src}
+      alt={typeof titulo === 'string' ? titulo : 'Portada de publicación'}
+      draggable={false}
+      className="publicaciones-card-img"
+    />
   );
 }
 
@@ -212,9 +291,28 @@ export function Publicaciones({
   mostrarSubtitulo = true,
   publicaciones = [],
   porPagina = 4,
+  esEdicion,
 }: PublicacionesProps) {
-  const conArchivo = publicaciones.filter((publicacion) => publicacion.pdfUrl);
-  const total = conArchivo.length;
+  // En modo edición permitimos ver siempre la preview completa
+  const enEdicion =
+    esEdicion ??
+    (typeof window !== 'undefined' &&
+      (window.location.pathname.includes('/admin/editor') ||
+        window.location.pathname.includes('/admin/plantilla')));
+
+  const configuradas = Array.isArray(publicaciones) ? publicaciones : [];
+  const validas = configuradas.filter(
+    (p) => p && (p.titulo || p.pdfUrl || p.etiqueta || p.mes || p.dia)
+  );
+
+  const usarEjemplo = enEdicion && validas.length === 0;
+  const listaPublicaciones = usarEjemplo
+    ? PUBLICACIONES_EJEMPLO
+    : enEdicion
+      ? validas
+      : validas.filter((p) => Boolean(p.pdfUrl));
+
+  const total = listaPublicaciones.length;
 
   const [inicio, setInicio] = useState(0);
   const [arrastreDesde, setArrastreDesde] = useState(0);
@@ -222,21 +320,23 @@ export function Publicaciones({
   const [arrastrando, setArrastrando] = useState(false);
 
   useEffect(() => {
-    conArchivo.forEach((publicacion) => {
-      if (publicacion.pdfUrl) dibujarPortada(publicacion.pdfUrl);
+    listaPublicaciones.forEach((publicacion) => {
+      if (publicacion.pdfUrl) void dibujarPortada(publicacion.pdfUrl);
     });
-    // Basta con la lista de rutas: dibujar es idempotente y va contra caché.
-  }, [conArchivo.map((publicacion) => publicacion.pdfUrl).join('|')]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [listaPublicaciones.map((p) => p.pdfUrl).join('|')]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // En edición detenemos el auto-carrusel para evitar interrupciones mientras se edita
   useEffect(() => {
+    if (enEdicion) return;
     if (total <= porPagina) return;
     const temporizador = setInterval(() => {
       setInicio((previo) => (previo + porPagina) % total);
     }, 5000);
     return () => clearInterval(temporizador);
-  }, [total, porPagina]);
+  }, [total, porPagina, enEdicion]);
 
-  if (total === 0) return null;
+  // Si no estamos en edición y no hay publicaciones con archivo, no mostramos el bloque vacío en el sitio público
+  if (total === 0 && !enEdicion) return null;
 
   const soltar = () => {
     if (!arrastrando) return;
@@ -251,8 +351,10 @@ export function Publicaciones({
 
   const visibles = Array.from(
     { length: Math.min(porPagina, total) },
-    (_, desplazamiento) => conArchivo[(inicio + desplazamiento) % total]
+    (_, desplazamiento) => listaPublicaciones[(inicio + desplazamiento) % total]
   );
+
+  const CardTag = enEdicion ? 'div' : 'a';
 
   return (
     <section className="olo-publicaciones" aria-label="Últimas publicaciones" data-block-id={block.id}>
@@ -272,7 +374,32 @@ export function Publicaciones({
           </div>
         )}
 
+        {usarEjemplo && (
+          <div className="mb-6 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200 shadow-sm mx-auto">
+            <svg className="w-4 h-4 text-amber-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Vista previa de ejemplo · Añade publicaciones desde el panel lateral derecho</span>
+          </div>
+        )}
+
         <div className="olo-publicaciones-body">
+          {total > porPagina && (
+            <button
+              type="button"
+              aria-label="Página anterior"
+              onClick={(evento) => {
+                evento.stopPropagation();
+                setInicio((previo) => (previo - porPagina + total * porPagina) % total);
+              }}
+              className="publicaciones-nav-btn publicaciones-nav-prev"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+
           <div
             className="publicaciones-container"
             onMouseDown={(evento) => {
@@ -286,43 +413,91 @@ export function Publicaciones({
           >
             <div className="publicaciones-grid animate-fade-in" key={inicio}>
               {visibles.map((publicacion, indice) => (
-                <a
-                  key={`${publicacion.pdfUrl}-${indice}`}
-                  href={publicacion.pdfUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  // Un arrastre termina en un clic sobre el enlace; sin esto,
-                  // pasar de página abriría además el PDF que quedó debajo.
+                <CardTag
+                  key={`${publicacion.pdfUrl || 'pub'}-${indice}`}
+                  {...(!enEdicion && publicacion.pdfUrl
+                    ? {
+                        href: publicacion.pdfUrl,
+                        target: '_blank',
+                        rel: 'noopener noreferrer',
+                      }
+                    : {})}
                   onClick={(evento) => {
+                    if (enEdicion) {
+                      evento.preventDefault();
+                      return;
+                    }
                     if (Math.abs(arrastreHasta - arrastreDesde) > 5) {
                       evento.preventDefault();
                       evento.stopPropagation();
                     }
                   }}
                   draggable={false}
-                  className="publicaciones-card"
+                  className={`publicaciones-card ${enEdicion ? 'cursor-default' : ''}`}
                 >
                   <div>
                     <div className="publicaciones-card-img-wrapper">
                       <Portada
-                        pdfUrl={publicacion.pdfUrl!}
-                        titulo={typeof publicacion.titulo === 'string' ? publicacion.titulo : ''}
+                        pdfUrl={publicacion.pdfUrl}
+                        titulo={publicacion.titulo}
                       />
                     </div>
-                    <h3 className="publicaciones-card-title">{publicacion.titulo}</h3>
-                    <p className="publicaciones-card-hashtag">{publicacion.etiqueta}</p>
+                    <h3 className="publicaciones-card-title">
+                      {publicacion.titulo || (enEdicion ? <span className="text-gray-400 italic">Título de la publicación</span> : '')}
+                    </h3>
+                    <p className="publicaciones-card-hashtag">
+                      {publicacion.etiqueta || (enEdicion ? <span className="text-gray-300">#Etiqueta</span> : '')}
+                    </p>
                   </div>
 
                   <div className="publicaciones-card-footer">
                     <div className="publicaciones-date-badge">
-                      <span className="publicaciones-date-month">{publicacion.mes}</span>
-                      <span className="publicaciones-date-day">{publicacion.dia}</span>
+                      <span className="publicaciones-date-month">{publicacion.mes || 'PDF'}</span>
+                      <span className="publicaciones-date-day">{publicacion.dia || '—'}</span>
                     </div>
                   </div>
-                </a>
+                </CardTag>
               ))}
             </div>
+
+            {total > porPagina && (
+              <div className="flex items-center justify-center gap-2 mt-4 pt-2">
+                {Array.from({ length: Math.ceil(total / porPagina) }).map((_, paginaIdx) => {
+                  const activa = Math.floor(inicio / porPagina) === paginaIdx;
+                  return (
+                    <button
+                      key={paginaIdx}
+                      type="button"
+                      aria-label={`Ir a la página ${paginaIdx + 1}`}
+                      onClick={(evento) => {
+                        evento.stopPropagation();
+                        setInicio(paginaIdx * porPagina);
+                      }}
+                      className={`h-2.5 rounded-full transition-all duration-300 ${
+                        activa ? 'w-8 bg-[#39A900]' : 'w-2.5 bg-gray-300 hover:bg-gray-400'
+                      }`}
+                    />
+                  );
+                })}
+              </div>
+            )}
           </div>
+
+          {total > porPagina && (
+            <button
+              type="button"
+              aria-label="Página siguiente"
+              onClick={(evento) => {
+                evento.stopPropagation();
+                setInicio((previo) => (previo + porPagina) % total);
+              }}
+              className="publicaciones-nav-btn publicaciones-nav-next"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
     </section>
