@@ -452,7 +452,7 @@ export function PanelGeneralLayout({
                   <SidebarLabel>Dashboard</SidebarLabel>
                 </SidebarItem>
                 <SidebarGroup
-                  label="Usuarios"
+                  label="Accesos"
                   icon={UserIcon}
                   prefixes={['/admin/users', '/admin/roles']}
                 >

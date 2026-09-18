@@ -1279,7 +1279,7 @@ const puckConfigBase: Config = {
         alineacionTitulo: 'centro',
         colorTitulo: '',
         mostrarDescripcion: true,
-        descripcion: 'Consulte los programas de formación con mayor tasa de vinculación laboral por departamento y centro.',
+        descripcion: 'Consulte los programas de formación con mayor tasa de vinculación laboral por departamento.',
         alineacionDescripcion: 'centro',
         colorDescripcion: '',
       },
