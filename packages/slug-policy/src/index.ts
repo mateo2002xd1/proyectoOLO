@@ -45,6 +45,13 @@ export const SLUGS_RESERVADOS: readonly string[] = [
   'preview',
   'login',
   'logout',
+  // Pasos del acceso: desde el 2026-09-18 son hermanos de `/login` en las dos apps
+  // (`app/(auth)/`), no subcarpetas suyas, así que ocupan la raíz.
+  'first-login',
+  'recovery',
+  'security-questions',
+  'reset-password',
+  'reset-success',
   'menu-y-pie',
   '_next',
   'assets',
