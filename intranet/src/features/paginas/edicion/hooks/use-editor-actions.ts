@@ -20,6 +20,20 @@ import {
 } from "../services/edicion.service";
 import type { ContenidoPagina, EstadoPagina } from "../../model/pagina.types";
 import type { Rechazo } from "../components/aviso-rechazo";
+import { ApiError } from "@/shared/lib/api-client";
+
+/**
+ * Lo que la API explica del fallo. El validador de la ruta responde un `error`
+ * genérico («Datos inválidos») y el motivo concreto en `detalles` —p. ej. «El
+ * comentario es muy corto…»—, que es el que le sirve a quien edita.
+ */
+function mensajeDeLaApi(err: unknown): string | null {
+  if (err instanceof ApiError) {
+    const detalles = (err.body as { detalles?: { mensaje?: string }[] } | undefined)?.detalles;
+    return detalles?.[0]?.mensaje ?? err.message;
+  }
+  return err instanceof Error ? err.message : null;
+}
 
 interface UseEditorActionsOptions {
   slug: string;
@@ -34,13 +48,17 @@ interface UseEditorActionsOptions {
 interface UseEditorActionsReturn {
   /** Guarda el JSON de Puck como borrador en la API */
   handleGuardarBorrador: (contenido: ContenidoPagina) => Promise<void>;
-  /** Envía la versión activa a revisión (requiere haber guardado primero) */
-  handleEnviarRevision: () => Promise<void>;
+  /**
+   * Envía la versión activa a revisión con su comentario de cambios (requiere haber
+   * guardado primero). Si falla, muestra el error y **lo relanza**: quien llama no
+   * debe dar el envío por hecho.
+   */
+  handleEnviarRevision: (comentario: string) => Promise<void>;
   isSaving: boolean;
   isSendingToReview: boolean;
   /** Estado editorial de la versión activa (actualizado tras cada acción) */
   estadoActual: EstadoPagina | null;
-  /** ID de la versión activa (necesario para enviar a revisión) */
+  /** ID de la versión activa (el envío a revisión no lo usa: la API toma el último borrador) */
   versionId: string | null;
   /**
    * El rechazo que hay que seguir enseñando, guardado aparte de `estadoActual`.
@@ -94,15 +112,15 @@ export function useEditorActions({
     [slug]
   );
 
-  const handleEnviarRevision = useCallback(async () => {
-    if (!versionId) {
-      setError("Debes guardar el borrador antes de enviarlo a revisión.");
-      return;
-    }
+  // Sin guarda de `versionId` a propósito. El editor guarda justo antes de enviar, en el
+  // mismo clic, y esta función se creó en el render anterior a ese guardado: en una
+  // sección nueva veía `versionId` en null y cortaba el envío. Si de verdad no hay
+  // borrador, la API lo dice («No hay borrador para enviar a revisión»).
+  const handleEnviarRevision = useCallback(async (comentario: string) => {
     setIsSendingToReview(true);
     setError(null);
     try {
-      const res = await enviarARevision(slug, versionId);
+      const res = await enviarARevision(slug, comentario);
       if (res?.estado) {
         setEstadoActual(res.estado);
       }
@@ -111,13 +129,16 @@ export function useEditorActions({
       // se rechazó.
       setRechazo(undefined);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Error al enviar a revisión"
-      );
+      setError(mensajeDeLaApi(err) ?? "Error al enviar a revisión");
+      // Antes el error se quedaba aquí y el editor enseñaba «Tu edición se envió con
+      // éxito» igual, con la versión todavía en borrador. Se relanza, como hace
+      // `handleGuardarBorrador`, para que la pantalla de éxito solo salga si la API
+      // aceptó el envío.
+      throw err;
     } finally {
       setIsSendingToReview(false);
     }
-  }, [slug, versionId]);
+  }, [slug]);
 
   return {
     handleGuardarBorrador,

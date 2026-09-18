@@ -219,8 +219,27 @@ interface ModalSalirProps {
   onConfirmar: () => void;
 }
 
+/**
+ * Topes del comentario de cambios. Son los de la API (`api-backend/src/shared/
+ * comentario-cambios.ts`), que es quien manda: si cambian allí, cambian aquí.
+ */
+const COMENTARIO_MIN = 10;
+const COMENTARIO_MAX = 100;
+
+/** Se mide como lo guardará la API: en una línea y sin espacios de sobra. */
+const largoDelComentario = (texto: string) =>
+  Array.from(texto.replace(/\s+/g, " ").trim()).length;
+
 interface ModalConfirmarAccionProps {
-  contenido: { titulo: string; descripcion: string; textoConfirmar: string } | null;
+  contenido: {
+    titulo: string;
+    descripcion: string;
+    textoConfirmar: string;
+    /** Enviar a revisión: el botón no se activa sin el comentario de cambios. */
+    pideComentario?: boolean;
+  } | null;
+  comentario: string;
+  onCambiarComentario: (texto: string) => void;
   onCancelar: () => void;
   onConfirmar: () => void;
 }
@@ -234,11 +253,25 @@ interface ModalConfirmarAccionProps {
  * dos en vez de copiar `ModalSalir`: mismo `<dialog>`, mismas clases, el texto es
  * lo único que cambia según `contenido`.
  *
+ * Al enviar pide además el comentario de cambios, el «commit» del envío: es lo que
+ * lee quien aprueba y lo que queda en la columna «Cambios» de la auditoría. El
+ * texto lo guarda el wrapper y no este componente, para que no se pierda si se
+ * cancela para corregir algo y se vuelve a pulsar «Enviar».
+ *
  * Gemela de la de sitio-web.
  */
-function ModalConfirmarAccion({ contenido, onCancelar, onConfirmar }: ModalConfirmarAccionProps) {
+function ModalConfirmarAccion({
+  contenido,
+  comentario,
+  onCambiarComentario,
+  onCancelar,
+  onConfirmar,
+}: ModalConfirmarAccionProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const abierto = contenido !== null;
+  const largo = largoDelComentario(comentario);
+  const comentarioValido = largo >= COMENTARIO_MIN && largo <= COMENTARIO_MAX;
+  const puedeConfirmar = !contenido?.pideComentario || comentarioValido;
 
   useEffect(() => {
     const dialogo = ref.current;
@@ -266,14 +299,58 @@ function ModalConfirmarAccion({ contenido, onCancelar, onConfirmar }: ModalConfi
             {contenido.titulo}
           </h2>
           <p className="olo-modal-texto">{contenido.descripcion}</p>
+          {contenido.pideComentario && (
+            <div className="olo-modal-comentario">
+              <label htmlFor="olo-modal-comentario-campo" className="olo-modal-comentario-etiqueta">
+                Describe tus cambios <span className="olo-modal-comentario-obligatorio">(obligatorio)</span>
+              </label>
+              {/* Primer elemento enfocable del diálogo: `showModal()` lo enfoca solo, así
+                  que se puede escribir sin tener que hacer clic. */}
+              <textarea
+                id="olo-modal-comentario-campo"
+                className="olo-modal-comentario-campo"
+                rows={3}
+                maxLength={COMENTARIO_MAX}
+                value={comentario}
+                placeholder="Ej.: Actualicé el directorio de contactos del área de formación"
+                aria-describedby="olo-modal-comentario-ayuda"
+                aria-invalid={comentario.trim() !== "" && !comentarioValido}
+                onChange={(evento) => onCambiarComentario(evento.target.value)}
+                // Es una línea, como el mensaje de un commit: Enter no parte el texto
+                // (la API lo juntaría igual) y, si ya vale, envía.
+                onKeyDown={(evento) => {
+                  if (evento.key !== "Enter" || evento.shiftKey || evento.nativeEvent.isComposing) return;
+                  evento.preventDefault();
+                  if (comentarioValido) onConfirmar();
+                }}
+              />
+              <div className="olo-modal-comentario-pie">
+                <span id="olo-modal-comentario-ayuda">
+                  {largo > 0 && largo < COMENTARIO_MIN
+                    ? `Sé específico: mínimo ${COMENTARIO_MIN} caracteres.`
+                    : "Lo lee quien aprueba y queda registrado en la auditoría."}
+                </span>
+                <span className="olo-modal-comentario-cuenta" aria-hidden="true">
+                  {comentario.length}/{COMENTARIO_MAX}
+                </span>
+              </div>
+            </div>
+          )}
           <div className="olo-modal-acciones">
-            <button type="button" className="olo-modal-btn" onClick={onCancelar} autoFocus>
+            <button
+              type="button"
+              className="olo-modal-btn"
+              onClick={onCancelar}
+              autoFocus={!contenido.pideComentario}
+            >
               Cancelar
             </button>
             <button
               type="button"
               className="olo-modal-btn olo-modal-btn--principal"
               onClick={onConfirmar}
+              disabled={!puedeConfirmar}
+              title={puedeConfirmar ? undefined : "Escribe el comentario de tus cambios para poder enviar"}
             >
               {contenido.textoConfirmar}
             </button>
@@ -431,8 +508,12 @@ export interface PuckEditorWrapperProps {
   initialData: ContenidoPagina | null;
   /** Llamado con el JSON de Puck al hacer "Guardar borrador" */
   onGuardarBorrador: (contenido: ContenidoPagina) => Promise<void>;
-  /** Llamado al hacer "Enviar a revisión" (sin payload — la versión ya fue guardada) */
-  onEnviarRevision: () => Promise<void>;
+  /**
+   * Llamado al confirmar "Enviar a revisión", con el comentario de cambios que
+   * escribió quien edita (el contenido ya se guardó justo antes). Debe rechazar la
+   * promesa si el envío falla: la pantalla de éxito solo sale si se cumple.
+   */
+  onEnviarRevision: (comentario: string) => Promise<void>;
   isSaving?: boolean;
   isSendingToReview?: boolean;
   versionActual?: PaginaVersion | null;
@@ -569,7 +650,7 @@ export function PuckEditorWrapper({
   );
 
   const handleSend = useCallback(
-    async (indiceHistoria: number) => {
+    async (indiceHistoria: number, comentario: string) => {
       // Aviso de cliente, no autoritativo: evita el viaje de red en el caso común,
       // pero el 400 de la API (mismo `@olo/accessibility-policy`) es quien manda de
       // verdad — ver `enviar-a-revision.usecase.ts`.
@@ -588,7 +669,9 @@ export function PuckEditorWrapper({
       } catch {
         return; // el mensaje ya lo muestra quien gestiona el error
       }
-      await onEnviarRevision();
+      // Si la API rechaza el envío, esto lanza y no se llega a la pantalla de éxito:
+      // el mensaje de error ya lo pinta `editor-client.tsx`.
+      await onEnviarRevision(comentario);
       // Ya no sale sola: muestra la pantalla de éxito y espera a que la cierren.
       setEnvioExitoso(true);
     },
@@ -611,18 +694,29 @@ export function PuckEditorWrapper({
     setAccionPendiente({ tipo: "enviar", indiceHistoria });
   }, []);
 
+  // El comentario de cambios del envío. Vive aquí y no en el modal para sobrevivir a
+  // un «Cancelar»: si el envío se corta —por accesibilidad, o porque quien edita
+  // quiso retocar algo antes— al volver a pulsar «Enviar» sigue escrito.
+  const [comentarioEnvio, setComentarioEnvio] = useState("");
+
   // Un onClick no puede devolver una promesa rechazada; el mensaje de error ya
   // se muestra sobre el editor.
   const confirmarAccionPendiente = useCallback(() => {
     if (!accionPendiente) return;
     const { tipo, indiceHistoria } = accionPendiente;
+    if (tipo === "enviar") {
+      // Misma regla que el botón deshabilitado; se repite porque Enter en el campo
+      // también llega aquí.
+      const largo = largoDelComentario(comentarioEnvio);
+      if (largo < COMENTARIO_MIN || largo > COMENTARIO_MAX) return;
+    }
     setAccionPendiente(null);
     if (tipo === "guardar") {
       void handleSave(indiceHistoria).catch(() => undefined);
     } else {
-      void handleSend(indiceHistoria).catch(() => undefined);
+      void handleSend(indiceHistoria, comentarioEnvio).catch(() => undefined);
     }
-  }, [accionPendiente, handleSave, handleSend]);
+  }, [accionPendiente, comentarioEnvio, handleSave, handleSend]);
 
   const contenidoConfirmacion = !accionPendiente
     ? null
@@ -638,6 +732,7 @@ export function PuckEditorWrapper({
           descripcion:
             "El administrador recibirá tu trabajo para revisarlo, aprobarlo y publicarlo en el sitio.",
           textoConfirmar: "Enviar a revisión",
+          pideComentario: true,
         };
 
   // Memorizado porque Puck reconstruye su store cada vez que cambia la identidad
@@ -728,6 +823,8 @@ export function PuckEditorWrapper({
 
       <ModalConfirmarAccion
         contenido={contenidoConfirmacion}
+        comentario={comentarioEnvio}
+        onCambiarComentario={setComentarioEnvio}
         onCancelar={() => setAccionPendiente(null)}
         onConfirmar={confirmarAccionPendiente}
       />

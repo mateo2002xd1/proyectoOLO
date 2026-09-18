@@ -61,13 +61,17 @@ export async function guardarBorrador(
 
 /**
  * Envía la versión borrador activa a revisión (borrador → en_revision).
+ *
+ * `comentario` es el «commit» del envío: la API lo exige (10 a 100 caracteres), lo
+ * guarda con la versión y lo deja en la bitácora de auditoría.
  */
 export async function enviarARevision(
   slug: string,
-  _versionId?: string
+  comentario: string
 ): Promise<{ estado: EstadoPagina } | null> {
   const res = await apiClient.patch<{ version?: { estado: EstadoPagina } }>(
-    `/paginas/${slug}/enviar-revision`
+    `/paginas/${slug}/enviar-revision`,
+    { comentario }
   );
   if (!res?.version?.estado) return null;
   return { estado: res.version.estado };
