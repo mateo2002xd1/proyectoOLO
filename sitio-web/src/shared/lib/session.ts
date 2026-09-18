@@ -119,6 +119,39 @@ export async function puedeEditarPaginas(): Promise<boolean> {
   return permissions.some(p => p.startsWith('editar.sitio.') || p === 'secciones.crear');
 }
 
+/**
+ * Si esta sesión puede editar **esta** sección del sitio, y la sección existe.
+ *
+ * `puedeEditarPaginas()` solo mira el rol, así que no distingue una sección creada y
+ * todavía vacía de una URL inventada: a un editor le ofrecía «Editar sección» en
+ * `/lo-que-sea`, y editar ahí crea la página al guardar. Esto pregunta a la API con
+ * la misma guardia que usa el editor (`requierePermisoDeSeccion` en `GET
+ * /api/paginas/:slug/editable`): 404 si la sección no existe, 403 si no es suya, 200
+ * si puede abrirla. Cuesta una petición, así que quien llama lo usa solo cuando ya
+ * sabe que la página no tiene nada publicado.
+ *
+ * La cabecera de ámbito va escrita aquí y no importada de `features/paginas/model/
+ * ambito.ts`: `shared/` no depende de las features.
+ */
+export async function puedeEditarSeccion(slug: string): Promise<boolean> {
+  const { token } = await getAuthSessionSnapshot();
+  if (!token) return false;
+
+  try {
+    const res = await fetch(
+      `${process.env.BACKEND_URL || 'http://localhost:4000'}/api/paginas/${encodeURIComponent(slug)}/editable`,
+      {
+        headers: { Authorization: `Bearer ${token}`, 'X-Ambito': 'sitio' },
+        cache: 'no-store',
+      }
+    );
+    return res.ok;
+  } catch {
+    // Sin API no se puede saber: se trata como «no», que acaba en el 404 de siempre.
+    return false;
+  }
+}
+
 export async function resolveFirstAccessibleRoute(role: string): Promise<string> {
   const roleRoutes: Record<string, string[]> = {
     Superadmin: ['/admin/dashboard'],
