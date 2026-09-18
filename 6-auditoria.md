@@ -5,6 +5,85 @@
 
 ---
 
+## sesión 18-09-2026 (17.ª parte): integrar la PR #114 de Mateo, revertir 4cf3734 y hacer bien lo que buscaba
+
+**Qué había.** La PR #114 (rama `mateo`) ya estaba fusionada en `OLO/dev`, y el `dev`
+local iba 11 commits por delante sin tenerla. El usuario pidió revisarla, omitir lo que
+rompiera o empeorara, arreglar lo que debió hacerse de otra forma y subir lo local con
+prioridad.
+
+**Qué traía la PR.** Seis commits de Mateo:
+- el bloque «Fuentes futuras de empleo», con endpoint público
+  `GET /api/observatorio/fuentes-futuras-empleo` que lee un Excel de `uploads/cargas-datos/`;
+- en programas sobresalientes, departamento por lista o por mapa y «Limpiar filtros»;
+- mapas usables dentro del editor Puck;
+- 4cf3734: que una página inexistente no ofrezca «Editar sección».
+
+### Lo que se hizo
+
+| Commit | Qué |
+|---|---|
+| `Merge remote-tracking branch 'OLO/dev'` | Sin conflictos de texto, pero **no compilaba**: `tabla-fuentes-futuras.tsx` importaba `tendencia-ocupacional/components/paginador`, que ddd14ab borró al unificar la paginación, y además era un import interno de otra feature (regla 12). Se resolvió dentro del merge con `shared/ui/molecules/paginacion`, igual que `tabla-tendencia` |
+| `revert(sitio-web): deshacer 4cf3734` | Revert y no reescritura de `dev`: ya estaba en GitHub y otros tienen esa historia. El cambio a `politica-de-privacidad/page.tsx` no se revierte: ese archivo ya no existe en `dev` (el merge de Mateo ya lo había perdido) |
+| `fix(sitio-web): 404 real y 'Editar seccion' solo si…` | Ver abajo |
+| `fix(sitio-web): tema oscuro solo en el panel…` | Ver abajo |
+
+**Por qué 4cf3734 empeoraba, y cómo se hizo bien.**
+
+- **El 404.** Para no enseñar el botón en URLs inventadas, 4cf3734 cambió `notFound()`
+  por un `<div>` «Página no encontrada» con **200 para todos**, visitantes incluidos (soft
+  404: los buscadores pueden indexar cualquier URL). También quitó la entrada al editor de
+  una sección creada y vacía. Y ni siquiera cerraba el caso: el menú flotante seguía
+  ofreciendo «Editar sección» al Superadmin. El problema de fondo era real: con solo el
+  rol, cualquier editor veía el botón en `/lo-que-sea`, y editar ahí crea la página al
+  guardar. **Arreglo:** `puedeEditarSeccion(slug)` en `shared/lib/session.ts` pregunta a
+  `GET /api/paginas/:slug/editable`, que pasa por la misma guardia que el editor
+  (`requierePermisoDeSeccion`: 404 si no existe, 403 si no es suya). Solo se llama cuando
+  no hay nada publicado y el rol ya permite editar, así que a un visitante no le cuesta
+  ninguna petición.
+- **El tema.** 4cf3734 quitó del `<head>` el script que aplica el tema antes de pintar y
+  lo pasó a un `useEffect` de `ThemeToggle`. El problema que resolvía también era real:
+  el script ponía `.dark` en **todo** el sitio, y como `body` usa `var(--background)`,
+  quien eligió oscuro en el panel veía el portal público con fondo `#0b1121`. Pero el
+  arreglo tuvo tres efectos malos: el panel parpadeaba en claro en cada carga, las
+  pantallas sin el botón dejaban de aplicar el tema y se perdía el «volver arriba al
+  recargar». **Arreglo:** se conserva el script, limitado a `/admin` (`shared/lib/tema/`).
+  `SincronizarTema`, en el layout raíz, repite la regla en cada cambio de ruta, porque al
+  ir del panel al sitio con un enlace de Next no hay recarga y `.dark` se quedaba.
+
+**Qué se dejó como estaba, a propósito.**
+- Que «Fuentes futuras» devuelva `[]` ante un Excel dañado: es lo mismo que hace tendencia,
+  así que no es una regresión de esta PR.
+- La etiqueta «Elegido en mapa ×» quitada en tendencia: el departamento se sigue pudiendo
+  quitar haciendo clic otra vez en el mapa.
+- El select de departamento en programas sobresalientes: es un cambio de producto, no un
+  error.
+
+### Verificación
+
+| Qué | Resultado |
+|---|---|
+| `git merge-tree` antes de fusionar | Sin conflictos de texto |
+| Imports del código de Mateo contra lo que borraron los commits locales | Un solo roto (el paginador), corregido en el merge |
+| `tsc --noEmit` en sitio-web y api-backend tras el merge y tras los arreglos | Sin errores |
+| ESLint en los archivos tocados | Sin errores; un aviso previo en `session.ts:46` (`user` sin usar) |
+| Script del `<head>` ejecutado con un DOM simulado en 8 rutas | `.dark` solo en `/admin` y `/admin/*` con «dark» guardado; nunca en `/`, `/inicio`, `/login`, `/editor/…` ni `/administrador-falso` |
+| `curl` al sitio local en `/pagina-que-no-existe-xyz` sin sesión | **404**, con la página de Next; `/inicio` sigue en 200 |
+| El caso con sesión de editor (sección vacía, sí; URL inventada, 404) | **No probado**: hace falta iniciar sesión en el navegador |
+
+> **Fuera del commit a propósito:** `sitio-web/next-env.d.ts` (lo reescribe `next dev`) y
+> `api-backend/uploads/cargas-datos/c6a34897-….xlsx` (una carga hecha desde el panel, no
+> código).
+
+**Pendiente al cierre:**
+- Con sesión de editor: abrir una sección recién creada y vacía (debe salir «Editar
+  sección») y una URL inventada (debe dar 404).
+- En el panel con modo oscuro: recargar (sin destello claro) e ir al sitio con un enlace
+  (debe quedar claro).
+- Sigue pendiente aplicar la 029 (16.ª parte).
+
+---
+
 ## sesión 18-09-2026 (16.ª parte): comentario de cambios obligatorio al enviar a revisión, y la auditoría lo muestra
 
 **Qué era.** La columna «Cambios» de Auditoría enseñaba `slug: inicio · version: 7 ·
