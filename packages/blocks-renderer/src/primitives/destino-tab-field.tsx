@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { usePaginaEnEdicion, useRegistrarSubida } from './pagina-en-edicion-context';
 
 export interface DestinoTabConfig {
   tipo: 'contenido' | 'enlace' | 'archivo';
@@ -56,6 +57,9 @@ function verificarSiPestanaActivaTieneContenido(): boolean {
  * Utiliza los estilos de formulario, colores (#0033a0) y botones existentes en intranet.
  */
 export function DestinoTabField({ value, onChange }: DestinoTabFieldProps) {
+  const slug = usePaginaEnEdicion();
+  const registrarSubida = useRegistrarSubida();
+
   const config: DestinoTabConfig = {
     tipo: value?.tipo || 'contenido',
     urlEnlace: value?.urlEnlace || '',
@@ -139,6 +143,18 @@ export function DestinoTabField({ value, onChange }: DestinoTabFieldProps) {
         urlArchivo: data.url,
         nombreArchivo: archivo.name,
       });
+
+      // Anota la subida pendiente según las normas establecidas
+      if (registrarSubida) {
+        void registrarSubida(data.url);
+      } else if (slug) {
+        void fetch(`/api/paginas/${encodeURIComponent(slug)}/subidas`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ruta: data.url }),
+          credentials: 'include',
+        }).catch(() => undefined);
+      }
     } catch (err) {
       setErrorSubida(err instanceof Error ? err.message : 'Error desconocido al subir el archivo');
     } finally {
@@ -147,9 +163,9 @@ export function DestinoTabField({ value, onChange }: DestinoTabFieldProps) {
     }
   };
 
-  const nombreVisible = config.urlArchivo
+  const nombreVisible = config.nombreArchivo || (config.urlArchivo
     ? decodeURIComponent(config.urlArchivo.split('/').pop() ?? '')
-    : '';
+    : '');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>

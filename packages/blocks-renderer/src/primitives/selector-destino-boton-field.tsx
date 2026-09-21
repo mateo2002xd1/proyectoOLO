@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { usePaginaEnEdicion, useRegistrarSubida } from './pagina-en-edicion-context';
 
 export interface DestinoBotonConfig {
   tipo: 'enlace' | 'archivo' | 'ninguno';
@@ -16,6 +17,9 @@ interface SelectorDestinoBotonFieldProps {
 }
 
 export function SelectorDestinoBotonField({ value, onChange }: SelectorDestinoBotonFieldProps) {
+  const slug = usePaginaEnEdicion();
+  const registrarSubida = useRegistrarSubida();
+
   const config: DestinoBotonConfig = {
     tipo: value?.tipo || 'enlace',
     urlEnlace: value?.urlEnlace || '',
@@ -66,6 +70,18 @@ export function SelectorDestinoBotonField({ value, onChange }: SelectorDestinoBo
         urlArchivo: data.url,
         nombreArchivo: archivo.name,
       });
+
+      // Anota la subida pendiente según las normas establecidas
+      if (registrarSubida) {
+        void registrarSubida(data.url);
+      } else if (slug) {
+        void fetch(`/api/paginas/${encodeURIComponent(slug)}/subidas`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ruta: data.url }),
+          credentials: 'include',
+        }).catch(() => undefined);
+      }
     } catch (err) {
       setErrorSubida(err instanceof Error ? err.message : 'Error desconocido al subir el archivo');
     } finally {

@@ -730,6 +730,7 @@ const puckConfigBase: Config = {
         videoUrl: { type: 'text', label: 'Enlace del video de YouTube' },
         descargaTexto: { type: 'text', label: 'Texto sobre el botón de descarga (opcional)', contentEditable: true },
         descargaEtiqueta: { type: 'text', label: 'Texto del botón', contentEditable: true },
+        descargaNombre: { type: 'text', label: 'Nombre al descargar (opcional)' },
         descargaUrl: {
           type: 'custom',
           label: 'Archivo para descargar (opcional)',
@@ -749,6 +750,7 @@ const puckConfigBase: Config = {
         videoUrl: 'https://www.youtube.com/embed/4E7Sci4DAVQ',
         descargaTexto: '',
         descargaEtiqueta: 'Descargar',
+        descargaNombre: '',
         descargaUrl: '',
       },
       render: (props: BlockRender<ComponentProps<typeof TasaVideo>>) => <TasaVideo {...props} />,
@@ -842,6 +844,7 @@ const puckConfigBase: Config = {
           arrayFields: {
             etiqueta: { type: 'text', label: 'Texto del enlace', contentEditable: true },
             url: { type: 'text', label: 'URL' },
+            nombreArchivo: { type: 'text', label: 'Nombre al descargar (opcional)' },
           },
           getItemSummary: (item) => item.etiqueta || 'Enlace',
         },
@@ -905,6 +908,7 @@ const puckConfigBase: Config = {
                 />
               ),
             },
+            nombreArchivo: { type: 'text', label: 'Nombre al descargar (opcional)' },
             etiqueta: { type: 'text', label: 'Etiqueta (#OLOtecuenta)', contentEditable: true },
             mes: { type: 'text', label: 'Mes', contentEditable: true },
             dia: { type: 'text', label: 'Día', contentEditable: true },

@@ -19,6 +19,7 @@ import "@puckeditor/core/dist/index.css";
 import { configDeEdicion, type ContextoDeEdicion } from "@/config/puck.config";
 import { resolverRutaDeVuelta, rutaPublicaDeSlug } from "../../model/rutas";
 import { PaginaEnEdicionContext } from "../lib/pagina-en-edicion";
+import { registrarSubidaPendiente } from "../services/edicion.service";
 import type { ContenidoPagina, PaginaVersion } from "../../model/pagina.types";
 import { validarAccesibilidad, mensajeDeViolacion, type ViolacionAccesibilidad } from "@olo/accessibility-policy";
 import { AvisoRechazo, type Rechazo } from "./aviso-rechazo";
@@ -794,11 +795,21 @@ export function PuckEditorWrapper({
     ]
   );
 
+  const contextoPagina = useMemo(
+    () => ({
+      slug,
+      registrarSubida: (ruta: string) => {
+        if (slug) void registrarSubidaPendiente(slug, ruta);
+      },
+    }),
+    [slug]
+  );
+
   return (
     // El estado viaja en un `data-` porque quien lo pinta es el CSS: la bandera
     // se monta sobre el marcado de la cabecera de Puck, que no es nuestro.
     <div className="olo-editor" data-estado={estado}>
-      <PaginaEnEdicionContext.Provider value={slug}>
+      <PaginaEnEdicionContext.Provider value={contextoPagina}>
         <Puck
           config={config}
           data={initialPuckData}

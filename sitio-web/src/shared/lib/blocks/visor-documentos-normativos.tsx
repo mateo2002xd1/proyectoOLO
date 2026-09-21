@@ -11,6 +11,8 @@ export interface DocumentoNormativo {
   descripcion?: ReactNode;
   /** ID del documento en CompromISO SENA (ej. "6701"). De ahí salen las dos URLs. */
   documentoId?: string;
+  /** Nombre sugerido para la descarga del archivo */
+  nombreArchivo?: string;
 }
 
 interface VisorDocumentosNormativosProps {
@@ -76,6 +78,7 @@ export function VisorDocumentosNormativos({
               descripcion={activo.descripcion}
               url={`/api/docs/pdf?id=${encodeURIComponent(activo.documentoId)}`}
               urlExterna={`https://compromiso.sena.edu.co/mapa/descarga.php?id=${encodeURIComponent(activo.documentoId)}`}
+              nombreArchivo={activo.nombreArchivo}
             />
           )}
         </section>

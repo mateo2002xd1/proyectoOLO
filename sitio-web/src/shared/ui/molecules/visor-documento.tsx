@@ -20,6 +20,8 @@ interface VisorDocumentoProps {
    * "Descargar PDF". Si no, se usa la misma `url`.
    */
   urlExterna?: string;
+  /** Nombre deseado del archivo al descargarse */
+  nombreArchivo?: string;
 }
 
 export function VisorDocumento({
@@ -27,6 +29,7 @@ export function VisorDocumento({
   descripcion,
   url,
   urlExterna,
+  nombreArchivo,
 }: VisorDocumentoProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -60,7 +63,12 @@ export function VisorDocumento({
 
           <a
             href={url}
-            download
+            download={
+              nombreArchivo ||
+              (typeof titulo === 'string' && titulo.trim()
+                ? `${titulo.replace(/<[^>]*>/g, '').trim()}.pdf`
+                : true)
+            }
             className="inline-flex items-center gap-1.5 rounded-lg bg-[#39A900] px-3.5 py-2 text-xs text-white shadow-sm transition hover:bg-[#329200] focus:outline-none focus:ring-2 focus:ring-[#39A900]/40"
           >
             <ArrowDownTrayIcon className="h-4 w-4" />

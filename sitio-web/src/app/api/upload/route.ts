@@ -85,6 +85,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       url: `/uploads/${carpeta}/${resultado.nombreArchivo}`,
+      nombreOriginal: file.name,
     });
   } catch (error) {
     console.error('[upload] Error al procesar archivo:', error);

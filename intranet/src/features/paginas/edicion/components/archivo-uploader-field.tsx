@@ -3,14 +3,15 @@
 import React, { useState } from 'react';
 import { mensajeDeError } from '@/shared/lib/errors';
 import { registrarSubidaPendiente } from '../services/edicion.service';
-import { usePaginaEnEdicion } from '../lib/pagina-en-edicion';
+import { usePaginaEnEdicion, useRegistrarSubida } from '../lib/pagina-en-edicion';
 
 interface ArchivoUploaderFieldProps {
   value: string;
-  onChange: (value: string) => void;
+  onChange: (value: string, nombreOriginal?: string) => void;
   /** Tipos que acepta el selector, en formato `accept` de HTML. */
   accept?: string;
   etiquetaBoton?: string;
+  nombreOriginal?: string;
 }
 
 /**
@@ -25,8 +26,10 @@ export function ArchivoUploaderField({
   onChange,
   accept = '.pptx,.ppt,.pdf,.xlsx,.xls,.docx,.doc',
   etiquetaBoton = 'Subir archivo',
+  nombreOriginal,
 }: ArchivoUploaderFieldProps) {
   const slug = usePaginaEnEdicion();
+  const registrarSubida = useRegistrarSubida();
   const [subiendo, setSubiendo] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,8 +55,14 @@ export function ArchivoUploaderField({
       }
 
       const data = await res.json();
-      onChange(data.url);
-      if (slug) void registrarSubidaPendiente(slug, data.url);
+      const nombreSubido = data.nombreOriginal || archivo.name;
+      const urlFinal = `${data.url}?nombre=${encodeURIComponent(nombreSubido)}`;
+      onChange(urlFinal, nombreSubido);
+      if (registrarSubida) {
+        void registrarSubida(data.url);
+      } else if (slug) {
+        void registrarSubidaPendiente(slug, data.url);
+      }
     } catch (err) {
       setError(mensajeDeError(err, 'Error desconocido'));
     } finally {
@@ -61,7 +70,20 @@ export function ArchivoUploaderField({
     }
   };
 
-  const nombreVisible = value ? decodeURIComponent(value.split('/').pop() ?? '') : '';
+  const nombreDeUrl = value?.includes('?nombre=')
+    ? (() => {
+        try {
+          return decodeURIComponent(value.split('?nombre=')[1]?.split('&')[0] ?? '');
+        } catch {
+          return '';
+        }
+      })()
+    : '';
+
+  const nombreVisible =
+    nombreOriginal ||
+    nombreDeUrl ||
+    (value ? decodeURIComponent(value.split('?')[0].split('/').pop() ?? '') : '');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

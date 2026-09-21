@@ -88,4 +88,15 @@ export type {
   AlineacionTarjeta,
 } from './blocks/tarjeta-articulo';
 
+// ─── Contexto de página en edición y registro de subidas para Puck ───
+export {
+  PaginaEnEdicionContext,
+  usePaginaEnEdicion,
+  useRegistrarSubida,
+} from './primitives/pagina-en-edicion-context';
+export type {
+  ContextoPaginaEnEdicion,
+  SubidaRegistrador,
+} from './primitives/pagina-en-edicion-context';
+
 

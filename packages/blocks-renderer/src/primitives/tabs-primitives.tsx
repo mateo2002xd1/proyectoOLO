@@ -119,7 +119,7 @@ export function TabsRender({
   const [mensajeToast, setMensajeToast] = useState<string | null>(null);
 
   const dispararDescarga = (tab: TabItem, url: string) => {
-    const nombre = url.split('/').pop() || 'archivo';
+    const nombre = tab.destino?.nombreArchivo || tab.nombreArchivo || (url ? url.split('/').pop() : '') || 'archivo';
     setMensajeToast(`Descargando archivo: ${decodeURIComponent(nombre)}`);
     setTimeout(() => {
       setMensajeToast(null);
@@ -221,6 +221,7 @@ export function TabsRender({
                   const urlEnlace = destino.urlEnlace || tab.urlEnlace || '';
                   const abrirNuevaPestana = destino.abrirNuevaPestana || tab.abrirNuevaPestana || 'si';
                   const urlArchivo = destino.urlArchivo || tab.urlArchivo || '';
+                  const nombreArchivo = destino.nombreArchivo || tab.nombreArchivo;
 
                   const esEnlace = tipoDestino === 'enlace';
                   const esArchivo = tipoDestino === 'archivo';
@@ -283,7 +284,7 @@ export function TabsRender({
                       key={tab.slotId}
                       id={tabButtonId}
                       href={urlArchivo}
-                      download
+                      download={nombreArchivo || true}
                       target="_blank"
                       rel="noopener noreferrer"
                       className={`olo-tabs-btn ${estaActiva ? 'olo-tabs-btn--active' : ''}`}
@@ -442,7 +443,7 @@ export function TabsRender({
                         <div style={{ marginTop: '14px' }}>
                           <a
                             href={urlArchivo}
-                            download
+                            download={destino.nombreArchivo || tab.nombreArchivo || true}
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={() => dispararDescarga(tab, urlArchivo)}
