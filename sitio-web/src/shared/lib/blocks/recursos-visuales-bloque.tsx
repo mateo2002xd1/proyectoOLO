@@ -52,9 +52,29 @@ const VIDEOS_EJEMPLO: VideoRecurso[] = [
   },
 ];
 
-const miniaturaDe = (video: VideoRecurso): string => {
+/**
+ * Extrae el identificador de 11 caracteres de YouTube a partir de un ID crudo o una URL
+ * (youtube.com/watch?v=..., youtu.be/..., youtube.com/embed/..., youtube.com/shorts/...).
+ */
+export const extraerYoutubeId = (urlOId?: string): string => {
+  if (!urlOId || typeof urlOId !== 'string') return '';
+  const limpio = urlOId.trim();
+  if (/^[\w-]{11}$/.test(limpio)) return limpio;
+  const matchV = limpio.match(/[?&]v=([\w-]{11})/);
+  if (matchV) return matchV[1];
+  const matchShort = limpio.match(/youtu\.be\/([\w-]{11})/);
+  if (matchShort) return matchShort[1];
+  const matchEmbed = limpio.match(/youtube\.com\/embed\/([\w-]{11})/);
+  if (matchEmbed) return matchEmbed[1];
+  const matchShorts = limpio.match(/youtube\.com\/shorts\/([\w-]{11})/);
+  if (matchShorts) return matchShorts[1];
+  return limpio;
+};
+
+export const miniaturaDe = (video: VideoRecurso): string => {
   if (video.miniatura) return video.miniatura;
-  if (video.youtubeId) return `https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`;
+  const ytId = extraerYoutubeId(video.youtubeId);
+  if (ytId && /^[\w-]{11}$/.test(ytId)) return `https://img.youtube.com/vi/${ytId}/mqdefault.jpg`;
   return '';
 };
 
@@ -69,7 +89,9 @@ export function RecursosVisualesBloque({
   const enEdicion =
     esEdicion ??
     (typeof window !== 'undefined' &&
-      (window.location.pathname.includes('/admin/editor') ||
+      (window.location.pathname.includes('/editor') ||
+        window.location.pathname.includes('/plantilla') ||
+        window.location.pathname.includes('/admin/editor') ||
         window.location.pathname.includes('/admin/plantilla')));
 
   const configurados = Array.isArray(videos) ? videos : [];
@@ -82,16 +104,17 @@ export function RecursosVisualesBloque({
     ? VIDEOS_EJEMPLO
     : enEdicion
       ? validos
-      : validos.filter((video) => Boolean(video.youtubeId));
+      : validos.filter((video) => Boolean(extraerYoutubeId(video.youtubeId)));
 
   if (listaVideos.length === 0 && !enEdicion) return null;
 
   // Si se borra el video que estaba activo, el índice guardado se acota al límite de la lista
   const indiceSeguro = Math.min(indiceActivo, Math.max(0, listaVideos.length - 1));
   const activo = listaVideos[indiceSeguro] || listaVideos[0];
+  const idActivo = extraerYoutubeId(activo?.youtubeId);
 
   return (
-    <section className="olo-recursos-visuales" aria-label="Recursos visuales" data-block-id={block.id}>
+    <section className="olo-recursos-visuales" aria-label="Recursos visuales" data-block-id={block?.id || 'recursos-visuales'}>
       <div className="olo-recursos-visuales-inner">
         {titulo && <TituloRico className="olo-recursos-visuales-title">{titulo}</TituloRico>}
 
@@ -108,11 +131,11 @@ export function RecursosVisualesBloque({
           <div className="rv-container">
             <div className="rv-player">
               <div className="rv-player-inner">
-                {activo?.youtubeId ? (
+                {idActivo && /^[\w-]{11}$/.test(idActivo) ? (
                   <iframe
-                    key={activo.youtubeId}
+                    key={idActivo}
                     className="rv-iframe"
-                    src={`https://www.youtube.com/embed/${activo.youtubeId}?autoplay=0`}
+                    src={`https://www.youtube.com/embed/${idActivo}?autoplay=0`}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                     title={typeof activo.titulo === 'string' ? activo.titulo : 'Recurso visual'}
@@ -128,14 +151,14 @@ export function RecursosVisualesBloque({
                       {activo?.titulo || 'Video pendiente de configurar'}
                     </p>
                     <span className="text-xs text-gray-300 max-w-sm">
-                      Ingresa el identificador de YouTube (11 caracteres) en el panel lateral derecho para reproducir este video
+                      Ingresa el enlace o identificador de YouTube (11 caracteres) en el panel lateral derecho para reproducir este video
                     </span>
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="rv-playlist">
+            <div className="rv-playlist" data-puck-overlay-portal={enEdicion ? 'true' : undefined}>
               {listaVideos.map((video, indice) => {
                 const thumbSrc = miniaturaDe(video);
                 return (
@@ -144,6 +167,7 @@ export function RecursosVisualesBloque({
                     className={`rv-playlist-item${indice === indiceSeguro ? ' rv-playlist-item--active' : ''}`}
                     onClick={() => setIndiceActivo(indice)}
                     type="button"
+                    style={enEdicion ? { pointerEvents: 'auto' } : undefined}
                   >
                     <div className="rv-thumb-wrap">
                       {thumbSrc ? (

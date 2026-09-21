@@ -19,7 +19,7 @@ import {
 import { ExternalPortals } from '@/shared/lib/blocks/external-portals';
 import { Services } from '@/shared/lib/blocks/services';
 import { DatoOloSemana } from '@/shared/lib/blocks/dato-olo-semana';
-import { RecursosVisualesBloque } from '@/shared/lib/blocks/recursos-visuales-bloque';
+import { RecursosVisualesBloque, extraerYoutubeId } from '@/shared/lib/blocks/recursos-visuales-bloque';
 import { Publicaciones } from '@/shared/lib/blocks/publicaciones';
 import { PoliticaPrivacidadEncabezado } from '@/shared/lib/blocks/politica-privacidad-encabezado';
 import { VisorDocumentosNormativos, type DocumentoNormativo } from '@/shared/lib/blocks/visor-documentos-normativos';
@@ -69,6 +69,79 @@ const campoImagen = (label: string) => ({
     <ImageUploaderField value={value} onChange={onChange} />
   ),
 });
+
+/**
+ * Campo con entrada para enlace o ID de YouTube y vista previa en vivo de la miniatura.
+ */
+function CampoYoutubePreview({ value = '', onChange }: CustomFieldRender<string>) {
+  const idExtraido = extraerYoutubeId(value);
+  const miniatura = idExtraido && /^[\w-]{11}$/.test(idExtraido)
+    ? `https://img.youtube.com/vi/${idExtraido}/mqdefault.jpg`
+    : '';
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <input
+        type="text"
+        value={value || ''}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Enlace o ID (ej. https://youtube.com/watch?v=...)"
+        style={{
+          width: '100%',
+          padding: '8px 12px',
+          fontSize: '13px',
+          border: '1px solid #d1d5db',
+          borderRadius: '6px',
+          outline: 'none',
+          boxSizing: 'border-box',
+        }}
+      />
+      {miniatura ? (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            padding: '8px',
+            backgroundColor: '#f8fafc',
+            border: '1px solid #e2e8f0',
+            borderRadius: '6px',
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={miniatura}
+            alt="Vista previa miniatura"
+            style={{
+              width: '84px',
+              height: '48px',
+              objectFit: 'cover',
+              borderRadius: '4px',
+              border: '1px solid #cbd5e1',
+              flexShrink: 0,
+            }}
+          />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', overflow: 'hidden' }}>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: '#0f172a' }}>
+              ✓ Vista previa detectada
+            </span>
+            <span style={{ fontSize: '11px', color: '#64748b', fontFamily: 'monospace' }}>
+              ID: {idExtraido}
+            </span>
+          </div>
+        </div>
+      ) : value && value.trim() ? (
+        <span style={{ fontSize: '11px', color: '#ef4444' }}>
+          No se detectó un identificador de YouTube válido (11 caracteres).
+        </span>
+      ) : (
+        <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+          Pega el enlace o identificador de 11 caracteres de YouTube para previsualizar.
+        </span>
+      )}
+    </div>
+  );
+}
 
 const campoFondo = {
   type: 'radio' as const,
@@ -604,14 +677,20 @@ const puckConfigBase: Config = {
       ),
     },
     RecursosVisualesBloque: {
-      label: 'Recursos Visuales',
+      label: 'Lista de videos',
       fields: {
         titulo: { type: 'richtext' as const, label: 'Título', contentEditable: true },
         videos: {
           type: 'array' as const,
           label: 'Videos',
           arrayFields: {
-            youtubeId: { type: 'text' as const, label: 'Identificador de YouTube (los 11 caracteres)' },
+            youtubeId: {
+              type: 'custom' as const,
+              label: 'Enlace o ID de YouTube',
+              render: ({ value, onChange }: CustomFieldRender<string>) => (
+                <CampoYoutubePreview value={value} onChange={onChange} />
+              ),
+            },
             titulo: { type: 'text' as const, label: 'Título', contentEditable: true },
             canal: { type: 'text' as const, label: 'Canal', contentEditable: true },
             miniatura: {
@@ -622,7 +701,13 @@ const puckConfigBase: Config = {
               ),
             },
           },
-          getItemSummary: (item: { titulo?: string }) => item.titulo || 'Video',
+          getItemSummary: (item: { titulo?: string; youtubeId?: string }) => {
+            const titulo = typeof item.titulo === 'string' ? item.titulo.trim() : '';
+            if (titulo) return titulo;
+            const id = extraerYoutubeId(item.youtubeId);
+            if (id) return `Video (${id})`;
+            return 'Video sin configurar';
+          },
         },
       },
       defaultProps: {
@@ -711,7 +796,15 @@ const puckConfigBase: Config = {
             mes: { type: 'text' as const, label: 'Mes', contentEditable: true },
             dia: { type: 'text' as const, label: 'Día', contentEditable: true },
           },
-          getItemSummary: (item: { titulo?: string }) => item.titulo || 'Publicación',
+          getItemSummary: (item: { titulo?: string; pdfUrl?: string }) => {
+            const titulo = typeof item.titulo === 'string' ? item.titulo.trim() : '';
+            if (titulo) return titulo;
+            if (item.pdfUrl) {
+              const nombre = decodeURIComponent(item.pdfUrl.split('/').pop() ?? 'Documento PDF');
+              return `PDF: ${nombre}`;
+            }
+            return 'Publicación sin título';
+          },
         },
         porPagina: { type: 'number' as const, label: 'Tarjetas visibles a la vez', min: 1, max: 6 },
       },
@@ -1817,7 +1910,7 @@ const puckConfigBase: Config = {
         colorBanner: '',
       },
       resolveData: async (data) => {
-        let propsActualizadas = { ...data.props };
+        const propsActualizadas = { ...data.props };
         let huboCambios = false;
 
         if (!propsActualizadas.titulo || !propsActualizadas.titulo.trim()) {
