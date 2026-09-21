@@ -434,7 +434,7 @@ const puckConfigBase: Config = {
               value={value}
               onChange={onChange}
               accept=".pptx,.ppt"
-              etiquetaBoton="Subir presentación"
+              etiquetaBoton="Subir archivo"
             />
           ),
         },
@@ -905,7 +905,7 @@ const puckConfigBase: Config = {
               value={value}
               onChange={onChange}
               accept=".pptx,.ppt"
-              etiquetaBoton="Subir presentación"
+              etiquetaBoton="Subir archivo"
             />
           ),
         },
@@ -941,7 +941,7 @@ const puckConfigBase: Config = {
               value={value}
               onChange={onChange}
               accept=".pptx,.ppt"
-              etiquetaBoton="Subir presentación"
+              etiquetaBoton="Subir archivo"
             />
           ),
         },
@@ -989,7 +989,7 @@ const puckConfigBase: Config = {
                   value={value}
                   onChange={onChange}
                   accept=".pdf"
-                  etiquetaBoton="Subir PDF"
+                  etiquetaBoton="Subir archivo"
                 />
               ),
             },

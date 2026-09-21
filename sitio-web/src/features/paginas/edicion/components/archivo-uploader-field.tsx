@@ -160,7 +160,7 @@ export function ArchivoUploaderField({
             width: '100%',
           }}
         >
-          {subiendo ? 'Subiendo...' : etiquetaBoton}
+          {subiendo ? 'Subiendo archivo...' : etiquetaBoton}
         </button>
         <input
           type="file"

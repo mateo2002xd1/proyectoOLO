@@ -95,7 +95,9 @@ export function SelectorDestinoBotonField({ value, onChange }: SelectorDestinoBo
     }
   };
 
-  const nombreVisible = config.nombreArchivo || (config.urlArchivo ? config.urlArchivo.split('/').pop() : '');
+  const nombreVisible =
+    config.nombreArchivo ||
+    (config.urlArchivo ? decodeURIComponent(config.urlArchivo.split('?')[0].split('/').pop() ?? '') : '');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
@@ -195,7 +197,7 @@ export function SelectorDestinoBotonField({ value, onChange }: SelectorDestinoBo
       {/* Modo: Archivo */}
       {config.tipo === 'archivo' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {/* Mensaje informativo idéntico al de pestañas cuando se configura un archivo */}
+          {/* Información del archivo adjunto */}
           <div
             style={{
               padding: '10px 12px',
@@ -207,76 +209,27 @@ export function SelectorDestinoBotonField({ value, onChange }: SelectorDestinoBo
               lineHeight: 1.4,
             }}
           >
-            <div style={{ fontWeight: 600, color: '#002237', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" y1="15" x2="12" y2="3" />
-              </svg>
-              Botón configurado para descarga de archivo
-            </div>
             <div style={{ color: '#4b5563', fontSize: '12px' }}>
               Archivo adjunto:{' '}
               {config.urlArchivo ? (
                 <span style={{ color: '#0033a0', fontWeight: 600, wordBreak: 'break-all' }}>
-                  {config.nombreArchivo || config.urlArchivo}
+                  {nombreVisible}
                   {config.pesoArchivo ? ` (${config.pesoArchivo})` : ''}
                 </span>
               ) : (
                 <span style={{ color: '#9ca3af' }}>(Sin archivo subido en el panel lateral)</span>
               )}
             </div>
-            <div style={{ margin: '4px 0 0 0', fontSize: '11px', color: '#64748b' }}>
-              Al hacer clic en el botón se descargará directamente este archivo y se mostrará la notificación en pantalla.
-            </div>
           </div>
 
-          {config.urlArchivo ? (
-            <div
+
+          <div>
+            <label
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '8px 10px',
-                background: '#f0fdf4',
-                border: '1px solid #bbf7d0',
-                borderRadius: '6px',
-                fontSize: '12px',
-              }}
-            >
-              <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: '8px' }}>
-                <span style={{ fontWeight: 600, color: '#166534' }}>Archivo vinculado:</span>{' '}
-                <span style={{ color: '#374151' }}>
-                  {nombreVisible}
-                  {config.pesoArchivo ? ` (${config.pesoArchivo})` : ''}
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => onChange({ ...config, urlArchivo: '', nombreArchivo: '', pesoArchivo: undefined })}
-                style={{
-                  padding: '2px 6px',
-                  background: '#fee2e2',
-                  color: '#b91c1c',
-                  border: '1px solid #fca5a5',
-                  borderRadius: '4px',
-                  fontSize: '11px',
-                  cursor: 'pointer',
-                  flexShrink: 0,
-                }}
-              >
-                Quitar
-              </button>
-            </div>
-          ) : null}
-
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <label
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
                 justifyContent: 'center',
-                padding: '6px 12px',
+                padding: '8px 14px',
                 background: '#002237',
                 color: '#ffffff',
                 borderRadius: '6px',
@@ -284,6 +237,8 @@ export function SelectorDestinoBotonField({ value, onChange }: SelectorDestinoBo
                 fontWeight: 600,
                 cursor: subiendo ? 'wait' : 'pointer',
                 opacity: subiendo ? 0.7 : 1,
+                width: '100%',
+                boxSizing: 'border-box',
               }}
             >
               {subiendo ? 'Subiendo archivo...' : 'Subir archivo'}
@@ -294,20 +249,6 @@ export function SelectorDestinoBotonField({ value, onChange }: SelectorDestinoBo
                 style={{ display: 'none' }}
               />
             </label>
-            <input
-              type="text"
-              value={config.urlArchivo || ''}
-              onChange={(e) => onChange({ ...config, urlArchivo: e.target.value })}
-              placeholder="O escribe la ruta /storage/..."
-              style={{
-                flex: 1,
-                padding: '6px 10px',
-                fontSize: '12px',
-                border: '1px solid #d1d5db',
-                borderRadius: '6px',
-                outline: 'none',
-              }}
-            />
           </div>
 
           {errorSubida && (

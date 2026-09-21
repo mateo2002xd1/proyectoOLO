@@ -788,7 +788,7 @@ const puckConfigBase: Config = {
                   value={value}
                   onChange={onChange}
                   accept=".pdf"
-                  etiquetaBoton="Subir PDF"
+                  etiquetaBoton="Subir archivo"
                 />
               ),
             },

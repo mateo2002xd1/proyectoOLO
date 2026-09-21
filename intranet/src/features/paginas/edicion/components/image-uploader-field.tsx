@@ -91,13 +91,6 @@ export function ImageUploaderField({ value, onChange }: ImageUploaderFieldProps)
           </button>
         </div>
       )}
-      <input
-        type="text"
-        value={value || ''}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="URL de la imagen"
-        style={{ padding: '8px', border: '1px solid #ccc', borderRadius: '4px', width: '100%' }}
-      />
       <div style={{ position: 'relative', overflow: 'hidden', display: 'inline-block' }}>
         <button
           type="button"
@@ -113,7 +106,7 @@ export function ImageUploaderField({ value, onChange }: ImageUploaderFieldProps)
             width: '100%',
           }}
         >
-          {isUploading ? 'Subiendo...' : 'Subir Imagen Local'}
+          {isUploading ? 'Subiendo imagen...' : 'Subir imagen'}
         </button>
         <input
           type="file"

@@ -57,22 +57,37 @@ export function ImageUploaderField({ value, onChange }: ImageUploaderFieldProps)
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       {value && (
-        // Vista previa de un archivo recién subido: la URL es dinámica y el
-        // tamaño depende del contenedor, así que next/image no aplica aquí.
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={value}
-          alt="Preview"
-          style={{ width: '100%', maxHeight: '150px', objectFit: 'cover', borderRadius: '4px' }}
-        />
+        <div style={{ position: 'relative' }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={value}
+            alt="Preview"
+            style={{ width: '100%', maxHeight: '150px', objectFit: 'cover', borderRadius: '4px' }}
+          />
+          <button
+            type="button"
+            onClick={() => onChange('')}
+            title="Quitar imagen"
+            style={{
+              position: 'absolute',
+              top: '4px',
+              right: '4px',
+              width: '24px',
+              height: '24px',
+              lineHeight: '24px',
+              textAlign: 'center',
+              padding: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.6)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '50%',
+              cursor: 'pointer',
+            }}
+          >
+            ✕
+          </button>
+        </div>
       )}
-      <input
-        type="text"
-        value={value || ''}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="URL de la imagen"
-        style={{ padding: '8px', border: '1px solid #ccc', borderRadius: '4px', width: '100%' }}
-      />
       <div style={{ position: 'relative', overflow: 'hidden', display: 'inline-block' }}>
         <button
           type="button"
@@ -88,7 +103,7 @@ export function ImageUploaderField({ value, onChange }: ImageUploaderFieldProps)
             width: '100%',
           }}
         >
-          {isUploading ? 'Subiendo...' : 'Subir Imagen Local'}
+          {isUploading ? 'Subiendo imagen...' : 'Subir imagen'}
         </button>
         <input
           type="file"
@@ -101,7 +116,7 @@ export function ImageUploaderField({ value, onChange }: ImageUploaderFieldProps)
             width: '100%',
             height: '100%',
             opacity: 0,
-            cursor: 'pointer'
+            cursor: 'pointer',
           }}
         />
       </div>

@@ -305,55 +305,13 @@ export function DestinoTabField({ value, onChange }: DestinoTabFieldProps) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
 
           {nombreVisible && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', color: '#4b5563', wordBreak: 'break-all' }}>
+            <div style={{ fontSize: '12px', color: '#4b5563', wordBreak: 'break-all' }}>
               <span>
                 Archivo actual: {nombreVisible}
                 {config.pesoArchivo ? ` (${config.pesoArchivo})` : ''}
               </span>
-              <button
-                type="button"
-                onClick={() =>
-                  onChange({
-                    ...config,
-                    urlArchivo: '',
-                    nombreArchivo: '',
-                    pesoArchivo: undefined,
-                  })
-                }
-                style={{
-                  color: '#dc2626',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  textDecoration: 'underline',
-                  padding: 0,
-                }}
-              >
-                Quitar
-              </button>
             </div>
           )}
-
-          <input
-            type="text"
-            value={config.urlArchivo || ''}
-            onChange={(e) =>
-              onChange({
-                ...config,
-                urlArchivo: e.target.value,
-              })
-            }
-            placeholder="Ruta del archivo"
-            style={{
-              padding: '8px',
-              border: '1px solid #ccc',
-              borderRadius: '4px',
-              width: '100%',
-              fontSize: '13px',
-              boxSizing: 'border-box',
-            }}
-          />
 
           <div style={{ position: 'relative', overflow: 'hidden', display: 'inline-block', width: '100%' }}>
             <button
@@ -372,7 +330,7 @@ export function DestinoTabField({ value, onChange }: DestinoTabFieldProps) {
                 fontWeight: 500,
               }}
             >
-              {subiendo ? 'Subiendo...' : 'Subir archivo'}
+              {subiendo ? 'Subiendo archivo...' : 'Subir archivo'}
             </button>
             <input
               type="file"
