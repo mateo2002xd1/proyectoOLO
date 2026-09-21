@@ -88,9 +88,58 @@ export function ArchivoUploaderField({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       {nombreVisible && (
-        <span style={{ fontSize: '12px', color: '#4b5563', wordBreak: 'break-all' }}>
-          Archivo actual: {nombreVisible}
-        </span>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '6px 10px',
+            backgroundColor: '#f8fafc',
+            border: '1px solid #e2e8f0',
+            borderRadius: '6px',
+          }}
+        >
+          <svg
+            style={{ width: '18px', height: '18px', color: '#dc2626', flexShrink: 0 }}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+            />
+          </svg>
+          <span
+            style={{
+              fontSize: '12px',
+              fontWeight: 500,
+              color: '#334155',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+            title={nombreVisible}
+          >
+            {nombreVisible}
+          </span>
+          <a
+            href={value}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              marginLeft: 'auto',
+              fontSize: '11px',
+              color: '#2563eb',
+              textDecoration: 'underline',
+              flexShrink: 0,
+            }}
+          >
+            Ver
+          </a>
+        </div>
       )}
       <div style={{ position: 'relative', overflow: 'hidden', display: 'inline-block' }}>
         <button

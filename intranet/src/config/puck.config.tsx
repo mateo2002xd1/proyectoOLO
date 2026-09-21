@@ -22,7 +22,7 @@ import { ImagenDestacada } from '@/shared/lib/blocks/compartidos/imagen-destacad
 import { TextoRico } from '@/shared/lib/blocks/compartidos/texto-rico';
 import { TextoConImagen } from '@/shared/lib/blocks/compartidos/texto-con-imagen';
 import { DescargasConPresentacion } from '@/shared/lib/blocks/compartidos/descargas-con-presentacion';
-import { RecursosVisualesBloque } from '@/shared/lib/blocks/inicio/recursos-visuales-bloque';
+import { RecursosVisualesBloque, extraerYoutubeId } from '@/shared/lib/blocks/inicio/recursos-visuales-bloque';
 import { Publicaciones } from '@/shared/lib/blocks/inicio/publicaciones';
 import { PreguntasFrecuentes } from '@/shared/lib/blocks/inicio/preguntas-frecuentes';
 import { IconoBloque } from '@/shared/lib/blocks/compartidos/icono-bloque';
@@ -61,6 +61,79 @@ const campoImagen = (label: string) =>
     <ImageUploaderField value={value} onChange={onChange} />
   ),
 });
+
+/**
+ * Campo con entrada para enlace o ID de YouTube y vista previa en vivo de la miniatura.
+ */
+function CampoYoutubePreview({ value = '', onChange }: { value: string; onChange: (v: string) => void }) {
+  const idExtraido = extraerYoutubeId(value);
+  const miniatura = idExtraido && /^[\w-]{11}$/.test(idExtraido)
+    ? `https://img.youtube.com/vi/${idExtraido}/mqdefault.jpg`
+    : '';
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <input
+        type="text"
+        value={value || ''}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Enlace o ID (ej. https://youtube.com/watch?v=...)"
+        style={{
+          width: '100%',
+          padding: '8px 12px',
+          fontSize: '13px',
+          border: '1px solid #d1d5db',
+          borderRadius: '6px',
+          outline: 'none',
+          boxSizing: 'border-box',
+        }}
+      />
+      {miniatura ? (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            padding: '8px',
+            backgroundColor: '#f8fafc',
+            border: '1px solid #e2e8f0',
+            borderRadius: '6px',
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={miniatura}
+            alt="Vista previa miniatura"
+            style={{
+              width: '84px',
+              height: '48px',
+              objectFit: 'cover',
+              borderRadius: '4px',
+              border: '1px solid #cbd5e1',
+              flexShrink: 0,
+            }}
+          />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', overflow: 'hidden' }}>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: '#0f172a' }}>
+              ✓ Vista previa detectada
+            </span>
+            <span style={{ fontSize: '11px', color: '#64748b', fontFamily: 'monospace' }}>
+              ID: {idExtraido}
+            </span>
+          </div>
+        </div>
+      ) : value && value.trim() ? (
+        <span style={{ fontSize: '11px', color: '#ef4444' }}>
+          No se detectó un identificador de YouTube válido (11 caracteres).
+        </span>
+      ) : (
+        <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+          Pega el enlace o identificador de 11 caracteres de YouTube para previsualizar.
+        </span>
+      )}
+    </div>
+  );
+}
 
 const campoFondo = {
   type: 'radio' as const,
@@ -763,20 +836,32 @@ const puckConfigBase: Config = {
           type: 'array',
           label: 'Videos',
           arrayFields: {
-            youtubeId: { type: 'text', label: 'Identificador de YouTube (los 11 caracteres)' },
+            youtubeId: {
+              type: 'custom',
+              label: 'Enlace o ID de YouTube',
+              render: ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
+                <CampoYoutubePreview value={value} onChange={onChange} />
+              ),
+            },
             titulo: { type: 'text', label: 'Título', contentEditable: true },
             canal: { type: 'text', label: 'Canal', contentEditable: true },
             miniatura: campoImagen('Miniatura propia (opcional)'),
           },
-          getItemSummary: (item) => item.titulo || 'Video',
+          getItemSummary: (item: { titulo?: string; youtubeId?: string }) => {
+            const titulo = typeof item.titulo === 'string' ? item.titulo.trim() : '';
+            if (titulo) return titulo;
+            const id = extraerYoutubeId(item.youtubeId);
+            if (id) return `Video (${id})`;
+            return 'Video sin configurar';
+          },
         },
       },
       defaultProps: {
         titulo: '<p><strong>Recursos</strong> visuales</p>',
         videos: [],
       },
-      render: (props: BlockRender<ComponentProps<typeof RecursosVisualesBloque>>) => (
-        <RecursosVisualesBloque {...props} />
+      render: ({ puck, ...props }: BlockRender<ComponentProps<typeof RecursosVisualesBloque> & { puck?: { isEditing?: boolean } }>) => (
+        <RecursosVisualesBloque {...props} esEdicion={Boolean(puck?.isEditing)} />
       ),
     },
     // ─── Datos y documentos ───
@@ -913,7 +998,15 @@ const puckConfigBase: Config = {
             mes: { type: 'text', label: 'Mes', contentEditable: true },
             dia: { type: 'text', label: 'Día', contentEditable: true },
           },
-          getItemSummary: (item) => item.titulo || 'Publicación',
+          getItemSummary: (item: { titulo?: string; pdfUrl?: string }) => {
+            const titulo = typeof item.titulo === 'string' ? item.titulo.trim() : '';
+            if (titulo) return titulo;
+            if (item.pdfUrl) {
+              const nombre = item.pdfUrl.split('/').pop() || 'Archivo PDF';
+              return `PDF: ${decodeURIComponent(nombre)}`;
+            }
+            return 'Publicación sin configurar';
+          },
         },
         porPagina: { type: 'number', label: 'Tarjetas visibles a la vez', min: 1, max: 6 },
       },
@@ -925,8 +1018,8 @@ const puckConfigBase: Config = {
         publicaciones: [],
         porPagina: 4,
       },
-      render: (props: BlockRender<ComponentProps<typeof Publicaciones>>) => (
-        <Publicaciones {...props} />
+      render: ({ puck, ...props }: BlockRender<ComponentProps<typeof Publicaciones> & { puck?: { isEditing?: boolean } }>) => (
+        <Publicaciones {...props} esEdicion={Boolean(puck?.isEditing)} />
       ),
     },
     // ─── Bloques de una sola sección ───

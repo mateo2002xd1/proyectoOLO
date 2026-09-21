@@ -40,3 +40,4 @@ export const AUTH_COOKIES = [
 /** Motivo con el que `/login` explica por qué se cortó la sesión. */
 export const PARAM_MOTIVO = 'motivo';
 export const MOTIVO_SESION_EXPIRADA = 'sesion-expirada';
+export const MOTIVO_SIN_PERMISOS = 'sin-permisos';

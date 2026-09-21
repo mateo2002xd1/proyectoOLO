@@ -298,7 +298,9 @@ export function Publicaciones({
   const enEdicion =
     esEdicion ??
     (typeof window !== 'undefined' &&
-      (window.location.pathname.includes('/admin/editor') ||
+      (window.location.pathname.includes('/editor') ||
+        window.location.pathname.includes('/plantilla') ||
+        window.location.pathname.includes('/admin/editor') ||
         window.location.pathname.includes('/admin/plantilla')));
 
   const configuradas = Array.isArray(publicaciones) ? publicaciones : [];
@@ -384,7 +386,7 @@ export function Publicaciones({
           </div>
         )}
 
-        <div className="olo-publicaciones-body">
+        <div className="olo-publicaciones-body" data-puck-overlay-portal={enEdicion ? 'true' : undefined}>
           {total > porPagina && (
             <button
               type="button"
@@ -393,6 +395,7 @@ export function Publicaciones({
                 evento.stopPropagation();
                 setInicio((previo) => (previo - porPagina + total * porPagina) % total);
               }}
+              style={enEdicion ? { pointerEvents: 'auto' } : undefined}
               className="publicaciones-nav-btn publicaciones-nav-prev"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -482,6 +485,7 @@ export function Publicaciones({
                         evento.stopPropagation();
                         setInicio(paginaIdx * porPagina);
                       }}
+                      style={enEdicion ? { pointerEvents: 'auto' } : undefined}
                       className={`h-2.5 rounded-full transition-all duration-300 ${
                         activa ? 'w-8 bg-[#39A900]' : 'w-2.5 bg-gray-300 hover:bg-gray-400'
                       }`}
@@ -500,6 +504,7 @@ export function Publicaciones({
                 evento.stopPropagation();
                 setInicio((previo) => (previo + porPagina) % total);
               }}
+              style={enEdicion ? { pointerEvents: 'auto' } : undefined}
               className="publicaciones-nav-btn publicaciones-nav-next"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">

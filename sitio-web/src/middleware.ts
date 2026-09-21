@@ -5,6 +5,7 @@ import {
   AUTH_COOKIES,
   PARAM_MOTIVO,
   MOTIVO_SESION_EXPIRADA,
+  MOTIVO_SIN_PERMISOS,
 } from '@/shared/lib/auth-cookies';
 import { verificarSesion } from '@/shared/lib/verificar-sesion';
 
@@ -64,6 +65,7 @@ export async function middleware(request: NextRequest) {
   const loginRedirect = () => {
     const url = new URL('/login', request.url);
     url.searchParams.set('redirect', pathname);
+    url.searchParams.set(PARAM_MOTIVO, MOTIVO_SIN_PERMISOS);
     return NextResponse.redirect(url);
   };
 
