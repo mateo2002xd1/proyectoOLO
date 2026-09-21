@@ -92,6 +92,20 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        // Los pasos del acceso dejaron de colgar de `/login` el 2026-09-18: viven en
+        // `app/(auth)/`, al lado del login, igual que en el sitio-web. Esto cubre
+        // marcadores y pestañas abiertas con la URL vieja. La lista es explícita a
+        // propósito: un comodín mandaría cualquier `/login/<algo>` a la raíz, donde
+        // podría caer en una sección.
+        source: "/login/:paso(first-login|recovery|security-questions|reset-password|reset-success)",
+        destination: "/:paso",
+        permanent: false,
+      },
+    ];
+  },
   async rewrites() {
     return [
       {

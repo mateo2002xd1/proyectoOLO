@@ -23,7 +23,13 @@ export type AccionAuditable =
   | 'guardar_borrador'
   // Se distingue de 'actualizar' a propósito: la Ley 1581 obliga a poder responder
   // «quién cambió contraseñas y cuándo» sin separarlo a mano del resto de ediciones.
-  | 'cambiar_password';
+  | 'cambiar_password'
+  // Seguridad y administración (migración 030): antes de esto ninguna de las tres
+  // dejaba rastro — el login no se auditaba, y una cuenta caducada o inactivada a
+  // mano se confundía con cualquier otro `actualizar`.
+  | 'autenticar'
+  | 'expirar'
+  | 'inactivar';
 
 export class ContentAuditLog extends Model {
   declare id: string;

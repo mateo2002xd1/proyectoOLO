@@ -131,6 +131,19 @@ export function useProgramasSobresalientes() {
     setFiltros((actual) => ({ ...actual, programa }));
   }, []);
 
+  const limpiarFiltros = useCallback(() => {
+    setFiltros(FILTROS_INICIALES);
+  }, []);
+
+  const hayFiltrosActivos = useMemo(
+    () =>
+      filtros.codigoDane !== 'todos' ||
+      filtros.nivelFormacion !== 'todos' ||
+      filtros.sexo !== 'todos' ||
+      filtros.programa !== 'todos',
+    [filtros],
+  );
+
   return {
     filtros,
     cargando,
@@ -148,5 +161,7 @@ export function useProgramasSobresalientes() {
     seleccionarNivelFormacion,
     seleccionarSexo,
     seleccionarPrograma,
+    limpiarFiltros,
+    hayFiltrosActivos,
   };
 }

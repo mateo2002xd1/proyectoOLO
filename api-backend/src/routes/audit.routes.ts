@@ -49,12 +49,45 @@ router.use(requireAuth, requierePermisoAuditoria('puedeVer'), requirePermission(
  *         description: Filtra por quién hizo el cambio.
  *       - name: accion
  *         in: query
+ *         description: |
+ *           Uno o varios verbos separados por coma (`actualizar,guardar_borrador`), porque
+ *           una etiqueta de la pantalla puede agrupar varios. Los que no existan se descartan.
+ *           `autenticar`, `expirar` e `inactivar` son de seguridad; ver la migración 030.
  *         schema:
  *           type: string
- *           enum: [crear, actualizar, eliminar, publicar, aprobar, rechazar, cambiar_password]
- *       - name: entidad
+ *           example: actualizar,guardar_borrador,enviar_revision
+ *           description: |
+ *             Verbos válidos: crear, actualizar, eliminar, publicar, despublicar, aprobar,
+ *             rechazar, enviar_revision, guardar_borrador, cambiar_password, autenticar,
+ *             expirar, inactivar.
+ *       - name: categoria
  *         in: query
- *         schema: { type: string, example: usuarios }
+ *         description: |
+ *           La categoría de la pantalla de Auditoría. Se combina con `accion` con «y»: sirve
+ *           para separar lo que comparte verbo, como editar una página (`editorial`) y
+ *           modificar una cuenta (`seguridad`), que son `actualizar` las dos.
+ *
+ *           - `editorial`: crear una página y editar una sección o página, desde el editor
+ *             (`crear`, `actualizar`, `guardar_borrador`, `enviar_revision` sobre `pagina` y
+ *             `contenido`).
+ *           - `administracion`: `rechazar`, `aprobar`, `publicar` y `despublicar`.
+ *           - `seguridad`: `autenticar`, `expirar`, `inactivar`, `cambiar_password` y
+ *             `eliminar` (de cualquier entidad), más `crear` y `actualizar` sobre `usuario`,
+ *             `rol` y `configuracion`.
+ *
+ *           Cada fila de la respuesta trae su `categoria`. Un valor desconocido se descarta.
+ *         schema:
+ *           type: string
+ *           enum: [editorial, administracion, seguridad]
+ *       - name: entidadTipo
+ *         in: query
+ *         description: Una o varias entidades separadas por coma.
+ *         schema:
+ *           type: string
+ *           example: pagina,contenido
+ *           description: |
+ *             Entidades válidas: contenido, pagina, seccion, usuario, rol, marca,
+ *             configuracion, archivo.
  *       - name: desde
  *         in: query
  *         schema: { type: string, format: date }

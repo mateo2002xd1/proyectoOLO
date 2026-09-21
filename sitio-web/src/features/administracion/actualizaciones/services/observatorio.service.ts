@@ -3,7 +3,7 @@ import type { CargaDatos } from '../types';
 
 /**
  * Cliente autenticado propio de esta feature — mismo patrón que
- * `features/paginas/services/paginas.service.ts`: `axios` + `withCredentials`,
+ * `features/paginas/model/api-con-sesion.ts`: `axios` + `withCredentials`,
  * directo al backend (no por un route handler de Next), igual que
  * `aprobarPagina`/`rechazarPagina`.
  */

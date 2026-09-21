@@ -10,6 +10,14 @@ import {
 import { esDominioInstitucional, normalizarEmail } from '../../shared/email-policy';
 import { RolePermissionRepository } from '../../repositories/role-permissions.repository';
 import { CLAVES_DEL_CATALOGO } from '../../shared/catalogo-permisos';
+import { logAudit } from '../auditoria/audit.usecase';
+
+/** El "desde dónde" de un login, para la bitácora. Opcional: los scripts y pruebas
+ *  que llaman a este caso de uso sin pasar por HTTP no tienen ninguno de los dos. */
+interface ContextoDeLogin {
+  ip?: string | null;
+  userAgent?: string | null;
+}
 
 /**
  * Anota un intento fallido y bloquea al llegar al tope (§3: 5 intentos, 15 minutos).
@@ -58,7 +66,7 @@ const esLaCuentaMaestra = (emailNormalizado: string, password: string): boolean 
   igualEnTiempoConstante(config.localAuth.email, emailNormalizado) &&
   igualEnTiempoConstante(config.localAuth.password, password);
 
-export const loginUseCase = async (email: string, password: string) => {
+export const loginUseCase = async (email: string, password: string, contexto?: ContextoDeLogin) => {
   const normalizedEmail = normalizarEmail(email ?? '');
 
   /**
@@ -72,6 +80,10 @@ export const loginUseCase = async (email: string, password: string) => {
     throw Object.assign(new Error('Credenciales inválidas'), { status: 401 });
   }
 
+  // La cuenta maestra de `.env` no deja fila en la bitácora: `entidad_id` es una
+  // FK obligatoria contra `usuarios` y ella no tiene fila — es una vía de rescate,
+  // no una cuenta real. El resto de sus acciones sí quedan (ver `idReferenciable`
+  // en `auditoria-request.ts`); solo el propio login queda sin auditar.
   if (config.localAuth.habilitado && esLaCuentaMaestra(normalizedEmail, password)) {
     const payload = {
       id: 'local-auth',
@@ -98,6 +110,19 @@ export const loginUseCase = async (email: string, password: string) => {
 
   if (user.expiration_date && new Date(user.expiration_date) < new Date()) {
     await UserRepository.update(user.id, { status: 'inactive' });
+    // El actor es «nadie»: nadie decidió esto, se cumplió una fecha. Por eso
+    // `usuarioId` va en null y el nombre lo dice en vez de repetir el de quien
+    // intentaba entrar — sería mentir sobre quién hizo el cambio.
+    await logAudit({
+      entidadId: user.id,
+      entidadTipo: 'usuario',
+      accion: 'expirar',
+      usuarioId: null,
+      usuarioNombre: 'Sistema (fecha de caducidad cumplida)',
+      ip: contexto?.ip ?? null,
+      userAgent: contexto?.userAgent ?? null,
+      camposModificados: [{ campo: 'status', antes: 'active', despues: 'inactive' }],
+    });
     throw Object.assign(new Error('Cuenta expirada'), { status: 403 });
   }
 
@@ -130,6 +155,21 @@ export const loginUseCase = async (email: string, password: string) => {
   };
 
   const token = jwt.sign(payload as any, config.jwtSecret, { expiresIn: config.jwtExpiresIn as any });
+
+  // Va después de firmar el token y no antes: si `logAudit` fallara, quien acaba de
+  // dar la contraseña correcta no debe quedarse sin poder entrar por eso. `logAudit`
+  // sin `tx` ya se traga sus propios errores (ver `audit.usecase.ts`), así que esto
+  // no puede tumbar el login de todos modos — el orden es además, por si acaso.
+  await logAudit({
+    entidadId: user.id,
+    entidadTipo: 'usuario',
+    accion: 'autenticar',
+    usuarioId: user.id,
+    usuarioNombre: payload.apellidos ? `${payload.name} ${payload.apellidos}` : payload.name,
+    ip: contexto?.ip ?? null,
+    userAgent: contexto?.userAgent ?? null,
+  });
+
   return { token, user: payload };
 };
 

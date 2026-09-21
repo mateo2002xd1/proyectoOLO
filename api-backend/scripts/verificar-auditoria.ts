@@ -28,6 +28,7 @@ import { auditoriaPolicies } from '../src/policies/auditoria.policies';
 import { camposDe, VALOR_OMITIDO } from '../src/shared/auditoria-campos';
 import { datosDeAuditoria } from '../src/shared/auditoria-request';
 import { aRegistroAuditoria, filtrosDesdeQuery } from '../src/shared/auditoria-dto';
+import { categoriaDe, CATEGORIAS } from '../src/shared/auditoria-categorias';
 
 let fallos = 0;
 
@@ -140,6 +141,42 @@ const verificarDto = () => {
   comprobar('traduce user_agent → userAgent', dto.userAgent, 'jest-menos');
   comprobar('campos_modificados nulo sale como lista vacía', dto.camposModificados, []);
   comprobar('la fecha sale en ISO', dto.fecha, '2026-08-04T10:00:00.000Z');
+  comprobar('publicar una página es de administración', dto.categoria, 'administracion');
+
+  comprobar('acepta una categoría válida', filtrosDesdeQuery({ categoria: 'seguridad' }).categoria, 'seguridad');
+  comprobar('descarta una categoría inventada', filtrosDesdeQuery({ categoria: 'ovni' }).categoria, undefined);
+};
+
+/**
+ * La regla que reparte las filas en las tres categorías de la pantalla. Es pura, así
+ * que vale sin base. Lo importante es lo que comparte verbo: `crear` y `actualizar`
+ * sirven igual para una página que para una cuenta, y ahí decide la entidad.
+ */
+const verificarCategoriasPuras = () => {
+  console.log('\n=== Categorías: a cuál pertenece cada fila ===');
+
+  comprobar('crear una página → editorial', categoriaDe('crear', 'pagina'), 'editorial');
+  comprobar('crear un contenido → editorial', categoriaDe('crear', 'contenido'), 'editorial');
+  comprobar('crear un usuario NO es editorial → seguridad', categoriaDe('crear', 'usuario'), 'seguridad');
+  comprobar('editar una página → editorial', categoriaDe('actualizar', 'pagina'), 'editorial');
+  comprobar('guardar borrador → editorial', categoriaDe('guardar_borrador', 'pagina'), 'editorial');
+  comprobar('enviar a revisión → editorial', categoriaDe('enviar_revision', 'pagina'), 'editorial');
+  comprobar('modificar un usuario → seguridad', categoriaDe('actualizar', 'usuario'), 'seguridad');
+  comprobar('modificar un rol → seguridad', categoriaDe('actualizar', 'rol'), 'seguridad');
+
+  comprobar('rechazar → administración', categoriaDe('rechazar', 'pagina'), 'administracion');
+  comprobar('aprobar → administración', categoriaDe('aprobar', 'pagina'), 'administracion');
+  comprobar('publicar un contenido → administración', categoriaDe('publicar', 'contenido'), 'administracion');
+  comprobar('despublicar (archivar) → administración', categoriaDe('despublicar', 'pagina'), 'administracion');
+
+  for (const accion of ['autenticar', 'expirar', 'inactivar', 'cambiar_password'] as const) {
+    comprobar(`${accion} → seguridad`, categoriaDe(accion, 'usuario'), 'seguridad');
+  }
+  comprobar('eliminar un usuario → seguridad', categoriaDe('eliminar', 'usuario'), 'seguridad');
+  comprobar('eliminar una página → seguridad (una sola «Eliminación»)', categoriaDe('eliminar', 'pagina'), 'seguridad');
+  comprobar('eliminar de la configuración → seguridad', categoriaDe('eliminar', 'configuracion'), 'seguridad');
+
+  comprobar('una fila que no encaja no tiene categoría', categoriaDe('actualizar', 'seccion'), null);
 };
 
 /** Escribe una fila real, la lee y la borra. Es la prueba que faltaba. */
@@ -297,11 +334,47 @@ const verificarLectura = async () => {
   comprobar('la limpieza no deja rastro', (await AuditRepository.findAll(base)).total, 0);
 };
 
+/**
+ * El filtro `categoria` (SQL) y la etiqueta de cada fila (`categoriaDe`, en JS) salen de
+ * la misma tabla de reglas, pero se aplican por dos caminos distintos. Esta prueba los
+ * pone a discrepar contra la bitácora real: para cada categoría, las filas que devuelve
+ * el filtro deben ser exactamente las que `categoriaDe` le asigna. Solo lee.
+ */
+const verificarCategorias = async () => {
+  console.log('\n=== El filtro por categoría coincide con la regla de cada fila ===');
+
+  const [pares] = (await sequelize.query(
+    `SELECT entidad_tipo, accion, COUNT(*)::int AS n FROM auditoria_cambios GROUP BY 1, 2`
+  )) as [{ entidad_tipo: any; accion: any; n: number }[], unknown];
+
+  const esperado = (categoria: string | null) =>
+    pares.filter((p) => categoriaDe(p.accion, p.entidad_tipo) === categoria).reduce((suma, p) => suma + p.n, 0);
+
+  for (const categoria of CATEGORIAS) {
+    const { total } = await AuditRepository.findAll({ categoria, porPagina: 1 });
+    comprobar(`«${categoria}» trae las filas que la regla le asigna`, total, esperado(categoria));
+  }
+
+  // Sin categoría en el filtro no se pierde nada: las tres más las que no encajan son todo.
+  const suma = CATEGORIAS.reduce((s, c) => s + esperado(c), 0) + esperado(null);
+  comprobar('las categorías más las sin categoría son toda la bitácora', suma, (await AuditRepository.findAll({ porPagina: 1 })).total);
+
+  // Categoría y acción se suman con «y»: `actualizar` solo, de las dos categorías, no es
+  // «Modificación» ni «Edición»; con la categoría sí lo es.
+  const soloEdiciones = pares.filter((p) => p.accion === 'actualizar' && categoriaDe(p.accion, p.entidad_tipo) === 'editorial');
+  comprobar(
+    'categoría + acción: «actualizar» dentro de editorial',
+    (await AuditRepository.findAll({ categoria: 'editorial', accion: 'actualizar', porPagina: 1 })).total,
+    soloEdiciones.reduce((s, p) => s + p.n, 0)
+  );
+};
+
 const main = async () => {
   verificarPermisos();
   verificarRedaccion();
   verificarUsuarioDeLaPeticion();
   verificarDto();
+  verificarCategoriasPuras();
 
   try {
     await sequelize.authenticate();
@@ -317,6 +390,7 @@ const main = async () => {
   await verificarEscritura();
   await verificarClaveForanea();
   await verificarLectura();
+  await verificarCategorias();
   await sequelize.close();
 
   console.log(fallos === 0 ? '\nTODO OK\n' : `\n${fallos} FALLOS\n`);

@@ -4,7 +4,7 @@ import { firstLoginUseCase, estadoPrimerIngreso } from '../use-cases/auth/first-
 import { UserRepository } from '../repositories/usuarios.repository';
 import { updateUser } from '../use-cases/usuarios/listar-usuarios.usecase';
 import { logCambioDePassword } from '../use-cases/auditoria/audit.usecase';
-import { datosDeAuditoria } from '../shared/auditoria-request';
+import { datosDeAuditoria, origenDeLaPeticion } from '../shared/auditoria-request';
 import { compararPassword, exigirPasswordValida } from '../shared/password-policy';
 import { RolePermissionRepository } from '../repositories/role-permissions.repository';
 import { CLAVES_DEL_CATALOGO } from '../shared/catalogo-permisos';
@@ -57,7 +57,10 @@ export const AuthController = {
   async login(req: Request, res: Response, next: NextFunction) {
     try {
       const { email, password } = req.body;
-      const { token, user } = await loginUseCase(email, password);
+      // Registra «Autenticación» (o «Expiró», si la cuenta acaba de caducar) — ver
+      // `login.usecase.ts`. sitio-web e intranet llegan aquí igual: el ámbito no
+      // distingue el login, así que un solo punto cubre las dos.
+      const { token, user } = await loginUseCase(email, password, origenDeLaPeticion(req));
 
       res.cookie('token', token, {
         httpOnly: true,

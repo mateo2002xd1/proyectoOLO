@@ -87,13 +87,13 @@ export async function POST(request: NextRequest) {
   // httpOnly — el token nunca es accesible por JS del cliente (regla §0.11)
   response.cookies.set(AUTH_COOKIE_NAME, token, { ...base, httpOnly: true });
 
-  // No httpOnly — el middleware y edit-button los leen sin red
+  // No httpOnly — el middleware y el botón flotante de edición (paginas-fab-speed-dial) los leen sin red
   response.cookies.set(AUTH_ROLE_COOKIE_NAME, user.role || '', { ...base, httpOnly: false });
   response.cookies.set(AUTH_USER_NAME_COOKIE_NAME, nombreCompleto, { ...base, httpOnly: false });
   response.cookies.set(AUTH_USER_EMAIL_COOKIE_NAME, user.email || '', { ...base, httpOnly: false });
 
   // Setear o LIMPIAR según el estado actual — si no se limpian cuando son false,
-  // quedan pegadas y el middleware rebota todo a /auth/cambiar-contrasena.
+  // quedan pegadas y el middleware rebota todo a /first-login.
   if (mustChangePassword) {
     response.cookies.set(AUTH_MUST_CHANGE_PW_COOKIE_NAME, 'true', { ...base, httpOnly: false });
   } else {

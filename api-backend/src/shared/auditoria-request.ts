@@ -30,11 +30,19 @@ const idReferenciable = (usuario: Request['user']) => {
   return typeof usuario.id === 'string' && UUID.test(usuario.id) ? usuario.id : null;
 };
 
-export const datosDeAuditoria = (req: Request) => ({
-  usuarioId: idReferenciable(req.user),
-  // El nombre se guarda junto al id a propósito (única desnormalización del
-  // esquema): si el usuario se borra, la fila debe seguir siendo legible.
-  usuarioNombre: req.user?.name ? (req.user.apellidos ? `${req.user.name} ${req.user.apellidos}` : req.user.name) : (req.user?.email ?? null),
+/** El "desde dónde": lo único de la bitácora que no depende de quién es el actor. */
+export const origenDeLaPeticion = (req: Request) => ({
   ip: req.ip ?? req.socket?.remoteAddress ?? null,
   userAgent: (req.headers['user-agent'] as string) ?? null,
+});
+
+/** El nombre se guarda junto al id a propósito (única desnormalización del esquema):
+ *  si el usuario se borra, la fila debe seguir siendo legible. */
+const nombreDe = (usuario: Request['user']) =>
+  usuario?.name ? (usuario.apellidos ? `${usuario.name} ${usuario.apellidos}` : usuario.name) : (usuario?.email ?? null);
+
+export const datosDeAuditoria = (req: Request) => ({
+  usuarioId: idReferenciable(req.user),
+  usuarioNombre: nombreDe(req.user),
+  ...origenDeLaPeticion(req),
 });

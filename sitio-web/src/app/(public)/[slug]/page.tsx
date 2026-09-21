@@ -1,8 +1,8 @@
 import { notFound } from 'next/navigation';
 import type { Data } from '@puckeditor/core';
 import Link from 'next/link';
-import { ClientPuckRender, obtenerPagina, enlaceAlEditor } from '@/features/paginas';
-import { puedeEditarPaginas } from '@/shared/lib/session';
+import { ClientPuckRender, obtenerPagina, enlaceAlEditor, SLUG_PLANTILLA } from '@/features/paginas';
+import { puedeEditarPaginas, puedeEditarSeccion } from '@/shared/lib/session';
 
 export default async function PublicPage({
   params,
@@ -10,6 +10,15 @@ export default async function PublicPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+
+  // `menu-y-pie` es una fila real de `paginas`, pero guarda la cabecera y el pie que el
+  // layout pinta alrededor de todo el sitio, no una página. Sin esto este comodín la
+  // encontraría en la base y la serviría en `/menu-y-pie`, con una cabecera y un pie
+  // duplicados dentro del `<main>`. Va antes de consultar la API: no hay nada que
+  // buscar. Para verla antes de publicar está `/preview/menu-y-pie`. Es el mismo
+  // corte que hace el comodín de la intranet.
+  if (slug === SLUG_PLANTILLA) notFound();
+
   const [pagina, puedeEditar] = await Promise.all([
     obtenerPagina(slug),
     puedeEditarPaginas(),
@@ -20,8 +29,13 @@ export default async function PublicPage({
   // normal es una sección recién creada que todavía está vacía —y mandarla a un 404
   // duro justo después de crearla es la peor manera de contarlo. Es el mismo trato
   // que ya da el comodín de la intranet.
+  //
+  // Pero solo si la sección existe y es de quien mira: con el rol a secas, una URL
+  // inventada le enseñaba a cualquier editor «Editar sección», y editar ahí crea la
+  // página al guardar. La segunda comprobación va después de la barata (el rol de la
+  // cookie) para que un visitante no le cueste al sitio una petición más.
   if (!pagina || !pagina.contenido) {
-    if (!puedeEditar) notFound();
+    if (!puedeEditar || !(await puedeEditarSeccion(slug))) notFound();
 
     return (
       <div style={{ padding: '4rem 2rem', textAlign: 'center' }}>

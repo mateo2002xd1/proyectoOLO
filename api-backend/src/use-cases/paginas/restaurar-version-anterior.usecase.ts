@@ -145,6 +145,14 @@ export async function restaurarVersionAnterior(
     userAgent: contextoAuditoria?.userAgent ?? null,
   };
 
+  // El mismo par que registra el ciclo editorial (`campoComentario` en
+  // `pagina.controller.ts`): lo que estaba publicado → lo que se vuelve a publicar.
+  const comentario = {
+    campo: 'comentario',
+    antes: versionPublicada?.comentarioCambios ?? null,
+    despues: versionArchivada.comentarioCambios ?? null,
+  };
+
   if (versionPublicada) {
     await logAudit({
       ...datosAudit,
@@ -152,6 +160,7 @@ export async function restaurarVersionAnterior(
       entidadTipo: 'pagina',
       accion: 'despublicar',
       camposModificados: [
+        comentario,
         { campo: 'slug', antes: pagina.slug, despues: pagina.slug },
         { campo: 'version', antes: versionPublicada.numeroVersion, despues: versionPublicada.numeroVersion },
         { campo: 'estado', antes: 'publicado', despues: 'archivado' },
@@ -166,6 +175,7 @@ export async function restaurarVersionAnterior(
     entidadTipo: 'pagina',
     accion: 'publicar',
     camposModificados: [
+      comentario,
       { campo: 'slug', antes: pagina.slug, despues: pagina.slug },
       { campo: 'version', antes: versionPublicada ? versionPublicada.numeroVersion : null, despues: versionArchivada.numeroVersion },
       { campo: 'motivo', antes: null, despues: `Restaurada versión anterior ${versionArchivada.numeroVersion}` },

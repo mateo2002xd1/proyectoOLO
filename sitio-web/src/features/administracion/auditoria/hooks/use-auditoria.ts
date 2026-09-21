@@ -13,6 +13,7 @@ import {
   type RegistroAuditoria,
   type RespuestaAuditoria,
 } from '../types';
+import { aplicarCambioDeFiltro } from '../lib/filtros';
 
 const POR_PAGINA_INICIAL = 15;
 
@@ -76,7 +77,8 @@ export function useAuditoria() {
   }, []);
 
   const cambiarFiltro = useCallback((campo: keyof FiltrosAuditoria, valor: string) => {
-    setFiltros((previos) => ({ ...previos, [campo]: valor }));
+    // «Categoría» y «Acción» dependen una de otra: ver `aplicarCambioDeFiltro`.
+    setFiltros((previos) => aplicarCambioDeFiltro(previos, campo, valor));
     // Filtrar desde la página 7 dejaría una lista vacía que parece "no hay nada".
     setPagina(1);
   }, []);

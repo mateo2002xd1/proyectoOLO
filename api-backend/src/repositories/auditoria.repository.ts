@@ -1,6 +1,7 @@
 import { Op, Transaction } from 'sequelize';
 import { ContentAuditLog } from '../infrastructure/db/models';
 import type { AccionAuditable, EntidadAuditable } from '../infrastructure/db/models/content-audit-log';
+import { REGLAS_POR_CATEGORIA, type CategoriaAuditoria } from '../shared/auditoria-categorias';
 
 /** Un campo que cambió, con su valor anterior y el nuevo (RF-07). */
 export interface CampoModificado {
@@ -40,9 +41,22 @@ export interface DatosAuditoria {
 export interface FiltrosAuditoria {
   pagina?: number;
   porPagina?: number;
-  entidadTipo?: EntidadAuditable;
+  /** Una o varias entidades. */
+  entidadTipo?: EntidadAuditable | EntidadAuditable[];
   usuarioId?: string;
-  accion?: AccionAuditable;
+  /**
+   * Una o varias acciones. Varias porque una etiqueta de la pantalla puede agrupar
+   * verbos distintos de la base: «Edición» son `guardar_borrador`, `enviar_revision` y
+   * `actualizar`.
+   */
+  accion?: AccionAuditable | AccionAuditable[];
+  /**
+   * Las filas de una categoría de la pantalla (ver `REGLAS_POR_CATEGORIA`). Se combina
+   * con `accion` y `entidadTipo` con «y»: `categoria: 'seguridad'` con
+   * `accion: 'actualizar'` son las modificaciones de cuentas y roles, no las ediciones
+   * de páginas, que también usan el verbo `actualizar`.
+   */
+  categoria?: CategoriaAuditoria;
   /** Inclusivo. */
   desde?: Date;
   /** Inclusivo: quien filtra por un día espera que ese día entre. */
@@ -85,12 +99,20 @@ export const AuditRepository = {
   },
 
   findAll: async (filtros: FiltrosAuditoria = {}) => {
-    const { entidadTipo, usuarioId, accion, desde, hasta } = filtros;
+    const { entidadTipo, usuarioId, accion, categoria, desde, hasta } = filtros;
 
     const where: Record<string, unknown> = {};
-    if (entidadTipo) where.entidad_tipo = entidadTipo;
+    // Un valor suelto sigue siendo `= valor` (usa el índice tal cual); solo la lista
+    // se convierte en `IN`. Una lista vacía no filtra: sería `IN ()`, que no devuelve
+    // nada, y quien pidió «sin filtro» no debe ver la bitácora vacía.
+    const enLista = <T>(valor: T | T[] | undefined) =>
+      Array.isArray(valor) ? (valor.length > 0 ? { [Op.in]: valor } : undefined) : valor;
+
+    const entidadFiltro = enLista(entidadTipo);
+    if (entidadFiltro) where.entidad_tipo = entidadFiltro;
     if (usuarioId) where.usuario_id = usuarioId;
-    if (accion) where.accion = accion;
+    const accionFiltro = enLista(accion);
+    if (accionFiltro) where.accion = accionFiltro;
 
     // `createdAt` es el nombre del atributo; el modelo va con `underscored: true`,
     // así que Sequelize lo traduce a la columna `created_at` (la que indexa
@@ -102,11 +124,27 @@ export const AuditRepository = {
       };
     }
 
+    // Cada regla de la categoría es un «acción en (...) y entidad en (...)»; la fila entra
+    // si cumple alguna (`OR`), y todo eso se suma con «y» a los demás filtros.
+    const conCategoria = categoria
+      ? {
+          [Op.and]: [
+            where,
+            {
+              [Op.or]: REGLAS_POR_CATEGORIA[categoria].map((regla) => ({
+                accion: { [Op.in]: regla.acciones },
+                ...(regla.entidades ? { entidad_tipo: { [Op.in]: regla.entidades } } : {}),
+              })),
+            },
+          ],
+        }
+      : where;
+
     const porPagina = Math.min(Math.max(filtros.porPagina || POR_PAGINA_POR_DEFECTO, 1), MAX_POR_PAGINA);
     const pagina = Math.max(filtros.pagina || 1, 1);
 
     const { rows, count } = await ContentAuditLog.findAndCountAll({
-      where,
+      where: conCategoria,
       order: [['created_at', 'DESC']],
       limit: porPagina,
       offset: (pagina - 1) * porPagina,

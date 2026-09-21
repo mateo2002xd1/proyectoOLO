@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from 'react';
 import { SunIcon, MoonIcon } from '@heroicons/react/20/solid';
+import { CLAVE_TEMA } from '@/shared/lib/tema';
 
 function subscribeToTheme(onChange: () => void) {
   const observer = new MutationObserver(onChange);
@@ -23,7 +24,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
   const toggleTheme = () => {
     const isDarkNow = !document.documentElement.classList.contains('dark');
     document.documentElement.classList.toggle('dark', isDarkNow);
-    localStorage.setItem('olo-theme', isDarkNow ? 'dark' : 'light');
+    localStorage.setItem(CLAVE_TEMA, isDarkNow ? 'dark' : 'light');
   };
 
   return (

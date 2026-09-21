@@ -116,24 +116,6 @@ export function FiltrosTendencia({
               </button>
             </div>
           </div>
-
-          {modoSeleccionDepartamento === 'mapa' && filtros.departamento !== 'Nacional' && (
-            <div className="flex items-center gap-1.5 text-xs text-[#344054]">
-              <span className="text-[#667085]">Elegido en mapa:</span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-[#e8f5e9] px-2.5 py-0.5 font-semibold text-[#2e7d32]">
-                {filtros.departamento}
-                <button
-                  type="button"
-                  onClick={() => onSeleccionarDepartamento('Nacional')}
-                  className="ml-1 hover:text-red-600 focus:outline-none"
-                  title="Quitar filtro de departamento"
-                  aria-label="Quitar filtro de departamento"
-                >
-                  ×
-                </button>
-              </span>
-            </div>
-          )}
         </div>
       )}
 

@@ -57,7 +57,13 @@ export const ContenidoController = {
   async update(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await actualizarContenido(req.params.id as string, req.body);
-      const accion = req.body?.estado === 'archivado' ? 'despublicar' : 'actualizar';
+      // Publicar un contenido también tenía que distinguirse: caía en `actualizar` y
+      // la bitácora lo mostraba como una edición más, no como el momento en que algo
+      // pasó a estar a la vista del público.
+      const accion =
+        req.body?.estado === 'archivado' ? 'despublicar'
+          : req.body?.estado === 'publicado' ? 'publicar'
+            : 'actualizar';
       await logAudit({
         ...datosDeAuditoria(req),
         entidadId: req.params.id as string,

@@ -126,11 +126,11 @@ function LoginForm() {
 
       setTimeout(() => {
         if (data.mustSetupSecurityQuestions && data.mustChangePassword) {
-          router.push('/login/first-login');
+          router.push('/first-login');
         } else if (data.mustSetupSecurityQuestions) {
-          router.push('/login/security-questions');
+          router.push('/security-questions');
         } else if (data.mustChangePassword) {
-          router.push('/login/reset-password');
+          router.push('/reset-password');
         } else {
           window.location.href = rutaDeVuelta;
         }
@@ -251,11 +251,11 @@ function LoginForm() {
                   pulsara al propio login del que venía. */}
               <p className="mb-6 text-xs leading-relaxed text-gray-500">
                 Al ingresar a este sitio aceptas la{' '}
-                <a href={`${SITE_URL}/politica-de-privacidad`} className="font-semibold text-gray-700 hover:underline">
+                <a href={`${SITE_URL}/inicio/politica-de-privacidad`} className="font-semibold text-gray-700 hover:underline">
                   política de privacidad
                 </a>{' '}
                 y{' '}
-                <a href={`${SITE_URL}/politica-de-privacidad`} className="font-semibold text-gray-700 hover:underline">
+                <a href={`${SITE_URL}/inicio/politica-de-privacidad`} className="font-semibold text-gray-700 hover:underline">
                   protección de datos
                 </a>
                 .
@@ -271,7 +271,7 @@ function LoginForm() {
 
               <div className="mt-4 text-center">
                 <Link
-                  href="/login/recovery"
+                  href="/recovery"
                   className="rounded text-xs text-gray-500 transition-colors hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d1526]"
                 >
                   ¿Olvidaste tu contraseña?

@@ -22,10 +22,13 @@ import {
  * Configuración obligatoria de primer ingreso: contraseña definitiva y preguntas
  * de seguridad.
  *
- * Se pinta en dos sitios y en los dos va dentro de `AuthSplitShell`: dentro de la
- * pantalla de acceso —cuando el login responde que la cuenta lo debe— y en
- * `/admin/cambiar-contrasena`. Por eso el marco no se monta aquí: lo pone quien
- * llama, y este componente aporta solo la tarjeta.
+ * Vive en `/first-login`. Llegan aquí el login, cuando responde que la cuenta lo
+ * debe, y el middleware, que manda a esta ruta a cualquier sesión con algo pendiente.
+ * Hasta el 2026-09-18 el login la pintaba dentro de su propia pantalla; ahora es una
+ * ruta, como en la intranet.
+ *
+ * El marco (`AuthSplitShell`) lo pone `app/(auth)/layout.tsx`: este componente
+ * aporta solo la tarjeta.
  */
 
 const TOTAL_QUESTIONS = 3;
@@ -178,7 +181,7 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
                 } catch {
                   // ignorar error de red
                 }
-                window.location.href = '/admin/login';
+                window.location.href = '/login';
               }}
               className={authQuietLinkClass}
             >
@@ -235,7 +238,7 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
             } catch {
               // Si falla la petición de logout, igualmente forzar la navegación al login
             }
-            window.location.href = '/admin/login';
+            window.location.href = '/login';
           }}
           className={authNavyActionClass}
         >

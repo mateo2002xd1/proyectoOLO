@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { COLOR_ACCION, etiquetaDeAccion, etiquetaDeEntidad, etiquetaDeCampo, type RegistroAuditoria } from '../types';
+import { comentariosDe, explicacionDeComentarios, type ComentariosDelRegistro } from '../lib/cambios';
 
 /** Un valor del JSONB puede ser texto, número, booleano u objeto. */
 const comoTexto = (valor: unknown) => {
@@ -23,6 +24,71 @@ const ETIQUETA_ESTADO: Record<string, string> = {
 };
 
 const traducirEstado = (v: string) => ETIQUETA_ESTADO[v] ?? v;
+
+/** Un comentario, o el aviso de que esa versión no tenía. */
+function TextoComentario({ texto, destacado }: { texto: string | null; destacado?: boolean }) {
+  if (!texto) return <p className="text-sm italic text-zinc-500">Sin comentario</p>;
+  return (
+    <p
+      className={`text-sm break-words ${
+        destacado ? 'font-semibold text-zinc-900 dark:text-[#f6f6f6]' : 'text-zinc-700 dark:text-zinc-300'
+      }`}
+    >
+      «{texto}»
+    </p>
+  );
+}
+
+/**
+ * Los campos modificados de un registro del ciclo editorial.
+ *
+ * Sustituye a la lista de `slug`, `version` y `estado`, que no decía qué había
+ * cambiado: aquí se lee el comentario de lo que estaba publicado frente al de la
+ * versión sobre la que se actuó. El motivo se conserva porque en un rechazo o un
+ * descarte es la otra mitad de la historia.
+ */
+function ComentariosDelCambio({
+  comentarios,
+  explicacion,
+  esRechazo,
+}: {
+  comentarios: ComentariosDelRegistro;
+  explicacion: string | null;
+  esRechazo: boolean;
+}) {
+  return (
+    <>
+      {explicacion && <p className="mt-1 text-xs text-zinc-500">{explicacion}</p>}
+      <ul className="mt-2 divide-y divide-zinc-200 rounded-lg border border-zinc-200 dark:divide-zinc-700 dark:border-zinc-700">
+        <li className="grid grid-cols-1 gap-3 p-3 sm:grid-cols-2">
+          <div>
+            <p className="text-xs font-medium text-zinc-500">Comentario anterior</p>
+            <div className="mt-1">
+              <TextoComentario texto={comentarios.anterior} />
+            </div>
+          </div>
+          <div>
+            <p className="text-xs font-medium text-zinc-500">Comentario después</p>
+            <div className="mt-1">
+              <TextoComentario texto={comentarios.despues} destacado />
+            </div>
+          </div>
+        </li>
+        {comentarios.motivo && (
+          <li className="p-3">
+            <p className="text-xs font-medium text-zinc-500">{esRechazo ? 'Motivo del rechazo' : 'Motivo'}</p>
+            <p className="mt-1 text-sm break-words text-zinc-900 dark:text-[#f6f6f6]">{comentarios.motivo}</p>
+          </li>
+        )}
+      </ul>
+      {comentarios.anteriorALaRegla && (
+        <p className="mt-2 text-xs text-zinc-500">
+          Este registro es anterior a que el comentario de cambios fuera obligatorio.
+        </p>
+      )}
+    </>
+  );
+}
 
 function Dato({ etiqueta, children }: { etiqueta: string; children: React.ReactNode }) {
   return (
@@ -153,6 +219,8 @@ export function DetalleRegistro({
   }, [registro]);
 
   const camposNormalizados = registro ? normalizarCamposModificados(registro.camposModificados) : [];
+  // Del ciclo editorial: en vez de slug, versión y estado, el comentario de cambios.
+  const comentarios = registro ? comentariosDe(registro) : null;
 
   return (
     <dialog
@@ -193,7 +261,7 @@ export function DetalleRegistro({
                     COLOR_ACCION[registro.accion] ?? ''
                   }`}
                 >
-                  {etiquetaDeAccion(registro.accion)}
+                  {etiquetaDeAccion(registro.accion, registro.categoria)}
                 </span>
               </Dato>
               <Dato etiqueta="Entidad">{etiquetaDeEntidad(registro.entidadTipo)}</Dato>
@@ -207,7 +275,13 @@ export function DetalleRegistro({
             </dl>
 
             <h3 className="mt-6 text-sm font-semibold">Campos modificados</h3>
-            {camposNormalizados.length === 0 ? (
+            {comentarios ? (
+              <ComentariosDelCambio
+                comentarios={comentarios}
+                explicacion={explicacionDeComentarios(registro)}
+                esRechazo={registro.accion === 'rechazar'}
+              />
+            ) : camposNormalizados.length === 0 ? (
               <p className="mt-2 text-sm text-zinc-500">Esta acción no registró campos concretos.</p>
             ) : (
               <ul className="mt-2 divide-y divide-zinc-200 rounded-lg border border-zinc-200 dark:divide-zinc-700 dark:border-zinc-700">

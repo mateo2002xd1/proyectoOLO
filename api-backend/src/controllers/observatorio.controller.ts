@@ -4,6 +4,7 @@ import { listarCargasObservatorio, obtenerCargaObservatorio } from '../use-cases
 import { eliminarCargaObservatorio, ErrorAlEliminarCarga } from '../use-cases/observatorio/eliminar-carga.usecase';
 import { consultarObservatorioActual } from '../use-cases/observatorio/consultar-actual.usecase';
 import { consultarTendenciaOcupacionalActual } from '../use-cases/observatorio/consultar-tendencia-actual.usecase';
+import { consultarFuentesFuturasActual } from '../use-cases/observatorio/consultar-fuentes-futuras-actual.usecase';
 
 export const ObservatorioController = {
   /** Sube el Excel y arranca la carga de inmediato — sin paso de aprobación. */
@@ -85,6 +86,17 @@ export const ObservatorioController = {
     } catch (error) {
       console.error('[observatorio] Error al consultar la tendencia ocupacional:', error);
       res.status(500).json({ error: 'Error al consultar los datos de tendencia ocupacional.' });
+    }
+  },
+
+  /** Datos de fuentes futuras de empleo leídos desde fuentes-futuras-de-empleo.xlsx — público, sin sesión. */
+  async obtenerFuentesFuturasEmpleo(_req: Request, res: Response) {
+    try {
+      const datos = await consultarFuentesFuturasActual();
+      res.json(datos);
+    } catch (error) {
+      console.error('[observatorio] Error al consultar fuentes futuras de empleo:', error);
+      res.status(500).json({ error: 'Error al consultar los datos de fuentes futuras de empleo.' });
     }
   },
 };

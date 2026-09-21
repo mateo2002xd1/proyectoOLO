@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { authApi } from '../api/auth.api';
+import { authApi } from '../services/auth.service';
 import { useRouter } from 'next/navigation';
 
 export interface User {

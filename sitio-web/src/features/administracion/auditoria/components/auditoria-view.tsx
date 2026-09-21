@@ -8,13 +8,15 @@ import { DetalleRegistro } from './detalle-registro';
 import { ModalDepurarAuditoria } from './modal-depurar-auditoria';
 import { Eye, Trash2 } from 'lucide-react';
 import { useAuditoria } from '../hooks/use-auditoria';
+import { comentarioPrincipal, resumenDeCambios } from '../lib/cambios';
 
 import {
   COLOR_ACCION,
-  ETIQUETA_ACCION,
-  ETIQUETA_ENTIDAD,
+  ETIQUETA_CATEGORIA,
   etiquetaDeAccion,
   etiquetaDeEntidad,
+  opcionesDeAccion,
+  type CategoriaAuditoria,
   type RegistroAuditoria,
 } from '../types';
 
@@ -22,14 +24,6 @@ import {
 // una sola banda de controles.
 const CLASE_BOTON =
   'h-11 rounded-[16px] border border-[#d0d5dd] px-4 text-sm font-medium text-zinc-700 transition hover:border-[#002237]/40 hover:bg-[#002237]/5 hover:text-[#002237] disabled:opacity-60 dark:border-[#2d3649] dark:text-zinc-200 dark:hover:bg-white/5 dark:hover:text-[#f6f6f6]';
-
-/** Una línea por campo; se corta en la tabla y se lee completo en el detalle. */
-const resumen = (registro: RegistroAuditoria) =>
-  registro.camposModificados
-    .map(({ campo, despues }) =>
-      `${campo}: ${despues === null || despues === undefined ? '—' : typeof despues === 'string' ? despues : JSON.stringify(despues)}`,
-    )
-    .join(' · ');
 
 /**
  * Etiqueta encima del control.
@@ -130,6 +124,24 @@ export function AuditoriaView() {
           />
         </Campo>
 
+        {/* Primero la categoría y después la acción: la segunda depende de la primera
+            (Rechazo es de Administración, Expiró de Seguridad), y ese es el orden en
+            que se piensa — de qué mundo hablo, y qué pasó en él. */}
+        <Campo etiqueta="Categoría">
+          <CustomSelect
+            ariaLabel="Categoría"
+            value={filtros.categoria}
+            onChange={(valor) => cambiarFiltro('categoria', valor)}
+            options={[
+              { value: '', label: 'Todas' },
+              ...(Object.keys(ETIQUETA_CATEGORIA) as CategoriaAuditoria[]).map((value) => ({
+                value,
+                label: ETIQUETA_CATEGORIA[value],
+              })),
+            ]}
+          />
+        </Campo>
+
         <Campo etiqueta="Acción">
           <CustomSelect
             ariaLabel="Acción"
@@ -137,21 +149,7 @@ export function AuditoriaView() {
             onChange={(valor) => cambiarFiltro('accion', valor)}
             options={[
               { value: '', label: 'Todas' },
-              ...Array.from(
-                new Map(Object.entries(ETIQUETA_ACCION).map(([value, label]) => [label, { value, label }])).values()
-              ),
-            ]}
-          />
-        </Campo>
-
-        <Campo etiqueta="Entidad">
-          <CustomSelect
-            ariaLabel="Entidad"
-            value={filtros.entidadTipo}
-            onChange={(valor) => cambiarFiltro('entidadTipo', valor)}
-            options={[
-              { value: '', label: 'Todas' },
-              ...Object.entries(ETIQUETA_ENTIDAD).map(([value, label]) => ({ value, label })),
+              ...opcionesDeAccion(filtros.categoria).map(({ value, label }) => ({ value, label })),
             ]}
           />
         </Campo>
@@ -203,14 +201,24 @@ export function AuditoriaView() {
                       <span
                         className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${COLOR_ACCION[registro.accion] ?? ''}`}
                       >
-                        {etiquetaDeAccion(registro.accion)}
+                        {etiquetaDeAccion(registro.accion, registro.categoria)}
                       </span>
                     </td>
                     <td className="px-4 py-1.5 text-zinc-600 dark:text-zinc-300">
                       {etiquetaDeEntidad(registro.entidadTipo)}
                     </td>
-                    <td className="max-w-xs truncate px-4 py-1.5 text-zinc-500" title={resumen(registro)}>
-                      {resumen(registro) || '—'}
+                    {/* Se corta en la tabla y se lee completo en el `title` o en el detalle.
+                        El comentario de un envío va más oscuro que los campos internos:
+                        es lo que se escribió para ser leído. */}
+                    <td
+                      className={`max-w-xs truncate px-4 py-1.5 ${
+                        comentarioPrincipal(registro)
+                          ? 'text-zinc-800 dark:text-zinc-200'
+                          : 'text-zinc-500'
+                      }`}
+                      title={resumenDeCambios(registro)}
+                    >
+                      {resumenDeCambios(registro) || '—'}
                     </td>
                     <td className="px-4 py-1.5 text-right">
                       <button

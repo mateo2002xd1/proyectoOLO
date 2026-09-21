@@ -3,6 +3,33 @@ import type { NextRequest } from "next/server";
 import { verificarSesion } from "@/shared/lib/verificar-sesion";
 
 /**
+ * Pantallas de acceso: `app/(auth)/`. Son hermanas de `/login` y no cuelgan de él
+ * (`/recovery`, no `/login/recovery`), así que ya no basta con mirar el prefijo
+ * `/login`: sin esta lista, quien va a recuperar su contraseña —que no tiene
+ * sesión— rebotaría al login.
+ */
+const RUTAS_DE_ACCESO = [
+  '/login',
+  '/first-login',
+  '/recovery',
+  '/security-questions',
+  '/reset-password',
+  '/reset-success',
+];
+
+/**
+ * Las que se pueden visitar con una sesión que aún debe cambiar la contraseña o
+ * configurar las preguntas. `/login` y `/recovery` no: con sesión no tienen nada
+ * que hacer y se manda a la pantalla pendiente.
+ */
+const RUTAS_DE_CONFIGURACION_PENDIENTE = [
+  '/first-login',
+  '/reset-password',
+  '/reset-success',
+  '/security-questions',
+];
+
+/**
  * Middleware global de la intranet.
  * Intercepta TODAS las rutas — la intranet no tiene zona pública.
  *
@@ -23,17 +50,19 @@ export async function middleware(request: NextRequest) {
 
   const getRestrictedRedirect = () => {
     if (mustSetupSecurityQuestions && mustChangePassword) {
-      return NextResponse.redirect(new URL('/login/first-login', request.url));
+      return NextResponse.redirect(new URL('/first-login', request.url));
     } else if (mustSetupSecurityQuestions) {
-      return NextResponse.redirect(new URL('/login/security-questions', request.url));
+      return NextResponse.redirect(new URL('/security-questions', request.url));
     } else if (mustChangePassword) {
-      return NextResponse.redirect(new URL('/login/reset-password', request.url));
+      return NextResponse.redirect(new URL('/reset-password', request.url));
     }
     return NextResponse.redirect(new URL('/inicio', request.url)); // Fallback
   };
 
+  const esRutaDeAcceso = RUTAS_DE_ACCESO.includes(pathname);
+
   // Rutas públicas / de login
-  if (pathname.startsWith('/login') || pathname.startsWith('/api-backend')) {
+  if (esRutaDeAcceso || pathname.startsWith('/api-backend')) {
     // Si el usuario pide salir explícitamente a /login?logout=1
     if (pathname === '/login' && request.nextUrl.searchParams.has('logout')) {
       const response = NextResponse.redirect(new URL('/login', request.url));
@@ -41,10 +70,10 @@ export async function middleware(request: NextRequest) {
       return response;
     }
 
-    // Si el usuario ya está logueado y trata de acceder a /login, redirigir
-    if (isTokenValid && pathname.startsWith('/login')) {
+    // Si el usuario ya está logueado y trata de acceder a una pantalla de acceso, redirigir
+    if (isTokenValid && esRutaDeAcceso) {
       // Bloquear si tiene sesión pero no permisos para intranet (p. ej. si llega directo
-      // a /login/first-login saltándose la vista de login, o redirigido desde el inicio)
+      // a /first-login saltándose la vista de login, o redirigido desde el inicio)
       if (!sesion?.permisos.includes('acceso.intranet')) {
         const response = NextResponse.redirect(new URL('/login?error=acceso_denegado', request.url));
         if (token) {
@@ -54,13 +83,7 @@ export async function middleware(request: NextRequest) {
       }
 
       if (isRestricted) {
-        const isAllowedRestrictedRoute =
-          pathname === '/login/first-login' ||
-          pathname === '/login/reset-password' ||
-          pathname === '/login/reset-success' ||
-          pathname === '/login/security-questions';
-
-        if (isAllowedRestrictedRoute) {
+        if (RUTAS_DE_CONFIGURACION_PENDIENTE.includes(pathname)) {
           return NextResponse.next();
         } else {
           return getRestrictedRedirect();
@@ -71,7 +94,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // Si hay un token inválido, lo limpiamos
-    if (token && !isTokenValid && pathname.startsWith('/login')) {
+    if (token && !isTokenValid && esRutaDeAcceso) {
       const response = NextResponse.next();
       response.cookies.delete('token');
       return response;

@@ -90,14 +90,14 @@ A continuación se detalla la ficha técnica y matriz de atributos para cada una
 | 3 | `entidad_tipo` | `TEXT` | — | SÍ | Ninguna | — | `'post'::text` | Nombre de la entidad auditada ('contenido', 'pagina', 'seccion', 'usuario', etc.). Restringido por CHECK. |
 | 4 | `usuario_id` | `UUID` | — | SÍ | **FK** | `usuarios.id` (ON DELETE SET NULL) | — | Clave foránea hacia el usuario que ejecutó la operación (NULL si es cuenta maestra local o usuario eliminado). |
 | 5 | `usuario_nombre` | `TEXT` | — | SÍ | Ninguna | — | — | Nombre desnormalizado del usuario para preservar trazabilidad histórica (D6). Almacena el nombre del usuario (`name` o email de fallback), tanto en peticiones web como en procesos de respaldo (`despublicar` y `publicar`). |
-| 6 | `accion` | `TEXT` | — | NO (NOT NULL) | Ninguna | — | — | Operación ejecutada ('crear', 'actualizar', 'eliminar', 'publicar', 'despublicar', 'aprobar', 'rechazar', 'enviar_revision', 'cambiar_password', 'guardar_borrador'). Restringido por CHECK. |
+| 6 | `accion` | `TEXT` | — | NO (NOT NULL) | Ninguna | — | — | Operación ejecutada ('crear', 'actualizar', 'eliminar', 'publicar', 'despublicar', 'aprobar', 'rechazar', 'enviar_revision', 'cambiar_password', 'guardar_borrador', 'autenticar', 'expirar', 'inactivar'). Restringido por CHECK. Los tres últimos (migración 030) son de seguridad y administración: inicio de sesión, cuenta caducada por su fecha y cuenta inactivada a mano. |
 | 7 | `campos_modificados` | `JSONB` | — | SÍ | Ninguna | — | `'[]'::jsonb` | Detalle JSONB con los deltas de campos alterados: [{campo, antes, despues}]. |
 | 8 | `created_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | — | Marca temporal exacta del evento auditado. |
 | 9 | `ip` | `INET` | — | SÍ | Ninguna | — | — | Dirección de red INET (IPv4/IPv6) desde la que se originó la petición web, proceso editorial o restauración de respaldos. |
 | 10 | `user_agent` | `TEXT` | — | SÍ | Ninguna | — | — | Encabezado User-Agent del navegador o cliente HTTP que originó la operación (incluye peticiones web y restauración de respaldos). |
 
 **Restricciones de Integridad (CHECK) de `auditoria_cambios`:**
-- **`ck_auditoria_accion`**: `(accion = ANY (ARRAY['crear'::text, 'actualizar'::text, 'eliminar'::text, 'publicar'::text, 'despublicar'::text, 'aprobar'::text, 'rechazar'::text, 'enviar_revision'::text, 'cambiar_password'::text, 'guardar_borrador'::text]))`
+- **`ck_auditoria_accion`**: `(accion = ANY (ARRAY['crear'::text, 'actualizar'::text, 'eliminar'::text, 'publicar'::text, 'despublicar'::text, 'aprobar'::text, 'rechazar'::text, 'enviar_revision'::text, 'cambiar_password'::text, 'guardar_borrador'::text, 'autenticar'::text, 'expirar'::text, 'inactivar'::text]))`
 - **`ck_auditoria_entidad`**: `(entidad_tipo = ANY (ARRAY['contenido'::text, 'pagina'::text, 'seccion'::text, 'usuario'::text, 'rol'::text, 'marca'::text, 'configuracion'::text, 'archivo'::text]))`
 
 ---
@@ -229,9 +229,11 @@ A continuación se detalla la ficha técnica y matriz de atributos para cada una
 | 11 | `creado_en` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | — | Fecha y hora de creación de la versión. |
 | 12 | `creado_por` | `UUID` | — | SÍ | **FK** | `usuarios.id` (ON DELETE SET NULL) | — | Usuario autor que redactó o modificó esta versión. |
 | 13 | `revisado_en` | `TIMESTAMPTZ` | — | SÍ | Ninguna | — | — | Fecha y hora de la evaluación editorial. |
+| 14 | `comentario_cambios` | `VARCHAR(100)` | 100 | SÍ | Ninguna | `CHECK ck_paginas_versiones_comentario` | — | «Commit» de la versión: qué cambió, escrito por el editor al enviarla a revisión (10 a 100 caracteres, en una línea). Obligatorio para estar en `en_revision`; la bitácora lo registra al enviar, aprobar, rechazar, descartar y restaurar. Nulo en borradores nunca enviados y en versiones anteriores a la migración 029. |
 
 **Restricciones de Integridad (CHECK) de `paginas_versiones`:**
 - **`ck_paginas_versiones_estado`**: `((estado)::text = ANY ((ARRAY['borrador'::character varying, 'en_revision'::character varying, 'publicado'::character varying, 'rechazado'::character varying, 'archivado'::character varying])::text[]))`
+- **`ck_paginas_versiones_comentario`**: `((estado)::text <> 'en_revision'::text OR btrim(COALESCE(comentario_cambios, ''::character varying)::text) <> ''::text)`
 
 ---
 

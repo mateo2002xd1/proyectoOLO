@@ -1,5 +1,7 @@
 import type { AccionAuditable, EntidadAuditable } from '../infrastructure/db/models/content-audit-log';
 import type { CampoModificado, FiltrosAuditoria } from '../repositories/auditoria.repository';
+import { categoriaDe, CATEGORIAS, type CategoriaAuditoria } from './auditoria-categorias';
+import { emailEnLaFila, resumenDeRegistro } from './auditoria-resumen';
 
 /**
  * Lo que la API entrega de una entrada de bitácora.
@@ -17,7 +19,21 @@ export interface RegistroAuditoria {
   usuarioId: string | null;
   usuarioNombre: string | null;
   accion: AccionAuditable;
+  /**
+   * La categoría de la pantalla a la que pertenece la fila, o `null` si no encaja en
+   * ninguna. Va calculada aquí para que la pantalla no repita la regla: la misma que
+   * usa el filtro `categoria` decide qué etiqueta lleva cada fila.
+   */
+  categoria: CategoriaAuditoria | null;
   camposModificados: CampoModificado[];
+  /**
+   * Lo que pasó, en una frase, o `null` si esta versión no sabe contar ese cambio.
+   *
+   * La pantalla lo enseña tal cual en la columna «Cambios». Con `null` sigue usando su
+   * camino de siempre, así que ninguna fila se queda sin explicación mientras las fases
+   * avanzan. La regla vive en `auditoria-resumen.ts`.
+   */
+  resumen: string | null;
   ip: string | null;
   userAgent: string | null;
   fecha: string;
@@ -38,8 +54,25 @@ type FilaAuditoria = {
   created_at?: Date | string;
 };
 
-export const aRegistroAuditoria = (fila: FilaAuditoria): RegistroAuditoria => {
+/**
+ * Lo que la fila no sabe de sí misma.
+ *
+ * `entidad_id` guarda el id del usuario sobre el que se actuó, no su correo; para que
+ * la frase diga «se inactivó el usuario fallip@sena.edu.co» hay que resolverlo, y eso
+ * es una consulta. El controlador la hace **una vez por página** y deja aquí el
+ * resultado, en vez de una consulta por fila.
+ */
+export interface ContextoDeLectura {
+  /** Correo por id de usuario, para las filas de `entidad_tipo: usuario`. */
+  emailPorUsuario?: Map<string, string>;
+}
+
+export const aRegistroAuditoria = (
+  fila: FilaAuditoria,
+  contexto: ContextoDeLectura = {}
+): RegistroAuditoria => {
   const fecha = fila.createdAt ?? fila.created_at;
+  const camposModificados = fila.campos_modificados ?? [];
 
   return {
     id: fila.id,
@@ -48,7 +81,15 @@ export const aRegistroAuditoria = (fila: FilaAuditoria): RegistroAuditoria => {
     usuarioId: fila.usuario_id ?? null,
     usuarioNombre: fila.usuario_nombre ?? null,
     accion: fila.accion,
-    camposModificados: fila.campos_modificados ?? [],
+    categoria: categoriaDe(fila.accion, fila.entidad_tipo),
+    camposModificados,
+    resumen: resumenDeRegistro({
+      accion: fila.accion,
+      entidadTipo: fila.entidad_tipo,
+      camposModificados,
+      emailAfectado:
+        contexto.emailPorUsuario?.get(fila.entidad_id) ?? emailEnLaFila(camposModificados),
+    }),
     ip: fila.ip ?? null,
     userAgent: fila.user_agent ?? null,
     fecha: fecha instanceof Date ? fecha.toISOString() : String(fecha ?? ''),
@@ -60,7 +101,8 @@ const ENTIDADES: EntidadAuditable[] = [
 ];
 
 const ACCIONES: AccionAuditable[] = [
-  'crear', 'actualizar', 'eliminar', 'publicar', 'despublicar', 'aprobar', 'rechazar', 'enviar_revision', 'guardar_borrador'
+  'crear', 'actualizar', 'eliminar', 'publicar', 'despublicar', 'aprobar', 'rechazar', 'enviar_revision', 'guardar_borrador',
+  'cambiar_password', 'autenticar', 'expirar', 'inactivar',
 ];
 
 const comoTexto = (valor: unknown) => (typeof valor === 'string' && valor.trim() ? valor.trim() : undefined);
@@ -87,10 +129,31 @@ const comoFecha = (valor: unknown, finDelDia = false) => {
   return Number.isNaN(fecha.getTime()) ? undefined : fecha;
 };
 
-const dentroDe = <T extends string>(valores: T[], valor: unknown): T | undefined => {
+/**
+ * Uno o varios valores separados por coma (`?accion=crear,eliminar`), cada uno
+ * comprobado contra la lista de los que existen.
+ *
+ * Varios porque una etiqueta de la pantalla puede agrupar verbos de la base — ver
+ * `FiltrosAuditoria`. Con uno solo devuelve el valor suelto, no una lista de uno:
+ * así la consulta sigue siendo `= valor` y no `IN (valor)` para el caso de siempre.
+ *
+ * Lo que no esté en la lista se descarta sin más, igual que antes con un valor suelto.
+ * Si no queda ninguno válido, se comporta como si no se hubiera pedido el filtro.
+ */
+const dentroDe = <T extends string>(valores: T[], valor: unknown): T | T[] | undefined => {
   const texto = comoTexto(valor);
-  return texto && (valores as string[]).includes(texto) ? (texto as T) : undefined;
+  if (!texto) return undefined;
+
+  const validos = texto
+    .split(',')
+    .map((item) => item.trim())
+    .filter((item): item is T => (valores as string[]).includes(item));
+
+  if (validos.length === 0) return undefined;
+  return validos.length === 1 ? validos[0] : validos;
 };
+
+const comoCategoria = (valor: unknown) => CATEGORIAS.find((categoria) => categoria === comoTexto(valor));
 
 /**
  * Traduce el querystring a filtros del repositorio.
@@ -105,6 +168,7 @@ export const filtrosDesdeQuery = (query: Record<string, unknown>): FiltrosAudito
   entidadTipo: dentroDe(ENTIDADES, query.entidadTipo ?? query.contentType),
   usuarioId: comoTexto(query.usuarioId ?? query.userId),
   accion: dentroDe(ACCIONES, query.accion ?? query.actionType),
+  categoria: comoCategoria(query.categoria),
   desde: comoFecha(query.desde),
   hasta: comoFecha(query.hasta, true),
 });

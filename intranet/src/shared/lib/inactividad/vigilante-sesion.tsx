@@ -8,7 +8,7 @@ import {
   MOTIVO_INACTIVIDAD_SIN_GUARDAR,
   type Vigilante,
 } from '@olo/inactividad';
-import { authApi } from '@/features/login/api/auth.api';
+import { authApi } from '@/features/login/services/auth.service';
 
 interface VigilanteSesionProps {
   /**

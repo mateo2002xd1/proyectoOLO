@@ -104,7 +104,7 @@ export const DESTINOS_PANEL: DestinoPanel[] = [
     id: 'plantilla',
     titulo: 'Menú y pie de página',
     descripcion: 'Configurar la cabecera y el pie que comparten todas las páginas del sitio.',
-    href: '/admin/editor/menu-y-pie',
+    href: '/editor/menu-y-pie',
     grupo: 'Contenido',
     sinonimos: ['plantilla', 'cabecera', 'header', 'footer', 'navegacion', 'menu', 'enlaces'],
   },

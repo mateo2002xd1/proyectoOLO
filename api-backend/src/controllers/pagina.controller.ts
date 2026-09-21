@@ -54,6 +54,10 @@ const ambitoExigidoDe = (req: Request) => exigirAmbito(req.header(AMBITO_HEADER)
  * El número de versión viaja en `camposModificados` porque es lo que de verdad
  * cambió en ese paso del ciclo editorial, y así la pantalla puede decir "creó la
  * versión 4" sin consultar otra tabla.
+ *
+ * Desde que enviar a revisión exige el «commit», cada paso que decide sobre una
+ * versión (enviar, aprobar, rechazar, descartar) registra además el campo
+ * `comentario`, siempre con el mismo sentido — ver `campoComentario`.
  */
 const registrar = async (
   req: Request,
@@ -73,6 +77,27 @@ const registrar = async (
     camposModificados: campos,
   }, tx);
 };
+
+/**
+ * El comentario de cambios como campo de la bitácora.
+ *
+ * - `antes`: el comentario de la versión que estaba **publicada** cuando ocurrió la
+ *   acción. Es lo que veía el público y contra lo que se compara la propuesta.
+ * - `despues`: el comentario de la versión **sobre la que se actuó** — la que se
+ *   envía, se aprueba, se rechaza o se descarta (y la que se restaura, en
+ *   `restaurar-version-anterior.usecase.ts`, que registra el mismo par).
+ *
+ * Un sentido fijo para las cuatro acciones es lo que deja a la pantalla de auditoría
+ * rotularlos siempre igual («Comentario anterior» / «Comentario después») sin tener
+ * que saber de qué acción viene cada fila. `null` en cualquiera de los dos lados
+ * significa «esa versión no tenía comentario»: una página que nunca se publicó, o
+ * una versión anterior a la migración 029.
+ */
+const campoComentario = (antes: string | null | undefined, despues: string | null | undefined) => ({
+  campo: 'comentario',
+  antes: antes ?? null,
+  despues: despues ?? null,
+});
 
 export const PaginaController = {
   async obtenerPublica(req: Request, res: Response, next: NextFunction) {
@@ -283,9 +308,17 @@ export const PaginaController = {
   async enviarARevision(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await sequelize.transaction(async (tx) => {
-        const r = await enviarARevision(req.params.slug as string, req.user?.id || '', ambitoExigidoDe(req), tx);
-        // enviar_revision: lo que cambia es el estado de la versión (borrador → en_revision)
+        const r = await enviarARevision(
+          req.params.slug as string,
+          req.user?.id || '',
+          ambitoExigidoDe(req),
+          req.body.comentario,
+          tx
+        );
+        // enviar_revision: lo que cambia es el estado de la versión (borrador → en_revision),
+        // y el comentario es lo que explica a quien lo lea qué trae esa versión.
         await registrar(req, 'enviar_revision', r, [
+          campoComentario(r.comentarioAnterior, r.version?.comentarioCambios),
           { campo: 'slug', antes: r.paginaAnterior?.slug ?? null, despues: r.pagina?.slug ?? req.params.slug },
           { campo: 'version', antes: r.versionAnterior?.numeroVersion ?? null, despues: r.version?.numeroVersion ?? null },
           { campo: 'estado', antes: r.versionAnterior?.estado ?? 'borrador', despues: 'en_revision' },
@@ -319,6 +352,9 @@ export const PaginaController = {
         ambitoExigidoDe(req)
       );
 
+      // El comentario de lo que estaba publicado, que es lo que esta aprobación sustituye.
+      const comentarioAnterior = result.versionArchivada?.comentarioCambios ?? null;
+
       // Si existía una versión publicada que pasa a archivada, registrar en auditoría
       if (result.versionArchivada) {
         await registrar(
@@ -326,6 +362,9 @@ export const PaginaController = {
           'despublicar',
           { pagina: result.pagina, version: result.versionArchivada },
           [
+            // Mismo par que el de `aprobar`: la archivada es el «antes» y la que la
+            // sustituye, el «después». Así las dos filas cuentan la misma transición.
+            campoComentario(comentarioAnterior, result.version?.comentarioCambios),
             { campo: 'slug', antes: result.pagina?.slug ?? null, despues: result.pagina?.slug ?? null },
             { campo: 'version', antes: result.versionArchivada?.numeroVersion ?? null, despues: result.versionArchivada?.numeroVersion ?? null },
             { campo: 'estado', antes: 'publicado', despues: 'archivado' },
@@ -334,8 +373,11 @@ export const PaginaController = {
         );
       }
 
-      // Aprobar es publicar: la versión pasa a `publicado` y queda visible.
+      // Aprobar es publicar: la versión pasa a `publicado` y queda visible. El comentario
+      // del editor se registra otra vez aquí: la fila de la aprobación tiene que decir
+      // qué se publicó sin obligar a buscar el envío que la precedió.
       await registrar(req, 'aprobar', result, [
+        campoComentario(comentarioAnterior, result.version?.comentarioCambios),
         { campo: 'slug', antes: result.pagina?.slug ?? null, despues: result.pagina?.slug ?? null },
         { campo: 'version', antes: result.versionAnterior?.numeroVersion ?? null, despues: result.version?.numeroVersion ?? null },
         { campo: 'estado', antes: result.versionAnterior?.estado ?? 'en_revision', despues: 'publicado' },
@@ -357,8 +399,10 @@ export const PaginaController = {
         );
         // El motivo se guarda en la bitácora porque es la única explicación de por
         // qué una versión volvió a borrador, y quien la lea semanas después no
-        // tiene otro sitio donde encontrarla.
+        // tiene otro sitio donde encontrarla. El comentario, porque sin él no se
+        // sabe qué fue lo que se rechazó.
         await registrar(req, 'rechazar', r, [
+          campoComentario(r.comentarioAnterior, r.versionAnterior?.comentarioCambios),
           { campo: 'slug', antes: r.paginaAnterior?.slug ?? null, despues: r.pagina?.slug ?? req.params.slug },
           { campo: 'version', antes: r.versionAnterior?.numeroVersion ?? null, despues: r.version?.numeroVersion ?? null },
           { campo: 'estado', antes: r.versionAnterior?.estado ?? 'en_revision', despues: 'rechazado' },
@@ -383,6 +427,7 @@ export const PaginaController = {
         // Descartar una versión destruye trabajo sin publicar: si la página entera
         // desaparece con ella, esta fila es lo único que queda de que existió.
         await registrar(req, 'eliminar', r, [
+          campoComentario(r.comentarioAnterior, r.version?.comentarioCambios),
           { campo: 'slug', antes: r.pagina?.slug ?? req.params.slug, despues: null },
           { campo: 'version', antes: r.version?.numeroVersion ?? null, despues: null },
           { campo: 'paginaEliminada', antes: null, despues: r.paginaEliminada },

@@ -10,6 +10,7 @@
  */
 
 import { z } from 'zod';
+import { errorDeComentario, normalizarComentario } from '../shared/comentario-cambios';
 
 /**
  * Un bloque de Puck: siempre trae `type` y `props`.
@@ -49,6 +50,30 @@ export const contenidoPaginaSchema = z
 export const guardarBorradorSchema = z
   .object({
     contenido: contenidoPaginaSchema,
+  })
+  .strict();
+
+/**
+ * Cuerpo de `PATCH /api/paginas/:slug/enviar-revision`.
+ *
+ * `comentario` es el «commit» del envío y es obligatorio: es lo que la bitácora
+ * enseña en la columna «Cambios» y lo que lee quien aprueba. Se normaliza aquí (una
+ * sola línea, sin espacios sobrantes) antes de medirlo, para que el tope se aplique
+ * a lo que de verdad se va a guardar. La regla vive en `shared/comentario-cambios.ts`
+ * porque el caso de uso la vuelve a aplicar.
+ */
+export const enviarARevisionSchema = z
+  .object({
+    comentario: z
+      .string({
+        required_error: 'Escribe un comentario que describa tus cambios antes de enviarlos a revisión.',
+        invalid_type_error: 'El comentario debe ser texto.',
+      })
+      .transform(normalizarComentario)
+      .superRefine((valor, ctx) => {
+        const error = errorDeComentario(valor);
+        if (error) ctx.addIssue({ code: z.ZodIssueCode.custom, message: error });
+      }),
   })
   .strict();
 

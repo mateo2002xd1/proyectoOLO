@@ -10,11 +10,11 @@
  * borrador, su revisión y su aprobación, pero nunca se sembró la primera
  * versión. `obtenerPlantilla()` cae entonces en sus valores por defecto — el
  * sitio público se ve bien porque ese fallback existe — pero el editor
- * (`/admin/editor/menu-y-pie`) y la vista previa abren en blanco: piden la
+ * (`/editor/menu-y-pie`) y la vista previa abren en blanco: piden la
  * página `plantilla` y la API responde 404, porque la fila no existe.
  *
  * Este script crea esa primera versión con el contenido que ya se ve hoy
- * (`defaultIdentidadVisual`), para que publicar dejé de ser un requisito
+ * (`CABECERA_POR_DEFECTO`), para que publicar dejé de ser un requisito
  * silencioso y pase a ser un hecho real en la base de datos.
  *
  * Recorre el ciclo editorial normal (borrador → revisión → aprobación) en vez
@@ -37,8 +37,8 @@ import { SLUG_PLANTILLA } from '../src/shared/catalogo-permisos';
 const AMBITO = 'sitio' as const;
 
 /**
- * Los mismos valores que hoy sirve `defaultIdentidadVisual`
- * (`sitio-web/src/features/identidad-visual/lib/default-identidad-visual.ts`),
+ * Los mismos valores que hoy sirve `CABECERA_POR_DEFECTO`
+ * (`sitio-web/src/features/paginas/menu-y-pie/cabecera-por-defecto.ts`),
  * que es lo que `obtenerPlantilla()` usa como cabecera cuando no hay página
  * `plantilla` — es decir, exactamente lo que ya está en pantalla. Sembrar la
  * página con estos valores no cambia nada visible; solo lo vuelve editable.
@@ -54,8 +54,8 @@ const CABECERA = {
       label: 'Clasificaciones',
       href: '/clasificacion',
       children: [
-        { label: 'Clasificación Única de Ocupaciones para Colombia', href: '/clasificacion?tipo=cuoc' },
-        { label: 'Clasificación Nacional de Ocupaciones', href: '/clasificacion?tipo=cno' },
+        { label: 'Clasificación Única de Ocupaciones para Colombia', href: '/clasificacion/cuoc' },
+        { label: 'Clasificación Nacional de Ocupaciones', href: '/clasificacion/cno' },
       ],
     },
     { label: 'Tendencias de las Ocupaciones', href: '/tendencias' },
@@ -112,11 +112,11 @@ const PIE = {
   ],
   enlacesFila2: [
     { texto: 'Derechos de autor y/o autorizacion de uso sobre contenidos', url: '#' },
-    { texto: 'Politica de Tratamiento para Proteccion de Datos Personales', url: '/politica-de-privacidad' },
+    { texto: 'Politica de Tratamiento para Proteccion de Datos Personales', url: '/inicio/politica-de-privacidad' },
   ],
   enlacesFila3: [
     { texto: 'Mapa del sitio', url: '#' },
-    { texto: 'Politica de seguridad y privacidad de la informacion', url: '/politica-de-privacidad' },
+    { texto: 'Politica de seguridad y privacidad de la informacion', url: '/inicio/politica-de-privacidad' },
   ],
 
   mostrarFranjaGov: true,
@@ -135,7 +135,7 @@ const CONTENIDO_PLANTILLA = {
 
 const publicarPlantilla = async (): Promise<void> => {
   await guardarBorrador(SLUG_PLANTILLA, CONTENIDO_PLANTILLA, '', AMBITO);
-  await enviarARevision(SLUG_PLANTILLA, '', AMBITO);
+  await enviarARevision(SLUG_PLANTILLA, '', AMBITO, 'Cabecera y pie del sitio sembrados por script');
   await aprobarPagina(SLUG_PLANTILLA, '', AMBITO);
 
   const guardada = await PaginaRepository.findBySlug(SLUG_PLANTILLA, AMBITO);

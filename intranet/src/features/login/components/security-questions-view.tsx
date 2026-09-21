@@ -103,7 +103,7 @@ export function SecurityQuestionsView() {
       // El correo solo hace falta aquí, así que se lee directo del storage.
       await authApi.verifyAnswers(sessionStorage.getItem('recoveryEmail') ?? '', payload);
       sessionStorage.setItem('recoveryAnswers', JSON.stringify(payload));
-      router.push('/login/reset-password');
+      router.push('/reset-password');
     } catch (error) {
       setErrors({ general: mensajeDeError(error, 'Las respuestas no coinciden. Intenta de nuevo.') });
       setCurrentStep(0);

@@ -1,6 +1,7 @@
 import { Transaction } from 'sequelize';
 import { PaginaRepository } from '../../repositories/pagina.repository';
 import type { Ambito } from '../../shared/ambito';
+import { errorDeComentario, normalizarComentario } from '../../shared/comentario-cambios';
 import { validarAccesibilidad, mensajeDeViolacion, type ViolacionAccesibilidad } from '@olo/accessibility-policy';
 
 /**
@@ -23,7 +24,24 @@ export class ErrorValidacionAccesibilidad extends Error {
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const toUUID = (id?: string) => (id && UUID_RE.test(id) ? id : null);
 
-export const enviarARevision = async (slug: string, userId: string, ambito: Ambito, tx?: Transaction) => {
+/**
+ * `comentario` es el «commit» del envío: qué cambió, en palabras de quien edita.
+ *
+ * Se comprueba aquí aunque la ruta ya lo valide con Zod, porque los scripts de siembra
+ * llaman a este caso de uso directamente, sin pasar por HTTP. Va antes que nada: sin
+ * comentario no hay envío, y no tiene sentido leer la página para acabar en un 400.
+ */
+export const enviarARevision = async (
+  slug: string,
+  userId: string,
+  ambito: Ambito,
+  comentario: string,
+  tx?: Transaction
+) => {
+  const comentarioCambios = normalizarComentario(comentario);
+  const errorComentario = errorDeComentario(comentarioCambios);
+  if (errorComentario) throw Object.assign(new Error(errorComentario), { status: 400 });
+
   const pagina = await PaginaRepository.findBySlug(slug, ambito, tx);
   if (!pagina) throw new Error('Página no encontrada');
   const paginaAnterior = pagina.toJSON();
@@ -37,12 +55,22 @@ export const enviarARevision = async (slug: string, userId: string, ambito: Ambi
   const violaciones = validarAccesibilidad(ultimaVersion.contenido, ambito);
   if (violaciones.length > 0) throw new ErrorValidacionAccesibilidad(violaciones);
 
-  const datosActualizacion: any = { estado: 'en_revision' };
+  // El comentario de lo que está publicado ahora es el «antes» de la bitácora: contra
+  // eso se compara lo que se propone.
+  const versionPublicada = await PaginaRepository.findVersionPorEstado(pagina.id, 'publicado', tx);
+
+  const datosActualizacion: any = { estado: 'en_revision', comentarioCambios };
   const autorId = toUUID(userId);
   if (autorId && !ultimaVersion.creadoPor) {
     datosActualizacion.creadoPor = autorId;
   }
   await PaginaRepository.actualizarVersion(ultimaVersion, datosActualizacion, tx);
 
-  return { pagina, version: ultimaVersion, paginaAnterior, versionAnterior };
+  return {
+    pagina,
+    version: ultimaVersion,
+    paginaAnterior,
+    versionAnterior,
+    comentarioAnterior: versionPublicada?.comentarioCambios ?? null,
+  };
 };

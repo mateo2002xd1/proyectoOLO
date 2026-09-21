@@ -2,8 +2,8 @@
  * Cierre de sesión por inactividad — el reloj, compartido por las dos aplicaciones.
  *
  * Aquí viven el reloj y el diálogo del aviso, que las dos aplicaciones necesitan
- * idénticos. Lo que **no** está aquí es el cierre: `sitio-web` llama a su route handler
- * y va a `/admin/login`, la intranet usa `useAuth().logout()` y va a `/login`. Eso lo
+ * idénticos. Lo que **no** está aquí es el cierre: `sitio-web` llama a su route handler,
+ * la intranet usa `useAuth().logout()`, y las dos van a su `/login`. Eso lo
  * pone cada una en su `vigilante-sesion.tsx`, que es la única pieza que difiere.
  *
  * El corte está donde estaba la diferencia real, no donde estaba la tecnología: el

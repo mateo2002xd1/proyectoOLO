@@ -75,7 +75,7 @@ export function VigilanteSesion({ activo = true, alExpirar }: VigilanteSesionPro
     // lo alimenta también para el cierre por inactividad. `pathname + search` y no
     // la URL completa: un `origin` distinto no tendría sentido después de loguear.
     const ruta = `${window.location.pathname}${window.location.search}`;
-    const destino = `/admin/login?motivo=${motivo}&redirect=${encodeURIComponent(ruta)}`;
+    const destino = `/login?motivo=${motivo}&redirect=${encodeURIComponent(ruta)}`;
 
     // `replace` y no `push`: el botón «atrás» no debe devolver a una pantalla del
     // panel que ya no tiene sesión detrás.

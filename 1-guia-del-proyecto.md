@@ -202,7 +202,7 @@ features/<dominio>/
 └── types.ts        # contratos del dominio
 ```
 
-**Excepción — dominios con ciclo de vida.** Si el dominio tiene estados con **actores, permisos o políticas de caché distintos**, se organiza por etapa del ciclo en vez de por tipo técnico. El caso de referencia es `paginas/` (borrador → revisión → publicado), detallado en `8-ciclo-editorial.md` §3.2.
+**Excepción — dominios con ciclo de vida.** Si el dominio tiene estados con **actores, permisos o políticas de caché distintos**, se organiza por etapa del ciclo en vez de por tipo técnico. El caso de referencia es `paginas/` (borrador → revisión → publicado), detallado en `8-ciclo-editorial.md` §3.2. **Dentro de cada etapa se vuelve a aplicar la anatomía de arriba**: `components/`, `hooks/`, `services/` y `lib/` (lógica y datos que no son servicio). Primero se decide la etapa y después el tipo. Las carpetas que solo tienen un tipo de archivo (`model/`, `menu-y-pie/`) quedan planas.
 
 El motivo no es estético: agrupar por tipo técnico mete en un mismo archivo lecturas públicas cacheables y escrituras autenticadas, lo que hace fácil cachear por error una respuesta con credenciales. Separar por etapa convierte esa frontera en estructura y no en disciplina.
 
@@ -325,26 +325,50 @@ sitio-web/src/
 ├── app/                              # SOLO enrutamiento Next.js
 │   ├── layout.tsx                    # Root: fuentes, providers
 │   │
-│   ├── admin/                        # ZONA PROTEGIDA — gated por middleware
-│   │   ├── layout.tsx                #   envuelve (auth), (shell), editor/ y preview/
-│   │   ├── (auth)/                   #   pantallas sin sesión: login, recuperar,
-│   │   │                             #   cambiar-contrasena
-│   │   ├── (shell)/                  #   comparten el chrome del panel: dashboard
-│   │   │                             #   (+ dashboard/buscar), users, roles, revision,
-│   │   │                             #   auditoria, mi-perfil, respaldos (nueva)
-│   │   ├── editor/[slug]/            # Mesa de trabajo Puck
-│   │   └── preview/[slug]/           # Vista previa de una versión en revisión
+│   ├── admin/                        # EL PANEL — gated por middleware → /admin/...
+│   │   ├── layout.tsx                #   el marco del panel (barra lateral, sesión,
+│   │   │                             #   vigilante de inactividad): envuelve TODO lo
+│   │   │                             #   que cuelga de esta carpeta
+│   │   └── dashboard/ (+ buscar, configuracion, soporte), users/, roles/,
+│   │       revision/, auditoria/, respaldos/, actualizaciones/, mi-perfil/
 │   │
-│   ├── (public)/                     # ZONA ABIERTA — ISR, sin credenciales
+│   ├── (auth)/                       # Pantallas de acceso: MISMAS carpetas y rutas que
+│   │   │                             #   la intranet. El grupo no añade segmento a la URL
+│   │   ├── layout.tsx                #   Poppins + AuthSplitShell + el proveedor de
+│   │   │                             #   flujo-de-recuperacion.tsx (lo que un paso deja
+│   │   │                             #   al siguiente, en memoria, no en sessionStorage)
+│   │   ├── login/                    #   → /login
+│   │   ├── first-login/              #   → /first-login (contraseña y/o preguntas pendientes)
+│   │   └── recovery/ security-questions/ reset-password/ reset-success/
+│   │                                 #   → los 4 pasos de la recuperación (RF-05).
+│   │                                 #   /admin/login, /admin/recuperar y
+│   │                                 #   /admin/cambiar-contrasena redirigen aquí
+│   │
+│   ├── editor/[slug]/                # Mesa de trabajo Puck → /editor/<slug>. Fuera del
+│   │                                 #   panel: no lleva su barra lateral. Misma ruta
+│   │                                 #   que en la intranet
+│   ├── preview/[slug]/               # Vista previa de una versión → /preview/<slug>
+│   │                                 #   (/admin/editor/* y /admin/preview/* redirigen
+│   │                                 #   aquí desde next.config.mjs)
+│   │
+│   ├── (public)/                     # ZONA ABIERTA — ISR, sin credenciales. El paréntesis
+│   │   │                             #   agrupa pero NO aparece en la URL (ver §4.2.1)
 │   │   ├── layout.tsx                # Pinta el menú y el pie alrededor de todo
-│   │   ├── [slug]/page.tsx           # Página pública dinámica (render Puck)
-│   │   ├── inicio/                   # La portada. `/` redirige aquí vía next.config.mjs
-│   │   │                             #   (no un app/page.tsx), ninguna otra ruta la sirve
-│   │   ├── menu-y-pie/               # NO es una página: notFound() a propósito
-│   │   ├── clasificacion/            # CNO / CUOC
-│   │   ├── publicaciones/
-│   │   └── politica-de-privacidad/   # `/privacidad` es solo un alias de redirect a esta
-│   │                                 #   ruta (next.config.mjs); no existe como carpeta
+│   │   ├── [slug]/page.tsx           # Comodín: toda página de Puck SIN carpeta propia
+│   │   │                             #   → /tendencias, /metrica, /publicaciones…
+│   │   │                             #   Excepto `menu-y-pie`: 404 a propósito
+│   │   ├── inicio/
+│   │   │   ├── page.tsx              # → /inicio. La portada; `/` redirige aquí
+│   │   │   │                         #   (next.config.mjs), ninguna otra ruta la sirve
+│   │   │   └── politica-de-privacidad/page.tsx
+│   │   │                             # → /inicio/politica-de-privacidad (Puck, slug
+│   │   │                             #   "politica-de-privacidad")
+│   │   ├── clasificacion/
+│   │   │   ├── page.tsx              # → /clasificacion. Buscador de ocupaciones (código)
+│   │   │   ├── cno/page.tsx          # → /clasificacion/cno  (Puck, slug "cno")
+│   │   │   └── cuoc/page.tsx         # → /clasificacion/cuoc (Puck, slug "cuoc")
+│   │   └── programas-sobresalientes/page.tsx
+│   │                                 # → /programas-sobresalientes (código)
 │   │
 │   └── api/                          # Route handlers delgados (delegan a la API :4000) — 13
 │       ├── auth/ users/ roles/ permissions/ role-permissions/
@@ -354,20 +378,48 @@ sitio-web/src/
 │       └── revalidar/                # La llama la API al publicar. Ver 3-seguridad §S11
 │
 ├── features/                         # Lógica por dominio (anatomía interna: §4.0)
-│   ├── paginas/                      # CMS/Puck: editor, cola de revisión, crear/eliminar
-│   │   │                             #   sección. Dominio CON ciclo de vida, pero HOY
-│   │   │                             #   organizado por tipo técnico:
-│   │   ├── components/               #   16 archivos: uploaders, editor completo, avisos,
-│   │   │                             #   revision-queue-view, FAB de acciones
-│   │   ├── hooks/                    #   use-pagina, use-bloqueo-de-edicion,
-│   │   │                             #   use-permiso-de-seccion, use-revision-queue
-│   │   ├── lib/                      #   plantilla, ruta-de-vuelta, page-seeds,
-│   │   │                             #   etiquetas-cache, fallbacks de home/plantilla/búsqueda
-│   │   ├── services/paginas.service.ts   # ÚNICO archivo, 374 líneas: fetch con ISR
-│   │   │                             #   (lecturas públicas) + axios withCredentials (admin)
-│   │   ├── types.ts
-│   │   └── index.ts                  #   no reexporta ImageUploaderField ni
-│   │                                 #   ArchivoUploaderField (ver nota debajo del árbol)
+│   ├── paginas/                      # CMS/Puck. Dominio CON ciclo de vida, organizado
+│   │   │                             #   POR ETAPA (8-ciclo-editorial.md §3.2), 4 fases
+│   │   │                             #   hechas el 2026-09-18. Regla: las etapas no se
+│   │   │                             #   importan entre sí; lo común sube a model/.
+│   │   │                             #   Dentro de cada etapa, subcarpetas por tipo
+│   │   │                             #   (components/ hooks/ services/ lib/, §4.0);
+│   │   │                             #   model/ y menu-y-pie/ son planas
+│   │   ├── model/                    #   Lo que comparten las etapas: pagina.types.ts,
+│   │   │                             #   rutas.ts (RUTAS_PROPIAS, slug ↔ URL, ruta de
+│   │   │                             #   vuelta del editor), ambito.ts, api-con-sesion.ts
+│   │   │                             #   (axios withCredentials; nunca desde
+│   │   │                             #   publicacion/), eventos.ts (aviso de cola de
+│   │   │                             #   revisión), home-fallback-data.ts
+│   │   ├── publicacion/              #   Lo que ve quien visita, SIN sesión:
+│   │   │                             #   publicacion.service.ts (lecturas públicas, visita,
+│   │   │                             #   índice de búsqueda), ClientPuckRender,
+│   │   │                             #   PaginaPuckFija, RastreadorVisitas, etiquetas de
+│   │   │                             #   caché, respaldo de la búsqueda
+│   │   ├── edicion/                  #   El editor: edicion.service.ts (editable,
+│   │   │                             #   borrador, subidas, enviar a revisión, candado),
+│   │   │                             #   puck-editor-wrapper, editorjs-wrapper, uploaders
+│   │   │                             #   de imagen y archivo, avisos de rechazo y de editor
+│   │   │                             #   ocupado, use-pagina, use-bloqueo-de-edicion,
+│   │   │                             #   page-seeds, pagina-en-edicion
+│   │   ├── revision/                 #   La cola de aprobación: revision.service.ts
+│   │   │                             #   (listar, aprobar, rechazar, descartar versión),
+│   │   │                             #   revision-queue-view, use-revision-queue
+│   │   ├── secciones/                #   Crear y eliminar páginas: secciones.service.ts
+│   │   │                             #   (crear, analizar y hacer el borrado, permisos de
+│   │   │                             #   la sesión, resumen de publicadas del panel),
+│   │   │                             #   paginas-fab-speed-dial (botón flotante), modales
+│   │   │                             #   de nueva y eliminar sección, aviso-seccion-nueva,
+│   │   │                             #   use-permiso-de-seccion
+│   │   ├── menu-y-pie/               #   La cabecera y el pie de todo el sitio:
+│   │   │                             #   menu-y-pie.ts (obtenerPlantilla, SLUG_PLANTILLA),
+│   │   │                             #   cabecera-por-defecto.ts (ex identidad-visual),
+│   │   │                             #   fallback del editor
+│   │   ├── index.ts                  #   agrupado por carpeta; no reexporta
+│   │   │                             #   ImageUploaderField ni ArchivoUploaderField (ver
+│   │   │                             #   nota debajo del árbol)
+│   │   └── client.ts                 #   segunda puerta, sin axios, para código de cliente
+│   │                                 #   (hoy: CABECERA_POR_DEFECTO para puck.config)
 │   │
 │   ├── administracion/               # Agrupador del panel — el agrupador mismo no
 │   │   │                             #   tiene index.ts (correcto, no es una feature)
@@ -380,22 +432,22 @@ sitio-web/src/
 │   │   └── hooks/use-usuarios.ts     #   ⚠ huérfano: duplica auth/hooks/use-usuarios.ts,
 │   │                                 #   nadie lo importa
 │   │
-│   ├── sitio-web/                    # Agrupador de lo público — solo dos hijas
-│   │   ├── inicio/                   #   composición de la portada
-│   │   └── buscador-ocupaciones/     #   CNO/CUOC vía API externa (RF-09)
-│   │
-│   ├── contenidos/                   # Estudios/informes + buscador interno (RF-01, RF-10)
-│   └── identidad-visual/             # Tipografías, colores, marca (RF-03); tiene un
-│                                     #   segundo punto de entrada, client.ts, para no
-│                                     #   arrastrar axios al bundle de cliente
+│   └── sitio-web/                    # Agrupador de lo público — cuatro hijas
+│       ├── inicio/                   #   composición de la portada
+│       ├── buscador-ocupaciones/     #   CNO/CUOC vía API externa (RF-09)
+│       ├── programas-sobresalientes/ #   mapa, filtros y tabla del Observatorio
+│       └── tendencia-ocupacional/    #   vista de tendencias (bloque Puck)
 │
 ├── shared/
 │   ├── ui/                           # EL SISTEMA DE DISEÑO INSTITUCIONAL
 │   │   ├── atoms/                    #   6: GooLoader, ResaltadorBusquedaClient,
 │   │   │                             #   RouteTransition, avatar, button, switch
-│   │   ├── molecules/                #   10: alert, breadcrumb, custom-select, date-picker,
-│   │   │                             #   dropdown, notification, ocupacion-search-banner,
-│   │   │                             #   paginador, theme-toggle, visor-documento
+│   │   ├── molecules/                #   12: alert, breadcrumb, custom-select, date-picker,
+│   │   │                             #   dropdown, grafico-echarts, notification,
+│   │   │                             #   ocupacion-search-banner, paginacion (la de TODAS
+│   │   │                             #   las tablas, panel y sitio público), paginador (el
+│   │   │                             #   pie de las tablas del panel, que la usa),
+│   │   │                             #   theme-toggle, visor-documento
 │   │   ├── organisms/                #   3: navbar, sidebar-layout, sidebar
 │   │   └── templates/                #   no existe todavía, ni vacía
 │   ├── lib/
@@ -417,16 +469,19 @@ sitio-web/src/
 
 **Cinco cosas de este árbol merecen explicación, porque no se deducen mirándolo.**
 
-**Hay dos rutas que existen para *no* servir nada, y ambas se resuelven fuera del árbol
-de `app/`.** `(public)/menu-y-pie/page.tsx` es un `notFound()` de una línea: `menu-y-pie`
-es una fila real de `paginas` —guarda la cabecera y el pie que el layout pinta alrededor
-de todo el sitio— así que sin esta ruta el comodín `[slug]` la encontraría en la base y la
-renderizaría como una página normal, con una cabecera y un pie duplicados dentro del
-`<main>`. Y `/` no sirve la portada: un `redirect` en `sitio-web/next.config.mjs` (no una
+**Hay dos rutas que existen para *no* servir nada, y ninguna tiene carpeta propia.**
+`/menu-y-pie` da 404 por una línea al principio de `(public)/[slug]/page.tsx`:
+`menu-y-pie` es una fila real de `paginas` —guarda la cabecera y el pie que el layout pinta
+alrededor de todo el sitio— así que sin ese corte el comodín la encontraría en la base y
+la renderizaría como una página normal, con una cabecera y un pie duplicados dentro del
+`<main>`. Hasta el 2026-09-18 el corte era una carpeta `(public)/menu-y-pie/` con un
+`notFound()`; se movió al comodín para que la regla quede junto al código que causa el
+problema, igual que en el comodín de la intranet. Y `/` no sirve la portada: un `redirect` en `sitio-web/next.config.mjs` (no una
 ruta de `app/`) la manda a `/inicio`, porque cuando las dos rutas servían el mismo slug el
-sitio tenía contenido duplicado bajo dos URLs. Ese mismo archivo resuelve `/privacidad` →
-`/politica-de-privacidad` (por eso el árbol ya no lista `privacidad/` como si fuera una
-carpeta) y varios alias más (`/login`, `/admin/auth`, `/uploads/:path*`…). **Cuando el
+sitio tenía contenido duplicado bajo dos URLs. Ese mismo archivo resuelve `/privacidad` y
+`/politica-de-privacidad` → `/inicio/politica-de-privacidad`, `/cno` y `/cuoc` →
+`/clasificacion/cno` y `/clasificacion/cuoc` (por eso el árbol no lista esas carpetas en
+la raíz) y varios alias más (`/admin/login`, `/admin/auth`, `/uploads/:path*`…). **Cuando el
 contenido sale de la base de datos, el enrutador tiene que decir explícitamente qué filas
 no son páginas — y cuando una URL es solo un alias, ese trabajo lo hace la config de Next,
 no una carpeta.**
@@ -437,11 +492,16 @@ agrupan features por zona de la aplicación. El agrupamiento se lee bien —lo d
 junto, lo público junto— pero la convención dice que una feature es una carpeta de
 `features/` con su `index.ts`, y aquí hay que bajar un nivel para encontrarlo.
 `administracion/` agrupa hoy **cinco** hijas, no cuatro (`respaldos/` se sumó y no estaba
-documentada); `sitio-web/` agrupa **dos**, no tres — `politica-privacidad/` nunca existió
-como feature-hija: la página de esa ruta importa `@/features/paginas` directo, igual que
-`inicio` y `[slug]`. Tampoco todas las hijas cumplen la convención que este párrafo daba
+documentada); `sitio-web/` agrupa **cuatro**: `inicio/` y `buscador-ocupaciones/`, que
+ya estaban, y `programas-sobresalientes/` y `tendencia-ocupacional/`, que se sumaron sin
+documentarse. `identidad-visual/`, que estaba en la raíz de `features/`, ya no existe
+(2026-09-18): no tenía tipografías, colores ni marca, solo los valores por defecto de la
+cabecera, y se unió a `paginas/menu-y-pie/cabecera-por-defecto.ts`, junto a quien los usa.
+Su servicio pedía `GET /api/identidad-visual`, una ruta que la API nunca tuvo (404 en
+cada página armada en el servidor); ahora es una constante. `politica-privacidad/` nunca existió como feature-hija: la página de esa ruta
+importa `@/features/paginas` directo, igual que `inicio` y `[slug]`. Tampoco todas las hijas cumplen la convención que este párrafo daba
 por sentada: `administracion/mi-perfil/` no tiene `index.ts`, así que
-`app/admin/(shell)/mi-perfil/page.tsx` importa su componente por ruta interna — el mismo
+`app/admin/mi-perfil/page.tsx` importa su componente por ruta interna — el mismo
 problema, en miniatura, que motiva la convención #12. Y `features/auditoria/`, que este
 documento marcaba como código muerto que duplicaba `administracion/auditoria`, **ya se
 eliminó** — pero apareció un caso equivalente sin detectar: `administracion/hooks/use-usuarios.ts`,
@@ -452,26 +512,92 @@ crudo en vez de `pedirJson` —sin el manejo único del 401— y un `Permission`
 `etiqueta`/`grupo`/`esFrontera`. Quien lo importara por autocompletado se llevaba el panel
 roto en silencio, que es exactamente el riesgo de dejar una copia divergente a la vista.
 
-**`paginas/` sigue organizado por tipo técnico, no por etapa del ciclo.** El §4.0 y
-`8-ciclo-editorial.md` §3.2 describen `model/ publicacion/ edicion/ revision/` como la
-forma correcta para un dominio con ciclo de vida, y esa sigue siendo la referencia. **No
-está aplicada.** El árbol de arriba es lo que hay; la reorganización es la fase 1-3 del
-plan de ese documento y sigue sin empezar. Mientras tanto, un solo
-`services/paginas.service.ts` (374 líneas) contiene lecturas públicas cacheables y
-escrituras autenticadas de administrador — con dos transportes distintos (`fetch` con ISR
-y `axios` con `withCredentials`) — y todo sale por el mismo `index.ts`.
+**`paginas/` está organizado por etapa del ciclo editorial.** Hasta el 2026-09-18 se
+organizaba por tipo técnico (`components/`, `hooks/`, `lib/`, `services/`). La estructura
+que proponía `8-ciclo-editorial.md` §3.2, ampliada con `secciones/` y `menu-y-pie/`, se
+aplicó en cuatro fases el mismo día: 1) `menu-y-pie/`, que une la antigua
+`identidad-visual`; 2) `model/` y `publicacion/`; 3) `edicion/`; 4) `revision/` y
+`secciones/`. El resultado más importante es que **el límite de seguridad se ve en el
+árbol**: el viejo `services/paginas.service.ts` (408 líneas) mezclaba lecturas anónimas
+y cacheables con acciones de administrador. Hoy cada etapa tiene su servicio,
+`publicacion/` usa un cliente sin credenciales y el cliente con sesión vive en
+`model/api-con-sesion.ts`, que `publicacion/` no importa. Los cuatro componentes que el
+botón flotante había dejado sin uso (`edit-button`, `plantilla-edit-button`,
+`nueva-seccion-button`, `eliminar-seccion-button`) se borraron en la fase 4, junto con sus
+estilos `.edit-button*`.
 
 **`config/puck.config.tsx` se salta el `index.ts` de `features/paginas` tres veces, y no
 todas por el mismo motivo.** Importa `EditorjsWrapper`, `ImageUploaderField` y
-`ArchivoUploaderField` directo desde `features/paginas/components/` en vez de por el
-barrel. El primero es un bypass innecesario — `EditorjsWrapper` ya está reexportado por
-`index.ts`, pudo importarse de ahí. Los otros dos no tienen alternativa hoy: ninguno está
-exportado por el barrel, así que el import directo es la única forma de usarlos desde el
-catálogo. Es el mismo patrón ya documentado para `intranet/config/puck.config.tsx` en el §4.3.
+`ArchivoUploaderField` directo desde `features/paginas/edicion/` (antes `components/`) en
+vez de por el barrel. Los dos últimos no están exportados por el barrel. Y hay un motivo
+más para no pasarlos por él: `index.ts` exporta `ClientPuckRender`, que importa
+`puckConfig`; si `puck.config.tsx` importara el `index.ts`, se cerraría un ciclo de
+módulos. Por eso los valores de la cabecera le llegan por una puerta aparte,
+`features/paginas/client.ts`. Es el mismo patrón ya documentado para
+`intranet/config/puck.config.tsx` en el §4.3.
 
 **El punto crítico de este proyecto:** `shared/ui/{atoms,molecules,organisms}` tiene **doble rol**. Es el sistema de diseño del código Y el catálogo de piezas que el editor registra en Puck (vía `config/puck.config.tsx`). Por eso el editor no puede escribir HTML crudo ni elegir colores arbitrarios: solo compone con piezas que nosotros controlamos.
 
 Esa es la palanca que permite que la conformidad sea **por construcción** — arreglar un átomo arregla todas las páginas, incluidas las que un editor cree mañana. Pero es una posibilidad, no un hecho consumado: hoy los propios átomos incumplen el contraste AA (`9-accesibilidad.md` §2.1 lo mide). La arquitectura habilita el cumplimiento; entregarlo es el plan del §4 de ese documento.
+
+#### 4.2.1 Cómo se arma una URL del sitio (y cómo anidar una página)
+
+Next.js no tiene un archivo de rutas: **la URL es el camino de carpetas dentro de
+`src/app/`**. Cinco reglas bastan para leer el árbol de arriba:
+
+| En `src/app/` | Qué significa | Ejemplo |
+|---|---|---|
+| Carpeta normal | Un segmento de la URL | `inicio/` → `/inicio` |
+| `page.tsx` | Lo que hace visitable esa URL; una carpeta sin él no es página | `inicio/page.tsx` |
+| Carpeta entre paréntesis | Agrupa (y comparte `layout.tsx`) pero **no** aparece en la URL | `(public)/` |
+| Carpeta entre corchetes | Comodín: atiende cualquier segmento y lo recibe como variable | `[slug]/` |
+| Prioridad | Una carpeta con nombre fijo le gana al comodín | `inicio/` antes que `[slug]/` |
+
+`/clasificacion/cno` se arma así: `app/` + `(public)/` (no cuenta) + `clasificacion/` +
+`cno/` + `page.tsx`.
+
+**Hay tres clases de página pública, y cada una se organiza distinto:**
+
+| Clase | Ejemplos | Dónde vive | Cómo se crea |
+|---|---|---|---|
+| Puck sin carpeta | `/tendencias`, `/metrica`, `/publicaciones` | Solo en la tabla `paginas`; la sirve `[slug]` | Desde el panel, «Nueva sección». **Un solo nivel**: `[slug]` no atiende `/a/b` |
+| Puck con carpeta propia | `/inicio/politica-de-privacidad`, `/clasificacion/cno`, `/clasificacion/cuoc` | Fila en `paginas` + carpeta con un `page.tsx` que usa `PaginaPuckFija` | En código, cuando hace falta una URL anidada o metadata propia |
+| Solo código | `/clasificacion`, `/programas-sobresalientes` | Carpeta con su `page.tsx` y su feature | En código; no se edita con Puck |
+
+**El slug no es la URL.** El slug es la llave de la página en la base: de él cuelgan el
+contenido, el permiso `editar.sitio.{slug}`, el contador de visitas y la etiqueta de caché.
+Para `[slug]` los dos coinciden (`/tendencias` ↔ `tendencias`), pero una página con
+carpeta propia puede vivir en otra URL sin cambiar su slug: `/clasificacion/cno` sigue
+siendo el slug `cno`. Por eso anidar una página **no toca la base de datos**.
+
+**Anidar una página de Puck son cuatro pasos,** y saltarse cualquiera deja algo roto sin
+error visible:
+
+1. **La carpeta:** `app/(public)/<padre>/<hija>/page.tsx` con su `metadata` y
+   `<PaginaPuckFija slug="<slug>" puedeEditar={await puedeEditarPaginas()} />`.
+2. **`RUTAS_PROPIAS`** en `features/paginas/model/rutas.ts`: `'<slug>': '/<padre>/<hija>'`.
+   El botón de editar, el de eliminar, el contador de visitas y el editor de «Menú y pie»
+   sacan el slug de la URL. Fuera de esta tabla usan la regla general (segmentos unidos
+   con guion: `/clasificacion/cno` → `clasificacion-cno`), que apunta a una página que no
+   existe.
+3. **`RUTAS_PROPIAS_SITIO`** en `api-backend/src/shared/extraer-textos-puck.ts`, la copia
+   de la API. Con ella, el buscador enlaza la URL nueva y el análisis de borrado detecta
+   los enlaces a ella.
+4. **El redirect** `/<slug>` → `/<padre>/<hija>` en `next.config.mjs`. Sin él la URL vieja
+   **no da 404**: `[slug]` la encuentra en la base y sirve la misma página por segunda
+   vez, sin su metadata. También cubre los enlaces guardados en contenido ya publicado
+   (el menú, sobre todo), que el código no puede corregir.
+
+> Los pasos 2 y 3 son la misma tabla escrita en dos repositorios. Si solo se actualiza
+> una, el buscador enlaza la URL vieja; el redirect lo tapa y el síntoma no se ve.
+
+**Ruta o parámetro.** `/clasificacion/cno` (ruta) y `/clasificacion?tipo=cno`
+(parámetro) no son intercambiables. La ruta es **otra página**: contenido propio
+editable, título propio para buscadores, y la reconocen el botón de editar y el contador
+de visitas. El parámetro es **la misma página con otra opción**: sirve para filtros,
+orden o pestañas del mismo contenido, y todo lo que va después del `?` es invisible para
+el cálculo del slug. En el buscador de ocupaciones, `?tipo=` solo cambia dos rótulos y se
+conserva por los enlaces ya repartidos; CNO y CUOC tienen página propia.
 
 ### 4.3 Intranet (`intranet/`) — repo independiente - Architecture Feature-based + App Router de Next.js
 
@@ -490,31 +616,48 @@ intranet/src/
 │   ├── (secciones)/[...puckPath]/    # TODA sección interna, render Puck desde BD
 │   ├── editor/[slug]/                # Mesa de trabajo Puck
 │   ├── preview/[slug]/               # Vista previa de una versión en revisión
-│   ├── login/                        # login, first-login, recovery, reset-password,
-│   │                                 #   reset-success, security-questions
+│   ├── (auth)/                       # Pantallas de acceso, hermanas y no hijas de login:
+│   │   │                             #   /login, /first-login, /recovery,
+│   │   │                             #   /security-questions, /reset-password,
+│   │   │                             #   /reset-success. Mismas carpetas que el sitio-web.
+│   │   │                             #   /login/<paso> redirige aquí (next.config.ts)
+│   │   ├── template.tsx              #   la animación de deslizamiento entre pasos
+│   │   └── login/ first-login/ recovery/ security-questions/ reset-password/ reset-success/
 │   └── api/upload/                   # El único route handler propio
 │
 ├── features/                         # Solo dos, y es lo correcto para lo que hace la app
-│   ├── gestor-secciones/             # Todo el editor: Puck, uploaders, botones de crear
-│   │   │                             #   y eliminar sección, MarcoSecciones
-│   │   ├── api/                      #   paginas.api.ts — cliente HTTP a la API (la
-│   │   │                             #   convención #8 pide "services/"; ver más abajo)
-│   │   ├── components/               #   18 archivos, UI DEL DOMINIO (no del sistema de
-│   │   │                             #   diseño): puck-editor-wrapper (el editor completo,
-│   │   │                             #   ~285 líneas), uploaders de imagen/archivo,
-│   │   │                             #   crear/eliminar sección (botón y modal), avisos de
-│   │   │                             #   editor-ocupado/rechazo/sección-nueva, FAB de
-│   │   │                             #   acciones, y dos campos de Puck sin acoplamiento
-│   │   │                             #   (color-selector-field, icon-selector-field —
-│   │   │                             #   únicos candidatos reales a volverse genéricos)
-│   │   ├── hooks/
-│   │   ├── lib/                      #   plantilla.ts, ruta-de-vuelta.ts,
-│   │   │                             #   pagina-en-edicion.ts (contexto de edición)
-│   │   ├── types/                    #   editor.types.ts
-│   │   └── index.ts                  #   única puerta pública
+│   ├── paginas/                      # Gemela de sitio-web/src/features/paginas (antes
+│   │   │                             #   se llamaba gestor-secciones/). Mismo orden: POR
+│   │   │                             #   ETAPA (8-ciclo-editorial.md §3.2) y, dentro de
+│   │   │                             #   cada etapa, subcarpetas por tipo (§4.0); model/ y
+│   │   │                             #   menu-y-pie/ son planas. Sin etapa revision/: la
+│   │   │                             #   intranet se aprueba desde el panel del sitio
+│   │   ├── model/                    #   pagina.types.ts (ContenidoPagina, PaginaVersion,
+│   │   │                             #   PaginaPublicada, VersionEditable, índice de
+│   │   │                             #   búsqueda), rutas.ts (slug ↔ URL, encuestas-* →
+│   │   │                             #   /encuestas/*, ruta de vuelta del editor)
+│   │   ├── publicacion/              #   publicacion.service.ts (publicada, índice de
+│   │   │                             #   búsqueda, visita), ClientPuckRender,
+│   │   │                             #   RastreadorVisitas
+│   │   ├── edicion/                  #   edicion.service.ts (editable, borrador, enviar a
+│   │   │                             #   revisión, candado, subidas), puck-editor-wrapper,
+│   │   │                             #   editorjs-wrapper, uploaders de imagen y archivo,
+│   │   │                             #   avisos de rechazo y de editor ocupado,
+│   │   │                             #   use-editor-actions, use-bloqueo-de-edicion,
+│   │   │                             #   use-pagina, page-seeds, pagina-en-edicion
+│   │   ├── secciones/                #   secciones.service.ts (crear, analizar y hacer el
+│   │   │                             #   borrado, permisos de la sesión desde el
+│   │   │                             #   navegador), paginas-fab-speed-dial, modales de
+│   │   │                             #   nueva y eliminar sección, aviso-seccion-nueva
+│   │   ├── menu-y-pie/               #   menu-y-pie.ts (obtenerPlantilla, SLUG_PLANTILLA),
+│   │   │                             #   marco-secciones.tsx (MarcoSecciones: la barra y
+│   │   │                             #   el pie alrededor de cada sección)
+│   │   ├── index.ts                  #   agrupado por carpeta
+│   │   └── client.ts                 #   segunda puerta para la barra de navegación, que
+│   │                                 #   es un bloque de puck.config (índice de búsqueda)
 │   │
 │   └── login/                        # Absorbió a auth/: las ocho vistas del flujo más
-│       └── api/ components/ hooks/ index.ts     #   use-auth y auth.api.ts
+│       └── services/ components/ hooks/ index.ts   # use-auth y auth.service.ts
 │
 ├── shared/
 │   ├── ui/                           # Sistema de diseño PROPIO de intranet — piezas SIN
@@ -534,7 +677,7 @@ intranet/src/
 └── config/
     └── puck.config.tsx               # Catálogo de bloques. Importa ImageUploaderField y
                                        #   ArchivoUploaderField directo desde
-                                       #   gestor-secciones/components — no pasa por el
+                                       #   paginas/edicion/components — no pasa por el
                                        #   index.ts de la feature (ver nota de más abajo)
 ```
 
@@ -546,25 +689,51 @@ base de datos y a editarse con Puck, se quedaron sin trabajo. La ruta comodín
 sección dejó de ser un cambio de código**. Es el mismo movimiento que la §2 promete —
 "editar sin desarrolladores" — llegando por fin a la estructura de carpetas.
 
-**Lo que sigue desalineado**, y sigue anotado en la fase 4 de `8-ciclo-editorial.md` §5:
+**Desde el 2026-09-18 la intranet está alineada con el sitio** (fase 4 de
+`8-ciclo-editorial.md` §5, cerrada):
 
-- Las dos features usan `api/` donde la convención 8 dice `services/`. El motivo de la
-  convención no es estético: `api/` colisiona con `app/api/`, que son los route handlers
-  de Next. El proxy y el cliente que lo consume no deben compartir nombre.
-- `gestor-secciones/` es la gemela de `paginas/` en el sitio y **se llaman distinto**.
-  Hay que elegir un nombre y usarlo en las dos, sobre todo antes de extraer `editor-core`.
-- Sigue sin aplicarse §3.2 (organización por etapa del ciclo), igual que en el sitio.
-- **La intranet no tiene cola de revisión.** Sus cambios se aprueban desde
-  `sitio-web/src/app/admin/(shell)/revision/`, que distingue ámbito y abre la vista
-  previa contra la intranet. Es la divergencia que la regla de `packages/` buscaba evitar
-  y que la fase 6 cierra.
+- **Mismo nombre.** `gestor-secciones/` pasó a llamarse `paginas/`, como su gemela del
+  sitio, la carpeta `use-cases/paginas/` de la API y la tabla `paginas`. Es requisito
+  para extraer algún día `editor-core`: dos carpetas que hacen lo mismo con nombres
+  distintos no se pueden comparar de un vistazo.
+- **`services/` en vez de `api/`**, en las dos features: `paginas.api.ts` se partió por
+  etapa en `publicacion.service.ts`, `edicion.service.ts` y `secciones.service.ts`, y
+  `auth.api.ts` pasó a `login/services/auth.service.ts`. El motivo de la convención 8 no
+  es estético: `api/` colisiona con `app/api/`, que son los route handlers de Next.
+- **§3.2 aplicada**, con las mismas etapas y subcarpetas que el sitio. Salieron los
+  mismos cuatro botones sin uso que se borraron en el sitio (`edit-button`,
+  `plantilla-edit-button`, `nueva-seccion-button`, `eliminar-seccion-button`), con sus
+  estilos `.edit-button*`.
+- **Una sola regla URL ↔ slug**, en `model/rutas.ts`. El rastreador de visitas y el
+  botón flotante tenían cada uno su copia, y `slugDeOrigen` no la aplicaba: al abrir
+  «Menú y pie» desde `/encuestas/calidad-de-formacion` pedía el slug
+  `encuestas/calidad-de-formacion`, con barra, y el editor se quedaba sin la sección de
+  referencia.
 
-Lo que **sí está alineado**: la puerta pública. Las dos features tienen su `index.ts`,
-y ningún archivo de `app/` importa rutas internas. La única excepción está en
-`config/puck.config.tsx`, que importa `ImageUploaderField` y `ArchivoUploaderField`
-directo desde `gestor-secciones/components` en vez de pasar por su `index.ts` — es el
-catálogo de bloques, no una feature ni `app/`, así que no viola literalmente la regla,
-pero sí el espíritu de la convención #12.
+**Las rutas de la intranet no necesitan carpetas por sección**, a diferencia del sitio.
+El comodín `[...puckPath]` cubre cualquier profundidad (`/encuestas/seguimiento-laboral`
+llega entero) y une los segmentos con `-` para sacar el slug. En el sitio, `[slug]` solo
+cubre un segmento, y por eso `clasificacion/cno/` necesita su propia carpeta (§4.2.1).
+Aquí, `/menu-y-pie` ya da 404 desde el propio comodín.
+
+**Lo que sigue desalineado: la intranet no tiene cola de revisión.** Sus cambios se
+aprueban desde `sitio-web/src/app/admin/revision/`, que distingue ámbito y abre
+la vista previa contra la intranet. Por eso `paginas/` no tiene carpeta `revision/`. Es
+la divergencia que la regla de `packages/` buscaba evitar, y la cierra la fase 6.
+
+**La puerta pública:** las dos features tienen su `index.ts`, y ningún archivo de `app/`
+importa rutas internas. Fuera de `app/` hay tres excepciones:
+
+- `config/puck.config.tsx` importa `ImageUploaderField` y `ArchivoUploaderField` directo
+  desde `paginas/edicion/components/`, porque importar el `index.ts` cerraría un ciclo
+  (`index.ts` → `ClientPuckRender` → `puck.config`). Igual que en el sitio.
+- La barra de navegación (`shared/lib/blocks/plantilla/intranet-topbar.tsx`) es un
+  bloque de ese mismo catálogo y lee el índice de búsqueda por `paginas/client.ts`, por
+  la misma razón. También igual que en el sitio.
+- `shared/lib/inactividad/vigilante-sesion.tsx` importa `authApi` desde
+  `login/services/auth.service.ts` y no desde `login/index.ts`, que sí lo exporta. Ya era
+  así antes (apuntaba a `login/api/auth.api.ts`); no hay ciclo que lo justifique, así que
+  se puede pasar al `index.ts` cuando se toque ese archivo.
 
 ### 4.4 Paquetes compartidos (`packages/`)
 
@@ -586,7 +755,7 @@ packages/
 
 De ahí sale el criterio para el siguiente: **`packages/` es para reglas que dos capas tienen que decidir idénticamente, no para código que simplemente se parece.**
 
-**Costo de no haber extraído `editor-core`, medido hoy:** la duplicación entre `sitio-web/src/features/paginas/` e `intranet/src/features/gestor-secciones/` no bajó, creció. A los siete archivos originales (`client-puck-render`, `edit-button`, `editorjs-wrapper`, `image-uploader-field`, `puck-editor-wrapper`, `use-pagina`, `page-seeds`) se sumaron `nueva-seccion-button`, `eliminar-seccion-button`, `aviso-seccion-nueva`, `plantilla-edit-button`, `plantilla.ts` y `ruta-de-vuelta.ts`. Cada funcionalidad nueva del editor se escribe dos veces. Y la divergencia sigue donde estaba: **la etapa de revisión existe solo en `sitio-web`**. El alcance exacto de `editor-core` está en `8-ciclo-editorial.md` §4.4, y su extracción es la fase 6.
+**Costo de no haber extraído `editor-core`, medido hoy:** la duplicación entre `sitio-web/src/features/paginas/` e `intranet/src/features/paginas/` no bajó, creció. A los siete archivos originales (`client-puck-render`, `edit-button`, `editorjs-wrapper`, `image-uploader-field`, `puck-editor-wrapper`, `use-pagina`, `page-seeds`) se sumaron los de crear y eliminar sección, el menú y pie, la ruta de vuelta y el candado de edición. Cada funcionalidad nueva del editor se escribe dos veces. Lo que sí cambió el 2026-09-18 es que la duplicación **se puede medir de un vistazo**: desde que las dos features tienen el mismo nombre y el mismo orden, **22 archivos están en la misma ruta en las dos apps** (`edicion/components/puck-editor-wrapper.tsx`, `model/rutas.ts`, `secciones/services/secciones.service.ts`...). Esa lista es el punto de partida de la extracción. Y la divergencia sigue donde estaba: **la etapa de revisión existe solo en `sitio-web`**. El alcance exacto de `editor-core` está en `8-ciclo-editorial.md` §4.4, y su extracción es la fase 6.
 
 ---
 
@@ -598,21 +767,21 @@ checklist de `3-seguridad-del-proyecto.md` §5; para la persistencia, `11-base-d
 
 | RF | Backend | Frontend | |
 |---|---|---|---|
-| RF-01 contenidos | `use-cases/contenidos`, `use-cases/paginas` | `features/paginas`, `features/contenidos`, `admin/editor` | ✅ |
+| RF-01 contenidos | `use-cases/contenidos`, `use-cases/paginas` | `features/paginas`, `admin/editor` | ✅ |
 | RF-02 archivos | subida en los route handlers de cada front vía `@olo/upload-policy`; `shared/storage` sigue STUB | `features/paginas` (uploaders) | 🟡 funciona, pero escribe dentro del webroot |
-| RF-03 identidad | tabla `marca_versiones`, **sin capa de aplicación** | `features/identidad-visual` | 🟡 |
+| RF-03 identidad | **ninguno**: `marca_versiones` se eliminó en la migración 020 sin haberse usado | ninguno propio: logo, menú y franja gov.co se editan en «Menú y pie» (`features/paginas/menu-y-pie`); tipografías en `shared/lib/fonts`, colores en `globals.css` | 🟡 |
 | RF-04 roles | `Role/Permission/RolePermission`, `use-cases/usuarios`, `shared/catalogo-permisos` | `features/administracion/auth` | ✅ |
-| RF-05/06 gobernanza | `policies/paginas`, `use-cases/paginas`, `domain-events/paginas` | cola en `admin/(shell)/revision` | ✅ solo en el sitio; la intranet no tiene cola propia |
+| RF-05/06 gobernanza | `policies/paginas`, `use-cases/paginas`, `domain-events/paginas` | cola en `admin/revision` | ✅ solo en el sitio; la intranet no tiene cola propia |
 | RF-07 historial | `ContentAuditLog` + `shared/auditoria-*`, escrito desde los controladores | `features/administracion/auditoria` | ✅ |
 | RF-08 Power BI | tabla `tableros_bi`, **sin capa de aplicación**; URLs a mano en los bloques | `config/puck.config` (bloque contenedor) | ⏳ |
 | RF-09 CNO/CUOC | proxy a API externa (por construir) | `features/sitio-web/buscador-ocupaciones` | ⏳ |
-| RF-10 buscador interno | `contenidos.busqueda` (tsvector + GIN) | `features/contenidos` | 🟡 |
+| RF-10 buscador interno | `contenidos.busqueda` (tsvector + GIN) | ninguno todavía: `features/contenidos` solo listaba publicados, nadie lo usaba y se borró (2026-09-18) | 🟡 |
 | RF-11 navegación 3 clics | `secciones.nivel` con `CHECK BETWEEN 1 AND 3` | `shared/ui/organisms` (nav + breadcrumbs) | 🟡 el esquema lo garantiza; la navegación falta |
 | RF-12 descarga pública | `archivos` + comprobación de estado publicado | enlaces de descarga | 🟡 |
 | RF-13 Habeas Data | `politicas_privacidad`, `consentimientos`, **sin capa de aplicación** | `features/sitio-web/politica-privacidad` | 🟡 la página existe; el registro de aceptación no |
 | RF-14 accesibilidad | `@olo/accessibility-policy` en `enviar-a-revision` | `shared/ui` + alto contraste (falta). Estado real en `9-accesibilidad.md` | 🟡 con una regresión abierta |
 | RF-15 directores | permiso `acceso.intranet`; auditoría de acceso sin implementar | la intranet entera | 🟡 |
-| RF-16 auth + caducidad | `auth`, caducidad revalidada en **cada** petición, bloqueo por intentos, inactividad en dos capas. El job programado `revisar-caducidad` sigue siendo un stub | `admin/(auth)`, `login/` de la intranet | ✅ la caducidad se aplica; avisar antes de que ocurra, no |
+| RF-16 auth + caducidad | `auth`, caducidad revalidada en **cada** petición, bloqueo por intentos, inactividad en dos capas. El job programado `revisar-caducidad` sigue siendo un stub | `app/(auth)/` en las dos apps | ✅ la caducidad se aplica; avisar antes de que ocurra, no |
 | RF-17 respaldos | `scripts/respaldo.ts` (a mano) + tabla `respaldos` | UI de config (falta) | ⏳ |
 
 > **La cola BullMQ está montada pero vacía.** `setupWorker()` arranca un worker sobre
@@ -643,18 +812,18 @@ checklist de `3-seguridad-del-proyecto.md` §5; para la persistencia, `11-base-d
 ### Cuáles se cumplen hoy y cuáles no
 
 Una convención que el código incumple en silencio deja de ser una convención. Estado
-verificado el 2026-08-21:
+verificado el 2026-08-21; las filas 8 y 9, el 2026-09-18:
 
 | # | Estado |
 |---|---|
 | 1, 2, 3, 4, 5, 12 | ✅ Se cumplen. La 12 es la que mejor aguantó: ningún archivo de `app/` alcanza una ruta interna de una feature, en ninguna de las dos apps |
 | 6 | 🟡 Se cumple estructuralmente — todo bloque sale de piezas nuestras — pero la promesa de "accesibilidad por construcción" **no se está cumpliendo**: los tokens interactivos volvieron a un verde que falla AA. Ver `9-accesibilidad.md` fase 1 |
 | 7 | ✅ Y creció bien: siete paquetes, cada uno naciendo de una regla que se había desincronizado |
-| 8 | ❌ Incumplida en la intranet, que usa `api/` donde va `services/`, y en el nombre: `paginas/` vs `gestor-secciones/` |
-| 9 | ❌ Incumplida en las dos apps. Es la fase 1-3 de `8-ciclo-editorial.md` §5 y sigue sin empezar |
+| 8 | ✅ Desde el 2026-09-18. La intranet usaba `api/` donde va `services/` y llamaba `gestor-secciones/` a la gemela de `paginas/`; las dos cosas se corrigieron (§4.3) |
+| 9 | ✅ Desde el 2026-09-18, en las dos apps: `paginas/` está organizado por etapa (`8-ciclo-editorial.md` §3.2, fases 1-4 de su §5) |
 | 10 | ✅ Y desde 2026-08-21 se cumple *de verdad*: antes lo publicado tardaba en verse, que es el mismo problema por el otro lado |
 | 11 | 🟡 Quedan unos 45 archivos en PascalCase, casi todos bloques Puck. Ojo: se renombra el archivo, **nunca la clave del componente** — el JSON guardado la lleva dentro |
 
-Ninguna de las dos ❌ es urgente ni bloquea nada. Están aquí porque el propósito de esta
-lista es que se pueda leer y saber en qué se puede confiar, y una lista donde todo
-aparece cumplido no sirve para eso.
+Hoy no queda ninguna ❌: las dos que había (8 y 9) se cerraron el 2026-09-18. Si vuelve a
+aparecer alguna, va aquí, porque el propósito de esta lista es que se pueda leer y
+saber en qué se puede confiar, y una lista donde todo aparece cumplido no sirve para eso.

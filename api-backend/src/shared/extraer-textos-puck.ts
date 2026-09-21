@@ -41,6 +41,18 @@ export function limpiarTextoHtml(valor: unknown): string {
 }
 
 /**
+ * Páginas del sitio web que no viven en `/{slug}` sino en una subcarpeta propia.
+ * Copia de `RUTAS_PROPIAS` en `sitio-web/src/features/paginas/model/rutas.ts`:
+ * al mover una página allí, hay que añadirla también aquí o el buscador enlazará la
+ * URL vieja (que igual redirige, pero con un salto de más).
+ */
+const RUTAS_PROPIAS_SITIO: Record<string, string> = {
+  'politica-de-privacidad': '/inicio/politica-de-privacidad',
+  cno: '/clasificacion/cno',
+  cuoc: '/clasificacion/cuoc',
+};
+
+/**
  * Resuelve la URL pública según el slug y el ámbito ('intranet' o 'sitio').
  * Los slugs jerárquicos de encuestas en intranet se mapean a su ruta correspondiente.
  */
@@ -49,6 +61,8 @@ export function resolverHref(slug: string, ambito: 'intranet' | 'sitio' = 'sitio
     if (slug === 'encuestas-calidad-de-formacion') return '/encuestas/calidad-de-formacion';
     if (slug === 'encuestas-seguimiento-laboral') return '/encuestas/seguimiento-laboral';
     if (slug.startsWith('encuestas-')) return `/encuestas/${slug.replace(/^encuestas-/, '')}`;
+  } else if (RUTAS_PROPIAS_SITIO[slug]) {
+    return RUTAS_PROPIAS_SITIO[slug];
   }
   return `/${slug}`;
 }

@@ -52,6 +52,7 @@ export async function depurarVersiones(
           pg_column_size(pv.contenido) +
           COALESCE(pg_column_size(pv.layout), 0) +
           COALESCE(pg_column_size(pv.motivo_rechazo), 0) +
+          COALESCE(pg_column_size(pv.comentario_cambios), 0) +
           64
         )::bigint AS bytes
       FROM paginas_versiones pv
@@ -121,6 +122,7 @@ function formatearBytes(bytes: number): string {
         pg_column_size(pv.contenido) +
         COALESCE(pg_column_size(pv.layout), 0) +
         COALESCE(pg_column_size(pv.motivo_rechazo), 0) +
+        COALESCE(pg_column_size(pv.comentario_cambios), 0) +
         64
       ), 0)::bigint AS bytes
       FROM paginas_versiones pv;`,

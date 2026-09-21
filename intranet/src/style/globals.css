@@ -1601,6 +1601,80 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* «Enviar a revisión» se apaga hasta que hay comentario de cambios. Sin este estado
+   el botón se veía igual de activo y el clic simplemente no hacía nada. Gemelo de
+   sitio-web. */
+.olo-modal-btn:disabled,
+.olo-modal-btn:disabled:hover {
+  background: #e5e7eb;
+  border-color: #d1d5db;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+/* --- Comentario de cambios del envío a revisión (el «commit») --- */
+
+.olo-modal-comentario {
+  margin: 0 0 1.25rem;
+}
+
+.olo-modal-comentario-etiqueta {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #001631;
+}
+
+.olo-modal-comentario-obligatorio {
+  font-weight: 400;
+  color: #4b5563;
+}
+
+.olo-modal-comentario-campo {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 0.925rem;
+  line-height: 1.45;
+  color: #1f2937;
+  background: #ffffff;
+  resize: none;
+}
+
+.olo-modal-comentario-campo::placeholder {
+  color: #6b7280;
+}
+
+.olo-modal-comentario-campo:focus-visible {
+  outline: 2px solid #001631;
+  outline-offset: 1px;
+  border-color: #001631;
+}
+
+.olo-modal-comentario-campo[aria-invalid="true"] {
+  border-color: #b45309;
+}
+
+/* Ayuda a la izquierda, cuenta a la derecha. Gris #4b5563 sobre blanco: 7.6:1. */
+.olo-modal-comentario-pie {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  color: #4b5563;
+}
+
+.olo-modal-comentario-cuenta {
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
 /* Solo para lectores de pantalla. La usa el anuncio de la cuenta atrás, que no debe
    duplicar en pantalla el número que ya está a la vista. El sitio público ya la tenía;
    la intranet no, y el modal es compartido. */
@@ -1803,82 +1877,6 @@
   }
 }
 
-/* --- Botón lápiz legado (edit-button) --- */
-
-/* Entrada corta al aparecer: los cuatro botones se resuelven en el servidor
-   aquí (ver `(secciones)/layout.tsx`), así que aparecen juntos, pero de golpe.
-   El `transform` va en el propio botón, no en un contenedor que lo envuelva:
-   ninguno de estos botones tiene descendientes con `position: fixed` propios, así
-   que no hay *containing block* que romper (a diferencia de `RouteTransition` en
-   sitio-web — ver el comentario equivalente en su `globals.css`). */
-@keyframes olo-boton-flotante-aparece {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.edit-button {
-  position: fixed;
-  bottom: 1.5rem;
-  right: 1.5rem;
-  z-index: 50;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.55rem 1rem;
-  background: #002c46;
-  color: #fff;
-  border-radius: 999px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
-  transition: background 0.15s ease, transform 0.15s ease;
-  animation: olo-boton-flotante-aparece 180ms ease-out both;
-}
-
-.edit-button:hover {
-  background: #001a2a;
-  transform: translateY(-2px);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .edit-button {
-    animation: none !important;
-  }
-}
-
-/* Editar la plantilla afecta a las cinco secciones, no solo a la que se está
-   mirando: se apila encima del botón de la sección. Apilado y no al lado, porque
-   así no hay que ajustar el desplazamiento cada vez que cambie el texto de un
-   botón. */
-.edit-button--plantilla {
-  bottom: 4.6rem;
-  font-weight: 500;
-}
-
-/* Crear una sección estrena una ruta del portal: es la acción menos frecuente y la
-   de mayor alcance de las tres, así que va la más arriba de la pila y en hueco, para
-   que no compita con «Editar sección», que es lo que se usa a diario. */
-.edit-button--nueva {
-  bottom: 7.7rem;
-  background: transparent;
-  color: #002c46;
-  border: 1.5px solid #002c46;
-  font-weight: 500;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
-}
-
-.edit-button--nueva:hover {
-  background: #002c46;
-  color: #fff;
-}
-
 /* --- Diálogo de «Nueva sección» --- */
 
 .nueva-seccion-fondo {
@@ -2047,23 +2045,6 @@
   flex-basis: 100%;
   font-size: 0.8rem;
   color: #40607a;
-}
-
-/* Eliminar es la acción de la que no se vuelve: va la más arriba de la pila, en rojo y
-   en hueco. El relleno se reserva para las acciones que se usan a diario — un botón
-   destructivo sólido y grande invita justo a lo que no se quiere invitar. */
-.edit-button--eliminar {
-  bottom: 10.8rem;
-  background: transparent;
-  color: #b3261e;
-  border: 1.5px solid #b3261e;
-  font-weight: 500;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
-}
-
-.edit-button--eliminar:hover {
-  background: #b3261e;
-  color: #fff;
 }
 
 /* Botón de confirmar un borrado dentro del diálogo. Se deshabilita hasta que el nombre

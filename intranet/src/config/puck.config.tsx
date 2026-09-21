@@ -44,8 +44,8 @@ import {
 import { Render, type Config, type Data } from '@puckeditor/core';
 import { useState, useEffect, useRef, type ComponentProps, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { ImageUploaderField } from '@/features/gestor-secciones/components/image-uploader-field';
-import { ArchivoUploaderField } from '@/features/gestor-secciones/components/archivo-uploader-field';
+import { ImageUploaderField } from '@/features/paginas/edicion/components/image-uploader-field';
+import { ArchivoUploaderField } from '@/features/paginas/edicion/components/archivo-uploader-field';
 
 /** Props de un componente de Puck. `id` siempre viene inyectado y, al ser
  *  obligatorio, evita que TypeScript trate el tipo como "weak" y rechace el
@@ -1149,7 +1149,7 @@ const BLOQUES_COMUNES = [
 /**
  * La sección que guarda la barra y el pie comunes.
  *
- * Espejo de `SLUG_PLANTILLA` en `features/gestor-secciones/lib/plantilla.ts`. No se
+ * Espejo de `SLUG_PLANTILLA` en `features/paginas/menu-y-pie/menu-y-pie.ts`. No se
  * importa de allí para no atar el catálogo de bloques a una feature: aquí solo hace
  * falta el literal, y si algún día cambia, cambia en los dos sitios.
  */

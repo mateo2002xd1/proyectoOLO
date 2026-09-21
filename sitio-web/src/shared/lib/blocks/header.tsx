@@ -171,7 +171,7 @@ export function Header({
     return () => clearInterval(interval);
   }, []);
 
-  const editHref = hasSession ? '/admin/dashboard' : '/admin/login';
+  const editHref = hasSession ? '/admin/dashboard' : '/login';
   const editTitle = hasSession ? 'Ir al panel de administración' : 'Iniciar sesión';
 
   const navLinks = customNavLinks || [
@@ -180,8 +180,8 @@ export function Header({
       label: 'Clasificaciones',
       href: '/clasificacion',
       children: [
-        { label: 'Clasificación Única de Ocupaciones para Colombia', href: '/clasificacion?tipo=cuoc' },
-        { label: 'Clasificación Nacional de Ocupaciones', href: '/clasificacion?tipo=cno' },
+        { label: 'Clasificación Única de Ocupaciones para Colombia', href: '/clasificacion/cuoc' },
+        { label: 'Clasificación Nacional de Ocupaciones', href: '/clasificacion/cno' },
       ],
     },
     { label: 'Tendencias de las Ocupaciones', href: '/tendencias' },
