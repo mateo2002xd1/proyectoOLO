@@ -623,20 +623,44 @@ const puckConfigBase: Config = {
       defaultProps: {
         id: 'recursos-visuales-1',
         titulo: '<p><strong>Recursos</strong> visuales</p>',
-        videos: [],
+        videos: [
+          {
+            youtubeId: 'm1h4tcLAmEk',
+            titulo: '#DatoOLO | Con nuestros servicios apoyamos a los colombianos víctimas del conflicto armado',
+            canal: '@SENAComunica',
+          },
+          {
+            youtubeId: 'v2imp4BA-Zg',
+            titulo: '#DatoOLO | ¡Con nosotros te formas para el éxito!',
+            canal: '@SENAComunica',
+          },
+          {
+            youtubeId: 'QjPPzJNR9K0',
+            titulo: '#DatoOLO | ¿Ya estás preparado para OLO te Cuenta 🤔?',
+            canal: '@SENAComunica',
+          },
+          {
+            youtubeId: 'azV9kvP4ikw',
+            titulo: '#DatoOLO | ¡No te pierdas ni un minuto de OLO Te Cuenta!',
+            canal: '@SENAComunica',
+          },
+        ],
       },
       render: ({
         id,
         titulo,
         videos,
+        puck,
       }: BlockRender<{
         titulo?: ReactNode;
         videos?: { youtubeId?: string; titulo?: ReactNode; canal?: ReactNode; miniatura?: string }[];
+        puck?: { isEditing?: boolean };
       }>) => (
         <RecursosVisualesBloque
           block={{ id: id || 'recursos-visuales-preview' }}
           titulo={titulo}
           videos={videos}
+          esEdicion={Boolean(puck?.isEditing)}
         />
       ),
     },
@@ -1558,7 +1582,7 @@ const puckConfigBase: Config = {
         const tipo = (data.props.tipoTendencia as TipoTendenciaOcupacional) || 'mas-menos';
         const tituloSugerido = TITULOS_TENDENCIA[tipo] || TITULOS_TENDENCIA['mas-menos'];
 
-        let propsActualizadas = { ...data.props };
+        const propsActualizadas = { ...data.props };
         let huboCambios = false;
 
         if (propsActualizadas.mostrarTotales === undefined) {
