@@ -60,7 +60,7 @@ import {
   ErrorAuditoria,
   COLOR_ACCION,
   etiquetaDeAccion,
-  etiquetaDeEntidad,
+  resumenDeCambios,
   type RegistroAuditoria,
 } from '@/features/administracion/auditoria';
 import { useUsuarios, mensajeDeError, type User } from '../hooks/use-usuarios';
@@ -136,10 +136,6 @@ function sinPlantilla(resumen: ResumenPaginasPublicadas): ResumenPaginasPublicad
   const intranet = resumen.intranet.filter((p) => p.slug !== SLUG_PLANTILLA);
   return { sitio, intranet, total: sitio.length + intranet.length };
 }
-
-/** Solo los nombres de los campos tocados: el antes/después vive en la bitácora. */
-const camposTocados = (registro: RegistroAuditoria) =>
-  registro.camposModificados.map(({ campo }) => campo).join(', ');
 
 /**
  * La cola de revisión exige permiso para publicar (`pagina.routes.ts`), así que a
@@ -591,6 +587,33 @@ export function PanelGeneralLayout({
   );
 }
 
+/**
+ * Título, subtítulo y el enlace a la bitácora completa de la tarjeta «Actividad
+ * Reciente». Se repite igual en sus tres estados (con datos, sin acceso/con error y
+ * vacía) — con datos va dentro de un `<caption>` de la tabla; sin ellos, en un `<div>`
+ * suelto — así que sale a un componente en vez de copiarlo tres veces.
+ */
+function CabeceraActividad({ sinAccesoAuditoria }: { sinAccesoAuditoria: boolean }) {
+  return (
+    <div className="flex items-start justify-between gap-3">
+      <div>
+        <h2 className="admin-subtitle text-zinc-950 dark:text-[#f6f6f6]">Actividad reciente</h2>
+        <p className="mt-1 text-sm text-zinc-500 dark:text-[#94a3b8]">
+          Consulta el resumen de la bitácora más reciente.
+        </p>
+      </div>
+      {!sinAccesoAuditoria && (
+        <Link
+          href="/admin/auditoria"
+          className="shrink-0 text-sm font-medium text-[#4C7A1C] hover:underline dark:text-[#9ED65C]"
+        >
+          Ver más
+        </Link>
+      )}
+    </div>
+  );
+}
+
 export function PanelGeneralDashboard() {
   const { users, error, fetchUsers } = useUsuarios();
   const [loading, setLoading] = useState(true);
@@ -688,67 +711,69 @@ export function PanelGeneralDashboard() {
       </div>
 
       <div className="w-full">
-        <div className="min-w-0 rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
-          <div className="mb-4 flex items-baseline justify-between gap-3">
-            <h2 className="admin-subtitle text-zinc-950 dark:text-[#f6f6f6]">Actividad Reciente</h2>
-            {!sinAccesoAuditoria && (
-              <Link
-                href="/admin/auditoria"
-                className="shrink-0 text-sm font-medium text-[#4C7A1C] hover:underline dark:text-[#9ED65C]"
-              >
-                Ver más
-              </Link>
-            )}
-          </div>
+        {/* Mismo patrón de tarjeta que Auditoría/Roles/Usuarios (borde + fondo +
+            sombra al pasar el ratón), pero sin `p-4`: el título, la tabla y el
+            paginador llevan su propio espaciado, como en el componente de
+            referencia (caption + thead + tbody a ancho completo, sin margen
+            perdido a los lados). */}
+        <div className="min-w-0 overflow-hidden rounded-xl border border-zinc-200 bg-white transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
           {errorActividad ? (
-            <p
-              className={
-                sinAccesoAuditoria
-                  ? 'text-sm text-zinc-500 dark:text-[#94a3b8]'
-                  : 'text-sm text-red-600 dark:text-red-300'
-              }
-            >
-              {errorActividad.message}
-            </p>
+            <div className="p-5">
+              <CabeceraActividad sinAccesoAuditoria={sinAccesoAuditoria} />
+              <p
+                className={
+                  sinAccesoAuditoria
+                    ? 'mt-3 text-sm text-zinc-500 dark:text-[#94a3b8]'
+                    : 'mt-3 text-sm text-red-600 dark:text-red-300'
+                }
+              >
+                {errorActividad.message}
+              </p>
+            </div>
           ) : (actividad || []).length > 0 ? (
             <>
-              {/* Mismas columnas que la bitácora, en versión angosta: la tarjeta ocupa
-                  media pantalla, así que la tabla desborda a scroll en vez de apretarse.
-                  `overflow-y-hidden` junto al `-x-auto` es lo que hace falta para que el
-                  redondeo del contenedor recorte el encabezado en las cuatro esquinas:
-                  con un solo eje explícito, algunos navegadores no lo clipan igual. */}
-              <div className="overflow-x-auto overflow-y-hidden rounded-lg">
-                <table className="w-full min-w-[34rem] text-left text-sm">
-                  <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-[#131b2f]">
+              {/* `overflow-y-hidden` junto al `-x-auto` es lo que hace falta para que
+                  el redondeo del contenedor recorte la cabecera en las cuatro
+                  esquinas: con un solo eje explícito, algunos navegadores no lo
+                  clipan igual. */}
+              <div className="overflow-x-auto overflow-y-hidden">
+                <table className="w-full min-w-[40rem] text-left text-sm">
+                  <caption className="p-5 text-left">
+                    <CabeceraActividad sinAccesoAuditoria={sinAccesoAuditoria} />
+                  </caption>
+                  <thead className="border-y border-zinc-200 bg-zinc-50 text-xs text-zinc-500 dark:border-zinc-700 dark:bg-white/5 dark:text-[#94a3b8]">
                     <tr>
-                      <th scope="col" className="px-3 py-2 font-medium">Fecha y hora</th>
-                      <th scope="col" className="px-3 py-2 font-medium">Usuario</th>
-                      <th scope="col" className="px-3 py-2 font-medium">Acción</th>
-                      <th scope="col" className="px-3 py-2 font-medium">Cambios</th>
+                      <th scope="col" className="px-5 py-3 font-medium">Fecha y hora</th>
+                      <th scope="col" className="px-5 py-3 font-medium">Usuario</th>
+                      <th scope="col" className="px-5 py-3 font-medium">Acción</th>
+                      <th scope="col" className="px-5 py-3 font-medium">Cambios</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
                     {actividadPaginada.map((registro) => (
                       <tr key={registro.id}>
-                        <td className="whitespace-nowrap px-3 py-3 text-xs text-zinc-600 dark:text-zinc-300">
+                        <td className="whitespace-nowrap px-5 py-3.5 text-zinc-600 dark:text-zinc-300">
                           {fechaCorta(registro.fecha)}
                         </td>
-                        <td className="max-w-[9rem] truncate px-3 py-3 text-zinc-900 dark:text-[#f6f6f6]">
-                          {registro.usuarioNombre ?? <span className="text-zinc-500">Sin usuario</span>}
+                        <td className="max-w-[10rem] truncate px-5 py-3.5 font-medium text-zinc-900 dark:text-[#f6f6f6]">
+                          {registro.usuarioNombre ?? <span className="font-normal text-zinc-500">Sin usuario</span>}
                         </td>
-                        <td className="px-3 py-3">
+                        <td className="px-5 py-3.5">
                           <span
                             className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${COLOR_ACCION[registro.accion] ?? ''}`}
                           >
-                            {etiquetaDeAccion(registro.accion)}
+                            {etiquetaDeAccion(registro.accion, registro.categoria)}
                           </span>
                         </td>
+                        {/* Lo que de verdad cambió (el comentario del envío, o el
+                            motivo de un rechazo), no los nombres de los campos
+                            tocados: mismo resumen que ya usa la tabla de
+                            Auditoría, para que las dos lean igual un registro. */}
                         <td
-                          className="max-w-[12rem] truncate px-3 py-3 text-zinc-500 dark:text-[#94a3b8]"
-                          title={camposTocados(registro)}
+                          className="max-w-[16rem] truncate px-5 py-3.5 text-zinc-500 dark:text-[#94a3b8]"
+                          title={resumenDeCambios(registro)}
                         >
-                          {etiquetaDeEntidad(registro.entidadTipo)}
-                          {camposTocados(registro) && ` · ${camposTocados(registro)}`}
+                          {resumenDeCambios(registro) || '—'}
                         </td>
                       </tr>
                     ))}
@@ -768,11 +793,14 @@ export function PanelGeneralDashboard() {
                 }}
                 etiqueta="registros"
                 opciones={[12, 30, 60, 100]}
-                className="mt-1 px-0"
+                className="px-5"
               />
             </>
           ) : (
-            <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">No hay actividad reciente.</p>
+            <div className="p-5">
+              <CabeceraActividad sinAccesoAuditoria={sinAccesoAuditoria} />
+              <p className="mt-3 text-sm text-zinc-500 dark:text-[#94a3b8]">No hay actividad reciente.</p>
+            </div>
           )}
         </div>
       </div>
