@@ -11,6 +11,7 @@ import { exigirEmailInstitucional } from '../../shared/email-policy';
 import { SecurityQuestionRepository } from '../../repositories/security-questions.repository';
 import { usuariosPolicies } from '../../policies/usuarios.policies';
 import { esDueno } from '../../shared/autorizacion';
+import { logAudit } from '../auditoria/audit.usecase';
 
 export const getAllUsers = () => UserRepository.findAll();
 
@@ -276,6 +277,18 @@ export const deactivateExpiredUsers = async () => {
       continue;
     }
     await UserRepository.update(user.id, { status: 'inactive' });
+    // Mismo verbo y el mismo «Sistema» como actor que el login expirado
+    // (`login.usecase.ts`): es la misma caducidad, solo que la descubre este barrido
+    // en vez de un intento de entrar. Sin `ip`/`user-agent`: esto corre al listar la
+    // pantalla de usuarios, no como respuesta a la petición de nadie en particular.
+    await logAudit({
+      entidadId: user.id,
+      entidadTipo: 'usuario',
+      accion: 'expirar',
+      usuarioId: null,
+      usuarioNombre: 'Sistema (fecha de caducidad cumplida)',
+      camposModificados: [{ campo: 'status', antes: 'active', despues: 'inactive' }],
+    });
     deactivated++;
   }
 

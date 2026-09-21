@@ -22,7 +22,7 @@ import { camposDe } from '../shared/auditoria-campos';
  */
 const registrarUsuario = (
   req: Request,
-  accion: 'crear' | 'actualizar' | 'eliminar',
+  accion: 'crear' | 'actualizar' | 'eliminar' | 'inactivar',
   usuarioAfectadoId: string | undefined,
   campos = camposDe(req.body)
 ) => {
@@ -75,17 +75,18 @@ export const UserController = {
       // trae en el cuerpo: que alguien pueda editar su cuenta no significa que pueda
       // cambiarse el rol desde ella.
       const result = await updateUser(id, req.body, req.user);
-      
-      console.log('--- DEBUG AUDITORIA ---');
-      console.log('BODY:', req.body);
-      console.log('ESTADO ANTERIOR:', estadoAnterior);
-      
-      const campos = camposDe(req.body, estadoAnterior as Record<string, unknown> | null);
-      
-      console.log('CAMPOS:', campos);
-      console.log('-----------------------');
 
-      await registrarUsuario(req, 'actualizar', id, campos);
+      const campos = camposDe(req.body, estadoAnterior as Record<string, unknown> | null);
+
+      // Inactivar desde el panel no es una edición más: le quita el acceso a alguien, y
+      // la bitácora tiene que poder decirlo sin que quien la lea abra el detalle. Se
+      // compara contra el estado anterior y no solo contra `req.body.status`: mandar
+      // `status: 'inactive'` sobre una cuenta que ya lo estaba no es una inactivación
+      // nueva, es un no-op, y registrarla como tal llenaría la bitácora de falsos.
+      const seInactivo =
+        req.body?.status === 'inactive' && (estadoAnterior as { status?: string } | null)?.status !== 'inactive';
+
+      await registrarUsuario(req, seInactivo ? 'inactivar' : 'actualizar', id, campos);
       res.json(result);
     } catch (err) { next(err); }
   },

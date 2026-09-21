@@ -30,6 +30,7 @@ import * as observatorioProgramasSobresalientes from './026-observatorio-program
 import * as cargasDatos from './027-cargas-datos';
 import * as cargasDatosProgreso from './028-cargas-datos-progreso';
 import * as comentarioCambiosVersiones from './029-comentario-cambios-versiones';
+import * as accionesSeguridadAuditoria from './030-acciones-seguridad-auditoria';
 
 export interface Migracion {
   nombre: string;
@@ -70,6 +71,7 @@ const migraciones: Migracion[] = [
   cargasDatos,
   cargasDatosProgreso,
   comentarioCambiosVersiones,
+  accionesSeguridadAuditoria,
 ];
 
 const TABLA_CONTROL = 'migraciones_aplicadas';
