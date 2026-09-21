@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Work_Sans } from 'next/font/google';
 import '@/style/globals.css';
-import { SCRIPT_TEMA_ANTES_DE_PINTAR, SincronizarTema } from '@/shared/lib/tema';
+import { SincronizarTema } from '@/shared/lib/tema';
 
 const workSans = Work_Sans({
   subsets: ['latin'],
@@ -42,17 +42,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className={workSans.variable} suppressHydrationWarning>
-      <head>
-        {/* Tema antes de pintar, y solo en el panel: ver `shared/lib/tema/tema.ts`. */}
-        <script
-          id="anti-flash-theme"
-          suppressHydrationWarning
-          dangerouslySetInnerHTML={{ __html: SCRIPT_TEMA_ANTES_DE_PINTAR }}
-        />
-      </head>
       <body>
-        {children}
         <SincronizarTema />
+        {children}
       </body>
     </html>
   );

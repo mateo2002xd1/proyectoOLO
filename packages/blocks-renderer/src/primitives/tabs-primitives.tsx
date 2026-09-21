@@ -13,6 +13,7 @@ export interface TabItem {
   abrirNuevaPestana?: 'si' | 'no';
   urlArchivo?: string;
   nombreArchivo?: string;
+  pesoArchivo?: string;
   destino?: DestinoTabConfig;
 }
 
@@ -119,8 +120,10 @@ export function TabsRender({
   const [mensajeToast, setMensajeToast] = useState<string | null>(null);
 
   const dispararDescarga = (tab: TabItem, url: string) => {
-    const nombre = url.split('/').pop() || 'archivo';
-    setMensajeToast(`Descargando archivo: ${decodeURIComponent(nombre)}`);
+    const nombre = tab.destino?.nombreArchivo || tab.nombreArchivo || (url ? url.split('/').pop() : '') || 'archivo';
+    const peso = tab.destino?.pesoArchivo || tab.pesoArchivo || '';
+    const textoPeso = peso ? ` (${peso})` : '';
+    setMensajeToast(`Descargando archivo: ${decodeURIComponent(nombre)}${textoPeso}`);
     setTimeout(() => {
       setMensajeToast(null);
     }, 3500);
@@ -221,6 +224,7 @@ export function TabsRender({
                   const urlEnlace = destino.urlEnlace || tab.urlEnlace || '';
                   const abrirNuevaPestana = destino.abrirNuevaPestana || tab.abrirNuevaPestana || 'si';
                   const urlArchivo = destino.urlArchivo || tab.urlArchivo || '';
+                  const nombreArchivo = destino.nombreArchivo || tab.nombreArchivo;
 
                   const esEnlace = tipoDestino === 'enlace';
                   const esArchivo = tipoDestino === 'archivo';
@@ -283,7 +287,7 @@ export function TabsRender({
                       key={tab.slotId}
                       id={tabButtonId}
                       href={urlArchivo}
-                      download
+                      download={nombreArchivo || true}
                       target="_blank"
                       rel="noopener noreferrer"
                       className={`olo-tabs-btn ${estaActiva ? 'olo-tabs-btn--active' : ''}`}
@@ -358,6 +362,11 @@ export function TabsRender({
               const tipoDestino = destino.tipo || tab.tipoDestino || 'contenido';
               const urlEnlace = destino.urlEnlace || tab.urlEnlace || '';
               const urlArchivo = destino.urlArchivo || tab.urlArchivo || '';
+              const nombreArchivo = destino.nombreArchivo || tab.nombreArchivo;
+              const pesoArchivo = destino.pesoArchivo || tab.pesoArchivo;
+              const nombreVisible =
+                nombreArchivo ||
+                (urlArchivo ? decodeURIComponent(urlArchivo.split('?')[0].split('/').pop() ?? '') : '');
 
               // Si es hipervínculo
               if (tipoDestino === 'enlace') {
@@ -427,42 +436,17 @@ export function TabsRender({
                       <h4 style={{ margin: '0 0 8px 0', fontSize: '15px', fontWeight: 600, color: '#001A39' }}>
                         Pestaña configurada para descarga de archivo
                       </h4>
-                      <p style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#4b5563' }}>
+                      <p style={{ margin: 0, fontSize: '13px', color: '#4b5563' }}>
                         Archivo adjunto:{' '}
                         {urlArchivo ? (
-                          <span style={{ color: '#0033a0', wordBreak: 'break-all' }}>{urlArchivo}</span>
+                          <span style={{ color: '#0033a0', fontWeight: 600, wordBreak: 'break-all' }}>
+                            {nombreVisible}
+                            {pesoArchivo ? ` (${pesoArchivo})` : ''}
+                          </span>
                         ) : (
                           <span style={{ color: '#9ca3af' }}>(Sin archivo subido en el panel lateral)</span>
                         )}
                       </p>
-                      <p style={{ margin: 0, fontSize: '12px', color: '#6b7280' }}>
-                        Por ser una descarga directa, esta pestaña no admite bloques ni contenido interno.
-                      </p>
-                      {urlArchivo && (
-                        <div style={{ marginTop: '14px' }}>
-                          <a
-                            href={urlArchivo}
-                            download
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={() => dispararDescarga(tab, urlArchivo)}
-                            style={{
-                              display: 'inline-block',
-                              padding: '6px 14px',
-                              fontSize: '13px',
-                              color: '#0033a0',
-                              border: '1px solid #0033a0',
-                              borderRadius: '4px',
-                              textDecoration: 'none',
-                              backgroundColor: '#ffffff',
-                              fontWeight: 500,
-                              cursor: 'pointer',
-                            }}
-                          >
-                            Probar descarga
-                          </a>
-                        </div>
-                      )}
                     </div>
                   </div>
                 );

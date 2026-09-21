@@ -1,19 +1,23 @@
 'use client';
 
 import { useEffect } from 'react';
-import { usePathname } from 'next/navigation';
-import { CLAVE_TEMA, esRutaDelPanel } from './tema';
+import { usePathname, useServerInsertedHTML } from 'next/navigation';
+import { CLAVE_TEMA, esRutaDelPanel, SCRIPT_TEMA_ANTES_DE_PINTAR } from './tema';
 
 /**
- * Vuelve a aplicar la regla del tema en cada cambio de ruta.
- *
- * El script del `<head>` solo corre en la carga completa. Al pasar del panel al sitio
- * con un enlace de Next no hay carga: el `<html>` es el mismo y conservaba `.dark`,
- * así que el sitio público se quedaba oscuro hasta recargar. Esto lo quita (o lo pone,
- * al volver al panel) sin esperar a una recarga.
+ * Inyecta el script anti-flash en el `<head>` antes de pintar en SSR (mediante
+ * `useServerInsertedHTML`) evitando warnings de React 19 al renderizar en cliente,
+ * y vuelve a sincronizar la regla del tema en cada cambio de ruta.
  */
 export function SincronizarTema() {
   const ruta = usePathname();
+
+  useServerInsertedHTML(() => (
+    <script
+      id="anti-flash-theme"
+      dangerouslySetInnerHTML={{ __html: SCRIPT_TEMA_ANTES_DE_PINTAR }}
+    />
+  ));
 
   useEffect(() => {
     let oscuro = false;

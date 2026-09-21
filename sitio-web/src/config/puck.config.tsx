@@ -788,10 +788,11 @@ const puckConfigBase: Config = {
                   value={value}
                   onChange={onChange}
                   accept=".pdf"
-                  etiquetaBoton="Subir PDF"
+                  etiquetaBoton="Subir archivo"
                 />
               ),
             },
+            nombreArchivo: { type: 'text' as const, label: 'Nombre al descargar (opcional)' },
             etiqueta: { type: 'text' as const, label: 'Etiqueta (#OLOtecuenta)', contentEditable: true },
             mes: { type: 'text' as const, label: 'Mes', contentEditable: true },
             dia: { type: 'text' as const, label: 'Día', contentEditable: true },
@@ -926,6 +927,7 @@ const puckConfigBase: Config = {
             titulo: { type: 'text' as const, label: 'Título del documento', contentEditable: true },
             descripcion: { type: 'text' as const, label: 'Descripción breve', contentEditable: true },
             documentoId: { type: 'text' as const, label: 'ID en CompromISO SENA (ej. 6701)' },
+            nombreArchivo: { type: 'text' as const, label: 'Nombre al descargar (opcional)' },
           },
           defaultItemProps: {
             etiquetaTab: 'Nuevo documento',

@@ -16,6 +16,7 @@ import type { ReactNode } from 'react';
 export interface EnlaceDescarga {
   etiqueta?: ReactNode;
   url?: string;
+  nombreArchivo?: string;
 }
 
 export interface DescargasConPresentacionProps {
@@ -48,6 +49,12 @@ export function DescargasConPresentacion({
                   {elemento.url ? (
                     <a
                       href={elemento.url}
+                      download={
+                        elemento.nombreArchivo ||
+                        (typeof elemento.etiqueta === 'string' && elemento.etiqueta.trim()
+                          ? elemento.etiqueta.trim()
+                          : true)
+                      }
                       className="hover:underline transition-colors"
                       target="_blank"
                       rel="noopener noreferrer"

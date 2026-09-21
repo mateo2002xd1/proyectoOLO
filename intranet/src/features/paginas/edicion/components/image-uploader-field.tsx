@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { mensajeDeError } from '@/shared/lib/errors';
 import { registrarSubidaPendiente } from '../services/edicion.service';
-import { usePaginaEnEdicion } from '../lib/pagina-en-edicion';
+import { usePaginaEnEdicion, useRegistrarSubida } from '../lib/pagina-en-edicion';
 
 interface ImageUploaderFieldProps {
   value: string;
@@ -12,6 +12,7 @@ interface ImageUploaderFieldProps {
 
 export function ImageUploaderField({ value, onChange }: ImageUploaderFieldProps) {
   const slug = usePaginaEnEdicion();
+  const registrarSubida = useRegistrarSubida();
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,7 +43,11 @@ export function ImageUploaderField({ value, onChange }: ImageUploaderFieldProps)
 
       const data = await res.json();
       onChange(data.url); // The API should return { url: '/uploads/filename.png' }
-      if (slug) void registrarSubidaPendiente(slug, data.url);
+      if (registrarSubida) {
+        void registrarSubida(data.url);
+      } else if (slug) {
+        void registrarSubidaPendiente(slug, data.url);
+      }
     } catch (err) {
       setError(mensajeDeError(err, 'Error desconocido'));
     } finally {
@@ -86,13 +91,6 @@ export function ImageUploaderField({ value, onChange }: ImageUploaderFieldProps)
           </button>
         </div>
       )}
-      <input
-        type="text"
-        value={value || ''}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="URL de la imagen"
-        style={{ padding: '8px', border: '1px solid #ccc', borderRadius: '4px', width: '100%' }}
-      />
       <div style={{ position: 'relative', overflow: 'hidden', display: 'inline-block' }}>
         <button
           type="button"
@@ -108,7 +106,7 @@ export function ImageUploaderField({ value, onChange }: ImageUploaderFieldProps)
             width: '100%',
           }}
         >
-          {isUploading ? 'Subiendo...' : 'Subir Imagen Local'}
+          {isUploading ? 'Subiendo imagen...' : 'Subir imagen'}
         </button>
         <input
           type="file"

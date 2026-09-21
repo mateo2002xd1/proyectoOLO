@@ -19,6 +19,7 @@ export interface TasaVideoProps {
   descargaTexto?: ReactNode;
   descargaEtiqueta?: ReactNode;
   descargaUrl?: string;
+  descargaNombre?: string;
 }
 
 const aUrlDeInsercion = (url: string): string => {
@@ -38,6 +39,7 @@ export function TasaVideo({
   descargaTexto,
   descargaEtiqueta = 'Descargar',
   descargaUrl,
+  descargaNombre,
 }: TasaVideoProps) {
   return (
     <section className="tasa-video-wrapper">
@@ -59,7 +61,19 @@ export function TasaVideo({
       {descargaUrl && (
         <div className="tasa-video-descarga">
           {descargaTexto && <p>{descargaTexto}</p>}
-          <a href={descargaUrl} download className="tasa-video-descarga-boton">
+          <a
+            href={descargaUrl}
+            download={
+              descargaNombre ||
+              (descargaUrl?.includes('?nombre=')
+                ? decodeURIComponent(descargaUrl.split('?nombre=')[1]?.split('&')[0] ?? '')
+                : '') ||
+              (typeof descargaEtiqueta === 'string' && descargaEtiqueta.trim()
+                ? descargaEtiqueta.trim()
+                : true)
+            }
+            className="tasa-video-descarga-boton"
+          >
             {descargaEtiqueta}
           </a>
         </div>

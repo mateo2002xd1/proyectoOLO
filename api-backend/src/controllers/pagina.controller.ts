@@ -339,7 +339,12 @@ export const PaginaController = {
 
   async registrarSubida(req: Request, res: Response, next: NextFunction) {
     try {
-      await registrarSubidaPendiente(req.params.slug as string, req.body.ruta, ambitoExigidoDe(req));
+      await registrarSubidaPendiente(
+        req.params.slug as string,
+        req.body.ruta,
+        ambitoExigidoDe(req),
+        req.user?.id
+      );
       res.json({ registrada: true });
     } catch (err) { next(err); }
   },

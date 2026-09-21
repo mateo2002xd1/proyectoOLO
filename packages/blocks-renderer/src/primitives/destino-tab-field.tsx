@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
+import { usePaginaEnEdicion, useRegistrarSubida } from './pagina-en-edicion-context';
+import { formatearBytes } from './formato-archivos';
 
 export interface DestinoTabConfig {
   tipo: 'contenido' | 'enlace' | 'archivo';
@@ -8,6 +10,7 @@ export interface DestinoTabConfig {
   abrirNuevaPestana?: 'si' | 'no';
   urlArchivo?: string;
   nombreArchivo?: string;
+  pesoArchivo?: string;
 }
 
 interface DestinoTabFieldProps {
@@ -56,12 +59,16 @@ function verificarSiPestanaActivaTieneContenido(): boolean {
  * Utiliza los estilos de formulario, colores (#0033a0) y botones existentes en intranet.
  */
 export function DestinoTabField({ value, onChange }: DestinoTabFieldProps) {
+  const slug = usePaginaEnEdicion();
+  const registrarSubida = useRegistrarSubida();
+
   const config: DestinoTabConfig = {
     tipo: value?.tipo || 'contenido',
     urlEnlace: value?.urlEnlace || '',
     abrirNuevaPestana: value?.abrirNuevaPestana || 'si',
     urlArchivo: value?.urlArchivo || '',
     nombreArchivo: value?.nombreArchivo || '',
+    pesoArchivo: value?.pesoArchivo || '',
   };
 
   const [subiendo, setSubiendo] = useState(false);
@@ -133,12 +140,26 @@ export function DestinoTabField({ value, onChange }: DestinoTabFieldProps) {
       }
 
       const data = await res.json();
+      const pesoFormateado = data.pesoFormateado || (archivo.size ? formatearBytes(archivo.size) : undefined);
       onChange({
         ...config,
         tipo: 'archivo',
         urlArchivo: data.url,
         nombreArchivo: archivo.name,
+        pesoArchivo: pesoFormateado,
       });
+
+      // Anota la subida pendiente según las normas establecidas
+      if (registrarSubida) {
+        void registrarSubida(data.url);
+      } else if (slug) {
+        void fetch(`/api/paginas/${encodeURIComponent(slug)}/subidas`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ruta: data.url }),
+          credentials: 'include',
+        }).catch(() => undefined);
+      }
     } catch (err) {
       setErrorSubida(err instanceof Error ? err.message : 'Error desconocido al subir el archivo');
     } finally {
@@ -147,9 +168,9 @@ export function DestinoTabField({ value, onChange }: DestinoTabFieldProps) {
     }
   };
 
-  const nombreVisible = config.urlArchivo
+  const nombreVisible = config.nombreArchivo || (config.urlArchivo
     ? decodeURIComponent(config.urlArchivo.split('/').pop() ?? '')
-    : '';
+    : '');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
@@ -284,51 +305,13 @@ export function DestinoTabField({ value, onChange }: DestinoTabFieldProps) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
 
           {nombreVisible && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', color: '#4b5563', wordBreak: 'break-all' }}>
-              <span>Archivo actual: {nombreVisible}</span>
-              <button
-                type="button"
-                onClick={() =>
-                  onChange({
-                    ...config,
-                    urlArchivo: '',
-                    nombreArchivo: '',
-                  })
-                }
-                style={{
-                  color: '#dc2626',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  textDecoration: 'underline',
-                  padding: 0,
-                }}
-              >
-                Quitar
-              </button>
+            <div style={{ fontSize: '12px', color: '#4b5563', wordBreak: 'break-all' }}>
+              <span>
+                Archivo actual: {nombreVisible}
+                {config.pesoArchivo ? ` (${config.pesoArchivo})` : ''}
+              </span>
             </div>
           )}
-
-          <input
-            type="text"
-            value={config.urlArchivo || ''}
-            onChange={(e) =>
-              onChange({
-                ...config,
-                urlArchivo: e.target.value,
-              })
-            }
-            placeholder="Ruta del archivo"
-            style={{
-              padding: '8px',
-              border: '1px solid #ccc',
-              borderRadius: '4px',
-              width: '100%',
-              fontSize: '13px',
-              boxSizing: 'border-box',
-            }}
-          />
 
           <div style={{ position: 'relative', overflow: 'hidden', display: 'inline-block', width: '100%' }}>
             <button
@@ -347,7 +330,7 @@ export function DestinoTabField({ value, onChange }: DestinoTabFieldProps) {
                 fontWeight: 500,
               }}
             >
-              {subiendo ? 'Subiendo...' : 'Subir archivo'}
+              {subiendo ? 'Subiendo archivo...' : 'Subir archivo'}
             </button>
             <input
               type="file"

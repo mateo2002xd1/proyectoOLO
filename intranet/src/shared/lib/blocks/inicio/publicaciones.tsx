@@ -23,6 +23,7 @@ import { resaltar } from '../compartidos/resaltar';
 export interface PublicacionItem {
   titulo?: React.ReactNode;
   pdfUrl?: string;
+  nombreArchivo?: string;
   etiqueta?: React.ReactNode;
   mes?: React.ReactNode;
   dia?: React.ReactNode;
@@ -415,6 +416,14 @@ export function Publicaciones({
                         href: publicacion.pdfUrl,
                         target: '_blank',
                         rel: 'noopener noreferrer',
+                        download:
+                          publicacion.nombreArchivo ||
+                          (publicacion.pdfUrl?.includes('?nombre=')
+                            ? decodeURIComponent(publicacion.pdfUrl.split('?nombre=')[1]?.split('&')[0] ?? '')
+                            : '') ||
+                          (typeof publicacion.titulo === 'string' && publicacion.titulo
+                            ? `${publicacion.titulo.replace(/<[^>]*>/g, '').trim()}.pdf`
+                            : true),
                       }
                     : {})}
                   onClick={(evento) => {

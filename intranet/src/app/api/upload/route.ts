@@ -96,9 +96,20 @@ export async function POST(request: Request) {
     await fs.mkdir(directorioDestino, { recursive: true });
     await fs.writeFile(path.join(directorioDestino, resultado.nombreArchivo), datos);
 
+    const formatearBytesLocal = (bytes: number) => {
+      if (!bytes || bytes <= 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
+    };
+
     return NextResponse.json({
       success: true,
       url: `/uploads/${carpeta}/${resultado.nombreArchivo}`,
+      nombreOriginal: file.name,
+      peso: file.size,
+      pesoFormateado: formatearBytesLocal(file.size),
     });
   } catch (error) {
     console.error('[upload] Error al procesar archivo:', error);
