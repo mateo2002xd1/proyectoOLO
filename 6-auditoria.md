@@ -5,6 +5,319 @@
 
 ---
 
+## sesión 19-09-2026 (4.ª parte): la API redacta lo que pasó, y «Cambios» deja de enseñar códigos
+
+**Qué era.** La columna «Cambios» enseñaba el campo crudo. Inactivar una cuenta se leía
+`status: inactive`; mover su caducidad, `expiration_date: 2026-09-20T00:00:00.000Z`. Ninguna de las
+dos decía **sobre quién**: `entidad_id` guarda el id del usuario, no su correo. El usuario pidió dos
+frases, por fases:
+
+| Fase | Cambio | Lo que se lee ahora |
+|---|---|---|
+| **1** | `status` | «Se activó el usuario fallip@sena.edu.co» / «Se inactivó el usuario fallip@sena.edu.co» |
+| **2** | `expiration_date` | «Se actualizó la fecha de caducidad de 19/09/2026 a 20/09/2026» |
+
+**Lo redacta el backend**, que es lo que se pidió —«organizar cómo el back entrega los cambios»— y
+además es el único sitio donde se puede: el correo no está en la fila. La frase viaja en un campo
+nuevo del registro, `resumen`; la pantalla lo prefiere a todo lo demás y, cuando llega `null`, sigue
+por el camino de siempre. Así ninguna fila se queda sin explicación mientras las fases avanzan.
+
+### Se calcula al leer, no al escribir
+
+`campos_modificados` **no se toca**: es la evidencia —qué campo cambió, de qué a qué— y meterle texto
+de presentación, o un correo que nadie modificó, la deja sin servir como prueba. El resumen se arma
+en `shared/auditoria-resumen.ts` cada vez que se lee, y eso trae un efecto que no se pidió y sí
+importa: **las filas de meses atrás también quedan explicadas**, sin migrar ni reescribir nada.
+
+Los correos se resuelven de **una consulta por página** (`UserRepository.findEmailsByIds`), no una
+por fila: sobre la tabla que más crece del sistema, y con el tope de 200 filas, lo segundo serían
+200 idas a la base para pintar una tabla. Una cuenta ya borrada no aparece —`entidad_id` no tiene
+clave foránea contra `usuarios`, así que sus filas sobreviven al borrado—; entonces se usa el correo
+que la propia fila recuerda, y si tampoco lo hay la frase queda «Se inactivó la cuenta».
+
+### Tres trampas que había que esquivar
+
+| Trampa | Qué habría pasado |
+|---|---|
+| **La fecha, leída en local** | `fecha_caducidad` es un `TIMESTAMP` que guarda un día suelto: el panel manda `2026-09-20` y se almacena como la medianoche **UTC** de ese día. Con los getters locales, en Colombia (UTC-5), sale el **19** — un día menos que el que se eligió, justo en la pantalla que existe para demostrar qué se eligió. Se formatea en UTC |
+| **El formulario manda campos que no cambiaron** | Editar solo la fecha manda además `name`, `apellidos`, `email` y `role_id` idénticos a como estaban. Sin comparar «antes» contra «después» no habría encajado ninguna frase. Y la fecha se compara **por día**: el «antes» llega como `2026-09-19T00:00:00.000Z` y el «después» como `2026-09-19`, el mismo día escrito de dos formas |
+| **`expirar` también deja `status: inactive`** | Caducar no lo decidió nadie: se cumplió una fecha. Redactarlo como «se inactivó el usuario» le atribuiría a una persona algo que hizo el sistema. La frase solo se arma para `actualizar` e `inactivar` |
+
+### Si el cambio toca algo más, no se redacta
+
+Basta con que el cambio real toque un campo fuera de `status` y `expiration_date` para que `resumen`
+venga `null` y la pantalla enseñe la lista de campos de siempre. Es a propósito: una frase que hable
+de la fecha y se calle que también cambió el rol es peor que el texto feo, porque **se lee como
+completa**. Cada fase nueva mueve un caso más a este lado.
+
+**Descartado.** El primer intento escribía el correo dentro de `campos_modificados` como un campo
+`_email` y redactaba la frase en la pantalla. Se deshizo por tres razones: ensucia la evidencia con
+un campo que nadie modificó, no sirve para las filas ya escritas, y deja la lógica en el sitio que
+el usuario pidió expresamente evitar. Arrastraba además dos fallos: la fecha se leía en la zona del
+navegador (un día menos) y la frase de inactivar **no se veía nunca**, porque `RESUMEN_FIJO` cortaba
+antes de llegar a ella.
+
+**Sin tocar:** las frases de `autenticar` y `expirar` siguen viviendo en la pantalla. No estaban en
+lo pedido, y la API devuelve `null` para las dos, así que se leen igual que ayer.
+
+**Verificado:** once casos contra `resumenDeRegistro` —activar, inactivar, cuenta borrada, fecha
+cambiada con cuatro campos iguales al lado, la misma fecha en dos formatos, primera fecha asignada,
+las dos frases juntas, `expirar`, un cambio que además toca el nombre, un login y una página—, todos
+en verde. `tsc --noEmit` limpio en la API y en el sitio-web.
+
+**Archivos.** Nuevo: `api-backend/src/shared/auditoria-resumen.ts`. Tocados: `auditoria-dto.ts`
+(campo `resumen` y contexto de lectura), `auditoria.controller.ts`, `audit.usecase.ts`,
+`usuarios.repository.ts`, `analizar-depuracion-auditoria.usecase.ts`, `docs/openapi.ts`, y en el
+sitio-web `auditoria/types.ts` y `auditoria/lib/cambios.ts`.
+
+**Pendiente:** el usuario anunció más fases. Añadir una es una entrada más en `CAMPOS_CON_FRASE` con
+su frase al lado, sin tocar la pantalla.
+
+---
+
+## sesión 19-09-2026 (3.ª parte): el filtro de Auditoría pasa a tres categorías
+
+**Qué era.** El usuario pidió reorganizar el filtro «Categoría» (que en la 2.ª parte tenía dos
+opciones) en tres, con estas acciones en cada una:
+
+| Categoría | Acciones |
+|---|---|
+| **Contenido editorial** | Creación (solo de **páginas**, no de usuarios ni nada relacionado), Edición (de secciones o páginas, desde el editor) |
+| **Administración** | Rechazo, Publicación, Archivado |
+| **Seguridad** | Autenticación, Modificación, Expiró, Inactivación, Cambio de contraseña, Eliminación |
+
+Reemplaza el mapeo de la 2.ª parte (que repartía por entidad: contenido / seguridad y administración).
+
+### Por qué no bastaba con reordenar el desplegable
+
+La categoría ya no puede salir de la **entidad**. Rechazo, Publicación y Archivado caen sobre las
+mismas entidades (`pagina`, `contenido`) que Creación y Edición y, sin embargo, son de otra
+categoría; y `crear` y `actualizar` sirven igual para una página que para una cuenta. Además,
+«Seguridad» junta cosas que dependen del verbo (Eliminación, de cualquier entidad) con cosas que
+dependen de la entidad (Modificación, solo de cuentas y roles). El filtro anterior —una lista de
+entidades «y» una lista de verbos— no puede decir eso.
+
+Por eso la regla pasó a la **API**, en un solo sitio: `shared/auditoria-categorias.ts`, una tabla
+por categoría de «acción en (…) y, si hace falta, entidad en (…)». La usan las dos cosas que antes
+podían discrepar: el filtro (`?categoria=`, que se suma con «y» a `accion`) y cada fila que la API
+entrega (`categoria` en el registro), que es lo que decide si una píldora dice «Edición» o
+«Modificación». La pantalla ya no repite la regla: se borró `ENTIDADES_POR_CATEGORIA`.
+
+### Decisiones que tomé y conviene revisar
+
+- **Eliminación está en Seguridad para *cualquier* entidad**, porque el usuario la puso solo ahí y
+  es una sola etiqueta. Hoy son 73 filas: **52 de páginas** (borrar una página, depurar versiones),
+  16 de usuarios, 3 de roles y 2 de configuración (la depuración de la propia bitácora). Si las de
+  páginas deben verse en otro lado, es cambiar una línea de la tabla.
+- **Crear un usuario o un rol** (21 filas) ya no aparece como «Creación» en el desplegable —la
+  Creación es solo de páginas—, pero **siguen en la categoría Seguridad**: se ven al elegirla con
+  «Todas» las acciones. Sin esto habrían quedado sin lugar en ninguna categoría.
+- Una fila que no encaje en ninguna (`seccion`, `marca`, `archivo`; ningún código las escribe) tiene
+  `categoria: null` y solo se ve sin filtrar por categoría. Hoy son **0**.
+
+### Un hueco que ya tenía la versión anterior
+
+Al quitar la categoría («Todas») con una acción elegida, la acción se quedaba sin categoría, y
+`actualizar` sin ella da 286 filas mezcladas de ediciones y modificaciones. Ahora **volver a «Todas»
+categorías vuelve también a «Todas» las acciones** (`lib/filtros.ts`). Lo destapó la prueba de la
+función pura.
+
+### Capas tocadas
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| API | `shared/auditoria-categorias.ts` (nuevo) | Las reglas y `categoriaDe` |
+| API | `repositories/auditoria.repository.ts`, `shared/auditoria-dto.ts` | Filtro `categoria`; el registro trae `categoria` |
+| API | `routes/audit.routes.ts`, `docs/openapi.ts` | Parámetro y campo documentados; de paso el enum de `accion` del esquema, que no traía seis verbos |
+| API | `scripts/verificar-auditoria.ts` | Comprobaciones de las reglas y una que compara el SQL del filtro contra la regla, sobre la bitácora real |
+| Pantalla | `types.ts`, `lib/filtros.ts`, `services/auditoria.service.ts`, `auditoria-view.tsx`, `detalle-registro.tsx`, `lib/csv.ts`, `panel-general.tsx` | Tres categorías, cada acción en una sola, la etiqueta sale de `registro.categoria` |
+
+**Sin tocar:** la base de datos (no hay migración nueva) y los colores de las píldoras.
+
+### Verificación
+
+| Qué | Resultado |
+|---|---|
+| `tsc --noEmit` en api-backend y sitio-web | Sin errores |
+| ESLint en la feature de auditoría y `panel-general.tsx` | Sin errores; los mismos 8 avisos que ya tenía |
+| Filtro SQL contra la regla en JS, sobre las **1.238 filas reales** (solo lectura) | Coincide: Contenido editorial 617, Administración 383, Seguridad 238, sin categoría 0 |
+| Cada una de las 11 opciones del desplegable contra su conteo por `GROUP BY` | Coincide (Creación 32, Edición 585, Rechazo 21, Publicación 215, Archivado 147, Modificación 121, Cambio de contraseña 23, Eliminación 73; Autenticación, Expiró e Inactivación en 0 hasta aplicar la 030) |
+| Categoría inventada en el querystring | Se descarta: es como no filtrar |
+| Acciones por categoría en el desplegable | Editorial: 2; Administración: 3; Seguridad: 6; sin categoría: las 11, sin etiquetas repetidas |
+| `aplicarCambioDeFiltro` (elegir acción fija categoría; cambiar de categoría descarta la que no cabe; volver a «Todas» limpia la acción) | Correcto |
+| OpenAPI regenerado | 52 rutas; `categoria` sale como parámetro y en el esquema del registro |
+| Recorrido en el navegador con sesión | **No se hizo**: el servidor no arranca con la 029 y la 030 sin aplicar |
+
+**Pendiente:** el mismo de la 2.ª parte —aplicar la 029 y la 030 con `npm run migrate`, reiniciar la
+API (no recarga sola) y recorrer las tres categorías con sesión—. Hasta entonces el proceso que
+corre sigue con el código anterior.
+
+---
+
+## sesión 19-09-2026 (2.ª parte): filtros de Auditoría por categoría y acción, tres eventos que no se registraban y badges por severidad
+
+**Qué era.** El filtro «Entidad» confundía: ofrecía ocho opciones (`contenido`, `pagina`,
+`seccion`, `usuario`, `rol`, `marca`, `configuracion`, `archivo`), de las que **`seccion`,
+`marca` y `archivo` no las escribe ningún código**, y ninguna decía *qué se hizo*. El usuario
+propuso organizar la bitácora en dos mundos —cambios de contenido, y seguridad y
+administración— con un nombre propio para cada acción, y pidió que los badges usaran
+`danger`, `success`, `warning` y `brand` según la severidad. Antes de tocar nada se presentó
+el plan y se confirmó (Categoría reemplaza a Entidad; instrumentar de verdad lo que faltaba).
+
+### Lo que no era relabeling: tres eventos que no dejaban rastro
+
+Al revisar el código para el mapeo aparecieron tres huecos. Los tres se cerraron:
+
+| Evento | Qué pasaba | Ahora |
+|---|---|---|
+| **Autenticación** | El login **nunca** se auditaba, ni en el sitio ni en la intranet | `login.usecase.ts` escribe `autenticar`. Sitio-web e intranet llegan al mismo `AuthController.login`, así que un solo punto cubre los dos |
+| **Expiró** | Al caducar una cuenta se pasaba a `inactive` en silencio, en dos sitios: al intentar entrar y en el barrido `deactivateExpiredUsers` (que corre al listar usuarios) | Los dos escriben `expirar`, con actor «Sistema (fecha de caducidad cumplida)» y `usuarioId` en null: nadie lo decidió, se cumplió una fecha |
+| **Inactivación** | Inactivar desde el panel era un `actualizar` más | `PATCH /users/:id` escribe `inactivar` cuando el estado pasa de activo a inactivo. Mandar `inactive` sobre una cuenta ya inactiva no cuenta |
+
+Además, publicar un **contenido** (banner, estudio) caía en `actualizar`; ahora escribe `publicar`
+(`contenido.controller.ts`), como ya hacían las páginas con `aprobar`.
+
+**Descartado:** auditar también el login fallido. No estaba en lo pedido («si alguien se
+autenticó») y es otra decisión —volumen, y qué hacer con un correo que no existe—. **Cuenta
+maestra de `.env`:** su propio login no deja fila, porque `entidad_id` es una FK obligatoria
+contra `usuarios` y ella no tiene fila. El resto de sus acciones sí quedan (ya era así).
+
+### El mapeo
+
+| Categoría | Etiqueta | Verbos de la base |
+|---|---|---|
+| Contenido (`pagina`, `contenido`) | **Creación** | `crear` |
+| | **Edición** | `guardar_borrador`, `enviar_revision`, y `actualizar` sobre una página o contenido |
+| | **Rechazo** | `rechazar` |
+| | **Publicación** | `aprobar`, `publicar` |
+| Seguridad y administración (`usuario`, `rol`, `configuracion`) | **Autenticación** | `autenticar` (nuevo) |
+| | **Creación** | `crear` (cuentas) |
+| | **Modificación** | `actualizar` sobre un usuario o un rol: su rol, sus permisos, sus datos |
+| | **Expiró** | `expirar` (nuevo) |
+| | **Inactivación** | `inactivar` (nuevo) |
+
+**Sin tocar, porque no estaba en la lista:** Eliminación, Archivado (`despublicar`) y Cambio de
+contraseña. `configuracion` entró en seguridad porque es lo que deja la depuración de la propia
+bitácora; sin lugar en ninguna categoría esas filas solo se veían con «Todas».
+
+> **La trampa:** `actualizar` es el mismo verbo para dos etiquetas distintas. Con solo el verbo no
+> se distingue «Edición» de «Modificación»; hace falta la entidad. Por eso la etiqueta pasó de un
+> diccionario `verbo → texto` a `etiquetaDeAccion(verbo, entidad)`, y decide por la **categoría** de la
+> entidad, la misma que usa el filtro. Hay **165 filas de `pagina` con `actualizar`** de antes de que
+> existiera `guardar_borrador`: la primera versión solo miraba `contenido` y esas filas decían
+> «Actualización» mientras el filtro «Edición» las contaba. Lo destapó comparar el filtro contra
+> los conteos reales de la base.
+
+### El filtro
+
+«Entidad» se reemplazó por **«Categoría»** (2 opciones). «Acción» depende de ella: con una categoría
+elegida solo ofrece lo que le corresponde, y con «Todas» ofrece las once. Dos reglas, en
+`lib/filtros.ts` como función pura para poder probarla:
+
+- Elegir una acción propia de una categoría **fija también la categoría** (quien busca «Autenticación»
+  no espera seguir viendo contenido).
+- Cambiar de categoría **descarta la acción que ya no cabe**, en vez de dejar un filtro invisible que
+  vacía la tabla sin explicación.
+
+Sin acotar la entidad, «Edición» y «Modificación» traerían las filas de la otra: `actualizar` sin
+categoría da 284 filas mezcladas.
+
+Del lado de la API, `accion` y `entidadTipo` aceptan **listas separadas por coma** (`Op.in`); con un
+solo valor la consulta sigue siendo `= valor`. De paso apareció un fallo viejo: `cambiar_password`
+**no estaba en la lista de verbos que acepta el filtro** de `auditoria-dto.ts`, así que filtrar por
+él se descartaba en silencio y devolvía toda la bitácora.
+
+### Badges por severidad
+
+Antes, nueve acciones con nueve colores sin más orden que ser distintos. Ahora cuatro niveles con los
+nombres que pidió el usuario (`VARIANTE_ACCION` en `types.ts`), y **una etiqueta, un color** —hay
+etiquetas que agrupan varios verbos, y no pueden verse en dos tonos—:
+
+| Nivel | Significa | Acciones |
+|---|---|---|
+| `brand` | Rutina: nada que mirar | Creación, Edición, Modificación, Autenticación, Archivado, Cambio de contraseña |
+| `success` | Logro: ya lo ve el público | Publicación |
+| `warning` | Atención: nada se perdió, pero alguien debe actuar | Rechazo, Expiró |
+| `danger` | Crítico: se cierra un acceso, y se puede revertir | Inactivación |
+| `dangerFuerte` | Crítico y no se deshace: el único relleno sólido | Eliminación |
+
+Los contrastes se midieron con la paleta de Tailwind v4 y, en oscuro, componiendo el fondo translúcido
+sobre el del panel: entre 6.3 y 11.5, todos sobre el 4.5 de AA. El verde de marca (`#7DB828`) es de tono
+medio y su texto no llega a AA sobre su propio fondo, así que el texto va en `#365812` (claro) y
+`#9ED65C` (oscuro). **La primera versión tenía el fondo claro al 10 % y la píldora casi no se veía**: se
+subió al 20 % y se cambió el texto. Se dibujó una vista previa en Chrome en claro y oscuro para juzgarlo
+a la vista y no solo por números.
+
+### Capas tocadas
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| DB | `migrations/030-acciones-seguridad-auditoria.ts` + `index.ts` | `CHECK ck_auditoria_accion` suma `autenticar`, `expirar`, `inactivar` |
+| Modelo | `models/content-audit-log.ts` | El tipo `AccionAuditable` |
+| Login | `auth.controller.ts`, `login.usecase.ts`, `shared/auditoria-request.ts` | `autenticar` y `expirar`; `origenDeLaPeticion` (ip y navegador) sale a una función |
+| Usuarios | `listar-usuarios.usecase.ts`, `usuarios.controller.ts` | `expirar` en el barrido; `inactivar`. Se quitaron los `console.log('--- DEBUG AUDITORIA ---')` que había en ese mismo bloque |
+| Contenido | `contenido.controller.ts` | Publicar escribe `publicar` |
+| Consulta | `auditoria.repository.ts`, `shared/auditoria-dto.ts`, `audit.routes.ts` | Listas en `accion` y `entidadTipo`, verbos nuevos, OpenAPI al día (el parámetro se documentaba como `entidad` y el código lee `entidadTipo`) |
+| Pantalla | `types.ts`, `lib/filtros.ts` (nuevo), `lib/cambios.ts`, `hooks/use-auditoria.ts`, `services/auditoria.service.ts`, `auditoria-view.tsx`, `detalle-registro.tsx`, `lib/csv.ts`, `panel-general.tsx` | Categoría, opciones de acción, etiquetas por entidad, severidad. La columna «Cambios» dice «Inició sesión», «La cuenta pasó a inactiva al cumplirse su fecha de caducidad» y «Cuenta inactivada desde el panel de usuarios» en vez de `status: inactive` |
+
+### Verificación
+
+| Qué | Resultado |
+|---|---|
+| `tsc --noEmit` en api-backend, sitio-web e intranet | Sin errores |
+| ESLint en la feature de auditoría | Sin errores; `panel-general.tsx` conserva 8 avisos que ya tenía |
+| `filtrosDesdeQuery` con 9 casos (suelto, lista, espacios, valores inventados, alias viejo) | Correcto |
+| Cada opción de «Acción» y cada categoría llega **completa** a la API | Correcto (11 opciones, 2 categorías) |
+| El filtro contra la base real, en solo lectura, comparado con los conteos por `GROUP BY` | **Coincide en las cinco consultas** (Contenido 1052, Seguridad, Contenido+Edición 585, Seguridad+Modificación, listas vacías = sin filtro) |
+| Una etiqueta, un color, sobre todas las combinaciones de verbo y entidad | Correcto |
+| `aplicarCambioDeFiltro` con 13 casos | Correcto |
+| Escrituras con los repositorios sustituidos (sin tocar Neon): login correcto, contraseña incorrecta, cuenta expirada, cuenta maestra, barrido con un administrador exento, PATCH activo→inactivo / inactivo→inactivo / reactivar / cambiar datos / cambiar rol, contenido publicado / archivado / editado | Las 30 comprobaciones correctas |
+| Que el login **siga funcionando aunque la escritura de la bitácora falle** (la 030 sin aplicar) | Correcto: `logAudit` se traga el error y lo deja en el log |
+| SQL de la 030 sobre una **copia temporal** de la tabla | Antes rechaza los tres verbos; después los acepta y rechaza uno inventado; `down()` vuelve las filas nuevas a `actualizar` |
+| OpenAPI regenerado con las anotaciones nuevas | 52 rutas, los dos parámetros salen bien |
+| Vista previa de las píldoras en Chrome, claro y oscuro | Revisada; de aquí salió el ajuste del verde de marca |
+| Recorrido en el navegador con sesión | **No se hizo**: la 030 no está aplicada |
+
+> **La 030 no está aplicada, a propósito** (la API apunta a la base de Neon compartida). El
+> orden importa: el servidor **no arranca** con migraciones pendientes (`server.ts`), así que
+> primero `npm run migrate` en `api-backend` —aplica la 029 y la 030— y después se reinicia
+> `npm run dev`, que no recarga solo. El proceso que ya corre sigue con el código anterior, y
+> con él nada de esto está activo. Las filas viejas no se reescriben: los `actualizar` de
+> usuarios que en su día fueron inactivaciones seguirán diciendo «Modificación».
+
+**Pendiente al cierre:**
+- Aplicar la 029 y la 030 y recorrerlo con sesión: iniciar sesión (debe salir «Autenticación»),
+  inactivar una cuenta de prueba, y filtrar por cada categoría y acción.
+- El filtro «Usuario» sobre `autenticar` muestra a quien entró; para `expirar` el actor es «Sistema» y
+  la persona afectada está en el detalle (`entidad_id`), no en el filtro.
+- Sigue sin auditarse el login fallido ni el bloqueo por intentos; si se quiere, es un verbo más.
+
+---
+
+## sesión 19-09-2026 (1.ª parte): la tabla «Actividad reciente» del dashboard muestra lo que cambió y se rediseña
+
+**Qué era.** La columna «Cambios» del dashboard seguía usando `camposTocados`, que solo unía los
+**nombres** de los campos (`comentario, slug, version, estado`), mientras la tabla de Auditoría ya
+mostraba el comentario del envío desde la sesión anterior. Era el pendiente que había quedado
+anotado en la 16.ª parte de ayer. Ahora usa `resumenDeCambios`, la misma función, exportada por el
+barrel de la feature para no saltarse la regla 12.
+
+**El rediseño.** El usuario pasó un componente de Flowbite (caption con título y subtítulo, cabecera
+con banda propia, filas espaciadas). Sus clases (`neutral-primary-soft`, `text-heading`, `fg-brand`…)
+**no existen en este Tailwind**, así que se copió la estructura y se mapeó a la paleta zinc/dark que ya
+usa el panel y al verde de marca del enlace «Ver más». Título, subtítulo y enlace van en un `<caption>`
+real (`CabeceraActividad`, que se repite igual en los tres estados de la tarjeta); la tarjeta perdió su
+`p-4` para que la tabla vaya a ancho completo; la cabecera dejó las mayúsculas y ganó una banda propia
+(en oscuro se confundía con el fondo de la tarjeta); «Usuario» va en negrita.
+
+**Descartado:** cambiar la columna «Usuario» a `<th scope="row">` como en el ejemplo. La tabla completa
+de Auditoría usa `<td>` en todas las celdas, y una sola tabla distinta rompía la coherencia.
+
+Verificación: `tsc` sin errores; ESLint sin errores nuevos (los 8 avisos ya estaban, comparado contra
+el estado previo); `resumenDeCambios` probado con los cuatro tipos de registro que trae esa tarjeta.
+No se vio en el navegador: el dashboard exige sesión.
+
+---
 ## sesión 18-09-2026 (17.ª parte): integrar la PR #114 de Mateo, revertir 4cf3734 y hacer bien lo que buscaba
 
 **Qué había.** La PR #114 (rama `mateo`) ya estaba fusionada en `OLO/dev`, y el `dev`

@@ -346,6 +346,7 @@ eso la tabla lleva el porqué en vez de un número de riesgo.
 | 025 | `visitas-paginas` | Añade la columna `visitas` (entero, default 0) a `paginas` y siembra conteos iniciales para las páginas publicadas existentes |
 | 026 | `observatorio-programas-sobresalientes` | Crea las 5 tablas del esquema snowflake del Observatorio: catálogos (`departamentos`, `centros_formacion`, `niveles_formacion`, `programas_formacion`) y tabla transaccional de hechos `programas_sobresalientes` con clave de idempotencia `(centro_id, programa_id, sexo)` e índices de cobertura |
 | 029 | `comentario-cambios-versiones` | `paginas_versiones.comentario_cambios VARCHAR(100)`: el «commit» obligatorio al enviar a revisión. Va en la versión y no solo en la bitácora porque aprobar, rechazar y descartar también lo registran, y las hace otra persona después. Añade la invariante I14; las versiones que ya estuvieran en revisión se rellenan con «Enviada antes de que el comentario fuera obligatorio» en vez de dejar el `CHECK` en `NOT VALID` |
+| 030 | `acciones-seguridad-auditoria` | Suma `autenticar`, `expirar` e `inactivar` al `CHECK` de `auditoria_cambios`. Hasta entonces el login no dejaba rastro y una cuenta caducada o inactivada a mano se confundía con cualquier `actualizar`. Se recrea el `CHECK` entero, como en la 011 y la 022; al revertir, las filas nuevas vuelven a `actualizar` para no romper el `CHECK` anterior |
 
 Tres lecciones de este tramo que vale más recordar que releer:
 

@@ -90,14 +90,14 @@ A continuación se detalla la ficha técnica y matriz de atributos para cada una
 | 3 | `entidad_tipo` | `TEXT` | — | SÍ | Ninguna | — | `'post'::text` | Nombre de la entidad auditada ('contenido', 'pagina', 'seccion', 'usuario', etc.). Restringido por CHECK. |
 | 4 | `usuario_id` | `UUID` | — | SÍ | **FK** | `usuarios.id` (ON DELETE SET NULL) | — | Clave foránea hacia el usuario que ejecutó la operación (NULL si es cuenta maestra local o usuario eliminado). |
 | 5 | `usuario_nombre` | `TEXT` | — | SÍ | Ninguna | — | — | Nombre desnormalizado del usuario para preservar trazabilidad histórica (D6). Almacena el nombre del usuario (`name` o email de fallback), tanto en peticiones web como en procesos de respaldo (`despublicar` y `publicar`). |
-| 6 | `accion` | `TEXT` | — | NO (NOT NULL) | Ninguna | — | — | Operación ejecutada ('crear', 'actualizar', 'eliminar', 'publicar', 'despublicar', 'aprobar', 'rechazar', 'enviar_revision', 'cambiar_password', 'guardar_borrador'). Restringido por CHECK. |
+| 6 | `accion` | `TEXT` | — | NO (NOT NULL) | Ninguna | — | — | Operación ejecutada ('crear', 'actualizar', 'eliminar', 'publicar', 'despublicar', 'aprobar', 'rechazar', 'enviar_revision', 'cambiar_password', 'guardar_borrador', 'autenticar', 'expirar', 'inactivar'). Restringido por CHECK. Los tres últimos (migración 030) son de seguridad y administración: inicio de sesión, cuenta caducada por su fecha y cuenta inactivada a mano. |
 | 7 | `campos_modificados` | `JSONB` | — | SÍ | Ninguna | — | `'[]'::jsonb` | Detalle JSONB con los deltas de campos alterados: [{campo, antes, despues}]. |
 | 8 | `created_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | — | Marca temporal exacta del evento auditado. |
 | 9 | `ip` | `INET` | — | SÍ | Ninguna | — | — | Dirección de red INET (IPv4/IPv6) desde la que se originó la petición web, proceso editorial o restauración de respaldos. |
 | 10 | `user_agent` | `TEXT` | — | SÍ | Ninguna | — | — | Encabezado User-Agent del navegador o cliente HTTP que originó la operación (incluye peticiones web y restauración de respaldos). |
 
 **Restricciones de Integridad (CHECK) de `auditoria_cambios`:**
-- **`ck_auditoria_accion`**: `(accion = ANY (ARRAY['crear'::text, 'actualizar'::text, 'eliminar'::text, 'publicar'::text, 'despublicar'::text, 'aprobar'::text, 'rechazar'::text, 'enviar_revision'::text, 'cambiar_password'::text, 'guardar_borrador'::text]))`
+- **`ck_auditoria_accion`**: `(accion = ANY (ARRAY['crear'::text, 'actualizar'::text, 'eliminar'::text, 'publicar'::text, 'despublicar'::text, 'aprobar'::text, 'rechazar'::text, 'enviar_revision'::text, 'cambiar_password'::text, 'guardar_borrador'::text, 'autenticar'::text, 'expirar'::text, 'inactivar'::text]))`
 - **`ck_auditoria_entidad`**: `(entidad_tipo = ANY (ARRAY['contenido'::text, 'pagina'::text, 'seccion'::text, 'usuario'::text, 'rol'::text, 'marca'::text, 'configuracion'::text, 'archivo'::text]))`
 
 ---
