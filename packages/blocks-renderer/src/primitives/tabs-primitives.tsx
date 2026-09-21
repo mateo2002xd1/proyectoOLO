@@ -13,6 +13,7 @@ export interface TabItem {
   abrirNuevaPestana?: 'si' | 'no';
   urlArchivo?: string;
   nombreArchivo?: string;
+  pesoArchivo?: string;
   destino?: DestinoTabConfig;
 }
 
@@ -120,7 +121,9 @@ export function TabsRender({
 
   const dispararDescarga = (tab: TabItem, url: string) => {
     const nombre = tab.destino?.nombreArchivo || tab.nombreArchivo || (url ? url.split('/').pop() : '') || 'archivo';
-    setMensajeToast(`Descargando archivo: ${decodeURIComponent(nombre)}`);
+    const peso = tab.destino?.pesoArchivo || tab.pesoArchivo || '';
+    const textoPeso = peso ? ` (${peso})` : '';
+    setMensajeToast(`Descargando archivo: ${decodeURIComponent(nombre)}${textoPeso}`);
     setTimeout(() => {
       setMensajeToast(null);
     }, 3500);

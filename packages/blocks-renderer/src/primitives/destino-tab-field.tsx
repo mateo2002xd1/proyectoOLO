@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { usePaginaEnEdicion, useRegistrarSubida } from './pagina-en-edicion-context';
+import { formatearBytes } from './formato-archivos';
 
 export interface DestinoTabConfig {
   tipo: 'contenido' | 'enlace' | 'archivo';
@@ -9,6 +10,7 @@ export interface DestinoTabConfig {
   abrirNuevaPestana?: 'si' | 'no';
   urlArchivo?: string;
   nombreArchivo?: string;
+  pesoArchivo?: string;
 }
 
 interface DestinoTabFieldProps {
@@ -66,6 +68,7 @@ export function DestinoTabField({ value, onChange }: DestinoTabFieldProps) {
     abrirNuevaPestana: value?.abrirNuevaPestana || 'si',
     urlArchivo: value?.urlArchivo || '',
     nombreArchivo: value?.nombreArchivo || '',
+    pesoArchivo: value?.pesoArchivo || '',
   };
 
   const [subiendo, setSubiendo] = useState(false);
@@ -137,11 +140,13 @@ export function DestinoTabField({ value, onChange }: DestinoTabFieldProps) {
       }
 
       const data = await res.json();
+      const pesoFormateado = data.pesoFormateado || (archivo.size ? formatearBytes(archivo.size) : undefined);
       onChange({
         ...config,
         tipo: 'archivo',
         urlArchivo: data.url,
         nombreArchivo: archivo.name,
+        pesoArchivo: pesoFormateado,
       });
 
       // Anota la subida pendiente según las normas establecidas
@@ -301,7 +306,10 @@ export function DestinoTabField({ value, onChange }: DestinoTabFieldProps) {
 
           {nombreVisible && (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', color: '#4b5563', wordBreak: 'break-all' }}>
-              <span>Archivo actual: {nombreVisible}</span>
+              <span>
+                Archivo actual: {nombreVisible}
+                {config.pesoArchivo ? ` (${config.pesoArchivo})` : ''}
+              </span>
               <button
                 type="button"
                 onClick={() =>
@@ -309,6 +317,7 @@ export function DestinoTabField({ value, onChange }: DestinoTabFieldProps) {
                     ...config,
                     urlArchivo: '',
                     nombreArchivo: '',
+                    pesoArchivo: undefined,
                   })
                 }
                 style={{

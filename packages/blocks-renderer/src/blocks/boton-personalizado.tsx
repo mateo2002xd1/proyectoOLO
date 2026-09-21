@@ -85,7 +85,8 @@ export function BotonPersonalizado({
   const dispararDescarga = (e?: React.MouseEvent) => {
     if (!urlDestino || urlDestino === '#') return;
     const nombre = destino?.nombreArchivo || (urlDestino ? urlDestino.split('/').pop() : '') || 'archivo';
-    setMensajeToast(`Descargando archivo: ${decodeURIComponent(nombre)}`);
+    const textoPeso = destino?.pesoArchivo ? ` (${destino.pesoArchivo})` : '';
+    setMensajeToast(`Descargando archivo: ${decodeURIComponent(nombre)}${textoPeso}`);
     setTimeout(() => {
       setMensajeToast(null);
     }, 3500);

@@ -99,4 +99,7 @@ export type {
   SubidaRegistrador,
 } from './primitives/pagina-en-edicion-context';
 
+// ─── Utilidades de peso y formato de archivo ───
+export { formatearBytes } from './primitives/formato-archivos';
+
 

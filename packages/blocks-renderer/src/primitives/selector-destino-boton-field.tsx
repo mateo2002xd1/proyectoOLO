@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { usePaginaEnEdicion, useRegistrarSubida } from './pagina-en-edicion-context';
+import { formatearBytes } from './formato-archivos';
 
 export interface DestinoBotonConfig {
   tipo: 'enlace' | 'archivo' | 'ninguno';
@@ -9,6 +10,7 @@ export interface DestinoBotonConfig {
   abrirNuevaPestana?: boolean;
   urlArchivo?: string;
   nombreArchivo?: string;
+  pesoArchivo?: string;
 }
 
 interface SelectorDestinoBotonFieldProps {
@@ -26,6 +28,7 @@ export function SelectorDestinoBotonField({ value, onChange }: SelectorDestinoBo
     abrirNuevaPestana: value?.abrirNuevaPestana ?? false,
     urlArchivo: value?.urlArchivo || '',
     nombreArchivo: value?.nombreArchivo || '',
+    pesoArchivo: value?.pesoArchivo || '',
   };
 
   const [subiendo, setSubiendo] = useState(false);
@@ -64,11 +67,13 @@ export function SelectorDestinoBotonField({ value, onChange }: SelectorDestinoBo
       }
 
       const data = await res.json();
+      const pesoFormateado = data.pesoFormateado || (archivo.size ? formatearBytes(archivo.size) : undefined);
       onChange({
         ...config,
         tipo: 'archivo',
         urlArchivo: data.url,
         nombreArchivo: archivo.name,
+        pesoArchivo: pesoFormateado,
       });
 
       // Anota la subida pendiente según las normas establecidas
@@ -215,6 +220,7 @@ export function SelectorDestinoBotonField({ value, onChange }: SelectorDestinoBo
               {config.urlArchivo ? (
                 <span style={{ color: '#0033a0', fontWeight: 600, wordBreak: 'break-all' }}>
                   {config.nombreArchivo || config.urlArchivo}
+                  {config.pesoArchivo ? ` (${config.pesoArchivo})` : ''}
                 </span>
               ) : (
                 <span style={{ color: '#9ca3af' }}>(Sin archivo subido en el panel lateral)</span>
@@ -240,11 +246,14 @@ export function SelectorDestinoBotonField({ value, onChange }: SelectorDestinoBo
             >
               <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: '8px' }}>
                 <span style={{ fontWeight: 600, color: '#166534' }}>Archivo vinculado:</span>{' '}
-                <span style={{ color: '#374151' }}>{nombreVisible}</span>
+                <span style={{ color: '#374151' }}>
+                  {nombreVisible}
+                  {config.pesoArchivo ? ` (${config.pesoArchivo})` : ''}
+                </span>
               </div>
               <button
                 type="button"
-                onClick={() => onChange({ ...config, urlArchivo: '', nombreArchivo: '' })}
+                onClick={() => onChange({ ...config, urlArchivo: '', nombreArchivo: '', pesoArchivo: undefined })}
                 style={{
                   padding: '2px 6px',
                   background: '#fee2e2',
