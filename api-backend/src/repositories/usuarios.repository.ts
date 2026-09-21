@@ -19,6 +19,22 @@ export const UserRepository = {
   findByIdWithPassword: (id: string) =>
     User.findByPk(id, { include: [{ model: Role, as: 'role' }] }),
 
+  /**
+   * El correo de varias cuentas de una vez, por id.
+   *
+   * Lo usa la bitácora: sus filas guardan el id del usuario sobre el que se actuó, y
+   * para poder decir «se inactivó el usuario fallip@sena.edu.co» hay que resolverlo.
+   * De una sola consulta por página y no una por fila, que sobre la tabla que más
+   * crece del sistema serían hasta 200 idas a la base para pintar una pantalla.
+   *
+   * Sin el `include` del rol ni el resto de columnas: aquí solo hace falta el correo.
+   */
+  findEmailsByIds: (ids: string[]) =>
+    User.findAll({
+      where: { id: { [Op.in]: ids } },
+      attributes: ['id', 'email'],
+    }),
+
   findByEmail: (email: string) =>
     User.findOne({
       where: { email },

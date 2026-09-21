@@ -4,6 +4,8 @@ import {
   type DatosAuditoria,
   type FiltrosAuditoria,
 } from '../../repositories/auditoria.repository';
+import { UserRepository } from '../../repositories/usuarios.repository';
+import type { EntidadAuditable } from '../../infrastructure/db/models/content-audit-log';
 
 export type { DatosAuditoria, FiltrosAuditoria };
 
@@ -73,3 +75,36 @@ export const getAuditByContentId = (contentId: string, contentType?: string) =>
   AuditRepository.findByContentId(contentId, contentType);
 
 export const getAllAudit = (filtros: FiltrosAuditoria) => AuditRepository.findAll(filtros);
+
+/** Lo mínimo que hace falta de una fila para saber a qué cuenta apunta. */
+type FilaConEntidad = { entidad_tipo: EntidadAuditable; entidad_id: string };
+
+/**
+ * Los correos de las cuentas de las que hablan estas filas, por id.
+ *
+ * La bitácora guarda en `entidad_id` el id del usuario sobre el que se actuó, nunca su
+ * correo. Para que la pantalla pueda leer «se inactivó el usuario fallip@sena.edu.co»
+ * hay que resolverlo, y se resuelve **de una sola consulta para toda la página**: una
+ * por fila serían hasta 200 idas a la base para pintar una tabla.
+ *
+ * Una cuenta borrada no aparece en el resultado, y no es un error: `entidad_id` no
+ * tiene clave foránea contra `usuarios`, así que sus filas sobreviven al borrado. Quien
+ * consume el mapa decide qué decir cuando falta —hoy, `auditoria-resumen.ts` cae en el
+ * correo que la propia fila recuerda y, si tampoco lo hay, en una frase sin correo.
+ */
+export const correosDeCuentasAuditadas = async (
+  filas: FilaConEntidad[]
+): Promise<Map<string, string>> => {
+  const ids = [
+    ...new Set(filas.filter((f) => f.entidad_tipo === 'usuario').map((f) => f.entidad_id)),
+  ];
+  if (ids.length === 0) return new Map();
+
+  const cuentas = await UserRepository.findEmailsByIds(ids);
+
+  return new Map(
+    cuentas
+      .filter((cuenta) => Boolean(cuenta.email))
+      .map((cuenta) => [cuenta.id, cuenta.email] as const)
+  );
+};
