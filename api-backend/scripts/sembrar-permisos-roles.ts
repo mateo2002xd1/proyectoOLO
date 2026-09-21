@@ -41,11 +41,10 @@ const PERMISOS_POR_ROL: Record<string, string[]> = {
 
   // El Editor edita en las dos aplicaciones y envía a revisión, pero no aprueba, no
   // toca cuentas y no lee la bitácora — que guarda la IP de sus compañeros.
-  // `acceso.panel` sí lo necesita: el editor visual vive en /editor.
+  // Ya no necesita `acceso.panel` porque el editor visual vive fuera de /admin en /editor.
   Editor: [
     'acceso.sitio',
     'acceso.intranet',
-    'acceso.panel',
     ...clavesDeEdicion('sitio'),
     ...clavesDeEdicion('intranet'),
   ],

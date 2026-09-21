@@ -3,10 +3,10 @@ import {
   MOTIVO_INACTIVIDAD,
   MOTIVO_INACTIVIDAD_SIN_GUARDAR,
 } from '@olo/inactividad';
-import { MOTIVO_SESION_EXPIRADA } from '../auth-cookies';
+import { MOTIVO_SESION_EXPIRADA, MOTIVO_SIN_PERMISOS } from '../auth-cookies';
 
 /**
- * Qué decirle a quien acaba de llegar al login desde un cierre por inactividad.
+ * Qué decirle a quien acaba de llegar al login desde un cierre por inactividad o permisos.
  *
  * Devuelve `null` cuando no hay motivo o no lo reconocemos: el parámetro llega en la
  * URL y cualquiera puede escribir lo que quiera ahí. Pintar el valor recibido sería
@@ -26,6 +26,8 @@ export const mensajeDeCierre = (motivo: string | null): string | null => {
     // y quien lo veía suponía que la base de datos estaba caída.
     case MOTIVO_SESION_EXPIRADA:
       return 'Tu sesión expiró. Vuelve a entrar para continuar donde estabas.';
+    case MOTIVO_SIN_PERMISOS:
+      return 'No tienes permisos para acceder a esta ruta. Por favor, ingresa con una cuenta autorizada.';
     default:
       return null;
   }
