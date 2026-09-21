@@ -12,10 +12,11 @@ import { comentarioPrincipal, resumenDeCambios } from '../lib/cambios';
 
 import {
   COLOR_ACCION,
-  ETIQUETA_ACCION,
-  ETIQUETA_ENTIDAD,
+  ETIQUETA_CATEGORIA,
   etiquetaDeAccion,
   etiquetaDeEntidad,
+  opcionesDeAccion,
+  type CategoriaAuditoria,
   type RegistroAuditoria,
 } from '../types';
 
@@ -123,6 +124,24 @@ export function AuditoriaView() {
           />
         </Campo>
 
+        {/* Primero la categoría y después la acción: la segunda depende de la primera
+            (Rechazo es de Administración, Expiró de Seguridad), y ese es el orden en
+            que se piensa — de qué mundo hablo, y qué pasó en él. */}
+        <Campo etiqueta="Categoría">
+          <CustomSelect
+            ariaLabel="Categoría"
+            value={filtros.categoria}
+            onChange={(valor) => cambiarFiltro('categoria', valor)}
+            options={[
+              { value: '', label: 'Todas' },
+              ...(Object.keys(ETIQUETA_CATEGORIA) as CategoriaAuditoria[]).map((value) => ({
+                value,
+                label: ETIQUETA_CATEGORIA[value],
+              })),
+            ]}
+          />
+        </Campo>
+
         <Campo etiqueta="Acción">
           <CustomSelect
             ariaLabel="Acción"
@@ -130,21 +149,7 @@ export function AuditoriaView() {
             onChange={(valor) => cambiarFiltro('accion', valor)}
             options={[
               { value: '', label: 'Todas' },
-              ...Array.from(
-                new Map(Object.entries(ETIQUETA_ACCION).map(([value, label]) => [label, { value, label }])).values()
-              ),
-            ]}
-          />
-        </Campo>
-
-        <Campo etiqueta="Entidad">
-          <CustomSelect
-            ariaLabel="Entidad"
-            value={filtros.entidadTipo}
-            onChange={(valor) => cambiarFiltro('entidadTipo', valor)}
-            options={[
-              { value: '', label: 'Todas' },
-              ...Object.entries(ETIQUETA_ENTIDAD).map(([value, label]) => ({ value, label })),
+              ...opcionesDeAccion(filtros.categoria).map(({ value, label }) => ({ value, label })),
             ]}
           />
         </Campo>
@@ -196,7 +201,7 @@ export function AuditoriaView() {
                       <span
                         className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${COLOR_ACCION[registro.accion] ?? ''}`}
                       >
-                        {etiquetaDeAccion(registro.accion)}
+                        {etiquetaDeAccion(registro.accion, registro.categoria)}
                       </span>
                     </td>
                     <td className="px-4 py-1.5 text-zinc-600 dark:text-zinc-300">

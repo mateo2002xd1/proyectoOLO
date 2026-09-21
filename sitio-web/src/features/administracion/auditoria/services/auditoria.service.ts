@@ -29,8 +29,10 @@ const conFiltros = (filtros: Partial<FiltrosAuditoria>, pagina: number, porPagin
   // Un filtro vacío no se manda: mandarlo como cadena vacía haría que el backend
   // lo descartara igual, pero deja una URL ilegible en el registro del servidor.
   if (filtros.usuarioId) params.set('usuarioId', filtros.usuarioId);
+  // `accion` ya viaja como lista separada por comas cuando la etiqueta agrupa verbos.
   if (filtros.accion) params.set('accion', filtros.accion);
-  if (filtros.entidadTipo) params.set('entidadTipo', filtros.entidadTipo);
+  // La API la combina con `accion` con «y»: es lo que separa «Edición» de «Modificación».
+  if (filtros.categoria) params.set('categoria', filtros.categoria);
   if (filtros.desde) params.set('desde', filtros.desde);
   if (filtros.hasta) params.set('hasta', filtros.hasta);
 

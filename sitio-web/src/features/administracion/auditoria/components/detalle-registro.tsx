@@ -261,7 +261,7 @@ export function DetalleRegistro({
                     COLOR_ACCION[registro.accion] ?? ''
                   }`}
                 >
-                  {etiquetaDeAccion(registro.accion)}
+                  {etiquetaDeAccion(registro.accion, registro.categoria)}
                 </span>
               </Dato>
               <Dato etiqueta="Entidad">{etiquetaDeEntidad(registro.entidadTipo)}</Dato>

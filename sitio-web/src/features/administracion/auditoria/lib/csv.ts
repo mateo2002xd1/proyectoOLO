@@ -42,7 +42,7 @@ export function aCsv(registros: RegistroAuditoria[]): string {
     [
       new Date(r.fecha).toLocaleString('es-CO'),
       r.usuarioNombre ?? 'Sin usuario',
-      etiquetaDeAccion(r.accion),
+      etiquetaDeAccion(r.accion, r.categoria),
       etiquetaDeEntidad(r.entidadTipo),
       r.entidadId,
       resumenDeCambios(r, '\n'),

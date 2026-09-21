@@ -1,4 +1,4 @@
-import type { CampoModificado, RegistroAuditoria } from '../types';
+import type { AccionAuditable, CampoModificado, RegistroAuditoria } from '../types';
 
 /**
  * Qué cuenta la bitácora de un registro, en palabras y no en campos internos.
@@ -13,6 +13,12 @@ import type { CampoModificado, RegistroAuditoria } from '../types';
  *   descartada o restaurada).
  *
  * Tabla, detalle y CSV leen de aquí para no contar tres versiones distintas.
+ *
+ * **Lo primero que se mira ya no está en este archivo.** La API manda `resumen`: la
+ * frase de lo que pasó, redactada en `auditoria-resumen.ts`. Se prefiere siempre que
+ * venga, porque el backend sabe cosas que aquí no llegan —el correo de la cuenta sobre
+ * la que se actuó, y cuáles de los campos que manda el formulario cambiaron de verdad—.
+ * Lo de abajo es lo que sigue atendiendo a las filas que la API todavía no redacta.
  */
 
 /**
@@ -21,6 +27,19 @@ import type { CampoModificado, RegistroAuditoria } from '../types';
  * de campos internos de antes.
  */
 const ACCIONES_EDITORIALES = new Set(['enviar_revision', 'aprobar', 'rechazar']);
+
+/**
+ * Lo que dice la columna «Cambios» de las acciones de seguridad que no necesitan campos.
+ *
+ * `autenticar` no lleva ninguno, y `expirar`/`inactivar` llevan solo `status`, cuyo valor
+ * («inactive») es un código interno. Una frase lo dice mejor; el detalle sigue
+ * enseñando el campo con su antes y su después.
+ */
+const RESUMEN_FIJO: Partial<Record<AccionAuditable, string>> = {
+  autenticar: 'Inició sesión',
+  expirar: 'La cuenta pasó a inactiva al cumplirse su fecha de caducidad',
+  inactivar: 'Cuenta inactivada desde el panel de usuarios',
+};
 
 /** Acciones cuyo `motivo` lo escribió una persona; el resto lo genera el sistema. */
 const MOTIVO_ESCRITO = new Set(['rechazar', 'eliminar']);
@@ -110,6 +129,17 @@ export function comentarioPrincipal(registro: RegistroAuditoria): string | null 
  * que abrir el detalle.
  */
 export function resumenDeCambios(registro: RegistroAuditoria, separador = ' · '): string {
+  // Lo que ya viene contado por la API manda sobre todo lo demás, las frases fijas de
+  // aquí abajo incluidas: el backend sabe dos cosas que esta pantalla no puede saber
+  // —el correo de la cuenta sobre la que se actuó, que no está en la fila, y si un
+  // campo cambió de verdad o el formulario lo mandó igual que estaba—.
+  if (registro.resumen) return registro.resumen;
+
+  // Las acciones de seguridad que se explican solas van antes que los campos: lo único
+  // que llevan es `status: inactive` (o nada), que no le dice nada a quien lee.
+  const fijo = RESUMEN_FIJO[registro.accion];
+  if (fijo) return fijo;
+
   const comentarios = comentariosDe(registro);
   if (!comentarios) return listaDeCampos(registro, separador);
 
