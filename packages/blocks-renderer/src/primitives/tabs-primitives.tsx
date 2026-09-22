@@ -191,7 +191,7 @@ export function TabsRender({
         >
           {/* Columna Izquierda: Barra de pestañas */}
           {tieneSidebar && (
-            <aside
+            <div
               role="tablist"
               aria-label="Pestañas de la sección"
               data-puck-overlay-portal=""
@@ -334,7 +334,7 @@ export function TabsRender({
                 );
               })}
             </div>
-          </aside>
+          </div>
         )}
 
         {/* Columna Derecha: Contenido vinculado a cada slotId */}

@@ -212,6 +212,23 @@ La pantalla de auditoría enseña ese comentario en la columna «Cambios» y, en
 detalle, «Comentario anterior» / «Comentario después» en lugar de la lista de campos
 internos (`lib/cambios.ts` de `features/administracion/auditoria/`).
 
+### 1.7 Gestión de archivos huérfanos y subidas pendientes (2026-09-22)
+
+Para evitar la acumulación de archivos inútiles en el servidor (`/uploads/`), el ciclo editorial incorpora un mecanismo de limpieza asíncrona automatizada (`limpiarSubidasPendientes`).
+
+1. **La tabla de memoria (`subidas_pendientes`)**: Toda subida que se realiza desde el editor de Puck (imágenes, documentos, videos) se registra inmediatamente en esta tabla antes de formar parte del borrador. La clave para que esto funcione es que los desarrolladores front-end usen siempre el hook `useRegistrarSubida(url)` apenas reciban la respuesta de subida.
+2. **Cuándo se ejecuta la limpieza**:
+   - Al **Descartar la edición** (salir sin guardar).
+   - Al **Eliminar una versión** (botón de papelera en la gestión de páginas).
+   - Al **Guardar un borrador** o **Enviar a revisión** (el archivo puede haber sido subido pero reemplazado o eliminado del lienzo antes del guardado).
+3. **Lógica de conservación (Evitar borrados accidentales)**:
+   - El proceso recorre los registros de `subidas_pendientes` correspondientes a la sesión/página.
+   - Si el archivo **sí está en uso** (su ruta aparece en la columna `contenido` o `layout` de *cualquier* versión de la página), **no se borra del disco ni de la tabla de pendientes**. Se mantiene en observación.
+   - Si el archivo **ya no se usa** (ej. fue subido pero reemplazado antes del segundo guardado), se borra físicamente del disco y se elimina de la tabla.
+4. **Cierre del ciclo al publicar**:
+   - Una vez una página es **aprobada** y pasa al estado `publicado`, todos los archivos de esa página que sobrevivieron dejan de ser "pendientes" y se asumen como fijos.
+   - La tabla `subidas_pendientes` se limpia por completo para esa página, evitando que crezca indefinidamente. Si esos archivos luego son reemplazados en futuros borradores, su limpieza quedará a cargo del proceso normal de respaldo y restauración detallado en el §1.5.
+
 ---
 
 ## 2. La regla de oro

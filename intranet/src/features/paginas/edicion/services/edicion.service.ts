@@ -135,3 +135,13 @@ export async function liberarBloqueo(slug: string): Promise<void> {
 export async function registrarSubidaPendiente(slug: string, ruta: string): Promise<void> {
   await apiClient.post(`/paginas/${slug}/subidas`, { ruta }).catch(() => undefined);
 }
+
+/**
+ * Descarta la sesión de edición actual, limpiando las subidas pendientes de
+ * la sesión. También usa `keepalive` por si se llama al cerrar la pestaña.
+ */
+export async function descartarEdicion(slug: string): Promise<void> {
+  await apiClient
+    .post(`/paginas/${slug}/descartar-edicion`, undefined, { keepalive: true })
+    .catch(() => undefined);
+}

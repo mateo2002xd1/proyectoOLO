@@ -26,6 +26,8 @@ import { VisorDocumentosNormativos, type DocumentoNormativo } from '@/shared/lib
 import { CanalesAtencion, type CanalDeAtencion } from '@/shared/lib/blocks/canales-atencion';
 import { Header } from '@/shared/lib/blocks/header';
 import { Footer, VALORES_PIE_POR_DEFECTO } from '@/shared/lib/blocks/footer';
+import { MapaSitio, VALORES_MAPA_SITIO_POR_DEFECTO } from '@/shared/lib/blocks/mapa-sitio';
+import { obtenerIndiceBusqueda } from '@/features/paginas/publicacion/services/publicacion.service';
 import { IntranetTopbar } from '@/shared/lib/blocks/intranet-topbar';
 import { IntranetHero } from '@/shared/lib/blocks/intranet-hero';
 import { CABECERA_POR_DEFECTO } from '@/features/paginas/client';
@@ -209,6 +211,7 @@ const puckConfigBase: Config = {
         'ProgramasSobresalientes',
         'TendenciaOcupacional',
         'FuentesFuturasEmpleo',
+        'MapaSitio',
       ],
     },
     'Texto e imagen': {
@@ -2022,6 +2025,49 @@ const puckConfigBase: Config = {
           descripcion={props.descripcion}
           alineacionDescripcion={props.alineacionDescripcion}
           colorDescripcion={props.colorDescripcion}
+        />
+      ),
+    },
+    MapaSitio: {
+      label: 'Mapa del Sitio',
+      defaultProps: VALORES_MAPA_SITIO_POR_DEFECTO,
+      fields: {
+        titulo: {
+          type: 'text',
+          label: 'Título',
+        },
+        mostrarDescripcion: {
+          type: 'radio',
+          label: 'Mostrar descripción',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        descripcion: {
+          type: 'textarea',
+          label: 'Descripción (Opcional)',
+        },
+      },
+      resolveData: async (data) => {
+        try {
+          const paginas = await obtenerIndiceBusqueda();
+          return {
+            props: {
+              ...data.props,
+              paginas,
+            }
+          };
+        } catch {
+          return { props: data.props };
+        }
+      },
+      render: ({ titulo, mostrarDescripcion, descripcion, paginas }) => (
+        <MapaSitio
+          titulo={titulo}
+          mostrarDescripcion={mostrarDescripcion}
+          descripcion={descripcion}
+          paginas={paginas}
         />
       ),
     },
