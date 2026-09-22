@@ -3667,7 +3667,7 @@ button.text-link,
 
 .olo-tabs-btn--active {
   background-color: #39A900 !important;
-  color: #ffffff !important;
+  color: #002237 !important; /* WCAG AA 4.5:1 (4.9:1) */
   border-color: #39A900 !important;
   box-shadow: 0 4px 12px rgba(57, 169, 0, 0.28) !important;
   transform: none;

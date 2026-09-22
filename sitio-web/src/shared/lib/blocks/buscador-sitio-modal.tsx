@@ -134,24 +134,27 @@ export function BuscadorSitioModal({
         type="button"
         onClick={handleCerrar}
         aria-label="Cerrar el buscador"
-        className="absolute top-4 right-6 sm:right-12 rounded-full p-2 text-white/70 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 cursor-pointer"
+        className="absolute top-4 right-6 sm:right-12 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full p-3 text-white transition-colors hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 cursor-pointer"
       >
         <XMarkIcon className="size-6" />
       </button>
 
-      <div
+      <form
+        role="search"
         className="mx-auto flex w-full max-w-2xl flex-col px-4 pt-20 pb-20 sm:pt-28"
         onMouseDown={(e) => e.stopPropagation()}
+        onSubmit={(e) => e.preventDefault()}
       >
         <label htmlFor="buscador-sitio" className="sr-only">
           Buscar en el sitio web
         </label>
 
         <div className="relative">
-          <MagnifyingGlassIcon className="pointer-events-none absolute top-1/2 left-5 size-6 -translate-y-1/2 text-white/50" />
+          <MagnifyingGlassIcon aria-hidden="true" className="pointer-events-none absolute top-1/2 left-5 size-6 -translate-y-1/2 text-white/70" />
           <input
             ref={searchInputRef}
             id="buscador-sitio"
+            name="q"
             type="search"
             role="combobox"
             aria-expanded={filteredResults.length > 0}
@@ -162,7 +165,7 @@ export function BuscadorSitioModal({
             aria-autocomplete="list"
             autoComplete="off"
             placeholder="Buscar en el sitio web…"
-            className="h-16 w-full rounded-[16px] border border-white/20 bg-white/10 pr-5 pl-14 text-lg text-white shadow-sm transition-colors outline-none placeholder:text-white/50 focus:border-transparent focus:ring-2 focus:ring-sky-400"
+            className="h-16 w-full rounded-[16px] border border-white/30 bg-white/10 pr-5 pl-14 text-lg text-white shadow-sm transition-colors outline-none placeholder:text-white/70 focus:border-transparent focus:ring-2 focus:ring-sky-400 focus-visible:ring-2 focus-visible:ring-sky-400"
             value={searchQuery}
             onChange={handleSearchChange}
             onKeyDown={alPulsarTecla}
@@ -176,11 +179,11 @@ export function BuscadorSitioModal({
         </p>
 
         {searchQuery.trim() === '' ? (
-          <p className="mt-8 text-center text-sm text-white/60">
+          <p className="mt-8 text-center text-sm text-white/80">
             Escribe para buscar en el sitio web…
           </p>
         ) : filteredResults.length === 0 ? (
-          <p className="mt-8 text-center text-sm text-white/60">
+          <p className="mt-8 text-center text-sm text-white/80">
             No hay nada en el sitio web que coincida con «{searchQuery.trim()}».
           </p>
         ) : (
@@ -202,7 +205,7 @@ export function BuscadorSitioModal({
                   data-activo={seleccionado}
                   onMouseEnter={() => setActivo(idx)}
                   className={`rounded-[16px] transition-colors ${
-                    seleccionado ? 'bg-white/15' : 'hover:bg-white/10'
+                    seleccionado ? 'bg-white/15 ring-2 ring-sky-400' : 'hover:bg-white/10'
                   }`}
                 >
                   <a
@@ -219,7 +222,7 @@ export function BuscadorSitioModal({
                       <span className="text-[11px] tracking-wider text-sky-400 uppercase">
                         {resaltarCoincidenciaTexto(result.context, searchQuery)}
                       </span>
-                      <span className="text-[10px] text-white/50 px-1.5 py-0.5 rounded bg-white/10">
+                      <span className="text-[10px] text-white/70 px-1.5 py-0.5 rounded bg-white/10">
                         {result.type === 'h1'
                           ? 'Página'
                           : result.type === 'h2'
@@ -242,7 +245,7 @@ export function BuscadorSitioModal({
             })}
           </ul>
         )}
-      </div>
+      </form>
     </div>
   );
 }
