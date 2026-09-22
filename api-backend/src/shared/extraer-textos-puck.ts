@@ -20,6 +20,7 @@ export interface PaginaIndiceBusqueda {
   href: string;
   slug: string;
   titulo: string;
+  fechaActualizacion?: string;
   items: ItemTextoPuck[];
 }
 

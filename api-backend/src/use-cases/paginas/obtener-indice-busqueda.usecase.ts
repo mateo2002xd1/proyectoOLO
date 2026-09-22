@@ -76,6 +76,11 @@ export const obtenerIndiceBusqueda = async (
       slug: pagina.slug,
       titulo: pagina.titulo,
       href: resolverHref(pagina.slug, ambito),
+      fechaActualizacion: version.publicadoEn 
+        ? version.publicadoEn.toISOString() 
+        : version.creadoEn 
+          ? version.creadoEn.toISOString() 
+          : undefined,
       items,
     });
   }

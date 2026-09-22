@@ -26,6 +26,8 @@ import { VisorDocumentosNormativos, type DocumentoNormativo } from '@/shared/lib
 import { CanalesAtencion, type CanalDeAtencion } from '@/shared/lib/blocks/canales-atencion';
 import { Header } from '@/shared/lib/blocks/header';
 import { Footer, VALORES_PIE_POR_DEFECTO } from '@/shared/lib/blocks/footer';
+import { MapaSitio, VALORES_MAPA_SITIO_POR_DEFECTO } from '@/shared/lib/blocks/mapa-sitio';
+import { obtenerIndiceBusqueda } from '@/features/paginas/publicacion/services/publicacion.service';
 import { IntranetTopbar } from '@/shared/lib/blocks/intranet-topbar';
 import { IntranetHero } from '@/shared/lib/blocks/intranet-hero';
 import { CABECERA_POR_DEFECTO } from '@/features/paginas/client';
@@ -209,6 +211,7 @@ const puckConfigBase: Config = {
         'ProgramasSobresalientes',
         'TendenciaOcupacional',
         'FuentesFuturasEmpleo',
+        'MapaSitio',
       ],
     },
     'Texto e imagen': {
@@ -2025,6 +2028,45 @@ const puckConfigBase: Config = {
         />
       ),
     },
+    MapaSitio: {
+      label: 'Mapa del Sitio',
+      defaultProps: VALORES_MAPA_SITIO_POR_DEFECTO,
+      fields: {
+        mostrarTitulo: {
+          type: 'radio',
+          label: 'Mostrar título',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        titulo: {
+          type: 'text',
+          label: 'Título (si se muestra)',
+        },
+        mostrarDescripcion: {
+          type: 'radio',
+          label: 'Mostrar descripción',
+          options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ],
+        },
+        descripcion: {
+          type: 'textarea',
+          label: 'Descripción (Opcional)',
+        },
+      },
+      render: ({ titulo, mostrarTitulo, mostrarDescripcion, descripcion, paginas }) => (
+        <MapaSitio 
+          titulo={titulo} 
+          mostrarTitulo={mostrarTitulo}
+          mostrarDescripcion={mostrarDescripcion} 
+          descripcion={descripcion} 
+          paginas={paginas} 
+        />
+      ),
+    },
   },
 };
 
@@ -2094,6 +2136,7 @@ const BLOQUES_PAGINA_SITIO_DEFECTO: string[] = [
   'ProgramasSobresalientes',
   'TendenciaOcupacional',
   'FuentesFuturasEmpleo',
+  'MapaSitio',
 ];
 
 const COMPONENTES_POR_SLUG: Record<string, string[]> = {
@@ -2120,6 +2163,7 @@ const COMPONENTES_POR_SLUG: Record<string, string[]> = {
     'ProgramasSobresalientes',
     'TendenciaOcupacional',
     'FuentesFuturasEmpleo',
+    'MapaSitio',
   ],
   'politica-de-privacidad': ['PoliticaPrivacidadEncabezado', 'VisorDocumentosNormativos', 'CanalesAtencion'],
 };
