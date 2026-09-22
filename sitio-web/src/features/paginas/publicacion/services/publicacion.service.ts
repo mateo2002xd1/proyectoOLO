@@ -108,19 +108,35 @@ export async function registrarVisita(slug: string, ambito: 'sitio' | 'intranet'
   }
 }
 
+let cachePromesaIndice: Promise<PaginaIndiceBusqueda[]> | null = null;
+let fechaCacheIndice = 0;
+
 /**
  * Obtiene el índice de búsqueda de páginas públicas del sitio web.
  * Usa fallback estático en caso de desconexión o fallo de red.
+ * Implementa una caché en memoria de 5 minutos para evitar saturar el backend.
  */
-export async function obtenerIndiceBusqueda(): Promise<PaginaIndiceBusqueda[]> {
-  try {
-    const { data } = await apiPublica.get<PaginaIndiceBusqueda[]>('/api/paginas/indice-busqueda');
-    if (Array.isArray(data) && data.length > 0) {
-      return data;
-    }
-    return SITIO_ESTATICO_FALLBACK;
-  } catch (error) {
-    console.warn('[sitio-web] No se pudo obtener índice dinámico de búsqueda, usando fallback:', error);
-    return SITIO_ESTATICO_FALLBACK;
+export function obtenerIndiceBusqueda(): Promise<PaginaIndiceBusqueda[]> {
+  const AHORA = Date.now();
+  
+  // Reutiliza la promesa si existe y tiene menos de 5 minutos
+  if (cachePromesaIndice && AHORA - fechaCacheIndice < 5 * 60 * 1000) {
+    return cachePromesaIndice;
   }
+
+  cachePromesaIndice = apiPublica.get<PaginaIndiceBusqueda[]>('/api/paginas/indice-busqueda')
+    .then(({ data }) => {
+      if (Array.isArray(data) && data.length > 0) {
+        return data;
+      }
+      return SITIO_ESTATICO_FALLBACK;
+    })
+    .catch((error) => {
+      console.warn('[sitio-web] No se pudo obtener índice dinámico de búsqueda, usando fallback:', error);
+      cachePromesaIndice = null; // En caso de error, permitimos que se reintente inmediatamente la próxima vez
+      return SITIO_ESTATICO_FALLBACK;
+    });
+
+  fechaCacheIndice = AHORA;
+  return cachePromesaIndice;
 }

@@ -81,16 +81,34 @@ export async function crearSeccion(titulo: string): Promise<SeccionCreada> {
  * ocultos porque los decide esta llamada—, que es exactamente el desconcierto que se
  * reportó. No se redirige a nadie: aquí un 401 puede ser simplemente un visitante.
  */
-export async function permisosDeLaSesion(): Promise<string[]> {
-  try {
-    // `/api/me`, no `/api/auth/me`: `authRoutes` se monta en `/api` a secas.
-    const { data } = await api.get('/api/me');
-    return Array.isArray(data?.permisos) ? data.permisos.map(String) : [];
-  } catch (error) {
-    const estado = (error as { response?: { status?: number } })?.response?.status;
-    if (estado === 401) void cerrarSesionLocal();
-    return [];
+let cachePromesaPermisos: Promise<string[]> | null = null;
+let fechaCachePermisos = 0;
+
+/**
+ * Los permisos de la sesión actual.
+ * Utiliza una caché de 1 minuto y deduplicación de promesas para evitar que múltiples hooks
+ * en el frontend (`usePermisoDeSeccion`, `PaginasFabSpeedDial`) inunden `/api/me`.
+ */
+export function permisosDeLaSesion(): Promise<string[]> {
+  const AHORA = Date.now();
+  
+  if (cachePromesaPermisos && (AHORA - fechaCachePermisos) < 60 * 1000) {
+    return cachePromesaPermisos;
   }
+
+  cachePromesaPermisos = api.get('/api/me')
+    .then(({ data }) => {
+      return Array.isArray(data?.permisos) ? data.permisos.map(String) : [];
+    })
+    .catch((error) => {
+      const estado = (error as { response?: { status?: number } })?.response?.status;
+      if (estado === 401) void cerrarSesionLocal();
+      cachePromesaPermisos = null; // Para no cachear el error y permitir reintento si hace login
+      return [];
+    });
+    
+  fechaCachePermisos = AHORA;
+  return cachePromesaPermisos;
 }
 
 /** Un sitio del portal que enlaza a la página que se quiere borrar. */
