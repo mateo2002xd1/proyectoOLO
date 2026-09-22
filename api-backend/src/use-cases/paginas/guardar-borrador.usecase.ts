@@ -2,6 +2,7 @@ import { Transaction } from 'sequelize';
 import { PaginaRepository } from '../../repositories/pagina.repository';
 import type { Ambito } from '../../shared/ambito';
 import { sanitizarContenidoPuck } from '../../shared/sanitizar-contenido';
+import { limpiarSubidasPendientes } from './limpiar-subidas-pendientes.usecase';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const toUUID = (id: string) => (UUID_RE.test(id) ? id : null);
@@ -65,6 +66,14 @@ export const guardarBorrador = async (
       tx
     );
   }
+
+  // Limpiar en background los archivos subidos en esta sesión que no quedaron en el borrador
+  limpiarSubidasPendientes({
+    paginaId: pagina.id,
+    slug,
+    ambito,
+    usuarioId: toUUID(userId) || userId,
+  }).catch((err) => console.error('[Limpieza Borrador] Error limpiando subidas pendientes:', err));
 
   return { pagina, version, paginaAnterior, versionAnterior };
 };

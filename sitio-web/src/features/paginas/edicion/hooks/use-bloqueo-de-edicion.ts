@@ -19,7 +19,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   adquirirBloqueo,
-  liberarBloqueo,
+  descartarEdicion,
   type EstadoDelBloqueo,
 } from '../services/edicion.service';
 
@@ -111,7 +111,7 @@ export function useBloqueoDeEdicion(slug: string): Bloqueo {
      * a ejecutarse. `liberarBloqueo` va con `keepalive` justamente para eso.
      */
     const soltar = () => {
-      if (loTuvimos) void liberarBloqueo(slug);
+      if (loTuvimos) void descartarEdicion(slug);
     };
     window.addEventListener('pagehide', soltar);
 

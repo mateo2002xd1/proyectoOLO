@@ -23,6 +23,8 @@ import {
 import { adquirirBloqueo } from '../use-cases/paginas/adquirir-bloqueo.usecase';
 import { liberarBloqueo } from '../use-cases/paginas/liberar-bloqueo.usecase';
 import { registrarSubidaPendiente } from '../use-cases/paginas/registrar-subida-pendiente.usecase';
+import { descartarEdicion } from '../use-cases/paginas/descartar-edicion.usecase';
+import { limpiarSubidasPendientes } from '../use-cases/paginas/limpiar-subidas-pendientes.usecase';
 import { AMBITO_HEADER, exigirAmbito, resolverAmbito } from '../shared/ambito';
 import { logAudit } from '../use-cases/auditoria/audit.usecase';
 import { datosDeAuditoria } from '../shared/auditoria-request';
@@ -279,6 +281,17 @@ export const PaginaController = {
     } catch (err) { next(err); }
   },
 
+  async descartarEdicion(req: Request, res: Response, next: NextFunction) {
+    try {
+      await descartarEdicion(
+        req.params.slug as string,
+        req.user?.id || '',
+        ambitoExigidoDe(req)
+      );
+      res.json({ descartado: true });
+    } catch (err) { next(err); }
+  },
+
   async guardarBorrador(req: Request, res: Response, next: NextFunction) {
     try {
       const { contenido } = req.body;
@@ -440,6 +453,18 @@ export const PaginaController = {
         ], tx);
         return r;
       });
+
+      // Si la versión eliminada contenía archivos que ya no se usan en ninguna otra 
+      // versión, este proceso en segundo plano los limpiará.
+      if (result.pagina) {
+        limpiarSubidasPendientes({
+          paginaId: result.pagina.id,
+          slug: req.params.slug as string,
+          ambito: ambitoExigidoDe(req),
+          usuarioId: req.user?.id || '',
+        }).catch((err) => console.error('[Limpieza Eliminar Versión] Error limpiando subidas pendientes:', err));
+      }
+
       res.json(result);
     } catch (err) { next(err); }
   },

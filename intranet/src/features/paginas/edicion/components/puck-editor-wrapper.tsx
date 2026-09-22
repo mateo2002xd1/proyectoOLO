@@ -19,7 +19,7 @@ import "@puckeditor/core/dist/index.css";
 import { configDeEdicion, type ContextoDeEdicion } from "@/config/puck.config";
 import { resolverRutaDeVuelta, rutaPublicaDeSlug } from "../../model/rutas";
 import { PaginaEnEdicionContext } from "../lib/pagina-en-edicion";
-import { registrarSubidaPendiente } from "../services/edicion.service";
+import { registrarSubidaPendiente, descartarEdicion } from "../services/edicion.service";
 import type { ContenidoPagina, PaginaVersion } from "../../model/pagina.types";
 import { validarAccesibilidad, mensajeDeViolacion, type ViolacionAccesibilidad } from "@olo/accessibility-policy";
 import { AvisoRechazo, type Rechazo } from "./aviso-rechazo";
@@ -633,8 +633,10 @@ export function PuckEditorWrapper({
   /**
    * Vuelve a la ruta desde la que se abrió el editor. Sin `?volver=` se usa la
    * propia página editada, que en la intranet es siempre `/{slug}`.
+   * También limpia la sesión de edición y libera el candado.
    */
   const salir = useCallback(() => {
+    descartarEdicion(slug);
     router.push(resolverRutaDeVuelta(rutaPublicaDeSlug(slug)));
   }, [router, slug]);
 

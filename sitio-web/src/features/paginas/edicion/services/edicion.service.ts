@@ -106,3 +106,17 @@ export async function liberarBloqueo(slug: string): Promise<void> {
     headers: CABECERAS_DEL_SITIO,
   }).catch(() => undefined);
 }
+
+/**
+ * Descarta la sesión de edición actual, limpiando las subidas pendientes de
+ * la sesión. También usa `keepalive` por si se llama al cerrar la pestaña.
+ */
+export async function descartarEdicion(slug: string): Promise<void> {
+  const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+  await fetch(`${base}/api/paginas/${slug}/descartar-edicion`, {
+    method: 'POST',
+    credentials: 'include',
+    keepalive: true,
+    headers: CABECERAS_DEL_SITIO,
+  }).catch(() => undefined);
+}

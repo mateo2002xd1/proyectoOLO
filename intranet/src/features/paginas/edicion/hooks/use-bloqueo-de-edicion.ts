@@ -15,7 +15,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { adquirirBloqueo, liberarBloqueo, type EstadoDelBloqueo } from "../services/edicion.service";
+import { adquirirBloqueo, descartarEdicion, type EstadoDelBloqueo } from "../services/edicion.service";
 
 /** Un poco por debajo de los 2 minutos que dura el candado en la base. */
 const MS_ENTRE_LATIDOS = 45_000;
@@ -107,7 +107,7 @@ export function useBloqueoDeEdicion(slug: string): Bloqueo {
      * esto es un DELETE.
      */
     const soltar = () => {
-      if (loTuvimos) void liberarBloqueo(slug);
+      if (loTuvimos) void descartarEdicion(slug);
     };
     window.addEventListener("pagehide", soltar);
 

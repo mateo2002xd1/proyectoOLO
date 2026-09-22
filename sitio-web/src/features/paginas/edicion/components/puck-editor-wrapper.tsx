@@ -7,7 +7,7 @@ import '@puckeditor/core/dist/index.css';
 import { configDeEdicion, type ContextoDeEdicion } from '@/config/puck.config';
 import { resolverRutaDeVuelta, rutaPublicaDeSlug } from '../../model/rutas';
 import { PaginaEnEdicionContext } from '../lib/pagina-en-edicion';
-import { registrarSubidaPendiente } from '../services/edicion.service';
+import { registrarSubidaPendiente, descartarEdicion } from '../services/edicion.service';
 import { Bloque, PuckData, EstadoPagina } from '../../model/pagina.types';
 import { AvisoRechazo, type Rechazo } from './aviso-rechazo';
 import { VigilanteSesion } from '@/shared/lib/inactividad';
@@ -741,10 +741,11 @@ export function PuckEditorWrapper({
     [onSave, initialPuckData]
   );
 
-  /** Vuelve a la ruta desde la que se abrió el editor. */
+  /** Vuelve a la ruta desde la que se abrió el editor y limpia los archivos de la sesión. */
   const salir = useCallback(() => {
+    descartarEdicion(slug);
     router.push(resolverRutaDeVuelta(rutaPorDefecto));
-  }, [router, rutaPorDefecto]);
+  }, [router, rutaPorDefecto, slug]);
 
   /** Sin cambios pendientes no hay nada que perder: se sale sin preguntar. */
   const handleSalir = useCallback(

@@ -457,6 +457,29 @@ router.delete(
 
 /**
  * @openapi
+ * /api/paginas/{slug}/descartar-edicion:
+ *   post:
+ *     tags: [Páginas]
+ *     summary: Descartar edición actual
+ *     description: |
+ *       Limpia las subidas pendientes de la sesión de edición actual.
+ *       Se invoca cuando el usuario cierra el editor sin guardar cambios.
+ *     parameters:
+ *       - $ref: '#/components/parameters/SlugEnRuta'
+ *       - $ref: '#/components/parameters/Ambito'
+ *     responses:
+ *       200: { description: Edición descartada y recursos liberados }
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ */
+router.post(
+  '/:slug/descartar-edicion',
+  requierePermisoPagina('puedeEditar'),
+  requierePermisoDeSeccion(),
+  PaginaController.descartarEdicion
+);
+
+/**
+ * @openapi
  * /api/paginas/{slug}/bloqueo:
  *   get:
  *     tags: [Páginas]

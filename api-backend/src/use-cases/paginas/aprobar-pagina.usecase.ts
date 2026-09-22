@@ -4,6 +4,7 @@ import { emitirContenidoPublicado } from '../../domain-events/paginas/contenido-
 import type { Ambito } from '../../shared/ambito';
 import { respaldarArchivosAlPublicar } from '../../shared/storage/backup-uploads.service';
 import { limpiarSubidasPendientes } from './limpiar-subidas-pendientes.usecase';
+import { SubidaPendiente } from '../../infrastructure/db/models';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const toUUID = (id: string) => (UUID_RE.test(id) ? id : null);
@@ -42,6 +43,11 @@ export const aprobarPagina = async (slug: string, userId: string, ambito: Ambito
 
   // Los archivos que se subieron y se reemplazaron antes de publicar no los mira nadie más.
   await limpiarSubidasPendientes({ paginaId: pagina.id, slug: pagina.slug, ambito, usuarioId: userId });
+  
+  // Los archivos que sobrevivieron y están en la versión publicada ya no son "pendientes".
+  // Limpiamos el registro para evitar acumulación innecesaria (y que no se eliminen si luego
+  // se reemplazan en futuros borradores, la gestión de publicados se encarga de eso).
+  await SubidaPendiente.destroy({ where: { paginaId: pagina.id }, transaction: tx });
 
   // Hasta aquí la publicación es correcta en la base de datos, y aun así la página no
   // cambiaba: el sitio seguía sirviendo su copia cacheada y quien acababa de aprobar

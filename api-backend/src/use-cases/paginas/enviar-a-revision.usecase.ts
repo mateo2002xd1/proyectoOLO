@@ -3,6 +3,7 @@ import { PaginaRepository } from '../../repositories/pagina.repository';
 import type { Ambito } from '../../shared/ambito';
 import { errorDeComentario, normalizarComentario } from '../../shared/comentario-cambios';
 import { validarAccesibilidad, mensajeDeViolacion, type ViolacionAccesibilidad } from '@olo/accessibility-policy';
+import { limpiarSubidasPendientes } from './limpiar-subidas-pendientes.usecase';
 
 /**
  * "Enviar a revisión" es el punto de la Fase 5 de `9-accesibilidad.md`: un
@@ -65,6 +66,14 @@ export const enviarARevision = async (
     datosActualizacion.creadoPor = autorId;
   }
   await PaginaRepository.actualizarVersion(ultimaVersion, datosActualizacion, tx);
+
+  // Limpiar huérfanos de la sesión antes de salir de la edición
+  limpiarSubidasPendientes({
+    paginaId: pagina.id,
+    slug,
+    ambito,
+    usuarioId: autorId || userId,
+  }).catch((err) => console.error('[Limpieza Enviar Revisión] Error limpiando subidas pendientes:', err));
 
   return {
     pagina,
