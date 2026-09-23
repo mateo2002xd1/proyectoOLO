@@ -29,7 +29,11 @@ export type AccionAuditable =
   // mano se confundía con cualquier otro `actualizar`.
   | 'autenticar'
   | 'expirar'
-  | 'inactivar';
+  | 'inactivar'
+  // Migración 031: una cuenta bloqueada por intentos fallidos y la verificación de las
+  // preguntas de seguridad, con su resultado. Tampoco dejaban rastro.
+  | 'bloquear'
+  | 'verificar_preguntas';
 
 export class ContentAuditLog extends Model {
   declare id: string;
