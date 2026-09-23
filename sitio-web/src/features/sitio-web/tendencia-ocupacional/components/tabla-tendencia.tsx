@@ -72,22 +72,25 @@ export function TablaTendencia({
       </p>
 
       <div className="overflow-x-auto rounded-[16px] border border-[#eaecf0] bg-white shadow-sm">
-        <table className="w-full min-w-[760px] border-collapse text-left text-sm">
+        <table className="w-full min-w-[760px] table-fixed border-collapse text-left text-sm">
           <thead>
             <tr className="border-b border-[#eaecf0] bg-[#f8f9fa]">
-              <th className="px-4 py-3 text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
+              <th className="w-[16%] px-4 py-3 text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
+                Departamento
+              </th>
+              <th className="w-[14%] px-4 py-3 text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
                 Nivel Ocupacional
               </th>
-              <th className="px-4 py-3 text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
+              <th className="w-[12%] px-4 py-3 text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
                 Código C.N.O.
               </th>
               <th className="px-4 py-3 text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
                 Nombre Ocupación
               </th>
-              <th className="px-4 py-3 text-right text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
+              <th className="w-[14%] px-4 py-3 text-right text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
                 Total Inscritos
               </th>
-              <th className="px-4 py-3 text-right text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
+              <th className="w-[14%] px-4 py-3 text-right text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
                 Total Vacantes
               </th>
             </tr>
@@ -98,6 +101,9 @@ export function TablaTendencia({
                 key={registro.id}
                 className="transition-colors hover:bg-[#f8f9fa]"
               >
+                <td className="px-4 py-3.5 font-medium text-[#344054]">
+                  {registro.departamento}
+                </td>
                 <td className="px-4 py-3.5 font-medium text-[#344054]">
                   {registro.nivelCodigo}
                 </td>
@@ -121,7 +127,7 @@ export function TablaTendencia({
             <tfoot className="border-t-2 border-[#d0d5dd] bg-[#f8f9fa]">
               {totalPaginas > 1 && (
                 <tr className="border-b border-[#eaecf0] text-xs text-[#475467]">
-                  <td colSpan={3} className="px-4 py-2 text-left font-medium">
+                  <td colSpan={4} className="px-4 py-2 text-left font-medium">
                     Subtotal esta página ({resultados.length} registros)
                   </td>
                   <td className="px-4 py-2 text-right tabular-nums font-semibold text-[#344054]">
@@ -134,7 +140,7 @@ export function TablaTendencia({
               )}
               <tr className="bg-[#f0f4f8]">
                 <td
-                  colSpan={3}
+                  colSpan={4}
                   className="px-4 py-3.5 text-left text-xs font-bold uppercase tracking-wider text-[#001631]"
                 >
                   Total general {totalPaginas > 1 ? `(${totalResultados.toLocaleString('es-CO')} registros)` : ''}

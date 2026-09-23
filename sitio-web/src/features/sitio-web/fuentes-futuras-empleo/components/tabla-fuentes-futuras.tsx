@@ -58,16 +58,19 @@ export function TablaFuentesFuturas({
       </p>
 
       <div className="overflow-x-auto rounded-[16px] border border-[#eaecf0] bg-white shadow-sm">
-        <table className="w-full min-w-[760px] border-collapse text-left text-sm">
+        <table className="w-full min-w-[760px] table-fixed border-collapse text-left text-sm">
           <thead>
             <tr className="border-b border-[#eaecf0] bg-[#f8f9fa]">
+              <th className="w-[20%] px-4 py-3 text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
+                Departamento
+              </th>
               <th className="px-4 py-3 text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
                 Sector
               </th>
-              <th className="px-4 py-3 text-right text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
+              <th className="w-[22%] px-4 py-3 text-right text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
                 Cuenta de Proyecto
               </th>
-              <th className="px-4 py-3 text-right text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
+              <th className="w-[15%] px-4 py-3 text-right text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
                 % Part
               </th>
             </tr>
@@ -84,6 +87,9 @@ export function TablaFuentesFuturas({
                   key={item.id}
                   className="transition-colors hover:bg-[#f8f9fa]"
                 >
+                  <td className="px-4 py-3.5 font-medium text-[#344054]">
+                    {item.departamento}
+                  </td>
                   <td className="px-4 py-3.5 font-medium text-[#001631]">
                     {item.sector}
                   </td>
@@ -102,7 +108,7 @@ export function TablaFuentesFuturas({
             <tfoot className="border-t-2 border-[#d0d5dd] bg-[#f8f9fa]">
               {totalPaginas > 1 && (
                 <tr className="border-b border-[#eaecf0] text-xs text-[#475467]">
-                  <td className="px-4 py-2 text-left font-medium">
+                  <td colSpan={2} className="px-4 py-2 text-left font-medium">
                     Subtotal esta página ({resultados.length} registros)
                   </td>
                   <td className="px-4 py-2 text-right tabular-nums font-semibold text-[#344054]">
@@ -117,7 +123,10 @@ export function TablaFuentesFuturas({
                 </tr>
               )}
               <tr className="bg-[#f0f4f8]">
-                <td className="px-4 py-3.5 text-left text-xs font-bold uppercase tracking-wider text-[#001631]">
+                <td 
+                  colSpan={2}
+                  className="px-4 py-3.5 text-left text-xs font-bold uppercase tracking-wider text-[#001631]"
+                >
                   Total general {totalPaginas > 1 ? `(${totalResultados.toLocaleString('es-CO')} registros)` : ''}
                 </td>
                 <td className="px-4 py-3.5 text-right font-bold tabular-nums text-sm text-[#001631]">
