@@ -516,10 +516,9 @@ const definicion = {
           },
           resumen: {
             type: 'string',
-            nullable: true,
-            example: 'Se inactivó el usuario fallip@sena.edu.co',
+            example: 'Se modificó el usuario dtejada@sena.edu.co · apellidos de «Tejada» a «Vargas»',
             description:
-              'Lo que pasó, en una frase ya redactada, para que la pantalla no tenga que traducir códigos internos ni resolver a quién apunta `entidad_id`. Es `null` cuando la API todavía no sabe contar ese cambio: quien consume cae entonces en la lista de `camposModificados`. Se calcula al leer, así que también explica las filas antiguas, y no se guarda en la tabla: `camposModificados` sigue siendo la evidencia intacta.',
+              'Lo que pasó, en una frase ya redactada, para que la pantalla no tenga que traducir códigos internos ni resolver a quién apunta `entidad_id`. Siempre viene: cada acción tiene frases propias, y lo que ninguna sabe contar lo redacta una genérica con cada campo en español y su antes y después. Se calcula al leer, así que también explica las filas antiguas, y no se guarda en la tabla: `camposModificados` sigue siendo la evidencia intacta.',
           },
           ip: { type: 'string', nullable: true, example: '190.0.0.1' },
           user_agent: { type: 'string', nullable: true },

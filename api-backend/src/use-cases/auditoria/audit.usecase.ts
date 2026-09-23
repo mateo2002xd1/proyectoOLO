@@ -2,10 +2,12 @@ import { QueryTypes, Transaction } from 'sequelize';
 import sequelize from '../../config/database';
 import {
   AuditRepository,
+  SQL_IDS_GUARDADOS_AUTOMATICOS,
   type DatosAuditoria,
   type FiltrosAuditoria,
 } from '../../repositories/auditoria.repository';
 import { UserRepository } from '../../repositories/usuarios.repository';
+import { Role } from '../../infrastructure/db/models';
 import type { EntidadAuditable } from '../../infrastructure/db/models/content-audit-log';
 
 export type { DatosAuditoria, FiltrosAuditoria };
@@ -81,35 +83,21 @@ export const getAllAudit = (filtros: FiltrosAuditoria) => AuditRepository.findAl
 type FilaConEntidad = { entidad_tipo: EntidadAuditable; entidad_id: string };
 
 /** Lo que hace falta de una fila para el contexto de lectura completo. */
-type FilaDeLectura = FilaConEntidad & { id: string; accion: string };
-
-/**
- * Cuánto pasaba, como mucho, entre el guardado automático y el envío que lo seguía.
- *
- * Eran dos peticiones del mismo clic, una detrás de otra. Medido sobre la base el
- * 23/9/2026: de 178 envíos con un guardado delante, 169 lo tenían a menos de un segundo,
- * 7 entre uno y dos, y 2 entre dos y tres; **ninguno** entre tres y diez. Tres segundos
- * los recogen todos, y sigue siendo corto a propósito: un guardado **a mano** seguido de
- * un envío pasa por abrir el cuadro del comentario y escribir de 10 a 100 caracteres, que
- * no cabe en ese tiempo.
- */
-const SEGUNDOS_ENTRE_GUARDADO_Y_ENVIO = 3;
+type FilaDeLectura = FilaConEntidad & {
+  id: string;
+  accion: string;
+  campos_modificados?: { campo: string }[] | null;
+};
 
 /**
  * De estas filas, cuáles son guardados que el editor hizo solo antes de enviar a revisión.
  *
- * Hasta el cambio de la fase 6, pulsar «Enviar a revisión» hacía dos peticiones: guardar
- * el borrador y enviarlo. Cada envío dejaba así un «guardar borrador» que nadie había
- * pulsado, un instante antes. Esas filas siguen en la base y **no se borran**: la
- * bitácora es evidencia. Lo que se hace es reconocerlas para no decir de ellas que «el
- * usuario guardó su edición».
+ * Los listados ya no los enseñan (ver `SQL_IDS_GUARDADOS_AUTOMATICOS` en el repositorio),
+ * pero el análisis previo a la depuración sí, porque cuenta lo que de verdad se va a
+ * borrar. Ahí tienen que llevar su propia frase y no la de un guardado hecho a mano: decir
+ * que «el usuario guardó su edición» sería falso, nadie pulsó nada.
  *
- * Una es automática si, de la misma persona y sobre la misma página, hay un envío a
- * revisión en los tres segundos siguientes **y ningún otro guardado entre medias**: así,
- * si alguien guardó a mano y el editor guardó otra vez antes de enviar, solo la segunda
- * se reconoce como automática.
- *
- * Una consulta por página de resultados, no una por fila, igual que los correos.
+ * Misma regla que la exclusión, leída del mismo SQL: las dos no pueden discrepar.
  */
 export const guardadosPreviosAEnvio = async (filas: FilaDeLectura[]): Promise<Set<string>> => {
   const ids = filas
@@ -118,35 +106,34 @@ export const guardadosPreviosAEnvio = async (filas: FilaDeLectura[]): Promise<Se
   if (ids.length === 0) return new Set();
 
   const automaticos = await sequelize.query<{ id: string }>(
-    `SELECT g.id
-       FROM auditoria_cambios g
-      WHERE g.id IN (:ids)
-        AND EXISTS (
-          SELECT 1
-            FROM auditoria_cambios e
-           WHERE e.entidad_tipo = 'pagina'
-             AND e.entidad_id = g.entidad_id
-             AND e.accion = 'enviar_revision'
-             AND e.usuario_id IS NOT DISTINCT FROM g.usuario_id
-             AND e.created_at >= g.created_at
-             AND e.created_at <= g.created_at + make_interval(secs => :segundos)
-             AND NOT EXISTS (
-               SELECT 1
-                 FROM auditoria_cambios g2
-                WHERE g2.entidad_tipo = 'pagina'
-                  AND g2.entidad_id = g.entidad_id
-                  AND g2.accion = 'guardar_borrador'
-                  AND g2.created_at > g.created_at
-                  AND g2.created_at <= e.created_at
-             )
-        )`,
-    {
-      replacements: { ids, segundos: SEGUNDOS_ENTRE_GUARDADO_Y_ENVIO },
-      type: QueryTypes.SELECT,
-    }
+    `SELECT a.id FROM (${SQL_IDS_GUARDADOS_AUTOMATICOS}) a WHERE a.id IN (:ids)`,
+    { replacements: { ids }, type: QueryTypes.SELECT }
   );
 
   return new Set(automaticos.map((f) => f.id));
+};
+
+/**
+ * El nombre de cada rol, por id, solo si alguna fila lo necesita.
+ *
+ * Hace falta para dos cosas: decir «rol «Editor»» donde la fila guarda un UUID
+ * (`role_id` al crear o modificar una cuenta) y nombrar el rol al que se le dio o quitó
+ * un permiso. La tabla de roles tiene un puñado de filas, así que se lee entera en una
+ * consulta en vez de filtrar por ids.
+ *
+ * Por el modelo y no con SQL a mano: la columna se llama `nombre` y el modelo la expone
+ * como `name`. Un `SELECT name` escrito aquí fallaba contra la base de verdad.
+ */
+const nombresDeRoles = async (filas: FilaDeLectura[]): Promise<Map<string, string>> => {
+  const necesita = filas.some(
+    (f) =>
+      f.entidad_tipo === 'rol' ||
+      (f.campos_modificados ?? []).some((c) => c.campo === 'role_id')
+  );
+  if (!necesita) return new Map();
+
+  const roles = await Role.findAll({ attributes: ['id', 'name'] });
+  return new Map(roles.map((r) => [r.id, r.name]));
 };
 
 /**
@@ -155,11 +142,12 @@ export const guardadosPreviosAEnvio = async (filas: FilaDeLectura[]): Promise<Se
  * un objeto y el análisis previo a la depuración: los tres leen las mismas frases.
  */
 export const contextoDeLectura = async (filas: FilaDeLectura[]) => {
-  const [emailPorUsuario, guardadosAutomaticos] = await Promise.all([
+  const [emailPorUsuario, guardadosAutomaticos, rolPorId] = await Promise.all([
     correosDeCuentasAuditadas(filas),
     guardadosPreviosAEnvio(filas),
+    nombresDeRoles(filas),
   ]);
-  return { emailPorUsuario, guardadosAutomaticos };
+  return { emailPorUsuario, guardadosAutomaticos, rolPorId };
 };
 
 /**

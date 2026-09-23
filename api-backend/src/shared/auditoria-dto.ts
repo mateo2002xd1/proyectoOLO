@@ -27,13 +27,12 @@ export interface RegistroAuditoria {
   categoria: CategoriaAuditoria | null;
   camposModificados: CampoModificado[];
   /**
-   * Lo que pasó, en una frase, o `null` si esta versión no sabe contar ese cambio.
-   *
-   * La pantalla lo enseña tal cual en la columna «Cambios». Con `null` sigue usando su
-   * camino de siempre, así que ninguna fila se queda sin explicación mientras las fases
-   * avanzan. La regla vive en `auditoria-resumen.ts`.
+   * Lo que pasó, en una frase. **Siempre viene**: cada acción tiene sus frases propias
+   * y lo que ninguna sabe contar lo redacta una genérica que nombra los campos en
+   * español, con su antes y su después. La pantalla lo enseña tal cual en la columna
+   * «Cambios». La regla vive en `auditoria-resumen.ts`.
    */
-  resumen: string | null;
+  resumen: string;
   ip: string | null;
   userAgent: string | null;
   fecha: string;
@@ -67,6 +66,8 @@ export interface ContextoDeLectura {
   emailPorUsuario?: Map<string, string>;
   /** Ids de los guardados que el editor hizo solo antes de enviar a revisión. */
   guardadosAutomaticos?: Set<string>;
+  /** Nombre de cada rol por su id: para decir «rol «Editor»» y no un UUID. */
+  rolPorId?: Map<string, string>;
 }
 
 export const aRegistroAuditoria = (
@@ -88,7 +89,9 @@ export const aRegistroAuditoria = (
     resumen: resumenDeRegistro({
       accion: fila.accion,
       entidadTipo: fila.entidad_tipo,
+      entidadId: fila.entidad_id,
       camposModificados,
+      nombreDeRol: (id) => (typeof id === 'string' ? contexto.rolPorId?.get(id) ?? null : null),
       emailAfectado:
         contexto.emailPorUsuario?.get(fila.entidad_id) ?? emailEnLaFila(camposModificados),
       guardadoAutomatico: contexto.guardadosAutomaticos?.has(fila.id) ?? false,

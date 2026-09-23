@@ -1,40 +1,52 @@
 import type { AccionAuditable, EntidadAuditable } from '../infrastructure/db/models/content-audit-log';
 import type { CampoModificado } from '../repositories/auditoria.repository';
+import { VALOR_OMITIDO } from './auditoria-campos';
+import { CATALOGO_PERMISOS, partesDeClaveDeSeccion } from './catalogo-permisos';
 
 /**
  * La frase que lee quien audita, construida aquí y no en la pantalla.
  *
  * La columna «Cambios» enseñaba el campo crudo —`status: active`,
- * `expiration_date: 2026-09-20T00:00:00.000Z`—: correcto como dato, ilegible como
- * bitácora, y sin decir **sobre quién**. Quien administra no tendría que traducir
- * códigos internos ni abrir el detalle para saber qué pasó.
+ * `expiration_date: 2026-09-20T00:00:00.000Z`, `via: cambio-voluntario`—: correcto como
+ * dato, ilegible como bitácora, y sin decir **sobre quién**. Quien administra no tendría
+ * que traducir códigos internos ni abrir el detalle para saber qué pasó.
  *
  * Se resuelve en el backend por tres razones:
  *
  * - La bitácora la leen la tabla, el detalle y el CSV. Una sola fuente evita que
  *   cuenten tres versiones distintas de lo mismo.
- * - El correo del usuario afectado **no está en la fila**: `entidad_id` es su id, y
- *   resolverlo es una consulta, no algo que la pantalla pueda inventar.
+ * - Lo que hace falta para decirlo bien **no está en la fila**: el correo del usuario
+ *   afectado o el nombre de un rol son consultas, no algo que la pantalla pueda inventar.
  * - Vale para las filas que ya existen. No se guarda nada nuevo en la tabla: la frase
  *   se calcula al leer, así que los registros de ayer también quedan explicados.
  *
  * **Nada de esto se escribe en `campos_modificados`.** Esa columna es la evidencia
- * —qué campo cambió, de qué a qué— y meterle texto de presentación, o un correo que
- * nadie modificó, la convierte en algo que ya no se sostiene como prueba.
- */
-
-/** Acciones que alguien decidió desde el panel. */
-const ACCIONES_DEL_PANEL = new Set<AccionAuditable>(['actualizar', 'inactivar']);
-
-/**
- * Campos que esta versión sabe contar en palabras.
+ * —qué campo cambió, de qué a qué— y meterle texto de presentación la convierte en algo
+ * que ya no se sostiene como prueba. El detalle de cada fila la sigue enseñando entera.
  *
- * Mientras un cambio toque **solo** campos de esta lista, la fila se explica con una
- * frase. En cuanto toque cualquier otro se devuelve `null` y la pantalla enseña la
- * lista de campos de siempre: es preferible un texto feo a una frase que cuente la
- * mitad y esconda el resto.
+ * El archivo va **por acción**, en el orden del filtro de la pantalla. Cada acción tiene
+ * sus frases propias, y lo que ninguna sabe contar cae en `fraseGenerica`, que nombra
+ * los campos en español y dice de qué valor a qué valor pasaron. Ninguna fila vuelve a
+ * salir en crudo, y ninguna frase se calla un campo: cuando una regla propia no encaja
+ * con lo que trae la fila, cede el paso a la genérica en vez de contar la mitad.
  */
-const CAMPOS_CON_FRASE = new Set(['status', 'expiration_date']);
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Utilidades
+// ═════════════════════════════════════════════════════════════════════════════
+
+/** Un valor de `campos_modificados` como texto, venga como número o como cadena. */
+const comoTextoONumero = (valor: unknown): string | null => {
+  if (typeof valor === 'number' && Number.isFinite(valor)) return String(valor);
+  return typeof valor === 'string' && valor.trim() ? valor.trim() : null;
+};
+
+const campoDe = (campos: CampoModificado[], nombre: string) =>
+  campos.find((c) => c.campo === nombre);
+
+/** `true` si la fila no trae ningún campo fuera de `permitidos`. */
+const soloTrae = (campos: CampoModificado[], permitidos: string[]) =>
+  campos.every(({ campo }) => permitidos.includes(campo));
 
 /**
  * El día de una fecha, en UTC y como `YYYY-MM-DD`.
@@ -76,7 +88,7 @@ const enDiaMesAno = (valor: unknown): string | null => {
  *
  * Hace falta porque el formulario de usuarios manda **siempre** `name`, `apellidos`,
  * `email` y `role_id`, cambien o no: sin esta comprobación, editar solo la fecha de
- * caducidad parecería un cambio de cinco campos y ninguna frase encajaría.
+ * caducidad parecería un cambio de cinco campos.
  *
  * La fecha se compara por día y no por texto: el «antes» llega de la base como
  * `2026-09-19T00:00:00.000Z` y el «después» del formulario como `2026-09-19`. Son el
@@ -87,65 +99,370 @@ const cambioDeVerdad = ({ campo, antes, despues }: CampoModificado): boolean => 
   return JSON.stringify(antes ?? null) !== JSON.stringify(despues ?? null);
 };
 
-/** Fase 1: activar o inactivar una cuenta, con el correo de quien la tiene. */
-const fraseDeEstado = (despues: unknown, email: string | null): string | null => {
-  const sujeto = email ? `el usuario ${email}` : 'la cuenta';
+const EN_EL_PORTAL: Record<string, string> = { sitio: 'el sitio web', intranet: 'la intranet' };
 
-  if (despues === 'active') return `Se activó ${sujeto}`;
-  if (despues === 'inactive') return `Se inactivó ${sujeto}`;
+/** Con «de» delante: «del sitio web», no «de el sitio web». */
+const DEL_PORTAL: Record<string, string> = { sitio: 'del sitio web', intranet: 'de la intranet' };
+
+/** `['Administrador', 'Editor']` o `'Administrador, Editor'` → `Administrador, Editor`. */
+const listaDeTexto = (valor: unknown): string | null =>
+  Array.isArray(valor) ? valor.map(String).join(', ') || null : comoTextoONumero(valor);
+
+// ─── Permisos ────────────────────────────────────────────────────────────────
+
+const ETIQUETA_DE_PERMISO = new Map(CATALOGO_PERMISOS.map((p) => [p.clave, p.etiqueta]));
+
+/**
+ * Un permiso como lo ve una persona: `«Crear secciones nuevas»`, no `secciones.crear`.
+ *
+ * Los de sección se dicen enteros —`de editar la sección «Inicio» del sitio web`—
+ * porque en el catálogo su etiqueta es solo el nombre de la sección, y «el permiso
+ * «Inicio»» no le dice a nadie qué deja hacer. Las secciones creadas desde el editor
+ * no están en el catálogo: se nombran por su ruta.
+ */
+const nombreDePermiso = (clave: unknown): string | null => {
+  const texto = comoTextoONumero(clave);
+  if (!texto) return null;
+
+  const seccion = partesDeClaveDeSeccion(texto);
+  if (seccion) {
+    const nombre = ETIQUETA_DE_PERMISO.get(texto) ?? seccion.slug;
+    return `de editar la sección «${nombre}» ${DEL_PORTAL[seccion.ambito] ?? `de ${seccion.ambito}`}`;
+  }
+
+  const fija = ETIQUETA_DE_PERMISO.get(texto);
+  return `«${fija ?? texto}»`;
+};
+
+// ─── Lo genérico: un campo cualquiera, en palabras ───────────────────────────
+
+const ETIQUETA_DE_CAMPO: Record<string, string> = {
+  name: 'nombre',
+  apellidos: 'apellidos',
+  email: 'correo',
+  role_id: 'rol',
+  status: 'estado de la cuenta',
+  expiration_date: 'fecha de caducidad',
+  password: 'contraseña',
+  slug: 'ruta',
+  version: 'versión',
+  estado: 'estado',
+  motivo: 'motivo',
+  comentario: 'comentario de cambios',
+  titulo: 'título',
+  ambito: 'portal',
+  origen: 'portal',
+  permiso: 'permiso',
+  description: 'descripción',
+  via: 'vía',
+  es_sistema: 'rol del sistema',
+};
+
+const etiquetaDeCampo = (campo: string) =>
+  ETIQUETA_DE_CAMPO[campo] ?? campo.replace(/_/g, ' ').trim().toLowerCase();
+
+const VALOR_EN_PALABRAS: Record<string, string> = {
+  active: 'activa',
+  inactive: 'inactiva',
+  suspended: 'suspendida',
+  borrador: 'borrador',
+  en_revision: 'en revisión',
+  publicado: 'publicada',
+  archivado: 'archivada',
+  rechazado: 'rechazada',
+  sitio: 'sitio web',
+  intranet: 'intranet',
+  'sitio-web': 'sitio web',
+};
+
+/** Lo que la frase necesita resolver fuera de la fila. */
+interface Resolutores {
+  nombreDeRol: (id: unknown) => string | null;
+}
+
+const valorEnPalabras = (campo: string, valor: unknown, r: Resolutores): string | null => {
+  if (valor === null || valor === undefined || valor === '') return null;
+  if (valor === VALOR_OMITIDO) return '(valor oculto)';
+  if (campo === 'role_id') {
+    const rol = r.nombreDeRol(valor);
+    return rol ? `«${rol}»` : 'un rol que ya no existe';
+  }
+  if (campo === 'expiration_date') return enDiaMesAno(valor);
+  if (typeof valor === 'boolean') return valor ? 'sí' : 'no';
+  if (typeof valor === 'number') return String(valor);
+  if (Array.isArray(valor)) return valor.map(String).join(', ') || null;
+  if (typeof valor === 'string') return VALOR_EN_PALABRAS[valor.trim()] ?? `«${valor.trim()}»`;
+  return JSON.stringify(valor);
+};
+
+/** `apellidos de «Tejada» a «Vargas»`, `rol: «Editor»`, `correo: se quitó «x»`. */
+const piezaGenerica = (c: CampoModificado, r: Resolutores): string | null => {
+  const etiqueta = etiquetaDeCampo(c.campo);
+  const antes = valorEnPalabras(c.campo, c.antes, r);
+  const despues = valorEnPalabras(c.campo, c.despues, r);
+
+  if (antes && despues) return antes === despues ? `${etiqueta}: ${despues}` : `${etiqueta} de ${antes} a ${despues}`;
+  if (despues) return `${etiqueta}: ${despues}`;
+  if (antes) return `${etiqueta}: se quitó ${antes}`;
   return null;
 };
 
-/** Un valor de `campos_modificados` como texto, venga como número o como cadena. */
-const comoTextoONumero = (valor: unknown): string | null => {
-  if (typeof valor === 'number' && Number.isFinite(valor)) return String(valor);
-  return typeof valor === 'string' && valor.trim() ? valor.trim() : null;
+const VERBO_DE_ACCION: Record<AccionAuditable, string> = {
+  crear: 'Se creó',
+  actualizar: 'Se modificó',
+  eliminar: 'Se eliminó',
+  publicar: 'Se publicó',
+  despublicar: 'Se archivó',
+  aprobar: 'Se aprobó',
+  rechazar: 'Se rechazó',
+  enviar_revision: 'Se envió a revisión',
+  guardar_borrador: 'Se guardó',
+  cambiar_password: 'Se cambió la contraseña de',
+  autenticar: 'Inició sesión',
+  expirar: 'Expiró',
+  inactivar: 'Se inactivó',
 };
+
+const ALGO_DE_ESTE_TIPO: Record<EntidadAuditable, string> = {
+  contenido: 'un contenido',
+  pagina: 'una página',
+  seccion: 'una sección',
+  usuario: 'una cuenta de usuario',
+  rol: 'un rol',
+  marca: 'la marca',
+  configuracion: 'la configuración',
+  archivo: 'un archivo',
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Creación
+// ═════════════════════════════════════════════════════════════════════════════
+
+const fraseDeCreacion = (d: Contexto): string | null => {
+  const { campos } = d;
+  const despues = (nombre: string) => comoTextoONumero(campoDe(campos, nombre)?.despues);
+
+  if (d.entidadTipo === 'pagina') {
+    if (!soloTrae(campos, ['slug', 'titulo', 'ambito', 'permiso', 'permiso_concedido_a_rol', 'roles_concedidos'])) return null;
+    const slug = despues('slug');
+    if (!slug) return null;
+
+    const titulo = despues('titulo');
+    const nombre = titulo && titulo !== slug ? `«${titulo}» (/${slug})` : `«${slug}»`;
+    const portal = EN_EL_PORTAL[despues('ambito') ?? ''];
+    const roles = listaDeTexto(
+      campoDe(campos, 'roles_concedidos')?.despues ?? campoDe(campos, 'permiso_concedido_a_rol')?.despues
+    );
+
+    return [
+      `Se creó la página ${nombre}${portal ? ` en ${portal}` : ''}`,
+      roles ? `pueden editarla: ${roles}` : null,
+    ].filter(Boolean).join(' · ');
+  }
+
+  if (d.entidadTipo === 'usuario') {
+    if (!soloTrae(campos, ['name', 'apellidos', 'email', 'role_id', 'expiration_date'])) return null;
+    const email = despues('email') ?? d.email;
+    if (!email) return null;
+
+    const nombre = [despues('name'), despues('apellidos')].filter(Boolean).join(' ');
+    const rol = d.nombreDeRol(campoDe(campos, 'role_id')?.despues);
+    const caduca = enDiaMesAno(campoDe(campos, 'expiration_date')?.despues);
+
+    return [
+      `Se creó el usuario ${email}`,
+      nombre ? `nombre «${nombre}»` : null,
+      rol ? `rol «${rol}»` : null,
+      caduca ? `caduca el ${caduca}` : null,
+    ].filter(Boolean).join(' · ');
+  }
+
+  if (d.entidadTipo === 'rol') {
+    if (!soloTrae(campos, ['name', 'description'])) return null;
+    const nombre = despues('name');
+    if (!nombre) return null;
+
+    const descripcion = despues('description');
+    return `Se creó el rol «${nombre}»${descripcion ? ` · «${descripcion}»` : ''}`;
+  }
+
+  return null;
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Edición: guardar y enviar a revisión
+// ═════════════════════════════════════════════════════════════════════════════
+
+/**
+ * La versión y la página de una fila del ciclo editorial, como `versión 36 de «inicio»`.
+ *
+ * Toma el «después» y, si no hay, el «antes»: al descartar una versión la fila guarda lo
+ * que había y deja el después vacío. `null` si falta algo o si el slug cambia entre el
+ * antes y el después: eso sería un renombre, y una frase que no lo diga lo escondería.
+ */
+const versionDePagina = (campos: CampoModificado[]): string | null => {
+  const slug = campoDe(campos, 'slug');
+  const slugAntes = comoTextoONumero(slug?.antes);
+  const slugDespues = comoTextoONumero(slug?.despues);
+  if (slugAntes && slugDespues && slugAntes !== slugDespues) return null;
+  const pagina = slugDespues ?? slugAntes;
+
+  const version = campoDe(campos, 'version');
+  const numero = comoTextoONumero(version?.despues) ?? comoTextoONumero(version?.antes);
+  if (!pagina || !numero) return null;
+
+  return `versión ${numero} de «${pagina}»`;
+};
+
+/**
+ * Fase 5: guardar el borrador de una página.
+ *
+ * Una sola frase, la que definió el usuario para no confundir a quien audita: el guardado
+ * es algo que decidió una persona al pulsar «Guardar».
+ *
+ * **Salvo los guardados automáticos de antes de la fase 6.** El editor guardaba por su
+ * cuenta un instante antes de cada envío. Los listados ya no los traen, pero el análisis
+ * de la depuración sí, y ahí decir «el usuario guardó» sería falso: nadie pulsó nada.
+ */
+const fraseDeBorrador = (d: Contexto): string | null => {
+  if (!soloTrae(d.campos, ['slug', 'version', 'estado'])) return null;
+
+  const estado = campoDe(d.campos, 'estado');
+  if (estado && comoTextoONumero(estado.despues) !== 'borrador') return null;
+
+  const cual = versionDePagina(d.campos);
+  if (!cual) return null;
+
+  return d.guardadoAutomatico
+    ? `Guardado automático al enviar a revisión · ${cual}`
+    : `El usuario guardó su edición en borrador · ${cual}`;
+};
+
+/**
+ * Fase 6: enviar una página a revisión, con su «commit». El comentario va detrás, entre
+ * comillas, porque es texto de quien edita y no de la API. Las filas de antes de que el
+ * comentario fuera obligatorio no traen el campo, y lo dicen.
+ */
+const fraseDeEnvio = (d: Contexto): string | null => {
+  if (!soloTrae(d.campos, ['comentario', 'slug', 'version', 'estado'])) return null;
+
+  const estado = campoDe(d.campos, 'estado');
+  if (estado && comoTextoONumero(estado.despues) !== 'en_revision') return null;
+
+  const cual = versionDePagina(d.campos);
+  if (!cual) return null;
+
+  const comentario = comoTextoONumero(campoDe(d.campos, 'comentario')?.despues);
+  return `El usuario envió su edición a revisión · ${cual} · ${comentario ? `«${comentario}»` : 'Sin comentario'}`;
+};
+
+/**
+ * Las 165 ediciones de página anteriores a `guardar_borrador`, que se escribían como
+ * `actualizar` con solo el slug y la versión. No se dice «borrador» porque la fila no
+ * lo dice, ni «el usuario guardó» porque no se sabe si alguien lo pulsó.
+ */
+const fraseDeEdicionAntigua = (d: Contexto): string | null => {
+  if (!soloTrae(d.campos, ['slug', 'version'])) return null;
+  const cual = versionDePagina(d.campos);
+  return cual ? `Se guardó la ${cual}` : null;
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Rechazo
+// ═════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Qué versión se rechazó, qué decía quien la envió y por qué la rechazaron.
+ *
+ * El motivo es el «commit» del rechazo: lo escribe quien revisa y es lo que quien editó
+ * necesita para corregir. Va con su nombre delante para que no se confunda con el
+ * comentario del envío, que es el de la otra persona.
+ */
+const fraseDeRechazo = (d: Contexto): string | null => {
+  if (!soloTrae(d.campos, ['comentario', 'slug', 'version', 'estado', 'motivo'])) return null;
+
+  const cual = versionDePagina(d.campos);
+  if (!cual) return null;
+
+  const comentario = comoTextoONumero(campoDe(d.campos, 'comentario')?.despues);
+  const motivo = comoTextoONumero(campoDe(d.campos, 'motivo')?.despues);
+
+  return [
+    `Se rechazó la ${cual}`,
+    comentario ? `Su comentario: «${comentario}»` : null,
+    motivo ? `Motivo del rechazo: «${motivo}»` : 'Sin motivo escrito',
+  ].filter(Boolean).join(' · ');
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Publicación
+// ═════════════════════════════════════════════════════════════════════════════
+
+/** Aprobar es publicar: la versión revisada pasa a verse, con el comentario con que llegó. */
+const fraseDeAprobacion = (d: Contexto): string | null => {
+  if (!soloTrae(d.campos, ['comentario', 'slug', 'version', 'estado'])) return null;
+
+  const cual = versionDePagina(d.campos);
+  if (!cual) return null;
+
+  const comentario = comoTextoONumero(campoDe(d.campos, 'comentario')?.despues);
+  return `Se aprobó y publicó la ${cual} · ${comentario ? `«${comentario}»` : 'Sin comentario'}`;
+};
+
+/**
+ * `publicar` sobre una página es, hoy, restaurar una versión anterior: vuelve a verse una
+ * que ya se había publicado. Las filas más viejas, sin motivo, son publicaciones de antes
+ * de que existiera la aprobación.
+ */
+const fraseDePublicacion = (d: Contexto): string | null => {
+  if (!soloTrae(d.campos, ['comentario', 'slug', 'version', 'motivo'])) return null;
+
+  const cual = versionDePagina(d.campos);
+  if (!cual) return null;
+
+  const motivo = comoTextoONumero(campoDe(d.campos, 'motivo')?.despues);
+  const comentario = comoTextoONumero(campoDe(d.campos, 'comentario')?.despues);
+  const restaurada = Boolean(motivo && /^Restaurada versión anterior/i.test(motivo));
+
+  return [
+    restaurada ? `Se restauró y publicó la ${cual}` : `Se publicó la ${cual}`,
+    comentario ? `«${comentario}»` : null,
+  ].filter(Boolean).join(' · ');
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Archivado
+// ═════════════════════════════════════════════════════════════════════════════
 
 /**
  * Los dos motivos por los que una versión de página deja de estar publicada.
  *
  * Archivar una página **no lo decide nadie**: una versión sale de la vista porque otra
- * ocupa su sitio, al aprobar una nueva o al restaurar una anterior. No hay ninguna
- * función para retirar una página del aire a propósito. El texto lo genera la API, y
- * lleva dentro el número de la versión que entró, que es el único sitio donde está.
+ * ocupa su sitio, al aprobar una nueva o al restaurar una anterior. El texto lo genera la
+ * API, y lleva dentro el número de la versión que entró, que es el único sitio donde está.
  *
  * Los constructores viven aquí, pegados a la expresión que vuelve a leerlos, y quien
- * escribe la fila los importa de este archivo. Sueltos en cada controlador, cambiar la
- * redacción en un sitio dejaría la frase sin armarse en el otro **y en silencio**: el
- * resumen devolvería `null` y la pantalla volvería al texto de antes sin que nadie se
- * entere de por qué.
+ * escribe la fila los importa de este archivo: cambiar la redacción en un solo sitio
+ * dejaría la frase sin armarse **y en silencio**.
  */
 export const MOTIVO_DE_ARCHIVADO = {
   alPublicar: (version: unknown) => `Archivada al publicar versión ${version}`,
   alRestaurar: (version: unknown) => `Archivada por restauración de versión ${version}`,
 };
 
-/**
- * Se exige `\d+` y no cualquier cosa a propósito: si el número llegara en blanco, el
- * motivo diría «versión undefined» y la frase saldría con esa palabra dentro. Sin
- * coincidencia se devuelve `null` y la pantalla enseña el motivo crudo, que es feo
- * pero cierto.
- */
+/** Se exige `\d+`: con el número en blanco, la frase diría «la undefined». */
 const CAUSAS_DE_ARCHIVADO = [
   { patron: /^Archivada al publicar versión\s+(\d+)\s*$/i, comoSeDice: 'al publicar la' },
   { patron: /^Archivada por restauración de versión\s+(\d+)\s*$/i, comoSeDice: 'al restaurar la' },
 ];
 
 /**
- * Fase 4: qué versión salió de la vista, y por culpa de cuál.
- *
- * La columna decía «Sin comentario · Archivada al publicar versión 9», y de ahí se
- * entendían dos cosas equivocadas: que alguien había archivado una página a mano, y que
- * la versión 9 se había publicado sin comentario. Ese «Sin comentario» es el de la
- * versión **archivada**, no el de la que entró; en la tabla, sin la explicación que sí
- * trae el detalle, se leía justo al revés.
- *
- * Solo para páginas. Un contenido —un banner, un estudio— sí se archiva a mano, y ahí
- * la lista de campos de siempre dice la verdad.
+ * Fase 4: qué versión salió de la vista, y por culpa de cuál. El comentario que se
+ * enseña es el de la **archivada**, y se dice de quién es: suelto, se leía como el de la
+ * versión recién publicada, que es justo lo contrario.
  */
-const fraseDeArchivado = (campos: CampoModificado[]): string | null => {
-  const motivo = comoTextoONumero(campos.find((c) => c.campo === 'motivo')?.despues);
+const fraseDeArchivado = (d: Contexto): string | null => {
+  const motivo = comoTextoONumero(campoDe(d.campos, 'motivo')?.despues);
   if (!motivo) return null;
 
   const causa = CAUSAS_DE_ARCHIVADO.map((c) => ({ ...c, coincidencia: motivo.match(c.patron) }))
@@ -153,116 +470,46 @@ const fraseDeArchivado = (campos: CampoModificado[]): string | null => {
   if (!causa?.coincidencia) return null;
 
   // `version` lleva el número de la archivada en las dos puntas: la fila trata de ella.
-  const version = campos.find((c) => c.campo === 'version');
+  const version = campoDe(d.campos, 'version');
   const archivada = comoTextoONumero(version?.antes ?? version?.despues);
   if (!archivada) return null;
 
-  const partes = [
+  const comentario = comoTextoONumero(campoDe(d.campos, 'comentario')?.antes);
+  return [
     `Se archivó la versión ${archivada} ${causa.comoSeDice} ${causa.coincidencia[1]}`,
-  ];
-
-  // El comentario de la que salió va detrás y diciendo de quién es. Callarlo escondería
-  // lo único que contaba qué decía la página antes; dejarlo como estaba lo hacía pasar
-  // por el de la versión recién publicada.
-  const comentario = comoTextoONumero(campos.find((c) => c.campo === 'comentario')?.antes);
-  if (comentario) partes.push(`Comentario de la archivada: «${comentario}»`);
-
-  return partes.join(' · ');
+    comentario ? `Comentario de la archivada: «${comentario}»` : null,
+  ].filter(Boolean).join(' · ');
 };
 
-/**
- * La versión y la página de una fila del ciclo editorial, como `versión 36 de «inicio»`.
- *
- * `null` si falta algo o si el slug cambia entre el antes y el después: eso sería un
- * renombre de la página, y una frase que no lo diga lo estaría escondiendo.
- */
-const versionDePagina = (campos: CampoModificado[]): string | null => {
-  const campo = (nombre: string) => campos.find((c) => c.campo === nombre);
-
-  const slugAntes = comoTextoONumero(campo('slug')?.antes);
-  const slugDespues = comoTextoONumero(campo('slug')?.despues);
-  if (slugAntes && slugDespues && slugAntes !== slugDespues) return null;
-  const pagina = slugDespues ?? slugAntes;
-
-  const numero = comoTextoONumero(campo('version')?.despues);
-  if (!pagina || !numero) return null;
-
-  return `versión ${numero} de «${pagina}»`;
-};
-
-/** Los únicos campos que escribe `guardarBorrador` en `pagina.controller.ts`. */
-const CAMPOS_DEL_BORRADOR = new Set(['slug', 'version', 'estado']);
+// ═════════════════════════════════════════════════════════════════════════════
+// Autenticación
+// ═════════════════════════════════════════════════════════════════════════════
 
 /**
- * Fase 5: guardar el borrador de una página.
- *
- * Una sola frase, la que definió el usuario para no confundir a quien audita: el guardado
- * es algo que decidió una persona al pulsar «Guardar». Da igual si abrió una versión
- * nueva o volvió a guardar la misma; eso sigue en el detalle, con su antes y su después.
- *
- * **Salvo los guardados automáticos de antes del cambio.** Hasta ahora el editor guardaba
- * por su cuenta un instante antes de cada envío a revisión, y esas filas siguen en la
- * base. Decir de ellas que «el usuario guardó su edición» sería falso: nadie pulsó nada.
- * Quien las reconoce es `guardadosPreviosAEnvio`, en `audit.usecase.ts`. Desde este
- * cambio ya no se escriben: el contenido viaja con el envío y la API lo guarda sin fila
- * propia (ver `PaginaController.enviarARevision`).
- */
-const fraseDeBorrador = (campos: CampoModificado[], automatico: boolean): string | null => {
-  if (campos.some(({ campo }) => !CAMPOS_DEL_BORRADOR.has(campo))) return null;
-
-  const estado = campos.find((c) => c.campo === 'estado');
-  if (estado && comoTextoONumero(estado.despues) !== 'borrador') return null;
-
-  const cual = versionDePagina(campos);
-  if (!cual) return null;
-
-  return automatico
-    ? `Guardado automático al enviar a revisión · ${cual}`
-    : `El usuario guardó su edición en borrador · ${cual}`;
-};
-
-/** Los campos que escribe `PaginaController.enviarARevision`. */
-const CAMPOS_DEL_ENVIO = new Set(['comentario', 'slug', 'version', 'estado']);
-
-/**
- * Fase 6: enviar una página a revisión, con su «commit».
- *
- * La columna solo enseñaba el comentario, sin decir de qué página ni de qué versión: la
- * columna «Entidad» pone «Página» y nada más. Ahora dice las dos cosas y el comentario va
- * detrás, entre comillas, porque es texto de quien edita y no de la API.
- *
- * Las filas de antes de que el comentario fuera obligatorio no traen el campo, y lo dicen.
- */
-const fraseDeEnvio = (campos: CampoModificado[]): string | null => {
-  if (campos.some(({ campo }) => !CAMPOS_DEL_ENVIO.has(campo))) return null;
-
-  const estado = campos.find((c) => c.campo === 'estado');
-  if (estado && comoTextoONumero(estado.despues) !== 'en_revision') return null;
-
-  const cual = versionDePagina(campos);
-  if (!cual) return null;
-
-  const comentario = comoTextoONumero(campos.find((c) => c.campo === 'comentario')?.despues);
-
-  return `El usuario envió su edición a revisión · ${cual} · ${comentario ? `«${comentario}»` : 'Sin comentario'}`;
-};
-
-/**
- * Fase 3: desde qué portal se inició sesión.
- *
- * Los dos entran por el mismo `POST /api/login`, así que el origen no se puede deducir
- * de la fila: lo marca cada aplicación al llamar y la API lo guarda en `origen`. Las
- * filas anteriores a esto no lo llevan y se quedan con el «Inició sesión» a secas que
- * decían hasta ahora, que es verdad aunque diga menos.
+ * Fase 3: desde qué portal se inició sesión. Las filas anteriores a que los portales se
+ * identificaran no lo llevan y se quedan con «Inició sesión» a secas, que es verdad
+ * aunque diga menos.
  */
 const FRASE_POR_APLICACION: Record<string, string> = {
   'sitio-web': 'Inició sesión en el sitio web',
   intranet: 'Inició sesión en la intranet',
 };
 
-const fraseDeAutenticacion = (campos: CampoModificado[]): string | null => {
-  const origen = campos.find((c) => c.campo === 'origen')?.despues;
-  return typeof origen === 'string' ? FRASE_POR_APLICACION[origen] ?? null : null;
+const fraseDeAutenticacion = (d: Contexto): string => {
+  const origen = comoTextoONumero(campoDe(d.campos, 'origen')?.despues);
+  return (origen && FRASE_POR_APLICACION[origen]) ?? 'Inició sesión';
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Modificación de usuarios (incluye la inactivación desde el panel)
+// ═════════════════════════════════════════════════════════════════════════════
+
+/** Fase 1: activar o inactivar una cuenta, con el correo de quien la tiene. */
+const fraseDeEstado = (despues: unknown, email: string | null): string | null => {
+  const sujeto = email ? `el usuario ${email}` : 'la cuenta';
+  if (despues === 'active') return `Se activó ${sujeto}`;
+  if (despues === 'inactive') return `Se inactivó ${sujeto}`;
+  return null;
 };
 
 /** Fase 2: la fecha de caducidad, de la que era a la que quedó. */
@@ -276,10 +523,245 @@ const fraseDeCaducidad = (antes: unknown, despues: unknown): string | null => {
   return null;
 };
 
+/** Cada campo de una cuenta, contado como lo diría una persona. */
+const piezaDeUsuario = (c: CampoModificado, r: Resolutores): string | null => {
+  if (c.campo === 'reset_password') return c.despues === true ? 'se restableció la contraseña (se generó una temporal)' : null;
+  if (c.campo === 'reset_security_questions') return c.despues === true ? 'se restablecieron las preguntas de seguridad' : null;
+  if (c.campo === 'status') {
+    if (c.despues === 'active') return 'se activó la cuenta';
+    if (c.despues === 'inactive') return 'se inactivó la cuenta';
+  }
+  if (c.campo === 'password') return 'se cambió la contraseña';
+  return piezaGenerica(c, r);
+};
+
+/**
+ * Qué se le cambió a una cuenta, solo lo que cambió de verdad.
+ *
+ * Antes la columna decía `name: David · apellidos: Vargas · email: dtejada@sena.edu.co`,
+ * que son los tres campos que el formulario manda **siempre**, cambien o no: no se sabía
+ * cuál era el cambio. Ahora se comparan con lo que había y solo se nombra lo distinto:
+ * «Se modificó el usuario dtejada@sena.edu.co · apellidos de «Tejada» a «Vargas»».
+ *
+ * Las dos frases que definió el usuario en las fases 1 y 2 se conservan tal cual cuando
+ * son lo único que cambió. Y si no cambió nada —guardar el formulario sin tocarlo—, se dice.
+ */
+const fraseDeModificacionDeUsuario = (d: Contexto): string | null => {
+  const reales = d.campos.filter(cambioDeVerdad);
+  const sujeto = d.email ? `el usuario ${d.email}` : 'una cuenta de usuario';
+
+  if (reales.length === 0) return `Se guardó ${sujeto} sin cambios`;
+
+  // Las filas anteriores a que se capturara el estado previo traen todos los «antes»
+  // vacíos: parecería que se cambió cada campo, y no se sabe. Se dice lo que quedó
+  // guardado y que lo que había no consta.
+  const sinAnteriores = d.campos.length > 1 && d.campos.every((c) => c.antes === null || c.antes === undefined);
+  if (sinAnteriores) {
+    const piezas = d.campos.map((c) => piezaDeUsuario(c, d)).filter((p): p is string => Boolean(p));
+    return [`Se guardó ${sujeto} con estos datos (el registro no guardó los anteriores)`, ...piezas].join(' · ');
+  }
+
+  if (reales.length === 1) {
+    const [unico] = reales;
+    if (unico.campo === 'status') {
+      const frase = fraseDeEstado(unico.despues, d.email);
+      if (frase) return frase;
+    }
+    if (unico.campo === 'expiration_date') {
+      const frase = fraseDeCaducidad(unico.antes, unico.despues);
+      if (frase) return frase;
+    }
+  }
+
+  const piezas = reales.map((c) => piezaDeUsuario(c, d)).filter((p): p is string => Boolean(p));
+  return [`Se modificó ${sujeto}`, ...piezas].join(' · ');
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Modificación de roles
+// ═════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Qué permiso se le dio o se le quitó a un rol, con su nombre y el del permiso.
+ * `role-permissions.controller.ts` escribe una fila por permiso.
+ */
+const fraseDeModificacionDeRol = (d: Contexto): string | null => {
+  const rol = d.nombreDeRolAfectado ? `«${d.nombreDeRolAfectado}»` : 'un rol';
+
+  const asignado = campoDe(d.campos, 'permiso_asignado');
+  if (asignado && d.campos.length === 1) {
+    const permiso = nombreDePermiso(asignado.despues);
+    return permiso ? `Se concedió al rol ${rol} el permiso ${permiso}` : null;
+  }
+
+  const revocado = campoDe(d.campos, 'permiso_revocado');
+  if (revocado && d.campos.length === 1) {
+    const permiso = nombreDePermiso(revocado.antes);
+    return permiso ? `Se retiró al rol ${rol} el permiso ${permiso}` : null;
+  }
+
+  // Cambios del propio rol (nombre, descripción): solo lo que cambió de verdad.
+  const reales = d.campos.filter(cambioDeVerdad);
+  if (reales.length === 0) return `Se guardó el rol ${rol} sin cambios`;
+  const piezas = reales.map((c) => piezaGenerica(c, d)).filter((p): p is string => Boolean(p));
+  return [`Se modificó el rol ${rol}`, ...piezas].join(' · ');
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Expiró
+// ═════════════════════════════════════════════════════════════════════════════
+
+/** Nadie lo decidió: se cumplió una fecha. Por eso la frase no tiene sujeto que actúe. */
+const fraseDeExpiracion = (d: Contexto): string =>
+  d.email
+    ? `La cuenta de ${d.email} pasó a inactiva al cumplirse su fecha de caducidad`
+    : 'La cuenta pasó a inactiva al cumplirse su fecha de caducidad';
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Cambio de contraseña
+// ═════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Las tres vías por las que alguien cambia su propia contraseña (`logCambioDePassword`).
+ * Antes la columna decía `via: cambio-voluntario`. El restablecimiento que hace un
+ * administrador no es esto: queda como «Modificación» del usuario.
+ */
+const FRASE_POR_VIA: Record<string, string> = {
+  'primer-inicio': 'Cambió la contraseña temporal en su primer ingreso',
+  recuperacion: 'Recuperó el acceso con sus preguntas de seguridad y puso una contraseña nueva',
+};
+
+const fraseDeCambioDePassword = (d: Contexto): string | null => {
+  if (!soloTrae(d.campos, ['via'])) return null;
+  const via = comoTextoONumero(campoDe(d.campos, 'via')?.despues);
+
+  // El cambio voluntario es el caso normal y se dice sin adornos, como lo definió el
+  // usuario: «Cambió su contraseña de la cuenta …». Las otras dos vías sí llevan su
+  // explicación, porque cuentan algo distinto de un cambio corriente.
+  const especial = via ? FRASE_POR_VIA[via] : undefined;
+  if (!especial) return d.email ? `Cambió su contraseña de la cuenta ${d.email}` : 'Cambió su contraseña';
+
+  return d.email ? `${especial} · cuenta ${d.email}` : especial;
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Eliminación
+// ═════════════════════════════════════════════════════════════════════════════
+
+const fraseDeEliminacion = (d: Contexto): string | null => {
+  const { campos } = d;
+  const antes = (nombre: string) => comoTextoONumero(campoDe(campos, nombre)?.antes);
+
+  if (d.entidadTipo === 'usuario') {
+    if (!soloTrae(campos, ['email', 'name', 'apellidos'])) return null;
+    // Una cuenta borrada ya no se puede consultar: solo se sabe cuál fue si la fila lo
+    // guardó. Las eliminaciones anteriores a que se guardara no lo llevan, y lo dicen.
+    const email = antes('email') ?? d.email;
+    if (!email) return 'Se eliminó una cuenta de usuario (el registro no guardó cuál)';
+    const nombre = [antes('name'), antes('apellidos')].filter(Boolean).join(' ');
+    return `Se eliminó el usuario ${email}${nombre ? ` · nombre «${nombre}»` : ''}`;
+  }
+
+  if (d.entidadTipo === 'rol') {
+    if (!soloTrae(campos, ['name'])) return null;
+    const nombre = antes('name') ?? d.nombreDeRolAfectado;
+    return nombre ? `Se eliminó el rol «${nombre}»` : 'Se eliminó un rol (el registro no guardó cuál)';
+  }
+
+  if (d.entidadTipo === 'configuracion') {
+    if (!soloTrae(campos, ['depuracion_auditoria_peso', 'registros_eliminados'])) return null;
+    const registros = antes('registros_eliminados');
+    const peso = campoDe(campos, 'depuracion_auditoria_peso');
+    return [
+      'Se depuró la bitácora de auditoría',
+      registros ? `se eliminaron ${registros} registros` : null,
+      peso?.antes && peso?.despues ? `la tabla pasó de ${peso.antes} a ${peso.despues}` : null,
+    ].filter(Boolean).join(' · ');
+  }
+
+  if (d.entidadTipo !== 'pagina') return null;
+
+  // Depurar versiones antiguas: la única huella es el peso de la tabla.
+  if (soloTrae(campos, ['peso_tabla'])) {
+    const peso = campoDe(campos, 'peso_tabla');
+    if (!peso?.antes || !peso?.despues) return null;
+    return `Se depuraron versiones antiguas de las páginas · la tabla de versiones pasó de ${peso.antes} a ${peso.despues}`;
+  }
+
+  // Borrar una página entera.
+  if (campoDe(campos, 'versiones_eliminadas') || campoDe(campos, 'permiso_retirado_a_roles')) {
+    if (!soloTrae(campos, ['slug', 'titulo', 'ambito', 'permiso', 'permiso_retirado_a_roles', 'versiones_eliminadas'])) return null;
+    const slug = antes('slug');
+    if (!slug) return null;
+
+    const titulo = antes('titulo');
+    const nombre = titulo && titulo !== slug ? `«${titulo}» (/${slug})` : `«${slug}»`;
+    const portal = DEL_PORTAL[antes('ambito') ?? ''];
+    const n = Number(antes('versiones_eliminadas'));
+    const versiones = Number.isFinite(n) && n > 0 ? (n === 1 ? 'y su única versión' : `y sus ${n} versiones`) : '';
+    const roles = listaDeTexto(campoDe(campos, 'permiso_retirado_a_roles')?.antes);
+
+    return [
+      `Se eliminó la página ${nombre}${portal ? ` ${portal}` : ''}${versiones ? ` ${versiones}` : ''}`,
+      roles ? `se retiró el permiso de edición a: ${roles}` : null,
+    ].filter(Boolean).join(' · ');
+  }
+
+  // Descartar una versión que no se había publicado.
+  if (campoDe(campos, 'paginaEliminada')) {
+    if (!soloTrae(campos, ['comentario', 'slug', 'version', 'motivo', 'paginaEliminada'])) return null;
+    const cual = versionDePagina(campos);
+    if (!cual) return null;
+
+    const comentario = comoTextoONumero(campoDe(campos, 'comentario')?.despues);
+    const motivo = comoTextoONumero(campoDe(campos, 'motivo')?.despues);
+    const tambienLaPagina = campoDe(campos, 'paginaEliminada')?.despues === true;
+
+    return [
+      `Se descartó la ${cual}`,
+      comentario ? `Su comentario: «${comentario}»` : null,
+      motivo ? `Motivo: «${motivo}»` : null,
+      tambienLaPagina ? 'la página también se eliminó, porque era su única versión' : null,
+    ].filter(Boolean).join(' · ');
+  }
+
+  return null;
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Lo que ninguna regla sabe contar
+// ═════════════════════════════════════════════════════════════════════════════
+
+/**
+ * La red de seguridad: qué se hizo sobre qué, y cada campo en español con su antes y su
+ * después. Aparece con los contenidos —banners, estudios—, que hoy no tienen filas, y con
+ * cualquier forma de fila que una regla propia no reconozca. Solo nombra lo que cambió de
+ * verdad; si no cambió nada, nombra lo que hay, para no dejar la frase vacía.
+ */
+const fraseGenerica = (d: Contexto): string => {
+  const sujeto =
+    d.entidadTipo === 'usuario' && d.email ? `el usuario ${d.email}`
+      : d.entidadTipo === 'rol' && d.nombreDeRolAfectado ? `el rol «${d.nombreDeRolAfectado}»`
+        : ALGO_DE_ESTE_TIPO[d.entidadTipo] ?? 'un registro';
+
+  const reales = d.campos.filter(cambioDeVerdad);
+  const piezas = (reales.length > 0 ? reales : d.campos)
+    .map((c) => piezaGenerica(c, d))
+    .filter((p): p is string => Boolean(p));
+
+  return [`${VERBO_DE_ACCION[d.accion] ?? 'Se registró'} ${sujeto}`, ...piezas].join(' · ');
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Entrada
+// ═════════════════════════════════════════════════════════════════════════════
+
 export interface DatosDelResumen {
   accion: AccionAuditable;
   entidadTipo: EntidadAuditable;
   camposModificados: CampoModificado[];
+  /** Id de lo afectado: hace falta para nombrar un rol. */
+  entidadId?: string;
   /** Correo de la cuenta sobre la que se actuó, ya resuelto. */
   emailAfectado?: string | null;
   /**
@@ -287,63 +769,94 @@ export interface DatosDelResumen {
    * enviar a revisión. Lo resuelve `guardadosPreviosAEnvio`: la fila sola no lo sabe.
    */
   guardadoAutomatico?: boolean;
+  /** Nombre de un rol por su id. Sin él, los roles se nombran como «un rol». */
+  nombreDeRol?: (id: unknown) => string | null;
 }
 
+/** Lo que reciben las reglas: los datos ya ordenados y los resolutores a mano. */
+interface Contexto extends Resolutores {
+  accion: AccionAuditable;
+  entidadTipo: EntidadAuditable;
+  campos: CampoModificado[];
+  email: string | null;
+  guardadoAutomatico: boolean;
+  nombreDeRolAfectado: string | null;
+}
+
+/** Cada acción con sus reglas propias, en el orden del filtro de la pantalla. */
+const reglaPropia = (d: Contexto): string | null => {
+  switch (d.accion) {
+    case 'crear':
+      return fraseDeCreacion(d);
+
+    case 'guardar_borrador':
+      return d.entidadTipo === 'pagina' ? fraseDeBorrador(d) : null;
+    case 'enviar_revision':
+      return d.entidadTipo === 'pagina' ? fraseDeEnvio(d) : null;
+
+    case 'rechazar':
+      return d.entidadTipo === 'pagina' ? fraseDeRechazo(d) : null;
+
+    case 'aprobar':
+      return d.entidadTipo === 'pagina' ? fraseDeAprobacion(d) : null;
+    case 'publicar':
+      return d.entidadTipo === 'pagina' ? fraseDePublicacion(d) : null;
+
+    // Un contenido —banner, estudio— sí se archiva a mano: ahí manda la genérica.
+    case 'despublicar':
+      return d.entidadTipo === 'pagina' ? fraseDeArchivado(d) : null;
+
+    case 'autenticar':
+      return fraseDeAutenticacion(d);
+
+    case 'actualizar':
+      if (d.entidadTipo === 'usuario') return fraseDeModificacionDeUsuario(d);
+      if (d.entidadTipo === 'rol') return fraseDeModificacionDeRol(d);
+      if (d.entidadTipo === 'pagina') return fraseDeEdicionAntigua(d);
+      return null;
+    case 'inactivar':
+      return d.entidadTipo === 'usuario' ? fraseDeModificacionDeUsuario(d) : null;
+
+    // `expirar` también deja `status: inactive`, pero no lo decidió nadie: tiene la suya.
+    case 'expirar':
+      return fraseDeExpiracion(d);
+
+    case 'cambiar_password':
+      return fraseDeCambioDePassword(d);
+
+    case 'eliminar':
+      return fraseDeEliminacion(d);
+
+    default:
+      return null;
+  }
+};
+
 /**
- * La frase de una entrada, o `null` si esta versión no sabe contarla.
- *
- * `null` no es un fallo: es «que lo cuente quien ya lo contaba». La pantalla conserva
- * su camino de siempre, y cada fase nueva mueve un caso más a este lado.
- *
- * Basta con que **un** campo del cambio se resista para devolver `null` entero. Una
- * frase que hable de la fecha y se calle el estado es peor que la lista cruda: quien
- * audita leería como completo un resumen que no lo es.
+ * La frase de una entrada. Siempre hay una: la regla propia de la acción si encaja con
+ * lo que trae la fila, y si no, la genérica, que no se calla ningún campo.
  */
-export const resumenDeRegistro = (datos: DatosDelResumen): string | null => {
-  const campos = datos.camposModificados ?? [];
+export const resumenDeRegistro = (datos: DatosDelResumen): string => {
+  const nombreDeRol = datos.nombreDeRol ?? (() => null);
 
-  if (datos.entidadTipo === 'pagina') {
-    // Archivar una versión de página es consecuencia de publicar otra, no un acto propio.
-    if (datos.accion === 'despublicar') return fraseDeArchivado(campos);
-    if (datos.accion === 'guardar_borrador') {
-      return fraseDeBorrador(campos, Boolean(datos.guardadoAutomatico));
-    }
-    if (datos.accion === 'enviar_revision') return fraseDeEnvio(campos);
-    return null;
-  }
+  const contexto: Contexto = {
+    accion: datos.accion,
+    entidadTipo: datos.entidadTipo,
+    campos: datos.camposModificados ?? [],
+    email: datos.emailAfectado?.trim() || null,
+    guardadoAutomatico: Boolean(datos.guardadoAutomatico),
+    nombreDeRol,
+    nombreDeRolAfectado: datos.entidadTipo === 'rol' && datos.entidadId ? nombreDeRol(datos.entidadId) : null,
+  };
 
-  if (datos.entidadTipo !== 'usuario') return null;
-
-  // Un login no describe un campo que cambió sino desde dónde se entró, así que tiene
-  // su propia rama, antes de toda la comparación de «antes» contra «después».
-  if (datos.accion === 'autenticar') return fraseDeAutenticacion(campos);
-
-  // `expirar` también deja `status: inactive`, pero eso no lo decidió nadie: se
-  // cumplió una fecha. Contarlo como «se inactivó el usuario» le atribuiría a una
-  // persona algo que hizo el sistema.
-  if (!ACCIONES_DEL_PANEL.has(datos.accion)) return null;
-
-  const cambios = campos.filter(cambioDeVerdad);
-  if (cambios.length === 0) return null;
-  if (cambios.some(({ campo }) => !CAMPOS_CON_FRASE.has(campo))) return null;
-
-  const email = datos.emailAfectado?.trim() || null;
-  const frases: string[] = [];
-
-  for (const { campo, antes, despues } of cambios) {
-    const frase = campo === 'status' ? fraseDeEstado(despues, email) : fraseDeCaducidad(antes, despues);
-    if (!frase) return null;
-    frases.push(frase);
-  }
-
-  return frases.join(' · ');
+  return reglaPropia(contexto) ?? fraseGenerica(contexto);
 };
 
 /**
  * El correo que la propia fila recuerda, para cuando la cuenta ya no existe.
  *
- * El formulario de edición manda el correo en cada guardado, así que muchas filas lo
- * llevan aunque no cambiara. Es el último recurso: mientras la cuenta viva, el correo
+ * El formulario de edición manda el correo en cada guardado, y al eliminar una cuenta la
+ * API lo guarda como «antes». Es el último recurso: mientras la cuenta viva, el correo
  * bueno es el que devuelve la consulta y no el que quedó congelado en la fila.
  */
 export const emailEnLaFila = (campos: CampoModificado[]): string | null => {
