@@ -58,12 +58,14 @@ const GRUPOS: { id: string; titulo: string; ayuda: string; sensible?: boolean }[
 interface ModalPermisosProps {
   abierto: boolean;
   onCerrar: () => void;
-  rol: { id: string; nombre: string } | null;
+  rol: { id: string; nombre: string; descripcion?: string | null } | null;
   permisos: Permission[];
   /** Ids concedidos al abrir. Sirve de línea base para calcular qué cambió. */
   originales: Set<string>;
   seleccionados: Set<string>;
   onCambiarSeleccion: (ids: Set<string>) => void;
+  descripcion?: string;
+  onCambiarDescripcion?: (desc: string) => void;
   onGuardar: () => Promise<void>;
   guardando: boolean;
 }
@@ -93,6 +95,8 @@ export function ModalPermisos({
   originales,
   seleccionados,
   onCambiarSeleccion,
+  descripcion,
+  onCambiarDescripcion,
   onGuardar,
   guardando,
 }: ModalPermisosProps) {
@@ -117,7 +121,8 @@ export function ModalPermisos({
     () => [...originales].filter((id) => !seleccionados.has(id)),
     [originales, seleccionados]
   );
-  const hayCambios = anadidos.length > 0 || quitados.length > 0;
+  const descripcionCambio = rol && descripcion !== undefined && descripcion !== (rol.descripcion || '');
+  const hayCambios = anadidos.length > 0 || quitados.length > 0 || descripcionCambio;
 
   if (!abierto || typeof document === 'undefined') return null;
 
@@ -176,10 +181,25 @@ export function ModalPermisos({
           {/* Fuera del área que scrollea: es la advertencia que no debe perderse de vista
               mientras se mueven interruptores. */}
           {rol && (
-            <p className="mt-4 rounded-xl border border-amber-200/60 bg-amber-50 px-4 py-2.5 text-xs text-amber-900 dark:border-amber-800/40 dark:bg-amber-950/30 dark:text-amber-300">
-              Esto afecta a <strong>todas las personas con el rol «{rol.nombre}»</strong>, no solo
-              a la que estés editando. El cambio se aplica en cuanto guardas.
-            </p>
+            <div className="mt-4 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">
+                  Descripción del rol
+                </label>
+                <textarea
+                  maxLength={200}
+                  rows={2}
+                  value={descripcion ?? ''}
+                  onChange={(e) => onCambiarDescripcion?.(e.target.value)}
+                  placeholder="Sin descripción"
+                  className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand-interactive focus:outline-none focus:ring-2 focus:ring-brand-interactive/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                />
+              </div>
+              <p className="rounded-xl border border-amber-200/60 bg-amber-50 px-4 py-2.5 text-xs text-amber-900 dark:border-amber-800/40 dark:bg-amber-950/30 dark:text-amber-300">
+                Esto afecta a <strong>todas las personas con el rol «{rol.nombre}»</strong>, no solo
+                a la que estés editando. El cambio se aplica en cuanto guardas.
+              </p>
+            </div>
           )}
 
           <div className="relative mt-3">
@@ -295,6 +315,12 @@ export function ModalPermisos({
           <p className="text-xs text-zinc-500 dark:text-[#94a3b8]">
             {hayCambios ? (
               <>
+                {descripcionCambio && (
+                  <strong className="text-zinc-900 dark:text-white">
+                    Descripción actualizada
+                  </strong>
+                )}
+                {descripcionCambio && (anadidos.length > 0 || quitados.length > 0) && ' · '}
                 {anadidos.length > 0 && (
                   <strong className="text-zinc-900 dark:text-white">
                     {anadidos.length} {anadidos.length === 1 ? 'permiso añadido' : 'permisos añadidos'}
