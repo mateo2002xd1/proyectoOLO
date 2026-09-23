@@ -810,7 +810,7 @@ const puckConfigBase: Config = {
           render: ({ value, onChange }) => (
             <ArchivoUploaderField
               value={value}
-              onChange={onChange}
+              onChange={(url) => onChange(url)}
               accept=".xlsx,.xls,.csv,.pdf"
               etiquetaBoton="Subir archivo"
             />
@@ -903,7 +903,7 @@ const puckConfigBase: Config = {
           render: ({ value, onChange }) => (
             <ArchivoUploaderField
               value={value}
-              onChange={onChange}
+              onChange={(url) => onChange(url)}
               accept=".pptx,.ppt"
               etiquetaBoton="Subir archivo"
             />
@@ -939,7 +939,7 @@ const puckConfigBase: Config = {
           render: ({ value, onChange }) => (
             <ArchivoUploaderField
               value={value}
-              onChange={onChange}
+              onChange={(url) => onChange(url)}
               accept=".pptx,.ppt"
               etiquetaBoton="Subir archivo"
             />
@@ -987,7 +987,7 @@ const puckConfigBase: Config = {
               render: ({ value, onChange }) => (
                 <ArchivoUploaderField
                   value={value}
-                  onChange={onChange}
+                  onChange={(url) => onChange(url)}
                   accept=".pdf"
                   etiquetaBoton="Subir archivo"
                 />
