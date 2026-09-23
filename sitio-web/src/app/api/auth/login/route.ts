@@ -37,7 +37,13 @@ export async function POST(request: NextRequest) {
   try {
     apiRes = await fetch(`${BACKEND_URL}/api/login`, {
       method: 'POST',
-      headers: conCabecerasDeCliente(request, { 'Content-Type': 'application/json' }),
+      headers: conCabecerasDeCliente(request, {
+        'Content-Type': 'application/json',
+        // Sitio-web e intranet entran por el mismo `POST /api/login` de la API, y esta
+        // petición además la abre el servidor de Next: sin esta marca las dos llegan
+        // allí idénticas y la bitácora no puede decir en cuál se inició sesión.
+        'X-Origen-App': 'sitio-web',
+      }),
       body: JSON.stringify({ email: body.email, password: body.password }),
     });
   } catch {

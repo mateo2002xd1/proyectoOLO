@@ -21,6 +21,9 @@ const ETIQUETA_ESTADO: Record<string, string> = {
   active: 'Activo',
   inactive: 'Inactivo',
   suspended: 'Suspendido',
+  // El portal desde el que se inició sesión (campo `origen` de las filas de login).
+  'sitio-web': 'Sitio web',
+  intranet: 'Intranet',
 };
 
 const traducirEstado = (v: string) => ETIQUETA_ESTADO[v] ?? v;

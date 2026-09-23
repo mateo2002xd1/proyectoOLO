@@ -275,6 +275,7 @@ export const ETIQUETA_CAMPO: Record<string, string> = {
   role_id: 'Rol',
   status: 'Estado de cuenta',
   expiration_date: 'Fecha de caducidad',
+  origen: 'Portal',
   slug: 'Slug',
   version: 'Versión',
   estado: 'Estado',
