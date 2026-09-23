@@ -98,13 +98,15 @@ export function usePagina(slug: string) {
     }
   }, [slug]);
 
-  const submitForReview = useCallback(async (comentario: string) => {
+  const submitForReview = useCallback(async (comentario: string, contenido?: PuckData | Bloque[]) => {
     try {
-      const result = await enviarARevision(slug, comentario);
+      const result = await enviarARevision(slug, comentario, contenido);
       setPagina((prev) =>
         prev
           ? {
               ...prev,
+              // Lo enviado quedó guardado en la misma operación: es el contenido vigente.
+              ...(contenido !== undefined ? { contenido } : {}),
               estado: result.version.estado,
               versionId: result.version.id,
               numeroVersion: result.version.numeroVersion,

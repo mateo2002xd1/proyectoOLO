@@ -40,12 +40,20 @@ export async function registrarSubidaPendiente(slug: string, ruta: string): Prom
 /**
  * `comentario` es el «commit» del envío: la API lo exige (10 a 100 caracteres), lo
  * guarda con la versión y lo deja en la bitácora de auditoría.
+ *
+ * `contenido` es lo que hay en el editor. Viaja en la misma petición y la API lo guarda
+ * y lo envía de una vez: antes se guardaba aparte justo antes, y cada envío dejaba en
+ * la bitácora un «guardar borrador» que nadie había pulsado.
  */
 export async function enviarARevision(
   slug: string,
-  comentario: string
+  comentario: string,
+  contenido?: PuckData | Bloque[]
 ): Promise<{ pagina: Pagina; version: PaginaVersion }> {
-  const { data } = await api.patch(`/api/paginas/${slug}/enviar-revision`, { comentario });
+  const { data } = await api.patch(
+    `/api/paginas/${slug}/enviar-revision`,
+    contenido === undefined ? { comentario } : { comentario, contenido }
+  );
   notificarRevisionActualizada({ slug });
   return data;
 }

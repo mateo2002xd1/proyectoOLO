@@ -72,8 +72,11 @@ interface PuckEditorWrapperProps {
   slug: string;
   initialData?: PuckData | Bloque[];
   onSave: (contenido: PuckData) => Promise<unknown>;
-  /** Envía a revisión con el comentario de cambios que escribió quien edita. */
-  onPublish?: (comentario: string) => Promise<unknown>;
+  /**
+   * Envía a revisión con el comentario de cambios que escribió quien edita y lo que hay
+   * en el editor. La API guarda ese contenido y lo envía en una sola operación.
+   */
+  onPublish?: (comentario: string, contenido: PuckData) => Promise<unknown>;
   /** A dónde vuelve "Salir" si no llegó un `?volver=` en la URL. */
   rutaPorDefecto: string;
   /** Estado de la versión que se está editando. Tiñe la bandera. */
@@ -714,8 +717,8 @@ export function PuckEditorWrapper({
    * `/editable` devuelve la última versión sea cual sea su estado, así que toda
    * página ya publicada —el caso normal de una página viva— abría el editor con
    * «Enviar a revisión» desactivado, y solo se podían acumular borradores. Enviar
-   * desde `publicado` es correcto: `handleSubmitForReview` guarda antes un borrador
-   * nuevo y `enviar-a-revision.usecase.ts` toma justo ese, el de número más alto.
+   * desde `publicado` es correcto: el contenido viaja con el envío, la API lo guarda
+   * como borrador nuevo y envía justo ese, todo en la misma transacción.
    */
   const bloqueado = estadoActual === 'en_revision';
 
@@ -776,17 +779,22 @@ export function PuckEditorWrapper({
 
       setIsSubmitting(true);
       try {
-        // Guardar antes de enviar a revisión (regla: contenido siempre consistente).
-        // Si el guardado falla no se envía nada: quedaría pendiente la versión vieja.
-        await handleSaveDraft(indiceHistoria);
-        await onPublish(comentario);
+        // Lo que se ve es lo que se envía (regla: contenido siempre consistente), pero ya
+        // no en dos peticiones. Antes se guardaba el borrador y luego se enviaba, y cada
+        // envío dejaba en la bitácora un «guardar borrador» que nadie había pulsado —dos
+        // idénticos seguidos si además se había guardado a mano—. Ahora el contenido va
+        // con el envío y la API lo guarda y lo envía en una sola transacción: si el envío
+        // falla, tampoco queda guardado, y los cambios siguen contando como pendientes.
+        await onPublish(comentario, data as PuckData);
+        // Solo se llega aquí si la API aceptó el envío: lo enviado ya está guardado.
+        setIndiceGuardado(indiceHistoria);
         // Ya no sale sola: muestra la pantalla de éxito y espera a que la cierren.
         setEnvioExitoso(true);
       } finally {
         setIsSubmitting(false);
       }
     },
-    [onPublish, handleSaveDraft, initialPuckData]
+    [onPublish, initialPuckData]
   );
 
   /**
