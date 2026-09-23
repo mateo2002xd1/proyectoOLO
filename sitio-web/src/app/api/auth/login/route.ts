@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
   // `document.cookie`, y de ahí que «Menú y pie» y «Nueva página» — que se resuelven en
   // el cliente leyendo esa cookie — no aparecieran para nadie, en ningún rol.
   //
-  // La señal correcta es si ESTA petición llegó por HTTPS de verdad: `nginx.conf.template`
+  // La señal correcta es si ESTA petición llegó por HTTPS de verdad: `nginx.servidor.conf`
   // reenvía `X-Forwarded-Proto` con el esquema real en producción; sin nginx por delante
   // (dev) esa cabecera no existe y `nextUrl.protocol` es el que ve Next.js.
   const esHttps =

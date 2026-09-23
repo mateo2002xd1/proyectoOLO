@@ -94,7 +94,7 @@ Cuatro decisiones que conviene no deshacer sin entender por qué están:
 
 **Límite conocido: una sola réplica.** La llamada resuelve `sitio-web` por DNS de Docker
 a **una** instancia. Con varias réplicas, solo se enteraría la que atienda esa llamada y
-las demás seguirían sirviendo lo viejo. Hoy no aplica —`docker-compose.prod.yml` levanta
+las demás seguirían sirviendo lo viejo. Hoy no aplica —`docker-compose.servidor.yml` levanta
 una de cada servicio en un único host—. El día que se escale horizontalmente la solución
 no es llamarlas a todas (no se sabe cuántas hay) sino darle a Next un `cacheHandler`
 sobre Redis, para que la caché sea común.
