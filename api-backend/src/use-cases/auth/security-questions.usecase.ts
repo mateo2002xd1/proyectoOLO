@@ -2,6 +2,27 @@ import bcrypt from 'bcryptjs';
 import { UserRepository } from '../../repositories/usuarios.repository';
 import { SecurityQuestionRepository } from '../../repositories/security-questions.repository';
 import { hashearPassword, exigirPasswordValida } from '../../shared/password-policy';
+import { logBloqueoDeCuenta, logVerificacionDePreguntas } from '../auditoria/audit.usecase';
+
+/** Respuestas incorrectas seguidas antes del bloqueo, y cuánto dura (§3). */
+const INTENTOS_MAXIMOS_PREGUNTAS = 3;
+const MINUTOS_BLOQUEO_PREGUNTAS = 30;
+
+/** Desde dónde llega quien responde. No hay sesión: se recupera una cuenta sin entrar. */
+type OrigenDeLaPeticion = { ip?: string | null; userAgent?: string | null };
+
+interface OpcionesDeVerificacion {
+  origen?: OrigenDeLaPeticion;
+  /**
+   * Si un acierto deja su propia fila. Las dos pantallas de recuperación verifican las
+   * respuestas en un paso y, al guardar la contraseña, `recoverPassword` las vuelve a
+   * verificar: si las dos registraran el acierto, cada recuperación saldría con dos
+   * aciertos seguidos. El segundo ya lo cuenta la fila del cambio de contraseña.
+   * Los **fallos** se registran siempre, vengan de donde vengan: cada uno gasta un
+   * intento y acerca el bloqueo.
+   */
+  registrarAcierto?: boolean;
+}
 
 const SECURITY_QUESTIONS_CATALOG = [
   { key: 'pet_name', label: '¿Cuál es el nombre de tu primera mascota?' },
@@ -69,7 +90,11 @@ export const setupQuestions = async (userId: string, questionsData: any[]) => {
   return { message: 'Preguntas de seguridad configuradas exitosamente' };
 };
 
-export const verifyAnswers = async (email: string, answersData: any[]) => {
+export const verifyAnswers = async (
+  email: string,
+  answersData: any[],
+  opciones: OpcionesDeVerificacion = {}
+) => {
   const normalizedEmail = email.trim().toLowerCase();
   const user = await UserRepository.findByEmail(normalizedEmail);
 
@@ -95,8 +120,24 @@ export const verifyAnswers = async (email: string, answersData: any[]) => {
     if (!isValid) {
       const newCount = (user.failed_security_attempts || 0) + 1;
       const updates: any = { failed_security_attempts: newCount };
-      if (newCount >= 3) updates.locked_until = new Date(Date.now() + 30 * 60 * 1000);
+      const seBloquea = newCount >= INTENTOS_MAXIMOS_PREGUNTAS;
+      if (seBloquea) updates.locked_until = new Date(Date.now() + MINUTOS_BLOQUEO_PREGUNTAS * 60 * 1000);
       await UserRepository.update(user.id, updates);
+
+      await logVerificacionDePreguntas(user, opciones.origen, {
+        correctas: false,
+        intento: newCount,
+        maximo: INTENTOS_MAXIMOS_PREGUNTAS,
+      });
+      if (seBloquea) {
+        await logBloqueoDeCuenta(user.id, opciones.origen, {
+          motivo: 'preguntas_seguridad',
+          intentos: newCount,
+          minutos: MINUTOS_BLOQUEO_PREGUNTAS,
+          hasta: updates.locked_until,
+        });
+      }
+
       throw Object.assign(new Error('Una o más respuestas son incorrectas'), { status: 401 });
     }
   }
@@ -105,17 +146,28 @@ export const verifyAnswers = async (email: string, answersData: any[]) => {
     await UserRepository.update(user.id, { failed_security_attempts: 0, locked_until: null });
   }
 
+  if (opciones.registrarAcierto) {
+    await logVerificacionDePreguntas(user, opciones.origen, { correctas: true });
+  }
+
   return user;
 };
 
-export const recoverPassword = async (email: string, answersData: any[], newPassword: string) => {
+export const recoverPassword = async (
+  email: string,
+  answersData: any[],
+  newPassword: string,
+  origen?: OrigenDeLaPeticion
+) => {
   // Se valida **antes** de comprobar las respuestas: si la contraseña no cumple la
   // política, gastar un intento de las preguntas —y arriesgar el bloqueo de §3— por
   // un error de formato sería castigar al usuario por lo que no es.
   // Consideración 4: el flujo de recuperación aplica exactamente las mismas reglas.
   exigirPasswordValida(newPassword);
 
-  const user = await verifyAnswers(email, answersData);
+  // Sin registrar el acierto: esta es la segunda verificación de la misma recuperación,
+  // y el éxito ya queda en la fila del cambio de contraseña. Un fallo aquí sí se registra.
+  const user = await verifyAnswers(email, answersData, { origen, registrarAcierto: false });
 
   const passwordHash = await hashearPassword(newPassword);
   await UserRepository.update(user.id, {

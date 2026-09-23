@@ -488,6 +488,8 @@ const definicion = {
               'autenticar',
               'expirar',
               'inactivar',
+              'bloquear',
+              'verificar_preguntas',
             ],
           },
           categoria: {

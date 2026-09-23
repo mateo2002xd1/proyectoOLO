@@ -108,7 +108,7 @@ const ENTIDADES: EntidadAuditable[] = [
 
 const ACCIONES: AccionAuditable[] = [
   'crear', 'actualizar', 'eliminar', 'publicar', 'despublicar', 'aprobar', 'rechazar', 'enviar_revision', 'guardar_borrador',
-  'cambiar_password', 'autenticar', 'expirar', 'inactivar',
+  'cambiar_password', 'autenticar', 'expirar', 'inactivar', 'bloquear', 'verificar_preguntas',
 ];
 
 const comoTexto = (valor: unknown) => (typeof valor === 'string' && valor.trim() ? valor.trim() : undefined);

@@ -7,7 +7,7 @@ import {
   recoverPassword,
 } from '../use-cases/auth/security-questions.usecase';
 import { logCambioDePassword } from '../use-cases/auditoria/audit.usecase';
-import { datosDeAuditoria } from '../shared/auditoria-request';
+import { datosDeAuditoria, origenDeLaPeticion } from '../shared/auditoria-request';
 import { esErrorDePolitica } from '../shared/password-policy';
 
 export const SecurityQuestionController = {
@@ -39,7 +39,9 @@ export const SecurityQuestionController = {
   async verifyAnswersCtrl(req: Request, res: Response, next: NextFunction) {
     try {
       const { email, answers } = req.body;
-      await verifyAnswers(email, answers);
+      // Este es el paso en que la pantalla de recuperación comprueba las respuestas: aquí
+      // se registra el acierto. Los fallos se registran siempre, dentro del caso de uso.
+      await verifyAnswers(email, answers, { origen: origenDeLaPeticion(req), registrarAcierto: true });
       res.json({ message: 'Respuestas correctas' });
     } catch (err) { next(err); }
   },
@@ -47,7 +49,7 @@ export const SecurityQuestionController = {
   async recoverPasswordCtrl(req: Request, res: Response, next: NextFunction) {
     try {
       const { email, answers, newPassword } = req.body;
-      const { message, usuarioId } = await recoverPassword(email, answers, newPassword);
+      const { message, usuarioId } = await recoverPassword(email, answers, newPassword, origenDeLaPeticion(req));
 
       // Quien recupera no tiene sesión, así que `datosDeAuditoria` deja el actor en
       // null; aquí el actor y el afectado son la misma persona —acaba de demostrarlo

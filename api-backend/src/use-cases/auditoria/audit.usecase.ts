@@ -74,6 +74,73 @@ export const logCambioDePassword = (
     camposModificados: [{ campo: 'via', antes: null, despues: via }],
   });
 
+/** El «desde dónde» de una petición sin sesión: solo IP y navegador. */
+type OrigenSinSesion = { ip?: string | null; userAgent?: string | null } | undefined;
+
+/**
+ * Una cuenta que quedó bloqueada por intentos fallidos (migración 031).
+ *
+ * El actor es el sistema y no quien estaba intentando entrar: los intentos pueden ser de
+ * la propia persona o de alguien que prueba contraseñas contra una cuenta ajena, y la
+ * fila no puede saber cuál. Lo que sí guarda es **desde dónde** llegó el intento que
+ * disparó el bloqueo, que es lo primero que se mira si alguien está atacando una cuenta.
+ */
+export const logBloqueoDeCuenta = (
+  usuarioId: string,
+  origen: OrigenSinSesion,
+  bloqueo: {
+    motivo: 'inicio_sesion' | 'preguntas_seguridad';
+    intentos: number;
+    minutos: number;
+    hasta: Date;
+  }
+): Promise<void> =>
+  logAudit({
+    entidadId: usuarioId,
+    entidadTipo: 'usuario',
+    accion: 'bloquear',
+    usuarioId: null,
+    usuarioNombre: 'Sistema (bloqueo por intentos fallidos)',
+    ip: origen?.ip ?? null,
+    userAgent: origen?.userAgent ?? null,
+    camposModificados: [
+      { campo: 'motivo', antes: null, despues: bloqueo.motivo },
+      { campo: 'intentos_fallidos', antes: null, despues: bloqueo.intentos },
+      { campo: 'minutos_bloqueo', antes: null, despues: bloqueo.minutos },
+      { campo: 'bloqueado_hasta', antes: null, despues: bloqueo.hasta.toISOString() },
+    ],
+  });
+
+/**
+ * Alguien respondió las preguntas de seguridad de una cuenta (migración 031).
+ *
+ * **Acertar demuestra quién es; fallar, no.** Por eso el acierto lleva a la persona como
+ * actor —igual que la recuperación de contraseña— y el fallo no: podría ser alguien
+ * intentando entrar en una cuenta ajena, y ponerle el nombre del dueño sería atribuirle
+ * algo que quizá no hizo.
+ */
+export const logVerificacionDePreguntas = (
+  usuario: { id: string; email: string },
+  origen: OrigenSinSesion,
+  resultado: { correctas: true } | { correctas: false; intento: number; maximo: number }
+): Promise<void> =>
+  logAudit({
+    entidadId: usuario.id,
+    entidadTipo: 'usuario',
+    accion: 'verificar_preguntas',
+    usuarioId: resultado.correctas ? usuario.id : null,
+    usuarioNombre: resultado.correctas ? usuario.email : 'Sin sesión (recuperación de contraseña)',
+    ip: origen?.ip ?? null,
+    userAgent: origen?.userAgent ?? null,
+    camposModificados: resultado.correctas
+      ? [{ campo: 'resultado', antes: null, despues: 'correctas' }]
+      : [
+          { campo: 'resultado', antes: null, despues: 'incorrectas' },
+          { campo: 'intento', antes: null, despues: resultado.intento },
+          { campo: 'intentos_maximos', antes: null, despues: resultado.maximo },
+        ],
+  });
+
 export const getAuditByContentId = (contentId: string, contentType?: string) =>
   AuditRepository.findByContentId(contentId, contentType);
 

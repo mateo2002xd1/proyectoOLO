@@ -10,7 +10,7 @@ import {
 import { esDominioInstitucional, normalizarEmail } from '../../shared/email-policy';
 import { RolePermissionRepository } from '../../repositories/role-permissions.repository';
 import { CLAVES_DEL_CATALOGO } from '../../shared/catalogo-permisos';
-import { logAudit } from '../auditoria/audit.usecase';
+import { logAudit, logBloqueoDeCuenta } from '../auditoria/audit.usecase';
 
 /** El "desde dónde" de un login, para la bitácora. Opcional: los scripts y pruebas
  *  que llaman a este caso de uso sin pasar por HTTP no tienen ninguno de los dos. */
@@ -32,18 +32,33 @@ interface ContextoDeLogin {
  * El contador es `intentos_fallidos_login`, distinto del de las preguntas de
  * seguridad: son dos flujos con umbrales distintos (5/15min contra 3/30min).
  */
-const registrarFalloDeLogin = async (user: any): Promise<void> => {
+const registrarFalloDeLogin = async (user: any, contexto?: ContextoDeLogin): Promise<void> => {
   const intentos = (user.failed_login_attempts || 0) + 1;
   const cambios: Record<string, unknown> = { failed_login_attempts: intentos };
+  let bloqueadoHasta: Date | null = null;
 
   if (intentos >= INTENTOS_MAXIMOS_LOGIN) {
-    cambios.locked_until = new Date(Date.now() + MINUTOS_BLOQUEO_LOGIN * 60 * 1000);
+    bloqueadoHasta = new Date(Date.now() + MINUTOS_BLOQUEO_LOGIN * 60 * 1000);
+    cambios.locked_until = bloqueadoHasta;
     // Se reinicia junto con el bloqueo para que, al expirar, el usuario tenga otra
     // tanda completa en vez de quedar bloqueado en cada intento siguiente.
     cambios.failed_login_attempts = 0;
   }
 
   await UserRepository.update(user.id, cambios);
+
+  // El bloqueo queda en la bitácora; cada fallo suelto, no. Auditar todos los intentos
+  // fallidos se descartó (6-auditoria.md, 19-09-2026): volumen, y qué hacer con correos
+  // que ni existen. El bloqueo es lo que cambia algo —la cuenta deja de poder entrar— y
+  // es lo que alguien tiene que poder ver.
+  if (bloqueadoHasta) {
+    await logBloqueoDeCuenta(user.id, contexto, {
+      motivo: 'inicio_sesion',
+      intentos: INTENTOS_MAXIMOS_LOGIN,
+      minutos: MINUTOS_BLOQUEO_LOGIN,
+      hasta: bloqueadoHasta,
+    });
+  }
 };
 
 /**
@@ -130,7 +145,7 @@ export const loginUseCase = async (email: string, password: string, contexto?: C
 
   const valid = await compararPassword(password, user.password_hash || '');
   if (!valid) {
-    await registrarFalloDeLogin(user);
+    await registrarFalloDeLogin(user, contexto);
     throw Object.assign(new Error('Credenciales inválidas'), { status: 401 });
   }
 

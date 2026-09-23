@@ -169,7 +169,7 @@ const verificarCategoriasPuras = () => {
   comprobar('publicar un contenido → administración', categoriaDe('publicar', 'contenido'), 'administracion');
   comprobar('despublicar (archivar) → administración', categoriaDe('despublicar', 'pagina'), 'administracion');
 
-  for (const accion of ['autenticar', 'expirar', 'inactivar', 'cambiar_password'] as const) {
+  for (const accion of ['autenticar', 'expirar', 'inactivar', 'cambiar_password', 'bloquear', 'verificar_preguntas'] as const) {
     comprobar(`${accion} → seguridad`, categoriaDe(accion, 'usuario'), 'seguridad');
   }
   comprobar('eliminar un usuario → seguridad', categoriaDe('eliminar', 'usuario'), 'seguridad');

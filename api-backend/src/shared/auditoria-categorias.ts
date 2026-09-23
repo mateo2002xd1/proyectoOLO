@@ -50,7 +50,12 @@ export const REGLAS_POR_CATEGORIA: Record<CategoriaAuditoria, ReglaDeCategoria[]
   ],
   administracion: [{ acciones: ['rechazar', 'aprobar', 'publicar', 'despublicar'] }],
   seguridad: [
-    { acciones: ['autenticar', 'expirar', 'inactivar', 'cambiar_password', 'eliminar'] },
+    {
+      acciones: [
+        'autenticar', 'expirar', 'inactivar', 'cambiar_password', 'eliminar',
+        'bloquear', 'verificar_preguntas',
+      ],
+    },
     { acciones: ['crear', 'actualizar'], entidades: ENTIDADES_DE_ACCESO },
   ],
 };

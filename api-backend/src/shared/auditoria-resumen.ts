@@ -221,6 +221,8 @@ const VERBO_DE_ACCION: Record<AccionAuditable, string> = {
   autenticar: 'Inició sesión',
   expirar: 'Expiró',
   inactivar: 'Se inactivó',
+  bloquear: 'Se bloqueó',
+  verificar_preguntas: 'Se verificaron las preguntas de seguridad de',
 };
 
 const ALGO_DE_ESTE_TIPO: Record<EntidadAuditable, string> = {
@@ -645,6 +647,63 @@ const fraseDeCambioDePassword = (d: Contexto): string | null => {
 };
 
 // ═════════════════════════════════════════════════════════════════════════════
+// Bloqueo
+// ═════════════════════════════════════════════════════════════════════════════
+
+const CAUSA_DEL_BLOQUEO: Record<string, string> = {
+  inicio_sesion: 'intentos fallidos de inicio de sesión',
+  preguntas_seguridad: 'respuestas incorrectas a las preguntas de seguridad',
+};
+
+/**
+ * La cuenta dejó de poder entrar un tiempo, y por qué. Nadie lo decidió: lo hizo el
+ * sistema al llegar al tope de intentos. La IP del intento que lo disparó está en el
+ * detalle de la fila.
+ */
+const fraseDeBloqueo = (d: Contexto): string | null => {
+  if (!soloTrae(d.campos, ['motivo', 'intentos_fallidos', 'minutos_bloqueo', 'bloqueado_hasta'])) return null;
+
+  const causa = CAUSA_DEL_BLOQUEO[comoTextoONumero(campoDe(d.campos, 'motivo')?.despues) ?? ''];
+  const intentos = comoTextoONumero(campoDe(d.campos, 'intentos_fallidos')?.despues);
+  const minutos = comoTextoONumero(campoDe(d.campos, 'minutos_bloqueo')?.despues);
+  if (!causa || !intentos || !minutos) return null;
+
+  const cuenta = d.email ? `la cuenta de ${d.email}` : 'la cuenta';
+  return `Se bloqueó ${cuenta} por ${minutos} minutos tras ${intentos} ${causa}`;
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Verificación de preguntas de seguridad
+// ═════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Si acertó o falló, y en qué intento. Los fallos son lo que interesa: cada uno acerca
+ * el bloqueo, y una racha de ellos sobre una cuenta ajena es un intento de robarla.
+ *
+ * Las respuestas no llegan nunca aquí, ni se guardan: solo el resultado.
+ */
+const fraseDeVerificacionDePreguntas = (d: Contexto): string | null => {
+  if (!soloTrae(d.campos, ['resultado', 'intento', 'intentos_maximos'])) return null;
+
+  const resultado = comoTextoONumero(campoDe(d.campos, 'resultado')?.despues);
+  const deLaCuenta = d.email ? ` de la cuenta ${d.email}` : '';
+
+  if (resultado === 'correctas') return `Respondió correctamente las preguntas de seguridad${deLaCuenta}`;
+  if (resultado !== 'incorrectas') return null;
+
+  const intento = Number(campoDe(d.campos, 'intento')?.despues);
+  const maximo = Number(campoDe(d.campos, 'intentos_maximos')?.despues);
+  const cuantos =
+    Number.isFinite(intento) && Number.isFinite(maximo) && intento > 0 && maximo > 0
+      // Tras un bloqueo el contador no vuelve a cero, y el siguiente fallo bloquea otra
+      // vez al instante: «intento 4 de 3» no se entendería.
+      ? intento <= maximo ? `intento ${intento} de ${maximo}` : `intento ${intento}, ya por encima del máximo de ${maximo}`
+      : null;
+
+  return [`Respuestas incorrectas a las preguntas de seguridad${deLaCuenta}`, cuantos].filter(Boolean).join(' · ');
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
 // Eliminación
 // ═════════════════════════════════════════════════════════════════════════════
 
@@ -823,6 +882,12 @@ const reglaPropia = (d: Contexto): string | null => {
 
     case 'cambiar_password':
       return fraseDeCambioDePassword(d);
+
+    case 'bloquear':
+      return fraseDeBloqueo(d);
+
+    case 'verificar_preguntas':
+      return fraseDeVerificacionDePreguntas(d);
 
     case 'eliminar':
       return fraseDeEliminacion(d);
