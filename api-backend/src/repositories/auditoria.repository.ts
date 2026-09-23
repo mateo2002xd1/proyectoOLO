@@ -1,4 +1,4 @@
-import { Op, Transaction } from 'sequelize';
+import { literal, Op, Transaction } from 'sequelize';
 import { ContentAuditLog } from '../infrastructure/db/models';
 import type { AccionAuditable, EntidadAuditable } from '../infrastructure/db/models/content-audit-log';
 import { REGLAS_POR_CATEGORIA, type CategoriaAuditoria } from '../shared/auditoria-categorias';
@@ -73,6 +73,77 @@ export interface FiltrosAuditoria {
 export const MAX_POR_PAGINA = 200;
 const POR_PAGINA_POR_DEFECTO = 50;
 
+/**
+ * Cuánto pasaba, como mucho, entre un guardado automático y el envío que lo seguía.
+ *
+ * Eran dos peticiones del mismo clic, una detrás de otra. Medido sobre la base el
+ * 23/9/2026: de 178 envíos con un guardado delante, 169 lo tenían a menos de un segundo,
+ * 7 entre uno y dos, y 2 entre dos y tres; **ninguno** entre tres y diez. Tres segundos
+ * los recogen todos, y sigue siendo corto a propósito: un guardado **a mano** seguido de
+ * un envío pasa por abrir el cuadro del comentario y escribir de 10 a 100 caracteres, que
+ * no cabe en ese tiempo.
+ */
+const SEGUNDOS_ENTRE_GUARDADO_Y_ENVIO = 3;
+
+/**
+ * Los ids de los guardados que el editor hacía **solo**, un instante antes de enviar.
+ *
+ * Hasta la fase 6, pulsar «Enviar a revisión» hacía dos peticiones: guardar el borrador y
+ * enviarlo. Cada envío dejaba así un «guardar borrador» que nadie había pulsado, y que el
+ * propio envío ya cuenta: misma versión, mismo contenido, y además con el comentario.
+ * Desde la fase 6 ya no se escriben —el contenido viaja con el envío—, pero los de antes
+ * siguen en la tabla.
+ *
+ * Uno es automático si, de la misma persona y sobre la misma página, hay un envío a
+ * revisión en los segundos siguientes **y ningún otro guardado entre medias**: si alguien
+ * guardó a mano y el editor volvió a guardar antes de enviar, solo el segundo cuenta.
+ *
+ * Vive aquí, como SQL, porque la usan dos cosas que no pueden discrepar: los listados, que
+ * los excluyen, y el análisis de la depuración, que los sigue nombrando por lo que son.
+ * El número se interpola porque es una constante de este archivo, nunca un dato de fuera.
+ */
+export const SQL_IDS_GUARDADOS_AUTOMATICOS = `
+  SELECT g.id
+    FROM auditoria_cambios g
+   WHERE g.entidad_tipo = 'pagina'
+     AND g.accion = 'guardar_borrador'
+     AND EXISTS (
+       SELECT 1
+         FROM auditoria_cambios e
+        WHERE e.entidad_tipo = 'pagina'
+          AND e.entidad_id = g.entidad_id
+          AND e.accion = 'enviar_revision'
+          AND e.usuario_id IS NOT DISTINCT FROM g.usuario_id
+          AND e.created_at >= g.created_at
+          AND e.created_at <= g.created_at + interval '${SEGUNDOS_ENTRE_GUARDADO_Y_ENVIO} seconds'
+          AND NOT EXISTS (
+            SELECT 1
+              FROM auditoria_cambios g2
+             WHERE g2.entidad_tipo = 'pagina'
+               AND g2.entidad_id = g.entidad_id
+               AND g2.accion = 'guardar_borrador'
+               AND g2.created_at > g.created_at
+               AND g2.created_at <= e.created_at
+          )
+     )`;
+
+/**
+ * La condición que deja fuera de un listado los guardados automáticos.
+ *
+ * **Decisión del usuario (23/9/2026):** no se enseñan. El envío que va detrás los
+ * sustituye —dice la misma versión y además trae el comentario—, y verlos al lado solo
+ * confundía a quien audita: parecían dos guardados donde se había pulsado uno.
+ *
+ * **No se borran.** Siguen en la tabla, y la depuración de seis meses se los lleva igual
+ * que al resto: por eso el análisis previo a depurar sí los cuenta y los enseña. Quitarlos
+ * de la base habría sido destruir evidencia para arreglar algo que era de lectura.
+ *
+ * Se aplica también al total, así que la paginación cuadra: no quedan páginas cortas.
+ */
+const sinGuardadosAutomaticos = () => ({
+  id: { [Op.notIn]: literal(`(${SQL_IDS_GUARDADOS_AUTOMATICOS})`) },
+});
+
 export const AuditRepository = {
   /**
    * Traduce del dominio (camelCase) a las columnas del modelo (snake_case).
@@ -93,7 +164,7 @@ export const AuditRepository = {
     }, { transaction: tx }),
 
   findByContentId: (entidadId: string, entidadTipo?: string) => {
-    const where: any = { entidad_id: entidadId };
+    const where: any = { entidad_id: entidadId, ...sinGuardadosAutomaticos() };
     if (entidadTipo) where.entidad_tipo = entidadTipo;
     return ContentAuditLog.findAll({ where, order: [['created_at', 'DESC']] });
   },
@@ -101,7 +172,7 @@ export const AuditRepository = {
   findAll: async (filtros: FiltrosAuditoria = {}) => {
     const { entidadTipo, usuarioId, accion, categoria, desde, hasta } = filtros;
 
-    const where: Record<string, unknown> = {};
+    const where: Record<string, unknown> = { ...sinGuardadosAutomaticos() };
     // Un valor suelto sigue siendo `= valor` (usa el índice tal cual); solo la lista
     // se convierte en `IN`. Una lista vacía no filtra: sería `IN ()`, que no devuelve
     // nada, y quien pidió «sin filtro» no debe ver la bitácora vacía.

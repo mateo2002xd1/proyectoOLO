@@ -42,6 +42,12 @@ router.use(requireAuth, requierePermisoAuditoria('puedeVer'), requirePermission(
  *
  *       Una `accion` fuera del catálogo se descarta en vez de dar error, y un rango de
  *       fechas sin resultados devuelve una página vacía con `total: 0`.
+ *
+ *       **No incluye los guardados automáticos previos a un envío.** Hasta el 23/9/2026 el
+ *       editor guardaba solo un instante antes de enviar a revisión, y cada envío dejaba
+ *       un «guardar borrador» que nadie había pulsado y que el propio envío ya cuenta. Siguen
+ *       en la tabla —no se borran—, pero ni este listado ni el total los traen. El análisis
+ *       de la depuración sí los cuenta, porque es lo que se va a borrar.
  *     parameters:
  *       - name: usuarioId
  *         in: query
