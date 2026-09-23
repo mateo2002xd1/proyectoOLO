@@ -5,6 +5,76 @@
 
 ---
 
+## sesión 23-09-2026 (6.ª parte): la bitácora registra los bloqueos de cuenta y las preguntas de seguridad
+
+**Qué era.** Dos hechos de seguridad ocurrían sin dejar rastro:
+
+- **Bloqueo de cuenta.** Cinco inicios de sesión fallidos bloquean la cuenta 15 minutos
+  (`registrarFalloDeLogin`), y tres respuestas incorrectas a las preguntas de seguridad, 30
+  (`verifyAnswers`). Nadie podía saber que alguien había estado probando contraseñas o
+  respuestas contra una cuenta.
+- **Verificación de preguntas de seguridad.** Ni los aciertos ni los fallos quedaban.
+
+### Dos acciones nuevas, y una migración
+
+| Acción | Etiqueta | Se lee |
+|---|---|---|
+| `bloquear` | Bloqueo | Se bloqueó la cuenta de … por 15 minutos tras 5 intentos fallidos de inicio de sesión |
+| | | Se bloqueó la cuenta de … por 30 minutos tras 3 respuestas incorrectas a las preguntas de seguridad |
+| `verificar_preguntas` | Preguntas de seguridad | Respondió correctamente las preguntas de seguridad de la cuenta … |
+| | | Respuestas incorrectas a las preguntas de seguridad de la cuenta … · intento 2 de 3 |
+
+Las dos van en la categoría **Seguridad**, con su propia opción en el filtro. Bloqueo lleva el
+rojo de inactivar, porque también cierra un acceso; la verificación, el de rutina, porque el
+resultado lo dice la frase.
+
+La base acepta solo una lista cerrada de acciones, así que hace falta la **migración 031**
+(`031-bloqueo-y-preguntas-auditoria.ts`), que recrea el `CHECK` con las dos nuevas, igual que la 030.
+**No se aplicó**: la base de desarrollo es Neon y las migraciones las corre el usuario. Su SQL se
+probó sobre una tabla temporal dentro de una transacción revertida: acepta las dos acciones nuevas,
+rechaza las inventadas y la tabla real quedó intacta.
+
+**La API no arranca mientras la migración esté pendiente**: `server.ts` lo comprueba al
+inicio y se detiene. Se reinició la API después del cambio sin prever esto, y quedó caída hasta
+que el usuario corra `npm run migrate`. La migración es **aditiva** —solo amplía la lista de
+acciones—, así que aplicarla no rompe a nadie que tenga el código anterior.
+
+### Decisiones
+
+- **Quién aparece como actor.** El bloqueo lo hace el sistema («Sistema (bloqueo por intentos
+  fallidos)»): los intentos pueden ser de la propia persona o de alguien atacando la cuenta, y la
+  fila no puede saber cuál. Lo que sí guarda es la **IP y el navegador** del intento que disparó el
+  bloqueo, que es lo primero que se mira ante un ataque.
+- **Acertar demuestra quién es; fallar, no.** El acierto lleva a la persona como actor, igual que
+  la recuperación de contraseña. El fallo no: ponerle el nombre del dueño a quien quizá está
+  intentando robarle la cuenta sería atribuirle algo que no hizo. Sale como «Sin sesión
+  (recuperación de contraseña)».
+- **Sin aciertos repetidos.** Las dos pantallas de recuperación verifican las respuestas en un paso
+  y, al guardar la contraseña nueva, la API las vuelve a verificar. El acierto se registra solo en
+  el primer paso: el segundo ya lo cuenta la fila del cambio de contraseña. Los **fallos** se
+  registran siempre, vengan de donde vengan, porque cada uno gasta un intento.
+- **Cada fallo de login suelto sigue sin registrarse**, como se decidió el 19-09: solo el bloqueo,
+  que es lo que cambia algo.
+- **Las respuestas no llegan nunca a la bitácora**, solo el resultado.
+
+**Algo que ya existía y no se tocó:** tras un bloqueo por preguntas, el contador de fallos no vuelve
+a cero, así que el siguiente fallo bloquea otra vez al instante. La frase lo cuenta como «intento 4,
+ya por encima del máximo de 3» en vez de «intento 4 de 3». El inicio de sesión sí reinicia su
+contador al bloquear. Unificarlo cambiaría la política de seguridad, y no estaba pedido.
+
+**Verificado:** el SQL de la migración sobre una tabla temporal, y las cinco frases. `tsc --noEmit`
+limpio en la API y en el sitio-web. **No verificado:** un bloqueo real de punta a punta, que exige
+la migración aplicada y fallar a propósito contra una cuenta.
+
+**Archivos.** API: la migración nueva y `migrations/index.ts`, `models/content-audit-log.ts`,
+`shared/auditoria-dto.ts`, `shared/auditoria-categorias.ts`, `shared/auditoria-resumen.ts`,
+`use-cases/auditoria/audit.usecase.ts` (`logBloqueoDeCuenta`, `logVerificacionDePreguntas`),
+`use-cases/auth/login.usecase.ts`, `use-cases/auth/security-questions.usecase.ts`,
+`controllers/security-questions.controller.ts`, `docs/openapi.ts`, `routes/audit.routes.ts` y
+`scripts/verificar-auditoria.ts`. Sitio-web: `auditoria/types.ts`.
+
+---
+
 ## sesión 23-09-2026 (5.ª parte): Docker igual al proyecto real, con los datos de Neon y publicado por túnel
 
 **Qué era.** El servidor (Windows, usuario SERVIDOR, publicado con el túnel de VS Code) iba
