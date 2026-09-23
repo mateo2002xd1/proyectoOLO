@@ -24,7 +24,10 @@ export type AccionAuditable =
   // Seguridad y administración (migración 030 de la API).
   | 'autenticar'
   | 'expirar'
-  | 'inactivar';
+  | 'inactivar'
+  // Migración 031 de la API.
+  | 'bloquear'
+  | 'verificar_preguntas';
 
 /**
  * Las tres categorías del filtro que reemplaza a «Entidad».
@@ -128,6 +131,8 @@ export const ETIQUETA_ACCION: Record<AccionAuditable, string> = {
   autenticar: 'Autenticación',
   expirar: 'Expiró',
   inactivar: 'Inactivación',
+  bloquear: 'Bloqueo',
+  verificar_preguntas: 'Preguntas de seguridad',
 };
 
 export const ETIQUETA_ENTIDAD: Record<EntidadAuditable, string> = {
@@ -219,6 +224,10 @@ export const VARIANTE_ACCION: Record<AccionAuditable, VarianteBadge> = {
   rechazar: 'warning',
   expirar: 'warning',
   inactivar: 'danger',
+  // Se cierra un acceso, aunque sea por un rato: mismo nivel que inactivar.
+  bloquear: 'danger',
+  // Rutina: el resultado —acierto o fallo— lo dice la frase, no el color.
+  verificar_preguntas: 'brand',
   eliminar: 'dangerFuerte',
 };
 
@@ -258,6 +267,8 @@ export const OPCIONES_ACCION: OpcionAccion[] = [
   { value: 'actualizar', label: 'Modificación', categoria: 'seguridad' },
   { value: 'expirar', label: 'Expiró', categoria: 'seguridad' },
   { value: 'inactivar', label: 'Inactivación', categoria: 'seguridad' },
+  { value: 'bloquear', label: 'Bloqueo', categoria: 'seguridad' },
+  { value: 'verificar_preguntas', label: 'Preguntas de seguridad', categoria: 'seguridad' },
   { value: 'cambiar_password', label: 'Cambio de contraseña', categoria: 'seguridad' },
   { value: 'eliminar', label: 'Eliminación', categoria: 'seguridad' },
 ];
