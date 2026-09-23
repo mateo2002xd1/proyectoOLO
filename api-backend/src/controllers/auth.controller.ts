@@ -4,7 +4,11 @@ import { firstLoginUseCase, estadoPrimerIngreso } from '../use-cases/auth/first-
 import { UserRepository } from '../repositories/usuarios.repository';
 import { updateUser } from '../use-cases/usuarios/listar-usuarios.usecase';
 import { logCambioDePassword } from '../use-cases/auditoria/audit.usecase';
-import { datosDeAuditoria, origenDeLaPeticion } from '../shared/auditoria-request';
+import {
+  aplicacionDeLaPeticion,
+  datosDeAuditoria,
+  origenDeLaPeticion,
+} from '../shared/auditoria-request';
 import { compararPassword, exigirPasswordValida } from '../shared/password-policy';
 import { RolePermissionRepository } from '../repositories/role-permissions.repository';
 import { CLAVES_DEL_CATALOGO } from '../shared/catalogo-permisos';
@@ -58,9 +62,14 @@ export const AuthController = {
     try {
       const { email, password } = req.body;
       // Registra «Autenticación» (o «Expiró», si la cuenta acaba de caducar) — ver
-      // `login.usecase.ts`. sitio-web e intranet llegan aquí igual: el ámbito no
-      // distingue el login, así que un solo punto cubre las dos.
-      const { token, user } = await loginUseCase(email, password, origenDeLaPeticion(req));
+      // `login.usecase.ts`. sitio-web e intranet llegan aquí igual, así que un solo
+      // punto sigue cubriendo las dos; lo único que las distingue es la cabecera que
+      // cada una manda, y de ahí sale el «en el sitio web» / «en la intranet» que
+      // después lee la bitácora.
+      const { token, user } = await loginUseCase(email, password, {
+        ...origenDeLaPeticion(req),
+        aplicacion: aplicacionDeLaPeticion(req),
+      });
 
       res.cookie('token', token, {
         httpOnly: true,

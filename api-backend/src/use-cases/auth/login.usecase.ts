@@ -17,6 +17,8 @@ import { logAudit } from '../auditoria/audit.usecase';
 interface ContextoDeLogin {
   ip?: string | null;
   userAgent?: string | null;
+  /** En cuál de los dos portales se está entrando; `null` si la petición no lo dice. */
+  aplicacion?: string | null;
 }
 
 /**
@@ -168,6 +170,14 @@ export const loginUseCase = async (email: string, password: string, contexto?: C
     usuarioNombre: payload.apellidos ? `${payload.name} ${payload.apellidos}` : payload.name,
     ip: contexto?.ip ?? null,
     userAgent: contexto?.userAgent ?? null,
+    // Lo único de un login que no se deduce de la fila: en cuál de los dos portales
+    // fue. Va como campo y no como una acción aparte porque sigue siendo la misma cosa
+    // —alguien entró—, solo que ahora dice por dónde. Sin la cabecera se queda sin
+    // campos, igual que todas las filas anteriores a esto, y la pantalla sigue leyendo
+    // «Inició sesión» a secas en vez de inventarse un portal.
+    camposModificados: contexto?.aplicacion
+      ? [{ campo: 'origen', antes: null, despues: contexto.aplicacion }]
+      : [],
   });
 
   return { token, user: payload };

@@ -40,7 +40,25 @@ const router = Router();
  *       **Dos controles distintos protegen esto**: el bloqueo de la cuenta tras cinco
  *       intentos fallidos, y este límite de peticiones, que cuenta por correo para que
  *       atacar una cuenta no deje sin entrar a las demás.
+ *
+ *       **Sitio web e intranet entran los dos por aquí.** Vistas desde la API las dos
+ *       peticiones son idénticas, así que cada frontal se identifica con la cabecera
+ *       `X-Origen-App` y eso es lo único que permite que la bitácora diga en cuál de
+ *       los dos se inició sesión. Omitirla no cambia nada del login: la fila se escribe
+ *       igual, solo que sin decir desde dónde.
  *     security: []
+ *     parameters:
+ *       - name: X-Origen-App
+ *         in: header
+ *         required: false
+ *         description: |
+ *           Qué frontal abre la sesión. Solo se acepta `sitio-web` o `intranet`;
+ *           cualquier otro valor se descarta en vez de guardarse, porque esta es una
+ *           ruta pública y lo que escriba un cliente no puede acabar copiado dentro de
+ *           la tabla de auditoría. Se queda en la fila, en el campo `origen`.
+ *         schema:
+ *           type: string
+ *           enum: [sitio-web, intranet]
  *     requestBody:
  *       required: true
  *       content:
