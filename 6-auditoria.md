@@ -5,7 +5,94 @@
 
 ---
 
-## sesión 23-09-2026: fase 5, guardar un borrador dice qué se guardó y de dónde venía
+## sesión 23-09-2026 (2.ª parte): fase 6, una edición deja dos filas y no tres
+
+**Qué era.** El usuario hizo un solo cambio en «inicio», lo guardó una vez y lo envió a
+revisión una vez. La bitácora mostró **dos «guardar borrador» idénticos** y el envío:
+
+| Hora | Qué pasó de verdad |
+|---|---|
+| 4:44:33 | Pulsó «Guardar» |
+| 4:44:59 | Pulsó «Enviar a revisión», y el editor **guardó antes por su cuenta** |
+| 4:45:00 | El envío, con su comentario |
+
+Los dos editores —sitio-web e intranet— hacían dos peticiones al enviar: guardar el borrador y
+luego enviarlo. La idea era buena (se envía lo que se ve, no una versión vieja), pero cada envío
+dejaba un «guardar borrador» que nadie había pulsado. Pasaba en **todos** los envíos: de 251 que
+hay en la base, 178 llevan pegado un guardado a menos de tres segundos.
+
+**Lo que decidió el usuario**, para no confundir a quien audita: deben quedar **dos filas**. El
+guardado que alguien pulsó, que diga que el usuario guardó su edición en borrador; y el envío con
+su «commit». El guardado automático sobra.
+
+### Dónde se quita, y por qué ahí
+
+El contenido del editor ahora **viaja con el envío** (`contenido`, opcional, en
+`PATCH /enviar-revision`) y la API lo guarda y lo envía en **una sola transacción**, sin fila
+propia para el guardado. Los dos editores dejaron de guardar aparte antes de enviar.
+
+Se descartaron dos caminos:
+
+- **Una marca en la ruta de guardar** («este guardado es previo a un envío, no lo audites»). La
+  podría mandar cualquiera para guardar sin dejar rastro.
+- **Esconder la fila al leer.** La bitácora es evidencia: lo que la API recibió, lo dice.
+
+Dentro del envío no hay hueco: el guardado solo ocurre como parte de uno, y el envío sí queda
+registrado con versión y comentario. Si el envío falla —comentario inválido, accesibilidad— la
+transacción deshace **también** el guardado, así que no puede quedar contenido cambiado sin una
+fila que lo cuente. Las dos rutas pasan por los mismos controles (límite de escritura, permiso de
+página y de sección), y el contenido se valida con el mismo esquema que el guardado.
+
+**Cambio de comportamiento a tener en cuenta:** antes, si el envío fallaba, el borrador quedaba
+guardado igual. Ahora no queda nada, y el editor sigue contando esos cambios como pendientes
+(avisa al salir). Es lo coherente con «una operación», pero es distinto.
+
+### Las frases
+
+| Fila | Se lee |
+|---|---|
+| Guardado a mano | El usuario guardó su edición en borrador · versión 36 de «inicio» |
+| Envío | El usuario envió su edición a revisión · versión 36 de «inicio» · «Se actuliza la sección de inicio» |
+| Guardado automático **antiguo** | Guardado automático al enviar a revisión · versión 36 de «inicio» |
+
+La frase del guardado es una sola, la que pidió el usuario. Las variantes de la fase 5 («se creó»,
+«tras su rechazo», «y salió de revisión») se retiraron: el detalle sigue enseñando el antes y el
+después de cada campo.
+
+### Las 178 filas automáticas que ya existen
+
+No se borran. Pero decir de ellas «el usuario guardó su edición» sería falso: nadie pulsó nada. Las
+reconoce al leer `guardadosPreviosAEnvio` (`audit.usecase.ts`), con una consulta por página de
+resultados: un guardado es automático si la misma persona envió esa misma página a revisión en los
+**tres segundos** siguientes y no hubo otro guardado en medio. Así, si alguien guardó a mano y el
+editor volvió a guardar antes de enviar, solo el segundo se marca.
+
+La ventana está medida: de los 178, 169 estaban a menos de un segundo, 7 entre uno y dos, 2 entre
+dos y tres, y **ninguno** entre tres y diez. Con dos segundos se escapaban esos 2, y se habrían
+leído como guardados a mano. Un guardado a mano seguido de un envío no cabe en tres segundos:
+entre medias hay que escribir un comentario de 10 a 100 caracteres.
+
+**Verificado contra la base:** la edición del usuario sale con sus tres frases exactas; las 536
+filas de borrador y envío tienen frase (251 envíos, 178 automáticos, 107 guardados a mano). Y 16
+casos sintéticos en verde, cuatro de ellos de las fases anteriores. `tsc --noEmit` limpio en la API
+y el sitio-web; la intranet sigue solo con sus cuatro errores previos de `puck.config.tsx`.
+
+**No verificado aquí:** un envío real de punta a punta. Escribiría en la base compartida y dejaría
+una página en revisión, así que queda para la prueba del usuario.
+
+**Archivos.** API: `validators/paginas.validators.ts`, `controllers/pagina.controller.ts`,
+`routes/pagina.routes.ts` (OpenAPI), `shared/auditoria-resumen.ts`, `shared/auditoria-dto.ts`,
+`use-cases/auditoria/audit.usecase.ts`, `controllers/auditoria.controller.ts` y
+`use-cases/auditoria/analizar-depuracion-auditoria.usecase.ts`. Sitio-web y la intranet, en los dos:
+`paginas/edicion/services/edicion.service.ts`, el hook de acciones del editor y
+`components/puck-editor-wrapper.tsx`.
+
+**Orden de despliegue: primero la API.** El esquema del envío es estricto: una API sin este cambio
+rechaza el campo `contenido` con un 400, y los editores nuevos no podrían enviar a revisión.
+
+---
+
+## sesión 23-09-2026 (1.ª parte): fase 5, guardar un borrador dice qué se guardó y de dónde venía
 
 **Qué era.** El usuario señaló esta fila:
 
