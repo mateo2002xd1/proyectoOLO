@@ -52,8 +52,9 @@ export async function obtenerIndiceBusqueda(): Promise<PaginaIndiceBusqueda[]> {
  */
 export async function registrarVisita(slug: string, ambito: 'sitio' | 'intranet' = 'intranet'): Promise<void> {
   try {
-    const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/paginas/visitas/registrar`;
-    await fetch(url, {
+    // Por el proxy `/api-backend` (añade el `/api`), como `api-client.ts`: con una URL
+    // absoluta, fuera del equipo del servidor el navegador acababa en su propio localhost.
+    await fetch('/api-backend/paginas/visitas/registrar', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

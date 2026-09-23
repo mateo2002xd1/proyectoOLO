@@ -83,6 +83,24 @@ export function resolverCarpetaPorExtension(ext: string): string {
   return CARPETA_POR_EXTENSION[ext.toLowerCase()] ?? 'otros';
 }
 
+/**
+ * El `Content-Type` con el que se puede servir un archivo de `storage/`, o `null` si no
+ * se sirve.
+ *
+ * Sale de `TIPOS_PERMITIDOS`: solo se entrega lo que se pudo subir. `jpeg` entra aparte
+ * porque hay archivos de antes de esta política con esa extensión. SVG sigue fuera por
+ * lo mismo que no se puede subir.
+ */
+const MIME_POR_EXTENSION: Record<string, string> = {
+  ...Object.fromEntries(Object.entries(TIPOS_PERMITIDOS).map(([mime, { ext }]) => [ext, mime])),
+  jpeg: 'image/jpeg',
+};
+
+export function mimeParaServir(nombreArchivo: string): string | null {
+  const ext = nombreArchivo.split('.').pop()?.toLowerCase() ?? '';
+  return MIME_POR_EXTENSION[ext] ?? null;
+}
+
 /** Lo que devuelve `fileTypeFromBuffer` y es lo único que necesitamos de él. */
 export type DetectorDeTipo = (
   datos: Uint8Array
