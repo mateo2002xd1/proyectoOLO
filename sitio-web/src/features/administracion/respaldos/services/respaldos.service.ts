@@ -1,8 +1,9 @@
 import axios from 'axios';
 import type { BloqueoVigente, RegistroRespaldo } from '../types';
+import { URL_DE_LA_API } from '@/shared/lib/url-de-la-api';
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000',
+  baseURL: URL_DE_LA_API,
   withCredentials: true,
   timeout: 8000,
 });

@@ -16,10 +16,11 @@ import { CABECERAS_DEL_SITIO } from '../../model/ambito';
 import { homeFallbackData } from '../../model/home-fallback-data';
 import { SITIO_ESTATICO_FALLBACK } from '../lib/sitio-busqueda-fallback';
 import { etiquetaDePagina } from '../lib/etiquetas-cache';
+import { URL_DE_LA_API } from '@/shared/lib/url-de-la-api';
 
 /** Cliente anónimo: sin `withCredentials`, a diferencia del de `services/`. */
 const apiPublica = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000',
+  baseURL: URL_DE_LA_API,
   timeout: 5000,
   headers: CABECERAS_DEL_SITIO,
 });
@@ -93,7 +94,7 @@ export async function obtenerPaginaInicio(): Promise<Data> {
  */
 export async function registrarVisita(slug: string, ambito: 'sitio' | 'intranet' = 'sitio'): Promise<void> {
   try {
-    const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/paginas/visitas/registrar`;
+    const url = `${URL_DE_LA_API}/api/paginas/visitas/registrar`;
     await fetch(url, {
       method: 'POST',
       headers: {

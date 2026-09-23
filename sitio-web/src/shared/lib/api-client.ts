@@ -28,6 +28,7 @@
  * @see 3-seguridad-del-proyecto.md §S3 (La API es la única que emite y valida el JWT)
  */
 import { PARAM_MOTIVO, MOTIVO_SESION_EXPIRADA } from './auth-cookies';
+import { URL_DE_LA_API } from './url-de-la-api';
 
 /**
  * Fallo de una llamada al panel, ya clasificado.
@@ -165,7 +166,7 @@ export async function pedirJson<T>(ruta: string, init?: RequestInit): Promise<T>
   return respuesta.json() as Promise<T>;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+const API_BASE_URL = URL_DE_LA_API;
 
 export const apiClient = {
   baseUrl: API_BASE_URL,
