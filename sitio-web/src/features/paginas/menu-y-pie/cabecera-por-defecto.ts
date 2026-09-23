@@ -27,18 +27,13 @@ export interface CabeceraPorDefecto {
   govBannerImageUrl?: string;
   mainLogoUrl?: string;
   intranetText: string;
-  intranetUrl: string;
   navLinks: NavLink[];
 }
 
+// Sin `intranetUrl`: la cabecera la toma siempre de NEXT_PUBLIC_INTRANET_URL (ver header.tsx).
 export const CABECERA_POR_DEFECTO: CabeceraPorDefecto = {
   govBannerEnabled: true,
   intranetText: 'Intranet',
-  // Base origin de la intranet. Se enlaza a la raíz a propósito: es la propia
-  // intranet (app/page.tsx) la que decide, server-side, si redirige a `/inicio`
-  // (sesión activa) o a `/login`, porque la cookie `token` es httpOnly y este
-  // sitio no puede leerla para decidirlo antes.
-  intranetUrl: process.env.NEXT_PUBLIC_INTRANET_URL || 'http://localhost:3001',
   navLinks: [
     { label: 'Inicio', href: '/inicio', active: true },
     {

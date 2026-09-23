@@ -47,7 +47,6 @@ const CABECERA = {
   id: 'plantilla-header',
   govBannerEnabled: true,
   intranetText: 'Intranet',
-  intranetUrl: 'http://localhost:3001',
   navLinks: [
     { label: 'Inicio', href: '/inicio', active: true },
     {

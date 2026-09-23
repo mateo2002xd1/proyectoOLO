@@ -24,8 +24,14 @@ interface HeaderProps {
   mainLogoUrl?: string;
   navLinks?: NavItem[];
   intranetText?: ReactNode;
-  intranetUrl?: string;
 }
+
+/* Sale siempre de la variable y nunca de lo guardado en «Menú y pie»: a dónde vive la
+   intranet depende de dónde se instala el sistema, no de lo que escriba un editor. El
+   menú publicado llegó a guardar `http://localhost:3001`, y como lo guardado ganaba, el
+   botón mandaba a cada visitante a su propio equipo. Enlaza a la raíz a propósito: la
+   intranet decide ahí si va a `/inicio` o a `/login`, porque su cookie es httpOnly. */
+const INTRANET_URL = process.env.NEXT_PUBLIC_INTRANET_URL || 'http://localhost:3001';
 
 /* En minúsculas y comparando en minúsculas: en la tabla `roles` los nombres van
    capitalizados, pero basta con que uno llegue de otra forma para que la
@@ -56,7 +62,6 @@ export function Header({
   mainLogoUrl,
   navLinks: customNavLinks,
   intranetText = 'Intranet',
-  intranetUrl = process.env.NEXT_PUBLIC_INTRANET_URL || 'http://localhost:3001'
 }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -336,7 +341,7 @@ export function Header({
               </svg>
             </button>
             {/* Link para intranet cambiar en produccion */}
-            <a href={intranetUrl} target="_blank" className="olo-gov-btn" id="gov-co-link">
+            <a href={INTRANET_URL} target="_blank" className="olo-gov-btn" id="gov-co-link">
               {intranetText}
             </a>
             <button

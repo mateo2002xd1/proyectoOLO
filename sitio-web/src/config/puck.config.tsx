@@ -289,7 +289,6 @@ const puckConfigBase: Config = {
           getItemSummary: (item: { label?: string }) => item.label || 'Enlace',
         },
         intranetText: { type: 'text', label: 'Texto del botón de intranet', contentEditable: true },
-        intranetUrl: { type: 'text', label: 'URL de la intranet' },
       },
       // Los mismos valores que usa la cabecera cuando no hay «Menú y pie» guardado:
       // arrastrar el bloque al lienzo da la cabecera que ya se ve hoy, no una vacía.
