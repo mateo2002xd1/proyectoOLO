@@ -1,4 +1,5 @@
-import { Transaction } from 'sequelize';
+import { QueryTypes, Transaction } from 'sequelize';
+import sequelize from '../../config/database';
 import {
   AuditRepository,
   type DatosAuditoria,
@@ -78,6 +79,88 @@ export const getAllAudit = (filtros: FiltrosAuditoria) => AuditRepository.findAl
 
 /** Lo mínimo que hace falta de una fila para saber a qué cuenta apunta. */
 type FilaConEntidad = { entidad_tipo: EntidadAuditable; entidad_id: string };
+
+/** Lo que hace falta de una fila para el contexto de lectura completo. */
+type FilaDeLectura = FilaConEntidad & { id: string; accion: string };
+
+/**
+ * Cuánto pasaba, como mucho, entre el guardado automático y el envío que lo seguía.
+ *
+ * Eran dos peticiones del mismo clic, una detrás de otra. Medido sobre la base el
+ * 23/9/2026: de 178 envíos con un guardado delante, 169 lo tenían a menos de un segundo,
+ * 7 entre uno y dos, y 2 entre dos y tres; **ninguno** entre tres y diez. Tres segundos
+ * los recogen todos, y sigue siendo corto a propósito: un guardado **a mano** seguido de
+ * un envío pasa por abrir el cuadro del comentario y escribir de 10 a 100 caracteres, que
+ * no cabe en ese tiempo.
+ */
+const SEGUNDOS_ENTRE_GUARDADO_Y_ENVIO = 3;
+
+/**
+ * De estas filas, cuáles son guardados que el editor hizo solo antes de enviar a revisión.
+ *
+ * Hasta el cambio de la fase 6, pulsar «Enviar a revisión» hacía dos peticiones: guardar
+ * el borrador y enviarlo. Cada envío dejaba así un «guardar borrador» que nadie había
+ * pulsado, un instante antes. Esas filas siguen en la base y **no se borran**: la
+ * bitácora es evidencia. Lo que se hace es reconocerlas para no decir de ellas que «el
+ * usuario guardó su edición».
+ *
+ * Una es automática si, de la misma persona y sobre la misma página, hay un envío a
+ * revisión en los tres segundos siguientes **y ningún otro guardado entre medias**: así,
+ * si alguien guardó a mano y el editor guardó otra vez antes de enviar, solo la segunda
+ * se reconoce como automática.
+ *
+ * Una consulta por página de resultados, no una por fila, igual que los correos.
+ */
+export const guardadosPreviosAEnvio = async (filas: FilaDeLectura[]): Promise<Set<string>> => {
+  const ids = filas
+    .filter((f) => f.entidad_tipo === 'pagina' && f.accion === 'guardar_borrador')
+    .map((f) => f.id);
+  if (ids.length === 0) return new Set();
+
+  const automaticos = await sequelize.query<{ id: string }>(
+    `SELECT g.id
+       FROM auditoria_cambios g
+      WHERE g.id IN (:ids)
+        AND EXISTS (
+          SELECT 1
+            FROM auditoria_cambios e
+           WHERE e.entidad_tipo = 'pagina'
+             AND e.entidad_id = g.entidad_id
+             AND e.accion = 'enviar_revision'
+             AND e.usuario_id IS NOT DISTINCT FROM g.usuario_id
+             AND e.created_at >= g.created_at
+             AND e.created_at <= g.created_at + make_interval(secs => :segundos)
+             AND NOT EXISTS (
+               SELECT 1
+                 FROM auditoria_cambios g2
+                WHERE g2.entidad_tipo = 'pagina'
+                  AND g2.entidad_id = g.entidad_id
+                  AND g2.accion = 'guardar_borrador'
+                  AND g2.created_at > g.created_at
+                  AND g2.created_at <= e.created_at
+             )
+        )`,
+    {
+      replacements: { ids, segundos: SEGUNDOS_ENTRE_GUARDADO_Y_ENVIO },
+      type: QueryTypes.SELECT,
+    }
+  );
+
+  return new Set(automaticos.map((f) => f.id));
+};
+
+/**
+ * Todo lo que la bitácora necesita saber de fuera de cada fila para redactarla, resuelto
+ * de una vez para la página de resultados entera. Lo usan la pantalla, el historial de
+ * un objeto y el análisis previo a la depuración: los tres leen las mismas frases.
+ */
+export const contextoDeLectura = async (filas: FilaDeLectura[]) => {
+  const [emailPorUsuario, guardadosAutomaticos] = await Promise.all([
+    correosDeCuentasAuditadas(filas),
+    guardadosPreviosAEnvio(filas),
+  ]);
+  return { emailPorUsuario, guardadosAutomaticos };
+};
 
 /**
  * Los correos de las cuentas de las que hablan estas filas, por id.

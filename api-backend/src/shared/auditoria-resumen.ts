@@ -170,67 +170,81 @@ const fraseDeArchivado = (campos: CampoModificado[]): string | null => {
   return partes.join(' · ');
 };
 
-/** Los únicos campos que escribe `guardarBorrador` en `pagina.controller.ts`. */
-const CAMPOS_DEL_BORRADOR = new Set(['slug', 'version', 'estado']);
-
 /**
- * Lo que se añade cuando el borrador que se guarda es la misma versión y venía de un
- * estado que no es el de borrador. Son los dos únicos que aparecen en la base; los
- * demás (`publicado`, `archivado` sobre la misma versión) no se sabe qué significarían,
- * y en vez de adivinar la frase se deja sin armar.
+ * La versión y la página de una fila del ciclo editorial, como `versión 36 de «inicio»`.
+ *
+ * `null` si falta algo o si el slug cambia entre el antes y el después: eso sería un
+ * renombre de la página, y una frase que no lo diga lo estaría escondiendo.
  */
-const COLA_POR_ESTADO_ANTERIOR: Record<string, string> = {
-  borrador: '',
-  rechazado: ' tras su rechazo',
-  en_revision: ' y salió de revisión',
-};
-
-/**
- * Fase 5: guardar el borrador de una página.
- *
- * La columna decía `slug: menu-y-pie · version: 9 · estado: borrador`, que son los
- * «después» de tres campos. Lo que distingue un guardado de otro está en los «antes»,
- * y la tabla no los enseñaba:
- *
- * - **Misma versión en las dos puntas** —lo más frecuente—: se volvió a guardar un
- *   borrador que ya existía. Si venía rechazado o en revisión, se dice, porque es
- *   justo lo que alguien que audita el ciclo editorial quiere ver.
- * - **Versión distinta**: se abrió un borrador nuevo. El «antes» es la última versión
- *   que existía, **no** la publicada: en la fila del 22/9 era la 8, archivada, mientras
- *   la publicada era la 6. Por eso la frase no dice «sobre la versión 8»: sería falso.
- *
- * Cualquier cosa fuera de eso —un campo que `guardarBorrador` no escribe, un slug que
- * cambia, un estado final que no es borrador— devuelve `null`: la frase contaría una
- * parte y se callaría la otra.
- */
-const fraseDeBorrador = (campos: CampoModificado[]): string | null => {
-  if (campos.some(({ campo }) => !CAMPOS_DEL_BORRADOR.has(campo))) return null;
-
+const versionDePagina = (campos: CampoModificado[]): string | null => {
   const campo = (nombre: string) => campos.find((c) => c.campo === nombre);
 
-  // Un slug que cambia sería un renombre de la página, y la frase lo escondería.
   const slugAntes = comoTextoONumero(campo('slug')?.antes);
   const slugDespues = comoTextoONumero(campo('slug')?.despues);
   if (slugAntes && slugDespues && slugAntes !== slugDespues) return null;
   const pagina = slugDespues ?? slugAntes;
-  if (!pagina) return null;
 
-  const version = campo('version');
-  const numero = comoTextoONumero(version?.despues);
-  if (!numero) return null;
+  const numero = comoTextoONumero(campo('version')?.despues);
+  if (!pagina || !numero) return null;
 
-  // Las filas más viejas no traen `estado`: se leen como un guardado sin más.
-  const estado = campo('estado');
+  return `versión ${numero} de «${pagina}»`;
+};
+
+/** Los únicos campos que escribe `guardarBorrador` en `pagina.controller.ts`. */
+const CAMPOS_DEL_BORRADOR = new Set(['slug', 'version', 'estado']);
+
+/**
+ * Fase 5: guardar el borrador de una página.
+ *
+ * Una sola frase, la que definió el usuario para no confundir a quien audita: el guardado
+ * es algo que decidió una persona al pulsar «Guardar». Da igual si abrió una versión
+ * nueva o volvió a guardar la misma; eso sigue en el detalle, con su antes y su después.
+ *
+ * **Salvo los guardados automáticos de antes del cambio.** Hasta ahora el editor guardaba
+ * por su cuenta un instante antes de cada envío a revisión, y esas filas siguen en la
+ * base. Decir de ellas que «el usuario guardó su edición» sería falso: nadie pulsó nada.
+ * Quien las reconoce es `guardadosPreviosAEnvio`, en `audit.usecase.ts`. Desde este
+ * cambio ya no se escriben: el contenido viaja con el envío y la API lo guarda sin fila
+ * propia (ver `PaginaController.enviarARevision`).
+ */
+const fraseDeBorrador = (campos: CampoModificado[], automatico: boolean): string | null => {
+  if (campos.some(({ campo }) => !CAMPOS_DEL_BORRADOR.has(campo))) return null;
+
+  const estado = campos.find((c) => c.campo === 'estado');
   if (estado && comoTextoONumero(estado.despues) !== 'borrador') return null;
 
-  if (comoTextoONumero(version?.antes) !== numero) {
-    return `Se creó el borrador de la versión ${numero} de «${pagina}»`;
-  }
+  const cual = versionDePagina(campos);
+  if (!cual) return null;
 
-  const cola = COLA_POR_ESTADO_ANTERIOR[comoTextoONumero(estado?.antes) ?? 'borrador'];
-  if (cola === undefined) return null;
+  return automatico
+    ? `Guardado automático al enviar a revisión · ${cual}`
+    : `El usuario guardó su edición en borrador · ${cual}`;
+};
 
-  return `Se guardó el borrador de la versión ${numero} de «${pagina}»${cola}`;
+/** Los campos que escribe `PaginaController.enviarARevision`. */
+const CAMPOS_DEL_ENVIO = new Set(['comentario', 'slug', 'version', 'estado']);
+
+/**
+ * Fase 6: enviar una página a revisión, con su «commit».
+ *
+ * La columna solo enseñaba el comentario, sin decir de qué página ni de qué versión: la
+ * columna «Entidad» pone «Página» y nada más. Ahora dice las dos cosas y el comentario va
+ * detrás, entre comillas, porque es texto de quien edita y no de la API.
+ *
+ * Las filas de antes de que el comentario fuera obligatorio no traen el campo, y lo dicen.
+ */
+const fraseDeEnvio = (campos: CampoModificado[]): string | null => {
+  if (campos.some(({ campo }) => !CAMPOS_DEL_ENVIO.has(campo))) return null;
+
+  const estado = campos.find((c) => c.campo === 'estado');
+  if (estado && comoTextoONumero(estado.despues) !== 'en_revision') return null;
+
+  const cual = versionDePagina(campos);
+  if (!cual) return null;
+
+  const comentario = comoTextoONumero(campos.find((c) => c.campo === 'comentario')?.despues);
+
+  return `El usuario envió su edición a revisión · ${cual} · ${comentario ? `«${comentario}»` : 'Sin comentario'}`;
 };
 
 /**
@@ -268,6 +282,11 @@ export interface DatosDelResumen {
   camposModificados: CampoModificado[];
   /** Correo de la cuenta sobre la que se actuó, ya resuelto. */
   emailAfectado?: string | null;
+  /**
+   * Si la fila es uno de los guardados que el editor hacía solo, un instante antes de
+   * enviar a revisión. Lo resuelve `guardadosPreviosAEnvio`: la fila sola no lo sabe.
+   */
+  guardadoAutomatico?: boolean;
 }
 
 /**
@@ -286,7 +305,10 @@ export const resumenDeRegistro = (datos: DatosDelResumen): string | null => {
   if (datos.entidadTipo === 'pagina') {
     // Archivar una versión de página es consecuencia de publicar otra, no un acto propio.
     if (datos.accion === 'despublicar') return fraseDeArchivado(campos);
-    if (datos.accion === 'guardar_borrador') return fraseDeBorrador(campos);
+    if (datos.accion === 'guardar_borrador') {
+      return fraseDeBorrador(campos, Boolean(datos.guardadoAutomatico));
+    }
+    if (datos.accion === 'enviar_revision') return fraseDeEnvio(campos);
     return null;
   }
 

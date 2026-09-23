@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import {
-  correosDeCuentasAuditadas,
+  contextoDeLectura,
   getAllAudit,
   getAuditByContentId,
 } from '../use-cases/auditoria/audit.usecase';
@@ -24,10 +24,10 @@ export const AuditController = {
         filtrosDesdeQuery(req.query as Record<string, unknown>)
       );
 
-      // El `toJSON` se hace una vez y se reutiliza: de esas mismas filas salen tanto
-      // los ids que resuelve `correosDeCuentasAuditadas` como lo que se traduce después.
+      // El `toJSON` se hace una vez y se reutiliza: de esas mismas filas sale tanto lo
+      // que resuelve `contextoDeLectura` como lo que se traduce después.
       const filas = registros.map((fila) => fila.toJSON());
-      const contexto = { emailPorUsuario: await correosDeCuentasAuditadas(filas) };
+      const contexto = await contextoDeLectura(filas);
 
       res.json({
         registros: filas.map((fila) => aRegistroAuditoria(fila, contexto)),
@@ -42,7 +42,7 @@ export const AuditController = {
       const filas = (await getAuditByContentId(contentId as string, contentType as string)).map(
         (fila) => fila.toJSON()
       );
-      const contexto = { emailPorUsuario: await correosDeCuentasAuditadas(filas) };
+      const contexto = await contextoDeLectura(filas);
 
       res.json(filas.map((fila) => aRegistroAuditoria(fila, contexto)));
     } catch (err) { next(err); }

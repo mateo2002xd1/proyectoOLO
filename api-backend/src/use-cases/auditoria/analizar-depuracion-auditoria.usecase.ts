@@ -1,7 +1,7 @@
 import { QueryTypes } from 'sequelize';
 import sequelize from '../../config/database';
 import { aRegistroAuditoria, type RegistroAuditoria } from '../../shared/auditoria-dto';
-import { correosDeCuentasAuditadas } from './audit.usecase';
+import { contextoDeLectura } from './audit.usecase';
 
 export interface AnalisisDepuracionAuditoriaDTO {
   totalEncontrados: number;
@@ -79,7 +79,7 @@ export async function analizarDepuracionAuditoria(): Promise<AnalisisDepuracionA
   const pesoEstimadoBytes = filas.reduce((acc, f) => acc + Number(f.bytes || 0), 0);
   // El mismo contexto que usa la pantalla de la bitácora: lo que se va a borrar se lee
   // con las mismas frases con que se leía antes, no en campos crudos.
-  const contexto = { emailPorUsuario: await correosDeCuentasAuditadas(filas) };
+  const contexto = await contextoDeLectura(filas);
   const registros = filas.map((fila) => aRegistroAuditoria(fila, contexto));
 
   return {

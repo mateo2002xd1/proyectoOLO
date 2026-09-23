@@ -65,6 +65,8 @@ type FilaAuditoria = {
 export interface ContextoDeLectura {
   /** Correo por id de usuario, para las filas de `entidad_tipo: usuario`. */
   emailPorUsuario?: Map<string, string>;
+  /** Ids de los guardados que el editor hizo solo antes de enviar a revisión. */
+  guardadosAutomaticos?: Set<string>;
 }
 
 export const aRegistroAuditoria = (
@@ -89,6 +91,7 @@ export const aRegistroAuditoria = (
       camposModificados,
       emailAfectado:
         contexto.emailPorUsuario?.get(fila.entidad_id) ?? emailEnLaFila(camposModificados),
+      guardadoAutomatico: contexto.guardadosAutomaticos?.has(fila.id) ?? false,
     }),
     ip: fila.ip ?? null,
     userAgent: fila.user_agent ?? null,
