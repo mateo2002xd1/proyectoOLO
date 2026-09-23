@@ -1,0 +1,201 @@
+# Servidor SIN dominio propio, publicado a internet con un túnel (devtunnel).
+#
+# Es la pila de producción -imágenes finales, `node server.js`, NODE_ENV=production-.
+# Sin SSL ni certbot: el túnel ya entrega HTTPS. Las direcciones públicas se leen
+# enteras del `.env` (SITIO_WEB_URL_PUBLICA, INTRANET_URL_PUBLICA).
+#
+# Es el único compose del repo. Se usa siempre a través de `./docker/deploy.sh`, que
+# añade `--project-directory`, el `.env` y el perfil de migraciones. Guía completa:
+# docker/7-despliegue.md.
+
+name: olo-web-app
+
+services:
+  db:
+    # 18 y no 16: es la versión de la base de origen (Neon, 18.6). Con la misma versión
+    # el volcado de `deploy.sh importar` entra sin traducir nada.
+    image: postgres:18-alpine
+    container_name: db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      # Desde la 18 la imagen guarda los datos en /var/lib/postgresql/18/docker y el
+      # volumen se monta en /var/lib/postgresql. Montarlo en .../data, como en la 16,
+      # deja los datos fuera del volumen: se perderían al recrear el contenedor.
+      # Volumen propio (pg18_data) para no chocar con el `pg_data` de la 16.
+      - pg18_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - olo-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - olo-network
+
+  api-backend:
+    build:
+      context: .
+      dockerfile: api-backend/Dockerfile
+    container_name: api
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      PORT: 4000
+      HOST: 0.0.0.0
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      DB_SSL: "false"
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
+      # Orígenes CORS: las direcciones por las que el NAVEGADOR llega a cada app.
+      FRONTEND_URL: ${SITIO_WEB_URL_PUBLICA}
+      INTRANET_URL: ${INTRANET_URL_PUBLICA}
+      SITIO_WEB_URL: http://sitio-web:3000
+      REVALIDAR_SECRET: ${REVALIDAR_SECRET}
+      NODE_ENV: production
+    volumes:
+      # Las mismas carpetas del repo que usa el proyecto en desarrollo, compartidas con
+      # los contenedores que las sirven:
+      #  - uploads/: los Excel de las cargas del observatorio. Las consultas de fuentes
+      #    futuras y tendencias leen el archivo de aquí; la imagen no los trae.
+      #  - */public/storage: al publicar o revertir una página la API copia y mueve
+      #    archivos entre uploads/ y backup/. Resuelve esas carpetas subiendo cuatro
+      #    niveles desde dist/shared/storage (`backup-uploads.service.ts`), o sea desde
+      #    la raíz del contenedor: de ahí /sitio-web y /intranet.
+      - ./api-backend/uploads:/app/uploads
+      - ./sitio-web/public/storage:/sitio-web/public/storage
+      - ./intranet/public/storage:/intranet/public/storage
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - olo-network
+
+  # Aplica las migraciones y ejecuta los scripts de mantenimiento (verificar esquema,
+  # sembrar permisos, crear el superadmin). No arranca con `up`: tiene perfil.
+  migraciones:
+    build:
+      context: .
+      dockerfile: api-backend/Dockerfile
+      target: builder
+    profiles: ["tools"]
+    command: ["npm", "run", "migrate"]
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      DB_SSL: "false"
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - olo-network
+
+  sitio-web:
+    build:
+      context: .
+      dockerfile: sitio-web/Dockerfile
+      args:
+        BACKEND_URL: http://api-backend:4000
+        # Estas dos las usa el NAVEGADOR y Next las incrusta en el bundle al compilar:
+        # si cambia la URL del túnel hay que reconstruir (`deploy.sh build`).
+        # /api-backend es el prefijo con el que nginx reenvía a la API.
+        NEXT_PUBLIC_API_URL: ${SITIO_WEB_URL_PUBLICA}/api-backend
+        NEXT_PUBLIC_INTRANET_URL: ${INTRANET_URL_PUBLICA}
+    container_name: sitio-web
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      BACKEND_URL: http://api-backend:4000
+      NEXT_PUBLIC_API_URL: ${SITIO_WEB_URL_PUBLICA}/api-backend
+      NEXT_PUBLIC_INTRANET_URL: ${INTRANET_URL_PUBLICA}
+      JWT_SECRET: ${JWT_SECRET}
+      REVALIDAR_SECRET: ${REVALIDAR_SECRET}
+    volumes:
+      # El standalone corre en /app/app (ver el Dockerfile). Montar la carpeta del repo
+      # y no un volumen de Docker hace que lo subido se vea en el Explorador de Windows,
+      # sobreviva a cualquier rebuild y se respalde copiando una carpeta.
+      - ./sitio-web/public/storage:/app/app/public/storage
+    depends_on:
+      - api-backend
+    networks:
+      - olo-network
+
+  intranet:
+    build:
+      context: .
+      dockerfile: intranet/Dockerfile
+      args:
+        API_BACKEND_URL: http://api-backend:4000
+        NEXT_PUBLIC_SITIO_WEB_URL: ${SITIO_WEB_URL_PUBLICA}
+    container_name: intranet
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      API_BACKEND_URL: http://api-backend:4000
+      JWT_SECRET: ${JWT_SECRET}
+      NEXT_PUBLIC_SITIO_WEB_URL: ${SITIO_WEB_URL_PUBLICA}
+    volumes:
+      - ./intranet/public/storage:/app/app/public/storage
+    depends_on:
+      - api-backend
+    networks:
+      - olo-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      # Solo en 127.0.0.1: la única entrada es el túnel, que corre en este mismo equipo.
+      # Por eso nginx puede fiarse de la IP que el túnel le pasa en X-Forwarded-For
+      # (ver nginx.servidor.conf): nadie más llega hasta aquí para inventársela.
+      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:8081:8081"
+    volumes:
+      - ./docker/nginx/nginx.servidor.conf:/etc/nginx/nginx.conf:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - sitio-web
+      - intranet
+    networks:
+      - olo-network
+
+volumes:
+  # Con el nombre que ya tienen (del proyecto anterior, "olo-app"): sin `name:` Compose
+  # los antepone con el nombre del proyecto, y al renombrarlo crearia volumenes nuevos y
+  # vacios. La base seguiria en el viejo, pero la app arrancaria sin datos.
+  pg18_data:
+    name: olo-app_pg18_data
+  redis_data:
+    name: olo-app_redis_data
+  nginx_logs:
+    name: olo-app_nginx_logs
+
+networks:
+  olo-network:
+    driver: bridge

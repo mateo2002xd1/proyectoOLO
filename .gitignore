@@ -35,6 +35,10 @@ yarn-error.log*
 # lleva usuarios, ni bitácora, ni datos personales—, es parte del proyecto.
 # Se regenera con `npm run seed:generar` desde api-backend/.
 !api-backend/seed/*.sql
+# Los pasos SQL de `deploy.sh importar` son código, no respaldos. Lo que sí es un
+# respaldo -el volcado `importacion_*.sql` que ese comando deja si algo falla- sigue
+# ignorado por la regla general.
+!docker/sql/*.sql
 
 
 # Tooling

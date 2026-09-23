@@ -2,32 +2,27 @@
 # Script de despliegue del OLO.
 # Uso: ./docker/deploy.sh [comando]
 #
-# Por defecto opera sobre `docker/docker-compose.prod.yml`. Para levantar la pila de
-# desarrollo (sin nginx ni SSL, con los puertos publicados directamente):
-#
-#   COMPOSE_FILE=docker/docker-compose.yml ./docker/deploy.sh start
+# Opera sobre `docker/docker-compose.servidor.yml`: la pila de produccion publicada con un
+# tunel. Es la unica que queda en el repo; las de dominio propio con SSL y las de
+# desarrollo se retiraron el 2026-09-23 y siguen en el historial de git (ver
+# docker/7-despliegue.md).
 
 set -Eeuo pipefail
 
 # Este script vive en docker/ pero todas las rutas de abajo (COMPOSE_FILE, ENV_FILE,
-# ./docker/init-ssl.sh) son relativas a la RAIZ del repo -- de ahi este cd, que hace que
+# docker/sql/) son relativas a la RAIZ del repo -- de ahi este cd, que hace que
 # invocarlo funcione igual desde la raiz (`./docker/deploy.sh`) que desde dentro de
 # `docker/` (`./deploy.sh`) o desde cualquier otro directorio.
 cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-COMPOSE_FILE="${COMPOSE_FILE:-docker/docker-compose.prod.yml}"
+COMPOSE_FILE="docker/docker-compose.servidor.yml"
 ENV_FILE=".env"
 
-# `docker-compose.prod.yml` es el unico que monta nginx y por tanto el unico que
-# necesita dominios y contrasena de Redis.
-ES_PRODUCCION=false
-[[ "$COMPOSE_FILE" == *prod* ]] && ES_PRODUCCION=true
-
-# Cada uno de estos tumba un contenedor si llega vacio: la API aborta el arranque sin
-# `JWT_SECRET`, Postgres no inicializa sin contrasena, y nginx levanta con un
-# `server_name` vacio que no casa con ningun dominio.
-VARIABLES_REQUERIDAS=(POSTGRES_DB POSTGRES_USER POSTGRES_PASSWORD JWT_SECRET REVALIDAR_SECRET)
-$ES_PRODUCCION && VARIABLES_REQUERIDAS+=(REDIS_PASSWORD SITIO_WEB_DOMAIN INTRANET_DOMAIN)
+# Cada uno de estos tumba algo si llega vacio: la API aborta el arranque sin
+# `JWT_SECRET`, Postgres no inicializa sin contrasena, Redis arranca sin clave, y sin las
+# dos direcciones publicas el navegador no encuentra la API ni la otra aplicacion.
+VARIABLES_REQUERIDAS=(POSTGRES_DB POSTGRES_USER POSTGRES_PASSWORD JWT_SECRET REVALIDAR_SECRET
+                      REDIS_PASSWORD SITIO_WEB_URL_PUBLICA INTRANET_URL_PUBLICA)
 
 # Secretos que el script puede generar solo porque no dependen de nada externo: nadie
 # mas los conoce y no hay que hacerlos coincidir con ningun sistema previo. Los dominios
@@ -61,6 +56,11 @@ morir() { rojo "ERROR: $*"; exit 1; }
 #     y el build no encontraria `api-backend/`, `sitio-web/`, etc.
 componer() { MSYS_NO_PATHCONV=1 docker compose --project-directory . --env-file "$ENV_FILE" -f "$COMPOSE_FILE" "$@"; }
 
+# `--profile tools` es lo que incluye `migraciones`: sin el, `build` se salta los servicios
+# con perfil y esa imagen se queda con el codigo de su primer build. Despues de un
+# `git pull`, las migraciones nuevas no se aplicaban y la API se negaba a arrancar.
+construir() { componer --profile tools build "$@"; }
+
 show_help() {
     cat <<'AYUDA'
 ============================================
@@ -79,15 +79,11 @@ Comandos:
   build     - Reconstruir imagenes
   migrar    - Aplicar las migraciones de esquema pendientes
   sembrar   - Cargar el contenido inicial (paginas, identidad visual)
+  importar  - Copiar los datos de la base de origen (ORIGEN_DATABASE_URL), sin cuentas
   crear-admin - Crear la primera cuenta de Superadmin (solo instalacion nueva)
   backup    - Backup de la base de datos
   restore   - Restaurar backup (uso: ./docker/deploy.sh restore backup.sql)
-  ssl       - Emitir certificado (uso: ./docker/deploy.sh ssl dominio.com email@dominio.com)
-  renovar   - Renovar los certificados ya emitidos
   help      - Mostrar esta ayuda
-
-Variables de entorno:
-  COMPOSE_FILE   Archivo compose a usar (por defecto docker/docker-compose.prod.yml)
 AYUDA
 }
 
@@ -147,6 +143,17 @@ comprobar_entorno() {
         echo "Rellenalos y vuelve a ejecutar. Para los secretos: openssl rand -hex 32"
         exit 1
     fi
+
+    # Van tal cual al bundle del navegador y a CORS: una barra final o un http:// no dan
+    # error al construir, dan un sitio que no conecta con su API, y se descubre tarde.
+    local nombre url
+    for nombre in SITIO_WEB_URL_PUBLICA INTRANET_URL_PUBLICA; do
+        url=$(leer_env "$nombre")
+        # http://localhost:<puerto> se acepta para probar en el propio equipo antes de
+        # tener el tunel; para publicar hay que reconstruir con las https del tunel.
+        [[ "$url" =~ ^https://[^/]+$ || "$url" =~ ^http://localhost:[0-9]+$ ]] ||
+            morir "$nombre debe ser https://<host> sin barra final (esta: '$url')."
+    done
 
     # El mismo valor en los dos serviria tecnicamente, pero anula la unica ventaja de
     # tenerlos separados: que filtrar el de revalidacion no permita firmar sesiones.
@@ -223,14 +230,11 @@ setup() {
 
     echo ""
     echo "=== Construyendo imagenes ==="
-    componer build
+    construir
 
     echo ""
     verde "=== Setup completado ==="
     echo "Ejecuta: ./docker/deploy.sh start"
-    if $ES_PRODUCCION; then
-        echo "Y despues, para el certificado: ./docker/deploy.sh ssl <dominio> <email>"
-    fi
 }
 
 start() {
@@ -250,16 +254,9 @@ start() {
     echo ""
     verde "Servicios iniciados. Verifica con: ./docker/deploy.sh status"
 
-    # nginx no arranca si `ssl_certificate` apunta a un archivo que no existe, asi que
-    # sin certificado la pila queda arriba pero inalcanzable desde fuera. Avisarlo aqui
-    # ahorra tener que deducirlo de un contenedor reiniciandose en bucle.
-    if $ES_PRODUCCION; then
-        if ! componer ps nginx 2>/dev/null | grep -qi "running\|up"; then
-            echo ""
-            aviso "nginx no esta arriba. Si aun no has emitido el certificado:"
-            aviso "  ./docker/deploy.sh ssl $(leer_env SITIO_WEB_DOMAIN) tu-correo@dominio.com"
-        fi
-    fi
+    echo ""
+    echo "nginx atiende en este equipo:  sitio http://localhost:8080  |  intranet http://localhost:8081"
+    echo "Desde fuera se entra por el tunel: $(leer_env SITIO_WEB_URL_PUBLICA)  |  $(leer_env INTRANET_URL_PUBLICA)"
 }
 
 stop() {
@@ -280,7 +277,7 @@ status() { comprobar_requisitos; componer ps; }
 build() {
     comprobar_requisitos
     echo "=== Reconstruyendo imagenes ==="
-    componer build --no-cache
+    construir --no-cache
     echo ""
     verde "Imagenes reconstruidas. Ejecuta: ./docker/deploy.sh restart"
 }
@@ -363,6 +360,118 @@ crear_admin() {
         migraciones npm run crear:superadmin
 }
 
+# Tablas cuyo CONTENIDO no viaja al importar. Su estructura si existe (la crean las
+# migraciones); solo llegan vacias.
+#  - usuarios, preguntas_seguridad: las cuentas y sus datos personales. La instalacion
+#    nueva nace sin cuentas; la primera se crea con `crear-admin`.
+#  - auditoria_cambios: la bitacora guarda nombre, IP y navegador de cada persona.
+#  - bloqueos_edicion, subidas_pendientes: estado temporal de sesiones del origen.
+#  - migraciones_aplicadas: describe el esquema de ESTA base, no son datos.
+TABLAS_QUE_NO_VIAJAN=(usuarios preguntas_seguridad auditoria_cambios bloqueos_edicion subidas_pendientes migraciones_aplicadas)
+
+# pg_dump tiene que ser de la misma version mayor que el servidor de origen (Neon, 18) o
+# mayor. Corre en un contenedor desechable: no hay que instalar nada en el equipo.
+IMAGEN_CLIENTE_PG="postgres:18-alpine"
+
+SQL_CONTEO_POR_TABLA="SELECT table_name, (xpath('/row/n/text()', query_to_xml(format('SELECT count(*) AS n FROM public.%I', table_name), false, true, '')))[1]::text FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'"
+
+# Reemplaza los datos de esta instalacion por los de la base de origen
+# (ORIGEN_DATABASE_URL en el .env), menos TABLAS_QUE_NO_VIAJAN.
+importar() {
+    comprobar_requisitos
+    comprobar_entorno
+
+    local origen usuario base volcado respuesta tabla
+    origen=$(leer_env ORIGEN_DATABASE_URL)
+    [ -n "$origen" ] || morir "Falta ORIGEN_DATABASE_URL en $ENV_FILE: la conexion a la base de donde se copian los datos (ver docker/7-despliegue.md)."
+    # Con sslmode=verify-* libpq busca el certificado raiz en ~/.postgresql/root.crt, que
+    # el contenedor no tiene; `system` le dice que use los del sistema.
+    if [[ "$origen" == *sslmode=verify-* && "$origen" != *sslrootcert=* ]]; then
+        origen="${origen}&sslrootcert=system"
+    fi
+    usuario=$(leer_env POSTGRES_USER)
+    base=$(leer_env POSTGRES_DB)
+
+    echo "=== Importar datos desde la base de origen ==="
+    aviso "Esto BORRA todos los datos de la base '$base' de esta instalacion, cuentas incluidas,"
+    aviso "y los reemplaza por los de la base de origen. No viajan: ${TABLAS_QUE_NO_VIAJAN[*]}."
+    read -r -p "Continuar? (s/n): " -n 1 respuesta
+    echo
+    if [[ ! $respuesta =~ ^[Ss]$ ]]; then
+        echo "Cancelado"
+        return 0
+    fi
+
+    echo ""
+    echo "--- 1/5 Esquema al dia (migraciones) ---"
+    aplicar_migraciones
+
+    echo ""
+    echo "--- 2/5 Copiando los datos del origen ---"
+    local excluir=()
+    for tabla in "${TABLAS_QUE_NO_VIAJAN[@]}"; do
+        excluir+=("--exclude-table-data=public.$tabla")
+    done
+    volcado="importacion_$(date +%Y%m%d_%H%M%S).sql"
+    # --disable-triggers: deja entrar filas cuyo autor es un usuario que no viaja, y las
+    # referencias circulares (paginas <-> paginas_versiones) sin importar el orden.
+    # importar-despues.sql arregla esas referencias y comprueba todas antes de confirmar.
+    if ! MSYS_NO_PATHCONV=1 docker run --rm "$IMAGEN_CLIENTE_PG" pg_dump "$origen" \
+            --data-only --disable-triggers --no-owner --no-privileges --schema=public \
+            "${excluir[@]}" > "$volcado"; then
+        rm -f "$volcado"
+        morir "No se pudo leer la base de origen. Revisa ORIGEN_DATABASE_URL y la conexion a internet."
+    fi
+
+    echo ""
+    echo "--- 3/5 Cargando (una sola transaccion: si algo falla, no cambia nada) ---"
+    if ! cat docker/sql/importar-antes.sql "$volcado" docker/sql/importar-despues.sql |
+            componer exec -T db psql -q -v ON_ERROR_STOP=1 --single-transaction -U "$usuario" -d "$base"; then
+        morir "La carga fallo y se deshizo entera: la base quedo como estaba. El volcado sigue en $volcado para revisarlo."
+    fi
+    rm -f "$volcado"
+
+    echo ""
+    echo "--- 4/5 Comparacion: filas en el origen y aqui ---"
+    # Antes de sembrar permisos a proposito: ese paso puede anadir filas a roles_permisos
+    # y la comparacion mostraria una diferencia que no es del traspaso.
+    local conteo_origen conteo_destino
+    conteo_origen=$(MSYS_NO_PATHCONV=1 docker run --rm "$IMAGEN_CLIENTE_PG" \
+        psql "$origen" -AtF ' ' -c "$SQL_CONTEO_POR_TABLA" | tr -d '\r' | LC_ALL=C sort)
+    conteo_destino=$(componer exec -T db psql -U "$usuario" -d "$base" -AtF ' ' -c "$SQL_CONTEO_POR_TABLA" |
+        tr -d '\r' | LC_ALL=C sort)
+    local distintas=0 t o d nota
+    printf '  %-28s %8s %8s\n' TABLA ORIGEN AQUI
+    while read -r t o d; do
+        nota=""
+        [[ " ${TABLAS_QUE_NO_VIAJAN[*]} " == *" $t "* ]] && nota="(no viaja)"
+        # Una tabla que crean las migraciones y que en el origen ya se borro a mano
+        # (p. ej. `_obsoleto_attachment`): vacia aqui, no es una diferencia de datos.
+        [ -z "$nota" ] && [ "$o" = "-" ] && [ "$d" = "0" ] && nota="(solo existe aqui, vacia)"
+        if [ -z "$nota" ] && [ "$o" != "$d" ]; then
+            nota="<-- DISTINTO"
+            distintas=$((distintas + 1))
+        fi
+        printf '  %-28s %8s %8s  %s\n' "$t" "$o" "$d" "$nota"
+    done < <(LC_ALL=C join -a1 -a2 -e '-' -o '0,1.2,2.2' <(echo "$conteo_origen") <(echo "$conteo_destino"))
+
+    echo ""
+    echo "--- 5/5 Permisos y cache ---"
+    componer run --rm -T migraciones npm run sembrar:permisos
+    # La API guarda respuestas en Redis: sin vaciarlo seguiria sirviendo lo de antes.
+    # El sitio tiene ademas su propia cache de Next, que caduca sola en un minuto.
+    componer exec -T redis redis-cli --no-auth-warning -a "$(leer_env REDIS_PASSWORD)" FLUSHALL >/dev/null
+
+    echo ""
+    if [ "$distintas" -gt 0 ]; then
+        aviso "Hay $distintas tabla(s) con un numero de filas distinto al del origen: revisalas arriba."
+    else
+        verde "=== Datos importados: todas las tablas coinciden con el origen ==="
+    fi
+    echo "Siguiente paso: ./docker/deploy.sh crear-admin   (la base quedo sin cuentas)"
+    aviso "Cuando termines de importar, borra ORIGEN_DATABASE_URL del $ENV_FILE: es la clave de la base de origen."
+}
+
 backup() {
     comprobar_requisitos
     comprobar_entorno
@@ -410,28 +519,6 @@ restore() {
     verde "Backup restaurado"
 }
 
-ssl() {
-    comprobar_requisitos
-    comprobar_entorno
-    if [ -z "${1:-}" ] || [ -z "${2:-}" ]; then
-        echo "Uso: ./docker/deploy.sh ssl <dominio> <email> [dominio-extra ...]"
-        echo "Ejemplo: ./docker/deploy.sh ssl tusitio.com admin@tusitio.com www.tusitio.com"
-        exit 1
-    fi
-    ./docker/init-ssl.sh "$@"
-}
-
-renovar() {
-    comprobar_requisitos
-    comprobar_entorno
-    echo "=== Renovando certificados ==="
-    componer run --rm -T certbot renew --webroot -w /var/www/certbot
-    # nginx solo lee los certificados al arrancar o al recargar: sin esto seguiria
-    # sirviendo el certificado viejo hasta el proximo reinicio.
-    componer exec -T nginx nginx -s reload
-    verde "Certificados renovados y nginx recargado"
-}
-
 case "${1:-help}" in
     setup)   setup ;;
     start)   start ;;
@@ -442,10 +529,9 @@ case "${1:-help}" in
     build)   build ;;
     migrar)  migrar ;;
     sembrar) sembrar ;;
+    importar) importar ;;
     crear-admin) crear_admin ;;
     backup)  backup ;;
     restore) restore "${2:-}" ;;
-    ssl)     shift; ssl "$@" ;;
-    renovar) renovar ;;
     help|*)  show_help ;;
 esac
