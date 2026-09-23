@@ -5,6 +5,208 @@
 
 ---
 
+## sesión 23-09-2026 (5.ª parte): Docker igual al proyecto real, con los datos de Neon y publicado por túnel
+
+**Qué era.** El servidor (Windows, usuario SERVIDOR, publicado con el túnel de VS Code) iba
+lento al cambiar de sección. Diagnóstico medido: `sitio-web` corría `next dev --webpack`,
+porque la pila se levantó con `docker compose up` dentro de `docker/` y Compose suma solo
+`docker-compose.override.yml`. Además usaba 2,8 GB de RAM y había escrito 1,29 GB en disco.
+La API respondía en 135 ms; `localhost:3000/inicio` tardaba unos 420 ms, y por el túnel
+entre 2 y 8 s. Al revisar qué impedía que Docker fuera igual al proyecto real salieron
+varios fallos que en `next dev` no se ven.
+
+El usuario decidió: los datos salen de **Neon**; viaja todo **menos las cuentas y la
+bitácora**; se sigue publicando con **devtunnel**.
+
+### Qué se hizo
+
+| Capa | Cambio |
+|---|---|
+| `docker/docker-compose.servidor.yml` (nuevo) | Pila de producción sin dominio. Postgres 18 como Neon, con el volumen en `/var/lib/postgresql` (la 18 cambió la ruta). nginx es la única entrada, en `127.0.0.1:8080` (sitio) y `:8081` (intranet). Las URL públicas salen de `SITIO_WEB_URL_PUBLICA` / `INTRANET_URL_PUBLICA`. Monta del repo `*/public/storage` y `api-backend/uploads`. |
+| `docker/nginx/nginx.servidor.conf` (nuevo) | Dos puertas; `/api-backend/` va a la API. Toma la IP real del visitante de `X-Forwarded-For`: sin eso, el límite de 20 r/s era para todos los usuarios juntos. Reenvía el host público para las Server Actions. |
+| `deploy.sh importar` + `docker/sql/importar-*.sql` (nuevos) | `pg_dump` 18 en un contenedor desechable → vaciar, cargar, dejar en NULL las columnas que apuntan a `usuarios` (leídas del catálogo), corregir rutas con `\` y comprobar **todas** las llaves foráneas. Todo en **una transacción**. Al final compara filas por tabla con el origen. |
+| `deploy.sh` | Modo servidor con validación de URLs. `build` ahora incluye `--profile tools`: sin eso, la imagen `migraciones` se quedaba con el código de su primer build y las migraciones nuevas no se aplicaban. |
+| `sitio-web` + `intranet`: `app/storage/[...ruta]/route.ts` (nuevo) | En producción, Next lee la lista de `public/` una sola vez al arrancar (`router-utils/filesystem.js`), así que una subida nueva daba 404 hasta reiniciar. La ruta sirve desde disco lo que Next no conoce. Qué tipos se sirven lo decide `mimeParaServir` en `@olo/upload-policy`, derivado de lo que se puede subir; sin SVG. |
+| `sitio-web/shared/lib/url-de-la-api.ts` (nuevo) + 9 servicios | Leían la API con `NEXT_PUBLIC_API_URL`, la URL **del navegador**, también desde el servidor. En el contenedor, todas las páginas del comodín `[slug]` daban 404; detrás del túnel, cada lectura habría salido a internet. Ahora en el servidor se usa `BACKEND_URL`. |
+| Botón «Intranet» (`header.tsx`, Puck, cabecera por defecto, semilla) | El menú publicado en Neon guarda `intranetUrl: http://localhost:3001`, y lo guardado ganaba a la variable. Ahora sale siempre de `NEXT_PUBLIC_INTRANET_URL`, y el campo salió del editor. |
+| `intranet` `registrarVisita` | Iba a `localhost:4000` desde el navegador; ahora pasa por el proxy `/api-backend`. |
+| `intranet/config/puck.config.tsx` | 4 usos de `ArchivoUploaderField` le pasaban a Puck el nombre del archivo como `uiState`. En `next dev` no se nota; **el build de producción de la intranet no compilaba** en `dev`. |
+| `scripts/crear-superadmin.ts` | Aceptaba cualquier dominio, y el login solo acepta `@sena.edu.co`: la única cuenta de una instalación nueva podía quedar sin poder entrar. Ahora usa `exigirEmailInstitucional`. |
+| `docker/7-despliegue.md` | Reescrita desde cero para Windows + Git Bash + devtunnel, con glosario. `.env.example` y `.gitignore` (`!docker/sql/*.sql`). |
+| `docker/` queda solo con la forma servidor | A pedido del usuario, «para no confundir», se borraron `docker-compose.prod.yml`, `nginx/nginx.conf.template` e `init-ssl.sh` (dominio + SSL), y `docker-compose.yml`, `docker-compose.override.yml` y `dev-entrypoint.sh` (desarrollo). Se recuperan con `git checkout ce29d80 -- docker/<archivo>`. `deploy.sh` usa siempre `docker-compose.servidor.yml` (sin `COMPOSE_FILE`) y pierde `ssl`/`renovar`. `.env.example` pierde los dominios y `LOCAL_AUTH_*`, y `JWT_EXPIRES_IN` pasa de `7d` a `8h`: con 7d, un token robado servía una semana, frente a la jornada que fijan la API y la cookie del sitio. |
+| Los compose | A pedido del usuario, el proyecto pasa de `olo-app` a **`olo-web-app`** y redis tiene nombre fijo (`redis`). Los volúmenes llevan `name: olo-app_…` para que el cambio de nombre no cree volúmenes nuevos y vacíos. Probado: al recrear la pila con el nombre nuevo, las 17 páginas y la cuenta siguieron ahí, y no se creó ningún volumen `olo-web-app_*`. |
+
+### Verificación (en local, Docker Desktop 29.7.2, pila servidor)
+
+| Prueba | Resultado |
+|---|---|
+| Build de las 4 imágenes con `deploy.sh` | OK, tras arreglar los tipos de la intranet |
+| `deploy.sh start` | 6 servicios arriba; `sitio-web` con `node server.js`; 88 MB de RAM |
+| Postgres 18: datos dentro del volumen | `PGDATA=/var/lib/postgresql/18/docker`, un solo montaje |
+| `deploy.sh importar` desde Neon | Primer intento: **falló y se deshizo entero** (FK revalidada en el UPDATE, ver aviso). Segundo: todas las tablas coinciden (17 páginas, 115 versiones, 671 programas sobresalientes…) |
+| `crear-admin` con `@olo.local` / `@sena.edu.co` | Rechazado / creado |
+| Login del sitio y de la intranet por nginx | 200; la intranet lleva a `/security-questions` (cuenta nueva) |
+| Subir una imagen y pedirla sin reiniciar | 200 `image/png`; el archivo queda en la carpeta del repo |
+| `..%2F`, archivo inexistente, otra carpeta, `.svg` | 400 / 404 / 404 / 404 |
+| Botón Intranet en el HTML | `http://localhost:8081` (de la variable) |
+| Observatorio: tendencias y fuentes futuras | Devuelven datos; antes, en Docker, vacíos (los Excel no estaban en la imagen) |
+| Páginas del sitio por nginx | 200 en 0,24–0,98 s; `/ape` da 404 porque no existe en Neon |
+| `stop` (borra contenedores) + `start` | Imagen, páginas, login y 115 versiones siguen |
+
+> **Trampa del traspaso.** Una fila insertada en la misma transacción revalida **todas** sus
+> llaves foráneas en cualquier UPDATE, aunque la columna que cambia sea otra. Vaciar
+> `revisor_id` fallaba porque `publicado_por` todavía apuntaba a un usuario ausente. Los
+> vaciados corren con `session_replication_role = replica`, y la comprobación manual de
+> todas las llaves va después.
+
+**Descartado.**
+- Publicar el túnel directo al 3000: haría falta un tercer túnel para la API y más CORS.
+- Volúmenes de Docker para los archivos: si la API monta primero, la copia inicial desde
+  la imagen no se hace. Se usan carpetas del repo, visibles en el Explorador.
+- Seguir en Postgres 16 limpiando el volcado de la 18 (`transaction_timeout`, `\restrict`).
+
+**Pendiente al cierre.**
+- Llevarlo al servidor siguiendo `7-despliegue.md`. No se probó con un devtunnel real: no se
+  pudo confirmar si el túnel reescribe `Host`. nginx cubre los dos casos.
+- `docker-compose.prod.yml` sigue con Postgres 16 y sin montar las carpetas de archivos.
+- `/ape` está en el menú y no existe como página.
+- En Neon falta `_obsoleto_attachment`, que las migraciones sí crean (0 filas, sin efecto).
+- El sincronizador de permisos quita `acceso.panel` a un rol que en Neon lo tiene.
+- La latencia del túnel de Microsoft (1,5–7 s por petición) no depende del código.
+
+---
+
+## sesión 23-09-2026 (4.ª parte): todas las acciones de la bitácora dicen qué pasó
+
+**Qué era.** El usuario pidió frases claras para las once acciones del filtro, con dos ejemplos de
+filas que no decían nada:
+
+> Modificación · `name: David · apellidos: Vargas · email: dtejada@sena.edu.co`
+> Cambio de contraseña · `via: cambio-voluntario`
+
+En la primera no se sabía **qué** había cambiado: el formulario manda siempre esos tres campos,
+cambien o no. En la segunda, `cambio-voluntario` es un código interno.
+
+**Ahora se leen:**
+
+> Se modificó el usuario dtejada@sena.edu.co · apellidos de «Tejada» a «Vargas»
+> Cambió su contraseña de la cuenta dtejada@sena.edu.co
+
+### Cómo se hizo
+
+Antes de redactar se sacaron de la base **todas las formas de fila que existen**: 42 combinaciones
+de acción, entidad y campos. `shared/auditoria-resumen.ts` se reescribió **por acción**, en el orden
+del filtro, conservando literalmente las frases que el usuario ya había definido en las fases 1 a 6.
+
+| Acción | Ejemplo real |
+|---|---|
+| Creación | Se creó la página «Mapa del sitio» (/mapa-del-sitio) en el sitio web · pueden editarla: Administrador, Editor |
+| Edición | El usuario envió su edición a revisión · versión 36 de «inicio» · «Se actuliza la sección de inicio» |
+| Rechazo | Se rechazó la versión 7 de «empleo» · Su comentario: «trestes tt» · Motivo del rechazo: «tEST» |
+| Publicación | Se aprobó y publicó la versión 36 de «inicio» · «…» / Se restauró y publicó la versión 2 de «empleo» |
+| Archivado | Se archivó la versión 35 al publicar la 36 · Comentario de la archivada: «…» |
+| Autenticación | Inició sesión en el sitio web |
+| Modificación | Se modificó el usuario p@sena.edu.co · rol de «Editor inicio» a «Editor prueba» |
+| Modificación (rol) | Se concedió al rol «Editor prueba» el permiso de editar la sección «Inicio» del sitio web |
+| Expiró | La cuenta de … pasó a inactiva al cumplirse su fecha de caducidad |
+| Inactivación | Se inactivó el usuario … |
+| Cambio de contraseña | Cambió la contraseña temporal en su primer ingreso · cuenta … |
+| Eliminación | Se descartó la versión 1 de «afliknd» · Motivo: «dfsd» · la página también se eliminó, porque era su única versión |
+
+Decisiones que conviene conocer:
+
+- **Solo se nombra lo que cambió de verdad.** Se compara el antes con el después; si no cambió
+  nada, se dice «Se guardó el usuario … sin cambios».
+- **El cambio de contraseña corriente se dice sin adornos**, como lo pidió el usuario: «Cambió su
+  contraseña de la cuenta …». Solo el primer ingreso y la recuperación llevan explicación, porque
+  cuentan algo distinto.
+- **El rechazo lleva su «commit»**, el motivo, con su nombre delante para no confundirlo con el
+  comentario de quien envió la versión.
+- **Los roles y los permisos se nombran como los ve una persona.** Un `role_id` sale como «Editor»
+  y `secciones.crear` como «Crear secciones nuevas», leídos del catálogo de permisos.
+- **Filas antiguas sin valores anteriores:** dos modificaciones de usuario guardaron todos los
+  «antes» vacíos. En vez de fingir que cambió todo, dicen que el registro no guardó lo que había.
+- **Una red de seguridad para lo demás.** Si una fila no encaja en ninguna frase propia —hoy los
+  contenidos, que no tienen filas, o un slug que cambia—, una frase genérica nombra cada campo en
+  español con su antes y su después. `resumen` **siempre viene** y ninguna fila sale en crudo.
+
+### Dos cosas que la bitácora no podía decir, y ahora sí
+
+Al eliminar un usuario o un rol, la fila solo guardaba el id de algo que dejaba de existir: la
+bitácora decía «se eliminó una cuenta» sin poder saber cuál. `usuarios.controller.ts` y
+`roles.controller.ts` ahora leen el registro **antes** de borrarlo y guardan su correo y nombre, o el
+nombre del rol, como «antes». Las 19 eliminaciones que ya existen no lo llevan y lo dicen: «el
+registro no guardó cuál».
+
+### Un fallo que la prueba atrapó
+
+La primera versión leía los nombres de los roles con `SELECT id, name FROM roles`. La columna se
+llama `nombre`; el modelo la expone como `name`. Falló contra la base real antes de llegar a la
+pantalla, y se cambió por el modelo, que es quien sabe traducirla.
+
+**Verificado:** las 42 formas reales pasadas por el código, frase por frase; las **1297 filas
+visibles** tienen frase; los dos ejemplos del usuario salen como arriba. Además, 16 casos para lo que
+la base todavía no tiene: las otras dos vías de contraseña, un usuario y un rol borrados con el cambio
+nuevo, una página del sitio web eliminada, un permiso de sección y la red de seguridad. `tsc --noEmit`
+limpio en la API y en el sitio-web.
+
+**Archivos.** API: `shared/auditoria-resumen.ts` (reescrito), `shared/auditoria-dto.ts`,
+`use-cases/auditoria/audit.usecase.ts`, `controllers/usuarios.controller.ts`,
+`controllers/roles.controller.ts` y `docs/openapi.ts`. La pantalla no se tocó.
+
+---
+
+## sesión 23-09-2026 (3.ª parte): los guardados automáticos antiguos salen de los listados
+
+**Qué era.** Tras la fase 6, la edición del usuario en «inicio» se leía en tres filas, y la del medio
+llevaba su propia frase:
+
+> 4:45:00 · El usuario envió su edición a revisión · versión 36 de «inicio» · «Se actuliza la sección de inicio»
+> 4:44:59 · **Guardado automático al enviar a revisión** · versión 36 de «inicio»
+> 4:44:33 · El usuario guardó su edición en borrador · versión 36 de «inicio»
+
+El usuario preguntó si se estaban guardando dos borradores. **No**: en `paginas_versiones` hay una
+sola versión 36. Cada edición es una fila que cambia de estado —borrador, en revisión, publicada, y
+archivada cuando otra la sustituye— y los dos guardados escribieron sobre esa misma fila. Solo se
+crea una versión nueva cuando la última ya está publicada o archivada. Aprobar publica esa misma fila
+(`aprobar-pagina.usecase.ts`); no hay copias en ningún paso.
+
+Lo que pidió es que la fila automática **no se muestre**: el envío la sustituye, porque dice la misma
+versión y además trae el comentario.
+
+### Qué se hizo
+
+Se propuso ocultarlas de la tabla y conservarlas en el CSV, por ser el respaldo previo a depurar. El
+usuario lo descartó: no quiere que aparezcan en ningún listado. Queda así:
+
+- **Fuera de todos los listados**: la tabla, el CSV (sale del mismo endpoint), el panel de
+  actividad reciente y el historial de un objeto. También del **total**, así que la paginación
+  cuadra.
+- **No se borran de la base.** La depuración de seis meses se las lleva igual que al resto, y por
+  eso el **análisis previo a depurar sí las cuenta y las enseña** con su frase: es lo que se va a
+  borrar de verdad, y ahí esconderlas falsearía el recuento.
+
+Las 178 son todas del mismo tipo que la de las 4:44:59. No hay forma de quitar solo esa sin una
+regla, y la regla las recoge a todas.
+
+La regla vive ahora en **un solo sitio**, `SQL_IDS_GUARDADOS_AUTOMATICOS` en
+`repositories/auditoria.repository.ts`, y la leen las dos cosas que no pueden discrepar: el filtro de
+los listados y la detección del análisis de depuración (`guardadosPreviosAEnvio`). La ventana de tres
+segundos y su medición se movieron con ella.
+
+**Verificado contra la base con el repositorio real:** 1473 filas en la tabla, 178 automáticas, y el
+listado da un total de **1295**, que es exactamente la diferencia. La edición del usuario sale en dos
+filas. El análisis de depuración sigue reconociendo las 178. `tsc --noEmit` limpio en la API.
+
+**Archivos.** `repositories/auditoria.repository.ts`, `use-cases/auditoria/audit.usecase.ts` y
+`routes/audit.routes.ts` (OpenAPI). La pantalla no se tocó.
+
+**Queda pendiente, como propuesta:** `paginas_versiones` no guarda cuándo se modificó una versión por
+última vez, solo cuándo nació. La versión 36 dice 22/9 aunque se editó el 23/9. Añadirlo necesita una
+migración.
+
+---
+
 ## sesión 23-09-2026 (2.ª parte): fase 6, una edición deja dos filas y no tres
 
 **Qué era.** El usuario hizo un solo cambio en «inicio», lo guardó una vez y lo envió a
