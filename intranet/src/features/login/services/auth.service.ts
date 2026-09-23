@@ -41,6 +41,10 @@ export const authApi = {
   login: async (email: string, password: string) => {
     return fetchAuth('/login', {
       method: 'POST',
+      // Sitio-web e intranet entran por el mismo `POST /api/login` de la API: sin esta
+      // marca las dos peticiones llegan allí idénticas y la bitácora no puede decir en
+      // cuál se inició sesión. Viaja tal cual a través del rewrite de `next.config`.
+      headers: { 'X-Origen-App': 'intranet' },
       body: JSON.stringify({ email, password }),
     });
   },
