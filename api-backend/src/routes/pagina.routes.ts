@@ -520,6 +520,12 @@ router.get(
  *       **Exige el comentario de cambios** (el «commit» del envío, de 10 a 100
  *       caracteres). Se guarda en la versión y la bitácora lo registra en el envío y
  *       otra vez al aprobar, rechazar o descartar esa versión.
+ *
+ *       **Puede traer el contenido del editor.** Si viene, se guarda como borrador y se
+ *       envía en una sola transacción, y la bitácora deja **una sola fila**, la del
+ *       envío. Antes el editor guardaba y enviaba en dos peticiones, y cada envío dejaba
+ *       un guardado que nadie había pulsado. Si el envío falla, el guardado también se
+ *       deshace.
  *     parameters:
  *       - $ref: '#/components/parameters/SlugEnRuta'
  *       - $ref: '#/components/parameters/Ambito'
@@ -531,6 +537,9 @@ router.get(
  *             type: object
  *             required: [comentario]
  *             properties:
+ *               contenido:
+ *                 type: object
+ *                 description: Lo que hay en el editor. Opcional; mismo formato que el de guardar borrador.
  *               comentario:
  *                 type: string
  *                 minLength: 10

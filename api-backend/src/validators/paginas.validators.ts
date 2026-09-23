@@ -61,9 +61,14 @@ export const guardarBorradorSchema = z
  * sola línea, sin espacios sobrantes) antes de medirlo, para que el tope se aplique
  * a lo que de verdad se va a guardar. La regla vive en `shared/comentario-cambios.ts`
  * porque el caso de uso la vuelve a aplicar.
+ *
+ * `contenido` es opcional y es lo que hay en el editor al pulsar «Enviar». Con el
+ * mismo esquema que el guardado de borrador, así que enviarlo por aquí no se salta
+ * ninguna comprobación de forma ni de tamaño.
  */
 export const enviarARevisionSchema = z
   .object({
+    contenido: contenidoPaginaSchema.optional(),
     comentario: z
       .string({
         required_error: 'Escribe un comentario que describa tus cambios antes de enviarlos a revisión.',

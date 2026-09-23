@@ -322,6 +322,31 @@ export const PaginaController = {
   async enviarARevision(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await sequelize.transaction(async (tx) => {
+        // Lo que hay en el editor viaja con el envío y se guarda aquí mismo, dentro de
+        // la transacción y **sin fila propia en la bitácora**.
+        //
+        // Antes el editor hacía dos peticiones: guardaba el borrador y luego lo enviaba.
+        // Cada envío dejaba así un «guardar borrador» que nadie había pulsado, pegado al
+        // envío, y si además se había guardado a mano salían dos guardados idénticos
+        // seguidos. Quien audita no puede distinguir cuál decidió una persona.
+        //
+        // Que no deje fila no abre un hueco: este guardado solo ocurre como parte de un
+        // envío, y el envío sí queda registrado con su versión y su comentario. Si el
+        // envío falla —falta el comentario, no cumple accesibilidad— la transacción
+        // deshace también el guardado, así que no puede quedar contenido cambiado sin
+        // una fila que lo cuente. Por eso esto va aquí y no como una marca en la ruta
+        // de guardar: una marca así la podría mandar cualquiera para guardar sin dejar
+        // rastro.
+        if (req.body.contenido !== undefined) {
+          await guardarBorrador(
+            req.params.slug as string,
+            req.body.contenido,
+            req.user?.id || '',
+            ambitoExigidoDe(req),
+            tx
+          );
+        }
+
         const r = await enviarARevision(
           req.params.slug as string,
           req.user?.id || '',
