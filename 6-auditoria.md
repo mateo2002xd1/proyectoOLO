@@ -5,6 +5,187 @@
 
 ---
 
+## sesión 23-09-2026: fase 5, guardar un borrador dice qué se guardó y de dónde venía
+
+**Qué era.** El usuario señaló esta fila:
+
+> `22/9/2026, 4:01:38 p. m.` · Mateo Pelaez Holguin · **Edición** · Página ·
+> `slug: menu-y-pie · version: 9 · estado: borrador`
+
+Es un `guardar_borrador`, y la columna enseñaba los tres **«después»** crudos. Pero lo que
+distingue un guardado de otro está en los **«antes»**, que no se veían. Mirando las 283 filas de
+borrador que hay en la base salen cinco situaciones distintas que hasta ahora se pintaban igual:
+
+| Qué dicen los datos | Qué pasó | Cómo se lee ahora |
+|---|---|---|
+| misma versión, venía de borrador | se volvió a guardar un borrador que ya existía | Se guardó el borrador de la versión 7 de «empleo» |
+| versión distinta | se abrió un borrador nuevo | Se creó el borrador de la versión 9 de «menu-y-pie» |
+| sin versión anterior | primera versión de una página nueva | Se creó el borrador de la versión 1 de «mapa-del-sitio» |
+| misma versión, venía rechazada | se retomó tras el rechazo | Se guardó el borrador de la versión 7 de «empleo» tras su rechazo |
+| misma versión, venía en revisión | guardarla la sacó de revisión | Se guardó el borrador de la versión 7 de «empleo» y salió de revisión |
+
+### El «antes» no es la versión publicada
+
+En la fila del ejemplo el «antes» es `version 8, archivado`. Tentaba escribir «sobre la versión
+8», pero la publicada en ese momento era la **6**: el «antes» que guarda `guardarBorrador` es la
+última versión que existía, sea cual sea su estado. Por eso la frase de un borrador nuevo no dice
+de dónde partió: lo que diría sería falso.
+
+### Lo que no encaja se deja sin redactar
+
+Con la misma regla de las fases anteriores —mejor el texto feo que una frase que cuente la mitad—
+se devuelve `null`, y la pantalla sigue con la lista de campos, cuando:
+
+- aparece un campo que `guardarBorrador` no escribe;
+- el slug cambia entre el antes y el después, que sería un renombre escondido;
+- el estado final no es borrador;
+- la misma versión venía **publicada** o **archivada**. No aparece en la base y no se sabe qué
+  significaría, así que en vez de adivinar no se redacta.
+
+Las filas más viejas, sin campo `estado`, se leen como un guardado normal.
+
+**Verificado contra la base real:** un ejemplo de cada una de las siete formas que existen —las
+cinco de la tabla más las dos de filas viejas sin estado— sale con la frase esperada, y las **283
+filas** de borrador reciben frase. Además, 24 casos sintéticos en verde: los catorce de las fases 1
+a 4, para que nada se rompiera, y diez de esta con sus casos límite. `tsc --noEmit` limpio en la API.
+
+**Archivo.** Solo `api-backend/src/shared/auditoria-resumen.ts` (`fraseDeBorrador`). La pantalla no
+se tocó.
+
+**Queda para otra fase, sin hacer por no estar pedido:** las demás filas de «Edición» de páginas.
+Las 165 de `actualizar` anteriores a `guardar_borrador` siguen con `slug · version` crudo, y
+`enviar_revision`, `aprobar` y `rechazar` enseñan el comentario pero **no dicen de qué página ni de
+qué versión**: la columna «Entidad» solo pone «Página».
+
+---
+
+## sesión 22-09-2026 (2.ª parte): fase 4, «Archivado» deja de parecer una decisión de alguien
+
+**Qué era.** El usuario señaló esta fila y pidió analizarla antes de tocar nada:
+
+> `22/9/2026, 4:02:35 p. m.` · Mateo Pelaez Holguin · **Archivado** · Página ·
+> `Sin comentario · Archivada al publicar versión 9`
+
+De ahí se entendían dos cosas, y las dos falsas:
+
+- **Que alguien archivó una página.** No existe esa función. Aprobar una versión *es*
+  publicarla, y al publicarla la que estuviera en la vista pasa a archivada. La API escribe
+  **dos filas por esa única acción**: una «Publicación» de la versión que entra y una
+  «Archivado» de la que sale, con el mismo actor y el mismo segundo.
+- **Que la versión 9 se publicó sin comentario.** Ese «Sin comentario» es el de la versión
+  **archivada**, no el de la 9. En las filas de archivado la columna enseña a propósito el
+  comentario de la que salió, porque es de ella de lo que trata la fila. Pero la tabla no lo
+  dice: la línea que lo explica solo está dentro del detalle, y sin ella se lee al revés.
+
+**Ahora se lee:** `Se archivó la versión 8 al publicar la 9`. Si la archivada llevaba
+comentario se añade detrás `Comentario de la archivada: «…»`, diciendo de quién es en vez de
+dejarlo suelto. Como las fases 1 y 2, se calcula al leer, así que las filas de meses atrás
+quedan explicadas sin migrar nada.
+
+### El número de la versión que entra solo vive dentro del motivo
+
+La fila guarda en `version` el número de la **archivada**, en las dos puntas. El de la que la
+sustituye no está en ningún campo: está dentro del texto del motivo, que lo genera la API
+(«Archivada al publicar versión 9»). Para armar la frase hay que sacarlo de ahí.
+
+Eso ata la lectura a una redacción, y esa atadura rompe **en silencio**: cambiar el texto en el
+controlador dejaría la expresión sin coincidir, el resumen devolvería `null` y la pantalla
+volvería al texto de antes sin que nadie supiera por qué. Por eso los dos motivos pasaron a
+tener **una sola definición**, `MOTIVO_DE_ARCHIVADO` en `auditoria-resumen.ts`, pegada a la
+expresión que los vuelve a leer; los dos sitios que los escribían ahora los importan de ahí.
+
+La expresión exige `\d+` y no cualquier cosa: si el número llegara en blanco, el motivo diría
+«versión undefined» y la frase saldría con esa palabra dentro. Sin coincidencia se devuelve
+`null` y la pantalla enseña el motivo crudo, que es feo pero cierto.
+
+### Solo páginas
+
+Un **contenido** —un banner, un estudio— sí se archiva a mano: alguien le pone
+`estado: archivado` y eso es una decisión de verdad. Esas filas no se tocan y siguen con su
+lista de campos. La frase se arma solo cuando la entidad es `pagina`, que es donde archivar
+nunca lo decide nadie.
+
+**Verificado:** catorce casos contra `resumenDeRegistro`, cinco de las fases anteriores para
+que no se rompieran y nueve de esta, entre ellos la fila exacta del usuario, la restauración
+de una versión anterior, el comentario de la archivada frente al de la nueva, el número en
+blanco, un motivo con otra redacción, la falta del campo `version`, un contenido archivado a
+mano y una publicación. Todos en verde, y `tsc --noEmit` limpio en la API.
+
+**Archivos.** `shared/auditoria-resumen.ts` (`MOTIVO_DE_ARCHIVADO` y `fraseDeArchivado`),
+`controllers/pagina.controller.ts` y `use-cases/paginas/restaurar-version-anterior.usecase.ts`,
+estos dos solo para tomar el motivo de la definición única. La pantalla no se tocó: ya prefiere
+lo que manda la API desde la fase 1.
+
+**Queda pendiente, y no se hizo por no estar pedido:** la píldora sigue diciendo «Archivado»
+con el color de actividad rutinaria, y el actor sigue siendo quien publicó. La frase ya aclara
+qué pasó, pero quien solo mire la columna «Acción» puede seguir leyéndolo como una retirada.
+
+---
+
+## sesión 22-09-2026 (1.ª parte): fase 3, la bitácora dice en cuál de los dos portales se inició sesión
+
+**Qué era.** Una fila de autenticación decía «Inició sesión» y nada más. El sistema tiene dos
+puertas —el sitio web y la intranet— y la bitácora no distinguía cuál se usó, que es justo lo que
+quiere saber quien revisa un acceso.
+
+| Antes | Ahora |
+|---|---|
+| Inició sesión | **Inició sesión en el sitio web** |
+| Inició sesión | **Inició sesión en la intranet** |
+
+### Por qué esta fase no se parece a las dos anteriores
+
+**El dato no existía.** Las dos aplicaciones entran por el mismo `POST /api/login`, y vistas desde
+la API las dos peticiones son idénticas: misma ruta, mismo cuerpo. En el sitio-web la petición la
+abre además el servidor de Next y no el navegador, así que ni la IP ni el `Origin` sirven para
+separarlas.
+
+Las fases 1 y 2 se resuelven **al leer**, y por eso explicaron también las filas viejas. Esta hay
+que **escribirla**: cada aplicación se identifica con la cabecera `X-Origen-App` al llamar al
+login, y la API la guarda en el campo `origen` de la fila. Los logins anteriores a este cambio no
+lo llevan y siguen diciendo «Inició sesión» a secas, que es verdad aunque diga menos.
+
+### Que lo mande el cliente obliga a no fiarse
+
+`/api/login` es la ruta más expuesta del sistema y no pide sesión: cualquiera puede mandar la
+cabecera con lo que quiera. Por eso el valor **se comprueba contra la lista** (`sitio-web`,
+`intranet`) y lo que no esté queda en `null` en vez de guardarse. Lo que escriba un cliente no
+puede acabar copiado dentro de la tabla que sirve de evidencia.
+
+Dos detalles que estaban a un paso de romperlo:
+
+- **Guiones, no guiones bajos.** nginx descarta por defecto las cabeceras con guion bajo
+  (`underscores_in_headers off`), así que `X_Origen_App` habría funcionado en desarrollo y
+  desaparecido detrás de nginx. `X-Origen-App` pasa.
+- **Una cabecera repetida llega como lista.** Node entrega `['sitio-web','intranet']`, que no está
+  en el catálogo, así que queda en `null` en vez de guardar algo raro.
+
+### Por dónde viaja cada una
+
+| Aplicación | Camino hasta la API | Dónde se marca |
+|---|---|---|
+| **sitio-web** | navegador → route handler de Next → `fetch` a la API | `app/api/auth/login/route.ts`, junto a las cabeceras de cliente que ya reenviaba |
+| **intranet** | navegador → rewrite `/api-backend/*` de `next.config` → API | `features/login/services/auth.service.ts`, en la llamada del login |
+
+**Verificado:** catorce casos contra `resumenDeRegistro` —los once de las fases 1 y 2 más los tres
+de esta— y nueve contra la lectura de la cabecera: valor en mayúsculas, con espacios, ausente,
+vacío, un portal inventado, texto con etiquetas HTML y la cabecera repetida. Todos en verde.
+`tsc --noEmit` limpio en la API y en el sitio-web; la intranet arrastra cuatro errores previos en
+`config/puck.config.tsx`, ninguno en lo que se tocó.
+
+**Falta probarlo en el navegador.** Que el rewrite de la intranet reenvíe la cabecera no se puede
+comprobar sin levantar las dos aplicaciones, y es lo único de esta entrega que no se verificó aquí.
+Si no llegara, la fila se escribiría sin `origen` y la pantalla seguiría diciendo «Inició sesión»:
+falla hacia el lado seguro, no rompe el login.
+
+**Archivos.** API: `shared/auditoria-request.ts` (`aplicacionDeLaPeticion`),
+`controllers/auth.controller.ts`, `use-cases/auth/login.usecase.ts`, `shared/auditoria-resumen.ts`
+y `routes/auth.routes.ts` (OpenAPI). Sitio-web: `app/api/auth/login/route.ts`,
+`auditoria/types.ts` y `auditoria/components/detalle-registro.tsx`. Intranet:
+`features/login/services/auth.service.ts`.
+
+---
+
 ## sesión 19-09-2026 (4.ª parte): la API redacta lo que pasó, y «Cambios» deja de enseñar códigos
 
 **Qué era.** La columna «Cambios» enseñaba el campo crudo. Inactivar una cuenta se leía
