@@ -6,6 +6,7 @@ import { emitirContenidoPublicado } from '../../domain-events/paginas/contenido-
 import type { Ambito } from '../../shared/ambito';
 import { restaurarArchivosDesdeBackup } from '../../shared/storage/backup-uploads.service';
 import { logAudit, type ContextoAuditoria } from '../auditoria/audit.usecase';
+import { MOTIVO_DE_ARCHIVADO } from '../../shared/auditoria-resumen';
 import { BloqueoEdicionRepository } from '../../repositories/bloqueo-edicion.repository';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -164,7 +165,7 @@ export async function restaurarVersionAnterior(
         { campo: 'slug', antes: pagina.slug, despues: pagina.slug },
         { campo: 'version', antes: versionPublicada.numeroVersion, despues: versionPublicada.numeroVersion },
         { campo: 'estado', antes: 'publicado', despues: 'archivado' },
-        { campo: 'motivo', antes: null, despues: `Archivada por restauración de versión ${versionArchivada.numeroVersion}` },
+        { campo: 'motivo', antes: null, despues: MOTIVO_DE_ARCHIVADO.alRestaurar(versionArchivada.numeroVersion) },
       ],
     });
   }

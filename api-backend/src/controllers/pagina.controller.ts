@@ -28,6 +28,7 @@ import { limpiarSubidasPendientes } from '../use-cases/paginas/limpiar-subidas-p
 import { AMBITO_HEADER, exigirAmbito, resolverAmbito } from '../shared/ambito';
 import { logAudit } from '../use-cases/auditoria/audit.usecase';
 import { datosDeAuditoria } from '../shared/auditoria-request';
+import { MOTIVO_DE_ARCHIVADO } from '../shared/auditoria-resumen';
 import sequelize from '../config/database';
 
 /**
@@ -386,7 +387,7 @@ export const PaginaController = {
             { campo: 'slug', antes: result.pagina?.slug ?? null, despues: result.pagina?.slug ?? null },
             { campo: 'version', antes: result.versionArchivada?.numeroVersion ?? null, despues: result.versionArchivada?.numeroVersion ?? null },
             { campo: 'estado', antes: 'publicado', despues: 'archivado' },
-            { campo: 'motivo', antes: null, despues: `Archivada al publicar versión ${result.version?.numeroVersion}` },
+            { campo: 'motivo', antes: null, despues: MOTIVO_DE_ARCHIVADO.alPublicar(result.version?.numeroVersion) },
           ]
         );
       }
