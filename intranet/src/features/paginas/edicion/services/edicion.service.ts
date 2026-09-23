@@ -60,21 +60,26 @@ export async function guardarBorrador(
 }
 
 /**
- * Envía la versión borrador activa a revisión (borrador → en_revision).
+ * Envía a revisión (→ en_revision).
  *
  * `comentario` es el «commit» del envío: la API lo exige (10 a 100 caracteres), lo
  * guarda con la versión y lo deja en la bitácora de auditoría.
+ *
+ * `contenido` es lo que hay en el editor. Viaja en la misma petición y la API lo guarda
+ * y lo envía de una vez: antes se guardaba aparte justo antes, y cada envío dejaba en
+ * la bitácora un «guardar borrador» que nadie había pulsado.
  */
 export async function enviarARevision(
   slug: string,
-  comentario: string
-): Promise<{ estado: EstadoPagina } | null> {
-  const res = await apiClient.patch<{ version?: { estado: EstadoPagina } }>(
+  comentario: string,
+  contenido?: ContenidoPagina
+): Promise<{ estado: EstadoPagina; versionId: string | null } | null> {
+  const res = await apiClient.patch<{ version?: { id?: string; estado: EstadoPagina } }>(
     `/paginas/${slug}/enviar-revision`,
-    { comentario }
+    contenido === undefined ? { comentario } : { comentario, contenido }
   );
   if (!res?.version?.estado) return null;
-  return { estado: res.version.estado };
+  return { estado: res.version.estado, versionId: res.version.id ?? null };
 }
 
 /** Lo que responde la API al pedir el candado de edición. */

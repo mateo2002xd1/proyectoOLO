@@ -49,11 +49,11 @@ interface UseEditorActionsReturn {
   /** Guarda el JSON de Puck como borrador en la API */
   handleGuardarBorrador: (contenido: ContenidoPagina) => Promise<void>;
   /**
-   * Envía la versión activa a revisión con su comentario de cambios (requiere haber
-   * guardado primero). Si falla, muestra el error y **lo relanza**: quien llama no
-   * debe dar el envío por hecho.
+   * Envía a revisión con su comentario de cambios y, si se pasa, el contenido del
+   * editor, que la API guarda y envía en una sola operación. Si falla, muestra el error
+   * y **lo relanza**: quien llama no debe dar el envío por hecho.
    */
-  handleEnviarRevision: (comentario: string) => Promise<void>;
+  handleEnviarRevision: (comentario: string, contenido?: ContenidoPagina) => Promise<void>;
   isSaving: boolean;
   isSendingToReview: boolean;
   /** Estado editorial de la versión activa (actualizado tras cada acción) */
@@ -116,13 +116,17 @@ export function useEditorActions({
   // mismo clic, y esta función se creó en el render anterior a ese guardado: en una
   // sección nueva veía `versionId` en null y cortaba el envío. Si de verdad no hay
   // borrador, la API lo dice («No hay borrador para enviar a revisión»).
-  const handleEnviarRevision = useCallback(async (comentario: string) => {
+  const handleEnviarRevision = useCallback(async (comentario: string, contenido?: ContenidoPagina) => {
     setIsSendingToReview(true);
     setError(null);
     try {
-      const res = await enviarARevision(slug, comentario);
+      const res = await enviarARevision(slug, comentario, contenido);
       if (res?.estado) {
         setEstadoActual(res.estado);
+      }
+      // Con el contenido en el envío puede haberse creado una versión nueva: es esa.
+      if (res?.versionId) {
+        setVersionId(res.versionId);
       }
       // La corrección ya está enviada: el rechazo anterior deja de tener que avisar
       // de nada, y dejarlo puesto haría creer que la versión recién mandada también

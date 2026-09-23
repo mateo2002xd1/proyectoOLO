@@ -511,10 +511,11 @@ export interface PuckEditorWrapperProps {
   onGuardarBorrador: (contenido: ContenidoPagina) => Promise<void>;
   /**
    * Llamado al confirmar "Enviar a revisión", con el comentario de cambios que
-   * escribió quien edita (el contenido ya se guardó justo antes). Debe rechazar la
-   * promesa si el envío falla: la pantalla de éxito solo sale si se cumple.
+   * escribió quien edita y el contenido del editor, que la API guarda y envía en una
+   * sola operación. Debe rechazar la promesa si el envío falla: la pantalla de éxito
+   * solo sale si se cumple.
    */
-  onEnviarRevision: (comentario: string) => Promise<void>;
+  onEnviarRevision: (comentario: string, contenido: ContenidoPagina) => Promise<void>;
   isSaving?: boolean;
   isSendingToReview?: boolean;
   versionActual?: PaginaVersion | null;
@@ -665,20 +666,22 @@ export function PuckEditorWrapper({
       }
       setAvisosAccesibilidad([]);
 
-      // Guardar antes de enviar (contenido siempre consistente). Si el guardado
-      // falla no se envía nada a revisión: se quedaría pendiente la versión vieja.
-      try {
-        await handleSave(indiceHistoria);
-      } catch {
-        return; // el mensaje ya lo muestra quien gestiona el error
-      }
+      // Lo que se ve es lo que se envía (contenido siempre consistente), pero ya no en
+      // dos peticiones. Antes se guardaba el borrador y luego se enviaba, y cada envío
+      // dejaba en la bitácora un «guardar borrador» que nadie había pulsado —dos
+      // idénticos seguidos si además se había guardado a mano—. Ahora el contenido va
+      // con el envío y la API lo guarda y lo envía en una sola transacción: si el envío
+      // falla, tampoco queda guardado, y los cambios siguen contando como pendientes.
+      //
       // Si la API rechaza el envío, esto lanza y no se llega a la pantalla de éxito:
       // el mensaje de error ya lo pinta `editor-client.tsx`.
-      await onEnviarRevision(comentario);
+      await onEnviarRevision(comentario, data as ContenidoPagina);
+      // Solo se llega aquí si la API aceptó el envío: lo enviado ya está guardado.
+      setIndiceGuardado(indiceHistoria);
       // Ya no sale sola: muestra la pantalla de éxito y espera a que la cierren.
       setEnvioExitoso(true);
     },
-    [handleSave, onEnviarRevision, initialPuckData]
+    [onEnviarRevision, initialPuckData]
   );
 
   // Qué botón se pulsó y con qué índice de historia, a la espera de que se
