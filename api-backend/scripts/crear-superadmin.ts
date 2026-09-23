@@ -2,6 +2,7 @@ import 'dotenv/config';
 import sequelize from '../src/config/database';
 import { Role, User } from '../src/infrastructure/db/models';
 import { hashearPassword } from '../src/shared/password-policy';
+import { exigirEmailInstitucional } from '../src/shared/email-policy';
 
 /**
  * Crea la primera cuenta de Superadmin sobre una base recién instalada.
@@ -24,14 +25,18 @@ import { hashearPassword } from '../src/shared/password-policy';
 const ROL = 'Superadmin';
 
 const crear = async (): Promise<void> => {
-  const email = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
   const password = process.env.ADMIN_PASSWORD || '';
 
-  if (!email || !password) {
+  if (!process.env.ADMIN_EMAIL || !password) {
     throw new Error(
       'Faltan ADMIN_EMAIL y/o ADMIN_PASSWORD. Uso: ADMIN_EMAIL=x@y.co ADMIN_PASSWORD=... npm run crear:superadmin'
     );
   }
+
+  // La misma regla que el login: sin ella se creaba sin quejas una cuenta con un correo
+  // de otro dominio, y el login la rechazaba después como «Credenciales inválidas». En
+  // una instalación nueva es la única cuenta, así que nadie podía entrar.
+  const email = exigirEmailInstitucional(process.env.ADMIN_EMAIL);
 
   await sequelize.authenticate();
 
