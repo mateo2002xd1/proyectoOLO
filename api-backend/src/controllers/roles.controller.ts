@@ -60,8 +60,17 @@ export const RoleController = {
   },
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await deleteRole(req.params.id as string);
-      await registrarRol(req, 'eliminar', req.params.id as string, []);
+      const id = req.params.id as string;
+      // Se lee antes de borrar, por lo mismo que al borrar una cuenta: después la
+      // bitácora ya no tendría cómo decir qué rol fue.
+      const anterior = (await getRoleById(id).catch(() => null)) as { name?: string } | null;
+      const result = await deleteRole(id);
+      await registrarRol(
+        req,
+        'eliminar',
+        id,
+        anterior?.name ? [{ campo: 'name', antes: anterior.name, despues: null }] : []
+      );
       res.json(result);
     } catch (err) { next(err); }
   },

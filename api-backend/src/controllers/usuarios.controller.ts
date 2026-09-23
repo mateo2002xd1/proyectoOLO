@@ -92,10 +92,26 @@ export const UserController = {
   },
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await deleteUser(req.params.id as string, req.user);
-      // En un borrado el cuerpo viene vacío; lo que importa es sobre quién se hizo,
-      // y eso ya va en `entidad_id`.
-      await registrarUsuario(req, 'eliminar', req.params.id as string, []);
+      const id = req.params.id as string;
+      // Se lee **antes** de borrar: después ya no hay a quién consultar. `entidad_id` no
+      // basta, porque apunta a una cuenta que deja de existir, y la bitácora solo podía
+      // decir «se eliminó una cuenta» sin saber cuál. Se guarda como «antes», con el
+      // «después» vacío, que es lo que es una eliminación.
+      const anterior = await getUserById(id).catch(() => null);
+      const result = await deleteUser(id, req.user);
+      const cuenta = anterior as { email?: string; name?: string; apellidos?: string } | null;
+      await registrarUsuario(
+        req,
+        'eliminar',
+        id,
+        cuenta
+          ? [
+              { campo: 'email', antes: cuenta.email ?? null, despues: null },
+              { campo: 'name', antes: cuenta.name ?? null, despues: null },
+              { campo: 'apellidos', antes: cuenta.apellidos ?? null, despues: null },
+            ]
+          : []
+      );
       res.json(result);
     } catch (err) { next(err); }
   },
