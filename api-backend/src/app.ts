@@ -16,9 +16,6 @@ import userRoutes from './routes/user.routes';
 import roleRoutes from './routes/role.routes';
 import permissionRoutes from './routes/permission.routes';
 import rolePermissionRoutes from './routes/rolePermission.routes';
-import contenidoRoutes from './routes/contenido.routes';
-import sectionRoutes from './routes/section.routes';
-import attachmentRoutes from './routes/attachment.routes';
 import auditRoutes from './routes/audit.routes';
 import securityQuestionRoutes from './routes/securityQuestion.routes';
 import paginaRoutes from './routes/pagina.routes';
@@ -123,17 +120,11 @@ app.use('/api/users', userRoutes);
 app.use('/api/roles', roleRoutes);
 app.use('/api/permissions', permissionRoutes);
 app.use('/api/role-permissions', rolePermissionRoutes);
-app.use('/api/sections', sectionRoutes);
-app.use('/api/contenidos', contenidoRoutes);
 app.use('/api/security-questions', securityQuestionRoutes);
 app.use('/api/paginas', paginaRoutes);
 app.use('/api/audit-logs', auditRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/observatorio', observatorioRoutes);
-// El borrado de adjuntos vivía aparte, en `/api/attachments/:id`, sin el contenido al
-// que pertenecen en la ruta: no había padre contra el que comprobar nada. Ahora cuelga
-// de este mismo router, que sí lo recibe por `mergeParams`.
-app.use('/api/contenidos/:contenidoId/attachments', attachmentRoutes);
 
 app.use(errorHandler);
 

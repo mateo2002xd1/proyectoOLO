@@ -226,7 +226,6 @@ const VERBO_DE_ACCION: Record<AccionAuditable, string> = {
 };
 
 const ALGO_DE_ESTE_TIPO: Record<EntidadAuditable, string> = {
-  contenido: 'un contenido',
   pagina: 'una página',
   seccion: 'una sección',
   usuario: 'una cuenta de usuario',
