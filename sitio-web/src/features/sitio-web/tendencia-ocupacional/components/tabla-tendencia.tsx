@@ -33,8 +33,8 @@ export function TablaTendencia({
   const subtotalPagina = useMemo(() => {
     return resultados.reduce(
       (acc, r) => {
-        acc.totalInscritos += Number(r.totalInscritos) || 0;
-        acc.totalVacantes += Number(r.totalVacantes) || 0;
+        acc.totalInscritos += r.inscritos;
+        acc.totalVacantes += r.vacantes;
         return acc;
       },
       { totalInscritos: 0, totalVacantes: 0 }
@@ -95,23 +95,23 @@ export function TablaTendencia({
           <tbody className="divide-y divide-[#eaecf0]">
             {resultados.map((registro) => (
               <tr
-                key={registro.id}
+                key={registro.codigo}
                 className="transition-colors hover:bg-[#f8f9fa]"
               >
                 <td className="px-4 py-3.5 font-medium text-[#344054]">
-                  {registro.nivelCodigo}
+                  {registro.nivelEtiqueta}
                 </td>
                 <td className="px-4 py-3.5 tabular-nums text-[#667085]">
-                  {registro.codigoCno}
+                  {registro.codigo}
                 </td>
                 <td className="px-4 py-3.5 font-medium text-[#001631]">
-                  {registro.nombreOcupacion}
+                  {registro.nombre}
                 </td>
                 <td className="px-4 py-3.5 text-right tabular-nums text-[#344054]">
-                  {registro.totalInscritos.toLocaleString('es-CO')}
+                  {registro.inscritos.toLocaleString('es-CO')}
                 </td>
                 <td className="px-4 py-3.5 text-right font-semibold tabular-nums text-[#39a900]">
-                  {registro.totalVacantes.toLocaleString('es-CO')}
+                  {registro.vacantes.toLocaleString('es-CO')}
                 </td>
               </tr>
             ))}

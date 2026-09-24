@@ -10,6 +10,8 @@ export { TendenciaOcupacionalView } from './components/tendencia-ocupacional-vie
 export { TITULOS_TENDENCIA } from './data/base-tendencia-datos';
 export type {
   RegistroTendenciaOcupacional,
+  ResultadoTendenciaOcupacional,
+  OpcionesTendenciaOcupacional,
   FiltrosTendencia,
   TipoTendenciaOcupacional,
   TendenciaOcupacionalViewProps,

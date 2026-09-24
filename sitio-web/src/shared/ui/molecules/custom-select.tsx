@@ -5,6 +5,8 @@ import { useEffect, useRef, useState } from "react";
 type Option = {
   value: string;
   label: string;
+  /** Se ve pero no se puede elegir (p. ej. un periodo sin datos publicados). */
+  disabled?: boolean;
 };
 
 type CustomSelectProps = {
@@ -143,17 +145,22 @@ export function CustomSelect({
                 <button
                   key={opt.value}
                   type="button"
+                  disabled={opt.disabled}
                   onClick={() => {
+                    if (opt.disabled) return;
                     onChange(opt.value);
                     setIsOpen(false);
                   }}
                   className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm transition duration-150 ${
-                    isSelected
-                      ? "bg-[#002237]/5 text-[#002237] dark:bg-white/10 dark:text-[#e6e8f0]"
-                      : "text-[#57607b] hover:bg-[#002237]/5 hover:text-[#002237] dark:text-[#b7c0d6] dark:hover:bg-white/5 dark:hover:text-[#e6e8f0]"
+                    opt.disabled
+                      ? "cursor-not-allowed text-[#667085] dark:text-[#95a0b8]"
+                      : isSelected
+                        ? "bg-[#002237]/5 text-[#002237] dark:bg-white/10 dark:text-[#e6e8f0]"
+                        : "text-[#57607b] hover:bg-[#002237]/5 hover:text-[#002237] dark:text-[#b7c0d6] dark:hover:bg-white/5 dark:hover:text-[#e6e8f0]"
                   }`}
                   role="option"
                   aria-selected={isSelected}
+                  aria-disabled={opt.disabled || undefined}
                 >
                   <span className="font-medium">{opt.label}</span>
                   <span

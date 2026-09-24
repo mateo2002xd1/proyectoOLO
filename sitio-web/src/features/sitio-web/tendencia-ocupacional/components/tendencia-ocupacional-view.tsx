@@ -1,25 +1,54 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+
+import { CRITERIO_POR_TIPO, TITULOS_TENDENCIA } from '../data/base-tendencia-datos';
 import {
-  TITULOS_TENDENCIA,
-  SUBTITULOS_TENDENCIA,
-} from '../data/base-tendencia-datos';
-import { obtenerTendenciaOcupacionalActual } from '../services/tendencia-ocupacional.service';
+  buscarTendenciaOcupacional,
+  obtenerOpcionesTendencia,
+} from '../services/tendencia-ocupacional.service';
 import { FiltrosTendencia } from './filtros-tendencia';
 import { BannerDepartamento } from './banner-departamento';
 import { DefinicionesNivelOcupacional } from './definiciones-nivel-ocupacional';
 import { MapaTendencia } from './mapa-tendencia';
 import { TablaTendencia } from './tabla-tendencia';
+
 import type {
   DefinicionNivel,
   FiltrosTendencia as IFiltrosTendencia,
-  RegistroTendenciaOcupacional,
+  OpcionesTendenciaOcupacional,
+  PeriodoTendencia,
+  ResultadoTendenciaOcupacional,
   TendenciaOcupacionalViewProps,
   TipoTendenciaOcupacional,
 } from '../types';
 
 const FILAS_POR_PAGINA = 20;
+
+const FILTROS_INICIALES: IFiltrosTendencia = {
+  departamento: 'nacional',
+  anio: '',
+  periodo: '',
+  nivelOcupacional: '',
+  incluirSinRegistros: false,
+};
+
+/**
+ * Periodo que se muestra al llegar o al cambiar de año: el de mayor cobertura con datos,
+ * que en el orden del catálogo es el último disponible (Anual, luego los semestres, luego
+ * el trimestre más reciente).
+ */
+function periodoPorDefecto(periodos: PeriodoTendencia[]): string {
+  return [...periodos].reverse().find((p) => p.disponible)?.codigo ?? '';
+}
+
+interface RespuestaConsulta {
+  clave: string;
+  /** `null` si la consulta falló. */
+  resultado: ResultadoTendenciaOcupacional | null;
+}
+
+const esCancelacion = (error: unknown) => error instanceof DOMException && error.name === 'AbortError';
 
 function renderizarTituloConResalte(texto: unknown): React.ReactNode {
   if (typeof texto !== 'string') {
@@ -39,6 +68,15 @@ function renderizarTituloConResalte(texto: unknown): React.ReactNode {
     }
     return parte;
   });
+}
+
+function AvisoEstado({ children, accion }: { children: React.ReactNode; accion?: React.ReactNode }) {
+  return (
+    <div className="rounded-[20px] border border-[#eaecf0] bg-[#f8f9fa] py-16 text-center" aria-live="polite">
+      <p className="text-sm text-[#667085]">{children}</p>
+      {accion}
+    </div>
+  );
 }
 
 export function TendenciaOcupacionalView({
@@ -65,29 +103,120 @@ export function TendenciaOcupacionalView({
   colorDescripcion,
   ocultarEncabezado = false,
 }: TendenciaOcupacionalViewProps = {}) {
-  const [datos, setDatos] = useState<RegistroTendenciaOcupacional[]>([]);
-  const [cargando, setCargando] = useState(true);
   const [modoSeleccion, setModoSeleccion] = useState<'lista' | 'mapa'>(
     modoSeleccionDepartamento || 'lista'
   );
 
-  useEffect(() => {
-    if (modoSeleccionDepartamento) {
-      setModoSeleccion(modoSeleccionDepartamento);
-    }
-  }, [modoSeleccionDepartamento]);
-
-  const [filtros, setFiltros] = useState<IFiltrosTendencia>({
-    departamento: 'Nacional',
-    anio: 'todos',
-    periodo: 'todos',
-    nivelOcupacional: 'todos',
-  });
-
-  const [pagina, setPagina] = useState(1);
-
   const tipoSeguro: TipoTendenciaOcupacional =
     tipoTendencia && TITULOS_TENDENCIA[tipoTendencia] ? tipoTendencia : 'mas-menos';
+  // Cada bloque consulta un solo criterio: es lo que diferencia los cuatro cuadrantes.
+  const criterio = CRITERIO_POR_TIPO[tipoSeguro];
+
+  const [opciones, setOpciones] = useState<OpcionesTendenciaOcupacional | null>(null);
+  const [errorOpciones, setErrorOpciones] = useState(false);
+  const [filtros, setFiltros] = useState<IFiltrosTendencia>(FILTROS_INICIALES);
+  /** Año y periodo con los que se llegó: a esto vuelve "Limpiar filtros". */
+  const [porDefecto, setPorDefecto] = useState<{ anio: string; periodo: string } | null>(null);
+  const [pagina, setPagina] = useState(1);
+  /** La última respuesta, con la clave de la consulta que la pidió. */
+  const [respuesta, setRespuesta] = useState<RespuestaConsulta | null>(null);
+  /** Sube con "Reintentar" para repetir la consulta que falló. */
+  const [intento, setIntento] = useState(0);
+  /** Año de las opciones cargadas: evita pedirlas dos veces para el mismo año. */
+  const anioDeOpciones = useRef<string | null>(null);
+
+  // Cambios que llegan del editor (otro modo u otro cuadrante): se ajustan al pintar, no
+  // en un efecto, para no pintar dos veces. Otro cuadrante vuelve a la página 1 porque
+  // la página vieja puede no existir en el nuevo.
+  const [anteriores, setAnteriores] = useState({ modo: modoSeleccionDepartamento, criterio });
+  if (anteriores.modo !== modoSeleccionDepartamento || anteriores.criterio !== criterio) {
+    if (anteriores.modo !== modoSeleccionDepartamento && modoSeleccionDepartamento) {
+      setModoSeleccion(modoSeleccionDepartamento);
+    }
+    if (anteriores.criterio !== criterio) setPagina(1);
+    setAnteriores({ modo: modoSeleccionDepartamento, criterio });
+  }
+
+  // Opciones de los filtros. Se vuelven a pedir al cambiar de año, porque de eso depende
+  // qué periodos tienen datos publicados.
+  useEffect(() => {
+    if (filtros.anio && anioDeOpciones.current === filtros.anio) return;
+
+    const control = new AbortController();
+    obtenerOpcionesTendencia(filtros.anio ? Number(filtros.anio) : undefined, control.signal)
+      .then((nuevas) => {
+        const anio = nuevas.anio === null ? '' : String(nuevas.anio);
+        anioDeOpciones.current = anio;
+        setOpciones(nuevas);
+        setErrorOpciones(false);
+        setFiltros((previos) => {
+          // Si el periodo elegido no tiene datos en el año nuevo, se pasa al de por defecto.
+          const periodoSigue = nuevas.periodos.some((p) => p.codigo === previos.periodo && p.disponible);
+          const periodo = periodoSigue ? previos.periodo : periodoPorDefecto(nuevas.periodos);
+          return previos.anio === anio && previos.periodo === periodo ? previos : { ...previos, anio, periodo };
+        });
+        setPorDefecto((actual) => actual ?? { anio, periodo: periodoPorDefecto(nuevas.periodos) });
+      })
+      .catch((error) => {
+        if (!esCancelacion(error)) setErrorOpciones(true);
+      });
+    return () => control.abort();
+  }, [filtros.anio, intento]);
+
+  // La consulta: filtros, criterio y página viajan a la API, que filtra y pagina en SQL.
+  // Espera a tener las opciones del año elegido para no consultar un periodo que en ese
+  // año no existe y pintar un "sin registros" que dura un instante.
+  const consultaLista =
+    opciones !== null && filtros.anio !== '' && filtros.periodo !== '' && String(opciones.anio) === filtros.anio;
+  const clave = consultaLista ? JSON.stringify([criterio, filtros, pagina, intento]) : null;
+
+  useEffect(() => {
+    if (!clave) return;
+
+    const control = new AbortController();
+    buscarTendenciaOcupacional(criterio, filtros, pagina, FILAS_POR_PAGINA, control.signal)
+      .then((resultado) => setRespuesta({ clave, resultado }))
+      .catch((error) => {
+        if (!esCancelacion(error)) setRespuesta({ clave, resultado: null });
+      });
+    return () => control.abort();
+  }, [clave, criterio, filtros, pagina]);
+
+  // Mientras llega la respuesta nueva se sigue viendo la anterior, atenuada.
+  const cargando = clave !== null && respuesta?.clave !== clave;
+  const errorResultado = respuesta !== null && respuesta.clave === clave && respuesta.resultado === null;
+  const resultado = respuesta?.resultado ?? null;
+
+  const cambiarFiltros = (cambios: Partial<IFiltrosTendencia>) => {
+    setFiltros((previos) => ({ ...previos, ...cambios }));
+    setPagina(1);
+  };
+
+  const limpiarFiltros = () => {
+    setFiltros({ ...FILTROS_INICIALES, ...(porDefecto ?? {}) });
+    setPagina(1);
+  };
+
+  const hayFiltrosActivos =
+    filtros.departamento !== 'nacional' ||
+    filtros.nivelOcupacional !== '' ||
+    filtros.incluirSinRegistros ||
+    (porDefecto !== null && (filtros.anio !== porDefecto.anio || filtros.periodo !== porDefecto.periodo));
+
+  const nombrePorValor = useMemo(
+    () => new Map((opciones?.departamentos ?? []).map((d) => [d.valor, d.nombre])),
+    [opciones]
+  );
+
+  const definicionesNivel = useMemo<DefinicionNivel[]>(
+    () =>
+      (opciones?.niveles ?? []).map((nivel) => ({
+        codigo: nivel.codigo,
+        titulo: nivel.etiqueta,
+        descripcion: nivel.descripcion ?? '',
+      })),
+    [opciones]
+  );
 
   const tituloPorDefecto = TITULOS_TENDENCIA[tipoSeguro];
 
@@ -106,168 +235,6 @@ export function TendenciaOcupacionalView({
       ? descripcion
       : '';
 
-  // Carga dinámica del archivo Excel según el cuadrante/tipo seleccionado
-  useEffect(() => {
-    let montado = true;
-    setCargando(true);
-    setPagina(1);
-    setFiltros({
-      departamento: 'Nacional',
-      anio: 'todos',
-      periodo: 'todos',
-      nivelOcupacional: 'todos',
-    });
-    obtenerTendenciaOcupacionalActual(tipoSeguro)
-      .then((registros) => {
-        if (montado) {
-          setDatos(Array.isArray(registros) ? registros : []);
-        }
-      })
-      .catch(() => {
-        if (montado) setDatos([]);
-      })
-      .finally(() => {
-        if (montado) setCargando(false);
-      });
-    return () => {
-      montado = false;
-    };
-  }, [tipoSeguro]);
-
-  // Opciones únicas disponibles para los desplegables basadas en los datos reales
-  const departamentosDisponibles = useMemo(
-    () => Array.from(new Set(datos.map((d) => d.departamento))).sort(),
-    [datos]
-  );
-
-  const aniosDisponibles = useMemo(
-    () =>
-      Array.from(new Set(datos.map((d) => d.anio))).sort((a, b) => b - a),
-    [datos]
-  );
-
-  const periodosDisponibles = useMemo(
-    () => Array.from(new Set(datos.map((d) => d.periodo))),
-    [datos]
-  );
-
-  const definicionesNivel = useMemo<DefinicionNivel[]>(() => {
-    const mapa = new Map<string, DefinicionNivel>();
-
-    for (const item of datos) {
-      const raw = (item.nivelOcupacional || '').trim();
-      if (!raw) continue;
-
-      const codigo = item.nivelCodigo || raw;
-      if (mapa.has(codigo)) continue;
-
-      if (raw.includes(':')) {
-        const idx = raw.indexOf(':');
-        const tit = raw.substring(0, idx).trim();
-        const desc = raw.substring(idx + 1).trim();
-        mapa.set(codigo, {
-          codigo,
-          titulo: tit,
-          descripcion: desc,
-        });
-      } else {
-        mapa.set(codigo, {
-          codigo,
-          titulo: raw,
-          descripcion: '',
-        });
-      }
-    }
-
-    return Array.from(mapa.values()).sort((a, b) => a.codigo.localeCompare(b.codigo));
-  }, [datos]);
-
-  const nivelesDisponibles = useMemo(() => {
-    return Array.from(new Set(datos.map((d) => d.nivelCodigo).filter(Boolean))).sort();
-  }, [datos]);
-
-  // Filtrado de registros en memoria
-  const registrosFiltrados = useMemo(() => {
-    return datos.filter((item) => {
-      if (
-        filtros.departamento !== 'Nacional' &&
-        item.departamento !== filtros.departamento
-      ) {
-        return false;
-      }
-      if (filtros.anio !== 'todos' && String(item.anio) !== filtros.anio) {
-        return false;
-      }
-      if (filtros.periodo !== 'todos' && item.periodo !== filtros.periodo) {
-        return false;
-      }
-      if (
-        filtros.nivelOcupacional !== 'todos' &&
-        item.nivelCodigo !== filtros.nivelOcupacional
-      ) {
-        return false;
-      }
-      return true;
-    });
-  }, [datos, filtros]);
-
-  const totalResultados = registrosFiltrados.length;
-  const totalPaginas = Math.max(1, Math.ceil(totalResultados / FILAS_POR_PAGINA));
-
-  // Totales acumulados de todos los registros que cumplen los filtros actuales
-  const totales = useMemo(() => {
-    return registrosFiltrados.reduce(
-      (acc, item) => {
-        acc.totalInscritos += Number(item.totalInscritos) || 0;
-        acc.totalVacantes += Number(item.totalVacantes) || 0;
-        return acc;
-      },
-      { totalInscritos: 0, totalVacantes: 0 }
-    );
-  }, [registrosFiltrados]);
-
-  // Filas para la página actual
-  const resultadosPaginados = useMemo(() => {
-    const inicio = (pagina - 1) * FILAS_POR_PAGINA;
-    return registrosFiltrados.slice(inicio, inicio + FILAS_POR_PAGINA);
-  }, [registrosFiltrados, pagina]);
-
-  const hayFiltrosActivos =
-    filtros.departamento !== 'Nacional' ||
-    filtros.anio !== 'todos' ||
-    filtros.periodo !== 'todos' ||
-    filtros.nivelOcupacional !== 'todos';
-
-  const limpiarFiltros = () => {
-    setFiltros({
-      departamento: 'Nacional',
-      anio: 'todos',
-      periodo: 'todos',
-      nivelOcupacional: 'todos',
-    });
-    setPagina(1);
-  };
-
-  const handleSeleccionarDepartamento = (depto: string) => {
-    setFiltros((prev) => ({ ...prev, departamento: depto }));
-    setPagina(1);
-  };
-
-  const handleSeleccionarAnio = (anio: string) => {
-    setFiltros((prev) => ({ ...prev, anio }));
-    setPagina(1);
-  };
-
-  const handleSeleccionarPeriodo = (periodo: string) => {
-    setFiltros((prev) => ({ ...prev, periodo }));
-    setPagina(1);
-  };
-
-  const handleSeleccionarNivel = (nivel: string) => {
-    setFiltros((prev) => ({ ...prev, nivelOcupacional: nivel }));
-    setPagina(1);
-  };
-
   const claseAlineacion = (alineacion: 'izquierda' | 'centro' | 'derecha') => {
     if (alineacion === 'izquierda') return 'text-left';
     if (alineacion === 'derecha') return 'text-right';
@@ -284,10 +251,82 @@ export function TendenciaOcupacionalView({
       (mostrarSubtitulo && Boolean(subtituloEfectivo)) ||
       (mostrarDescripcion && Boolean(descripcionEfectiva)));
 
-  const departamentoActivo =
-    filtros.departamento === 'Nacional'
-      ? null
-      : filtros.departamento;
+  const nombreDepartamento = nombrePorValor.get(filtros.departamento) ?? 'Nacional';
+  const departamentoActivo = filtros.departamento === 'nacional' ? null : nombreDepartamento;
+  const sinDatosPublicados = opciones !== null && opciones.anios.length === 0;
+
+  const reintentar = () => {
+    setErrorOpciones(false);
+    setIntento((n) => n + 1);
+  };
+
+  const botonReintentar = (
+    <button
+      type="button"
+      onClick={reintentar}
+      className="mt-4 inline-flex h-10 items-center justify-center rounded-[16px] border border-[#d0d5dd] bg-white px-4 text-xs font-semibold text-[#344054] transition hover:bg-[#f2f4f7] focus:outline-none focus:ring-2 focus:ring-[#002237]/20"
+    >
+      Reintentar
+    </button>
+  );
+
+  let contenido: React.ReactNode;
+  if (errorOpciones || errorResultado) {
+    contenido = (
+      <AvisoEstado accion={botonReintentar}>
+        No se pudieron consultar los datos de tendencia ocupacional en este momento.
+      </AvisoEstado>
+    );
+  } else if (sinDatosPublicados) {
+    contenido = <AvisoEstado>Todavía no hay datos de tendencia ocupacional publicados.</AvisoEstado>;
+  } else if (!resultado) {
+    contenido = <AvisoEstado>Cargando datos de tendencia ocupacional...</AvisoEstado>;
+  } else {
+    contenido = (
+      <div aria-busy={cargando} className={`transition-opacity ${cargando ? 'opacity-60' : ''}`}>
+        <TablaTendencia
+          resultados={resultado.registros}
+          totalResultados={resultado.total}
+          departamentoActivo={departamentoActivo}
+          pagina={pagina}
+          totalPaginas={resultado.totalPaginas}
+          onCambiarPagina={setPagina}
+          totales={{ totalInscritos: resultado.totales.inscritos, totalVacantes: resultado.totales.vacantes }}
+          mostrarTotales={mostrarTotales}
+        />
+      </div>
+    );
+  }
+
+  const filtrosYResultados = (
+    <>
+      {opciones && !sinDatosPublicados && (
+        <FiltrosTendencia
+          filtros={filtros}
+          opciones={opciones}
+          modoSeleccionDepartamento={modoSeleccion}
+          onCambiarModoSeleccion={setModoSeleccion}
+          onCambiar={cambiarFiltros}
+          onLimpiarFiltros={limpiarFiltros}
+          hayFiltrosActivos={hayFiltrosActivos}
+        />
+      )}
+
+      {mostrarBannerDepartamento && (
+        <BannerDepartamento
+          departamento={nombreDepartamento}
+          titulo={tituloBanner}
+          subtitulo={subtituloBanner}
+          descripcion={descripcionBanner}
+          colorFondo={colorBanner}
+        />
+      )}
+
+      {mostrarDefiniciones && <DefinicionesNivelOcupacional definiciones={definicionesNivel} />}
+
+      {contenido}
+    </>
+  );
 
   return (
     <div className="mx-auto flex w-full max-w-[1920px] flex-col gap-6 px-4 py-10 sm:px-6 lg:px-8">
@@ -330,116 +369,16 @@ export function TendenciaOcupacionalView({
         <div className="flex flex-col gap-6 2xl:flex-row 2xl:items-start">
           <div className="w-full 2xl:sticky 2xl:top-[104px] 2xl:w-[440px] 2xl:flex-shrink-0">
             <MapaTendencia
-              departamentosConDatos={departamentosDisponibles}
-              departamentoSeleccionado={filtros.departamento}
-              onSeleccionar={handleSeleccionarDepartamento}
+              codigosConDatos={resultado?.departamentosConResultados ?? []}
+              codigoSeleccionado={filtros.departamento}
+              onSeleccionar={(departamento) => cambiarFiltros({ departamento })}
             />
           </div>
 
-          <div className="flex min-w-0 flex-1 flex-col gap-4">
-            <FiltrosTendencia
-              filtros={filtros}
-              departamentosDisponibles={departamentosDisponibles}
-              aniosDisponibles={aniosDisponibles}
-              periodosDisponibles={periodosDisponibles}
-              nivelesDisponibles={nivelesDisponibles}
-              modoSeleccionDepartamento={modoSeleccion}
-              onCambiarModoSeleccion={setModoSeleccion}
-              onSeleccionarDepartamento={handleSeleccionarDepartamento}
-              onSeleccionarAnio={handleSeleccionarAnio}
-              onSeleccionarPeriodo={handleSeleccionarPeriodo}
-              onSeleccionarNivel={handleSeleccionarNivel}
-              onLimpiarFiltros={limpiarFiltros}
-              hayFiltrosActivos={hayFiltrosActivos}
-            />
-
-            {mostrarBannerDepartamento && (
-              <BannerDepartamento
-                departamento={filtros.departamento}
-                titulo={tituloBanner}
-                subtitulo={subtituloBanner}
-                descripcion={descripcionBanner}
-                colorFondo={colorBanner}
-              />
-            )}
-
-            {mostrarDefiniciones && (
-              <DefinicionesNivelOcupacional definiciones={definicionesNivel} />
-            )}
-
-            {cargando ? (
-              <div
-                className="rounded-[20px] border border-[#eaecf0] bg-[#f8f9fa] py-16 text-center"
-                aria-live="polite"
-              >
-                <p className="text-sm text-[#667085]">Cargando datos de tendencia ocupacional...</p>
-              </div>
-            ) : (
-              <TablaTendencia
-                resultados={resultadosPaginados}
-                totalResultados={totalResultados}
-                departamentoActivo={departamentoActivo}
-                pagina={pagina}
-                totalPaginas={totalPaginas}
-                onCambiarPagina={setPagina}
-                totales={totales}
-                mostrarTotales={mostrarTotales}
-              />
-            )}
-          </div>
+          <div className="flex min-w-0 flex-1 flex-col gap-4">{filtrosYResultados}</div>
         </div>
       ) : (
-        <div className="flex flex-col gap-4">
-          <FiltrosTendencia
-            filtros={filtros}
-            departamentosDisponibles={departamentosDisponibles}
-            aniosDisponibles={aniosDisponibles}
-            periodosDisponibles={periodosDisponibles}
-            nivelesDisponibles={nivelesDisponibles}
-            modoSeleccionDepartamento={modoSeleccion}
-            onCambiarModoSeleccion={setModoSeleccion}
-            onSeleccionarDepartamento={handleSeleccionarDepartamento}
-            onSeleccionarAnio={handleSeleccionarAnio}
-            onSeleccionarPeriodo={handleSeleccionarPeriodo}
-            onSeleccionarNivel={handleSeleccionarNivel}
-            onLimpiarFiltros={limpiarFiltros}
-            hayFiltrosActivos={hayFiltrosActivos}
-          />
-
-          {mostrarBannerDepartamento && (
-            <BannerDepartamento
-              departamento={filtros.departamento}
-              titulo={tituloBanner}
-              subtitulo={subtituloBanner}
-              descripcion={descripcionBanner}
-              colorFondo={colorBanner}
-            />
-          )}
-
-          {mostrarDefiniciones && (
-            <DefinicionesNivelOcupacional definiciones={definicionesNivel} />
-          )}
-
-          {cargando ? (
-            <div
-              className="rounded-[20px] border border-[#eaecf0] bg-[#f8f9fa] py-16 text-center"
-              aria-live="polite"
-            >
-              <p className="text-sm text-[#667085]">Cargando datos de tendencia ocupacional...</p>
-            </div>
-          ) : (
-            <TablaTendencia
-              resultados={resultadosPaginados}
-              totalResultados={totalResultados}
-              departamentoActivo={departamentoActivo}
-              pagina={pagina}
-              totalPaginas={totalPaginas}
-              onCambiarPagina={setPagina}
-              totales={totales}
-              mostrarTotales={mostrarTotales}
-            />
-          )}
-        </div>
+        <div className="flex flex-col gap-4">{filtrosYResultados}</div>
       )}
     </div>
   );

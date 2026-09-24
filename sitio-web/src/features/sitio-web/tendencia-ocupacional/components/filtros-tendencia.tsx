@@ -1,59 +1,50 @@
 'use client';
 
+import { Switch } from '@/shared/ui/atoms/switch';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
-import type { FiltrosTendencia } from '../types';
+import { YearPicker } from '@/shared/ui/molecules/year-picker';
+
+import type { FiltrosTendencia as Filtros, OpcionesTendenciaOcupacional } from '../types';
 
 interface FiltrosTendenciaProps {
-  filtros: FiltrosTendencia;
-  departamentosDisponibles: string[];
-  aniosDisponibles: number[];
-  periodosDisponibles: string[];
-  nivelesDisponibles: string[];
+  filtros: Filtros;
+  /** Catálogos de la base: nada de las listas está fijo aquí. */
+  opciones: OpcionesTendenciaOcupacional;
   modoSeleccionDepartamento?: 'lista' | 'mapa';
   onCambiarModoSeleccion?: (modo: 'lista' | 'mapa') => void;
-  onSeleccionarDepartamento: (depto: string) => void;
-  onSeleccionarAnio: (anio: string) => void;
-  onSeleccionarPeriodo: (periodo: string) => void;
-  onSeleccionarNivel: (nivel: string) => void;
+  onCambiar: (cambios: Partial<Filtros>) => void;
   onLimpiarFiltros?: () => void;
   hayFiltrosActivos?: boolean;
 }
 
 export function FiltrosTendencia({
   filtros,
-  departamentosDisponibles,
-  aniosDisponibles,
-  periodosDisponibles,
-  nivelesDisponibles,
+  opciones,
   modoSeleccionDepartamento = 'lista',
   onCambiarModoSeleccion,
-  onSeleccionarDepartamento,
-  onSeleccionarAnio,
-  onSeleccionarPeriodo,
-  onSeleccionarNivel,
+  onCambiar,
   onLimpiarFiltros,
   hayFiltrosActivos = false,
 }: FiltrosTendenciaProps) {
-  const opcionesDepartamento = [
-    { value: 'Nacional', label: 'Nacional' },
-    ...departamentosDisponibles
-      .filter((depto) => depto.toLowerCase() !== 'nacional')
-      .map((depto) => ({ value: depto, label: depto })),
-  ];
+  const opcionesDepartamento = opciones.departamentos.map((d) => ({ value: d.valor, label: d.nombre }));
 
-  const opcionesAnio = [
-    { value: 'todos', label: 'Año' },
-    ...aniosDisponibles.map((a) => ({ value: String(a), label: String(a) })),
-  ];
+  // El año se elige en el calendario, entre el primero y el último con datos publicados;
+  // los años de en medio sin nada publicado se ven apagados y no se pueden elegir.
+  const anioActual = new Date().getFullYear();
+  const primerAnio = opciones.anios.length ? Math.min(...opciones.anios) : anioActual;
+  const ultimoAnio = opciones.anios.length ? Math.max(...opciones.anios) : anioActual;
 
-  const opcionesPeriodo = [
-    { value: 'todos', label: 'Periodo' },
-    ...periodosDisponibles.map((p) => ({ value: p, label: p })),
-  ];
+  // Los siete periodos siempre, en su orden; los que no tienen datos publicados ese año
+  // se ven marcados pero no se pueden elegir (el texto lo dice: no solo el color).
+  const opcionesPeriodo = opciones.periodos.map((p) => ({
+    value: p.codigo,
+    label: p.disponible ? p.nombre : `${p.nombre} (sin datos)`,
+    disabled: !p.disponible,
+  }));
 
   const opcionesNivel = [
-    { value: 'todos', label: 'Nivel Ocupacional' },
-    ...nivelesDisponibles.map((n) => ({ value: n, label: n })),
+    { value: '', label: 'Todos los niveles' },
+    ...opciones.niveles.map((n) => ({ value: n.codigo, label: n.etiqueta })),
   ];
 
   return (
@@ -124,36 +115,49 @@ export function FiltrosTendencia({
         {modoSeleccionDepartamento === 'lista' && (
           <CustomSelect
             value={filtros.departamento}
-            onChange={onSeleccionarDepartamento}
+            onChange={(departamento) => onCambiar({ departamento })}
             options={opcionesDepartamento}
             ariaLabel="Filtrar por departamento"
             className="sm:w-56"
           />
         )}
 
-        <CustomSelect
+        <YearPicker
           value={filtros.anio}
-          onChange={onSeleccionarAnio}
-          options={opcionesAnio}
+          onChange={(anio) => onCambiar({ anio })}
+          min={primerAnio}
+          max={ultimoAnio}
+          disponibles={opciones.anios}
+          placeholder="Año"
           ariaLabel="Filtrar por año"
           className="sm:w-36"
         />
 
         <CustomSelect
           value={filtros.periodo}
-          onChange={onSeleccionarPeriodo}
+          onChange={(periodo) => onCambiar({ periodo })}
           options={opcionesPeriodo}
+          placeholder="Periodo"
           ariaLabel="Filtrar por periodo"
-          className="sm:w-48"
+          className="sm:w-56"
         />
 
         <CustomSelect
           value={filtros.nivelOcupacional}
-          onChange={onSeleccionarNivel}
+          onChange={(nivelOcupacional) => onCambiar({ nivelOcupacional })}
           options={opcionesNivel}
           ariaLabel="Filtrar por nivel ocupacional"
           className="sm:w-64"
         />
+
+        <div className="flex items-center gap-2 text-xs font-medium text-[#344054]">
+          <Switch
+            checked={filtros.incluirSinRegistros}
+            onChange={(incluirSinRegistros) => onCambiar({ incluirSinRegistros })}
+            aria-label="Incluir ocupaciones sin registros"
+          />
+          <span aria-hidden="true">Incluir ocupaciones sin registros</span>
+        </div>
 
         {hayFiltrosActivos && onLimpiarFiltros && (
           <button

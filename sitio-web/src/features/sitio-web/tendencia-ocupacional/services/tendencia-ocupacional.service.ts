@@ -1,32 +1,68 @@
-import type { RegistroTendenciaOcupacional, TipoTendenciaOcupacional } from '../types';
 import { URL_DE_LA_API } from '@/shared/lib/url-de-la-api';
 
-const BACKEND_URL = URL_DE_LA_API;
+import type {
+  FiltrosTendencia,
+  OpcionesTendenciaOcupacional,
+  ResultadoTendenciaOcupacional,
+} from '../types';
+
+const RUTA = `${URL_DE_LA_API}/api/observatorio/tendencia-ocupacional`;
 
 /**
- * Consulta los datos vigentes del Excel de tendencia ocupacional según el tipo/cuadrante.
- * Si el backend no responde o el archivo no existe, retorna una lista vacía.
+ * Fallo al consultar la tendencia ocupacional. Antes el servicio devolvía una lista vacía
+ * ante cualquier error, y un backend caído se veía igual que "no hay datos": ahora la
+ * vista puede distinguirlo y decírselo al ciudadano.
  */
-export async function obtenerTendenciaOcupacionalActual(
-  tipo: TipoTendenciaOcupacional = 'mas-menos'
-): Promise<RegistroTendenciaOcupacional[]> {
-  try {
-    const res = await fetch(
-      `${BACKEND_URL}/api/observatorio/tendencia-ocupacional?tipo=${encodeURIComponent(tipo)}`,
-      {
-        cache: 'no-store',
-      }
-    );
-    if (!res.ok) {
-      return [];
-    }
-    const data = await res.json();
-    if (Array.isArray(data)) {
-      return data;
-    }
-    return [];
-  } catch (err) {
-    console.warn('[tendencia-ocupacional] Error al conectar con el backend:', err);
-    return [];
+export class ErrorTendenciaOcupacional extends Error {
+  constructor(public status: number | null) {
+    super('No se pudieron consultar los datos de tendencia ocupacional.');
   }
+}
+
+async function pedir<T>(url: string, signal?: AbortSignal): Promise<T> {
+  let respuesta: Response;
+  try {
+    respuesta = await fetch(url, { cache: 'no-store', signal });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') throw error;
+    throw new ErrorTendenciaOcupacional(null);
+  }
+  if (!respuesta.ok) throw new ErrorTendenciaOcupacional(respuesta.status);
+  return respuesta.json() as Promise<T>;
+}
+
+/**
+ * Opciones de los desplegables. Todo sale de la base: años con datos publicados,
+ * periodos (marcando los que tienen datos en `anio`), niveles, departamentos y criterios.
+ *
+ * @param anio año para marcar la disponibilidad de los periodos; sin él, el más reciente.
+ */
+export function obtenerOpcionesTendencia(anio?: number, signal?: AbortSignal) {
+  const query = anio ? `?anio=${anio}` : '';
+  return pedir<OpcionesTendenciaOcupacional>(`${RUTA}/opciones${query}`, signal);
+}
+
+/**
+ * Consulta un criterio con sus filtros. El filtrado, el orden, la paginación y los
+ * totales los resuelve la API en SQL; aquí solo se arma la petición.
+ */
+export function buscarTendenciaOcupacional(
+  criterio: number,
+  filtros: FiltrosTendencia,
+  pagina: number,
+  porPagina: number,
+  signal?: AbortSignal
+) {
+  const query = new URLSearchParams({
+    anio: filtros.anio,
+    periodo: filtros.periodo,
+    departamento: filtros.departamento,
+    criterio: String(criterio),
+    pagina: String(pagina),
+    porPagina: String(porPagina),
+  });
+  if (filtros.nivelOcupacional) query.set('nivel', filtros.nivelOcupacional);
+  if (filtros.incluirSinRegistros) query.set('incluirSinRegistros', 'true');
+
+  return pedir<ResultadoTendenciaOcupacional>(`${RUTA}?${query}`, signal);
 }

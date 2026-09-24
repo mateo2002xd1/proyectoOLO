@@ -8,11 +8,22 @@ import {
 
 interface MapaTendenciaProps {
   /** Departamentos con al menos un registro en los datos actuales del bloque */
-  departamentosConDatos: string[];
+  departamentosConDatos?: string[];
   /** Departamento elegido en el filtro, o 'Nacional' */
-  departamentoSeleccionado: string;
-  /** Callback para cambiar el departamento seleccionado */
+  departamentoSeleccionado?: string;
+  /**
+   * Callback para cambiar el departamento seleccionado. Recibe el nombre tal como vino en
+   * `departamentosConDatos` o 'Nacional'; en el modo por código, el código DANE o 'nacional'.
+   */
   onSeleccionar: (departamento: string) => void;
+  /**
+   * Modo por código DANE, para quien ya lo tiene (tendencia ocupacional). Si llega, se usa
+   * en vez de los dos de arriba y no se comparan nombres: comparando nombres, "Santander"
+   * coincide con "Norte de Santander" y "Cauca" con "Valle del Cauca".
+   */
+  codigosConDatos?: string[];
+  /** Código DANE elegido, o 'nacional'. Solo en el modo por código. */
+  codigoSeleccionado?: string;
 }
 
 /** Verde institucional: departamento con ocupaciones registradas en este bloque */
@@ -47,7 +58,10 @@ export function MapaTendencia({
   departamentosConDatos = [],
   departamentoSeleccionado = 'Nacional',
   onSeleccionar,
+  codigosConDatos,
+  codigoSeleccionado = 'nacional',
 }: MapaTendenciaProps) {
+  const porCodigo = codigosConDatos !== undefined;
   const [enFoco, setEnFoco] = useState<string | null>(null);
   const tituloId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -63,14 +77,20 @@ export function MapaTendencia({
     };
   }, []);
 
-  const esNacional =
-    !departamentoSeleccionado ||
-    departamentoSeleccionado.toLowerCase() === 'nacional' ||
-    departamentoSeleccionado.toLowerCase() === 'todos';
+  const esNacional = porCodigo
+    ? !codigoSeleccionado || codigoSeleccionado === 'nacional'
+    : !departamentoSeleccionado ||
+      departamentoSeleccionado.toLowerCase() === 'nacional' ||
+      departamentoSeleccionado.toLowerCase() === 'todos';
 
-  // Mapa rápido de nombres reales para conservar la capitalización original del dataset
+  // Mapa rápido de nombres reales para conservar la capitalización original del dataset.
+  // En el modo por código, código → código: lo que se devuelve al seleccionar es el código.
   const deptoMap = useMemo(() => {
     const map = new Map<string, string>();
+    if (codigosConDatos) {
+      for (const codigo of codigosConDatos) map.set(codigo, codigo);
+      return map;
+    }
     for (const geo of DEPARTAMENTOS_COLOMBIA) {
       const coincidencia = departamentosConDatos.find((d) => coinciden(d, geo.nombre));
       if (coincidencia) {
@@ -78,7 +98,9 @@ export function MapaTendencia({
       }
     }
     return map;
-  }, [departamentosConDatos]);
+  }, [codigosConDatos, departamentosConDatos]);
+
+  const valorNacional = porCodigo ? 'nacional' : 'Nacional';
 
   const departamentoActivo = DEPARTAMENTOS_COLOMBIA.find((d) => d.codigoDane === enFoco);
 
@@ -102,7 +124,11 @@ export function MapaTendencia({
         {DEPARTAMENTOS_COLOMBIA.map((departamento) => {
           const tieneDatos = deptoMap.has(departamento.codigoDane);
           const nombreEnDatos = deptoMap.get(departamento.codigoDane) || departamento.nombre;
-          const estaSeleccionado = !esNacional && coinciden(departamentoSeleccionado, departamento.nombre);
+          const estaSeleccionado =
+            !esNacional &&
+            (porCodigo
+              ? codigoSeleccionado === departamento.codigoDane
+              : coinciden(departamentoSeleccionado, departamento.nombre));
           const deshabilitado = !tieneDatos;
 
           return (
@@ -120,13 +146,13 @@ export function MapaTendencia({
               }
               onClick={() => {
                 if (!tieneDatos) return;
-                onSeleccionar(estaSeleccionado ? 'Nacional' : nombreEnDatos);
+                onSeleccionar(estaSeleccionado ? valorNacional : nombreEnDatos);
               }}
               onKeyDown={(event) => {
                 if (!tieneDatos) return;
                 if (event.key === 'Enter' || event.key === ' ') {
                   event.preventDefault();
-                  onSeleccionar(estaSeleccionado ? 'Nacional' : nombreEnDatos);
+                  onSeleccionar(estaSeleccionado ? valorNacional : nombreEnDatos);
                 }
               }}
               onMouseEnter={() => setEnFoco(departamento.codigoDane)}
