@@ -122,54 +122,21 @@ A continuación se detalla la ficha técnica y matriz de atributos para cada una
 
 ---
 
-### 3.4. Tabla: `contenidos`
+### 3.4. Tablas del Observatorio Laboral (Módulo OLO)
 
-- **Módulo / Dominio:** Gestión Editorial y Publicaciones
-- **Requerimientos Asociados:** RF-01, RF-10
-- **Propósito General:** Entidad principal para artículos, boletines, estadísticas, estudios y banners. Dispone de un vector de búsqueda textual `tsvector` generado automáticamente con configuración en español e indexado con GIN para consultas instantáneas.
+- **Módulo / Dominio:** Análisis y Estadísticas del Mercado Laboral
+- **Propósito General:** Almacena la estructura normalizada de ocupaciones, indicadores y matrices. Sustituye al antiguo esquema estático de `contenidos` por un modelo de datos robusto y consultable dinámicamente.
 
-| No. | Campo | Tipo de Dato | Longitud | Permite Nulos | Tipo Llave | Referencia / Restricción | Valor por Defecto | Descripción y Reglas de Negocio |
-|:---:|:---|:---|:---:|:---:|:---:|:---|:---|:---|
-| 1 | `id` | `UUID` | — | NO (NOT NULL) | **PK** | — | `gen_random_uuid()` | Identificador único universal del contenido (UUID). |
-| 2 | `titulo` | `TEXT` | — | NO (NOT NULL) | Ninguna | — | — | Título descriptivo de la publicación. |
-| 3 | `slug` | `TEXT` | — | NO (NOT NULL) | **UK** | — | — | Identificador amigable único para rutas web. |
-| 4 | `resumen` | `TEXT` | — | SÍ | Ninguna | — | — | Extracto o síntesis del artículo / publicación. |
-| 5 | `cuerpo` | `TEXT` | — | NO (NOT NULL) | Ninguna | — | — | Contenido enriquecido almacenado en formato estructurado JSONB (Editor.js) o texto. |
-| 6 | `seccion_id` | `UUID` | — | NO (NOT NULL) | **FK** | `secciones.id` (ON DELETE NO ACTION) | — | Clave foránea hacia la sección jerárquica a la que pertenece. |
-| 7 | `autor_id` | `UUID` | — | NO (NOT NULL) | **FK** | `usuarios.id` (ON DELETE SET NULL) | — | Clave foránea hacia el usuario autor que redactó el contenido. |
-| 8 | `publicado_en` | `TIMESTAMPTZ` | — | SÍ | Ninguna | — | — | Fecha de publicación oficial para ordenamiento cronológico. |
-| 9 | `created_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | — | Fecha y hora de registro técnico. |
-| 10 | `updated_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | — | Fecha y hora de modificación técnica. |
-| 11 | `busqueda` | `TSVECTOR` | — | SÍ | Ninguna | — | — | Columna generada STORED tipo tsvector con índice GIN para búsquedas de texto completo en español. |
-| 12 | `tipo` | `TEXT` | — | SÍ | Ninguna | — | — | Clasificación ('estudio', 'informe', 'estadistica', 'banner', 'noticia'). Restringido por CHECK. |
-| 13 | `estado` | `TEXT` | — | NO (NOT NULL) | Ninguna | — | `'borrador'::text` | Estado editorial ('borrador', 'en_revision', 'publicado', 'rechazado', 'archivado'). Restringido por CHECK. |
-| 14 | `motivo_rechazo` | `TEXT` | — | SÍ | Ninguna | — | — | Texto explicativo en caso de que la publicación haya sido rechazada. |
-| 15 | `revisado_por` | `UUID` | — | SÍ | **FK** | `usuarios.id` (ON DELETE SET NULL) | — | Usuario editor o aprobador que revisó el contenido. |
-| 16 | `revisado_en` | `TIMESTAMPTZ` | — | SÍ | Ninguna | — | — | Marca temporal de la revisión. |
-| 17 | `destacado` | `BOOLEAN` | — | NO (NOT NULL) | Ninguna | — | `false` | Bandera booleana para fijar la publicación en la sección principal. |
+*Nota técnica: Tras la eliminación del CMS tradicional (migraciones 035 y 036), las tablas principales para la gestión del observatorio son:*
 
-**Restricciones de Integridad (CHECK) de `contenidos`:**
-- **`ck_contenidos_tipo`**: `((tipo IS NULL) OR (tipo = ANY (ARRAY['estudio'::text, 'informe'::text, 'estadistica'::text, 'banner'::text, 'noticia'::text])))`
-- **`ck_contenidos_estado`**: `(estado = ANY (ARRAY['borrador'::text, 'en_revision'::text, 'publicado'::text, 'rechazado'::text, 'archivado'::text]))`
+1. **`ocupaciones`**: Catálogo base del CNO.
+2. **`niveles_ocupacionales`** y **`niveles_cualificacion`**: Estructuras jerárquicas del SENA.
+3. **`cortes_ocupacionales`** y **`periodos`**: Dimensiones de tiempo.
+4. **`indicadores_ocupacionales`**: Tabla de hechos con métricas de vacantes e inscritos.
+5. **`criterios_ocupacionales`**: Dimensiones analíticas estáticas.
+6. **`cargas_datos_ocupacionales`**: Control de auditoría de ingesta (Excel/CSV).
 
----
-
-### 3.5. Tabla: `contenidos_archivos`
-
-- **Módulo / Dominio:** Gestión Editorial y Multimedia
-- **Requerimientos Asociados:** RF-01, RF-02
-- **Propósito General:** Tabla asociativa muchos a muchos entre publicaciones y recursos multimedia. Define el rol de uso del recurso (`portada`, `adjunto`, `galeria`) y su orden de despliegue visual.
-
-| No. | Campo | Tipo de Dato | Longitud | Permite Nulos | Tipo Llave | Referencia / Restricción | Valor por Defecto | Descripción y Reglas de Negocio |
-|:---:|:---|:---|:---:|:---:|:---:|:---|:---|:---|
-| 1 | `contenido_id` | `UUID` | — | NO (NOT NULL) | **PK / FK** | `contenidos.id` (ON DELETE CASCADE) | — | Clave foránea hacia el contenido asociado. |
-| 2 | `archivo_id` | `UUID` | — | NO (NOT NULL) | **PK / FK** | `archivos.id` (ON DELETE RESTRICT) | — | Clave foránea hacia el archivo multimedia asociado. |
-| 3 | `orden` | `SMALLINT` | — | NO (NOT NULL) | Ninguna | — | `0` | Orden de secuencia visual del adjunto dentro de la publicación. |
-| 4 | `rol` | `TEXT` | — | NO (NOT NULL) | Ninguna | — | `'adjunto'::text` | Función semántica del recurso ('adjunto', 'portada', 'galeria'). Restringido por CHECK. |
-| 5 | `created_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | `now()` | Fecha y hora de vinculación. |
-
-**Restricciones de Integridad (CHECK) de `contenidos_archivos`:**
-- **`contenidos_archivos_rol_check`**: `(rol = ANY (ARRAY['adjunto'::text, 'portada'::text, 'galeria'::text]))`
+La especificación exhaustiva columna por columna de estas tablas se encuentra directamente en las definiciones de los modelos Sequelize (`api-backend/src/infrastructure/db/models/olo/`).
 
 ---
 
@@ -411,25 +378,6 @@ A continuación se detalla la ficha técnica y matriz de atributos para cada una
 
 ---
 
-### 3.17. Módulo: Tendencia ocupacional (percentiles inscritos vs. vacantes)
-
-- **Requerimientos Asociados:** RF-08
-- **Migraciones:** 033, y 034 (quita el único de `huella_datos`). Especificación y conteos esperados en `criterios/analisis-normalizacion-percentiles-ocupacionales.md`.
-- **Propósito General:** los percentiles de inscritos y vacantes por ocupación, a nivel nacional y por departamento, para cada corte (año × periodo). El criterio de cada fila (los cuatro cuadrantes del sitio) se calcula en la base.
-
-#### Catálogos (semillas)
-
-1. **`niveles_ocupacionales`:** `id` (SMALLINT PK), `codigo` (CHAR 1, único: 0, A, B, C, D), `etiqueta` (VARCHAR 40, único: texto del filtro), `nombre` (VARCHAR 80), `descripcion` (TEXT, nula en el nivel 0), `orden` (SMALLINT).
-2. **`niveles_cualificacion`:** `codigo_nc` (SMALLINT PK: 0, 1, 2, 3, 4, 6), `nivel_ocupacional_id` (SMALLINT FK -> `niveles_ocupacionales.id`).
-3. **`criterios_ocupacionales`:** `id` (SMALLINT PK, 1–4), `codigo` (VARCHAR 40, único), `nombre` (VARCHAR 200), `regla` (VARCHAR 120, documental), `orden` (SMALLINT).
-4. **`periodos`:** `id` (SMALLINT PK), `codigo` (VARCHAR 10, único: T1–T4, S1, S2, ANUAL), `nombre` (VARCHAR 40), `orden` (SMALLINT).
-5. **`ocupaciones`:** `id` (INTEGER identidad PK), `codigo` (CHAR 4, único, `CHECK ~ '^[0-9]{4}$'`), `nombre` (VARCHAR 255), `codigo_nc` (SMALLINT **generada** del código, FK -> `niveles_cualificacion.codigo_nc`), `nombre_vigencia` (INTEGER, año×10 + orden del periodo que fijó el nombre), `created_at`, `updated_at`.
-
-#### Cortes y cargas
-
-6. **`cortes_ocupacionales`:** `id` (INTEGER identidad PK), `anio` (SMALLINT, cualquier año de cuatro cifras desde la 035), `periodo_id` (SMALLINT FK -> `periodos.id`), `estado` (VARCHAR 12: `borrador` | `publicado`), `publicado_en` (TIMESTAMPTZ), `huella_datos` (CHAR 32; ya no es único desde la 034), `created_at`, `updated_at`. Único `(anio, periodo_id)`.
-7. **`cargas_datos_ocupacionales`:** `carga_id` (UUID PK, FK -> `cargas_datos.id` ON DELETE CASCADE), `anio` (SMALLINT, cuatro cifras), `periodo_id` (SMALLINT FK), `reemplazar` (BOOLEAN; siempre `false` desde que una celda con datos no admite otra carga, solo describe cargas viejas), `corte_id` (INTEGER FK -> `cortes_ocupacionales.id` ON DELETE SET NULL), `filas_nacional`, `filas_departamental` (INTEGER), `reporte` (JSONB `{errores, advertencias}` por validación V1–V10).
-
 #### Tabla Central: `indicadores_ocupacionales` (Hechos)
 
 | No. | Campo | Tipo de Dato | Permite Nulos | Tipo Llave | Referencia / Restricción | Descripción y Reglas de Negocio |
@@ -446,8 +394,6 @@ A continuación se detalla la ficha técnica y matriz de atributos para cada una
 
 **Índices:** `uq_indicadores_ocupacionales_nacional (corte_id, ocupacion_id) WHERE departamento_id IS NULL`, `uq_indicadores_ocupacionales_departamental (corte_id, departamento_id, ocupacion_id) WHERE departamento_id IS NOT NULL`, `idx_indicadores_ocupacionales_busqueda (corte_id, departamento_id, criterio_id)`, `idx_indicadores_ocupacionales_ocupacion (ocupacion_id, corte_id)`.
 
-**Vistas:** `v_buscador_ocupacional` (hechos con corte, periodo, ocupación, nivel, criterio y departamento, más `es_nacional` y `sin_registros`) y `v_estado_cargas_ocupacional` (matriz año × periodo con `estado_celda`).
-
 ---
 
 ## 4. Matriz de Relaciones e Integridad Referencial (Foreign Keys)
@@ -458,16 +404,10 @@ A continuación se detalla la ficha técnica y matriz de atributos para cada una
 | `roles_permisos` | `permiso_id` | `permisos` | `id` | `CASCADE` | `CASCADE` |
 | `paginas` | `version_publicada_id` | `paginas_versiones` | `id` | `SET NULL` | `NO ACTION` |
 | `archivos` | `subido_por` | `usuarios` | `id` | `SET NULL` | `NO ACTION` |
-| `contenidos_archivos` | `contenido_id` | `contenidos` | `id` | `CASCADE` | `NO ACTION` |
-| `contenidos_archivos` | `archivo_id` | `archivos` | `id` | `RESTRICT` | `NO ACTION` |
-| `secciones` | `padre_id` | `secciones` | `id` | `RESTRICT` | `NO ACTION` |
-| `contenidos` | `revisado_por` | `usuarios` | `id` | `SET NULL` | `NO ACTION` |
-| `contenidos` | `autor_id` | `usuarios` | `id` | `SET NULL` | `NO ACTION` |
 | `usuarios` | `creado_por` | `usuarios` | `id` | `SET NULL` | `NO ACTION` |
 | `paginas_versiones` | `creado_por` | `usuarios` | `id` | `SET NULL` | `NO ACTION` |
 | `usuarios` | `rol_id` | `roles` | `id` | `NO ACTION` | `CASCADE` |
 | `preguntas_seguridad` | `usuario_id` | `usuarios` | `id` | `CASCADE` | `CASCADE` |
-| `contenidos` | `seccion_id` | `secciones` | `id` | `NO ACTION` | `CASCADE` |
 | `auditoria_cambios` | `usuario_id` | `usuarios` | `id` | `SET NULL` | `NO ACTION` |
 | `paginas_versiones` | `pagina_id` | `paginas` | `id` | `CASCADE` | `CASCADE` |
 | `paginas_versiones` | `revisor_id` | `usuarios` | `id` | `SET NULL` | `CASCADE` |

@@ -64,15 +64,14 @@ Una plataforma de **tres capas** bajo un modelo **CMS headless con composición 
 
 ### Modelo de contenido — decisión clave
 
-El contenido editable se modela como **páginas Puck** (`Pagina`/`PaginaVersion`): la maqueta y composición visual. Pero los **estudios/informes/estadísticas/banners** también deben ser **descubribles** (aparecer en el buscador y en "Últimas publicaciones" del inicio), aunque el editor los coloque dentro de una página concreta.
+El contenido editable se modela con un CMS visual basado en Puck (`paginas` y `paginas_versiones`), que permite componer páginas usando un sistema de bloques. 
+Por otro lado, el **Observatorio Laboral y Ocupacional** maneja datos estadísticos mediante un esquema propio fuertemente tipado (`ocupaciones`, `indicadores_ocupacionales`, `cortes_ocupacionales`, etc.), que se alimenta de fuentes externas.
 
-Solución híbrida:
+- **Puck CMS (`paginas` / `paginas_versiones`)** → El lienzo editable visualmente. Estructura y layout del sitio web y la intranet.
+- **Observatorio (`ocupaciones`, etc.)** → Los datos estadísticos y descriptivos, separados de la maqueta.
+- **Vínculo por referencia**: un bloque de Puck se encarga de renderizar gráficos o tablas llamando a los endpoints del Observatorio.
 
-- **`Pagina` / `PaginaVersion`** → el lienzo editable (dónde va cada bloque). Estructura y layout.
-- **`Contenido`** (el modelo `Post` reutilizado y renombrado) → cada estudio/informe como **registro independiente** con título, tipo, categoría, fecha, adjuntos. Buscable y listable.
-- **Vínculo por referencia**: un bloque Puck que muestra un contenido guarda su **ID**, no una copia. Así el mismo estudio aparece en su página propia y en "Últimas publicaciones", y editarlo una vez lo actualiza en todos lados.
-
-Esto habilita directamente RF-01, RF-07, RF-10 y RF-12 sin duplicar datos.
+Esto separa limpiamente la **presentación** de los **datos del negocio**, permitiendo que el sistema responda a los RF-01, RF-09 y RF-10 sin duplicar información.
 
 ---
 
