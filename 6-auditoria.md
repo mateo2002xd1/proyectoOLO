@@ -5,6 +5,471 @@
 
 ---
 
+## sesión 24-09-2026 (8.ª parte): menos texto y un flag de color por estado en «Criterios de clasificación»
+
+**Qué era.** El usuario pidió bajar la carga cognitiva de la tarjeta: quitar texto redundante,
+mensajes más claros y limpios, y estados con flags de color. Lo que se repetía: el año y periodo
+salían hasta cuatro veces en el recuadro de resultado (título, mensaje, explicación y botón); la
+idea «borrador / el sitio solo muestra lo publicado» se explicaba en la descripción, en el aviso
+de pendientes y en el resultado; el historial tenía dos columnas de estado («Estado: Completada» y
+«En el sitio: Borrador») y un resultado que repetía año, periodo y «quedó en borrador».
+
+### Qué quedó
+
+| Parte | Antes → ahora |
+|---|---|
+| `EstadoFlag` (`components/estado-flag.tsx`) | Nuevo. Un color por estado, el mismo en toda la tarjeta, **siempre con texto**: Libre (gris), En curso / Procesando % (azul, pulsa), Borrador (ámbar), Publicado (verde), Con errores (rojo), Inactiva (gris apagado). Lo que no cabe (fecha de publicación, por qué está inactiva) va en el `title`. `estadoDeCelda`, `estadoDeCarga` y `resumenDeFilas` concentran la traducción |
+| Descripción | 3 frases → «Percentiles de inscritos y vacantes para Tendencia Ocupacional. Un archivo .xlsx por año y periodo.» Lo de las hojas pasó al `title` del campo de archivo; la regla de periodo ocupado la dice el formulario cuando aplica |
+| Aviso de pendientes | Título + párrafo + lista → una línea: flag «Sin publicar», las celdas con su «Publicar» y «Publicar todos» |
+| Estado de la celda elegida | Frase larga con icono → flag + «2026 · Tercer trimestre» y, solo si está ocupada, «Ya tiene datos: para cambiarlos, elimine su carga. Ver en el historial» |
+| Avisos del nombre del archivo | «Año y periodo tomados del nombre del archivo.» / «El nombre del archivo sugiere 2025 · Anual.» |
+| Resultado de la carga | 4 líneas → una: flag + celda + «20.774 filas (611 nacionales · 20.163 departamentales)» + «Publicar en el sitio». El flag sale de la matriz, así que pasa a «Publicado» al publicar. Tras subir se limpia el periodo (se queda el año): el estado de la celda repetía lo que ya dice el resultado |
+| Historial | «Estado» + «En el sitio» → un solo flag. «Resultado»: las filas (de `filasNacional`/`filasDepartamental`, no del mensaje guardado); en error, el mensaje. Acciones juntas al final: Publicar, Despublicar, papelera. Fuera «Con «reemplazar»» |
+| Diálogos | Eliminar: qué se borra, lo que depende del caso y al final «No se puede deshacer». Despublicar: «El sitio deja de mostrarlo. Los datos quedan en borrador y se pueden volver a publicar.» |
+| Aviso tras eliminar | «2023 · Primer semestre: se eliminó la carga y su archivo.» (+ «Ya no se ve en el sitio.» o «El archivo se conservó: lo usa otra carga.» solo si aplica) |
+| API: mensaje de error | «No se cargó: V1 · … El detalle está en el reporte de la carga.» → «V1 · Departamento no reconocido (1).» (el flag y «Ver reporte» ya decían lo demás). Las cargas viejas conservan su texto |
+
+### Verificado
+
+Postgres 18 desechable con todos los estados a la vez (publicado, borrador, con errores e inactiva
+—esta hecha por SQL, porque la API ya no la produce—), API de prueba en el 4100 y el panel real en
+el 3000 con Chrome headless: textos leídos uno a uno y tres capturas (arriba, resultado, historial).
+
+| Pantalla | Lo que se lee |
+|---|---|
+| Aviso | «Sin publicar · 2027 · Primer trimestre [Publicar] · 2025 · Anual [Publicar] · Publicar todos» |
+| Celda ocupada | «Publicado · 2026 · Tercer trimestre · Ya tiene datos: para cambiarlos, elimine su carga. Ver en el historial» |
+| Celda libre | «Libre · 2028 · Primer trimestre» |
+| Resultado | «Borrador · 2028 · Primer trimestre · 20.774 filas (611 nacionales · 20.163 departamentales) · Publicar en el sitio», sin el estado repetido arriba |
+| Historial | Publicado / Con errores («V1 · Departamento no reconocido (1).» + Ver reporte) / Inactiva / Borrador, con sus acciones |
+| Diálogos y aviso | Como en la tabla de arriba |
+| `tsc --noEmit` | Limpio en la API y el sitio-web; ESLint limpio en el sitio-web |
+
+Limpieza: contenedor y API de prueba detenidos, Redis base 7 vaciada, los 3 Excel de prueba que
+quedaban borrados (siguen los 10 del usuario).
+
+**Visto y no tocado:** el historial muestra el nombre del **primer** archivo con ese contenido, no el
+de cada subida: los Excel se deduplican por contenido y `archivos` guarda un solo nombre. Subir
+«1er trimestre 2024.xlsx» con el mismo contenido que «percentiles_2024_ANUAL.xlsx» aparece con este
+último. Ahora que el mismo archivo va a varios periodos se nota más; arreglarlo pide guardar el
+nombre en cada carga (una columna en `cargas_datos`, migración nueva).
+
+**Pendiente al cierre:** reiniciar la API (el mensaje de error nuevo es del backend). Sin migración nueva.
+
+---
+
+## sesión 24-09-2026 (7.ª parte): el año se elige en un calendario y es libre (proyecciones incluidas)
+
+**Qué era.** El usuario pidió cambiar el desplegable de años por un selector «tipo calendario»,
+en el panel y en la consulta del sitio, y preguntó cómo elegir 2027. Mientras se hacía, pidió una
+«proyección futura de muchos años» y luego, al ver «El año debe estar entre 2012 y 2026», que el
+año **no tenga regla de rango**: elegir libremente el archivo y asociarle su año. El año venía
+acotado en cuatro lugares: la lista del panel (la matriz, 2012..año actual), el validador de la
+API (2012–2100), la comprobación de la subida (2012..año actual) y el CHECK de la base (2012–2100).
+
+### Qué quedó
+
+| Parte | Qué hace |
+|---|---|
+| `YearPicker` (`shared/ui/molecules/year-picker.tsx`) | Hermano de `DatePicker`, mismo campo y mismo panel: una década en rejilla de 3 × 4 (con el año anterior y el siguiente apagados, como los días de otro mes), flechas de década, «Este año», y una casilla **para escribir el año** (solo cifras; con cuatro salta a su década; Enter o «Elegir» lo eligen, y avisa si está fuera de rango o sin datos). Opcional: `disponibles` (solo esos años) y `textoSinAnio` («Todos los años») |
+| Panel | Año del formulario y filtro del historial con el calendario. Cualquier año de cuatro cifras (`RANGO_ANIOS_TENDENCIA`). Un año que la matriz aún no trae (uno futuro antes de cargarlo) cuenta como libre |
+| Sitio | El filtro de año del bloque de Tendencia Ocupacional usa el calendario: entre el primer y el último año publicado, y los de en medio sin datos apagados |
+| API | `anio` del validador: 1000–9999 (buscador, historial y subida). La subida ya no compara con el año actual |
+| Migración 035 | `035-tendencia-anio-libre`: quita los CHECK de `anio` de `cortes_ocupacionales` y `cargas_datos_ocupacionales` **por definición** (como la 008) y pone «cuatro cifras»; la matriz `v_estado_cargas_ocupacional` va del menor al mayor año con corte **o carga** (antes no veía un 2005, ni un año futuro con la carga en curso o fallida). En su propia transacción, como la 032 |
+| Año por defecto del sitio | `/opciones` sin año propone el más reciente **que no sea futuro** (si solo hay futuros, el más cercano): con proyecciones publicadas, quien llega ve primero los datos de hoy. Antes era el mayor, que con una proyección a 2040 abría el sitio en 2040 |
+
+### Verificado
+
+Postgres 18 desechable, API de prueba en el 4100 con Redis en la base 7, panel real en el 3000 y
+el **inicio real** del sitio: allí solo las peticiones de tendencia fueron a la API de prueba, el
+resto a la del usuario, y cualquier escritura se bloqueó (solo hubo una: el contador de visitas).
+
+| Prueba | Resultado |
+|---|---|
+| Migración 035 sobre una base con 033–034 y datos | CHECK nuevos `ck_*_anio` (1000–9999) en las dos tablas |
+| Año 999 / 10000 | 400 |
+| Cargar 1998 · T1 y 2150 · S2 (y antes 2035, 2040) | Cargan; la matriz va de 1998 a 2150 (1.071 celdas) |
+| `/opciones` con 1998, 2024, 2026, 2035, 2040 y 2150 publicados | Ofrece los seis; año por defecto **2026** |
+| Revertir la 035 con 1998 y 2150 cargados | Falla sin tocar nada: siguen los CHECK nuevos y la 035 aplicada |
+| Panel: calendario del año | Abre en 2020–2029; «0999» → «Elija un año entre 1000 y 9999.»; «2045» salta a 2040–2049 y Enter lo elige → «2045 · Primer trimestre: Libre» |
+| Panel: 1998 · Primer trimestre | «Ya tiene datos publicados… No admite otro archivo» |
+| Panel: filtro del historial | «Todos los años» → escribir 2150 → una fila → «Todos los años» → todas |
+| Sitio: por defecto | 2026 · Tercer trimestre |
+| Sitio: calendario | En 2020–2029 solo 2024 y 2026 elegibles; «2030» → «2030 no tiene datos.»; «2150» + Enter → 2150 · Segundo semestre, 81 registros |
+| `tsc --noEmit` | Limpio en la API y el sitio-web; ESLint limpio en el sitio-web |
+
+Durante las pruebas se vio que faltaba `fccc6e2e…xlsx` (el `data2.xlsx` del usuario) en
+`uploads/cargas-datos`: no lo borró la limpieza (estaba en la lista de antes de la prueba 4 y no entre
+los 6 que esa limpieza borró); desapareció después, junto con dos archivos nuevos del usuario (07:28
+y 07:30), lo que corresponde a que eliminó esa carga desde el panel. Limpieza de esta ronda:
+contenedor y API de prueba detenidos, Redis base 7 vaciada, los 3 Excel de la prueba borrados
+(quedan los 10 que había).
+
+**Pendiente al cierre:** `npm run migrate` (aplica la 035, y la 034 si faltaba) y **después** reiniciar la
+API: el «El año debe estar entre 2012 y 2026» que vio el usuario sale de la API sin reiniciar.
+
+---
+
+## sesión 24-09-2026 (6.ª parte): un año y periodo con datos no admite otra carga
+
+**Qué era.** El usuario definió la regla: si un periodo ya está cargado (por ejemplo 2026 · Tercer
+trimestre), no se puede volver a subir un archivo a ese mismo periodo; si está libre, se guarda
+normal. Hasta ahora una celda en borrador se sobrescribía sin más, y una publicada con la casilla
+«Reemplazar los datos publicados».
+
+### Qué quedó
+
+| Parte | Cambio |
+|---|---|
+| Formulario | Se quitó la casilla «reemplazar». Con el año elegido, el desplegable de periodo marca «· ya cargado» (o «· en curso») los ocupados. Al elegir uno, aviso ámbar («Ya tiene datos en borrador/publicados. No admite otro archivo: para cambiarlo, elimine primero su carga desde el historial») con **«Ver en el historial»**, que filtra el historial por esa celda; «Cargar» queda deshabilitado. Una celda sin datos o cuyo último intento falló sale como «Libre» |
+| Subida (API) | `iniciarCargaTendencia` responde 409 si la celda tiene corte o una carga en curso, **antes** de guardar el Excel. `reemplazar` salió del validador (`.strict()`: enviarlo da 400), del controlador y de `crearCarga` |
+| Worker | Con el candado de la celda tomado, comprueba otra vez que esté libre y, si no, termina en error con el mismo mensaje (`CONFLICTO`), sin validar las 20.000 filas. Cubre dos subidas simultáneas a la misma celda vacía, que pasan las dos el primer control |
+| Corte | `crearOObtenerCorte` (upsert) → `crearCorte` (`INSERT` sin `ON CONFLICT`); `reemplazarIndicadores` → `guardarIndicadores` (sin el `DELETE`). El mensaje de la carga es siempre «…; quedó en borrador» |
+| Texto compartido | `mensajeCeldaOcupada` en `reporte-carga.ts`, para que la subida y el worker digan lo mismo |
+| Historial | Sin cambios: «Con «reemplazar»» sigue apareciendo en las cargas viejas que lo usaron |
+
+**Arreglo de paso** (encontrado al probar): `validarYGuardarExcel`, compartido con «Programa +
+Sobresalientes». Si se subía el mismo Excel nuevo dos veces a la vez, las dos peticiones pasaban la
+búsqueda por hash y la segunda chocaba con `archivos.hash_sha256 UNIQUE`: respondía 500 y dejaba
+una copia huérfana en disco. Ahora borra su copia y usa la fila de la primera.
+
+### Verificado
+
+Postgres 18 desechable (001–034), API de prueba en el 4100 con Redis en la base 7, y el panel real
+(`next dev` en el 3000) contra esa API.
+
+| Prueba | Resultado |
+|---|---|
+| 2026 · T3 libre | Carga normal, «quedó en borrador» |
+| Otra vez 2026 · T3 (borrador) | 409 «2026 · Tercer trimestre ya tiene datos en borrador. Para subir otro archivo, elimine primero su carga desde el historial.»; ni archivo nuevo en disco ni carga |
+| 2026 · T3 publicado | 409 «…ya tiene datos publicados…» |
+| Enviar `reemplazar=true` | 400 (campo desconocido) |
+| 2026 · T2 libre | Carga normal |
+| Dos subidas a la vez a una celda vacía (mismo Excel y Excel distintos) | Las dos 202; una completa y la otra termina en error «…ya tiene datos en borrador…»; un solo corte |
+| Eliminar la carga de 2026 · T3 y volver a subir | Admite el archivo y carga |
+| Mismo Excel nuevo subido dos veces a la vez | Antes: 500 y copia huérfana. Ahora: 202 y 202, una fila en `archivos`, un solo archivo en disco |
+| Panel: año 2026 | Periodos «Segundo trimestre · ya cargado», «Tercer trimestre · ya cargado»; los demás limpios |
+| Panel: Tercer trimestre + archivo | Aviso ámbar con «Ver en el historial»; «Cargar» deshabilitado; el filtro del historial queda en 2026 · Tercer trimestre |
+| Panel: Primer trimestre | «Libre: todavía no tiene datos.»; «Cargar» habilitado |
+| `tsc --noEmit` | Limpio en la API y el sitio-web; ESLint limpio en el sitio-web |
+
+La primera captura cortaba «Tercer trimestre · ya ca…»; la columna de periodo pasó de 14 a 18 rem.
+Limpieza: contenedor y API de prueba detenidos, Redis base 7 vaciada, los 6 archivos de la prueba
+borrados de `uploads/cargas-datos` (quedan los 9 que había).
+
+**Pendiente al cierre:** reiniciar la API. No hay migración nueva (la 034 sigue pendiente si no se aplicó).
+
+---
+
+## sesión 24-09-2026 (5.ª parte): eliminar cargas de tendencia del historial, con su Excel
+
+**Qué era.** El usuario pidió un botón para eliminar cargas del historial de «Criterios de
+clasificación de resultados» y que su archivo se borre del almacenamiento. Hasta ahora esas cargas
+no se borraban (la ruta de programas respondía 409).
+
+### Qué quedó
+
+| Parte | Qué hace |
+|---|---|
+| Botón | Papelera al final de cada fila del historial (mismo estilo que el de «Programa + Sobresalientes»), solo para quien puede actualizar. Confirma con un texto que cambia según el caso: reemplazada o fallida («los datos no cambian»), **vigente** («también se borran los datos de 2026 · T3», y si está publicada, «el sitio deja de mostrar ese periodo»), o «procesando» |
+| Aviso | Tras eliminar: qué se borró, si se fueron los datos y si el Excel salió del almacenamiento o se conservó porque otra carga usa el mismo archivo |
+| API | `DELETE /api/observatorio/tendencia-ocupacional/cargas/:id` (`puedePublicarDatos`, porque puede quitar datos publicados): responde `{ datosEliminados, archivoEliminado }`. 404 si no existe, 409 si una carga está guardando en esa celda |
+| Vigente | Si la carga es la que puso los datos del corte, se borra el corte con sus indicadores (CASCADE) y la celda vuelve a «sin datos». Dejar los datos sin su carga los dejaría sin origen, y Publicar/Despublicar pasaría a una carga anterior cuyos datos ya no están |
+| Excel | `eliminarArchivoSiQuedaSuelto` (extraída de `eliminarCargaObservatorio`, la usan las dos): se borra de `uploads/cargas-datos/` y de `archivos` solo si nadie más lo usa. Importa ahora que el mismo Excel puede ir a varios periodos: es **un** archivo compartido |
+| Carreras | El borrado toma el candado de la celda sin esperar (`pg_try_advisory_xact_lock`, misma llave que la carga, ahora en `CANDADO_CELDA`). El cargador lee el Excel *antes* de tomar el candado, así que con el candado ya tomado comprueba que su carga siga existiendo (`carga.sigueExistiendo`); si se eliminó en ese rato, no guarda nada |
+| `vigente` | La regla pasó a `ES_VIGENTE`, compartida por el historial y el borrado, y ahora exige que el corte siga en pie |
+
+La ruta genérica `DELETE /api/observatorio/cargas/:id` sigue rechazando las de tendencia (409),
+ahora indicando la ruta correcta: no sabe borrar el corte.
+
+### Verificado
+
+Postgres 18 desechable (001–034), API de prueba en el 4100 con Redis en la base 7, el `data2.xlsx`
+real del usuario y los Excel de prueba; y el panel real (`next dev` en el 3000) contra esa API.
+
+| Prueba | Resultado |
+|---|---|
+| Mismo Excel en 2026 · T3 y T2 | Un solo archivo compartido |
+| Eliminar la vigente de T2 (borrador) | Se va el corte de T2; T3 intacto (20.774 filas); el Excel **se conserva** (lo usa T3): `archivoEliminado: false` |
+| Eliminar una reemplazada de 2025 · Anual | Los datos no cambian, la v2 sigue vigente, su Excel sale del disco |
+| Eliminar la vigente publicada de 2026 · T3 | `estabaPublicado: true`; `/opciones` deja de ofrecer 2026; el Excel, ya sin dueños, sale del disco; la celda vuelve a «pendiente» |
+| Eliminar una fallida | Se borra con su Excel |
+| Candado de la celda tomado por otra sesión | 409 «Hay una carga guardando datos en 2025 · Anual…»; la carga sigue |
+| Eliminar recién subida (el worker abriendo el Excel), dos veces | 200; el worker registra «La carga se eliminó del historial antes de guardarse» y no deja corte |
+| Borrar con la carga ya guardando | 409 (el primer intento de esta prueba cayó ahí: el progreso en la base va detrás) |
+| Ruta de programas con una de tendencia / sin sesión / id inválido | 409 / 401 / 400 |
+| Panel: papelera en una reemplazada | Diálogo «Los datos de 2025 · Anual no cambian»; Cancelar |
+| Panel: papelera en la vigente 2024 · T1 | Diálogo «Es la carga vigente: también se borran los datos…»; al eliminar, aviso con lo borrado, la fila se va y 2024 · T1 sale de «pendientes de publicar» |
+| `tsc --noEmit` | Limpio en la API y el sitio-web; ESLint limpio en el sitio-web |
+
+Limpieza: contenedor y API de prueba detenidos, Redis base 7 vaciada, `uploads/cargas-datos` con los
+mismos 10 archivos de antes (la prueba dejó uno, que se borró; los demás ya los había borrado la
+propia función).
+
+**Pendiente al cierre:** reiniciar la API (sin migración nueva; la 034 sigue pendiente si no se aplicó).
+Eliminar no deja fila en `auditoria_cambios`, igual que publicar y despublicar.
+
+---
+
+## sesión 24-09-2026 (4.ª parte): el mismo archivo se puede cargar en varios periodos (sin V10)
+
+**Qué pasó.** Al cargar el mismo Excel en otro periodo, la carga fallaba con «Este mismo
+contenido ya está cargado en 2026 · Tercer trimestre. Revise que el archivo corresponda a la celda
+elegida.» Era V10 de la especificación, que suponía que dos celdas con el mismo contenido son un
+error de archivo. El usuario pidió quitarla: los datos pueden repetirse entre periodos, y lo que
+importa es que cada periodo quede guardado y se muestre.
+
+### Qué quedó
+
+| Parte | Cambio |
+|---|---|
+| Cargador | `importarPercentilesExcel` ya no compara la huella con otras celdas; se quitó `celdaConMismaHuella` del repositorio y `V10` del catálogo de validaciones. La huella se sigue calculando y guardando en el corte |
+| Migración 034 | `034-cortes-ocupacionales-huella-repetible`: `DROP CONSTRAINT IF EXISTS uq_cortes_ocupacionales_huella`. Sin ella, quitar la validación no alcanzaba: la base habría rechazado el corte al guardarlo. `down`: deja en NULL las huellas repetidas salvo la del corte más antiguo y recrea el `UNIQUE` |
+| Cargas viejas | La que falló con V10 sigue en el historial con su reporte (cada hallazgo guarda su descripción). No se borra: es trazabilidad |
+| Textos | «V1–V10» → «V1–V9» en la barra de progreso, la ruta documentada y comentarios; la 033 anota que la 034 quitó el `UNIQUE` |
+| Docs | `11-base-de-datos.md`: I19 tachada como retirada, fila de la 034, §4.6.1. `12-diccionario-de-datos.md` §3.17 y `1-guia-del-proyecto.md` |
+
+Es una desviación consciente de `criterios/002_carga_y_validaciones.sql` (bloque V10), que no se tocó.
+
+### Verificado
+
+Postgres 18 desechable con 001–034 aplicadas desde cero, llamando al cargador directamente con el
+`data2.xlsx` real del usuario:
+
+| Prueba | Resultado |
+|---|---|
+| Restricciones únicas de `cortes_ocupacionales` tras la 034 | Solo `(anio, periodo_id)` |
+| El mismo archivo en 2026 · T3, 2026 · T2 y 2025 · Anual | Las tres cargan: 20.774 filas cada una, misma huella `a26ad71f…` |
+| `migrate:down` con esas tres huellas repetidas | Revierte: T3 conserva la huella, T2 y Anual quedan en NULL, vuelve el `UNIQUE` |
+| `migrate up` otra vez | Aplica la 034 sin error |
+| `tsc --noEmit` | Limpio en la API y el sitio-web; ESLint limpio en el sitio-web (la API no tiene configuración de ESLint) |
+
+**Pendiente al cierre:** `npm run migrate` en `api-backend` (aplica la 034 en Neon) y **después**
+reiniciar la API. En otro orden, el archivo repetido fallaría con un error de llave duplicada en vez
+del mensaje de V10.
+
+---
+
+## sesión 24-09-2026 (3.ª parte): lo cargado sin publicar se ve, y se publica, desde la tarjeta
+
+**Qué pasó.** El usuario cargó `data2.xlsx` (2026 · Tercer trimestre), recargó el inicio y los
+bloques de Tendencia Ocupacional seguían sin datos. La carga había salido bien —20.774 filas,
+611 nacionales y 20.163 departamentales, con los cuatro criterios poblados (54, 30, 37 y 457
+ocupaciones nacionales con registros)—, pero el corte quedó en **borrador**, y la consulta pública
+exige `corte_estado = 'publicado'` (`tendencia-ocupacional.repository.ts`). Para el sitio no había
+ningún año con datos: `GET …/opciones` devolvía `anios: []` y el bloque decía «Todavía no hay datos
+publicados». No era un fallo del cargador sino de la tarjeta: el recuadro verde «Carga completada»
+se leía como el final, y el botón de publicar pasaba desapercibido (y desaparece al recargar la página).
+
+### Qué quedó
+
+| Parte | Qué hace |
+|---|---|
+| Aviso de pendientes | Arriba de la tarjeta, en ámbar, siempre que haya cortes en borrador: «Hay N periodos cargados que el sitio todavía no muestra», cada uno con «Publicar», y «Publicar los N» si hay más de uno (la API ya aceptaba una lista). Sale de la matriz `/estado`, así que sobrevive a recargar la página. En solo lectura dice que un Administrador debe publicarlos |
+| Resultado de la carga | Si quedó en borrador pasa a ámbar: «Carga completada, falta publicarla», con «El sitio todavía no muestra estos datos» y el botón. Al publicar, verde: «Carga completada y publicada · Ya se ve en los bloques del sitio». Ese corte no se repite en el aviso de arriba |
+| Hook | `publicar(...corteIds)` publica varios en una llamada; `corteEnAccion` pasó a `cortesEnAccion: number[]` |
+
+No se cambió el flujo: la carga sigue quedando en borrador para revisar el reporte (V6–V9) antes
+de publicarla, como pide la especificación.
+
+### Verificado
+
+Panel real (`next dev` del usuario en el 3000) contra la API real (4000, Neon) con Chrome headless
+por CDP, **sin escribir en Neon**: las lecturas pasan; `POST …/cortes/publicar` y la subida se
+contestan desde el navegador; cualquier otra escritura se bloquea (no hubo ninguna). A `/estado`
+se le inyectó un 2025 · Anual en borrador inventado.
+
+| Prueba | Resultado |
+|---|---|
+| Al entrar | Aviso con «2026 · Tercer trimestre» (el real) y «2025 · Anual», y «Publicar los 2» |
+| Publicar 2025 · Anual desde el aviso | Queda «Hay un periodo…» solo con 2026 · Tercer trimestre, sin «Publicar los» |
+| Subida simulada de 2024 · T1 | Recuadro ámbar «Carga completada, falta publicarla» con su botón; 2024 · T1 no se repite en el aviso |
+| Publicar desde el resultado | «Carga completada y publicada … Ya se ve en los bloques de Tendencia Ocupacional del sitio» |
+| `tsc --noEmit` y ESLint | Limpios en el sitio-web |
+
+**Pendiente al cierre:** publicar 2026 · Tercer trimestre. Lo hace el usuario desde la tarjeta:
+es su decisión y queda a su nombre. Lo demás, igual que en la entrada anterior.
+
+---
+
+## sesión 24-09-2026 (2.ª parte): formulario de carga por año y periodo, e historial, en «Criterios de clasificación de resultados»
+
+**Qué era.** La tarjeta «Criterios de clasificación de resultados» de Actualizaciones decía
+«Próximamente», y los percentiles solo se podían cargar por Swagger o `curl` (ver la entrada
+anterior). El usuario pidió un formulario para cargar cada archivo con su año y periodo, y un
+historial que dé trazabilidad de cada año y periodo.
+
+### Qué quedó
+
+La tarjeta ocupa todo el ancho de la página (lleva formulario y tabla); las otras tres pasan a
+una fila de tres.
+
+| Parte | Qué hace |
+|---|---|
+| Formulario | Año y periodo salen de la matriz de la API (2012..año actual × 7), nada fijo. Si el archivo se llama como `percentiles_2025_T1.xlsx` o «1er trimestre 2019», se **proponen** solos (`lib/detectar-celda.ts`, el detector de la especificación §8, con sus 11 casos de prueba) y se avisa; si el nombre contradice la celda elegida, se advierte |
+| Estado de la celda | Debajo de los desplegables dice qué tiene ya: sin datos, en borrador, publicada, fallida o en curso. Una celda **publicada** exige marcar «Reemplazar los datos publicados»; sin eso el botón no se habilita (la API respondería 409). Con una carga en curso en esa celda, tampoco |
+| Carga | Barra de progreso real (fases del worker: leer, preparar, validar V1–V10, guardar) y resultado con el mensaje y el reporte de validaciones desplegable, con filas de ejemplo («fila 102 · departamento: Amazonía»). Si quedó en borrador, botón «Publicar en el sitio» ahí mismo |
+| Historial | Una fila por archivo subido: año y periodo, archivo, quién y cuándo, estado, resultado + reporte, y **qué ve hoy el sitio**. Filtros por año y periodo, paginado de a 10. Solo la carga **vigente** de cada celda (la más reciente que terminó bien) lleva Publicar/Despublicar; las anteriores dicen «Reemplazada». Despublicar pide confirmación |
+
+**Backend.** `GET …/tendencia-ocupacional/cargas` pasó a `{ cargas, total, pagina, porPagina,
+totalPaginas }` con filtros `anio`, `periodo`, y cada carga trae `subidoPorNombre`,
+`corteEstado`, `cortePublicadoEn` y `vigente`. La ruta de borrado de programas rechaza las
+cargas de tendencia (409): son el historial y no se borran. El mensaje de cada carga pasó a
+«…; quedó en borrador» / «…; reemplazó los datos publicados»: queda escrito y describe lo que
+pasó al cargar, y «en borrador» se leía como el estado actual aunque luego se publicara.
+
+**Refactor de paso:** la barra de progreso de «Programa + Sobresalientes» pasó a
+`components/barra-de-progreso.tsx` con la fase como prop, para las dos tarjetas.
+
+### Verificado
+
+Otra vez sobre un Postgres 18 local desechable (001–033 + tablas de programas de Neon), la API
+de prueba en el 4100 con Redis en la base 7, y el panel real (`next dev` del usuario en el 3000)
+conducido con Chrome headless por CDP con una sesión de la cuenta maestra local.
+
+| Prueba | Resultado |
+|---|---|
+| «1er trimestre 2024.xlsx» sin elegir celda | Propone 2024 · Primer trimestre, lo avisa, carga, barra de progreso, resultado con «Publicar» |
+| 2025 · Primer trimestre + archivo «percentiles_2025_ANUAL» | Aviso: el nombre sugiere 2025 · Anual. Al elegir Anual, el aviso se va |
+| Publicar desde el resultado | El historial pasa a «Publicado desde …» con «Despublicar» |
+| Otro archivo para 2025 · Anual (publicada) | Botón deshabilitado hasta marcar «reemplazar»; carga; la fila anterior queda «Reemplazada» y la nueva sigue publicada |
+| Archivo con «Amazonía» | Resultado rojo: V1 con la fila 102, y V9 como advertencia |
+| Filtro del historial por 2025 | 2 filas |
+| API: `?periodo=T9` | 400 |
+| API: `DELETE /api/observatorio/cargas/:id` con una carga de tendencia | 409; las cargas siguen ahí |
+| Nombre de quien carga | «Ana María Rojas» con un usuario real; «Cuenta local» con la maestra |
+| `tsc --noEmit` y ESLint | Limpios en la API y en el sitio-web |
+
+Tras la primera captura la columna «En el sitio» quedaba cortada y exigía desplazar la tabla
+de lado justo donde está el botón; se ajustaron anchos y se partió «Borrador · no visible» en dos
+líneas. Segunda captura: la tabla cabe entera a 1440 px.
+
+**Pendiente al cierre:**
+
+- Lo mismo de la entrada anterior: `npm run migrate` + reiniciar la API, y `next build` con el dev
+  detenido.
+- La **matriz visual** año × periodo y la **carga masiva** de varios archivos (§8 de la
+  especificación): la API ya los sostiene (`/estado`, detector de celda en el front); falta la pantalla.
+- Publicar y despublicar siguen sin fila en `auditoria_cambios`; el historial de cargas sí guarda
+  quién cargó, pero no quién publicó.
+
+---
+
+## sesión 24-09-2026: la tendencia ocupacional lee de la base, por criterio, y un solo catálogo de departamentos
+
+**Qué era.** El bloque "Tendencia Ocupacional" del sitio pedía `GET /api/observatorio/tendencia-ocupacional?tipo=…`
+y la API leía uno de cuatro Excel sueltos de `uploads/cargas-datos/` (`base-tendencia-1..4.xlsx`,
+uno por cuadrante) y los devolvía enteros; el front filtraba en memoria. Los años y periodos
+salían de lo que trajera el archivo, y había un "todos" que sumaba periodos distintos. La base
+para reemplazarlo estaba planeada en `criterios/` (análisis del Excel real, DDL y SQL de carga,
+probados con el archivo completo): se implementó eso.
+
+**Alcance acordado con el usuario:** consulta + cargador en el backend; el panel con la matriz
+año × periodo queda para la siguiente entrega. Un solo catálogo de departamentos para los dos
+módulos sin romper la carga ni los buscadores de ninguno. Las filas con 0 inscritos y 0 vacantes
+se ocultan por defecto, con un interruptor para verlas. La carga pasa por el mismo sistema de
+"Programa + Sobresalientes".
+
+### Un catálogo de departamentos, depurado en su sitio (migración 032)
+
+`departamentos` lo llenaba el importador de programas con el nombre tal como viniera: en Neon
+tenía «Distrito Capital», «Valle», «Guajira», **tres Vaupés** («Vaupes», «Vaupés» y «Vupes», este
+sin código) y le faltaban Caquetá, Chocó y Vichada. La especificación pedía reutilizar la tabla
+si existía; se depuró **conservando los UUID**, así que ninguna FK de programas cambió:
+
+| Paso | Qué hace | Con los datos de Neon |
+|---|---|---|
+| Resolver | Cada fila a su código DANE por nombre normalizado (alias) o el código que ya tenía | 31 resuelven; «Vupes» no |
+| Sin código | Se borra con sus centros **si no tiene datos**; si los tuviera, la migración se detiene | «Vupes» y su centro vacío («…Agropecuarioss…») |
+| Duplicados | Sobrevive el que ya tiene el nombre oficial; los otros le pasan centros y datos. Si dos variantes tienen un centro con el mismo nombre, se detiene | «Vaupes» → «Vaupés» (su centro, sin datos, pasa con él) |
+| Nombres | Oficiales; se insertan los que faltan | 33 departamentos |
+| Restricciones | `codigo_dane` CHAR(2) obligatorio, único y de dos dígitos | — |
+| Alias | `departamentos_alias`: los nombres de los Excel reales de los dos módulos | 41 alias |
+
+El importador de programas **ya no crea departamentos**: los resuelve por alias antes de agrupar
+(así «Valle» y «Valle del Cauca» en un mismo archivo no chocan) y un nombre desconocido rechaza
+la carga con la fila. `departamentos-dane.ts` (la lista en código) se borró: la verdad es la base.
+
+### Tendencia ocupacional (migración 033)
+
+El DDL de `criterios/001_percentiles_ocupacionales.sql` con tres ajustes: tablas en plural
+(convención), el catálogo de departamentos de la 032 (UUID; `NULL` = nacional) y la bitácora en
+`cargas_datos` + `cargas_datos_ocupacionales` en vez de una tabla propia. Detalle de tablas,
+invariantes I16–I19 y vistas en `11-base-de-datos.md` §4.6.1 y `12-diccionario-de-datos.md` §3.17.
+
+| Capa | Qué hay |
+|---|---|
+| Rutas públicas | `GET /api/observatorio/tendencia-ocupacional` (anio, periodo, departamento, criterio, nivel, q, incluirSinRegistros, pagina, porPagina) y `…/opciones?anio=` |
+| Rutas del panel | `POST/GET …/cargas`, `GET …/cargas/:id` (con el reporte), `GET …/estado` (matriz), `POST …/cortes/publicar`, `PATCH …/cortes/:id/despublicar`. Publicar exige `puedePublicarDatos`, permiso aparte de cargar (hoy los mismos roles) |
+| Carga | `validarYGuardarExcel` (sacado de `iniciar-carga`, lo usan los dos módulos) → `cargas_datos` + detalle en una transacción → cola `heavy-jobs` → `importar-percentiles-excel`: candado por celda, tabla temporal con `unnest` por lotes, V1–V5 abortan, V6–V9 advierten, huella y V10, catálogo, corte, reemplazo atómico |
+| Consulta | `WHERE` armado según los filtros (no el `($n IS NULL OR …)` de referencia), paginación y totales en SQL, solo cortes publicados, y los códigos DANE con resultados para pintar el mapa |
+| Front | Un criterio por bloque: `tipoTendencia` (guardado en el JSON de Puck, no se renombró) → `CRITERIO_POR_TIPO`. Los desplegables salen de `/opciones`: años con datos publicados, los 7 periodos (los que no tienen datos, visibles pero deshabilitados y con «(sin datos)»), niveles con su etiqueta, "Nacional" + 33. Arranca en el año más reciente y su periodo de mayor cobertura |
+
+### Verificado
+
+Todo contra un **Postgres 18 local desechable** (misma versión que Neon) con las migraciones
+001–031 y una copia de solo lectura de las tablas de programas de Neon; Redis en la base 7 para
+no cruzarse con el worker de la API del usuario. El archivo real de percentiles no está en el
+repo: se probó con uno **sintético** de la misma anatomía (611 ocupaciones × 33 departamentos,
+encabezados con las rarezas del real, vacíos = 0, departamentos «Guajira, La»/«Bogotá D.C.»,
+percentiles calculados con la metodología, «X» como fórmulas).
+
+| Prueba | Resultado |
+|---|---|
+| 032 sobre los datos de Neon | 33 departamentos oficiales, los 671 hechos de programas intactos con los mismos conteos por departamento, 41 alias. `down` + `up` otra vez: bien |
+| Excel real de programas por el importador nuevo | 671 filas, **0 centros nuevos** (cada departamento resolvió al mismo UUID) |
+| Carga válida (20.774 filas) | Completa en ~4,6 s; conteos por criterio nacionales y departamentales iguales a los calculados por el generador; sumas nacionales; sin V6/V7 |
+| Criterios de aceptación de `criterios/…md` §10 | Recarga sin duplicar; mismo archivo en otra celda → V10 nombrando la celda; publicado sin «reemplazar» → 409; con «reemplazar» sigue publicado; matriz vacía → 105 `pendiente` |
+| Negativas | «Amazonía» → V1; N.C. 1 en `0012` → V2; nacional ≠ suma → V5 (y no crean corte); código `13` numérico → `0013`; percentil alterado → V6 (1); columnas X sin caché → carga; nombre de 2013 → V8 y conserva el de 2025; nombre de 2026 → lo toma |
+| HTTP (API de prueba en el 4100) | 22 comprobaciones: 400 de validación, 401 sin sesión, `.strict()` en la subida, 415 a lo que no es Excel, 202 → worker → `completado`, publicar/despublicar |
+| Front en Chrome headless (páginas `metrica` e `inicio` de Neon, llamadas de tendencia redirigidas al 4100) | Los cuatro bloques muestran su criterio (81/44/405/81 = el SQL); periodos sin datos deshabilitados; cambiar de año salta al periodo con datos; filtros, paginación, limpiar; en el mapa, clic en Santander → 33 filas de Santander (código 68) |
+| `tsc --noEmit` | Limpio en la API y en el sitio-web |
+| ESLint del módulo | Limpio (el archivo de la vista traía 2 errores `set-state-in-effect`; se corrigieron junto con el nuevo) |
+
+> **Aviso — 032 no es aditiva.** Cambia nombres y borra filas de `departamentos`. Con ella
+> aplicada, el importador **viejo** de programas falla en cuanto el Excel traiga un nombre que ya
+> no existe tal cual («Distrito Capital» → choca con el código único). Aplicar la migración y
+> desplegar este código **juntos**. Y mientras no se aplique, la API nueva no arranca.
+
+### Descartado
+
+- **Una tabla de departamentos nueva** (la `departamento` con PK = código DANE de la
+  especificación): habrían sido dos catálogos de lo mismo, justo lo que se pidió evitar.
+- **Cambiar el PK de `departamentos` a código DANE**: obligaba a reescribir las FK de
+  `centros_formacion` y `programas_sobresalientes`. Conservar el UUID da lo mismo con
+  `codigo_dane` único.
+- **Migrar los cuatro `base-tendencia-*.xlsx`**: son muestras de 10 a 23 filas sin percentiles;
+  el criterio se calcula de ellos, así que no hay de dónde sacarlo.
+- **Respuesta síncrona 201/422 de la especificación**: la carga va por la cola como la de
+  programas (202 + sondeo). El 409 sí se responde en el acto, antes de guardar el archivo.
+- **`next build` para verificar**: el `next dev` del usuario estaba corriendo sobre la misma
+  carpeta y no se confirmó que el build respete `.next/dev`.
+
+**De paso:** `ObservatorioController.subir` mandaba `req.user.id` a `cargas_datos.subido_por`; con
+la cuenta maestra local (`'local-auth'`, no es UUID) la subida de programas daba 500. Ahora usa
+`idReferenciable` (exportado de `shared/auditoria-request.ts`), igual que la nueva. Y
+`MapaTendencia` casaba nombres con `includes()` («Santander» ⊂ «Norte de Santander», «Cauca» ⊂
+«Valle del Cauca»): ganó un modo por código DANE que usa la tendencia; fuentes futuras sigue con el de nombres.
+
+**Pendiente al cierre:**
+
+- **El usuario:** `npm run migrate` en `api-backend` (032 y 033 en Neon) y reiniciar la API. Hasta
+  entonces el sitio en dev ya muestra el front nuevo y los bloques dicen «No se pudieron consultar
+  los datos». Después, «Todavía no hay datos publicados» hasta la primera carga.
+- `next build` del sitio-web con el dev detenido.
+- **Probar con el Excel real** (`data2.xlsx`) contra los conteos de §10 de la especificación.
+- **Panel de Actualizaciones** para percentiles: la matriz, la carga masiva con detección de celda
+  por nombre de archivo y la publicación en bloque. La API ya lo tiene todo; mientras tanto se carga
+  por Swagger (`/api/docs`, en dev) o `curl`.
+- Publicar/despublicar no deja fila en `auditoria_cambios` (tampoco la carga de programas); sumar
+  la entidad al `CHECK` de la bitácora si se quiere.
+- Decisiones de negocio de §11 de la especificación: empates que cruzan el 80 %, grupos con una sola
+  ocupación, descripción del nivel 0, si existe el N.C. 5.
+- `fuentes-futuras-empleo` importa `MapaTendencia` desde dentro de otra feature (regla 12); ya
+  estaba así.
+
+---
+
 ## sesión 23-09-2026 (6.ª parte): la bitácora registra los bloqueos de cuenta y las preguntas de seguridad
 
 **Qué era.** Dos hechos de seguridad ocurrían sin dejar rastro:

@@ -214,7 +214,7 @@ Contenido del proyecto en capa `api-backend/`:
 - **controllers/** — traduce HTTP (req/res) a una llamada de use-case. No sabe de SQL. Trece, uno por dominio o sub-recurso: `pagina.controller.ts` (maqueta Puck), `contenido.controller.ts` (estudios/informes), `observatorio.controller.ts` (importación Excel y estadísticas OLO), `secciones.controller.ts`, `adjuntos.controller.ts`, `auditoria.controller.ts`, `usuarios.controller.ts`, `roles.controller.ts`, `permisos.controller.ts`, `role-permissions.controller.ts`, `security-questions.controller.ts`, `auth.controller.ts`, `trabajos.controller.ts` (BullMQ).
 - **use-cases/** — la lógica de negocio real. Una acción = una función (`aprobarPagina`, `guardarBorrador`, `importarProgramasExcel`). Organizadas por dominio real, no por el modelo que tocan:
   - `paginas/` — **22 archivos**, la carpeta que más creció desde que se escribió esta sección: a la gobernanza original de la maqueta Puck (`guardar-borrador`, `enviar-a-revision`, `aprobar-pagina`, `rechazar-pagina`, `listar-en-revision`, `obtener-pagina-publica`, `obtener-version-editable`, `eliminar-version`, `crear-seccion`, `eliminar-seccion`) se sumaron el bloqueo de edición (`adquirir-bloqueo`, `liberar-bloqueo`), las subidas pendientes (`registrar-subida-pendiente`, `limpiar-subidas-pendientes`) y varios listados/soporte (`listar-publicadas`, `listar-respaldos`, `listar-versiones-archivadas`, `obtener-indice-busqueda`, `restaurar-version-anterior`, `secciones.usecase.ts`). Todas pasan por `repositories/pagina.repository.ts`.
-  - `observatorio/` — ingesta e importación masiva de estadísticas laborales: `importar-programas-excel.usecase.ts` (procesamiento por stream en memoria con ExcelJS, resolución de catálogos e inserción atómica e idempotente).
+  - `observatorio/` — ingesta e importación masiva de estadísticas laborales: `importar-programas-excel.usecase.ts` (procesamiento por stream en memoria con ExcelJS, resolución de catálogos e inserción atómica e idempotente) y `tendencia-ocupacional/` (percentiles inscritos vs. vacantes por corte año × periodo: carga con validaciones V1–V9, buscador público por criterio y publicación; ver `11-base-de-datos.md` §4.6.1). Las dos cargas comparten `guardar-excel-de-carga.ts` y el catálogo único de `departamentos`.
   - `contenidos/` — estudios/informes y su soporte: `contenido.usecase.ts` (renombrado de `posts.usecase.ts`), `secciones.usecase.ts`, `adjuntos.usecase.ts`.
   - `usuarios/` — 7: crear, caducidad, roles, permisos, role-permissions.
   - `auth/` — login, first-login, security-questions.
@@ -245,7 +245,7 @@ api-backend/src/
 ├── use-cases/                # La lógica de negocio real vive aquí
 │   ├── paginas/               # 22 archivos: gobernanza Puck + bloqueo de edición +
 │   │                          #   subidas pendientes + listados/búsqueda/restaurar versión
-│   ├── observatorio/          # importar-programas-excel.usecase.ts (ExcelJS stream + upsert atómico)
+│   ├── observatorio/          # importar-programas-excel.usecase.ts (ExcelJS stream + upsert atómico), tendencia-ocupacional/
 │   ├── contenidos/            # contenido.usecase.ts (era "posts"), secciones, adjuntos
 │   ├── usuarios/               # 7: crear, caducidad, roles, permisos, role-permissions
 │   ├── auditoria/             # audit.usecase.ts

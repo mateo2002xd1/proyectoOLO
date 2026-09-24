@@ -378,8 +378,9 @@ A continuación se detalla la ficha técnica y matriz de atributos para cada una
 
 #### Catálogos Dinámicos (Dimensiones)
 
-1. **`departamentos`:** 
-   - Campos: `id` (UUID PK, `DEFAULT gen_random_uuid()`), `nombre` (VARCHAR 100, NOT NULL, Único `uq_departamentos_nombre`), `codigo_dane` (VARCHAR 10, Opcional), `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ).
+1. **`departamentos`:** catálogo cerrado de los 33 oficiales, compartido con la tendencia ocupacional (§3.17). Ya no se autogenera: los importadores lo resuelven por alias (migración 032).
+   - Campos: `id` (UUID PK, `DEFAULT gen_random_uuid()`), `nombre` (VARCHAR 100, NOT NULL, Único `uq_departamentos_nombre`, nombre oficial), `codigo_dane` (CHAR 2, NOT NULL, Único `uq_departamentos_codigo_dane`, `CHECK ~ '^[0-9]{2}$'`), `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ).
+   - **`departamentos_alias`:** `alias_normalizado` (VARCHAR 120 PK: minúsculas, sin tildes, signos como espacio), `departamento_id` (UUID FK -> `departamentos.id`, ON DELETE CASCADE).
 2. **`centros_formacion`:** 
    - Campos: `id` (UUID PK, `DEFAULT gen_random_uuid()`), `departamento_id` (UUID FK -> `departamentos.id`, ON DELETE RESTRICT, ON UPDATE CASCADE), `nombre` (VARCHAR 255, NOT NULL), `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ). Llave única compuesta: `(departamento_id, nombre)` (`uq_centros_formacion_depto_nombre`).
 3. **`niveles_formacion`:** 
@@ -407,6 +408,45 @@ A continuación se detalla la ficha técnica y matriz de atributos para cada una
 **Índices y Restricciones del Observatorio:**
 - **Restricción de Idempotencia:** `uq_sobresalientes_registro UNIQUE (centro_id, programa_id, sexo)`. Garantiza que ejecuciones sucesivas del importador de Excel actualicen las métricas existentes sin duplicar filas.
 - **Índices de Cobertura:** `idx_sobresalientes_departamento`, `idx_sobresalientes_nivel`, `idx_sobresalientes_sexo` e `idx_sobresalientes_tasa`.
+
+---
+
+### 3.17. Módulo: Tendencia ocupacional (percentiles inscritos vs. vacantes)
+
+- **Requerimientos Asociados:** RF-08
+- **Migraciones:** 033, y 034 (quita el único de `huella_datos`). Especificación y conteos esperados en `criterios/analisis-normalizacion-percentiles-ocupacionales.md`.
+- **Propósito General:** los percentiles de inscritos y vacantes por ocupación, a nivel nacional y por departamento, para cada corte (año × periodo). El criterio de cada fila (los cuatro cuadrantes del sitio) se calcula en la base.
+
+#### Catálogos (semillas)
+
+1. **`niveles_ocupacionales`:** `id` (SMALLINT PK), `codigo` (CHAR 1, único: 0, A, B, C, D), `etiqueta` (VARCHAR 40, único: texto del filtro), `nombre` (VARCHAR 80), `descripcion` (TEXT, nula en el nivel 0), `orden` (SMALLINT).
+2. **`niveles_cualificacion`:** `codigo_nc` (SMALLINT PK: 0, 1, 2, 3, 4, 6), `nivel_ocupacional_id` (SMALLINT FK -> `niveles_ocupacionales.id`).
+3. **`criterios_ocupacionales`:** `id` (SMALLINT PK, 1–4), `codigo` (VARCHAR 40, único), `nombre` (VARCHAR 200), `regla` (VARCHAR 120, documental), `orden` (SMALLINT).
+4. **`periodos`:** `id` (SMALLINT PK), `codigo` (VARCHAR 10, único: T1–T4, S1, S2, ANUAL), `nombre` (VARCHAR 40), `orden` (SMALLINT).
+5. **`ocupaciones`:** `id` (INTEGER identidad PK), `codigo` (CHAR 4, único, `CHECK ~ '^[0-9]{4}$'`), `nombre` (VARCHAR 255), `codigo_nc` (SMALLINT **generada** del código, FK -> `niveles_cualificacion.codigo_nc`), `nombre_vigencia` (INTEGER, año×10 + orden del periodo que fijó el nombre), `created_at`, `updated_at`.
+
+#### Cortes y cargas
+
+6. **`cortes_ocupacionales`:** `id` (INTEGER identidad PK), `anio` (SMALLINT, cualquier año de cuatro cifras desde la 035), `periodo_id` (SMALLINT FK -> `periodos.id`), `estado` (VARCHAR 12: `borrador` | `publicado`), `publicado_en` (TIMESTAMPTZ), `huella_datos` (CHAR 32; ya no es único desde la 034), `created_at`, `updated_at`. Único `(anio, periodo_id)`.
+7. **`cargas_datos_ocupacionales`:** `carga_id` (UUID PK, FK -> `cargas_datos.id` ON DELETE CASCADE), `anio` (SMALLINT, cuatro cifras), `periodo_id` (SMALLINT FK), `reemplazar` (BOOLEAN; siempre `false` desde que una celda con datos no admite otra carga, solo describe cargas viejas), `corte_id` (INTEGER FK -> `cortes_ocupacionales.id` ON DELETE SET NULL), `filas_nacional`, `filas_departamental` (INTEGER), `reporte` (JSONB `{errores, advertencias}` por validación V1–V10).
+
+#### Tabla Central: `indicadores_ocupacionales` (Hechos)
+
+| No. | Campo | Tipo de Dato | Permite Nulos | Tipo Llave | Referencia / Restricción | Descripción y Reglas de Negocio |
+|:---:|:---|:---|:---:|:---:|:---|:---|
+| 1 | `id` | `BIGINT` identidad | NO | **PK** | — | Identificador del hecho. |
+| 2 | `corte_id` | `INTEGER` | NO | **FK** | `cortes_ocupacionales.id` (ON DELETE CASCADE) | Año × periodo al que pertenece. |
+| 3 | `departamento_id` | `UUID` | SÍ | **FK** | `departamentos.id` (ON DELETE RESTRICT) | `NULL` = hoja nacional. |
+| 4 | `ocupacion_id` | `INTEGER` | NO | **FK** | `ocupaciones.id` | Ocupación CNO. |
+| 5 | `inscritos` | `INTEGER` | NO | Ninguna | `CHECK (inscritos >= 0)`, default 0 | Personas que buscan empleo registradas. Celda vacía del Excel = 0. |
+| 6 | `vacantes` | `INTEGER` | NO | Ninguna | `CHECK (vacantes >= 0)`, default 0 | Vacantes de los empresarios. Celda vacía = 0. |
+| 7 | `percentil_inscritos` | `DOUBLE PRECISION` | SÍ | Ninguna | `CHECK (> 0 AND <= 1)` | Tal como lo publica el Excel. `NULL` = menos de 10 registros. |
+| 8 | `percentil_vacantes` | `DOUBLE PRECISION` | SÍ | Ninguna | `CHECK (> 0 AND <= 1)` | Ídem. |
+| 9 | `criterio_id` | `SMALLINT` **generada** | NO | **FK** | `criterios_ocupacionales.id` | Fórmula del 80 %: 1 los dos > 0,8; 2 solo inscritos; 3 solo vacantes; 4 ninguno. `NULL` cuenta como 0, igual que Excel. |
+
+**Índices:** `uq_indicadores_ocupacionales_nacional (corte_id, ocupacion_id) WHERE departamento_id IS NULL`, `uq_indicadores_ocupacionales_departamental (corte_id, departamento_id, ocupacion_id) WHERE departamento_id IS NOT NULL`, `idx_indicadores_ocupacionales_busqueda (corte_id, departamento_id, criterio_id)`, `idx_indicadores_ocupacionales_ocupacion (ocupacion_id, corte_id)`.
+
+**Vistas:** `v_buscador_ocupacional` (hechos con corte, periodo, ocupación, nivel, criterio y departamento, más `es_nacional` y `sin_registros`) y `v_estado_cargas_ocupacional` (matriz año × periodo con `estado_celda`).
 
 ---
 
@@ -440,6 +480,17 @@ A continuación se detalla la ficha técnica y matriz de atributos para cada una
 | `programas_sobresalientes` | `centro_id` | `centros_formacion` | `id` | `RESTRICT` | `CASCADE` |
 | `programas_sobresalientes` | `programa_id` | `programas_formacion` | `id` | `RESTRICT` | `CASCADE` |
 | `programas_sobresalientes` | `nivel_formacion_id` | `niveles_formacion` | `id` | `RESTRICT` | `CASCADE` |
+| `departamentos_alias` | `departamento_id` | `departamentos` | `id` | `CASCADE` | `NO ACTION` |
+| `niveles_cualificacion` | `nivel_ocupacional_id` | `niveles_ocupacionales` | `id` | `NO ACTION` | `NO ACTION` |
+| `ocupaciones` | `codigo_nc` | `niveles_cualificacion` | `codigo_nc` | `NO ACTION` | `NO ACTION` |
+| `cortes_ocupacionales` | `periodo_id` | `periodos` | `id` | `NO ACTION` | `NO ACTION` |
+| `cargas_datos_ocupacionales` | `carga_id` | `cargas_datos` | `id` | `CASCADE` | `NO ACTION` |
+| `cargas_datos_ocupacionales` | `periodo_id` | `periodos` | `id` | `NO ACTION` | `NO ACTION` |
+| `cargas_datos_ocupacionales` | `corte_id` | `cortes_ocupacionales` | `id` | `SET NULL` | `NO ACTION` |
+| `indicadores_ocupacionales` | `corte_id` | `cortes_ocupacionales` | `id` | `CASCADE` | `NO ACTION` |
+| `indicadores_ocupacionales` | `departamento_id` | `departamentos` | `id` | `RESTRICT` | `NO ACTION` |
+| `indicadores_ocupacionales` | `ocupacion_id` | `ocupaciones` | `id` | `NO ACTION` | `NO ACTION` |
+| `indicadores_ocupacionales` | `criterio_id` | `criterios_ocupacionales` | `id` | `NO ACTION` | `NO ACTION` |
 
 ---
 

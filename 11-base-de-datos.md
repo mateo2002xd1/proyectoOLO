@@ -214,14 +214,68 @@ Estructura en copo de nieve (Snowflake) que almacena los catálogos y las estad�
 
 | Tabla | Qué guarda | Claves e invariantes |
 |---|---|---|
-| **`departamentos`** | Catálogo de regiones / departamentos de Colombia | `nombre` VARCHAR(100) UNIQUE (`uq_departamentos_nombre`). `codigo_dane` VARCHAR(10) opcional |
+| **`departamentos`** | Catálogo **único y cerrado** de los 33 departamentos oficiales, compartido por programas sobresalientes y tendencia ocupacional (migración 032) | `nombre` VARCHAR(100) UNIQUE (`uq_departamentos_nombre`), con el nombre oficial. `codigo_dane` CHAR(2) **obligatorio y único** (`uq_departamentos_codigo_dane`, `ck_departamentos_codigo_dane`). Ningún importador crea filas: resuelven por alias o rechazan |
+| **`departamentos_alias`** | Nombres "tal como vienen" en los Excel («Distrito Capital», «Guajira, La», «Valle») → departamento | `alias_normalizado` PK (minúsculas, sin tildes, signos como espacio: `shared/normalizar-texto.ts`). FK a `departamentos.id` `ON DELETE CASCADE`. Un nombre nuevo se agrega aquí, nunca como departamento |
 | **`centros_formacion`** | Sedes o centros del SENA pertenecientes a cada regional | `departamento_id` FK a `departamentos.id` (`ON DELETE RESTRICT, ON UPDATE CASCADE`). Restricción única compuesta `UNIQUE(departamento_id, nombre)` (`uq_centros_formacion_depto_nombre`) |
 | **`niveles_formacion`** | Niveles académicos ofrecidos (Técnico, Tecnólogo, Especialización, etc.) | `nombre` VARCHAR(50) UNIQUE (`uq_niveles_formacion_nombre`) |
 | **`programas_formacion`** | Oferta educativa del SENA ligada a su nivel | `nivel_formacion_id` FK a `niveles_formacion.id` (`ON DELETE RESTRICT, ON UPDATE CASCADE`). Restricción única compuesta `UNIQUE(nivel_formacion_id, nombre)` (`uq_programas_formacion_nivel_nombre`) |
 | **`programas_sobresalientes`** | Tabla transaccional de hechos que consolida los indicadores de vinculación laboral y egresados | FKs a `departamentos.id`, `centros_formacion.id`, `programas_formacion.id`, `niveles_formacion.id` (`RESTRICT`/`CASCADE`). Restricciones numéricas: `certificados >= 0`, `0 <= vinculados <= certificados`, `0 <= tasa_vinculacion <= 1`, `salario_promedio >= 0`. `CHECK (sexo IN ('M', 'F'))`. **Clave única de idempotencia: `UNIQUE(centro_id, programa_id, sexo)`** |
 
 **Ingesta y procesamiento atómico de Excel:**
-El backend procesa los archivos `.xlsx` en memoria mediante streaming (`exceljs`), validando encabezados y tipos. Para garantizar idempotencia y evitar duplicación de métricas, la carga se ejecuta en una única transacción de base de datos (`transaction.commit()` / `rollback()`). Primero asegura la existencia de las dimensiones de catálogo (`departamentos`, `centros_formacion`, `niveles_formacion`, `programas_formacion`) y finalmente realiza un `upsert` sobre `programas_sobresalientes` utilizando la tupla única `(centro_id, programa_id, sexo)`.
+El backend procesa los archivos `.xlsx` en memoria mediante streaming (`exceljs`), validando encabezados y tipos. Para garantizar idempotencia y evitar duplicación de métricas, la carga se ejecuta en una única transacción de base de datos (`transaction.commit()` / `rollback()`). Resuelve el departamento por `departamentos_alias` (un nombre desconocido rechaza la carga), asegura la existencia de las otras dimensiones de catálogo (`centros_formacion`, `niveles_formacion`, `programas_formacion`) y finalmente realiza un `upsert` sobre `programas_sobresalientes` utilizando la tupla única `(centro_id, programa_id, sexo)`.
+
+#### 4.6.1 Tendencia ocupacional (percentiles inscritos vs. vacantes) — migración 033
+
+Lo que alimenta el bloque "Tendencia Ocupacional" del sitio. Especificación completa, con
+el análisis del Excel y los conteos esperados, en `criterios/analisis-normalizacion-percentiles-ocupacionales.md`.
+Un **corte** es un (año, periodo): el Excel no trae ninguno de los dos y los elige quien carga.
+
+| Tabla | Qué guarda | Claves e invariantes |
+|---|---|---|
+| **`niveles_ocupacionales`** | 0, A, B, C, D con la `etiqueta` exacta del filtro ("Nivel 3,4 (C)") y su descripción | Semilla. Es también la partición con la que se calcularon los percentiles |
+| **`niveles_cualificacion`** | Dígito N.C. del Excel (0, 1, 2, 3, 4, 6) → nivel. 3 y 4 son C | Semilla. Un N.C. no catalogado (p. ej. 5) lo rechaza la FK de `ocupaciones` |
+| **`criterios_ocupacionales`** | Los cuatro criterios (las cuatro columnas "X" del Excel) | Semilla. `id` 1–4 |
+| **`periodos`** | T1–T4, S1, S2, ANUAL, en ese orden | Semilla, catálogo cerrado |
+| **`ocupaciones`** | Catálogo CNO de las ocupaciones que traen los archivos: código y nombre | `codigo` CHAR(4) UNIQUE `^[0-9]{4}$`. `codigo_nc` **generada** del código. `nombre_vigencia` = año×10 + orden del periodo que fijó el nombre: solo lo cambia un corte igual o más reciente |
+| **`cortes_ocupacionales`** | Un (año, periodo) cargado, en `borrador` o `publicado` | `UNIQUE(anio, periodo_id)`, `anio` de cuatro cifras (1000–9999, migración 035: sin rango de negocio). `huella_datos` (md5 del contenido numérico), sin `UNIQUE` desde la 034: el mismo contenido puede estar en varios periodos |
+| **`cargas_datos_ocupacionales`** | Lo propio de una carga de percentiles: celda, corte resultante, filas y `reporte` JSONB de validaciones V1–V9 | PK = FK a `cargas_datos.id` `ON DELETE CASCADE`. Lo común (archivo, quién, estado, progreso) sigue en `cargas_datos` con `modulo = 'tendencia_ocupacional'` |
+| **`indicadores_ocupacionales`** | Hechos: corte × ámbito × ocupación. `departamento_id NULL` = hoja nacional | `criterio_id` **columna generada** con la fórmula del 80 % sobre los percentiles (`DOUBLE PRECISION`, como Excel). Unicidad del grano con dos índices parciales (nacional / departamental). Índice `(corte_id, departamento_id, criterio_id)` para el buscador |
+
+Dos vistas: `v_buscador_ocupacional` (lo único que lee el buscador; el sitio solo ve
+`corte_estado = 'publicado'`) y `v_estado_cargas_ocupacional` (matriz año × periodo para el
+panel de Actualizaciones, con `estado_celda`: del menor al mayor año con corte o carga, y
+siempre de 2012 al año actual; migración 035).
+
+**El año es libre.** Cualquier año de cuatro cifras: anteriores a la serie y proyecciones hacia
+adelante (validador `anio`, CHECK de `cortes_ocupacionales` y `cargas_datos_ocupacionales`). El
+panel lo elige con un calendario de años donde también se escribe. En el sitio, sin año pedido,
+`/opciones` propone el más reciente que no sea futuro, para que las proyecciones publicadas no
+tapen los datos de hoy.
+
+La carga reutiliza el sistema de "Programa + Sobresalientes" —archivo en `archivos`,
+fila en `cargas_datos`, trabajo en la cola `heavy-jobs`— y ejecuta en **una** transacción
+los pasos de `criterios/002_carga_y_validaciones.sql`: candado por celda, celda libre, tabla
+temporal, V1–V5 (abortan), V6–V9 (advertencias), huella (sin V10 desde la 034), catálogo,
+corte e indicadores. Detalle en `use-cases/observatorio/tendencia-ocupacional/`.
+
+**Solo se carga en una celda libre**: sin corte (ni en borrador ni publicado) y sin otra carga
+en curso. La subida responde 409 si no lo está, antes de guardar el Excel, y el cargador lo
+vuelve a mirar con el candado tomado, porque dos subidas simultáneas a la misma celda vacía
+pasan las dos el primer control (la segunda termina en error con el mismo mensaje). Para
+cambiar el archivo de una celda se elimina antes su carga (abajo). Así el corte nace siempre
+en `borrador` y se crea con `INSERT` sin `ON CONFLICT`; la opción «reemplazar» se retiró
+(la columna `cargas_datos_ocupacionales.reemplazar` queda en `false` y solo describe cargas viejas).
+
+**Eliminar una carga de tendencia** (`DELETE /api/observatorio/tendencia-ocupacional/cargas/:id`,
+papelera del historial): `cargas_datos` + `cargas_datos_ocupacionales` son la trazabilidad de
+cada año y periodo, así que borrar es explícito y confirmado. Se van la fila, su reporte y el Excel
+de `uploads/cargas-datos/` —salvo que otra carga lo use: los archivos se deduplican por contenido—.
+Si la carga es la **vigente** de su celda, se borra también el corte con sus indicadores (CASCADE);
+sin eso quedarían datos sin la carga que los trajo. Una reemplazada o fallida no toca los datos.
+Corre con el candado de la celda sin esperarlo (409 si una carga está guardando en ella), y el
+cargador comprueba con el candado tomado que su carga sigue existiendo, porque el Excel se lee antes.
+La ruta de "Programa + Sobresalientes" (`DELETE /api/observatorio/cargas/:id`) las sigue rechazando
+con 409: no sabe borrar el corte.
 
 ### 4.7 Lo que hay en la base y no está en el inventario
 
@@ -257,6 +311,10 @@ Cada una es una regla de negocio que **el código no puede violar por accidente*
 | I14 | Una versión en revisión **siempre dice qué cambió** | `CHECK estado='en_revision' ⇒ btrim(comentario_cambios) <> ''` (`ck_paginas_versiones_comentario`, migración 029) | RF-06/RF-07: quien aprueba y quien audita leen el «commit» del envío. Gemela de la I4 |
 | I14 | **Ámbito de bloqueos de edición** | `CHECK (ambito IN ('sitio', 'intranet'))` | Garantiza que los bloqueos de concurrencia pesimista solo apliquen a los ámbitos válidos del sistema |
 | I15 | **Limpieza e integridad de subidas pendientes** | `PRIMARY KEY (pagina_id, ruta)` + `ON DELETE CASCADE` hacia `paginas.id` | Al eliminar una página o publicar una versión, los archivos temporales no confirmados se purgan sin dejar registros huérfanos |
+| I16 | **Un departamento, un código** | `departamentos.codigo_dane` `NOT NULL` + `UNIQUE` + `CHECK ~ '^[0-9]{2}$'` (migración 032) | El catálogo no vuelve a tener dos Vaupés: los filtros y los mapas de los dos módulos trabajan por código |
+| I17 | **El criterio no contradice a los percentiles** | `indicadores_ocupacionales.criterio_id` `GENERATED ALWAYS … STORED` con la fórmula del 80 % | Una "X" editada a mano en el Excel no llega a la base: el criterio se calcula |
+| I18 | **Una fila por corte, ámbito y ocupación** | `UNIQUE (corte_id, ocupacion_id) WHERE departamento_id IS NULL` + `UNIQUE (corte_id, departamento_id, ocupacion_id) WHERE departamento_id IS NOT NULL` | Recargar un corte reemplaza sin duplicar |
+| I19 | ~~**Un archivo, una celda**~~ — retirada en la 034 | (era `cortes_ocupacionales.huella_datos UNIQUE`) | Los datos se repiten entre periodos y el mismo archivo se carga en varios a propósito; V10 lo bloqueaba con «Este mismo contenido ya está cargado en…». La huella se sigue guardando, sin `UNIQUE` |
 
 Y las reglas que protegen el borrado: `RESTRICT` en `roles`, `secciones`, `archivos`, `departamentos`, `centros_formacion`, `niveles_formacion` y `programas_formacion` (no se borra un catálogo ni un archivo en uso), `SET NULL` en las autorías (borrar un usuario no borra su trabajo), `CASCADE` solo donde el hijo no tiene sentido sin el padre (preguntas de seguridad, versiones de página, subidas pendientes).
 
@@ -270,7 +328,7 @@ Y las reglas que protegen el borrado: `RESTRICT` en `roles`, `secciones`, `archi
 | Intentos de login / rate limiting | Redis (`express-rate-limit`) | Escritura por request fallido; en Postgres envenena el WAL sin dar nada a cambio |
 | Bloqueo de edición concurrente | Tabla `bloqueos_edicion` con lease / `expira_en` | Formalizado en Postgres en migración 021 para persistir el estado entre reinicios y auditar bloqueos activos sin depender de infraestructura externa |
 | Caché de páginas públicas | Redis | Ya decidido en la guía §3.3 |
-| **Ocupaciones CNO / CUOC (RF-09)** | **Servicio externo consumido con API key + caché Redis** | RF-09 dice "consultando **en línea** la BD del OLO". Replicarla localmente crearía una copia que envejece y una segunda fuente de verdad. La API key vive solo en el `.env` del backend (S5) |
+| **Ocupaciones CNO / CUOC (RF-09)** | **Servicio externo consumido con API key + caché Redis** | RF-09 dice "consultando **en línea** la BD del OLO". Replicarla localmente crearía una copia que envejece y una segunda fuente de verdad. La API key vive solo en el `.env` del backend (S5). La tabla `ocupaciones` (033) **no** es esa réplica: solo guarda código y nombre de las ocupaciones que traen los archivos de percentiles, para que sus hechos tengan contra qué apuntar |
 | Cola de respaldos | BullMQ sobre Redis | Solo el **historial** se persiste, en `respaldos` |
 | Contadores de límite de tasa | Redis, con **conexión propia** | Se comparten entre réplicas y sobreviven a un reinicio. La conexión es distinta de la de BullMQ a propósito: aquella se abre con `maxRetriesPerRequest: null` porque BullMQ lo exige, y con Redis caído encola comandos para siempre en vez de fallar — un limitador montado encima colgaría la API entera al primer parpadeo |
 | Permisos de cada rol, mientras se atiende | Memoria del proceso, con TTL y invalidación explícita | `roles_permisos` es la verdad; esto es una caché de un `JOIN` que se consultaría en **cada** petición autorizada. Se invalida al escribir (`invalidarPermisosDeRol`) y el TTL solo cubre el caso de varias réplicas, donde la escritura ocurre en un proceso y la caché está en otro |
@@ -288,7 +346,7 @@ Y las reglas que protegen el borrado: `RESTRICT` en `roles`, `secciones`, `archi
 | RF-05 restricción al editor | `roles_permisos` + policies |
 | RF-06 aprobación | `paginas_versiones` (I1–I4) |
 | RF-07 historial | `auditoria_cambios` |
-| RF-08 Power BI y datos dinámicos | `departamentos`, `centros_formacion`, `niveles_formacion`, `programas_formacion`, `programas_sobresalientes` (importación Excel) |
+| RF-08 Power BI y datos dinámicos | `departamentos`, `departamentos_alias`, `centros_formacion`, `niveles_formacion`, `programas_formacion`, `programas_sobresalientes` (importación Excel); tendencia ocupacional: `ocupaciones`, `cortes_ocupacionales`, `indicadores_ocupacionales` y sus catálogos (§4.6.1) |
 | RF-09 CNO/CUOC | Catálogos del Observatorio + servicio externo en línea (§6) |
 | RF-10 buscador interno | `contenidos.busqueda` (tsvector + GIN) |
 | RF-11 navegación 3 clics | `secciones.nivel` (I6) |
@@ -347,6 +405,10 @@ eso la tabla lleva el porqué en vez de un número de riesgo.
 | 026 | `observatorio-programas-sobresalientes` | Crea las 5 tablas del esquema snowflake del Observatorio: catálogos (`departamentos`, `centros_formacion`, `niveles_formacion`, `programas_formacion`) y tabla transaccional de hechos `programas_sobresalientes` con clave de idempotencia `(centro_id, programa_id, sexo)` e índices de cobertura |
 | 029 | `comentario-cambios-versiones` | `paginas_versiones.comentario_cambios VARCHAR(100)`: el «commit» obligatorio al enviar a revisión. Va en la versión y no solo en la bitácora porque aprobar, rechazar y descartar también lo registran, y las hace otra persona después. Añade la invariante I14; las versiones que ya estuvieran en revisión se rellenan con «Enviada antes de que el comentario fuera obligatorio» en vez de dejar el `CHECK` en `NOT VALID` |
 | 030 | `acciones-seguridad-auditoria` | Suma `autenticar`, `expirar` e `inactivar` al `CHECK` de `auditoria_cambios`. Hasta entonces el login no dejaba rastro y una cuenta caducada o inactivada a mano se confundía con cualquier `actualizar`. Se recrea el `CHECK` entero, como en la 011 y la 022; al revertir, las filas nuevas vuelven a `actualizar` para no romper el `CHECK` anterior |
+| 032 | `departamentos-catalogo-unico` | Depura `departamentos` **en su sitio** (conserva los UUID que ya usan los programas): fusiona variantes con el mismo código («Vaupes»/«Vaupés»), borra las que no resuelven y no tienen datos («Vupes»), pone los nombres oficiales, agrega los que faltaban (Caquetá, Chocó, Vichada), deja `codigo_dane` obligatorio y único, y crea `departamentos_alias`. Si una variante sin código tuviera datos, o dos variantes el mismo centro, **se detiene** en vez de adivinar. El `down` no deshace la fusión |
+| 033 | `tendencia-ocupacional` | Las 8 tablas y 2 vistas de §4.6.1, con sus semillas. DDL de `criterios/001_percentiles_ocupacionales.sql` con las tablas en plural, el catálogo de departamentos de la 032 y la bitácora en `cargas_datos` |
+| 034 | `cortes-ocupacionales-huella-repetible` | Quita el `UNIQUE` de `cortes_ocupacionales.huella_datos` (I19) y el cargador deja de aplicar V10: el mismo contenido puede cargarse en varios periodos. La huella se sigue guardando. Al revertir, las huellas repetidas quedan en NULL salvo la del corte más antiguo, para poder recrear el `UNIQUE` |
+| 035 | `tendencia-anio-libre` | Quita el rango 2012–2100 del año: los CHECK de `anio` de `cortes_ocupacionales` y `cargas_datos_ocupacionales` (por definición, no por nombre, como la 008) pasan a «cuatro cifras». La matriz `v_estado_cargas_ocupacional` va del menor al mayor año con corte o carga (antes 2012..máx. corte: no veía un 2005 ni un año futuro con la carga en curso o fallida). En su propia transacción, como la 032. Revertir falla sin tocar nada si ya hay años fuera de 2012–2100 |
 
 Tres lecciones de este tramo que vale más recordar que releer:
 

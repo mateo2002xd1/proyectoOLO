@@ -75,8 +75,10 @@ services:
     volumes:
       # Las mismas carpetas del repo que usa el proyecto en desarrollo, compartidas con
       # los contenedores que las sirven:
-      #  - uploads/: los Excel de las cargas del observatorio. Las consultas de fuentes
-      #    futuras y tendencias leen el archivo de aquí; la imagen no los trae.
+      #  - uploads/: los Excel de las cargas del observatorio. Los de programas y
+      #    tendencia ocupacional se guardan aquí al subirlos y el worker los lee una vez
+      #    para cargarlos en la base; fuentes futuras todavía lee su archivo de aquí en
+      #    cada consulta. La imagen no los trae.
       #  - */public/storage: al publicar o revertir una página la API copia y mueve
       #    archivos entre uploads/ y backup/. Resuelve esas carpetas subiendo cuatro
       #    niveles desde dist/shared/storage (`backup-uploads.service.ts`), o sea desde
