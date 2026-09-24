@@ -1,5 +1,6 @@
 'use client';
 
+import { CargaCriteriosClasificacion } from './carga-criterios-clasificacion';
 import { CargaProgramaSobresalientes } from './carga-programa-sobresalientes';
 
 interface ActualizacionesViewProps {
@@ -7,20 +8,20 @@ interface ActualizacionesViewProps {
   puedeActualizar: boolean;
 }
 
-/** Las 3 tarjetas que todavía no tienen Excel ni esquema de datos especificado. */
+/** Las tarjetas que todavía no tienen Excel ni esquema de datos especificado. */
 const MODULOS_PROXIMAMENTE = [
   'Alertas de inversión',
   'Fuentes futuras de empleo',
-  'Criterios de clasificación de resultados',
 ];
 
 /**
  * Sección "Actualizaciones" del panel de administración — antes "Soporte", un
  * enlace del sidebar sin página real detrás (`/admin/dashboard/soporte`, 404).
  *
- * Cuatro tarjetas de carga de datos; hoy solo "Programa + Sobresalientes" tiene
- * Excel, tablas y flujo de carga especificados. Las otras tres quedan como
- * "Próximamente" hasta que se defina su estructura de datos.
+ * Cuatro tarjetas de carga de datos. "Programa + Sobresalientes" y "Criterios de
+ * clasificación de resultados" (percentiles de la tendencia ocupacional) ya cargan;
+ * las otras dos quedan como "Próximamente" hasta que se defina su estructura de datos.
+ * Criterios ocupa todo el ancho: lleva formulario de año y periodo e historial por celda.
  */
 export function ActualizacionesView({ puedeActualizar }: ActualizacionesViewProps) {
   return (
@@ -30,7 +31,7 @@ export function ActualizacionesView({ puedeActualizar }: ActualizacionesViewProp
         Cargas de archivos que actualizan datos públicos del sitio.
       </p>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <CargaProgramaSobresalientes puedeActualizar={puedeActualizar} />
 
         {MODULOS_PROXIMAMENTE.map((nombre) => (
@@ -42,6 +43,8 @@ export function ActualizacionesView({ puedeActualizar }: ActualizacionesViewProp
             <p className="mt-2 text-sm text-gray-500 dark:text-[#94a3b8]">Próximamente</p>
           </div>
         ))}
+
+        <CargaCriteriosClasificacion puedeActualizar={puedeActualizar} />
       </div>
     </div>
   );

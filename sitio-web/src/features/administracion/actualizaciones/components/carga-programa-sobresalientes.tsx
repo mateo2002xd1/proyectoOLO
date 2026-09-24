@@ -3,47 +3,12 @@
 import { useRef } from 'react';
 import { ArrowUpTrayIcon, InformationCircleIcon } from '@heroicons/react/20/solid';
 import { useCargasProgramaSobresalientes } from '../hooks/use-cargas-programa-sobresalientes';
+import { BarraDeProgreso } from './barra-de-progreso';
 import { HistorialCargasGrid } from './historial-cargas-grid';
-import type { CargaDatos } from '../types';
 
 /** Etiqueta de la fase actual — 60% es donde `importarProgramasExcel` pasa de
  * leer el Excel a escribir en la base (ver `ProgresoImportacion` en el backend). */
 const etiquetaFase = (progreso: number) => (progreso < 60 ? 'Leyendo el archivo' : 'Guardando en la base de datos');
-
-/**
- * Progreso real (no simulado) de la carga en curso: el worker de `heavy-jobs`
- * escribe `progreso`/`filasProcesadas`/`filasTotales` en `cargas_datos` a medida
- * que avanza, y el sondeo de `useCargasProgramaSobresalientes` los trae aquí.
- */
-function BarraDeProgreso({ carga }: { carga: CargaDatos }) {
-  const porcentaje = Math.min(100, Math.max(0, carga.progreso));
-
-  return (
-    <div className="mt-3 w-full max-w-sm" aria-live="polite">
-      <div className="flex items-baseline justify-between text-xs text-gray-500 dark:text-[#94a3b8]">
-        <span>{etiquetaFase(porcentaje)}</span>
-        <span className="font-medium text-[#001631] dark:text-[#f6f6f6]">{porcentaje}%</span>
-      </div>
-      <div
-        className="mt-1 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-zinc-700"
-        role="progressbar"
-        aria-valuenow={porcentaje}
-        aria-valuemin={0}
-        aria-valuemax={100}
-      >
-        <div
-          className="h-full rounded-full bg-brand-interactive transition-[width] duration-300 ease-out"
-          style={{ width: `${porcentaje}%` }}
-        />
-      </div>
-      {carga.filasTotales !== null && (
-        <p className="mt-1 text-xs text-gray-500 dark:text-[#94a3b8]">
-          {carga.filasProcesadas.toLocaleString('es-CO')} de {carga.filasTotales.toLocaleString('es-CO')} filas
-        </p>
-      )}
-    </div>
-  );
-}
 
 interface CargaProgramaSobresalientesProps {
   /** Solo Administrador/Superadmin puede subir — el resto ve el historial nada más. */
@@ -81,7 +46,7 @@ export function CargaProgramaSobresalientes({ puedeActualizar }: CargaProgramaSo
             }`}
           >
             <ArrowUpTrayIcon className="size-4" />
-            {subiendo ? 'Subiendo...' : cargaEnProceso ? 'Procesando...' : 'Cargar archivo Excel'}
+            {subiendo ? 'Subiendo...' : cargaEnProceso ? 'Procesando...' : 'Cargar'}
             <input
               ref={inputRef}
               type="file"
@@ -96,7 +61,14 @@ export function CargaProgramaSobresalientes({ puedeActualizar }: CargaProgramaSo
             Formato admitido: .xlsx
           </p>
           {error && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>}
-          {cargaEnProceso && <BarraDeProgreso carga={cargaEnProceso} />}
+          {cargaEnProceso && (
+            <BarraDeProgreso
+              progreso={cargaEnProceso.progreso}
+              filasProcesadas={cargaEnProceso.filasProcesadas}
+              filasTotales={cargaEnProceso.filasTotales}
+              fase={etiquetaFase(cargaEnProceso.progreso)}
+            />
+          )}
         </div>
       ) : (
         <p className="mt-4 text-sm text-gray-500 dark:text-[#94a3b8]">
