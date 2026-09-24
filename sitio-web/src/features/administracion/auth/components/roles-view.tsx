@@ -174,6 +174,7 @@ export default function RolesView() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const [rolPermisos, setRolPermisos] = useState<Role | null>(null);
+  const [descripcionEdicion, setDescripcionEdicion] = useState('');
   const [selectedPermissionIds, setSelectedPermissionIds] = useState<Set<string>>(new Set());
   const [originalPermissionIds, setOriginalPermissionIds] = useState<Set<string>>(new Set());
   const [loadingRolePerms, setLoadingRolePerms] = useState(false);
@@ -270,6 +271,7 @@ export default function RolesView() {
 
   const abrirModalPermisos = useCallback(async (rol: Role) => {
     setRolPermisos(rol);
+    setDescripcionEdicion(rol.description || '');
     setSelectedPermissionIds(new Set());
     setOriginalPermissionIds(new Set());
     setLoadingRolePerms(true);
@@ -297,19 +299,41 @@ export default function RolesView() {
     try {
       const aAsignar = [...selectedPermissionIds].filter((id) => !originalPermissionIds.has(id));
       const aRevocar = [...originalPermissionIds].filter((id) => !selectedPermissionIds.has(id));
-      await Promise.all([
+      
+      const promises: Promise<any>[] = [
         ...aAsignar.map((permId) => assignPermissionToRole(rolPermisos.id, permId)),
         ...aRevocar.map((permId) => revokePermissionFromRole(rolPermisos.id, permId)),
-      ]);
+      ];
+
+      const descripcionCambiada = descripcionEdicion !== (rolPermisos.description || '');
+      if (descripcionCambiada) {
+        promises.push(
+          fetch(`/api/roles/${rolPermisos.id}`, {
+            method: 'PATCH',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ description: descripcionEdicion }),
+          }).then(async res => {
+             if (!res.ok) throw new Error((await res.json()).error || 'Error al actualizar descripción');
+          })
+        );
+      }
+
+      await Promise.all(promises);
+
+      if (descripcionCambiada) {
+        await fetchRoles();
+      }
+
       setOriginalPermissionIds(new Set(selectedPermissionIds));
       setRolPermisos(null);
-      notificar('Permisos actualizados', `Se aplicaron a todas las personas con el rol "${rolPermisos.name}".`);
+      notificar('Rol actualizado', `Se aplicaron los cambios para el rol "${rolPermisos.name}".`);
     } catch (err) {
-      notificar('Error', mensajeDeError(err) || 'No se pudieron guardar los permisos.', 'error');
+      notificar('Error', mensajeDeError(err) || 'No se pudieron guardar los cambios.', 'error');
     } finally {
       setGuardandoPermisos(false);
     }
-  }, [rolPermisos, selectedPermissionIds, originalPermissionIds, assignPermissionToRole, revokePermissionFromRole]);
+  }, [rolPermisos, selectedPermissionIds, originalPermissionIds, assignPermissionToRole, revokePermissionFromRole, descripcionEdicion, fetchRoles]);
 
   return (
     <div className="p-6 lg:p-8">
@@ -391,7 +415,7 @@ export default function RolesView() {
                           type="button"
                           onClick={() => abrirModalPermisos(rol)}
                           className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
-                          title="Editar permisos"
+                          title="Editar rol y permisos"
                         >
                           <PencilIcon className="size-4" />
                         </button>
@@ -453,11 +477,13 @@ export default function RolesView() {
       <ModalPermisos
         abierto={!!rolPermisos}
         onCerrar={() => { setRolPermisos(null); setLoadingRolePerms(false); }}
-        rol={rolPermisos ? { id: rolPermisos.id, nombre: rolPermisos.name } : null}
+        rol={rolPermisos ? { id: rolPermisos.id, nombre: rolPermisos.name, descripcion: rolPermisos.description } : null}
         permisos={loadingRolePerms ? [] : permissions}
         originales={originalPermissionIds}
         seleccionados={selectedPermissionIds}
         onCambiarSeleccion={setSelectedPermissionIds}
+        descripcion={descripcionEdicion}
+        onCambiarDescripcion={setDescripcionEdicion}
         onGuardar={guardarPermisos}
         guardando={guardandoPermisos}
       />

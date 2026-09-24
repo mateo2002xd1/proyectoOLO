@@ -72,22 +72,22 @@ export function TablaTendencia({
       </p>
 
       <div className="overflow-x-auto rounded-[16px] border border-[#eaecf0] bg-white shadow-sm">
-        <table className="w-full min-w-[760px] border-collapse text-left text-sm">
+        <table className="w-full min-w-[760px] table-fixed border-collapse text-left text-sm">
           <thead>
             <tr className="border-b border-[#eaecf0] bg-[#f8f9fa]">
-              <th className="px-4 py-3 text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
+              <th className="w-[14%] px-4 py-3 text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
                 Nivel Ocupacional
               </th>
-              <th className="px-4 py-3 text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
+              <th className="w-[12%] px-4 py-3 text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
                 Código C.N.O.
               </th>
               <th className="px-4 py-3 text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
                 Nombre Ocupación
               </th>
-              <th className="px-4 py-3 text-right text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
+              <th className="w-[14%] px-4 py-3 text-right text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
                 Total Inscritos
               </th>
-              <th className="px-4 py-3 text-right text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
+              <th className="w-[14%] px-4 py-3 text-right text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
                 Total Vacantes
               </th>
             </tr>

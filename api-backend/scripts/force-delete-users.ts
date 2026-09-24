@@ -1,5 +1,5 @@
 import sequelize from '../src/config/database';
-import { User, SecurityQuestion, Post, Pagina, PaginaVersion } from '../src/infrastructure/db/models';
+import { User, SecurityQuestion, Contenido, Pagina, PaginaVersion } from '../src/infrastructure/db/models';
 
 const run = async () => {
   try {
@@ -13,7 +13,7 @@ const run = async () => {
     
     if (userIds.length > 0) {
       await SecurityQuestion.destroy({ where: { user_id: userIds } });
-      await Post.destroy({ where: { authorId: userIds } });
+      await Contenido.destroy({ where: { authorId: userIds } });
       await PaginaVersion.destroy({ where: { revisorId: userIds } });
       await PaginaVersion.destroy({ where: { publicadoPor: userIds } });
       await Pagina.destroy({ where: { creadoPor: userIds } });
