@@ -136,6 +136,8 @@ A continuación se detalla la ficha técnica y matriz de atributos para cada una
 5. **`criterios_ocupacionales`**: Dimensiones analíticas estáticas.
 6. **`cargas_datos_ocupacionales`**: Control de auditoría de ingesta (Excel/CSV).
 
+Todas con clave primaria `UUID` (`DEFAULT gen_random_uuid()`) desde la migración 037; la 033 las creó con `SMALLINT`/`INTEGER` secuenciales. `niveles_cualificacion.codigo_nc` y `criterios_ocupacionales.codigo` quedan `UNIQUE`: son lo que referencian las dos columnas generadas (`ocupaciones.codigo_nc` e `indicadores_ocupacionales.criterio_codigo`).
+
 La especificación exhaustiva columna por columna de estas tablas se encuentra directamente en las definiciones de los modelos Sequelize (`api-backend/src/infrastructure/db/models/olo/`).
 
 ---
@@ -382,17 +384,17 @@ La especificación exhaustiva columna por columna de estas tablas se encuentra d
 
 | No. | Campo | Tipo de Dato | Permite Nulos | Tipo Llave | Referencia / Restricción | Descripción y Reglas de Negocio |
 |:---:|:---|:---|:---:|:---:|:---|:---|
-| 1 | `id` | `BIGINT` identidad | NO | **PK** | — | Identificador del hecho. |
-| 2 | `corte_id` | `INTEGER` | NO | **FK** | `cortes_ocupacionales.id` (ON DELETE CASCADE) | Año × periodo al que pertenece. |
+| 1 | `id` | `UUID` | NO | **PK** | `DEFAULT gen_random_uuid()` | Identificador del hecho (migración 037; antes `BIGINT` de identidad). |
+| 2 | `corte_id` | `UUID` | NO | **FK** | `cortes_ocupacionales.id` (ON DELETE CASCADE) | Año × periodo al que pertenece. |
 | 3 | `departamento_id` | `UUID` | SÍ | **FK** | `departamentos.id` (ON DELETE RESTRICT) | `NULL` = hoja nacional. |
-| 4 | `ocupacion_id` | `INTEGER` | NO | **FK** | `ocupaciones.id` | Ocupación CNO. |
+| 4 | `ocupacion_id` | `UUID` | NO | **FK** | `ocupaciones.id` | Ocupación CNO. |
 | 5 | `inscritos` | `INTEGER` | NO | Ninguna | `CHECK (inscritos >= 0)`, default 0 | Personas que buscan empleo registradas. Celda vacía del Excel = 0. |
 | 6 | `vacantes` | `INTEGER` | NO | Ninguna | `CHECK (vacantes >= 0)`, default 0 | Vacantes de los empresarios. Celda vacía = 0. |
 | 7 | `percentil_inscritos` | `DOUBLE PRECISION` | SÍ | Ninguna | `CHECK (> 0 AND <= 1)` | Tal como lo publica el Excel. `NULL` = menos de 10 registros. |
 | 8 | `percentil_vacantes` | `DOUBLE PRECISION` | SÍ | Ninguna | `CHECK (> 0 AND <= 1)` | Ídem. |
-| 9 | `criterio_id` | `SMALLINT` **generada** | NO | **FK** | `criterios_ocupacionales.id` | Fórmula del 80 %: 1 los dos > 0,8; 2 solo inscritos; 3 solo vacantes; 4 ninguno. `NULL` cuenta como 0, igual que Excel. |
+| 9 | `criterio_codigo` | `VARCHAR(40)` **generada** | NO | **FK** | `criterios_ocupacionales.codigo` | Fórmula del 80 %: `ALTA_OFERTA_ALTA_DEMANDA` los dos > 0,8; `ALTA_OFERTA_BAJA_DEMANDA` solo inscritos; `BAJA_OFERTA_ALTA_DEMANDA` solo vacantes; `BAJA_OFERTA_BAJA_DEMANDA` ninguno. Apunta al código y no al id porque una columna generada no puede calcular un UUID. `NULL` cuenta como 0, igual que Excel. |
 
-**Índices:** `uq_indicadores_ocupacionales_nacional (corte_id, ocupacion_id) WHERE departamento_id IS NULL`, `uq_indicadores_ocupacionales_departamental (corte_id, departamento_id, ocupacion_id) WHERE departamento_id IS NOT NULL`, `idx_indicadores_ocupacionales_busqueda (corte_id, departamento_id, criterio_id)`, `idx_indicadores_ocupacionales_ocupacion (ocupacion_id, corte_id)`.
+**Índices:** `uq_indicadores_ocupacionales_nacional (corte_id, ocupacion_id) WHERE departamento_id IS NULL`, `uq_indicadores_ocupacionales_departamental (corte_id, departamento_id, ocupacion_id) WHERE departamento_id IS NOT NULL`, `idx_indicadores_ocupacionales_busqueda (corte_id, departamento_id, criterio_codigo)`, `idx_indicadores_ocupacionales_ocupacion (ocupacion_id, corte_id)`.
 
 ---
 
@@ -430,7 +432,7 @@ La especificación exhaustiva columna por columna de estas tablas se encuentra d
 | `indicadores_ocupacionales` | `corte_id` | `cortes_ocupacionales` | `id` | `CASCADE` | `NO ACTION` |
 | `indicadores_ocupacionales` | `departamento_id` | `departamentos` | `id` | `RESTRICT` | `NO ACTION` |
 | `indicadores_ocupacionales` | `ocupacion_id` | `ocupaciones` | `id` | `NO ACTION` | `NO ACTION` |
-| `indicadores_ocupacionales` | `criterio_id` | `criterios_ocupacionales` | `id` | `NO ACTION` | `NO ACTION` |
+| `indicadores_ocupacionales` | `criterio_codigo` | `criterios_ocupacionales` | `codigo` | `NO ACTION` | `NO ACTION` |
 
 ---
 

@@ -383,7 +383,7 @@ La consulta de opciones devuelve además `disponible` (si hay corte publicado pa
 | `periodo` | sí | `T1`, `T2`, `T3`, `T4`, `S1`, `S2`, `ANUAL` | `periodo_codigo = …` |
 | `departamento` | sí | `nacional` o `codigo_dane` (`05`, `11`…) | `departamento_id IS NULL` o `codigo_dane = …` |
 | `nivel` | no (omitido = Todos) | `0`, `A`, `B`, `C`, `D` | `nivel_codigo = …` |
-| `criterio` | no | 1–4 o `criterio_ocupacional.codigo` | `criterio_id = …` |
+| `criterio` | no | `criterio_ocupacional.codigo` (el 1–4 dejó de aceptarse en la migración 037: el id es un UUID) | `criterio_codigo = …` |
 | `q` | no | texto | `ocupacion_nombre ILIKE` o código exacto |
 | `ocultarSinRegistros` | no | booleano | `NOT sin_registros` |
 
