@@ -54,8 +54,8 @@ function PendientesDePublicar({
 }: {
   celdas: CeldaTendencia[];
   /** Ausente en solo lectura. */
-  onPublicar?: (...corteIds: number[]) => void;
-  cortesEnAccion: number[];
+  onPublicar?: (...corteIds: string[]) => void;
+  cortesEnAccion: string[];
 }) {
   if (celdas.length === 0) return null;
   const corteIds = celdas.flatMap((c) => (c.corteId === null ? [] : [c.corteId]));

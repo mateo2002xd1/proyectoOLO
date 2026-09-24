@@ -31,7 +31,7 @@ export interface CeldaTendencia {
   periodoCodigo: string;
   periodoNombre: string;
   estadoCelda: EstadoCeldaTendencia;
-  corteId: number | null;
+  corteId: string | null;
   publicadoEn: string | null;
   cargaId: string | null;
   /** Estado del último intento: si falló un reemplazo, la celda conserva sus datos. */
@@ -70,7 +70,7 @@ export interface CargaTendencia {
   periodoCodigo: string;
   periodoNombre: string;
   reemplazar: boolean;
-  corteId: number | null;
+  corteId: string | null;
   /** Estado de hoy del corte que dejó esta carga. */
   corteEstado: EstadoCorteTendencia | null;
   cortePublicadoEn: string | null;

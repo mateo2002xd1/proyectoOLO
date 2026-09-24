@@ -9,8 +9,15 @@ export interface RegistroTendenciaOcupacional {
   vacantes: number;
   percentilInscritos: number | null;
   percentilVacantes: number | null;
-  criterioId: number;
+  criterio: CodigoCriterio;
 }
+
+/** `criterios_ocupacionales.codigo`: lo que filtra el buscador (el id es un UUID interno). */
+export type CodigoCriterio =
+  | 'ALTA_OFERTA_ALTA_DEMANDA'
+  | 'ALTA_OFERTA_BAJA_DEMANDA'
+  | 'BAJA_OFERTA_ALTA_DEMANDA'
+  | 'BAJA_OFERTA_BAJA_DEMANDA';
 
 /** Respuesta de `GET /api/observatorio/tendencia-ocupacional`. */
 export interface ResultadoTendenciaOcupacional {
@@ -49,7 +56,7 @@ export interface OpcionesTendenciaOcupacional {
   niveles: NivelOcupacional[];
   /** "Nacional" primero (valor `nacional`); luego los 33 con su código DANE como valor. */
   departamentos: { valor: string; nombre: string }[];
-  criterios: { id: number; codigo: string; nombre: string }[];
+  criterios: { codigo: CodigoCriterio; nombre: string }[];
 }
 
 export interface DefinicionNivel {

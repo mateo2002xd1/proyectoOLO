@@ -1,4 +1,4 @@
-import type { TipoTendenciaOcupacional } from '../types';
+import type { CodigoCriterio, TipoTendenciaOcupacional } from '../types';
 
 /**
  * Títulos oficiales según el cuadrante de tendencias ocupacionales:
@@ -15,21 +15,21 @@ export const TITULOS_TENDENCIA: Record<TipoTendenciaOcupacional, string> = {
 };
 
 /**
- * Cuadrante del bloque → criterio de la base (`criterios_ocupacionales.id`), que es lo
- * que filtra la consulta: cada bloque del sitio muestra un solo criterio.
+ * Cuadrante del bloque → criterio de la base (`criterios_ocupacionales.codigo`), que es
+ * lo que filtra la consulta: cada bloque del sitio muestra un solo criterio.
  *
  * El nombre del cuadrante va primero por empresarios (vacantes) y luego por quienes
  * buscan empleo (inscritos); el criterio se define con el percentil 80 de cada uno:
- *   1  inscritos > 80 % y vacantes > 80 %    → más / más
- *   2  inscritos > 80 % y vacantes <= 80 %   → menos solicitadas / más registradas
- *   3  vacantes > 80 % e inscritos <= 80 %   → más solicitadas / menos registradas
- *   4  los dos <= 80 %                        → menos / menos
+ *   ALTA_OFERTA_ALTA_DEMANDA  inscritos > 80 % y vacantes > 80 %    → más / más
+ *   ALTA_OFERTA_BAJA_DEMANDA  inscritos > 80 % y vacantes <= 80 %   → menos solicitadas / más registradas
+ *   BAJA_OFERTA_ALTA_DEMANDA  vacantes > 80 % e inscritos <= 80 %   → más solicitadas / menos registradas
+ *   BAJA_OFERTA_BAJA_DEMANDA  los dos <= 80 %                        → menos / menos
  */
-export const CRITERIO_POR_TIPO: Record<TipoTendenciaOcupacional, number> = {
-  'mas-mas': 1,
-  'menos-mas': 2,
-  'mas-menos': 3,
-  'menos-menos': 4,
+export const CRITERIO_POR_TIPO: Record<TipoTendenciaOcupacional, CodigoCriterio> = {
+  'mas-mas': 'ALTA_OFERTA_ALTA_DEMANDA',
+  'menos-mas': 'ALTA_OFERTA_BAJA_DEMANDA',
+  'mas-menos': 'BAJA_OFERTA_ALTA_DEMANDA',
+  'menos-menos': 'BAJA_OFERTA_BAJA_DEMANDA',
 };
 
 /**

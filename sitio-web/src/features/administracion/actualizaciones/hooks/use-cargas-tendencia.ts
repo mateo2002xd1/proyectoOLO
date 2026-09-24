@@ -47,7 +47,7 @@ export function useCargasTendencia() {
   const [ultimaCarga, setUltimaCarga] = useState<CargaTendencia | null>(null);
 
   /** Cortes con una publicación o despublicación en curso. */
-  const [cortesEnAccion, setCortesEnAccion] = useState<number[]>([]);
+  const [cortesEnAccion, setCortesEnAccion] = useState<string[]>([]);
   const [errorAccion, setErrorAccion] = useState<string | null>(null);
 
   /** Carga que se está eliminando, y lo que dijo la API de la última que se eliminó. */
@@ -160,7 +160,7 @@ export function useCargasTendencia() {
     }
   };
 
-  const cambiarPublicacion = async (corteIds: number[], publicar: boolean) => {
+  const cambiarPublicacion = async (corteIds: string[], publicar: boolean) => {
     setCortesEnAccion(corteIds);
     setErrorAccion(null);
     try {
@@ -223,8 +223,8 @@ export function useCargasTendencia() {
     cargaEnProceso,
     ultimaCarga,
     subir,
-    publicar: (...corteIds: number[]) => cambiarPublicacion(corteIds, true),
-    despublicar: (corteId: number) => cambiarPublicacion([corteId], false),
+    publicar: (...corteIds: string[]) => cambiarPublicacion(corteIds, true),
+    despublicar: (corteId: string) => cambiarPublicacion([corteId], false),
     cortesEnAccion,
     errorAccion,
     eliminar,

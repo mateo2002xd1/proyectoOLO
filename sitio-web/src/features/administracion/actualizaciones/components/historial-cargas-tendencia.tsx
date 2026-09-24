@@ -22,9 +22,9 @@ interface HistorialCargasTendenciaProps {
   opcionesPeriodo: { value: string; label: string }[];
   onCambiarPagina: (pagina: number) => void;
   /** Ausentes en solo lectura (quien no puede actualizar no publica ni elimina). */
-  onPublicar?: (corteId: number) => void;
-  onDespublicar?: (corteId: number) => void;
-  cortesEnAccion: number[];
+  onPublicar?: (corteId: string) => void;
+  onDespublicar?: (corteId: string) => void;
+  cortesEnAccion: string[];
   onEliminar?: (carga: CargaTendencia) => void;
   cargaEnEliminacion: string | null;
 }

@@ -1,6 +1,7 @@
 import { URL_DE_LA_API } from '@/shared/lib/url-de-la-api';
 
 import type {
+  CodigoCriterio,
   FiltrosTendencia,
   OpcionesTendenciaOcupacional,
   ResultadoTendenciaOcupacional,
@@ -47,7 +48,7 @@ export function obtenerOpcionesTendencia(anio?: number, signal?: AbortSignal) {
  * totales los resuelve la API en SQL; aquí solo se arma la petición.
  */
 export function buscarTendenciaOcupacional(
-  criterio: number,
+  criterio: CodigoCriterio,
   filtros: FiltrosTendencia,
   pagina: number,
   porPagina: number,
@@ -57,7 +58,7 @@ export function buscarTendenciaOcupacional(
     anio: filtros.anio,
     periodo: filtros.periodo,
     departamento: filtros.departamento,
-    criterio: String(criterio),
+    criterio,
     pagina: String(pagina),
     porPagina: String(porPagina),
   });

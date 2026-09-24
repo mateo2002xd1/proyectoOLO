@@ -96,7 +96,7 @@ export async function obtenerCargaTendencia(id: string): Promise<CargaTendencia>
 }
 
 /** Hace visibles en el sitio los cortes en borrador. */
-export async function publicarCortesTendencia(corteIds: number[]): Promise<void> {
+export async function publicarCortesTendencia(corteIds: string[]): Promise<void> {
   await api.post(`${TENDENCIA}/cortes/publicar`, { corteIds });
 }
 
@@ -110,6 +110,6 @@ export async function eliminarCargaTendencia(id: string): Promise<CargaTendencia
 }
 
 /** Devuelve un corte a borrador: deja de verse en el sitio y sus datos se conservan. */
-export async function despublicarCorteTendencia(corteId: number): Promise<void> {
+export async function despublicarCorteTendencia(corteId: string): Promise<void> {
   await api.patch(`${TENDENCIA}/cortes/${corteId}/despublicar`);
 }
