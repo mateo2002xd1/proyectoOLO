@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { ObservatorioRepository as Repo } from '../../repositories/observatorio.repository';
+import { MODULO_CARGA as MODULO_CARGA_TENDENCIA } from '../../repositories/tendencia-ocupacional.repository';
 
 export class ErrorAlEliminarCarga extends Error {
   constructor(message: string, public status: number) {
@@ -29,23 +30,44 @@ export async function eliminarCargaObservatorio(id: string): Promise<void> {
     throw new ErrorAlEliminarCarga('Carga no encontrada.', 404);
   }
 
+  // Las de tendencia ocupacional tienen su propia ruta, que además retira del corte los
+  // datos de la carga vigente (`eliminarCargaTendencia`). Esta, la de programas, no sabe
+  // hacerlo y dejaría un corte con datos sin la carga que los trajo.
+  if (carga.get('modulo') === MODULO_CARGA_TENDENCIA) {
+    throw new ErrorAlEliminarCarga(
+      'Las cargas de tendencia ocupacional se eliminan con DELETE /api/observatorio/tendencia-ocupacional/cargas/:id.',
+      409
+    );
+  }
+
   const archivoId = carga.get('archivoId') as string | null;
   await Repo.eliminarCarga(id);
 
-  if (!archivoId) return;
+  if (archivoId) await eliminarArchivoSiQuedaSuelto(archivoId, id);
+}
 
-  const otrasReferencias = await Repo.otrasReferenciasAlArchivo(archivoId, id);
-  if (otrasReferencias > 0) return;
+/**
+ * Borra el Excel de `uploads/cargas-datos/` y su fila en `archivos`, salvo que otra carga o
+ * un contenido lo siga usando: los archivos se deduplican por contenido, así que el mismo
+ * Excel subido dos veces —o a dos periodos de tendencia— es un solo archivo.
+ *
+ * Se llama con la carga ya borrada. Un archivo que no estaba en disco (o un permiso raro)
+ * no tumba la petición: la carga ya no existe y el registro del archivo tampoco.
+ *
+ * @returns `true` si el archivo se borró; `false` si se conservó porque sigue en uso.
+ */
+export async function eliminarArchivoSiQuedaSuelto(archivoId: string, cargaId: string): Promise<boolean> {
+  const otrasReferencias = await Repo.otrasReferenciasAlArchivo(archivoId, cargaId);
+  if (otrasReferencias > 0) return false;
 
   const archivo = await Repo.obtenerArchivo(archivoId);
-  if (!archivo) return;
+  if (!archivo) return true;
 
   await Repo.eliminarArchivo(archivoId);
 
   const rutaAbsoluta = path.join(process.cwd(), archivo.get('rutaRelativa') as string);
   await fs.unlink(rutaAbsoluta).catch((error) => {
-    // El registro ya se borró — un archivo que ya no estaba en disco (o un permiso
-    // raro) no debe dejar la carga a medio borrar ni tumbar la petición.
-    console.error(`[observatorio] No se pudo borrar el archivo físico de la carga ${id}:`, error);
+    console.error(`[observatorio] No se pudo borrar el archivo físico de la carga ${cargaId}:`, error);
   });
+  return true;
 }

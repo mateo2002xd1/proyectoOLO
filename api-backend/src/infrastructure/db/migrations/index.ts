@@ -32,6 +32,10 @@ import * as cargasDatosProgreso from './028-cargas-datos-progreso';
 import * as comentarioCambiosVersiones from './029-comentario-cambios-versiones';
 import * as accionesSeguridadAuditoria from './030-acciones-seguridad-auditoria';
 import * as bloqueoYPreguntasAuditoria from './031-bloqueo-y-preguntas-auditoria';
+import * as departamentosCatalogoUnico from './032-departamentos-catalogo-unico';
+import * as tendenciaOcupacional from './033-tendencia-ocupacional';
+import * as cortesHuellaRepetible from './034-cortes-ocupacionales-huella-repetible';
+import * as tendenciaAnioLibre from './035-tendencia-anio-libre';
 
 export interface Migracion {
   nombre: string;
@@ -74,6 +78,10 @@ const migraciones: Migracion[] = [
   comentarioCambiosVersiones,
   accionesSeguridadAuditoria,
   bloqueoYPreguntasAuditoria,
+  departamentosCatalogoUnico,
+  tendenciaOcupacional,
+  cortesHuellaRepetible,
+  tendenciaAnioLibre,
 ];
 
 const TABLA_CONTROL = 'migraciones_aplicadas';

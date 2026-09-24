@@ -24,8 +24,11 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
  *
  * Con el id en `null` la fila sí se escribe, y `usuario_nombre` —que se guarda
  * precisamente para estos casos— deja dicho quién fue.
+ *
+ * Sirve igual para cualquier otra columna de autoría con FK a `usuarios`, como
+ * `cargas_datos.subido_por` y `archivos.subido_por`.
  */
-const idReferenciable = (usuario: Request['user']) => {
+export const idReferenciable = (usuario: Request['user']) => {
   if (!usuario || usuario.isLocal) return null;
   return typeof usuario.id === 'string' && UUID.test(usuario.id) ? usuario.id : null;
 };

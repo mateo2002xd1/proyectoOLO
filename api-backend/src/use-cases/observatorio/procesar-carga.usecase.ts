@@ -36,8 +36,7 @@ export async function procesarCargaObservatorio(cargaId: string, rutaAbsoluta: s
       cargaId,
       resultado.estadisticas.filasCargadas,
       `${resultado.estadisticas.filasCargadas} filas cargadas ` +
-        `(${resultado.estadisticas.nuevosDepartamentos} departamentos, ` +
-        `${resultado.estadisticas.nuevosCentros} centros, ` +
+        `(${resultado.estadisticas.nuevosCentros} centros, ` +
         `${resultado.estadisticas.nuevosNiveles} niveles y ` +
         `${resultado.estadisticas.nuevosProgramas} programas nuevos)` +
         (resultado.estadisticas.filasCombinadas > 0

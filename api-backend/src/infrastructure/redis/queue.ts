@@ -1,6 +1,7 @@
 import { Queue, Worker, Job } from 'bullmq';
 import { crearLoggerDeErrorConThrottle, getRedis } from './index';
 import { procesarCargaObservatorio } from '../../use-cases/observatorio/procesar-carga.usecase';
+import { procesarCargaTendencia } from '../../use-cases/observatorio/tendencia-ocupacional/procesar-carga-tendencia.usecase';
 
 // Misma conexión que `getRedis()` — ya se abre con `maxRetriesPerRequest: null`
 // porque BullMQ lo exige (ver el comentario en `./index`). Antes esto armaba su
@@ -23,6 +24,15 @@ export const setupWorker = () => {
     if (job.name === 'importar-observatorio-excel') {
       const { cargaId, rutaAbsoluta } = job.data as { cargaId: string; rutaAbsoluta: string };
       await procesarCargaObservatorio(cargaId, rutaAbsoluta);
+      return { success: true, processedAt: new Date().toISOString() };
+    }
+
+    // Tendencia ocupacional (percentiles): un Excel por celda año × periodo. Igual que
+    // el anterior, deja su resultado en `cargas_datos`. El worker procesa de a un
+    // trabajo, así que una carga masiva queda en fila sin pisarse.
+    if (job.name === 'importar-tendencia-ocupacional') {
+      const { cargaId, rutaAbsoluta } = job.data as { cargaId: string; rutaAbsoluta: string };
+      await procesarCargaTendencia(cargaId, rutaAbsoluta);
       return { success: true, processedAt: new Date().toISOString() };
     }
 

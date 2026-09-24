@@ -2,13 +2,12 @@ import * as ExcelJS from 'exceljs';
 import { Transaction } from 'sequelize';
 import sequelize from '../../config/database';
 import {
-  Departamento,
   CentroFormacion,
   NivelFormacion,
   ProgramaFormacion,
   ProgramaSobresaliente,
 } from '../../infrastructure/db/models';
-import { resolverCodigoDane } from './departamentos-dane';
+import { DepartamentosRepository } from '../../repositories/departamentos.repository';
 
 const MAX_ROWS_LIMIT = 100000;
 
@@ -38,7 +37,6 @@ export interface ImportarExcelResult {
     filasCargadas: number;
     /** Filas del Excel que compartían centro+programa+sexo con otra y se sumaron en una sola. */
     filasCombinadas: number;
-    nuevosDepartamentos: number;
     nuevosCentros: number;
     nuevosProgramas: number;
     nuevosNiveles: number;
@@ -95,9 +93,11 @@ const normalizarTasa = (valorCrudo: number): number => (valorCrudo > 1 ? valorCr
  * `programas_sobresalientes` dentro de una única transacción (vaciar + recargar:
  * si algo falla, no queda la tabla a medias ni con datos mezclados de dos cargas).
  *
- * Catálogos (`departamentos`, `centros_formacion`, `niveles_formacion`,
- * `programas_formacion`) se resuelven por nombre exacto — no tienen columna de
- * código — y se crean los que falten en la misma transacción.
+ * Catálogos (`centros_formacion`, `niveles_formacion`, `programas_formacion`) se
+ * resuelven por nombre exacto — no tienen columna de código — y se crean los que
+ * falten en la misma transacción. `departamentos` no: es el catálogo cerrado de los 33
+ * oficiales (migración 032) y se resuelve por alias; un nombre que no calce rechaza
+ * la carga en vez de crear un departamento nuevo.
  */
 export const importarProgramasExcel = async (
   fileBuffer: Buffer,
@@ -133,9 +133,8 @@ export const importarProgramasExcel = async (
 
   const leer = (fila: ExcelJS.Row, columna: string) => fila.getCell(indicePorColumna.get(columna)!);
 
-  const deptosSet = new Set<string>();
+  const primeraFilaPorDepto = new Map<string, number>(); // nombre tal como viene -> fila
   const nivelesSet = new Set<string>();
-  const centrosSet = new Set<string>(); // "depto|centro"
   const programasSet = new Set<string>(); // "nivel|programa"
   const rowsData: {
     depto: string; centro: string; nivel: string; programa: string; sexo: string;
@@ -170,9 +169,8 @@ export const importarProgramasExcel = async (
       throw new ErrorDeFila(numeroFila, `"Vinculados" (${vinculados}) no puede superar a "Certificados" (${certificados})`);
     }
 
-    deptosSet.add(depto);
+    if (!primeraFilaPorDepto.has(depto)) primeraFilaPorDepto.set(depto, numeroFila);
     nivelesSet.add(nivel);
-    centrosSet.add(`${depto}|${centro}`);
     programasSet.add(`${nivel}|${programa}`);
 
     rowsData.push({ depto, centro, nivel, programa, sexo, certificados, vinculados, tasaVinculacion, salarioPromedio });
@@ -190,6 +188,25 @@ export const importarProgramasExcel = async (
 
   if (rowsData.length === 0) {
     throw new Error(`La hoja "${HOJA_A_CARGAR}" no tiene filas de datos.`);
+  }
+
+  // El departamento se resuelve por alias contra el catálogo cerrado (migración 032) y
+  // se sustituye por su id antes de agrupar: así "Valle" y "Valle del Cauca" en el
+  // mismo archivo son un solo departamento y no dos filas que chocan al insertar.
+  const departamentos = await DepartamentosRepository.resolverPorNombres(primeraFilaPorDepto.keys());
+  const noReconocidos = Array.from(departamentos)
+    .filter(([, departamento]) => !departamento)
+    .map(([nombre]) => `"${nombre}" (fila ${primeraFilaPorDepto.get(nombre)})`);
+  if (noReconocidos.length > 0) {
+    throw new Error(
+      `Departamento no reconocido en la columna "${COLUMNAS.regional}": ${noReconocidos.join(', ')}. ` +
+        'Use el nombre oficial del departamento.'
+    );
+  }
+  const centrosSet = new Set<string>(); // "departamentoId|centro"
+  for (const fila of rowsData) {
+    fila.depto = departamentos.get(fila.depto)!.id;
+    centrosSet.add(`${fila.depto}|${fila.centro}`);
   }
 
   // El Excel real trae centro+programa+sexo repetido alguna vez (varias cohortes
@@ -232,35 +249,9 @@ export const importarProgramasExcel = async (
   const filasCombinadas = rowsData.length - filasFinales.length;
 
   const resultado = await sequelize.transaction(async (transaction: Transaction) => {
-    let nuevosDepartamentos = 0;
     let nuevosCentros = 0;
     let nuevosNiveles = 0;
     let nuevosProgramas = 0;
-
-    // --- Departamentos ---
-    const deptosMap = new Map<string, string>(); // nombre -> id
-    const deptosExistentes = await Departamento.findAll({ transaction });
-    deptosExistentes.forEach((d: any) => deptosMap.set(d.nombre, d.id));
-
-    // Autocorrección: departamentos que ya existían sin `codigo_dane` (cargas
-    // anteriores a este fix, o creados a mano) se completan aquí si el nombre
-    // resuelve a uno conocido — sin esto, el mapa público nunca los colorea
-    // aunque sus datos sí estén cargados.
-    for (const departamento of deptosExistentes) {
-      if (departamento.codigo_dane) continue;
-      const codigo = resolverCodigoDane(departamento.nombre);
-      if (codigo) await departamento.update({ codigo_dane: codigo }, { transaction });
-    }
-
-    const deptosFaltantes = Array.from(deptosSet).filter((d) => !deptosMap.has(d));
-    if (deptosFaltantes.length > 0) {
-      const creados = await Departamento.bulkCreate(
-        deptosFaltantes.map((nombre) => ({ nombre, codigo_dane: resolverCodigoDane(nombre) })),
-        { transaction }
-      );
-      creados.forEach((d: any) => deptosMap.set(d.nombre, d.id));
-      nuevosDepartamentos = creados.length;
-    }
 
     // --- Niveles de formación ---
     const nivelesMap = new Map<string, string>();
@@ -278,11 +269,10 @@ export const importarProgramasExcel = async (
       centrosIdMap.set(`${c.departamento_id}|${c.nombre}`, c.id)
     );
     const centrosFaltantes: { departamento_id: string; nombre: string }[] = [];
-    for (const item of centrosSet) {
-      const [depto, centro] = item.split('|');
-      const key = `${deptosMap.get(depto)}|${centro}`;
+    for (const key of centrosSet) {
       if (!centrosIdMap.has(key)) {
-        centrosFaltantes.push({ departamento_id: deptosMap.get(depto)!, nombre: centro });
+        const separador = key.indexOf('|');
+        centrosFaltantes.push({ departamento_id: key.slice(0, separador), nombre: key.slice(separador + 1) });
         centrosIdMap.set(key, 'PENDIENTE');
       }
     }
@@ -316,7 +306,7 @@ export const importarProgramasExcel = async (
     await ProgramaSobresaliente.destroy({ where: {}, transaction });
 
     const registros = filasFinales.map((fila) => {
-      const departamentoId = deptosMap.get(fila.depto)!;
+      const departamentoId = fila.depto; // ya es el id: se resolvió antes de agrupar
       const nivelFormacionId = nivelesMap.get(fila.nivel)!;
       return {
         departamento_id: departamentoId,
@@ -351,7 +341,6 @@ export const importarProgramasExcel = async (
       estadisticas: {
         filasCargadas: registros.length,
         filasCombinadas,
-        nuevosDepartamentos,
         nuevosCentros,
         nuevosNiveles,
         nuevosProgramas,

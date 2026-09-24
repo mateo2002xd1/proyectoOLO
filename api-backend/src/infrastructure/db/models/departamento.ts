@@ -4,7 +4,7 @@ import sequelize from '../../../config/database';
 class Departamento extends Model {
   declare id: string;
   declare nombre: string;
-  declare codigo_dane?: string;
+  declare codigo_dane: string;
   declare readonly created_at: Date;
   declare readonly updated_at: Date;
 }
@@ -21,9 +21,11 @@ Departamento.init(
       allowNull: false,
       unique: true,
     },
+    // Obligatorio y único desde la migración 032: el catálogo son los 33 oficiales.
     codigo_dane: {
-      type: DataTypes.STRING(10),
-      allowNull: true,
+      type: DataTypes.CHAR(2),
+      allowNull: false,
+      unique: true,
     },
     created_at: {
       type: DataTypes.DATE,
