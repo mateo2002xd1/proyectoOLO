@@ -52,6 +52,8 @@ export function ProgramasSobresalientesView({
     pagina,
     totalPaginas,
     irAPagina,
+    porPagina,
+    cambiarPorPagina,
     seleccionarDepartamento,
     seleccionarNivelFormacion,
     seleccionarSexo,
@@ -166,6 +168,8 @@ export function ProgramasSobresalientesView({
               pagina={pagina}
               totalPaginas={totalPaginas}
               onCambiarPagina={irAPagina}
+              porPagina={porPagina}
+              onCambiarPorPagina={cambiarPorPagina}
             />
           </div>
         </div>
@@ -194,6 +198,8 @@ export function ProgramasSobresalientesView({
             pagina={pagina}
             totalPaginas={totalPaginas}
             onCambiarPagina={irAPagina}
+            porPagina={porPagina}
+            onCambiarPorPagina={cambiarPorPagina}
           />
         </div>
       )}

@@ -15,8 +15,7 @@ const FILTROS_INICIALES: FiltrosFormacion = {
 /** Sexo es un conjunto cerrado (`CHECK IN ('M','F')` en el esquema real). */
 const SEXOS = ['M', 'F'];
 
-/** Filas por página en la tabla de resultados. */
-const TAMANIO_PAGINA = 6;
+
 
 /**
  * Estado del panel de indicadores de formación por departamento.
@@ -32,6 +31,7 @@ const TAMANIO_PAGINA = 6;
 export function useProgramasSobresalientes() {
   const [filtros, setFiltros] = useState<FiltrosFormacion>(FILTROS_INICIALES);
   const [pagina, setPagina] = useState(1);
+  const [porPagina, setPorPagina] = useState(15);
   const [todosLosRegistros, setTodosLosRegistros] = useState<RegistroConDepartamento[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -95,11 +95,11 @@ export function useProgramasSobresalientes() {
     [todosLosRegistros, filtros],
   );
 
-  const totalPaginas = Math.max(1, Math.ceil(resultados.length / TAMANIO_PAGINA));
+  const totalPaginas = Math.max(1, Math.ceil(resultados.length / porPagina));
 
   const resultadosPagina = useMemo(
-    () => resultados.slice((pagina - 1) * TAMANIO_PAGINA, pagina * TAMANIO_PAGINA),
-    [resultados, pagina],
+    () => resultados.slice((pagina - 1) * porPagina, pagina * porPagina),
+    [resultados, pagina, porPagina],
   );
 
   const irAPagina = useCallback(
@@ -108,6 +108,11 @@ export function useProgramasSobresalientes() {
     },
     [totalPaginas],
   );
+
+  const cambiarPorPagina = useCallback((nuevoPorPagina: number) => {
+    setPorPagina(nuevoPorPagina);
+    setPagina(1);
+  }, []);
 
   /** Cambiar de departamento reinicia el resto de filtros: podían no pertenecerle. */
   const seleccionarDepartamento = useCallback((codigoDane: string) => {
@@ -157,6 +162,8 @@ export function useProgramasSobresalientes() {
     pagina,
     totalPaginas,
     irAPagina,
+    porPagina,
+    cambiarPorPagina,
     seleccionarDepartamento,
     seleccionarNivelFormacion,
     seleccionarSexo,

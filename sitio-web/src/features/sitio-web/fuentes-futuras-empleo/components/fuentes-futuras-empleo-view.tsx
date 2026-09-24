@@ -12,7 +12,7 @@ import type {
   FiltrosFuentesFuturas as IFiltrosFuentesFuturas,
 } from '../types';
 
-const ELEMENTOS_POR_PAGINA = 10;
+
 const TITULO_POR_DEFECTO = 'Fuentes futuras de empleo';
 const SUBTITULO_INFO_DEPTO_POR_DEFECTO =
   'Proyectos de inversión nuevos y/o en expansión potencialmente generadores de empleo.';
@@ -85,6 +85,7 @@ export function FuentesFuturasEmpleoView({
   });
 
   const [pagina, setPagina] = useState(1);
+  const [porPagina, setPorPagina] = useState(15);
 
   const tituloEfectivo =
     typeof titulo === 'string' && titulo.trim() !== ''
@@ -158,12 +159,12 @@ export function FuentesFuturasEmpleoView({
   }, [datos, filtros.departamento, esNacional]);
 
   const totalResultados = resultadosFiltrados.length;
-  const totalPaginas = Math.ceil(totalResultados / ELEMENTOS_POR_PAGINA) || 1;
+  const totalPaginas = Math.ceil(totalResultados / porPagina) || 1;
 
   const resultadosPaginados = useMemo(() => {
-    const inicio = (pagina - 1) * ELEMENTOS_POR_PAGINA;
-    return resultadosFiltrados.slice(inicio, inicio + ELEMENTOS_POR_PAGINA);
-  }, [resultadosFiltrados, pagina]);
+    const inicio = (pagina - 1) * porPagina;
+    return resultadosFiltrados.slice(inicio, inicio + porPagina);
+  }, [resultadosFiltrados, pagina, porPagina]);
 
   const totalCuentaProyectos = useMemo(() => {
     return resultadosFiltrados.reduce(
@@ -441,6 +442,11 @@ export function FuentesFuturasEmpleoView({
               pagina={pagina}
               totalPaginas={totalPaginas}
               onCambiarPagina={setPagina}
+              porPagina={porPagina}
+              onCambiarPorPagina={(nuevo) => {
+                setPorPagina(nuevo);
+                setPagina(1);
+              }}
               mostrarTotales={mostrarTotales}
             />
           </div>
@@ -467,6 +473,11 @@ export function FuentesFuturasEmpleoView({
             pagina={pagina}
             totalPaginas={totalPaginas}
             onCambiarPagina={setPagina}
+            porPagina={porPagina}
+            onCambiarPorPagina={(nuevo) => {
+              setPorPagina(nuevo);
+              setPagina(1);
+            }}
             mostrarTotales={mostrarTotales}
           />
         </div>

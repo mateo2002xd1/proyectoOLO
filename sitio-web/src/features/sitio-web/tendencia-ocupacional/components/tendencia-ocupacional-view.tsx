@@ -23,7 +23,7 @@ import type {
   TipoTendenciaOcupacional,
 } from '../types';
 
-const FILAS_POR_PAGINA = 20;
+
 
 const FILTROS_INICIALES: IFiltrosTendencia = {
   departamento: 'nacional',
@@ -118,6 +118,7 @@ export function TendenciaOcupacionalView({
   /** Año y periodo con los que se llegó: a esto vuelve "Limpiar filtros". */
   const [porDefecto, setPorDefecto] = useState<{ anio: string; periodo: string } | null>(null);
   const [pagina, setPagina] = useState(1);
+  const [porPagina, setPorPagina] = useState(15);
   /** La última respuesta, con la clave de la consulta que la pidió. */
   const [respuesta, setRespuesta] = useState<RespuestaConsulta | null>(null);
   /** Sube con "Reintentar" para repetir la consulta que falló. */
@@ -168,19 +169,19 @@ export function TendenciaOcupacionalView({
   // año no existe y pintar un "sin registros" que dura un instante.
   const consultaLista =
     opciones !== null && filtros.anio !== '' && filtros.periodo !== '' && String(opciones.anio) === filtros.anio;
-  const clave = consultaLista ? JSON.stringify([criterio, filtros, pagina, intento]) : null;
+  const clave = consultaLista ? JSON.stringify([criterio, filtros, pagina, porPagina, intento]) : null;
 
   useEffect(() => {
     if (!clave) return;
 
     const control = new AbortController();
-    buscarTendenciaOcupacional(criterio, filtros, pagina, FILAS_POR_PAGINA, control.signal)
+    buscarTendenciaOcupacional(criterio, filtros, pagina, porPagina, control.signal)
       .then((resultado) => setRespuesta({ clave, resultado }))
       .catch((error) => {
         if (!esCancelacion(error)) setRespuesta({ clave, resultado: null });
       });
     return () => control.abort();
-  }, [clave, criterio, filtros, pagina]);
+  }, [clave, criterio, filtros, pagina, porPagina]);
 
   // Mientras llega la respuesta nueva se sigue viendo la anterior, atenuada.
   const cargando = clave !== null && respuesta?.clave !== clave;
@@ -291,6 +292,11 @@ export function TendenciaOcupacionalView({
           pagina={pagina}
           totalPaginas={resultado.totalPaginas}
           onCambiarPagina={setPagina}
+          porPagina={porPagina}
+          onCambiarPorPagina={(nuevoPorPagina) => {
+            setPorPagina(nuevoPorPagina);
+            setPagina(1);
+          }}
           totales={{ totalInscritos: resultado.totales.inscritos, totalVacantes: resultado.totales.vacantes }}
           mostrarTotales={mostrarTotales}
         />

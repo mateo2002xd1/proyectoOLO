@@ -28,8 +28,7 @@ import { Header } from '@/shared/lib/blocks/header';
 import { Footer, VALORES_PIE_POR_DEFECTO } from '@/shared/lib/blocks/footer';
 import { MapaSitio, VALORES_MAPA_SITIO_POR_DEFECTO } from '@/shared/lib/blocks/mapa-sitio';
 import { obtenerIndiceBusqueda } from '@/features/paginas/publicacion/services/publicacion.service';
-import { IntranetTopbar } from '@/shared/lib/blocks/intranet-topbar';
-import { IntranetHero } from '@/shared/lib/blocks/intranet-hero';
+
 import { CABECERA_POR_DEFECTO } from '@/features/paginas/client';
 import { HeroBuscadorOcupaciones } from '@/features/sitio-web/buscador-ocupaciones';
 import { ProgramasSobresalientesView } from '@/features/sitio-web/programas-sobresalientes';
@@ -226,6 +225,13 @@ const puckConfigBase: Config = {
     'Maquetación': {
       components: ['Grid', 'Flex', 'Space', 'SeccionPestanasLaterales'],
     },
+    'Ocultos': {
+      visible: false,
+      components: ['Tabs'],
+    },
+    other: {
+      title: 'Otros',
+    },
   },
   components: {
     // Primitivos de maquetación compartidos (Flex / Space / SeccionPestanasLaterales)
@@ -403,84 +409,7 @@ const puckConfigBase: Config = {
         <Footer {...props} block={{ id: props.id || 'footer-preview' }} />
       ),
     },
-    IntranetTopbar: {
-      label: 'Intranet Topbar',
-      fields: {
-        brandText: { type: 'text', label: 'Texto de la Marca', contentEditable: true },
-        alineacionMarca: {
-          type: 'object',
-          label: 'Posición de la marca (logo + texto)',
-          objectFields: {
-            horizontal: {
-              type: 'radio',
-              label: 'Alineación horizontal',
-              options: [
-                { label: 'Izquierda', value: 'flex-start' },
-                { label: 'Centro', value: 'center' },
-                { label: 'Derecha', value: 'flex-end' },
-              ],
-            },
-            vertical: {
-              type: 'radio',
-              label: 'Alineación vertical',
-              options: [
-                { label: 'Arriba', value: 'flex-start' },
-                { label: 'Centro', value: 'center' },
-                { label: 'Abajo', value: 'flex-end' },
-              ],
-            },
-          },
-        },
-        logoUrl: {
-          type: 'custom',
-          render: ({ value, onChange }: CustomFieldRender<string>) => (
-            <ImageUploaderField value={value} onChange={onChange} />
-          ),
-        },
-        menuItems: {
-          type: 'array',
-          label: 'Menú de Navegación',
-          arrayFields: {
-            label: { type: 'text', label: 'Texto del enlace', contentEditable: true },
-            href: { type: 'text', label: 'URL' },
-          },
-          getItemSummary: (item: { label?: string }) => item.label || 'Enlace',
-        },
-      },
-      defaultProps: {
-        brandText: 'Intranet',
-        // Igual al comportamiento de hoy (`.intranet-brand` en globals.css):
-        // fila pegada a la izquierda, centrada verticalmente con el logo.
-        alineacionMarca: { horizontal: 'flex-start', vertical: 'center' },
-        logoUrl: '/assets/svg/olo-logo-blanco.svg',
-        menuItems: [
-          { href: "/intranet", label: "Inicio" },
-          { href: "#", label: "Tasa de Vinculación y Empleabilidad" },
-          { href: "#", label: "Matriz de Pertinencia" },
-          { href: "#", label: "Encuestas" },
-        ],
-      },
-      render: (props: BlockRender<ComponentProps<typeof IntranetTopbar>>) => {
-        return <IntranetTopbar {...props} />;
-      },
-    },
-    IntranetHero: {
-      label: 'Intranet Banner Principal',
-      fields: {
-        imageSrc: {
-          type: 'custom',
-          render: ({ value, onChange }: CustomFieldRender<string>) => (
-            <ImageUploaderField value={value} onChange={onChange} />
-          ),
-        },
-        imageAlt: { type: 'text', label: 'Texto alternativo' },
-      },
-      defaultProps: {
-        imageSrc: '/assets/img/banner1.png',
-        imageAlt: 'Banner principal de la intranet',
-      },
-      render: (props: BlockRender<ComponentProps<typeof IntranetHero>>) => <IntranetHero {...props} />,
-    },
+
     /**
      * Banner de la portada.
      *
@@ -2125,60 +2054,7 @@ export const puckConfig: Config = {
  */
 const SLUG_DE_PLANTILLA = 'menu-y-pie';
 
-const BLOQUES_PAGINA_SITIO_DEFECTO: string[] = [
-  'Hero',
-  'Services',
-  'DatoOloSemana',
-  'RecursosVisualesBloque',
-  'Publicaciones',
-  'RichText',
-  'PoliticaPrivacidadEncabezado',
-  'VisorDocumentosNormativos',
-  'CanalesAtencion',
-  'TextoRico',
-  'ImagenDestacada',
-  'TarjetaArticulo',
-  'ExternalPortals',
-  'Grid',
-  'Flex',
-  'Space',
-  'SeccionPestanasLaterales',
-  'BotonPersonalizado',
-  'SeccionBotonesIcono',
-  'ProgramasSobresalientes',
-  'TendenciaOcupacional',
-  'FuentesFuturasEmpleo',
-  'MapaSitio',
-];
 
-const COMPONENTES_POR_SLUG: Record<string, string[]> = {
-  // La plantilla es lo contrario a una página: solo la cabecera y el pie, que es
-  // justo lo que las páginas ya no pueden tocar.
-  [SLUG_DE_PLANTILLA]: ['Header', 'Footer'],
-  inicio: [
-    'Hero',
-    'Services',
-    'DatoOloSemana',
-    'RecursosVisualesBloque',
-    'Publicaciones',
-    'ExternalPortals',
-    'RichText',
-    'TextoRico',
-    'ImagenDestacada',
-    'TarjetaArticulo',
-    'Grid',
-    'Flex',
-    'Space',
-    'SeccionPestanasLaterales',
-    'BotonPersonalizado',
-    'SeccionBotonesIcono',
-    'ProgramasSobresalientes',
-    'TendenciaOcupacional',
-    'FuentesFuturasEmpleo',
-    'MapaSitio',
-  ],
-  'politica-de-privacidad': ['PoliticaPrivacidadEncabezado', 'VisorDocumentosNormativos', 'CanalesAtencion'],
-};
 
 /**
  * Lo que el lienzo enseña alrededor de lo que se está editando.
@@ -2293,9 +2169,11 @@ function PreviewIntercalado({
 }
 
 export function configDeEdicion(slug: string, contexto: ContextoDeEdicion = {}): Config {
-  // Las páginas creadas a mano reciben el catálogo de bloques de contenido de sitio,
-  // nunca los bloques de 'Plantilla' (Header/Footer), que solo se ofrecen en 'menu-y-pie'.
-  const permitidos = COMPONENTES_POR_SLUG[slug] ?? BLOQUES_PAGINA_SITIO_DEFECTO;
+  // Las páginas creadas a mano reciben todo el catálogo de bloques,
+  // pero nunca los bloques de 'Plantilla' (Header/Footer), que solo se ofrecen en 'menu-y-pie'.
+  const permitidos = slug === SLUG_DE_PLANTILLA
+    ? ['Header', 'Footer']
+    : Object.keys(puckConfig.components).filter((c) => c !== 'Header' && c !== 'Footer');
 
   const recortada: Config = {
     ...puckConfig,

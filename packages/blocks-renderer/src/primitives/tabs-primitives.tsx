@@ -24,7 +24,9 @@ const TODOS_LOS_SLOTS = Array.from({ length: MAX_TABS }, (_, i) => `tab${i + 1}`
 
 // Generar dinámicamente campos de tipo slot para soportar hasta 15 pestañas
 const slotFields: Record<string, { type: 'slot' }> = {};
-for (let i = 1; i <= MAX_TABS; i++) {
+// Puck renderiza los slots de los objetos en un orden que causa que se vean al revés.
+// Insertamos de mayor a menor para que en la lista visual salgan del 1 al 15 hacia abajo.
+for (let i = MAX_TABS; i >= 1; i--) {
   slotFields[`tab${i}`] = { type: 'slot' };
 }
 
@@ -671,9 +673,21 @@ export const tabsConfig: ConfigDeBloque = {
     const tabs = asegurarSlotsEnTabs(data?.props?.tabs || []);
     const cantidad = tabs.length;
     const esMaximo = cantidad >= MAX_TABS;
+    const slotsActivos = new Set(tabs.map((t) => t.slotId));
+
+    // Filtramos los fields para remover los slots (`tab1`...`tab15`) que no están en uso.
+    // Esto oculta los huecos inactivos del panel lateral de Puck.
+    const camposFiltrados = Object.fromEntries(
+      Object.entries(fields).filter(([key]) => {
+        if (key.startsWith('tab') && parseInt(key.replace('tab', ''), 10) > 0) {
+          return slotsActivos.has(key);
+        }
+        return true;
+      })
+    );
 
     return {
-      ...fields,
+      ...camposFiltrados,
       tabs: {
         ...fields.tabs,
         label: esMaximo

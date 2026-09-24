@@ -407,6 +407,9 @@ export function PanelGeneralLayout({
             <NavbarSpacer />
             <NavbarSection>
               <Dropdown>
+                <DropdownButton as={NavbarItem} aria-label="Opciones de usuario">
+                  <UserIcon className="size-5 text-zinc-500 dark:text-zinc-400" />
+                </DropdownButton>
                 <DropdownMenu className="min-w-64" anchor="bottom end">
                   <DropdownItem href="/admin/mi-perfil">
                     <UserIcon />
@@ -510,7 +513,7 @@ export function PanelGeneralLayout({
               </SidebarSection>
             </SidebarBody>
 
-            <div className="max-lg:hidden mx-2 flex flex-row items-center gap-1">
+            <div className="mx-2 flex flex-row items-center gap-1">
               <SidebarItem onClick={() => setIsBuscarOpen(true)} className="flex-1">
                 <MagnifyingGlassIcon />
                 <SidebarLabel>Buscar</SidebarLabel>
@@ -518,7 +521,7 @@ export function PanelGeneralLayout({
               <ThemeToggle className="shrink-0 flex size-9 items-center justify-center rounded-lg text-zinc-500 hover:bg-[#001631]/10 hover:text-zinc-900 dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive transition-colors [&>svg]:size-5" />
             </div>
 
-            <SidebarFooter className="max-lg:hidden flex flex-row items-center gap-1">
+            <SidebarFooter className="flex flex-row items-center gap-1">
               <Dropdown className="flex-1 min-w-0">
                 <DropdownButton as={SidebarItem} className="w-full justify-between">
                   <span className="flex min-w-0 flex-1 items-center gap-3 text-left">

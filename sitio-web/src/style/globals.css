@@ -2116,14 +2116,34 @@
   background: #0064df28;
 }
 
-/* Hide global scrollbar */
+/* Scrollbar global (minimalista para tablas y áreas con overflow) */
 * {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+  scrollbar-width: thin;
+}
+.dark * {
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
 
 *::-webkit-scrollbar {
-  display: none;
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.4);
+}
+.dark *::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+.dark *::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
 }
 
 .hide-scrollbar {
@@ -4284,6 +4304,15 @@ button.text-link,
 [data-puck-entry][data-puck-preview-mode="edit"] [data-mapa-interactivo][data-puck-overlay-portal]:hover,
 [data-puck-entry][data-puck-preview-mode="edit"] [data-mapa-interactivo][data-puck-overlay-portal]:focus-within {
   outline: none !important;
+}
+
+/* Traducción de Puck en el panel lateral (Outline) */
+[class*="_LayerTree-helper_"] {
+  font-size: 0 !important;
+}
+[class*="_LayerTree-helper_"]::before {
+  content: "Sin bloques";
+  font-size: 14px;
 }
 
 

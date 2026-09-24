@@ -1,6 +1,6 @@
 'use client';
 
-import { Paginacion } from '@/shared/ui/molecules/paginacion';
+import { Paginador } from '@/shared/ui/molecules/paginador';
 import type { RegistroConDepartamento } from '../types';
 
 interface ResultadosProgramasSobresalientesProps {
@@ -13,6 +13,8 @@ interface ResultadosProgramasSobresalientesProps {
   pagina: number;
   totalPaginas: number;
   onCambiarPagina: (pagina: number) => void;
+  porPagina: number;
+  onCambiarPorPagina: (porPagina: number) => void;
 }
 
 const ETIQUETA_SEXO: Record<string, string> = { M: 'Masculino', F: 'Femenino' };
@@ -52,6 +54,8 @@ export function ResultadosProgramasSobresalientes({
   pagina,
   totalPaginas,
   onCambiarPagina,
+  porPagina,
+  onCambiarPorPagina,
 }: ResultadosProgramasSobresalientesProps) {
   if (totalResultados === 0) {
     return (
@@ -135,12 +139,15 @@ export function ResultadosProgramasSobresalientes({
       </div>
 
       {totalPaginas > 1 && (
-        <Paginacion
+        <Paginador
           pagina={pagina}
           totalPaginas={totalPaginas}
           onCambiarPagina={onCambiarPagina}
+          total={totalResultados}
+          porPagina={porPagina}
+          onCambiarPorPagina={onCambiarPorPagina}
+          etiqueta="programas"
           tono="publico"
-          ariaLabel="Paginación de resultados"
           className="mt-4"
         />
       )}

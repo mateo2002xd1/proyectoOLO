@@ -16,6 +16,7 @@ interface PaginadorProps {
   onCambiarPorPagina: (porPagina: number) => void;
   /** Sustantivo en plural para el texto: "usuarios", "roles", "registros". */
   etiqueta: string;
+  tono?: 'panel' | 'publico';
   opciones?: readonly number[];
   className?: string;
 }
@@ -31,6 +32,7 @@ export function Paginador({
   porPagina,
   onCambiarPorPagina,
   etiqueta,
+  tono = 'panel',
   opciones = OPCIONES_POR_PAGINA,
   className = '',
 }: PaginadorProps) {
@@ -72,7 +74,7 @@ export function Paginador({
           pagina={pagina}
           totalPaginas={totalPaginas}
           onCambiarPagina={onCambiarPagina}
-          tono="panel"
+          tono={tono}
           ariaLabel={`Paginación de ${etiqueta}`}
         />
       )}
