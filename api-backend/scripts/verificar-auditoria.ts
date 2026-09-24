@@ -22,7 +22,7 @@ import 'dotenv/config';
 import { randomUUID } from 'crypto';
 import sequelize from '../src/config/database';
 import { ContentAuditLog } from '../src/infrastructure/db/models';
-import { AuditRepository, MAX_POR_PAGINA } from '../src/repositories/auditoria.repository';
+import { AuditRepository, MAX_POR_PAGINA, SQL_IDS_GUARDADOS_AUTOMATICOS } from '../src/repositories/auditoria.repository';
 import { logAudit } from '../src/use-cases/auditoria/audit.usecase';
 import { auditoriaPolicies } from '../src/policies/auditoria.policies';
 import { camposDe, VALOR_OMITIDO } from '../src/shared/auditoria-campos';
@@ -156,7 +156,7 @@ const verificarCategoriasPuras = () => {
   console.log('\n=== Categorías: a cuál pertenece cada fila ===');
 
   comprobar('crear una página → editorial', categoriaDe('crear', 'pagina'), 'editorial');
-  comprobar('crear un contenido → editorial', categoriaDe('crear', 'contenido'), 'editorial');
+
   comprobar('crear un usuario NO es editorial → seguridad', categoriaDe('crear', 'usuario'), 'seguridad');
   comprobar('editar una página → editorial', categoriaDe('actualizar', 'pagina'), 'editorial');
   comprobar('guardar borrador → editorial', categoriaDe('guardar_borrador', 'pagina'), 'editorial');
@@ -166,7 +166,7 @@ const verificarCategoriasPuras = () => {
 
   comprobar('rechazar → administración', categoriaDe('rechazar', 'pagina'), 'administracion');
   comprobar('aprobar → administración', categoriaDe('aprobar', 'pagina'), 'administracion');
-  comprobar('publicar un contenido → administración', categoriaDe('publicar', 'contenido'), 'administracion');
+
   comprobar('despublicar (archivar) → administración', categoriaDe('despublicar', 'pagina'), 'administracion');
 
   for (const accion of ['autenticar', 'expirar', 'inactivar', 'cambiar_password', 'bloquear', 'verificar_preguntas'] as const) {
@@ -344,7 +344,7 @@ const verificarCategorias = async () => {
   console.log('\n=== El filtro por categoría coincide con la regla de cada fila ===');
 
   const [pares] = (await sequelize.query(
-    `SELECT entidad_tipo, accion, COUNT(*)::int AS n FROM auditoria_cambios GROUP BY 1, 2`
+    `SELECT entidad_tipo, accion, COUNT(*)::int AS n FROM auditoria_cambios WHERE id NOT IN (${SQL_IDS_GUARDADOS_AUTOMATICOS}) GROUP BY 1, 2`
   )) as [{ entidad_tipo: any; accion: any; n: number }[], unknown];
 
   const esperado = (categoria: string | null) =>

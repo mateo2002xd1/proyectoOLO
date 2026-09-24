@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from 'express';
 import { paginasPolicies, type PermisoPagina } from '../policies/paginas.policies';
 import { auditoriaPolicies, type PermisoAuditoria } from '../policies/auditoria.policies';
 import { usuariosPolicies, type PermisoUsuario } from '../policies/usuarios.policies';
-import { contenidosPolicies, type PermisoContenido } from '../policies/contenidos.policies';
 import { observatorioPolicies, type PermisoObservatorio } from '../policies/observatorio.policies';
 import { marcarGuardia } from '../shared/autorizacion';
 
@@ -71,19 +70,7 @@ export const requierePermisoUsuario = construirGuardia<PermisoUsuario>(
   usuariosPolicies
 );
 
-/**
- * Exige permiso sobre contenidos, adjuntos o secciones.
- *
- * Ojo con lo que **no** hace: no mira de quién es el contenido. Cualquiera con el
- * permiso puede retomar el trabajo de otro —lo que impide que dos lo hagan **a la vez**
- * es el candado de edición (`adquirir-bloqueo.usecase.ts`), no este guardia—, y la
- * comprobación de autoría, donde aplica (borrar, leer lo no publicado), vive en el caso
- * de uso, que es quien tiene la fila delante.
- */
-export const requierePermisoContenido = construirGuardia<PermisoContenido>(
-  'contenidos',
-  contenidosPolicies
-);
+
 
 /**
  * Exige permiso sobre las cargas de datos de "Actualizaciones" (panel de

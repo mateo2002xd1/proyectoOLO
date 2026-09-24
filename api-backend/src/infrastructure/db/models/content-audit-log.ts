@@ -2,7 +2,6 @@ import { DataTypes, Model } from 'sequelize';
 import sequelize from '../../../config/database';
 
 export type EntidadAuditable =
-  | 'contenido'
   | 'pagina'
   | 'seccion'
   | 'usuario'
@@ -60,7 +59,7 @@ ContentAuditLog.init(
   {
     id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     entidad_id: { type: DataTypes.UUID, allowNull: false },
-    entidad_tipo: { type: DataTypes.TEXT, allowNull: false, defaultValue: 'contenido' },
+    entidad_tipo: { type: DataTypes.TEXT, allowNull: false, defaultValue: 'pagina' },
     usuario_id: { type: DataTypes.UUID },
     usuario_nombre: { type: DataTypes.TEXT },
     accion: { type: DataTypes.TEXT, allowNull: false },

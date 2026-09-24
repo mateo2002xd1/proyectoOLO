@@ -103,7 +103,7 @@ export const aRegistroAuditoria = (
 };
 
 const ENTIDADES: EntidadAuditable[] = [
-  'contenido', 'pagina', 'seccion', 'usuario', 'rol', 'marca', 'configuracion', 'archivo',
+  'pagina', 'seccion', 'usuario', 'rol', 'marca', 'configuracion', 'archivo',
 ];
 
 const ACCIONES: AccionAuditable[] = [

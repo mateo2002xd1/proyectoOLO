@@ -27,7 +27,6 @@ import express from 'express';
 import { QueryTypes } from 'sequelize';
 import sequelize from '../src/config/database';
 import { usuariosPolicies } from '../src/policies/usuarios.policies';
-import { contenidosPolicies } from '../src/policies/contenidos.policies';
 import { detalleDeGuardia } from '../src/shared/autorizacion';
 
 /**
@@ -100,14 +99,11 @@ const verificarPolicies = async () => {
     console.log(`\n  [${nombre}]`);
     comprobar('administra usuarios', usuariosPolicies.puedeAdministrarUsuarios(nombre), esperado[0]);
     comprobar('administra seguridad', usuariosPolicies.puedeAdministrarSeguridad(nombre), esperado[1]);
-    comprobar('edita contenido', contenidosPolicies.puedeEditar(nombre), esperado[2]);
-    comprobar('elimina contenido ajeno', contenidosPolicies.puedeEliminar(nombre), esperado[3]);
   }
 
   console.log('\n  [Casos límite]');
   comprobar('rol vacío no administra', usuariosPolicies.puedeAdministrarUsuarios(''), false);
   comprobar('rol nulo no administra', usuariosPolicies.puedeAdministrarUsuarios(null), false);
-  comprobar('rol desconocido no edita', contenidosPolicies.puedeEditar('Invitado'), false);
   comprobar('admite espacios sobrantes', usuariosPolicies.puedeAdministrarUsuarios('  Administrador  '), true);
 };
 
@@ -122,14 +118,8 @@ const verificarPolicies = async () => {
 const COMPROBACION_FUERA_DE_LA_RUTA: Record<string, string> = {
   'GET /api/paginas/publica/:slug':
     'ruta pública por diseño (RF-10): solo devuelve la versión publicada',
-  'GET /api/contenidos/:id':
-    'obtenerContenidoPorId → 404 si no está publicado y no eres el autor ni puedes ver borradores',
   'GET /api/jobs/:id':
     'TrabajosController.consultarEstado → 404 si el job no es tuyo (dueño en job.data.usuarioId)',
-  'GET /api/sections/:id':
-    'la taxonomía es común a quien edita; no tiene dueño ni contenido reservado',
-  'GET /api/contenidos/:contenidoId/attachments/':
-    'getAttachmentsByPost → obtenerContenidoPorId hereda la visibilidad del contenido padre',
 };
 
 type Capa = {

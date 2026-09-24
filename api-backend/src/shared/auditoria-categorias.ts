@@ -22,7 +22,7 @@ export interface ReglaDeCategoria {
   entidades?: EntidadAuditable[];
 }
 
-const ENTIDADES_DEL_EDITOR: EntidadAuditable[] = ['pagina', 'contenido'];
+const ENTIDADES_DEL_EDITOR: EntidadAuditable[] = ['pagina'];
 const ENTIDADES_DE_ACCESO: EntidadAuditable[] = ['usuario', 'rol', 'configuracion'];
 
 /**

@@ -7,7 +7,6 @@ import {
   NivelFormacion,
   ProgramaFormacion,
   Archivo,
-  ContenidoArchivo,
 } from '../infrastructure/db/models';
 
 const MODULO = 'programa_sobresalientes';
@@ -61,11 +60,8 @@ export const ObservatorioRepository = {
    * Solo si ambas dan cero es seguro borrar el archivo físico y su fila.
    */
   otrasReferenciasAlArchivo: async (archivoId: string, idCargaExcluida: string): Promise<number> => {
-    const [otrasCargas, adjuntos] = await Promise.all([
-      CargaDatos.count({ where: { archivoId, id: { [Op.ne]: idCargaExcluida } } }),
-      ContenidoArchivo.count({ where: { archivoId } }),
-    ]);
-    return otrasCargas + adjuntos;
+    const otrasCargas = await CargaDatos.count({ where: { archivoId, id: { [Op.ne]: idCargaExcluida } } });
+    return otrasCargas;
   },
 
   obtenerArchivo: (id: string) => Archivo.findByPk(id),
