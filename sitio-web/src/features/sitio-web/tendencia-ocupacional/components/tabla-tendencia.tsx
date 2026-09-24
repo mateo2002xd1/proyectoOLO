@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Paginacion } from '@/shared/ui/molecules/paginacion';
+import { Paginador } from '@/shared/ui/molecules/paginador';
 import type { RegistroTendenciaOcupacional } from '../types';
 
 interface TotalesTendencia {
@@ -16,6 +16,8 @@ interface TablaTendenciaProps {
   pagina: number;
   totalPaginas: number;
   onCambiarPagina: (pagina: number) => void;
+  porPagina: number;
+  onCambiarPorPagina: (porPagina: number) => void;
   totales?: TotalesTendencia;
   mostrarTotales?: boolean;
 }
@@ -27,6 +29,8 @@ export function TablaTendencia({
   pagina,
   totalPaginas,
   onCambiarPagina,
+  porPagina,
+  onCambiarPorPagina,
   totales,
   mostrarTotales = false,
 }: TablaTendenciaProps) {
@@ -152,12 +156,15 @@ export function TablaTendencia({
       </div>
 
       {totalPaginas > 1 && (
-        <Paginacion
+        <Paginador
           pagina={pagina}
           totalPaginas={totalPaginas}
           onCambiarPagina={onCambiarPagina}
+          total={totalResultados}
+          porPagina={porPagina}
+          onCambiarPorPagina={onCambiarPorPagina}
+          etiqueta="registros"
           tono="publico"
-          ariaLabel="Paginación de resultados"
           className="mt-4"
         />
       )}
