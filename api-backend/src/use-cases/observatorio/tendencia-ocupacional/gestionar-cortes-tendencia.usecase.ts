@@ -13,7 +13,7 @@ export async function consultarEstadoCargasTendencia() {
     periodoCodigo: f.periodo_codigo as string,
     periodoNombre: f.periodo_nombre as string,
     estadoCelda: f.estado_celda as 'pendiente' | 'procesando' | 'borrador' | 'publicado' | 'fallido',
-    corteId: f.corte_id === null ? null : Number(f.corte_id),
+    corteId: f.corte_id as string | null,
     publicadoEn: f.publicado_en as Date | null,
     cargaId: f.carga_id as string | null,
     /** Estado del último intento: si falló un reemplazo, la celda conserva su estado pero se avisa. */
@@ -40,7 +40,7 @@ const aCarga = (f: Record<string, unknown>) => ({
   periodoCodigo: f.periodo_codigo as string,
   periodoNombre: f.periodo_nombre as string,
   reemplazar: Boolean(f.reemplazar),
-  corteId: f.corte_id === null ? null : Number(f.corte_id),
+  corteId: f.corte_id as string | null,
   /** Estado de hoy del corte que dejó esta carga (no el que tenía al cargarse). */
   corteEstado: f.corte_estado as 'borrador' | 'publicado' | null,
   cortePublicadoEn: f.corte_publicado_en as Date | null,
@@ -86,16 +86,16 @@ export async function obtenerCargaTendencia(cargaId: string) {
  * Publica en bloque los cortes en borrador; los que ya estaban publicados o no existen
  * se ignoran. Devuelve los que cambiaron.
  */
-export async function publicarCortesTendencia(corteIds: number[]) {
+export async function publicarCortesTendencia(corteIds: string[]) {
   const publicados = await Repo.publicarCortes(corteIds);
-  return publicados.map((c) => ({ id: Number(c.id), anio: Number(c.anio), periodoCodigo: c.periodo_codigo }));
+  return publicados.map((c) => ({ id: c.id, anio: Number(c.anio), periodoCodigo: c.periodo_codigo }));
 }
 
 /**
  * Devuelve un corte publicado a borrador: deja de verse en el sitio, sus datos se conservan.
  * @throws {Error} 409 si el corte no existe o no está publicado.
  */
-export async function despublicarCorteTendencia(corteId: number): Promise<void> {
+export async function despublicarCorteTendencia(corteId: string): Promise<void> {
   const cambio = await Repo.despublicarCorte(corteId);
   if (!cambio) {
     throw Object.assign(new Error('El corte no existe o no está publicado.'), { status: 409 });

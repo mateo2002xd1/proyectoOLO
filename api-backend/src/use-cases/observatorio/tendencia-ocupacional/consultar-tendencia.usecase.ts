@@ -14,7 +14,8 @@ export interface OpcionesTendencia {
   niveles: { codigo: string; etiqueta: string; nombre: string; descripcion: string | null }[];
   /** "Nacional" primero (valor `nacional`), luego los 33 por nombre con su código DANE. */
   departamentos: { valor: string; nombre: string }[];
-  criterios: { id: number; codigo: string; nombre: string }[];
+  /** En su orden (1–4 de la especificación); `codigo` es lo que filtra el buscador. */
+  criterios: { codigo: string; nombre: string }[];
 }
 
 export interface RegistroTendencia {
@@ -27,7 +28,8 @@ export interface RegistroTendencia {
   vacantes: number;
   percentilInscritos: number | null;
   percentilVacantes: number | null;
-  criterioId: number;
+  /** Código del criterio (`ALTA_OFERTA_ALTA_DEMANDA`…). */
+  criterio: string;
 }
 
 export interface ResultadoTendencia {
@@ -69,7 +71,7 @@ export async function consultarOpcionesTendencia(anio?: number): Promise<Opcione
       { valor: 'nacional', nombre: 'Nacional' },
       ...departamentos.map((d) => ({ valor: d.codigo_dane, nombre: d.nombre })),
     ],
-    criterios: criterios.map((c) => ({ id: Number(c.id), codigo: c.codigo, nombre: c.nombre })),
+    criterios,
   };
 }
 
@@ -100,7 +102,7 @@ export async function consultarTendencia(
       vacantes: Number(f.vacantes),
       percentilInscritos: f.percentil_inscritos,
       percentilVacantes: f.percentil_vacantes,
-      criterioId: Number(f.criterio_id),
+      criterio: f.criterio_codigo,
     })),
     total: resultado.total,
     pagina,

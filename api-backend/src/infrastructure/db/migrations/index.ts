@@ -37,6 +37,7 @@ import * as tendenciaOcupacional from './033-tendencia-ocupacional';
 import * as cortesHuellaRepetible from './034-cortes-ocupacionales-huella-repetible';
 import * as tendenciaAnioLibre from './035-tendencia-anio-libre';
 import * as eliminarCmsTradicional from './036-eliminar-cms-tradicional';
+import * as tendenciaClavesUuid from './037-tendencia-ocupacional-claves-uuid';
 
 export interface Migracion {
   nombre: string;
@@ -84,6 +85,7 @@ const migraciones: Migracion[] = [
   cortesHuellaRepetible,
   tendenciaAnioLibre,
   eliminarCmsTradicional,
+  tendenciaClavesUuid,
 ];
 
 const TABLA_CONTROL = 'migraciones_aplicadas';

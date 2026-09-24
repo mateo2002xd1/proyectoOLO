@@ -11,12 +11,13 @@ import { z } from 'zod';
 
 export const CODIGOS_PERIODO = ['T1', 'T2', 'T3', 'T4', 'S1', 'S2', 'ANUAL'] as const;
 const CODIGOS_NIVEL = ['0', 'A', 'B', 'C', 'D'] as const;
-const ID_POR_CODIGO_CRITERIO: Record<string, number> = {
-  ALTA_OFERTA_ALTA_DEMANDA: 1,
-  ALTA_OFERTA_BAJA_DEMANDA: 2,
-  BAJA_OFERTA_ALTA_DEMANDA: 3,
-  BAJA_OFERTA_BAJA_DEMANDA: 4,
-};
+/** `criterios_ocupacionales.codigo`: el id es un UUID (migración 037) y no sale de la API. */
+const CODIGOS_CRITERIO = [
+  'ALTA_OFERTA_ALTA_DEMANDA',
+  'ALTA_OFERTA_BAJA_DEMANDA',
+  'BAJA_OFERTA_ALTA_DEMANDA',
+  'BAJA_OFERTA_BAJA_DEMANDA',
+] as const;
 
 /**
  * Cualquier año de cuatro cifras: no hay rango de negocio (se cargan años anteriores a 2012
@@ -37,18 +38,11 @@ export const consultaTendenciaSchema = z.object({
   periodo: z.enum(CODIGOS_PERIODO),
   /** `nacional` (la hoja nacional) o el código DANE del departamento. */
   departamento: z.string().regex(/^(nacional|[0-9]{2})$/, 'Use «nacional» o el código DANE de dos dígitos.'),
-  /** 1–4 o el código del criterio. Omitido = los cuatro. */
+  /** Código del criterio. Omitido o vacío = los cuatro. */
   criterio: z
-    .string()
-    .optional()
-    .transform((valor, ctx) => {
-      if (!valor) return undefined;
-      if (/^[1-4]$/.test(valor)) return Number(valor);
-      const id = ID_POR_CODIGO_CRITERIO[valor];
-      if (id) return id;
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Criterio desconocido.' });
-      return z.NEVER;
-    }),
+    .enum(CODIGOS_CRITERIO)
+    .or(z.literal('').transform(() => undefined))
+    .optional(),
   /** Omitido = "Todos". */
   nivel: z.enum(CODIGOS_NIVEL).optional(),
   /** Parte del nombre o código exacto de la ocupación. */
@@ -90,10 +84,10 @@ export const cargaTendenciaSchema = z
 
 export const publicarCortesSchema = z
   .object({
-    corteIds: z.array(z.number().int().positive()).min(1).max(200),
+    corteIds: z.array(z.string().uuid()).min(1).max(200),
   })
   .strict();
 
-export const idCorteSchema = z.coerce.number().int().positive();
+export const idCorteSchema = z.string().uuid();
 
 export const idCargaSchema = z.string().uuid();

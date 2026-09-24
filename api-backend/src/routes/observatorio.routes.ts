@@ -63,8 +63,10 @@ router.get('/programas-sobresalientes', ObservatorioController.obtenerActual);
  *         schema: { type: string, example: nacional }
  *       - name: criterio
  *         in: query
- *         description: 1–4 o el código del criterio. Omitido, los cuatro.
- *         schema: { type: string, example: '3' }
+ *         description: Código del criterio. Omitido, los cuatro.
+ *         schema:
+ *           type: string
+ *           enum: [ALTA_OFERTA_ALTA_DEMANDA, ALTA_OFERTA_BAJA_DEMANDA, BAJA_OFERTA_ALTA_DEMANDA, BAJA_OFERTA_BAJA_DEMANDA]
  *       - { name: nivel, in: query, description: Omitido, todos los niveles., schema: { type: string, enum: ['0', A, B, C, D] } }
  *       - { name: q, in: query, description: Parte del nombre o código exacto., schema: { type: string, maxLength: 100 } }
  *       - { name: incluirSinRegistros, in: query, schema: { type: boolean, default: false } }
@@ -305,7 +307,7 @@ router.get('/tendencia-ocupacional/estado', TendenciaOcupacionalController.estad
  *           schema:
  *             type: object
  *             properties:
- *               corteIds: { type: array, items: { type: integer }, minItems: 1, maxItems: 200 }
+ *               corteIds: { type: array, items: { type: string, format: uuid }, minItems: 1, maxItems: 200 }
  *             required: [corteIds]
  *     responses:
  *       200: { description: Cortes publicados. }
@@ -327,7 +329,7 @@ router.post(
  *     summary: Devuelve un corte publicado a borrador
  *     description: Deja de verse en el sitio; sus datos se conservan.
  *     parameters:
- *       - { name: id, in: path, required: true, schema: { type: integer } }
+ *       - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
  *     responses:
  *       204: { description: Despublicado. }
  *       401: { $ref: '#/components/responses/NoAutenticado' }

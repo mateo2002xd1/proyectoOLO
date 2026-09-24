@@ -40,8 +40,8 @@ export const TendenciaOcupacionalController = {
     if (!consulta.success) return datosInvalidos(res, consulta.error);
 
     try {
-      const { pagina, porPagina, criterio, ...filtros } = consulta.data;
-      res.json(await consultarTendencia({ ...filtros, criterioId: criterio }, pagina, porPagina));
+      const { pagina, porPagina, ...filtros } = consulta.data;
+      res.json(await consultarTendencia(filtros, pagina, porPagina));
     } catch (error) {
       next(error);
     }
@@ -128,7 +128,7 @@ export const TendenciaOcupacionalController = {
   /** El cuerpo ya pasó por `publicarCortesSchema`. */
   async publicar(req: Request, res: Response, next: NextFunction) {
     try {
-      const { corteIds } = req.body as { corteIds: number[] };
+      const { corteIds } = req.body as { corteIds: string[] };
       res.json({ publicados: await publicarCortesTendencia(corteIds) });
     } catch (error) {
       next(error);

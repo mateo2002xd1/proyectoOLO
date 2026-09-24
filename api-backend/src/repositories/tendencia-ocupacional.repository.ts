@@ -37,12 +37,12 @@ export interface Hallazgo {
 }
 
 export interface CorteDeCelda {
-  id: number;
+  id: string;
   estado: 'borrador' | 'publicado';
 }
 
 export interface PeriodoCatalogo {
-  id: number;
+  id: string;
   codigo: string;
   nombre: string;
   orden: number;
@@ -53,7 +53,8 @@ export interface FiltrosBuscador {
   periodo: string;
   /** `'nacional'` o el código DANE de dos dígitos. */
   departamento: string;
-  criterioId?: number;
+  /** `criterios_ocupacionales.codigo` (`ALTA_OFERTA_ALTA_DEMANDA`…). Omitido = los cuatro. */
+  criterio?: string;
   nivel?: string;
   q?: string;
   incluirSinRegistros: boolean;
@@ -68,7 +69,7 @@ export interface FilaBuscador {
   vacantes: number;
   percentil_inscritos: number | null;
   percentil_vacantes: number | null;
-  criterio_id: number;
+  criterio_codigo: string;
 }
 
 /** `cargas_datos.modulo` de este módulo (el de programas es `programa_sobresalientes`). */
@@ -144,9 +145,9 @@ function construirFiltro(filtros: FiltrosBuscador, { conDepartamento }: { conDep
     replacements.departamento = filtros.departamento;
   }
 
-  if (filtros.criterioId !== undefined) {
-    condiciones.push('criterio_id = :criterioId');
-    replacements.criterioId = filtros.criterioId;
+  if (filtros.criterio !== undefined) {
+    condiciones.push('criterio_codigo = :criterio');
+    replacements.criterio = filtros.criterio;
   }
   if (filtros.nivel) {
     condiciones.push('nivel_codigo = :nivel');
@@ -202,8 +203,8 @@ export const TendenciaOcupacionalRepository = {
     ),
 
   criterios: () =>
-    seleccionar<{ id: number; codigo: string; nombre: string }>(
-      'SELECT id, codigo, nombre FROM criterios_ocupacionales ORDER BY orden'
+    seleccionar<{ codigo: string; nombre: string }>(
+      'SELECT codigo, nombre FROM criterios_ocupacionales ORDER BY orden'
     ),
 
   // ---------------------------------------------------------------------------
@@ -216,10 +217,10 @@ export const TendenciaOcupacionalRepository = {
     const [filas, [resumen]] = await Promise.all([
       seleccionar<FilaBuscador>(
         `SELECT ocupacion_codigo, ocupacion_nombre, nivel_codigo, nivel_etiqueta,
-                inscritos, vacantes, percentil_inscritos, percentil_vacantes, criterio_id
+                inscritos, vacantes, percentil_inscritos, percentil_vacantes, criterio_codigo
            FROM v_buscador_ocupacional
           WHERE ${where}
-          ORDER BY criterio_id, percentil_vacantes DESC NULLS LAST,
+          ORDER BY criterio_orden, percentil_vacantes DESC NULLS LAST,
                    percentil_inscritos DESC NULLS LAST, ocupacion_codigo
           LIMIT :limite OFFSET :desplazamiento`,
         { ...replacements, limite, desplazamiento }
@@ -263,7 +264,7 @@ export const TendenciaOcupacionalRepository = {
         ORDER BY anio DESC, periodo_orden`
     ),
 
-  async obtenerCorteDeCelda(anio: number, periodoId: number, transaction?: Transaction): Promise<CorteDeCelda | null> {
+  async obtenerCorteDeCelda(anio: number, periodoId: string, transaction?: Transaction): Promise<CorteDeCelda | null> {
     const filas = await seleccionar<CorteDeCelda>(
       'SELECT id, estado FROM cortes_ocupacionales WHERE anio = :anio AND periodo_id = :periodoId',
       { anio, periodoId },
@@ -273,7 +274,7 @@ export const TendenciaOcupacionalRepository = {
   },
 
   /** ¿Hay una carga en curso para la celda? (en cola, leyendo o guardando). */
-  async hayCargaEnCurso(anio: number, periodoId: number): Promise<boolean> {
+  async hayCargaEnCurso(anio: number, periodoId: string): Promise<boolean> {
     const filas = await seleccionar<{ id: string }>(
       `SELECT cd.id
          FROM cargas_datos cd
@@ -287,8 +288,8 @@ export const TendenciaOcupacionalRepository = {
   },
 
   /** Publica los que estén en borrador; los demás ids se ignoran (ya publicados o inexistentes). */
-  publicarCortes: (corteIds: number[]) =>
-    seleccionar<{ id: number; anio: number; periodo_codigo: string }>(
+  publicarCortes: (corteIds: string[]) =>
+    seleccionar<{ id: string; anio: number; periodo_codigo: string }>(
       `UPDATE cortes_ocupacionales c
           SET estado = 'publicado', publicado_en = now(), updated_at = now()
          FROM periodos p
@@ -299,8 +300,8 @@ export const TendenciaOcupacionalRepository = {
       { corteIds }
     ),
 
-  async despublicarCorte(corteId: number): Promise<boolean> {
-    const filas = await seleccionar<{ id: number }>(
+  async despublicarCorte(corteId: string): Promise<boolean> {
+    const filas = await seleccionar<{ id: string }>(
       `UPDATE cortes_ocupacionales
           SET estado = 'borrador', publicado_en = NULL, updated_at = now()
         WHERE id = :corteId AND estado = 'publicado'
@@ -319,7 +320,7 @@ export const TendenciaOcupacionalRepository = {
    * datos ya no admite otra carga (se elimina la anterior primero), y la columna solo
    * describe cargas viejas.
    */
-  crearCarga: (datos: { archivoId: string; subidoPor: string | null; anio: number; periodoId: number }) =>
+  crearCarga: (datos: { archivoId: string; subidoPor: string | null; anio: number; periodoId: string }) =>
     sequelize.transaction(async (transaction) => {
       const [carga] = await seleccionar<{ id: string }>(
         `INSERT INTO cargas_datos (modulo, archivo_id, subido_por, estado)
@@ -342,7 +343,7 @@ export const TendenciaOcupacionalRepository = {
   async obtenerDetalleCarga(cargaId: string) {
     const filas = await seleccionar<{
       anio: number;
-      periodo_id: number;
+      periodo_id: string;
       periodo_codigo: string;
       periodo_nombre: string;
       periodo_orden: number;
@@ -436,10 +437,10 @@ export const TendenciaOcupacionalRepository = {
     async detalle(transaction: Transaction, cargaId: string) {
       const filas = await seleccionar<{
         anio: number;
-        periodo_id: number;
+        periodo_id: string;
         periodo_nombre: string;
         archivo_id: string | null;
-        corte_id: number | null;
+        corte_id: string | null;
         corte_estado: 'borrador' | 'publicado' | null;
         vigente: boolean;
       }>(
@@ -457,17 +458,17 @@ export const TendenciaOcupacionalRepository = {
     },
 
     /** El candado de la celda, sin esperar: `false` si una carga está guardando en ella. */
-    async intentarBloquearCelda(transaction: Transaction, anio: number, periodoId: number): Promise<boolean> {
+    async intentarBloquearCelda(transaction: Transaction, anio: number, periodoId: string): Promise<boolean> {
       const [fila] = await seleccionar<{ bloqueada: boolean }>(
         `SELECT pg_try_advisory_xact_lock(${CANDADO_CELDA}) AS bloqueada`,
-        { anio: String(anio), periodoId: String(periodoId) },
+        { anio: String(anio), periodoId },
         transaction
       );
       return fila.bloqueada;
     },
 
     /** El corte y sus indicadores (CASCADE); las cargas de la celda quedan con `corte_id` NULL. */
-    eliminarCorte: (transaction: Transaction, corteId: number) =>
+    eliminarCorte: (transaction: Transaction, corteId: string) =>
       sequelize.query('DELETE FROM cortes_ocupacionales WHERE id = :corteId', {
         replacements: { corteId },
         transaction,
@@ -487,9 +488,9 @@ export const TendenciaOcupacionalRepository = {
 
   carga: {
     /** Paso 0: dos cargas del mismo corte no corren a la vez. */
-    bloquearCelda: (transaction: Transaction, anio: number, periodoId: number) =>
+    bloquearCelda: (transaction: Transaction, anio: number, periodoId: string) =>
       sequelize.query(`SELECT pg_advisory_xact_lock(${CANDADO_CELDA})`, {
-        replacements: { anio: String(anio), periodoId: String(periodoId) },
+        replacements: { anio: String(anio), periodoId },
         transaction,
       }),
 
@@ -718,7 +719,7 @@ export const TendenciaOcupacionalRepository = {
      * 3.1 Upsert del catálogo de ocupaciones. El nombre solo lo reemplaza un corte igual
      * o más reciente que el que lo fijó, así que el orden de carga no altera el resultado.
      */
-    upsertOcupaciones: (transaction: Transaction, anio: number, periodoId: number) =>
+    upsertOcupaciones: (transaction: Transaction, anio: number, periodoId: string) =>
       sequelize.query(
         `INSERT INTO ocupaciones (codigo, nombre, nombre_vigencia)
          SELECT DISTINCT s.codigo, s.nombre, CAST(:anio AS int) * 10 + p.orden
@@ -739,8 +740,8 @@ export const TendenciaOcupacionalRepository = {
      * 3.2 Crea el corte, en borrador, con su huella. Sin `ON CONFLICT`: la celda se
      * comprobó vacía con el candado tomado, y una celda con datos no se recarga.
      */
-    async crearCorte(transaction: Transaction, anio: number, periodoId: number, huella: string): Promise<number> {
-      const [corte] = await seleccionar<{ id: number }>(
+    async crearCorte(transaction: Transaction, anio: number, periodoId: string, huella: string): Promise<string> {
+      const [corte] = await seleccionar<{ id: string }>(
         `INSERT INTO cortes_ocupacionales (anio, periodo_id, huella_datos)
          VALUES (:anio, :periodoId, :huella)
          RETURNING id`,
@@ -751,7 +752,7 @@ export const TendenciaOcupacionalRepository = {
     },
 
     /** 3.3 Los hechos del corte, desde la tabla temporal. */
-    async guardarIndicadores(transaction: Transaction, corteId: number) {
+    async guardarIndicadores(transaction: Transaction, corteId: string) {
       await sequelize.query(
         `INSERT INTO indicadores_ocupacionales
                (corte_id, departamento_id, ocupacion_id, inscritos, vacantes,
@@ -768,7 +769,7 @@ export const TendenciaOcupacionalRepository = {
       transaction: Transaction,
       datos: {
         cargaId: string;
-        corteId: number;
+        corteId: string;
         filasNacional: number;
         filasDepartamental: number;
         reporte: object;

@@ -16,7 +16,7 @@ import {
 export interface CeldaDeCarga {
   cargaId: string;
   anio: number;
-  periodoId: number;
+  periodoId: string;
   periodoNombre: string;
 }
 
