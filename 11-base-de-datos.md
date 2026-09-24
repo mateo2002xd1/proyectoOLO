@@ -78,25 +78,24 @@ El middleware de cada frontend exige el suyo. Un director/subdirector no entra a
    │           │  usuarios  │◀────┴── creado_por (auto-referencia)
    │           └──┬──┬──┬───┘
    │              │  │  └──────────────▶ preguntas_seguridad  (1:N, CASCADE)
-   │       autor  │  │ subido_por
+   │ subido_por   │  │ usuario_id
    ▼              ▼  ▼
-┌──────────┐  ┌────────────┐         ┌───────────┐
-│secciones │─▶│ contenidos │────────▶│ archivos  │   (contenidos_archivos, M:N)
-│ (árbol,  │  └────────────┘         └───────────┘
-│  máx 3)  │                                ▲
-└──────────┘                                │ referenciados por id
-                                            │ desde los bloques Puck (D5)
-┌──────────┐  1:N   ┌────────────────────┐  │
-│ paginas  │───────▶│ paginas_versiones  │──┘
-└────┬─────┘        └────────────────────┘
-     │ 1:N          version_publicada_id ──▲  (FK circular, DEFERRABLE)
-     ▼
+┌──────────┐  ┌───────────────────┐  ┌───────────┐
+│ paginas  │  │ auditoria_cambios │  │ archivos  │   
+└────┬─────┘  └───────────────────┘  └───────────┘
+     │ 1:N                                 ▲
+     ▼                                     │ referenciados por id
+┌──────────────────────┐                   │ desde los bloques Puck (D5)
+│  paginas_versiones   │                   │
+└──────────────────────┘                   │
+version_publicada_id ──▲  (FK circular)    │
+                                           │
 ┌──────────────────────┐   ┌──────────────────────┐
 │  subidas_pendientes  │   │   bloqueos_edicion   │ (concurrencia pesimista en Puck,
 │ (recolección basura) │   │ (lease con TTL)      │  PK: ambito + slug)
 └──────────────────────┘   └──────────────────────┘
 
-  auditoria_cambios ── entidad_tipo + entidad_id ──▶ (contenidos | paginas | usuarios | ...)
+  auditoria_cambios ── entidad_tipo + entidad_id ──▶ (paginas | usuarios | ...)
 
   ─── Módulo: Observatorio Laboral y Ocupacional (Datos Dinámicos / Snowflake) ───
   ┌─────────────────┐ 1:N  ┌───────────────────┐
@@ -148,25 +147,26 @@ Las 19 tablas de este inventario existen en el esquema y **las 19 tienen modelo 
 | `bloqueado_hasta` | 011 | Ese sí es compartido: la cuenta está bloqueada o no, venga el bloqueo de donde venga |
 | `ultimo_acceso_en` | anterior, pero **antes no medía nada** | El cierre por inactividad de 20 minutos del servidor. La columna existía y solo se escribía al iniciar sesión; ahora se refresca en cada petición, como mucho una vez por minuto para no convertir cada lectura en un `UPDATE`. Ver `3-seguridad-del-proyecto.md` §S3 |
 
-### 4.2 Contenido — RF-01, RF-10, RF-11
+### 4.2 Observatorio Laboral y Ocupacional
 
 | Tabla | Qué guarda | Claves e invariantes |
 |---|---|---|
-| **`secciones`** | El árbol de navegación del sitio | `padre_id` auto-referencia `RESTRICT`. `nivel` con `CHECK BETWEEN 1 AND 3` — **RF-11 (todo a tres clics) queda garantizado por el esquema**, no por la disciplina del editor. `UNIQUE(slug)` |
-| **`contenidos`** | Cada estudio, informe, estadística o banner como registro independiente y buscable | `estado` con el ciclo completo. `busqueda` es una columna `tsvector GENERATED ALWAYS AS ... STORED` sobre título y resumen con configuración `spanish`, con índice **GIN** — así RF-10 no necesita tabla de índice aparte. `CHECK`: `estado='publicado'` ⇒ `publicado_en NOT NULL` |
-
-`contenidos.cuerpo` es **`JSONB`**, no `TEXT`: Editor.js produce JSON, y guardarlo como texto obliga a parsear en cada lectura y hace imposible consultar por bloque.
-
-**Sin versionado de contenidos.** A diferencia de las páginas, un contenido tiene `estado` + historial en `auditoria_cambios`, no filas de versión. RF-07 pide *historial de cambios* (quién, qué campos, cuándo) y eso es exactamente lo que da la auditoría. Duplicar la maquinaria de `paginas_versiones` para estudios y banners costaría una tabla, un repositorio y un ciclo de aprobación paralelo sin requerimiento que lo pida.
+| **`ocupaciones`** | Catálogo principal de ocupaciones | `UNIQUE(codigo)`. |
+| **`niveles_ocupacionales`** | Catálogo base del SENA | `UNIQUE(codigo)`. |
+| **`niveles_cualificacion`** | Catálogo base del SENA | PK es `codigo_nc`. |
+| **`cortes_ocupacionales`** | Gestión de cortes de datos | `UNIQUE(anio, periodo_id)`. |
+| **`periodos`** | Catálogo estático temporal (Trimestres, Semestres) | `UNIQUE(codigo)`. |
+| **`indicadores_ocupacionales`** | Datos masivos de las vacantes e inscritos | FK a ocupaciones, cortes, criterios. |
+| **`criterios_ocupacionales`** | Reglas estáticas (ej. "Alta demanda") | `UNIQUE(codigo)`. |
+| **`cargas_datos_ocupacionales`** | Metadatos de la subida masiva (auditoría sobre el archivo cargado) | PK y FK a la tabla general de cargas. |
 
 ### 4.3 Archivos — RF-02, RF-12, RF-15
 
 | Tabla | Qué guarda | Claves e invariantes |
 |---|---|---|
-| **`archivos`** | Un archivo almacenado, con su metadato de seguridad | `hash_sha256` **UNIQUE**: el mismo PDF subido dos veces no crea dos filas ni dos copias en disco. `nombre_almacenado` UNIQUE (UUID generado — S1, evita path traversal). `nombre_original` se conserva solo para que la descarga tenga nombre legible. `ambito` `CHECK(publico\|interno)` separa RF-12 de RF-15 |
-| **`contenidos_archivos`** | Qué archivo aparece en qué contenido | PK `(contenido_id, archivo_id)`. `CASCADE` en contenido, `RESTRICT` en archivo: borrar un contenido no borra un archivo que otro esté usando |
+| **`archivos`** | Un archivo almacenado, con su metadato de seguridad | `hash_sha256` **UNIQUE**. `nombre_almacenado` UNIQUE (UUID generado). `ambito` `CHECK(publico\|interno)` |
 
-**Por qué el archivo se separó del contenido.** El modelo anterior tenía `Attachment.postId NOT NULL`, así que **una imagen subida desde el editor Puck no tenía dónde guardarse**: no pertenece a ningún contenido, pertenece a un bloque. Con la tabla suelta, el bloque la referencia por `id` (D5), y el mismo archivo puede estar en un contenido, en un bloque y en la marca institucional sin triplicarse.
+**Por qué el archivo no tiene una relación M:N con contenidos.** El archivo subido desde el editor Puck no pertenece a un contenido tradicional: pertenece a un bloque. Con la tabla suelta, el bloque la referencia por `id` (D5), y el mismo archivo puede estar en una página, en un bloque y en la marca institucional sin triplicarse.
 
 ### 4.4 Maqueta, gobernanza y concurrencia — RF-01, RF-06
 
