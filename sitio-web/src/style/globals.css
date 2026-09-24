@@ -1929,6 +1929,66 @@
   color: var(--foreground);
 }
 
+/* Lista abierta del desplegable de las tarjetas de acceso (`AuthSelectField`).
+   La de un <select> la pinta el sistema y no admite CSS; con el select
+   personalizable (`appearance: base-select`, Chrome/Edge 135+) sí, y se le da el
+   borde #001A39 del campo. Sigue siendo el <select> nativo: teclado, lector de
+   pantalla y envío del formulario no cambian. Sin soporte, queda la lista del
+   sistema. */
+@supports (appearance: base-select) {
+  .admin-auth-select,
+  .admin-auth-select::picker(select) {
+    appearance: base-select;
+  }
+
+  /* En modo base la pregunta elegida se parte en dos líneas; en una, como la
+     nativa, recortada. */
+  .admin-auth-select {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* La flecha la pone el SVG del componente. */
+  .admin-auth-select::picker-icon {
+    display: none;
+  }
+
+  .admin-auth-select::picker(select) {
+    margin-block: 4px;
+    padding: 4px;
+    border: 1.5px solid #001a39;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgb(0 26 57 / 0.15);
+  }
+
+  .admin-auth-select option {
+    padding: 8px 10px;
+    border-radius: 6px;
+  }
+
+  .admin-auth-select option::checkmark {
+    display: none;
+  }
+
+  .admin-auth-select option:checked {
+    font-weight: 600;
+  }
+
+  /* Blanco sobre #001A39: 17:1. */
+  .admin-auth-select option:not(:disabled):hover,
+  .admin-auth-select option:not(:disabled):focus-visible {
+    background: #001a39;
+    color: #fff;
+    outline: none;
+  }
+
+  .admin-auth-select option:disabled {
+    color: #9ca3af;
+  }
+}
+
 /* --- Admin Badges --- */
 .admin-badge {
   display: inline-flex;

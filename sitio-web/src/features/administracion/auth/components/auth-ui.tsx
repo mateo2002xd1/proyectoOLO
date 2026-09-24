@@ -323,7 +323,8 @@ export function AuthSelectField({
           onChange={(e) => onChange(e.target.value)}
           // Sin valor el campo imita a un `placeholder`; las opciones vuelven al
           // gris de texto porque en Windows heredan el color del `select`.
-          className={`${authSolidInputClass(!!error)} appearance-none pr-10 ${value ? '' : 'text-gray-400'
+          // `admin-auth-select`: la lista abierta, con borde (globals.css).
+          className={`admin-auth-select ${authSolidInputClass(!!error)} appearance-none pr-10 ${value ? '' : 'text-gray-400'
             }`}
         >
           <option value="" disabled>
