@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Paginacion } from '@/shared/ui/molecules/paginacion';
+import { Paginador } from '@/shared/ui/molecules/paginador';
 import type { RegistroFuenteFutura } from '../types';
 
 interface TablaFuentesFuturasProps {
@@ -12,6 +12,8 @@ interface TablaFuentesFuturasProps {
   pagina: number;
   totalPaginas: number;
   onCambiarPagina: (pagina: number) => void;
+  porPagina: number;
+  onCambiarPorPagina: (porPagina: number) => void;
   mostrarTotales?: boolean;
 }
 
@@ -23,6 +25,8 @@ export function TablaFuentesFuturas({
   pagina,
   totalPaginas,
   onCambiarPagina,
+  porPagina,
+  onCambiarPorPagina,
   mostrarTotales = true,
 }: TablaFuentesFuturasProps) {
   const subtotalPagina = useMemo(() => {
@@ -145,12 +149,15 @@ export function TablaFuentesFuturas({
           Importaba el paginador interno de tendencia, que ya no existe desde que
           todas las tablas comparten `shared/ui/molecules/paginacion`. */}
       {totalPaginas > 1 && (
-        <Paginacion
+        <Paginador
           pagina={pagina}
           totalPaginas={totalPaginas}
           onCambiarPagina={onCambiarPagina}
+          total={totalResultados}
+          porPagina={porPagina}
+          onCambiarPorPagina={onCambiarPorPagina}
+          etiqueta="fuentes"
           tono="publico"
-          ariaLabel="Paginación de resultados"
           className="mt-4"
         />
       )}

@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Puck, createUsePuck, Data } from '@puckeditor/core';
+import { Puck, createUsePuck, Data, blocksPlugin, outlinePlugin } from '@puckeditor/core';
 import '@puckeditor/core/dist/index.css';
 import { configDeEdicion, type ContextoDeEdicion } from '@/config/puck.config';
 import { resolverRutaDeVuelta, rutaPublicaDeSlug } from '../../model/rutas';
@@ -943,12 +943,23 @@ export function PuckEditorWrapper({
     [slug]
   );
 
+  // Preparamos los plugins base de Puck para traducir sus etiquetas y tooltips.
+  const complementosTraduccion = useMemo(() => {
+    const bloques = blocksPlugin();
+    bloques.label = 'Bloques';
+    const capas = outlinePlugin();
+    capas.label = 'Capas';
+    return [bloques, capas];
+  }, []);
+
   return (
     // El estado viaja en un `data-` porque quien lo pinta es el CSS: la bandera
     // se monta sobre el marcado de la cabecera de Puck, que no es nuestro.
     <div className="olo-editor" data-estado={estadoActual}>
       <PaginaEnEdicionContext.Provider value={contextoPagina}>
         <Puck
+          plugins={complementosTraduccion}
+          ui={{ componentList: { other: { title: 'Otros' } } }}
           config={config}
           data={initialPuckData}
           onChange={handleChange}

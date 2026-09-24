@@ -187,6 +187,13 @@ const puckConfigBase: Config = {
     'Maquetación': {
       components: ['Grid', 'Flex', 'Space', 'SeccionPestanasLaterales'],
     },
+    'Ocultos': {
+      visible: false,
+      components: ['Tabs'],
+    },
+    other: {
+      title: 'Otros',
+    },
   },
   components: {
     // Primitivos de maquetación compartidos (Flex / Space)
@@ -1252,32 +1259,7 @@ const BLOQUES_COMUNES = [
  */
 const SLUG_DE_PLANTILLA = 'menu-y-pie';
 
-const COMPONENTES_POR_SLUG: Record<string, string[]> = {
-  // La plantilla es lo contrario a una sección: solo la barra y el pie, que es
-  // justo lo que las secciones ya no pueden tocar.
-  [SLUG_DE_PLANTILLA]: ['IntranetTopbar', 'IntranetFooter', 'IconoBloque'],
-  inicio: [...BLOQUES_COMUNES, 'RecursosVisualesBloque', 'Publicaciones', 'PreguntasFrecuentes'],
-  tasa: [...BLOQUES_COMUNES, 'TasaBanner', 'TasaConceptos', 'TasaDashboards', 'TasaPresentacion'],
-  matriz: [
-    ...BLOQUES_COMUNES,
-    'MatrizBanner',
-    'TasaDashboards',
-    'TasaPresentacion',
-    'DescargasConPresentacion',
-  ],
-  'encuestas-calidad-de-formacion': [
-    ...BLOQUES_COMUNES,
-    'EncuestaBanner',
-    'DescargasConPresentacion',
-    'TasaDashboards',
-  ],
-  'encuestas-seguimiento-laboral': [
-    ...BLOQUES_COMUNES,
-    'EncuestaBanner',
-    'DescargasConPresentacion',
-    'TasaDashboards',
-  ],
-};
+
 
 /**
  * Lo que el lienzo enseña alrededor de lo que se está editando.
@@ -1390,20 +1372,12 @@ function PreviewIntercalado({
   );
 }
 
-const BLOQUES_SECCION_INTRANET_DEFECTO: string[] = [
-  ...BLOQUES_COMUNES,
-  'RecursosVisualesBloque',
-  'Publicaciones',
-  'PreguntasFrecuentes',
-  'TasaDashboards',
-  'TasaPresentacion',
-  'DescargasConPresentacion',
-];
-
 export function configDeEdicion(slug: string, contexto: ContextoDeEdicion = {}): Config {
-  // Las secciones creadas a mano reciben el catálogo de bloques comunes de intranet,
-  // nunca los bloques de 'Plantilla' (IntranetTopbar/IntranetFooter), que solo se ofrecen en 'menu-y-pie'.
-  const permitidos = COMPONENTES_POR_SLUG[slug] ?? BLOQUES_SECCION_INTRANET_DEFECTO;
+  // Las secciones creadas a mano reciben todo el catálogo de bloques,
+  // pero nunca los bloques de 'Plantilla' (IntranetTopbar/IntranetFooter/IconoBloque), que solo se ofrecen en 'menu-y-pie'.
+  const permitidos = slug === SLUG_DE_PLANTILLA
+    ? ['IntranetTopbar', 'IntranetFooter', 'IconoBloque']
+    : Object.keys(puckConfig.components).filter((c) => !['IntranetTopbar', 'IntranetFooter', 'IconoBloque'].includes(c));
 
   const recortada: Config = {
     ...puckConfig,
