@@ -4,9 +4,8 @@ export const nombre = '033-tendencia-ocupacional';
 
 /**
  * Percentiles ocupacionales (inscritos vs. vacantes): lo que alimenta el bloque
- * "Tendencia Ocupacional" del sitio. Especificación completa y pruebas con el archivo
- * real en `criterios/analisis-normalizacion-percentiles-ocupacionales.md`; este DDL es
- * el de `criterios/001_percentiles_ocupacionales.sql` con tres ajustes al proyecto:
+ * "Tendencia Ocupacional" del sitio. Este DDL es el de
+ * `criterios/001_percentiles_ocupacionales.sql` con tres ajustes al proyecto:
  *
  * - **Tablas en plural** (convención de `2-convenciones-del-proyecto.md`):
  *   `nivel_ocupacional` → `niveles_ocupacionales`, `nivel_ocupacional_codigo` →

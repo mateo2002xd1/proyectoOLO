@@ -226,8 +226,7 @@ El backend procesa los archivos `.xlsx` en memoria mediante streaming (`exceljs`
 
 #### 4.6.1 Tendencia ocupacional (percentiles inscritos vs. vacantes) — migración 033
 
-Lo que alimenta el bloque "Tendencia Ocupacional" del sitio. Especificación completa, con
-el análisis del Excel y los conteos esperados, en `criterios/analisis-normalizacion-percentiles-ocupacionales.md`.
+Lo que alimenta el bloque "Tendencia Ocupacional" del sitio.
 Un **corte** es un (año, periodo): el Excel no trae ninguno de los dos y los elige quien carga.
 
 | Tabla | Qué guarda | Claves e invariantes |

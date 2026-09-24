@@ -1,8 +1,8 @@
 import type { Hallazgo } from '../../../repositories/tendencia-ocupacional.repository';
 
 /**
- * Qué verifica cada validación. Los códigos V1–V9 son los de
- * `criterios/analisis-normalizacion-percentiles-ocupacionales.md`; `LECTURA` agrupa
+ * Qué verifica cada validación. Los códigos V1–V9 son los de la carga en
+ * `TendenciaOcupacionalRepository.carga`; `LECTURA` agrupa
  * los errores por fila que se detectan al leer el Excel, antes de tocar la base, y
  * `CONFLICTO` es una celda que ya tenía datos cuando la carga iba a guardar.
  *

@@ -3,8 +3,6 @@
  *
  * Los catálogos cerrados (periodos, niveles, criterios) se repiten aquí para rechazar en
  * la puerta lo que no existe; su fuente de verdad sigue siendo la base (migración 033).
- *
- * @see criterios/analisis-normalizacion-percentiles-ocupacionales.md §9
  */
 
 import { z } from 'zod';

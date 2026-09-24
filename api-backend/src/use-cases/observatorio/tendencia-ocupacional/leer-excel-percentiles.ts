@@ -5,8 +5,7 @@ import { ErrorDeCargaTendencia, hallazgoReporte } from './reporte-carga';
 
 /**
  * Lectura del Excel de percentiles: dos hojas, encabezado en la fila 1, sin celdas
- * combinadas. Anatomía y problemas de calidad conocidos en
- * `criterios/analisis-normalizacion-percentiles-ocupacionales.md` §1, §2 y §6.
+ * combinadas.
  *
  * No toca la base: devuelve filas listas para la tabla temporal o lanza
  * `ErrorDeCargaTendencia` con todos los problemas encontrados (no solo el primero), para

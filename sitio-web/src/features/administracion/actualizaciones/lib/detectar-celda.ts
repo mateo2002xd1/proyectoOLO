@@ -3,8 +3,7 @@
  * trae, así que esto solo **sugiere**: rellena los desplegables vacíos y el formulario
  * dice de dónde salió, para que el administrador lo confirme.
  *
- * Tomado de `criterios/analisis-normalizacion-percentiles-ocupacionales.md` §8, donde se
- * probó con: percentiles_2025_T1, "1er trimestre 2019", "2do trimestre 2014",
+ * Probado con: percentiles_2025_T1, "1er trimestre 2019", "2do trimestre 2014",
  * percentiles-2012-3T, "Cuarto Trimestre 2020", "II semestre 2016", "Primer semestre 2021",
  * "anual 2013", "trimestre 4 - 2015" → correctos; "data2.xlsx" y "..._T5" → null.
  * La convención recomendada al equipo de análisis es `percentiles_AAAA_PERIODO.xlsx`.
