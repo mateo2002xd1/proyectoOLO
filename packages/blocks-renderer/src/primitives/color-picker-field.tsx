@@ -48,7 +48,7 @@ export function ColorPickerField({ value, onChange }: ColorPickerFieldProps) {
         placeholder="Usar el color por defecto"
         style={{ flex: 1, padding: '8px', border: '1px solid #ccc', borderRadius: '4px', minWidth: 0 }}
       />
-      {value && (
+      {!!value && (
         <button
           type="button"
           onClick={() => onChange('')}

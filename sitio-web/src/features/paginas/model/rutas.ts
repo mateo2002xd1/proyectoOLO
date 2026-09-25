@@ -38,7 +38,6 @@ export function enlaceAlEditor(slug: string, volverA: string): string {
  * URL vieja queda redirigida en `next.config.mjs` para los enlaces ya repartidos.
  */
 const RUTAS_PROPIAS: Record<string, string> = {
-  'politica-de-privacidad': '/inicio/politica-de-privacidad',
   cno: '/clasificacion/cno',
   cuoc: '/clasificacion/cuoc',
 };
