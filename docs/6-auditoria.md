@@ -184,6 +184,53 @@ Los 10 escenarios fueron:
 
 ---
 
+## sesión 25-09-2026: el chequeo sin IA deja dos falsos positivos y encuentra un XSS real (7.ª parte)
+
+**Qué era.** Al explicar en palabras sencillas el informe del equipo desde el 2026-09-01,
+se revisaron a mano las señales altas. Dos patrones eran culpa del script, no del código.
+Una de las señales de seguridad resultó real.
+
+### Qué cambió en `chequeo-automatico.mjs`
+
+| Qué | Antes → ahora |
+|---|---|
+| Excepciones que terminan en `**` | `**/src/app/**` solo cubría un nivel. El `.*` del `**` pasaba después por el reemplazo de `*` y quedaba `.[^/]*`. Por eso los `page.tsx` y `layout.tsx` de subcarpetas salían como CAR-09, cuando Next exige su `export default`. Ahora `**` pasa por un marcador y se traduce al final |
+| SEG-11 con constantes | `` `SELECT pg_advisory_xact_lock(${CANDADO_CELDA})` `` salía como «SQL armado a mano». `CANDADO_CELDA` es texto fijo del módulo y los valores van por `replacements`. Ahora no cuenta una interpolación que sea un nombre en MAYÚSCULAS |
+
+### Verificado
+
+| Qué | Resultado |
+|---|---|
+| Mismo alcance (`OLO/dev` en `95e8516`, 286 commits) | 220 → **203 señales**, y 9 → 25 filtradas por excepciones. La crítica y las demás altas siguen igual |
+| `sanitizarContenidoPuck` con un bloque de texto enriquecido y otro con `titulo`, ambos con `<img src=x onerror=…>` | El `titulo` sale limpio (`<img>`). El texto enriquecido sale **intacto**, con el `onerror` |
+
+> **XSS almacenado en el bloque «Texto enriquecido» (`RichTextBlock`).**
+>
+> - **Por qué no se sanea.** Su prop se llama `content` y guarda el objeto de EditorJS
+>   (`{ blocks: [...] }`), no un texto. `content` está en `CAMPOS_HTML` de
+>   `api-backend/src/shared/sanitizar-contenido.ts`, así que pasa por `sanitizarHtml`, que
+>   devuelve sin tocar todo lo que no es string.
+> - **Dónde se pinta.** `editorjs-wrapper.tsx` pinta después su `text` y sus `items` con
+>   `dangerouslySetInnerHTML` en el sitio público.
+> - **Qué puede pasar.** Es el vector de §S2 de `3-seguridad-del-proyecto.md`: una cuenta
+>   de editor comprometida mete un `onerror`, y ese código corre en el navegador de quien
+>   aprueba y después en el de cada visitante.
+> - **Un hueco más.** Los strings sueltos dentro de un arreglo (los `items` de una lista
+>   de EditorJS) tampoco se sanean en ninguna rama.
+
+**Pendiente al cierre:**
+
+- **Arreglar el saneo.**
+  - Un campo de `CAMPOS_HTML` que traiga un objeto o un arreglo se recorre.
+  - Los strings de un arreglo se sanean según la clave del padre.
+  - Revisar si ya hay contenido guardado con HTML peligroso.
+- **Rutas de los `.md` numerados.** Pasaron a `docs/`, pero todavía los buscan en la raíz:
+  - `SALIDA` de `generar-mapa.mjs` y el `git add` del hook `pre-commit`;
+  - las fuentes de `reglas.md` y `auditor-arquitectura.md`;
+  - DOC-01/02 en `chequeo-automatico.mjs`.
+
+---
+
 ## sesión 25-09-2026: los diagramas de la §3 de la guía se ven en cualquier visor (6.ª parte)
 
 **Qué era.** Los §3.1 (capas), §3.3 (lectura pública) y §3.4 (edición y publicación) de
@@ -317,6 +364,39 @@ Total: 29 de 29 comprobaciones con el código nuevo.
 
 ---
 
+## sesión 25-09-2026: el chequeo sin IA de `/auditar`, para todo el equipo y por persona (5.ª parte)
+
+**Qué era.** El usuario preguntó si el chequeo automático de `/auditar` podía correr
+sobre todo el equipo sin IA. Podía (`desde=` sin `autor`), pero al probarlo con
+septiembre salieron tres problemas: tardaba 4 min 17 s, no decía de quién era cada
+señal y solo mostraba 40 líneas en pantalla, con el resto en un JSON.
+
+### Qué cambió
+
+| Qué | Antes → ahora |
+|---|---|
+| Tiempo, 286 commits y 530 archivos | 4 min 17 s → **54 s**. Los `git blame` y los `git show` corren en paralelo (`enLotes`), y el texto de la punta se lee con un solo `git cat-file --batch` en vez de mil llamadas de ~65 ms cada una en Windows |
+| De quién es cada señal | Cada una lleva su persona. Las firmas que comparten nombre o correo se juntan: «David Tejada / ingdave» (mismo correo) y los dos correos de diegorioz |
+| Salida | Tabla por persona en pantalla, las críticas y altas, y un informe legible en `auditorias/<fecha>-equipo-desde-<fecha>-sin-ia.md`: por persona, por regla (con lo que pide cada una) y cada señal con su enlace al archivo |
+| Falso positivo SEG-01 (crítico) | `password: 'contraseña'`, una etiqueta de la interfaz en `auditoria-resumen.ts`, salía como secreto. Ahora una asignación suelta solo cuenta si el valor no es una palabra |
+| Falso positivo SEG-10 | `console.log('[Auth] Token verify failed:', err.name)` salía como «log con token». Ahora solo cuenta lo que se imprime, no el texto del mensaje |
+
+### Verificado
+
+Chequeo de todo el equipo desde el 2026-09-01 sobre `OLO/dev` (`95e8516`): 286 commits,
+220 señales (1 crítica, 14 altas, 157 medias, 48 bajas), 9 filtradas por excepciones.
+Mismo resultado antes y después de paralelizar, salvo los dos falsos positivos.
+
+> **La crítica que queda es real y conviene mirarla:** `021-bloqueos-edicion.ts` cambió
+> su `nombre` de `020-…` a `021-…` el mismo día en que se creó (`df49d88`). El runner
+> reconoce las migraciones aplicadas por ese nombre: si en algún entorno se aplicó con el
+> nombre viejo, la ve como nueva e intenta correrla otra vez.
+
+**Pendiente al cierre:** confirmar en Neon y en el servidor con qué nombre quedó
+registrada la 021.
+
+---
+
 ## sesión 25-09-2026: `13-mapa-del-proyecto.md`, el plano de cómo está el proyecto, al día en cada commit (4.ª parte)
 
 **Qué era.** El usuario notó que la arquitectura de carpetas no está bien definida y pidió
@@ -381,6 +461,70 @@ temporales de SQLite.
   con esa definición: hoy es una transcripción de la guía, no una decisión nueva.
 - Opcional: que `1-guia` §4 deje de copiar árboles a mano y apunte al mapa, que se
   desactualiza solo mucho menos (la guía dice 26 migraciones; hay 37).
+
+---
+
+## sesión 25-09-2026: `/auditar`, un auditor de código contra las reglas de los `.md` (3.ª parte)
+
+**Qué era.** El usuario pidió un agente que, al llamarlo, audite lo que hicieron otras
+personas en el repositorio y marque dónde se apartan de las convenciones de los `.md` y
+de las recomendaciones de otros agentes, con otra forma de hacerlo en tres frentes:
+arquitectura del proyecto, arquitectura de carpetas y seguridad. Eligió: auditar
+**commits por persona y fechas** (con `git`, sin la CLI de GitHub, que no está instalada),
+un informe `.md` **privado e ignorado por git**, el auditor **versionado para el equipo**,
+y cuatro extras: chequeo automático sin IA, verificador de falsos positivos, duplicación
+sitio-web ↔ intranet y documentación y bitácora al día.
+
+### Qué quedó
+
+| Pieza | Qué hace |
+|---|---|
+| `.claude/skills/auditar/SKILL.md` | `/auditar autor=… desde=… [hasta=…] [rama=OLO/dev]` o `rango=a..b`. Solo corre si alguien lo escribe (`disable-model-invocation`). Dirige los seis pasos y escribe el informe en `auditorias/<fecha>-<alcance>.md` |
+| `scripts/preparar-alcance.mjs` (+ `alcance.mjs`) | `git fetch`, los commits del filtro y, con `git blame -w` sobre la punta, **solo las líneas de esa persona que siguen vivas**. Deja una copia de la rama en `%TEMP%\olo-auditoria\<id>` (sin `storage/` ni `uploads/`: 34 MB, menos de 2 s) armada con un índice temporal, sin tocar el árbol de trabajo ni el índice |
+| `scripts/chequeo-automatico.mjs` | Lo que no necesita IA: kebab-case, `ui/`/`api/` en features, imports que cruzan fronteras, `any`, `TODO` anónimos, `catch` vacíos, `eslint-disable` sin motivo, capas de la API, rutas sin sesión o sin `validar()`, migraciones editadas o fuera del manifiesto, secretos en lo añadido (aunque ya se hayan borrado), duplicación entre las dos apps, días de código sin entrada en esta bitácora y documentación que nombra archivos que este trabajo borró o renombró. También sirve suelto: `rango=OLO/dev..HEAD --estricto` sale con 1 si hay algo crítico o alto |
+| `reglas.md` | 51 reglas con código fijo (`ARQ-*`, `CAR-*`, `CONV-*`, `A11Y-01`, `SEG-*`, `DOC-*`) y la fuente exacta de cada una: archivo y encabezado. Lo que no sale de un `.md` se reporta como `REC`, recomendación |
+| `excepciones.md` | Lo que parece error y es una decisión documentada. Un bloque que el script filtra solo y una tabla para los inspectores |
+| `.claude/agents/auditor-{arquitectura,carpetas,seguridad}.md` | Tres inspectores en paralelo (Sonnet), solo lectura, cada uno con sus reglas. Si la sesión tiene las skills `senior-architect`, `frontend-senior`/`backend-senior` o `senior-security`, las cargan; si chocan con un `.md`, gana el `.md` |
+| `.claude/agents/auditor-verificador.md` | Intenta refutar cada hallazgo: el código dice eso, la línea es de esta persona, la regla lo exige, no es una decisión escrita, la severidad es proporcional |
+| `plantilla-informe.md` | Resumen de 30 segundos, hallazgos con qué pasa / por qué importa / cómo hacerlo / ejemplo del propio repo / cita de la regla, propuestas de fondo, hábitos «para la próxima» y lo que el verificador descartó |
+| `.gitignore` | `.claude/` estaba ignorado entero desde el 2026-07-20: ahora se versionan solo `.claude/agents/` y `.claude/skills/auditar/`. Se ignora `auditorias/` |
+
+**Se revisa lo vivo, no el diff.** Si otra persona ya reescribió una línea, reportarla
+sería pedirle a quien la escribió que arregle algo que ya no existe. Por la misma razón,
+la documentación desactualizada solo se le atribuye a quien borró o renombró el archivo,
+no a quien lo tocó antes.
+
+**Descartado:** revisar las PR con `gh` (no está instalado; queda para cuando lo esté) y
+guardar memoria por agente (`memory: project`): acumularía en el repo versionado juicios
+sobre el trabajo de cada persona, que el usuario quiere privados.
+
+### Verificado
+
+Solo la parte sin IA: los inspectores y el verificador no se corrieron en esta sesión.
+
+| Prueba | Resultado |
+|---|---|
+| `preparar-alcance.mjs` sobre 6 commits reales de una persona (10 días) | 42 archivos, 728 líneas vivas, copia de 34 MB; 8 s |
+| `chequeo-automatico.mjs` sobre ese alcance | 7 señales, para que las juzgue un inspector: un `POST` sin sesión ni `validar()` (¿público a propósito?), un `any`, un use-case que usa un modelo sin su repositorio, `mensaje-de-cierre.ts` idéntico en las dos apps y 17 menciones en los `.md` de `middleware.ts`, que en esa rama ya es `proxy.ts` |
+| Modo rápido, `rango=HEAD~11..HEAD --estricto` | 3 señales, 2 filtradas por excepciones, exit 0. Entre ellas, que el `registrar-service-worker.tsx` de la PWA está duplicado en las dos apps (cierto) |
+| Falso positivo encontrado y corregido | `033-tendencia-ocupacional.ts` salía como «migración aplicada editada» (crítica); el cambio era solo de comentarios (`36e6019`). Ahora eso baja a `revisar`/baja |
+| Autocomprobación de `reglas.md` | Las 59 citas (36 encabezados distintos) existen; con uno inventado, avisa `REGLAS DESACTUALIZADAS` |
+| YAML de la skill y los 4 agentes; `node --check` de los 3 scripts | Correctos |
+
+> **Dos avisos para quien lo use.** Los agentes nuevos se cargan al abrir la sesión: si
+> `/auditar` no los encuentra, hay que reiniciar Claude Code. Y la regla 1 de
+> `1-guia-del-proyecto.md` §6 y la 9 de `4-reglas.md` dicen que `proxy.ts` es un nombre
+> que Next ignora: desde Next 16 es al revés. `reglas.md` ya lo trata como documentación
+> desactualizada (DOC-02), pero los dos `.md` siguen diciéndolo.
+
+**Pendiente al cierre:**
+- Primera corrida real de `/auditar` con los inspectores y el verificador, y ajustar los
+  agentes con lo que salga.
+- Corregir en `1-guia` y `4-reglas` lo de `middleware.ts` → `proxy.ts`, y las 17
+  menciones en los `.md` cuando se confirme la migración a `proxy.ts`.
+- Opcional: `winget install GitHub.cli` para auditar PR; un hook `pre-push` con el modo
+  rápido; mover `.claude/SKILL.md` (el `llm-council`) a `.claude/skills/llm-council/`,
+  que es donde Claude Code lo encuentra.
 
 ---
 
