@@ -303,7 +303,7 @@ function ModalConfirmarAccion({
           {contenido.pideComentario && (
             <div className="olo-modal-comentario">
               <label htmlFor="olo-modal-comentario-campo" className="olo-modal-comentario-etiqueta">
-                Describe tus cambios <span className="olo-modal-comentario-obligatorio">(obligatorio)</span>
+                Describe tus cambios <span className="olo-modal-comentario-obligatorio">(requerido)</span>
               </label>
               {/* Primer elemento enfocable del diálogo: `showModal()` lo enfoca solo, así
                   que se puede escribir sin tener que hacer clic. */}
@@ -327,9 +327,9 @@ function ModalConfirmarAccion({
               />
               <div className="olo-modal-comentario-pie">
                 <span id="olo-modal-comentario-ayuda">
-                  {largo > 0 && largo < COMENTARIO_MIN
-                    ? `Sé específico: mínimo ${COMENTARIO_MIN} caracteres.`
-                    : "Lo lee quien aprueba y queda registrado en la auditoría."}
+                  {largo < COMENTARIO_MIN
+                    ? `Mínimo ${COMENTARIO_MIN} caracteres`
+                    : "Listo para enviar"}
                 </span>
                 <span className="olo-modal-comentario-cuenta" aria-hidden="true">
                   {comentario.length}/{COMENTARIO_MAX}
@@ -351,7 +351,7 @@ function ModalConfirmarAccion({
               className="olo-modal-btn olo-modal-btn--principal"
               onClick={onConfirmar}
               disabled={!puedeConfirmar}
-              title={puedeConfirmar ? undefined : "Escribe el comentario de tus cambios para poder enviar"}
+              title={puedeConfirmar ? undefined : `Escribe al menos ${COMENTARIO_MIN} caracteres para enviar`}
             >
               {contenido.textoConfirmar}
             </button>
@@ -735,9 +735,8 @@ export function PuckEditorWrapper({
         }
       : {
           titulo: "¿Enviar a revisión?",
-          descripcion:
-            "El administrador recibirá tu trabajo para revisarlo, aprobarlo y publicarlo en el sitio.",
-          textoConfirmar: "Enviar a revisión",
+          descripcion: "Un administrador revisará tus cambios antes de publicarlos.",
+          textoConfirmar: "Enviar",
           pideComentario: true,
         };
 
