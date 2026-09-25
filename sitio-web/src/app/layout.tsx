@@ -1,7 +1,8 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Work_Sans } from 'next/font/google';
 import '@/style/globals.css';
 import { SincronizarTema } from '@/shared/lib/tema';
+import { COLOR_PWA, ICONO_APPLE, RegistrarServiceWorker } from '@/shared/lib/pwa';
 
 const workSans = Work_Sans({
   subsets: ['latin'],
@@ -24,6 +25,14 @@ export const metadata: Metadata = {
   ],
   icons: {
     icon: '/assets/logos/olo-logo-none.svg',
+    apple: ICONO_APPLE,
+  },
+  // iOS no lee el manifiesto para esto: sin `appleWebApp`, «Agregar a inicio» abre
+  // el sitio dentro de Safari, con su barra, en vez de a pantalla completa.
+  appleWebApp: {
+    capable: true,
+    title: 'OLO SENA',
+    statusBarStyle: 'default',
   },
   openGraph: {
     title: 'Observatorio Laboral y Ocupacional',
@@ -35,6 +44,11 @@ export const metadata: Metadata = {
   },
 };
 
+/** Color de la barra del navegador en el celular y de la app instalada. */
+export const viewport: Viewport = {
+  themeColor: COLOR_PWA,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -44,6 +58,7 @@ export default function RootLayout({
     <html lang="es" className={workSans.variable} suppressHydrationWarning>
       <body>
         <SincronizarTema />
+        <RegistrarServiceWorker />
         {children}
       </body>
     </html>

@@ -26,6 +26,24 @@ const nextConfig = {
   turbopack: {
     root: path.resolve(__dirname, '..')
   },
+  async headers() {
+    return [
+      {
+        /**
+         * El service worker de la PWA (`public/sw.js`). Sin caché: una versión vieja
+         * guardada en el navegador seguiría decidiendo qué se sirve sin conexión
+         * después de un despliegue. La CSP es solo para lo que él mismo pida: nada
+         * fuera del propio sitio.
+         */
+        source: '/sw.js',
+        headers: [
+          { key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' },
+          { key: 'Content-Type', value: 'application/javascript; charset=utf-8' },
+          { key: 'Content-Security-Policy', value: "default-src 'self'; script-src 'self'" },
+        ],
+      },
+    ];
+  },
   /**
    * Alias hacia las pantallas de acceso, que viven en `app/(auth)/`.
    *
