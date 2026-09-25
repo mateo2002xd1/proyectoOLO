@@ -2,6 +2,9 @@
 
 export type EstadoCargaDatos = 'procesando' | 'completado' | 'error';
 
+/** Excel de ejemplo que sirve `GET /api/observatorio/formatos/:formato`, uno por tarjeta. */
+export type FormatoDeCarga = 'programas-sobresalientes' | 'tendencia-ocupacional';
+
 /** Una carga de Excel registrada en `cargas_datos`. */
 export interface CargaDatos {
   id: string;

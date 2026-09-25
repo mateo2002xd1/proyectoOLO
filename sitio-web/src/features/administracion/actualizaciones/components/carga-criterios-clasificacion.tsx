@@ -8,6 +8,7 @@ import { useCargasTendencia } from '../hooks/use-cargas-tendencia';
 import { detectarCelda } from '../lib/detectar-celda';
 import { RANGO_ANIOS_TENDENCIA } from '../lib/rango-anios';
 import { BarraDeProgreso } from './barra-de-progreso';
+import { DescargarFormato } from './descargar-formato';
 import { EstadoFlag, estadoDeCarga, estadoDeCelda, resumenDeFilas, type TonoEstado } from './estado-flag';
 import { HistorialCargasTendencia } from './historial-cargas-tendencia';
 import { ReporteCargaTendencia } from './reporte-carga-tendencia';
@@ -238,12 +239,17 @@ export function CargaCriteriosClasificacion({ puedeActualizar }: CargaCriteriosC
       aria-labelledby="titulo-criterios-clasificacion"
       className="col-span-full rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f]"
     >
-      <h2 id="titulo-criterios-clasificacion" className="font-semibold text-[#001631] dark:text-[#f6f6f6]">
-        Criterios de clasificación de resultados
-      </h2>
-      <p className="mt-1 text-sm text-gray-600 dark:text-[#94a3b8]">
-        Percentiles de inscritos y vacantes para Tendencia Ocupacional. Un archivo .xlsx por año y periodo.
-      </p>
+      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
+        <div>
+          <h2 id="titulo-criterios-clasificacion" className="font-semibold text-[#001631] dark:text-[#f6f6f6]">
+            Criterios de clasificación de resultados
+          </h2>
+          <p className="mt-1 text-sm text-gray-600 dark:text-[#94a3b8]">
+            Percentiles de inscritos y vacantes para Tendencia Ocupacional. Un archivo .xlsx por año y periodo.
+          </p>
+        </div>
+        {puedeActualizar && <DescargarFormato formato="tendencia-ocupacional" />}
+      </div>
 
       {t.errorEstado && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{t.errorEstado}</p>}
 

@@ -5,6 +5,7 @@ import type {
   CargaTendenciaEliminada,
   CeldaTendencia,
   FiltroHistorialTendencia,
+  FormatoDeCarga,
   HistorialTendencia,
 } from '../types';
 import { URL_DE_LA_API } from '@/shared/lib/url-de-la-api';
@@ -21,6 +22,30 @@ const api = axios.create({
   timeout: 15000,
 });
 
+/**
+ * Excel de ejemplo de una carga, con las hojas y columnas que espera. Va por la API y no
+ * por un enlace directo porque pide la sesión de Administrador.
+ */
+export async function descargarFormatoDeCarga(formato: FormatoDeCarga): Promise<Blob> {
+  try {
+    const { data } = await api.get(`/api/observatorio/formatos/${formato}`, {
+      responseType: 'blob',
+      timeout: 60000,
+    });
+    return data;
+  } catch (error) {
+    // Con `responseType: 'blob'` el cuerpo del error también llega como Blob: se lee aquí
+    // para que `mensajeDeErrorApi` encuentre el `{ error }` de la API como en las demás.
+    if (axios.isAxiosError(error) && error.response?.data instanceof Blob) {
+      try {
+        error.response.data = JSON.parse(await error.response.data.text());
+      } catch {
+        // No era JSON (una página de error del proxy, por ejemplo): se deja tal cual.
+      }
+    }
+    throw error;
+  }
+}
 
 /** Sube el Excel y arranca la carga de inmediato — sin paso de aprobación (decisión de sesión). */
 export async function subirExcelProgramaSobresalientes(archivo: File): Promise<{ cargaId: string }> {
