@@ -36,6 +36,11 @@ const CSP_DIRECTIVAS = [
   "form-action 'self'",
   // Base-uri: solo mismo origen (previene base-tag injection)
   "base-uri 'self'",
+  // PWA: el service worker (`public/sw.js`) y el manifiesto (`app/manifest.ts`) son
+  // del mismo origen. Explícitos para que no dependan de a qué directiva recurre cada
+  // navegador cuando faltan.
+  "worker-src 'self'",
+  "manifest-src 'self'",
 ].join('; ');
 
 const nextConfig: NextConfig = {
@@ -88,6 +93,18 @@ const nextConfig: NextConfig = {
             key: "Referrer-Policy",
             value: "strict-origin-when-cross-origin",
           },
+        ],
+      },
+      {
+        // El service worker de la PWA (`public/sw.js`). Sin caché: una versión vieja
+        // guardada en el navegador seguiría decidiendo qué se sirve sin conexión
+        // después de un despliegue. La CSP es solo para lo que él mismo pida: nada
+        // fuera de la propia intranet.
+        source: "/sw.js",
+        headers: [
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+          { key: "Content-Security-Policy", value: "default-src 'self'; script-src 'self'" },
         ],
       },
     ];

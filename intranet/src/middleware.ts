@@ -134,5 +134,9 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|assets|favicon.ico).*)"],
+  // `sw.js` y `manifest.webmanifest` quedan fuera porque el navegador los pide sin
+  // sesión (el manifiesto, incluso, sin cookies): con el middleware delante recibirían
+  // el login en su lugar y la intranet no se podría instalar. Ninguno lleva nada
+  // privado; ver `shared/lib/pwa/`.
+  matcher: ["/((?!_next/static|_next/image|assets|favicon.ico|sw.js|manifest.webmanifest).*)"],
 };

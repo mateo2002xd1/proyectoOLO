@@ -1,0 +1,97 @@
+<!doctype html>
+<!--
+  Página que muestra `public/sw.js` cuando no hay red. La intranet no guarda copias de
+  sus páginas (ver el comentario de `sw.js`), así que sin red siempre se ve esta.
+  Autocontenida a propósito: sin red no llegan ni el CSS ni las fuentes de Next. Sin
+  scripts —la CSP de la intranet no admite los que van dentro del HTML—: «Intentar de
+  nuevo» es un enlace vacío, que vuelve a pedir la dirección en la que se está (el
+  service worker la sirve en lugar de la página original, así que la barra de
+  direcciones conserva la que se pidió).
+-->
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#001A39" />
+    <meta name="robots" content="noindex" />
+    <title>Sin conexión | Intranet OLO SENA</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px 16px;
+        background: #f3f3f3;
+        color: #1a2340;
+        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+        line-height: 1.5;
+      }
+      main {
+        width: 100%;
+        max-width: 440px;
+        padding: 32px 24px;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 1px 3px rgba(0, 26, 57, 0.12);
+        text-align: center;
+      }
+      img {
+        display: block;
+        margin: 0 auto 20px;
+        border-radius: 16px;
+      }
+      h1 {
+        margin: 0 0 12px;
+        font-size: 1.5rem;
+        line-height: 1.25;
+        color: #001a39;
+      }
+      p {
+        margin: 0 0 12px;
+      }
+      .acciones {
+        display: flex;
+        justify-content: center;
+        margin-top: 24px;
+      }
+      a {
+        display: inline-block;
+        min-height: 44px;
+        padding: 10px 20px;
+        border: 2px solid #001a39;
+        border-radius: 8px;
+        background: #001a39;
+        color: #ffffff;
+        font-weight: 600;
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      a:focus-visible {
+        outline: 3px solid #001a39;
+        outline-offset: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img src="/assets/pwa/icono-192.png" alt="" width="72" height="72" />
+      <h1>Estás sin conexión</h1>
+      <p>La intranet necesita internet para mostrar su información.</p>
+      <p>
+        Por seguridad no guarda copias de sus páginas en este dispositivo, así nadie puede
+        verlas después de que cierres sesión.
+      </p>
+      <div class="acciones">
+        <a href="">Intentar de nuevo</a>
+      </div>
+    </main>
+  </body>
+</html>
