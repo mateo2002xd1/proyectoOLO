@@ -45,6 +45,11 @@ import { resolverHref } from '../../shared/extraer-textos-puck';
 import { invalidarPermisosDeRol } from '../../middlewares/require-permission.middleware';
 import { borrarClavesPorPatron } from '../../infrastructure/redis';
 import type { Ambito } from '../../shared/ambito';
+import { 
+  eliminarDirectorioBackupCompleto, 
+  eliminarArchivosDeUploads, 
+  extraerRutasUploads 
+} from '../../shared/storage/backup-uploads.service';
 
 const fallo = (mensaje: string, status: number) =>
   Object.assign(new Error(mensaje), { status });
@@ -218,6 +223,12 @@ export const eliminarSeccion = async (
     );
     const roles = (filas as { nombre: string }[]).map((f) => f.nombre);
 
+    const versiones = await PaginaVersion.findAll({ where: { paginaId: analisis.id }, transaction });
+    const rutasUploads = new Set<string>();
+    for (const v of versiones) {
+      extraerRutasUploads(v.contenido).forEach(r => rutasUploads.add(r));
+    }
+
     await Pagina.destroy({ where: { slug, ambito }, transaction });
     const permiso = await Permission.findOne({ where: { name: clavePermiso }, transaction });
     if (permiso) {
@@ -226,10 +237,10 @@ export const eliminarSeccion = async (
       await permiso.destroy({ transaction });
     }
 
-    return roles;
+    return { roles, rutasUploads };
   };
 
-  const rolesAfectados = tx ? await execute(tx) : await sequelize.transaction(execute);
+  const { roles: rolesAfectados, rutasUploads } = tx ? await execute(tx) : await sequelize.transaction(execute);
 
   // Fuera de la transacción: la caché solo debe olvidar lo confirmado. Si no, un rol
   // seguiría creyendo hasta 30 s que puede editar una sección que ya no existe.
@@ -238,6 +249,10 @@ export const eliminarSeccion = async (
     borrarClavesPorPatron(`cache:/api/paginas/publica/${slug}|*`),
     borrarClavesPorPatron('cache:/api/paginas/indice-busqueda|*'),
   ]).catch(() => {});
+
+  // Limpiar basura del sistema de archivos
+  eliminarDirectorioBackupCompleto(analisis.id, ambito);
+  eliminarArchivosDeUploads(rutasUploads, ambito);
 
   return {
     id: analisis.id,

@@ -393,3 +393,40 @@ export function adaptarRutasParaVistaPreviaArchivada(
 
   return transformar(contenido);
 }
+
+/**
+ * Elimina físicamente del directorio uploads/ los archivos especificados.
+ * Se utiliza al eliminar por completo una página para no dejar archivos basura.
+ */
+export function eliminarArchivosDeUploads(rutas: Iterable<string>, ambito: Ambito): void {
+  const dirUploads = resolverDirectorioUploads(ambito);
+  for (const rutaRelativa of rutas) {
+    const subRuta = rutaRelativa.replace(/^\/?uploads\//, '');
+    // Prevención de path traversal
+    if (subRuta.includes('..')) continue;
+    
+    const rutaFisica = path.join(dirUploads, subRuta);
+    if (fs.existsSync(rutaFisica)) {
+      try {
+        fs.unlinkSync(rutaFisica);
+      } catch (error) {
+        console.error(`[Storage] No se pudo eliminar el archivo basura en uploads: ${rutaFisica}`, error);
+      }
+    }
+  }
+}
+
+/**
+ * Elimina por completo el directorio de backup de una página.
+ * Útil cuando se elimina por completo la página del sistema.
+ */
+export function eliminarDirectorioBackupCompleto(paginaId: string, ambito: Ambito): void {
+  const dirBackup = resolverDirectorioBackup(paginaId, ambito);
+  if (fs.existsSync(dirBackup)) {
+    try {
+      fs.rmSync(dirBackup, { recursive: true, force: true });
+    } catch (error) {
+      console.error(`[Storage] No se pudo eliminar el directorio de backup de la página ${paginaId}:`, error);
+    }
+  }
+}
