@@ -1,0 +1,32 @@
+%% Fuente de diagramas/3-4-edicion-y-publicacion.svg (1-guia-del-proyecto.md §3.4).
+%% Para cambiarlo: editar aquí, pegarlo en https://mermaid.live y exportar como SVG
+%% sobre diagramas/3-4-edicion-y-publicacion.svg (o pedírselo a Claude, que lo regenera igual).
+%%{init: {"theme": "base", "themeVariables": {"actorBkg": "#eef7e1", "actorBorder": "#7DB828", "actorTextColor": "#12210a", "actorLineColor": "#9aa7b4", "signalColor": "#1a1a1a", "signalTextColor": "#1a1a1a", "noteBkgColor": "#f4f6f8", "noteBorderColor": "#9aa7b4", "noteTextColor": "#1a1a1a", "labelBoxBkgColor": "#001A39", "labelBoxBorderColor": "#001A39", "labelTextColor": "#ffffff", "loopTextColor": "#1a1a1a", "sequenceNumberColor": "#ffffff"}, "sequence": {"actorMargin": 30, "width": 130, "noteMargin": 8}}}%%
+sequenceDiagram
+    accTitle: Flujo de edición y publicación con gobernanza
+    accDescr: El editor trabaja en la mesa de trabajo y el autoguardado deja un borrador en la API sin tocar lo público. Al enviarlo a revisión pasa a en_revision. Cuando el administrador aprueba, la API archiva la versión publicada, publica la nueva y emite ContenidoPublicado; sus oyentes invalidan la caché de Redis y revalidan el sitio. El controlador registra la auditoría.
+
+    autonumber
+    actor editor as Editor
+    actor admin as Administrador
+    participant mesa as Mesa de trabajo<br/>(Puck + Zustand)
+    participant api as API :4000
+    participant redis as Redis
+    participant sitio as Sitio web<br/>POST /api/revalidar
+
+    editor->>mesa: edita
+    mesa->>api: autoguardado (debounce)
+    Note right of api: guarda BORRADOR<br/>(no toca lo público)
+    editor->>api: envía a revisión
+    Note right of api: estado → en_revision
+
+    admin->>api: aprueba
+    Note right of api: archiva la versión publicada<br/>y la nueva ocupa su lugar
+    api->>api: emite ContenidoPublicado
+    rect rgb(247, 248, 250)
+        Note over api,sitio: oyentes de ContenidoPublicado (se esperan antes de responder)
+        api->>redis: invalida caché (SCAN + DEL por patrón)
+        api->>sitio: revalidar → revalidateTag
+    end
+    Note right of api: el controlador registra la auditoría<br/>(quién, qué, cuándo)
+    api-->>admin: publicada

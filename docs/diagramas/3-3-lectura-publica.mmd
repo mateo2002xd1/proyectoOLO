@@ -1,0 +1,29 @@
+%% Fuente de diagramas/3-3-lectura-publica.svg (1-guia-del-proyecto.md §3.3).
+%% Para cambiarlo: editar aquí, pegarlo en https://mermaid.live y exportar como SVG
+%% sobre diagramas/3-3-lectura-publica.svg (o pedírselo a Claude, que lo regenera igual).
+%%{init: {"theme": "base", "themeVariables": {"actorBkg": "#eef7e1", "actorBorder": "#7DB828", "actorTextColor": "#12210a", "actorLineColor": "#9aa7b4", "signalColor": "#1a1a1a", "signalTextColor": "#1a1a1a", "noteBkgColor": "#f4f6f8", "noteBorderColor": "#9aa7b4", "noteTextColor": "#1a1a1a", "labelBoxBkgColor": "#001A39", "labelBoxBorderColor": "#001A39", "labelTextColor": "#ffffff", "loopTextColor": "#1a1a1a", "sequenceNumberColor": "#ffffff"}}}%%
+sequenceDiagram
+    accTitle: Flujo de lectura pública con caché
+    accDescr: El navegador pide una página al sitio web. El sitio la pide a la API, que busca primero en Redis. Si está (HIT) devuelve el JSON cacheado; si no (MISS) consulta PostgreSQL, la guarda en Redis con TTL y la devuelve. Next renderiza los bloques con ISR y entrega el HTML.
+
+    autonumber
+    actor nav as Navegador
+    participant sitio as Sitio web :3000<br/>(Server Component)
+    participant api as API :4000
+    participant redis as Redis
+    participant pg as PostgreSQL
+
+    nav->>sitio: GET /pagina
+    sitio->>api: fetch /api/paginas/publica/:slug
+    api->>redis: ¿está en caché?
+    alt HIT · está en caché
+        redis-->>api: JSON cacheado
+    else MISS · no está
+        redis-->>api: no está
+        api->>pg: consulta la página
+        pg-->>api: datos
+        api->>redis: guarda con TTL
+    end
+    api-->>sitio: JSON
+    Note over sitio: renderiza la página<br/>con los bloques (ISR)
+    sitio-->>nav: HTML

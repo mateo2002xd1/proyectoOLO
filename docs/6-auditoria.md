@@ -184,6 +184,58 @@ Los 10 escenarios fueron:
 
 ---
 
+## sesión 25-09-2026: los diagramas de la §3 de la guía se ven en cualquier visor (6.ª parte)
+
+**Qué era.** Los §3.1 (capas), §3.3 (lectura pública) y §3.4 (edición y publicación) de
+`1-guia-del-proyecto.md` eran dibujos en texto. Primero se probó un bloque Mermaid. Pero el
+visor de Markdown de Antigravity (un fork de VS Code), igual que el de VS Code, no dibuja
+Mermaid sin una extensión, y el usuario lo veía como código. Lo que sí muestran todos los
+visores sin instalar nada es una imagen.
+
+### Qué quedó
+
+| Pieza | Qué es |
+|---|---|
+| `diagramas/3-1-capas.mmd` + `.svg` | Diagrama de capas (flowchart) |
+| `diagramas/3-3-lectura-publica.mmd` + `.svg` | Diagrama de secuencia con las dos ramas, HIT y MISS |
+| `diagramas/3-4-edicion-y-publicacion.mmd` + `.svg` | Diagrama de secuencia: borrador → revisión → aprobación, con los oyentes de `ContenidoPublicado` agrupados. Las personas a la izquierda y los sistemas a la derecha |
+| `1-guia-del-proyecto.md` §3.1, §3.3, §3.4 | Cada imagen con un texto alternativo que cuenta el diagrama entero, y un enlace a su fuente. Los párrafos del §3.4 no se tocaron |
+
+Los `.mmd` son la fuente editable, con el mismo contenido que los dibujos en texto y los
+colores de la marca (`#7DB828`, `#001A39`). Los `.svg` se generaron con Mermaid 11; llevan
+fondo blanco para leerse en temas oscuros, y título y descripción accesibles
+(`accTitle` / `accDescr`).
+
+**Decisiones:**
+
+- **Imagen y no bloque Mermaid.** Se ve sin extensiones en Antigravity, VS Code y GitHub. Tener las dos cosas en el `.md` haría que GitHub mostrara cada diagrama dos veces.
+- **Rótulos como texto SVG** (`htmlLabels: false`), para no depender de HTML incrustado dentro del SVG.
+- **Las dos fases del §3 en secuencia, no en flujo:** lo que cuentan es quién habla con quién y en qué orden.
+
+**Descartado:** instalar la extensión de Mermaid. Arregla el visor de una persona, no el de
+todo el equipo.
+
+> **Trampa al editar los `.mmd` de secuencia:** en Mermaid el `;` separa instrucciones,
+> también dentro de una nota o un mensaje. Una nota con «publicada; la nueva…» no compila.
+
+**Hallazgo, sin tocar:** el diagrama de capas y el §3.2 dicen que ningún frontend toca el
+sistema de archivos. Pero `app/api/upload/route.ts`, en las dos apps, escribe y borra con
+`fs` en `public/storage/uploads`, sin pasar por la API. La fila RF-02 del §5 ya lo insinúa.
+Hay que decidir si el diagrama muestra esa excepción o si se corrige el código.
+
+### Verificado
+
+| Prueba | Resultado |
+|---|---|
+| Los tres SVG cargados como `<img>` (como los inserta el visor) sobre fondo claro y oscuro, en Chrome headless | Se leen enteros; en oscuro quedan como tarjetas blancas |
+| Rótulos con HTML incrustado (`foreignObject`) | 0 en los tres |
+| Ancho del §3.4 | Bajó de 1436 a 1334 px al reordenar los actores y ajustar márgenes; legible a unos 850 px |
+
+**Pendiente al cierre:** el hallazgo de arriba. Para regenerar un SVG: pegar su `.mmd` en
+mermaid.live y exportarlo como SVG, o pedírselo a Claude.
+
+---
+
 ## sesión 25-09-2026: un solo criterio para borrar archivos de páginas (4.ª parte)
 
 **Qué era.** Al integrar `OLO/dev` (merge `6bebc71`) entró el borrado de archivos de

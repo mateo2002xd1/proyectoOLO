@@ -1,0 +1,52 @@
+%% Fuente de diagramas/3-1-capas.svg (1-guia-del-proyecto.md §3.1).
+%% Para cambiarlo: editar aquí, pegarlo en https://mermaid.live y exportar como SVG
+%% sobre diagramas/3-1-capas.svg (o pedírselo a Claude, que lo regenera igual).
+flowchart TB
+    accTitle: Diagrama de capas del OLO
+    accDescr: El navegador entra al sitio web, público, o a la intranet, privada. Los dos frontends consumen la API solo por HTTP, y la API trabaja con PostgreSQL, Redis y el sistema de archivos.
+
+    nav(["`**Navegador**`"])
+
+    subgraph frontends ["Frontends"]
+        direction LR
+        sitio["`**Sitio web** · :3000
+Next.js (App Router)
+Público con ISR
++ panel admin`"]
+        intranet["`**Intranet** · :3001
+Next.js (App Router)
+100 % protegida
+Identidad propia`"]
+    end
+
+    api["`**API backend** · :4000
+Express (Clean Arch)
+Controla todo lo que entra:
+valida · autoriza · orquesta`"]
+
+    subgraph infra ["Infraestructura"]
+        direction LR
+        pg[("`**PostgreSQL**
+datos`")]
+        redis[("`**Redis**
+caché + colas`")]
+        archivos[("`**Filesystem**
+archivos: pdf, img…`")]
+    end
+
+    nav -- público --> sitio
+    nav -- "privado, con sesión" --> intranet
+    sitio -- solo HTTP --> api
+    intranet -- solo HTTP --> api
+    api --> pg & redis & archivos
+
+    classDef navegador fill:#ffffff,stroke:#001A39,stroke-width:2px,color:#001A39
+    classDef front fill:#eef7e1,stroke:#7DB828,stroke-width:2px,color:#12210a
+    classDef backend fill:#001A39,stroke:#001A39,color:#ffffff
+    classDef dato fill:#f4f6f8,stroke:#5b6b7b,color:#1a1a1a
+    class nav navegador
+    class sitio,intranet front
+    class api backend
+    class pg,redis,archivos dato
+    style frontends fill:#f6fbef,stroke:#7DB828,color:#12210a
+    style infra fill:#f7f8fa,stroke:#9aa7b4,color:#1a1a1a

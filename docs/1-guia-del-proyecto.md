@@ -76,36 +76,9 @@ Esto separa limpiamente la **presentación** de los **datos del negocio**, permi
 
 ### 3.1 Diagrama de capas
 
-```
-                         ┌────────────────────────────────────────┐
-                         │              NAVEGADOR                  │
-                         └───────────────┬────────────────────────┘
-                        (público)        │        (privado, con auth)
-                ┌────────────────────────┴───────────────────────┐
-                ▼                                                 ▼
-   ┌───────────────────────────┐                   ┌───────────────────────────┐
-   │   SITIO WEB  :3000         │                   │      INTRANET  :3001       │
-   │   Next.js (App Router)     │                   │   Next.js (App Router)     │
-   │   - Público (ISR)          │                   │   - 100% protegido         │
-   │   - Panel admin            │                   │   - Identidad propia       │
-   └────────────┬──────────────┘                   └────────────┬──────────────┘
-                │                                                 │
-                │      Ambos consumen SOLO vía HTTP la API        │
-                └───────────────────────┬─────────────────────────┘
-                                         ▼
-                         ┌───────────────────────────────┐
-                         │      API BACKEND  :4000         │
-                         │      Express (Clean Arch)       │
-                         │  Controla TODO lo que entra:    │
-                         │  valida · autoriza · orquesta   │
-                         └───┬───────────┬───────────┬─────┘
-                             ▼           ▼           ▼
-                     ┌────────────┐ ┌─────────┐ ┌──────────────┐
-                     │ PostgreSQL │ │  Redis  │ │  Filesystem  │
-                     │  (datos)   │ │ (caché+ │ │  (archivos:  │
-                     │            │ │  colas) │ │  pdf/img/etc)│
-                     └────────────┘ └─────────┘ └──────────────┘
-```
+![Diagrama de capas: el navegador entra al sitio web (público, :3000) o a la intranet (privada, :3001); los dos frontends consumen la API (:4000) solo por HTTP, y la API trabaja con PostgreSQL, Redis y el sistema de archivos.](diagramas/3-1-capas.svg)
+
+> Fuente editable: [`diagramas/3-1-capas.mmd`](diagramas/3-1-capas.mmd) (Mermaid). Para cambiar el diagrama se edita ese archivo y se vuelve a exportar el SVG (por ejemplo, en mermaid.live).
 
 ### 3.2 Principio rector: el backend es la única puerta
 
@@ -120,30 +93,15 @@ Esto es lo que hace el sistema seguro y mantenible: hay **un solo lugar** donde 
 
 ### 3.3 Flujo de datos — lectura pública (con caché)
 
-```
-Navegador → GET /pagina           (Sitio web :3000, Server Component)
-   → fetch a la API /api/paginas/publica/:slug
-      → API consulta Redis (cache lookup)
-         · HIT  → devuelve JSON cacheado
-         · MISS → consulta Postgres → guarda en Redis (TTL) → devuelve JSON
-   → Next renderiza la página con los bloques (ISR)
-   → HTML al navegador
-```
+![Lectura pública con caché: el navegador pide la página al sitio web; el sitio la pide a la API, que busca primero en Redis. Si está (HIT) devuelve el JSON cacheado; si no (MISS) consulta PostgreSQL, la guarda en Redis con TTL y la devuelve. Next renderiza los bloques (ISR) y entrega el HTML.](diagramas/3-3-lectura-publica.svg)
+
+> Fuente editable: [`diagramas/3-3-lectura-publica.mmd`](diagramas/3-3-lectura-publica.mmd).
 
 ### 3.4 Flujo de datos — edición y publicación (con gobernanza)
 
-```
-Editor edita en la mesa de trabajo (Puck, estado local Zustand)
-   → autoguardado con debounce → API guarda BORRADOR (no toca lo público)
-Editor envía a revisión
-   → API cambia estado a "en_revision"
-Administrador aprueba
-   → API: archiva la versión publicada, la nueva ocupa su lugar
-   → emite evento ContenidoPublicado
-      → listener invalida caché Redis (SCAN + DEL por patrón)
-      → listener llama a POST /api/revalidar del sitio → revalidateTag
-   → el controlador registra la auditoría (quién, qué, cuándo)
-```
+![Edición y publicación: el editor edita en la mesa de trabajo y el autoguardado deja un BORRADOR en la API sin tocar lo público; al enviarlo a revisión pasa a en_revision. El administrador aprueba: la API archiva la versión publicada, la nueva ocupa su lugar y se emite ContenidoPublicado, cuyos oyentes invalidan la caché de Redis y revalidan el sitio. El controlador registra la auditoría y responde.](diagramas/3-4-edicion-y-publicacion.svg)
+
+> Fuente editable: [`diagramas/3-4-edicion-y-publicacion.mmd`](diagramas/3-4-edicion-y-publicacion.mmd).
 
 **Los dos listeners funcionan desde el 2026-08-21; antes eran `console.log` que nadie
 importaba.** Mientras lo fueron, aprobar dejaba la base correcta y la pantalla igual: el
