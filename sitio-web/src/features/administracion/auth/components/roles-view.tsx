@@ -174,6 +174,7 @@ export default function RolesView() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const [rolPermisos, setRolPermisos] = useState<Role | null>(null);
+  const [nombreEdicion, setNombreEdicion] = useState('');
   const [descripcionEdicion, setDescripcionEdicion] = useState('');
   const [selectedPermissionIds, setSelectedPermissionIds] = useState<Set<string>>(new Set());
   const [originalPermissionIds, setOriginalPermissionIds] = useState<Set<string>>(new Set());
@@ -271,6 +272,7 @@ export default function RolesView() {
 
   const abrirModalPermisos = useCallback(async (rol: Role) => {
     setRolPermisos(rol);
+    setNombreEdicion(rol.name);
     setDescripcionEdicion(rol.description || '');
     setSelectedPermissionIds(new Set());
     setOriginalPermissionIds(new Set());
@@ -306,22 +308,26 @@ export default function RolesView() {
       ];
 
       const descripcionCambiada = descripcionEdicion !== (rolPermisos.description || '');
-      if (descripcionCambiada) {
+      const nombreCambiado = nombreEdicion !== rolPermisos.name && nombreEdicion.trim() !== '';
+      if (descripcionCambiada || nombreCambiado) {
         promises.push(
           fetch(`/api/roles/${rolPermisos.id}`, {
             method: 'PATCH',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ description: descripcionEdicion }),
+            body: JSON.stringify({ 
+              ...(nombreCambiado && { name: nombreEdicion.trim() }),
+              ...(descripcionCambiada && { description: descripcionEdicion }),
+            }),
           }).then(async res => {
-             if (!res.ok) throw new Error((await res.json()).error || 'Error al actualizar descripción');
+             if (!res.ok) throw new Error((await res.json()).error || 'Error al actualizar detalles del rol');
           })
         );
       }
 
       await Promise.all(promises);
 
-      if (descripcionCambiada) {
+      if (descripcionCambiada || nombreCambiado) {
         await fetchRoles();
       }
 
@@ -482,6 +488,8 @@ export default function RolesView() {
         originales={originalPermissionIds}
         seleccionados={selectedPermissionIds}
         onCambiarSeleccion={setSelectedPermissionIds}
+        nombre={nombreEdicion}
+        onCambiarNombre={setNombreEdicion}
         descripcion={descripcionEdicion}
         onCambiarDescripcion={setDescripcionEdicion}
         onGuardar={guardarPermisos}
