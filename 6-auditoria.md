@@ -5,6 +5,80 @@
 
 ---
 
+## sesión 25-09-2026: «Descargar formato» en Actualizaciones (2.ª parte)
+
+**Qué era.** Quien carga datos en Actualizaciones no tenía de dónde sacar el Excel con las
+hojas y columnas que espera cada carga. El usuario dejó los dos formatos en
+`api-backend/uploads/formatos-carga/` y pidió un botón para descargarlos. Ahora cada tarjeta
+que ya carga tiene su «Descargar formato» junto al título.
+
+### Qué quedó
+
+| Capa | Cambio |
+|---|---|
+| Archivos (`api-backend/uploads/formatos-carga/`) | `formatdata-sobresalientes.xlsx` (Programa + Sobresalientes) y `formatdata-criterios-tendencias.xlsx` (Criterios de clasificación). Entran al repositorio como el resto de `uploads/` |
+| Caso de uso (`use-cases/observatorio/formatos-de-carga.ts`) | Lista cerrada `id → archivo` y `resolverFormatoDeCarga`: 404 si el id no está en la lista o el archivo falta en disco |
+| Ruta (`GET /api/observatorio/formatos/:formato`) | Detrás de `requireAuth` + `puedeActualizarDatos`, como las cargas. Ids: `programas-sobresalientes` y `tendencia-ocupacional`. Responde el Excel como adjunto `formato-<id>.xlsx`, con `Cache-Control: private, no-cache`. Documentada en Swagger |
+| Servicio (`sitio-web/.../actualizaciones/services/observatorio.service.ts`) | `descargarFormatoDeCarga` pide el archivo como Blob. Si falla, lee el Blob del error como JSON, para que `mensajeDeErrorApi` muestre el `{ error }` de la API |
+| Componente (`components/descargar-formato.tsx`) | Botón con contorno gris e ícono verde; el error sale debajo con `role="alert"`. Solo lo ven Administrador y Superadmin, los mismos que pueden cargar |
+
+**Por qué por la API y con una lista cerrada.** La URL lleva un identificador, nunca un
+nombre de archivo, así que por aquí no se puede pedir nada más de `uploads/`. Descartados:
+
+- **Servir `uploads/` con `express.static`.** Dejaría a la vista los Excel subidos en
+  `uploads/cargas-datos/`.
+- **Ponerlos en `sitio-web/public/`.** Quedarían públicos, sin sesión, y cambiar un formato
+  obligaría a recompilar el sitio. En `uploads/`, que el servidor monta en el contenedor,
+  basta con reemplazar el archivo con el mismo nombre.
+- **Un `<a href>` directo a la API.** Con la sesión vencida, el navegador abriría el JSON
+  del 401 como página. Por `axios`, el error sale en la misma tarjeta.
+
+**Por qué el texto del botón no va en verde.** El verde de la marca (`#7DB828`) tiene un
+contraste de unos 2,4:1 sobre blanco, por debajo del 4,5:1 que pide AA para texto. El verde
+queda solo en el ícono.
+
+**Hallazgo: los formatos traen datos completos.** No son plantillas vacías.
+`formatdata-sobresalientes.xlsx` tiene 672 filas en «Superan el margen».
+`formatdata-criterios-tendencias.xlsx` (1,5 MB) tiene 611 filas en «percentiles nacional» y
+20.163 en «percentiles departamental». Sirven de ejemplo tal cual. Si se prefiere una
+plantilla vacía, basta con reemplazar los archivos.
+
+### Verificado
+
+El router real se montó en un Express aparte con un token de la cuenta local (`isLocal`, que
+no consulta la base). No se tocó Neon ni la API de desarrollo. La pantalla se probó con
+`next dev` en el puerto 3200, una API de prueba en el 4100 (el router real, más stubs vacíos
+para `/api/me` y los historiales) y Chrome headless por CDP.
+
+| Prueba | Resultado |
+|---|---|
+| `tsc --noEmit` en api-backend y sitio-web; ESLint sobre la feature | Limpios |
+| Sin sesión | 401 |
+| Rol Editor | 403 |
+| Superadmin (cookie `sitio_token`) → `programas-sobresalientes` | 200, 66.832 B, mismo SHA-256 que el archivo; `Content-Disposition: attachment; filename="formato-programas-sobresalientes.xlsx"`; `private, no-cache` |
+| Administrador (Bearer) → `tendencia-ocupacional` | 200, 1.582.605 B, mismo SHA-256 |
+| `otro`, `toString`, `..%2Fcargas-datos%2F…`, `..%252F..%252Fpackage.json` | 404 `Formato no encontrado.` en los cuatro |
+| En el navegador: clic en los dos botones | Dos descargas completas con el nombre y el tamaño de cada archivo; ningún error visible |
+| Capturas a 1440 px (claro y oscuro) y 390 px | Revisadas. En la tarjeta angosta el botón baja bajo el título, encima de «Cargar». Sin scroll horizontal en móvil |
+
+No se probó el caso «el id existe pero falta el archivo en disco» (404 y aviso en el log).
+
+> **Trampa para quien pruebe el sitio-web con `next dev`:** esta versión de Next crea
+> `sitio-web/AGENTS.md` y `sitio-web/CLAUDE.md` al arrancar («Generated AGENTS.md and
+> CLAUDE.md for AI agents»). Si se borran, vuelve a crearlos. Se apaga con
+> `agentRules: false` en `next.config.mjs`.
+
+**Pendiente al cierre:**
+
+- Reiniciar `npm run dev` en api-backend: sin eso la ruta nueva da 404.
+- Decidir qué hacer con `sitio-web/AGENTS.md` y `sitio-web/CLAUDE.md`, que creó la prueba.
+- En el servidor: `git pull` + `./docker/deploy.sh build` + `start`. Los Excel llegan con el
+  repositorio, y la carpeta ya está montada.
+- «Alertas de inversión» y «Fuentes futuras de empleo» no tienen botón: todavía no cargan
+  ni tienen formato.
+
+---
+
 ## sesión 25-09-2026: el sitio y la intranet se pueden instalar como app (PWA)
 
 **Qué era.** El usuario pidió volver PWA el proyecto: que se pueda instalar como app en el
