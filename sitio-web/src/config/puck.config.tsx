@@ -305,34 +305,80 @@ const puckConfigBase: Config = {
     },
     Footer: {
       label: 'Pie de página',
+      defaultProps: {
+        footerPersonalizado: true,
+        colorFondo: '',
+        colorFondoSuperior: '',
+        colorTarjeta: '',
+        logoSenaUrl: '',
+        logoSenaAlt: '',
+        logoOloUrl: '',
+        logoOloAlt: '',
+        separadorLogos: '|',
+        tamanoSeparadorLogos: 30,
+        logoMintrabajoUrl: '',
+        logoMintrabajoAlt: '',
+        nombreEntidad: '',
+        direccion: '',
+        atencionPresencial: '',
+        puntosAtencionTexto: '',
+        whatsappTitulo: '',
+        whatsappNumero: '',
+        lineasAtencionTitulo: '',
+        lineasAtencionTexto: '',
+        mesaAyudaTitulo: '',
+        mesaAyudaTelefono: '',
+        mesaAyudaEmail: '',
+        horarioTitulo: '',
+        horarioTexto: '',
+        certificacionImgUrl: '',
+        certificacionImgAlt: '',
+        mostrarFranjaGov: false,
+        rutaCoImgUrl: '',
+        rutaCoImgAlt: '',
+        redesSociales: [],
+        certificaciones: [],
+        enlacesFila1: [],
+        enlacesFila2: [],
+        enlacesFila3: []
+      },
       fields: {
+        colorFondo: campoColor('Color de fondo (zona baja)'),
+        colorFondoSuperior: campoColor('Color de fondo (zona alta)'),
+        colorTarjeta: campoColor('Color de la tarjeta (interior)'),
         // Logos superiores
         logoSenaUrl: campoImagen('Logo SENA'),
         logoSenaAlt: { type: 'text', label: 'Texto alternativo - Logo SENA' },
         logoOloUrl: campoImagen('Logo OLO horizontal'),
         logoOloAlt: { type: 'text', label: 'Texto alternativo - Logo OLO' },
+        separadorLogos: { type: 'text', label: 'Símbolo separador de logos' },
+        tamanoSeparadorLogos: {
+          type: 'select',
+          label: 'Tamaño del separador (px)',
+          options: [20, 25, 30, 35, 40].map(v => ({ label: `${v}px`, value: v }))
+        },
         logoMintrabajoUrl: campoImagen('Logo Ministerio del Trabajo'),
         logoMintrabajoAlt: { type: 'text', label: 'Texto alternativo - Logo MinTrabajo' },
 
         // Bloques de información institucional y contacto
         nombreEntidad: { type: 'text', label: 'Nombre de la entidad', contentEditable: true },
-        direccion: { type: 'text', label: 'Dirección física', contentEditable: true },
-        atencionPresencial: { type: 'text', label: 'Atención presencial', contentEditable: true },
-        puntosAtencionTexto: { type: 'text', label: 'Texto de puntos de atención', contentEditable: true },
+        direccion: { type: 'textarea', label: 'Dirección física', contentEditable: true },
+        atencionPresencial: { type: 'textarea', label: 'Atención presencial', contentEditable: true },
+        puntosAtencionTexto: { type: 'textarea', label: 'Texto de puntos de atención', contentEditable: true },
         puntosAtencionUrl: { type: 'text', label: 'URL puntos de atención' },
 
         whatsappTitulo: { type: 'text', label: 'Título WhatsApp', contentEditable: true },
-        whatsappNumero: { type: 'text', label: 'Número WhatsApp', contentEditable: true },
+        whatsappNumero: { type: 'textarea', label: 'Número WhatsApp', contentEditable: true },
 
         lineasAtencionTitulo: { type: 'text', label: 'Título líneas de atención / PQRS', contentEditable: true },
         lineasAtencionTexto: { type: 'textarea', label: 'Líneas de atención y teléfonos', contentEditable: true },
 
         mesaAyudaTitulo: { type: 'text', label: 'Título mesa de ayuda', contentEditable: true },
-        mesaAyudaTelefono: { type: 'text', label: 'Teléfono / PBX mesa de ayuda', contentEditable: true },
-        mesaAyudaEmail: { type: 'text', label: 'Correo mesa de ayuda', contentEditable: true },
+        mesaAyudaTelefono: { type: 'textarea', label: 'Teléfono / PBX mesa de ayuda', contentEditable: true },
+        mesaAyudaEmail: { type: 'textarea', label: 'Correo mesa de ayuda', contentEditable: true },
 
         horarioTitulo: { type: 'text', label: 'Título horario de atención', contentEditable: true },
-        horarioTexto: { type: 'text', label: 'Horario de atención', contentEditable: true },
+        horarioTexto: { type: 'textarea', label: 'Horario de atención', contentEditable: true },
 
         // Redes sociales
         redesSociales: {
@@ -404,7 +450,6 @@ const puckConfigBase: Config = {
         rutaCoImgUrl: campoImagen('Distintivo Colombia (franja inferior)'),
         rutaCoImgAlt: { type: 'text', label: 'Texto alternativo - Distintivo Colombia' },
       },
-      defaultProps: { ...VALORES_PIE_POR_DEFECTO },
       render: (props: BlockRender<Omit<ComponentProps<typeof Footer>, 'block'>>) => (
         <Footer {...props} block={{ id: props.id || 'footer-preview' }} />
       ),

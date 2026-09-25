@@ -13,10 +13,15 @@ export interface EnlacePieItem {
 }
 
 export interface FooterLogosProps {
+  footerPersonalizado?: boolean;
   logoSenaUrl?: string;
   logoSenaAlt?: string;
   logoOloUrl?: string;
   logoOloAlt?: string;
+  /** Símbolo de separación entre el logo SENA y OLO. Si está vacío, no se pinta nada. */
+  separadorLogos?: string;
+  /** Tamaño del separador en píxeles. */
+  tamanoSeparadorLogos?: number;
   logoMintrabajoUrl?: string;
   logoMintrabajoAlt?: string;
 }
@@ -36,6 +41,9 @@ export interface FooterInstitucionalProps {
   mesaAyudaEmail?: string;
   horarioTitulo?: string;
   horarioTexto?: string;
+  colorFondo?: string;
+  colorFondoSuperior?: string;
+  colorTarjeta?: string;
 }
 
 export interface FooterProps extends FooterLogosProps, FooterInstitucionalProps {
@@ -55,10 +63,16 @@ export interface FooterProps extends FooterLogosProps, FooterInstitucionalProps 
 }
 
 export const VALORES_PIE_POR_DEFECTO: Required<Omit<FooterProps, 'block'>> = {
+  footerPersonalizado: false,
+  colorFondo: '',
+  colorFondoSuperior: '',
+  colorTarjeta: '',
   logoSenaUrl: '/assets/logos/logo-sena.svg',
   logoSenaAlt: 'Logotipo oficial del SENA con la palabra SENA y simbolo institucional en color verde, presentado en la cabecera del pie de pagina de un sitio gubernamental educativo',
   logoOloUrl: '/assets/logos/olo-logo-horizontal.svg',
   logoOloAlt: 'Logotipo horizontal del Observatorio Laboral y Ocupacional con el texto Observatorio Laboral y Ocupacional, ubicado junto al logo del SENA en la parte superior del pie de pagina',
+  separadorLogos: '|',
+  tamanoSeparadorLogos: 30,
   logoMintrabajoUrl: '/assets/img/mintrabajo.webp',
   logoMintrabajoAlt: 'Logotipo del Ministerio del Trabajo de Colombia con texto institucional, mostrado en el extremo derecho de la franja superior del pie de pagina en un contexto oficial',
 
@@ -172,10 +186,16 @@ function renderIconoRedSocial(red: RedSocialItem['red'], iconoPersonalizado?: st
 
 export function Footer({
   block,
+  footerPersonalizado,
+  colorFondo = VALORES_PIE_POR_DEFECTO.colorFondo,
+  colorFondoSuperior = VALORES_PIE_POR_DEFECTO.colorFondoSuperior,
+  colorTarjeta = VALORES_PIE_POR_DEFECTO.colorTarjeta,
   logoSenaUrl = VALORES_PIE_POR_DEFECTO.logoSenaUrl,
   logoSenaAlt = VALORES_PIE_POR_DEFECTO.logoSenaAlt,
   logoOloUrl = VALORES_PIE_POR_DEFECTO.logoOloUrl,
   logoOloAlt = VALORES_PIE_POR_DEFECTO.logoOloAlt,
+  separadorLogos = VALORES_PIE_POR_DEFECTO.separadorLogos,
+  tamanoSeparadorLogos = VALORES_PIE_POR_DEFECTO.tamanoSeparadorLogos,
   logoMintrabajoUrl = VALORES_PIE_POR_DEFECTO.logoMintrabajoUrl,
   logoMintrabajoAlt = VALORES_PIE_POR_DEFECTO.logoMintrabajoAlt,
   nombreEntidad = VALORES_PIE_POR_DEFECTO.nombreEntidad,
@@ -202,90 +222,130 @@ export function Footer({
   rutaCoImgUrl = VALORES_PIE_POR_DEFECTO.rutaCoImgUrl,
   rutaCoImgAlt = VALORES_PIE_POR_DEFECTO.rutaCoImgAlt,
 }: FooterProps) {
-  const redes = redesSociales && redesSociales.length > 0 ? redesSociales : VALORES_PIE_POR_DEFECTO.redesSociales;
-  const fila1 = enlacesFila1 && enlacesFila1.length > 0 ? enlacesFila1 : VALORES_PIE_POR_DEFECTO.enlacesFila1;
-  const fila2 = enlacesFila2 && enlacesFila2.length > 0 ? enlacesFila2 : VALORES_PIE_POR_DEFECTO.enlacesFila2;
-  const fila3 = enlacesFila3 && enlacesFila3.length > 0 ? enlacesFila3 : VALORES_PIE_POR_DEFECTO.enlacesFila3;
+  const redes = footerPersonalizado ? redesSociales : (redesSociales && redesSociales.length > 0 ? redesSociales : VALORES_PIE_POR_DEFECTO.redesSociales);
+  const fila1 = footerPersonalizado ? enlacesFila1 : (enlacesFila1 && enlacesFila1.length > 0 ? enlacesFila1 : VALORES_PIE_POR_DEFECTO.enlacesFila1);
+  const fila2 = footerPersonalizado ? enlacesFila2 : (enlacesFila2 && enlacesFila2.length > 0 ? enlacesFila2 : VALORES_PIE_POR_DEFECTO.enlacesFila2);
+  const fila3 = footerPersonalizado ? enlacesFila3 : (enlacesFila3 && enlacesFila3.length > 0 ? enlacesFila3 : VALORES_PIE_POR_DEFECTO.enlacesFila3);
+
+  const hasText = (val: any) => {
+    if (typeof val === 'string') {
+      const cleaned = val.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
+      return cleaned.length > 0;
+    }
+    return !!val;
+  };
+
+  // Si es un pie nuevo (personalizado) y borran el color, usamos blanco en lugar de dejar que el CSS ponga el azul antiguo
+  const fondoInferiorAplicar = colorFondo || (footerPersonalizado ? '#ffffff' : undefined);
+  const fondoSuperiorAplicar = colorFondoSuperior || (footerPersonalizado ? '#ffffff' : 'transparent');
+  
+  const estiloWrapper = fondoInferiorAplicar 
+    ? { background: `linear-gradient(to bottom, ${fondoSuperiorAplicar} 120px, ${fondoInferiorAplicar} 120px)` } 
+    : undefined;
+
+  const colorTarjetaAplicar = colorTarjeta || (footerPersonalizado ? '#ffffff' : undefined);
 
   return (
     <>
-      <footer className="olo-footer-wrapper" id="main-footer" role="contentinfo" data-block-id={block?.id || 'main-footer'}>
-        <div className="olo-footer-card">
+      <footer 
+        className="olo-footer-wrapper" 
+        id="main-footer" 
+        role="contentinfo" 
+        data-block-id={block?.id || 'main-footer'}
+        style={estiloWrapper}
+      >
+        <div className="olo-footer-card" style={colorTarjetaAplicar ? { backgroundColor: colorTarjetaAplicar } : undefined}>
           <div className="olo-logos-top">
             <div className="olo-logos-left">
-              {logoSenaUrl && (
+              {logoSenaUrl ? (
                 <img src={logoSenaUrl} alt={logoSenaAlt || 'Logotipo del SENA'} className="olo-logo" />
-              )}
-              {logoSenaUrl && logoOloUrl && <span className="olo-logo-separator">|</span>}
-              {logoOloUrl && (
+              ) : null}
+              {(logoSenaUrl && logoOloUrl && separadorLogos) ? (
+                <span 
+                  className="olo-logo-separator" 
+                  style={{ 
+                    display: 'inline-block',
+                    fontSize: '20px',
+                    lineHeight: 1,
+                    transform: tamanoSeparadorLogos ? `scaleY(${tamanoSeparadorLogos / 20})` : undefined 
+                  }}
+                >
+                  {separadorLogos}
+                </span>
+              ) : null}
+              {logoOloUrl ? (
                 <img src={logoOloUrl} alt={logoOloAlt || 'Logotipo del OLO'} className="olo-logo" />
-              )}
+              ) : null}
             </div>
             <div className="olo-logos-right">
-              {logoMintrabajoUrl && (
+              {logoMintrabajoUrl ? (
                 <img src={logoMintrabajoUrl} alt={logoMintrabajoAlt || 'Logotipo del Ministerio del Trabajo'} className="olo-logo" />
-              )}
+              ) : null}
             </div>
           </div>
           <div className="olo-content-blocks">
-            <div className="olo-block">
-              {nombreEntidad && <h3 className="olo-title-main">{nombreEntidad}</h3>}
-              {direccion && <p className="olo-text">{direccion}</p>}
-              {atencionPresencial && <p className="olo-text">{atencionPresencial}</p>}
-              {puntosAtencionTexto && (
-                <a href={puntosAtencionUrl || '#'} className="olo-link">
-                  {puntosAtencionTexto}
-                </a>
-              )}
-            </div>
-
-            {(whatsappTitulo || whatsappNumero) && (
+            {(hasText(nombreEntidad) || hasText(direccion) || hasText(atencionPresencial) || hasText(puntosAtencionTexto)) ? (
               <div className="olo-block">
-                {whatsappTitulo && <h4 className="olo-title">{whatsappTitulo}</h4>}
-                {whatsappNumero && <p className="olo-text">{whatsappNumero}</p>}
+                {hasText(nombreEntidad) ? <h3 className="olo-title-main">{nombreEntidad}</h3> : null}
+                {hasText(direccion) ? <p className="olo-text" style={{ whiteSpace: 'pre-wrap' }}>{direccion}</p> : null}
+                {hasText(atencionPresencial) ? <p className="olo-text" style={{ whiteSpace: 'pre-wrap' }}>{atencionPresencial}</p> : null}
+                {hasText(puntosAtencionTexto) ? (
+                  <a href={puntosAtencionUrl || '#'} className="olo-link" style={{ whiteSpace: 'pre-wrap' }}>
+                    {puntosAtencionTexto}
+                  </a>
+                ) : null}
               </div>
-            )}
+            ) : null}
 
-            {(lineasAtencionTitulo || lineasAtencionTexto) && (
+            {(hasText(whatsappTitulo) || hasText(whatsappNumero)) ? (
               <div className="olo-block">
-                {lineasAtencionTitulo && <h4 className="olo-title">{lineasAtencionTitulo}</h4>}
-                {lineasAtencionTexto && <p className="olo-text">{lineasAtencionTexto}</p>}
+                {hasText(whatsappTitulo) ? <h4 className="olo-title">{whatsappTitulo}</h4> : null}
+                {hasText(whatsappNumero) ? <p className="olo-text" style={{ whiteSpace: 'pre-wrap' }}>{whatsappNumero}</p> : null}
               </div>
-            )}
+            ) : null}
 
-            {(mesaAyudaTitulo || mesaAyudaTelefono || mesaAyudaEmail) && (
+            {(hasText(lineasAtencionTitulo) || hasText(lineasAtencionTexto)) ? (
               <div className="olo-block">
-                {mesaAyudaTitulo && <h4 className="olo-title">{mesaAyudaTitulo}</h4>}
-                {mesaAyudaTelefono && <p className="olo-text">{mesaAyudaTelefono}</p>}
-                {mesaAyudaEmail && <p className="olo-text">{mesaAyudaEmail}</p>}
+                {hasText(lineasAtencionTitulo) ? <h4 className="olo-title">{lineasAtencionTitulo}</h4> : null}
+                {hasText(lineasAtencionTexto) ? <p className="olo-text" style={{ whiteSpace: 'pre-wrap' }}>{lineasAtencionTexto}</p> : null}
               </div>
-            )}
+            ) : null}
 
-            {(horarioTitulo || horarioTexto) && (
+            {(hasText(mesaAyudaTitulo) || hasText(mesaAyudaTelefono) || hasText(mesaAyudaEmail)) ? (
               <div className="olo-block">
-                {horarioTitulo && <h4 className="olo-title">{horarioTitulo}</h4>}
-                {horarioTexto && <p className="olo-text">{horarioTexto}</p>}
+                {hasText(mesaAyudaTitulo) ? <h4 className="olo-title">{mesaAyudaTitulo}</h4> : null}
+                {hasText(mesaAyudaTelefono) ? <p className="olo-text" style={{ whiteSpace: 'pre-wrap' }}>{mesaAyudaTelefono}</p> : null}
+                {hasText(mesaAyudaEmail) ? <p className="olo-text" style={{ whiteSpace: 'pre-wrap' }}>{mesaAyudaEmail}</p> : null}
               </div>
-            )}
+            ) : null}
+
+            {(hasText(horarioTitulo) || hasText(horarioTexto)) ? (
+              <div className="olo-block">
+                {hasText(horarioTitulo) ? <h4 className="olo-title">{horarioTitulo}</h4> : null}
+                {hasText(horarioTexto) ? <p className="olo-text" style={{ whiteSpace: 'pre-wrap' }}>{horarioTexto}</p> : null}
+              </div>
+            ) : null}
           </div>
 
           <div className="olo-social-and-certs">
-            <div className="olo-social-links">
-              {redes.map((item, idx) => (
-                <a
-                  key={idx}
-                  href={item.url || '#'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="olo-social-item"
-                >
-                  {renderIconoRedSocial(item.red, item.iconoPersonalizado)}
-                  <span className="olo-social-text">{item.nombre}</span>
-                </a>
-              ))}
-            </div>
+            {redes.length > 0 ? (
+              <div className="olo-social-links">
+                {redes.map((item, idx) => (
+                  <a
+                    key={idx}
+                    href={item.url || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="olo-social-item"
+                  >
+                    {renderIconoRedSocial(item.red, item.iconoPersonalizado)}
+                    <span className="olo-social-text">{item.nombre}</span>
+                  </a>
+                ))}
+              </div>
+            ) : null}
 
-            {certificacionImgUrl && (
+            {certificacionImgUrl ? (
               <div className="olo-certifications">
                 <img
                   src={certificacionImgUrl}
@@ -293,38 +353,40 @@ export function Footer({
                   className="w-[clamp(140px,26vw,220px)] h-auto object-contain"
                 />
               </div>
-            )}
+            ) : null}
           </div>
 
-          <div className="olo-bottom-links">
-            {fila1.length > 0 && (
-              <div className="olo-links-row">
-                {fila1.map((enlace, idx) => (
-                  <a key={idx} href={enlace.url || '#'}>
-                    {enlace.texto}
-                  </a>
-                ))}
-              </div>
-            )}
-            {fila2.length > 0 && (
-              <div className="olo-links-row">
-                {fila2.map((enlace, idx) => (
-                  <a key={idx} href={enlace.url || '#'}>
-                    {enlace.texto}
-                  </a>
-                ))}
-              </div>
-            )}
-            {fila3.length > 0 && (
-              <div className="olo-links-row">
-                {fila3.map((enlace, idx) => (
-                  <a key={idx} href={enlace.url || '#'}>
-                    {enlace.texto}
-                  </a>
-                ))}
-              </div>
-            )}
-          </div>
+          {(fila1.length > 0 || fila2.length > 0 || fila3.length > 0) ? (
+            <div className="olo-bottom-links">
+              {fila1.length > 0 ? (
+                <div className="olo-links-row">
+                  {fila1.map((enlace, idx) => (
+                    <a key={idx} href={enlace.url || '#'}>
+                      {enlace.texto}
+                    </a>
+                  ))}
+                </div>
+              ) : null}
+              {fila2.length > 0 ? (
+                <div className="olo-links-row">
+                  {fila2.map((enlace, idx) => (
+                    <a key={idx} href={enlace.url || '#'}>
+                      {enlace.texto}
+                    </a>
+                  ))}
+                </div>
+              ) : null}
+              {fila3.length > 0 ? (
+                <div className="olo-links-row">
+                  {fila3.map((enlace, idx) => (
+                    <a key={idx} href={enlace.url || '#'}>
+                      {enlace.texto}
+                    </a>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       </footer>
       {mostrarFranjaGov && (

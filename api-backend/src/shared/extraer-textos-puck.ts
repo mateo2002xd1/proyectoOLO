@@ -48,7 +48,6 @@ export function limpiarTextoHtml(valor: unknown): string {
  * URL vieja (que igual redirige, pero con un salto de más).
  */
 const RUTAS_PROPIAS_SITIO: Record<string, string> = {
-  'politica-de-privacidad': '/inicio/politica-de-privacidad',
   cno: '/clasificacion/cno',
   cuoc: '/clasificacion/cuoc',
 };
