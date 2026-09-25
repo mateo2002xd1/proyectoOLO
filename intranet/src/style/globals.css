@@ -1551,13 +1551,14 @@
 }
 
 .olo-modal-texto {
-  margin: 0 0 0.75rem;
+  margin: 0 0 0.85rem;
   font-size: 0.925rem;
   line-height: 1.5;
+  color: #4b5563;
 }
 
 .olo-modal-texto--apunte {
-  color: #4b5563;
+  color: #6b7280;
   font-size: 0.875rem;
   margin-bottom: 1.25rem;
 }
@@ -1566,23 +1567,25 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 0.6rem;
+  gap: 0.65rem;
+  margin-top: 1.25rem;
 }
 
 .olo-modal-btn {
-  padding: 0.55rem 1rem;
-  border-radius: 6px;
+  padding: 0.55rem 1.15rem;
+  border-radius: 8px;
   border: 1px solid #d1d5db;
   background: #ffffff;
   color: #374151;
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .olo-modal-btn:hover {
-  background: #f3f4f6;
+  background: #f9fafb;
+  border-color: #9ca3af;
 }
 
 .olo-modal-btn--peligro {
@@ -1608,6 +1611,7 @@
   background: #001631;
   border-color: #001631;
   color: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .olo-modal-btn--principal:hover {
@@ -1630,17 +1634,18 @@
   border-color: #d1d5db;
   color: #6b7280;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 /* --- Comentario de cambios del envío a revisión (el «commit») --- */
 
 .olo-modal-comentario {
-  margin: 0 0 1.25rem;
+  margin: 0.5rem 0 1rem;
 }
 
 .olo-modal-comentario-etiqueta {
   display: block;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.4rem;
   font-size: 0.875rem;
   font-weight: 600;
   color: #001631;
@@ -1648,51 +1653,188 @@
 
 .olo-modal-comentario-obligatorio {
   font-weight: 400;
-  color: #4b5563;
+  color: #6b7280;
 }
 
 .olo-modal-comentario-campo {
   display: block;
   width: 100%;
   box-sizing: border-box;
-  padding: 0.6rem 0.75rem;
+  padding: 0.65rem 0.8rem;
   border: 1px solid #d1d5db;
-  border-radius: 6px;
+  border-radius: 8px;
   font: inherit;
   font-size: 0.925rem;
   line-height: 1.45;
   color: #1f2937;
   background: #ffffff;
   resize: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .olo-modal-comentario-campo::placeholder {
-  color: #6b7280;
+  color: #9ca3af;
 }
 
 .olo-modal-comentario-campo:focus-visible {
-  outline: 2px solid #001631;
-  outline-offset: 1px;
+  outline: none;
   border-color: #001631;
+  box-shadow: 0 0 0 3px rgba(0, 22, 49, 0.12);
 }
 
 .olo-modal-comentario-campo[aria-invalid="true"] {
   border-color: #b45309;
 }
 
-/* Ayuda a la izquierda, cuenta a la derecha. Gris #4b5563 sobre blanco: 7.6:1. */
+/* Ayuda a la izquierda, cuenta a la derecha. */
 .olo-modal-comentario-pie {
   display: flex;
   justify-content: space-between;
   gap: 0.75rem;
-  margin-top: 0.35rem;
+  margin-top: 0.4rem;
   font-size: 0.8rem;
-  color: #4b5563;
+  color: #6b7280;
 }
 
 .olo-modal-comentario-cuenta {
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
+}
+
+/* --- Pantalla de Envío Exitoso --- */
+
+.olo-pantalla-exito {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(6px);
+  animation: oloExitoFadeIn 0.2s ease-out;
+}
+
+.olo-pantalla-exito-tarjeta {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 2.25rem 2rem 1.75rem;
+  box-shadow: 0 24px 48px -12px rgba(0, 22, 49, 0.28), 0 0 0 1px rgba(0, 22, 49, 0.05);
+  text-align: center;
+  animation: oloExitoSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.olo-pantalla-exito-cerrar {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.olo-pantalla-exito-cerrar:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.olo-pantalla-exito-cerrar:focus-visible {
+  outline: 2px solid #001631;
+  outline-offset: 2px;
+}
+
+.olo-pantalla-exito-titulo {
+  margin: 0.5rem 0 0.6rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #001631;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+}
+
+.olo-pantalla-exito-descripcion {
+  margin: 0 0 1.5rem;
+  font-size: 0.925rem;
+  line-height: 1.55;
+  color: #4b5563;
+}
+
+.olo-pantalla-exito-acciones {
+  display: flex;
+  flex-direction: column;
+}
+
+.olo-pantalla-exito-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  border: 1px solid #001631;
+  background: #001631;
+  color: #ffffff;
+  font-size: 0.925rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0, 22, 49, 0.12);
+}
+
+.olo-pantalla-exito-btn:hover {
+  background: #002a5c;
+  border-color: #002a5c;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 22, 49, 0.18);
+}
+
+.olo-pantalla-exito-btn:focus-visible {
+  outline: 2px solid #001631;
+  outline-offset: 2px;
+}
+
+@keyframes oloExitoFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes oloExitoSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes oloExitoPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.25;
+  }
 }
 
 /* Solo para lectores de pantalla. La usa el anuncio de la cuenta atrás, que no debe

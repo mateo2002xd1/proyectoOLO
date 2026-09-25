@@ -303,7 +303,7 @@ function ModalConfirmarAccion({
           {contenido.pideComentario && (
             <div className="olo-modal-comentario">
               <label htmlFor="olo-modal-comentario-campo" className="olo-modal-comentario-etiqueta">
-                Describe tus cambios <span className="olo-modal-comentario-obligatorio">(obligatorio)</span>
+                Describe tus cambios <span className="olo-modal-comentario-obligatorio">(requerido)</span>
               </label>
               {/* Primer elemento enfocable del diálogo: `showModal()` lo enfoca solo, así
                   que se puede escribir sin tener que hacer clic. */}
@@ -327,9 +327,9 @@ function ModalConfirmarAccion({
               />
               <div className="olo-modal-comentario-pie">
                 <span id="olo-modal-comentario-ayuda">
-                  {largo > 0 && largo < COMENTARIO_MIN
-                    ? `Sé específico: mínimo ${COMENTARIO_MIN} caracteres.`
-                    : "Lo lee quien aprueba y queda registrado en la auditoría."}
+                  {largo < COMENTARIO_MIN
+                    ? `Mínimo ${COMENTARIO_MIN} caracteres`
+                    : "Listo para enviar"}
                 </span>
                 <span className="olo-modal-comentario-cuenta" aria-hidden="true">
                   {comentario.length}/{COMENTARIO_MAX}
@@ -351,7 +351,7 @@ function ModalConfirmarAccion({
               className="olo-modal-btn olo-modal-btn--principal"
               onClick={onConfirmar}
               disabled={!puedeConfirmar}
-              title={puedeConfirmar ? undefined : "Escribe el comentario de tus cambios para poder enviar"}
+              title={puedeConfirmar ? undefined : `Escribe al menos ${COMENTARIO_MIN} caracteres para enviar`}
             >
               {contenido.textoConfirmar}
             </button>
@@ -446,59 +446,85 @@ function PantallaEnvioExitoso({
   abierto: boolean;
   onCerrar: () => void;
 }) {
+  useEffect(() => {
+    if (!abierto) return;
+    const alPresionarTecla = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onCerrar();
+      }
+    };
+    window.addEventListener("keydown", alPresionarTecla);
+    return () => window.removeEventListener("keydown", alPresionarTecla);
+  }, [abierto, onCerrar]);
+
   if (!abierto) return null;
 
   return (
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Envío a revisión exitoso"
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 999999,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 24,
-        background: "#fff",
+      aria-labelledby="olo-exito-titulo"
+      aria-describedby="olo-exito-descripcion"
+      className="olo-pantalla-exito"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onCerrar();
       }}
     >
-      <button
-        type="button"
-        onClick={onCerrar}
-        aria-label="Cerrar e ir a la página desde la que editaste"
-        style={{
-          position: "absolute",
-          top: 20,
-          right: 20,
-          width: 36,
-          height: 36,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "transparent",
-          border: "none",
-          borderRadius: 8,
-          color: "#374151",
-          cursor: "pointer",
-          fontSize: 20,
-        }}
-      >
-        ✕
-      </button>
+      <div className="olo-pantalla-exito-tarjeta">
+        <button
+          type="button"
+          onClick={onCerrar}
+          aria-label="Cerrar y volver"
+          className="olo-pantalla-exito-cerrar"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
 
-      <div style={{ maxWidth: 440, textAlign: "center" }}>
-        <div>
-          <p>aquí va manolo</p>
-        </div>
-
-        <h2 style={{ margin: "20px 0 0", fontSize: 22, fontWeight: 700, color: "#111827" }}>
+        <h2 id="olo-exito-titulo" className="olo-pantalla-exito-titulo">
           Tu edición se envió con éxito
         </h2>
-        <p style={{ margin: "12px 0 0", fontSize: 15, lineHeight: 1.6, color: "#4b5563" }}>
-          Comunícale al administrador tu avance para que apruebe y publique tu trabajo en el sitio.
+
+        <p id="olo-exito-descripcion" className="olo-pantalla-exito-descripcion">
+          Tus cambios quedaron guardados y fueron enviados al administrador para su revisión y publicación.
         </p>
+
+        <div className="olo-pantalla-exito-acciones">
+          <button
+            type="button"
+            onClick={onCerrar}
+            className="olo-pantalla-exito-btn"
+            autoFocus
+          >
+            Volver al inicio
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -735,9 +761,8 @@ export function PuckEditorWrapper({
         }
       : {
           titulo: "¿Enviar a revisión?",
-          descripcion:
-            "El administrador recibirá tu trabajo para revisarlo, aprobarlo y publicarlo en el sitio.",
-          textoConfirmar: "Enviar a revisión",
+          descripcion: "Un administrador revisará tus cambios antes de publicarlos.",
+          textoConfirmar: "Enviar",
           pideComentario: true,
         };
 
