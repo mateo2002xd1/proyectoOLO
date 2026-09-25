@@ -5,6 +5,67 @@
 
 ---
 
+## sesión 25-09-2026: el trabajo local en 7 commits por tema y los cambios de Mateo (#130) integrados (12.ª parte)
+
+**Qué era.** Un `git pull OLO dev` falló. El índice tenía el `git mv` y el `git rm` del refactor
+de borrado de archivos, y git no mezcla con cambios en el índice. Antes de rendirse, guardó el
+estado, reseteó y lo volvió a aplicar. No se perdió nada, pero dejó una copia suelta de
+`backup-uploads.service.ts` en `api-backend/`, que se borró. Había más de 840 archivos sin
+commitear de nueve sesiones del día, varios archivos mezclaban dos sesiones, y otra sesión
+seguía trabajando en el XSS.
+
+### Qué quedó
+
+| Commit | Qué lleva |
+|---|---|
+| `refactor(api)` | El refactor de borrado (4.ª parte), en las rutas de antes de la mudanza. `backup-uploads.service.ts`, `probar-versionamiento.ts` y el compose, con solo lo del refactor |
+| `refactor` | La mudanza completa (10.ª parte), sin lo de los commits siguientes |
+| `chore(gitignore)` | 9.ª parte |
+| `feat(mapa)` | 4.ª parte, la del mapa. Los hooks quedan ejecutables (`100755`) para que corran también en Linux y Mac |
+| `feat(dev)` | 8.ª parte |
+| `docs(guia)` | 6.ª parte. La guía del commit de mudanza lleva los dibujos en texto; este los cambia por los SVG |
+| `docs(auditoria)` | 3.ª, 5.ª y 7.ª partes. Solo es la bitácora: el auditor es local |
+| Merge de `OLO/dev` | Lo de Mateo, llevado a las carpetas nuevas |
+
+Cada commit lleva su entrada de esta bitácora.
+
+En el merge, git llevó solo a las carpetas nuevas casi todo lo de Mateo. Hubo tres casos a mano:
+
+- **`politica-de-privacidad/page.tsx`.** Mateo la sacó de `inicio/` y la mudanza la llevó a `3000-sitio-web/`. Queda en `3000-sitio-web/src/app/(public)/politica-de-privacidad/`.
+- **Sus 5 imágenes de `uploads/img/`.** Git proponía llevarlas al `backup/` de otra página, porque hay imágenes idénticas en los dos sitios. Quedan en `3000-sitio-web/public/storage/uploads/img/`.
+- **Sus 4 imágenes de `backup/cb8b3487…/`.** Git las dejaba, sin avisar, en `sitio-web/`, la carpeta vieja. Quedan en `3000-sitio-web/public/storage/backup/cb8b3487…/`.
+
+**Se dejó fuera a propósito** lo que la otra sesión editaba mientras tanto (11.ª parte). Los
+commits salen de una foto del estado de las 17:45, anterior a ese trabajo, que sigue sin
+commitear.
+
+### Verificado
+
+| Prueba | Resultado |
+|---|---|
+| Índice y árbol de trabajo tras el pull fallido, contra el stash interno de git | Idénticos |
+| Árbol del último commit contra la foto del estado local | Idéntico, salvo el modo ejecutable de los tres hooks |
+| Cada archivo de Mateo contra su commit | Iguales. `next.config.mjs` e `intranet-footer.tsx` cambiaron en los dos lados y se mezclaron sin conflicto |
+| `tsc --noEmit` de la intranet | 0 errores |
+| `tsc --noEmit` del sitio | 2 errores en `puck.config.tsx` (`categories` como `unknown`), los mismos que antes del merge |
+| `node --check` de `next.config.mjs` | Válido |
+
+> **Respaldo:** `refs/respaldo/estado-local-2026-09-25` guarda el estado completo de antes de
+> organizar. Es local: no se sube. Se borra con
+> `git update-ref -d refs/respaldo/estado-local-2026-09-25`.
+
+**Pendiente al cierre:**
+
+- **`/inicio/politica-de-privacidad` da 404 desde el cambio de Mateo.** La página volvió a
+  `/politica-de-privacidad` y se quitó el redirect. Pero siguen enlazando a la ruta vieja el
+  pie (`footer.tsx`), los dos login, `sitio-busqueda-fallback.ts`, la semilla del pie y lo
+  que ya esté guardado en el pie publicado de la base. Falta un redirect de la ruta vieja a la
+  nueva, o corregir los enlaces.
+- Los 2 errores de tipos de `puck.config.tsx` del sitio.
+- `git push OLO dev`, cuando el usuario lo decida.
+
+---
+
 ## sesión 25-09-2026: todo apunta a las carpetas nuevas (`3000-sitio-web`, `3001-intranet`, `4000-api-backend`, `docs/`) y los scripts de la API por carpeta (10.ª parte)
 
 **Qué era.** Las apps se renombraron con su puerto delante y los `.md` numerados pasaron a
