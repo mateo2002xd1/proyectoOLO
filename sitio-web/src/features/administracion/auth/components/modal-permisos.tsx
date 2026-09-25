@@ -64,6 +64,8 @@ interface ModalPermisosProps {
   originales: Set<string>;
   seleccionados: Set<string>;
   onCambiarSeleccion: (ids: Set<string>) => void;
+  nombre?: string;
+  onCambiarNombre?: (nombre: string) => void;
   descripcion?: string;
   onCambiarDescripcion?: (desc: string) => void;
   onGuardar: () => Promise<void>;
@@ -95,12 +97,20 @@ export function ModalPermisos({
   originales,
   seleccionados,
   onCambiarSeleccion,
+  nombre,
+  onCambiarNombre,
   descripcion,
   onCambiarDescripcion,
   onGuardar,
   guardando,
 }: ModalPermisosProps) {
   const [busqueda, setBusqueda] = useState('');
+  const [mostrarPermisos, setMostrarPermisos] = useState(false);
+
+  // Resetear el estado al abrir
+  useMemo(() => {
+    if (abierto) setMostrarPermisos(false);
+  }, [abierto]);
 
   const visibles = useMemo(() => {
     // Ocultar acceso.panel porque es solo para administradores
@@ -121,8 +131,9 @@ export function ModalPermisos({
     () => [...originales].filter((id) => !seleccionados.has(id)),
     [originales, seleccionados]
   );
+  const nombreCambio = rol && nombre !== undefined && nombre !== rol.nombre && nombre.trim() !== '';
   const descripcionCambio = rol && descripcion !== undefined && descripcion !== (rol.descripcion || '');
-  const hayCambios = anadidos.length > 0 || quitados.length > 0 || descripcionCambio;
+  const hayCambios = anadidos.length > 0 || quitados.length > 0 || descripcionCambio || nombreCambio;
 
   if (!abierto || typeof document === 'undefined') return null;
 
@@ -164,7 +175,7 @@ export function ModalPermisos({
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <h3 id="permisos-titulo" className="admin-subtitle text-zinc-900 dark:text-[#f6f6f6]">
-                Permisos del rol {rol ? `«${rol.nombre}»` : ''}
+                Permisos {rol ? `del rol «${rol.nombre}»` : 'a asignar'}
               </h3>
             </div>
             <button
@@ -180,8 +191,21 @@ export function ModalPermisos({
 
           {/* Fuera del área que scrollea: es la advertencia que no debe perderse de vista
               mientras se mueven interruptores. */}
-          {rol && (
+          {rol && !mostrarPermisos && (
             <div className="mt-4 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">
+                  Nombre del rol
+                </label>
+                <input
+                  type="text"
+                  maxLength={70}
+                  value={nombre ?? ''}
+                  onChange={(e) => onCambiarNombre?.(e.target.value)}
+                  disabled={rol.nombre === 'Editor'}
+                  className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand-interactive focus:outline-none focus:ring-2 focus:ring-brand-interactive/20 disabled:bg-zinc-100 disabled:text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:disabled:bg-zinc-800/50"
+                />
+              </div>
               <div>
                 <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">
                   Descripción del rol
@@ -199,122 +223,142 @@ export function ModalPermisos({
                 Esto afecta a <strong>todas las personas con el rol «{rol.nombre}»</strong>, no solo
                 a la que estés editando. El cambio se aplica en cuanto guardas.
               </p>
+              
+              <div className="pt-2">
+                <Button type="button" onClick={() => setMostrarPermisos(true)}>
+                  Editar roles
+                </Button>
+              </div>
             </div>
           )}
 
-          <div className="relative mt-3">
-            <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
-            <input
-              type="search"
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              placeholder="Buscar un permiso…"
-              className="w-full rounded-xl border border-zinc-200 bg-white py-2 pl-9 pr-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-brand-interactive focus:outline-none focus:ring-2 focus:ring-brand-focus/30 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-            />
-          </div>
+          {(!rol || mostrarPermisos) && (
+            <div className="relative mt-5">
+              <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
+              <input
+                type="search"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                placeholder="Buscar un permiso…"
+                className="w-full rounded-xl border border-zinc-200 bg-white py-2 pl-9 pr-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-brand-interactive focus:outline-none focus:ring-2 focus:ring-brand-focus/30 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+              />
+            </div>
+          )}
         </header>
 
         <div className="flex-1 space-y-5 overflow-y-auto p-6">
-          {gruposAPintar.length === 0 && (
+          {(rol && !mostrarPermisos) ? (
+            <div className="flex h-full items-center justify-center">
+              <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">
+                Haz clic en "Editar roles" para ver y modificar la lista.
+              </p>
+            </div>
+          ) : gruposAPintar.length === 0 ? (
             <p className="py-8 text-center text-sm text-zinc-500 dark:text-[#94a3b8]">
               Ningún permiso coincide con «{busqueda}».
             </p>
-          )}
+          ) : (
+            gruposAPintar.map((grupo) => {
+              const ids = grupo.items.map((p) => p.id);
+              const activos = ids.filter((id) => seleccionados.has(id)).length;
+              const todos = activos === ids.length;
+              // Las dos filas de plantilla no llevan atajo: activarlas de golpe es
+              // justo lo que conviene que cueste un clic de más.
+              const conAtajo = grupo.id.startsWith('secciones-');
 
-          {gruposAPintar.map((grupo) => {
-            const ids = grupo.items.map((p) => p.id);
-            const activos = ids.filter((id) => seleccionados.has(id)).length;
-            const todos = activos === ids.length;
-            // Las dos filas de plantilla no llevan atajo: activarlas de golpe es
-            // justo lo que conviene que cueste un clic de más.
-            const conAtajo = grupo.id.startsWith('secciones-');
-
-            return (
-              <section key={grupo.id}>
-                <div className="mb-2 flex items-end justify-between gap-3">
-                  <div className="min-w-0">
-                    <h4
-                      className={`flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider ${
-                        grupo.sensible
-                          ? 'text-amber-800 dark:text-amber-300'
-                          : 'text-zinc-700 dark:text-zinc-300'
-                      }`}
-                    >
-                      {grupo.sensible && <ShieldExclamationIcon className="size-4 shrink-0" />}
-                      {grupo.titulo}
-                      <span className="font-normal normal-case tracking-normal text-zinc-400">
-                        {activos}/{ids.length}
-                      </span>
-                    </h4>
+              return (
+                <section key={grupo.id}>
+                  <div className="mb-2 flex items-end justify-between gap-3">
+                    <div className="min-w-0">
+                      <h4
+                        className={`flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider ${
+                          grupo.sensible
+                            ? 'text-amber-800 dark:text-amber-300'
+                            : 'text-zinc-700 dark:text-zinc-300'
+                        }`}
+                      >
+                        {grupo.sensible && <ShieldExclamationIcon className="size-4 shrink-0" />}
+                        {grupo.titulo}
+                        <span className="font-normal normal-case tracking-normal text-zinc-400">
+                          {activos}/{ids.length}
+                        </span>
+                      </h4>
+                    </div>
+                    {conAtajo && (
+                      <button
+                        type="button"
+                        onClick={() => alternarGrupo(ids, !todos)}
+                        className="shrink-0 rounded-md px-2 py-0.5 text-[11px] font-semibold text-brand-blue-dark underline-offset-2 hover:underline dark:text-sky-300"
+                      >
+                        {todos ? 'Quitar todas' : 'Todas'}
+                      </button>
+                    )}
                   </div>
-                  {conAtajo && (
-                    <button
-                      type="button"
-                      onClick={() => alternarGrupo(ids, !todos)}
-                      className="shrink-0 rounded-md px-2 py-0.5 text-[11px] font-semibold text-brand-blue-dark underline-offset-2 hover:underline dark:text-sky-300"
-                    >
-                      {todos ? 'Quitar todas' : 'Todas'}
-                    </button>
-                  )}
-                </div>
 
-                <ul
-                  className={`divide-y overflow-hidden rounded-2xl border ${
-                    grupo.sensible
-                      ? 'divide-amber-100 border-amber-200/70 dark:divide-amber-900/30 dark:border-amber-800/40'
-                      : 'divide-zinc-100 border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800'
-                  }`}
-                >
-                  {grupo.items.map((permiso) => {
-                    const activo = seleccionados.has(permiso.id);
-                    const cambiado =
-                      activo !== originales.has(permiso.id);
+                  <ul
+                    className={`divide-y overflow-hidden rounded-2xl border ${
+                      grupo.sensible
+                        ? 'divide-amber-100 border-amber-200/70 dark:divide-amber-900/30 dark:border-amber-800/40'
+                        : 'divide-zinc-100 border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800'
+                    }`}
+                  >
+                    {grupo.items.map((permiso) => {
+                      const activo = seleccionados.has(permiso.id);
+                      const cambiado =
+                        activo !== originales.has(permiso.id);
 
-                    return (
-                      <li key={permiso.id}>
-                        {/* `<label>` y no `<div onClick>`: así la fila entera es
-                            alcanzable con Tab y se conmuta con Espacio, que es lo que
-                            antes solo hacía el botón interior. */}
-                        <label className="flex cursor-pointer items-center justify-between gap-3 bg-white px-3.5 py-2.5 transition-colors hover:bg-zinc-50 dark:bg-transparent dark:hover:bg-zinc-800/40">
-                          <span className="min-w-0 flex-1">
-                            <span className="flex items-center gap-2">
-                              <span className="text-xs font-medium text-zinc-900 dark:text-[#f6f6f6]">
-                                {permiso.etiqueta}
+                      return (
+                        <li key={permiso.id}>
+                          {/* `<label>` y no `<div onClick>`: así la fila entera es
+                              alcanzable con Tab y se conmuta con Espacio, que es lo que
+                              antes solo hacía el botón interior. */}
+                          <label className="flex cursor-pointer items-center justify-between gap-3 bg-white px-3.5 py-2.5 transition-colors hover:bg-zinc-50 dark:bg-transparent dark:hover:bg-zinc-800/40">
+                            <span className="min-w-0 flex-1">
+                              <span className="flex items-center gap-2">
+                                <span className="text-xs font-medium text-zinc-900 dark:text-[#f6f6f6]">
+                                  {permiso.etiqueta}
+                                </span>
+                                {cambiado && (
+                                  <span className="rounded-full bg-brand-interactive/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-brand-interactive-hover dark:text-brand-interactive">
+                                    {activo ? 'se añade' : 'se quita'}
+                                  </span>
+                                )}
+                                {!permiso.esFrontera && (
+                                  <span
+                                    className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400"
+                                    title="Solo cambia lo que se ve en el editor. La API no puede comprobarlo."
+                                  >
+                                    solo interfaz
+                                  </span>
+                                )}
                               </span>
-                              {cambiado && (
-                                <span className="rounded-full bg-brand-interactive/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-brand-interactive-hover dark:text-brand-interactive">
-                                  {activo ? 'se añade' : 'se quita'}
-                                </span>
-                              )}
-                              {!permiso.esFrontera && (
-                                <span
-                                  className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400"
-                                  title="Solo cambia lo que se ve en el editor. La API no puede comprobarlo."
-                                >
-                                  solo interfaz
-                                </span>
-                              )}
                             </span>
-                          </span>
-                          <Switch
-                            checked={activo}
-                            onChange={() => alternar(permiso.id)}
-                            aria-label={permiso.etiqueta}
-                          />
-                        </label>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </section>
-            );
-          })}
+                            <Switch
+                              checked={activo}
+                              onChange={() => alternar(permiso.id)}
+                              aria-label={permiso.etiqueta}
+                            />
+                          </label>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </section>
+              );
+            })
+          )}
         </div>
 
         <footer className="flex items-center justify-between gap-4 border-t border-zinc-100 bg-zinc-50/60 px-6 py-4 dark:border-zinc-800/80 dark:bg-[#161b27]/60">
           <p className="text-xs text-zinc-500 dark:text-[#94a3b8]">
             {hayCambios ? (
               <>
+                {nombreCambio && (
+                  <strong className="text-zinc-900 dark:text-white">
+                    Nombre actualizado
+                  </strong>
+                )}
+                {nombreCambio && (descripcionCambio || anadidos.length > 0 || quitados.length > 0) && ' · '}
                 {descripcionCambio && (
                   <strong className="text-zinc-900 dark:text-white">
                     Descripción actualizada
