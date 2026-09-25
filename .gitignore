@@ -1,60 +1,58 @@
-# Dependencies
+# ── Dependencias y compilados ──────────────────────────────────────────────────
 node_modules/
-
-# Framework/build outputs
 .next/
 out/
 build/
 dist/
 coverage/
 .turbo/
+*.tsbuildinfo
 
-# Environment and secrets
+# ── Variables de entorno y secretos ────────────────────────────────────────────
 .env
 .env.local
 .env.*
 !.env.example
 
-# Logs
+# ── Logs ───────────────────────────────────────────────────────────────────────
 npm-debug.log*
 yarn-error.log*
 
-# NOTA: aquí había un bloque "# Markdown files" que ignoraba los documentos
-# 1 a 7. No hacía nada —los siete ya estaban trackeados desde e07ccf5, y
-# .gitignore solo aplica a archivos sin trackear— pero era engañoso: daba a
-# entender que la documentación no se versiona, cuando es justo al revés.
-# Se eliminó. La documentación del proyecto SÍ va al repositorio.
-
-# Database backups
+# ── SQL ────────────────────────────────────────────────────────────────────────
+# Todo .sql se ignora porque puede ser un volcado con datos reales. Se rescata lo
+# que es código del proyecto:
 *.sql
-# La excepción de abajo apuntaba a `migrations/script.sql`, que ya no existe: se movió a
-# `migrations/_obsoletas/`. Se deja por si alguien vuelve a ponerlo, pero hoy no cubre nada.
-!api-backend/src/infrastructure/db/migrations/script.sql
-# La semilla de contenido SÍ se versiona: es lo que hace que una instalación nueva
-# arranque con las páginas cargadas en vez de con la base vacía. No es un backup —no
-# lleva usuarios, ni bitácora, ni datos personales—, es parte del proyecto.
-# Se regenera con `npm run seed:generar` desde api-backend/.
-!api-backend/seed/*.sql
-# Los pasos SQL de `deploy.sh importar` son código, no respaldos. Lo que sí es un
-# respaldo -el volcado `importacion_*.sql` que ese comando deja si algo falla- sigue
-# ignorado por la regla general.
+# La semilla de contenido: hace que una instalación nueva arranque con las páginas
+# cargadas. No lleva usuarios, bitácora ni datos personales. Se regenera con
+# `npm run seed:generar` desde 4000-api-backend/.
+!4000-api-backend/seed/*.sql
+# Los pasos de `deploy.sh importar`. El volcado importacion_*.sql que ese comando
+# deja si algo falla sigue ignorado.
 !docker/sql/*.sql
+# El esquema de antes de las migraciones. Ya no se aplica, pero se conserva como
+# historia; sin esta línea, `*.sql` lo sacaría del repositorio.
+!4000-api-backend/src/infrastructure/db/migrations/_obsoletas/script.sql
 
+# ── Asistentes de IA ───────────────────────────────────────────────────────────
+.agent/
+.agents/
+openspec/
+# .claude/ no se versiona: ajustes, permisos, skills y el auditor (/auditar) son de
+# cada quien y se quedan en su máquina.
+.claude/
+# Los informes de /auditar son privados de quien los genera.
+auditorias/
 
-# Tooling
-*.tsbuildinfo
+# ── Carpetas con el nombre de antes ────────────────────────────────────────────
+# Las apps se llaman `3000-sitio-web`, `3001-intranet` y `4000-api-backend` desde el
+# 2026-09-25. Tras el `git pull` de ese cambio, en cada PC queda la carpeta vieja con
+# lo que Git no muda (.env, archivos subidos, node_modules). `npm run dev` lo trae y
+# deja CARPETA-MUDADA.txt; sin estas líneas, un `git add .` volvería a subirla.
+/sitio-web/
+/intranet/
+/api-backend/
 
-#deprecated
+# ── Trabajo local que no es del proyecto ───────────────────────────────────────
 deprecated/
 test/
-auditoria-rf-pendientes/
-.agents/
-.claude/
-.agent/
-openspec/
-10-backlog.csv
-10-backlog.md
-backlogv2.xlsx
-10-backlog-verificado.csv
-backlog.csv
-12-plan-de-pruebas.csv
+

@@ -77,6 +77,53 @@ Lo que el auditor dejaba de hacer mal con el commit de mudanza:
 
 ---
 
+## sesión 25-09-2026: `.gitignore` ordenado, al día con las carpetas renombradas y con `.claude/` otra vez local (9.ª parte)
+
+**Qué era.** El usuario pidió ordenar el `.gitignore`. Tenía `auditorias/` dos veces, `.agent/` metido en
+medio del bloque de `.claude/` y había perdido `openspec/`: la segunda `auditorias/` quedó donde estaba.
+Al revisarlo apareció algo más serio. Las carpetas se renombraron a `3000-sitio-web/`, `3001-intranet/` y
+`4000-api-backend/`, y las excepciones de `*.sql` seguían apuntando a `api-backend/`. Al commitear el
+renombre, **la semilla de contenido** (`seed/*.sql`) y `migrations/_obsoletas/script.sql` habrían salido del
+repositorio sin aviso: `git add` no añade lo que está ignorado.
+
+Después pidió que `.claude/` se quedara solo en su máquina, porque creía que estaba en el remoto. No lo
+estaba: salió del repositorio el 2026-07-20 (`c58ebd9`) y ninguna rama de `OLO`, `UST` ni `BACKUP` lo
+tiene. Lo que sí lo dejaba a punto de subir era el propio `.gitignore`. Las excepciones del auditor
+(`!.claude/agents/`, `!.claude/skills/auditar/`, de la sesión de `/auditar`) dejaban 11 archivos listos
+para el próximo `git add .`.
+
+### Qué quedó
+
+| Bloque | Cambio |
+|---|---|
+| Dependencias y compilados | `*.tsbuildinfo` pasa aquí desde un bloque suelto |
+| SQL | Excepciones con las rutas nuevas. La de `migrations/script.sql`, que no cubría nada, pasa a `migrations/_obsoletas/script.sql`, donde está el archivo |
+| Asistentes de IA | `.agent/`, `.agents/`, `openspec/` (recuperado) y `auditorias/` una sola vez. `.claude/` se ignora entero, sin excepciones |
+| `scripts/mapa/descripciones.md` | Sin la línea de `.claude/`: el mapa lista con `--exclude-standard` y ya no la ve. `13-mapa-del-proyecto.md` regenerado |
+
+**Consecuencia para el equipo:** `/auditar` y su `chequeo-automatico.mjs` ya no les llegan a los
+compañeros. Si el chequeo sin IA tiene que poder correrlo cualquiera, hay que sacarlo de `.claude/` a
+`scripts/`.
+
+### Verificado
+
+| Prueba | Resultado |
+|---|---|
+| 46 rutas de prueba con `git check-ignore --no-index`, en un repo desechable con el archivo viejo y otro con el nuevo | Solo cambian las rutas de las excepciones de SQL (de `api-backend/` a `4000-api-backend/`) y `openspec/` |
+| Archivos reales ignorados, antes y después | Solo dejan de estar ignorados los dos `.sql` de la semilla en su carpeta nueva |
+| Archivos trackeados en las carpetas viejas que quedarían ignorados en las nuevas | Antes: los dos de la semilla y `_obsoletas/script.sql`. Después: ninguno |
+| `git add -A --dry-run -- .claude` | Antes: 11 archivos (4 agentes y 7 de la skill). Después: ninguno; git avisa que está ignorado |
+| `git check-ignore -v` sobre agentes, skill, `settings.local.json` y `.claude/SKILL.md` | Los cuatro caen en `.claude/` |
+| `git ls-tree` de `.claude/` en las ramas locales y de los tres remotos | 0 archivos en todas. El historial anterior al 2026-07-20 guarda un `settings.json` con permisos de comandos, sin secretos |
+
+> **Aviso:** `test/` está ignorada, pero sus 8 archivos de `pruebas-carga/` se añadieron antes de la regla y
+> siguen trackeados. Un archivo nuevo ahí no entra sin `git add -f`.
+
+**Pendiente al cierre:** nada del `.gitignore`. Lo que el renombre rompía (`backup-uploads.service.ts`,
+`docker-compose.servidor.yml`, `generar-mapa.mjs`) ya usa los nombres nuevos.
+
+---
+
 ## sesión 25-09-2026: un solo criterio para borrar archivos de páginas (4.ª parte)
 
 **Qué era.** Al integrar `OLO/dev` (merge `6bebc71`) entró el borrado de archivos de
