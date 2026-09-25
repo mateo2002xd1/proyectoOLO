@@ -2,7 +2,8 @@ import { Transaction } from 'sequelize';
 import { PaginaRepository } from '../../repositories/pagina.repository';
 import { emitirContenidoPublicado } from '../../domain-events/paginas/contenido-publicado.event';
 import type { Ambito } from '../../shared/ambito';
-import { respaldarArchivosAlPublicar } from '../../shared/storage/backup-uploads.service';
+import { respaldarArchivosAlPublicar } from '../../infrastructure/storage/backup-uploads.service';
+import { extraerRutasUploads } from '../../shared/rutas-uploads-en-contenido';
 import { limpiarSubidasPendientes } from './limpiar-subidas-pendientes.usecase';
 import { SubidaPendiente } from '../../infrastructure/db/models';
 
@@ -21,11 +22,19 @@ export const aprobarPagina = async (slug: string, userId: string, ambito: Ambito
   // 1. Obtener la versión que estaba publicada antes de archivarla para respaldar sus recursos
   const versionPublicadaAnterior = await PaginaRepository.findVersionPorEstado(pagina.id, 'publicado', tx);
   if (versionPublicadaAnterior) {
+    // Lo que la versión nueva deja de usar sale de `uploads/`, salvo que otra página lo
+    // enlace: entonces se copia al backup y se queda donde está.
+    const usadasPorOtrasPaginas = await PaginaRepository.rutasEnUso(
+      extraerRutasUploads(versionPublicadaAnterior.contenido),
+      ambito,
+      { excluirPaginaId: pagina.id, tx }
+    );
     respaldarArchivosAlPublicar({
       paginaId: pagina.id,
       versionAnteriorContenido: versionPublicadaAnterior.contenido,
       versionNuevaContenido: versionEnRevision.contenido,
       ambito,
+      conservarEnUploads: usadasPorOtrasPaginas,
     });
   }
 

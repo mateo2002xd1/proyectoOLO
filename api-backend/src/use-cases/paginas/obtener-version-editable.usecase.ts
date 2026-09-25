@@ -2,7 +2,7 @@ import { Op } from 'sequelize';
 import { PaginaRepository } from '../../repositories/pagina.repository';
 import { PaginaVersion } from '../../infrastructure/db/models';
 import type { Ambito } from '../../shared/ambito';
-import { adaptarRutasParaVistaPreviaArchivada } from '../../shared/storage/backup-uploads.service';
+import { adaptarRutasParaVistaPreviaArchivada } from '../../infrastructure/storage/backup-uploads.service';
 
 const EMPTY_CONTENIDO = { content: [], root: { props: {} } };
 

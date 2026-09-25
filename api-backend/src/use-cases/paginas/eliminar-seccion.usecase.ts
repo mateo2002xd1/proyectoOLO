@@ -45,11 +45,9 @@ import { resolverHref } from '../../shared/extraer-textos-puck';
 import { invalidarPermisosDeRol } from '../../middlewares/require-permission.middleware';
 import { borrarClavesPorPatron } from '../../infrastructure/redis';
 import type { Ambito } from '../../shared/ambito';
-import { 
-  eliminarDirectorioBackupCompleto, 
-  eliminarArchivosDeUploads, 
-  extraerRutasUploads 
-} from '../../shared/storage/backup-uploads.service';
+import { eliminarDirectorioBackupCompleto } from '../../infrastructure/storage/backup-uploads.service';
+import { extraerRutasUploads } from '../../shared/rutas-uploads-en-contenido';
+import { borrarArchivosHuerfanos } from './borrar-archivos-huerfanos.usecase';
 
 const fallo = (mensaje: string, status: number) =>
   Object.assign(new Error(mensaje), { status });
@@ -159,6 +157,25 @@ async function buscarReferencias(
   return referencias;
 }
 
+/**
+ * Quita del disco lo que dejó una sección ya eliminada: su carpeta de backup y, de sus
+ * archivos, los que ninguna otra página usa (`borrarArchivosHuerfanos`).
+ *
+ * Corre en el `afterCommit` de la baja. Primero comprueba contra la base que la página ya
+ * no existe, porque Sequelize 6 ejecuta esos ganchos en un `finally` —también cuando el
+ * COMMIT falla—, y lo que se borra aquí no se recupera. Nunca lanza: un error en el
+ * gancho haría fallar la petición de una baja que sí se confirmó.
+ */
+async function limpiarArchivosDeSeccionEliminada(paginaId: string, ambito: Ambito, rutas: string[]) {
+  try {
+    if ((await Pagina.count({ where: { id: paginaId } })) > 0) return;
+    eliminarDirectorioBackupCompleto(paginaId, ambito);
+    await borrarArchivosHuerfanos(rutas, ambito);
+  } catch (error) {
+    console.error(`[paginas] No se pudieron limpiar los archivos de la sección ${paginaId}:`, error);
+  }
+}
+
 export interface SeccionEliminada {
   /** El id que tenía la página. La bitácora lo necesita para poder encadenar su historia. */
   id: string;
@@ -223,11 +240,13 @@ export const eliminarSeccion = async (
     );
     const roles = (filas as { nombre: string }[]).map((f) => f.nombre);
 
+    // Los archivos se leen aquí, mientras las versiones existen, pero se borran solo
+    // cuando la baja quede confirmada: quien llama suele seguir escribiendo en esta
+    // transacción (la bitácora), y si algo falla la página vuelve y sus archivos tienen
+    // que seguir ahí.
     const versiones = await PaginaVersion.findAll({ where: { paginaId: analisis.id }, transaction });
-    const rutasUploads = new Set<string>();
-    for (const v of versiones) {
-      extraerRutasUploads(v.contenido).forEach(r => rutasUploads.add(r));
-    }
+    const rutasUploads = versiones.flatMap((v) => extraerRutasUploads(v.contenido));
+    transaction.afterCommit(() => limpiarArchivosDeSeccionEliminada(analisis.id, ambito, rutasUploads));
 
     await Pagina.destroy({ where: { slug, ambito }, transaction });
     const permiso = await Permission.findOne({ where: { name: clavePermiso }, transaction });
@@ -237,10 +256,10 @@ export const eliminarSeccion = async (
       await permiso.destroy({ transaction });
     }
 
-    return { roles, rutasUploads };
+    return roles;
   };
 
-  const { roles: rolesAfectados, rutasUploads } = tx ? await execute(tx) : await sequelize.transaction(execute);
+  const rolesAfectados = tx ? await execute(tx) : await sequelize.transaction(execute);
 
   // Fuera de la transacción: la caché solo debe olvidar lo confirmado. Si no, un rol
   // seguiría creyendo hasta 30 s que puede editar una sección que ya no existe.
@@ -249,10 +268,6 @@ export const eliminarSeccion = async (
     borrarClavesPorPatron(`cache:/api/paginas/publica/${slug}|*`),
     borrarClavesPorPatron('cache:/api/paginas/indice-busqueda|*'),
   ]).catch(() => {});
-
-  // Limpiar basura del sistema de archivos
-  eliminarDirectorioBackupCompleto(analisis.id, ambito);
-  eliminarArchivosDeUploads(rutasUploads, ambito);
 
   return {
     id: analisis.id,

@@ -1,4 +1,5 @@
-import { Op, Transaction } from 'sequelize';
+import { Op, QueryTypes, Transaction } from 'sequelize';
+import sequelize from '../config/database';
 import { Pagina, PaginaVersion, User } from '../infrastructure/db/models';
 import type { Ambito } from '../shared/ambito';
 
@@ -99,5 +100,56 @@ export const PaginaRepository = {
     await pagina.increment('visitas', { by: 1, transaction: tx });
     await pagina.reload({ transaction: tx });
     return pagina.visitas;
+  },
+
+  /**
+   * De estas rutas de `/uploads/`, las que alguna versión —en cualquier estado— de alguna
+   * página del ámbito todavía nombra en su contenido o su layout. Es la única respuesta a
+   * «¿se puede borrar o mover este archivo?»: la usan `borrarArchivosHuerfanos` y, con
+   * `excluirPaginaId`, publicar y restaurar, para no sacar de `uploads/` lo que otra
+   * página enlaza.
+   *
+   * Busca el texto de la ruta en el JSON, como la primera versión de
+   * `limpiarSubidasPendientes` (que hacía una consulta por archivo): así cuenta cualquier
+   * bloque, sepa o no dónde guarda sus archivos. `strpos` y no `LIKE` para que un `_` o un
+   * `%` en el nombre no hagan de comodín. Cada ruta se busca también codificada
+   * (`mi%20foto.png`), porque `extraerRutasUploads` las devuelve descodificadas.
+   *
+   * `MATERIALIZED` convierte cada versión a texto una sola vez para todas las rutas.
+   */
+  rutasEnUso: async (
+    rutas: string[],
+    ambito: Ambito,
+    opciones: { excluirPaginaId?: string; tx?: Transaction } = {}
+  ): Promise<Set<string>> => {
+    if (rutas.length === 0) return new Set();
+
+    const filas = await sequelize.query<{ ruta: string }>(
+      `WITH textos AS MATERIALIZED (
+         SELECT v.contenido::text || ' ' || COALESCE(v.layout::text, '') AS texto
+           FROM paginas_versiones v
+           JOIN paginas p ON p.id = v.pagina_id
+          WHERE p.ambito = :ambito
+            AND (CAST(:excluir AS uuid) IS NULL OR p.id <> CAST(:excluir AS uuid))
+       )
+       SELECT r.ruta
+         FROM unnest(ARRAY[:rutas]::text[], ARRAY[:codificadas]::text[]) AS r(ruta, codificada)
+        WHERE EXISTS (
+          SELECT 1 FROM textos t
+           WHERE strpos(t.texto, r.ruta) > 0 OR strpos(t.texto, r.codificada) > 0
+        )`,
+      {
+        replacements: {
+          ambito,
+          excluir: opciones.excluirPaginaId ?? null,
+          rutas,
+          codificadas: rutas.map((r) => encodeURI(r)),
+        },
+        type: QueryTypes.SELECT,
+        transaction: opciones.tx,
+      }
+    );
+
+    return new Set(filas.map((f) => f.ruta));
   },
 };

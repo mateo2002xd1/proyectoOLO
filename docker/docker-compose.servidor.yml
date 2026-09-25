@@ -81,7 +81,7 @@ services:
       #    cada consulta. La imagen no los trae.
       #  - */public/storage: al publicar o revertir una página la API copia y mueve
       #    archivos entre uploads/ y backup/. Resuelve esas carpetas subiendo cuatro
-      #    niveles desde dist/shared/storage (`backup-uploads.service.ts`), o sea desde
+      #    niveles desde dist/infrastructure/storage (`backup-uploads.service.ts`), o sea desde
       #    la raíz del contenedor: de ahí /sitio-web y /intranet.
       - ./api-backend/uploads:/app/uploads
       - ./sitio-web/public/storage:/sitio-web/public/storage

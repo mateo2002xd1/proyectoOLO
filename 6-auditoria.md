@@ -5,6 +5,87 @@
 
 ---
 
+## sesión 25-09-2026: un solo criterio para borrar archivos de páginas (4.ª parte)
+
+**Qué era.** Al integrar `OLO/dev` (merge `6bebc71`) entró el borrado de archivos de
+Mateo al eliminar una sección (`c57d8c0`). El usuario notó que ya había resuelto lo mismo
+el 10-09 con `024-subidas-pendientes` (`7e25b89`): borrar al publicar solo lo que ninguna
+versión de ninguna página usa. Pidió reutilizarlo y ordenar cada cosa según su
+competencia, para no tener desarrollo duplicado ni disperso. Había tres criterios distintos
+para decidir si se podía borrar o mover un archivo:
+
+| Flujo | Antes de sacar un archivo, ¿miraba si otra página lo usa? | Cómo lo borraba |
+|---|---|---|
+| Subidas pendientes (10-09) | Sí: `LIKE` en todas las versiones del ámbito, una consulta por archivo | Su propio `fs.rm` |
+| Publicar / restaurar (02-09) | No: solo la versión vieja contra la nueva de la misma página | Lo movía a `backup/` |
+| Eliminar sección (25-09) | No miraba nada, y borraba **antes** de confirmar la transacción | Su propio `unlinkSync` |
+
+### Qué quedó
+
+| Capa | Pieza | Qué hace |
+|---|---|---|
+| Repositorio | `PaginaRepository.rutasEnUso(rutas, ambito, { excluirPaginaId?, tx? })` | La única respuesta a «¿alguna versión de alguna página nombra este archivo?». Es la consulta de las subidas pendientes, generalizada y en una sola consulta |
+| Infraestructura | `infrastructure/storage/backup-uploads.service.ts` (antes `shared/storage/`) | El disco: resolver carpetas, mover, copiar, borrar. `borrarDeUploads` sustituye a los dos borrados anteriores y descarta cualquier ruta que, ya resuelta, caiga fuera de `uploads/` |
+| Caso de uso | `use-cases/paginas/borrar-archivos-huerfanos.usecase.ts` | La única puerta para borrar archivos de páginas: pregunta a `rutasEnUso` y borra con `borrarDeUploads` |
+| Shared | `shared/rutas-uploads-en-contenido.ts` | `extraerRutasUploads`, que es solo lectura del JSON, sale del almacenamiento y queda junto a `enlaces-en-contenido.ts` y `extraer-textos-puck.ts` |
+
+Quién la usa:
+
+- **`limpiarSubidasPendientes`** (subidas pendientes): mismo comportamiento que antes. Se queda con lo suyo, la guarda del bloqueo y el registro de `subidas_pendientes`, y delega el resto.
+- **`eliminarSeccion`**: lee los archivos dentro de la transacción y los limpia en su `afterCommit`. Si la baja no se confirma, no se toca el disco, y lo que otra página enlaza se conserva.
+- **`aprobarPagina` y `restaurarVersionAnterior`**: pasan a `respaldar`/`restaurar` el nuevo parámetro `conservarEnUploads`, que es `rutasEnUso` excluyendo la propia página. Así lo que otra página enlaza se copia al backup en vez de moverse.
+- **El stub `shared/storage/index.ts`** (tres funciones vacías que nadie importaba) se borró.
+
+**Decisiones:**
+
+- `strpos` y no `LIKE`, para que un `_` o un `%` del nombre no hagan de comodín.
+- Cada ruta se busca también codificada (`mi%20foto.png`), porque `extraerRutasUploads` descodifica.
+- `WITH … AS MATERIALIZED` convierte cada versión a texto una sola vez para todas las rutas.
+
+**Descartado:**
+
+- **Unirlo con la deduplicación SHA-256 de `archivos`.** Parecen lo mismo, pero no lo son. Los Excel de las cargas son privados y cada carga apunta a su archivo con una llave foránea, así que contar referencias es exacto. Los archivos de páginas son públicos y su referencia vive dentro del JSON del contenido. Registrarlos en `archivos` obligaría a mantener una tabla de relación sincronizada en cada guardado.
+- **Resolver las carpetas desde una variable de entorno.** Se mantuvo la subida de cuatro niveles, y el archivo se movió a la misma profundidad. Así el despliegue no cambia.
+
+> **Trampa (Sequelize 6.37):** `transaction.afterCommit` se ejecuta en un `finally`,
+> **también cuando el COMMIT falla**. Por eso la limpieza de eliminar sección comprueba
+> primero contra la base que la página ya no existe, y nunca lanza: un error en el gancho
+> hace fallar la petición de una baja que sí se confirmó.
+> **Segunda trampa:** `backup-uploads.service.ts` encuentra `public/storage` subiendo cuatro
+> niveles desde su directorio. Si se mueve a otra profundidad, publicar y restaurar fallan
+> solo en el servidor.
+
+### Verificado
+
+Postgres 18 desechable en Docker (puerto 55432), con las 37 migraciones aplicadas con el
+runner real. El backend se ejecutó desde una copia en el scratchpad, sin `.env`, así que
+las carpetas `public/storage` eran las de la copia. No se tocó Neon, ni el disco del
+proyecto, ni la API de desarrollo.
+
+| Prueba | Resultado |
+|---|---|
+| `tsc --noEmit` de api-backend, sitio-web e intranet sobre el árbol del merge, antes de cerrarlo | Limpios |
+| `tsc --noEmit` de api-backend tras el cambio, y de `scripts/probar-versionamiento.ts` con el tsconfig del proyecto | Limpios |
+| `rutasEnUso`: usadas / codificada / `_` no es comodín / `excluirPaginaId` / otro ámbito | 5 de 5 |
+| Eliminar sección con ROLLBACK (la bitácora falla) | La página vuelve y sus archivos y su backup siguen |
+| Eliminar sección con **COMMIT fallido** (conexión terminada con `pg_terminate_backend`) | Ídem. Sequelize avisa «Committing transaction … failed» |
+| Eliminar sección confirmada | Borra lo que solo usaba ella y su backup; conserva lo compartido, también si la otra página lo guarda codificado |
+| Subidas pendientes | Borra la reemplazada, conserva la usada; en `subidas_pendientes` queda solo la usada |
+| Publicar | Lo que usa otra página se queda en `uploads/` (y se copia al backup); lo exclusivo se mueve |
+| Restaurar | Lo que usa otra página se queda en `uploads/`; lo restaurado vuelve |
+| **Control con el código de antes** (merge `6bebc71`), mismos escenarios | Los tres fallos se reproducen: tras el ROLLBACK los archivos ya no estaban, se borró el archivo compartido y publicar sacó de `uploads/` el de otra página |
+
+Total: 29 de 29 comprobaciones con el código nuevo.
+
+**Pendiente al cierre:**
+
+- Reiniciar `npm run dev` en api-backend.
+- **Sin cambiar, anterior a esto:** publicar y restaurar mueven archivos **antes** de escribir en la base. Si esa escritura falla, el disco queda por delante. Se arreglaría igual que eliminar sección, llevando la parte de disco a un `afterCommit`.
+- `SubidaPendiente` sigue sin repositorio propio (ya anotado en la guía).
+- `11-base-de-datos.md` §archivos todavía dice «los que suba el `shared/storage` de RF-02». Se dejó así porque es la historia de esa migración.
+
+---
+
 ## sesión 25-09-2026: «Descargar formato» en Actualizaciones (2.ª parte)
 
 **Qué era.** Quien carga datos en Actualizaciones no tenía de dónde sacar el Excel con las

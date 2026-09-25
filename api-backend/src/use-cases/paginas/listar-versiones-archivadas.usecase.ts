@@ -1,10 +1,8 @@
 import { QueryTypes } from 'sequelize';
 import sequelize from '../../config/database';
 import type { Ambito } from '../../shared/ambito';
-import {
-  extraerRutasUploads,
-  listarArchivosEnBackup,
-} from '../../shared/storage/backup-uploads.service';
+import { listarArchivosEnBackup } from '../../infrastructure/storage/backup-uploads.service';
+import { extraerRutasUploads } from '../../shared/rutas-uploads-en-contenido';
 
 export interface VersionArchivadaResumen {
   paginaId: string;

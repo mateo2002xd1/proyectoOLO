@@ -4,7 +4,8 @@ import { Pagina, PaginaVersion, User } from '../../infrastructure/db/models';
 import { PaginaRepository } from '../../repositories/pagina.repository';
 import { emitirContenidoPublicado } from '../../domain-events/paginas/contenido-publicado.event';
 import type { Ambito } from '../../shared/ambito';
-import { restaurarArchivosDesdeBackup } from '../../shared/storage/backup-uploads.service';
+import { restaurarArchivosDesdeBackup } from '../../infrastructure/storage/backup-uploads.service';
+import { extraerRutasUploads } from '../../shared/rutas-uploads-en-contenido';
 import { logAudit, type ContextoAuditoria } from '../auditoria/audit.usecase';
 import { MOTIVO_DE_ARCHIVADO } from '../../shared/auditoria-resumen';
 import { BloqueoEdicionRepository } from '../../repositories/bloqueo-edicion.repository';
@@ -65,12 +66,19 @@ export async function restaurarVersionAnterior(
     throw new Error(`La página "${pagina.slug}" no tiene la versión anterior archivada solicitada para restaurar.`);
   }
 
-  // 3. Sincronizar archivos de disco entre backup y uploads
+  // 3. Sincronizar archivos de disco entre backup y uploads. Lo que la versión que se
+  // despublica deja de usar sale de `uploads/`, salvo que otra página lo enlace.
+  const usadasPorOtrasPaginas = versionPublicada
+    ? await PaginaRepository.rutasEnUso(extraerRutasUploads(versionPublicada.contenido), ambito, {
+        excluirPaginaId: pagina.id,
+      })
+    : undefined;
   const resultadoArchivos = restaurarArchivosDesdeBackup({
     paginaId: pagina.id,
     versionRestaurarContenido: versionArchivada.contenido,
     versionActualContenido: versionPublicada ? versionPublicada.contenido : null,
     ambito,
+    conservarEnUploads: usadasPorOtrasPaginas,
   });
 
   // 4. Ejecutar el intercambio atómico en PostgreSQL

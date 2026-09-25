@@ -10,9 +10,9 @@ import { Pagina, PaginaVersion } from '../src/infrastructure/db/models';
 import {
   resolverDirectorioUploads,
   resolverDirectorioBackup,
-  extraerRutasUploads,
   listarArchivosEnBackup,
-} from '../src/shared/storage/backup-uploads.service';
+} from '../src/infrastructure/storage/backup-uploads.service';
+import { extraerRutasUploads } from '../src/shared/rutas-uploads-en-contenido';
 
 function obtenerAmbito(args: string[]): Ambito {
   const argAmbito = args.find((a) => a.startsWith('--ambito='));

@@ -1,6 +1,18 @@
+/**
+ * El disco de los archivos de las páginas: `uploads/` (lo que se sirve hoy) y
+ * `backup/{paginaId}/` (lo de la última versión archivada), dentro del
+ * `public/storage` de cada aplicación.
+ *
+ * Solo mueve, copia y borra. **No decide qué se puede borrar**: esa pregunta —¿alguna
+ * versión de alguna página nombra todavía este archivo?— la responde
+ * `PaginaRepository.rutasEnUso`, y la une con el borrado `borrarArchivosHuerfanos`, que es
+ * la única puerta para borrar archivos de páginas. Qué rutas nombra un contenido lo dice
+ * `shared/rutas-uploads-en-contenido.ts`.
+ */
 import fs from 'fs';
 import path from 'path';
-import type { Ambito } from '../ambito';
+import type { Ambito } from '../../shared/ambito';
+import { extraerRutasUploads } from '../../shared/rutas-uploads-en-contenido';
 
 /**
  * Resuelve la ruta física absoluta de la carpeta `uploads` según el ámbito.
@@ -11,9 +23,24 @@ import type { Ambito } from '../ambito';
  * no necesita tocarse.
  */
 export function resolverDirectorioUploads(ambito: Ambito): string {
+  return path.join(raizDeLaApp(ambito), 'public', 'storage', 'uploads');
+}
+
+/**
+ * La carpeta de la aplicación (`sitio-web` o `intranet`), subiendo cuatro niveles desde
+ * este archivo: `src/infrastructure/storage` → raíz del proyecto; en la imagen,
+ * `dist/infrastructure/storage` → `/`, donde `docker-compose.servidor.yml` monta las dos
+ * `public/storage`. **Si este archivo cambia de profundidad, esto deja de apuntar ahí** y
+ * publicar o restaurar fallan solo en el servidor.
+ */
+function raizDeLaApp(ambito: Ambito): string {
   const raizProyecto = path.resolve(__dirname, '../../../../');
-  const carpetaApp = ambito === 'sitio' ? 'sitio-web' : 'intranet';
-  return path.join(raizProyecto, carpetaApp, 'public', 'storage', 'uploads');
+  return path.join(raizProyecto, ambito === 'sitio' ? 'sitio-web' : 'intranet');
+}
+
+/** La carpeta de backup de una página, sin crearla. */
+function rutaDirectorioBackup(paginaId: string, ambito: Ambito): string {
+  return path.join(raizDeLaApp(ambito), 'public', 'storage', 'backup', paginaId);
 }
 
 /**
@@ -23,9 +50,7 @@ export function resolverDirectorioUploads(ambito: Ambito): string {
  * Crea el directorio si aún no existe y garantiza que permanezca creado.
  */
 export function resolverDirectorioBackup(paginaId: string, ambito: Ambito): string {
-  const raizProyecto = path.resolve(__dirname, '../../../../');
-  const carpetaApp = ambito === 'sitio' ? 'sitio-web' : 'intranet';
-  const dirBackup = path.join(raizProyecto, carpetaApp, 'public', 'storage', 'backup', paginaId);
+  const dirBackup = rutaDirectorioBackup(paginaId, ambito);
 
   if (!fs.existsSync(dirBackup)) {
     fs.mkdirSync(dirBackup, { recursive: true });
@@ -39,59 +64,6 @@ export function resolverDirectorioBackup(paginaId: string, ambito: Ambito): stri
  */
 function nombreEnBackup(subRuta: string): string {
   return subRuta.split('/').pop() ?? subRuta;
-}
-
-/**
- * Extrae recursivamente todas las rutas de archivos que inicien por `/uploads/`
- * presentes en cualquier parte del árbol JSON de bloques de Puck.
- */
-export function extraerRutasUploads(contenido: unknown): string[] {
-  const rutas = new Set<string>();
-
-  function recorrer(nodo: unknown) {
-    if (!nodo) return;
-
-    if (typeof nodo === 'string') {
-      const nodoTrim = nodo.trim();
-      if (nodoTrim.startsWith('/uploads/') && !nodoTrim.includes('"') && !nodoTrim.includes('\n')) {
-        const rutaLimpia = nodoTrim.split(/[?#]/)[0].replace(/[\),;:.]+$/, '');
-        try {
-          rutas.add(decodeURIComponent(rutaLimpia));
-        } catch {
-          rutas.add(rutaLimpia);
-        }
-      }
-
-      const coincidencias = nodo.match(/\/uploads\/[^\s"'<>]+/g);
-      if (coincidencias) {
-        for (const m of coincidencias) {
-          const rutaLimpia = m.split(/[?#]/)[0].replace(/[\),;:.]+$/, '');
-          try {
-            rutas.add(decodeURIComponent(rutaLimpia));
-          } catch {
-            rutas.add(rutaLimpia);
-          }
-        }
-      }
-      return;
-    }
-
-    if (Array.isArray(nodo)) {
-      for (const elemento of nodo) {
-        recorrer(elemento);
-      }
-      return;
-    }
-
-    if (typeof nodo === 'object') {
-      for (const valor of Object.values(nodo as Record<string, unknown>)) {
-        recorrer(valor);
-      }
-    }
-  }
-
-  recorrer(contenido);
-  return Array.from(rutas);
 }
 
 function copiarArchivoSeguro(origen: string, destino: string): void {
@@ -158,7 +130,8 @@ function limpiarArchivosHuerfanosEnBackup(
  *
  * Regla de integridad:
  *  - Si un archivo de la versión anterior también lo usa la nueva versión: se COPIA a backup (se mantiene en uploads).
- *  - Si un archivo de la versión anterior ya NO lo usa la nueva versión: se MUEVE a backup (se quita de uploads).
+ *  - Si un archivo de la versión anterior ya NO lo usa la nueva versión: se MUEVE a backup (se quita de uploads),
+ *    salvo que esté en `conservarEnUploads` (otra página lo usa): entonces se COPIA.
  *  - Limpia cualquier archivo en backup que no pertenezca a la versión archivada.
  */
 export function respaldarArchivosAlPublicar(params: {
@@ -166,8 +139,10 @@ export function respaldarArchivosAlPublicar(params: {
   versionAnteriorContenido: unknown;
   versionNuevaContenido: unknown;
   ambito: Ambito;
+  /** Rutas que nombra alguna otra página (`PaginaRepository.rutasEnUso`): no salen de `uploads/`. */
+  conservarEnUploads?: ReadonlySet<string>;
 }): { respaldados: string[]; preservadosEnUploads: string[]; purgadosDeBackup: string[] } {
-  const { paginaId, versionAnteriorContenido, versionNuevaContenido, ambito } = params;
+  const { paginaId, versionAnteriorContenido, versionNuevaContenido, ambito, conservarEnUploads } = params;
 
   const dirUploads = resolverDirectorioUploads(ambito);
   const dirBackup = resolverDirectorioBackup(paginaId, ambito);
@@ -187,9 +162,9 @@ export function respaldarArchivosAlPublicar(params: {
       continue;
     }
 
-    const sigueEnUsoPorNuevaVersion = rutasNuevas.has(rutaRelativa);
+    const sigueEnUso = rutasNuevas.has(rutaRelativa) || conservarEnUploads?.has(rutaRelativa);
 
-    if (sigueEnUsoPorNuevaVersion) {
+    if (sigueEnUso) {
       copiarArchivoSeguro(rutaOrigenFisica, rutaDestinoFisica);
       preservadosEnUploads.push(subRuta);
     } else {
@@ -212,7 +187,8 @@ export function respaldarArchivosAlPublicar(params: {
  *
  * Regla de integridad:
  *  - Los archivos de `backup/{paginaId}/` vuelven a su carpeta de tipo en `uploads/`.
- *  - Los archivos de la versión que deja de ser publicada se mueven a `backup/{paginaId}/`.
+ *  - Los archivos de la versión que deja de ser publicada se mueven a `backup/{paginaId}/`, salvo los de
+ *    `conservarEnUploads` (otra página los usa), que se copian.
  *  - Se purga cualquier archivo en backup que no pertenezca a la versión que pasa a ser archivada.
  */
 export function restaurarArchivosDesdeBackup(params: {
@@ -220,8 +196,10 @@ export function restaurarArchivosDesdeBackup(params: {
   versionRestaurarContenido: unknown;
   versionActualContenido: unknown;
   ambito: Ambito;
+  /** Rutas que nombra alguna otra página (`PaginaRepository.rutasEnUso`): no salen de `uploads/`. */
+  conservarEnUploads?: ReadonlySet<string>;
 }): { restaurados: string[]; guardadosEnBackup: string[]; purgadosDeBackup: string[] } {
-  const { paginaId, versionRestaurarContenido, versionActualContenido, ambito } = params;
+  const { paginaId, versionRestaurarContenido, versionActualContenido, ambito, conservarEnUploads } = params;
 
   const dirUploads = resolverDirectorioUploads(ambito);
   const dirBackup = resolverDirectorioBackup(paginaId, ambito);
@@ -250,8 +228,8 @@ export function restaurarArchivosDesdeBackup(params: {
     const rutaOrigenUploads = path.join(dirUploads, subRuta);
     const rutaDestinoBackup = path.join(dirBackup, nombreEnBackup(subRuta));
 
-    if (rutasRestaurar.includes(rutaRelativa)) {
-      // Si la versión restaurada también la usa, se copia a backup (se mantiene en uploads)
+    if (rutasRestaurar.includes(rutaRelativa) || conservarEnUploads?.has(rutaRelativa)) {
+      // Si la versión restaurada u otra página también la usa, se copia a backup (se mantiene en uploads)
       if (fs.existsSync(rutaOrigenUploads)) {
         copiarArchivoSeguro(rutaOrigenUploads, rutaDestinoBackup);
         guardadosEnBackup.push(subRuta);
@@ -395,25 +373,29 @@ export function adaptarRutasParaVistaPreviaArchivada(
 }
 
 /**
- * Elimina físicamente del directorio uploads/ los archivos especificados.
- * Se utiliza al eliminar por completo una página para no dejar archivos basura.
+ * Borra de `uploads/` las rutas dadas (`/uploads/img/x.png`) y devuelve las que ya no están
+ * en el disco (también las que no estaban). **No comprueba si alguien las usa**: se llama
+ * desde `borrarArchivosHuerfanos`, que antes lo pregunta a la base.
+ *
+ * Una ruta que, ya resuelta, cae fuera de `uploads/` (un `../`, una ruta absoluta) se ignora.
  */
-export function eliminarArchivosDeUploads(rutas: Iterable<string>, ambito: Ambito): void {
+export async function borrarDeUploads(rutas: Iterable<string>, ambito: Ambito): Promise<string[]> {
   const dirUploads = resolverDirectorioUploads(ambito);
-  for (const rutaRelativa of rutas) {
-    const subRuta = rutaRelativa.replace(/^\/?uploads\//, '');
-    // Prevención de path traversal
-    if (subRuta.includes('..')) continue;
-    
-    const rutaFisica = path.join(dirUploads, subRuta);
-    if (fs.existsSync(rutaFisica)) {
-      try {
-        fs.unlinkSync(rutaFisica);
-      } catch (error) {
-        console.error(`[Storage] No se pudo eliminar el archivo basura en uploads: ${rutaFisica}`, error);
-      }
+  const borradas: string[] = [];
+
+  for (const ruta of rutas) {
+    const rutaFisica = path.resolve(dirUploads, ruta.replace(/^\/?uploads\//, ''));
+    if (!rutaFisica.startsWith(dirUploads + path.sep)) continue;
+
+    try {
+      await fs.promises.rm(rutaFisica, { force: true });
+      borradas.push(ruta);
+    } catch (error) {
+      console.error(`[storage] No se pudo borrar ${rutaFisica}:`, error);
     }
   }
+
+  return borradas;
 }
 
 /**
@@ -421,7 +403,9 @@ export function eliminarArchivosDeUploads(rutas: Iterable<string>, ambito: Ambit
  * Útil cuando se elimina por completo la página del sistema.
  */
 export function eliminarDirectorioBackupCompleto(paginaId: string, ambito: Ambito): void {
-  const dirBackup = resolverDirectorioBackup(paginaId, ambito);
+  // Sin `resolverDirectorioBackup`, que crea la carpeta si no existe: aquí sería crearla
+  // para borrarla en la línea siguiente.
+  const dirBackup = rutaDirectorioBackup(paginaId, ambito);
   if (fs.existsSync(dirBackup)) {
     try {
       fs.rmSync(dirBackup, { recursive: true, force: true });
