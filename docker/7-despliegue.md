@@ -259,6 +259,8 @@ Register-ScheduledTask -TaskName "OLO - tunel" -Action $accion -Trigger $inicio 
 | Cambiar de sección varias veces | En `localhost:8080`, menos de 1 s. Por el túnel se suma la demora del servicio de Microsoft: se midió entre 1,5 y 7 s por petición |
 | Subir una imagen desde el editor y verla | Se ve al momento, sin reiniciar nada |
 | `./docker/deploy.sh restart` y volver a entrar | Todo sigue ahí: páginas, cuentas e imágenes |
+| En el celular, abrir la dirección del sitio (o de la intranet) en Chrome | Menú ⋮ → **Instalar app** o **Agregar a la pantalla principal**. En iPhone: Safari → Compartir → **Agregar a inicio**. Queda un ícono con el logo del OLO sobre azul |
+| Con el sitio instalado y ya visitado, activar el modo avión y abrirlo | La portada se ve (es la última copia); una página no visitada muestra **«Estás sin conexión»**. La intranet siempre muestra ese aviso: no guarda páginas |
 
 ### A9. Limpieza
 
@@ -365,6 +367,16 @@ Casi siempre el sitio se construyó con otras direcciones: revisa `SITIO_WEB_URL
 1. `REVALIDAR_SECRET` tiene que estar en el `.env` (lo genera `setup`).
 2. Redis tiene que estar arriba (`status`).
 3. El sitio guarda su propia copia hasta un minuto: espera y recarga.
+
+### El celular no ofrece «Instalar app»
+- Tiene que ser la dirección **https** del túnel: por `http://` (salvo `localhost`) el
+  navegador no instala nada.
+- Pasa primero el aviso de Microsoft (A7) y recarga.
+- Abre `<dirección>/manifest.webmanifest`: tiene que verse un texto que empieza por `{`
+  y dice `"name":`. Si ves una página web (el aviso de Microsoft o el login), el
+  navegador tampoco puede leerlo. En la intranet, revisa que el `matcher` de
+  `intranet/src/middleware.ts` siga dejando pasar `manifest.webmanifest` y `sw.js`.
+- En Chrome de escritorio: F12 → **Application** → **Manifest** dice qué le falta.
 
 ### El túnel no conecta
 - `devtunnel host olo` tiene que estar corriendo (ventana abierta o la tarea de A7).

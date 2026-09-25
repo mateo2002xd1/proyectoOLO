@@ -454,6 +454,9 @@ sitio-web/src/
 │   │   │                             #   real en config/puck.config.tsx, 4 son helpers
 │   │   │                             #   internos que otros bloques usan
 │   │   ├── inactividad/              #   aviso y cierre de sesión — no documentada
+│   │   ├── pwa/                      #   PWA: íconos y color del manifiesto
+│   │   │                             #   (app/manifest.ts) y registro de public/sw.js,
+│   │   │                             #   que guarda solo páginas públicas
 │   │   ├── api-client, backend-proxy, session, auth-cookies, auth-server,
 │   │   │   dashboard, fonts, types, verificar-sesion
 │   │   └── reenviar-cliente.ts       # Propaga X-Forwarded-For. Ver 3-seguridad §4.5
@@ -670,6 +673,9 @@ intranet/src/
 │       │                             #   encuestas/, inicio/, matriz/, plantilla/, tasa/
 │       ├── inactividad/              #   Aviso y cierre de sesión por inactividad
 │       │                             #   (vigilante-sesion.tsx)
+│       ├── pwa/                      #   PWA: íconos y color del manifiesto
+│       │                             #   (app/manifest.ts) y registro de public/sw.js,
+│       │                             #   que NO guarda ninguna página
 │       └── api-client.ts, auth-server.ts, constants.ts, errors.ts,
 │           fonts.ts, sesion.ts, types.ts, verificar-sesion.ts
 │

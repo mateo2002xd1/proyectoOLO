@@ -435,6 +435,15 @@ HSTS, `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff` y
   imprime fuera de producción.
 - **La paginación de auditoría tiene tope**, para que `?limit=1000000` no sea una petición
   válida contra la tabla que más crece.
+- **La PWA solo guarda en el dispositivo lo que es público** (desde el 2026-09-25). Lo que
+  el service worker (`public/sw.js`) guarda sigue ahí después de cerrar sesión, así que la
+  regla es por app: el **sitio-web** guarda copias de las páginas públicas visitadas, pero
+  nunca `/admin`, `/editor`, `/preview`, `/api` ni las pantallas de acceso, y tampoco
+  ninguna respuesta con `no-store` o `private` (la red de seguridad para una ruta privada
+  nueva que nadie añada a la lista). La **intranet** no guarda ninguna página ni dato: solo
+  `/_next/static/` (código servido sin sesión) y su página «sin conexión». El middleware de
+  la intranet deja pasar `sw.js` y `manifest.webmanifest` sin sesión; ninguno lleva nada
+  privado.
 - **`.env` en `.gitignore` y nunca commiteado** — verificado sobre el historial completo,
   no solo sobre el árbol de trabajo.
 - **Ningún secreto en los archivos versionados.** Hasta el 2026-08-20 `docker-compose.yml`

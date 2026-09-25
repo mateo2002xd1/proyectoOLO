@@ -5,6 +5,103 @@
 
 ---
 
+## sesión 25-09-2026: el sitio y la intranet se pueden instalar como app (PWA)
+
+**Qué era.** El usuario pidió volver PWA el proyecto: que se pueda instalar como app en el
+celular o el computador y que funcione sin conexión. Eligió las dos apps, con una regla
+distinta en cada una. El **sitio-web** guarda copias de sus páginas públicas para verlas sin
+internet. La **intranet** es instalable pero no guarda ninguna página: todo en ella es
+privado, y una copia en el dispositivo seguiría ahí después de cerrar sesión, a la vista de
+quien use después el mismo equipo.
+
+### Qué quedó
+
+| Parte | Sitio-web | Intranet |
+|---|---|---|
+| Manifiesto (`app/manifest.ts` → `/manifest.webmanifest`) | «OLO SENA APP», abre en `/inicio`, sin barra del navegador | «Intranet OLO», abre en `/inicio` (sin sesión, el middleware lo manda al login) |
+| Íconos (`public/assets/pwa/`) | 192, 512, 512 enmascarable y 180 de Apple: el favicon blanco sobre `#001A39`, generados con el `sharp` que trae Next | Los mismos archivos |
+| `<head>` (`app/layout.tsx`) | `viewport.themeColor`, `appleWebApp` e `icons.apple` (iOS no lee el manifiesto para eso) | Igual |
+| Service worker (`public/sw.js`) | Red primero. Guarda copia de las páginas públicas (tope 50) y de las imágenes (80). `/_next/static/` sale de la copia (200) | Solo guarda `/_next/static/` y la página sin conexión. Las páginas van siempre a la red |
+| Página sin conexión (`public/assets/pwa/sin-conexion.html`) | HTML plano, sin scripts: «Intentar de nuevo» e «Ir al inicio» | Igual, con su propio texto y solo «Intentar de nuevo» |
+| Registro (`shared/lib/pwa/`) | `RegistrarServiceWorker` en el layout raíz. Solo en producción; en `next dev` desinstala y borra lo que haya quedado de un build probado en el mismo puerto | Igual |
+| `next.config` | `/sw.js` sin caché y con su propia CSP (`default-src 'self'`) | Igual, más `worker-src 'self'` y `manifest-src 'self'` en la CSP general |
+| `middleware.ts` | Sin cambios: su `matcher` es una lista explícita y no toca estas rutas | El `matcher` deja pasar `sw.js` y `manifest.webmanifest`. Sin eso el navegador los recibía redirigidos al login y la intranet no se podía instalar |
+
+**Por qué red primero y no copia primero.** El sitio lo editan personas que publican y
+recargan esperando ver su cambio. Si el service worker sirviera primero la copia, verían la
+versión anterior. Con internet, todo sale de la red como antes; la copia solo se usa cuando
+la red falla. La excepción es `/_next/static/`: Next pone un hash en el nombre de esos
+archivos, así que un nombre nunca cambia de contenido.
+
+**Qué no se guarda nunca en el sitio-web.** `/admin`, `/editor`, `/preview`, `/api`,
+`/api-backend` y las pantallas de acceso (`RUTAS_PRIVADAS` en `sw.js`). De respaldo, tampoco
+ninguna respuesta con `no-store` o `private`, que es como Next marca las páginas que leen la
+sesión. Así, si mañana aparece una ruta privada nueva (el middleware ya anuncia `/portal` y
+`/mi-cuenta`) y nadie la añade a la lista, igual no se guarda.
+
+**Descartado: `next-pwa` o una librería parecida.** `next-pwa` se engancha al build de
+webpack y este proyecto compila con Turbopack. Además, el service worker propio son unas 150
+líneas que se leen de una vez: se ve exactamente qué se guarda. Una dependencia más no
+aportaba.
+
+### Hallazgo: cuatro páginas públicas no se pueden guardar
+
+`/[slug]`, `/clasificacion/cno`, `/clasificacion/cuoc` e `/inicio/politica-de-privacidad`
+llaman en el servidor a `puedeEditarPaginas()`, que lee la cookie de sesión. Por eso Next las
+compila como dinámicas (ƒ en la tabla del build) y responde
+`Cache-Control: private, no-cache, no-store`, así que la red de seguridad las deja fuera. No
+es un error del service worker: la página puede cambiar según quién la mire (a un editor le
+muestra «Editar sección» si está vacía). Hoy, sin conexión solo abren las ISR ya visitadas:
+`/inicio`, `/clasificacion` y `/programas-sobresalientes`. El texto de la página sin
+conexión lo dice así («Algunas páginas que ya visitaste, como el inicio…»).
+
+El arreglo, si se quiere, es resolver ese permiso en el navegador, como ya lo hace
+`PaginasFabSpeedDial` en el layout público. Así esas páginas pasarían a ISR: se podrían
+guardar y además cargarían más rápido, porque hoy cada visita consulta la API.
+
+### Verificado
+
+`next build` de producción de las dos apps; `next start` en los puertos 3200 y 3201 (los de
+desarrollo no se tocaron) y Chrome headless por CDP. Para simular la falta de red se apagó el
+servidor. La API estaba apagada, así que las páginas públicas se pintaron con su contenido de
+respaldo.
+
+| Prueba | Sitio-web | Intranet |
+|---|---|---|
+| `tsc --noEmit` y ESLint sobre lo tocado | Limpios | Limpios |
+| `next build` | Exit 0; `/manifest.webmanifest` estático (○) | Exit 0; ídem |
+| `GET /manifest.webmanifest` sin sesión | 200 `application/manifest+json` | 200, **no** redirige al login |
+| `GET /sw.js` | 200, `no-cache, no-store` y su CSP | Igual |
+| Primera visita | Service worker `activated`, controla la página | Igual (desde `/login`, sin sesión) |
+| `Page.getAppManifest` / `Page.getInstallabilityErrors` | Sin errores / `[]` | Sin errores / `[]` |
+| Qué guardó tras visitar páginas públicas, `/login` y `/admin/dashboard` | Páginas: solo `/inicio` y `/clasificacion`. Nada de `/login` ni del panel. 12 imágenes, 29 estáticos | Solo la página sin conexión, su ícono y 19 estáticos. Ninguna página |
+| Sin red: página visitada | `/inicio` y `/clasificacion` desde la copia, con su URL | «Estás sin conexión» |
+| Sin red: página dinámica, privada o no visitada | «Estás sin conexión» (`/clasificacion/cno`, `/admin/dashboard`, `/login`, `/programas-sobresalientes`) | «Estás sin conexión» en todas |
+| Captura a 390 px de la página sin conexión | Revisada: logo, título, dos botones de 44 px | Revisada |
+
+No se comprobó con un 200 real que la red de seguridad `no-store` deje fuera una página
+dinámica: sin la API, esas rutas daban 404, y un 404 tampoco se guarda. Sí se comprobó la
+cabecera que la activa: `private, no-cache, no-store, max-age=0, must-revalidate` en
+`/clasificacion/cno` y en `/inicio/politica-de-privacidad`.
+
+> **Trampa para quien pruebe esto con Chrome headless en este equipo:** si el perfil
+> (`--user-data-dir`) queda en una ruta larga como el scratchpad, el service worker nunca se
+> instala, y sin ningún error en la página. El motivo es que CacheStorage anida unos 140
+> caracteres dentro del perfil y se pasa del límite de 260 de Windows. Solo lo delata el
+> dominio `ServiceWorker` de CDP: `Failed to execute 'open' on 'CacheStorage': Unexpected
+> internal error`. Con el perfil en `%LOCALAPPDATA%\Temp\olo-pwa-<puerto>` funciona.
+
+**Pendiente al cierre:**
+- Probar la instalación en el servidor real, por el túnel (https) y desde un celular.
+  Falta confirmar que el aviso de Microsoft (*You are about to connect to a developer
+  tunnel*) no se pone en lugar del manifiesto: el navegador lo pide sin cookies.
+  `docker/7-despliegue.md` tiene las filas de A8 y una entrada en «Solución de problemas».
+- Si se quiere que `/[slug]` y las otras tres se vean sin conexión, pasarlas a ISR (arriba).
+- Si un cambio en un `sw.js` altera qué se guarda, subir su `VERSION`: así la versión nueva
+  borra las cachés de la anterior al activarse.
+
+---
+
 ## sesión 24-09-2026 (8.ª parte): menos texto y un flag de color por estado en «Criterios de clasificación»
 
 **Qué era.** El usuario pidió bajar la carga cognitiva de la tarjeta: quitar texto redundante,
