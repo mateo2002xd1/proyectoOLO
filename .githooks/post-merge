@@ -1,0 +1,6 @@
+#!/bin/sh
+# Después de un `git pull` o un merge: cuenta qué cambió en la estructura (carpetas,
+# rutas, endpoints, librerías, migraciones) y deja el mapa al día en el árbol de trabajo.
+command -v node >/dev/null 2>&1 || exit 0
+node scripts/mapa/generar-mapa.mjs --comparar ORIG_HEAD HEAD || true
+exit 0

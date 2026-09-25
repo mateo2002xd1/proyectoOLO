@@ -1,0 +1,6 @@
+#!/bin/sh
+# `git pull --rebase` no dispara post-merge sino este hook: mismo aviso que post-merge.
+[ "$1" = "rebase" ] || exit 0
+command -v node >/dev/null 2>&1 || exit 0
+node scripts/mapa/generar-mapa.mjs --comparar ORIG_HEAD HEAD || true
+exit 0

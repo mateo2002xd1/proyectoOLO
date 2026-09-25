@@ -1,0 +1,28 @@
+#!/bin/sh
+# Antes de cada commit: regenera docs/13-mapa-del-proyecto.md con lo que está en staging
+# (no con el árbol de trabajo) y lo mete en el mismo commit. Así el mapa cambia en el
+# commit que cambió la estructura, y su diff dice qué carpeta, librería o ruta entró.
+#
+# Nunca bloquea un commit: el mapa es un plano, no un control.
+
+# `git commit -- rutas` arma un índice temporal solo con esas rutas; añadir el mapa ahí
+# lo dejaría descuadrado con el índice real. En ese caso se salta y lo pone al día el
+# siguiente commit normal.
+case "$GIT_INDEX_FILE" in
+  *next-index*)
+    echo "mapa: commit de rutas sueltas; el mapa se pone al día en el próximo commit."
+    exit 0
+    ;;
+esac
+
+if ! command -v node >/dev/null 2>&1; then
+  echo "mapa: no se encontró node; el mapa no se regeneró."
+  exit 0
+fi
+
+node scripts/mapa/generar-mapa.mjs --desde index --hook || {
+  echo "mapa: no se pudo regenerar; el commit sigue igual."
+  exit 0
+}
+git add docs/13-mapa-del-proyecto.md
+exit 0

@@ -15,3 +15,5 @@ Dockerfile      text eol=lf
 *.template      text eol=lf
 .env.example    text eol=lf
 docker-compose*.yml text eol=lf
+# Los hooks de git los ejecuta el `sh` de Git también en Windows, y con CRLF fallan igual.
+.githooks/*     text eol=lf

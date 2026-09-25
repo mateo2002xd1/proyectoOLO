@@ -205,6 +205,73 @@ Total: 29 de 29 comprobaciones con el código nuevo.
 
 ---
 
+## sesión 25-09-2026: `13-mapa-del-proyecto.md`, el plano de cómo está el proyecto, al día en cada commit (4.ª parte)
+
+**Qué era.** El usuario notó que la arquitectura de carpetas no está bien definida y pidió
+«un mapa del proyecto» que se actualice solo cada vez que aparezca una carpeta, una
+librería o un renombre, corriendo al hacer `git status`. Se separaron dos planos que la
+documentación venía mezclando: **cómo debe estar** el proyecto (norma: lo deciden
+personas, en los `.md`) y **cómo está** (estado: lo puede escribir un script). El mapa es
+el segundo. Eligió: actualizar en commit y en pull, versionado para el equipo, con
+carpetas, rutas, endpoints, librerías y base de datos, y que las carpetas nuevas salgan
+marcadas hasta que alguien diga para qué son.
+
+### Qué quedó
+
+| Pieza | Qué hace |
+|---|---|
+| `scripts/mapa/generar-mapa.mjs` | Escribe `13-mapa-del-proyecto.md` a partir del código, en 0,3 s y sin dependencias. Lee del árbol de trabajo, del índice o de un commit (`git cat-file --batch`, una sola llamada). Sin fecha ni hash a propósito: solo cambia cuando cambia la estructura |
+| `13-mapa-del-proyecto.md` | Resumen por app; carpetas sin descripción; árbol de carpetas con el propósito de cada una; features y su anatomía; rutas de Next con su URL; endpoints de la API con sus protecciones (🔓 si no hay sesión ni permiso a la vista); librerías por app y quién usa cada paquete de `packages/`; migraciones en el orden del manifiesto (avisa si una no está registrada) y modelos con su tabla |
+| `scripts/mapa/descripciones.md` | Para qué es cada carpeta, una línea por carpeta, escrito por personas. Sembrado con lo que ya decían `1-guia` y el código. `components/`, `hooks/`, `services/`, `lib/` y `model/` dentro de una feature ya los define la anatomía de `2-convenciones` §2.4 |
+| `.githooks/pre-commit` | Regenera el mapa **con lo que está en staging** y lo mete en el mismo commit. Nunca bloquea un commit. En `git commit -- rutas` se salta (el índice temporal quedaría descuadrado) y lo pone al día el commit siguiente |
+| `.githooks/post-merge` y `post-rewrite` | Después de un `pull` (con merge o con rebase) dicen qué cambió: carpetas, rutas, endpoints, migraciones y librerías (nuevas o de otra versión), y dejan el mapa al día |
+| `.gitattributes` | `.githooks/*` en LF: con CRLF el `sh` de Git falla igual que los `.sh` de Docker |
+| `README.md` | El mapa en la tabla de documentación, con el comando de activación |
+| `auditor-arquitectura` | Usa el mapa para ubicarse y trata una carpeta nueva sin descripción como una carpeta sin lugar definido |
+
+**`git status` no se puede enganchar**: Git no tiene hook para un comando que solo mira.
+Commit y pull son mejores momentos: el mapa cambia en el mismo commit que cambió la
+estructura, y su diff dice qué entró.
+
+**Un script y no un agente de IA**: tarda 0,3 s en vez de minutos por commit, no cuesta
+nada, y da el mismo resultado para el mismo código, así que su diff solo muestra lo que
+de verdad cambió.
+
+**Corregido de paso en `/auditar`:** el chequeo de rutas buscaba `validar(`, pero el
+middleware se llama `validarCuerpo(`. Habría marcado como «sin validar» cada `POST` que
+sí valida.
+
+### Verificado
+
+| Prueba | Resultado |
+|---|---|
+| Generar en el repo | 0,3 s; 108 carpetas en las tres apps, 5 features, 67 rutas de Next, 77 endpoints, 37 migraciones, 17 modelos |
+| Hooks en una **copia desechable** del repo (no en el de trabajo, que tenía cambios en staging) | Commit con una feature nueva: el mapa entró en el mismo commit con `reportes/` marcada «⚠ sin descripción» y el árbol quedó limpio |
+| `git commit -- ruta` | Se salta con aviso; el commit siguiente pone el mapa al día |
+| `git commit -a` | El mapa entra en el mismo commit (`zod` nuevo en la intranet) |
+| `git merge` de una rama con cambios de estructura | Imprime `+ ruta /reportes`, `+ endpoint GET /api/audit-logs/resumen`, `+ migración 038-reportes`, `+ librería chart.js@^4.4.0`, `~ librería next: ^16.3.0 → ^16.4.0`; la migración sin registrar sale en el mapa como «no corre» |
+
+**Tres carpetas quedaron sin descripción, a propósito:** no están documentadas en ningún
+lado. `sitio-web/data_temporal/` (los catálogos JSON de la CNO que lee el buscador de
+ocupaciones), `sitio-web/src/features/sitio-web/fuentes-futuras-empleo/` e
+`intranet/data/`, que además versiona `intranet.db-shm` e `intranet.db-wal`, archivos
+temporales de SQLite.
+
+> **Los hooks no llegan solos con el `pull`.** Viven en la configuración local de cada
+> clon: cada persona corre una vez `git config core.hooksPath .githooks`. Quien no lo
+> active no rompe nada, pero sus commits llevan el mapa viejo; el siguiente que lo tenga
+> activo lo pone al día.
+
+**Pendiente al cierre:**
+- Activar los hooks en cada clon (`git config core.hooksPath .githooks`).
+- Describir las tres carpetas de arriba y decidir si `intranet/data/*.db-*` sale del repo.
+- Cuando se defina la arquitectura de carpetas en los `.md`, revisar `descripciones.md`
+  con esa definición: hoy es una transcripción de la guía, no una decisión nueva.
+- Opcional: que `1-guia` §4 deje de copiar árboles a mano y apunte al mapa, que se
+  desactualiza solo mucho menos (la guía dice 26 migraciones; hay 37).
+
+---
+
 ## sesión 25-09-2026: «Descargar formato» en Actualizaciones (2.ª parte)
 
 **Qué era.** Quien carga datos en Actualizaciones no tenía de dónde sacar el Excel con las

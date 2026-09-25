@@ -60,6 +60,7 @@ Leer en este orden. Los tres primeros son de lectura obligatoria antes de tocar 
 | [9-accesibilidad.md](docs/9-accesibilidad.md) | **Nivel AA y Resolución 1519 de 2020.** Estado auditado, decisiones de paleta y plan por fases (RF-14). |
 | [5-tableros-bi.md](docs/5-tableros-bi.md) | Tableros Power BI embebidos: URLs, dónde se usan y controles de seguridad (RF-08). |
 | [6-auditoria.md](docs/6-auditoria.md) | Bitácora de sesiones de trabajo. |
+| [13-mapa-del-proyecto.md](docs/13-mapa-del-proyecto.md) | **Cómo está el proyecto hoy, generado del código:** carpetas con su propósito, features, rutas, endpoints con sus protecciones, librerías y base de datos. No se edita a mano: se regenera solo en cada commit y cada `pull`. Los hooks que lo hacen se activan la primera vez que corres `npm run dev` en cualquier app. Para qué es cada carpeta se escribe en `scripts/mapa/descripciones.md`. |
 | [docker/guia-pws.md](docker/guia-pws.md) | **Empieza aquí si nunca usaste Docker.** Paso a paso explicado: instalar Docker, construir imágenes, levantar contenedores y correr las migraciones. |
 | [docker/guia-bash.md](docker/guia-bash.md) | Docker, Nginx, SSL, variables de entorno (despliegue en servidor real). |
 
