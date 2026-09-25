@@ -46,6 +46,10 @@ export interface LogoPie {
 
 export interface IntranetFooterProps {
   logos?: LogoPie[];
+  /** Símbolo de separación entre logos. Si está vacío, no se pinta nada. */
+  separadorLogos?: string;
+  /** Tamaño del separador en píxeles. */
+  tamanoSeparadorLogos?: number;
   columnas?: ColumnaPie[];
   /** Vacío usa el navy de `.intranet-footer` en globals.css. */
   fondo?: string;
@@ -91,6 +95,8 @@ function plantillaDeColumnas(conLogos: boolean, cuantasColumnas: number): string
 
 export function IntranetFooter({
   logos = LOGOS_POR_DEFECTO,
+  separadorLogos = '|',
+  tamanoSeparadorLogos = 30,
   columnas = COLUMNAS_POR_DEFECTO,
   fondo,
 }: IntranetFooterProps) {
@@ -114,7 +120,18 @@ export function IntranetFooter({
               {logosVisibles.map((logo, indice) => (
                 <Fragment key={`${logo.src}-${indice}`}>
                   {/* La barra separa logos, así que no va antes del primero. */}
-                  {indice > 0 && <span>|</span>}
+                  {indice > 0 && separadorLogos && (
+                    <span 
+                      style={{ 
+                        display: 'inline-block', 
+                        fontSize: '20px', 
+                        lineHeight: 1, 
+                        transform: tamanoSeparadorLogos ? `scaleY(${tamanoSeparadorLogos / 20})` : undefined 
+                      }}
+                    >
+                      {separadorLogos}
+                    </span>
+                  )}
                   {/* src editable desde el editor: next/image exigiria dimensiones fijas */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img

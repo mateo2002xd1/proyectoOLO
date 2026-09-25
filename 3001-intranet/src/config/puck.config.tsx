@@ -1092,10 +1092,23 @@ const puckConfigBase: Config = {
     },
     IntranetFooter: {
       label: 'Pie de página',
+      defaultProps: {
+        logos: [],
+        columnas: [],
+        separadorLogos: '|',
+        tamanoSeparadorLogos: 30,
+        fondo: ''
+      },
       // El pie no tenía ni un campo: se ponía o se quitaba y punto, y para cambiar
       // un teléfono había que tocar el componente. Aquí está todo su contenido.
       fields: {
         fondo: campoColor('Color de fondo (opcional)'),
+        separadorLogos: { type: 'text', label: 'Símbolo separador de logos' },
+        tamanoSeparadorLogos: {
+          type: 'select',
+          label: 'Tamaño del separador (px)',
+          options: [20, 25, 30, 35, 40].map(v => ({ label: `${v}px`, value: v }))
+        },
         logos: {
           type: 'array',
           label: 'Logos',
@@ -1152,14 +1165,6 @@ const puckConfigBase: Config = {
             return 'Columna';
           },
         },
-      },
-      // Repiten los valores por defecto del componente: el pie que se ve hoy. Sin
-      // esto, arrastrar el bloque al lienzo daría un pie vacío en vez de uno que
-      // ya trae el contenido bueno y solo hay que retocar.
-      defaultProps: {
-        fondo: '',
-        logos: LOGOS_POR_DEFECTO,
-        columnas: COLUMNAS_POR_DEFECTO,
       },
       render: (props: BlockRender<ComponentProps<typeof IntranetFooter>>) => (
         <IntranetFooter {...props} />

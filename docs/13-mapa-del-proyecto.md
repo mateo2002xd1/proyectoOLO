@@ -251,9 +251,9 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `/editor/[slug]` | página |  | `editor/[slug]/page.tsx` |
 | `/first-login` | página | `(auth)` | `(auth)/first-login/page.tsx` |
 | `/inicio` | página | `(public)` | `(public)/inicio/page.tsx` |
-| `/inicio/politica-de-privacidad` | página | `(public)` | `(public)/inicio/politica-de-privacidad/page.tsx` |
 | `/login` | página | `(auth)` | `(auth)/login/page.tsx` |
 | `/manifest.webmanifest` | metadatos |  | `manifest.ts` |
+| `/politica-de-privacidad` | página | `(public)` | `(public)/politica-de-privacidad/page.tsx` |
 | `/preview/[slug]` | página |  | `preview/[slug]/page.tsx` |
 | `/programas-sobresalientes` | página | `(public)` | `(public)/programas-sobresalientes/page.tsx` |
 | `/recovery` | página | `(auth)` | `(auth)/recovery/page.tsx` |

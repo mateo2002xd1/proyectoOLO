@@ -77,28 +77,8 @@ const nextConfig = {
         permanent: false,
       },
       {
-        /**
-         * `/privacidad` era un alias que servía el mismo componente que
-         * `/politica-de-privacidad` bajo otra URL — contenido duplicado bajo dos
-         * rutas. Ahora que `politica-de-privacidad` es una sección Puck editable
-         * de verdad (con su propia fila en `paginas`), el alias no tiene contenido
-         * propio que editar: redirige a la canónica en vez de mostrar una copia
-         * que nunca se actualizaría con lo que se publique.
-         */
         source: '/privacidad',
-        destination: '/inicio/politica-de-privacidad',
-        permanent: false,
-      },
-      {
-        /**
-         * La política se movió bajo `/inicio`. Sin este redirect la URL vieja no daría
-         * 404: la atraparía el comodín `[slug]`, que busca por slug y el slug no
-         * cambió, así que serviría la misma página por segunda vez y sin su metadata.
-         * También es la red para los enlaces que no se pueden corregir en el código:
-         * los que ya están guardados en el pie publicado de la base de datos.
-         */
-        source: '/politica-de-privacidad',
-        destination: '/inicio/politica-de-privacidad',
+        destination: '/politica-de-privacidad',
         permanent: false,
       },
       {
