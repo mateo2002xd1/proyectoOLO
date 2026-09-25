@@ -124,6 +124,66 @@ compañeros. Si el chequeo sin IA tiene que poder correrlo cualquiera, hay que s
 
 ---
 
+## sesión 25-09-2026: `npm run dev` deja la app lista sola, también después del cambio de nombre de carpetas (8.ª parte)
+
+**Qué era.** Las apps pasaron a llamarse `3000-sitio-web`, `3001-intranet` y
+`4000-api-backend`. Git solo muda lo que está en el repositorio: al hacer `git pull`,
+cada compañero se queda con sus `.env`, sus archivos subidos y su `node_modules` en la
+carpeta vieja, y la app nueva arranca sin configuración. Se pidió que `npm run dev` lo
+resolviera sin que nadie configure nada.
+
+### Qué cambió en `scripts/sincronizar-paquetes-locales.mjs`
+
+Ya corría en el `predev` y el `prebuild` de las tres apps (`npm run sync:paquetes`).
+Ahora hace cinco pasos, cada uno solo si hace falta:
+
+| Paso | Cuándo actúa | Qué hace |
+|---|---|---|
+| 1. Carpeta vieja | Existe `../sitio-web` (u `intranet`, `api-backend`) **sin** `package.json` | Mueve `node_modules`. Copia sin pisar nada lo demás: los `.env`, `public/storage` y `uploads/`. No trae `.next` ni `dist`. Deja `CARPETA-MUDADA.txt` para no repetirse |
+| 2. `dist/` de `@olo/*` | `src/` más nuevo que `dist/` | Lo de antes, sin cambios |
+| 3. Instalar | `node_modules/.package-lock.json` (lo que npm instaló) no coincide con `package-lock.json`, una librería de `package.json` no está instalada, o la copia de `@olo/*` difiere de `packages/` | Un solo `npm install` para todo |
+| 4. `.next` | Es de otra carpeta, de otra versión de Next o de otro `package-lock.json`, o no tiene sello | Lo borra. El sello queda en `.next/cache/olo-sello.json`, que `next build` no vacía |
+| 5. Hooks | Existe `.githooks` y el clon no tiene `core.hooksPath` | `git config core.hooksPath .githooks` |
+
+**Descartado: borrar `.next` en cada arranque**, que fue lo que se pidió al principio.
+Cada página compilaría de cero en cada `npm run dev`, y eso son segundos cada vez. Con el
+sello se borra justo cuando puede estar viejo.
+
+### Verificado
+
+| Qué | Resultado |
+|---|---|
+| Comparación contra el `package-lock` en las tres apps reales | 0 diferencias, 4–7 ms. Se saltan 90 opcionales de otros sistemas operativos, que npm nunca instala aquí y harían reinstalar en cada arranque |
+| 10 escenarios en un repo de prueba en el scratchpad, con un npm falso que registra las llamadas | **10/10**, detalle abajo |
+
+Los 10 escenarios fueron:
+
+- el primer arranque tras el pull;
+- el segundo arranque, sin hacer nada;
+- una librería nueva en el lock;
+- una librería nueva solo en `package.json`;
+- un cambio en `@olo`;
+- una versión nueva de Next;
+- la app movida de carpeta;
+- `OLO_SKIP_SYNC=1`;
+- una carpeta vieja que es una rama anterior;
+- un clon con hooks propios.
+
+> **El primer `npm run dev` de cada uno borra `.next` una vez**, porque todavía no tiene
+> sello. Es a propósito: en quien movió las carpetas, esa caché guarda las rutas viejas.
+
+**Pendiente al cierre:**
+
+- **El paso 5 activa hooks que todavía usan rutas viejas.** El `pre-commit` del mapa no
+  bloquea el commit, pero:
+  - hasta que se ponga al día con `docs/` y los nombres nuevos, imprime «no se pudo
+    regenerar»;
+  - o, si la mudanza no está en staging, deja un `13-mapa-del-proyecto.md` en la raíz.
+- **Nombre del script.** Ya no solo sincroniza paquetes. Renombrarlo a algo como
+  `preparar-app.mjs` toca los tres `package.json` y los comentarios de los Dockerfile.
+
+---
+
 ## sesión 25-09-2026: un solo criterio para borrar archivos de páginas (4.ª parte)
 
 **Qué era.** Al integrar `OLO/dev` (merge `6bebc71`) entró el borrado de archivos de
