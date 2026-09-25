@@ -1,9 +1,9 @@
 **/.git
 **/.next
 **/node_modules
-api-backend/dist
-sitio-web/dist
-intranet/dist
+4000-api-backend/dist
+3000-sitio-web/dist
+3001-intranet/dist
 packages/*/dist
 **/build
 **/.env

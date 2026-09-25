@@ -30,18 +30,18 @@ Una plataforma de **tres capas** bajo un modelo **composición visual**:
 
 Ningún frontend toca la base de datos, el filesystem ni Redis directamente: todo pasa por la API, que valida, autoriza y controla qué entra y sale.
 
-**El diagrama de capas, los flujos de datos y el modelo de contenido están en [1-guia-del-proyecto.md](1-guia-del-proyecto.md) §3.** No se repiten aquí a propósito: cuando el mismo contenido vive en dos archivos, uno de los dos queda desactualizado.
+**El diagrama de capas, los flujos de datos y el modelo de contenido están en [1-guia-del-proyecto.md](docs/1-guia-del-proyecto.md) §3.** No se repiten aquí a propósito: cuando el mismo contenido vive en dos archivos, uno de los dos queda desactualizado.
 
 ### Arquitectura de carpetado
 
 | Proyecto | Arquitectura |
 |---|---|
-| `api-backend/` | Clean Architecture (capas con dependencia unidireccional) |
-| `sitio-web/` | Feature-based + App Router (público + panel admin) |
-| `intranet/` | Feature-based + App Router (directores/subdirectores) |
+| `4000-api-backend/` | Clean Architecture (capas con dependencia unidireccional) |
+| `3000-sitio-web/` | Feature-based + App Router (público + panel admin) |
+| `3001-intranet/` | Feature-based + App Router (directores/subdirectores) |
 | `packages/` | Código compartido por ambos frontends |
 
-Detalle completo en [1-guia-del-proyecto.md](1-guia-del-proyecto.md) §4.
+Detalle completo en [1-guia-del-proyecto.md](docs/1-guia-del-proyecto.md) §4.
 
 ---
 
@@ -51,17 +51,17 @@ Leer en este orden. Los tres primeros son de lectura obligatoria antes de tocar 
 
 | Documento | Qué responde |
 |---|---|
-| [1-guia-del-proyecto.md](1-guia-del-proyecto.md) | Arquitectura del sistema y de carpetas. Mapa requerimiento → dónde vive. Convenciones no negociables. |
-| [2-convenciones-del-proyecto.md](2-convenciones-del-proyecto.md) | Cómo se escribe el código: nomenclatura, tipos, errores, comentarios. |
-| [8-ciclo-editorial.md](8-ciclo-editorial.md) | **Cómo se organiza por dentro un dominio.** El ciclo borrador → revisión → publicado, y el plan de migración por fases. |
-| [11-base-de-datos.md](11-base-de-datos.md) | **El modelo de datos.** Las 20 tablas, por qué existe cada una, las invariantes que declara el esquema y lo que deliberadamente no es tabla. |
-| [3-seguridad-del-proyecto.md](3-seguridad-del-proyecto.md) | Superficies de ataque y controles. |
-| [4-reglas.md](4-reglas.md) | Reglas operativas para mover o crear carpetas sin romper nada. |
-| [9-accesibilidad.md](9-accesibilidad.md) | **Nivel AA y Resolución 1519 de 2020.** Estado auditado, decisiones de paleta y plan por fases (RF-14). |
-| [5-tableros-bi.md](5-tableros-bi.md) | Tableros Power BI embebidos: URLs, dónde se usan y controles de seguridad (RF-08). |
-| [6-auditoria.md](6-auditoria.md) | Bitácora de sesiones de trabajo. |
-| [docker/0-manual-principiante.md](docker/0-manual-principiante.md) | **Empieza aquí si nunca usaste Docker.** Paso a paso explicado: instalar Docker, construir imágenes, levantar contenedores y correr las migraciones. |
-| [7-despliegue.md](docker/7-despliegue.md) | Docker, Nginx, SSL, variables de entorno (despliegue en servidor real). |
+| [1-guia-del-proyecto.md](docs/1-guia-del-proyecto.md) | Arquitectura del sistema y de carpetas. Mapa requerimiento → dónde vive. Convenciones no negociables. |
+| [2-convenciones-del-proyecto.md](docs/2-convenciones-del-proyecto.md) | Cómo se escribe el código: nomenclatura, tipos, errores, comentarios. |
+| [8-ciclo-editorial.md](docs/8-ciclo-editorial.md) | **Cómo se organiza por dentro un dominio.** El ciclo borrador → revisión → publicado, y el plan de migración por fases. |
+| [11-base-de-datos.md](docs/11-base-de-datos.md) | **El modelo de datos.** Las 20 tablas, por qué existe cada una, las invariantes que declara el esquema y lo que deliberadamente no es tabla. |
+| [3-seguridad-del-proyecto.md](docs/3-seguridad-del-proyecto.md) | Superficies de ataque y controles. |
+| [4-reglas.md](docs/4-reglas.md) | Reglas operativas para mover o crear carpetas sin romper nada. |
+| [9-accesibilidad.md](docs/9-accesibilidad.md) | **Nivel AA y Resolución 1519 de 2020.** Estado auditado, decisiones de paleta y plan por fases (RF-14). |
+| [5-tableros-bi.md](docs/5-tableros-bi.md) | Tableros Power BI embebidos: URLs, dónde se usan y controles de seguridad (RF-08). |
+| [6-auditoria.md](docs/6-auditoria.md) | Bitácora de sesiones de trabajo. |
+| [docker/guia-pws.md](docker/guia-pws.md) | **Empieza aquí si nunca usaste Docker.** Paso a paso explicado: instalar Docker, construir imágenes, levantar contenedores y correr las migraciones. |
+| [docker/guia-bash.md](docker/guia-bash.md) | Docker, Nginx, SSL, variables de entorno (despliegue en servidor real). |
 
 **La API se documenta sola.** Con el backend levantado, `http://localhost:4000/api/docs`
 abre Swagger UI —los endpoints con sus parámetros, sus respuestas y el permiso que exige
@@ -69,4 +69,4 @@ cada uno, y un botón para probarlos— y `/api/docs.json` devuelve el documento
 crudo para Postman o para generar clientes. Las descripciones salen de comentarios
 `@openapi` escritos junto a cada ruta, no de una lista aparte, para que no se
 desincronicen. En producción está apagada salvo que se encienda a mano: ver
-[7-despliegue.md](docker/7-despliegue.md).
+[guia-bash.md](docker/guia-bash.md).

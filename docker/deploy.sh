@@ -5,7 +5,7 @@
 # Opera sobre `docker/docker-compose.servidor.yml`: la pila de produccion publicada con un
 # tunel. Es la unica que queda en el repo; las de dominio propio con SSL y las de
 # desarrollo se retiraron el 2026-09-23 y siguen en el historial de git (ver
-# docker/7-despliegue.md).
+# docker/guia-bash.md).
 
 set -Eeuo pipefail
 
@@ -53,7 +53,7 @@ morir() { rojo "ERROR: $*"; exit 1; }
 #     nginx) estan escritas como si vivieran en la raiz -- porque esta bandera hace
 #     que Compose las resuelva contra la raiz (el `cd` de arriba) en vez de contra la
 #     carpeta del propio archivo compose. Sin esto, `context: .` apuntaria a `docker/`
-#     y el build no encontraria `api-backend/`, `sitio-web/`, etc.
+#     y el build no encontraria `4000-api-backend/`, `3000-sitio-web/`, etc.
 componer() { MSYS_NO_PATHCONV=1 docker compose --project-directory . --env-file "$ENV_FILE" -f "$COMPOSE_FILE" "$@"; }
 
 # `--profile tools` es lo que incluye `migraciones`: sin el, `build` se salta los servicios
@@ -168,7 +168,7 @@ comprobar_entorno() {
 # Migra el esquema, valida que el mapeo modelo-columna siga correcto y reconcilia el
 # catalogo de permisos con el codigo. Los tres pasos son idempotentes -correrlos de mas
 # no hace nada-, asi que start() y migrar() comparten esta misma secuencia sin duplicarla.
-# Antes eran pasos manuales (ver 7-despliegue.md); van aqui para que ningun empaquetado
+# Antes eran pasos manuales (ver docker/guia-bash.md); van aqui para que ningun empaquetado
 # deje el esquema o los permisos desincronizados de lo que dice el codigo.
 aplicar_migraciones() {
     componer up -d db
@@ -292,14 +292,14 @@ migrar() {
     verde "Migraciones al dia"
 }
 
-SEED="api-backend/seed/contenido-inicial.sql"
-SEED_ROLES="api-backend/seed/roles-y-permisos.sql"
+SEED="4000-api-backend/seed/contenido-inicial.sql"
+SEED_ROLES="4000-api-backend/seed/roles-y-permisos.sql"
 
 sembrar() {
     comprobar_requisitos
     comprobar_entorno
 
-    [ -f "$SEED" ] || morir "No existe '$SEED'. Regeneralo con: npm run seed:generar (en api-backend/)"
+    [ -f "$SEED" ] || morir "No existe '$SEED'. Regeneralo con: npm run seed:generar (en 4000-api-backend/)"
 
     local usuario base
     usuario=$(leer_env POSTGRES_USER)
@@ -383,7 +383,7 @@ importar() {
 
     local origen usuario base volcado respuesta tabla
     origen=$(leer_env ORIGEN_DATABASE_URL)
-    [ -n "$origen" ] || morir "Falta ORIGEN_DATABASE_URL en $ENV_FILE: la conexion a la base de donde se copian los datos (ver docker/7-despliegue.md)."
+    [ -n "$origen" ] || morir "Falta ORIGEN_DATABASE_URL en $ENV_FILE: la conexion a la base de donde se copian los datos (ver docker/guia-bash.md)."
     # Con sslmode=verify-* libpq busca el certificado raiz en ~/.postgresql/root.crt, que
     # el contenedor no tiene; `system` le dice que use los del sistema.
     if [[ "$origen" == *sslmode=verify-* && "$origen" != *sslrootcert=* ]]; then

@@ -6,7 +6,7 @@
 #
 # Es el único compose del repo. Se usa siempre a través de `./docker/deploy.sh`, que
 # añade `--project-directory`, el `.env` y el perfil de migraciones. Guía completa:
-# docker/7-despliegue.md.
+# docker/guia-bash.md.
 
 name: olo-web-app
 
@@ -53,7 +53,7 @@ services:
   api-backend:
     build:
       context: .
-      dockerfile: api-backend/Dockerfile
+      dockerfile: 4000-api-backend/Dockerfile
     container_name: api
     restart: unless-stopped
     env_file:
@@ -82,10 +82,11 @@ services:
       #  - */public/storage: al publicar o revertir una página la API copia y mueve
       #    archivos entre uploads/ y backup/. Resuelve esas carpetas subiendo cuatro
       #    niveles desde dist/infrastructure/storage (`backup-uploads.service.ts`), o sea desde
-      #    la raíz del contenedor: de ahí /sitio-web y /intranet.
-      - ./api-backend/uploads:/app/uploads
-      - ./sitio-web/public/storage:/sitio-web/public/storage
-      - ./intranet/public/storage:/intranet/public/storage
+      #    la raíz del contenedor: de ahí /3000-sitio-web y /3001-intranet. Esos nombres
+      #    salen de `CARPETA_DE_APP` en ese archivo: si cambian allí, cambian aquí.
+      - ./4000-api-backend/uploads:/app/uploads
+      - ./3000-sitio-web/public/storage:/3000-sitio-web/public/storage
+      - ./3001-intranet/public/storage:/3001-intranet/public/storage
     depends_on:
       db:
         condition: service_healthy
@@ -99,7 +100,7 @@ services:
   migraciones:
     build:
       context: .
-      dockerfile: api-backend/Dockerfile
+      dockerfile: 4000-api-backend/Dockerfile
       target: builder
     profiles: ["tools"]
     command: ["npm", "run", "migrate"]
@@ -118,7 +119,7 @@ services:
   sitio-web:
     build:
       context: .
-      dockerfile: sitio-web/Dockerfile
+      dockerfile: 3000-sitio-web/Dockerfile
       args:
         BACKEND_URL: http://api-backend:4000
         # Estas dos las usa el NAVEGADOR y Next las incrusta en el bundle al compilar:
@@ -140,7 +141,7 @@ services:
       # El standalone corre en /app/app (ver el Dockerfile). Montar la carpeta del repo
       # y no un volumen de Docker hace que lo subido se vea en el Explorador de Windows,
       # sobreviva a cualquier rebuild y se respalde copiando una carpeta.
-      - ./sitio-web/public/storage:/app/app/public/storage
+      - ./3000-sitio-web/public/storage:/app/app/public/storage
     depends_on:
       - api-backend
     networks:
@@ -149,7 +150,7 @@ services:
   intranet:
     build:
       context: .
-      dockerfile: intranet/Dockerfile
+      dockerfile: 3001-intranet/Dockerfile
       args:
         API_BACKEND_URL: http://api-backend:4000
         NEXT_PUBLIC_SITIO_WEB_URL: ${SITIO_WEB_URL_PUBLICA}
@@ -162,7 +163,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       NEXT_PUBLIC_SITIO_WEB_URL: ${SITIO_WEB_URL_PUBLICA}
     volumes:
-      - ./intranet/public/storage:/app/app/public/storage
+      - ./3001-intranet/public/storage:/app/app/public/storage
     depends_on:
       - api-backend
     networks:
