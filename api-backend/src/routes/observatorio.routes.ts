@@ -183,6 +183,33 @@ router.delete('/cargas/:id', ObservatorioController.eliminarCarga);
 
 /**
  * @openapi
+ * /api/observatorio/formatos/{formato}:
+ *   get:
+ *     tags: [Observatorio]
+ *     summary: Descarga el Excel de ejemplo de una carga
+ *     description: |
+ *       El archivo con las hojas y columnas que espera cada carga de "Actualizaciones",
+ *       tomado de `uploads/formatos-carga/`. Solo se sirven los formatos de la lista:
+ *       la ruta lleva un identificador, nunca un nombre de archivo.
+ *     parameters:
+ *       - name: formato
+ *         in: path
+ *         required: true
+ *         schema: { type: string, enum: [programas-sobresalientes, tendencia-ocupacional] }
+ *     responses:
+ *       200:
+ *         description: El Excel, como adjunto `formato-{formato}.xlsx`.
+ *         content:
+ *           application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+ *             schema: { type: string, format: binary }
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
+ *       404: { description: Formato desconocido o sin archivo en el servidor. }
+ */
+router.get('/formatos/:formato', ObservatorioController.descargarFormato);
+
+/**
+ * @openapi
  * /api/observatorio/tendencia-ocupacional/cargas:
  *   get:
  *     tags: [Observatorio]

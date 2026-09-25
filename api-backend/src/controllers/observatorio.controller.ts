@@ -4,6 +4,7 @@ import { listarCargasObservatorio, obtenerCargaObservatorio } from '../use-cases
 import { eliminarCargaObservatorio, ErrorAlEliminarCarga } from '../use-cases/observatorio/eliminar-carga.usecase';
 import { consultarObservatorioActual } from '../use-cases/observatorio/consultar-actual.usecase';
 import { consultarFuentesFuturasActual } from '../use-cases/observatorio/consultar-fuentes-futuras-actual.usecase';
+import { resolverFormatoDeCarga, ErrorDeFormato } from '../use-cases/observatorio/formatos-de-carga';
 import { idReferenciable } from '../shared/auditoria-request';
 
 export const ObservatorioController = {
@@ -66,6 +67,26 @@ export const ObservatorioController = {
       }
       console.error('[observatorio] Error al eliminar la carga:', error);
       res.status(500).json({ error: 'Error al eliminar la carga.' });
+    }
+  },
+
+  /** Excel de ejemplo de una tarjeta de "Actualizaciones" — las hojas y columnas que espera su carga. */
+  async descargarFormato(req: Request, res: Response) {
+    try {
+      const { ruta, nombreDescarga } = await resolverFormatoDeCarga(req.params.formato as string);
+      // Pide sesión de Administrador: que ningún intermediario guarde una copia.
+      res.set('Cache-Control', 'private, no-cache');
+      res.download(ruta, nombreDescarga, { cacheControl: false }, (error) => {
+        if (!error) return;
+        console.error('[observatorio] Error al enviar el formato de carga:', error);
+        if (!res.headersSent) res.status(500).json({ error: 'Error al descargar el formato.' });
+      });
+    } catch (error) {
+      if (error instanceof ErrorDeFormato) {
+        return res.status(error.status).json({ error: error.message });
+      }
+      console.error('[observatorio] Error al descargar el formato de carga:', error);
+      res.status(500).json({ error: 'Error al descargar el formato.' });
     }
   },
 
