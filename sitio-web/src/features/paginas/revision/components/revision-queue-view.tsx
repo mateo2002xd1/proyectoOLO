@@ -23,14 +23,7 @@ function enlaceDeVistaPrevia(pagina: PaginaEnRevision): string {
     : `/preview/${pagina.slug}`;
 }
 
-const CLASE_BOTON =
-  'h-9 rounded-[16px] border border-[#d0d5dd] px-3.5 text-sm font-medium text-zinc-700 transition hover:border-[#002237]/40 hover:bg-[#002237]/5 hover:text-[#002237] disabled:opacity-60 dark:border-[#2d3649] dark:text-zinc-200 dark:hover:bg-white/5 dark:hover:text-[#f6f6f6] inline-flex items-center gap-1.5';
 
-const CLASE_BOTON_PRIMARIO =
-  'h-9 rounded-[16px] bg-brand-interactive px-3.5 text-sm font-semibold text-white transition hover:bg-brand-interactive-hover disabled:cursor-not-allowed disabled:opacity-40 inline-flex items-center gap-1.5';
-
-const CLASE_BOTON_RECHAZAR =
-  'h-9 rounded-[16px] border border-red-200 bg-red-50 px-3.5 text-sm font-medium text-red-600 transition hover:border-red-300 hover:bg-red-100 disabled:opacity-60 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/40 inline-flex items-center gap-1.5';
 
 const fecha = (iso: string) => {
   try {
@@ -278,35 +271,35 @@ export function RevisionQueueView() {
                         href={enlaceDeVistaPrevia(pagina)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={CLASE_BOTON}
+                        title="Ver página"
+                        className="flex h-9 w-12 items-center justify-center rounded-[16px] bg-blue-500 text-white transition-colors hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                       >
                         <ExternalLink className="h-4 w-4" />
-                        Ver
                       </a>
                       <button
                         type="button"
                         disabled={busySlug === pagina.slug}
                         onClick={() => handleAprobar(pagina)}
-                        className={CLASE_BOTON_PRIMARIO}
+                        title="Aprobar"
+                        className="flex h-9 w-12 items-center justify-center rounded-[16px] bg-green-500 text-white transition-colors hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <CheckCircle className="h-4 w-4" />
-                        Aprobar
                       </button>
                       <button
                         type="button"
                         disabled={busySlug === pagina.slug}
                         onClick={() => abrirRechazar(pagina)}
-                        className={CLASE_BOTON_RECHAZAR}
+                        title="Rechazar"
+                        className="flex h-9 w-12 items-center justify-center rounded-[16px] bg-yellow-500 text-white transition-colors hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <XCircle className="h-4 w-4" />
-                        Rechazar
                       </button>
                       <button
                         type="button"
                         disabled={busySlug === pagina.slug}
                         onClick={() => abrirEliminar(pagina)}
                         title="Descartar esta versión sin publicar"
-                        className="h-9 w-9 inline-flex items-center justify-center rounded-[16px] text-zinc-400 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-40 dark:hover:bg-red-900/30 dark:hover:text-red-400"
+                        className="flex h-9 w-12 items-center justify-center rounded-[16px] bg-red-500 text-white transition-colors hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
