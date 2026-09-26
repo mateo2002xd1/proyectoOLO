@@ -34,7 +34,8 @@
     "probar:versionamiento": "ts-node scripts/verificaciones/probar-versionamiento.ts",
     "email:verificar": "ts-node scripts/verificaciones/verificar-politica-email.ts",
     "seed:generar": "ts-node scripts/semillas/generar-seed-contenido.ts",
-    "crear:superadmin": "ts-node scripts/semillas/crear-superadmin.ts"
+    "crear:superadmin": "ts-node scripts/semillas/crear-superadmin.ts",
+    "contenido:revisar": "ts-node scripts/puntuales/revisar-contenido-guardado.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

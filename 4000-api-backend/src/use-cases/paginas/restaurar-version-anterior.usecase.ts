@@ -8,6 +8,7 @@ import { restaurarArchivosDesdeBackup } from '../../infrastructure/storage/backu
 import { extraerRutasUploads } from '../../shared/rutas-uploads-en-contenido';
 import { logAudit, type ContextoAuditoria } from '../auditoria/audit.usecase';
 import { MOTIVO_DE_ARCHIVADO } from '../../shared/auditoria-resumen';
+import { sanitizarContenidoPuck } from '../../shared/sanitizar-contenido';
 import { BloqueoEdicionRepository } from '../../repositories/bloqueo-edicion.repository';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -100,9 +101,11 @@ export async function restaurarVersionAnterior(
       }
     );
 
-    // La versión archivada pasa a ser la publicada
+    // La versión archivada pasa a ser la publicada. Se sanea al restaurarla: pudo
+    // guardarse antes de que el saneo cubriera todo el contenido (2026-09-25).
     await versionArchivada.update(
       {
+        contenido: sanitizarContenidoPuck(versionArchivada.contenido),
         estado: 'publicado',
         publicadoEn: new Date(),
         publicadoPor: toUUID(userId),

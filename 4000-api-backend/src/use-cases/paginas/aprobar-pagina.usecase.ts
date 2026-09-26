@@ -6,6 +6,7 @@ import { respaldarArchivosAlPublicar } from '../../infrastructure/storage/backup
 import { extraerRutasUploads } from '../../shared/rutas-uploads-en-contenido';
 import { limpiarSubidasPendientes } from './limpiar-subidas-pendientes.usecase';
 import { SubidaPendiente } from '../../infrastructure/db/models';
+import { sanitizarContenidoPuck } from '../../shared/sanitizar-contenido';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const toUUID = (id: string) => (UUID_RE.test(id) ? id : null);
@@ -42,7 +43,10 @@ export const aprobarPagina = async (slug: string, userId: string, ambito: Ambito
   // una página tiene como máximo una versión publicada, y la base lo impone.
   await PaginaRepository.archivarVersionPublicada(pagina.id, tx);
 
+  // Se sanea otra vez al publicar: una versión guardada antes de que el saneo cubriera
+  // todo el contenido (2026-09-25) todavía puede traer HTML peligroso.
   await PaginaRepository.actualizarVersion(versionEnRevision, {
+    contenido: sanitizarContenidoPuck(versionEnRevision.contenido),
     estado: 'publicado',
     publicadoPor: toUUID(userId),
     publicadoEn: new Date(),

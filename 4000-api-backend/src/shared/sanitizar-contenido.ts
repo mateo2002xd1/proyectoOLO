@@ -1,22 +1,31 @@
 /**
  * Sanitización de contenido Puck antes de persistir en base de datos.
  *
- * Recorre la estructura JSON de bloques Puck y aplica DOMPurify sobre todos los
- * campos que pueden contener HTML libre (texto enriquecido, URLs, atributos de
- * elementos visuales). Previene XSS almacenado: un editor con cuenta comprometida
- * no puede inyectar scripts que se ejecuten para todos los visitantes.
+ * Recorre TODO el JSON de una página —`content`, `root`, `zones` y lo que haya dentro
+ * de cada prop, a cualquier profundidad— y pasa por DOMPurify cada texto que contenga
+ * `<`. Previene XSS almacenado: un editor con cuenta comprometida no puede inyectar
+ * scripts que se ejecuten para todos los visitantes.
+ *
+ * **Por qué `<` y no una lista de campos.** Hasta el 2026-09-25 se saneaban solo los
+ * campos con nombre de HTML (`content`, `titulo`, `texto`…), y la lista se quedaba
+ * atrás de los bloques. Tres huecos reales:
+ *   - el bloque «Texto enriquecido» guarda en `content` el objeto de EditorJS
+ *     (`{ blocks: [{ data: { text, items } }] }`), no un texto, y el objeto pasaba
+ *     sin tocar aunque `editorjs-wrapper.tsx` pinta ese `text` con `dangerouslySetInnerHTML`;
+ *   - los campos `richtext` llamados `intro` no estaban en la lista;
+ *   - los bloques dentro de una `DropZone` viven en `zones`, que no se recorría.
+ * Sin `<` no hay etiqueta que inyectar: un texto sin ese carácter se pinta igual como
+ * HTML o como texto, así que no hace falta saber qué campo es HTML.
+ *
+ * Perfil de sanitización (estricto):
+ *   - Etiquetas y atributos: los de ETIQUETAS_PERMITIDAS y ATRIBUTOS_PERMITIDOS.
+ *   - Enlaces e imágenes: http, https, mailto, tel y rutas relativas (`/estudios`,
+ *     `#seccion`). Se eliminan `javascript:`, `data:` y `vbscript:`.
+ *   - Scripts inline y event handlers (`onerror`, `onclick`…) se eliminan siempre.
  *
  * DOMPurify necesita un DOM para operar; en Node.js se provee jsdom.
  *
- * Perfil de sanitización (estricto):
- *   - Etiquetas permitidas: h1-h6, p, b, strong, i, em, u, s, del, ul, ol, li,
- *     blockquote, br, hr, a, img, table, thead, tbody, tr, th, td, span, div
- *   - Atributos permitidos: href, src, alt, title, class, target, rel, width, height
- *   - Esquemas de URL permitidos: http, https (se excluye javascript:, data:, vbscript:)
- *   - Scripts inline, event handlers y javascript: URIs son eliminados.
- *
  * @see 3-seguridad-del-proyecto.md §S2 (XSS del contenido — CRÍTICO)
- * @see openspec/changes/qa-seguridad-vistas-intranet/specs/qa-intranet-content-xss/spec.md
  */
 
 import { JSDOM } from 'jsdom';
@@ -54,76 +63,69 @@ const ATRIBUTOS_PERMITIDOS = [
 ];
 
 /**
- * Sanitiza un string HTML con DOMPurify.
- * Devuelve el HTML limpio. Si el input no es string, lo devuelve sin cambios.
+ * Qué puede ir en `href` y `src`: http(s), mailto y tel, o una ruta relativa. Es el
+ * patrón por defecto de DOMPurify sin los esquemas raros: lo que empieza con letras
+ * seguidas de `:` tiene que ser uno de los permitidos, y eso deja fuera `javascript:`.
+ * Con el patrón anterior (`^(?:https?|mailto):`) un enlace a `/estudios` perdía el href.
  */
-function sanitizarHtml(valor: unknown): unknown {
-  if (typeof valor !== 'string') return valor;
+const URI_PERMITIDA = /^(?:(?:https?|mailto|tel):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i;
 
-  return purify.sanitize(valor, {
+/**
+ * Lo que DOMPurify quitó y sí era peligroso, para `htmlPeligrosoEn`. Un `style` o una
+ * etiqueta fuera de la lista también se quitan, pero no son un ataque.
+ */
+const ETIQUETAS_PELIGROSAS = new Set(['script', 'iframe', 'object', 'embed', 'svg', 'math', 'form', 'link', 'meta', 'base', 'style']);
+let recolector: ((quitado: string) => void) | null = null;
+
+/** Sanitiza un string HTML con DOMPurify y devuelve el HTML limpio. */
+function sanitizarHtml(valor: string): string {
+  const limpio = purify.sanitize(valor, {
     ALLOWED_TAGS: ETIQUETAS_PERMITIDAS,
     ALLOWED_ATTR: ATRIBUTOS_PERMITIDOS,
-    // Solo esquemas seguros en href y src; bloquea javascript:, data: con scripts, vbscript:
-    ALLOWED_URI_REGEXP: /^(?:https?|mailto):/i,
-    // Elimina comentarios HTML que pueden contener XSS en algunos parsers
+    ALLOWED_URI_REGEXP: URI_PERMITIDA,
     ALLOW_DATA_ATTR: false,
     FORCE_BODY: false,
   });
+  if (recolector) {
+    for (const quitado of purify.removed as Array<{ element?: Element; attribute?: Attr | null; from?: Element }>) {
+      if (quitado.attribute) {
+        const { name, value } = quitado.attribute;
+        if (/^on/i.test(name) || /^\s*(javascript|vbscript|data):/i.test(value)) recolector(`${name}="${value.slice(0, 40)}"`);
+      } else if (quitado.element) {
+        const nombre = quitado.element.nodeName.toLowerCase();
+        if (ETIQUETAS_PELIGROSAS.has(nombre)) recolector(`<${nombre}>`);
+      }
+    }
+  }
+  return limpio;
 }
 
 /**
- * Lista de campos de props de bloque Puck que pueden contener HTML libre.
- * El resto de props (números, booleans, slugs) se dejan intactos.
- *
- * **Los nombres en español importan tanto como los ingleses, y son fáciles de
- * olvidar.** Esta lista se escribió cuando los campos con HTML se llamaban
- * `content` o `description`, pero los bloques del proyecto nombran sus props en
- * español: un campo `richtext` llamado `titulo` o `contenido` no coincidía con
- * ninguna entrada, caía en la rama de «otros strings» —que devuelve el valor tal
- * cual, sin tocarlo— y su HTML se guardaba **sin sanear**. Como Puck pinta el
- * texto enriquecido con `dangerouslySetInnerHTML`, eso es exactamente el vector
- * de §S2: un editor con la cuenta comprometida escribe una etiqueta con `onerror`
- * en un título y se ejecuta en el navegador de cada visitante.
- *
- * Al añadir un campo `richtext` a un bloque hay que comprobar que su nombre esté
- * aquí. Añadir de más no rompe nada: sobre texto plano DOMPurify no cambia el
- * valor, solo escapa los `<` sueltos, que en un campo de texto tampoco deberían
- * llegar crudos a la página.
- *
- * @see 3-seguridad-del-proyecto.md §S2 (XSS del contenido — CRÍTICO)
+ * Campos que contienen URLs sueltas (no dentro de HTML): se validan aparte, porque
+ * pueden ir a un `href` o a un `src` sin pasar por DOMPurify. En minúsculas: la clave
+ * se compara en minúsculas (`backgroundImage` → `backgroundimage`).
  */
-const CAMPOS_HTML = new Set([
-  'content', 'text', 'html', 'body', 'description', 'caption',
-  'title', 'subtitle', 'label', 'heading', 'subheading',
-  // Nombres en español de los mismos campos, tal como los declaran los bloques.
-  'contenido', 'titulo', 'subtitulo', 'texto', 'cuerpo', 'descripcion',
-  'etiqueta', 'leyenda', 'piedeimagen',
-]);
+const CAMPOS_URL = new Set(['src', 'href', 'url', 'link', 'backgroundimage', 'imageurl']);
 
 /**
- * Campos que contienen URLs — se validan para aceptar solo http/https.
+ * Sanitiza una URL: acepta http(s), mailto, tel y rutas relativas (`/uploads/…`,
+ * `#seccion`, `?pagina=2`). Devuelve cadena vacía si el esquema no es permitido.
  */
-const CAMPOS_URL = new Set(['src', 'href', 'url', 'link', 'backgroundImage', 'imageUrl']);
-
-/**
- * Sanitiza una URL: solo acepta http:// y https://.
- * Devuelve cadena vacía si el esquema no es permitido.
- */
-function sanitizarUrl(valor: unknown): unknown {
-  if (typeof valor !== 'string') return valor;
+function sanitizarUrl(valor: string): string {
   const trimmed = valor.trim();
   if (!trimmed) return trimmed;
 
   try {
     const parsed = new URL(trimmed);
-    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+    if (['http:', 'https:', 'mailto:', 'tel:'].includes(parsed.protocol)) {
       return trimmed;
     }
     // javascript:, data:, vbscript:, file:, etc. → descartados
+    if (recolector && /^(javascript|vbscript|data):$/i.test(parsed.protocol)) recolector(`url ${trimmed.slice(0, 40)}`);
     return '';
   } catch {
-    // URL relativa (empieza con /uploads/) — permitida
-    if (trimmed.startsWith('/uploads/') || trimmed.startsWith('/')) {
+    // Ruta relativa: no tiene esquema, así que no puede ser javascript:.
+    if (/^[/#?]/.test(trimmed)) {
       return trimmed;
     }
     return '';
@@ -131,62 +133,28 @@ function sanitizarUrl(valor: unknown): unknown {
 }
 
 /**
- * Sanitiza recursivamente un objeto de props de bloque Puck.
- * Recorre todas las claves y sanitiza según el tipo de campo.
+ * Sanea un valor a cualquier profundidad. Un texto dentro de un arreglo hereda la
+ * clave del arreglo (los `items` de una lista de EditorJS son textos sueltos).
  */
-function sanitizarProps(props: Record<string, unknown>): Record<string, unknown> {
-  const resultado: Record<string, unknown> = {};
-
-  for (const [clave, valor] of Object.entries(props)) {
-    const claveMin = clave.toLowerCase();
-
-    if (CAMPOS_URL.has(claveMin)) {
-      resultado[clave] = sanitizarUrl(valor);
-    } else if (CAMPOS_HTML.has(claveMin)) {
-      resultado[clave] = sanitizarHtml(valor);
-    } else if (typeof valor === 'string') {
-      // Otros strings: sanitizar igualmente pero con modo texto (sin HTML)
-      // para evitar que el escape de angle-brackets rompa slugs o clases CSS.
-      resultado[clave] = valor;
-    } else if (Array.isArray(valor)) {
-      resultado[clave] = valor.map(item =>
-        typeof item === 'object' && item !== null
-          ? sanitizarProps(item as Record<string, unknown>)
-          : item
-      );
-    } else if (typeof valor === 'object' && valor !== null) {
-      resultado[clave] = sanitizarProps(valor as Record<string, unknown>);
-    } else {
-      resultado[clave] = valor;
-    }
+function sanitizarValor(valor: unknown, clave: string): unknown {
+  if (typeof valor === 'string') {
+    if (CAMPOS_URL.has(clave)) return sanitizarUrl(valor);
+    return valor.includes('<') ? sanitizarHtml(valor) : valor;
   }
-
-  return resultado;
-}
-
-/**
- * Estructura de un bloque Puck. Solo la forma mínima necesaria para sanitizar.
- */
-interface BloquePuck {
-  type: string;
-  props?: Record<string, unknown>;
-  [key: string]: unknown;
-}
-
-/**
- * Estructura del contenido de una página Puck.
- */
-export interface ContenidoPuck {
-  content?: BloquePuck[];
-  root?: Record<string, unknown>;
-  [key: string]: unknown;
+  if (Array.isArray(valor)) return valor.map((item) => sanitizarValor(item, clave));
+  if (typeof valor === 'object' && valor !== null) {
+    const resultado: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(valor)) resultado[k] = sanitizarValor(v, k.toLowerCase());
+    return resultado;
+  }
+  return valor;
 }
 
 /**
  * Sanitiza el contenido completo de una página Puck antes de persistirlo.
  *
- * Procesa todos los bloques del array `content` y el objeto `root`, sanitizando
- * sus props según el tipo de campo. No modifica la estructura del JSON.
+ * Recorre el objeto entero —`content`, `root`, `zones` y cualquier clave nueva que
+ * traiga Puck— sin cambiar su forma: solo limpia textos con `<` y URLs sueltas.
  *
  * @param contenido - El objeto de contenido Puck tal como llega del cliente.
  * @returns El contenido sanitizado, listo para persistir en base de datos.
@@ -196,26 +164,22 @@ export function sanitizarContenidoPuck(contenido: unknown): unknown {
   if (typeof contenido !== 'object' || contenido === null) {
     return contenido;
   }
+  return sanitizarValor(contenido, '');
+}
 
-  const puck = contenido as ContenidoPuck;
-  const resultado: ContenidoPuck = { ...puck };
-
-  // Sanitizar cada bloque del array content
-  if (Array.isArray(puck.content)) {
-    resultado.content = puck.content.map(bloque => {
-      if (!bloque || typeof bloque !== 'object') return bloque;
-
-      return {
-        ...bloque,
-        props: bloque.props ? sanitizarProps(bloque.props) : bloque.props,
-      };
-    });
+/**
+ * Lo peligroso que `sanitizarContenidoPuck` le quitaría a un contenido ya guardado:
+ * etiquetas como `<script>` o `<iframe>`, atributos `on…` y enlaces `javascript:`.
+ * Vacío si no hay nada. Sirve para revisar versiones guardadas antes de que se
+ * saneara todo el contenido.
+ */
+export function htmlPeligrosoEn(contenido: unknown): string[] {
+  const encontrados: string[] = [];
+  recolector = (quitado) => encontrados.push(quitado);
+  try {
+    sanitizarContenidoPuck(contenido);
+  } finally {
+    recolector = null;
   }
-
-  // Sanitizar las props del root (menú, pie, etc.)
-  if (puck.root && typeof puck.root === 'object') {
-    resultado.root = sanitizarProps(puck.root as Record<string, unknown>);
-  }
-
-  return resultado;
+  return encontrados;
 }

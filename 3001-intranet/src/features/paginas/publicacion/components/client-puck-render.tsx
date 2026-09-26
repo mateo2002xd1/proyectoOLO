@@ -17,7 +17,7 @@ import type { ContenidoPagina } from '../../model/pagina.types';
  * No usamos `dangerouslySetInnerHTML` directamente. La defensa de segunda capa
  * es la Content-Security-Policy que bloquea scripts inline en el navegador.
  *
- * @see api-backend/src/shared/sanitizar-contenido.ts
+ * @see 4000-api-backend/src/shared/sanitizar-contenido.ts
  * @see 3-seguridad-del-proyecto.md §S2 (XSS del contenido — CRÍTICO)
  */
 export function ClientPuckRender({ data }: { data: ContenidoPagina }) {
