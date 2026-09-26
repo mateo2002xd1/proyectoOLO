@@ -66,6 +66,77 @@ commitear.
 
 ---
 
+## sesión 25-09-2026: el saneo del contenido cubre todo (texto enriquecido, `intro`, `zones`) y Docker construye con las carpetas nuevas (11.ª parte)
+
+**Qué era.** La 7.ª parte encontró un XSS almacenado real en el bloque «Texto
+enriquecido». Al arreglarlo aparecieron cuatro huecos más en el mismo limpiador
+(`sanitizar-contenido.ts`), todos por la misma causa: saneaba solo los campos de una
+lista de nombres, y la lista se quedaba atrás de los bloques.
+
+| Hueco | Por qué pasaba |
+|---|---|
+| Texto enriquecido (EditorJS) | `content` guarda un objeto (`{ blocks: [{ data: { text, items } }] }`) y `sanitizarHtml` devolvía intacto todo lo que no era texto. `editorjs-wrapper.tsx` lo pinta con `dangerouslySetInnerHTML` |
+| Campos `intro` | Son `richtext` en dos bloques del sitio y no estaban en la lista |
+| `zones` | Los bloques de una `DropZone` (`seccion-botones-icono`) viven ahí, y solo se recorrían `content` y `root`. El validador acepta cualquier bloque en `zones` |
+| `backgroundImage`, `imageUrl` | La clave se pasaba a minúsculas y la lista las tenía con mayúsculas: nunca coincidían |
+| Restaurar y aprobar | Publicaban la versión tal cual. Una guardada antes del arreglo volvía a salir sin limpiar |
+
+### Qué cambió
+
+| Qué | Cómo |
+|---|---|
+| Regla del saneo | Se sanea **todo texto que tenga `<`**, en todo el JSON (`content`, `root`, `zones` y a cualquier profundidad). Sin `<` no hay etiqueta que inyectar, así que ya no hace falta saber qué campo es HTML. Se quitó la lista `CAMPOS_HTML` |
+| Enlaces dentro del HTML | `ALLOWED_URI_REGEXP` acepta http(s), mailto, tel y rutas relativas. Con el patrón anterior, `<a href="/estudios">` perdía el href, y al sanear el texto enriquecido se habrían roto sus enlaces. `javascript:` sigue fuera |
+| Campos de URL sueltos | Aceptan también `mailto:`, `tel:`, `#ancla` y `?query`. Antes quedaban vacíos |
+| Publicar | `aprobar-pagina` y `restaurar-version-anterior` sanean la versión al publicarla |
+| Lo ya guardado | `npm run contenido:revisar` (`scripts/puntuales/revisar-contenido-guardado.ts`) lista las versiones con HTML peligroso y sale con 1. Con `-- --aplicar` las sanea. Usa `htmlPeligrosoEn()`, que cuenta solo lo peligroso (`<script>`, `on…`, `javascript:`), no un `style` |
+| Docs | `3-seguridad-del-proyecto.md` §4.4 y la fila RF-01 |
+
+### Verificado
+
+| Qué | Resultado |
+|---|---|
+| 23 comprobaciones con el limpiador real (ts-node): ataques y contenido legítimo | 23/23, detalle abajo |
+| Las 9 versiones reales de la semilla, limpiador viejo contra nuevo | **0 textos distintos**: el contenido legítimo no cambia. 0 con HTML peligroso |
+| Postgres 18 desechable (Docker, puerto 55432) con una copia de la API **sin `.env`** | Las 37 migraciones corren con `scripts/db/migrate.ts` desde su carpeta nueva |
+| En esa base, `contenido:revisar` con 3 versiones (2 con ataques y 1 limpia) | Encuentra las 2 y sale con 1. `--aplicar` las sanea sin cambiar la forma del JSON. Al revisar otra vez da 0. La limpia queda idéntica (comparada sin el orden de claves, que JSONB reordena) |
+| `aprobarPagina` y `restaurarVersionAnterior` reales sobre versiones con `onerror` guardadas directo en la base | Las dos quedan publicadas sin el `onerror` |
+| `tsc` de `src/` y los scripts juntos | Sin errores nuevos. Queda solo `pg` sin tipos en `puntuales/update-uploads.ts`, que ya estaba |
+| **Docker:** las 4 imágenes (`api`, `migraciones`, `sitio`, `intranet`) construidas con tags de prueba y borradas después | Las 4 construyen. En la de migraciones, `migrate`, `sembrar:permisos`, `crear:superadmin` y `db:verificar` encuentran su script. La API compilada resuelve `/3000-sitio-web/public/storage/uploads`, lo mismo que monta el compose |
+
+Las 23 comprobaciones cubren:
+
+- **Ataques que tienen que salir limpios (10):**
+  - EditorJS: párrafo, encabezado, lista de textos, lista anidada y cita;
+  - `intro`;
+  - `zones`;
+  - `root`;
+  - `backgroundImage` y `href` con `javascript:`.
+- **Contenido legítimo que tiene que sobrevivir (10):**
+  - `&`;
+  - enlaces relativos, ancla y `mailto`;
+  - imagen de `/uploads`;
+  - negrita;
+  - EditorJS sin HTML, idéntico.
+- **Detección de `htmlPeligrosoEn` (3).**
+
+> **Lo guardado antes de hoy puede tener HTML peligroso publicado.** Hay que correr
+> `npm run contenido:revisar` en `4000-api-backend/` contra Neon, y en el servidor con
+> `docker compose … run --rm migraciones npm run contenido:revisar`. Sin `--aplicar` no
+> cambia nada.
+
+**Pendiente al cierre:**
+
+- **Correr `contenido:revisar` en el servidor**, y `--aplicar` si encuentra algo. En Neon ya
+  se corrió el 26-09. Revisó 127 versiones de 18 páginas y encontró 1 con HTML peligroso:
+  la versión 22, archivada, de `intranet/menu-y-pie`, que tenía un `<svg>`. Ninguna
+  publicada. Con `--aplicar` quedó saneada, y la segunda revisión dio 0.
+- **Content-Security-Policy.** La tercera medida de §S2 sigue sin revisarse en el sitio.
+- **Textos con `<` que no son HTML** (por ejemplo `a < b`) se guardan como `a &lt; b`. Si
+  un bloque los pinta como texto de React, se ve `&lt;`. No hay ninguno en la semilla.
+
+---
+
 ## sesión 25-09-2026: todo apunta a las carpetas nuevas (`3000-sitio-web`, `3001-intranet`, `4000-api-backend`, `docs/`) y los scripts de la API por carpeta (10.ª parte)
 
 **Qué era.** Las apps se renombraron con su puerto delante y los `.md` numerados pasaron a

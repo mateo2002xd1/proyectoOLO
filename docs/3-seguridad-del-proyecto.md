@@ -338,9 +338,15 @@ oculta, el backend prohíbe*, y aquí el backend no prohíbe.
 ### 4.4 Contenido y archivos (§S1, §S2)
 
 - **Sanitización server-side del contenido Puck** con DOMPurify sobre jsdom, aplicada al
-  guardar y no al renderizar: `shared/sanitizar-contenido.ts`, invocada desde
-  `use-cases/paginas/guardar-borrador.usecase.ts`. Que el editor sanee también es una
-  segunda capa, no la primera.
+  guardar, al aprobar y al restaurar, no al renderizar: `shared/sanitizar-contenido.ts`,
+  invocada desde `guardar-borrador`, `aprobar-pagina` y `restaurar-version-anterior`. Que el
+  editor sanee también es una segunda capa, no la primera.
+- **Se sanea todo texto que tenga `<`, en cualquier parte del JSON** (`content`, `root`,
+  `zones` y a cualquier profundidad), no una lista de campos. Hasta el 2026-09-25 era una
+  lista, y se quedó atrás: el objeto de EditorJS del bloque «Texto enriquecido», los
+  `richtext` llamados `intro` y los bloques de una `DropZone` se guardaban sin limpiar. Lo
+  guardado antes se revisa con `npm run contenido:revisar` (en `4000-api-backend/`), que
+  solo informa salvo con `-- --aplicar`.
 - **Las dos subidas** (`3001-intranet/` y `3000-sitio-web/src/app/api/upload/route.ts`) aplican los
   cinco controles de §S1: autenticación con verificación **de firma** (`jwtVerify`, no
   `decodeJwt`), detección de tipo por *magic bytes* ignorando extensión y `Content-Type`,
@@ -536,7 +542,7 @@ equivalente — y se nota: un cambio de tres valores hex revirtió media fase de
 
 | RF | Control obligatorio antes de producción | Estado |
 |---|---|---|
-| RF-01 | Sanitizar HTML de Editor.js en el servidor | ✅ `sanitizarContenidoPuck()` en `guardar-borrador.usecase.ts` — 2026-08-11 |
+| RF-01 | Sanitizar HTML de Editor.js en el servidor | ✅ `sanitizarContenidoPuck()` al guardar — 2026-08-11. El objeto de EditorJS, `intro` y `zones` quedaban fuera hasta el 2026-09-25: desde entonces se sanea todo texto con `<`, también al aprobar y restaurar (§4.4) |
 | RF-02 | Validar magic bytes, sanitizar SVG, renombrar a UUID, tamaño en servidor, fuera del webroot | 🟡 Parcial: la subida de la **intranet** cumple los cinco controles (`file-type`, lista blanca, UUID, límites, auth con firma) — 2026-08-11. La de **sitio-web** aplica los mismos desde 2026-08-20 vía `packages/upload-policy`. Ambas siguen escribiendo dentro del webroot — ver §4.8 |
 | RF-04/05/06 | Doble capa RBAC (ruta + policy) aplicada en TODA operación sensible | ✅ Extendido a usuarios, roles, permisos, secciones, contenidos, adjuntos y trabajos; propiedad de objeto comprobada contra la BD — `npm run propiedad:verificar` — 2026-08-17 |
 | RF-08 | Lista blanca de dominios de iframe + validación de URL en servidor + sandbox | ⏳ Pendiente implementación completa |
