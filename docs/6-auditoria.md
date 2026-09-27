@@ -99,6 +99,107 @@ desarrollo apunta a Neon.
 
 ---
 
+## sesión 26-09-2026: las reglas responsive pasan a convenciones y al auditor; la intranet y el sitio público se adaptan (4.ª parte)
+
+**Qué era.** Sigue a la 1.ª parte (el panel). El usuario pidió dos cosas: dejar las reglas
+responsive en las convenciones, con los agentes ajustados a ellas, y seguir con la intranet
+y el sitio público.
+
+### La norma y quién la revisa
+
+| Dónde | Cambio |
+|---|---|
+| `docs/2-convenciones-del-proyecto.md` §10 (nueva) | Seis reglas con código: cortes solo de la escala de Tailwind (`RESP-01`), `dvh` y anchos que no desbordan (`RESP-02`, `RESP-03`), medir el contenedor (`RESP-04`), táctil (`RESP-05`) y piezas compartidas (`RESP-06`). Más cómo se verifica. Casilla nueva en el checklist §9 |
+| `docs/1-guia-del-proyecto.md` §6 | Convención no negociable 13 y su fila de estado (🟡: el panel cumple, lo demás en curso) |
+| `.claude/skills/auditar/reglas.md` | `RESP-01`…`RESP-06` en el inspector de carpetas, con su fuente en §10 |
+| `.claude/skills/auditar/scripts/chequeo-automatico.mjs` | Señales sin IA: `@media` fuera de la escala o con la sintaxis vieja, `vh`/`h-screen`, `w-[Npx]` ≥ 400 sin salida y `<table>` sin `olo-tabla-apilable` |
+| `.claude/agents/auditor-carpetas.md` | Revisa `RESP-*` en toda interfaz: ventana o contenedor, táctil, piezas compartidas |
+| `.claude/agents/auditor-arquitectura.md` | Los bloques de Puck que miden la ventana (`RESP-04`), y cuándo una pieza responsive se sube a `packages/` |
+| `.claude/agents/auditor-verificador.md` | Cómo refutar un `RESP-*`: `vh` con su `dvh` al lado, `lg:h-screen`, `min-w` en tabla apilable, ancho fijo con prefijo |
+| `.claude/skills/auditar/excepciones.md` | Esos mismos casos, como decisiones escritas |
+
+`auditor-seguridad` no cambia: nada de esto es de su área. **`.claude/` no se versiona**
+(decisión del 2026-09-25): lo del auditor queda solo en esta máquina.
+
+### Intranet
+
+| Qué | Cambio |
+|---|---|
+| Barra superior | El menú pasa a hamburguesa por debajo de `lg`, el mismo corte que ya usaba su JSX (antes el CSS cambiaba en 720 y 1060 px). «Encuestas» se despliega con clic, toque o teclado (`aria-expanded`); antes solo con `:hover`. En el menú del móvil el submenú se abre en línea |
+| Login | Logo de 96/150/210 px y título de 24/30/36 px por corte: en el móvil el formulario queda en la primera pantalla |
+| Carruseles (`Carousel`, «Últimas publicaciones») | Muestran las piezas que caben en su hueco (`use-cuantos-caben.ts`, nuevo): 1 en el móvil, 2 en tablet, 3-4 en escritorio. Antes, siempre las N de Puck: en el móvil eran dos imágenes de 80 px, o cuatro tarjetas apiladas (~1600 px) con las flechas en medio. El arrastre usa eventos de puntero y `touch-pan-y`: con `onMouseMove` no respondía al dedo |
+| `globals.css` | 34 `@media` a la escala; `vh` → `dvh` con respaldo; títulos de Tasa con `clamp()`; justificado solo desde `md`; pie a 14 px (bajaba a 12) |
+| Recursos visuales | Reproductor y lista lado a lado desde `lg`, igual que en el sitio: a 768 px la lista hacía 14 px de scroll lateral |
+
+### Sitio público
+
+| Qué | Cambio |
+|---|---|
+| Tablas de tendencia, fuentes futuras y programas sobresalientes | `olo-tabla-apilable`. El nombre (ocupación, sector, programa) encabeza la tarjeta con `data-titulo` aunque en la tabla vaya tercero. Los totales (`tfoot`) también pasan a tarjeta |
+| `.olo-tabla-apilable` | Admite `tfoot` y `data-titulo`. La etiqueta pasa a una rejilla (ver abajo) |
+| Encabezado | Hamburguesa por debajo de `lg` (era 900). Entre `lg` y `xl`, los enlaces con menos relleno: a 1024 px «Intranet» se salía 6 px, y ya se salía entre 901 y ~1030 con el corte de antes |
+| `globals.css` | 28 `@media` a la escala; `vh` → `dvh` en el CSS y en 8 componentes |
+
+### Decisiones y lo descartado
+
+- **La etiqueta de la tarjeta, tercera versión.** 1.ª: en posición absoluta. Una etiqueta
+  de dos líneas («NIVEL OCUPACIONAL») pisaba la siguiente, porque la celda no crecía con
+  ella. 2.ª: rejilla con la etiqueta en `grid-row: 1 / span 20`. Con un valor con
+  `line-clamp`, Chrome repartía 0,875 px en cada fila vacía: 17 px de hueco. Queda una
+  rejilla con la etiqueta en la fila 1 y `justify-items: start`, porque sin esto las
+  píldoras se estiraban a todo el ancho. El límite, escrito en el CSS: un texto suelto que
+  va *detrás* de un elemento caería en la columna de la etiqueta.
+- **Carrusel: medir con JS, no con CSS.** Ocultar con `@container` las imágenes que sobran
+  era posible, pero cada flecha avanza tantas como se ven. Con CSS, en el móvil se veía una
+  y la flecha saltaba tres.
+- **Cortes elegidos donde había que mover uno.** El 900 pasó a `lg` en los casos con
+  imagen o menú al lado: hasta 1023 px queda la disposición de móvil, que es la segura. El
+  login de la intranet pasó a `md`: a 768 px los dos paneles caben. El apaisado bajo
+  (`min-width: 901px`) pasó a `lg` y no a `md`: un teléfono apaisado mide 800-930 px y le
+  crecería el logo.
+- **No se tocaron** los primitivos de Puck (`.olo-grid`, `.olo-flex`, pestañas) más allá de
+  la sintaxis: siguen midiendo la ventana (ver Pendiente).
+
+### Verificado
+
+Sin sesión y sin servidores (el `next dev` estaba apagado y la API caída). Las páginas se
+pintaron en estático con el código real: `ts.transpileModule` sobre el TSX; sustitutos
+solo para `next/navigation`, `next/image`, `next/dynamic` y `next/font`. Por dentro, el
+`Render` de Puck de cada app con su config y el contenido de las semillas (`sembrar-*`),
+y encima el CSS compilado con el Tailwind de cada app.
+
+| Prueba | Resultado |
+|---|---|
+| `tsc --noEmit` intranet / sitio | 0 errores / los 2 de siempre en `puck.config.tsx` |
+| ESLint de cada archivo tocado, contra su versión de `HEAD` | Mismos errores y avisos; los archivos nuevos, limpios |
+| Chequeo automático sobre `HEAD~40..HEAD` | Corre. Encontró justo las dos tablas públicas sin apilar (`RESP-04`), arregladas después. Avisa `REGLAS DESACTUALIZADAS` para `RESP-*` hasta que se commitee §10: lee los `.md` del último commit |
+| Las señales `RESP` sobre las apps enteras | Intranet: ninguna (un falso positivo en un comentario JSX). Sitio: solo `--app-vh: 100vh`, que tiene su `dvh` en un `@supports` debajo |
+| 10 páginas × 360/768/1024/1280 px: 5 secciones y 2 pantallas de acceso de la intranet, inicio del sitio, sus 3 tablas con filas de ejemplo, el banco del panel | Sin desborde ni scroll lateral interno en ninguna |
+| Menú de la intranet abierto, con el submenú desplegado (clases puestas a mano) | En línea en el móvil, flotante en escritorio |
+| **En un navegador real** | **No verificado:** lo que depende de JS (el conteo de los carruseles, el arrastre con el dedo, abrir «Encuestas» con toque y teclado) y las páginas con datos reales |
+
+> **Trampa:** el HTML estático no ejecuta JS, así que un carrusel sale con el máximo de
+> Puck, que es lo que pinta el servidor. El estado del móvil se comprobó sustituyendo
+> `useCuantosCaben` por lo que devolvería a 360 px. Esa cuenta, con las medidas del CSS,
+> da 1 a 360/390, 2 a 768 y 3-4 desde 1024.
+
+**Pendiente al cierre:**
+
+- **Mirarlo en real**, con cuenta: los dos carruseles de inicio de la intranet a 360, 768 y
+  1280, deslizar «Últimas publicaciones» con el dedo, abrir «Encuestas» con toque y con Tab.
+- **Imágenes con texto** («Sabías que…», «Dato OLO de la semana»): en el móvil se encogen
+  hasta no leerse. Hace falta un campo «imagen para móvil» en el bloque (`<picture>`): es
+  una decisión de contenido.
+- **Primitivos de Puck a `@container`** (`.olo-grid`, `.olo-flex`, pestañas) en las dos
+  apps, que hoy miden la ventana (`RESP-04`).
+- **CSS de bloques copiado entre las dos apps** (`rv-*`, `publicaciones-*`: el del sitio
+  dice «portado del global de la intranet»). Es duplicación (`ARQ-06`): conviene moverlo
+  junto a `@olo/blocks-renderer`.
+- Las piezas `BarraFiltros`, `EncabezadoPanel` y la tabla apilable viven solo en el sitio.
+  Si la intranet las necesita, suben a `packages/` (`RESP-06`).
+
+---
+
 ## sesión 26-09-2026: auditoría de la API, fase 1: comentarios, código muerto y basura (3.ª parte)
 
 **Qué era.** Primera de tres auditorías por fases (API → sitio web → intranet), con tres
