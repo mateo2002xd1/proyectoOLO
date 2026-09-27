@@ -6,7 +6,7 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Los paquetes compartidos, los siete, en /packages y NO en /app/packages.
+# Los paquetes compartidos, todos, en /packages y NO en /app/packages.
 #
 # Dos cosas estaban mal aqui. Se copiaba uno solo de los siete que declara el
 # package.json (`blocks-renderer`), y se copiaba a /app/packages: npm resuelve

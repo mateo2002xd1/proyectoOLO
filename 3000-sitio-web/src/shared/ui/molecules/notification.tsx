@@ -80,7 +80,8 @@ export function Notification({
   if (typeof document === 'undefined') return null;
 
   return createPortal(
-    <div className="fixed bottom-6 right-6 z-[100] flex items-end justify-end pointer-events-none sm:bottom-8 sm:right-8">
+    // Por debajo de `lg` el panel tiene la navegación mobile abajo: el aviso sale por encima.
+    <div className="fixed bottom-[calc(var(--navegacion-mobile-alto)+1.5rem)] right-6 z-[100] flex items-end justify-end pointer-events-none sm:right-8 lg:bottom-8">
       <div
         className={`pointer-events-auto w-[360px] max-w-[calc(100vw-3rem)] overflow-hidden rounded-2xl ${surface} ${text} shadow-[0_12px_40px_-8px_rgba(0,0,0,0.2)] transition-all duration-300 ease-out ${
           isVisible && !isLeaving
