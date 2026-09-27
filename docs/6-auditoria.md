@@ -5,6 +5,93 @@
 
 ---
 
+## sesión 26-09-2026: el panel se adapta al móvil (tablas que pasan a tarjetas, filtros plegables, modales que caben)
+
+**Qué era.** El objetivo es que el panel, el sitio público y la intranet funcionen en
+cualquier pantalla. Antes de tocar nada se midió el estado real con capturas de Chrome
+headless a 360, 768 y 1280 px y un detector de desbordes. Salió esto:
+
+| Dónde | Qué pasaba |
+|---|---|
+| Todo el proyecto | 16 cortes distintos en los `@media` (480, 600, 640, 720, 767, 768, 850, 900, 1024, 1060, 1200, 1600…) y el JSX con los de Tailwind. No hay una escala común |
+| Intranet, barra superior | El CSS cambia de diseño en 720 y 1060 px y el JSX usa `lg:` (1024). **Entre 720 y 1024 cada enlace ocupa todo el ancho y el menú se apila en vertical**, media pantalla de alto en una tablet |
+| Panel, Roles | El contenedor es `overflow-hidden`: en el móvil **se cortaban las columnas Permisos y Acciones**. No se podía editar un rol desde el teléfono |
+| Panel, Auditoría, Respaldos, Revisión | La tabla hace scroll lateral con la columna importante fuera. Los filtros son de 176 px fijos (`w-44`) y en el móvil ocupan la pantalla entera antes de la primera fila |
+| Panel, Actualizaciones | La tabla del historial vive en una tarjeta de 300 px **también en escritorio**: scroll lateral en un monitor |
+| Panel, modales de depuración | Cabecera + cuerpo de `80vh` + pie. En un teléfono, `vh` incluye la barra del navegador y el pie (Cancelar) quedaba fuera, sin scroll |
+| Panel, Nuevo Usuario | El formulario va en `Alert`, que no tiene scroll: en un teléfono bajo, la parte de abajo no se alcanzaba |
+| Panel, títulos | 30px fijos: «Gestion de Roles» en dos líneas apretando el botón de al lado |
+| Panel, CSS | 330 líneas de clases `admin-*` sin uso, incluida una regla «Admin Responsive» que ponía la barra lateral a 20px |
+| Sitio, tabla de ocupaciones | Scroll lateral con el nombre de la ocupación cortado |
+| Intranet, login | El logo ocupa media pantalla del móvil y el formulario queda debajo del pliegue |
+
+Esta sesión cubre el panel. Lo demás queda en **Pendiente**.
+
+### Qué se hizo
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Estilos | `3000-sitio-web/src/style/globals.css` | `.olo-tabla-apilable`: la tabla pasa a tarjetas cuando **su contenedor** mide menos de 48rem. Títulos `admin-header`/`admin-subtitle` con `clamp()`. Fuera las clases `admin-*` sin uso |
+| UI compartida | `shared/ui/molecules/encabezado-panel.tsx` (nuevo) | Título, descripción y acciones de cada pantalla. Apila por debajo de `sm` |
+| UI compartida | `shared/ui/molecules/barra-filtros.tsx` (nuevo) | `BarraFiltros` + `CampoFiltro`. Por debajo de `lg` los filtros se pliegan tras un botón «Filtros (n)». Sustituye las **tres copias** de `Campo` de Auditoría, Respaldos y Revisión |
+| UI compartida | `shared/ui/molecules/alert.tsx` | El fondo hace scroll y alinea con `items-*-safe`: si el cuadro no cabe, empieza arriba en vez de salirse |
+| UI compartida | `shared/ui/organisms/sidebar-layout.tsx` | `h-screen` → `h-dvh` |
+| Vistas | Auditoría, Respaldos, Revisión, Roles, Usuarios, Dashboard, Actualizaciones (2 tablas) | Las tres piezas de arriba. Usuarios ya apilaba, con un `<span className="md:hidden">` por celda: pasa a la clase compartida |
+| Vistas | Revisión | Con la tabla en tarjetas, los cuatro botones dicen lo que hacen (rejilla 2×2, 44px de alto). Tonos 600-700: el blanco sobre verde o amarillo 500 no llegaba a 3:1 ni para un icono |
+| Modales | Depurar auditoría, Depurar versiones | Caja `max-h-[calc(100dvh-2rem)]` en columna y cuerpo `flex-1`, en vez de cuerpo de `80vh` |
+| Modales | Detalle, Vista previa, Permisos, Diagrama de visitas, Rol, Visor de documentos | `vh` → `dvh`. Los `min-h` fijos, con tope en la pantalla |
+
+### Decisiones
+
+- **La tabla mide su contenedor, no la ventana** (`@container`). La misma tabla va a
+  pantalla completa en Auditoría y en una tarjeta de 300px en Actualizaciones. Con `md:` de
+  la ventana, la segunda seguía siendo tabla en un monitor. El contenedor se declara solo:
+  `:where(:has(> .olo-tabla-apilable))`. Así basta con poner la clase en la tabla.
+- **Dentro de una tabla apilable se usa `@3xl:`, no `md:`.** Es el mismo 48rem, medido
+  sobre el mismo contenedor. Si no, entre 1024 y ~1150 px (con la barra lateral) la tabla
+  sería tarjetas y los botones seguirían en modo tabla.
+- **Cortes: los de Tailwind y ningún otro** (640 · 768 · 1024 · 1280 · 1536). En CSS, con
+  sintaxis de rango (`width < 48rem`), que es lo que genera `max-md:`.
+- **Descartado: etiqueta y valor en una rejilla de dos columnas.** Con `display: grid` cada
+  nodo de texto suelto de la celda es un elemento de la rejilla, y «Nombre
+  `<span>`correo`</span>`» se partía en filas. La etiqueta va en posición absoluta sobre el
+  relleno izquierdo y el contenido fluye normal.
+- **Descartado por ahora: un componente `Modal` único.** Hay 10 modales con estructuras
+  distintas (`<dialog>` nativo, portal, `fixed`). Unificarlos es un cambio más grande que
+  el problema. Se corrigió la altura en cada uno.
+
+> **Trampa:** el CSS de `globals.css` que no está en ninguna `@layer` **le gana a
+> cualquier utilidad** de Tailwind, sin importar la especificidad. Por eso
+> `.olo-tabla-apilable` puede anular el `min-w-[52rem]` de la tabla. Pero también anula
+> un `line-clamp-3` o un `text-right` que se ponga en la celda: lo que haya que cambiar
+> en modo tarjeta va en un `<span>` dentro de la celda (como el resumen de Cambios).
+
+### Verificado
+
+| Prueba | Resultado |
+|---|---|
+| `tsc --noEmit` del sitio | 2 errores en `puck.config.tsx`, los mismos de antes. Ninguno nuevo |
+| ESLint de los 18 archivos tocados, contra su versión de `HEAD` | Mismos errores y avisos que antes, archivo por archivo. Los 2 nuevos, limpios |
+| CSS compilado con el Tailwind del proyecto | Genera `.olo-tabla-apilable`, las variantes `@3xl:` / `@max-3xl:` y `items-*-safe` |
+| Página de prueba con el marcado de las vistas y ese CSS, a 360, 768, 1024 y 1280 px, claro y oscuro | Sin desborde. Tarjetas por debajo de 48rem de contenedor, tabla por encima. La tarjeta de 300px de Actualizaciones apila también a 1280 |
+| **El panel real con sesión** | **No verificado.** La página de prueba cubre el CSS, no los componentes montados. Falta mirarlo con una cuenta real |
+
+**Pendiente al cierre:**
+
+- **Mirar el panel real** en el móvil y la tablet (Usuarios, Roles, Auditoría, Respaldos,
+  Revisión, Actualizaciones, Dashboard, y el modal de Nuevo Usuario). También re-medir
+  `/admin/actualizaciones` y `/admin/auditoria` en el móvil: antes del cambio el navegador
+  ensanchaba la ventana a ~880px. La causa probable eran las tablas con `min-w`.
+- **Intranet:** la barra superior entre 720 y 1024 px, el logo del login en el móvil, y
+  pasar sus `@media` (720, 1060, 900…) a la escala de Tailwind.
+- **Sitio público:** la tabla de ocupaciones de `/inicio` (a tarjetas), el icono que falta
+  en una red social del pie, y los `@media` sueltos (600, 850, 900, 1200).
+- **Bloques de Puck** (`@olo/blocks-renderer`): revisar con contenido real.
+- **Llevar la escala de cortes a `2-convenciones-del-proyecto.md`.** La norma la decide el
+  usuario: aquí solo se propone.
+
+---
+
 ## sesión 25-09-2026: el trabajo local en 7 commits por tema y los cambios de Mateo (#130) integrados (12.ª parte)
 
 **Qué era.** Un `git pull OLO dev` falló. El índice tenía el `git mv` y el `git rm` del refactor
