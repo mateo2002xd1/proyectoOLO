@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import Link from 'next/link';
+import { useOcultarAlBajar } from './use-ocultar-al-bajar';
 
 /** Un destino de la barra, o una fila de la hoja que abre. */
 export interface DestinoMobile {
@@ -81,6 +82,8 @@ export function NavegacionMobile({ destinos, inicio, etiqueta = 'Navegación' }:
     setAbiertaPedida(true);
   };
   const cerrar = () => setAbiertaPedida(false);
+  // Se esconde al bajar por la página y vuelve al subir; con la hoja abierta, nunca.
+  const oculta = useOcultarAlBajar(abierta);
 
   useEffect(() => {
     const dialogo = dialogoRef.current;
@@ -199,7 +202,7 @@ export function NavegacionMobile({ destinos, inicio, etiqueta = 'Navegación' }:
   };
 
   return (
-    <nav className="navegacion-mobile" aria-label={etiqueta}>
+    <nav className={`navegacion-mobile${oculta ? ' es-oculta' : ''}`} aria-label={etiqueta}>
       <ul className="navegacion-mobile-lista">
         {destinos.slice(0, mitad).map(pintarDestino)}
         <li className="navegacion-mobile-centro">
