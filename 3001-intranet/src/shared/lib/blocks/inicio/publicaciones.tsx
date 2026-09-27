@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useCuantosCaben } from '@/shared/lib/use-cuantos-caben';
 import { resaltar } from '../compartidos/resaltar';
 
 /**
@@ -313,6 +314,10 @@ export function Publicaciones({
   const [arrastreDesde, setArrastreDesde] = useState(0);
   const [arrastreHasta, setArrastreHasta] = useState(0);
   const [arrastrando, setArrastrando] = useState(false);
+  // `porPagina` es el máximo que eligió quien edita. Se ven las tarjetas que quepan
+  // (200px como mínimo cada una): en el móvil antes salían las cuatro apiladas, unos
+  // 1600px de alto, con las flechas en mitad de la pila.
+  const { ref: medidor, cuantos: porVista } = useCuantosCaben<HTMLDivElement>(porPagina, 200, 24);
 
   useEffect(() => {
     listaPublicaciones.forEach((publicacion) => {
@@ -324,12 +329,12 @@ export function Publicaciones({
   // En edición detenemos el auto-carrusel para evitar interrupciones mientras se edita
   useEffect(() => {
     if (enEdicion) return;
-    if (total <= porPagina) return;
+    if (total <= porVista) return;
     const temporizador = setInterval(() => {
-      setInicio((previo) => (previo + porPagina) % total);
+      setInicio((previo) => (previo + porVista) % total);
     }, 5000);
     return () => clearInterval(temporizador);
-  }, [total, porPagina, enEdicion]);
+  }, [total, porVista, enEdicion]);
 
   // Si no estamos en edición y no hay publicaciones con archivo, no mostramos el bloque vacío en el sitio público
   if (total === 0 && !enEdicion) return null;
@@ -340,13 +345,13 @@ export function Publicaciones({
     const distancia = arrastreHasta - arrastreDesde;
     if (Math.abs(distancia) > 50) {
       setInicio((previo) =>
-        distancia > 0 ? (previo - porPagina + total * porPagina) % total : (previo + porPagina) % total
+        distancia > 0 ? (previo - porVista + total * porVista) % total : (previo + porVista) % total
       );
     }
   };
 
   const visibles = Array.from(
-    { length: Math.min(porPagina, total) },
+    { length: Math.min(porVista, total) },
     (_, desplazamiento) => listaPublicaciones[(inicio + desplazamiento) % total]
   );
 
@@ -379,13 +384,13 @@ export function Publicaciones({
           className="relative w-full max-w-[1200px] mx-auto group/carousel flex items-center justify-center px-4 md:px-8"
           data-puck-overlay-portal={enEdicion ? 'true' : undefined}
         >
-          {total > porPagina && (
+          {total > porVista && (
             <button
               type="button"
               aria-label="Página anterior"
               onClick={(evento) => {
                 evento.stopPropagation();
-                setInicio((previo) => (previo - porPagina + total * porPagina) % total);
+                setInicio((previo) => (previo - porVista + total * porVista) % total);
               }}
               style={enEdicion ? { pointerEvents: 'auto' } : undefined}
               className="publicaciones-nav-btn publicaciones-nav-prev"
@@ -397,17 +402,26 @@ export function Publicaciones({
           )}
 
           <div
-            className="publicaciones-container w-full cursor-grab active:cursor-grabbing"
-            onMouseDown={(evento) => {
+            ref={medidor}
+            // Eventos de puntero y no de ratón: cubren también el dedo, que con
+            // `onMouseMove` no llegaba mientras se deslizaba. `touch-pan-y` deja el
+            // desplazamiento vertical al navegador y el horizontal al carrusel.
+            className="publicaciones-container w-full cursor-grab touch-pan-y active:cursor-grabbing"
+            onPointerDown={(evento) => {
               setArrastrando(true);
               setArrastreDesde(evento.clientX);
               setArrastreHasta(evento.clientX);
             }}
-            onMouseMove={(evento) => arrastrando && setArrastreHasta(evento.clientX)}
-            onMouseUp={soltar}
-            onMouseLeave={soltar}
+            onPointerMove={(evento) => arrastrando && setArrastreHasta(evento.clientX)}
+            onPointerUp={soltar}
+            onPointerLeave={soltar}
+            onPointerCancel={() => setArrastrando(false)}
           >
-            <div className="publicaciones-grid animate-fade-in select-none" key={inicio}>
+            <div
+              className="publicaciones-grid animate-fade-in select-none"
+              key={inicio}
+              style={{ gridTemplateColumns: `repeat(${porVista}, minmax(0, 1fr))` }}
+            >
               {visibles.map((publicacion, indice) => (
                 <CardTag
                   key={`${publicacion.pdfUrl || 'pub'}-${indice}`}
@@ -461,10 +475,10 @@ export function Publicaciones({
               ))}
             </div>
 
-            {total > porPagina && (
+            {total > porVista && (
               <div className="flex items-center justify-center gap-2 mt-6 pt-2">
-                {Array.from({ length: Math.ceil(total / porPagina) }).map((_, paginaIdx) => {
-                  const activa = Math.floor(inicio / porPagina) === paginaIdx;
+                {Array.from({ length: Math.ceil(total / porVista) }).map((_, paginaIdx) => {
+                  const activa = Math.floor(inicio / porVista) === paginaIdx;
                   return (
                     <button
                       key={paginaIdx}
@@ -472,7 +486,7 @@ export function Publicaciones({
                       aria-label={`Ir a la página ${paginaIdx + 1}`}
                       onClick={(evento) => {
                         evento.stopPropagation();
-                        setInicio(paginaIdx * porPagina);
+                        setInicio(paginaIdx * porVista);
                       }}
                       style={enEdicion ? { pointerEvents: 'auto' } : undefined}
                       className={`h-2.5 rounded-full transition-all duration-300 ${
@@ -485,13 +499,13 @@ export function Publicaciones({
             )}
           </div>
 
-          {total > porPagina && (
+          {total > porVista && (
             <button
               type="button"
               aria-label="Página siguiente"
               onClick={(evento) => {
                 evento.stopPropagation();
-                setInicio((previo) => (previo + porPagina) % total);
+                setInicio((previo) => (previo + porVista) % total);
               }}
               style={enEdicion ? { pointerEvents: 'auto' } : undefined}
               className="publicaciones-nav-btn publicaciones-nav-next"

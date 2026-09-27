@@ -2,6 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 
+import { useCuantosCaben } from '@/shared/lib/use-cuantos-caben';
+
+/** Ancho mínimo de una imagen y hueco entre ellas (el `gap` de `.matriz-carousel-track`). */
+const ANCHO_MINIMO = 200;
+const HUECO = 24;
+
 export interface CarouselImage {
   src: string;
   alt: string;
@@ -24,7 +30,10 @@ export function Carousel({
 }: CarouselProps) {
   const [startIndex, setStartIndex] = useState(0);
   const totalItems = images.length;
-  const step = itemsPerPage;
+  // `itemsPerPage` es el máximo que eligió quien edita; se ven las que quepan en el
+  // hueco del carrusel, con 200px como mínimo cada una.
+  const { ref: medidor, cuantos: porVista } = useCuantosCaben<HTMLDivElement>(itemsPerPage, ANCHO_MINIMO, HUECO);
+  const step = porVista;
 
   const prevPage = () => {
     setStartIndex((prev) => (prev - step + totalItems * step) % totalItems);
@@ -35,22 +44,22 @@ export function Carousel({
   };
 
   useEffect(() => {
-    if (!autoplay || totalItems <= itemsPerPage) return;
+    if (!autoplay || totalItems <= porVista) return;
 
     const timer = setInterval(() => {
       setStartIndex((prev) => (prev + step) % totalItems);
     }, autoplayInterval);
 
     return () => clearInterval(timer);
-  }, [autoplay, autoplayInterval, totalItems, itemsPerPage, step]);
+  }, [autoplay, autoplayInterval, totalItems, porVista, step]);
 
   const currentSlides = [];
-  for (let i = 0; i < itemsPerPage; i++) {
+  for (let i = 0; i < porVista; i++) {
     currentSlides.push(images[(startIndex + i) % totalItems]);
   }
 
   return (
-    <div className={`matriz-carousel-wrapper ${!showButtons ? 'no-buttons' : ''}`}>
+    <div ref={medidor} className={`matriz-carousel-wrapper ${!showButtons ? 'no-buttons' : ''}`}>
       {/* Botón Anterior */}
       {showButtons && (
         <button
@@ -70,7 +79,7 @@ export function Carousel({
           <div
             key={index}
             className="matriz-carousel-slide"
-            style={{ width: itemsPerPage === 1 ? '100%' : `calc(${100 / itemsPerPage}% - ${(itemsPerPage - 1) * 1.5 / itemsPerPage}rem)` }}
+            style={{ width: porVista === 1 ? '100%' : `calc(${100 / porVista}% - ${(porVista - 1) * 1.5 / porVista}rem)` }}
           >
             {/* src dinamico y tamano por CSS: next/image exigiria width/height fijos o remotePatterns */}
             {/* eslint-disable-next-line @next/next/no-img-element */}

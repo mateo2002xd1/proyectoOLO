@@ -151,9 +151,11 @@ function LoginForm() {
           <img
             src="/assets/svg/olo-logo-blanco.svg"
             alt="Logo intranet"
-            className="mx-auto w-[210px]"
+            // En el móvil el panel de marca va encima del formulario: con 210px de logo
+            // y el título a 36px, el formulario quedaba debajo del pliegue.
+            className="mx-auto w-[96px] sm:w-[150px] lg:w-[210px]"
           />
-          <h1 className="text-4xl font-light text-white">
+          <h1 className="text-2xl font-light text-white sm:text-3xl lg:text-4xl">
             Bienvenido a <span className="font-bold"><br />NUESTRA INTRANET</span>
           </h1>
         </div>
@@ -164,7 +166,7 @@ function LoginForm() {
         {/* Misma tarjeta que el login del panel de administración: clases de
             Tailwind literales, no la hoja `.login-*` que tenía valores propios
             y se desalineaba de sitio-web cada vez que uno de los dos cambiaba. */}
-        <div className="w-full max-w-[380px] rounded-[24px] bg-white px-9 py-10 shadow-[0_25px_60px_rgba(0,0,0,0.35)]">
+        <div className="w-full max-w-[380px] rounded-[24px] bg-white px-6 py-8 shadow-[0_25px_60px_rgba(0,0,0,0.35)] sm:px-9 sm:py-10">
           {isSuccess ? (
             <div className="login-success-loader">
               <GooLoader label="Preparando tu espacio..." />

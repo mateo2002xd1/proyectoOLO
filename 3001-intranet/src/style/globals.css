@@ -57,6 +57,7 @@
 
   body {
     min-height: 100vh;
+    min-height: 100dvh;
     font-family: var(--font-body);
     color: var(--color-text-primary);
     line-height: 1.5;
@@ -225,6 +226,7 @@
 
 .intranet-home {
   min-height: 100vh;
+  min-height: 100dvh;
   background: #ececec;
   display: flex;
   flex-direction: column;
@@ -353,7 +355,12 @@
   z-index: 50;
 }
 
-.group:hover .intranet-dropdown-menu {
+/* Con ratón se abre al pasar por encima; con teclado, al tener el foco dentro; y con
+   un toque o un clic, por la clase `is-open` que pone el botón. Solo con `:hover`
+   no se abría con Tab ni de forma fiable en una pantalla táctil. */
+.group:hover .intranet-dropdown-menu,
+.group:focus-within .intranet-dropdown-menu,
+.group.is-open .intranet-dropdown-menu {
   opacity: 1;
   visibility: visible;
 }
@@ -402,30 +409,6 @@
 
 .intranet-mobile-menu>summary::-webkit-details-marker {
   display: none;
-}
-
-.intranet-mobile-menu-trigger {
-  display: none;
-  /* Hidden by default on desktop */
-  width: 42px;
-  height: 32px;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  border-radius: 8px;
-  color: #ffffff;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-@media (max-width: 720px) {
-  .intranet-mobile-menu-trigger {
-    display: inline-flex;
-  }
-}
-
-.intranet-mobile-menu-trigger svg {
-  width: 20px;
-  height: 20px;
 }
 
 .intranet-mobile-menu-panel {
@@ -560,6 +543,7 @@
 
 .intranet-search-results {
   max-height: min(50vh, 360px);
+  max-height: min(50dvh, 360px);
   overflow-y: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -645,6 +629,7 @@
 .intranet-construction {
   flex: 1;
   min-height: max(56vh, 500px);
+  min-height: max(56dvh, 500px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -685,7 +670,9 @@
   display: flex;
   flex-direction: column;
   gap: 0.58rem;
-  font-size: clamp(0.74rem, 1vw, 0.86rem);
+  /* 14px fijos: con `clamp(0.74rem, 1vw, …)` el pie bajaba a 12px en el móvil, por
+     debajo del mínimo de lectura (2-convenciones §10.2). */
+  font-size: 0.875rem;
   line-height: 1.5;
 }
 
@@ -735,23 +722,7 @@
   opacity: 0.88;
 }
 
-@media (max-width: 1060px) {
-  .intranet-topbar-inner {
-    grid-template-columns: 1fr;
-    justify-items: start;
-    gap: 0.8rem;
-  }
-
-  .intranet-nav {
-    justify-content: flex-start;
-    flex-wrap: wrap;
-    row-gap: 0.5rem;
-  }
-
-  .intranet-topbar-actions {
-    justify-self: end;
-  }
-
+@media (width < 64rem) {
   .intranet-footer-inner {
     grid-template-columns: 1fr;
   }
@@ -764,61 +735,432 @@
   }
 }
 
-@media (max-width: 720px) {
+/* Por debajo de `lg` la barra de arriba se queda solo con el buscador: el logo, el
+   menú y «Cerrar sesión» pasan a la navegación mobile de abajo (sección «NAVEGACIÓN
+   MOBILE DE LA INTRANET», más abajo). Hasta el 2026-09-27 aquí había un menú de
+   hamburguesa que se desplegaba debajo. */
+@media (width < 64rem) {
   .intranet-topbar-inner {
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    padding-top: 0.8rem;
-    gap: 0.5rem;
+    grid-template-columns: 1fr;
+    justify-items: end;
+    padding-block: 0.375rem;
   }
 
-  .intranet-brand {
-    order: 1;
-  }
-
-  .intranet-topbar-actions {
-    order: 2;
-  }
-
-  /* Default state on mobile: hidden */
-  .intranet-nav {
-    display: none;
-    order: 3;
-    width: 100%;
-    flex-direction: column;
-    align-items: flex-start;
-    grid-column: 1 / -1;
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  /* Open state on mobile */
-  .intranet-nav.is-open {
-    display: flex;
-  }
-
-  .intranet-nav-desktop,
-  .intranet-actions-desktop {
+  .intranet-brand,
+  .intranet-nav,
+  .intranet-login-btn {
     display: none;
   }
 
-  .intranet-mobile-menu {
-    display: block;
-    justify-self: end;
+  /* 44 px: es la acción principal de la barra en el móvil (2-convenciones §10.4). */
+  .intranet-search-toggle {
+    width: 44px;
+    height: 44px;
   }
+}
 
-  .intranet-brand-text {
-    font-size: 1rem;
+/* ============================================
+   NAVEGACIÓN MOBILE DE LA INTRANET
+   ============================================
+   `shared/lib/mobile/navegacion-mobile.tsx`. Por debajo de `lg` (1024 px) el menú de
+   la plantilla pasa de la barra de arriba a una barra fija abajo, al alcance del
+   pulgar, con el logo de OLO en el centro como «Inicio» y «Salir» al final. Lo que
+   no cabe se abre en una hoja desde abajo.
+
+   Es solo de la intranet: el panel tiene la suya, con sus estilos en su `globals.css`.
+   Los colores son el azul de la barra de arriba, en variables sobre
+   `.navegacion-mobile`: si en Puck se elige otro fondo para la barra,
+   `navegacion-mobile-intranet.tsx` lo pasa a `--navegacion-mobile-fondo`. La hoja es
+   hija de la barra y hereda las variables. */
+
+:root {
+  /* Lo que ocupa la barra, incluida la franja del gesto de inicio de iOS. El `<body>`
+     reserva este hueco y el botón flotante de edición sale por encima. */
+  --navegacion-mobile-alto: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+.navegacion-mobile {
+  --navegacion-mobile-fondo: #001631;
+  --navegacion-mobile-borde: rgb(255 255 255 / 0.12);
+  --navegacion-mobile-texto: rgb(255 255 255 / 0.78);
+  --navegacion-mobile-activo: #ffffff;
+  --navegacion-mobile-activo-fondo: rgb(255 255 255 / 0.16);
+  --navegacion-mobile-hover-fondo: rgb(255 255 255 / 0.08);
+  --navegacion-mobile-hoja-fondo: #03224a;
+  --navegacion-mobile-hoja-texto: #ffffff;
+  --navegacion-mobile-foco: #38bdf8;
+  --navegacion-mobile-logo-fondo: #001631;
+
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  /* Por encima del contenido y por debajo de los modales (z 50 y más), que así
+     tapan también la barra. */
+  z-index: 40;
+  /* Solo las esquinas de arriba: abajo la barra toca el borde de la pantalla. */
+  border-radius: 1.25rem 1.25rem 0 0;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: var(--navegacion-mobile-fondo);
+  /* La línea de arriba es sombra y no borde: un `border-top` sumaba 1px al alto y
+     la barra pisaba ese píxel del hueco reservado. */
+  box-shadow:
+    inset 0 1px 0 var(--navegacion-mobile-borde),
+    0 -4px 16px rgb(0 0 0 / 0.06);
+  color: var(--navegacion-mobile-texto);
+}
+
+/* Desde `lg` la intranet tiene su menú arriba: el mismo corte que `lg:` de Tailwind. */
+@media (width >= 64rem) {
+  .navegacion-mobile {
+    display: none;
   }
+}
 
-  .intranet-nav-link {
-    font-size: 0.9rem;
-    width: 100%;
+/* La página hace scroll en el documento: el hueco de la barra se reserva al final
+   del `<body>`, para que el pie no quede debajo de ella. */
+@media (width < 64rem) {
+  body:has(.navegacion-mobile) {
+    padding-bottom: var(--navegacion-mobile-alto);
   }
+}
 
+.navegacion-mobile-lista {
+  display: flex;
+  align-items: stretch;
+  height: 4.5rem;
+  /* En una tablet los destinos no se separan hasta los bordes de la pantalla. */
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 0 0.25rem;
+  list-style: none;
+}
+
+.navegacion-mobile-lista > li {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.navegacion-mobile-lista > .navegacion-mobile-centro {
+  flex: 0 0 5.75rem;
+}
+
+.navegacion-mobile-destino,
+.navegacion-mobile-inicio {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.125rem;
+  border: 0;
+  border-radius: 0.75rem;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.navegacion-mobile-destino {
+  justify-content: center;
+  padding: 0.375rem 0.125rem;
+}
+
+.navegacion-mobile-icono {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 2rem;
+  border-radius: 9999px;
+  transition: background-color 150ms ease;
+}
+
+.navegacion-mobile-icono > svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+}
+
+/* 12px: es el nombre de un destino, no texto de lectura (2-convenciones §10.2 pide
+   14px para este). La misma medida que en el panel, donde con 14px «Auditoría» no
+   cabía a 320px. */
+.navegacion-mobile-etiqueta {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 500;
+}
+
+.navegacion-mobile-destino.es-activo,
+.navegacion-mobile-inicio.es-activo {
+  color: var(--navegacion-mobile-activo);
+}
+
+.navegacion-mobile-destino.es-activo .navegacion-mobile-icono {
+  background: var(--navegacion-mobile-activo-fondo);
+}
+
+.navegacion-mobile-destino.es-activo .navegacion-mobile-etiqueta,
+.navegacion-mobile-inicio.es-activo .navegacion-mobile-etiqueta {
+  font-weight: 600;
+}
+
+/* Solo con ratón: en una pantalla táctil el `:hover` se queda pegado tras el toque. */
+@media (hover: hover) {
+  .navegacion-mobile-destino:not(.es-activo):hover .navegacion-mobile-icono {
+    background: var(--navegacion-mobile-hover-fondo);
+  }
+}
+
+.navegacion-mobile-destino:focus-visible,
+.navegacion-mobile-inicio:focus-visible,
+.navegacion-mobile-hoja-fila:focus-visible,
+.navegacion-mobile-hoja-cerrar:focus-visible {
+  outline: 2px solid var(--navegacion-mobile-foco);
+  outline-offset: -2px;
+}
+
+.navegacion-mobile-contador {
+  position: absolute;
+  top: -0.125rem;
+  left: calc(50% + 0.375rem);
+  min-width: 1.125rem;
+  height: 1.125rem;
+  padding: 0 0.25rem;
+  border-radius: 9999px;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.125rem;
+  text-align: center;
+  box-shadow: 0 0 0 2px var(--navegacion-mobile-fondo);
+}
+
+/* --- El logo del centro ---
+   Un círculo de 5rem (80 px) que sobresale 49 px por encima de la barra y se separa
+   0.75rem de su etiqueta, para no montarse sobre la fila de los demás destinos. El
+   logo (91 × 104) va a 52 px de ancho, en color sobre el azul de la barra. */
+/* 0.6875rem (11px) abajo: lo que les queda a los demás destinos, que van centrados
+   ((4.5rem − icono 2rem − hueco − etiqueta 1rem) / 2). Con menos, la etiqueta del
+   logo quedaba 5px más abajo que las demás (medido en el panel, con «Dashboard»). */
+.navegacion-mobile-inicio {
+  justify-content: flex-end;
+  padding-bottom: 0.6875rem;
+}
+
+.navegacion-mobile-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 5rem;
+  height: 5rem;
+  flex-shrink: 0;
+  margin-top: -3.5625rem;
+  margin-bottom: 0.75rem;
+  border-radius: 50%;
+  background: var(--navegacion-mobile-logo-fondo);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.18);
+  transition: box-shadow 150ms ease;
+}
+
+.navegacion-mobile-logo img {
+  width: 3.25rem;
+  height: auto;
+  translate: 0 3px; /* x  y — negativo sube / va a la izquierda; positivo baja / va a la derecha */
+}
+
+.navegacion-mobile-inicio.es-activo .navegacion-mobile-logo {
+  box-shadow:
+    0 0 0 2px var(--navegacion-mobile-fondo),
+    0 0 0 4px var(--navegacion-mobile-activo),
+    0 4px 12px rgb(0 0 0 / 0.18);
+}
+
+.navegacion-mobile-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- La hoja que sube desde abajo («Encuestas», «Más») ---
+   Es un `<dialog>`: el navegador le pone `display: none` cerrado, así que el
+   `display: flex` va solo con `[open]`. Cabe siempre (2-convenciones §10.4): alto
+   máximo con `dvh` y la lista con su propio scroll. */
+.navegacion-mobile-hoja {
+  width: 100%;
+  max-width: 32rem;
+  max-height: calc(100dvh - 2rem);
+  margin: auto auto 0;
+  padding: 0 0 env(safe-area-inset-bottom, 0px);
+  border: 0;
+  border-radius: 1.25rem 1.25rem 0 0;
+  background: var(--navegacion-mobile-hoja-fondo);
+  color: var(--navegacion-mobile-hoja-texto);
+  box-shadow: 0 -8px 32px rgb(0 0 0 / 0.2);
+}
+
+.navegacion-mobile-hoja[open] {
+  display: flex;
+  flex-direction: column;
+  animation: navegacion-mobile-hoja-sube 200ms ease-out;
+}
+
+.navegacion-mobile-hoja::backdrop {
+  background: rgb(15 23 42 / 0.5);
+}
+
+@keyframes navegacion-mobile-hoja-sube {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navegacion-mobile-hoja[open] {
+    animation: none;
+  }
+}
+
+/* El modal nativo no bloquea el scroll de la página de detrás. */
+body:has(.navegacion-mobile-hoja[open]) {
+  overflow: hidden;
+}
+
+.navegacion-mobile-hoja-caja {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.navegacion-mobile-hoja-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.5rem 0.25rem 1.25rem;
+}
+
+.navegacion-mobile-hoja-titulo {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.navegacion-mobile-hoja-cerrar {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 0;
+  border-radius: 9999px;
+  background: none;
+  color: var(--navegacion-mobile-texto);
+  cursor: pointer;
+}
+
+.navegacion-mobile-hoja-cerrar svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.navegacion-mobile-hoja-lista {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 0 0.5rem 0.75rem;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.navegacion-mobile-hoja-fila {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.5rem 0.75rem;
+  border: 0;
+  border-radius: 0.75rem;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 500;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.navegacion-mobile-hoja-fila.es-activo {
+  background: var(--navegacion-mobile-activo-fondo);
+  color: var(--navegacion-mobile-activo);
+  font-weight: 600;
+}
+
+@media (hover: hover) {
+  .navegacion-mobile-hoja-fila:not(.es-activo):hover,
+  .navegacion-mobile-hoja-cerrar:hover {
+    background: var(--navegacion-mobile-hover-fondo);
+  }
+}
+
+.navegacion-mobile-hoja-icono {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--navegacion-mobile-texto);
+}
+
+.navegacion-mobile-hoja-fila.es-activo .navegacion-mobile-hoja-icono {
+  color: inherit;
+}
+
+.navegacion-mobile-hoja-icono > svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.navegacion-mobile-hoja-etiqueta {
+  flex: 1;
+  min-width: 0;
+}
+
+.navegacion-mobile-hoja-contador {
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.375rem;
+  border-radius: 9999px;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.5rem;
+  text-align: center;
+}
+
+@media (width < 48rem) {
   .intranet-construction {
-    min-height: 50vh;
+    min-height: 50dvh;
   }
 
   .intranet-construction-title {
@@ -833,6 +1175,7 @@
 
 .editor-page {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background: #f0f2f5;
@@ -1262,7 +1605,7 @@
   color: #1e293b;
 }
 
-@media (min-width: 480px) {
+@media (width >= 40rem) {
   .olo-ocupado-acciones {
     flex-direction: row;
     flex-wrap: wrap;
@@ -1305,6 +1648,7 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
 }
 
@@ -1863,6 +2207,14 @@
   align-items: center;
   justify-content: center;
   pointer-events: none;
+}
+
+/* Por debajo de `lg` está la navegación mobile abajo: el botón sale por encima de ella. */
+@media (width < 64rem) {
+  .fab-speed-dial {
+    bottom: calc(var(--navegacion-mobile-alto) + 1rem);
+    right: 1rem;
+  }
 }
 
 .fab-speed-dial__trigger {
@@ -3400,8 +3752,8 @@
    RESPONSIVE — Mobile-first breakpoints
    ============================================ */
 
-/* Tablets竖屏 (768px - 900px) */
-@media (max-width: 900px) {
+/* Por debajo de `md` los dos paneles se apilan: marca arriba, formulario debajo. */
+@media (width < 48rem) {
 
   .login-page,
   .recovery-page,
@@ -3432,8 +3784,8 @@
   }
 }
 
-/* Mobile (480px y menos) */
-@media (max-width: 480px) {
+/* Móvil (por debajo de `sm`) */
+@media (width < 40rem) {
 
   .login-left,
   .recovery-left,
@@ -3475,7 +3827,7 @@
 }
 
 /* Landscape mobile (altura limitada) */
-@media (max-height: 500px) and (orientation: landscape) {
+@media (height <= 500px) and (orientation: landscape) {
 
   .login-page,
   .recovery-page,
@@ -3552,8 +3904,9 @@
   }
 }
 
-/* Landscape tablets y desktop anchos */
-@media (min-width: 901px) and (orientation: landscape) and (max-height: 600px) {
+/* Apaisado bajo desde `lg` (portátiles con poca altura). Desde `lg` y no desde `md`:
+   un teléfono apaisado mide 800-930px de ancho y aquí le crecería el logo. */
+@media (width >= 64rem) and (orientation: landscape) and (height <= 600px) {
 
   .login-left,
   .recovery-left,
@@ -3592,8 +3945,8 @@
   }
 }
 
-/* Ultrawide / pantallas muy anchas (> 1600px) */
-@media (min-width: 1600px) {
+/* Pantallas muy anchas (desde `2xl`) */
+@media (width >= 96rem) {
 
   .login-left-content,
   .recovery-left-content,
@@ -4059,7 +4412,7 @@
   overflow-x: hidden;
 }
 
-@media (min-width: 768px) {
+@media (width >= 48rem) {
 
   .matriz-section-gray,
   .matriz-section-white,
@@ -4124,7 +4477,7 @@
   margin: 0;
 }
 
-@media (min-width: 768px) {
+@media (width >= 48rem) {
   .matriz-content-container-datoolo {
     flex-direction: row;
     gap: 3.5rem;
@@ -4183,9 +4536,15 @@
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem 4rem;
-  /* Espacio horizontal para los botones */
+  /* Espacio horizontal para los botones: en el móvil, el justo para uno de 44px. */
+  padding: 1.5rem 3.25rem;
   position: relative;
+}
+
+@media (width >= 48rem) {
+  .matriz-carousel-wrapper {
+    padding: 2rem 4rem;
+  }
 }
 
 .matriz-carousel-wrapper.no-buttons {
@@ -4227,8 +4586,10 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background-color: #ffffff;
-  padding: 0.75rem;
   border-radius: 25px;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   color: #0A1B3F;
@@ -4236,8 +4597,9 @@
   z-index: 10;
   cursor: pointer;
   transition: all 0.3s ease;
-  width: 50px;
-  height: 50px;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0.5rem;
 }
 
 .matriz-carousel-btn:hover {
@@ -4254,13 +4616,11 @@
   right: 0;
 }
 
-@media (min-width: 768px) {
-  .matriz-carousel-btn.prev {
-    left: 0;
-  }
-
-  .matriz-carousel-btn.next {
-    right: 0;
+@media (width >= 48rem) {
+  .matriz-carousel-btn {
+    width: 50px;
+    height: 50px;
+    padding: 0.75rem;
   }
 }
 
@@ -4288,7 +4648,7 @@
   z-index: 10;
 }
 
-@media (min-width: 900px) {
+@media (width >= 64rem) {
   .tasa-banner-content {
     flex-direction: row;
     justify-content: space-between;
@@ -4299,7 +4659,7 @@
 
 .tasa-banner-title {
   color: #ffffff;
-  font-size: 2.5rem;
+  font-size: clamp(1.75rem, 1.2rem + 2.2vw, 2.5rem);
   line-height: 1.3;
   font-weight: 400;
 }
@@ -4329,7 +4689,7 @@
   max-width: 1200px;
 }
 
-@media (min-width: 900px) {
+@media (width >= 64rem) {
   .encuesta-banner-content {
     gap: clamp(2rem, 4vw, 5rem);
   }
@@ -4359,7 +4719,7 @@
   margin-bottom: 0;
 }
 
-@media (min-width: 900px) {
+@media (width >= 64rem) {
   .tasa-concept-row {
     flex-direction: row;
     justify-content: space-between;
@@ -4378,17 +4738,26 @@
 
 .tasa-concept-title {
   color: #001631;
-  font-size: 2.25rem;
+  font-size: clamp(1.5rem, 1.1rem + 1.8vw, 2.25rem);
   margin-bottom: 1.5rem;
   position: relative;
 }
 
+/* Justificado solo desde `md`: en una columna de 300px el justificado abre huecos de
+   varios espacios entre palabras («certificados    por    competencias»). */
 .tasa-concept-desc {
   color: #475569;
-  font-size: 1.125rem;
+  font-size: 1.0625rem;
   line-height: 1.8;
-  text-align: justify;
+  text-align: left;
   margin-top: 1rem;
+}
+
+@media (width >= 48rem) {
+  .tasa-concept-desc {
+    font-size: 1.125rem;
+    text-align: justify;
+  }
 }
 
 .tasa-concept-desc h1,
@@ -4407,11 +4776,11 @@
 }
 
 .tasa-concept-desc h1 {
-  font-size: 2.25rem;
+  font-size: clamp(1.5rem, 1.1rem + 1.8vw, 2.25rem);
 }
 
 .tasa-concept-desc h2 {
-  font-size: 1.875rem;
+  font-size: clamp(1.375rem, 1.05rem + 1.4vw, 1.875rem);
 }
 
 .tasa-concept-desc h3 {
@@ -4501,7 +4870,7 @@
 }
 
 .tasa-video-title {
-  font-size: 2rem;
+  font-size: clamp(1.5rem, 1.2rem + 1.3vw, 2rem);
   font-weight: 400;
   margin-bottom: 1rem;
   line-height: 1.3;
@@ -4700,7 +5069,7 @@
   gap: 4rem;
 }
 
-@media (min-width: 900px) {
+@media (width >= 64rem) {
   .tasa-ppt-container {
     flex-direction: row;
     justify-content: space-between;
@@ -4751,7 +5120,10 @@
   box-shadow: 0 4px 24px rgba(0, 22, 49, 0.08);
 }
 
-@media (min-width: 768px) {
+/* Reproductor y lista lado a lado desde `lg`: a 768px la columna de la lista medía
+   210px y, con la miniatura de 110px, el título se quedaba en 60px y hacía scroll
+   lateral. En tablet van uno encima del otro. */
+@media (width >= 64rem) {
   .rv-container {
     grid-template-columns: 1.8fr 1fr;
     padding: 1.5rem;
@@ -4901,7 +5273,7 @@
   color: #718096;
 }
 
-@media (max-width: 767px) {
+@media (width < 48rem) {
   .rv-playlist {
     max-height: 300px;
   }
@@ -4939,29 +5311,17 @@
   overflow: hidden;
 }
 
-@media (min-width: 768px) {
+@media (width >= 48rem) {
   .publicaciones-container {
     padding: 2rem;
   }
 }
 
+/* Las columnas las pone `publicaciones.tsx` en línea: tantas como tarjetas quepan en
+   el contenedor (`useCuantosCaben`), que es también lo que avanza cada flecha. */
 .publicaciones-grid {
   display: grid;
-  grid-template-columns: repeat(1, 1fr);
   gap: 1.5rem;
-
-}
-
-@media (min-width: 640px) {
-  .publicaciones-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 768px) {
-  .publicaciones-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
 }
 
 .publicaciones-card {
@@ -5011,7 +5371,7 @@
   overflow: hidden;
 }
 
-@media (min-width: 768px) {
+@media (width >= 48rem) {
   .publicaciones-card-title {
     font-size: 1rem;
   }
@@ -5090,7 +5450,7 @@
   right: -0.5rem;
 }
 
-@media (min-width: 768px) {
+@media (width >= 48rem) {
   .publicaciones-nav-prev {
     left: 0.25rem;
   }
@@ -5193,7 +5553,7 @@
   width: 100%;
 }
 
-@media (min-width: 768px) {
+@media (width >= 48rem) {
   .preguntas-section {
     padding-top: 5rem;
     padding-bottom: 5rem;
@@ -5209,7 +5569,7 @@
   padding: 0 1rem;
 }
 
-@media (min-width: 768px) {
+@media (width >= 48rem) {
   .preguntas-title {
     font-size: 2.25rem;
     margin-bottom: 3rem;
@@ -5230,7 +5590,7 @@
   padding: 0 1rem;
 }
 
-@media (min-width: 768px) {
+@media (width >= 48rem) {
   .preguntas-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 2.5rem;
@@ -5320,7 +5680,7 @@
 /* Un espaciado amplio en escritorio deja el contenido en una columna
    asfixiada en móvil. Se reduce solo, en vez de pedir que se configure aparte
    cada tamaño de pantalla. */
-@media (max-width: 640px) {
+@media (width < 40rem) {
   .olo-caja {
     padding-top: calc(var(--olo-caja-interior-y, 0px) * 0.6);
     padding-bottom: calc(var(--olo-caja-interior-y, 0px) * 0.6);
@@ -5340,7 +5700,7 @@
   width: 100%;
 }
 
-@media (max-width: 640px) {
+@media (width < 40rem) {
   .olo-grid {
     grid-template-columns: 1fr;
   }
@@ -5363,7 +5723,7 @@
   min-width: 0;
 }
 
-@media (max-width: 640px) {
+@media (width < 40rem) {
   .olo-flex--apilar {
     flex-direction: column;
     align-items: stretch;
@@ -5379,7 +5739,7 @@
   padding: 3rem 1.5rem;
 }
 
-@media (min-width: 768px) {
+@media (width >= 48rem) {
   .olo-tabs-section {
     padding: 4rem 2rem;
   }
@@ -5395,7 +5755,7 @@
   width: 100%;
 }
 
-@media (max-width: 768px) {
+@media (width < 48rem) {
   .olo-tabs-layout--lateral {
     flex-direction: column !important;
   }
@@ -5449,7 +5809,7 @@
   min-height: 200px;
 }
 
-@media (max-width: 640px) {
+@media (width < 40rem) {
   .olo-tabs-content {
     padding: 1.25rem;
     border-radius: var(--radius-md, 8px);
@@ -5465,6 +5825,7 @@
    flexible para estirarse y dejar el pie abajo del todo. */
 .preview-page {
   min-height: 100vh;
+  min-height: 100dvh;
   background: #ffffff;
   display: flex;
   flex-direction: column;
@@ -5511,7 +5872,7 @@ body:has(.preview-page) .intranet-topbar {
   opacity: 0.85;
 }
 
-@media (max-width: 720px) {
+@media (width < 48rem) {
   .preview-aviso-nota {
     margin-left: 0;
     width: 100%;
@@ -5559,7 +5920,7 @@ body:has(.preview-page) .intranet-topbar {
   opacity: 0.85;
 }
 
-@media (max-width: 720px) {
+@media (width < 48rem) {
   .preview-aviso-nota {
     margin-left: 0;
   }
@@ -5624,19 +5985,19 @@ body:has(.preview-page) .intranet-topbar {
   justify-content: center;
 }
 
-@media (max-width: 1200px) {
+@media (width < 80rem) {
   .olo-sectorial-grid {
     grid-template-columns: repeat(min(var(--olo-grid-cols, 3), 4), minmax(0, 1fr)) !important;
   }
 }
 
-@media (max-width: 768px) {
+@media (width < 48rem) {
   .olo-sectorial-grid {
     grid-template-columns: repeat(min(var(--olo-grid-cols, 3), 2), minmax(0, 1fr)) !important;
   }
 }
 
-@media (max-width: 480px) {
+@media (width < 40rem) {
   .olo-sectorial-grid {
     grid-template-columns: 1fr !important;
   }
@@ -5771,4 +6132,4 @@ body:has(.preview-page) .intranet-topbar {
 [class*="_LayerTree-helper_"]::before {
   content: "Sin bloques";
   font-size: 14px;
-}
+}

@@ -10,12 +10,24 @@ import {
   type ItemTextoBusqueda,
 } from '@/features/paginas/client';
 import { desplazarAElemento, resaltarCoincidenciaTexto } from '@olo/blocks-renderer';
+import { NavegacionMobileIntranet } from '@/shared/lib/mobile';
 
 /** Valores de Puck para `justify-content`/`align-items` dentro de `.intranet-brand`. */
 type AlineacionFlex = 'flex-start' | 'center' | 'flex-end';
 
+/** Un enlace del menú, tal como se edita en Puck (`puck.config.tsx`, campo «Menú de Navegación»). */
+export interface ItemMenuIntranet {
+  label?: React.ReactNode;
+  href?: string;
+  children?: Array<{ label?: React.ReactNode; href?: string }>;
+  /** Icono en la navegación mobile. Vacío: el de su sección en `public/assets/svg/mobile/`. */
+  icono?: string;
+  /** Texto bajo el icono en el móvil. Vacío: el del menú, recortado. */
+  etiquetaMovil?: string;
+}
+
 interface IntranetTopbarProps {
-  menuItems?: Array<{ label?: React.ReactNode; href?: string; children?: Array<{ label?: React.ReactNode; href?: string }> }>;
+  menuItems?: ItemMenuIntranet[];
   brandText?: React.ReactNode;
   /** Posición del logo + texto dentro de su contenedor. Por defecto, el
    *  layout de siempre: pegado a la izquierda y centrado verticalmente. */
@@ -113,9 +125,29 @@ export function IntranetTopbar({
   const [searchQuery, setSearchQuery] = useState("");
   const [activo, setActivo] = useState(0);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  // Índice del enlace cuyo submenú está abierto por clic o toque. El `:hover` sigue
+  // abriéndolo con ratón, pero solo con él no se abría con teclado ni de forma fiable
+  // en una pantalla táctil.
+  const [submenuAbierto, setSubmenuAbierto] = useState<number | null>(null);
+  const navRef = useRef<HTMLElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const listaRef = useRef<HTMLUListElement>(null);
+
+  useEffect(() => {
+    if (submenuAbierto === null) return;
+    const alPulsarFuera = (evento: MouseEvent) => {
+      if (!navRef.current?.contains(evento.target as Node)) setSubmenuAbierto(null);
+    };
+    const alPulsarEscape = (evento: KeyboardEvent) => {
+      if (evento.key === 'Escape') setSubmenuAbierto(null);
+    };
+    document.addEventListener('mousedown', alPulsarFuera);
+    document.addEventListener('keydown', alPulsarEscape);
+    return () => {
+      document.removeEventListener('mousedown', alPulsarFuera);
+      document.removeEventListener('keydown', alPulsarEscape);
+    };
+  }, [submenuAbierto]);
 
   useEffect(() => {
     if (isDropdownOpen) searchInputRef.current?.focus();
@@ -349,25 +381,54 @@ export function IntranetTopbar({
           <span className="intranet-brand-text">{brandText}</span>
         </div>
 
-        <nav className={`intranet-nav ${isMobileMenuOpen ? 'is-open' : ''}`}>
-          {menuItems.map((item, index) => (
+        <nav ref={navRef} className="intranet-nav">
+          {menuItems.map((item, index) => {
             // `item.children?.length` y no `item.children`: desde el editor los
             // enlaces sin submenú llegan con un array vacío, que es truthy y
             // pintaría la flecha de desplegar sobre un menú sin nada dentro.
-            item.children?.length ? (
-              <div key={typeof item.label === 'string' ? `${item.label}-${index}` : `nav-${index}`} className="relative group w-full lg:w-auto">
-                <a 
-                  href={item.href} 
-                  className="intranet-nav-link flex items-center justify-between lg:justify-start gap-1.5 px-4 py-3 lg:py-2 w-full"
-                  onClick={(e) => {
-                    if (item.href === "#" || !item.href) {
-                      e.preventDefault();
-                    }
-                  }}
-                >
+            if (!item.children?.length) {
+              return (
+                <a key={typeof item.label === 'string' ? `${item.label}-${index}` : `nav-${index}`} href={item.href} className="intranet-nav-link flex items-center gap-1.5 px-4 py-3 lg:py-2 w-full lg:w-auto">
                   {item.label}
-                  <svg className="w-3.5 h-3.5 transition-transform duration-200 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                 </a>
+              );
+            }
+            const abierto = submenuAbierto === index;
+            const alternar = () => setSubmenuAbierto(abierto ? null : index);
+            const flecha = (
+              <svg aria-hidden="true" className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 lg:group-hover:rotate-180 ${abierto ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+            );
+            // Con destino propio, el texto navega y la flecha despliega; sin él (`#`,
+            // como «Encuestas»), el elemento entero es el botón que despliega.
+            const tieneDestino = Boolean(item.href) && item.href !== '#';
+            return (
+              <div key={typeof item.label === 'string' ? `${item.label}-${index}` : `nav-${index}`} className={`relative group w-full lg:w-auto${abierto ? ' is-open' : ''}`}>
+                {tieneDestino ? (
+                  <div className="flex items-center">
+                    <a href={item.href} className="intranet-nav-link flex-1 px-4 py-3 lg:py-2 lg:pr-1">
+                      {item.label}
+                    </a>
+                    <button
+                      type="button"
+                      aria-expanded={abierto}
+                      aria-label={typeof item.label === 'string' ? `Abrir el submenú de ${item.label}` : 'Abrir el submenú'}
+                      onClick={alternar}
+                      className="intranet-nav-link flex items-center px-4 py-3 lg:py-2 lg:pl-1"
+                    >
+                      {flecha}
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    aria-expanded={abierto}
+                    onClick={alternar}
+                    className="intranet-nav-link flex items-center justify-between lg:justify-start gap-1.5 px-4 py-3 lg:py-2 w-full"
+                  >
+                    {item.label}
+                    {flecha}
+                  </button>
+                )}
                 <div className="intranet-dropdown-menu">
                   <div className="intranet-dropdown-box">
                     {item.children.map((child, childIndex) => (
@@ -382,28 +443,11 @@ export function IntranetTopbar({
                   </div>
                 </div>
               </div>
-            ) : (
-              <a key={typeof item.label === 'string' ? `${item.label}-${index}` : `nav-${index}`} href={item.href} className="intranet-nav-link flex items-center gap-1.5 px-4 py-3 lg:py-2 w-full lg:w-auto">
-                {item.label}
-              </a>
-            )
-          ))}
+            );
+          })}
         </nav>
 
         <div className="intranet-topbar-actions" aria-label="Acciones">
-          <button
-            type="button"
-            className="intranet-mobile-menu-trigger"
-            aria-label="Menú"
-            onClick={() => setIsMobileMenuOpen((open) => !open)}
-          >
-            {isMobileMenuOpen ? (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            ) : (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-            )}
-          </button>
-
           <button
             type="button"
             className={`intranet-search-toggle${isDropdownOpen ? ' is-active' : ''}`}
@@ -514,7 +558,7 @@ export function IntranetTopbar({
                 id="buscador-intranet-resultados"
                 role="listbox"
                 aria-label="Resultados"
-                className="mt-6 max-h-[50vh] space-y-1 overflow-y-auto"
+                className="mt-6 max-h-[50dvh] space-y-1 overflow-y-auto"
               >
                 {filteredResults.slice(0, 25).map((result, idx) => {
                   const seleccionado = idx === activo;
@@ -569,6 +613,12 @@ export function IntranetTopbar({
           </div>
         </div>
       )}
+
+      {/* Por debajo de `lg` el menú, el logo y "Cerrar sesión" de arriba se ocultan
+          (globals.css) y viven aquí, en la navegación mobile de abajo, al alcance del
+          pulgar. Va dentro de la barra y no en `MarcoSecciones` para que el editor y
+          la vista previa de la plantilla la pinten con el menú del borrador. */}
+      <NavegacionMobileIntranet menuItems={menuItems} fondo={fondo} onLogout={onLogout} />
     </header>
   );
 }
