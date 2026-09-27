@@ -455,16 +455,16 @@ export default function UsuariosView() {
               ) : (
                 usuariosPaginados.map((user) => (
                   <tr key={user.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                    <td className="px-6 py-4 text-sm font-medium text-zinc-900 dark:text-[#f6f6f6]">
+                    <td className="px-6 py-2 text-sm font-medium text-zinc-900 dark:text-[#f6f6f6]">
                       {[user.name, user.apellidos].filter(Boolean).join(' ')}
                     </td>
-                    <td data-etiqueta="Correo" className="px-6 py-4 text-sm text-zinc-500 dark:text-[#94a3b8]">
+                    <td data-etiqueta="Correo" className="px-6 py-2 text-sm text-zinc-500 dark:text-[#94a3b8]">
                       {user.email}
                     </td>
-                    <td data-etiqueta="Rol" className="px-6 py-4 text-sm text-zinc-500 dark:text-[#94a3b8]">
+                    <td data-etiqueta="Rol" className="px-6 py-2 text-sm text-zinc-500 dark:text-[#94a3b8]">
                       {user.role?.name || 'Sin rol'}
                     </td>
-                    <td data-etiqueta="Estado" className="px-6 py-4 text-sm">
+                    <td data-etiqueta="Estado" className="px-6 py-2 text-sm">
                       <div className="flex items-center gap-2">
                         <Switch
                           checked={user.status === 'active'}
@@ -473,7 +473,7 @@ export default function UsuariosView() {
                         <span className="text-zinc-500 dark:text-[#94a3b8] text-xs">{user.status === 'active' ? 'Activo' : 'Inactivo'}</span>
                       </div>
                     </td>
-                    <td data-etiqueta="Bloqueo" className="px-6 py-4 text-sm">
+                    <td data-etiqueta="Bloqueo" className="px-6 py-2 text-sm">
                       {(() => {
                         const bloqueo = infoBloqueo(user, ahora);
                         return bloqueo ? (
@@ -488,7 +488,7 @@ export default function UsuariosView() {
                         );
                       })()}
                     </td>
-                    <td data-etiqueta="Acciones" className="px-6 py-4 text-sm text-right">
+                    <td data-etiqueta="Acciones" className="px-6 py-2 text-sm text-right">
                       <div className="flex items-center gap-2 @3xl:justify-end">
                         <button type="button" onClick={() => startEdit(user)} className="p-1.5 text-zinc-500 hover:text-zinc-900 dark:text-[#94a3b8] dark:hover:text-white transition-colors" title="Editar">
                           <PencilIcon className="size-5" />

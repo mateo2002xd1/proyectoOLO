@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useId, useState } from 'react';
+import { CustomSelect } from './custom-select';
 
 /**
  * De qué zona son los colores. El diseño es uno solo en todas las tablas; lo que
@@ -19,7 +20,15 @@ interface PaginacionProps {
   tono: Tono;
   /** Nombre de la navegación para lectores de pantalla. */
   ariaLabel?: string;
+  /** Si llega, «Filas por página» va al final, después de «Ir a la página». */
+  porPagina?: FilasPorPaginaProps;
   className?: string;
+}
+
+interface FilasPorPaginaProps {
+  valor: number;
+  opciones: readonly number[];
+  onCambiar: (porPagina: number) => void;
 }
 
 const COLORES: Record<
@@ -151,7 +160,7 @@ function IrAPagina({
         // Solo dígitos: el campo es de texto (un `type="number"` pinta flechas que no
         // caben en este ancho) y así no hace falta avisar de nada al enviar.
         onChange={(e) => setValor(e.target.value.replace(/\D/g, ''))}
-        className={`block w-12 rounded-lg border px-2.5 py-1.5 text-sm shadow-xs focus:outline-none focus:ring-1 sm:py-2 ${colores.campo}`}
+        className={`block h-8 w-12 rounded-lg border px-2.5 text-sm shadow-xs focus:outline-none focus:ring-1 sm:h-9 ${colores.campo}`}
       />
       <span id={`${id}-total`} className={`text-sm font-medium ${colores.texto}`}>
         de {totalPaginas}
@@ -161,12 +170,45 @@ function IrAPagina({
 }
 
 /**
+ * «Filas por página»: con el mismo borde, alto y radio que las casillas del grupo,
+ * para que la fila se lea como una sola pieza. Es `CustomSelect` y no un `<select>`:
+ * la lista de un `<select>` la dibuja el navegador, sin borde ni esquinas. Se abre
+ * hacia arriba porque va al pie de la tabla.
+ */
+function FilasPorPagina({
+  valor,
+  opciones,
+  onCambiar,
+  colores,
+}: FilasPorPaginaProps & { colores: (typeof COLORES)[Tono] }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span aria-hidden="true" className={`shrink-0 text-sm font-medium ${colores.texto}`}>
+        Filas por página
+      </span>
+      <CustomSelect
+        compacto
+        abrirArriba
+        paleta={colores.boton}
+        // Con `aria-label` el lector no lee el contenido del botón: el valor va en él.
+        ariaLabel={`Filas por página: ${valor}`}
+        value={String(valor)}
+        onChange={(v) => onCambiar(Number(v))}
+        options={opciones.map(String)}
+        className="w-[4.5rem]"
+      />
+    </div>
+  );
+}
+
+/**
  * Paginación de todas las tablas: un grupo de casillas unidas (anterior, números,
- * siguiente) y el campo «Ir a la página». La usan el panel, a través de `Paginador`,
- * que le añade el «Mostrando X-Y» y las filas por página, y las tablas públicas
- * directamente.
+ * siguiente), el campo «Ir a la página» y, si se pide, «Filas por página». La usan
+ * el panel, a través de `Paginador`, que le añade el «Mostrando X-Y», y las tablas
+ * públicas directamente.
  *
- * No se pinta con una sola página: quien la usa decide si hace falta.
+ * Con una sola página no pinta las casillas ni «Ir a la página»; solo las filas por
+ * página, si se pidieron (con 15 filas y 20 registros hay que poder pasar a 30).
  */
 export function Paginacion({
   pagina,
@@ -174,75 +216,83 @@ export function Paginacion({
   onCambiarPagina,
   tono,
   ariaLabel = 'Paginación',
+  porPagina,
   className = '',
 }: PaginacionProps) {
   const colores = COLORES[tono];
+  const variasPaginas = totalPaginas > 1;
 
   return (
     <nav
       aria-label={ariaLabel}
       className={`flex flex-wrap items-center justify-center gap-x-4 gap-y-3 ${className}`}
     >
-      <ul className="flex -space-x-px text-sm">
-        <li>
-          <button
-            type="button"
-            onClick={() => onCambiarPagina(pagina - 1)}
-            disabled={pagina === 1}
-            aria-label="Página anterior"
-            className={`${CASILLA} ${FLECHA} rounded-s-lg ${colores.boton} ${colores.deshabilitado}`}
-          >
-            <ChevronIcon direccion="izquierda" />
-            <span className="hidden sm:inline">Anterior</span>
-          </button>
-        </li>
+      {variasPaginas && (
+        <ul className="flex -space-x-px text-sm">
+          <li>
+            <button
+              type="button"
+              onClick={() => onCambiarPagina(pagina - 1)}
+              disabled={pagina === 1}
+              aria-label="Página anterior"
+              className={`${CASILLA} ${FLECHA} rounded-s-lg ${colores.boton} ${colores.deshabilitado}`}
+            >
+              <ChevronIcon direccion="izquierda" />
+              <span className="hidden sm:inline">Anterior</span>
+            </button>
+          </li>
 
-        {posicionesVisibles(pagina, totalPaginas).map((posicion, indice) =>
-          posicion === '…' ? (
-            // `aria-hidden`: un lector de pantalla no gana nada oyendo «puntos
-            // suspensivos»; ya oye «página 1» y «página 112» a cada lado.
-            <li key={`hueco-${indice}`} aria-hidden="true">
-              <span className={`${CASILLA} ${NUMERO} select-none ${colores.hueco}`}>…</span>
-            </li>
-          ) : (
-            <li key={posicion}>
-              <button
-                type="button"
-                onClick={() => onCambiarPagina(posicion)}
-                aria-label={`Página ${posicion}`}
-                aria-current={posicion === pagina ? 'page' : undefined}
-                className={`${CASILLA} ${NUMERO} ${
-                  // `relative z-10`: su borde es de otro color y, sin subirla, las
-                  // vecinas le taparían un píxel a cada lado.
-                  posicion === pagina ? `relative z-10 ${colores.actual}` : colores.boton
-                }`}
-              >
-                {posicion}
-              </button>
-            </li>
-          )
-        )}
+          {posicionesVisibles(pagina, totalPaginas).map((posicion, indice) =>
+            posicion === '…' ? (
+              // `aria-hidden`: un lector de pantalla no gana nada oyendo «puntos
+              // suspensivos»; ya oye «página 1» y «página 112» a cada lado.
+              <li key={`hueco-${indice}`} aria-hidden="true">
+                <span className={`${CASILLA} ${NUMERO} select-none ${colores.hueco}`}>…</span>
+              </li>
+            ) : (
+              <li key={posicion}>
+                <button
+                  type="button"
+                  onClick={() => onCambiarPagina(posicion)}
+                  aria-label={`Página ${posicion}`}
+                  aria-current={posicion === pagina ? 'page' : undefined}
+                  className={`${CASILLA} ${NUMERO} ${
+                    // `relative z-10`: su borde es de otro color y, sin subirla, las
+                    // vecinas le taparían un píxel a cada lado.
+                    posicion === pagina ? `relative z-10 ${colores.actual}` : colores.boton
+                  }`}
+                >
+                  {posicion}
+                </button>
+              </li>
+            )
+          )}
 
-        <li>
-          <button
-            type="button"
-            onClick={() => onCambiarPagina(pagina + 1)}
-            disabled={pagina === totalPaginas}
-            aria-label="Página siguiente"
-            className={`${CASILLA} ${FLECHA} rounded-e-lg ${colores.boton} ${colores.deshabilitado}`}
-          >
-            <span className="hidden sm:inline">Siguiente</span>
-            <ChevronIcon direccion="derecha" />
-          </button>
-        </li>
-      </ul>
+          <li>
+            <button
+              type="button"
+              onClick={() => onCambiarPagina(pagina + 1)}
+              disabled={pagina === totalPaginas}
+              aria-label="Página siguiente"
+              className={`${CASILLA} ${FLECHA} rounded-e-lg ${colores.boton} ${colores.deshabilitado}`}
+            >
+              <span className="hidden sm:inline">Siguiente</span>
+              <ChevronIcon direccion="derecha" />
+            </button>
+          </li>
+        </ul>
+      )}
 
-      <IrAPagina
-        pagina={pagina}
-        totalPaginas={totalPaginas}
-        onCambiarPagina={onCambiarPagina}
-        colores={colores}
-      />
+      {variasPaginas && (
+        <IrAPagina
+          pagina={pagina}
+          totalPaginas={totalPaginas}
+          onCambiarPagina={onCambiarPagina}
+          colores={colores}
+        />
+      )}
+
+      {porPagina && <FilasPorPagina {...porPagina} colores={colores} />}
     </nav>
   );
 }

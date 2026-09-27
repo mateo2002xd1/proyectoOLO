@@ -21,9 +21,10 @@ interface PaginadorProps {
   className?: string;
 }
 
-/** Pie de las tablas del panel: «Mostrando X-Y de Z», filas por página y, a la
- *  derecha, `Paginacion` (la misma de las tablas públicas, con la paleta del
- *  panel). Lo usan Roles, Usuarios, Actividad Reciente, Auditoría y Revisión. */
+/** Pie de las tablas: «Mostrando X-Y de Z» a la izquierda y, a la derecha,
+ *  `Paginacion` (anterior, números, siguiente, «Ir a la página» y filas por
+ *  página). Lo usan Roles, Usuarios, Actividad Reciente, Auditoría, Revisión y las
+ *  tablas públicas con paginación. */
 export function Paginador({
   pagina,
   totalPaginas,
@@ -49,35 +50,20 @@ export function Paginador({
     <div
       className={`flex flex-wrap items-center justify-between gap-3 border-t border-zinc-100 py-3 dark:border-zinc-800 ${className}`}
     >
-      <div className="flex flex-wrap items-center gap-4">
-        <span className="text-xs text-zinc-500 dark:text-[#94a3b8]">
-          Mostrando {desde}-{hasta} de {total} {etiqueta}
-        </span>
-        <label className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-[#94a3b8]">
-          Filas por página
-          <select
-            value={porPagina}
-            onChange={(e) => onCambiarPorPagina(Number(e.target.value))}
-            className="rounded-lg border border-zinc-300 bg-white px-2 py-1 text-xs font-medium text-zinc-700 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-[#131b2f] dark:text-zinc-200 dark:focus:border-white dark:focus:ring-white"
-          >
-            {opciones.map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
+      <span className="text-xs text-zinc-500 dark:text-[#94a3b8]">
+        Mostrando {desde}-{hasta} de {total} {etiqueta}
+      </span>
 
-      {totalPaginas > 1 && (
-        <Paginacion
-          pagina={pagina}
-          totalPaginas={totalPaginas}
-          onCambiarPagina={onCambiarPagina}
-          tono={tono}
-          ariaLabel={`Paginación de ${etiqueta}`}
-        />
-      )}
+      {/* «Filas por página» va a la derecha, tras «Ir a la página», con el borde y el
+          alto de las casillas: se pinta aunque haya una sola página. */}
+      <Paginacion
+        pagina={pagina}
+        totalPaginas={totalPaginas}
+        onCambiarPagina={onCambiarPagina}
+        tono={tono}
+        ariaLabel={`Paginación de ${etiqueta}`}
+        porPagina={{ valor: porPagina, opciones, onCambiar: onCambiarPorPagina }}
+      />
     </div>
   );
 }

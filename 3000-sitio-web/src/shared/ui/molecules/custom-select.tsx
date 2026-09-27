@@ -18,7 +18,19 @@ type CustomSelectProps = {
   className?: string;
   /** Necesario cuando la etiqueta visible no es un `<label>` asociado. */
   ariaLabel?: string;
+  /**
+   * Del alto de las casillas de la paginación (32 px; 36 desde `sm`) en vez de los
+   * 44 px de un filtro, y sin el círculo de la flecha.
+   */
+  compacto?: boolean;
+  /** Borde y fondo del botón cerrado; por defecto, los de los filtros del panel. */
+  paleta?: string;
+  /** La lista se abre hacia arriba: para un desplegable al pie de la página. */
+  abrirArriba?: boolean;
 };
+
+const PALETA_CERRADO =
+  "border-[#d0d5dd] bg-white hover:border-[#002237]/40 hover:bg-[#002237]/5 dark:border-[#2d3649] dark:bg-[#252f47] dark:hover:border-[#3a4660] dark:hover:bg-white/5";
 
 /**
  * Desplegable con lista propia.
@@ -56,6 +68,9 @@ export function CustomSelect({
   disabled = false,
   className = "",
   ariaLabel,
+  compacto = false,
+  paleta = PALETA_CERRADO,
+  abrirArriba = false,
 }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
@@ -100,10 +115,12 @@ export function CustomSelect({
         type="button"
         disabled={disabled}
         onClick={() => !disabled && setIsOpen((current) => !current)}
-        className={`group flex h-11 w-full items-center justify-between rounded-[16px] border px-3 text-left outline-none transition duration-200 ${
+        className={`group flex w-full items-center justify-between border text-left outline-none transition duration-200 ${
+          compacto ? "h-8 gap-1.5 rounded-lg pl-2.5 pr-1.5 shadow-xs sm:h-9" : "h-11 rounded-[16px] px-3"
+        } ${
           isOpen
             ? "border-[#002237] bg-white shadow-[0_0_0_3px_rgba(0,34,55,0.12)] dark:bg-[#252f47]"
-            : "border-[#d0d5dd] bg-white hover:border-[#002237]/40 hover:bg-[#002237]/5 dark:border-[#2d3649] dark:bg-[#252f47] dark:hover:border-[#3a4660] dark:hover:bg-white/5"
+            : paleta
         } ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
@@ -121,10 +138,12 @@ export function CustomSelect({
           </span>
         </span>
         <span
-          className={`flex h-7 w-7 items-center justify-center rounded-full transition ${
-            isOpen
-              ? "bg-[#002237]/10 text-[#002237] dark:bg-[#2f3a54] dark:text-[#a7b2cb]"
-              : "bg-[#f2f4f7] text-[#667085] group-hover:bg-[#002237]/10 group-hover:text-[#002237] dark:bg-[#2f3a54] dark:text-[#a7b2cb] dark:group-hover:bg-[#374565] dark:group-hover:text-[#a7b2cb]"
+          className={`flex items-center justify-center rounded-full transition ${
+            compacto
+              ? "h-5 w-5 text-[#667085] dark:text-[#a7b2cb]"
+              : isOpen
+                ? "h-7 w-7 bg-[#002237]/10 text-[#002237] dark:bg-[#2f3a54] dark:text-[#a7b2cb]"
+                : "h-7 w-7 bg-[#f2f4f7] text-[#667085] group-hover:bg-[#002237]/10 group-hover:text-[#002237] dark:bg-[#2f3a54] dark:text-[#a7b2cb] dark:group-hover:bg-[#374565] dark:group-hover:text-[#a7b2cb]"
           }`}
         >
           <ChevronDownIcon isOpen={isOpen} />
@@ -133,10 +152,16 @@ export function CustomSelect({
 
       {isOpen && (
         <div
-          className="absolute top-full left-0 right-0 z-[200] mt-1"
+          // Compacto, la lista puede ser más ancha que el botón si una opción no cabe,
+          // nunca más estrecha.
+          className={`absolute left-0 z-[200] ${compacto ? "min-w-full" : "right-0"} ${
+            abrirArriba ? "bottom-full mb-1" : "top-full mt-1"
+          }`}
         >
           <div
-            className="max-h-60 overflow-y-auto overflow-x-hidden rounded-[16px] border border-[#d0d5dd] bg-white p-1.5 shadow-[0_18px_30px_-12px_rgba(15,23,42,0.3)] dark:border-[#2d3649] dark:bg-[#1e2538]"
+            className={`max-h-60 overflow-y-auto overflow-x-hidden border border-[#d0d5dd] bg-white shadow-[0_18px_30px_-12px_rgba(15,23,42,0.3)] dark:border-[#2d3649] dark:bg-[#1e2538] ${
+              compacto ? "rounded-xl p-1" : "rounded-[16px] p-1.5"
+            }`}
             role="listbox"
           >
             {normalizedOptions.map((opt) => {
@@ -151,7 +176,9 @@ export function CustomSelect({
                     onChange(opt.value);
                     setIsOpen(false);
                   }}
-                  className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm transition duration-150 ${
+                  className={`flex w-full items-center justify-between text-left text-sm transition duration-150 ${
+                    compacto ? "gap-3 rounded-lg px-2.5 py-1.5" : "rounded-xl px-3 py-2.5"
+                  } ${
                     opt.disabled
                       ? "cursor-not-allowed text-[#667085] dark:text-[#95a0b8]"
                       : isSelected
@@ -163,9 +190,12 @@ export function CustomSelect({
                   aria-disabled={opt.disabled || undefined}
                 >
                   <span className="font-medium">{opt.label}</span>
-                  <span
-                    className={`h-2.5 w-2.5 rounded-full shrink-0 transition ${isSelected ? "bg-[#002237] shadow-[0_0_0_4px_rgba(0,34,55,0.12)] dark:bg-[#7c8db0]" : "bg-[#d8dde7] dark:bg-[#3a4660]"}`}
-                  />
+                  {/* Compacto, solo el dato: el elegido ya se distingue por su fondo. */}
+                  {!compacto && (
+                    <span
+                      className={`h-2.5 w-2.5 rounded-full shrink-0 transition ${isSelected ? "bg-[#002237] shadow-[0_0_0_4px_rgba(0,34,55,0.12)] dark:bg-[#7c8db0]" : "bg-[#d8dde7] dark:bg-[#3a4660]"}`}
+                    />
+                  )}
                 </button>
               );
             })}
