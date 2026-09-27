@@ -40,6 +40,16 @@ yarn-error.log*
 4000-api-backend/uploads/cargas-datos/*
 !4000-api-backend/uploads/cargas-datos/fuentes-futuras-de-empleo.xlsx
 
+# ── Adjuntos de páginas (imágenes, PDF, Excel subidos desde el editor) ─────────
+# `uploads/` es lo servido hoy, `backup/{paginaId}/` la última versión archivada. A
+# diferencia de arriba, aquí no hay tabla que reescriba el archivo si falta: son datos
+# de cada máquina y de cada prueba, no código. Los crea solo `backup-uploads.service.ts`
+# (fs.mkdirSync recursivo) la primera vez que alguien sube algo.
+3000-sitio-web/public/storage/uploads/*
+3000-sitio-web/public/storage/backup/*
+3001-intranet/public/storage/uploads/*
+3001-intranet/public/storage/backup/*
+
 # Lo que generan `npm run db:esquema-diagrama` y `db:esquema-pdf` en 4000-api-backend/
 # (los `.sql` de los demás `db:esquema-*` ya los cubre `*.sql`).
 4000-api-backend/esquema-diagrama.*
