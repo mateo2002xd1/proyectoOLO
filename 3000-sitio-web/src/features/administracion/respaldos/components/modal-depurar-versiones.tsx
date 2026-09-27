@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   AlertTriangle,
   CheckCircle2,
@@ -32,6 +33,26 @@ function formatearBytes(bytes: number): string {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 }
 
+const claveTitulo = (titulo: string) => titulo.trim().toLocaleLowerCase('es');
+
+/** Títulos que se repiten entre páginas: solo esos llevan el ámbito para distinguirse. */
+function titulosRepetidos(paginas: { titulo: string }[]): Set<string> {
+  const vistos = new Set<string>();
+  const repetidos = new Set<string>();
+  for (const { titulo } of paginas) {
+    const clave = claveTitulo(titulo);
+    if (vistos.has(clave)) repetidos.add(clave);
+    vistos.add(clave);
+  }
+  return repetidos;
+}
+
+/** El título tal cual; con el ámbito detrás solo si otra página se llama igual. */
+function nombrePagina(titulo: string, ambito: string | undefined, repetidos: Set<string>): string {
+  if (!repetidos.has(claveTitulo(titulo))) return titulo;
+  return `${titulo} · ${ambito === 'intranet' ? 'Intranet' : 'Sitio web'}`;
+}
+
 export function ModalDepurarVersiones({
   abierto,
   registros,
@@ -58,23 +79,20 @@ export function ModalDepurarVersiones({
 
   // Catálogo único de páginas disponibles para el selector
   const opcionesPaginas = useMemo(() => {
-    const mapa = new Map<string, { id: string; label: string; ambito?: string }>();
+    const mapa = new Map<string, { id: string; titulo: string; ambito?: string }>();
     for (const r of registros) {
       if (!mapa.has(r.paginaId)) {
-        mapa.set(r.paginaId, {
-          id: r.paginaId,
-          label: `${r.titulo} (/${r.slug})`,
-          ambito: r.ambito,
-        });
+        mapa.set(r.paginaId, { id: r.paginaId, titulo: r.titulo, ambito: r.ambito });
       }
     }
     let lista = Array.from(mapa.values());
     if (filtros.ambito) {
       lista = lista.filter((p) => p.ambito === filtros.ambito);
     }
+    const repetidos = titulosRepetidos(lista);
     return [
       { value: '', label: 'Todas las páginas' },
-      ...lista.map((p) => ({ value: p.id, label: p.label })),
+      ...lista.map((p) => ({ value: p.id, label: nombrePagina(p.titulo, p.ambito, repetidos) })),
     ];
   }, [registros, filtros.ambito]);
 
@@ -119,7 +137,7 @@ export function ModalDepurarVersiones({
   // son exactamente los valores del reset— y con `fechaMaximaPermitida` recalculada al
   // día de hoy, que el efecto anterior no hacía (su `useMemo` sin dependencias se
   // quedaba con la fecha del primer montaje).
-  if (!abierto) return null;
+  if (!abierto || typeof document === 'undefined') return null;
 
   const handleEjecutar = async () => {
     setEjecutando(true);
@@ -143,33 +161,28 @@ export function ModalDepurarVersiones({
 
   const totalEncontradas = analisis?.totalVersiones ?? 0;
   const cantidadABorrar = totalEncontradas;
+  const repetidosDetalle = titulosRepetidos(analisis?.paginasAfectadas ?? []);
 
-  return (
+  // Sale por un portal al `<body>`, como `Alert` (crear usuario): dentro de la columna
+  // del panel la barra de abajo le quedaba encima y el desenfoque no cubría la página
+  // entera. Por debajo de `lg` el fondo deja libre el alto de esa barra: la caja cabe
+  // entre el borde de arriba y ella, y lo que no quepa hace scroll dentro.
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center-safe justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center-safe justify-center overflow-y-auto bg-[#0f172a]/40 p-4 pb-[calc(var(--navegacion-mobile-alto)+1rem)] backdrop-blur-sm animate-in fade-in duration-200 lg:pb-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="titulo-modal-depuracion"
     >
-      <div className="relative flex max-h-[calc(100dvh-2rem)] w-full max-w-2xl flex-col overflow-hidden rounded-[24px] border border-zinc-200 bg-white shadow-2xl dark:border-[#2d3649] dark:bg-[#151d30]">
+      <div className="relative flex max-h-[calc(100dvh-2rem-var(--navegacion-mobile-alto))] w-full max-w-2xl flex-col overflow-hidden rounded-[24px] border border-zinc-200 bg-white shadow-2xl lg:max-h-[calc(100dvh-2rem)] dark:border-[#2d3649] dark:bg-[#151d30]">
         {/* Cabecera */}
-        <div className="flex items-center justify-between border-b border-zinc-100 px-6 py-4 dark:border-[#202b42]">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-100 text-red-600 dark:bg-red-950/50 dark:text-red-400">
-              <Trash2 size={20} />
-            </div>
-            <div>
-              <h2
-                id="titulo-modal-depuracion"
-                className="text-lg font-bold text-zinc-900 dark:text-[#f6f6f6]"
-              >
-                Depurar versiones antiguas
-              </h2>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                Libera espacio en la base de datos eliminando versiones archivadas obsoletas.
-              </p>
-            </div>
-          </div>
+        <div className="flex items-center justify-between gap-3 border-b border-zinc-100 px-6 py-4 dark:border-[#202b42]">
+          <h2
+            id="titulo-modal-depuracion"
+            className="text-lg font-bold text-zinc-900 dark:text-[#f6f6f6]"
+          >
+            Depurar versiones antiguas
+          </h2>
           <button
             type="button"
             onClick={onCerrar}
@@ -205,6 +218,15 @@ export function ModalDepurarVersiones({
             </div>
           ) : (
             <div className="space-y-5">
+              {/* Información fija de conservación de respaldo */}
+              <div className="flex items-start gap-2.5 rounded-xl border border-blue-100 bg-blue-50/60 p-3 text-xs text-blue-900 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-200">
+                <Info size={16} className="mt-0.5 shrink-0 text-blue-600 dark:text-blue-400" />
+                <p className="leading-relaxed">
+                  <strong>Respaldo siempre protegido:</strong> La versión archivada más reciente de cada página
+                  se conserva siempre de forma automática para asegurar que nunca se pierda el punto de restauración.
+                </p>
+              </div>
+
               {/* Formulario de filtros */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
@@ -242,15 +264,6 @@ export function ModalDepurarVersiones({
                     options={opcionesPaginas}
                   />
                 </div>
-              </div>
-
-              {/* Información fija de conservación de respaldo */}
-              <div className="flex items-start gap-2.5 rounded-xl border border-blue-100 bg-blue-50/60 p-3 text-xs text-blue-900 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-200">
-                <Info size={16} className="mt-0.5 shrink-0 text-blue-600 dark:text-blue-400" />
-                <p className="leading-relaxed">
-                  <strong>Respaldo siempre protegido:</strong> La versión archivada más reciente de cada página
-                  se conserva siempre de forma automática para asegurar que nunca se pierda el punto de restauración.
-                </p>
               </div>
 
               {/* Panel de métricas en vivo */}
@@ -303,6 +316,16 @@ export function ModalDepurarVersiones({
                   </div>
                 )}
 
+                {/* Mientras llega el primer análisis se reserva el hueco de la lista (28 px
+                    por fila, hasta 4 = `max-h-28`): así la caja abre con su alto y no crece
+                    de golpe al cargar. */}
+                {!analisis && !errorAnalisis && (
+                  <div className="mt-3.5 border-t border-zinc-100 pt-2.5 dark:border-zinc-800/80" aria-hidden="true">
+                    <div className="h-4 w-28 animate-pulse rounded bg-zinc-100 dark:bg-zinc-800" />
+                    <div className="mt-1.5 h-28 animate-pulse rounded-lg bg-zinc-50 dark:bg-[#131b2e]" />
+                  </div>
+                )}
+
                 {analisis && analisis.paginasAfectadas.length > 0 && (
                   <div className="mt-3.5 border-t border-zinc-100 pt-2.5 dark:border-zinc-800/80">
                     <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
@@ -314,9 +337,8 @@ export function ModalDepurarVersiones({
                           <div className="flex items-center gap-1.5 truncate">
                             <FileText size={13} className="shrink-0 text-zinc-400" />
                             <span className="truncate font-medium text-zinc-800 dark:text-zinc-200">
-                              {p.titulo}
+                              {nombrePagina(p.titulo, p.ambito, repetidosDetalle)}
                             </span>
-                            <span className="text-[10px] text-zinc-500">({p.ambito})</span>
                           </div>
                           <div className="flex shrink-0 items-center gap-3 text-right text-zinc-600 dark:text-zinc-300">
                             <span>{p.cantidadVersiones} vers.</span>
@@ -408,7 +430,8 @@ export function ModalDepurarVersiones({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
