@@ -2603,6 +2603,16 @@ button.text-link,
   animation: gooPulseOpacity 1.5s ease-in-out infinite;
 }
 
+/* En el panel oscuro el azul marino no se lee: la etiqueta y el punto oscuro
+   pasan a tonos claros. */
+.dark .goo-loader-label {
+  color: #e2e8f0;
+}
+
+.dark .goo-loader-dot1 {
+  background-color: #e2e8f0;
+}
+
 .editor-loading-overlay {
   position: fixed;
   inset: 0;

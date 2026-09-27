@@ -19,6 +19,7 @@ import {
   type CategoriaAuditoria,
   type RegistroAuditoria,
 } from '../types';
+import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
 
 // Misma altura y mismas esquinas que los filtros, para que la fila se lea como
 // una sola banda de controles.
@@ -165,7 +166,7 @@ export function AuditoriaView() {
       {error ? (
         <p className="text-sm text-red-600">{error}</p>
       ) : isLoading ? (
-        <p className="text-sm text-zinc-500">Cargando bitácora…</p>
+        <CargandoSeccion label="Cargando bitácora..." className="min-h-[40vh]" />
       ) : registros.length === 0 ? (
         <p className="text-sm text-zinc-500">
           {hayFiltros
