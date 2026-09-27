@@ -38,6 +38,16 @@ const INTRANET_URL = process.env.NEXT_PUBLIC_INTRANET_URL || 'http://localhost:3
    comparación literal deje al usuario sin enlace al panel. */
 const EDITABLE_ROLES = ['superadmin', 'administrador', 'editor'];
 
+/* Firma oculta: teclear este código en la página cambia el reloj por el texto durante
+   18 s. Es un código de cifras y no un atajo con Ctrl, Alt o ⌘ porque cada sistema se
+   queda con alguno (Ctrl + T abre pestaña, ⌘ + ⌥ + D oculta el Dock de macOS). Se
+   compara `key` y no `code`: así sirven la fila de números y el teclado numérico. */
+const FIRMA = 'Diseñado y desarrollado por el Ingeniero David Tejada';
+const FIRMA_CODIGO = '50849501';
+const FIRMA_PAUSA_MAX_MS = 2000;
+const FIRMA_VISIBLE_MS = 18000;
+const FIRMA_SALIDA_MS = 1000;
+
 function getCookie(name: string): string | null {
   if (typeof document === 'undefined') return null;
   const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
@@ -156,25 +166,70 @@ export function Header({
   const [clock, setClock] = useState<string>('');
 
   useEffect(() => {
+    // La hora y el país salen de la zona horaria del equipo del visitante: se pinta en
+    // el navegador, así que quien está fuera ve la suya. `America/Bogota` es la única
+    // zona de Colombia. Fuera de ella, el formato del idioma y la región del navegador.
+    const enColombia = Intl.DateTimeFormat().resolvedOptions().timeZone === 'America/Bogota';
+    const formatoFecha = new Intl.DateTimeFormat(undefined, { day: '2-digit', month: '2-digit', year: '2-digit' });
+    const formatoHora = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' });
+    // En Colombia, «26-09-26 - 09:50 pm» armado a mano: con 'es-CO' `Intl` separa
+    // con «/» y escribe «p. m.».
+    const dosDigitos = (n: number) => String(n).padStart(2, '0');
     const updateTime = () => {
       const now = new Date();
-      const dateStr = now.toLocaleDateString('es-CO', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      });
-      const timeStr = now.toLocaleTimeString('es-CO', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: true,
-      });
-      setClock(`${dateStr} | ${timeStr}`);
+      if (!enColombia) {
+        setClock(`${formatoFecha.format(now)} - ${formatoHora.format(now)}`);
+        return;
+      }
+      const horas = now.getHours();
+      const fecha = `${dosDigitos(now.getDate())}-${dosDigitos(now.getMonth() + 1)}-${dosDigitos(now.getFullYear() % 100)}`;
+      const hora = `${dosDigitos(horas % 12 || 12)}:${dosDigitos(now.getMinutes())} ${horas < 12 ? 'am' : 'pm'}`;
+      setClock(`${fecha} - ${hora}`);
     };
     updateTime();
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  const [firma, setFirma] = useState<'oculta' | 'visible' | 'saliendo'>('oculta');
+
+  useEffect(() => {
+    if (!govBannerEnabled) return;
+    // Las últimas cifras tecleadas. Cualquier otra tecla o una pausa larga lo vacían.
+    let tecleado = '';
+    let ultimaTecla = 0;
+    let temporizadores: number[] = [];
+    const cancelarTemporizadores = () => {
+      temporizadores.forEach(clearTimeout);
+      temporizadores = [];
+    };
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.repeat || event.key === 'Shift') return;
+      if (!/^\d$/.test(event.key) || event.ctrlKey || event.altKey || event.metaKey) {
+        tecleado = '';
+        return;
+      }
+      if (event.timeStamp - ultimaTecla > FIRMA_PAUSA_MAX_MS) tecleado = '';
+      ultimaTecla = event.timeStamp;
+      tecleado = (tecleado + event.key).slice(-FIRMA_CODIGO.length);
+      if (tecleado !== FIRMA_CODIGO) return;
+
+      tecleado = '';
+      cancelarTemporizadores();
+      setFirma('visible');
+      temporizadores.push(
+        window.setTimeout(() => setFirma('saliendo'), FIRMA_VISIBLE_MS),
+        window.setTimeout(() => setFirma('oculta'), FIRMA_VISIBLE_MS + FIRMA_SALIDA_MS),
+      );
+    }
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      cancelarTemporizadores();
+    };
+  }, [govBannerEnabled]);
 
   const editHref = hasSession ? '/admin/dashboard' : '/login';
   const editTitle = hasSession ? 'Ir al panel de administración' : 'Iniciar sesión';
@@ -228,7 +283,18 @@ export function Header({
               className="olo-gov-banner-edit"
               title={editTitle}
             >
-              <span>{clock}</span>
+              {firma === 'oculta' ? (
+                <span>{clock}</span>
+              ) : (
+                // Puede partirse en dos líneas: en un móvil de 360 px no cabe en una.
+                <span
+                  className={`whitespace-normal text-right leading-tight transition-opacity duration-1000 motion-reduce:transition-none ${
+                    firma === 'saliendo' ? 'opacity-0' : 'opacity-100'
+                  }`}
+                >
+                  {FIRMA}
+                </span>
+              )}
             </a>
           </div>
         </div>
