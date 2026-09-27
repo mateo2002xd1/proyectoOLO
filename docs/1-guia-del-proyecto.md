@@ -299,6 +299,10 @@ Contenido del proyecto en capa `3001-intranet/src/`:
 │       │                             #   encuestas/, inicio/, matriz/, plantilla/, tasa/
 │       ├── inactividad/              #   Aviso y cierre de sesión por inactividad
 │       │                             #   (vigilante-sesion.tsx)
+│       ├── mobile/                   #   Navegación mobile: barra de abajo con el logo
+│       │                             #   al centro, armada con el menú de la plantilla.
+│       │                             #   Estilos en globals.css; iconos en
+│       │                             #   public/assets/svg/mobile/
 │       ├── pwa/                      #   PWA: íconos y color del manifiesto
 │       │                             #   (app/manifest.ts) y registro de public/sw.js,
 │       │                             #   que NO guarda ninguna página
@@ -377,11 +381,10 @@ packages/
 ├── upload-policy/            # Los cinco controles de subida (§S1 de 3-seguridad)
 ├── accessibility-policy/     # Campos obligatorios de accesibilidad por bloque (fase 5 de 9-a11y)
 ├── inactividad/              # Aviso y cierre de sesión en el navegador
-├── navegacion-movil/         # Barra inferior del móvil (panel e intranet): logo al centro y hoja «Más»
 └── editor-core/              # PLANEADO — lógica del editor extraída. Sigue sin existir
 ```
 
-**Regla:** algo va a `packages/` solo si **ambos frontends** lo necesitan con el mismo comportamiento. El sistema de diseño NO va aquí porque cada frontend tiene identidad visual distinta — por eso `blocks-renderer` ya no comparte los componentes de bloque (`Header`, `Footer`, `Services`...): cada app tiene los suyos en su propio `shared/lib/blocks/`, y el paquete solo aporta lo verdaderamente idéntico entre ambas.
+**Regla:** algo va a `packages/` solo si **ambos frontends** lo necesitan con el mismo comportamiento. El sistema de diseño NO va aquí porque cada frontend tiene identidad visual distinta — por eso `blocks-renderer` ya no comparte los componentes de bloque (`Header`, `Footer`, `Services`...): cada app tiene los suyos en su propio `shared/lib/blocks/`, y el paquete solo aporta lo verdaderamente idéntico entre ambas. Lo mismo la **navegación mobile**: cada frontend tiene la suya en `src/shared/lib/mobile/`, con sus estilos en su `globals.css` (decisión del 2026-09-27, `2-convenciones` §10.5).
 
 **Los seis paquetes de política tienen todos el mismo origen, y vale la pena verlo:** una regla que estaba escrita dos veces se desincronizó una vez. El caso que mejor lo ilustra es `upload-policy` — el endurecimiento de la subida de archivos se aplicó al handler de la intranet, y el del sitio se quedó sin **ninguno** de los cinco controles durante meses, sin que nadie lo notara porque los dos archivos se veían bien por separado. Lo mismo con `accessibility-policy`, que además se consume desde **tres** sitios: el editor de cada app (aviso inmediato) y la API (rechazo real). Una segunda implementación ahí significaría que el editor cree que un campo es obligatorio y el servidor lo publique igual, o al revés.
 

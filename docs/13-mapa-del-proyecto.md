@@ -15,21 +15,17 @@
 | | Carpetas | Features | Rutas de Next | Endpoints | Librerías |
 |---|--:|--:|--:|--:|--:|
 | `3000-sitio-web` | 46 | 3 | 54 | — | 33 |
-| `3001-intranet` | 34 | 2 | 13 | — | 27 |
+| `3001-intranet` | 33 | 2 | 13 | — | 27 |
 | `4000-api-backend` | 32 | — | — | 70 | 42 |
 
 Paquetes compartidos: 7 · migraciones: 37 · modelos: 17.
 
-## Carpetas sin descripción (4)
+## Carpetas sin descripción (2)
 
 Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scripts/mapa/descripciones.md` con una línea: `` - `ruta/` — para qué es ``.
 
 - `3000-sitio-web/data_temporal/`
 - `3000-sitio-web/src/features/sitio-web/fuentes-futuras-empleo/`
-- `3000-sitio-web/src/shared/lib/mobile/`
-- `3001-intranet/src/shared/lib/mobile/`
-
-**Descripciones de carpetas que ya no existen (1):** `packages/navegacion-movil/`. Se borran de `descripciones.md` o se corrige la ruta.
 
 ## Carpetas
 
@@ -77,7 +73,7 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
     │   ├── lib/                               utilidades transversales: cliente HTTP, sesión, bloques
     │   │   ├── blocks/                        los bloques Puck de esta app
     │   │   ├── inactividad/                   aviso y cierre de sesión por inactividad
-    │   │   ├── mobile/                        ⚠ sin descripción
+    │   │   ├── mobile/                        navegación mobile del panel: barra de abajo con el logo al centro
     │   │   ├── pwa/                           manifiesto, íconos y registro del service worker
     │   │   └── tema/                          tema oscuro del panel, sin parpadeo al cargar
     │   └── ui/                                sistema de diseño institucional y catálogo del editor
@@ -88,8 +84,7 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
 
 3001-intranet/                                 intranet de directores y subdirectores, 100 % protegida (Next.js)
 ├── public/                                    estáticos: imágenes, íconos de la PWA y `storage/` con lo subido
-│   ├── assets/
-│   └── docs/
+│   └── assets/
 └── src/                                       código de la intranet
     ├── app/                                   solo enrutamiento: `(secciones)` (comodín Puck), `(auth)`, `editor`, `preview`
     │   ├── (auth)/
@@ -114,7 +109,7 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
     │   ├── lib/                               utilidades transversales: cliente HTTP, sesión, bloques
     │   │   ├── blocks/                        los bloques Puck de la intranet
     │   │   ├── inactividad/                   aviso y cierre de sesión por inactividad
-    │   │   ├── mobile/                        ⚠ sin descripción
+    │   │   ├── mobile/                        navegación mobile de la intranet, con el menú de la plantilla
     │   │   └── pwa/                           manifiesto, íconos y registro del service worker
     │   └── ui/                                sistema de diseño propio de la intranet
     │       ├── atoms/                         piezas mínimas
@@ -201,7 +196,7 @@ test/                                          pruebas de carga con k6
 | Feature | Para qué | Subcarpetas | `index.ts` | Archivos |
 |---|---|---|:-:|--:|
 | `login/` | pantallas del flujo de acceso | `components/` `hooks/` `services/` | sí | 11 |
-| `paginas/` | secciones editables con Puck, gemela de la del sitio | `edicion/` `menu-y-pie/` `model/` `publicacion/` `secciones/` | sí | 26 |
+| `paginas/` | secciones editables con Puck, gemela de la del sitio | `edicion/` `menu-y-pie/` `model/` `publicacion/` `secciones/` | sí | 24 |
 
 ## Rutas de Next
 

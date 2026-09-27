@@ -303,10 +303,20 @@ bloque de Puck, un modal— responde a **su contenedor** (`@container` y las var
 | `BarraFiltros` + `CampoFiltro` | `3000-sitio-web/src/shared/ui/molecules/barra-filtros.tsx` | Filtros de una tabla: fila en escritorio, plegados tras «Filtros (n)» por debajo de `lg` |
 | `EncabezadoPanel` | `3000-sitio-web/src/shared/ui/molecules/encabezado-panel.tsx` | Título, descripción y acciones de cada pantalla del panel |
 | `Alert` | `3000-sitio-web/src/shared/ui/molecules/alert.tsx` | Diálogo corto: hoja inferior en el móvil, centrado desde `sm` |
+| `NavegacionMobile` | `src/shared/lib/mobile/` de cada frontend | Por debajo de `lg`, las secciones en una barra abajo con el logo al centro y una hoja para lo que no cabe |
 
 Antes de escribir una tabla, una banda de filtros o un encabezado, se usa la pieza. Si no
-alcanza, se amplía la pieza; no se copia al lado. Cuando una pieza la necesiten las dos
-apps, se sube a `packages/` como el resto de lo compartido.
+alcanza, se amplía la pieza; no se copia al lado. **Una pieza de interfaz no sube a
+`packages/` aunque la usen las dos apps**: cada una lleva su identidad (`1-guia` §4.4), y
+`packages/` es para reglas que las dos deciden igual.
+
+**Lo que solo existe en el móvil va en la carpeta `mobile/` de cada frontend** (decisión
+del usuario, 2026-09-27): el código en `src/shared/lib/mobile/`, los iconos en
+`public/assets/svg/mobile/` y los estilos en el `globals.css` de esa app, con el nombre
+«mobile» y no el de su posición («barra inferior»). Hoy es la navegación mobile:
+`NavegacionMobilePanel` en el panel y `NavegacionMobileIntranet` en la intranet, cada una
+sobre su propio `NavegacionMobile` y con clases `navegacion-mobile-*`. Las dos copias se
+parecen a propósito: un arreglo en una se revisa en la otra.
 
 ### 10.6 Cómo se verifica antes de entregar
 

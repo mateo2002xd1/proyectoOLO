@@ -78,7 +78,6 @@ no sabes qué poner, esa es la señal de que la carpeta no tiene un lugar claro 
 - `packages/blocks-renderer/` — pinta los bloques guardados igual en las dos apps
 - `packages/email-policy/` — dominio de correo institucional
 - `packages/inactividad/` — aviso y cierre de sesión por inactividad
-- `packages/navegacion-movil/` — barra inferior del móvil del panel y la intranet
 - `packages/password-policy/` — política de contraseñas
 - `packages/slug-policy/` — formato válido de un slug
 - `packages/upload-policy/` — controles de subida: bytes mágicos, lista blanca, UUID, límites
@@ -112,6 +111,7 @@ no sabes qué poner, esa es la señal de que la carpeta no tiene un lugar claro 
 - `3000-sitio-web/src/shared/lib/` — utilidades transversales: cliente HTTP, sesión, bloques
 - `3000-sitio-web/src/shared/lib/blocks/` — los bloques Puck de esta app
 - `3000-sitio-web/src/shared/lib/inactividad/` — aviso y cierre de sesión por inactividad
+- `3000-sitio-web/src/shared/lib/mobile/` — navegación mobile del panel: barra de abajo con el logo al centro
 - `3000-sitio-web/src/shared/lib/pwa/` — manifiesto, íconos y registro del service worker
 - `3000-sitio-web/src/shared/lib/tema/` — tema oscuro del panel, sin parpadeo al cargar
 - `3000-sitio-web/src/shared/ui/` — sistema de diseño institucional y catálogo del editor
@@ -137,6 +137,7 @@ no sabes qué poner, esa es la señal de que la carpeta no tiene un lugar claro 
 - `3001-intranet/src/shared/lib/` — utilidades transversales: cliente HTTP, sesión, bloques
 - `3001-intranet/src/shared/lib/blocks/` — los bloques Puck de la intranet
 - `3001-intranet/src/shared/lib/inactividad/` — aviso y cierre de sesión por inactividad
+- `3001-intranet/src/shared/lib/mobile/` — navegación mobile de la intranet, con el menú de la plantilla
 - `3001-intranet/src/shared/lib/pwa/` — manifiesto, íconos y registro del service worker
 - `3001-intranet/src/shared/ui/` — sistema de diseño propio de la intranet
 - `3001-intranet/src/shared/ui/atoms/` — piezas mínimas
