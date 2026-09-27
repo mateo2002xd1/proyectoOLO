@@ -25,7 +25,7 @@ import { PoliticaPrivacidadEncabezado } from '@/shared/lib/blocks/politica-priva
 import { VisorDocumentosNormativos, type DocumentoNormativo } from '@/shared/lib/blocks/visor-documentos-normativos';
 import { CanalesAtencion, type CanalDeAtencion } from '@/shared/lib/blocks/canales-atencion';
 import { Header } from '@/shared/lib/blocks/header';
-import { Footer, VALORES_PIE_POR_DEFECTO } from '@/shared/lib/blocks/footer';
+import { Footer } from '@/shared/lib/blocks/footer';
 import { MapaSitio, VALORES_MAPA_SITIO_POR_DEFECTO } from '@/shared/lib/blocks/mapa-sitio';
 import { obtenerIndiceBusqueda } from '@/features/paginas/publicacion/services/publicacion.service';
 
@@ -223,7 +223,11 @@ const puckConfigBase: Config = {
       components: ['ExternalPortals'],
     },
     'Maquetación': {
-      components: ['Grid', 'Flex', 'Space', 'SeccionPestanasLaterales'],
+      // `SeccionPestanasLaterales` se quitó de aquí el 2026-09-27: mencionaba un
+      // componente que nunca llegó a registrarse en `components` (no hay `import` de
+      // `shared/lib/blocks/seccion-pestanas-laterales.tsx` en este archivo), así que
+      // este filtro simplemente lo descartaba sin que nadie lo notara.
+      components: ['Grid', 'Flex', 'Space'],
     },
     'Ocultos': {
       visible: false,
@@ -1280,7 +1284,7 @@ const puckConfigBase: Config = {
         },
       },
       defaultProps: {
-        imagenSrc: '/docs/images/blog/image-1.jpg',
+        imagenSrc: '',
         imagenAlt: 'Ilustración del artículo',
         titulo: 'Ingresa texto',
         descripcion: 'Ingresa descripción',
@@ -2226,16 +2230,23 @@ export function configDeEdicion(slug: string, contexto: ContextoDeEdicion = {}):
       Object.entries(puckConfig.components).filter(([nombre]) => permitidos.includes(nombre))
     ) as Config['components'],
     categories: Object.fromEntries(
-      Object.entries(puckConfig.categories ?? {})
+      // El tipo de Puck para `categories` es `Record<CategoryName, Category<...>> &
+      // { other?: Category<...> }`: esa intersección hace que `Object.entries` deje de
+      // inferir el tipo del valor y devuelva `unknown` (tsc --noEmit fallaba en el
+      // spread y en `.components` de abajo). Se anota la forma real a mano.
+      (Object.entries(puckConfig.categories ?? {}) as [
+        string,
+        { components?: string[]; title?: string; visible?: boolean; defaultExpanded?: boolean },
+      ][])
         .map(([nombre, categoria]) => [
           nombre,
           {
             ...categoria,
             components: (categoria.components ?? []).filter((c) => permitidos.includes(c)),
           },
-        ])
+        ] as const)
         // Una categoría que se queda sin bloques no debe salir como grupo vacío.
-        .filter(([, categoria]) => (categoria as { components: string[] }).components.length > 0)
+        .filter(([, categoria]) => categoria.components.length > 0)
     ) as Config['categories'],
   };
 
