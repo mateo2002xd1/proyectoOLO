@@ -27,7 +27,7 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
 - `3000-sitio-web/data_temporal/`
 - `3000-sitio-web/src/features/sitio-web/fuentes-futuras-empleo/`
 
-**Descripciones de carpetas que ya no existen (2):** `4000-api-backend/src/shared/cache/`, `4000-api-backend/src/shared/errors/`. Se borran de `descripciones.md` o se corrige la ruta.
+**Descripciones de carpetas que ya no existen (1):** `packages/navegacion-movil/`. Se borran de `descripciones.md` o se corrige la ruta.
 
 ## Carpetas
 

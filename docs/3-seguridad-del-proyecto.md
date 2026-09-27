@@ -121,11 +121,11 @@ Lo que estaba abierto y ya no:
 | Ruta | Lo que permitía | Dónde se cierra ahora |
 |---|---|---|
 | `PATCH /api/users/:id` | Cambiar el `role_id` de cualquiera → **escalada a Superadmin**; con `reset_password` la respuesta devolvía la contraseña temporal de la víctima → **toma de cuenta** | `user.routes.ts` (administra o es su cuenta) + lista blanca de autoservicio en `updateUser` |
-| `/api/roles`, `/api/permissions`, `/api/role-permissions` | Concederse permisos a uno mismo | `requierePermisoUsuario('puedeAdministrarSeguridad')` |
+| `/api/roles`, `/api/permissions`, `/api/role-permissions` | Concederse permisos a uno mismo | `requierePermisoUsuario('puedeAdministrarSeguridad')`. Desde el 2026-09-26 `/api/permissions` es además de solo lectura: el alta, la edición y el borrado a mano se retiraron (ningún panel los usaba) |
 | `/api/sitio-users/:id` | Datos personales de ciudadanos (Ley 1581) | Se cerró con `requierePermisoUsuario('puedeAdministrarUsuarios')`; desde `013-eliminar-usuarios-sitio` la ruta ya no existe |
-| `GET /api/jobs/:id` | **Sin autenticación**, con ids secuenciales de BullMQ: enumerar el resultado de exportaciones ajenas | `requireAuth` + dueño en `job.data.usuarioId`, con 404 |
-| `DELETE /api/attachments/:id` | Borrar del disco el fichero de cualquier contenido: se cargaba por id y se hacía `fs.unlinkSync` sin mirar el padre | Colgada de `/api/contenidos/:contenidoId/attachments/:id` + `exigirPertenencia` |
-| `GET /api/contenidos/:id` | Leer borradores y material rechazado con solo tener sesión | 404 salvo autor o `puedeVerNoPublicado` (cierra también **S8**) |
+| `GET /api/jobs/:id` | **Sin autenticación**, con ids secuenciales de BullMQ: enumerar el resultado de exportaciones ajenas | `requireAuth` + dueño en `job.data.usuarioId`, con 404. **Hoy no existe:** `/api/jobs` era la prueba de concepto de la cola y se retiró el 2026-09-27 porque nadie la usaba; las cargas de Excel encolan desde sus propios casos de uso |
+| `DELETE /api/attachments/:id` | Borrar del disco el fichero de cualquier contenido: se cargaba por id y se hacía `fs.unlinkSync` sin mirar el padre | Colgada de `/api/contenidos/:contenidoId/attachments/:id` + `exigirPertenencia`. **Hoy no existe:** la migración 036 retiró el CMS de contenidos, y `exigirPertenencia`/`exigirPropiedad` se quitaron el 2026-09-26 al quedarse sin uso |
+| `GET /api/contenidos/:id` | Leer borradores y material rechazado con solo tener sesión | 404 salvo autor o `puedeVerNoPublicado` (cierra también **S8**). **Hoy no existe:** se retiró con el CMS de contenidos (migración 036) |
 | `/api/alerts` | Correo y caducidad de toda la plantilla | `puedeAdministrarUsuarios` |
 | Rol tomado del JWT | Degradar a alguien no surtía efecto durante 7 días | `auth.middleware.ts` lo lee de la fila, sin consulta extra |
 
@@ -166,7 +166,13 @@ navegador—, así que hay que decir explícitamente qué la protege y por qué 
 | **Sin secreto configurado, no se acepta nada** | Responde 503. Dejar la ruta abierta «hasta que se configure» sería dejar que cualquiera vacíe la caché del sitio a voluntad |
 | **Comparación en tiempo constante** | `timingSafeEqual` sobre los **hashes SHA-256**, no sobre las cadenas: `timingSafeEqual` exige búferes del mismo tamaño y lanza si no lo son, y esa excepción por sí sola ya revelaría la longitud del secreto |
 | **El slug se valida por forma** | `^[a-z0-9]+(?:-[a-z0-9]+)*$` y 255 caracteres de tope, antes de construir con él ninguna etiqueta |
-| **No es alcanzable desde internet** | La llamada va por la red privada de Docker, de `api-backend:4000` a `sitio-web:3000`. Nginx solo publica 80/443 y manda todo `/api/` al backend, así que esta ruta del sitio no se alcanza desde fuera ni adivinando el secreto |
+| **No es alcanzable desde internet**: nginx la corta a propósito (desde el 2026-09-27) | La llamada de la API va por la red privada de Docker, de `api-backend:4000` a `sitio-web:3000`, sin pasar por nginx. En `docker/nginx/nginx.servidor.conf`, la puerta 8080 responde 404 a `location ^~ /api/revalidar` antes de mandar el resto al sitio. Entre el 2026-09-26 y el 27 no fue así: el cambio de prefijo a `/api-backend/` la dejó expuesta y dependía solo del secreto |
+
+> **Lo que se anticipaba abajo pasó, y se resolvió.** Al cambiar el prefijo de nginx a
+> `/api-backend/`, `/api/revalidar` quedó expuesta sin que nadie lo decidiera (detectado en
+> la auditoría del 2026-09-26). El 2026-09-27 se cortó en nginx, en la puerta 8080; la
+> intranet no tiene esa ruta. Si la intranet llega a tener la suya
+> (`INTRANET_REVALIDAR_URL`), se corta igual en la 8081. Texto original:
 
 **El último control es el más fuerte y el más frágil a la vez.** Hoy la ruta es
 inalcanzable por un efecto colateral de la configuración de nginx —el mismo que rompe
@@ -283,7 +289,7 @@ grep -rl "$SECRETO" 3000-sitio-web/.next/static 3001-intranet/.next/static
 | Bloqueo de cuenta a los 5 intentos fallidos, 15 minutos | `login.usecase.ts` → `registrarFalloDeLogin` |
 | Estado, bloqueo y caducidad revalidados en **cada** petición, no solo al entrar | `auth.middleware.ts` |
 | Cierre por inactividad verificado en el servidor (20 min) además del aviso del navegador (15 min) | `auth.middleware.ts` + `packages/inactividad/` |
-| Recuperación de contraseña limitada **por correo**, no por IP | `routes/securityQuestion.routes.ts` → `recoverPasswordLimiter` |
+| Recuperación de contraseña limitada **por correo**, no por IP | `routes/security-question.routes.ts` → `limitadorDeRecuperacion` |
 
 Dos decisiones que conviene no deshacer sin entender por qué están:
 
@@ -484,7 +490,9 @@ repartidos por §4.1 a §4.7. Lo que queda, y por qué queda:
   `nginx/nginx.conf.template` — el archivo pasó a ser una plantilla que `envsubst`
   procesa al arrancar el contenedor, así que ya no existe un `nginx.conf` que editar a
   mano. **Al resolverlo, decidir a la vez qué pasa con `/api/revalidar`** (§S11): hoy
-  está protegida por este mismo efecto colateral.
+  está protegida por este mismo efecto colateral. *(2026-09-27: el prefijo ya es
+  `/api-backend/` en `docker/nginx/nginx.servidor.conf`, y `/api/revalidar` se corta ahí
+  con un 404; ver §S11.)*
 - **La API escucha en `127.0.0.1`.** Correcto si nginx corre en la misma máquina;
   incompatible con la topología de `docker-compose`, donde los servicios se hablan por
   nombre de red. Depende de cómo se despliegue de verdad, así que no se cambia a ciegas:
@@ -561,7 +569,7 @@ La lista original de este documento está casi entera cerrada. Lo que queda, en 
 | # | Qué | Por qué sigue arriba |
 |---|---|---|
 | 1 | **Sacar las subidas del webroot** (§S1) | Los cinco controles de entrada están puestos en las dos apps vía `packages/upload-policy`, así que el riesgo inmediato —cualquiera subiendo cualquier cosa— está cerrado. El estructural no: siguen escribiéndose en `public/uploads` y sirviéndose por path, en vez de fuera del webroot y por un endpoint controlado. `4000-api-backend/src/infrastructure/storage/backup-uploads.service.ts` (hasta el 2026-09-25 en `shared/storage/`, junto a un stub vacío que se borró) resuelve las carpetas y trabaja sobre `public/storage/uploads` — es decir, el código real existe, pero sigue apuntando dentro del webroot. Es ahí donde debe vivir el cambio |
-| 2 | **Decidir el prefijo de nginx** (§4.8) | Bloquea el despliegue, y de paso decide si `/api/revalidar` (§S11) queda expuesta |
+| 2 | **Decidir el prefijo de nginx** (§4.8) | Bloquea el despliegue, y de paso decide si `/api/revalidar` (§S11) queda expuesta. *2026-09-27: el prefijo ya es `/api-backend/` en `nginx.servidor.conf` y `/api/revalidar` se corta ahí* |
 | 3 | **Extender Zod al resto de la API** (§4.8) | Cubre usuarios y borradores de página, que es donde estaban el *mass assignment* y la entrada más grande. El resto sigue leyendo `req.body` directo |
 | 4 | **S6 Power BI** — lista blanca de dominios, validación de URL en servidor, `sandbox` | La tabla `tableros_bi` existe; falta toda la capa de aplicación encima. Hoy los tokens de informe están escritos a mano en tres componentes |
 | 5 | **S5 API key CNO/CUOC** | Al construir el buscador |

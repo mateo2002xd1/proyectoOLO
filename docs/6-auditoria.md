@@ -5,6 +5,166 @@
 
 ---
 
+## sesión 27-09-2026: se corrige lo que encontró la auditoría de la API (fase 1: comentarios, código muerto y basura)
+
+**Qué era.** La auditoría del 26-09 (3.ª parte) dejó el inventario; el usuario pidió
+corregirlo todo antes de pasar al sitio web. Se hizo todo salvo lo que por norma no se toca
+(las migraciones aplicadas); `/api/jobs` se retiró en un segundo paso, cuando el usuario lo
+decidió (abajo).
+
+| Frente | Qué se hizo |
+|---|---|
+| Bug | `escaparGlob` (`invalidar-cache.listener.ts`) escapa de verdad: `` `\\${caracter}` ``. Con una sola barra devolvía el texto literal `${caracter}` |
+| Comentarios | Las 238 funciones sin comentario de `src/` y `scripts/` tienen su JSDoc (una línea de qué hace; `@throws` en los casos de uso), y 14 modelos dicen qué tabla son. Cobertura: 671 → 622 funciones, **44 sin comentario, todas `up`/`down` de migraciones**. 20 comentarios desactualizados, los 4 archivos con comentarios en inglés, las cabeceras de plantilla y la línea de código comentado |
+| Código muerto | Fuera `shared/cache/` y `shared/errors/`, `requireRole`, `verifyTokenUseCase`, `resolverHrefIntranet`, `exigirPropiedad`/`exigirPertenencia`, `MINUTOS_ENTRE_LATIDOS`, el tipo `Limitador`, `conservarUltimo`, `RolePermissionRepository.revokeAll` y `dt`. El parámetro `next` sin usar pasa a `_next` |
+| Endpoints | Retirados `GET /api/audit-logs/:contentType/:contentId` y el `POST`/`GET :id`/`PATCH`/`DELETE` de `/api/permissions`, con sus casos de uso y métodos. El proxy de `3000-sitio-web/app/api/permissions` pierde su `POST`. `/api/permissions` queda de solo lectura |
+| Duplicados | `toUUID` + `UUID_RE` (9 copias) → `shared/uuid.ts` (`uuidONulo`, `esUuid`). `normalizar`/`tieneRol` de las 4 policies y 4 comparaciones sueltas con 'superadmin' → `normalizarRol`/`tieneRol` en `shared/autorizacion.ts`. «Permisos de un rol, con el catálogo entero para Superadmin», repetido en el login y en `GET /api/me` → `permisosDeRol`. Los dos diccionarios de tablas de los generadores de esquema → `scripts/db/descripciones-tablas.ts` |
+| Nombres | `rolePermission.routes.ts` → `role-permission.routes.ts`, `securityQuestion.routes.ts` → `security-question.routes.ts` |
+| Basura | Fuera `migrations/_obsoletas/` (y su excepción en `.gitignore`), 7 scripts de un solo uso, los 4 `base-tendencia-*.xlsx` y, del repositorio (no del disco), los 4 Excel con nombre UUID; `uploads/cargas-datos/*` queda ignorado salvo `fuentes-futuras-de-empleo.xlsx`. `dist/` local borrado |
+| Dependencias | Fuera `nodemon`, `@types/exceljs`, `@types/dompurify` y `@types/express-rate-limit` |
+| Configuración | `.env.example` documenta las 9 variables que el código leía sin estar ahí; `JWT_SITE_SECRET` sale del `.env` local |
+| Scripts | 7 registrados en `package.json` (`db:exportar-esquema`, `db:esquema-*`, `uploads:limpiar-huerfanos`, `uploads:renombrar-carpeta`) y sus textos de uso apuntan a `npm run` |
+
+**Tres cosas que no eran lo que parecían:**
+
+- **Los Excel con UUID sí cumplían una función.** La base de desarrollo es compartida, y
+  `guardar-excel-de-carga.ts` reutilizaba por hash la fila de `archivos` **sin mirar si el
+  archivo estaba en ese disco**: volver a subir en otro equipo un Excel ya cargado hacía
+  fallar al worker. Por eso se versionaron. Se arregló la causa —`restaurarSiFalta` lo
+  reescribe con los bytes que acaban de llegar— y entonces sí salieron de git.
+- **`limpiar-permisos-huerfanos.ts` era redundante**, no solo puntual:
+  `npm run sembrar:permisos` ya retira las claves de secciones borradas, y con más cuidado.
+- **`update-uploads-seq.js` también sobraba:** corregía rutas de adjuntos del CMS viejo,
+  cuyas tablas borró la 036, y después `reorganizar-uploads-por-tipo` movió todo otra vez.
+
+> **Hallazgo de seguridad, corregido en un segundo paso cuando el usuario lo decidió.** El
+> comentario de `revalidar-isr.listener.ts` y la tabla de `3-seguridad` §S11 decían que
+> `/api/revalidar` del sitio no se alcanza desde fuera. Ya no era verdad: `nginx.servidor.conf`
+> manda `/api-backend/` a la API y **todo lo demás al sitio**, así que la ruta se alcanzaba
+> por el túnel y la protegía solo `REVALIDAR_SECRET`. Es exactamente lo que §S11 anticipaba
+> («el día que se arregle ese prefijo… conviene decidirlo a propósito»). **Se cortó en
+> nginx:** `location ^~ /api/revalidar { return 404; }` en la puerta 8080. `^~` cubre también
+> la variante con barra final y gana a cualquier otra regla. La intranet no tiene esa ruta,
+> y la API llama al sitio por `http://sitio-web:3000`, sin pasar por nginx, así que la
+> revalidación sigue funcionando. El comentario del oyente y §S11 dicen ahora lo que hay.
+
+**`/api/jobs` retirado (segundo paso, a pedido del usuario).** Era la prueba de concepto de
+la cola: encolaba una «exportación» que solo esperaba 5 s. Se comprobó otra vez que ni el
+sitio, ni la intranet, ni nginx lo llaman; las cargas de Excel encolan desde sus propios
+casos de uso (`iniciar-carga*.usecase.ts`) y no pasan por esta ruta. Salen el montaje en
+`app.ts`, `limitadorDeTrabajos`, la etiqueta `Trabajos` y el esquema `EstadoTrabajo` del
+OpenAPI, y su línea en `verificar-propiedad.ts`. El worker ya no simula: un trabajo con un
+nombre desconocido **falla** con un mensaje que lo dice, en vez de darse por bueno. En
+`3-seguridad` la fila de `GET /api/jobs/:id` queda como histórica. **Los dos archivos
+(`routes/job.routes.ts`, `controllers/trabajos.controller.ts`) los borró el usuario con
+`git rm`**, en un commit propio: el control de permisos de la sesión volvió a bloquear el
+borrado. Entre el `refactor(api)` y ese commit, `tsc` falla en `job.routes.ts`, que importa
+el limitador retirado.
+
+**Se descartó:** tocar las migraciones aplicadas (el `queryInterface` sin usar de la 036,
+las citas a `criterios/` de la 033, sus `up`/`down` sin JSDoc): ARQ-03.
+
+### Verificado
+
+| Qué | Resultado |
+|---|---|
+| `tsc --noEmit` de la API | 0 errores |
+| `tsc` con `noUnusedLocals`/`noUnusedParameters`, `src/` + `scripts/` | 1 aviso, el de la migración 036 (antes 11, y el de `pg` sin tipos desapareció con `update-uploads.ts`) |
+| Exports sin uso y archivos que nadie carga | Ninguno (queda `express.d.ts`, tipos globales, y `listar-versiones-archivadas`, que usa `probar:versionamiento`) |
+| Métodos de objetos exportados sin uso | Solo `revokeAll`, quitado; el resto se usa por clave de texto |
+| App de Express cargada sin servidor, rutas listadas | 73 rutas; `/api/permissions` solo `GET`, sin la de auditoría por contenido, las dos rutas renombradas montadas. Tras retirar `/api/jobs`: 71, y la diferencia son exactamente sus dos rutas |
+| `tsc` de `src/` + `scripts/` sin los dos archivos de `/api/jobs` | 0 errores: nada más los importa |
+| Policies y helpers nuevos, 18 casos (roles con mayúsculas y espacios, permisos sueltos, `local-auth`) | 18/18 |
+| `npm run email:verificar`, `password:verificar` | Todo correcto |
+| `escaparGlob('pag*ina?[x]')` | `pag\*ina\?\[x\]` |
+| `npm run db:esquema-sql` (script registrado) | Genera el SQL |
+| Finales de línea de todo lo tocado | Ninguno mezclado |
+| `./docker/deploy.sh start` con la pila completa; `POST /api/revalidar` en `127.0.0.1:8080` (la puerta que ve el túnel) | 404, con y sin barra final |
+| La misma llamada en `127.0.0.1:8081` (intranet) | 307 a `/login`: esa app no tiene la ruta, nginx no necesitaba tocarse ahí |
+| Desde dentro del contenedor `api`, `POST http://sitio-web:3000/api/revalidar` con el secreto real (la llamada que hace la API de verdad, sin pasar por nginx) | 200, `{"revalidado":"pagina:sitio:inicio"}` |
+| `/` del sitio y `/api-backend/health` por nginx, tras el cambio | Sin romperse: 307 a `/inicio` (normal) y 200 |
+
+**Sin probar:** `restaurarSiFalta` contra una base y un Redis reales (necesita subir un
+Excel ya registrado en otro equipo), y las verificaciones que escriben en la base
+(`permisos:verificar`, `propiedad:verificar`, `auditoria:verificar`), porque la API de
+desarrollo apunta a Neon.
+
+**Pendiente al cierre:**
+
+- Los cuatro scripts de semillas repiten el mismo «borrador → revisión → aprobación →
+  comprobar» y `bloque()` está copiado dos veces: candidato a un helper común.
+- Los modelos de catálogo (`departamento`, `centro-formacion`…) usan `export default`
+  (§5 pide export nombrado). No era parte de esta fase.
+- Fases 2 y 3: el sitio web y la intranet.
+
+---
+
+## sesión 26-09-2026: auditoría de la API, fase 1: comentarios, código muerto y basura (3.ª parte)
+
+**Qué era.** Primera de tres auditorías por fases (API → sitio web → intranet), con tres
+preguntas: ¿cada función dice qué hace, según `2-convenciones-del-proyecto.md` §3?, ¿qué
+código ya no usa nadie? y ¿qué carpetas o archivos dejaron atrás los agentes y las
+personas que trabajan en paralelo? **No se cambió código**: es el inventario para decidir
+qué se corrige. El detalle, con enlace a cada línea, está en
+`auditorias/2026-09-26-api-comentarios-y-codigo-muerto.md` (carpeta local, no se versiona).
+
+Nada se midió a ojo: `tsc` con `noUnusedLocals`/`noUnusedParameters` sobre `src/` y
+`scripts/` juntos, `findReferences` del servicio de lenguaje sobre cada `export`, el grafo
+de imports desde `server.ts`, la tabla de endpoints de `13-mapa` contra las URLs y los
+proxies de los dos frontends, y el AST para contar funciones con y sin comentario.
+
+| Frente | Resultado |
+|---|---|
+| Comentarios | 343 de 671 funciones sin comentario. **51 incumplen hoy la §3** (públicas de `use-cases/` y `shared/`); el resto son controladores (53), repositorios (55), policies, modelos y scripts, que la §3 no exige. 20 comentarios citan archivos o rutas que ya no existen (`7-despliegue.md`, `sitio-web/src` sin el número, `criterios/`, `editor.types.ts`). 4 archivos con comentarios en inglés. 1 línea de código comentado. 0 `TODO` anónimos |
+| Código muerto | `shared/cache/` y `shared/errors/` (stubs que nadie importa); `requireRole`, `verifyTokenUseCase`, `resolverHrefIntranet`, el tipo `Limitador`; `conservarUltimo` en los dos casos de uso de depuración. `exigirPropiedad`/`exigirPertenencia` quedaron sin uso con la migración 036, pero `3-seguridad` §S10 aún los cita |
+| Endpoints sin consumidor | `/api/jobs/*` (la prueba de concepto de la cola, con su espera de 5 s), `GET /api/audit-logs/:contentType/:contentId` y el CRUD de `/api/permissions` salvo el `GET` |
+| Dependencias | `nodemon` (nadie lo llama) y tres `@types/*` de paquetes que ya traen sus tipos |
+| Basura | `migrations/_obsoletas/` se compila y va dentro de la imagen; 8 Excel sin uso en `uploads/cargas-datos/` (uno idéntico a un formato de carga); 6 scripts de un solo uso ya ejecutados; `dist/` local con el CMS borrado |
+
+**Un bug real, salido de «variable sin usar»:** `escaparGlob` en
+`invalidar-cache.listener.ts:13` escribe `` `\${caracter}` ``, que produce el texto literal
+`${caracter}` en vez de anteponer `\` a los comodines de Redis. Hoy no hace daño porque
+`@olo/slug-policy` no deja pasar esos caracteres, pero la protección que promete su
+comentario no existe. Se arregla con `` `\\${caracter}` ``.
+
+> **Dos cosas que parecen muertas y no lo son.** `pg-hstore` no se importa en ninguna
+> parte, pero Sequelize lo carga por dentro con Postgres. Y en `uploads/` se quedan
+> `fuentes-futuras-de-empleo.xlsx` y `formatos-carga/`: los leen
+> `consultar-fuentes-futuras-actual.usecase.ts` y `formatos-de-carga.ts`.
+
+**Se descartó:**
+
+- **Comentar línea a línea.** La §3 lo prohíbe expresamente («no comentar lo evidente»).
+  La propuesta es una línea de JSDoc por función exportada en todas las capas; si se
+  adopta, la §3 tiene que decirlo, y esa redacción es del usuario.
+- **Corregir las migraciones** (el parámetro sin usar de la 036, las citas a `criterios/`
+  de la 033): una migración aplicada no se edita (ARQ-03).
+
+### Verificado
+
+| Qué | Resultado |
+|---|---|
+| `tsc --noEmit` de la API | 0 errores |
+| `tsc` con `noUnusedLocals` + `noUnusedParameters`, `src/` y `scripts/` | 11 avisos; 1 de ellos es el bug de arriba |
+| `escaparGlob('pag*ina?[x]')` evaluado con node | `pag${caracter}ina${caracter}${caracter}x${caracter}` |
+| Grafo de imports desde `server.ts` | 5 archivos de `src/` que no carga nadie: los dos stubs, los dos `.ts` de `_obsoletas/` y `express.d.ts` (tipos globales, correcto) |
+| Cada candidato contra esta bitácora | `listar-versiones-archivadas` sigue vivo (lo usa `probar:versionamiento`, 16-09); `_obsoletas/script.sql` se conserva a propósito según `.gitignore` |
+| `docker-compose.servidor.yml` | Ya no monta `script.sql`: `11-base-de-datos.md:468` dice lo contrario |
+
+**Pendiente al cierre:**
+
+- Aplicar las correcciones en el orden del informe: primero lo que no tiene riesgo (el
+  bug, las variables, los stubs, los comentarios rotos), luego el JSDoc de las 51
+  funciones que la §3 ya exige.
+- Decisiones del usuario: los endpoints sin consumidor, `_obsoletas/`, los Excel de
+  `uploads/cargas-datos/` y los scripts de un solo uso. Confirmar con Samuel
+  `update-uploads-seq.js` y con Mateo `importar-excel-sobresalientes.ts`.
+- `11-base-de-datos.md:468` y `3-seguridad-del-proyecto.md:127` describen cosas que ya no
+  existen.
+- Fases 2 y 3: el sitio web y la intranet.
+
+---
+
 ## sesión 26-09-2026: el panel se adapta al móvil (tablas que pasan a tarjetas, filtros plegables, modales que caben)
 
 **Qué era.** El objetivo es que el panel, el sitio público y la intranet funcionen en

@@ -58,8 +58,6 @@ no sabes qué poner, esa es la señal de que la carpeta no tiene un lugar claro 
 - `4000-api-backend/src/repositories/` — única capa que consulta los modelos Sequelize
 - `4000-api-backend/src/routes/` — solo declaran endpoints y sus protecciones; cero lógica
 - `4000-api-backend/src/shared/` — utilidades transversales: sanitización, permisos, auditoría
-- `4000-api-backend/src/shared/cache/` — ayudantes de caché compartidos
-- `4000-api-backend/src/shared/errors/` — errores con `status` que traduce el middleware de errores
 - `4000-api-backend/src/types/` — tipos globales (extensión del `Request` de Express)
 - `4000-api-backend/src/use-cases/` — la lógica de negocio: una acción, una función
 - `4000-api-backend/src/use-cases/auditoria/` — consulta de la bitácora de cambios (RF-07)
@@ -80,6 +78,7 @@ no sabes qué poner, esa es la señal de que la carpeta no tiene un lugar claro 
 - `packages/blocks-renderer/` — pinta los bloques guardados igual en las dos apps
 - `packages/email-policy/` — dominio de correo institucional
 - `packages/inactividad/` — aviso y cierre de sesión por inactividad
+- `packages/navegacion-movil/` — barra inferior del móvil del panel y la intranet
 - `packages/password-policy/` — política de contraseñas
 - `packages/slug-policy/` — formato válido de un slug
 - `packages/upload-policy/` — controles de subida: bytes mágicos, lista blanca, UUID, límites
