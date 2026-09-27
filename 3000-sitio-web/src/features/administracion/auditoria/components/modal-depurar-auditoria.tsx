@@ -127,12 +127,12 @@ export function ModalDepurarAuditoria({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center-safe justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm animate-in fade-in duration-200"
       role="dialog"
       aria-modal="true"
       aria-labelledby="titulo-modal-depurar-auditoria"
     >
-      <div className="relative w-full max-w-2xl overflow-hidden rounded-[24px] border border-zinc-200 bg-white shadow-2xl dark:border-[#2d3649] dark:bg-[#151d30]">
+      <div className="relative flex max-h-[calc(100dvh-2rem)] w-full max-w-2xl flex-col overflow-hidden rounded-[24px] border border-zinc-200 bg-white shadow-2xl dark:border-[#2d3649] dark:bg-[#151d30]">
         {/* Cabecera */}
         <div className="flex items-center justify-between border-b border-zinc-100 px-6 py-4 dark:border-[#202b42]">
           <div className="flex items-center gap-3">
@@ -163,7 +163,7 @@ export function ModalDepurarAuditoria({
         </div>
 
         {/* Contenido */}
-        <div className="max-h-[80vh] overflow-y-auto p-6">
+        <div className="min-h-0 flex-1 overflow-y-auto p-6">
           {resultadoExito ? (
             <div className="flex flex-col items-center justify-center py-8 text-center animate-in zoom-in-95 duration-200">
               <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400">

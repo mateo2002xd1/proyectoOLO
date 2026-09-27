@@ -235,7 +235,7 @@ export function DetalleRegistro({
       className="m-auto w-full max-w-2xl rounded-xl border border-zinc-200 bg-white p-0 text-zinc-900 backdrop:bg-[#0f172a]/50 backdrop:backdrop-blur-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:text-[#f6f6f6]"
     >
       {registro && (
-        <div className="flex max-h-[80vh] flex-col">
+        <div className="flex max-h-[80dvh] flex-col">
           <div className="flex items-start justify-between gap-4 border-b border-zinc-200 p-5 dark:border-zinc-700">
             <div>
               <h2 className="admin-subtitle">Detalle del registro</h2>

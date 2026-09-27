@@ -121,7 +121,7 @@ export function VisorDocumento({
           onMouseDown={() => setIsFullscreen(false)}
         >
           <div
-            className="relative flex h-[94vh] w-full max-w-6xl flex-col rounded-2xl bg-white dark:bg-[#131b2f] shadow-2xl overflow-hidden border border-transparent dark:border-[#1e293b]"
+            className="relative flex h-[94dvh] w-full max-w-6xl flex-col rounded-2xl bg-white dark:bg-[#131b2f] shadow-2xl overflow-hidden border border-transparent dark:border-[#1e293b]"
             onMouseDown={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-gray-200 dark:border-[#1e293b] px-6 py-4 bg-gray-50 dark:bg-[#0b1121]">

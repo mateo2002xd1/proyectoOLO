@@ -165,7 +165,7 @@ export function ModalDiagramaVisitas({ abierto, onCerrar, resumen }: Props) {
       }}
     >
       <div
-        className="flex max-h-[92vh] min-h-[30rem] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-[#121824]"
+        className="flex max-h-[92dvh] min-h-[min(30rem,92dvh)] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-[#121824]"
         role="dialog"
         aria-modal="true"
         aria-labelledby="titulo-ventana-visitas"
