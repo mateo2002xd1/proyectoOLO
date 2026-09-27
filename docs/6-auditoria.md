@@ -165,6 +165,70 @@ comentario no existe. Se arregla con `` `\\${caracter}` ``.
 
 ---
 
+## sesión 26-09-2026: el reloj de la cabecera del sitio sigue el país del visitante y guarda una firma oculta (2.ª parte)
+
+**Qué era.** El reloj de la barra superior del sitio público (`header.tsx`) mostraba
+`26/09/2026 | 09:50:12 p. m.` a todo el mundo: día primero, año de cuatro cifras,
+segundos y el «p. m.» que pone `toLocaleTimeString('es-CO')`. Se pidió, en tres pasos:
+sin segundos; en Colombia `dd-mm-aa` (`26-09-26 - 09:50 pm`); fuera de Colombia la hora y
+el formato del país de quien visita. Y una firma oculta: al teclear un código, el reloj se
+cambia por «Diseñado y desarrollado por el Ingeniero David Tejada» y a los 18 s se
+desvanece.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Bloque público | `3000-sitio-web/src/shared/lib/blocks/header.tsx` | Reloj: si la zona horaria del equipo es `America/Bogota` (la única de Colombia), `26-09-26 - 09:50 pm` armado a mano con `padStart`. Si no, fecha y hora con `Intl.DateTimeFormat` en el idioma y la región del navegador, unidas con « - » |
+| Bloque público | `3000-sitio-web/src/shared/lib/blocks/header.tsx` | Firma oculta: teclear **50849501** en cualquier parte de la página, sin pausas de más de 2 s. Sirven la fila de números y el teclado numérico (se compara `key`). Se queda 18 s y se desvanece en 1 s (`transition-opacity`, sin animación con `prefers-reduced-motion`); repetir el código reinicia la cuenta. En el móvil el texto se parte en dos líneas |
+
+**Descartado:**
+
+- **Ubicar al visitante por su IP.** Hace falta un servicio externo que recibiría la IP de
+  cada visitante del sitio (dato personal, Ley 1581) y falla con una VPN. No hace falta:
+  el reloj se pinta en el navegador con `new Date()`, que ya da la hora de la zona del
+  equipo. La zona también dice si se está en Colombia.
+- **Decidir el país por el idioma del navegador.** Un equipo en Colombia con el navegador
+  en inglés saldría con el formato de EE. UU. Por eso Colombia se decide por la zona y el
+  idioma solo elige el formato fuera de ella.
+- **`toLocale*` con `'es-CO'` para Colombia.** Separa con «/» y escribe «p. m.».
+- **Atajos con modificadores (Ctrl + D, T, V; Ctrl + Alt + D, T, V; ⌘ + ⌥ + D, T, V).** Ctrl + T
+  abre una pestaña nueva antes de que la página se entere, y ninguna página lo puede
+  anular. ⌘ + ⌥ + D lo toma macOS para ocultar el Dock. Ctrl + Alt + T abre la terminal en
+  Ubuntu. Llegó a estar hecho con Ctrl + Alt y se cambió por el código, que funciona igual
+  en todos los sistemas.
+
+> **Aviso.** El código viaja en el JavaScript público del sitio y queda en el repositorio:
+> quien lea el código fuente de la página lo encuentra. No es un secreto.
+
+El intervalo del reloj sigue en 1 s: sin segundos el texto solo cambia una vez por minuto
+y React no vuelve a pintar si el estado recibe la misma cadena, así que el minuto cambia a
+tiempo sin coste.
+
+| Verificación | Resultado |
+|---|---|
+| `npx tsc --noEmit` y `eslint` de `header.tsx` | Sin errores (solo los dos avisos de `<img>` que ya estaban) |
+| Chrome headless contra el `next dev` del 3000, zona y idioma forzados por CDP: Bogotá + `es-CO`, 360 px | `26-09-26 - 09:20 pm`, sin desborde |
+| Ídem: Bogotá + `en-US` (navegador en inglés en Colombia) | `26-09-26 - 09:20 pm` |
+| Ídem: Nueva York + `en-US` | `09/26/26 - 10:20 PM` |
+| Ídem: Madrid + `es-ES` / Berlín + `de-DE` | `27/09/26 - 04:20` / `27.09.26 - 04:20` |
+| Ídem: Lima + `es-PE` (misma hora que Colombia, otro país) | `26/09/26 - 09:20 p. m.`: no lo toma por Colombia |
+| Código `50849501` tecleado, con cifras de más delante (`1250849501`) | Aparece la firma, sin desborde a 360 px |
+| Código desde el teclado numérico | Aparece la firma |
+| Con una letra en medio / con una pausa de 2,6 s / con Ctrl pulsado / Ctrl + Alt + D, T, V | No se activa |
+| Firma a los 17 s / 18,4 s / 19,5 s (prueba anterior con el atajo; la parte que la oculta no cambió) | Visible / desvaneciéndose (`opacity-0`) / vuelve el reloj |
+| Peticiones que no eran GET durante las pruebas | Bloqueadas con CDP para no registrar visitas en Neon |
+| Finales de línea de `header.tsx` | Todo CRLF, como estaba |
+
+**Pendiente al cierre.**
+
+- No se probó en un Mac real. El código es de cifras sin modificadores, así que no debería
+  cambiar nada.
+- En Windows, Colombia, Perú y Ecuador comparten la zona «(UTC-05:00) Bogotá, Lima, Quito».
+  El navegador la traduce a `America/Bogota` o a la del país según la región configurada en
+  Windows. Un equipo de Perú con la región sin configurar vería el formato de Colombia.
+- La intranet no tiene reloj en su barra superior, así que allí no hay nada que igualar.
+
+---
+
 ## sesión 26-09-2026: el panel se adapta al móvil (tablas que pasan a tarjetas, filtros plegables, modales que caben)
 
 **Qué era.** El objetivo es que el panel, el sitio público y la intranet funcionen en
