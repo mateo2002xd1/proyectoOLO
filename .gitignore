@@ -29,9 +29,20 @@ yarn-error.log*
 # Los pasos de `deploy.sh importar`. El volcado importacion_*.sql que ese comando
 # deja si algo falla sigue ignorado.
 !docker/sql/*.sql
-# El esquema de antes de las migraciones. Ya no se aplica, pero se conserva como
-# historia; sin esta línea, `*.sql` lo sacaría del repositorio.
-!4000-api-backend/src/infrastructure/db/migrations/_obsoletas/script.sql
+# El esquema de antes de las migraciones (`migrations/_obsoletas/script.sql`) salió del
+# repositorio el 2026-09-26; si hace falta consultarlo, está en el historial de git.
+
+# ── Cargas de datos subidas desde el panel ─────────────────────────────────────
+# Cada carga de "Actualizaciones" guarda su Excel en uploads/cargas-datos/ con un
+# nombre UUID. Son datos de cada máquina, no código: si una fila de `archivos` apunta a
+# un Excel que aquí no está, `guardar-excel-de-carga.ts` lo vuelve a escribir al
+# subirlo de nuevo. Se rescata el único que lee la API por su nombre.
+4000-api-backend/uploads/cargas-datos/*
+!4000-api-backend/uploads/cargas-datos/fuentes-futuras-de-empleo.xlsx
+
+# Lo que generan `npm run db:esquema-diagrama` y `db:esquema-pdf` en 4000-api-backend/
+# (los `.sql` de los demás `db:esquema-*` ya los cubre `*.sql`).
+4000-api-backend/esquema-diagrama.*
 
 # ── Asistentes de IA ───────────────────────────────────────────────────────────
 .agent/

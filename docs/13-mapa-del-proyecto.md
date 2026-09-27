@@ -16,7 +16,7 @@
 |---|--:|--:|--:|--:|--:|
 | `3000-sitio-web` | 45 | 3 | 54 | — | 33 |
 | `3001-intranet` | 33 | 2 | 13 | — | 27 |
-| `4000-api-backend` | 32 | — | — | 72 | 46 |
+| `4000-api-backend` | 32 | — | — | 72 | 42 |
 
 Paquetes compartidos: 7 · migraciones: 37 · modelos: 17.
 
@@ -506,10 +506,7 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `@types/bcryptjs` | `^2.4.6` | desarrollo |
 | `@types/cookie-parser` | `^1.4.10` | desarrollo |
 | `@types/cors` | `^2.8.17` | desarrollo |
-| `@types/dompurify` | `^3.0.5` | desarrollo |
-| `@types/exceljs` | `^0.5.3` | desarrollo |
 | `@types/express` | `^5.0.0` | desarrollo |
-| `@types/express-rate-limit` | `^5.1.3` | desarrollo |
 | `@types/jsdom` | `^30.0.0` | desarrollo |
 | `@types/jsonwebtoken` | `^9.0.7` | desarrollo |
 | `@types/morgan` | `^1.9.9` | desarrollo |
@@ -534,7 +531,6 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `jsonwebtoken` | `^9.0.2` | producción |
 | `morgan` | `^1.10.0` | producción |
 | `multer` | `^2.0.1` | producción |
-| `nodemon` | `^3.1.14` | desarrollo |
 | `pg` | `^8.13.1` | producción |
 | `pg-hstore` | `^2.3.4` | producción |
 | `rate-limit-redis` | `^6.0.1` | producción |
