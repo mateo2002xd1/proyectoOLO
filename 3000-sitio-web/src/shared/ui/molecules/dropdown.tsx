@@ -25,24 +25,31 @@ interface DropdownProps {
 export function Dropdown({ children, className = '' }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const anchorRef = useRef<HTMLElement | null>(null);
+  const contenedorRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    // «Fuera» es fuera del botón Y del menú. Mirando solo el botón, el `mousedown`
+    // sobre una opción cerraba el menú y lo desmontaba antes de que llegara su
+    // `click`. Las opciones ya lo cierran al pulsarse (`DropdownItem`).
     function handleClickOutside(e: MouseEvent) {
-      if (
-        isOpen &&
-        anchorRef.current &&
-        !anchorRef.current.contains(e.target as Node)
-      ) {
+      if (isOpen && !contenedorRef.current?.contains(e.target as Node)) {
         setIsOpen(false);
       }
     }
+    function handleEscape(e: KeyboardEvent) {
+      if (isOpen && e.key === 'Escape') setIsOpen(false);
+    }
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
   }, [isOpen]);
 
   return (
     <DropdownContext.Provider value={{ isOpen, setIsOpen, anchorRef }}>
-      <div className={`relative ${className}`}>{children}</div>
+      <div ref={contenedorRef} className={`relative ${className}`}>{children}</div>
     </DropdownContext.Provider>
   );
 }
