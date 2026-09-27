@@ -241,6 +241,11 @@ const puckConfigBase: Config = {
           arrayFields: {
             label: { type: 'text', label: 'Texto del enlace', contentEditable: true },
             href: { type: 'text', label: 'URL (usa # si solo abre el submenú)' },
+            // Los dos siguientes solo se ven en el móvil, en la navegación de abajo
+            // (`shared/lib/mobile/navegacion-mobile-intranet.tsx`). Vacíos, cada sección
+            // conocida lleva su icono de `public/assets/svg/mobile/` y el texto se recorta solo.
+            icono: campoIcono('Icono en la navegación del móvil'),
+            etiquetaMovil: { type: 'text', label: 'Texto corto en el móvil (vacío: se recorta el de arriba)' },
             children: {
               type: 'array',
               label: 'Submenú (déjalo vacío si no despliega)',

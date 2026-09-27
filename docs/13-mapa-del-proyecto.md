@@ -15,18 +15,19 @@
 | | Carpetas | Features | Rutas de Next | Endpoints | Librerías |
 |---|--:|--:|--:|--:|--:|
 | `3000-sitio-web` | 46 | 3 | 54 | — | 33 |
-| `3001-intranet` | 33 | 2 | 13 | — | 27 |
+| `3001-intranet` | 34 | 2 | 13 | — | 27 |
 | `4000-api-backend` | 32 | — | — | 70 | 42 |
 
 Paquetes compartidos: 7 · migraciones: 37 · modelos: 17.
 
-## Carpetas sin descripción (3)
+## Carpetas sin descripción (4)
 
 Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scripts/mapa/descripciones.md` con una línea: `` - `ruta/` — para qué es ``.
 
 - `3000-sitio-web/data_temporal/`
 - `3000-sitio-web/src/features/sitio-web/fuentes-futuras-empleo/`
 - `3000-sitio-web/src/shared/lib/mobile/`
+- `3001-intranet/src/shared/lib/mobile/`
 
 **Descripciones de carpetas que ya no existen (1):** `packages/navegacion-movil/`. Se borran de `descripciones.md` o se corrige la ruta.
 
@@ -113,6 +114,7 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
     │   ├── lib/                               utilidades transversales: cliente HTTP, sesión, bloques
     │   │   ├── blocks/                        los bloques Puck de la intranet
     │   │   ├── inactividad/                   aviso y cierre de sesión por inactividad
+    │   │   ├── mobile/                        ⚠ sin descripción
     │   │   └── pwa/                           manifiesto, íconos y registro del service worker
     │   └── ui/                                sistema de diseño propio de la intranet
     │       ├── atoms/                         piezas mínimas

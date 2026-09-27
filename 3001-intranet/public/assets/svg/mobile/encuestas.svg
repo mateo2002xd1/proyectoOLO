@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#001631" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Provisional: Encuestas. -->
+  <rect x="5" y="4.5" width="14" height="16.5" rx="2"/>
+  <path d="M9 3h6v3H9z"/>
+  <path d="m8.5 11.5 1.5 1.5 2.5-2.5M8.5 17l1.5 1.5 2.5-2.5M14.5 12h1.5M14.5 17.5h1.5"/>
+</svg>
