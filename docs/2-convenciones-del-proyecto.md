@@ -204,6 +204,115 @@ Estas convenciones no se vigilan a mano — se automatizan:
 - [ ] Errores manejados y con mensaje en español sin filtrar internals.
 - [ ] Librerías pesadas con carga diferida.
 - [ ] Si tocaste `shared/ui`: contraste ≥4.5:1, operable con teclado, foco visible, `alt` en toda imagen. Checklist completo en `9-accesibilidad.md` §5.
+- [ ] Si tocaste interfaz: cortes de la escala de Tailwind, alturas en `dvh`, sin anchos fijos que desborden, y mirado a 360, 768, 1024 y 1280 px sin scroll horizontal (§10).
 - [ ] Pasa ESLint y `tsc --noEmit`.
 
 > Nota de estado (2026-07-26): **Prettier y Husky + lint-staged aún no están instalados** en ningún proyecto, pese a lo que dice §8. Hasta que lo estén, las dos últimas casillas se verifican a mano corriendo `npx eslint .` y `npx tsc --noEmit` en el proyecto tocado.
+
+---
+
+## 10. Diseño responsive
+
+Aplica a las tres superficies —el sitio público, el panel (`3000-sitio-web/src/app/admin/`)
+y la intranet— y a los bloques de `packages/blocks-renderer/`. El objetivo es que cada
+pantalla funcione de 320 px a un monitor ancho, con una experiencia pensada para cada
+tamaño y no una versión de escritorio encogida. **Las reglas son las mismas para quien
+escriba el código, sea una persona o un agente**, y el auditor (`/auditar`) las revisa con
+los códigos `RESP-*`.
+
+> **Por qué hay reglas y no solo buen criterio.** El 2026-09-26 se midió el proyecto a 360,
+> 768 y 1280 px: 16 cortes distintos en los `@media`, un menú que se apilaba en vertical en
+> tablet porque el CSS cambiaba en 720 px y el JSX en 1024, columnas de Roles cortadas en el
+> móvil (no se podía editar un rol desde el teléfono) y modales con el botón de guardar fuera
+> de la pantalla. Detalle en `6-auditoria.md`, sesión 26-09-2026.
+
+### 10.1 Cortes: la escala de Tailwind y ninguna otra (`RESP-01`)
+
+| Prefijo | Desde | Pensado para |
+|---|---|---|
+| (ninguno) | 0 | Móvil. Se diseña primero para aquí |
+| `sm:` | 640 px (40rem) | Móvil grande, tablet vertical pequeña |
+| `md:` | 768 px (48rem) | Tablet |
+| `lg:` | 1024 px (64rem) | Portátil. Desde aquí aparece la barra lateral del panel |
+| `xl:` | 1280 px (80rem) | Escritorio |
+| `2xl:` | 1536 px (96rem) | Monitor ancho |
+
+- **Móvil primero:** los estilos sin prefijo son los del móvil y se añade hacia arriba
+  (`w-full md:w-1/2`). No al revés.
+- **En CSS**, los mismos valores con sintaxis de rango, que es lo que genera Tailwind:
+  `@media (width >= 48rem)` equivale a `md:` y `@media (width < 48rem)` a `max-md:`. Así
+  una regla de `globals.css` y un prefijo del JSX cambian en el mismo píxel.
+- **Prohibido** cualquier otro ancho: 480, 600, 720, 767, 850, 900, 1060, 1200… Si un
+  diseño «necesita» 900 px, lo que necesita es medir su contenedor (§10.3).
+- Sí valen las consultas que no son de ancho: `prefers-reduced-motion`,
+  `prefers-color-scheme`, `orientation` y `height` (pantallas apaisadas bajas).
+- Los `@media` antiguos se pasan a la escala **cuando se toca ese bloque**, no en una
+  migración masiva a ciegas.
+
+### 10.2 Medidas que se adaptan (`RESP-02`, `RESP-03`)
+
+- **Alturas de pantalla con `dvh`**, nunca `vh` ni `h-screen`/`min-h-screen`. En el móvil,
+  `100vh` incluye la barra del navegador y lo último de la pantalla queda tapado. Tailwind:
+  `h-dvh`, `min-h-dvh`, `max-h-[80dvh]`.
+- **Anchos fluidos:** `w-full` con `max-w-*`. Un ancho fijo en píxeles (`w-[440px]`,
+  `min-w-[820px]`) solo con salida para pantallas estrechas (`max-w-full`, o fijo solo desde
+  un corte: `md:w-[440px]`). La página **nunca** hace scroll horizontal a 320 px (criterio
+  1.4.10 de WCAG, nivel AA; ver `9-accesibilidad.md`).
+- **Títulos con `clamp()`** o con la escala de Tailwind por corte (`text-2xl md:text-3xl`),
+  no con un tamaño grande fijo. El texto de lectura no baja de 14 px; las etiquetas de 11 px
+  solo en píldoras y encabezados de tabla.
+- **Flex que envuelve:** una fila con varios elementos lleva `flex-wrap` o pasa a columna en
+  el móvil (`flex-col sm:flex-row`). Un hijo con texto largo lleva `min-w-0` para poder
+  encogerse.
+- **Imágenes y vídeos:** `max-w-full h-auto`, o `object-cover` dentro de una caja con
+  `aspect-*`. Nunca un alto fijo que deforme.
+
+### 10.3 Componentes que miden su contenedor (`RESP-04`)
+
+Un componente que puede vivir en huecos de anchos distintos —una tarjeta, una columna de un
+bloque de Puck, un modal— responde a **su contenedor** (`@container` y las variantes `@sm:`,
+`@3xl:`…), no a la ventana. La ventana (`md:`, `lg:`) es para la maqueta de la página.
+
+- **Tablas:** clase `olo-tabla-apilable` en la `<table>` y `data-etiqueta` en cada `<td>`.
+  Cuando su contenedor mide menos de 48rem, cada fila pasa a tarjeta «ETIQUETA · valor». La
+  celda sin `data-etiqueta` ocupa el ancho entero (el título de la fila o las acciones).
+  **Dentro de esa tabla se usa `@3xl:`, no `md:`**: es el mismo corte medido sobre el mismo
+  contenedor. Hoy existe en el sitio (`globals.css`, «RESPONSIVE: PIEZAS COMPARTIDAS»).
+- Una tabla que de verdad necesita todas sus columnas a la vez (una hoja de datos) puede
+  quedarse con scroll lateral **dentro de su caja**, nunca de la página, y con un comentario
+  que diga por qué.
+- El CSS sin `@layer` de `globals.css` le gana a cualquier utilidad de Tailwind. Lo que deba
+  cambiar en modo tarjeta va en un elemento dentro de la celda, no en la celda.
+
+### 10.4 Táctil (`RESP-05`)
+
+- **Nada depende solo de `hover` o de `title`**: en una pantalla táctil no existen. Un menú
+  desplegable se abre con clic o toque; una acción con solo icono lleva nombre accesible
+  (`aria-label` o texto `sr-only`) y, en el móvil, texto visible si es una acción de fila.
+- **Objetivos táctiles** de al menos 24 × 24 px (criterio 2.5.8, AA) y de 44 px de alto
+  para las acciones principales en el móvil.
+- Los modales en el móvil salen desde abajo o a pantalla completa, y **siempre caben**: caja
+  con `max-h-[calc(100dvh-2rem)]` en columna y cuerpo `min-h-0 flex-1 overflow-y-auto`, o
+  fondo con `overflow-y-auto` y `items-center-safe`/`items-end-safe`.
+
+### 10.5 Piezas compartidas: se reutilizan, no se reescriben (`RESP-06`)
+
+| Pieza | Dónde | Para |
+|---|---|---|
+| `olo-tabla-apilable` | `3000-sitio-web/src/style/globals.css` | Tablas que pasan a tarjetas (§10.3) |
+| `BarraFiltros` + `CampoFiltro` | `3000-sitio-web/src/shared/ui/molecules/barra-filtros.tsx` | Filtros de una tabla: fila en escritorio, plegados tras «Filtros (n)» por debajo de `lg` |
+| `EncabezadoPanel` | `3000-sitio-web/src/shared/ui/molecules/encabezado-panel.tsx` | Título, descripción y acciones de cada pantalla del panel |
+| `Alert` | `3000-sitio-web/src/shared/ui/molecules/alert.tsx` | Diálogo corto: hoja inferior en el móvil, centrado desde `sm` |
+
+Antes de escribir una tabla, una banda de filtros o un encabezado, se usa la pieza. Si no
+alcanza, se amplía la pieza; no se copia al lado. Cuando una pieza la necesiten las dos
+apps, se sube a `packages/` como el resto de lo compartido.
+
+### 10.6 Cómo se verifica antes de entregar
+
+- Mirar la pantalla a **360, 768, 1024 y 1280 px**, en claro y en oscuro (DevTools → modo
+  dispositivo). En el sitio público, también a 1920 px.
+- Sin scroll horizontal de la página en ningún ancho. Probar con `document.documentElement.scrollWidth > innerWidth`
+  en la consola.
+- Si la pantalla tiene modales, abrir cada uno en el móvil y llegar a su último botón.
+- En la entrada de `6-auditoria.md`, decir qué anchos se miraron y cuáles no.

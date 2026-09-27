@@ -377,6 +377,7 @@ packages/
 ├── upload-policy/            # Los cinco controles de subida (§S1 de 3-seguridad)
 ├── accessibility-policy/     # Campos obligatorios de accesibilidad por bloque (fase 5 de 9-a11y)
 ├── inactividad/              # Aviso y cierre de sesión en el navegador
+├── navegacion-movil/         # Barra inferior del móvil (panel e intranet): logo al centro y hoja «Más»
 └── editor-core/              # PLANEADO — lógica del editor extraída. Sigue sin existir
 ```
 
@@ -439,6 +440,7 @@ checklist de `3-seguridad-del-proyecto.md` §5; para la persistencia, `11-base-d
 10. **Lo que ve el ciudadano solo cambia al aprobar una versión.** Ningún borrador ni página en revisión puede alcanzar el sitio público. Ver `8-ciclo-editorial.md` §1.2.
 11. **Todo archivo se nombra en `kebab-case`; el identificador que exporta, en `PascalCase`.** Sin excepciones por tipo de archivo. Evita la clase de bug que solo aparece en producción, donde el sistema de archivos de Linux sí distingue mayúsculas y el de Windows no.
 12. **Solo `index.ts` es importable desde fuera de una feature.** Ninguna ruta interna de un módulo se importa desde otro.
+13. **Toda pantalla funciona de 320 px a un monitor ancho.** Cortes solo de la escala de Tailwind, alturas en `dvh`, lo que vive en huecos de ancho variable mide su contenedor, y tablas, filtros y encabezados salen de las piezas compartidas. Reglas completas en `2-convenciones-del-proyecto.md` §10.
 
 ### Cuáles se cumplen hoy y cuáles no
 
@@ -454,6 +456,7 @@ verificado el 2026-08-21; las filas 8 y 9, el 2026-09-18:
 | 9 | ✅ Desde el 2026-09-18, en las dos apps: `paginas/` está organizado por etapa (`8-ciclo-editorial.md` §3.2, fases 1-4 de su §5) |
 | 10 | ✅ Y desde 2026-08-21 se cumple *de verdad*: antes lo publicado tardaba en verse, que es el mismo problema por el otro lado |
 | 11 | 🟡 Quedan unos 45 archivos en PascalCase, casi todos bloques Puck. Ojo: se renombra el archivo, **nunca la clave del componente** — el JSON guardado la lleva dentro |
+| 13 | 🟡 Desde el 2026-09-26. El panel ya la cumple; la intranet, el sitio público y los bloques de `packages/blocks-renderer` están en curso. Estado en `6-auditoria.md` |
 
 Hoy no queda ninguna ❌: las dos que había (8 y 9) se cerraron el 2026-09-18. Si vuelve a
 aparecer alguna, va aquí, porque el propósito de esta lista es que se pueda leer y
