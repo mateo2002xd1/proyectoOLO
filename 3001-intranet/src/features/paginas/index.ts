@@ -52,9 +52,7 @@ export {
   enviarARevision,
 } from "./edicion/services/edicion.service";
 export { PuckEditorWrapper } from "./edicion/components/puck-editor-wrapper";
-export { EditorJsWrapper } from "./edicion/components/editorjs-wrapper";
 export { AvisoEditorOcupado } from "./edicion/components/aviso-editor-ocupado";
-export { usePagina } from "./edicion/hooks/use-pagina";
 export { useEditorActions } from "./edicion/hooks/use-editor-actions";
 export { useBloqueoDeEdicion } from "./edicion/hooks/use-bloqueo-de-edicion";
 export type { Bloqueo, EstadoDeBloqueo } from "./edicion/hooks/use-bloqueo-de-edicion";
