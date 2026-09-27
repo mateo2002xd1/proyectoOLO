@@ -61,15 +61,17 @@ interface NavegacionMobileIntranetProps {
   menuItems: ItemMenuIntranet[];
   /** El fondo elegido en Puck para la barra de arriba; vacío deja el azul de siempre. */
   fondo?: string;
-  onLogout?: () => void;
+  /** Abre el buscador de la barra de arriba, que en el móvil no tiene botón propio. */
+  onBuscar?: () => void;
 }
 
 /**
  * Navegación mobile de la intranet: el mismo menú que la barra de arriba (el de la
  * plantilla, editable en Puck), con el logo de OLO en el centro como «Inicio» y
- * «Salir» al final. Si el menú crece, lo que no cabe va a «Más».
+ * «Buscar» al final. Si el menú crece, lo que no cabe va a «Más». «Cerrar sesión»
+ * no va aquí: en el móvil está arriba a la derecha (`intranet-topbar.tsx`).
  */
-export function NavegacionMobileIntranet({ menuItems, fondo, onLogout }: NavegacionMobileIntranetProps) {
+export function NavegacionMobileIntranet({ menuItems, fondo, onBuscar }: NavegacionMobileIntranetProps) {
   const pathname = usePathname() ?? '';
 
   const estaEn = (href?: string) =>
@@ -110,16 +112,16 @@ export function NavegacionMobileIntranet({ menuItems, fondo, onLogout }: Navegac
     .filter((item) => !esInicio(item.href) && (rutaDe(item) || item.children?.length))
     .map(aDestino);
 
-  const salir: DestinoMobile = {
-    clave: 'salir',
-    etiqueta: 'Salir',
-    icono: <IconoRenderer icono={`${CARPETA_ICONOS}/salir.svg`} size={24} />,
-    alPulsar: onLogout,
+  const buscar: DestinoMobile = {
+    clave: 'buscar',
+    etiqueta: 'Buscar',
+    icono: <IconoRenderer icono={`${CARPETA_ICONOS}/buscar.svg`} size={24} />,
+    alPulsar: onBuscar,
   };
 
   let destinos: DestinoMobile[];
   if (secciones.length <= MAXIMO_A_LA_VISTA) {
-    destinos = [...secciones, salir];
+    destinos = [...secciones, buscar];
   } else {
     const resto = secciones.slice(MAXIMO_A_LA_VISTA);
     destinos = [
@@ -135,7 +137,7 @@ export function NavegacionMobileIntranet({ menuItems, fondo, onLogout }: Navegac
           ...resto.flatMap((destino) =>
             destino.hijos ? destino.hijos : [{ ...destino }],
           ),
-          { ...salir, etiqueta: 'Cerrar sesión' },
+          buscar,
         ],
       },
     ];

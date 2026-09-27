@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import Link from 'next/link';
+import { useOcultarAlBajar } from './use-ocultar-al-bajar';
 
 /** Un destino de la barra, o una fila de la hoja que abre. */
 export interface DestinoMobile {
@@ -12,7 +13,7 @@ export interface DestinoMobile {
   /** En la barra siempre va; en una fila de la hoja puede faltar. */
   icono?: ReactNode;
   href?: string;
-  /** Acción en vez de navegación, como cerrar sesión («Salir»). */
+  /** Acción en vez de navegación, como abrir el buscador. */
   alPulsar?: () => void;
   /** Si el usuario está en esta sección. Con `hijos`, lo decide quien monta la barra. */
   activo?: boolean;
@@ -83,6 +84,8 @@ export function NavegacionMobile({ destinos, inicio, etiqueta = 'Navegación', s
     setAbiertaPedida(true);
   };
   const cerrar = () => setAbiertaPedida(false);
+  // Se esconde al bajar por la página y vuelve al subir; con la hoja abierta, nunca.
+  const oculta = useOcultarAlBajar(abierta);
 
   useEffect(() => {
     const dialogo = dialogoRef.current;
@@ -105,7 +108,7 @@ export function NavegacionMobile({ destinos, inicio, etiqueta = 'Navegación', s
   }, [abierta]);
 
   // Con un número impar de destinos sobra uno a la izquierda y el logo se desplaza
-  // media casilla. El menú de la plantilla da cuatro: tres secciones y «Salir».
+  // media casilla. El menú de la plantilla da cuatro: tres secciones y «Buscar».
   const mitad = Math.ceil(destinos.length / 2);
 
   const pintarDestino = (destino: DestinoMobile) => {
@@ -201,7 +204,7 @@ export function NavegacionMobile({ destinos, inicio, etiqueta = 'Navegación', s
   };
 
   return (
-    <nav className="navegacion-mobile" aria-label={etiqueta} style={style}>
+    <nav className={`navegacion-mobile${oculta ? ' es-oculta' : ''}`} aria-label={etiqueta} style={style}>
       <ul className="navegacion-mobile-lista">
         {destinos.slice(0, mitad).map(pintarDestino)}
         <li className="navegacion-mobile-centro">

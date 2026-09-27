@@ -241,10 +241,13 @@ export function IntranetTopbar({
   // páginas ya guardadas (sin este campo) sigan viéndose pixel-igual que hoy.
   const horizontalMarca = alineacionMarca?.horizontal ?? 'flex-start';
   const verticalMarca = alineacionMarca?.vertical ?? 'center';
-  const estiloMarca: React.CSSProperties = { alignItems: verticalMarca };
+  // La alineación horizontal va en variables y no en `justifyContent` directo: en el
+  // móvil la barra solo lleva el nombre, pegado a la izquierda, y un estilo en línea
+  // no se puede anular desde globals.css sin `!important`.
+  const estiloMarca: React.CSSProperties & Record<`--${string}`, string> = { alignItems: verticalMarca };
   if (horizontalMarca !== 'flex-start') {
-    estiloMarca.justifyContent = horizontalMarca;
-    estiloMarca.minWidth = '180px';
+    estiloMarca['--marca-horizontal'] = horizontalMarca;
+    estiloMarca['--marca-ancho-minimo'] = '180px';
   }
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -469,7 +472,7 @@ export function IntranetTopbar({
           <button
             type="button"
             className="intranet-login-btn"
-            aria-label="Cerrar sesion"
+            aria-label="Cerrar sesión"
             title="Cerrar sesión"
             onClick={onLogout}
             disabled={isLoading}
@@ -614,11 +617,12 @@ export function IntranetTopbar({
         </div>
       )}
 
-      {/* Por debajo de `lg` el menú, el logo y "Cerrar sesión" de arriba se ocultan
+      {/* Por debajo de `lg` el menú, el logo y el buscador de arriba se ocultan
           (globals.css) y viven aquí, en la navegación mobile de abajo, al alcance del
-          pulgar. Va dentro de la barra y no en `MarcoSecciones` para que el editor y
-          la vista previa de la plantilla la pinten con el menú del borrador. */}
-      <NavegacionMobileIntranet menuItems={menuItems} fondo={fondo} onLogout={onLogout} />
+          pulgar; arriba quedan el nombre y «Cerrar sesión». Va dentro de la barra y no
+          en `MarcoSecciones` para que el editor y la vista previa de la plantilla la
+          pinten con el menú del borrador. */}
+      <NavegacionMobileIntranet menuItems={menuItems} fondo={fondo} onBuscar={() => setIsDropdownOpen(true)} />
     </header>
   );
 }
