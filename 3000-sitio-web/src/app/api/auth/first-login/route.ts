@@ -31,10 +31,13 @@ export async function POST(request: NextRequest) {
   try {
     apiRes = await fetch(`${BACKEND_URL}/api/first-login`, {
       method: 'POST',
-      headers: {
+      // La misma cuota de intentos que protege el login normal cubre este cambio de
+      // contraseña obligatorio; sin las cabeceras del cliente, contaba por IP del
+      // contenedor y no por visitante.
+      headers: conCabecerasDeCliente(request, {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
-      },
+      }),
       body: JSON.stringify(body),
     });
   } catch {

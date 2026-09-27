@@ -44,11 +44,16 @@ export async function getSessionPermissionsSnapshot(): Promise<{ role: string | 
     if (!res.ok) return { role: session.role, permissions: [] };
 
     const { user, permisos } = await res.json();
-    
+
     // /api/me devuelve el array de permisos en la raíz de la respuesta, no dentro de user
     const permissions = permisos || [];
 
-    return { role: session.role, permissions };
+    // El rol de la cookie es el de cuando se inició sesión; `user.role` lo resuelve
+    // `auth.middleware.ts` desde la fila en cada petición. Sin este `user?.role`, a
+    // alguien degradado de rol el gate del editor lo seguía tratando con el rol viejo
+    // hasta que volvía a iniciar sesión — la misma brecha que ya se cerró en la API
+    // (ver "Rol tomado del JWT" en 3-seguridad-del-proyecto.md), pero aquí seguía abierta.
+    return { role: user?.role ?? session.role, permissions };
   } catch {
     return { role: session.role, permissions: [] };
   }

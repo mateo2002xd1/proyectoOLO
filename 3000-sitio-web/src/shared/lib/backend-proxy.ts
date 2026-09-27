@@ -9,9 +9,13 @@ export async function proxyToBackend(path: string, request: Request) {
   const cookieStore = await cookies();
   const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
 
-  const headers: Record<string, string> = {
+  // Sin esto, las doce rutas que pasan por aquí (alertas, auditoría, permisos,
+  // roles, usuarios…) llegaban a la API con la IP del contenedor de Next, no la
+  // del visitante: el límite de tasa por IP se convertía en un cubo compartido por
+  // todo el mundo. `conCabecerasDeCliente` estaba importada pero nunca se llamaba.
+  const headers: Record<string, string> = conCabecerasDeCliente(request, {
     'Content-Type': request.headers.get('Content-Type') || 'application/json',
-  };
+  });
 
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
