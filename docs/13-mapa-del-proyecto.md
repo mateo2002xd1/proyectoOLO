@@ -16,7 +16,7 @@
 |---|--:|--:|--:|--:|--:|
 | `3000-sitio-web` | 45 | 3 | 54 | — | 33 |
 | `3001-intranet` | 33 | 2 | 13 | — | 27 |
-| `4000-api-backend` | 32 | — | — | 72 | 42 |
+| `4000-api-backend` | 32 | — | — | 70 | 42 |
 
 Paquetes compartidos: 7 · migraciones: 37 · modelos: 17.
 
@@ -309,13 +309,6 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | POST | `/api/logout` | 🔓 limitadorDeLogout | AuthController.logout |
 | GET | `/api/me` | requireAuth | AuthController.me |
 | POST | `/api/change-password` | requireAuth | AuthController.changePassword |
-
-### `routes/job.routes.ts`
-
-| Método | Ruta | Protección y validación | Manejador |
-|---|---|---|---|
-| GET | `(sin montar en app.ts)/:id` | requireAuth | TrabajosController.consultarEstado |
-| POST | `(sin montar en app.ts)/start-heavy-task` | requireAuth, limitadorDeTrabajos | TrabajosController.encolarTarea |
 
 ### `routes/observatorio.routes.ts`
 
