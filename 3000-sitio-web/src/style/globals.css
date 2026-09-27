@@ -1874,7 +1874,7 @@
 :root {
   /* Lo que ocupa la barra, incluida la franja del gesto de inicio de iOS. La columna
      del panel reserva este hueco y los avisos (`notification.tsx`) salen por encima. */
-  --navegacion-mobile-alto: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+  --navegacion-mobile-alto: calc(5rem + env(safe-area-inset-bottom, 0px));
 }
 
 .navegacion-mobile {
@@ -1940,10 +1940,46 @@
   }
 }
 
+/* Se esconde al bajar por la página y vuelve al subir (`use-ocultar-al-bajar.ts`).
+   Baja lo que mide más lo que sobresale el logo (49 px y su sombra), para que no
+   quede asomando. Si el teclado lleva el foco a la barra, vuelve a verse. */
+.navegacion-mobile {
+  transition: translate 250ms ease;
+}
+
+.navegacion-mobile.es-oculta {
+  translate: 0 calc(100% + 4rem);
+}
+
+.navegacion-mobile.es-oculta:focus-within {
+  translate: none;
+}
+
+/* Con la barra oculta, la columna deja de reservarle el hueco: la reserva está fuera
+   del `<main>` que hace scroll, y si no se quitaba quedaba una franja vacía fija al pie
+   de la pantalla. Sin transición: la barra se desliza por encima del contenido. */
+body:has(.navegacion-mobile.es-oculta:not(:focus-within)) .navegacion-mobile-reserva {
+  padding-bottom: 0;
+}
+
+/* Sin movimiento, se desvanece en vez de deslizarse. */
+@media (prefers-reduced-motion: reduce) {
+  .navegacion-mobile {
+    transition: opacity 150ms ease, visibility 150ms;
+  }
+
+  .navegacion-mobile.es-oculta {
+    translate: none;
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
 .navegacion-mobile-lista {
   display: flex;
   align-items: stretch;
-  height: 4.5rem;
+  /* 80 px, como en la intranet: el usuario la quiso más alta. */
+  height: 5rem;
   /* En una tablet los destinos no se separan hasta los bordes de la pantalla. */
   max-width: 40rem;
   margin: 0 auto;
@@ -1979,9 +2015,19 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* El destino es una pastilla que envuelve el icono y su texto: el resaltado del
+   activo, del toque y del ratón va en ella entera. Hasta 76 px de ancho y centrada
+   en su casilla, para que en una tablet no se estire de lado a lado. */
 .navegacion-mobile-destino {
+  flex: 0 1 4.75rem;
+  /* 2 px de aire a cada lado aunque la casilla sea estrecha (320 px). */
+  max-width: calc(100% - 0.25rem);
   justify-content: center;
-  padding: 0.375rem 0.125rem;
+  /* 8 px arriba y abajo: la pastilla no toca el borde de la barra. */
+  margin: 0.5rem auto;
+  padding: 0.25rem 0.125rem;
+  border-radius: 1rem;
+  transition: background-color 150ms ease;
 }
 
 .navegacion-mobile-icono {
@@ -1989,10 +2035,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 3.5rem;
+  width: 2rem;
   height: 2rem;
-  border-radius: 9999px;
-  transition: background-color 150ms ease;
 }
 
 .navegacion-mobile-icono > svg {
@@ -2018,7 +2062,15 @@
   color: var(--navegacion-mobile-activo);
 }
 
-.navegacion-mobile-destino.es-activo .navegacion-mobile-icono {
+.navegacion-mobile-destino.es-activo {
+  background: var(--navegacion-mobile-activo-fondo);
+}
+
+/* Al tocar un destino, y mientras su hoja está abierta, la pastilla se ve en el
+   momento: en una pantalla táctil no hay `:hover`, y sin esto no se veía nada hasta
+   que cargaba la página nueva (o nunca, con «Más»). */
+.navegacion-mobile-destino:active,
+.navegacion-mobile-destino[aria-expanded="true"] {
   background: var(--navegacion-mobile-activo-fondo);
 }
 
@@ -2029,7 +2081,7 @@
 
 /* Solo con ratón: en una pantalla táctil el `:hover` se queda pegado tras el toque. */
 @media (hover: hover) {
-  .navegacion-mobile-destino:not(.es-activo):hover .navegacion-mobile-icono {
+  .navegacion-mobile-destino:not(.es-activo):hover {
     background: var(--navegacion-mobile-hover-fondo);
   }
 }
@@ -2061,14 +2113,15 @@
 
 /* --- El logo del centro ---
    Un círculo de 5rem (80 px) que sobresale 49 px por encima de la barra y se separa
-   0.75rem de su etiqueta, para no montarse sobre la fila de los demás destinos. El
+   1rem de su etiqueta, para no montarse sobre la fila de los demás destinos. El
    logo (91 × 104) va a 52 px de ancho. */
-/* 0.6875rem (11px) abajo: lo que les queda a los demás destinos, que van centrados
-   ((4.5rem − icono 2rem − hueco − etiqueta 1rem) / 2). Con menos, «Dashboard» quedaba
+/* 0.9375rem (15px) abajo: lo que les queda a los demás destinos, centrados en su
+   pastilla (margen 0.5rem + relleno 0.25rem + (3.5rem − icono 2rem − hueco −
+   etiqueta 1rem) / 2). Con menos, «Dashboard» quedaba
    5px más abajo que «Accesos» o «Más». */
 .navegacion-mobile-inicio {
   justify-content: flex-end;
-  padding-bottom: 0.6875rem;
+  padding-bottom: 0.9375rem;
 }
 
 .navegacion-mobile-logo {
@@ -2078,8 +2131,10 @@
   width: 5rem;
   height: 5rem;
   flex-shrink: 0;
-  margin-top: -3.5625rem;
-  margin-bottom: 0.75rem;
+  margin-top: -2.8125rem;
+  /* 4 px sobre su etiqueta: sobresale 37 px de la barra, no 49 (el usuario lo quiso
+     más abajo). */
+  margin-bottom: 0.25rem;
   border-radius: 50%;
   background: var(--navegacion-mobile-logo-fondo);
   box-shadow: 0 4px 12px rgb(0 0 0 / 0.18);
