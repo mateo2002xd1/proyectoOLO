@@ -12,8 +12,6 @@ import { ModalNuevaSeccion } from './modal-nueva-seccion';
 import { ModalEliminarSeccion } from './modal-eliminar-seccion';
 import { Pencil, X } from 'lucide-react';
 
-const ROLES_QUE_EDITAN = ['superadmin', 'administrador', 'editor', 'admin'];
-
 function leerCookie(nombre: string): string | null {
   if (typeof document === 'undefined') return null;
   const coincidencia = document.cookie.match(new RegExp('(?:^|; )' + nombre + '=([^;]*)'));

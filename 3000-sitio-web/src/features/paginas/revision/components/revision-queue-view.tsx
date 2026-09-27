@@ -8,7 +8,7 @@ import { DatePicker } from '@/shared/ui/molecules/date-picker';
 import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
 import { Paginador } from '@/shared/ui/molecules/paginador';
 import { useRevisionQueue } from '../hooks/use-revision-queue';
-import type { Ambito, PaginaEnRevision } from '../../model/pagina.types';
+import type { PaginaEnRevision } from '../../model/pagina.types';
 
 /**
  * Dónde se ve una página que aún no está publicada.

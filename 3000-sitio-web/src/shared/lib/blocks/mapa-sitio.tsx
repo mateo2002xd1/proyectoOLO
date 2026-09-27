@@ -1,4 +1,4 @@
-import { useState, useEffect, type ReactNode } from 'react';
+import { useState, useEffect } from 'react';
 import type { PaginaIndiceBusqueda } from '@/features/paginas/model/pagina.types';
 import { obtenerIndiceBusqueda } from '@/features/paginas/publicacion/services/publicacion.service';
 

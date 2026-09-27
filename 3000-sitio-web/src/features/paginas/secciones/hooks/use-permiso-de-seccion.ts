@@ -4,9 +4,6 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 import { permisosDeLaSesion } from '../services/secciones.service';
 import { AUTH_ROLE_COOKIE_NAME } from '@/shared/lib/auth-cookies';
 
-/** Mismos roles que `puedeEditarPaginas()` en `shared/lib/session.ts`. */
-const ROLES_QUE_EDITAN = ['superadmin', 'administrador', 'editor', 'admin'];
-
 function leerCookie(nombre: string): string | null {
   if (typeof document === 'undefined') return null;
   const coincidencia = document.cookie.match(new RegExp('(?:^|; )' + nombre + '=([^;]*)'));

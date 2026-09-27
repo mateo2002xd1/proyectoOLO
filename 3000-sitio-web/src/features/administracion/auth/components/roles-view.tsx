@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { PencilIcon, TrashIcon, EyeIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import {
   useUsuarios,
   mensajeDeError,
@@ -9,7 +9,6 @@ import {
   type Permission,
 } from '../hooks/use-usuarios';
 import { Button } from '@/shared/ui/atoms/button';
-import { Switch } from '@/shared/ui/atoms/switch';
 import { Notification } from '@/shared/ui/molecules/notification';
 import { Alert, AlertTitle, AlertDescription, AlertActions } from '@/shared/ui/molecules/alert';
 import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
@@ -400,20 +399,20 @@ export default function RolesView() {
                 const noEliminable = rol.name === 'Editor';
                 return (
                   <tr key={rol.id} className="transition-colors hover:bg-zinc-50 dark:hover:bg-[#0f1624]/60">
-                    <td className="px-5 py-3.5">
+                    <td className="px-5 py-2">
                       <span className="font-medium text-zinc-900 dark:text-[#f6f6f6]">{rol.name}</span>
                     </td>
-                    <td data-etiqueta="Descripción" className="max-w-xs px-5 py-3.5">
+                    <td data-etiqueta="Descripción" className="max-w-xs px-5 py-2">
                       <span className="truncate text-zinc-500 dark:text-[#94a3b8]">
                         {rol.description || 'Sin descripcion'}
                       </span>
                     </td>
-                    <td data-etiqueta="Permisos" className="px-5 py-3.5 text-center">
+                    <td data-etiqueta="Permisos" className="px-5 py-2 text-center">
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-brand-interactive/30 bg-brand-interactive/10 px-2.5 py-0.5 text-xs font-semibold text-brand-interactive">
                         {numPermisos} permiso{numPermisos !== 1 ? 's' : ''}
                       </span>
                     </td>
-                    <td data-etiqueta="Acciones" className="px-5 py-3.5">
+                    <td data-etiqueta="Acciones" className="px-5 py-2">
                       <div className="flex items-center gap-1 @3xl:justify-end">
                         <button
                           type="button"

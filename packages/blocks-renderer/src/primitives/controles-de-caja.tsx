@@ -33,7 +33,6 @@
  */
 
 import { campoColor } from './color-picker-field';
-import { campoIcono } from './icon-selector-field';
 
 // ─── Tipos mínimos de Puck ───────────────────────────────────────────────────
 /**

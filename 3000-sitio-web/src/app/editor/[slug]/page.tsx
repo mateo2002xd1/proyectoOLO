@@ -7,7 +7,7 @@ import {
   SLUG_PLANTILLA,
   slugDeOrigen,
 } from '@/features/paginas';
-import { getAuthSessionSnapshot, puedeEditarPaginas, getSessionPermissionsSnapshot } from '@/shared/lib/session';
+import { getAuthSessionSnapshot, getSessionPermissionsSnapshot } from '@/shared/lib/session';
 import { EditorClient } from './editor-client';
 
 /**

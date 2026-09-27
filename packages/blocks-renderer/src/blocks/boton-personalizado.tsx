@@ -82,7 +82,7 @@ export function BotonPersonalizado({
   const iconoIzquierda = tieneIcono && posicionIcono === 'izquierda';
   const iconoDerecha = tieneIcono && posicionIcono === 'derecha';
 
-  const dispararDescarga = (e?: React.MouseEvent) => {
+  const dispararDescarga = () => {
     if (!urlDestino || urlDestino === '#') return;
     const nombre = destino?.nombreArchivo || (urlDestino ? urlDestino.split('/').pop() : '') || 'archivo';
     const textoPeso = destino?.pesoArchivo ? ` (${destino.pesoArchivo})` : '';
@@ -183,9 +183,9 @@ export function BotonPersonalizado({
       download={esArchivo ? (destino?.nombreArchivo || true) : undefined}
       className={clasesBoton}
       style={estilosBoton}
-      onClick={(e) => {
+      onClick={() => {
         if (esArchivo) {
-          dispararDescarga(e);
+          dispararDescarga();
         }
       }}
     >
@@ -196,9 +196,9 @@ export function BotonPersonalizado({
       type="button"
       className={clasesBoton}
       style={estilosBoton}
-      onClick={(e) => {
+      onClick={() => {
         if (esArchivo) {
-          dispararDescarga(e);
+          dispararDescarga();
           if (urlDestino && urlDestino !== '#') {
             const link = document.createElement('a');
             link.href = urlDestino;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
@@ -47,7 +47,6 @@ import { ThemeToggle } from '@/shared/ui/molecules/theme-toggle';
 import { Paginador } from '@/shared/ui/molecules/paginador';
 import { RouteTransition } from '@/shared/ui/atoms/route-transition';
 import {
-  enlaceAlEditor,
   listarEnRevision,
   resumenDePaginasPublicadas,
   SLUG_PLANTILLA,
@@ -65,7 +64,7 @@ import {
   resumenDeCambios,
   type RegistroAuditoria,
 } from '@/features/administracion/auditoria';
-import { useUsuarios, mensajeDeError, type User } from '../hooks/use-usuarios';
+import { useUsuarios } from '../hooks/use-usuarios';
 import { listarAlertasCaducidad, type AlertaCaducidad } from '../services/alertas-caducidad.service';
 
 /**
@@ -139,18 +138,6 @@ function sinPlantilla(resumen: ResumenPaginasPublicadas): ResumenPaginasPublicad
   return { sitio, intranet, total: sitio.length + intranet.length };
 }
 
-/**
- * La cola de revisión exige permiso para publicar (`pagina.routes.ts`), así que a
- * un editor le responde 403. Eso no es una avería: es que estas alertas no son
- * suyas, y decírselo así evita que reporte un error que no existe.
- */
-function mensajeDeRevision(err: unknown): string {
-  const status = (err as { response?: { status?: number } })?.response?.status;
-  return status === 403
-    ? 'Tu rol no aprueba páginas, así que no recibes estas alertas.'
-    : 'No se pudieron cargar las alertas de páginas en revisión.';
-}
-
 /** Fecha corta: la tarjeta es angosta y la hora exacta se consulta en Auditoría. */
 const fechaCorta = (iso: string) =>
   new Date(iso).toLocaleString('es-CO', {
@@ -159,14 +146,6 @@ const fechaCorta = (iso: string) =>
     hour: '2-digit',
     minute: '2-digit',
   });
-
-/** Urgencia visual de una cuenta por vencer: lo inminente se distingue de un vistazo. */
-const colorDiasRestantes = (dias: number) =>
-  dias <= 3
-    ? 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200'
-    : dias <= 7
-      ? 'bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-200'
-      : 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300';
 
 /** Botón de la barra superior del móvil (buscar y tema). */
 const BOTON_BARRA_MOVIL =
@@ -211,12 +190,14 @@ function ModalAlertas({
       }}
     >
       <div
-        className="flex max-h-[88dvh] min-h-[min(22rem,88dvh)] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-[#121824]"
+        // Sin alto mínimo: la caja mide lo que su contenido, hasta el 88 % de la
+        // pantalla; con más alertas, la lista hace scroll dentro.
+        className="flex max-h-[88dvh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-[#121824]"
         role="dialog"
         aria-modal="true"
         aria-labelledby="alertas-titulo"
       >
-        <header className="border-b border-zinc-100 px-8 py-6 dark:border-zinc-800/80">
+        <header className="border-b border-zinc-100 px-5 py-4 sm:px-8 sm:py-6 dark:border-zinc-800/80">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <h3 id="alertas-titulo" className="admin-subtitle text-xl text-zinc-900 dark:text-[#f6f6f6]">
@@ -239,59 +220,59 @@ function ModalAlertas({
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-8">
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-3 sm:px-8 sm:py-5">
           {total === 0 ? (
-            <p className="py-12 text-center text-base text-zinc-500 dark:text-[#94a3b8]">
+            <p className="py-8 text-center text-base text-zinc-500 dark:text-[#94a3b8]">
               No hay alertas pendientes en este momento.
             </p>
           ) : (
             <div className="space-y-3">
               {cuentasPorVencer.map((a) => (
-                <div
-                  key={a.userId || a.email}
-                  className="group flex h-11 w-full items-center gap-2 rounded-full border border-amber-200 bg-amber-50 pl-1.5 pr-2 dark:border-amber-900/40 dark:bg-amber-900/15"
-                >
+                // Sin fondo ni borde en la fila: el estado lo dicen la etiqueta y el
+                // color del texto, que es el mismo de la etiqueta.
+                <div key={a.userId || a.email} className="group flex h-11 w-full items-center gap-2">
                   <span className="shrink-0 rounded-full bg-amber-200/80 px-2.5 py-1 text-xs font-semibold text-amber-900 dark:bg-amber-800/60 dark:text-amber-100">
                     Por vencer
                   </span>
-                  <p className="min-w-0 flex-1 truncate text-sm text-amber-800 dark:text-amber-200">
+                  <p className="min-w-0 flex-1 truncate text-sm text-amber-900 dark:text-amber-100">
                     <Link href="/admin/users" className="font-medium underline hover:no-underline">
                       {a.email}
                     </Link>
                     {' '}vence en {a.daysLeft} día{a.daysLeft !== 1 ? 's' : ''}
                   </p>
                   <button
+                    type="button"
                     onClick={() => onDismissCuenta(a.email)}
-                    className="flex size-7 shrink-0 items-center justify-center rounded-full text-amber-600 hover:bg-amber-200/70 dark:text-amber-300 dark:hover:bg-amber-900/50"
+                    className="flex size-7 shrink-0 items-center justify-center rounded-full text-amber-900 hover:bg-amber-200/70 dark:text-amber-100 dark:hover:bg-amber-900/50"
+                    aria-label={`Marcar como solucionada: ${a.email}`}
                     title="Marcar como solucionada"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-4">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-4" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
                     </svg>
                   </button>
                 </div>
               ))}
 
               {enRevision.map((p) => (
-                <div
-                  key={p.id}
-                  className="group flex h-11 w-full items-center gap-2 rounded-full border border-blue-200 bg-blue-50 pl-1.5 pr-2 dark:border-blue-900/40 dark:bg-blue-900/15"
-                >
+                <div key={p.id} className="group flex h-11 w-full items-center gap-2">
                   <span className="shrink-0 rounded-full bg-blue-200/80 px-2.5 py-1 text-xs font-semibold text-blue-900 dark:bg-blue-800/60 dark:text-blue-100">
                     En revisión
                   </span>
-                  <p className="min-w-0 flex-1 truncate text-sm text-blue-800 dark:text-blue-200">
+                  <p className="min-w-0 flex-1 truncate text-sm text-blue-900 dark:text-blue-100">
                     <Link href="/admin/revision" className="font-medium underline hover:no-underline">
                       {p.titulo}
                     </Link>
                   </p>
                   <button
+                    type="button"
                     onClick={() => onDismissRevision(p.id)}
-                    className="flex size-7 shrink-0 items-center justify-center rounded-full text-blue-600 hover:bg-blue-200/70 dark:text-blue-300 dark:hover:bg-blue-900/50"
+                    className="flex size-7 shrink-0 items-center justify-center rounded-full text-blue-900 hover:bg-blue-200/70 dark:text-blue-100 dark:hover:bg-blue-900/50"
+                    aria-label={`Marcar como solucionada: ${p.titulo}`}
                     title="Marcar como solucionada"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-4">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-4" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
                     </svg>
                   </button>
                 </div>
@@ -763,13 +744,13 @@ export function PanelGeneralDashboard() {
                   <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
                     {actividadPaginada.map((registro) => (
                       <tr key={registro.id}>
-                        <td data-etiqueta="Fecha y hora" className="whitespace-nowrap px-5 py-3.5 text-zinc-600 dark:text-zinc-300">
+                        <td data-etiqueta="Fecha y hora" className="whitespace-nowrap px-5 py-2 text-zinc-600 dark:text-zinc-300">
                           {fechaCorta(registro.fecha)}
                         </td>
-                        <td data-etiqueta="Usuario" className="max-w-[10rem] truncate px-5 py-3.5 font-medium text-zinc-900 dark:text-[#f6f6f6]">
+                        <td data-etiqueta="Usuario" className="max-w-[10rem] truncate px-5 py-2 font-medium text-zinc-900 dark:text-[#f6f6f6]">
                           {registro.usuarioNombre ?? <span className="font-normal text-zinc-500">Sin usuario</span>}
                         </td>
-                        <td data-etiqueta="Acción" className="px-5 py-3.5">
+                        <td data-etiqueta="Acción" className="px-5 py-2">
                           <span
                             className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${COLOR_ACCION[registro.accion] ?? ''}`}
                           >
@@ -782,7 +763,7 @@ export function PanelGeneralDashboard() {
                             Auditoría, para que las dos lean igual un registro. */}
                         <td
                           data-etiqueta="Cambios"
-                          className="max-w-[16rem] truncate px-5 py-3.5 text-zinc-500 dark:text-[#94a3b8]"
+                          className="max-w-[16rem] truncate px-5 py-2 text-zinc-500 dark:text-[#94a3b8]"
                           title={resumenDeCambios(registro)}
                         >
                           <span className="@max-3xl:line-clamp-3">{resumenDeCambios(registro) || '—'}</span>
