@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   AlertTriangle,
   CheckCircle2,
   Database,
   Download,
-  FileSpreadsheet,
   Info,
   Loader2,
   Trash2,
@@ -93,7 +93,7 @@ export function ModalDepurarAuditoria({
     };
   }, [abierto]);
 
-  if (!abierto) return null;
+  if (!abierto || typeof document === 'undefined') return null;
 
   const handleDescargarCsv = () => {
     if (!analisis || analisis.registros.length === 0) return;
@@ -123,34 +123,29 @@ export function ModalDepurarAuditoria({
   };
 
   const totalCandidatos = analisis?.registros.length ?? 0;
+  const totalUltimoAnio = analisis?.totalUltimoAnio ?? 0;
   const fechaCorteTexto = analisis?.fechaCorte ? formatearFechaCorte(analisis.fechaCorte) : '';
 
-  return (
+  // Sale por un portal al `<body>`, como `Alert` (crear usuario): dentro de la columna
+  // del panel la barra de abajo le quedaba encima y el desenfoque no cubría la página
+  // entera. Por debajo de `lg` el fondo deja libre el alto de esa barra: la caja cabe
+  // entre el borde de arriba y ella, y lo que no quepa hace scroll dentro.
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center-safe justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center-safe justify-center overflow-y-auto bg-[#0f172a]/40 p-4 pb-[calc(var(--navegacion-mobile-alto)+1rem)] backdrop-blur-sm animate-in fade-in duration-200 lg:pb-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="titulo-modal-depurar-auditoria"
     >
-      <div className="relative flex max-h-[calc(100dvh-2rem)] w-full max-w-2xl flex-col overflow-hidden rounded-[24px] border border-zinc-200 bg-white shadow-2xl dark:border-[#2d3649] dark:bg-[#151d30]">
+      <div className="relative flex max-h-[calc(100dvh-2rem-var(--navegacion-mobile-alto))] w-full max-w-2xl flex-col overflow-hidden rounded-[24px] border border-zinc-200 bg-white shadow-2xl lg:max-h-[calc(100dvh-2rem)] dark:border-[#2d3649] dark:bg-[#151d30]">
         {/* Cabecera */}
-        <div className="flex items-center justify-between border-b border-zinc-100 px-6 py-4 dark:border-[#202b42]">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-100 text-red-600 dark:bg-red-950/50 dark:text-red-400">
-              <Trash2 size={20} />
-            </div>
-            <div>
-              <h2
-                id="titulo-modal-depurar-auditoria"
-                className="text-lg font-bold text-zinc-900 dark:text-[#f6f6f6]"
-              >
-                Depurar tabla de auditoría
-              </h2>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                Elimina registros antiguos de la bitácora con respaldo obligatorio previo en CSV.
-              </p>
-            </div>
-          </div>
+        <div className="flex items-center justify-between gap-3 border-b border-zinc-100 px-6 py-4 dark:border-[#202b42]">
+          <h2
+            id="titulo-modal-depurar-auditoria"
+            className="text-lg font-bold text-zinc-900 dark:text-[#f6f6f6]"
+          >
+            Depurar tabla de auditoría
+          </h2>
           <button
             type="button"
             onClick={onCerrar}
@@ -163,7 +158,7 @@ export function ModalDepurarAuditoria({
         </div>
 
         {/* Contenido */}
-        <div className="min-h-0 flex-1 overflow-y-auto p-6">
+        <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
           {resultadoExito ? (
             <div className="flex flex-col items-center justify-center py-8 text-center animate-in zoom-in-95 duration-200">
               <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400">
@@ -195,10 +190,11 @@ export function ModalDepurarAuditoria({
                   <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
                   <div className="text-xs text-amber-800 dark:text-amber-300/90 leading-relaxed">
                     <p className="font-semibold text-amber-900 dark:text-amber-200 mb-1">
-                      Criterio de retención de 6 meses
+                      Importante:
                     </p>
                     <p>
-                      El sistema identifica y depura todos los registros con fecha anterior a <strong>{fechaCorteTexto || '6 meses atrás'}</strong>.
+                      Se conserva el último año de la bitácora donde se depuran los registros posteriores con
+                      respaldo obligatorio previo en CSV.
                     </p>
                   </div>
                 </div>
@@ -230,35 +226,44 @@ export function ModalDepurarAuditoria({
               {/* Resumen de análisis */}
               {!cargando && analisis && (
                 <>
+                  {/* La fecha de corte va en el aviso del criterio; aquí, cuánto se va y cuánto se queda. */}
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                    <div className="rounded-2xl border border-zinc-200/80 bg-zinc-50/50 p-3.5 dark:border-[#202b42] dark:bg-[#1a2333]/50">
-                      <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+                    <div className="col-span-2 rounded-2xl border border-zinc-200/80 bg-zinc-50/50 p-3.5 text-center sm:col-span-1 dark:border-[#202b42] dark:bg-[#1a2333]/50">
+                      <span className="block text-[11px] font-medium leading-tight text-zinc-500 dark:text-zinc-400">
                         Registros a depurar
                       </span>
                       <p className="mt-1 text-lg font-bold text-red-600 dark:text-red-400">
                         {totalCandidatos} {totalCandidatos === 1 ? 'registro' : 'registros'}
                       </p>
-                    </div>
-
-                    <div className="rounded-2xl border border-zinc-200/80 bg-zinc-50/50 p-3.5 dark:border-[#202b42] dark:bg-[#1a2333]/50">
-                      <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
-                        Fecha de corte
-                      </span>
-                      <p className="mt-1 text-sm font-semibold text-zinc-800 dark:text-zinc-200">
-                        {fechaCorteTexto}
+                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                        {formatearBytes(analisis.pesoEstimadoBytes)}
                       </p>
                     </div>
 
-                    <div className="col-span-2 sm:col-span-1 rounded-2xl border border-zinc-200/80 bg-zinc-50/50 p-3.5 dark:border-[#202b42] dark:bg-[#1a2333]/50">
-                      <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
-                        Espacio estimado
+                    <div className="rounded-2xl border border-zinc-200/80 bg-zinc-50/50 p-3.5 text-center dark:border-[#202b42] dark:bg-[#1a2333]/50">
+                      <span className="block text-[11px] font-medium leading-tight text-zinc-500 dark:text-zinc-400">
+                        Registros del último año
+                      </span>
+                      <p className="mt-1 text-lg font-bold text-zinc-900 dark:text-zinc-100">
+                        {formatearBytes(analisis.pesoUltimoAnioBytes)}
+                      </p>
+                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                        {totalUltimoAnio} {totalUltimoAnio === 1 ? 'registro' : 'registros'}
+                      </p>
+                    </div>
+
+                    <div className="rounded-2xl border border-zinc-200/80 bg-zinc-50/50 p-3.5 text-center dark:border-[#202b42] dark:bg-[#1a2333]/50">
+                      <span className="block text-[11px] font-medium leading-tight text-zinc-500 dark:text-zinc-400">
+                        Registros de más de un año
                       </span>
                       <p className="mt-1 text-lg font-bold text-zinc-900 dark:text-zinc-100">
                         {formatearBytes(analisis.pesoEstimadoBytes)}
                       </p>
+                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                        {totalCandidatos} {totalCandidatos === 1 ? 'registro' : 'registros'}
+                      </p>
                     </div>
                   </div>
-
 
                   {totalCandidatos === 0 ? (
                     <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-6 text-center text-sm text-zinc-600 dark:border-[#202b42] dark:bg-[#1a2333] dark:text-zinc-400">
@@ -266,94 +271,25 @@ export function ModalDepurarAuditoria({
                       No se encontraron registros de auditoría anteriores a {fechaCorteTexto}. No se requiere depuración en este momento.
                     </div>
                   ) : (
-                    /* Tarjeta de flujo de 2 pasos */
-                    <div className="rounded-2xl border border-zinc-200 bg-white p-4.5 dark:border-[#202b42] dark:bg-[#172033] space-y-4">
-                      {/* Paso 1: Descargar CSV */}
-                      <div className={`rounded-xl border p-4 transition-all ${
-                        csvDescargado
-                          ? 'border-emerald-200 bg-emerald-50/60 dark:border-emerald-900/40 dark:bg-emerald-950/20'
-                          : 'border-zinc-200 bg-zinc-50/80 dark:border-[#26334d] dark:bg-[#1a2333]'
-                      }`}>
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                          <div className="flex items-start gap-3">
-                            <div className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${
-                              csvDescargado
-                                ? 'bg-emerald-200 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300'
-                                : 'bg-zinc-200 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300'
-                            }`}>
-                              {csvDescargado ? <CheckCircle2 size={16} /> : <FileSpreadsheet size={16} />}
-                            </div>
-                            <div>
-                              <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
-                                Paso 1: Descargar respaldo CSV (Obligatorio)
-                              </p>
-                              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
-                                {csvDescargado
-                                  ? 'Respaldo generado y descargado exitosamente. Ya puedes proceder al paso 2.'
-                                  : 'Para poder eliminar los datos, es indispensable generar y descargar su respaldo en CSV.'}
-                              </p>
-                            </div>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={handleDescargarCsv}
-                            disabled={ejecutando}
-                            className={`flex shrink-0 items-center justify-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold shadow-sm transition ${
-                              csvDescargado
-                                ? 'bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-600'
-                                : 'bg-[#00324D] text-white hover:bg-[#002233] dark:bg-blue-600 dark:hover:bg-blue-500'
-                            }`}
-                          >
-                            <Download size={14} />
-                            {csvDescargado ? 'Volver a descargar CSV' : 'Descargar respaldo CSV'}
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Paso 2: Confirmar y eliminar */}
-                      <div className={`rounded-xl border p-4 transition-all ${
-                        !csvDescargado
-                          ? 'border-zinc-100 bg-zinc-50/40 opacity-60 dark:border-[#202b42] dark:bg-[#151d30]'
-                          : 'border-red-200 bg-red-50/40 dark:border-red-900/30 dark:bg-red-950/10'
-                      }`}>
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                          <div className="flex items-start gap-3">
-                            <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-red-100 text-red-600 dark:bg-red-950/50 dark:text-red-400">
-                              <Trash2 size={16} />
-                            </div>
-                            <div>
-                              <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
-                                Paso 2: Eliminación definitiva en base de datos
-                              </p>
-                              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
-                                {!csvDescargado
-                                  ? 'Bloqueado. Debes completar el Paso 1 para habilitar este botón.'
-                                  : 'Esta acción borrará de forma irreversible los 10 registros respaldados.'}
-                              </p>
-                            </div>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={handleEjecutar}
-                            disabled={!csvDescargado || ejecutando}
-                            className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500 dark:disabled:bg-zinc-800 dark:disabled:text-zinc-600"
-                          >
-                            {ejecutando ? (
-                              <>
-                                <Loader2 size={14} className="animate-spin" />
-                                Eliminando...
-                              </>
-                            ) : (
-                              <>
-                                <Trash2 size={14} />
-                                Confirmar y eliminar registros
-                              </>
-                            )}
-                          </button>
-                        </div>
-                      </div>
+                    /* El respaldo va antes que el borrado: el botón rojo del pie no se
+                       habilita hasta descargarlo. */
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                        {csvDescargado ? 'Respaldo descargado' : 'Descargar primero tu respaldo'}{' '}
+                        <span className="text-red-600 dark:text-red-400" aria-hidden="true">*</span>
+                        <span className="sr-only">(obligatorio)</span>
+                      </p>
+                      {/* Solo texto, en el verde de los enlaces del panel: el #7DB728 sobre blanco no se
+                         lee (2.42:1, `9-accesibilidad.md` §2.1). */}
+                      <button
+                        type="button"
+                        onClick={handleDescargarCsv}
+                        disabled={ejecutando}
+                        className="flex h-11 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-[16px] px-4 sm:px-5 text-sm font-semibold text-[#4C7A1C] transition hover:bg-[#7DB728]/10 active:bg-[#7DB728]/20 disabled:opacity-50 dark:text-[#9ED65C] dark:hover:bg-[#7DB728]/15"
+                      >
+                        {csvDescargado ? <CheckCircle2 size={16} /> : <Download size={16} />}
+                        {csvDescargado ? 'Volver a descargar' : 'Descargar respaldo CSV'}
+                      </button>
                     </div>
                   )}
                 </>
@@ -362,18 +298,42 @@ export function ModalDepurarAuditoria({
           )}
         </div>
 
-        {/* Pie */}
-        <div className="flex items-center justify-end border-t border-zinc-100 bg-zinc-50 px-6 py-3.5 dark:border-[#202b42] dark:bg-[#151d30]">
+        {/* Pie: como el de Respaldos. Depurar pide antes el respaldo descargado. */}
+        <div className="flex flex-wrap items-center justify-end gap-2 border-t border-zinc-100 bg-zinc-50/60 px-4 py-4 sm:gap-3 sm:px-6 dark:border-[#202b42] dark:bg-[#111726]">
           <button
             type="button"
             onClick={onCerrar}
             disabled={ejecutando}
-            className="rounded-xl border border-zinc-200 bg-white px-4 py-2 text-xs font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:opacity-50 dark:border-[#2d3649] dark:bg-[#1a2333] dark:text-zinc-300 dark:hover:bg-[#202b42]"
+            className="h-11 rounded-[16px] border border-[#d0d5dd] bg-white px-4 text-sm font-medium sm:px-5 text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50 dark:border-[#2d3649] dark:bg-[#1a233a] dark:text-zinc-200 dark:hover:bg-[#202b42]"
           >
             {resultadoExito ? 'Cerrar' : 'Cancelar'}
           </button>
+
+          {!resultadoExito && totalCandidatos > 0 && (
+            <button
+              type="button"
+              onClick={handleEjecutar}
+              disabled={!csvDescargado || ejecutando}
+              title={csvDescargado ? undefined : 'Descarga primero el respaldo CSV'}
+              className="flex h-11 items-center gap-2 whitespace-nowrap rounded-[16px] bg-red-600 px-4 text-sm font-semibold text-white sm:px-5 shadow-sm transition hover:bg-red-700 active:bg-red-800 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {ejecutando ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Eliminando…
+                </>
+              ) : (
+                <>
+                  {/* Sin icono en el móvil: con él, el texto no cabía en una línea a 360 px. */}
+                  <Trash2 size={16} className="hidden sm:block" />
+                  Depurar {totalCandidatos} {totalCandidatos === 1 ? 'registro' : 'registros'}
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
