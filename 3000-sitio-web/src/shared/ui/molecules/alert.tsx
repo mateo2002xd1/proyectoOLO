@@ -13,8 +13,14 @@ export function Alert({ open, onClose, children }: AlertProps) {
   if (!open || typeof document === "undefined") return null;
 
   return createPortal(
+    // En el móvil el cuadro sale desde abajo, al alcance del pulgar; desde `sm`,
+    // centrado. Si es más alto que la pantalla (el formulario de Nuevo Usuario en
+    // un teléfono), el fondo hace scroll: el cuadro no puede hacerlo él mismo porque
+    // es `overflow-visible` para que las listas desplegables salgan por fuera. Las
+    // variantes `-safe` lo alinean arriba cuando no cabe; sin ellas, la parte de
+    // arriba del formulario quedaba fuera de la pantalla y fuera del scroll.
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center sm:items-center bg-[#0f172a]/40 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-end-safe justify-center overflow-y-auto bg-[#0f172a]/40 p-4 backdrop-blur-sm sm:items-center-safe"
       // Usamos `onMouseDown` y no `onClick`: si el usuario selecciona texto dentro
       // del cuadro y suelta el ratón fuera, el clic se contabiliza en el fondo y
       // el cuadro se cerraba en mitad de la selección.

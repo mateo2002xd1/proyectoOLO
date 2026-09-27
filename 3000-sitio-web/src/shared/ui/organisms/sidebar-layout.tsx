@@ -34,7 +34,7 @@ export function SidebarLayout({
   }, [pathname]);
 
   return (
-    <div className={`flex h-screen bg-white dark:bg-[#131B2E] ${className}`}>
+    <div className={`flex h-dvh bg-white dark:bg-[#131B2E] ${className}`}>
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div 
