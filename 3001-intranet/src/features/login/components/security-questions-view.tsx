@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, FormEvent, useEffect, useMemo, useSyncExternalStore } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authApi, useAuth } from '@/features/login';
 import { ReturnToSiteLink } from '@/shared/ui/molecules/return-to-site-link';

@@ -16,7 +16,7 @@
  */
 
 import { redirect } from "next/navigation";
-import { obtenerSesion, puedeEditarPaginas, permisosDeLaSesion } from "@/shared/lib/sesion";
+import { obtenerSesion, permisosDeLaSesion } from "@/shared/lib/sesion";
 import {
   AvisoSeccionNueva,
   obtenerPlantilla,

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { PptxViewer as AidenPptxViewer } from '@aiden0z/pptx-renderer';
 
 interface PptxViewerProps {

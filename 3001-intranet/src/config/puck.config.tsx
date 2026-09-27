@@ -1,10 +1,6 @@
 'use client';
 
-import {
-  IntranetFooter,
-  LOGOS_POR_DEFECTO,
-  COLUMNAS_POR_DEFECTO,
-} from '@/shared/lib/blocks/plantilla/intranet-footer';
+import { IntranetFooter } from '@/shared/lib/blocks/plantilla/intranet-footer';
 import { IntranetTopbarWrapper } from '@/shared/lib/blocks/plantilla/intranet-topbar-wrapper';
 // La barra "pelada", sin el envoltorio que le inyecta la sesión: el contexto
 // inerte del editor no necesita un botón de cerrar sesión que no se puede pulsar.
@@ -29,8 +25,6 @@ import { IconoBloque } from '@/shared/lib/blocks/compartidos/icono-bloque';
 import {
   primitiveComponents,
   crearGridConfig,
-  flexConfig,
-  spaceConfig,
   conCaja,
   conCajaEnTodos,
   BLOQUES_SIN_CAJA,
@@ -42,8 +36,7 @@ import {
   campoDestinoBoton,
 } from '@olo/blocks-renderer';
 import { Render, type Config, type Data } from '@puckeditor/core';
-import { useState, useEffect, useRef, type ComponentProps, type ReactNode } from 'react';
-import { createPortal } from 'react-dom';
+import { useEffect, useRef, type ComponentProps, type ReactNode } from 'react';
 import { ImageUploaderField } from '@/features/paginas/edicion/components/image-uploader-field';
 import { ArchivoUploaderField } from '@/features/paginas/edicion/components/archivo-uploader-field';
 
@@ -185,7 +178,11 @@ const puckConfigBase: Config = {
       components: ['TasaConceptos', 'PreguntasFrecuentes'],
     },
     'Maquetación': {
-      components: ['Grid', 'Flex', 'Space', 'SeccionPestanasLaterales'],
+      // `SeccionPestanasLaterales` se quitó de aquí el 2026-09-27: no existe ningún
+      // componente con ese nombre en el catálogo (ni import, ni entrada en
+      // `components:` más abajo, ni en `@olo/blocks-renderer`); esta mención no hacía
+      // nada. Mismo hallazgo que en el sitio web, ver 6-auditoria.md.
+      components: ['Grid', 'Flex', 'Space'],
     },
     'Ocultos': {
       visible: false,
@@ -595,7 +592,7 @@ const puckConfigBase: Config = {
         },
       },
       defaultProps: {
-        imagenSrc: '/docs/images/blog/image-1.jpg',
+        imagenSrc: '',
         imagenAlt: 'Ilustración del artículo',
         titulo: 'Ingresa texto',
         descripcion: 'Ingresa descripción',
@@ -1243,23 +1240,6 @@ export const puckConfig: Config = {
  * problema que se acaba de quitar. Siguen registrados en `puckConfig` porque
  * puede quedar contenido guardado que los use.
  */
-const BLOQUES_COMUNES = [
-  'IntranetHero',
-  'TextoRico',
-  'TextoConImagen',
-  'ImagenDestacada',
-  'TarjetaArticulo',
-  'BotonPersonalizado',
-  'SeccionBotonesIcono',
-  'SeccionCarrusel',
-  'TasaVideo',
-  'Grid',
-  'Flex',
-  'Space',
-  'IconoBloque',
-  'SeccionPestanasLaterales',
-];
-
 /**
  * La sección que guarda la barra y el pie comunes.
  *

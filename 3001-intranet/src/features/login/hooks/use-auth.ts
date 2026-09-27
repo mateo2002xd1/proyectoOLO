@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { authApi } from '../services/auth.service';
-import { useRouter } from 'next/navigation';
 
 export interface User {
   id: string;
@@ -37,7 +36,6 @@ export interface AuthContextType {
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
 
   const verifySession = useCallback(async () => {
     setIsLoading(true);

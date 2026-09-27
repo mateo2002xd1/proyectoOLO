@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, FormEvent, useEffect, useSyncExternalStore } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authApi, useAuth } from '@/features/login';
 import { cumplePolitica, primerFallo } from '@olo/password-policy';

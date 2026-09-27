@@ -122,7 +122,6 @@ export async function proxy(request: NextRequest) {
   }
 
   if (!sesion?.permisos.includes('acceso.intranet')) {
-    console.log('Acceso denegado a intranet, redirigiendo...');
     const response = NextResponse.redirect(new URL('/login?error=acceso_denegado', request.url));
     if (token) {
       response.cookies.delete('token');
