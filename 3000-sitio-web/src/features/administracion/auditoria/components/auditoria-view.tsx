@@ -66,10 +66,10 @@ export function AuditoriaView() {
           <button
             type="button"
             onClick={() => setModalDepurarAbierto(true)}
-            className="flex h-11 shrink-0 items-center gap-2 rounded-[16px] bg-red-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 active:bg-red-800"
+            className="flex h-11 shrink-0 items-center gap-2 rounded-[16px] px-4 text-sm font-semibold text-red-600 transition hover:bg-red-50 hover:text-red-700 active:bg-red-100 dark:text-red-400 dark:hover:bg-red-950/40 dark:hover:text-red-300 dark:active:bg-red-950/60"
           >
             <Trash2 size={16} />
-            Depurar auditoría
+            Depurar
           </button>
         }
       />
@@ -173,20 +173,20 @@ export function AuditoriaView() {
               <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
                 {registros.map((registro) => (
                   <tr key={registro.id} className="bg-white dark:bg-[#0f1626]">
-                    <td data-etiqueta="Fecha y hora" className="whitespace-nowrap px-4 py-1.5 text-zinc-600 dark:text-zinc-300">
+                    <td data-etiqueta="Fecha y hora" className="whitespace-nowrap px-4 py-2 text-zinc-600 dark:text-zinc-300">
                       {new Date(registro.fecha).toLocaleString('es-CO')}
                     </td>
-                    <td data-etiqueta="Usuario" className="px-4 py-1.5 text-zinc-900 dark:text-[#f6f6f6]">
+                    <td data-etiqueta="Usuario" className="px-4 py-2 text-zinc-900 dark:text-[#f6f6f6]">
                       {(registro.usuarioId ? usuarios.find(u => u.id === registro.usuarioId)?.nombre : null) ?? registro.usuarioNombre ?? <span className="text-zinc-500">Sin usuario</span>}
                     </td>
-                    <td data-etiqueta="Acción" className="px-4 py-1.5">
+                    <td data-etiqueta="Acción" className="px-4 py-2">
                       <span
                         className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${COLOR_ACCION[registro.accion] ?? ''}`}
                       >
                         {etiquetaDeAccion(registro.accion, registro.categoria)}
                       </span>
                     </td>
-                    <td data-etiqueta="Entidad" className="px-4 py-1.5 text-zinc-600 dark:text-zinc-300">
+                    <td data-etiqueta="Entidad" className="px-4 py-2 text-zinc-600 dark:text-zinc-300">
                       {etiquetaDeEntidad(registro.entidadTipo)}
                     </td>
                     {/* Se corta en la tabla y se lee completo en el `title` o en el detalle.
@@ -194,7 +194,7 @@ export function AuditoriaView() {
                         es lo que se escribió para ser leído. */}
                     <td
                       data-etiqueta="Cambios"
-                      className={`max-w-xs truncate px-4 py-1.5 ${
+                      className={`max-w-xs truncate px-4 py-2 ${
                         comentarioPrincipal(registro)
                           ? 'text-zinc-800 dark:text-zinc-200'
                           : 'text-zinc-500'
@@ -204,7 +204,7 @@ export function AuditoriaView() {
                       {/* Cuando la tabla pasa a tarjetas, el texto no se corta en una línea: se parte, hasta tres. */}
                       <span className="@max-3xl:line-clamp-3">{resumenDeCambios(registro) || '—'}</span>
                     </td>
-                    <td data-etiqueta="Detalle" className="px-4 py-1.5 text-right">
+                    <td data-etiqueta="Detalle" className="px-4 py-2 text-right">
                       <button
                         type="button"
                         onClick={() => setSeleccionado(registro)}
