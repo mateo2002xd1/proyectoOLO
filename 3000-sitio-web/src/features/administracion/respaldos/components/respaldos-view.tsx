@@ -13,10 +13,7 @@ import type { RegistroRespaldo } from '../types';
 
 const fecha = (iso: string) => new Date(iso).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' });
 
-const normalizar = (t: string) =>
-  t.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
-
-const FILTROS_VACIOS = { busqueda: '', ambito: '', editor: '', publicador: '', desde: '', hasta: '' };
+const FILTROS_VACIOS = { ambito: '', editor: '', publicador: '', desde: '', hasta: '' };
 
 /**
  * Historial de publicaciones de página (respaldos).
@@ -59,9 +56,7 @@ export function RespaldosView() {
   );
 
   const registrosFiltrados = useMemo(() => {
-    const q = normalizar(filtros.busqueda);
     return registrosRestaurables.filter((r) => {
-      if (q && !normalizar(`${r.titulo} ${r.slug}`).includes(q)) return false;
       if (filtros.ambito && r.ambito !== filtros.ambito) return false;
       if (filtros.editor && r.editadoPor.nombre !== filtros.editor) return false;
       if (filtros.publicador && r.publicadoPor.nombre !== filtros.publicador) return false;
@@ -93,10 +88,10 @@ export function RespaldosView() {
                 setAperturaDepurar((n) => n + 1);
                 setModalDepurarAbierto(true);
               }}
-              className="flex h-11 shrink-0 items-center gap-2 rounded-[16px] bg-red-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 active:bg-red-800"
+              className="flex h-11 shrink-0 items-center gap-2 rounded-[16px] px-4 text-sm font-semibold text-red-600 transition hover:bg-red-50 hover:text-red-700 active:bg-red-100 dark:text-red-400 dark:hover:bg-red-950/40 dark:hover:text-red-300 dark:active:bg-red-950/60"
             >
               <Trash2 size={16} />
-              Depurar versiones antiguas
+              Depurar
             </button>
           </>
         }
@@ -104,16 +99,6 @@ export function RespaldosView() {
 
       {!isLoading && registrosRestaurables.length > 0 && (
         <BarraFiltros activos={Object.values(filtros).filter(Boolean).length}>
-          <CampoFiltro etiqueta="Página">
-            <input
-              type="search"
-              value={filtros.busqueda}
-              onChange={(e) => cambiarFiltro('busqueda', e.target.value)}
-              placeholder="Título o slug…"
-              className="h-11 w-full rounded-[16px] border border-[#d0d5dd] bg-white px-3 text-sm text-zinc-900 placeholder:text-[#8a95ad] focus:border-[#002237] focus:outline-none focus:ring-2 focus:ring-[#002237]/20 dark:border-[#2d3649] dark:bg-[#252f47] dark:text-[#e6e8f0]"
-            />
-          </CampoFiltro>
-
           <CampoFiltro etiqueta="Ámbito">
             <CustomSelect
               ariaLabel="Ámbito"
@@ -188,19 +173,19 @@ export function RespaldosView() {
           <table className="olo-tabla-apilable w-full min-w-[56rem] text-left text-sm">
             <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-[#131b2f]">
               <tr>
-                <th scope="col" className="px-4 py-3 font-medium">Página</th>
-                <th scope="col" className="px-4 py-3 font-medium">Editado por</th>
-                <th scope="col" className="px-4 py-3 font-medium">Publicado por</th>
-                <th scope="col" className="px-4 py-3 font-medium">Editado el</th>
-                <th scope="col" className="px-4 py-3 font-medium">Publicado el</th>
-                <th scope="col" className="px-4 py-3 text-center font-medium">Versión anterior</th>
+                <th scope="col" className="px-4 py-3.5 font-medium">Página</th>
+                <th scope="col" className="px-4 py-3.5 font-medium">Editado por</th>
+                <th scope="col" className="px-4 py-3.5 font-medium">Publicado por</th>
+                <th scope="col" className="px-4 py-3.5 font-medium">Editado el</th>
+                <th scope="col" className="px-4 py-3.5 font-medium">Publicado el</th>
+                <th scope="col" className="px-4 py-3.5 text-center font-medium">Versión anterior</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
               {registrosFiltrados.map((registro) => (
                 <tr key={registro.id} className="bg-white dark:bg-[#0f1626]">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
+                  <td className="px-4 py-2">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                       <p className="font-medium text-zinc-900 dark:text-[#f6f6f6]">{registro.titulo}</p>
                       {registro.ambito && (
                         <span
@@ -213,24 +198,24 @@ export function RespaldosView() {
                           {registro.ambito === 'intranet' ? 'Intranet' : 'Sitio web'}
                         </span>
                       )}
+                      <span className="text-xs text-zinc-500">· versión {registro.numeroVersion}</span>
                     </div>
-                    <p className="text-xs text-zinc-500">/{registro.slug} · versión {registro.numeroVersion}</p>
                   </td>
-                  <td data-etiqueta="Editado por" className="px-4 py-3 text-zinc-600 dark:text-zinc-300">{registro.editadoPor.nombre}</td>
-                  <td data-etiqueta="Publicado por" className="px-4 py-3 text-zinc-600 dark:text-zinc-300">{registro.publicadoPor.nombre}</td>
-                  <td data-etiqueta="Editado el" className="whitespace-nowrap px-4 py-3 text-zinc-600 dark:text-zinc-300">
+                  <td data-etiqueta="Editado por" className="px-4 py-2 text-zinc-600 dark:text-zinc-300">{registro.editadoPor.nombre}</td>
+                  <td data-etiqueta="Publicado por" className="px-4 py-2 text-zinc-600 dark:text-zinc-300">{registro.publicadoPor.nombre}</td>
+                  <td data-etiqueta="Editado el" className="whitespace-nowrap px-4 py-2 text-zinc-600 dark:text-zinc-300">
                     {fecha(registro.editadoEn)}
                   </td>
-                  <td data-etiqueta="Publicado el" className="whitespace-nowrap px-4 py-3 text-zinc-600 dark:text-zinc-300">
+                  <td data-etiqueta="Publicado el" className="whitespace-nowrap px-4 py-2 text-zinc-600 dark:text-zinc-300">
                     {fecha(registro.publicadoEn)}
                   </td>
-                  <td data-etiqueta="Versión anterior" className="px-4 py-3 text-center">
+                  <td data-etiqueta="Versión anterior" className="px-4 py-2 text-center">
                     <button
                       type="button"
                       onClick={() => setSeleccionado(registro)}
                       aria-label="Ver versión anterior"
                       title="Ver versión anterior"
-                      className="rounded-lg p-1.5 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-[#94a3b8] dark:hover:bg-white/5 dark:hover:text-white"
+                      className="rounded-lg p-1.25 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-[#94a3b8] dark:hover:bg-white/5 dark:hover:text-white"
                     >
                       <Eye size={18} />
                     </button>
