@@ -1,6 +1,7 @@
 import { QueryTypes, Transaction } from 'sequelize';
 import sequelize from '../../config/database';
 import { logAudit, type ContextoAuditoria } from './audit.usecase';
+import { BYTES_POR_REGISTRO_SQL, fechaCorteDepuracion } from './analizar-depuracion-auditoria.usecase';
 
 export interface ParametrosEjecutarDepuracionAuditoria {
   ids: string[];
@@ -24,7 +25,7 @@ function formatearBytes(bytes: number): string {
 }
 
 /**
- * Borra de la bitácora los registros indicados que tengan más de 6 meses y dice cuánto se liberó.
+ * Borra de la bitácora los registros indicados que tengan más de un año y dice cuánto se liberó.
  * La antigüedad se vuelve a comprobar aquí, dentro de la transacción: no basta con que el
  * panel los haya mostrado como antiguos.
  * @throws {Error} 400 si no llega ningún id.
@@ -43,20 +44,13 @@ export async function ejecutarDepuracionAuditoria(
 
   return await sequelize.transaction(async (tx: Transaction) => {
 
-    // 1. Validar que los registros a eliminar realmente cumplan la regla de 6 meses
-    const fechaCorteDate = new Date();
-    fechaCorteDate.setMonth(fechaCorteDate.getMonth() - 6);
-    const fechaCorteIso = fechaCorteDate.toISOString();
+    // 1. Validar que los registros a eliminar realmente tengan más de un año
+    const fechaCorteIso = fechaCorteDepuracion();
 
     const filas = await sequelize.query<{ id: string; bytes: string | number }>(
       `SELECT
          id,
-         (
-           COALESCE(pg_column_size(campos_modificados), 0) +
-           COALESCE(pg_column_size(usuario_nombre), 0) +
-           COALESCE(pg_column_size(user_agent), 0) +
-           128
-         )::bigint AS bytes
+         ${BYTES_POR_REGISTRO_SQL} AS bytes
        FROM auditoria_cambios
        WHERE id IN (:ids)
          AND created_at <= :fechaCorte

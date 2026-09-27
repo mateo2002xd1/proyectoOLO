@@ -134,7 +134,7 @@ export const SQL_IDS_GUARDADOS_AUTOMATICOS = `
  * sustituye —dice la misma versión y además trae el comentario—, y verlos al lado solo
  * confundía a quien audita: parecían dos guardados donde se había pulsado uno.
  *
- * **No se borran.** Siguen en la tabla, y la depuración de seis meses se los lleva igual
+ * **No se borran.** Siguen en la tabla, y la depuración de un año se los lleva igual
  * que al resto: por eso el análisis previo a depurar sí los cuenta y los enseña. Quitarlos
  * de la base habría sido destruir evidencia para arreglar algo que era de lectura.
  *
