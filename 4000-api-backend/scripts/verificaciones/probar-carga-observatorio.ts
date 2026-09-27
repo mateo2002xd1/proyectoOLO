@@ -8,8 +8,8 @@ import { importarProgramasExcel } from '../../src/use-cases/observatorio/importa
 /**
  * Prueba manual de la carga de "Programa + Sobresalientes" (observatorio) sin
  * pasar por HTTP ni por la cola de BullMQ — llama directo al use-case de
- * importación, igual de transaccional, para poder revisar rápido
- * (Criterio 5 de `plan-programa-sobresalientes.md`):
+ * importación, igual de transaccional, para poder revisar rápido los criterios de
+ * aceptación de esa carga:
  *
  *   - Un Excel con una columna faltante falla con mensaje claro, sin tocar
  *     `programas_sobresalientes`.

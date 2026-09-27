@@ -28,6 +28,7 @@ import { PaginaRepository } from '../../src/repositories/pagina.repository';
 
 const AMBITO = 'intranet' as const;
 
+/** Un bloque de Puck con su tipo, su id y sus props. */
 const bloque = (type: string, id: string, props: Record<string, unknown> = {}) => ({
   type,
   props: { id, ...props },
@@ -376,6 +377,7 @@ const PAGINAS: Record<string, { titulo: string; content: ReturnType<typeof bloqu
   },
 };
 
+/** Publica una página de la intranet con el contenido definido en `PAGINAS`. */
 const sembrarUna = async (slug: string): Promise<void> => {
   const pagina = PAGINAS[slug];
   if (!pagina) {
@@ -398,6 +400,7 @@ const sembrarUna = async (slug: string): Promise<void> => {
   console.log(`  ✓ ${slug} — ${pagina.content.length} bloques publicados`);
 };
 
+/** Publica las páginas pedidas por argumento, o todas si no se pide ninguna. */
 const sembrar = async (): Promise<void> => {
   await sequelize.authenticate();
 

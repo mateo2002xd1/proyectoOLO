@@ -23,6 +23,7 @@ interface Discrepancia {
 const valores = (fila: unknown): unknown[] =>
   Array.isArray(fila) ? fila : Object.values(fila as Record<string, unknown>);
 
+/** Las columnas que existen de verdad en la base, agrupadas por tabla. */
 const obtenerColumnasReales = async (): Promise<Map<string, Set<string>>> => {
   const filas = await sequelize.query(
     `SELECT table_name, column_name
@@ -40,6 +41,7 @@ const obtenerColumnasReales = async (): Promise<Map<string, Set<string>>> => {
   return porTabla;
 };
 
+/** Compara cada modelo Sequelize con las columnas reales y devuelve las que no existen. */
 const verificar = async (): Promise<Discrepancia[]> => {
   const columnasReales = await obtenerColumnasReales();
   const discrepancias: Discrepancia[] = [];

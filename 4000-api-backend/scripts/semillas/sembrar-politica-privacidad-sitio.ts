@@ -86,6 +86,7 @@ const CONTENIDO_POLITICA_PRIVACIDAD = {
   zones: {},
 };
 
+/** Publica la política de privacidad pasando por borrador, revisión y aprobación. */
 const publicarPoliticaPrivacidad = async (): Promise<void> => {
   await guardarBorrador(SLUG, CONTENIDO_POLITICA_PRIVACIDAD, '', AMBITO);
   await enviarARevision(SLUG, '', AMBITO, 'Política de privacidad sembrada por script');
@@ -100,6 +101,7 @@ const publicarPoliticaPrivacidad = async (): Promise<void> => {
   console.log(`  ✓ ${SLUG} — publicada con ${CONTENIDO_POLITICA_PRIVACIDAD.content.length} bloques: ${bloques}`);
 };
 
+/** Conecta a la base y publica la política de privacidad. */
 const sembrar = async (): Promise<void> => {
   await sequelize.authenticate();
   console.log(`Política de privacidad del sitio web:`);

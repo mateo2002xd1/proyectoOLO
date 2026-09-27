@@ -12,9 +12,11 @@ import sequelize from '../../src/config/database';
 
 type Fila = Record<string, unknown>;
 
+/** Ejecuta una consulta SELECT sin registrar el SQL. */
 const consultar = (sql: string) =>
   sequelize.query<Fila>(sql, { type: QueryTypes.SELECT, logging: false });
 
+/** Imprime las filas una por línea, o el aviso si no hay ninguna. */
 const imprimirTabla = (filas: Fila[], vacio: string) => {
   if (filas.length === 0) {
     console.log(`  ${vacio}`);
@@ -23,6 +25,7 @@ const imprimirTabla = (filas: Fila[], vacio: string) => {
   filas.forEach((fila) => console.log('  ', JSON.stringify(fila)));
 };
 
+/** Informa de cómo se reparten páginas y versiones entre los dos ámbitos y de lo que no cuadra. */
 const auditar = async (): Promise<void> => {
   await sequelize.authenticate();
 

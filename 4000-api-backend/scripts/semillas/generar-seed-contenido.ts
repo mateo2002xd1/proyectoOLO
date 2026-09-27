@@ -61,6 +61,7 @@ interface Columna {
   esJson: boolean;
 }
 
+/** Las columnas de una tabla con su tipo, en su orden. */
 const columnasDe = async (tabla: string): Promise<Columna[]> => {
   const filas = await sequelize.query<{ column_name: string; data_type: string }>(
     `SELECT column_name, data_type FROM information_schema.columns
@@ -82,6 +83,7 @@ interface OpcionesVolcado {
   filtro?: string;
 }
 
+/** Los INSERT de una tabla, con las columnas omitidas fuera y un filtro opcional. */
 const volcar = async (
   tabla: string,
   { tag, omitir = [], filtro = '' }: OpcionesVolcado
@@ -112,6 +114,7 @@ const volcar = async (
   };
 };
 
+/** El comentario que encabeza el archivo generado, con la fecha. */
 const cabecera = (fecha: string) => `-- Contenido inicial del OLO. GENERADO, no editar a mano.
 --
 -- Qué lleva: las páginas del sitio y de la intranet con su versión PUBLICADA, el árbol
@@ -146,6 +149,7 @@ const cabecera = (fecha: string) => `-- Contenido inicial del OLO. GENERADO, no 
 -- Generado el ${fecha}
 `;
 
+/** Escribe `seed/contenido-inicial.sql` con las páginas y versiones de la base actual. */
 const generar = async (): Promise<void> => {
   await sequelize.authenticate();
 

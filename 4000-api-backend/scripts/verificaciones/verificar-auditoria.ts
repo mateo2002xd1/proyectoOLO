@@ -32,6 +32,7 @@ import { categoriaDe, CATEGORIAS } from '../../src/shared/auditoria-categorias';
 
 let fallos = 0;
 
+/** Compara lo obtenido con lo esperado, imprime OK o FALLA y cuenta los fallos. */
 const comprobar = (descripcion: string, obtenido: unknown, esperado: unknown) => {
   const ok = JSON.stringify(obtenido) === JSON.stringify(esperado);
   if (!ok) fallos += 1;
@@ -369,6 +370,7 @@ const verificarCategorias = async () => {
   );
 };
 
+/** Ejecuta todas las comprobaciones de la bitácora y sale con código 1 si alguna falla. */
 const main = async () => {
   verificarPermisos();
   verificarRedaccion();

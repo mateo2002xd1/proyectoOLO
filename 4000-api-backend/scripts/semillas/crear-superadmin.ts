@@ -24,6 +24,7 @@ import { exigirEmailInstitucional } from '../../src/shared/email-policy';
 
 const ROL = 'Superadmin';
 
+/** Crea la cuenta Superadmin con `ADMIN_EMAIL` y `ADMIN_PASSWORD` (falla si faltan). */
 const crear = async (): Promise<void> => {
   const password = process.env.ADMIN_PASSWORD || '';
 

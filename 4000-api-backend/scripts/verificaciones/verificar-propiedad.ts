@@ -65,6 +65,7 @@ const { app } = require('../../src/app') as typeof import('../../src/app');
 
 let fallos = 0;
 
+/** Imprime OK o FALLA para una comprobación y cuenta los fallos. */
 const comprobar = (descripcion: string, obtenido: boolean, esperado: boolean) => {
   const ok = obtenido === esperado;
   if (!ok) fallos += 1;
@@ -83,6 +84,7 @@ const ESPERADO: Record<string, [boolean, boolean, boolean, boolean]> = {
   'Director/Subdirector': [false, false, false, false],
 };
 
+/** Comprueba, rol por rol de la base, lo que las policies de usuarios le dejan hacer. */
 const verificarPolicies = async () => {
   const roles = await sequelize.query<{ nombre: string }>(
     'SELECT nombre FROM roles ORDER BY nombre;',
@@ -118,8 +120,6 @@ const verificarPolicies = async () => {
 const COMPROBACION_FUERA_DE_LA_RUTA: Record<string, string> = {
   'GET /api/paginas/publica/:slug':
     'ruta pública por diseño (RF-10): solo devuelve la versión publicada',
-  'GET /api/jobs/:id':
-    'TrabajosController.consultarEstado → 404 si el job no es tuyo (dueño en job.data.usuarioId)',
 };
 
 type Capa = {
@@ -130,6 +130,7 @@ type Capa = {
 
 type RutaHallada = { metodo: string; ruta: string; guardias: string[]; autenticada: boolean };
 
+/** Recorre el router de Express y anota cada ruta con los guardias que la protegen. */
 const recorrer = (capas: Capa[], prefijo: string, encontradas: RutaHallada[], heredados: any[]) => {
   const acumulados = [...heredados];
 
@@ -171,6 +172,7 @@ const recorrer = (capas: Capa[], prefijo: string, encontradas: RutaHallada[], he
 
 const TIENE_PARAMETRO = /:[A-Za-z]/;
 
+/** Comprueba que ninguna ruta con `:id` llegue al controlador solo con `requireAuth`. */
 const verificarRutas = () => {
   console.log('\n=== 2. Rutas con identificador de objeto ===');
 
@@ -222,6 +224,7 @@ const verificarRutas = () => {
   }
 };
 
+/** Ejecuta las dos comprobaciones y resume el resultado. */
 const verificar = async (): Promise<void> => {
   await sequelize.authenticate();
   await verificarPolicies();

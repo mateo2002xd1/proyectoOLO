@@ -21,9 +21,10 @@ const TABLAS = [
   'FileStatuses',
 ];
 
+/** Vuelca a un JSON las filas de las tablas de `TABLAS`, para restaurarlas a mano si hace falta. */
 const main = async () => {
   const destino = process.argv[2];
-  if (!destino) throw new Error('Uso: ts-node scripts/db/respaldo.ts <ruta-del-json>');
+  if (!destino) throw new Error('Uso: npm run respaldo -- <ruta-del-json>');
 
   const volcado: Record<string, unknown[]> = {};
 

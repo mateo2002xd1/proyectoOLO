@@ -4,10 +4,10 @@
  * guardadas en el contenido de página para que sigan apuntando al archivo real.
  *
  * Uso:
- *   ts-node scripts/archivos/renombrar-carpeta-uploads.ts <vieja> <nueva>            (reporte, no toca nada)
- *   ts-node scripts/archivos/renombrar-carpeta-uploads.ts <vieja> <nueva> --aplicar  (aplica de verdad)
+ *   npm run uploads:renombrar-carpeta -- <vieja> <nueva>            (reporte, no toca nada)
+ *   npm run uploads:renombrar-carpeta -- <vieja> <nueva> --aplicar  (aplica de verdad)
  *
- * Mismo orden que `reorganizar-uploads-por-tipo.ts`: primero la base de datos
+ * El orden importa: primero la base de datos
  * (una transacción, todo o nada), y solo si eso queda bien se mueven los
  * archivos físicos — así nunca hay una versión publicada apuntando a una ruta
  * que el disco ya no tiene.
@@ -22,14 +22,17 @@ import { resolverDirectorioStorage } from '../../src/infrastructure/storage/back
 
 type Ambito = 'sitio' | 'intranet';
 
+/** La carpeta `uploads/` del frontal de ese ámbito. */
 function dirUploads(ambito: Ambito): string {
   return path.join(resolverDirectorioStorage(ambito), 'uploads');
 }
 
+/** La carpeta `backup/` del frontal de ese ámbito. */
 function dirBackupRaiz(ambito: Ambito): string {
   return path.join(resolverDirectorioStorage(ambito), 'backup');
 }
 
+/** Sustituye una ruta por otra dentro del JSON de una versión y dice si cambió algo. */
 function reescribirRutas(
   jsonComoTexto: string,
   buscado: string,
@@ -39,13 +42,16 @@ function reescribirRutas(
   return { resultado: jsonComoTexto.split(buscado).join(reemplazo), cambiado: true };
 }
 
+/**
+ * Renombra la carpeta en la base (una transacción) y, si eso sale bien, en el disco de los dos ámbitos.
+ */
 async function main() {
   const [vieja, nueva, ...resto] = process.argv.slice(2);
   const aplicar = resto.includes('--aplicar');
 
   if (!vieja || !nueva) {
     throw new Error(
-      'Uso: ts-node scripts/archivos/renombrar-carpeta-uploads.ts <carpeta-vieja> <carpeta-nueva> [--aplicar]'
+      'Uso: npm run uploads:renombrar-carpeta -- <carpeta-vieja> <carpeta-nueva> [--aplicar]'
     );
   }
 

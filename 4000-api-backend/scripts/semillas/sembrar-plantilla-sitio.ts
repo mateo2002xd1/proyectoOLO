@@ -38,7 +38,7 @@ const AMBITO = 'sitio' as const;
 
 /**
  * Los mismos valores que hoy sirve `CABECERA_POR_DEFECTO`
- * (`sitio-web/src/features/paginas/menu-y-pie/cabecera-por-defecto.ts`),
+ * (`3000-sitio-web/src/features/paginas/menu-y-pie/cabecera-por-defecto.ts`),
  * que es lo que `obtenerPlantilla()` usa como cabecera cuando no hay página
  * `plantilla` — es decir, exactamente lo que ya está en pantalla. Sembrar la
  * página con estos valores no cambia nada visible; solo lo vuelve editable.
@@ -132,6 +132,7 @@ const CONTENIDO_PLANTILLA = {
   ],
 };
 
+/** Publica la cabecera y el pie del sitio pasando por borrador, revisión y aprobación. */
 const publicarPlantilla = async (): Promise<void> => {
   await guardarBorrador(SLUG_PLANTILLA, CONTENIDO_PLANTILLA, '', AMBITO);
   await enviarARevision(SLUG_PLANTILLA, '', AMBITO, 'Cabecera y pie del sitio sembrados por script');
@@ -145,6 +146,7 @@ const publicarPlantilla = async (): Promise<void> => {
   console.log(`  ✓ ${SLUG_PLANTILLA} — cabecera y pie del sitio publicados`);
 };
 
+/** Conecta a la base y publica la plantilla común del sitio. */
 const sembrar = async (): Promise<void> => {
   await sequelize.authenticate();
 

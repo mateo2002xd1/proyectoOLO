@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { QueryTypes } from 'sequelize';
 import sequelize from '../../src/config/database';
 import * as fs from 'fs';
+import { DESCRIPCION_DE_TABLA } from './descripciones-tablas';
 
 /**
  * Genera un HTML con visualización del esquema usando Mermaid ER Diagram.
@@ -68,8 +69,8 @@ async function generarPDFEsquema(): Promise<void> {
       const atributos = (cols as any[])
         .slice(0, 8) // Limitar a primeros 8 atributos para legibilidad
         .map(c => {
+          // Mermaid solo necesita el nombre; el tipo se escribe genérico (`string`).
           const cn = Array.isArray(c) ? c[0] : c.column_name || Object.values(c)[0];
-          const dt = Array.isArray(c) ? c[1] : c.data_type || Object.values(c)[1];
           return `string ${cn}`;
         })
         .join('\n    ');
@@ -332,30 +333,12 @@ ${mermaid}
   }
 }
 
+/** Las filas HTML de la tabla resumen del diagrama, con la descripción de cada tabla. */
 function generarFilasTablas(tablas: any[]): string {
-  const comentariosTablas: Record<string, string> = {
-    usuarios: 'Usuarios administradores del sistema',
-    paginas: 'Páginas publicables con versionado',
-    paginas_versiones: 'Historial de versiones de páginas',
-    contenidos: 'Artículos y posts con metadatos SEO',
-    archivos: 'Almacenamiento centralizado de archivos',
-    configuraciones: 'Configuración del sistema editable',
-    marca_versiones: 'Identidad visual con tokens de diseño',
-    tableros_bi: 'Tableros Power BI embebidos',
-    politicas_privacidad: 'Políticas de privacidad versionadas',
-    consentimientos: 'Registro de aceptaciones de políticas',
-    notificaciones: 'Avisos del sistema para usuarios',
-    auditoria_accesos: 'Registro de descargas y visualizaciones',
-    auditoria_cambios: 'Historial de cambios en contenidos',
-    respaldos: 'Registro de respaldos automáticos',
-    roles: 'Definición de roles de acceso',
-    permissions: 'Permisos granulares del sistema'
-  };
-
   return (tablas as any[])
     .map(row => {
       const tableName = Array.isArray(row) ? row[0] : row.table_name || Object.values(row)[0];
-      const desc = comentariosTablas[tableName] || '—';
+      const desc = DESCRIPCION_DE_TABLA[tableName] || '—';
       return `<tr><td class="table-name">${tableName}</td><td class="table-desc">${desc}</td></tr>`;
     })
     .join('\n');

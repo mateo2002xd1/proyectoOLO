@@ -5,7 +5,7 @@ import * as path from 'path';
  * Genera un archivo SQL limpio con todo el esquema de base de datos.
  * Extrae las instrucciones SQL de las migraciones y las compila en un solo archivo.
  *
- * Uso: ts-node scripts/db/generar-esquema-sql.ts > esquema-completo.sql
+ * Uso: npm run --silent db:esquema-sql > esquema-completo.sql
  */
 
 const migrationsDir = path.join(__dirname, '../../src/infrastructure/db/migrations');
@@ -15,6 +15,7 @@ interface Migracion {
   contenido: string;
 }
 
+/** Los bloques SQL que ejecuta una migración (`sequelize.query` con plantilla). */
 function extraerSQL(contenido: string): string[] {
   const regex = /sql\.query\s*\(\s*`([^`]+)`/g;
   const matches = [];
@@ -27,6 +28,7 @@ function extraerSQL(contenido: string): string[] {
   return matches;
 }
 
+/** Deshace los escapes del SQL copiado de una plantilla de TypeScript. */
 function limpiarSQL(sql: string): string {
   // Elimina comillas de comillas escapadas en las migraciones
   return sql
@@ -35,6 +37,7 @@ function limpiarSQL(sql: string): string {
     .trim();
 }
 
+/** Las migraciones numeradas, en orden, con el SQL que ejecuta cada una. */
 function obtenerMigraciones(): Migracion[] {
   const archivos = fs.readdirSync(migrationsDir)
     .filter(f => f.match(/^\d{3}-.*\.ts$/) && f !== 'index.ts')
@@ -53,6 +56,7 @@ function obtenerMigraciones(): Migracion[] {
   });
 }
 
+/** Imprime en la salida estándar el esquema completo reconstruido desde las migraciones. */
 function generarEsquema(): void {
   const migraciones = obtenerMigraciones();
 

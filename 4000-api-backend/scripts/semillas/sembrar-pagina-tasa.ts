@@ -20,6 +20,7 @@ import { PaginaRepository } from '../../src/repositories/pagina.repository';
 const SLUG = 'tasa';
 const AMBITO = 'intranet' as const;
 
+/** Un bloque de Puck con su tipo, su id y sus props. */
 const bloque = (type: string, id: string, props: Record<string, unknown> = {}) => ({
   type,
   props: { id, ...props },
@@ -87,6 +88,7 @@ const CONTENIDO = {
   ],
 };
 
+/** Publica la página de la tasa pasando por borrador, revisión y aprobación. */
 const sembrar = async (): Promise<void> => {
   await sequelize.authenticate();
 

@@ -30,7 +30,7 @@
  * ## De dónde sale el contenido
  *
  * Es una copia literal de `homeFallbackData`
- * (`sitio-web/src/features/paginas/model/home-fallback-data.ts`), generada desde ese
+ * (`3000-sitio-web/src/features/paginas/model/home-fallback-data.ts`), generada desde ese
  * archivo para que no puedan discrepar. Si se toca el fallback, hay que regenerar
  * esto; y al revés, lo que se edite desde el panel ya no vuelve al fallback.
  *
@@ -237,6 +237,7 @@ const CONTENIDO_INICIO = {
     "zones": {}
   };
 
+/** Publica la portada pasando por el ciclo completo: borrador, revisión y aprobación. */
 const publicarInicio = async (): Promise<void> => {
   await guardarBorrador(SLUG, CONTENIDO_INICIO, '', AMBITO);
   await enviarARevision(SLUG, '', AMBITO, 'Portada del sitio sembrada por script');
@@ -251,6 +252,7 @@ const publicarInicio = async (): Promise<void> => {
   console.log(`  ✓ ${SLUG} — portada publicada con ${CONTENIDO_INICIO.content.length} bloques: ${bloques}`);
 };
 
+/** Conecta a la base y publica la portada del sitio. */
 const sembrar = async (): Promise<void> => {
   await sequelize.authenticate();
   console.log(`Portada del sitio web:`);

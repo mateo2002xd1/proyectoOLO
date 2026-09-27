@@ -21,12 +21,14 @@ const ESPERADO: Record<string, [boolean, boolean, boolean]> = {
 
 let fallos = 0;
 
+/** Imprime OK o FALLA para una comprobación y cuenta los fallos. */
 const comprobar = (descripcion: string, obtenido: boolean, esperado: boolean) => {
   const ok = obtenido === esperado;
   if (!ok) fallos += 1;
   console.log(`  ${ok ? 'OK  ' : 'FALLA'}  ${descripcion} → ${obtenido} (esperado ${esperado})`);
 };
 
+/** Comprueba, rol por rol de la base, lo que las policies de páginas le dejan hacer. */
 const verificar = async (): Promise<void> => {
   await sequelize.authenticate();
 

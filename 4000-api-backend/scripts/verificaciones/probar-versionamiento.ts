@@ -13,7 +13,9 @@ import {
   listarArchivosEnBackup,
 } from '../../src/infrastructure/storage/backup-uploads.service';
 import { extraerRutasUploads } from '../../src/shared/rutas-uploads-en-contenido';
+import { esUuid } from '../../src/shared/uuid';
 
+/** El ámbito de `--ambito=`, o el de por defecto si no se indica. */
 function obtenerAmbito(args: string[]): Ambito {
   const argAmbito = args.find((a) => a.startsWith('--ambito='));
   if (argAmbito) {
@@ -25,6 +27,7 @@ function obtenerAmbito(args: string[]): Ambito {
   return 'intranet';
 }
 
+/** El comando (`listar`, `estado`, `restaurar`) y su parámetro, sin la opción de ámbito. */
 function obtenerComandoYParametros(args: string[]) {
   const argumentosLimpios = args.filter((a) => !a.startsWith('--ambito='));
   const comando = argumentosLimpios[0]?.toLowerCase();
@@ -32,6 +35,7 @@ function obtenerComandoYParametros(args: string[]) {
   return { comando, parametro };
 }
 
+/** Lista las páginas que tienen versiones archivadas a las que se puede volver. */
 async function ejecutarListar(ambito: Ambito) {
   console.log(`\n======================================================================`);
   console.log(`PÁGINAS CON VERSIONES ARCHIVADAS DISPONIBLES (Ámbito: ${ambito.toUpperCase()})`);
@@ -77,13 +81,14 @@ async function ejecutarListar(ambito: Ambito) {
   console.log(`  npm run probar:versionamiento -- restaurar <slug> --ambito=${ambito}\n`);
 }
 
+/** Muestra las versiones de una página (por slug o id) y cuál está publicada. */
 async function ejecutarEstado(identificador: string | undefined, ambito: Ambito) {
   if (!identificador) {
     console.error('Error: Debes especificar el slug o pagina_id de la página. Ejemplo: estado inicio');
     return;
   }
 
-  const esUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identificador);
+  const esUUID = esUuid(identificador);
   const pagina = esUUID
     ? await Pagina.findByPk(identificador)
     : await PaginaRepository.findBySlug(identificador, ambito);
@@ -150,6 +155,7 @@ async function ejecutarEstado(identificador: string | undefined, ambito: Ambito)
   console.log('');
 }
 
+/** Restaura la versión anterior de una página con el caso de uso real. */
 async function ejecutarRestaurar(identificador: string | undefined, ambito: Ambito) {
   if (!identificador) {
     console.error('Error: Debes especificar el slug o pagina_id de la página a restaurar. Ejemplo: restaurar inicio');
@@ -184,6 +190,7 @@ async function ejecutarRestaurar(identificador: string | undefined, ambito: Ambi
   }
 }
 
+/** Lee el comando y lo ejecuta. */
 async function main() {
   const args = process.argv.slice(2);
   const ambito = obtenerAmbito(args);

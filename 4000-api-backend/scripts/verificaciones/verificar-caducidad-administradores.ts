@@ -24,6 +24,7 @@ import { deactivateExpiredUsers } from '../../src/use-cases/usuarios/listar-usua
 
 let fallos = 0;
 
+/** Compara lo obtenido con lo esperado, imprime OK o FALLA y cuenta los fallos. */
 const comprobar = (descripcion: string, obtenido: unknown, esperado: unknown) => {
   const ok = JSON.stringify(obtenido) === JSON.stringify(esperado);
   if (!ok) fallos += 1;
@@ -35,6 +36,7 @@ const comprobar = (descripcion: string, obtenido: unknown, esperado: unknown) =>
 
 const AYER = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
+/** Crea una cuenta de prueba ya caducada con el rol indicado. */
 const sembrarUsuarioCaducado = async (rolNombre: string) => {
   const rol = await RoleRepository.findByName(rolNombre);
   if (!rol) throw new Error(`El rol '${rolNombre}' no existe en esta base — ¿falta sembrar roles?`);
@@ -49,6 +51,9 @@ const sembrarUsuarioCaducado = async (rolNombre: string) => {
   });
 };
 
+/**
+ * Comprueba que la caducidad automática inactiva a los demás y deja exentos a los administradores.
+ */
 const main = async () => {
   try {
     await sequelize.authenticate();

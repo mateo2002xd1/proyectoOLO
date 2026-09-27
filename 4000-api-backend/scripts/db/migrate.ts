@@ -5,6 +5,9 @@ import { aplicarPendientes, listarPendientes, revertirUltima } from '../../src/i
 const COMANDOS = ['up', 'status', 'down'] as const;
 type Comando = (typeof COMANDOS)[number];
 
+/**
+ * Aplica las migraciones pendientes (`up`), deshace la última (`down`) o dice cuáles faltan (`status`).
+ */
 const ejecutar = async (comando: Comando): Promise<void> => {
   await sequelize.authenticate();
 

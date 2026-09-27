@@ -17,6 +17,7 @@ import {
 
 let fallos = 0;
 
+/** Imprime OK o FALLA para una comprobación y cuenta los fallos. */
 const comprobar = (descripcion: string, obtenido: boolean, esperado: boolean) => {
   const ok = obtenido === esperado;
   if (!ok) fallos += 1;
@@ -38,6 +39,7 @@ const CASOS: [string, boolean, string][] = [
   ['', false, 'vacío'],
 ];
 
+/** Prueba la política de correo institucional con los casos de `CASOS`. */
 const verificar = (): void => {
   console.log(`\n=== Dominio institucional (@${DOMINIO_INSTITUCIONAL}) ===`);
   for (const [email, esperado, nota] of CASOS) {

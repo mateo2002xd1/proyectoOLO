@@ -23,6 +23,7 @@ import {
   partesDeClaveDeSeccion,
 } from '../../src/shared/catalogo-permisos';
 
+/** Las claves `editar.*` de las secciones fijas de un ámbito. */
 const clavesDeEdicion = (ambito: 'sitio' | 'intranet') =>
   SECCIONES_POR_AMBITO[ambito].map((slug) => claveDeSeccion(ambito, slug));
 
@@ -65,6 +66,7 @@ const ROLES_BASE = [
   { nombre: 'Director/Subdirector', descripcion: 'Consulta ejecutiva de la intranet: dirección y subdirección', es_sistema: true },
 ];
 
+/** Ejecuta una consulta SELECT con reemplazos y devuelve sus filas. */
 const consultar = async <T>(
   sql: string,
   replacements: Record<string, unknown> = {}
@@ -75,6 +77,7 @@ const consultar = async <T>(
     logging: false,
   })) as T[];
 
+/** Crea los roles base, reconcilia `permisos` con el catálogo y ajusta lo que tiene cada rol. */
 const sembrar = async (): Promise<void> => {
   await sequelize.authenticate();
 

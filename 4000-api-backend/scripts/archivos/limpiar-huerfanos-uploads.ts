@@ -10,7 +10,10 @@
  * quedan en disco sin que ninguna fila de `paginas_versiones` los mencione ya.
  *
  * Corre en modo reporte (dry-run) por defecto. Pasa `--aplicar` para borrar de
- * verdad.
+ * verdad:
+ *
+ *   npm run uploads:limpiar-huerfanos               # solo informa
+ *   npm run uploads:limpiar-huerfanos -- --aplicar  # borra
  */
 import 'dotenv/config';
 import fs from 'fs';
@@ -22,6 +25,7 @@ import { resolverDirectorioStorage } from '../../src/infrastructure/storage/back
 
 type Ambito = 'sitio' | 'intranet';
 
+/** La carpeta `uploads/` del frontal de ese ámbito. */
 function dirUploads(ambito: Ambito): string {
   return path.join(resolverDirectorioStorage(ambito), 'uploads');
 }
@@ -68,6 +72,9 @@ function extraerSubRutasReferenciadas(jsonComoTexto: string): Set<string> {
   return subRutas;
 }
 
+/**
+ * Las rutas de archivo que menciona alguna versión de página del ámbito, sea cual sea su estado.
+ */
 async function construirReferenciadas(ambito: Ambito): Promise<Set<string>> {
   const { Pagina } = await import('../../src/infrastructure/db/models');
   const paginas = await Pagina.findAll({ where: { ambito } });
@@ -90,6 +97,7 @@ async function construirReferenciadas(ambito: Ambito): Promise<Set<string>> {
   return referenciadas;
 }
 
+/** Lista (y con `--aplicar`, borra) los archivos de `uploads/` que ninguna versión menciona. */
 async function procesarAmbito(ambito: Ambito, aplicar: boolean): Promise<void> {
   console.log(`\n=== ${ambito} ===`);
 
@@ -123,6 +131,7 @@ async function procesarAmbito(ambito: Ambito, aplicar: boolean): Promise<void> {
   console.log(`Borrados: ${borrados} de ${huerfanos.length}`);
 }
 
+/** Recorre los dos ámbitos; sin `--aplicar` solo informa. */
 async function main() {
   const aplicar = process.argv.includes('--aplicar');
 

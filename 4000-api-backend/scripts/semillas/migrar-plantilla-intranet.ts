@@ -14,7 +14,7 @@
  *      (que es la buena) y el pie.
  *   2. Quita esos dos bloques del contenido publicado de las cinco secciones.
  *
- * A partir de ahí las pinta `intranet/src/app/(secciones)/layout.tsx`, una sola
+ * A partir de ahí las pinta `3001-intranet/src/app/(secciones)/layout.tsx`, una sola
  * vez para todas, y se editan en `/editor/menu-y-pie`.
  *
  * Recorre el ciclo editorial normal (borrador → revisión → aprobación) en vez de
@@ -137,6 +137,7 @@ const publicar = async (slug: string, contenido: Contenido): Promise<void> => {
   await aprobarPagina(slug, '', AMBITO);
 };
 
+/** Publica la página `plantilla` de la intranet con la barra y el pie comunes. */
 const crearPlantilla = async (): Promise<void> => {
   await publicar(SLUG_PLANTILLA, CONTENIDO_PLANTILLA);
 
@@ -148,6 +149,7 @@ const crearPlantilla = async (): Promise<void> => {
   console.log(`  ✓ ${SLUG_PLANTILLA} — barra y pie comunes publicados`);
 };
 
+/** Quita la barra y el pie repetidos del contenido publicado de una sección. */
 const limpiarSeccion = async (slug: string): Promise<void> => {
   const pagina = await PaginaRepository.findBySlug(slug, AMBITO);
   if (!pagina?.versionPublicadaId) {
@@ -176,6 +178,7 @@ const limpiarSeccion = async (slug: string): Promise<void> => {
   console.log(`  ✓ ${slug} — ${quitados} bloque(s) de plantilla quitados`);
 };
 
+/** Crea la plantilla común y la limpia de las secciones que la llevaban copiada. */
 const migrar = async (): Promise<void> => {
   await sequelize.authenticate();
 

@@ -17,6 +17,7 @@ import sequelize from '../../src/config/database';
 import { Pagina, PaginaVersion } from '../../src/infrastructure/db/models';
 import { htmlPeligrosoEn, sanitizarContenidoPuck } from '../../src/shared/sanitizar-contenido';
 
+/** Informa de las versiones con HTML peligroso y, con `--aplicar`, las sanea en la base. */
 async function main() {
   const aplicar = process.argv.includes('--aplicar');
   await sequelize.authenticate();

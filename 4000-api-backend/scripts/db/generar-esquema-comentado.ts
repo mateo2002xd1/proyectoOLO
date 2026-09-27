@@ -2,41 +2,14 @@ import 'dotenv/config';
 import { QueryTypes } from 'sequelize';
 import sequelize from '../../src/config/database';
 import * as fs from 'fs';
+import { DESCRIPCION_DE_TABLA } from './descripciones-tablas';
 
 /**
- * Genera esquema SQL con comentarios explicativos de cada tabla.
- * Lee los comentarios de PostgreSQL y agrega documentación adicional.
+ * Lee el esquema real de la base y escribe `esquema-comentado.sql` con la descripción de
+ * cada tabla (`descripciones-tablas.ts`) y de las columnas documentadas a mano.
+ *
+ * Uso: `npm run db:esquema-comentado`
  */
-
-const comentariosTablas: Record<string, string> = {
-  usuarios: 'Usuarios administradores del sistema con control de acceso basado en roles',
-  roles: 'Definición de roles de acceso (administrador, editor, etc.)',
-  permissions: 'Permisos granulares del sistema (acceso.sitio, acceso.intranet)',
-  role_permissions: 'Relación muchos-a-muchos entre roles y permisos',
-  paginas: 'Páginas publicables del sitio e intranet con versionado',
-  paginas_versiones: 'Historial de versiones de páginas con estados (borrador, revisión, publicado)',
-  contenidos: 'Artículos y posts publicables con metadatos SEO',
-  contenidos_archivos: 'Asociación entre contenidos y archivos (adjuntos, portadas, galerías)',
-  archivos: 'Almacenamiento centralizado de archivos con validación de integridad (SHA-256)',
-  archivos_metadatos: 'Información adicional y análisis de archivos',
-  configuraciones: 'Configuración del sistema editable (tamaño máximo de archivos, dominios permitidos)',
-  marca_versiones: 'Versiones de identidad visual con tokens de diseño (colores, logos)',
-  tableros_bi: 'Referencias a tableros Power BI embebidos en páginas',
-  politicas_privacidad: 'Políticas de privacidad versionadas (Habeas Data - Ley 1581/2012)',
-  consentimientos: 'Registro de aceptaciones de políticas de privacidad (cumplimiento normativo)',
-  notificaciones: 'Avisos del sistema para usuarios (cambios, rechazos, tareas)',
-  auditoria_accesos: 'Registro de descargas y visualizaciones de archivos y páginas',
-  auditoria_cambios: 'Historial de cambios en contenidos con quién y cuándo',
-  respaldos: 'Registro de respaldos automáticos y manuales de la BD',
-  security_questions: 'Preguntas de seguridad personalizadas para autenticación multifactor',
-  consentimiento: 'Consentimientos para procesamiento de datos',
-  "Section": 'Secciones de contenido heredadas (migración pendiente)',
-  "Post": 'Posts heredados de versión anterior (migración pendiente)',
-  "Attachment": 'Adjuntos heredados de versión anterior (migración pendiente)',
-  FileStatuses: 'Estados de revisión de archivos subidos',
-  _obsoleto_attachment: 'Tabla obsoleta - usar archivos en lugar de esta'
-};
-
 async function generarEsquemaComentado(): Promise<void> {
   try {
     await sequelize.authenticate();
@@ -70,7 +43,7 @@ async function generarEsquemaComentado(): Promise<void> {
       const table_name = Array.isArray(row) ? row[0] : row.table_name || Object.values(row)[0];
 
       // Agregar comentario descriptivo
-      const comentario = comentariosTablas[table_name] || 'Tabla sin documentación';
+      const comentario = DESCRIPCION_DE_TABLA[table_name] || 'Tabla sin documentación';
       sql += `\n-- ── ${table_name.toUpperCase()} ────────────────────────────────────\n`;
       sql += `-- ${comentario}\n`;
 
@@ -165,6 +138,7 @@ async function generarEsquemaComentado(): Promise<void> {
   }
 }
 
+/** La descripción, escrita a mano, de las columnas de una tabla. */
 function obtenerComentariosColumnas(tabla: string): Array<{columna: string; descripcion: string}> {
   const comentarios: Record<string, Array<{columna: string; descripcion: string}>> = {
     usuarios: [
@@ -192,20 +166,6 @@ function obtenerComentariosColumnas(tabla: string): Array<{columna: string; desc
       { columna: 'ambito', descripcion: 'publico o interno - controla visibilidad' },
       { columna: 'estado', descripcion: 'pendiente/disponible/rechazado/eliminado' },
       { columna: 'texto_alternativo', descripcion: 'Descripción para accesibilidad (WCAG)' }
-    ],
-    consentimientos: [
-      { columna: 'id', descripcion: 'Identificador único' },
-      { columna: 'politica_id', descripcion: 'FK a politicas_privacidad - NO BORRABLE (prueba legal)' },
-      { columna: 'aceptado', descripcion: 'Solo true - registra aceptación explícita, nunca casilla premarcada' },
-      { columna: 'ip', descripcion: 'IP del usuario para auditoría' },
-      { columna: 'user_agent', descripcion: 'Navegador/dispositivo para auditoría' }
-    ],
-    respaldos: [
-      { columna: 'id', descripcion: 'Identificador único' },
-      { columna: 'estado', descripcion: 'en_curso/exitoso/fallido' },
-      { columna: 'retencion_hasta', descripcion: 'Cuándo se puede borrar este respaldo (RF-17)' },
-      { columna: 'cifrado', descripcion: 'Si el respaldo está encriptado' },
-      { columna: 'error', descripcion: 'Mensaje de error si falló' }
     ]
   };
 

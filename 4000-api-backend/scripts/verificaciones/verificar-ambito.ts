@@ -36,6 +36,7 @@ const tipoDelPrimerBloque = (contenido: unknown): string | undefined =>
 
 let fallos = 0;
 
+/** Imprime OK o FALLA para una comprobación y cuenta los fallos. */
 const comprobar = (descripcion: string, condicion: boolean, detalle?: unknown) => {
   console.log(`  ${condicion ? 'OK  ' : 'FALLA'}  ${descripcion}`);
   if (!condicion) {
@@ -44,6 +45,7 @@ const comprobar = (descripcion: string, condicion: boolean, detalle?: unknown) =
   }
 };
 
+/** Borra las páginas de prueba que crea esta verificación. */
 const limpiar = async () => {
   const paginas = await Pagina.findAll({
     where: { slug: { [Op.in]: [SLUG_PRUEBA, SLUG_SOLO_SITIO] } },
@@ -54,6 +56,7 @@ const limpiar = async () => {
   }
 };
 
+/** Comprueba que el mismo slug en los dos ámbitos son páginas distintas y que nada se filtra. */
 const verificar = async (): Promise<void> => {
   await sequelize.authenticate();
   await limpiar();

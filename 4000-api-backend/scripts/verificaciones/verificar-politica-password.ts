@@ -22,6 +22,7 @@ import {
 
 let fallos = 0;
 
+/** Imprime OK o FALLA para una comprobación (con el detalle si falla) y cuenta los fallos. */
 const comprobar = (descripcion: string, obtenido: boolean, esperado: boolean, detalle = '') => {
   const ok = obtenido === esperado;
   if (!ok) fallos += 1;
@@ -51,6 +52,7 @@ const CASOS: [string, boolean, string][] = [
   ['', false, 'vacía'],
 ];
 
+/** Prueba la política de contraseñas con los casos de `CASOS`. */
 const verificar = async (): Promise<void> => {
   console.log('\n=== §1 Composición ===');
   for (const [password, esperado, nota] of CASOS) {
