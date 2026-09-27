@@ -12,6 +12,7 @@ import { Button } from '@/shared/ui/atoms/button';
 import { Switch } from '@/shared/ui/atoms/switch';
 import { Notification } from '@/shared/ui/molecules/notification';
 import { Alert, AlertTitle, AlertDescription, AlertActions } from '@/shared/ui/molecules/alert';
+import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
 import { Paginador } from '@/shared/ui/molecules/paginador';
 import { ModalPermisos } from './modal-permisos';
 
@@ -342,15 +343,12 @@ export default function RolesView() {
   }, [rolPermisos, selectedPermissionIds, originalPermissionIds, assignPermissionToRole, revokePermissionFromRole, descripcionEdicion, fetchRoles]);
 
   return (
-    <div className="p-6 lg:p-8">
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="admin-header text-zinc-900 dark:text-[#f6f6f6]">Gestion de Roles</h1>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-[#94a3b8]">
-            Administra los roles del sistema y configura sus permisos
-          </p>
-        </div>
-        <div>
+    <div className="px-4 py-6 sm:p-6 lg:p-8">
+      <EncabezadoPanel
+        titulo="Gestion de Roles"
+        descripcion="Administra los roles del sistema y configura sus permisos"
+        className="mb-8"
+        acciones={
           <Button
             onClick={async () => {
               await fetchPermissions();
@@ -360,8 +358,8 @@ export default function RolesView() {
           >
             Nuevo Editor
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       <div className="mb-6">
         <input
@@ -374,7 +372,7 @@ export default function RolesView() {
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-[#7db828]/30 dark:bg-[#131b2f]">
-        <table className="w-full text-left text-sm">
+        <table className="olo-tabla-apilable w-full text-left text-sm">
           <thead className="border-b border-zinc-100 bg-zinc-50 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:border-zinc-800 dark:bg-[#0f1624] dark:text-[#94a3b8]">
             <tr>
               <th className="px-5 py-3">Rol</th>
@@ -405,18 +403,18 @@ export default function RolesView() {
                     <td className="px-5 py-3.5">
                       <span className="font-medium text-zinc-900 dark:text-[#f6f6f6]">{rol.name}</span>
                     </td>
-                    <td className="max-w-xs px-5 py-3.5">
+                    <td data-etiqueta="Descripción" className="max-w-xs px-5 py-3.5">
                       <span className="truncate text-zinc-500 dark:text-[#94a3b8]">
                         {rol.description || 'Sin descripcion'}
                       </span>
                     </td>
-                    <td className="px-5 py-3.5 text-center">
+                    <td data-etiqueta="Permisos" className="px-5 py-3.5 text-center">
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-brand-interactive/30 bg-brand-interactive/10 px-2.5 py-0.5 text-xs font-semibold text-brand-interactive">
                         {numPermisos} permiso{numPermisos !== 1 ? 's' : ''}
                       </span>
                     </td>
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center justify-end gap-1">
+                    <td data-etiqueta="Acciones" className="px-5 py-3.5">
+                      <div className="flex items-center gap-1 @3xl:justify-end">
                         <button
                           type="button"
                           onClick={() => abrirModalPermisos(rol)}

@@ -121,7 +121,7 @@ export function HistorialCargasTendencia({
         </p>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-700">
-          <table className="w-full min-w-[820px] text-left text-sm">
+          <table className="olo-tabla-apilable w-full min-w-[820px] text-left text-sm">
             <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-zinc-800/60 dark:text-zinc-400">
               <tr>
                 <th scope="col" className="px-3 py-2 font-medium">Año y periodo</th>
@@ -147,19 +147,19 @@ export function HistorialCargasTendencia({
                     <td className="whitespace-nowrap px-3 py-3 font-medium text-[#001631] dark:text-[#f6f6f6]">
                       {celda(carga)}
                     </td>
-                    <td className="max-w-[12rem] px-3 py-3 text-zinc-600 dark:text-zinc-300">
+                    <td data-etiqueta="Archivo" className="max-w-[12rem] px-3 py-3 text-zinc-600 dark:text-zinc-300">
                       <span className="block truncate" title={carga.archivoNombre ?? undefined}>
                         {carga.archivoNombre ?? '—'}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-3 py-3 text-zinc-600 dark:text-zinc-300">
+                    <td data-etiqueta="Cargado por" className="whitespace-nowrap px-3 py-3 text-zinc-600 dark:text-zinc-300">
                       <span className="block">{carga.subidoPorNombre ?? 'Cuenta local'}</span>
                       <span className="text-xs text-zinc-500 dark:text-[#94a3b8]">{formatearFecha(carga.creadoEn)}</span>
                     </td>
-                    <td className="whitespace-nowrap px-3 py-3">
+                    <td data-etiqueta="Estado" className="whitespace-nowrap px-3 py-3">
                       <EstadoFlag estado={estadoDeCarga(carga)} />
                     </td>
-                    <td className="min-w-[14rem] px-3 py-3 text-zinc-600 dark:text-[#94a3b8]">
+                    <td data-etiqueta="Resultado" className="min-w-[14rem] px-3 py-3 text-zinc-600 dark:text-[#94a3b8]">
                       {filas ? (
                         <>
                           <span className="block text-zinc-700 dark:text-zinc-300">{filas.total}</span>
@@ -174,7 +174,7 @@ export function HistorialCargasTendencia({
                     </td>
                     {hayAcciones && (
                       <td className="whitespace-nowrap px-3 py-3">
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="flex flex-wrap items-center gap-2 @3xl:justify-end">
                           {vigente && corteId !== null && carga.corteEstado !== 'publicado' && onPublicar && (
                             <button
                               type="button"

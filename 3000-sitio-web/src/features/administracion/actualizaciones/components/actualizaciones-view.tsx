@@ -1,5 +1,6 @@
 'use client';
 
+import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
 import { CargaCriteriosClasificacion } from './carga-criterios-clasificacion';
 import { CargaProgramaSobresalientes } from './carga-programa-sobresalientes';
 
@@ -25,11 +26,11 @@ const MODULOS_PROXIMAMENTE = [
  */
 export function ActualizacionesView({ puedeActualizar }: ActualizacionesViewProps) {
   return (
-    <div className="w-full p-6 lg:p-8">
-      <h1 className="admin-header text-[#001631] dark:text-[#f6f6f6]">Actualizaciones</h1>
-      <p className="mt-1 mb-6 text-sm text-gray-600 dark:text-[#94a3b8]">
-        Cargas de archivos que actualizan datos públicos del sitio.
-      </p>
+    <div className="w-full px-4 py-6 sm:p-6 lg:p-8">
+      <EncabezadoPanel
+        titulo="Actualizaciones"
+        descripcion="Cargas de archivos que actualizan datos públicos del sitio."
+      />
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <CargaProgramaSobresalientes puedeActualizar={puedeActualizar} />

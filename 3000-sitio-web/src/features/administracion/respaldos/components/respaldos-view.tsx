@@ -2,8 +2,10 @@
 
 import { useMemo, useState } from 'react';
 import { Eye, Trash2 } from 'lucide-react';
+import { BarraFiltros, CampoFiltro } from '@/shared/ui/molecules/barra-filtros';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
 import { DatePicker } from '@/shared/ui/molecules/date-picker';
+import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
 import { useRespaldos } from '../hooks/use-respaldos';
 import { VistaPreviaVersion } from './vista-previa-version';
 import { ModalDepurarVersiones } from './modal-depurar-versiones';
@@ -13,16 +15,6 @@ const fecha = (iso: string) => new Date(iso).toLocaleString('es-CO', { dateStyle
 
 const normalizar = (t: string) =>
   t.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
-
-/** Misma etiqueta-encima-del-control que Auditoría, para que los filtros se lean igual en las dos pantallas. */
-function Campo({ etiqueta, children }: { etiqueta: string; children: React.ReactNode }) {
-  return (
-    <div className="flex w-44 flex-col gap-1">
-      <span className="text-xs font-medium text-zinc-500">{etiqueta}</span>
-      {children}
-    </div>
-  );
-}
 
 const FILTROS_VACIOS = { busqueda: '', ambito: '', editor: '', publicador: '', desde: '', hasta: '' };
 
@@ -84,37 +76,35 @@ export function RespaldosView() {
   const hayFiltros = Object.values(filtros).some(Boolean);
 
   return (
-    <div className="p-6 lg:p-8">
-      <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="admin-header text-zinc-950 dark:text-[#f6f6f6]">Respaldos</h1>
-          <p className="mt-1 text-sm text-zinc-500 max-w-2xl">
-            Historial de publicaciones con versión anterior archivada: páginas con respaldo disponible para consultar y restaurar.
-          </p>
-        </div>
-        <div className="flex items-center gap-3 shrink-0">
-          {isRefreshing && (
-            <span className="text-xs font-medium text-brand-interactive animate-pulse">
-              Actualizando respaldos…
-            </span>
-          )}
-          <button
-            type="button"
-            onClick={() => {
-              setAperturaDepurar((n) => n + 1);
-              setModalDepurarAbierto(true);
-            }}
-            className="flex h-11 shrink-0 items-center gap-2 rounded-[16px] bg-red-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 active:bg-red-800"
-          >
-            <Trash2 size={16} />
-            Depurar versiones antiguas
-          </button>
-        </div>
-      </div>
+    <div className="px-4 py-6 sm:p-6 lg:p-8">
+      <EncabezadoPanel
+        titulo="Respaldos"
+        descripcion="Historial de publicaciones con versión anterior archivada: páginas con respaldo disponible para consultar y restaurar."
+        acciones={
+          <>
+            {isRefreshing && (
+              <span className="text-xs font-medium text-brand-interactive animate-pulse">
+                Actualizando respaldos…
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                setAperturaDepurar((n) => n + 1);
+                setModalDepurarAbierto(true);
+              }}
+              className="flex h-11 shrink-0 items-center gap-2 rounded-[16px] bg-red-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 active:bg-red-800"
+            >
+              <Trash2 size={16} />
+              Depurar versiones antiguas
+            </button>
+          </>
+        }
+      />
 
       {!isLoading && registrosRestaurables.length > 0 && (
-        <div className="mb-4 flex flex-wrap items-end gap-3">
-          <Campo etiqueta="Página">
+        <BarraFiltros activos={Object.values(filtros).filter(Boolean).length}>
+          <CampoFiltro etiqueta="Página">
             <input
               type="search"
               value={filtros.busqueda}
@@ -122,9 +112,9 @@ export function RespaldosView() {
               placeholder="Título o slug…"
               className="h-11 w-full rounded-[16px] border border-[#d0d5dd] bg-white px-3 text-sm text-zinc-900 placeholder:text-[#8a95ad] focus:border-[#002237] focus:outline-none focus:ring-2 focus:ring-[#002237]/20 dark:border-[#2d3649] dark:bg-[#252f47] dark:text-[#e6e8f0]"
             />
-          </Campo>
+          </CampoFiltro>
 
-          <Campo etiqueta="Ámbito">
+          <CampoFiltro etiqueta="Ámbito">
             <CustomSelect
               ariaLabel="Ámbito"
               value={filtros.ambito}
@@ -135,43 +125,43 @@ export function RespaldosView() {
                 { value: 'intranet', label: 'Intranet' },
               ]}
             />
-          </Campo>
+          </CampoFiltro>
 
-          <Campo etiqueta="Editor">
+          <CampoFiltro etiqueta="Editor">
             <CustomSelect
               ariaLabel="Editor"
               value={filtros.editor}
               onChange={(valor) => cambiarFiltro('editor', valor)}
               options={[{ value: '', label: 'Todos' }, ...editores.map((n) => ({ value: n, label: n }))]}
             />
-          </Campo>
+          </CampoFiltro>
 
-          <Campo etiqueta="Publicador">
+          <CampoFiltro etiqueta="Publicador">
             <CustomSelect
               ariaLabel="Publicador"
               value={filtros.publicador}
               onChange={(valor) => cambiarFiltro('publicador', valor)}
               options={[{ value: '', label: 'Todos' }, ...publicadores.map((n) => ({ value: n, label: n }))]}
             />
-          </Campo>
+          </CampoFiltro>
 
-          <Campo etiqueta="Publicado desde">
+          <CampoFiltro etiqueta="Publicado desde">
             <DatePicker
               ariaLabel="Publicado desde"
               value={filtros.desde}
               max={filtros.hasta || undefined}
               onChange={(valor) => cambiarFiltro('desde', valor)}
             />
-          </Campo>
+          </CampoFiltro>
 
-          <Campo etiqueta="Publicado hasta">
+          <CampoFiltro etiqueta="Publicado hasta">
             <DatePicker
               ariaLabel="Publicado hasta"
               value={filtros.hasta}
               min={filtros.desde || undefined}
               onChange={(valor) => cambiarFiltro('hasta', valor)}
             />
-          </Campo>
+          </CampoFiltro>
 
           {hayFiltros && (
             <button
@@ -182,7 +172,7 @@ export function RespaldosView() {
               Limpiar filtros
             </button>
           )}
-        </div>
+        </BarraFiltros>
       )}
 
       {error && !registros.length ? (
@@ -195,7 +185,7 @@ export function RespaldosView() {
         <p className="text-sm text-zinc-500">Ningún registro coincide con los filtros aplicados.</p>
       ) : (
         <div className={`overflow-x-auto rounded-xl border border-zinc-200 dark:border-[#7db828]/30 transition-opacity ${isRefreshing ? 'opacity-70' : 'opacity-100'}`}>
-          <table className="w-full min-w-[56rem] text-left text-sm">
+          <table className="olo-tabla-apilable w-full min-w-[56rem] text-left text-sm">
             <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-[#131b2f]">
               <tr>
                 <th scope="col" className="px-4 py-3 font-medium">Página</th>
@@ -226,15 +216,15 @@ export function RespaldosView() {
                     </div>
                     <p className="text-xs text-zinc-500">/{registro.slug} · versión {registro.numeroVersion}</p>
                   </td>
-                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">{registro.editadoPor.nombre}</td>
-                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">{registro.publicadoPor.nombre}</td>
-                  <td className="whitespace-nowrap px-4 py-3 text-zinc-600 dark:text-zinc-300">
+                  <td data-etiqueta="Editado por" className="px-4 py-3 text-zinc-600 dark:text-zinc-300">{registro.editadoPor.nombre}</td>
+                  <td data-etiqueta="Publicado por" className="px-4 py-3 text-zinc-600 dark:text-zinc-300">{registro.publicadoPor.nombre}</td>
+                  <td data-etiqueta="Editado el" className="whitespace-nowrap px-4 py-3 text-zinc-600 dark:text-zinc-300">
                     {fecha(registro.editadoEn)}
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-zinc-600 dark:text-zinc-300">
+                  <td data-etiqueta="Publicado el" className="whitespace-nowrap px-4 py-3 text-zinc-600 dark:text-zinc-300">
                     {fecha(registro.publicadoEn)}
                   </td>
-                  <td className="px-4 py-3 text-center">
+                  <td data-etiqueta="Versión anterior" className="px-4 py-3 text-center">
                     <button
                       type="button"
                       onClick={() => setSeleccionado(registro)}

@@ -25,6 +25,7 @@ import {
   SidebarSpacer,
 } from '@/shared/ui/organisms/sidebar';
 import { SidebarLayout } from '@/shared/ui/organisms/sidebar-layout';
+import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
 import {
   ArrowRightStartOnRectangleIcon,
   ChevronDownIcon,
@@ -205,7 +206,7 @@ function ModalAlertas({
       }}
     >
       <div
-        className="flex max-h-[88vh] min-h-[22rem] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-[#121824]"
+        className="flex max-h-[88dvh] min-h-[min(22rem,88dvh)] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-[#121824]"
         role="dialog"
         aria-modal="true"
         aria-labelledby="alertas-titulo"
@@ -693,13 +694,12 @@ export function PanelGeneralDashboard() {
   }
 
   return (
-    <div className="p-6 lg:p-8">
-      <div className="mb-8">
-        <h1 className="admin-header text-zinc-950 dark:text-[#f6f6f6]">Dashboard</h1>
-        <p className="mt-1 text-sm text-zinc-500">
-          Resumen de tareas pendientes y gestión del observatorio.
-        </p>
-      </div>
+    <div className="px-4 py-6 sm:p-6 lg:p-8">
+      <EncabezadoPanel
+        titulo="Dashboard"
+        descripcion="Resumen de tareas pendientes y gestión del observatorio."
+        className="mb-8"
+      />
 
       {error && (
         <p className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
@@ -740,7 +740,7 @@ export function PanelGeneralDashboard() {
                   esquinas: con un solo eje explícito, algunos navegadores no lo
                   clipan igual. */}
               <div className="overflow-x-auto overflow-y-hidden">
-                <table className="w-full min-w-[40rem] text-left text-sm">
+                <table className="olo-tabla-apilable w-full min-w-[40rem] text-left text-sm">
                   <caption className="p-5 text-left">
                     <CabeceraActividad sinAccesoAuditoria={sinAccesoAuditoria} />
                   </caption>
@@ -755,13 +755,13 @@ export function PanelGeneralDashboard() {
                   <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
                     {actividadPaginada.map((registro) => (
                       <tr key={registro.id}>
-                        <td className="whitespace-nowrap px-5 py-3.5 text-zinc-600 dark:text-zinc-300">
+                        <td data-etiqueta="Fecha y hora" className="whitespace-nowrap px-5 py-3.5 text-zinc-600 dark:text-zinc-300">
                           {fechaCorta(registro.fecha)}
                         </td>
-                        <td className="max-w-[10rem] truncate px-5 py-3.5 font-medium text-zinc-900 dark:text-[#f6f6f6]">
+                        <td data-etiqueta="Usuario" className="max-w-[10rem] truncate px-5 py-3.5 font-medium text-zinc-900 dark:text-[#f6f6f6]">
                           {registro.usuarioNombre ?? <span className="font-normal text-zinc-500">Sin usuario</span>}
                         </td>
-                        <td className="px-5 py-3.5">
+                        <td data-etiqueta="Acción" className="px-5 py-3.5">
                           <span
                             className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${COLOR_ACCION[registro.accion] ?? ''}`}
                           >
@@ -773,10 +773,11 @@ export function PanelGeneralDashboard() {
                             tocados: mismo resumen que ya usa la tabla de
                             Auditoría, para que las dos lean igual un registro. */}
                         <td
+                          data-etiqueta="Cambios"
                           className="max-w-[16rem] truncate px-5 py-3.5 text-zinc-500 dark:text-[#94a3b8]"
                           title={resumenDeCambios(registro)}
                         >
-                          {resumenDeCambios(registro) || '—'}
+                          <span className="@max-3xl:line-clamp-3">{resumenDeCambios(registro) || '—'}</span>
                         </td>
                       </tr>
                     ))}

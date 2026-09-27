@@ -15,6 +15,7 @@ import { CustomSelect } from '@/shared/ui/molecules/custom-select';
 import { DatePicker } from '@/shared/ui/molecules/date-picker';
 import { Notification } from '@/shared/ui/molecules/notification';
 import { Alert, AlertTitle, AlertDescription, AlertActions } from '@/shared/ui/molecules/alert';
+import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
 import { Paginador } from '@/shared/ui/molecules/paginador';
 import { Switch } from '@/shared/ui/atoms/switch';
 
@@ -250,22 +251,21 @@ export default function UsuariosView() {
   );
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="admin-header text-zinc-900 dark:text-[#f6f6f6]">Usuarios</h1>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-[#94a3b8]">
-            Controla los usuarios que actúan en las diferentes plataformas
-          </p>
-        </div>
-        <Button onClick={() => {
-          setEditingUserId(null);
-          resetForm();
-          setIsCreating(true);
-        }}>
-          Crear Usuario
-        </Button>
-      </div>
+    <div className="px-4 py-6 sm:p-6">
+      <EncabezadoPanel
+        titulo="Usuarios"
+        descripcion="Controla los usuarios que actúan en las diferentes plataformas"
+        className="mb-8"
+        acciones={
+          <Button onClick={() => {
+            setEditingUserId(null);
+            resetForm();
+            setIsCreating(true);
+          }}>
+            Crear Usuario
+          </Button>
+        }
+      />
 
       {error && (
         <div className="mb-6 rounded-lg bg-red-50 p-4 text-sm text-red-800 dark:bg-red-950/50 dark:text-red-200">
@@ -416,8 +416,8 @@ export default function UsuariosView() {
 
       <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-[#7db828]/30 dark:bg-[#0b1121]">
         <div className="overflow-x-auto">
-          <table className="block md:table min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
-            <thead className="hidden md:table-header-group bg-zinc-50 dark:bg-[#0b1121]/50">
+          <table className="olo-tabla-apilable min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
+            <thead className="bg-zinc-50 dark:bg-[#0b1121]/50">
               <tr>
                 <th scope="col" className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-[#94a3b8]">
                   Nombre
@@ -439,36 +439,32 @@ export default function UsuariosView() {
                 </th>
               </tr>
             </thead>
-            <tbody className="block md:table-row-group divide-y divide-zinc-200 dark:divide-zinc-800">
+            <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
               {loading ? (
-                <tr className="block md:table-row">
-                  <td colSpan={6} className="block md:table-cell px-6 py-8 text-center text-sm text-zinc-500">
+                <tr>
+                  <td colSpan={6} className="px-6 py-8 text-center text-sm text-zinc-500">
                     Cargando usuarios...
                   </td>
                 </tr>
               ) : users.length === 0 ? (
-                <tr className="block md:table-row">
-                  <td colSpan={6} className="block md:table-cell px-6 py-8 text-center text-sm text-zinc-500">
+                <tr>
+                  <td colSpan={6} className="px-6 py-8 text-center text-sm text-zinc-500">
                     No hay usuarios registrados.
                   </td>
                 </tr>
               ) : (
                 usuariosPaginados.map((user) => (
-                  <tr key={user.id} className="block md:table-row hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                    <td className="block md:table-cell px-6 py-3 md:py-4 text-sm font-medium text-zinc-900 dark:text-[#f6f6f6]">
-                      <span className="block md:hidden text-xs font-semibold text-zinc-500 dark:text-[#94a3b8] uppercase tracking-wider mb-1">Nombre</span>
+                  <tr key={user.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                    <td className="px-6 py-4 text-sm font-medium text-zinc-900 dark:text-[#f6f6f6]">
                       {[user.name, user.apellidos].filter(Boolean).join(' ')}
                     </td>
-                    <td className="block md:table-cell px-6 py-3 md:py-4 text-sm text-zinc-500 dark:text-[#94a3b8]">
-                      <span className="block md:hidden text-xs font-semibold text-zinc-500 dark:text-[#94a3b8] uppercase tracking-wider mb-1">Correo</span>
+                    <td data-etiqueta="Correo" className="px-6 py-4 text-sm text-zinc-500 dark:text-[#94a3b8]">
                       {user.email}
                     </td>
-                    <td className="block md:table-cell px-6 py-3 md:py-4 text-sm text-zinc-500 dark:text-[#94a3b8]">
-                      <span className="block md:hidden text-xs font-semibold text-zinc-500 dark:text-[#94a3b8] uppercase tracking-wider mb-1">Rol</span>
+                    <td data-etiqueta="Rol" className="px-6 py-4 text-sm text-zinc-500 dark:text-[#94a3b8]">
                       {user.role?.name || 'Sin rol'}
                     </td>
-                    <td className="block md:table-cell px-6 py-3 md:py-4 text-sm">
-                      <span className="block md:hidden text-xs font-semibold text-zinc-500 dark:text-[#94a3b8] uppercase tracking-wider mb-1">Estado</span>
+                    <td data-etiqueta="Estado" className="px-6 py-4 text-sm">
                       <div className="flex items-center gap-2">
                         <Switch
                           checked={user.status === 'active'}
@@ -477,8 +473,7 @@ export default function UsuariosView() {
                         <span className="text-zinc-500 dark:text-[#94a3b8] text-xs">{user.status === 'active' ? 'Activo' : 'Inactivo'}</span>
                       </div>
                     </td>
-                    <td className="block md:table-cell px-6 py-3 md:py-4 text-sm">
-                      <span className="block md:hidden text-xs font-semibold text-zinc-500 dark:text-[#94a3b8] uppercase tracking-wider mb-1">Bloqueo</span>
+                    <td data-etiqueta="Bloqueo" className="px-6 py-4 text-sm">
                       {(() => {
                         const bloqueo = infoBloqueo(user, ahora);
                         return bloqueo ? (
@@ -493,9 +488,8 @@ export default function UsuariosView() {
                         );
                       })()}
                     </td>
-                    <td className="block md:table-cell px-6 py-3 md:py-4 text-sm md:text-right">
-                      <span className="block md:hidden text-xs font-semibold text-zinc-500 dark:text-[#94a3b8] uppercase tracking-wider mb-1">Acciones</span>
-                      <div className="flex items-center justify-start md:justify-end gap-2">
+                    <td data-etiqueta="Acciones" className="px-6 py-4 text-sm text-right">
+                      <div className="flex items-center gap-2 @3xl:justify-end">
                         <button type="button" onClick={() => startEdit(user)} className="p-1.5 text-zinc-500 hover:text-zinc-900 dark:text-[#94a3b8] dark:hover:text-white transition-colors" title="Editar">
                           <PencilIcon className="size-5" />
                         </button>

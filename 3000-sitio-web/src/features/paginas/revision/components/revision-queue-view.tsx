@@ -2,8 +2,10 @@
 
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { CheckCircle, XCircle, Trash2, ExternalLink } from 'lucide-react';
+import { BarraFiltros, CampoFiltro } from '@/shared/ui/molecules/barra-filtros';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
 import { DatePicker } from '@/shared/ui/molecules/date-picker';
+import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
 import { Paginador } from '@/shared/ui/molecules/paginador';
 import { useRevisionQueue } from '../hooks/use-revision-queue';
 import type { Ambito, PaginaEnRevision } from '../../model/pagina.types';
@@ -35,16 +37,6 @@ const fecha = (iso: string) => {
 
 const normalizar = (t: string) =>
   t.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
-
-/** Misma etiqueta-encima-del-control que Auditoría y Respaldos. */
-function Campo({ etiqueta, children }: { etiqueta: string; children: React.ReactNode }) {
-  return (
-    <div className="flex w-44 flex-col gap-1">
-      <span className="text-xs font-medium text-zinc-500">{etiqueta}</span>
-      {children}
-    </div>
-  );
-}
 
 const FILTROS_VACIOS = { busqueda: '', ambito: '', autor: '', desde: '', hasta: '' };
 
@@ -133,19 +125,15 @@ export function RevisionQueueView() {
   }
 
   return (
-    <div className="p-6 lg:p-8">
-      <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="admin-header text-zinc-950 dark:text-[#f6f6f6]">Páginas en revisión</h1>
-          <p className="mt-1 text-sm text-zinc-500 max-w-2xl">
-            Borradores enviados por editores del sitio y de la intranet, pendientes de aprobación.
-          </p>
-        </div>
-      </div>
+    <div className="px-4 py-6 sm:p-6 lg:p-8">
+      <EncabezadoPanel
+        titulo="Páginas en revisión"
+        descripcion="Borradores enviados por editores del sitio y de la intranet, pendientes de aprobación."
+      />
 
       {!isLoading && paginas.length > 0 && (
-        <div className="mb-4 flex flex-wrap items-end gap-3">
-          <Campo etiqueta="Página">
+        <BarraFiltros activos={Object.values(filtros).filter(Boolean).length}>
+          <CampoFiltro etiqueta="Página">
             <input
               type="search"
               value={filtros.busqueda}
@@ -153,9 +141,9 @@ export function RevisionQueueView() {
               placeholder="Título, slug o comentario…"
               className="h-11 w-full rounded-[16px] border border-[#d0d5dd] bg-white px-3 text-sm text-zinc-900 placeholder:text-[#8a95ad] focus:border-[#002237] focus:outline-none focus:ring-2 focus:ring-[#002237]/20 dark:border-[#2d3649] dark:bg-[#252f47] dark:text-[#e6e8f0]"
             />
-          </Campo>
+          </CampoFiltro>
 
-          <Campo etiqueta="Ámbito">
+          <CampoFiltro etiqueta="Ámbito">
             <CustomSelect
               ariaLabel="Ámbito"
               value={filtros.ambito}
@@ -166,34 +154,34 @@ export function RevisionQueueView() {
                 { value: 'intranet', label: 'Intranet' },
               ]}
             />
-          </Campo>
+          </CampoFiltro>
 
-          <Campo etiqueta="Autor">
+          <CampoFiltro etiqueta="Autor">
             <CustomSelect
               ariaLabel="Autor"
               value={filtros.autor}
               onChange={(valor) => cambiarFiltro('autor', valor)}
               options={[{ value: '', label: 'Todos' }, ...autores.map((n) => ({ value: n, label: n }))]}
             />
-          </Campo>
+          </CampoFiltro>
 
-          <Campo etiqueta="Enviado desde">
+          <CampoFiltro etiqueta="Enviado desde">
             <DatePicker
               ariaLabel="Enviado desde"
               value={filtros.desde}
               max={filtros.hasta || undefined}
               onChange={(valor) => cambiarFiltro('desde', valor)}
             />
-          </Campo>
+          </CampoFiltro>
 
-          <Campo etiqueta="Enviado hasta">
+          <CampoFiltro etiqueta="Enviado hasta">
             <DatePicker
               ariaLabel="Enviado hasta"
               value={filtros.hasta}
               min={filtros.desde || undefined}
               onChange={(valor) => cambiarFiltro('hasta', valor)}
             />
-          </Campo>
+          </CampoFiltro>
 
           {hayFiltros && (
             <button
@@ -204,7 +192,7 @@ export function RevisionQueueView() {
               Limpiar filtros
             </button>
           )}
-        </div>
+        </BarraFiltros>
       )}
 
       {error ? (
@@ -219,7 +207,7 @@ export function RevisionQueueView() {
         <p className="text-sm text-zinc-500">Ninguna página coincide con los filtros aplicados.</p>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-[#7db828]/30">
-          <table className="w-full min-w-[56rem] text-left text-sm">
+          <table className="olo-tabla-apilable w-full min-w-[56rem] text-left text-sm">
             <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-[#131b2f]">
               <tr>
                 <th scope="col" className="px-4 py-3 font-medium">Página</th>
@@ -245,7 +233,7 @@ export function RevisionQueueView() {
                       </p>
                     )}
                   </td>
-                  <td className="px-4 py-3">
+                  <td data-etiqueta="Ámbito" className="px-4 py-3">
                     <span
                       className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold ${
                         pagina.ambito === 'intranet'
@@ -256,52 +244,61 @@ export function RevisionQueueView() {
                       {pagina.ambito === 'intranet' ? 'Intranet' : 'Sitio web'}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
+                  <td data-etiqueta="Autor" className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
                     <p className="text-sm">{pagina.autor?.nombre || 'Desconocido'}</p>
                     {pagina.autor?.email && (
                       <p className="text-xs text-zinc-400">{pagina.autor.email}</p>
                     )}
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-zinc-600 dark:text-zinc-300">
+                  <td data-etiqueta="Enviado el" className="whitespace-nowrap px-4 py-3 text-zinc-600 dark:text-zinc-300">
                     {fecha(pagina.creadoEn)}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-2">
+                    {/* Con la tabla en tarjetas cada botón dice lo que hace, en una rejilla de 2×2: el
+                        `title` no aparece en una pantalla táctil y cuatro iconos solos no
+                        se distinguen. Con la tabla completa, el texto queda para el lector de pantalla.
+                        Tonos 600-700 y no 500: el blanco sobre verde o amarillo 500 no llega
+                        al 3:1 ni para un icono. */}
+                    <div className="grid grid-cols-2 gap-2 @3xl:flex @3xl:items-center @3xl:justify-end">
                       <a
                         href={enlaceDeVistaPrevia(pagina)}
                         target="_blank"
                         rel="noopener noreferrer"
                         title="Ver página"
-                        className="flex h-9 w-12 items-center justify-center rounded-[16px] bg-blue-500 text-white transition-colors hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        className="flex h-11 items-center justify-center gap-2 rounded-[16px] px-3 text-sm font-medium text-white transition-colors focus:outline-none focus:ring-2 @3xl:h-9 @3xl:w-12 @3xl:px-0 bg-blue-600 hover:bg-blue-700 focus:ring-blue-500/50"
                       >
-                        <ExternalLink className="h-4 w-4" />
+                        <ExternalLink className="h-4 w-4 shrink-0" aria-hidden="true" />
+                        <span className="@3xl:sr-only">Ver página</span>
                       </a>
                       <button
                         type="button"
                         disabled={busySlug === pagina.slug}
                         onClick={() => handleAprobar(pagina)}
                         title="Aprobar"
-                        className="flex h-9 w-12 items-center justify-center rounded-[16px] bg-green-500 text-white transition-colors hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex h-11 items-center justify-center gap-2 rounded-[16px] px-3 text-sm font-medium text-white transition-colors focus:outline-none focus:ring-2 @3xl:h-9 @3xl:w-12 @3xl:px-0 bg-green-700 hover:bg-green-800 focus:ring-green-500/50 disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        <CheckCircle className="h-4 w-4" />
+                        <CheckCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+                        <span className="@3xl:sr-only">Aprobar</span>
                       </button>
                       <button
                         type="button"
                         disabled={busySlug === pagina.slug}
                         onClick={() => abrirRechazar(pagina)}
                         title="Rechazar"
-                        className="flex h-9 w-12 items-center justify-center rounded-[16px] bg-yellow-500 text-white transition-colors hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex h-11 items-center justify-center gap-2 rounded-[16px] px-3 text-sm font-medium text-white transition-colors focus:outline-none focus:ring-2 @3xl:h-9 @3xl:w-12 @3xl:px-0 bg-amber-700 hover:bg-amber-800 focus:ring-amber-500/50 disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        <XCircle className="h-4 w-4" />
+                        <XCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+                        <span className="@3xl:sr-only">Rechazar</span>
                       </button>
                       <button
                         type="button"
                         disabled={busySlug === pagina.slug}
                         onClick={() => abrirEliminar(pagina)}
                         title="Descartar esta versión sin publicar"
-                        className="flex h-9 w-12 items-center justify-center rounded-[16px] bg-red-500 text-white transition-colors hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex h-11 items-center justify-center gap-2 rounded-[16px] px-3 text-sm font-medium text-white transition-colors focus:outline-none focus:ring-2 @3xl:h-9 @3xl:w-12 @3xl:px-0 bg-red-600 hover:bg-red-700 focus:ring-red-500/50 disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4 shrink-0" aria-hidden="true" />
+                        <span className="@3xl:sr-only">Descartar</span>
                       </button>
                     </div>
                   </td>

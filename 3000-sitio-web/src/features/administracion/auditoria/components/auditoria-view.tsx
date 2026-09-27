@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { BarraFiltros, CampoFiltro } from '@/shared/ui/molecules/barra-filtros';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
 import { DatePicker } from '@/shared/ui/molecules/date-picker';
+import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
 import { Paginador } from '@/shared/ui/molecules/paginador';
 import { DetalleRegistro } from './detalle-registro';
 import { ModalDepurarAuditoria } from './modal-depurar-auditoria';
@@ -24,22 +26,6 @@ import {
 // una sola banda de controles.
 const CLASE_BOTON =
   'h-11 rounded-[16px] border border-[#d0d5dd] px-4 text-sm font-medium text-zinc-700 transition hover:border-[#002237]/40 hover:bg-[#002237]/5 hover:text-[#002237] disabled:opacity-60 dark:border-[#2d3649] dark:text-zinc-200 dark:hover:bg-white/5 dark:hover:text-[#f6f6f6]';
-
-/**
- * Etiqueta encima del control.
- *
- * Es un `div` y no un `label`: los filtros ya no son campos nativos sino
- * botones que abren su propia lista, y un `label` no puede etiquetar a un
- * botón. El nombre viaja por `ariaLabel` en cada control.
- */
-function Campo({ etiqueta, children }: { etiqueta: string; children: React.ReactNode }) {
-  return (
-    <div className="flex w-44 flex-col gap-1">
-      <span className="text-xs font-medium text-zinc-500">{etiqueta}</span>
-      {children}
-    </div>
-  );
-}
 
 /**
  * Bitácora de cambios del panel (RF-07, HU-07).
@@ -72,47 +58,44 @@ export function AuditoriaView() {
 
   return (
 
-    <div className="p-6 lg:p-8">
-      <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="admin-header text-zinc-950 dark:text-[#f6f6f6]">Auditoría</h1>
-          <p className="mt-1 text-sm text-zinc-500 max-w-2xl">
-            Registro de todo lo que administradores y editores hacen en el sistema: ciclo editorial
-            de las páginas, contenidos, y gestión de usuarios, roles y permisos.
-          </p>
-        </div>
-        <button 
-          type="button" 
-          onClick={() => setModalDepurarAbierto(true)} 
-          className="flex h-11 shrink-0 items-center gap-2 rounded-[16px] bg-red-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 active:bg-red-800"
-        >
-          <Trash2 size={16} />
-          Depurar auditoría
-        </button>
-      </div>
+    <div className="px-4 py-6 sm:p-6 lg:p-8">
+      <EncabezadoPanel
+        titulo="Auditoría"
+        descripcion="Registro de todo lo que administradores y editores hacen en el sistema: ciclo editorial de las páginas, contenidos, y gestión de usuarios, roles y permisos."
+        acciones={
+          <button
+            type="button"
+            onClick={() => setModalDepurarAbierto(true)}
+            className="flex h-11 shrink-0 items-center gap-2 rounded-[16px] bg-red-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 active:bg-red-800"
+          >
+            <Trash2 size={16} />
+            Depurar auditoría
+          </button>
+        }
+      />
 
-
-
-      <div className="mb-4 flex flex-wrap items-end gap-3">
-        <Campo etiqueta="Desde">
+      <BarraFiltros
+        activos={Object.values(filtros).filter(Boolean).length}
+      >
+        <CampoFiltro etiqueta="Desde">
           <DatePicker
             ariaLabel="Desde"
             value={filtros.desde}
             max={filtros.hasta || undefined}
             onChange={(valor) => cambiarFiltro('desde', valor)}
           />
-        </Campo>
+        </CampoFiltro>
 
-        <Campo etiqueta="Hasta">
+        <CampoFiltro etiqueta="Hasta">
           <DatePicker
             ariaLabel="Hasta"
             value={filtros.hasta}
             min={filtros.desde || undefined}
             onChange={(valor) => cambiarFiltro('hasta', valor)}
           />
-        </Campo>
+        </CampoFiltro>
 
-        <Campo etiqueta="Usuario">
+        <CampoFiltro etiqueta="Usuario">
           <CustomSelect
             ariaLabel="Usuario"
             value={filtros.usuarioId}
@@ -122,12 +105,12 @@ export function AuditoriaView() {
               ...usuarios.map((u) => ({ value: u.id, label: u.nombre })),
             ]}
           />
-        </Campo>
+        </CampoFiltro>
 
         {/* Primero la categoría y después la acción: la segunda depende de la primera
             (Rechazo es de Administración, Expiró de Seguridad), y ese es el orden en
             que se piensa — de qué mundo hablo, y qué pasó en él. */}
-        <Campo etiqueta="Categoría">
+        <CampoFiltro etiqueta="Categoría">
           <CustomSelect
             ariaLabel="Categoría"
             value={filtros.categoria}
@@ -140,9 +123,9 @@ export function AuditoriaView() {
               })),
             ]}
           />
-        </Campo>
+        </CampoFiltro>
 
-        <Campo etiqueta="Acción">
+        <CampoFiltro etiqueta="Acción">
           <CustomSelect
             ariaLabel="Acción"
             value={filtros.accion}
@@ -152,15 +135,14 @@ export function AuditoriaView() {
               ...opcionesDeAccion(filtros.categoria).map(({ value, label }) => ({ value, label })),
             ]}
           />
-        </Campo>
+        </CampoFiltro>
 
         {hayFiltros && (
           <button type="button" onClick={limpiarFiltros} className={CLASE_BOTON}>
             Limpiar filtros
           </button>
         )}
-      </div>
-
+      </BarraFiltros>
 
       {error ? (
         <p className="text-sm text-red-600">{error}</p>
@@ -175,7 +157,7 @@ export function AuditoriaView() {
       ) : (
         <>
           <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-[#7db828]/30">
-            <table className="w-full min-w-[52rem] text-left text-sm">
+            <table className="olo-tabla-apilable w-full min-w-[52rem] text-left text-sm">
               <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-[#131b2f]">
                 <tr>
                   <th scope="col" className="px-4 py-3 font-medium">Fecha y hora</th>
@@ -191,26 +173,27 @@ export function AuditoriaView() {
               <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
                 {registros.map((registro) => (
                   <tr key={registro.id} className="bg-white dark:bg-[#0f1626]">
-                    <td className="whitespace-nowrap px-4 py-1.5 text-zinc-600 dark:text-zinc-300">
+                    <td data-etiqueta="Fecha y hora" className="whitespace-nowrap px-4 py-1.5 text-zinc-600 dark:text-zinc-300">
                       {new Date(registro.fecha).toLocaleString('es-CO')}
                     </td>
-                    <td className="px-4 py-1.5 text-zinc-900 dark:text-[#f6f6f6]">
+                    <td data-etiqueta="Usuario" className="px-4 py-1.5 text-zinc-900 dark:text-[#f6f6f6]">
                       {(registro.usuarioId ? usuarios.find(u => u.id === registro.usuarioId)?.nombre : null) ?? registro.usuarioNombre ?? <span className="text-zinc-500">Sin usuario</span>}
                     </td>
-                    <td className="px-4 py-1.5">
+                    <td data-etiqueta="Acción" className="px-4 py-1.5">
                       <span
                         className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${COLOR_ACCION[registro.accion] ?? ''}`}
                       >
                         {etiquetaDeAccion(registro.accion, registro.categoria)}
                       </span>
                     </td>
-                    <td className="px-4 py-1.5 text-zinc-600 dark:text-zinc-300">
+                    <td data-etiqueta="Entidad" className="px-4 py-1.5 text-zinc-600 dark:text-zinc-300">
                       {etiquetaDeEntidad(registro.entidadTipo)}
                     </td>
                     {/* Se corta en la tabla y se lee completo en el `title` o en el detalle.
                         El comentario de un envío va más oscuro que los campos internos:
                         es lo que se escribió para ser leído. */}
                     <td
+                      data-etiqueta="Cambios"
                       className={`max-w-xs truncate px-4 py-1.5 ${
                         comentarioPrincipal(registro)
                           ? 'text-zinc-800 dark:text-zinc-200'
@@ -218,9 +201,10 @@ export function AuditoriaView() {
                       }`}
                       title={resumenDeCambios(registro)}
                     >
-                      {resumenDeCambios(registro) || '—'}
+                      {/* Cuando la tabla pasa a tarjetas, el texto no se corta en una línea: se parte, hasta tres. */}
+                      <span className="@max-3xl:line-clamp-3">{resumenDeCambios(registro) || '—'}</span>
                     </td>
-                    <td className="px-4 py-1.5 text-right">
+                    <td data-etiqueta="Detalle" className="px-4 py-1.5 text-right">
                       <button
                         type="button"
                         onClick={() => setSeleccionado(registro)}

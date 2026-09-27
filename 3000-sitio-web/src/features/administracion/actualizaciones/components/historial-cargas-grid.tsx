@@ -58,7 +58,7 @@ export function HistorialCargasGrid({ cargas, onEliminar }: HistorialCargasGridP
   return (
     <div>
       <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-700">
-        <table className="w-full text-left text-sm">
+        <table className="olo-tabla-apilable w-full text-left text-sm">
           <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-zinc-800/60 dark:text-zinc-400">
             <tr>
               <th scope="col" className="px-3 py-2 font-medium">Fecha</th>
@@ -75,10 +75,10 @@ export function HistorialCargasGrid({ cargas, onEliminar }: HistorialCargasGridP
           <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
             {cargas.map((carga) => (
               <tr key={carga.id} className="transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/40">
-                <td className="whitespace-nowrap px-3 py-3 text-xs text-zinc-600 dark:text-zinc-300">
+                <td data-etiqueta="Fecha" className="whitespace-nowrap px-3 py-3 text-xs text-zinc-600 dark:text-zinc-300">
                   {formatearFecha(carga.creadoEn)}
                 </td>
-                <td className="whitespace-nowrap px-3 py-3">
+                <td data-etiqueta="Estado" className="whitespace-nowrap px-3 py-3">
                   <span
                     className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium ${COLOR_ESTADO[carga.estado]}`}
                   >
@@ -88,10 +88,10 @@ export function HistorialCargasGrid({ cargas, onEliminar }: HistorialCargasGridP
                     {etiquetaEstado(carga)}
                   </span>
                 </td>
-                <td className="whitespace-nowrap px-3 py-3 tabular-nums text-zinc-700 dark:text-zinc-300">
+                <td data-etiqueta="Filas" className="whitespace-nowrap px-3 py-3 tabular-nums text-zinc-700 dark:text-zinc-300">
                   {carga.estado === 'error' ? '—' : carga.filasProcesadas.toLocaleString('es-CO')}
                 </td>
-                <td className="px-3 py-3 text-zinc-500 dark:text-[#94a3b8]">
+                <td data-etiqueta="Mensaje" className="px-3 py-3 text-zinc-500 dark:text-[#94a3b8]">
                   {carga.mensaje ?? '—'}
                 </td>
                 {onEliminar && (
