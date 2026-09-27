@@ -5,6 +5,113 @@
 
 ---
 
+## sesión 27-09-2026: el panel y la intranet se navegan como una app en el móvil (barra inferior con el logo al centro) (2.ª parte)
+
+**Qué era.** Por debajo de 1024 px el panel escondía sus secciones tras una hamburguesa que
+sacaba la barra lateral, con avisos y cuenta arriba; la intranet desplegaba su menú debajo
+de la barra superior. Se pidió que las dos se vean como una app: **barra de navegación
+abajo**, al alcance del pulgar, con los iconos del panel, el logo de OLO sin texto y, arriba,
+solo buscar y el modo nocturno. Decisiones del usuario, tomadas con una maqueta delante:
+el logo va **en el centro de la barra** como botón de inicio; el panel lleva **cuatro
+destinos a la vista + «Más»**; la intranet, **solo buscar arriba** (no tiene modo oscuro, ver
+Pendiente); y la intranet lleva **iconos provisionales** que el usuario cambiará.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Paquete nuevo | `packages/navegacion-movil/` (`@olo/navegacion-movil`) | `BarraInferior`: destinos a los lados del logo, contador de pendientes, y una hoja desde abajo (`<dialog>` nativo) para los que tienen hijos. `barra-inferior.css`: estructura y la variable `--olo-barra-inferior-alto`; los colores, con `--olo-barra-*` que pone cada app. Se oculta desde `lg` por CSS |
+| Panel | `shared/ui/organisms/sidebar-layout.tsx` | Fuera el menú lateral deslizable del móvil: la barra lateral es `hidden lg:flex`; la columna reserva el hueco de la barra (`olo-reserva-barra-inferior`) |
+| Panel | `features/administracion/auth/components/panel-general.tsx` | Arriba en el móvil: a la izquierda, el nombre de quien está conectado con un desplegable (Mi perfil, Cerrar sesión; esquinas de arriba rectas, pegado a la barra) y la campana de notificaciones suelta a su lado; a la derecha, buscar y tema (todo a 44 px). Abajo: Accesos (hoja: Usuarios, Roles) · Revisión (con contador) · **logo → Dashboard** · Auditoría · Más (Actualizaciones, Respaldos, Configuración) |
+| Panel | `shared/ui/molecules/dropdown.tsx` | El «clic fuera» mira el menú entero y no solo su botón (ver abajo); cierra también con Escape |
+| Panel | `style/globals.css` (tema oscuro) | El logo del centro en blanco sobre un círculo oscuro (`--olo-barra-logo-fondo`, `--olo-barra-logo-filtro`), como hace la barra lateral con `dark:brightness-0 dark:invert` |
+| Panel | `shared/ui/molecules/notification.tsx` | El aviso sale por encima de la barra en el móvil |
+| Panel | `style/globals.css` | `@import` del CSS del paquete y colores de la barra en claro y oscuro |
+| Intranet | `shared/lib/blocks/plantilla/barra-inferior-intranet.tsx` (nuevo) | Arma la barra con el **mismo menú de la plantilla** (Puck): «Inicio» pasa al logo; Tasa · Matriz · Encuestas (hoja con sus dos encuestas) · Salir. Con más de tres secciones, las que sobran van a «Más» |
+| Intranet | `shared/lib/blocks/plantilla/intranet-topbar.tsx` | Exporta `ItemMenuIntranet` (con `icono` y `etiquetaMovil`), quita la hamburguesa y monta la barra inferior |
+| Intranet | `config/puck.config.tsx` | Dos campos por enlace del menú: icono (el selector que ya existía, `campoIcono`) y texto corto para el móvil |
+| Intranet | `style/globals.css` | Por debajo de `lg` la barra de arriba es solo el buscador (44 px); colores de la barra en el azul de la intranet; `body` reserva el hueco; el botón flotante de edición sube por encima de la barra. Fuera las reglas de la hamburguesa |
+| Intranet | `public/assets/svg/barra-inferior/*.svg`, `public/assets/svg/olo-logo-none.svg` | Iconos **provisionales** (tasa, matriz, encuestas, salir, más, sección) y el logo sin texto, que la intranet no tenía |
+| Las dos | `package.json`, `package-lock.json`, `next.config` | Dependencia `file:../packages/navegacion-movil` y `transpilePackages` |
+
+**Cómo se cambian los iconos de la intranet.** Reemplazando el archivo en
+`3001-intranet/public/assets/svg/barra-inferior/` con el mismo nombre: se pintan como
+máscara (`IconoRenderer` de `@olo/blocks-renderer`), así que toman el color de la barra sea
+cual sea el del SVG. O, por enlace, eligiendo otro en el editor de la plantilla («Icono en
+la barra inferior del móvil»). Sin elegir nada, cada sección toma el suyo por la primera
+parte de la ruta (`/tasa` → `tasa.svg`), y la que no está en la lista, `seccion.svg`.
+
+**Por qué un paquete y no dos copias.** §10.5 de `2-convenciones`: lo que necesitan las dos
+apps con el mismo comportamiento va a `packages/`. El corte es el de `@olo/inactividad`:
+el comportamiento (cuántos destinos, la hoja, el foco, qué se anuncia) es uno; los destinos
+y los colores, de cada app. Los estilos van en un `.css` del paquete importado por los dos
+`globals.css` y no en utilidades de Tailwind, porque Tailwind no escanea `node_modules`.
+
+**Se descartó:**
+
+- **Todo en la barra, solo iconos** (8 destinos a 45 px, sin texto): el usuario eligió
+  «4 + Más»; sin etiquetas no se sabe qué es cada icono.
+- **Botón de tema en la intranet que solo oscurezca las barras**: el contenido seguiría en
+  claro. Elegido por el usuario: solo buscar hasta que exista el modo oscuro.
+- **Cerrar la hoja con `onMouseDown`** (lo que usan los modales del proyecto): la hoja
+  desaparecía antes del `click` y ese `click` caía en el enlace de la página de debajo.
+- **Desmontar la hoja al cerrarla**: el foco quedaba en un elemento borrado y `close()` lo
+  devolvía a `<body>`, no al botón. Se deja montada y se cierra con `close()`.
+- **Borde de 1 px arriba de la barra**: la barra medía 65 px y reservaba 64; la línea es
+  sombra interior.
+
+**Corrección del mismo día, a pedido del usuario al ver la primera versión:** «Más» se
+queda solo con Actualizaciones, Respaldos y Configuración, en ese orden; Mi perfil y Cerrar
+sesión pasan a un desplegable con el nombre del usuario, arriba a la izquierda, y
+Notificaciones a una campana suelta junto a él. En oscuro, el círculo del logo era blanco
+y el logo seguía en color: ahora es oscuro con el logo en blanco. En tres pasos más, a
+pedido del usuario: la barra pasó de 64 a 72 px de alto con solo las esquinas de arriba
+redondeadas (1.25rem), y el logo creció hasta 52 px de ancho (antes 28) sobre un fondo de
+80 × 88 px (antes un círculo de 56): el logo es más alto que ancho y en un círculo le
+quedaban 14 px a los lados y 10 arriba y abajo; así, 14 en los cuatro (medido). El fondo se
+separa 12 px de «Dashboard» y sobresale 3.5625rem; «Dashboard» quedaba 5 px más abajo que
+las demás etiquetas y ahora las cinco están en la misma línea (medido: 713–729 px). Vale también para la intranet, que usa el mismo
+paquete. **Coste medido:** a 320 px las casillas de los lados quedan en ~55 px y «Auditoría»
+se corta a «Audito…»; desde 360 px cabe entera.
+
+> **Aviso: `Dropdown` (`shared/ui/molecules/dropdown.tsx`) cerraba al pulsar sus propias
+> opciones.** El «clic fuera» miraba solo el botón, así que el `mousedown` sobre una opción
+> contaba como fuera, cerraba el menú y lo desmontaba antes de su `click`. Se corrigió por
+> lectura del código, al reutilizarlo en la barra superior; **no se reprodujo en pantalla**.
+> Afecta también al menú del pie de la barra lateral (Mi perfil, Configuración, Cerrar sesión).
+
+> **Aviso: las apps compilan contra la copia del paquete, no contra `packages/`.** Con
+> `install-links=true`, `node_modules/@olo/navegacion-movil` es una copia. Tras cambiar el
+> paquete, el `predev` (`sincronizar-paquetes-locales.mjs`) la rehace al arrancar; con el
+> dev ya corriendo, el cambio no se ve hasta reiniciar. En esta sesión se copió a mano.
+
+> **Aviso: la hoja se cierra sola al pasar a escritorio.** Al girar una tablet a más de
+> 1024 px la barra se oculta con `display: none` y la hoja con ella; sin ese cierre el
+> `<dialog>` seguiría abierto e invisible, con la página inerte.
+
+### Verificado
+
+| Qué | Resultado |
+|---|---|
+| `tsc` del paquete | Sin errores |
+| `tsc --noEmit` de la intranet | Sin errores |
+| `tsc --noEmit` del sitio | 2 errores en `src/config/puck.config.tsx:2233`, de un cambio en paralelo de ese archivo (no tocado aquí); ninguno en lo de esta entrega |
+| `eslint` de los archivos tocados, en las dos apps | 0 errores (solo avisos que ya estaban) |
+| `npm run build` de la intranet (dev apagado) | Compila; la barra está en el CSS y el JS finales. `next-env.d.ts` sin cambios |
+| CSS real de cada app compilado con su Tailwind | El `@import "@olo/navegacion-movil/…"` se resuelve en las dos |
+| Chrome headless: barra y hoja reales (React SSR) con el CSS real, panel a 320/360/768/1024/1280 (claro y oscuro, con el desplegable abierto y un nombre de 30 letras), intranet a 320/360/768/1024/1280 | Sin scroll horizontal en ninguno; barra visible hasta 768 y oculta desde 1024; el final del contenido y el pie quedan encima de la barra; todos los botones de la barra, la hoja y buscar/tema ≥ 44 px; en la intranet, arriba solo buscar; iconos de la intranet pintados por máscara; en escritorio la intranet queda como estaba |
+| Panel e intranet reales con sesión | **No se miraron**: los servidores de dev estaban apagados al terminar y las pantallas piden sesión (no se firman tokens propios). Queda para el usuario |
+
+**Pendiente al cierre:**
+
+- Mirar con una cuenta real el panel y la intranet en el móvil: la hoja «Más», el
+  desplegable del nombre (Mi perfil y Cerrar sesión), la campana y «Salir» de la intranet.
+  Y en escritorio, que el menú del pie de la barra lateral siga abriendo sus opciones.
+- Cambiar los iconos provisionales de la intranet (arriba, cómo).
+- Modo oscuro de la intranet: no existe (4 usos de `dark:` en toda la app). Cuando exista,
+  el botón de tema va junto al buscador.
+- `13-mapa-del-proyecto.md` lo regenera el `pre-commit` con el paquete nuevo.
+
+---
+
 ## sesión 27-09-2026: se corrige lo que encontró la auditoría de la API (fase 1: comentarios, código muerto y basura)
 
 **Qué era.** La auditoría del 26-09 (3.ª parte) dejó el inventario; el usuario pidió
