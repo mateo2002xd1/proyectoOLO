@@ -1,4 +1,4 @@
-// Listener - Invalidar Cache
+// Al publicarse una página, borra de Redis sus respuestas cacheadas para que nadie vea la versión anterior.
 
 import { borrarClavesPorPatron } from '../../../infrastructure/redis';
 import type { ContenidoPublicadoEvent } from '../contenido-publicado.event';
@@ -9,8 +9,11 @@ import type { ContenidoPublicadoEvent } from '../contenido-publicado.event';
  * Hoy los slugs los genera `@olo/slug-policy` y no pueden contenerlos, pero el slug
  * llega desde una fila de la base de datos: escaparlo cuesta una línea y evita que un
  * slug inesperado convierta este borrado puntual en un borrado ancho.
+ *
+ * Ojo con el template: `\${caracter}` (una sola barra) escapa el dólar y devuelve el
+ * texto literal «${caracter}»; hacen falta dos barras para anteponer una `\` real.
  */
-const escaparGlob = (valor: string) => valor.replace(/[\*?[\]]/g, (caracter) => `\${caracter}`);
+const escaparGlob = (valor: string) => valor.replace(/[\*?[\]]/g, (caracter) => `\\${caracter}`);
 
 /**
  * Tira de Redis la respuesta cacheada de la página que se acaba de publicar.
