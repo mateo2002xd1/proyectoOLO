@@ -94,9 +94,15 @@ export async function listarUsuariosDeFiltro(): Promise<UsuarioDeFiltro[]> {
 }
 
 export interface AnalisisDepuracionAuditoriaDTO {
+  /** Registros con más de un año: los que se depuran. */
   totalEncontrados: number;
+  /** Un año antes de hoy: lo anterior se puede depurar. */
   fechaCorte: string;
+  /** Lo que ocupan los registros de más de un año. */
   pesoEstimadoBytes: number;
+  /** Registros del último año, que se conservan, y lo que ocupan. */
+  totalUltimoAnio: number;
+  pesoUltimoAnioBytes: number;
   pesoTablaBytes: number;
   registros: import('../types').RegistroAuditoria[];
 }

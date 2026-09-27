@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
   AlertTriangle,
+  Check,
   CheckCircle2,
   Database,
   Download,
@@ -273,24 +274,24 @@ export function ModalDepurarAuditoria({
                   ) : (
                     /* El respaldo va antes que el borrado: el botón rojo del pie no se
                        habilita hasta descargarlo. */
-                    <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
                       <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                         {csvDescargado ? 'Respaldo descargado' : 'Descarga aquí el Logs de respaldo'}{' '}
                         <span className="text-red-600 dark:text-red-400" aria-hidden="true">*</span>
                         <span className="sr-only">(obligatorio)</span>
                       </p>
-                      {/* Solo el icono, sobre el verde de marca. El icono va en azul marino: en
-                          blanco sobre #7DB728 no llega al 3:1 que pide un icono (2.42:1,
-                          `9-accesibilidad.md` §2.1). */}
+                      {/* Solo el icono, en blanco sobre el verde de marca (lo pidió así el usuario; el
+                          contraste es 2.42:1, bajo el 3:1 de `9-accesibilidad.md` §2.1: el nombre
+                          accesible y el texto de al lado dicen qué hace). */}
                       <button
                         type="button"
                         onClick={handleDescargarCsv}
                         disabled={ejecutando}
                         aria-label={csvDescargado ? 'Volver a descargar el respaldo CSV' : 'Descargar el respaldo CSV'}
                         title={csvDescargado ? 'Volver a descargar el respaldo CSV' : 'Descargar el respaldo CSV'}
-                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[16px] bg-[#7DB728] text-[#001631] shadow-sm transition hover:bg-[#6ea321] active:bg-[#5f8f1c] disabled:opacity-50"
+                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[16px] bg-[#7DB728] text-white shadow-sm transition hover:bg-[#6ea321] active:bg-[#5f8f1c] disabled:opacity-50"
                       >
-                        {csvDescargado ? <CheckCircle2 size={20} /> : <Download size={20} />}
+                        {csvDescargado ? <Check size={20} /> : <Download size={20} />}
                       </button>
                     </div>
                   )}
