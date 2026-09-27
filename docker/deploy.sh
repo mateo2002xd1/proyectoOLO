@@ -71,9 +71,9 @@ Uso: ./docker/deploy.sh [comando]
 
 Comandos:
   setup     - Primera configuracion (crear .env, generar secretos, construir)
-  start     - Iniciar todos los servicios
+  start     - Aplicar migraciones e iniciar o actualizar todos los servicios
   stop      - Detener todos los servicios
-  restart   - Reiniciar todos los servicios
+  restart   - Reiniciar contenedores existentes (no aplica imagenes nuevas)
   logs      - Ver logs en tiempo real
   status    - Ver estado de los servicios
   build     - Reconstruir imagenes
@@ -279,7 +279,7 @@ build() {
     echo "=== Reconstruyendo imagenes ==="
     construir --no-cache
     echo ""
-    verde "Imagenes reconstruidas. Ejecuta: ./docker/deploy.sh restart"
+    verde "Imagenes reconstruidas. Ejecuta: ./docker/deploy.sh start"
 }
 
 migrar() {
