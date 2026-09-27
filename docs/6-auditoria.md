@@ -5,7 +5,328 @@
 
 ---
 
+## sesión 27-09-2026: la pantalla de Auditoría del panel, igual que Respaldos
+
+**Qué era.** Tras limpiar Respaldos, el usuario pasa a Auditoría y pide los mismos ajustes,
+empezando por el botón de depurar.
+
+| App | Archivo | Cambio |
+|---|---|---|
+| Panel | `auditoria/components/auditoria-view.tsx` | El botón «Depurar auditoría» del encabezado pasa a «Depurar» (lo cambió el usuario) y deja el fondo rojo: solo el texto y el icono en rojo (600; 400 en oscuro), con un tinte suave al pasar el ratón o tocar. Mismas clases que «Depurar» de Respaldos; conserva su papelera (se quitó por error y se devolvió: el usuario se refería a la del modal) |
+| Panel | `auditoria/components/modal-depurar-auditoria.tsx` | Sale por `createPortal` al `<body>` con el fondo de `Alert` (`bg-[#0f172a]/40 backdrop-blur-sm`, antes `bg-black/60` dentro de la columna): la página entera se ve borrosa y la barra mobile queda debajo. Por debajo de `lg` deja libre `--navegacion-mobile-alto` y la caja mide como máximo `100dvh − 2rem − barra`. Medido a 360 × 650 y 1280 × 800: `blur(8px)`, z 50 sobre la barra, sin scroll lateral |
+| Panel | ídem | Cabecera sin el cuadro con la papelera: quedan el título, el subtítulo y la X. Siguen las papeleras del «Paso 2» y de «Confirmar y eliminar registros» |
+| Panel | `auth/components/panel-general.tsx` | «Actividad reciente» del dashboard: celdas de `py-3.5` a `py-2`, como las de Auditoría y Respaldos (el encabezado sigue en `py-3`) |
+| Panel | `auth/components/usuarios-view.tsx`, `roles-view.tsx` | Filas de Usuarios (de `py-4`) y de Roles y permisos (de `py-3.5`) a `py-2`. Los encabezados y las filas de «cargando» y «sin datos» no cambian. `roles-view.tsx` ya tenía un error de lint (`any` en la línea 305) y dos avisos de dependencias, ajenos a esto |
+| Panel | `auditoria/components/auditoria-view.tsx` | Tabla con la misma altura que la de Respaldos: celdas `py-2` (estaban en `py-1.5`) y encabezado `py-3.5` (estaba en `py-3`) |
+| Sitio y panel | `shared/ui/molecules/paginacion.tsx`, `paginador.tsx` | Pie de las tablas: a la izquierda solo «Mostrando X-Y de Z»; a la derecha anterior/números/siguiente, «Ir a la página N de M» y, al final, **«Filas por página»** (antes iba junto al «Mostrando», en 12 px y más bajo). El selector y el campo de «Ir a la página» miden lo mismo que las casillas (32 px; 36 desde `sm`), con su borde, radio y paleta (`panel` o `publico`); el campo medía 2 px más. Con una sola página solo se ve «Filas por página». Afecta a las 8 tablas con `Paginador` (Auditoría, Usuarios, Roles, Revisión, actividad reciente y las tres tablas públicas); el historial de cargas usa `Paginacion` sin filas por página y no cambia. Medido a 360/768/1280, claro, oscuro y tono público: mismos altos y sin scroll lateral |
+| Sitio y panel | `shared/ui/molecules/custom-select.tsx`, `paginacion.tsx` | «Filas por página» deja el `<select>` nativo (su lista la dibuja el navegador, sin bordes) por `CustomSelect`, con tres opciones nuevas: `compacto` (alto de las casillas, radio `rounded-lg`, flecha sin círculo y opciones sin el punto de la derecha: solo el número, con su hover y el fondo del elegido), `paleta` (el borde y fondo del botón cerrado; aquí, los de las casillas del tono) y `abrirArriba` (va al pie de la tabla). Los 21 `CustomSelect` de filtros no cambian: sin esas opciones pintan lo mismo que antes (medido: 44 px y radio 16). La lista abierta tiene borde, esquinas y sombra; el nombre accesible del botón lleva el valor («Filas por página: 15») |
+| API | `use-cases/auditoria/analizar-depuracion-auditoria.usecase.ts` | **La retención pasa de 6 meses a 1 año**: se conserva el último año y se depura lo anterior. La fecha de corte sale de `fechaCorteDepuracion()` y el tamaño por fila de `BYTES_POR_REGISTRO_SQL`, los dos exportados desde aquí para que el análisis y el borrado no puedan discrepar (antes cada uno repetía el cálculo). El análisis añade `totalUltimoAnio` y `pesoUltimoAnioBytes` (una sola consulta con `COUNT/SUM … FILTER`) |
+| API | `use-cases/auditoria/ejecutar-depuracion-auditoria.usecase.ts` | La comprobación dentro de la transacción usa la misma fecha de corte de un año. Sin cambios de ruta ni de permisos |
+| API | `repositories/auditoria.repository.ts` | Comentario: «la depuración de seis meses» → «de un año» |
+| Panel | `auditoria/services/auditoria.service.ts` | `AnalisisDepuracionAuditoriaDTO` con `totalUltimoAnio` y `pesoUltimoAnioBytes` |
+| Panel | `auditoria/components/modal-depurar-auditoria.tsx` | Aviso «Criterio de retención de 1 año» con la fecha de corte de la API. Fuera la tarjeta «Fecha de corte» y «Espacio estimado»; quedan «Registros a depurar» (cantidad y tamaño), «Registros del último año» y «Registros de más de un año» (tamaño y cantidad). Botón limpio (sin fondo) «Exportar registros a depurar»: baja el mismo CSV que el Paso 1 y cuenta como su respaldo. El Paso 2 decía siempre «los 10 registros respaldados»: ahora dice los que son. Etiquetas de las tarjetas en bloque con `leading-tight` (a 360 px partían en dos líneas muy separadas) |
+| Panel | ídem | Segunda pasada a pedido del usuario: el aviso pasa a «Importante: Se conserva el último año de la bitácora donde se depuran los registros posteriores con respaldo obligatorio previo en CSV.» (texto del usuario; ya no muestra la fecha de corte, que sigue en el mensaje de «no hay nada que depurar») y la cabecera queda solo con el título. Fuera «Exportar registros a depurar». Los dos pasos (tarjetas con icono) pasan a una línea «Descargar primero tu respaldo *» con un botón `#7DB728` y texto `#001631` (en blanco sobre ese verde no se lee: 2.42:1). El borrado sale de la tarjeta y va al pie, como en Respaldos: «Cancelar» y un botón rojo «Depurar N registros», deshabilitado hasta descargar el respaldo. En el móvil, márgenes menores, el icono del botón rojo oculto y el pie en dos filas a 320 px. Medido a 320/360/768/1280: ningún botón se sale ni parte su texto |
+
+**Verificado.** `tsc` limpio en la API y el panel, `eslint` limpio en el panel. La consulta nueva se
+probó en un Postgres 18 desechable (`docker`, puerto 55433, borrado al acabar) con cuatro filas
+de 2 años, 13 meses, 11 meses y 1 día: 2 a depurar, 2 del último año, 300 bytes (167 + 133,
+igual que la suma fila a fila). El modal se pintó con datos de ejemplo a 360 y 1280 px sin
+scroll lateral. **La API de dev no recarga sola**: hay que reiniciarla para ver los tamaños
+nuevos; sin reiniciar, las tarjetas del último año saldrían vacías (0 B). No probado con sesión.
+
+**Datos de prueba en Neon (pendiente de borrar).** Para ver el modal con algo que depurar
+(no había ningún registro real de más de un año: el más antiguo era del 05/08/2026), el usuario
+corrió un script que copia 150 registros reales al azar con fechas de 13 a 30 meses atrás, todos
+con `user_agent = 'olo-datos-de-prueba-depuracion'`. Se borran con
+`DELETE FROM auditoria_cambios WHERE user_agent = 'olo-datos-de-prueba-depuracion'`; si se
+depuran desde el panel, se van esos mismos, porque son los únicos de más de un año.
+
+---
+
+## sesión 27-09-2026: auditoría de la intranet, fase 3: comentarios, código muerto y basura
+
+**Qué era.** Fase 3 de la auditoría por partes (fase 1 la API, fase 2 el sitio web,
+sesiones anteriores): comentarios, código muerto y carpetas obsoletas, ahora en
+`3001-intranet`. Inventario en
+`auditorias/2026-09-27-intranet-comentarios-y-codigo-muerto.md` (no versionado);
+corregido todo, sin decisiones pendientes del usuario en esta fase.
+
+**De entrada, más limpia que el sitio web:** `tsc --noEmit` normal ya daba 0 errores
+(no había ningún bug de tipos como el de `puck.config.tsx` del sitio) y `eslint src`
+daba 0 errores, sin `react-hooks/set-state-in-effect` ni `any`. El `tsconfig.json` ya
+tiene `strict: true` (el del sitio, `false`).
+
+**Código muerto:** 16 avisos de `noUnusedLocals`/`noUnusedParameters` (sin contar el de
+`ancho` en `texto-rico.tsx`, del paquete compartido, ya anotado en la fase 2 — mismo
+archivo, no se repite el hallazgo). Entre ellos, `BLOQUES_COMUNES` en `puck.config.tsx`:
+un array de 14 nombres de componentes declarado y nunca usado en el resto del archivo.
+Mismo hallazgo que en el sitio web: `SeccionPestanasLaterales` se mencionaba en dos
+sitios de `puck.config.tsx` sin que exista ese componente en ningún catálogo; se
+quitaron las dos menciones.
+
+**Dos archivos de una fase anterior al editor actual, nunca conectados, borrados:**
+`use-pagina.ts` y `editorjs-wrapper.tsx` traían comentarios `TODO: Fase 3`/`TODO: Fase
+6` de un plan anterior a Puck — el segundo renderiza literalmente un `<div>` que dice
+"Editor.js (stub) — instalar @editorjs/editorjs para activar". El editor real ya es
+Puck; ninguno de los dos se importaba desde ningún componente, solo se reexportaban sin
+consumidor en `features/paginas/index.ts`. Se borraron los dos archivos y sus exports.
+
+**Un `console.log` suelto en `src/proxy.ts`** (el middleware): registraba cada sesión
+sin `acceso.intranet` en el log del contenedor, un caso normal, no una avería. Quitado.
+
+**Archivos que nadie importa:** 7 candidatos, los 7 falsos positivos verificados uno por
+uno (convención de Next, barrels por carpeta). El caso interesante fue `src/proxy.ts`:
+no es un archivo sin usar, es que Next 16 renombró el middleware a `proxy.ts` y lo carga
+por convención de nombre, igual que `page.tsx`/`layout.tsx`, sin que nada lo importe
+explícitamente.
+
+**Carpetas:** el hallazgo de `public/storage/{uploads,backup}` (14 archivos de la
+intranet) ya se resolvió junto con el del sitio web en la fase 2, mismo commit y misma
+regla de `.gitignore`. `public/docs/images/blog/` (436 KB) se revisó y no es basura: es
+la imagen por defecto de `TarjetaArticulo` en `puck.config.tsx`.
+
+**Verificado:** `tsc --noEmit` normal, 0→0. `noUnusedLocals`, 16→0 propios de la
+intranet. `eslint src`, 0→0. Cero referencias a los dos archivos borrados en todo el
+repositorio. Sin finales de línea mezclados.
+
+**Pendiente al cierre:** ninguno propio de esta fase. Las tres fases de la auditoría por
+partes (API, sitio web, intranet) quedan cerradas.
+
+---
+
+## sesión 27-09-2026: el modal «Depurar versiones antiguas» sin redundancia, sin saltos y con el fondo borroso de los demás
+
+**Qué era.** En el móvil, el modal de Respaldos abría con un alto y crecía al llegar el
+análisis; al crecer, la barra de abajo lo cortaba. El usuario pidió además quitar el icono
+de basura y el subtítulo de la cabecera, dejar los nombres de página limpios (sin
+«(/menu-pie)» ni «(intranet)») y que el fondo fuera el borroso de todos los modales, como
+el de crear usuario.
+
+| App | Archivo | Cambio |
+|---|---|---|
+| Panel | `respaldos/components/modal-depurar-versiones.tsx` | Sale por `createPortal` al `<body>` con el fondo de `Alert` (`bg-[#0f172a]/40 backdrop-blur-sm`, antes `bg-black/60` dentro de la columna del panel): la barra mobile ya no le queda encima y la página entera se ve borrosa. Por debajo de `lg` el fondo deja libre `--navegacion-mobile-alto` y la caja mide como máximo `100dvh − 2rem − barra`; lo que no cabe hace scroll dentro |
+| Panel | ídem | Mientras llega el primer análisis se reserva el hueco del detalle por página (esqueleto de 112 px): la caja abre con su alto y no crece al cargar |
+| Panel | ídem | Cabecera solo con el título y la X: fuera el icono de basura y «Libera espacio en la base de datos…» |
+| Panel | ídem | El aviso «Respaldo siempre protegido» pasa arriba del todo y los filtros (ámbito y página) debajo de él |
+| Panel | `respaldos/components/respaldos-view.tsx` | El botón «Depurar» del encabezado deja el fondo rojo: solo el texto y el icono en rojo (600; 400 en oscuro), con un tinte suave al pasar el ratón o tocar |
+| Panel | ídem | Columna «Página» en una sola línea: título, etiqueta del ámbito y «· versión N». Fuera el `/slug` |
+| Panel | ídem | Fuera el filtro «Página» (buscador por título o slug), con su campo `busqueda` y la función `normalizar`: quedan ámbito, editor, publicador y fechas |
+| Panel | ídem | Tabla más compacta: celdas de `py-3` a `py-2` y el botón del ojo de `p-1.5` a `p-1.25` (la fila más alta pasa de 54 a 44 px; el usuario probó varias alturas y eligió esta); encabezado de `py-3` a `py-3.5` (un poco más alto) |
+| Panel | ídem | Selector de página y detalle por página con el título solo. Si dos páginas se llaman igual (p. ej. «Inicio» del sitio y de la intranet), esas dos llevan « · Sitio web» / « · Intranet» para distinguirse |
+
+**Verificado.** Render con datos de ejemplo y la barra del panel, en Chrome headless: a
+360 × 650 la caja mide 538 px cargando y con datos (no salta) y termina 16 px por encima
+de la barra; a 360 × 800, 768 × 1024 y 1280 × 800 cabe sin scroll lateral; el fondo es
+`blur(8px)` con z 50 sobre la barra. `tsc` y `eslint` limpios. No probado en el móvil con
+sesión.
+
+**Pendiente.** `auditoria/components/modal-depurar-auditoria.tsx` es gemelo y tiene el
+mismo fondo `bg-black/60` sin portal.
+
+---
+
+## sesión 27-09-2026: auditoría del sitio web, fase 2: comentarios, código muerto y basura
+
+**Qué era.** Fase 2 de la auditoría por partes que pidió el usuario (fase 1 fue la API,
+sesión anterior): mismos tres frentes —comentarios, código muerto, carpetas obsoletas—
+aplicados a `3000-sitio-web`. Se entregó primero el inventario
+(`auditorias/2026-09-27-sitio-web-comentarios-y-codigo-muerto.md`, no versionado) y se
+corrigió todo salvo dos cosas fuera de alcance (abajo).
+
+**Dos bugs de seguridad, no solo código muerto.** Al preguntar por qué dos imports
+estaban "sin usar", resultó que la función existía para arreglar algo y nunca se llegó a
+llamar:
+
+- `conCabecerasDeCliente` (reenvía la IP real del visitante a la API) estaba importada
+  pero nunca invocada en `shared/lib/backend-proxy.ts` —el BFF genérico de **12 rutas**:
+  alertas, auditoría, permisos, roles, usuarios…— ni en
+  `app/api/auth/first-login/route.ts`. Sin ella, esas peticiones salían con la IP del
+  contenedor de Next y el límite de tasa por IP se volvía un cubo compartido por todos
+  los visitantes. Corregido en los dos archivos.
+- `getSessionPermissionsSnapshot()` (`shared/lib/session.ts`) pedía `/api/me` —que trae
+  el rol resuelto desde la fila, fresco en cada petición— pero descartaba `user.role` y
+  devolvía el de la cookie, fijado al iniciar sesión. Es la misma brecha que ya se cerró
+  en la API ("Rol tomado del JWT", tabla de `3-seguridad-del-proyecto.md`), pero seguía
+  abierta en el gate del editor del frontend. Corregido: `user?.role ?? session.role`.
+
+**Un bug real de tipos, no cosmético.** `tsc --noEmit` —el normal del proyecto, sin
+flags— fallaba con 2 errores en `puck.config.tsx`, y `next.config.mjs` no tiene
+`typescript.ignoreBuildErrors`, así que esto tumbaba `npm run build`. Causa: el tipo de
+Puck para `categories` es una intersección que hace que `Object.entries()` devuelva
+`unknown`. Se anotó a mano la forma real de cada entrada. `tsc --noEmit` pasó de 2
+errores a 0.
+
+**Código muerto:** 27 avisos de `noUnusedLocals`/`noUnusedParameters` (sin contar los 2
+de `conCabecerasDeCliente`, que eran el bug de arriba). `panel-general.tsx` tenía 6 en un
+archivo — al revisarlo entero, dos eran funciones con sentido (`mensajeDeRevision`,
+`colorDiasRestantes`) que nadie llamaba, no solo líneas sueltas. `ROLES_QUE_EDITAN`
+estaba duplicada, sin usar, en dos archivos.
+
+**5 archivos que nadie importaba, borrados:** `shared/lib/dashboard.ts`,
+`shared/lib/blocks/{resaltar,intranet-hero,intranet-topbar,seccion-pestanas-laterales}.tsx`.
+Se confirmó que la intranet tiene sus propias versiones reales y en uso de tres de ellos
+— las del sitio web eran sobrantes de un cruce entre apps que nunca se conectó aquí.
+`seccion-pestanas-laterales` además se mencionaba por nombre en una categoría de
+`puck.config.tsx` sin estar registrada; se quitó también esa mención.
+
+**Basura: `public/storage/backup/` y `public/storage/uploads/` iban al repositorio.** 69
+archivos en el sitio + 14 en la intranet, 45 MB (adjuntos reales de páginas, con nombre
+UUID). A diferencia de los Excel del backend, aquí no hay tabla con deduplicación por
+hash que reconstruya el archivo si falta. El usuario confirmó que son pruebas de cuando
+se armaba el editor: se borran de git y de disco en las dos apps, con la regla nueva en
+`.gitignore`. `data_temporal/` (el catálogo CNO provisional) se revisó y está bien como
+está, documentado en su propio comentario.
+
+**Encontrado, no corregido:** el prop `ancho` de `TextoRico`
+(`packages/blocks-renderer`) no hace nada — el render ignora la prop y siempre usa el
+mismo ancho fijo. No se corrigió por no saber qué valores de diseño corresponden a cada
+opción. Y 11 errores de ESLint (`react-hooks/set-state-in-effect` en tres vistas, un
+`any` en `footer.tsx`) quedan fuera de esta auditoría: no son comentarios, código muerto
+ni basura, y corregirlos puede cambiar el orden de renders.
+
+**Verificado:** `tsc --noEmit` normal, 2→0 errores. `noUnusedLocals`, 27→2 avisos (los 2
+que quedan son el bug de `ancho`, sin tocar, y `intranet-hero.tsx`, que se borró
+entero). Cero referencias a los 5 archivos borrados en todo el repositorio. Sin finales
+de línea mezclados.
+
+**Pendiente al cierre:** el `git rm` de `public/storage/{uploads,backup}` en las dos
+apps lo corre el usuario — el control de permisos de la sesión volvió a bloquear el
+borrado, igual que con `/api/jobs` en la fase 1. Fase 3 (la intranet) cuando el usuario
+lo pida.
+
+---
+
+## sesión 27-09-2026: la navegación mobile se oculta al bajar y vuelve al subir; el círculo del activo se ve al tocar (5.ª parte)
+
+**Qué era.** El usuario pidió poder ocultar la barra de abajo con doble clic en la página.
+Se le propuso otra cosa y la eligió: **ocultarla al bajar por la página y mostrarla al
+subir**, con el dedo o con la rueda. Además, al ver el círculo del activo (4.ª parte)
+dijo que no envolvía el icono: en el móvil no hay `:hover`, así que al tocar un destino no
+se veía nada hasta cargar la página nueva, y con «Más» nunca.
+
+| App | Archivo | Cambio |
+|---|---|---|
+| Las dos | `shared/lib/mobile/use-ocultar-al-bajar.ts` (nuevo, uno por app) | `useOcultarAlBajar`: escucha el `scroll` en captura (en el panel se desplaza el `<main>`, en la intranet la página) y atiende al contenedor que ocupa la pantalla; ignora listas pequeñas, diálogos y la hoja. La decisión va aparte, en `siguienteEstado`, sin React |
+| Las dos | `shared/lib/mobile/navegacion-mobile.tsx` | Clase `es-oculta` según el hook; con la hoja abierta no se oculta, y al cambiar de página vuelve a verse |
+| Las dos | `style/globals.css` | `.es-oculta` baja la barra lo que mide más 4rem (el logo sobresale 49 px); con el foco dentro vuelve; con «reducir movimiento» se desvanece |
+| Las dos | `style/globals.css` | Corrección del usuario al verlo: el resaltado no es un círculo en el icono sino una **pastilla que envuelve icono y texto** (el destino entero, hasta 76 px, radio 1rem), con el activo, al tocar (`:active`), con su hoja abierta (`aria-expanded`) y con el ratón. El icono vuelve a su caja de 2rem; el logo y las etiquetas quedan donde estaban (medido: logo y = 659, etiquetas en la misma línea) |
+| Intranet | `style/globals.css` | El hueco que el `<body>` reserva para la barra se pinta `#001631` (sombra interior del tamaño del hueco): al ocultarse la barra quedaba una franja blanca bajo el pie. En el móvil, sin la línea que separaba las columnas del pie; se deja el espacio |
+
+| Panel | `style/globals.css` | Al ocultarse la barra quedaba una **franja blanca fija** al pie de la pantalla: la reserva de 72 px está en la columna, fuera del `<main>` que hace scroll. Con la barra oculta (y sin foco dentro) la reserva pasa a 0 con `body:has(.navegacion-mobile.es-oculta…)`. Medido con el CSS real: visible 72 px, oculta 0, oculta con foco 72 |
+
+| Panel | `panel-general.tsx` (`ModalAlertas`) | Cada alerta sin fondo ni borde: solo la etiqueta («Por vencer», «En revisión») y el texto en el mismo color que ella (ámbar o azul 900; 100 en oscuro). El botón de marcar como solucionada lleva una flecha a la derecha en vez de la palomita, `type="button"` y nombre accesible (`aria-label`; antes solo `title`). La caja pierde su alto mínimo de 22rem (medía 352 px aunque hubiera dos alertas): ahora mide lo que su contenido, hasta el 88 % de la pantalla, con la lista en scroll; relleno menor en el móvil (`px-5 py-4`, `sm:` como antes) |
+
+| Las dos | `style/globals.css` | La lista de la barra pasa de 72 a 80 px de alto (`--navegacion-mobile-alto` con ella, así que la reserva también es de 80). El botón del centro baja su relleno a 0.9375rem y el logo se separa 1rem de su etiqueta: medido a 320/360/768, etiquetas en la misma línea y el logo sobresale los mismos 49 px |
+| Las dos | `style/globals.css` | La pastilla del destino se separa del borde de la barra: margen vertical de 0.25rem a 0.5rem, así que queda a 8 px arriba y abajo y mide 64 px (antes 72, pegada a 4 px). El logo del centro baja 12 px (`margin-bottom` de 1rem a 0.25rem, `margin-top` de -3.5625rem a -2.8125rem): sobresale 37 px y queda a 6 px de su etiqueta. Medido a 320/360/768 en claro y oscuro: etiquetas en la misma línea (y 749), sin scroll lateral. Se corrige el comentario de `.navegacion-mobile-inicio` que explica sus 15 px (margen 0.5rem + relleno 0.25rem + (3.5rem − 3.125rem) / 2). Aviso: el servidor de desarrollo de la intranet no recogió el cambio del logo y siguió sirviendo el CSS viejo hasta que el archivo se volvió a modificar |
+
+> **Aviso:** en una vuelta intermedia se quitó la línea de arriba de la barra por error (el
+> usuario se refería a la del pie). Se devolvió tal cual estaba en `HEAD`.
+
+**Reglas de la decisión:** 12 px seguidos en una dirección para cambiar (los temblores del
+dedo no la hacen parpadear); arriba del todo y al final siempre visible, lo que cubre
+también el rebote elástico del iPhone.
+
+**Se descartó el doble clic:** no se descubre, en el móvil el doble toque selecciona texto
+o hace zoom (y iOS no lanza `dblclick` de forma fiable), se dispara sin querer al tocar dos
+veces un botón y no se puede hacer con teclado ni lector de pantalla.
+
+### Verificado
+
+| Qué | Resultado |
+|---|---|
+| `tsc --noEmit` y `eslint` de `shared/lib/mobile` | Intranet sin errores; sitio, solo los 2 de siempre en `puck.config.tsx` |
+| `siguienteEstado` con 7 recorridos (dedo lento, temblor, rueda, inercia, rebote arriba, final con rebote, subir y volver a bajar), en las dos apps | Los 7 dan lo esperado |
+| CSS compilado del sitio | Salen `.es-oculta`, la variante sin movimiento y el círculo con `:active` y `aria-expanded` |
+| El dev de las dos apps | Ya servía el círculo de 40 px de la 4.ª parte |
+| El desplazamiento real con el dedo en un celular | **No se probó**: sin sesión no se llega a las pantallas. Queda para el usuario |
+
+---
+
+## sesión 27-09-2026: en el móvil de la intranet, «Salir» arriba y «Buscar» abajo; el activo de la barra es un círculo que envuelve el icono (4.ª parte)
+
+**Qué era.** Tres pedidos del usuario sobre la navegación mobile: en la intranet,
+intercambiar «Salir» (estaba abajo) y la lupa (estaba arriba), y dejar arriba a la
+izquierda el nombre «Intranet»; quitar el `justify-content: center` de `.intranet-brand`;
+y que el resaltado del destino activo (y del ratón) envuelva el icono, en el panel y en la
+intranet.
+
+| App | Archivo | Cambio |
+|---|---|---|
+| Intranet | `shared/lib/mobile/navegacion-mobile-intranet.tsx` | «Buscar» ocupa el sitio de «Salir» (y su fila en «Más»); abre el buscador de la barra de arriba con `onBuscar`. La prop `onLogout` sale |
+| Intranet | `shared/lib/blocks/plantilla/intranet-topbar.tsx` | Pasa `onBuscar`. La alineación de la marca elegida en Puck va en variables (`--marca-horizontal`, `--marca-ancho-minimo`) y no en `justifyContent`/`minWidth` en línea, que no se podían anular desde el CSS. `aria-label` «Cerrar sesión» con tilde |
+| Intranet | `style/globals.css` | Por debajo de `lg`: nombre a la izquierda (sin el logo, que ya está abajo, y siempre pegado a la izquierda) y el botón de salir a la derecha, redondo de 44 px y sin la píldora blanca; la lupa se oculta. En escritorio, igual que antes |
+| Intranet | `public/assets/svg/mobile/` | Nuevo `buscar.svg` (provisional, mismo trazo que los demás); fuera `salir.svg`, que ya nadie usaba |
+| Las dos | `style/globals.css` | `.navegacion-mobile-icono` pasa de píldora de 56 × 32 a círculo de 40 px (8 px de aire en los cuatro lados; a 320 px la píldora se salía 1 px de su casilla). Para que las etiquetas sigan en la misma línea y el logo no se mueva, el botón del centro baja su relleno a 0.4375rem y el logo se separa 1rem de su etiqueta |
+
+### Verificado
+
+| Qué | Resultado |
+|---|---|
+| `tsc --noEmit` y `eslint` de la intranet | Sin errores |
+| Barra de arriba de la intranet (React SSR + CSS real, por HTTP) a 1024 y 1280, antes y después, con 4 menús distintos | Mismas cajas, estilos y capturas píxel a píxel |
+| Marca centrada en Puck | A 1280, `center` y 180 px como antes; a 360, a la izquierda |
+| Móvil a 320/360/768 | Arriba «Intranet» y salir; abajo Tasa · Matriz · logo · Encuestas · Buscar. Sin scroll horizontal, también con un nombre de 47 letras (se recorta con «…») |
+| Círculo del activo, panel a 320 y 360 | Las cinco etiquetas en la misma línea (y = 757) y el logo en el mismo sitio que antes (y = 659); los círculos caben en su casilla |
+| Con sesión real | **No se miró**. Queda para el usuario |
+
+---
+
+## sesión 27-09-2026: la navegación mobile sale del paquete compartido; cada frontend la tiene en su carpeta `mobile/` (3.ª parte)
+
+**Qué era.** La barra de abajo de la 2.ª parte se hizo como paquete (`packages/navegacion-movil`,
+con su CSS importado desde los dos `globals.css`), siguiendo la frase de §10.5 que mandaba
+a `packages/` toda pieza que usaran las dos apps. El usuario lo corrigió: la navegación
+mobile va **separada en cada frontend**, en una carpeta que diga `mobile`, con los iconos
+en `public/assets/svg/mobile/` (no «barra-inferior») y los estilos en el `globals.css` de
+cada app. Encaja con `1-guia` §4.4: `packages/` es para reglas que se deciden igual, y la
+interfaz lleva la identidad de cada app.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Panel | `src/shared/lib/mobile/navegacion-mobile.tsx` (nuevo) | `NavegacionMobile`: la barra y su hoja (`<dialog>`), con `next/link` directo; sin la prop `Enlace` ni `style`, que el panel no usa |
+| Panel | `src/shared/lib/mobile/navegacion-mobile-panel.tsx` (nuevo), `index.ts` | `NavegacionMobilePanel`: los destinos que estaban dentro de `panel-general.tsx` (Accesos · Revisión · logo → Dashboard · Auditoría · Más) |
+| Panel | `panel-general.tsx`, `sidebar-layout.tsx`, `notification.tsx` | Montan `<NavegacionMobilePanel pendientesRevision>`; la prop `barraInferior` pasa a `navegacionMobile`; `--navegacion-mobile-alto` |
+| Panel | `src/style/globals.css` | Sección «NAVEGACIÓN MOBILE DEL PANEL»: estructura, paleta clara y oscura y la reserva de la columna. Fuera el `@import` del paquete |
+| Intranet | `src/shared/lib/mobile/navegacion-mobile.tsx` (nuevo), `navegacion-mobile-intranet.tsx` (antes `blocks/plantilla/barra-inferior-intranet.tsx`), `index.ts` | La misma barra, con `style` para el fondo elegido en Puck, y `NavegacionMobileIntranet`, que la arma con el menú de la plantilla |
+| Intranet | `intranet-topbar.tsx`, `config/puck.config.tsx` | Importan de `@/shared/lib/mobile`; el campo del editor se llama «Icono en la navegación del móvil» (las props guardadas, `icono` y `etiquetaMovil`, no cambian) |
+| Intranet | `src/style/globals.css` | Sección «NAVEGACIÓN MOBILE DE LA INTRANET»; el `<body>` y el botón flotante usan `--navegacion-mobile-alto`. Fuera el `@import` |
+| Intranet | `public/assets/svg/barra-inferior/` → `public/assets/svg/mobile/` | Los seis iconos provisionales, sin cambios |
+| Las dos | `package.json`, `package-lock.json`, `next.config` | Vuelven a como estaban en `HEAD`: sin la dependencia ni `transpilePackages` |
+| Repo | `packages/navegacion-movil/` | Borrado, con sus copias en `node_modules/@olo/` |
+| Docs | `2-convenciones` §10.5, `1-guia` §4.3/§4.4, `scripts/mapa/descripciones.md` | La regla nueva (una pieza de interfaz no sube a `packages/`; lo del móvil va en `mobile/`) y las carpetas |
+
+Nombres: clases `navegacion-mobile-*` y variables `--navegacion-mobile-*`, en vez de
+`olo-barra-inferior-*`, `olo-hoja-inferior-*` y `--olo-barra-*`. Cada `globals.css` declara
+toda su paleta, así que los valores por defecto de los `var(…, …)` sobraban y se quitaron.
+El comentario del logo decía «5 × 5.5rem» y «sobresale 3.5rem»; medido: círculo de 80 × 80 px
+que sobresale 49 px.
+
+> **Aviso: las dos copias se parecen a propósito.** Un arreglo en la barra de una app se
+> revisa en la otra. El auditor no lo marca como duplicación: está en `excepciones.md`.
+
+### Verificado
+
+| Qué | Resultado |
+|---|---|
+| `tsc --noEmit` | Intranet sin errores; sitio, solo los 2 de siempre en `puck.config.tsx:2233` |
+| `eslint` de lo tocado | 0 errores; los avisos son los que ya tenían `panel-general.tsx` y `puck.config.tsx` |
+| Antes/después con el CSS real de cada app y React (SSR): 12 estados (Dashboard, Revisión con 3 y 120, hojas «Más», «Accesos» y «Encuestas», tema oscuro, fondo de Puck, menú largo) a 320/360/768/1024 | Mismas cajas y mismos estilos calculados en los 48 casos; 47 capturas idénticas píxel a píxel |
+| Iconos de la intranet servidos por HTTP (por `file://` Chrome no carga las máscaras) | Salen de `assets/svg/mobile/`; estilos y cajas iguales en los 20 casos. Las capturas que difieren cambian de caso en cada pasada: ruido de captura, no del cambio |
+| Referencias a lo viejo en el código | Ninguna (`navegacion-movil`, `barra-inferior`, `olo-barra`, `olo-hoja-inferior`) |
+| Panel e intranet reales con sesión | **No se miraron**: piden sesión. Queda para el usuario |
+
+**Pendiente al cierre:**
+
+- Mirar con una cuenta real la barra en el móvil (abrir y cerrar la hoja, Escape, «Salir»).
+- Si en el editor de la plantilla se escribió a mano un icono con `/assets/svg/barra-inferior/…`,
+  cambiarlo a `/assets/svg/mobile/…`. Sin elegir nada, cada sección toma el suyo solo.
+
+---
+
 ## sesión 27-09-2026: el panel y la intranet se navegan como una app en el móvil (barra inferior con el logo al centro) (2.ª parte)
+
+> **Rehecho en la 3.ª parte (arriba):** ya no hay paquete `navegacion-movil`; cada app tiene
+> su navegación en `src/shared/lib/mobile/` y los iconos están en `public/assets/svg/mobile/`.
 
 **Qué era.** Por debajo de 1024 px el panel escondía sus secciones tras una hamburguesa que
 sacaba la barra lateral, con avisos y cuenta arriba; la intranet desplegaba su menú debajo
