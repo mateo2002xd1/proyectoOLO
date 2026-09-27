@@ -350,7 +350,7 @@ Recuerda: en cada ventana nueva de Git Bash, primero `cd /c/OLO`.
 | Ver si todo está arriba | `./docker/deploy.sh status` |
 | Ver qué está pasando (Ctrl+C para salir) | `./docker/deploy.sh logs` |
 | Ver los mensajes de un solo servicio | `docker logs -f api` (o `sitio-web`, `intranet`, `nginx`, `db`) |
-| Reiniciar todo | `./docker/deploy.sh restart` |
+| Reiniciar contenedores existentes (sin aplicar imagenes nuevas) | `./docker/deploy.sh restart` |
 | Apagar todo | `./docker/deploy.sh stop` |
 | **Actualizar a una versión nueva del código** | `git pull` → `./docker/deploy.sh build` → `./docker/deploy.sh start` |
 | Respaldar la base | `./docker/deploy.sh backup` (deja un `.sql` en `C:\OLO`) |
