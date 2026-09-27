@@ -80,7 +80,7 @@ export const authNavyActionClass =
  */
 export function AuthSplitShell({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen w-full bg-[#001631]">
+    <div className="flex min-h-dvh w-full bg-[#001631]">
       {/* Panel izquierdo — identidad sobre blanco, con la esquina derecha redondeada. */}
       <div className="hidden w-[50%] shrink-0 items-center justify-center bg-white rounded-r-[16px] md:flex">
         <div className="text-center">

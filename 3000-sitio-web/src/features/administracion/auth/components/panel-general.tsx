@@ -12,7 +12,8 @@ import {
   DropdownLabel,
   DropdownMenu,
 } from '@/shared/ui/molecules/dropdown';
-import { Navbar, NavbarItem, NavbarSection, NavbarSpacer } from '@/shared/ui/organisms/navbar';
+import { Navbar, NavbarSection, NavbarSpacer } from '@/shared/ui/organisms/navbar';
+import { NavegacionMobilePanel } from '@/shared/lib/mobile';
 import { BuscadorModal } from '@/features/administracion/buscador';
 import {
   Sidebar,
@@ -167,6 +168,10 @@ const colorDiasRestantes = (dias: number) =>
       ? 'bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-200'
       : 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300';
 
+/** Botón de la barra superior del móvil (buscar y tema). */
+const BOTON_BARRA_MOVIL =
+  'flex size-11 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-[#94a3b8] dark:hover:bg-zinc-800 dark:hover:text-white [&>svg]:size-5 [&>svg]:shrink-0';
+
 /** Contador rojo tipo campanita, para marcar cambios pendientes junto a un item del sidebar. */
 function ContadorSidebar({ cantidad }: { cantidad: number }) {
   if (cantidad <= 0) return null;
@@ -312,7 +317,6 @@ export function PanelGeneralLayout({
   const router = useRouter();
   const pathname = usePathname();
   const [isBuscarOpen, setIsBuscarOpen] = useState(false);
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isAlertasOpen, setIsAlertasOpen] = useState(false);
   const [alertasVistas, setAlertasVistas] = useState(false);
   const [enRevision, setEnRevision] = useState<PaginaEnRevision[]>([]);
@@ -374,51 +378,31 @@ export function PanelGeneralLayout({
     router.push('/login');
   }, [router]);
 
+  // El globo de la campana de la barra superior del móvil: se apaga al abrir los avisos.
+  const avisosSinVer = alertasVistas ? 0 : totalAlertas;
+
   return (
     <>
       <SidebarLayout
         className={className}
-        isSidebarOpen={isMobileSidebarOpen}
-        onCloseSidebar={() => setIsMobileSidebarOpen(false)}
         navbar={
+          // En el móvil: a la izquierda, quién está conectado (con su menú) y los
+          // avisos; a la derecha, buscar y el tema. Las secciones, en la navegación
+          // mobile de abajo.
+          // Botones de 44 px y no los 32 de `NavbarItem`: son las acciones principales
+          // de la barra en el móvil (2-convenciones §10.4).
           <Navbar>
-            <NavbarSection>
-              <NavbarItem
-                onClick={() => setIsMobileSidebarOpen(true)}
-                aria-label="Abrir menú"
-                className="lg:hidden"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                </svg>
-              </NavbarItem>
-              <NavbarItem onClick={() => setIsBuscarOpen(true)} aria-label="Buscar">
-                <MagnifyingGlassIcon />
-              </NavbarItem>
-              <ThemeToggle />
-              <NavbarItem onClick={() => setIsAlertasOpen(true)} aria-label="Notificaciones" className="relative cursor-pointer">
-                <BellIcon className="size-5 text-zinc-500 dark:text-zinc-400" />
-                {totalAlertas > 0 && !alertasVistas && (
-                  <span className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
-                    {totalAlertas}
-                  </span>
-                )}
-              </NavbarItem>
-            </NavbarSection>
-            <NavbarSpacer />
-            <NavbarSection>
-              <Dropdown>
-                <DropdownButton as={NavbarItem} aria-label="Opciones de usuario">
-                  <UserIcon className="size-5 text-zinc-500 dark:text-zinc-400" />
+            <NavbarSection className="min-w-0 gap-1">
+              <Dropdown className="min-w-0">
+                <DropdownButton className="flex min-h-11 min-w-0 max-w-full items-center gap-1.5 rounded-lg px-2 text-left text-sm font-semibold text-zinc-900 transition hover:bg-zinc-100 dark:text-[#f6f6f6] dark:hover:bg-zinc-800">
+                  <span className="truncate">{userProfile?.name || 'Usuario'}</span>
+                  <ChevronDownIcon className="size-4 shrink-0 text-zinc-500 dark:text-[#94a3b8]" />
                 </DropdownButton>
-                <DropdownMenu className="min-w-64" anchor="bottom end">
+                {/* Esquinas de arriba rectas: el menú sale pegado a la barra. */}
+                <DropdownMenu className="min-w-56 rounded-t-none" anchor="bottom start">
                   <DropdownItem href="/admin/mi-perfil">
                     <UserIcon />
                     <DropdownLabel>Mi perfil</DropdownLabel>
-                  </DropdownItem>
-                  <DropdownItem href="/admin/dashboard/configuracion">
-                    <Cog8ToothIcon />
-                    <DropdownLabel>Configuración</DropdownLabel>
                   </DropdownItem>
                   <DropdownDivider />
                   <DropdownItem onClick={handleLogout}>
@@ -427,9 +411,33 @@ export function PanelGeneralLayout({
                   </DropdownItem>
                 </DropdownMenu>
               </Dropdown>
+              <button
+                type="button"
+                onClick={() => setIsAlertasOpen(true)}
+                aria-label={avisosSinVer > 0 ? `Notificaciones, ${avisosSinVer} pendientes` : 'Notificaciones'}
+                className={`relative shrink-0 ${BOTON_BARRA_MOVIL}`}
+              >
+                <BellIcon />
+                {avisosSinVer > 0 && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute right-1.5 top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white ring-2 ring-white dark:ring-[#131b2f]"
+                  >
+                    {avisosSinVer}
+                  </span>
+                )}
+              </button>
+            </NavbarSection>
+            <NavbarSpacer />
+            <NavbarSection className="shrink-0 gap-1">
+              <button type="button" onClick={() => setIsBuscarOpen(true)} aria-label="Buscar" className={BOTON_BARRA_MOVIL}>
+                <MagnifyingGlassIcon />
+              </button>
+              <ThemeToggle className={BOTON_BARRA_MOVIL} />
             </NavbarSection>
           </Navbar>
         }
+        navegacionMobile={<NavegacionMobilePanel pendientesRevision={enRevision.length} />}
         sidebar={
           <Sidebar>
             <SidebarHeader>
@@ -684,7 +692,7 @@ export function PanelGeneralDashboard() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-100 dark:bg-[#0b1121]">
+      <div className="flex min-h-[60dvh] items-center justify-center bg-zinc-100 dark:bg-[#0b1121]">
         <div className="flex flex-col items-center gap-4">
           <div className="size-10 animate-spin rounded-full border-4 border-zinc-300 border-t-zinc-600" />
           <p className="text-sm text-zinc-500">Cargando panel general...</p>

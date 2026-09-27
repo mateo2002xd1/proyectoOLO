@@ -170,7 +170,7 @@ export function BuscadorModal({ onClose }: { onClose?: () => void }) {
               No hay nada en el panel que coincida con «{consulta.trim()}».
             </p>
           ) : (
-            <ul aria-label="Resultados" className="mt-6 max-h-[45vh] space-y-1 overflow-y-auto">
+            <ul aria-label="Resultados" className="mt-6 max-h-[45dvh] space-y-1 overflow-y-auto">
               {resultados.map((destino) => (
                 <li key={destino.id} className="rounded-[16px]">
                   <Link

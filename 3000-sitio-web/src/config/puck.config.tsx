@@ -2275,7 +2275,7 @@ export function configDeEdicion(slug: string, contexto: ContextoDeEdicion = {}):
     root: {
       ...recortada.root,
       render: ({ children }: { children?: ReactNode }) => (
-        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh' }}>
           {plantilla.cabecera && (
             <Inerte etiqueta="Cabecera · se edita en «Menú y pie»">
               <Header block={{ id: 'contexto-header' }} {...plantilla.cabecera} />

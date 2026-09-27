@@ -192,7 +192,7 @@ export function BuscadorSitioModal({
             id="buscador-sitio-resultados"
             role="listbox"
             aria-label="Resultados"
-            className="mt-6 max-h-[50vh] space-y-1 overflow-y-auto"
+            className="mt-6 max-h-[50dvh] space-y-1 overflow-y-auto"
           >
             {filteredResults.slice(0, 25).map((result, idx) => {
               const seleccionado = idx === activo;

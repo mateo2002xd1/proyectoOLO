@@ -57,7 +57,7 @@ export default async function PreviewPage({
   const contenido = version?.contenido?.content ? version.contenido : CONTENIDO_VACIO;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-dvh bg-white">
       <div className="sticky top-0 z-[200] flex flex-wrap items-center gap-3 border-b border-amber-300 bg-amber-100 px-4 py-2.5 text-sm text-amber-900 lg:px-8">
         <span className="rounded-full bg-amber-900 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-amber-100">
           Vista previa

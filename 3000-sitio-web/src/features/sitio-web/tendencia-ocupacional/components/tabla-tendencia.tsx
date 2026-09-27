@@ -76,7 +76,7 @@ export function TablaTendencia({
       </p>
 
       <div className="overflow-x-auto rounded-[16px] border border-[#eaecf0] bg-white shadow-sm">
-        <table className="w-full min-w-[760px] table-fixed border-collapse text-left text-sm">
+        <table className="olo-tabla-apilable w-full min-w-[760px] table-fixed border-collapse text-left text-sm">
           <thead>
             <tr className="border-b border-[#eaecf0] bg-[#f8f9fa]">
               <th className="w-[14%] px-4 py-3 text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
@@ -102,19 +102,20 @@ export function TablaTendencia({
                 key={registro.codigo}
                 className="transition-colors hover:bg-[#f8f9fa]"
               >
-                <td className="px-4 py-3.5 font-medium text-[#344054]">
+                <td data-etiqueta="Nivel ocupacional" className="px-4 py-3.5 font-medium text-[#344054]">
                   {registro.nivelEtiqueta}
                 </td>
-                <td className="px-4 py-3.5 tabular-nums text-[#667085]">
+                <td data-etiqueta="Código C.N.O." className="px-4 py-3.5 tabular-nums text-[#667085]">
                   {registro.codigo}
                 </td>
-                <td className="px-4 py-3.5 font-medium text-[#001631]">
+                {/* En el móvil la fila pasa a tarjeta y el nombre la encabeza (`data-titulo`). */}
+                <td data-titulo className="px-4 py-3.5 font-medium text-[#001631]">
                   {registro.nombre}
                 </td>
-                <td className="px-4 py-3.5 text-right tabular-nums text-[#344054]">
+                <td data-etiqueta="Total inscritos" className="px-4 py-3.5 text-right tabular-nums text-[#344054]">
                   {registro.inscritos.toLocaleString('es-CO')}
                 </td>
-                <td className="px-4 py-3.5 text-right font-semibold tabular-nums text-[#39a900]">
+                <td data-etiqueta="Total vacantes" className="px-4 py-3.5 text-right font-semibold tabular-nums text-[#39a900]">
                   {registro.vacantes.toLocaleString('es-CO')}
                 </td>
               </tr>
@@ -128,10 +129,10 @@ export function TablaTendencia({
                   <td colSpan={3} className="px-4 py-2 text-left font-medium">
                     Subtotal esta página ({resultados.length} registros)
                   </td>
-                  <td className="px-4 py-2 text-right tabular-nums font-semibold text-[#344054]">
+                  <td data-etiqueta="Inscritos" className="px-4 py-2 text-right tabular-nums font-semibold text-[#344054]">
                     {subtotalPagina.totalInscritos.toLocaleString('es-CO')}
                   </td>
-                  <td className="px-4 py-2 text-right tabular-nums font-semibold text-[#39a900]">
+                  <td data-etiqueta="Vacantes" className="px-4 py-2 text-right tabular-nums font-semibold text-[#39a900]">
                     {subtotalPagina.totalVacantes.toLocaleString('es-CO')}
                   </td>
                 </tr>
@@ -143,10 +144,10 @@ export function TablaTendencia({
                 >
                   Total general {totalPaginas > 1 ? `(${totalResultados.toLocaleString('es-CO')} registros)` : ''}
                 </td>
-                <td className="px-4 py-3.5 text-right font-bold tabular-nums text-sm text-[#001631]">
+                <td data-etiqueta="Inscritos" className="px-4 py-3.5 text-right font-bold tabular-nums text-sm text-[#001631]">
                   {totales.totalInscritos.toLocaleString('es-CO')}
                 </td>
-                <td className="px-4 py-3.5 text-right font-bold tabular-nums text-sm text-[#39a900]">
+                <td data-etiqueta="Vacantes" className="px-4 py-3.5 text-right font-bold tabular-nums text-sm text-[#39a900]">
                   {totales.totalVacantes.toLocaleString('es-CO')}
                 </td>
               </tr>

@@ -62,7 +62,7 @@ export function TablaFuentesFuturas({
       </p>
 
       <div className="overflow-x-auto rounded-[16px] border border-[#eaecf0] bg-white shadow-sm">
-        <table className="w-full min-w-[760px] table-fixed border-collapse text-left text-sm">
+        <table className="olo-tabla-apilable w-full min-w-[760px] table-fixed border-collapse text-left text-sm">
           <thead>
             <tr className="border-b border-[#eaecf0] bg-[#f8f9fa]">
               <th className="w-[20%] px-4 py-3 text-[11px] font-semibold tracking-[0.12em] text-[#667085] uppercase">
@@ -91,16 +91,17 @@ export function TablaFuentesFuturas({
                   key={item.id}
                   className="transition-colors hover:bg-[#f8f9fa]"
                 >
-                  <td className="px-4 py-3.5 font-medium text-[#344054]">
+                  <td data-etiqueta="Departamento" className="px-4 py-3.5 font-medium text-[#344054]">
                     {item.departamento}
                   </td>
-                  <td className="px-4 py-3.5 font-medium text-[#001631]">
+                  {/* En el móvil la fila pasa a tarjeta y el sector la encabeza (`data-titulo`). */}
+                  <td data-titulo className="px-4 py-3.5 font-medium text-[#001631]">
                     {item.sector}
                   </td>
-                  <td className="px-4 py-3.5 text-right font-medium tabular-nums text-[#344054]">
+                  <td data-etiqueta="Cuenta de proyecto" className="px-4 py-3.5 text-right font-medium tabular-nums text-[#344054]">
                     {(Number(item.cuentaProyecto) || 0).toLocaleString('es-CO')}
                   </td>
-                  <td className="px-4 py-3.5 text-right font-semibold tabular-nums text-[#39a900]">
+                  <td data-etiqueta="% Part" className="px-4 py-3.5 text-right font-semibold tabular-nums text-[#39a900]">
                     {porcentaje.toFixed(1)}%
                   </td>
                 </tr>
@@ -115,10 +116,10 @@ export function TablaFuentesFuturas({
                   <td colSpan={2} className="px-4 py-2 text-left font-medium">
                     Subtotal esta página ({resultados.length} registros)
                   </td>
-                  <td className="px-4 py-2 text-right tabular-nums font-semibold text-[#344054]">
+                  <td data-etiqueta="Proyectos" className="px-4 py-2 text-right tabular-nums font-semibold text-[#344054]">
                     {subtotalPagina.toLocaleString('es-CO')}
                   </td>
-                  <td className="px-4 py-2 text-right tabular-nums font-semibold text-[#39a900]">
+                  <td data-etiqueta="% Part" className="px-4 py-2 text-right tabular-nums font-semibold text-[#39a900]">
                     {totalCuentaProyectos > 0
                       ? ((subtotalPagina / totalCuentaProyectos) * 100).toFixed(1)
                       : '0.0'}
@@ -133,10 +134,10 @@ export function TablaFuentesFuturas({
                 >
                   Total general {totalPaginas > 1 ? `(${totalResultados.toLocaleString('es-CO')} registros)` : ''}
                 </td>
-                <td className="px-4 py-3.5 text-right font-bold tabular-nums text-sm text-[#001631]">
+                <td data-etiqueta="Proyectos" className="px-4 py-3.5 text-right font-bold tabular-nums text-sm text-[#001631]">
                   {totalCuentaProyectos.toLocaleString('es-CO')}
                 </td>
-                <td className="px-4 py-3.5 text-right font-bold tabular-nums text-sm text-[#39a900]">
+                <td data-etiqueta="% Part" className="px-4 py-3.5 text-right font-bold tabular-nums text-sm text-[#39a900]">
                   100.0%
                 </td>
               </tr>

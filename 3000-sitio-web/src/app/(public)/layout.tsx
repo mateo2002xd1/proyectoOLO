@@ -28,7 +28,7 @@ export default async function PublicLayout({ children }: { children: React.React
   const plantilla = await obtenerPlantilla();
 
   return (
-    <div className="publico-layout min-h-screen flex flex-col">
+    <div className="publico-layout min-h-dvh flex flex-col">
       {plantilla.cabecera && <Header block={{ id: 'header-plantilla' }} {...plantilla.cabecera} />}
       <main className="flex-grow">
         <RouteTransition>{children}</RouteTransition>
