@@ -66,6 +66,7 @@ import {
 } from '@/features/administracion/auditoria';
 import { useUsuarios } from '../hooks/use-usuarios';
 import { listarAlertasCaducidad, type AlertaCaducidad } from '../services/alertas-caducidad.service';
+import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
 
 /**
  * Grupo colapsable del sidebar con animación de acordeón.
@@ -672,14 +673,7 @@ export function PanelGeneralDashboard() {
   );
 
   if (loading) {
-    return (
-      <div className="flex min-h-[60dvh] items-center justify-center bg-zinc-100 dark:bg-[#0b1121]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="size-10 animate-spin rounded-full border-4 border-zinc-300 border-t-zinc-600" />
-          <p className="text-sm text-zinc-500">Cargando panel general...</p>
-        </div>
-      </div>
-    );
+    return <CargandoSeccion label="Cargando panel general..." />;
   }
 
   return (

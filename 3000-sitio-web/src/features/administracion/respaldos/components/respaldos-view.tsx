@@ -10,6 +10,7 @@ import { useRespaldos } from '../hooks/use-respaldos';
 import { VistaPreviaVersion } from './vista-previa-version';
 import { ModalDepurarVersiones } from './modal-depurar-versiones';
 import type { RegistroRespaldo } from '../types';
+import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
 
 const fecha = (iso: string) => new Date(iso).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' });
 
@@ -163,7 +164,7 @@ export function RespaldosView() {
       {error && !registros.length ? (
         <p className="text-sm text-red-600">{error}</p>
       ) : isLoading ? (
-        <p className="text-sm text-zinc-500">Cargando respaldos…</p>
+        <CargandoSeccion label="Cargando respaldos..." className="min-h-[40vh]" />
       ) : registrosRestaurables.length === 0 ? (
         <p className="text-sm text-zinc-500">No hay páginas con versiones anteriores disponibles para restaurar.</p>
       ) : registrosFiltrados.length === 0 ? (

@@ -18,6 +18,7 @@ import { Alert, AlertTitle, AlertDescription, AlertActions } from '@/shared/ui/m
 import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
 import { Paginador } from '@/shared/ui/molecules/paginador';
 import { Switch } from '@/shared/ui/atoms/switch';
+import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
 
 /**
  * Las etiquetas, descripciones y grupos de los permisos ya **no viven aquí**.
@@ -441,9 +442,9 @@ export default function UsuariosView() {
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
               {loading ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-sm text-zinc-500">
-                    Cargando usuarios...
+                <tr className="block md:table-row">
+                  <td colSpan={6} className="block md:table-cell">
+                    <CargandoSeccion label="Cargando usuarios..." className="min-h-[40vh]" />
                   </td>
                 </tr>
               ) : users.length === 0 ? (

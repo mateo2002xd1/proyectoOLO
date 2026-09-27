@@ -14,6 +14,7 @@ import { Alert, AlertTitle, AlertDescription, AlertActions } from '@/shared/ui/m
 import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
 import { Paginador } from '@/shared/ui/molecules/paginador';
 import { ModalPermisos } from './modal-permisos';
+import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
 
 function ModalNuevoEditor({
   open,
@@ -383,8 +384,8 @@ export default function RolesView() {
           <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
             {loading ? (
               <tr>
-                <td colSpan={5} className="py-12 text-center text-sm text-zinc-400 dark:text-zinc-500">
-                  Cargando roles...
+                <td colSpan={5}>
+                  <CargandoSeccion label="Cargando roles..." className="min-h-[40vh]" />
                 </td>
               </tr>
             ) : rolesPagina.length === 0 ? (
