@@ -1,10 +1,12 @@
 import { Transaction } from 'sequelize';
 import { PaginaRepository } from '../../repositories/pagina.repository';
 import type { Ambito } from '../../shared/ambito';
+import { uuidONulo } from '../../shared/uuid';
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const toUUID = (id: string) => (UUID_RE.test(id) ? id : null);
-
+/**
+ * Devuelve la versión en revisión a «rechazado» con su motivo y quién la revisó.
+ * @throws {Error} si la página no existe o no tiene versión en revisión.
+ */
 export const rechazarPagina = async (
   slug: string,
   userId: string,
@@ -27,7 +29,7 @@ export const rechazarPagina = async (
   await PaginaRepository.actualizarVersion(versionEnRevision, {
     estado: 'rechazado',
     motivoRechazo: motivo,
-    revisorId: toUUID(userId),
+    revisorId: uuidONulo(userId),
   }, tx);
 
   return {

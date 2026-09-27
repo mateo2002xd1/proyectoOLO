@@ -1,4 +1,5 @@
 import type { Request } from 'express';
+import { uuidONulo } from './uuid';
 
 /**
  * Saca de la petición el "quién y desde dónde" de una entrada de bitácora.
@@ -11,8 +12,6 @@ import type { Request } from 'express';
  * los mandaba: las columnas existen desde la migración 006 y todas las filas las
  * habrían tenido en NULL.
  */
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 /**
  * El id solo viaja si de verdad apunta a una fila de `usuarios`.
  *
@@ -30,7 +29,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
  */
 export const idReferenciable = (usuario: Request['user']) => {
   if (!usuario || usuario.isLocal) return null;
-  return typeof usuario.id === 'string' && UUID.test(usuario.id) ? usuario.id : null;
+  return typeof usuario.id === 'string' ? uuidONulo(usuario.id) : null;
 };
 
 /** El "desde dónde": lo único de la bitácora que no depende de quién es el actor. */
@@ -74,6 +73,7 @@ export const aplicacionDeLaPeticion = (req: Request): AplicacionDeAcceso | null 
 const nombreDe = (usuario: Request['user']) =>
   usuario?.name ? (usuario.apellidos ? `${usuario.name} ${usuario.apellidos}` : usuario.name) : (usuario?.email ?? null);
 
+/** Quién hace la petición y desde dónde (IP, navegador), listo para escribir en la bitácora. */
 export const datosDeAuditoria = (req: Request) => ({
   usuarioId: idReferenciable(req.user),
   usuarioNombre: nombreDe(req.user),

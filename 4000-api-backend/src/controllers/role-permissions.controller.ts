@@ -38,12 +38,15 @@ const registrarPermisoDeRol = (
 };
 
 export const RolePermissionController = {
+  /** Lista todas las asignaciones de permisos a roles. */
   async getAll(_req: Request, res: Response, next: NextFunction) {
     try { res.json(await getAllRolePermissions()); } catch (err) { next(err); }
   },
+  /** Lista los permisos asignados a un rol. */
   async getByRole(req: Request, res: Response, next: NextFunction) {
     try { res.json(await getByRole(req.params.roleId as string)); } catch (err) { next(err); }
   },
+  /** Asigna un permiso a un rol (201 si es nuevo, 200 si ya lo tenía). */
   async assign(req: Request, res: Response, next: NextFunction) {
     try {
       const { role_id, permission_id } = req.body;
@@ -56,6 +59,7 @@ export const RolePermissionController = {
       res.status(result.created ? 201 : 200).json(result);
     } catch (err) { next(err); }
   },
+  /** Quita un permiso a un rol y lo registra en la bitácora. */
   async revoke(req: Request, res: Response, next: NextFunction) {
     try {
       const role_id = req.body?.role_id || req.query?.role_id;

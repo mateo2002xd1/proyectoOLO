@@ -27,6 +27,7 @@ const CAMPOS_SENSIBLES = new Set([
 /** Lo que se guarda en lugar del valor de un campo sensible. */
 export const VALOR_OMITIDO = '«valor omitido»';
 
+/** ¿Es un campo cuyo valor nunca debe llegar a la bitácora (contraseñas, respuestas…)? */
 export const esCampoSensible = (campo: string) =>
   CAMPOS_SENSIBLES.has(campo.trim().toLowerCase());
 

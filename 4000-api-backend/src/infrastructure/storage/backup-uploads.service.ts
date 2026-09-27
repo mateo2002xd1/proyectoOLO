@@ -82,6 +82,7 @@ function nombreEnBackup(subRuta: string): string {
   return subRuta.split('/').pop() ?? subRuta;
 }
 
+/** Copia un archivo creando antes la carpeta de destino si no existe. */
 function copiarArchivoSeguro(origen: string, destino: string): void {
   const dirDestino = path.dirname(destino);
   if (!fs.existsSync(dirDestino)) {
@@ -90,6 +91,9 @@ function copiarArchivoSeguro(origen: string, destino: string): void {
   fs.copyFileSync(origen, destino);
 }
 
+/**
+ * Mueve un archivo copiándolo y borrando el original; si el borrado falla, el original se queda.
+ */
 function moverArchivoSeguro(origen: string, destino: string): void {
   copiarArchivoSeguro(origen, destino);
   try {

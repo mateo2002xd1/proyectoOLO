@@ -4,6 +4,7 @@ import type { Ambito } from '../../shared/ambito';
 import { errorDeComentario, normalizarComentario } from '../../shared/comentario-cambios';
 import { validarAccesibilidad, mensajeDeViolacion, type ViolacionAccesibilidad } from '@olo/accessibility-policy';
 import { limpiarSubidasPendientes } from './limpiar-subidas-pendientes.usecase';
+import { uuidONulo } from '../../shared/uuid';
 
 /**
  * "Enviar a revisión" es el punto de la Fase 5 de `9-accesibilidad.md`: un
@@ -21,9 +22,6 @@ export class ErrorValidacionAccesibilidad extends Error {
     this.violaciones = violaciones;
   }
 }
-
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const toUUID = (id?: string) => (id && UUID_RE.test(id) ? id : null);
 
 /**
  * `comentario` es el «commit» del envío: qué cambió, en palabras de quien edita.
@@ -61,7 +59,7 @@ export const enviarARevision = async (
   const versionPublicada = await PaginaRepository.findVersionPorEstado(pagina.id, 'publicado', tx);
 
   const datosActualizacion: any = { estado: 'en_revision', comentarioCambios };
-  const autorId = toUUID(userId);
+  const autorId = uuidONulo(userId);
   if (autorId && !ultimaVersion.creadoPor) {
     datosActualizacion.creadoPor = autorId;
   }

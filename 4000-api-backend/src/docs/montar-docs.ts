@@ -13,7 +13,7 @@
  * mano (ver `config.docs`).
  *
  * @see openapi.ts — la definición base y los esquemas compartidos
- * @see 7-despliegue.md — las variables de entorno que lo controlan
+ * @see docker/guia-bash.md — las variables de entorno que lo controlan
  */
 
 import type { Express, RequestHandler } from 'express';

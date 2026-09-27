@@ -41,6 +41,7 @@ const comoTextoONumero = (valor: unknown): string | null => {
   return typeof valor === 'string' && valor.trim() ? valor.trim() : null;
 };
 
+/** El cambio de un campo concreto dentro de los campos modificados, si está. */
 const campoDe = (campos: CampoModificado[], nombre: string) =>
   campos.find((c) => c.campo === nombre);
 
@@ -158,6 +159,7 @@ const ETIQUETA_DE_CAMPO: Record<string, string> = {
   es_sistema: 'rol del sistema',
 };
 
+/** El nombre legible de un campo (`expiration_date` → «fecha de caducidad»). */
 const etiquetaDeCampo = (campo: string) =>
   ETIQUETA_DE_CAMPO[campo] ?? campo.replace(/_/g, ' ').trim().toLowerCase();
 
@@ -180,6 +182,10 @@ interface Resolutores {
   nombreDeRol: (id: unknown) => string | null;
 }
 
+/**
+ * Un valor guardado dicho en palabras para el resumen: roles por su nombre, fechas legibles,
+ * booleanos como sí/no y los valores ocultos como «(valor oculto)».
+ */
 const valorEnPalabras = (campo: string, valor: unknown, r: Resolutores): string | null => {
   if (valor === null || valor === undefined || valor === '') return null;
   if (valor === VALOR_OMITIDO) return '(valor oculto)';
@@ -447,7 +453,9 @@ const fraseDePublicacion = (d: Contexto): string | null => {
  * dejaría la frase sin armarse **y en silencio**.
  */
 export const MOTIVO_DE_ARCHIVADO = {
+  /** Motivo de una versión que se archivó porque se publicó otra. */
   alPublicar: (version: unknown) => `Archivada al publicar versión ${version}`,
+  /** Motivo de una versión que se archivó porque se restauró otra. */
   alRestaurar: (version: unknown) => `Archivada por restauración de versión ${version}`,
 };
 
@@ -496,6 +504,7 @@ const FRASE_POR_APLICACION: Record<string, string> = {
   intranet: 'Inició sesión en la intranet',
 };
 
+/** La frase de un inicio de sesión, diciendo por qué aplicación entró si se sabe. */
 const fraseDeAutenticacion = (d: Contexto): string => {
   const origen = comoTextoONumero(campoDe(d.campos, 'origen')?.despues);
   return (origen && FRASE_POR_APLICACION[origen]) ?? 'Inició sesión';
@@ -632,6 +641,7 @@ const FRASE_POR_VIA: Record<string, string> = {
   recuperacion: 'Recuperó el acceso con sus preguntas de seguridad y puso una contraseña nueva',
 };
 
+/** La frase de un cambio de contraseña según su vía (voluntario, primer ingreso, recuperación). */
 const fraseDeCambioDePassword = (d: Contexto): string | null => {
   if (!soloTrae(d.campos, ['via'])) return null;
   const via = comoTextoONumero(campoDe(d.campos, 'via')?.despues);

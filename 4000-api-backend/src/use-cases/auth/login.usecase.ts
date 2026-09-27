@@ -11,6 +11,7 @@ import { esDominioInstitucional, normalizarEmail } from '../../shared/email-poli
 import { RolePermissionRepository } from '../../repositories/role-permissions.repository';
 import { CLAVES_DEL_CATALOGO } from '../../shared/catalogo-permisos';
 import { logAudit, logBloqueoDeCuenta } from '../auditoria/audit.usecase';
+import { tieneRol } from '../../shared/autorizacion';
 
 /** El "desde dónde" de un login, para la bitácora. Opcional: los scripts y pruebas
  *  que llaman a este caso de uso sin pasar por HTTP no tienen ninguno de los dos. */
@@ -79,10 +80,26 @@ const igualEnTiempoConstante = (a: string, b: string): boolean => {
   return timingSafeEqual(bufA, bufB);
 };
 
+/** ¿Son estas las credenciales de la cuenta maestra local? Compara en tiempo constante. */
 const esLaCuentaMaestra = (emailNormalizado: string, password: string): boolean =>
   igualEnTiempoConstante(config.localAuth.email, emailNormalizado) &&
   igualEnTiempoConstante(config.localAuth.password, password);
 
+/**
+ * Las claves de permiso de un rol, tal como las recibe el frontend.
+ *
+ * Superadmin recibe el catálogo entero: su bypass vive en `resolverPermisos` y no en la
+ * tabla `roles_permisos`, así que sin esto el panel le enseñaría menos de lo que puede
+ * hacer. Lo usan el login (para el token) y `GET /api/me` (para refrescarlos).
+ */
+export const permisosDeRol = async (rol: string | null | undefined): Promise<string[]> =>
+  tieneRol(rol, ['superadmin']) ? CLAVES_DEL_CATALOGO : RolePermissionRepository.getPermissionsByRole(rol ?? '');
+
+/**
+ * Inicia sesión: valida dominio y credenciales, aplica bloqueo y caducidad, firma el JWT con los
+ * permisos del rol y deja el ingreso en la bitácora.
+ * @throws {Error} 401 genérico ante credenciales inválidas; 403 si la cuenta está inactiva o caducada; 423 si está bloqueada.
+ */
 export const loginUseCase = async (email: string, password: string, contexto?: ContextoDeLogin) => {
   const normalizedEmail = normalizarEmail(email ?? '');
 
@@ -166,9 +183,7 @@ export const loginUseCase = async (email: string, password: string, contexto?: C
     role_id: user.role_id,
     must_setup_security_questions: user.must_setup_security_questions,
     must_change_password: user.must_change_password,
-    permisos: user.role?.name?.trim().toLowerCase() === 'superadmin' 
-      ? CLAVES_DEL_CATALOGO 
-      : await RolePermissionRepository.getPermissionsByRole(user.role?.name || ''),
+    permisos: await permisosDeRol(user.role?.name),
   };
 
   const token = jwt.sign(payload as any, config.jwtSecret, { expiresIn: config.jwtExpiresIn as any });
@@ -196,8 +211,4 @@ export const loginUseCase = async (email: string, password: string, contexto?: C
   });
 
   return { token, user: payload };
-};
-
-export const verifyTokenUseCase = (token: string) => {
-  return jwt.verify(token, config.jwtSecret);
 };

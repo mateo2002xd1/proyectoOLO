@@ -1,6 +1,7 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../../../config/database';
 
+/** Tabla `roles`: los roles de las cuentas (Superadmin, Administrador, Editor…). */
 export class Role extends Model {
   declare id: string;
   declare name: string;

@@ -1,6 +1,10 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../../../config/database';
 
+/**
+ * Tabla `archivos`: los archivos guardados en disco (hoy, los Excel de las cargas de datos),
+ * deduplicados por su SHA-256. `ambito` dice si se sirve al público o es de uso interno.
+ */
 export class Archivo extends Model {
   declare id: string;
   declare nombreOriginal: string;

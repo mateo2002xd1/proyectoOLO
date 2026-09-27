@@ -19,10 +19,31 @@ import { redisEstaListo } from '../../infrastructure/redis';
  */
 const DIRECTORIO_CARGAS = path.join(process.cwd(), 'uploads', 'cargas-datos');
 
+/** Rechazo de una subida con el código HTTP que debe ver el panel. */
 export class ErrorDeSubida extends Error {
   constructor(message: string, public status: number) {
     super(message);
   }
+}
+
+/**
+ * Vuelve a escribir el Excel si su fila en `archivos` existe pero el archivo no está en
+ * este disco.
+ *
+ * La base de desarrollo (Neon) la comparten varios equipos y el servidor arranca con una
+ * copia de sus datos, pero cada máquina tiene su propia carpeta `uploads/`: la fila que
+ * dejó una carga hecha en otro equipo apunta a un archivo que aquí no existe. Sin esto,
+ * volver a subir ese mismo Excel encontraba la fila por su hash y el worker fallaba al
+ * leerlo; por eso se llegaron a versionar en git Excel subidos desde el panel. Los bytes
+ * son los mismos —el SHA-256 lo garantiza—, así que basta con escribir los que acaban
+ * de llegar.
+ */
+async function restaurarSiFalta(rutaRelativa: string, datos: Buffer): Promise<void> {
+  const rutaAbsoluta = path.join(process.cwd(), rutaRelativa);
+  const existe = await fs.access(rutaAbsoluta).then(() => true, () => false);
+  if (existe) return;
+  await fs.mkdir(path.dirname(rutaAbsoluta), { recursive: true });
+  await fs.writeFile(rutaAbsoluta, datos);
 }
 
 /**
@@ -69,7 +90,9 @@ export async function validarYGuardarExcel(
   const hashSha256 = crypto.createHash('sha256').update(datos).digest('hex');
 
   let archivo = await Repo.buscarArchivoPorHash(hashSha256);
-  if (!archivo) {
+  if (archivo) {
+    await restaurarSiFalta(archivo.get('rutaRelativa') as string, datos);
+  } else {
     await fs.mkdir(DIRECTORIO_CARGAS, { recursive: true });
     const rutaRelativa = path.join('uploads', 'cargas-datos', resultado.nombreArchivo);
     await fs.writeFile(path.join(process.cwd(), rutaRelativa), datos);

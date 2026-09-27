@@ -12,7 +12,7 @@
  * Lo que arregla esto son tres piezas que solo funcionan juntas:
  *
  *  1. `app.set('trust proxy', 1)` en `app.ts`, para que Express lea `X-Forwarded-For`.
- *  2. Los BFF de Next reenvían esa cabecera tal cual (`sitio-web/src/shared/lib/
+ *  2. Los BFF de Next reenvían esa cabecera tal cual (`3000-sitio-web/src/shared/lib/
  *     backend-proxy.ts`), para que el salto extra no borre al cliente original.
  *  3. `claveDeSesionOIp`, que en rutas autenticadas cuenta **por usuario** y no por
  *     IP: es la única clave que no se puede rotar con un proxy ni compartir sin
@@ -21,11 +21,12 @@
  * @see 3-seguridad-del-proyecto.md §4.5
  */
 
-import type { Request, Response, NextFunction } from 'express';
+import type { Request, Response } from 'express';
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { RedisStore } from 'rate-limit-redis';
 import Redis from 'ioredis';
 import { crearLoggerDeErrorConThrottle } from '../infrastructure/redis';
+import { tieneRol } from '../shared/autorizacion';
 
 /**
  * Conexión propia para los límites, separada de la que usan BullMQ y la caché.
@@ -55,6 +56,7 @@ import { crearLoggerDeErrorConThrottle } from '../infrastructure/redis';
  */
 let clienteDeLimites: Redis | null | undefined;
 
+/** Abre la conexión de límites la primera vez y la reutiliza; `null` si no hay `REDIS_URL`. */
 function obtenerClienteDeLimites(): Redis | null {
   if (clienteDeLimites !== undefined) return clienteDeLimites;
 
@@ -124,6 +126,10 @@ interface OpcionesDeLimitador {
   skip?: (req: Request, res: Response) => boolean;
 }
 
+/**
+ * Construye un limitador con las reglas comunes del proyecto: cabeceras estándar,
+ * almacén en Redis y paso libre si Redis falla. Por defecto cuenta por sesión o IP.
+ */
 export function crearLimitador({
   nombre,
   ventanaMs,
@@ -174,7 +180,7 @@ export function crearLimitador({
  * Para llegar aquí sin ella hay que estar ya dentro de la red interna.
  *
  * Lo que esto exime es solo este techo genérico. Los límites que de verdad protegen
- * —login y recuperación por correo, escrituras y trabajos por usuario— no dependen de
+ * —login y recuperación por correo, escrituras por usuario— no dependen de
  * la IP y siguen aplicándose a todo el mundo, venga por donde venga.
  */
 export const limitadorGlobal = crearLimitador({
@@ -194,6 +200,7 @@ export const limitadorDeLogin = crearLimitador({
   clave: claveDeCorreoOIp,
 });
 
+/** Cierre de sesión: techo holgado, solo para cortar bucles. */
 export const limitadorDeLogout = crearLimitador({
   nombre: 'logout',
   ventanaMs: 15 * 60 * 1000,
@@ -219,6 +226,7 @@ export const limitadorDeVerificacion = crearLimitador({
   clave: claveDeCorreoOIp,
 });
 
+/** Recuperación de contraseña: tres intentos por hora y por correo. */
 export const limitadorDeRecuperacion = crearLimitador({
   nombre: 'recuperar',
   ventanaMs: 60 * 60 * 1000,
@@ -239,22 +247,7 @@ export const limitadorDeEscritura = crearLimitador({
   ventanaMs: 60 * 1000,
   limite: 30,
   mensaje: 'Demasiadas solicitudes de escritura. Espera un momento antes de continuar.',
-  skip: (req) => req.user?.role?.toLowerCase() === 'superadmin',
-});
-
-/**
- * Cuota de encolado de trabajos pesados.
- *
- * Una exportación masiva cuesta mucho más que la petición que la pide, así que este
- * es el endpoint con mejor relación esfuerzo/daño de la API: un bucle autenticado
- * saturaba el worker y la memoria de Redis sin despeinarse. Diez por hora y por
- * usuario es de sobra para el uso real y deja el abuso sin recorrido.
- */
-export const limitadorDeTrabajos = crearLimitador({
-  nombre: 'trabajos',
-  ventanaMs: 60 * 60 * 1000,
-  limite: 10,
-  mensaje: 'Ha encolado demasiadas exportaciones. Espere a que terminen las anteriores.',
+  skip: (req) => tieneRol(req.user?.role, ['superadmin']),
 });
 
 /**
@@ -269,6 +262,3 @@ export async function cerrarClienteDeLimites(): Promise<void> {
     clienteDeLimites = undefined;
   }
 }
-
-/** Tipado de conveniencia para los routers. */
-export type Limitador = (req: Request, res: Response, next: NextFunction) => void;

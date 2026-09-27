@@ -141,9 +141,9 @@ export const logVerificacionDePreguntas = (
         ],
   });
 
-export const getAuditByContentId = (contentId: string, contentType?: string) =>
-  AuditRepository.findByContentId(contentId, contentType);
-
+/**
+ * Registros de la bitácora que cumplen los filtros, paginados (la traducción la hace el controlador).
+ */
 export const getAllAudit = (filtros: FiltrosAuditoria) => AuditRepository.findAll(filtros);
 
 /** Lo mínimo que hace falta de una fila para saber a qué cuenta apunta. */

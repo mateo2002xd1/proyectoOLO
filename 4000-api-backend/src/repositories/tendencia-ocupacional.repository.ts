@@ -4,8 +4,9 @@ import sequelize from '../config/database';
 /**
  * Única capa que toca SQL para la tendencia ocupacional (percentiles).
  *
- * El SQL es el de `criterios/002_carga_y_validaciones.sql` con los nombres de tabla del
- * proyecto (migración 033). Se escribe a mano y no con modelos Sequelize porque casi
+ * El SQL sale del análisis del Excel real que se hizo en `criterios/` (carpeta de
+ * trabajo que no llegó al repositorio; ver la sesión del 24-09-2026 en `6-auditoria.md`),
+ * con los nombres de tabla del proyecto (migración 033). Se escribe a mano y no con modelos Sequelize porque casi
  * todo son operaciones de conjunto —tabla temporal, validaciones agregadas, `INSERT …
  * SELECT`— que un ORM haría fila por fila.
  */
@@ -102,6 +103,7 @@ const ES_VIGENTE = `(cd.estado = 'completado' AND co.corte_id IS NOT NULL AND NO
                       AND (cd2.completado_en > cd.completado_en
                            OR (cd2.completado_en = cd.completado_en AND cd2.id > cd.id))))`;
 
+/** Ejecuta una consulta SELECT (o con RETURNING) y devuelve sus filas tipadas. */
 const seleccionar = <T extends object>(
   sql: string,
   replacements: Record<string, unknown> = {},
@@ -197,11 +199,13 @@ export const TendenciaOcupacionalRepository = {
       { anio }
     ),
 
+  /** Los niveles ocupacionales, en su orden de presentación. */
   niveles: () =>
     seleccionar<{ codigo: string; etiqueta: string; nombre: string; descripcion: string | null }>(
       'SELECT codigo, etiqueta, nombre, descripcion FROM niveles_ocupacionales ORDER BY orden'
     ),
 
+  /** Los criterios ocupacionales, en su orden de presentación. */
   criterios: () =>
     seleccionar<{ codigo: string; nombre: string }>(
       'SELECT codigo, nombre FROM criterios_ocupacionales ORDER BY orden'
@@ -264,6 +268,7 @@ export const TendenciaOcupacionalRepository = {
         ORDER BY anio DESC, periodo_orden`
     ),
 
+  /** El corte de una celda año × periodo con su estado, o `null` si no hay. */
   async obtenerCorteDeCelda(anio: number, periodoId: string, transaction?: Transaction): Promise<CorteDeCelda | null> {
     const filas = await seleccionar<CorteDeCelda>(
       'SELECT id, estado FROM cortes_ocupacionales WHERE anio = :anio AND periodo_id = :periodoId',
@@ -300,6 +305,7 @@ export const TendenciaOcupacionalRepository = {
       { corteIds }
     ),
 
+  /** Devuelve un corte publicado a borrador; `false` si no estaba publicado. */
   async despublicarCorte(corteId: string): Promise<boolean> {
     const filas = await seleccionar<{ id: string }>(
       `UPDATE cortes_ocupacionales
@@ -340,6 +346,7 @@ export const TendenciaOcupacionalRepository = {
       return carga.id;
     }),
 
+  /** Las celdas año × periodo que tocó una carga, con los datos de su periodo. */
   async obtenerDetalleCarga(cargaId: string) {
     const filas = await seleccionar<{
       anio: number;

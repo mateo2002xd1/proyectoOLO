@@ -27,12 +27,14 @@ export interface ProgresoCarga {
   filasTotales: number;
 }
 
+/** Un número con separador de miles colombiano, para los mensajes del reporte. */
 const formatoMiles = (numero: number) => numero.toLocaleString('es-CO');
 
 /**
  * Carga un Excel de percentiles en la celda (año, periodo) de la carga.
  *
- * Todo ocurre en una sola transacción, en el orden de `criterios/002_carga_y_validaciones.sql`:
+ * Todo ocurre en una sola transacción, en el orden que fijó el análisis de `criterios/`
+ * (no versionado; ver `tendencia-ocupacional.repository.ts`):
  * candado por celda → celda libre → tabla temporal → V1–V5 (abortan) → V6–V9 (advertencias)
  * → huella → catálogo de ocupaciones → corte → hechos → cierre de la carga. V10 (el mismo
  * contenido en otra celda) ya no se aplica: los datos pueden repetirse entre periodos. Si

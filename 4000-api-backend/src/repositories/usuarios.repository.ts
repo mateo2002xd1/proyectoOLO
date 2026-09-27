@@ -3,6 +3,7 @@ import { config } from '../config';
 import { Op } from 'sequelize';
 
 export const UserRepository = {
+  /** Todas las cuentas con su rol, sin el hash de contraseña ni la cuenta maestra local. */
   findAll: () =>
     User.findAll({
       where: { email: { [Op.ne]: config.localAuth.email.toLowerCase() } },
@@ -10,12 +11,14 @@ export const UserRepository = {
       attributes: { exclude: ['password_hash'] },
     }),
 
+  /** Una cuenta por su id, con su rol y sin el hash de contraseña. */
   findById: (id: string) =>
     User.findByPk(id, {
       include: [{ model: Role, as: 'role' }],
       attributes: { exclude: ['password_hash'] },
     }),
 
+  /** Una cuenta por su id, con el hash: solo para comprobar la contraseña actual. */
   findByIdWithPassword: (id: string) =>
     User.findByPk(id, { include: [{ model: Role, as: 'role' }] }),
 
@@ -35,19 +38,24 @@ export const UserRepository = {
       attributes: ['id', 'email'],
     }),
 
+  /** Una cuenta por su correo, con su rol (y con el hash, para el login). */
   findByEmail: (email: string) =>
     User.findOne({
       where: { email },
       include: [{ model: Role, as: 'role' }],
     }),
 
+  /** Crea una cuenta. */
   create: (data: any) => User.create(data),
 
+  /** Actualiza una cuenta y devuelve las filas cambiadas. */
   update: (id: string, data: any) =>
     User.update(data, { where: { id }, returning: true }),
 
+  /** Borra una cuenta. */
   delete: (id: string) => User.destroy({ where: { id } }),
 
+  /** Marca ahora como el último acceso de la cuenta (lo usa el cierre por inactividad). */
   updateLastAccess: (id: string) =>
     User.update({ last_access_at: new Date() }, { where: { id } }),
 };

@@ -10,12 +10,19 @@ import {
 const MS_DE_INACTIVIDAD = MINUTOS_DE_INACTIVIDAD_API * 60 * 1000;
 const MS_ENTRE_REFRESCOS = MINUTOS_ENTRE_REFRESCOS_DE_ACCESO * 60 * 1000;
 
-// Middleware para verificar la autenticación del usuario mediante Token JWT
+/**
+ * Exige una sesión válida: verifica el JWT, comprueba en la base que la cuenta siga
+ * activa, sin bloqueo, sin caducar y sin inactividad, y deja en `req.user` los datos
+ * de la fila (no los del token). Responde 401 en cualquier otro caso.
+ *
+ * Para las rutas del proyecto, lo que viene después de la sesión —qué puede hacer cada
+ * rol— lo deciden los middlewares de `permisos.middleware.ts` contra una policy.
+ */
 export async function requireAuth(req: Request, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
   // 'token' la usa la intranet (pasa la cookie de la API sin tocar); 'sitio_token'
-  // la emite sitio-web con nombre propio para no compartir sesión con la intranet
-  // en el mismo navegador — ver `sitio-web/src/shared/lib/auth-cookies.ts`.
+  // la emite el sitio web con nombre propio para no compartir sesión con la intranet
+  // en el mismo navegador — ver `3000-sitio-web/src/shared/lib/auth-cookies.ts`.
   const tokenFromCookie = req.cookies?.token ?? req.cookies?.sitio_token;
   // Extrae el token priorizando el header Bearer o la cookie segura de sesión
   const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : tokenFromCookie;
@@ -109,26 +116,4 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
   }
 
   next();
-}
-
-/**
- * Exige uno de varios roles por nombre.
- *
- * La comparación es en minúsculas por la misma razón que en `paginas.policies.ts`:
- * en la tabla `roles` los nombres están capitalizados ('Editor', 'Superadmin') y el
- * JWT los lleva tal cual, así que comparar literal dejaba fuera a todo el mundo sin
- * fallar en ningún sitio.
- *
- * Para las rutas del proyecto se prefieren los middlewares de `permisos.middleware.ts`,
- * que resuelven contra una policy con nombre propio en vez de contra una lista suelta
- * repetida en cada router.
- */
-export function requireRole(...roles: string[]) {
-  const permitidos = roles.map((rol) => rol.trim().toLowerCase());
-  return (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user) return res.status(401).json({ error: 'No autenticado' });
-    if (!permitidos.includes((req.user.role ?? '').trim().toLowerCase()))
-      return res.status(403).json({ error: 'Acceso denegado' });
-    next();
-  };
 }

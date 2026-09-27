@@ -22,7 +22,10 @@
  * Se compara en minúsculas por lo mismo que las policies: en la tabla `roles` los
  * nombres están capitalizados.
  */
+import { normalizarRol } from './autorizacion';
+
 export const ROLES_PROTEGIDOS = ['superadmin', 'administrador', 'director/subdirector'];
 
+/** ¿Es un rol que define el sistema y no se puede tocar desde el panel? */
 export const esRolProtegido = (nombre: string | null | undefined): boolean =>
-  ROLES_PROTEGIDOS.includes((nombre ?? '').trim().toLowerCase());
+  ROLES_PROTEGIDOS.includes(normalizarRol(nombre));

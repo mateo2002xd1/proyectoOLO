@@ -36,8 +36,8 @@ import DOMPurify from 'dompurify';
 // ---------------------------------------------------------------------------
 
 const { window: jsdomWindow } = new JSDOM('');
-// jsdom's Window type doesn't perfectly match DOMPurify's WindowLike — the cast
-// is safe because DOMPurify only uses a small subset of DOM APIs that jsdom provides.
+// El tipo `Window` de jsdom no encaja del todo con el `WindowLike` que espera DOMPurify.
+// El cast es seguro: DOMPurify solo usa un subconjunto pequeño del DOM, que jsdom sí trae.
 const purify = DOMPurify(jsdomWindow as unknown as Parameters<typeof DOMPurify>[0]);
 
 

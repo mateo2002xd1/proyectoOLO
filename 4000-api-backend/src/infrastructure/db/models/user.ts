@@ -1,6 +1,10 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../../../config/database';
 
+/**
+ * Tabla `usuarios`: las cuentas del panel y la intranet, con su rol, estado, caducidad y los
+ * controles de seguridad (bloqueo, último acceso, cambio de contraseña pendiente).
+ */
 export class User extends Model {
   declare id: string;
   declare name: string;

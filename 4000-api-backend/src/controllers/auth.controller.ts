@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { loginUseCase } from '../use-cases/auth/login.usecase';
+import { loginUseCase, permisosDeRol } from '../use-cases/auth/login.usecase';
 import { firstLoginUseCase, estadoPrimerIngreso } from '../use-cases/auth/first-login.usecase';
 import { UserRepository } from '../repositories/usuarios.repository';
 import { updateUser } from '../use-cases/usuarios/listar-usuarios.usecase';
@@ -10,8 +10,6 @@ import {
   origenDeLaPeticion,
 } from '../shared/auditoria-request';
 import { compararPassword, exigirPasswordValida } from '../shared/password-policy';
-import { RolePermissionRepository } from '../repositories/role-permissions.repository';
-import { CLAVES_DEL_CATALOGO } from '../shared/catalogo-permisos';
 
 export const AuthController = {
   /**
@@ -37,6 +35,7 @@ export const AuthController = {
     }
   },
 
+  /** Primer ingreso: cambia la contraseña temporal y configura las preguntas de seguridad. */
   async firstLogin(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.user?.id;
@@ -58,6 +57,9 @@ export const AuthController = {
       next(err);
     }
   },
+  /**
+   * Inicia sesión: valida credenciales, deja el JWT en una cookie HttpOnly y devuelve el usuario.
+   */
   async login(req: Request, res: Response, next: NextFunction) {
     try {
       const { email, password } = req.body;
@@ -86,6 +88,7 @@ export const AuthController = {
     }
   },
 
+  /** Cierra la sesión borrando la cookie del token. */
   logout(_req: Request, res: Response) {
     res.clearCookie('token');
     res.json({ message: 'Sesión cerrada' });
@@ -100,19 +103,14 @@ export const AuthController = {
    * Adivinar de menos esconde acciones a quien sí puede; adivinar de más pinta
    * botones que responden 403. Ahora se pregunta.
    *
-   * Superadmin recibe el catálogo entero: su bypass vive en `resolverPermisos` y no
-   * en la tabla, así que sin esto el panel le enseñaría menos de lo que puede hacer.
+   * Superadmin recibe el catálogo entero (ver `permisosDeRol`).
    *
    * Devuelve **los permisos de quien llama**, nunca los de otro: la ruta va detrás de
    * `requireAuth` y la clave se resuelve desde `req.user`.
    */
   async me(req: Request, res: Response, next: NextFunction) {
     try {
-      const rol = req.user?.role ?? '';
-      const permisos =
-        rol.trim().toLowerCase() === 'superadmin'
-          ? CLAVES_DEL_CATALOGO
-          : await RolePermissionRepository.getPermissionsByRole(rol);
+      const permisos = await permisosDeRol(req.user?.role);
 
       if (req.user?.isLocal) {
         return res.json({ user: req.user, permisos });
@@ -134,6 +132,7 @@ export const AuthController = {
     }
   },
 
+  /** Cambia la contraseña de la sesión actual tras comprobar la vigente y la política. */
   async changePassword(req: Request, res: Response, next: NextFunction) {
     try {
       const { currentPassword, newPassword } = req.body;

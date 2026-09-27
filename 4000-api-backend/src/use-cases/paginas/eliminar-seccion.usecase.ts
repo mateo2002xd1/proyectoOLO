@@ -49,6 +49,7 @@ import { eliminarDirectorioBackupCompleto } from '../../infrastructure/storage/b
 import { extraerRutasUploads } from '../../shared/rutas-uploads-en-contenido';
 import { borrarArchivosHuerfanos } from './borrar-archivos-huerfanos.usecase';
 
+/** Un `Error` con el `status` HTTP que traduce `error.middleware.ts`. */
 const fallo = (mensaje: string, status: number) =>
   Object.assign(new Error(mensaje), { status });
 
@@ -197,6 +198,11 @@ export interface SeccionEliminada {
  */
 import { Transaction } from 'sequelize';
 
+/**
+ * Borra una sección con todas sus versiones y retira su permiso de edición de los roles.
+ * Vuelve a comprobar que nada la enlace y exige escribir su nombre como confirmación.
+ * @throws {Error} 409 si algún menú o página la enlaza; 400 si la confirmación no coincide.
+ */
 export const eliminarSeccion = async (
   slug: string,
   ambito: Ambito,

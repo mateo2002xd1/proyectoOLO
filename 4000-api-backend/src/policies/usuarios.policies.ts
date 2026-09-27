@@ -10,22 +10,17 @@
  *
  * `puedeAdministrarSeguridad` incluye a Administrador y no solo a Superadmin porque
  * el panel de usuarios y roles (`/admin/dashboard`) lo abren los dos —lo decide
- * `sitio-web/src/middleware.ts` con `isAdminRole`— y ahí se asignan permisos a roles.
+ * `3000-sitio-web/src/proxy.ts` con el permiso `acceso.panel`— y ahí se asignan permisos a roles.
  * Restringirlo a Superadmin dejaría al Administrador con la pantalla pintada y todas
  * las llamadas en 403. Estrecharlo es cambiar esta lista, no los routers.
  *
  * Los nombres se comparan en minúsculas por lo mismo que en `paginas.policies.ts`:
  * en la tabla `roles` están capitalizados y el JWT los lleva tal cual.
  */
-import { rolDeActor, permisosDeActor, type ActorDePolicy } from '../shared/autorizacion';
+import { rolDeActor, permisosDeActor, tieneRol, type ActorDePolicy } from '../shared/autorizacion';
 
 const ROLES_QUE_ADMINISTRAN_USUARIOS = ['superadmin', 'administrador'];
 const ROLES_QUE_ADMINISTRAN_SEGURIDAD = ['superadmin', 'administrador'];
-
-const normalizar = (rol: string | undefined | null) => (rol ?? '').trim().toLowerCase();
-
-const tieneRol = (rol: string | undefined | null, permitidos: string[]) =>
-  permitidos.includes(normalizar(rol));
 
 export const usuariosPolicies = {
   /** Alta, edición, baja y consulta de cuentas ajenas, y las alertas de caducidad. */

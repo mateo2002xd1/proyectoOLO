@@ -13,6 +13,10 @@ process.on('unhandledRejection', (reason) => {
   process.exit(1);
 });
 
+/**
+ * Arranca la API: conecta a la base, exige que no haya migraciones pendientes, levanta el worker
+ * de la cola y empieza a escuchar; cierra ordenadamente con SIGTERM o SIGINT.
+ */
 const start = async () => {
   try {
     console.log('Connecting to database...');

@@ -70,6 +70,7 @@ interface DetalleDeValidacion {
   path?: string;
 }
 
+/** Los mensajes de validación que trae un error de Sequelize, para enseñarlos en el historial. */
 function extraerDetallesDeValidacion(error: unknown): string[] {
   if (typeof error !== 'object' || error === null || !('errors' in error)) return [];
 

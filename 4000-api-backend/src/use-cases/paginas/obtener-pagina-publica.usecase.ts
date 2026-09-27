@@ -1,6 +1,10 @@
 import { PaginaRepository } from '../../repositories/pagina.repository';
 import type { Ambito } from '../../shared/ambito';
 
+/**
+ * La versión publicada de una página, con el contenido normalizado a la forma de Puck;
+ * `null` si la página no existe o aún no tiene nada publicado.
+ */
 export const obtenerPaginaPublica = async (slug: string, ambito: Ambito) => {
   const pagina = await PaginaRepository.findBySlug(slug, ambito);
   if (!pagina) return null;

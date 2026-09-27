@@ -8,6 +8,7 @@ export interface ParametrosDepuracionVersiones {
   ambito?: Ambito;
   paginaId?: string;
   fechaCorte?: string; // ISO YYYY-MM-DD opcional
+  /** Lo manda el panel, pero se ignora: la última versión archivada se conserva siempre. */
   conservarUltimoRespaldo?: boolean;
 }
 
@@ -19,6 +20,10 @@ export interface ResultadoDepuracion {
   pesoTablaDespues?: number;
 }
 
+/**
+ * Borra las versiones archivadas que cumplen los filtros, dentro de una transacción, y lo registra.
+ * La última archivada de cada página se conserva siempre para poder volver atrás.
+ */
 export async function depurarVersiones(
   params: ParametrosDepuracionVersiones,
   contextoAuditoria?: ContextoAuditoria
@@ -31,8 +36,8 @@ export async function depurarVersiones(
     }
   }
 
-  // Regla invariable: SIEMPRE se conserva la última versión archivada para permitir rollback
-  const conservarUltimo = true;
+  // Regla invariable: SIEMPRE se conserva la última versión archivada para permitir rollback.
+  // Está escrita en el SQL (`ultima_archivada`), no en una variable.
 
   return await sequelize.transaction(async (tx: Transaction) => {
     // 1. Identificar las versiones que cumplen exactamente los criterios

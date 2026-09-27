@@ -32,12 +32,17 @@ interface CacheOptions {
   paramsPermitidos?: string[];
 }
 
+/**
+ * Middleware que cachea en Redis las respuestas GET durante `ttlSeconds`.
+ * La clave incluye la ruta, los parámetros permitidos y las cabeceras de `varyBy`; sin Redis
+ * conectado deja pasar la petición sin cachear.
+ */
 export const cacheInterceptor = (ttlSeconds: number = 60, options: CacheOptions = {}) => {
   const varyBy = options.varyBy ?? [];
   const paramsPermitidos = options.paramsPermitidos ?? [];
 
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    // Only cache GET requests
+    // Solo se cachean las lecturas (GET): una escritura nunca debe servirse de memoria.
     if (req.method !== 'GET') {
       return next();
     }
@@ -48,7 +53,7 @@ export const cacheInterceptor = (ttlSeconds: number = 60, options: CacheOptions 
       res.setHeader('Vary', varyBy.join(', '));
     }
 
-    // If Redis is not connected, skip caching entirely to avoid hanging
+    // Sin Redis conectado no se cachea nada: esperar a la conexión colgaría la petición.
     if (!isRedisReady()) {
       res.setHeader('X-Cache', 'BYPASS');
       return next();
@@ -88,7 +93,7 @@ export const cacheInterceptor = (ttlSeconds: number = 60, options: CacheOptions 
         return;
       }
 
-      // Intercept res.json to store the response before sending it
+      // Se intercepta `res.json` para guardar la respuesta en Redis antes de enviarla.
       const originalJson = res.json.bind(res);
       res.json = (body: any) => {
         // Only cache 2xx responses

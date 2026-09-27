@@ -43,7 +43,8 @@ const ambitoDe = (req: Request) => resolverAmbito(req.header(AMBITO_HEADER));
  * Aquí no vale asumir: las dos aplicaciones comparten la tabla `paginas` y ambas
  * tienen su `/inicio`, así que un ámbito equivocado no da error — da la página de la
  * otra aplicación. Los dos clientes mandan la cabecera siempre
- * (`intranet/src/shared/lib/api-client.ts`, `sitio-web/.../paginas.service.ts`), de
+ * (`3001-intranet/src/shared/lib/api-client.ts`, `CABECERAS_DEL_SITIO` en
+ * `3000-sitio-web/src/features/paginas/model/ambito.ts`), de
  * modo que exigirla no rompe a nadie y convierte en 400 lo que antes era escribir en
  * el sitio equivocado en silencio.
  */
@@ -103,6 +104,7 @@ const campoComentario = (antes: string | null | undefined, despues: string | nul
 });
 
 export const PaginaController = {
+  /** Devuelve la versión publicada de una página (lo que ve el ciudadano), o 404. */
   async obtenerPublica(req: Request, res: Response, next: NextFunction) {
     try {
       const pagina = await obtenerPaginaPublica(req.params.slug as string, ambitoDe(req));
@@ -220,6 +222,7 @@ export const PaginaController = {
     } catch (err) { next(err); }
   },
 
+  /** Devuelve la versión con la que abre el editor: la indicada en `versionId` o la vigente. */
   async obtenerEditable(req: Request, res: Response, next: NextFunction) {
     try {
       const versionId = typeof req.query.versionId === 'string' ? req.query.versionId : undefined;
@@ -264,6 +267,7 @@ export const PaginaController = {
     } catch (err) { next(err); }
   },
 
+  /** Suelta el candado de edición que la sesión tiene sobre la página. */
   async liberarBloqueo(req: Request, res: Response, next: NextFunction) {
     try {
       const resultado = await liberarBloqueo(
@@ -275,6 +279,7 @@ export const PaginaController = {
     } catch (err) { next(err); }
   },
 
+  /** Dice quién tiene abierta la página en el editor, si alguien la tiene. */
   async consultarBloqueo(req: Request, res: Response, next: NextFunction) {
     try {
       const dueño = await BloqueoEdicionRepository.vigente(ambitoExigidoDe(req), req.params.slug as string);
@@ -282,6 +287,7 @@ export const PaginaController = {
     } catch (err) { next(err); }
   },
 
+  /** Descarta el borrador en curso de la sesión y vuelve a lo que había antes. */
   async descartarEdicion(req: Request, res: Response, next: NextFunction) {
     try {
       await descartarEdicion(
@@ -293,6 +299,7 @@ export const PaginaController = {
     } catch (err) { next(err); }
   },
 
+  /** Guarda el contenido del editor como borrador y lo registra en la bitácora. */
   async guardarBorrador(req: Request, res: Response, next: NextFunction) {
     try {
       const { contenido } = req.body;
@@ -319,6 +326,7 @@ export const PaginaController = {
     } catch (err) { next(err); }
   },
 
+  /** Guarda lo que hay en el editor y lo envía a revisión en una sola transacción. */
   async enviarARevision(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await sequelize.transaction(async (tx) => {
@@ -376,6 +384,7 @@ export const PaginaController = {
     }
   },
 
+  /** Anota un archivo recién subido al borrador para poder limpiarlo si no se usa. */
   async registrarSubida(req: Request, res: Response, next: NextFunction) {
     try {
       await registrarSubidaPendiente(
@@ -388,6 +397,7 @@ export const PaginaController = {
     } catch (err) { next(err); }
   },
 
+  /** Publica la versión en revisión, archiva la anterior y deja ambas cosas en la bitácora. */
   async aprobar(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await aprobarPagina(
@@ -430,6 +440,7 @@ export const PaginaController = {
     } catch (err) { next(err); }
   },
 
+  /** Devuelve la versión en revisión a borrador con su motivo, y lo registra. */
   async rechazar(req: Request, res: Response, next: NextFunction) {
     try {
       const { motivo } = req.body;
@@ -458,6 +469,7 @@ export const PaginaController = {
     } catch (err) { next(err); }
   },
 
+  /** Elimina una versión no publicada (y la página si era la única) y lo registra. */
   async eliminarVersion(req: Request, res: Response, next: NextFunction) {
     try {
       const { motivo } = req.body;
@@ -503,12 +515,14 @@ export const PaginaController = {
     } catch (err) { next(err); }
   },
 
+  /** Lista las páginas publicadas de los dos ámbitos, con su resumen. */
   async listarPublicadas(_req: Request, res: Response, next: NextFunction) {
     try {
       res.json(await listarPaginasPublicadas());
     } catch (err) { next(err); }
   },
 
+  /** Suma una visita a la página indicada (ruta pública, sin sesión). */
   async registrarVisita(req: Request, res: Response, next: NextFunction) {
     try {
       const slug = (req.body?.slug || req.params?.slug || '').trim();
@@ -521,6 +535,7 @@ export const PaginaController = {
     } catch (err) { next(err); }
   },
 
+  /** Lista las versiones archivadas (respaldos) de un ámbito o de los dos. */
   async listarRespaldos(req: Request, res: Response, next: NextFunction) {
     try {
       const ambitoParam = (req.query.ambito as string) || req.header(AMBITO_HEADER);
@@ -530,6 +545,7 @@ export const PaginaController = {
     } catch (err) { next(err); }
   },
 
+  /** Vuelve a publicar una versión archivada: la indicada o la inmediatamente anterior. */
   async restaurar(req: Request, res: Response, next: NextFunction) {
     try {
       const slug = req.params.slug as string;
@@ -548,6 +564,7 @@ export const PaginaController = {
     } catch (err) { next(err); }
   },
 
+  /** Dice qué versiones archivadas se borrarían con estos filtros, sin borrar nada. */
   async analizarDepuracion(req: Request, res: Response, next: NextFunction) {
     try {
       const ambitoParam = (req.query.ambito as string) || req.header(AMBITO_HEADER);
@@ -566,6 +583,7 @@ export const PaginaController = {
     } catch (err) { next(err); }
   },
 
+  /** Borra las versiones archivadas que cumplen los filtros, conservando siempre la última. */
   async depurarVersiones(req: Request, res: Response, next: NextFunction) {
     try {
       const { ambito: ambitoBody, paginaId, fechaCorte, conservarUltimoRespaldo } = req.body;

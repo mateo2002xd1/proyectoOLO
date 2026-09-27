@@ -47,9 +47,10 @@ export const TrabajosController = {
     }
   },
 
+  /** Encola una exportación simulada y devuelve su id para consultarla después. */
   async encolarTarea(req: Request, res: Response) {
     try {
-      // Enqueue a job as a proof-of-concept
+      // Prueba de concepto de la cola: encola una exportación simulada (ningún panel la usa).
       const job = await heavyJobsQueue.add('export-data', {
         // El dueño sale de la sesión, nunca del cuerpo: si viniera de `req.body` el
         // que consulta podría encolar trabajos a nombre de otro y viceversa. `user`

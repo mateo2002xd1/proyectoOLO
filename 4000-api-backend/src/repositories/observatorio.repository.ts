@@ -21,6 +21,7 @@ const MODULO = 'programa_sobresalientes';
  * misma transacción.
  */
 export const ObservatorioRepository = {
+  /** Crea la fila de una carga nueva en estado «procesando». */
   crearCarga: (archivoId: string | null, subidoPor: string | null) =>
     CargaDatos.create({ modulo: MODULO, archivoId, subidoPor, estado: 'procesando' }),
 
@@ -36,20 +37,25 @@ export const ObservatorioRepository = {
       { where: { id } }
     ),
 
+  /** Cierra una carga como completada: progreso al 100 %, filas y mensaje final. */
   marcarCargaCompletada: (id: string, filasProcesadas: number, mensaje: string) =>
     CargaDatos.update(
       { estado: 'completado', progreso: 100, filasProcesadas, mensaje, completadoEn: new Date() },
       { where: { id } }
     ),
 
+  /** Cierra una carga como fallida, con el mensaje del error. */
   marcarCargaError: (id: string, mensaje: string) =>
     CargaDatos.update({ estado: 'error', mensaje, completadoEn: new Date() }, { where: { id } }),
 
+  /** Las últimas cargas del módulo, de la más reciente a la más antigua. */
   listarCargas: (limite = 20) =>
     CargaDatos.findAll({ where: { modulo: MODULO }, order: [['creadoEn', 'DESC']], limit: limite }),
 
+  /** Una carga por su id, o `null`. */
   obtenerCarga: (id: string) => CargaDatos.findByPk(id),
 
+  /** Borra la fila de una carga (el Excel lo gestiona `eliminarArchivoSiQuedaSuelto`). */
   eliminarCarga: (id: string) => CargaDatos.destroy({ where: { id } }),
 
   /**
@@ -64,13 +70,16 @@ export const ObservatorioRepository = {
     return otrasCargas;
   },
 
+  /** La fila de `archivos` de un Excel por su id, o `null`. */
   obtenerArchivo: (id: string) => Archivo.findByPk(id),
 
+  /** Borra la fila de `archivos` de un Excel (el archivo físico se borra aparte). */
   eliminarArchivo: (id: string) => Archivo.destroy({ where: { id } }),
 
   /** `archivos.hash_sha256` es `UNIQUE` (RF-02): el mismo archivo subido dos veces no crea dos filas. */
   buscarArchivoPorHash: (hashSha256: string) => Archivo.findOne({ where: { hashSha256 } }),
 
+  /** Registra en `archivos` un Excel recién guardado en disco, como archivo interno. */
   crearArchivo: (datos: {
     nombreOriginal: string;
     nombreAlmacenado: string;

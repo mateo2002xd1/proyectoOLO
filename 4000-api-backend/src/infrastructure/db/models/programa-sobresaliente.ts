@@ -5,6 +5,10 @@ import CentroFormacion from './centro-formacion';
 import NivelFormacion from './nivel-formacion';
 import ProgramaFormacion from './programa-formacion';
 
+/**
+ * Tabla `programas_sobresalientes`: los datos de «Programa + Sobresalientes» que se cargan por
+ * Excel (certificados, vinculados, tasa y salario por departamento, centro, programa y sexo).
+ */
 class ProgramaSobresaliente extends Model {
   declare id: string;
   declare departamento_id: string;

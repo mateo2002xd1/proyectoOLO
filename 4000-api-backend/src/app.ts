@@ -15,11 +15,10 @@ import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
 import roleRoutes from './routes/role.routes';
 import permissionRoutes from './routes/permission.routes';
-import rolePermissionRoutes from './routes/rolePermission.routes';
+import rolePermissionRoutes from './routes/role-permission.routes';
 import auditRoutes from './routes/audit.routes';
-import securityQuestionRoutes from './routes/securityQuestion.routes';
+import securityQuestionRoutes from './routes/security-question.routes';
 import paginaRoutes from './routes/pagina.routes';
-import jobRoutes from './routes/job.routes';
 import observatorioRoutes from './routes/observatorio.routes';
 
 const app = express();
@@ -123,7 +122,6 @@ app.use('/api/role-permissions', rolePermissionRoutes);
 app.use('/api/security-questions', securityQuestionRoutes);
 app.use('/api/paginas', paginaRoutes);
 app.use('/api/audit-logs', auditRoutes);
-app.use('/api/jobs', jobRoutes);
 app.use('/api/observatorio', observatorioRoutes);
 
 app.use(errorHandler);

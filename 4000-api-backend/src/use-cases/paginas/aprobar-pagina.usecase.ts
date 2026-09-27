@@ -7,10 +7,13 @@ import { extraerRutasUploads } from '../../shared/rutas-uploads-en-contenido';
 import { limpiarSubidasPendientes } from './limpiar-subidas-pendientes.usecase';
 import { SubidaPendiente } from '../../infrastructure/db/models';
 import { sanitizarContenidoPuck } from '../../shared/sanitizar-contenido';
+import { uuidONulo } from '../../shared/uuid';
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const toUUID = (id: string) => (UUID_RE.test(id) ? id : null);
-
+/**
+ * Publica la versión en revisión: archiva la que estaba publicada, respalda sus archivos, sanea el
+ * contenido otra vez y emite `ContenidoPublicado` para vaciar las cachés.
+ * @throws {Error} si la página no existe o no tiene versión en revisión.
+ */
 export const aprobarPagina = async (slug: string, userId: string, ambito: Ambito, tx?: Transaction) => {
   const pagina = await PaginaRepository.findBySlug(slug, ambito, tx);
   if (!pagina) throw new Error('Página no encontrada');
@@ -48,7 +51,7 @@ export const aprobarPagina = async (slug: string, userId: string, ambito: Ambito
   await PaginaRepository.actualizarVersion(versionEnRevision, {
     contenido: sanitizarContenidoPuck(versionEnRevision.contenido),
     estado: 'publicado',
-    publicadoPor: toUUID(userId),
+    publicadoPor: uuidONulo(userId),
     publicadoEn: new Date(),
   }, tx);
 
@@ -74,7 +77,7 @@ export const aprobarPagina = async (slug: string, userId: string, ambito: Ambito
     slug: pagina.slug,
     ambito,
     versionId: versionEnRevision.id,
-    publicadoPor: toUUID(userId),
+    publicadoPor: uuidONulo(userId),
     fecha: new Date(),
   });
 

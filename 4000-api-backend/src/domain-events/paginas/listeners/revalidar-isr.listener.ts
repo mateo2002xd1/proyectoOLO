@@ -1,4 +1,4 @@
-// Listener - Revalidar ISR
+// Al publicarse una página, pide al frontal que la sirve que tire su copia cacheada.
 
 import { config } from '../../../config';
 import type { ContenidoPublicadoEvent } from '../contenido-publicado.event';
@@ -27,10 +27,10 @@ let yaAvisadoDelSecreto = false;
  * Un ámbito sin URL configurada simplemente no se llama; ver `config.revalidacion`.
  *
  * La llamada no sale del host: va por la red privada de Docker (`olo-network`), de
- * `api-backend:4000` a `sitio-web:3000`, sin pasar por nginx ni por internet. Nginx solo
- * publica 80/443 y manda todo lo que empieza por `/api/` al backend —el prefijo más
- * largo gana sobre `/`—, así que esta ruta del sitio no es alcanzable desde fuera ni
- * aunque alguien adivine el secreto. Ver `nginx/nginx.conf` y `7-despliegue.md`.
+ * `api-backend:4000` a `sitio-web:3000`, sin pasar por nginx ni por internet. Desde fuera
+ * la ruta no se alcanza porque `docker/nginx/nginx.servidor.conf` la corta con un 404, y
+ * además exige `REVALIDAR_SECRET` (ver `3-seguridad-del-proyecto.md` §S11). Si algún día
+ * esta llamada pasara por nginx, ese corte la rompería: habría que llamar por la red interna.
  *
  * LÍMITE CONOCIDO — una sola réplica. `sitio-web` resuelve por DNS de Docker a UNA
  * instancia, así que con varias réplicas solo se enteraría la que atienda esta llamada y

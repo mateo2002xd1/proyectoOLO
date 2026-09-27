@@ -1,6 +1,10 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../../../config/database';
 
+/**
+ * Tabla `paginas`: una página por slug y ámbito (sitio o intranet), que apunta a su versión
+ * publicada. El contenido vive en `paginas_versiones`.
+ */
 export class Pagina extends Model {
   declare id: string;
   declare slug: string;

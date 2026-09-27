@@ -1,9 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import {
-  contextoDeLectura,
-  getAllAudit,
-  getAuditByContentId,
-} from '../use-cases/auditoria/audit.usecase';
+import { contextoDeLectura, getAllAudit } from '../use-cases/auditoria/audit.usecase';
 import { aRegistroAuditoria, filtrosDesdeQuery } from '../shared/auditoria-dto';
 import { analizarDepuracionAuditoria } from '../use-cases/auditoria/analizar-depuracion-auditoria.usecase';
 import { ejecutarDepuracionAuditoria } from '../use-cases/auditoria/ejecutar-depuracion-auditoria.usecase';
@@ -18,6 +14,9 @@ import { datosDeAuditoria } from '../shared/auditoria-request';
  * sabe de columnas.
  */
 export const AuditController = {
+  /**
+   * Lista la bitácora con los filtros del querystring, paginada y ya traducida para la pantalla.
+   */
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const { registros, ...paginacion } = await getAllAudit(
@@ -36,18 +35,7 @@ export const AuditController = {
     } catch (err) { next(err); }
   },
 
-  async getByContentId(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { contentType, contentId } = req.params;
-      const filas = (await getAuditByContentId(contentId as string, contentType as string)).map(
-        (fila) => fila.toJSON()
-      );
-      const contexto = await contextoDeLectura(filas);
-
-      res.json(filas.map((fila) => aRegistroAuditoria(fila, contexto)));
-    } catch (err) { next(err); }
-  },
-
+  /** Dice cuántos registros de la bitácora se podrían depurar y cuánto ocupan, sin borrar nada. */
   async analizarDepuracion(_req: Request, res: Response, next: NextFunction) {
     try {
       const resultado = await analizarDepuracionAuditoria();
@@ -55,6 +43,7 @@ export const AuditController = {
     } catch (err) { next(err); }
   },
 
+  /** Borra de la bitácora los registros indicados y deja constancia de quién lo hizo. */
   async ejecutarDepuracion(req: Request, res: Response, next: NextFunction) {
     try {
       const { ids } = req.body;

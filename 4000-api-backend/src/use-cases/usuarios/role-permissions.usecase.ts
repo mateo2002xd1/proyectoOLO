@@ -4,14 +4,20 @@ import { PermissionRepository } from '../../repositories/permisos.repository';
 import { invalidarPermisosDeRol } from '../../middlewares/require-permission.middleware';
 import { esRolProtegido } from '../../shared/roles-protegidos';
 
+/** El 403 de los roles cuyos permisos fija el sistema (ver `roles-protegidos.ts`). */
 const errorRolProtegido = () =>
   Object.assign(
     new Error('Los permisos de este rol los define el sistema y no se pueden modificar desde el panel'),
     { status: 403 }
   );
 
+/** Todas las asignaciones rol ↔ permiso. */
 export const getAllRolePermissions = () => RolePermissionRepository.findAll();
 
+/**
+ * Las asignaciones de un rol.
+ * @throws {Error} 404 si el rol no existe.
+ */
 export const getByRole = async (roleId: string) => {
   const role = await RoleRepository.findById(roleId);
   if (!role) throw Object.assign(new Error('Rol no encontrado'), { status: 404 });
@@ -41,6 +47,10 @@ export const assignPermission = async (role_id: string, permission_id: string) =
   return { record, created, permiso: (perm as any).name ?? permission_id };
 };
 
+/**
+ * Quita un permiso a un rol y vacía al momento la caché de permisos de ese rol.
+ * @throws {Error} 403 si el rol está protegido; 404 si no tenía esa asignación.
+ */
 export const revokePermission = async (role_id: string, permission_id: string) => {
   // Se lee antes de borrar y sin exigir que exista: solo sirve para nombrar el
   // permiso en la bitácora, y quedarse sin nombre no debe impedir revocarlo.

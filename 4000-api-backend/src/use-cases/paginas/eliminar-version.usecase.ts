@@ -20,6 +20,10 @@ import type { Ambito } from '../../shared/ambito';
  */
 import { Transaction } from 'sequelize';
 
+/**
+ * Elimina una versión que no está publicada; si era la única, se lleva la página con ella.
+ * @throws {Error} 404 si la página o la versión no existen; 409 si es la versión publicada.
+ */
 export const eliminarVersion = async (slug: string, versionId: string, ambito: Ambito, tx?: Transaction) => {
   const pagina = await PaginaRepository.findBySlug(slug, ambito, tx);
   if (!pagina) throw Object.assign(new Error('Página no encontrada'), { status: 404 });

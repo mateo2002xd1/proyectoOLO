@@ -12,7 +12,7 @@ router.use(requireAuth);
 /**
  * Consultar **un** rol: el propio, o cualquiera si administras seguridad.
  *
- * `sitio-web/src/shared/lib/session.ts` pide `GET /api/roles/<mi role_id>` en cada
+ * `3000-sitio-web/src/shared/lib/session.ts` pide `GET /api/roles/<mi role_id>` en cada
  * carga para saber qué permisos tiene la sesión, y eso lo hace cualquier usuario, no
  * solo un administrador. Cerrar la ruta entera a administración dejaría a todos los
  * demás con la lista de permisos vacía.

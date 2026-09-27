@@ -11,6 +11,10 @@ export interface AnalisisDepuracionAuditoriaDTO {
   registros: RegistroAuditoria[];
 }
 
+/**
+ * Cuenta los registros de la bitácora con más de 6 meses y estima cuánto ocupan, sin borrar.
+ * Es el paso previo de la depuración: el panel enseña esto antes de pedir confirmación.
+ */
 export async function analizarDepuracionAuditoria(): Promise<AnalisisDepuracionAuditoriaDTO> {
   // 1. Fecha de corte: 6 meses hacia atrás desde el momento actual
   const fechaCorteDate = new Date();

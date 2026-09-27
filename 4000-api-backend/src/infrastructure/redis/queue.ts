@@ -12,6 +12,10 @@ const connection = getRedis();
 
 export const heavyJobsQueue = new Queue('heavy-jobs', { connection });
 
+/**
+ * Arranca el worker de la cola `heavy-jobs`: procesa las cargas de Excel del observatorio y de la
+ * tendencia ocupacional fuera de la petición HTTP.
+ */
 export const setupWorker = () => {
   const worker = new Worker('heavy-jobs', async (job: Job) => {
     console.log(`[Worker] Procesando trabajo asíncrono ${job.id}:`, job.name);
@@ -36,10 +40,10 @@ export const setupWorker = () => {
       return { success: true, processedAt: new Date().toISOString() };
     }
 
-    // Simular trabajo pesado (proof-of-concept original de la cola).
-    await new Promise((resolve) => setTimeout(resolve, 5000));
-    console.log(`[Worker] Trabajo asíncrono ${job.id} completado.`);
-    return { success: true, processedAt: new Date().toISOString() };
+    // Hasta el 2026-09-27 aquí caía la prueba de concepto de la cola (`/api/jobs`), que
+    // esperaba 5 s y se daba por buena. Se retiró porque nadie la usaba: un nombre que
+    // no es de los de arriba es un error de quien encola, y así queda como fallido.
+    throw new Error(`Trabajo desconocido en la cola heavy-jobs: "${job.name}"`);
   }, { connection });
 
   worker.on('completed', (job) => {

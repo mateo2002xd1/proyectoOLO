@@ -7,13 +7,12 @@ import type { Ambito } from '../../shared/ambito';
  *
  * Corto a propósito: es lo que tarda en liberarse una página cuya pestaña se cerró
  * de golpe (o cuyo portátil se suspendió), y durante ese rato nadie más puede
- * entrar. El editor lo renueva cada `MINUTOS_ENTRE_LATIDOS`, bastante antes de que
- * caduque, así que a quien está trabajando de verdad no se le cae nunca.
+ * entrar. El editor lo renueva cada 45 s (`MS_ENTRE_LATIDOS` en los dos
+ * `use-bloqueo-de-edicion.ts`, menos de la mitad de este plazo), bastante antes de que
+ * caduque, así que a quien está trabajando de verdad no se le cae nunca. Si se cambia
+ * uno de los dos valores, hay que mirar el otro.
  */
 export const MINUTOS_DE_BLOQUEO = 2;
-
-/** Cada cuánto refresca el navegador su candado. Menos de la mitad del TTL. */
-export const MINUTOS_ENTRE_LATIDOS = 0.75;
 
 export interface ResultadoDeBloqueo {
   /** `true` si el candado quedó a nombre de quien lo pidió. */

@@ -16,7 +16,7 @@
 |---|--:|--:|--:|--:|--:|
 | `3000-sitio-web` | 45 | 3 | 54 | — | 33 |
 | `3001-intranet` | 33 | 2 | 13 | — | 27 |
-| `4000-api-backend` | 34 | — | — | 77 | 46 |
+| `4000-api-backend` | 32 | — | — | 72 | 46 |
 
 Paquetes compartidos: 7 · migraciones: 37 · modelos: 17.
 
@@ -26,6 +26,8 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
 
 - `3000-sitio-web/data_temporal/`
 - `3000-sitio-web/src/features/sitio-web/fuentes-futuras-empleo/`
+
+**Descripciones de carpetas que ya no existen (2):** `4000-api-backend/src/shared/cache/`, `4000-api-backend/src/shared/errors/`. Se borran de `descripciones.md` o se corrige la ruta.
 
 ## Carpetas
 
@@ -141,8 +143,6 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
     ├── repositories/                          única capa que consulta los modelos Sequelize
     ├── routes/                                solo declaran endpoints y sus protecciones; cero lógica
     ├── shared/                                utilidades transversales: sanitización, permisos, auditoría
-    │   ├── cache/                             ayudantes de caché compartidos
-    │   └── errors/                            errores con `status` que traduce el middleware de errores
     ├── types/                                 tipos globales (extensión del `Request` de Express)
     ├── use-cases/                             la lógica de negocio: una acción, una función
     │   ├── auditoria/                         consulta de la bitácora de cambios (RF-07)
@@ -298,7 +298,6 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | GET | `/api/audit-logs` | requireAuth, requierePermisoAuditoria('puedeVer'), requirePermission('auditoria.ver') | AuditController.getAll |
 | GET | `/api/audit-logs/depurar/analizar` | requireAuth, requierePermisoAuditoria('puedeVer'), requirePermission('auditoria.ver') | AuditController.analizarDepuracion |
 | POST | `/api/audit-logs/depurar` | requireAuth, requierePermisoAuditoria('puedeVer'), requirePermission('auditoria.ver') | AuditController.ejecutarDepuracion |
-| GET | `/api/audit-logs/:contentType/:contentId` | requireAuth, requierePermisoAuditoria('puedeVer'), requirePermission('auditoria.ver') | AuditController.getByContentId |
 
 ### `routes/auth.routes.ts`
 
@@ -315,8 +314,8 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 
 | Método | Ruta | Protección y validación | Manejador |
 |---|---|---|---|
-| GET | `/api/jobs/:id` | requireAuth | TrabajosController.consultarEstado |
-| POST | `/api/jobs/start-heavy-task` | requireAuth, limitadorDeTrabajos | TrabajosController.encolarTarea |
+| GET | `(sin montar en app.ts)/:id` | requireAuth | TrabajosController.consultarEstado |
+| POST | `(sin montar en app.ts)/start-heavy-task` | requireAuth, limitadorDeTrabajos | TrabajosController.encolarTarea |
 
 ### `routes/observatorio.routes.ts`
 
@@ -372,10 +371,15 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | Método | Ruta | Protección y validación | Manejador |
 |---|---|---|---|
 | GET | `/api/permissions` | requireAuth, requierePermisoUsuario('puedeAdministrarSeguridad'), requirePermission('usuarios.permisos') | PermissionController.getAll |
-| GET | `/api/permissions/:id` | requireAuth, requierePermisoUsuario('puedeAdministrarSeguridad'), requirePermission('usuarios.permisos') | PermissionController.getById |
-| POST | `/api/permissions` | requireAuth, requierePermisoUsuario('puedeAdministrarSeguridad'), requirePermission('usuarios.permisos') | PermissionController.create |
-| PATCH | `/api/permissions/:id` | requireAuth, requierePermisoUsuario('puedeAdministrarSeguridad'), requirePermission('usuarios.permisos') | PermissionController.update |
-| DELETE | `/api/permissions/:id` | requireAuth, requierePermisoUsuario('puedeAdministrarSeguridad'), requirePermission('usuarios.permisos') | PermissionController.delete |
+
+### `routes/role-permission.routes.ts`
+
+| Método | Ruta | Protección y validación | Manejador |
+|---|---|---|---|
+| GET | `/api/role-permissions` | requireAuth, requierePermisoUsuario('puedeAdministrarSeguridad'), requirePermission('usuarios.permisos') | RolePermissionController.getAll |
+| GET | `/api/role-permissions/role/:roleId` | requireAuth, requierePermisoUsuario('puedeAdministrarSeguridad'), requirePermission('usuarios.permisos') | RolePermissionController.getByRole |
+| POST | `/api/role-permissions` | requireAuth, requierePermisoUsuario('puedeAdministrarSeguridad'), requirePermission('usuarios.permisos') | RolePermissionController.assign |
+| DELETE | `/api/role-permissions` | requireAuth, requierePermisoUsuario('puedeAdministrarSeguridad'), requirePermission('usuarios.permisos') | RolePermissionController.revoke |
 
 ### `routes/role.routes.ts`
 
@@ -387,16 +391,7 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | PATCH | `/api/roles/:id` | requireAuth, requierePermisoUsuario('puedeAdministrarSeguridad'), requirePermission('usuarios.permisos') | RoleController.update |
 | DELETE | `/api/roles/:id` | requireAuth, requierePermisoUsuario('puedeAdministrarSeguridad'), requirePermission('usuarios.permisos') | RoleController.delete |
 
-### `routes/rolePermission.routes.ts`
-
-| Método | Ruta | Protección y validación | Manejador |
-|---|---|---|---|
-| GET | `/api/role-permissions` | requireAuth, requierePermisoUsuario('puedeAdministrarSeguridad'), requirePermission('usuarios.permisos') | RolePermissionController.getAll |
-| GET | `/api/role-permissions/role/:roleId` | requireAuth, requierePermisoUsuario('puedeAdministrarSeguridad'), requirePermission('usuarios.permisos') | RolePermissionController.getByRole |
-| POST | `/api/role-permissions` | requireAuth, requierePermisoUsuario('puedeAdministrarSeguridad'), requirePermission('usuarios.permisos') | RolePermissionController.assign |
-| DELETE | `/api/role-permissions` | requireAuth, requierePermisoUsuario('puedeAdministrarSeguridad'), requirePermission('usuarios.permisos') | RolePermissionController.revoke |
-
-### `routes/securityQuestion.routes.ts`
+### `routes/security-question.routes.ts`
 
 | Método | Ruta | Protección y validación | Manejador |
 |---|---|---|---|

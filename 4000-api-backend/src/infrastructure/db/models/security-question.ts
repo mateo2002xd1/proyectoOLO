@@ -1,6 +1,7 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../../../config/database';
 
+/** Tabla `preguntas_seguridad`: las tres preguntas de cada cuenta, con la respuesta hasheada. */
 export class SecurityQuestion extends Model {
   declare id: string;
   declare user_id: string;

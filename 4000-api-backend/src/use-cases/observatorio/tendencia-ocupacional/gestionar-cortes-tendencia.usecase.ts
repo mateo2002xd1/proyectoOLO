@@ -24,6 +24,7 @@ export async function consultarEstadoCargasTendencia() {
   }));
 }
 
+/** Traduce una fila de la consulta de cargas (snake_case) a la forma que consume el panel. */
 const aCarga = (f: Record<string, unknown>) => ({
   id: f.id as string,
   estado: f.estado as 'procesando' | 'completado' | 'error',

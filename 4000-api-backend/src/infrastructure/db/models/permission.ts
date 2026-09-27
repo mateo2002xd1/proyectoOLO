@@ -1,6 +1,10 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../../../config/database';
 
+/**
+ * Tabla `permisos`: las claves que se pueden conceder a un rol (`usuarios.crear`,
+ * `editar.sitio.inicio`…).
+ */
 export class Permission extends Model {
   declare id: string;
   declare name: string;

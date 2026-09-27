@@ -1,6 +1,9 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../../../config/database';
 
+/**
+ * Tabla `departamentos`: el catálogo único de los 33 departamentos oficiales, con su código DANE.
+ */
 class Departamento extends Model {
   declare id: string;
   declare nombre: string;

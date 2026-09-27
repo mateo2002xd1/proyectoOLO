@@ -90,6 +90,7 @@ const migraciones: Migracion[] = [
 
 const TABLA_CONTROL = 'migraciones_aplicadas';
 
+/** Crea, si no existe, la tabla que anota qué migraciones ya se aplicaron. */
 const asegurarTablaControl = async (): Promise<void> => {
   await sequelize.query(`
     CREATE TABLE IF NOT EXISTS ${TABLA_CONTROL} (
@@ -118,6 +119,7 @@ const obtenerAplicadas = async (): Promise<Set<string>> => {
   );
 };
 
+/** Los nombres de las migraciones que aún no se aplicaron en esta base, en orden. */
 export const listarPendientes = async (): Promise<string[]> => {
   await asegurarTablaControl();
   const aplicadas = await obtenerAplicadas();

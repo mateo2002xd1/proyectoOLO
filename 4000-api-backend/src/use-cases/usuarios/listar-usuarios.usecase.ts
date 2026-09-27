@@ -13,14 +13,23 @@ import { usuariosPolicies } from '../../policies/usuarios.policies';
 import { esDueno } from '../../shared/autorizacion';
 import { logAudit } from '../auditoria/audit.usecase';
 
+/** Todas las cuentas con su rol, sin hash de contraseña. */
 export const getAllUsers = () => UserRepository.findAll();
 
+/**
+ * Una cuenta por su id.
+ * @throws {Error} 404 si no existe.
+ */
 export const getUserById = async (id: string) => {
   const user = await UserRepository.findById(id);
   if (!user) throw Object.assign(new Error('Usuario no encontrado'), { status: 404 });
   return user;
 };
 
+/**
+ * Crea una cuenta con correo institucional y una contraseña temporal que obliga a cambiarla al entrar.
+ * @throws {Error} 403 con el correo reservado; 409 si el correo ya existe; 404 si el rol no existe.
+ */
 export const createUser = async (data: any) => {
   const { email, password, role_id, ...rest } = data;
   // Aquí sí se devuelve el motivo real: quien crea usuarios es un administrador
@@ -85,6 +94,11 @@ const contarAdministradoresActivos = async (excluirId?: string) => {
   ).length;
 };
 
+/**
+ * Actualiza una cuenta respetando quién la edita: nadie se cambia su propio rol ni estado, y no se
+ * degrada al último administrador activo. También resetea contraseña o preguntas si se pide.
+ * @throws {Error} 404 si no existe; 403 si el cambio no está permitido; 409 si dejaría el sistema sin administrador.
+ */
 export const updateUser = async (id: string, data: any, actor?: Actor) => {
   const { password, email, reset_password, reset_security_questions, ...rest } = data;
 
@@ -220,6 +234,10 @@ export const updateUser = async (id: string, data: any, actor?: Actor) => {
   return UserRepository.findById(id);
 };
 
+/**
+ * Elimina una cuenta, salvo la maestra, la propia o la del último administrador activo.
+ * @throws {Error} 404 si no existe; 403 en los casos protegidos; 409 si es el último administrador o tiene contenido asociado.
+ */
 export const deleteUser = async (id: string, actor?: Actor) => {
   const user = await UserRepository.findById(id);
   if (!user) throw Object.assign(new Error('Usuario no encontrado'), { status: 404 });
@@ -255,6 +273,9 @@ export const deleteUser = async (id: string, actor?: Actor) => {
   return { message: 'Usuario eliminado' };
 };
 
+/**
+ * Inactiva las cuentas activas cuya fecha de caducidad ya pasó (el rol administrador queda exento).
+ */
 export const deactivateExpiredUsers = async () => {
   const users = await UserRepository.findAll() as any[];
   const now = new Date();
@@ -295,6 +316,7 @@ export const deactivateExpiredUsers = async () => {
   return { deactivated, exentosPorRolAdministrador };
 };
 
+/** Cuentas activas que caducan dentro de `windowDays` días, con los días que les quedan. */
 export const getExpirationAlerts = async (windowDays = 7) => {
   const users = await UserRepository.findAll();
   const now = new Date();

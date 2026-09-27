@@ -40,6 +40,7 @@ const registrarUsuario = (
 };
 
 export const UserController = {
+  /** Lista las cuentas que caducan en los próximos días (7 por defecto, 30 como máximo). */
   async getExpirationAlerts(req: Request, res: Response, next: NextFunction) {
     try {
       const windowDaysRaw = Number.parseInt(String(req.query.windowDays ?? '7'), 10);
@@ -48,15 +49,18 @@ export const UserController = {
     } catch (err) { next(err); }
   },
 
+  /** Lista las cuentas, inactivando antes las que ya caducaron. */
   async getAll(_req: Request, res: Response, next: NextFunction) {
     try {
       await deactivateExpiredUsers();
       res.json(await getAllUsers());
     } catch (err) { next(err); }
   },
+  /** Devuelve una cuenta por su id. */
   async getById(req: Request, res: Response, next: NextFunction) {
     try { res.json(await getUserById(req.params.id as string)); } catch (err) { next(err); }
   },
+  /** Crea una cuenta y lo registra en la bitácora. */
   async create(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await createUser(req.body);
@@ -64,6 +68,9 @@ export const UserController = {
       res.status(201).json(result);
     } catch (err) { next(err); }
   },
+  /**
+   * Actualiza una cuenta y registra qué cambió; el caso de uso decide qué puede tocar quien llama.
+   */
   async update(req: Request, res: Response, next: NextFunction) {
     try {
       const id = req.params.id as string;
@@ -90,6 +97,7 @@ export const UserController = {
       res.json(result);
     } catch (err) { next(err); }
   },
+  /** Elimina una cuenta, guardando antes sus datos para que la bitácora diga cuál fue. */
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
       const id = req.params.id as string;

@@ -1,6 +1,7 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../../../config/database';
 
+/** Tabla `niveles_formacion`: los niveles de formación (técnico, tecnólogo…). */
 class NivelFormacion extends Model {
   declare id: string;
   declare nombre: string;

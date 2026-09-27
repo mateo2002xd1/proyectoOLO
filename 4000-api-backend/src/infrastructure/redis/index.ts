@@ -1,4 +1,4 @@
-// Infrastructure - Redis
+// Conexión a Redis compartida por la caché de respuestas y la cola de trabajos (BullMQ).
 
 import Redis from 'ioredis';
 
@@ -17,6 +17,7 @@ export const crearLoggerDeErrorConThrottle = (etiqueta: string, intervaloMs = 30
   };
 };
 
+/** La conexión compartida a Redis, que se abre la primera vez que alguien la pide. */
 export const getRedis = () => {
   if (!redis) {
     redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {

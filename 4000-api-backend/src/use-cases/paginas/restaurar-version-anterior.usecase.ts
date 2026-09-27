@@ -10,10 +10,14 @@ import { logAudit, type ContextoAuditoria } from '../auditoria/audit.usecase';
 import { MOTIVO_DE_ARCHIVADO } from '../../shared/auditoria-resumen';
 import { sanitizarContenidoPuck } from '../../shared/sanitizar-contenido';
 import { BloqueoEdicionRepository } from '../../repositories/bloqueo-edicion.repository';
+import { esUuid, uuidONulo } from '../../shared/uuid';
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const toUUID = (id?: string | null) => (id && UUID_RE.test(id) ? id : null);
-
+/**
+ * Vuelve a publicar una versión archivada (la indicada o la inmediatamente anterior): comprueba
+ * que nadie esté editando, sincroniza los archivos entre backup y uploads, intercambia las
+ * versiones en una transacción, vacía las cachés y lo registra.
+ * @throws {Error} si la página no existe, está abierta en el editor o no tiene esa versión.
+ */
 export async function restaurarVersionAnterior(
   slugOId: string,
   userId?: string,
@@ -21,7 +25,7 @@ export async function restaurarVersionAnterior(
   criterioVersion?: { versionId?: string; numeroVersion?: number },
   contextoAuditoria?: ContextoAuditoria
 ) {
-  const esUUID = UUID_RE.test(slugOId);
+  const esUUID = esUuid(slugOId);
   const pagina = esUUID
     ? await Pagina.findByPk(slugOId)
     : await PaginaRepository.findBySlug(slugOId, ambito);
@@ -108,7 +112,7 @@ export async function restaurarVersionAnterior(
         contenido: sanitizarContenidoPuck(versionArchivada.contenido),
         estado: 'publicado',
         publicadoEn: new Date(),
-        publicadoPor: toUUID(userId),
+        publicadoPor: uuidONulo(userId),
       },
       { transaction: t }
     );
@@ -126,7 +130,7 @@ export async function restaurarVersionAnterior(
     slug: pagina.slug,
     ambito,
     versionId: versionArchivada.id,
-    publicadoPor: toUUID(userId),
+    publicadoPor: uuidONulo(userId),
     fecha: new Date(),
   });
 
@@ -134,10 +138,10 @@ export async function restaurarVersionAnterior(
   let nombreUsuario = contextoAuditoria?.usuarioNombre ?? null;
   const usuarioIdFinal = contextoAuditoria?.usuarioId !== undefined
     ? contextoAuditoria.usuarioId
-    : toUUID(userId);
+    : uuidONulo(userId);
 
   if (!nombreUsuario && userId) {
-    const idValido = toUUID(userId);
+    const idValido = uuidONulo(userId);
     if (idValido) {
       try {
         const u = await User.findByPk(idValido, { attributes: ['name', 'apellidos', 'email'] });

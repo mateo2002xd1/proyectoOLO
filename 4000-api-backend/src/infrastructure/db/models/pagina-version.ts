@@ -1,6 +1,10 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../../../config/database';
 
+/**
+ * Tabla `paginas_versiones`: cada versión del contenido Puck de una página, con su estado en el
+ * ciclo editorial (borrador, en revisión, publicado, rechazado, archivado) y su autoría.
+ */
 export class PaginaVersion extends Model {
   declare id: string;
   declare paginaId: string;

@@ -163,12 +163,16 @@ export const AuditRepository = {
       user_agent: datos.userAgent ?? null,
     }, { transaction: tx }),
 
+  /** Historial de una entidad concreta (más reciente primero), sin los guardados automáticos. */
   findByContentId: (entidadId: string, entidadTipo?: string) => {
     const where: any = { entidad_id: entidadId, ...sinGuardadosAutomaticos() };
     if (entidadTipo) where.entidad_tipo = entidadTipo;
     return ContentAuditLog.findAll({ where, order: [['created_at', 'DESC']] });
   },
 
+  /**
+   * Registros de la bitácora que cumplen los filtros, paginados y sin los guardados automáticos.
+   */
   findAll: async (filtros: FiltrosAuditoria = {}) => {
     const { entidadTipo, usuarioId, accion, categoria, desde, hasta } = filtros;
 

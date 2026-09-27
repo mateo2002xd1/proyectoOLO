@@ -117,6 +117,7 @@ export const TendenciaOcupacionalController = {
     }
   },
 
+  /** Devuelve la matriz año × periodo con el estado de carga de cada celda. */
   async estado(_req: Request, res: Response, next: NextFunction) {
     try {
       res.json(await consultarEstadoCargasTendencia());
@@ -135,6 +136,7 @@ export const TendenciaOcupacionalController = {
     }
   },
 
+  /** Retira del sitio público un corte de datos ya publicado. */
   async despublicar(req: Request, res: Response, next: NextFunction) {
     const id = idCorteSchema.safeParse(req.params.id);
     if (!id.success) return datosInvalidos(res, id.error);

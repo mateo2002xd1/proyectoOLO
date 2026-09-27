@@ -43,7 +43,7 @@ export function limpiarTextoHtml(valor: unknown): string {
 
 /**
  * Páginas del sitio web que no viven en `/{slug}` sino en una subcarpeta propia.
- * Copia de `RUTAS_PROPIAS` en `sitio-web/src/features/paginas/model/rutas.ts`:
+ * Copia de `RUTAS_PROPIAS` en `3000-sitio-web/src/features/paginas/model/rutas.ts`:
  * al mover una página allí, hay que añadirla también aquí o el buscador enlazará la
  * URL vieja (que igual redirige, pero con un salto de más).
  */
@@ -66,9 +66,6 @@ export function resolverHref(slug: string, ambito: 'intranet' | 'sitio' = 'sitio
   }
   return `/${slug}`;
 }
-
-/** Alias retrocompatible para la intranet */
-export const resolverHrefIntranet = (slug: string) => resolverHref(slug, 'intranet');
 
 /**
  * Extrae todos los fragmentos textuales relevantes de un objeto de contenido Puck.

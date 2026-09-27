@@ -70,6 +70,10 @@ export interface ContextoDeLectura {
   rolPorId?: Map<string, string>;
 }
 
+/**
+ * Traduce una fila de `auditoria_cambios` a lo que pinta la pantalla de auditoría, con su resumen
+ * en palabras y los nombres que resuelve el contexto de lectura.
+ */
 export const aRegistroAuditoria = (
   fila: FilaAuditoria,
   contexto: ContextoDeLectura = {}
@@ -111,8 +115,10 @@ const ACCIONES: AccionAuditable[] = [
   'cambiar_password', 'autenticar', 'expirar', 'inactivar', 'bloquear', 'verificar_preguntas',
 ];
 
+/** El texto sin espacios alrededor, o `undefined` si no es texto o queda vacío. */
 const comoTexto = (valor: unknown) => (typeof valor === 'string' && valor.trim() ? valor.trim() : undefined);
 
+/** El entero que representa el valor, o `undefined` si no es un número. */
 const comoEntero = (valor: unknown) => {
   const n = Number.parseInt(String(valor ?? ''), 10);
   return Number.isFinite(n) ? n : undefined;
@@ -159,6 +165,7 @@ const dentroDe = <T extends string>(valores: T[], valor: unknown): T | T[] | und
   return validos.length === 1 ? validos[0] : validos;
 };
 
+/** La categoría de auditoría que nombra el valor, o `undefined` si no es una conocida. */
 const comoCategoria = (valor: unknown) => CATEGORIAS.find((categoria) => categoria === comoTexto(valor));
 
 /**

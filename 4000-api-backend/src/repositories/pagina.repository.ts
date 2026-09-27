@@ -9,10 +9,13 @@ export const PaginaRepository = {
   // otra aplicación.
   findBySlug: (slug: string, ambito: Ambito, tx?: Transaction) => Pagina.findOne({ where: { slug, ambito }, transaction: tx }),
 
+  /** Crea la fila de una página nueva. */
   crear: (data: any, tx?: Transaction) => Pagina.create(data, { transaction: tx }),
 
+  /** Actualiza los datos de una página ya cargada. */
   actualizarPagina: (pagina: Pagina, data: any, tx?: Transaction) => pagina.update(data, { transaction: tx }),
 
+  /** La versión con el número más alto de una página, sea cual sea su estado. */
   findUltimaVersion: (paginaId: string, tx?: Transaction) =>
     PaginaVersion.findOne({
       where: { paginaId },
@@ -20,6 +23,7 @@ export const PaginaRepository = {
       transaction: tx,
     }),
 
+  /** La versión más reciente de una página en el estado indicado, o `null`. */
   findVersionPorEstado: (paginaId: string, estado: string, tx?: Transaction) =>
     PaginaVersion.findOne({
       where: { paginaId, estado },
@@ -27,6 +31,7 @@ export const PaginaRepository = {
       transaction: tx,
     }),
 
+  /** Crea una versión nueva de una página. */
   crearVersion: (data: any, tx?: Transaction) => PaginaVersion.create(data, { transaction: tx }),
 
   /**
@@ -37,14 +42,19 @@ export const PaginaRepository = {
   archivarVersionPublicada: (paginaId: string, tx?: Transaction) =>
     PaginaVersion.update({ estado: 'archivado' }, { where: { paginaId, estado: 'publicado' }, transaction: tx }),
 
+  /** Actualiza una versión ya cargada (contenido, estado, autoría…). */
   actualizarVersion: (version: PaginaVersion, data: any, tx?: Transaction) => version.update(data, { transaction: tx }),
 
+  /** Borra una versión. */
   eliminarVersion: (version: PaginaVersion, tx?: Transaction) => version.destroy({ transaction: tx }),
 
+  /** Cuántas versiones tiene una página. */
   contarVersiones: (paginaId: string, tx?: Transaction) => PaginaVersion.count({ where: { paginaId }, transaction: tx }),
 
+  /** Borra una página (sus versiones caen en cascada). */
   eliminarPagina: (pagina: Pagina, tx?: Transaction) => pagina.destroy({ transaction: tx }),
 
+  /** Una versión por su id, o `null`. */
   findVersionPorId: (id: string, tx?: Transaction) => PaginaVersion.findByPk(id, { transaction: tx }),
 
   // La cola de revisión es única para las dos aplicaciones: quien aprueba lo hace

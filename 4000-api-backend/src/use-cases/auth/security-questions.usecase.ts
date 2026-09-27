@@ -37,8 +37,13 @@ const SECURITY_QUESTIONS_CATALOG = [
   { key: 'childhood_street', label: '¿Cuál es el nombre de la calle donde creciste?' },
 ];
 
+/** El catálogo fijo de preguntas de seguridad que se pueden elegir. */
 export const getCatalog = () => SECURITY_QUESTIONS_CATALOG;
 
+/**
+ * Qué preguntas configuró una cuenta (sin respuestas), para pintar el paso de recuperación.
+ * @throws {Error} 404 si el correo no existe; 423 si la cuenta está bloqueada.
+ */
 export const getQuestionKeysForUser = async (email: string) => {
   const normalizedEmail = email.trim().toLowerCase();
   const user = await UserRepository.findByEmail(normalizedEmail);
@@ -57,6 +62,10 @@ export const getQuestionKeysForUser = async (email: string) => {
   }));
 };
 
+/**
+ * Sustituye las preguntas de seguridad de una cuenta por las 3 nuevas, con las respuestas hasheadas.
+ * @throws {Error} 400 si no son exactamente 3, se repiten o alguna respuesta está vacía.
+ */
 export const setupQuestions = async (userId: string, questionsData: any[]) => {
   if (!Array.isArray(questionsData) || questionsData.length !== 3)
     throw Object.assign(new Error('Debe proporcionar exactamente 3 preguntas'), { status: 400 });
@@ -90,6 +99,10 @@ export const setupQuestions = async (userId: string, questionsData: any[]) => {
   return { message: 'Preguntas de seguridad configuradas exitosamente' };
 };
 
+/**
+ * Comprueba las respuestas de seguridad de una cuenta y cuenta los fallos (bloquea al llegar al tope).
+ * @throws {Error} 404 si el correo no existe; 423 si está bloqueada; 400 si faltan respuestas; 401 si alguna no coincide.
+ */
 export const verifyAnswers = async (
   email: string,
   answersData: any[],
@@ -153,6 +166,10 @@ export const verifyAnswers = async (
   return user;
 };
 
+/**
+ * Recupera la contraseña: valida la nueva con la política, verifica las respuestas y la guarda.
+ * @throws {Error} 400 si la contraseña no cumple la política; los de `verifyAnswers` si fallan las respuestas.
+ */
 export const recoverPassword = async (
   email: string,
   answersData: any[],

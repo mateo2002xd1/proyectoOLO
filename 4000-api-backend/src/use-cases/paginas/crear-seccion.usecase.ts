@@ -39,9 +39,6 @@ import { claveDeSeccion } from '../../shared/catalogo-permisos';
 import { invalidarPermisosDeRol } from '../../middlewares/require-permission.middleware';
 import type { Ambito } from '../../shared/ambito';
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const toUUID = (id: string) => (UUID_RE.test(id) ? id : null);
-
 /** Error con `status`, que es como el manejador de errores decide el código HTTP. */
 const fallo = (mensaje: string, status: number) =>
   Object.assign(new Error(mensaje), { status });
@@ -61,7 +58,13 @@ export interface SeccionCreada {
 }
 
 import { Transaction } from 'sequelize';
+import { uuidONulo } from '../../shared/uuid';
 
+/**
+ * Crea una sección nueva: calcula su slug, crea la página vacía y su permiso de edición, y concede ese
+ * permiso a los roles administrador y editor y al de quien la crea.
+ * @throws {Error} 400 sin nombre o con un slug inválido; 409 si la ruta ya existe.
+ */
 export const crearSeccion = async (
   titulo: string,
   ambito: Ambito,
@@ -91,7 +94,7 @@ export const crearSeccion = async (
     }
 
     const pagina = await Pagina.create(
-      { slug, ambito, titulo: nombre, creadoPor: toUUID(userId) },
+      { slug, ambito, titulo: nombre, creadoPor: uuidONulo(userId) },
       { transaction }
     );
 

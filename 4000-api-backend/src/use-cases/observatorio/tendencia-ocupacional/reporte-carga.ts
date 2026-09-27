@@ -45,6 +45,7 @@ export interface ReporteCarga {
   advertencias: HallazgoReporte[];
 }
 
+/** Arma un hallazgo del reporte de carga con la descripción fija de su código de validación. */
 export const hallazgoReporte = (codigo: CodigoValidacion, hallazgo: Hallazgo): HallazgoReporte => ({
   codigo,
   descripcion: VALIDACIONES[codigo],

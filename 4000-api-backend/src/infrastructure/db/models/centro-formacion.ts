@@ -2,6 +2,7 @@ import { DataTypes, Model } from 'sequelize';
 import sequelize from '../../../config/database';
 import Departamento from './departamento';
 
+/** Tabla `centros_formacion`: los centros del SENA, cada uno en su departamento. */
 class CentroFormacion extends Model {
   declare id: string;
   declare departamento_id: string;

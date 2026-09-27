@@ -5,6 +5,9 @@ dotenv.config();
 const nodeEnv = process.env.NODE_ENV || 'development';
 const esProduccion = nodeEnv === 'production';
 
+/**
+ * Corta el arranque si falta `JWT_SECRET`: sin él no se puede firmar ni verificar ninguna sesión.
+ */
 function validateEnv() {
   if (!process.env.JWT_SECRET || process.env.JWT_SECRET.trim() === '') {
     throw new Error(
@@ -28,7 +31,7 @@ validateEnv();
  *
  * Como atajo de desarrollo es útil y se conserva. En producción es una puerta trasera
  * con contraseña reutilizable, así que aquí se apaga de raíz en vez de confiar en que
- * nadie defina las variables: `docker-compose.prod.yml` las estaba definiendo.
+ * nadie defina las variables: el `docker-compose.prod.yml` de entonces las definía.
  */
 const localAuthHabilitado =
   !esProduccion &&
@@ -58,7 +61,7 @@ if (esProduccion && process.env.LOCAL_AUTH_EMAIL?.trim()) {
  * decisión razonable; por eso se deja la puerta, en vez de apagarla de raíz.
  *
  * @see 3-seguridad-del-proyecto.md
- * @see 7-despliegue.md
+ * @see docker/guia-bash.md
  */
 const docsHabilitadas = esProduccion
   ? process.env.SWAGGER_HABILITADO === 'true'
@@ -75,9 +78,9 @@ export const config = {
    * Se hizo configurable porque dentro de un contenedor esa direccion significa "solo
    * yo": nginx, el sitio y la intranet son contenedores distintos y la alcanzan por
    * nombre de red, asi que con el valor por defecto no la ven y la pila entera queda
-   * incomunicada. Los docker-compose ponen `0.0.0.0` de forma explicita, y ahi es
-   * seguro porque ninguno de ellos publica el puerto 4000 al exterior: solo nginx
-   * publica puertos, y solo el 80 y el 443.
+   * incomunicada. `docker-compose.servidor.yml` pone `0.0.0.0` de forma explicita, y ahi
+   * es seguro porque no publica el puerto 4000: solo nginx publica puertos (8080 y 8081),
+   * y solo en 127.0.0.1, para el tunel que corre en el mismo equipo.
    *
    * @see 3-seguridad-del-proyecto.md 4.8 - "La API escucha en 127.0.0.1"
    */

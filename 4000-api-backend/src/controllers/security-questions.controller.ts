@@ -11,10 +11,12 @@ import { datosDeAuditoria, origenDeLaPeticion } from '../shared/auditoria-reques
 import { esErrorDePolitica } from '../shared/password-policy';
 
 export const SecurityQuestionController = {
+  /** Devuelve el catálogo de preguntas de seguridad disponibles. */
   getCatalog(_req: Request, res: Response) {
     res.json(getCatalog());
   },
 
+  /** Devuelve qué preguntas configuró una cuenta; lista vacía si el correo no existe. */
   async getQuestionKeysForUser(req: Request, res: Response, next: NextFunction) {
     try {
       const { email } = req.body;
@@ -27,6 +29,7 @@ export const SecurityQuestionController = {
     }
   },
 
+  /** Guarda las preguntas y respuestas de seguridad de la sesión actual. */
   async setupQuestions(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.user?.id;
@@ -36,6 +39,7 @@ export const SecurityQuestionController = {
     } catch (err) { next(err); }
   },
 
+  /** Comprueba las respuestas de seguridad de una cuenta (paso previo a recuperar). */
   async verifyAnswersCtrl(req: Request, res: Response, next: NextFunction) {
     try {
       const { email, answers } = req.body;
@@ -46,7 +50,11 @@ export const SecurityQuestionController = {
     } catch (err) { next(err); }
   },
 
-  async recoverPasswordCtrl(req: Request, res: Response, next: NextFunction) {
+  /**
+   * Recupera la contraseña con las respuestas de seguridad.
+   * Arma sus propios errores a propósito: el mensaje genérico no delata si el correo existe.
+   */
+  async recoverPasswordCtrl(req: Request, res: Response, _next: NextFunction) {
     try {
       const { email, answers, newPassword } = req.body;
       const { message, usuarioId } = await recoverPassword(email, answers, newPassword, origenDeLaPeticion(req));

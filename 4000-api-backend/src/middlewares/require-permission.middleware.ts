@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { RolePermissionRepository } from '../repositories/role-permissions.repository';
-import { marcarGuardia } from '../shared/autorizacion';
+import { marcarGuardia, normalizarRol, tieneRol } from '../shared/autorizacion';
 import { claveDeSeccion } from '../shared/catalogo-permisos';
 import { esSeccionConocida } from '../use-cases/paginas/secciones.usecase';
 import { AMBITO_HEADER, resolverAmbito } from '../shared/ambito';
@@ -45,9 +45,9 @@ export function invalidarPermisosDeRol(rol?: string | null): void {
   // El nombre del rol viaja en el JWT tal cual está en la tabla, pero un renombrado
   // podría dejar variantes; limpiar por comparación laxa evita dejar una entrada viva
   // con otro uso de mayúsculas.
-  const normalizado = rol.trim().toLowerCase();
+  const normalizado = normalizarRol(rol);
   for (const clave of cache.keys()) {
-    if (clave.trim().toLowerCase() === normalizado) cache.delete(clave);
+    if (normalizarRol(clave) === normalizado) cache.delete(clave);
   }
 }
 
@@ -83,7 +83,7 @@ const resolverPermisos = async (
     return null;
   }
 
-  if (rol.trim().toLowerCase() === 'superadmin') return 'superadmin';
+  if (tieneRol(rol, ['superadmin'])) return 'superadmin';
 
   return { perms: await permisosDe(rol) };
 };

@@ -32,12 +32,15 @@ const registrarRol = (
 };
 
 export const RoleController = {
+  /** Lista los roles. */
   async getAll(_req: Request, res: Response, next: NextFunction) {
     try { res.json(await getAllRoles()); } catch (err) { next(err); }
   },
+  /** Devuelve un rol por su id. */
   async getById(req: Request, res: Response, next: NextFunction) {
     try { res.json(await getRoleById(req.params.id as string)); } catch (err) { next(err); }
   },
+  /** Crea un rol y lo registra en la bitácora. */
   async create(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await createRole(req.body);
@@ -45,6 +48,7 @@ export const RoleController = {
       res.status(201).json(result);
     } catch (err) { next(err); }
   },
+  /** Actualiza un rol y registra qué campos cambiaron. */
   async update(req: Request, res: Response, next: NextFunction) {
     try {
       const id = req.params.id as string;
@@ -58,6 +62,7 @@ export const RoleController = {
       res.json(result);
     } catch (err) { next(err); }
   },
+  /** Elimina un rol, guardando antes su nombre para la bitácora. */
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
       const id = req.params.id as string;

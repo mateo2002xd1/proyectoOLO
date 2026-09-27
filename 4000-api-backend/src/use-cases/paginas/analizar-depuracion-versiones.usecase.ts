@@ -6,6 +6,7 @@ export interface FiltrosAnalisisDepuracion {
   ambito?: Ambito;
   paginaId?: string;
   fechaCorte?: string; // ISO YYYY-MM-DD opcional
+  /** Lo manda el panel, pero se ignora: la última versión archivada se conserva siempre. */
   conservarUltimoRespaldo?: boolean;
 }
 
@@ -27,6 +28,10 @@ export interface ResultadoAnalisisDepuracion {
   paginasAfectadas: DetallePaginaDepuracion[];
 }
 
+/**
+ * Dice qué versiones archivadas se borrarían con estos filtros (ámbito, página, fecha de corte),
+ * cuántas son y cuánto ocupan, sin borrar nada. La última archivada de cada página nunca entra.
+ */
 export async function analizarDepuracionVersiones(
   filtros: FiltrosAnalisisDepuracion
 ): Promise<ResultadoAnalisisDepuracion> {
@@ -38,8 +43,8 @@ export async function analizarDepuracionVersiones(
     }
   }
 
-  // Regla invariable: SIEMPRE se conserva la última versión archivada para permitir rollback
-  const conservarUltimo = true;
+  // Regla invariable: SIEMPRE se conserva la última versión archivada para permitir rollback.
+  // Está escrita en el SQL (`ultima_archivada`), no en una variable.
 
   // Consulta que obtiene el conteo global y el detalle de TODAS las versiones candidatas
   const sql = `

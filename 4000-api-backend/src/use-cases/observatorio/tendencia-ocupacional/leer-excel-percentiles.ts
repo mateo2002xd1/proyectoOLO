@@ -103,6 +103,7 @@ function valorDeCelda(celda: ExcelJS.Cell): unknown {
   return null; // { error: '#N/A' } y similares
 }
 
+/** ¿Está vacía la celda? `null` o un texto que solo tiene espacios. */
 const esVacio = (valor: unknown) => valor === null || (typeof valor === 'string' && valor.trim() === '');
 
 /** Acepta número o texto numérico ("0,85", "85%"); `null` si no lo es. */

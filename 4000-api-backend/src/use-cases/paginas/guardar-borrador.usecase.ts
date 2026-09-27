@@ -3,10 +3,12 @@ import { PaginaRepository } from '../../repositories/pagina.repository';
 import type { Ambito } from '../../shared/ambito';
 import { sanitizarContenidoPuck } from '../../shared/sanitizar-contenido';
 import { limpiarSubidasPendientes } from './limpiar-subidas-pendientes.usecase';
+import { uuidONulo } from '../../shared/uuid';
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const toUUID = (id: string) => (UUID_RE.test(id) ? id : null);
-
+/**
+ * Guarda el contenido del editor (sanitizado) como borrador: crea la página si no existía, reutiliza
+ * la última versión si aún no está publicada ni archivada y, si lo está, abre una nueva.
+ */
 export const guardarBorrador = async (
   slug: string,
   contenido: any,
@@ -24,7 +26,7 @@ export const guardarBorrador = async (
       slug,
       ambito,
       titulo: slug,
-      creadoPor: toUUID(userId),
+      creadoPor: uuidONulo(userId),
     }, tx);
   }
 
@@ -47,7 +49,7 @@ export const guardarBorrador = async (
       {
         contenido: contenidoSanitizado,
         estado: 'borrador',
-        creadoPor: toUUID(userId),
+        creadoPor: uuidONulo(userId),
       },
       tx
     );
@@ -61,7 +63,7 @@ export const guardarBorrador = async (
         contenido: contenidoSanitizado,
         numeroVersion,
         estado: 'borrador',
-        creadoPor: toUUID(userId),
+        creadoPor: uuidONulo(userId),
       },
       tx
     );
@@ -72,7 +74,7 @@ export const guardarBorrador = async (
     paginaId: pagina.id,
     slug,
     ambito,
-    usuarioId: toUUID(userId) || userId,
+    usuarioId: uuidONulo(userId) || userId,
   }).catch((err) => console.error('[Limpieza Borrador] Error limpiando subidas pendientes:', err));
 
   return { pagina, version, paginaAnterior, versionAnterior };

@@ -13,6 +13,7 @@ export interface ResultadoDepuracionAuditoria {
   pesoTablaDespues: number;
 }
 
+/** Tamaño legible para el mensaje final: `1536` → «1.5 KB». */
 function formatearBytes(bytes: number): string {
   if (!bytes || bytes <= 0) return '0 B';
   const k = 1024;
@@ -22,6 +23,12 @@ function formatearBytes(bytes: number): string {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 }
 
+/**
+ * Borra de la bitácora los registros indicados que tengan más de 6 meses y dice cuánto se liberó.
+ * La antigüedad se vuelve a comprobar aquí, dentro de la transacción: no basta con que el
+ * panel los haya mostrado como antiguos.
+ * @throws {Error} 400 si no llega ningún id.
+ */
 export async function ejecutarDepuracionAuditoria(
   params: ParametrosEjecutarDepuracionAuditoria,
   contextoAuditoria?: ContextoAuditoria

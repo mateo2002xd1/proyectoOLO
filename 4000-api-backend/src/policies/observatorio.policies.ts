@@ -5,9 +5,9 @@
  * sesión — se descartó dejar que cualquiera con `contenidos.editar` importara,
  * que es lo que hacía la primera versión de este endpoint).
  */
-const ROLES_QUE_ACTUALIZAN_DATOS = ['superadmin', 'administrador'];
+import { tieneRol } from '../shared/autorizacion';
 
-const normalizar = (rol: string | undefined | null) => (rol ?? '').trim().toLowerCase();
+const ROLES_QUE_ACTUALIZAN_DATOS = ['superadmin', 'administrador'];
 
 /**
  * Quién decide que un corte de datos ya cargado se vea en el sitio público (hoy, la
@@ -18,8 +18,10 @@ const normalizar = (rol: string | undefined | null) => (rol ?? '').trim().toLowe
 const ROLES_QUE_PUBLICAN_DATOS = ['superadmin', 'administrador'];
 
 export const observatorioPolicies = {
-  puedeActualizarDatos: (user?: any) => ROLES_QUE_ACTUALIZAN_DATOS.includes(normalizar(user?.role)),
-  puedePublicarDatos: (user?: any) => ROLES_QUE_PUBLICAN_DATOS.includes(normalizar(user?.role)),
+  /** Subir un Excel de datos y ver el historial de cargas. */
+  puedeActualizarDatos: (user?: any) => tieneRol(user?.role, ROLES_QUE_ACTUALIZAN_DATOS),
+  /** Publicar o retirar del sitio un corte de datos ya cargado. */
+  puedePublicarDatos: (user?: any) => tieneRol(user?.role, ROLES_QUE_PUBLICAN_DATOS),
 };
 
 export type PermisoObservatorio = keyof typeof observatorioPolicies;

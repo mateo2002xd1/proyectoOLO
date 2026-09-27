@@ -148,7 +148,6 @@ const definicion = {
         'El editor visual y su ciclo editorial: borrador → revisión → publicado (RF-01, RF-06).',
     },
     { name: 'Auditoría', description: 'Historial de cambios: quién, qué, cuándo (RF-07).' },
-    { name: 'Trabajos', description: 'Cola de tareas pesadas (exportaciones).' },
   ],
 
   /**
@@ -563,16 +562,6 @@ const definicion = {
         properties: {
           key: { type: 'string', example: 'primera_mascota' },
           label: { type: 'string', example: '¿Cómo se llamaba tu primera mascota?' },
-        },
-      },
-
-      EstadoTrabajo: {
-        type: 'object',
-        properties: {
-          id: { type: 'string', example: '42' },
-          estado: { type: 'string', enum: ['waiting', 'active', 'completed', 'failed', 'delayed'] },
-          progreso: { type: 'number', minimum: 0, maximum: 100 },
-          resultado: { nullable: true, description: 'Solo cuando el trabajo terminó bien.' },
         },
       },
 

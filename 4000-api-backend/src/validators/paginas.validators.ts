@@ -4,7 +4,7 @@
  * El stub anterior describía un formato que no existe (`{ titulo, slug, contenido:
  * [{tipo, datos}] }`). Lo que el editor manda de verdad es el árbol de Puck bajo la
  * clave `contenido` — ver `ContenidoPagina` en
- * `intranet/src/features/gestor-secciones/types/editor.types.ts`.
+ * `3001-intranet/src/features/paginas/model/pagina.types.ts`.
  *
  * @see 3-seguridad-del-proyecto.md §3
  */

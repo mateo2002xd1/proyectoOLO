@@ -34,6 +34,10 @@ export type AccionAuditable =
   | 'bloquear'
   | 'verificar_preguntas';
 
+/**
+ * Tabla `auditoria_cambios`: la bitácora (RF-07). Una fila por acción, con quién, desde dónde
+ * y qué campos cambiaron.
+ */
 export class ContentAuditLog extends Model {
   declare id: string;
   declare entidad_id: string;

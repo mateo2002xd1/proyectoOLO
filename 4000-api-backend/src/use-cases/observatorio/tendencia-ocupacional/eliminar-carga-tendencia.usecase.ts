@@ -2,6 +2,7 @@ import sequelize from '../../../config/database';
 import { TendenciaOcupacionalRepository as Repo } from '../../../repositories/tendencia-ocupacional.repository';
 import { eliminarArchivoSiQuedaSuelto } from '../eliminar-carga.usecase';
 
+/** Un `Error` con el `status` HTTP que traduce `error.middleware.ts`. */
 const conEstado = (mensaje: string, status: number) => Object.assign(new Error(mensaje), { status });
 
 export interface CargaEliminada {

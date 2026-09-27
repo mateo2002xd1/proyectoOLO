@@ -12,27 +12,26 @@
  * capitalizados ('Editor', 'Superadmin'), el JWT los lleva tal cual y `LOCAL_AUTH_ROLE`
  * también. Comparar literal dejaría fuera a todo el mundo.
  */
-import { rolDeActor, permisosDeActor, type ActorDePolicy } from '../shared/autorizacion';
+import { rolDeActor, permisosDeActor, tieneRol, type ActorDePolicy } from '../shared/autorizacion';
 
 const ROLES_QUE_VEN = ['superadmin', 'administrador', 'editor', 'director/subdirector'];
 const ROLES_QUE_EDITAN = ['superadmin', 'administrador', 'editor'];
 const ROLES_QUE_APRUEBAN = ['superadmin', 'administrador'];
 
-const normalizar = (rol: string | undefined | null) => (rol ?? '').trim().toLowerCase();
-
-const tieneRol = (rol: string | undefined | null, permitidos: string[]) =>
-  permitidos.includes(normalizar(rol));
-
 export const paginasPolicies = {
+  /** Ver el contenido de la intranet: los roles de la lista o el permiso `acceso.intranet`. */
   puedeVer: (actor?: ActorDePolicy) =>
     tieneRol(rolDeActor(actor), ROLES_QUE_VEN) || !!permisosDeActor(actor)?.includes('acceso.intranet'),
 
+  /** Editar páginas: los roles que editan o cualquier permiso `editar.*`, `secciones.*` o `editor.*`. */
   puedeEditar: (actor?: ActorDePolicy) =>
     tieneRol(rolDeActor(actor), ROLES_QUE_EDITAN) ||
     !!permisosDeActor(actor)?.some((p: string) => p.startsWith('editar.') || p.startsWith('secciones.') || p.startsWith('editor.')),
 
+  /** Aprobar una versión en revisión y publicarla. */
   puedePublicar: (actor?: ActorDePolicy) => tieneRol(rolDeActor(actor), ROLES_QUE_APRUEBAN),
 
+  /** Devolver al editor una versión en revisión, con su motivo. */
   puedeRechazar: (actor?: ActorDePolicy) => tieneRol(rolDeActor(actor), ROLES_QUE_APRUEBAN),
 
   /**

@@ -63,8 +63,13 @@ class ErrorDeFila extends Error {
   }
 }
 
+/** El texto visible de una celda, sin espacios alrededor. */
 const comoTexto = (celda: ExcelJS.Cell): string => (celda.text ?? '').toString().trim();
 
+/**
+ * El valor numérico de una celda (acepta coma decimal, `%` y fórmulas).
+ * @throws {ErrorDeFila} si la celda no es un número.
+ */
 const comoNumero = (celda: ExcelJS.Cell, fila: number, columna: string): number => {
   const crudo = celda.type === ExcelJS.ValueType.Formula ? (celda as any).result : celda.text;
   const numero = Number(String(crudo ?? '').replace(',', '.').replace('%', '').trim());

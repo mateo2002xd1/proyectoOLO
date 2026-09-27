@@ -2,6 +2,7 @@ import { DataTypes, Model } from 'sequelize';
 import sequelize from '../../../config/database';
 import NivelFormacion from './nivel-formacion';
 
+/** Tabla `programas_formacion`: los programas de formación, cada uno con su nivel. */
 class ProgramaFormacion extends Model {
   declare id: string;
   declare nivel_formacion_id: string;

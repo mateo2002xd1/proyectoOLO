@@ -121,46 +121,9 @@ router.use(requireAuth, requierePermisoAuditoria('puedeVer'), requirePermission(
 router.get('/', AuditController.getAll);
 
 /**
- * Endpoints de depuración de la tabla de auditoría
+ * Depuración de la bitácora: primero se analiza qué se borraría y después se borra.
  */
 router.get('/depurar/analizar', AuditController.analizarDepuracion);
 router.post('/depurar', AuditController.ejecutarDepuracion);
-
-/**
- * @openapi
- * /api/audit-logs/{contentType}/{contentId}:
- *   get:
- *     tags: [Auditoría]
- *     summary: Historial de un objeto concreto
- *     description: |
- *       El rastro completo de una entidad: todos los cambios sobre ese contenido,
- *       página o usuario, en orden.
- *
- *       **Las contraseñas no llegan aquí.** Un cambio de contraseña se registra como
- *       acción —la Ley 1581 obliga a poder consultarlo— pero el campo se guarda como
- *       «valor omitido»: ni el valor anterior ni el nuevo tocan la tabla. Hay una
- *       comprobación automatizada que lo verifica (`npm run auditoria:verificar`).
- *     parameters:
- *       - name: contentType
- *         in: path
- *         required: true
- *         schema: { type: string, example: usuarios }
- *         description: Tipo de entidad.
- *       - name: contentId
- *         in: path
- *         required: true
- *         schema: { type: string }
- *     responses:
- *       200:
- *         description: Registros de ese objeto.
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items: { $ref: '#/components/schemas/RegistroAuditoria' }
- *       401: { $ref: '#/components/responses/NoAutenticado' }
- *       403: { $ref: '#/components/responses/SinPermiso' }
- */
-router.get('/:contentType/:contentId', AuditController.getByContentId);
 
 export default router;

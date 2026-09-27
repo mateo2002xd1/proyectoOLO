@@ -170,8 +170,7 @@ export const esErrorDePolitica = (error: unknown): boolean =>
  * Valida y devuelve la contraseña ya normalizada, lista para hashear.
  *
  * Lanza con `status` 400 igual que el resto de use-cases (la convención del
- * backend es `Object.assign(new Error(...), { status })`, no las clases de
- * `shared/errors`, que nadie usa todavía).
+ * backend es `Object.assign(new Error(...), { status })`, §6 de las convenciones).
  *
  * **Devuelve un valor a propósito**: obliga a quien llama a hashear lo que salió de
  * aquí y no lo que entró, que es lo único que mantiene coherente la normalización.
