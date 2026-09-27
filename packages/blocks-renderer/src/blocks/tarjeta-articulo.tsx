@@ -42,7 +42,7 @@ const FALLBACK_SVG =
  * Compatible con utilidades de Tailwind CSS y tokens semánticos.
  */
 export function TarjetaArticulo({
-  imagenSrc = '/docs/images/blog/image-1.jpg',
+  imagenSrc = '',
   imagenAlt = 'Ilustración del artículo',
   titulo = 'Optimiza y agiliza tus procesos hoy mismo',
   descripcion = 'En el entorno digital actual, impulsando una colaboración fluida entre equipos de desarrollo y operaciones.',
