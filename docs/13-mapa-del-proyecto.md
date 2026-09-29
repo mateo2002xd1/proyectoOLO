@@ -18,7 +18,7 @@
 | `3001-intranet` | 33 | 2 | 13 | — | 27 |
 | `4000-api-backend` | 32 | — | — | 70 | 42 |
 
-Paquetes compartidos: 7 · migraciones: 37 · modelos: 17.
+Paquetes compartidos: 7 · migraciones: 38 · modelos: 17.
 
 ## Carpetas sin descripción (2)
 
@@ -577,6 +577,7 @@ En el orden del manifiesto (`migrations/index.ts`), que es el orden en que corre
 - `035-tendencia-anio-libre`
 - `036-eliminar-cms-tradicional`
 - `037-tendencia-ocupacional-claves-uuid`
+- `038-auditoria-autoguardado`
 
 ### Modelos
 

@@ -112,7 +112,7 @@ const ENTIDADES: EntidadAuditable[] = [
 
 const ACCIONES: AccionAuditable[] = [
   'crear', 'actualizar', 'eliminar', 'publicar', 'despublicar', 'aprobar', 'rechazar', 'enviar_revision', 'guardar_borrador',
-  'cambiar_password', 'autenticar', 'expirar', 'inactivar', 'bloquear', 'verificar_preguntas',
+  'cambiar_password', 'autenticar', 'expirar', 'inactivar', 'bloquear', 'verificar_preguntas', 'autoguardar_borrador',
 ];
 
 /** El texto sin espacios alrededor, o `undefined` si no es texto o queda vacío. */

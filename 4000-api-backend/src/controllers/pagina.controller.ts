@@ -65,7 +65,7 @@ const ambitoExigidoDe = (req: Request) => exigirAmbito(req.header(AMBITO_HEADER)
  */
 const registrar = async (
   req: Request,
-  accion: 'crear' | 'actualizar' | 'enviar_revision' | 'publicar' | 'despublicar' | 'aprobar' | 'rechazar' | 'eliminar' | 'guardar_borrador',
+  accion: 'crear' | 'actualizar' | 'enviar_revision' | 'publicar' | 'despublicar' | 'aprobar' | 'rechazar' | 'eliminar' | 'guardar_borrador' | 'autoguardar_borrador',
   resultado: any,
   campos: { campo: string; antes: unknown; despues: unknown }[],
   tx?: any
@@ -299,23 +299,30 @@ export const PaginaController = {
     } catch (err) { next(err); }
   },
 
-  /** Guarda el contenido del editor como borrador y lo registra en la bitácora. */
+  /**
+   * Guarda el contenido del editor como borrador y lo registra en la bitácora.
+   *
+   * Con `automatico` es el autoguardado del editor: misma fila, con su propio verbo
+   * (`autoguardar_borrador`) para que no se lea como un guardado que alguien pulsó.
+   */
   async guardarBorrador(req: Request, res: Response, next: NextFunction) {
     try {
       const { contenido } = req.body;
+      const automatico = req.body.automatico === true;
       const result = await sequelize.transaction(async (tx) => {
         const r = await guardarBorrador(
           req.params.slug as string,
           contenido,
           req.user?.id || '',
           ambitoExigidoDe(req),
-          tx
+          tx,
+          { automatico }
         );
         // guardar_borrador: registra slug (puede ser primera vez que se crea la página) y la versión
         const slugAntes = r.paginaAnterior?.slug ?? null;
         const verAntes = r.versionAnterior?.numeroVersion ?? null;
         const verDespues = r.version?.numeroVersion ?? null;
-        await registrar(req, 'guardar_borrador', r, [
+        await registrar(req, automatico ? 'autoguardar_borrador' : 'guardar_borrador', r, [
           { campo: 'slug', antes: slugAntes, despues: r.pagina?.slug ?? req.params.slug },
           ...(verDespues !== undefined ? [{ campo: 'version', antes: verAntes, despues: verDespues }] : []),
           { campo: 'estado', antes: r.versionAnterior?.estado ?? null, despues: 'borrador' },

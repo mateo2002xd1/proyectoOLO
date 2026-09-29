@@ -46,10 +46,17 @@ export const contenidoPaginaSchema = z
   })
   .passthrough();
 
-/** Cuerpo de `POST /api/paginas/:slug/borrador`. */
+/**
+ * Cuerpo de `POST /api/paginas/:slug/borrador`.
+ *
+ * `automatico` lo manda el autoguardado del editor. No se salta nada —mismo esquema,
+ * mismo saneado, misma fila en la bitácora—: solo cambia el verbo con el que queda
+ * escrita (`autoguardar_borrador`) y prohíbe sacar de la cola una versión en revisión.
+ */
 export const guardarBorradorSchema = z
   .object({
     contenido: contenidoPaginaSchema,
+    automatico: z.boolean().optional(),
   })
   .strict();
 

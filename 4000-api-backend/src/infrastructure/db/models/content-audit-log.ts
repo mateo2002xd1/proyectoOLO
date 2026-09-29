@@ -32,7 +32,10 @@ export type AccionAuditable =
   // Migración 031: una cuenta bloqueada por intentos fallidos y la verificación de las
   // preguntas de seguridad, con su resultado. Tampoco dejaban rastro.
   | 'bloquear'
-  | 'verificar_preguntas';
+  | 'verificar_preguntas'
+  // Migración 038: el guardado que hace el editor solo. Aparte de `guardar_borrador`
+  // porque ese se lee como «el usuario guardó», y este no lo pulsó nadie.
+  | 'autoguardar_borrador';
 
 /**
  * Tabla `auditoria_cambios`: la bitácora (RF-07). Una fila por acción, con quién, desde dónde
