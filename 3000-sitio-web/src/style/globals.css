@@ -3187,6 +3187,13 @@ button.text-link,
   color: #fbbf24;
 }
 
+/* Ya guardado (a mano o por el autoguardado): informa, no avisa, así que deja el
+   ámbar y va en el blanco atenuado de la ruta de la bandera. Sobre el #001631 de la
+   cabecera mide unos 9:1. */
+.olo-editor-aviso--guardado {
+  color: rgba(255, 255, 255, 0.7);
+}
+
 .olo-editor-btn {
   display: flex;
   align-items: center;
