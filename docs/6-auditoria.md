@@ -5,6 +5,59 @@
 
 ---
 
+## sesión 28-09-2026: autoguardado del editor
+
+**Qué era.** El usuario abría el editor, se le cerraba por error y perdía todo: el borrador
+solo se guardaba al pulsar «Guardar borrador». Pide que ese mismo guardado ocurra solo, con
+el intervalo que se recomiende.
+
+**Cuándo guarda.** Cada **30 s** si hay cambios (intervalo fijo, no «30 s después de dejar
+de escribir»: con una espera que se reinicia, quien edita sin pausas no guardaría nunca), al
+**ocultarse la pestaña** y al **desmontarse el editor** sin pasar por «Salir» (el «atrás»
+del navegador). Al cerrar o recargar la pestaña no se puede guardar —el navegador corta la
+petición y `keepalive` no admite más de 64 KB—, así que el navegador **pregunta antes** si
+queda algo pendiente. Treinta segundos: como mucho se pierde medio minuto, y como mucho son
+dos guardados por minuto (cada uno sanea el árbol, escribe en la bitácora y gasta del
+límite de 30 escrituras/min). WordPress guarda cada 60 s; Google Docs, al instante.
+
+**No guarda** con un guardado o envío en curso, con un diálogo abierto (un autoguardado a la
+vez que un envío podía devolver a borrador la versión recién enviada), sin candado, ni con
+la versión **en revisión**: guardar encima la saca de la cola de quien aprueba, y eso lo
+decide una persona pulsando «Guardar». Tras un fallo no reintenta hasta el siguiente cambio.
+
+**Decisión del usuario: acción propia en la bitácora.** `autoguardar_borrador`, aparte de
+`guardar_borrador` (que se lee «el usuario guardó»): mismo criterio que el 23/9 con los
+guardados que nadie pulsó. Frase: «El editor guardó automáticamente el borrador · versión N
+de «slug»». En el panel, «Autoguardado», con su propia opción en el filtro de acción (dentro
+de «Edición» taparía lo que sí decidió una persona).
+
+| App | Archivo | Cambio |
+|---|---|---|
+| API | `migrations/038-auditoria-autoguardado.ts` (+ `index.ts`) | Suma `autoguardar_borrador` al `CHECK` de `auditoria_cambios`. Al revertir, las filas pasan a `guardar_borrador` |
+| API | `validators/paginas.validators.ts`, `controllers/pagina.controller.ts` | `POST /:slug/borrador` acepta `automatico: true`: mismo guardado, se registra como `autoguardar_borrador` |
+| API | `use-cases/paginas/guardar-borrador.usecase.ts` | Con `automatico`, **409** si la última versión está en revisión (cubre el editor abierto en dos pestañas). Y **bug previo**: la limpieza de subidas corría antes del COMMIT, así que no veía la imagen recién metida en el borrador y podía borrarla del disco; ahora va en `afterCommit` (también al enviar a revisión) |
+| API | `auditoria-resumen.ts`, `auditoria-categorias.ts`, `auditoria-dto.ts`, `listar-en-revision.usecase.ts`, `content-audit-log.ts`, OpenAPI | Verbo, frase, categoría editorial y autor de respaldo en la cola de revisión |
+| Panel | `administracion/auditoria/types.ts` | Etiqueta «Autoguardado», píldora `brand`, opción de filtro propia |
+| Sitio e intranet | `edicion/hooks/use-autoguardado.ts` (nuevo, gemelos) | El intervalo, la pestaña oculta, el desmontaje y el aviso antes de cerrar |
+| Sitio e intranet | `edicion/components/puck-editor-wrapper.tsx` | Usa el hook; la cabecera dice «Guardando…», «Sin guardar» o «Guardado a las 10:42 a. m.» (`.olo-editor-aviso--guardado`, blanco atenuado, ~9:1). El guardado antes del cierre por inactividad también va como autoguardado, y marca la salida para que el aviso del navegador no frene la redirección al login |
+| Sitio e intranet | `edicion.service.ts`, `use-pagina.ts` / `use-editor-actions.ts` | Pasan `automatico`. Los errores de guardado muestran el mensaje de la API y no el de axios; en el sitio, un guardado nuevo retira el aviso anterior (la intranet ya lo hacía) |
+
+**Verificado.** `tsc` limpio en la API, el sitio y la intranet; `eslint` limpio en lo tocado
+(queda el `any` que ya había en la normalización de `puck-editor-wrapper.tsx` del sitio).
+La frase y la categoría nuevas, probadas con `ts-node` sin base. **La migración 038 no se ha
+aplicado a ninguna base**: sin ella, cada autoguardado falla por el `CHECK` (la transacción
+se deshace y el editor lo muestra como error). Sin probar en el navegador.
+
+**Pendiente.**
+- Aplicar la 038 (`npm run migrate` en `4000-api-backend`) y reiniciar la API de dev.
+- Probar en el navegador: que abrir el editor sin tocar nada no autoguarde (si Puck
+  apuntara algo en la historia al montar, crearía un borrador solo por abrir una página
+  publicada); cambiar de pestaña con cambios; «atrás» del navegador; cerrar con cambios
+  (debe preguntar); versión en revisión (no debe autoguardar); dos pestañas.
+- `12-diccionario-de-datos.md` sigue con la lista de acciones de antes de la 031.
+
+---
+
 ## sesión 27-09-2026: la pantalla de Auditoría del panel, igual que Respaldos
 
 **Qué era.** Tras limpiar Respaldos, el usuario pasa a Auditoría y pide los mismos ajustes,
