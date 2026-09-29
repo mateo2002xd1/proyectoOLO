@@ -1,6 +1,6 @@
 import { QueryInterface } from 'sequelize';
 
-export const nombre = '038-auditoria-autoguardado';
+export const nombre = '040-auditoria-autoguardado';
 
 /**
  * Un verbo nuevo para la bitácora: `autoguardar_borrador`, el guardado que hace el editor

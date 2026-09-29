@@ -5,6 +5,41 @@
 
 ---
 
+## sesión 29-09-2026: módulo "Alertas de inversión" — carga de Excel, alta manual y sitio público
+
+**Qué era.** La tarjeta "Alertas de inversión" de "Actualizaciones" llevaba desde la migración
+`027-cargas-datos` como "Próximamente", sin Excel ni esquema. Se implementa completo: dos
+catálogos nuevos, la tabla de hechos, las dos vías de entrada de datos (Excel y formulario
+manual) y la página pública `/alertas-inversion` con el gráfico por sector.
+
+| App | Archivo | Cambio |
+|---|---|---|
+| API | `infrastructure/db/migrations/038-alertas-inversion-catalogos.ts` | `ciiu_secciones` (A–U, semilla de las 21), `ciiu_clases`, `empresas` (única por `lower(nombre)`), `municipios` (catálogo **abierto**, a diferencia de `departamentos`) |
+| API | `infrastructure/db/migrations/039-alertas-inversion-proyectos.ts` | `proyectos_inversion` (mismo ciclo `borrador/en_revision/publicado/rechazado` de `paginas_versiones`) y `proyectos_inversion_ubicaciones` (puente N:M, calcado de `roles_permisos`) |
+| API | `infrastructure/db/models/{ciiu-seccion,ciiu-clase,empresa,municipio,proyecto-inversion,proyecto-inversion-ubicacion}.ts`, `models/index.ts` | Modelos nuevos y sus asociaciones, estilo `Departamento`/`CentroFormacion` (snake_case, sin `field:`) |
+| API | `policies/alertas-inversion.policies.ts`, `middlewares/permisos.middleware.ts` | Familia de policy propia (`requierePermisoAlertasInversion`), no la de Observatorio: mismos roles (superadmin/administrador) pero módulo distinto |
+| API | `repositories/alertas-inversion.repository.ts` | Cargas sobre `cargas_datos` con `modulo='alertas_inversion'` (reutiliza la tabla, no la duplica); resolución/creación de empresa y municipio; consultas del gráfico y el listado público |
+| API | `use-cases/alertas-inversion/*` | `importar-excel.usecase.ts` (agrega, no vacía-y-recarga: cada fila es una noticia independiente; omite filas cuya "Fuente" ya esté registrada); `iniciar-carga`/`procesar-carga` (reutilizan `validarYGuardarExcel` de Observatorio); `crear-proyecto-manual`; `consultas-publicas` (gráfico, listado, opciones) |
+| API | `infrastructure/redis/queue.ts` | Nuevo `job.name = 'importar-alertas-inversion-excel'` en la cola `heavy-jobs` |
+| API | `routes/alertas-inversion.routes.ts`, `controllers/alertas-inversion.controller.ts`, `validators/alertas-inversion.validators.ts`, `app.ts` | `/api/alertas-inversion/{grafico,listado,opciones}` públicos; `/cargas`, `/formatos/plantilla`, `/proyectos` tras `requireAuth` |
+| API | `use-cases/observatorio/formatos-de-carga.ts`, `uploads/formatos-carga/formatdata-alertas-inversion.xlsx` | Formato nuevo: Código, Actividad, Departamento, Ciudad, Empresa, Fecha, Fuente, Descripción, Tipo, Inversión COP, Empleos estimados, Medio |
+| Sitio | `features/administracion/actualizaciones/components/carga-alertas-inversion.tsx` | Reemplaza la tarjeta "Próximamente": botón "Cargar Excel" + botón "Agregar manualmente", reutiliza `BarraDeProgreso` e `HistorialCargasGrid` tal cual |
+| Sitio | `features/administracion/actualizaciones/components/formulario-proyecto-inversion.tsx` | Modal (`Alert`) con el formulario de alta manual, mismo patrón que "Nuevo Usuario" |
+| Sitio | `features/administracion/actualizaciones/{hooks,services,types}.ts` | `use-cargas-alertas-inversion.ts`, funciones de servicio y tipos nuevos |
+| Sitio | `features/sitio-web/alertas-inversion/*`, `app/(public)/alertas-inversion/page.tsx` | Página pública: gráfico de barras por sector (`echarts`, sin envoltorio — no está `echarts-for-react` entre las dependencias) con clic para filtrar, y listado paginado |
+
+**Pendiente conocido.** El catálogo completo de clases CIIU (cientos de códigos del DANE) no
+viene seedeado — solo las 21 secciones. Hasta que alguien lo cargue, el importador resuelve el
+sector por letra de sección o por el nombre exacto de "Actividad"; un código de clase de 4
+dígitos solo funciona si ya existe en `ciiu_clases`.
+
+**Verificado.** `tsc --noEmit` limpio en la API y en el sitio; `eslint` limpio en los archivos
+nuevos del sitio (dos avisos de `react-hooks/set-state-in-effect` corregidos). No se aplicó la
+migración contra Neon ni se probó en el navegador — falta `npm run migrate` (lo deja el usuario,
+ver `migraciones-en-neon-no-las-aplico.md`) y levantar Redis para el worker de `heavy-jobs`.
+
+---
+
 ## sesión 28-09-2026: autoguardado del editor
 
 **Qué era.** El usuario abría el editor, se le cerraba por error y perdía todo: el borrador
@@ -33,7 +68,7 @@ de «Edición» taparía lo que sí decidió una persona).
 
 | App | Archivo | Cambio |
 |---|---|---|
-| API | `migrations/038-auditoria-autoguardado.ts` (+ `index.ts`) | Suma `autoguardar_borrador` al `CHECK` de `auditoria_cambios`. Al revertir, las filas pasan a `guardar_borrador` |
+| API | `migrations/040-auditoria-autoguardado.ts` (+ `index.ts`) | Suma `autoguardar_borrador` al `CHECK` de `auditoria_cambios`. Al revertir, las filas pasan a `guardar_borrador` |
 | API | `validators/paginas.validators.ts`, `controllers/pagina.controller.ts` | `POST /:slug/borrador` acepta `automatico: true`: mismo guardado, se registra como `autoguardar_borrador` |
 | API | `use-cases/paginas/guardar-borrador.usecase.ts` | Con `automatico`, **409** si la última versión está en revisión (cubre el editor abierto en dos pestañas). Y **bug previo**: la limpieza de subidas corría antes del COMMIT, así que no veía la imagen recién metida en el borrador y podía borrarla del disco; ahora va en `afterCommit` (también al enviar a revisión) |
 | API | `auditoria-resumen.ts`, `auditoria-categorias.ts`, `auditoria-dto.ts`, `listar-en-revision.usecase.ts`, `content-audit-log.ts`, OpenAPI | Verbo, frase, categoría editorial y autor de respaldo en la cola de revisión |
@@ -44,17 +79,23 @@ de «Edición» taparía lo que sí decidió una persona).
 
 **Verificado.** `tsc` limpio en la API, el sitio y la intranet; `eslint` limpio en lo tocado
 (queda el `any` que ya había en la normalización de `puck-editor-wrapper.tsx` del sitio).
-La frase y la categoría nuevas, probadas con `ts-node` sin base. **La migración 038 no se ha
+La frase y la categoría nuevas, probadas con `ts-node` sin base. **La migración 040 no se ha
 aplicado a ninguna base**: sin ella, cada autoguardado falla por el `CHECK` (la transacción
 se deshace y el editor lo muestra como error). Sin probar en el navegador.
 
 **Pendiente.**
-- Aplicar la 038 (`npm run migrate` en `4000-api-backend`) y reiniciar la API de dev.
+- Aplicar la 040 (`npm run migrate` en `4000-api-backend`) y reiniciar la API de dev.
 - Probar en el navegador: que abrir el editor sin tocar nada no autoguarde (si Puck
   apuntara algo en la historia al montar, crearía un borrador solo por abrir una página
   publicada); cambiar de pestaña con cambios; «atrás» del navegador; cerrar con cambios
   (debe preguntar); versión en revisión (no debe autoguardar); dos pestañas.
 - `12-diccionario-de-datos.md` sigue con la lista de acciones de antes de la 031.
+
+**Nota del merge con `BACKUP/main` (29-09-2026).** Las alertas de inversión trajeron sus
+propias 038 y 039, así que la migración del autoguardado se renumeró a **040**
+(`040-auditoria-autoguardado`). El runner identifica cada migración por su nombre: si la
+antigua `038-auditoria-autoguardado` llegó a aplicarse en alguna base, la 040 vuelve a
+correr sin efecto (recrea el mismo `CHECK`).
 
 ---
 

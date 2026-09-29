@@ -10,7 +10,7 @@
 
 ## 0. Las tres preguntas que responde el diseño
 
-1. **¿Qué se guarda?** 19 tablas de dominio (20 incluyendo la tabla de control del runner de migraciones), agrupadas en 6 dominios esenciales (§4).
+1. **¿Qué se guarda?** 25 tablas de dominio (26 incluyendo la tabla de control del runner de migraciones), agrupadas en 7 dominios esenciales (§4).
 2. **¿Qué NO se guarda en Postgres?** Seis necesidades que parecen tabla y no lo son (§6).
 3. **¿Qué impide que los datos queden inconsistentes?** Catorce invariantes declaradas en el esquema, no en el código (§5).
 
@@ -276,9 +276,29 @@ cargador comprueba con el candado tomado que su carga sigue existiendo, porque e
 La ruta de "Programa + Sobresalientes" (`DELETE /api/observatorio/cargas/:id`) las sigue rechazando
 con 409: no sabe borrar el corte.
 
-### 4.7 Lo que hay en la base y no está en el inventario
+### 4.7 Alertas de inversión — migraciones 038/039
 
-Tras aplicar las migraciones, la base contiene los 19 modelos activos más la tabla técnica de control:
+Reutiliza `departamentos` (§4.6) y `cargas_datos` (§4.6.1, con `modulo = 'alertas_inversion'`); no
+duplica ninguna de las dos.
+
+| Tabla | Qué guarda | Claves e invariantes |
+|---|---|---|
+| **`ciiu_secciones`** | Catálogo CIIU Rev.4 A.C. (DANE), sección A–U | `letra` CHAR(1) UNIQUE, `CHECK (letra ~ '^[A-Z]$')`. Semilla de las 21; la T (hogares como empleadores) queda `activa = false` |
+| **`ciiu_clases`** | Código de 4 dígitos dentro de una sección, opcional por proyecto | `CHECK (codigo ~ '^[0-9]{4}$')`, `UNIQUE(seccion_id, codigo)`. **No viene seedeado** (son cientos del DANE): se completa a mano o el importador resuelve por sección/nombre |
+| **`empresas`** | Catálogo de empresas que anuncian proyectos | Único por `lower(nombre)` (`uq_empresas_nombre`), igual que `empresa_nombre_uq` del borrador de origen |
+| **`municipios`** | Ciudad/municipio de un proyecto | FK a `departamentos.id` (`RESTRICT`). A diferencia de `departamentos` (cerrado), es **catálogo abierto**: el importador lo completa por `(departamento_id, nombre)`, como `centros_formacion` |
+| **`proyectos_inversion`** | Una fila por proyecto de inversión anunciado (noticia) | Mismo ciclo `borrador/en_revision/publicado/rechazado` de `paginas_versiones` (D8: borrado lógico por `estado`, no uno propio). `CHECK (fuente_url ~* '^https?://')`. `creado_por` `SET NULL` |
+| **`proyectos_inversion_ubicaciones`** | Puente N:M proyecto↔ubicación (una noticia puede anunciar varias sedes) | `UNIQUE NULLS NOT DISTINCT (proyecto_id, departamento_id, municipio_id)`, calcada de `roles_permisos` |
+
+**Dos vías de entrada, un mismo destino.** El Excel agrega fila a fila (no vacía-y-recarga, a
+diferencia de §4.6: cada fila es una noticia independiente) y omite cualquiera cuya `fuente_url`
+ya exista, para que re-subir el mismo archivo no duplique. El formulario manual del panel
+("Agregar manualmente") inserta el mismo `proyectos_inversion`, publicado de una vez. Las dos
+siguen la decisión de sesión de Observatorio: sin paso de aprobación.
+
+### 4.8 Lo que hay en la base y no está en el inventario
+
+Tras aplicar las migraciones, la base contiene los 25 modelos activos (19 más los 6 de §4.7) más la tabla técnica de control:
 
 | Tabla | Qué es | Hasta cuándo |
 |---|---|---|
@@ -409,7 +429,9 @@ eso la tabla lleva el porqué en vez de un número de riesgo.
 | 034 | `cortes-ocupacionales-huella-repetible` | Quita el `UNIQUE` de `cortes_ocupacionales.huella_datos` (I19) y el cargador deja de aplicar V10: el mismo contenido puede cargarse en varios periodos. La huella se sigue guardando. Al revertir, las huellas repetidas quedan en NULL salvo la del corte más antiguo, para poder recrear el `UNIQUE` |
 | 035 | `tendencia-anio-libre` | Quita el rango 2012–2100 del año: los CHECK de `anio` de `cortes_ocupacionales` y `cargas_datos_ocupacionales` (por definición, no por nombre, como la 008) pasan a «cuatro cifras». La matriz `v_estado_cargas_ocupacional` va del menor al mayor año con corte o carga (antes 2012..máx. corte: no veía un 2005 ni un año futuro con la carga en curso o fallida). En su propia transacción, como la 032. Revertir falla sin tocar nada si ya hay años fuera de 2012–2100 |
 | 037 | `tendencia-ocupacional-claves-uuid` | Las ocho tablas de la 033 pasan a UUID en toda clave primaria y foránea (D3), en su sitio y sin perder datos: los catálogos eran 1, 2, 3… y los cortes, ocupaciones e indicadores, identidades secuenciales. `/cortes/{id}/despublicar` recibía un entero que se adivina. El criterio generado pasa de `criterio_id` (1–4) a `criterio_codigo`, y la API lo pide por código. El `down` devuelve los enteros: los catálogos, los de su semilla (`id` = `orden`); el resto, nuevos y en orden. En su propia transacción. Las columnas `id` quedan al final de cada tabla: Postgres no reordena columnas |
-| 038 | `auditoria-autoguardado` | Suma `autoguardar_borrador` al `CHECK` de `auditoria_cambios`: el guardado que hace el editor solo cada 30 s. Aparte de `guardar_borrador` porque ese se lee «el usuario guardó» y este no lo pulsó nadie. Al revertir, las filas pasan a `guardar_borrador` (no a `actualizar`): son guardados de borrador de verdad |
+| 038 | `alertas-inversion-catalogos` | `ciiu_secciones` (semilla de las 21), `ciiu_clases`, `empresas`, `municipios` (§4.7). Puramente aditiva |
+| 039 | `alertas-inversion-proyectos` | `proyectos_inversion` y `proyectos_inversion_ubicaciones` (§4.7), con FKs a `empresas`, `ciiu_secciones`, `ciiu_clases`, `departamentos`, `municipios` y `usuarios`. Puramente aditiva |
+| 040 | `auditoria-autoguardado` | Suma `autoguardar_borrador` al `CHECK` de `auditoria_cambios`: el guardado que hace el editor solo cada 30 s. Aparte de `guardar_borrador` porque ese se lee «el usuario guardó» y este no lo pulsó nadie. Al revertir, las filas pasan a `guardar_borrador` (no a `actualizar`): son guardados de borrador de verdad |
 
 Tres lecciones de este tramo que vale más recordar que releer:
 

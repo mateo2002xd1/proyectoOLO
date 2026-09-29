@@ -60,7 +60,7 @@ router.use(requireAuth, requierePermisoAuditoria('puedeVer'), requirePermission(
  *           una etiqueta de la pantalla puede agrupar varios. Los que no existan se descartan.
  *           `autenticar`, `expirar` e `inactivar` son de seguridad (migración 030), igual
  *           que `bloquear` y `verificar_preguntas` (migración 031). `autoguardar_borrador`
- *           es el guardado que hace el editor solo (migración 038).
+ *           es el guardado que hace el editor solo (migración 040).
  *         schema:
  *           type: string
  *           example: actualizar,guardar_borrador,enviar_revision

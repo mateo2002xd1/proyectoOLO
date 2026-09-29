@@ -33,7 +33,7 @@ export type AccionAuditable =
   // preguntas de seguridad, con su resultado. Tampoco dejaban rastro.
   | 'bloquear'
   | 'verificar_preguntas'
-  // Migración 038: el guardado que hace el editor solo. Aparte de `guardar_borrador`
+  // Migración 040: el guardado que hace el editor solo. Aparte de `guardar_borrador`
   // porque ese se lee como «el usuario guardó», y este no lo pulsó nadie.
   | 'autoguardar_borrador';
 

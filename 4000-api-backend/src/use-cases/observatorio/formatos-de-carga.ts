@@ -14,6 +14,7 @@ import path from 'path';
 const FORMATOS = new Map<string, string>([
   ['programas-sobresalientes', 'formatdata-sobresalientes.xlsx'],
   ['tendencia-ocupacional', 'formatdata-criterios-tendencias.xlsx'],
+  ['alertas-inversion', 'formatdata-alertas-inversion.xlsx'],
 ]);
 
 const DIRECTORIO_FORMATOS = path.join(process.cwd(), 'uploads', 'formatos-carga');

@@ -28,7 +28,7 @@ export type AccionAuditable =
   // Migración 031 de la API.
   | 'bloquear'
   | 'verificar_preguntas'
-  // Migración 038 de la API: el guardado que hace el editor solo.
+  // Migración 040 de la API: el guardado que hace el editor solo.
   | 'autoguardar_borrador';
 
 /**

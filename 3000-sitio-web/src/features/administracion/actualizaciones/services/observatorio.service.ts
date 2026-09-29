@@ -4,9 +4,11 @@ import type {
   CargaTendencia,
   CargaTendenciaEliminada,
   CeldaTendencia,
+  DatosProyectoInversionManual,
   FiltroHistorialTendencia,
   FormatoDeCarga,
   HistorialTendencia,
+  SeccionCiiu,
 } from '../types';
 import { URL_DE_LA_API } from '@/shared/lib/url-de-la-api';
 
@@ -137,4 +139,67 @@ export async function eliminarCargaTendencia(id: string): Promise<CargaTendencia
 /** Devuelve un corte a borrador: deja de verse en el sitio y sus datos se conservan. */
 export async function despublicarCorteTendencia(corteId: string): Promise<void> {
   await api.patch(`${TENDENCIA}/cortes/${corteId}/despublicar`);
+}
+
+// ---------------------------------------------------------------------------
+// Alertas de inversión
+// ---------------------------------------------------------------------------
+
+const ALERTAS_INVERSION = '/api/alertas-inversion';
+
+/** Sube el Excel y arranca la carga de inmediato — sin paso de aprobación. */
+export async function subirExcelAlertasInversion(archivo: File): Promise<{ cargaId: string }> {
+  const formData = new FormData();
+  formData.append('file', archivo);
+  const { data } = await api.post(`${ALERTAS_INVERSION}/cargas`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 60000,
+  });
+  return data;
+}
+
+export async function listarCargasAlertasInversion(): Promise<CargaDatos[]> {
+  const { data } = await api.get(`${ALERTAS_INVERSION}/cargas`);
+  return data;
+}
+
+export async function obtenerCargaAlertasInversion(id: string): Promise<CargaDatos> {
+  const { data } = await api.get(`${ALERTAS_INVERSION}/cargas/${id}`);
+  return data;
+}
+
+export async function eliminarCargaAlertasInversion(id: string): Promise<void> {
+  await api.delete(`${ALERTAS_INVERSION}/cargas/${id}`);
+}
+
+/** Excel de ejemplo de la carga — mismo manejo de error-como-blob que `descargarFormatoDeCarga`. */
+export async function descargarFormatoAlertasInversion(): Promise<Blob> {
+  try {
+    const { data } = await api.get(`${ALERTAS_INVERSION}/formatos/plantilla`, {
+      responseType: 'blob',
+      timeout: 60000,
+    });
+    return data;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.data instanceof Blob) {
+      try {
+        error.response.data = JSON.parse(await error.response.data.text());
+      } catch {
+        // No era JSON: se deja tal cual.
+      }
+    }
+    throw error;
+  }
+}
+
+/** Catálogo de secciones CIIU activas, para el formulario manual. Público, sin sesión. */
+export async function obtenerSeccionesCiiu(): Promise<SeccionCiiu[]> {
+  const { data } = await api.get(`${ALERTAS_INVERSION}/opciones`);
+  return data.secciones;
+}
+
+/** Alta manual de un proyecto — segunda vía de entrada, junto a la carga de Excel. */
+export async function crearProyectoInversionManual(datos: DatosProyectoInversionManual): Promise<{ id: string }> {
+  const { data } = await api.post(`${ALERTAS_INVERSION}/proyectos`, datos);
+  return data;
 }

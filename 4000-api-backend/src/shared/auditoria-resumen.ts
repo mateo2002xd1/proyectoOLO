@@ -347,7 +347,7 @@ const fraseDeBorrador = (d: Contexto): string | null => {
 };
 
 /**
- * El autoguardado del editor (migración 038): lo que había en pantalla quedó en el
+ * El autoguardado del editor (migración 040): lo que había en pantalla quedó en el
  * borrador sin que nadie pulsara «Guardar». Misma forma de fila que `fraseDeBorrador`;
  * lo único que cambia es que no se le atribuye la decisión a la persona.
  */
