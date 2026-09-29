@@ -46,8 +46,8 @@ interface UseEditorActionsOptions {
 }
 
 interface UseEditorActionsReturn {
-  /** Guarda el JSON de Puck como borrador en la API */
-  handleGuardarBorrador: (contenido: ContenidoPagina) => Promise<void>;
+  /** Guarda el JSON de Puck como borrador en la API. `automatico`: lo lanzó el autoguardado. */
+  handleGuardarBorrador: (contenido: ContenidoPagina, opciones?: { automatico?: boolean }) => Promise<void>;
   /**
    * Envía a revisión con su comentario de cambios y, si se pasa, el contenido del
    * editor, que la API guarda y envía en una sola operación. Si falla, muestra el error
@@ -88,19 +88,17 @@ export function useEditorActions({
   const [error, setError] = useState<string | null>(null);
 
   const handleGuardarBorrador = useCallback(
-    async (contenido: ContenidoPagina) => {
+    async (contenido: ContenidoPagina, opciones: { automatico?: boolean } = {}) => {
       setIsSaving(true);
       setError(null);
       try {
-        const res = await guardarBorrador(slug, contenido);
+        const res = await guardarBorrador(slug, contenido, opciones);
         if (res?.versionId) {
           setVersionId(res.versionId);
           setEstadoActual(res.estado ?? "borrador");
         }
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Error al guardar el borrador"
-        );
+        setError(mensajeDeLaApi(err) ?? "Error al guardar el borrador");
         // Se relanza además de mostrarlo: quien llama necesita distinguir un
         // guardado real de uno fallido antes de enviar a revisión o de dejar
         // salir del editor dando el contenido por guardado.

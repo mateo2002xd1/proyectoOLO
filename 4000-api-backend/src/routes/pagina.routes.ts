@@ -341,6 +341,12 @@ router.get(
  *             type: object
  *             properties:
  *               contenido: { $ref: '#/components/schemas/ContenidoPagina' }
+ *               automatico:
+ *                 type: boolean
+ *                 description: |
+ *                   Lo manda el autoguardado del editor. Guarda igual, pero la bitácora lo
+ *                   escribe como `autoguardar_borrador` y no como un guardado que alguien
+ *                   pulsó, y no devuelve a borrador una versión en revisión (409).
  *             required: [contenido]
  *             additionalProperties: false
  *     responses:
@@ -352,6 +358,7 @@ router.get(
  *       400: { $ref: '#/components/responses/CuerpoInvalido' }
  *       401: { $ref: '#/components/responses/NoAutenticado' }
  *       403: { $ref: '#/components/responses/SinPermiso' }
+ *       409: { description: Autoguardado sobre una versión en revisión; no se guardó nada }
  *       429: { $ref: '#/components/responses/LimiteExcedido' }
  */
 router.post(

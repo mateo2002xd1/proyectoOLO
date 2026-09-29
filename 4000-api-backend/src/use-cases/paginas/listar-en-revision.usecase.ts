@@ -26,7 +26,7 @@ export const listarEnRevision = async () => {
       const logs = await ContentAuditLog.findAll({
         where: {
           entidad_id: { [Op.in]: paginasSinAutor },
-          accion: { [Op.in]: ['enviar_revision', 'guardar_borrador', 'crear'] },
+          accion: { [Op.in]: ['enviar_revision', 'guardar_borrador', 'autoguardar_borrador', 'crear'] },
           usuario_nombre: { [Op.ne]: null },
         },
         order: [['created_at', 'DESC']],

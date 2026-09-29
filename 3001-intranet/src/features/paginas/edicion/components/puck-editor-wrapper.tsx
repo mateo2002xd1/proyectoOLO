@@ -23,6 +23,7 @@ import { registrarSubidaPendiente, descartarEdicion } from "../services/edicion.
 import type { ContenidoPagina, PaginaVersion } from "../../model/pagina.types";
 import { validarAccesibilidad, mensajeDeViolacion, type ViolacionAccesibilidad } from "@olo/accessibility-policy";
 import { AvisoRechazo, type Rechazo } from "./aviso-rechazo";
+import { useAutoguardado, MS_ENTRE_AUTOGUARDADOS } from "../hooks/use-autoguardado";
 
 /**
  * Íconos de las tres acciones de la cabecera, en blanco fijo.
@@ -89,6 +90,8 @@ interface AccionesCabeceraProps {
   isSendingToReview: boolean;
   /** Punto de la historia de Puck en el que se guardó por última vez. */
   indiceGuardado: number;
+  /** Cuándo se guardó por última vez, a mano o solo. `null` si aún no se guardó nada. */
+  ultimoGuardado: Date | null;
   /** Reciben el índice actual para poder marcar hasta dónde quedó guardado. */
   onGuardar: (indiceHistoria: number) => void;
   onEnviar: (indiceHistoria: number) => void;
@@ -125,6 +128,7 @@ function AccionesCabecera({
   isSaving,
   isSendingToReview,
   indiceGuardado,
+  ultimoGuardado,
   onGuardar,
   onEnviar,
   onSalir,
@@ -141,7 +145,22 @@ function AccionesCabecera({
 
   return (
     <div className="olo-editor-acciones">
-      {hayCambiosSinGuardar && <span className="olo-editor-aviso">Sin guardar</span>}
+      {/* Guardándose, pendiente o guardado: con el autoguardado ya no basta con avisar
+          de lo pendiente, porque lo normal es que se guarde sin que nadie pulse nada. */}
+      {isSaving ? (
+        <span className="olo-editor-aviso">Guardando…</span>
+      ) : hayCambiosSinGuardar ? (
+        <span
+          className="olo-editor-aviso"
+          title={`Se guarda solo como borrador cada ${MS_ENTRE_AUTOGUARDADOS / 1000} segundos`}
+        >
+          Sin guardar
+        </span>
+      ) : ultimoGuardado ? (
+        <span className="olo-editor-aviso olo-editor-aviso--guardado">
+          Guardado a las {ultimoGuardado.toLocaleTimeString("es-CO", { hour: "numeric", minute: "2-digit" })}
+        </span>
+      ) : null}
       {/* Salir es la única acción que puede perder trabajo, así que va en rojo:
           antes iba en gris para no competir con guardar y enviar, pero eso lo
           dejaba a un clic de distancia sin que nada avisara del riesgo. */}
@@ -533,8 +552,8 @@ function PantallaEnvioExitoso({
 export interface PuckEditorWrapperProps {
   slug: string;
   initialData: ContenidoPagina | null;
-  /** Llamado con el JSON de Puck al hacer "Guardar borrador" */
-  onGuardarBorrador: (contenido: ContenidoPagina) => Promise<void>;
+  /** Llamado con el JSON de Puck al hacer "Guardar borrador", o al autoguardar (`automatico`). */
+  onGuardarBorrador: (contenido: ContenidoPagina, opciones?: { automatico?: boolean }) => Promise<void>;
   /**
    * Llamado al confirmar "Enviar a revisión", con el comentario de cambios que
    * escribió quien edita y el contenido del editor, que la API guarda y envía en una
@@ -581,6 +600,17 @@ export function PuckEditorWrapper({
 
   // La historia arranca en 0; tras cada guardado exitoso se mueve al punto actual.
   const [indiceGuardado, setIndiceGuardado] = useState(0);
+
+  // Hora del último guardado, para que la cabecera diga «Guardado a las…».
+  const [ultimoGuardado, setUltimoGuardado] = useState<Date | null>(null);
+
+  // La salida ya está decidida —«Salir» confirmado o cierre por inactividad—: ni se
+  // autoguarda al desmontar ni el navegador pregunta antes de irse.
+  const saliendoRef = useRef(false);
+
+  // Punto de la historia en el que falló el último autoguardado. No se reintenta hasta
+  // que haya un cambio nuevo: repetir lo mismo cada 30 s solo repetiría el mismo error.
+  const indiceFallidoRef = useRef<number | null>(null);
 
   // Salida pedida con cambios sin guardar, a la espera de que se confirme.
   const [salidaPendiente, setSalidaPendiente] = useState(false);
@@ -629,14 +659,21 @@ export function PuckEditorWrapper({
   }, []);
 
   const handleSave = useCallback(
-    async (indiceHistoria: number) => {
+    async (indiceHistoria: number, automatico = false) => {
       // El contenido se toma antes del await, así que corresponde al índice del
       // clic: si alguien sigue editando mientras se guarda, esos cambios quedan
       // fuera y deben seguir contando como pendientes.
       const data = currentDataRef.current ?? initialPuckData;
-      await onGuardarBorrador(data as ContenidoPagina);
+      try {
+        await onGuardarBorrador(data as ContenidoPagina, { automatico });
+      } catch (err) {
+        if (automatico) indiceFallidoRef.current = indiceHistoria;
+        throw err;
+      }
       // Solo se llega aquí si la API aceptó el borrador.
       setIndiceGuardado(indiceHistoria);
+      setUltimoGuardado(new Date());
+      indiceFallidoRef.current = null;
     },
     [onGuardarBorrador, initialPuckData]
   );
@@ -644,17 +681,23 @@ export function PuckEditorWrapper({
   /**
    * Lo que el vigilante de inactividad ejecuta antes de cerrar la sesión.
    *
-   * Solo guarda si de verdad hay algo pendiente: el editor crea una versión nueva en
-   * cada guardado, y hacerlo a ciegas llenaría `paginas_versiones` de copias idénticas
-   * cada vez que alguien deja la pantalla abierta y se va.
+   * Solo guarda si de verdad hay algo pendiente: cada guardado reescribe el borrador y
+   * deja una fila en la bitácora, y hacerlo a ciegas las llenaría cada vez que alguien
+   * deja la pantalla abierta y se va.
+   *
+   * Va como autoguardado porque nadie lo pulsó: así queda escrito en la bitácora, y la
+   * API no deja que un cierre por inactividad saque de la cola una versión en revisión.
    *
    * No se atrapa el error a propósito. Si el guardado falla, el vigilante lo recoge y
    * cierra igual, pero cambiando el motivo para que el login lo diga: cerrar en
-   * silencio después de perder el trabajo sería lo peor de las dos opciones.
+   * silencio después de perder el trabajo sería lo peor de las dos opciones. Por eso
+   * marca antes la salida: si no, el aviso del navegador por cambios sin guardar
+   * frenaría esa redirección con la sesión ya cerrada.
    */
   const guardarAntesDeCerrar = useCallback(async () => {
+    saliendoRef.current = true;
     if (!hayCambiosSinGuardarRef.current) return;
-    await handleSave(indiceHistoriaRef.current);
+    await handleSave(indiceHistoriaRef.current, true);
   }, [handleSave]);
 
   /**
@@ -663,6 +706,7 @@ export function PuckEditorWrapper({
    * También limpia la sesión de edición y libera el candado.
    */
   const salir = useCallback(() => {
+    saliendoRef.current = true;
     descartarEdicion(slug);
     router.push(resolverRutaDeVuelta(rutaPublicaDeSlug(slug)));
   }, [router, slug]);
@@ -750,6 +794,26 @@ export function PuckEditorWrapper({
     }
   }, [accionPendiente, comentarioEnvio, handleSave, handleSend]);
 
+  // Guarda solo lo pendiente, como el botón «Guardar borrador» pero sin preguntar. No
+  // lo hace si ya hay un guardado o envío en curso, ni con un diálogo abierto: el envío
+  // guarda lo que había al pulsar, y un autoguardado a la vez podría devolver a borrador
+  // la versión que ese envío acaba de poner en revisión. Tampoco sin candado (quien la
+  // tiene ahora no debe recibir nuestro borrador encima) ni con la versión en revisión.
+  useAutoguardado({
+    hayCambios: () => !saliendoRef.current && hayCambiosSinGuardarRef.current,
+    puedeGuardar: () =>
+      !saliendoRef.current &&
+      hayCambiosSinGuardarRef.current &&
+      indiceHistoriaRef.current !== indiceFallidoRef.current &&
+      !busy &&
+      !bloqueado &&
+      !candadoPerdidoPor &&
+      accionPendiente === null &&
+      !salidaPendiente &&
+      !envioExitoso,
+    guardar: () => handleSave(indiceHistoriaRef.current, true),
+  });
+
   const contenidoConfirmacion = !accionPendiente
     ? null
     : accionPendiente.tipo === "guardar"
@@ -799,6 +863,7 @@ export function PuckEditorWrapper({
               isSaving={isSaving}
               isSendingToReview={isSendingToReview}
               indiceGuardado={indiceGuardado}
+              ultimoGuardado={ultimoGuardado}
               onGuardar={alPulsarGuardar}
               onEnviar={alPulsarEnviar}
               onSalir={handleSalir}
@@ -815,6 +880,7 @@ export function PuckEditorWrapper({
       isSaving,
       isSendingToReview,
       indiceGuardado,
+      ultimoGuardado,
       alPulsarGuardar,
       alPulsarEnviar,
       handleSalir,

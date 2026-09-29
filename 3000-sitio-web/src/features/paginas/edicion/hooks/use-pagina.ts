@@ -70,9 +70,16 @@ export function usePagina(slug: string) {
     load();
   }, [slug]);
 
-  const saveDraft = useCallback(async (contenido: PuckData | Bloque[]) => {
+  const saveDraft = useCallback(async (
+    contenido: PuckData | Bloque[],
+    opciones: { automatico?: boolean } = {}
+  ) => {
+    // Como en la intranet: un guardado nuevo retira el aviso anterior. Con el
+    // autoguardado, un fallo de red pasajero dejaba el aviso puesto aunque el siguiente
+    // guardado, medio minuto después, ya hubiera entrado.
+    setError(null);
     try {
-      const result = await guardarBorrador(slug, contenido);
+      const result = await guardarBorrador(slug, contenido, opciones);
       // La versión que devuelve la API es la que acaba de crearse, y es la que manda:
       // guardar deja la página en borrador aunque el editor se hubiera abierto sobre la
       // versión publicada. Sin este refresco la cabecera seguía diciendo «Publicado» y
@@ -93,7 +100,10 @@ export function usePagina(slug: string) {
       // quien edita corrige lo que le señalaron.
       return result;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al guardar');
+      // Lo que explica la API y no el «Request failed with status code 409» de axios:
+      // con el autoguardado este aviso puede salir sin que nadie haya pulsado nada, y
+      // tiene que entenderse solo.
+      setError(mensajeDeLaApi(err) ?? 'Error al guardar');
       throw err;
     }
   }, [slug]);

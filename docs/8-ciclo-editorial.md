@@ -35,7 +35,7 @@ Una página nunca se edita en vivo. Recorre estados, y cada transición tiene un
 
 | # | Etapa | Actor | Qué ocurre | Efecto en el sitio público |
 |---|---|---|---|---|
-| 1 | **Edición** | Editor | Entra a `/editor/<slug>`, modifica bloques. Al guardar, la API crea o actualiza un registro en `PaginaVersion` con estado `borrador`. | **Ninguno.** Sigue mostrando la versión publicada. |
+| 1 | **Edición** | Editor | Entra a `/editor/<slug>`, modifica bloques. Al guardar —con el botón, o solo cada 30 s si hay cambios (autoguardado, `use-autoguardado.ts`)—, la API crea o actualiza un registro en `PaginaVersion` con estado `borrador`. El autoguardado no toca una versión `en_revision`. | **Ninguno.** Sigue mostrando la versión publicada. |
 | 2 | **Envío a revisión** | Editor | Escribe el **comentario de cambios** (obligatorio, 10–100 caracteres; ver §1.6). La versión pasa a `en_revision` con ese comentario. Queda bloqueada para edición. | Ninguno. |
 | 3 | **Revisión** | Administrador | Entra a `/revision`, lee el comentario, previsualiza y decide. | Ninguno. |
 | 4 | **Aprobación** | Administrador | La `PaginaVersion` se marca como la versión `publicado` activa. Se dispara revalidación de caché (ISR + Redis). | **Ahora sí cambia.** |
@@ -222,7 +222,7 @@ Para evitar la acumulación de archivos inútiles en el servidor (`/uploads/`), 
 2. **Cuándo se ejecuta la limpieza**:
    - Al **Descartar la edición** (salir sin guardar).
    - Al **Eliminar una versión** (botón de papelera en la gestión de páginas).
-   - Al **Guardar un borrador** o **Enviar a revisión** (el archivo puede haber sido subido pero reemplazado o eliminado del lienzo antes del guardado).
+   - Al **Guardar un borrador** —a mano o por el autoguardado— o **Enviar a revisión** (el archivo puede haber sido subido pero reemplazado o eliminado del lienzo antes del guardado). Corre **después del COMMIT** (`afterCommit`): lanzada antes, no veía la imagen que ese mismo guardado acababa de meter en el borrador y la borraba del disco.
 3. **Lógica de conservación (Evitar borrados accidentales)**:
    - El proceso recorre los registros de `subidas_pendientes` correspondientes a la sesión/página.
    - Si el archivo **sí está en uso** (su ruta aparece en la columna `contenido` o `layout` de *cualquier* versión de la página), **no se borra del disco ni de la tabla de pendientes**. Se mantiene en observación.

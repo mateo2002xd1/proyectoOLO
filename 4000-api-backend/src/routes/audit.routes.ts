@@ -59,14 +59,15 @@ router.use(requireAuth, requierePermisoAuditoria('puedeVer'), requirePermission(
  *           Uno o varios verbos separados por coma (`actualizar,guardar_borrador`), porque
  *           una etiqueta de la pantalla puede agrupar varios. Los que no existan se descartan.
  *           `autenticar`, `expirar` e `inactivar` son de seguridad (migración 030), igual
- *           que `bloquear` y `verificar_preguntas` (migración 031).
+ *           que `bloquear` y `verificar_preguntas` (migración 031). `autoguardar_borrador`
+ *           es el guardado que hace el editor solo (migración 040).
  *         schema:
  *           type: string
  *           example: actualizar,guardar_borrador,enviar_revision
  *           description: |
  *             Verbos válidos: crear, actualizar, eliminar, publicar, despublicar, aprobar,
  *             rechazar, enviar_revision, guardar_borrador, cambiar_password, autenticar,
- *             expirar, inactivar, bloquear, verificar_preguntas.
+ *             expirar, inactivar, bloquear, verificar_preguntas, autoguardar_borrador.
  *       - name: categoria
  *         in: query
  *         description: |
@@ -75,8 +76,8 @@ router.use(requireAuth, requierePermisoAuditoria('puedeVer'), requirePermission(
  *           modificar una cuenta (`seguridad`), que son `actualizar` las dos.
  *
  *           - `editorial`: crear una página y editar una sección o página, desde el editor
- *             (`crear`, `actualizar`, `guardar_borrador`, `enviar_revision` sobre `pagina` y
- *             `contenido`).
+ *             (`crear`, `actualizar`, `guardar_borrador`, `autoguardar_borrador`,
+ *             `enviar_revision` sobre `pagina` y `contenido`).
  *           - `administracion`: `rechazar`, `aprobar`, `publicar` y `despublicar`.
  *           - `seguridad`: `autenticar`, `expirar`, `inactivar`, `bloquear`,
  *             `verificar_preguntas`, `cambiar_password` y

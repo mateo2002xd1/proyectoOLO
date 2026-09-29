@@ -3,6 +3,7 @@ import { paginasPolicies, type PermisoPagina } from '../policies/paginas.policie
 import { auditoriaPolicies, type PermisoAuditoria } from '../policies/auditoria.policies';
 import { usuariosPolicies, type PermisoUsuario } from '../policies/usuarios.policies';
 import { observatorioPolicies, type PermisoObservatorio } from '../policies/observatorio.policies';
+import { alertasInversionPolicies, type PermisoAlertasInversion } from '../policies/alertas-inversion.policies';
 import { marcarGuardia } from '../shared/autorizacion';
 
 /**
@@ -79,4 +80,13 @@ export const requierePermisoUsuario = construirGuardia<PermisoUsuario>(
 export const requierePermisoObservatorio = construirGuardia<PermisoObservatorio>(
   'observatorio',
   observatorioPolicies
+);
+
+/**
+ * Exige permiso sobre las cargas y altas manuales de "Alertas de inversión"
+ * (panel de administración). Solo Administrador y Superadmin.
+ */
+export const requierePermisoAlertasInversion = construirGuardia<PermisoAlertasInversion>(
+  'alertasInversion',
+  alertasInversionPolicies
 );

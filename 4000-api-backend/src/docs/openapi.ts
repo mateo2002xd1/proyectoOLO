@@ -489,6 +489,7 @@ const definicion = {
               'inactivar',
               'bloquear',
               'verificar_preguntas',
+              'autoguardar_borrador',
             ],
           },
           categoria: {

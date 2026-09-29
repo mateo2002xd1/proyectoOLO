@@ -2,6 +2,7 @@ import { Queue, Worker, Job } from 'bullmq';
 import { crearLoggerDeErrorConThrottle, getRedis } from './index';
 import { procesarCargaObservatorio } from '../../use-cases/observatorio/procesar-carga.usecase';
 import { procesarCargaTendencia } from '../../use-cases/observatorio/tendencia-ocupacional/procesar-carga-tendencia.usecase';
+import { procesarCargaAlertasInversion } from '../../use-cases/alertas-inversion/procesar-carga.usecase';
 
 // Misma conexión que `getRedis()` — ya se abre con `maxRetriesPerRequest: null`
 // porque BullMQ lo exige (ver el comentario en `./index`). Antes esto armaba su
@@ -37,6 +38,19 @@ export const setupWorker = () => {
     if (job.name === 'importar-tendencia-ocupacional') {
       const { cargaId, rutaAbsoluta } = job.data as { cargaId: string; rutaAbsoluta: string };
       await procesarCargaTendencia(cargaId, rutaAbsoluta);
+      return { success: true, processedAt: new Date().toISOString() };
+    }
+
+    // Alertas de inversión: a diferencia de los dos anteriores, no vacía y recarga —
+    // cada fila del Excel se agrega como un proyecto independiente. Deja su resultado
+    // en `cargas_datos` con `modulo = 'alertas_inversion'`.
+    if (job.name === 'importar-alertas-inversion-excel') {
+      const { cargaId, rutaAbsoluta, subidoPor } = job.data as {
+        cargaId: string;
+        rutaAbsoluta: string;
+        subidoPor: string | null;
+      };
+      await procesarCargaAlertasInversion(cargaId, rutaAbsoluta, subidoPor);
       return { success: true, processedAt: new Date().toISOString() };
     }
 

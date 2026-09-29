@@ -24,6 +24,16 @@ import NivelFormacion from './nivel-formacion';
 import ProgramaFormacion from './programa-formacion';
 import ProgramaSobresaliente from './programa-sobresaliente';
 
+// Catálogos y hechos de "Alertas de inversión" (migraciones 038/039). Comparten
+// `departamentos` con el observatorio y siguen su mismo estilo: atributos en
+// snake_case, sin `field:` mapping.
+import Municipio from './municipio';
+import CiiuSeccion from './ciiu-seccion';
+import CiiuClase from './ciiu-clase';
+import Empresa from './empresa';
+import ProyectoInversion from './proyecto-inversion';
+import ProyectoInversionUbicacion from './proyecto-inversion-ubicacion';
+
 Role.belongsToMany(Permission, { through: RolePermission, as: 'permissions', foreignKey: 'role_id', otherKey: 'permission_id' });
 Permission.belongsToMany(Role, { through: RolePermission, as: 'roles', foreignKey: 'permission_id', otherKey: 'role_id' });
 
@@ -66,6 +76,22 @@ ProgramaSobresaliente.belongsTo(ProgramaFormacion, { as: 'programa', foreignKey:
 CargaDatos.belongsTo(Archivo, { as: 'archivo', foreignKey: 'archivoId', onDelete: 'SET NULL' });
 CargaDatos.belongsTo(User, { as: 'subidoPorUsuario', foreignKey: 'subidoPor', onDelete: 'SET NULL' });
 
+// Alertas de inversión (migraciones 038/039).
+Departamento.hasMany(Municipio, { as: 'municipios', foreignKey: 'departamento_id' });
+Municipio.belongsTo(Departamento, { as: 'departamento', foreignKey: 'departamento_id' });
+
+CiiuSeccion.hasMany(CiiuClase, { as: 'clases', foreignKey: 'seccion_id' });
+CiiuClase.belongsTo(CiiuSeccion, { as: 'seccion', foreignKey: 'seccion_id' });
+
+ProyectoInversion.belongsTo(Empresa, { as: 'empresa', foreignKey: 'empresa_id' });
+ProyectoInversion.belongsTo(CiiuSeccion, { as: 'seccion', foreignKey: 'seccion_id' });
+ProyectoInversion.belongsTo(CiiuClase, { as: 'clase', foreignKey: 'clase_id' });
+ProyectoInversion.belongsTo(User, { as: 'creador', foreignKey: 'creado_por', onDelete: 'SET NULL' });
+ProyectoInversion.hasMany(ProyectoInversionUbicacion, { as: 'ubicaciones', foreignKey: 'proyecto_id', onDelete: 'CASCADE' });
+ProyectoInversionUbicacion.belongsTo(ProyectoInversion, { as: 'proyecto', foreignKey: 'proyecto_id' });
+ProyectoInversionUbicacion.belongsTo(Departamento, { as: 'departamento', foreignKey: 'departamento_id' });
+ProyectoInversionUbicacion.belongsTo(Municipio, { as: 'municipio', foreignKey: 'municipio_id' });
+
 export {
   User,
   Role,
@@ -84,4 +110,10 @@ export {
   NivelFormacion,
   ProgramaFormacion,
   ProgramaSobresaliente,
+  Municipio,
+  CiiuSeccion,
+  CiiuClase,
+  Empresa,
+  ProyectoInversion,
+  ProyectoInversionUbicacion,
 };

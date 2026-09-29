@@ -14,18 +14,20 @@
 
 | | Carpetas | Features | Rutas de Next | Endpoints | Librerías |
 |---|--:|--:|--:|--:|--:|
-| `3000-sitio-web` | 46 | 3 | 54 | — | 33 |
+| `3000-sitio-web` | 47 | 3 | 55 | — | 33 |
 | `3001-intranet` | 33 | 2 | 13 | — | 27 |
-| `4000-api-backend` | 32 | — | — | 70 | 42 |
+| `4000-api-backend` | 33 | — | — | 79 | 42 |
 
-Paquetes compartidos: 7 · migraciones: 37 · modelos: 17.
+Paquetes compartidos: 7 · migraciones: 40 · modelos: 23.
 
-## Carpetas sin descripción (2)
+## Carpetas sin descripción (4)
 
 Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scripts/mapa/descripciones.md` con una línea: `` - `ruta/` — para qué es ``.
 
 - `3000-sitio-web/data_temporal/`
+- `3000-sitio-web/src/features/sitio-web/alertas-inversion/`
 - `3000-sitio-web/src/features/sitio-web/fuentes-futuras-empleo/`
+- `4000-api-backend/src/use-cases/alertas-inversion/`
 
 ## Carpetas
 
@@ -64,6 +66,7 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
     │   │   ├── revision/                      etapas 3 a 5: cola de revisión, aprobar, rechazar
     │   │   └── secciones/                     crear y eliminar páginas
     │   └── sitio-web/                         agrupador de lo público
+    │       ├── alertas-inversion/             ⚠ sin descripción
     │       ├── buscador-ocupaciones/          buscador CNO/CUOC (RF-09)
     │       ├── fuentes-futuras-empleo/        ⚠ sin descripción
     │       ├── inicio/                        composición de la portada
@@ -144,6 +147,7 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
     ├── shared/                                utilidades transversales: sanitización, permisos, auditoría
     ├── types/                                 tipos globales (extensión del `Request` de Express)
     ├── use-cases/                             la lógica de negocio: una acción, una función
+    │   ├── alertas-inversion/                 ⚠ sin descripción
     │   ├── auditoria/                         consulta de la bitácora de cambios (RF-07)
     │   ├── auth/                              login, primer ingreso y preguntas de seguridad
     │   ├── observatorio/                      cargas de Excel del Observatorio y tendencia ocupacional
@@ -187,16 +191,16 @@ test/                                          pruebas de carga con k6
 
 | Feature | Para qué | Subcarpetas | `index.ts` | Archivos |
 |---|---|---|:-:|--:|
-| `administracion/` | el panel: usuarios, roles, auditoría, respaldos, cargas | `actualizaciones/` `auditoria/` `auth/` `buscador/` `mi-perfil/` `respaldos/` | **no** | 61 |
-| `paginas/` | páginas editables con Puck, organizadas por etapa del ciclo | `edicion/` `menu-y-pie/` `model/` `publicacion/` `revision/` `secciones/` | sí | 37 |
-| `sitio-web/` | agrupador de lo público | `buscador-ocupaciones/` `fuentes-futuras-empleo/` `inicio/` `programas-sobresalientes/` `tendencia-ocupacional/` | **no** | 42 |
+| `administracion/` | el panel: usuarios, roles, auditoría, respaldos, cargas | `actualizaciones/` `auditoria/` `auth/` `buscador/` `mi-perfil/` `respaldos/` | **no** | 64 |
+| `paginas/` | páginas editables con Puck, organizadas por etapa del ciclo | `edicion/` `menu-y-pie/` `model/` `publicacion/` `revision/` `secciones/` | sí | 38 |
+| `sitio-web/` | agrupador de lo público | `alertas-inversion/` `buscador-ocupaciones/` `fuentes-futuras-empleo/` `inicio/` `programas-sobresalientes/` `tendencia-ocupacional/` | **no** | 49 |
 
 ### 3001-intranet
 
 | Feature | Para qué | Subcarpetas | `index.ts` | Archivos |
 |---|---|---|:-:|--:|
 | `login/` | pantallas del flujo de acceso | `components/` `hooks/` `services/` | sí | 11 |
-| `paginas/` | secciones editables con Puck, gemela de la del sitio | `edicion/` `menu-y-pie/` `model/` `publicacion/` `secciones/` | sí | 24 |
+| `paginas/` | secciones editables con Puck, gemela de la del sitio | `edicion/` `menu-y-pie/` `model/` `publicacion/` `secciones/` | sí | 25 |
 
 ## Rutas de Next
 
@@ -218,6 +222,7 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `/admin/revision` | página |  | `admin/revision/page.tsx` |
 | `/admin/roles` | página |  | `admin/roles/page.tsx` |
 | `/admin/users` | página |  | `admin/users/page.tsx` |
+| `/alertas-inversion` | página | `(public)` | `(public)/alertas-inversion/page.tsx` |
 | `/api/alerts` | manejador |  | `api/alerts/route.ts` |
 | `/api/audit-logs` | manejador |  | `api/audit-logs/route.ts` |
 | `/api/audit-logs/depurar` | manejador |  | `api/audit-logs/depurar/route.ts` |
@@ -289,6 +294,20 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 |---|---|---|---|
 | GET | `/health` | 🔓 — | función en línea |
 | GET | `/api/alerts` | requireAuth, requierePermisoUsuario('puedeAdministrarUsuarios') | UserController.getExpirationAlerts |
+
+### `routes/alertas-inversion.routes.ts`
+
+| Método | Ruta | Protección y validación | Manejador |
+|---|---|---|---|
+| GET | `/api/alertas-inversion/grafico` | 🔓 — | AlertasInversionController.grafico |
+| GET | `/api/alertas-inversion/listado` | 🔓 — | AlertasInversionController.listado |
+| GET | `/api/alertas-inversion/opciones` | 🔓 — | AlertasInversionController.opciones |
+| GET | `/api/alertas-inversion/cargas` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos') | AlertasInversionController.listarCargas |
+| POST | `/api/alertas-inversion/cargas` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos'), subidaEnMemoria.single('file') | AlertasInversionController.subir |
+| GET | `/api/alertas-inversion/cargas/:id` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos') | AlertasInversionController.obtenerCarga |
+| DELETE | `/api/alertas-inversion/cargas/:id` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos') | AlertasInversionController.eliminarCarga |
+| GET | `/api/alertas-inversion/formatos/plantilla` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos') | AlertasInversionController.descargarFormato |
+| POST | `/api/alertas-inversion/proyectos` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos'), validarCuerpo(crearProyectoManualSchema) | AlertasInversionController.crearManual |
 
 ### `routes/audit.routes.ts`
 
@@ -577,6 +596,9 @@ En el orden del manifiesto (`migrations/index.ts`), que es el orden en que corre
 - `035-tendencia-anio-libre`
 - `036-eliminar-cms-tradicional`
 - `037-tendencia-ocupacional-claves-uuid`
+- `038-alertas-inversion-catalogos`
+- `039-alertas-inversion-proyectos`
+- `040-auditoria-autoguardado`
 
 ### Modelos
 
@@ -586,14 +608,20 @@ En el orden del manifiesto (`migrations/index.ts`), que es el orden en que corre
 | `bloqueo-edicion` | `bloqueos_edicion` |
 | `carga-datos` | `cargas_datos` |
 | `centro-formacion` | `centros_formacion` |
+| `ciiu-clase` | `ciiu_clases` |
+| `ciiu-seccion` | `ciiu_secciones` |
 | `content-audit-log` | `auditoria_cambios` |
 | `departamento` | `departamentos` |
+| `empresa` | `empresas` |
+| `municipio` | `municipios` |
 | `nivel-formacion` | `niveles_formacion` |
 | `pagina-version` | `paginas_versiones` |
 | `pagina` | `paginas` |
 | `permission` | `permisos` |
 | `programa-formacion` | `programas_formacion` |
 | `programa-sobresaliente` | `programas_sobresalientes` |
+| `proyecto-inversion-ubicacion` | `proyectos_inversion_ubicaciones` |
+| `proyecto-inversion` | `proyectos_inversion` |
 | `role-permission` | `roles_permisos` |
 | `role` | `roles` |
 | `security-question` | `preguntas_seguridad` |

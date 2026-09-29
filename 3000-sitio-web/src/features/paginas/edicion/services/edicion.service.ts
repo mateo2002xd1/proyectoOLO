@@ -25,8 +25,19 @@ export async function obtenerPaginaEditable(slug: string): Promise<PaginaEditabl
   }
 }
 
-export async function guardarBorrador(slug: string, contenido: PuckData | Bloque[]): Promise<{ pagina: Pagina; version: PaginaVersion }> {
-  const { data } = await api.post(`/api/paginas/${slug}/borrador`, { contenido });
+/**
+ * `automatico` es el autoguardado del editor: la bitácora lo escribe como
+ * `autoguardar_borrador` y la API no deja que saque de la cola una versión en revisión.
+ */
+export async function guardarBorrador(
+  slug: string,
+  contenido: PuckData | Bloque[],
+  { automatico = false }: { automatico?: boolean } = {}
+): Promise<{ pagina: Pagina; version: PaginaVersion }> {
+  const { data } = await api.post(
+    `/api/paginas/${slug}/borrador`,
+    automatico ? { contenido, automatico } : { contenido }
+  );
   return data;
 }
 
