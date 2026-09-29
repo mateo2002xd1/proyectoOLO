@@ -215,7 +215,7 @@ function LoginForm() {
 
               <div className="mb-5">
                 <label htmlFor="password" className="mb-1.5 block text-sm font-semibold text-[#0d1526]">
-                  Passcode
+                  Contraseña
                 </label>
                 <div className="relative">
                   <input

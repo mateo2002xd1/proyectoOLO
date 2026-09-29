@@ -59,7 +59,7 @@ export function RecoveryView() {
             Recupera el acceso<br />a tu cuenta
           </h1>
           <p className="recovery-brand-subtitle">
-            No te preocupes, vamos a ayudarte a restablecer tu passcode, verifica que eres tú.
+            No te preocupes, vamos a ayudarte a restablecer tu contraseña, verifica que eres tú.
           </p>
         </div>
       </div>
