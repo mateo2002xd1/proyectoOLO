@@ -10,7 +10,7 @@
 El manual de usuario está dirigido a los diferentes perfiles que interactúan con la plataforma del Observatorio Laboral y Ocupacional (OLO):
 
 ### 5.1. Directores y Subdirectores
-Personal directivo institucional del SENA que inicia sesión con cuenta corporativa `@sena.edu.co` para consultar en modalidad de solo lectura tableros gerenciales de Power BI, matrices de pertinencia e indicadores de inserción laboral en la Intranet.
+Personal directivo del SENA que inicia sesión con cuenta corporativa `@sena.edu.co` para consultar en modalidad de solo lectura matrices de pertinencia, indicadores del mercado laboral y tableros analíticos en la Intranet del OLO.
 
 ### 5.2. Editores de Contenido y Roles Hijos Derivados
 Funcionarios autorizados para maquetar, estructurar y actualizar el contenido de las páginas web y boletines informativos mediante el editor visual de páginas, ajustándose a las secciones y permisos concedidos por la administración.
@@ -55,40 +55,28 @@ El sistema es una aplicación web moderna y requiere navegadores con soporte com
 
 > **Nota técnica:** No se requiere la instalación de complementos, Java runtime ni extensiones adicionales en el navegador.
 
-### 6.3. Requisitos de Credenciales Institucionales
+### 6.3. Requisitos de Credenciales y Cuentas de Acceso
 Para acceder a los entornos privados (Panel Administrativo, Editor Visual e Intranet):
-* **Cuenta de correo obligatoria:** Debe pertenecer estrictamente al dominio corporativo institucional `@sena.edu.co`. Cualquier intento de autenticación o registro con dominios públicos o ajenos es rechazado automáticamente.
-
-> **[Captura: Rechazo de Correo no SENA]**
-> *Intento de inicio de sesión o registro con un correo ajeno al dominio institucional `@sena.edu.co` mostrando la alerta o mensaje de restricción.*
->
-> **[Captura: Rechazo de Correo no SENA (Móvil)]**
-> *Intento de inicio de sesión o registro con un correo ajeno al dominio institucional `@sena.edu.co` mostrando la alerta o mensaje de restricción. (Vista en dispositivo móvil).*
-
-* **Contraseña robusta:** Debe satisfacer los 5 lineamientos de la política institucional de seguridad:
+* **Cuenta de correo obligatoria:** Debe pertenecer estrictamente al dominio corporativo `@sena.edu.co`. Cualquier intento de autenticación o registro con dominios públicos o ajenos es rechazado automáticamente por la plataforma OLO (ver procedimiento de acceso en [Sección 10.1](#101-acceso-y-autenticación) y resolución de alertas en [Sección 14.1](#141-problemas-de-acceso-y-autenticación)).
+* **Contraseña robusta:** Debe satisfacer los 5 lineamientos de la política de seguridad de contraseñas de la plataforma:
   1. Longitud mínima de **12 caracteres**.
   2. Al menos una letra **mayúscula** (`A-Z`).
   3. Al menos una letra **minúscula** (`a-z`).
   4. Al menos un dígito **numérico** (`0-9`).
   5. Al menos un **carácter especial** o símbolo (`!@#$%^&*()_+-=[]{}|;:,.<>?`).
-
-> **[Captura: Ingreso y Validación de Contraseña]**
-> *Visual del formulario mostrando el campo de ingreso de contraseña y la validación dinámica de los lineamientos de seguridad requeridos.*
->
-> **[Captura: Ingreso y Validación de Contraseña (Móvil)]**
-> *Visual del formulario mostrando el campo de ingreso de contraseña y la validación dinámica de los lineamientos de seguridad requeridos. (Vista en dispositivo móvil).*
+  *(El ingreso y validación interactiva de credenciales se detalla en el paso a paso de autenticación y restablecimiento en [Sección 10.1.3](#1013-procedimiento-de-recuperación-de-contraseña-ambos-portales)).*
 
 ---
 
 ## 7. Roles y permisos
 
-Esta sección detalla qué puede hacer cada tipo de usuario dentro del aplicativo, delimitando las capacidades de la consulta pública abierta y los perfiles institucionales autorizados.
+Esta sección detalla qué puede hacer cada tipo de usuario dentro del aplicativo, delimitando las capacidades de la consulta pública abierta y los perfiles autorizados del OLO.
 
 ### 7.1. Acceso Ciudadano General (Sin rol ni inicio de sesión)
 El Sitio Web Público fue concebido como un portal abierto para toda la sociedad civil, la comunidad académica, el sector productivo y los buscadores de empleo:
 1. **Sin necesidad de rol ni registro:** La ciudadanía no requiere una cuenta de usuario ni la asignación de un rol para interactuar con la plataforma.
 2. **Consulta y descarga libre:** Cualquier persona puede navegar por todas las páginas públicas, realizar búsquedas mediante los componentes interactivos, consultar indicadores, reproducir contenidos en los visores de videos y acceder a documentos mediante los visores de PDFs o botones de descarga libre en formato PDF sin necesidad de iniciar sesión.
-3. **Ámbito del control de accesos:** El inicio de sesión y la asignación de roles aplican de manera exclusiva para los funcionarios del SENA que acceden con correo institucional (`@sena.edu.co`) a la Intranet, al editor visual de páginas o al Panel Administrativo.
+3. **Ámbito del control de accesos:** El inicio de sesión y la asignación de roles aplican de manera exclusiva para los funcionarios del SENA que acceden con cuenta corporativa (`@sena.edu.co`) a la Intranet del OLO, al editor visual de páginas o al Panel Administrativo.
 
 > **[Captura: Consulta Ciudadana]**
 > *Exploración de contenidos públicos, consulta de indicadores y descarga libre de documentos disponible para la ciudadanía.*
@@ -105,36 +93,19 @@ Corresponde a la máxima autoridad técnica y operativa dentro de la plataforma 
   Garantizar la administración integral, gobernanza, disponibilidad operativa y seguridad técnica del sistema. Es el encargado de la gestión de usuarios, el control editorial de publicaciones, la importación masiva de datos y la fiscalización del sistema mediante la bitácora de auditoría.
 
 * **Entorno de acceso y autenticación:**
-  Inicia sesión mediante credenciales corporativas institucionales obligatorias (`@sena.edu.co`). Dispone de acceso exclusivo al Panel Administrativo (`/admin`), entorno inaccesible para los demás perfiles. Asimismo, puede navegar libremente por el Sitio Web público y por la Intranet institucional con plenas facultades de visualización y edición en línea.
+  Inicia sesión mediante credenciales corporativas obligatorias (`@sena.edu.co`). Dispone de acceso exclusivo al Panel Administrativo (`/admin`), entorno inaccesible para los demás perfiles. Asimismo, puede navegar libremente por el Sitio Web público y por la Intranet del OLO con plenas facultades de visualización y edición en línea.
 
 * **Funciones y facultades principales:**
-  * *Gestión integral de cuentas de usuario:* Registra nuevos usuarios institucionales, asigna o revoca roles, activa o suspende cuentas y ejecuta el restablecimiento de contraseñas ante eventualidades o bloqueos.
-  * *Creación de roles de editor y parametrización de permisos:* Crea perfiles personalizados exclusivamente bajo la tipología de editor (bajo la nomenclatura fija «Editor [Nombre]») y define manualmente («a mano») los accesos e interruptores de permisos sobre cada página o sección.
+  * *Gestión integral de cuentas de usuario:* Registra nuevas cuentas de usuario en el OLO, asigna o revoca roles, activa o suspende cuentas y ejecuta el restablecimiento de contraseñas ante eventualidades o bloqueos (ver paso a paso en [Sección 10.3.1](#1031-submenú-usuarios)).
+  * *Creación de roles de editor y parametrización de permisos:* Crea perfiles personalizados exclusivamente bajo la tipología de editor (bajo la nomenclatura fija «Editor [Nombre]») y define manualmente («a mano») los accesos e interruptores de permisos sobre cada página o sección (ver paso a paso en [Sección 10.3.2](#1032-submenú-roles)).
   * *Aprobación y control en la bandeja de revisión:* Examina los borradores remitidos por los editores mediante la previsualización interactiva y dispone de tres decisiones operativas:
     * *Aprobar:* Autoriza la publicación inmediata de la versión revisada para su despliegue público o en la Intranet.
     * *Rechazar:* Devuelve la versión al editor responsable con las observaciones y justificación de los cambios requeridos.
     * *Descartar / Eliminar (ícono de basurero):* Elimina definitivamente el borrador no procedente o enviado por error. Esta acción exige registrar obligatoriamente el motivo para la bitácora de auditoría y depura los archivos e imágenes huérfanas sin alterar la versión publicada.
-  * *Edición integral y gestión de páginas:* Accede al editor visual para maquetar directamente cualquier contenido en el Sitio Web o la Intranet, crear nuevas páginas y eliminar páginas dinámicas creadas por los editores.
-  * *Carga masiva de información en Excel:* Importa y procesa actualizaciones masivas de datos institucionales, estadísticas e indicadores mediante archivos en formato `.xlsx`.
-  * *Supervisión mediante bitácora de auditoría:* Inspecciona el registro cronológico inmutable de eventos para verificar qué usuario realizó cada acción, los cambios ejecutados, las marcas de tiempo y las direcciones de origen.
-
-> **[Captura: Bandeja de Revisión]**
-> *Bandeja de páginas en revisión en el Panel Administrativo con los controles directos para previsualizar, aprobar, rechazar o descartar borradores mediante el botón de basurero.*
->
-> **[Captura: Bandeja de Revisión (Móvil)]**
-> *Bandeja de páginas en revisión en el Panel Administrativo con los controles directos para previsualizar, aprobar, rechazar o descartar borradores mediante el botón de basurero. (Vista en dispositivo móvil).*
-
-> **[Captura: Confirmación Descarte]**
-> *Ventana modal de confirmación para el descarte de versiones en revisión, mostrando la exigencia del registro obligatorio del motivo para auditoría.*
->
-> **[Captura: Confirmación Descarte (Móvil)]**
-> *Ventana modal de confirmación para el descarte de versiones en revisión, mostrando la exigencia del registro obligatorio del motivo para auditoría. (Vista en dispositivo móvil).*
-
-> **[Captura: Carga Masiva Excel]**
-> *Módulo administrativo de carga masiva mostrando la interfaz y zona de arrastre para importar el archivo Excel.*
->
-> **[Captura: Carga Masiva Excel (Móvil)]**
-> *Módulo administrativo de carga masiva mostrando la interfaz y zona de arrastre para importar el archivo Excel. (Vista en dispositivo móvil).*
+    *(Ver procedimiento operativo de revisión en [Sección 10.4](#104-panel-administrativo-páginas-en-revisión)).*
+  * *Edición integral y gestión de páginas:* Accede al editor visual para maquetar directamente cualquier contenido en el Sitio Web o la Intranet, crear nuevas páginas y eliminar páginas dinámicas creadas por los editores (ver [Sección 12.2](#122-creación-y-edición-en-el-lienzo) y [Sección 12.4](#124-eliminación-de-páginas-dinámicas-paso-a-paso)).
+  * *Carga masiva de información en Excel:* Importa y procesa actualizaciones masivas de datos ocupacionales, estadísticas e indicadores del observatorio mediante archivos en formato `.xlsx` (ver paso a paso en [Sección 10.7](#107-panel-administrativo-carga-masiva-de-datos-en-excel)).
+  * *Supervisión mediante bitácora de auditoría:* Inspecciona el registro cronológico inmutable de eventos para verificar qué usuario realizó cada acción, los cambios ejecutados, las marcas de tiempo y las direcciones de origen (ver paso a paso en [Sección 10.5](#105-panel-administrativo-auditoría)).
 
 * **Límites operativos y restricciones de seguridad:**
   * No puede modificar ni eliminar mediante el editor visual las rutas y vistas que no son gestionables desde el editor de páginas, tales como las interfaces de autenticación (inicio de sesión, recuperación de credenciales y preguntas de seguridad) y todas las rutas funcionales del Panel Administrativo (`/admin`), las cuales corresponden a la arquitectura fija de código del aplicativo.
@@ -142,31 +113,25 @@ Corresponde a la máxima autoridad técnica y operativa dentro de la plataforma 
   * No puede omitir ni alterar el registro de auditoría; todas las acciones administrativas quedan grabadas de forma obligatoria e irreversible en la base de datos.
 
 #### 7.2.2. Editor (Rol Base)
-Corresponde al perfil técnico general facultado para la producción, maquetación y diseño de los contenidos institucionales.
+Corresponde al perfil técnico general facultado para la producción, maquetación y diseño de los contenidos del OLO.
 
 * **Propósito del perfil:**
-  Construir, actualizar y diseñar visualmente las páginas y boletines de la plataforma mediante el editor interactivo de bloques, manteniendo la pertinencia informativa y la coherencia gráfica institucional.
+  Construir, actualizar y diseñar visualmente las páginas y boletines de la plataforma mediante el editor interactivo de bloques, manteniendo la pertinencia informativa y la identidad gráfica del observatorio.
 
 * **Entorno de acceso y autenticación:**
-  Inicia sesión con su cuenta corporativa institucional (`@sena.edu.co`) desde el Sitio Web público o desde la Intranet. Al autenticarse, el sistema retorna al usuario a la página de inicio correspondiente según el ambiente donde ingresó. Al navegar por las diferentes páginas, se le despliega un menú flotante con los botones de acción para editar página, editar cabecera/pie, crear o eliminar páginas.
+  Inicia sesión con su cuenta corporativa (`@sena.edu.co`) desde el Sitio Web público o desde la Intranet del OLO. Al autenticarse, el sistema dirige al usuario a la página de inicio correspondiente según el ambiente donde ingresó. Al navegar por las diferentes páginas, se le despliega un menú flotante con los botones de acción para editar página, editar cabecera/pie, crear o eliminar páginas.
 
 * **Funciones y facultades principales:**
-  * *Maquetación interactiva con bloques:* Diseña y estructura contenidos directamente en el editor visual mediante su entorno de tres paneles: seleccionando bloques prediseñados del catálogo izquierdo (textos, imágenes, tarjetas de indicadores, carruseles, acordeones), arrastrándolos al lienzo central en tiempo real y personalizando sus propiedades en el panel lateral derecho.
+  * *Maquetación interactiva con bloques:* Diseña y estructura contenidos directamente en el editor visual mediante su entorno de tres paneles: seleccionando bloques prediseñados del catálogo izquierdo (textos, imágenes, tarjetas de indicadores, carruseles, acordeones), arrastrándolos al lienzo central en tiempo real y personalizando sus propiedades en el panel lateral derecho (ver paso a paso en [Sección 12.2](#122-creación-y-edición-en-el-lienzo)).
   * *Cobertura total de edición:* Accede a la edición de cualquier página del portal o de la Intranet a través del botón flotante en pantalla (opción **"Editar página"**), disponiendo de permisos plenos sobre todos los contenidos existentes, sin importar qué editor los haya creado originalmente.
-  * *Creación y eliminación de páginas dinámicas:* Gestiona páginas dinámicas desde el menú del botón flotante mediante las opciones **"Crear página"** (definiendo título y ruta URL) y **"Eliminar página"** (con validaciones de seguridad y protección contra enlaces rotos). Al crear una nueva página, el sistema otorga permisos de edición automáticos al rol del editor que la creó, al rol padre Editor base y al rol de Administrador; de este modo, ningún otro rol de editor tiene acceso a intervenirla a menos que el Administrador se lo conceda manualmente.
-  * *Flujo de trabajo mediante borradores:* Guarda su progreso de forma privada mediante el botón **"Guardar Borrador"** sin alterar el portal público, y traslada los cambios terminados mediante **"Enviar a revisión"** hacia la sección **"Páginas en revisión"** del Panel Administrativo para la evaluación y aprobación final por parte del Administrador.
-
-> **[Captura: Editor Visual Componentes]**
-> *Entorno del editor visual interactivo mostrando el panel de componentes prediseñados y el menú flotante para la creación y eliminación de secciones.*
->
-> **[Captura: Editor Visual Componentes (Móvil)]**
-> *Entorno del editor visual interactivo mostrando el panel de componentes prediseñados y el menú flotante para la creación y eliminación de secciones. (Vista en dispositivo móvil).*
+  * *Creación y eliminación de páginas dinámicas:* Gestiona páginas dinámicas desde el menú del botón flotante mediante las opciones **"Crear página"** (definiendo título y ruta URL) y **"Eliminar página"** (con validaciones de seguridad y protección contra enlaces rotos). (Ver paso a paso de creación en [Sección 12.2, Paso 1](#122-creación-y-edición-en-el-lienzo) y de eliminación en [Sección 12.4](#124-eliminación-de-páginas-dinámicas-paso-a-paso)).
+  * *Flujo de trabajo mediante borradores:* Guarda su progreso de forma privada mediante el botón **"Guardar Borrador"** sin alterar el portal público, y traslada los cambios terminados mediante **"Enviar a revisión"** hacia la sección **"Páginas en revisión"** del Panel Administrativo para la evaluación y aprobación final por parte del Administrador (ver paso a paso en [Sección 12.2, Paso 7](#122-creación-y-edición-en-el-lienzo)).
 
 * **Límites operativos y restricciones de seguridad:**
   * No tiene acceso al Panel Administrativo (`/admin`).
   * No puede publicar directamente en los entornos productivos; requiere obligatoriamente la aprobación previa de un Administrador.
   * No puede intervenir ni eliminar las rutas fijas del aplicativo (como las interfaces de inicio de sesión o las rutas administrativas), ya que corresponden a la estructura de código del sistema y no a páginas gestionables desde el editor visual.
-  * Si bien está facultado para eliminar páginas dinámicas creadas en el sistema, no puede borrarlas si se encuentran vinculadas a algún elemento del menú de navegación institucional o a otros enlaces del portal; en dichos casos, el sistema bloquea la acción y le exige retirar previamente esos enlaces desde la edición del menú para evitar enlaces rotos.
+  * Si bien está facultado para eliminar páginas dinámicas creadas en el sistema, no puede borrarlas si se encuentran vinculadas a algún elemento del menú de navegación del portal o a otros enlaces del sistema; en dichos casos, el sistema bloquea la acción y le exige retirar previamente esos enlaces desde la edición del menú para evitar enlaces rotos.
   * No puede crear, modificar ni gestionar cuentas de usuario ni roles.
   * No tiene acceso a la bitácora de auditoría ni al módulo de carga masiva de datos en Excel.
 
@@ -177,21 +142,15 @@ Corresponden a perfiles editoriales especializados creados por el Administrador 
   Permitir la participación distribuida de funcionarios en la maquetación y actualización de contenidos concretos, aplicando el principio de mínimo privilegio para limitar el alcance de su intervención únicamente a las páginas autorizadas.
 
 * **Entorno de acceso y autenticación:**
-  Inician sesión con credenciales corporativas institucionales (`@sena.edu.co`) en el Sitio Web público o en la Intranet. Al ingresar, el sistema redirige al usuario al inicio del portal y despliega el menú flotante de edición únicamente cuando navega por las páginas y secciones específicas que le hayan sido habilitadas.
+  Inician sesión con credenciales corporativas (`@sena.edu.co`) en el Sitio Web público o en la Intranet del OLO. Al ingresar, el sistema redirige al usuario al inicio del portal y despliega el menú flotante de edición únicamente cuando navega por las páginas y secciones específicas que le hayan sido habilitadas.
 
 * **Funciones y facultades principales:**
   * *Exclusividad de tipología:* Todo rol derivado creado en la plataforma pertenece obligatoriamente a la familia de editores y se registra bajo el formato estricto «Editor [Nombre]».
-  * *Configuración manual de permisos («a mano»):* Nace sin ningún permiso predeterminado (privilegio cero). El Administrador habilita de forma selectiva los interruptores de acceso para las páginas, secciones o funciones específicas requeridas.
+  * *Configuración manual de permisos («a mano»):* Nace sin ningún permiso predeterminado (privilegio cero). El Administrador habilita de forma selectiva los interruptores de acceso para las páginas, secciones o funciones específicas requeridas (ver paso a paso en [Sección 10.3.2, Paso 3](#1032-submenú-roles)).
   * *Capacidad equivalente según asignación:* Si el Administrador le otorga permisos completos (activando todas las páginas, la creación y el borrado), el rol hijo adquiere las mismas facultades operativas que el rol Editor base.
-  * *Control de componentes globales:* La modificación de la cabecera y pie de página institucional permanece bloqueada por defecto, salvo concesión expresa del Administrador.
+  * *Control de componentes globales:* La modificación de la cabecera y pie de página compartidos permanece bloqueada por defecto, salvo concesión expresa del Administrador.
   * *Ciclo editorial de borradores:* Maqueta los bloques en las páginas asignadas y remite las versiones trabajadas a la sección de **"Páginas en revisión"** del Panel Administrativo para la evaluación y aprobación definitiva por parte del Administrador.
-  * *Asignación automática y delegación de nuevas páginas:* Cuando un rol hijo que cuenta con permiso de creación genera una nueva página, el sistema otorga permisos de edición inmediatos únicamente a su propio rol, al rol padre Editor base y al Administrador. Los demás roles hijos de editor quedan sin acceso a dicha página; si otro rol especializado necesita colaborar o editarla, el Administrador debe otorgarle el permiso de forma manual («a mano») desde la opción de editar rol en el Panel Administrativo.
-
-> **[Captura: Formulario Crear Rol]**
-> *Formulario de creación de nuevos roles en el Panel Administrativo evidenciando el prefijo obligatorio para editores y la interfaz de asignación manual de permisos.*
->
-> **[Captura: Formulario Crear Rol (Móvil)]**
-> *Formulario de creación de nuevos roles en el Panel Administrativo evidenciando el prefijo obligatorio para editores y la interfaz de asignación manual de permisos. (Vista en dispositivo móvil).*
+  * *Asignación automática y delegación de nuevas páginas:* Cuando un rol hijo que cuenta con permiso de creación genera una nueva página, el sistema otorga permisos de edición inmediatos únicamente a su propio rol, al rol padre Editor base y al Administrador. Los demás roles hijos de editor quedan sin acceso a dicha página; si otro rol especializado necesita colaborar o editarla, el Administrador debe otorgarle el permiso de forma manual («a mano») desde la opción de editar rol en el Panel Administrativo (ver [Sección 10.3.2](#1032-submenú-roles)).
 
 * **Límites operativos y restricciones de seguridad:**
   * No tienen acceso al Panel Administrativo (`/admin`).
@@ -201,24 +160,18 @@ Corresponden a perfiles editoriales especializados creados por el Administrador 
   * No pueden intervenir ni eliminar las rutas no gestionables desde el editor visual (pantallas de inicio de sesión y rutas administrativas), ni gestionar usuarios, roles, auditoría o cargas masivas.
 
 #### 7.2.4. Director / Subdirector
-Corresponde al perfil institucional de dirección enfocado en el monitoreo gerencial, el análisis estratégico y la toma de decisiones institucionales.
+Corresponde al perfil directivo enfocado en el monitoreo gerencial, el análisis de indicadores del mercado laboral y la toma de decisiones estratégicas del observatorio.
 
 * **Propósito del perfil:**
   Facilitar la consulta directa, ágil y protegida de la información estadística, los indicadores del mercado laboral y los resultados de pertinencia educativa para respaldar la planeación y la gestión directiva.
 
 * **Entorno de acceso y autenticación:**
-  Inicia sesión mediante su cuenta institucional corporativa (`@sena.edu.co`) directamente en la Intranet institucional. El sistema valida su identidad y despliega el entorno privado con acceso inmediato a los módulos gerenciales.
+  Inicia sesión mediante su cuenta corporativa (`@sena.edu.co`) directamente en la Intranet del OLO. El sistema valida su identidad y despliega el entorno privado con acceso inmediato a los módulos gerenciales.
 
 * **Funciones y facultades principales:**
-  * *Consulta gerencial en solo lectura:* Explora e interactúa con los tableros analíticos de Power BI integrados en la Intranet (tasas de ocupación, matrices de pertinencia educativa e indicadores de encuestas a egresados y calidad formativa).
-  * *Descarga de presentaciones e informes internos:* Descarga informes analíticos, boletines ejecutivos y presentaciones en formato PDF o PowerPoint para comités de dirección y mesas de trabajo técnico.
-  * *Monitoreo estratégico sin fricción operativa:* Realiza análisis comparativos y seguimiento a las metas institucionales sobre información consolidada y oficial.
-
-> **[Captura: Intranet Director]**
-> *Interfaz de consulta gerencial en la Intranet institucional con tableros interactivos integrados en modalidad de solo lectura.*
->
-> **[Captura: Intranet Director (Móvil)]**
-> *Interfaz de consulta gerencial en la Intranet institucional con tableros interactivos integrados en modalidad de solo lectura. (Vista en dispositivo móvil).*
+  * *Consulta gerencial en solo lectura:* Explora e interactúa con los módulos analíticos y tableros de indicadores integrados en las páginas de la Intranet (tasas de ocupación, matrices de pertinencia educativa e indicadores de encuestas a egresados y calidad formativa) (ver [Sección 13.1](#131-uso-de-tableros-bi-en-la-intranet-power-bi)).
+  * *Descarga de presentaciones e informes internos:* Descarga informes analíticos, boletines ejecutivos y presentaciones en formato PDF o PowerPoint para comités de dirección y mesas de trabajo técnico (ver [Sección 13.4](#134-descarga-directa-de-archivos-y-boletines)).
+  * *Monitoreo estratégico sin fricción operativa:* Realiza análisis comparativos y seguimiento a los indicadores y metas ocupacionales sobre información consolidada y oficial.
 
 * **Límites operativos y restricciones de seguridad:**
   * No tiene acceso al Panel Administrativo (`/admin`).
@@ -227,38 +180,17 @@ Corresponde al perfil institucional de dirección enfocado en el monitoreo geren
   * No administra cuentas de usuario, no crea roles ni configura permisos.
   * No ejecuta cargas masivas de datos en Excel ni accede a la bitácora de auditoría técnica.
 
-### 7.3. Reglas para la Creación y Eliminación de Páginas
-El sistema aplica controles estrictos para salvaguardar la estabilidad, coherencia de navegación e integridad del portal:
-1. **Crear una página no la publica:** La acción de crear una página únicamente genera la estructura vacía en el sistema. La página no es visible para la ciudadanía ni en la Intranet hasta que se le agregue contenido, se guarde el borrador, se envíe a revisión y un Administrador apruebe su publicación definitiva.
-2. **Asignación jerárquica de permisos al crear páginas:** Al crearse una nueva página, el sistema confiere de manera automática e inmediata permisos de edición exclusivamente a tres roles:
-   * Al **rol del editor que creó la página** (sea el rol Editor base o un rol hijo con permiso de creación).
-   * Al **rol padre Editor (Rol Base)**, asegurando que mantenga su cobertura general de edición sobre todos los contenidos de la plataforma.
-   * Al rol **Administrador**, garantizando la supervisión y control técnico de la plataforma.
-   Ningún otro rol hijo o derivado de editor recibe permisos automáticamente sobre dicha página. Por lo tanto, si otro rol requiere intervenir o colaborar en su maquetación, el Administrador debe ingresar al Panel Administrativo y otorgarle el acceso de forma manual («a mano») mediante la opción de editar rol.
-3. **Protección de rutas fijas del aplicativo:** Las vistas y pantallas que no son gestionables mediante el editor visual (tales como las interfaces de inicio de sesión, flujos de autenticación y las rutas del Panel Administrativo) forman parte del código base del sistema y **nunca pueden ser eliminadas ni alteradas desde el editor visual**.
-4. **Ámbito de eliminación en páginas gestionadas por el editor:** La eliminación únicamente aplica sobre las páginas dinámicas y secciones de contenido creadas o administradas en la plataforma, las cuales sí pueden ser retiradas siempre que no cuenten con enlaces activos.
-5. **Protección contra enlaces rotos:** Antes de procesar el borrado, el sistema inspecciona todo el portal; si otra página o menú institucional contiene un enlace activo que apunta hacia la página a eliminar, el borrado se bloquea automáticamente hasta que dichos enlaces sean retirados, impidiendo que los usuarios encuentren enlaces rotos (error 404).
-6. **Confirmación de seguridad obligatoria:** Para evitar eliminaciones accidentales por un clic involuntario, el sistema despliega una ventana de confirmación donde el usuario debe escribir exactamente el título de la página antes de autorizar su borrado definitivo.
-
-> **[Captura: Modal Eliminar Página]**
-> *Ventana de confirmación de seguridad para la eliminación de páginas dinámicas con requisito de digitación exacta del título de la página.*
->
-> **[Captura: Modal Eliminar Página (Móvil)]**
-> *Ventana de confirmación de seguridad para la eliminación de páginas dinámicas con requisito de digitación exacta del título de la página. (Vista en dispositivo móvil).*
-
-7. **Registro inmutable:** La eliminación retira la página y sus versiones de la plataforma, pero la bitácora de auditoría conserva de forma permanente el registro histórico de quién la creó, quién la editó y quién la eliminó.
-
-### 7.4. Matriz Comparativa de Acceso y Capacidades
+### 7.3. Matriz Comparativa de Acceso y Capacidades
 
 | Capacidad / Entorno del Sistema | Director / Subdirector | Editor Base | Roles Hijos de Editor | Administrador |
 | :--- | :---: | :---: | :---: | :---: |
 | **Navegar Sitio Web Público y descargar archivos** | Permitido | Permitido | Permitido | Permitido |
-| **Inicio de sesión institucional (`@sena.edu.co`)** | Permitido | Permitido | Permitido | Permitido |
-| **Consultar tableros de Power BI en Intranet** | Permitido (Solo lectura) | Permitido | Permitido | Permitido |
+| **Inicio de sesión con cuenta SENA (`@sena.edu.co`)** | Permitido | Permitido | Permitido | Permitido |
+| **Consultar contenidos y módulos analíticos en Intranet** | Permitido (Solo lectura) | Permitido | Permitido | Permitido |
 | **Descargar informes y presentaciones internas** | Permitido | Permitido | Permitido | Permitido |
 | **Ingresar al editor visual de páginas** | Sin acceso | Permitido | Permitido | Permitido |
 | **Editar páginas asignadas del Sitio Web e Intranet** | Sin acceso | Permitido | Según asignación manual | Permitido |
-| **Modificar cabecera y pie de página institucional** | Sin acceso | Permitido | No (Por defecto) | Permitido |
+| **Modificar cabecera y pie de página del portal** | Sin acceso | Permitido | No (Por defecto) | Permitido |
 | **Crear nuevas páginas en el portal** | Sin acceso | Permitido | Según asignación manual | Permitido |
 | **Eliminar páginas creadas por usuarios** | Sin acceso | Permitido | Según asignación manual | Permitido |
 | **Eliminar páginas base del sistema (de fábrica)** | No (Bloqueado) | No (Bloqueado) | No (Bloqueado) | No (Bloqueado) |
@@ -273,117 +205,44 @@ El sistema aplica controles estrictos para salvaguardar la estabilidad, coherenc
 | **Carga masiva de datos ocupacionales en Excel** | Sin acceso | Sin acceso | Sin acceso | Permitido |
 | **Consultar la bitácora de auditoría del sistema** | Sin acceso | Sin acceso | Sin acceso | Permitido |
 
-### 7.5. Flujo de Separación de Funciones y Control Operativo
-1. **Separación entre redacción y publicación:** Quienes redactan y diseñan el contenido preparan sus borradores sin publicarlos inmediatamente hacia el público general.
-2. **Revisión previa:** El Administrador revisa el material propuesto, valida su pertinencia y decide su publicación definitiva, remite observaciones de ajuste al editor, o descarta la versión mediante el botón de basurero si el borrador fue enviado por error o no procede.
-3. **Control en la creación y borrado:** La creación de nuevas estructuras de páginas está regulada para evitar páginas vacías en producción, y el borrado cuenta con validación de enlaces y protección inmutable para las páginas estructurales del portal.
-4. **Protección de la administración central:** Las herramientas de configuración y control de accesos se mantienen reservadas exclusivamente para la administración. Asimismo, la creación de nuevos roles en la plataforma está restringida exclusivamente a roles de editor («Editor [Nombre]») con permisos acotados, garantizando que no se puedan crear roles administrativos ni directivos adicionales.
-5. **Consulta directiva sin riesgos de alteración:** Los directores y subdirectores disponen de toda la información gerencial de forma inmediata y protegida, sin peligro de modificar inadvertidamente las páginas ni los datos del observatorio.
-
 ---
 
 ## 8. Acceso al sistema
 
-El acceso al ecosistema tecnológico del Observatorio Laboral y Ocupacional comprende los mecanismos de navegación pública abierta y los procedimientos de autenticación, recuperación de credenciales y administración de cuentas institucionales para el personal autorizado.
+El acceso al ecosistema tecnológico del Observatorio Laboral y Ocupacional (OLO) comprende los mecanismos de navegación pública abierta y los procedimientos de autenticación, recuperación de credenciales y administración de cuentas de usuario para el personal autorizado.
 
 ### 8.1. Sitio Web Público
 
 #### 8.1.1. Portal Web Público (Cara visible)
-El portal web público es la plataforma principal que refleja el trabajo realizado por los editores y administradores. Es un entorno dinámico y adaptable donde se publican las páginas maquetadas con diversos componentes interactivos (buscadores, visores de videos, visores de documentos PDF, tarjetas de indicadores y enlaces de descarga). La apariencia y distribución de los contenidos varían según las prioridades institucionales de cada momento. Aunque su contenido principal es público y consumido por la ciudadanía sin requerir autenticación, el personal administrativo y editorial utiliza este mismo entorno como punto de acceso institucional.
+El portal web público es la plataforma principal que refleja el trabajo del Observatorio Laboral y Ocupacional (OLO). Es un entorno dinámico y adaptable donde se publican las páginas maquetadas con diversos componentes interactivos (buscadores de ocupaciones, visores de videos, visores de documentos PDF, tarjetas de indicadores y enlaces de descarga). La apariencia y distribución de los contenidos varían según las prioridades informativas del observatorio. Aunque su contenido principal es público y consultado por la ciudadanía sin requerir autenticación, el personal editorial y administrativo utiliza este mismo entorno como punto de acceso al sistema.
 
-#### 8.1.2. Inicio de Sesión Institucional en el Portal Web
-Permite a cualquier usuario institucional registrado acceder con su cuenta corporativa al portal:
-* **Autenticación abierta para todo usuario institucional:** Cualquier funcionario que cuente con una cuenta activa registrada puede iniciar sesión en la plataforma, independiente de el rol asignado (Administrador, Director / Subdirector, Editor base o Roles hijos derivados de Editor).
+#### 8.1.2. Acceso al Sistema desde el Sitio Web Público (Enlace a la Intranet)
+El Sitio Web Público no cuenta con un botón directo de "Iniciar Sesión" para la ciudadanía, ya que la navegación por todos sus contenidos es totalmente libre y abierta. Para los funcionarios registrados del SENA (Directores, Editores y Administradores), la vía de entrada institucional es el botón fijo **"Intranet"** en la cabecera (o el acceso directo a las rutas `/login` y `/admin`):
+* **Punto de acceso institucional:** Al presionar el botón **"Intranet"**, el personal es dirigido a la pantalla de autenticación corporativa donde ingresa con su cuenta `@sena.edu.co`.
 * **Alcance según el perfil del usuario:**
-  * *Editores y Administradores:* Al identificarse, el sistema habilita las barras de herramientas operativas, el acceso al editor visual de páginas y, en el caso exclusivo del Administrador, el ingreso al Panel Administrativo.
-  * *Directores y Subdirectores:* Su función dentro del sistema es actuar como cualquier **usuario registrado legítimo**, pero **sin permisos administrativos ni facultades de edición**. Por lo tanto, al iniciar sesión en el sitio web interactúan con la plataforma de forma autenticada, pero sin visualizar herramientas de maquetación, botones de edición ni accesos de configuración.
+  * *Editores:* Al autenticarse, disponen de permisos editoriales activos; cuando regresan o navegan por el Sitio Web Público o la Intranet, el sistema despliega el botón circular flotante (Speed Dial) para maquetar páginas, cabecera y pie.
+  * *Administradores:* Son dirigidos al Panel Administrativo (`/admin`), accediendo a la gestión de usuarios, roles, auditoría y revisión editorial.
+  * *Directores y Subdirectores:* Ingresan a la Intranet para consultar tableros analíticos e informes en modalidad de solo lectura, sin herramientas de edición ni acceso al panel administrativo.
 * **Credenciales requeridas:**
-  * Correo electrónico corporativo con dominio institucional `@sena.edu.co`.
+  * Correo electrónico corporativo con dominio `@sena.edu.co`.
   * Contraseña robusta configurada en la plataforma.
-* **Enlace de recuperación:** La pantalla de autenticación dispone del acceso directo para el restablecimiento de contraseñas ante olvidos *(¿Olvidaste tu contraseña?)*.
+* **Enlace de recuperación:** La pantalla de autenticación dispone del acceso directo para el restablecimiento de contraseñas ante olvidos *(¿Olvidaste tu contraseña?)*. *(Para consultar la guía visual paso a paso del acceso, ver [Sección 10.1.1: Acceso al Sistema desde el Sitio Web Público (Botón Intranet)](#1011-acceso-al-sistema-desde-el-sitio-web-público-botón-intranet)).*
 
-> **[Captura: Login Intranet]**
-> *Formulario de inicio de sesión del Sitio Web Público con campos de correo institucional `@sena.edu.co`, contraseña y enlace de recuperación.*
->
-> **[Captura: Login Intranet (Móvil)]**
-> *Formulario de inicio de sesión del Sitio Web Público con campos de correo institucional `@sena.edu.co`, contraseña y enlace de recuperación. (Vista en dispositivo móvil).*
-
-### 8.2. Intranet Institucional
+### 8.2. Intranet del OLO
 
 #### 8.2.1. Inicio de Sesión en el Entorno Privado
 La Intranet es una plataforma privada orientada al seguimiento gerencial, análisis ocupacional y trabajo interno del SENA:
 * **Acceso restringido con autenticación obligatoria:** A diferencia del portal público, la Intranet no permite navegación anónima ni libre. Toda persona debe autenticarse para ingresar.
 * **Perfiles habilitados:**
-  * *Directores y Subdirectores:* Ingresan como usuarios registrados institucionales para consultar los tableros de Power BI e indicadores de gestión en modalidad de solo lectura, manteniendo protegidos los datos y la estructura interna al no contar con permisos de edición ni facultades de administración.
+  * *Directores y Subdirectores:* Ingresan como usuarios del OLO para consultar los módulos de información e indicadores ocupacionales en modalidad de solo lectura, manteniendo protegidos los datos y la estructura interna al no contar con permisos de edición ni facultades de administración.
   * *Editores y Administradores:* Ingresan para maquetar secciones internas o realizar labores de supervisión según sus atribuciones.
-* **Credenciales de ingreso:** Correo corporativo `@sena.edu.co` y contraseña institucional. Al iniciar sesión, el sistema redirige al usuario a los tableros analíticos de Power BI o a sus secciones asignadas según el rol.
-
-> **[Captura: Recuperación Correo]**
-> *Pantalla de acceso a la Intranet Institucional para consulta directiva de tableros analíticos y reportes.*
->
-> **[Captura: Recuperación Correo (Móvil)]**
-> *Pantalla de acceso a la Intranet Institucional para consulta directiva de tableros analíticos y reportes. (Vista en dispositivo móvil).*
+* **Credenciales de ingreso:** Correo corporativo `@sena.edu.co` y contraseña asignada. Al iniciar sesión, el sistema redirige al usuario a la página de inicio de la Intranet o a sus secciones asignadas según el rol, donde podrá consultar los contenidos e indicadores configurados en la plataforma. *(Para consultar la guía visual paso a paso del acceso a la Intranet, ver [Sección 10.1.2: Inicio de Sesión en la Intranet del OLO](#1012-inicio-de-sesión-en-la-intranet-del-olo)).*
 
 ### 8.3. Procedimiento de Recuperación de Contraseña (Preguntas de Seguridad)
-El mecanismo de recuperación de acceso opera de manera unificada para todos los usuarios:
-
-1. **Inicio del proceso:** En la pantalla de inicio de sesión (ya sea del Sitio Web o de la Intranet), se debe ubicar el enlace inferior.
-
-> **[Captura: Paso 1]**
-> *Ubicación del enlace de recuperación en la pantalla de inicio de sesión.*
->
-> **[Captura: Paso 1 (Móvil)]**
-> *Ubicación del enlace de recuperación en la pantalla de inicio de sesión. (Vista en dispositivo móvil).*
-
-2. **Clic en el enlace:** Se debe hacer clic en el texto **"*(¿Olvidaste tu contraseña?)* / Recuperar contraseña"**.
-
-> **[Captura: Paso 2]**
-> *Acción de hacer clic en el enlace de recuperación.*
->
-> **[Captura: Paso 2 (Móvil)]**
-> *Acción de hacer clic en el enlace de recuperación. (Vista en dispositivo móvil).*
-
-3. **Identificación de cuenta:** El sistema desplegará un campo para digitar el correo. Se debe ingresar el correo corporativo `@sena.edu.co`.
-
-> **[Captura: Paso 3]**
-> *Ingreso del correo institucional en el campo de recuperación.*
->
-> **[Captura: Paso 3 (Móvil)]**
-> *Ingreso del correo institucional en el campo de recuperación. (Vista en dispositivo móvil).*
-
-4. **Confirmación de identidad:** Se debe pulsar el botón **"Continuar"** para que el sistema busque la cuenta.
-
-> **[Captura: Paso 4]**
-> *Clic en el botón continuar.*
->
-> **[Captura: Paso 4 (Móvil)]**
-> *Clic en el botón continuar. (Vista en dispositivo móvil).*
-
-5. **Preguntas de seguridad:** Se desplegará el formulario de preguntas de seguridad. Se debe seleccionar la respuesta correcta para cada menú desplegable.
-
-> **[Captura: Paso 5]**
-> *Selección de respuestas en el formulario de preguntas de seguridad.*
->
-> **[Captura: Paso 5 (Móvil)]**
-> *Selección de respuestas en el formulario de preguntas de seguridad. (Vista en dispositivo móvil).*
-
-6. **Envío de validación:** Se debe hacer clic en **"Validar Identidad"**.
-
-> **[Captura: Paso 6]**
-> *Clic en el botón Validar Identidad.*
->
-> **[Captura: Paso 6 (Móvil)]**
-> *Clic en el botón Validar Identidad. (Vista en dispositivo móvil).*
-
-7. **Restablecimiento:** Si es correcto, aparecerán los campos de nueva contraseña. Se debe digitar la nueva contraseña cumpliendo las políticas de seguridad.
-
-> **[Captura: Paso 7]**
-> *Ingreso de la nueva contraseña en los campos correspondientes.*
->
-> **[Captura: Paso 7 (Móvil)]**
-> *Ingreso de la nueva contraseña en los campos correspondientes. (Vista en dispositivo móvil).*
-
-8. **Confirmación final:** Se debe pulsar el botón **"Guardar nueva contraseña"** para finalizar el proceso. El sistema devolverá al usuario al login.
+El sistema del Observatorio Laboral y Ocupacional cuenta con un mecanismo autónomo de restablecimiento de contraseña ante olvidos o bloqueos, unificado para todos los funcionarios tanto en el Sitio Web como en la Intranet:
+* **Autonomía sin dependencia de correo externo:** A diferencia de plataformas que envían enlaces o tokens a buzones de correo externos, el aplicativo comprueba la identidad del titular validando las **tres preguntas de seguridad** parametrizadas obligatoriamente durante el primer ingreso (onboarding). Esto previene bloqueos por filtros de spam o falta de disponibilidad de servidores de correo externos.
+* **Política de seguridad:** Una vez validadas con éxito las respuestas correspondientes, el usuario puede establecer de inmediato una nueva contraseña que satisfaga los lineamientos de seguridad de la plataforma (longitud mínima de 12 caracteres, mayúsculas, minúsculas, números y caracteres especiales).
+* **Guía operativa paso a paso:** Para consultar el procedimiento interactivo en pantalla con las capturas de cada paso, remitirse a la **[Sección 10.1.3: Procedimiento de Recuperación de Contraseña (Ambos Portales)](#1013-procedimiento-de-recuperación-de-contraseña-ambos-portales)**.
 
 ### 8.4. Creación y Registro Centralizado de Usuarios (Exclusivo Administrador)
 El sistema no cuenta con registro público autónomo; ninguna persona puede crear una cuenta por sí misma:
@@ -392,146 +251,144 @@ El sistema no cuenta con registro público autónomo; ninguna persona puede crea
 
 ## 8.5. Primer Ingreso al Sistema (Onboarding)
 
-Cuando el Administrador crea una cuenta nueva, el funcionario debe completar la configuración inicial antes de poder operar con normalidad.
+Cuando el Administrador crea una cuenta nueva, el funcionario debe completar obligatoriamente la configuración inicial de seguridad antes de poder operar en la plataforma.
 
 ### 8.5.1. Recepción de Credenciales Iniciales
 
-Al crear la cuenta, el Administrador establece una **contraseña temporal** y la comunica de forma manual al funcionario a través del canal institucional que considere apropiado (correo electrónico, mensaje de chat corporativo u otro medio). **El sistema no envía ningún correo automático de bienvenida.** La contraseña temporal no tiene fecha de expiración: permanece activa hasta que el funcionario la use para completar su primer ingreso.
+Al crear la cuenta, el Administrador establece una **contraseña temporal** y la comunica de forma manual al funcionario a través del canal corporativo que considere apropiado (correo electrónico, mensaje de chat interno u otro medio). **El sistema no envía ningún correo automático de bienvenida.** La contraseña temporal no tiene fecha de expiración: permanece activa hasta que el funcionario la use para completar su primer ingreso.
 
-### 8.5.2. Flujo de Primer Ingreso Paso a Paso
+Al acceder por primera vez con estas credenciales provisorias, el sistema interrumpe el flujo de navegación habitual y obliga al funcionario a completar el protocolo de configuración inicial:
+* **Establecimiento de contraseña definitiva:** Registro de una clave personal e intransferible que cumpla con los 5 requisitos de la política de contraseñas robustas (ver [Sección 6.3](#63-política-de-contraseñas-robustas)).
+* **Parametrización de preguntas de seguridad:** Selección y respuesta obligatoria de tres preguntas que habilitan el mecanismo autónomo de recuperación de cuenta ante eventuales bloqueos u olvidos.
 
-1. **Inicio de sesión con contraseña temporal:** El funcionario accede al portal (Sitio Web o Intranet, según su rol) e ingresa su correo corporativo `@sena.edu.co` y la contraseña temporal recibida.
+Una vez validados estos datos, el sistema guarda la configuración definitiva y concede el acceso formal al portal o sección correspondiente según el rol asignado. *(Para consultar la guía visual paso a paso con las capturas de pantalla de este procedimiento, ver [Sección 10.1.4: Flujo de Primer Ingreso al Sistema (Onboarding y Configuración Inicial)](#1014-flujo-de-primer-ingreso-al-sistema-onboarding-y-configuración-inicial)).*
 
-> **[Captura: Login Primer Ingreso]**
-> *Formulario de inicio de sesión con las credenciales temporales.*
->
-> **[Captura: Login Primer Ingreso (Móvil)]**
-> *Formulario de inicio de sesión con las credenciales temporales. (Vista en dispositivo móvil).*
+## 8.6. Cierre de Sesión y Expiración Preventiva
 
-2. **Detección automática del primer ingreso:** El sistema detecta que la cuenta tiene pendiente un cambio de contraseña e interrumpe el flujo de redirección normal, mostrando obligatoriamente la pantalla de configuración inicial.
+El cierre de sesión seguro es una práctica obligatoria para salvaguardar la privacidad de las cuentas y proteger la información del observatorio, especialmente al operar en estaciones de trabajo compartidas o redes abiertas:
+* **Cierre de sesión en el Panel Administrativo:** Los administradores finalizan su sesión activa mediante el menú desplegable de perfil ubicado en la parte inferior del menú lateral izquierdo.
+* **Cierre de sesión en la Intranet:** Directivos, editores y administradores autenticados cierran su sesión mediante el botón de salida segura ubicado en la esquina superior derecha de la barra superior de la Intranet.
+* **Efecto en el Sitio Web Público:** Dado que el portal público no dispone de controles de perfil ni botones de sesión en su cabecera, al cerrar sesión desde la Intranet o el Panel Administrativo el token de acceso queda invalidado de inmediato; al navegar nuevamente en el Sitio Web Público, el botón flotante de edición (Speed Dial) desaparece y la vista vuelve a la modalidad ciudadana estándar.
+* **Invalidación de credenciales y tokens:** Al presionar el botón de salida segura, el sistema destruye el token de autenticación activo en el navegador y redirige al usuario a la pantalla de inicio de sesión correspondiente.
+* **Expiración preventiva por inactividad:** Las sesiones inactivas expiran de manera automática tras **30 minutos** sin actividad detectada. En tal caso, el sistema suspende la sesión de forma preventiva y solicita al usuario autenticarse nuevamente para proteger los datos.
 
-> **[Captura: Pantalla Configuración Inicial]**
-> *Pantalla de configuración obligatoria que aparece tras el primer inicio de sesión.*
->
-> **[Captura: Pantalla Configuración Inicial (Móvil)]**
-> *Pantalla de configuración obligatoria que aparece tras el primer inicio de sesión. (Vista en dispositivo móvil).*
-
-3. **Establecimiento de nueva contraseña:** El sistema solicitará al funcionario crear su contraseña definitiva. Se debe digitar la nueva contraseña en el primer campo y repetirla en el segundo campo de confirmación, cumpliendo estrictamente los 5 lineamientos de la política de seguridad (ver sección 6.3).
-
-> **[Captura: Nueva Contraseña Primer Ingreso]**
-> *Campos de nueva contraseña y confirmación con indicador visual de cumplimiento de políticas de seguridad.*
->
-> **[Captura: Nueva Contraseña Primer Ingreso (Móvil)]**
-> *Campos de nueva contraseña y confirmación con indicador visual de cumplimiento de políticas de seguridad. (Vista en dispositivo móvil).*
-
-4. **Configuración de preguntas de seguridad:** A continuación, el sistema solicitará configurar **tres preguntas de seguridad**. Para cada pregunta, se debe:
-   * Desplegar el menú y seleccionar la pregunta deseada de la lista predefinida.
-   * Digitar la respuesta exacta en el campo de texto correspondiente (la respuesta es sensible a mayúsculas).
-
-> **[Captura: Configurar Preguntas de Seguridad]**
-> *Formulario de configuración inicial de las tres preguntas de seguridad con sus respectivos campos de respuesta.*
->
-> **[Captura: Configurar Preguntas de Seguridad (Móvil)]**
-> *Formulario de configuración inicial de las tres preguntas de seguridad con sus respectivos campos de respuesta. (Vista en dispositivo móvil).*
-
-5. **Confirmación y acceso:** Se debe hacer clic en el botón **"Guardar y continuar"**. Si todo es correcto, el sistema redirigirá automáticamente al entorno correspondiente según el rol asignado.
-
-## 8.6. Cierre de Sesión
-
-El cierre de sesión seguro es una práctica obligatoria para proteger la información institucional, especialmente en equipos compartidos.
-
-### 8.6.1. Cerrar Sesión desde el Panel Administrativo
-
-El Panel Administrativo dispone del botón de cierre de sesión en el menú lateral izquierdo:
-
-1. **Acceso al menú de perfil:** En la parte inferior del menú lateral, hacer clic sobre el nombre o foto de perfil del usuario.
-2. **Selección de la opción:** En el menú desplegable oscuro que aparece, hacer clic en **"Cerrar sesión"**.
-3. **Confirmación:** El sistema cerrará la sesión activa, invalidará el token de autenticación y redirigirá automáticamente a la pantalla de inicio de sesión del Sitio Web.
-
-> **[Captura: Logout Panel Admin]**
-> *Menú desplegable de perfil en el menú lateral del Panel Administrativo con la opción "Cerrar sesión" visible.*
->
-> **[Captura: Logout Panel Admin (Móvil)]**
-> *Menú desplegable de perfil en el menú lateral del Panel Administrativo con la opción "Cerrar sesión" visible. (Vista en dispositivo móvil).*
-
-### 8.6.2. Cerrar Sesión desde el Sitio Web Público
-
-Los Editores y demás usuarios autenticados que operan directamente desde el Sitio Web (sin ingresar al Panel Administrativo) cierran su sesión desde la cabecera del portal:
-
-1. **Acceso al menú de perfil:** En la esquina superior derecha de la cabecera del Sitio Web Público, hacer clic sobre el nombre del usuario o su foto de perfil.
-2. **Selección de la opción:** En el menú desplegable que se despliega, hacer clic en **"Cerrar sesión"**.
-3. **Confirmación:** El sistema cerrará la sesión y recargará la cabecera mostrando nuevamente el botón **"Iniciar Sesión"**, confirmando que el usuario ha salido correctamente.
-
-> **[Captura: Logout Sitio Web]**
-> *Menú desplegable de perfil en la cabecera del Sitio Web Público mostrando la opción de cierre de sesión.*
->
-> **[Captura: Logout Sitio Web (Móvil)]**
-> *Menú desplegable de perfil en la cabecera del Sitio Web Público mostrando la opción de cierre de sesión. (Vista en dispositivo móvil).*
-
-### 8.6.3. Cierre de Sesión en la Intranet
-
-El proceso es equivalente al del Sitio Web: se accede al menú de perfil en la cabecera de la Intranet y se selecciona **"Cerrar sesión"**. El sistema redirige a la pantalla de bloqueo de la Intranet.
-
-> **Nota técnica:** Las sesiones inactivas expiran automáticamente tras **30 minutos** sin actividad. Al detectar la expiración, el sistema cierra la sesión de forma preventiva y solicita al usuario autenticarse de nuevo.
+*(Para consultar la guía visual paso a paso con las capturas de pantalla del cierre de sesión, ver [Sección 10.1.5: Procedimiento de Cierre de Sesión (Logout)](#1015-procedimiento-de-cierre-de-sesión-logout)).*
 
 
 
 ---
 
-## 9. Interfaz general
+## 9. Interfaz general: Páginas fijas, controles del sistema y lienzo editable
 
-La interfaz de usuario del Observatorio Laboral y Ocupacional ha sido diseñada bajo principios de claridad, accesibilidad y consistencia. Esta sección detalla la disposición de los elementos en pantalla y las reglas de interacción, enfatizando la coexistencia de componentes estructurales fijos y áreas de contenido dinámico.
+La plataforma del Observatorio Laboral y Ocupacional (OLO) articula su experiencia de navegación y administración mediante una clara diferenciación entre las **páginas y controles fijos del sistema**, los **componentes ajustables de cabecera y pie** y el **área central de contenido dinámico maquetable**. Esta sección detalla la disposición visual en los tres portales del ecosistema (**Sitio Web Público**, **Panel Administrativo** e **Intranet**), aclarando qué elementos son estructuralmente fijos, cómo operan los componentes configurables en el editor visual y bajo qué reglas se despliega el botón de edición.
 
-### 9.1. Disposición General de la Pantalla (Anatomía)
+### 9.1. Estructura y Elementos del Sistema en los Tres Portales
 
-La pantalla se divide en tres zonas principales que facilitan la orientación y la navegación del usuario en cualquier módulo del sistema:
-* **Zona superior (Cabecera):** Contiene la identidad institucional (logotipo del SENA), el nombre oficial del sistema, el menú de navegación principal y los controles de acceso (botón de inicio de sesión o menú del perfil de usuario).
-* **Zona central (Área de contenido):** Es el espacio principal donde se despliega la información pública, los tableros analíticos o las herramientas del editor visual. Su diseño es responsivo y se adapta automáticamente a la resolución del dispositivo.
-* **Zona inferior (Pie de página):** Despliega la información de contacto, políticas de privacidad, enlaces de interés institucional y los créditos de la plataforma.
+El sistema se compone de tres portales complementarios, cada uno con propósitos y características de interfaz claramente definidos:
 
-> **[Captura: Lienzo Edición Flexible]**
-> *Esquema general de la pantalla mostrando la cabecera institucional, el área de contenido dinámico central y el pie de página.*
+1. **Sitio Web Público:**
+   * **Propósito:** Portal de acceso abierto y consulta libre para la ciudadanía, investigadores y comunidad general, que sirve a su vez como punto de enlace institucional hacia el entorno privado del observatorio.
+   * **Controles y páginas fijas del sistema:**
+     * *Botón de Búsqueda (Buscador Global):* Control fijo e inamovible ubicado en la zona superior, diseñado para consultar en tiempo real ocupaciones, publicaciones y páginas de todo el observatorio sin depender de la maquetación de la página.
+     * *Botón de Acceso a la Intranet:* Enlace fijo permanente ubicado en la esquina superior derecha hacia el entorno privado del OLO, que sirve como puerta de acceso institucional hacia la pantalla de autenticación y los módulos internos para el personal del SENA.
+     * *Páginas fijas del aplicativo:* Interfaces programadas de autenticación (`/login`, `/recuperar-password`) y pantallas de primer ingreso (onboarding), las cuales no forman parte de las páginas dinámicas y no pueden ser alteradas ni eliminadas desde el editor.
+   * **Componentes ajustables de Cabecera y Pie de página:**
+     * Tanto la cabecera como el pie de página funcionan mediante componentes maquetables del editor visual: los editores autorizados (a través de la opción de plantilla "Menú y pie") pueden personalizar los enlaces del menú, logos, redes y textos informativos. Estos componentes son flexibles y ajustables, pudiendo adaptarse a las necesidades informativas de la plataforma o configurarse según el diseño requerido.
+   * **Área central dinámica:** Lienzo donde se despliegan los contenidos maquetados mediante bloques (artículos, cifras, visores y publicaciones).
+
+> **[Captura: Elementos Fijos Sitio Web]**
+> *Esquema general del Sitio Web Público mostrando la barra superior con los controles fijos (búsqueda e intranet), el área de contenido dinámico central y el pie de página.*
 >
-> **[Captura: Lienzo Edición Flexible (Móvil)]**
-> *Esquema general de la pantalla mostrando la cabecera institucional, el área de contenido dinámico central y el pie de página. (Vista en dispositivo móvil).*
+> **[Captura: Elementos Fijos Sitio Web (Móvil)]**
+> *Esquema general del Sitio Web Público mostrando la barra superior con los controles fijos (búsqueda e intranet), el área de contenido dinámico central y el pie de página. (Vista en dispositivo móvil).*
 
-### 9.2. Elementos Estructurales Fijos (Inmutables)
+2. **Panel Administrativo (`/admin`):**
+   * **Propósito:** Entorno privado de gestión técnica, auditoría y control editorial de acceso exclusivo para el rol de Administrador.
+   * **Estructura fija del aplicativo:** A diferencia de las páginas de contenido, el Panel Administrativo **no utiliza el editor visual para sus propias pantallas**. Todas sus vistas están programadas como páginas fijas para garantizar la seguridad transaccional y la inmutabilidad de sus funciones de gobierno.
+   * **Elementos fijos estructurales:**
+     * *Menú lateral permanente (Sidebar):* Barra vertical izquierda que contiene el logo del OLO (retorno al sitio web público), accesos directos (*Dashboard*, *Páginas en revisión* con indicador numérico de alertas pendientes, *Accesos* para la administración de usuarios y roles, *Auditoría*, *Respaldos* y *Carga Masiva*), ícono de campanita de alertas y menú inferior de perfil (*Mi perfil*, *Configuración* y *Cerrar sesión*).
+     * *Vistas fijas programadas:* Tablero con tarjetas de métricas, formularios de configuración, tablas paginadas de bitácora y ventanas modales de confirmación con registro obligatorio de motivos.
 
-Para garantizar la estabilidad operativa del portal, la coherencia en la navegación ciudadana y la identidad gráfica del SENA, el sistema cuenta con componentes base que están protegidos de manera estricta contra eliminación o alteración estructural:
-* **Menús principales y barras de navegación:** El esqueleto de la navegación superior se mantiene constante. Aunque el sistema permite acoplar dinámicamente nuevas páginas a la navegación, las rutas estructurales base de las categorías principales no pueden ser suprimidas.
-* **Rutas fijas del aplicativo:** Las vistas y componentes programados fijos en el código fuente que no se gestionan mediante el editor visual (como las interfaces de inicio de sesión, flujos de autenticación y las pantallas del Panel Administrativo) son permanentes y no se pueden eliminar. Por el contrario, las páginas de contenido que se abren desde el portal público o la Intranet son dinámicamente editables y ajustables a través del editor visual.
-* **Cabecera y Pie de página globales:** Elementos estructurales bloqueados para la edición general, cuyo propósito es garantizar la homogeneidad en la identidad en todo el ecosistema del portal.
-
-### 9.3. Elementos Dinámicos y Flexibles (Entorno de Edición)
-
-El área central de las páginas representa el entorno dinámico y flexible del sistema. En estas zonas, los usuarios con roles y permisos de edición tienen plena facultad operativa para construir y actualizar la información de forma interactiva:
-* **Naturaleza adaptable de las páginas (Guía y Plantilla):** El presente manual opera como una guía metodológica y una plantilla referencial sobre las capacidades de la plataforma. Debido a que las páginas se maquetan dinámicamente mediante el editor visual, la disposición de los bloques, su orden, sus títulos y sus elementos visuales específicos variarán según las necesidades institucionales del momento y el diseño implementado por los editores.
-* **Catálogo de componentes disponibles:** Dentro del lienzo de edición, el usuario puede incorporar, reordenar y configurar componentes prediseñados de la plataforma:
-  * *Contenido textual y gráfico:* Texto enriquecido, títulos, imágenes con descripción accesible y tarjetas de artículos.
-  * *Tarjetas e indicadores:* Módulos de servicios, tarjetas de cifras clave y resúmenes informativos.
-  * *Visualización multimedia:* **Visor de videos** (para reproducir contenido audiovisual institucional) y **visor de documentos y PDFs** (para explorar publicaciones e informes normativos sin abandonar el portal).
-  * *Analítica y datos:* **Tableros BI** interactivos (Power BI) embebidos para la consulta gerencial y ciudadana de estadísticas e indicadores.
-  * *Acción y descargas:* Botones de acción, enlaces de **descarga de documentos**, menús acordeón y canales de atención.
-* **Creación de nuevas páginas:** Capacidad para generar páginas adicionales que se incorporan a la plataforma de forma flexible, respetando las validaciones contra enlaces rotos y las reglas de publicación mediante revisión.
-
-> **[Captura: Botones Estandarizados]**
-> *Área central en modo de edición mostrando los límites flexibles del lienzo y la estructura de los bloques de contenido apilados.*
+> **[Captura: Elementos Fijos Panel Administrativo]**
+> *Esquema general del Panel Administrativo mostrando los elementos fijos estructurales: el menú lateral permanente (sidebar con accesos de navegación y perfil) y el área central de trabajo.*
 >
-> **[Captura: Botones Estandarizados (Móvil)]**
-> *Área central en modo de edición mostrando los límites flexibles del lienzo y la estructura de los bloques de contenido apilados. (Vista en dispositivo móvil).*
+> **[Captura: Elementos Fijos Panel Administrativo (Móvil)]**
+> *Esquema general del Panel Administrativo mostrando los elementos fijos estructurales: el menú lateral permanente (sidebar con accesos de navegación y perfil) y el área central de trabajo. (Vista en dispositivo móvil).*
+
+3. **Intranet del OLO:**
+   * **Propósito:** Entorno privado y protegido orientado al seguimiento estratégico, consulta de tableros de indicadores y trabajo interno de directivos y funcionarios del SENA.
+   * **Elementos y páginas fijas del sistema:**
+     * *Pantalla de bloqueo y acceso obligatorio:* Página fija que intercepta cualquier navegación no autenticada, forzando el ingreso exclusivo con cuenta corporativa `@sena.edu.co`.
+     * *Temporizador preventivo:* Módulo en segundo plano que finaliza la sesión automáticamente tras 30 minutos de inactividad técnica.
+     * *Control de salida:* Acceso seguro de cierre de sesión siempre disponible en la barra superior.
+   * **Componentes ajustables de Cabecera y Pie internos:**
+     * Al igual que en el sitio público, el marco superior e inferior de la Intranet está respaldado por componentes configurables que los editores pueden adaptar según las secciones internas del observatorio.
+   * **Área central dinámica:** Lienzo donde se presentan las secciones analíticas e indicadores, con la posibilidad de incorporar componentes opcionales de visualización como tableros de Power BI.
+
+> **[Captura: Elementos Fijos Intranet]**
+> *Esquema general de la Intranet mostrando la barra superior con los controles fijos (buscador interno y botón de cierre de sesión), el área de contenido dinámico central y el pie de página.*
+>
+> **[Captura: Elementos Fijos Intranet (Móvil)]**
+> *Esquema general de la Intranet mostrando la barra superior con los controles fijos (buscador interno y botón de cierre de sesión), el área de contenido dinámico central y el pie de página. (Vista en dispositivo móvil).*
+
+### 9.2. Botón Flotante de Edición: Despliegue Condicional por Sesión y Permisos
+
+Uno de los elementos interactivos más importantes en el Sitio Web y la Intranet es el **Botón Flotante de Edición (Menú de Edición)**. Aunque forma parte de la estructura visual de las páginas, **su visualización en pantalla es estrictamente condicional**: el sistema comprueba en tiempo real si el usuario ha iniciado sesión y cuáles permisos específicos tiene asignados antes de mostrarlo:
+
+* **Caso 1: Usuario no autenticado (Ciudadanía y visitantes anónimos):**
+  * El botón flotante **no se muestra en pantalla** para los visitantes. La página pública se presenta completamente limpia, sin barras ni herramientas de edición, garantizando una lectura despejada y cómoda para la ciudadanía.
+
+> **[Captura: Vista Ciudadana sin Botón Flotante]**
+> *Vista pública y limpia de la página para la ciudadanía y usuarios anónimos, donde el botón flotante de edición no se muestra en pantalla.*
+>
+> **[Captura: Vista Ciudadana sin Botón Flotante (Móvil)]**
+> *Vista pública y limpia de la página para la ciudadanía y usuarios anónimos, donde el botón flotante de edición no se muestra en pantalla. (Vista en dispositivo móvil).*
+
+* **Caso 2: Usuario autenticado sin permisos de edición (Directores y Subdirectores):**
+  * Al iniciar sesión con cuenta corporativa `@sena.edu.co`, el sistema identifica que el usuario posee un perfil configurado en modo de **solo lectura**. Debido a que no cuenta con facultades de edición ni administración, el botón flotante **permanece completamente oculto**, impidiendo que el personal directivo ingrese por error al modo de diseño o altere contenidos.
+
+> **[Captura: Vista Directiva Solo Lectura sin Botón Flotante]**
+> *Pantalla de la Intranet para perfiles directivos en modalidad de solo lectura, donde el botón flotante de edición permanece completamente oculto.*
+>
+> **[Captura: Vista Directiva Solo Lectura sin Botón Flotante (Móvil)]**
+> *Pantalla de la Intranet para perfiles directivos en modalidad de solo lectura, donde el botón flotante de edición permanece completamente oculto. (Vista en dispositivo móvil).*
+
+* **Caso 3: Usuario autenticado con rol de Editor o Administrador:**
+  * Si el funcionario cuenta con sesión activa y permisos editoriales, el sistema despliega el botón circular flotante en la esquina inferior de la pantalla. Al hacer clic o pasar el cursor, el botón despliega exclusivamente las opciones para las que el usuario está autorizado:
+    * **"Editar sección":** Aparece si el usuario tiene asignado el permiso para editar esa página específica (del Sitio Web o de la Intranet) o si es Administrador.
+    * **"Menú y pie":** Se activa únicamente si el rol posee el permiso explícito para editar la cabecera y el pie de página de la plantilla en el editor visual.
+    * **"Nueva página":** Disponible si el usuario cuenta con la facultad de crear nuevas páginas en el sistema.
+    * **"Eliminar página":** Se visualiza exclusivamente en páginas dinámicas creadas por usuarios, siempre que el rol tenga el permiso de borrado y la página no posea enlaces activos que generen enlaces rotos.
+  * **Regla de restricción por página:** Si un editor con un rol personalizado navega por una página para la cual no tiene permisos asignados, las opciones no autorizadas no estarán visibles; si no tiene permisos para ninguna acción en dicha página, el botón flotante completo se oculta automáticamente.
+
+> **[Captura: Botón Flotante de Edición]**
+> *Despliegue condicional del botón flotante de edición en pantalla para un usuario autenticado con permisos activos.*
+>
+> **[Captura: Botón Flotante de Edición (Móvil)]**
+> *Despliegue condicional del botón flotante de edición en pantalla para un usuario autenticado con permisos activos. (Vista en dispositivo móvil).*
+
+### 9.3. Diferenciación entre Páginas Fijas y Lienzo Dinámico del Editor Visual
+
+La frontera entre la infraestructura base y la gestión de contenido define la seguridad del sistema:
+* **Límites de las páginas fijas del sistema:** Ningún usuario, independientemente de sus permisos, puede alterar mediante el editor visual las pantallas programadas fijas (como las interfaces de inicio de sesión o recuperación de credenciales), las validaciones de acceso de la sesión ni las vistas del Panel Administrativo.
+* **Área central maquetable (Lienzo del Editor Visual):** Corresponde al lienzo central de trabajo de las páginas del Sitio Web y la Intranet. En esta zona, los editores autorizados pueden organizar y apilar bloques prediseñados:
+  * *Textos y encabezados:* Párrafos enriquecidos, títulos y tarjetas de artículos.
+  * *Multimedia y lectura:* **Visores de PDF** para documentos oficiales y **visores de videos** para cápsulas del observatorio.
+  * *Analítica y datos:* **Tableros BI**, como componente opcional maquetable para embeber paneles interactivos de Power BI cuando la página lo requiera.
+  * *Navegación e interacción:* Acordeones de preguntas, enlaces de descarga y botones de enlace.
 
 ### 9.4. Estandarización de Botones y Controles de Acción
 
-Las interacciones dentro de la plataforma, en especial dentro del Panel Administrativo y el Editor Visual, obedecen a convenciones estandarizadas para agilizar el trabajo y prevenir errores operativos:
-* **Controles de confirmación y flujo de estado:** Botones destinados a preservar el trabajo (guardar borradores) o a avanzar en el flujo de publicación (enviar a revisión, o aprobar definitivamente desde la administración).
-* **Controles destructivos o de descarte:** Acciones orientadas a la eliminación de bloques de contenido, descarte de versiones en revisión o borrado de páginas dinámicas. Por lineamientos de seguridad, las acciones de carácter destructivo que comprometen páginas o versiones siempre están condicionadas a validaciones secundarias, como ventanas de confirmación o justificaciones obligatorias para la auditoría.
-* **Controles de previsualización:** Herramientas que habilitan la visualización del contenido en su formato final antes de aplicar los cambios en producción, permitiendo al editor o administrador certificar la calidad visual y la funcionalidad de los enlaces.
+Todas las interfaces del Panel Administrativo y del Editor Visual comparten un patrón estandarizado de controles para brindar una experiencia consistente y prevenir pérdidas accidentales de información:
+* **Controles de confirmación y guardado:** Botones destacados (color corporativo o verde) para guardar borradores en edición o avanzar versiones hacia la bandeja de revisión.
+* **Controles de previsualización:** Botones identificados con ícono de ojo para verificar el resultado final de la página antes de someterla a aprobación.
+* **Controles destructivos o de descarte:** Botones en color rojo (ícono de papelera o basurero) utilizados para borrar páginas dinámicas o descartar borradores en revisión. Todo control destructivo requiere obligatoriamente una ventana modal de confirmación secundaria y el ingreso de una justificación para la auditoría técnica.
 
-> **[Captura: Buscador Global]**
-> *Conjunto de botones estandarizados de la plataforma: guardado (verde), descarte/eliminación (rojo con ícono de basurero) y previsualización (ícono de ojo).*
+> **[Captura: Botones Estandarizados]**
+> *Conjunto de botones estandarizados de la plataforma: guardado, descarte/eliminación con confirmación modal y previsualización.*
 >
-> **[Captura: Buscador Global (Móvil)]**
-> *Conjunto de botones estandarizados de la plataforma: guardado (verde), descarte/eliminación (rojo con ícono de basurero) y previsualización (ícono de ojo). (Vista en dispositivo móvil).*
+> **[Captura: Botones Estandarizados (Móvil)]**
+> *Conjunto de botones estandarizados de la plataforma: guardado, descarte/eliminación con confirmación modal y previsualización. (Vista en dispositivo móvil).*
 
 ---
 
@@ -541,26 +398,26 @@ Esta sección detalla de forma exhaustiva los flujos de trabajo de la plataforma
 
 ### 10.1. Ingreso y Recuperación de Contraseña
 
-#### 10.1.1. Inicio de Sesión en el Sitio Web Público
-Este proceso es la puerta de entrada principal para Editores y Administradores en la plataforma.
+#### 10.1.1. Acceso al Sistema desde el Sitio Web Público (Botón Intranet)
+El Sitio Web Público no requiere inicio de sesión para los ciudadanos que consultan la información. Para el personal del SENA (Editores, Administradores y Directivos), la puerta de entrada al entorno institucional es el botón fijo **"Intranet"** en la cabecera del portal.
 
-1. **Ubicación del acceso:** En la cabecera (zona superior derecha) del portal web, se debe ubicar y hacer clic en el botón **"Iniciar Sesión"**.
+1. **Ubicación del acceso:** En la cabecera (zona superior derecha) del Sitio Web Público, ubicar y hacer clic en el botón **"Intranet"**.
 
-> **[Captura: Botón Iniciar Sesión]**
-> *Ubicación del botón de 'Iniciar Sesión' en la esquina superior derecha de la cabecera del Sitio Web Público.*
+> **[Captura: Botón Intranet en Cabecera]**
+> *Ubicación del botón 'Intranet' en la esquina superior derecha de la cabecera del Sitio Web Público.*
 >
-> **[Captura: Botón Iniciar Sesión (Móvil)]**
-> *Ubicación del botón de 'Iniciar Sesión' en la esquina superior derecha de la cabecera del Sitio Web Público. (Vista en dispositivo móvil).*
+> **[Captura: Botón Intranet en Cabecera (Móvil)]**
+> *Ubicación del botón 'Intranet' en la esquina superior derecha de la cabecera del Sitio Web Público. (Vista en dispositivo móvil).*
 
-2. **Formulario de credenciales:** El sistema desplegará una ventana modal o dirigirá al formulario de acceso. Se debe ingresar el correo institucional (estrictamente `@sena.edu.co`) en el primer campo de texto.
+2. **Formulario de credenciales:** Al no contar con una sesión activa, el sistema dirigirá a la pantalla institucional de acceso (`/login`). Se debe ingresar el correo corporativo (estrictamente `@sena.edu.co`) en el primer campo de texto.
 
-> **[Captura: Campo Correo Institucional]**
+> **[Captura: Campo Correo Corporativo]**
 > *Vista del formulario de ingreso resaltando el campo para digitar el correo corporativo.*
 >
-> **[Captura: Campo Correo Institucional (Móvil)]**
+> **[Captura: Campo Correo Corporativo (Móvil)]**
 > *Vista del formulario de ingreso resaltando el campo para digitar el correo corporativo. (Vista en dispositivo móvil).*
 
-3. **Ingreso de Contraseña:** En el segundo campo, se debe digitar la contraseña institucional.
+3. **Ingreso de Contraseña:** En el segundo campo, se debe digitar la contraseña asignada.
 
 > **[Captura: Campo Contraseña]**
 > *Vista del formulario de ingreso resaltando el campo de contraseña.*
@@ -568,7 +425,7 @@ Este proceso es la puerta de entrada principal para Editores y Administradores e
 > **[Captura: Campo Contraseña (Móvil)]**
 > *Vista del formulario de ingreso resaltando el campo de contraseña. (Vista en dispositivo móvil).*
 
-4. **Ejecución:** Se debe hacer clic en el botón principal **"Ingresar"** (habitualmente destacado en color institucional).
+4. **Ejecución:** Se debe hacer clic en el botón principal **"Ingresar"** (destacado con el color de marca del portal).
 
 > **[Captura: Botón Ingresar]**
 > *Acción de hacer clic sobre el botón principal para ejecutar el inicio de sesión.*
@@ -576,26 +433,27 @@ Este proceso es la puerta de entrada principal para Editores y Administradores e
 > **[Captura: Botón Ingresar (Móvil)]**
 > *Acción de hacer clic sobre el botón principal para ejecutar el inicio de sesión. (Vista en dispositivo móvil).*
 
-5. **Resultado y Redirección por Rol:** Si las credenciales son correctas, el sistema evaluará el rol asignado para determinar a qué entorno dirigir al usuario automáticamente:
-   * **Editores:** Serán devueltos al **Sitio Web Público**. La página se recargará mostrando el nombre del usuario en la cabecera y habilitará de inmediato las herramientas necesarias para la maquetación y edición de páginas en el portal.
-   * **Administradores:** Serán redirigidos de inmediato e ingresarán directamente al **Panel Administrativo**, donde tendrán acceso al *Dashboard* y a todas las herramientas operativas y de gestión de la plataforma.
+5. **Resultado y Redirección por Rol:** Si las credenciales son correctas, el sistema evaluará el rol asignado para habilitar las áreas correspondientes:
+   * **Editores:** Al autenticarse satisfactoriamente, disponen de permisos editoriales activos; al navegar por el **Sitio Web Público** o la Intranet, el sistema desplegará de inmediato el **botón circular flotante (Speed Dial con ícono de lápiz)** en la pantalla para permitirles maquetar y editar páginas, o configurar el menú y pie.
+   * **Administradores:** Ingresarán directamente al **Panel Administrativo** (`/admin`), donde tendrán acceso al *Dashboard* y a todas las herramientas operativas, de gobierno y de gestión de la plataforma.
+   * **Directores y Subdirectores:** Ingresarán a la **Intranet**, accediendo a los tableros analíticos e informes en modalidad de solo lectura.
 
 > **[Captura: Redirección de Rol]**
-> *Ejemplo visual de la redirección exitosa, ya sea mostrando la cabecera con el perfil del Editor o el Dashboard del Administrador.*
+> *Ejemplo visual del acceso exitoso según el perfil: despliegue del botón flotante de edición para el Editor o el Dashboard del Administrador.*
 >
 > **[Captura: Redirección de Rol (Móvil)]**
-> *Ejemplo visual de la redirección exitosa, ya sea mostrando la cabecera con el perfil del Editor o el Dashboard del Administrador. (Vista en dispositivo móvil).*
+> *Ejemplo visual del acceso exitoso según el perfil: despliegue del botón flotante de edición para el Editor o el Dashboard del Administrador. (Vista en dispositivo móvil).*
 
-#### 10.1.2. Inicio de Sesión en la Intranet Institucional
+#### 10.1.2. Inicio de Sesión en la Intranet del OLO
 Este acceso está diseñado principalmente para Directores y Subdirectores que consultan tableros privados, así como para personal administrativo que entra directamente al entorno interno.
 
-1. **Acceso a la URL:** Se debe ingresar a la dirección web específica de la Intranet Institucional. Al ser un entorno privado, el sistema bloqueará la navegación y mostrará inmediatamente la pantalla central de acceso.
+1. **Acceso a la URL:** Se debe ingresar a la dirección web específica de la Intranet del OLO. Al ser un entorno privado, el sistema bloqueará la navegación y mostrará inmediatamente la pantalla central de acceso.
 
 > **[Captura: Pantalla Bloqueo Intranet]**
-> *Pantalla de bloqueo de la Intranet Institucional exigiendo autenticación obligatoria.*
+> *Pantalla de bloqueo de la Intranet del OLO exigiendo autenticación obligatoria.*
 >
 > **[Captura: Pantalla Bloqueo Intranet (Móvil)]**
-> *Pantalla de bloqueo de la Intranet Institucional exigiendo autenticación obligatoria. (Vista en dispositivo móvil).*
+> *Pantalla de bloqueo de la Intranet del OLO exigiendo autenticación obligatoria. (Vista en dispositivo móvil).*
 
 2. **Diligenciamiento:** Se deben completar los campos de correo corporativo (`@sena.edu.co`) y contraseña.
 
@@ -613,13 +471,13 @@ Este acceso está diseñado principalmente para Directores y Subdirectores que c
 > **[Captura: Botón Acceder Intranet (Móvil)]**
 > *Clic en el botón de acceso para enviar las credenciales. (Vista en dispositivo móvil).*
 
-4. **Resultado:** El usuario será redirigido automáticamente al *dashboard* gerencial de Power BI o a la pantalla de inicio privada correspondiente al rol asignado.
+4. **Resultado:** El usuario será redirigido automáticamente a la pantalla de inicio privada de la Intranet o a la sección correspondiente al rol asignado.
 
 > **[Captura: Dashboard Intranet]**
-> *Pantalla de inicio exitosa en la Intranet mostrando el tablero correspondiente al rol.*
+> *Pantalla de inicio exitosa en la Intranet mostrando las secciones y contenidos correspondientes al rol.*
 >
 > **[Captura: Dashboard Intranet (Móvil)]**
-> *Pantalla de inicio exitosa en la Intranet mostrando el tablero correspondiente al rol. (Vista en dispositivo móvil).*
+> *Pantalla de inicio exitosa en la Intranet mostrando las secciones y contenidos correspondientes al rol. (Vista en dispositivo móvil).*
 
 #### 10.1.3. Procedimiento de Recuperación de Contraseña (Ambos Portales)
 1. **Inicio del proceso:** En la pantalla de inicio de sesión (ya sea del Sitio Web o de la Intranet), se debe ubicar el enlace inferior.
@@ -641,10 +499,10 @@ Este acceso está diseñado principalmente para Directores y Subdirectores que c
 3. **Identificación de cuenta:** El sistema desplegará un campo para digitar el correo. Se debe ingresar el correo corporativo `@sena.edu.co`.
 
 > **[Captura: Paso 3]**
-> *Ingreso del correo institucional en el campo de recuperación.*
+> *Ingreso del correo corporativo en el campo de recuperación.*
 >
 > **[Captura: Paso 3 (Móvil)]**
-> *Ingreso del correo institucional en el campo de recuperación. (Vista en dispositivo móvil).*
+> *Ingreso del correo corporativo en el campo de recuperación. (Vista en dispositivo móvil).*
 
 4. **Confirmación de identidad:** Se debe pulsar el botón **"Continuar"** para que el sistema busque la cuenta.
 
@@ -679,6 +537,72 @@ Este acceso está diseñado principalmente para Directores y Subdirectores que c
 > *Ingreso de la nueva contraseña en los campos correspondientes. (Vista en dispositivo móvil).*
 
 8. **Confirmación final:** Se debe pulsar el botón **"Guardar nueva contraseña"** para finalizar el proceso. El sistema devolverá al usuario al login.
+
+#### 10.1.4. Flujo de Primer Ingreso al Sistema (Onboarding y Configuración Inicial)
+
+1. **Inicio de sesión con contraseña temporal:** El funcionario accede al portal (Sitio Web o Intranet, según su rol) e ingresa su correo corporativo `@sena.edu.co` y la contraseña temporal comunicada manualmente por el Administrador.
+
+> **[Captura: Login Primer Ingreso]**
+> *Formulario de inicio de sesión con las credenciales temporales.*
+>
+> **[Captura: Login Primer Ingreso (Móvil)]**
+> *Formulario de inicio de sesión con las credenciales temporales. (Vista en dispositivo móvil).*
+
+2. **Detección automática del primer ingreso:** El sistema detecta que la cuenta tiene pendiente la configuración inicial de seguridad e interrumpe el flujo normal de redirección, mostrando obligatoriamente la pantalla de parametrización de cuenta.
+
+> **[Captura: Pantalla Configuración Inicial]**
+> *Pantalla de configuración obligatoria que aparece tras el primer inicio de sesión.*
+>
+> **[Captura: Pantalla Configuración Inicial (Móvil)]**
+> *Pantalla de configuración obligatoria que aparece tras el primer inicio de sesión. (Vista en dispositivo móvil).*
+
+3. **Establecimiento de nueva contraseña:** El sistema solicitará al funcionario crear su contraseña definitiva. Se debe digitar la nueva contraseña en el primer campo y repetirla en el segundo campo de confirmación, cumpliendo estrictamente los 5 lineamientos de la política de seguridad (ver [Sección 6.3](#63-política-de-contraseñas-robustas)).
+
+> **[Captura: Nueva Contraseña Primer Ingreso]**
+> *Campos de nueva contraseña y confirmación con indicador visual de cumplimiento de políticas de seguridad.*
+>
+> **[Captura: Nueva Contraseña Primer Ingreso (Móvil)]**
+> *Campos de nueva contraseña y confirmación con indicador visual de cumplimiento de políticas de seguridad. (Vista en dispositivo móvil).*
+
+4. **Configuración de preguntas de seguridad:** A continuación, el sistema solicitará configurar obligatoriamente **tres preguntas de seguridad**. Para cada pregunta, se debe:
+   * Desplegar el menú y seleccionar la pregunta deseada de la lista predefinida.
+   * Digitar la respuesta exacta en el campo de texto correspondiente (la respuesta es sensible a mayúsculas).
+
+> **[Captura: Configurar Preguntas de Seguridad]**
+> *Formulario de configuración inicial de las tres preguntas de seguridad con sus respectivos campos de respuesta.*
+>
+> **[Captura: Configurar Preguntas de Seguridad (Móvil)]**
+> *Formulario de configuración inicial de las tres preguntas de seguridad con sus respectivos campos de respuesta. (Vista en dispositivo móvil).*
+
+5. **Confirmación y acceso:** Se debe hacer clic en el botón **"Guardar y continuar"**. Una vez validados los datos, el sistema guardará las credenciales definitivas y redirigirá automáticamente al entorno correspondiente según el rol asignado.
+
+#### 10.1.5. Procedimiento de Cierre de Sesión (Logout)
+
+El sistema provee mecanismos específicos de salida segura según el entorno en el que se encuentre trabajando el usuario:
+
+##### A. Cierre de Sesión desde el Panel Administrativo
+1. **Acceso al menú de perfil:** En la parte inferior del menú lateral izquierdo, hacer clic sobre el nombre o foto de perfil del usuario.
+2. **Selección de la opción:** En el menú desplegable oscuro que aparece, hacer clic en **"Cerrar sesión"**.
+3. **Confirmación:** El sistema cerrará la sesión activa, invalidará el token de autenticación y redirigirá automáticamente a la pantalla de acceso.
+
+> **[Captura: Logout Panel Admin]**
+> *Menú desplegable de perfil en el menú lateral del Panel Administrativo con la opción "Cerrar sesión" visible.*
+>
+> **[Captura: Logout Panel Admin (Móvil)]**
+> *Menú desplegable de perfil en el menú lateral del Panel Administrativo con la opción "Cerrar sesión" visible. (Vista en dispositivo móvil).*
+
+##### B. Cierre de Sesión desde la Intranet
+1. **Ubicación del control de salida:** En la esquina superior derecha de la barra superior de la Intranet, ubicar el botón de salida segura (ícono de cerrar sesión).
+2. **Ejecución:** Hacer clic en el botón **"Cerrar sesión"**.
+3. **Confirmación:** El sistema destruirá la sesión activa e invalidará el token en el navegador, redirigiendo de inmediato a la pantalla de inicio de sesión de la Intranet.
+
+> **[Captura: Logout Intranet]**
+> *Botón de salida segura ('Cerrar sesión') en la barra superior de la Intranet.*
+>
+> **[Captura: Logout Intranet (Móvil)]**
+> *Botón de salida segura ('Cerrar sesión') en la barra superior de la Intranet. (Vista en dispositivo móvil).*
+
+*(Nota sobre el Sitio Web Público: El portal público no posee menú de usuario ni botón de cierre de sesión en su cabecera. Al cerrar sesión en la Intranet o en el Panel Administrativo, la sesión queda destruida para todo el sistema, por lo que al volver a ingresar al Sitio Web Público el botón circular flotante de edición desaparece automáticamente).*
 
 ### 10.2. Panel Administrativo: Interfaz General y Dashboard
 Al iniciar sesión con el rol de Administrador y ser dirigido al Panel Administrativo, el usuario encontrará un entorno compuesto por un menú lateral de navegación y un área central de trabajo.
@@ -786,7 +710,9 @@ En la barra de navegación lateral izquierda del panel, al desplegar la pestaña
 > **[Captura: Paso 1 (Móvil)]**
 > *Evidencia visual de la acción descrita en el paso 1. (Vista en dispositivo móvil).*
 
-2. **Botón "Crear Rol":** Ubicado en la esquina superior derecha.
+2. **Acceso al formulario de creación o edición de rol:**
+   * **Para crear un nuevo rol:** Se debe hacer clic en el botón **"Crear Rol"** (o **"Nuevo Editor"**) ubicado en la esquina superior derecha.
+   * **Para editar un rol existente y sus permisos:** En la tabla de roles, se debe ubicar la fila correspondiente y hacer clic en el ícono de **Lápiz ("Editar rol y permisos")**.
 
 > **[Captura: Paso 2]**
 > *Evidencia visual de la acción descrita en el paso 2.*
@@ -794,8 +720,46 @@ En la barra de navegación lateral izquierda del panel, al desplegar la pestaña
 > **[Captura: Paso 2 (Móvil)]**
 > *Evidencia visual de la acción descrita en el paso 2. (Vista en dispositivo móvil).*
 
-3. **Formulario de Permisos:** Al crear o editar un rol, la pantalla muestra una lista de módulos y páginas. Junto a cada uno, existen **botones tipo interruptor (switch)** (encendido/apagado) para habilitar permisos de lectura, creación, edición o eliminación de forma manual (permisos granulares). Se confirman los cambios con el botón **"Guardar Rol"**.
-   * *Delegación de páginas nuevas a otros roles:* Cuando un editor crea una página nueva en el sistema, esta solo queda habilitada automáticamente para el rol creador, para el rol base Editor y para el Administrador. Si otros roles hijos requieren intervenir o editar esa página, el Administrador debe ingresar a este submenú, pulsar en **"Editar Rol"** sobre el perfil correspondiente y activar manualmente el interruptor de edición para dicha página.
+3. **Formulario y Gestión de Permisos Granulares (Catálogo de 5 Secciones):** Al abrir el formulario modal, el Administrador puede definir el nombre del rol, su descripción funcional y pulsar el botón **"Editar rol"** para desplegar el catálogo interactivo de permisos. La interfaz incluye una barra de búsqueda para filtrar permisos en tiempo real.
+   
+   Los permisos configurables para los roles de editor se organizan rigurosamente en **5 secciones exclusivas**, cada una con un propósito y alcance específico dentro de la plataforma:
+
+   * **1. Acceso (`acceso`):** Define las puertas de entrada al sistema. Si un rol no tiene activo el acceso al entorno respectivo, el usuario no podrá autenticarse ni visualizar su contenido:
+     * *Sitio web público (`acceso.sitio`):* Habilita al usuario para autenticarse y disponer de facultades operativas sobre las páginas del portal público del OLO.
+     * *Intranet (`acceso.intranet`):* Permite ingresar a la Intranet del OLO y consultar sus páginas y contenidos restringidos.
+     *(Nota de seguridad: El acceso al Panel Administrativo `/admin` está restringido por código exclusivamente al Administrador y no se expone a los roles de editor).*
+
+   * **2. Editar [Plantilla / Globales] (`plantilla`):** Agrupa los permisos para intervenir los componentes estructurales envolventes que comparten todas las páginas de un entorno determinado. No modifican una página aislada, sino la cabecera (header) y pie de página (footer) de forma global:
+     * *Menú y pie de el sitio web (`editar.sitio.menu-y-pie`):* Otorga la facultad de maquetar y modificar la barra superior de navegación y el pie de página de todo el portal del OLO.
+     * *Menú y pie de la intranet (`editar.intranet.menu-y-pie`):* Otorga la facultad de maquetar y modificar el menú y pie de página compartidos por todas las páginas de la Intranet.
+     *(Por motivos de control y debido a su impacto global, estos interruptores no cuentan con botón de activación masiva).*
+
+   * **3. Secciones del sitio web (`secciones-sitio`):** Habilita la edición granular de páginas específicas pertenecientes al portal web público:
+     * *Inicio (`editar.sitio.inicio`):* Permite editar y reestructurar los bloques de contenido de la página principal del portal público.
+     * *Política de privacidad (`editar.sitio.politica-de-privacidad`):* Permite editar el contenido legal y términos de privacidad del portal.
+     * *Páginas dinámicas del sitio (`editar.sitio.[slug]`):* Cada página creada para el portal público se incorpora automáticamente como un permiso independiente, mostrando su nombre real para asignar o revocar su edición.
+     *(Dispone de la opción rápida "Todas / Quitar todas" para conmutar el grupo completo en un solo clic).*
+
+   * **4. Secciones de la intranet (`secciones-intranet`):** Habilita la edición granular de páginas específicas pertenecientes a la Intranet del OLO:
+     * *Inicio (`editar.intranet.inicio`):* Permite maquetar y editar la portada de la intranet.
+     * *Tasa de vinculación (`editar.intranet.tasa`):* Permite editar la página de indicadores y tasas de vinculación laboral.
+     * *Matriz de tendencias (`editar.intranet.matriz`):* Permite editar el contenido de la matriz de tendencias ocupacionales.
+     * *Encuestas de calidad de la formación (`editar.intranet.encuestas-calidad-de-formacion`):* Permite editar la sección de encuestas sobre la calidad formativa.
+     * *Encuestas de seguimiento laboral (`editar.intranet.encuestas-seguimiento-laboral`):* Permite editar la sección de encuestas de seguimiento a egresados.
+     * *Páginas dinámicas de la intranet (`editar.intranet.[slug]`):* Cada página creada dentro de la intranet se muestra de forma individual con su respectivo interruptor de edición.
+     *(Dispone de la opción rápida "Todas / Quitar todas" para conmutar el grupo completo en un solo clic).*
+
+   * **5. Qué puede hacer dentro del editor (`editor`):** Regula las facultades operativas y de gestión estructural que el editor puede ejercer sobre las páginas que tenga autorizadas:
+     * *Crear secciones nuevas (`secciones.crear`):* Faculta al rol para crear nuevas páginas o rutas dinámicas en el portal o intranet.
+     * *Eliminar secciones (`secciones.eliminar`):* Autoriza a borrar definitivamente páginas dinámicas creadas desde el editor, junto con su contenido e histórico de versiones (acción irreversible; las secciones de fábrica del sistema están protegidas y nunca se pueden eliminar).
+
+   * **Manejo de interruptores, indicadores y guardado:**
+     * Junto a cada permiso existe un **botón tipo interruptor (switch)** (encendido/apagado) operable con un clic o mediante teclado (tecla Espacio).
+     * El sistema muestra etiquetas informativas en tiempo real (**"se añade"** o **"se quita"**) indicando las diferencias respecto a la configuración original.
+     * En el pie del modal, se detalla un resumen de los cambios efectuados antes de confirmar.
+     * Al hacer clic en el botón **"Guardar permisos"** (o **"Guardar Rol"**), los cambios se aplican de manera inmediata y afectarán a todos los usuarios asignados a dicho rol.
+   
+   * **Delegación de páginas nuevas a otros roles:** Cuando un editor crea una página nueva en el sistema, esta solo queda habilitada automáticamente para el rol creador, para el rol base Editor y para el Administrador. Si otros roles derivados requieren intervenir o editar esa página, el Administrador debe ingresar a este submenú, hacer clic en el ícono de lápiz sobre el rol correspondiente, buscar la página dentro de "Secciones del sitio web" o "Secciones de la intranet", y encender manualmente su interruptor de edición.
 
 > **[Captura: Paso 3]**
 > *Evidencia visual de la acción descrita en el paso 3.*
@@ -803,7 +767,7 @@ En la barra de navegación lateral izquierda del panel, al desplegar la pestaña
 > **[Captura: Paso 3 (Móvil)]**
 > *Evidencia visual de la acción descrita en el paso 3. (Vista en dispositivo móvil).*
 
-### 10.3.3. Eliminación de Roles (Submenú: Roles)
+#### 10.3.3. Eliminación de Roles (Submenú: Roles)
 
 1. **Verificación previa:** El Administrador debe confirmar que ningún usuario activo tenga ese rol asignado. Si existen usuarios con el rol, el sistema bloqueará la eliminación.
 
@@ -856,13 +820,21 @@ Módulo vital para el flujo de publicación, accesible desde el menú lateral ba
 > **[Captura: Paso 4 (Móvil)]**
 > *Ventana inmersiva mostrando la página. (Vista en dispositivo móvil).*
 
-5. **Toma de decisión:** Se debe utilizar uno de los botones de acción: Botón Verde para **Aprobar** (pasa a producción), Botón Naranja para **Rechazar** (devuelve al editor) o el Basurero para **Descartar**.
+5. **Toma de decisión:** Se debe utilizar uno de los botones de acción: Botón Verde para **Aprobar** (pasa a producción), Botón Naranja para **Rechazar** (devuelve al editor con observaciones) o el Basurero para **Descartar**.
 
 > **[Captura: Paso 5]**
 > *Uso de los botones de decisión.*
 >
 > **[Captura: Paso 5 (Móvil)]**
 > *Uso de los botones de decisión. (Vista en dispositivo móvil).*
+
+6. **Confirmación obligatoria para descarte:** Si se pulsa el botón de basurero para descartar un borrador no procedente o remitido por error, el sistema desplegará una ventana modal de seguridad. Es obligatorio registrar el motivo de la anulación para la bitácora de auditoría antes de confirmar la eliminación definitiva del borrador.
+
+> **[Captura: Confirmación Descarte]**
+> *Ventana modal de confirmación para el descarte de versiones en revisión, mostrando la exigencia del registro obligatorio del motivo para auditoría.*
+>
+> **[Captura: Confirmación Descarte (Móvil)]**
+> *Ventana modal de confirmación para el descarte de versiones en revisión, mostrando la exigencia del registro obligatorio del motivo para auditoría. (Vista en dispositivo móvil).*
 
 ### 10.5. Panel Administrativo: Auditoría
 Herramienta de control forense, accesible desde el menú lateral bajo **"Auditoría"** o **"Bitácora"**.
@@ -971,13 +943,13 @@ El sistema genera respaldos automáticos con la siguiente frecuencia:
 
 La restauración es un proceso técnico de alto impacto que **reemplaza toda la base de datos activa** con la versión guardada. Debe ejecutarse únicamente como medida de recuperación ante fallos críticos.
 
-> **⚠️ Advertencia:** Restaurar un respaldo eliminará de forma irreversible todos los cambios realizados después de la fecha del respaldo seleccionado. Esta acción no puede deshacerse.
+> **Advertencia:** Restaurar un respaldo eliminará de forma irreversible todos los cambios realizados después de la fecha del respaldo seleccionado. Esta acción no puede deshacerse.
 
 Para solicitar la restauración, el Administrador debe contactar al equipo técnico responsable del servidor, ya que esta operación se ejecuta a nivel de infraestructura y no está disponible como botón de autoservicio dentro del Panel Administrativo.
 
 ### 10.7. Panel Administrativo: Carga Masiva de Datos en Excel
 
-Módulo exclusivo del Administrador para importar o actualizar de forma masiva datos institucionales, estadísticas e indicadores del observatorio.
+Módulo exclusivo del Administrador para importar o actualizar de forma masiva clasificaciones (CNO/CUOC), estadísticas e indicadores del observatorio.
 
 #### 10.7.1. Preparación del Archivo Excel
 
@@ -1337,7 +1309,7 @@ El Editor Visual dispone de un historial de acciones en sesión:
 
 #### 12.3.4. Edición de la Cabecera y Pie de Página Globales
 
-La cabecera y el pie de página son componentes institucionales globales. Su edición está disponible para el rol **Editor base** y para los **Roles hijos** a quienes el Administrador haya habilitado explícitamente este permiso.
+La cabecera y el pie de página son componentes envolventes globales del portal. Su edición está disponible para el rol **Editor base** y para los **Roles hijos** a quienes el Administrador haya habilitado explícitamente este permiso.
 
 1. **Acceso:** Desde el menú del botón flotante de edición en cualquier página, el usuario debe seleccionar la opción **"Editar cabecera"** o **"Editar pie"**.
 
@@ -1349,9 +1321,41 @@ La cabecera y el pie de página son componentes institucionales globales. Su edi
 
 2. **Lienzo de cabecera/pie:** Se abrirá el Editor Visual en modo de edición del componente global seleccionado. Los cambios aquí realizados se propagarán a **todas las páginas del portal simultáneamente**.
 
-> **⚠️ Advertencia:** Dado que la cabecera y el pie son globales, cualquier modificación aprobada afectará la apariencia de toda la plataforma. Se recomienda especial cuidado y la previsualización detallada antes de enviar a revisión.
+> **Advertencia:** Dado que la cabecera y el pie son globales, cualquier modificación aprobada afectará la apariencia de toda la plataforma. Se recomienda especial cuidado y la previsualización detallada antes de enviar a revisión.
 
 3. **Guardado:** Al finalizar, se debe hacer clic en **"Guardar Borrador"** y enviar a revisión. El Administrador deberá aprobar los cambios antes de que sean visibles en el portal.
+
+### 12.4. Eliminación de Páginas Dinámicas (Paso a Paso)
+
+La eliminación de páginas dinámicas retira de forma definitiva la página y sus versiones del portal. Esta acción está disponible únicamente para el rol **Editor base**, el rol **Administrador** y aquellos **Roles hijos de editor** a los que se les haya concedido manualmente el permiso de eliminación sobre páginas.
+
+1. **Acceso desde el botón flotante:** El editor debe navegar hacia la página dinámica que desea eliminar y hacer clic en el botón circular flotante con ícono de lápiz para desplegar el menú de opciones (sección 12.1).
+2. **Selección de la opción:** En el menú desplegado, se debe hacer clic en la opción **"Eliminar página"**.
+
+> **[Captura: Menú Flotante Eliminar Página]**
+> *Opción "Eliminar página" seleccionada en el menú flotante del editor visual.*
+>
+> **[Captura: Menú Flotante Eliminar Página (Móvil)]**
+> *Opción "Eliminar página" seleccionada en el menú flotante del editor visual. (Vista en dispositivo móvil).*
+
+3. **Validación automática de enlaces activos (Protección contra enlaces rotos):** El sistema escanea en tiempo real todo el portal. Si la página está vinculada en el menú de navegación principal (cabecera o pie) o referenciada en enlaces de otras páginas, el borrado se bloquea inmediatamente y el sistema arroja una alerta roja impidiendo la eliminación (ver secciones 14.3 y 15.3). En tal caso, el usuario debe ingresar primero a la edición de la cabecera/pie (sección 12.3.4) o a las páginas enlazadas para retirar dichos vínculos antes de repetir el intento.
+
+> **[Captura: Alerta Enlaces Rotos Bloqueo]**
+> *Alerta del sistema bloqueando el borrado de la página debido a enlaces activos detectados en la plataforma.*
+>
+> **[Captura: Alerta Enlaces Rotos Bloqueo (Móvil)]**
+> *Alerta del sistema bloqueando el borrado de la página debido a enlaces activos detectados en la plataforma. (Vista en dispositivo móvil).*
+
+4. **Ventana modal de confirmación y digitación obligatoria del título:** Si no existen enlaces dependientes, el sistema desplegará la ventana modal de confirmación de seguridad. Para evitar eliminaciones accidentales, el usuario debe digitar de manera idéntica y exacta el título de la página en el campo de texto requerido.
+
+> **[Captura: Modal Eliminar Página]**
+> *Ventana de confirmación de seguridad para la eliminación de páginas dinámicas con requisito de digitación exacta del título de la página.*
+>
+> **[Captura: Modal Eliminar Página (Móvil)]**
+> *Ventana de confirmación de seguridad para la eliminación de páginas dinámicas con requisito de digitación exacta del título de la página. (Vista en dispositivo móvil).*
+
+5. **Confirmación definitiva:** Una vez digitado el título idéntico, se activará el botón de confirmación en color rojo **"Eliminar definitivamente"**. Al hacer clic, la página y sus borradores quedarán eliminados del sistema.
+6. **Constancia en auditoría:** La página desaparece de la vista pública y del editor, pero el evento queda grabado de forma automática e inmutable en la bitácora de auditoría del sistema (sección 10.5), conservando el usuario ejecutor, la fecha, la hora y el registro de la acción.
 
 
 ## 13. Reportes y visualización de recursos
@@ -1359,13 +1363,13 @@ La cabecera y el pie de página son componentes institucionales globales. Su edi
 La plataforma ofrece múltiples formas de consultar y explorar la información generada por el observatorio. Dado que las páginas son editables mediante bloques, los editores pueden disponer estos componentes en distintas secciones según los requerimientos del momento:
 
 ### 13.1. Uso de tableros BI en la Intranet (Power BI)
-En las secciones analíticas de la Intranet, los directivos y funcionarios autorizados pueden consultar tableros interactivos de Power BI embebidos. Utilizando los controles internos del tablero (filtros por período, región o sector), los gráficos y tablas se actualizan en tiempo real sin recargar la página.
+En las páginas o secciones de la Intranet que integren este componente maquetable, los directivos y funcionarios autorizados pueden consultar tableros analíticos interactivos de Power BI embebidos. Cabe destacar que este es un componente opcional en el catálogo de bloques del editor visual, por lo que su visualización depende de la maquetación definida por los editores para cada página. Cuando el componente está presente, los usuarios pueden utilizar sus controles internos (filtros por período, región o sector) para actualizar gráficos y tablas en tiempo real sin recargar la página.
 
 > **[Captura: Tablero BI]**
-> *Tablero interactivo de Power BI embebido en la Intranet, detallando los filtros de segmentación de datos disponibles para el análisis.*
+> *Tablero interactivo de Power BI embebido en una página de la Intranet, detallando los filtros de segmentación de datos disponibles para el análisis.*
 >
 > **[Captura: Tablero BI (Móvil)]**
-> *Tablero interactivo de Power BI embebido en la Intranet, detallando los filtros de segmentación de datos disponibles para el análisis. (Vista en dispositivo móvil).*
+> *Tablero interactivo de Power BI embebido en una página de la Intranet, detallando los filtros de segmentación de datos disponibles para el análisis. (Vista en dispositivo móvil).*
 
 ### 13.2. Visor de PDFs y Documentos Normativos
 El componente de visor de documentos permite a los usuarios leer y revisar archivos PDF oficiales (boletines, resoluciones, manuales o informes) directamente dentro de la interfaz del portal, con controles integrados de navegación de páginas y opción de lectura inmersiva.
@@ -1377,13 +1381,13 @@ El componente de visor de documentos permite a los usuarios leer y revisar archi
 > *Visor de documentos y publicaciones en PDF integrado en la página. (Vista en dispositivo móvil).*
 
 ### 13.3. Visor de Videos y Recursos Multimedia
-A través del bloque de recursos visuales, los usuarios pueden reproducir contenido audiovisual institucional y cápsulas informativas directamente en la página, con controles de reproducción estándar y adaptabilidad a dispositivos móviles.
+A través del bloque de recursos visuales, los usuarios pueden reproducir contenidos audiovisuales, cápsulas informativas y videos del OLO directamente en la página, con controles de reproducción estándar y adaptabilidad a dispositivos móviles.
 
 > **[Captura: Visor de Videos]**
-> *Bloque de recursos audiovisuales con reproductor de video institucional.*
+> *Bloque de recursos audiovisuales con reproductor de video del observatorio.*
 >
 > **[Captura: Visor de Videos (Móvil)]**
-> *Bloque de recursos audiovisuales con reproductor de video institucional. (Vista en dispositivo móvil).*
+> *Bloque de recursos audiovisuales con reproductor de video del observatorio. (Vista en dispositivo móvil).*
 
 ### 13.4. Descarga directa de archivos y boletines
 En las distintas páginas del portal y de la Intranet, los documentos cuentan con botones estandarizados de **"Descargar Documento"** o enlaces de descarga directa. Los archivos se suministran en formatos estandarizados (como PDF o planillas), listos para su consulta y archivo fuera de línea.
@@ -1415,7 +1419,7 @@ Si un editor o administrador intenta eliminar una página hacia la cual apuntan 
 
 ### 14.4. Errores habituales y solución
 
-**Situación:** Alerta de "Correo institucional inválido".
+**Situación:** Alerta de "Correo inválido" o dominio no corporativo.
 **Posible causa:** Intento de inicio de sesión con un correo fuera del dominio `@sena.edu.co`.
 **Acción recomendada:** El usuario debe ingresar estrictamente la cuenta corporativa oficial asignada por la entidad.
 
@@ -1437,8 +1441,8 @@ Si un editor o administrador intenta eliminar una página hacia la cual apuntan 
 **Posible causa:** El archivo cargado no es un `.xlsx` válido, está corrupto o fue generado con una versión de Excel incompatible.
 **Acción recomendada:** Se debe descargar nuevamente la plantilla oficial desde el módulo de carga, trasladar los datos al nuevo archivo y repetir la operación.
 
-**Situación:** El tablero de Power BI en la Intranet no carga o aparece en blanco.
-**Posible causa:** (1) La conexión a Internet es inestable o lenta. (2) La sesión de Power BI expiró internamente.
+**Situación:** El componente de tablero analítico (Power BI) no carga o aparece en blanco en la página.
+**Posible causa:** (1) La página contiene el bloque de Power BI pero la conexión a Internet es inestable o lenta. (2) La sesión o enlace del servicio embebido expiró internamente.
 **Acción recomendada:** (1) El usuario debe verificar la conexión a Internet (se recomiendan al menos 10 Mbps para tableros analíticos). (2) Se debe recargar la página con la tecla F5. (3) Si la eventualidad persiste, se debe cerrar sesión y volver a iniciarla.
 
 **Situación:** El Editor Visual no carga o aparece en blanco al intentar editar una página.
@@ -1466,7 +1470,7 @@ Si un editor o administrador intenta eliminar una página hacia la cual apuntan 
 ### 15.3. Bloqueo al intentar eliminar páginas
 **Situación:** El sistema no muestra la opción o bloquea el borrado de una página.
 **Posible causa:** Se está intentando eliminar una ruta fija del sistema (como las interfaces de inicio de sesión o rutas administrativas), o bien la página seleccionada cuenta con enlaces activos en menús u otras secciones que provocarían errores de navegación 404.
-**Acción:** Las rutas fijas del sistema no son eliminables. Si se trata de una página de contenido, se deben retirar primero todos los enlaces activos que apunten hacia ella en el menú institucional y en las demás páginas antes de proceder con el borrado.
+**Acción:** Las rutas fijas del sistema no son eliminables. Si se trata de una página de contenido, se deben retirar primero todos los enlaces activos que apunten hacia ella en el menú de navegación y en las demás páginas antes de proceder con el borrado.
 
 ### 15.4. Imposibilidad de crear nuevas secciones
 **Situación:** Un editor no encuentra o no puede usar la opción para crear páginas nuevas.
@@ -1481,40 +1485,47 @@ Si un editor o administrador intenta eliminar una página hacia la cual apuntan 
 
 ---
 
-## 16. Glosario de términos técnicos e institucionales
+## 16. Glosario de términos técnicos y del observatorio
 
-El presente glosario define y consolida de forma exclusiva los términos, conceptos, siglas y herramientas institucionales que aparecen textualmente a lo largo de las secciones anteriores del presente manual de usuario:
+El presente glosario define y consolida de forma exhaustiva los términos, conceptos, siglas y herramientas de la plataforma OLO que aparecen a lo largo de las secciones del presente manual de usuario, organizados en estricto orden alfabético:
 
-* **Bandeja de Revisión:** Módulo del Panel Administrativo donde el Administrador visualiza y gestiona las versiones y páginas enviadas por los editores para evaluar los cambios propuestos mediante vista previa, permitiendo aprobar su publicación, rechazarlas con observaciones o descartar borradores mediante el botón de basurero.
-* **Bitácora de Auditoría:** Historial cronológico permanente e inmutable que registra las acciones realizadas por los usuarios autenticados en la plataforma (quién ejecutó la acción, qué modificó, fecha y hora), garantizando la trazabilidad operativa y la supervisión del sistema.
-* **Bloque de Contenido:** Componente prediseñado de interfaz (textos, imágenes, tarjetas informativas, carruseles, acordeones o enlaces) que los editores configuran e incorporan en el editor visual para maquetar las páginas del Sitio Web y la Intranet.
+* **Bandeja de Revisión:** Módulo del Panel Administrativo donde el Administrador visualiza y gestiona las versiones y páginas enviadas por los editores para evaluar los cambios propuestos mediante vista previa, permitiendo aprobar su publicación, rechazarlas con observaciones de retroalimentación o descartar borradores mediante el botón de basurero.
+* **Bitácora de Auditoría:** Historial cronológico permanente e inmutable que registra las acciones realizadas por los usuarios autenticados en la plataforma (quién ejecutó la acción, qué modificó, motivo del descarte, fecha y hora exacta), garantizando la trazabilidad operativa y la supervisión del sistema.
+* **Bloque de Contenido:** Componente prediseñado de interfaz (textos, imágenes, tarjetas informativas, carruseles, acordeones, visores multimedia o tableros analíticos) que los editores configuran e incorporan en el editor visual para maquetar las páginas del Sitio Web y la Intranet.
 * **Borrador (Modo de Borrador):** Estado de trabajo privado en el que los editores maquetan y estructuran una página sin que los cambios sean visibles al público o en la Intranet, hasta que sean enviados a revisión y aprobados por el Administrador.
-* **Botón Flotante (Floating Action Button):** Botón circular ubicado en la interfaz pública que despliega las opciones rápidas de edición, creación y eliminación de páginas para los usuarios con rol de Editor.
-* **Carga Masiva en Excel:** Función exclusiva del Administrador para ingresar o actualizar grandes volúmenes de datos institucionales, estadísticas e indicadores mediante planillas de cálculo en formato `.xlsx`.
-* **Contraseña (Contraseña Robusta):** Clave requerida para el inicio de sesión institucional, la cual debe cumplir estrictamente con los lineamientos de seguridad establecidos (mínimo 12 caracteres, mayúsculas, minúsculas, números y caracteres especiales).
+* **Botón Flotante (Floating Action Button):** Botón circular interactivo visible en las páginas para usuarios con roles de editor autorizados, desde el cual se despliegan accesos rápidos a la edición, creación y eliminación de páginas.
+* **Carga Masiva en Excel:** Función exclusiva del Administrador para ingresar o actualizar grandes volúmenes de datos ocupacionales, clasificaciones y estadísticas del observatorio mediante planillas de cálculo en formato `.xlsx`.
+* **Contraseña (Contraseña Robusta):** Clave definitiva requerida para el inicio de sesión en el OLO, la cual debe cumplir estrictamente con los lineamientos de seguridad establecidos (mínimo 12 caracteres, mayúsculas, minúsculas, números y caracteres especiales).
+* **Contraseña Temporal:** Clave provisoria asignada manualmente por el Administrador al registrar una nueva cuenta de usuario, válida únicamente para el primer acceso (onboarding) y sin caducidad automática de tiempo.
 * **Dashboard (Tablero Principal):** Pantalla de inicio del Panel Administrativo que resume en tiempo real el estado del sistema mediante tarjetas de métricas numéricas y gráficos de actividad.
-* **Descarte de Versión (Botón de Basurero):** Acción de control en la bandeja de revisión que permite al Administrador eliminar definitivamente un borrador no deseado o enviado por error. Exige registrar de forma obligatoria el motivo en la bitácora de auditoría y depura archivos huérfanos sin afectar la versión ya publicada.
+* **Descarte de Versión (Botón de Basurero):** Acción de control en la bandeja de revisión que permite al Administrador eliminar definitivamente un borrador no deseado o enviado por error. Exige registrar de forma obligatoria el motivo en la bitácora de auditoría y depura archivos huérfanos sin alterar la versión publicada.
 * **Diseño Responsivo:** Capacidad de las interfaces del portal web y de la Intranet para adaptarse de manera automática y fluida a diferentes tamaños y resoluciones de pantalla, tanto en computadores de escritorio como en tabletas y dispositivos móviles.
-* **Dominio Corporativo (`@sena.edu.co`):** Dominio de correo electrónico oficial e institucional exigido como requisito estricto y excluyente para la creación de cuentas, inicio de sesión y recuperación de contraseña del personal autorizado.
+* **Dominio Corporativo (`@sena.edu.co`):** Dominio de correo electrónico oficial del SENA exigido como requisito estricto y excluyente para la creación de cuentas, inicio de sesión y recuperación de contraseña del personal autorizado en el OLO.
 * **Drag and Drop (Arrastrar y Soltar):** Acción interactiva que permite a los editores seleccionar un bloque de contenido con el ratón y moverlo hacia el lienzo de trabajo para maquetar la página.
-* **Editor Visual:** Herramienta interactiva de maquetación que permite a los editores y administradores estructurar, diseñar y actualizar visualmente las páginas del Sitio Web y la Intranet mediante bloques y componentes prediseñados.
+* **Editor Visual:** Herramienta interactiva de maquetación basada en bloques que permite a editores y administradores estructurar, diseñar y actualizar visualmente las páginas del Sitio Web y la Intranet.
 * **Exportación (Descarga PDF):** Funcionalidad que permite al usuario consolidar los resultados de una búsqueda o consulta en un documento descargable en formato PDF u hoja de cálculo.
 * **Ficha Técnica / Vista en Detalle:** Pantalla o módulo que despliega la información detallada y completa de un registro seleccionado a través del buscador o catálogos interactivos.
 * **Filtros Avanzados:** Herramientas de segmentación dinámica que permiten refinar las búsquedas por áreas temáticas, niveles, categorías o palabras clave.
-* **Intranet Institucional:** Entorno privado del SENA con autenticación obligatoria para directivos, editores y administradores, destinado a la consulta de tableros analíticos gerenciales de Power BI, descarga de informes internos y maquetación de secciones institucionales.
+* **Flujo Editorial (Revisión y Aprobación):** Ciclo formal de control en el que ningún cambio de contenido pasa a producción de manera directa, requiriendo que los borradores generados por los editores sean revisados, aprobados o rechazados por un Administrador.
+* **Intranet del OLO:** Entorno privado del observatorio con autenticación obligatoria para directivos, editores y administradores, destinado a la consulta de módulos de información y tableros analíticos sobre el mercado laboral, descarga de informes internos y maquetación de secciones internas del OLO.
+* **Lienzo de Edición:** Área interactiva de trabajo del editor visual donde los funcionarios autorizados estructuran, reordenan y configuran bloques de contenido mediante la interacción directa de arrastrar y soltar.
 * **Modo de Solo Lectura:** Modalidad de acceso asignada a Directores y Subdirectores que les permite explorar tableros analíticos en la Intranet y descargar reportes, operando como usuarios autenticados pero sin facultades de edición ni acceso al Panel Administrativo.
 * **OLO (Observatorio Laboral y Ocupacional):** Instancia del SENA encargada de recolectar, analizar y divulgar información y estadísticas sobre el mercado laboral, las ocupaciones y la pertinencia de la formación en Colombia.
-* **Rutas Fijas del Aplicativo:** Vistas y pantallas programadas en el código base que no se gestionan a través del editor visual (como las interfaces de inicio de sesión, recuperación de credenciales y las rutas del Panel Administrativo), las cuales no pueden ser alteradas ni eliminadas desde el entorno de edición.
 * **Páginas Dinámicas y Gestionables:** Páginas y secciones de contenido del Sitio Web público y de la Intranet que pueden maquetarse y actualizarse mediante el editor visual, y que pueden ser eliminadas siempre que no cuenten con enlaces activos que provoquen enlaces rotos.
 * **Panel Administrativo:** Entorno web privado y de acceso exclusivo para el rol Administrador (`/admin`), desde el cual se gestionan usuarios, se crean roles derivados de editor, se asignan permisos manuales, se gestiona la bandeja de revisión y se revisa la auditoría.
-* **Power BI:** Herramienta de visualización analítica de datos integrada en la Intranet para que directores y administradores consulten tableros interactivos de indicadores de inserción laboral y pertinencia educativa.
-* **Preguntas de Seguridad:** Método de comprobación de identidad configurado por cada funcionario en el primer ingreso, utilizado para validar al titular de la cuenta durante el procedimiento de recuperación de contraseña ante olvidos.
+* **Permisos Granulares de Edición:** Conjunto de facultades específicas configurables por el Administrador al crear o modificar roles derivados de editor (editar cabecera/pie de página, crear páginas nuevas, eliminar páginas creadas, y asignación sobre páginas específicas del Sitio Web o la Intranet).
+* **Plantilla Oficial de Carga (.xlsx):** Archivo predefinido en formato Excel disponible en el Panel Administrativo que contiene los encabezados y estructuras estandarizadas necesarias para efectuar la importación masiva de datos sin inconsistencias.
+* **Power BI:** Plataforma externa de analítica y visualización de datos cuyas vistas pueden integrarse como un componente interactivo opcional (bloque de contenido) dentro de las páginas maquetadas del observatorio.
+* **Preguntas de Seguridad:** Método autónomo de comprobación de identidad configurado por cada funcionario en su primer ingreso, utilizado para validar al titular de la cuenta durante el procedimiento de recuperación de contraseña ante olvidos.
+* **Primer Ingreso (Onboarding):** Procedimiento obligatorio que realiza un funcionario nuevo al ingresar por primera vez con su contraseña temporal para registrar sus preguntas de seguridad y definir su contraseña robusta definitiva.
 * **Protección contra Enlaces Rotos:** Validación automática que impide la eliminación de una página creada si existen menús u otras páginas que contengan enlaces activos hacia ella, evitando errores de navegación 404.
 * **PWA (Aplicación Web Progresiva):** Tecnología que permite instalar la plataforma del observatorio en la pantalla de inicio de computadores o dispositivos móviles como una aplicación ligera e independiente desde el navegador web.
 * **Respaldo de Base de Datos (Backup):** Copia de seguridad integral de la información del sistema generada desde el Panel Administrativo y empaquetada en un archivo comprimido con marca de tiempo.
 * **Rol Hijo / Derivado de Editor:** Rol personalizado creado exclusivamente bajo la estructura de editor con el prefijo «Editor [Nombre]», el cual nace sin permisos por defecto y al que el Administrador le asigna manualmente permisos específicos sobre páginas o secciones.
+* **Rutas Fijas del Aplicativo:** Vistas y pantallas programadas en el código base que no se gestionan a través del editor visual (como las interfaces de inicio de sesión, recuperación de credenciales y las rutas del Panel Administrativo), las cuales no pueden ser alteradas ni eliminadas desde el entorno de edición.
 * **SENA (Servicio Nacional de Aprendizaje):** Entidad pública colombiana de formación técnica y profesional, titular de la plataforma tecnológica y responsable del Observatorio Laboral y Ocupacional.
-* **Sitio Web Público:** Portal web de libre acceso y consulta abierta para la ciudadanía y comunidad en general, donde se consultan páginas dinámicas, boletines, estadísticas y contenidos institucionales.
-* **Tablero BI (Power BI):** Módulo interactivo de análisis de datos integrado en la plataforma que permite visualizar gráficos dinámicos y métricas institucionales con filtros en tiempo real.
+* **Separación de Funciones:** Principio operativo y de seguridad del sistema donde los editores solo maquetan y proponen contenido en borrador, mientras que la aprobación, descarte y publicación final corresponde con exclusividad al Administrador.
+* **Sitio Web Público:** Portal web del OLO de libre acceso y consulta abierta para la ciudadanía y comunidad en general, donde se consultan páginas dinámicas, boletines, estadísticas ocupacionales y publicaciones del observatorio.
+* **Tablero BI (Power BI):** Componente maquetable opcional del editor visual que permite embeber paneles interactivos de análisis de datos en las páginas de la plataforma, facilitando la visualización de métricas dinámicas con filtros en tiempo real.
 * **Visor de Documentos y PDFs:** Componente de interfaz que permite visualizar, leer y explorar documentos oficiales, boletines y publicaciones en formato PDF directamente en la pantalla sin descargarlos obligatoriamente.
-* **Visor de Videos:** Componente interactivo para la reproducción de recursos audiovisuales institucionales y cápsulas de video integradas en las páginas del portal.
+* **Visor de Videos:** Componente interactivo para la reproducción de recursos audiovisuales y cápsulas de video integradas en las páginas del portal del OLO.
