@@ -407,7 +407,13 @@ export function Header({
               </svg>
             </button>
             {/* Link para intranet cambiar en produccion */}
-            <a href={INTRANET_URL} target="_blank" className="olo-gov-btn" id="gov-co-link">
+            <a
+              href={INTRANET_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="olo-gov-btn hidden lg:inline-flex"
+              id="gov-co-link"
+            >
               {intranetText}
             </a>
             <button
@@ -443,17 +449,39 @@ export function Header({
                     key={`m-child-${childIndex}`}
                     href={child.href}
                     className="olo-mobile-nav-link olo-mobile-nav-link-child"
+                    onClick={() => setMobileMenuOpen(false)}
                   >
                     {child.label}
                   </a>
                 ))}
               </div>
             ) : (
-              <a key={`m-nav-${index}`} href={link.href} className="olo-mobile-nav-link">
+              <a
+                key={`m-nav-${index}`}
+                href={link.href}
+                className="olo-mobile-nav-link"
+                onClick={() => setMobileMenuOpen(false)}
+              >
                 {link.label}
               </a>
             )
           )}
+          <div className="olo-mobile-menu-footer">
+            <a
+              href={INTRANET_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="olo-mobile-gov-btn"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <span>{intranetText}</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+              </svg>
+            </a>
+          </div>
         </div>
 
         <BuscadorSitioModal
