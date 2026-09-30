@@ -58,6 +58,13 @@ El sistema es una aplicación web moderna y requiere navegadores con soporte com
 ### 6.3. Requisitos de Credenciales Institucionales
 Para acceder a los entornos privados (Panel Administrativo, Editor Visual e Intranet):
 * **Cuenta de correo obligatoria:** Debe pertenecer estrictamente al dominio corporativo institucional `@sena.edu.co`. Cualquier intento de autenticación o registro con dominios públicos o ajenos es rechazado automáticamente.
+
+> **[Captura: Rechazo de Correo no SENA]**
+> *Intento de inicio de sesión o registro con un correo ajeno al dominio institucional `@sena.edu.co` mostrando la alerta o mensaje de restricción.*
+>
+> **[Captura: Rechazo de Correo no SENA (Móvil)]**
+> *Intento de inicio de sesión o registro con un correo ajeno al dominio institucional `@sena.edu.co` mostrando la alerta o mensaje de restricción. (Vista en dispositivo móvil).*
+
 * **Contraseña robusta:** Debe satisfacer los 5 lineamientos de la política institucional de seguridad:
   1. Longitud mínima de **12 caracteres**.
   2. Al menos una letra **mayúscula** (`A-Z`).
@@ -65,11 +72,11 @@ Para acceder a los entornos privados (Panel Administrativo, Editor Visual e Intr
   4. Al menos un dígito **numérico** (`0-9`).
   5. Al menos un **carácter especial** o símbolo (`!@#$%^&*()_+-=[]{}|;:,.<>?`).
 
-> **[Captura: Login Dominio Institucional]**
-> *Pantalla de acceso institucional requiriendo correo con dominio corporativo y validación de los lineamientos de seguridad para la contraseña.*
+> **[Captura: Ingreso y Validación de Contraseña]**
+> *Visual del formulario mostrando el campo de ingreso de contraseña y la validación dinámica de los lineamientos de seguridad requeridos.*
 >
-> **[Captura: Login Dominio Institucional (Móvil)]**
-> *Pantalla de acceso institucional requiriendo correo con dominio corporativo y validación de los lineamientos de seguridad para la contraseña. (Vista en dispositivo móvil).*
+> **[Captura: Ingreso y Validación de Contraseña (Móvil)]**
+> *Visual del formulario mostrando el campo de ingreso de contraseña y la validación dinámica de los lineamientos de seguridad requeridos. (Vista en dispositivo móvil).*
 
 ---
 
@@ -80,26 +87,36 @@ Esta sección detalla qué puede hacer cada tipo de usuario dentro del aplicativ
 ### 7.1. Acceso Ciudadano General (Sin rol ni inicio de sesión)
 El Sitio Web Público fue concebido como un portal abierto para toda la sociedad civil, la comunidad académica, el sector productivo y los buscadores de empleo:
 1. **Sin necesidad de rol ni registro:** La ciudadanía no requiere una cuenta de usuario ni la asignación de un rol para interactuar con la plataforma.
-2. **Consulta y descarga libre:** Cualquier persona puede navegar por todas las páginas públicas, consultar el catálogo ocupacional (CUOC y CNO), revisar las cifras del observatorio y descargar libremente archivos, boletines e informes en formato PDF sin necesidad de iniciar sesión.
+2. **Consulta y descarga libre:** Cualquier persona puede navegar por todas las páginas públicas, realizar búsquedas mediante los componentes interactivos, consultar indicadores, reproducir contenidos en los visores de videos y acceder a documentos mediante los visores de PDFs o botones de descarga libre en formato PDF sin necesidad de iniciar sesión.
 3. **Ámbito del control de accesos:** El inicio de sesión y la asignación de roles aplican de manera exclusiva para los funcionarios del SENA que acceden con correo institucional (`@sena.edu.co`) a la Intranet, al editor visual de páginas o al Panel Administrativo.
 
 > **[Captura: Consulta Ciudadana]**
-> *Exploración del catálogo ocupacional y consulta de indicadores laborales disponible de forma abierta para la ciudadanía.*
+> *Exploración de contenidos públicos, consulta de indicadores y descarga libre de documentos disponible para la ciudadanía.*
 >
 > **[Captura: Consulta Ciudadana (Móvil)]**
-> *Exploración del catálogo ocupacional y consulta de indicadores laborales disponible de forma abierta para la ciudadanía. (Vista en dispositivo móvil).*
+> *Exploración de contenidos públicos, consulta de indicadores y descarga libre de documentos disponible para la ciudadanía. (Vista en dispositivo móvil).*
 
 ### 7.2. Qué puede hacer cada tipo de usuario
 
 #### 7.2.1. Administrador
-Es el rol de máxima autoridad operativa del sistema y el encargado de la gestión general:
-* **Acceso exclusivo al Panel Administrativo:** Es el único rol autorizado para ingresar al Panel Administrativo. Ningún otro rol puede visualizar ni acceder a este entorno.
-* **Gestión de usuarios:** Creación de nuevas cuentas institucionales, asignación de roles, activación o suspensión de usuarios y restablecimiento de contraseñas ante olvidos o bloqueos.
-* **Creación de roles de editor y configuración de permisos:** Creación de nuevos roles personalizados en el sistema (facultad restringida de forma exclusiva a la creación de roles de editor, registrados en el sistema bajo el formato «Editor [Nombre]») y asignación manual («a mano») de los permisos específicos sobre las páginas y secciones que podrá intervenir cada rol.
-* **Aprobación y gestión de publicaciones en revisión:** Recibe las páginas enviadas por los editores en la bandeja de revisión, examina los cambios propuestos mediante la vista previa interactiva y dispone de tres acciones operativas sobre cada versión:
-  * *Aprobar:* Autoriza la publicación inmediata de la versión revisada para que quede visible de forma definitiva en el portal web o la Intranet.
-  * *Rechazar:* Devuelve el borrador al editor responsable junto con las observaciones y justificación de los ajustes requeridos para que realice las correcciones pertinentes.
-  * *Eliminar / Descartar (botón con ícono de basurero):* Permite descartar y eliminar definitivamente esa versión de borrador sin publicarla. Al pulsar el botón de basurero, se despliega una ventana de confirmación donde el Administrador debe ingresar obligatoriamente el motivo de la eliminación para garantizar la trazabilidad forense en la bitácora. Esta acción descarta el trabajo no deseado o enviado por error sin alterar la versión que ya se encuentra publicada y activa para los usuarios, depurando además del servidor cualquier archivo o imagen huérfana vinculada exclusivamente a ese borrador descartado.
+Corresponde a la máxima autoridad técnica y operativa dentro de la plataforma del observatorio.
+
+* **Propósito del perfil:**
+  Garantizar la administración integral, gobernanza, disponibilidad operativa y seguridad técnica del sistema. Es el encargado de la gestión de usuarios, el control editorial de publicaciones, la importación masiva de datos y la fiscalización del sistema mediante la bitácora de auditoría.
+
+* **Entorno de acceso y autenticación:**
+  Inicia sesión mediante credenciales corporativas institucionales obligatorias (`@sena.edu.co`). Dispone de acceso exclusivo al Panel Administrativo (`/admin`), entorno inaccesible para los demás perfiles. Asimismo, puede navegar libremente por el Sitio Web público y por la Intranet institucional con plenas facultades de visualización y edición en línea.
+
+* **Funciones y facultades principales:**
+  * *Gestión integral de cuentas de usuario:* Registra nuevos usuarios institucionales, asigna o revoca roles, activa o suspende cuentas y ejecuta el restablecimiento de contraseñas ante eventualidades o bloqueos.
+  * *Creación de roles de editor y parametrización de permisos:* Crea perfiles personalizados exclusivamente bajo la tipología de editor (bajo la nomenclatura fija «Editor [Nombre]») y define manualmente («a mano») los accesos e interruptores de permisos sobre cada página o sección.
+  * *Aprobación y control en la bandeja de revisión:* Examina los borradores remitidos por los editores mediante la previsualización interactiva y dispone de tres decisiones operativas:
+    * *Aprobar:* Autoriza la publicación inmediata de la versión revisada para su despliegue público o en la Intranet.
+    * *Rechazar:* Devuelve la versión al editor responsable con las observaciones y justificación de los cambios requeridos.
+    * *Descartar / Eliminar (ícono de basurero):* Elimina definitivamente el borrador no procedente o enviado por error. Esta acción exige registrar obligatoriamente el motivo para la bitácora de auditoría y depura los archivos e imágenes huérfanas sin alterar la versión publicada.
+  * *Edición integral y gestión de páginas:* Accede al editor visual para maquetar directamente cualquier contenido en el Sitio Web o la Intranet, crear nuevas páginas y eliminar páginas dinámicas creadas por los editores.
+  * *Carga masiva de información en Excel:* Importa y procesa actualizaciones masivas de datos institucionales, estadísticas e indicadores mediante archivos en formato `.xlsx`.
+  * *Supervisión mediante bitácora de auditoría:* Inspecciona el registro cronológico inmutable de eventos para verificar qué usuario realizó cada acción, los cambios ejecutados, las marcas de tiempo y las direcciones de origen.
 
 > **[Captura: Bandeja de Revisión]**
 > *Bandeja de páginas en revisión en el Panel Administrativo con los controles directos para previsualizar, aprobar, rechazar o descartar borradores mediante el botón de basurero.*
@@ -113,21 +130,31 @@ Es el rol de máxima autoridad operativa del sistema y el encargado de la gesti�
 > **[Captura: Confirmación Descarte (Móvil)]**
 > *Ventana modal de confirmación para el descarte de versiones en revisión, mostrando la exigencia del registro obligatorio del motivo para auditoría. (Vista en dispositivo móvil).*
 
-* **Edición integral y gestión de páginas:** Posee permisos plenos para acceder al editor visual, modificar directamente cualquier bloque de contenido en el Sitio Web y en la Intranet, así como crear páginas nuevas y eliminar definitivamente páginas dinámicas creadas por los usuarios.
-* **Carga masiva de datos en Excel:** Actualización masiva de las ocupaciones, cifras y estadísticas del observatorio mediante la carga de planillas de cálculo en formato Excel (`.xlsx`).
-
 > **[Captura: Carga Masiva Excel]**
 > *Módulo administrativo de carga masiva mostrando la interfaz y zona de arrastre para importar el archivo Excel.*
 >
 > **[Captura: Carga Masiva Excel (Móvil)]**
 > *Módulo administrativo de carga masiva mostrando la interfaz y zona de arrastre para importar el archivo Excel. (Vista en dispositivo móvil).*
-* **Consulta de bitácora de auditoría:** Supervisión del historial completo de actividades del sistema, permitiendo conocer qué usuario realizó cada acción, qué cambios efectuó y en qué fecha y hora.
 
-#### 7.2.2. Editor (Rol Base de Maquetación)
-Es el rol encargado de la producción, diseño y actualización visual de los contenidos:
-* **Acceso al Editor Visual:** Se debe ingresar con sus credenciales institucionales al editor visual de páginas tanto en el Sitio Web como en la Intranet.
-* **Maquetación interactiva:** Arma y actualiza páginas agregando componentes prediseñados como textos, imágenes, tarjetas informativas, carruseles, acordeones y enlaces de descarga.
-* **Creación y eliminación de secciones por defecto:** Dentro del editor visual cuenta por defecto con las facultades activas para **crear secciones nuevas** (incorporar nuevas páginas al portal) y **eliminar secciones** creadas por usuarios que ya no se requieran, cumpliendo con las validaciones de seguridad del sistema.
+* **Límites operativos y restricciones de seguridad:**
+  * No puede modificar ni eliminar mediante el editor visual las rutas y vistas que no son gestionables desde el editor de páginas, tales como las interfaces de autenticación (inicio de sesión, recuperación de credenciales y preguntas de seguridad) y todas las rutas funcionales del Panel Administrativo (`/admin`), las cuales corresponden a la arquitectura fija de código del aplicativo.
+  * No puede crear roles dentro de las jerarquías de Administrador ni de Director; la creación de roles nuevos se encuentra restringida exclusivamente a roles hijos de editor.
+  * No puede omitir ni alterar el registro de auditoría; todas las acciones administrativas quedan grabadas de forma obligatoria e irreversible en la base de datos.
+
+#### 7.2.2. Editor (Rol Base)
+Corresponde al perfil técnico general facultado para la producción, maquetación y diseño de los contenidos institucionales.
+
+* **Propósito del perfil:**
+  Construir, actualizar y diseñar visualmente las páginas y boletines de la plataforma mediante el editor interactivo de bloques, manteniendo la pertinencia informativa y la coherencia gráfica institucional.
+
+* **Entorno de acceso y autenticación:**
+  Inicia sesión con su cuenta corporativa institucional (`@sena.edu.co`) desde el Sitio Web público o desde la Intranet. Al autenticarse, el sistema retorna al usuario a la página de inicio correspondiente según el ambiente donde ingresó. Al navegar por las diferentes páginas, se le despliega un menú flotante con los botones de acción para editar página, editar cabecera/pie, crear o eliminar páginas.
+
+* **Funciones y facultades principales:**
+  * *Maquetación interactiva con bloques:* Diseña y estructura contenidos directamente en el editor visual mediante su entorno de tres paneles: seleccionando bloques prediseñados del catálogo izquierdo (textos, imágenes, tarjetas de indicadores, carruseles, acordeones), arrastrándolos al lienzo central en tiempo real y personalizando sus propiedades en el panel lateral derecho.
+  * *Cobertura total de edición:* Accede a la edición de cualquier página del portal o de la Intranet a través del botón flotante en pantalla (opción **"Editar página"**), disponiendo de permisos plenos sobre todos los contenidos existentes, sin importar qué editor los haya creado originalmente.
+  * *Creación y eliminación de páginas dinámicas:* Gestiona páginas dinámicas desde el menú del botón flotante mediante las opciones **"Crear página"** (definiendo título y ruta URL) y **"Eliminar página"** (con validaciones de seguridad y protección contra enlaces rotos). Al crear una nueva página, el sistema otorga permisos de edición automáticos al rol del editor que la creó, al rol padre Editor base y al rol de Administrador; de este modo, ningún otro rol de editor tiene acceso a intervenirla a menos que el Administrador se lo conceda manualmente.
+  * *Flujo de trabajo mediante borradores:* Guarda su progreso de forma privada mediante el botón **"Guardar Borrador"** sin alterar el portal público, y traslada los cambios terminados mediante **"Enviar a revisión"** hacia la sección **"Páginas en revisión"** del Panel Administrativo para la evaluación y aprobación final por parte del Administrador.
 
 > **[Captura: Editor Visual Componentes]**
 > *Entorno del editor visual interactivo mostrando el panel de componentes prediseñados y el menú flotante para la creación y eliminación de secciones.*
@@ -135,19 +162,30 @@ Es el rol encargado de la producción, diseño y actualización visual de los co
 > **[Captura: Editor Visual Componentes (Móvil)]**
 > *Entorno del editor visual interactivo mostrando el panel de componentes prediseñados y el menú flotante para la creación y eliminación de secciones. (Vista en dispositivo móvil).*
 
-* **Garantía de accesibilidad:** Diligencia obligatoriamente la descripción textual de todas las imágenes que incorpora en las páginas para facilitar la lectura accesible.
-* **Flujo de trabajo mediante borradores:** Guarda los cambios en modo de borrador y, una vez completada la edición, envía la página a revisión para que sea evaluada por el Administrador. Toda página nueva o editada debe ser aprobada antes de ser visible al público o en la Intranet.
-* **Límites operativos del rol:**
-  * No tiene acceso al Panel Administrativo.
-  * No puede publicar páginas directamente en producción (siempre requiere aprobación previa del Administrador).
-  * No puede eliminar las páginas base del sistema (de fábrica).
-  * No puede crear ni modificar cuentas de usuarios.
-  * No tiene acceso a la bitácora de auditoría.
+* **Límites operativos y restricciones de seguridad:**
+  * No tiene acceso al Panel Administrativo (`/admin`).
+  * No puede publicar directamente en los entornos productivos; requiere obligatoriamente la aprobación previa de un Administrador.
+  * No puede intervenir ni eliminar las rutas fijas del aplicativo (como las interfaces de inicio de sesión o las rutas administrativas), ya que corresponden a la estructura de código del sistema y no a páginas gestionables desde el editor visual.
+  * Si bien está facultado para eliminar páginas dinámicas creadas en el sistema, no puede borrarlas si se encuentran vinculadas a algún elemento del menú de navegación institucional o a otros enlaces del portal; en dichos casos, el sistema bloquea la acción y le exige retirar previamente esos enlaces desde la edición del menú para evitar enlaces rotos.
+  * No puede crear, modificar ni gestionar cuentas de usuario ni roles.
+  * No tiene acceso a la bitácora de auditoría ni al módulo de carga masiva de datos en Excel.
 
 #### 7.2.3. Roles Hijos o Derivados de Editor
-Para responder a requerimientos organizativos y de gobernanza específicos en el SENA, el Administrador puede crear **roles hijos o derivados de Editor** desde el Panel Administrativo:
-* **Exclusividad en la creación de roles (solo para editores):** En la plataforma, la creación de nuevos roles está diseñada y habilitada **únicamente para roles de tipo editor**. El sistema no permite la creación de nuevos roles de Administrador ni de Director; cualquier rol creado corresponde siempre a un rol de editor y se registra obligatoriamente bajo el prefijo fijo *«Editor [Nombre]»* (por ejemplo: *Editor Inicio*, *Editor Ocupaciones*, etc.).
-* **Configuración manual de permisos («a mano»):** Al crear un rol nuevo de editor, este nace **sin ningún permiso por defecto**. El Administrador debe asignarle y activar los permisos manualmente, uno a uno, mediante los interruptores de la interfaz de permisos.
+Corresponden a perfiles editoriales especializados creados por el Administrador para delimitar responsabilidades por dependencia o temática.
+
+* **Propósito del perfil:**
+  Permitir la participación distribuida de funcionarios en la maquetación y actualización de contenidos concretos, aplicando el principio de mínimo privilegio para limitar el alcance de su intervención únicamente a las páginas autorizadas.
+
+* **Entorno de acceso y autenticación:**
+  Inician sesión con credenciales corporativas institucionales (`@sena.edu.co`) en el Sitio Web público o en la Intranet. Al ingresar, el sistema redirige al usuario al inicio del portal y despliega el menú flotante de edición únicamente cuando navega por las páginas y secciones específicas que le hayan sido habilitadas.
+
+* **Funciones y facultades principales:**
+  * *Exclusividad de tipología:* Todo rol derivado creado en la plataforma pertenece obligatoriamente a la familia de editores y se registra bajo el formato estricto «Editor [Nombre]».
+  * *Configuración manual de permisos («a mano»):* Nace sin ningún permiso predeterminado (privilegio cero). El Administrador habilita de forma selectiva los interruptores de acceso para las páginas, secciones o funciones específicas requeridas.
+  * *Capacidad equivalente según asignación:* Si el Administrador le otorga permisos completos (activando todas las páginas, la creación y el borrado), el rol hijo adquiere las mismas facultades operativas que el rol Editor base.
+  * *Control de componentes globales:* La modificación de la cabecera y pie de página institucional permanece bloqueada por defecto, salvo concesión expresa del Administrador.
+  * *Ciclo editorial de borradores:* Maqueta los bloques en las páginas asignadas y remite las versiones trabajadas a la sección de **"Páginas en revisión"** del Panel Administrativo para la evaluación y aprobación definitiva por parte del Administrador.
+  * *Asignación automática y delegación de nuevas páginas:* Cuando un rol hijo que cuenta con permiso de creación genera una nueva página, el sistema otorga permisos de edición inmediatos únicamente a su propio rol, al rol padre Editor base y al Administrador. Los demás roles hijos de editor quedan sin acceso a dicha página; si otro rol especializado necesita colaborar o editarla, el Administrador debe otorgarle el permiso de forma manual («a mano») desde la opción de editar rol en el Panel Administrativo.
 
 > **[Captura: Formulario Crear Rol]**
 > *Formulario de creación de nuevos roles en el Panel Administrativo evidenciando el prefijo obligatorio para editores y la interfaz de asignación manual de permisos.*
@@ -155,18 +193,26 @@ Para responder a requerimientos organizativos y de gobernanza específicos en el
 > **[Captura: Formulario Crear Rol (Móvil)]**
 > *Formulario de creación de nuevos roles en el Panel Administrativo evidenciando el prefijo obligatorio para editores y la interfaz de asignación manual de permisos. (Vista en dispositivo móvil).*
 
-* **Principio de mínimo privilegio:**
-  * Si a un rol nuevo no se le asigna ningún permiso, el usuario que lo tenga **no podrá hacer nada en el sistema**.
-  * El Administrador va concediendo acceso selectivo según la responsabilidad asignada al funcionario (por ejemplo: editar únicamente páginas del Sitio Web público, una sección temática específica o una página de encuestas en la Intranet).
-* **Capacidad equivalente al rol Editor base:** En su núcleo funcional y operativo, estos roles comparten exactamente la misma estructura que el rol Editor principal. Por tanto, **si el Administrador le otorga los permisos suficientes (activando todas las secciones, la creación y la eliminación de páginas), el nuevo rol podrá hacer exactamente lo mismo que el rol Editor base**.
-* **Gestión de la plantilla global (cabecera y pie de página):** Al configurar los permisos manualmente, el Administrador decide si otorga o reserva la edición de la cabecera y el pie de página institucional, evitando modificaciones no autorizadas en la identidad global del portal.
-* **Límites infranqueables de seguridad:** Independientemente de cuántos permisos de edición se le asignen, ningún rol hijo puede ingresar al Panel Administrativo, no puede publicar directamente en producción sin revisión previa del Administrador, y no tiene acceso a la gestión de usuarios ni a la bitácora de auditoría.
+* **Límites operativos y restricciones de seguridad:**
+  * No tienen acceso al Panel Administrativo (`/admin`).
+  * No pueden publicar páginas directamente en producción sin la aprobación del Administrador.
+  * No pueden intervenir ni editar páginas o secciones ajenas a las asignadas de forma explícita en su perfil.
+  * No pueden crear ni eliminar páginas a menos que cuenten con el permiso manual activado específicamente para ello.
+  * No pueden intervenir ni eliminar las rutas no gestionables desde el editor visual (pantallas de inicio de sesión y rutas administrativas), ni gestionar usuarios, roles, auditoría o cargas masivas.
 
 #### 7.2.4. Director / Subdirector
-Es el rol institucional enfocado en el seguimiento gerencial, la consulta estratégica y la toma de decisiones:
-* **Acceso a la Intranet Institucional:** Inicia sesión con su cuenta institucional `@sena.edu.co` para ingresar al portal interno de la entidad.
-* **Consulta gerencial en solo lectura:** Navega y consulta los tableros analíticos de Power BI integrados en la Intranet (indicadores de tasa de ocupación, matrices de pertinencia educativa y resultados de encuestas a egresados y calidad de formación).
-* **Descarga de presentaciones e informes:** Descarga reportes, presentaciones y boletines internos en formatos PDF o PowerPoint para uso en reuniones de planeación y comités directivos.
+Corresponde al perfil institucional de dirección enfocado en el monitoreo gerencial, el análisis estratégico y la toma de decisiones institucionales.
+
+* **Propósito del perfil:**
+  Facilitar la consulta directa, ágil y protegida de la información estadística, los indicadores del mercado laboral y los resultados de pertinencia educativa para respaldar la planeación y la gestión directiva.
+
+* **Entorno de acceso y autenticación:**
+  Inicia sesión mediante su cuenta institucional corporativa (`@sena.edu.co`) directamente en la Intranet institucional. El sistema valida su identidad y despliega el entorno privado con acceso inmediato a los módulos gerenciales.
+
+* **Funciones y facultades principales:**
+  * *Consulta gerencial en solo lectura:* Explora e interactúa con los tableros analíticos de Power BI integrados en la Intranet (tasas de ocupación, matrices de pertinencia educativa e indicadores de encuestas a egresados y calidad formativa).
+  * *Descarga de presentaciones e informes internos:* Descarga informes analíticos, boletines ejecutivos y presentaciones en formato PDF o PowerPoint para comités de dirección y mesas de trabajo técnico.
+  * *Monitoreo estratégico sin fricción operativa:* Realiza análisis comparativos y seguimiento a las metas institucionales sobre información consolidada y oficial.
 
 > **[Captura: Intranet Director]**
 > *Interfaz de consulta gerencial en la Intranet institucional con tableros interactivos integrados en modalidad de solo lectura.*
@@ -174,19 +220,25 @@ Es el rol institucional enfocado en el seguimiento gerencial, la consulta estrat
 > **[Captura: Intranet Director (Móvil)]**
 > *Interfaz de consulta gerencial en la Intranet institucional con tableros interactivos integrados en modalidad de solo lectura. (Vista en dispositivo móvil).*
 
-* **Límites operativos del rol:**
-  * No tiene acceso al Panel Administrativo.
-  * No tiene permisos de edición (no puede modificar contenidos, textos ni la estructura de las páginas).
-  * No puede crear ni eliminar páginas del sistema.
-  * No gestiona usuarios, roles ni configuraciones de la plataforma.
+* **Límites operativos y restricciones de seguridad:**
+  * No tiene acceso al Panel Administrativo (`/admin`).
+  * No posee facultades de edición ni maquetación; no se despliega el menú flotante de edición ni tiene acceso al editor visual.
+  * No puede crear, modificar ni eliminar páginas, menús ni contenidos de la plataforma.
+  * No administra cuentas de usuario, no crea roles ni configura permisos.
+  * No ejecuta cargas masivas de datos en Excel ni accede a la bitácora de auditoría técnica.
 
-### 7.2. Reglas para la Creación y Eliminación de Páginas
+### 7.3. Reglas para la Creación y Eliminación de Páginas
 El sistema aplica controles estrictos para salvaguardar la estabilidad, coherencia de navegación e integridad del portal:
-1. **Crear una página no la publica:** La acción de crear una página únicamente genera la estructura vacía en el sistema. La página no es visible para la ciudadanía ni en la Intranet hasta que se le agregue contenido, se guarde el borrador, se envíe a revisión y un Administrador apruebe su publicación definitiva. Al crearse, el rol del creador queda facultado automáticamente para editarla.
-2. **Protección absoluta de páginas base (de fábrica):** Las páginas indispensables del sistema (como Inicio, Tasas de ocupación, Matrices de pertinencia, Encuestas institucionales y la cabecera/pie de página global) están blindadas y **nunca pueden ser eliminadas por ningún rol** (ni por Administradores ni por Editores), garantizando la estabilidad operativa del portal.
-3. **Solo aplica sobre páginas creadas por usuarios:** Únicamente se permite eliminar páginas dinámicas o secciones adicionales creadas por el personal del observatorio.
-4. **Protección contra enlaces rotos:** Antes de procesar el borrado, el sistema inspecciona todo el portal; si otra página o menú institucional contiene un enlace activo que apunta hacia la página a eliminar, el borrado se bloquea automáticamente hasta que dichos enlaces sean retirados, impidiendo que los usuarios encuentren enlaces rotos (error 404).
-5. **Confirmación de seguridad obligatoria:** Para evitar eliminaciones accidentales por un clic involuntario, el sistema despliega una ventana de confirmación donde el usuario debe escribir exactamente el título de la página antes de autorizar su borrado definitivo.
+1. **Crear una página no la publica:** La acción de crear una página únicamente genera la estructura vacía en el sistema. La página no es visible para la ciudadanía ni en la Intranet hasta que se le agregue contenido, se guarde el borrador, se envíe a revisión y un Administrador apruebe su publicación definitiva.
+2. **Asignación jerárquica de permisos al crear páginas:** Al crearse una nueva página, el sistema confiere de manera automática e inmediata permisos de edición exclusivamente a tres roles:
+   * Al **rol del editor que creó la página** (sea el rol Editor base o un rol hijo con permiso de creación).
+   * Al **rol padre Editor (Rol Base)**, asegurando que mantenga su cobertura general de edición sobre todos los contenidos de la plataforma.
+   * Al rol **Administrador**, garantizando la supervisión y control técnico de la plataforma.
+   Ningún otro rol hijo o derivado de editor recibe permisos automáticamente sobre dicha página. Por lo tanto, si otro rol requiere intervenir o colaborar en su maquetación, el Administrador debe ingresar al Panel Administrativo y otorgarle el acceso de forma manual («a mano») mediante la opción de editar rol.
+3. **Protección de rutas fijas del aplicativo:** Las vistas y pantallas que no son gestionables mediante el editor visual (tales como las interfaces de inicio de sesión, flujos de autenticación y las rutas del Panel Administrativo) forman parte del código base del sistema y **nunca pueden ser eliminadas ni alteradas desde el editor visual**.
+4. **Ámbito de eliminación en páginas gestionadas por el editor:** La eliminación únicamente aplica sobre las páginas dinámicas y secciones de contenido creadas o administradas en la plataforma, las cuales sí pueden ser retiradas siempre que no cuenten con enlaces activos.
+5. **Protección contra enlaces rotos:** Antes de procesar el borrado, el sistema inspecciona todo el portal; si otra página o menú institucional contiene un enlace activo que apunta hacia la página a eliminar, el borrado se bloquea automáticamente hasta que dichos enlaces sean retirados, impidiendo que los usuarios encuentren enlaces rotos (error 404).
+6. **Confirmación de seguridad obligatoria:** Para evitar eliminaciones accidentales por un clic involuntario, el sistema despliega una ventana de confirmación donde el usuario debe escribir exactamente el título de la página antes de autorizar su borrado definitivo.
 
 > **[Captura: Modal Eliminar Página]**
 > *Ventana de confirmación de seguridad para la eliminación de páginas dinámicas con requisito de digitación exacta del título de la página.*
@@ -194,7 +246,7 @@ El sistema aplica controles estrictos para salvaguardar la estabilidad, coherenc
 > **[Captura: Modal Eliminar Página (Móvil)]**
 > *Ventana de confirmación de seguridad para la eliminación de páginas dinámicas con requisito de digitación exacta del título de la página. (Vista en dispositivo móvil).*
 
-6. **Registro inmutable:** La eliminación retira la página y sus versiones de la plataforma, pero la bitácora de auditoría conserva de forma permanente el registro histórico de quién la creó, quién la editó y quién la eliminó.
+7. **Registro inmutable:** La eliminación retira la página y sus versiones de la plataforma, pero la bitácora de auditoría conserva de forma permanente el registro histórico de quién la creó, quién la editó y quién la eliminó.
 
 ### 7.4. Matriz Comparativa de Acceso y Capacidades
 
@@ -221,7 +273,7 @@ El sistema aplica controles estrictos para salvaguardar la estabilidad, coherenc
 | **Carga masiva de datos ocupacionales en Excel** | Sin acceso | Sin acceso | Sin acceso | Permitido |
 | **Consultar la bitácora de auditoría del sistema** | Sin acceso | Sin acceso | Sin acceso | Permitido |
 
-### 7.4. Flujo de Separación de Funciones y Control Operativo
+### 7.5. Flujo de Separación de Funciones y Control Operativo
 1. **Separación entre redacción y publicación:** Quienes redactan y diseñan el contenido preparan sus borradores sin publicarlos inmediatamente hacia el público general.
 2. **Revisión previa:** El Administrador revisa el material propuesto, valida su pertinencia y decide su publicación definitiva, remite observaciones de ajuste al editor, o descarta la versión mediante el botón de basurero si el borrador fue enviado por error o no procede.
 3. **Control en la creación y borrado:** La creación de nuevas estructuras de páginas está regulada para evitar páginas vacías en producción, y el borrado cuenta con validación de enlaces y protección inmutable para las páginas estructurales del portal.
@@ -237,7 +289,7 @@ El acceso al ecosistema tecnológico del Observatorio Laboral y Ocupacional comp
 ### 8.1. Sitio Web Público
 
 #### 8.1.1. Portal Web Público (Cara visible)
-El portal web público es la plataforma principal que refleja el trabajo realizado por los editores y administradores. Es un entorno de consulta de acceso libre donde se exponen las páginas dinámicas, el catálogo ocupacional y los reportes creados dentro del sistema. Aunque su contenido principal es público y consumido por la ciudadanía sin requerir autenticación, el personal administrativo y editorial utiliza este mismo entorno como punto de acceso institucional.
+El portal web público es la plataforma principal que refleja el trabajo realizado por los editores y administradores. Es un entorno dinámico y adaptable donde se publican las páginas maquetadas con diversos componentes interactivos (buscadores, visores de videos, visores de documentos PDF, tarjetas de indicadores y enlaces de descarga). La apariencia y distribución de los contenidos varían según las prioridades institucionales de cada momento. Aunque su contenido principal es público y consumido por la ciudadanía sin requerir autenticación, el personal administrativo y editorial utiliza este mismo entorno como punto de acceso institucional.
 
 #### 8.1.2. Inicio de Sesión Institucional en el Portal Web
 Permite a cualquier usuario institucional registrado acceder con su cuenta corporativa al portal:
@@ -447,14 +499,20 @@ La pantalla se divide en tres zonas principales que facilitan la orientación y 
 
 Para garantizar la estabilidad operativa del portal, la coherencia en la navegación ciudadana y la identidad gráfica del SENA, el sistema cuenta con componentes base que están protegidos de manera estricta contra eliminación o alteración estructural:
 * **Menús principales y barras de navegación:** El esqueleto de la navegación superior se mantiene constante. Aunque el sistema permite acoplar dinámicamente nuevas páginas a la navegación, las rutas estructurales base de las categorías principales no pueden ser suprimidas.
-* **Páginas Base (De fábrica):** Secciones críticas como la página de "Inicio", "Tasas de ocupación" o los tableros de "Matrices de pertinencia" son de carácter permanente. Los editores pueden modificar y actualizar el contenido alojado dentro de ellas, pero no tienen facultades para eliminar la existencia de la página como tal.
+* **Rutas fijas del aplicativo:** Las vistas y componentes programados fijos en el código fuente que no se gestionan mediante el editor visual (como las interfaces de inicio de sesión, flujos de autenticación y las pantallas del Panel Administrativo) son permanentes y no se pueden eliminar. Por el contrario, las páginas de contenido que se abren desde el portal público o la Intranet son dinámicamente editables y ajustables a través del editor visual.
 * **Cabecera y Pie de página globales:** Elementos estructurales bloqueados para la edición general, cuyo propósito es garantizar la homogeneidad en la identidad en todo el ecosistema del portal.
 
 ### 9.3. Elementos Dinámicos y Flexibles (Entorno de Edición)
 
 El área central de las páginas representa el entorno dinámico y flexible del sistema. En estas zonas, los usuarios con roles y permisos de edición tienen plena facultad operativa para construir y actualizar la información de forma interactiva:
-* **Bloques de contenido acoplables:** Dentro del lienzo de edición habilitado, el usuario puede agregar, reorganizar, editar o eliminar dinámicamente componentes prediseñados. La interfaz permite la integración fluida de párrafos de texto, imágenes, tarjetas informativas, carruseles, bloques de acordeón, botones de acción y enlaces de descarga.
-* **Creación de secciones:** Capacidad para generar nuevas páginas informativas que se integran a la arquitectura del portal de manera dinámica, respetando siempre los límites de las páginas base inmutables.
+* **Naturaleza adaptable de las páginas (Guía y Plantilla):** El presente manual opera como una guía metodológica y una plantilla referencial sobre las capacidades de la plataforma. Debido a que las páginas se maquetan dinámicamente mediante el editor visual, la disposición de los bloques, su orden, sus títulos y sus elementos visuales específicos variarán según las necesidades institucionales del momento y el diseño implementado por los editores.
+* **Catálogo de componentes disponibles:** Dentro del lienzo de edición, el usuario puede incorporar, reordenar y configurar componentes prediseñados de la plataforma:
+  * *Contenido textual y gráfico:* Texto enriquecido, títulos, imágenes con descripción accesible y tarjetas de artículos.
+  * *Tarjetas e indicadores:* Módulos de servicios, tarjetas de cifras clave y resúmenes informativos.
+  * *Visualización multimedia:* **Visor de videos** (para reproducir contenido audiovisual institucional) y **visor de documentos y PDFs** (para explorar publicaciones e informes normativos sin abandonar el portal).
+  * *Analítica y datos:* **Tableros BI** interactivos (Power BI) embebidos para la consulta gerencial y ciudadana de estadísticas e indicadores.
+  * *Acción y descargas:* Botones de acción, enlaces de **descarga de documentos**, menús acordeón y canales de atención.
+* **Creación de nuevas páginas:** Capacidad para generar páginas adicionales que se incorporan a la plataforma de forma flexible, respetando las validaciones contra enlaces rotos y las reglas de publicación mediante revisión.
 
 > **[Captura: Botones Estandarizados]**
 > *Área central en modo de edición mostrando los límites flexibles del lienzo y la estructura de los bloques de contenido apilados.*
@@ -479,7 +537,7 @@ Las interacciones dentro de la plataforma, en especial dentro del Panel Administ
 
 ## 10. Funcionalidades (Flujo Operativo Paso a Paso)
 
-Esta sección detalla de forma exhaustiva los flujos de trabajo de la plataforma, guiando al usuario paso a paso desde la interacción con botones específicos en la interfaz hasta la ejecución de procesos centrales en el Panel Administrativo. *(Nota: El proceso de maquetación y edición de páginas mediante el Editor Puck se explica exclusivamente en la sección 12).*
+Esta sección detalla de forma exhaustiva los flujos de trabajo de la plataforma, guiando al usuario paso a paso desde la interacción con botones específicos en la interfaz hasta la ejecución de procesos centrales en el Panel Administrativo. *(Nota: El proceso de maquetación y edición de páginas mediante el Editor Visual se explica exclusivamente en la sección 12).*
 
 ### 10.1. Ingreso y Recuperación de Contraseña
 
@@ -737,6 +795,7 @@ En la barra de navegación lateral izquierda del panel, al desplegar la pestaña
 > *Evidencia visual de la acción descrita en el paso 2. (Vista en dispositivo móvil).*
 
 3. **Formulario de Permisos:** Al crear o editar un rol, la pantalla muestra una lista de módulos y páginas. Junto a cada uno, existen **botones tipo interruptor (switch)** (encendido/apagado) para habilitar permisos de lectura, creación, edición o eliminación de forma manual (permisos granulares). Se confirman los cambios con el botón **"Guardar Rol"**.
+   * *Delegación de páginas nuevas a otros roles:* Cuando un editor crea una página nueva en el sistema, esta solo queda habilitada automáticamente para el rol creador, para el rol base Editor y para el Administrador. Si otros roles hijos requieren intervenir o editar esa página, el Administrador debe ingresar a este submenú, pulsar en **"Editar Rol"** sobre el perfil correspondiente y activar manualmente el interruptor de edición para dicha página.
 
 > **[Captura: Paso 3]**
 > *Evidencia visual de la acción descrita en el paso 3.*
@@ -746,7 +805,7 @@ En la barra de navegación lateral izquierda del panel, al desplegar la pestaña
 
 ### 10.3.3. Eliminación de Roles (Submenú: Roles)
 
-1. **Verificación previa:** Confirmar que ningún usuario activo tenga ese rol asignado. Si existen usuarios con el rol, el sistema bloqueará la eliminación.
+1. **Verificación previa:** El Administrador debe confirmar que ningún usuario activo tenga ese rol asignado. Si existen usuarios con el rol, el sistema bloqueará la eliminación.
 
 > **[Captura: Bloqueo Eliminar Rol]**
 > *Alerta del sistema bloqueando la eliminación de un rol que aún tiene usuarios asignados.*
@@ -918,7 +977,7 @@ Para solicitar la restauración, el Administrador debe contactar al equipo técn
 
 ### 10.7. Panel Administrativo: Carga Masiva de Datos en Excel
 
-Módulo exclusivo del Administrador para importar o actualizar de forma masiva las ocupaciones, estadísticas e indicadores del observatorio.
+Módulo exclusivo del Administrador para importar o actualizar de forma masiva datos institucionales, estadísticas e indicadores del observatorio.
 
 #### 10.7.1. Preparación del Archivo Excel
 
@@ -927,7 +986,7 @@ Antes de realizar la carga, el archivo debe estar correctamente estructurado:
 * **Formato obligatorio:** `.xlsx` (Excel 2007 o superior). No se aceptan archivos `.xls`, `.csv` ni otros formatos.
 * **Estructura de columnas:** El sistema espera columnas en un orden y con encabezados específicos. Para obtener la plantilla oficial con los encabezados correctos, se debe descargar desde el módulo de carga (ver paso 2).
 * **Límite de filas:** Se recomienda no superar las **10.000 filas** por carga para garantizar el rendimiento del sistema.
-* **Celdas vacías:** Las celdas vacías en columnas obligatorias generarán errores de validación. Verificar que todos los campos requeridos estén completos antes de cargar.
+* **Celdas vacías:** Las celdas vacías en columnas obligatorias generarán errores de validación. El usuario debe verificar que todos los campos requeridos se encuentren diligenciados antes de realizar la carga.
 
 #### 10.7.2. Flujo de Carga Masiva Paso a Paso
 
@@ -993,28 +1052,28 @@ La plataforma del OLO puede instalarse en el dispositivo del usuario como una ap
 
 #### 10.8.1. Instalación en Computador de Escritorio (Chrome / Edge)
 
-1. Abrir el portal del OLO en el navegador compatible.
-2. En la barra de direcciones, hacer clic en el **ícono de instalación** (pantalla con flecha hacia abajo) o ir al menú de tres puntos y seleccionar **"Instalar [nombre de la aplicación]..."**.
+1. El usuario debe abrir el portal del OLO en un navegador web compatible.
+2. En la barra de direcciones superior, se debe hacer clic en el **ícono de instalación** (pantalla con flecha hacia abajo) o acceder al menú de tres puntos del navegador y seleccionar la opción **"Instalar [nombre de la aplicación]..."**.
 
 > **[Captura: Instalar PWA Desktop]**
 > *Ícono de instalación de PWA visible en la barra de direcciones del navegador de escritorio.*
 
-3. En el cuadro de diálogo, hacer clic en **"Instalar"** para confirmar.
-4. La aplicación se abrirá en una ventana independiente y aparecerá un acceso directo en el escritorio y en el menú de aplicaciones del sistema operativo.
+3. En el cuadro de diálogo emergente, se debe hacer clic en **"Instalar"** para autorizar el procedimiento.
+4. La aplicación se abrirá en una ventana independiente y el sistema operativo creará un acceso directo en el escritorio y en el menú de aplicaciones.
 
 #### 10.8.2. Instalación en Dispositivo Móvil (Android — Chrome)
 
-1. Abrir el portal del OLO en Chrome.
-2. El navegador mostrará un banner inferior con el texto **"Añadir a pantalla de inicio"**. Hacer clic en él.
-3. Alternativamente, abrir el menú de Chrome (tres puntos) y seleccionar **"Añadir a pantalla de inicio"**.
-4. Confirmar el nombre y pulsar **"Añadir"**.
+1. El usuario debe acceder al portal del OLO desde el navegador Google Chrome en su dispositivo móvil.
+2. El navegador desplegará una notificación inferior con el texto **"Añadir a pantalla de inicio"**, en la cual se debe pulsar para continuar.
+3. De forma alternativa, el usuario puede abrir el menú principal del navegador (ícono de tres puntos) y seleccionar la opción **"Añadir a pantalla de inicio"**.
+4. Finalmente, se debe confirmar el nombre de la aplicación y pulsar en **"Añadir"**.
 
 #### 10.8.3. Instalación en Dispositivo Móvil (iOS — Safari)
 
-1. Abrir el portal del OLO en Safari.
-2. Pulsar el botón de **compartir** (cuadrado con flecha hacia arriba) en la barra inferior.
-3. Seleccionar **"Agregar a pantalla de inicio"**.
-4. Confirmar el nombre y pulsar **"Agregar"** en la esquina superior derecha.
+1. El usuario debe ingresar al portal del OLO desde el navegador Safari en su dispositivo iOS.
+2. Se debe presionar el botón de **compartir** (ícono de recuadro con flecha vertical) ubicado en la barra de navegación inferior.
+3. En el menú desplegado, se debe seleccionar la opción **"Agregar a pantalla de inicio"**.
+4. Se debe confirmar el nombre asignado a la aplicación y pulsar en **"Agregar"** en la esquina superior derecha.
 
 > **[Captura: PWA iOS]**
 > *Secuencia de pasos para agregar la PWA a la pantalla de inicio en un dispositivo iOS con Safari.*
@@ -1040,9 +1099,9 @@ Contiene la información de identificación del usuario dentro del sistema:
 > *Vista del módulo "Mi Perfil" en el Panel Administrativo con los campos de nombre, foto, correo y cambio de contraseña. (Vista en dispositivo móvil).*
 
 Flujo para actualizar los datos:
-1. Modificar los campos deseados.
-2. Hacer clic en **"Guardar cambios"**.
-3. El sistema mostrará una notificación *toast* verde confirmando la actualización.
+1. El usuario modifica los campos deseados en el formulario.
+2. Se debe hacer clic en el botón **"Guardar cambios"**.
+3. El sistema muestra una notificación *toast* verde confirmando la actualización exitosa de la información.
 
 #### 10.9.2. Sección "Configuración"
 
@@ -1074,7 +1133,7 @@ El sistema cuenta con un motor de búsqueda global accesible desde la cabecera. 
 > **[Captura: Paso 1 (Móvil)]**
 > *Ubicación del buscador global en la cabecera. (Vista en dispositivo móvil).*
 
-2. **Ingreso de términos:** Se deben digitar las palabras clave relacionadas con la ocupación, boletín o documento que se desea localizar (ej. "ingeniero", "salud").
+2. **Ingreso de términos:** Se deben digitar las palabras clave relacionadas con la temática, contenido, boletín o documento que se desea localizar.
 
 > **[Captura: Paso 2]**
 > *Ingreso de términos clave en el campo de texto del buscador.*
@@ -1090,18 +1149,18 @@ El sistema cuenta con un motor de búsqueda global accesible desde la cabecera. 
 > **[Captura: Paso 3 (Móvil)]**
 > *Página de resultados desplegando las coincidencias encontradas por el sistema. (Vista en dispositivo móvil).*
 
-### 11.2. Búsqueda con Filtros Avanzados (Catálogo Ocupacional)
-Para consultas específicas, el sistema ofrece herramientas de segmentación en el módulo del Catálogo Ocupacional:
+### 11.2. Búsqueda con Filtros Avanzados y Consulta de Información
+Para consultas específicas en catálogos y listados, el sistema ofrece herramientas de segmentación y filtrado dinámico:
 
-1. **Apertura de filtros:** En la vista del catálogo, se debe ubicar el panel lateral (o menú desplegable en móviles) de "Filtros Avanzados".
+1. **Apertura de filtros:** En la vista correspondiente, se debe ubicar el panel lateral (o menú desplegable en dispositivos móviles) de "Filtros Avanzados".
 
 > **[Captura: Paso 1]**
-> *Ubicación del panel de filtros avanzados en el módulo ocupacional.*
+> *Ubicación del panel de filtros avanzados en la vista de consulta.*
 >
 > **[Captura: Paso 1 (Móvil)]**
-> *Ubicación del panel de filtros avanzados en el módulo ocupacional. (Vista en dispositivo móvil).*
+> *Ubicación del panel de filtros avanzados en la vista de consulta. (Vista en dispositivo móvil).*
 
-2. **Selección de criterios:** Se pueden marcar casillas o seleccionar opciones en menús desplegables para filtrar por Nivel de Cualificación, Área de Desempeño, o cruzar variables entre CUOC y CNO. El listado de resultados se actualizará dinámicamente.
+2. **Selección de criterios:** Se pueden marcar casillas o seleccionar opciones en menús desplegables para filtrar por categorías, áreas temáticas, niveles o palabras clave. El listado de resultados se actualizará dinámicamente según las opciones seleccionadas.
 
 > **[Captura: Paso 2]**
 > *Selección de criterios específicos en el panel de filtros.*
@@ -1109,21 +1168,21 @@ Para consultas específicas, el sistema ofrece herramientas de segmentación en 
 > **[Captura: Paso 2 (Móvil)]**
 > *Selección de criterios específicos en el panel de filtros. (Vista en dispositivo móvil).*
 
-3. **Interpretación de la Ficha Técnica:** Al hacer clic sobre una de las ocupaciones listadas, el sistema despliega su ficha técnica detallada (descripción, denominaciones, funciones y competencias).
+3. **Visualización de detalles y fichas informativas:** Al hacer clic sobre cualquiera de los registros listados, el sistema despliega su vista en detalle o ficha técnica con la información completa del elemento seleccionado.
 
 > **[Captura: Paso 3]**
-> *Vista detallada de la ficha técnica de una ocupación seleccionada.*
+> *Vista en detalle o ficha informativa del registro seleccionado.*
 >
 > **[Captura: Paso 3 (Móvil)]**
-> *Vista detallada de la ficha técnica de una ocupación seleccionada. (Vista en dispositivo móvil).*
+> *Vista en detalle o ficha informativa del registro seleccionado. (Vista en dispositivo móvil).*
 
-4. **Exportación (Opcional):** Si el usuario necesita un respaldo, debe pulsar el botón **"Exportar"** o **"Descargar PDF"** ubicado en la ficha técnica para generar un documento consolidado.
+4. **Descargas y visualización de documentos (Visor de PDF):** Si el usuario requiere consultar o conservar un respaldo formal de la información, puede utilizar los botones de **"Descargar Documento"** o **"Exportar PDF"** disponibles en la interfaz, o bien explorar el documento directamente mediante el visor de PDFs integrado.
 
 > **[Captura: Paso 4]**
-> *Botón de descarga o exportación dentro de la ficha técnica.*
+> *Botón de descarga o exportación dentro de la ficha de información.*
 >
 > **[Captura: Paso 4 (Móvil)]**
-> *Botón de descarga o exportación dentro de la ficha técnica. (Vista en dispositivo móvil).*
+> *Botón de descarga o exportación dentro de la ficha de información. (Vista en dispositivo móvil).*
 
 ### 11.3. Buscador Interno del Panel Administrativo
 El Panel Administrativo cuenta con su propia herramienta de búsqueda para facilitar la gestión de usuarios, roles, registros de auditoría y páginas en revisión. El flujo de uso es el siguiente:
@@ -1154,9 +1213,9 @@ El Panel Administrativo cuenta con su propia herramienta de búsqueda para facil
 
 ---
 
-## 12. Gestión de información (Editor Puck)
+## 12. Gestión de información (Editor Visual)
 
-Esta sección aborda el uso de la herramienta visual Puck, exclusiva para usuarios con rol de Editor, mediante la cual se diseña y actualiza el contenido del portal.
+Esta sección aborda el uso de la herramienta del Editor Visual, exclusiva para usuarios con rol de Editor, mediante la cual se diseña y actualiza el contenido del portal.
 
 ### 12.1. Acceso a las opciones de Edición (Botón Flotante)
 1. **Visualización del botón:** Al iniciar sesión como Editor, se debe ubicar el **botón circular flotante con un ícono de lápiz** en la pantalla del portal.
@@ -1176,7 +1235,8 @@ Esta sección aborda el uso de la herramienta visual Puck, exclusiva para usuari
 > *Menú de opciones desplegado. (Vista en dispositivo móvil).*
 
 ### 12.2. Creación y Edición en el Lienzo
-1. **Creación:** Si se Se debe seleccionar **"Crear página"**, el sistema solicitará digitar un título y una ruta URL. Se debe completar y confirmar.
+1. **Creación:** Se debe seleccionar la opción **"Crear página"** en el menú del botón flotante; el sistema solicitará digitar un título y una ruta URL. Al completar y confirmar el formulario, la nueva página se crea en estado de borrador.
+   * *Asignación automática de permisos:* De forma inmediata, el sistema habilita el permiso de edición únicamente para el rol del editor que la creó, para el rol padre Editor base y para el Administrador. Los demás roles hijos de editor quedan sin acceso a la página a menos que un Administrador les conceda el permiso manualmente desde el Panel Administrativo (**Accesos > Roles > Editar Rol**).
 
 > **[Captura: Paso 1]**
 > *Formulario de título y URL para la nueva página.*
@@ -1184,13 +1244,13 @@ Esta sección aborda el uso de la herramienta visual Puck, exclusiva para usuari
 > **[Captura: Paso 1 (Móvil)]**
 > *Formulario de título y URL para la nueva página. (Vista en dispositivo móvil).*
 
-2. **Acceso al lienzo:** Al crear o al seleccionar **"Editar página"**, se abrirá la interfaz del Editor Puck dividida en tres paneles (catálogo, lienzo y propiedades).
+2. **Acceso al lienzo:** Al crear o al seleccionar **"Editar página"**, se abrirá la interfaz del Editor Visual dividida en tres paneles (catálogo, lienzo y propiedades).
 
 > **[Captura: Paso 2]**
-> *Interfaz de 3 paneles del Editor Puck.*
+> *Interfaz de 3 paneles del Editor Visual.*
 >
 > **[Captura: Paso 2 (Móvil)]**
-> *Interfaz de 3 paneles del Editor Puck. (Vista en dispositivo móvil).*
+> *Interfaz de 3 paneles del Editor Visual. (Vista en dispositivo móvil).*
 
 3. **Arrastrar componente:** Se debe hacer clic sostenido sobre un componente del panel izquierdo y arrastrarlo hacia el centro.
 
@@ -1232,27 +1292,27 @@ Esta sección aborda el uso de la herramienta visual Puck, exclusiva para usuari
 > **[Captura: Paso 7 (Móvil)]**
 > *Clic en los botones de guardado o revisión. (Vista en dispositivo móvil).*
 
-### 12.3. Gestión Avanzada en el Editor Puck
+### 12.3. Gestión Avanzada en el Editor Visual
 
 Esta sección complementa la sección 12.2, cubriendo las operaciones sobre componentes ya colocados en el lienzo.
 
 #### 12.3.1. Reordenar Componentes en el Lienzo
 
-1. **Selección del componente:** Hacer clic sobre el componente que se desea mover. Aparecerá un borde de selección a su alrededor.
-2. **Arrastre de reposicionamiento:** Mantener pulsado el botón izquierdo del ratón sobre la barra de control superior del componente (ícono de agarradera de seis puntos) y arrastrarlo hacia la nueva posición deseada.
-3. **Soltado:** Al soltar el botón del ratón, el componente quedará fijado en su nueva posición y los demás componentes se reorganizarán automáticamente.
+1. **Selección del componente:** El usuario debe hacer clic sobre el componente que desea mover. El sistema resaltará un borde de selección a su alrededor.
+2. **Arrastre de reposicionamiento:** Se debe mantener presionado el botón izquierdo del ratón sobre la barra de control superior del componente (ícono de agarradera de seis puntos) y desplazarlo hacia la nueva posición requerida.
+3. **Soltado:** Al soltar el botón del ratón, el componente queda fijado en su nueva ubicación y el lienzo reorganiza los demás bloques de forma automática.
 
 > **[Captura: Reordenar Componente]**
-> *Arrastre de un componente seleccionado hacia una nueva posición en el lienzo del Editor Puck.*
+> *Arrastre de un componente seleccionado hacia una nueva posición en el lienzo del Editor Visual.*
 >
 > **[Captura: Reordenar Componente (Móvil)]**
-> *Arrastre de un componente seleccionado hacia una nueva posición en el lienzo del Editor Puck. (Vista en dispositivo móvil).*
+> *Arrastre de un componente seleccionado hacia una nueva posición en el lienzo del Editor Visual. (Vista en dispositivo móvil).*
 
 #### 12.3.2. Eliminar un Componente del Lienzo
 
-1. **Selección:** Hacer clic sobre el componente que se desea eliminar.
-2. **Botón de eliminación:** En la barra de control que aparece sobre el componente seleccionado, hacer clic en el **ícono de basurero** (rojo).
-3. **Resultado:** El componente será retirado del lienzo inmediatamente. Esta acción puede revertirse con Deshacer (ver sección 12.3.3) mientras no se guarde el borrador.
+1. **Selección:** Se debe hacer clic sobre el componente que se desea retirar del lienzo.
+2. **Botón de eliminación:** En la barra de control superior del componente seleccionado, se debe hacer clic en el **ícono de basurero** (destacado en rojo).
+3. **Resultado:** El componente se retira del lienzo de manera inmediata. Esta acción puede revertirse mediante la función Deshacer (sección 12.3.3) mientras no se guarde el borrador.
 
 > **[Captura: Eliminar Componente]**
 > *Barra de control del componente seleccionado mostrando el ícono de basurero para su eliminación.*
@@ -1262,7 +1322,7 @@ Esta sección complementa la sección 12.2, cubriendo las operaciones sobre comp
 
 #### 12.3.3. Deshacer y Rehacer Cambios
 
-El Editor Puck dispone de un historial de acciones en sesión:
+El Editor Visual dispone de un historial de acciones en sesión:
 
 * **Deshacer (Ctrl + Z / Cmd + Z):** Revierte la última acción realizada en el lienzo. Puede aplicarse múltiples veces de forma consecutiva.
 * **Rehacer (Ctrl + Y / Cmd + Shift + Z):** Vuelve a aplicar la acción que fue deshecha.
@@ -1270,16 +1330,16 @@ El Editor Puck dispone de un historial de acciones en sesión:
 > **Nota importante:** El historial de deshacer/rehacer es exclusivo de la sesión activa de edición. Al hacer clic en **"Guardar Borrador"** o al cerrar el editor, el historial se reinicia y no es posible revertir los cambios guardados mediante esta función.
 
 > **[Captura: Botones Deshacer Rehacer]**
-> *Botones de deshacer y rehacer en la barra de herramientas superior del Editor Puck.*
+> *Botones de deshacer y rehacer en la barra de herramientas superior del Editor Visual.*
 >
 > **[Captura: Botones Deshacer Rehacer (Móvil)]**
-> *Botones de deshacer y rehacer en la barra de herramientas superior del Editor Puck. (Vista en dispositivo móvil).*
+> *Botones de deshacer y rehacer en la barra de herramientas superior del Editor Visual. (Vista en dispositivo móvil).*
 
 #### 12.3.4. Edición de la Cabecera y Pie de Página Globales
 
 La cabecera y el pie de página son componentes institucionales globales. Su edición está disponible para el rol **Editor base** y para los **Roles hijos** a quienes el Administrador haya habilitado explícitamente este permiso.
 
-1. **Acceso:** Desde el botón flotante de edición en cualquier página, seleccionar la opción **"Editar cabecera"** o **"Editar pie"**.
+1. **Acceso:** Desde el menú del botón flotante de edición en cualquier página, el usuario debe seleccionar la opción **"Editar cabecera"** o **"Editar pie"**.
 
 > **[Captura: Menú Editar Cabecera]**
 > *Opción de edición de cabecera en el menú flotante del editor.*
@@ -1287,29 +1347,46 @@ La cabecera y el pie de página son componentes institucionales globales. Su edi
 > **[Captura: Menú Editar Cabecera (Móvil)]**
 > *Opción de edición de cabecera en el menú flotante del editor. (Vista en dispositivo móvil).*
 
-2. **Lienzo de cabecera/pie:** Se abrirá el Editor Puck en modo de edición del componente global seleccionado. Los cambios aquí realizados se propagarán a **todas las páginas del portal simultáneamente**.
+2. **Lienzo de cabecera/pie:** Se abrirá el Editor Visual en modo de edición del componente global seleccionado. Los cambios aquí realizados se propagarán a **todas las páginas del portal simultáneamente**.
 
 > **⚠️ Advertencia:** Dado que la cabecera y el pie son globales, cualquier modificación aprobada afectará la apariencia de toda la plataforma. Se recomienda especial cuidado y la previsualización detallada antes de enviar a revisión.
 
 3. **Guardado:** Al finalizar, se debe hacer clic en **"Guardar Borrador"** y enviar a revisión. El Administrador deberá aprobar los cambios antes de que sean visibles en el portal.
 
 
-## 13. Reportes
+## 13. Reportes y visualización de recursos
 
-### 13.1. Uso de los tableros de Power BI en la Intranet
-Los Directores y Subdirectores pueden acceder a la sección de **Estadísticas** en la Intranet. Allí encontrarán tableros interactivos embebidos. Utilizando los selectores internos del tablero (filtros por año, región o sector), la gráfica se actualizará en tiempo real sin recargar la página.
+La plataforma ofrece múltiples formas de consultar y explorar la información generada por el observatorio. Dado que las páginas son editables mediante bloques, los editores pueden disponer estos componentes en distintas secciones según los requerimientos del momento:
 
-> **[Captura: Imagen]**
+### 13.1. Uso de tableros BI en la Intranet (Power BI)
+En las secciones analíticas de la Intranet, los directivos y funcionarios autorizados pueden consultar tableros interactivos de Power BI embebidos. Utilizando los controles internos del tablero (filtros por período, región o sector), los gráficos y tablas se actualizan en tiempo real sin recargar la página.
+
+> **[Captura: Tablero BI]**
 > *Tablero interactivo de Power BI embebido en la Intranet, detallando los filtros de segmentación de datos disponibles para el análisis.*
 >
-> **[Captura: Imagen (Móvil)]**
+> **[Captura: Tablero BI (Móvil)]**
 > *Tablero interactivo de Power BI embebido en la Intranet, detallando los filtros de segmentación de datos disponibles para el análisis. (Vista en dispositivo móvil).*
 
-### 13.2. Generación y visualización de indicadores dinámicos
-El observatorio calcula y actualiza automáticamente los indicadores de pertinencia e inserción laboral según la carga masiva de datos realizada por el administrador, garantizando que la alta gerencia visualice siempre la información más reciente al momento de su consulta.
+### 13.2. Visor de PDFs y Documentos Normativos
+El componente de visor de documentos permite a los usuarios leer y revisar archivos PDF oficiales (boletines, resoluciones, manuales o informes) directamente dentro de la interfaz del portal, con controles integrados de navegación de páginas y opción de lectura inmersiva.
 
-### 13.3. Descarga de boletines y presentaciones en PDF
-Dentro de la Intranet y el Sitio Web, los documentos de análisis cualitativo elaborados por el OLO cuentan con un botón de **"Descargar Documento"**. Los archivos se suministran en formato PDF estandarizado, listos para su difusión y análisis.
+> **[Captura: Visor de PDF]**
+> *Visor de documentos y publicaciones en PDF integrado en la página.*
+>
+> **[Captura: Visor de PDF (Móvil)]**
+> *Visor de documentos y publicaciones en PDF integrado en la página. (Vista en dispositivo móvil).*
+
+### 13.3. Visor de Videos y Recursos Multimedia
+A través del bloque de recursos visuales, los usuarios pueden reproducir contenido audiovisual institucional y cápsulas informativas directamente en la página, con controles de reproducción estándar y adaptabilidad a dispositivos móviles.
+
+> **[Captura: Visor de Videos]**
+> *Bloque de recursos audiovisuales con reproductor de video institucional.*
+>
+> **[Captura: Visor de Videos (Móvil)]**
+> *Bloque de recursos audiovisuales con reproductor de video institucional. (Vista en dispositivo móvil).*
+
+### 13.4. Descarga directa de archivos y boletines
+En las distintas páginas del portal y de la Intranet, los documentos cuentan con botones estandarizados de **"Descargar Documento"** o enlaces de descarga directa. Los archivos se suministran en formatos estandarizados (como PDF o planillas), listos para su consulta y archivo fuera de línea.
 
 ---
 
@@ -1340,37 +1417,37 @@ Si un editor o administrador intenta eliminar una página hacia la cual apuntan 
 
 **Situación:** Alerta de "Correo institucional inválido".
 **Posible causa:** Intento de inicio de sesión con un correo fuera del dominio `@sena.edu.co`.
-**Acción:** Ingresar estrictamente la cuenta corporativa oficial asignada por la entidad.
+**Acción recomendada:** El usuario debe ingresar estrictamente la cuenta corporativa oficial asignada por la entidad.
 
 **Situación:** Alerta de "Credenciales incorrectas".
 **Posible causa:** Se ha digitado mal la contraseña o el correo electrónico.
-**Acción:** Verificar la escritura correcta de los datos o utilizar la opción "Recuperar contraseña".
+**Acción recomendada:** Se debe verificar la escritura correcta de los datos o hacer uso de la opción "Recuperar contraseña".
 
 **Situación:** Mensaje de "Permisos insuficientes".
 **Posible causa:** El rol asignado al usuario no tiene autorización para acceder a esa URL o ejecutar esa acción.
-**Acción:** Solicitar al Administrador del sistema la revisión y asignación del permiso correspondiente.
+**Acción recomendada:** El usuario debe solicitar al Administrador del sistema la revisión y asignación del permiso correspondiente.
 
 ### 14.5. Mensajes de Error Adicionales
 
 **Situación:** Mensaje de "Sesión expirada. Por favor, inicie sesión de nuevo."
 **Posible causa:** La sesión del usuario estuvo inactiva durante más de 30 minutos y el sistema la cerró automáticamente por seguridad.
-**Acción:** Hacer clic en el botón de inicio de sesión e ingresar las credenciales nuevamente. El trabajo no guardado en el editor puede haberse perdido; revisar si el sistema conservó el último borrador guardado.
+**Acción recomendada:** Se debe hacer clic en el botón de inicio de sesión e ingresar las credenciales nuevamente. Si existía trabajo no guardado en el editor, el usuario debe comprobar si el sistema conservó el último borrador guardado.
 
 **Situación:** Error al cargar el archivo en la Carga Masiva ("Formato de archivo no válido").
 **Posible causa:** El archivo cargado no es un `.xlsx` válido, está corrupto o fue generado con una versión de Excel incompatible.
-**Acción:** Descargar nuevamente la plantilla oficial desde el módulo de carga, trasladar los datos al nuevo archivo y volver a intentarlo.
+**Acción recomendada:** Se debe descargar nuevamente la plantilla oficial desde el módulo de carga, trasladar los datos al nuevo archivo y repetir la operación.
 
 **Situación:** El tablero de Power BI en la Intranet no carga o aparece en blanco.
 **Posible causa:** (1) La conexión a Internet es inestable o lenta. (2) La sesión de Power BI expiró internamente.
-**Acción:** (1) Verificar la conexión a Internet (se recomiendan al menos 10 Mbps para tableros analíticos). (2) Recargar la página con F5. (3) Si el problema persiste, cerrar sesión y volver a iniciarla.
+**Acción recomendada:** (1) El usuario debe verificar la conexión a Internet (se recomiendan al menos 10 Mbps para tableros analíticos). (2) Se debe recargar la página con la tecla F5. (3) Si la eventualidad persiste, se debe cerrar sesión y volver a iniciarla.
 
-**Situación:** El Editor Puck no carga o aparece en blanco al intentar editar una página.
+**Situación:** El Editor Visual no carga o aparece en blanco al intentar editar una página.
 **Posible causa:** Caché del navegador desactualizado o incompatibilidad con una versión de navegador antigua.
-**Acción:** Limpiar la caché del navegador (Ctrl + Shift + Delete) y recargar la página. Verificar que el navegador cumpla los requisitos mínimos de la sección 6.2.
+**Acción recomendada:** Se debe limpiar la caché del navegador (Ctrl + Shift + Delete) y recargar la página, verificando que el navegador cumpla con los requisitos mínimos de la sección 6.2.
 
 **Situación:** Mensaje de "Cuenta suspendida".
 **Posible causa:** El Administrador ha suspendido la cuenta del usuario.
-**Acción:** Contactar directamente al Administrador del sistema para conocer el motivo de la suspensión y solicitar la reactivación si corresponde.
+**Acción recomendada:** El usuario debe contactar directamente al Administrador del sistema para conocer el motivo de la suspensión y solicitar la reactivación correspondiente.
 
 ---
 
@@ -1387,9 +1464,9 @@ Si un editor o administrador intenta eliminar una página hacia la cual apuntan 
 **Acción:** El editor debe enviar la página a revisión y esperar a que el Administrador la apruebe definitivamente para su publicación.
 
 ### 15.3. Bloqueo al intentar eliminar páginas
-**Situación:** El sistema impide eliminar la página de "Inicio" u otras páginas similares.
-**Posible causa:** Se está intentando eliminar una página base (de fábrica), las cuales son inmutables por políticas de seguridad e integridad estructural.
-**Acción:** No se requiere ninguna acción; las páginas base no deben ni pueden ser eliminadas por ningún rol en el sistema.
+**Situación:** El sistema no muestra la opción o bloquea el borrado de una página.
+**Posible causa:** Se está intentando eliminar una ruta fija del sistema (como las interfaces de inicio de sesión o rutas administrativas), o bien la página seleccionada cuenta con enlaces activos en menús u otras secciones que provocarían errores de navegación 404.
+**Acción:** Las rutas fijas del sistema no son eliminables. Si se trata de una página de contenido, se deben retirar primero todos los enlaces activos que apunten hacia ella en el menú institucional y en las demás páginas antes de proceder con el borrado.
 
 ### 15.4. Imposibilidad de crear nuevas secciones
 **Situación:** Un editor no encuentra o no puede usar la opción para crear páginas nuevas.
@@ -1398,7 +1475,7 @@ Si un editor o administrador intenta eliminar una página hacia la cual apuntan 
 
 ### 15.5. Timeout de Sesión y Pérdida de Trabajo No Guardado
 
-**Situación:** El editor cierra el navegador o la sesión expira mientras tenía cambios sin guardar en el Editor Puck.
+**Situación:** El editor cierra el navegador o la sesión expira mientras tenía cambios sin guardar en el Editor Visual.
 **Posible causa:** Se cerró el navegador accidentalmente, o la sesión expiró por inactividad antes de guardar el borrador.
 **Acción:** Al volver a iniciar sesión y acceder a la página que se estaba editando, el sistema intentará recuperar el último borrador guardado. Los cambios realizados después del último guardado manual no podrán recuperarse. Se recomienda usar el botón **"Guardar Borrador"** con frecuencia durante sesiones de edición largas.
 
@@ -1413,24 +1490,22 @@ El presente glosario define y consolida de forma exclusiva los términos, concep
 * **Bloque de Contenido:** Componente prediseñado de interfaz (textos, imágenes, tarjetas informativas, carruseles, acordeones o enlaces) que los editores configuran e incorporan en el editor visual para maquetar las páginas del Sitio Web y la Intranet.
 * **Borrador (Modo de Borrador):** Estado de trabajo privado en el que los editores maquetan y estructuran una página sin que los cambios sean visibles al público o en la Intranet, hasta que sean enviados a revisión y aprobados por el Administrador.
 * **Botón Flotante (Floating Action Button):** Botón circular ubicado en la interfaz pública que despliega las opciones rápidas de edición, creación y eliminación de páginas para los usuarios con rol de Editor.
-* **Carga Masiva en Excel:** Función exclusiva del Administrador para ingresar o actualizar grandes volúmenes de estadísticas, datos ocupacionales e indicadores mediante planillas de cálculo en formato `.xlsx`.
-* **CNO (Clasificación Nacional de Ocupaciones):** Estructura de clasificación ocupacional utilizada por el SENA para agrupar y organizar las ocupaciones en el mercado laboral colombiano.
+* **Carga Masiva en Excel:** Función exclusiva del Administrador para ingresar o actualizar grandes volúmenes de datos institucionales, estadísticas e indicadores mediante planillas de cálculo en formato `.xlsx`.
 * **Contraseña (Contraseña Robusta):** Clave requerida para el inicio de sesión institucional, la cual debe cumplir estrictamente con los lineamientos de seguridad establecidos (mínimo 12 caracteres, mayúsculas, minúsculas, números y caracteres especiales).
-* **CUOC (Clasificación Única de Ocupaciones para Colombia):** Marco taxonómico oficial del Estado colombiano que clasifica las ocupaciones del país para estandarizar el mercado laboral y formativo.
 * **Dashboard (Tablero Principal):** Pantalla de inicio del Panel Administrativo que resume en tiempo real el estado del sistema mediante tarjetas de métricas numéricas y gráficos de actividad.
 * **Descarte de Versión (Botón de Basurero):** Acción de control en la bandeja de revisión que permite al Administrador eliminar definitivamente un borrador no deseado o enviado por error. Exige registrar de forma obligatoria el motivo en la bitácora de auditoría y depura archivos huérfanos sin afectar la versión ya publicada.
 * **Diseño Responsivo:** Capacidad de las interfaces del portal web y de la Intranet para adaptarse de manera automática y fluida a diferentes tamaños y resoluciones de pantalla, tanto en computadores de escritorio como en tabletas y dispositivos móviles.
 * **Dominio Corporativo (`@sena.edu.co`):** Dominio de correo electrónico oficial e institucional exigido como requisito estricto y excluyente para la creación de cuentas, inicio de sesión y recuperación de contraseña del personal autorizado.
 * **Drag and Drop (Arrastrar y Soltar):** Acción interactiva que permite a los editores seleccionar un bloque de contenido con el ratón y moverlo hacia el lienzo de trabajo para maquetar la página.
-* **Editor Visual (Editor Puck):** Herramienta interactiva de maquetación que permite a los editores y administradores estructurar, diseñar y actualizar visualmente las páginas del Sitio Web y la Intranet mediante bloques y componentes prediseñados.
-* **Exportación (Descarga PDF):** Funcionalidad que permite al usuario consolidar los resultados de una búsqueda ocupacional en un documento portátil y formal.
-* **Ficha Técnica Ocupacional:** Vista detallada que despliega la información completa de una ocupación resultante de una búsqueda, incluyendo descripción, denominaciones, funciones y competencias.
-* **Filtros Avanzados:** Herramientas de segmentación dinámica ubicadas en los paneles laterales del buscador, que permiten cruzar variables como Nivel de Cualificación o Área de Desempeño.
+* **Editor Visual:** Herramienta interactiva de maquetación que permite a los editores y administradores estructurar, diseñar y actualizar visualmente las páginas del Sitio Web y la Intranet mediante bloques y componentes prediseñados.
+* **Exportación (Descarga PDF):** Funcionalidad que permite al usuario consolidar los resultados de una búsqueda o consulta en un documento descargable en formato PDF u hoja de cálculo.
+* **Ficha Técnica / Vista en Detalle:** Pantalla o módulo que despliega la información detallada y completa de un registro seleccionado a través del buscador o catálogos interactivos.
+* **Filtros Avanzados:** Herramientas de segmentación dinámica que permiten refinar las búsquedas por áreas temáticas, niveles, categorías o palabras clave.
 * **Intranet Institucional:** Entorno privado del SENA con autenticación obligatoria para directivos, editores y administradores, destinado a la consulta de tableros analíticos gerenciales de Power BI, descarga de informes internos y maquetación de secciones institucionales.
 * **Modo de Solo Lectura:** Modalidad de acceso asignada a Directores y Subdirectores que les permite explorar tableros analíticos en la Intranet y descargar reportes, operando como usuarios autenticados pero sin facultades de edición ni acceso al Panel Administrativo.
 * **OLO (Observatorio Laboral y Ocupacional):** Instancia del SENA encargada de recolectar, analizar y divulgar información y estadísticas sobre el mercado laboral, las ocupaciones y la pertinencia de la formación en Colombia.
-* **Página Base (Página de Fábrica):** Página estructural e indispensable del sistema (como Inicio, Tasas de ocupación, Matrices de pertinencia o Encuestas) blindada permanentemente para que ningún usuario ni rol pueda eliminarla, asegurando la estabilidad del portal.
-* **Páginas Dinámicas:** Páginas y secciones adicionales creadas por los usuarios autorizados en la plataforma, las cuales sí pueden ser eliminadas siempre que no cuenten con enlaces activos que provoquen enlaces rotos.
+* **Rutas Fijas del Aplicativo:** Vistas y pantallas programadas en el código base que no se gestionan a través del editor visual (como las interfaces de inicio de sesión, recuperación de credenciales y las rutas del Panel Administrativo), las cuales no pueden ser alteradas ni eliminadas desde el entorno de edición.
+* **Páginas Dinámicas y Gestionables:** Páginas y secciones de contenido del Sitio Web público y de la Intranet que pueden maquetarse y actualizarse mediante el editor visual, y que pueden ser eliminadas siempre que no cuenten con enlaces activos que provoquen enlaces rotos.
 * **Panel Administrativo:** Entorno web privado y de acceso exclusivo para el rol Administrador (`/admin`), desde el cual se gestionan usuarios, se crean roles derivados de editor, se asignan permisos manuales, se gestiona la bandeja de revisión y se revisa la auditoría.
 * **Power BI:** Herramienta de visualización analítica de datos integrada en la Intranet para que directores y administradores consulten tableros interactivos de indicadores de inserción laboral y pertinencia educativa.
 * **Preguntas de Seguridad:** Método de comprobación de identidad configurado por cada funcionario en el primer ingreso, utilizado para validar al titular de la cuenta durante el procedimiento de recuperación de contraseña ante olvidos.
@@ -1439,4 +1514,7 @@ El presente glosario define y consolida de forma exclusiva los términos, concep
 * **Respaldo de Base de Datos (Backup):** Copia de seguridad integral de la información del sistema generada desde el Panel Administrativo y empaquetada en un archivo comprimido con marca de tiempo.
 * **Rol Hijo / Derivado de Editor:** Rol personalizado creado exclusivamente bajo la estructura de editor con el prefijo «Editor [Nombre]», el cual nace sin permisos por defecto y al que el Administrador le asigna manualmente permisos específicos sobre páginas o secciones.
 * **SENA (Servicio Nacional de Aprendizaje):** Entidad pública colombiana de formación técnica y profesional, titular de la plataforma tecnológica y responsable del Observatorio Laboral y Ocupacional.
-* **Sitio Web Público:** Portal web de libre acceso y consulta abierta para la ciudadanía y comunidad en general, donde se consultan ocupaciones, boletines y cifras.
+* **Sitio Web Público:** Portal web de libre acceso y consulta abierta para la ciudadanía y comunidad en general, donde se consultan páginas dinámicas, boletines, estadísticas y contenidos institucionales.
+* **Tablero BI (Power BI):** Módulo interactivo de análisis de datos integrado en la plataforma que permite visualizar gráficos dinámicos y métricas institucionales con filtros en tiempo real.
+* **Visor de Documentos y PDFs:** Componente de interfaz que permite visualizar, leer y explorar documentos oficiales, boletines y publicaciones en formato PDF directamente en la pantalla sin descargarlos obligatoriamente.
+* **Visor de Videos:** Componente interactivo para la reproducción de recursos audiovisuales institucionales y cápsulas de video integradas en las páginas del portal.
