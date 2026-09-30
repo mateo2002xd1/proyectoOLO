@@ -128,7 +128,7 @@ export function Header({
         url.hash = blockId;
       }
       if (texto) {
-        url.searchParams.set('resaltar', texto.slice(0, 60));
+        url.searchParams.set('resaltar', texto.slice(0, 120));
       }
 
       router.push(url.pathname + url.search + url.hash);

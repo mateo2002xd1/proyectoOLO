@@ -119,9 +119,12 @@ let fechaCacheIndice = 0;
  */
 export function obtenerIndiceBusqueda(): Promise<PaginaIndiceBusqueda[]> {
   const AHORA = Date.now();
-  
-  // Reutiliza la promesa si existe y tiene menos de 5 minutos
-  if (cachePromesaIndice && AHORA - fechaCacheIndice < 5 * 60 * 1000) {
+  // En desarrollo, caché de 1 minuto para que los cambios del backend se reflejen rápido.
+  // En producción, 5 minutos.
+  const TTL_MS = process.env.NODE_ENV === 'development' ? 60_000 : 5 * 60_000;
+
+  // Reutiliza la promesa si existe y no ha expirado
+  if (cachePromesaIndice && AHORA - fechaCacheIndice < TTL_MS) {
     return cachePromesaIndice;
   }
 

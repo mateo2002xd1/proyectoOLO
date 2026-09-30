@@ -57,10 +57,29 @@ export function resaltarCoincidenciaTexto(
     pos = idx + qLimpia.length;
   }
 
-  // 2. Si no hubo coincidencia continua o tiene varias palabras, buscar palabras individuales
+  // 1.5. Frase difusa: permite signos de puntuación entre palabras
+  // Ej.: buscar "Aprendizaje SENA" encuentra "Aprendizaje (SENA)" en el texto.
+  if (rangos.length === 0 && qLimpia.includes(' ')) {
+    const palabrasQ2 = qLimpia.split(/\s+/).filter((p) => p.length >= 2);
+    if (palabrasQ2.length >= 2) {
+      const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const patronFuzzy = palabrasQ2.map(escapeRe).join('[\\s\\W]*');
+      try {
+        const reFuzzy = new RegExp(patronFuzzy, 'g');
+        let mFuzzy: RegExpExecArray | null;
+        while ((mFuzzy = reFuzzy.exec(textoNorm)) !== null) {
+          rangos.push({ inicio: mFuzzy.index, fin: mFuzzy.index + mFuzzy[0].length });
+          if (mFuzzy[0].length === 0) { reFuzzy.lastIndex++; }
+        }
+      } catch { /* ignorar expresión regular inválida */ }
+    }
+  }
+
+  // 2. Si no hubo coincidencia, buscar palabras individuales significativas (>= 3 chars)
+  // Se excluyen artículos/preposiciones cortas ("el", "de") para no resaltar todo el texto.
   if (rangos.length === 0) {
     const palabras = Array.from(
-      new Set(qLimpia.split(/\s+/).filter((p) => p.length >= 2))
+      new Set(qLimpia.split(/\s+/).filter((p) => p.length >= 3))
     );
     for (const palabra of palabras) {
       let pPos = 0;
@@ -243,9 +262,14 @@ export function aplicarDestello(elemento: HTMLElement, textoBuscado?: string): v
   // excepciones cuando el rango cruza límites de elementos hijos).
   const textoContenido = (elemento.textContent || '').trim();
   const terminoTrim = textoBuscado?.trim() ?? '';
+  const esBotonOLink = ['A', 'BUTTON'].includes(elemento.tagName) || !!elemento.closest('button, a, [role="button"], .btn, .boton');
+  const esCorto = textoContenido.length <= 60;
+
   const usarMarkPreciso =
     terminoTrim.length > 0 &&
-    textoContenido.length > terminoTrim.length + 4;
+    textoContenido.length > terminoTrim.length + 4 &&
+    !esBotonOLink &&
+    !esCorto;
 
   let markInyectado: HTMLElement | null = null;
 
@@ -260,11 +284,14 @@ export function aplicarDestello(elemento: HTMLElement, textoBuscado?: string): v
     let nodo: Text | null;
     let nodoEncontrado: Text | null = null;
     let idxEnOriginal = -1;
+    // Por defecto la longitud del fragmento a marcar es la del término buscado;
+    // el paso 3 (fuzzy) puede sobreescribirla si la coincidencia incluye puntuación extra.
+    let longitudCoincidencia = terminoTrim.length;
 
     while ((nodo = walker.nextNode() as Text | null)) {
       const textoNodo = nodo.nodeValue || '';
 
-      // 1. Intentar coincidencia directa (case-insensitive) — índice correcto en el DOM
+      // 1. Coincidencia directa case-insensitive — índice correcto en el DOM
       const idxDirecto = textoNodo.toLowerCase().indexOf(terminoTrim.toLowerCase());
       if (idxDirecto !== -1) {
         nodoEncontrado = nodo;
@@ -272,11 +299,13 @@ export function aplicarDestello(elemento: HTMLElement, textoBuscado?: string): v
         break;
       }
 
-      // 2. Fallback: coincidencia insensible a tildes
+      // Normalizar una sola vez para los pasos 2 y 3
       const textoNodoNorm = textoNodo
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
         .toLowerCase();
+
+      // 2. Fallback: coincidencia insensible a tildes
       const idxNorm = textoNodoNorm.indexOf(terminoNorm);
       if (idxNorm !== -1) {
         nodoEncontrado = nodo;
@@ -285,6 +314,24 @@ export function aplicarDestello(elemento: HTMLElement, textoBuscado?: string): v
         idxEnOriginal = idxNorm;
         break;
       }
+
+      // 3. Frase difusa: permite signos de puntuación/paréntesis entre palabras
+      // Cubre casos como buscar "Aprendizaje SENA" cuando el DOM tiene "Aprendizaje (SENA)"
+      const palabrasSignificativas = terminoNorm.split(/\s+/).filter((p) => p.length >= 3);
+      if (palabrasSignificativas.length >= 2) {
+        const escRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const patronFuzzy = palabrasSignificativas.map(escRe).join('[\\s\\W]*');
+        try {
+          const reFuzzy = new RegExp(patronFuzzy);
+          const mFuzzy = reFuzzy.exec(textoNodoNorm);
+          if (mFuzzy) {
+            nodoEncontrado = nodo;
+            idxEnOriginal = mFuzzy.index;
+            longitudCoincidencia = mFuzzy[0].length; // puede incluir puntuación extra
+            break;
+          }
+        } catch { /* ignorar expresión regular inválida */ }
+      }
     }
 
     if (nodoEncontrado !== null && idxEnOriginal !== -1) {
@@ -292,8 +339,8 @@ export function aplicarDestello(elemento: HTMLElement, textoBuscado?: string): v
         // Split manual: más robusto que surroundContents
         const textoOriginal = nodoEncontrado.nodeValue ?? '';
         const antes = textoOriginal.substring(0, idxEnOriginal);
-        const coincidencia = textoOriginal.substring(idxEnOriginal, idxEnOriginal + terminoTrim.length);
-        const despues = textoOriginal.substring(idxEnOriginal + terminoTrim.length);
+        const coincidencia = textoOriginal.substring(idxEnOriginal, idxEnOriginal + longitudCoincidencia);
+        const despues = textoOriginal.substring(idxEnOriginal + longitudCoincidencia);
 
         const mark = document.createElement('mark');
         mark.textContent = coincidencia;
