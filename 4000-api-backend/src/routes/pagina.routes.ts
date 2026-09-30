@@ -770,3 +770,4 @@ router.get('/publicadas', requireAuth, PaginaController.listarPublicadas);
 router.post('/:slug/restaurar', requierePermisoPagina('puedePublicar'), PaginaController.restaurar);
 
 export default router;
+
