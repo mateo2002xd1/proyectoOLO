@@ -46,7 +46,7 @@ const ENTIDADES_DE_ACCESO: EntidadAuditable[] = ['usuario', 'rol', 'configuracio
  */
 export const REGLAS_POR_CATEGORIA: Record<CategoriaAuditoria, ReglaDeCategoria[]> = {
   editorial: [
-    { acciones: ['crear', 'actualizar', 'guardar_borrador', 'enviar_revision'], entidades: ENTIDADES_DEL_EDITOR },
+    { acciones: ['crear', 'actualizar', 'guardar_borrador', 'autoguardar_borrador', 'enviar_revision'], entidades: ENTIDADES_DEL_EDITOR },
   ],
   administracion: [{ acciones: ['rechazar', 'aprobar', 'publicar', 'despublicar'] }],
   seguridad: [

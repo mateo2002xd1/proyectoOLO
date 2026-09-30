@@ -46,14 +46,18 @@ export async function obtenerVersionEditable(
 /**
  * Guarda el layout de Puck como una nueva versión borrador.
  * El backend auto-crea la página si el slug no existe.
+ *
+ * `automatico` es el autoguardado del editor: la bitácora lo escribe como
+ * `autoguardar_borrador` y la API no deja que saque de la cola una versión en revisión.
  */
 export async function guardarBorrador(
   slug: string,
-  contenido: ContenidoPagina
+  contenido: ContenidoPagina,
+  { automatico = false }: { automatico?: boolean } = {}
 ): Promise<{ versionId: string; estado: EstadoPagina } | null> {
   const res = await apiClient.post<{ version?: { id: string; estado: EstadoPagina } }>(
     `/paginas/${slug}/borrador`,
-    { contenido }
+    automatico ? { contenido, automatico } : { contenido }
   );
   if (!res?.version?.id) return null;
   return { versionId: res.version.id, estado: res.version.estado };

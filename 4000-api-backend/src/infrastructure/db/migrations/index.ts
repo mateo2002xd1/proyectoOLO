@@ -38,6 +38,9 @@ import * as cortesHuellaRepetible from './034-cortes-ocupacionales-huella-repeti
 import * as tendenciaAnioLibre from './035-tendencia-anio-libre';
 import * as eliminarCmsTradicional from './036-eliminar-cms-tradicional';
 import * as tendenciaClavesUuid from './037-tendencia-ocupacional-claves-uuid';
+import * as alertasInversionCatalogos from './038-alertas-inversion-catalogos';
+import * as alertasInversionProyectos from './039-alertas-inversion-proyectos';
+import * as auditoriaAutoguardado from './040-auditoria-autoguardado';
 
 export interface Migracion {
   nombre: string;
@@ -86,6 +89,9 @@ const migraciones: Migracion[] = [
   tendenciaAnioLibre,
   eliminarCmsTradicional,
   tendenciaClavesUuid,
+  alertasInversionCatalogos,
+  alertasInversionProyectos,
+  auditoriaAutoguardado,
 ];
 
 const TABLA_CONTROL = 'migraciones_aplicadas';

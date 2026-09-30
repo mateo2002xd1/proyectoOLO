@@ -8,13 +8,20 @@ import { uuidONulo } from '../../shared/uuid';
 /**
  * Guarda el contenido del editor (sanitizado) como borrador: crea la página si no existía, reutiliza
  * la última versión si aún no está publicada ni archivada y, si lo está, abre una nueva.
+ *
+ * Con `automatico` (el autoguardado del editor) no toca una versión en revisión: guardar
+ * encima la devuelve a borrador y la saca de la cola de quien aprueba, y eso tiene que
+ * decidirlo una persona pulsando «Guardar», no un temporizador. Pasa, por ejemplo, con el
+ * editor abierto en dos pestañas: una envía y la otra, con cambios viejos, seguía
+ * autoguardando.
  */
 export const guardarBorrador = async (
   slug: string,
   contenido: any,
   userId: string,
   ambito: Ambito,
-  tx?: Transaction
+  tx?: Transaction,
+  { automatico = false }: { automatico?: boolean } = {}
 ) => {
   let pagina = await PaginaRepository.findBySlug(slug, ambito, tx);
   const paginaAnterior = pagina ? pagina.toJSON() : null;
@@ -32,6 +39,13 @@ export const guardarBorrador = async (
 
   const ultimaVersion = await PaginaRepository.findUltimaVersion(pagina.id, tx);
   const versionAnterior = ultimaVersion ? ultimaVersion.toJSON() : null;
+
+  if (automatico && ultimaVersion?.estado === 'en_revision') {
+    throw Object.assign(
+      new Error('La versión está en revisión: el autoguardado no la devuelve a borrador'),
+      { status: 409 }
+    );
+  }
   
   // Sanitizar el contenido antes de persistirlo: elimina scripts, event handlers
   // y URIs peligrosas de todos los campos HTML de los bloques Puck.
@@ -69,14 +83,24 @@ export const guardarBorrador = async (
     );
   }
 
-  // Limpiar en background los archivos subidos en esta sesión que no quedaron en el borrador
-  limpiarSubidasPendientes({
-    paginaId: pagina.id,
-    slug,
-    ambito,
-    usuarioId: uuidONulo(userId) || userId,
-  }).catch((err) => console.error('[Limpieza Borrador] Error limpiando subidas pendientes:', err));
+  // Limpiar en background los archivos subidos en esta sesión que no quedaron en el borrador.
+  //
+  // Dentro de una transacción espera a que confirme. La limpieza pregunta a la base qué
+  // rutas siguen en uso, y fuera de la transacción solo ve lo confirmado: lanzada antes,
+  // no veía la imagen que este mismo guardado acababa de meter en el borrador y la
+  // borraba de `uploads/`. Con el autoguardado guardando solo cada medio minuto, esa
+  // carrera dejaba de ser rara.
+  const paginaId = pagina.id;
+  const limpiar = () =>
+    limpiarSubidasPendientes({
+      paginaId,
+      slug,
+      ambito,
+      usuarioId: uuidONulo(userId) || userId,
+    }).catch((err) => console.error('[Limpieza Borrador] Error limpiando subidas pendientes:', err));
+
+  if (tx) tx.afterCommit(() => { void limpiar(); });
+  else void limpiar();
 
   return { pagina, version, paginaAnterior, versionAnterior };
 };
-

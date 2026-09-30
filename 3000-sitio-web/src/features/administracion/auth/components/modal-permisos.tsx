@@ -226,7 +226,7 @@ export function ModalPermisos({
               
               <div className="pt-2">
                 <Button type="button" onClick={() => setMostrarPermisos(true)}>
-                  Editar roles
+                  Editar rol
                 </Button>
               </div>
             </div>
@@ -250,7 +250,7 @@ export function ModalPermisos({
           {(rol && !mostrarPermisos) ? (
             <div className="flex h-full items-center justify-center">
               <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">
-                Haz clic en "Editar roles" para ver y modificar la lista.
+                Haz clic en "Editar rol" para ver y modificar la lista.
               </p>
             </div>
           ) : gruposAPintar.length === 0 ? (

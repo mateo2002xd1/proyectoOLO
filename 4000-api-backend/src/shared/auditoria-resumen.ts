@@ -223,6 +223,7 @@ const VERBO_DE_ACCION: Record<AccionAuditable, string> = {
   rechazar: 'Se rechazó',
   enviar_revision: 'Se envió a revisión',
   guardar_borrador: 'Se guardó',
+  autoguardar_borrador: 'Se guardó automáticamente',
   cambiar_password: 'Se cambió la contraseña de',
   autenticar: 'Inició sesión',
   expirar: 'Expiró',
@@ -343,6 +344,21 @@ const fraseDeBorrador = (d: Contexto): string | null => {
   return d.guardadoAutomatico
     ? `Guardado automático al enviar a revisión · ${cual}`
     : `El usuario guardó su edición en borrador · ${cual}`;
+};
+
+/**
+ * El autoguardado del editor (migración 040): lo que había en pantalla quedó en el
+ * borrador sin que nadie pulsara «Guardar». Misma forma de fila que `fraseDeBorrador`;
+ * lo único que cambia es que no se le atribuye la decisión a la persona.
+ */
+const fraseDeAutoguardado = (d: Contexto): string | null => {
+  if (!soloTrae(d.campos, ['slug', 'version', 'estado'])) return null;
+
+  const estado = campoDe(d.campos, 'estado');
+  if (estado && comoTextoONumero(estado.despues) !== 'borrador') return null;
+
+  const cual = versionDePagina(d.campos);
+  return cual ? `El editor guardó automáticamente el borrador · ${cual}` : null;
 };
 
 /**
@@ -859,6 +875,8 @@ const reglaPropia = (d: Contexto): string | null => {
 
     case 'guardar_borrador':
       return d.entidadTipo === 'pagina' ? fraseDeBorrador(d) : null;
+    case 'autoguardar_borrador':
+      return d.entidadTipo === 'pagina' ? fraseDeAutoguardado(d) : null;
     case 'enviar_revision':
       return d.entidadTipo === 'pagina' ? fraseDeEnvio(d) : null;
 

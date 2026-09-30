@@ -28,8 +28,8 @@ export function ResetSuccessView() {
       <AuthSuccessBadge />
       <AuthCardTitle
         className="mb-6"
-        title="Tu passcode se actualizó"
-        description="Ya puedes entrar al panel con tu nuevo passcode."
+        title="Tu contraseña se actualizó"
+        description="Ya puedes entrar al panel con tu nueva contraseña."
       />
       <Link href="/login" className={authNavyActionClass}>
         Ir a iniciar sesión

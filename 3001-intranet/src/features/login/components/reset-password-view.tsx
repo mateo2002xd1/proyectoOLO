@@ -72,15 +72,15 @@ export function ResetPasswordView() {
     // reglas que el primer ingreso. `currentPassword` no se mide contra la política
     // —es la que el usuario ya tiene, no la que está eligiendo—.
     if (!password) {
-      newErrors.password = 'El passcode es requerido';
+      newErrors.password = 'La contraseña es requerida';
     } else if (!cumplePolitica(password)) {
       newErrors.password = primerFallo(password) ?? '';
     }
 
     if (!confirmPassword) {
-      newErrors.confirm = 'Confirma tu passcode';
+      newErrors.confirm = 'Confirma tu contraseña';
     } else if (password !== confirmPassword) {
-      newErrors.confirm = 'Los passcodes no coinciden';
+      newErrors.confirm = 'Las contraseñas no coinciden';
     }
 
     setErrors(newErrors);
@@ -133,9 +133,9 @@ export function ResetPasswordView() {
             </>
           ) : (
             <>
-              <h1 className="rp-brand-title">Crea tu nuevo passcode</h1>
+              <h1 className="rp-brand-title">Crea tu nueva contraseña</h1>
               <p className="rp-brand-subtitle">
-                Elige un nuevo passcode personal y privado que solo tú conozcas para volver a acceder a tu cuenta.
+                Elige una nueva contraseña personal y privada que solo tú conozcas para volver a acceder a tu cuenta.
               </p>
             </>
           )}
@@ -146,7 +146,7 @@ export function ResetPasswordView() {
       <div className="rp-right">
         <div className="rp-card">
           <form onSubmit={handleSubmit} className="rp-form">
-            <h2 className="rp-card-title">Crea tu nuevo passcode</h2>
+            <h2 className="rp-card-title">Crea tu nueva contraseña</h2>
 
             {mode === 'forced' && (
               <PasswordField
@@ -163,7 +163,7 @@ export function ResetPasswordView() {
             <PasswordField
               id="password"
               classPrefix="rp"
-              label="Nuevo passcode"
+              label="Nueva contraseña"
               value={password}
               onChange={(v) => { setPassword(v); setErrors({}); }}
               error={errors.password}
@@ -173,7 +173,7 @@ export function ResetPasswordView() {
             <PasswordField
               id="confirmPassword"
               classPrefix="rp"
-              label="Ingresa nuevamente el passcode"
+              label="Ingresa nuevamente la contraseña"
               value={confirmPassword}
               onChange={(v) => { setConfirmPassword(v); setErrors({}); }}
               error={errors.confirm}

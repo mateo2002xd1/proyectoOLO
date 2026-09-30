@@ -27,7 +27,9 @@ export type AccionAuditable =
   | 'inactivar'
   // Migración 031 de la API.
   | 'bloquear'
-  | 'verificar_preguntas';
+  | 'verificar_preguntas'
+  // Migración 040 de la API: el guardado que hace el editor solo.
+  | 'autoguardar_borrador';
 
 /**
  * Las tres categorías del filtro que reemplaza a «Entidad».
@@ -127,6 +129,7 @@ export const ETIQUETA_ACCION: Record<AccionAuditable, string> = {
   rechazar: 'Rechazo',
   enviar_revision: 'Edición',
   guardar_borrador: 'Edición',
+  autoguardar_borrador: 'Autoguardado',
   cambiar_password: 'Cambio de contraseña',
   autenticar: 'Autenticación',
   expirar: 'Expiró',
@@ -215,6 +218,7 @@ export const VARIANTE_ACCION: Record<AccionAuditable, VarianteBadge> = {
   crear: 'brand',
   actualizar: 'brand',
   guardar_borrador: 'brand',
+  autoguardar_borrador: 'brand',
   enviar_revision: 'brand',
   despublicar: 'brand',
   cambiar_password: 'brand',
@@ -260,6 +264,9 @@ export interface OpcionAccion {
 export const OPCIONES_ACCION: OpcionAccion[] = [
   { value: 'crear', label: 'Creación', categoria: 'editorial' },
   { value: 'actualizar,guardar_borrador,enviar_revision', label: 'Edición', categoria: 'editorial' },
+  // Aparte de «Edición» a propósito: se escribe solo cada 30 s mientras alguien edita, y
+  // dentro de «Edición» taparía los guardados y envíos que sí decidió una persona.
+  { value: 'autoguardar_borrador', label: 'Autoguardado', categoria: 'editorial' },
   { value: 'rechazar', label: 'Rechazo', categoria: 'administracion' },
   { value: 'aprobar,publicar', label: 'Publicación', categoria: 'administracion' },
   { value: 'despublicar', label: 'Archivado', categoria: 'administracion' },

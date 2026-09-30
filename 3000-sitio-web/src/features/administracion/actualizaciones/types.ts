@@ -106,3 +106,29 @@ export interface FiltroHistorialTendencia {
   /** Código del periodo; vacío = todos. */
   periodo: string;
 }
+
+// ---------------------------------------------------------------------------
+// Alertas de inversión
+// ---------------------------------------------------------------------------
+
+export interface SeccionCiiu {
+  id: string;
+  letra: string;
+  nombre: string;
+}
+
+/** Los campos del formulario "Agregar manualmente" — un proyecto por envío. */
+export interface DatosProyectoInversionManual {
+  tipo: 'nuevo' | 'expansion';
+  descripcion: string;
+  empresa: string;
+  seccionId: string;
+  claseId: string | null;
+  fechaAnuncio: string;
+  fuenteUrl: string;
+  fuenteMedio: string | null;
+  inversionCop: number | null;
+  empleosEstimados: number | null;
+  departamento: string;
+  ciudad: string | null;
+}

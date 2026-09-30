@@ -161,6 +161,7 @@ const verificarCategoriasPuras = () => {
   comprobar('crear un usuario NO es editorial → seguridad', categoriaDe('crear', 'usuario'), 'seguridad');
   comprobar('editar una página → editorial', categoriaDe('actualizar', 'pagina'), 'editorial');
   comprobar('guardar borrador → editorial', categoriaDe('guardar_borrador', 'pagina'), 'editorial');
+  comprobar('autoguardado del editor → editorial', categoriaDe('autoguardar_borrador', 'pagina'), 'editorial');
   comprobar('enviar a revisión → editorial', categoriaDe('enviar_revision', 'pagina'), 'editorial');
   comprobar('modificar un usuario → seguridad', categoriaDe('actualizar', 'usuario'), 'seguridad');
   comprobar('modificar un rol → seguridad', categoriaDe('actualizar', 'rol'), 'seguridad');
