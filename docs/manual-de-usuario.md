@@ -57,14 +57,14 @@ El sistema es una aplicación web moderna y requiere navegadores con soporte com
 
 ### 6.3. Requisitos de Credenciales y Cuentas de Acceso
 Para acceder a los entornos privados (Panel Administrativo, Editor Visual e Intranet):
-* **Cuenta de correo obligatoria:** Debe pertenecer estrictamente al dominio corporativo `@sena.edu.co`. Cualquier intento de autenticación o registro con dominios públicos o ajenos es rechazado automáticamente por la plataforma OLO (ver procedimiento de acceso en [Sección 10.1](#101-acceso-y-autenticación) y resolución de alertas en [Sección 14.1](#141-problemas-de-acceso-y-autenticación)).
+* **Cuenta de correo obligatoria:** Debe pertenecer estrictamente al dominio corporativo `@sena.edu.co`. Cualquier intento de autenticación o registro con dominios públicos o ajenos es rechazado automáticamente por la plataforma OLO (ver procedimiento de acceso en [Sección 10.1](#101-ingreso-y-recuperación-de-contraseña) y resolución de alertas en [Sección 15.1](#151-problemas-de-acceso-por-bloqueo)).
 * **Contraseña robusta:** Debe satisfacer los 5 lineamientos de la política de seguridad de contraseñas de la plataforma:
   1. Longitud mínima de **12 caracteres**.
   2. Al menos una letra **mayúscula** (`A-Z`).
   3. Al menos una letra **minúscula** (`a-z`).
   4. Al menos un dígito **numérico** (`0-9`).
   5. Al menos un **carácter especial** o símbolo (`!@#$%^&*()_+-=[]{}|;:,.<>?`).
-  *(El ingreso y validación interactiva de credenciales se detalla en el paso a paso de autenticación y restablecimiento en [Sección 10.1.3](#1013-procedimiento-de-recuperación-de-contraseña-ambos-portales)).*
+  *(El flujo de primer ingreso, la validación interactiva de credenciales y el procedimiento de recuperación se detallan en [Sección 10.1.1](#1011-flujo-de-primer-ingreso-al-sistema-onboarding-y-configuración-inicial) y [Sección 10.1.4](#1014-procedimiento-de-recuperación-de-contraseña-ambos-portales)).*
 
 ---
 
@@ -216,33 +216,36 @@ El acceso al ecosistema tecnológico del Observatorio Laboral y Ocupacional (OLO
 #### 8.1.1. Portal Web Público (Cara visible)
 El portal web público es la plataforma principal que refleja el trabajo del Observatorio Laboral y Ocupacional (OLO). Es un entorno dinámico y adaptable donde se publican las páginas maquetadas con diversos componentes interactivos (buscadores de ocupaciones, visores de videos, visores de documentos PDF, tarjetas de indicadores y enlaces de descarga). La apariencia y distribución de los contenidos varían según las prioridades informativas del observatorio. Aunque su contenido principal es público y consultado por la ciudadanía sin requerir autenticación, el personal editorial y administrativo utiliza este mismo entorno como punto de acceso al sistema.
 
-#### 8.1.2. Acceso al Sistema desde el Sitio Web Público (Enlace a la Intranet)
-El Sitio Web Público no cuenta con un botón directo de "Iniciar Sesión" para la ciudadanía, ya que la navegación por todos sus contenidos es totalmente libre y abierta. Para los funcionarios registrados del SENA (Directores, Editores y Administradores), la vía de entrada institucional es el botón fijo **"Intranet"** en la cabecera (o el acceso directo a las rutas `/login` y `/admin`):
-* **Punto de acceso institucional:** Al presionar el botón **"Intranet"**, el personal es dirigido a la pantalla de autenticación corporativa donde ingresa con su cuenta `@sena.edu.co`.
-* **Alcance según el perfil del usuario:**
-  * *Editores:* Al autenticarse, disponen de permisos editoriales activos; cuando regresan o navegan por el Sitio Web Público o la Intranet, el sistema despliega el botón circular flotante (Speed Dial) para maquetar páginas, cabecera y pie.
-  * *Administradores:* Son dirigidos al Panel Administrativo (`/admin`), accediendo a la gestión de usuarios, roles, auditoría y revisión editorial.
-  * *Directores y Subdirectores:* Ingresan a la Intranet para consultar tableros analíticos e informes en modalidad de solo lectura, sin herramientas de edición ni acceso al panel administrativo.
+#### 8.1.2. Inicio de Sesión en el Sitio Web Público (Banner GOV.CO)
+El Sitio Web Público no cuenta con un botón directo de "Iniciar Sesión" para la ciudadanía, ya que la navegación por todos sus contenidos es totalmente libre y abierta. Para los funcionarios autorizados del SENA (Editores y Administradores), la vía de entrada para autenticarse en el Sitio Web es el enlace interactivo ubicado en la franja azul superior del Estado:
+* **Punto de acceso institucional (Banner GOV.CO):** En la parte superior de la página, dentro de la franja azul de GOV.CO, se ubica a la derecha el reloj interactivo con la **fecha y hora en vivo**. Al hacer clic sobre este texto (identificado con el mensaje de ayuda *"Iniciar sesión"*), el sistema redirige a la pantalla de acceso corporativo (`/login`).
 * **Credenciales requeridas:**
   * Correo electrónico corporativo con dominio `@sena.edu.co`.
   * Contraseña robusta configurada en la plataforma.
-* **Enlace de recuperación:** La pantalla de autenticación dispone del acceso directo para el restablecimiento de contraseñas ante olvidos *(¿Olvidaste tu contraseña?)*. *(Para consultar la guía visual paso a paso del acceso, ver [Sección 10.1.1: Acceso al Sistema desde el Sitio Web Público (Botón Intranet)](#1011-acceso-al-sistema-desde-el-sitio-web-público-botón-intranet)).*
+* **Redirección por rol (Exclusivo para el Sitio Web Público):**
+  * *Editores (y roles derivados de Editor):* Al validar sus credenciales y permisos editoriales, el sistema los redirige de vuelta a la página de **Inicio del Sitio Web Público** (`/inicio`), donde se activa y despliega el botón circular flotante (Speed Dial) para maquetar páginas y gestionar cabecera y pie.
+  * *Administradores:* Al contar con facultades de gobierno y acceso al panel (`acceso.panel`), el sistema los redirige de manera directa al **Panel Administrativo** (`/admin/dashboard`).
+  * *(Si una cuenta no posee permisos de edición ni acceso al panel, el sistema detiene el ingreso indicando que no cuenta con autorizaciones para este entorno).*
+* **Enlace de recuperación:** La pantalla de autenticación dispone del acceso directo para el restablecimiento de contraseñas ante olvidos *(¿Olvidaste tu contraseña?)*. *(Para consultar la guía visual paso a paso de este acceso, ver [Sección 10.1.2: Inicio de Sesión Habitual en el Sitio Web Público (Banner GOV.CO)](#1012-inicio-de-sesión-habitual-en-el-sitio-web-público-banner-govco)).*
+
+#### 8.1.3. Enlace Institucional a la Intranet (Botón Intranet)
+El botón fijo **"Intranet"** ubicado en la cabecera del portal (extremo superior derecho) no corresponde al inicio de sesión del Sitio Web Público, sino que constituye el enlace institucional permanente hacia el portal privado independiente de la Intranet del OLO. Al pulsarlo, el usuario es dirigido al entorno de la Intranet, cuya plataforma cuenta con su propio sistema de bloqueo y autenticación obligatoria para funcionarios.
 
 ### 8.2. Intranet del OLO
 
-#### 8.2.1. Inicio de Sesión en el Entorno Privado
-La Intranet es una plataforma privada orientada al seguimiento gerencial, análisis ocupacional y trabajo interno del SENA:
-* **Acceso restringido con autenticación obligatoria:** A diferencia del portal público, la Intranet no permite navegación anónima ni libre. Toda persona debe autenticarse para ingresar.
+#### 8.2.1. Inicio de Sesión en el Entorno Privado de la Intranet
+La Intranet es una plataforma privada e independiente orientada al seguimiento gerencial, análisis ocupacional y trabajo interno del SENA:
+* **Acceso restringido con autenticación obligatoria:** A diferencia del portal público, la Intranet no permite navegación anónima ni libre. Toda persona debe autenticarse para ingresar mediante su propio formulario de acceso.
 * **Perfiles habilitados:**
-  * *Directores y Subdirectores:* Ingresan como usuarios del OLO para consultar los módulos de información e indicadores ocupacionales en modalidad de solo lectura, manteniendo protegidos los datos y la estructura interna al no contar con permisos de edición ni facultades de administración.
-  * *Editores y Administradores:* Ingresan para maquetar secciones internas o realizar labores de supervisión según sus atribuciones.
-* **Credenciales de ingreso:** Correo corporativo `@sena.edu.co` y contraseña asignada. Al iniciar sesión, el sistema redirige al usuario a la página de inicio de la Intranet o a sus secciones asignadas según el rol, donde podrá consultar los contenidos e indicadores configurados en la plataforma. *(Para consultar la guía visual paso a paso del acceso a la Intranet, ver [Sección 10.1.2: Inicio de Sesión en la Intranet del OLO](#1012-inicio-de-sesión-en-la-intranet-del-olo)).*
+  * *Directores y Subdirectores:* Ingresan con cuenta corporativa `@sena.edu.co` para consultar los módulos de información, matrices e indicadores ocupacionales en modalidad de **solo lectura**, manteniendo protegida la información al no contar con permisos de edición ni administración.
+  * *Editores y Administradores:* Ingresan para maquetar secciones internas autorizadas o supervisar contenidos según sus atribuciones.
+* **Credenciales y validación:** Correo corporativo `@sena.edu.co` y contraseña asignada (requiere permiso de `acceso.intranet`). Al iniciar sesión exitosamente, el sistema despliega el entorno privado de la Intranet con los tableros analíticos e indicadores configurados. *(Para consultar la guía visual paso a paso del acceso a la Intranet, ver [Sección 10.1.3: Acceso e Inicio de Sesión Habitual en la Intranet del OLO](#1013-acceso-e-inicio-de-sesión-habitual-en-la-intranet-del-olo)).*
 
 ### 8.3. Procedimiento de Recuperación de Contraseña (Preguntas de Seguridad)
 El sistema del Observatorio Laboral y Ocupacional cuenta con un mecanismo autónomo de restablecimiento de contraseña ante olvidos o bloqueos, unificado para todos los funcionarios tanto en el Sitio Web como en la Intranet:
 * **Autonomía sin dependencia de correo externo:** A diferencia de plataformas que envían enlaces o tokens a buzones de correo externos, el aplicativo comprueba la identidad del titular validando las **tres preguntas de seguridad** parametrizadas obligatoriamente durante el primer ingreso (onboarding). Esto previene bloqueos por filtros de spam o falta de disponibilidad de servidores de correo externos.
 * **Política de seguridad:** Una vez validadas con éxito las respuestas correspondientes, el usuario puede establecer de inmediato una nueva contraseña que satisfaga los lineamientos de seguridad de la plataforma (longitud mínima de 12 caracteres, mayúsculas, minúsculas, números y caracteres especiales).
-* **Guía operativa paso a paso:** Para consultar el procedimiento interactivo en pantalla con las capturas de cada paso, remitirse a la **[Sección 10.1.3: Procedimiento de Recuperación de Contraseña (Ambos Portales)](#1013-procedimiento-de-recuperación-de-contraseña-ambos-portales)**.
+* **Guía operativa paso a paso:** Para consultar el procedimiento interactivo en pantalla con las capturas de cada paso, remitirse a la **[Sección 10.1.4: Procedimiento de Recuperación de Contraseña (Ambos Portales)](#1014-procedimiento-de-recuperación-de-contraseña-ambos-portales)**.
 
 ### 8.4. Creación y Registro Centralizado de Usuarios (Exclusivo Administrador)
 El sistema no cuenta con registro público autónomo; ninguna persona puede crear una cuenta por sí misma:
@@ -258,10 +261,10 @@ Cuando el Administrador crea una cuenta nueva, el funcionario debe completar obl
 Al crear la cuenta, el Administrador establece una **contraseña temporal** y la comunica de forma manual al funcionario a través del canal corporativo que considere apropiado (correo electrónico, mensaje de chat interno u otro medio). **El sistema no envía ningún correo automático de bienvenida.** La contraseña temporal no tiene fecha de expiración: permanece activa hasta que el funcionario la use para completar su primer ingreso.
 
 Al acceder por primera vez con estas credenciales provisorias, el sistema interrumpe el flujo de navegación habitual y obliga al funcionario a completar el protocolo de configuración inicial:
-* **Establecimiento de contraseña definitiva:** Registro de una clave personal e intransferible que cumpla con los 5 requisitos de la política de contraseñas robustas (ver [Sección 6.3](#63-política-de-contraseñas-robustas)).
+* **Establecimiento de contraseña definitiva:** Registro de una clave personal e intransferible que cumpla con los 5 requisitos de la política de contraseñas robustas (ver [Sección 6.3](#63-requisitos-de-credenciales-y-cuentas-de-acceso)).
 * **Parametrización de preguntas de seguridad:** Selección y respuesta obligatoria de tres preguntas que habilitan el mecanismo autónomo de recuperación de cuenta ante eventuales bloqueos u olvidos.
 
-Una vez validados estos datos, el sistema guarda la configuración definitiva y concede el acceso formal al portal o sección correspondiente según el rol asignado. *(Para consultar la guía visual paso a paso con las capturas de pantalla de este procedimiento, ver [Sección 10.1.4: Flujo de Primer Ingreso al Sistema (Onboarding y Configuración Inicial)](#1014-flujo-de-primer-ingreso-al-sistema-onboarding-y-configuración-inicial)).*
+Una vez validados estos datos, el sistema guarda la configuración definitiva y concede el acceso formal al portal o sección correspondiente según el rol asignado. *(Para consultar la guía visual paso a paso con las capturas de pantalla de este procedimiento, ver [Sección 10.1.1: Flujo de Primer Ingreso al Sistema (Onboarding y Configuración Inicial)](#1011-flujo-de-primer-ingreso-al-sistema-onboarding-y-configuración-inicial)).*
 
 ## 8.6. Cierre de Sesión y Expiración Preventiva
 
@@ -289,18 +292,19 @@ El sistema se compone de tres portales complementarios, cada uno con propósitos
 1. **Sitio Web Público:**
    * **Propósito:** Portal de acceso abierto y consulta libre para la ciudadanía, investigadores y comunidad general, que sirve a su vez como punto de enlace institucional hacia el entorno privado del observatorio.
    * **Controles y páginas fijas del sistema:**
+     * *Franja superior GOV.CO (Fecha y hora en vivo):* Barra azul fija superior donde se ubica el texto interactivo de fecha y hora, que sirve como punto de acceso para que el personal editorial y administrativo inicie sesión (`/login`) en el portal.
      * *Botón de Búsqueda (Buscador Global):* Control fijo e inamovible ubicado en la zona superior, diseñado para consultar en tiempo real ocupaciones, publicaciones y páginas de todo el observatorio sin depender de la maquetación de la página.
-     * *Botón de Acceso a la Intranet:* Enlace fijo permanente ubicado en la esquina superior derecha hacia el entorno privado del OLO, que sirve como puerta de acceso institucional hacia la pantalla de autenticación y los módulos internos para el personal del SENA.
+     * *Botón de Acceso a la Intranet:* Enlace fijo permanente ubicado en la esquina superior derecha del menú de navegación hacia el portal privado independiente de la Intranet del OLO.
      * *Páginas fijas del aplicativo:* Interfaces programadas de autenticación (`/login`, `/recuperar-password`) y pantallas de primer ingreso (onboarding), las cuales no forman parte de las páginas dinámicas y no pueden ser alteradas ni eliminadas desde el editor.
    * **Componentes ajustables de Cabecera y Pie de página:**
      * Tanto la cabecera como el pie de página funcionan mediante componentes maquetables del editor visual: los editores autorizados (a través de la opción de plantilla "Menú y pie") pueden personalizar los enlaces del menú, logos, redes y textos informativos. Estos componentes son flexibles y ajustables, pudiendo adaptarse a las necesidades informativas de la plataforma o configurarse según el diseño requerido.
    * **Área central dinámica:** Lienzo donde se despliegan los contenidos maquetados mediante bloques (artículos, cifras, visores y publicaciones).
 
 > **[Captura: Elementos Fijos Sitio Web]**
-> *Esquema general del Sitio Web Público mostrando la barra superior con los controles fijos (búsqueda e intranet), el área de contenido dinámico central y el pie de página.*
+> *Esquema general del Sitio Web Público mostrando la franja superior GOV.CO con el acceso por fecha y hora, los controles fijos (búsqueda e intranet), el área de contenido dinámico central y el pie de página.*
 >
 > **[Captura: Elementos Fijos Sitio Web (Móvil)]**
-> *Esquema general del Sitio Web Público mostrando la barra superior con los controles fijos (búsqueda e intranet), el área de contenido dinámico central y el pie de página. (Vista en dispositivo móvil).*
+> *Esquema general del Sitio Web Público mostrando la franja superior GOV.CO con el acceso por fecha y hora, los controles fijos (búsqueda e intranet), el área de contenido dinámico central y el pie de página. (Vista en dispositivo móvil).*
 
 2. **Panel Administrativo (`/admin`):**
    * **Propósito:** Entorno privado de gestión técnica, auditoría y control editorial de acceso exclusivo para el rol de Administrador.
@@ -398,18 +402,60 @@ Esta sección detalla de forma exhaustiva los flujos de trabajo de la plataforma
 
 ### 10.1. Ingreso y Recuperación de Contraseña
 
-#### 10.1.1. Acceso al Sistema desde el Sitio Web Público (Botón Intranet)
-El Sitio Web Público no requiere inicio de sesión para los ciudadanos que consultan la información. Para el personal del SENA (Editores, Administradores y Directivos), la puerta de entrada al entorno institucional es el botón fijo **"Intranet"** en la cabecera del portal.
+#### 10.1.1. Flujo de Primer Ingreso al Sistema (Onboarding y Configuración Inicial)
+Cuando el Administrador crea una cuenta nueva, asigna una contraseña temporal provisoria. Este procedimiento es de carácter obligatorio para todo funcionario nuevo del SENA (Editores, Administradores, Directores y Subdirectores) y se ejecuta una única vez antes de poder operar de forma habitual en la plataforma:
 
-1. **Ubicación del acceso:** En la cabecera (zona superior derecha) del Sitio Web Público, ubicar y hacer clic en el botón **"Intranet"**.
+1. **Inicio de sesión con contraseña temporal:** El funcionario accede a la pantalla de acceso del portal correspondiente (Sitio Web Público o Intranet, según su rol) e ingresa su correo corporativo `@sena.edu.co` junto con la contraseña temporal comunicada manualmente por el Administrador.
 
-> **[Captura: Botón Intranet en Cabecera]**
-> *Ubicación del botón 'Intranet' en la esquina superior derecha de la cabecera del Sitio Web Público.*
+> **[Captura: Login Primer Ingreso]**
+> *Formulario de inicio de sesión con las credenciales temporales.*
 >
-> **[Captura: Botón Intranet en Cabecera (Móvil)]**
-> *Ubicación del botón 'Intranet' en la esquina superior derecha de la cabecera del Sitio Web Público. (Vista en dispositivo móvil).*
+> **[Captura: Login Primer Ingreso (Móvil)]**
+> *Formulario de inicio de sesión con las credenciales temporales. (Vista en dispositivo móvil).*
 
-2. **Formulario de credenciales:** Al no contar con una sesión activa, el sistema dirigirá a la pantalla institucional de acceso (`/login`). Se debe ingresar el correo corporativo (estrictamente `@sena.edu.co`) en el primer campo de texto.
+2. **Detección automática del primer ingreso:** El sistema detecta que la cuenta tiene pendiente la configuración inicial de seguridad e interrumpe el flujo normal de redirección, mostrando obligatoriamente la pantalla de parametrización de cuenta (`/first-login`).
+
+> **[Captura: Pantalla Configuración Inicial]**
+> *Pantalla de configuración obligatoria que aparece tras el primer inicio de sesión.*
+>
+> **[Captura: Pantalla Configuración Inicial (Móvil)]**
+> *Pantalla de configuración obligatoria que aparece tras el primer inicio de sesión. (Vista en dispositivo móvil).*
+
+3. **Establecimiento de contraseña definitiva:** El sistema solicitará al funcionario crear su clave definitiva personal e intransferible. Se debe digitar la nueva contraseña en el primer campo y repetirla en el segundo campo de confirmación, cumpliendo estrictamente los 5 lineamientos de la política de seguridad (ver [Sección 6.3](#63-requisitos-de-credenciales-y-cuentas-de-acceso)).
+
+> **[Captura: Nueva Contraseña Primer Ingreso]**
+> *Campos de nueva contraseña y confirmación con indicador visual de cumplimiento de políticas de seguridad.*
+>
+> **[Captura: Nueva Contraseña Primer Ingreso (Móvil)]**
+> *Campos de nueva contraseña y confirmación con indicador visual de cumplimiento de políticas de seguridad. (Vista en dispositivo móvil).*
+
+4. **Configuración de preguntas de seguridad:** A continuación, el sistema solicitará parametrizar obligatoriamente **tres preguntas de seguridad**. Para cada una:
+   * Desplegar el menú y seleccionar la pregunta deseada de la lista predefinida.
+   * Digitar la respuesta en el campo de texto correspondiente (la validación es sensible a mayúsculas y caracteres).
+
+> **[Captura: Configurar Preguntas de Seguridad]**
+> *Formulario de configuración inicial de las tres preguntas de seguridad con sus respectivos campos de respuesta.*
+>
+> **[Captura: Configurar Preguntas de Seguridad (Móvil)]**
+> *Formulario de configuración inicial de las tres preguntas de seguridad con sus respectivos campos de respuesta. (Vista en dispositivo móvil).*
+
+5. **Confirmación y acceso formal:** Hacer clic en el botón **"Guardar y continuar"**. Una vez validados los datos, el sistema guardará las credenciales definitivas y concederá el acceso formal al portal o sección correspondiente según el rol asignado (Sitio Web con herramientas de edición para editores, Panel Administrativo para administradores o Intranet para directivos).
+
+#### 10.1.2. Inicio de Sesión Habitual en el Sitio Web Público (Banner GOV.CO)
+Una vez completado el primer ingreso, los funcionarios autorizados acceden al Sitio Web Público de forma habitual. El portal no requiere inicio de sesión para la consulta de información abierta a la ciudadanía; para el personal del SENA con facultades editoriales o administrativas, la vía de entrada es el enlace interactivo de la franja superior del Estado:
+
+*(Nota: Si el funcionario ingresa por primera vez con su contraseña temporal provisoria, el sistema detectará el estado pendiente y lo guiará de manera obligatoria por el flujo de onboarding detallado en la [Sección 10.1.1](#1011-flujo-de-primer-ingreso-al-sistema-onboarding-y-configuración-inicial)).*
+
+1. **Ubicación del acceso (Banner GOV.CO):** En la franja azul superior del portal del Estado (GOV.CO), ubicar en el extremo derecho el texto interactivo con la **fecha y hora en vivo**. Al pasar el cursor sobre este elemento, el sistema desplegará la etiqueta de ayuda *"Iniciar sesión"*; al hacer clic, redirigirá a la pantalla corporativa de inicio de sesión (`/login`).
+   *(Nota importante: El botón "Intranet" ubicado en el menú de navegación no es para iniciar sesión en el portal público, sino que enlaza a la plataforma independiente de la Intranet).*
+
+> **[Captura: Enlace de Inicio de Sesión en Banner GOV.CO]**
+> *Ubicación del texto interactivo de fecha y hora en el extremo derecho de la franja azul GOV.CO para acceder al inicio de sesión.*
+>
+> **[Captura: Enlace de Inicio de Sesión en Banner GOV.CO (Móvil)]**
+> *Ubicación del texto interactivo de fecha y hora en la franja azul GOV.CO para acceder al inicio de sesión. (Vista en dispositivo móvil).*
+
+2. **Formulario de credenciales:** En la pantalla institucional de acceso (`/login`), ingresar el correo corporativo (estrictamente `@sena.edu.co`) en el primer campo de texto.
 
 > **[Captura: Campo Correo Corporativo]**
 > *Vista del formulario de ingreso resaltando el campo para digitar el correo corporativo.*
@@ -417,7 +463,7 @@ El Sitio Web Público no requiere inicio de sesión para los ciudadanos que cons
 > **[Captura: Campo Correo Corporativo (Móvil)]**
 > *Vista del formulario de ingreso resaltando el campo para digitar el correo corporativo. (Vista en dispositivo móvil).*
 
-3. **Ingreso de Contraseña:** En el segundo campo, se debe digitar la contraseña asignada.
+3. **Ingreso de Contraseña:** En el segundo campo, digitar la contraseña robusta asignada.
 
 > **[Captura: Campo Contraseña]**
 > *Vista del formulario de ingreso resaltando el campo de contraseña.*
@@ -425,7 +471,7 @@ El Sitio Web Público no requiere inicio de sesión para los ciudadanos que cons
 > **[Captura: Campo Contraseña (Móvil)]**
 > *Vista del formulario de ingreso resaltando el campo de contraseña. (Vista en dispositivo móvil).*
 
-4. **Ejecución:** Se debe hacer clic en el botón principal **"Ingresar"** (destacado con el color de marca del portal).
+4. **Ejecución:** Hacer clic en el botón principal **"Ingresar"** (destacado con el color de marca del portal).
 
 > **[Captura: Botón Ingresar]**
 > *Acción de hacer clic sobre el botón principal para ejecutar el inicio de sesión.*
@@ -433,21 +479,31 @@ El Sitio Web Público no requiere inicio de sesión para los ciudadanos que cons
 > **[Captura: Botón Ingresar (Móvil)]**
 > *Acción de hacer clic sobre el botón principal para ejecutar el inicio de sesión. (Vista en dispositivo móvil).*
 
-5. **Resultado y Redirección por Rol:** Si las credenciales son correctas, el sistema evaluará el rol asignado para habilitar las áreas correspondientes:
-   * **Editores:** Al autenticarse satisfactoriamente, disponen de permisos editoriales activos; al navegar por el **Sitio Web Público** o la Intranet, el sistema desplegará de inmediato el **botón circular flotante (Speed Dial con ícono de lápiz)** en la pantalla para permitirles maquetar y editar páginas, o configurar el menú y pie.
-   * **Administradores:** Ingresarán directamente al **Panel Administrativo** (`/admin`), donde tendrán acceso al *Dashboard* y a todas las herramientas operativas, de gobierno y de gestión de la plataforma.
-   * **Directores y Subdirectores:** Ingresarán a la **Intranet**, accediendo a los tableros analíticos e informes en modalidad de solo lectura.
+5. **Resultado y Redirección por Rol (Exclusivo para el Sitio Web Público):** Si las credenciales son válidas, el sistema evalúa los permisos específicos del funcionario para redirigirlo según las funciones de este portal:
+   * **Editores (y roles derivados de Editor):** Al validar sus permisos de maquetación, el sistema los redirige de vuelta a la **página de inicio del Sitio Web Público** (`/inicio`), donde se despliega de inmediato el **botón circular flotante (Speed Dial)** en la esquina de la pantalla para maquetar páginas, agregar bloques o configurar el menú y pie.
+   * **Administradores:** Al poseer facultades integrales y acceso al panel (`acceso.panel`), el sistema los redirige de manera directa al **Panel Administrativo** (`/admin/dashboard`), habilitando la gestión de usuarios, roles, auditoría y bandeja de revisión.
+   *(Nota: Si una cuenta autenticada no posee permisos de edición ni acceso al panel, el sistema detendrá el acceso y presentará la alerta: "Tu cuenta no tiene permisos de edición ni de acceso al panel").*
 
-> **[Captura: Redirección de Rol]**
-> *Ejemplo visual del acceso exitoso según el perfil: despliegue del botón flotante de edición para el Editor o el Dashboard del Administrador.*
+> **[Captura: Redirección de Rol Sitio Web]**
+> *Ejemplo visual del acceso según perfil en el Sitio Web Público: retorno al inicio con botón flotante para Editores o redirección al Dashboard para Administradores.*
 >
-> **[Captura: Redirección de Rol (Móvil)]**
-> *Ejemplo visual del acceso exitoso según el perfil: despliegue del botón flotante de edición para el Editor o el Dashboard del Administrador. (Vista en dispositivo móvil).*
+> **[Captura: Redirección de Rol Sitio Web (Móvil)]**
+> *Ejemplo visual del acceso según perfil en el Sitio Web Público: retorno al inicio con botón flotante para Editores o redirección al Dashboard para Administradores. (Vista en dispositivo móvil).*
 
-#### 10.1.2. Inicio de Sesión en la Intranet del OLO
-Este acceso está diseñado principalmente para Directores y Subdirectores que consultan tableros privados, así como para personal administrativo que entra directamente al entorno interno.
+#### 10.1.3. Acceso e Inicio de Sesión Habitual en la Intranet del OLO
+La Intranet es una plataforma privada e independiente del Sitio Web Público, concebida para el seguimiento gerencial, análisis de indicadores y trabajo interno. Su sistema de inicio de sesión es totalmente independiente:
 
-1. **Acceso a la URL:** Se debe ingresar a la dirección web específica de la Intranet del OLO. Al ser un entorno privado, el sistema bloqueará la navegación y mostrará inmediatamente la pantalla central de acceso.
+*(Nota: Si un directivo o funcionario nuevo accede por primera vez con su contraseña temporal provisoria, el sistema activará de forma automática el flujo de primer ingreso descrito en la [Sección 10.1.1](#1011-flujo-de-primer-ingreso-al-sistema-onboarding-y-configuración-inicial)).*
+
+1. **Punto de enlace y acceso a la plataforma:** Desde el Sitio Web Público, ubicar y hacer clic en el botón fijo **"Intranet"** en la cabecera (esquina superior derecha), o ingresar directamente mediante la dirección web (URL) corporativa de la Intranet.
+
+> **[Captura: Botón Acceso Intranet en Cabecera]**
+> *Ubicación del botón 'Intranet' en la esquina superior derecha del Sitio Web Público como punto de enlace hacia el portal privado.*
+>
+> **[Captura: Botón Acceso Intranet en Cabecera (Móvil)]**
+> *Ubicación del botón 'Intranet' en la cabecera del Sitio Web Público como punto de enlace hacia el portal privado. (Vista en dispositivo móvil).*
+
+2. **Pantalla de bloqueo y autenticación obligatoria:** Al acceder a la Intranet, el sistema no permite navegación pública e intercepta al usuario con la pantalla de bloqueo y formulario propio de inicio de sesión (`/login`).
 
 > **[Captura: Pantalla Bloqueo Intranet]**
 > *Pantalla de bloqueo de la Intranet del OLO exigiendo autenticación obligatoria.*
@@ -455,31 +511,36 @@ Este acceso está diseñado principalmente para Directores y Subdirectores que c
 > **[Captura: Pantalla Bloqueo Intranet (Móvil)]**
 > *Pantalla de bloqueo de la Intranet del OLO exigiendo autenticación obligatoria. (Vista en dispositivo móvil).*
 
-2. **Diligenciamiento:** Se deben completar los campos de correo corporativo (`@sena.edu.co`) y contraseña.
+3. **Ingreso de credenciales:** Completar los campos con el correo corporativo (`@sena.edu.co`) y la contraseña correspondiente en el formulario de la Intranet.
 
 > **[Captura: Credenciales Intranet]**
-> *Ingreso de correo y contraseña en el portal de la Intranet.*
+> *Ingreso de correo corporativo y contraseña en el portal de la Intranet.*
 >
 > **[Captura: Credenciales Intranet (Móvil)]**
-> *Ingreso de correo y contraseña en el portal de la Intranet. (Vista en dispositivo móvil).*
+> *Ingreso de correo corporativo y contraseña en el portal de la Intranet. (Vista en dispositivo móvil).*
 
-3. **Ejecución:** Se debe presionar el botón **"Acceder a la Intranet"**.
+4. **Ejecución:** Presionar el botón principal **"Ingresar"** (o "Acceder a la Intranet").
 
 > **[Captura: Botón Acceder Intranet]**
-> *Clic en el botón de acceso para enviar las credenciales.*
+> *Clic en el botón de acceso para enviar y validar las credenciales en la Intranet.*
 >
 > **[Captura: Botón Acceder Intranet (Móvil)]**
-> *Clic en el botón de acceso para enviar las credenciales. (Vista en dispositivo móvil).*
+> *Clic en el botón de acceso para enviar y validar las credenciales en la Intranet. (Vista en dispositivo móvil).*
 
-4. **Resultado:** El usuario será redirigido automáticamente a la pantalla de inicio privada de la Intranet o a la sección correspondiente al rol asignado.
+5. **Resultado y acceso según perfil en la Intranet:** El sistema verifica que la cuenta disponga del permiso de acceso interno (`acceso.intranet`):
+   * **Directores y Subdirectores:** Ingresan a la pantalla principal de la Intranet para consultar tableros analíticos de Power BI, reportes e indicadores en modalidad de **solo lectura**, sin herramientas de edición ni acceso al panel administrativo.
+   * **Editores y Administradores:** Acceden a los módulos y secciones internas según los permisos que tengan asignados en la plataforma.
+   *(Nota: Si un usuario no posee el permiso de acceso interno a la intranet, el sistema denegará la entrada indicando: "No tienes permisos para ingresar a la intranet").*
 
-> **[Captura: Dashboard Intranet]**
-> *Pantalla de inicio exitosa en la Intranet mostrando las secciones y contenidos correspondientes al rol.*
+> **[Captura: Inicio Exitoso Intranet]**
+> *Pantalla de inicio exitosa en la Intranet mostrando los tableros analíticos y contenidos correspondientes al perfil.*
 >
-> **[Captura: Dashboard Intranet (Móvil)]**
-> *Pantalla de inicio exitosa en la Intranet mostrando las secciones y contenidos correspondientes al rol. (Vista en dispositivo móvil).*
+> **[Captura: Inicio Exitoso Intranet (Móvil)]**
+> *Pantalla de inicio exitosa en la Intranet mostrando los tableros analíticos y contenidos correspondientes al perfil. (Vista en dispositivo móvil).*
 
-#### 10.1.3. Procedimiento de Recuperación de Contraseña (Ambos Portales)
+#### 10.1.4. Procedimiento de Recuperación de Contraseña (Ambos Portales)
+Este procedimiento permite a cualquier funcionario restablecer de forma autónoma su clave de acceso ante olvidos o bloqueos, validando su identidad mediante las preguntas de seguridad configuradas durante el primer ingreso:
+
 1. **Inicio del proceso:** En la pantalla de inicio de sesión (ya sea del Sitio Web o de la Intranet), se debe ubicar el enlace inferior.
 
 > **[Captura: Paso 1]**
@@ -537,44 +598,6 @@ Este acceso está diseñado principalmente para Directores y Subdirectores que c
 > *Ingreso de la nueva contraseña en los campos correspondientes. (Vista en dispositivo móvil).*
 
 8. **Confirmación final:** Se debe pulsar el botón **"Guardar nueva contraseña"** para finalizar el proceso. El sistema devolverá al usuario al login.
-
-#### 10.1.4. Flujo de Primer Ingreso al Sistema (Onboarding y Configuración Inicial)
-
-1. **Inicio de sesión con contraseña temporal:** El funcionario accede al portal (Sitio Web o Intranet, según su rol) e ingresa su correo corporativo `@sena.edu.co` y la contraseña temporal comunicada manualmente por el Administrador.
-
-> **[Captura: Login Primer Ingreso]**
-> *Formulario de inicio de sesión con las credenciales temporales.*
->
-> **[Captura: Login Primer Ingreso (Móvil)]**
-> *Formulario de inicio de sesión con las credenciales temporales. (Vista en dispositivo móvil).*
-
-2. **Detección automática del primer ingreso:** El sistema detecta que la cuenta tiene pendiente la configuración inicial de seguridad e interrumpe el flujo normal de redirección, mostrando obligatoriamente la pantalla de parametrización de cuenta.
-
-> **[Captura: Pantalla Configuración Inicial]**
-> *Pantalla de configuración obligatoria que aparece tras el primer inicio de sesión.*
->
-> **[Captura: Pantalla Configuración Inicial (Móvil)]**
-> *Pantalla de configuración obligatoria que aparece tras el primer inicio de sesión. (Vista en dispositivo móvil).*
-
-3. **Establecimiento de nueva contraseña:** El sistema solicitará al funcionario crear su contraseña definitiva. Se debe digitar la nueva contraseña en el primer campo y repetirla en el segundo campo de confirmación, cumpliendo estrictamente los 5 lineamientos de la política de seguridad (ver [Sección 6.3](#63-política-de-contraseñas-robustas)).
-
-> **[Captura: Nueva Contraseña Primer Ingreso]**
-> *Campos de nueva contraseña y confirmación con indicador visual de cumplimiento de políticas de seguridad.*
->
-> **[Captura: Nueva Contraseña Primer Ingreso (Móvil)]**
-> *Campos de nueva contraseña y confirmación con indicador visual de cumplimiento de políticas de seguridad. (Vista en dispositivo móvil).*
-
-4. **Configuración de preguntas de seguridad:** A continuación, el sistema solicitará configurar obligatoriamente **tres preguntas de seguridad**. Para cada pregunta, se debe:
-   * Desplegar el menú y seleccionar la pregunta deseada de la lista predefinida.
-   * Digitar la respuesta exacta en el campo de texto correspondiente (la respuesta es sensible a mayúsculas).
-
-> **[Captura: Configurar Preguntas de Seguridad]**
-> *Formulario de configuración inicial de las tres preguntas de seguridad con sus respectivos campos de respuesta.*
->
-> **[Captura: Configurar Preguntas de Seguridad (Móvil)]**
-> *Formulario de configuración inicial de las tres preguntas de seguridad con sus respectivos campos de respuesta. (Vista en dispositivo móvil).*
-
-5. **Confirmación y acceso:** Se debe hacer clic en el botón **"Guardar y continuar"**. Una vez validados los datos, el sistema guardará las credenciales definitivas y redirigirá automáticamente al entorno correspondiente según el rol asignado.
 
 #### 10.1.5. Procedimiento de Cierre de Sesión (Logout)
 
