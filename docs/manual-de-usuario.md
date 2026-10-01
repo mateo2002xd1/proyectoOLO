@@ -9,20 +9,20 @@
 
 El manual de usuario está dirigido a los diferentes perfiles que interactúan con la plataforma del Observatorio Laboral y Ocupacional (OLO):
 
-### 5.1. Directores y Subdirectores
-Personal directivo del SENA que inicia sesión con cuenta corporativa `@sena.edu.co` para consultar en modalidad de solo lectura matrices de pertinencia, indicadores del mercado laboral y tableros analíticos en la Intranet del OLO.
+### 5.1. Administradores del Sistema
+Personal responsable de la gestión integral de cuentas de usuario, creación de nuevos roles personalizados (exclusivamente para roles de editores), asignación manual de permisos, aprobación y publicación de contenidos, procesamiento de cargas masivas de datos en Excel, consulta de la bitácora de auditoría y configuración general del sistema en el Panel Administrativo.
 
 ### 5.2. Editores de Contenido y Roles Hijos Derivados
 Funcionarios autorizados para maquetar, estructurar y actualizar el contenido de las páginas web y boletines informativos mediante el editor visual de páginas, ajustándose a las secciones y permisos concedidos por la administración.
 
-### 5.3. Administradores del Sistema
-Personal responsable de la gestión integral de cuentas de usuario, creación de nuevos roles personalizados (exclusivamente para roles de editores), asignación manual de permisos, aprobación y publicación de contenidos, procesamiento de cargas masivas de datos en Excel, consulta de la bitácora de auditoría y configuración general del sistema en el Panel Administrativo.
+### 5.3. Directores y Subdirectores
+Personal directivo del SENA que inicia sesión con cuenta corporativa `@sena.edu.co` para consultar en modalidad de solo lectura matrices de pertinencia, indicadores del mercado laboral y tableros analíticos en la Intranet del OLO.
 
 > **[Captura: Perfiles de Usuario]**
-> *Esquema visual ilustrativo de los tres perfiles principales de usuario (Directivos, Editores y Administradores) interactuando con los distintos módulos de la plataforma.*
+> *Esquema visual ilustrativo de los tres perfiles principales de usuario (Administradores, Editores y Directivos) interactuando con los distintos módulos de la plataforma.*
 >
 > **[Captura: Perfiles de Usuario (Móvil)]**
-> *Esquema visual ilustrativo de los tres perfiles principales de usuario (Directivos, Editores y Administradores) interactuando con los distintos módulos de la plataforma. (Vista en dispositivo móvil).*
+> *Esquema visual ilustrativo de los tres perfiles principales de usuario (Administradores, Editores y Directivos) interactuando con los distintos módulos de la plataforma. (Vista en dispositivo móvil).*
 
 ---
 
@@ -64,7 +64,7 @@ Para acceder a los entornos privados (Panel Administrativo, Editor Visual e Intr
   3. Al menos una letra **minúscula** (`a-z`).
   4. Al menos un dígito **numérico** (`0-9`).
   5. Al menos un **carácter especial** o símbolo (`!@#$%^&*()_+-=[]{}|;:,.<>?`).
-  *(El flujo de primer ingreso, la validación interactiva de credenciales y el procedimiento de recuperación se detallan en [Sección 10.1.1](#1011-flujo-de-primer-ingreso-al-sistema-onboarding-y-configuración-inicial) y [Sección 10.1.4](#1014-procedimiento-de-recuperación-de-contraseña-ambos-portales)).*
+  *(El flujo de primer ingreso, la validación interactiva de credenciales y el procedimiento de recuperación se detallan en [Sección 10.1.1](#1011-flujo-de-primer-ingreso) y [Sección 10.1.3](#1013-procedimiento-de-recuperación-de-contraseña-ambos-portales)).*
 
 ---
 
@@ -76,7 +76,7 @@ Esta sección detalla qué puede hacer cada tipo de usuario dentro del aplicativ
 El Sitio Web Público fue concebido como un portal abierto para toda la sociedad civil, la comunidad académica, el sector productivo y los buscadores de empleo:
 1. **Sin necesidad de rol ni registro:** La ciudadanía no requiere una cuenta de usuario ni la asignación de un rol para interactuar con la plataforma.
 2. **Consulta y descarga libre:** Cualquier persona puede navegar por todas las páginas públicas, realizar búsquedas mediante los componentes interactivos, consultar indicadores, reproducir contenidos en los visores de videos y acceder a documentos mediante los visores de PDFs o botones de descarga libre en formato PDF sin necesidad de iniciar sesión.
-3. **Ámbito del control de accesos:** El inicio de sesión y la asignación de roles aplican de manera exclusiva para los funcionarios del SENA que acceden con cuenta corporativa (`@sena.edu.co`) a la Intranet del OLO, al editor visual de páginas o al Panel Administrativo.
+3. **Ámbito del control de accesos:** El inicio de sesión y la asignación de roles aplican de manera exclusiva para los funcionarios del SENA que acceden con cuenta corporativa (`@sena.edu.co`) al Panel Administrativo, al editor visual de páginas o a la Intranet del OLO.
 
 > **[Captura: Consulta Ciudadana]**
 > *Exploración de contenidos públicos, consulta de indicadores y descarga libre de documentos disponible para la ciudadanía.*
@@ -146,11 +146,11 @@ Corresponden a perfiles editoriales especializados creados por el Administrador 
 
 * **Funciones y facultades principales:**
   * *Exclusividad de tipología:* Todo rol derivado creado en la plataforma pertenece obligatoriamente a la familia de editores y se registra bajo el formato estricto «Editor [Nombre]».
-  * *Configuración manual de permisos («a mano»):* Nace sin ningún permiso predeterminado (privilegio cero). El Administrador habilita de forma selectiva los interruptores de acceso para las páginas, secciones o funciones específicas requeridas (ver paso a paso en [Sección 10.3.2, Paso 3](#1032-submenú-roles)).
+  * *Configuración manual de permisos («a mano»):* Nace sin ningún permiso predeterminado (privilegio cero). El Administrador habilita de forma selectiva los interruptores organizados dentro de las 5 secciones de permisos del sistema (ver contexto en [Sección 7.3](#73-estructura-y-ámbitos-de-los-permisos-las-5-secciones-de-control) y procedimiento paso a paso en [Sección 10.3.2, Paso 3](#1032-submenú-roles)).
   * *Capacidad equivalente según asignación:* Si el Administrador le otorga permisos completos (activando todas las páginas, la creación y el borrado), el rol hijo adquiere las mismas facultades operativas que el rol Editor base.
   * *Control de componentes globales:* La modificación de la cabecera y pie de página compartidos permanece bloqueada por defecto, salvo concesión expresa del Administrador.
   * *Ciclo editorial de borradores:* Maqueta los bloques en las páginas asignadas y remite las versiones trabajadas a la sección de **"Páginas en revisión"** del Panel Administrativo para la evaluación y aprobación definitiva por parte del Administrador.
-  * *Asignación automática y delegación de nuevas páginas:* Cuando un rol hijo que cuenta con permiso de creación genera una nueva página, el sistema otorga permisos de edición inmediatos únicamente a su propio rol, al rol padre Editor base y al Administrador. Los demás roles hijos de editor quedan sin acceso a dicha página; si otro rol especializado necesita colaborar o editarla, el Administrador debe otorgarle el permiso de forma manual («a mano») desde la opción de editar rol en el Panel Administrativo (ver [Sección 10.3.2](#1032-submenú-roles)).
+  * *Asignación automática y delegación de nuevas páginas:* Cuando un rol hijo que cuenta con permiso de creación genera una nueva página, el sistema otorga permisos de edición inmediatos únicamente al Administrador, al rol padre Editor base y a su propio rol creador. Los demás roles hijos de editor quedan sin acceso a dicha página; si otro rol especializado necesita colaborar o editarla, el Administrador debe otorgarle el permiso de forma manual («a mano») desde la opción de editar rol en el Panel Administrativo (ver [Sección 10.3.2](#1032-submenú-roles)).
 
 * **Límites operativos y restricciones de seguridad:**
   * No tienen acceso al Panel Administrativo (`/admin`).
@@ -166,7 +166,7 @@ Corresponde al perfil directivo enfocado en el monitoreo gerencial, el análisis
   Facilitar la consulta directa, ágil y protegida de la información estadística, los indicadores del mercado laboral y los resultados de pertinencia educativa para respaldar la planeación y la gestión directiva.
 
 * **Entorno de acceso y autenticación:**
-  Inicia sesión mediante su cuenta corporativa (`@sena.edu.co`) directamente en la Intranet del OLO. El sistema valida su identidad y despliega el entorno privado con acceso inmediato a los módulos gerenciales.
+  Inicia sesión mediante su cuenta corporativa (`@sena.edu.co`) en la **Intranet del OLO**. Al autenticarse, el sistema despliega el entorno privado con acceso inmediato a los módulos gerenciales, tableros analíticos e indicadores ocupacionales en modalidad de solo lectura.
 
 * **Funciones y facultades principales:**
   * *Consulta gerencial en solo lectura:* Explora e interactúa con los módulos analíticos y tableros de indicadores integrados en las páginas de la Intranet (tasas de ocupación, matrices de pertinencia educativa e indicadores de encuestas a egresados y calidad formativa) (ver [Sección 13.1](#131-uso-de-tableros-bi-en-la-intranet-power-bi)).
@@ -174,36 +174,51 @@ Corresponde al perfil directivo enfocado en el monitoreo gerencial, el análisis
   * *Monitoreo estratégico sin fricción operativa:* Realiza análisis comparativos y seguimiento a los indicadores y metas ocupacionales sobre información consolidada y oficial.
 
 * **Límites operativos y restricciones de seguridad:**
+  * No tiene permisos para operar ni autenticarse en el Sitio Web Público (su ámbito exclusivo de trabajo autenticado es la Intranet).
   * No tiene acceso al Panel Administrativo (`/admin`).
   * No posee facultades de edición ni maquetación; no se despliega el menú flotante de edición ni tiene acceso al editor visual.
   * No puede crear, modificar ni eliminar páginas, menús ni contenidos de la plataforma.
   * No administra cuentas de usuario, no crea roles ni configura permisos.
   * No ejecuta cargas masivas de datos en Excel ni accede a la bitácora de auditoría técnica.
 
-### 7.3. Matriz Comparativa de Acceso y Capacidades
+### 7.3. Estructura y Ámbitos de los Permisos (Las 5 Secciones de Control)
 
-| Capacidad / Entorno del Sistema | Director / Subdirector | Editor Base | Roles Hijos de Editor | Administrador |
+Es fundamental tener presente un principio de seguridad central en la plataforma: **los roles base del sistema (Administrador, Editor base y Director / Subdirector) cuentan con permisos fijos y protegidos por código**. Cuando el Administrador crea una cuenta de usuario y le asigna alguno de estos roles, el sistema le otorga automáticamente sus facultades correspondientes, las cuales **no son modificables ni editables** desde el panel.
+
+Por este motivo, **los únicos roles cuyos permisos son personalizables y editables son los roles hijos o derivados de Editor** (creados bajo el formato «Editor [Nombre]»). Para garantizar un control seguro y granular sobre las facultades de estos roles especializados, la plataforma del OLO organiza los permisos configurables en **5 secciones funcionales**, ordenadas de menor a mayor alcance operativo:
+
+1. **Acceso:** Controla las puertas de entrada a los dos entornos del sistema (el Sitio Web Público y la Intranet del OLO). Sin estos permisos activos, la cuenta no podrá autenticarse ni visualizar el contenido del portal correspondiente.
+2. **Editar (Plantilla / Globales):** Regula la intervención sobre los componentes estructurales envolventes compartidos por todas las páginas de un entorno, específicamente la cabecera (header con menús y logos) y el pie de página (footer con enlaces y redes sociales), aplicables de forma independiente para el Sitio Web y para la Intranet.
+3. **Secciones del sitio web:** Define de forma granular y página por página el acceso de edición sobre los contenidos del portal público (tales como Inicio, Política de Privacidad y cada una de las páginas dinámicas creadas en el sitio).
+4. **Secciones de la intranet:** Controla individualmente la facultad de maquetar y actualizar las páginas y módulos analíticos internos de la Intranet del OLO (Inicio, Tasa de vinculación, Matriz de tendencias, Encuestas y páginas dinámicas internas).
+5. **Qué puede hacer dentro del editor:** Determina las capacidades de acción estructural que el usuario puede ejercer dentro del lienzo de trabajo interactivo, tales como la creación de nuevas páginas o la eliminación definitiva de páginas dinámicas existentes.
+
+*(Nota: En la [Sección 10.3.2: Submenú Roles](#1032-submenú-roles) se describe detalladamente cada permiso individual y se ilustra el procedimiento operativo paso a paso para activarlos o desactivarlos mediante interruptores en el Panel Administrativo al crear o editar roles derivados).*
+
+### 7.4. Matriz Comparativa de Acceso y Capacidades
+
+| Capacidad / Entorno del Sistema | Administrador | Editor Base | Roles Hijos de Editor | Director / Subdirector |
 | :--- | :---: | :---: | :---: | :---: |
 | **Navegar Sitio Web Público y descargar archivos** | Permitido | Permitido | Permitido | Permitido |
 | **Inicio de sesión con cuenta SENA (`@sena.edu.co`)** | Permitido | Permitido | Permitido | Permitido |
-| **Consultar contenidos y módulos analíticos en Intranet** | Permitido (Solo lectura) | Permitido | Permitido | Permitido |
+| **Consultar contenidos y módulos analíticos en Intranet** | Permitido | Permitido | Permitido | Permitido (Solo lectura) |
 | **Descargar informes y presentaciones internas** | Permitido | Permitido | Permitido | Permitido |
-| **Ingresar al editor visual de páginas** | Sin acceso | Permitido | Permitido | Permitido |
-| **Editar páginas asignadas del Sitio Web e Intranet** | Sin acceso | Permitido | Según asignación manual | Permitido |
-| **Modificar cabecera y pie de página del portal** | Sin acceso | Permitido | No (Por defecto) | Permitido |
-| **Crear nuevas páginas en el portal** | Sin acceso | Permitido | Según asignación manual | Permitido |
-| **Eliminar páginas creadas por usuarios** | Sin acceso | Permitido | Según asignación manual | Permitido |
+| **Ingresar al editor visual de páginas** | Permitido | Permitido | Permitido | Sin acceso |
+| **Editar páginas asignadas del Sitio Web e Intranet** | Permitido | Permitido | Según asignación manual | Sin acceso |
+| **Modificar cabecera y pie de página del portal** | Permitido | Permitido | No (Por defecto) | Sin acceso |
+| **Crear nuevas páginas en el portal** | Permitido | Permitido | Según asignación manual | Sin acceso |
+| **Eliminar páginas creadas por usuarios** | Permitido | Permitido | Según asignación manual | Sin acceso |
 | **Eliminar páginas base del sistema (de fábrica)** | No (Bloqueado) | No (Bloqueado) | No (Bloqueado) | No (Bloqueado) |
-| **Guardar borradores y enviar a revisión** | Sin acceso | Permitido | Permitido | Permitido |
-| **Aprobar y publicar páginas en producción** | Sin acceso | Sin acceso | Sin acceso | Permitido |
-| **Rechazar páginas en revisión con observaciones** | Sin acceso | Sin acceso | Sin acceso | Permitido |
-| **Descartar versiones en revisión (botón de basurero)** | Sin acceso | Sin acceso | Sin acceso | Permitido |
-| **Ingresar al Panel Administrativo** | Sin acceso | Sin acceso | Sin acceso | Permitido (Exclusivo) |
-| **Crear, editar y suspender cuentas de usuario** | Sin acceso | Sin acceso | Sin acceso | Permitido |
-| **Crear roles (exclusivo para roles de Editor) y asignar permisos a mano** | Sin acceso | Sin acceso | Sin acceso | Permitido |
-| **Restablecer contraseñas de otros usuarios** | Sin acceso | Sin acceso | Sin acceso | Permitido |
-| **Carga masiva de datos ocupacionales en Excel** | Sin acceso | Sin acceso | Sin acceso | Permitido |
-| **Consultar la bitácora de auditoría del sistema** | Sin acceso | Sin acceso | Sin acceso | Permitido |
+| **Guardar borradores y enviar a revisión** | Permitido | Permitido | Permitido | Sin acceso |
+| **Aprobar y publicar páginas en producción** | Permitido | Sin acceso | Sin acceso | Sin acceso |
+| **Rechazar páginas en revisión con observaciones** | Permitido | Sin acceso | Sin acceso | Sin acceso |
+| **Descartar versiones en revisión (botón de basurero)** | Permitido | Sin acceso | Sin acceso | Sin acceso |
+| **Ingresar al Panel Administrativo** | Permitido (Exclusivo) | Sin acceso | Sin acceso | Sin acceso |
+| **Crear, editar y suspender cuentas de usuario** | Permitido | Sin acceso | Sin acceso | Sin acceso |
+| **Crear roles (exclusivo para roles de Editor) y asignar permisos a mano** | Permitido | Sin acceso | Sin acceso | Sin acceso |
+| **Restablecer contraseñas de otros usuarios** | Permitido | Sin acceso | Sin acceso | Sin acceso |
+| **Carga masiva de datos ocupacionales en Excel** | Permitido | Sin acceso | Sin acceso | Sin acceso |
+| **Consultar la bitácora de auditoría del sistema** | Permitido | Sin acceso | Sin acceso | Sin acceso |
 
 ---
 
@@ -214,22 +229,22 @@ El acceso al ecosistema tecnológico del Observatorio Laboral y Ocupacional (OLO
 ### 8.1. Sitio Web Público
 
 #### 8.1.1. Portal Web Público (Cara visible)
-El portal web público es la plataforma principal que refleja el trabajo del Observatorio Laboral y Ocupacional (OLO). Es un entorno dinámico y adaptable donde se publican las páginas maquetadas con diversos componentes interactivos (buscadores de ocupaciones, visores de videos, visores de documentos PDF, tarjetas de indicadores y enlaces de descarga). La apariencia y distribución de los contenidos varían según las prioridades informativas del observatorio. Aunque su contenido principal es público y consultado por la ciudadanía sin requerir autenticación, el personal editorial y administrativo utiliza este mismo entorno como punto de acceso al sistema.
+El portal web público es la plataforma principal que refleja el trabajo del Observatorio Laboral y Ocupacional (OLO). Es un entorno dinámico y adaptable donde se publican las páginas maquetadas con diversos componentes interactivos (buscadores de ocupaciones, visores de videos, visores de documentos PDF, tarjetas de indicadores y enlaces de descarga). La apariencia y distribución de los contenidos varían según las prioridades informativas del observatorio. Aunque su contenido principal es público y consultado por la ciudadanía sin requerir autenticación, el personal administrativo y editorial utiliza este mismo entorno como punto de acceso al sistema.
 
 #### 8.1.2. Inicio de Sesión en el Sitio Web Público (Banner GOV.CO)
-El Sitio Web Público no cuenta con un botón directo de "Iniciar Sesión" para la ciudadanía, ya que la navegación por todos sus contenidos es totalmente libre y abierta. Para los funcionarios autorizados del SENA (Editores y Administradores), la vía de entrada para autenticarse en el Sitio Web es el enlace interactivo ubicado en la franja azul superior del Estado:
-* **Punto de acceso institucional (Banner GOV.CO):** En la parte superior de la página, dentro de la franja azul de GOV.CO, se ubica a la derecha el reloj interactivo con la **fecha y hora en vivo**. Al hacer clic sobre este texto (identificado con el mensaje de ayuda *"Iniciar sesión"*), el sistema redirige a la pantalla de acceso corporativo (`/login`).
+El Sitio Web Público no cuenta con un botón directo de "Iniciar Sesión" para la ciudadanía, ya que la navegación por todos sus contenidos es totalmente libre y abierta. Para los funcionarios del SENA, la vía de entrada para autenticarse en el Sitio Web es el enlace interactivo ubicado en la franja azul superior del Estado:
+* **Punto de acceso en el Sitio Web (Banner GOV.CO):** En la parte superior de la página, dentro de la franja azul de GOV.CO, se ubica a la derecha el reloj interactivo con la **fecha y hora en vivo**. Al hacer clic sobre este texto (identificado con el mensaje de ayuda *"Iniciar sesión"*), el sistema abre la pantalla de inicio de sesión.
 * **Credenciales requeridas:**
   * Correo electrónico corporativo con dominio `@sena.edu.co`.
   * Contraseña robusta configurada en la plataforma.
 * **Redirección por rol (Exclusivo para el Sitio Web Público):**
-  * *Editores (y roles derivados de Editor):* Al validar sus credenciales y permisos editoriales, el sistema los redirige de vuelta a la página de **Inicio del Sitio Web Público** (`/inicio`), donde se activa y despliega el botón circular flotante (Speed Dial) para maquetar páginas y gestionar cabecera y pie.
-  * *Administradores:* Al contar con facultades de gobierno y acceso al panel (`acceso.panel`), el sistema los redirige de manera directa al **Panel Administrativo** (`/admin/dashboard`).
-  * *(Si una cuenta no posee permisos de edición ni acceso al panel, el sistema detiene el ingreso indicando que no cuenta con autorizaciones para este entorno).*
-* **Enlace de recuperación:** La pantalla de autenticación dispone del acceso directo para el restablecimiento de contraseñas ante olvidos *(¿Olvidaste tu contraseña?)*. *(Para consultar la guía visual paso a paso de este acceso, ver [Sección 10.1.2: Inicio de Sesión Habitual en el Sitio Web Público (Banner GOV.CO)](#1012-inicio-de-sesión-habitual-en-el-sitio-web-público-banner-govco)).*
+  * *Administradores:* Al contar con facultades de gobierno y permisos de administración, el sistema los redirige de manera directa al **Panel Administrativo** (`/admin/dashboard`).
+  * *Editores (y roles derivados de Editor):* Al validar sus credenciales y permisos editoriales, el sistema los redirige de vuelta a la página de **Inicio del Sitio Web Público** (`/inicio`), donde se activa y despliega el botón flotante de edición para maquetar páginas y gestionar cabecera y pie.
+  * *Directores y Subdirectores:* Al no contar con permisos de edición ni de acceso al panel administrativo en este portal, el sistema muestra la alerta *"Tu cuenta no tiene permisos de edición ni de acceso al panel."*, orientándolos a ingresar a la Intranet para consultar sus tableros analíticos e indicadores gerenciales.
+* **Enlace de recuperación:** La pantalla de autenticación dispone del acceso directo para el restablecimiento de contraseñas ante olvidos *(¿Olvidaste tu contraseña?)*. *(Para consultar la guía visual paso a paso de este acceso, ver [Sección 10.1.2: Flujo de Inicio de Sesión Habitual](#inicio-de-sesión-habitual-en-el-sitio-web-público)).*
 
-#### 8.1.3. Enlace Institucional a la Intranet (Botón Intranet)
-El botón fijo **"Intranet"** ubicado en la cabecera del portal (extremo superior derecho) no corresponde al inicio de sesión del Sitio Web Público, sino que constituye el enlace institucional permanente hacia el portal privado independiente de la Intranet del OLO. Al pulsarlo, el usuario es dirigido al entorno de la Intranet, cuya plataforma cuenta con su propio sistema de bloqueo y autenticación obligatoria para funcionarios.
+#### 8.1.3. Enlace a la Intranet (Botón Intranet)
+El botón fijo **"Intranet"** ubicado en la cabecera del portal (extremo superior derecho) no corresponde al inicio de sesión del Sitio Web Público, sino que constituye el enlace directo permanente hacia la plataforma privada de la Intranet del OLO. Al pulsarlo, el usuario es dirigido al entorno de la Intranet, cuya plataforma requiere autenticación para los funcionarios.
 
 ### 8.2. Intranet del OLO
 
@@ -237,45 +252,46 @@ El botón fijo **"Intranet"** ubicado en la cabecera del portal (extremo superio
 La Intranet es una plataforma privada e independiente orientada al seguimiento gerencial, análisis ocupacional y trabajo interno del SENA:
 * **Acceso restringido con autenticación obligatoria:** A diferencia del portal público, la Intranet no permite navegación anónima ni libre. Toda persona debe autenticarse para ingresar mediante su propio formulario de acceso.
 * **Perfiles habilitados:**
+  * *Administradores:* Ingresan para supervisar contenidos, maquetar secciones internas o fiscalizar el entorno según sus facultades globales de gobierno.
+  * *Editores (y roles derivados autorizados):* Ingresan para maquetar y actualizar secciones internas autorizadas en su perfil.
   * *Directores y Subdirectores:* Ingresan con cuenta corporativa `@sena.edu.co` para consultar los módulos de información, matrices e indicadores ocupacionales en modalidad de **solo lectura**, manteniendo protegida la información al no contar con permisos de edición ni administración.
-  * *Editores y Administradores:* Ingresan para maquetar secciones internas autorizadas o supervisar contenidos según sus atribuciones.
-* **Credenciales y validación:** Correo corporativo `@sena.edu.co` y contraseña asignada (requiere permiso de `acceso.intranet`). Al iniciar sesión exitosamente, el sistema despliega el entorno privado de la Intranet con los tableros analíticos e indicadores configurados. *(Para consultar la guía visual paso a paso del acceso a la Intranet, ver [Sección 10.1.3: Acceso e Inicio de Sesión Habitual en la Intranet del OLO](#1013-acceso-e-inicio-de-sesión-habitual-en-la-intranet-del-olo)).*
+* **Credenciales y validación:** Correo corporativo `@sena.edu.co` y contraseña asignada (requiere autorización de acceso a la Intranet). Al iniciar sesión exitosamente, el sistema despliega el entorno privado de la Intranet con los tableros analíticos e indicadores configurados. *(Para consultar la guía visual paso a paso del acceso a la Intranet, ver [Sección 10.1.2: Flujo de Inicio de Sesión Habitual](#inicio-de-sesión-habitual-en-la-intranet-del-olo)).*
 
 ### 8.3. Procedimiento de Recuperación de Contraseña (Preguntas de Seguridad)
 El sistema del Observatorio Laboral y Ocupacional cuenta con un mecanismo autónomo de restablecimiento de contraseña ante olvidos o bloqueos, unificado para todos los funcionarios tanto en el Sitio Web como en la Intranet:
-* **Autonomía sin dependencia de correo externo:** A diferencia de plataformas que envían enlaces o tokens a buzones de correo externos, el aplicativo comprueba la identidad del titular validando las **tres preguntas de seguridad** parametrizadas obligatoriamente durante el primer ingreso (onboarding). Esto previene bloqueos por filtros de spam o falta de disponibilidad de servidores de correo externos.
+* **Autonomía sin dependencia de correo externo:** A diferencia de plataformas que envían enlaces o códigos a buzones de correo externos, el aplicativo comprueba la identidad del titular validando las **tres preguntas de seguridad** configuradas obligatoriamente durante el primer ingreso al sistema. Esto previene bloqueos por filtros de spam o falta de disponibilidad de servidores de correo externos.
 * **Política de seguridad:** Una vez validadas con éxito las respuestas correspondientes, el usuario puede establecer de inmediato una nueva contraseña que satisfaga los lineamientos de seguridad de la plataforma (longitud mínima de 12 caracteres, mayúsculas, minúsculas, números y caracteres especiales).
-* **Guía operativa paso a paso:** Para consultar el procedimiento interactivo en pantalla con las capturas de cada paso, remitirse a la **[Sección 10.1.4: Procedimiento de Recuperación de Contraseña (Ambos Portales)](#1014-procedimiento-de-recuperación-de-contraseña-ambos-portales)**.
+* **Guía operativa paso a paso:** Para consultar el procedimiento interactivo en pantalla con las capturas de cada paso, remitirse a la **[Sección 10.1.3: Procedimiento de Recuperación de Contraseña (Ambos Portales)](#1013-procedimiento-de-recuperación-de-contraseña-ambos-portales)**.
 
 ### 8.4. Creación y Registro Centralizado de Usuarios (Exclusivo Administrador)
 El sistema no cuenta con registro público autónomo; ninguna persona puede crear una cuenta por sí misma:
 * **Facultad exclusiva de administración:** La creación, habilitación y asignación de roles para nuevos usuarios es responsabilidad exclusiva del rol **Administrador**.
 * **Gestión centralizada desde el Panel Administrativo:** Aplica de forma unificada tanto para los usuarios que operan el Sitio Web como para quienes consultan la Intranet. El procedimiento operativo paso a paso y la interfaz para llevar a cabo esta labor se explican a detalle en la **Sección 10.3.1** de este manual.
 
-## 8.5. Primer Ingreso al Sistema (Onboarding)
+### 8.5. Primer Ingreso al Sistema (Configuración Inicial de la Cuenta)
 
 Cuando el Administrador crea una cuenta nueva, el funcionario debe completar obligatoriamente la configuración inicial de seguridad antes de poder operar en la plataforma.
 
 ### 8.5.1. Recepción de Credenciales Iniciales
 
-Al crear la cuenta, el Administrador establece una **contraseña temporal** y la comunica de forma manual al funcionario a través del canal corporativo que considere apropiado (correo electrónico, mensaje de chat interno u otro medio). **El sistema no envía ningún correo automático de bienvenida.** La contraseña temporal no tiene fecha de expiración: permanece activa hasta que el funcionario la use para completar su primer ingreso.
+Al crear la cuenta (cuyo procedimiento paso a paso se detalla en la [Sección 10.3.1: Submenú Usuarios](#1031-submenú-usuarios)), el Administrador establece una **contraseña temporal** y la comunica de forma manual al funcionario a través del canal corporativo que considere apropiado (correo electrónico, mensaje de chat interno u otro medio). **El sistema no envía ningún correo automático de bienvenida.** La contraseña temporal no tiene fecha de expiración: permanece activa hasta que el funcionario la use para completar su primer ingreso.
 
-Al acceder por primera vez con estas credenciales provisorias, el sistema interrumpe el flujo de navegación habitual y obliga al funcionario a completar el protocolo de configuración inicial:
+Al acceder por primera vez con estas credenciales provisorias, el sistema solicita de manera obligatoria al funcionario completar la configuración inicial de seguridad:
 * **Establecimiento de contraseña definitiva:** Registro de una clave personal e intransferible que cumpla con los 5 requisitos de la política de contraseñas robustas (ver [Sección 6.3](#63-requisitos-de-credenciales-y-cuentas-de-acceso)).
 * **Parametrización de preguntas de seguridad:** Selección y respuesta obligatoria de tres preguntas que habilitan el mecanismo autónomo de recuperación de cuenta ante eventuales bloqueos u olvidos.
 
-Una vez validados estos datos, el sistema guarda la configuración definitiva y concede el acceso formal al portal o sección correspondiente según el rol asignado. *(Para consultar la guía visual paso a paso con las capturas de pantalla de este procedimiento, ver [Sección 10.1.1: Flujo de Primer Ingreso al Sistema (Onboarding y Configuración Inicial)](#1011-flujo-de-primer-ingreso-al-sistema-onboarding-y-configuración-inicial)).*
+El procedimiento se efectúa según el portal de acceso utilizado por el funcionario (Sitio Web Público o Intranet del OLO). Una vez validados estos datos, el sistema guarda la configuración definitiva y concede el acceso formal al portal o sección correspondiente según el rol asignado. *(Para consultar la guía visual paso a paso con las capturas de pantalla de este procedimiento para ambos ámbitos, ver [Sección 10.1.1: Flujo de Primer Ingreso](#1011-flujo-de-primer-ingreso)).*
 
-## 8.6. Cierre de Sesión y Expiración Preventiva
+### 8.6. Cierre de Sesión y Expiración Preventiva
 
 El cierre de sesión seguro es una práctica obligatoria para salvaguardar la privacidad de las cuentas y proteger la información del observatorio, especialmente al operar en estaciones de trabajo compartidas o redes abiertas:
 * **Cierre de sesión en el Panel Administrativo:** Los administradores finalizan su sesión activa mediante el menú desplegable de perfil ubicado en la parte inferior del menú lateral izquierdo.
-* **Cierre de sesión en la Intranet:** Directivos, editores y administradores autenticados cierran su sesión mediante el botón de salida segura ubicado en la esquina superior derecha de la barra superior de la Intranet.
-* **Efecto en el Sitio Web Público:** Dado que el portal público no dispone de controles de perfil ni botones de sesión en su cabecera, al cerrar sesión desde la Intranet o el Panel Administrativo el token de acceso queda invalidado de inmediato; al navegar nuevamente en el Sitio Web Público, el botón flotante de edición (Speed Dial) desaparece y la vista vuelve a la modalidad ciudadana estándar.
-* **Invalidación de credenciales y tokens:** Al presionar el botón de salida segura, el sistema destruye el token de autenticación activo en el navegador y redirige al usuario a la pantalla de inicio de sesión correspondiente.
+* **Cierre de sesión en la Intranet:** Administradores, editores y directivos autenticados cierran su sesión mediante el botón de salida segura ubicado en la esquina superior derecha de la barra superior de la Intranet.
+* **Efecto en el Sitio Web Público:** Dado que el portal público no dispone de controles de perfil ni botones de sesión en su cabecera, al cerrar sesión desde la Intranet o el Panel Administrativo la sesión activa finaliza de inmediato; al navegar nuevamente en el Sitio Web Público, el botón flotante de edición desaparece y la vista vuelve a la modalidad de consulta ciudadana estándar.
+* **Finalización de la sesión:** Al presionar el botón de salida segura, el sistema finaliza la sesión activa en el navegador y redirige al usuario a la pantalla de inicio de sesión correspondiente.
 * **Expiración preventiva por inactividad:** Las sesiones inactivas expiran de manera automática tras **30 minutos** sin actividad detectada. En tal caso, el sistema suspende la sesión de forma preventiva y solicita al usuario autenticarse nuevamente para proteger los datos.
 
-*(Para consultar la guía visual paso a paso con las capturas de pantalla del cierre de sesión, ver [Sección 10.1.5: Procedimiento de Cierre de Sesión (Logout)](#1015-procedimiento-de-cierre-de-sesión-logout)).*
+*(Para consultar la guía visual paso a paso con las capturas de pantalla del cierre de sesión, ver [Sección 10.1.4: Procedimiento de Cierre de Sesión (Logout)](#1014-procedimiento-de-cierre-de-sesión-logout)).*
 
 
 
@@ -290,12 +306,12 @@ La plataforma del Observatorio Laboral y Ocupacional (OLO) articula su experienc
 El sistema se compone de tres portales complementarios, cada uno con propósitos y características de interfaz claramente definidos:
 
 1. **Sitio Web Público:**
-   * **Propósito:** Portal de acceso abierto y consulta libre para la ciudadanía, investigadores y comunidad general, que sirve a su vez como punto de enlace institucional hacia el entorno privado del observatorio.
+   * **Propósito:** Portal de acceso abierto y consulta libre para la ciudadanía, investigadores y comunidad general, que sirve a su vez como punto de enlace hacia el entorno privado del observatorio.
    * **Controles y páginas fijas del sistema:**
-     * *Franja superior GOV.CO (Fecha y hora en vivo):* Barra azul fija superior donde se ubica el texto interactivo de fecha y hora, que sirve como punto de acceso para que el personal editorial y administrativo inicie sesión (`/login`) en el portal.
+     * *Franja superior GOV.CO (Fecha y hora en vivo):* Barra azul fija superior donde se ubica el texto interactivo de fecha y hora, que sirve como punto de acceso para que el personal administrativo y editorial inicie sesión (`/login`) en el portal.
      * *Botón de Búsqueda (Buscador Global):* Control fijo e inamovible ubicado en la zona superior, diseñado para consultar en tiempo real ocupaciones, publicaciones y páginas de todo el observatorio sin depender de la maquetación de la página.
      * *Botón de Acceso a la Intranet:* Enlace fijo permanente ubicado en la esquina superior derecha del menú de navegación hacia el portal privado independiente de la Intranet del OLO.
-     * *Páginas fijas del aplicativo:* Interfaces programadas de autenticación (`/login`, `/recuperar-password`) y pantallas de primer ingreso (onboarding), las cuales no forman parte de las páginas dinámicas y no pueden ser alteradas ni eliminadas desde el editor.
+     * *Páginas fijas del aplicativo:* Interfaces programadas de autenticación (`/login`, `/recuperar-password`) y pantallas de primer ingreso (`/first-login`), las cuales no forman parte de las páginas dinámicas y no pueden ser alteradas ni eliminadas desde el editor.
    * **Componentes ajustables de Cabecera y Pie de página:**
      * Tanto la cabecera como el pie de página funcionan mediante componentes maquetables del editor visual: los editores autorizados (a través de la opción de plantilla "Menú y pie") pueden personalizar los enlaces del menú, logos, redes y textos informativos. Estos componentes son flexibles y ajustables, pudiendo adaptarse a las necesidades informativas de la plataforma o configurarse según el diseño requerido.
    * **Área central dinámica:** Lienzo donde se despliegan los contenidos maquetados mediante bloques (artículos, cifras, visores y publicaciones).
@@ -348,21 +364,12 @@ Uno de los elementos interactivos más importantes en el Sitio Web y la Intranet
 > **[Captura: Vista Ciudadana sin Botón Flotante (Móvil)]**
 > *Vista pública y limpia de la página para la ciudadanía y usuarios anónimos, donde el botón flotante de edición no se muestra en pantalla. (Vista en dispositivo móvil).*
 
-* **Caso 2: Usuario autenticado sin permisos de edición (Directores y Subdirectores):**
-  * Al iniciar sesión con cuenta corporativa `@sena.edu.co`, el sistema identifica que el usuario posee un perfil configurado en modo de **solo lectura**. Debido a que no cuenta con facultades de edición ni administración, el botón flotante **permanece completamente oculto**, impidiendo que el personal directivo ingrese por error al modo de diseño o altere contenidos.
-
-> **[Captura: Vista Directiva Solo Lectura sin Botón Flotante]**
-> *Pantalla de la Intranet para perfiles directivos en modalidad de solo lectura, donde el botón flotante de edición permanece completamente oculto.*
->
-> **[Captura: Vista Directiva Solo Lectura sin Botón Flotante (Móvil)]**
-> *Pantalla de la Intranet para perfiles directivos en modalidad de solo lectura, donde el botón flotante de edición permanece completamente oculto. (Vista en dispositivo móvil).*
-
-* **Caso 3: Usuario autenticado con rol de Editor o Administrador:**
-  * Si el funcionario cuenta con sesión activa y permisos editoriales, el sistema despliega el botón circular flotante en la esquina inferior de la pantalla. Al hacer clic o pasar el cursor, el botón despliega exclusivamente las opciones para las que el usuario está autorizado:
-    * **"Editar sección":** Aparece si el usuario tiene asignado el permiso para editar esa página específica (del Sitio Web o de la Intranet) o si es Administrador.
-    * **"Menú y pie":** Se activa únicamente si el rol posee el permiso explícito para editar la cabecera y el pie de página de la plantilla en el editor visual.
-    * **"Nueva página":** Disponible si el usuario cuenta con la facultad de crear nuevas páginas en el sistema.
-    * **"Eliminar página":** Se visualiza exclusivamente en páginas dinámicas creadas por usuarios, siempre que el rol tenga el permiso de borrado y la página no posea enlaces activos que generen enlaces rotos.
+* **Caso 2: Usuario autenticado con rol de Administrador o Editor (y roles hijos autorizados):**
+  * Si el funcionario cuenta con sesión activa y permisos administrativos o editoriales, el sistema despliega el botón circular flotante en la esquina inferior de la pantalla. Al hacer clic o pasar el cursor, el botón despliega exclusivamente las opciones para las que el usuario está autorizado:
+    * **"Editar sección":** Aparece si el usuario es Administrador o tiene asignado el permiso para editar esa página específica (del Sitio Web o de la Intranet).
+    * **"Menú y pie":** Se activa si el usuario es Administrador o si el rol posee el permiso explícito para editar la cabecera y el pie de página de la plantilla en el editor visual.
+    * **"Nueva página":** Disponible si el usuario es Administrador o cuenta con la facultad de crear nuevas páginas en el sistema.
+    * **"Eliminar página":** Se visualiza exclusivamente en páginas dinámicas creadas por usuarios, siempre que el usuario sea Administrador o que su rol tenga el permiso de borrado y la página no posea enlaces activos que generen enlaces rotos.
   * **Regla de restricción por página:** Si un editor con un rol personalizado navega por una página para la cual no tiene permisos asignados, las opciones no autorizadas no estarán visibles; si no tiene permisos para ninguna acción en dicha página, el botón flotante completo se oculta automáticamente.
 
 > **[Captura: Botón Flotante de Edición]**
@@ -370,6 +377,15 @@ Uno de los elementos interactivos más importantes en el Sitio Web y la Intranet
 >
 > **[Captura: Botón Flotante de Edición (Móvil)]**
 > *Despliegue condicional del botón flotante de edición en pantalla para un usuario autenticado con permisos activos. (Vista en dispositivo móvil).*
+
+* **Caso 3: Usuario autenticado sin permisos de edición (Directores y Subdirectores):**
+  * Al iniciar sesión con cuenta corporativa `@sena.edu.co`, el sistema identifica que el usuario posee un perfil configurado en modo de **solo lectura**. Debido a que no cuenta con facultades de edición ni administración, el botón flotante **permanece completamente oculto**, impidiendo que el personal directivo ingrese por error al modo de diseño o altere contenidos.
+
+> **[Captura: Vista Directiva Solo Lectura sin Botón Flotante]**
+> *Pantalla de la Intranet para perfiles directivos en modalidad de solo lectura, donde el botón flotante de edición permanece completamente oculto.*
+>
+> **[Captura: Vista Directiva Solo Lectura sin Botón Flotante (Móvil)]**
+> *Pantalla de la Intranet para perfiles directivos en modalidad de solo lectura, donde el botón flotante de edición permanece completamente oculto. (Vista en dispositivo móvil).*
 
 ### 9.3. Diferenciación entre Páginas Fijas y Lienzo Dinámico del Editor Visual
 
@@ -402,52 +418,160 @@ Esta sección detalla de forma exhaustiva los flujos de trabajo de la plataforma
 
 ### 10.1. Ingreso y Recuperación de Contraseña
 
-#### 10.1.1. Flujo de Primer Ingreso al Sistema (Onboarding y Configuración Inicial)
-Cuando el Administrador crea una cuenta nueva, asigna una contraseña temporal provisoria. Este procedimiento es de carácter obligatorio para todo funcionario nuevo del SENA (Editores, Administradores, Directores y Subdirectores) y se ejecuta una única vez antes de poder operar de forma habitual en la plataforma:
+#### 10.1.1. Flujo de Primer Ingreso
 
-1. **Inicio de sesión con contraseña temporal:** El funcionario accede a la pantalla de acceso del portal correspondiente (Sitio Web Público o Intranet, según su rol) e ingresa su correo corporativo `@sena.edu.co` junto con la contraseña temporal comunicada manualmente por el Administrador.
+*(Nota: Para consultar las posibles situaciones de error, validaciones de campos y alertas del sistema asociadas a este proceso con sus respectivas capturas de pantalla, remitirse a la [Sección 14.1: Validaciones en el Primer Ingreso](#141-validaciones-en-el-primer-ingreso)).*
 
-> **[Captura: Login Primer Ingreso]**
-> *Formulario de inicio de sesión con las credenciales temporales.*
+Cuando el Administrador crea una cuenta de usuario en la plataforma (procedimiento detallado paso a paso en la [Sección 10.3.1: Submenú Usuarios](#1031-submenú-usuarios)), el sistema genera una **contraseña temporal provisoria**. Dado que la plataforma no envía correos automáticos ni notificaciones de bienvenida, el Administrador es el responsable de hacer llegar al nuevo funcionario, a través del canal o medio de comunicación que considere más conveniente (correo del SENA, chat interno, mensajería u otro medio), tanto el **correo corporativo registrado** como dicha **contraseña temporal**. Todo funcionario nuevo del SENA (Administradores, Editores de Contenido y Directores o Subdirectores) debe realizar de manera obligatoria esta configuración inicial por única vez antes de poder operar normalmente en el aplicativo.
+
+El sistema del Observatorio Laboral y Ocupacional dispone de dos formularios de inicio de sesión independientes (uno en el Sitio Web Público y otro en la Intranet del OLO). Cualquier usuario creado por el Administrador puede iniciar sesión o completar su primer ingreso desde cualquiera de los dos portales, siempre que su cuenta cuente con los permisos correspondientes para ese entorno:
+
+* **[Primer Ingreso desde el Sitio Web Público](#primer-ingreso-desde-el-sitio-web-público):** Permite configurar la cuenta desde el inicio de sesión del Sitio Web del OLO. Tras ingresar, acceden a operar las cuentas con permisos de administración (Panel Administrativo) o de edición de páginas (quienes no dispongan de estos permisos recibirán la indicación del sistema).
+* **[Primer Ingreso desde la Intranet del OLO](#primer-ingreso-desde-la-intranet-del-olo):** Permite configurar la cuenta desde el inicio de sesión de la Intranet del OLO. Tras ingresar, acceden las cuentas autorizadas con permiso de acceso interno a la Intranet, como Administradores, Editores de Contenido o Directores y Subdirectores para consulta de tableros (quienes no cuenten con dicho permiso recibirán la alerta correspondiente).
+
+##### Primer Ingreso desde el Sitio Web Público
+
+Este procedimiento describe el paso a paso para el funcionario que inicia sesión por primera vez a través del Sitio Web Público del OLO:
+
+1. **Ubicación del acceso en el Sitio Web:** En la franja azul superior del Sitio Web del OLO (banner GOV.CO), el funcionario ubica en el extremo derecho el texto interactivo con la **fecha y hora en vivo**. Al posar el cursor sobre este elemento, el sistema despliega la indicación *"Iniciar sesión"*. Al hacer clic, se abre la pantalla de inicio de sesión (`/login`).
+
+> **[Captura: Acceso a Inicio de Sesión Sitio Web]**
+> *Ubicación del texto interactivo de fecha y hora en el banner GOV.CO del Sitio Web Público para acceder al inicio de sesión.*
 >
-> **[Captura: Login Primer Ingreso (Móvil)]**
-> *Formulario de inicio de sesión con las credenciales temporales. (Vista en dispositivo móvil).*
+> **[Captura: Acceso a Inicio de Sesión Sitio Web (Móvil)]**
+> *Ubicación del texto interactivo de fecha y hora en el banner GOV.CO del Sitio Web Público para acceder al inicio de sesión. (Vista en dispositivo móvil).*
 
-2. **Detección automática del primer ingreso:** El sistema detecta que la cuenta tiene pendiente la configuración inicial de seguridad e interrumpe el flujo normal de redirección, mostrando obligatoriamente la pantalla de parametrización de cuenta (`/first-login`).
+2. **Ingreso con credenciales temporales:** En el formulario de inicio de sesión, se debe ingresar el correo corporativo asignado (`@sena.edu.co`) y la contraseña temporal comunicada por el Administrador. Luego, se debe presionar el botón **"Ingresar"**.
 
-> **[Captura: Pantalla Configuración Inicial]**
-> *Pantalla de configuración obligatoria que aparece tras el primer inicio de sesión.*
+> **[Captura: Formulario de Inicio de Sesión Sitio Web]**
+> *Formulario de acceso del Sitio Web Público diligenciado con correo corporativo y contraseña provisoria.*
 >
-> **[Captura: Pantalla Configuración Inicial (Móvil)]**
-> *Pantalla de configuración obligatoria que aparece tras el primer inicio de sesión. (Vista en dispositivo móvil).*
+> **[Captura: Formulario de Inicio de Sesión Sitio Web (Móvil)]**
+> *Formulario de acceso del Sitio Web Público diligenciado con correo corporativo y contraseña provisoria. (Vista en dispositivo móvil).*
 
-3. **Establecimiento de contraseña definitiva:** El sistema solicitará al funcionario crear su clave definitiva personal e intransferible. Se debe digitar la nueva contraseña en el primer campo y repetirla en el segundo campo de confirmación, cumpliendo estrictamente los 5 lineamientos de la política de seguridad (ver [Sección 6.3](#63-requisitos-de-credenciales-y-cuentas-de-acceso)).
+3. **Pantalla de bienvenida y configuración obligatoria:** Al comprobar los datos de acceso, el sistema identifica que se trata del primer ingreso del funcionario y presenta de forma automática la pantalla de primer ingreso (`/first-login`). En esta vista se solicita actualizar la seguridad de la cuenta antes de continuar hacia el portal.
 
-> **[Captura: Nueva Contraseña Primer Ingreso]**
-> *Campos de nueva contraseña y confirmación con indicador visual de cumplimiento de políticas de seguridad.*
+> **[Captura: Pantalla de Bienvenida y Configuración Inicial Sitio Web]**
+> *Pantalla de primer ingreso en el Sitio Web con saludo al funcionario y solicitud de actualización de seguridad.*
 >
-> **[Captura: Nueva Contraseña Primer Ingreso (Móvil)]**
-> *Campos de nueva contraseña y confirmación con indicador visual de cumplimiento de políticas de seguridad. (Vista en dispositivo móvil).*
+> **[Captura: Pantalla de Bienvenida y Configuración Inicial Sitio Web (Móvil)]**
+> *Pantalla de primer ingreso en el Sitio Web con saludo al funcionario y solicitud de actualización de seguridad. (Vista en dispositivo móvil).*
 
-4. **Configuración de preguntas de seguridad:** A continuación, el sistema solicitará parametrizar obligatoriamente **tres preguntas de seguridad**. Para cada una:
-   * Desplegar el menú y seleccionar la pregunta deseada de la lista predefinida.
-   * Digitar la respuesta en el campo de texto correspondiente (la validación es sensible a mayúsculas y caracteres).
+4. **Establecimiento de la contraseña definitiva:** En la pantalla de cambio de clave, el funcionario debe registrar su nueva contraseña personal:
+   * En el campo **"Contraseña temporal"**, se digita la clave provisoria recibida.
+   * En el campo **"Nueva contraseña"**, se escribe la nueva clave personal. La interfaz cuenta con un validador interactivo que confirma en tiempo real el cumplimiento de los 5 requisitos de seguridad de la política de contraseñas del SENA (mínimo 12 caracteres, mayúsculas, minúsculas, números y caracteres especiales).
+   * En el campo **"Ingresa nuevamente la contraseña"**, se reescribe la nueva clave para certificar la coincidencia exacta.
+   * Se hace clic en el botón **"Continuar"**.
 
-> **[Captura: Configurar Preguntas de Seguridad]**
-> *Formulario de configuración inicial de las tres preguntas de seguridad con sus respectivos campos de respuesta.*
+> **[Captura: Contraseña Definitiva Sitio Web]**
+> *Campos de ingreso de contraseña temporal, nueva clave y confirmación con validador de políticas de seguridad en el Sitio Web.*
 >
-> **[Captura: Configurar Preguntas de Seguridad (Móvil)]**
-> *Formulario de configuración inicial de las tres preguntas de seguridad con sus respectivos campos de respuesta. (Vista en dispositivo móvil).*
+> **[Captura: Contraseña Definitiva Sitio Web (Móvil)]**
+> *Campos de ingreso de contraseña temporal, nueva clave y confirmación con validador de políticas de seguridad en el Sitio Web. (Vista en dispositivo móvil).*
 
-5. **Confirmación y acceso formal:** Hacer clic en el botón **"Guardar y continuar"**. Una vez validados los datos, el sistema guardará las credenciales definitivas y concederá el acceso formal al portal o sección correspondiente según el rol asignado (Sitio Web con herramientas de edición para editores, Panel Administrativo para administradores o Intranet para directivos).
+5. **Configuración de preguntas de seguridad:** En la pantalla "Protege el acceso a tu cuenta", se deben configurar obligatoriamente las tres preguntas de seguridad para habilitar la recuperación de la cuenta ante un posible olvido:
+   * Se despliega el menú selector y se elige una pregunta de la lista predefinida del sistema.
+   * Se escribe la respuesta correspondiente en el campo de texto (la respuesta es confidencial y sensible a mayúsculas y caracteres).
+   * Se pulsa el botón **"Continuar"** para repetir la selección con la segunda y tercera pregunta del catálogo.
 
-#### 10.1.2. Inicio de Sesión Habitual en el Sitio Web Público (Banner GOV.CO)
-Una vez completado el primer ingreso, los funcionarios autorizados acceden al Sitio Web Público de forma habitual. El portal no requiere inicio de sesión para la consulta de información abierta a la ciudadanía; para el personal del SENA con facultades editoriales o administrativas, la vía de entrada es el enlace interactivo de la franja superior del Estado:
+> **[Captura: Preguntas de Seguridad Sitio Web]**
+> *Selector de preguntas del catálogo del sistema y registro de respuestas de seguridad en el Sitio Web.*
+>
+> **[Captura: Preguntas de Seguridad Sitio Web (Móvil)]**
+> *Selector de preguntas del catálogo del sistema y registro de respuestas de seguridad en el Sitio Web. (Vista en dispositivo móvil).*
 
-*(Nota: Si el funcionario ingresa por primera vez con su contraseña temporal provisoria, el sistema detectará el estado pendiente y lo guiará de manera obligatoria por el flujo de onboarding detallado en la [Sección 10.1.1](#1011-flujo-de-primer-ingreso-al-sistema-onboarding-y-configuración-inicial)).*
+6. **Confirmación, cierre de sesión y evaluación de permisos:** Al procesar las respuestas de seguridad, el sistema guarda la configuración definitiva y muestra el mensaje de confirmación **"¡Configuración completada!"**, recordando guardar las respuestas en un lugar seguro. Al presionar el botón **"Iniciar sesión"**, el sistema finaliza la sesión provisional y regresa a la pantalla de inicio de sesión (`/login`). El funcionario debe iniciar sesión con su contraseña definitiva recién creada, tras lo cual el aplicativo evalúa los permisos específicos de su cuenta:
+   * **Administradores:** El sistema los redirige de forma directa al **Panel Administrativo** (`/admin/dashboard`) para gestionar usuarios, roles, bitácora de auditoría y revisión de contenidos.
+   * **Editores de Contenido (y roles derivados autorizados):** El sistema los redirige a la **página de inicio del Sitio Web Público** (`/inicio`), donde se despliega de inmediato el **botón flotante de edición** en la esquina de la pantalla para maquetar páginas y gestionar contenidos autorizados.
+   * **Directores y Subdirectores (cuentas sin permisos para este portal):** Al estar configurados exclusivamente para la consulta analítica en la Intranet y no poseer permisos de edición ni de acceso al panel en el Sitio Web, el sistema detiene el acceso y muestra la alerta: *"Tu cuenta no tiene permisos de edición ni de acceso al panel."*, orientándolos a ingresar a través del portal de la Intranet (ver [Sección 14.1: Validaciones en el Primer Ingreso](#141-validaciones-en-el-primer-ingreso)).
 
-1. **Ubicación del acceso (Banner GOV.CO):** En la franja azul superior del portal del Estado (GOV.CO), ubicar en el extremo derecho el texto interactivo con la **fecha y hora en vivo**. Al pasar el cursor sobre este elemento, el sistema desplegará la etiqueta de ayuda *"Iniciar sesión"*; al hacer clic, redirigirá a la pantalla corporativa de inicio de sesión (`/login`).
-   *(Nota importante: El botón "Intranet" ubicado en el menú de navegación no es para iniciar sesión en el portal público, sino que enlaza a la plataforma independiente de la Intranet).*
+> **[Captura: Confirmación de Configuración Exitosa Sitio Web]**
+> *Pantalla de éxito confirmando la configuración de la cuenta en el Sitio Web y botón para iniciar sesión.*
+>
+> **[Captura: Confirmación de Configuración Exitosa Sitio Web (Móvil)]**
+> *Pantalla de éxito confirmando la configuración de la cuenta en el Sitio Web y botón para iniciar sesión. (Vista en dispositivo móvil).*
+
+##### Primer Ingreso desde la Intranet del OLO
+
+Este procedimiento lo ejecutan los funcionarios (Administradores, Editores autorizados y Directores o Subdirectores) que realizan su primer inicio de sesión directamente en el portal privado de la Intranet:
+
+1. **Acceso a la Intranet:** El funcionario hace clic en el botón fijo **"Intranet"** ubicado en la esquina superior derecha de la cabecera del Sitio Web Público, o ingresa mediante la dirección web (URL) de la Intranet del OLO. Al tratarse de una plataforma privada que requiere autenticación, el sistema presenta la pantalla de bienvenida y acceso (`/login`), compuesta por un panel de bienvenida a la izquierda ("Bienvenido a NUESTRA INTRANET") y el formulario de inicio de sesión en el panel derecho.
+
+> **[Captura: Acceso a la Intranet]**
+> *Pantalla de acceso de la Intranet del OLO ('Bienvenido a NUESTRA INTRANET') con formulario en el panel derecho.*
+>
+> **[Captura: Acceso a la Intranet (Móvil)]**
+> *Pantalla de acceso de la Intranet del OLO con formulario en el panel derecho. (Vista en dispositivo móvil).*
+
+2. **Ingreso con credenciales temporales:** En el formulario de la Intranet, se debe digitar el correo electrónico corporativo (`@sena.edu.co`) y la contraseña provisoria entregada por el Administrador. Luego, se debe presionar el botón principal **"Ingresar"** (o "Acceder a la Intranet").
+
+> **[Captura: Formulario de Inicio de Sesión Intranet]**
+> *Diligenciamiento de correo corporativo del SENA y contraseña temporal en el formulario de la Intranet.*
+>
+> **[Captura: Formulario de Inicio de Sesión Intranet (Móvil)]**
+> *Diligenciamiento de correo corporativo del SENA y contraseña temporal en el formulario de la Intranet. (Vista en dispositivo móvil).*
+
+3. **Bienvenida y pasos guiados de configuración:** Al verificar las credenciales temporales, el aplicativo reconoce que la cuenta requiere su configuración inicial y da paso a la pantalla de primer ingreso de la Intranet (`/first-login`). En esta vista se despliega un panel explicativo con el saludo y una barra de pasos guiados para orientar al funcionario durante el proceso.
+
+> **[Captura: Pantalla de Pasos Guiados Intranet]**
+> *Interfaz de primer ingreso de la Intranet con panel informativo izquierdo, formulario de configuración y barra de pasos inferior.*
+>
+> **[Captura: Pantalla de Pasos Guiados Intranet (Móvil)]**
+> *Interfaz de primer ingreso de la Intranet con panel informativo, formulario de configuración y barra de pasos inferior. (Vista en dispositivo móvil).*
+
+4. **Establecimiento de la contraseña definitiva:** En el formulario de cambio de clave, el usuario registra su nueva contraseña personal:
+   * En el primer campo, se digita la clave provisoria en **"Contraseña temporal"**.
+   * En el segundo campo, se escribe la **"Nueva contraseña"**. El recuadro interactivo de requisitos de seguridad comprueba en tiempo real el cumplimiento de los 5 lineamientos de seguridad (longitud mínima de 12 caracteres, mayúscula, minúscula, dígito y símbolo).
+   * En el tercer campo, se reescribe la clave en **"Ingresa nuevamente la contraseña"**.
+   * Se hace clic en el botón **"Continuar"** (o en el control de navegación siguiente) para validar la información y avanzar.
+
+> **[Captura: Contraseña Definitiva Intranet]**
+> *Formulario de actualización de contraseña de la Intranet con validador de requisitos de seguridad y controles de navegación.*
+>
+> **[Captura: Contraseña Definitiva Intranet (Móvil)]**
+> *Formulario de actualización de contraseña de la Intranet con validador de requisitos de seguridad y controles de navegación. (Vista en dispositivo móvil).*
+
+5. **Configuración de preguntas de seguridad:** En la pantalla "Escoge tus preguntas y respuestas":
+   * Mediante el selector interactivo, se elige la primera pregunta de seguridad del catálogo oficial del sistema.
+   * Se escribe la respuesta confidencial correspondiente en el campo de texto.
+   * Se presiona el botón **"Continuar"** para responder secuencialmente la segunda y tercera pregunta.
+   * Al completar la tercera respuesta, el botón principal cambia a **"Guardar"**. Al pulsarlo, el sistema almacena de forma segura las tres preguntas y respuestas de recuperación.
+
+> **[Captura: Preguntas de Seguridad Intranet]**
+> *Formulario de selección de preguntas y respuestas de seguridad con guía paso a paso en la Intranet.*
+>
+> **[Captura: Preguntas de Seguridad Intranet (Móvil)]**
+> *Formulario de selección de preguntas y respuestas de seguridad con guía paso a paso en la Intranet. (Vista en dispositivo móvil).*
+
+6. **Confirmación, cierre de sesión y evaluación de permisos:** La pantalla presenta la confirmación: **"¡Configuración completada con éxito! Tu cuenta ya es segura."**, recordando que estas respuestas serán el único método para recuperar la cuenta ante olvidos. Al hacer clic en el botón **"Iniciar sesión"**, el sistema cierra la sesión provisional y regresa al formulario de acceso de la Intranet (`/login`). El usuario debe ingresar sus nuevas credenciales definitivas, momento en el cual el sistema valida su identidad y los permisos asignados:
+   * **Administradores:** Acceden a la Intranet con plenas facultades de visualización, supervisión editorial y navegación global.
+   * **Editores de Contenido (y roles derivados autorizados):** Acceden a la Intranet con el botón flotante habilitado para maquetar y actualizar las páginas internas autorizadas en su perfil.
+   * **Directores y Subdirectores:** Ingresan a la **pantalla principal de la Intranet** (`/inicio`), habilitando la visualización interactiva de tableros de Power BI, indicadores ocupacionales y descarga de reportes en modalidad de **solo lectura**, sin menú de edición ni acceso al Panel Administrativo.
+   * **Cuentas sin permiso para la Intranet:** Si el usuario no cuenta con autorización o permisos para ingresar a este portal, el sistema deniega la entrada mostrando la alerta: *"No tienes permisos para ingresar a la intranet."*
+
+> **[Captura: Confirmación de Configuración Exitosa Intranet]**
+> *Pantalla de éxito en la Intranet confirmando la correcta configuración y habilitando el botón para el inicio de sesión formal.*
+>
+> **[Captura: Confirmación de Configuración Exitosa Intranet (Móvil)]**
+> *Pantalla de éxito en la Intranet confirmando la correcta configuración y habilitando el botón para el inicio de sesión formal. (Vista en dispositivo móvil).*
+
+#### 10.1.2. Flujo de Inicio de Sesión Habitual
+
+*(Nota: Para consultar las posibles situaciones de error, validaciones de campos y alertas del sistema en el inicio de sesión con sus respectivas capturas de pantalla, remitirse a la [Sección 14.2: Validaciones en el Inicio de Sesión Habitual](#142-validaciones-en-el-inicio-de-sesión-habitual)).*
+
+Una vez completado el primer ingreso y configurada la contraseña definitiva, los funcionarios autorizados acceden al sistema de forma habitual para sus labores operativas, editoriales o de consulta gerencial. Al igual que en la configuración inicial, la plataforma dispone de dos puntos de acceso independientes según el entorno de trabajo y el rol del usuario:
+
+* **[Inicio de Sesión Habitual en el Sitio Web Público](#inicio-de-sesión-habitual-en-el-sitio-web-público):** Permite el acceso al personal con facultades de administración o de edición a través del enlace interactivo de fecha y hora en el banner GOV.CO.
+* **[Inicio de Sesión Habitual en la Intranet del OLO](#inicio-de-sesión-habitual-en-la-intranet-del-olo):** Permite el ingreso a la plataforma privada para la consulta de módulos analíticos o labores de gestión interna según el rol asignado.
+
+##### Inicio de Sesión Habitual en el Sitio Web Público
+
+El portal web público no requiere inicio de sesión para la consulta de información abierta a la ciudadanía; para el personal del SENA con facultades administrativas o editoriales, la vía de entrada es el enlace interactivo de la franja superior del Estado:
+
+*(Nota: Si el funcionario ingresa por primera vez con su contraseña temporal provisoria, el sistema reconocerá la configuración inicial pendiente y lo guiará de manera obligatoria por el flujo detallado en [Primer Ingreso desde el Sitio Web Público](#primer-ingreso-desde-el-sitio-web-público)).*
+
+1. **Ubicación del enlace de acceso (Banner GOV.CO):** En la parte superior de la página, dentro de la franja azul oficial de GOV.CO, se ubica el texto interactivo de **fecha y hora** en la esquina derecha. Al colocar el cursor sobre el texto, se muestra la etiqueta flotante *"Iniciar sesión"*. Al hacer clic sobre dicho elemento, la pantalla se traslada directamente al formulario de ingreso (`/login`).
+   *(Aclaración: El botón verde "Intranet" en el menú principal no es para iniciar sesión en la web, sino que conduce a la plataforma privada).*
 
 > **[Captura: Enlace de Inicio de Sesión en Banner GOV.CO]**
 > *Ubicación del texto interactivo de fecha y hora en el extremo derecho de la franja azul GOV.CO para acceder al inicio de sesión.*
@@ -455,90 +579,114 @@ Una vez completado el primer ingreso, los funcionarios autorizados acceden al Si
 > **[Captura: Enlace de Inicio de Sesión en Banner GOV.CO (Móvil)]**
 > *Ubicación del texto interactivo de fecha y hora en la franja azul GOV.CO para acceder al inicio de sesión. (Vista en dispositivo móvil).*
 
-2. **Formulario de credenciales:** En la pantalla institucional de acceso (`/login`), ingresar el correo corporativo (estrictamente `@sena.edu.co`) en el primer campo de texto.
+2. **Visualización de la pantalla de inicio de sesión:** La pantalla presenta una tarjeta central de acceso limpia con el logotipo institucional del observatorio, dos casillas de texto para ingresar los datos y el enlace interactivo **"*(¿Olvidaste tu contraseña?)*"** en la parte inferior para restablecer la clave en caso de pérdida.
 
-> **[Captura: Campo Correo Corporativo]**
-> *Vista del formulario de ingreso resaltando el campo para digitar el correo corporativo.*
+> **[Captura: Formulario de Autenticación Sitio Web]**
+> *Pantalla de inicio de sesión del Sitio Web con las casillas de correo, contraseña y enlace de recuperación.*
 >
-> **[Captura: Campo Correo Corporativo (Móvil)]**
-> *Vista del formulario de ingreso resaltando el campo para digitar el correo corporativo. (Vista en dispositivo móvil).*
+> **[Captura: Formulario de Autenticación Sitio Web (Móvil)]**
+> *Pantalla de inicio de sesión del Sitio Web con las casillas de correo, contraseña y enlace de recuperación. (Vista en dispositivo móvil).*
 
-3. **Ingreso de Contraseña:** En el segundo campo, digitar la contraseña robusta asignada.
+3. **Diligenciamiento de correo y contraseña:** En el formulario de acceso, se completan ambas casillas:
+   * En la casilla superior **"Correo electrónico"**, se escribe la cuenta corporativa institucional (`@sena.edu.co`).
+   * En la casilla inferior **"Contraseña"**, se escribe la clave definitiva personal. Se puede hacer clic sobre el **ícono de ojo** situado a la derecha de la casilla para ver u ocultar los caracteres escritos y confirmar que la escritura sea correcta.
 
-> **[Captura: Campo Contraseña]**
-> *Vista del formulario de ingreso resaltando el campo de contraseña.*
+> **[Captura: Credenciales Definitivas en Sitio Web]**
+> *Casillas de correo corporativo y contraseña diligenciadas en el formulario de inicio de sesión.*
 >
-> **[Captura: Campo Contraseña (Móvil)]**
-> *Vista del formulario de ingreso resaltando el campo de contraseña. (Vista en dispositivo móvil).*
+> **[Captura: Credenciales Definitivas en Sitio Web (Móvil)]**
+> *Casillas de correo corporativo y contraseña diligenciadas en el formulario de inicio de sesión. (Vista en dispositivo móvil).*
 
-4. **Ejecución:** Hacer clic en el botón principal **"Ingresar"** (destacado con el color de marca del portal).
+4. **Clic en el botón Ingresar:** Se hace clic sobre el botón principal **"Ingresar"** (destacado con el color verde corporativo). La interfaz muestra una breve animación de carga mientras procesa el acceso hacia el portal.
 
-> **[Captura: Botón Ingresar]**
-> *Acción de hacer clic sobre el botón principal para ejecutar el inicio de sesión.*
+> **[Captura: Ejecución de Inicio de Sesión Sitio Web]**
+> *Botón 'Ingresar' activo para iniciar la sesión en el Sitio Web.*
 >
-> **[Captura: Botón Ingresar (Móvil)]**
-> *Acción de hacer clic sobre el botón principal para ejecutar el inicio de sesión. (Vista en dispositivo móvil).*
+> **[Captura: Ejecución de Inicio de Sesión Sitio Web (Móvil)]**
+> *Botón 'Ingresar' activo para iniciar la sesión en el Sitio Web. (Vista en dispositivo móvil).*
 
-5. **Resultado y Redirección por Rol (Exclusivo para el Sitio Web Público):** Si las credenciales son válidas, el sistema evalúa los permisos específicos del funcionario para redirigirlo según las funciones de este portal:
-   * **Editores (y roles derivados de Editor):** Al validar sus permisos de maquetación, el sistema los redirige de vuelta a la **página de inicio del Sitio Web Público** (`/inicio`), donde se despliega de inmediato el **botón circular flotante (Speed Dial)** en la esquina de la pantalla para maquetar páginas, agregar bloques o configurar el menú y pie.
-   * **Administradores:** Al poseer facultades integrales y acceso al panel (`acceso.panel`), el sistema los redirige de manera directa al **Panel Administrativo** (`/admin/dashboard`), habilitando la gestión de usuarios, roles, auditoría y bandeja de revisión.
-   *(Nota: Si una cuenta autenticada no posee permisos de edición ni acceso al panel, el sistema detendrá el acceso y presentará la alerta: "Tu cuenta no tiene permisos de edición ni de acceso al panel").*
+5. **Validación de acceso según el perfil del usuario:** La plataforma comprueba el tipo de cuenta:
+   * Si la cuenta corresponde a un Administrador o Editor, el sistema autoriza la entrada y da paso inmediato a la vista correspondiente.
+   * Si se trata de un Director o Subdirector (cuyo perfil está destinado a la Intranet), la pantalla no avanza y muestra un recuadro de aviso con el mensaje: *"Tu cuenta no tiene permisos de edición ni de acceso al panel."*, indicándole que debe ingresar por el portal de la Intranet (ver [Sección 14.2: Validaciones en el Inicio de Sesión Habitual](#142-validaciones-en-el-inicio-de-sesión-habitual)).
 
-> **[Captura: Redirección de Rol Sitio Web]**
-> *Ejemplo visual del acceso según perfil en el Sitio Web Público: retorno al inicio con botón flotante para Editores o redirección al Dashboard para Administradores.*
+> **[Captura: Verificación de Autorización Sitio Web]**
+> *Validación del tipo de usuario en pantalla para dar paso al entorno correspondiente o mostrar la indicación hacia la Intranet.*
 >
-> **[Captura: Redirección de Rol Sitio Web (Móvil)]**
-> *Ejemplo visual del acceso según perfil en el Sitio Web Público: retorno al inicio con botón flotante para Editores o redirección al Dashboard para Administradores. (Vista en dispositivo móvil).*
+> **[Captura: Verificación de Autorización Sitio Web (Móvil)]**
+> *Validación del tipo de usuario en pantalla para dar paso al entorno correspondiente o mostrar la indicación hacia la Intranet. (Vista en dispositivo móvil).*
 
-#### 10.1.3. Acceso e Inicio de Sesión Habitual en la Intranet del OLO
+6. **Despliegue del entorno de trabajo en pantalla:** Al completarse el ingreso, la pantalla cambia automáticamente según el rol del funcionario:
+   * **Administradores:** La pantalla muestra el **Panel Administrativo** (`/admin/dashboard`), con el menú lateral de fondo oscuro a la izquierda (Usuarios, Roles, Auditoría y Revisión) y las tarjetas de resumen informativo en el centro.
+   * **Editores de Contenido:** El navegador regresa a la portada del **Sitio Web Público** (`/inicio`), donde aparece de inmediato en la esquina inferior derecha el **botón flotante circular de edición** (ícono de lápiz) para comenzar a maquetar y modificar páginas autorizadas.
+
+> **[Captura: Redirección y Despliegue de Rol Sitio Web]**
+> *Entorno visible tras el inicio de sesión: Panel Administrativo con menú lateral para Administradores o portada pública con botón flotante de edición para Editores.*
+>
+> **[Captura: Redirección y Despliegue de Rol Sitio Web (Móvil)]**
+> *Entorno visible tras el inicio de sesión: Panel Administrativo con menú lateral para Administradores o portada pública con botón flotante de edición para Editores. (Vista en dispositivo móvil).*
+
+##### Inicio de Sesión Habitual en la Intranet del OLO
+
 La Intranet es una plataforma privada e independiente del Sitio Web Público, concebida para el seguimiento gerencial, análisis de indicadores y trabajo interno. Su sistema de inicio de sesión es totalmente independiente:
 
-*(Nota: Si un directivo o funcionario nuevo accede por primera vez con su contraseña temporal provisoria, el sistema activará de forma automática el flujo de primer ingreso descrito en la [Sección 10.1.1](#1011-flujo-de-primer-ingreso-al-sistema-onboarding-y-configuración-inicial)).*
+*(Nota: Si un nuevo funcionario (Administrador, Editor o Directivo) accede por primera vez con su contraseña temporal provisoria, el sistema activará de forma automática el flujo de primer ingreso descrito en [Primer Ingreso desde la Intranet del OLO](#primer-ingreso-desde-la-intranet-del-olo)).*
 
-1. **Punto de enlace y acceso a la plataforma:** Desde el Sitio Web Público, ubicar y hacer clic en el botón fijo **"Intranet"** en la cabecera (esquina superior derecha), o ingresar directamente mediante la dirección web (URL) corporativa de la Intranet.
+1. **Ubicación del botón de acceso a la Intranet:** Desde la página del Sitio Web Público, se hace clic sobre el botón destacado **"Intranet"** en la parte superior derecha de la cabecera, o bien se ingresa la dirección web oficial de la Intranet en el navegador.
 
 > **[Captura: Botón Acceso Intranet en Cabecera]**
-> *Ubicación del botón 'Intranet' en la esquina superior derecha del Sitio Web Público como punto de enlace hacia el portal privado.*
+> *Botón 'Intranet' visible en la cabecera superior derecha del Sitio Web para dirigirse al entorno privado.*
 >
 > **[Captura: Botón Acceso Intranet en Cabecera (Móvil)]**
-> *Ubicación del botón 'Intranet' en la cabecera del Sitio Web Público como punto de enlace hacia el portal privado. (Vista en dispositivo móvil).*
+> *Botón 'Intranet' visible en la cabecera del Sitio Web para dirigirse al entorno privado. (Vista en dispositivo móvil).*
 
-2. **Pantalla de bloqueo y autenticación obligatoria:** Al acceder a la Intranet, el sistema no permite navegación pública e intercepta al usuario con la pantalla de bloqueo y formulario propio de inicio de sesión (`/login`).
+2. **Visualización de la pantalla de bienvenida y bloqueo:** Al tratarse de un espacio privado, se despliega una pantalla dividida en dos áreas: a la izquierda, un panel ilustrado de bienvenida institucional con el texto "Bienvenido a NUESTRA INTRANET"; a la derecha, el recuadro blanco con el formulario de ingreso.
 
 > **[Captura: Pantalla Bloqueo Intranet]**
-> *Pantalla de bloqueo de la Intranet del OLO exigiendo autenticación obligatoria.*
+> *Pantalla de acceso de la Intranet con panel visual de bienvenida a la izquierda y formulario de ingreso a la derecha.*
 >
 > **[Captura: Pantalla Bloqueo Intranet (Móvil)]**
-> *Pantalla de bloqueo de la Intranet del OLO exigiendo autenticación obligatoria. (Vista en dispositivo móvil).*
+> *Pantalla de acceso de la Intranet con formulario de ingreso centrado en dispositivos móviles.*
 
-3. **Ingreso de credenciales:** Completar los campos con el correo corporativo (`@sena.edu.co`) y la contraseña correspondiente en el formulario de la Intranet.
+3. **Diligenciamiento de credenciales en el formulario:** En el formulario de la Intranet, se completan ambas casillas:
+   * En la casilla **"Correo electrónico"**, se escribe la cuenta corporativa `@sena.edu.co`.
+   * En la casilla **"Contraseña"**, se digita la clave personal definitiva.
 
-> **[Captura: Credenciales Intranet]**
-> *Ingreso de correo corporativo y contraseña en el portal de la Intranet.*
+> **[Captura: Credenciales Definitivas Intranet]**
+> *Casillas de correo corporativo y contraseña diligenciadas en el formulario de la Intranet.*
 >
-> **[Captura: Credenciales Intranet (Móvil)]**
-> *Ingreso de correo corporativo y contraseña en el portal de la Intranet. (Vista en dispositivo móvil).*
+> **[Captura: Credenciales Definitivas Intranet (Móvil)]**
+> *Casillas de correo corporativo y contraseña diligenciadas en el formulario de la Intranet. (Vista en dispositivo móvil).*
 
-4. **Ejecución:** Presionar el botón principal **"Ingresar"** (o "Acceder a la Intranet").
+4. **Clic en el botón de ingreso:** Se presiona el botón verde principal **"Ingresar"** (o "Acceder a la Intranet") para enviar los datos e iniciar la comprobación.
 
 > **[Captura: Botón Acceder Intranet]**
-> *Clic en el botón de acceso para enviar y validar las credenciales en la Intranet.*
+> *Acción de hacer clic sobre el botón 'Ingresar' en el formulario de la Intranet.*
 >
 > **[Captura: Botón Acceder Intranet (Móvil)]**
-> *Clic en el botón de acceso para enviar y validar las credenciales en la Intranet. (Vista en dispositivo móvil).*
+> *Acción de hacer clic sobre el botón 'Ingresar' en el formulario de la Intranet. (Vista en dispositivo móvil).*
 
-5. **Resultado y acceso según perfil en la Intranet:** El sistema verifica que la cuenta disponga del permiso de acceso interno (`acceso.intranet`):
-   * **Directores y Subdirectores:** Ingresan a la pantalla principal de la Intranet para consultar tableros analíticos de Power BI, reportes e indicadores en modalidad de **solo lectura**, sin herramientas de edición ni acceso al panel administrativo.
-   * **Editores y Administradores:** Acceden a los módulos y secciones internas según los permisos que tengan asignados en la plataforma.
-   *(Nota: Si un usuario no posee el permiso de acceso interno a la intranet, el sistema denegará la entrada indicando: "No tienes permisos para ingresar a la intranet").*
+5. **Comprobación de permiso de ingreso a la Intranet:** La plataforma confirma que la cuenta tenga habilitado el acceso a este entorno privado:
+   * Si el funcionario tiene permiso concedido, el formulario da paso directo al interior de la Intranet.
+   * Si la cuenta no cuenta con permiso asignado para ingresar a este portal, la pantalla muestra una alerta roja destacada: *"No tienes permisos para ingresar a la intranet."* (ver [Sección 14.2: Validaciones en el Inicio de Sesión Habitual](#142-validaciones-en-el-inicio-de-sesión-habitual)).
+
+> **[Captura: Verificación de Autorización en Intranet]**
+> *Mensaje informativo en pantalla confirmando el acceso o mostrando la alerta de falta de permiso institucional.*
+>
+> **[Captura: Verificación de Autorización en Intranet (Móvil)]**
+> *Mensaje informativo en pantalla confirmando el acceso o mostrando la alerta de falta de permiso institucional. (Vista en dispositivo móvil).*
+
+6. **Despliegue de los módulos y herramientas según rol:** La interfaz se abre mostrando los contenidos correspondientes a cada perfil:
+   * **Administradores:** Visualizan todas las secciones de la Intranet con libertad de navegación y herramientas de supervisión activas.
+   * **Editores de Contenido:** Acceden a las páginas internas autorizadas, visualizando el **botón flotante de edición** para maquetar bloques de contenido.
+   * **Directores y Subdirectores:** Ingresan directamente a la **pantalla principal de la Intranet** (`/inicio`), visualizando en pantalla los **tableros interactivos de Power BI**, indicadores del mercado laboral y botones de descarga de reportes en modalidad de **solo lectura** (sin botones de edición ni accesos administrativos).
 
 > **[Captura: Inicio Exitoso Intranet]**
-> *Pantalla de inicio exitosa en la Intranet mostrando los tableros analíticos y contenidos correspondientes al perfil.*
+> *Pantalla principal de la Intranet mostrando los tableros analíticos de Power BI e indicadores gerenciales en pantalla.*
 >
 > **[Captura: Inicio Exitoso Intranet (Móvil)]**
-> *Pantalla de inicio exitosa en la Intranet mostrando los tableros analíticos y contenidos correspondientes al perfil. (Vista en dispositivo móvil).*
+> *Pantalla principal de la Intranet mostrando los tableros analíticos de Power BI e indicadores gerenciales en pantalla. (Vista en dispositivo móvil).*
 
-#### 10.1.4. Procedimiento de Recuperación de Contraseña (Ambos Portales)
+#### 10.1.3. Procedimiento de Recuperación de Contraseña (Ambos Portales)
 Este procedimiento permite a cualquier funcionario restablecer de forma autónoma su clave de acceso ante olvidos o bloqueos, validando su identidad mediante las preguntas de seguridad configuradas durante el primer ingreso:
 
 1. **Inicio del proceso:** En la pantalla de inicio de sesión (ya sea del Sitio Web o de la Intranet), se debe ubicar el enlace inferior.
@@ -597,16 +745,16 @@ Este procedimiento permite a cualquier funcionario restablecer de forma autónom
 > **[Captura: Paso 7 (Móvil)]**
 > *Ingreso de la nueva contraseña en los campos correspondientes. (Vista en dispositivo móvil).*
 
-8. **Confirmación final:** Se debe pulsar el botón **"Guardar nueva contraseña"** para finalizar el proceso. El sistema devolverá al usuario al login.
+8. **Confirmación final:** Se debe pulsar el botón **"Guardar nueva contraseña"** para finalizar el proceso. El sistema redirigirá al usuario a la pantalla de inicio de sesión (`/login`).
 
-#### 10.1.5. Procedimiento de Cierre de Sesión (Logout)
+#### 10.1.4. Procedimiento de Cierre de Sesión (Logout)
 
 El sistema provee mecanismos específicos de salida segura según el entorno en el que se encuentre trabajando el usuario:
 
-##### A. Cierre de Sesión desde el Panel Administrativo
-1. **Acceso al menú de perfil:** En la parte inferior del menú lateral izquierdo, hacer clic sobre el nombre o foto de perfil del usuario.
-2. **Selección de la opción:** En el menú desplegable oscuro que aparece, hacer clic en **"Cerrar sesión"**.
-3. **Confirmación:** El sistema cerrará la sesión activa, invalidará el token de autenticación y redirigirá automáticamente a la pantalla de acceso.
+##### Cierre de Sesión desde el Panel Administrativo
+1. **Acceso al menú de perfil:** En la parte inferior del menú lateral izquierdo, se debe hacer clic sobre el nombre o foto de perfil del usuario.
+2. **Selección de la opción:** En el menú desplegable oscuro que aparece, se debe hacer clic en **"Cerrar sesión"**.
+3. **Confirmación:** El sistema cerrará la sesión activa y redirigirá automáticamente a la pantalla de inicio de sesión (`/login`).
 
 > **[Captura: Logout Panel Admin]**
 > *Menú desplegable de perfil en el menú lateral del Panel Administrativo con la opción "Cerrar sesión" visible.*
@@ -614,10 +762,10 @@ El sistema provee mecanismos específicos de salida segura según el entorno en 
 > **[Captura: Logout Panel Admin (Móvil)]**
 > *Menú desplegable de perfil en el menú lateral del Panel Administrativo con la opción "Cerrar sesión" visible. (Vista en dispositivo móvil).*
 
-##### B. Cierre de Sesión desde la Intranet
-1. **Ubicación del control de salida:** En la esquina superior derecha de la barra superior de la Intranet, ubicar el botón de salida segura (ícono de cerrar sesión).
-2. **Ejecución:** Hacer clic en el botón **"Cerrar sesión"**.
-3. **Confirmación:** El sistema destruirá la sesión activa e invalidará el token en el navegador, redirigiendo de inmediato a la pantalla de inicio de sesión de la Intranet.
+##### Cierre de Sesión desde la Intranet
+1. **Ubicación del control de salida:** En la esquina superior derecha de la barra superior de la Intranet, se debe ubicar el botón de salida segura (ícono de cerrar sesión).
+2. **Ejecución:** Se debe hacer clic en el botón **"Cerrar sesión"**.
+3. **Confirmación:** El sistema finalizará la sesión activa y redirigirá de inmediato a la pantalla de inicio de sesión de la Intranet (`/login`).
 
 > **[Captura: Logout Intranet]**
 > *Botón de salida segura ('Cerrar sesión') en la barra superior de la Intranet.*
@@ -625,7 +773,7 @@ El sistema provee mecanismos específicos de salida segura según el entorno en 
 > **[Captura: Logout Intranet (Móvil)]**
 > *Botón de salida segura ('Cerrar sesión') en la barra superior de la Intranet. (Vista en dispositivo móvil).*
 
-*(Nota sobre el Sitio Web Público: El portal público no posee menú de usuario ni botón de cierre de sesión en su cabecera. Al cerrar sesión en la Intranet o en el Panel Administrativo, la sesión queda destruida para todo el sistema, por lo que al volver a ingresar al Sitio Web Público el botón circular flotante de edición desaparece automáticamente).*
+*(Nota sobre el Sitio Web Público: El portal público no posee menú de usuario ni botón de cierre de sesión en su cabecera. Al cerrar sesión en la Intranet o en el Panel Administrativo, la sesión se cierra para todo el sistema, por lo que al volver a ingresar al Sitio Web Público el botón flotante de edición desaparece automáticamente).*
 
 ### 10.2. Panel Administrativo: Interfaz General y Dashboard
 Al iniciar sesión con el rol de Administrador y ser dirigido al Panel Administrativo, el usuario encontrará un entorno compuesto por un menú lateral de navegación y un área central de trabajo.
@@ -700,7 +848,7 @@ En la barra de navegación lateral izquierda del panel, al desplegar la pestaña
 > **[Captura: Paso 3 (Móvil)]**
 > *Ingreso de datos personales en el formulario modal. (Vista en dispositivo móvil).*
 
-4. **Asignación de rol:** Se debe desplegar el menú de roles y seleccionar el perfil adecuado (Director, Editor, Administrador).
+4. **Asignación de rol:** Se debe desplegar el menú de roles y seleccionar el perfil adecuado (Administrador, Editor base o rol derivado, o Director / Subdirector).
 
 > **[Captura: Paso 4]**
 > *Selección del rol desde la lista desplegable.*
@@ -708,7 +856,7 @@ En la barra de navegación lateral izquierda del panel, al desplegar la pestaña
 > **[Captura: Paso 4 (Móvil)]**
 > *Selección del rol desde la lista desplegable. (Vista en dispositivo móvil).*
 
-5. **Guardado:** Se debe hacer clic en el botón **"Guardar usuario"** para registrar la cuenta en el sistema.
+5. **Guardado y entrega de credenciales:** Se debe hacer clic en el botón **"Guardar usuario"** para registrar la cuenta en el sistema. De inmediato, la plataforma despliega una ventana emergente que muestra el correo registrado y la **contraseña temporal** generada. El Administrador debe copiar dicha contraseña y suministrarla al funcionario junto con su correo asignado mediante el medio que considere más conveniente (correo del SENA, chat interno o mensajería directa), teniendo en cuenta que la plataforma no efectúa envíos automáticos de notificación.
 
 > **[Captura: Paso 5]**
 > *Clic en el botón Guardar para confirmar la creación.*
@@ -725,7 +873,7 @@ En la barra de navegación lateral izquierda del panel, al desplegar la pestaña
 > *Uso de los botones de acción en la fila de un usuario. (Vista en dispositivo móvil).*
 
 #### 10.3.2. Submenú: Roles
-1. **Vista principal:** Muestra la lista de roles creados en la plataforma (recordando que todos derivan de la jerarquía Editor).
+1. **Vista principal:** Muestra la lista de roles configurables en la plataforma (recordando que los roles de Administrador, Editor base y Director / Subdirector cuentan con permisos fijos del sistema y no son modificables; esta tabla gestiona exclusivamente los roles hijos derivados de Editor).
 
 > **[Captura: Paso 1]**
 > *Evidencia visual de la acción descrita en el paso 1.*
@@ -747,34 +895,34 @@ En la barra de navegación lateral izquierda del panel, al desplegar la pestaña
    
    Los permisos configurables para los roles de editor se organizan rigurosamente en **5 secciones exclusivas**, cada una con un propósito y alcance específico dentro de la plataforma:
 
-   * **1. Acceso (`acceso`):** Define las puertas de entrada al sistema. Si un rol no tiene activo el acceso al entorno respectivo, el usuario no podrá autenticarse ni visualizar su contenido:
-     * *Sitio web público (`acceso.sitio`):* Habilita al usuario para autenticarse y disponer de facultades operativas sobre las páginas del portal público del OLO.
-     * *Intranet (`acceso.intranet`):* Permite ingresar a la Intranet del OLO y consultar sus páginas y contenidos restringidos.
+   * **1. Acceso:** Define las puertas de entrada al sistema. Si un rol no tiene activo el acceso al entorno respectivo, el usuario no podrá autenticarse ni visualizar su contenido:
+     * *Sitio web público:* Habilita al usuario para autenticarse y disponer de facultades operativas sobre las páginas del portal público del OLO.
+     * *Intranet:* Permite ingresar a la Intranet del OLO y consultar sus páginas y contenidos restringidos.
      *(Nota de seguridad: El acceso al Panel Administrativo `/admin` está restringido por código exclusivamente al Administrador y no se expone a los roles de editor).*
 
-   * **2. Editar [Plantilla / Globales] (`plantilla`):** Agrupa los permisos para intervenir los componentes estructurales envolventes que comparten todas las páginas de un entorno determinado. No modifican una página aislada, sino la cabecera (header) y pie de página (footer) de forma global:
-     * *Menú y pie de el sitio web (`editar.sitio.menu-y-pie`):* Otorga la facultad de maquetar y modificar la barra superior de navegación y el pie de página de todo el portal del OLO.
-     * *Menú y pie de la intranet (`editar.intranet.menu-y-pie`):* Otorga la facultad de maquetar y modificar el menú y pie de página compartidos por todas las páginas de la Intranet.
+   * **2. Editar [Plantilla / Globales]:** Agrupa los permisos para intervenir los componentes estructurales envolventes que comparten todas las páginas de un entorno determinado. No modifican una página aislada, sino la cabecera (header) y pie de página (footer) de forma global:
+     * *Menú y pie del sitio web:* Otorga la facultad de maquetar y modificar la barra superior de navegación y el pie de página de todo el portal del OLO.
+     * *Menú y pie de la intranet:* Otorga la facultad de maquetar y modificar el menú y pie de página compartidos por todas las páginas de la Intranet.
      *(Por motivos de control y debido a su impacto global, estos interruptores no cuentan con botón de activación masiva).*
 
-   * **3. Secciones del sitio web (`secciones-sitio`):** Habilita la edición granular de páginas específicas pertenecientes al portal web público:
-     * *Inicio (`editar.sitio.inicio`):* Permite editar y reestructurar los bloques de contenido de la página principal del portal público.
-     * *Política de privacidad (`editar.sitio.politica-de-privacidad`):* Permite editar el contenido legal y términos de privacidad del portal.
-     * *Páginas dinámicas del sitio (`editar.sitio.[slug]`):* Cada página creada para el portal público se incorpora automáticamente como un permiso independiente, mostrando su nombre real para asignar o revocar su edición.
+   * **3. Secciones del sitio web:** Habilita la edición granular de páginas específicas pertenecientes al portal web público:
+     * *Inicio:* Permite editar y reestructurar los bloques de contenido de la página principal del portal público.
+     * *Política de privacidad:* Permite editar el contenido legal y términos de privacidad del portal.
+     * *Páginas dinámicas del sitio:* Cada página creada para el portal público se incorpora automáticamente como un permiso independiente, mostrando su nombre real para asignar o revocar su edición.
      *(Dispone de la opción rápida "Todas / Quitar todas" para conmutar el grupo completo en un solo clic).*
 
-   * **4. Secciones de la intranet (`secciones-intranet`):** Habilita la edición granular de páginas específicas pertenecientes a la Intranet del OLO:
-     * *Inicio (`editar.intranet.inicio`):* Permite maquetar y editar la portada de la intranet.
-     * *Tasa de vinculación (`editar.intranet.tasa`):* Permite editar la página de indicadores y tasas de vinculación laboral.
-     * *Matriz de tendencias (`editar.intranet.matriz`):* Permite editar el contenido de la matriz de tendencias ocupacionales.
-     * *Encuestas de calidad de la formación (`editar.intranet.encuestas-calidad-de-formacion`):* Permite editar la sección de encuestas sobre la calidad formativa.
-     * *Encuestas de seguimiento laboral (`editar.intranet.encuestas-seguimiento-laboral`):* Permite editar la sección de encuestas de seguimiento a egresados.
-     * *Páginas dinámicas de la intranet (`editar.intranet.[slug]`):* Cada página creada dentro de la intranet se muestra de forma individual con su respectivo interruptor de edición.
+   * **4. Secciones de la intranet:** Habilita la edición granular de páginas específicas pertenecientes a la Intranet del OLO:
+     * *Inicio:* Permite maquetar y editar la portada de la intranet.
+     * *Tasa de vinculación:* Permite editar la página de indicadores y tasas de vinculación laboral.
+     * *Matriz de tendencias:* Permite editar el contenido de la matriz de tendencias ocupacionales.
+     * *Encuestas de calidad de la formación:* Permite editar la sección de encuestas sobre la calidad formativa.
+     * *Encuestas de seguimiento laboral:* Permite editar la sección de encuestas de seguimiento a egresados.
+     * *Páginas dinámicas de la intranet:* Cada página creada dentro de la intranet se muestra de forma individual con su respectivo interruptor de edición.
      *(Dispone de la opción rápida "Todas / Quitar todas" para conmutar el grupo completo en un solo clic).*
 
-   * **5. Qué puede hacer dentro del editor (`editor`):** Regula las facultades operativas y de gestión estructural que el editor puede ejercer sobre las páginas que tenga autorizadas:
-     * *Crear secciones nuevas (`secciones.crear`):* Faculta al rol para crear nuevas páginas o rutas dinámicas en el portal o intranet.
-     * *Eliminar secciones (`secciones.eliminar`):* Autoriza a borrar definitivamente páginas dinámicas creadas desde el editor, junto con su contenido e histórico de versiones (acción irreversible; las secciones de fábrica del sistema están protegidas y nunca se pueden eliminar).
+   * **5. Qué puede hacer dentro del editor:** Regula las facultades operativas y de gestión estructural que el editor puede ejercer sobre las páginas que tenga autorizadas:
+     * *Crear secciones nuevas:* Faculta al rol para crear nuevas páginas o rutas dinámicas en el portal o intranet.
+     * *Eliminar secciones:* Autoriza a borrar definitivamente páginas dinámicas creadas desde el editor, junto con su contenido e histórico de versiones (acción irreversible; las secciones de fábrica del sistema están protegidas y nunca se pueden eliminar).
 
    * **Manejo de interruptores, indicadores y guardado:**
      * Junto a cada permiso existe un **botón tipo interruptor (switch)** (encendido/apagado) operable con un clic o mediante teclado (tecla Espacio).
@@ -782,7 +930,7 @@ En la barra de navegación lateral izquierda del panel, al desplegar la pestaña
      * En el pie del modal, se detalla un resumen de los cambios efectuados antes de confirmar.
      * Al hacer clic en el botón **"Guardar permisos"** (o **"Guardar Rol"**), los cambios se aplican de manera inmediata y afectarán a todos los usuarios asignados a dicho rol.
    
-   * **Delegación de páginas nuevas a otros roles:** Cuando un editor crea una página nueva en el sistema, esta solo queda habilitada automáticamente para el rol creador, para el rol base Editor y para el Administrador. Si otros roles derivados requieren intervenir o editar esa página, el Administrador debe ingresar a este submenú, hacer clic en el ícono de lápiz sobre el rol correspondiente, buscar la página dentro de "Secciones del sitio web" o "Secciones de la intranet", y encender manualmente su interruptor de edición.
+   * **Delegación de páginas nuevas a otros roles:** Cuando un editor crea una página nueva en el sistema, esta solo queda habilitada automáticamente para el Administrador, para el rol base Editor y para el rol creador. Si otros roles derivados requieren intervenir o editar esa página, el Administrador debe ingresar a este submenú, hacer clic en el ícono de lápiz sobre el rol correspondiente, buscar la página dentro de "Secciones del sitio web" o "Secciones de la intranet", y encender manualmente su interruptor de edición.
 
 > **[Captura: Paso 3]**
 > *Evidencia visual de la acción descrita en el paso 3.*
@@ -881,7 +1029,7 @@ Herramienta de control forense, accesible desde el menú lateral bajo **"Auditor
 
 Tras aplicar los filtros deseados, el sistema permite exportar los registros visibles en la tabla:
 
-1. **Botón de exportación:** En la parte superior derecha de la tabla de auditoría, hacer clic en el botón **"Exportar"**.
+1. **Botón de exportación:** En la parte superior derecha de la tabla de auditoría, se debe hacer clic en el botón **"Exportar"**.
 2. **Selección de formato:** El sistema ofrecerá los formatos de descarga disponibles (`.xlsx` o `.csv`).
 3. **Descarga:** El archivo se generará con los registros actualmente filtrados y se descargará automáticamente al dispositivo del Administrador.
 
@@ -1210,10 +1358,10 @@ El Panel Administrativo cuenta con su propia herramienta de búsqueda para facil
 
 ## 12. Gestión de información (Editor Visual)
 
-Esta sección aborda el uso de la herramienta del Editor Visual, exclusiva para usuarios con rol de Editor, mediante la cual se diseña y actualiza el contenido del portal.
+Esta sección aborda el uso de la herramienta del Editor Visual, disponible para usuarios con rol de Administrador o Editor (incluyendo roles derivados autorizados), mediante la cual se diseña y actualiza el contenido del portal.
 
 ### 12.1. Acceso a las opciones de Edición (Botón Flotante)
-1. **Visualización del botón:** Al iniciar sesión como Editor, se debe ubicar el **botón circular flotante con un ícono de lápiz** en la pantalla del portal.
+1. **Visualización del botón:** Al iniciar sesión con un rol autorizado (Administrador o Editor), se debe ubicar el **botón circular flotante con un ícono de lápiz** en la pantalla del portal.
 
 > **[Captura: Paso 1]**
 > *Ubicación del botón flotante de edición.*
@@ -1231,7 +1379,7 @@ Esta sección aborda el uso de la herramienta del Editor Visual, exclusiva para 
 
 ### 12.2. Creación y Edición en el Lienzo
 1. **Creación:** Se debe seleccionar la opción **"Crear página"** en el menú del botón flotante; el sistema solicitará digitar un título y una ruta URL. Al completar y confirmar el formulario, la nueva página se crea en estado de borrador.
-   * *Asignación automática de permisos:* De forma inmediata, el sistema habilita el permiso de edición únicamente para el rol del editor que la creó, para el rol padre Editor base y para el Administrador. Los demás roles hijos de editor quedan sin acceso a la página a menos que un Administrador les conceda el permiso manualmente desde el Panel Administrativo (**Accesos > Roles > Editar Rol**).
+   * *Asignación automática de permisos:* De forma inmediata, el sistema habilita el permiso de edición únicamente para el Administrador, para el rol padre Editor base y para el rol del editor que la creó. Los demás roles hijos de editor quedan sin acceso a la página a menos que un Administrador les conceda el permiso manualmente desde el Panel Administrativo (**Accesos > Roles > Editar Rol**).
 
 > **[Captura: Paso 1]**
 > *Formulario de título y URL para la nueva página.*
@@ -1332,7 +1480,7 @@ El Editor Visual dispone de un historial de acciones en sesión:
 
 #### 12.3.4. Edición de la Cabecera y Pie de Página Globales
 
-La cabecera y el pie de página son componentes envolventes globales del portal. Su edición está disponible para el rol **Editor base** y para los **Roles hijos** a quienes el Administrador haya habilitado explícitamente este permiso.
+La cabecera y el pie de página son componentes envolventes globales del portal. Su edición está disponible para el rol **Administrador**, el rol **Editor base** y para los **Roles hijos** a quienes el Administrador haya habilitado explícitamente este permiso.
 
 1. **Acceso:** Desde el menú del botón flotante de edición en cualquier página, el usuario debe seleccionar la opción **"Editar cabecera"** o **"Editar pie"**.
 
@@ -1350,7 +1498,7 @@ La cabecera y el pie de página son componentes envolventes globales del portal.
 
 ### 12.4. Eliminación de Páginas Dinámicas (Paso a Paso)
 
-La eliminación de páginas dinámicas retira de forma definitiva la página y sus versiones del portal. Esta acción está disponible únicamente para el rol **Editor base**, el rol **Administrador** y aquellos **Roles hijos de editor** a los que se les haya concedido manualmente el permiso de eliminación sobre páginas.
+La eliminación de páginas dinámicas retira de forma definitiva la página y sus versiones del portal. Esta acción está disponible únicamente para el rol **Administrador**, el rol **Editor base** y aquellos **Roles hijos de editor** a los que se les haya concedido manualmente el permiso de eliminación sobre páginas.
 
 1. **Acceso desde el botón flotante:** El editor debe navegar hacia la página dinámica que desea eliminar y hacer clic en el botón circular flotante con ícono de lápiz para desplegar el menú de opciones (sección 12.1).
 2. **Selección de la opción:** En el menú desplegado, se debe hacer clic en la opción **"Eliminar página"**.
@@ -1419,26 +1567,313 @@ En las distintas páginas del portal y de la Intranet, los documentos cuentan co
 
 ## 14. Mensajes del sistema
 
-### 14.1. Confirmaciones de éxito
-Cuando una acción se ejecuta correctamente (ej. "Usuario creado", "Página enviada a revisión", "Carga masiva completada"), el sistema muestra una notificación tipo *toast* (barra emergente verde) en la parte superior derecha de la pantalla, que desaparece a los pocos segundos.
+### 14.1. Validaciones en el Primer Ingreso
 
-> **[Captura: Imagen]**
-> *Notificación verde emergente (toast) en la esquina superior de la pantalla confirmando el éxito de la operación.*
+Durante el primer ingreso (cuyo procedimiento operativo regular se detalla en la [Sección 10.1.1: Flujo de Primer Ingreso](#1011-flujo-de-primer-ingreso)), el sistema aplica rigurosas validaciones de formato, comprobaciones de seguridad de contraseñas y restricciones de acceso por rol. Esta sección detalla de forma paralela cada punto del paso a paso, ilustrando los errores comunes de ingreso, los mensajes de advertencia y las alertas establecidas en la plataforma para ambos entornos:
+
+* **[Validaciones en el Primer Ingreso (Sitio Web Público)](#validaciones-en-el-primer-ingreso-sitio-web-público):** Alertas de campos, validaciones del validador de políticas y comprobación de permisos al iniciar sesión en el portal público.
+* **[Validaciones en el Primer Ingreso (Intranet del OLO)](#validaciones-en-el-primer-ingreso-intranet-del-olo):** Redirecciones forzosas, validaciones en pantalla de bloqueo, asistencia paso a paso y alertas de autorización en la Intranet.
+
+#### Validaciones en el Primer Ingreso (Sitio Web Público)
+
+1. **Ubicación del acceso en el Sitio Web (Confusión de punto de entrada):**
+   * *Acción errónea:* El usuario intenta ingresar a configurar su cuenta haciendo clic sobre el botón interactivo **"Intranet"** en la barra superior en lugar de pulsar el texto de **fecha y hora** en la franja azul de GOV.CO.
+   * *Respuesta del sistema y validación:* El sistema lo traslada a la pantalla de bloqueo y acceso de la Intranet (`/login`), la cual cuenta con un formulario independiente para el personal interno.
+   * *Acción de corrección:* El usuario debe regresar a la portada del Sitio Web Público y hacer clic sobre el reloj de fecha y hora ubicado en el extremo derecho del banner GOV.CO.
+
+> **[Captura: Error de Acceso por Botón Intranet en Sitio Web]**
+> *Desviación involuntaria hacia la pantalla de acceso de la Intranet al pulsar el botón erróneo en el Sitio Web Público.*
 >
-> **[Captura: Imagen (Móvil)]**
-> *Notificación verde emergente (toast) en la esquina superior de la pantalla confirmando el éxito de la operación. (Vista en dispositivo móvil).*
+> **[Captura: Error de Acceso por Botón Intranet en Sitio Web (Móvil)]**
+> *Desviación involuntaria hacia la pantalla de acceso de la Intranet al pulsar el botón erróneo en el Sitio Web Público. (Vista en dispositivo móvil).*
 
-### 14.2. Ventanas de alerta y validaciones de seguridad
-Para acciones críticas, el sistema interrumpe el flujo con una ventana emergente en el centro de la pantalla. Por ejemplo, al intentar descartar un borrador, la ventana exigirá que se digite una justificación antes de habilitar el botón de confirmación en rojo.
+2. **Ingreso con credenciales temporales (Validaciones de formulario):**
+   * *Acciones erróneas y mensajes de validación:*
+     * **Correo obligatorio:** Si se pulsa el botón "Ingresar" con la casilla de correo vacía, el sistema interrumpe el envío y resalta bajo el campo: `"El correo es requerido"`.
+     * **Formato de correo inválido:** Si se digita un texto sin sintaxis de correo electrónico válida, el formulario señala: `"El correo no tiene un formato válido"`.
+     * **Dominio ajeno o no corporativo:** Si se intenta ingresar con un correo personal o externo (`@gmail.com`, `@hotmail.com`, etc.), el validador emite la alerta en tiempo real: `"Debe ser un correo institucional @sena.edu.co"`.
+     * **Contraseña vacía:** Si no se ingresa la clave temporal en la casilla correspondiente, el sistema exige: `"La contraseña es requerida"`.
+     * **Credenciales incorrectas:** Si el correo o la clave provisoria contienen erratas o no corresponden a un registro activo, el sistema despliega la alerta general en el recuadro superior: `"Correo o contraseña incorrectos"`.
+   * *Acción de corrección:* El funcionario debe verificar la escritura de su correo institucional `@sena.edu.co` y transcribir con exactitud la contraseña provisoria comunicada por el Administrador.
 
-> **[Captura: Imagen]**
-> *Ventana de alerta crítica interrumpiendo el flujo operativo para exigir una justificación antes de ejecutar acciones destructivas.*
+> **[Captura: Validaciones en Formulario de Acceso Sitio Web]**
+> *Mensajes de validación de campos requeridos, dominio institucional y alerta general de credenciales erróneas en el Sitio Web.*
 >
-> **[Captura: Imagen (Móvil)]**
-> *Ventana de alerta crítica interrumpiendo el flujo operativo para exigir una justificación antes de ejecutar acciones destructivas. (Vista en dispositivo móvil).*
+> **[Captura: Validaciones en Formulario de Acceso Sitio Web (Móvil)]**
+> *Mensajes de validación de campos requeridos, dominio institucional y alerta general de credenciales erróneas en el Sitio Web. (Vista en dispositivo móvil).*
+
+3. **Pantalla de bienvenida y verificación del estado de cuenta:**
+   * *Situaciones anómalas y respuestas del sistema:*
+     * **Sesión provisional expirada o no iniciada:** Si el usuario ingresa de forma manual a la ruta `/first-login` sin una sesión activa o si la sesión caducó por inactividad, la plataforma detiene la carga con la alerta: `"No se pudo comprobar el estado de tu cuenta. Vuelve a iniciar sesión."`, facilitando el enlace directo para regresar a la pantalla de acceso.
+     * **Cuenta sin configuraciones pendientes:** Si la cuenta ya había completado el proceso con anterioridad (por ejemplo, desde otra pestaña del navegador), el sistema no solicita credenciales temporales inexistentes; en su lugar, presenta el aviso: `"Tu cuenta ya está configurada. No hay nada pendiente: tu contraseña y tus preguntas de seguridad están al día."` junto con el botón `"Ir al panel"`.
+   * *Acción de corrección:* Iniciar sesión nuevamente en el portal para que el aplicativo evalúe los pendientes activos del perfil.
+
+> **[Captura: Alerta de Estado de Cuenta en Primer Ingreso Sitio Web]**
+> *Aviso del sistema ante sesiones caducadas o mensaje informativo cuando la cuenta ya completó la configuración inicial.*
+>
+> **[Captura: Alerta de Estado de Cuenta en Primer Ingreso Sitio Web (Móvil)]**
+> *Aviso del sistema ante sesiones caducadas o mensaje informativo cuando la cuenta ya completó la configuración inicial. (Vista en dispositivo móvil).*
+
+4. **Establecimiento de la contraseña definitiva (Reglas de robustez y coincidencia):**
+   * *Acciones erróneas y validaciones:*
+     * **Omisión de contraseña temporal:** Si no se ingresa la clave provisoria en la primera casilla, se indica: `"La contraseña temporal es requerida"`.
+     * **Contraseña temporal errónea al enviar:** Si la clave temporal ingresada no concuerda con la base de datos, el servidor rechaza la solicitud al presionar "Continuar" con la alerta: `"No se pudo completar la configuración"`.
+     * **Incumplimiento de requisitos de seguridad:** Al digitar la nueva contraseña, si no se cumplen las condiciones mínimas exigidas por la entidad, los indicadores interactivos permanecen en color gris o rojo y el sistema resalta el primer fallo pendiente bajo el campo (ej. `"Al menos 12 caracteres"` o `"Combina 3 de 4: mayúsculas, minúsculas, números y símbolos"`), bloqueando el avance.
+     * **Falta de confirmación o discrepancia:** Si la confirmación está en blanco, se solicita `"Confirma tu contraseña"`. Si el texto digitado no es exactamente idéntico al de la nueva clave, se despliega la advertencia: `"Las contraseñas no coinciden"`.
+   * *Acción de corrección:* El funcionario debe construir una contraseña que cumpla con todos los requisitos resaltados en verde por el verificador interactivo y comprobar la coincidencia exacta en el campo de confirmación.
+
+> **[Captura: Errores de Validación de Contraseña Sitio Web]**
+> *Validador de requisitos de seguridad con condiciones incompletas y alerta por falta de coincidencia en la confirmación.*
+>
+> **[Captura: Errores de Validación de Contraseña Sitio Web (Móvil)]**
+> *Validador de requisitos de seguridad con condiciones incompletas y alerta por falta de coincidencia en la confirmación. (Vista en dispositivo móvil).*
+
+5. **Configuración de preguntas de seguridad (Reglas de catálogo y respuestas):**
+   * *Acciones erróneas y validaciones:*
+     * **Omisión de pregunta:** Si el usuario no despliega el catálogo ni selecciona una pregunta, el sistema bloquea el paso indicando: `"Selecciona una pregunta"`.
+     * **Respuesta vacía o con espacios:** Si no se escribe texto en el campo de respuesta o se ingresan únicamente espacios en blanco, se resalta: `"La respuesta es requerida"`.
+     * **Preguntas repetidas:** El selector interactivo bloquea y desactiva automáticamente las preguntas seleccionadas en pasos anteriores para impedir la duplicación de ítems en el perfil.
+   * *Acción de corrección:* Seleccionar una pregunta diferente en cada uno de los tres pasos y registrar una respuesta confidencial válida.
+
+> **[Captura: Validaciones en Preguntas de Seguridad Sitio Web]**
+> *Alertas por omisión de selección de pregunta del catálogo y validación de respuesta obligatoria en el Sitio Web.*
+>
+> **[Captura: Validaciones en Preguntas de Seguridad Sitio Web (Móvil)]**
+> *Alertas por omisión de selección de pregunta del catálogo y validación de respuesta obligatoria en el Sitio Web. (Vista en dispositivo móvil).*
+
+6. **Confirmación, cierre de sesión y evaluación de permisos:**
+   * *Acciones erróneas y alertas de perfil:*
+     * **Uso indebido de la contraseña temporal anterior:** Tras finalizar la configuración e intentar iniciar sesión en `/login`, si el usuario digita la clave temporal previa en lugar de la nueva contraseña recién creada, el sistema rechaza el ingreso con `"Correo o contraseña incorrectos"`, ya que la clave provisional fue reemplazada de forma definitiva.
+     * **Perfiles sin permisos para el Sitio Web (Directores / Subdirectores):** Si un funcionario con perfil directivo se autentica correctamente en este portal, el sistema comprueba que no cuenta con facultades de edición ni de acceso al panel administrativo y detiene el acceso mostrando la alerta preventiva: *"Tu cuenta no tiene permisos de edición ni de acceso al panel."*, orientándolo a ingresar por la Intranet.
+   * *Acción de corrección:* Iniciar sesión estrictamente con la contraseña definitiva personal; si se trata de un perfil directivo, acceder a través de la Intranet del OLO.
+
+> **[Captura: Alerta de Permisos y Acceso Denegado Sitio Web]**
+> *Alerta desplegada al intentar acceder al Sitio Web con una cuenta configurada sin facultades de edición ni de administración.*
+>
+> **[Captura: Alerta de Permisos y Acceso Denegado Sitio Web (Móvil)]**
+> *Alerta desplegada al intentar acceder al Sitio Web con una cuenta configurada sin facultades de edición ni de administración. (Vista en dispositivo móvil).*
+
+#### Validaciones en el Primer Ingreso (Intranet del OLO)
+
+1. **Acceso a la Intranet (Intento de acceso directo no autenticado):**
+   * *Acción errónea:* Intentar acceder a secciones o tableros internos de la Intranet (ej. `/inicio`, `/tasas-vinculacion`) mediante enlaces guardados sin haber iniciado sesión previamente.
+   * *Respuesta del sistema y validación:* El mecanismo de seguridad intercepta la navegación no autenticada y redirige automáticamente al usuario hacia el formulario de acceso (`/login`), bloqueando la visualización del entorno privado.
+   * *Acción de corrección:* El funcionario debe ingresar a través de la pantalla oficial de acceso de la Intranet para iniciar su flujo de autenticación.
+
+> **[Captura: Intercepción de Acceso No Autenticado Intranet]**
+> *Pantalla de bloqueo y acceso obligatorio de la Intranet al interceptar un intento de navegación no autenticada.*
+>
+> **[Captura: Intercepción de Acceso No Autenticado Intranet (Móvil)]**
+> *Pantalla de bloqueo y acceso obligatorio de la Intranet al interceptar un intento de navegación no autenticada. (Vista en dispositivo móvil).*
+
+2. **Ingreso con credenciales temporales (Validaciones de formulario):**
+   * *Acciones erróneas y validaciones:*
+     * **Campos vacíos:** Si se pulsa el botón principal sin diligenciar los datos, el sistema resalta: `"El correo es requerido"` y `"La contraseña es requerida"`.
+     * **Formato o dominio incorrecto:** Si el correo no tiene formato válido o pertenece a un dominio ajeno a la entidad, el sistema muestra: `"El correo no tiene un formato válido"` o `"Debe ser un correo institucional @sena.edu.co"`.
+     * **Credenciales incorrectas:** Si se ingresan datos errados o inexistentes, el sistema emite el aviso: `"Correo o contraseña incorrectos"`.
+   * *Acción de corrección:* Digitar el correo corporativo `@sena.edu.co` y escribir con precisión la clave temporal asignada por el Administrador.
+
+> **[Captura: Validaciones en Formulario de Acceso Intranet]**
+> *Alertas de campos obligatorios, validación de dominio institucional y mensaje de credenciales no coincidentes en la Intranet.*
+>
+> **[Captura: Validaciones en Formulario de Acceso Intranet (Móvil)]**
+> *Alertas de campos obligatorios, validación de dominio institucional y mensaje de credenciales no coincidentes en la Intranet. (Vista en dispositivo móvil).*
+
+3. **Bienvenida y pasos guiados de configuración (Control de sesión):**
+   * *Situaciones anómalas y validaciones:*
+     * **Caducidad de la sesión provisional:** Si el funcionario suspende el proceso y se supera el período de inactividad, el sistema interrumpe la configuración y muestra la alerta: `"No se pudo comprobar el estado de tu cuenta. Vuelve a iniciar sesión."`.
+     * **Detección de avances parciales:** Si la cuenta ya había modificado su clave pero tenía pendientes las preguntas de seguridad, la barra guiada desactiva el primer paso y sitúa el formulario directamente en el paso 2 para evitar reprocesos innecesarios.
+   * *Acción de corrección:* Reiniciar la sesión si esta caducó y continuar el diligenciamiento de los pasos indicados en la barra guiada.
+
+> **[Captura: Control de Sesión y Pasos Guiados Intranet]**
+> *Alerta de expiración de sesión provisional y barra de avance guiado indicando el paso pendiente de configuración.*
+>
+> **[Captura: Control de Sesión y Pasos Guiados Intranet (Móvil)]**
+> *Alerta de expiración de sesión provisional y barra de avance guiado indicando el paso pendiente de configuración. (Vista en dispositivo móvil).*
+
+4. **Establecimiento de la contraseña definitiva (Reglas de robustez y coincidencia):**
+   * *Acciones erróneas y validaciones:*
+     * **Clave temporal en blanco:** Si se omite la clave provisoria en el primer campo, el sistema exige: `"La contraseña temporal es requerida"`.
+     * **Clave temporal no válida:** Si la clave temporal ingresada no coincide con la registrada en el sistema, al pulsar "Continuar" el servidor notifica: `"No se pudo completar la configuración"`.
+     * **Contraseña débil:** Si la nueva clave no satisface la totalidad de las 5 condiciones exigidas, el panel de requisitos muestra las condiciones no cumplidas y bloquea el avance con el mensaje del primer fallo (ej. `"Al menos 12 caracteres"` o `"Combina 3 de 4: mayúsculas, minúsculas, números y símbolos"`).
+     * **Contraseñas no coincidentes:** Si el campo de repetición difiere de la nueva clave registrada, se bloquea el guardado indicando: `"Las contraseñas no coinciden"`.
+   * *Acción de corrección:* Establecer una clave que cumpla con todos los requisitos del módulo interactivo y asegurar que el campo de repetición coincida con exactitud.
+
+> **[Captura: Errores de Validación de Contraseña Intranet]**
+> *Módulo de requisitos de contraseña con directivas pendientes y alerta por falta de coincidencia en la confirmación.*
+>
+> **[Captura: Errores de Validación de Contraseña Intranet (Móvil)]**
+> *Módulo de requisitos de contraseña con directivas pendientes y alerta por falta de coincidencia en la confirmación. (Vista en dispositivo móvil).*
+
+5. **Configuración de preguntas de seguridad (Reglas de catálogo y respuestas):**
+   * *Acciones erróneas y validaciones:*
+     * **Pregunta sin seleccionar:** Si se presiona el botón para avanzar sin haber elegido una opción del menú desplegable, el sistema indica: `"Selecciona una pregunta"`.
+     * **Respuesta en blanco:** Si la casilla de respuesta se encuentra vacía o solo contiene espacios, se señala: `"La respuesta es requerida"`.
+     * **Bloqueo de preguntas seleccionadas:** El selector interactivo bloquea las preguntas ya utilizadas en los pasos anteriores para garantizar que se configuren tres opciones distintas.
+   * *Acción de corrección:* Elegir una pregunta no seleccionada previamente y redactar una respuesta válida en cada uno de los tres pasos del asistente.
+
+> **[Captura: Validaciones en Preguntas de Seguridad Intranet]**
+> *Alertas de selección obligatoria de pregunta y campo de respuesta requerido en la Intranet.*
+>
+> **[Captura: Validaciones en Preguntas de Seguridad Intranet (Móvil)]**
+> *Alertas de selección obligatoria de pregunta y campo de respuesta requerido en la Intranet. (Vista en dispositivo móvil).*
+
+6. **Confirmación, cierre de sesión y evaluación de permisos:**
+   * *Acciones erróneas y alertas de permisos:*
+     * **Autenticación con contraseña temporal:** Si tras finalizar la configuración el usuario digita en el formulario de la Intranet la clave temporal anterior en lugar de la nueva contraseña personal, el sistema deniega el acceso con la alerta: `"Correo o contraseña incorrectos"`.
+     * **Cuentas sin autorización para la Intranet:** Si el funcionario posee una cuenta activa pero no cuenta con el permiso institucional de acceso a la Intranet, el sistema invalida la sesión y despliega la alerta preventiva: *"No tienes permisos para ingresar a la intranet."*.
+   * *Acción de corrección:* Iniciar sesión ingresando la nueva contraseña definitiva; si la cuenta no tiene habilitado el acceso a la Intranet, solicitar la asignación del permiso al Administrador del sistema.
+
+> **[Captura: Alerta de Acceso Denegado Intranet]**
+> *Alerta de falta de permisos para ingresar a la Intranet desplegada tras validar las credenciales de la cuenta.*
+>
+> **[Captura: Alerta de Acceso Denegado Intranet (Móvil)]**
+> *Alerta de falta de permisos para ingresar a la Intranet desplegada tras validar las credenciales de la cuenta. (Vista en dispositivo móvil).*
+
+### 14.2. Validaciones en el Inicio de Sesión Habitual
+
+Durante el inicio de sesión habitual (descrito operativamente en la [Sección 10.1.2: Flujo de Inicio de Sesión Habitual](#1012-flujo-de-inicio-de-sesión-habitual)), el sistema ejecuta comprobaciones inmediatas de identidad, sintaxis de correo corporativo, vigencia de credenciales y autorización por perfil. Esta sección detalla de forma paralela las situaciones erróneas, los bloqueos de interfaz y las alertas emitidas por la plataforma en ambos entornos de acceso:
+
+* **[Validaciones en el Inicio de Sesión Habitual (Sitio Web Público)](#validaciones-en-el-inicio-de-sesión-habitual-sitio-web-público):** Errores comunes al autenticarse mediante el banner GOV.CO, validaciones de campos y alertas de denegación de acceso al panel administrativo o portal público.
+* **[Validaciones en el Inicio de Sesión Habitual (Intranet del OLO)](#validaciones-en-el-inicio-de-sesión-habitual-intranet-del-olo):** Intercepciones por navegación no autenticada, validaciones del formulario de acceso interno y alertas por falta de autorización para ingresar a la Intranet.
+
+#### Validaciones en el Inicio de Sesión Habitual (Sitio Web Público)
+
+1. **Ubicación del acceso en el Sitio Web (Banner GOV.CO):**
+   * *Acción errónea:* El funcionario intenta autenticarse para editar el portal público pulsando el botón **"Intranet"** en la barra de navegación superior en lugar del enlace interactivo de fecha y hora.
+   * *Respuesta del sistema y validación:* La plataforma lo traslada a la URL y pantalla de acceso de la Intranet (`/login`), desviándolo del formulario del Sitio Web y Panel Administrativo.
+   * *Acción de corrección:* El usuario debe situarse en el Sitio Web Público y pulsar sobre el texto interactivo de **fecha y hora** en el extremo derecho de la franja azul GOV.CO.
+
+> **[Captura: Error de Enlace de Acceso en Banner GOV.CO]**
+> *Redirección errónea hacia la pantalla de acceso de la Intranet por presionar el botón incorrecto en la cabecera.*
+>
+> **[Captura: Error de Enlace de Acceso en Banner GOV.CO (Móvil)]**
+> *Redirección errónea hacia la pantalla de acceso de la Intranet por presionar el botón incorrecto en la cabecera. (Vista en dispositivo móvil).*
+
+2. **Presentación de la interfaz de autenticación (Avisos preventivos):**
+   * *Situación anómala y alerta:* Si el usuario es redirigido a este formulario tras 30 minutos de inactividad, el formulario presenta el mensaje preventivo de cierre de sesión antes de que el usuario envíe nuevos datos. Asimismo, si intenta acceder directamente a una ruta interna administrativa sin sesión previa, el sistema intercepta la navegación y lo conduce a este formulario.
+   * *Acción de corrección:* Proceder al diligenciamiento regular de las credenciales activas para reanudar el trabajo seguro.
+
+> **[Captura: Aviso de Sesión Expirada en Sitio Web]**
+> *Aviso preventivo por vencimiento de sesión por inactividad desplegado en la pantalla de acceso del Sitio Web Público.*
+>
+> **[Captura: Aviso de Sesión Expirada en Sitio Web (Móvil)]**
+> *Aviso preventivo por vencimiento de sesión por inactividad desplegado en la pantalla de acceso del Sitio Web Público. (Vista en dispositivo móvil).*
+
+3. **Ingreso con credenciales definitivas (Validaciones de campos de entrada):**
+   * *Acciones erróneas y validaciones:*
+     * **Campos obligatorios:** Si se presiona el botón "Ingresar" dejando la casilla de correo o contraseña vacía, el sistema resalta bajo cada campo: `"El correo es requerido"` o `"La contraseña es requerida"`.
+     * **Validación de formato:** Si se escribe una dirección sin `@` o incompleta (ej. `nombre.apellido`), se despliega: `"El correo no tiene un formato válido"`.
+     * **Dominio institucional SENA:** Si se digita un correo de dominios comerciales (`@gmail.com`, `@outlook.com`, etc.), el validador bloquea en tiempo real con el mensaje: `"Debe ser un correo institucional @sena.edu.co"`.
+     * **Contraseña con espacios erróneos:** Si se copian y pegan caracteres con espacios al inicio o final de forma involuntaria, el validador evalúa la cadena exacta y emite error de coincidencia.
+   * *Acción de corrección:* Digitar estrictamente el correo corporativo `@sena.edu.co` y transcribir con exactitud la contraseña definitiva sin espacios adicionales.
+
+> **[Captura: Validaciones de Campos en Formulario Sitio Web]**
+> *Mensajes de advertencia por campos requeridos, formato inválido y rechazo de dominios externos al SENA en el Sitio Web.*
+>
+> **[Captura: Validaciones de Campos en Formulario Sitio Web (Móvil)]**
+> *Mensajes de advertencia por campos requeridos, formato inválido y rechazo de dominios externos al SENA en el Sitio Web. (Vista en dispositivo móvil).*
+
+4. **Ejecución y validación de la sesión (Validación de credenciales en el acceso):**
+   * *Acción errónea y alerta del sistema:* Al hacer clic en el botón "Ingresar", si la contraseña o el correo no coinciden con los registros activos de la plataforma, se despliega la alerta en la parte superior del formulario: `"Correo o contraseña incorrectos"`.
+   * *Acción de corrección:* Comprobar que no esté activada la tecla Bloq Mayús, verificar los caracteres mediante el control de visualización (ícono de ojo) o hacer uso del enlace de recuperación *(¿Olvidaste tu contraseña?)*.
+
+> **[Captura: Alerta de Credenciales Incorrectas en Sitio Web]**
+> *Mensaje superior de credenciales incorrectas en el formulario de acceso del Sitio Web Público.*
+>
+> **[Captura: Alerta de Credenciales Incorrectas en Sitio Web (Móvil)]**
+> *Mensaje superior de credenciales incorrectas en el formulario de acceso del Sitio Web Público. (Vista en dispositivo móvil).*
+
+5. **Verificación de permisos y autorización del portal:**
+   * *Acciones erróneas y alertas de permisos:*
+     * **Directores y Subdirectores intentando entrar por el Sitio Web Público:** Los directivos no cuentan con facultades de edición ni de acceso al Panel Administrativo en este portal. Al autenticarse correctamente, el sistema detiene el paso y emite la alerta preventiva: *"Tu cuenta no tiene permisos de edición ni de acceso al panel."*, instruyendo al funcionario a dirigirse a la Intranet.
+     * **Cuentas inactivas o suspendidas:** Si la cuenta fue desactivada preventivamente por el Administrador, el sistema interrumpe la entrada mostrando el aviso de suspensión correspondiente.
+   * *Acción de corrección:* Si se trata de un directivo, hacer clic en el botón "Intranet" e ingresar por dicho portal; si se trata de un editor o administrador con problemas de perfil, solicitar la habilitación correspondiente al Administrador.
+
+> **[Captura: Alerta de Falta de Permisos en Sitio Web]**
+> *Alerta informativa impidiendo el acceso a cuentas directivas u operativas sin permisos de edición ni panel en el Sitio Web.*
+>
+> **[Captura: Alerta de Falta de Permisos en Sitio Web (Móvil)]**
+> *Alerta informativa impidiendo el acceso a cuentas directivas u operativas sin permisos de edición ni panel en el Sitio Web. (Vista en dispositivo móvil).*
+
+6. **Resultado y despliegue del entorno según rol:**
+   * *Situaciones anómalas y restricciones de interfaz:* Si un editor ingresa exitosamente pero su rol no tiene permisos asignados sobre la página que está visualizando, las herramientas de edición no se renderizan; si no tiene permisos sobre ninguna sección maquetable, el botón flotante de edición permanece completamente oculto.
+   * *Acción de corrección:* Solicitar al Administrador del sistema la asignación de los permisos específicos sobre las páginas o secciones requeridas.
+
+> **[Captura: Restricción de Herramientas de Edición Sitio Web]**
+> *Ocultamiento del botón flotante de edición ante falta de permisos sobre la página navegada en el Sitio Web.*
+>
+> **[Captura: Restricción de Herramientas de Edición Sitio Web (Móvil)]**
+> *Ocultamiento del botón flotante de edición ante falta de permisos sobre la página navegada en el Sitio Web. (Vista en dispositivo móvil).*
+
+#### Validaciones en el Inicio de Sesión Habitual (Intranet del OLO)
+
+1. **Punto de enlace y acceso a la plataforma (Intercepción de navegación no autorizada):**
+   * *Acción errónea:* Intentar acceder directamente a rutas privadas de la Intranet (como tableros de Power BI o indicadores en `/inicio`) a través de marcadores del navegador sin haber iniciado sesión previamente.
+   * *Respuesta del sistema y validación:* El enrutador de seguridad intercepta la petición y redirige forzosamente al usuario a la pantalla de bloqueo y acceso (`/login`), impidiendo la exposición de datos protegidos.
+   * *Acción de corrección:* Autenticarse de forma regular en el formulario presentado en la pantalla de bienvenida.
+
+> **[Captura: Redirección Forzosa a Pantalla de Bloqueo Intranet]**
+> *Bloqueo de acceso directo y redirección inmediata al formulario de inicio de sesión de la Intranet.*
+>
+> **[Captura: Redirección Forzosa a Pantalla de Bloqueo Intranet (Móvil)]**
+> *Bloqueo de acceso directo y redirección inmediata al formulario de inicio de sesión de la Intranet. (Vista en dispositivo móvil).*
+
+2. **Pantalla de bloqueo y bienvenida institucional (Aviso de cierre de sesión):**
+   * *Situación anómala y alerta:* Si el funcionario arriba a la pantalla de bloqueo a causa de un vencimiento de sesión por inactividad (30 minutos sin interacción), el sistema despliega el aviso informativo superior advirtiendo la expiración antes de recibir las credenciales.
+   * *Acción de corrección:* Reintroducir las credenciales activas del usuario para reanudar la sesión segura de trabajo.
+
+> **[Captura: Aviso de Sesión Expirada en Intranet]**
+> *Aviso preventivo por vencimiento de sesión por inactividad en la pantalla de acceso de la Intranet.*
+>
+> **[Captura: Aviso de Sesión Expirada en Intranet (Móvil)]**
+> *Aviso preventivo por vencimiento de sesión por inactividad en la pantalla de acceso de la Intranet. (Vista en dispositivo móvil).*
+
+3. **Ingreso con credenciales definitivas (Validaciones de campos de entrada):**
+   * *Acciones erróneas y validaciones:*
+     * **Campos obligatorios:** Si se omite el correo o la contraseña, el sistema resalta bajo cada casilla correspondiente: `"El correo es requerido"` o `"La contraseña es requerida"`.
+     * **Validación de dominio SENA:** Si se introduce un correo que no finaliza en `@sena.edu.co`, el sistema bloquea el envío con: `"Debe ser un correo institucional @sena.edu.co"`.
+     * **Formato no válido:** Si la dirección no cumple con el estándar de correo electrónico, se notifica: `"El correo no tiene un formato válido"`.
+   * *Acción de corrección:* Digitar el correo corporativo y la contraseña correspondiente sin espacios adicionales.
+
+> **[Captura: Validaciones de Campos en Intranet]**
+> *Alertas bajo las casillas de texto por omisión de datos o dominio no corporativo en la Intranet.*
+>
+> **[Captura: Validaciones de Campos en Intranet (Móvil)]**
+> *Alertas bajo las casillas de texto por omisión de datos o dominio no corporativo en la Intranet. (Vista en dispositivo móvil).*
+
+4. **Ejecución y validación de la sesión (Validación de credenciales en el acceso):**
+   * *Acción errónea y respuesta del sistema:* Si el correo electrónico o la clave no coinciden con los registros activos de la plataforma, el sistema emite la alerta general: `"Correo o contraseña incorrectos"`.
+   * *Acción de corrección:* Verificar minuciosamente la clave ingresada mediante el control de visualización (ícono de ojo) o acceder al enlace de recuperación de contraseña *(¿Olvidaste tu contraseña?)*.
+
+> **[Captura: Alerta de Credenciales Inválidas en Intranet]**
+> *Mensaje de credenciales erróneas en el panel de acceso de la Intranet.*
+>
+> **[Captura: Alerta de Credenciales Inválidas en Intranet (Móvil)]**
+> *Mensaje de credenciales erróneas en el panel de acceso de la Intranet. (Vista en dispositivo móvil).*
+
+5. **Verificación de autorización de acceso a la Intranet:**
+   * *Acciones erróneas y alertas de permisos:* Si el usuario cuenta con un usuario registrado en el OLO pero carece del permiso de acceso al entorno privado interno, el sistema detiene el acceso y despliega la alerta preventiva: *"No tienes permisos para ingresar a la intranet."*.
+   * *Acción de corrección:* Solicitar al Administrador del sistema la asignación de permisos de acceso para la Intranet si el funcionario requiere consultar dichos tableros.
+
+> **[Captura: Alerta de Acceso Denegado a la Intranet]**
+> *Alerta indicando falta de permisos institucionales para acceder a los módulos internos de la Intranet.*
+>
+> **[Captura: Alerta de Acceso Denegado a la Intranet (Móvil)]**
+> *Alerta indicando falta de permisos institucionales para acceder a los módulos internos de la Intranet. (Vista en dispositivo móvil).*
+
+6. **Resultado y despliegue del entorno según perfil en la Intranet:**
+   * *Acciones erróneas y control de interfaz:* Si un Director o Subdirector (rol de solo lectura) intenta forzar el acceso a herramientas de edición o maquetación, los controles simplemente no se renderizan, manteniendo el esquema protegido de solo consulta analítica.
+   * *Acción de corrección:* Operar dentro del marco de solo lectura asignado al perfil o solicitar al Administrador del sistema permisos editoriales si se requiere participar en la creación o modificación de contenidos.
+
+> **[Captura: Restricción de Solo Lectura en Intranet]**
+> *Despliegue exclusivo de módulos analíticos y ocultamiento de herramientas de maquetación para perfiles directivos.*
+>
+> **[Captura: Restricción de Solo Lectura en Intranet (Móvil)]**
+> *Despliegue exclusivo de módulos analíticos y ocultamiento de herramientas de maquetación para perfiles directivos. (Vista en dispositivo móvil).*
 
 ### 14.3. Prevención de enlaces rotos (Bloqueos de eliminación)
-Si un editor o administrador intenta eliminar una página hacia la cual apuntan otros botones en el portal, el sistema arrojará una alerta roja de bloqueo. No se permitirá la eliminación hasta que los enlaces entrantes sean retirados.
+Si un administrador o editor intenta eliminar una página hacia la cual apuntan otros botones en el portal, el sistema arrojará una alerta roja de bloqueo. No se permitirá la eliminación hasta que los enlaces entrantes sean retirados.
 
 ### 14.4. Errores habituales y solución
 
@@ -1450,9 +1885,9 @@ Si un editor o administrador intenta eliminar una página hacia la cual apuntan 
 **Posible causa:** Se ha digitado mal la contraseña o el correo electrónico.
 **Acción recomendada:** Se debe verificar la escritura correcta de los datos o hacer uso de la opción "Recuperar contraseña".
 
-**Situación:** Mensaje de "Permisos insuficientes".
-**Posible causa:** El rol asignado al usuario no tiene autorización para acceder a esa URL o ejecutar esa acción.
-**Acción recomendada:** El usuario debe solicitar al Administrador del sistema la revisión y asignación del permiso correspondiente.
+**Situación:** Mensaje de "Permisos insuficientes", *"Tu cuenta no tiene permisos de edición ni de acceso al panel."* o *"No tienes permisos para ingresar a la intranet."*.
+**Posible causa:** (1) El rol asignado no cuenta con autorización para acceder a esa URL o ejecutar esa acción. (2) Cuentas con perfil de Director o Subdirector (u orientadas a la Intranet) que intentan ingresar a través del Sitio Web Público. (3) Cuentas de usuario que no tienen permisos asignados para ingresar al entorno privado de la Intranet.
+**Acción recomendada:** Si se trata de un directivo que intentó ingresar desde el portal público, debe ingresar a través del portal de la Intranet (ver [Sección 10.1.2: Flujo de Inicio de Sesión Habitual](#inicio-de-sesión-habitual-en-la-intranet-del-olo)). Si se trata de un funcionario que requiere permisos para el portal web o para la Intranet, solicitar al Administrador del sistema la asignación de permisos correspondiente.
 
 ### 14.5. Mensajes de Error Adicionales
 
@@ -1510,45 +1945,50 @@ Si un editor o administrador intenta eliminar una página hacia la cual apuntan 
 
 ## 16. Glosario de términos técnicos y del observatorio
 
-El presente glosario define y consolida de forma exhaustiva los términos, conceptos, siglas y herramientas de la plataforma OLO que aparecen a lo largo de las secciones del presente manual de usuario, organizados en estricto orden alfabético:
+El presente glosario define y consolida los términos, conceptos y herramientas de la plataforma OLO explicados a lo largo del manual de usuario, organizados en estricto orden alfabético:
 
-* **Bandeja de Revisión:** Módulo del Panel Administrativo donde el Administrador visualiza y gestiona las versiones y páginas enviadas por los editores para evaluar los cambios propuestos mediante vista previa, permitiendo aprobar su publicación, rechazarlas con observaciones de retroalimentación o descartar borradores mediante el botón de basurero.
+* **Arrastrar y Soltar:** Acción interactiva que permite a los editores seleccionar un bloque de contenido desde el catálogo del editor visual y moverlo hacia el lienzo central para maquetar la página.
+* **Bandeja de Revisión:** Módulo del Panel Administrativo donde el Administrador visualiza y gestiona las versiones enviadas por los editores para evaluar los cambios propuestos mediante vista previa, permitiendo aprobar su publicación, rechazarlas con observaciones de retroalimentación o descartar borradores mediante el botón de basurero.
+* **Banner GOV.CO:** Franja azul oficial superior del Estado colombiano presente en el Sitio Web Público, en cuyo extremo derecho se ubica el texto interactivo de fecha y hora en vivo que sirve como punto de acceso para el inicio de sesión del personal autorizado.
 * **Bitácora de Auditoría:** Historial cronológico permanente e inmutable que registra las acciones realizadas por los usuarios autenticados en la plataforma (quién ejecutó la acción, qué modificó, motivo del descarte, fecha y hora exacta), garantizando la trazabilidad operativa y la supervisión del sistema.
 * **Bloque de Contenido:** Componente prediseñado de interfaz (textos, imágenes, tarjetas informativas, carruseles, acordeones, visores multimedia o tableros analíticos) que los editores configuran e incorporan en el editor visual para maquetar las páginas del Sitio Web y la Intranet.
 * **Borrador (Modo de Borrador):** Estado de trabajo privado en el que los editores maquetan y estructuran una página sin que los cambios sean visibles al público o en la Intranet, hasta que sean enviados a revisión y aprobados por el Administrador.
-* **Botón Flotante (Floating Action Button):** Botón circular interactivo visible en las páginas para usuarios con roles de editor autorizados, desde el cual se despliegan accesos rápidos a la edición, creación y eliminación de páginas.
+* **Botón Flotante de Edición:** Control circular interactivo visible en las páginas para usuarios con perfil administrativo o editorial, desde el cual se despliegan accesos rápidos para editar la página actual, configurar cabecera y pie, crear nuevas páginas o eliminarlas.
+* **Buscador Global:** Control de búsqueda permanente ubicado en la cabecera superior del portal público que permite consultar en tiempo real ocupaciones, publicaciones, documentos y páginas de todo el observatorio.
 * **Carga Masiva en Excel:** Función exclusiva del Administrador para ingresar o actualizar grandes volúmenes de datos ocupacionales, clasificaciones y estadísticas del observatorio mediante planillas de cálculo en formato `.xlsx`.
-* **Contraseña (Contraseña Robusta):** Clave definitiva requerida para el inicio de sesión en el OLO, la cual debe cumplir estrictamente con los lineamientos de seguridad establecidos (mínimo 12 caracteres, mayúsculas, minúsculas, números y caracteres especiales).
-* **Contraseña Temporal:** Clave provisoria asignada manualmente por el Administrador al registrar una nueva cuenta de usuario, válida únicamente para el primer acceso (onboarding) y sin caducidad automática de tiempo.
+* **Contraseña Robusta:** Clave definitiva requerida para el inicio de sesión en el OLO, la cual debe cumplir estrictamente con los lineamientos de seguridad establecidos (mínimo 12 caracteres, mayúsculas, minúsculas, números y caracteres especiales).
+* **Contraseña Temporal:** Clave provisoria asignada manualmente por el Administrador al registrar una nueva cuenta de usuario, válida únicamente para el primer acceso y sin caducidad automática de tiempo.
 * **Dashboard (Tablero Principal):** Pantalla de inicio del Panel Administrativo que resume en tiempo real el estado del sistema mediante tarjetas de métricas numéricas y gráficos de actividad.
 * **Descarte de Versión (Botón de Basurero):** Acción de control en la bandeja de revisión que permite al Administrador eliminar definitivamente un borrador no deseado o enviado por error. Exige registrar de forma obligatoria el motivo en la bitácora de auditoría y depura archivos huérfanos sin alterar la versión publicada.
 * **Diseño Responsivo:** Capacidad de las interfaces del portal web y de la Intranet para adaptarse de manera automática y fluida a diferentes tamaños y resoluciones de pantalla, tanto en computadores de escritorio como en tabletas y dispositivos móviles.
 * **Dominio Corporativo (`@sena.edu.co`):** Dominio de correo electrónico oficial del SENA exigido como requisito estricto y excluyente para la creación de cuentas, inicio de sesión y recuperación de contraseña del personal autorizado en el OLO.
-* **Drag and Drop (Arrastrar y Soltar):** Acción interactiva que permite a los editores seleccionar un bloque de contenido con el ratón y moverlo hacia el lienzo de trabajo para maquetar la página.
-* **Editor Visual:** Herramienta interactiva de maquetación basada en bloques que permite a editores y administradores estructurar, diseñar y actualizar visualmente las páginas del Sitio Web y la Intranet.
-* **Exportación (Descarga PDF):** Funcionalidad que permite al usuario consolidar los resultados de una búsqueda o consulta en un documento descargable en formato PDF u hoja de cálculo.
-* **Ficha Técnica / Vista en Detalle:** Pantalla o módulo que despliega la información detallada y completa de un registro seleccionado a través del buscador o catálogos interactivos.
+* **Editor Visual:** Herramienta interactiva de maquetación basada en bloques que permite a administradores y editores estructurar, diseñar y actualizar visualmente las páginas del Sitio Web y la Intranet.
+* **Exportación de Información (PDF / Excel):** Funcionalidad que permite consolidar reportes, bitácoras de auditoría o documentos oficiales en archivos descargables en formato PDF u hoja de cálculo.
+* **Ficha Técnica / Vista en Detalle:** Pantalla o módulo que despliega la información detallada y completa de un registro seleccionado a través del buscador o catálogos interactivos del observatorio.
 * **Filtros Avanzados:** Herramientas de segmentación dinámica que permiten refinar las búsquedas por áreas temáticas, niveles, categorías o palabras clave.
 * **Flujo Editorial (Revisión y Aprobación):** Ciclo formal de control en el que ningún cambio de contenido pasa a producción de manera directa, requiriendo que los borradores generados por los editores sean revisados, aprobados o rechazados por un Administrador.
-* **Intranet del OLO:** Entorno privado del observatorio con autenticación obligatoria para directivos, editores y administradores, destinado a la consulta de módulos de información y tableros analíticos sobre el mercado laboral, descarga de informes internos y maquetación de secciones internas del OLO.
-* **Lienzo de Edición:** Área interactiva de trabajo del editor visual donde los funcionarios autorizados estructuran, reordenan y configuran bloques de contenido mediante la interacción directa de arrastrar y soltar.
+* **Intranet del OLO:** Entorno privado del observatorio con autenticación obligatoria para administradores, editores y directivos, destinado a la consulta de módulos de información y tableros analíticos sobre el mercado laboral, descarga de informes internos y maquetación de secciones internas del OLO.
+* **Lienzo de Edición:** Área interactiva de trabajo del editor visual donde los funcionarios autorizados estructuran, reordenan y configuran bloques de contenido de la página.
 * **Modo de Solo Lectura:** Modalidad de acceso asignada a Directores y Subdirectores que les permite explorar tableros analíticos en la Intranet y descargar reportes, operando como usuarios autenticados pero sin facultades de edición ni acceso al Panel Administrativo.
+* **Notificación Toast (Mensaje de Éxito):** Aviso emergente de color verde que se muestra temporalmente en la parte superior derecha de la pantalla para confirmar que una acción (guardado, creación o envío) se ejecutó correctamente.
 * **OLO (Observatorio Laboral y Ocupacional):** Instancia del SENA encargada de recolectar, analizar y divulgar información y estadísticas sobre el mercado laboral, las ocupaciones y la pertinencia de la formación en Colombia.
 * **Páginas Dinámicas y Gestionables:** Páginas y secciones de contenido del Sitio Web público y de la Intranet que pueden maquetarse y actualizarse mediante el editor visual, y que pueden ser eliminadas siempre que no cuenten con enlaces activos que provoquen enlaces rotos.
+* **Páginas en Revisión:** Sección del Panel Administrativo donde se concentran los borradores remitidos por los editores para su evaluación, previsualización, aprobación o rechazo por parte del Administrador.
 * **Panel Administrativo:** Entorno web privado y de acceso exclusivo para el rol Administrador (`/admin`), desde el cual se gestionan usuarios, se crean roles derivados de editor, se asignan permisos manuales, se gestiona la bandeja de revisión y se revisa la auditoría.
 * **Permisos Granulares de Edición:** Conjunto de facultades específicas configurables por el Administrador al crear o modificar roles derivados de editor (editar cabecera/pie de página, crear páginas nuevas, eliminar páginas creadas, y asignación sobre páginas específicas del Sitio Web o la Intranet).
-* **Plantilla Oficial de Carga (.xlsx):** Archivo predefinido en formato Excel disponible en el Panel Administrativo que contiene los encabezados y estructuras estandarizadas necesarias para efectuar la importación masiva de datos sin inconsistencias.
-* **Power BI:** Plataforma externa de analítica y visualización de datos cuyas vistas pueden integrarse como un componente interactivo opcional (bloque de contenido) dentro de las páginas maquetadas del observatorio.
+* **Plantilla Oficial de Carga (`.xlsx`):** Archivo predefinido en formato Excel disponible en el Panel Administrativo que contiene los encabezados y estructuras estandarizadas necesarias para efectuar la importación masiva de datos sin inconsistencias.
 * **Preguntas de Seguridad:** Método autónomo de comprobación de identidad configurado por cada funcionario en su primer ingreso, utilizado para validar al titular de la cuenta durante el procedimiento de recuperación de contraseña ante olvidos.
-* **Primer Ingreso (Onboarding):** Procedimiento obligatorio que realiza un funcionario nuevo al ingresar por primera vez con su contraseña temporal para registrar sus preguntas de seguridad y definir su contraseña robusta definitiva.
+* **Primer Ingreso (Configuración Inicial de la Cuenta):** Procedimiento obligatorio que realiza un funcionario nuevo al ingresar por primera vez con su contraseña temporal para registrar sus preguntas de seguridad y definir su contraseña robusta definitiva.
 * **Protección contra Enlaces Rotos:** Validación automática que impide la eliminación de una página creada si existen menús u otras páginas que contengan enlaces activos hacia ella, evitando errores de navegación 404.
 * **PWA (Aplicación Web Progresiva):** Tecnología que permite instalar la plataforma del observatorio en la pantalla de inicio de computadores o dispositivos móviles como una aplicación ligera e independiente desde el navegador web.
+* **Recuperación de Contraseña:** Procedimiento autónomo mediante el cual cualquier funcionario restablece su clave de acceso respondiendo correctamente a las tres preguntas de seguridad previamente configuradas en su cuenta.
 * **Respaldo de Base de Datos (Backup):** Copia de seguridad integral de la información del sistema generada desde el Panel Administrativo y empaquetada en un archivo comprimido con marca de tiempo.
+* **Restauración de Respaldo:** Proceso mediante el cual el Administrador restablece la información del sistema a partir de un archivo de respaldo generado previamente en la plataforma.
 * **Rol Hijo / Derivado de Editor:** Rol personalizado creado exclusivamente bajo la estructura de editor con el prefijo «Editor [Nombre]», el cual nace sin permisos por defecto y al que el Administrador le asigna manualmente permisos específicos sobre páginas o secciones.
 * **Rutas Fijas del Aplicativo:** Vistas y pantallas programadas en el código base que no se gestionan a través del editor visual (como las interfaces de inicio de sesión, recuperación de credenciales y las rutas del Panel Administrativo), las cuales no pueden ser alteradas ni eliminadas desde el entorno de edición.
 * **SENA (Servicio Nacional de Aprendizaje):** Entidad pública colombiana de formación técnica y profesional, titular de la plataforma tecnológica y responsable del Observatorio Laboral y Ocupacional.
-* **Separación de Funciones:** Principio operativo y de seguridad del sistema donde los editores solo maquetan y proponen contenido en borrador, mientras que la aprobación, descarte y publicación final corresponde con exclusividad al Administrador.
 * **Sitio Web Público:** Portal web del OLO de libre acceso y consulta abierta para la ciudadanía y comunidad en general, donde se consultan páginas dinámicas, boletines, estadísticas ocupacionales y publicaciones del observatorio.
-* **Tablero BI (Power BI):** Componente maquetable opcional del editor visual que permite embeber paneles interactivos de análisis de datos en las páginas de la plataforma, facilitando la visualización de métricas dinámicas con filtros en tiempo real.
+* **Tablero BI (Power BI):** Componente interactivo que permite visualizar paneles de indicadores y análisis de datos del mercado laboral con filtros en tiempo real, integrados en las páginas de la Intranet y del Sitio Web.
+* **Timeout de Sesión (Inactividad):** Medida preventiva de seguridad que suspende la sesión de un usuario tras 30 minutos continuos sin actividad detectada, protegiendo la información y los datos del observatorio.
 * **Visor de Documentos y PDFs:** Componente de interfaz que permite visualizar, leer y explorar documentos oficiales, boletines y publicaciones en formato PDF directamente en la pantalla sin descargarlos obligatoriamente.
 * **Visor de Videos:** Componente interactivo para la reproducción de recursos audiovisuales y cápsulas de video integradas en las páginas del portal del OLO.
