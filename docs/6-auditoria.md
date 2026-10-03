@@ -5,6 +5,47 @@
 
 ---
 
+## sesión 03-10-2026: la franja blanca bajo el panel y el punto de los desplegables
+
+**Qué era.** En cualquier sección del panel sobraba una franja blanca al final: la ventana
+entera hacía scroll por debajo del marco, que mide exactamente una pantalla. El panel está
+pensado para que lo único que se desplace sea su `<main>`.
+
+**Por qué pasaba.** `.sr-only` —las etiquetas que solo oye un lector de pantalla— es
+`position: absolute`. Sin un ancestro posicionado, su bloque contenedor era `<body>`, no el
+`<main>` que las contiene en el árbol. Y `overflow` solo recorta a los descendientes de los
+que uno es bloque contenedor: cada `.sr-only` se quedaba en su posición estática —el final
+del contenido, bastante más abajo que la pantalla— sin que el `overflow-y: auto` del
+`<main>` la tocara, y estiraba el alto del documento. Como `.sr-only` está repartida por
+todo el panel, el síntoma salía en todas las secciones.
+
+| App | Archivo | Cambio |
+|---|---|---|
+| Sitio | `shared/ui/organisms/sidebar-layout.tsx` | `relative` en el `<main>`: pasa a ser el bloque contenedor de sus `.sr-only`, que vuelven a entrar en su recorte |
+| Sitio | `shared/ui/molecules/custom-select.tsx` | Fuera el punto de cada opción del desplegable; queda solo el texto. La elegida se sigue distinguiendo por su fondo |
+
+**Verificado** en Chrome headless contra el dev real (sesión de `LOCAL_AUTH_*`), ventana de
+784 px de alto:
+
+| Ruta | Documento antes | Documento después |
+|---|---|---|
+| `/admin/actualizaciones` | 1.306 px (sobran 522) | 784 px |
+| `/admin/dashboard`, `/admin/users`, `/admin/auditoria`, `/admin/respaldos`, `/admin/revision` | — | 784 px, sin sobrante |
+
+El scroll interno del `<main>` sigue intacto (p. ej. 1.444 px de contenido sobre 784 de
+caja en Actualizaciones). `tsc --noEmit` limpio.
+
+> **Trampa.** Un `overflow` no recorta a un descendiente `position: absolute` si no es su
+> bloque contenedor. Cualquier caja con scroll que vaya a contener `.sr-only`, un menú
+> absoluto o un tooltip necesita `position: relative`. Se descartó tocar `.sr-only` en
+> `globals.css`: la receta (incluida la de Tailwind) es `position: absolute`, y cambiarla
+> arrastraría a las dos apps y a las páginas públicas por un problema que es del contenedor.
+
+**Pendiente al cierre.** No se revisó si otras cajas con scroll del proyecto —la columna de
+la barra lateral, los modales con listas largas— tienen el mismo descuido.
+
+---
+
 ## sesión 02-10-2026: botón «Salir de modo edición» y tooltips en el botón flotante
 
 **Qué era.** El botón flotante del lápiz (`PaginasFabSpeedDial`) solo abría el menú de
