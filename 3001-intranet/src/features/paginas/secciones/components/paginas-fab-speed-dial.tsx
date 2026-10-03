@@ -84,6 +84,20 @@ export function PaginasFabSpeedDial({
   const contenedorRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
+  const [saliendo, setSaliendo] = useState(false);
+
+  // Cierra la sesión y lleva al login, igual que el resto de salidas de la intranet.
+  const salirDelModoEdicion = async () => {
+    if (saliendo) return;
+    setSaliendo(true);
+    try {
+      await fetch('/api-backend/logout', { method: 'POST' });
+    } catch {
+      // Sin red igualmente se sale hacia el login.
+    }
+    window.location.href = '/login?logout=1';
+  };
+
   const alternarMenu = () => {
     setAbierto((prev) => !prev);
   };
@@ -139,7 +153,7 @@ export function PaginasFabSpeedDial({
     <>
       <div
         ref={contenedorRef}
-        className={`fab-speed-dial ${abierto ? 'fab-speed-dial--abierto' : ''}`}
+        className={`fab-speed-dial fab-speed-dial--con-salir ${abierto ? 'fab-speed-dial--abierto' : ''}`}
         aria-label="Acciones de administración de página"
       >
         {/* Submenú de acciones desplegables hacia arriba */}
@@ -255,7 +269,7 @@ export function PaginasFabSpeedDial({
 
           {/* 4. Eliminar página */}
           {puedeEliminarSeccion && (
-            <div className="fab-speed-dial__item" role="none">
+            <div className="fab-speed-dial__item fab-speed-dial__item--eliminar" role="none">
               <span className="fab-speed-dial__tooltip" role="tooltip">
                 Eliminar sección
               </span>
@@ -292,54 +306,88 @@ export function PaginasFabSpeedDial({
         </div>
 
         {/* Botón Principal (Trigger FAB fijo abajo) */}
-        <button
-          ref={triggerRef}
-          type="button"
-          onClick={alternarMenu}
-          className={`fab-speed-dial__trigger ${
-            abierto ? 'fab-speed-dial__trigger--activo' : ''
-          }`}
-          aria-haspopup="menu"
-          aria-expanded={abierto}
-          aria-label={abierto ? 'Cerrar menú de acciones' : 'Abrir menú de acciones'}
-          title={abierto ? 'Cerrar menú de acciones' : 'Acciones de página'}
-        >
-          <span className="fab-speed-dial__icono-wrapper">
-            {abierto ? (
-              <svg
-                className="fab-speed-dial__icono"
-                viewBox="0 0 24 24"
-                width={22}
-                height={22}
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2.2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            ) : (
-              <svg
-                className="fab-speed-dial__icono"
-                viewBox="0 0 24 24"
-                width={20}
-                height={20}
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                <path d="m15 5 4 4" />
-              </svg>
-            )}
+        <div className="fab-speed-dial__item">
+          <span className="fab-speed-dial__tooltip" role="tooltip">
+            {abierto ? 'Cerrar opciones' : 'Opciones de edición'}
           </span>
-        </button>
+          <button
+            ref={triggerRef}
+            type="button"
+            onClick={alternarMenu}
+            className={`fab-speed-dial__trigger ${
+              abierto ? 'fab-speed-dial__trigger--activo' : ''
+            }`}
+            aria-haspopup="menu"
+            aria-expanded={abierto}
+            aria-label={abierto ? 'Cerrar menú de acciones' : 'Abrir menú de acciones'}
+          >
+            <span className="fab-speed-dial__icono-wrapper">
+              {abierto ? (
+                <svg
+                  className="fab-speed-dial__icono"
+                  viewBox="0 0 24 24"
+                  width={22}
+                  height={22}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2.2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              ) : (
+                <svg
+                  className="fab-speed-dial__icono"
+                  viewBox="0 0 24 24"
+                  width={20}
+                  height={20}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                  <path d="m15 5 4 4" />
+                </svg>
+              )}
+            </span>
+          </button>
+        </div>
+
+        {/* Salir del modo edición: siempre a la vista, debajo del lápiz */}
+        <div className="fab-speed-dial__item fab-speed-dial__item--salir">
+          <span className="fab-speed-dial__tooltip" role="tooltip">
+            Salir de modo edición
+          </span>
+          <button
+            type="button"
+            onClick={salirDelModoEdicion}
+            disabled={saliendo}
+            className="fab-speed-dial__btn fab-speed-dial__btn--salir"
+            aria-label="Salir de modo edición"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width={18}
+              height={18}
+              aria-hidden="true"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Diálogos modales controlados por el FAB */}
