@@ -5,6 +5,131 @@
 
 ---
 
+## sesión 03-10-2026 (3.ª parte): «Fuentes futuras de empleo» deja de ser un Excel quemado en disco y entra al ciclo de cargas
+
+**Qué se reportó.** Que los archivos de `4000-api-backend/uploads/cargas-datos/` están
+«quemados», a propósito de que toda carga de Actualizaciones debería limpiar su registro al
+eliminarse.
+
+**Lo que había.** Comprobado contra la base de dev (Neon) y el disco, los cinco Excel de esa
+carpeta:
+
+| Archivo | Estado |
+|---|---|
+| `0d1653a2…` (data2.xlsx) | Registrado — carga de tendencia viva |
+| `5e42b9a8…` (formato-alertas-inversion.xlsx) | Registrado — carga de alertas viva |
+| `c6a34897…` (Programas sobresalientes…) | Registrado — carga de programas viva |
+| `b43c28b7…` | **Huérfano**: en disco, sin fila en `archivos` |
+| `fuentes-futuras-de-empleo.xlsx` | **Quemado**: leído por nombre fijo, versionado en git, fuera del ciclo |
+
+El mecanismo que se pedía **ya existía y funciona**: `eliminarArchivoSiQuedaSuelto` borra fila
+y archivo, y lo comparten las tres cargas con cola. Lo que fallaba era lo que nunca entraba a
+ese ciclo:
+
+1. `consultar-fuentes-futuras-actual.usecase.ts` buscaba tres nombres fijos en disco y servía
+   el primero que encontrara. Sin tarjeta en Actualizaciones, cambiar los datos del portal
+   pedía reemplazar el archivo a mano y hacer commit (de ahí su excepción en `.gitignore`).
+2. Nada limpiaba los huérfanos de `cargas-datos/`. La base de dev es compartida y la carpeta
+   `uploads/` es de cada máquina: cuando alguien elimina una carga desde su equipo, la fila
+   desaparece para todos y el Excel solo de *su* disco. En las demás queda sin dueño, porque
+   ya no hay registro desde el que llegar a él. El único script que había
+   (`limpiar-huerfanos-uploads.ts`) cubre los adjuntos de páginas, no esta carpeta.
+
+**Lo que se hizo.** El módulo pasa al mismo ciclo que las demás tarjetas, sin crear tablas: el
+Excel sigue siendo el dato, pero ahora es el de la **carga vigente**.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| API | `repositories/fuentes-futuras-empleo.repository.ts` | Nuevo. `cargas_datos` con `modulo = 'fuentes_futuras_empleo'`; `obtenerVigente` es la última completada |
+| API | `use-cases/observatorio/fuentes-futuras/leer-excel-fuentes-futuras.ts` | Nuevo. Lectura por nombre de encabezado (no por posición), desde ruta o buffer; valida columnas y tope de 20 000 filas |
+| API | `use-cases/observatorio/fuentes-futuras/consultar-fuentes-futuras-actual.usecase.ts` | Movido desde `observatorio/`. Resuelve la ruta por la carga vigente; caché de una entrada por ruta + `mtime` |
+| API | `use-cases/observatorio/fuentes-futuras/{iniciar,listar,eliminar}-*.usecase.ts` | Nuevos. Subir valida **antes** de guardar; eliminar reusa `eliminarArchivoSiQuedaSuelto` |
+| API | `controllers/fuentes-futuras-empleo.controller.ts` | Nuevo; el handler público sale de `ObservatorioController` |
+| API | `routes/observatorio.routes.ts` | `GET/POST /fuentes-futuras-empleo/cargas` y `DELETE …/cargas/:id`, tras `requireAuth` + `puedeActualizarDatos` |
+| API | `use-cases/observatorio/guardar-excel-de-carga.ts` | Opción `requiereCola` (por defecto `true`): esta carga no encola nada, así que no exige Redis |
+| API | `use-cases/observatorio/formatos-de-carga.ts` + `uploads/formatos-carga/formato-fuentes-futuras.xlsx` | Formato de ejemplo descargable, generado del Excel real (encabezados + 3 filas) |
+| API | `scripts/archivos/limpiar-huerfanos-cargas.ts` + `npm run cargas:limpiar-huerfanos` | Nuevo. Reporte por defecto, `--aplicar` para borrar; respeta la lista `PROTEGIDOS` |
+| Sitio | `actualizaciones/components/carga-fuentes-futuras.tsx` + `hooks/use-cargas-fuentes-futuras.ts` + servicio y tipos | Tarjeta nueva. Sin barra de progreso: la respuesta del POST ya trae la carga terminada |
+| Sitio | `actualizaciones/components/historial-cargas-grid.tsx` | `descripcionEliminar` opcional: aquí borrar **sí** cambia lo público, y el diálogo lo dice |
+| Sitio | `actualizaciones/components/actualizaciones-view.tsx` | Vuelve la tarjeta, ahora con funcionalidad (el 01-10 se quitó el cartel «Próximamente», que no hacía nada) |
+
+**Probado de punta a punta** con Postgres 18 desechable (40 migraciones), copia del backend en
+el scratchpad y la API en el 4100 — sin tocar Neon, el dev ni Redis:
+
+| Caso | Resultado |
+|---|---|
+| Público sin ninguna carga | 25 registros del respaldo heredado |
+| Subir Excel válido | 201, 3 filas; el público pasa a las 3 nuevas |
+| Subir Excel sin las columnas | 422 con el detalle de cuáles faltan, **sin** dejar archivo ni fila |
+| Segunda carga | El público pasa a la nueva; historial con las dos |
+| Eliminar la vigente | `cargas_datos` −1, `archivos` −1, Excel fuera del disco; el público vuelve a la anterior |
+| Mismo Excel subido dos veces | 1 fila en `archivos`, 2 cargas; borrar una devuelve `archivoEliminado: false` y conserva el Excel |
+| Eliminar la última | El público vuelve al respaldo heredado |
+| `DELETE` de id inexistente / `POST` sin sesión | 404 / 401 |
+| Descargar `formatos/fuentes-futuras` | 200 con `Content-Disposition`; `otro` y `..%2F..%2Fpackage.json` siguen en 404 |
+| `cargas:limpiar-huerfanos` | Reporta 2 huérfanos y protege el heredado; con `--aplicar` los borra |
+
+`tsc --noEmit` y `eslint` limpios en API y sitio.
+
+> **El respaldo heredado sigue vivo a propósito.** `ARCHIVO_HEREDADO` lee
+> `fuentes-futuras-de-empleo.xlsx` solo cuando no hay ninguna carga, para que el portal no se
+> quede en blanco en los ambientes donde todavía nadie ha subido el Excel por el panel. Se
+> retira —junto con la excepción del `.gitignore` y la lista `PROTEGIDOS` del script— cuando
+> el archivo esté cargado en todas partes.
+
+**Queda.** Borrar el huérfano real de este equipo:
+`npm run cargas:limpiar-huerfanos -- --aplicar` (reporta `b43c28b7…`, 10 KB). No se corrió:
+borrar es irreversible y es decisión del usuario.
+
+---
+
+## sesión 03-10-2026 (2.ª parte): por qué un Administrador no veía «Editar» y el botón pasa a llamarse «Editar página»
+
+**Qué se reportó.** Con `dtejada@sena.edu.co` (rol Administrador) el lápiz flotante salía,
+pero sin la opción de editar. La duda era si faltaban permisos o si había caché de por medio.
+
+**No era ninguna de las dos.** Comprobado contra el dev real:
+
+| Qué se miró | Resultado |
+|---|---|
+| Permisos del rol Administrador en la base | 28 claves: `acceso.sitio`, `acceso.intranet` y **todas** las de edición — 11/11 del sitio, 7/7 de la intranet |
+| `/api/me` con un usuario real de ese rol | 200, devuelve las 28; el rol sale de la fila, no del token |
+| Caché del navegador (`permisosDeLaSesion`, 60 s) | Se anula ante un 401; reproducido el peor caso —abrir el sitio sin sesión y que aparezca después, sin recargar— y el botón salió al instante |
+| Caché del servidor (`require-permission`, 30 s) | Se invalida al escribir permisos, y `/api/me` ni la usa |
+
+**Lo que pasaba de verdad.** `/clasificacion` y `/programas-sobresalientes` **no son secciones
+de la base**: son páginas React escritas a mano. No tienen clave `editar.sitio.<slug>` en el
+catálogo, así que nadie —Administrador incluido— puede editarlas con Puck, y el botón no se
+pinta. Las 11 que sí son secciones (`inicio`, `empleo`, `tendencias`, `publicaciones`,
+`metrica`, `cno`, `cuoc`, `politica-de-privacidad`, `mapa-del-sitio`, `alertas-inversion`,
+`menu-y-pie`) salen bien: verificadas una a una en el navegador con la sesión de ese usuario.
+
+| App | Archivo | Cambio |
+|---|---|---|
+| Sitio | `features/paginas/secciones/components/paginas-fab-speed-dial.tsx` | «Editar sección» pasa a «Editar página» —tooltip, `aria-label` y `title`—, como «Nueva página» y «Eliminar página» del mismo menú. La intranet se queda en «sección», que es coherente con las suyas |
+
+> **Trampa, y lo que confundió.** Con rol Superadmin el botón **sí** aparece en esas dos rutas:
+> `puedeEditarSeccion` corta por `esSuperadmin` sin mirar si el slug es una sección. Llevaría a
+> un editor sin página detrás —la API responde 404 a `clasificacion` y a
+> `programas-sobresalientes`—. No se tocó: el atajo existe porque `CLAVES_DEL_CATALOGO` es una
+> lista fija de secciones de fábrica, así que quitarlo dejaría al superadmin sin poder editar
+> las secciones creadas después. Arreglarlo pide preguntarle a la API si el slug existe.
+
+**Hallazgo suelto.** `diego@sena.edu.co` recibe `401 Sesión cerrada por inactividad` (la API
+corta a los 20 minutos, `MINUTOS_DE_INACTIVIDAD_API`). En una página pública el cliente atrapa
+ese 401 y llama a `cerrarSesionLocal()`, que borra las cookies sin avisar y sin redirigir: el
+lápiz desaparece entero y sin explicación. Es otro síntoma distinto del de arriba.
+
+**Cómo se verificó sin contraseñas.** Chrome headless por CDP contra el dev, firmando tokens de
+prueba con el `JWT_SECRET` local (la cuenta de `LOCAL_AUTH_*` y el id de un usuario real). Todo
+lecturas; el único efecto fue refrescar `last_access_at`, lo mismo que navegar. Los tokens y el
+perfil de Chrome se borraron al terminar.
+
+**Pendiente al cierre.** Decidir si el botón debe esconderse para superadmin en rutas que no son
+secciones, y si el cierre por inactividad debe avisar en vez de vaciar la interfaz.
+
+---
+
 ## sesión 03-10-2026: la franja blanca bajo el panel y el punto de los desplegables
 
 **Qué era.** En cualquier sección del panel sobraba una franja blanca al final: la ventana
