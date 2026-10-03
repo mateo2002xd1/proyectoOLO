@@ -181,19 +181,19 @@ export function PaginasFabSpeedDial() {
           role="menu"
           aria-hidden={!abierto}
         >
-          {/* 1. Editar sección (más cercano al disparador en column-reverse) */}
+          {/* 1. Editar página (más cercano al disparador en column-reverse) */}
           {puedeEditarSeccion && (
             <div className="fab-speed-dial__item" role="none">
               <span className="fab-speed-dial__tooltip" role="tooltip">
-                Editar sección
+                Editar página
               </span>
               <Link
                 href={enlaceAlEditor(slug, rutaActual || `/${slug}`)}
                 role="menuitem"
                 onClick={cerrarMenu}
                 className="fab-speed-dial__btn fab-speed-dial__btn--editar"
-                aria-label="Editar sección"
-                title="Editar sección"
+                aria-label="Editar página"
+                title="Editar página"
                 tabIndex={abierto ? 0 : -1}
               >
                 <svg
