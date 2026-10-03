@@ -5,6 +5,33 @@
 
 ---
 
+## sesión 02-10-2026: botón «Salir de modo edición» y tooltips en el botón flotante
+
+**Qué era.** El botón flotante del lápiz (`PaginasFabSpeedDial`) solo abría el menú de
+acciones; quien editaba no tenía cómo salir de ese modo sin ir al panel. Se añade, debajo del
+lápiz, un botón rojo de salir y se rotulan con tooltip los botones que no lo tenían.
+
+| App | Archivo | Cambio |
+|---|---|---|
+| Sitio | `features/paginas/secciones/components/paginas-fab-speed-dial.tsx` | Botón «Salir de modo edición» siempre visible bajo el lápiz: `cerrarSesionLocal()` y recarga de la misma página, así el portal queda como lo ve un visitante. Tooltip «Opciones de edición» en el lápiz («Cerrar opciones» con el menú abierto; se quitó su `title` para no duplicar) |
+| Intranet | `features/paginas/secciones/components/paginas-fab-speed-dial.tsx` | Igual, pero la salida hace `POST /api-backend/logout` y lleva a `/login?logout=1`, como el resto de salidas de la intranet |
+| Ambas | `style/globals.css` | `.fab-speed-dial--con-salir` (columna), `.fab-speed-dial__btn--salir` (rojo `#b3261e`, icono blanco) y tooltip rojo para salir y para eliminar |
+
+> **Trampa.** El menú desplegable está anclado con `bottom: calc(100% + …)` al contenedor;
+> al apilar un segundo botón debajo, el contenedor creció y el menú quedaba flotando lejos del
+> lápiz. Con `--con-salir` el ancla es `calc(100% - 3.5rem + 0.85rem)` (3.5 rem = alto del
+> lápiz). Si se cambia el tamaño del lápiz hay que tocar las dos cifras.
+
+**Descartado.** Usar `useAuth().logout` en la intranet: importar `features/login` desde
+`features/paginas` cruza una frontera entre módulos; se llama al endpoint directamente, como
+ya hace `login-view.tsx`. También se probó `#ff1f1f` para el botón y se volvió al rojo
+anterior a petición del usuario.
+
+**Pendiente al cierre.** No se probó en el navegador: solo `tsc --noEmit` sin errores en los
+dos componentes.
+
+---
+
 ## sesión 29-09-2026: módulo "Alertas de inversión" — carga de Excel, alta manual y sitio público
 
 **Qué era.** La tarjeta "Alertas de inversión" de "Actualizaciones" llevaba desde la migración
@@ -7053,3 +7080,94 @@ Se requirió integrar un componente Puck para la carga masiva de estadísticas l
 - Tipado TypeScript verificado en `sitio-web` (`npx tsc --noEmit` exitoso sin errores).
 - Verificación del esquema de base de datos (`node check-tables.js` confirmando las 20 tablas presentes en PostgreSQL).
 
+## Sesión 01-10-2026: botones de acción en /admin/revision
+
+- Los cuatro botones de la cola de revisión usan los iconos de `public/assets/svg` (`eye-open`, `send`, `equiz`, `trash`) tintados por máscara CSS (`IconoMascara`) y los colores pedidos: ver #1FACE3/#002237, aprobar #7DB728/#004600, rechazar fondo #FFE9E9 con icono y borde #FF1F1F, eliminar #FF1F1F/#6A0000.
+- Archivo: `3000-sitio-web/src/features/paginas/revision/components/revision-queue-view.tsx`.
+- Sin verificar en navegador.
+
+## Sesión 01-10-2026: se quita la tarjeta «Fuentes futuras de empleo» de Actualizaciones
+
+- Era la única tarjeta «Próximamente» de `/admin/dashboard/actualizaciones`; se eliminó la constante `MODULOS_PROXIMAMENTE`, el bloque que la dibujaba y la mención en el comentario.
+- Archivo: `3000-sitio-web/src/features/administracion/actualizaciones/components/actualizaciones-view.tsx`.
+- No se toca el bloque público ni su endpoint de Puck.
+- Sin verificar en navegador.
+- Las dos tarjetas de arriba (Programa + Sobresalientes y Alertas de inversión) ocupan 50% y 50%: la grilla pasa de `lg:grid-cols-3` a 2 columnas desde `sm`; Criterios sigue a todo el ancho (`col-span-full`).
+
+## Sesión 01-10-2026: borrar proyectos de Alertas de inversión desde Actualizaciones
+
+- Problema: un proyecto agregado a mano (o importado de Excel) no se podía quitar; «Historial de cargas» solo borra la auditoría de la carga y las altas manuales ni aparecen ahí.
+- API: `GET /api/alertas-inversion/proyectos` (100 más recientes, reutiliza el listado público) y `DELETE /api/alertas-inversion/proyectos/:id` (borra el proyecto; las ubicaciones caen por CASCADE). Mismo permiso `puedeActualizarDatos`. Caso de uso nuevo `eliminar-proyecto.usecase.ts`.
+- Panel: sección «Proyectos registrados» en la tarjeta, con icono de basura y confirmación (`lista-proyectos-inversion.tsx`); se refresca al agregar uno a mano y al terminar una carga de Excel.
+- Borrado físico, no lógico; si se borra una fila de un Excel y se vuelve a subir, se reimporta (la deduplicación es por URL de fuente).
+- Sin verificar en navegador ni contra la base.
+
+## Sesión 01-10-2026: el gráfico de Alertas de inversión a veces no cargaba
+
+- Causa: `grafico-sectores.tsx` cargaba ECharts con `import()` dinámico en un efecto y aplicaba la opción en otro; si el módulo llegaba después del primer render, `instanciaRef` era `null`, no se pintaba nada y no había nada que lo volviera a intentar. Además el clic usaba los `datos` del primer render y el listener de `resize` nunca se quitaba.
+- Arreglo: usa `GraficoEcharts` (shared/ui/molecules, init síncrono + ResizeObserver) con la opción en `useMemo`; a `GraficoEcharts` se le añadió `onClickElemento` opcional.
+- Sin verificar en navegador.
+
+## Sesión 01-10-2026: filtros Sector / Departamento / Año en Alertas de inversión
+
+- La consulta pública ahora se filtra por sector, departamento y año (antes solo año y sector por clic en la barra; el gráfico ya aceptaba departamento en la API pero el sitio no lo enviaba y el listado lo ignoraba).
+- API: `listarPublicados` filtra por departamento con `EXISTS` sobre las ubicaciones (mismo criterio del gráfico); `GET /opciones` devuelve también los departamentos del catálogo (`codigoDane`, `nombre`); `GET /listado` pasa `departamento` al repositorio.
+- Sitio: tres selectores en ese orden en `alertas-inversion-view.tsx`; el clic en una barra sigue filtrando por sector y queda reflejado en el selector. Cambiar cualquier filtro vuelve a la página 1.
+- Reiniciar la API para ver el cambio. Sin verificar en navegador ni contra la base.
+
+## Sesión 01-10-2026: modal «Agregar manualmente» más ancho
+
+- `Alert` (shared/ui/molecules) recibe `anchoMaximo` opcional (por defecto `max-w-md`, así los demás modales no cambian); el formulario de proyecto de inversión usa `max-w-3xl`. En móvil sigue a todo el ancho.
+- Sin verificar en navegador.
+- La «Fecha del anuncio» del mismo formulario usa el `DatePicker` del panel en vez del `<input type="date">` nativo; como ya no es `required` del navegador, se valida a mano («Elija la fecha del anuncio.»). Riesgo: el formulario hace scroll interno (`overflow-y-auto`) y el calendario desplegable podría recortarse en el borde inferior; sin verificar en navegador.
+- El «Departamento» del formulario es un desplegable (`CustomSelect`) con los departamentos que devuelve `GET /api/alertas-inversion/opciones` (se envía el nombre, que la API resuelve por alias); se valida a mano que se elija uno. Requiere la API reiniciada: con la anterior la lista sale vacía. `obtenerSeccionesCiiu` pasa a `obtenerOpcionesProyectoInversion` (sectores + departamentos en una sola llamada).
+
+## Sesión 01-10-2026: el filtro por departamento no respondía y la consulta se sentía lenta
+
+- Departamento: no filtraba porque la API en ejecución era la anterior al cambio (su `/opciones` no traía `departamentos` y el listado ignoraba el parámetro). Se validó el código nuevo directo contra la base (solo SELECT): 33 departamentos y, p. ej., Antioquia 3, Bogotá 3, Santander 2 proyectos, ~115 ms por consulta. Falta reiniciar la API.
+- Lentitud: la base responde rápido; lo lento era el sitio. Cada cambio de filtro ponía `cargando` y desmontaba el gráfico y la tabla ("Cargando datos..." y redibujo), pedía el gráfico de nuevo al cambiar de página o de sector aunque no depende de ellos, y una respuesta vieja podía pisar a una nueva.
+- Arreglo en `use-alertas-inversion.ts`: un efecto para el gráfico (departamento, año) y otro para el listado (sector, departamento, año, página), con descarte de respuestas obsoletas; solo la primera carga muestra "Cargando"; después los datos anteriores quedan a la vista al 60% de opacidad (`actualizando`).
+- Sin verificar en navegador.
+
+## Sesión 01-10-2026: dos gráficas en Alertas de inversión (lineal + torta)
+
+- Gráfica lineal nueva «Evolución de proyectos»: proyectos publicados por año, o por mes si hay un año elegido; respeta sector y departamento. API: `GET /api/alertas-inversion/evolucion` (público, mismos filtros que el gráfico; rellena con 0 los periodos vacíos). SQL probado contra la base (solo SELECT): 2024:1, 2025:1, 2026:13 en ese momento; Bogotá y sector C filtran bien; vista mensual de 2026 devuelve los 12 meses.
+- «Proyectos por sector» tiene un botón Barras / Torta; el clic en una barra o porción filtra por sector en las dos vistas. En la torta solo salen sectores con proyectos y, con un sector elegido, el resto pasa a gris.
+- Archivos: `grafico-evolucion.tsx` (nuevo), `grafico-sectores.tsx`, `alertas-inversion-view.tsx`, hook/servicio/tipos del sitio; `consultas-publicas.usecase.ts`, repositorio, validador, controlador y rutas de la API.
+- Interpretación mía del pedido: «el lineal» = serie en el tiempo y «botón con torta» = alternar la vista del gráfico por sector. Requiere reiniciar la API. Sin verificar en navegador.
+
+## Sesión 01-10-2026: «Limpiar» en el listado de proyectos y se quita la torta
+
+- Panel Actualizaciones, «Proyectos registrados»: botón «Limpiar» (sin fondo, texto rojo) que borra todos los proyectos tras confirmar. API: `DELETE /api/alertas-inversion/proyectos` (mismo permiso `puedeActualizarDatos`; devuelve `{ eliminados }`; las ubicaciones caen por CASCADE). Es irreversible y deja el sitio público sin datos de alertas; las empresas y municipios creados se conservan.
+- Se retira la vista de torta de «Proyectos por sector» (queda solo barras); la gráfica lineal de evolución se mantiene.
+- Requiere reiniciar la API. Sin verificar en navegador.
+
+## Sesión 01-10-2026: se elimina la gráfica «Evolución de proyectos»
+
+- Se retira del sitio la gráfica lineal (componente, hook, servicio y tipos) y de la API el endpoint `GET /api/alertas-inversion/evolucion` con su consulta, validador y caso de uso, que ya nadie usaba. Queda «Proyectos por sector» (barras). Reiniciar la API; sin verificar en navegador.
+- El botón de la lista se llama «Limpiar todo». El 404 al pulsarlo venía de una API iniciada antes de existir `DELETE /api/alertas-inversion/proyectos`; se resuelve reiniciándola.
+- La API no arrancaba: en `alertas-inversion.routes.ts` la descripción del `GET /proyectos` llevaba comillas y dos puntos dentro de un comentario OpenAPI (YAML inválido). Corregido; se comprobó con `swagger-jsdoc` sobre todas las rutas. Lección: en los comentarios `@openapi` no usar `:` dentro de un valor sin comillas.
+
+## Sesión 01-10-2026: descripción en la tabla de Alertas de inversión
+
+- `listado-proyectos.tsx` (sitio público): columna nueva «Descripción» cortada a dos líneas (`line-clamp-2`); si pasa de 110 caracteres aparece «Ver más», que abre un modal solo con la descripción completa (título = empresa).
+- El modal es el `ModalOcupaciones` del sitio público (Escape, foco atrapado, capa sobre la cabecera sticky, scroll de fondo bloqueado) en vez de uno nuevo; el `Alert` del panel no sirve aquí porque su `z-50` queda bajo la cabecera (`z-1000`). Ojo: es una importación entre features (`buscador-ocupaciones`); si se vuelve a reutilizar conviene moverlo a `shared/ui`.
+- Sin verificar en navegador.
+
+## Sesión 01-10-2026: botón «Actualizar sectores (CIIU)» con Excel de código y nombre
+
+- Decisión (con el usuario): el Excel trae el **código numérico** CIIU y el nombre; los de 4 dígitos (clase, p. ej. 0111) se guardan en `ciiu_clases` (vacía hasta hoy, sin migración) y su sección se **deduce del prefijo**: los 2 primeros dígitos son la división y cada sección cubre un rango (`ciiu_secciones.divisiones`). Los de 2 y 3 dígitos (sector principal) se leen pero no se guardan, porque no hay tabla para ellos.
+- API: `POST /api/alertas-inversion/sectores` (multipart `file`, mismo permiso `puedeActualizarDatos`), caso de uso `actualizar-sectores.usecase.ts`: síncrono, sin Redis ni cola; valida tipo por magic bytes (.xlsx); crea los nuevos, actualiza el nombre de los que cambian, nunca borra; las filas con problema (no numérico, sin nombre, repetido, división sin sección) se reportan y las demás se aplican en una transacción. `GET /opciones` devuelve también `clases`.
+- Panel: botón «Actualizar sectores (CIIU)» junto a «Agregar manualmente» con resumen (nuevos / nombre cambiado / sin cambios / omitidos / errores por fila). Formulario manual: nuevo desplegable opcional «Actividad (CIIU)» con "código · nombre", filtrado por el sector elegido. Tabla pública: bajo el sector se ve "código · actividad" si el proyecto la tiene.
+- Probado con un Excel generado (ejemplo de cultivos 011/0111–0119, 4711, repetido, no numérico, sin nombre) **sin escribir en Neon** (guardado simulado): 8 creados, 1 omitido y 3 errores bien reportados. Pendiente: primera carga real y verla en navegador; reiniciar la API.
+- Trampa conocida: un código con cero inicial (0111) guardado en Excel como número llega como 111 y se omite; hay que guardarlo como texto. El resumen del panel lo avisa.
+
+## Sesión 01-10-2026: formatos de Excel asociados a los botones de Alertas de inversión
+
+- Los Excel de ejemplo de `uploads/formatos-carga/` se renombraron a `formato-*.xlsx` y `formatos-de-carga.ts` seguía pidiendo `formatdata-*`: las tres descargas daban 404. La tabla ahora apunta a `formato-sobresalientes.xlsx`, `formato-criterios-tendencias.xlsx` y `formato-alertas-inversion.xlsx`, y suma `actualizar-ciiu` → `formato-actualizar-CIIU.xlsx`. Verificado que los cuatro se resuelven en disco.
+- «Actualizar sectores (CIIU)» tiene su botón «Descargar formato de sectores» (`GET /api/alertas-inversion/formatos/sectores`). La descarga de formatos del controlador se unificó en `enviarFormato`, y en el sitio `descargarExcelDeAlertas` sirve a los dos botones.
+- El formato de proyectos trae el código sin cero inicial (`11` = grupo `011`, «Cultivos agrícolas transitorios»). El importador de proyectos ahora deduce la sección de cualquier código numérico por su división (`ciiu-divisiones.ts`, compartido con «Actualizar sectores»); antes solo aceptaba letra, clase de 4 dígitos ya cargada o el nombre exacto de la sección, y esa fila fallaba. Probado con las secciones reales: 11→A, 011→A, 0111→A, 4711→G, 1011→C, 9999→U.
+- El formato de CIIU (`Código CIUU`, `Actividad`) solo trae el encabezado; el lector salta la primera fila si su código no es numérico, así que es compatible. Las filas de la hoja de proyectos con código de 3 dígitos enlazan a la sección pero no a una clase (no hay tabla de grupos).
+- Git: los `formatdata-*` siguen versionados y en disco ya no están; incluirlos en el commit como renombrados.
+- Reiniciar la API. Sin verificar en navegador.
+- El botón de descarga del formato de sectores pasa del enlace de texto junto a «Actualizar sectores» al encabezado de la tarjeta, como botón igual al de «Descargar formato»: «Descargar formato» (proyectos) y «Descargar formato CIIU». Una sola función `descargarFormato(cual)` en `carga-alertas-inversion.tsx`; se quitó el enlace de `actualizar-sectores-ciiu.tsx`. Sin verificar en navegador.
