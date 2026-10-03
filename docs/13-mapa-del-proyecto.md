@@ -16,7 +16,7 @@
 |---|--:|--:|--:|--:|--:|
 | `3000-sitio-web` | 47 | 3 | 55 | — | 33 |
 | `3001-intranet` | 33 | 2 | 13 | — | 27 |
-| `4000-api-backend` | 33 | — | — | 79 | 42 |
+| `4000-api-backend` | 33 | — | — | 84 | 42 |
 
 Paquetes compartidos: 7 · migraciones: 40 · modelos: 23.
 
@@ -308,6 +308,11 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | DELETE | `/api/alertas-inversion/cargas/:id` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos') | AlertasInversionController.eliminarCarga |
 | GET | `/api/alertas-inversion/formatos/plantilla` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos') | AlertasInversionController.descargarFormato |
 | POST | `/api/alertas-inversion/proyectos` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos'), validarCuerpo(crearProyectoManualSchema) | AlertasInversionController.crearManual |
+| GET | `/api/alertas-inversion/formatos/sectores` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos') | AlertasInversionController.descargarFormatoSectores |
+| POST | `/api/alertas-inversion/sectores` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos'), subidaEnMemoria.single('file') | AlertasInversionController.actualizarSectores |
+| GET | `/api/alertas-inversion/proyectos` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos') | AlertasInversionController.listarProyectos |
+| DELETE | `/api/alertas-inversion/proyectos` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos') | AlertasInversionController.eliminarTodosLosProyectos |
+| DELETE | `/api/alertas-inversion/proyectos/:id` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos') | AlertasInversionController.eliminarProyecto |
 
 ### `routes/audit.routes.ts`
 
