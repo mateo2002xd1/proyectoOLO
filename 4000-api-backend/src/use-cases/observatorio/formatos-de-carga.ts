@@ -12,9 +12,10 @@ import path from 'path';
  * basta con reemplazar el archivo con el mismo nombre, sin volver a desplegar.
  */
 const FORMATOS = new Map<string, string>([
-  ['programas-sobresalientes', 'formatdata-sobresalientes.xlsx'],
-  ['tendencia-ocupacional', 'formatdata-criterios-tendencias.xlsx'],
-  ['alertas-inversion', 'formatdata-alertas-inversion.xlsx'],
+  ['programas-sobresalientes', 'formato-sobresalientes.xlsx'],
+  ['tendencia-ocupacional', 'formato-criterios-tendencias.xlsx'],
+  ['alertas-inversion', 'formato-alertas-inversion.xlsx'],
+  ['actualizar-ciiu', 'formato-actualizar-CIIU.xlsx'],
 ]);
 
 const DIRECTORIO_FORMATOS = path.join(process.cwd(), 'uploads', 'formatos-carga');
