@@ -3,7 +3,7 @@ import { PaginaController } from '../controllers/pagina.controller';
 import { requireAuth } from '../middlewares/auth.middleware';
 import { cacheInterceptor } from '../middlewares/cache.middleware';
 import { requierePermisoPagina } from '../middlewares/permisos.middleware';
-import { limitadorDeEscritura } from '../middlewares/rate-limit.middleware';
+import { limitadorDeEscritura, limitadorDeVisitas, limitadorDeVisitasPorPagina } from '../middlewares/rate-limit.middleware';
 import { validarCuerpo } from '../middlewares/validar.middleware';
 import {
   adquirirBloqueoSchema,
@@ -83,7 +83,12 @@ router.get(
   PaginaController.obtenerIndiceBusqueda
 );
 
-router.post('/visitas/registrar', PaginaController.registrarVisita);
+router.post(
+  '/visitas/registrar',
+  limitadorDeVisitas,
+  limitadorDeVisitasPorPagina,
+  PaginaController.registrarVisita
+);
 
 router.use(requireAuth);
 

@@ -355,7 +355,7 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 |---|---|---|---|
 | GET | `/api/paginas/publica/:slug` | 🔓 cacheInterceptor(300, { varyBy: [AMBITO_HEADER] }) | PaginaController.obtenerPublica |
 | GET | `/api/paginas/indice-busqueda` | 🔓 cacheInterceptor(300, { varyBy: [AMBITO_HEADER] }) | PaginaController.obtenerIndiceBusqueda |
-| POST | `/api/paginas/visitas/registrar` | 🔓 — | PaginaController.registrarVisita |
+| POST | `/api/paginas/visitas/registrar` | 🔓 limitadorDeVisitas, limitadorDeVisitasPorPagina | PaginaController.registrarVisita |
 | POST | `/api/paginas` | requireAuth, limitadorDeEscritura, requierePermisoPagina('puedeEditar'), requirePermission('secciones.crear'), validarCuerpo(crearSeccionSchema) | PaginaController.crearSeccion |
 | GET | `/api/paginas/:slug/eliminable` | requireAuth, requierePermisoPagina('puedeEditar'), requirePermission('secciones.eliminar') | PaginaController.analizarEliminacion |
 | DELETE | `/api/paginas/:slug` | requireAuth, limitadorDeEscritura, requierePermisoPagina('puedeEditar'), requirePermission('secciones.eliminar'), validarCuerpo(eliminarSeccionSchema) | PaginaController.eliminarSeccion |
