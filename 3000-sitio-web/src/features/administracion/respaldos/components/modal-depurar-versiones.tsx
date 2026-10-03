@@ -1,5 +1,6 @@
 'use client';
 
+import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
@@ -9,7 +10,6 @@ import {
   FileText,
   Info,
   Loader2,
-  Trash2,
   X,
 } from 'lucide-react';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
@@ -400,7 +400,7 @@ export function ModalDepurarVersiones({
                 }
                 className="flex h-11 items-center gap-2 rounded-[16px] bg-red-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 active:bg-red-800 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <Trash2 size={16} />
+                <IconoMascara nombre="trash" tamano="h-5 w-5" />
                 {cargandoAnalisis
                   ? 'Calculando…'
                   : totalEncontradas > 0
@@ -421,7 +421,7 @@ export function ModalDepurarVersiones({
                   </>
                 ) : (
                   <>
-                    <Trash2 size={16} />
+                    <IconoMascara nombre="trash" tamano="h-5 w-5" />
                     Confirmar y eliminar {cantidadABorrar} versiones
                   </>
                 )}
