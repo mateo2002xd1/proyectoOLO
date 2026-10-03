@@ -117,6 +117,34 @@ export interface SeccionCiiu {
   nombre: string;
 }
 
+/** Un proyecto publicado, tal como lo lista `GET /api/alertas-inversion/proyectos` para poder borrarlo. */
+export interface ProyectoInversionPanel {
+  id: string;
+  tipo: 'nuevo' | 'expansion';
+  empresa: string;
+  descripcion: string;
+  sector: string;
+  ubicaciones: string;
+  fechaAnuncio: string;
+}
+
+/** Una actividad CIIU (código de 4 dígitos) del catálogo, asociada a su sector. */
+export interface ClaseCiiu {
+  id: string;
+  codigo: string;
+  nombre: string;
+  seccionId: string;
+}
+
+/** Respuesta de `POST /api/alertas-inversion/sectores`. */
+export interface ResultadoActualizarSectores {
+  creados: number;
+  actualizados: number;
+  sinCambios: number;
+  omitidos: number;
+  errores: { fila: number; mensaje: string }[];
+}
+
 /** Los campos del formulario "Agregar manualmente" — un proyecto por envío. */
 export interface DatosProyectoInversionManual {
   tipo: 'nuevo' | 'expansion';

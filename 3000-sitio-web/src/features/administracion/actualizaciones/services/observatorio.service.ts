@@ -3,11 +3,14 @@ import type {
   CargaDatos,
   CargaTendencia,
   CargaTendenciaEliminada,
+  ClaseCiiu,
   CeldaTendencia,
   DatosProyectoInversionManual,
   FiltroHistorialTendencia,
   FormatoDeCarga,
   HistorialTendencia,
+  ProyectoInversionPanel,
+  ResultadoActualizarSectores,
   SeccionCiiu,
 } from '../types';
 import { URL_DE_LA_API } from '@/shared/lib/url-de-la-api';
@@ -172,13 +175,30 @@ export async function eliminarCargaAlertasInversion(id: string): Promise<void> {
   await api.delete(`${ALERTAS_INVERSION}/cargas/${id}`);
 }
 
+export async function listarProyectosInversion(): Promise<ProyectoInversionPanel[]> {
+  const { data } = await api.get(`${ALERTAS_INVERSION}/proyectos`);
+  return data;
+}
+
+/** «Limpiar»: borra todos los proyectos. */
+export async function eliminarTodosLosProyectosInversion(): Promise<{ eliminados: number }> {
+  const { data } = await api.delete(`${ALERTAS_INVERSION}/proyectos`);
+  return data;
+}
+
+export async function eliminarProyectoInversion(id: string): Promise<void> {
+  await api.delete(`${ALERTAS_INVERSION}/proyectos/${id}`);
+}
+
 /** Excel de ejemplo de la carga — mismo manejo de error-como-blob que `descargarFormatoDeCarga`. */
-export async function descargarFormatoAlertasInversion(): Promise<Blob> {
+/**
+ * Descarga un Excel de ejemplo de Alertas de inversión. Con `responseType: 'blob'` el
+ * cuerpo del error también llega como Blob: se lee aquí para que `mensajeDeErrorApi`
+ * encuentre el `{ error }` de la API, igual que en `descargarFormatoDeCarga`.
+ */
+async function descargarExcelDeAlertas(ruta: string): Promise<Blob> {
   try {
-    const { data } = await api.get(`${ALERTAS_INVERSION}/formatos/plantilla`, {
-      responseType: 'blob',
-      timeout: 60000,
-    });
+    const { data } = await api.get(`${ALERTAS_INVERSION}/${ruta}`, { responseType: 'blob', timeout: 60000 });
     return data;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.data instanceof Blob) {
@@ -192,10 +212,32 @@ export async function descargarFormatoAlertasInversion(): Promise<Blob> {
   }
 }
 
+/** Excel de ejemplo de la carga de proyectos. */
+export const descargarFormatoAlertasInversion = () => descargarExcelDeAlertas('formatos/plantilla');
+
+/** Excel de ejemplo de «Actualizar sectores (CIIU)». */
+export const descargarFormatoSectoresCiiu = () => descargarExcelDeAlertas('formatos/sectores');
+
 /** Catálogo de secciones CIIU activas, para el formulario manual. Público, sin sesión. */
-export async function obtenerSeccionesCiiu(): Promise<SeccionCiiu[]> {
+/** Catálogos del formulario manual: sectores CIIU y departamentos (la API los reconoce por nombre). */
+export async function obtenerOpcionesProyectoInversion(): Promise<{
+  secciones: SeccionCiiu[];
+  departamentos: { codigoDane: string; nombre: string }[];
+  clases: ClaseCiiu[];
+}> {
   const { data } = await api.get(`${ALERTAS_INVERSION}/opciones`);
-  return data.secciones;
+  return { secciones: data.secciones, departamentos: data.departamentos ?? [], clases: data.clases ?? [] };
+}
+
+/** Actualiza el catálogo de sectores CIIU desde un Excel de código y nombre. */
+export async function actualizarSectoresCiiu(archivo: File): Promise<ResultadoActualizarSectores> {
+  const formData = new FormData();
+  formData.append('file', archivo);
+  const { data } = await api.post(`${ALERTAS_INVERSION}/sectores`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 60000,
+  });
+  return data;
 }
 
 /** Alta manual de un proyecto — segunda vía de entrada, junto a la carga de Excel. */
