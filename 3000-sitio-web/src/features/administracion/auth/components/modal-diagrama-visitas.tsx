@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { type PaginaPublicada, type ResumenPaginasPublicadas } from '@/features/paginas';
 import { GraficoEcharts, useEsOscuro, type OpcionGrafico } from '@/shared/ui/molecules/grafico-echarts';
@@ -12,13 +12,18 @@ interface Props {
 }
 
 /**
- * Ranking de páginas por visitas de un ámbito, como barras horizontales con ECharts.
+ * Visitas por página de un ámbito: la misma línea con área de la tarjeta, con más detalle.
  */
-function GraficoBarras({
+/** "#rrggbb" a "rgba(r,g,b,a)" para el degradado del área. */
+function hexARgba(hex: string, alfa: number): string {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${alfa})`;
+}
+
+function GraficoVisitas({
   titulo,
   subtitulo,
   paginas,
-  colorInicio,
   colorFin,
   colorBg,
   colorBorde,
@@ -26,7 +31,6 @@ function GraficoBarras({
   titulo: string;
   subtitulo: string;
   paginas: PaginaPublicada[];
-  colorInicio: string;
   colorFin: string;
   colorBg: string;
   colorBorde: string;
@@ -38,73 +42,75 @@ function GraficoBarras({
     [paginas]
   );
 
-  // ECharts dibuja las categorías de abajo hacia arriba: se invierte el orden
-  // para que la página más visitada quede arriba, como en una tabla de posiciones.
-  const paginasOrdenadas = useMemo(
-    () => [...paginas].sort((a, b) => (a.visitas ?? 0) - (b.visitas ?? 0)),
-    [paginas]
-  );
-
   const opcion: OpcionGrafico = useMemo(() => {
     const colorTexto = esOscuro ? '#f6f6f6' : '#18181b';
-    const colorEje = esOscuro ? '#cbd5e1' : '#3f3f46';
+    const colorEje = esOscuro ? '#cbd5e1' : '#52525b';
+    const colorAreaTope = hexARgba(colorFin, 0.35);
+    const colorAreaFondo = hexARgba(colorFin, 0);
 
     return {
-      grid: { left: 8, right: 56, top: 8, bottom: 8, containLabel: true },
+      grid: { left: 8, right: 24, top: 32, bottom: 8, containLabel: true },
       tooltip: {
-        trigger: 'item',
+        trigger: 'axis',
         backgroundColor: esOscuro ? '#1e293b' : '#ffffff',
         borderColor: esOscuro ? '#334155' : '#e4e4e7',
         textStyle: { color: colorTexto },
         formatter: (parametros) => {
           const punto = Array.isArray(parametros) ? parametros[0] : parametros;
-          const pagina = paginasOrdenadas[punto.dataIndex as number];
+          const pagina = paginas[punto.dataIndex as number];
           const visitas = pagina?.visitas ?? 0;
           const porcentaje = totalVisitas > 0 ? ((visitas / totalVisitas) * 100).toFixed(1) : '0';
           return `<strong>${pagina?.titulo}</strong><br/>/${pagina?.slug}<br/>${visitas.toLocaleString('es-CO')} visitas (${porcentaje}%)`;
         },
       },
-      xAxis: { type: 'value', show: false },
-      yAxis: {
+      xAxis: {
         type: 'category',
-        data: paginasOrdenadas.map((p) => p.titulo),
-        axisLine: { show: false },
+        data: paginas.map((p) => p.titulo),
+        axisLine: { lineStyle: { color: esOscuro ? '#334155' : '#e4e4e7' } },
         axisTick: { show: false },
-        axisLabel: { color: colorEje, fontSize: 12, width: 130, overflow: 'truncate' },
+        axisLabel: { color: colorEje, fontSize: 11, rotate: 30, width: 110, overflow: 'truncate', interval: 0 },
+      },
+      yAxis: {
+        type: 'value',
+        minInterval: 1,
+        axisLabel: { color: colorEje, fontSize: 11 },
+        splitLine: { lineStyle: { color: esOscuro ? '#1e293b' : '#f4f4f5' } },
       },
       series: [
         {
-          type: 'bar',
-          data: paginasOrdenadas.map((p) => p.visitas ?? 0),
-          barMaxWidth: 22,
-          itemStyle: {
-            borderRadius: [0, 6, 6, 0],
-            color: {
-              type: 'linear',
-              x: 0,
-              y: 0,
-              x2: 1,
-              y2: 0,
-              colorStops: [
-                { offset: 0, color: colorInicio },
-                { offset: 1, color: colorFin },
-              ],
-            },
-          },
+          type: 'line',
+          data: paginas.map((p) => p.visitas ?? 0),
+          smooth: true,
+          symbolSize: 8,
+          lineStyle: { width: 3, color: colorFin },
+          itemStyle: { color: colorFin },
           label: {
             show: true,
-            position: 'right',
+            position: 'top',
             color: colorTexto,
             fontWeight: 600,
             fontSize: 11,
             formatter: (p) => (p.value as number).toLocaleString('es-CO'),
           },
+          areaStyle: {
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [
+                { offset: 0, color: colorAreaTope },
+                { offset: 1, color: colorAreaFondo },
+              ],
+            },
+          },
         },
       ],
     };
-  }, [paginasOrdenadas, esOscuro, colorInicio, colorFin, totalVisitas]);
+  }, [paginas, esOscuro, colorFin, totalVisitas]);
 
-  const alto = Math.max(180, paginasOrdenadas.length * 40 + 16);
+  const alto = 420;
 
   return (
     <div className={`flex flex-col rounded-2xl border p-5 sm:p-6 transition-all ${colorBorde} ${colorBg}`}>
@@ -129,9 +135,11 @@ function GraficoBarras({
 }
 
 /**
- * Ventana modal completa con los dos diagramas de barras interactivos (Sitio Web e Intranet)
+ * Ventana modal completa con las dos gráficas de visitas interactivas (Sitio Web e Intranet)
  */
 export function ModalDiagramaVisitas({ abierto, onCerrar, resumen }: Props) {
+  const [ambitoActivo, setAmbitoActivo] = useState<'sitio' | 'intranet'>('sitio');
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && abierto) {
@@ -176,7 +184,7 @@ export function ModalDiagramaVisitas({ abierto, onCerrar, resumen }: Props) {
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <h3 id="titulo-ventana-visitas" className="admin-subtitle text-xl text-zinc-900 dark:text-[#f6f6f6]">
-                  Ventana de Vistas y Diagrama de Visitas
+                  Ventana de Vistas y Gráfica de Visitas
                 </h3>
               </div>
               <p className="mt-1 text-sm text-zinc-500 dark:text-[#94a3b8]">
@@ -218,29 +226,50 @@ export function ModalDiagramaVisitas({ abierto, onCerrar, resumen }: Props) {
 
         {/* Contenido con scroll y los 2 gráficos */}
         <div className="flex-1 overflow-y-auto p-6 sm:p-8">
-          <div className="grid gap-6 lg:grid-cols-2">
-            {/* Gráfico 1: Sitio Web */}
-            <GraficoBarras
+          {/* Un solo gráfico grande; el selector alterna entre los dos portales */}
+          <div
+            role="tablist"
+            aria-label="Portal"
+            className="mb-5 inline-flex gap-1 rounded-xl bg-zinc-100 p-1 dark:bg-zinc-800/70"
+          >
+            {(['sitio', 'intranet'] as const).map((ambito) => (
+              <button
+                key={ambito}
+                type="button"
+                role="tab"
+                aria-selected={ambitoActivo === ambito}
+                onClick={() => setAmbitoActivo(ambito)}
+                className={`flex items-center gap-2 rounded-lg px-4 py-1.5 text-sm font-medium transition-colors ${
+                  ambitoActivo === ambito
+                    ? 'bg-white text-zinc-900 shadow-xs dark:bg-zinc-700 dark:text-white'
+                    : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-white'
+                }`}
+              >
+                <span className={`size-2 rounded-full ${ambito === 'sitio' ? 'bg-[#4C7A1C]' : 'bg-sky-500'}`} />
+                {ambito === 'sitio' ? 'Sitio web' : 'Intranet'}
+              </button>
+            ))}
+          </div>
+
+          {ambitoActivo === 'sitio' ? (
+            <GraficoVisitas
               titulo="Sitio Web"
               subtitulo="Flujo de visitas a las páginas públicas del portal"
               paginas={paginasSitio}
-              colorInicio="#4C7A1C"
               colorFin="#7db828"
               colorBg="bg-white dark:bg-[#131b2f]"
               colorBorde="border-emerald-200/80 dark:border-emerald-900/40"
             />
-
-            {/* Gráfico 2: Intranet */}
-            <GraficoBarras
+          ) : (
+            <GraficoVisitas
               titulo="Intranet"
               subtitulo="Flujo de visitas a las secciones institucionales internas"
               paginas={paginasIntranet}
-              colorInicio="#002c46"
               colorFin="#0284c7"
               colorBg="bg-white dark:bg-[#131b2f]"
               colorBorde="border-sky-200/80 dark:border-sky-900/40"
             />
-          </div>
+          )}
         </div>
 
         {/* Pie de la ventana */}

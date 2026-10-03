@@ -18,7 +18,7 @@ const acortar = (texto: string, limite = 12) =>
 /**
  * Tarjeta de Visitas para el Dashboard.
  * Contiene 2 gráficos de líneas interactivos (Sitio Web e Intranet) con sus páginas correspondientes,
- * y permite abrir la ventana modal completa con métricas detalladas.
+ * y se abre en grande, con métricas detalladas, al pulsar la tarjeta.
  */
 export function TarjetaVisitas({ resumen, error }: Props) {
   const [modalAbierto, setModalAbierto] = useState(false);
@@ -97,7 +97,18 @@ export function TarjetaVisitas({ resumen, error }: Props) {
 
   return (
     <>
-      <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155] flex flex-col justify-between">
+      <div
+        role="button"
+        tabIndex={0}
+        aria-label="Abrir la gráfica de visitas en grande"
+        onClick={() => setModalAbierto(true)}
+        onKeyDown={(e) => {
+          if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            setModalAbierto(true);
+          }
+        }}
+        className="cursor-pointer rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155] flex flex-col justify-between">
         <div>
           {/* Encabezado con título y botón para abrir la ventana de vistas */}
           <div className="flex items-start justify-between gap-2">
@@ -121,7 +132,10 @@ export function TarjetaVisitas({ resumen, error }: Props) {
               <div className="mb-3 flex items-center justify-between gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800/70">
                 <button
                   type="button"
-                  onClick={() => setPestanaActiva('sitio')}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPestanaActiva('sitio');
+                  }}
                   className={`flex flex-1 items-center justify-center gap-1.5 rounded-md py-1 text-xs font-medium transition-colors ${
                     pestanaActiva === 'sitio'
                       ? 'bg-white text-zinc-900 shadow-xs dark:bg-zinc-700 dark:text-white'
@@ -129,12 +143,15 @@ export function TarjetaVisitas({ resumen, error }: Props) {
                   }`}
                 >
                   <span className="size-2 rounded-full bg-[#4C7A1C]" />
-                  <span>Sitio web ({totalVisitasSitio.toLocaleString('es-CO')})</span>
+                  <span>Sitio web</span>
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => setPestanaActiva('intranet')}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPestanaActiva('intranet');
+                  }}
                   className={`flex flex-1 items-center justify-center gap-1.5 rounded-md py-1 text-xs font-medium transition-colors ${
                     pestanaActiva === 'intranet'
                       ? 'bg-white text-zinc-900 shadow-xs dark:bg-zinc-700 dark:text-white'
@@ -142,7 +159,7 @@ export function TarjetaVisitas({ resumen, error }: Props) {
                   }`}
                 >
                   <span className="size-2 rounded-full bg-sky-500" />
-                  <span>Intranet ({totalVisitasIntranet.toLocaleString('es-CO')})</span>
+                  <span>Intranet</span>
                 </button>
               </div>
 
@@ -156,19 +173,6 @@ export function TarjetaVisitas({ resumen, error }: Props) {
           )}
         </div>
 
-        {/* Enlace inferior para ver la ventana de vistas completa */}
-        {!error && (
-          <button
-            type="button"
-            onClick={() => setModalAbierto(true)}
-            className="mt-3 flex items-center justify-between border-t border-zinc-100 pt-2 text-xs font-medium text-[#4C7A1C] transition hover:underline dark:border-[#7db828]/20 dark:text-[#9ED65C]"
-          >
-            <span>Ver diagrama de ambos portales</span>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="size-3.5">
-              <path fillRule="evenodd" d="M2 8a.75.75 0 0 1 .75-.75h8.69L8.22 4.03a.75.75 0 0 1 1.06-1.06l4.5 4.5a.75.75 0 0 1 0 1.06l-4.5 4.5a.75.75 0 0 1-1.06-1.06l3.22-3.22H2.75A.75.75 0 0 1 2 8Z" clipRule="evenodd" />
-            </svg>
-          </button>
-        )}
       </div>
 
       {/* Ventana modal interactiva */}
