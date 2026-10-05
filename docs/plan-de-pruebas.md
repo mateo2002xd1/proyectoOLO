@@ -8,30 +8,32 @@ Guía interna y compacta de escenarios y pasos para verificación funcional del 
 ### Escenario 1: Proceso de Primer Ingreso (Sitio Web e Intranet)
 | Paso | Descripción del Paso | Resultado Esperado | Estado | Observaciones |
 | :---: | :--- | :--- | :---: | :--- |
-| **1** | Entrar a login de Sitio Web con clave temporal | Detecta primer ingreso y abre modal de configuración obligatoria | [ ] | |
+| **1** | Entrar a login de Sitio Web con clave temporal | Detecta primer ingreso y traslada a pantalla de configuración | [ ] | |
 | **2** | Entrar a login de Intranet con clave temporal | Detecta primer ingreso y traslada a pantalla de configuración | [ ] | |
-| **3** | Configurar nueva clave y 3 preguntas en Sitio Web | Valida requisitos de clave, guarda respuestas y concede acceso | [ ] | |
-| **4** | Configurar nueva clave y 3 preguntas en Intranet | Valida requisitos, muestra pantalla `/setup-success` y da acceso | [ ] | |
+| **3** | Configurar nueva clave en Sitio Web | Valida requisitos de política en tiempo real y traslada a pantalla de preguntas | [ ] | |
+| **4** | Configurar 3 preguntas de seguridad en Sitio Web | Guarda respuestas, presenta confirmación exitosa y botón para iniciar sesión | [ ] | |
+| **5** | Configurar nueva clave en Intranet | Valida requisitos de política en tiempo real y traslada a pantalla de preguntas | [ ] | |
+| **6** | Configurar 3 preguntas de seguridad en Intranet | Guarda respuestas, presenta confirmación exitosa y botón para iniciar sesión | [ ] | |
 
 ---
 
-### Escenario 2: Proceso de Login Habitual (Sitio Web e Intranet)
+### Escenario 2: Validaciones de Acceso y Formulario de Login
 | Paso | Descripción del Paso | Resultado Esperado | Estado | Observaciones |
 | :---: | :--- | :--- | :---: | :--- |
-| **1** | Entrar a login de Intranet (`/login`) | Carga pantalla ilustrada de acceso a la Intranet | [ ] | |
-| **2** | Entrar a login de Sitio Web (banner GOV.CO) | Despliega ventana modal de inicio de sesión público | [ ] | |
-| **3** | Ingresar datos en login Sitio Web y aceptar | Autentica exitosamente y habilita botón flotante o enlace a `/admin` | [ ] | |
-| **4** | Ingresar datos en login Intranet y aceptar | Autentica exitosamente e ingresa al home privado y tableros BI | [ ] | |
+| **1** | Probar correo no permitido (vacío, sintaxis errónea o dominio no institucional) | Alertas en tiempo real: *"El correo es requerido"*, *"El correo no tiene un formato válido"* o *"Debe ser un correo institucional @sena.edu.co"* | [ ] | |
+| **2** | Probar contraseña vacía y credenciales incorrectas | Resalta *"La contraseña es requerida"* o alerta general *"Correo o contraseña incorrectos"* sin filtrar datos confidenciales | [ ] | |
+| **3** | Probar acceso con cuenta suspendida o sin permisos del entorno | Bloquea ingreso de cuenta inactiva o muestra alerta (*"Tu cuenta no tiene permisos..."* / *"No tienes permisos para ingresar a la intranet"*) | [ ] | |
 
 ---
 
-### Escenario 3: Recuperación de Contraseña (Sitio Web e Intranet)
+### Escenario 3: Restablecimiento de Contraseña desde el Portal de Login (Sitio Web e Intranet)
 | Paso | Descripción del Paso | Resultado Esperado | Estado | Observaciones |
 | :---: | :--- | :--- | :---: | :--- |
-| **1** | Clic en "¿Olvidaste tu contraseña?" en Sitio Web | Solicita correo `@sena.edu.co` y despliega las 3 preguntas registradas | [ ] | |
-| **2** | Clic en "¿Olvidaste tu contraseña?" en Intranet | Solicita correo `@sena.edu.co` y despliega las 3 preguntas registradas | [ ] | |
-| **3** | Responder preguntas secretas en ambos portales | Valida respuestas confidenciales sin depender de correo externo | [ ] | |
-| **4** | Asignar nueva contraseña y confirmar | Actualiza clave y sincroniza el nuevo acceso en ambos portales | [ ] | |
+| **1** | Clic en "¿Olvidaste tu contraseña?" en login de Sitio Web o Intranet | Traslada a pantalla `/recovery` solicitando correo institucional | [ ] | |
+| **2** | Ingresar correo institucional `@sena.edu.co` y dar Continuar | Valida sintaxis, comprueba preguntas configuradas y navega a `/security-questions` | [ ] | |
+| **3** | Responder secuencialmente las 3 preguntas de seguridad | Valida respuestas confidenciales en servidor y traslada a `/reset-password` | [ ] | |
+| **4** | Definir nueva contraseña cumpliendo requisitos y confirmar | Valida política de seguridad (12 caracteres, símbolos, etc.) y coincidencia | [ ] | |
+| **5** | Confirmar cambio y retornar al login | Muestra `/reset-success` y botón para volver a `/login` con la nueva clave activa | [ ] | |
 
 ---
 
