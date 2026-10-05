@@ -743,6 +743,7 @@ La Intranet es una plataforma privada e independiente del Sitio Web Público, co
 5. **Comprobación de permiso de ingreso a la Intranet:** La plataforma confirma que la cuenta tenga habilitado el acceso a este entorno privado:
    * Si el funcionario tiene permiso concedido, el formulario da paso directo al interior de la Intranet.
    * Si la cuenta no cuenta con permiso asignado para ingresar a este portal, la pantalla muestra una alerta roja destacada: *"No tienes permisos para ingresar a la intranet."* (ver [Sección 3.5.1.2: Validaciones en el Inicio de Sesión Habitual](#3512-validaciones-en-el-inicio-de-sesión-habitual)).
+   * Si la cuenta se encuentra desactivada o suspendida preventivamente por el Administrador (o vencida por caducidad), el sistema interrumpe el acceso y muestra la alerta: *"Cuenta inactiva o suspendida"*.
 
 > **[Captura: Verificación de Autorización en Intranet]**
 > *Mensaje informativo en pantalla confirmando el acceso o mostrando la alerta de falta de permiso institucional.*
@@ -1958,14 +1959,22 @@ Durante el inicio de sesión habitual (descrito operativamente en la [Sección 3
 > *Mensaje de credenciales erróneas en el panel de acceso de la Intranet. (Vista en dispositivo móvil).*
 
 5. **Verificación de autorización de acceso a la Intranet:**
-   * *Acciones erróneas y alertas de permisos:* Si el usuario cuenta con un usuario registrado en el OLO pero carece del permiso de acceso al entorno privado interno, el sistema detiene el acceso y despliega la alerta preventiva: *"No tienes permisos para ingresar a la intranet."*.
-   * *Acción de corrección:* Solicitar al Administrador del sistema la asignación de permisos de acceso para la Intranet si el funcionario requiere consultar dichos tableros.
+   * *Acciones erróneas y alertas de permisos:*
+     * **Cuentas sin permiso para el entorno interno:** Si el usuario cuenta con un usuario registrado en el OLO pero carece del permiso de acceso al entorno privado interno, el sistema detiene el acceso y despliega la alerta preventiva: *"No tienes permisos para ingresar a la intranet."*.
+     * **Cuentas inactivas o suspendidas:** Si la cuenta fue desactivada preventivamente por el Administrador desde el panel de usuarios (o pasó a estado inactivo al cumplirse su fecha de caducidad), el sistema interrumpe de inmediato la autenticación y muestra la alerta en el formulario: `"Cuenta inactiva o suspendida"`.
+   * *Acción de corrección:* Si se trata de una cuenta inactiva o suspendida, contactar al Administrador para su reactivación; si carece de permisos de navegación para la Intranet, solicitar la asignación del rol o permiso correspondiente.
 
 > **[Captura: Alerta de Acceso Denegado a la Intranet]**
 > *Alerta indicando falta de permisos institucionales para acceder a los módulos internos de la Intranet.*
 >
 > **[Captura: Alerta de Acceso Denegado a la Intranet (Móvil)]**
 > *Alerta indicando falta de permisos institucionales para acceder a los módulos internos de la Intranet. (Vista en dispositivo móvil).*
+>
+> **[Captura: Alerta de Cuenta Inactiva en Intranet]**
+> *Alerta desplegada en el formulario de la Intranet impidiendo el acceso a una cuenta inactiva o suspendida.*
+>
+> **[Captura: Alerta de Cuenta Inactiva en Intranet (Móvil)]**
+> *Alerta desplegada en el formulario de la Intranet impidiendo el acceso a una cuenta inactiva o suspendida. (Vista en dispositivo móvil).*
 
 6. **Resultado y despliegue del entorno según perfil en la Intranet:**
    * *Acciones erróneas y control de interfaz:* Si un Director o Subdirector (rol de solo lectura) intenta forzar el acceso a herramientas de edición o maquetación, los controles simplemente no se renderizan, manteniendo el esquema protegido de solo consulta analítica.
