@@ -654,8 +654,9 @@
 }
 
 .olo-gov-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-xs);
   padding: 6px 14px;
   font-size: 16px;
@@ -664,12 +665,16 @@
   background: #002237;
   border: none;
   border-radius: 10px;
+  text-decoration: none;
   transition: all var(--transition-fast);
   letter-spacing: 0.02em;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .olo-gov-btn:hover {
   background: #001a2b;
+  color: white;
 }
 
 .olo-menu-btn {
@@ -689,8 +694,8 @@
 
 .olo-mobile-menu {
   display: none;
-  position: fixed;
-  top: var(--header-height);
+  position: absolute;
+  top: 100%;
   left: 0;
   right: 0;
   background: white;
@@ -699,6 +704,8 @@
   box-shadow: var(--shadow-xl);
   animation: fadeIn 200ms ease;
   z-index: 999;
+  max-height: calc(100dvh - 100%);
+  overflow-y: auto;
 }
 
 .olo-mobile-menu-open {
@@ -746,17 +753,70 @@
   font-size: var(--fs-sm);
 }
 
+.olo-mobile-menu-footer {
+  margin-top: var(--space-sm);
+  padding-top: var(--space-md);
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.olo-mobile-gov-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  width: 100%;
+  padding: 10px 16px;
+  font-size: 15px;
+  font-weight: var(--fw-semibold);
+  color: white;
+  background: #002237;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: background var(--transition-fast);
+}
+
+.olo-mobile-gov-btn:hover {
+  background: #001a2b;
+  color: white;
+}
+
 @media (width < 64rem) {
   .olo-nav {
     display: none;
   }
 
   .olo-gov-btn {
-    display: none;
+    display: none !important;
   }
 
   .olo-menu-btn {
     display: flex;
+  }
+}
+
+@media (width >= 64rem) {
+  .olo-mobile-menu {
+    display: none !important;
+  }
+}
+
+@media (width < 48rem) {
+  .olo-header {
+    height: 72px;
+  }
+
+  .olo-header-inner {
+    padding: 0 var(--space-md);
+  }
+
+  .olo-nav-actions {
+    gap: var(--space-xs);
+  }
+}
+
+@media (width < 25rem) {
+  .olo-header-inner {
+    padding: 0 var(--space-sm);
   }
 }
 

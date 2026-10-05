@@ -77,7 +77,9 @@ export function extraerTextosPuck(contenido: any, tituloPagina?: string): ItemTe
   const agregar = (type: 'h1' | 'h2' | 'p' | 'span', rawText: unknown, blockId?: string) => {
     const text = limpiarTextoHtml(rawText);
     if (!text || text.length < 2) return;
-    const key = `${type}:${text.toLowerCase()}`;
+    // Incluir blockId en la clave: el mismo texto en bloques distintos (ej. dos pestañas)
+    // debe aparecer como dos resultados separados en el buscador.
+    const key = `${type}:${text.toLowerCase()}:${blockId ?? ''}`;
     if (textosVistos.has(key)) return;
     textosVistos.add(key);
     items.push({ type, text, ...(blockId ? { blockId } : {}) });
@@ -118,6 +120,25 @@ export function extraerTextosPuck(contenido: any, tituloPagina?: string): ItemTe
         return;
       }
 
+      // ── EditorJS: { blocks: [{ type, data: { text, items, content } }] } ──────
+      // El bloque `RichText` guarda su contenido en este formato.
+      if (Array.isArray(obj.blocks)) {
+        for (const block of obj.blocks) {
+          if (!block?.data) continue;
+          const d = block.data;
+          // Párrafos, encabezados, citas
+          if (d.text && typeof d.text === 'string') agregar('p', d.text, blockId);
+          // Listas: items es un array de strings o de { content: string }
+          if (Array.isArray(d.items)) {
+            for (const item of d.items) {
+              if (typeof item === 'string') agregar('span', item, blockId);
+              else if (item?.content && typeof item.content === 'string') agregar('span', item.content, blockId);
+            }
+          }
+        }
+        return; // No seguir recursando dentro del árbol de EditorJS
+      }
+
       // Títulos compuestos (ej. TasaBanner, TasaVideo)
       if (obj.tituloInicio || obj.tituloDestacado) {
         const compuesto = [obj.tituloInicio, obj.tituloDestacado].filter(Boolean).join(' ');
@@ -129,35 +150,42 @@ export function extraerTextosPuck(contenido: any, tituloPagina?: string): ItemTe
       if (obj.title) agregar('h2', obj.title, blockId);
       if (obj.sectionTitle) agregar('h2', obj.sectionTitle, blockId);
       if (obj.antetitulo) agregar('span', obj.antetitulo, blockId);
+      if (obj.subtitulo) agregar('span', obj.subtitulo, blockId);
 
-      // Descripciones y párrafos
+      // Párrafos e introducciones (richtext guardado como string HTML o texto plano)
       if (obj.contenido && typeof obj.contenido === 'string') agregar('p', obj.contenido, blockId);
       if (obj.descripcion && typeof obj.descripcion === 'string') agregar('p', obj.descripcion, blockId);
       if (obj.description && typeof obj.description === 'string') agregar('p', obj.description, blockId);
       if (obj.texto && typeof obj.texto === 'string') agregar('p', obj.texto, blockId);
       if (obj.text && typeof obj.text === 'string') agregar('p', obj.text, blockId);
+      // `intro` es el campo de párrafo introductorio en PoliticaPrivacidadEncabezado y similares
+      if (obj.intro && typeof obj.intro === 'string') agregar('p', obj.intro, blockId);
+
+      // Metadatos y etiquetas cortas (canal, valor, nombre, etc.)
       if (obj.pieDeImagen && typeof obj.pieDeImagen === 'string') agregar('span', obj.pieDeImagen, blockId);
       if (obj.etiqueta && typeof obj.etiqueta === 'string') agregar('span', obj.etiqueta, blockId);
       if (obj.label && typeof obj.label === 'string') agregar('span', obj.label, blockId);
+      if (obj.canal && typeof obj.canal === 'string') agregar('span', obj.canal, blockId);
+      if (obj.valor && typeof obj.valor === 'string') agregar('span', obj.valor, blockId);
+      if (obj.nombre && typeof obj.nombre === 'string') agregar('span', obj.nombre, blockId);
+      if (obj.nombreEntidad && typeof obj.nombreEntidad === 'string') agregar('span', obj.nombreEntidad, blockId);
+      if (obj.textoBoton && typeof obj.textoBoton === 'string') agregar('span', obj.textoBoton, blockId);
+      if (obj.horarioTitulo && typeof obj.horarioTitulo === 'string') agregar('span', obj.horarioTitulo, blockId);
+      if (obj.lineasAtencionTitulo && typeof obj.lineasAtencionTitulo === 'string') agregar('span', obj.lineasAtencionTitulo, blockId);
+      if (obj.mesaAyudaTitulo && typeof obj.mesaAyudaTitulo === 'string') agregar('span', obj.mesaAyudaTitulo, blockId);
+      if (obj.etiquetaTab && typeof obj.etiquetaTab === 'string') agregar('span', obj.etiquetaTab, blockId);
 
       // Recorrer propiedades internas (props, arrays anidados, etc.)
+      // Se excluyen las claves ya procesadas arriba para no duplicar entradas.
+      const CLAVES_YA_PROCESADAS = new Set([
+        'titulo', 'title', 'sectionTitle', 'tituloInicio', 'tituloDestacado',
+        'antetitulo', 'subtitulo',
+        'contenido', 'descripcion', 'description', 'texto', 'text', 'intro',
+        'pieDeImagen', 'etiqueta', 'label', 'canal', 'valor', 'nombre',
+        'nombreEntidad', 'textoBoton', 'horarioTitulo', 'lineasAtencionTitulo', 'mesaAyudaTitulo', 'etiquetaTab'
+      ]);
       for (const key of Object.keys(obj)) {
-        if (
-          [
-            'titulo',
-            'title',
-            'sectionTitle',
-            'tituloInicio',
-            'tituloDestacado',
-            'contenido',
-            'descripcion',
-            'description',
-            'texto',
-            'text',
-          ].includes(key)
-        ) {
-          continue;
-        }
+        if (CLAVES_YA_PROCESADAS.has(key)) continue;
         const val = obj[key];
         if (val && typeof val === 'object') {
           recorrerObjeto(val);
@@ -166,6 +194,7 @@ export function extraerTextosPuck(contenido: any, tituloPagina?: string): ItemTe
     };
 
     recorrerObjeto(props);
+
   }
 
   return items;

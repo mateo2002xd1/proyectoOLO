@@ -67,7 +67,20 @@ export function BuscadorSitioModal({
   const filteredResults: ResultadoBusqueda[] = [];
   if (searchQuery.trim() !== '') {
     const q = normalizeText(searchQuery).replace(/[\s\u00A0]+/g, ' ').trim();
-    const palabrasQ = q.split(' ').filter((p) => p.length >= 2);
+    const palabrasQ = q.split(' ').filter((p) => p.length >= 3);
+
+    // Construir regex de frase difusa una sola vez (permite puntuación entre palabras)
+    // Ej.: buscar "Aprendizaje SENA" encuentra "Aprendizaje (SENA)" en el texto.
+    let reFraseDifusa: RegExp | null = null;
+    if (q.includes(' ')) {
+      const palabrasQ2 = q.split(' ').filter((p) => p.length >= 2);
+      if (palabrasQ2.length >= 2) {
+        try {
+          const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          reFraseDifusa = new RegExp(palabrasQ2.map(escapeRe).join('[\\s\\W]*'));
+        } catch { /* ignorar */ }
+      }
+    }
 
     indice.forEach((page) => {
       const contexto = page.titulo || page.items[0]?.text || 'Observatorio';
@@ -75,8 +88,12 @@ export function BuscadorSitioModal({
         const itemNorm = normalizeText(item.text).replace(/[\s\u00A0]+/g, ' ');
         const contextoNorm = normalizeText(contexto);
         const coincide =
+          // 1. Frase exacta normalizada
           itemNorm.includes(q) ||
           contextoNorm.includes(q) ||
+          // 1.5. Frase difusa: tolera paréntesis y signos entre palabras
+          (reFraseDifusa !== null && (reFraseDifusa.test(itemNorm) || reFraseDifusa.test(contextoNorm))) ||
+          // 2. Todas las palabras significativas (>= 3 chars) presentes en el item o contexto
           (palabrasQ.length > 1 &&
             palabrasQ.every((p) => itemNorm.includes(p) || contextoNorm.includes(p)));
 
@@ -92,6 +109,7 @@ export function BuscadorSitioModal({
       });
     });
   }
+
 
   const alPulsarTecla = (evento: React.KeyboardEvent<HTMLInputElement>) => {
     if (evento.key === 'Escape') {
@@ -111,7 +129,7 @@ export function BuscadorSitioModal({
       evento.preventDefault();
       const seleccionado = filteredResults[activo];
       if (seleccionado) {
-        onNavigate(seleccionado.href, seleccionado.blockId, seleccionado.text);
+        onNavigate(seleccionado.href, seleccionado.blockId, searchQuery.trim() || seleccionado.text);
         handleCerrar();
       }
     }
@@ -213,7 +231,7 @@ export function BuscadorSitioModal({
                     tabIndex={-1}
                     onClick={(e) => {
                       e.preventDefault();
-                      onNavigate(result.href, result.blockId, result.text);
+                      onNavigate(result.href, result.blockId, searchQuery.trim() || result.text);
                       handleCerrar();
                     }}
                     className="block px-4 py-3 no-underline text-inherit cursor-pointer"
