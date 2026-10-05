@@ -1,6 +1,8 @@
 import axios from 'axios';
 import type {
   CargaDatos,
+  CargaFuentesFuturasCreada,
+  CargaFuentesFuturasEliminada,
   CargaTendencia,
   CargaTendenciaEliminada,
   ClaseCiiu,
@@ -243,5 +245,36 @@ export async function actualizarSectoresCiiu(archivo: File): Promise<ResultadoAc
 /** Alta manual de un proyecto — segunda vía de entrada, junto a la carga de Excel. */
 export async function crearProyectoInversionManual(datos: DatosProyectoInversionManual): Promise<{ id: string }> {
   const { data } = await api.post(`${ALERTAS_INVERSION}/proyectos`, datos);
+  return data;
+}
+
+// ---------------------------------------------------------------------------
+// Fuentes futuras de empleo
+// ---------------------------------------------------------------------------
+
+const FUENTES_FUTURAS = '/api/observatorio/fuentes-futuras-empleo';
+
+/**
+ * Sube el Excel y lo deja vigente en el portal en la misma petición: esta carga no pasa
+ * por la cola, así que no hay nada que sondear después.
+ */
+export async function subirExcelFuentesFuturas(archivo: File): Promise<CargaFuentesFuturasCreada> {
+  const formData = new FormData();
+  formData.append('file', archivo);
+  const { data } = await api.post(`${FUENTES_FUTURAS}/cargas`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 60000,
+  });
+  return data;
+}
+
+export async function listarCargasFuentesFuturas(): Promise<CargaDatos[]> {
+  const { data } = await api.get(`${FUENTES_FUTURAS}/cargas`);
+  return data;
+}
+
+/** Borra la carga y su Excel; el portal vuelve a la carga anterior, o se queda sin datos. */
+export async function eliminarCargaFuentesFuturas(id: string): Promise<CargaFuentesFuturasEliminada> {
+  const { data } = await api.delete(`${FUENTES_FUTURAS}/cargas/${id}`);
   return data;
 }

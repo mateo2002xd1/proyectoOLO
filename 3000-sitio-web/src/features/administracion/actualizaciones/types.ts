@@ -3,7 +3,7 @@
 export type EstadoCargaDatos = 'procesando' | 'completado' | 'error';
 
 /** Excel de ejemplo que sirve `GET /api/observatorio/formatos/:formato`, uno por tarjeta. */
-export type FormatoDeCarga = 'programas-sobresalientes' | 'tendencia-ocupacional';
+export type FormatoDeCarga = 'programas-sobresalientes' | 'tendencia-ocupacional' | 'fuentes-futuras';
 
 /** Una carga de Excel registrada en `cargas_datos`. */
 export interface CargaDatos {
@@ -159,4 +159,22 @@ export interface DatosProyectoInversionManual {
   empleosEstimados: number | null;
   departamento: string;
   ciudad: string | null;
+}
+
+// ---------------------------------------------------------------------------
+// Fuentes futuras de empleo
+// ---------------------------------------------------------------------------
+
+/** Respuesta de `POST /api/observatorio/fuentes-futuras-empleo/cargas`. */
+export interface CargaFuentesFuturasCreada {
+  cargaId: string;
+  /** Registros que quedaron publicados en el portal. */
+  filas: number;
+  message: string;
+}
+
+/** Respuesta de `DELETE /api/observatorio/fuentes-futuras-empleo/cargas/:id`. */
+export interface CargaFuentesFuturasEliminada {
+  /** `false` si el Excel se conservó porque otra carga usa el mismo archivo. */
+  archivoEliminado: boolean;
 }
