@@ -49,6 +49,7 @@ export interface ListadoPublico {
 /** El listado paginado que acompaña al gráfico. Público, sin sesión. */
 export async function consultarListadoAlertasInversion(filtro: {
   seccionLetra: string | null;
+  codigoDaneDepartamento?: string | null;
   anio: number | null;
   pagina: number;
   porPagina: number;
@@ -88,9 +89,16 @@ export async function consultarListadoAlertasInversion(filtro: {
 
 /** Catálogo de secciones activas y años con datos — para poblar los filtros del sitio y el formulario del panel. */
 export async function consultarOpcionesAlertasInversion() {
-  const [secciones, anios] = await Promise.all([Repo.listarSecciones(), Repo.listarAniosConDatos()]);
+  const [secciones, anios, departamentos, clases] = await Promise.all([
+    Repo.listarSecciones(),
+    Repo.listarAniosConDatos(),
+    Repo.listarDepartamentos(),
+    Repo.listarClases(),
+  ]);
   return {
     secciones: secciones.map((s: any) => ({ id: s.id, letra: s.letra, nombre: s.nombre })),
     anios: anios.map((a) => a.anio),
+    clases: clases.map((c: any) => ({ id: c.id, codigo: c.codigo, nombre: c.nombre, seccionId: c.seccion_id })),
+    departamentos: departamentos.map((d) => ({ codigoDane: d.codigo_dane, nombre: d.nombre })),
   };
 }

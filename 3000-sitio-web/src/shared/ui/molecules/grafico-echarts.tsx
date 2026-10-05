@@ -63,18 +63,29 @@ export function GraficoEcharts({
   option,
   className,
   alto = 240,
+  onClickElemento,
 }: {
   option: OpcionGrafico;
   className?: string;
   alto?: number | string;
+  /** Clic en una barra/porción: recibe su índice en `series[0].data`. */
+  onClickElemento?: (indice: number) => void;
 }) {
   const contenedorRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<echarts.ECharts | null>(null);
+  // Siempre el último manejador, sin tener que re-crear el chart cuando cambia.
+  const onClickRef = useRef(onClickElemento);
+  useEffect(() => {
+    onClickRef.current = onClickElemento;
+  }, [onClickElemento]);
 
   useEffect(() => {
     if (!contenedorRef.current) return;
     const chart = echarts.init(contenedorRef.current);
     chartRef.current = chart;
+    chart.on('click', (evento) => {
+      if (typeof evento.dataIndex === 'number') onClickRef.current?.(evento.dataIndex);
+    });
 
     const resizeObserver = new ResizeObserver(() => chart.resize());
     resizeObserver.observe(contenedorRef.current);

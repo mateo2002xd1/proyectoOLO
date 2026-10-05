@@ -4,9 +4,10 @@ import { URL_DE_LA_API } from '@/shared/lib/url-de-la-api';
 const BACKEND_URL = URL_DE_LA_API;
 
 /** Proyectos publicados por sector CIIU — pública, sin sesión, directo al backend. */
-export async function obtenerGraficoAlertasInversion(anio: string): Promise<SeccionConCantidad[]> {
+export async function obtenerGraficoAlertasInversion(filtro: { departamento: string; anio: string }): Promise<SeccionConCantidad[]> {
   const parametros = new URLSearchParams();
-  if (anio) parametros.set('anio', anio);
+  if (filtro.departamento) parametros.set('departamento', filtro.departamento);
+  if (filtro.anio) parametros.set('anio', filtro.anio);
   const res = await fetch(`${BACKEND_URL}/api/alertas-inversion/grafico?${parametros}`, { cache: 'no-store' });
   if (!res.ok) throw new Error('No se pudo cargar el gráfico de alertas de inversión.');
   return res.json();
@@ -14,12 +15,14 @@ export async function obtenerGraficoAlertasInversion(anio: string): Promise<Secc
 
 export async function obtenerListadoAlertasInversion(filtro: {
   seccion: string;
+  departamento: string;
   anio: string;
   pagina: number;
   porPagina: number;
 }): Promise<ListadoPublico> {
   const parametros = new URLSearchParams();
   if (filtro.seccion) parametros.set('seccion', filtro.seccion);
+  if (filtro.departamento) parametros.set('departamento', filtro.departamento);
   if (filtro.anio) parametros.set('anio', filtro.anio);
   parametros.set('pagina', String(filtro.pagina));
   parametros.set('porPagina', String(filtro.porPagina));

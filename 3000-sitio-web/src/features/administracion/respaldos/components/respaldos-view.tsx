@@ -1,7 +1,8 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Eye, Trash2 } from 'lucide-react';
+import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
+import { BotonOjo } from '@/shared/ui/atoms/boton-ojo';
 import { BarraFiltros, CampoFiltro } from '@/shared/ui/molecules/barra-filtros';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
 import { DatePicker } from '@/shared/ui/molecules/date-picker';
@@ -91,7 +92,7 @@ export function RespaldosView() {
               }}
               className="flex h-11 shrink-0 items-center gap-2 rounded-[16px] px-4 text-sm font-semibold text-red-600 transition hover:bg-red-50 hover:text-red-700 active:bg-red-100 dark:text-red-400 dark:hover:bg-red-950/40 dark:hover:text-red-300 dark:active:bg-red-950/60"
             >
-              <Trash2 size={16} />
+              <IconoMascara nombre="trash" tamano="h-5 w-5" />
               Depurar
             </button>
           </>
@@ -211,15 +212,11 @@ export function RespaldosView() {
                     {fecha(registro.publicadoEn)}
                   </td>
                   <td data-etiqueta="Versión anterior" className="px-4 py-2 text-center">
-                    <button
-                      type="button"
+                    <BotonOjo
+                      etiqueta="Ver versión anterior"
                       onClick={() => setSeleccionado(registro)}
-                      aria-label="Ver versión anterior"
-                      title="Ver versión anterior"
                       className="rounded-lg p-1.25 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-[#94a3b8] dark:hover:bg-white/5 dark:hover:text-white"
-                    >
-                      <Eye size={18} />
-                    </button>
+                    />
                   </td>
                 </tr>
               ))}

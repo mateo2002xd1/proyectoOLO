@@ -4,11 +4,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { mensajeDeErrorApi } from '@/shared/lib/errores-api';
 import {
   eliminarCargaAlertasInversion,
+  eliminarProyectoInversion,
+  eliminarTodosLosProyectosInversion,
   listarCargasAlertasInversion,
+  listarProyectosInversion,
   obtenerCargaAlertasInversion,
   subirExcelAlertasInversion,
 } from '../services/observatorio.service';
-import type { CargaDatos } from '../types';
+import type { CargaDatos, ProyectoInversionPanel } from '../types';
 
 // Mismo intervalo que `use-cargas-programa-sobresalientes`: lo que alimenta la barra
 // de progreso en vivo mientras el worker de `heavy-jobs` procesa la carga.
@@ -21,6 +24,7 @@ const INTERVALO_SONDEO_MS = 1000;
  */
 export function useCargasAlertasInversion() {
   const [cargas, setCargas] = useState<CargaDatos[]>([]);
+  const [proyectos, setProyectos] = useState<ProyectoInversionPanel[]>([]);
   const [cargando, setCargando] = useState(true);
   const [subiendo, setSubiendo] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +33,12 @@ export function useCargasAlertasInversion() {
 
   const refrescar = useCallback(async () => {
     try {
-      setCargas(await listarCargasAlertasInversion());
+      const [listaCargas, listaProyectos] = await Promise.all([
+        listarCargasAlertasInversion(),
+        listarProyectosInversion(),
+      ]);
+      setCargas(listaCargas);
+      setProyectos(listaProyectos);
     } catch {
       setError('No se pudo cargar el historial de cargas.');
     } finally {
@@ -57,6 +66,8 @@ export function useCargasAlertasInversion() {
             sondeoRef.current = null;
           }
           setCargaEnProcesoId(null);
+          // Ya terminó de escribir: aparecen los proyectos nuevos de la lista.
+          setProyectos(await listarProyectosInversion());
         }
       } catch {
         if (sondeoRef.current) clearInterval(sondeoRef.current);
@@ -101,7 +112,43 @@ export function useCargasAlertasInversion() {
     [refrescar]
   );
 
+  const eliminarProyecto = useCallback(
+    async (id: string) => {
+      setError(null);
+      setProyectos((actual) => actual.filter((p) => p.id !== id));
+      try {
+        await eliminarProyectoInversion(id);
+      } catch (err) {
+        setError(mensajeDeErrorApi(err, 'No se pudo eliminar el proyecto.'));
+        await refrescar();
+      }
+    },
+    [refrescar]
+  );
+
+  const limpiarProyectos = useCallback(async () => {
+    setError(null);
+    try {
+      await eliminarTodosLosProyectosInversion();
+      setProyectos([]);
+    } catch (err) {
+      setError(mensajeDeErrorApi(err, 'No se pudieron limpiar los proyectos.'));
+    }
+  }, []);
+
   const cargaEnProceso = cargas.find((c) => c.id === cargaEnProcesoId) ?? null;
 
-  return { cargas, cargando, subiendo, error, subirArchivo, cargaEnProceso, eliminarCarga, refrescar };
+  return {
+    cargas,
+    proyectos,
+    cargando,
+    subiendo,
+    error,
+    subirArchivo,
+    cargaEnProceso,
+    eliminarCarga,
+    eliminarProyecto,
+    limpiarProyectos,
+    refrescar,
+  };
 }

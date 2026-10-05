@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { TrashIcon } from '@heroicons/react/20/solid';
 import { Alert, AlertActions, AlertDescription, AlertTitle } from '@/shared/ui/molecules/alert';
 import { Button } from '@/shared/ui/atoms/button';
@@ -10,6 +10,12 @@ interface HistorialCargasGridProps {
   cargas: CargaDatos[];
   /** Ausente en solo-lectura (quien no `puedeActualizar` no ve la columna de borrar). */
   onEliminar?: (id: string) => void;
+  /**
+   * Qué advierte el diálogo de borrado. Por defecto, el de las cargas que importan a una
+   * tabla: borrar la carga no deshace los datos. "Fuentes futuras de empleo" pasa el
+   * suyo, porque ahí el Excel *es* el dato y borrarlo sí cambia lo que ve el público.
+   */
+  descripcionEliminar?: ReactNode;
 }
 
 const ETIQUETA_ESTADO: Record<CargaDatos['estado'], string> = {
@@ -39,7 +45,7 @@ const formatearFecha = (iso: string | null) =>
  * mucho para 4 columnas de solo lectura, no tenía modo oscuro y su scroll
  * interno recortaba la columna de borrar en tarjetas angostas.
  */
-export function HistorialCargasGrid({ cargas, onEliminar }: HistorialCargasGridProps) {
+export function HistorialCargasGrid({ cargas, onEliminar, descripcionEliminar }: HistorialCargasGridProps) {
   const [cargaAEliminar, setCargaAEliminar] = useState<CargaDatos | null>(null);
 
   const confirmarEliminar = () => {
@@ -115,9 +121,13 @@ export function HistorialCargasGrid({ cargas, onEliminar }: HistorialCargasGridP
       <Alert open={cargaAEliminar !== null} onClose={(open) => !open && setCargaAEliminar(null)}>
         <AlertTitle>¿Eliminar esta carga?</AlertTitle>
         <AlertDescription>
-          Se borra del historial y, si ningún otro registro usa el mismo archivo, también el Excel
-          guardado en el servidor. Los datos que ya quedaron en el mapa de formación no se tocan —
-          esto solo borra la auditoría de la carga.
+          {descripcionEliminar ?? (
+            <>
+              Se borra del historial y, si ningún otro registro usa el mismo archivo, también el
+              Excel guardado en el servidor. Los datos que ya quedaron en el mapa de formación no se
+              tocan — esto solo borra la auditoría de la carga.
+            </>
+          )}
           {cargaAEliminar?.estado === 'procesando' && (
             <>
               {' '}

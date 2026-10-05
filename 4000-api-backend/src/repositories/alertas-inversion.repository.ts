@@ -75,6 +75,26 @@ export const AlertasInversionRepository = {
   /** Las secciones CIIU activas, para el formulario manual y para resolver texto libre del Excel. */
   listarSecciones: () => CiiuSeccion.findAll({ where: { activa: true }, order: [['letra', 'ASC']] }),
 
+  /** Todas las secciones (también la inactiva), con su rango de divisiones, para deducir la sección de un código. */
+  listarSeccionesConDivisiones: () => CiiuSeccion.findAll({ order: [['letra', 'ASC']] }),
+
+  /** Las clases CIIU (código de 4 dígitos) con su sección, para el formulario manual. */
+  listarClases: () => CiiuClase.findAll({ order: [['codigo', 'ASC']] }),
+
+  /** Crea y actualiza clases en una sola transacción: todo o nada para las filas válidas del Excel. */
+  guardarClases: (nuevas: { seccionId: string; codigo: string; nombre: string }[], cambios: { id: string; nombre: string }[]) =>
+    sequelize.transaction(async (transaction) => {
+      if (nuevas.length > 0) {
+        await CiiuClase.bulkCreate(
+          nuevas.map((c) => ({ seccion_id: c.seccionId, codigo: c.codigo, nombre: c.nombre })),
+          { transaction }
+        );
+      }
+      for (const cambio of cambios) {
+        await CiiuClase.update({ nombre: cambio.nombre }, { where: { id: cambio.id }, transaction });
+      }
+    }),
+
   /** Resuelve una letra de sección ('A'..'U') exacta. */
   buscarSeccionPorLetra: (letra: string) => CiiuSeccion.findOne({ where: { letra: letra.toUpperCase() } }),
 
@@ -131,6 +151,12 @@ export const AlertasInversionRepository = {
       return proyecto;
     }),
 
+  /** Borra el proyecto; sus ubicaciones caen por `ON DELETE CASCADE`. Devuelve cuántas filas borró. */
+  eliminarProyecto: (id: string) => ProyectoInversion.destroy({ where: { id } }),
+
+  /** Vacía la tabla de proyectos; las ubicaciones caen por `ON DELETE CASCADE`. Devuelve cuántos borró. */
+  eliminarTodosLosProyectos: () => ProyectoInversion.destroy({ where: {} }),
+
   /**
    * Conteo de proyectos publicados por sección, para el gráfico público — calcado de
    * la consulta `grafico` del borrador de esquema de origen: `LEFT JOIN` desde el
@@ -155,13 +181,30 @@ export const AlertasInversionRepository = {
     ),
 
   /** Listado paginado de proyectos publicados, con sus ubicaciones ya resueltas a texto. */
-  async listarPublicados(filtros: { seccionLetra: string | null; anio: number | null; pagina: number; porPagina: number }) {
+  async listarPublicados(filtros: {
+    seccionLetra: string | null;
+    codigoDaneDepartamento?: string | null;
+    anio: number | null;
+    pagina: number;
+    porPagina: number;
+  }) {
     // `sequelize.where(...)` es una condición completa, no el valor de una clave: va en
     // un `AND` aparte, no asignada a `where.fecha_anuncio`.
     const condiciones: any[] = [{ estado: 'publicado' }];
     if (filtros.anio) {
       condiciones.push(
         sequelize.where(sequelize.fn('EXTRACT', sequelize.literal('YEAR FROM fecha_anuncio')), filtros.anio)
+      );
+    }
+    if (filtros.codigoDaneDepartamento) {
+      // Mismo criterio que el gráfico: el proyecto cuenta si alguna de sus sedes está en el departamento.
+      condiciones.push(
+        sequelize.literal(
+          `EXISTS (SELECT 1 FROM proyectos_inversion_ubicaciones u
+                    JOIN departamentos d ON d.id = u.departamento_id
+                   WHERE u.proyecto_id = "ProyectoInversion"."id"
+                     AND d.codigo_dane = ${sequelize.escape(filtros.codigoDaneDepartamento)})`
+        )
       );
     }
     const where = { [Op.and]: condiciones };
@@ -195,6 +238,13 @@ export const AlertasInversionRepository = {
 
     return { rows, total: count };
   },
+
+  /** Los departamentos del catálogo, para el filtro del sitio público. */
+  listarDepartamentos: () =>
+    sequelize.query<{ codigo_dane: string; nombre: string }>(
+      `SELECT codigo_dane, nombre FROM departamentos ORDER BY nombre`,
+      { type: QueryTypes.SELECT }
+    ),
 
   /** Todos los años con al menos un proyecto publicado, del más reciente al más antiguo. */
   listarAniosConDatos: () =>

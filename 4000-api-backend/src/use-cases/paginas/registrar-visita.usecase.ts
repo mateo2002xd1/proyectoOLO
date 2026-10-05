@@ -22,7 +22,8 @@ export async function registrarVisita({
   ambito,
 }: RegistrarVisitaParams): Promise<RegistrarVisitaResultado> {
   const slugLimpio = (slug || '').trim().replace(/^\/+/, '');
-  if (!slugLimpio) {
+  // Solo slugs con la forma de los reales: corta basura antes de tocar la base.
+  if (!slugLimpio || slugLimpio.length > 100 || !/^[a-z0-9][a-z0-9-]*$/.test(slugLimpio)) {
     return { ok: false, slug, ambito };
   }
 

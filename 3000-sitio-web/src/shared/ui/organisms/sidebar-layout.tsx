@@ -35,7 +35,15 @@ export function SidebarLayout({
       <div className="navegacion-mobile-reserva flex min-w-0 flex-1 flex-col">
         {navbar && <div className="lg:hidden">{navbar}</div>}
 
-        <main className="flex-1 overflow-y-auto bg-[#FFFFFF] dark:bg-[#131B2E]">
+        {/* `relative` no es decorativo: `.sr-only` es `position: absolute` y, sin un
+            ancestro posicionado, su bloque contenedor era `<body>`. Al no ser `<main>`
+            quien lo contiene, su `overflow-y: auto` no lo recortaba: cada etiqueta
+            invisible de las que hay repartidas por el panel se quedaba en su posición
+            estática —abajo del todo del contenido— y estiraba el alto del documento.
+            Resultado: la ventana entera hacía scroll y aparecía una franja blanca bajo
+            el panel. Medido el 2026-10-03 en `/admin/actualizaciones`: 1.306 px de
+            documento para 784 px de ventana; con `relative`, 784. */}
+        <main className="relative flex-1 overflow-y-auto bg-[#FFFFFF] dark:bg-[#131B2E]">
           {children}
         </main>
       </div>

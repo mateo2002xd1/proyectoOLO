@@ -2,6 +2,7 @@
 
 import { useState, ReactNode } from 'react';
 import Link from 'next/link';
+import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { LONGITUD_MINIMA, requisitosDe } from '@olo/password-policy';
 
 /**
@@ -361,21 +362,6 @@ export function AuthSelectField({
   );
 }
 
-function EyeIcon({ crossed }: { crossed: boolean }) {
-  return crossed ? (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-      <line x1="1" y1="1" x2="23" y2="23" />
-    </svg>
-  ) : (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  );
-}
-
 /** Campo de contraseña con alternador de visibilidad. */
 export function PasswordField({
   id,
@@ -419,7 +405,7 @@ export function PasswordField({
           aria-label={show ? 'Ocultar contraseña' : 'Mostrar contraseña'}
           className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-gray-500 transition-colors hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d1526]"
         >
-          <EyeIcon crossed={show} />
+          <IconoMascara nombre={show ? 'eye-open' : 'eye-closed'} tamano="h-5 w-5" />
         </button>
       </div>
       {error && <p className={authErrorTextClass}>{error}</p>}

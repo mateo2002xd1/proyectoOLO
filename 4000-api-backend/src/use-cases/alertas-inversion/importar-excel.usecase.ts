@@ -3,6 +3,7 @@ import sequelize from '../../config/database';
 import { DepartamentosRepository } from '../../repositories/departamentos.repository';
 import { AlertasInversionRepository as Repo } from '../../repositories/alertas-inversion.repository';
 import { normalizarParaComparar } from '../../shared/normalizar-texto';
+import { crearBuscadorDeSeccionPorDivision, divisionDeCodigo } from './ciiu-divisiones';
 import { ProyectoInversion, CiiuSeccion, Municipio, Empresa } from '../../infrastructure/db/models';
 
 // Más bajo que el de Observatorio (100.000): cada fila aquí es una noticia distinta,
@@ -89,11 +90,10 @@ function comoNumeroOpcional(celda: ExcelJS.Cell, fila: number, columna: string):
 }
 
 /**
- * Resuelve la sección CIIU de una fila: por código de clase (4 dígitos, si ya está en
- * el catálogo), por letra de sección directa (A–U), o por el nombre exacto de
- * "Actividad" contra `ciiu_secciones.nombre` — el catálogo completo del DANE no viene
- * seedeado (son cientos de clases), así que el nombre del sector es la vía práctica
- * hasta que alguien cargue el catálogo completo.
+ * Resuelve la sección CIIU de una fila, en este orden: letra de sección directa (A–U);
+ * clase de 4 dígitos ya cargada en el catálogo (se enlaza); código numérico de grupo o
+ * clase, cuya sección sale de la división (sus dos primeros dígitos); y, por último, el
+ * nombre exacto de "Actividad" contra `ciiu_secciones.nombre`.
  */
 async function resolverSeccionYClase(
   codigo: string,
@@ -110,6 +110,17 @@ async function resolverSeccionYClase(
     if (clase) return { seccionId: clase.get('seccion_id') as string, claseId: clase.get('id') as string };
   }
 
+  // Código numérico (grupo o clase): la sección sale de su división. Excel se come el cero
+  // inicial de un grupo (`011` llega como `11`) y `divisionDeCodigo` lo recompone.
+  const division = divisionDeCodigo(codigo);
+  if (division !== null) {
+    const todas = await Repo.listarSeccionesConDivisiones();
+    const seccionId = crearBuscadorDeSeccionPorDivision(
+      todas.map((s: any) => ({ id: s.get('id') as string, divisiones: s.get('divisiones') as string }))
+    )(division);
+    if (seccionId) return { seccionId, claseId: null };
+  }
+
   const secciones = await CiiuSeccion.findAll({ where: { activa: true } });
   const normalizado = normalizarParaComparar(actividad);
   const porNombre = secciones.find((s: any) => normalizarParaComparar(s.nombre) === normalizado);
@@ -118,8 +129,8 @@ async function resolverSeccionYClase(
   throw new ErrorDeFila(
     fila,
     `no se pudo identificar el sector CIIU con "${COLUMNAS.codigo}"="${codigo}" y ` +
-      `"${COLUMNAS.actividad}"="${actividad}". Use una letra de sección (A–U), un código de ` +
-      'clase ya cargado, o el nombre exacto del sector.'
+      `"${COLUMNAS.actividad}"="${actividad}". Use un código CIIU numérico (grupo o clase), ` +
+      'una letra de sección (A–U) o el nombre exacto del sector.'
   );
 }
 

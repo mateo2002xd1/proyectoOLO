@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useMemo } from 'react';
+import { GraficoEcharts, type OpcionGrafico } from '@/shared/ui/molecules/grafico-echarts';
 import type { SeccionConCantidad } from '../types';
 
 interface GraficoSectoresProps {
@@ -9,47 +10,24 @@ interface GraficoSectoresProps {
   onSeleccionar: (letra: string) => void;
 }
 
+const VERDE = '#7db828';
+const GRIS = '#cbd5e1';
+
 /**
- * Barras horizontales de "proyectos de inversión por sector CIIU" — `echarts` va
- * directo (sin `echarts-for-react`, que no está entre las dependencias del sitio):
- * un `useEffect` inicializa el chart sobre un `div` y lo destruye al desmontar.
+ * Barras horizontales de proyectos de inversión por sector CIIU, sobre el envoltorio
+ * compartido `GraficoEcharts`; el clic en una barra filtra por ese sector. (Antes
+ * cargaba `echarts` con un `import()` dinámico en un efecto y, si llegaba tarde, el
+ * gráfico quedaba vacío.)
  */
 export function GraficoSectores({ datos, seccionSeleccionada, onSeleccionar }: GraficoSectoresProps) {
-  const contenedorRef = useRef<HTMLDivElement>(null);
-  const instanciaRef = useRef<import('echarts').ECharts | null>(null);
+  // De menos a más: el sector con más proyectos queda arriba.
+  const ordenados = useMemo(
+    () => [...datos].sort((a, b) => a.cantidadProyectos - b.cantidadProyectos),
+    [datos]
+  );
 
-  useEffect(() => {
-    let cancelado = false;
-    import('echarts').then((echarts) => {
-      if (cancelado || !contenedorRef.current) return;
-      const instancia = echarts.init(contenedorRef.current);
-      instanciaRef.current = instancia;
-
-      instancia.on('click', (evento) => {
-        const letra = datos[evento.dataIndex as number]?.letra;
-        if (letra) onSeleccionar(letra);
-      });
-
-      const redimensionar = () => instancia.resize();
-      window.addEventListener('resize', redimensionar);
-      return () => window.removeEventListener('resize', redimensionar);
-    });
-
-    return () => {
-      cancelado = true;
-      instanciaRef.current?.dispose();
-      instanciaRef.current = null;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    const instancia = instanciaRef.current;
-    if (!instancia) return;
-
-    const ordenados = [...datos].sort((a, b) => a.cantidadProyectos - b.cantidadProyectos);
-
-    instancia.setOption({
+  const option = useMemo<OpcionGrafico>(
+    () => ({
       grid: { left: 8, right: 24, top: 8, bottom: 8, containLabel: true },
       tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
       xAxis: { type: 'value', minInterval: 1 },
@@ -63,15 +41,14 @@ export function GraficoSectores({ datos, seccionSeleccionada, onSeleccionar }: G
           type: 'bar',
           data: ordenados.map((s) => ({
             value: s.cantidadProyectos,
-            itemStyle: {
-              color: !seccionSeleccionada || s.letra === seccionSeleccionada ? '#7db828' : '#cbd5e1',
-            },
+            itemStyle: { color: !seccionSeleccionada || s.letra === seccionSeleccionada ? VERDE : GRIS },
           })),
           barMaxWidth: 22,
         },
       ],
-    });
-  }, [datos, seccionSeleccionada]);
+    }),
+    [ordenados, seccionSeleccionada]
+  );
 
   if (datos.every((s) => s.cantidadProyectos === 0)) {
     return (
@@ -81,5 +58,20 @@ export function GraficoSectores({ datos, seccionSeleccionada, onSeleccionar }: G
     );
   }
 
-  return <div ref={contenedorRef} className="h-[520px] w-full" role="img" aria-label="Proyectos de inversión por sector económico" />;
+  return (
+    <section className="rounded-[20px] border border-[#eaecf0] bg-white p-5">
+      <h2 className="text-base font-semibold text-[#001631]">Proyectos por sector</h2>
+      <p className="mb-2 text-sm text-[#667085]">Haga clic en un sector para filtrar el listado.</p>
+      <div role="img" aria-label="Proyectos de inversión por sector económico">
+        <GraficoEcharts
+          option={option}
+          alto={520}
+          onClickElemento={(indice) => {
+            const letra = ordenados[indice]?.letra;
+            if (letra) onSeleccionar(letra);
+          }}
+        />
+      </div>
+    </section>
+  );
 }

@@ -2,7 +2,13 @@ import { Request, Response } from 'express';
 import { iniciarCargaAlertasInversion, ErrorDeSubida } from '../use-cases/alertas-inversion/iniciar-carga.usecase';
 import { listarCargasAlertasInversion, obtenerCargaAlertasInversion } from '../use-cases/alertas-inversion/listar-cargas.usecase';
 import { eliminarCargaAlertasInversion, ErrorAlEliminarCarga } from '../use-cases/alertas-inversion/eliminar-carga.usecase';
+import { actualizarSectoresCiiu, ErrorAlActualizarSectores } from '../use-cases/alertas-inversion/actualizar-sectores.usecase';
 import { crearProyectoInversionManual, ErrorDeAltaManual } from '../use-cases/alertas-inversion/crear-proyecto-manual.usecase';
+import {
+  eliminarProyectoInversion,
+  eliminarTodosLosProyectosInversion,
+  ErrorAlEliminarProyecto,
+} from '../use-cases/alertas-inversion/eliminar-proyecto.usecase';
 import {
   consultarGraficoAlertasInversion,
   consultarListadoAlertasInversion,
@@ -11,6 +17,25 @@ import {
 import { resolverFormatoDeCarga, ErrorDeFormato } from '../use-cases/observatorio/formatos-de-carga';
 import { idReferenciable } from '../shared/auditoria-request';
 import { filtroPublicoSchema, listadoPublicoSchema } from '../validators/alertas-inversion.validators';
+
+/** Sirve uno de los Excel de ejemplo de `uploads/formatos-carga/` (lista cerrada en `formatos-de-carga.ts`). */
+async function enviarFormato(res: Response, formato: string) {
+  try {
+    const { ruta, nombreDescarga } = await resolverFormatoDeCarga(formato);
+    res.set('Cache-Control', 'private, no-cache');
+    res.download(ruta, nombreDescarga, { cacheControl: false }, (error) => {
+      if (!error) return;
+      console.error(`[alertas-inversion] Error al enviar el formato ${formato}:`, error);
+      if (!res.headersSent) res.status(500).json({ error: 'Error al descargar el formato.' });
+    });
+  } catch (error) {
+    if (error instanceof ErrorDeFormato) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    console.error(`[alertas-inversion] Error al descargar el formato ${formato}:`, error);
+    res.status(500).json({ error: 'Error al descargar el formato.' });
+  }
+}
 
 export const AlertasInversionController = {
   /** Sube el Excel y arranca la carga de inmediato — sin paso de aprobación. */
@@ -70,23 +95,11 @@ export const AlertasInversionController = {
     }
   },
 
-  async descargarFormato(_req: Request, res: Response) {
-    try {
-      const { ruta, nombreDescarga } = await resolverFormatoDeCarga('alertas-inversion');
-      res.set('Cache-Control', 'private, no-cache');
-      res.download(ruta, nombreDescarga, { cacheControl: false }, (error) => {
-        if (!error) return;
-        console.error('[alertas-inversion] Error al enviar el formato de carga:', error);
-        if (!res.headersSent) res.status(500).json({ error: 'Error al descargar el formato.' });
-      });
-    } catch (error) {
-      if (error instanceof ErrorDeFormato) {
-        return res.status(error.status).json({ error: error.message });
-      }
-      console.error('[alertas-inversion] Error al descargar el formato de carga:', error);
-      res.status(500).json({ error: 'Error al descargar el formato.' });
-    }
-  },
+  /** Excel de ejemplo de la carga de proyectos. */
+  descargarFormato: (_req: Request, res: Response) => enviarFormato(res, 'alertas-inversion'),
+
+  /** Excel de ejemplo de «Actualizar sectores (CIIU)». */
+  descargarFormatoSectores: (_req: Request, res: Response) => enviarFormato(res, 'actualizar-ciiu'),
 
   /** Alta manual — la segunda vía de entrada, junto a la carga de Excel. */
   async crearManual(req: Request, res: Response) {
@@ -99,6 +112,61 @@ export const AlertasInversionController = {
       }
       console.error('[alertas-inversion] Error al crear el proyecto:', error);
       res.status(500).json({ error: 'Error al crear el proyecto.' });
+    }
+  },
+
+  /** Actualiza el catálogo de sectores (CIIU) desde un Excel de código y nombre. */
+  async actualizarSectores(req: Request, res: Response) {
+    try {
+      const archivo = (req as any).file as Express.Multer.File | undefined;
+      if (!archivo) {
+        return res.status(400).json({ error: 'No se envió ningún archivo.' });
+      }
+      res.json(await actualizarSectoresCiiu(archivo.buffer));
+    } catch (error) {
+      if (error instanceof ErrorAlActualizarSectores) {
+        return res.status(error.status).json({ error: error.message });
+      }
+      console.error('[alertas-inversion] Error al actualizar los sectores:', error);
+      res.status(500).json({ error: 'Error al actualizar los sectores.' });
+    }
+  },
+
+  /** Proyectos publicados, para que el panel pueda listarlos y borrarlos. */
+  async listarProyectos(_req: Request, res: Response) {
+    try {
+      const { proyectos } = await consultarListadoAlertasInversion({
+        seccionLetra: null,
+        anio: null,
+        pagina: 1,
+        porPagina: 100,
+      });
+      res.json(proyectos);
+    } catch (error) {
+      console.error('[alertas-inversion] Error al listar los proyectos:', error);
+      res.status(500).json({ error: 'Error al listar los proyectos.' });
+    }
+  },
+
+  async eliminarTodosLosProyectos(_req: Request, res: Response) {
+    try {
+      res.json({ eliminados: await eliminarTodosLosProyectosInversion() });
+    } catch (error) {
+      console.error('[alertas-inversion] Error al limpiar los proyectos:', error);
+      res.status(500).json({ error: 'Error al limpiar los proyectos.' });
+    }
+  },
+
+  async eliminarProyecto(req: Request, res: Response) {
+    try {
+      await eliminarProyectoInversion(req.params.id as string);
+      res.status(204).send();
+    } catch (error) {
+      if (error instanceof ErrorAlEliminarProyecto) {
+        return res.status(error.status).json({ error: error.message });
+      }
+      console.error('[alertas-inversion] Error al eliminar el proyecto:', error);
+      res.status(500).json({ error: 'Error al eliminar el proyecto.' });
     }
   },
 
@@ -129,6 +197,7 @@ export const AlertasInversionController = {
     try {
       const datos = await consultarListadoAlertasInversion({
         seccionLetra: consulta.data.seccion ?? null,
+        codigoDaneDepartamento: consulta.data.departamento ?? null,
         anio: consulta.data.anio ?? null,
         pagina: consulta.data.pagina,
         porPagina: consulta.data.porPagina,

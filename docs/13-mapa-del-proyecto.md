@@ -16,7 +16,7 @@
 |---|--:|--:|--:|--:|--:|
 | `3000-sitio-web` | 47 | 3 | 55 | — | 33 |
 | `3001-intranet` | 33 | 2 | 13 | — | 27 |
-| `4000-api-backend` | 33 | — | — | 79 | 42 |
+| `4000-api-backend` | 33 | — | — | 87 | 42 |
 
 Paquetes compartidos: 7 · migraciones: 40 · modelos: 23.
 
@@ -191,7 +191,7 @@ test/                                          pruebas de carga con k6
 
 | Feature | Para qué | Subcarpetas | `index.ts` | Archivos |
 |---|---|---|:-:|--:|
-| `administracion/` | el panel: usuarios, roles, auditoría, respaldos, cargas | `actualizaciones/` `auditoria/` `auth/` `buscador/` `mi-perfil/` `respaldos/` | **no** | 64 |
+| `administracion/` | el panel: usuarios, roles, auditoría, respaldos, cargas | `actualizaciones/` `auditoria/` `auth/` `buscador/` `mi-perfil/` `respaldos/` | **no** | 68 |
 | `paginas/` | páginas editables con Puck, organizadas por etapa del ciclo | `edicion/` `menu-y-pie/` `model/` `publicacion/` `revision/` `secciones/` | sí | 38 |
 | `sitio-web/` | agrupador de lo público | `alertas-inversion/` `buscador-ocupaciones/` `fuentes-futuras-empleo/` `inicio/` `programas-sobresalientes/` `tendencia-ocupacional/` | **no** | 49 |
 
@@ -308,6 +308,11 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | DELETE | `/api/alertas-inversion/cargas/:id` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos') | AlertasInversionController.eliminarCarga |
 | GET | `/api/alertas-inversion/formatos/plantilla` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos') | AlertasInversionController.descargarFormato |
 | POST | `/api/alertas-inversion/proyectos` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos'), validarCuerpo(crearProyectoManualSchema) | AlertasInversionController.crearManual |
+| GET | `/api/alertas-inversion/formatos/sectores` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos') | AlertasInversionController.descargarFormatoSectores |
+| POST | `/api/alertas-inversion/sectores` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos'), subidaEnMemoria.single('file') | AlertasInversionController.actualizarSectores |
+| GET | `/api/alertas-inversion/proyectos` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos') | AlertasInversionController.listarProyectos |
+| DELETE | `/api/alertas-inversion/proyectos` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos') | AlertasInversionController.eliminarTodosLosProyectos |
+| DELETE | `/api/alertas-inversion/proyectos/:id` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos') | AlertasInversionController.eliminarProyecto |
 
 ### `routes/audit.routes.ts`
 
@@ -335,12 +340,15 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | GET | `/api/observatorio/programas-sobresalientes` | 🔓 — | ObservatorioController.obtenerActual |
 | GET | `/api/observatorio/tendencia-ocupacional` | 🔓 — | TendenciaOcupacionalController.buscar |
 | GET | `/api/observatorio/tendencia-ocupacional/opciones` | 🔓 — | TendenciaOcupacionalController.opciones |
-| GET | `/api/observatorio/fuentes-futuras-empleo` | 🔓 — | ObservatorioController.obtenerFuentesFuturasEmpleo |
+| GET | `/api/observatorio/fuentes-futuras-empleo` | 🔓 — | FuentesFuturasEmpleoController.obtenerActual |
 | GET | `/api/observatorio/cargas` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos') | ObservatorioController.listarCargas |
 | POST | `/api/observatorio/cargas` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos'), subidaEnMemoria.single('file') | ObservatorioController.subir |
 | GET | `/api/observatorio/cargas/:id` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos') | ObservatorioController.obtenerCarga |
 | DELETE | `/api/observatorio/cargas/:id` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos') | ObservatorioController.eliminarCarga |
 | GET | `/api/observatorio/formatos/:formato` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos') | ObservatorioController.descargarFormato |
+| GET | `/api/observatorio/fuentes-futuras-empleo/cargas` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos') | FuentesFuturasEmpleoController.listarCargas |
+| POST | `/api/observatorio/fuentes-futuras-empleo/cargas` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos'), subidaEnMemoria.single('file') | FuentesFuturasEmpleoController.subir |
+| DELETE | `/api/observatorio/fuentes-futuras-empleo/cargas/:id` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos') | FuentesFuturasEmpleoController.eliminarCarga |
 | GET | `/api/observatorio/tendencia-ocupacional/cargas` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos') | TendenciaOcupacionalController.listarCargas |
 | POST | `/api/observatorio/tendencia-ocupacional/cargas` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos'), subidaEnMemoria.single('file'), validarCuerpo(cargaTendenciaSchema) | TendenciaOcupacionalController.subir |
 | GET | `/api/observatorio/tendencia-ocupacional/cargas/:id` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos') | TendenciaOcupacionalController.obtenerCarga |
@@ -355,7 +363,7 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 |---|---|---|---|
 | GET | `/api/paginas/publica/:slug` | 🔓 cacheInterceptor(300, { varyBy: [AMBITO_HEADER] }) | PaginaController.obtenerPublica |
 | GET | `/api/paginas/indice-busqueda` | 🔓 cacheInterceptor(300, { varyBy: [AMBITO_HEADER] }) | PaginaController.obtenerIndiceBusqueda |
-| POST | `/api/paginas/visitas/registrar` | 🔓 — | PaginaController.registrarVisita |
+| POST | `/api/paginas/visitas/registrar` | 🔓 limitadorDeVisitas, limitadorDeVisitasPorPagina | PaginaController.registrarVisita |
 | POST | `/api/paginas` | requireAuth, limitadorDeEscritura, requierePermisoPagina('puedeEditar'), requirePermission('secciones.crear'), validarCuerpo(crearSeccionSchema) | PaginaController.crearSeccion |
 | GET | `/api/paginas/:slug/eliminable` | requireAuth, requierePermisoPagina('puedeEditar'), requirePermission('secciones.eliminar') | PaginaController.analizarEliminacion |
 | DELETE | `/api/paginas/:slug` | requireAuth, limitadorDeEscritura, requierePermisoPagina('puedeEditar'), requirePermission('secciones.eliminar'), validarCuerpo(eliminarSeccionSchema) | PaginaController.eliminarSeccion |
