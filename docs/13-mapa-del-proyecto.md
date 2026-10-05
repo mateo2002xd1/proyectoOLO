@@ -16,7 +16,7 @@
 |---|--:|--:|--:|--:|--:|
 | `3000-sitio-web` | 47 | 3 | 55 | — | 33 |
 | `3001-intranet` | 33 | 2 | 13 | — | 27 |
-| `4000-api-backend` | 33 | — | — | 84 | 42 |
+| `4000-api-backend` | 33 | — | — | 87 | 42 |
 
 Paquetes compartidos: 7 · migraciones: 40 · modelos: 23.
 
@@ -340,12 +340,15 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | GET | `/api/observatorio/programas-sobresalientes` | 🔓 — | ObservatorioController.obtenerActual |
 | GET | `/api/observatorio/tendencia-ocupacional` | 🔓 — | TendenciaOcupacionalController.buscar |
 | GET | `/api/observatorio/tendencia-ocupacional/opciones` | 🔓 — | TendenciaOcupacionalController.opciones |
-| GET | `/api/observatorio/fuentes-futuras-empleo` | 🔓 — | ObservatorioController.obtenerFuentesFuturasEmpleo |
+| GET | `/api/observatorio/fuentes-futuras-empleo` | 🔓 — | FuentesFuturasEmpleoController.obtenerActual |
 | GET | `/api/observatorio/cargas` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos') | ObservatorioController.listarCargas |
 | POST | `/api/observatorio/cargas` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos'), subidaEnMemoria.single('file') | ObservatorioController.subir |
 | GET | `/api/observatorio/cargas/:id` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos') | ObservatorioController.obtenerCarga |
 | DELETE | `/api/observatorio/cargas/:id` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos') | ObservatorioController.eliminarCarga |
 | GET | `/api/observatorio/formatos/:formato` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos') | ObservatorioController.descargarFormato |
+| GET | `/api/observatorio/fuentes-futuras-empleo/cargas` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos') | FuentesFuturasEmpleoController.listarCargas |
+| POST | `/api/observatorio/fuentes-futuras-empleo/cargas` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos'), subidaEnMemoria.single('file') | FuentesFuturasEmpleoController.subir |
+| DELETE | `/api/observatorio/fuentes-futuras-empleo/cargas/:id` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos') | FuentesFuturasEmpleoController.eliminarCarga |
 | GET | `/api/observatorio/tendencia-ocupacional/cargas` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos') | TendenciaOcupacionalController.listarCargas |
 | POST | `/api/observatorio/tendencia-ocupacional/cargas` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos'), subidaEnMemoria.single('file'), validarCuerpo(cargaTendenciaSchema) | TendenciaOcupacionalController.subir |
 | GET | `/api/observatorio/tendencia-ocupacional/cargas/:id` | requireAuth, requierePermisoObservatorio('puedeActualizarDatos') | TendenciaOcupacionalController.obtenerCarga |

@@ -16,6 +16,7 @@ const FORMATOS = new Map<string, string>([
   ['tendencia-ocupacional', 'formato-criterios-tendencias.xlsx'],
   ['alertas-inversion', 'formato-alertas-inversion.xlsx'],
   ['actualizar-ciiu', 'formato-actualizar-CIIU.xlsx'],
+  ['fuentes-futuras', 'formato-fuentes-futuras.xlsx'],
 ]);
 
 const DIRECTORIO_FORMATOS = path.join(process.cwd(), 'uploads', 'formatos-carga');
