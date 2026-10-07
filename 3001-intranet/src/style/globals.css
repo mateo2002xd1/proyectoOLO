@@ -2525,8 +2525,9 @@ body:has(.navegacion-mobile-hoja[open]) {
 .nueva-seccion-fondo {
   position: fixed;
   inset: 0;
-  z-index: 60;
-  /* por encima de los botones flotantes, que están en 50 */
+  /* Por encima de todo lo que se ve detrás: el menú superior (100) y el botón
+     flotante de edición (9999). Con 60 el desenfoque no los cubría. */
+  z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;

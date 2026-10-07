@@ -11,6 +11,7 @@ import { cerrarSesionLocal } from '@/shared/lib/api-client';
 import { AUTH_ROLE_COOKIE_NAME } from '@/shared/lib/auth-cookies';
 import { ModalNuevaSeccion } from './modal-nueva-seccion';
 import { ModalEliminarSeccion } from './modal-eliminar-seccion';
+import { ModalCerrarSesion } from './modal-cerrar-sesion';
 import { Pencil, X } from 'lucide-react';
 
 function leerCookie(nombre: string): string | null {
@@ -102,6 +103,7 @@ export function PaginasFabSpeedDial() {
   const [abierto, setAbierto] = useState(false);
   const [modalNuevaAbierto, setModalNuevaAbierto] = useState(false);
   const [modalEliminarAbierto, setModalEliminarAbierto] = useState(false);
+  const [modalSalirAbierto, setModalSalirAbierto] = useState(false);
 
   const contenedorRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -355,7 +357,10 @@ export function PaginasFabSpeedDial() {
           </span>
           <button
             type="button"
-            onClick={salirDelModoEdicion}
+            onClick={() => {
+              cerrarMenu();
+              setModalSalirAbierto(true);
+            }}
             disabled={saliendo}
             className="fab-speed-dial__btn fab-speed-dial__btn--salir"
             aria-label="Salir de modo edición"
@@ -389,6 +394,13 @@ export function PaginasFabSpeedDial() {
         slug={slug}
         abierto={modalEliminarAbierto}
         alCerrar={() => setModalEliminarAbierto(false)}
+      />
+
+      <ModalCerrarSesion
+        abierto={modalSalirAbierto}
+        saliendo={saliendo}
+        alConfirmar={salirDelModoEdicion}
+        alCerrar={() => setModalSalirAbierto(false)}
       />
     </>
   );
