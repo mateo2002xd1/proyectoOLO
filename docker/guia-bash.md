@@ -462,10 +462,114 @@ olo-app_filesystem                  (dentro de la API: /filesystem)
   año en el navegador (el nombre nunca se repite); las de la intranet se comprueban en
   cada visita.
 - **Verlos:** Docker Desktop → **Volumes** → `olo-app_filesystem` → **Browse**, o en
-  Git Bash `docker exec api ls -R /filesystem | less`.
+  Git Bash `docker exec api sh -c 'ls -R /filesystem' | less`.
 - **Los formatos de ejemplo** de "Actualizaciones" no están aquí: vienen con el
   repositorio en `4000-api-backend\uploads\formatos-carga` y se cambian reemplazando el
   archivo, sin reconstruir.
+
+### Cómo se monta el volumen
+
+No hay que montarlo a mano: `deploy.sh` lo crea y Docker Compose lo conecta a la API cada
+vez que arranca la pila. Son tres piezas, y tienen que estar las tres:
+
+| Pieza | Dónde está | Qué hace |
+|---|---|---|
+| **1. El volumen existe** | `deploy.sh`, al empezar cualquier comando | Si no hay un volumen `olo-app_filesystem`, lo crea vacío (`docker volume create olo-app_filesystem`). Si ya existe, no lo toca. |
+| **2. Compose lo declara externo** | `docker-compose.servidor.yml`, al final, en `volumes:` | Le dice a Compose que el volumen ya existe y no es suyo: no lo crea, no le cambia el nombre y `down -v` no lo borra. |
+| **3. La API lo monta en `/filesystem`** | `docker-compose.servidor.yml`, servicio `api-backend` | Lo conecta dentro del contenedor en la carpeta `/filesystem`, y `FILESYSTEM_DIR` le dice a la API que guarde ahí. |
+
+Estas son las líneas del compose (ya están, no hay que escribirlas):
+
+```yaml
+services:
+  api-backend:
+    environment:
+      FILESYSTEM_DIR: /filesystem      # dónde guarda la API (pieza 3)
+    volumes:
+      - filesystem:/filesystem         # <volumen>:<carpeta dentro del contenedor> (pieza 3)
+      - ./4000-api-backend/uploads/formatos-carga:/app/uploads/formatos-carga:ro
+
+volumes:
+  filesystem:                          # el nombre que usa el compose, arriba
+    name: olo-app_filesystem           # el nombre real del volumen en Docker
+    external: true                     # ya existe y no es de Compose (pieza 2)
+```
+
+**En un servidor nuevo** el primer comando de `deploy.sh` crea el volumen vacío. Los
+archivos llegan con `./docker/deploy.sh restore-archivos archivos_<fecha>.tar.gz`, desde un
+respaldo, o con `./docker/deploy.sh migrar-archivos`, desde las carpetas de antes.
+
+**Reglas:**
+
+- **Solo la API lo monta.** No lo agregues a `sitio-web`, `intranet` ni `nginx`: lo que
+  está en el disco de un frontend se puede servir sin pasar por los permisos de la API
+  (`docs/3-seguridad-del-proyecto.md` §S1).
+- **No le cambies el nombre.** Está escrito en dos sitios: `name:` en el compose y
+  `VOLUMEN_DE_ARCHIVOS` en `deploy.sh`. Con otro nombre, la API arrancaría con un volumen
+  nuevo y vacío, y los archivos se quedarían en el viejo.
+- **No lo cambies por una carpeta de Windows** (`C:\...:/filesystem`). Con Docker Desktop,
+  cada lectura de una carpeta de Windows cruza de Windows a la máquina virtual de Docker y
+  va más lenta. Además, cualquiera puede borrar o bloquear un archivo desde el Explorador.
+- **No está en `C:`.** Vive dentro de la máquina virtual de Docker Desktop
+  (`/var/lib/docker/volumes/olo-app_filesystem/_data`). No se busca con el Explorador:
+  se ve en Docker Desktop → **Volumes**, o con los comandos de abajo.
+
+**Comprobar que está montado.** Con la pila arriba, en Git Bash:
+
+```bash
+docker volume inspect olo-app_filesystem --format '{{.Name}} {{.Mountpoint}}'
+docker inspect api --format '{{range .Mounts}}{{.Name}} -> {{.Destination}} (escritura: {{.RW}}){{"\n"}}{{end}}'
+docker exec api sh -c 'echo $FILESYSTEM_DIR; ls /filesystem; du -sh /filesystem'
+```
+
+Deberías ver:
+
+```
+olo-app_filesystem /var/lib/docker/volumes/olo-app_filesystem/_data
+olo-app_filesystem -> /filesystem (escritura: true)
+ -> /app/uploads/formatos-carga (escritura: false)
+/filesystem
+cargas-datos
+intranet
+sitio
+5.4M	/filesystem
+```
+
+La línea que empieza por ` ->`, sin nombre, es la carpeta de los formatos de ejemplo: es
+de Windows y la API la monta de solo lectura. Las carpetas `cargas-datos`, `intranet` y
+`sitio` aparecen la primera vez que se sube algo, o después de `migrar-archivos`. La
+última línea es lo que ocupa todo lo subido, así que el número cambia.
+
+Si falta la línea `olo-app_filesystem -> /filesystem`, la API está corriendo sin el
+volumen: guarda dentro del contenedor y todo lo que se suba se pierde al recrearlo. Pasa
+cuando la pila se levantó con un compose viejo, o con `restart` después de una
+actualización. `./docker/deploy.sh start` vuelve a crear el contenedor con el compose
+actual.
+
+**Abrirlo sin la API.** Con la API apagada, para mirar o sacar archivos, se monta en un
+contenedor de paso. Es lo que hacen por dentro `backup`, `restore-archivos` y
+`migrar-archivos`:
+
+```bash
+MSYS_NO_PATHCONV=1 docker run --rm --mount type=volume,source=olo-app_filesystem,target=/filesystem,readonly alpine:3 ls -R /filesystem
+```
+
+`readonly` impide borrar algo por error: ese contenedor no puede escribir. Para copiar un
+archivo del volumen a la carpeta en la que estás:
+`docker cp api:/filesystem/sitio/uploads/img/<uuid>.png .`
+
+> **Git Bash y las rutas que empiezan por `/`.** Antes de pasarle un comando a Docker,
+> Git Bash convierte toda palabra que empiece por `/` en una ruta de Windows: `/filesystem`
+> llega como `C:/Program Files/Git/filesystem`, y Docker responde `mount path must be
+> absolute` o «no existe». Por eso los comandos de esta guía meten la ruta dentro de
+> `sh -c '...'`, o empiezan con `MSYS_NO_PATHCONV=1`. En PowerShell no pasa.
+
+**En desarrollo no hay volumen.** Con `npm run dev`, `FILESYSTEM_DIR` está vacía en
+`4000-api-backend/.env`, y la API guarda en la carpeta `filesystem/` de la raíz del
+repositorio (git la ignora). Para pasar esos archivos al volumen de Docker:
+`./docker/deploy.sh migrar-archivos`. No apuntes `FILESYSTEM_DIR` a la ruta interna del
+volumen (`\\wsl.localhost\docker-desktop\...`): cambia entre versiones de Docker Desktop y
+es lenta.
 
 ---
 
@@ -502,8 +606,9 @@ Casi siempre el sitio se construyó con otras direcciones: revisa `SITIO_WEB_URL
 `INTRANET_URL_PUBLICA` y reconstruye (`build` y `start`).
 
 ### Una imagen subida no se ve
-- Comprueba que está en el volumen: `docker exec api ls /filesystem/sitio/uploads/img`
+- Comprueba que está en el volumen: `docker exec api sh -c 'ls /filesystem/sitio/uploads/img'`
   (o `intranet/...`, o la carpeta de su tipo).
+- Comprueba que la API tiene el volumen montado (ver «Cómo se monta el volumen»).
 - Si pasó justo después de la actualización que pasó los archivos al volumen, falta
   `./docker/deploy.sh migrar-archivos` (ver «Una sola vez: los archivos pasan al volumen»).
 - En la intranet, los archivos exigen sesión: abierto sin sesión, lleva al login.
