@@ -483,7 +483,7 @@ La plataforma emplea una paleta estandarizada de colores e iconografía instituc
 
 > [!NOTE]
 > **Consulta de Errores Específicos y Catálogo de Validaciones:**
-> Para consultar el desglose detallado de validaciones campo a campo, los mensajes de error específicos de cada formulario, sus causas técnicas y las instrucciones de solución paso a paso, diríjase a la [Sección 3.5.1: Catálogo de Validaciones y Solución de Problemas](#351-catálogo-de-validaciones-y-solución-de-problemas).
+> Para consultar el desglose detallado de validaciones campo a campo, los mensajes de error específicos de cada formulario, sus causas técnicas y las instrucciones de solución paso a paso, remitirse a la [Sección 3.5.1: Catálogo de Validaciones y Solución de Problemas](#351-catálogo-de-validaciones-y-solución-de-problemas).
 
 ---
 
@@ -512,7 +512,7 @@ El sistema del Observatorio Laboral y Ocupacional dispone de dos formularios de 
 
 Este procedimiento describe el paso a paso para el funcionario que inicia sesión por primera vez a través del Sitio Web Público del OLO:
 
-1. **Ubicación del acceso en el Sitio Web:** En la franja azul superior del Sitio Web del OLO (banner GOV.CO), el funcionario ubica en el extremo derecho el texto interactivo con la **fecha y hora en vivo**. Al posar el cursor sobre este elemento, el sistema despliega la indicación *"Iniciar sesión"*. Al hacer clic, se abre la pantalla de inicio de sesión (`/login`).
+1. **Ubicación del acceso en el Sitio Web:** En la barra superior del Sitio Web del OLO (banner GOV.CO), el funcionario ubica en el extremo derecho el texto interactivo con la **fecha y hora en vivo**. Al posar el cursor sobre este elemento, el sistema despliega la indicación *"Iniciar sesión"*. Al hacer clic, se abre la pantalla de inicio de sesión (`/login`).
 
 > **[Captura: Acceso a Inicio de Sesión Sitio Web]**
 > *Texto de fecha y hora en el banner GOV.CO del Sitio Web Público para acceder al inicio de sesión.*
@@ -649,14 +649,14 @@ El portal web público no requiere inicio de sesión para la consulta de informa
 
 *(Nota: Si el funcionario ingresa por primera vez con su contraseña temporal provisoria, el sistema reconocerá la configuración inicial pendiente y lo guiará de manera obligatoria por el flujo detallado en [Primer Ingreso desde el Sitio Web Público](#primer-ingreso-desde-el-sitio-web-público)).*
 
-1. **Ubicación del enlace de acceso (Banner GOV.CO):** En la parte superior de la página, dentro de la franja azul oficial de GOV.CO, se ubica el texto interactivo de **fecha y hora** en la esquina derecha. Al colocar el cursor sobre el texto, se muestra la etiqueta flotante *"Iniciar sesión"*. Al hacer clic sobre dicho elemento, la pantalla se traslada directamente al formulario de ingreso (`/login`).
-   *(Aclaración: El botón verde "Intranet" en el menú principal no es para iniciar sesión en la web, sino que conduce a la plataforma privada).*
+1. **Ubicación del enlace de acceso (Banner GOV.CO):** En la parte superior de la página, dentro de la barra superior oficial de GOV.CO, se ubica el texto interactivo de **fecha y hora** en la esquina derecha. Al colocar el cursor sobre el texto, se muestra la etiqueta flotante *"Iniciar sesión"*. Al hacer clic sobre dicho elemento, la pantalla se traslada directamente al formulario de ingreso (`/login`).
+   *(Aclaración: El botón "Intranet" en el menú principal no es para iniciar sesión en la web, sino que conduce a la plataforma privada).*
 
 > **[Captura: Enlace de Inicio de Sesión en Banner GOV.CO]**
-> *Texto de fecha y hora en el extremo derecho de la franja azul GOV.CO para acceder al inicio de sesión.*
+> *Texto de fecha y hora en el extremo derecho de la barra GOV.CO para acceder al inicio de sesión.*
 >
 > **[Captura: Enlace de Inicio de Sesión en Banner GOV.CO (Móvil)]**
-> *Texto de fecha y hora en la franja azul GOV.CO para acceder al inicio de sesión. (Móvil).*
+> *Texto de fecha y hora en la barra GOV.CO para acceder al inicio de sesión. (Móvil).*
 
 2. **Visualización de la pantalla de inicio de sesión:** La pantalla presenta una tarjeta central de acceso limpia con el logotipo institucional del observatorio, dos casillas de texto para ingresar los datos y el enlace interactivo **"*(¿Olvidaste tu contraseña?)*"** en la parte inferior para restablecer la clave en caso de pérdida.
 
@@ -676,7 +676,7 @@ El portal web público no requiere inicio de sesión para la consulta de informa
 > **[Captura: Credenciales Definitivas en Sitio Web (Móvil)]**
 > *Casillas de correo corporativo y contraseña diligenciadas en el formulario de inicio de sesión. (Móvil).*
 
-4. **Clic en el botón Ingresar:** Se hace clic sobre el botón principal **"Ingresar"** (destacado con el color verde corporativo). La interfaz muestra una breve animación de carga mientras procesa el acceso hacia el portal.
+4. **Clic en el botón Ingresar:** Se hace clic sobre el botón principal **"Ingresar"**. La interfaz muestra una breve animación de carga mientras procesa el acceso hacia el portal.
 
 > **[Captura: Ejecución de Inicio de Sesión Sitio Web]**
 > *Botón 'Ingresar' activo para iniciar la sesión en el Sitio Web.*
@@ -726,9 +726,10 @@ La Intranet es una plataforma privada e independiente del Sitio Web Público, co
 > **[Captura: Pantalla Bloqueo Intranet (Móvil)]**
 > *Pantalla de acceso de la Intranet con formulario de ingreso centrado en dispositivos móviles.*
 
-3. **Diligenciamiento de credenciales en el formulario:** En el formulario de la Intranet, se completan ambas casillas:
-   * En la casilla **"Correo electrónico"**, se escribe la cuenta corporativa `@sena.edu.co`.
-   * En la casilla **"Contraseña"**, se digita la clave personal definitiva.
+3. **Diligenciamiento de credenciales en el formulario:** En la tarjeta de acceso, se completan los campos requeridos:
+   * **Correo SENA:** Se digita la cuenta corporativa institucional (`@sena.edu.co`).
+   * **Contraseña:** Se ingresa la clave personal definitiva. El usuario puede utilizar el botón interactivo con el **ícono de ojo** situado a la derecha del campo para alternar la visualización de los caracteres y verificar la escritura correcta.
+   * En la base del formulario, el sistema informa que el ingreso implica la aceptación de la política de privacidad y protección de datos.
 
 > **[Captura: Credenciales Definitivas Intranet]**
 > *Casillas de correo corporativo y contraseña diligenciadas en el formulario de la Intranet.*
@@ -736,7 +737,7 @@ La Intranet es una plataforma privada e independiente del Sitio Web Público, co
 > **[Captura: Credenciales Definitivas Intranet (Móvil)]**
 > *Casillas de correo corporativo y contraseña diligenciadas en el formulario de la Intranet. (Móvil).*
 
-4. **Clic en el botón de ingreso:** Se presiona el botón verde principal **"Ingresar"** (o "Acceder a la Intranet") para enviar los datos e iniciar la comprobación.
+4. **Clic en el botón Ingresar:** Se presiona el botón principal **"Ingresar"**. La interfaz muestra el estado interactivo *"Ingresando..."* mientras procesa la comprobación de identidad y valida los permisos asignados en el servidor.
 
 > **[Captura: Botón Acceder Intranet]**
 > *Acción de hacer clic sobre el botón 'Ingresar' en el formulario de la Intranet.*
@@ -746,7 +747,7 @@ La Intranet es una plataforma privada e independiente del Sitio Web Público, co
 
 5. **Comprobación de permiso de ingreso a la Intranet:** La plataforma confirma que la cuenta tenga habilitado el acceso a este entorno privado:
    * Si el funcionario tiene permiso concedido, el formulario da paso directo al interior de la Intranet.
-   * Si la cuenta no cuenta con permiso asignado para ingresar a este portal, la pantalla muestra una alerta roja destacada: *"No tienes permisos para ingresar a la intranet."* (ver [Sección 3.5.1.2: Validaciones en el Inicio de Sesión Habitual](#3512-validaciones-en-el-inicio-de-sesión-habitual)).
+   * Si la cuenta no cuenta con permiso asignado para ingresar a este portal, la pantalla muestra una alerta destacada: *"No tienes permisos para ingresar a la intranet."* (ver [Sección 3.5.1.2: Validaciones en el Inicio de Sesión Habitual](#3512-validaciones-en-el-inicio-de-sesión-habitual)).
    * Si la cuenta se encuentra desactivada o suspendida preventivamente por el Administrador (o vencida por caducidad), el sistema interrumpe el acceso y muestra la alerta: *"Cuenta inactiva o suspendida"*.
 
 > **[Captura: Verificación de Autorización en Intranet]**
@@ -768,7 +769,7 @@ La Intranet es una plataforma privada e independiente del Sitio Web Público, co
 
 #### 3.4.1.3. Procedimiento de Recuperación de Contraseña
 
-*(Nota: Para consultar las posibles situaciones de error, validaciones de campos y alertas del sistema en este proceso, consulte la [Sección 3.5.1.3: Validaciones en la Recuperación de Contraseña](#3513-validaciones-en-la-recuperación-de-contraseña)).*
+*(Nota: Para consultar las posibles situaciones de error, validaciones de campos y alertas del sistema en este proceso, remitirse a la [Sección 3.5.1.3: Validaciones en la Recuperación de Contraseña](#3513-validaciones-en-la-recuperación-de-contraseña)).*
 
 *(Aclaración — Cuenta única y sincronización de credenciales: Las cuentas de usuario son compartidas entre el Sitio Web y la Intranet; los permisos asignados determinan a qué entorno se puede ingresar. Restablecer la contraseña desde cualquiera de los dos portales actualiza de inmediato el acceso en ambos).*
 
@@ -787,7 +788,7 @@ Este procedimiento permite a cualquier funcionario restablecer de forma autónom
 > **[Captura: Enlace de Recuperación en Sitio Web (Móvil)]**
 > *Enlace '¿Olvidaste tu contraseña?' en el formulario de inicio de sesión del Sitio Web. (Móvil).*
 
-2. **Ingreso del correo corporativo institucional:** En la pantalla con el título *"¿Olvidaste tu contraseña?"*, se digita la cuenta de correo corporativo institucional (`@sena.edu.co`) en la casilla **"Correo SENA"** y se presiona el botón azul oscuro **"Continuar"**. El sistema valida el formato del correo y comprueba si la cuenta dispone de preguntas de seguridad configuradas.
+2. **Ingreso del correo corporativo institucional:** En la pantalla con el título *"¿Olvidaste tu contraseña?"*, se digita la cuenta de correo corporativo institucional (`@sena.edu.co`) en la casilla **"Correo SENA"** y se presiona el botón principal **"Continuar"**. El sistema valida el formato del correo y comprueba si la cuenta dispone de preguntas de seguridad configuradas.
 
 > **[Captura: Ingreso de Correo de Recuperación Sitio Web]**
 > *Casilla de correo institucional diligenciada y botón 'Continuar' en el formulario de recuperación del Sitio Web.*
@@ -811,7 +812,7 @@ Este procedimiento permite a cualquier funcionario restablecer de forma autónom
 > **[Captura: Restablecimiento de Contraseña Sitio Web (Móvil)]**
 > *Formulario de ingreso de nueva contraseña con validador de requisitos de seguridad en el Sitio Web. (Móvil).*
 
-5. **Confirmación de actualización y retorno al acceso:** La interfaz presenta la pantalla de confirmación exitosa con la insignia verde y el mensaje: *"Tu contraseña se actualizó. Ya puedes entrar al panel con tu nueva contraseña."*. Al presionar el botón **"Ir a iniciar sesión"**, el sistema redirige automáticamente a la pantalla de acceso (`/login`) para ingresar con la nueva clave (ver [Sección 3.4.1.2: Flujo de Inicio de Sesión Habitual](#3412-flujo-de-inicio-de-sesión-habitual)).
+5. **Confirmación de actualización y retorno al acceso:** La interfaz presenta la pantalla de confirmación exitosa con la insignia de confirmación y el mensaje: *"Tu contraseña se actualizó. Ya puedes entrar al panel con tu nueva contraseña."*. Al presionar el botón **"Ir a iniciar sesión"**, el sistema redirige automáticamente a la pantalla de acceso (`/login`) para ingresar con la nueva clave (ver [Sección 3.4.1.2: Flujo de Inicio de Sesión Habitual](#3412-flujo-de-inicio-de-sesión-habitual)).
 
 > **[Captura: Confirmación de Clave Actualizada Sitio Web]**
 > *Pantalla de éxito indicando la actualización correcta de la contraseña y botón de retorno al inicio de sesión.*
@@ -829,7 +830,7 @@ Este procedimiento permite a cualquier funcionario restablecer de forma autónom
 > **[Captura: Enlace de Recuperación en Intranet (Móvil)]**
 > *Enlace '¿Olvidaste tu contraseña?' en la tarjeta de acceso de la Intranet. (Móvil).*
 
-2. **Ingreso del correo corporativo en la Intranet:** En la pantalla dividida de la Intranet, dentro de la tarjeta derecha con el título *"Ingresa tu correo SENA"*, se escribe la cuenta institucional `@sena.edu.co` en la casilla correspondiente y se pulsa el botón verde principal **"Comenzar"** para iniciar la comprobación de identidad.
+2. **Ingreso del correo corporativo en la Intranet:** En la pantalla dividida de la Intranet, dentro de la tarjeta derecha con el título *"Ingresa tu correo SENA"*, se escribe la cuenta institucional `@sena.edu.co` en la casilla correspondiente y se pulsa el botón principal **"Comenzar"** para iniciar la comprobación de identidad.
 
 > **[Captura: Ingreso de Correo de Recuperación Intranet]**
 > *Tarjeta de recuperación de la Intranet con el campo de correo institucional y botón 'Comenzar'.*
@@ -845,7 +846,7 @@ Este procedimiento permite a cualquier funcionario restablecer de forma autónom
 > **[Captura: Preguntas de Seguridad en Recuperación Intranet (Móvil)]**
 > *Asistente guiado de preguntas de seguridad con indicador de avance en la Intranet. (Móvil).*
 
-4. **Establecimiento de la nueva contraseña en la Intranet:** Superada la validación de identidad, la pantalla de restablecimiento (`/reset-password`) despliega las casillas para ingresar la nueva clave y certificar la coincidencia en la casilla de confirmación. Al verificarse los requisitos de seguridad, se hace clic sobre el botón verde **"Guardar contraseña"**.
+4. **Establecimiento de la nueva contraseña en la Intranet:** Superada la validación de identidad, la pantalla de restablecimiento (`/reset-password`) despliega las casillas para ingresar la nueva clave y certificar la coincidencia en la casilla de confirmación. Al verificarse los requisitos de seguridad, se hace clic sobre el botón **"Guardar contraseña"**.
 
 > **[Captura: Restablecimiento de Contraseña Intranet]**
 > *Campos de nueva clave y confirmación con panel de directivas de seguridad en la Intranet.*
@@ -869,7 +870,7 @@ El sistema provee mecanismos específicos de salida segura según el entorno en 
 
 ##### Cierre de Sesión desde el Panel Administrativo
 
-1. **Acceso al menú desplegable de perfil:** En el entorno de escritorio, haz clic sobre el bloque con tu nombre y foto de perfil ubicado en la parte inferior del menú lateral izquierdo. Si navegas desde un dispositivo móvil, presiona tu foto de perfil ubicada en la barra de navegación (Navbar).
+1. **Acceso al menú desplegable de perfil:** En el entorno de escritorio, se hace clic sobre el bloque con el nombre y foto de perfil del funcionario ubicado en la parte inferior del menú lateral izquierdo. Si se navega desde un dispositivo móvil, se presiona la foto de perfil ubicada en la barra de navegación (Navbar).
 
 > **[Captura: Menú de perfil en Panel Admin]**
 > *Menú desplegable de perfil en el menú lateral del Panel Administrativo.*
@@ -877,7 +878,7 @@ El sistema provee mecanismos específicos de salida segura según el entorno en 
 > **[Captura: Menú de perfil en Panel Admin (Móvil)]**
 > *Menú desplegable de perfil en la barra superior del Panel Administrativo. (Móvil).*
 
-2. **Ejecución y cierre del sistema:** En el submenú contextual que se despliega en pantalla, selecciona la opción **"Cerrar sesión"**. El sistema finalizará tu sesión de inmediato de forma segura y te redirigirá automáticamente a la pantalla de acceso principal (`/login`).
+2. **Ejecución y cierre del sistema:** En el submenú contextual que se despliega en pantalla, se selecciona la opción **"Cerrar sesión"**. El sistema finaliza la sesión de inmediato de forma segura y redirige automáticamente al usuario a la pantalla de acceso principal (`/login`).
 
 > **[Captura: Opción de cerrar sesión en Panel Admin]**
 > *Opción explícita de 'Cerrar sesión' en escritorio.*
@@ -887,15 +888,15 @@ El sistema provee mecanismos específicos de salida segura según el entorno en 
 
 ##### Cierre de Sesión desde el Sitio Web Público
 
-1. **Ubicación del control de salida flotante:** Mientras tengas una sesión con privilegios activa, observarás en la esquina inferior derecha de la pantalla un menú flotante principal de herramientas (botón de lápiz). Justo debajo de este, se encuentra permanentemente visible un **botón rojo flotante** con el ícono de una puerta y una flecha.
+1. **Ubicación del control de salida flotante:** Mientras exista una sesión activa con privilegios, en la esquina inferior derecha de la pantalla se visualiza un menú flotante principal de herramientas (botón de lápiz). Justo debajo de este, se encuentra permanentemente visible un **botón flotante de salida** con el ícono de una puerta y una flecha.
 
 > **[Captura: Botón Flotante de Salida en Sitio Web]**
-> *Botón rojo flotante "Salir de modo edición" situado justo debajo del botón de herramientas principal en el Sitio Web Público.*
+> *Botón flotante "Salir de modo edición" situado justo debajo del botón de herramientas principal en el Sitio Web Público.*
 >
 > **[Captura: Botón Flotante de Salida en Sitio Web (Móvil)]**
-> *Botón rojo flotante "Salir de modo edición" situado justo debajo del botón de herramientas principal en el Sitio Web Público. (Móvil).*
+> *Botón flotante "Salir de modo edición" situado justo debajo del botón de herramientas principal en el Sitio Web Público. (Móvil).*
 
-2. **Cierre de sesión y retorno a vista pública:** Al pasar el cursor sobre este botón rojo, verás el texto indicativo **"Salir de modo edición"**. Haz clic o pulsa sobre él. Inmediatamente, la sesión terminará, los botones flotantes de edición desaparecerán de la pantalla y la página se recargará, regresando a la vista de solo lectura que tiene cualquier ciudadano.
+2. **Cierre de sesión y retorno a vista pública:** Al pasar el cursor sobre este control de salida, se visualiza el texto indicativo **"Salir de modo edición"**. Al hacer clic o pulsar sobre él, la sesión finaliza de inmediato, los botones flotantes de edición desaparecen de la pantalla y la página se recarga, regresando a la vista de solo lectura pública.
 
 > **[Captura: Vista estándar del Sitio Web (Sesión cerrada)]**
 > *Pantalla recargada tras salir, mostrando la interfaz libre de controles flotantes de edición.*
@@ -905,7 +906,7 @@ El sistema provee mecanismos específicos de salida segura según el entorno en 
 
 ##### Cierre de Sesión desde la Intranet
 
-1. **Ubicación del botón de salida segura:** Dirígete a la barra superior (Navbar) fija de la Intranet. En esta cabecera, sin importar si estás en escritorio o en celular, encontrarás un botón directo identificado con el ícono de salir (puerta y flecha) acompañado del texto **"Cerrar sesión"**.
+1. **Ubicación del botón de salida segura:** En la barra superior (Navbar) fija de la Intranet, tanto en computadores de escritorio como en dispositivos móviles, se encuentra un botón directo identificado con el ícono de salir (puerta y flecha) acompañado del texto **"Cerrar sesión"**.
 
 > **[Captura: Ubicación del botón en Intranet]**
 > *Botón de salida segura ('Cerrar sesión') en el extremo derecho de la barra superior de la Intranet.*
@@ -913,7 +914,7 @@ El sistema provee mecanismos específicos de salida segura según el entorno en 
 > **[Captura: Ubicación del botón en Intranet (Móvil)]**
 > *Botón de salida segura ('Cerrar sesión') en la cabecera compacta móvil de la Intranet. (Móvil).*
 
-2. **Ejecución y retorno al acceso:** Haz clic o pulsa sobre dicho botón de **"Cerrar sesión"**. La plataforma procesará tu desconexión de manera segura invalidando tus credenciales activas y te trasladará automáticamente de regreso a la tarjeta de inicio de sesión de la Intranet (`/login`).
+2. **Ejecución y retorno al acceso:** Al hacer clic o pulsar sobre dicho botón de **"Cerrar sesión"**, la plataforma procesa la desconexión de manera segura invalidando las credenciales activas y traslada al usuario automáticamente de regreso a la tarjeta de inicio de sesión de la Intranet (`/login`).
 
 > **[Captura: Retorno al Login de Intranet tras cerrar sesión]**
 > *Pantalla de acceso de la Intranet (`/login`) desplegada automáticamente tras el cierre de la sesión.*
@@ -928,10 +929,13 @@ El sistema provee mecanismos específicos de salida segura según el entorno en 
 El Panel Administrativo (`/admin`) constituye el centro de gobierno y control integral del Observatorio Laboral y Ocupacional (OLO), de acceso exclusivo para el rol **Administrador**. A continuación se detalla su estructura visual y se consolidan en una única secuencia operativa todos los procedimientos de gestión de usuarios, roles, aprobación editorial, seguridad, auditoría, respaldos y actualizaciones masivas de la plataforma.
 
 #### 3.4.2.1. Estructura Visual, Navegación y Menú de Perfil
+
+*(Nota: Para consultar las posibles situaciones de error, incidencias de visualización en la barra lateral o móvil, persistencia de temas y alertas de interfaz asociadas a este entorno con sus respectivas capturas de pantalla, remitirse a la [Sección 3.5.1.5: Validaciones y Solución de Problemas en la Estructura Visual, Navegación y Menú de Perfil](#3515-validaciones-y-solución-de-problemas-en-la-estructura-visual-navegación-y-menú-de-perfil)).*
+
 El entorno del Panel Administrativo está diseñado para facilitar la gestión eficiente del observatorio tanto en estaciones de trabajo como en dispositivos móviles:
 
 1. **Barra Lateral de Navegación (Sidebar):**
-   El menú principal en computadores de escritorio se ubica de forma fija en el lateral izquierdo de la pantalla. Aquí encontrarás:
+   El menú principal en computadores de escritorio se ubica de forma fija en el lateral izquierdo de la pantalla. En esta sección se encuentran:
    * **Retorno al Sitio Web:** En la parte superior, el logotipo institucional del OLO funciona como enlace permanente para regresar a la vista pública del portal en cualquier momento.
    * **Navegación Modular:** Enlaces de acceso directo al **Dashboard**, grupo colapsable **Accesos** (con los submenús *Usuarios* y *Roles y Permisos*), **Auditoría**, **Respaldos** y **Actualizaciones** (Carga Masiva).
    * **Controles auxiliares:** En la parte inferior de la lista de módulos se ubican el botón de **Búsqueda rápida** (que abre el modal interactivo de localización) y el alternador de tema (**Modo claro / Modo oscuro**).
@@ -940,20 +944,20 @@ El entorno del Panel Administrativo está diseñado para facilitar la gestión e
 > *Barra lateral izquierda con todas sus opciones modulares y controles auxiliares desplegados.*
 
 2. **Indicador Numérico de Revisiones:**
-   Dentro del mismo menú de navegación, el ítem **"Páginas en revisión"** integra un contador rojo dinámico. Este elemento visual muestra en tiempo real la cantidad de borradores que los editores han remitido y que están a la espera de tu aprobación.
+   Dentro del mismo menú de navegación, el ítem **"Páginas en revisión"** integra un contador numérico dinámico. Este elemento visual muestra en tiempo real la cantidad de borradores que los editores han remitido y que están a la espera de aprobación por parte del Administrador.
 
 > **[Captura: Indicador Numérico de Revisiones]**
-> *Detalle del ítem "Páginas en revisión" dentro del menú lateral, resaltando el contador numérico en color rojo.*
+> *Detalle del ítem "Páginas en revisión" dentro del menú lateral, resaltando el contador numérico de borradores pendientes.*
 
 3. **Menú de Perfil y Salida Segura:**
-   En la base inferior de la barra lateral de escritorio se encuentra tu bloque de usuario. Al hacer clic sobre tu nombre o foto de perfil, se despliega un menú contextual emergente que ofrece acceso directo a **"Mi perfil"** (para la gestión de tus datos personales, foto y cambio de clave) y la opción de salida segura **"Cerrar sesión"**.
+   En la base inferior de la barra lateral de escritorio se encuentra el bloque de usuario del funcionario. Al hacer clic sobre su nombre o foto de perfil, se despliega un menú contextual emergente que ofrece acceso directo a **"Mi perfil"** (para la gestión de sus datos personales, foto y cambio de clave) y la opción de salida segura **"Cerrar sesión"**.
 
 > **[Captura: Menú de Perfil y Salida Segura]**
 > *Menú contextual emergente desplegado tras hacer clic sobre la foto de perfil en la base del menú lateral.*
 
 4. **Adaptabilidad en Dispositivos Móviles:**
    Al acceder desde un celular o tablet, la disposición estructural cambia automáticamente para optimizar el espacio de lectura:
-   * **Barra superior (Navbar):** Reúne en la parte alta la lupa de búsqueda, el alternador de tema, la campana interactiva de notificaciones y el botón interactivo con tu foto de perfil (que despliega tu menú personal).
+   * **Barra superior (Navbar):** Reúne en la parte alta la lupa de búsqueda, el alternador de tema, la campana interactiva de notificaciones y el botón interactivo con la foto de perfil (que despliega el menú de usuario).
    * **Barra inferior fija (Bottom Navigation):** Mueve los iconos de acceso a los módulos principales hacia la parte baja de la pantalla, permitiendo navegar entre secciones usando los pulgares sin obstruir el área de la tabla de datos.
 
 > **[Captura: Interfaz Adaptativa en Dispositivos Móviles]**
@@ -962,38 +966,65 @@ El entorno del Panel Administrativo está diseñado para facilitar la gestión e
 ---
 
 #### 3.4.2.2. Buscador Global del Panel Administrativo
-El Panel Administrativo cuenta con un buscador global diseñado para navegar entre los diferentes módulos, secciones y configuraciones del sistema utilizando palabras clave. Este buscador no filtra datos de tablas individuales, sino que funciona como un acceso directo hacia cualquier área de la interfaz administrativa.
+El Panel Administrativo cuenta con un buscador global diseñado para navegar ágilmente entre los diferentes módulos, secciones, herramientas de gestión y configuraciones del sistema utilizando palabras clave. Este buscador no filtra registros dentro de tablas individuales, sino que opera como un localizador y acceso directo integral hacia cualquier área de la plataforma administrativa o páginas institucionales asociadas.
 
-1. **Apertura del buscador:** En escritorio, haz clic en la opción **"Buscar"** ubicada en la parte inferior del menú lateral izquierdo. Si estás en un dispositivo móvil, presiona el ícono de la **lupa** ubicado en la barra superior. Al hacerlo, se desplegará una capa a pantalla completa con un campo de búsqueda grande y centrado, ocultando el panel de fondo para evitar distracciones.
+*(Nota: Para consultar las posibles situaciones de error, validaciones de búsqueda y solución de problemas al interactuar con el buscador global o utilizar el botón Devolver, remitirse a la [Sección 3.5.1.6: Validaciones y Solución de Problemas en el Buscador Global del Panel Administrativo](#3516-validaciones-y-solución-de-problemas-en-el-buscador-global-del-panel-administrativo)).*
+
+1. **Apertura del buscador y despliegue de la capa interactiva:**
+   * **En computadores de escritorio:** Se hace clic sobre la opción **"Buscar"** (identificada con el ícono de lupa) ubicada en la parte inferior de la barra lateral izquierda, inmediatamente encima del menú de usuario y junto al alternador de tema.
+   * **En dispositivos móviles o tabletas:** Se pulsa el botón con el ícono de **lupa** situado en el extremo derecho de la barra de navegación superior (*Navbar*).
+   * Al activarse, la plataforma despliega una capa a pantalla completa que cubre la totalidad de la interfaz e inhabilita temporalmente el desplazamiento del panel subyacente para concentrar la atención en la búsqueda.
+   * El cursor se ubica de forma automática dentro del campo de texto central con el mensaje de guía *"Buscar en el panel…"*. En este estado inicial, la lista de destinos permanece oculta para evitar sobrecarga visual antes de escribir.
 
 > **[Captura: Apertura del Buscador Global]**
-> *Pantalla completa del buscador global con el campo de texto centrado y listo para escribir.*
+> *Capa a pantalla completa del buscador global con el campo de texto centrado y listo para escribir.*
 >
 > **[Captura: Apertura del Buscador Global (Móvil)]**
-> *Pantalla completa del buscador global con el campo de texto centrado y listo para escribir. (Móvil).*
+> *Capa a pantalla completa del buscador global con el campo de texto centrado y listo para escribir. (Móvil).*
 
-2. **Ingreso del término de búsqueda:** Escribe lo que necesitas encontrar. El buscador cuenta con un índice inteligente que comprende descripciones y sinónimos. Por ejemplo: si escribes *"bitácora"* te sugerirá el módulo de Auditoría, y si escribes *"backups"* te sugerirá el módulo de Respaldos. Las coincidencias aparecerán dinámicamente debajo del campo a medida que tecleas.
+2. **Botón Devolver (Cancelación y retorno inmediato sin navegación):**
+   * En caso de que el funcionario decida no continuar con la búsqueda o requiera regresar a la sección del panel en la que se encontraba previamente, la interfaz dispone en la esquina superior derecha de un **botón Devolver**, identificado visualmente con el ícono de una **flecha orientada hacia la izquierda**.
+   * Al pulsar este botón Devolver, la capa se cierra de manera instantánea y restituye al usuario exactamente en la vista, formulario o tabla donde estaba trabajando, restaurando el desplazamiento normal del panel sin recargar la página ni perder datos.
+
+> **[Captura: Botón Devolver del Buscador Global]**
+> *Ubicación del botón Devolver (flecha de retorno) en la esquina superior derecha de la capa interactiva.*
+>
+> **[Captura: Botón Devolver del Buscador Global (Móvil)]**
+> *Ubicación del botón Devolver en la parte superior derecha de la pantalla del buscador. (Móvil).*
+
+3. **Ingreso del término y localización inteligente por sinónimos:**
+   * El usuario introduce la palabra clave, término técnico o concepto deseado. El motor de búsqueda procesa la consulta en tiempo real, normalizando el texto de manera automática (eliminando tildes, mayúsculas y espacios sobrantes) y exigiendo que todas las palabras ingresadas coincidan para ofrecer resultados precisos.
+   * La localización no se limita a los nombres exactos de las pantallas, sino que evalúa las descripciones funcionales, categorías y un índice integral de **sinónimos institucionales**, ejempl:
+     * Al escribir términos como *"bitácora"*, *"historial"*, *"trazabilidad"* o *"log"*, el sistema presenta el módulo de **Auditoría**.
+     * Al escribir *"cuentas"*, *"personas"*, *"permisos"* o *"roles"*, sugiere los módulos de **Usuarios** y **Roles y Permisos**.
+     
+   * **Notificación de ausencia de coincidencias:** Si el texto ingresado no guarda relación con ningún destino disponible, el sistema despliega el mensaje de aviso: *"No hay nada en el panel que coincida con «[término]»."*.
+   * **Despliegue de resultados estructurados:** Cuando existen coincidencias, aparece un listado vertical desplazable bajo el campo central, donde cada resultado exhibe de forma diferenciada:
+     * El **título** oficial del destino en tipografía destacada.
+     * La **descripción** sintética de la función o propósito del área.
+     * La **etiqueta de grupo** que clasifica el módulo (*Panel*, *Gestión*, *Contenido*, *Sitio Público*, *Intranet* o *Cuenta*).
 
 > **[Captura: Búsqueda Activa por Sinónimos]**
-> *Resultados dinámicos agrupados por categoría que coinciden con el sinónimo ingresado.*
+> *Resultados dinámicos estructurados con título, descripción y categoría que coinciden con el término ingresado.*
 >
 > **[Captura: Búsqueda Activa por Sinónimos (Móvil)]**
-> *Resultados dinámicos agrupados por categoría que coinciden con el sinónimo ingresado. (Móvil).*
+> *Resultados dinámicos estructurados con título, descripción y categoría que coinciden con el término ingresado. (Móvil).*
 
-3. **Selección rápida del destino:** Haz clic sobre el resultado que estabas buscando para que la plataforma te traslade directamente a ese módulo. Para mayor agilidad si estás en un teclado de computadora, simplemente presiona la tecla **`Enter`** para navegar de inmediato al primer resultado de la lista, o pulsa **`Esc`** para cerrar el buscador sin hacer nada.
+4. **Selección rápida del destino (Interacción por ratón o teclado):**
+   * **Selección con ratón o toque táctil:** El usuario hace clic o presiona sobre la tarjeta del resultado elegido. La plataforma cierra la capa interactiva y traslada la navegación de manera directa hacia la sección seleccionada.
 
 > **[Captura: Navegación hacia el Resultado]**
-> *Transición automática hacia el módulo de destino elegido en la lista de resultados.*
+> *Transición automática hacia el módulo de destino seleccionado en la lista de resultados.*
 >
 > **[Captura: Navegación hacia el Resultado (Móvil)]**
-> *Transición automática hacia el módulo de destino elegido en la lista de resultados. (Móvil).*
+> *Transición automática hacia el módulo de destino seleccionado en la lista de resultados. (Móvil).*
 
 ---
 
 #### 3.4.2.3. Tablero Principal y Métricas de Gestión (Dashboard)
 Al ingresar al Panel Administrativo (`/admin/dashboard`), el Administrador visualiza el resumen consolidado de la actividad del observatorio:
 
-1. **Tarjeta de Páginas Publicadas:** Muestra el total de páginas activas en el observatorio. Puedes hacer clic en las categorías (Sitio Web o Intranet) para desplegar la lista exacta de las páginas publicadas en cada entorno; al hacer clic sobre el título de una página específica en esa lista, el sistema te navegará directamente a su vista pública para consultarla.
+1. **Tarjeta de Páginas Publicadas:** Muestra el total de páginas activas en el observatorio. El usuario puede hacer clic en las categorías (Sitio Web o Intranet) para desplegar la lista exacta de las páginas publicadas en cada entorno; al hacer clic sobre el título de una página específica en esa lista, el sistema navega directamente a su vista pública para consultarla.
 
 > **[Captura: Tarjeta de Páginas Publicadas]**
 > *Tarjeta de páginas publicadas mostrando el acordeón desplegado con enlaces directos a cada página.*
@@ -1001,9 +1032,9 @@ Al ingresar al Panel Administrativo (`/admin/dashboard`), el Administrador visua
 > **[Captura: Tarjeta de Páginas Publicadas (Móvil)]**
 > *Tarjeta de páginas publicadas mostrando el acordeón desplegado con enlaces directos a cada página. (Móvil).*
 
-2. **Gráficos Interactivos de Visitas y Usuarios:** Las tarjetas adyacentes no solo muestran totales numéricos, sino que incluyen visualizaciones con las que puedes interactuar pasando el cursor del mouse (o tocando en la pantalla móvil):
+2. **Gráficos Interactivos de Visitas y Usuarios:** Las tarjetas adyacentes no solo muestran totales numéricos, sino que incluyen visualizaciones con las que se puede interactuar pasando el cursor del mouse (o tocando en la pantalla móvil):
 
-   * **Tarjeta de Visitas:** Incluye un diagrama de área y líneas equipado con pestañas para alternar entre el tráfico del Sitio Web y la Intranet. Al posar el cursor sobre los nodos de la línea, un recuadro flotante (*tooltip*) te indicará el título exacto de la página y cuántas visitas específicas ha recibido. Adicionalmente, si haces clic en cualquier parte de la tarjeta, el gráfico se transformará en una ventana modal ampliada que te mostrará los datos de tráfico de forma mucho más extensa y detallada.
+   * **Tarjeta de Visitas:** Incluye un diagrama de área y líneas equipado con pestañas para alternar entre el tráfico del Sitio Web y la Intranet. Al posar el cursor sobre los nodos de la línea, un recuadro flotante (*tooltip*) indica el título exacto de la página y cuántas visitas específicas ha recibido. Adicionalmente, al hacer clic en cualquier parte de la tarjeta, el gráfico se amplía en una ventana modal que presenta los datos de tráfico de forma extensa y detallada.
 
 > **[Captura: Gráfico Interactivo de Visitas]**
 > *Diagrama de líneas de visitas mostrando sus cuadros de detalle al interactuar con la tarjeta.*
@@ -1017,7 +1048,7 @@ Al ingresar al Panel Administrativo (`/admin/dashboard`), el Administrador visua
 > **[Captura: Modal Ampliado de Visitas (Móvil)]**
 > *Ventana modal desplegada tras hacer clic en la tarjeta de visitas, detallando la gráfica interactiva en un tamaño mayor. (Móvil).*
 
-   * **Tarjeta de Usuarios:** Muestra un gráfico circular de colores (*pie chart*) que clasifica las cuentas según su rol asignado. Al posar el cursor sobre cada segmento coloreado, verás la cantidad exacta de usuarios agrupados en ese rol.
+   * **Tarjeta de Usuarios:** Muestra un gráfico circular (*pie chart*) que clasifica las cuentas según su rol asignado. Al posar el cursor sobre cada segmento, se visualiza la cantidad exacta de usuarios agrupados en ese rol.
 
 > **[Captura: Gráfico Circular de Usuarios]**
 > *Gráfico circular de usuarios mostrando sus cuadros de detalle al interactuar con las proporciones.*
@@ -1025,13 +1056,13 @@ Al ingresar al Panel Administrativo (`/admin/dashboard`), el Administrador visua
 > **[Captura: Gráfico Circular de Usuarios (Móvil)]**
 > *Gráfico circular de usuarios mostrando sus cuadros de detalle al interactuar con las proporciones. (Móvil).*
 
-3. **Bitácora de Actividad Reciente:** En la zona inferior del tablero, encontrarás una tabla con el registro de las acciones más recientes ejecutadas en el sistema. La tabla se compone de cuatro columnas que detallan cada evento:
+3. **Bitácora de Actividad Reciente:** En la zona inferior del tablero, se encuentra una tabla con el registro de las acciones más recientes ejecutadas en el sistema. La tabla se compone de cuatro columnas que detallan cada evento:
    * **Fecha y hora:** Indica el momento cronológico exacto en que ocurrió la operación.
    * **Usuario:** Muestra el nombre del funcionario que la ejecutó.
-   * **Acción:** Presenta una etiqueta de color que clasifica el evento (ej. *Inicio de sesión*, *Creó página*, *Eliminó rol*, *Rechazó borrador*).
+   * **Acción:** Presenta una etiqueta que clasifica el evento (ej. *Inicio de sesión*, *Creó página*, *Eliminó rol*, *Rechazó borrador*).
    * **Cambios:** Ofrece un texto breve que resume el detalle de la operación (ej. el motivo de rechazo, o los campos puntuales que se modificaron).
 
-   A diferencia de un listado estático, esta tabla cuenta con **controles de paginación** para navegar por el historial sin salir del panel, y un enlace **"Ver más"** en la cabecera que te traslada directamente al módulo completo de Auditoría (Ver [Sección 3.4.2.6: Auditoría y Bitácora de Eventos](#3426-auditoría-y-bitácora-de-eventos)).
+   A diferencia de un listado estático, esta tabla cuenta con **controles de paginación** para navegar por el historial sin salir del panel, y un enlace **"Ver más"** en la cabecera que traslada directamente al módulo completo de Auditoría (Ver [Sección 3.4.2.6: Auditoría y Bitácora de Eventos](#3426-auditoría-y-bitácora-de-eventos)).
 
 > **[Captura: Tabla de Actividad Reciente]**
 > *Vista general de la tabla de Actividad Reciente.*
@@ -1061,7 +1092,7 @@ En este apartado se gestionan las cuentas individuales de la plataforma. La inte
    * **Email:** Cuenta corporativa vinculada (`@sena.edu.co`).
    * **Rol:** El nivel de privilegios asignado en el sistema (ej. Administrador, Editor, etc.).
    * **Expiración (Opcional):** Indica si la cuenta tiene un límite de validez programado.
-   * **Estado:** Un interruptor visual que indica si la cuenta está Activa (verde) o Inactiva/Suspendida (gris).
+   * **Estado:** Un interruptor visual que indica si la cuenta está Activa o Inactiva/Suspendida.
    * **Acciones:** Botones operativos específicos para interactuar con cada fila.
 
 > **[Captura: Tabla General de Usuarios]**
@@ -1193,7 +1224,7 @@ Módulo vital para el flujo de publicación, accesible desde el menú lateral (o
 > **[Captura: Paso 4 (Móvil)]**
 > *Ventana inmersiva con página. (Móvil).*
 
-5. **Toma de decisión:** Se debe utilizar uno de los botones de acción: Botón Verde para **Aprobar** (pasa a producción), Botón Naranja para **Rechazar** (devuelve al editor con observaciones) o el Basurero para **Descartar**.
+5. **Toma de decisión:** Se debe utilizar uno de los botones de acción: **Aprobar** (pasa a producción), **Rechazar** (devuelve al editor con observaciones) o el ícono de papelera para **Descartar**.
 
 > **[Captura: Paso 5]**
 > *Uso de los botones de decisión.*
@@ -1272,7 +1303,7 @@ Tras aplicar los filtros deseados, el sistema permite exportar los registros vis
 
 ---
 
-#### 3.4.2.7. Respaldos y Restauración de Páginas (Versiones Puck)
+#### 3.4.2.7. Respaldos y Restauración de Páginas
 El módulo de **Respaldos** (`/admin/respaldos`) constituye el centro de control de versiones históricas de todas las páginas creadas y administradas desde el Editor Visual (Puck), tanto para el Sitio Web Público como para la Intranet. Su propósito es permitir al Administrador auditar el historial de publicaciones, previsualizar versiones archivadas que fueron reemplazadas y restaurar cualquiera de ellas de manera atómica a producción en caso de errores o contingencias.
 
 1. **Tabla de páginas con respaldo activo:**
@@ -1326,7 +1357,7 @@ El módulo de **Respaldos** (`/admin/respaldos`) constituye el centro de control
 > *Ventana modal de confirmación y advertencia previa para restaurar la versión archivada a producción. (Móvil).*
 
 5. **Depuración y limpieza de versiones antiguas:**
-   En la cabecera superior del módulo, el botón rojo **"Depurar"** permite al Administrador abrir el asistente de depuración para eliminar versiones históricas obsoletas o borradores antiguos que ya no sean requeridos, optimizando el rendimiento y almacenamiento de la plataforma.
+   En la cabecera superior del módulo, el botón **"Depurar"** permite al Administrador abrir el asistente de depuración para eliminar versiones históricas obsoletas o borradores antiguos que ya no sean requeridos, optimizando el rendimiento y almacenamiento de la plataforma.
 
 > **[Captura: Paso 5]**
 > *Ventana modal de depuración de versiones históricas de páginas.*
@@ -1372,7 +1403,7 @@ Módulo de procesamiento masivo, accesible desde el menú lateral (o barra infer
 > **[Captura: Paso 5 (Móvil)]**
 > *Panel de prevalidación con la lista de errores encontrados por fila. (Móvil).*
 
-6. **Confirmación y ejecución:** Con la prevalidación aprobada (0 errores), se habilitará el botón verde **"Procesar Carga"**. Al hacer clic, una barra de progreso indicará el avance del procesamiento.
+6. **Confirmación y ejecución:** Con la prevalidación aprobada (0 errores), se habilitará el botón **"Procesar Carga"**. Al hacer clic, una barra de progreso indicará el avance del procesamiento.
 
 > **[Captura: Paso 6]**
 > *Barra de progreso de la carga masiva con porcentaje de avance.*
@@ -1380,7 +1411,7 @@ Módulo de procesamiento masivo, accesible desde el menú lateral (o barra infer
 > **[Captura: Paso 6 (Móvil)]**
 > *Barra de progreso de la carga masiva con porcentaje de avance. (Móvil).*
 
-7. **Confirmación de éxito:** Al finalizar, el sistema mostrará un resumen con el número de registros **procesados**, **creados**, **actualizados** y **omitidos**. Una notificación *toast* verde confirmará que la operación fue exitosa y el evento quedará registrado en la bitácora de auditoría.
+7. **Confirmación de éxito:** Al finalizar, el sistema mostrará un resumen con el número de registros **procesados**, **creados**, **actualizados** y **omitidos**. Una notificación emergente (*toast*) confirmará que la operación fue exitosa y el evento quedará registrado en la bitácora de auditoría.
 
 > **[Captura: Paso 7]**
 > *Resumen de resultados de la carga masiva con el conteo de registros procesados, creados, actualizados y omitidos.*
@@ -1412,7 +1443,7 @@ Contiene la información de identificación del usuario dentro del sistema:
 Flujo para actualizar los datos:
 1. El usuario modifica los campos deseados en el formulario.
 2. Se debe hacer clic en el botón **"Guardar cambios"**.
-3. El sistema muestra una notificación *toast* verde confirmando la actualización exitosa de la información.
+3. El sistema muestra una notificación emergente (*toast*) confirmando la actualización exitosa de la información.
 
 ##### 3.4.2.9.2. Sección "Configuración"
 
@@ -1486,7 +1517,7 @@ Esta sección aborda el uso de la herramienta del Editor Visual, disponible para
 > **[Captura: Paso 4 (Móvil)]**
 > *Componente fijado en el lienzo central. (Móvil).*
 
-5. **Configuración de propiedades:** Se debe hacer clic sobre el componente recién colocado. El panel derecho mostrará sus campos editables (textos, colores, imágenes).
+5. **Configuración de propiedades:** Se debe hacer clic sobre el componente recién colocado. El panel derecho mostrará sus campos editables (textos, estilos y contenidos visuales).
 
 > **[Captura: Paso 5]**
 > *Panel derecho habilitado con las propiedades del componente.*
@@ -1529,7 +1560,7 @@ Esta sección complementa la Sección 3.4.3.2, cubriendo las operaciones sobre c
 ##### 3.4.3.3.2. Eliminar un Componente del Lienzo
 
 1. **Selección:** Se debe hacer clic sobre el componente que se desea retirar del lienzo.
-2. **Botón de eliminación:** En la barra de control superior del componente seleccionado, se debe hacer clic en el **ícono de basurero** (destacado en rojo).
+2. **Botón de eliminación:** En la barra de control superior del componente seleccionado, se debe hacer clic en el **ícono de basurero** para retirar el elemento.
 3. **Resultado:** El componente se retira del lienzo de manera inmediata. Esta acción puede revertirse mediante la función Deshacer (Sección 3.4.3.3.3) mientras no se guarde el borrador.
 
 > **[Captura: Eliminar Componente]**
@@ -1584,7 +1615,7 @@ La eliminación de páginas dinámicas retira de forma definitiva la página y s
 > **[Captura: Menú Flotante Eliminar Página (Móvil)]**
 > *Opción "Eliminar página" seleccionada en el menú flotante del editor visual. (Móvil).*
 
-3. **Validación automática de enlaces activos (Protección contra enlaces rotos):** El sistema escanea en tiempo real todo el portal. Si la página está vinculada en el menú de navegación principal (cabecera o pie) o referenciada en enlaces de otras páginas, el borrado se bloquea inmediatamente y el sistema arroja una alerta roja impidiendo la eliminación (ver [Sección 3.5.1.5: Prevención de enlaces rotos](#3515-prevención-de-enlaces-rotos-bloqueos-de-eliminación) y [Sección 3.5.2.3: Bloqueo al intentar eliminar páginas](#3523-bloqueo-al-intentar-eliminar-páginas)). En tal caso, el usuario debe ingresar primero a la edición de la cabecera/pie ([Sección 3.4.3.3: Gestión Avanzada en el Editor Visual](#3433-gestión-avanzada-en-el-editor-visual)) o a las páginas enlazadas para retirar dichos vínculos antes de repetir el intento.
+3. **Validación automática de enlaces activos (Protección contra enlaces rotos):** El sistema escanea en tiempo real todo el portal. Si la página está vinculada en el menú de navegación principal (cabecera o pie) o referenciada en enlaces de otras páginas, el borrado se bloquea inmediatamente y el sistema arroja una alerta de bloqueo impidiendo la eliminación (ver [Sección 3.5.1.7: Prevención de enlaces rotos](#3517-prevención-de-enlaces-rotos-bloqueos-de-eliminación) y [Sección 3.5.2.3: Bloqueo al intentar eliminar páginas](#3523-bloqueo-al-intentar-eliminar-páginas)). En tal caso, el usuario debe ingresar primero a la edición de la cabecera/pie ([Sección 3.4.3.3: Gestión Avanzada en el Editor Visual](#3433-gestión-avanzada-en-el-editor-visual)) o a las páginas enlazadas para retirar dichos vínculos antes de repetir el intento.
 
 > **[Captura: Alerta Enlaces Rotos Bloqueo]**
 > *Alerta del sistema bloqueando el borrado de la página debido a enlaces activos detectados.*
@@ -1600,7 +1631,7 @@ La eliminación de páginas dinámicas retira de forma definitiva la página y s
 > **[Captura: Modal Eliminar Página (Móvil)]**
 > *Ventana de confirmación de seguridad para la eliminación de páginas dinámicas con requisito de digitación exacta del título de la página. (Móvil).*
 
-5. **Confirmación definitiva:** Una vez digitado el título idéntico, se activará el botón de confirmación en color rojo **"Eliminar definitivamente"**. Al hacer clic, la página y sus borradores quedarán eliminados del sistema.
+5. **Confirmación definitiva:** Una vez digitado el título idéntico, se activará el botón de confirmación **"Eliminar definitivamente"**. Al hacer clic, la página y sus borradores quedarán eliminados del sistema.
 6. **Constancia en auditoría:** La página desaparece de la vista pública y del editor, pero el evento queda grabado de forma automática e inmutable en la bitácora de auditoría del sistema (Sección 3.4.2.6), conservando el usuario ejecutor, la fecha, la hora y el registro de la acción.
 
 ---
@@ -2240,10 +2271,106 @@ Al reintroducir las credenciales corporativas `@sena.edu.co` y la contraseña de
 > **[Captura: Alerta de Sesión Expirada por Inactividad en Intranet (Móvil)]**
 > *Recuadro informativo en la pantalla de bienvenida y acceso de la Intranet tras expirar la sesión. (Móvil).*
 
-#### 3.5.1.5. Prevención de enlaces rotos (Bloqueos de eliminación)
+#### 3.5.1.5. Validaciones y Solución de Problemas en la Estructura Visual, Navegación y Menú de Perfil
+
+Durante la interacción cotidiana con el entorno del Panel Administrativo (cuyo funcionamiento regular se documenta en la [Sección 3.4.2.1: Estructura Visual, Navegación y Menú de Perfil](#3421-estructura-visual-navegación-y-menú-de-perfil)), pueden presentarse situaciones de comportamiento inesperado asociadas a la resolución del monitor, configuración del navegador web, persistencia de preferencias locales o visualización adaptativa en dispositivos móviles. A continuación se detallan las principales incidencias, sus causas y las acciones correctivas correspondientes:
+
+##### 1. La barra lateral de navegación (Sidebar) no se visualiza en computadores de escritorio
+* **Situación:** El funcionario ingresa al Panel Administrativo desde un computador y la barra lateral fija izquierda no aparece visible, mostrando en su lugar la barra de navegación superior reducida o la barra inferior fija propia de teléfonos móviles.
+* **Causa técnica y operativa:** El sistema aplica un punto de quiebre responsivo automático a los 1024 píxeles de ancho. Esta situación ocurre cuando el monitor cuenta con una resolución horizontal reducida o cuando el nivel de zoom del navegador web se encuentra ampliado al 125%, 150% o más, lo que provoca que el área visible sea interpretada por la interfaz como una pantalla de tableta o teléfono móvil.
+* **Acción correctiva:**
+  1. Presionar la combinación de teclas `Ctrl + 0` (en Windows) o `Cmd + 0` (en macOS) para restablecer el nivel de zoom del navegador web al 100%.
+  2. Maximizar la ventana del navegador web para ocupar la totalidad del monitor de escritorio.
+  3. Comprobar en la configuración de pantalla del sistema operativo que la resolución del monitor esté configurada como mínimo en 1280 × 720 píxeles o superior.
+
+> **[Captura: Visualización de Interfaz Adaptativa y Menú Lateral]**
+> *Comportamiento de la barra lateral izquierda al restablecer el nivel de zoom estándar en computadores de escritorio.*
+
+##### 2. El menú contextual de perfil no se despliega o se oculta inmediatamente
+* **Situación:** Al hacer clic sobre el nombre del funcionario o su fotografía en la base de la barra lateral (en escritorio) o en el botón de perfil del navbar (en móvil), el menú flotante con las opciones *"Mi perfil"* y *"Cerrar sesión"* no se abre o desaparece de manera instantánea.
+* **Causa técnica y operativa:** 
+  1. Pulsación rápida de doble clic involuntario que abre y cierra el menú contextual consecutivamente.
+  2. Conflicto con extensiones de bloqueo de secuencias de comandos o complementos de terceros instalados en el navegador.
+  3. Expiración de la sesión en segundo plano que inhabilita temporalmente los componentes interactivos antes de ejecutar la redirección.
+* **Acción correctiva:**
+  1. Realizar un único clic pausado sobre la tarjeta de usuario en la base del menú lateral.
+  2. Recargar la página mediante la tecla `F5` para reiniciar el estado de los componentes interactivos.
+  3. En caso de persistencia, desactivar extensiones invasivas del navegador o verificar en una ventana limpia si la sesión sigue activa.
+
+> **[Captura: Menú Contextual de Perfil y Opciones de Sesión]**
+> *Menú contextual emergente desplegado correctamente en la base del menú lateral.*
+>
+> **[Captura: Menú Contextual de Perfil y Opciones de Sesión (Móvil)]**
+> *Menú contextual de usuario desplegado desde la barra superior en dispositivos móviles. (Móvil).*
+
+##### 3. El alternador de tema (Modo claro / Modo oscuro) no conserva la preferencia seleccionada
+* **Situación:** El funcionario activa el Modo Oscuro (o Modo Claro), pero al navegar hacia otro módulo administrativo o recargar la página, la apariencia regresa automáticamente al tema anterior.
+* **Causa técnica y operativa:** La preferencia visual se almacena localmente en el almacenamiento del navegador (*localStorage*). Si las directivas de seguridad del explorador bloquean las cookies o los datos de sitios locales, o si se navega en modo de incógnito estricto, el navegador descarta la preferencia al cambiar de página o cerrar la pestaña.
+* **Acción correctiva:**
+  1. Acceder a la configuración de privacidad del navegador web y asegurarse de que el almacenamiento local y las cookies estén permitidos para el dominio institucional del aplicativo.
+  2. Evitar el uso de ventanas de incógnito si se desea conservar la configuración estética de contraste de manera permanente para sesiones futuras.
+
+##### 4. La barra inferior fija en dispositivos móviles cubre botones o las últimas filas de una tabla
+* **Situación:** Al consultar tablas de datos extensas (como usuarios, auditoría o revisiones) desde un teléfono móvil o tableta, la barra inferior fija de navegación (*Bottom Navigation*) parece obstaculizar la visualización de los últimos registros o botones de paginación.
+* **Causa técnica y operativa:** Variaciones en el cálculo de la altura visible del navegador móvil provocadas por barras dinámicas del explorador (como la barra de direcciones de Chrome o Safari móvil), las cuales alteran la reserva de espacio inferior antes de que el usuario finalice el desplazamiento.
+* **Acción correctiva:**
+  1. Desplazar el contenido hacia arriba con el dedo hasta el final de la pantalla; la plataforma incorpora un margen de reserva inferior diseñado específicamente para asegurar que el último elemento quede completamente visible y operable por encima de la barra de botones.
+  2. Si la barra del navegador continúa interfiriendo, configurar el explorador móvil para ocultar barras de navegación durante el desplazamiento o girar el dispositivo horizontalmente para ingresar al modo apaisado (*landscape*).
+
+##### 5. Desincronización del contador de "Páginas en revisión"
+* **Situación:** El círculo rojo con el número de borradores pendientes junto al ítem "Páginas en revisión" muestra una cifra desactualizada que no concuerda con las páginas que realmente se encuentran en espera dentro del módulo.
+* **Causa técnica y operativa:** Retención de datos en la memoria caché temporal del navegador web o concurrencia operativa, generada cuando otro usuario con rol Administrador aprueba, rechaza o descarta una página simultáneamente desde otra sesión.
+* **Acción correctiva:**
+  1. Hacer clic sobre el ítem **"Páginas en revisión"** para acceder directamente a la cola de aprobación y consultar los registros reales actualizados en el servidor.
+  2. Presionar las teclas `Ctrl + F5` (o forzar recarga en el navegador) para renovar el contador numérico del menú lateral con la información más reciente de la base de datos.
+
+#### 3.5.1.6. Validaciones y Solución de Problemas en el Buscador Global del Panel Administrativo
+
+Durante el uso del buscador global del Panel Administrativo (cuyo procedimiento operativo regular se detalla en la [Sección 3.4.2.2: Buscador Global del Panel Administrativo](#3422-buscador-global-del-panel-administrativo)), pueden suscitarse incidencias operativas relacionadas con la apertura de la capa interactiva, el retorno al área de trabajo mediante el botón Devolver o la interpretación de términos sin coincidencias. A continuación se desglosan las principales situaciones, sus causas y las acciones correctivas correspondientes:
+
+##### 1. La capa a pantalla completa del buscador no se despliega
+* **Situación:** Al hacer clic sobre la opción **"Buscar"** en la parte inferior del menú lateral o pulsar el ícono de **lupa** en el encabezado móvil, la interfaz no abre la capa de búsqueda ni enfoca el campo de texto.
+* **Causa técnica y operativa:** El cursor del teclado se encuentra capturado dentro de un campo de formulario o componente con foco retenido que intercepta los eventos del mouse o teclado, o existe una ventana modal secundaria en segundo plano que bloquea la interacción.
+* **Acción correctiva:**
+  1. Presionar la tecla `Escape` (`Esc`) una vez para liberar cualquier foco retenido o cerrar posibles ventanas modales secundarias abiertas previamente.
+  2. Hacer clic directamente con el cursor del mouse sobre la opción **"Buscar"** en el menú lateral de escritorio o pulsar el ícono de **lupa** en la barra superior móvil.
+
+> **[Captura: Apertura Exitosa del Buscador Global]**
+> *Despliegue correcto de la capa interactiva a pantalla completa con el campo de texto centrado.*
+>
+> **[Captura: Apertura Exitosa del Buscador Global (Móvil)]**
+> *Despliegue correcto de la capa interactiva a pantalla completa en dispositivo móvil. (Móvil).*
+
+##### 2. Dificultad para cerrar la capa interactiva o retornar al panel (Uso del Botón Devolver)
+* **Situación:** La capa a pantalla completa se encuentra desplegada pero el funcionario desea cancelar la búsqueda y volver a su trabajo en el panel, sin identificar inicialmente el mecanismo de salida debido a que la interfaz oculta el panel de fondo.
+* **Causa técnica y operativa:** La capa del buscador está diseñada a pantalla completa opaca (para prevenir distracciones visuales e inhabilitar el desplazamiento de fondo), por lo que la salida no se realiza mediante un botón tradicional de cancelar en el pie, sino a través de un control de navegación superior.
+* **Acción correctiva:**
+  1. Hacer clic sobre el **botón Devolver** (identificado con el ícono de una **flecha orientada hacia la izquierda**) ubicado en la esquina superior derecha de la capa, a la izquierda del conmutador de tema.
+  2. Como alternativa por teclado, pulsar la tecla `Escape` (`Esc`). Ambas acciones restituyen de forma inmediata la visualización del panel administrativo exactamente en el estado en que se encontraba, sin recargar la página ni perder datos no guardados.
+
+> **[Captura: Botón Devolver y Restitución del Panel]**
+> *Ubicación del botón Devolver (flecha hacia la izquierda) y restitución inmediata del panel administrativo.*
+>
+> **[Captura: Botón Devolver y Restitución del Panel (Móvil)]**
+> *Ubicación y uso del botón Devolver en la parte superior derecha de la pantalla del buscador. (Móvil).*
+
+##### 3. Mensaje de ausencia de coincidencias ("No hay nada en el panel que coincida con...")
+* **Situación:** Al redactar un término en el campo de texto, no se muestra ningún resultado y la pantalla presenta la notificación: *"No hay nada en el panel que coincida con «[término]»."*.
+* **Causa técnica y operativa:** El motor de búsqueda evalúa que **todas** las palabras digitadas coincidan simultáneamente con los títulos, descripciones, categorías o sinónimos registrados en el índice. Si se escribe una frase excesivamente larga, nombres de registros específicos de una tabla (ej. el nombre propio de un funcionario o el código de una ocupación) en lugar de un módulo del sistema, o palabras con errores ortográficos graves en la raíz léxica, el filtro no encontrará correspondencias.
+* **Acción correctiva:**
+  1. Simplificar la búsqueda utilizando una o dos palabras clave representativas del área o función requerida (por ejemplo: *"usuarios"*, *"roles"*, *"bitácora"*, *"backups"*, *"cola"*, *"contraseña"*, *"actualizaciones"*).
+  2. Si se requiere buscar un registro específico dentro de una tabla (por ejemplo, buscar un usuario por su nombre o cédula), utilizar el botón Devolver para ingresar al módulo respectivo (**"Usuarios"**) y emplear los filtros propios de dicha tabla de datos.
+
+> **[Captura: Mensaje de Sin Coincidencias en el Buscador]**
+> *Visualización de la alerta informativa cuando el término ingresado no registra coincidencias en el índice.*
+>
+> **[Captura: Mensaje de Sin Coincidencias en el Buscador (Móvil)]**
+> *Visualización de la alerta informativa de ausencia de coincidencias en dispositivo móvil. (Móvil).*
+
+#### 3.5.1.7. Prevención de enlaces rotos (Bloqueos de eliminación)
 Si un administrador o editor intenta eliminar una página hacia la cual apuntan otros botones en el portal, el sistema arrojará una alerta roja de bloqueo. No se permitirá la eliminación hasta que los enlaces entrantes sean retirados.
 
-#### 3.5.1.6. Errores habituales y solución
+#### 3.5.1.8. Errores habituales y solución
 
 **Situación:** Alerta de "Correo inválido" o dominio no corporativo.
 **Posible causa:** Intento de inicio de sesión con un correo fuera del dominio `@sena.edu.co`.
@@ -2257,7 +2384,7 @@ Si un administrador o editor intenta eliminar una página hacia la cual apuntan 
 **Posible causa:** (1) El rol asignado no cuenta con autorización para acceder a esa URL o ejecutar esa acción. (2) Cuentas con perfil de Director o Subdirector (u orientadas a la Intranet) que intentan ingresar a través del Sitio Web Público. (3) Cuentas de usuario que no tienen permisos asignados para ingresar al entorno privado de la Intranet.
 **Acción recomendada:** Si se trata de un directivo que intentó ingresar desde el portal público, debe ingresar a través del portal de la Intranet (ver [Sección 3.4.1.2: Flujo de Inicio de Sesión Habitual](#3412-flujo-de-inicio-de-sesión-habitual)). Si se trata de un funcionario que requiere permisos para el portal web o para la Intranet, solicitar al Administrador del sistema la asignación de permisos correspondiente.
 
-#### 3.5.1.7. Mensajes de Error Adicionales
+#### 3.5.1.9. Mensajes de Error Adicionales
 
 **Situación:** Error al cargar el archivo en la Carga Masiva ("Formato de archivo no válido").
 **Posible causa:** El archivo cargado no es un `.xlsx` válido, está corrupto o fue generado con una versión de Excel incompatible.
