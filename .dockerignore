@@ -13,3 +13,12 @@ packages/*/dist
 **/.agent
 **/openspec
 *.md
+# Lo subido por la gente vive en el volumen de la API, nunca en una imagen: dentro del
+# `public/` de un frontend Next lo serviría sin pasar por nadie. Las carpetas de antes
+# pueden seguir en el equipo con copias. El Excel heredado sí entra: es del repositorio
+# y lo copia el Dockerfile de la API.
+filesystem
+archivos_*.tar.gz
+**/public/storage
+4000-api-backend/uploads/cargas-datos/*
+!4000-api-backend/uploads/cargas-datos/fuentes-futuras-de-empleo.xlsx

@@ -6,6 +6,7 @@ import {
 } from '@/features/paginas';
 import {
   obtenerSesion,
+  puedeEditarPaginas,
 } from '@/shared/lib/sesion';
 import { VigilanteSesion } from '@/shared/lib/inactividad';
 
@@ -29,12 +30,16 @@ export default async function SeccionesLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const sesion = await obtenerSesion();
   const esSuperadmin = (sesion?.rol ?? "").trim().toLowerCase() === "superadmin";
+  // Quien edita (superadmin, administrador, editor y sus roles hijos) cierra sesión
+  // desde el botón flotante; dirección y subdirección, que no lo tienen, desde la barra.
+  const cerrarSesionEnFlotante = await puedeEditarPaginas();
 
   return (
-    <MarcoSecciones>
+    <MarcoSecciones cerrarSesionEnFlotante={cerrarSesionEnFlotante}>
       {children}
       <PaginasFabSpeedDial
         esSuperadmin={esSuperadmin}
+        conCerrarSesion={cerrarSesionEnFlotante}
       />
       <RastreadorVisitas ambito="intranet" />
       {/* Cubre las cinco secciones de una vez. El editor y la vista previa cuelgan

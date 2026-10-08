@@ -13,11 +13,16 @@ import { pedirPermisosDeLaSesion } from '../services/secciones.service';
 export interface PaginasFabSpeedDialProps {
   esSuperadmin?: boolean;
   permisosActivos?: string[];
+  /** Este botón es el «Cerrar sesión» de quien edita: la barra de arriba no lo lleva
+   *  para ellos (`MarcoSecciones`). Con esto se pinta aunque en la sección actual no
+   *  haya nada que editar, solo con el botón rojo. */
+  conCerrarSesion?: boolean;
 }
 
 export function PaginasFabSpeedDial({
   esSuperadmin = false,
   permisosActivos: permisosIniciales = [],
+  conCerrarSesion = false,
 }: PaginasFabSpeedDialProps) {
   const rutaActual = usePathname() ?? '/inicio';
   const slug = slugDeRutaPublica(rutaActual);
@@ -148,8 +153,9 @@ export function PaginasFabSpeedDial({
   // Durante SSR y primera hidratación en cliente no se pinta para evitar mismatch de hidratación.
   if (!montado) return null;
 
-  // Si no tiene permisos para ninguna acción, no se pinta nada
-  if (!tieneAlgunaAccion) return null;
+  // Sin acciones en esta sección no se pinta nada, salvo que este sea su único
+  // «Cerrar sesión»: entonces queda el botón rojo solo, sin el lápiz.
+  if (!tieneAlgunaAccion && !conCerrarSesion) return null;
 
   return (
     <>
@@ -307,64 +313,66 @@ export function PaginasFabSpeedDial({
           )}
         </div>
 
-        {/* Botón Principal (Trigger FAB fijo abajo) */}
-        <div className="fab-speed-dial__item">
-          <span className="fab-speed-dial__tooltip" role="tooltip">
-            {abierto ? 'Cerrar opciones' : 'Opciones de edición'}
-          </span>
-          <button
-            ref={triggerRef}
-            type="button"
-            onClick={alternarMenu}
-            className={`fab-speed-dial__trigger ${
-              abierto ? 'fab-speed-dial__trigger--activo' : ''
-            }`}
-            aria-haspopup="menu"
-            aria-expanded={abierto}
-            aria-label={abierto ? 'Cerrar menú de acciones' : 'Abrir menú de acciones'}
-          >
-            <span className="fab-speed-dial__icono-wrapper">
-              {abierto ? (
-                <svg
-                  className="fab-speed-dial__icono"
-                  viewBox="0 0 24 24"
-                  width={22}
-                  height={22}
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2.2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              ) : (
-                <svg
-                  className="fab-speed-dial__icono"
-                  viewBox="0 0 24 24"
-                  width={20}
-                  height={20}
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                  <path d="m15 5 4 4" />
-                </svg>
-              )}
+        {/* Botón Principal (Trigger FAB fijo abajo). Sin acciones no hay menú que abrir. */}
+        {tieneAlgunaAccion && (
+          <div className="fab-speed-dial__item">
+            <span className="fab-speed-dial__tooltip" role="tooltip">
+              {abierto ? 'Cerrar opciones' : 'Opciones de edición'}
             </span>
-          </button>
-        </div>
+            <button
+              ref={triggerRef}
+              type="button"
+              onClick={alternarMenu}
+              className={`fab-speed-dial__trigger ${
+                abierto ? 'fab-speed-dial__trigger--activo' : ''
+              }`}
+              aria-haspopup="menu"
+              aria-expanded={abierto}
+              aria-label={abierto ? 'Cerrar menú de acciones' : 'Abrir menú de acciones'}
+            >
+              <span className="fab-speed-dial__icono-wrapper">
+                {abierto ? (
+                  <svg
+                    className="fab-speed-dial__icono"
+                    viewBox="0 0 24 24"
+                    width={22}
+                    height={22}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2.2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                ) : (
+                  <svg
+                    className="fab-speed-dial__icono"
+                    viewBox="0 0 24 24"
+                    width={20}
+                    height={20}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                    <path d="m15 5 4 4" />
+                  </svg>
+                )}
+              </span>
+            </button>
+          </div>
+        )}
 
-        {/* Salir del modo edición: siempre a la vista, debajo del lápiz */}
+        {/* Cerrar sesión: siempre a la vista, debajo del lápiz */}
         <div className="fab-speed-dial__item fab-speed-dial__item--salir">
           <span className="fab-speed-dial__tooltip" role="tooltip">
-            Salir de modo edición
+            Cerrar sesión
           </span>
           <button
             type="button"
@@ -374,7 +382,7 @@ export function PaginasFabSpeedDial({
             }}
             disabled={saliendo}
             className="fab-speed-dial__btn fab-speed-dial__btn--salir"
-            aria-label="Salir de modo edición"
+            aria-label="Cerrar sesión"
           >
             <svg
               viewBox="0 0 24 24"

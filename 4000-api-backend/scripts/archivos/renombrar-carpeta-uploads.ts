@@ -17,17 +17,17 @@ import fs from 'fs';
 import path from 'path';
 import sequelize from '../../src/config/database';
 import { Pagina, PaginaVersion } from '../../src/infrastructure/db/models';
-// De ahí sale la carpeta de cada app: el nombre vive en un solo lugar.
+// De ahí sale la carpeta de cada ámbito en el filesystem: vive en un solo lugar.
 import { resolverDirectorioStorage } from '../../src/infrastructure/storage/backup-uploads.service';
 
 type Ambito = 'sitio' | 'intranet';
 
-/** La carpeta `uploads/` del frontal de ese ámbito. */
+/** La carpeta `uploads/` de ese ámbito en el filesystem. */
 function dirUploads(ambito: Ambito): string {
   return path.join(resolverDirectorioStorage(ambito), 'uploads');
 }
 
-/** La carpeta `backup/` del frontal de ese ámbito. */
+/** La carpeta `backup/` de ese ámbito en el filesystem. */
 function dirBackupRaiz(ambito: Ambito): string {
   return path.join(resolverDirectorioStorage(ambito), 'backup');
 }

@@ -130,28 +130,45 @@ const nextConfig: NextConfig = {
         destination: `${API_URL}/api/:path*`,
       },
       /**
-       * `uploads` y `backup` viven físicamente en `public/storage/` (unificados ahí
-       * para no desparramar carpetas de almacenamiento en la raíz de `public`), pero
-       * la URL pública sigue siendo la de siempre: `/uploads/...` y `/backup/...`.
-       * Así el contenido ya publicado (que guarda esas rutas literales en la BD) no
-       * necesita ninguna migración.
+       * Los adjuntos de las páginas no viven en este proyecto: los guarda y los sirve la
+       * API, desde su filesystem (`3-seguridad-del-proyecto.md` §S1), y para servir
+       * los de la intranet exige sesión. Aquí solo se reenvían, con las URL públicas de
+       * siempre (`/uploads/...`, `/backup/...`, lo que el contenido guarda en la BD) y la
+       * cookie de sesión, que el reenvío pasa tal cual. La subida del editor sigue siendo
+       * `POST /api/upload`.
+       *
+       * En el servidor nginx los manda directo a la API sin pasar por aquí
+       * (`nginx.servidor.conf`); esto cubre `npm run dev` y cualquier acceso directo al
+       * contenedor.
        */
       {
         source: "/uploads/:path*",
-        destination: "/storage/uploads/:path*",
+        destination: `${API_URL}/api/archivos/intranet/uploads/:path*`,
       },
       {
         source: "/backup/:path*",
-        destination: "/storage/backup/:path*",
+        destination: `${API_URL}/api/archivos/intranet/backup/:path*`,
       },
       /**
-       * Retrocompatibilidad transparente: si un navegador o vista previa solicita
-       * una ruta histórica /backend/..., Next.js la sirve directamente desde el
-       * backup real.
+       * Retrocompatibilidad: rutas históricas `/backend/...` que aún pida un navegador o
+       * una vista previa. Son el backup.
        */
       {
         source: "/backend/:path*",
-        destination: "/storage/backup/:path*",
+        destination: `${API_URL}/api/archivos/intranet/backup/:path*`,
+      },
+      /**
+       * Y `/storage/uploads/...`, la ruta física de antes, que quedó escrita en algunos
+       * valores por defecto de bloques (Publicaciones) y en el contenido guardado con
+       * ellos. La API solo sirve lo que cuelgue de `uploads/` o `backup/`.
+       */
+      {
+        source: "/storage/:path*",
+        destination: `${API_URL}/api/archivos/intranet/:path*`,
+      },
+      {
+        source: "/api/upload",
+        destination: `${API_URL}/api/archivos/intranet`,
       },
     ];
   },

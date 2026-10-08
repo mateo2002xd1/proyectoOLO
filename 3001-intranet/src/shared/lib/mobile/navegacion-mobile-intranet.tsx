@@ -69,7 +69,8 @@ interface NavegacionMobileIntranetProps {
  * Navegación mobile de la intranet: el mismo menú que la barra de arriba (el de la
  * plantilla, editable en Puck), con el logo de OLO en el centro como «Inicio» y
  * «Buscar» al final. Si el menú crece, lo que no cabe va a «Más». «Cerrar sesión»
- * no va aquí: en el móvil está arriba a la derecha (`intranet-topbar.tsx`).
+ * no va aquí: en el móvil está arriba a la derecha (`intranet-topbar.tsx`), o en el
+ * botón flotante para quien edita.
  */
 export function NavegacionMobileIntranet({ menuItems, fondo, onBuscar }: NavegacionMobileIntranetProps) {
   const pathname = usePathname() ?? '';

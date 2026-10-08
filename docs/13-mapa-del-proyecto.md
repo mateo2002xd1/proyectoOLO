@@ -14,9 +14,9 @@
 
 | | Carpetas | Features | Rutas de Next | Endpoints | Librerías |
 |---|--:|--:|--:|--:|--:|
-| `3000-sitio-web` | 47 | 3 | 55 | — | 33 |
-| `3001-intranet` | 33 | 2 | 13 | — | 27 |
-| `4000-api-backend` | 33 | — | — | 87 | 42 |
+| `3000-sitio-web` | 46 | 3 | 53 | — | 33 |
+| `3001-intranet` | 31 | 2 | 11 | — | 27 |
+| `4000-api-backend` | 34 | — | — | 91 | 42 |
 
 Paquetes compartidos: 7 · migraciones: 40 · modelos: 23.
 
@@ -38,7 +38,7 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
 
 3000-sitio-web/                                sitio público (ISR) y panel administrativo (Next.js)
 ├── data_temporal/                             ⚠ sin descripción
-├── public/                                    estáticos: imágenes, logos, PWA y `storage/` con lo subido
+├── public/                                    estáticos: imágenes, logos y PWA
 │   └── assets/
 └── src/                                       código del sitio
     ├── app/                                   solo enrutamiento: `(public)`, `(auth)`, `admin`, `editor`, `preview`, `api`
@@ -47,8 +47,7 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
     │   ├── admin/
     │   ├── api/
     │   ├── editor/
-    │   ├── preview/
-    │   └── storage/
+    │   └── preview/
     ├── config/                                catálogo de bloques del editor (`puck.config.tsx`)
     ├── features/                              un dominio por carpeta
     │   ├── administracion/                    el panel: usuarios, roles, auditoría, respaldos, cargas
@@ -86,16 +85,14 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
     └── style/                                 `globals.css` y los tokens de Tailwind
 
 3001-intranet/                                 intranet de directores y subdirectores, 100 % protegida (Next.js)
-├── public/                                    estáticos: imágenes, íconos de la PWA y `storage/` con lo subido
+├── public/                                    estáticos: imágenes e íconos de la PWA
 │   └── assets/
 └── src/                                       código de la intranet
     ├── app/                                   solo enrutamiento: `(secciones)` (comodín Puck), `(auth)`, `editor`, `preview`
     │   ├── (auth)/
     │   ├── (secciones)/
-    │   ├── api/
     │   ├── editor/
-    │   ├── preview/
-    │   └── storage/
+    │   └── preview/
     ├── config/                                catálogo de bloques del editor de la intranet
     ├── features/                              un dominio por carpeta
     │   ├── login/                             pantallas del flujo de acceso
@@ -139,7 +136,7 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
     │   │   ├── migrations/
     │   │   └── models/
     │   ├── redis/                             conexión, colas BullMQ e invalidación de caché
-    │   └── storage/                           respaldo y restauración de los archivos de una página
+    │   └── storage/                           el filesystem de lo subido, fuera del código, y el respaldo de los archivos de cada página
     ├── middlewares/                           sesión, permisos, Zod, límites de tasa, caché y errores
     ├── policies/                              quién puede hacer qué, por acción
     ├── repositories/                          única capa que consulta los modelos Sequelize
@@ -148,6 +145,7 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
     ├── types/                                 tipos globales (extensión del `Request` de Express)
     ├── use-cases/                             la lógica de negocio: una acción, una función
     │   ├── alertas-inversion/                 ⚠ sin descripción
+    │   ├── archivos/                          subida de los adjuntos de las páginas (RF-02)
     │   ├── auditoria/                         consulta de la bitácora de cambios (RF-07)
     │   ├── auth/                              login, primer ingreso y preguntas de seguridad
     │   ├── observatorio/                      cargas de Excel del Observatorio y tendencia ocupacional
@@ -246,7 +244,6 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `/api/security-questions/recover-password` | manejador |  | `api/security-questions/recover-password/route.ts` |
 | `/api/security-questions/user-questions` | manejador |  | `api/security-questions/user-questions/route.ts` |
 | `/api/security-questions/verify` | manejador |  | `api/security-questions/verify/route.ts` |
-| `/api/upload` | manejador |  | `api/upload/route.ts` |
 | `/api/users` | manejador |  | `api/users/route.ts` |
 | `/api/users/[id]` | manejador |  | `api/users/[id]/route.ts` |
 | `/clasificacion` | página | `(public)` | `(public)/clasificacion/page.tsx` |
@@ -264,7 +261,6 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `/reset-password` | página | `(auth)` | `(auth)/reset-password/page.tsx` |
 | `/reset-success` | página | `(auth)` | `(auth)/reset-success/page.tsx` |
 | `/security-questions` | página | `(auth)` | `(auth)/security-questions/page.tsx` |
-| `/storage/[...ruta]` | manejador |  | `storage/[...ruta]/route.ts` |
 
 ### 3001-intranet
 
@@ -272,7 +268,6 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 |---|---|---|---|
 | `/` | página |  | `page.tsx` |
 | `/[...puckPath]` | página | `(secciones)` | `(secciones)/[...puckPath]/page.tsx` |
-| `/api/upload` | manejador |  | `api/upload/route.ts` |
 | `/editor/[slug]` | página |  | `editor/[slug]/page.tsx` |
 | `/first-login` | página | `(auth)` | `(auth)/first-login/page.tsx` |
 | `/login` | página | `(auth)` | `(auth)/login/page.tsx` |
@@ -282,7 +277,6 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `/reset-password` | página | `(auth)` | `(auth)/reset-password/page.tsx` |
 | `/reset-success` | página | `(auth)` | `(auth)/reset-success/page.tsx` |
 | `/security-questions` | página | `(auth)` | `(auth)/security-questions/page.tsx` |
-| `/storage/[...ruta]` | manejador |  | `storage/[...ruta]/route.ts` |
 
 ## Endpoints de la API
 
@@ -313,6 +307,15 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | GET | `/api/alertas-inversion/proyectos` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos') | AlertasInversionController.listarProyectos |
 | DELETE | `/api/alertas-inversion/proyectos` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos') | AlertasInversionController.eliminarTodosLosProyectos |
 | DELETE | `/api/alertas-inversion/proyectos/:id` | requireAuth, requierePermisoAlertasInversion('puedeActualizarDatos') | AlertasInversionController.eliminarProyecto |
+
+### `routes/archivos.routes.ts`
+
+| Método | Ruta | Protección y validación | Manejador |
+|---|---|---|---|
+| POST | `/api/archivos/sitio` | 🔓 ...guardiasDeSubida | ArchivosController.subir('sitio') |
+| POST | `/api/archivos/intranet` | 🔓 ...guardiasDeSubida | ArchivosController.subir('intranet') |
+| GET | `/api/archivos/sitio/*ruta` | 🔓 — | ArchivosController.servir('sitio') |
+| GET | `/api/archivos/intranet/*ruta` | requireAuth, requierePermisoPagina('puedeVer') | ArchivosController.servir('intranet') |
 
 ### `routes/audit.routes.ts`
 

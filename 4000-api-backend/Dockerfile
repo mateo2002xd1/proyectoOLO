@@ -81,6 +81,13 @@ RUN for pkg in /app/node_modules/@olo/*; do \
 
 COPY --from=builder /app/dist ./dist
 
+# El Excel heredado de "Fuentes futuras de empleo" es un archivo del repositorio, no algo
+# que alguien subio: lo lee `consultar-fuentes-futuras-actual.usecase.ts` mientras no haya
+# ninguna carga, y se va de aqui cuando se borre esa constante. Lo subido vive en el
+# volumen `/filesystem`, y los formatos de carga los monta el compose (solo lectura)
+# para poder cambiarlos sin reconstruir.
+COPY 4000-api-backend/uploads/cargas-datos/fuentes-futuras-de-empleo.xlsx ./uploads/cargas-datos/
+
 EXPOSE 4000
 
 CMD ["node", "dist/server.js"]

@@ -268,7 +268,7 @@ en `borrador` y se crea con `INSERT` sin `ON CONFLICT`; la opción «reemplazar�
 **Eliminar una carga de tendencia** (`DELETE /api/observatorio/tendencia-ocupacional/cargas/:id`,
 papelera del historial): `cargas_datos` + `cargas_datos_ocupacionales` son la trazabilidad de
 cada año y periodo, así que borrar es explícito y confirmado. Se van la fila, su reporte y el Excel
-de `uploads/cargas-datos/` —salvo que otra carga lo use: los archivos se deduplican por contenido—.
+de `cargas-datos/` del filesystem —salvo que otra carga lo use: los archivos se deduplican por contenido—.
 Si la carga es la **vigente** de su celda, se borra también el corte con sus indicadores (CASCADE);
 sin eso quedarían datos sin la carga que los trajo. Una reemplazada o fallida no toca los datos.
 Corre con el candado de la celda sin esperarlo (409 si una carga está guardando en ella), y el

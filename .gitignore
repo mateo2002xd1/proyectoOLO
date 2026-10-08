@@ -32,24 +32,24 @@ yarn-error.log*
 # El esquema de antes de las migraciones (`migrations/_obsoletas/script.sql`) salió del
 # repositorio el 2026-09-26; si hace falta consultarlo, está en el historial de git.
 
-# ── Cargas de datos subidas desde el panel ─────────────────────────────────────
-# Cada carga de "Actualizaciones" guarda su Excel en uploads/cargas-datos/ con un
-# nombre UUID. Son datos de cada máquina, no código: si una fila de `archivos` apunta a
-# un Excel que aquí no está, `guardar-excel-de-carga.ts` lo vuelve a escribir al
-# subirlo de nuevo. Los que quedaron sin fila (una carga borrada desde otra máquina) los
-# lista `npm run cargas:limpiar-huerfanos`.
+# ── Archivos subidos (adjuntos de páginas y Excel de cargas) ───────────────────
+# Desde el 2026-10-06 viven en `filesystem/` (en el servidor, el volumen
+# olo-app_filesystem), y solo la API los toca: ver
+# 4000-api-backend/src/infrastructure/storage/filesystem.ts. Son datos de cada
+# máquina, no código. Lo mismo los respaldos que deja `deploy.sh backup`.
+/filesystem/
+/archivos_*.tar.gz
+
+# Las carpetas donde vivían antes. Se quedan ignoradas mientras quede alguna copia
+# en algún equipo; `npm run dev` y `deploy.sh migrar-archivos` las copian al
+# filesystem.
 #
-# El rescatado es el respaldo de "Fuentes futuras de empleo" mientras no haya ninguna carga
-# suya; desde el 03-10-2026 ese Excel se sube desde el panel, así que esta excepción se va
-# cuando esté cargado en todos los ambientes (ver consultar-fuentes-futuras-actual.usecase.ts).
+# El Excel rescatado es el respaldo de "Fuentes futuras de empleo" mientras no haya
+# ninguna carga suya: es del repositorio, no algo subido, y la imagen de la API lo trae.
+# Esta excepción se va cuando esté cargado en todos los ambientes (ver
+# consultar-fuentes-futuras-actual.usecase.ts).
 4000-api-backend/uploads/cargas-datos/*
 !4000-api-backend/uploads/cargas-datos/fuentes-futuras-de-empleo.xlsx
-
-# ── Adjuntos de páginas (imágenes, PDF, Excel subidos desde el editor) ─────────
-# `uploads/` es lo servido hoy, `backup/{paginaId}/` la última versión archivada. A
-# diferencia de arriba, aquí no hay tabla que reescriba el archivo si falta: son datos
-# de cada máquina y de cada prueba, no código. Los crea solo `backup-uploads.service.ts`
-# (fs.mkdirSync recursivo) la primera vez que alguien sube algo.
 3000-sitio-web/public/storage/uploads/*
 3000-sitio-web/public/storage/backup/*
 3001-intranet/public/storage/uploads/*

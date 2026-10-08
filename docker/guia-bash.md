@@ -26,10 +26,10 @@ te suena, está aquí.
 |---|---|---|
 | **Imagen** | El programa ya preparado y empaquetado (la API, el sitio, la intranet), listo para arrancar. Se crea con `build`. | Un molde. |
 | **Contenedor** | Una imagen funcionando. Si lo borras y lo vuelves a crear, sale igual que el molde: lo que tenía dentro se pierde. | La pieza que sale del molde. |
-| **Volumen** | Un disco que Docker guarda aparte del contenedor. La base de datos vive en uno (`pg18_data`), por eso sobrevive aunque el contenedor se borre. | Un disco externo enchufado al contenedor. |
-| **Carpeta montada** | Una carpeta de tu Windows que el contenedor ve como suya. Aquí se usan para los archivos subidos: los ves en el Explorador y sobreviven a todo. | Una carpeta compartida en red. |
+| **Volumen** | Un disco que Docker guarda aparte del contenedor. La base de datos vive en uno (`pg18_data`) y los archivos que sube la gente en otro (`olo-app_filesystem`): por eso sobreviven aunque el contenedor se borre o se reconstruya. | Un disco externo enchufado al contenedor. |
+| **Carpeta montada** | Una carpeta de tu Windows que el contenedor ve como suya. Aquí solo se usan para lo que viene con el repositorio: la configuración de nginx y los formatos de ejemplo de las cargas. | Una carpeta compartida en red. |
 | **Docker Compose** | La lista de contenedores del proyecto, cómo se conectan y qué necesita cada uno. `deploy.sh` la usa por ti. | El plano del edificio. |
-| **nginx** | Recibe todas las visitas y las reparte: las páginas al sitio o a la intranet, y lo que empieza por `/api-backend` a la API. | La recepción del edificio. |
+| **nginx** | Recibe todas las visitas y las reparte: las páginas al sitio o a la intranet, y lo que empieza por `/api-backend` y los archivos subidos (`/uploads/...`) a la API. | La recepción del edificio. |
 | **Túnel (devtunnel)** | Un programa de Microsoft que crea una dirección pública `https://…devtunnels.ms` y la conecta con tu equipo, sin abrir puertos en el router. | Un puente desde internet hasta la recepción. |
 | **Puerto** | El número de puerta por el que se entra a un programa. nginx tiene dos: **8080** (sitio) y **8081** (intranet). Las apps usan 3000, 3001 y 4000, pero solo dentro de Docker. | El número de una puerta. |
 | **Migraciones** | Los pasos que crean y actualizan las tablas de la base de datos. Corren solos al arrancar. | Los planos de la base. |
@@ -44,7 +44,8 @@ Internet                          Tu servidor (Windows + Docker Desktop)
 https://olo-8080.….devtunnels.ms ─┐
                                   ├─ devtunnel ─► nginx :8080 ─► sitio-web  (3000) ─┐
 https://olo-8081.….devtunnels.ms ─┘              nginx :8081 ─► intranet   (3001) ─┼─► api (4000) ─► db (Postgres 18)
-                                                 /api-backend ────────────────────►─┘            └─► redis
+                                                 /api-backend, /uploads ──────────►─┘            ├─► redis
+                                                                                                 └─► archivos (volumen olo-app_filesystem)
 ```
 
 ---
@@ -200,8 +201,12 @@ Pide confirmación (`s`) y hace, en orden:
 
 Lo que en el origen decía *quién* hizo algo (`creado_por`, `publicado_por`, `revisor_id`,
 `subido_por`…) queda vacío, porque esas personas no existen aquí. Los **archivos** (imágenes,
-PDF, Excel) no van en la base: vienen con el repositorio en `3000-sitio-web/public/storage`,
-`3001-intranet/public/storage` y `4000-api-backend/uploads`.
+PDF, Excel) no van en la base: viven en el volumen `olo-app_filesystem` (ver «Los
+archivos subidos»). Algunos de la intranet vienen con el repositorio; pásalos al volumen:
+
+```bash
+./docker/deploy.sh migrar-archivos
+```
 
 Después, crea la primera cuenta:
 
@@ -282,8 +287,9 @@ Antes de A5, en la carpeta donde corre el proyecto viejo:
    (`database` es el nombre del contenedor de la base en la versión vieja: compruébalo con
    `docker ps`.)
 2. **Copia las carpetas de archivos** que se hayan subido en el servidor viejo, cada una
-   encima de la suya en `C:\OLO` (acepta combinar carpetas). Si el viejo es de antes del
-   2026-09-25, las carpetas tienen otro nombre:
+   encima de la suya en `C:\OLO` (acepta combinar carpetas). Desde ahí las pasa al volumen
+   `./docker/deploy.sh migrar-archivos`, en A6. Si el viejo es de antes del 2026-09-25,
+   las carpetas tienen otro nombre:
 
    | En el servidor viejo | En `C:\OLO` |
    |---|---|
@@ -334,10 +340,60 @@ En Git Bash, desde `C:\OLO`:
    cp -rn api-backend/uploads/.      4000-api-backend/uploads/
    ```
 
-4. **Reconstruye y arranca:** `./docker/deploy.sh build` y después `./docker/deploy.sh start`.
+4. **Reconstruye y arranca:** sigue «Una sola vez: los archivos pasan al volumen» desde su
+   paso 3: las carpetas nuevas de arriba son las que ese paso copia al volumen.
 5. **Comprueba** con A8, y abre una página que tenga una imagen subida antes de la
    actualización. Si se ve, borra las carpetas viejas `sitio-web`, `intranet` y
    `api-backend`. Git ya las ignora, así que no vuelven a aparecer.
+
+---
+
+## Una sola vez: los archivos pasan al volumen (y Redis guarda su AOF)
+
+Desde el 2026-10-06 lo que sube la gente ya no vive en carpetas del repositorio sino en el
+volumen `olo-app_filesystem`, y solo la API lo toca (ver «Los archivos subidos»). La
+misma actualización enciende el AOF de Redis (`--appendonly yes`), que anota cada escritura
+y así no pierde las cargas en cola ni los contadores de intentos de login si el equipo se
+apaga de golpe.
+
+Las dos cosas necesitan un paso antes de `start`. Sin él, la API arrancaría con el volumen
+vacío y Redis también vacío: un Redis que arranca con AOF y todavía no tiene el archivo AOF
+no lee el que tenía, empieza de cero.
+
+En Git Bash, desde `C:\OLO`:
+
+1. **Trae el código nuevo:** `git pull`.
+2. **Respalda la base:** `./docker/deploy.sh backup`. Los archivos todavía están en las
+   carpetas del repositorio, y el paso 5 copia sin tocarlas: ellas mismas son el respaldo.
+3. **Reconstruye:** `./docker/deploy.sh build`. Lo que está corriendo sigue funcionando
+   mientras tanto.
+4. **Activa el AOF de Redis en caliente**, para que escriba su archivo con lo que tiene
+   ahora:
+
+   ```bash
+   CLAVE=$(sed -n 's/^REDIS_PASSWORD=//p' .env | tr -d '\r')
+   docker exec redis redis-cli --no-auth-warning -a "$CLAVE" CONFIG SET appendonly yes
+   docker exec redis redis-cli --no-auth-warning -a "$CLAVE" INFO persistence | grep -E 'aof_enabled|aof_rewrite_in_progress|aof_last_bgrewrite_status'
+   ```
+
+   Repite la última línea hasta ver `aof_rewrite_in_progress:0` y
+   `aof_last_bgrewrite_status:ok` (con estos datos tarda menos de un segundo).
+5. **Copia los archivos al volumen:** `./docker/deploy.sh migrar-archivos`. Al final dice
+   cuántos hay en cada carpeta.
+6. **Arranca:** `./docker/deploy.sh start`. Es `start` y no `restart`: `restart` reinicia
+   los contenedores que ya existen, sin aplicar el compose nuevo.
+7. **Repite `./docker/deploy.sh migrar-archivos`.** Recoge lo que alguien haya subido entre
+   el paso 5 y el 6; lo que ya está en el volumen no lo toca.
+8. **Comprueba:**
+   - A8, y una página del sitio y otra de la intranet con imágenes o PDF de antes.
+   - `docker exec redis redis-cli --no-auth-warning -a "$CLAVE" INFO persistence | grep aof_enabled`
+     dice `aof_enabled:1`.
+
+Las carpetas de antes (`3000-sitio-web\public\storage`, `3001-intranet\public\storage`,
+`4000-api-backend\uploads\cargas-datos`) ya no se usan, y las imágenes de Docker no las
+incluyen. Guárdalas hasta haber comprobado todo; después se pueden vaciar desde el
+Explorador. Si luego `git status` muestra archivos borrados, eran de los que vienen con el
+repositorio: devuélvelos con `git checkout -- <carpeta>`.
 
 ---
 
@@ -350,22 +406,170 @@ Recuerda: en cada ventana nueva de Git Bash, primero `cd /c/OLO`.
 | Ver si todo está arriba | `./docker/deploy.sh status` |
 | Ver qué está pasando (Ctrl+C para salir) | `./docker/deploy.sh logs` |
 | Ver los mensajes de un solo servicio | `docker logs -f api` (o `sitio-web`, `intranet`, `nginx`, `db`) |
-| Reiniciar contenedores existentes (sin aplicar imagenes nuevas) | `./docker/deploy.sh restart` |
+| Reiniciar contenedores existentes (sin aplicar imagenes nuevas ni cambios del compose) | `./docker/deploy.sh restart` |
 | Apagar todo | `./docker/deploy.sh stop` |
 | **Actualizar a una versión nueva del código** | `git pull` → `./docker/deploy.sh build` → `./docker/deploy.sh start` |
-| Respaldar la base | `./docker/deploy.sh backup` (deja un `.sql` en `C:\OLO`) |
-| Restaurar un respaldo | `./docker/deploy.sh restore backup_olo_db_AAAAMMDD_HHMMSS.sql` |
+| Respaldar la base y los archivos | `./docker/deploy.sh backup` (deja un `.sql` y un `.tar.gz` en `C:\OLO`) |
+| Restaurar la base | `./docker/deploy.sh restore backup_olo_db_AAAAMMDD_HHMMSS.sql` |
+| Restaurar los archivos | `./docker/deploy.sh restore-archivos archivos_AAAAMMDD_HHMMSS.tar.gz` |
+| Llevar a Docker lo subido con `npm run dev` (solo en un equipo de desarrollo) | `./docker/deploy.sh migrar-archivos` (copia `filesystem/` al volumen sin pisar nada) |
 
-**Respaldo completo = base + archivos.** `backup` solo guarda la base. Copia también, a otro
-disco, `3000-sitio-web\public\storage`, `3001-intranet\public\storage` y
-`4000-api-backend\uploads`.
+**Respaldo completo = base + archivos**, y `backup` hace los dos, con la misma fecha en el
+nombre: `backup_olo_db_<fecha>.sql` y `archivos_<fecha>.tar.gz`. Se restauran en pareja:
+una base sin sus archivos deja las páginas con imágenes y PDF rotos. Copia los dos a otro
+disco: un respaldo en el mismo equipo no sirve si falla ese equipo.
 
-> **Nunca ejecutes `git clean` ni `git reset --hard` en el servidor.** Los archivos que la
-> gente sube viven dentro de las carpetas del repositorio, y esos comandos los borran.
+> **Nunca ejecutes `git clean` ni `git reset --hard` en el servidor.** Los archivos subidos
+> ya no están en el repositorio, pero en `C:\OLO` siguen el `.env` y los respaldos, que git
+> no conoce: un `git clean` con las opciones equivocadas se los lleva.
+
+> **Nunca borres el volumen `olo-app_filesystem`** (`docker volume rm`, o «Delete» en
+> Docker Desktop → Volumes): son todos los archivos subidos. `docker compose down -v` no lo
+> toca, porque está declarado como externo, pero sí borraría el de la base.
 
 > **Si cambia la dirección del túnel** (lo borraste, caducó o usas otro nombre): actualiza
 > `SITIO_WEB_URL_PUBLICA` e `INTRANET_URL_PUBLICA` en el `.env` y ejecuta `build` y `start`.
 > Sin reconstruir, los botones y el panel seguirían apuntando a la dirección vieja.
+
+### Los archivos subidos
+
+Todo lo que sube la gente vive en el volumen `olo-app_filesystem`, que solo monta la
+API. El sitio y la intranet no tocan el disco: piden cada archivo a la API (en el sitio,
+nginx se lo manda directo; en la intranet pasa por su middleware, que exige sesión).
+
+```
+olo-app_filesystem                  (dentro de la API: /filesystem)
+├── sitio/
+│   ├── uploads/                    adjuntos de las páginas del sitio, por tipo:
+│   │   ├── img/                    JPG y PNG
+│   │   ├── pdf/
+│   │   ├── excel/
+│   │   ├── word/
+│   │   ├── presentaciones/         PowerPoint
+│   │   └── otros/
+│   └── backup/<id de página>/      lo de la última versión archivada de cada página
+├── intranet/                       lo mismo para la intranet (solo con sesión)
+│   ├── uploads/…
+│   └── backup/…
+└── cargas-datos/                   Excel de "Actualizaciones": nunca se sirven
+```
+
+- **Nombres:** cada archivo se guarda como `<uuid>.<extensión>`. El nombre original queda
+  en la página, no en el disco.
+- **Qué se puede subir:** PDF, Excel, Word, PowerPoint, JPG y PNG. Se comprueba el tipo
+  real del archivo, no la extensión. Nada de SVG ni HTML.
+- **URL:** las de siempre, `/uploads/img/<uuid>.png`. Las imágenes del sitio se guardan un
+  año en el navegador (el nombre nunca se repite); las de la intranet se comprueban en
+  cada visita.
+- **Verlos:** Docker Desktop → **Volumes** → `olo-app_filesystem` → **Browse**, o en
+  Git Bash `docker exec api sh -c 'ls -R /filesystem' | less`.
+- **Los formatos de ejemplo** de "Actualizaciones" no están aquí: vienen con el
+  repositorio en `4000-api-backend\uploads\formatos-carga` y se cambian reemplazando el
+  archivo, sin reconstruir.
+
+### Cómo se monta el volumen
+
+No hay que montarlo a mano: `deploy.sh` lo crea y Docker Compose lo conecta a la API cada
+vez que arranca la pila. Son tres piezas, y tienen que estar las tres:
+
+| Pieza | Dónde está | Qué hace |
+|---|---|---|
+| **1. El volumen existe** | `deploy.sh`, al empezar cualquier comando | Si no hay un volumen `olo-app_filesystem`, lo crea vacío (`docker volume create olo-app_filesystem`). Si ya existe, no lo toca. |
+| **2. Compose lo declara externo** | `docker-compose.servidor.yml`, al final, en `volumes:` | Le dice a Compose que el volumen ya existe y no es suyo: no lo crea, no le cambia el nombre y `down -v` no lo borra. |
+| **3. La API lo monta en `/filesystem`** | `docker-compose.servidor.yml`, servicio `api-backend` | Lo conecta dentro del contenedor en la carpeta `/filesystem`, y `FILESYSTEM_DIR` le dice a la API que guarde ahí. |
+
+Estas son las líneas del compose (ya están, no hay que escribirlas):
+
+```yaml
+services:
+  api-backend:
+    environment:
+      FILESYSTEM_DIR: /filesystem      # dónde guarda la API (pieza 3)
+    volumes:
+      - filesystem:/filesystem         # <volumen>:<carpeta dentro del contenedor> (pieza 3)
+      - ./4000-api-backend/uploads/formatos-carga:/app/uploads/formatos-carga:ro
+
+volumes:
+  filesystem:                          # el nombre que usa el compose, arriba
+    name: olo-app_filesystem           # el nombre real del volumen en Docker
+    external: true                     # ya existe y no es de Compose (pieza 2)
+```
+
+**En un servidor nuevo** el primer comando de `deploy.sh` crea el volumen vacío. Los
+archivos llegan con `./docker/deploy.sh restore-archivos archivos_<fecha>.tar.gz`, desde un
+respaldo, o con `./docker/deploy.sh migrar-archivos`, desde las carpetas de antes.
+
+**Reglas:**
+
+- **Solo la API lo monta.** No lo agregues a `sitio-web`, `intranet` ni `nginx`: lo que
+  está en el disco de un frontend se puede servir sin pasar por los permisos de la API
+  (`docs/3-seguridad-del-proyecto.md` §S1).
+- **No le cambies el nombre.** Está escrito en dos sitios: `name:` en el compose y
+  `VOLUMEN_DE_ARCHIVOS` en `deploy.sh`. Con otro nombre, la API arrancaría con un volumen
+  nuevo y vacío, y los archivos se quedarían en el viejo.
+- **No lo cambies por una carpeta de Windows** (`C:\...:/filesystem`). Con Docker Desktop,
+  cada lectura de una carpeta de Windows cruza de Windows a la máquina virtual de Docker y
+  va más lenta. Además, cualquiera puede borrar o bloquear un archivo desde el Explorador.
+- **No está en `C:`.** Vive dentro de la máquina virtual de Docker Desktop
+  (`/var/lib/docker/volumes/olo-app_filesystem/_data`). No se busca con el Explorador:
+  se ve en Docker Desktop → **Volumes**, o con los comandos de abajo.
+
+**Comprobar que está montado.** Con la pila arriba, en Git Bash:
+
+```bash
+docker volume inspect olo-app_filesystem --format '{{.Name}} {{.Mountpoint}}'
+docker inspect api --format '{{range .Mounts}}{{.Name}} -> {{.Destination}} (escritura: {{.RW}}){{"\n"}}{{end}}'
+docker exec api sh -c 'echo $FILESYSTEM_DIR; ls /filesystem; du -sh /filesystem'
+```
+
+Deberías ver:
+
+```
+olo-app_filesystem /var/lib/docker/volumes/olo-app_filesystem/_data
+olo-app_filesystem -> /filesystem (escritura: true)
+ -> /app/uploads/formatos-carga (escritura: false)
+/filesystem
+cargas-datos
+intranet
+sitio
+5.4M	/filesystem
+```
+
+La línea que empieza por ` ->`, sin nombre, es la carpeta de los formatos de ejemplo: es
+de Windows y la API la monta de solo lectura. Las carpetas `cargas-datos`, `intranet` y
+`sitio` aparecen la primera vez que se sube algo, o después de `migrar-archivos`. La
+última línea es lo que ocupa todo lo subido, así que el número cambia.
+
+Si falta la línea `olo-app_filesystem -> /filesystem`, la API está corriendo sin el
+volumen: guarda dentro del contenedor y todo lo que se suba se pierde al recrearlo. Pasa
+cuando la pila se levantó con un compose viejo, o con `restart` después de una
+actualización. `./docker/deploy.sh start` vuelve a crear el contenedor con el compose
+actual.
+
+**Abrirlo sin la API.** Con la API apagada, para mirar o sacar archivos, se monta en un
+contenedor de paso. Es lo que hacen por dentro `backup`, `restore-archivos` y
+`migrar-archivos`:
+
+```bash
+MSYS_NO_PATHCONV=1 docker run --rm --mount type=volume,source=olo-app_filesystem,target=/filesystem,readonly alpine:3 ls -R /filesystem
+```
+
+`readonly` impide borrar algo por error: ese contenedor no puede escribir. Para copiar un
+archivo del volumen a la carpeta en la que estás:
+`docker cp api:/filesystem/sitio/uploads/img/<uuid>.png .`
+
+> **Git Bash y las rutas que empiezan por `/`.** Antes de pasarle un comando a Docker,
+> Git Bash convierte toda palabra que empiece por `/` en una ruta de Windows: `/filesystem`
+> llega como `C:/Program Files/Git/filesystem`, y Docker responde `mount path must be
+> absolute` o «no existe». Por eso los comandos de esta guía meten la ruta dentro de
+> `sh -c '...'`, o empiezan con `MSYS_NO_PATHCONV=1`. En PowerShell no pasa.
+
+**En desarrollo no hay volumen.** Con `npm run dev`, `FILESYSTEM_DIR` está vacía en
+`4000-api-backend/.env`, y la API guarda en la carpeta `filesystem/` de la raíz del
+repositorio (git la ignora). Para pasar esos archivos al volumen de Docker:
+`./docker/deploy.sh migrar-archivos`. No apuntes `FILESYSTEM_DIR` a la ruta interna del
+volumen (`\\wsl.localhost\docker-desktop\...`): cambia entre versiones de Docker Desktop y
+es lenta.
 
 ---
 
@@ -402,11 +606,18 @@ Casi siempre el sitio se construyó con otras direcciones: revisa `SITIO_WEB_URL
 `INTRANET_URL_PUBLICA` y reconstruye (`build` y `start`).
 
 ### Una imagen subida no se ve
-- Comprueba que existe en `3000-sitio-web\public\storage\uploads\...` (o en la de la
-  intranet).
-- Si pasó justo después de la actualización que renombró las carpetas, falta el paso 3 de
-  «Una sola vez: la actualización que renombra las carpetas».
-- `docker logs sitio-web` muestra el error, si lo hay.
+- Comprueba que está en el volumen: `docker exec api sh -c 'ls /filesystem/sitio/uploads/img'`
+  (o `intranet/...`, o la carpeta de su tipo).
+- Comprueba que la API tiene el volumen montado (ver «Cómo se monta el volumen»).
+- Si pasó justo después de la actualización que pasó los archivos al volumen, falta
+  `./docker/deploy.sh migrar-archivos` (ver «Una sola vez: los archivos pasan al volumen»).
+- En la intranet, los archivos exigen sesión: abierto sin sesión, lleva al login.
+- `docker logs api` muestra el error, si lo hay.
+
+### `external volume "olo-app_filesystem" not found`
+Se levantó la pila con `docker compose` a mano. `deploy.sh` crea el volumen si falta;
+usa siempre `./docker/deploy.sh start`. Si de verdad hace falta crearlo a mano:
+`docker volume create olo-app_filesystem` (vacío: después, `restore-archivos`).
 
 ### Aprobar una página no cambia lo que se ve
 1. `REVALIDAR_SECRET` tiene que estar en el `.env` (lo genera `setup`).
@@ -442,11 +653,13 @@ OLO/
 │   ├── deploy.sh                    # El único comando que hace falta usar
 │   └── guia-bash.md                 # Esta guía
 ├── .env.example / .env              # Plantilla / valores reales (el .env NO se sube a git)
-├── 4000-api-backend/uploads/             # Excel de las cargas del observatorio (carpeta montada)
-├── 3000-sitio-web/public/storage/        # Archivos subidos al sitio (carpeta montada)
-├── 3001-intranet/public/storage/         # Archivos subidos a la intranet (carpeta montada)
+├── backup_*.sql / archivos_*.tar.gz # Lo que deja `deploy.sh backup` (no se sube a git)
+├── 4000-api-backend/uploads/formatos-carga/  # Formatos de ejemplo de las cargas (carpeta montada)
 └── packages/                        # Los siete paquetes @olo/* compartidos
 ```
+
+Los archivos subidos no están aquí: viven en el volumen `olo-app_filesystem` (ver
+«Los archivos subidos»).
 
 > La documentación interactiva de la API (Swagger, `/api/docs`) está apagada en
 > producción. Se enciende con `SWAGGER_HABILITADO=true` en el `.env`, si hace falta.

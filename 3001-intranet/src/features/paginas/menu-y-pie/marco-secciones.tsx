@@ -19,12 +19,21 @@ import { obtenerPlantilla } from './menu-y-pie';
 
 export async function MarcoSecciones({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+  cerrarSesionEnFlotante = false,
+}: Readonly<{
+  children: React.ReactNode;
+  /** Quita «Cerrar sesión» de la barra porque lo pinta el botón flotante. Solo lo
+   *  activa `app/(secciones)/layout.tsx`, que es donde está ese botón; la vista
+   *  previa no lo tiene y deja la barra como está. */
+  cerrarSesionEnFlotante?: boolean;
+}>) {
   const plantilla = await obtenerPlantilla();
 
   return (
     <>
-      {plantilla.topbar && <IntranetTopbarWrapper {...plantilla.topbar} />}
+      {plantilla.topbar && (
+        <IntranetTopbarWrapper {...plantilla.topbar} mostrarCerrarSesion={!cerrarSesionEnFlotante} />
+      )}
 
       {/* Crece para ocupar el hueco sobrante y dejar el pie abajo del todo. Antes
           lo resolvía cada página con `min-h-screen`, pero con el pie ya fuera del

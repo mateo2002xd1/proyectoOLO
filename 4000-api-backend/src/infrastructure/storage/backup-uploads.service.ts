@@ -1,7 +1,7 @@
 /**
  * El disco de los archivos de las páginas: `uploads/` (lo que se sirve hoy) y
- * `backup/{paginaId}/` (lo de la última versión archivada), dentro del
- * `public/storage` de cada aplicación.
+ * `backup/{paginaId}/` (lo de la última versión archivada), dentro de la carpeta de cada
+ * ámbito en el filesystem (`filesystem.ts`).
  *
  * Solo mueve, copia y borra. **No decide qué se puede borrar**: esa pregunta —¿alguna
  * versión de alguna página nombra todavía este archivo?— la responde
@@ -13,45 +13,27 @@ import fs from 'fs';
 import path from 'path';
 import type { Ambito } from '../../shared/ambito';
 import { extraerRutasUploads } from '../../shared/rutas-uploads-en-contenido';
+import { directorioDelAmbito } from './filesystem';
 
 /**
  * Resuelve la ruta física absoluta de la carpeta `uploads` según el ámbito.
  *
- * Vive bajo `public/storage/uploads`, pero se sigue sirviendo en la URL pública
- * `/uploads/...` de siempre: el rewrite en next.config es el que traduce una cosa
- * en la otra, así que el contenido ya publicado (con esa URL guardada en la BD)
- * no necesita tocarse.
+ * La URL pública sigue siendo `/uploads/...`, la de siempre: cada frontend la reenvía a
+ * `/api/archivos/{ambito}/uploads/...` (su `next.config` en desarrollo, nginx en el
+ * servidor), así que el contenido ya publicado, con esa URL guardada en la BD, no
+ * necesita tocarse.
  */
 export function resolverDirectorioUploads(ambito: Ambito): string {
   return path.join(resolverDirectorioStorage(ambito), 'uploads');
 }
 
 /**
- * La carpeta de cada aplicación en el repositorio. Es el único lugar donde está el
- * nombre: los scripts de mantenimiento de uploads lo toman de aquí. Si se renombran
- * las carpetas, cambia esto y, a la vez, los volúmenes de `api` en
- * `docker-compose.servidor.yml`, que montan cada `public/storage` con este mismo nombre.
+ * La carpeta del ámbito en el filesystem, donde viven `uploads/` y `backup/`. Hasta
+ * el 2026-10-06 era el `public/storage` de cada frontend; los scripts de mantenimiento
+ * siguen tomándola de aquí.
  */
-export const CARPETA_DE_APP: Record<Ambito, string> = {
-  sitio: '3000-sitio-web',
-  intranet: '3001-intranet',
-};
-
-/** El `public/storage` de la aplicación, donde viven `uploads/` y `backup/`. */
 export function resolverDirectorioStorage(ambito: Ambito): string {
-  return path.join(raizDeLaApp(ambito), 'public', 'storage');
-}
-
-/**
- * La carpeta de la aplicación, subiendo cuatro niveles desde este archivo:
- * `src/infrastructure/storage` → raíz del proyecto; en la imagen,
- * `dist/infrastructure/storage` → `/`, donde `docker-compose.servidor.yml` monta las dos
- * `public/storage`. **Si este archivo cambia de profundidad, esto deja de apuntar ahí** y
- * publicar o restaurar fallan solo en el servidor.
- */
-function raizDeLaApp(ambito: Ambito): string {
-  const raizProyecto = path.resolve(__dirname, '../../../../');
-  return path.join(raizProyecto, CARPETA_DE_APP[ambito]);
+  return directorioDelAmbito(ambito);
 }
 
 /** La carpeta de backup de una página, sin crearla. */
@@ -61,8 +43,8 @@ function rutaDirectorioBackup(paginaId: string, ambito: Ambito): string {
 
 /**
  * Resuelve la ruta física absoluta de la carpeta de backup para una página dada.
- * Ubicación física: /{aplicacion}/public/storage/backup/{paginaId}/ — servida en la
- * URL pública `/backup/{paginaId}/...` vía rewrite (ver next.config).
+ * Ubicación física: `{filesystem}/{ambito}/backup/{paginaId}/` — servida en la URL
+ * pública `/backup/{paginaId}/...`, que cada frontend reenvía a la API.
  * Crea el directorio si aún no existe y garantiza que permanezca creado.
  */
 export function resolverDirectorioBackup(paginaId: string, ambito: Ambito): string {

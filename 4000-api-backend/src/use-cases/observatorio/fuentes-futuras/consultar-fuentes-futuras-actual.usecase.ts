@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { FuentesFuturasEmpleoRepository as Repo } from '../../../repositories/fuentes-futuras-empleo.repository';
 import { ObservatorioRepository } from '../../../repositories/observatorio.repository';
+import { resolverRutaDeCarga } from '../../../infrastructure/storage/filesystem';
 import { leerRegistrosDeArchivo, type RegistroFuenteFuturaDTO } from './leer-excel-fuentes-futuras';
 
 export type { RegistroFuenteFuturaDTO };
@@ -13,8 +14,11 @@ export type { RegistroFuenteFuturaDTO };
  *
  * Sigue aquí solo como respaldo, y solo mientras no haya ninguna carga: en cuanto se sube
  * el Excel desde "Actualizaciones" manda la carga vigente. Cuando el archivo esté cargado
- * en todos los ambientes, se puede borrar del repositorio junto con esta constante y su
- * excepción en `.gitignore`.
+ * en todos los ambientes, se puede borrar del repositorio junto con esta constante, su
+ * excepción en `.gitignore` y su `COPY` en el Dockerfile de la API.
+ *
+ * Por eso se lee del código (`process.cwd()`) y no del filesystem: es un archivo del
+ * repositorio, no algo que alguien subió. La imagen lo trae copiado.
  */
 const ARCHIVO_HEREDADO = path.join(process.cwd(), 'uploads', 'cargas-datos', 'fuentes-futuras-de-empleo.xlsx');
 
@@ -33,10 +37,10 @@ async function resolverRutaVigente(): Promise<string | null> {
   if (archivoId) {
     const archivo = await ObservatorioRepository.obtenerArchivo(archivoId);
     if (archivo) {
-      // La base de desarrollo es compartida y cada máquina tiene su propia carpeta
-      // `uploads/`: la carga puede venir de otro equipo y el Excel no estar aquí. Se cae
-      // al respaldo en vez de servir una lista vacía.
-      const ruta = path.join(process.cwd(), archivo.get('rutaRelativa') as string);
+      // La base de desarrollo es compartida y cada máquina tiene su propio
+      // filesystem: la carga puede venir de otro equipo y el Excel no estar aquí. Se
+      // cae al respaldo en vez de servir una lista vacía.
+      const ruta = resolverRutaDeCarga(archivo.get('rutaRelativa') as string);
       if (fs.existsSync(ruta)) return ruta;
       console.warn(`[fuentes-futuras-empleo] La carga vigente apunta a un archivo que no está en disco: ${ruta}`);
     }
