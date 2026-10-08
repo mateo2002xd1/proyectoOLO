@@ -37,6 +37,10 @@ interface IntranetTopbarProps {
   fondo?: string;
   onLogout?: () => void;
   isLoading?: boolean;
+  /** `false` para quien edita: su «Cerrar sesión» está en el botón flotante
+   *  (`PaginasFabSpeedDial`). Dirección y subdirección no tienen ese botón, así que
+   *  para ellas se queda aquí. */
+  mostrarCerrarSesion?: boolean;
 }
 
 const INTRANET_ESTATICO_FALLBACK: Array<{
@@ -119,6 +123,7 @@ export function IntranetTopbar({
   logoUrl = "/assets/svg/olo-logo-blanco.svg",
   onLogout,
   isLoading = false,
+  mostrarCerrarSesion = true,
 }: IntranetTopbarProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -486,25 +491,27 @@ export function IntranetTopbar({
             </svg>
           </button>
 
-          <button
-            type="button"
-            className="intranet-login-btn"
-            aria-label="Cerrar sesión"
-            title="Cerrar sesión"
-            onClick={onLogout}
-            disabled={isLoading}
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20">
-              <path
-                d="M15 8l4 4m0 0-4 4m4-4H9m4-9H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
+          {mostrarCerrarSesion && (
+            <button
+              type="button"
+              className="intranet-login-btn"
+              aria-label="Cerrar sesión"
+              title="Cerrar sesión"
+              onClick={onLogout}
+              disabled={isLoading}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20">
+                <path
+                  d="M15 8l4 4m0 0-4 4m4-4H9m4-9H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 

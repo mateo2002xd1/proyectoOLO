@@ -9,8 +9,8 @@ export interface ModalCerrarSesionProps {
 }
 
 /**
- * Confirmación antes de «Salir de modo edición»: el botón está siempre a la vista
- * junto al lápiz y un toque sin querer cerraba la sesión de golpe.
+ * Confirmación antes de cerrar sesión desde el botón flotante: está siempre a la
+ * vista junto al lápiz y un toque sin querer cerraba la sesión de golpe.
  */
 export function ModalCerrarSesion({ abierto, saliendo, alConfirmar, alCerrar }: ModalCerrarSesionProps) {
   if (!abierto) return null;
@@ -39,7 +39,7 @@ export function ModalCerrarSesion({ abierto, saliendo, alConfirmar, alCerrar }: 
         </h2>
 
         <p className="nueva-seccion-ruta">
-          Saldrás del modo edición y volverás a la pantalla de inicio de sesión.
+          Volverás a la pantalla de inicio de sesión.
         </p>
 
         <div className="nueva-seccion-acciones">
