@@ -212,10 +212,11 @@ export function RevisionQueueView() {
         <p className="text-sm text-zinc-500">Ninguna página coincide con los filtros aplicados.</p>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-[#7db828]/30">
-          <table className="olo-tabla-apilable w-full min-w-[56rem] text-left text-sm">
+          <table className="olo-tabla-apilable w-full min-w-[64rem] text-left text-sm">
             <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-[#131b2f]">
               <tr>
                 <th scope="col" className="px-4 py-3 font-medium">Página</th>
+                <th scope="col" className="px-4 py-3 font-medium">Cambios</th>
                 <th scope="col" className="px-4 py-3 font-medium">Ámbito</th>
                 <th scope="col" className="px-4 py-3 font-medium">Autor</th>
                 <th scope="col" className="px-4 py-3 font-medium">Enviado el</th>
@@ -228,14 +229,18 @@ export function RevisionQueueView() {
               {paginasPagina.map((pagina) => (
                 <tr key={pagina.id} className="bg-white dark:bg-[#0f1626] transition-colors hover:bg-zinc-50/60 dark:hover:bg-[#131b2f]/50">
                   <td className="px-4 py-3">
-                    <p className="font-medium text-zinc-900 dark:text-[#f6f6f6]">{pagina.titulo}</p>
-                    <p className="text-xs text-zinc-500">/{pagina.slug} · versión {pagina.numeroVersion}</p>
-                    {/* Lo que el editor dice que cambió: se lee antes de decidir, como la
-                        descripción de un pull request. */}
-                    {pagina.comentario && (
-                      <p className="mt-1 max-w-md text-sm text-zinc-700 dark:text-zinc-300">
-                        «{pagina.comentario}»
-                      </p>
+                    <p className="font-medium text-zinc-900 dark:text-[#f6f6f6]">
+                      {pagina.titulo}
+                      <span className="font-normal text-zinc-500"> · versión {pagina.numeroVersion}</span>
+                    </p>
+                  </td>
+                  {/* Lo que el editor dice que cambió: se lee antes de decidir, como la
+                      descripción de un pull request. */}
+                  <td data-etiqueta="Cambios" className="px-4 py-3">
+                    {pagina.comentario ? (
+                      <p className="max-w-md text-sm text-zinc-700 dark:text-zinc-300">«{pagina.comentario}»</p>
+                    ) : (
+                      <p className="text-sm text-zinc-400">Sin comentario</p>
                     )}
                   </td>
                   <td data-etiqueta="Ámbito" className="px-4 py-3">
