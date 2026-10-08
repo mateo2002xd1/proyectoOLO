@@ -1,7 +1,7 @@
 {
   "name": "@olo/api-backend",
   "version": "1.0.0",
-  "description": "API Backend - Observatorio Laboral y Ocupacional (OLO)",
+  "description": "API Backend - Sistema integrado de control de contenidos para el sitio web del Observatorio Laboral SENA",
   "main": "dist/server.js",
   "scripts": {
     "sync:paquetes": "node ../scripts/sincronizar-paquetes-locales.mjs",

@@ -1,4 +1,4 @@
-# Observatorio Laboral y Ocupacional (SENA)
+# Sistema integrado de control de contenidos para el sitio web del Observatorio Laboral SENA
 
 Portal del Observatorio Laboral y Ocupacional: sitio público editable sin desarrolladores, intranet para directores, y una API que es la única puerta a los datos.
 

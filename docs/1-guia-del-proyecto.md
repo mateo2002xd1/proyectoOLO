@@ -1,6 +1,6 @@
 # Guía del Proyecto
 
-> Observatorio Laboral y Ocupacional. Documento de referencia de arquitectura: qué necesita el cliente, cómo se resuelve, cómo está arquitecturado el sistema y cómo se organiza el código.
+> Sistema integrado de control de contenidos para el sitio web del Observatorio Laboral SENA. Documento de referencia de arquitectura: qué necesita el cliente, cómo se resuelve, cómo está arquitecturado el sistema y cómo se organiza el código.
 ---
 
 ## 1. Necesidad del cliente

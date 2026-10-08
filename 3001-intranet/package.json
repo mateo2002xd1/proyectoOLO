@@ -2,6 +2,7 @@
   "name": "intranet-olo",
   "version": "0.1.0",
   "private": true,
+  "description": "Intranet - Sistema integrado de control de contenidos para el Observatorio Laboral SENA",
   "scripts": {
     "sync:paquetes": "node ../scripts/sincronizar-paquetes-locales.mjs",
     "predev": "npm run sync:paquetes",
