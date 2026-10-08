@@ -403,7 +403,7 @@ checklist de `3-seguridad-del-proyecto.md` §5; para la persistencia, `11-base-d
 | RF | Backend | Frontend | |
 |---|---|---|---|
 | RF-01 contenidos | `use-cases/contenidos`, `use-cases/paginas` | `features/paginas`, `admin/editor` | ✅ |
-| RF-02 archivos | subida en los route handlers de cada front vía `@olo/upload-policy`; respaldo, restauración y borrado de huérfanos en `infrastructure/storage` + `borrar-archivos-huerfanos` | `features/paginas` (uploaders) | 🟡 funciona, pero escribe dentro del webroot |
+| RF-02 archivos | subida y servido en `routes/archivos.routes.ts` + `use-cases/archivos`, con `@olo/upload-policy`; filesystem, respaldo, restauración y borrado de huérfanos en `infrastructure/storage` + `borrar-archivos-huerfanos` | `features/paginas` (uploaders); los fronts solo reenvían `/api/upload` y `/uploads` a la API | ✅ fuera del webroot desde 2026-10-06 |
 | RF-03 identidad | **ninguno**: `marca_versiones` se eliminó en la migración 020 sin haberse usado | ninguno propio: logo, menú y franja gov.co se editan en «Menú y pie» (`features/paginas/menu-y-pie`); tipografías en `shared/lib/fonts`, colores en `globals.css` | 🟡 |
 | RF-04 roles | `Role/Permission/RolePermission`, `use-cases/usuarios`, `shared/catalogo-permisos` | `features/administracion/auth` | ✅ |
 | RF-05/06 gobernanza | `policies/paginas`, `use-cases/paginas`, `domain-events/paginas` | cola en `admin/revision` | ✅ solo en el sitio; la intranet no tiene cola propia |

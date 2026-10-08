@@ -158,11 +158,11 @@ Ahora el ciclo soporta **restaurar a la versión inmediatamente anterior**:
    - La restauración concluye disparando `emitirContenidoPublicado`.
    - Al igual que en la aprobación ordinaria, se purga Redis y se revalida la etiqueta ISR en Next.js, por lo que el front refleja la versión recuperada en el acto.
 
-3. **Salvaguarda de recursos multimedia (`/uploads/` ↔ `/public/backup/{pagina_id}/`):**
+3. **Salvaguarda de recursos multimedia (`/uploads/` ↔ `/backup/{pagina_id}/`):**
    - **El problema que resuelve:** En versiones anteriores, si un editor reemplazaba una imagen o archivo en Puck, el archivo viejo en `/uploads/` corría el riesgo de ser eliminado o quedar huérfano. Al restaurar la versión anterior, esa página se quedaba con enlaces rotos (error 404).
-   - **Ubicación de backup:** Implementado en `src/infrastructure/storage/backup-uploads.service.ts` (antes `shared/storage`, movido el 2026-09-25). Cada aplicación almacena los respaldos en su propia carpeta pública:
-     - Intranet: `3001-intranet/public/backup/{pagina_id}/`
-     - Sitio Web: `3000-sitio-web/public/backup/{pagina_id}/`
+   - **Ubicación de backup:** Implementado en `src/infrastructure/storage/backup-uploads.service.ts` (antes `shared/storage`, movido el 2026-09-25). Desde el 2026-10-06 los respaldos viven en el filesystem de la API, uno por ámbito, y no en el `public/` de cada aplicación (`infrastructure/storage/filesystem.ts`):
+     - Intranet: `{filesystem}/intranet/backup/{pagina_id}/`
+     - Sitio Web: `{filesystem}/sitio/backup/{pagina_id}/`
    - **Regla de integridad al archivar / publicar (`respaldarArchivosAlPublicar`):**
      - Si el archivo de la versión que se archiva **sigue en uso** por la nueva versión: se **copia** a backup (permanece en uploads).
      - Si el archivo **ya no se usa** en la nueva versión: se **mueve** a backup (se retira de uploads).
@@ -172,7 +172,7 @@ Ahora el ciclo soporta **restaurar a la versión inmediatamente anterior**:
    - **Archivos que comparten varias páginas (2026-09-25):** al publicar y al restaurar, antes de sacar un archivo de `/uploads/` se pregunta a `PaginaRepository.rutasEnUso` si otra página lo nombra; si es así, se **copia** a backup en vez de moverse. Antes se movía, y la otra página se quedaba con la imagen rota.
    - **Borrado de archivos (`borrarArchivosHuerfanos`):** es la única puerta para borrar archivos de páginas. Borra solo los candidatos que ninguna versión de ninguna página del ámbito nombra. La usan las subidas pendientes (al guardar, enviar, publicar o descartar) y eliminar sección; esta última la llama en el `afterCommit` de la baja y comprueba antes que la página ya no existe, porque Sequelize 6 corre ese gancho también cuando el COMMIT falla.
    - **Purga automática de archivos huérfanos (`limpiarArchivosHuerfanosEnBackup`):**
-     - La carpeta `public/backup/{pagina_id}/` solo conserva **los archivos que la versión archivada actual realmente utiliza**.
+     - La carpeta `backup/{pagina_id}/` solo conserva **los archivos que la versión archivada actual realmente utiliza**.
      - Cada vez que se restaura o publica, cualquier archivo físico residual que no pertenezca a la versión archivada se elimina del disco, garantizando que no se acumule basura de versiones antiguas.
 
 4. **Herramienta de consola (CLI):**

@@ -5,6 +5,101 @@
 
 ---
 
+## sesión 07-10-2026: fase 0 del filesystem — verificación de punta a punta
+
+**Cómo se probó.** En desarrollo, contra los servidores en marcha y sin escribir en la base.
+En Docker, la pila de producción completa en este equipo con un `.env` de prueba (base propia,
+semilla de contenido, una cuenta Superadmin de prueba), por nginx `8080`/`8081`.
+
+| Prueba | Resultado |
+|---|---|
+| Desarrollo: la API lee `filesystem/`; el sitio reenvía `/uploads` y `/storage`; la intranet manda al login sin sesión; subir sin sesión | ✅ |
+| `build` de las cuatro imágenes (incluye `next build` de las dos apps con los reenvíos nuevos) | ✅. Ninguna imagen de front trae `public/storage` |
+| Subir por `/api/upload` (8080 y 8081), publicar, reemplazar: el viejo pasa a `backup/<página>/` | ✅ |
+| Subida reemplazada antes de guardar: se borra del disco | ✅ |
+| Servir: `immutable` en el sitio, `/backup/`, 404, `..` codificado | ✅ |
+| Restaurar la versión anterior: los archivos se intercambian | ✅ |
+| Intranet con sesión completa: 200 `private, no-cache`, `Range` 206, archivos migrados | ✅ (con una cuenta nueva, primero redirige a `/security-questions`: correcto) |
+| Cargas: formato de solo lectura, fuentes futuras (el portal lee 3 registros), programas por la cola (el worker lee del filesystem), eliminar borra los Excel | ✅ |
+| Recrear el contenedor de la API, `restart` de Redis (AOF activo, claves intactas), `down` + `up` | ✅ |
+| `down -v` | Borró los volúmenes de la base, Redis y logs de prueba; **`olo-app_filesystem` quedó**, por ser externo |
+| `deploy.sh restore-archivos` tras borrar un archivo a propósito | ✅ volvió |
+
+**Error encontrado y corregido.** `deploy.sh migrar-archivos` creaba las carpetas y **copiaba 0
+archivos**: el `cp` de BusyBox (imagen alpine) no copia nada con `cp -Rn origen/. destino/` si el
+destino existe, y no da error. La simulación del 06-10 usó el `cp` de Git Bash, que sí lo hace.
+En el servidor la mudanza habría terminado «bien» con el volumen vacío. Ahora copia archivo por
+archivo; repetido dos veces, 14 y 14.
+
+**Error encontrado, sin corregir (anterior a este cambio).** `seed/contenido-inicial.sql` inserta en
+`configuraciones`, tabla que ya no existe: `deploy.sh sembrar` falla en una instalación nueva y,
+como va en una transacción, no carga nada. Para la prueba se usó una copia sin ese bloque.
+
+**Estado que quedó en este equipo:** imágenes `olo-web-app-*` construidas, pila apagada, volumen
+`olo-app_filesystem` con los 14 archivos de la intranet más dos PNG de prueba del sitio.
+
+---
+
+## sesión 06-10-2026: los archivos subidos salen del webroot a un volumen de la API (§S1), y Redis con AOF
+
+**Qué se pidió.** Un volumen de Docker para los PDF, imágenes, Excel y PowerPoint del
+proyecto, que no se borre, organizado según la arquitectura. Y revisar el cambio de Redis a
+AOF (`--appendonly yes`) que se había hecho en el compose.
+
+**Lo que había.** Lo subido estaba repartido en tres carpetas del repositorio montadas en
+los contenedores: `3000-sitio-web/public/storage`, `3001-intranet/public/storage` y
+`4000-api-backend/uploads/cargas-datos`. Los route handlers `/api/upload` de los frontends
+escribían en su `public/` y `/storage/[...ruta]` lo servía, en contra del §3.2 de la guía
+(«ningún frontend toca el filesystem») y de §S1, que era la prioridad #1 pendiente de
+seguridad. Catorce adjuntos de la intranet estaban versionados en git pese al `.gitignore`.
+
+**Lo que se hizo.**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| API | `infrastructure/storage/filesystem.ts` | Nuevo. Raíz única (`FILESYSTEM_DIR`, por defecto `filesystem/` en la raíz del repo; `/filesystem` en la imagen) con `{sitio,intranet}/{uploads,backup}` y `cargas-datos/`. `resolverArchivoServible` decide qué se puede servir |
+| API | `backup-uploads.service.ts` | `resolverDirectorioStorage` apunta al ámbito en el filesystem; fuera `CARPETA_DE_APP` y la resolución por profundidad de carpetas |
+| API | `routes/archivos.routes.ts`, `controllers/archivos.controller.ts`, `use-cases/archivos/subir-archivo-de-pagina.usecase.ts` | Nuevos. `POST /api/archivos/{sitio,intranet}` (sesión + `puedeEditar`; antes bastaba cualquier sesión) y `GET /api/archivos/{ambito}/{uploads,backup}/...` (la intranet exige sesión + `puedeVer`). Montado antes del `limitadorGlobal` |
+| API | `guardar-excel-de-carga.ts`, `eliminar-carga.usecase.ts`, `consultar-fuentes-futuras-actual.usecase.ts`, `scripts/archivos/*` | Los Excel de las cargas en `cargas-datos/`. `archivos.ruta_relativa` conserva `uploads/cargas-datos/…`: la base de dev es compartida |
+| Fronts | `app/api/upload/route.ts`, `app/storage/[...ruta]/route.ts` (las dos apps) | Borrados. `next.config` reenvía `/api/upload`, `/uploads`, `/backup`, `/backend` y `/storage` a la API. El `DELETE` de esos handlers no lo llamaba nadie y no se trasladó |
+| Docker | `docker-compose.servidor.yml`, `nginx.servidor.conf`, `Dockerfile` de la API, `.dockerignore` | Volumen `olo-app_filesystem` (externo: `down -v` no lo borra) solo en la API; sitio e intranet sin volúmenes. nginx 8080 manda los adjuntos directo a la API; las dos puertas, `/api/upload`. Los formatos de carga, montados de solo lectura |
+| Docker | `deploy.sh` | Crea el volumen si falta; `migrar-archivos` (copia, no mueve, sin pisar; lee las carpetas de antes y, en un equipo de desarrollo, `filesystem/`); `backup` deja también `archivos_<fecha>.tar.gz`; `restore-archivos` |
+| Dev | `scripts/sincronizar-paquetes-locales.mjs` | Paso 6: en `npm run dev` copia una vez lo de las carpetas de antes a `filesystem/` y deja una marca |
+
+**Nombre.** El 07-10-2026, antes de desplegarlo y a pedido del usuario, pasó a llamarse
+`filesystem` como en el diagrama de capas: volumen `olo-app_filesystem`, carpeta `filesystem/`,
+variable `FILESYSTEM_DIR`, montaje `/filesystem` y módulo `filesystem.ts`. La carpeta que ya había
+creado `npm run dev` en este equipo se renombró con sus 14 archivos y sus marcas.
+
+**Caché.** Sitio, `uploads/` con nombre UUID: `public, max-age=31536000, immutable`. El resto
+del sitio, `public, no-cache` con ETag/304. Intranet, `private, no-cache`. Se quita la CSP de
+helmet en los archivos: su `object-src 'none'` puede dejar en blanco el visor de PDF, y solo
+se sirven tipos de la lista blanca, con `nosniff`.
+
+**Redis.** El `--appendonly yes` era correcto, pero la indicación que lo acompañaba no:
+`deploy.sh restart` no aplica cambios del compose (hace falta `start`), y un Redis que arranca
+con AOF sin tener todavía el archivo AOF **empieza vacío**: no lee el RDB que tenía. La guía
+lleva el paso seguro (`CONFIG SET appendonly yes` en caliente antes de `start`).
+
+**Probado** con un filesystem temporal y la API en un puerto libre, sin base ni Redis
+(token `isLocal`): 29 casos, 28 a la primera. Servir con tipo, caché y CORP correctos,
+`Range` 206, 404 sin caché, `..` codificado de tres formas, byte nulo y `cargas-datos/` en
+404, intranet 401 sin sesión y 200 con ella, subida con nombre UTF-8, tipo falso 415, sin
+archivo 400. El que falló fue el 304: el `fetch` de Node añade `cache-control: no-cache` a
+una petición condicional; repetido con curl, 304 por ETag y por fecha. El paso 6 del script de `npm run dev`, en una copia falsa de
+la intranet y la API. `tsc --noEmit` limpio en API, sitio e intranet. No probado: los
+comandos de `deploy.sh` que levantan contenedores (Docker no estaba encendido en este equipo)
+y un `next build`.
+
+**Queda.**
+- En el servidor, la actualización de una sola vez de `docker/guia-bash.md`, en orden.
+- Sacar de git los 14 adjuntos de la intranet cuando todos los equipos hayan pasado por
+  `npm run dev` o `migrar-archivos`. Hoy son la fuente de esa copia.
+- Antivirus (§S1) y comprobar el estado de publicación antes de servir (RF-12): un archivo de
+  un borrador se puede pedir si se conoce su UUID.
+
+---
+
 ## sesión 03-10-2026 (3.ª parte): «Fuentes futuras de empleo» deja de ser un Excel quemado en disco y entra al ciclo de cargas
 
 **Qué se reportó.** Que los archivos de `4000-api-backend/uploads/cargas-datos/` están
