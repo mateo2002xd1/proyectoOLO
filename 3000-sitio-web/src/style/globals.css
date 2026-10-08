@@ -3912,15 +3912,13 @@ button.text-link,
   box-shadow: 0 4px 14px rgba(179, 38, 30, 0.3);
 }
 
-/* Salir del modo edición: botón rojo debajo del lápiz. El menú desplegable se ancla
-   al lápiz (arriba de la columna), no a la columna entera. */
+/* Salir del modo edición: botón rojo debajo del lápiz. El lápiz queda arriba de la
+   columna, así que el menú desplegable ya sale desde encima de él con el `bottom`
+   general de `.fab-speed-dial__acciones`: no hay que moverlo. Bajarlo 3.5rem (como
+   si el lápiz estuviera abajo) escondía «Editar página» detrás del lápiz. */
 .fab-speed-dial--con-salir {
   flex-direction: column;
   gap: 0.75rem;
-}
-
-.fab-speed-dial--con-salir .fab-speed-dial__acciones {
-  bottom: calc(100% - 3.5rem + 0.85rem);
 }
 
 .fab-speed-dial__btn--salir {
