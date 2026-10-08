@@ -1,5 +1,5 @@
 /**
- * Borra archivos de `public/storage/uploads/` que no está referenciando NINGUNA
+ * Borra archivos de `{ambito}/uploads/` del filesystem que no está referenciando NINGUNA
  * versión de página (publicada, archivada o en borrador/revisión) en la base de
  * datos.
  *
@@ -20,12 +20,12 @@ import fs from 'fs';
 import path from 'path';
 import sequelize from '../../src/config/database';
 import { PaginaVersion } from '../../src/infrastructure/db/models';
-// De ahí sale la carpeta de cada app: el nombre vive en un solo lugar.
+// De ahí sale la carpeta de cada ámbito en el filesystem: vive en un solo lugar.
 import { resolverDirectorioStorage } from '../../src/infrastructure/storage/backup-uploads.service';
 
 type Ambito = 'sitio' | 'intranet';
 
-/** La carpeta `uploads/` del frontal de ese ámbito. */
+/** La carpeta `uploads/` de ese ámbito en el filesystem. */
 function dirUploads(ambito: Ambito): string {
   return path.join(resolverDirectorioStorage(ambito), 'uploads');
 }

@@ -1,16 +1,16 @@
 /**
- * Borra los Excel de `uploads/cargas-datos/` que ya no referencia ninguna fila de
- * `archivos` — los que quedaron "quemados" en el disco.
+ * Borra los Excel de `cargas-datos/` del filesystem que ya no referencia ninguna fila
+ * de `archivos` — los que quedaron "quemados" en el disco.
  *
- * Aparecen porque la base de desarrollo es compartida (Neon) pero la carpeta `uploads/`
- * es de cada máquina: cuando alguien elimina una carga desde su equipo,
+ * Aparecen porque la base de desarrollo es compartida (Neon) pero el filesystem es
+ * de cada máquina: cuando alguien elimina una carga desde su equipo,
  * `eliminarArchivoSiQuedaSuelto` borra la fila para todos y el Excel solo de *su* disco.
  * En las demás máquinas el archivo se queda sin dueño para siempre, porque ya no hay
  * registro desde el que llegar a él. Lo mismo pasa con las cargas anteriores a que esa
  * limpieza existiera.
  *
  * Es el gemelo de `limpiar-huerfanos-uploads.ts`, que hace lo propio con los adjuntos de
- * páginas en `public/storage/uploads/`.
+ * páginas en `{ambito}/uploads/`.
  *
  * Corre en modo reporte (dry-run) por defecto. Pasa `--aplicar` para borrar de verdad:
  *
@@ -22,8 +22,9 @@ import fs from 'fs';
 import path from 'path';
 import sequelize from '../../src/config/database';
 import { Archivo } from '../../src/infrastructure/db/models';
+import { directorioDeCargas, resolverRutaDeCarga } from '../../src/infrastructure/storage/filesystem';
 
-const DIRECTORIO = path.join(process.cwd(), 'uploads', 'cargas-datos');
+const DIRECTORIO = directorioDeCargas();
 
 /**
  * No se tocan aunque no tengan fila en `archivos`: el Excel que la API sigue leyendo por
@@ -47,7 +48,9 @@ async function main() {
   const enDisco = fs.readdirSync(DIRECTORIO, { withFileTypes: true }).filter((e) => e.isFile());
 
   const filas = await Archivo.findAll({ attributes: ['id', 'nombreAlmacenado', 'rutaRelativa'] });
-  const registrados = new Set(filas.map((fila) => path.basename(fila.get('rutaRelativa') as string)));
+  const registrados = new Set(
+    filas.map((fila) => path.basename(resolverRutaDeCarga(fila.get('rutaRelativa') as string)))
+  );
 
   const huerfanos: { nombre: string; bytes: number }[] = [];
   let protegidos = 0;
@@ -64,7 +67,7 @@ async function main() {
   // El caso inverso no es basura: una fila cuyo Excel no está en este disco es una carga
   // hecha en otra máquina, y `guardar-excel-de-carga.ts` la reescribe al volver a subirla.
   const sinArchivo = filas.filter(
-    (fila) => !fs.existsSync(path.join(process.cwd(), fila.get('rutaRelativa') as string))
+    (fila) => !fs.existsSync(resolverRutaDeCarga(fila.get('rutaRelativa') as string))
   ).length;
 
   console.log(`Carpeta:   ${DIRECTORIO}`);
