@@ -9,7 +9,7 @@
 
 ## 3.1. Publico objetivo
 
-El manual de usuario está dirigido a los diferentes perfiles que interactúan con la plataforma del Observatorio Laboral y Ocupacional (OLO):
+El manual de usuario está dirigido a los diferentes roles de usuario que interactúan con la plataforma del Observatorio Laboral y Ocupacional (OLO):
 
 ### 3.1.1. Administradores del Sistema
 Personal responsable de la gestión integral de cuentas de usuario, creación de nuevos roles personalizados (exclusivamente para roles de editores), asignación manual de permisos, aprobación y publicación de contenidos, procesamiento de cargas masivas de datos en Excel, consulta de la bitácora de auditoría y configuración general del sistema en el Panel Administrativo.
@@ -20,11 +20,11 @@ Funcionarios autorizados para maquetar, estructurar y actualizar el contenido de
 ### 3.1.3. Directores y Subdirectores
 Personal directivo del SENA que inicia sesión con cuenta corporativa `@sena.edu.co` para consultar en modalidad de solo lectura matrices de pertinencia, indicadores del mercado laboral y tableros analíticos en la Intranet del OLO.
 
-> **[Captura: Perfiles de Usuario]**
-> *Esquema de los tres perfiles principales de usuario (Administradores, Editores y Directivos) interactuando con los distintos módulos de la plataforma.*
+> **[Captura: Roles de Usuario]**
+> *Esquema de los tres roles principales de usuario (Administradores, Editores y Directivos) interactuando con los distintos módulos de la plataforma.*
 >
-> **[Captura: Perfiles de Usuario (Móvil)]**
-> *Esquema de los tres perfiles principales de usuario (Administradores, Editores y Directivos) interactuando con los distintos módulos de la plataforma. (Móvil).*
+> **[Captura: Roles de Usuario (Móvil)]**
+> *Esquema de los tres roles principales de usuario (Administradores, Editores y Directivos) interactuando con los distintos módulos de la plataforma. (Móvil).*
 
 ---
 
@@ -78,7 +78,7 @@ Para acceder a los entornos privados (Panel Administrativo, Editor Visual e Intr
 
 ### 3.2.2. Roles y permisos
 
-Esta sección detalla qué puede hacer cada tipo de usuario dentro del aplicativo, delimitando las capacidades de la consulta pública abierta y los perfiles autorizados del OLO.
+Esta sección detalla qué puede hacer cada tipo de usuario dentro del aplicativo, delimitando las capacidades de la consulta pública abierta y los roles autorizados del OLO.
 
 #### 3.2.2.1. Acceso Ciudadano General (Sin rol ni inicio de sesión)
 El Sitio Web Público fue concebido como un portal abierto para toda la sociedad civil, la comunidad académica, el sector productivo y los buscadores de empleo:
@@ -97,15 +97,15 @@ El Sitio Web Público fue concebido como un portal abierto para toda la sociedad
 ##### 3.2.2.2.1. Administrador
 Corresponde a la máxima autoridad técnica y operativa dentro de la plataforma del observatorio.
 
-* **Propósito del perfil:**
+* **Propósito del rol:**
   Garantizar la administración integral, gobernanza, disponibilidad operativa y seguridad técnica del sistema. Es el encargado de la gestión de usuarios, el control editorial de publicaciones, la importación masiva de datos y la fiscalización del sistema mediante la bitácora de auditoría.
 
 * **Entorno de acceso y autenticación:**
-  Inicia sesión mediante credenciales corporativas obligatorias (`@sena.edu.co`). Dispone de acceso exclusivo al Panel Administrativo (`/admin`), entorno inaccesible para los demás perfiles. Asimismo, puede navegar libremente por el Sitio Web público y por la Intranet del OLO con plenas facultades de visualización y edición en línea.
+  Inicia sesión mediante credenciales corporativas obligatorias (`@sena.edu.co`). Dispone de acceso exclusivo al Panel Administrativo (`/admin`), entorno inaccesible para los demás roles. Asimismo, puede navegar libremente por el Sitio Web público y por la Intranet del OLO con plenas facultades de visualización y edición en línea.
 
 * **Funciones y facultades principales:**
   * *Gestión integral de cuentas de usuario:* Registra nuevas cuentas de usuario en el OLO, asigna o revoca roles, activa o suspende cuentas y ejecuta el restablecimiento de contraseñas ante eventualidades o bloqueos (ver paso a paso en [Sección 3.4.2.4.1: Submenú Usuarios](#34241-submenú-usuarios)).
-  * *Creación de roles de editor y parametrización de permisos:* Crea perfiles personalizados exclusivamente bajo la tipología de editor (bajo la nomenclatura fija «Editor [Nombre]») y define manualmente («a mano») los accesos e interruptores de permisos sobre cada página o sección (ver paso a paso en [Sección 3.4.2.4.2: Submenú Roles y Permisos](#34242-submenú-roles-y-permisos)).
+  * *Creación de roles de editor y parametrización de permisos:* Crea roles personalizados exclusivamente bajo la tipología de editor (bajo la nomenclatura fija «Editor [Nombre]») y define manualmente («a mano») los accesos e interruptores de permisos sobre cada página o sección (ver paso a paso en [Sección 3.4.2.4.2: Submenú Roles y Permisos](#34242-submenú-roles-y-permisos)).
   * *Aprobación y control en la bandeja de revisión:* Examina los borradores remitidos por los editores mediante la previsualización interactiva y dispone de tres decisiones operativas:
     * *Aprobar:* Autoriza la publicación inmediata de la versión revisada para su despliegue público o en la Intranet.
     * *Rechazar:* Devuelve la versión al editor responsable con las observaciones y justificación de los cambios requeridos.
@@ -121,9 +121,9 @@ Corresponde a la máxima autoridad técnica y operativa dentro de la plataforma 
   * No puede omitir ni alterar el registro de auditoría; todas las acciones administrativas quedan grabadas de forma obligatoria e irreversible en la base de datos.
 
 ##### 3.2.2.2.2. Editor (Rol Base)
-Corresponde al perfil técnico general facultado para la producción, maquetación y diseño de los contenidos del OLO.
+Corresponde al rol técnico general facultado para la producción, maquetación y diseño de los contenidos del OLO.
 
-* **Propósito del perfil:**
+* **Propósito del rol:**
   Construir, actualizar y diseñar visualmente las páginas y boletines de la plataforma mediante el editor interactivo de bloques, manteniendo la pertinencia informativa y la identidad gráfica del observatorio.
 
 * **Entorno de acceso y autenticación:**
@@ -144,9 +144,9 @@ Corresponde al perfil técnico general facultado para la producción, maquetaci�
   * No tiene acceso a la bitácora de auditoría ni al módulo de carga masiva de datos en Excel.
 
 ##### 3.2.2.2.3. Roles Hijos o Derivados de Editor
-Corresponden a perfiles editoriales especializados creados por el Administrador para delimitar responsabilidades por dependencia o temática.
+Corresponden a roles editoriales especializados creados por el Administrador para delimitar responsabilidades por dependencia o temática.
 
-* **Propósito del perfil:**
+* **Propósito del rol:**
   Permitir la participación distribuida de funcionarios en la maquetación y actualización de contenidos concretos, aplicando el principio de mínimo privilegio para limitar el alcance de su intervención únicamente a las páginas autorizadas.
 
 * **Entorno de acceso y autenticación:**
@@ -163,14 +163,14 @@ Corresponden a perfiles editoriales especializados creados por el Administrador 
 * **Límites operativos y restricciones de seguridad:**
   * No tienen acceso al Panel Administrativo (`/admin`).
   * No pueden publicar páginas directamente en producción sin la aprobación del Administrador.
-  * No pueden intervenir ni editar páginas o secciones ajenas a las asignadas de forma explícita en su perfil.
+  * No pueden intervenir ni editar páginas o secciones ajenas a las asignadas de forma explícita en su rol.
   * No pueden crear ni eliminar páginas a menos que cuenten con el permiso manual activado específicamente para ello.
   * No pueden intervenir ni eliminar las rutas no gestionables desde el editor visual (pantallas de inicio de sesión y rutas administrativas), ni gestionar usuarios, roles, auditoría o cargas masivas.
 
 ##### 3.2.2.2.4. Director / Subdirector
-Corresponde al perfil directivo enfocado en el monitoreo gerencial, el análisis de indicadores del mercado laboral y la toma de decisiones estratégicas del observatorio.
+Corresponde al rol directivo enfocado en el monitoreo gerencial, el análisis de indicadores del mercado laboral y la toma de decisiones estratégicas del observatorio.
 
-* **Propósito del perfil:**
+* **Propósito del rol:**
   Facilitar la consulta directa, ágil y protegida de la información estadística, los indicadores del mercado laboral y los resultados de pertinencia educativa para respaldar la planeación y la gestión directiva.
 
 * **Entorno de acceso y autenticación:**
@@ -193,11 +193,11 @@ Corresponde al perfil directivo enfocado en el monitoreo gerencial, el análisis
 
 Es fundamental tener presente un principio de seguridad central en la plataforma: **los roles base del sistema (Administrador, Editor base y Director / Subdirector) cuentan con permisos fijos y protegidos por código**. Cuando el Administrador crea una cuenta de usuario y le asigna alguno de estos roles, el sistema le otorga automáticamente sus facultades correspondientes, las cuales **no son modificables ni editables** desde el panel.
 
-Por este motivo, **los únicos roles cuyos permisos son personalizables y editables son los roles hijos o derivados de Editor** (creados bajo el formato «Editor [Nombre]»). Para garantizar un control seguro y granular sobre las facultades de estos roles especializados, la plataforma del OLO organiza los permisos configurables en **5 secciones funcionales**, ordenadas de menor a mayor alcance operativo:
+Por este motivo, **los únicos roles cuyos permisos son personalizables y editables son los roles hijos o derivados de Editor** (creados bajo el formato «Editor [Nombre]»). Para garantizar un control seguro y detallado sobre las facultades de estos roles especializados, la plataforma del OLO organiza los permisos configurables en **5 secciones funcionales**, ordenadas de menor a mayor alcance operativo:
 
 1. **Acceso:** Controla las puertas de entrada a los dos entornos del sistema (el Sitio Web Público y la Intranet del OLO). Sin estos permisos activos, la cuenta no podrá autenticarse ni visualizar el contenido del portal correspondiente.
-2. **Editar (Plantilla / Globales):** Regula la intervención sobre los componentes estructurales envolventes compartidos por todas las páginas de un entorno, específicamente la cabecera (header con menús y logos) y el pie de página (footer con enlaces y redes sociales), aplicables de forma independiente para el Sitio Web y para la Intranet.
-3. **Secciones del sitio web:** Define de forma granular y página por página el acceso de edición sobre los contenidos del portal público (tales como Inicio, Política de Privacidad y cada una de las páginas dinámicas creadas en el sitio).
+2. **Editar:** Regula la intervención sobre el menú y pie de página, aplicables de forma independiente para el Sitio Web y para la Intranet (afecta a todas las páginas de la respectiva aplicación).
+3. **Secciones del sitio web:** Define de forma detallada, página por página, el acceso de edición sobre los contenidos del portal público (tales como Inicio, Política de Privacidad y cada una de las páginas dinámicas creadas en el sitio).
 4. **Secciones de la intranet:** Controla individualmente la facultad de maquetar y actualizar las páginas y módulos analíticos internos de la Intranet del OLO (Inicio, Tasa de vinculación, Matriz de tendencias, Encuestas y páginas dinámicas internas).
 5. **Qué puede hacer dentro del editor:** Determina las capacidades de acción estructural que el usuario puede ejercer dentro del lienzo de trabajo interactivo, tales como la creación de nuevas páginas o la eliminación definitiva de páginas dinámicas existentes.
 
@@ -259,9 +259,9 @@ El botón fijo **"Intranet"** ubicado en la cabecera del portal (extremo superio
 ##### 3.2.3.2.1. Inicio de Sesión en el Entorno Privado de la Intranet
 La Intranet es una plataforma privada e independiente orientada al seguimiento gerencial, análisis ocupacional y trabajo interno del SENA:
 * **Acceso restringido con autenticación obligatoria:** A diferencia del portal público, la Intranet no permite navegación anónima ni libre. Toda persona debe autenticarse para ingresar mediante su propio formulario de acceso.
-* **Perfiles habilitados:**
+* **Roles habilitados:**
   * *Administradores:* Ingresan para supervisar contenidos, maquetar secciones internas o fiscalizar el entorno según sus facultades globales de gobierno.
-  * *Editores (y roles derivados autorizados):* Ingresan para maquetar y actualizar secciones internas autorizadas en su perfil.
+  * *Editores (y roles derivados autorizados):* Ingresan para maquetar y actualizar secciones internas autorizadas en su rol.
   * *Directores y Subdirectores:* Ingresan con cuenta corporativa `@sena.edu.co` para consultar los módulos de información, matrices e indicadores ocupacionales en modalidad de **solo lectura**, manteniendo protegida la información al no contar con permisos de edición ni administración.
 * **Credenciales y validación:** Correo corporativo `@sena.edu.co` y contraseña asignada (requiere autorización de acceso a la Intranet). Al iniciar sesión exitosamente, el sistema despliega el entorno privado de la Intranet con los tableros analíticos e indicadores configurados. *(Para consultar la guía visual paso a paso del acceso a la Intranet, ver [Sección 3.4.1.2: Flujo de Inicio de Sesión Habitual](#3412-flujo-de-inicio-de-sesión-habitual)).*
 
@@ -391,13 +391,13 @@ Uno de los elementos interactivos más importantes en el Sitio Web y la Intranet
 > *Despliegue condicional del botón flotante de edición en pantalla para un usuario autenticado con permisos activos. (Móvil).*
 
 * **Caso 3: Usuario autenticado sin permisos de edición (Directores y Subdirectores):**
-  * Al iniciar sesión con cuenta corporativa `@sena.edu.co`, el sistema identifica que el usuario posee un perfil configurado en modo de **solo lectura**. Debido a que no cuenta con facultades de edición ni administración, el botón flotante **permanece completamente oculto**, impidiendo que el personal directivo ingrese por error al modo de diseño o altere contenidos.
+  * Al iniciar sesión con cuenta corporativa `@sena.edu.co`, el sistema identifica que el usuario posee un rol configurado en modo de **solo lectura**. Debido a que no cuenta con facultades de edición ni administración, el botón flotante **permanece completamente oculto**, impidiendo que el personal directivo ingrese por error al modo de diseño o altere contenidos.
 
 > **[Captura: Vista Directiva Solo Lectura sin Botón Flotante]**
-> *Pantalla de la Intranet para perfiles directivos en modalidad de solo lectura, donde el botón flotante de edición permanece completamente oculto.*
+> *Pantalla de la Intranet para roles directivos en modalidad de solo lectura, donde el botón flotante de edición permanece completamente oculto.*
 >
 > **[Captura: Vista Directiva Solo Lectura sin Botón Flotante (Móvil)]**
-> *Pantalla de la Intranet para perfiles directivos en modalidad de solo lectura, donde el botón flotante de edición permanece completamente oculto. (Móvil).*
+> *Pantalla de la Intranet para roles directivos en modalidad de solo lectura, donde el botón flotante de edición permanece completamente oculto. (Móvil).*
 
 #### 3.3.1.3. Diferenciación entre Páginas Fijas y Lienzo Dinámico del Editor Visual
 
@@ -462,6 +462,7 @@ El sistema clasifica sus avisos e interacciones en cinco formatos principales se
    * **Descripción y ubicación:** Círculos rojos con un contador numérico superpuestos al ícono de una campana interactiva y junto a elementos específicos del menú lateral (como la opción *"Páginas en revisión"*).
    * **Comportamiento:** Se actualizan automáticamente de fondo. Al hacer clic sobre el ícono de la campana, se despliega la ventana del Centro de Notificaciones listando en detalle cada aviso pendiente. Desde allí, el administrador puede ir directamente al origen del aviso o descartarlo marcándolo como resuelto.
    * **Propósito:** Alertar de forma proactiva y no intrusiva sobre tareas administrativas que requieren atención (por ejemplo: advertir sobre cuentas de usuario que están próximas a caducar o notificar la llegada de nuevos borradores que esperan aprobación editorial).
+
 #### 3.3.3.2. Código Cromático y Convenciones Visuales
 
 La plataforma emplea una paleta estandarizada de colores e iconografía institucional para que el usuario identifique instantáneamente la naturaleza y gravedad del aviso:
@@ -489,7 +490,7 @@ La plataforma emplea una paleta estandarizada de colores e iconografía instituc
 
 ## 3.4. Funcionalidades
 
-Paso a paso de las operaciones y flujos de trabajo de la plataforma: autenticación, búsquedas y filtros, gestión integral de información (CRUD), generación de reportes en pantalla y exportación de datos.
+Paso a paso de las operaciones y flujos de trabajo de la plataforma: autenticación, búsquedas y filtros, gestión integral de información (CRUD), generación de reportes en pantalla, exportación de datos y demas procesos existentes en el aplicativo.
 
 ---
 
@@ -538,9 +539,9 @@ Este procedimiento describe el paso a paso para el funcionario que inicia sesió
 
 4. **Establecimiento de la contraseña definitiva:** En la pantalla de cambio de clave, el funcionario debe registrar su nueva contraseña personal:
    * En el campo **"Contraseña temporal"**, se digita la clave provisoria recibida.
-   * En el campo **"Nueva contraseña"**, se escribe la nueva clave personal. La interfaz cuenta con un validador interactivo que confirma en tiempo real el cumplimiento de los 5 requisitos de seguridad de la política de contraseñas del SENA (mínimo 12 caracteres, mayúsculas, minúsculas, números y caracteres especiales).
+   * En el campo **"Nueva contraseña"**, se escribe la nueva clave personal. La interfaz cuenta con un validador interactivo que confirma en tiempo real el cumplimiento de las políticas (mínimo 12 caracteres, combinar 3 de 4 opciones: mayúsculas, minúsculas, números o símbolos, sin emojis ni tabulaciones, y no demasiado larga).
    * En el campo **"Ingresa nuevamente la contraseña"**, se reescribe la nueva clave para certificar la coincidencia exacta.
-   * Se hace clic en el botón **"Continuar"**.
+   * Se hace clic en el botón oscuro **"Continuar"**.
 
 > **[Captura: Contraseña Definitiva Sitio Web]**
 > *Campos de ingreso de contraseña temporal, nueva clave y confirmación con validador de políticas de seguridad en el Sitio Web.*
@@ -600,7 +601,7 @@ Este procedimiento lo ejecutan los funcionarios (Administradores, Editores autor
 
 4. **Establecimiento de la contraseña definitiva:** En el formulario de cambio de clave, el usuario registra su nueva contraseña personal:
    * En el primer campo, se digita la clave provisoria en **"Contraseña temporal"**.
-   * En el segundo campo, se escribe la **"Nueva contraseña"**. El recuadro interactivo de requisitos de seguridad comprueba en tiempo real el cumplimiento de los 5 lineamientos de seguridad (longitud mínima de 12 caracteres, mayúscula, minúscula, dígito y símbolo).
+   * En el segundo campo, se escribe la **"Nueva contraseña"**. El recuadro interactivo comprueba en tiempo real el cumplimiento de las políticas (mínimo 12 caracteres, combinar 3 de 4 opciones: mayúsculas, minúsculas, números o símbolos, sin emojis ni tabulaciones, y no demasiado larga).
    * En el tercer campo, se reescribe la clave en **"Ingresa nuevamente la contraseña"**.
    * Se hace clic en el botón **"Continuar"** (o en el control de navegación siguiente) para validar la información y avanzar.
 
@@ -624,7 +625,7 @@ Este procedimiento lo ejecutan los funcionarios (Administradores, Editores autor
 
 6. **Confirmación, cierre de sesión y evaluación de permisos:** La pantalla presenta la confirmación: **"¡Configuración completada con éxito! Tu cuenta ya es segura."**, recordando que estas respuestas serán el único método para recuperar la cuenta ante olvidos. Al hacer clic en el botón **"Iniciar sesión"**, el sistema cierra la sesión provisional y regresa al formulario de acceso de la Intranet (`/login`). El usuario debe ingresar sus nuevas credenciales definitivas, momento en el cual el sistema valida su identidad y los permisos asignados:
    * **Administradores:** Acceden a la Intranet con plenas facultades de visualización, supervisión editorial y navegación global.
-   * **Editores de Contenido (y roles derivados autorizados):** Acceden a la Intranet con el botón flotante habilitado para maquetar y actualizar las páginas internas autorizadas en su perfil.
+   * **Editores de Contenido (y roles derivados autorizados):** Acceden a la Intranet con el botón flotante habilitado para maquetar y actualizar las páginas internas autorizadas en su rol.
    * **Directores y Subdirectores:** Ingresan a la **pantalla principal de la Intranet** (`/inicio`), habilitando la visualización interactiva de tableros de Power BI, indicadores ocupacionales y descarga de reportes en modalidad de **solo lectura**, sin menú de edición ni acceso al Panel Administrativo.
    * **Cuentas sin permiso para la Intranet:** Si el usuario no cuenta con autorización o permisos para ingresar a este portal, el sistema deniega la entrada mostrando la alerta: *"No tienes permisos para ingresar a la intranet."*
 
@@ -684,9 +685,9 @@ El portal web público no requiere inicio de sesión para la consulta de informa
 > **[Captura: Ejecución de Inicio de Sesión Sitio Web (Móvil)]**
 > *Botón 'Ingresar' activo para iniciar la sesión en el Sitio Web. (Móvil).*
 
-5. **Validación de acceso según el perfil del usuario:** La plataforma comprueba el tipo de cuenta:
+5. **Validación de acceso según el rol del usuario:** La plataforma comprueba el tipo de cuenta:
    * Si la cuenta corresponde a un Administrador o Editor, el sistema autoriza la entrada y da paso inmediato a la vista correspondiente.
-   * Si se trata de un Director o Subdirector (cuyo perfil está destinado a la Intranet), la pantalla no avanza y muestra un recuadro de aviso con el mensaje: *"Tu cuenta no tiene permisos de edición ni de acceso al panel."*, indicándole que debe ingresar por el portal de la Intranet (ver [Sección 3.5.1.2: Validaciones en el Inicio de Sesión Habitual](#3512-validaciones-en-el-inicio-de-sesión-habitual)).
+   * Si se trata de un Director o Subdirector (cuyo rol está destinado a la Intranet), la pantalla no avanza y muestra un recuadro de aviso con el mensaje: *"Tu cuenta no tiene permisos de edición ni de acceso al panel."*, indicándole que debe ingresar por el portal de la Intranet (ver [Sección 3.5.1.2: Validaciones en el Inicio de Sesión Habitual](#3512-validaciones-en-el-inicio-de-sesión-habitual)).
 
 > **[Captura: Verificación de Autorización Sitio Web]**
 > *Validación del tipo de usuario en pantalla para dar paso al entorno correspondiente o mostrar la indicación hacia la Intranet.*
@@ -756,7 +757,7 @@ La Intranet es una plataforma privada e independiente del Sitio Web Público, co
 > **[Captura: Verificación de Autorización en Intranet (Móvil)]**
 > *Mensaje informativo en pantalla confirmando el acceso o con alerta de falta de permiso institucional. (Móvil).*
 
-6. **Despliegue de los módulos y herramientas según rol:** La interfaz se abre mostrando los contenidos correspondientes a cada perfil:
+6. **Despliegue de los módulos y herramientas según rol:** La interfaz se abre mostrando los contenidos correspondientes a cada rol:
    * **Administradores:** Visualizan todas las secciones de la Intranet con libertad de navegación y herramientas de supervisión activas.
    * **Editores de Contenido:** Acceden a las páginas internas autorizadas, visualizando el **botón flotante de edición** para maquetar bloques de contenido.
    * **Directores y Subdirectores:** Ingresan directamente a la **pantalla principal de la Intranet** (`/inicio`), visualizando en pantalla los **tableros interactivos de Power BI**, indicadores del mercado laboral y botones de descarga de reportes en modalidad de **solo lectura** (sin botones de edición ni accesos administrativos).
@@ -906,7 +907,7 @@ El sistema provee mecanismos específicos de salida segura según el entorno en 
 
 ##### Cierre de Sesión desde la Intranet
 
-1. **Ubicación del botón de salida segura:** En la barra superior (Navbar) fija de la Intranet, tanto en computadores de escritorio como en dispositivos móviles, se encuentra un botón directo identificado con el ícono de salir (puerta y flecha) acompañado del texto **"Cerrar sesión"**.
+1. **Ubicación del botón de salida segura:** En la barra superior fija de la Intranet, tanto en computadores de escritorio como en dispositivos móviles, se encuentra un botón directo identificado con el ícono de salir (puerta y flecha) acompañado del texto **"Cerrar sesión"**.
 
 > **[Captura: Ubicación del botón en Intranet]**
 > *Botón de salida segura ('Cerrar sesión') en el extremo derecho de la barra superior de la Intranet.*
@@ -932,36 +933,38 @@ El Panel Administrativo (`/admin`) constituye el centro de gobierno y control in
 
 *(Nota: Para consultar las posibles situaciones de error, incidencias de visualización en la barra lateral o móvil, persistencia de temas y alertas de interfaz asociadas a este entorno con sus respectivas capturas de pantalla, remitirse a la [Sección 3.5.1.5: Validaciones y Solución de Problemas en la Estructura Visual, Navegación y Menú de Perfil](#3515-validaciones-y-solución-de-problemas-en-la-estructura-visual-navegación-y-menú-de-perfil)).*
 
-El entorno del Panel Administrativo está diseñado para facilitar la gestión eficiente del observatorio tanto en estaciones de trabajo como en dispositivos móviles:
+El entorno del Panel Administrativo está diseñado para facilitar la gestión eficiente del observatorio, adaptando sus elementos visuales y de navegación tanto para estaciones de trabajo como para dispositivos móviles. Su estructura general se divide en áreas de navegación fijas y un área central de contenido dinámico.
 
-1. **Barra Lateral de Navegación (Sidebar):**
-   El menú principal en computadores de escritorio se ubica de forma fija en el lateral izquierdo de la pantalla. En esta sección se encuentran:
-   * **Retorno al Sitio Web:** En la parte superior, el logotipo institucional del OLO funciona como enlace permanente para regresar a la vista pública del portal en cualquier momento.
-   * **Navegación Modular:** Enlaces de acceso directo al **Dashboard**, grupo colapsable **Accesos** (con los submenús *Usuarios* y *Roles y Permisos*), **Auditoría**, **Respaldos** y **Actualizaciones** (Carga Masiva).
-   * **Controles auxiliares:** En la parte inferior de la lista de módulos se ubican el botón de **Búsqueda rápida** (que abre el modal interactivo de localización) y el alternador de tema (**Modo claro / Modo oscuro**).
+1. **Barra Lateral de Navegación Fija (Entorno Escritorio):**
+   En computadores de escritorio, el menú de navegación principal se ancla de forma permanente en el lateral izquierdo de la pantalla. Este menú concentra las herramientas globales:
+   * **Logo y Retorno al Sitio Web:** En la parte superior, el logotipo institucional del Observatorio Laboral y Ocupacional (OLO) está siempre visible. Al hacer clic sobre este ícono y título, actúa como un enlace directo que lleva al usuario de regreso a la página principal del sitio web público.
+   * **Navegación Modular:** Presenta una lista de accesos directos a los módulos del sistema. El módulo activo en el que se encuentra el usuario se resalta visualmente (con texto y un borde en color verde, como se aprecia en el Dashboard). Los accesos incluyen el **Dashboard**, el grupo colapsable **Accesos** (identificado por una flecha desplegable que contiene submenús), **Páginas en revisión**, **Auditoría**, **Respaldos** y **Actualizaciones**.
+   * **Buscador Integrado:** En la parte inferior de la barra lateral se ubica un campo fijo interactivo de **Buscar** (identificado con un ícono de lupa y un acceso rápido con símbolo "+"). Este buscador global permite localizar funciones o secciones específicas de manera ágil.
 
-> **[Captura: Barra Lateral de Navegación (Sidebar)]**
-> *Barra lateral izquierda con todas sus opciones modulares y controles auxiliares desplegados.*
+> **[Captura: Barra Lateral de Navegación]**
+> *Barra lateral izquierda mostrando el logotipo de retorno, la navegación modular con el módulo activo resaltado, el menú desplegable y el campo fijo de búsqueda.*
 
 2. **Indicador Numérico de Revisiones:**
-   Dentro del mismo menú de navegación, el ítem **"Páginas en revisión"** integra un contador numérico dinámico. Este elemento visual muestra en tiempo real la cantidad de borradores que los editores han remitido y que están a la espera de aprobación por parte del Administrador.
+   Dentro de la lista de navegación modular, la opción **"Páginas en revisión"** integra un contador numérico dinámico cuando hay acciones pendientes. Este elemento visual alerta y muestra en tiempo real la cantidad de borradores que los editores han remitido y que requieren revisión y aprobación por parte del Administrador.
 
 > **[Captura: Indicador Numérico de Revisiones]**
-> *Detalle del ítem "Páginas en revisión" dentro del menú lateral, resaltando el contador numérico de borradores pendientes.*
+> *Detalle de la opción "Páginas en revisión" en la barra de navegación, exhibiendo el contador numérico de borradores pendientes de revisión.*
 
-3. **Menú de Perfil y Salida Segura:**
-   En la base inferior de la barra lateral de escritorio se encuentra el bloque de usuario del funcionario. Al hacer clic sobre su nombre o foto de perfil, se despliega un menú contextual emergente que ofrece acceso directo a **"Mi perfil"** (para la gestión de sus datos personales, foto y cambio de clave) y la opción de salida segura **"Cerrar sesión"**.
+3. **Menú de Perfil, Notificaciones y Salida Segura:**
+   Los controles de la cuenta de usuario y notificaciones están siempre accesibles:
+   * **Bloque de Perfil:** Ubicado en la base inferior de la barra lateral (en escritorio). Muestra el nombre, el correo del usuario en sesión y un ícono de flecha indicadora. Al hacer clic sobre el nombre de usuario, se despliega un **Menú contextual** para ingresar a **"Mi perfil"** o ejecutar la acción de **"Cerrar sesión"** de forma segura.
+   * **Campana de Notificaciones:** Junto al bloque de perfil se ubica permanentemente el ícono de una campana, diseñada para alertar y desplegar notificaciones relevantes o novedades del sistema.
 
-> **[Captura: Menú de Perfil y Salida Segura]**
-> *Menú contextual emergente desplegado tras hacer clic sobre la foto de perfil en la base del menú lateral.*
+> **[Captura: Menú de Perfil y Notificaciones]**
+> *Vista de la base de la barra lateral, mostrando la información del usuario, el menú desplegable y la campana de notificaciones.*
 
-4. **Adaptabilidad en Dispositivos Móviles:**
-   Al acceder desde un celular o tablet, la disposición estructural cambia automáticamente para optimizar el espacio de lectura:
-   * **Barra superior (Navbar):** Reúne en la parte alta la lupa de búsqueda, el alternador de tema, la campana interactiva de notificaciones y el botón interactivo con la foto de perfil (que despliega el menú de usuario).
-   * **Barra inferior fija (Bottom Navigation):** Mueve los iconos de acceso a los módulos principales hacia la parte baja de la pantalla, permitiendo navegar entre secciones usando los pulgares sin obstruir el área de la tabla de datos.
+4. **Adaptabilidad Estructural en Dispositivos Móviles:**
+   Al ingresar desde un celular o tablet, la arquitectura visual del panel cambia automáticamente mediante un diseño responsivo para optimizar el espacio en pantallas táctiles, dividiendo los controles en dos barras fijas:
+   * **Barra Superior:** Traslada a la cabecera de la pantalla el nombre del usuario y el menú desplegable de perfil (representado con un ícono de flecha hacia abajo), junto con íconos de acceso rápido para la campana de notificaciones, el buscador global (lupa) y un **alternador de tema visual** (ícono de sol o luna para cambiar entre modo claro y oscuro).
+   * **Barra de Navegación Inferior:** Oculta la barra lateral y ubica en la base inferior de la pantalla un menú horizontal persistente. Este menú integra accesos rápidos: *Accesos* (ícono de usuario), *Revisión* (ícono de documento), un botón central destacado del *Dashboard* (representado por el isotipo del OLO en verde), *Auditoría* (escudo) y un botón *Más* (tres puntos) para expandir los módulos restantes.
 
 > **[Captura: Interfaz Adaptativa en Dispositivos Móviles]**
-> *Distribución de los elementos de navegación y perfil divididos entre la barra superior y la barra de navegación inferior. (Móvil).*
+> *Distribución móvil con la barra superior (perfil, notificaciones, buscador y tema) y la barra de navegación inferior con el isotipo del Dashboard destacado en el centro. (Móvil).*
 
 ---
 
@@ -970,31 +973,31 @@ El Panel Administrativo cuenta con un buscador global diseñado para navegar ág
 
 *(Nota: Para consultar las posibles situaciones de error, validaciones de búsqueda y solución de problemas al interactuar con el buscador global o utilizar el botón Devolver, remitirse a la [Sección 3.5.1.6: Validaciones y Solución de Problemas en el Buscador Global del Panel Administrativo](#3516-validaciones-y-solución-de-problemas-en-el-buscador-global-del-panel-administrativo)).*
 
-1. **Apertura del buscador y despliegue de la capa interactiva:**
+1. **Apertura del buscador y despliegue de la pantalla de búsqueda:**
    * **En computadores de escritorio:** Se hace clic sobre la opción **"Buscar"** (identificada con el ícono de lupa) ubicada en la parte inferior de la barra lateral izquierda, inmediatamente encima del menú de usuario y junto al alternador de tema.
-   * **En dispositivos móviles o tabletas:** Se pulsa el botón con el ícono de **lupa** situado en el extremo derecho de la barra de navegación superior (*Navbar*).
-   * Al activarse, la plataforma despliega una capa a pantalla completa que cubre la totalidad de la interfaz e inhabilita temporalmente el desplazamiento del panel subyacente para concentrar la atención en la búsqueda.
+   * **En dispositivos móviles o tabletas:** Se pulsa el botón con el ícono de **lupa** situado en el extremo derecho de la barra de navegación superior.
+   * Al activarse, la plataforma despliega una pantalla de búsqueda a tamaño completo que cubre toda la interfaz e inhabilita temporalmente el desplazamiento del panel que está de fondo, permitiendo concentrar la atención exclusivamente en la búsqueda.
    * El cursor se ubica de forma automática dentro del campo de texto central con el mensaje de guía *"Buscar en el panel…"*. En este estado inicial, la lista de destinos permanece oculta para evitar sobrecarga visual antes de escribir.
 
 > **[Captura: Apertura del Buscador Global]**
-> *Capa a pantalla completa del buscador global con el campo de texto centrado y listo para escribir.*
+> *Pantalla completa del buscador global con el campo de texto centrado y listo para escribir.*
 >
 > **[Captura: Apertura del Buscador Global (Móvil)]**
-> *Capa a pantalla completa del buscador global con el campo de texto centrado y listo para escribir. (Móvil).*
+> *Pantalla completa del buscador global con el campo de texto centrado y listo para escribir. (Móvil).*
 
 2. **Botón Devolver (Cancelación y retorno inmediato sin navegación):**
    * En caso de que el funcionario decida no continuar con la búsqueda o requiera regresar a la sección del panel en la que se encontraba previamente, la interfaz dispone en la esquina superior derecha de un **botón Devolver**, identificado visualmente con el ícono de una **flecha orientada hacia la izquierda**.
-   * Al pulsar este botón Devolver, la capa se cierra de manera instantánea y restituye al usuario exactamente en la vista, formulario o tabla donde estaba trabajando, restaurando el desplazamiento normal del panel sin recargar la página ni perder datos.
+   * Al pulsar este botón Devolver, la ventana de búsqueda se cierra de manera instantánea y regresa al usuario exactamente a la vista, formulario o tabla donde estaba trabajando, restaurando el desplazamiento normal del panel sin recargar la página ni perder datos.
 
 > **[Captura: Botón Devolver del Buscador Global]**
-> *Ubicación del botón Devolver (flecha de retorno) en la esquina superior derecha de la capa interactiva.*
+> *Ubicación del botón Devolver (flecha de retorno) en la esquina superior derecha de la ventana de búsqueda.*
 >
 > **[Captura: Botón Devolver del Buscador Global (Móvil)]**
 > *Ubicación del botón Devolver en la parte superior derecha de la pantalla del buscador. (Móvil).*
 
 3. **Ingreso del término y localización inteligente por sinónimos:**
    * El usuario introduce la palabra clave, término técnico o concepto deseado. El motor de búsqueda procesa la consulta en tiempo real, normalizando el texto de manera automática (eliminando tildes, mayúsculas y espacios sobrantes) y exigiendo que todas las palabras ingresadas coincidan para ofrecer resultados precisos.
-   * La localización no se limita a los nombres exactos de las pantallas, sino que evalúa las descripciones funcionales, categorías y un índice integral de **sinónimos institucionales**, ejempl:
+   * La localización no se limita a los nombres exactos de las pantallas, sino que evalúa las descripciones funcionales, categorías y un índice integral de **sinónimos institucionales**, ejemplo:
      * Al escribir términos como *"bitácora"*, *"historial"*, *"trazabilidad"* o *"log"*, el sistema presenta el módulo de **Auditoría**.
      * Al escribir *"cuentas"*, *"personas"*, *"permisos"* o *"roles"*, sugiere los módulos de **Usuarios** y **Roles y Permisos**.
      
@@ -1011,7 +1014,7 @@ El Panel Administrativo cuenta con un buscador global diseñado para navegar ág
 > *Resultados dinámicos estructurados con título, descripción y categoría que coinciden con el término ingresado. (Móvil).*
 
 4. **Selección rápida del destino (Interacción por ratón o teclado):**
-   * **Selección con ratón o toque táctil:** El usuario hace clic o presiona sobre la tarjeta del resultado elegido. La plataforma cierra la capa interactiva y traslada la navegación de manera directa hacia la sección seleccionada.
+   * **Selección con ratón o toque táctil:** El usuario hace clic o presiona sobre la tarjeta del resultado elegido. La plataforma cierra la pantalla de búsqueda y traslada la navegación de manera directa hacia la sección seleccionada.
 
 > **[Captura: Navegación hacia el Resultado]**
 > *Transición automática hacia el módulo de destino seleccionado en la lista de resultados.*
@@ -1022,6 +1025,9 @@ El Panel Administrativo cuenta con un buscador global diseñado para navegar ág
 ---
 
 #### 3.4.2.3. Tablero Principal y Métricas de Gestión (Dashboard)
+
+*(Nota: Para consultar las validaciones y solución de problemas relacionados con gráficas que no cargan o tarjetas sin resultados, remitirse a la [Sección 3.5.1.7: Validaciones y Solución de Problemas en el Tablero Principal (Dashboard)](#3517-validaciones-y-solución-de-problemas-en-el-tablero-principal-dashboard)).*
+
 Al ingresar al Panel Administrativo (`/admin/dashboard`), el Administrador visualiza el resumen consolidado de la actividad del observatorio:
 
 1. **Tarjeta de Páginas Publicadas:** Muestra el total de páginas activas en el observatorio. El usuario puede hacer clic en las categorías (Sitio Web o Intranet) para desplegar la lista exacta de las páginas publicadas en cada entorno; al hacer clic sobre el título de una página específica en esa lista, el sistema navega directamente a su vista pública para consultarla.
@@ -1034,7 +1040,7 @@ Al ingresar al Panel Administrativo (`/admin/dashboard`), el Administrador visua
 
 2. **Gráficos Interactivos de Visitas y Usuarios:** Las tarjetas adyacentes no solo muestran totales numéricos, sino que incluyen visualizaciones con las que se puede interactuar pasando el cursor del mouse (o tocando en la pantalla móvil):
 
-   * **Tarjeta de Visitas:** Incluye un diagrama de área y líneas equipado con pestañas para alternar entre el tráfico del Sitio Web y la Intranet. Al posar el cursor sobre los nodos de la línea, un recuadro flotante (*tooltip*) indica el título exacto de la página y cuántas visitas específicas ha recibido. Adicionalmente, al hacer clic en cualquier parte de la tarjeta, el gráfico se amplía en una ventana modal que presenta los datos de tráfico de forma extensa y detallada.
+   * **Tarjeta de Visitas:** Incluye un diagrama de área y líneas equipado con pestañas para alternar entre el tráfico del Sitio Web y la Intranet. Al posar el cursor sobre los nodos de la línea, un recuadro flotante indica el título exacto de la página y cuántas visitas específicas ha recibido. Adicionalmente, al hacer clic en cualquier parte de la tarjeta, el gráfico se amplía en una ventana modal que presenta los datos de tráfico de forma extensa y detallada.
 
 > **[Captura: Gráfico Interactivo de Visitas]**
 > *Diagrama de líneas de visitas mostrando sus cuadros de detalle al interactuar con la tarjeta.*
@@ -1076,7 +1082,10 @@ Al ingresar al Panel Administrativo (`/admin/dashboard`), el Administrador visua
 En la barra lateral (escritorio) o barra inferior (móvil), el grupo **"Accesos"** se expande para revelar la administración centralizada de cuentas y permisos.
 
 ##### 3.4.2.4.1. Submenú: Usuarios
-En este apartado se gestionan las cuentas individuales de la plataforma. La interfaz está compuesta por una cabecera de controles, una tabla central de datos y un paginador en la base:
+
+*(Nota: Para consultar la guía de solución de obstáculos comunes durante estos procesos, como alertas de dominio incorrecto, fechas caducadas o ventanas bloqueadas, remitirse a la [Sección 3.5.1.8: Validaciones y Solución de Problemas en la Gestión de Usuarios](#3518-validaciones-y-solución-de-problemas-en-la-gestión-de-usuarios)).*
+
+En este apartado se gestionan las cuentas individuales de los funcionarios que interactúan con la plataforma del OLO. La interfaz está compuesta por una cabecera con el botón de creación (**"Crear Usuario"**), una barra de búsqueda en tiempo real, una tabla central de datos y un paginador en la base:
 
 1. **Acceso al módulo:** En el menú lateral (o barra inferior de navegación en móviles), desplegar "Accesos" y hacer clic en **"Usuarios"**.
 
@@ -1086,26 +1095,32 @@ En este apartado se gestionan las cuentas individuales de la plataforma. La inte
 > **[Captura: Paso 1 (Móvil)]**
 > *Acceso al submenú Usuarios en el menú lateral. (Móvil).*
 
-2. **Tabla General y Navegación:** Al ingresar, el sistema despliega el listado completo de los funcionarios registrados. Para facilitar la navegación sin saturar la pantalla, la tabla cuenta con **controles de paginación** en la parte inferior, permitiendo avanzar o retroceder entre páginas de resultados. 
+2. **Tabla General, Columnas y Búsqueda:** Al ingresar, el sistema despliega el listado completo de los funcionarios registrados. En la parte superior se dispone de un campo de búsqueda interactivo (**"Buscar usuarios..."**) para filtrar resultados en tiempo real por nombre, apellidos, correo electrónico institucional o rol asignado, así como controles de paginación en la parte inferior para recorrer los registros de manera ágil sin saturar la pantalla.
    La tabla expone las siguientes columnas de información:
-   * **Nombre y Apellidos:** Identificación del funcionario.
-   * **Email:** Cuenta corporativa vinculada (`@sena.edu.co`).
-   * **Rol:** El nivel de privilegios asignado en el sistema (ej. Administrador, Editor, etc.).
-   * **Expiración (Opcional):** Indica si la cuenta tiene un límite de validez programado.
+   * **Nombre:** Nombres y apellidos completos del funcionario.
+   * **Correo:** Cuenta corporativa vinculada (`@sena.edu.co`).
+   * **Rol:** El rol de acceso asignado en el sistema (ej. Administrador, Editor, o rol derivado).
    * **Estado:** Un interruptor visual que indica si la cuenta está Activa o Inactiva/Suspendida.
-   * **Acciones:** Botones operativos específicos para interactuar con cada fila.
+   * **Bloqueo:** Indicador de seguridad que señala si la cuenta se encuentra temporalmente bloqueada por exceso de intentos fallidos y el tiempo restante de bloqueo.
+   * **Acciones:** Herramientas operativas individuales para interactuar con cada fila:
+     * **Ícono de lápiz (Editar Usuario):** Abre la ventana modal para modificar datos del usuario, reasignar rol, gestionar fecha de caducidad y opciones de restablecimiento de contraseña o preguntas de seguridad.
+     * **Ícono de basurero (Eliminar usuario):** Despliega la ventana modal de confirmación para eliminar de forma definitiva la cuenta del sistema.
 
 > **[Captura: Tabla General de Usuarios]**
-> *Vista de la tabla detallando sus columnas y el paginador inferior.*
+> *Vista de la tabla de usuarios detallando sus columnas, buscador superior y el paginador inferior.*
 >
 > **[Captura: Tabla General de Usuarios (Móvil)]**
-> *Vista de la tabla detallando sus columnas y el paginador inferior. (Móvil).*
+> *Vista de la tabla de usuarios detallando sus columnas, buscador superior y el paginador inferior. (Móvil).*
 
-3. **Creación de Cuentas (Botón "Nuevo Usuario"):** En la cabecera del módulo, hacer clic en el botón de creación para abrir el modal de registro de funcionarios. Se deben diligenciar los campos obligatorios:
+3. **Creación de Cuentas y Generación de Credenciales:** En la cabecera del módulo, hacer clic en el botón **"Crear Usuario"** para abrir el modal de registro de funcionarios. Se deben diligenciar los campos obligatorios:
    * **Nombre y Apellidos**
-   * **Correo electrónico institucional** (estrictamente `@sena.edu.co`)
+   * **Correo electrónico** (estrictamente `@sena.edu.co`)
    * **Rol asignado** (Administrador, Editor base o cualquier rol derivado)
-   * **Fecha de Expiración (Opcional)**
+   * **Fecha de caducidad (Opcional):** Si se deja en blanco, la cuenta será de carácter permanente y no expirará automáticamente. Si se establece una fecha, el sistema desactivará el acceso del usuario en cuanto se cumpla dicho plazo.
+   
+   En la parte inferior del formulario de creación se encuentran las opciones de acción:
+   * **Cancelar:** Descarta la operación y cierra la ventana sin registrar al funcionario.
+   * **Guardar:** Confirma la información ingresada y da de alta al usuario en el sistema.
 
 > **[Captura: Modal Nuevo Usuario]**
 > *Formulario modal de registro de nuevo usuario.*
@@ -1113,8 +1128,9 @@ En este apartado se gestionan las cuentas individuales de la plataforma. La inte
 > **[Captura: Modal Nuevo Usuario (Móvil)]**
 > *Formulario modal de registro de nuevo usuario. (Móvil).*
 
-4. **Generación de credenciales temporales:** Al confirmar la creación mediante el botón **"Crear Usuario"**, el sistema genera automáticamente una **contraseña temporal provisoria** y la despliega en pantalla dentro de un recuadro destacado con botón de copiado rápido.
-   * **Responsabilidad de comunicación:** El Administrador debe copiar dicha clave y hacérsela llegar al funcionario a través de los canales internos del SENA (correo electrónico, chat interno u otro medio formal). El sistema no envía correos de bienvenida de forma automática.
+   Al confirmar la creación mediante el botón **"Guardar"**, el sistema genera automáticamente una **contraseña temporal provisoria** y la despliega en una segunda ventana modal ("Contraseña temporal generada").
+   * **Validación de copiado obligatorio:** Por seguridad, el sistema advierte que la contraseña no se podrá volver a visualizar y **bloquea el botón "Cerrar"** de la ventana hasta que el Administrador presione obligatoriamente el botón verde de **"Copiar"**.
+   * **Responsabilidad de comunicación:** Una vez copiada, el Administrador debe hacerle llegar esta clave al nuevo funcionario a través de los canales internos del SENA (correo electrónico corporativo, chat interno u otro medio formal), ya que la plataforma no envía notificaciones de bienvenida de forma automática.
    * En el primer inicio de sesión del funcionario, el sistema le exigirá de forma obligatoria el cambio de clave y la configuración de sus preguntas de seguridad (ver [Sección 3.4.1.1: Flujo de Primer Ingreso](#3411-flujo-de-primer-ingreso)).
 
 > **[Captura: Credenciales Generadas]**
@@ -1123,16 +1139,52 @@ En este apartado se gestionan las cuentas individuales de la plataforma. La inte
 > **[Captura: Credenciales Generadas (Móvil)]**
 > *Recuadro con la contraseña temporal generada. (Móvil).*
 
-5. **Acciones de Gestión sobre Usuarios Existentes:**
-   Cada usuario registrado cuenta con herramientas de control en su respectiva fila:
-   * **Editar (Ícono de lápiz):** Abre el formulario para modificar su nombre, apellidos, rol asignado o fecha de expiración. Dentro de este mismo modal de edición, existen opciones para **Restablecer la contraseña** o **Restablecer las preguntas de seguridad**, en caso de que el funcionario pierda el acceso y necesite credenciales temporales nuevas.
-   * **Eliminar (Ícono de basurero):** Permite borrar definitivamente al usuario si fue creado por error. *(Nota: Por trazabilidad, a los usuarios con actividad en el sistema se recomienda suspenderlos en lugar de eliminarlos).*
-   * **Suspender / Activar (Interruptor de la columna Estado):** Al hacer clic sobre el estado (Activo/Inactivo), el sistema revoca de inmediato el acceso de ese usuario. Si un usuario es suspendido, se desconectan sus sesiones actuales y se bloquea cualquier intento futuro de ingreso, manteniendo intacto su historial en la bitácora de auditoría.
+4. **Edición y Restablecimiento de Cuentas (Ícono de lápiz):**
+   Al hacer clic en el ícono de lápiz ubicado en la fila de un usuario, se abre el modal de edición. Desde aquí, el Administrador tiene acceso a dos procesos:
+   * **Actualización de datos del usuario:** Permite modificar la información base, incluyendo el nombre, apellidos, el rol asignado (nivel de privilegios) o establecer/quitar la fecha de caducidad de la cuenta. 
+   * **Opciones de restablecimiento:** En la base del formulario, se encuentran botones críticos para brindar soporte técnico al funcionario:
+     * **Restablecer la contraseña:** Genera una nueva clave temporal y fuerza el flujo de primer ingreso. *(Nota: Esta acción también funciona como un mecanismo de **desbloqueo manual**, eliminando de forma inmediata cualquier bloqueo de 15 minutos por intentos fallidos).*
+     * **Restablecer las preguntas de seguridad:** Borra las preguntas previamente configuradas por el usuario, obligándolo a elegir y responder un nuevo par de preguntas de seguridad en su próximo inicio de sesión.
+
+> **[Captura: Modal Edición de Usuario]**
+> *Modal de edición mostrando los campos del usuario y las opciones de restablecimiento.*
+>
+> **[Captura: Modal Edición de Usuario (Móvil)]**
+> *Modal de edición mostrando los campos del usuario y las opciones de restablecimiento. (Móvil).*
+
+5. **Suspender y Activar Cuentas (Interruptor de Estado):**
+   La columna "Estado" permite gestionar el acceso de los funcionarios mediante un interruptor:
+   * **Suspender cuenta (Pasar a Inactivo):** Al apagar el interruptor, el sistema revoca de inmediato el acceso. Si la persona estaba conectada, sus sesiones se cierran al instante y se bloquea cualquier intento de ingreso futuro. **Esta es la acción recomendada** para retirar a un usuario, ya que conserva intacto su historial en la bitácora de auditoría.
+   * **Activar cuenta (Pasar a Activo):** Al volver a encender el interruptor para restituirle el acceso a un usuario previamente suspendido, el sistema ejecuta dos procesos automáticos:
+     1. **Validación de caducidad:** Si la "Fecha de caducidad" de esa cuenta ya está vencida, el sistema bloqueará la activación y desplegará una alerta advirtiendo que primero se debe extender la fecha desde el modal de edición.
+     2. **Generación de nueva clave:** Si la fecha es válida, se restablecerá automáticamente su contraseña por seguridad, desplegando en pantalla una credencial temporal nueva que el Administrador deberá compartirle al funcionario.
+
+> **[Captura: Cambiar Estado de Usuario]**
+> *Interruptor de estado en la tabla general y alerta de caducidad vencida.*
+>
+> **[Captura: Cambiar Estado de Usuario (Móvil)]**
+> *Interruptor de estado en la tabla general. (Móvil).*
+
+6. **Eliminar Cuentas (Ícono de basurero):**
+   El borrado definitivo de una cuenta se ejecuta mediante el ícono de basurero ubicado en la fila correspondiente al funcionario. Es posible eliminar a un usuario incluso si este cuenta con un historial de creación de páginas o registros previos, ya que el sistema está diseñado para conservar dicha trazabilidad de manera segura.
+   * **Confirmación obligatoria:** Al seleccionar el ícono, se despliega una ventana modal de advertencia ("¿Eliminar usuario?") indicando el carácter irreversible de la acción. El procedimiento se concreta al seleccionar el botón rojo **"Eliminar"**, o bien se interrumpe mediante la opción **"Cancelar"**.
+   * **Restricción de seguridad (Último Administrador):** La plataforma cuenta con una única validación estricta de bloqueo: el sistema impedirá el borrado si se intenta eliminar al último usuario con rol de Administrador activo, con el fin de garantizar la gestión continua y evitar que el portal quede sin soporte.
+
+> **[Captura: Confirmación de Eliminación]**
+> *Alerta de seguridad para confirmar el borrado definitivo de un usuario.*
+>
+> **[Captura: Confirmación de Eliminación (Móvil)]**
+> *Alerta de seguridad para confirmar el borrado definitivo de un usuario. (Móvil).*
 
 ---
 
 ##### 3.4.2.4.2. Submenú: Roles y Permisos
-Permite al Administrador gestionar los roles del sistema y crear perfiles con permisos granulares:
+
+*(Nota: Para consultar la guía de solución de obstáculos comunes durante estos procesos, como bloqueos al intentar eliminar roles en uso, nombres no modificables o delegación de páginas nuevas, remitirse a la [Sección 3.5.1.9: Validaciones y Solución de Problemas en la Gestión de Roles y Permisos](#3519-validaciones-y-solución-de-problemas-en-la-gestión-de-roles-y-permisos)).*
+
+En este apartado se gestionan los roles del sistema y se configuran roles a la medida con permisos específicos sobre las páginas y herramientas de la plataforma. La interfaz está compuesta por una cabecera con el botón de creación, una barra de búsqueda en tiempo real, una tabla central de datos y un paginador en la base.
+
+Por motivos de seguridad estructural del sistema, la tabla **oculta** deliberadamente los roles fijos administrativos o gerenciales (`Administrador` y `Director/Subdirector`), puesto que sus facultades son estáticas y están protegidas por código fuente. En este módulo únicamente se visualizan y gestionan el rol base **Editor** y los roles derivados personalizados (hijos de Editor).
 
 1. **Acceso al módulo:** En el menú lateral (o barra inferior de navegación en móviles), bajo "Accesos", hacer clic en **"Roles"** (o "Roles y Permisos").
 
@@ -1142,50 +1194,110 @@ Permite al Administrador gestionar los roles del sistema y crear perfiles con pe
 > **[Captura: Paso 1 (Móvil)]**
 > *Acceso al submenú Roles en el menú lateral. (Móvil).*
 
-2. **Roles del sistema:** La tabla muestra los roles existentes:
-   * **Roles base predefinidos:** `Administrador` (superusuario de plataforma con control total no editable) y `Editor` (rol base de contenidos con permisos completos sobre el editor visual).
-   * **Roles derivados (Hijos de Editor):** Perfiles personalizados creados por el Administrador para delimitar qué páginas específicas o qué acciones puede realizar un grupo de funcionarios.
+2. **Tabla General, Columnas y Búsqueda:** Al ingresar, el sistema despliega el catálogo de roles gestionables. En la parte superior se dispone de un campo de búsqueda interactivo (**"Buscar roles..."**) para filtrar resultados en tiempo real por nombre o descripción, así como controles de paginación en la parte inferior para recorrer la lista de manera organizada.
+   La tabla expone las siguientes columnas de información:
+   * **Rol:** Nombre oficial asignado (el rol base predefinido `Editor`, o bien los roles derivados que incorporan el prefijo obligatorio `Editor [Nombre]`).
+   * **Descripción:** Detalle textual que resume el alcance, objetivo o dependencia asignada a dicho rol. Si no se especificó un texto al crearlo, el sistema muestra la indicación *"Sin descripción"*.
+   * **Permisos:** Etiqueta visual (cápsula interactiva) que contabiliza numéricamente la cantidad exacta de permisos activos asignados al rol (ej. *«14 permisos»*).
+   * **Acciones:** Herramientas operativas individuales para interactuar con cada fila:
+     * **Ícono de lápiz (Editar rol y permisos):** Abre la ventana modal para modificar la denominación, descripción y los permisos asignados al rol.
+     * **Ícono de basurero (Eliminar rol):** Permite suprimir roles personalizados derivados. En el rol base **"Editor"**, este botón permanece permanentemente **deshabilitado y bloqueado en gris**, impidiendo su eliminación por ser un componente estructural del sistema.
 
-> **[Captura: Paso 2]**
-> *Listado de roles predefinidos y derivados en el sistema.*
+> **[Captura: Tabla General de Roles]**
+> *Vista de la tabla de roles detallando sus columnas, contador de permisos y buscador superior.*
 >
-> **[Captura: Paso 2 (Móvil)]**
-> *Listado de roles predefinidos y derivados en el sistema. (Móvil).*
+> **[Captura: Tabla General de Roles (Móvil)]**
+> *Vista de la tabla de roles detallando sus columnas, contador de permisos y buscador superior. (Móvil).*
 
-3. **Creación o edición de roles con permisos granulares:**
-   * **Botón "Nuevo Rol":** Abre el modal de configuración de perfiles.
-   * **Nombre y descripción:** Asignar una denominación clara al rol derivado (ej. "Editor Regional Antioquia", "Revisor Prensa").
-   * **Matriz de permisos:** El Administrador puede marcar o desmarcar permisos específicos organizados por categorías:
-     * **Gestión de Páginas:** Crear páginas, editar borradores, enviar a revisión, eliminar páginas dinámicas.
-     * **Componentes Globales:** Habilitar o restringir la edición de la Cabecera (Header) y Pie de página (Footer) de la plataforma.
-     * **Secciones específicas:** Seleccionar exactamente sobre qué páginas dinámicas o estáticas del Sitio Web o de la Intranet tiene potestad el rol.
-     * **Operaciones Especiales:** Autorización para realizar Carga Masiva en Excel o consulta de reportes analíticos.
-     * En el pie del modal, se detalla un resumen de los cambios efectuados antes de confirmar.
-     * Al hacer clic en el botón **"Guardar permisos"** (o **"Guardar Rol"**), los cambios se aplican de manera inmediata y afectarán a todos los usuarios asignados a dicho rol.
+3. **Creación de Roles Derivados (Botón "Nuevo Editor"):** En la cabecera superior del módulo, hacer clic en el botón **"Nuevo Editor"** para abrir la ventana modal de configuración. Se deben diligenciar los siguientes campos:
+   * **Nombre del rol:** Campo de texto donde el prefijo **"Editor"** ya viene fijado por el sistema de forma obligatoria. Solo se debe ingresar la denominación complementaria según el área o función (ej. *«Inicio»*, *«Prensa»*, *«Regional Antioquia»*, con un máximo de 70 caracteres).
+   * **Descripción:** Cuadro de texto para especificar las funciones o el alcance operativo del rol (hasta 200 caracteres).
+   * **Permisos:** Se debe hacer clic en el botón **"Añadir permisos"**, el cual abre la ventana modal de permisos y actualiza el contador de permisos elegidos (ej. *«3 seleccionados»*). *(Nota: Para consultar la definición y el alcance de las 5 secciones de control de permisos que componen la plataforma, remitirse a la [Sección 3.2.2.3: Estructura y Ámbitos de los Permisos (Las 5 Secciones de Control)](#3223-estructura-y-ámbitos-de-los-permisos-las-5-secciones-de-control)).*
    
-   * **Delegación de páginas nuevas a otros roles:** Cuando un editor crea una página nueva en el sistema, esta solo queda habilitada automáticamente para el Administrador, para el rol base Editor y para el rol creador. Si otros roles derivados requieren intervenir o editar esa página, el Administrador debe ingresar a este submenú, hacer clic en el ícono de lápiz sobre el rol correspondiente, buscar la página dentro de "Secciones del sitio web" o "Secciones de la intranet", y encender manualmente su interruptor de edición.
+   En la base del formulario se encuentran los controles de confirmación:
+   * **Cancelar:** Cierra la ventana y descarta la creación.
+   * **Guardar:** Confirma la información e ingresa el nuevo rol derivado a la plataforma.
 
-> **[Captura: Paso 3]**
-> *Evidencia visual de la acción descrita en el paso 3.*
+> **[Captura: Modal Nuevo Editor]**
+> *Ventana modal de registro para la creación de un nuevo rol derivado de Editor.*
 >
-> **[Captura: Paso 3 (Móvil)]**
-> *Evidencia visual de la acción descrita en el paso 3. (Móvil).*
+> **[Captura: Modal Nuevo Editor (Móvil)]**
+> *Ventana modal de registro para la creación de un nuevo rol derivado de Editor. (Móvil).*
 
-###### 3.4.2.4.2.1. Eliminación de Roles Derivados
+4. **Edición de Roles y Configuración de Permisos (Ícono de lápiz):**
+   Para modificar la información o el alcance operativo de un rol existente, el Administrador debe ubicarse en la tabla de datos y hacer clic en el **ícono de lápiz** (*"Editar rol y permisos"*) ubicado en la columna *Acciones* de la fila correspondiente al rol.
 
-1. **Verificación previa:** El Administrador debe confirmar que ningún usuario activo tenga ese rol asignado. Si existen usuarios con el rol, el sistema bloqueará la eliminación.
+   Al pulsar este botón, el sistema despliega la ventana modal **«Permisos del rol «[Nombre del Rol]»»**, la cual presenta los datos base del rol:
+   * **Nombre del rol:** Campo informativo de solo lectura y no modificable (acompañado por el distintivo *«No modificable»*). Una vez que un rol ha sido creado en la plataforma, su nombre no se puede alterar desde esta ventana modal (aplica tanto para el rol base «Editor» como para los roles derivados), preservando la estabilidad estructural y la coherencia de las cuentas asociadas. Únicamente es posible actualizar su descripción y sus permisos.
+   * **Descripción del rol:** Área de texto editable (hasta 200 caracteres) para actualizar o detallar las responsabilidades del rol.
+   * **Aviso preventivo del sistema:** Se presenta una alerta informativa destacada en recuadro ámbar que advierte: *«Esto afecta a todas las personas con el rol «[Nombre]», no solo a la que estés editando. El cambio se aplica en cuanto guardas.»*, recordando que la modificación no es individual, sino que impacta de inmediato a todos los funcionarios que tengan asignado dicho rol.
+   * **Botón "Editar permisos":** Al pulsar este botón, la ventana modal expande el catálogo interactivo de permisos y habilita las herramientas de búsqueda y control.
 
-> **[Captura: Bloqueo Eliminar Rol]**
-> *Alerta del sistema bloqueando la eliminación de un rol que aún tiene usuarios asignados.*
+> **[Captura: Modal Edición de Rol - Datos Básicos]**
+> *Ventana modal de edición mostrando el nombre del rol no modificable, la descripción, el aviso preventivo y el botón para editar permisos.*
 >
-> **[Captura: Bloqueo Eliminar Rol (Móvil)]**
-> *Alerta del sistema bloqueando la eliminación de un rol que aún tiene usuarios asignados. (Móvil).*
+> **[Captura: Modal Edición de Rol - Datos Básicos (Móvil)]**
+> *Ventana modal de edición mostrando el nombre del rol no modificable, la descripción, el aviso preventivo y el botón para editar permisos. (Móvil).*
 
-2. **Reasignación obligatoria:** Si el rol tiene usuarios asignados, el Administrador debe primero editar cada uno de esos usuarios (Sección 3.4.2.4.1, paso 6) y asignarles otro rol antes de continuar.
+   Al pulsar el botón **"Editar permisos"**, la ventana modal despliega las herramientas de control organizadas estrictamente en las **5 secciones de control** establecidas en la plataforma (remitirse a la [Sección 3.2.2.3: Estructura y Ámbitos de los Permisos (Las 5 Secciones de Control)](#3223-estructura-y-ámbitos-de-los-permisos-las-5-secciones-de-control)):
+   * **Buscador interno de permisos:** Campo de búsqueda interactivo (*«Buscar un permiso…»*) con ícono de lupa que filtra dinámicamente los permisos visibles conforme el Administrador escribe.
+   * **Estructura de las 5 secciones de control:** Cada sección cuenta con su encabezado y un contador numérico de permisos concedidos respecto al total del bloque (ej. *«2/3»*):
+     1. **Acceso:** Controla las puertas de entrada a los entornos del sistema (el Sitio Web Público y la Intranet del OLO).
+     2. **Editar:** Regula la intervención sobre el menú y pie de página, aplicables de forma independiente para el Sitio Web y para la Intranet (afecta a todas las páginas de la respectiva aplicación).
+     3. **Secciones del sitio web:** Control individual página por página para el portal público (*«Inicio»*, *«Política de privacidad»* y páginas dinámicas creadas). Dispone de los botones de acción rápida **"Todas"** (activa simultáneamente todas las páginas del bloque) y **"Quitar todas"** (desactiva todas las páginas del bloque).
+     4. **Secciones de la intranet:** Control individual para maquetar y actualizar las páginas y módulos analíticos internos de la Intranet (*«Inicio»*, *«Tasa de vinculación»*, *«Matriz de tendencias»*, *«Encuestas de calidad de la formación»*, *«Encuestas de seguimiento laboral»* y páginas dinámicas internas). Dispone también de los botones de acción rápida **"Todas"** y **"Quitar todas"**.
+     5. **Qué puede hacer dentro del editor:** Facultades de acción estructural dentro del lienzo de trabajo interactivo (crear nuevas páginas o eliminar páginas dinámicas creadas).
+   * **Interruptores (`Switch`) e insignias de cambio en tiempo real:** Cada permiso cuenta con un interruptor individual. Al cambiar el estado de cualquier interruptor, el sistema compara la selección con la configuración original y despliega una insignia visual inmediata:
+     * **«se añade»:** Indica que el permiso está siendo incorporado al rol.
+     * **«se quita»:** Indica que el permiso está siendo revocado del rol.
+     * **«solo interfaz»:** Distintivo visible en permisos cuyo control aplica a la visualización del editor de contenidos.
 
-3. **Eliminación del rol:** Una vez el rol no tenga usuarios asignados, en la lista de roles se debe hacer clic en el **ícono de basurero** de la fila correspondiente.
+> **[Captura: Despliegue de las 5 Secciones de Permisos]**
+> *Catálogo interactivo de permisos desplegado tras pulsar "Editar permisos", detallando el buscador interno y las 5 secciones de control.*
+>
+> **[Captura: Despliegue de las 5 Secciones de Permisos (Móvil)]**
+> *Catálogo interactivo de permisos desplegado tras pulsar "Editar permisos", detallando el buscador interno y las 5 secciones de control. (Móvil).*
 
-4. **Confirmación:** El sistema mostrará una ventana de confirmación. Se debe hacer clic en **"Eliminar rol"** para confirmar. La acción quedará registrada en la bitácora de auditoría.
+   En la parte inferior de la ventana modal se ubican los controles de guardado y confirmación:
+   * **Resumen de modificaciones en tiempo real:** En la base de la ventana modal se describe en vivo el balance exacto de cambios detectados (ej. *«Descripción actualizada · 2 permisos añadidos · 1 quitado»* o *«Sin cambios que guardar.»* si no se han realizado variaciones).
+   * **Cancelar:** Descarta cualquier modificación pendiente y cierra la ventana modal sin aplicar cambios.
+   * **Guardar permisos:** Se activa únicamente si existen modificaciones pendientes. Al pulsarlo, el botón cambia su etiqueta a *«Guardando…»* mientras se transmiten los cambios al servidor.
+
+> **[Captura: Resumen de Cambios en Pie de Modal]**
+> *Barra inferior de la ventana modal reflejando en tiempo real las modificaciones realizadas antes de guardar.*
+>
+> **[Captura: Resumen de Cambios en Pie de Modal (Móvil)]**
+> *Barra inferior de la ventana modal reflejando en tiempo real las modificaciones realizadas antes de guardar. (Móvil).*
+
+   Una vez procesada la actualización, la ventana modal se cierra de forma automática y la plataforma emite una notificación flotante de confirmación (toast) en pantalla:
+   * **Título:** **«Rol actualizado»**
+   * **Mensaje:** *«Se aplicaron los cambios para el rol «[Nombre del Rol]».»*
+   Asimismo, la tabla central de roles actualiza de inmediato la descripción y el contador total de permisos asignados en su respectiva fila.
+
+> **[Captura: Notificación Rol Actualizado]**
+> *Alerta flotante de confirmación en pantalla informando la actualización exitosa del rol.*
+>
+> **[Captura: Notificación Rol Actualizado (Móvil)]**
+> *Alerta flotante de confirmación en pantalla informando la actualización exitosa del rol. (Móvil).*
+
+   * **Inclusión dinámica de páginas creadas:** Cuando se crean nuevas páginas en el sitio web o en la intranet, estas se integran automáticamente a sus secciones correspondientes dentro de este catálogo para permitir su asignación individual a los roles derivados requeridos. *(Nota: Si un funcionario con rol derivado no visualiza el botón de edición en una página nueva, consultar el procedimiento de delegación en la [Sección 3.5.1.9 - Caso 4](#3519-validaciones-y-solución-de-problemas-en-la-gestión-de-roles-y-permisos)).*
+
+5. **Eliminación de Roles Derivados (Ícono de basurero):**
+   El borrado de un rol personalizado que no se encuentre en uso se ejecuta desde la tabla mediante el **ícono de basurero** ubicado en la columna *Acciones* de su fila correspondiente.
+
+   * **Confirmación de eliminación definitiva:** Al presionar el botón en un rol derivado apto para borrado (sin funcionarios asignados), el sistema despliega la ventana modal de confirmación (*«¿Eliminar este rol?»*), advirtiendo que la acción es permanente e irreversible:
+     * **Cancelar:** Cierra la ventana y conserva el rol intacto en el sistema.
+     * **Eliminar:** Botón destructivo en color rojo que retira de forma definitiva el rol de la base de datos y registra el evento en la bitácora de auditoría. Al completarse, el sistema emite la notificación flotante de confirmación (*«Rol eliminado - El rol «[Nombre]» se eliminó exitosamente.»*).
+
+> **[Captura: Confirmación Eliminación de Rol sin Usuarios]**
+> *Ventana modal de confirmación definitiva para eliminar un rol derivado sin usuarios asociados.*
+>
+> **[Captura: Confirmación Eliminación de Rol sin Usuarios (Móvil)]**
+> *Ventana modal de confirmación definitiva para eliminar un rol derivado sin usuarios asociados. (Móvil).*
+
+   * **Reglas de integridad y restricciones de seguridad:**
+     * **Rol base "Editor":** Su ícono de basurero permanece permanentemente deshabilitado y bloqueado en gris, puesto que es un componente estructural indispensable del sistema y no puede ser eliminado (ver [Sección 3.5.1.9 - Caso 3](#3519-validaciones-y-solución-de-problemas-en-la-gestión-de-roles-y-permisos)).
+     * **Roles con usuarios vinculados:** Por regla de integridad, ningún usuario puede quedar sin rol en la plataforma. Si el Administrador intenta eliminar un rol que tenga uno o más funcionarios asignados, el sistema bloquea la acción y presenta una ventana modal informativa orientando a la reasignación previa de cuentas (ver guía detallada de resolución en la [Sección 3.5.1.9 - Caso 1](#3519-validaciones-y-solución-de-problemas-en-la-gestión-de-roles-y-permisos)).
 
 ---
 
@@ -1826,7 +1938,7 @@ Durante el primer ingreso (cuyo procedimiento operativo regular se detalla en la
    * *Situaciones anómalas y respuestas del sistema:*
      * **Sesión provisional expirada o no iniciada:** Si el usuario ingresa de forma manual a la ruta `/first-login` sin una sesión activa o si la sesión caducó por inactividad, la plataforma detiene la carga con la alerta: `"No se pudo comprobar el estado de tu cuenta. Vuelve a iniciar sesión."`, facilitando el enlace directo para regresar a la pantalla de acceso.
      * **Cuenta sin configuraciones pendientes:** Si la cuenta ya había completado el proceso con anterioridad (por ejemplo, desde otra pestaña del navegador), el sistema no solicita credenciales temporales inexistentes; en su lugar, presenta el aviso: `"Tu cuenta ya está configurada. No hay nada pendiente: tu contraseña y tus preguntas de seguridad están al día."` junto con el botón `"Ir al panel"`.
-   * *Acción de corrección:* Iniciar sesión nuevamente en el portal para que el aplicativo evalúe los pendientes activos del perfil.
+   * *Acción de corrección:* Iniciar sesión nuevamente en el portal para que el aplicativo evalúe los pendientes activos de la cuenta.
 
 > **[Captura: Alerta de Estado de Cuenta en Primer Ingreso Sitio Web]**
 > *Aviso del sistema ante sesiones caducadas o mensaje informativo cuando la cuenta ya completó la configuración inicial.*
@@ -1852,7 +1964,7 @@ Durante el primer ingreso (cuyo procedimiento operativo regular se detalla en la
    * *Acciones erróneas y validaciones:*
      * **Omisión de pregunta:** Si el usuario no despliega el catálogo ni selecciona una pregunta, el sistema bloquea el paso indicando: `"Selecciona una pregunta"`.
      * **Respuesta vacía o con espacios:** Si no se escribe texto en el campo de respuesta o se ingresan únicamente espacios en blanco, se resalta: `"La respuesta es requerida"`.
-     * **Preguntas repetidas:** El selector interactivo bloquea y desactiva automáticamente las preguntas seleccionadas en pasos anteriores para impedir la duplicación de ítems en el perfil.
+     * **Preguntas repetidas:** El selector interactivo bloquea y desactiva automáticamente las preguntas seleccionadas en pasos anteriores para impedir la duplicación de ítems en la cuenta.
    * *Acción de corrección:* Seleccionar una pregunta diferente en cada uno de los tres pasos y registrar una respuesta confidencial válida.
 
 > **[Captura: Validaciones en Preguntas de Seguridad Sitio Web]**
@@ -1862,10 +1974,10 @@ Durante el primer ingreso (cuyo procedimiento operativo regular se detalla en la
 > *Alertas por omisión de selección de pregunta del catálogo y validación de respuesta obligatoria en el Sitio Web. (Móvil).*
 
 6. **Confirmación, cierre de sesión y evaluación de permisos:**
-   * *Acciones erróneas y alertas de perfil:*
+   * *Acciones erróneas y alertas según rol:*
      * **Uso indebido de la contraseña temporal anterior:** Tras finalizar la configuración e intentar iniciar sesión en `/login`, si el usuario digita la clave temporal previa en lugar de la nueva contraseña recién creada, el sistema rechaza el ingreso con `"Correo o contraseña incorrectos"`, ya que la clave provisional fue reemplazada de forma definitiva.
-     * **Perfiles sin permisos para el Sitio Web (Directores / Subdirectores):** Si un funcionario con perfil directivo se autentica correctamente en este portal, el sistema comprueba que no cuenta con facultades de edición ni de acceso al panel administrativo y detiene el acceso mostrando la alerta preventiva: *"Tu cuenta no tiene permisos de edición ni de acceso al panel."*, orientándolo a ingresar por la Intranet.
-   * *Acción de corrección:* Iniciar sesión estrictamente con la contraseña definitiva personal; si se trata de un perfil directivo, acceder a través de la Intranet del OLO.
+     * **Roles sin permisos para el Sitio Web (Directores / Subdirectores):** Si un funcionario con rol directivo se autentica correctamente en este portal, el sistema comprueba que no cuenta con facultades de edición ni de acceso al panel administrativo y detiene el acceso mostrando la alerta preventiva: *"Tu cuenta no tiene permisos de edición ni de acceso al panel."*, orientándolo a ingresar por la Intranet.
+   * *Acción de corrección:* Iniciar sesión estrictamente con la contraseña definitiva personal; si se trata de un funcionario con rol directivo, acceder a través de la Intranet del OLO.
 
 > **[Captura: Alerta de Permisos y Acceso Denegado Sitio Web]**
 > *Alerta desplegada al intentar acceder al Sitio Web con una cuenta configurada sin facultades de edición ni de administración.*
@@ -1952,7 +2064,7 @@ Durante el primer ingreso (cuyo procedimiento operativo regular se detalla en la
 
 #### 3.5.1.2. Validaciones en el Inicio de Sesión Habitual
 
-Durante el inicio de sesión habitual (descrito operativamente en la [Sección 3.4.1.2: Flujo de Inicio de Sesión Habitual](#3412-flujo-de-inicio-de-sesión-habitual)), el sistema ejecuta comprobaciones inmediatas de identidad, sintaxis de correo corporativo, vigencia de credenciales y autorización por perfil. Esta sección detalla de forma paralela las situaciones erróneas, los bloqueos de interfaz y las alertas emitidas por la plataforma en ambos entornos de acceso:
+Durante el inicio de sesión habitual (descrito operativamente en la [Sección 3.4.1.2: Flujo de Inicio de Sesión Habitual](#3412-flujo-de-inicio-de-sesión-habitual)), el sistema ejecuta comprobaciones inmediatas de identidad, sintaxis de correo corporativo, vigencia de credenciales y autorización por rol. Esta sección detalla de forma paralela las situaciones erróneas, los bloqueos de interfaz y las alertas emitidas por la plataforma en ambos entornos de acceso:
 
 * **[Validaciones en el Inicio de Sesión Habitual (Sitio Web Público)](#validaciones-en-el-inicio-de-sesión-habitual-sitio-web-público):** Errores comunes al autenticarse mediante el banner GOV.CO, validaciones de campos y alertas de denegación de acceso al panel administrativo o portal público.
 * **[Validaciones en el Inicio de Sesión Habitual (Intranet del OLO)](#validaciones-en-el-inicio-de-sesión-habitual-intranet-del-olo):** Intercepciones por navegación no autenticada, validaciones del formulario de acceso interno y alertas por falta de autorización para ingresar a la Intranet.
@@ -2078,15 +2190,15 @@ Durante el inicio de sesión habitual (descrito operativamente en la [Sección 3
 > **[Captura: Alerta de Cuenta Inactiva en Intranet (Móvil)]**
 > *Alerta desplegada en el formulario de la Intranet impidiendo el acceso a una cuenta inactiva o suspendida. (Móvil).*
 
-6. **Resultado y despliegue del entorno según perfil en la Intranet:**
+6. **Resultado y despliegue del entorno según rol en la Intranet:**
    * *Acciones erróneas y control de interfaz:* Si un Director o Subdirector (rol de solo lectura) intenta forzar el acceso a herramientas de edición o maquetación, los controles simplemente no se renderizan, manteniendo el esquema protegido de solo consulta analítica.
-   * *Acción de corrección:* Operar dentro del marco de solo lectura asignado al perfil o solicitar al Administrador del sistema permisos editoriales si se requiere participar en la creación o modificación de contenidos.
+   * *Acción de corrección:* Operar dentro del marco de solo lectura asignado al rol o solicitar al Administrador del sistema permisos editoriales si se requiere participar en la creación o modificación de contenidos.
 
 > **[Captura: Restricción de Solo Lectura en Intranet]**
-> *Despliegue exclusivo de módulos analíticos y ocultamiento de herramientas de maquetación para perfiles directivos.*
+> *Despliegue exclusivo de módulos analíticos y ocultamiento de herramientas de maquetación para roles directivos.*
 >
 > **[Captura: Restricción de Solo Lectura en Intranet (Móvil)]**
-> *Despliegue exclusivo de módulos analíticos y ocultamiento de herramientas de maquetación para perfiles directivos. (Móvil).*
+> *Despliegue exclusivo de módulos analíticos y ocultamiento de herramientas de maquetación para roles directivos. (Móvil).*
 
 #### 3.5.1.3. Validaciones en la Recuperación de Contraseña
 
@@ -2367,40 +2479,126 @@ Durante el uso del buscador global del Panel Administrativo (cuyo procedimiento 
 > **[Captura: Mensaje de Sin Coincidencias en el Buscador (Móvil)]**
 > *Visualización de la alerta informativa de ausencia de coincidencias en dispositivo móvil. (Móvil).*
 
-#### 3.5.1.7. Prevención de enlaces rotos (Bloqueos de eliminación)
-Si un administrador o editor intenta eliminar una página hacia la cual apuntan otros botones en el portal, el sistema arrojará una alerta roja de bloqueo. No se permitirá la eliminación hasta que los enlaces entrantes sean retirados.
+#### 3.5.1.7. Validaciones y Solución de Problemas en el Tablero Principal (Dashboard)
 
-#### 3.5.1.8. Errores habituales y solución
+El Tablero Principal (Dashboard) recopila métricas y registros consolidados del observatorio. Al interactuar con este entorno, pueden presentarse las siguientes situaciones:
 
-**Situación:** Alerta de "Correo inválido" o dominio no corporativo.
-**Posible causa:** Intento de inicio de sesión con un correo fuera del dominio `@sena.edu.co`.
-**Acción recomendada:** El usuario debe ingresar estrictamente la cuenta corporativa oficial asignada por la entidad.
+##### 1. Tarjeta de Páginas Publicadas sin resultados o vacía
+* **Situación:** Al hacer clic en las categorías (Sitio Web o Intranet) dentro de la tarjeta, el acordeón se despliega pero no muestra ningún enlace, o la tarjeta completa no carga.
+* **Posible causa:** (1) No existen páginas publicadas en ese entorno en el momento de la consulta. (2) Un fallo de red temporal impidió que el componente obtuviera la lista desde la base de datos al abrir el panel.
+* **Acción correctiva:**
+  1. Verificar en el menú de "Páginas en revisión" si los borradores aún están pendientes de aprobación (las páginas no aprobadas no aparecerán en esta tarjeta).
+  2. Presionar la tecla `F5` para recargar el panel y forzar una nueva consulta al servidor.
 
-**Situación:** Alerta de "Credenciales incorrectas".
-**Posible causa:** Se ha digitado mal la contraseña o el correo electrónico.
-**Acción recomendada:** Se debe verificar la escritura correcta de los datos o hacer uso de la opción "Recuperar contraseña".
+##### 2. Gráficos de Visitas o Usuarios en blanco
+* **Situación:** El diagrama de líneas de tráfico o el gráfico circular de roles se queda en blanco o muestra un indicador de carga permanente.
+* **Posible causa:** Lentitud temporal en la conexión al cargar las estadísticas, o el uso de extensiones en el navegador (como bloqueadores de anuncios) que ocultan las gráficas por error.
+* **Acción correctiva:**
+  1. Revisar y pausar temporalmente cualquier extensión de bloqueo de anuncios (ej. AdBlock) instalada en el navegador, ya que pueden interferir con la visualización.
+  2. Recargar el panel administrativo (`F5`). Si el gráfico de usuarios se visualiza pero el de tráfico no, el sistema puede estar procesando aún los datos de visitas de ese periodo.
 
-**Situación:** Mensaje de "Permisos insuficientes", *"Tu cuenta no tiene permisos de edición ni de acceso al panel."* o *"No tienes permisos para ingresar a la intranet."*.
-**Posible causa:** (1) El rol asignado no cuenta con autorización para acceder a esa URL o ejecutar esa acción. (2) Cuentas con perfil de Director o Subdirector (u orientadas a la Intranet) que intentan ingresar a través del Sitio Web Público. (3) Cuentas de usuario que no tienen permisos asignados para ingresar al entorno privado de la Intranet.
-**Acción recomendada:** Si se trata de un directivo que intentó ingresar desde el portal público, debe ingresar a través del portal de la Intranet (ver [Sección 3.4.1.2: Flujo de Inicio de Sesión Habitual](#3412-flujo-de-inicio-de-sesión-habitual)). Si se trata de un funcionario que requiere permisos para el portal web o para la Intranet, solicitar al Administrador del sistema la asignación de permisos correspondiente.
+##### 3. Tabla de Actividad Reciente desactualizada
+* **Situación:** Se acaba de realizar una acción (ej. aprobar una página) pero no aparece inmediatamente en la tabla inferior del tablero principal.
+* **Posible causa:** Para agilizar los tiempos de carga, el tablero principal retiene una memoria temporal (*caché*) de las últimas operaciones por breves instantes.
+* **Acción correctiva:**
+  1. Si se requiere consultar la trazabilidad exacta e inmediata, hacer clic en el enlace **"Ver más"** ubicado en la esquina superior derecha de la tabla.
+  2. Esto abrirá el módulo de **Auditoría**, el cual extrae los registros en tiempo real directo desde la base de datos sin tiempos de espera.
 
-#### 3.5.1.9. Mensajes de Error Adicionales
+#### 3.5.1.8. Validaciones y Solución de Problemas en la Gestión de Usuarios
 
-**Situación:** Error al cargar el archivo en la Carga Masiva ("Formato de archivo no válido").
-**Posible causa:** El archivo cargado no es un `.xlsx` válido, está corrupto o fue generado con una versión de Excel incompatible.
-**Acción recomendada:** Se debe descargar nuevamente la plantilla oficial desde el módulo de carga, trasladar los datos al nuevo archivo y repetir la operación.
+La administración de cuentas en el sistema (detallada operativamente en la [Sección 3.4.2.4.1: Submenú Usuarios](#34241-submenú-usuarios)) está protegida por múltiples reglas lógicas para garantizar la seguridad e integridad de la plataforma. Al gestionar funcionarios pueden surgir las siguientes situaciones:
 
-**Situación:** El componente de tablero analítico (Power BI) no carga o aparece en blanco en la página.
-**Posible causa:** (1) La página contiene el bloque de Power BI pero la conexión a Internet es inestable o lenta. (2) La sesión o enlace del servicio embebido expiró internamente.
-**Acción recomendada:** (1) El usuario debe verificar la conexión a Internet (se recomiendan al menos 10 Mbps para tableros analíticos). (2) Se debe recargar la página con la tecla F5. (3) Si la eventualidad persiste, se debe cerrar sesión y volver a iniciarla.
+##### 1. Error de Dominio al Crear Usuario
+* **Situación:** Al dar clic en "Guardar" en el formulario de Nuevo Usuario, el sistema arroja una alerta roja y rechaza la creación.
+* **Posible causa:** El correo ingresado no pertenece al dominio oficial obligatorio.
+* **Acción correctiva:** Asegurarse de que el campo de correo termine estrictamente en `@sena.edu.co` sin espacios adicionales al final.
 
-**Situación:** El Editor Visual no carga o aparece en blanco al intentar editar una página.
-**Posible causa:** Caché del navegador desactualizado o incompatibilidad con una versión de navegador antigua.
-**Acción recomendada:** Se debe limpiar la caché del navegador (Ctrl + Shift + Delete) y recargar la página, verificando que el navegador cumpla con los requisitos mínimos de la Sección 3.2.1.2.
+##### 2. Interfaz de Credenciales "Atrapada" (Botón de Cerrar Bloqueado)
+* **Situación:** Se acaba de generar la contraseña temporal para un funcionario nuevo (o tras restablecerla), pero el botón de "Cerrar" aparece deshabilitado y no se puede salir de la ventana.
+* **Posible causa:** Como mecanismo de prevención contra pérdida de claves irrecuperables, el aplicativo exige constancia de respaldo antes de cerrar.
+* **Acción correctiva:** Presionar obligatoriamente el botón verde **"Copiar"**. Inmediatamente después de pulsarlo, el sistema liberará la acción y habilitará el botón de cierre.
 
-**Situación:** Mensaje de "Cuenta suspendida".
-**Posible causa:** El Administrador ha suspendido la cuenta del usuario.
-**Acción recomendada:** El usuario debe contactar directamente al Administrador del sistema para conocer el motivo de la suspensión y solicitar la reactivación correspondiente.
+##### 3. Alerta de "Fecha de caducidad vencida" al Intentar Activar
+* **Situación:** Al encender el interruptor de "Estado" para devolver el acceso a un funcionario previamente suspendido, el sistema muestra una alerta de error y apaga el interruptor por la fuerza.
+* **Posible causa:** La cuenta del usuario tiene configurada una "Fecha de caducidad" que ya expiró, por lo que las políticas le prohíben reactivar su acceso sin extenderle primero el periodo.
+* **Acción correctiva:** Abrir el modal de edición mediante el ícono del lápiz en la fila del funcionario. Modificar el campo "Fecha de caducidad" seleccionando un nuevo límite futuro (o borrar el valor para hacer la cuenta permanente). Guardar e intentar activar nuevamente.
+
+##### 4. Bloqueo al Intentar Eliminar al Último Administrador
+* **Situación:** El Administrador presiona el botón rojo "Eliminar" en la alerta de advertencia, pero el sistema bloquea la acción y arroja una alerta de error, impidiendo el borrado.
+* **Posible causa:** Se intentó borrar al único usuario Administrador activo restante en toda la plataforma. Aunque el sistema permite borrar usuarios con historial (como creadores de páginas), restringe de forma estricta que la plataforma se quede sin gestores.
+* **Acción correctiva:** Si ese funcionario definitivamente debe ser retirado, es imperativo que primero se asigne el rol de Administrador a otro usuario activo en el sistema. Una vez exista un relevo, el sistema permitirá eliminar al anterior. Alternativamente, se le puede simplemente **Suspender** (apagar el interruptor de Estado).
+
+#### 3.5.1.9. Validaciones y Solución de Problemas en la Gestión de Roles y Permisos
+
+La configuración de roles y la asignación de permisos (cuyo procedimiento operativo regular se detalla en la [Sección 3.4.2.4.2: Submenú Roles y Permisos](#34242-submenú-roles-y-permisos)) cuenta con mecanismos de protección estructural para preservar la consistencia de los accesos institucionales y la integridad de las cuentas de usuario. A continuación se desglosan las principales situaciones, sus causas y las acciones correctivas correspondientes:
+
+##### 1. Bloqueo al Intentar Eliminar un Rol en Uso (Usuarios Asignados)
+* **Situación:** Al presionar el ícono de basurero para eliminar un rol derivado, el sistema no muestra el botón de borrado, sino una ventana modal de advertencia (*«No se puede eliminar este rol»*) con el botón único *"Entendido"*.
+* **Causa técnica y operativa:** Todo usuario en la plataforma debe tener obligatoriamente un rol asignado en todo momento. Para prevenir cuentas huérfanas de rol y fallos de autorización en cascada, el sistema comprueba la base de datos y bloquea terminantemente el borrado de cualquier rol que tenga uno o más funcionarios vinculados.
+* **Acción correctiva:**
+  1. Dirigirse al módulo de Usuarios ([Sección 3.4.2.4.1: Submenú Usuarios](#34241-submenú-usuarios)).
+  2. Filtrar o localizar a los funcionarios que tienen asignado dicho rol y abrir su formulario mediante el ícono de lápiz.
+  3. Reasignarles otro rol adecuado (ej. el rol base Editor u otro rol derivado) y guardar los cambios.
+  4. Una vez que el rol tenga 0 usuarios asociados, regresar al módulo de Roles y presionar nuevamente el ícono de basurero; el sistema presentará la confirmación definitiva para proceder con la eliminación.
+
+> **[Captura: Alerta Bloqueo Eliminación Rol en Uso]**
+> *Ventana modal informando que el rol no se puede eliminar por contar con usuarios asignados y orientando a la reasignación previa.*
+>
+> **[Captura: Alerta Bloqueo Eliminación Rol en Uso (Móvil)]**
+> *Ventana modal informando que el rol no se puede eliminar por contar con usuarios asignados. (Móvil).*
+
+##### 2. Imposibilidad de Modificar el Nombre de un Rol Creado
+* **Situación:** Al hacer clic en el ícono de lápiz para editar un rol, el campo *"Nombre del rol"* se encuentra bloqueado, en tono grisáceo y con la etiqueta *"No modificable"*, sin permitir la edición del texto.
+* **Causa técnica y operativa:** Por motivos de seguridad e integridad en la base de datos, el nombre de un rol queda fijado al momento de su creación para salvaguardar las asignaciones existentes y la coherencia en la bitácora de auditoría técnica. Únicamente es posible actualizar su descripción y sus permisos.
+* **Acción correctiva:** Si se requiere un rol con una denominación distinta:
+  1. Crear un nuevo rol mediante el botón **"Nuevo Editor"** con el nombre complementario deseado.
+  2. Configurar la descripción y activar los permisos necesarios en las 5 secciones de control.
+  3. Reasignar a los funcionarios correspondientes a este nuevo rol desde el módulo de Usuarios.
+  4. Eliminar el rol anterior una vez quede sin usuarios vinculados.
+
+> **[Captura: Campo Nombre No Modificable]**
+> *Visualización del campo de nombre de rol bloqueado y en modo de solo lectura dentro de la modal de edición.*
+>
+> **[Captura: Campo Nombre No Modificable (Móvil)]**
+> *Visualización del campo de nombre de rol bloqueado y en modo de solo lectura en dispositivo móvil. (Móvil).*
+
+##### 3. Ícono de Basurero Bloqueado en el Rol Base "Editor"
+* **Situación:** En la fila correspondiente al rol *"Editor"*, el botón de basurero aparece en color gris deshabilitado (*cursor-not-allowed*) y no responde al clic.
+* **Causa técnica y operativa:** El rol base `Editor` es el perfil matriz del cual heredan todos los roles derivados de la plataforma. Su existencia es obligatoria para la infraestructura del editor visual y se encuentra protegido por código fuente, por lo que su eliminación está inhabilitada de forma permanente.
+* **Acción correctiva:** El rol base Editor no debe ni puede ser suprimido. Si se necesita limitar las facultades de un usuario que posee este rol, se le debe editar desde el módulo de Usuarios para asignarle un rol derivado con permisos restringidos, o bien suspender su acceso apagando su interruptor de Estado.
+
+> **[Captura: Rol Base Editor con Borrado Bloqueado]**
+> *Fila del rol base Editor en la tabla mostrando el ícono de basurero deshabilitado permanentemente.*
+>
+> **[Captura: Rol Base Editor con Borrado Bloqueado (Móvil)]**
+> *Fila del rol base Editor en dispositivo móvil con el control de borrado deshabilitado. (Móvil).*
+
+##### 4. Nuevas Páginas No Editables para Roles Derivados (Falta de Delegación)
+* **Situación:** Un funcionario con rol derivado puede ingresar al editor pero no visualiza el botón flotante de edición en una página recién creada en el portal o intranet.
+* **Causa técnica y operativa:** Cuando se crea una nueva página, por política de aislamiento inicial esta solo queda habilitada automáticamente para el Administrador, para el rol base Editor y para el rol creador de la misma. Los demás roles derivados no tienen acceso a ella de fábrica.
+* **Acción correctiva:**
+  1. Ingresar a este módulo (**Roles y Permisos**).
+  2. Localizar el rol derivado y hacer clic en el ícono de **lápiz**.
+  3. Pulsar el botón verde **"Editar permisos"**.
+  4. Ubicar la página creada dentro de la sección correspondiente (*"Secciones del sitio web"* o *"Secciones de la intranet"*), utilizando el buscador interno si es necesario.
+  5. Activar el interruptor de la página (el sistema mostrará la insignia *«se añade»*) y hacer clic en **"Guardar permisos"**.
+
+> **[Captura: Delegación de Nueva Página en Catálogo de Permisos]**
+> *Activación manual del interruptor de una nueva página en el catálogo de permisos de un rol derivado.*
+>
+> **[Captura: Delegación de Nueva Página en Catálogo de Permisos (Móvil)]**
+> *Activación manual del interruptor de una nueva página en dispositivo móvil. (Móvil).*
+
+##### 5. Botón "Guardar permisos" Inactivo o Deshabilitado
+* **Situación:** El Administrador se encuentra en la ventana modal de edición de permisos pero el botón *"Guardar permisos"* permanece inactivo y no permite confirmar la operación.
+* **Causa técnica y operativa:** El sistema detecta que no se ha realizado ninguna variación respecto a la configuración original del rol (no se modificó la descripción ni se alteró ningún interruptor). El pie de la modal muestra la indicación informativa *"Sin cambios que guardar."*.
+* **Acción correctiva:** Si no se requiere efectuar ajustes, cerrar la ventana modal mediante el botón **"Cancelar"** o la *"✕"* superior. Si se desea guardar, verificar que efectivamente se haya cambiado la descripción o alternado al menos un interruptor de permisos.
+
+> **[Captura: Botón Guardar Deshabilitado sin Cambios]**
+> *Pie de la ventana modal mostrando el mensaje informativo de ausencia de cambios y el botón deshabilitado.*
+>
+> **[Captura: Botón Guardar Deshabilitado sin Cambios (Móvil)]**
+> *Pie de la ventana modal mostrando el mensaje informativo de ausencia de cambios en dispositivo móvil. (Móvil).*
 
 ---
 

@@ -1,4 +1,5 @@
 import { RoleRepository } from '../../repositories/roles.repository';
+import { User } from '../../infrastructure/db/models';
 import { invalidarPermisosDeRol } from '../../middlewares/require-permission.middleware';
 import { esRolProtegido } from '../../shared/roles-protegidos';
 
@@ -61,6 +62,17 @@ export const deleteRole = async (id: string) => {
   const role = await RoleRepository.findById(id);
   if (!role) throw Object.assign(new Error('Rol no encontrado'), { status: 404 });
   if (esRolProtegido((role as any).name)) throw errorRolProtegido();
+
+  const usuariosConRol = await User.count({ where: { role_id: id } });
+  if (usuariosConRol > 0) {
+    throw Object.assign(
+      new Error(
+        `No se puede eliminar el rol «${(role as any).name}» porque está asignado a ${usuariosConRol} usuario(s). Reasigna los usuarios a otro rol antes de eliminarlo.`
+      ),
+      { status: 400 }
+    );
+  }
+
   await RoleRepository.delete(id);
 
   invalidarPermisosDeRol((role as any).name);
