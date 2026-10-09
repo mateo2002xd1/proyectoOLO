@@ -3880,8 +3880,11 @@ body:has(.navegacion-mobile-hoja[open]) {
    RESPONSIVE — Mobile-first breakpoints
    ============================================ */
 
-/* Por debajo de `md` los dos paneles se apilan: marca arriba, formulario debajo. */
-@media (width < 48rem) {
+/* Por debajo de `xl` los dos paneles se apilan: marca (o título del paso) arriba,
+   formulario debajo, todo centrado sobre un solo azul. Es `xl` y no `md` por la tablet
+   grande (iPad Pro 13", 1032 px en vertical): con `md` o `lg` le tocaban dos columnas
+   de 516 px. El mismo corte que el acceso al panel del sitio web (`AuthSplitShell`). */
+@media (width < 80rem) {
 
   .login-page,
   .recovery-page,
@@ -3889,6 +3892,8 @@ body:has(.navegacion-mobile-hoja[open]) {
   .rp-page,
   .fl-page {
     flex-direction: column;
+    justify-content: center;
+    background: var(--color-right-panel);
   }
 
   .login-left,
@@ -3898,7 +3903,9 @@ body:has(.navegacion-mobile-hoja[open]) {
   .fl-left {
     flex: 0 0 auto;
     min-height: auto;
-    padding: clamp(2rem, 8vw, 4rem) clamp(1rem, 4vw, 2rem);
+    padding: clamp(2rem, 8vw, 4rem) clamp(1rem, 4vw, 2rem) 0;
+    background: transparent;
+    border-radius: 0;
   }
 
   .login-right,
@@ -3906,9 +3913,16 @@ body:has(.navegacion-mobile-hoja[open]) {
   .sq-right,
   .rp-right,
   .fl-right {
-    flex: 1 1 auto;
+    flex: 0 0 auto;
     min-height: auto;
     padding: clamp(2rem, 6vw, 3rem) clamp(1rem, 4vw, 2rem);
+    background: transparent;
+  }
+
+  /* En el login el formulario va sin tarjeta, directo sobre el azul: el texto del
+     cargador (navy) desaparecería. */
+  .login-page .goo-loader-label {
+    color: var(--color-white);
   }
 }
 
@@ -3920,7 +3934,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   .sq-left,
   .rp-left,
   .fl-left {
-    padding: 2rem 1rem;
+    padding: 2rem 1rem 0;
   }
 
   .login-brand-title,

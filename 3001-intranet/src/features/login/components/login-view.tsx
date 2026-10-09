@@ -27,6 +27,14 @@ interface ErroresLogin {
  * `useSearchParams` obliga a un límite de Suspense y, sin él, el prerender de `/login`
  * falla en el build en vez de avisar en desarrollo.
  */
+/**
+ * Tarjeta del formulario. Por debajo de `xl` no es tarjeta: el formulario va directo
+ * sobre el azul, con etiquetas y textos en blanco (diseño de móvil y tablet). Desde
+ * `xl` vuelve la tarjeta blanca, igual que el login del panel del sitio web.
+ */
+const TARJETA_LOGIN =
+  'w-full max-w-[380px] xl:rounded-[24px] xl:bg-white xl:px-9 xl:py-10 xl:shadow-[0_25px_60px_rgba(0,0,0,0.35)]';
+
 function LoginForm() {
   const { login } = useAuth();
   const router = useRouter();
@@ -132,26 +140,28 @@ function LoginForm() {
       {/* Panel izquierdo — Branding */}
       <div className="login-left">
         <div className="login-left-content">
+          {/* Por debajo de `xl` (móvil y tablet, ver globals.css) manda el diseño de
+              móvil: el título primero y el logo debajo, grande y atenuado, como fondo
+              de marca antes del formulario. Desde `xl`, logo arriba y título debajo. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/assets/svg/olo-logo-blanco.svg"
             alt="Logo intranet"
-            // En el móvil el panel de marca va encima del formulario: con 210px de logo
-            // y el título a 36px, el formulario quedaba debajo del pliegue.
-            className="mx-auto w-[96px] sm:w-[150px] lg:w-[210px]"
+            className="order-2 mx-auto w-48 opacity-30 sm:w-56 xl:order-1 xl:w-[210px] xl:opacity-100"
           />
-          <h1 className="text-2xl font-light text-white sm:text-3xl lg:text-4xl">
-            Bienvenido a <span className="font-bold"><br />NUESTRA INTRANET</span>
+          <h1 className="order-1 mb-8 text-3xl font-bold leading-tight text-white sm:text-4xl xl:order-2 xl:mb-0 xl:font-light">
+            Bienvenido a <span className="font-bold xl:uppercase"><br />nuestra Intranet</span>
           </h1>
         </div>
       </div>
 
       {/* Panel derecho — Login Card */}
       <div className="login-right">
-        {/* Misma tarjeta que el login del panel de administración: clases de
-            Tailwind literales, no la hoja `.login-*` que tenía valores propios
-            y se desalineaba de sitio-web cada vez que uno de los dos cambiaba. */}
-        <div className="w-full max-w-[380px] rounded-[24px] bg-white px-6 py-8 shadow-[0_25px_60px_rgba(0,0,0,0.35)] sm:px-9 sm:py-10">
+        {/* Desde `xl`, misma tarjeta que el login del panel de administración:
+            clases de Tailwind literales, no la hoja `.login-*` que tenía valores
+            propios y se desalineaba de sitio-web cada vez que uno de los dos
+            cambiaba. Por debajo, sin tarjeta (ver `TARJETA_LOGIN`). */}
+        <div className={TARJETA_LOGIN}>
           {isSuccess ? (
             <div className="login-success-loader">
               <GooLoader label="Preparando tu espacio..." />
@@ -178,7 +188,7 @@ function LoginForm() {
               )}
 
               <div className="mb-4">
-                <label htmlFor="email" className="mb-1.5 block text-sm font-semibold text-[#0d1526]">
+                <label htmlFor="email" className="mb-1.5 block text-sm font-semibold text-white xl:text-[#0d1526]">
                   Correo SENA
                 </label>
                 <input
@@ -189,17 +199,17 @@ function LoginForm() {
                   autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className={`w-full rounded-lg border px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:outline-none focus:ring-2 ${
+                  className={`w-full rounded-lg border bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:outline-none focus:ring-2 ${
                     errors.email
                       ? 'border-red-400 focus:border-red-500 focus:ring-red-500'
-                      : 'border-gray-300 focus:border-[#0d1526] focus:ring-[#0d1526]'
+                      : 'border-gray-300 focus:border-[#0d1526] focus:ring-white xl:focus:ring-[#0d1526]'
                   }`}
                 />
-                {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email}</p>}
+                {errors.email && <p className="mt-1 text-xs text-red-300 xl:text-red-600">{errors.email}</p>}
               </div>
 
               <div className="mb-5">
-                <label htmlFor="password" className="mb-1.5 block text-sm font-semibold text-[#0d1526]">
+                <label htmlFor="password" className="mb-1.5 block text-sm font-semibold text-white xl:text-[#0d1526]">
                   Contraseña
                 </label>
                 <div className="relative">
@@ -211,10 +221,10 @@ function LoginForm() {
                     placeholder="Mínimo 12 caracteres"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className={`w-full rounded-lg border px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:outline-none focus:ring-2 pr-10 ${
+                    className={`w-full rounded-lg border bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:outline-none focus:ring-2 pr-10 ${
                       errors.password
                         ? 'border-red-400 focus:border-red-500 focus:ring-red-500'
-                        : 'border-gray-300 focus:border-[#0d1526] focus:ring-[#0d1526]'
+                        : 'border-gray-300 focus:border-[#0d1526] focus:ring-white xl:focus:ring-[#0d1526]'
                     }`}
                   />
                   <button
@@ -226,7 +236,7 @@ function LoginForm() {
                     <IconoMascara nombre={showPassword ? 'eye-open' : 'eye-closed'} tamano="h-5 w-5" />
                   </button>
                 </div>
-                {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password}</p>}
+                {errors.password && <p className="mt-1 text-xs text-red-300 xl:text-red-600">{errors.password}</p>}
               </div>
 
               {/* RF-13: aviso de políticas de privacidad y datos.
@@ -236,13 +246,13 @@ function LoginForm() {
                   relativas (`/politica-de-privacidad`, `/privacidad`), así que el
                   middleware las tomaba por pantalla protegida y devolvía a quien las
                   pulsara al propio login del que venía. */}
-              <p className="mb-6 text-xs leading-relaxed text-gray-500">
+              <p className="mb-6 text-xs leading-relaxed text-white/85 xl:text-gray-500">
                 Al ingresar a este sitio aceptas la{' '}
-                <a href={`${SITE_URL}/inicio/politica-de-privacidad`} className="font-semibold text-gray-700 hover:underline">
+                <a href={`${SITE_URL}/inicio/politica-de-privacidad`} className="font-semibold text-white hover:underline xl:text-gray-700">
                   política de privacidad
                 </a>{' '}
                 y{' '}
-                <a href={`${SITE_URL}/inicio/politica-de-privacidad`} className="font-semibold text-gray-700 hover:underline">
+                <a href={`${SITE_URL}/inicio/politica-de-privacidad`} className="font-semibold text-white hover:underline xl:text-gray-700">
                   protección de datos
                 </a>
                 .
@@ -251,7 +261,7 @@ function LoginForm() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="inline-flex w-full items-center justify-center rounded-[16px] bg-[#0d1526] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_8px_-2px_rgba(13,21,38,0.4)] transition hover:bg-[#1a2340] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0d1526] disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex w-full items-center justify-center rounded-[16px] bg-white px-4 py-2.5 text-sm font-semibold text-[#0d1526] shadow-[0_2px_8px_-2px_rgba(13,21,38,0.4)] transition hover:bg-gray-100 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#001A39] disabled:cursor-not-allowed disabled:opacity-50 xl:bg-[#0d1526] xl:text-white xl:hover:bg-[#1a2340] xl:focus-visible:ring-[#0d1526] xl:focus-visible:ring-offset-white"
               >
                 {isLoading ? 'Ingresando...' : 'Ingresar'}
               </button>
@@ -259,7 +269,7 @@ function LoginForm() {
               <div className="mt-4 text-center">
                 <Link
                   href="/recovery"
-                  className="rounded text-xs text-gray-500 transition-colors hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d1526]"
+                  className="rounded text-sm text-white/90 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white xl:text-xs xl:text-gray-500 xl:hover:text-gray-700 xl:focus-visible:ring-[#0d1526]"
                 >
                   ¿Olvidaste tu contraseña?
                 </Link>
@@ -279,7 +289,7 @@ export function LoginView() {
       fallback={
         <div className="login-page">
           <div className="login-right w-full">
-            <div className="w-full max-w-[380px] rounded-[24px] bg-white px-9 py-10 shadow-[0_25px_60px_rgba(0,0,0,0.35)]" />
+            <div className={TARJETA_LOGIN} />
           </div>
         </div>
       }
