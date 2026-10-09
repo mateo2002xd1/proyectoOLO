@@ -5,6 +5,67 @@
 
 ---
 
+## sesión 09-10-2026 (13.ª parte): la sesión de primer ingreso solo sirve para terminarlo
+
+**Qué se pidió.** Revisar qué pasa cuando alguien entra con un correo nuevo y la contraseña
+temporal y sale de la pantalla sin cambiarla; que esa sesión sea «de un único uso», que el
+primer ingreso vuelva a aparecer, y que también aparezca si la cuenta no tiene preguntas.
+
+**Lo que se encontró.**
+
+| Pregunta | Respuesta antes del cambio |
+|---|---|
+| ¿Vuelve a salir el primer ingreso al entrar otra vez con la temporal? | **Sí.** El login devuelve las marcas y las dos apps mandan a `/first-login` (sitio) o a la pantalla pendiente (intranet) |
+| ¿Qué pasa al salir sin terminar? | «Regresar al sitio web» **no cerraba la sesión**. En el portal la cuenta seguía conectada, con los botones de edición a la vista (los decide la cookie de rol) |
+| ¿La API exigía terminar? | **No.** `requireAuth` no miraba `must_change_password` ni `must_setup_security_questions`: solo los proxies redirigían pantallas, y cualquier llamada directa funcionaba con todo el rol |
+| ¿Se detecta una cuenta sin preguntas? | **No.** Solo se miraba la marca, que se enciende al crear la cuenta o al restablecerlas. En Neon (solo `SELECT`): de 12 cuentas activas, 9 tienen sus 3 preguntas, 2 no y ya están marcadas, y **1 no las tiene y no está marcada**: nunca se le pedían |
+
+**Lo que se hizo.**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| API | `middlewares/auth.middleware.ts` | `requireAuth` responde 403 `CONFIGURACION_PENDIENTE` si la fila tiene algo pendiente; `requireAuthConConfiguracionPendiente` para lo que hace falta para terminar; `req.user.must_*` salen de la fila, no del token; `tieneConfiguracionPendiente()` |
+| API | `routes/auth.routes.ts`, `routes/security-question.routes.ts` | `first-login/status`, `first-login`, `me`, `change-password` y `security-questions/setup` usan la variante que admite pendiente |
+| API | `use-cases/auth/login.usecase.ts`, `security-questions.repository.ts`, `first-login.usecase.ts` | El login cuenta las preguntas y, con menos de 3, enciende `debe_configurar_preguntas` antes de firmar el token (`countByUserId`, `TOTAL_PREGUNTAS` exportado) |
+| API | `controllers/auth.controller.ts` | `/me` devuelve `configuracionPendiente` y, si lo está, `permisos: []` |
+| Sitio | `marco-de-pasos.tsx`, `first-login-flow.tsx` | `cerrarSesionAlSalir`: en los cinco estados del primer ingreso, «Regresar al sitio web» cierra la sesión antes de salir |
+| Sitio | `secciones.service.ts` | Si `/me` dice `configuracionPendiente`, el portal manda a `/first-login` en vez de pintar botones de edición |
+| Intranet | `return-to-site-link.tsx` + `first-login-view`, `security-questions-view` (modo `setup`), `reset-password-view` (modo `forced`), `auth-success-screen` | `cerrarSesion`: cierra la sesión antes de ir al sitio |
+| Docs | `3-seguridad-del-proyecto.md` | Fila nueva en la tabla de S10 |
+
+**Cómo se probó.** El middleware y el login reales, con `jwt`, los repositorios y bcrypt
+simulados y variables de entorno falsas (sin base ni token reales). `tsc --noEmit` en las tres
+apps y `eslint` de los archivos tocados del sitio y de la intranet, limpios.
+
+| Caso | Resultado |
+|---|---|
+| Cuenta configurada | ✅ pasa por `requireAuth` y por la variante |
+| Contraseña temporal pendiente; solo preguntas pendientes | ✅ `requireAuth` → 403 `CONFIGURACION_PENDIENTE`; la variante pasa |
+| Token viejo que dice «pendiente», fila ya al día | ✅ pasa |
+| Login con 3, 1 y 0 preguntas | ✅ con 3 no toca nada; con 1 y 0 marca la cuenta y el token sale con la marca |
+
+No se probó en el navegador con una cuenta real (hace falta sesión): queda para el usuario.
+
+> **Aviso.** El token se firma al entrar y no cambia: tras terminar el primer ingreso sigue
+> diciendo «pendiente». La API ya no se fía de él (mira la fila); los proxies sí, por eso las
+> dos apps cierran la sesión al terminar y piden volver a entrar.
+
+**Lo que se descartó (por ahora).**
+
+- **Quemar la contraseña temporal al primer uso.** Es lo que más se parece a «un único uso»,
+  pero quien cierra la pestaña por error se queda fuera hasta que un administrador le emita
+  otra. Se dejó la temporal válida hasta que se cambie y se limitó lo que esa sesión puede
+  hacer. Queda planteado al usuario junto con la alternativa de darle caducidad.
+
+**Pendiente al cierre.**
+
+- **Reiniciar la API** y probar: crear una cuenta, entrar con la temporal, pulsar «Regresar al
+  sitio web» (debe salir sin sesión), volver a entrar (debe salir el primer ingreso).
+- La cuenta activa sin preguntas verá la configuración en su próximo ingreso.
+- Decidir si la contraseña temporal caduca o se quema al primer uso.
+
+---
+
 ## sesión 09-10-2026 (12.ª parte): mensajes de estado y preguntas de seguridad con esquinas de 16 px
 
 **Qué se pidió.** Esquinas de 16 px, y no las de 32 de los botones, en los mensajes de estado
@@ -406,67 +467,6 @@ No se probó con altavoces ni dentro del panel con sesión. Las dos cosas quedan
 
 - Mi perfil, Revisión y las cargas siguen con sus mensajes propios, que no suenan. Si se quiere sonido ahí, que usen `Notification`, no un audio aparte (`9-accesibilidad` §3.4).
 - El manual (`manual-de-usuario-formato.md` §3.4.2.9.2) describe en Configuración «preguntas de seguridad» y «notificaciones», que no existen todavía.
-
----
-
-## sesión 09-10-2026 (6.ª parte): la sesión de primer ingreso solo sirve para terminarlo
-
-**Qué se pidió.** Revisar qué pasa cuando alguien entra con un correo nuevo y la contraseña
-temporal y sale de la pantalla sin cambiarla; que esa sesión sea «de un único uso», que el
-primer ingreso vuelva a aparecer, y que también aparezca si la cuenta no tiene preguntas.
-
-**Lo que se encontró.**
-
-| Pregunta | Respuesta antes del cambio |
-|---|---|
-| ¿Vuelve a salir el primer ingreso al entrar otra vez con la temporal? | **Sí.** El login devuelve las marcas y las dos apps mandan a `/first-login` (sitio) o a la pantalla pendiente (intranet) |
-| ¿Qué pasa al salir sin terminar? | «Regresar al sitio web» **no cerraba la sesión**. En el portal la cuenta seguía conectada, con los botones de edición a la vista (los decide la cookie de rol) |
-| ¿La API exigía terminar? | **No.** `requireAuth` no miraba `must_change_password` ni `must_setup_security_questions`: solo los proxies redirigían pantallas, y cualquier llamada directa funcionaba con todo el rol |
-| ¿Se detecta una cuenta sin preguntas? | **No.** Solo se miraba la marca, que se enciende al crear la cuenta o al restablecerlas. En Neon (solo `SELECT`): de 12 cuentas activas, 9 tienen sus 3 preguntas, 2 no y ya están marcadas, y **1 no las tiene y no está marcada**: nunca se le pedían |
-
-**Lo que se hizo.**
-
-| Capa | Archivo | Cambio |
-|---|---|---|
-| API | `middlewares/auth.middleware.ts` | `requireAuth` responde 403 `CONFIGURACION_PENDIENTE` si la fila tiene algo pendiente; `requireAuthConConfiguracionPendiente` para lo que hace falta para terminar; `req.user.must_*` salen de la fila, no del token; `tieneConfiguracionPendiente()` |
-| API | `routes/auth.routes.ts`, `routes/security-question.routes.ts` | `first-login/status`, `first-login`, `me`, `change-password` y `security-questions/setup` usan la variante que admite pendiente |
-| API | `use-cases/auth/login.usecase.ts`, `security-questions.repository.ts`, `first-login.usecase.ts` | El login cuenta las preguntas y, con menos de 3, enciende `debe_configurar_preguntas` antes de firmar el token (`countByUserId`, `TOTAL_PREGUNTAS` exportado) |
-| API | `controllers/auth.controller.ts` | `/me` devuelve `configuracionPendiente` y, si lo está, `permisos: []` |
-| Sitio | `marco-de-pasos.tsx`, `first-login-flow.tsx` | `cerrarSesionAlSalir`: en los cinco estados del primer ingreso, «Regresar al sitio web» cierra la sesión antes de salir |
-| Sitio | `secciones.service.ts` | Si `/me` dice `configuracionPendiente`, el portal manda a `/first-login` en vez de pintar botones de edición |
-| Intranet | `return-to-site-link.tsx` + `first-login-view`, `security-questions-view` (modo `setup`), `reset-password-view` (modo `forced`), `auth-success-screen` | `cerrarSesion`: cierra la sesión antes de ir al sitio |
-| Docs | `3-seguridad-del-proyecto.md` | Fila nueva en la tabla de S10 |
-
-**Cómo se probó.** El middleware y el login reales, con `jwt`, los repositorios y bcrypt
-simulados y variables de entorno falsas (sin base ni token reales). `tsc --noEmit` en las tres
-apps y `eslint` de los archivos tocados del sitio y de la intranet, limpios.
-
-| Caso | Resultado |
-|---|---|
-| Cuenta configurada | ✅ pasa por `requireAuth` y por la variante |
-| Contraseña temporal pendiente; solo preguntas pendientes | ✅ `requireAuth` → 403 `CONFIGURACION_PENDIENTE`; la variante pasa |
-| Token viejo que dice «pendiente», fila ya al día | ✅ pasa |
-| Login con 3, 1 y 0 preguntas | ✅ con 3 no toca nada; con 1 y 0 marca la cuenta y el token sale con la marca |
-
-No se probó en el navegador con una cuenta real (hace falta sesión): queda para el usuario.
-
-> **Aviso.** El token se firma al entrar y no cambia: tras terminar el primer ingreso sigue
-> diciendo «pendiente». La API ya no se fía de él (mira la fila); los proxies sí, por eso las
-> dos apps cierran la sesión al terminar y piden volver a entrar.
-
-**Lo que se descartó (por ahora).**
-
-- **Quemar la contraseña temporal al primer uso.** Es lo que más se parece a «un único uso»,
-  pero quien cierra la pestaña por error se queda fuera hasta que un administrador le emita
-  otra. Se dejó la temporal válida hasta que se cambie y se limitó lo que esa sesión puede
-  hacer. Queda planteado al usuario junto con la alternativa de darle caducidad.
-
-**Pendiente al cierre.**
-
-- **Reiniciar la API** y probar: crear una cuenta, entrar con la temporal, pulsar «Regresar al
-  sitio web» (debe salir sin sesión), volver a entrar (debe salir el primer ingreso).
-- La cuenta activa sin preguntas verá la configuración en su próximo ingreso.
-- Decidir si la contraseña temporal caduca o se quema al primer uso.
 
 ---
 
