@@ -1,10 +1,9 @@
 import * as ExcelJS from 'exceljs';
-import sequelize from '../../config/database';
 import { DepartamentosRepository } from '../../repositories/departamentos.repository';
 import { AlertasInversionRepository as Repo } from '../../repositories/alertas-inversion.repository';
 import { normalizarParaComparar } from '../../shared/normalizar-texto';
 import { crearBuscadorDeSeccionPorDivision, divisionDeCodigo } from './ciiu-divisiones';
-import { ProyectoInversion, CiiuSeccion, Municipio, Empresa } from '../../infrastructure/db/models';
+import { ProyectoInversion, CiiuSeccion } from '../../infrastructure/db/models';
 
 // Más bajo que el de Observatorio (100.000): cada fila aquí es una noticia distinta,
 // resuelta y escrita una por una (no hay "vaciar y recargar" en bloque posible, porque
@@ -294,18 +293,14 @@ export const importarAlertasInversionExcel = async (
 
     const departamentoResuelto = departamentosResueltos.get(fila.departamento)!;
 
-    const empresaYaExistia = (await Empresa.count({
-      where: sequelize.where(sequelize.fn('lower', sequelize.col('nombre')), fila.empresa.toLowerCase()),
-    })) > 0;
     const empresa = await Repo.resolverOCrearEmpresa(fila.empresa);
-    if (!empresaYaExistia) nuevasEmpresas += 1;
+    if (empresa.creado) nuevasEmpresas += 1;
 
     let municipioId: string | null = null;
     if (fila.ciudad) {
-      const antes = await Municipio.count({ where: { departamento_id: departamentoResuelto.id, nombre: fila.ciudad } });
       const municipio = await Repo.resolverOCrearMunicipio(departamentoResuelto.id, fila.ciudad);
-      if (antes === 0) nuevosMunicipios += 1;
-      municipioId = municipio.get('id') as string;
+      if (municipio.creado) nuevosMunicipios += 1;
+      municipioId = municipio.registro.get('id') as string;
     }
 
     const { seccionId, claseId } = await resolverSeccionYClase(fila.codigo, fila.actividad, fila.numeroFila);
@@ -313,7 +308,7 @@ export const importarAlertasInversionExcel = async (
     await Repo.crearProyecto({
       tipo: fila.tipo,
       descripcion: fila.descripcion,
-      empresaId: empresa.get('id') as string,
+      empresaId: empresa.registro.get('id') as string,
       seccionId,
       claseId,
       fechaAnuncio: fila.fecha,
