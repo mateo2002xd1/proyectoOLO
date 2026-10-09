@@ -5,6 +5,74 @@
 
 ---
 
+## sesión 09-10-2026 (9.ª parte): la recuperación de contraseña del panel con el diseño nuevo (mockups de tablet)
+
+**Qué se pidió.** Las cuatro pantallas de la recuperación (`/recovery`, `/security-questions`,
+`/reset-password`, `/reset-success`) según seis mockups de tablet (1032 px), y el móvil a
+partir de ellos. A diferencia del primer ingreso, van sobre **blanco**: título, texto y enlace
+de regreso en `#001631`, tarjeta de 452 px con borde `#d9d9d9` y, en las preguntas, barras de
+avance de 32 × 6 px (`#002237` / `#ccd3d7`). Colores medidos sobre los PNG con canvas.
+
+**Cómo quedó.**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| FE | `.../auth/components/marco-de-pasos.tsx` | `tema="claro"`: blanco y texto `#001631` por debajo de `xl`. Título como `ReactNode` con `text-balance`; descripción en uno o varios párrafos (`text-pretty`) |
+| FE | `.../auth/components/auth-ui.tsx` | Las cuatro rutas pasan a `RUTAS_CON_MARCO_PROPIO`. En la piel `pasos`, `AuthProgressDots` son las barras del mockup, y también las ve el paso 2 del primer ingreso. `BackToSiteLink` en navy sobre blanco. Nuevos `authPasosCardHeadingClass` y los exportados `authPasosInputClass` y `authPasosErrorTextClass` |
+| FE | `recovery-view.tsx` | «Recupera el acceso / a tu cuenta», «Ingresa tu correo SENA» en negrita, «Comenzar», «Iniciar sesión» |
+| FE | `security-questions-view.tsx` | «Validación de identidad (Pregunta de seguridad n de 3)». La pregunta va en una caja con forma de campo, que es la `<label>` de la respuesta: pulsarla lleva al campo, y el lector la anuncia con «Pregunta n de 3». Debajo, «Respuesta», las barras y «Continuar» |
+| FE | `reset-password-view.tsx` | «¡Enhorabuena, <nombre>!», «Crea tu nueva contraseña», «Guardar», requisitos al enfocar |
+| FE | `reset-success-view.tsx` | Sin tarjeta, como el mockup: título, dos párrafos y «Iniciar sesión» de 272 px |
+| FE | `hooks/use-requisitos-al-enfocar.ts` (nuevo) | La regla de cuándo se ve la lista de requisitos, compartida con el primer ingreso, que la tenía dentro |
+| FE | `flujo-de-recuperacion.tsx`, `recuperacion.service.ts` | El nombre que da el servidor viaja al paso de la contraseña |
+| API | `controllers/security-questions.controller.ts`, `routes/security-question.routes.ts` | `POST /api/security-questions/verify` devuelve también `nombre`, el primer nombre de la cuenta. Solo sale con las tres respuestas correctas, así que no sirve para averiguar de quién es un correo. Documentado en OpenAPI. La intranet ignora el campo |
+| Docs | `manual-de-usuario-formato.md` §3.4.1.3 y §3.5.1.3 | Textos y botones nuevos de la recuperación del Sitio Web. Se corrigió además «Ir a iniciar sesión» |
+
+**Decisiones sin mockup, y por qué.**
+
+- **Escritorio:** no hubo mockup. Usa el del primer ingreso: dos mitades azules, con el logo,
+  el título y el texto a la izquierda, y la tarjeta a la derecha. Así los dos flujos se ven
+  iguales en pantalla grande. En la confirmación, el botón azul sobre el azul de la derecha no
+  se distinguía: ahí va dentro de una tarjeta con la marca de hecho.
+- **Móvil:** el de la tablet en 330 px. El subtítulo de las preguntas baja a 24 px, porque a 32
+  el título ocupaba cuatro líneas en grande.
+- **«coincidir exactamente»** pasa a «deben coincidir… No importan las mayúsculas»: el servidor
+  compara con `trim().toLowerCase()`. **«passcode»** pasa a «contraseña» y **«Preguntas de
+  Seguridad 1»** a «Pregunta de seguridad 1 de 3», en minúsculas como el resto del sitio.
+- **En las preguntas 2 y 3** el mockup deja vacío el hueco del enlace. Ahí va «Volver a la
+  pregunta anterior», que ya existía. En la 1, «Iniciar sesión».
+- **El ojo de mostrar** es el relleno de la piel `pasos` y no el de pestañas del mockup de
+  `/reset-password`, para que sea el mismo en todo el diseño nuevo.
+
+**Cómo se probó.** El arnés de la 7.ª parte, ahora con un enrutador simulado que cambia de
+página como el de Next dentro del mismo layout. Monta el layout real (`FlujoDeRecuperacionProvider`
++ `AuthSplitShell`) y recorre el flujo con la API simulada.
+
+| Prueba | Resultado |
+|---|---|
+| Las cuatro pantallas a 360, 440, 768, 1032, 1280 y 1920 px | ✅ Sin desborde y un solo `h1` visible. Blanco y `#001631` hasta `xl`; azul y blanco desde `xl`, con logo. Tarjeta de 312/330/452/452/320/320. Botón de 44/40 |
+| Correo vacío / sin preguntas | ✅ «El correo es requerido» / el aviso general de siempre |
+| Preguntas | ✅ El nombre accesible de la respuesta es «Pregunta 1 de 3: …». Respuesta vacía: error con `aria-invalid`. «Volver a la pregunta anterior» conserva lo escrito |
+| Verificación fallida | ✅ «Una o más respuestas son incorrectas», vuelve a la 1 y borra las respuestas |
+| Contraseña nueva | ✅ «¡Enhorabuena, Prueba!» con el nombre que manda la API. Requisitos ocultos hasta enfocar. «Las contraseñas no coinciden». Un solo envío con correo, tres respuestas y la clave |
+| Éxito | ✅ «¡Genial, tu clave ha sido actualizada con éxito!» y «Iniciar sesión» → `/login` |
+| Abrir `/security-questions`, `/reset-password` o `/reset-success` a mano | ✅ Vuelven a `/recovery` |
+| Primer ingreso tras el cambio | ✅ Sigue en azul, con el mismo tamaño de tarjeta |
+| Consola | ✅ Sin errores ni avisos |
+| `tsc --noEmit` del sitio y de la API; `eslint` de lo tocado | ✅ |
+
+No se probó la API con una base: el cambio es una línea sobre el usuario que `verifyAnswers` ya
+devolvía. **Hay que reiniciar la API** de desarrollo para que salga el nombre: `ts-node` no
+recarga solo. Sin reiniciar, el título dice «¡Enhorabuena!» sin nombre.
+
+**Queda.**
+
+- Mirar el flujo con una cuenta real a 360 y 1032.
+- Los mockups de escritorio de la recuperación, si los hay, y los del login.
+- La intranet tiene su propia recuperación (`3001-intranet`), con su marco: no se tocó.
+
+---
+
 ## sesión 09-10-2026 (8.ª parte): el manual de usuario pasa a `manual-de-usuario-formato.md`
 
 **Qué pasó.** Al bajar `OLO/dev` llegó el PR #138 (rama `mateo`). En el commit `31873fe0` se borró

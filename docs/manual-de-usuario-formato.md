@@ -791,7 +791,7 @@ Este procedimiento permite a cualquier funcionario restablecer de forma autónom
 > **[Captura: Enlace de Recuperación en Sitio Web (Móvil)]**
 > *Enlace '¿Olvidaste tu contraseña?' en el formulario de inicio de sesión del Sitio Web. (Móvil).*
 
-2. **Ingreso del correo corporativo institucional:** En la pantalla con el título *"¿Olvidaste tu contraseña?"*, se digita la cuenta de correo corporativo institucional (`@sena.edu.co`) en la casilla **"Correo SENA"** y se presiona el botón principal **"Continuar"**. El sistema valida el formato del correo y comprueba si la cuenta dispone de preguntas de seguridad configuradas.
+2. **Ingreso del correo corporativo institucional:** En la pantalla con el título *"Recupera el acceso a tu cuenta"*, se digita la cuenta de correo corporativo institucional (`@sena.edu.co`) en la casilla **"Ingresa tu correo SENA"** y se presiona el botón principal **"Comenzar"**. El sistema valida el formato del correo y comprueba si la cuenta dispone de preguntas de seguridad configuradas. El enlace **"Iniciar sesión"** bajo el botón regresa a la pantalla de acceso. En el móvil y la tablet esta pantalla y las siguientes van sobre fondo blanco; en el computador, sobre el azul institucional, con el logo y el título a la izquierda y el formulario a la derecha.
 
 > **[Captura: Ingreso de Correo de Recuperación Sitio Web]**
 > *Casilla de correo institucional diligenciada y botón 'Continuar' en el formulario de recuperación del Sitio Web.*
@@ -799,7 +799,7 @@ Este procedimiento permite a cualquier funcionario restablecer de forma autónom
 > **[Captura: Ingreso de Correo de Recuperación Sitio Web (Móvil)]**
 > *Casilla de correo institucional diligenciada y botón 'Continuar' en el formulario de recuperación del Sitio Web. (Móvil).*
 
-3. **Respuesta a las preguntas de seguridad:** En la pantalla *"Verifica tu identidad"*, la interfaz despliega una a una las tres preguntas de seguridad seleccionadas por el usuario durante su primer ingreso, indicando el avance mediante puntos indicadores. Se digita la respuesta confidencial correspondiente en el campo de texto y se pulsa el botón **"Continuar"** para avanzar entre preguntas hasta completar el cuestionario.
+3. **Respuesta a las preguntas de seguridad:** En la pantalla *"Validación de identidad (Pregunta de seguridad 1 de 3)"*, la interfaz despliega una a una las tres preguntas de seguridad seleccionadas por el usuario durante su primer ingreso; el número de la pregunta va en el título y el avance se indica con tres barras. Bajo **"Responde tus preguntas"** se muestra la pregunta en un recuadro; se digita la respuesta en el campo **"Respuesta"** y se pulsa **"Continuar"**. La respuesta no distingue mayúsculas de minúsculas ni tiene en cuenta los espacios al principio o al final. Desde la segunda pregunta, **"Volver a la pregunta anterior"** permite corregir la anterior. Las tres se verifican juntas al final: si alguna no coincide, el sistema lo indica sin decir cuál y el cuestionario vuelve a empezar desde la primera pregunta.
 
 > **[Captura: Preguntas de Seguridad en Recuperación Sitio Web]**
 > *Cuestionario presentando las preguntas de seguridad registradas y campo de respuesta en el Sitio Web.*
@@ -807,7 +807,7 @@ Este procedimiento permite a cualquier funcionario restablecer de forma autónom
 > **[Captura: Preguntas de Seguridad en Recuperación Sitio Web (Móvil)]**
 > *Cuestionario presentando las preguntas de seguridad registradas y campo de respuesta en el Sitio Web. (Móvil).*
 
-4. **Establecimiento de la nueva contraseña:** Al validar satisfactoriamente las respuestas, la pantalla *"Crea tu nueva contraseña"* habilita los campos **"Nueva contraseña"** y **"Confirmar contraseña"**. El usuario digita su nueva clave personal verificando que cumpla con los 5 requisitos de la política de seguridad del SENA y presiona el botón **"Guardar contraseña"**.
+4. **Establecimiento de la nueva contraseña:** Al validar satisfactoriamente las respuestas, la pantalla saluda por el nombre (*"¡Enhorabuena, [nombre]!"*) y, bajo **"Crea tu nueva contraseña"**, habilita los campos **"Nueva contraseña"** e **"Ingresa nuevamente la contraseña"**. Al entrar en el primero aparece la lista de requisitos de la política de seguridad, que se van marcando a medida que se cumplen. El usuario digita su nueva clave personal y presiona el botón **"Guardar"**. El enlace **"Iniciar sesión"** abandona el proceso sin cambiar la contraseña.
 
 > **[Captura: Restablecimiento de Contraseña Sitio Web]**
 > *Formulario de ingreso de nueva contraseña con validador de requisitos de seguridad en el Sitio Web.*
@@ -815,7 +815,7 @@ Este procedimiento permite a cualquier funcionario restablecer de forma autónom
 > **[Captura: Restablecimiento de Contraseña Sitio Web (Móvil)]**
 > *Formulario de ingreso de nueva contraseña con validador de requisitos de seguridad en el Sitio Web. (Móvil).*
 
-5. **Confirmación de actualización y retorno al acceso:** La interfaz presenta la pantalla de confirmación exitosa con la insignia de confirmación y el mensaje: *"Tu contraseña se actualizó. Ya puedes entrar al panel con tu nueva contraseña."*. Al presionar el botón **"Ir a iniciar sesión"**, el sistema redirige automáticamente a la pantalla de acceso (`/login`) para ingresar con la nueva clave (ver [Sección 3.4.1.2: Flujo de Inicio de Sesión Habitual](#3412-flujo-de-inicio-de-sesión-habitual)).
+5. **Confirmación de actualización y retorno al acceso:** La interfaz presenta la pantalla de confirmación exitosa con el mensaje: *"¡Genial, tu clave ha sido actualizada con éxito! Ya puedes ingresar a tu cuenta con tu nueva contraseña. ¡Tu seguridad es nuestra prioridad!"*. Al presionar el botón **"Iniciar sesión"**, el sistema redirige a la pantalla de acceso (`/login`) para ingresar con la nueva clave (ver [Sección 3.4.1.2: Flujo de Inicio de Sesión Habitual](#3412-flujo-de-inicio-de-sesión-habitual)).
 
 > **[Captura: Confirmación de Clave Actualizada Sitio Web]**
 > *Pantalla de éxito indicando la actualización correcta de la contraseña y botón de retorno al inicio de sesión.*
@@ -2225,7 +2225,7 @@ Durante el procedimiento de recuperación de contraseña (descrito operativament
 
 2. **Ingreso y comprobación de la cuenta de correo corporativo:**
    * *Acciones erróneas y validaciones:*
-     * **Correo obligatorio:** Si se presiona el botón "Continuar" con la casilla vacía, el sistema interrumpe el envío indicando: `"El correo es requerido"`.
+     * **Correo obligatorio:** Si se presiona el botón "Comenzar" con la casilla vacía, el sistema interrumpe el envío indicando: `"El correo es requerido"`.
      * **Formato o dominio ajeno:** Si se escribe un correo con formato inválido o fuera del dominio oficial (`@gmail.com`, `@hotmail.com`), el validador emite en tiempo real: `"El correo no tiene un formato válido"` o `"Debe ser un correo institucional @sena.edu.co"`.
      * **Cuenta sin preguntas de seguridad o inexistente:** Si el correo no cuenta con preguntas de seguridad configuradas en el sistema, la tarjeta despliega la alerta general: `"No hay preguntas de seguridad asociadas a ese correo. Contacta al administrador para restablecer tu acceso."`.
    * *Acción de corrección:* Verificar la correcta escritura del correo corporativo `@sena.edu.co` o solicitar soporte al Administrador si la cuenta nunca completó su configuración inicial de seguridad.
@@ -2263,7 +2263,7 @@ Durante el procedimiento de recuperación de contraseña (descrito operativament
 
 5. **Confirmación y retorno seguro:**
    * *Situación de control:* Tras procesar el cambio en el servidor, la pantalla `/reset-success` confirma la operación y bloquea retornos involuntarios con el botón de retroceso del navegador, obligando a iniciar sesión formalmente.
-   * *Acción de corrección:* Hacer clic sobre el botón "Ir a iniciar sesión" y autenticarse con la nueva contraseña definitiva.
+   * *Acción de corrección:* Hacer clic sobre el botón "Iniciar sesión" y autenticarse con la nueva contraseña definitiva.
 
 > **[Captura: Pantalla de Éxito en Recuperación Sitio Web]**
 > *Insignia de confirmación y botón para reanudar el acceso formal en el Sitio Web.*
