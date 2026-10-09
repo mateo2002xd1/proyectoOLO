@@ -5,6 +5,103 @@
 
 ---
 
+## sesión 09-10-2026: revisión del esquema de la base — integridad, normalización e índices (migración 041)
+
+**Qué se pidió.** Revisar todas las tablas, ver si se puede normalizar más y mejorar el
+rendimiento, corregir lo que haga falta y dejar en `11-base-de-datos.md` qué información
+guarda cada tabla. Primero el análisis, después las correcciones, al final el documento.
+
+**Cómo se analizó.** Solo lectura sobre Neon (08-10-2026), en transacciones `READ ONLY`: el
+catálogo (`pg_constraint`, `pg_index`, `information_schema`), los contadores de uso
+(`pg_stat_user_tables`, `pg_stat_user_indexes`), ~40 consultas de coherencia sobre los datos
+(duplicados, nulos, copias que no coinciden) y `EXPLAIN ANALYZE` del buscador ocupacional, el
+listado de la bitácora, la matriz de cargas y la lectura de sobresalientes. Se contrastó cada
+afirmación de `11` y `12` con lo que de verdad hay.
+
+**Lo que se encontró.**
+
+| Hallazgo | Gravedad |
+|---|---|
+| `UNIQUE` en `departamentos.nombre`, `niveles_formacion.nombre` y `ciiu_secciones.letra` documentados y **nunca creados**: la 026 y la 038 los pidieron con `unique: 'uq_…'` en `createTable`, que no crea nada | Alta: los importadores resuelven por nombre |
+| Cuatro copias de datos (dependencias transitivas) sin nada que impida que se contradigan: `programas_sobresalientes.departamento_id` y `.nivel_formacion_id`, `proyectos_inversion.seccion_id`, `proyectos_inversion_ubicaciones.departamento_id`. Y `paginas.version_publicada_id` podía apuntar a la versión de otra página | Media (hoy coinciden en el 100 % de las filas) |
+| `paginas_versiones.estado`, tres columnas de `usuarios`, `preguntas_seguridad.orden` y `auditoria_cambios.entidad_tipo` admitían `NULL`; esta última con `DEFAULT 'post'`, que su propio `CHECK` rechaza | Media |
+| Dos índices únicos de correo; seis índices sin lecturas (tres en la tabla que se reescribe entera en cada importación); doce fechas y dos `id` sin `DEFAULT` en Neon | Baja (rendimiento y trampas de SQL plano) |
+| Neon y una base nueva **no tienen el mismo esquema**: cuatro índices muy leídos solo existían en Neon (nombres de `sync`) y `_obsoleto_attachment` seguía viva en toda base nueva | Media: el servidor no tenía esos índices |
+| `npm run respaldo`, el respaldo que el documento manda correr antes de migrar, tenía la lista de tablas de antes de la 005 y **fallaba en la primera** | Alta para quien vaya a migrar |
+| `11-base-de-datos.md` describía tablas borradas (`contenidos`, `secciones`, `respaldos`…), invariantes de esas tablas, un mapa RF → tabla obsoleto y dos invariantes con el mismo número (I14) | Documental |
+
+**Lo que se hizo.**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| DB | `migrations/041-integridad-e-indices.ts` (nuevo) + `index.ts` | En una transacción propia: los cuatro `UNIQUE` (con `ciiu_clases.codigo`, la clave natural real); cinco FK compuestas con sus únicos de destino; `NOT NULL` y `DEFAULT`; `CHECK` de fecha de publicación, módulo de carga y correo en minúsculas; un solo único de correo; seis índices fuera, uno nuevo (`idx_sobresalientes_programa`) y cuatro unificados; `_obsoleto_attachment` fuera si está vacía. Funciona igual sobre Neon y sobre una base nueva (lo que depende de nombres de `sync` se resuelve por definición) |
+| API | `models/ciiu-clase.ts`, `models/programa-sobresaliente.ts`, `repositories/alertas-inversion.repository.ts` | Los índices que declaran los modelos y un comentario, al día con la 041 |
+| Scripts | `scripts/db/respaldo.ts` | Pide la lista de tablas a la base en cada ejecución |
+| Scripts | `scripts/db/descripciones-tablas.ts` | Las siete tablas que le faltaban (alias y alertas) |
+| Docs | `11-base-de-datos.md` | Reescrito: qué guarda cada una de las 33 tablas (§4), mapa de relaciones por dominio, invariantes renumeradas sin reutilizar números (I20–I26 nuevas, I5–I9 retiradas), mapa RF → tabla actual, migraciones 027/028/031/036/041 en §8.0, D6 y D9 nuevas, y la revisión completa en §9 |
+| Docs | `12-diccionario-de-datos.md` | Cifras de cabecera reales, fichas afectadas por la 041, `secciones` retirada, FK compuestas en la matriz, y un «Alcance» que dice qué tablas no tienen ficha todavía |
+
+**Cómo se probó.** Sin tocar Neon: una copia (`pg_dump` de solo lectura, sin los datos de la
+bitácora ni de las preguntas de seguridad) restaurada en un `postgres:18-alpine` desechable, y
+una API copiada al scratchpad, sin `.env`, contra esa base.
+
+| Prueba | Resultado |
+|---|---|
+| `up` de la 041 sobre la copia de Neon; `down`; `up` otra vez | ✅ las tres |
+| Base vacía migrada de la 001 a la 041 | ✅ |
+| Comparar las dos bases por definición (restricciones, índices, columnas) | Iguales salvo nombres heredados de `sync` y `ON UPDATE CASCADE` sobre UUID: sin efecto |
+| 15 intentos de romper las reglas nuevas (duplicados, copias incoherentes, página con versión ajena, publicado sin fecha, módulo desconocido, correo con mayúsculas…) | ✅ los 15 rechazados |
+| 5 casos válidos: borrar la versión publicada deja la página sin puntero, mover un centro arrastra sus hechos, proyecto sin clase y sede sin municipio, `INSERT` en SQL plano sin fechas, login por índice | ✅ |
+| Ciclo editorial con los casos de uso reales: crear sección, borrador, revisión, aprobar v1 y v2, rechazar v3, restaurar v1, eliminar la sección; escribir y listar la bitácora | ✅ en cada paso la publicada tiene fecha y es de su página |
+| `db:verificar` en las dos bases | ✅ 23 modelos |
+| Recarga de `programas_sobresalientes` (671 filas, mediana de 15), antes / después | 30,5 / 31,9 ms: igual dentro del ruido. Índices de la tabla: 496 → 352 kB |
+| `npm run respaldo` arreglado, sobre la copia | ✅ 33 tablas |
+| `tsc --noEmit` de la API | ✅ |
+
+> **Trampa.** En `queryInterface.createTable`, `unique: 'uq_nombre'` (una cadena) **no crea
+> ninguna restricción** y no avisa: solo `unique: true` lo hace. Para nombrarla, `addConstraint`
+> o SQL. Después de migrar, comprobar en `pg_constraint`, no en el código de la migración.
+
+> **Trampa.** Neon nació de `sequelize.sync()` y una base nueva de la 001: no son el mismo
+> esquema aunque las dos tengan las mismas migraciones aplicadas. Una migración que quite o
+> renombre algo creado por `sync` tiene que buscarlo por definición (como la 008), y conviene
+> probarla en las dos.
+
+**Lo que se descartó.**
+
+- **Quitar las columnas copiadas** (tercera forma normal estricta): obliga a cambiar dos
+  importadores y cada filtro; la FK compuesta da la misma garantía sin tocar código.
+- **Quitar las FK simples** que la compuesta ya implica: se dejan, no cuestan y los diagramas
+  las leen.
+- **`tasa_vinculacion` como columna generada**: rompe el `bulkCreate` del importador. Y un
+  `CHECK` que la compare con `vinculados / certificados` rechazaría una carga entera por una
+  diferencia de redondeo del Excel. Queda en §9.4.
+- **Conservar el único de `lower(email)` y cambiar el login a `lower(email) = …`**: cambia
+  código; con el `CHECK` de minúsculas el único simple es equivalente y el login ya lo usa.
+- **FK de `bloqueos_edicion` a `paginas`**: el latido de 45 s fallaría con error de base sobre
+  un slug inexistente. El candado huérfano que hay (de una sección de prueba) está caducado y es
+  inofensivo.
+- **Renombrar los nombres heredados de `sync`** (`users_pkey`, `…_key61`): ruido sin efecto.
+- **Fusionar «Tecnico» con «Técnico»**: es una decisión sobre los datos y debe ir con la
+  normalización del nombre en el importador.
+
+**Pendiente al cierre.**
+
+- **Aplicar la 041 en Neon** (no lo hice): respaldo con `npm run respaldo -- <ruta.json>` (o una
+  rama de Neon), `npm run migrate`, reiniciar `npm run dev` de la API y `npm run db:verificar`.
+  Mientras no se aplique, el servidor de quien tenga este código se niega a arrancar. En el
+  servidor la aplica `deploy.sh start`.
+- Lo que quedó sin corregir, con su porqué, en `11-base-de-datos.md` §9.4: tasa de vinculación
+  derivada, «Tecnico»/«Técnico», columnas sin uso (`layout`, `texto_alternativo`,
+  `reemplazar`), el candado huérfano, el `CHECK` de entidades de la bitácora, el filtro por año
+  de alertas y el coste lineal del listado de la bitácora.
+- `12-diccionario-de-datos.md` no tiene ficha de 15 tablas (tendencia, `cargas_datos`, alertas).
+- Los comentarios de `publicaciones.tsx` (sitio e intranet) citan la I5 y la tabla `contenidos`,
+  que ya no existen.
+- En Neon sobran dos filas en `migraciones_aplicadas` (nombres viejos de la 026 y la 040).
+
+---
+
 ## sesión 07-10-2026: fase 0 del filesystem — verificación de punta a punta
 
 **Cómo se probó.** En desarrollo, contra los servidores en marcha y sin escribir en la base.
