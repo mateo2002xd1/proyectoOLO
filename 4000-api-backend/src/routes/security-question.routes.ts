@@ -153,7 +153,16 @@ router.post('/setup', requireAuth, SecurityQuestionController.setupQuestions);
  *             required: [email, answers]
  *     responses:
  *       200:
- *         description: Respuestas correctas. Habilita el paso de recuperación.
+ *         description: |
+ *           Respuestas correctas. Habilita el paso de recuperación. Trae el primer nombre
+ *           de la cuenta para saludar en ese paso; solo sale con las tres respuestas bien.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string }
+ *                 nombre: { type: string, nullable: true }
  *       401:
  *         description: Respuestas incorrectas, o cuenta bloqueada por intentos.
  *         content:

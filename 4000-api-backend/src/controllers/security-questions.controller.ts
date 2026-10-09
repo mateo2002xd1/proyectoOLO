@@ -45,8 +45,12 @@ export const SecurityQuestionController = {
       const { email, answers } = req.body;
       // Este es el paso en que la pantalla de recuperación comprueba las respuestas: aquí
       // se registra el acierto. Los fallos se registran siempre, dentro del caso de uso.
-      await verifyAnswers(email, answers, { origen: origenDeLaPeticion(req), registrarAcierto: true });
-      res.json({ message: 'Respuestas correctas' });
+      const usuario = await verifyAnswers(email, answers, { origen: origenDeLaPeticion(req), registrarAcierto: true });
+      // El primer nombre, para el saludo de la pantalla siguiente («¡Enhorabuena, <nombre>!»).
+      // Solo sale con las tres respuestas correctas: quien llega aquí ya probó quién es,
+      // así que no sirve para averiguar de quién es un correo.
+      const nombre = usuario.name?.trim().split(/\s+/)[0] || null;
+      res.json({ message: 'Respuestas correctas', nombre });
     } catch (err) { next(err); }
   },
 
