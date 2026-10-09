@@ -65,7 +65,7 @@ function PendientesDePublicar({
   return (
     <div
       role="status"
-      className="mt-4 flex flex-wrap items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm dark:border-amber-900/60 dark:bg-amber-900/20"
+      className="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm dark:border-amber-900/60 dark:bg-amber-900/20"
     >
       <EstadoFlag estado={{ tono: 'borrador', texto: 'Sin publicar' }} />
       {celdas.map((c) => {
@@ -366,7 +366,7 @@ export function CargaCriteriosClasificacion({ puedeActualizar }: CargaCriteriosC
           )}
 
           {ultima && estadoUltima && (
-            <div role="status" className={`mt-4 rounded-lg border px-3 py-2.5 text-sm ${CAJA[estadoUltima.tono]}`}>
+            <div role="status" className={`mt-4 rounded-xl border px-3 py-2.5 text-sm ${CAJA[estadoUltima.tono]}`}>
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 <EstadoFlag estado={estadoUltima} />
                 <span className="font-medium text-[#001631] dark:text-[#f6f6f6]">

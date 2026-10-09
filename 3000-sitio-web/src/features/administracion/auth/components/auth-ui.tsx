@@ -18,7 +18,10 @@ import { LONGITUD_MINIMA, requisitosDe } from '@olo/password-policy';
  * está el único juego, y todas lo usan:
  *
  *   · campos, la caja de la pregunta y botones: 44 px de alto (el mínimo táctil de
- *     `2-convenciones` §10.4), a todo el ancho del formulario y con esquinas de 32 px;
+ *     `2-convenciones` §10.4) y a todo el ancho del formulario. Campos y botones con esquinas
+ *     de 32 px; lo que muestra una pregunta de seguridad (la caja de la recuperación y el
+ *     desplegable del primer ingreso), de 16, como los mensajes de estado, porque si la
+ *     pregunta es larga ocupa dos líneas;
  *   · el formulario: en el móvil, sin tarjeta y 330 px como máximo, como en el mockup de
  *     móvil; desde `md`, tarjeta de 452 px con borde y las mismas esquinas de 32 px;
  *   · las letras, de la escala tipográfica del usuario: etiquetas, campos, botones y
@@ -68,11 +71,16 @@ const authPasosLabelClass = 'mb-2 block text-base font-medium text-[#001a39]';
  */
 export const authPasosCardHeadingClass = 'text-xl font-medium text-[#001631]';
 
-/** Exportada para el campo que no cabe en los de abajo (la respuesta a la pregunta). */
-export const authPasosInputClass = (hasError: boolean) =>
+/**
+ * Exportada para el campo que no cabe en los de abajo (la respuesta a la pregunta).
+ * `esquinas`: las de píldora por defecto; el desplegable de preguntas pasa `rounded-xl` (16 px
+ * en este sitio). Va como parámetro y no como clase añadida después: dos clases de radio en el
+ * mismo elemento las resuelve el orden del CSS, no el del atributo.
+ */
+export const authPasosInputClass = (hasError: boolean, esquinas = 'rounded-[32px]') =>
   [
     // `py-2`: el `select` de Chrome pinta el texto arriba de su caja, no centrado.
-    'h-11 w-full rounded-[32px] border bg-white px-5 py-2 text-base text-[#001a39] placeholder:text-[#b3b3b3]',
+    `h-11 w-full ${esquinas} border bg-white px-5 py-2 text-base text-[#001a39] placeholder:text-[#b3b3b3]`,
     'transition-colors focus:outline-none focus:ring-2',
     hasError
       ? 'border-red-500 focus:border-red-600 focus:ring-red-600'
@@ -81,13 +89,17 @@ export const authPasosInputClass = (hasError: boolean) =>
 
 export const authPasosErrorTextClass = 'mt-1.5 text-sm text-red-600';
 
-/* ---------- Avisos ---------- */
+/* ---------- Avisos ---------- *
+ * Los mensajes de estado llevan esquinas de 16 px, no las de 32 de campos y botones, para
+ * que no se confundan con ellos (pedido del usuario, 2026-10-09). `rounded-xl` es 16 en este
+ * sitio: globals.css redefine la escala de radios (en Tailwind sería 12), y `rounded-2xl`
+ * es 24, que en una banda se veía igual que un botón. */
 
 /** Banda roja para errores que no pertenecen a un campo concreto. */
 export function AuthGeneralError({ children }: { children: ReactNode }) {
   return (
     <div
-      className="mb-6 rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-600"
+      className="mb-6 rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-600"
       role="alert"
     >
       {children}
@@ -109,7 +121,7 @@ export function AuthGeneralError({ children }: { children: ReactNode }) {
 export function AuthGeneralNotice({ children }: { children: ReactNode }) {
   return (
     <div
-      className="mb-6 rounded-2xl border border-blue-300 bg-blue-50 px-4 py-3 text-sm text-blue-800"
+      className="mb-6 rounded-xl border border-blue-300 bg-blue-50 px-4 py-3 text-sm text-blue-800"
       role="status"
     >
       {children}
@@ -261,8 +273,9 @@ export function AuthSelectField({
           aria-describedby={error ? `${id}-error` : undefined}
           // Sin valor el campo imita a un `placeholder`; las opciones vuelven al
           // gris de texto porque en Windows heredan el color del `select`.
-          // `admin-auth-select`: la lista abierta, con borde (globals.css).
-          className={`admin-auth-select ${authPasosInputClass(!!error)} appearance-none pr-12 ${value ? '' : 'text-[#b3b3b3]'}`}
+          // `admin-auth-select`: la lista abierta, con borde (globals.css). Esquinas de 16, como
+          // la caja de la pregunta en la recuperación: la pregunta elegida puede ocupar dos líneas.
+          className={`admin-auth-select ${authPasosInputClass(!!error, 'rounded-xl')} appearance-none pr-12 ${value ? '' : 'text-[#b3b3b3]'}`}
         >
           <option value="" disabled>
             {placeholder}

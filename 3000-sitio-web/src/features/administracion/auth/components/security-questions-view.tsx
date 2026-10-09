@@ -114,11 +114,12 @@ export function SecurityQuestionsView() {
 
           <h2 className={`mb-3 ${authPasosCardHeadingClass}`}>Responde tus preguntas</h2>
 
-          {/* Mide lo mismo que un campo (`authPasosInputClass`): 44 px de alto, esquinas
-              de 32 y el mismo relleno. Si la pregunta es larga, crece hacia abajo. */}
+          {/* Mide lo mismo que un campo (`authPasosInputClass`): 44 px de alto y el mismo
+              relleno. Si la pregunta es larga, crece hacia abajo; por eso sus esquinas son de
+              16 (`rounded-xl` en este sitio), como los mensajes de estado, y no de 32. */}
           <label
             htmlFor="respuesta"
-            className="mb-6 block min-h-11 rounded-[32px] border border-[#d9d9d9] px-5 py-2 text-base text-[#001a39]"
+            className="mb-6 block min-h-11 rounded-xl border border-[#d9d9d9] px-5 py-2 text-base text-[#001a39]"
           >
             <span className="sr-only">
               Pregunta {preguntaActual + 1} de {total}:{' '}

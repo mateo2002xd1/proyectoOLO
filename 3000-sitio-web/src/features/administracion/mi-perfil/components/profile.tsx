@@ -99,7 +99,7 @@ export function ProfileForm() {
             <h2 className="admin-header text-gray-800 dark:text-gray-100 mb-6">Mi Perfil</h2>
 
             {message && (
-                <div className={`p-4 mb-6 rounded-lg text-sm ${message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800' : 'bg-red-50 text-red-800 border border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800'}`}>
+                <div className={`p-4 mb-6 rounded-xl text-sm ${message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800' : 'bg-red-50 text-red-800 border border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800'}`}>
                     {message.text}
                 </div>
             )}
