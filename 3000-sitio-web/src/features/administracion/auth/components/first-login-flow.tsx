@@ -30,7 +30,8 @@ import { useRequisitosAlEnfocar } from '../hooks/use-requisitos-al-enfocar';
  *
  * Desde el 2026-10-09 lleva el diseño nuevo (`MarcoDePasos`): el título y lo que se
  * pide en cada paso van fuera de la tarjeta, con el paginador debajo, y la tarjeta
- * solo trae el formulario. `AuthSplitShell` deja pasar esta ruta sin su marco.
+ * solo trae el formulario. Ese mismo día pasó del azul al fondo blanco, como la
+ * recuperación.
  */
 
 const TOTAL_QUESTIONS = 3;

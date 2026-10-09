@@ -1,289 +1,93 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { useState, ReactNode } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { EyeIcon, EyeSlashIcon, HomeIcon } from '@heroicons/react/20/solid';
+import { HomeIcon } from '@heroicons/react/20/solid';
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { LONGITUD_MINIMA, requisitosDe } from '@olo/password-policy';
 
 /**
- * Primitivas compartidas por las pantallas de autenticación del panel:
- * acceso, primer ingreso y recuperación de contraseña.
+ * Primitivas de las pantallas de acceso del panel: login, primer ingreso y recuperación
+ * de contraseña. El marco de todas es `MarcoDePasos` (`marco-de-pasos.tsx`).
  *
- * ## Un solo marco para las tres
+ * ## Un solo juego de medidas (simetría, 2026-10-09)
  *
- * Las tres viven dentro de `AuthSplitShell` —identidad a la izquierda, tarjeta
- * blanca sobre el azul institucional a la derecha— y comparten el mismo juego de
- * estilos. Antes solo la de acceso lo hacía: primer ingreso y recuperación traían
- * un juego con variantes `dark:`, pensado para una tarjeta que sigue el tema del
- * panel. Dentro de este marco eso se rompía dos veces:
+ * Los mockups llegaron pantalla por pantalla y cada uno traía las suyas: en el de móvil el
+ * campo medía 330 px en el login, 320 en la recuperación y 283 en las preguntas, y el botón
+ * de la confirmación, 272. El usuario pidió simetría entre todas las rutas, así que aquí
+ * está el único juego, y todas lo usan:
  *
- *   · el tema oscuro se activa también por preferencia del sistema operativo
- *     (`layout.tsx` lo aplica antes de pintar), así que la tarjeta salía blanca
- *     con etiquetas gris claro y texto gris azulado encima;
- *   · los títulos de paso se pintaban fuera de la tarjeta, en `text-gray-900`,
- *     es decir gris oscuro sobre el azul `#001631`: ilegibles.
+ *   · campos, la caja de la pregunta y botones: 44 px de alto (el mínimo táctil de
+ *     `2-convenciones` §10.4), a todo el ancho del formulario y con esquinas de 32 px;
+ *   · el formulario: en el móvil, sin tarjeta y 330 px como máximo, como en el mockup de
+ *     móvil; desde `md`, tarjeta de 452 px con borde y las mismas esquinas de 32 px;
+ *   · las letras, de la escala tipográfica del usuario: etiquetas, campos, botones y
+ *     enlaces a 16 px («Body»); errores y avisos a 14 («Footnote»).
  *
- * Por eso aquí no hay variantes `dark:` salvo en `PasswordRequisitos`, que además
- * de estas pantallas sirve al perfil dentro del panel, donde sí hay tema.
+ * Hasta ese día convivían dos pieles, elegidas con un contexto: la de siempre (`tarjeta`,
+ * que al final solo usaba el login) y la del diseño nuevo (`pasos`). Con el login en el
+ * diseño nuevo, la vieja y su marco (`AuthSplitShell`) se quitaron. Las clases conservan
+ * el prefijo `authPasos`.
  *
- * ## El diseño nuevo, pantalla por pantalla (desde el 2026-10-09)
- *
- * El usuario va pasando los mockups de una en una. Las que ya lo tienen usan
- * `MarcoDePasos` (`marco-de-pasos.tsx`) y la piel `pasos` de más abajo; hoy, el primer
- * ingreso. Las demás siguen en `AuthSplitShell` con la piel de siempre. Cuando no quede
- * ninguna, la piel `tarjeta` y su marco sobran.
+ * No hay variantes `dark:` salvo en `PasswordRequisitos`, que también usa el perfil dentro
+ * del panel: estas pantallas pintan su propio fondo, y con el tema oscuro del sistema
+ * operativo un campo oscuro quedaba sobre la tarjeta blanca.
  */
 
-/* ---------- Clases base ---------- *
- * La tarjeta es siempre blanca y el marco pinta su propio fondo, así que estas
- * clases no llevan tema oscuro: hacerlo dejaría un campo oscuro dentro de una
- * tarjeta blanca. */
-
-// Relleno menor en el móvil: con `px-9` dentro del `px-6` del marco, a 360 px el
-// campo se quedaba en 240 px y la pregunta de seguridad partía en cuatro líneas.
-export const authSolidCardClass =
-  'w-full max-w-[380px] rounded-2xl bg-white px-6 py-8 shadow-[0_25px_60px_rgba(0,0,0,0.35)] sm:px-9 sm:py-10';
+/* ---------- Clases ---------- *
+ * Colores medidos en los mockups: texto `#001631`, etiquetas y campos `#001a39`, borde
+ * `#d9d9d9`, marcador `#b3b3b3`, botón y barras `#001631`, ojo `#334861`. */
 
 /**
- * Tarjeta del login. Por debajo de `xl` no es tarjeta: la pantalla entera es blanca
- * (ver `AuthSplitShell`) y el formulario va directo sobre ella, sin borde ni sombra,
- * como en el diseño de móvil y tablet. Desde `xl` vuelve a ser la de las demás.
+ * El formulario de cada pantalla. Por debajo de `md` no es tarjeta: va directo sobre el
+ * fondo blanco, como en el mockup de móvil. Desde `md`, tarjeta con borde; en el
+ * escritorio queda sobre el azul de la mitad derecha.
  */
-export const authLoginCardClass =
-  'w-full max-w-[380px] bg-white xl:rounded-2xl xl:px-9 xl:py-10 xl:shadow-[0_25px_60px_rgba(0,0,0,0.35)]';
-
-export const authSolidLabelClass = 'mb-1.5 block text-sm font-semibold text-[#0d1526]';
-
-export const authSolidInputClass = (hasError: boolean) =>
-  [
-    'w-full rounded-lg border px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400',
-    'transition-colors focus:outline-none focus:ring-2',
-    hasError
-      ? 'border-red-400 focus:border-red-500 focus:ring-red-500'
-      : // El anillo va a opacidad plena por lo mismo que en `Button`: SC 1.4.11 pide
-      // 3:1 para el indicador de foco y cualquier `/20` lo hunde por debajo.
-      'border-gray-300 focus:border-[#0d1526] focus:ring-[#0d1526]',
-  ].join(' ');
-
-export const authErrorTextClass = 'mt-1 text-xs text-red-600';
-
-/** Enlaces secundarios de una tarjeta: volver, ir al login, cambiar de paso. */
-export const authQuietLinkClass =
-  'rounded text-xs text-gray-500 transition-colors hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d1526]';
-
-/**
- * Piel del botón principal cuando la acción es navegar y no enviar.
- *
- * Repite lo que `Button variant="navy"` da a un `<button>`, porque las pantallas
- * de éxito terminan en un enlace. Meter un `<Button>` dentro de un `<Link>` sería
- * anidar contenido interactivo, que es HTML inválido y confunde a los lectores de
- * pantalla sobre qué se está activando.
- */
-export const authNavyActionClass =
-  'inline-flex w-full items-center justify-center rounded-[16px] bg-[#0d1526] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_8px_-2px_rgba(13,21,38,0.4)] transition hover:bg-[#1a2340] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-focus';
-
-/* ---------- Piel «pasos» ---------- *
- * La del diseño nuevo, que empezó por el primer ingreso (2026-10-09) y seguirá por el
- * resto del flujo: tarjeta con borde y sin sombra, esquinas pequeñas, etiquetas en peso
- * normal y campos de 16 px. Los colores son los medidos en el mockup. La elige
- * `MarcoDePasos` con `PielAuth`, así que los campos de abajo se pintan solos con ella.
- *
- * Anchos de la tarjeta según el mockup de cada tamaño: 330 en el móvil, 452 en la tablet
- * y 320 en el escritorio, donde comparte la pantalla con el panel de la izquierda. */
-
 export const authPasosCardClass =
-  'w-full max-w-[330px] rounded-md border border-[#d9d9d9] bg-white px-6 py-10 md:max-w-[452px] xl:max-w-[320px]';
+  'w-full max-w-[330px] bg-white md:max-w-[452px] md:rounded-[32px] md:border md:border-[#d9d9d9] md:px-8 md:py-10';
 
-// 44 px de alto por debajo de `xl`, que es lo que pide `2-convenciones` §10.4 para la
-// acción principal en el móvil; en el escritorio, los 40 del mockup.
 export const authPasosPrimaryClass =
-  'inline-flex h-11 w-full items-center justify-center rounded-md bg-[#002237] px-4 text-base text-[#f5f5f5] transition-colors hover:bg-[#0a3350] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#002237] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 xl:h-10';
+  'inline-flex h-11 w-full items-center justify-center rounded-[32px] bg-[#001631] px-6 text-base font-medium text-[#f5f5f5] transition-colors hover:bg-[#0d2c4f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001631] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60';
 
 export const authPasosSecondaryClass =
-  'inline-flex h-11 items-center justify-center rounded-md border border-[#d9d9d9] bg-white px-4 text-base text-[#001a39] transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#002237] focus-visible:ring-offset-2 xl:h-10';
+  'inline-flex h-11 items-center justify-center rounded-[32px] border border-[#d9d9d9] bg-white px-6 text-base font-medium text-[#001a39] transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001631] focus-visible:ring-offset-2';
 
-/** El enlace discreto de la tarjeta («Iniciar sesión»). */
+/** El enlace discreto bajo el botón («Iniciar sesión», «¿Olvidaste tu contraseña?»). */
 export const authPasosQuietLinkClass =
-  'rounded px-1 py-1 text-[15px] text-[#001631] underline-offset-4 transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#002237]';
+  'rounded px-1 py-1 text-base text-[#001631] underline-offset-4 transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001631]';
 
-// 15 px y no los 16 del mockup: Poppins es más ancha que la letra del diseño, y a 16
-// «Ingresa nuevamente la contraseña» (282 px) no cabía en una línea de la tarjeta de
-// 320 (270 por dentro). A 15 mide 265.
-const authPasosLabelClass = 'mb-2 block text-[15px] text-[#001a39]';
+// 16 px en peso medio. Con Poppins, «Ingresa nuevamente la contraseña» mide unos 290 px, y
+// el formulario tiene 328 en un móvil de 360 (sin tarjeta, ver arriba) y 388 por dentro de
+// la tarjeta: cabe en una línea en todos los anchos.
+const authPasosLabelClass = 'mb-2 block text-base font-medium text-[#001a39]';
 
 /**
- * Encabezado en negrita dentro de la tarjeta («Crea tu nueva contraseña», «Responde tus
- * preguntas»), como en los mockups de la recuperación. Va en un `h2`: el `h1` es el
- * título del marco.
+ * Encabezado dentro del formulario («Crea tu nueva contraseña», «Responde tus
+ * preguntas»): 20 px en peso medio («Headline»), entre el título de la pantalla y las
+ * etiquetas. Va en un `h2`: el `h1` es el título del marco.
  */
-export const authPasosCardHeadingClass = 'text-base font-semibold text-[#001631]';
+export const authPasosCardHeadingClass = 'text-xl font-medium text-[#001631]';
 
 /** Exportada para el campo que no cabe en los de abajo (la respuesta a la pregunta). */
 export const authPasosInputClass = (hasError: boolean) =>
   [
     // `py-2`: el `select` de Chrome pinta el texto arriba de su caja, no centrado.
-    'h-10 w-full rounded-md border bg-white px-4 py-2 text-base text-[#001a39] placeholder:text-[#b3b3b3]',
+    'h-11 w-full rounded-[32px] border bg-white px-5 py-2 text-base text-[#001a39] placeholder:text-[#b3b3b3]',
     'transition-colors focus:outline-none focus:ring-2',
     hasError
       ? 'border-red-500 focus:border-red-600 focus:ring-red-600'
-      : 'border-[#d9d9d9] focus:border-[#002237] focus:ring-[#002237]',
+      : 'border-[#d9d9d9] focus:border-[#001631] focus:ring-[#001631]',
   ].join(' ');
 
 export const authPasosErrorTextClass = 'mt-1.5 text-sm text-red-600';
 
-/**
- * Qué piel llevan los campos y el enlace de regreso. Sin proveedor, la de siempre
- * (`tarjeta`); `MarcoDePasos` pone `pasos`. Así una pantalla cambia de diseño al
- * cambiar de marco, sin pasar la piel a cada campo.
- */
-export type PielDeAuth = 'tarjeta' | 'pasos';
-export const PielAuth = createContext<PielDeAuth>('tarjeta');
-
-const claseEtiqueta = (piel: PielDeAuth) => (piel === 'pasos' ? authPasosLabelClass : authSolidLabelClass);
-const claseCampo = (piel: PielDeAuth, hasError: boolean) =>
-  piel === 'pasos' ? authPasosInputClass(hasError) : authSolidInputClass(hasError);
-const claseError = (piel: PielDeAuth) => (piel === 'pasos' ? authPasosErrorTextClass : authErrorTextClass);
-
-/* ---------- Contenedores ---------- */
-
-/**
- * Marco partido de las pantallas de autenticación: identidad a la izquierda,
- * tarjeta a la derecha sobre el azul institucional.
- *
- * El logo vive aquí y no dentro de la tarjeta porque el panel izquierdo ya lo
- * sostiene. Por debajo de `xl` ese panel se oculta, así que el marco repone la marca
- * arriba: si no, la pantalla de móvil se quedaría sin ninguna.
- *
- * ## Por qué el corte es `xl` y no `md`
- *
- * El diseño de móvil vale hasta la tablet grande incluida (iPad Pro 13", 1032 × 1376
- * en vertical). `lg` empieza en 1024, así que esa tablet caía en el diseño partido,
- * con dos columnas de 516 px; `xl` (1280) es el primer corte de la escala por encima
- * (`2-convenciones` §10.1). La misma tablet en horizontal (1376) sí lo parte.
- *
- * ## El login, por debajo de `xl`, es otra pantalla
- *
- * Fondo blanco entero, el logo a color con «Panel de Administración» encima y el
- * formulario sin tarjeta (`authLoginCardClass`). El resto del flujo sigue sobre el
- * azul, con la marca compacta en blanco y su tarjeta. Por eso el marco mira la ruta:
- * vive en el layout y es el único que pinta el fondo.
- *
- * El enlace de regreso al sitio también es del marco y no de cada pantalla: sale
- * igual en el acceso, en la elección de editor y en la recuperación.
- *
- * ## Las rutas con marco propio
- *
- * El primer ingreso y la recuperación ya tienen el diseño nuevo (`MarcoDePasos`): el
- * panel izquierdo cuenta el paso en que se está, así que lo pinta la propia pantalla,
- * que es la que sabe en qué paso va. Para esas rutas este marco no pinta nada.
- */
-const RUTAS_CON_MARCO_PROPIO = new Set([
-  '/first-login',
-  '/recovery',
-  '/security-questions',
-  '/reset-password',
-  '/reset-success',
-]);
-
-export function AuthSplitShell({ children }: { children: ReactNode }) {
-  const ruta = usePathname();
-  const esLogin = ruta === '/login';
-
-  if (RUTAS_CON_MARCO_PROPIO.has(ruta)) return <>{children}</>;
-
-  return (
-    <div className={`flex min-h-dvh w-full xl:bg-[#001631] ${esLogin ? 'bg-white' : 'bg-[#001631]'}`}>
-      {/* Panel izquierdo — identidad sobre blanco, con la esquina derecha redondeada. */}
-      <div className="hidden w-[50%] shrink-0 items-center justify-center bg-white rounded-r-[16px] xl:flex">
-        <div className="text-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/assets/logos/olo-logo-none.svg" alt="OLO Logo" className="mx-auto w-[210px]" />
-          <p className="mt-6 text-2xl font-light text-[#0d1526]">Panel de</p>
-          {/* Es el título de la pantalla, así que va como encabezado y no como
-              párrafo: sin esto la página no tiene ningún `h1` que anunciar. Los
-              títulos de cada paso van dentro de la tarjeta como `h2`. */}
-          <h1 className="text-3xl font-bold leading-tight text-[#0d1526]">ADMINISTRACIÓN</h1>
-        </div>
-      </div>
-
-      <div className="flex min-w-0 flex-1 flex-col items-center justify-center gap-6 px-6 py-12 sm:py-16">
-        {/* Marca mientras el panel izquierdo está oculto. Los dos `h1` nunca
-            coexisten: el que no toca está en `display:none` y no llega al árbol
-            de accesibilidad. */}
-        {esLogin ? (
-          // Login: el logo a color y el título grande, con aire antes del formulario.
-          <div className="mb-4 text-center sm:mb-10 xl:hidden">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/assets/logos/olo-logo-none.svg"
-              alt="OLO Logo"
-              className="mx-auto w-24 sm:w-28"
-            />
-            <h1 className="mt-4 leading-tight text-[#0d1526]">
-              <span className="block text-xl font-light sm:text-2xl">Panel de</span>{' '}
-              {/* El espacio de arriba es para el nombre accesible: dos `block`
-                  seguidos se leían «Panel deAdministración». */}
-              <span className="block text-2xl font-bold sm:text-3xl">Administración</span>
-            </h1>
-          </div>
-        ) : (
-          <div className="mb-2 text-center xl:hidden">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/assets/logos/olo-logo-none.svg"
-              alt="OLO Logo"
-              className="mx-auto mb-2 w-16 brightness-0 invert"
-            />
-            <h1 className="text-lg text-white">
-              Panel de <span className="font-bold">ADMINISTRACIÓN</span>
-            </h1>
-          </div>
-        )}
-
-        {children}
-
-        <BackToSiteLink label="Regresar al sitio web del Observatorio" sobreBlanco={esLogin} />
-      </div>
-    </div>
-  );
-}
-
-/**
- * Encabezado de una tarjeta: qué pantalla es y qué se espera de quien la ve.
- *
- * Va **dentro** de la tarjeta blanca. Fuera solo cabe lo que el marco pinta en
- * blanco sobre el azul; cualquier texto oscuro ahí desaparece.
- *
- * Es `h2` porque el `h1` de la página lo pone el marco. La pantalla de acceso no
- * lo usa: allí el panel izquierdo ya dice a dónde se está entrando y la tarjeta
- * empieza directamente por el formulario.
- */
-export function AuthCardTitle({
-  title,
-  description,
-  className = 'mb-6',
-}: {
-  title: string;
-  description?: ReactNode;
-  className?: string;
-}) {
-  return (
-    <div className={className}>
-      <h2 className="text-[19px] font-bold leading-snug text-[#0d1526]">{title}</h2>
-      {description && (
-        <p className="mt-1.5 text-[13px] leading-relaxed text-gray-500">{description}</p>
-      )}
-    </div>
-  );
-}
+/* ---------- Avisos ---------- */
 
 /** Banda roja para errores que no pertenecen a un campo concreto. */
 export function AuthGeneralError({ children }: { children: ReactNode }) {
   return (
     <div
-      className="mb-4 rounded-lg border border-red-300 bg-red-50 px-3.5 py-2.5 text-sm text-red-600"
+      className="mb-6 rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-600"
       role="alert"
     >
       {children}
@@ -305,7 +109,7 @@ export function AuthGeneralError({ children }: { children: ReactNode }) {
 export function AuthGeneralNotice({ children }: { children: ReactNode }) {
   return (
     <div
-      className="mb-4 rounded-lg border border-blue-300 bg-blue-50 px-3.5 py-2.5 text-sm text-blue-800"
+      className="mb-6 rounded-2xl border border-blue-300 bg-blue-50 px-4 py-3 text-sm text-blue-800"
       role="status"
     >
       {children}
@@ -314,14 +118,12 @@ export function AuthGeneralNotice({ children }: { children: ReactNode }) {
 }
 
 /**
- * Avance dentro de un cuestionario de varios pasos.
+ * Avance dentro de un cuestionario de varios pasos: las barras del mockup (32 × 6 px), la
+ * actual en `#001631` y el resto en `#ccd3d7`.
  *
  * Decorativo a propósito (`aria-hidden`): la posición se anuncia en texto —
  * «Pregunta 2 de 3»— junto al campo, que es lo que de verdad sirve a quien no ve
- * los puntos. El paso actual se distingue por forma *y* color, no solo por color.
- *
- * En la piel `pasos` son las barras del mockup (32 × 6 px): la actual en `#002237` y
- * el resto en `#ccd3d7`.
+ * las barras.
  */
 export function AuthProgressDots({
   total,
@@ -332,43 +134,25 @@ export function AuthProgressDots({
   current: number;
   className?: string;
 }) {
-  const piel = useContext(PielAuth);
-
-  if (piel === 'pasos') {
-    return (
-      <div className={`flex justify-center gap-2 ${className}`} aria-hidden="true">
-        {Array.from({ length: total }).map((_, i) => (
-          <span
-            key={i}
-            className={`h-1.5 w-8 rounded-sm transition-colors ${i === current ? 'bg-[#002237]' : 'bg-[#ccd3d7]'}`}
-          />
-        ))}
-      </div>
-    );
-  }
-
   return (
-    <div className={`flex justify-center gap-1.5 ${className}`} aria-hidden="true">
+    <div className={`flex justify-center gap-2 ${className}`} aria-hidden="true">
       {Array.from({ length: total }).map((_, i) => (
         <span
           key={i}
-          className={`h-1.5 rounded-full transition-all ${
-            i === current
-              ? 'w-6 bg-[#0d1526]'
-              : i < current
-                ? 'w-1.5 bg-[#0d1526]/45'
-                : 'w-1.5 bg-gray-300'
-            }`}
+          className={`h-1.5 w-8 rounded-full transition-colors ${i === current ? 'bg-[#001631]' : 'bg-[#ccd3d7]'}`}
         />
       ))}
     </div>
   );
 }
 
-/** Marca de operación terminada, para las pantallas de cierre del flujo. */
+/**
+ * Marca de operación terminada, para las pantallas de cierre del flujo. Solo desde `md`,
+ * donde el formulario es tarjeta: en el mockup de móvil la confirmación no la lleva.
+ */
 export function AuthSuccessBadge() {
   return (
-    <div className="mx-auto mb-5 flex size-12 items-center justify-center rounded-full bg-[#0d1526]">
+    <div className="mx-auto mb-5 hidden size-12 items-center justify-center rounded-full bg-[#001631] md:flex">
       <svg
         width="22"
         height="22"
@@ -401,7 +185,7 @@ export function AuthTextField({
   autoComplete,
   autoCapitalize,
   autoCorrect,
-  className = 'mb-4',
+  className = 'mb-6',
 }: {
   id: string;
   label: ReactNode;
@@ -415,11 +199,9 @@ export function AuthTextField({
   autoCorrect?: 'on' | 'off';
   className?: string;
 }) {
-  const piel = useContext(PielAuth);
-
   return (
     <div className={className}>
-      <label htmlFor={id} className={claseEtiqueta(piel)}>
+      <label htmlFor={id} className={authPasosLabelClass}>
         {label}
       </label>
       <input
@@ -433,18 +215,18 @@ export function AuthTextField({
         autoCorrect={autoCorrect}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? `${id}-error` : undefined}
-        className={claseCampo(piel, !!error)}
+        className={authPasosInputClass(!!error)}
       />
-      {error && <p id={`${id}-error`} className={claseError(piel)}>{error}</p>}
+      {error && <p id={`${id}-error`} className={authPasosErrorTextClass}>{error}</p>}
     </div>
   );
 }
 
 /**
- * Desplegable con la misma piel que el resto de campos.
+ * Desplegable con la misma forma que el resto de campos.
  *
  * `appearance-none` y flecha propia: el desplegable del sistema trae su borde y
- * su tipografía, y dentro de esta tarjeta cantaba al lado de los demás campos.
+ * su tipografía, y al lado de los demás campos desentonaba.
  */
 export function AuthSelectField({
   id,
@@ -454,7 +236,7 @@ export function AuthSelectField({
   error,
   options,
   placeholder = 'Selecciona una opción…',
-  className = 'mb-4',
+  className = 'mb-6',
 }: {
   id: string;
   label: ReactNode;
@@ -465,12 +247,9 @@ export function AuthSelectField({
   placeholder?: string;
   className?: string;
 }) {
-  const piel = useContext(PielAuth);
-  const sinValor = piel === 'pasos' ? 'text-[#b3b3b3]' : 'text-gray-400';
-
   return (
     <div className={className}>
-      <label htmlFor={id} className={claseEtiqueta(piel)}>
+      <label htmlFor={id} className={authPasosLabelClass}>
         {label}
       </label>
       <div className="relative">
@@ -483,8 +262,7 @@ export function AuthSelectField({
           // Sin valor el campo imita a un `placeholder`; las opciones vuelven al
           // gris de texto porque en Windows heredan el color del `select`.
           // `admin-auth-select`: la lista abierta, con borde (globals.css).
-          className={`admin-auth-select ${claseCampo(piel, !!error)} appearance-none pr-10 ${value ? '' : sinValor
-            }`}
+          className={`admin-auth-select ${authPasosInputClass(!!error)} appearance-none pr-12 ${value ? '' : 'text-[#b3b3b3]'}`}
         >
           <option value="" disabled>
             {placeholder}
@@ -510,12 +288,12 @@ export function AuthSelectField({
           strokeLinecap="round"
           strokeLinejoin="round"
           aria-hidden="true"
-          className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500"
+          className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-gray-500"
         >
           <polyline points="6 9 12 15 18 9" />
         </svg>
       </div>
-      {error && <p id={`${id}-error`} className={claseError(piel)}>{error}</p>}
+      {error && <p id={`${id}-error`} className={authPasosErrorTextClass}>{error}</p>}
     </div>
   );
 }
@@ -523,9 +301,10 @@ export function AuthSelectField({
 /**
  * Campo de contraseña con alternador de visibilidad.
  *
- * En la piel `pasos` el ojo es el relleno del mockup y dice lo que hará al pulsarlo
- * (ojo: mostrar; ojo tachado: ocultar). En la de siempre muestra el estado. El nombre
- * accesible dice la acción en las dos.
+ * Los ojos son los del usuario (2026-10-09), los mismos `eye-closed` y `eye-open` de
+ * `/assets/svg` que usan los botones de «ver» del panel. Muestran el estado, como en el
+ * mockup: cerrado mientras la contraseña está oculta, abierto cuando se ve. El nombre
+ * accesible dice la acción («Mostrar contraseña»).
  */
 export function PasswordField({
   id,
@@ -537,7 +316,7 @@ export function PasswordField({
   placeholder = `Mínimo ${LONGITUD_MINIMA} caracteres`,
   autoComplete,
   describedBy,
-  className = 'mb-4',
+  className = 'mb-6',
 }: {
   id: string;
   label: string;
@@ -552,12 +331,11 @@ export function PasswordField({
   className?: string;
 }) {
   const [show, setShow] = useState(false);
-  const piel = useContext(PielAuth);
   const descripciones = [describedBy, error ? `${id}-error` : undefined].filter(Boolean).join(' ');
 
   return (
     <div className={className}>
-      <label htmlFor={id} className={claseEtiqueta(piel)}>
+      <label htmlFor={id} className={authPasosLabelClass}>
         {label}
       </label>
       <div className="relative">
@@ -571,26 +349,19 @@ export function PasswordField({
           placeholder={placeholder}
           aria-invalid={error ? true : undefined}
           aria-describedby={descripciones || undefined}
-          className={`${claseCampo(piel, !!error)} ${piel === 'pasos' ? 'pr-11' : 'pr-10'}`}
+          // Hueco para el ojo: 12 px al borde, el botón y 8 de aire antes del texto.
+          className={`${authPasosInputClass(!!error)} pr-14`}
         />
         <button
           type="button"
           onClick={() => setShow((v) => !v)}
           aria-label={show ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-          className={
-            piel === 'pasos'
-              ? 'absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-[#334861] transition-colors hover:text-[#001a39] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#002237]'
-              : 'absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-gray-500 transition-colors hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d1526]'
-          }
+          className="absolute right-3 top-1/2 flex -translate-y-1/2 rounded-full p-1.5 text-[#334861] transition-colors hover:text-[#001a39] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001631]"
         >
-          {piel === 'pasos' ? (
-            show ? <EyeSlashIcon aria-hidden="true" className="size-5" /> : <EyeIcon aria-hidden="true" className="size-5" />
-          ) : (
-            <IconoMascara nombre={show ? 'eye-open' : 'eye-closed'} tamano="h-5 w-5" />
-          )}
+          <IconoMascara nombre={show ? 'eye-open' : 'eye-closed'} tamano="h-5 w-6" />
         </button>
       </div>
-      {error && <p id={`${id}-error`} className={claseError(piel)}>{error}</p>}
+      {error && <p id={`${id}-error`} className={authPasosErrorTextClass}>{error}</p>}
     </div>
   );
 }
@@ -605,7 +376,7 @@ export function PasswordField({
  * `aria-live` para que un lector de pantalla anuncie los que se van cumpliendo; sin
  * eso la lista es información visual que no llega a todo el mundo.
  *
- * Es la única primitiva con dos pieles, porque además de estas pantallas la usa
+ * Es la única primitiva con dos variantes, porque además de estas pantallas la usa
  * el perfil dentro del panel, que sí tiene tema oscuro (`variant="panel"`).
  */
 export function PasswordRequisitos({
@@ -652,69 +423,26 @@ export function PasswordRequisitos({
 /* ---------- Navegación ---------- */
 
 /**
- * Enlace de regreso al sitio público.
- *
- * Lo ponen `AuthSplitShell` y `MarcoDePasos`, casi siempre sobre el azul: de ahí el
- * blanco. Con `sobreBlanco` (el login, y la recuperación en la piel `pasos`, que por
- * debajo de `xl` van sobre fondo blanco) se oscurece hasta ese corte; desde `xl` vuelve
- * a estar sobre el azul. En la piel `pasos`, la casa rellena y el texto de 16 px del
- * mockup.
+ * Enlace de regreso al sitio público, al pie de cada pantalla (lo pone `MarcoDePasos`).
+ * Por debajo de `xl` va sobre el fondo blanco, en `#001631`; desde `xl`, sobre el azul
+ * de la mitad derecha, en blanco. La casa rellena y el texto de 16 px del mockup.
  */
 export function BackToSiteLink({
   className = '',
   label = 'Ir al sitio web',
-  sobreBlanco = false,
 }: {
   className?: string;
   label?: string;
-  sobreBlanco?: boolean;
 }) {
-  const piel = useContext(PielAuth);
-  const color = sobreBlanco
-    ? 'text-gray-600 hover:text-gray-900 xl:text-white/90 xl:hover:text-white'
-    : 'text-white/90 hover:text-white';
-
-  if (piel === 'pasos') {
-    return (
-      <div className={`text-center ${className}`}>
-        <Link
-          href="/inicio"
-          // En línea y no `inline-flex`: a 360 px el texto parte en dos y la casa debe ir
-          // pegada a la primera palabra, no sola a la izquierda.
-          className={`inline-block rounded py-2.5 text-base transition hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 ${
-            sobreBlanco
-              ? 'text-[#001631] focus-visible:ring-[#001631] xl:text-white xl:focus-visible:ring-white'
-              : 'text-white focus-visible:ring-white'
-          }`}
-        >
-          <HomeIcon aria-hidden="true" className="mr-2 inline-block size-5 align-[-4px]" />
-          {label}
-        </Link>
-      </div>
-    );
-  }
-
   return (
     <div className={`text-center ${className}`}>
       <Link
         href="/inicio"
-        // `py-2.5`: el texto solo mide 20 px de alto, y en el móvil el objetivo
-        // táctil debe llegar a 24 (`2-convenciones` §10.4).
-        className={`inline-flex items-center justify-center gap-2 py-2.5 text-sm font-medium transition hover:-translate-y-px ${color}`}
+        // En línea y no `inline-flex`: a 360 px el texto parte en dos y la casa debe ir
+        // pegada a la primera palabra, no sola a la izquierda.
+        className="inline-block rounded py-2.5 text-base text-[#001631] transition hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001631] xl:text-white xl:focus-visible:ring-white"
       >
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-          <polyline points="9 22 9 12 15 12 15 22" />
-        </svg>
+        <HomeIcon aria-hidden="true" className="mr-2 inline-block size-5 align-[-4px]" />
         {label}
       </Link>
     </div>

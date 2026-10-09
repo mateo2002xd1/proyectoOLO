@@ -22,7 +22,7 @@ import { obtenerPreguntas } from '../services/recuperacion.service';
  * Es la única pantalla del flujo que se puede abrir suelta: las demás dependen de
  * lo que esta deja en `useFlujoDeRecuperacion` (ver `flujo-de-recuperacion.tsx`).
  *
- * Diseño nuevo desde el 2026-10-09 (mockup de tablet): `MarcoDePasos` en tema claro.
+ * Diseño nuevo desde el 2026-10-09 (mockups de tablet y de móvil): `MarcoDePasos`.
  */
 export function RecoveryView() {
   const router = useRouter();
@@ -67,7 +67,6 @@ export function RecoveryView() {
 
   return (
     <MarcoDePasos
-      tema="claro"
       // El mockup corta tras «acceso»; en el móvil el corte lo decide el ancho.
       titulo={
         <>
@@ -83,8 +82,7 @@ export function RecoveryView() {
           <AuthTextField
             id="email-recuperacion"
             type="email"
-            // En el mockup la etiqueta va en negrita y hace de encabezado de la tarjeta.
-            label={<span className="text-base font-semibold text-[#001631]">Ingresa tu correo SENA</span>}
+            label="Ingresa tu correo SENA"
             placeholder="usuario@sena.edu.co"
             autoComplete="email"
             value={email}

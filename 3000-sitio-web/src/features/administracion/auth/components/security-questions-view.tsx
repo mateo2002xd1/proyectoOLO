@@ -93,12 +93,10 @@ export function SecurityQuestionsView() {
 
   return (
     <MarcoDePasos
-      tema="claro"
       titulo={
         <>
           Validación de identidad{' '}
-          {/* Más pequeña en el móvil: a 32 px el título ocupaba cuatro líneas. */}
-          <span className="block text-2xl md:text-[32px]">
+          <span className="block">
             (Pregunta de seguridad {preguntaActual + 1} de {total})
           </span>
         </>
@@ -116,9 +114,11 @@ export function SecurityQuestionsView() {
 
           <h2 className={`mb-3 ${authPasosCardHeadingClass}`}>Responde tus preguntas</h2>
 
+          {/* Mide lo mismo que un campo (`authPasosInputClass`): 44 px de alto, esquinas
+              de 32 y el mismo relleno. Si la pregunta es larga, crece hacia abajo. */}
           <label
             htmlFor="respuesta"
-            className="mb-6 block min-h-10 rounded-md border border-[#d9d9d9] px-4 py-2 text-base text-[#001a39]"
+            className="mb-6 block min-h-11 rounded-[32px] border border-[#d9d9d9] px-5 py-2 text-base text-[#001a39]"
           >
             <span className="sr-only">
               Pregunta {preguntaActual + 1} de {total}:{' '}

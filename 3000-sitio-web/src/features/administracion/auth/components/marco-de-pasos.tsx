@@ -2,94 +2,92 @@
 
 import type { ReactNode } from 'react';
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/20/solid';
-import { BackToSiteLink, PielAuth } from './auth-ui';
+import { BackToSiteLink } from './auth-ui';
 
 /**
- * Marco del diseño nuevo de las pantallas de acceso (mockups del usuario, 2026-10-09),
- * que estrenó el primer ingreso.
+ * Marco de todas las pantallas de acceso: login, primer ingreso y recuperación de
+ * contraseña (mockups del usuario, 2026-10-09).
  *
+ * - **Móvil y tablet**: una sola columna sobre blanco, con el texto en `#001631`: título,
+ *   qué se pide, paginador si lo hay, el formulario y el enlace de regreso. Sin logo,
+ *   salvo en el login (`conLogo`). El corte es `xl`: la tablet grande en vertical
+ *   (1032 px) va en una columna.
  * - **Escritorio (`xl`)**: dos mitades azules. A la izquierda, sobre `#001631`, el logo,
- *   el título del paso, qué se pide y el paginador. A la derecha, sobre `#001a39` y con
- *   las esquinas izquierdas redondeadas, la tarjeta y el enlace de regreso.
- * - **Tablet y móvil**: una sola columna sobre `#001631`, sin logo: título, texto,
- *   paginador, tarjeta y enlace. El corte es `xl`, como en el resto del acceso
- *   (`AuthSplitShell`): la tablet grande en vertical (1032 px) va en una columna.
+ *   el título, el texto y el paginador, en blanco. A la derecha, sobre `#001a39` y con las
+ *   esquinas izquierdas redondeadas, la tarjeta y el enlace de regreso.
  *
- * El título es el `h1` de la página, en los dos diseños: es el mismo elemento, que solo
+ * Hasta el 2026-10-09 el primer ingreso iba sobre azul también en el móvil (`tema`
+ * oscuro) y la recuperación sobre blanco. El usuario pidió el mismo estilo para todas.
+ *
+ * ## Tamaños de letra
+ *
+ * Los de la escala tipográfica del usuario, en Poppins (`LetraDelPanel`):
+ *
+ * | Qué | Escala | Tamaño |
+ * |---|---|---|
+ * | Título (`h1`) | Heading 5 → Heading 4, Semibold | 24 px en el móvil, 30 desde `md` |
+ * | Texto bajo el título | Body Large, Regular | 18 px |
+ * | Encabezado del formulario | Headline, Medium | 20 px (`authPasosCardHeadingClass`) |
+ * | Etiquetas, campos, botones, enlaces | Body | 16 px |
+ * | Errores y avisos | Footnote | 14 px |
+ *
+ * El título es el `h1` de la página en los dos diseños: es el mismo elemento, que solo
  * cambia de sitio.
- *
- * Pone la piel `pasos` (`PielAuth`): los campos, botones y el enlace de regreso que
- * haya dentro se pintan con ella sin que la pantalla lo pida.
- *
- * ## Tema claro (la recuperación de contraseña)
- *
- * Los mockups de tablet de la recuperación van sobre **blanco**, con el título, el texto
- * y el enlace de regreso en `#001631`; los del primer ingreso, sobre azul. `tema="claro"`
- * pinta así por debajo de `xl`. En el escritorio no hay mockup de la recuperación, así que
- * usa el mismo que el primer ingreso: las dos mitades azules, con el texto en blanco.
  */
 export function MarcoDePasos({
   titulo,
   descripcion,
   pasos,
-  tema = 'oscuro',
+  conLogo = false,
   children,
 }: {
   titulo: ReactNode;
   /** Uno o varios párrafos. */
   descripcion?: string | string[];
-  /** El paginador. Solo está diseñado sobre azul: con `tema="claro"` no se usa. */
+  /** El paginador del primer ingreso. */
   pasos?: PasosDelMarco;
-  tema?: 'oscuro' | 'claro';
-  /** La tarjeta (`authPasosCardClass`), o lo que haga sus veces. */
+  /**
+   * El logo también por debajo de `xl`, encima del título. Solo el login: es la puerta de
+   * entrada y la única pantalla del flujo que en el mockup de móvil lo lleva.
+   */
+  conLogo?: boolean;
+  /** El formulario (`authPasosCardClass`), o lo que haga sus veces. */
   children: ReactNode;
 }) {
-  const claro = tema === 'claro';
   const parrafos = descripcion === undefined ? [] : Array.isArray(descripcion) ? descripcion : [descripcion];
 
   return (
-    <PielAuth.Provider value="pasos">
-      <div
-        className={`flex min-h-dvh w-full flex-col justify-center py-12 xl:flex-row xl:bg-[#001631] xl:py-0 ${
-          claro ? 'bg-white' : 'bg-[#001631]'
-        }`}
-      >
-        <section
-          className={`flex flex-col items-center px-6 text-center xl:w-1/2 xl:shrink-0 xl:justify-center xl:py-12 xl:text-white ${
-            claro ? 'text-[#001631]' : 'text-white'
-          }`}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/assets/logos/olo-logo-none.svg"
-            alt="OLO Logo"
-            className="mb-8 hidden w-[200px] xl:block"
-          />
-          {/* En el móvil el título parte en dos líneas, como en el mockup. `text-balance`
-              reparte las líneas parejas («Recupera el acceso / a tu cuenta»). */}
-          <h1 className="max-w-[300px] text-[32px] font-bold leading-tight text-balance md:max-w-[480px]">
-            {titulo}
-          </h1>
-          {parrafos.length > 0 && (
-            <div className="mt-8 max-w-[300px] space-y-6 text-lg leading-6 text-pretty md:max-w-[440px] xl:max-w-[400px]">
-              {parrafos.map((texto) => (
-                <p key={texto}>{texto}</p>
-              ))}
-            </div>
-          )}
-          {pasos && (
-            <div className="@container mt-12 w-full md:mt-[72px]">
-              <PaginadorDePasos {...pasos} />
-            </div>
-          )}
-        </section>
+    <div className="flex min-h-dvh w-full flex-col justify-center bg-white py-12 xl:flex-row xl:bg-[#001631] xl:py-0">
+      <section className="flex flex-col items-center px-4 text-center text-[#001631] sm:px-6 xl:w-1/2 xl:shrink-0 xl:justify-center xl:py-12 xl:text-white">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/assets/logos/olo-logo-none.svg"
+          alt="OLO Logo"
+          className={`mb-6 w-28 md:w-32 xl:mb-8 xl:block xl:w-[200px] ${conLogo ? 'block' : 'hidden'}`}
+        />
+        {/* `text-balance` reparte las líneas parejas («Recupera el acceso / a tu cuenta»). */}
+        <h1 className="max-w-[330px] text-2xl font-semibold leading-tight text-balance md:max-w-[480px] md:text-3xl">
+          {titulo}
+        </h1>
+        {parrafos.length > 0 && (
+          <div className="mt-6 max-w-[330px] space-y-6 text-lg leading-7 text-pretty md:mt-8 md:max-w-[440px] xl:max-w-[400px]">
+            {parrafos.map((texto) => (
+              <p key={texto}>{texto}</p>
+            ))}
+          </div>
+        )}
+        {pasos && (
+          <div className="@container mt-10 w-full md:mt-[72px]">
+            <PaginadorDePasos {...pasos} />
+          </div>
+        )}
+      </section>
 
-        <div className="mt-6 flex flex-col items-center px-6 md:mt-11 xl:mt-0 xl:flex-1 xl:justify-center xl:rounded-l-2xl xl:bg-[#001a39] xl:py-12">
-          {children}
-          <BackToSiteLink label="Regresar al sitio web del Observatorio" sobreBlanco={claro} className="mt-8 xl:mt-2" />
-        </div>
+      <div className="mt-10 flex flex-col items-center px-4 sm:px-6 md:mt-11 xl:mt-0 xl:flex-1 xl:justify-center xl:rounded-l-[32px] xl:bg-[#001a39] xl:py-12">
+        {children}
+        <BackToSiteLink label="Regresar al sitio web del Observatorio" className="mt-8 xl:mt-4" />
       </div>
-    </PielAuth.Provider>
+    </div>
   );
 }
 
@@ -117,6 +115,7 @@ export interface PasosDelMarco {
  *   que se puede corregir desde las preguntas.
  * - Hacia adelante, solo pasando por el formulario. Los números de los pasos que faltan
  *   no son botones: saltar un paso dejaría la cuenta a medias.
+ * - Sobre blanco en `#001631` y, desde `xl`, sobre el azul en blanco.
  * - Por debajo de 384 px de ancho disponible (`@sm` del contenedor), «Anterior» y
  *   «Siguiente» se quedan en la flecha; el nombre lo da su `aria-label` en todos los
  *   anchos. Con las palabras en español, la fila no cabía a 360 px. Se mide el
@@ -130,8 +129,8 @@ function PaginadorDePasos({ nombres, actual, volverA, formulario }: PasosDelMarc
   const total = nombres.length;
   const puedeVolver = !!volverA && actual > 0;
   const flecha =
-    'inline-flex h-8 items-center gap-2 rounded-md px-2 text-base text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:cursor-default disabled:text-white/50 disabled:hover:bg-transparent';
-  const numero = 'flex size-8 items-center justify-center rounded-md text-base';
+    'inline-flex h-8 items-center gap-2 rounded-full px-3 text-base text-[#001631] transition-colors hover:bg-[#001631]/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001631] disabled:cursor-default disabled:text-[#001631]/40 disabled:hover:bg-transparent xl:text-white xl:hover:bg-white/10 xl:focus-visible:ring-white xl:disabled:text-white/50';
+  const numero = 'flex size-8 items-center justify-center rounded-full text-base';
 
   return (
     <nav aria-label="Pasos para configurar tu cuenta" className="flex items-center justify-center gap-3 @sm:gap-5">
@@ -146,7 +145,7 @@ function PaginadorDePasos({ nombres, actual, volverA, formulario }: PasosDelMarc
           return (
             <li key={nombre}>
               {i === actual ? (
-                <span aria-current="step" className={`${numero} bg-white text-[#001631]`}>
+                <span aria-current="step" className={`${numero} bg-[#001631] text-white xl:bg-white xl:text-[#001631]`}>
                   <span aria-hidden="true">{i + 1}</span>
                   <span className="sr-only">{etiqueta}</span>
                 </span>
@@ -155,12 +154,12 @@ function PaginadorDePasos({ nombres, actual, volverA, formulario }: PasosDelMarc
                   type="button"
                   onClick={() => volverA(i)}
                   aria-label={`Volver al ${etiqueta.charAt(0).toLowerCase()}${etiqueta.slice(1)}`}
-                  className={`${numero} text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white`}
+                  className={`${numero} text-[#001631] transition-colors hover:bg-[#001631]/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001631] xl:text-white xl:hover:bg-white/10 xl:focus-visible:ring-white`}
                 >
                   {i + 1}
                 </button>
               ) : (
-                <span className={`${numero} text-white`}>
+                <span className={`${numero} text-[#001631] xl:text-white`}>
                   <span aria-hidden="true">{i + 1}</span>
                   <span className="sr-only">{etiqueta}</span>
                 </span>

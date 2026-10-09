@@ -84,7 +84,6 @@ export function ResetPasswordView() {
 
   return (
     <MarcoDePasos
-      tema="claro"
       titulo={nombre ? `¡Enhorabuena, ${nombre}!` : '¡Enhorabuena!'}
       descripcion={[
         'Ahora puedes crear tu nueva contraseña.',

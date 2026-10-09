@@ -4,16 +4,17 @@ import { Suspense, useState, FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { validarEmail } from '@olo/email-policy';
-import { Button } from '@/shared/ui/atoms/button';
 import { mensajeDeCierre } from '@/shared/lib/inactividad';
 import {
   AuthGeneralError,
   AuthGeneralNotice,
   AuthTextField,
   PasswordField,
-  authQuietLinkClass,
-  authLoginCardClass,
+  authPasosCardClass,
+  authPasosPrimaryClass,
+  authPasosQuietLinkClass,
 } from './auth-ui';
+import { MarcoDePasos } from './marco-de-pasos';
 
 /**
  * Pantalla de acceso al panel de administración (`/login`).
@@ -24,14 +25,15 @@ import {
  *
  * Solo pinta el formulario. Si la cuenta debe la configuración de primer ingreso,
  * manda a `/first-login` —hasta el 2026-09-18 la pintaba aquí mismo—, y el
- * «¿Olvidaste tu contraseña?» lleva a `/recovery`. El marco (`AuthSplitShell`) lo
- * pone `app/(auth)/layout.tsx`, común a todas esas pantallas.
+ * «¿Olvidaste tu contraseña?» lleva a `/recovery`.
+ *
+ * Desde el 2026-10-09 usa el mismo marco que el resto del acceso (`MarcoDePasos`, mockup de
+ * móvil): el logo y «Panel de Administración» arriba, y el formulario con las mismas
+ * medidas que las demás pantallas.
  *
  * @see 1-guia-del-proyecto.md §4.2  (app/ solo enrutamiento; la lógica en features/)
  * @see 3-seguridad-del-proyecto.md  (la sesión la emite y valida la API :4000)
  */
-
-
 
 function LoginForm() {
   const router = useRouter();
@@ -95,7 +97,7 @@ function LoginForm() {
 
       const permisos = data.user?.permisos || [];
       const hasAccesoPanel = permisos.includes('acceso.panel');
-      const hasPermisosEdicion = permisos.some((p: string) => 
+      const hasPermisosEdicion = permisos.some((p: string) =>
         p.startsWith('editar.') || p.startsWith('secciones.') || p.startsWith('editor.')
       );
 
@@ -118,71 +120,90 @@ function LoginForm() {
   };
 
   return (
-    <div className={authLoginCardClass}>
-      <form onSubmit={handleSubmit} noValidate>
-        {/* Antes que el error: explica por qué se está aquí, no qué se hizo mal. Al
-            escribir credenciales nuevas el error lo sustituye visualmente. */}
-        {avisoDeCierre && <AuthGeneralNotice>{avisoDeCierre}</AuthGeneralNotice>}
-        {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
+    <form onSubmit={handleSubmit} noValidate>
+      {/* Antes que el error: explica por qué se está aquí, no qué se hizo mal. Al
+          escribir credenciales nuevas el error lo sustituye visualmente. */}
+      {avisoDeCierre && <AuthGeneralNotice>{avisoDeCierre}</AuthGeneralNotice>}
+      {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
 
-        <AuthTextField
-          id="email"
-          type="email"
-          label="Correo SENA"
-          autoComplete="email"
-          value={email}
-          onChange={setEmail}
-          error={errors.email}
-          placeholder="usuario@sena.edu.co"
-        />
+      <AuthTextField
+        id="email"
+        type="email"
+        label="Correo SENA"
+        autoComplete="email"
+        value={email}
+        onChange={setEmail}
+        error={errors.email}
+        placeholder="usuario@sena.edu.co"
+      />
 
-        <PasswordField
-          id="password"
-          label="Contraseña"
-          autoComplete="current-password"
-          value={password}
-          onChange={setPassword}
-          error={errors.password}
-          className="mb-5"
-        />
+      <PasswordField
+        id="password"
+        label="Contraseña"
+        autoComplete="current-password"
+        value={password}
+        onChange={setPassword}
+        error={errors.password}
+        className="mb-4"
+      />
 
-        {/* RF-13: el aviso va antes de enviar nada, no después.
+      {/* RF-13: el aviso va antes de enviar nada, no después.
 
-            Los dos enlaces van a `/inicio/politica-de-privacidad`, la ruta canónica.
-            `/privacidad` y `/politica-de-privacidad` son alias que redirigen ahí (ver
-            `next.config.mjs`): enlazarlos manda al mismo sitio pagando un salto de más. */}
-        <p className="mb-6 text-xs leading-relaxed text-gray-500">
-          Al ingresar a este sitio aceptas la{' '}
-          <Link href="/inicio/politica-de-privacidad" className="font-semibold text-gray-700 hover:underline">
-            política de privacidad
-          </Link>{' '}
-          y{' '}
-          <Link href="/inicio/politica-de-privacidad" className="font-semibold text-gray-700 hover:underline">
-            protección de datos
-          </Link>
-          .
-        </p>
+          Los dos enlaces van a `/inicio/politica-de-privacidad`, la ruta canónica.
+          `/privacidad` y `/politica-de-privacidad` son alias que redirigen ahí (ver
+          `next.config.mjs`): enlazarlos manda al mismo sitio pagando un salto de más. */}
+      <p className="mb-6 text-sm leading-relaxed text-[#737373]">
+        Al ingresar a este sitio aceptas la{' '}
+        <Link href="/inicio/politica-de-privacidad" className="font-semibold hover:underline">
+          política de privacidad
+        </Link>{' '}
+        y{' '}
+        <Link href="/inicio/politica-de-privacidad" className="font-semibold hover:underline">
+          protección de datos
+        </Link>
+        .
+      </p>
 
-        <Button type="submit" variant="navy" disabled={isLoading} className="w-full">
-          {isLoading ? 'Iniciando sesión…' : 'Ingresar'}
-        </Button>
+      <button type="submit" disabled={isLoading} className={authPasosPrimaryClass}>
+        {isLoading ? 'Iniciando sesión…' : 'Ingresar'}
+      </button>
 
-        <div className="mt-4 text-center">
-          <Link href="/recovery" className={authQuietLinkClass}>
-            ¿Olvidaste tu contraseña?
-          </Link>
-        </div>
-      </form>
-    </div>
+      <div className="mt-6 text-center">
+        <Link href="/recovery" className={authPasosQuietLinkClass}>
+          ¿Olvidaste tu contraseña?
+        </Link>
+      </div>
+    </form>
   );
 }
 
 export function LoginView() {
   return (
-    // `useSearchParams` obliga a un límite de Suspense: sin él, la ruta entera se
-    // renderiza en cliente.
-    <Suspense fallback={<div className={`${authLoginCardClass} text-center`}>Cargando…</div>}>
-      <LoginForm />
-    </Suspense>
+    <MarcoDePasos
+      conLogo
+      titulo={
+        <>
+          {/* El espacio entre los dos es para el nombre accesible: dos `block` seguidos se
+              leían «Panel deAdministración». */}
+          <span className="block font-normal">Panel de</span>{' '}
+          <span className="block">Administración</span>
+        </>
+      }
+    >
+      <div className={authPasosCardClass}>
+        {/* `useSearchParams` obliga a un límite de Suspense: sin él, la ruta entera se
+            renderiza en cliente. Va solo alrededor del formulario, para que el marco y el
+            título lleguen ya en el HTML del servidor. */}
+        <Suspense
+          fallback={
+            <p className="text-center text-base text-[#001a39]" role="status">
+              Cargando…
+            </p>
+          }
+        >
+          <LoginForm />
+        </Suspense>
+      </div>
+    </MarcoDePasos>
   );
 }
