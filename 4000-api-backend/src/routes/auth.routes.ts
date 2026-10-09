@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { AuthController } from '../controllers/auth.controller';
-import { requireAuth } from '../middlewares/auth.middleware';
+import { requireAuthConConfiguracionPendiente } from '../middlewares/auth.middleware';
 import { limitadorDeLogin, limitadorDeLogout } from '../middlewares/rate-limit.middleware';
 
 const router = Router();
@@ -106,7 +106,7 @@ router.post('/login', limitadorDeLogin, AuthController.login);
  *                 mustSetupSecurityQuestions: { type: boolean }
  *       401: { $ref: '#/components/responses/NoAutenticado' }
  */
-router.get('/first-login/status', requireAuth, AuthController.firstLoginStatus);
+router.get('/first-login/status', requireAuthConConfiguracionPendiente, AuthController.firstLoginStatus);
 
 /**
  * @openapi
@@ -147,7 +147,7 @@ router.get('/first-login/status', requireAuth, AuthController.firstLoginStatus);
  *             schema: { $ref: '#/components/schemas/Error' }
  *       401: { $ref: '#/components/responses/NoAutenticado' }
  */
-router.post('/first-login', requireAuth, AuthController.firstLogin);
+router.post('/first-login', requireAuthConConfiguracionPendiente, AuthController.firstLogin);
 
 /**
  * @openapi
@@ -185,7 +185,7 @@ router.post('/logout', limitadorDeLogout, AuthController.logout);
  *             schema: { $ref: '#/components/schemas/Usuario' }
  *       401: { $ref: '#/components/responses/NoAutenticado' }
  */
-router.get('/me', requireAuth, AuthController.me);
+router.get('/me', requireAuthConConfiguracionPendiente, AuthController.me);
 
 /**
  * @openapi
@@ -217,6 +217,6 @@ router.get('/me', requireAuth, AuthController.me);
  *             schema: { $ref: '#/components/schemas/Error' }
  *       401: { $ref: '#/components/responses/NoAutenticado' }
  */
-router.post('/change-password', requireAuth, AuthController.changePassword);
+router.post('/change-password', requireAuthConConfiguracionPendiente, AuthController.changePassword);
 
 export default router;

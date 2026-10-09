@@ -10,15 +10,45 @@ import {
 const MS_DE_INACTIVIDAD = MINUTOS_DE_INACTIVIDAD_API * 60 * 1000;
 const MS_ENTRE_REFRESCOS = MINUTOS_ENTRE_REFRESCOS_DE_ACCESO * 60 * 1000;
 
+/** Lo que responde la API a una cuenta que aún no terminó su primer ingreso. */
+export const CODIGO_CONFIGURACION_PENDIENTE = 'CONFIGURACION_PENDIENTE';
+
 /**
  * Exige una sesión válida: verifica el JWT, comprueba en la base que la cuenta siga
  * activa, sin bloqueo, sin caducar y sin inactividad, y deja en `req.user` los datos
  * de la fila (no los del token). Responde 401 en cualquier otro caso.
  *
+ * **Y que la cuenta esté configurada.** Una sesión abierta con la contraseña temporal,
+ * o sin preguntas de seguridad, solo sirve para terminar esa configuración: para todo
+ * lo demás responde 403 con `codigo: CONFIGURACION_PENDIENTE`. Hasta el 2026-10-09 solo
+ * lo hacían cumplir los proxies de las dos apps, redirigiendo pantallas; la API
+ * aceptaba la sesión entera, así que quien salía de `/first-login` sin terminar
+ * («Regresar al sitio web») seguía en el portal con sus botones de edición y con todo
+ * su rol detrás. Las rutas del propio primer ingreso usan
+ * `requireAuthConConfiguracionPendiente`.
+ *
+ * Se mira **la fila**, no el token: el token se firma al entrar y dice «pendiente»
+ * hasta que caduca, aunque la configuración ya se haya completado.
+ *
  * Para las rutas del proyecto, lo que viene después de la sesión —qué puede hacer cada
  * rol— lo deciden los middlewares de `permisos.middleware.ts` contra una policy.
  */
-export async function requireAuth(req: Request, res: Response, next: NextFunction) {
+export function requireAuth(req: Request, res: Response, next: NextFunction) {
+  return autenticar(req, res, next, false);
+}
+
+/**
+ * `requireAuth` que deja pasar una cuenta a medio configurar.
+ *
+ * Solo para lo que hace falta para terminar el primer ingreso: saber qué falta, quién
+ * es (`/me`), cambiar la contraseña y guardar las preguntas. Cualquier otra ruta va
+ * con `requireAuth`.
+ */
+export function requireAuthConConfiguracionPendiente(req: Request, res: Response, next: NextFunction) {
+  return autenticar(req, res, next, true);
+}
+
+async function autenticar(req: Request, res: Response, next: NextFunction, admitePendiente: boolean) {
   const authHeader = req.headers.authorization;
   // 'token' la usa la intranet (pasa la cookie de la API sin tocar); 'sitio_token'
   // la emite el sitio web con nombre propio para no compartir sesión con la intranet
@@ -110,10 +140,30 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
       email: (user as any).email ?? decoded.email,
       role: (user as any).role?.name ?? undefined,
       role_id: (user as any).role_id,
+      // De la fila, como el rol: los del token se quedan en «pendiente» hasta que
+      // caduca aunque la configuración ya esté hecha.
+      must_change_password: Boolean((user as any).must_change_password),
+      must_setup_security_questions: Boolean((user as any).must_setup_security_questions),
     };
+
+    if (!admitePendiente && tieneConfiguracionPendiente(req.user)) {
+      return res.status(403).json({
+        error: 'Termina de configurar tu cuenta (contraseña y preguntas de seguridad) para continuar.',
+        codigo: CODIGO_CONFIGURACION_PENDIENTE,
+      });
+    }
   } catch (err) {
     return next(err);
   }
 
   next();
+}
+
+/**
+ * Si a la sesión le queda algo del primer ingreso: la contraseña temporal o las
+ * preguntas de seguridad. La cuenta maestra de `.env` nunca (no tiene fila).
+ */
+export function tieneConfiguracionPendiente(usuario: Request['user']): boolean {
+  if (!usuario || usuario.isLocal) return false;
+  return Boolean(usuario.must_change_password) || Boolean(usuario.must_setup_security_questions);
 }

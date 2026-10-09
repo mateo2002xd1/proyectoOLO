@@ -2,6 +2,8 @@ import jwt from 'jsonwebtoken';
 import { createHash, timingSafeEqual } from 'crypto';
 import { config } from '../../config';
 import { UserRepository } from '../../repositories/usuarios.repository';
+import { SecurityQuestionRepository } from '../../repositories/security-questions.repository';
+import { TOTAL_PREGUNTAS } from './first-login.usecase';
 import {
   compararPassword,
   INTENTOS_MAXIMOS_LOGIN,
@@ -173,6 +175,23 @@ export const loginUseCase = async (email: string, password: string, contexto?: C
   }
 
   await UserRepository.updateLastAccess(user.id);
+
+  /**
+   * Una cuenta sin sus preguntas de seguridad no puede recuperar la contraseña, y la
+   * marca `must_setup_security_questions` no basta para saberlo: solo se enciende al
+   * crear la cuenta o al restablecerlas, así que las cuentas sembradas a mano, las
+   * anteriores a la recuperación o aquellas cuyas filas se perdieron entraban sin que
+   * nadie se las pidiera. Aquí se cuenta lo que hay de verdad y, si falta, se enciende
+   * la marca: desde ese momento todo el sistema (proxies, `requireAuth`, primer
+   * ingreso) la trata como cualquier otra cuenta pendiente.
+   */
+  if (!user.must_setup_security_questions) {
+    const preguntas = await SecurityQuestionRepository.countByUserId(user.id);
+    if (preguntas < TOTAL_PREGUNTAS) {
+      await UserRepository.update(user.id, { must_setup_security_questions: true });
+      user.must_setup_security_questions = true;
+    }
+  }
 
   const payload = {
     id: user.id,

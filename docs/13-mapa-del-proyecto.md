@@ -332,11 +332,11 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | Método | Ruta | Protección y validación | Manejador |
 |---|---|---|---|
 | POST | `/api/login` | 🔓 limitadorDeLogin | AuthController.login |
-| GET | `/api/first-login/status` | requireAuth | AuthController.firstLoginStatus |
-| POST | `/api/first-login` | requireAuth | AuthController.firstLogin |
+| GET | `/api/first-login/status` | requireAuthConConfiguracionPendiente | AuthController.firstLoginStatus |
+| POST | `/api/first-login` | requireAuthConConfiguracionPendiente | AuthController.firstLogin |
 | POST | `/api/logout` | 🔓 limitadorDeLogout | AuthController.logout |
-| GET | `/api/me` | requireAuth | AuthController.me |
-| POST | `/api/change-password` | requireAuth | AuthController.changePassword |
+| GET | `/api/me` | requireAuthConConfiguracionPendiente | AuthController.me |
+| POST | `/api/change-password` | requireAuthConConfiguracionPendiente | AuthController.changePassword |
 
 ### `routes/observatorio.routes.ts`
 
@@ -421,7 +421,7 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 |---|---|---|---|
 | GET | `/api/security-questions/catalog` | 🔓 — | SecurityQuestionController.getCatalog |
 | POST | `/api/security-questions/user-questions` | 🔓 limitadorDePreguntas | SecurityQuestionController.getQuestionKeysForUser |
-| POST | `/api/security-questions/setup` | requireAuth | SecurityQuestionController.setupQuestions |
+| POST | `/api/security-questions/setup` | requireAuthConConfiguracionPendiente | SecurityQuestionController.setupQuestions |
 | POST | `/api/security-questions/verify` | 🔓 limitadorDeVerificacion | SecurityQuestionController.verifyAnswersCtrl |
 | POST | `/api/security-questions/recover-password` | 🔓 limitadorDeRecuperacion | SecurityQuestionController.recoverPasswordCtrl |
 

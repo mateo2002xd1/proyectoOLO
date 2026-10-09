@@ -24,7 +24,8 @@ export const estadoPrimerIngreso = async (userId: string): Promise<EstadoPrimerI
   };
 };
 
-const TOTAL_PREGUNTAS = 3;
+/** Las preguntas que pide una cuenta; con menos, la recuperación no funciona. */
+export const TOTAL_PREGUNTAS = 3;
 
 /**
  * Valida y prepara las preguntas de seguridad para guardar.

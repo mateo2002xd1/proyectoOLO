@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { SecurityQuestionController } from '../controllers/security-questions.controller';
-import { requireAuth } from '../middlewares/auth.middleware';
+import { requireAuthConConfiguracionPendiente } from '../middlewares/auth.middleware';
 import {
   limitadorDePreguntas,
   limitadorDeVerificacion,
@@ -120,7 +120,7 @@ router.post('/user-questions', limitadorDePreguntas, SecurityQuestionController.
  *             schema: { $ref: '#/components/schemas/Error' }
  *       401: { $ref: '#/components/responses/NoAutenticado' }
  */
-router.post('/setup', requireAuth, SecurityQuestionController.setupQuestions);
+router.post('/setup', requireAuthConConfiguracionPendiente, SecurityQuestionController.setupQuestions);
 
 /**
  * @openapi
