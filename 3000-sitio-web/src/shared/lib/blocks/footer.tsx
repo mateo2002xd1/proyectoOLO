@@ -115,11 +115,11 @@ export const VALORES_PIE_POR_DEFECTO: Required<Omit<FooterProps, 'block'>> = {
   ],
   enlacesFila2: [
     { texto: 'Derechos de autor y/o autorizacion de uso sobre contenidos', url: '#' },
-    { texto: 'Politica de Tratamiento para Proteccion de Datos Personales', url: '/inicio/politica-de-privacidad' },
+    { texto: 'Politica de Tratamiento para Proteccion de Datos Personales', url: '/politica-de-privacidad' },
   ],
   enlacesFila3: [
     { texto: 'Mapa del sitio', url: '#' },
-    { texto: 'Politica de seguridad y privacidad de la informacion', url: '/inicio/politica-de-privacidad' },
+    { texto: 'Politica de seguridad y privacidad de la informacion', url: '/politica-de-privacidad' },
   ],
 
   mostrarFranjaGov: true,

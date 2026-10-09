@@ -140,8 +140,8 @@ function LoginForm() {
             // y el título a 36px, el formulario quedaba debajo del pliegue.
             className="mx-auto w-[96px] sm:w-[150px] lg:w-[210px]"
           />
-          <h1 className="text-2xl font-light text-white sm:text-3xl lg:text-4xl">
-            Bienvenido a <span className="font-bold"><br />NUESTRA INTRANET</span>
+          <h1 className="mt-6 text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
+            INTRANET
           </h1>
         </div>
       </div>
@@ -230,19 +230,15 @@ function LoginForm() {
               </div>
 
               {/* RF-13: aviso de políticas de privacidad y datos.
-
-                  Los dos enlaces apuntan al SITIO WEB, no a la intranet: la política es
-                  una sección del portal público y aquí no existe esa ruta. Eran
-                  relativas (`/politica-de-privacidad`, `/privacidad`), así que el
-                  middleware las tomaba por pantalla protegida y devolvía a quien las
-                  pulsara al propio login del que venía. */}
+                  Los dos enlaces apuntan al SITIO WEB (/politica-de-privacidad), ya que la política
+                  es una sección del portal público. */}
               <p className="mb-6 text-xs leading-relaxed text-gray-500">
                 Al ingresar a este sitio aceptas la{' '}
-                <a href={`${SITE_URL}/inicio/politica-de-privacidad`} className="font-semibold text-gray-700 hover:underline">
+                <a href={`${SITE_URL}/politica-de-privacidad`} className="font-semibold text-gray-700 hover:underline">
                   política de privacidad
                 </a>{' '}
                 y{' '}
-                <a href={`${SITE_URL}/inicio/politica-de-privacidad`} className="font-semibold text-gray-700 hover:underline">
+                <a href={`${SITE_URL}/politica-de-privacidad`} className="font-semibold text-gray-700 hover:underline">
                   protección de datos
                 </a>
                 .

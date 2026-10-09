@@ -232,7 +232,12 @@ Por este motivo, **los únicos roles cuyos permisos son personalizables y editab
 
 ### 3.2.3. Acceso al sistema
 
-El acceso al ecosistema tecnológico del Observatorio Laboral y Ocupacional (OLO) comprende los mecanismos de navegación pública abierta y los procedimientos de autenticación, recuperación de credenciales y administración de cuentas de usuario para el personal autorizado. Las cuentas institucionales se gestionan de forma centralizada y unificada: un mismo usuario y contraseña son compartidos entre el Sitio Web y la Intranet, siendo los permisos asignados los que determinan a qué entorno puede ingresar cada funcionario.
+El acceso al ecosistema tecnológico del Observatorio Laboral y Ocupacional (OLO) comprende los mecanismos de navegación pública abierta y los procedimientos de autenticación, recuperación de credenciales y administración de cuentas de usuario para el personal autorizado.
+
+> [!IMPORTANT]
+> **Regla de credenciales únicas e inicio de sesión independiente:**
+> * **Credenciales idénticas para ambos portales:** Cada funcionario dispone de una **cuenta institucional única**. Su correo corporativo (`@sena.edu.co`) y su contraseña son exactamente los mismos para entrar tanto al **Sitio Web** como a la **Intranet**.
+> * **Autenticación por separado en cada portal:** Las sesiones de usuario son independientes entre portales. Iniciar sesión en el Sitio Web **no** inicia sesión automáticamente en la Intranet (ni viceversa). Por lo tanto, si un funcionario necesita trabajar en ambos entornos, debe autenticarse en el formulario de acceso de cada portal por separado utilizando esas mismas credenciales.
 
 #### 3.2.3.1. Sitio Web Público
 
@@ -250,6 +255,7 @@ El Sitio Web Público no cuenta con un botón directo de "Iniciar Sesión" para 
   * *Editores (y roles derivados de Editor):* Al validar sus credenciales y permisos editoriales, el sistema los redirige de vuelta a la página de **Inicio del Sitio Web Público** (`/inicio`), donde se activa y despliega el botón flotante de edición para maquetar páginas y gestionar cabecera y pie.
   * *Directores y Subdirectores:* Al no contar con permisos de edición ni de acceso al panel administrativo en este portal, el sistema muestra la alerta *"Tu cuenta no tiene permisos de edición ni de acceso al panel."*, orientándolos a ingresar a la Intranet para consultar sus tableros analíticos e indicadores gerenciales.
 * **Enlace de recuperación:** La pantalla de autenticación dispone del acceso directo para el restablecimiento de contraseñas ante olvidos *(¿Olvidaste tu contraseña?)*. *(Para consultar la guía visual paso a paso de este acceso, ver [Sección 3.4.1.2: Flujo de Inicio de Sesión Habitual](#3412-flujo-de-inicio-de-sesión-habitual)).*
+* **Aviso de privacidad y protección de datos:** En la base del formulario se ubican los hipervínculos a la **política de privacidad y protección de datos**, los cuales permiten al usuario consultar el documento normativo institucional (`/politica-de-privacidad`) antes de ingresar al sistema.
 
 ##### 3.2.3.1.3. Enlace a la Intranet (Botón Intranet)
 El botón fijo **"Intranet"** ubicado en la cabecera del portal (extremo superior derecho) no corresponde al inicio de sesión del Sitio Web Público, sino que constituye el enlace directo permanente hacia la plataforma privada de la Intranet del OLO. Al pulsarlo, el usuario es dirigido al entorno de la Intranet, cuya plataforma requiere autenticación para los funcionarios.
@@ -264,6 +270,7 @@ La Intranet es una plataforma privada e independiente orientada al seguimiento g
   * *Editores (y roles derivados autorizados):* Ingresan para maquetar y actualizar secciones internas autorizadas en su rol.
   * *Directores y Subdirectores:* Ingresan con cuenta corporativa `@sena.edu.co` para consultar los módulos de información, matrices e indicadores ocupacionales en modalidad de **solo lectura**, manteniendo protegida la información al no contar con permisos de edición ni administración.
 * **Credenciales y validación:** Correo corporativo `@sena.edu.co` y contraseña asignada (requiere autorización de acceso a la Intranet). Al iniciar sesión exitosamente, el sistema despliega el entorno privado de la Intranet con los tableros analíticos e indicadores configurados. *(Para consultar la guía visual paso a paso del acceso a la Intranet, ver [Sección 3.4.1.2: Flujo de Inicio de Sesión Habitual](#3412-flujo-de-inicio-de-sesión-habitual)).*
+* **Aviso de privacidad y protección de datos:** En la base del formulario se disponen los enlaces directos a la política de privacidad y protección de datos del portal público (`/politica-de-privacidad`).
 
 #### 3.2.3.3. Procedimiento de Recuperación de Contraseña (Preguntas de Seguridad)
 El sistema del Observatorio Laboral y Ocupacional cuenta con un mecanismo autónomo de restablecimiento de contraseña ante olvidos o bloqueos, unificado para todos los funcionarios tanto en el Sitio Web como en la Intranet:
@@ -575,10 +582,10 @@ Este procedimiento describe el paso a paso para el funcionario que inicia sesió
 
 Este procedimiento lo ejecutan los funcionarios (Administradores, Editores autorizados y Directores o Subdirectores) que realizan su primer inicio de sesión directamente en el portal privado de la Intranet:
 
-1. **Acceso a la Intranet:** El funcionario hace clic en el botón fijo **"Intranet"** ubicado en la esquina superior derecha de la cabecera del Sitio Web Público, o ingresa mediante la dirección web (URL) de la Intranet del OLO. Al tratarse de una plataforma privada que requiere autenticación, el sistema presenta la pantalla de bienvenida y acceso (`/login`), compuesta por un panel de bienvenida a la izquierda ("Bienvenido a NUESTRA INTRANET") y el formulario de inicio de sesión en el panel derecho.
+1. **Acceso a la Intranet:** El funcionario hace clic en el botón fijo **"Intranet"** ubicado en la esquina superior derecha de la cabecera del Sitio Web Público, o ingresa mediante la dirección web (URL) de la Intranet del OLO. Al tratarse de una plataforma privada que requiere autenticación, el sistema presenta la pantalla de acceso institucional (`/login`), estructurada en diseño dividido: a la izquierda, el panel de marca corporativo con el logotipo blanco institucional y el encabezado principal **INTRANET**; a la derecha, la tarjeta blanca con el formulario de credenciales y el enlace inferior de retorno al portal público.
 
 > **[Captura: Acceso a la Intranet]**
-> *Pantalla de acceso de la Intranet del OLO ('Bienvenido a NUESTRA INTRANET') con formulario en el panel derecho.*
+> *Pantalla de acceso institucional de la Intranet del OLO con panel de marca a la izquierda ('INTRANET') y formulario en el panel derecho.*
 >
 > **[Captura: Acceso a la Intranet (Móvil)]**
 > *Pantalla de acceso de la Intranet del OLO con formulario en el panel derecho. (Móvil).*
@@ -639,7 +646,13 @@ Este procedimiento lo ejecutan los funcionarios (Administradores, Editores autor
 
 *(Nota: Para consultar las posibles situaciones de error, validaciones de campos y alertas del sistema en el inicio de sesión con sus respectivas capturas de pantalla, remitirse a la [Sección 3.5.1.2: Validaciones en el Inicio de Sesión Habitual](#3512-validaciones-en-el-inicio-de-sesión-habitual)).*
 
-Una vez completado el primer ingreso y configurada la contraseña definitiva, los funcionarios autorizados acceden al sistema de forma habitual para sus labores operativas, editoriales o de consulta gerencial. Al igual que en la configuración inicial, la plataforma dispone de dos puntos de acceso independientes según el entorno de trabajo y el rol del usuario:
+Una vez completado el primer ingreso y configurada la contraseña definitiva, los funcionarios autorizados acceden al sistema de forma habitual para sus labores operativas, editoriales o de consulta gerencial.
+
+> [!NOTE]
+> **Aclaración sobre credenciales y acceso a los portales:**
+> Las credenciales de acceso (correo corporativo `@sena.edu.co` y contraseña definitiva) **son las mismas para ambos portales**. Sin embargo, debido a que el Sitio Web Público y la Intranet son plataformas con sesiones independientes, el usuario debe **iniciar sesión por separado en cada una** con esas mismas credenciales cuando requiera utilizarlas. Iniciar sesión en un portal no habilita automáticamente la sesión en el otro.
+
+Al igual que en la configuración inicial, la plataforma dispone de dos puntos de acceso independientes según el entorno de trabajo y el rol del usuario:
 
 * **[Inicio de Sesión Habitual en el Sitio Web Público](#inicio-de-sesión-habitual-en-el-sitio-web-público):** Permite el acceso al personal con facultades de administración o de edición a través del enlace interactivo de fecha y hora en el banner GOV.CO.
 * **[Inicio de Sesión Habitual en la Intranet del OLO](#inicio-de-sesión-habitual-en-la-intranet-del-olo):** Permite el ingreso a la plataforma privada para la consulta de módulos analíticos o labores de gestión interna según el rol asignado.
@@ -667,9 +680,10 @@ El portal web público no requiere inicio de sesión para la consulta de informa
 > **[Captura: Formulario de Autenticación Sitio Web (Móvil)]**
 > *Pantalla de inicio de sesión del Sitio Web con las casillas de correo, contraseña y enlace de recuperación. (Móvil).*
 
-3. **Diligenciamiento de correo y contraseña:** En el formulario de acceso, se completan ambas casillas:
+3. **Diligenciamiento de correo y contraseña y aviso de privacidad:** En el formulario de acceso, se completan ambas casillas:
    * En la casilla superior **"Correo electrónico"**, se escribe la cuenta corporativa institucional (`@sena.edu.co`).
    * En la casilla inferior **"Contraseña"**, se escribe la clave definitiva personal. Se puede hacer clic sobre el **ícono de ojo** situado a la derecha de la casilla para ver u ocultar los caracteres escritos y confirmar que la escritura sea correcta.
+   * **Vínculos de política de privacidad y protección de datos:** En la base del formulario (previo al botón de ingreso), se despliega el aviso legal: *"Al ingresar a este sitio aceptas la política de privacidad y protección de datos"*. Al pulsar sobre los enlaces destacados de *"política de privacidad"* o *"protección de datos"*, el usuario es dirigido al documento normativo del Observatorio (`/politica-de-privacidad`) para consultar las políticas de seguridad de la información institucional y los lineamientos de tratamiento de datos personales (Ley 1581 de 2012).
 
 > **[Captura: Credenciales Definitivas en Sitio Web]**
 > *Casillas de correo corporativo y contraseña diligenciadas en el formulario de inicio de sesión.*
@@ -709,6 +723,8 @@ El portal web público no requiere inicio de sesión para la consulta de informa
 
 La Intranet es una plataforma privada e independiente del Sitio Web Público, concebida para el seguimiento gerencial, análisis de indicadores y trabajo interno. Su sistema de inicio de sesión es totalmente independiente:
 
+*(Aclaración de acceso: Para ingresar a la Intranet se utiliza el **mismo correo institucional y la misma contraseña** configurados en el Sitio Web. No obstante, al tratarse de entornos separados, el usuario debe autenticarse directamente en la Intranet para habilitar su acceso privado, incluso si ya tenía una sesión iniciada en el Sitio Web).*
+
 *(Nota: Si un nuevo funcionario (Administrador, Editor o Directivo) accede por primera vez con su contraseña temporal provisoria, el sistema activará de forma automática el flujo de primer ingreso descrito en [Primer Ingreso desde la Intranet del OLO](#primer-ingreso-desde-la-intranet-del-olo)).*
 
 1. **Ubicación del botón de acceso a la Intranet:** Desde la página del Sitio Web Público, se hace clic sobre el botón destacado **"Intranet"** en la parte superior derecha de la cabecera, o bien se ingresa la dirección web oficial de la Intranet en el navegador.
@@ -719,18 +735,18 @@ La Intranet es una plataforma privada e independiente del Sitio Web Público, co
 > **[Captura: Botón Acceso Intranet en Cabecera (Móvil)]**
 > *Botón 'Intranet' visible en la cabecera del Sitio Web para dirigirse al entorno privado. (Móvil).*
 
-2. **Visualización de la pantalla de bienvenida y bloqueo:** Al tratarse de un espacio privado, se despliega una pantalla dividida en dos áreas: a la izquierda, un panel ilustrado de bienvenida institucional con el texto "Bienvenido a NUESTRA INTRANET"; a la derecha, el recuadro blanco con el formulario de ingreso.
+2. **Visualización de la pantalla institucional de acceso:** Al tratarse de un espacio privado, se despliega una pantalla dividida en dos áreas: a la izquierda, el panel corporativo institucional con el logotipo blanco del OLO y el título principal **INTRANET**; a la derecha, la tarjeta blanca flotante con el formulario de ingreso, el botón principal de acceso y el enlace exterior de retorno al sitio web.
 
 > **[Captura: Pantalla Bloqueo Intranet]**
-> *Pantalla de acceso de la Intranet con panel visual de bienvenida a la izquierda y formulario de ingreso a la derecha.*
+> *Pantalla de acceso de la Intranet con panel institucional a la izquierda ('INTRANET') y tarjeta de ingreso a la derecha.*
 >
 > **[Captura: Pantalla Bloqueo Intranet (Móvil)]**
 > *Pantalla de acceso de la Intranet con formulario de ingreso centrado en dispositivos móviles.*
 
-3. **Diligenciamiento de credenciales en el formulario:** En la tarjeta de acceso, se completan los campos requeridos:
+3. **Diligenciamiento de credenciales en el formulario y aviso legal:** En la tarjeta de acceso, se completan los campos requeridos:
    * **Correo SENA:** Se digita la cuenta corporativa institucional (`@sena.edu.co`).
    * **Contraseña:** Se ingresa la clave personal definitiva. El usuario puede utilizar el botón interactivo con el **ícono de ojo** situado a la derecha del campo para alternar la visualización de los caracteres y verificar la escritura correcta.
-   * En la base del formulario, el sistema informa que el ingreso implica la aceptación de la política de privacidad y protección de datos.
+   * **Vínculos de política de privacidad y protección de datos:** En la base del formulario, el sistema informa que el ingreso implica la aceptación de los lineamientos institucionales. Al pulsar sobre los enlaces destacados de *"política de privacidad"* o *"protección de datos"*, la plataforma traslada al usuario al documento normativo del Observatorio (`/politica-de-privacidad` en el portal público) para consultar las directivas de seguridad de la información y tratamiento de datos personales.
 
 > **[Captura: Credenciales Definitivas Intranet]**
 > *Casillas de correo corporativo y contraseña diligenciadas en el formulario de la Intranet.*
@@ -738,7 +754,7 @@ La Intranet es una plataforma privada e independiente del Sitio Web Público, co
 > **[Captura: Credenciales Definitivas Intranet (Móvil)]**
 > *Casillas de correo corporativo y contraseña diligenciadas en el formulario de la Intranet. (Móvil).*
 
-4. **Clic en el botón Ingresar:** Se presiona el botón principal **"Ingresar"**. La interfaz muestra el estado interactivo *"Ingresando..."* mientras procesa la comprobación de identidad y valida los permisos asignados en el servidor.
+4. **Clic en el botón Ingresar:** Se presiona el botón principal **"Ingresar"**. La interfaz muestra una breve animación de carga mientras procesa el acceso hacia el portal.
 
 > **[Captura: Botón Acceder Intranet]**
 > *Acción de hacer clic sobre el botón 'Ingresar' en el formulario de la Intranet.*
@@ -797,7 +813,7 @@ Este procedimiento permite a cualquier funcionario restablecer de forma autónom
 > **[Captura: Ingreso de Correo de Recuperación Sitio Web (Móvil)]**
 > *Casilla de correo institucional diligenciada y botón 'Continuar' en el formulario de recuperación del Sitio Web. (Móvil).*
 
-3. **Respuesta a las preguntas de seguridad:** En la pantalla *"Verifica tu identidad"*, la interfaz despliega una a una las tres preguntas de seguridad seleccionadas por el usuario durante su primer ingreso, indicando el avance mediante puntos indicadores. Se digita la respuesta confidencial correspondiente en el campo de texto y se pulsa el botón **"Continuar"** para avanzar entre preguntas hasta completar el cuestionario.
+3. **Respuesta a las preguntas de seguridad:** En la pantalla *"Verifica tu identidad"*, la interfaz despliega una a una las tres preguntas de seguridad seleccionadas por el usuario durante su primer ingreso, indicando el avance mediante puntos indicadores. Se digita la respuesta confidencial correspondiente en el campo de texto y se pulsa el botón **"Continuar"** para avanzar entre preguntas hasta completar el cuestionario. Por motivos de seguridad institucional, el sistema otorga un margen de hasta **3 intentos consecutivos**; si se fallan las respuestas 3 veces seguidas, la cuenta se bloquea automáticamente por **30 minutos**.
 
 > **[Captura: Preguntas de Seguridad en Recuperación Sitio Web]**
 > *Cuestionario presentando las preguntas de seguridad registradas y campo de respuesta en el Sitio Web.*
@@ -823,7 +839,7 @@ Este procedimiento permite a cualquier funcionario restablecer de forma autónom
 
 ##### Recuperación de Contraseña desde la Intranet del OLO
 
-1. **Ubicación del enlace de recuperación en la Intranet:** En la pantalla de bienvenida y acceso privado de la Intranet (`/login`), se ubica bajo el formulario de credenciales el enlace interactivo **"¿Olvidaste tu contraseña?"**. Al hacer clic sobre dicho enlace, la pantalla se traslada a la vista de recuperación de la Intranet (`/recovery`).
+1. **Ubicación del enlace de recuperación en la Intranet:** En la pantalla institucional de acceso de la Intranet (`/login`), se ubica bajo el formulario de credenciales el enlace interactivo **"¿Olvidaste tu contraseña?"**. Al hacer clic sobre dicho enlace, la pantalla se traslada a la vista de recuperación de la Intranet (`/recovery`).
 
 > **[Captura: Enlace de Recuperación en Intranet]**
 > *Enlace '¿Olvidaste tu contraseña?' en la tarjeta de acceso de la Intranet.*
@@ -831,7 +847,7 @@ Este procedimiento permite a cualquier funcionario restablecer de forma autónom
 > **[Captura: Enlace de Recuperación en Intranet (Móvil)]**
 > *Enlace '¿Olvidaste tu contraseña?' en la tarjeta de acceso de la Intranet. (Móvil).*
 
-2. **Ingreso del correo corporativo en la Intranet:** En la pantalla dividida de la Intranet, dentro de la tarjeta derecha con el título *"Ingresa tu correo SENA"*, se escribe la cuenta institucional `@sena.edu.co` en la casilla correspondiente y se pulsa el botón principal **"Comenzar"** para iniciar la comprobación de identidad.
+2. **Ingreso del correo corporativo institucional:** En la pantalla con el título *"Ingresa tu correo SENA"*, se digita la cuenta de correo corporativo institucional (`@sena.edu.co`) en la casilla correspondiente y se presiona el botón principal **"Comenzar"**. El sistema valida el formato del correo y comprueba si la cuenta dispone de preguntas de seguridad configuradas.
 
 > **[Captura: Ingreso de Correo de Recuperación Intranet]**
 > *Tarjeta de recuperación de la Intranet con el campo de correo institucional y botón 'Comenzar'.*
@@ -839,29 +855,29 @@ Este procedimiento permite a cualquier funcionario restablecer de forma autónom
 > **[Captura: Ingreso de Correo de Recuperación Intranet (Móvil)]**
 > *Tarjeta de recuperación de la Intranet con el campo de correo institucional y botón 'Comenzar'. (Móvil).*
 
-3. **Respuesta a las preguntas de seguridad en la Intranet:** La plataforma presenta el asistente guiado de comprobación de identidad (`/security-questions`). El funcionario responde una a una las preguntas de seguridad registradas en su perfil y presiona el botón para avanzar hasta enviar la verificación final al sistema.
+3. **Respuesta a las preguntas de seguridad:** En la pantalla *"Verifica tu identidad"*, la interfaz despliega una a una las tres preguntas de seguridad seleccionadas por el usuario durante su primer ingreso, indicando el avance mediante puntos indicadores. Se digita la respuesta confidencial correspondiente en el campo de texto y se pulsa el botón **"Siguiente"** (o **"Verificar"** en la última pregunta) para validar las respuestas. Por motivos de seguridad institucional, el sistema otorga un margen de hasta **3 intentos consecutivos**; si se fallan las respuestas 3 veces seguidas, la cuenta se bloquea automáticamente por **30 minutos**.
 
 > **[Captura: Preguntas de Seguridad en Recuperación Intranet]**
-> *Asistente guiado de preguntas de seguridad con indicador de avance en la Intranet.*
+> *Asistente guiado de preguntas de seguridad con indicador de avance mediante puntos de progreso en la Intranet.*
 >
 > **[Captura: Preguntas de Seguridad en Recuperación Intranet (Móvil)]**
 > *Asistente guiado de preguntas de seguridad con indicador de avance en la Intranet. (Móvil).*
 
-4. **Establecimiento de la nueva contraseña en la Intranet:** Superada la validación de identidad, la pantalla de restablecimiento (`/reset-password`) despliega las casillas para ingresar la nueva clave y certificar la coincidencia en la casilla de confirmación. Al verificarse los requisitos de seguridad, se hace clic sobre el botón **"Guardar contraseña"**.
+4. **Establecimiento de la nueva contraseña:** Al validar satisfactoriamente las respuestas, la pantalla *"Crea tu nueva contraseña"* habilita los campos **"Nueva contraseña"** y **"Ingresa nuevamente la contraseña"**. El usuario digita su nueva clave personal verificando que cumpla con los requisitos de la política de seguridad institucional y presiona el botón **"Guardar contraseña"**.
 
 > **[Captura: Restablecimiento de Contraseña Intranet]**
-> *Campos de nueva clave y confirmación con panel de directivas de seguridad en la Intranet.*
+> *Formulario de nueva contraseña con lista interactiva de requisitos y botón 'Guardar contraseña' en la Intranet.*
 >
 > **[Captura: Restablecimiento de Contraseña Intranet (Móvil)]**
-> *Campos de nueva clave y confirmación con panel de directivas de seguridad en la Intranet. (Móvil).*
+> *Formulario de nueva contraseña con lista interactiva de requisitos en la Intranet. (Móvil).*
 
-5. **Confirmación y retorno al acceso de la Intranet:** Se despliega la pantalla ilustrada de confirmación (`/reset-success`) con el mensaje *"¡Genial, tu clave ha sido actualizada con éxito! Ya puedes ingresar a tu cuenta con tu nuevo código de acceso"*. Al presionar el botón de inicio, el sistema traslada al usuario a la pantalla de login de la Intranet para acceder a la plataforma (ver [Sección 3.4.1.2: Flujo de Inicio de Sesión Habitual](#3412-flujo-de-inicio-de-sesión-habitual)).
+5. **Confirmación de actualización y retorno al acceso:** La interfaz presenta la pantalla de confirmación exitosa con la insignia de confirmación y el mensaje: *"Tu contraseña se actualizó. Ya puedes entrar a la intranet con tu nueva contraseña."*. Al presionar el botón **"Ir a iniciar sesión"**, el sistema redirige automáticamente a la pantalla de acceso de la Intranet (`/login`) para ingresar con la nueva clave (ver [Sección 3.4.1.2: Flujo de Inicio de Sesión Habitual](#3412-flujo-de-inicio-de-sesión-habitual)).
 
 > **[Captura: Confirmación de Clave Actualizada Intranet]**
-> *Pantalla de éxito institucional confirmando la actualización de la contraseña en la Intranet.*
+> *Pantalla de éxito indicando la actualización correcta de la contraseña y botón de retorno al inicio de sesión.*
 >
 > **[Captura: Confirmación de Clave Actualizada Intranet (Móvil)]**
-> *Pantalla de éxito institucional confirmando la actualización de la contraseña en la Intranet. (Móvil).*
+> *Pantalla de éxito indicando la actualización correcta de la contraseña y botón de retorno al inicio de sesión. (Móvil).*
 
 #### 3.4.1.4. Procedimiento de Cierre de Sesión
 
@@ -2236,9 +2252,10 @@ Durante el procedimiento de recuperación de contraseña (descrito operativament
 3. **Verificación de identidad mediante preguntas de seguridad:**
    * *Acciones erróneas y validaciones:*
      * **Respuesta en blanco:** Si se pulsa "Continuar" sin redactar la respuesta a la pregunta activa, el formulario señala: `"La respuesta es requerida"`.
-     * **Respuestas no coincidentes:** Al enviar el cuestionario, si las respuestas no coinciden con los registros guardados, el sistema bloquea el paso emitiendo la alerta: `"Las respuestas no coinciden con nuestros registros. Intenta nuevamente."`, restableciendo el cuestionario al inicio por seguridad.
+     * **Respuestas no coincidentes:** Al enviar el cuestionario, si las respuestas no coinciden con los registros guardados, el sistema emite la alerta: `"Las respuestas no coinciden con nuestros registros. Intenta nuevamente."`, restableciendo el cuestionario al inicio por seguridad y acumulando un intento fallido en el servidor.
+     * **Bloqueo de cuenta por 3 intentos fallidos (30 minutos):** El mecanismo de seguridad interno restringe la recuperación a un máximo de **3 intentos fallidos consecutivos**. Si se alcanza este tope, la cuenta pasa automáticamente a estado bloqueado temporal durante **30 minutos**, impidiendo tanto la recuperación como el acceso normal al sistema con la alerta: `"Cuenta bloqueada temporalmente"`. Dicho evento queda asentado en la bitácora inmutable de auditoría.
      * **Navegación forzada sin correo previo:** Si el usuario intenta cargar directamente la ruta `/security-questions` sin haber validado su correo, el sistema lo reconduce de forma automática a `/recovery`.
-   * *Acción de corrección:* Digitar con precisión la respuesta secreta configurada en el primer ingreso respetando caracteres y ortografía.
+   * *Acción de corrección:* Digitar con precisión la respuesta secreta configurada en el primer ingreso respetando caracteres y ortografía. En caso de bloqueo por 3 intentos fallidos, aguardar 30 minutos a que expire la restricción o solicitar el desbloqueo manual al Administrador.
 
 > **[Captura: Alerta de Respuestas No Coincidentes Sitio Web]**
 > *Alerta general por respuestas de seguridad incorrectas y campo obligatorio en el Sitio Web.*
@@ -2270,10 +2287,10 @@ Durante el procedimiento de recuperación de contraseña (descrito operativament
 
 ##### Validaciones en la Recuperación de Contraseña (Intranet del OLO)
 
-1. **Ubicación del enlace de recuperación en la Intranet:**
-   * *Acción errónea:* Intentar acceder a la ruta privada de la Intranet sin conocer la clave en lugar de utilizar el asistente de restablecimiento.
-   * *Respuesta del sistema y validación:* La tarjeta de acceso a la Intranet proporciona el enlace directo interactivo **"¿Olvidaste tu contraseña?"** para canalizar solicitudes de restablecimiento.
-   * *Acción de corrección:* Hacer clic sobre dicho enlace ubicado bajo los campos de usuario y contraseña en la pantalla de bienvenida.
+1. **Ubicación del enlace de recuperación en la Intranet (Punto de acceso):**
+   * *Acción errónea:* El usuario intenta acceder a la Intranet sin recordar la clave en lugar de utilizar el asistente de restablecimiento.
+   * *Respuesta del sistema y validación:* La opción de recuperación está disponible mediante el enlace interactivo **"¿Olvidaste tu contraseña?"** ubicado en el formulario de `/login`.
+   * *Acción de corrección:* Situarse en la pantalla de acceso de la Intranet y hacer clic sobre dicho enlace interactivo.
 
 > **[Captura: Enlace de Recuperación en Formulario Intranet]**
 > *Enlace '¿Olvidaste tu contraseña?' en la tarjeta de ingreso de la Intranet.*
@@ -2281,12 +2298,12 @@ Durante el procedimiento de recuperación de contraseña (descrito operativament
 > **[Captura: Enlace de Recuperación en Formulario Intranet (Móvil)]**
 > *Enlace '¿Olvidaste tu contraseña?' en la tarjeta de ingreso de la Intranet. (Móvil).*
 
-2. **Ingreso y comprobación del correo en la Intranet:**
+2. **Ingreso y comprobación de la cuenta de correo corporativo:**
    * *Acciones erróneas y validaciones:*
-     * **Campo vacío:** Si se presiona "Comenzar" sin haber escrito datos, el sistema resalta: `"El correo es requerido"`.
-     * **Dominio no corporativo:** Si el correo no culmina en `@sena.edu.co`, el sistema bloquea con: `"Debe ser un correo institucional @sena.edu.co"`.
-     * **Preguntas no configuradas:** Si la cuenta no posee preguntas de seguridad en la base de datos, se despliega el aviso: `"No se encontraron preguntas de seguridad para este correo."`.
-   * *Acción de corrección:* Digitar el correo corporativo `@sena.edu.co` del funcionario o solicitar apoyo administrativo para la configuración inicial.
+     * **Correo obligatorio:** Si se presiona el botón "Comenzar" con la casilla vacía, el sistema interrumpe el envío indicando: `"El correo es requerido"`.
+     * **Formato o dominio ajeno:** Si se escribe un correo con formato inválido o fuera del dominio oficial (`@gmail.com`, `@hotmail.com`), el validador emite en tiempo real: `"El correo no tiene un formato válido"` o `"Debe ser un correo institucional @sena.edu.co"`.
+     * **Cuenta sin preguntas de seguridad o inexistente:** Si el correo no cuenta con preguntas de seguridad configuradas en el sistema, la tarjeta despliega la alerta: `"No se encontraron preguntas de seguridad para este correo."`.
+   * *Acción de corrección:* Digitar el correo corporativo `@sena.edu.co` del funcionario o solicitar apoyo administrativo si la cuenta nunca configuró sus preguntas.
 
 > **[Captura: Validaciones de Correo en Recuperación Intranet]**
 > *Alertas de campo obligatorio, dominio institucional y preguntas no encontradas en la Intranet.*
@@ -2294,11 +2311,13 @@ Durante el procedimiento de recuperación de contraseña (descrito operativament
 > **[Captura: Validaciones de Correo en Recuperación Intranet (Móvil)]**
 > *Alertas de campo obligatorio, dominio institucional y preguntas no encontradas en la Intranet. (Móvil).*
 
-3. **Verificación asistida de preguntas de seguridad en la Intranet:**
+3. **Verificación de identidad mediante preguntas de seguridad:**
    * *Acciones erróneas y validaciones:*
-     * **Respuesta omitida:** Si no se introduce texto en el campo de respuesta, se señala: `"La respuesta es requerida"`.
-     * **Respuestas erróneas:** Si alguna de las respuestas proporcionadas es incorrecta, la plataforma emite: `"Las respuestas no coinciden. Intenta de nuevo."`, reiniciando el paso al inicio para proteger los datos institucionales.
-   * *Acción de corrección:* Ingresar las respuestas confidenciales tal como fueron registradas durante el primer ingreso.
+     * **Respuesta en blanco:** Si se pulsa "Siguiente" o "Verificar" sin redactar la respuesta a la pregunta activa, el formulario señala: `"La respuesta es requerida"`.
+     * **Respuestas no coincidentes:** Al enviar el cuestionario, si las respuestas no coinciden con los registros guardados, el sistema emite la alerta: `"Las respuestas no coinciden. Intenta de nuevo."`, restableciendo el cuestionario al inicio por seguridad y acumulando un intento fallido en el servidor.
+     * **Bloqueo de cuenta por 3 intentos fallidos (30 minutos):** El mecanismo de seguridad interno restringe la recuperación a un máximo de **3 intentos fallidos consecutivos**. Si se alcanza este tope, la plataforma bloquea la cuenta de forma automática durante **30 minutos** con la alerta: `"Cuenta bloqueada temporalmente"`. Dicho evento queda asentado en la bitácora inmutable de auditoría.
+     * **Navegación forzada sin correo previo:** Si el usuario intenta cargar directamente la ruta `/security-questions` sin haber validado su correo, el sistema lo reconduce de forma automática a `/recovery`.
+   * *Acción de corrección:* Digitar con precisión la respuesta secreta configurada en el primer ingreso respetando caracteres y ortografía. En caso de bloqueo por 3 intentos fallidos, aguardar 30 minutos a que expire la restricción o solicitar el desbloqueo manual al Administrador.
 
 > **[Captura: Alerta de Respuestas No Coincidentes Intranet]**
 > *Mensaje informativo de respuestas no coincidentes en el asistente guiado de la Intranet.*
@@ -2306,11 +2325,11 @@ Durante el procedimiento de recuperación de contraseña (descrito operativament
 > **[Captura: Alerta de Respuestas No Coincidentes Intranet (Móvil)]**
 > *Mensaje informativo de respuestas no coincidentes en el asistente guiado de la Intranet. (Móvil).*
 
-4. **Establecimiento de la nueva clave en la Intranet:**
+4. **Establecimiento de la nueva contraseña (Políticas y confirmación):**
    * *Acciones erróneas y validaciones:*
-     * **Políticas incumplidas:** Si la nueva contraseña no cumple con los 5 requisitos de longitud y complejidad, los indicadores permanecen pendientes y se bloquea el guardado.
-     * **Discrepancia en confirmación:** Si ambas casillas no son idénticas, se resalta: `"Las contraseñas no coinciden"`.
-   * *Acción de corrección:* Registrar una contraseña robusta que satisfaga todos los criterios y confirmar su coincidencia exacta.
+     * **Omisión o contraseña débil:** Si se intenta guardar dejando el campo vacío o incumpliendo los requisitos de seguridad, los indicadores permanecen pendientes, impidiendo el avance.
+     * **Discrepancia en la confirmación:** Si el campo de repetición no coincide de manera exacta con la nueva clave, se despliega la advertencia: `"Las contraseñas no coinciden"`.
+   * *Acción de corrección:* Registrar una contraseña que satisfaga todos los requisitos y confirmarla con exactitud en la segunda casilla.
 
 > **[Captura: Validaciones de Contraseña en Intranet]**
 > *Verificador de directivas de seguridad y aviso de falta de coincidencia en la confirmación en la Intranet.*
@@ -2318,15 +2337,15 @@ Durante el procedimiento de recuperación de contraseña (descrito operativament
 > **[Captura: Validaciones de Contraseña en Intranet (Móvil)]**
 > *Verificador de directivas de seguridad y aviso de falta de coincidencia en la confirmación en la Intranet. (Móvil).*
 
-5. **Confirmación y retorno al inicio de sesión de la Intranet:**
-   * *Situación de control:* Al completarse el restablecimiento, el sistema elimina las credenciales temporales de sesión y despliega la pantalla de éxito con el botón para ingresar a la Intranet.
-   * *Acción de corrección:* Hacer clic sobre el botón de inicio de sesión y autenticarse con la nueva contraseña definitiva.
+5. **Confirmación y retorno seguro:**
+   * *Situación de control:* Tras procesar el cambio en el servidor, la pantalla `/reset-success` confirma la operación con la insignia de verificación y el mensaje *"Tu contraseña se actualizó"*, bloqueando retornos involuntarios con el botón de retroceso del navegador y obligando a iniciar sesión formalmente.
+   * *Acción de corrección:* Hacer clic sobre el botón "Ir a iniciar sesión" y autenticarse con la nueva contraseña definitiva en la pantalla de acceso de la Intranet (`/login`).
 
 > **[Captura: Pantalla de Éxito en Recuperación Intranet]**
-> *Confirmación institucional de clave actualizada con éxito en la Intranet.*
+> *Insignia circular de verificación, mensaje 'Tu contraseña se actualizó' y botón 'Ir a iniciar sesión' en la Intranet.*
 >
 > **[Captura: Pantalla de Éxito en Recuperación Intranet (Móvil)]**
-> *Confirmación institucional de clave actualizada con éxito en la Intranet. (Móvil).*
+> *Insignia circular de verificación, mensaje 'Tu contraseña se actualizó' y botón 'Ir a iniciar sesión' en la Intranet. (Móvil).*
 
 #### 3.5.1.4. Cierre de Sesión por Inactividad y Alertas de Expiración
 
@@ -2417,7 +2436,7 @@ Durante la interacción cotidiana con el entorno del Panel Administrativo (cuyo 
 
 ##### 3. El alternador de tema (Modo claro / Modo oscuro) no conserva la preferencia seleccionada
 * **Situación:** El funcionario activa el Modo Oscuro (o Modo Claro), pero al navegar hacia otro módulo administrativo o recargar la página, la apariencia regresa automáticamente al tema anterior.
-* **Causa técnica y operativa:** La preferencia visual se almacena localmente en el almacenamiento del navegador (*localStorage*). Si las directivas de seguridad del explorador bloquean las cookies o los datos de sitios locales, o si se navega en modo de incógnito estricto, el navegador descarta la preferencia al cambiar de página o cerrar la pestaña.
+* **Causa técnica y operativa:** La preferencia visual se almacena localmente en las preferencias del navegador. Si las directivas de seguridad del explorador bloquean los datos de sitios locales, o si se navega en modo de incógnito estricto, el navegador descarta la preferencia al cambiar de página o cerrar la pestaña.
 * **Acción correctiva:**
   1. Acceder a la configuración de privacidad del navegador web y asegurarse de que el almacenamiento local y las cookies estén permitidos para el dominio institucional del aplicativo.
   2. Evitar el uso de ventanas de incógnito si se desea conservar la configuración estética de contraste de manera permanente para sesiones futuras.
@@ -2605,9 +2624,16 @@ La configuración de roles y la asignación de permisos (cuyo procedimiento oper
 ### 3.5.2. Preguntas Frecuentes
 
 #### 3.5.2.1. Problemas de acceso por bloqueo
-**Situación:** El sistema bloquea el acceso por múltiples intentos fallidos.
-**Posible causa:** Se ha ingresado repetidamente una contraseña incorrecta superando el límite de seguridad.
-**Acción:** Se debe esperar 15 minutos para que el bloqueo expire automáticamente, o comunicarse con el Administrador para un desbloqueo manual.
+**Situación:** El sistema bloquea el acceso temporalmente impidiendo iniciar sesión o restablecer credenciales.
+**Posibles causas y reglas de seguridad aplicadas:**
+1. **Bloqueo por intentos fallidos de inicio de sesión (Login):** Se ingresó una contraseña errónea **5 veces consecutivas**. El sistema activa un bloqueo temporal sobre la cuenta de **15 minutos**.
+2. **Bloqueo por preguntas de seguridad (Recuperación de contraseña):** Se fallaron las respuestas de seguridad **3 veces consecutivas**. El sistema activa un bloqueo de seguridad sobre la cuenta de **30 minutos**.
+3. **Límite perimetral de peticiones (*Rate Limiting*):** Se realizaron demasiadas solicitudes seguidas desde la misma dirección IP o correo en una ventana corta de tiempo (ej. más de 10 peticiones de login o más de 5 verificaciones de preguntas en 15 minutos).
+*(Nota: Un **bloqueo temporal** difiere de una cuenta **inactiva o suspendida**. El bloqueo expira por tiempo o se desbloquea en el panel; una cuenta inactiva o caducada por fecha de vigencia requiere activación y ampliación de fecha por parte del Administrador).*
+**Acción:** 
+* Si el bloqueo se originó por contraseña en el login, esperar **15 minutos** para su desbloqueo automático.
+* Si el bloqueo se produjo en las preguntas de seguridad, esperar **30 minutos** para el desbloqueo automático.
+* En situaciones urgentes, comunicarse con el Administrador de la plataforma para que ejecute el desbloqueo manual inmediato desde la tabla de usuarios del Panel Administrativo.
 
 #### 3.5.2.2. Visibilidad de páginas editadas
 **Situación:** La página recién editada no es visible en el portal público.
@@ -2623,4 +2649,10 @@ La configuración de roles y la asignación de permisos (cuyo procedimiento oper
 **Situación:** Un editor no encuentra o no puede usar la opción para crear páginas nuevas.
 **Posible causa:** Al usuario se le asignó un "Rol derivado de Editor" que no tiene activado el permiso manual de "Crear secciones".
 **Acción:** El usuario debe solicitar al Administrador del sistema la activación de dicho permiso en el Panel Administrativo.
+
+#### 3.5.2.5. Inicio de sesión y credenciales entre Sitio Web e Intranet
+**Situación:** Un funcionario tiene dudas sobre si necesita dos contraseñas distintas o por qué debe volver a iniciar sesión al pasar del Sitio Web a la Intranet.
+**Aclaración de la plataforma:**
+* **Mismas credenciales:** La cuenta de usuario es centralizada y única en todo el sistema. El correo `@sena.edu.co` y la contraseña son exactamente los mismos para ambos portales.
+* **Sesiones independientes:** Cada portal opera como un entorno web protegido por separado. Por ello, iniciar sesión en el Sitio Web no abre la sesión en la Intranet (ni viceversa); el usuario debe ingresar sus mismas credenciales en el formulario de acceso de cada portal cuando desee utilizarlo.
 

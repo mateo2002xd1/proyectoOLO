@@ -1,11 +1,20 @@
+'use client';
+
+import { useEffect } from 'react';
 import { AuthSuccessScreen } from './auth-success-screen';
 
 export function ResetSuccessView() {
+  useEffect(() => {
+    sessionStorage.removeItem('recoveryEmail');
+    sessionStorage.removeItem('recoveryQuestions');
+    sessionStorage.removeItem('recoveryAnswers');
+  }, []);
+
   return (
     <AuthSuccessScreen
-      title="¡Genial, tu clave ha sido actualizada con éxito!"
-      subtitle="Ya puedes ingresar a tu cuenta con tu nuevo código de acceso."
-      hint="¡Tu seguridad es nuestra prioridad!"
+      title="Tu contraseña se actualizó"
+      subtitle="Ya puedes entrar a la intranet con tu nueva contraseña."
+      loginLabel="Ir a iniciar sesión"
     />
   );
 }
