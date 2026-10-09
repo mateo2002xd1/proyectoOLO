@@ -14,7 +14,7 @@
 
 1. **¿Qué se guarda?** 32 tablas de dominio y 2 vistas, en siete grupos (§4), más `migraciones_aplicadas`, que es del runner y no del dominio. 23 de las 32 tienen modelo Sequelize; las ocho de la tendencia ocupacional y `departamentos_alias` se consultan con SQL directo.
 2. **¿Qué NO se guarda en Postgres?** Lo que parece tabla y no lo es (§6).
-3. **¿Qué impide que los datos queden inconsistentes?** Veinte invariantes declaradas en el esquema, no en el código (§5).
+3. **¿Qué impide que los datos queden inconsistentes?** Veintiuna invariantes declaradas en el esquema, no en el código (§5).
 
 ---
 
@@ -31,6 +31,7 @@
 | D7 | **El acceso a cada app es un permiso, no una columna** | `acceso.sitio` y `acceso.intranet` son filas en `permisos`. Ver §2.1 |
 | D8 | **Borrado lógico por `estado`, no por `deleted_at`** | RF-01 pide *despublicar*, no borrar. El ciclo ya tiene estados; añadir una segunda forma de "no visible" duplicaría la regla |
 | D9 | **Un índice existe porque una consulta lo lee o una FK lo necesita** | Cada índice se reescribe en cada `INSERT`, `UPDATE` y `DELETE` de su tabla. Antes de crear o quitar uno se mira `pg_stat_user_indexes` (§9.3). Y **`usuarios.ultimo_acceso_en` no se indexa nunca**: se escribe en cada petición, y hoy el 99 % de las escrituras en `usuarios` son *HOT* (Postgres no toca ningún índice) precisamente porque ninguna columna indexada cambia |
+| D10 | **Un catálogo se identifica por la clave de su fuente, no por cómo se escribió** | Si la fuente trae código, el código es la identidad: DANE para departamentos, SENA para niveles, centros y programas, CIIU para clases, CNO para ocupaciones. Un nombre escrito distinto no es otra fila (se actualiza), y un código distinto sí lo es aunque el nombre coincida. Solo donde no hay código (municipios, empresas) la identidad es el nombre normalizado con `normalizar_nombre()`. Ver §9.5 |
 
 ---
 
@@ -228,14 +229,22 @@ Catálogos y hechos de las estadísticas de vinculación laboral, extraídos del
 
 | Tabla | Qué información guarda | Claves e invariantes |
 |---|---|---|
-| **`departamentos`** | Los 33 departamentos oficiales con su nombre y su código DANE de dos cifras. Catálogo **cerrado**, compartido por los tres módulos que trabajan por territorio (migración 032) | `uq_departamentos_nombre` y `uq_departamentos_codigo_dane` (I16, I24). Ningún importador crea filas: resuelven por alias o rechazan la carga |
+| **`departamentos`** | Los 32 departamentos y Bogotá D.C. (33 filas) con su nombre oficial y su código DANE de dos cifras. Catálogo **cerrado**, compartido por los tres módulos que trabajan por territorio (migración 032) | Solo los 33 códigos DANE (I27) y un código por fila (I16). `uq_departamentos_nombre` sobre el nombre **normalizado**: «Vaupés» y «Vaupes» no pueden convivir (I24). Ningún importador crea filas: resuelven por alias o rechazan la carga |
 | **`departamentos_alias`** | Cómo viene escrito un departamento en los Excel («Distrito Capital», «Guajira, La», «Valle»), normalizado, y a cuál corresponde | PK `alias_normalizado` (minúsculas, sin tildes, signos como espacio: `shared/normalizar-texto.ts`). `CASCADE` desde `departamentos`. Un nombre nuevo se agrega aquí, nunca como departamento |
-| **`centros_formacion`** | Los centros del SENA: nombre y departamento. Catálogo abierto: lo completa el importador | `UNIQUE(departamento_id, nombre)`. El nombre solo no basta: «Centro de Comercio y Servicios» existe en cinco departamentos |
-| **`niveles_formacion`** | Los niveles de formación tal como los trae el Excel (Técnico, Tecnólogo, Auxiliar, Operario…) | `uq_niveles_formacion_nombre` (I24). Hay un «Tecnico» sin tilde junto a «Técnico» (§9.4) |
-| **`programas_formacion`** | Los programas de formación, cada uno con su nivel | `UNIQUE(nivel_formacion_id, nombre)` |
+| **`centros_formacion`** | Los centros del SENA: código SENA (`Cod. Centro`), nombre y departamento. Catálogo abierto: lo crea y actualiza el importador | `uq_centros_formacion_codigo` (I24, 042). El nombre no identifica: hay cinco centros distintos llamados «Centro de Comercio y Servicios» |
+| **`niveles_formacion`** | Los niveles de formación: código SENA (`Cod. Nivel de formación`) y nombre (Técnico, Tecnólogo, Auxiliar, Operario, Profundización Técnica) | `uq_niveles_formacion_codigo` (I24, 042) |
+| **`programas_formacion`** | Los programas de formación: código SENA (`Cod. Programa`), nombre y nivel | `uq_programas_formacion_codigo` (I24, 042). Dos programas del mismo nivel pueden llamarse igual: «Apoyo administrativo en salud» es el 134507 y el 134508 |
 | **`programas_sobresalientes`** | Los hechos: por centro, programa y sexo, cuántos aprendices se certificaron, cuántos se vincularon, la tasa de vinculación y el salario promedio | `UNIQUE(centro_id, programa_id, sexo)` (I10), I11–I13. `departamento_id` y `nivel_formacion_id` repiten lo que ya dicen el centro y el programa; dos FK compuestas impiden que se contradigan (I22) |
 
-**Ingesta.** El backend lee el `.xlsx` en streaming (`exceljs`), valida encabezados y tipos, resuelve el departamento por `departamentos_alias` (un nombre desconocido rechaza la carga), crea los centros, niveles y programas que falten y **vacía y recarga** `programas_sobresalientes` entera, todo en una sola transacción: o entra el archivo completo o no entra nada. Las filas repetidas de un mismo centro, programa y sexo se fusionan antes de insertar (se suman certificados y vinculados, y la tasa se recalcula).
+**Ingesta.** El backend lee el `.xlsx` (`exceljs`), valida encabezados y tipos, y en una sola transacción —o entra el archivo completo o no entra nada—:
+
+1. Resuelve el departamento por `departamentos_alias` (un nombre desconocido rechaza la carga) y exige que el `Cod. Regional` sea su código DANE.
+2. Comprueba que el archivo no se contradiga: el mismo código de nivel, centro o programa con dos nombres distintos (más allá de tildes o mayúsculas), o un centro en dos regionales, o un programa en dos niveles, rechaza la carga señalando la fila. Mismo criterio que la V3 de la tendencia.
+3. Crea o actualiza niveles, centros y programas **por código** (`ON CONFLICT (codigo)`): el nombre que manda es el del último archivo.
+4. **Vacía y recarga** `programas_sobresalientes`. Las filas con el mismo centro, programa y sexo **por código** son cohortes del mismo programa y se fusionan (se suman certificados y vinculados, la tasa se recalcula y el salario se pondera).
+5. Borra de los tres catálogos lo que ya no usa ningún hecho, así no se acumulan variantes de cargas viejas.
+
+Hasta la 042 todo esto iba por nombre exacto: sumaba dos programas distintos que se llamaban igual («Mantenimiento Electromecánico Industrial», 223201 + 223213) y habría separado uno mismo escrito con otra mayúscula. §9.5.
 
 #### 4.6.1 Tendencia ocupacional (percentiles inscritos vs. vacantes) — migración 033
 
@@ -318,10 +327,12 @@ duplica ninguna de las dos.
 |---|---|---|
 | **`ciiu_secciones`** | Las 21 secciones de la CIIU Rev.4 A.C. del DANE: letra (A–U), nombre, rango de divisiones («01-03») y si está activa | `uq_ciiu_secciones_letra` (I24), `CHECK (letra ~ '^[A-Z]$')`. Semilla; la T (hogares como empleadores) queda `activa = false` |
 | **`ciiu_clases`** | Las clases CIIU de cuatro cifras, con su nombre y su sección. Se completan desde el Excel de sectores; no vienen sembradas | `uq_ciiu_clases_codigo` (I24): el código ya identifica la clase, y por sus dos primeras cifras se deduce la sección. `CHECK (codigo ~ '^[0-9]{4}$')` |
-| **`empresas`** | Las empresas que anuncian proyectos: solo el nombre | Único por `lower(nombre)` (`uq_empresas_nombre`) |
-| **`municipios`** | El municipio de una sede, con su departamento. A diferencia de `departamentos`, es **catálogo abierto**: el importador lo completa por `(departamento_id, nombre)`, como `centros_formacion` | `UNIQUE(departamento_id, nombre)` |
+| **`empresas`** | Las empresas que anuncian proyectos: solo el nombre | `uq_empresas_nombre` sobre el nombre **normalizado** (042): «Grupo Éxito» y «GRUPO EXITO.» son la misma. El Excel no trae NIT |
+| **`municipios`** | El municipio de una sede, con su departamento. A diferencia de `departamentos`, es **catálogo abierto**: el importador y el alta manual lo completan | `uq_municipios_depto_nombre` sobre departamento y nombre **normalizado** (042): «Medellín» y «Medellin» son el mismo. El Excel no trae código DIVIPOLA |
 | **`proyectos_inversion`** | Una fila por proyecto de inversión anunciado en una noticia: tipo (`nuevo`/`expansion`), descripción, empresa, sección y clase CIIU, fecha del anuncio, URL y medio de la fuente, inversión en pesos, empleos estimados, estado y quién lo creó | Mismo ciclo `borrador/en_revision/publicado/rechazado` de `paginas_versiones` (D8). `CHECK (fuente_url ~* '^https?://')`. Si hay clase, la sección es la de la clase (I22). `creado_por` `SET NULL` |
 | **`proyectos_inversion_ubicaciones`** | Dónde se ubica cada proyecto —una noticia puede anunciar varias sedes—: departamento y, si se sabe, municipio | `UNIQUE NULLS NOT DISTINCT (proyecto_id, departamento_id, municipio_id)`. Si hay municipio, el departamento es el suyo (I22). `CASCADE` desde el proyecto |
+
+Empresas y municipios se resuelven con `normalizar_nombre()` en la consulta (`resolverOCrearEmpresa`, `resolverOCrearMunicipio`): la misma función sobre la que está el índice único, así la búsqueda y la unicidad no pueden discrepar.
 
 **Dos vías de entrada, un mismo destino.** El Excel agrega fila a fila (no vacía-y-recarga, a
 diferencia de §4.6: cada fila es una noticia independiente) y omite cualquiera cuya `fuente_url`
@@ -370,9 +381,10 @@ Cada una es una regla de negocio que **el código no puede violar por accidente*
 | I21 | **Lo publicado tiene fecha** | `CHECK estado='publicado' ⇒ publicado_en NOT NULL` en `paginas_versiones` y `cortes_ocupacionales` (041) | Los respaldos y el historial ordenan por `publicado_en`; una publicación sin fecha desaparecería de esos listados. Heredera de la I5 |
 | I22 | **Una copia no contradice a su origen** | FK compuestas (041): `programas_sobresalientes (centro_id, departamento_id)` y `(programa_id, nivel_formacion_id)`; `proyectos_inversion (clase_id, seccion_id)`; `proyectos_inversion_ubicaciones (municipio_id, departamento_id)` | Un hecho no puede estar en un departamento distinto del de su centro, ni un proyecto en una sección distinta de la de su clase. Con `ON UPDATE CASCADE`, si el origen cambia, la copia lo sigue (§9.2) |
 | I23 | **Una página publica una versión suya** | `FOREIGN KEY (version_publicada_id, id) REFERENCES paginas_versiones (id, pagina_id) ON DELETE SET NULL (version_publicada_id) DEFERRABLE INITIALLY DEFERRED` (041) | Antes podía apuntar a la versión de otra página, y el sitio habría pintado el contenido equivocado |
-| I24 | **Un catálogo, un nombre** | `UNIQUE` en `departamentos.nombre`, `niveles_formacion.nombre`, `ciiu_secciones.letra` y `ciiu_clases.codigo` (041) | Los importadores resuelven por nombre o código: con dos filas iguales, el resultado dependería de cuál devuelva Postgres primero |
+| I24 | **Una fila por cosa en cada catálogo** | Por la clave de la fuente (D10): `UNIQUE (codigo)` en `niveles_formacion`, `centros_formacion` y `programas_formacion` (042), en `ciiu_clases` (041) y en `ocupaciones` (033); `ciiu_secciones.letra` (041); y, donde no hay código, únicos sobre `normalizar_nombre(nombre)` en `departamentos`, `municipios` (por departamento) y `empresas` (042) | Los importadores resuelven por código o por nombre: con dos filas para lo mismo, el resultado dependería de cuál devuelva Postgres primero, y las estadísticas se partirían en dos. En la 041 los de niveles y departamentos eran por nombre exacto, que no ve tildes ni mayúsculas |
 | I25 | **Un correo por cuenta, en minúsculas** | `uq_usuarios_email UNIQUE (email)` + `CHECK (email = lower(email))` (041) | El login busca el correo ya normalizado; uno guardado con mayúsculas no podría entrar nunca |
 | I26 | **Cada carga es de un módulo conocido** | `CHECK (modulo IN (…))` en `cargas_datos` (041) | El historial de cada tarjeta filtra por módulo: una carga con un módulo mal escrito no aparecería en ninguna |
+| I27 | **Los departamentos son 33 y solo 33** | `ck_departamentos_codigo_dane CHECK (codigo_dane IN ('05', '08', '11', …, '99'))` + `UNIQUE (codigo_dane)` (042) | Los 32 departamentos y Bogotá D.C. No cabe una fila 34: un departamento «nuevo» solo puede ser un alias (§9.5) |
 
 Y las reglas que protegen el borrado: **no se borra** un rol con cuentas, ni un catálogo con hechos que lo usen (`departamentos`, `centros_formacion`, `niveles_formacion`, `programas_formacion`, `ocupaciones`, `periodos`, `criterios_ocupacionales`, `empresas`, `ciiu_secciones`, `ciiu_clases`, `municipios`); **`SET NULL`** en las autorías (borrar un usuario no borra su trabajo), en `cargas_datos.archivo_id` y en `cargas_datos_ocupacionales.corte_id`; **`CASCADE`** solo donde el hijo no tiene sentido sin el padre (preguntas de seguridad, versiones y subidas pendientes de una página, concesiones de un rol o permiso, alias de un departamento, indicadores de un corte, el detalle de una carga, las ubicaciones de un proyecto).
 
@@ -478,6 +490,7 @@ eso la tabla lleva el porqué en vez de un número de riesgo.
 | 039 | `alertas-inversion-proyectos` | `proyectos_inversion` y `proyectos_inversion_ubicaciones` (§4.7), con FKs a `empresas`, `ciiu_secciones`, `ciiu_clases`, `departamentos`, `municipios` y `usuarios`. Puramente aditiva |
 | 040 | `auditoria-autoguardado` | Suma `autoguardar_borrador` al `CHECK` de `auditoria_cambios`: el guardado que hace el editor solo cada 30 s. Aparte de `guardar_borrador` porque ese se lee «el usuario guardó» y este no lo pulsó nadie. Al revertir, las filas pasan a `guardar_borrador` (no a `actualizar`): son guardados de borrador de verdad |
 | 041 | `integridad-e-indices` | Lo que encontró la revisión del §9: los `UNIQUE` que faltaban, FK compuestas para las copias (I22, I23), `NOT NULL` y `DEFAULT` donde `sync` los había dejado sin poner, las reglas I21–I26, seis índices que nadie leía fuera y cuatro que solo existían en Neon unificados. En su propia transacción. El `down` quita las reglas y devuelve los índices; no devuelve los `NULL`, el `DEFAULT 'post'` ni `_obsoleto_attachment` |
+| 042 | `catalogos-sin-duplicados` | Que las cargas no dupliquen filas en las tablas maestras (§9.5). Función `normalizar_nombre()`, gemela en SQL de `normalizarParaComparar()`; únicos sobre el nombre normalizado en `departamentos`, `municipios` y `empresas`; `CHECK` de los 33 códigos DANE; columna `codigo` (SENA) con su único en niveles, centros y programas, sin los únicos por nombre; funde «Medellin» en «Medellín» y borra cinco filas de catálogo sin hechos. `codigo` entra nulo: lo rellena la siguiente carga del Excel. Revertir falla sin tocar nada si ya hay dos programas o centros con el mismo nombre en su nivel o departamento |
 
 Cuatro lecciones de este tramo que vale más recordar que releer:
 
@@ -548,7 +561,7 @@ Alinear también los nombres de atributo al español es un refactor de la API, c
 
 ### 8.4 Resultado de la ejecución
 
-Hoy el manifiesto lleva **cuarenta y una migraciones (`001` a `041`)**. `npm run db:verificar` confirma que los **23 modelos Sequelize** coinciden con las columnas reales de PostgreSQL, tanto en una copia de Neon como en una base nueva migrada desde cero (comprobado el 08-10-2026).
+Hoy el manifiesto lleva **cuarenta y dos migraciones (`001` a `042`)**. `npm run db:verificar` confirma que los **23 modelos Sequelize** coinciden con las columnas reales de PostgreSQL, tanto en una copia de Neon como en una base nueva migrada desde cero (comprobado el 08-10-2026 y otra vez el 09-10-2026 con la 042).
 
 Cosas que solo se supieron al ejecutar, y que estaban mal supuestas en el diseño:
 
@@ -659,7 +672,6 @@ La recarga queda igual dentro del ruido: las dos FK compuestas cuestan lo que ah
 | Qué | Por qué no en la 041 | Qué haría falta |
 |---|---|---|
 | `programas_sobresalientes.tasa_vinculacion` se deduce de `vinculados / certificados` (coincide en las 671 filas) | El importador la lee del Excel y la escribe; convertirla en columna generada rompe ese `INSERT` | Columna `GENERATED ALWAYS AS (round(vinculados::numeric / NULLIF(certificados, 0), 4)) STORED` y quitar la tasa del `bulkCreate` de `importar-programas-excel` |
-| `niveles_formacion` tiene «Tecnico» y «Técnico» (el primero con un programa y ningún hecho) | El `UNIQUE` no ve tildes, y fusionar catálogos es una decisión sobre los datos | Normalizar el nivel al importar, como `departamentos_alias`, y fusionar la fila vieja |
 | `paginas_versiones.layout` está vacía en las 147 versiones | `obtener-pagina-publica` la devuelve en la API pública | Quitarla del contrato y luego de la tabla |
 | `archivos.texto_alternativo` no la escribe ningún código | El texto alternativo vive en el bloque (§4.3) | Quitarla con el modelo |
 | `cargas_datos_ocupacionales.reemplazar` siempre `false` | El código todavía la lee al listar cargas viejas | Quitarla del listado y de la tabla |
@@ -669,6 +681,35 @@ La recarga queda igual dentro del ruido: las dos FK compuestas cuestan lo que ah
 | El filtro por año de alertas usa `EXTRACT(YEAR FROM fecha_anuncio) = :anio`, que no puede usar `idx_proyectos_inversion_fecha` | 17 filas | Comparar por rango (`fecha_anuncio >= make_date(:anio, 1, 1) AND fecha_anuncio < make_date(:anio + 1, 1, 1)`) cuando crezca |
 | Extensiones `pgcrypto` y `uuid-ossp` instaladas sin uso (`gen_random_uuid()` es nativa desde Postgres 13) | No cuestan nada | Opcional |
 | Diferencias entre Neon y una base nueva que no cambian nada: las FK que hizo `sync` llevan `ON UPDATE CASCADE` sobre UUID que nunca cambian, algunos únicos se llaman `…_key61` y algunos `CHECK` se escriben distinto con el mismo significado | Renombrar es ruido en el historial sin efecto | Nada |
+
+### 9.5 Las tablas maestras: que una carga no duplique (09-10-2026)
+
+La pregunta: ¿pueden las cargas de «Programa + Sobresalientes», «Alertas de inversión» y «Criterios» (tendencia ocupacional) meter dos veces lo mismo en un catálogo, como un «Vaupes» junto a «Vaupés»? Se revisó el código de cada importador, los datos de Neon (nombres normalizados, distancia de edición, palabras vacías y sufijos societarios) y los Excel reales que se cargaron.
+
+**Treinta y tres, no treinta y dos.** Colombia tiene 32 departamentos y Bogotá D.C., que es distrito capital y no departamento, pero tiene código DANE propio (11) y regional propia en el SENA («Distrito Capital»: 15 centros y 150 hechos hoy). Por eso el catálogo tiene 33 filas, y la 042 cierra la puerta a una 34.ª (I27).
+
+| Catálogo | Quién lo llena | Cómo se identificaba | Lo que se encontró | Cómo queda (042) |
+|---|---|---|---|---|
+| `departamentos` | Nadie: semilla de la 032 | Alias normalizado, en los tres importadores y el alta manual | **Sin duplicados.** Los 33 tienen el alias de su nombre oficial; «Vaupes», «Vaupés», «VAÚPES» y «Vaúpes» caen en el mismo (`vaupes`) | Además, la base rechaza dos nombres que solo difieran en tildes o mayúsculas, y cualquier código fuera de los 33 |
+| `niveles_formacion` | Sobresalientes | Nombre exacto | «Tecnico» (un programa, ningún hecho) junto a «Técnico» | Por código SENA. La fila vieja se borró |
+| `centros_formacion` | Sobresalientes | Departamento + nombre exacto | Un centro de Vaupés repetido con una errata («Agropecuarios»), y dos centros asignados a departamentos donde no tenían datos; los tres sin hechos | Por código SENA. Las tres filas se borraron |
+| `programas_formacion` | Sobresalientes | Nivel + nombre exacto | Por nombre no se puede: el Excel trae **programas distintos con el mismo nombre** (134507 y 134508, «Apoyo administrativo en salud»; 223201 y 223213; 662121 y 635503). Por nombre exacto, el importador **sumaba** dos de ellos en una sola fila | Por código SENA (decisión del usuario). La próxima carga los separa |
+| `municipios` | Alertas (Excel y alta manual) | Departamento + nombre exacto | «Medellín» (2 sedes) y «Medellin» (ninguna) | Departamento + nombre normalizado. Fundidos |
+| `empresas` | Alertas (Excel y alta manual) | `lower(nombre)` | Sin duplicados hoy; pero «Grupo Éxito» y «GRUPO EXITO» habrían sido dos | Nombre normalizado |
+| `ocupaciones` | Tendencia | Código CNO (`ON CONFLICT (codigo)`); V3 y V4 rechazan un código con dos nombres o repetido | **Sin duplicados.** Siete nombres se repiten con códigos distintos («Psicólogos» 3161 y 4151): viene así de la fuente y son ocupaciones distintas | Sin cambios |
+| `ciiu_secciones`, `ciiu_clases` | Semilla; Excel de sectores | Letra; código CIIU (041) | Sin duplicados | Sin cambios |
+| `periodos`, `niveles_ocupacionales`, `niveles_cualificacion`, `criterios_ocupacionales` | Semilla de la 033 | Código | Sin duplicados | Sin cambios |
+
+**Por qué el código y no el nombre normalizado en sobresalientes.** Era la primera idea, y los datos la descartaron: normalizar el nombre habría fundido programas que la fuente da como distintos. El Excel oficial trae `Cod. Regional`, `Cod. Centro`, `Cod. Nivel de formación` y `Cod. Programa` (el formato de `uploads/formatos-carga/` también). Comprobado sobre el archivo real: cada código tiene un solo nombre y un solo padre, y `Cod. Regional` es el código DANE del departamento. El nombre normalizado se usa solo donde la fuente no trae código.
+
+**Lo que hace la base, no solo el código.** La unicidad está en índices sobre `normalizar_nombre()` o sobre `codigo`, así que un duplicado se rechaza venga del importador, del alta manual o de un `INSERT` a mano. La función SQL y la de TypeScript dan el mismo resultado en los 1.201 nombres que hay en la base y en 17 casos difíciles; solo difieren con letras de otros alfabetos latinos («ā», «š»), que no aparecen en estos datos.
+
+**Lo que se vio y no es un duplicado, pero conviene saberlo:**
+
+- Un «municipio» llamado **«Varios municipios»** en Santander: no es un municipio. Si una noticia anuncia varias sedes, lo correcto son varias ubicaciones, o una sin municipio. Decidir cómo tratarlo en el Excel es de negocio.
+- Cuatro empresas sin ningún proyecto (Croydon, Frisby, Grupo Éxito y **«Prueba 1»**, que parece de pruebas): quedaron de proyectos borrados. Son inofensivas.
+- El sitio público no muestra el código del programa, así que los dos «Apoyo administrativo en salud» de un mismo centro se ven como dos filas con el mismo nombre. Mostrar el código es un cambio del frontend.
+- Hasta que se vuelva a subir el Excel de sobresalientes, sus catálogos siguen con `codigo` vacío y los dos «Mantenimiento Electromecánico Industrial» siguen sumados. La primera carga después de la 042 lo corrige (probado con el archivo real: 672 hechos en vez de 671, los mismos totales de certificados y vinculados).
 
 ---
 

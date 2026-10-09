@@ -5,6 +5,84 @@
 
 ---
 
+## sesión 09-10-2026 (2.ª parte): las cargas ya no duplican filas en las tablas maestras (migración 042)
+
+**Qué se pidió.** Revisar que las cargas de «Programa + Sobresalientes», «Alertas de inversión»
+y «Criterios» (tendencia ocupacional) no dupliquen datos en las tablas maestras —el ejemplo:
+que `departamentos` no tenga «Vaupes» y «Vaúpes», «entendiendo que son 32 departamentos»— y
+analizar esas tablas.
+
+**Cómo se analizó.** El código de resolución de cada importador; los catálogos de Neon en
+solo lectura (duplicados por nombre normalizado, distancia de edición ≤ 2, nombres que solo
+cambian en artículos o sufijos societarios); y los Excel reales ya cargados
+(`filesystem/cargas-datos/`), comparando códigos con nombres.
+
+**Lo que se encontró.**
+
+| Catálogo | Hallazgo |
+|---|---|
+| `departamentos` | Sin duplicados y bien protegido: los tres importadores y el alta manual resuelven por alias normalizado. Son **33** (32 + Bogotá D.C., código DANE 11), no 32 |
+| `niveles_formacion`, `centros_formacion`, `programas_formacion` | Se resolvían por nombre exacto. «Tecnico» junto a «Técnico», un centro repetido con una errata, dos centros sin hechos. Y lo importante: **el nombre no identifica**. El Excel trae `Cod. Centro`, `Cod. Nivel` y `Cod. Programa` (el importador los ignoraba), y hay programas distintos con el mismo nombre: por nombre exacto se **sumaban** dos de ellos («Mantenimiento Electromecánico Industrial», 223201 + 223213) |
+| `municipios` | Nombre exacto: «Medellín» y «Medellin» |
+| `empresas` | Solo ignoraba mayúsculas: «Grupo Éxito» y «GRUPO EXITO» habrían sido dos |
+| `ocupaciones`, CIIU, semillas de la tendencia | Sin duplicados: por código, con V3/V4 en la carga |
+
+**La decisión.** La primera idea era deduplicar por nombre normalizado. Los códigos del Excel
+lo descartaron: habría fundido programas que el SENA da como distintos. Se le preguntó al
+usuario y eligió **el código SENA como identidad** de niveles, centros y programas. El nombre
+normalizado queda solo donde la fuente no trae código (municipios y empresas).
+
+**Lo que se hizo.**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| DB | `migrations/042-catalogos-sin-duplicados.ts` (nuevo) + `index.ts` | `normalizar_nombre()` (gemela SQL de `normalizarParaComparar`); únicos sobre el nombre normalizado en `departamentos`, `municipios` y `empresas`; `CHECK` de los 33 códigos DANE; `codigo` con su único en niveles, centros y programas, sin los únicos por nombre; funde «Medellin»; borra 5 filas de catálogo sin hechos. Una transacción |
+| API | `importar-programas-excel.usecase.ts` | Lee los cuatro códigos; exige que `Cod. Regional` sea el DANE del alias; rechaza códigos que se contradicen dentro del archivo; crea o actualiza los catálogos por código (`ON CONFLICT (codigo)`); agrupa las cohortes por código; borra lo que ningún hecho usa |
+| API | `alertas-inversion.repository.ts`, `importar-excel.usecase.ts`, `crear-proyecto-manual.usecase.ts` | Empresas y municipios se resuelven con `normalizar_nombre()` en la consulta y devuelven si se crearon; el importador deja de repetir la búsqueda para contarlos |
+| API | modelos de nivel, centro, programa, municipio y empresa; `shared/normalizar-texto.ts` | `codigo` en los modelos y los índices declarados al día; el normalizador avisa de su gemela |
+| Docs | `11-base-de-datos.md`, `12-diccionario-de-datos.md` | D10 (identidad por la clave de la fuente), §4.6 y §4.7, I24 al día, I27 nueva, fila de la 042 y §9.5 con este análisis; fichas y cifras del diccionario |
+
+**Cómo se probó.** Copia de Neon (ya con la 041) en un `postgres:18-alpine` desechable y la
+API copiada al scratchpad sin `.env`.
+
+| Prueba | Resultado |
+|---|---|
+| `up` de la 042 sobre la copia | ✅ hechos intactos (671; 21.663 certificados, 16.860 vinculados); 5 filas sin uso fuera; «Medellin» fundido con sus sedes |
+| `normalizar_nombre()` frente a `normalizarParaComparar()` en los 1.201 nombres de la base y 17 casos difíciles | ✅ iguales salvo «Ā š», fuera del español, documentado |
+| 8 intentos de duplicar («Vaupes» con otro código, un departamento 34, renombrar Vichada a «VAUPÉS», «MEDELLIN», «GRUPO  EXITO.», código SENA repetido, código no numérico) | ✅ los 8 rechazados |
+| Válidos: «Medellín» en otro departamento, dos «Cocina» del mismo nivel con códigos distintos | ✅ |
+| Importador real de sobresalientes con el Excel real | ✅ 672 hechos (los dos «Mantenimiento…» ya no se suman), mismos totales, 185 programas = 185 códigos, ninguna fila sin código |
+| La misma carga otra vez; con un programa en mayúsculas | ✅ nada nuevo; solo cambia el nombre |
+| Archivo que se contradice (código con dos nombres, regional con otro código, centro en dos regionales); «VAÚPES» | ✅ rechazado con la fila exacta y sin tocar nada; «VAÚPES» se resuelve |
+| Importador real de alertas con empresas y ciudades en mayúsculas, sin tildes y con signos | ✅ 17 proyectos, 0 empresas y 0 municipios nuevos |
+| Base vacía 001 → 042; `down` y `up` de la 042 | ✅ |
+| `down` de la 042 sobre la copia ya recargada | Falla sin tocar nada (dos programas con el mismo nombre en un nivel), como dice la migración |
+| `db:verificar` en las dos bases; `tsc --noEmit` | ✅ |
+
+> **Trampa.** El nombre de un centro o de un programa del SENA **no lo identifica**: hay cinco
+> «Centro de Comercio y Servicios» y dos «Apoyo administrativo en salud» (134507 y 134508).
+> Cualquier cruce de datos del Observatorio va por código, nunca por nombre.
+
+**Lo que se descartó.**
+
+- **Deduplicar sobresalientes por nombre normalizado**: fundía programas distintos.
+- **Resolver el departamento por `Cod. Regional` en vez de por alias**: el alias ya es el
+  mecanismo de los tres importadores; el código se usa para comprobarlo.
+- **`unaccent` para la función SQL**: es otra extensión que instalar en Neon y en el servidor,
+  y no es `IMMUTABLE`; `translate` cubre el español y no depende del locale.
+
+**Pendiente al cierre.**
+
+- **Aplicar la 042 en Neon** (`npm run migrate`, reiniciar la API, `npm run db:verificar`) y
+  **volver a subir el Excel de «Programa + Sobresalientes»** una vez: es lo que les pone código
+  a los catálogos y separa los dos «Mantenimiento Electromecánico Industrial».
+- El sitio no muestra el código del programa: dos programas del mismo centro con el mismo
+  nombre se ven iguales.
+- Un «municipio» llamado «Varios municipios» en Santander, y la empresa «Prueba 1» sin
+  proyectos: decidir qué hacer con ellos.
+
+---
+
 ## sesión 09-10-2026: revisión del esquema de la base — integridad, normalización e índices (migración 041)
 
 **Qué se pidió.** Revisar todas las tablas, ver si se puede normalizar más y mejorar el

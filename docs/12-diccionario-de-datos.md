@@ -14,11 +14,11 @@
 
 El modelo de datos del Observatorio Laboral y Ocupacional (OLO) está implementado en **PostgreSQL** bajo el esquema `public`. Fue diseñado siguiendo principios de normalización relacional (3FN), segregación estricta de responsabilidades (RBAC), gobernanza de contenido mediante versionamiento inmutable, concurrencia pesimista en maquetación visual y trazabilidad integral requerida por la **Ley 1581 de 2012 (Habeas Data)**.
 
-### Métricas Generales del Esquema (tras la migración 041):
+### Métricas Generales del Esquema (tras la migración 042):
 - **Total de Tablas Base:** 33 (32 del dominio, 23 de ellas con modelo Sequelize, + 1 tabla técnica de control `migraciones_aplicadas`).
-- **Total de Columnas:** 230, dos de ellas generadas (`ocupaciones.codigo_nc`, `indicadores_ocupacionales.criterio_codigo`).
+- **Total de Columnas:** 233, dos de ellas generadas (`ocupaciones.codigo_nc`, `indicadores_ocupacionales.criterio_codigo`).
 - **Total de Llaves Foráneas (FK):** 46, cinco de ellas compuestas (las que impiden que una copia contradiga a su origen: invariantes I22 e I23 de `11-base-de-datos.md`), con políticas `RESTRICT`, `CASCADE` y `SET NULL`.
-- **Total de Restricciones CHECK:** 38 restricciones de dominio y reglas de negocio validadas en el motor de base de datos.
+- **Total de Restricciones CHECK:** 41 restricciones de dominio y reglas de negocio validadas en el motor de base de datos.
 - **Estrategia de Identificadores (PK):** UUID versión 4 (`DEFAULT gen_random_uuid()`) en todas las entidades del dominio, garantizando unicidad global y previniendo enumeración secuencial maliciosa.
 - **Control de Estados:** Implementado mediante restricciones `CHECK` con tipos de texto nativos en lugar de `ENUM` de PostgreSQL, permitiendo modificaciones y mantenimientos no bloqueantes.
 
@@ -34,7 +34,7 @@ En respuesta a la verificación de componentes adicionales del motor PostgreSQL:
 | **Vistas (`VIEW`)** | **2** | `v_buscador_ocupacional` y `v_estado_cargas_ocupacional`, de la tendencia ocupacional (migraciones 033 y 035). |
 | **Vistas Materializadas (`MATERIALIZED VIEW`)** | **0** | Las agregaciones analíticas se delegan a Power BI (RF-08), datos dinámicos del Observatorio y caché en memoria Redis. |
 | **Procedimientos Almacenados (`PROCEDURE`)** | **0** | La lógica transaccional reside en la capa de servicios y casos de uso de la API (Node.js/TypeScript). |
-| **Funciones de Negocio (`FUNCTION`)** | **0** | No hay funciones PL/pgSQL propietarias. El motor ejecuta exclusivamente las funciones criptográficas provistas por la extensión `pgcrypto`. |
+| **Funciones de Negocio (`FUNCTION`)** | **1** | `normalizar_nombre(text)` (SQL, `IMMUTABLE`, migración 042): sin tildes, minúsculas, signos como espacio. Es la gemela de `normalizarParaComparar()` y la base de los únicos por nombre de `departamentos`, `municipios` y `empresas`. No hay funciones PL/pgSQL propias. |
 | **Disparadores (`TRIGGER`)** | **0** | La auditoría y reglas de negocio se aplican por software y restricciones declarativas (`CHECK`, `UNIQUE`, `FK`), evitando efectos colaterales ocultos en BD. |
 | **Paquetes (`PACKAGE`)** | **No aplica** | PostgreSQL no soporta paquetes estilo Oracle. La modularización se logra a nivel de esquemas y módulos de software. |
 | **Extensiones (`EXTENSION`)** | **3** | `plpgsql` (v1.0), `pgcrypto` (v1.4, la crea la 001) y `uuid-ossp` (v1.1, solo en Neon). Ninguna se usa: `gen_random_uuid()` es nativa desde PostgreSQL 13. |
@@ -338,17 +338,18 @@ La especificación exhaustiva columna por columna de estas tablas se encuentra d
 
 #### Catálogos Dinámicos (Dimensiones)
 
-1. **`departamentos`:** catálogo cerrado de los 33 oficiales, compartido con la tendencia ocupacional (§3.17). Ya no se autogenera: los importadores lo resuelven por alias (migración 032).
-   - Campos: `id` (UUID PK, `DEFAULT gen_random_uuid()`), `nombre` (VARCHAR 100, NOT NULL, Único `uq_departamentos_nombre`, nombre oficial), `codigo_dane` (CHAR 2, NOT NULL, Único `uq_departamentos_codigo_dane`, `CHECK ~ '^[0-9]{2}$'`), `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ).
+1. **`departamentos`:** catálogo cerrado de los 32 departamentos y Bogotá D.C. (33 filas), compartido con la tendencia ocupacional y alertas de inversión. Ningún importador lo crea: lo resuelven por alias (migración 032).
+   - Campos: `id` (UUID PK, `DEFAULT gen_random_uuid()`), `nombre` (VARCHAR 100, NOT NULL, nombre oficial), `codigo_dane` (CHAR 2, NOT NULL, Único `uq_departamentos_codigo_dane`), `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ).
+   - Unicidad del nombre: índice `uq_departamentos_nombre` sobre `normalizar_nombre(nombre)` (042): «Vaupés» y «Vaupes» no pueden convivir. `ck_departamentos_codigo_dane`: `codigo_dane IN ('05', '08', '11', …, '99')`, los 33 códigos DANE (042; antes solo `~ '^[0-9]{2}$'`).
    - **`departamentos_alias`:** `alias_normalizado` (VARCHAR 120 PK: minúsculas, sin tildes, signos como espacio), `departamento_id` (UUID FK -> `departamentos.id`, ON DELETE CASCADE).
 2. **`centros_formacion`:** 
-   - Campos: `id` (UUID PK, `DEFAULT gen_random_uuid()`), `departamento_id` (UUID FK -> `departamentos.id`, ON DELETE RESTRICT, ON UPDATE CASCADE), `nombre` (VARCHAR 255, NOT NULL), `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ). Llave única compuesta: `(departamento_id, nombre)` (`uq_centros_formacion_depto_nombre`). `(id, departamento_id)` también es único (`uq_centros_formacion_id_departamento`, 041): es el destino de la FK compuesta de los hechos.
+   - Campos: `id` (UUID PK, `DEFAULT gen_random_uuid()`), `codigo` (VARCHAR 20, Único `uq_centros_formacion_codigo`, `CHECK ~ '^[0-9]+$'`: el `Cod. Centro` del SENA; nulo solo hasta la primera carga después de la 042), `departamento_id` (UUID FK -> `departamentos.id`, ON DELETE RESTRICT, ON UPDATE CASCADE), `nombre` (VARCHAR 255, NOT NULL), `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ). El nombre **no** es único: hay cinco centros llamados «Centro de Comercio y Servicios». `(id, departamento_id)` es único (`uq_centros_formacion_id_departamento`, 041): es el destino de la FK compuesta de los hechos.
 3. **`niveles_formacion`:** 
-   - Campos: `id` (UUID PK, `DEFAULT gen_random_uuid()`), `nombre` (VARCHAR 50, NOT NULL, Único `uq_niveles_formacion_nombre`), `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ).
+   - Campos: `id` (UUID PK, `DEFAULT gen_random_uuid()`), `codigo` (VARCHAR 20, Único `uq_niveles_formacion_codigo`, `CHECK ~ '^[0-9]+$'`: el `Cod. Nivel de formación`), `nombre` (VARCHAR 50, NOT NULL), `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ).
 4. **`programas_formacion`:** 
-   - Campos: `id` (UUID PK, `DEFAULT gen_random_uuid()`), `nivel_formacion_id` (UUID FK -> `niveles_formacion.id`, ON DELETE RESTRICT, ON UPDATE CASCADE), `nombre` (VARCHAR 255, NOT NULL), `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ). Llave única compuesta: `(nivel_formacion_id, nombre)` (`uq_programas_formacion_nivel_nombre`). `(id, nivel_formacion_id)` también es único (`uq_programas_formacion_id_nivel`, 041).
+   - Campos: `id` (UUID PK, `DEFAULT gen_random_uuid()`), `codigo` (VARCHAR 20, Único `uq_programas_formacion_codigo`, `CHECK ~ '^[0-9]+$'`: el `Cod. Programa`), `nivel_formacion_id` (UUID FK -> `niveles_formacion.id`, ON DELETE RESTRICT, ON UPDATE CASCADE), `nombre` (VARCHAR 255, NOT NULL), `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ). El nombre **no** es único ni dentro del nivel: «Apoyo administrativo en salud» es el 134507 y el 134508. `(id, nivel_formacion_id)` es único (`uq_programas_formacion_id_nivel`, 041).
 
-> Los `UNIQUE` de `departamentos.nombre` y `niveles_formacion.nombre` estaban aquí desde la 026, pero **no existieron hasta la 041**: la 026 los pidió con `unique: 'uq_…'` dentro de `createTable`, que no crea nada (`11-base-de-datos.md` §9.1).
+> Desde la migración 042 estos tres catálogos se identifican por el **código SENA**, no por el nombre (`11-base-de-datos.md` D10 y §9.5). El importador los crea o actualiza por código y borra los que ya no usa ningún hecho. Los únicos por nombre que hubo antes (`uq_niveles_formacion_nombre`, `uq_centros_formacion_depto_nombre`, `uq_programas_formacion_nivel_nombre`) se quitaron. Los de `departamentos.nombre` y `niveles_formacion.nombre` estaban documentados desde la 026 pero **no existieron hasta la 041**: la 026 los pidió con `unique: 'uq_…'` dentro de `createTable`, que no crea nada (§9.1).
 
 #### Tabla Central: `programas_sobresalientes` (Hechos)
 
