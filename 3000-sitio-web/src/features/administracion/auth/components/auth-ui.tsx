@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { EyeIcon, EyeSlashIcon, HomeIcon } from '@heroicons/react/20/solid';
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { LONGITUD_MINIMA, requisitosDe } from '@olo/password-policy';
 
@@ -26,6 +27,13 @@ import { LONGITUD_MINIMA, requisitosDe } from '@olo/password-policy';
  *
  * Por eso aquí no hay variantes `dark:` salvo en `PasswordRequisitos`, que además
  * de estas pantallas sirve al perfil dentro del panel, donde sí hay tema.
+ *
+ * ## El diseño nuevo, pantalla por pantalla (desde el 2026-10-09)
+ *
+ * El usuario va pasando los mockups de una en una. Las que ya lo tienen usan
+ * `MarcoDePasos` (`marco-de-pasos.tsx`) y la piel `pasos` de más abajo; hoy, el primer
+ * ingreso. Las demás siguen en `AuthSplitShell` con la piel de siempre. Cuando no quede
+ * ninguna, la piel `tarjeta` y su marco sobran.
  */
 
 /* ---------- Clases base ---------- *
@@ -76,6 +84,60 @@ export const authQuietLinkClass =
 export const authNavyActionClass =
   'inline-flex w-full items-center justify-center rounded-[16px] bg-[#0d1526] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_8px_-2px_rgba(13,21,38,0.4)] transition hover:bg-[#1a2340] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-focus';
 
+/* ---------- Piel «pasos» ---------- *
+ * La del diseño nuevo, que empezó por el primer ingreso (2026-10-09) y seguirá por el
+ * resto del flujo: tarjeta con borde y sin sombra, esquinas pequeñas, etiquetas en peso
+ * normal y campos de 16 px. Los colores son los medidos en el mockup. La elige
+ * `MarcoDePasos` con `PielAuth`, así que los campos de abajo se pintan solos con ella.
+ *
+ * Anchos de la tarjeta según el mockup de cada tamaño: 330 en el móvil, 452 en la tablet
+ * y 320 en el escritorio, donde comparte la pantalla con el panel de la izquierda. */
+
+export const authPasosCardClass =
+  'w-full max-w-[330px] rounded-md border border-[#d9d9d9] bg-white px-6 py-10 md:max-w-[452px] xl:max-w-[320px]';
+
+// 44 px de alto por debajo de `xl`, que es lo que pide `2-convenciones` §10.4 para la
+// acción principal en el móvil; en el escritorio, los 40 del mockup.
+export const authPasosPrimaryClass =
+  'inline-flex h-11 w-full items-center justify-center rounded-md bg-[#002237] px-4 text-base text-[#f5f5f5] transition-colors hover:bg-[#0a3350] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#002237] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 xl:h-10';
+
+export const authPasosSecondaryClass =
+  'inline-flex h-11 items-center justify-center rounded-md border border-[#d9d9d9] bg-white px-4 text-base text-[#001a39] transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#002237] focus-visible:ring-offset-2 xl:h-10';
+
+/** El enlace discreto de la tarjeta («Iniciar sesión»). */
+export const authPasosQuietLinkClass =
+  'rounded px-1 py-1 text-[15px] text-[#001631] underline-offset-4 transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#002237]';
+
+// 15 px y no los 16 del mockup: Poppins es más ancha que la letra del diseño, y a 16
+// «Ingresa nuevamente la contraseña» (282 px) no cabía en una línea de la tarjeta de
+// 320 (270 por dentro). A 15 mide 265.
+const authPasosLabelClass = 'mb-2 block text-[15px] text-[#001a39]';
+
+const authPasosInputClass = (hasError: boolean) =>
+  [
+    // `py-2`: el `select` de Chrome pinta el texto arriba de su caja, no centrado.
+    'h-10 w-full rounded-md border bg-white px-4 py-2 text-base text-[#001a39] placeholder:text-[#b3b3b3]',
+    'transition-colors focus:outline-none focus:ring-2',
+    hasError
+      ? 'border-red-500 focus:border-red-600 focus:ring-red-600'
+      : 'border-[#d9d9d9] focus:border-[#002237] focus:ring-[#002237]',
+  ].join(' ');
+
+const authPasosErrorTextClass = 'mt-1.5 text-sm text-red-600';
+
+/**
+ * Qué piel llevan los campos y el enlace de regreso. Sin proveedor, la de siempre
+ * (`tarjeta`); `MarcoDePasos` pone `pasos`. Así una pantalla cambia de diseño al
+ * cambiar de marco, sin pasar la piel a cada campo.
+ */
+export type PielDeAuth = 'tarjeta' | 'pasos';
+export const PielAuth = createContext<PielDeAuth>('tarjeta');
+
+const claseEtiqueta = (piel: PielDeAuth) => (piel === 'pasos' ? authPasosLabelClass : authSolidLabelClass);
+const claseCampo = (piel: PielDeAuth, hasError: boolean) =>
+  piel === 'pasos' ? authPasosInputClass(hasError) : authSolidInputClass(hasError);
+const claseError = (piel: PielDeAuth) => (piel === 'pasos' ? authPasosErrorTextClass : authErrorTextClass);
+
 /* ---------- Contenedores ---------- */
 
 /**
@@ -101,11 +163,21 @@ export const authNavyActionClass =
  * vive en el layout y es el único que pinta el fondo.
  *
  * El enlace de regreso al sitio también es del marco y no de cada pantalla: sale
- * igual en el acceso, en la elección de editor, en el primer ingreso y en la
- * recuperación.
+ * igual en el acceso, en la elección de editor y en la recuperación.
+ *
+ * ## Las rutas con marco propio
+ *
+ * El primer ingreso ya tiene el diseño nuevo (`MarcoDePasos`): el panel izquierdo
+ * cuenta el paso en que se está, así que lo pinta la propia pantalla, que es la que
+ * sabe en qué paso va. Para esas rutas este marco no pinta nada.
  */
+const RUTAS_CON_MARCO_PROPIO = new Set(['/first-login']);
+
 export function AuthSplitShell({ children }: { children: ReactNode }) {
-  const esLogin = usePathname() === '/login';
+  const ruta = usePathname();
+  const esLogin = ruta === '/login';
+
+  if (RUTAS_CON_MARCO_PROPIO.has(ruta)) return <>{children}</>;
 
   return (
     <div className={`flex min-h-dvh w-full xl:bg-[#001631] ${esLogin ? 'bg-white' : 'bg-[#001631]'}`}>
@@ -311,9 +383,11 @@ export function AuthTextField({
   autoCorrect?: 'on' | 'off';
   className?: string;
 }) {
+  const piel = useContext(PielAuth);
+
   return (
     <div className={className}>
-      <label htmlFor={id} className={authSolidLabelClass}>
+      <label htmlFor={id} className={claseEtiqueta(piel)}>
         {label}
       </label>
       <input
@@ -325,9 +399,11 @@ export function AuthTextField({
         autoComplete={autoComplete}
         autoCapitalize={autoCapitalize}
         autoCorrect={autoCorrect}
-        className={authSolidInputClass(!!error)}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${id}-error` : undefined}
+        className={claseCampo(piel, !!error)}
       />
-      {error && <p className={authErrorTextClass}>{error}</p>}
+      {error && <p id={`${id}-error`} className={claseError(piel)}>{error}</p>}
     </div>
   );
 }
@@ -357,9 +433,12 @@ export function AuthSelectField({
   placeholder?: string;
   className?: string;
 }) {
+  const piel = useContext(PielAuth);
+  const sinValor = piel === 'pasos' ? 'text-[#b3b3b3]' : 'text-gray-400';
+
   return (
     <div className={className}>
-      <label htmlFor={id} className={authSolidLabelClass}>
+      <label htmlFor={id} className={claseEtiqueta(piel)}>
         {label}
       </label>
       <div className="relative">
@@ -367,10 +446,12 @@ export function AuthSelectField({
           id={id}
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? `${id}-error` : undefined}
           // Sin valor el campo imita a un `placeholder`; las opciones vuelven al
           // gris de texto porque en Windows heredan el color del `select`.
           // `admin-auth-select`: la lista abierta, con borde (globals.css).
-          className={`admin-auth-select ${authSolidInputClass(!!error)} appearance-none pr-10 ${value ? '' : 'text-gray-400'
+          className={`admin-auth-select ${claseCampo(piel, !!error)} appearance-none pr-10 ${value ? '' : sinValor
             }`}
         >
           <option value="" disabled>
@@ -402,36 +483,49 @@ export function AuthSelectField({
           <polyline points="6 9 12 15 18 9" />
         </svg>
       </div>
-      {error && <p className={authErrorTextClass}>{error}</p>}
+      {error && <p id={`${id}-error`} className={claseError(piel)}>{error}</p>}
     </div>
   );
 }
 
-/** Campo de contraseña con alternador de visibilidad. */
+/**
+ * Campo de contraseña con alternador de visibilidad.
+ *
+ * En la piel `pasos` el ojo es el relleno del mockup y dice lo que hará al pulsarlo
+ * (ojo: mostrar; ojo tachado: ocultar). En la de siempre muestra el estado. El nombre
+ * accesible dice la acción en las dos.
+ */
 export function PasswordField({
   id,
   label,
   value,
   onChange,
+  onFocus,
   error,
   placeholder = `Mínimo ${LONGITUD_MINIMA} caracteres`,
   autoComplete,
+  describedBy,
   className = 'mb-4',
 }: {
   id: string;
   label: string;
   value: string;
   onChange: (v: string) => void;
+  onFocus?: () => void;
   error?: string;
   placeholder?: string;
   autoComplete?: string;
+  /** `id` de lo que explica el campo además de su error (la lista de requisitos). */
+  describedBy?: string;
   className?: string;
 }) {
   const [show, setShow] = useState(false);
+  const piel = useContext(PielAuth);
+  const descripciones = [describedBy, error ? `${id}-error` : undefined].filter(Boolean).join(' ');
 
   return (
     <div className={className}>
-      <label htmlFor={id} className={authSolidLabelClass}>
+      <label htmlFor={id} className={claseEtiqueta(piel)}>
         {label}
       </label>
       <div className="relative">
@@ -441,19 +535,30 @@ export function PasswordField({
           autoComplete={autoComplete}
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          onFocus={onFocus}
           placeholder={placeholder}
-          className={`${authSolidInputClass(!!error)} pr-10`}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={descripciones || undefined}
+          className={`${claseCampo(piel, !!error)} ${piel === 'pasos' ? 'pr-11' : 'pr-10'}`}
         />
         <button
           type="button"
           onClick={() => setShow((v) => !v)}
           aria-label={show ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-          className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-gray-500 transition-colors hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d1526]"
+          className={
+            piel === 'pasos'
+              ? 'absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-[#334861] transition-colors hover:text-[#001a39] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#002237]'
+              : 'absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-gray-500 transition-colors hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d1526]'
+          }
         >
-          <IconoMascara nombre={show ? 'eye-open' : 'eye-closed'} tamano="h-5 w-5" />
+          {piel === 'pasos' ? (
+            show ? <EyeSlashIcon aria-hidden="true" className="size-5" /> : <EyeIcon aria-hidden="true" className="size-5" />
+          ) : (
+            <IconoMascara nombre={show ? 'eye-open' : 'eye-closed'} tamano="h-5 w-5" />
+          )}
         </button>
       </div>
-      {error && <p className={authErrorTextClass}>{error}</p>}
+      {error && <p id={`${id}-error`} className={claseError(piel)}>{error}</p>}
     </div>
   );
 }
@@ -472,10 +577,13 @@ export function PasswordField({
  * el perfil dentro del panel, que sí tiene tema oscuro (`variant="panel"`).
  */
 export function PasswordRequisitos({
+  id,
   password,
   className = 'mb-4',
   variant = 'panel',
 }: {
+  /** Para que el campo lo nombre en su `aria-describedby`. */
+  id?: string;
   password: string;
   className?: string;
   variant?: 'panel' | 'solid';
@@ -484,7 +592,7 @@ export function PasswordRequisitos({
   const esSolido = variant === 'solid';
 
   return (
-    <ul className={`${className} space-y-1`} aria-live="polite">
+    <ul id={id} className={`${className} space-y-1`} aria-live="polite">
       {requisitos.map((requisito) => {
         const claseEstado = requisito.cumplido
           ? esSolido
@@ -514,9 +622,10 @@ export function PasswordRequisitos({
 /**
  * Enlace de regreso al sitio público.
  *
- * Solo lo usa `AuthSplitShell`, que lo pone sobre el azul: de ahí el blanco. Con
- * `sobreBlanco` (el login por debajo de `xl`, que va sobre fondo blanco) pasa a
- * gris oscuro hasta ese corte; desde `xl` vuelve a estar sobre el azul.
+ * Lo ponen `AuthSplitShell` y `MarcoDePasos`, siempre sobre el azul: de ahí el
+ * blanco. Con `sobreBlanco` (el login por debajo de `xl`, que va sobre fondo blanco)
+ * pasa a gris oscuro hasta ese corte; desde `xl` vuelve a estar sobre el azul. En la
+ * piel `pasos`, la casa rellena y el texto de 16 px del mockup.
  */
 export function BackToSiteLink({
   className = '',
@@ -527,9 +636,26 @@ export function BackToSiteLink({
   label?: string;
   sobreBlanco?: boolean;
 }) {
+  const piel = useContext(PielAuth);
   const color = sobreBlanco
     ? 'text-gray-600 hover:text-gray-900 xl:text-white/90 xl:hover:text-white'
     : 'text-white/90 hover:text-white';
+
+  if (piel === 'pasos') {
+    return (
+      <div className={`text-center ${className}`}>
+        <Link
+          href="/inicio"
+          // En línea y no `inline-flex`: a 360 px el texto parte en dos y la casa debe ir
+          // pegada a la primera palabra, no sola a la izquierda.
+          className="inline-block rounded py-2.5 text-base text-white transition hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+        >
+          <HomeIcon aria-hidden="true" className="mr-2 inline-block size-5 align-[-4px]" />
+          {label}
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className={`text-center ${className}`}>

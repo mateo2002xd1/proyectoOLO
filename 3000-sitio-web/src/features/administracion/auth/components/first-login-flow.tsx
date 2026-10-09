@@ -1,11 +1,9 @@
 'use client';
 
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, FormEvent, ReactNode } from 'react';
 import Link from 'next/link';
-import { Button } from '@/shared/ui/atoms/button';
 import { cumplePolitica, primerFallo } from '@olo/password-policy';
 import {
-  AuthCardTitle,
   AuthGeneralError,
   AuthProgressDots,
   AuthSelectField,
@@ -13,10 +11,12 @@ import {
   AuthTextField,
   PasswordField,
   PasswordRequisitos,
-  authNavyActionClass,
-  authQuietLinkClass,
-  authSolidCardClass,
+  authPasosCardClass,
+  authPasosPrimaryClass,
+  authPasosQuietLinkClass,
+  authPasosSecondaryClass,
 } from './auth-ui';
+import { MarcoDePasos, type PasosDelMarco } from './marco-de-pasos';
 
 /**
  * Configuración obligatoria de primer ingreso: contraseña definitiva y preguntas
@@ -27,18 +27,14 @@ import {
  * Hasta el 2026-09-18 el login la pintaba dentro de su propia pantalla; ahora es una
  * ruta, como en la intranet.
  *
- * El marco (`AuthSplitShell`) lo pone `app/(auth)/layout.tsx`: este componente
- * aporta solo la tarjeta.
+ * Desde el 2026-10-09 lleva el diseño nuevo (`MarcoDePasos`): el título y lo que se
+ * pide en cada paso van fuera de la tarjeta, con el paginador debajo, y la tarjeta
+ * solo trae el formulario. `AuthSplitShell` deja pasar esta ruta sin su marco.
  */
 
 const TOTAL_QUESTIONS = 3;
 
 type CatalogQuestion = { key: string; label: string };
-
-interface FirstLoginFlowProps {
-  /** Nombre del usuario, para saludar en el primer paso. */
-  name?: string;
-}
 
 /**
  * Qué le falta a la cuenta. `null` mientras se consulta.
@@ -49,7 +45,43 @@ interface FirstLoginFlowProps {
  */
 type Pendiente = { debeCambiarPassword: boolean; debeConfigurarPreguntas: boolean };
 
-export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
+/** Los pasos que puede tener el flujo, en orden. Cuáles salen depende de `Pendiente`. */
+type Etapa = 'contrasena' | 'preguntas' | 'listo';
+const NOMBRE_DE_ETAPA: Record<Etapa, string> = {
+  contrasena: 'Contraseña',
+  preguntas: 'Preguntas de seguridad',
+  listo: 'Listo',
+};
+const ETAPA_DEL_PASO: Record<1 | 2 | 3, Etapa> = { 1: 'contrasena', 2: 'preguntas', 3: 'listo' };
+
+const FORM_CONTRASENA = 'form-contrasena';
+const FORM_PREGUNTAS = 'form-preguntas';
+
+async function cerrarSesionEIrAlLogin() {
+  try {
+    await fetch('/api/auth/logout', { method: 'POST' });
+  } catch {
+    // Si falla la petición de logout, igualmente se va al login.
+  }
+  window.location.href = '/login';
+}
+
+/**
+ * «Iniciar sesión», debajo del botón de la tarjeta, como en el mockup. Cierra la sesión
+ * temporal y lleva al login: es la salida para quien entró con otra cuenta o quiere
+ * dejarlo para después.
+ */
+function EnlaceIniciarSesion() {
+  return (
+    <div className="mt-6 text-center">
+      <button type="button" onClick={cerrarSesionEIrAlLogin} className={authPasosQuietLinkClass}>
+        Iniciar sesión
+      </button>
+    </div>
+  );
+}
+
+export function FirstLoginFlow() {
   const [pendiente, setPendiente] = useState<Pendiente | null>(null);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -58,6 +90,12 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
   const [tempPassword, setTempPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  // La lista de requisitos aparece al entrar en «Nueva contraseña» y ya no se va: el
+  // mockup no la muestra en reposo, pero descubrir las reglas a base de rechazos es la
+  // forma segura de que alguien abandone. Si se ocultara al salir del campo, la tarjeta
+  // encogería justo cuando se pulsa el de abajo, y el clic caería en otro sitio. También
+  // sale si el campo ya tiene algo sin haber pasado por él (lo rellenó el navegador).
+  const [verRequisitos, setVerRequisitos] = useState(false);
 
   // Paso 2 — preguntas de seguridad
   const [selectedKeys, setSelectedKeys] = useState<string[]>(Array(TOTAL_QUESTIONS).fill(''));
@@ -166,32 +204,27 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
     await enviar();
   };
 
+  const requisitosVisibles = verRequisitos || newPassword !== '';
+
   /* ---------- Mientras se sabe qué falta ---------- */
   if (!pendiente) {
     return (
-      <div className={`${authSolidCardClass} text-center`}>
-        {errors.general ? (
-          <>
-            <AuthGeneralError>{errors.general}</AuthGeneralError>
-            <button
-              type="button"
-              onClick={async () => {
-                try {
-                  await fetch('/api/auth/logout', { method: 'POST' });
-                } catch {
-                  // ignorar error de red
-                }
-                window.location.href = '/login';
-              }}
-              className={authQuietLinkClass}
-            >
-              Volver a iniciar sesión
-            </button>
-          </>
-        ) : (
-          <p className="text-sm text-gray-500">Comprobando tu cuenta…</p>
-        )}
-      </div>
+      <MarcoDePasos titulo="Configura tu acceso">
+        <div className={`${authPasosCardClass} text-center`}>
+          {errors.general ? (
+            <>
+              <AuthGeneralError>{errors.general}</AuthGeneralError>
+              <button type="button" onClick={cerrarSesionEIrAlLogin} className={authPasosQuietLinkClass}>
+                Volver a iniciar sesión
+              </button>
+            </>
+          ) : (
+            <p className="text-base text-[#001a39]" role="status">
+              Comprobando tu cuenta…
+            </p>
+          )}
+        </div>
+      </MarcoDePasos>
     );
   }
 
@@ -201,182 +234,212 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
   // contraseña temporal que ya no existía.
   if (!pendiente.debeCambiarPassword && !pendiente.debeConfigurarPreguntas && step !== 3) {
     return (
-      <div className={`${authSolidCardClass} text-center`}>
-        <AuthSuccessBadge />
-        <AuthCardTitle
-          className="mb-6"
-          title="Tu cuenta ya está configurada"
-          description="No hay nada pendiente: tu contraseña y tus preguntas de seguridad están al día."
-        />
-        <Link href="/admin/dashboard" className={authNavyActionClass}>
-          Ir al panel
-        </Link>
-      </div>
+      <MarcoDePasos
+        titulo="Tu cuenta ya está configurada"
+        descripcion="No hay nada pendiente: tu contraseña y tus preguntas de seguridad están al día."
+      >
+        <div className={`${authPasosCardClass} text-center`}>
+          <AuthSuccessBadge />
+          <Link href="/admin/dashboard" className={authPasosPrimaryClass}>
+            Ir al panel
+          </Link>
+        </div>
+      </MarcoDePasos>
     );
   }
+
+  // Los pasos que tiene esta cuenta: el paginador muestra 3 cuando falta todo y 2
+  // cuando solo falta la contraseña o solo las preguntas.
+  const etapas: Etapa[] = [
+    ...(pendiente.debeCambiarPassword ? (['contrasena'] as const) : []),
+    ...(pendiente.debeConfigurarPreguntas ? (['preguntas'] as const) : []),
+    'listo',
+  ];
+  const pasos = (formulario?: string): PasosDelMarco => ({
+    nombres: etapas.map((e) => NOMBRE_DE_ETAPA[e]),
+    actual: etapas.indexOf(ETAPA_DEL_PASO[step]),
+    formulario,
+    // Solo se vuelve desde las preguntas a la contraseña, que aún no se ha enviado.
+    // Terminado, ya no hay nada que corregir.
+    volverA:
+      step === 2 && pendiente.debeCambiarPassword
+        ? (indice) => {
+            if (etapas[indice] !== 'contrasena') return;
+            setErrors({});
+            setStep(1);
+          }
+        : undefined,
+  });
 
   /* ---------- Paso 3: éxito ---------- */
   if (step === 3) {
     return (
-      <div className={`${authSolidCardClass} text-center`}>
-        <AuthSuccessBadge />
-        <AuthCardTitle
-          className="mb-6"
-          title="¡Configuración completada!"
-          description={
-            // El aviso sobre las respuestas solo tiene sentido si se acaban de elegir.
-            pendiente.debeConfigurarPreguntas
-              ? 'Guarda tus respuestas en un lugar seguro: serán el único método para validar tu identidad si olvidas tu clave en el futuro.'
-              : 'Tu cuenta ya es segura.'
-          }
-        />
-        <button
-          type="button"
-          onClick={async () => {
-            try {
-              await fetch('/api/auth/logout', { method: 'POST' });
-            } catch {
-              // Si falla la petición de logout, igualmente forzar la navegación al login
-            }
-            window.location.href = '/login';
-          }}
-          className={authNavyActionClass}
-        >
-          Iniciar sesión
-        </button>
-      </div>
+      <MarcoDePasos
+        titulo="¡Configuración completada!"
+        descripcion={
+          // El aviso sobre las respuestas solo tiene sentido si se acaban de elegir.
+          pendiente.debeConfigurarPreguntas
+            ? 'Guarda tus respuestas en un lugar seguro: serán el único método para validar tu identidad si olvidas tu clave en el futuro.'
+            : 'Tu cuenta ya es segura.'
+        }
+        pasos={pasos()}
+      >
+        <div className={`${authPasosCardClass} text-center`}>
+          <AuthSuccessBadge />
+          <p className="mb-6 text-base text-[#001a39]">Vuelve a iniciar sesión para entrar al panel.</p>
+          <button type="button" onClick={cerrarSesionEIrAlLogin} className={authPasosPrimaryClass}>
+            Iniciar sesión
+          </button>
+        </div>
+      </MarcoDePasos>
     );
   }
 
   /* ---------- Paso 1 — contraseñas ---------- */
   if (step === 1) {
     return (
-      <div className={authSolidCardClass}>
-        <AuthCardTitle
-          title={name ? `Hola ${name.split(' ')[0]}, actualiza tu seguridad` : 'Actualiza tu seguridad'}
-          description="Ingresaste con un código temporal. Crea ahora una contraseña personal que solo tú conozcas."
-        />
+      <MarcoDePasos
+        titulo="Actualiza tu seguridad"
+        descripcion="Has ingresado con una contraseña temporal. Por tu seguridad, es necesario que crees una contraseña personal y privada que solo tú conozcas."
+        pasos={pasos(FORM_CONTRASENA)}
+      >
+        <Tarjeta>
+          <form id={FORM_CONTRASENA} onSubmit={(e: FormEvent) => { e.preventDefault(); handleStep1(); }} noValidate>
+            {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
 
-        <form onSubmit={(e: FormEvent) => { e.preventDefault(); handleStep1(); }} noValidate>
-          {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
+            <PasswordField
+              id="temp-password"
+              label="Contraseña temporal"
+              // La da el administrador al crear o restablecer la cuenta; no llega por correo.
+              placeholder="La que te entregaron"
+              autoComplete="current-password"
+              value={tempPassword}
+              onChange={(v) => { setTempPassword(v); setErrors({}); }}
+              error={errors.tempPassword}
+              className="mb-6"
+            />
+            <PasswordField
+              id="new-password"
+              label="Nueva contraseña"
+              autoComplete="new-password"
+              value={newPassword}
+              onChange={(v) => { setNewPassword(v); setErrors({}); }}
+              onFocus={() => setVerRequisitos(true)}
+              describedBy={requisitosVisibles ? 'requisitos-contrasena' : undefined}
+              error={errors.newPassword}
+              className={requisitosVisibles ? 'mb-3' : 'mb-6'}
+            />
+            {requisitosVisibles && (
+              <PasswordRequisitos
+                id="requisitos-contrasena"
+                password={newPassword}
+                variant="solid"
+                className="mb-6"
+              />
+            )}
+            <PasswordField
+              id="confirm-password"
+              label="Ingresa nuevamente la contraseña"
+              autoComplete="new-password"
+              value={confirmPassword}
+              onChange={(v) => { setConfirmPassword(v); setErrors({}); }}
+              error={errors.confirmPassword}
+              className="mb-6"
+            />
 
-          <PasswordField
-            id="temp-password"
-            label="Contraseña temporal"
-            placeholder="Tu contraseña temporal"
-            autoComplete="current-password"
-            value={tempPassword}
-            onChange={(v) => { setTempPassword(v); setErrors({}); }}
-            error={errors.tempPassword}
-          />
-          <PasswordField
-            id="new-password"
-            label="Nueva contraseña"
-            autoComplete="new-password"
-            value={newPassword}
-            onChange={(v) => { setNewPassword(v); setErrors({}); }}
-            error={errors.newPassword}
-            className="mb-2"
-          />
-          <PasswordRequisitos password={newPassword} variant="solid" />
-          <PasswordField
-            id="confirm-password"
-            label="Ingresa nuevamente la contraseña"
-            autoComplete="new-password"
-            value={confirmPassword}
-            onChange={(v) => { setConfirmPassword(v); setErrors({}); }}
-            error={errors.confirmPassword}
-            className="mb-6"
-          />
-
-          <Button type="submit" variant="navy" disabled={isLoading} className="w-full">
-            {isLoading ? 'Guardando…' : 'Continuar'}
-          </Button>
-        </form>
-      </div>
+            <button type="submit" disabled={isLoading} className={authPasosPrimaryClass}>
+              {isLoading ? 'Guardando…' : 'Continuar'}
+            </button>
+          </form>
+          <EnlaceIniciarSesion />
+        </Tarjeta>
+      </MarcoDePasos>
     );
   }
 
   /* ---------- Paso 2 — preguntas de seguridad ---------- */
   return (
-    <div className={authSolidCardClass}>
-      <AuthCardTitle
-        title="Protege el acceso a tu cuenta"
-        // El texto cambia según por qué se está aquí: a quien solo le restablecieron
-        // las preguntas hay que decírselo, o no entiende por qué se le piden otra vez.
-        description={
-          pendiente.debeCambiarPassword
-            ? 'Elige 3 preguntas y asigna una respuesta a cada una. Con ellas verificaremos tu identidad si algún día necesitas recuperar tu cuenta.'
-            : 'Tus preguntas de seguridad fueron restablecidas. Elige 3 y asigna una respuesta a cada una; tu contraseña actual no cambia.'
-        }
-      />
+    <MarcoDePasos
+      titulo="Protege el acceso a tu cuenta"
+      // El texto cambia según por qué se está aquí: a quien solo le restablecieron
+      // las preguntas hay que decírselo, o no entiende por qué se le piden otra vez.
+      descripcion={
+        pendiente.debeCambiarPassword
+          ? 'Elige 3 preguntas y asigna una respuesta a cada una. Con ellas verificaremos tu identidad si algún día necesitas recuperar tu cuenta.'
+          : 'Tus preguntas de seguridad fueron restablecidas. Elige 3 y asigna una respuesta a cada una; tu contraseña actual no cambia.'
+      }
+      pasos={pasos(FORM_PREGUNTAS)}
+    >
+      <Tarjeta>
+        <form id={FORM_PREGUNTAS} onSubmit={(e: FormEvent) => { e.preventDefault(); handleQuestionNext(); }} noValidate>
+          {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
 
-      <form
-        onSubmit={(e: FormEvent) => { e.preventDefault(); handleQuestionNext(); }}
-        noValidate
-      >
-        {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
+          <AuthSelectField
+            id="security-question"
+            label={`Pregunta ${currentQuestion + 1} de ${TOTAL_QUESTIONS}`}
+            value={selectedKeys[currentQuestion] || ''}
+            onChange={(valor) => {
+              const next = [...selectedKeys];
+              next[currentQuestion] = valor;
+              setSelectedKeys(next);
+              setErrors({});
+            }}
+            error={errors.question}
+            options={catalog.map((q) => ({
+              value: q.key,
+              label: q.label,
+              // Ya elegida en otro paso: se ve, pero no se puede repetir.
+              disabled: selectedKeys.includes(q.key) && selectedKeys[currentQuestion] !== q.key,
+            }))}
+            className="mb-6"
+          />
 
-        <AuthSelectField
-          id="security-question"
-          label={`Pregunta ${currentQuestion + 1} de ${TOTAL_QUESTIONS}`}
-          value={selectedKeys[currentQuestion] || ''}
-          onChange={(valor) => {
-            const next = [...selectedKeys];
-            next[currentQuestion] = valor;
-            setSelectedKeys(next);
-            setErrors({});
-          }}
-          error={errors.question}
-          options={catalog.map((q) => ({
-            value: q.key,
-            label: q.label,
-            // Ya elegida en otro paso: se ve, pero no se puede repetir.
-            disabled: selectedKeys.includes(q.key) && selectedKeys[currentQuestion] !== q.key,
-          }))}
-        />
+          <AuthTextField
+            id="security-answer"
+            label="Respuesta"
+            placeholder="Tu respuesta"
+            value={answers[currentQuestion]}
+            onChange={(valor) => {
+              const next = [...answers];
+              next[currentQuestion] = valor;
+              setAnswers(next);
+              setErrors({});
+            }}
+            error={errors.answer}
+            // Se compara en minúsculas y sin espacios en el servidor, así que el
+            // autocorrector del móvil solo puede estorbar.
+            autoCapitalize="none"
+            autoCorrect="off"
+            className="mb-6"
+          />
 
-        <AuthTextField
-          id="security-answer"
-          label="Respuesta"
-          placeholder="Tu respuesta"
-          value={answers[currentQuestion]}
-          onChange={(valor) => {
-            const next = [...answers];
-            next[currentQuestion] = valor;
-            setAnswers(next);
-            setErrors({});
-          }}
-          error={errors.answer}
-          // Se compara en minúsculas y sin espacios en el servidor, así que el
-          // autocorrector del móvil solo puede estorbar.
-          autoCapitalize="none"
-          autoCorrect="off"
-          className="mb-5"
-        />
+          <AuthProgressDots total={TOTAL_QUESTIONS} current={currentQuestion} className="mb-6" />
 
-        <AuthProgressDots total={TOTAL_QUESTIONS} current={currentQuestion} />
-
-        <div className="flex gap-2.5">
-          {currentQuestion > 0 && (
-            <Button
-              type="button"
-              plain
-              onClick={() => { setCurrentQuestion((q) => q - 1); setErrors({}); }}
-              className="shrink-0"
-            >
-              Atrás
-            </Button>
-          )}
-          <Button type="submit" variant="navy" disabled={isLoading} className="flex-1">
-            {isLoading
-              ? 'Guardando…'
-              : currentQuestion === TOTAL_QUESTIONS - 1
-                ? 'Guardar'
-                : 'Continuar'}
-          </Button>
-        </div>
-      </form>
-    </div>
+          <div className="flex gap-2.5">
+            {currentQuestion > 0 && (
+              <button
+                type="button"
+                onClick={() => { setCurrentQuestion((q) => q - 1); setErrors({}); }}
+                className={`${authPasosSecondaryClass} shrink-0`}
+              >
+                Atrás
+              </button>
+            )}
+            <button type="submit" disabled={isLoading} className={`${authPasosPrimaryClass} flex-1`}>
+              {isLoading
+                ? 'Guardando…'
+                : currentQuestion === TOTAL_QUESTIONS - 1
+                  ? 'Guardar'
+                  : 'Continuar'}
+            </button>
+          </div>
+        </form>
+        <EnlaceIniciarSesion />
+      </Tarjeta>
+    </MarcoDePasos>
   );
+}
+
+function Tarjeta({ children }: { children: ReactNode }) {
+  return <div className={authPasosCardClass}>{children}</div>;
 }
