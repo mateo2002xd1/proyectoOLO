@@ -1,5 +1,5 @@
 import * as ExcelJS from 'exceljs';
-import { Transaction } from 'sequelize';
+import { Op, Transaction } from 'sequelize';
 import sequelize from '../../config/database';
 import {
   CentroFormacion,
@@ -8,6 +8,7 @@ import {
   ProgramaSobresaliente,
 } from '../../infrastructure/db/models';
 import { DepartamentosRepository } from '../../repositories/departamentos.repository';
+import { normalizarParaComparar } from '../../shared/normalizar-texto';
 
 const MAX_ROWS_LIMIT = 100000;
 
@@ -19,9 +20,13 @@ const HOJA_A_CARGAR = 'Superan el margen';
 
 /** Encabezados reales de la hoja, tal como los trae el Excel de SENA. */
 const COLUMNAS = {
+  codRegional: 'Cod. Regional',
   regional: 'Regional',
+  codCentro: 'Cod. Centro',
   centro: 'Centro',
+  codNivel: 'Cod. Nivel de formación',
   nivel: 'Nivel de Formación',
+  codPrograma: 'Cod. Programa',
   programa: 'Programa',
   sexo: 'Sexo',
   certificados: 'Certificados',
@@ -35,7 +40,7 @@ export interface ImportarExcelResult {
   mensaje: string;
   estadisticas: {
     filasCargadas: number;
-    /** Filas del Excel que compartían centro+programa+sexo con otra y se sumaron en una sola. */
+    /** Filas del Excel con el mismo centro, programa y sexo (por código) que se sumaron en una sola. */
     filasCombinadas: number;
     nuevosCentros: number;
     nuevosProgramas: number;
@@ -67,6 +72,19 @@ class ErrorDeFila extends Error {
 const comoTexto = (celda: ExcelJS.Cell): string => (celda.text ?? '').toString().trim();
 
 /**
+ * Un código SENA, sin ceros a la izquierda: «0223» y «223» son el mismo según la celda
+ * venga como texto o como número.
+ * @throws {ErrorDeFila} si la celda no es un número entero.
+ */
+const comoCodigo = (celda: ExcelJS.Cell, fila: number, columna: string): string => {
+  const texto = comoTexto(celda);
+  if (!/^\d+$/.test(texto)) {
+    throw new ErrorDeFila(fila, `"${columna}" debe ser un código numérico (llegó "${texto}")`);
+  }
+  return texto.replace(/^0+(?=\d)/, '');
+};
+
+/**
  * El valor numérico de una celda (acepta coma decimal, `%` y fórmulas).
  * @throws {ErrorDeFila} si la celda no es un número.
  */
@@ -92,17 +110,59 @@ const comoNumero = (celda: ExcelJS.Cell, fila: number, columna: string): number 
  */
 const normalizarTasa = (valorCrudo: number): number => (valorCrudo > 1 ? valorCrudo / 100 : valorCrudo);
 
+/** Lo que dice el Excel de un código: su nombre (el primero que trae) y de quién cuelga. */
+interface EntradaDeCatalogo {
+  nombre: string;
+  padre: string;
+  fila: number;
+}
+
+/**
+ * Anota un código del catálogo y comprueba que el archivo no se contradiga: el mismo
+ * código con dos nombres distintos (más allá de tildes o mayúsculas), o colgando de dos
+ * padres (un centro en dos regionales, un programa en dos niveles), rechaza la carga.
+ * Mismo criterio que la V3 de la tendencia ocupacional.
+ */
+const anotarCodigo = (
+  catalogo: Map<string, EntradaDeCatalogo>,
+  tipo: string,
+  codigo: string,
+  nombre: string,
+  padre: string,
+  fila: number
+) => {
+  const previa = catalogo.get(codigo);
+  if (!previa) {
+    catalogo.set(codigo, { nombre, padre, fila });
+    return;
+  }
+  if (normalizarParaComparar(previa.nombre) !== normalizarParaComparar(nombre)) {
+    throw new ErrorDeFila(
+      fila,
+      `el ${tipo} ${codigo} se llama "${nombre}", pero en la fila ${previa.fila} se llamaba "${previa.nombre}"`
+    );
+  }
+  if (previa.padre !== padre) {
+    throw new ErrorDeFila(fila, `el ${tipo} ${codigo} cambia de ${tipo === 'programa' ? 'nivel' : 'regional'} respecto de la fila ${previa.fila}`);
+  }
+};
+
 /**
  * Carga el Excel de "Programa + sobresalientes": lee **solo** la hoja
  * "Superan el margen", valida cada fila y reemplaza por completo
  * `programas_sobresalientes` dentro de una única transacción (vaciar + recargar:
  * si algo falla, no queda la tabla a medias ni con datos mezclados de dos cargas).
  *
- * Catálogos (`centros_formacion`, `niveles_formacion`, `programas_formacion`) se
- * resuelven por nombre exacto — no tienen columna de código — y se crean los que
- * falten en la misma transacción. `departamentos` no: es el catálogo cerrado de los 33
- * oficiales (migración 032) y se resuelve por alias; un nombre que no calce rechaza
- * la carga en vez de crear un departamento nuevo.
+ * Los catálogos (`niveles_formacion`, `centros_formacion`, `programas_formacion`) se
+ * identifican por su **código SENA**, no por el nombre (migración 042): el Excel oficial
+ * trae programas distintos que se llaman igual («Apoyo administrativo en salud», 134507 y
+ * 134508) y centros distintos con el mismo nombre en varias regionales. Se crean o se
+ * actualizan por código en la misma transacción, y al final se borran los que ya no usa
+ * ningún hecho: el catálogo queda igual a lo que dice el último archivo.
+ *
+ * `departamentos` no: es el catálogo cerrado de los 33 (032) y se resuelve por alias; un
+ * nombre que no calce rechaza la carga en vez de crear un departamento nuevo. El
+ * `Cod. Regional` del Excel es el código DANE, y se exige que coincida con el alias.
  */
 export const importarProgramasExcel = async (
   fileBuffer: Buffer,
@@ -138,19 +198,25 @@ export const importarProgramasExcel = async (
 
   const leer = (fila: ExcelJS.Row, columna: string) => fila.getCell(indicePorColumna.get(columna)!);
 
-  const primeraFilaPorDepto = new Map<string, number>(); // nombre tal como viene -> fila
-  const nivelesSet = new Set<string>();
-  const programasSet = new Set<string>(); // "nivel|programa"
+  // Regional tal como viene → su código y la primera fila, para resolver y reportar.
+  const regionales = new Map<string, { codigo: string; fila: number }>();
+  const niveles = new Map<string, EntradaDeCatalogo>(); // código → nombre
+  const centros = new Map<string, EntradaDeCatalogo>(); // código → nombre y regional (nombre tal como viene)
+  const programas = new Map<string, EntradaDeCatalogo>(); // código → nombre y código de nivel
   const rowsData: {
-    depto: string; centro: string; nivel: string; programa: string; sexo: string;
+    regional: string; codCentro: string; codNivel: string; codPrograma: string; sexo: string;
     certificados: number; vinculados: number; tasaVinculacion: number; salarioPromedio: number;
   }[] = [];
 
   for (let numeroFila = 2; numeroFila <= hoja.rowCount; numeroFila++) {
     const fila = hoja.getRow(numeroFila);
-    const depto = comoTexto(leer(fila, COLUMNAS.regional));
-    if (fila.cellCount === 0 || !depto) continue; // fin del rango usado por Excel, no un dato
+    const regional = comoTexto(leer(fila, COLUMNAS.regional));
+    if (fila.cellCount === 0 || !regional) continue; // fin del rango usado por Excel, no un dato
 
+    const codRegional = comoCodigo(leer(fila, COLUMNAS.codRegional), numeroFila, COLUMNAS.codRegional);
+    const codCentro = comoCodigo(leer(fila, COLUMNAS.codCentro), numeroFila, COLUMNAS.codCentro);
+    const codNivel = comoCodigo(leer(fila, COLUMNAS.codNivel), numeroFila, COLUMNAS.codNivel);
+    const codPrograma = comoCodigo(leer(fila, COLUMNAS.codPrograma), numeroFila, COLUMNAS.codPrograma);
     const centro = comoTexto(leer(fila, COLUMNAS.centro));
     const nivel = comoTexto(leer(fila, COLUMNAS.nivel));
     const programa = comoTexto(leer(fila, COLUMNAS.programa));
@@ -158,6 +224,9 @@ export const importarProgramasExcel = async (
 
     if (sexo !== 'M' && sexo !== 'F') {
       throw new ErrorDeFila(numeroFila, `"Sexo" debe ser M o F (llegó "${sexo}")`);
+    }
+    if (!centro || !nivel || !programa) {
+      throw new ErrorDeFila(numeroFila, 'el centro, el nivel y el programa no pueden estar vacíos');
     }
 
     const certificados = comoNumero(leer(fila, COLUMNAS.certificados), numeroFila, COLUMNAS.certificados);
@@ -174,11 +243,16 @@ export const importarProgramasExcel = async (
       throw new ErrorDeFila(numeroFila, `"Vinculados" (${vinculados}) no puede superar a "Certificados" (${certificados})`);
     }
 
-    if (!primeraFilaPorDepto.has(depto)) primeraFilaPorDepto.set(depto, numeroFila);
-    nivelesSet.add(nivel);
-    programasSet.add(`${nivel}|${programa}`);
+    const previa = regionales.get(regional);
+    if (!previa) regionales.set(regional, { codigo: codRegional, fila: numeroFila });
+    else if (previa.codigo !== codRegional) {
+      throw new ErrorDeFila(numeroFila, `"${regional}" llega con el código ${codRegional}, pero en la fila ${previa.fila} con ${previa.codigo}`);
+    }
+    anotarCodigo(niveles, 'nivel', codNivel, nivel, '', numeroFila);
+    anotarCodigo(centros, 'centro', codCentro, centro, codRegional, numeroFila);
+    anotarCodigo(programas, 'programa', codPrograma, programa, codNivel, numeroFila);
 
-    rowsData.push({ depto, centro, nivel, programa, sexo, certificados, vinculados, tasaVinculacion, salarioPromedio });
+    rowsData.push({ regional, codCentro, codNivel, codPrograma, sexo, certificados, vinculados, tasaVinculacion, salarioPromedio });
 
     // Cada 100 filas alcanza para que el loader se vea vivo sin llamar al
     // callback (y de ahí escribir en la base) en cada una de hasta 100.000 filas.
@@ -195,58 +269,54 @@ export const importarProgramasExcel = async (
     throw new Error(`La hoja "${HOJA_A_CARGAR}" no tiene filas de datos.`);
   }
 
-  // El departamento se resuelve por alias contra el catálogo cerrado (migración 032) y
-  // se sustituye por su id antes de agrupar: así "Valle" y "Valle del Cauca" en el
-  // mismo archivo son un solo departamento y no dos filas que chocan al insertar.
-  const departamentos = await DepartamentosRepository.resolverPorNombres(primeraFilaPorDepto.keys());
-  const noReconocidos = Array.from(departamentos)
-    .filter(([, departamento]) => !departamento)
-    .map(([nombre]) => `"${nombre}" (fila ${primeraFilaPorDepto.get(nombre)})`);
-  if (noReconocidos.length > 0) {
+  // El departamento se resuelve por alias contra el catálogo cerrado (migración 032): así
+  // "Valle" y "Valle del Cauca" en el mismo archivo son un solo departamento. Y el
+  // `Cod. Regional` tiene que ser su código DANE: si no, el nombre y el código del Excel
+  // dicen cosas distintas y no hay forma de saber cuál es el bueno.
+  const departamentos = await DepartamentosRepository.resolverPorNombres(regionales.keys());
+  const problemas: string[] = [];
+  for (const [regional, { codigo, fila }] of regionales) {
+    const departamento = departamentos.get(regional);
+    if (!departamento) problemas.push(`"${regional}" (fila ${fila}) no es un departamento reconocido`);
+    else if (departamento.codigoDane !== codigo.padStart(2, '0')) {
+      problemas.push(`"${regional}" (fila ${fila}) es ${departamento.nombre} (${departamento.codigoDane}), pero llega con el código ${codigo}`);
+    }
+  }
+  if (problemas.length > 0) {
     throw new Error(
-      `Departamento no reconocido en la columna "${COLUMNAS.regional}": ${noReconocidos.join(', ')}. ` +
-        'Use el nombre oficial del departamento.'
+      `Revise la columna "${COLUMNAS.regional}": ${problemas.join('; ')}. Use el nombre oficial del departamento.`
     );
   }
-  const centrosSet = new Set<string>(); // "departamentoId|centro"
-  for (const fila of rowsData) {
-    fila.depto = departamentos.get(fila.depto)!.id;
-    centrosSet.add(`${fila.depto}|${fila.centro}`);
-  }
+  const departamentoDeRegional = (codRegional: string) =>
+    Array.from(departamentos.values()).find((d) => d!.codigoDane === codRegional.padStart(2, '0'))!.id;
 
-  // El Excel real trae centro+programa+sexo repetido alguna vez (varias cohortes
-  // del mismo programa reportadas en filas separadas) — y `programas_sobresalientes`
-  // exige esa combinación única (`uq_sobresalientes_registro`). En vez de fallar la
-  // carga completa o descartar filas, se fusionan: certificados y vinculados se
-  // suman, la tasa se recalcula sobre esos totales y el salario se pondera por
-  // certificados — así no se pierde ningún dato, solo se consolida.
+  // El mismo centro, programa y sexo (por código) en varias filas son cohortes del mismo
+  // programa: se fusionan sumando certificados y vinculados, recalculando la tasa sobre
+  // esos totales y ponderando el salario por certificados. Dos programas distintos que se
+  // llamen igual ya no se suman: tienen códigos distintos.
   const filasAgregadas = new Map<
     string,
-    { depto: string; centro: string; nivel: string; programa: string; sexo: string;
-      certificados: number; vinculados: number; salarioPonderado: number; filasOriginales: number }
+    { codCentro: string; codPrograma: string; sexo: string;
+      certificados: number; vinculados: number; salarioPonderado: number }
   >();
   for (const fila of rowsData) {
-    const clave = `${fila.depto}|||${fila.centro}|||${fila.nivel}|||${fila.programa}|||${fila.sexo}`;
+    const clave = `${fila.codCentro}|${fila.codPrograma}|${fila.sexo}`;
     const existente = filasAgregadas.get(clave);
     const salarioPonderado = fila.salarioPromedio * fila.certificados;
     if (existente) {
       existente.certificados += fila.certificados;
       existente.vinculados += fila.vinculados;
       existente.salarioPonderado += salarioPonderado;
-      existente.filasOriginales += 1;
     } else {
-      filasAgregadas.set(clave, { ...fila, salarioPonderado, filasOriginales: 1 });
+      filasAgregadas.set(clave, {
+        codCentro: fila.codCentro, codPrograma: fila.codPrograma, sexo: fila.sexo,
+        certificados: fila.certificados, vinculados: fila.vinculados, salarioPonderado,
+      });
     }
   }
 
   const filasFinales = Array.from(filasAgregadas.values()).map((f) => ({
-    depto: f.depto,
-    centro: f.centro,
-    nivel: f.nivel,
-    programa: f.programa,
-    sexo: f.sexo,
-    certificados: f.certificados,
-    vinculados: f.vinculados,
+    ...f,
     tasaVinculacion: f.certificados > 0 ? f.vinculados / f.certificados : 0,
     salarioPromedio: f.certificados > 0 ? f.salarioPonderado / f.certificados : 0,
   }));
@@ -254,70 +324,62 @@ export const importarProgramasExcel = async (
   const filasCombinadas = rowsData.length - filasFinales.length;
 
   const resultado = await sequelize.transaction(async (transaction: Transaction) => {
-    let nuevosCentros = 0;
-    let nuevosNiveles = 0;
-    let nuevosProgramas = 0;
+    /**
+     * Crea o actualiza las filas de un catálogo por su código y devuelve código → id, y
+     * cuántos códigos no existían. El nombre (y el padre) que manda es el del último archivo.
+     */
+    const sincronizarPorCodigo = async (
+      modelo: typeof NivelFormacion | typeof CentroFormacion | typeof ProgramaFormacion,
+      filas: Record<string, string>[],
+      columnasQueSeActualizan: string[]
+    ) => {
+      const codigos = filas.map((f) => f.codigo);
+      const yaExistian = await (modelo as any).count({ where: { codigo: { [Op.in]: codigos } }, transaction });
+      await (modelo as any).bulkCreate(filas, {
+        conflictAttributes: ['codigo'],
+        updateOnDuplicate: [...columnasQueSeActualizan, 'updated_at'],
+        transaction,
+      });
+      const guardadas = await (modelo as any).findAll({
+        where: { codigo: { [Op.in]: codigos } },
+        attributes: ['id', 'codigo'],
+        transaction,
+      });
+      const idPorCodigo = new Map<string, string>(guardadas.map((g: any) => [g.codigo as string, g.id as string]));
+      return { idPorCodigo, nuevos: codigos.length - yaExistian };
+    };
 
-    // --- Niveles de formación ---
-    const nivelesMap = new Map<string, string>();
-    (await NivelFormacion.findAll({ transaction })).forEach((n: any) => nivelesMap.set(n.nombre, n.id));
-    const nivelesFaltantes = Array.from(nivelesSet).filter((n) => !nivelesMap.has(n));
-    if (nivelesFaltantes.length > 0) {
-      const creados = await NivelFormacion.bulkCreate(nivelesFaltantes.map((nombre) => ({ nombre })), { transaction });
-      creados.forEach((n: any) => nivelesMap.set(n.nombre, n.id));
-      nuevosNiveles = creados.length;
-    }
-
-    // --- Centros de formación ---
-    const centrosIdMap = new Map<string, string>(); // "deptoId|nombre" -> id
-    (await CentroFormacion.findAll({ transaction })).forEach((c: any) =>
-      centrosIdMap.set(`${c.departamento_id}|${c.nombre}`, c.id)
+    const nivelesGuardados = await sincronizarPorCodigo(
+      NivelFormacion,
+      Array.from(niveles, ([codigo, n]) => ({ codigo, nombre: n.nombre })),
+      ['nombre']
     );
-    const centrosFaltantes: { departamento_id: string; nombre: string }[] = [];
-    for (const key of centrosSet) {
-      if (!centrosIdMap.has(key)) {
-        const separador = key.indexOf('|');
-        centrosFaltantes.push({ departamento_id: key.slice(0, separador), nombre: key.slice(separador + 1) });
-        centrosIdMap.set(key, 'PENDIENTE');
-      }
-    }
-    if (centrosFaltantes.length > 0) {
-      const creados = await CentroFormacion.bulkCreate(centrosFaltantes, { transaction });
-      creados.forEach((c: any) => centrosIdMap.set(`${c.departamento_id}|${c.nombre}`, c.id));
-      nuevosCentros = creados.length;
-    }
-
-    // --- Programas de formación ---
-    const programasIdMap = new Map<string, string>(); // "nivelId|nombre" -> id
-    (await ProgramaFormacion.findAll({ transaction })).forEach((p: any) =>
-      programasIdMap.set(`${p.nivel_formacion_id}|${p.nombre}`, p.id)
+    const centrosGuardados = await sincronizarPorCodigo(
+      CentroFormacion,
+      Array.from(centros, ([codigo, c]) => ({ codigo, nombre: c.nombre, departamento_id: departamentoDeRegional(c.padre) })),
+      ['nombre', 'departamento_id']
     );
-    const programasFaltantes: { nivel_formacion_id: string; nombre: string }[] = [];
-    for (const item of programasSet) {
-      const [nivel, programa] = item.split('|');
-      const key = `${nivelesMap.get(nivel)}|${programa}`;
-      if (!programasIdMap.has(key)) {
-        programasFaltantes.push({ nivel_formacion_id: nivelesMap.get(nivel)!, nombre: programa });
-        programasIdMap.set(key, 'PENDIENTE');
-      }
-    }
-    if (programasFaltantes.length > 0) {
-      const creados = await ProgramaFormacion.bulkCreate(programasFaltantes, { transaction });
-      creados.forEach((p: any) => programasIdMap.set(`${p.nivel_formacion_id}|${p.nombre}`, p.id));
-      nuevosProgramas = creados.length;
-    }
+    const programasGuardados = await sincronizarPorCodigo(
+      ProgramaFormacion,
+      Array.from(programas, ([codigo, p]) => ({
+        codigo,
+        nombre: p.nombre,
+        nivel_formacion_id: nivelesGuardados.idPorCodigo.get(p.padre)!,
+      })),
+      ['nombre', 'nivel_formacion_id']
+    );
 
     // --- Hechos: vaciar y recargar completo ---
     await ProgramaSobresaliente.destroy({ where: {}, transaction });
 
     const registros = filasFinales.map((fila) => {
-      const departamentoId = fila.depto; // ya es el id: se resolvió antes de agrupar
-      const nivelFormacionId = nivelesMap.get(fila.nivel)!;
+      const centro = centros.get(fila.codCentro)!;
+      const programa = programas.get(fila.codPrograma)!;
       return {
-        departamento_id: departamentoId,
-        centro_id: centrosIdMap.get(`${departamentoId}|${fila.centro}`)!,
-        nivel_formacion_id: nivelFormacionId,
-        programa_id: programasIdMap.get(`${nivelFormacionId}|${fila.programa}`)!,
+        departamento_id: departamentoDeRegional(centro.padre),
+        centro_id: centrosGuardados.idPorCodigo.get(fila.codCentro)!,
+        nivel_formacion_id: nivelesGuardados.idPorCodigo.get(programa.padre)!,
+        programa_id: programasGuardados.idPorCodigo.get(fila.codPrograma)!,
         sexo: fila.sexo,
         certificados: fila.certificados,
         vinculados: fila.vinculados,
@@ -340,15 +402,28 @@ export const importarProgramasExcel = async (
       });
     }
 
+    // Lo que ningún hecho usa ya: lo que traían cargas anteriores y esta no, y las filas
+    // sin código de antes de la migración 042. Si un Excel futuro lo vuelve a traer, se
+    // crea otra vez. Así el catálogo no acumula variantes de cargas viejas.
+    await sequelize.query(
+      `DELETE FROM programas_formacion p
+        WHERE NOT EXISTS (SELECT 1 FROM programas_sobresalientes s WHERE s.programa_id = p.id);
+       DELETE FROM centros_formacion c
+        WHERE NOT EXISTS (SELECT 1 FROM programas_sobresalientes s WHERE s.centro_id = c.id);
+       DELETE FROM niveles_formacion n
+        WHERE NOT EXISTS (SELECT 1 FROM programas_formacion p WHERE p.nivel_formacion_id = n.id);`,
+      { transaction }
+    );
+
     return {
       exito: true,
       mensaje: 'Base de datos actualizada con éxito',
       estadisticas: {
         filasCargadas: registros.length,
         filasCombinadas,
-        nuevosCentros,
-        nuevosNiveles,
-        nuevosProgramas,
+        nuevosCentros: centrosGuardados.nuevos,
+        nuevosNiveles: nivelesGuardados.nuevos,
+        nuevosProgramas: programasGuardados.nuevos,
       },
     };
   });
