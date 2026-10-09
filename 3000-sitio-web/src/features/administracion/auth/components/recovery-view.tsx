@@ -4,14 +4,14 @@ import { useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { validarEmail } from '@olo/email-policy';
-import { Button } from '@/shared/ui/atoms/button';
 import {
-  AuthCardTitle,
   AuthGeneralError,
   AuthTextField,
-  authQuietLinkClass,
-  authSolidCardClass,
+  authPasosCardClass,
+  authPasosPrimaryClass,
+  authPasosQuietLinkClass,
 } from './auth-ui';
+import { MarcoDePasos } from './marco-de-pasos';
 import { useFlujoDeRecuperacion } from './flujo-de-recuperacion';
 import { obtenerPreguntas } from '../services/recuperacion.service';
 
@@ -21,6 +21,8 @@ import { obtenerPreguntas } from '../services/recuperacion.service';
  *
  * Es la única pantalla del flujo que se puede abrir suelta: las demás dependen de
  * lo que esta deja en `useFlujoDeRecuperacion` (ver `flujo-de-recuperacion.tsx`).
+ *
+ * Diseño nuevo desde el 2026-10-09 (mockup de tablet): `MarcoDePasos` en tema claro.
  */
 export function RecoveryView() {
   const router = useRouter();
@@ -64,37 +66,44 @@ export function RecoveryView() {
   };
 
   return (
-    <div className={authSolidCardClass}>
-      <AuthCardTitle
-        title="¿Olvidaste tu contraseña?"
-        description="Escribe tu correo institucional y te preguntaremos por tus preguntas de seguridad."
-      />
+    <MarcoDePasos
+      tema="claro"
+      // El mockup corta tras «acceso»; en el móvil el corte lo decide el ancho.
+      titulo={
+        <>
+          Recupera el acceso <span className="md:block">a tu cuenta</span>
+        </>
+      }
+      descripcion="No te preocupes, vamos a ayudarte a restablecer tu contraseña de ingreso. Verifica que eres tú."
+    >
+      <div className={authPasosCardClass}>
+        <form onSubmit={enviarCorreo} noValidate>
+          {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
 
-      <form onSubmit={enviarCorreo} noValidate>
-        {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
+          <AuthTextField
+            id="email-recuperacion"
+            type="email"
+            // En el mockup la etiqueta va en negrita y hace de encabezado de la tarjeta.
+            label={<span className="text-base font-semibold text-[#001631]">Ingresa tu correo SENA</span>}
+            placeholder="usuario@sena.edu.co"
+            autoComplete="email"
+            value={email}
+            onChange={(valor) => { setEmail(valor); setErrors({}); }}
+            error={errors.email}
+            className="mb-6"
+          />
 
-        <AuthTextField
-          id="email-recuperacion"
-          type="email"
-          label="Correo SENA"
-          placeholder="usuario@sena.edu.co"
-          autoComplete="email"
-          value={email}
-          onChange={(valor) => { setEmail(valor); setErrors({}); }}
-          error={errors.email}
-          className="mb-6"
-        />
+          <button type="submit" disabled={isLoading} className={authPasosPrimaryClass}>
+            {isLoading ? 'Buscando…' : 'Comenzar'}
+          </button>
+        </form>
 
-        <Button type="submit" variant="navy" disabled={isLoading} className="w-full">
-          {isLoading ? 'Buscando…' : 'Continuar'}
-        </Button>
-
-        <div className="mt-4 text-center">
-          <Link href="/login" className={authQuietLinkClass}>
-            Volver a iniciar sesión
+        <div className="mt-6 text-center">
+          <Link href="/login" className={authPasosQuietLinkClass}>
+            Iniciar sesión
           </Link>
         </div>
-      </form>
-    </div>
+      </div>
+    </MarcoDePasos>
   );
 }

@@ -3,7 +3,8 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { AuthCardTitle, AuthSuccessBadge, authNavyActionClass, authSolidCardClass } from './auth-ui';
+import { AuthSuccessBadge, authPasosPrimaryClass } from './auth-ui';
+import { MarcoDePasos } from './marco-de-pasos';
 import { useFlujoDeRecuperacion } from './flujo-de-recuperacion';
 
 /**
@@ -11,6 +12,11 @@ import { useFlujoDeRecuperacion } from './flujo-de-recuperacion';
  *
  * Solo se pinta si la contraseña se acaba de cambiar. Abierta a mano diría que se
  * actualizó algo que nadie tocó, así que en ese caso devuelve al principio.
+ *
+ * Diseño nuevo desde el 2026-10-09 (mockup de tablet): sin tarjeta, el botón suelto
+ * bajo el texto. En el escritorio el botón queda sobre el azul de la mitad derecha, y
+ * el azul del botón no se distinguiría: ahí vuelve a ir dentro de una tarjeta, con la
+ * marca de hecho, como el último paso del primer ingreso.
  */
 export function ResetSuccessView() {
   const router = useRouter();
@@ -24,16 +30,19 @@ export function ResetSuccessView() {
   if (!terminada) return null;
 
   return (
-    <div className={`${authSolidCardClass} text-center`}>
-      <AuthSuccessBadge />
-      <AuthCardTitle
-        className="mb-6"
-        title="Tu contraseña se actualizó"
-        description="Ya puedes entrar al panel con tu nueva contraseña."
-      />
-      <Link href="/login" className={authNavyActionClass}>
-        Ir a iniciar sesión
-      </Link>
-    </div>
+    <MarcoDePasos
+      tema="claro"
+      titulo="¡Genial, tu clave ha sido actualizada con éxito!"
+      descripcion={['Ya puedes ingresar a tu cuenta con tu nueva contraseña.', '¡Tu seguridad es nuestra prioridad!']}
+    >
+      <div className="w-full max-w-[272px] xl:max-w-[320px] xl:rounded-md xl:border xl:border-[#d9d9d9] xl:bg-white xl:px-6 xl:py-10">
+        <div className="hidden xl:block">
+          <AuthSuccessBadge />
+        </div>
+        <Link href="/login" className={authPasosPrimaryClass}>
+          Iniciar sesión
+        </Link>
+      </div>
+    </MarcoDePasos>
   );
 }

@@ -113,7 +113,15 @@ export const authPasosQuietLinkClass =
 // 320 (270 por dentro). A 15 mide 265.
 const authPasosLabelClass = 'mb-2 block text-[15px] text-[#001a39]';
 
-const authPasosInputClass = (hasError: boolean) =>
+/**
+ * Encabezado en negrita dentro de la tarjeta («Crea tu nueva contraseña», «Responde tus
+ * preguntas»), como en los mockups de la recuperación. Va en un `h2`: el `h1` es el
+ * título del marco.
+ */
+export const authPasosCardHeadingClass = 'text-base font-semibold text-[#001631]';
+
+/** Exportada para el campo que no cabe en los de abajo (la respuesta a la pregunta). */
+export const authPasosInputClass = (hasError: boolean) =>
   [
     // `py-2`: el `select` de Chrome pinta el texto arriba de su caja, no centrado.
     'h-10 w-full rounded-md border bg-white px-4 py-2 text-base text-[#001a39] placeholder:text-[#b3b3b3]',
@@ -123,7 +131,7 @@ const authPasosInputClass = (hasError: boolean) =>
       : 'border-[#d9d9d9] focus:border-[#002237] focus:ring-[#002237]',
   ].join(' ');
 
-const authPasosErrorTextClass = 'mt-1.5 text-sm text-red-600';
+export const authPasosErrorTextClass = 'mt-1.5 text-sm text-red-600';
 
 /**
  * Qué piel llevan los campos y el enlace de regreso. Sin proveedor, la de siempre
@@ -167,11 +175,17 @@ const claseError = (piel: PielDeAuth) => (piel === 'pasos' ? authPasosErrorTextC
  *
  * ## Las rutas con marco propio
  *
- * El primer ingreso ya tiene el diseño nuevo (`MarcoDePasos`): el panel izquierdo
- * cuenta el paso en que se está, así que lo pinta la propia pantalla, que es la que
- * sabe en qué paso va. Para esas rutas este marco no pinta nada.
+ * El primer ingreso y la recuperación ya tienen el diseño nuevo (`MarcoDePasos`): el
+ * panel izquierdo cuenta el paso en que se está, así que lo pinta la propia pantalla,
+ * que es la que sabe en qué paso va. Para esas rutas este marco no pinta nada.
  */
-const RUTAS_CON_MARCO_PROPIO = new Set(['/first-login']);
+const RUTAS_CON_MARCO_PROPIO = new Set([
+  '/first-login',
+  '/recovery',
+  '/security-questions',
+  '/reset-password',
+  '/reset-success',
+]);
 
 export function AuthSplitShell({ children }: { children: ReactNode }) {
   const ruta = usePathname();
@@ -305,6 +319,9 @@ export function AuthGeneralNotice({ children }: { children: ReactNode }) {
  * Decorativo a propósito (`aria-hidden`): la posición se anuncia en texto —
  * «Pregunta 2 de 3»— junto al campo, que es lo que de verdad sirve a quien no ve
  * los puntos. El paso actual se distingue por forma *y* color, no solo por color.
+ *
+ * En la piel `pasos` son las barras del mockup (32 × 6 px): la actual en `#002237` y
+ * el resto en `#ccd3d7`.
  */
 export function AuthProgressDots({
   total,
@@ -315,6 +332,21 @@ export function AuthProgressDots({
   current: number;
   className?: string;
 }) {
+  const piel = useContext(PielAuth);
+
+  if (piel === 'pasos') {
+    return (
+      <div className={`flex justify-center gap-2 ${className}`} aria-hidden="true">
+        {Array.from({ length: total }).map((_, i) => (
+          <span
+            key={i}
+            className={`h-1.5 w-8 rounded-sm transition-colors ${i === current ? 'bg-[#002237]' : 'bg-[#ccd3d7]'}`}
+          />
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className={`flex justify-center gap-1.5 ${className}`} aria-hidden="true">
       {Array.from({ length: total }).map((_, i) => (
@@ -622,10 +654,11 @@ export function PasswordRequisitos({
 /**
  * Enlace de regreso al sitio público.
  *
- * Lo ponen `AuthSplitShell` y `MarcoDePasos`, siempre sobre el azul: de ahí el
- * blanco. Con `sobreBlanco` (el login por debajo de `xl`, que va sobre fondo blanco)
- * pasa a gris oscuro hasta ese corte; desde `xl` vuelve a estar sobre el azul. En la
- * piel `pasos`, la casa rellena y el texto de 16 px del mockup.
+ * Lo ponen `AuthSplitShell` y `MarcoDePasos`, casi siempre sobre el azul: de ahí el
+ * blanco. Con `sobreBlanco` (el login, y la recuperación en la piel `pasos`, que por
+ * debajo de `xl` van sobre fondo blanco) se oscurece hasta ese corte; desde `xl` vuelve
+ * a estar sobre el azul. En la piel `pasos`, la casa rellena y el texto de 16 px del
+ * mockup.
  */
 export function BackToSiteLink({
   className = '',
@@ -648,7 +681,11 @@ export function BackToSiteLink({
           href="/inicio"
           // En línea y no `inline-flex`: a 360 px el texto parte en dos y la casa debe ir
           // pegada a la primera palabra, no sola a la izquierda.
-          className="inline-block rounded py-2.5 text-base text-white transition hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          className={`inline-block rounded py-2.5 text-base transition hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 ${
+            sobreBlanco
+              ? 'text-[#001631] focus-visible:ring-[#001631] xl:text-white xl:focus-visible:ring-white'
+              : 'text-white focus-visible:ring-white'
+          }`}
         >
           <HomeIcon aria-hidden="true" className="mr-2 inline-block size-5 align-[-4px]" />
           {label}

@@ -49,10 +49,14 @@ export const obtenerPreguntas = async (email: string): Promise<PreguntaDeUsuario
   return Array.isArray(data?.questions) ? data.questions : [];
 };
 
+/**
+ * Comprueba las tres respuestas. Si son correctas, el servidor devuelve además el
+ * primer nombre de la cuenta, para saludar en la pantalla de la contraseña nueva.
+ */
 export const verificarRespuestas = async (
   email: string,
   answers: RespuestaDeUsuario[]
-): Promise<void> => {
+): Promise<{ nombre: string | null }> => {
   const res = await fetch('/api/security-questions/verify', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -60,6 +64,9 @@ export const verificarRespuestas = async (
   });
 
   if (!res.ok) throw new Error(await mensajeDeError(res, 'Una o más respuestas son incorrectas'));
+
+  const data = await res.json().catch(() => null);
+  return { nombre: typeof data?.nombre === 'string' && data.nombre ? data.nombre : null };
 };
 
 export const recuperarPassword = async (

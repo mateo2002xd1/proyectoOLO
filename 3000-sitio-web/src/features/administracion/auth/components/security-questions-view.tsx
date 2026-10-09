@@ -1,16 +1,19 @@
 'use client';
 
 import { useEffect, useState, FormEvent } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/shared/ui/atoms/button';
 import {
-  AuthCardTitle,
   AuthGeneralError,
   AuthProgressDots,
-  AuthTextField,
-  authQuietLinkClass,
-  authSolidCardClass,
+  authPasosCardClass,
+  authPasosCardHeadingClass,
+  authPasosErrorTextClass,
+  authPasosInputClass,
+  authPasosPrimaryClass,
+  authPasosQuietLinkClass,
 } from './auth-ui';
+import { MarcoDePasos } from './marco-de-pasos';
 import { useFlujoDeRecuperacion } from './flujo-de-recuperacion';
 import { verificarRespuestas } from '../services/recuperacion.service';
 
@@ -21,6 +24,11 @@ import { verificarRespuestas } from '../services/recuperacion.service';
  * En la intranet esta misma ruta sirve también para configurar las preguntas cuando
  * es lo único que le falta a la cuenta. Aquí no: esa configuración, sola o junto a la
  * contraseña, la resuelve entera `/first-login`, que pregunta al servidor qué falta.
+ *
+ * Diseño nuevo desde el 2026-10-09 (mockups de tablet): el número de la pregunta va en
+ * el título, y en la tarjeta la pregunta se ve en una caja con la forma de un campo.
+ * Esa caja es la `<label>` de la respuesta: pulsarla lleva al campo y el lector de
+ * pantalla anuncia la pregunta al entrar en él.
  */
 export function SecurityQuestionsView() {
   const router = useRouter();
@@ -62,8 +70,8 @@ export function SecurityQuestionsView() {
     setIsLoading(true);
     try {
       const verificadas = respuestasParaApi();
-      await verificarRespuestas(datos.email, verificadas);
-      confirmarRespuestas(verificadas);
+      const { nombre } = await verificarRespuestas(datos.email, verificadas);
+      confirmarRespuestas(verificadas, nombre);
       router.push('/reset-password');
     } catch (error) {
       setErrors({ general: (error as Error).message });
@@ -82,60 +90,91 @@ export function SecurityQuestionsView() {
   };
 
   const pregunta = datos.preguntas[preguntaActual];
-  const esUltima = preguntaActual === total - 1;
 
   return (
-    <div className={authSolidCardClass}>
-      <AuthCardTitle
-        title="Verifica tu identidad"
-        description={`Responde las ${total} preguntas que elegiste al configurar tu cuenta.`}
-      />
+    <MarcoDePasos
+      tema="claro"
+      titulo={
+        <>
+          Validación de identidad{' '}
+          {/* Más pequeña en el móvil: a 32 px el título ocupaba cuatro líneas. */}
+          <span className="block text-2xl md:text-[32px]">
+            (Pregunta de seguridad {preguntaActual + 1} de {total})
+          </span>
+        </>
+      }
+      descripcion={[
+        'Responde correctamente a tus preguntas de seguridad.',
+        // El mockup dice «coincidir exactamente», pero el servidor compara sin
+        // mayúsculas y sin los espacios de los extremos (`trim().toLowerCase()`).
+        'Recuerda que las respuestas deben coincidir con las que asignaste la primera vez. No importan las mayúsculas.',
+      ]}
+    >
+      <div className={authPasosCardClass}>
+        <form onSubmit={siguientePregunta} noValidate>
+          {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
 
-      <form onSubmit={siguientePregunta} noValidate>
-        {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
+          <h2 className={`mb-3 ${authPasosCardHeadingClass}`}>Responde tus preguntas</h2>
 
-        <AuthTextField
-          id="respuesta"
-          label={
-            <>
-              {/* `gray-500` y no `gray-400`: es texto, y el 400 se queda en 2.6:1
-                  contra el blanco de la tarjeta (9-accesibilidad.md §2.1). */}
-              <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-500">
-                Pregunta {preguntaActual + 1} de {total}
-              </span>
-              {pregunta?.label}
-            </>
-          }
-          value={respuestas[preguntaActual] ?? ''}
-          onChange={(valor) => {
-            const copia = [...respuestas];
-            copia[preguntaActual] = valor;
-            setRespuestas(copia);
-            setErrors({});
-          }}
-          error={errors.answer}
-          autoComplete="off"
-          // La respuesta se compara en minúsculas y sin espacios en el servidor,
-          // así que el autocorrector del móvil solo puede estorbar.
-          autoCapitalize="none"
-          autoCorrect="off"
-          className="mb-5"
-        />
+          <label
+            htmlFor="respuesta"
+            className="mb-6 block min-h-10 rounded-md border border-[#d9d9d9] px-4 py-2 text-base text-[#001a39]"
+          >
+            <span className="sr-only">
+              Pregunta {preguntaActual + 1} de {total}:{' '}
+            </span>
+            {pregunta?.label}
+          </label>
 
-        <AuthProgressDots total={total} current={preguntaActual} />
+          <div className="mb-6">
+            <input
+              id="respuesta"
+              type="text"
+              placeholder="Respuesta"
+              value={respuestas[preguntaActual] ?? ''}
+              onChange={(e) => {
+                const copia = [...respuestas];
+                copia[preguntaActual] = e.target.value;
+                setRespuestas(copia);
+                setErrors({});
+              }}
+              autoComplete="off"
+              // La respuesta se compara en minúsculas y sin espacios en el servidor,
+              // así que el autocorrector del móvil solo puede estorbar.
+              autoCapitalize="none"
+              autoCorrect="off"
+              aria-invalid={errors.answer ? true : undefined}
+              aria-describedby={errors.answer ? 'respuesta-error' : undefined}
+              className={authPasosInputClass(!!errors.answer)}
+            />
+            {errors.answer && (
+              <p id="respuesta-error" className={authPasosErrorTextClass}>
+                {errors.answer}
+              </p>
+            )}
+          </div>
 
-        <Button type="submit" variant="navy" disabled={isLoading} className="w-full">
-          {isLoading ? 'Verificando…' : esUltima ? 'Verificar' : 'Siguiente'}
-        </Button>
+          <AuthProgressDots total={total} current={preguntaActual} className="mb-6" />
 
-        {preguntaActual > 0 && (
-          <div className="mt-4 text-center">
-            <button type="button" onClick={anteriorPregunta} className={authQuietLinkClass}>
+          <button type="submit" disabled={isLoading} className={authPasosPrimaryClass}>
+            {isLoading ? 'Verificando…' : 'Continuar'}
+          </button>
+        </form>
+
+        {/* En la primera pregunta, la salida al login del mockup; en las siguientes, el
+            mockup deja ese hueco vacío y aquí va la vuelta a la pregunta anterior. */}
+        <div className="mt-6 text-center">
+          {preguntaActual === 0 ? (
+            <Link href="/login" className={authPasosQuietLinkClass}>
+              Iniciar sesión
+            </Link>
+          ) : (
+            <button type="button" onClick={anteriorPregunta} className={authPasosQuietLinkClass}>
               Volver a la pregunta anterior
             </button>
-          </div>
-        )}
-      </form>
-    </div>
+          )}
+        </div>
+      </div>
+    </MarcoDePasos>
   );
 }

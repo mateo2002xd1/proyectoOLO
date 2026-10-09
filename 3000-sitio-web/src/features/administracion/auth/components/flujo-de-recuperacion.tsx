@@ -33,13 +33,15 @@ export type Recuperacion =
       preguntas: PreguntaDeUsuario[];
       /** Las que el servidor ya dio por buenas. Se vuelven a mandar al guardar. */
       respuestas: RespuestaDeUsuario[];
+      /** Primer nombre de la cuenta, que el servidor da al verificar, para el saludo. */
+      nombre: string | null;
     }
   | { etapa: 'terminada' };
 
 interface FlujoDeRecuperacion {
   recuperacion: Recuperacion | null;
   empezarRecuperacion: (email: string, preguntas: PreguntaDeUsuario[]) => void;
-  confirmarRespuestas: (respuestas: RespuestaDeUsuario[]) => void;
+  confirmarRespuestas: (respuestas: RespuestaDeUsuario[], nombre: string | null) => void;
   terminarRecuperacion: () => void;
 }
 
@@ -55,10 +57,10 @@ export function FlujoDeRecuperacionProvider({ children }: { children: ReactNode 
   );
 
   const confirmarRespuestas = useCallback(
-    (respuestas: RespuestaDeUsuario[]) =>
+    (respuestas: RespuestaDeUsuario[], nombre: string | null) =>
       setRecuperacion((actual) =>
         actual && actual.etapa !== 'terminada'
-          ? { etapa: 'nueva-contrasena', email: actual.email, preguntas: actual.preguntas, respuestas }
+          ? { etapa: 'nueva-contrasena', email: actual.email, preguntas: actual.preguntas, respuestas, nombre }
           : actual
       ),
     []

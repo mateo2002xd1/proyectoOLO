@@ -17,6 +17,7 @@ import {
   authPasosSecondaryClass,
 } from './auth-ui';
 import { MarcoDePasos, type PasosDelMarco } from './marco-de-pasos';
+import { useRequisitosAlEnfocar } from '../hooks/use-requisitos-al-enfocar';
 
 /**
  * Configuración obligatoria de primer ingreso: contraseña definitiva y preguntas
@@ -90,12 +91,7 @@ export function FirstLoginFlow() {
   const [tempPassword, setTempPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  // La lista de requisitos aparece al entrar en «Nueva contraseña» y ya no se va: el
-  // mockup no la muestra en reposo, pero descubrir las reglas a base de rechazos es la
-  // forma segura de que alguien abandone. Si se ocultara al salir del campo, la tarjeta
-  // encogería justo cuando se pulsa el de abajo, y el clic caería en otro sitio. También
-  // sale si el campo ya tiene algo sin haber pasado por él (lo rellenó el navegador).
-  const [verRequisitos, setVerRequisitos] = useState(false);
+  const requisitos = useRequisitosAlEnfocar(newPassword);
 
   // Paso 2 — preguntas de seguridad
   const [selectedKeys, setSelectedKeys] = useState<string[]>(Array(TOTAL_QUESTIONS).fill(''));
@@ -203,8 +199,6 @@ export function FirstLoginFlow() {
     }
     await enviar();
   };
-
-  const requisitosVisibles = verRequisitos || newPassword !== '';
 
   /* ---------- Mientras se sabe qué falta ---------- */
   if (!pendiente) {
@@ -324,12 +318,12 @@ export function FirstLoginFlow() {
               autoComplete="new-password"
               value={newPassword}
               onChange={(v) => { setNewPassword(v); setErrors({}); }}
-              onFocus={() => setVerRequisitos(true)}
-              describedBy={requisitosVisibles ? 'requisitos-contrasena' : undefined}
+              onFocus={requisitos.alEnfocar}
+              describedBy={requisitos.visibles ? 'requisitos-contrasena' : undefined}
               error={errors.newPassword}
-              className={requisitosVisibles ? 'mb-3' : 'mb-6'}
+              className={requisitos.visibles ? 'mb-3' : 'mb-6'}
             />
-            {requisitosVisibles && (
+            {requisitos.visibles && (
               <PasswordRequisitos
                 id="requisitos-contrasena"
                 password={newPassword}

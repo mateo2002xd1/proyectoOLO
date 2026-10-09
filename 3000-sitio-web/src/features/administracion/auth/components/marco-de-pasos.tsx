@@ -20,36 +20,62 @@ import { BackToSiteLink, PielAuth } from './auth-ui';
  *
  * Pone la piel `pasos` (`PielAuth`): los campos, botones y el enlace de regreso que
  * haya dentro se pintan con ella sin que la pantalla lo pida.
+ *
+ * ## Tema claro (la recuperación de contraseña)
+ *
+ * Los mockups de tablet de la recuperación van sobre **blanco**, con el título, el texto
+ * y el enlace de regreso en `#001631`; los del primer ingreso, sobre azul. `tema="claro"`
+ * pinta así por debajo de `xl`. En el escritorio no hay mockup de la recuperación, así que
+ * usa el mismo que el primer ingreso: las dos mitades azules, con el texto en blanco.
  */
 export function MarcoDePasos({
   titulo,
   descripcion,
   pasos,
+  tema = 'oscuro',
   children,
 }: {
-  titulo: string;
-  descripcion?: ReactNode;
+  titulo: ReactNode;
+  /** Uno o varios párrafos. */
+  descripcion?: string | string[];
+  /** El paginador. Solo está diseñado sobre azul: con `tema="claro"` no se usa. */
   pasos?: PasosDelMarco;
-  /** La tarjeta (`authPasosCardClass`). */
+  tema?: 'oscuro' | 'claro';
+  /** La tarjeta (`authPasosCardClass`), o lo que haga sus veces. */
   children: ReactNode;
 }) {
+  const claro = tema === 'claro';
+  const parrafos = descripcion === undefined ? [] : Array.isArray(descripcion) ? descripcion : [descripcion];
+
   return (
     <PielAuth.Provider value="pasos">
-      <div className="flex min-h-dvh w-full flex-col justify-center bg-[#001631] py-12 xl:flex-row xl:py-0">
-        <section className="flex flex-col items-center px-6 text-center text-white xl:w-1/2 xl:shrink-0 xl:justify-center xl:py-12">
+      <div
+        className={`flex min-h-dvh w-full flex-col justify-center py-12 xl:flex-row xl:bg-[#001631] xl:py-0 ${
+          claro ? 'bg-white' : 'bg-[#001631]'
+        }`}
+      >
+        <section
+          className={`flex flex-col items-center px-6 text-center xl:w-1/2 xl:shrink-0 xl:justify-center xl:py-12 xl:text-white ${
+            claro ? 'text-[#001631]' : 'text-white'
+          }`}
+        >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/assets/logos/olo-logo-none.svg"
             alt="OLO Logo"
             className="mb-8 hidden w-[200px] xl:block"
           />
-          {/* En el móvil el título parte en dos líneas, como en el mockup: comparte el
-              ancho del texto de abajo. */}
-          <h1 className="max-w-[300px] text-[32px] font-bold leading-tight md:max-w-[440px] xl:max-w-[400px]">
+          {/* En el móvil el título parte en dos líneas, como en el mockup. `text-balance`
+              reparte las líneas parejas («Recupera el acceso / a tu cuenta»). */}
+          <h1 className="max-w-[300px] text-[32px] font-bold leading-tight text-balance md:max-w-[480px]">
             {titulo}
           </h1>
-          {descripcion && (
-            <p className="mt-8 max-w-[300px] text-lg leading-6 md:max-w-[440px] xl:max-w-[400px]">{descripcion}</p>
+          {parrafos.length > 0 && (
+            <div className="mt-8 max-w-[300px] space-y-6 text-lg leading-6 text-pretty md:max-w-[440px] xl:max-w-[400px]">
+              {parrafos.map((texto) => (
+                <p key={texto}>{texto}</p>
+              ))}
+            </div>
           )}
           {pasos && (
             <div className="@container mt-12 w-full md:mt-[72px]">
@@ -60,7 +86,7 @@ export function MarcoDePasos({
 
         <div className="mt-6 flex flex-col items-center px-6 md:mt-11 xl:mt-0 xl:flex-1 xl:justify-center xl:rounded-l-2xl xl:bg-[#001a39] xl:py-12">
           {children}
-          <BackToSiteLink label="Regresar al sitio web del Observatorio" className="mt-8 xl:mt-2" />
+          <BackToSiteLink label="Regresar al sitio web del Observatorio" sobreBlanco={claro} className="mt-8 xl:mt-2" />
         </div>
       </div>
     </PielAuth.Provider>
