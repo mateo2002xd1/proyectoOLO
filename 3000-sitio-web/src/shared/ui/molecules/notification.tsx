@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { reproducirSonidoAviso } from "@/shared/lib/sonido-avisos";
 
 export type NotificationType = "success" | "error" | "warning" | "info";
 
@@ -62,6 +63,15 @@ export function Notification({
   useEffect(() => {
     requestAnimationFrame(() => setIsVisible(true));
   }, []);
+
+  // Suena con cada aviso nuevo, no con cada render: Roles y Usuarios le cambian el texto
+  // sin desmontarlo si llega otro antes de que se cierre. Va en un `setTimeout` que se
+  // cancela al desmontar para que el doble montaje del modo estricto no suene dos veces.
+  // `info` no suena, y nada suena si se silenció en Configuración.
+  useEffect(() => {
+    const temporizador = setTimeout(() => reproducirSonidoAviso(type), 0);
+    return () => clearTimeout(temporizador);
+  }, [type, title, message]);
 
   useEffect(() => {
     if (duration <= 0) return;

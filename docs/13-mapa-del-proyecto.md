@@ -14,19 +14,20 @@
 
 | | Carpetas | Features | Rutas de Next | Endpoints | Librerías |
 |---|--:|--:|--:|--:|--:|
-| `3000-sitio-web` | 46 | 3 | 53 | — | 33 |
+| `3000-sitio-web` | 47 | 3 | 53 | — | 33 |
 | `3001-intranet` | 31 | 2 | 11 | — | 27 |
 | `4000-api-backend` | 34 | — | — | 91 | 42 |
 
 Paquetes compartidos: 7 · migraciones: 42 · modelos: 23.
 
-## Carpetas sin descripción (4)
+## Carpetas sin descripción (5)
 
 Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scripts/mapa/descripciones.md` con una línea: `` - `ruta/` — para qué es ``.
 
 - `3000-sitio-web/data_temporal/`
 - `3000-sitio-web/src/features/sitio-web/alertas-inversion/`
 - `3000-sitio-web/src/features/sitio-web/fuentes-futuras-empleo/`
+- `3000-sitio-web/src/shared/lib/sonido-avisos/`
 - `4000-api-backend/src/use-cases/alertas-inversion/`
 
 ## Carpetas
@@ -77,6 +78,7 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
     │   │   ├── inactividad/                   aviso y cierre de sesión por inactividad
     │   │   ├── mobile/                        navegación mobile del panel: barra de abajo con el logo al centro
     │   │   ├── pwa/                           manifiesto, íconos y registro del service worker
+    │   │   ├── sonido-avisos/                 ⚠ sin descripción
     │   │   └── tema/                          tema oscuro del panel, sin parpadeo al cargar
     │   └── ui/                                sistema de diseño institucional y catálogo del editor
     │       ├── atoms/                         piezas mínimas: botón, avatar, interruptor…
