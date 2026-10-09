@@ -5,6 +5,58 @@
 
 ---
 
+## sesión 09-10-2026 (3.ª parte): acceso al panel de administración en móvil y tablet
+
+**Qué se pidió.** Adaptar a móvil y tablet las pantallas de acceso del panel (`/login`,
+`/first-login` y la recuperación: `/recovery`, `/security-questions`, `/reset-password`,
+`/reset-success`) según los mockups del usuario: por debajo de la tablet grande (iPad Pro 13",
+1032 × 1376) el login va sobre fondo blanco, con el logo a color y «Panel de Administración»
+encima y el formulario sin tarjeta; el resto del flujo se apila en una columna sobre el azul.
+
+**El corte.** El diseño partido empezaba en `md` (768), así que toda tablet lo recibía. La
+tablet del mockup mide 1032 y `lg` empieza en 1024, de modo que `lg` tampoco servía: el
+corte pasa a **`xl` (1280)**, el primero de la escala por encima (`2-convenciones` §10.1).
+La misma tablet en horizontal (1376) sí ve el diseño partido.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| FE | `3000-sitio-web/.../auth/components/auth-ui.tsx` | `AuthSplitShell`: panel izquierdo y marca compacta de `md` a `xl`; mira la ruta y, en `/login`, fondo blanco y marca a color (logo + «Panel de / Administración») hasta `xl`. `authLoginCardClass` nueva (sin tarjeta hasta `xl`). `authSolidCardClass` con `px-6 py-8` en el móvil. `BackToSiteLink` con `sobreBlanco` (gris hasta `xl`) y `py-2.5` para el objetivo táctil |
+| FE | `3000-sitio-web/.../auth/components/login-view.tsx` | El formulario y su estado de carga usan `authLoginCardClass` |
+
+**Cómo se probó.** Chrome headless contra el `next dev` del usuario, con emulación de
+dispositivo por CDP (la ventana de `--headless=new` no baja de ~500 px y falsea el ancho de
+360). `tsc --noEmit` y `eslint` de los dos archivos, limpios.
+
+| Ruta | 360 | 768 | 1032 | 1280 |
+|---|---|---|---|---|
+| `/login` | ✅ blanco, sin tarjeta, sin desborde | ✅ igual | ✅ igual (el mockup) | ✅ partido, tarjeta sobre azul |
+| `/recovery` | ✅ azul, marca compacta, tarjeta | ✅ igual | ✅ igual | ✅ partido |
+
+Se comprobó también el color del enlace de regreso (gris sobre blanco, blanco sobre azul) y
+que solo hay un `h1` visible en cada ancho. No se miró el tema oscuro (estas pantallas pintan
+su propio fondo y no llevan `dark:`) ni las pantallas que piden sesión o datos del paso
+anterior (`/first-login`, `/security-questions`, `/reset-password`, `/reset-success`): usan
+el mismo marco y la misma tarjeta, pero se mostraron sin abrirlas.
+
+**Lo que se descartó.**
+
+- **Un corte propio en 1033 px**: lo prohíbe §10.1; `xl` cubre la tablet sin salirse de la escala.
+- **Sacar el título de cada paso fuera de la tarjeta**, en blanco, como en los mockups de la
+  recuperación: `auth-ui.tsx` ya explica por qué va dentro (el texto oscuro sobre el azul se
+  perdía) y el pedido para el resto del flujo era apilar, no rediseñar.
+- **Los textos de los mockups** («Passcode», «Comenzar», «Validación de identidad»…): no se
+  tocaron; el cambio es de maqueta.
+
+**Pendiente al cierre.**
+
+- El botón principal (`Button`, `py-2.5`) mide 40 px de alto; §10.4 pide 44 en el móvil para
+  la acción principal. Es la pieza compartida de todo el sitio: cambiarlo es otra decisión.
+- La intranet (`3001-intranet`, `features/login`) tiene el mismo diseño partido con sus propios
+  cortes; no se tocó.
+- Mirar `/first-login` y los pasos de recuperación con una cuenta real a 360 y 1032.
+
+---
+
 ## sesión 09-10-2026 (2.ª parte): las cargas ya no duplican filas en las tablas maestras (migración 042)
 
 **Qué se pidió.** Revisar que las cargas de «Programa + Sobresalientes», «Alertas de inversión»
