@@ -14,17 +14,18 @@
 
 | | Carpetas | Features | Rutas de Next | Endpoints | Librerías |
 |---|--:|--:|--:|--:|--:|
-| `3000-sitio-web` | 47 | 3 | 53 | — | 33 |
+| `3000-sitio-web` | 48 | 3 | 53 | — | 33 |
 | `3001-intranet` | 31 | 2 | 11 | — | 27 |
 | `4000-api-backend` | 34 | — | — | 91 | 42 |
 
 Paquetes compartidos: 7 · migraciones: 42 · modelos: 23.
 
-## Carpetas sin descripción (5)
+## Carpetas sin descripción (6)
 
 Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scripts/mapa/descripciones.md` con una línea: `` - `ruta/` — para qué es ``.
 
 - `3000-sitio-web/data_temporal/`
+- `3000-sitio-web/src/features/administracion/configuracion/`
 - `3000-sitio-web/src/features/sitio-web/alertas-inversion/`
 - `3000-sitio-web/src/features/sitio-web/fuentes-futuras-empleo/`
 - `3000-sitio-web/src/shared/lib/sonido-avisos/`
@@ -56,6 +57,7 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
     │   │   ├── auditoria/                     historial de cambios (RF-07)
     │   │   ├── auth/                          login, primer ingreso, recuperación, usuarios y roles
     │   │   ├── buscador/                      buscador del propio panel
+    │   │   ├── configuracion/                 ⚠ sin descripción
     │   │   ├── mi-perfil/                     la cuenta de quien inició sesión
     │   │   └── respaldos/                     restaurar versiones archivadas de una página
     │   ├── paginas/                           páginas editables con Puck, organizadas por etapa del ciclo
@@ -191,7 +193,7 @@ test/                                          pruebas de carga con k6
 
 | Feature | Para qué | Subcarpetas | `index.ts` | Archivos |
 |---|---|---|:-:|--:|
-| `administracion/` | el panel: usuarios, roles, auditoría, respaldos, cargas | `actualizaciones/` `auditoria/` `auth/` `buscador/` `mi-perfil/` `respaldos/` | **no** | 68 |
+| `administracion/` | el panel: usuarios, roles, auditoría, respaldos, cargas | `actualizaciones/` `auditoria/` `auth/` `buscador/` `configuracion/` `mi-perfil/` `respaldos/` | **no** | 71 |
 | `paginas/` | páginas editables con Puck, organizadas por etapa del ciclo | `edicion/` `menu-y-pie/` `model/` `publicacion/` `revision/` `secciones/` | sí | 39 |
 | `sitio-web/` | agrupador de lo público | `alertas-inversion/` `buscador-ocupaciones/` `fuentes-futuras-empleo/` `inicio/` `programas-sobresalientes/` `tendencia-ocupacional/` | **no** | 49 |
 
