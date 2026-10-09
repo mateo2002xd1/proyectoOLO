@@ -5,6 +5,43 @@
 
 ---
 
+## sesión 09-10-2026 (8.ª parte): el manual de usuario pasa a `manual-de-usuario-formato.md`
+
+**Qué pasó.** Al bajar `OLO/dev` llegó el PR #138 (rama `mateo`). En el commit `31873fe0` se borró
+`docs/manual-de-usuario.md` y quedó `docs/manual-de-usuario-formato.md`, con otra numeración
+(el manual empieza en §3) y el primer ingreso y el inicio de sesión separados por portal. Aquí, mientras
+tanto, se había editado el manual viejo en la 6.ª y la 7.ª parte. El merge se detuvo con el
+conflicto «deleted by them».
+
+**Decisión del usuario.** Queda el manual nuevo. Lo de estas dos sesiones se pasa al nuevo y las
+referencias al nombre viejo se cambian.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Docs | `manual-de-usuario.md` | Se acepta el borrado del merge |
+| Docs | `manual-de-usuario-formato.md` §3.4.1.1, «Primer Ingreso desde el Sitio Web Público», pasos 3 a 6 | El paginador, los requisitos al entrar en «Nueva contraseña», el ojo, «Continuar»/«Siguiente», las preguntas una a la vez sin repetir, «Atrás»/«Anterior», «Guardar» en la tercera y el enlace «Iniciar sesión» que sale sin guardar. Se corrige que la respuesta «es sensible a mayúsculas»: no distingue mayúsculas ni cuenta los espacios de los extremos (`trim().toLowerCase()`). La captura ya no dice «con saludo al funcionario», que se quitó en la 7.ª parte |
+| Docs | `manual-de-usuario-formato.md` §3.4.2.9.2, «Configuración» | El punto «Sonido de los avisos». La captura describe el interruptor y los botones, que es lo que hay en la pantalla |
+| Docs | `6-auditoria.md`, 6.ª y 7.ª parte | Las referencias a `manual-de-usuario.md` §8.5.2 y §10.9.2 apuntan a las secciones nuevas, con la antigua entre paréntesis |
+
+**Lo que no se tocó.** El primer ingreso **de la intranet** (mismo §3.4.1.1) es otra pantalla y no
+tiene el diseño nuevo: se deja como lo escribió Mateo.
+
+**Verificación.**
+
+| Prueba | Resultado |
+|---|---|
+| Búsqueda de `manual-de-usuario` (sin `-formato`) en el repositorio, sin `node_modules` | ✅ Solo quedan las menciones «era `manual-de-usuario.md`» de esta bitácora |
+| Finales de línea del manual y la bitácora, medidos con node | ✅ CRLF entero en los dos, antes y después |
+
+**Queda.**
+
+- Acordar con Mateo que `manual-de-usuario-formato.md` es el manual oficial, y si conviene que
+  vuelva a llamarse `manual-de-usuario.md`.
+- §3.4.2.9.2 sigue describiendo «preguntas de seguridad» y «notificaciones» en Configuración, que
+  no existen todavía (ya anotado en la 6.ª parte).
+
+---
+
 ## sesión 09-10-2026 (7.ª parte): el primer ingreso del panel con el diseño nuevo (mockups de escritorio, tablet y móvil)
 
 **Qué se pidió.** El usuario va a pasar los mockups de las pantallas del panel de una en una,
@@ -37,7 +74,7 @@ Colores medidos sobre el mockup de escritorio, píxel a píxel con un canvas en 
 | FE | `.../auth/components/auth-ui.tsx` | La piel `pasos`: tarjeta de 330/452/320 px según el tamaño (los tres mockups), botón de 44 px por debajo de `xl` (§10.4) y 40 en escritorio, campos de 40 px con texto de 16, ojo relleno. La elige el marco con el contexto `PielAuth`, así que los campos (`PasswordField`, `AuthTextField`, `AuthSelectField`) y `BackToSiteLink` cambian solos. Sin el marco, la piel de siempre: login y recuperación no cambian. Los tres campos anuncian ya su error (`aria-invalid` + `aria-describedby`). `AuthSplitShell` deja pasar `/first-login` sin pintar su marco |
 | FE | `.../auth/components/first-login-flow.tsx` | Sobre `MarcoDePasos`: título y texto de cada paso fuera de la tarjeta. Es el mismo flujo (lo que falta, las validaciones y el envío no cambian), con la tarjeta, los textos y el paginador nuevos |
 | FE | `app/(auth)/first-login/page.tsx` | Sin el saludo por nombre, que el mockup no tiene |
-| Docs | `manual-de-usuario.md` §8.5.2 | El flujo como es: tres campos, requisitos, paginador, «Guardar» y el paso final. Se corrigió además que la respuesta «es sensible a mayúsculas»: el servidor la compara con `trim().toLowerCase()` |
+| Docs | `manual-de-usuario-formato.md` §3.4.1.1 («Primer Ingreso desde el Sitio Web Público»; era `manual-de-usuario.md` §8.5.2) | El flujo como es: tres campos, requisitos, paginador, «Guardar» y el paso final. Se corrigió además que la respuesta «es sensible a mayúsculas»: el servidor la compara con `trim().toLowerCase()` |
 
 **Paginador.**
 
@@ -112,7 +149,7 @@ No había audio en ninguna de las dos apps. `/admin/dashboard/configuracion` era
 | FE | `3000-sitio-web/src/shared/ui/molecules/notification.tsx` | Suena con cada aviso nuevo, incluido el que cambia de texto sin desmontarse, y no con cada render. El `setTimeout` cancelable evita que el modo estricto de React lo toque dos veces |
 | FE | `3000-sitio-web/src/features/administracion/configuracion/` (nuevo) y `app/admin/dashboard/configuracion/page.tsx` | La pantalla con `EncabezadoPanel`, un interruptor (el `Switch` de siempre) y los botones «Escuchar: Éxito / Advertencia / Error», que suenan aunque esté silenciado |
 | FE | `features/administracion/buscador/lib/indice-panel.ts` | Configuración entra al buscador del panel («sonido», «silenciar», «preferencias»…) |
-| Docs | `9-accesibilidad.md` §3.4, `2-convenciones` §10.5, `manual-de-usuario.md` §10.9.2, `scripts/mapa/descripciones.md` | La regla (el sonido acompaña, nunca es el único canal), `Notification` en las piezas compartidas, el manual y el mapa |
+| Docs | `9-accesibilidad.md` §3.4, `2-convenciones` §10.5, `manual-de-usuario-formato.md` §3.4.2.9.2 (era `manual-de-usuario.md` §10.9.2), `scripts/mapa/descripciones.md` | La regla (el sonido acompaña, nunca es el único canal), `Notification` en las piezas compartidas, el manual y el mapa |
 
 **Por qué en el navegador y no en la cuenta.** Se hizo igual que el tema oscuro (`CLAVE_TEMA`). Quien comparte oficina quiere silencio en ese equipo, no en todos. Además, así no hace falta columna, migración ni endpoint.
 
@@ -134,7 +171,7 @@ No se probó con altavoces ni dentro del panel con sesión. Las dos cosas quedan
 **Queda.**
 
 - Mi perfil, Revisión y las cargas siguen con sus mensajes propios, que no suenan. Si se quiere sonido ahí, que usen `Notification`, no un audio aparte (`9-accesibilidad` §3.4).
-- El manual (§10.9.2) describe en Configuración «preguntas de seguridad» y «notificaciones», que no existen todavía.
+- El manual (`manual-de-usuario-formato.md` §3.4.2.9.2) describe en Configuración «preguntas de seguridad» y «notificaciones», que no existen todavía.
 
 ---
 

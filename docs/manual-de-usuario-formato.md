@@ -529,19 +529,20 @@ Este procedimiento describe el paso a paso para el funcionario que inicia sesió
 > **[Captura: Formulario de Inicio de Sesión Sitio Web (Móvil)]**
 > *Formulario de acceso del Sitio Web Público diligenciado con correo corporativo y contraseña provisoria. (Móvil).*
 
-3. **Pantalla de bienvenida y configuración obligatoria:** Al comprobar los datos de acceso, el sistema identifica que se trata del primer ingreso del funcionario y presenta de forma automática la pantalla de primer ingreso (`/first-login`). En esta vista se solicita actualizar la seguridad de la cuenta antes de continuar hacia el portal.
+3. **Pantalla de bienvenida y configuración obligatoria:** Al comprobar los datos de acceso, el sistema identifica que se trata del primer ingreso del funcionario y presenta de forma automática la pantalla de primer ingreso (`/first-login`). En esta vista se solicita actualizar la seguridad de la cuenta antes de continuar hacia el portal. A un lado (arriba en el móvil y la tablet) se indica qué se pide en cada paso, con un paginador **«Anterior 1 2 3 Siguiente»** que muestra en qué paso se está; al otro lado está el formulario.
 
 > **[Captura: Pantalla de Bienvenida y Configuración Inicial Sitio Web]**
-> *Pantalla de primer ingreso en el Sitio Web con saludo al funcionario y solicitud de actualización de seguridad.*
+> *Pantalla de primer ingreso en el Sitio Web con la indicación del paso, el paginador y el formulario de actualización de seguridad.*
 >
 > **[Captura: Pantalla de Bienvenida y Configuración Inicial Sitio Web (Móvil)]**
-> *Pantalla de primer ingreso en el Sitio Web con saludo al funcionario y solicitud de actualización de seguridad. (Móvil).*
+> *Pantalla de primer ingreso en el Sitio Web con la indicación del paso, el paginador y el formulario de actualización de seguridad. (Móvil).*
 
-4. **Establecimiento de la contraseña definitiva:** En la pantalla de cambio de clave, el funcionario debe registrar su nueva contraseña personal:
+4. **Establecimiento de la contraseña definitiva (paso 1, «Actualiza tu seguridad»):** En la pantalla de cambio de clave, el funcionario debe registrar su nueva contraseña personal:
    * En el campo **"Contraseña temporal"**, se digita la clave provisoria recibida.
-   * En el campo **"Nueva contraseña"**, se escribe la nueva clave personal. La interfaz cuenta con un validador interactivo que confirma en tiempo real el cumplimiento de las políticas (mínimo 12 caracteres, combinar 3 de 4 opciones: mayúsculas, minúsculas, números o símbolos, sin emojis ni tabulaciones, y no demasiado larga).
+   * En el campo **"Nueva contraseña"**, se escribe la nueva clave personal. Al entrar en este campo aparece la lista de requisitos de la política (mínimo 12 caracteres, combinar 3 de 4 opciones: mayúsculas, minúsculas, números o símbolos, sin emojis ni tabulaciones, y no demasiado larga), que se van marcando a medida que se cumplen.
    * En el campo **"Ingresa nuevamente la contraseña"**, se reescribe la nueva clave para certificar la coincidencia exacta.
-   * Se hace clic en el botón oscuro **"Continuar"**.
+   * El ícono del ojo muestra u oculta lo escrito en cada campo.
+   * Se hace clic en el botón oscuro **"Continuar"** (o en «Siguiente» del paginador), que revisa los tres campos y pasa al paso 2. Si algo falta o no coincide, lo indica debajo del campo.
 
 > **[Captura: Contraseña Definitiva Sitio Web]**
 > *Campos de ingreso de contraseña temporal, nueva clave y confirmación con validador de políticas de seguridad en el Sitio Web.*
@@ -549,10 +550,11 @@ Este procedimiento describe el paso a paso para el funcionario que inicia sesió
 > **[Captura: Contraseña Definitiva Sitio Web (Móvil)]**
 > *Campos de ingreso de contraseña temporal, nueva clave y confirmación con validador de políticas de seguridad en el Sitio Web. (Móvil).*
 
-5. **Configuración de preguntas de seguridad:** En la pantalla "Protege el acceso a tu cuenta", se deben configurar obligatoriamente las tres preguntas de seguridad para habilitar la recuperación de la cuenta ante un posible olvido:
-   * Se despliega el menú selector y se elige una pregunta de la lista predefinida del sistema.
-   * Se escribe la respuesta correspondiente en el campo de texto (la respuesta es confidencial y sensible a mayúsculas y caracteres).
-   * Se pulsa el botón **"Continuar"** para repetir la selección con la segunda y tercera pregunta del catálogo.
+5. **Configuración de preguntas de seguridad (paso 2):** En la pantalla "Protege el acceso a tu cuenta", se deben configurar obligatoriamente las tres preguntas de seguridad, una a la vez («Pregunta 1 de 3»), para habilitar la recuperación de la cuenta ante un posible olvido:
+   * Se despliega el menú selector y se elige una pregunta de la lista predefinida del sistema. Una pregunta ya elegida no se puede repetir.
+   * Se escribe la respuesta correspondiente en el campo de texto. La respuesta es confidencial; no distingue mayúsculas de minúsculas ni tiene en cuenta los espacios al principio o al final.
+   * Se pulsa el botón **"Continuar"** para repetir la selección con la segunda y tercera pregunta del catálogo. En la tercera, el botón dice **"Guardar"**.
+   * **"Atrás"** vuelve a la pregunta anterior; **«Anterior»** en el paginador vuelve al paso 1 sin perder lo escrito.
 
 > **[Captura: Preguntas de Seguridad Sitio Web]**
 > *Selector de preguntas del catálogo del sistema y registro de respuestas de seguridad en el Sitio Web.*
@@ -560,7 +562,7 @@ Este procedimiento describe el paso a paso para el funcionario que inicia sesió
 > **[Captura: Preguntas de Seguridad Sitio Web (Móvil)]**
 > *Selector de preguntas del catálogo del sistema y registro de respuestas de seguridad en el Sitio Web. (Móvil).*
 
-6. **Confirmación, cierre de sesión y evaluación de permisos:** Al procesar las respuestas de seguridad, el sistema guarda la configuración definitiva y muestra el mensaje de confirmación **"¡Configuración completada!"**, recordando guardar las respuestas en un lugar seguro. Al presionar el botón **"Iniciar sesión"**, el sistema finaliza la sesión provisional y regresa a la pantalla de inicio de sesión (`/login`). El funcionario debe iniciar sesión con su contraseña definitiva recién creada, tras lo cual el aplicativo evalúa los permisos específicos de su cuenta:
+6. **Confirmación, cierre de sesión y evaluación de permisos (paso 3):** Al procesar las respuestas de seguridad, el sistema guarda la configuración definitiva y muestra el mensaje de confirmación **"¡Configuración completada!"**, recordando guardar las respuestas en un lugar seguro. Al presionar el botón **"Iniciar sesión"**, el sistema finaliza la sesión provisional y regresa a la pantalla de inicio de sesión (`/login`). Si se quiere salir antes de terminar, el enlace «Iniciar sesión» bajo el formulario cierra la sesión temporal sin guardar nada. El funcionario debe iniciar sesión con su contraseña definitiva recién creada, tras lo cual el aplicativo evalúa los permisos específicos de su cuenta:
    * **Administradores:** El sistema los redirige de forma directa al **Panel Administrativo** (`/admin/dashboard`) para gestionar usuarios, roles, bitácora de auditoría y revisión de contenidos.
    * **Editores de Contenido (y roles derivados autorizados):** El sistema los redirige a la **página de inicio del Sitio Web Público** (`/inicio`), donde se despliega de inmediato el **botón flotante de edición** en la esquina de la pantalla para maquetar páginas y gestionar contenidos autorizados.
    * **Directores y Subdirectores (cuentas sin permisos para este portal):** Al estar configurados exclusivamente para la consulta analítica en la Intranet y no poseer permisos de edición ni de acceso al panel en el Sitio Web, el sistema detiene el acceso y muestra la alerta: *"Tu cuenta no tiene permisos de edición ni de acceso al panel."*, orientándolos a ingresar a través del portal de la Intranet (ver [Sección 3.5.1.1: Validaciones en el Primer Ingreso](#3511-validaciones-en-el-primer-ingreso)).
@@ -1561,14 +1563,15 @@ Flujo para actualizar los datos:
 
 Contiene las preferencias operativas del usuario:
 
+* **Sonido de los avisos:** Activa o silencia el tono corto que acompaña a los avisos flotantes de éxito, advertencia y error. Viene activado. La elección se guarda en el navegador que se esté usando, así que en otro equipo o navegador hay que volver a elegirla. Los botones **Éxito**, **Advertencia** y **Error** permiten escuchar cada tono.
 * **Actualización de preguntas de seguridad:** Permite al usuario reconfigurar sus tres preguntas y respuestas de seguridad. Requiere confirmar la contraseña actual antes de realizar cambios.
 * **Notificaciones:** Activa o desactiva la recepción de alertas del sistema (ej. notificación cuando un borrador es aprobado o rechazado).
 
 > **[Captura: Configuración Usuario]**
-> *Vista del módulo "Configuración" en el Panel Administrativo con las opciones de preguntas de seguridad y notificaciones.*
+> *Vista del módulo "Configuración" en el Panel Administrativo con el interruptor del sonido de los avisos y los botones para escuchar cada tono.*
 >
 > **[Captura: Configuración Usuario (Móvil)]**
-> *Vista del módulo "Configuración" en el Panel Administrativo con las opciones de preguntas de seguridad y notificaciones. (Móvil).*
+> *Vista del módulo "Configuración" en el Panel Administrativo con el interruptor del sonido de los avisos y los botones para escuchar cada tono. (Móvil).*
 
 ---
 
