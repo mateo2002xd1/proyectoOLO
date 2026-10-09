@@ -130,8 +130,16 @@ export default function UsuariosView() {
     try {
       let response;
       if (editingUserId) {
-        const data: CambiosUsuario = { name, apellidos, email, role_id: roleId };
-        if (expirationDate) data.expiration_date = expirationDate;
+        // La fecha va siempre, también vacía: `null` es «sin caducidad». Mandarla solo
+        // si tenía valor hacía que «Borrar» en el calendario no llegara a la base, y la
+        // API —que no recibía el campo— dejaba la fecha anterior.
+        const data: CambiosUsuario = {
+          name,
+          apellidos,
+          email,
+          role_id: roleId,
+          expiration_date: expirationDate || null,
+        };
         if (resetPassword) data.reset_password = true;
         if (resetSecurityQuestions) data.reset_security_questions = true;
         response = await updateUser(editingUserId, data);

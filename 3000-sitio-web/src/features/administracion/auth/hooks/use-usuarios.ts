@@ -66,7 +66,8 @@ export type CambiosUsuario = Partial<{
   email: string;
   role_id: string;
   status: string;
-  expiration_date: string;
+  /** `null` quita la caducidad. */
+  expiration_date: string | null;
   reset_password: boolean;
   reset_security_questions: boolean;
   permissions?: string[]; // lista de permission IDs a asignar al rol
