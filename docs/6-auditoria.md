@@ -5,6 +5,55 @@
 
 ---
 
+## sesión 09-10-2026 (6.ª parte): los avisos de éxito, advertencia y error suenan, y Configuración deja de estar «en construcción»
+
+**Qué se pidió.** Añadir sonido a los avisos de estado: error, aprobado (éxito) y advertencia.
+
+**Lo que había.** Los avisos de estado no siguen un solo patrón:
+
+- `Notification` (el aviso flotante del panel) es el único con los cuatro estados, y hoy solo lo usan Usuarios y Roles.
+- Mi perfil, Revisión y las cargas muestran su propio mensaje dentro de la página. Al aprobar en Revisión no aparece ningún aviso de éxito.
+- La intranet no tiene aviso flotante.
+
+No había audio en ninguna de las dos apps. `/admin/dashboard/configuracion` era una página «en construcción» y el buscador del panel la excluía por eso.
+
+**Decisión del usuario.**
+
+- **Alcance:** solo suena el aviso flotante. Cualquier pantalla que pase a usarlo sonará sin cambiar nada más.
+- **Control:** suena por defecto y se puede silenciar desde Configuración.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| FE | `3000-sitio-web/src/shared/lib/sonido-avisos/` (nuevo) | Tres tonos de menos de medio segundo, generados con Web Audio y sin archivos: éxito sube una quinta, advertencia repite un la, error baja un tritono. `info` no suena. La preferencia se guarda en `localStorage` (`olo-sonido-avisos`): solo se escribe `'apagado'`, y sin valor suena. Se sincroniza entre pestañas. Si el navegador tarda más de 300 ms en dejar sonar, no suena |
+| FE | `3000-sitio-web/src/shared/ui/molecules/notification.tsx` | Suena con cada aviso nuevo, incluido el que cambia de texto sin desmontarse, y no con cada render. El `setTimeout` cancelable evita que el modo estricto de React lo toque dos veces |
+| FE | `3000-sitio-web/src/features/administracion/configuracion/` (nuevo) y `app/admin/dashboard/configuracion/page.tsx` | La pantalla con `EncabezadoPanel`, un interruptor (el `Switch` de siempre) y los botones «Escuchar: Éxito / Advertencia / Error», que suenan aunque esté silenciado |
+| FE | `features/administracion/buscador/lib/indice-panel.ts` | Configuración entra al buscador del panel («sonido», «silenciar», «preferencias»…) |
+| Docs | `9-accesibilidad.md` §3.4, `2-convenciones` §10.5, `manual-de-usuario.md` §10.9.2, `scripts/mapa/descripciones.md` | La regla (el sonido acompaña, nunca es el único canal), `Notification` en las piezas compartidas, el manual y el mapa |
+
+**Por qué en el navegador y no en la cuenta.** Se hizo igual que el tema oscuro (`CLAVE_TEMA`). Quien comparte oficina quiere silencio en ese equipo, no en todos. Además, así no hace falta columna, migración ni endpoint.
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| Módulo real en Chrome sin ventana, cada sonido renderizado con `OfflineAudioContext` | ✅ Duran 0,25–0,37 s, pico 0,18 sobre 1 y la primera nota a 660, 880 y 520 Hz (la esperada). Sin chasquidos: el salto máximo entre muestras es 0,023 |
+| Preferencia en el mismo Chrome | ✅ Por defecto suena. Apagar guarda `'apagado'` y encender borra la clave. Silenciado no crea ni el contexto de audio. `info` no suena. La muestra suena aunque esté silenciado. El suscriptor se entera y deja de enterarse al quitarlo |
+| Primer gesto (Safari solo deja arrancar el audio dentro de un clic) | ✅ Con sonido, el primer clic o tecla prepara el contexto una vez. Silenciado no crea nada |
+| Navegador que tarda 400 ms en dejar sonar | ✅ Silencio en vez de un tono a destiempo |
+| `Notification` real en `<StrictMode>` (React 19 de desarrollo, happy-dom) | ✅ Cada aviso suena una vez. Un render con el mismo aviso no repite. Otro aviso sin desmontar sí suena. `info` y el silenciado, no |
+| Control de esa prueba: el mismo efecto sin el `setTimeout` | Suena dos veces al montar. La prueba sí detecta el doble montaje |
+| `ConfiguracionView` real con el CSS de la app, a 360, 768, 1024 y 1440 px en claro y oscuro | ✅ Sin desborde, 16 px de margen en el móvil, el interruptor dentro de la tarjeta y los botones de 42 px de alto en una fila. A 360 px «Escuchar:» baja a su propia línea; antes, «Error» quedaba solo en una segunda fila |
+| `tsc --noEmit` del sitio; `eslint` de lo tocado | ✅ |
+
+No se probó con altavoces ni dentro del panel con sesión. Las dos cosas quedan para el usuario: escuchar los tonos en Configuración y crear o borrar algo en Usuarios.
+
+**Queda.**
+
+- Mi perfil, Revisión y las cargas siguen con sus mensajes propios, que no suenan. Si se quiere sonido ahí, que usen `Notification`, no un audio aparte (`9-accesibilidad` §3.4).
+- El manual (§10.9.2) describe en Configuración «preguntas de seguridad» y «notificaciones», que no existen todavía.
+
+---
+
 ## sesión 09-10-2026 (5.ª parte): quitar la fecha de caducidad de un usuario no llegaba a la base
 
 **Qué pasaba.** En `/admin/users`, al editar una cuenta y pulsar «Borrar» en el calendario de

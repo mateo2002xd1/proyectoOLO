@@ -20,15 +20,13 @@
 
 Paquetes compartidos: 7 · migraciones: 42 · modelos: 23.
 
-## Carpetas sin descripción (6)
+## Carpetas sin descripción (4)
 
 Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scripts/mapa/descripciones.md` con una línea: `` - `ruta/` — para qué es ``.
 
 - `3000-sitio-web/data_temporal/`
-- `3000-sitio-web/src/features/administracion/configuracion/`
 - `3000-sitio-web/src/features/sitio-web/alertas-inversion/`
 - `3000-sitio-web/src/features/sitio-web/fuentes-futuras-empleo/`
-- `3000-sitio-web/src/shared/lib/sonido-avisos/`
 - `4000-api-backend/src/use-cases/alertas-inversion/`
 
 ## Carpetas
@@ -57,7 +55,7 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
     │   │   ├── auditoria/                     historial de cambios (RF-07)
     │   │   ├── auth/                          login, primer ingreso, recuperación, usuarios y roles
     │   │   ├── buscador/                      buscador del propio panel
-    │   │   ├── configuracion/                 ⚠ sin descripción
+    │   │   ├── configuracion/                 preferencias del panel en este navegador, como el sonido de los avisos
     │   │   ├── mi-perfil/                     la cuenta de quien inició sesión
     │   │   └── respaldos/                     restaurar versiones archivadas de una página
     │   ├── paginas/                           páginas editables con Puck, organizadas por etapa del ciclo
@@ -80,7 +78,7 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
     │   │   ├── inactividad/                   aviso y cierre de sesión por inactividad
     │   │   ├── mobile/                        navegación mobile del panel: barra de abajo con el logo al centro
     │   │   ├── pwa/                           manifiesto, íconos y registro del service worker
-    │   │   ├── sonido-avisos/                 ⚠ sin descripción
+    │   │   ├── sonido-avisos/                 el tono de los avisos flotantes y la preferencia de silenciarlo
     │   │   └── tema/                          tema oscuro del panel, sin parpadeo al cargar
     │   └── ui/                                sistema de diseño institucional y catálogo del editor
     │       ├── atoms/                         piezas mínimas: botón, avatar, interruptor…

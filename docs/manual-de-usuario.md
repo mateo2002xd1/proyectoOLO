@@ -1048,6 +1048,7 @@ Flujo para actualizar los datos:
 
 Contiene las preferencias operativas del usuario:
 
+* **Sonido de los avisos:** Activa o silencia el tono corto que acompaña a los avisos flotantes de éxito, advertencia y error. Viene activado. La elección se guarda en el navegador que se esté usando, así que en otro equipo o navegador hay que volver a elegirla. Los botones **Éxito**, **Advertencia** y **Error** permiten escuchar cada tono.
 * **Actualización de preguntas de seguridad:** Permite al usuario reconfigurar sus tres preguntas y respuestas de seguridad. Requiere confirmar la contraseña actual antes de realizar cambios.
 * **Notificaciones:** Activa o desactiva la recepción de alertas del sistema (ej. notificación cuando un borrador es aprobado o rechazado).
 

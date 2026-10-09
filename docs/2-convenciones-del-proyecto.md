@@ -303,6 +303,7 @@ bloque de Puck, un modal— responde a **su contenedor** (`@container` y las var
 | `BarraFiltros` + `CampoFiltro` | `3000-sitio-web/src/shared/ui/molecules/barra-filtros.tsx` | Filtros de una tabla: fila en escritorio, plegados tras «Filtros (n)» por debajo de `lg` |
 | `EncabezadoPanel` | `3000-sitio-web/src/shared/ui/molecules/encabezado-panel.tsx` | Título, descripción y acciones de cada pantalla del panel |
 | `Alert` | `3000-sitio-web/src/shared/ui/molecules/alert.tsx` | Diálogo corto: hoja inferior en el móvil, centrado desde `sm` |
+| `Notification` | `3000-sitio-web/src/shared/ui/molecules/notification.tsx` | Aviso flotante de éxito, advertencia, error o información. Los tres primeros suenan, salvo que se silencien en Configuración (`9-accesibilidad` §3.4) |
 | `NavegacionMobile` | `src/shared/lib/mobile/` de cada frontend | Por debajo de `lg`, las secciones en una barra abajo con el logo al centro y una hoja para lo que no cabe |
 
 Antes de escribir una tabla, una banda de filtros o un encabezado, se usa la pieza. Si no

@@ -95,6 +95,7 @@ no sabes qué poner, esa es la señal de que la carpeta no tiene un lugar claro 
 - `3000-sitio-web/src/features/administracion/auditoria/` — historial de cambios (RF-07)
 - `3000-sitio-web/src/features/administracion/auth/` — login, primer ingreso, recuperación, usuarios y roles
 - `3000-sitio-web/src/features/administracion/buscador/` — buscador del propio panel
+- `3000-sitio-web/src/features/administracion/configuracion/` — preferencias del panel en este navegador, como el sonido de los avisos
 - `3000-sitio-web/src/features/administracion/mi-perfil/` — la cuenta de quien inició sesión
 - `3000-sitio-web/src/features/administracion/respaldos/` — restaurar versiones archivadas de una página
 - `3000-sitio-web/src/features/paginas/` — páginas editables con Puck, organizadas por etapa del ciclo
@@ -114,6 +115,7 @@ no sabes qué poner, esa es la señal de que la carpeta no tiene un lugar claro 
 - `3000-sitio-web/src/shared/lib/inactividad/` — aviso y cierre de sesión por inactividad
 - `3000-sitio-web/src/shared/lib/mobile/` — navegación mobile del panel: barra de abajo con el logo al centro
 - `3000-sitio-web/src/shared/lib/pwa/` — manifiesto, íconos y registro del service worker
+- `3000-sitio-web/src/shared/lib/sonido-avisos/` — el tono de los avisos flotantes y la preferencia de silenciarlo
 - `3000-sitio-web/src/shared/lib/tema/` — tema oscuro del panel, sin parpadeo al cargar
 - `3000-sitio-web/src/shared/ui/` — sistema de diseño institucional y catálogo del editor
 - `3000-sitio-web/src/shared/ui/atoms/` — piezas mínimas: botón, avatar, interruptor…
