@@ -356,7 +356,7 @@ Al crear la cuenta, el Administrador establece una **contraseña temporal** y la
 > **[Captura: Login Primer Ingreso (Móvil)]**
 > *Formulario de inicio de sesión con las credenciales temporales. (Vista en dispositivo móvil).*
 
-2. **Detección automática del primer ingreso:** El sistema detecta que la cuenta tiene pendiente un cambio de contraseña e interrumpe el flujo de redirección normal, mostrando obligatoriamente la pantalla de configuración inicial.
+2. **Detección automática del primer ingreso:** El sistema detecta que la cuenta tiene pendiente un cambio de contraseña e interrumpe el flujo de redirección normal, mostrando obligatoriamente la pantalla de configuración inicial. A un lado (arriba en el móvil y la tablet) se indica qué se pide en cada paso, con un paginador **«Anterior 1 2 3 Siguiente»** que muestra en qué paso se está; al otro lado está el formulario.
 
 > **[Captura: Pantalla Configuración Inicial]**
 > *Pantalla de configuración obligatoria que aparece tras el primer inicio de sesión.*
@@ -364,7 +364,7 @@ Al crear la cuenta, el Administrador establece una **contraseña temporal** y la
 > **[Captura: Pantalla Configuración Inicial (Móvil)]**
 > *Pantalla de configuración obligatoria que aparece tras el primer inicio de sesión. (Vista en dispositivo móvil).*
 
-3. **Establecimiento de nueva contraseña:** El sistema solicitará al funcionario crear su contraseña definitiva. Se debe digitar la nueva contraseña en el primer campo y repetirla en el segundo campo de confirmación, cumpliendo estrictamente los 5 lineamientos de la política de seguridad (ver sección 6.3).
+3. **Establecimiento de nueva contraseña (paso 1, «Actualiza tu seguridad»):** Se escribe la contraseña temporal, la nueva contraseña y, en «Ingresa nuevamente la contraseña», la misma otra vez. Al entrar en «Nueva contraseña» aparece la lista de requisitos de la política de seguridad (ver sección 6.3), que se van marcando a medida que se cumplen. El ícono del ojo muestra u oculta lo escrito. **«Continuar»** (o «Siguiente» en el paginador) revisa los tres campos y pasa al paso 2; si algo falta o no coincide, lo dice debajo del campo.
 
 > **[Captura: Nueva Contraseña Primer Ingreso]**
 > *Campos de nueva contraseña y confirmación con indicador visual de cumplimiento de políticas de seguridad.*
@@ -372,9 +372,10 @@ Al crear la cuenta, el Administrador establece una **contraseña temporal** y la
 > **[Captura: Nueva Contraseña Primer Ingreso (Móvil)]**
 > *Campos de nueva contraseña y confirmación con indicador visual de cumplimiento de políticas de seguridad. (Vista en dispositivo móvil).*
 
-4. **Configuración de preguntas de seguridad:** A continuación, el sistema solicitará configurar **tres preguntas de seguridad**. Para cada pregunta, se debe:
-   * Desplegar el menú y seleccionar la pregunta deseada de la lista predefinida.
-   * Digitar la respuesta exacta en el campo de texto correspondiente (la respuesta es sensible a mayúsculas).
+4. **Configuración de preguntas de seguridad (paso 2, «Protege el acceso a tu cuenta»):** A continuación, el sistema solicitará configurar **tres preguntas de seguridad**, una a la vez («Pregunta 1 de 3»). Para cada pregunta, se debe:
+   * Desplegar el menú y seleccionar la pregunta deseada de la lista predefinida. Una pregunta ya elegida no se puede repetir.
+   * Digitar la respuesta en el campo de texto correspondiente. No distingue mayúsculas de minúsculas ni tiene en cuenta los espacios al principio o al final.
+   * «Atrás» vuelve a la pregunta anterior; «Anterior» en el paginador vuelve al paso 1 sin perder lo escrito.
 
 > **[Captura: Configurar Preguntas de Seguridad]**
 > *Formulario de configuración inicial de las tres preguntas de seguridad con sus respectivos campos de respuesta.*
@@ -382,7 +383,7 @@ Al crear la cuenta, el Administrador establece una **contraseña temporal** y la
 > **[Captura: Configurar Preguntas de Seguridad (Móvil)]**
 > *Formulario de configuración inicial de las tres preguntas de seguridad con sus respectivos campos de respuesta. (Vista en dispositivo móvil).*
 
-5. **Confirmación y acceso:** Se debe hacer clic en el botón **"Guardar y continuar"**. Si todo es correcto, el sistema redirigirá automáticamente al entorno correspondiente según el rol asignado.
+5. **Confirmación y acceso (paso 3):** En la tercera pregunta el botón dice **«Guardar»**. Si todo es correcto, aparece «¡Configuración completada!» con el botón **«Iniciar sesión»**, que lleva al inicio de sesión para entrar ya con la contraseña nueva. Si se quiere salir antes de terminar, el enlace «Iniciar sesión» bajo el formulario cierra la sesión temporal sin guardar nada.
 
 ## 8.6. Cierre de Sesión
 
