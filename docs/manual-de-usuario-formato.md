@@ -301,10 +301,11 @@ El procedimiento se efectúa según el portal de acceso utilizado por el funcion
 #### 3.2.3.6. Cierre de Sesión y Expiración Preventiva
 
 El cierre de sesión seguro es una práctica obligatoria para salvaguardar la privacidad de las cuentas y proteger la información del observatorio, especialmente al operar en estaciones de trabajo compartidas o redes abiertas:
-* **Cierre de sesión en el Panel Administrativo:** Los administradores finalizan su sesión activa mediante el menú desplegable de perfil, ubicado en la parte inferior del menú lateral izquierdo en computadores o en la barra superior en dispositivos móviles.
-* **Cierre de sesión en el Sitio Web Público:** Los usuarios autenticados disponen de un botón flotante de salida ubicado en la esquina inferior izquierda de la pantalla, que permite cerrar la sesión directamente; al finalizarla, los botones flotantes desaparecen y la vista vuelve a la modalidad de consulta ciudadana estándar.
-* **Cierre de sesión en la Intranet:** Administradores, editores y directivos autenticados cierran su sesión mediante el botón de salida segura ubicado en la esquina superior derecha de la barra superior de la Intranet (disponible tanto en computador como en dispositivos móviles).
-* **Finalización de la sesión:** Al presionar el botón de salida segura, el sistema finaliza la sesión activa en el navegador y redirige al usuario a la pantalla de inicio de sesión correspondiente.
+* **Cierre de sesión en el Panel Administrativo:** Los administradores finalizan su sesión activa mediante el menú desplegable de perfil, ubicado en la parte inferior del menú lateral izquierdo en computadores o en la barra superior en dispositivos móviles, seleccionando la opción **"Cerrar sesión"**.
+* **Cierre de sesión en el Sitio Web Público:** Los usuarios con permisos de edición disponen de un botón flotante de salida ubicado en la esquina inferior derecha de la pantalla, justo debajo del botón de edición (ícono de lápiz). Al presionarlo, el sistema despliega una ventana de confirmación (*"¿Cerrar sesión?"*); tras confirmar, se cierra la sesión, desaparecen los controles de edición y la página regresa a la vista de consulta ciudadana habitual.
+* **Cierre de sesión en la Intranet:** Opera de manera diferenciada según las funciones del rol asignado:
+  * *Usuarios con permisos de edición (Administrador o Editor):* Cierran sesión desde el botón flotante ubicado en la esquina inferior derecha (justo debajo del botón de lápiz), el cual abre una ventana de confirmación (*"¿Cerrar sesión?"*). En este caso, el botón de salida de la barra superior se oculta automáticamente.
+  * *Usuarios de solo consulta sin permisos de edición (como Director o Subdirector):* No visualizan controles flotantes en pantalla; en su lugar, utilizan el botón **"Cerrar sesión"** ubicado en el extremo derecho de la barra superior de navegación.
 * **Expiración preventiva por inactividad:** Como salvaguarda de seguridad institucional, toda sesión expira de forma automática tras **15 minutos** continuos sin interacción, protegiendo las estaciones de trabajo desatendidas.
 
 *(Para consultar la guía visual paso a paso con las capturas de pantalla del cierre de sesión, ver [Sección 3.4.1.4: Procedimiento de Cierre de Sesión](#3414-procedimiento-de-cierre-de-sesión)).*
@@ -359,16 +360,16 @@ El sistema se compone de tres portales complementarios, cada uno con propósitos
    * **Propósito:** Entorno privado y protegido orientado al seguimiento estratégico, consulta de tableros de indicadores y trabajo interno de directivos y funcionarios del SENA.
    * **Elementos y páginas fijas del sistema:**
      * *Pantalla de bloqueo y acceso obligatorio:* Página fija que intercepta cualquier navegación no autenticada, forzando el ingreso exclusivo con cuenta corporativa `@sena.edu.co`.
-     * *Control de salida:* Acceso seguro de cierre de sesión siempre disponible en la barra superior.
+     * *Control de salida:* Mecanismo seguro de cierre de sesión adaptado según el rol: visible en la barra superior de navegación para roles de solo consulta (como Director o Subdirector) o mediante el botón flotante inferior con ventana modal de confirmación para funcionarios con permisos de edición.
    * **Componentes ajustables de Cabecera y Pie internos:**
      * Al igual que en el sitio público, el marco superior e inferior de la Intranet está respaldado por componentes configurables que los editores pueden adaptar según las secciones internas del observatorio.
    * **Área central dinámica:** Lienzo donde se presentan las secciones analíticas e indicadores, con la posibilidad de incorporar componentes opcionales de visualización como tableros de Power BI.
 
 > **[Captura: Elementos Fijos Intranet]**
-> *Esquema general de la Intranet con barra superior con los controles fijos (buscador interno y botón de cierre de sesión), el área de contenido dinámico central y el pie de página.*
+> *Esquema general de la Intranet con barra superior con los controles fijos (buscador interno y botón de cierre de sesión para consulta), el área de contenido dinámico central y el pie de página.*
 >
 > **[Captura: Elementos Fijos Intranet (Móvil)]**
-> *Esquema general de la Intranet con barra superior con los controles fijos (buscador interno y botón de cierre de sesión), el área de contenido dinámico central y el pie de página. (Móvil).*
+> *Esquema general de la Intranet con barra superior con los controles fijos (buscador interno y botón de cierre de sesión para consulta), el área de contenido dinámico central y el pie de página. (Móvil).*
 
 #### 3.3.1.2. Botón Flotante de Edición: Despliegue Condicional por Sesión y Permisos
 
@@ -398,7 +399,7 @@ Uno de los elementos interactivos más importantes en el Sitio Web y la Intranet
 > *Despliegue condicional del botón flotante de edición en pantalla para un usuario autenticado con permisos activos. (Móvil).*
 
 * **Caso 3: Usuario autenticado sin permisos de edición (Directores y Subdirectores):**
-  * Al iniciar sesión con cuenta corporativa `@sena.edu.co`, el sistema identifica que el usuario posee un rol configurado en modo de **solo lectura**. Debido a que no cuenta con facultades de edición ni administración, el botón flotante **permanece completamente oculto**, impidiendo que el personal directivo ingrese por error al modo de diseño o altere contenidos.
+  * Al iniciar sesión con cuenta corporativa `@sena.edu.co`, el sistema identifica que el usuario posee un rol configurado en modo de **solo lectura**. Debido a que no cuenta con facultades de edición ni administración, los botones flotantes inferiores **permanecen completamente ocultos**, impidiendo que el personal directivo ingrese por error al modo de diseño o altere contenidos. En este caso, la opción para finalizar la sesión se mantiene accesible y visible permanentemente en la barra superior de navegación.
 
 > **[Captura: Vista Directiva Solo Lectura sin Botón Flotante]**
 > *Pantalla de la Intranet para roles directivos en modalidad de solo lectura, donde el botón flotante de edición permanece completamente oculto.*
@@ -883,11 +884,13 @@ Este procedimiento permite a cualquier funcionario restablecer de forma autónom
 
 *(Nota: Para consultar el comportamiento ante el cierre involuntario por inactividad, la advertencia preventiva y las alertas de sesión expirada en la pantalla de acceso, remitirse a la [Sección 3.5.1.4: Cierre de Sesión por Inactividad y Alertas de Expiración](#3514-cierre-de-sesión-por-inactividad-y-alertas-de-expiración)).*
 
-El sistema provee mecanismos específicos de salida segura según el entorno en el que se encuentre trabajando el usuario:
+El sistema provee mecanismos específicos de salida segura según el entorno en el que se encuentre trabajando el usuario, adaptando la interfaz para garantizar comodidad visual y prevenir desconexiones involuntarias:
 
 ##### Cierre de Sesión desde el Panel Administrativo
 
-1. **Acceso al menú desplegable de perfil:** En el entorno de escritorio, se hace clic sobre el bloque con el nombre y foto de perfil del funcionario ubicado en la parte inferior del menú lateral izquierdo. Si se navega desde un dispositivo móvil, se presiona la foto de perfil ubicada en la barra de navegación (Navbar).
+El Panel Administrativo mantiene su mecanismo centralizado de salida a través del menú de perfil del usuario:
+
+1. **Acceso al menú desplegable de perfil:** En el entorno de escritorio, se hace clic sobre el bloque interactivo con el nombre y correo del funcionario ubicado en la base inferior del menú lateral izquierdo (acompañado de un ícono de flecha hacia arriba). Si se navega desde un dispositivo móvil, se presiona el bloque interactivo con el nombre del usuario ubicado en la barra superior de navegación.
 
 > **[Captura: Menú de perfil en Panel Admin]**
 > *Menú desplegable de perfil en el menú lateral del Panel Administrativo.*
@@ -895,7 +898,7 @@ El sistema provee mecanismos específicos de salida segura según el entorno en 
 > **[Captura: Menú de perfil en Panel Admin (Móvil)]**
 > *Menú desplegable de perfil en la barra superior del Panel Administrativo. (Móvil).*
 
-2. **Ejecución y cierre del sistema:** En el submenú contextual que se despliega en pantalla, se selecciona la opción **"Cerrar sesión"**. El sistema finaliza la sesión de inmediato de forma segura y redirige automáticamente al usuario a la pantalla de acceso principal (`/login`).
+2. **Ejecución y cierre del sistema:** En el submenú contextual que se despliega en pantalla, se selecciona la opción **"Cerrar sesión"** (identificada con el ícono de puerta y flecha de salida). El sistema finaliza la sesión de inmediato de forma segura y redirige automáticamente al usuario a la pantalla de acceso principal (`/login`).
 
 > **[Captura: Opción de cerrar sesión en Panel Admin]**
 > *Opción explícita de 'Cerrar sesión' en escritorio.*
@@ -905,15 +908,27 @@ El sistema provee mecanismos específicos de salida segura según el entorno en 
 
 ##### Cierre de Sesión desde el Sitio Web Público
 
-1. **Ubicación del control de salida flotante:** Mientras exista una sesión activa con privilegios, en la esquina inferior derecha de la pantalla se visualiza un menú flotante principal de herramientas (botón de lápiz). Justo debajo de este, se encuentra permanentemente visible un **botón flotante de salida** con el ícono de una puerta y una flecha.
+En el portal público, los usuarios autenticados con permisos de edición disponen de un control flotante con confirmación previa:
+
+1. **Ubicación del control de salida flotante:** Mientras exista una sesión activa con privilegios de edición (roles de Administrador o Editor), en la esquina inferior derecha de la pantalla se visualiza el menú flotante de acciones. Justo debajo del botón principal de edición (ícono de lápiz), se encuentra permanentemente visible el **botón circular de salida** (con ícono de puerta y flecha, y texto indicativo *"Salir de modo edición"* al pasar el cursor).
 
 > **[Captura: Botón Flotante de Salida en Sitio Web]**
-> *Botón flotante "Salir de modo edición" situado justo debajo del botón de herramientas principal en el Sitio Web Público.*
+> *Botón circular de salida situado justo debajo del botón del lápiz en la esquina inferior derecha del Sitio Web Público.*
 >
 > **[Captura: Botón Flotante de Salida en Sitio Web (Móvil)]**
-> *Botón flotante "Salir de modo edición" situado justo debajo del botón de herramientas principal en el Sitio Web Público. (Móvil).*
+> *Botón circular de salida situado justo debajo del botón del lápiz en la esquina inferior derecha del Sitio Web Público. (Móvil).*
 
-2. **Cierre de sesión y retorno a vista pública:** Al pasar el cursor sobre este control de salida, se visualiza el texto indicativo **"Salir de modo edición"**. Al hacer clic o pulsar sobre él, la sesión finaliza de inmediato, los botones flotantes de edición desaparecen de la pantalla y la página se recarga, regresando a la vista de solo lectura pública.
+2. **Confirmación de salida:** Al presionar el botón de salida, el sistema despliega una ventana de confirmación titulada **"¿Cerrar sesión?"** con dos opciones:
+   * **Cancelar:** Cierra la ventana emergente y mantiene la sesión abierta.
+   * **Cerrar sesión:** Confirma la salida del sistema y finaliza el modo de edición.
+
+> **[Captura: Modal de Confirmación Cerrar Sesión Sitio Web]**
+> *Ventana de confirmación '¿Cerrar sesión?' en el Sitio Web Público.*
+>
+> **[Captura: Modal de Confirmación Cerrar Sesión Sitio Web (Móvil)]**
+> *Ventana de confirmación '¿Cerrar sesión?' en el Sitio Web Público. (Móvil).*
+
+3. **Retorno a la vista pública:** Al confirmar la salida, el sistema finaliza la sesión activa, oculta los botones flotantes de edición y recarga la página en la vista ciudadana habitual.
 
 > **[Captura: Vista estándar del Sitio Web (Sesión cerrada)]**
 > *Pantalla recargada tras salir, mostrando la interfaz libre de controles flotantes de edición.*
@@ -923,16 +938,32 @@ El sistema provee mecanismos específicos de salida segura según el entorno en 
 
 ##### Cierre de Sesión desde la Intranet
 
-1. **Ubicación del botón de salida segura:** En la barra superior fija de la Intranet, tanto en computadores de escritorio como en dispositivos móviles, se encuentra un botón directo identificado con el ícono de salir (puerta y flecha) acompañado del texto **"Cerrar sesión"**.
+La Intranet adapta el mecanismo de salida según los permisos del rol asignado:
 
-> **[Captura: Ubicación del botón en Intranet]**
-> *Botón de salida segura ('Cerrar sesión') en el extremo derecho de la barra superior de la Intranet.*
+* **Caso 1: Funcionarios con permisos de edición (Administradores y Editores):**
+  1. **Ubicación del botón flotante:** El botón de salida de la barra superior se oculta automáticamente para mantener limpia la cabecera. El usuario utiliza el **botón circular flotante** situado en la esquina inferior derecha, justo debajo del botón de edición (ícono de lápiz).
+  2. **Confirmación de salida:** Al presionar el botón flotante, el sistema abre la ventana de confirmación titulada **"¿Cerrar sesión?"** con dos opciones:
+     * **Cancelar:** Cierra la ventana emergente y mantiene la sesión abierta.
+     * **Cerrar sesión:** Confirma la salida del sistema.
+  3. **Retorno al acceso:** Al confirmar, el sistema cierra la sesión y traslada al usuario a la pantalla de ingreso de la Intranet (`/login`).
+
+> **[Captura: Botón Flotante y Modal de Confirmación en Intranet (Usuarios con edición)]**
+> *Botón flotante inferior debajo del lápiz y ventana modal de confirmación '¿Cerrar sesión?' en la Intranet.*
 >
-> **[Captura: Ubicación del botón en Intranet (Móvil)]**
-> *Botón de salida segura ('Cerrar sesión') en la cabecera compacta móvil de la Intranet. (Móvil).*
+> **[Captura: Botón Flotante y Modal de Confirmación en Intranet (Usuarios con edición - Móvil)]**
+> *Botón flotante inferior debajo del lápiz y ventana modal de confirmación '¿Cerrar sesión?' en la Intranet. (Móvil).*
 
-2. **Ejecución y retorno al acceso:** Al hacer clic o pulsar sobre dicho botón de **"Cerrar sesión"**, la plataforma procesa la desconexión de manera segura invalidando las credenciales activas y traslada al usuario automáticamente de regreso a la tarjeta de inicio de sesión de la Intranet (`/login`).
+* **Caso 2: Funcionarios de solo consulta sin permisos de edición (Directores y Subdirectores):**
+  1. **Ausencia de botones flotantes:** Al no contar con facultades de edición, la interfaz no muestra ningún botón flotante en pantalla.
+  2. **Ubicación en la barra superior:** El usuario dispone del botón directo **"Cerrar sesión"** ubicado en el extremo superior derecho de la barra de navegación fija (junto al buscador interno). En dispositivos móviles, se ubica en la cabecera superior.
+  3. **Ejecución y salida directa:** Al presionar este botón, el sistema cierra la sesión de inmediato y redirige a la pantalla de ingreso de la Intranet (`/login`).
 
+> **[Captura: Botón Cerrar Sesión en Barra Superior Intranet (Roles de consulta)]**
+> *Botón directo de 'Cerrar sesión' en el extremo derecho de la barra superior fija de la Intranet para roles de solo consulta.*
+>
+> **[Captura: Botón Cerrar Sesión en Barra Superior Intranet (Roles de consulta - Móvil)]**
+> *Botón directo de 'Cerrar sesión' en la cabecera superior móvil de la Intranet para roles de solo consulta. (Móvil).*
+>
 > **[Captura: Retorno al Login de Intranet tras cerrar sesión]**
 > *Pantalla de acceso de la Intranet (`/login`) desplegada automáticamente tras el cierre de la sesión.*
 >
@@ -1437,9 +1468,9 @@ El módulo de **Respaldos** (`/admin/respaldos`) constituye el centro de control
 1. **Tabla de páginas con respaldo activo:**
    La interfaz lista de forma automática todas las páginas que cuentan con al menos una **versión anterior archivada** disponible para restaurar. Para cada registro se visualiza:
    * **Página:** Título de la página, distintivo de ámbito (*Sitio web* o *Intranet*) y número de versión activa actual.
-   * **Editado por:** Nombre del editor que maquetó los cambios en el lienzo de Puck.
-   * **Publicado por:** Nombre del administrador que aprobó y publicó la versión.
-   * **Fechas:** Marcas de tiempo de edición y de publicación formal.
+   * **Autor:** Nombre del funcionario que elaboró y editó la versión de la página.
+   * **Publicado por:** Nombre del funcionario o administrador que aprobó y publicó la versión.
+   * **Fechas:** Marcas de tiempo de edición (*Editado el*) y de publicación formal (*Publicado el*).
    * **Versión anterior:** Botón con ícono de **Ojo** (*Ver versión anterior*) para acceder al visor de respaldo.
 
 > **[Captura: Paso 1]**
@@ -1451,15 +1482,15 @@ El módulo de **Respaldos** (`/admin/respaldos`) constituye el centro de control
 2. **Barra de filtros de búsqueda:**
    Permite localizar rápidamente páginas respaldadas mediante criterios específicos:
    * **Ámbito:** Filtrar entre páginas del *Sitio web* o de la *Intranet*.
-   * **Editor / Publicador:** Listas desplegables con los funcionarios que han intervenido en las publicaciones.
+   * **Autor / Publicado por:** Listas desplegables para filtrar por el autor de la versión o por el funcionario que la publicó.
    * **Rango de fechas:** Selectores de calendario (*Publicado desde* / *Publicado hasta*).
    * **Limpiar filtros:** Botón para reiniciar los parámetros de búsqueda.
 
 > **[Captura: Paso 2]**
-> *Uso de la barra de filtros para ubicar versiones por ámbito, editor y fechas.*
+> *Uso de la barra de filtros para ubicar versiones por ámbito, autor, publicado por y fechas.*
 >
 > **[Captura: Paso 2 (Móvil)]**
-> *Uso de la barra de filtros para ubicar versiones por ámbito, editor y fechas. (Móvil).*
+> *Uso de la barra de filtros para ubicar versiones por ámbito, autor, publicado por y fechas. (Móvil).*
 
 3. **Previsualización de la versión anterior archivada:**
    Al hacer clic en el ícono de **Ojo** de cualquier fila, el sistema despliega la ventana modal de consulta de respaldo:
@@ -1550,23 +1581,21 @@ Módulo de procesamiento masivo, accesible desde el menú lateral (o barra infer
 ---
 
 #### 3.4.2.9. Perfil de Usuario ("Mi perfil" y "Configuración")
-Accesible desde el menú desplegable de perfil ubicado en la parte inferior del menú lateral izquierdo (en escritorio) o pulsando la foto de perfil en la barra superior (en móvil). Permite al Administrador —y a cualquier usuario autenticado con acceso al panel— gestionar su información personal y preferencias.
+Accesible desde el menú desplegable de perfil ubicado en la base inferior del menú lateral izquierdo (en escritorio) o pulsando el nombre de usuario en la barra superior (en móvil). Permite al Administrador gestionar sus datos básicos y actualizar su contraseña institucional.
 
 ##### 3.4.2.9.1. Sección "Mi Perfil"
 
 Contiene la información de identificación del usuario dentro del sistema:
 
-* **Nombre completo:** Nombre registrado en la cuenta. Puede ser actualizado por el propio usuario desde este campo.
-* **Correo corporativo:** Muestra el correo `@sena.edu.co` vinculado a la cuenta. Este campo es de solo lectura y no puede ser modificado por el usuario; cualquier cambio de correo debe ser gestionado por el Administrador.
-* **Foto de perfil:** Campo opcional. El usuario puede subir una imagen desde su dispositivo (formatos permitidos: `.jpg`, `.png`; tamaño máximo: 2 MB).
-* **Rol asignado:** Muestra el rol activo del usuario en el sistema (solo lectura).
-* **Cambio de contraseña:** Permite al usuario actualizar su contraseña actual sin necesidad de pasar por el flujo de recuperación. Para ello, se debe ingresar la contraseña actual, la nueva contraseña y su confirmación, cumpliendo la política de seguridad (Sección 3.2.1.3).
+* **Nombre y Apellidos:** Campos de texto editables para actualizar los nombres y apellidos del funcionario en el sistema.
+* **Correo Electrónico:** Dirección institucional `@sena.edu.co` registrada en la plataforma.
+* **Cambiar contraseña:** Opción desplegable interactiva que permite al usuario actualizar su contraseña sin salir del panel. Al activarla, solicita la contraseña actual, la nueva contraseña (con indicador en vivo del cumplimiento de los requisitos de seguridad) y la confirmación de la nueva clave.
 
 > **[Captura: Mi Perfil]**
-> *Vista del módulo "Mi Perfil" en el Panel Administrativo con los campos de nombre, foto, correo y cambio de contraseña.*
+> *Vista del módulo "Mi Perfil" en el Panel Administrativo con los campos de nombre, apellidos, correo y cambio de contraseña.*
 >
 > **[Captura: Mi Perfil (Móvil)]**
-> *Vista del módulo "Mi Perfil" en el Panel Administrativo con los campos de nombre, foto, correo y cambio de contraseña. (Móvil).*
+> *Vista del módulo "Mi Perfil" en el Panel Administrativo con los campos de nombre, apellidos, correo y cambio de contraseña. (Móvil).*
 
 Flujo para actualizar los datos:
 1. El usuario modifica los campos deseados en el formulario.
@@ -2418,7 +2447,7 @@ Durante la interacción cotidiana con el entorno del Panel Administrativo (cuyo 
 > *Comportamiento de la barra lateral izquierda al restablecer el nivel de zoom estándar en computadores de escritorio.*
 
 ##### 2. El menú contextual de perfil no se despliega o se oculta inmediatamente
-* **Situación:** Al hacer clic sobre el nombre del funcionario o su fotografía en la base de la barra lateral (en escritorio) o en el botón de perfil del navbar (en móvil), el menú flotante con las opciones *"Mi perfil"* y *"Cerrar sesión"* no se abre o desaparece de manera instantánea.
+* **Situación:** Al hacer clic sobre el bloque con el nombre y correo del funcionario en la base de la barra lateral (en escritorio) o sobre el nombre del usuario en la barra superior (en móvil), el menú emergente con las opciones *"Mi perfil"* y *"Cerrar sesión"* no se abre o desaparece de manera instantánea.
 * **Causa técnica y operativa:** 
   1. Pulsación rápida de doble clic involuntario que abre y cierra el menú contextual consecutivamente.
   2. Conflicto con extensiones de bloqueo de secuencias de comandos o complementos de terceros instalados en el navegador.
