@@ -5,6 +5,50 @@
 
 ---
 
+## sesión 09-10-2026 (4.ª parte): acceso a la intranet en móvil y tablet
+
+**Qué se pidió.** Lo mismo que en la 3.ª parte, para la intranet: el login con su propio
+mockup de móvil y el resto del flujo (`/first-login`, `/recovery`, `/security-questions`,
+`/reset-password`, `/reset-success`) igual que en el sitio web. En el mockup, todo va sobre
+el azul: «Bienvenido a nuestra Intranet» en blanco arriba, el logo grande y atenuado debajo,
+y el formulario sin tarjeta, con etiquetas blancas, campos blancos y botón blanco.
+
+**Cómo está hecha la intranet.** No tiene un marco común como el sitio: cada pantalla trae
+dos paneles (`.login-left`/`.login-right`, `.recovery-*`, `.sq-*`, `.rp-*`, `.fl-*`) en su
+`globals.css`, y por debajo de `md` se apilaban. El panel de arriba ya pinta el título y la
+descripción del paso en blanco, que es justo lo que muestran los mockups del flujo; bastaba
+con subir el corte.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| FE | `3001-intranet/src/style/globals.css` | El apilado de los cinco pares de paneles pasa de `width < 48rem` a `width < 80rem` (`xl`); apilados, un solo azul de fondo, sin la esquina redondeada y centrados en vertical. El texto del cargador del login, en blanco por debajo de `xl` |
+| FE | `3001-intranet/src/features/login/components/login-view.tsx` | Por debajo de `xl`: título arriba y en negrita, logo de 192/224 px al 30 % debajo; `TARJETA_LOGIN` sin tarjeta; etiquetas, aviso legal y enlaces en blanco; campos con `bg-white` y anillo de foco blanco; errores de campo en `red-300`; botón blanco con texto navy. Desde `xl`, todo como estaba |
+
+**Cómo se probó.** Igual que la 3.ª parte: CDP contra el `next dev` de la intranet (3001).
+`tsc --noEmit` y `eslint` del archivo, limpios.
+
+| Ruta | 360 | 768 | 1032 | 1280 |
+|---|---|---|---|---|
+| `/login` | ✅ el mockup, sin desborde | ✅ | ✅ | ✅ dos columnas, como antes |
+| `/recovery` | ✅ marca arriba, tarjeta debajo | ✅ | ✅ | ✅ dos columnas |
+
+No se abrieron `/first-login`, `/security-questions`, `/reset-password` ni `/reset-success`:
+piden sesión o lo que deja el paso anterior en `sessionStorage`. Usan las mismas reglas de
+apilado que `/recovery`.
+
+**Lo que se descartó.**
+
+- **Pasar la intranet al marco del sitio (`AuthSplitShell`)**: es otra app con su identidad y
+  su hoja (`2-convenciones` §10.5); el corte común se decide igual en las dos y se cita en
+  ambos comentarios.
+
+**Pendiente al cierre.**
+
+- El botón principal sigue en 40 px de alto (§10.4 pide 44 en el móvil), como en el sitio.
+- Mirar los pasos con sesión con una cuenta real a 360 y 1032.
+
+---
+
 ## sesión 09-10-2026 (3.ª parte): acceso al panel de administración en móvil y tablet
 
 **Qué se pidió.** Adaptar a móvil y tablet las pantallas de acceso del panel (`/login`,
