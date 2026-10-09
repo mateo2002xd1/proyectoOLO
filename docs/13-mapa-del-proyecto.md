@@ -18,7 +18,7 @@
 | `3001-intranet` | 31 | 2 | 11 | — | 27 |
 | `4000-api-backend` | 34 | — | — | 91 | 42 |
 
-Paquetes compartidos: 7 · migraciones: 41 · modelos: 23.
+Paquetes compartidos: 7 · migraciones: 42 · modelos: 23.
 
 ## Carpetas sin descripción (4)
 
@@ -611,6 +611,7 @@ En el orden del manifiesto (`migrations/index.ts`), que es el orden en que corre
 - `039-alertas-inversion-proyectos`
 - `040-auditoria-autoguardado`
 - `041-integridad-e-indices`
+- `042-catalogos-sin-duplicados`
 
 ### Modelos
 

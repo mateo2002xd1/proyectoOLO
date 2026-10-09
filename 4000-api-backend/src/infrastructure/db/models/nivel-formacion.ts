@@ -5,6 +5,7 @@ import sequelize from '../../../config/database';
 class NivelFormacion extends Model {
   declare id: string;
   declare nombre: string;
+  declare codigo: string | null;
   declare readonly created_at: Date;
   declare readonly updated_at: Date;
 }
@@ -19,6 +20,12 @@ NivelFormacion.init(
     nombre: {
       type: DataTypes.STRING(50),
       allowNull: false,
+    },
+    // Código SENA (`Cod. Nivel de formación` del Excel): es lo que identifica al nivel
+    // desde la migración 042, no el nombre. Nulo solo en filas anteriores a esa migración.
+    codigo: {
+      type: DataTypes.STRING(20),
+      allowNull: true,
       unique: true,
     },
     created_at: {

@@ -7,6 +7,7 @@ class CentroFormacion extends Model {
   declare id: string;
   declare departamento_id: string;
   declare nombre: string;
+  declare codigo: string | null;
   declare readonly created_at: Date;
   declare readonly updated_at: Date;
   
@@ -32,6 +33,13 @@ CentroFormacion.init(
       type: DataTypes.STRING(255),
       allowNull: false,
     },
+    // Código SENA (`Cod. Centro`): identifica al centro desde la migración 042. El nombre
+    // no: «Centro de Comercio y Servicios» son cinco centros distintos.
+    codigo: {
+      type: DataTypes.STRING(20),
+      allowNull: true,
+      unique: true,
+    },
     created_at: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -49,13 +57,6 @@ CentroFormacion.init(
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at',
-    indexes: [
-      {
-        unique: true,
-        fields: ['departamento_id', 'nombre'],
-        name: 'uq_centros_formacion_depto_nombre',
-      },
-    ],
   }
 );
 

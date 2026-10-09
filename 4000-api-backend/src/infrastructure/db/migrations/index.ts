@@ -42,6 +42,7 @@ import * as alertasInversionCatalogos from './038-alertas-inversion-catalogos';
 import * as alertasInversionProyectos from './039-alertas-inversion-proyectos';
 import * as auditoriaAutoguardado from './040-auditoria-autoguardado';
 import * as integridadEIndices from './041-integridad-e-indices';
+import * as catalogosSinDuplicados from './042-catalogos-sin-duplicados';
 
 export interface Migracion {
   nombre: string;
@@ -94,6 +95,7 @@ const migraciones: Migracion[] = [
   alertasInversionProyectos,
   auditoriaAutoguardado,
   integridadEIndices,
+  catalogosSinDuplicados,
 ];
 
 const TABLA_CONTROL = 'migraciones_aplicadas';

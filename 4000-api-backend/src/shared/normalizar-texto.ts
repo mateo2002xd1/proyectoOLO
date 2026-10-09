@@ -8,6 +8,12 @@
  *
  * `departamentos_alias.alias_normalizado` está guardado con esta misma regla (ver la
  * migración 032, que la replica en SQL): si cambia aquí, los alias dejan de coincidir.
+ *
+ * Y tiene una gemela en la base, `normalizar_nombre()` (migración 042), sobre la que están
+ * los únicos de `departamentos`, `municipios` y `empresas`. Dan lo mismo con cualquier
+ * texto en español; con letras de otros alfabetos latinos que la función SQL no lista
+ * («ā», «š») la de aquí quita la tilde y la de la base pone un espacio. Cambiar una
+ * obliga a cambiar la otra con una migración.
  */
 export function normalizarParaComparar(texto: string): string {
   return texto
