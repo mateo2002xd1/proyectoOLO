@@ -5,6 +5,90 @@
 
 ---
 
+## sesión 09-10-2026 (7.ª parte): el primer ingreso del panel con el diseño nuevo (mockups de escritorio, tablet y móvil)
+
+**Qué se pidió.** El usuario va a pasar los mockups de las pantallas del panel de una en una,
+«con sus mensajes y experiencia de usuario». La primera es el primer ingreso (`/first-login`),
+en tres tamaños:
+
+- **Escritorio:** dos azules. A la izquierda, el logo, «Actualiza tu seguridad», el texto y un
+  paginador «← Previous 1 2 3 Next →». A la derecha, una tarjeta blanca con borde, sin título,
+  con los tres campos, «Continuar», el enlace «Iniciar sesión» y «Regresar al sitio web» debajo.
+- **Tablet (1032) y móvil (440):** lo mismo en una columna, sin logo.
+
+Colores medidos sobre el mockup de escritorio, píxel a píxel con un canvas en Chrome:
+
+| Elemento | Color |
+|---|---|
+| Fondo izquierdo | `#001631` |
+| Fondo derecho | `#001a39`, con las esquinas izquierdas redondeadas |
+| Borde de la tarjeta y de los campos | `#d9d9d9` |
+| Etiquetas | `#001a39` |
+| Texto de ejemplo | `#b3b3b3` |
+| Ojo | `#334861` |
+| Botón | `#002237` |
+| «Previous» apagado | blanco al 50 % |
+
+**Cómo quedó.**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| FE | `3000-sitio-web/.../auth/components/marco-de-pasos.tsx` (nuevo) | `MarcoDePasos`: las dos mitades en `xl`, una columna por debajo, el título del paso como `h1`. Su `PaginadorDePasos` se puede ver en «Paginador», más abajo |
+| FE | `.../auth/components/auth-ui.tsx` | La piel `pasos`: tarjeta de 330/452/320 px según el tamaño (los tres mockups), botón de 44 px por debajo de `xl` (§10.4) y 40 en escritorio, campos de 40 px con texto de 16, ojo relleno. La elige el marco con el contexto `PielAuth`, así que los campos (`PasswordField`, `AuthTextField`, `AuthSelectField`) y `BackToSiteLink` cambian solos. Sin el marco, la piel de siempre: login y recuperación no cambian. Los tres campos anuncian ya su error (`aria-invalid` + `aria-describedby`). `AuthSplitShell` deja pasar `/first-login` sin pintar su marco |
+| FE | `.../auth/components/first-login-flow.tsx` | Sobre `MarcoDePasos`: título y texto de cada paso fuera de la tarjeta. Es el mismo flujo (lo que falta, las validaciones y el envío no cambian), con la tarjeta, los textos y el paginador nuevos |
+| FE | `app/(auth)/first-login/page.tsx` | Sin el saludo por nombre, que el mockup no tiene |
+| Docs | `manual-de-usuario.md` §8.5.2 | El flujo como es: tres campos, requisitos, paginador, «Guardar» y el paso final. Se corrigió además que la respuesta «es sensible a mayúsculas»: el servidor la compara con `trim().toLowerCase()` |
+
+**Paginador.**
+
+- **«Anterior»** vuelve de las preguntas a la contraseña, que no se envía hasta el final, sin perder lo escrito.
+- **«Siguiente»** envía el formulario del paso (`form=`), así que valida igual que «Continuar».
+- **Los números** de los pasos que faltan no son botones, porque saltarse uno dejaría la cuenta a medias. Los anteriores sí.
+- **Al terminar** se apaga todo.
+- **Pasos según lo pendiente:** si a la cuenta solo le falta la contraseña o solo las preguntas, el paginador muestra 2 pasos.
+
+**Lo que se adaptó del mockup, y por qué.**
+
+- **«passcode» y «código de acceso» pasan a «contraseña»**, que es como lo llama el resto del sitio y la propia etiqueta «Contraseña temporal» del mockup. **«Previous / Next»** pasan a «Anterior / Siguiente».
+- **«mínimo 8 caracteres» pasa a «Mínimo 12 caracteres»**, que es la política (`LONGITUD_MINIMA`). La temporal dice «La que te entregaron»: la da el administrador y no llega por correo.
+- **Los requisitos de la contraseña** no salen en el mockup. Aparecen al entrar en «Nueva contraseña» (o si el navegador la rellena) y ya no se van: en reposo la pantalla es la del mockup, y nadie descubre las reglas a base de rechazos. Si se fueran al salir del campo, la tarjeta encogería justo al pulsar el de abajo.
+- **El ojo para mostrar la contraseña** se mantiene en tablet y móvil, aunque esos mockups no lo dibujan.
+- **Las etiquetas van a 15 px y no a 16.** La letra del mockup es más estrecha que Poppins: a 16, «Ingresa nuevamente la contraseña» mide 282 px y la tarjeta de escritorio tiene 270 por dentro. Poppins es la del panel, y el título usa Work Sans, la de los encabezados del sitio.
+- **El enlace «Iniciar sesión»** de la tarjeta cierra la sesión temporal y lleva al login.
+
+**Cómo se probó.** Al no poder abrir `/first-login` sin una sesión real, se montó el componente
+real con React 19 de desarrollo, el CSS de la app compilado con su Tailwind, Poppins y Work Sans,
+y la API simulada. Se empaquetó con un empaquetador de 70 líneas en el scratchpad (el proyecto
+no tiene esbuild) y se recorrió en Chrome sin ventana.
+
+| Prueba | Resultado |
+|---|---|
+| 360, 440, 768, 1032, 1280 y 1920 px | ✅ Sin desborde y un solo `h1`. Logo solo desde `xl`. Tarjeta de 312/330/452/452/320/320. «Anterior / Siguiente» con palabras desde 440 y solo flechas a 360. Botón de 44/40 |
+| «Siguiente» con todo vacío | ✅ Los tres errores bajo sus campos, con `aria-invalid` y `aria-describedby`; sigue en el paso 1 |
+| Requisitos | ✅ Ocultos en reposo, aparecen al enfocar, se marcan al escribir y siguen al pasar al campo de abajo |
+| Contraseñas distintas, luego iguales | ✅ «Las contraseñas no coinciden», y después al paso 2 |
+| «Anterior» desde el paso 2, luego «Siguiente» | ✅ Vuelve con los tres campos intactos y la revalida |
+| Tres preguntas | ✅ No deja repetir una ya elegida. Un solo POST con la temporal, la nueva y las tres respuestas |
+| Paso 3 | ✅ «¡Configuración completada!», con el paginador apagado |
+| Solo preguntas / solo contraseña | ✅ Paginador de 2. Con solo la contraseña, «Continuar» envía directo |
+| Nada pendiente / fallo al consultar | ✅ «Tu cuenta ya está configurada» con «Ir al panel» / «Configura tu acceso» con el error |
+| Consola del navegador | ✅ Sin errores ni avisos de React |
+| `tsc --noEmit` del sitio; `eslint` de los cuatro archivos | ✅ |
+
+> **Trampa encontrada:** `3000-sitio-web/src/style/globals.css` define `.sr-only` **fuera de
+> las capas** de Tailwind, y una regla sin capa gana a cualquier utilidad. Por eso
+> `md:not-sr-only` o `@sm:not-sr-only` no hacen nada en este sitio. El paginador usa
+> `aria-label` y `hidden @sm:inline`. Arreglarlo (meter la regla en `@layer utilities` o
+> borrarla, porque Tailwind ya trae `sr-only`) toca todo el sitio y queda pendiente.
+
+**Queda.**
+
+- **Revisar con una cuenta real:** crear una cuenta de prueba y entrar con su temporal, a 360 y a 1032.
+- **El resto de pantallas del flujo, con sus mockups:** login, recuperación, preguntas y restablecer. Cuando no quede ninguna con la piel `tarjeta`, sobran ella y `AuthSplitShell`.
+- **La regla `.sr-only` sin capa** de `globals.css`.
+
+---
+
 ## sesión 09-10-2026 (6.ª parte): los avisos de éxito, advertencia y error suenan, y Configuración deja de estar «en construcción»
 
 **Qué se pidió.** Añadir sonido a los avisos de estado: error, aprobado (éxito) y advertencia.
