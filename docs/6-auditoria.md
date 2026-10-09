@@ -5,6 +5,143 @@
 
 ---
 
+## sesión 09-10-2026 (11.ª parte): simetría en las pantallas de acceso — escala tipográfica, campos y botones iguales, fondo blanco y el login en el diseño nuevo
+
+**Qué se pidió.** Con dos imágenes: la escala tipográfica del usuario (Heading 1 a 5 en
+60/50/40/30/24 Semibold, Headline 20, Body Large 18, Body 16, Footnote 14, Caption 13 y Small 12)
+y los mockups de móvil (440 px) del login y de la recuperación. Darle simetría a todas las rutas
+del acceso (login, primer ingreso, recuperación):
+
+- títulos con los tamaños de la escala, en Poppins, y no en Work Sans ni en Inter;
+- campos y botones del mismo largo y alto, con esquinas de 32 px, como la tarjeta, y con medidas
+  responsivas;
+- el primer ingreso sobre blanco, como la recuperación.
+
+Durante el trabajo llegaron dos cosas más: el color de los botones (`#001631`) y los dos ojos del
+campo de contraseña, en SVG.
+
+**Lo que había** (medido con canvas sobre los mockups). En el móvil el campo medía 330 px en el
+login, 320 en la recuperación y 283 en las preguntas, y el botón de la confirmación, 272. Los
+campos eran de 40 px y los botones de 44 (40 en el escritorio), con esquinas de 4 a 6. El login
+seguía con su marco viejo (`AuthSplitShell`, piel `tarjeta`) y el primer ingreso iba sobre azul.
+
+**Cómo quedó.**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| FE | `auth/components/auth-ui.tsx` | Un solo juego de medidas para todas las pantallas. Campos, caja de la pregunta y botones: 44 px de alto, a todo el ancho y con esquinas de 32. Formulario: sin tarjeta y de 330 px como máximo en el móvil; desde `md`, tarjeta de 452 con borde `#d9d9d9` y esquinas de 32. Etiquetas a 16 px en peso medio, encabezado del formulario a 20 (Headline Medium) y errores a 14. Botón y barras en `#001631`. Se quitan la piel `tarjeta`, el contexto `PielAuth`, `AuthSplitShell`, `AuthCardTitle` y las clases que solo usaba el login viejo |
+| FE | `auth/components/marco-de-pasos.tsx` | Un solo tema: blanco con texto `#001631` por debajo de `xl` y las dos mitades azules desde `xl`. Título a 24 px en el móvil y 30 desde `md` (Heading 5 → 4, Semibold); texto a 18 (Body Large). `conLogo` para el login. El paginador se lee sobre blanco y sobre azul, con números redondos |
+| FE | `auth/components/login-view.tsx` | El login pasa al marco nuevo, como el mockup de móvil: logo, «Panel de Administración» y el formulario con las mismas medidas. El límite de Suspense rodea solo el formulario, así que el marco llega ya en el HTML del servidor |
+| FE | `first-login-flow.tsx`, `recovery-view.tsx`, `security-questions-view.tsx`, `reset-password-view.tsx`, `reset-success-view.tsx` | Sin `tema`: todo va sobre blanco. El título de las preguntas pierde su tamaño propio. La caja de la pregunta mide lo que un campo. El botón de la confirmación va en el mismo formulario (antes, 272 px) |
+| FE | `app/(auth)/layout.tsx`, `auth/index.ts` | Sin `AuthSplitShell`: cada pantalla pinta su marco |
+| FE | `public/assets/svg/eye-closed.svg`, `eye-open.svg` | Los ojos que pasó el usuario. El campo de contraseña los usa con `IconoMascara`: cerrado mientras la clave está oculta, abierto cuando se ve. Son los mismos archivos de los botones de «ver» de Respaldos y Revisión, que también cambian |
+| FE | `style/globals.css` | El desplegable de preguntas (el select personalizable de Chrome) deja partir la pregunta en dos líneas y crece hacia abajo, como la caja de la recuperación: en una línea el recorte caía bajo la flecha. Su lista abierta, con esquinas de 16 |
+| Docs | `manual-de-usuario-formato.md` §3.4.1.1 y §3.4.1.2 | El login nuevo, el primer ingreso sobre blanco y cómo se lee el ojo. Se corrige la casilla «Correo electrónico», que en pantalla es «Correo SENA» |
+
+**Decisiones.**
+
+- **Títulos de la escala, en Semibold, como ella:** 24 px (Heading 5) en el móvil y 30
+  (Heading 4) desde la tablet, en todas las pantallas. En el mockup de móvil miden unos 32, y el
+  de las preguntas ocupaba cuatro líneas; a 24 son cuatro como máximo.
+- **Sin tarjeta en el móvil**, como en el mockup de móvil. Desde `md`, la tarjeta con esquinas
+  de 32.
+- **Etiquetas a 16 en peso medio** (Body Medium) en todas las pantallas. En el mockup unas iban
+  en negrita y otras no. «Ingresa nuevamente la contraseña» cabe en una línea en todos los anchos.
+- **«¿Olvidaste tu contraseña?» en `#001631`**, como los demás enlaces, y no en el gris claro del
+  mockup (`#929292`, con 3,2:1, por debajo del 4,5:1 de AA).
+- **«Passcode» sigue siendo «Contraseña».**
+
+**Cómo se probó.** El arnés de la 9.ª parte, ahora con lo que monta el layout real
+(`LetraDelPanel` y `FlujoDeRecuperacionProvider`). Ocho vistas a 360, 440, 768, 1032, 1280 y
+1920 px, y los tres flujos con la API simulada.
+
+| Prueba | Resultado |
+|---|---|
+| Medidas de campos y botones | ✅ En cada ancho, iguales en todas las pantallas: 328 px a 360, 330 a 440 y 386 desde 768. Todos de 44 de alto y con esquinas de 32. La caja de la pregunta crece a 66 cuando la pregunta ocupa dos líneas |
+| Tarjeta | ✅ Ninguna por debajo de 768. Desde ahí, 452 px, borde `#d9d9d9` y esquinas de 32 |
+| Letra | ✅ Títulos, etiquetas, botones y enlaces pintados en Poppins (`CSS.getPlatformFontsForNode`) |
+| Tamaños | ✅ Título a 24/600 hasta 767 px y a 30/600 desde 768. Texto a 18, encabezado del formulario a 20/500, etiquetas a 16/500 y en una línea |
+| Fondo | ✅ Blanco hasta 1279 px en todas las pantallas, también en el primer ingreso. Azul desde 1280 |
+| Paginador | ✅ `#001631` sobre blanco y blanco sobre azul. El paso actual va relleno |
+| Login | ✅ Vacío: los dos errores. Con un `@gmail.com`: «Debe ser un correo institucional @sena.edu.co». Con la API respondiendo 401: «Correo o contraseña incorrectos» |
+| Primer ingreso y recuperación | ✅ Completos de punta a punta |
+| Ojo | ✅ Cerrado con la clave oculta y abierto al mostrarla. El nombre accesible dice la acción |
+| Desborde y consola | ✅ Sin desborde horizontal en ningún ancho, sin errores ni avisos |
+| `/login` y `/recovery` en el dev | ✅ El diseño nuevo, en Poppins y con las mismas medidas |
+| `tsc --noEmit` del sitio; `eslint` de lo tocado | ✅ |
+
+**Queda.**
+
+- Mirar el primer ingreso y la recuperación con una cuenta real.
+- La intranet tiene sus propias pantallas de acceso: no se tocaron.
+
+---
+
+## sesión 09-10-2026 (10.ª parte): el panel y sus pantallas de acceso en Poppins, títulos incluidos y en negrita
+
+**Qué se pidió.** Una sola letra para todo el panel de administración y sus pantallas de acceso.
+Primero se pidió Work Sans; a mitad de camino, Inter, la de los mockups; y en la 11.ª parte,
+Poppins, la que ya tenía el panel: «es mejor que Inter». Con una regla para el panel: los títulos
+en negrita, cada uno a su tamaño, y las descripciones en un tamaño menor que su título.
+
+**Cómo quedó.**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| FE | `features/administracion/auth/components/letra-del-panel.tsx` (nuevo) | Pone Poppins (la de `shared/lib/fonts.ts`) en `<body>`, en `--font-heading` y `--font-body`, mientras el panel o una pantalla de acceso están montados. Va en `<body>` y no en el contenedor porque los modales y los avisos salen por portal a `<body>`. Al ir al sitio público o al editor se desmonta y vuelve la letra de antes |
+| FE | `app/admin/layout.tsx`, `app/(auth)/layout.tsx`, `auth/index.ts` | Montan `LetraDelPanel` en lugar de poner `poppins.className` en su contenedor |
+| FE | `style/globals.css` | `.admin-header` (títulos de página) y `.admin-subtitle` (de sección y de modal) pasan a negrita, igual que `.navegacion-mobile-hoja-titulo`. La regla queda escrita junto a ellas |
+| FE | `carga-alertas-inversion`, `carga-criterios-clasificacion`, `carga-fuentes-futuras`, `carga-programa-sobresalientes`, `historial-cargas-tendencia`, `preferencia-sonido-avisos`, `detalle-registro`, `modal-bloqueo-restauracion`, `modal-confirmar-restauracion`, `alert`, `notification` | Los títulos escritos a mano pasan de `font-semibold`/`font-medium` a `font-bold` |
+| FE | `shared/lib/fonts.ts` | Solo el comentario |
+
+**Qué cambia de verdad.** El texto del panel ya era Poppins. Lo nuevo es que **los títulos** (los
+h1–h6, `.admin-header` y `.admin-subtitle`) salían en la letra del sistema, Arial en Windows, por
+el hallazgo de abajo, y ahora salen en Poppins.
+
+**Decisiones.**
+
+- **Inter se probó y se descartó.** Iba en su propio módulo, para no precargarse en el sitio
+  público. Poppins se queda en `shared/lib/fonts.ts`, el único punto donde se declara.
+- **No es título y se queda como estaba:** las cifras de las tarjetas del Dashboard (etiqueta
+  pequeña y número grande en negrita), las etiquetas de campo y los nombres en listas y tablas.
+- **Las descripciones ya eran menores** que su título en todo el panel: bajo el título de página
+  van a 14 px, y bajo el de un modal o una tarjeta a 14 o 12. No hubo que cambiarlas.
+
+**Hallazgo, sin tocar: los títulos del sitio público no salen en Work Sans.** `app/layout.tsx`
+carga Work Sans en `--font-heading`, pero el `:root` de `globals.css` define esa misma variable
+como `'Open Sans'`. Los dos van sin capa y con la misma especificidad, y en el CSS que arma Next
+globals.css va después, así que gana el segundo (comprobado en `.next/dev`). Open Sans no se
+carga en ningún lado, de modo que los títulos públicos salen en la letra del sistema: Arial en
+Windows, Helvetica en Mac. Era también lo que les pasaba a los títulos del panel. Arreglarlo
+cambia cómo se ve el sitio público, así que queda para que se decida aparte. El panel ya no
+depende de esto, porque `LetraDelPanel` fija sus dos variables.
+
+**Cómo se probó.** Con `CSS.getPlatformFontsForNode` de Chrome, que dice con qué letra se pintó
+de verdad cada texto y no solo la que se pidió. Un segundo arnés monta `PanelGeneralLayout` con
+una página de ejemplo; Puck, axios y echarts van simulados, porque sus paquetes son de Node.
+
+| Prueba | Resultado |
+|---|---|
+| Panel a 1280, 768 y 360 | ✅ Barra lateral, barra superior, navegación de abajo en el móvil, título, subtítulo y párrafo pintados en Poppins |
+| Aviso que sale por portal a `<body>` | ✅ En Poppins, en el panel y en el acceso |
+| Sin `LetraDelPanel` (como estaba antes) | ✅ Se reproduce el fallo: el texto en Poppins y los títulos en Arial |
+| Jerarquía en el panel | ✅ Título de página de 24 a 30 px a 700, con descripción de 14. Subtítulo de 17 a 20 a 700, con descripción de 14 |
+| Consola | ✅ Sin errores ni avisos |
+| `tsc --noEmit` del sitio; `eslint` de lo tocado | ✅ |
+
+**Queda.**
+
+- Mirar el panel en el navegador con una sesión real. El arnés monta el marco y una página de
+  ejemplo, no cada pantalla con sus datos.
+- Decidir los títulos del sitio público (el hallazgo de arriba).
+- Visto al revisar `/login` en el dev: la página carga la hoja de estilos del editor Puck, con su
+  `@import` de Inter desde `rsms.me`, un servidor externo. Llega por el barril de `auth`, que
+  exporta `panel-general`, y este importa `@/features/paginas`, que incluye
+  `puck-editor-wrapper.tsx`. Ya pasaba antes de estos cambios. No cambia la letra, pero el login
+  descarga CSS que no usa.
+
+---
+
 ## sesión 09-10-2026 (9.ª parte): la recuperación de contraseña del panel con el diseño nuevo (mockups de tablet)
 
 **Qué se pidió.** Las cuatro pantallas de la recuperación (`/recovery`, `/security-questions`,

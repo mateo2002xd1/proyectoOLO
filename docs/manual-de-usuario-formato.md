@@ -529,7 +529,7 @@ Este procedimiento describe el paso a paso para el funcionario que inicia sesió
 > **[Captura: Formulario de Inicio de Sesión Sitio Web (Móvil)]**
 > *Formulario de acceso del Sitio Web Público diligenciado con correo corporativo y contraseña provisoria. (Móvil).*
 
-3. **Pantalla de bienvenida y configuración obligatoria:** Al comprobar los datos de acceso, el sistema identifica que se trata del primer ingreso del funcionario y presenta de forma automática la pantalla de primer ingreso (`/first-login`). En esta vista se solicita actualizar la seguridad de la cuenta antes de continuar hacia el portal. A un lado (arriba en el móvil y la tablet) se indica qué se pide en cada paso, con un paginador **«Anterior 1 2 3 Siguiente»** que muestra en qué paso se está; al otro lado está el formulario.
+3. **Pantalla de bienvenida y configuración obligatoria:** Al comprobar los datos de acceso, el sistema identifica que se trata del primer ingreso del funcionario y presenta de forma automática la pantalla de primer ingreso (`/first-login`). En esta vista se solicita actualizar la seguridad de la cuenta antes de continuar hacia el portal. A un lado (arriba en el móvil y la tablet) se indica qué se pide en cada paso, con un paginador **«Anterior 1 2 3 Siguiente»** que muestra en qué paso se está; al otro lado está el formulario. Como el inicio de sesión y la recuperación de contraseña, en el móvil y la tablet va sobre fondo blanco, y en el computador sobre el azul institucional.
 
 > **[Captura: Pantalla de Bienvenida y Configuración Inicial Sitio Web]**
 > *Pantalla de primer ingreso en el Sitio Web con la indicación del paso, el paginador y el formulario de actualización de seguridad.*
@@ -541,7 +541,7 @@ Este procedimiento describe el paso a paso para el funcionario que inicia sesió
    * En el campo **"Contraseña temporal"**, se digita la clave provisoria recibida.
    * En el campo **"Nueva contraseña"**, se escribe la nueva clave personal. Al entrar en este campo aparece la lista de requisitos de la política (mínimo 12 caracteres, combinar 3 de 4 opciones: mayúsculas, minúsculas, números o símbolos, sin emojis ni tabulaciones, y no demasiado larga), que se van marcando a medida que se cumplen.
    * En el campo **"Ingresa nuevamente la contraseña"**, se reescribe la nueva clave para certificar la coincidencia exacta.
-   * El ícono del ojo muestra u oculta lo escrito en cada campo.
+   * El ícono del ojo muestra u oculta lo escrito en cada campo: cerrado mientras la clave está oculta, abierto cuando se ve.
    * Se hace clic en el botón oscuro **"Continuar"** (o en «Siguiente» del paginador), que revisa los tres campos y pasa al paso 2. Si algo falta o no coincide, lo indica debajo del campo.
 
 > **[Captura: Contraseña Definitiva Sitio Web]**
@@ -661,7 +661,7 @@ El portal web público no requiere inicio de sesión para la consulta de informa
 > **[Captura: Enlace de Inicio de Sesión en Banner GOV.CO (Móvil)]**
 > *Texto de fecha y hora en la barra GOV.CO para acceder al inicio de sesión. (Móvil).*
 
-2. **Visualización de la pantalla de inicio de sesión:** La pantalla presenta una tarjeta central de acceso limpia con el logotipo institucional del observatorio, dos casillas de texto para ingresar los datos y el enlace interactivo **"*(¿Olvidaste tu contraseña?)*"** en la parte inferior para restablecer la clave en caso de pérdida.
+2. **Visualización de la pantalla de inicio de sesión:** La pantalla presenta el logotipo institucional del observatorio con el título **"Panel de Administración"**, las casillas **"Correo SENA"** y **"Contraseña"**, el aviso de privacidad, el botón **"Ingresar"** y, debajo, el enlace interactivo **"*(¿Olvidaste tu contraseña?)*"** para restablecer la clave en caso de pérdida. En el móvil y la tablet va sobre fondo blanco; en el computador, el logotipo y el título quedan a la izquierda sobre el azul institucional y el formulario en una tarjeta a la derecha, como en el primer ingreso y la recuperación de contraseña.
 
 > **[Captura: Formulario de Autenticación Sitio Web]**
 > *Pantalla de inicio de sesión del Sitio Web con las casillas de correo, contraseña y enlace de recuperación.*
@@ -670,8 +670,8 @@ El portal web público no requiere inicio de sesión para la consulta de informa
 > *Pantalla de inicio de sesión del Sitio Web con las casillas de correo, contraseña y enlace de recuperación. (Móvil).*
 
 3. **Diligenciamiento de correo y contraseña:** En el formulario de acceso, se completan ambas casillas:
-   * En la casilla superior **"Correo electrónico"**, se escribe la cuenta corporativa institucional (`@sena.edu.co`).
-   * En la casilla inferior **"Contraseña"**, se escribe la clave definitiva personal. Se puede hacer clic sobre el **ícono de ojo** situado a la derecha de la casilla para ver u ocultar los caracteres escritos y confirmar que la escritura sea correcta.
+   * En la casilla superior **"Correo SENA"**, se escribe la cuenta corporativa institucional (`@sena.edu.co`).
+   * En la casilla inferior **"Contraseña"**, se escribe la clave definitiva personal. Se puede hacer clic sobre el **ícono de ojo** situado a la derecha de la casilla para ver u ocultar los caracteres escritos y confirmar que la escritura sea correcta: el ojo está cerrado mientras la clave está oculta y abierto cuando se ve.
 
 > **[Captura: Credenciales Definitivas en Sitio Web]**
 > *Casillas de correo corporativo y contraseña diligenciadas en el formulario de inicio de sesión.*
