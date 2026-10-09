@@ -20,12 +20,16 @@ import { z } from 'zod';
 const textoObligatorio = (max: number) => z.string().trim().min(1).max(max);
 
 /**
- * La fecha llega del `<input type="date">` del panel como 'YYYY-MM-DD', y limpiarla
- * se hace mandando cadena vacía o `null`. Los tres casos son válidos; cualquier otra
- * cosa no.
+ * La fecha llega del calendario del panel como 'YYYY-MM-DD', y limpiarla se hace
+ * mandando cadena vacía o `null`. Los tres casos son válidos; cualquier otra cosa no.
+ *
+ * La cadena vacía sale de aquí convertida en `null`: es lo que entiende la columna
+ * `fecha_caducidad`. Pasada tal cual, Postgres la rechaza como fecha y quitar la
+ * caducidad respondía con error.
  */
 const fechaOpcional = z
   .union([z.string().trim().max(64), z.null()])
+  .transform((valor) => (valor === '' ? null : valor))
   .optional();
 
 /**
