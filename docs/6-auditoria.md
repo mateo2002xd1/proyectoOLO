@@ -5,6 +5,51 @@
 
 ---
 
+## sesión 09-10-2026 (5.ª parte): quitar la fecha de caducidad de un usuario no llegaba a la base
+
+**Qué pasaba.** En `/admin/users`, al editar una cuenta y pulsar «Borrar» en el calendario de
+la fecha de caducidad, se guardaba sin error pero la fecha seguía en la base: una cuenta con
+caducidad ya no podía quedarse sin ella.
+
+**Por qué.** Dos fallos, uno tapando al otro:
+
+1. El formulario solo mandaba `expiration_date` si tenía valor (`if (expirationDate)`). Al
+   borrarla, el campo no viajaba, y para un PATCH parcial «no viene» es «no se toca».
+2. Aunque se hubiera mandado vacía, el validador dejaba pasar `''` tal cual hasta el modelo,
+   y `''` no es una fecha válida para la columna `fecha_caducidad`.
+
+El resto ya estaba preparado para el `null`: el esquema lo admitía, la regla de reactivar con
+fecha vencida lo trata bien y la bitácora ya sabe decir «Se quitó la fecha de caducidad, que
+era …».
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| FE | `3000-sitio-web/.../auth/components/usuarios-view.tsx` | Al editar, `expiration_date` va siempre: la fecha o `null` |
+| FE | `3000-sitio-web/.../auth/hooks/use-usuarios.ts` | `CambiosUsuario.expiration_date` admite `null` |
+| API | `4000-api-backend/src/validators/usuarios.validators.ts` | `fechaOpcional` convierte la cadena vacía (y la de solo espacios) en `null`, en el alta y en la edición |
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| `actualizarUsuarioSchema` con fecha, `''`, `'  '`, `null`, sin el campo y un número | ✅ fecha intacta; `''`, `'  '` y `null` → `null`; sin campo no aparece; el número, rechazado |
+| `crearUsuarioSchema` con `expiration_date: ''` | ✅ `null` |
+| `tsc --noEmit` en el sitio y en la API; `eslint` de los dos archivos del sitio | ✅ |
+
+No se probó de punta a punta contra Neon: hace falta una sesión de administrador real, así
+que queda para el usuario.
+
+> **Aviso.** Ahora cada edición manda la fecha aunque no cambie. No ensucia la auditoría:
+> `cambioDeVerdad` compara la fecha por día y `null` con `null` como iguales.
+
+**Pendiente al cierre.**
+
+- **Reiniciar la API** (ts-node sin recarga) y probar en `/admin/users`: editar una cuenta con
+  caducidad, «Borrar», guardar, y volver a abrirla; en la auditoría debe salir «Se quitó la
+  fecha de caducidad».
+
+---
+
 ## sesión 09-10-2026 (4.ª parte): acceso a la intranet en móvil y tablet
 
 **Qué se pidió.** Lo mismo que en la 3.ª parte, para la intranet: el login con su propio
