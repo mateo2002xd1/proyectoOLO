@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { validarEmail } from '@olo/email-policy';
 import {
@@ -66,6 +66,7 @@ export default function UsuariosView() {
   // Additional Actions state
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [busqueda, setBusqueda] = useState('');
   const [paginaUsuarios, setPaginaUsuarios] = useState(1);
   const [itemsPorPaginaUsuarios, setItemsPorPaginaUsuarios] = useState(15);
 
@@ -250,11 +251,22 @@ export default function UsuariosView() {
     setCopiedPassword(false);
   }
 
-  // Determina el nombre del rol seleccionado para mostrar el aviso
+  const normalizar = (t: string) =>
+    t.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
 
-  const totalPaginasUsuarios = Math.max(1, Math.ceil(users.length / itemsPorPaginaUsuarios));
+  const usuariosFiltrados = useMemo(() => {
+    const q = normalizar(busqueda);
+    if (!q) return users;
+    return users.filter((u) => {
+      const nombreCompleto = `${u.name} ${u.apellidos ?? ''}`;
+      const rolNombre = u.role?.name ?? '';
+      return normalizar(`${nombreCompleto} ${u.email} ${rolNombre}`).includes(q);
+    });
+  }, [users, busqueda]);
+
+  const totalPaginasUsuarios = Math.max(1, Math.ceil(usuariosFiltrados.length / itemsPorPaginaUsuarios));
   const paginaActualUsuarios = Math.min(paginaUsuarios, totalPaginasUsuarios);
-  const usuariosPaginados = users.slice(
+  const usuariosPaginados = usuariosFiltrados.slice(
     (paginaActualUsuarios - 1) * itemsPorPaginaUsuarios,
     paginaActualUsuarios * itemsPorPaginaUsuarios,
   );
@@ -423,6 +435,19 @@ export default function UsuariosView() {
         </AlertActions>
       </Alert>
 
+      <div className="mb-6">
+        <input
+          type="search"
+          value={busqueda}
+          onChange={(e) => {
+            setBusqueda(e.target.value);
+            setPaginaUsuarios(1);
+          }}
+          placeholder="Buscar usuarios..."
+          className="w-full max-w-sm rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-brand-interactive focus:outline-none focus:ring-2 focus:ring-brand-interactive/20 dark:border-zinc-700 dark:bg-[#131b2f] dark:text-zinc-100 dark:placeholder:text-zinc-500"
+        />
+      </div>
+
       <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-[#7db828]/30 dark:bg-[#0b1121]">
         <div className="overflow-x-auto">
           <table className="olo-tabla-apilable min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -455,10 +480,10 @@ export default function UsuariosView() {
                     <CargandoSeccion label="Cargando usuarios..." className="min-h-[40vh]" />
                   </td>
                 </tr>
-              ) : users.length === 0 ? (
+              ) : usuariosFiltrados.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-8 text-center text-sm text-zinc-500">
-                    No hay usuarios registrados.
+                    {busqueda ? `Sin resultados para "${busqueda}"` : 'No hay usuarios registrados.'}
                   </td>
                 </tr>
               ) : (
@@ -518,7 +543,7 @@ export default function UsuariosView() {
           pagina={paginaActualUsuarios}
           totalPaginas={totalPaginasUsuarios}
           onCambiarPagina={setPaginaUsuarios}
-          total={users.length}
+          total={usuariosFiltrados.length}
           porPagina={itemsPorPaginaUsuarios}
           onCambiarPorPagina={(n) => {
             setItemsPorPaginaUsuarios(n);
