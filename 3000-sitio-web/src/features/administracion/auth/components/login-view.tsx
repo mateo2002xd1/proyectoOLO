@@ -12,7 +12,7 @@ import {
   AuthTextField,
   PasswordField,
   authQuietLinkClass,
-  authSolidCardClass,
+  authLoginCardClass,
 } from './auth-ui';
 
 /**
@@ -118,7 +118,7 @@ function LoginForm() {
   };
 
   return (
-    <div className={authSolidCardClass}>
+    <div className={authLoginCardClass}>
       <form onSubmit={handleSubmit} noValidate>
         {/* Antes que el error: explica por qué se está aquí, no qué se hizo mal. Al
             escribir credenciales nuevas el error lo sustituye visualmente. */}
@@ -181,7 +181,7 @@ export function LoginView() {
   return (
     // `useSearchParams` obliga a un límite de Suspense: sin él, la ruta entera se
     // renderiza en cliente.
-    <Suspense fallback={<div className={`${authSolidCardClass} text-center`}>Cargando…</div>}>
+    <Suspense fallback={<div className={`${authLoginCardClass} text-center`}>Cargando…</div>}>
       <LoginForm />
     </Suspense>
   );

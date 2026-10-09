@@ -2,6 +2,7 @@
 
 import { useState, ReactNode } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { LONGITUD_MINIMA, requisitosDe } from '@olo/password-policy';
 
@@ -32,8 +33,18 @@ import { LONGITUD_MINIMA, requisitosDe } from '@olo/password-policy';
  * clases no llevan tema oscuro: hacerlo dejaría un campo oscuro dentro de una
  * tarjeta blanca. */
 
+// Relleno menor en el móvil: con `px-9` dentro del `px-6` del marco, a 360 px el
+// campo se quedaba en 240 px y la pregunta de seguridad partía en cuatro líneas.
 export const authSolidCardClass =
-  'w-full max-w-[380px] rounded-2xl bg-white px-9 py-10 shadow-[0_25px_60px_rgba(0,0,0,0.35)]';
+  'w-full max-w-[380px] rounded-2xl bg-white px-6 py-8 shadow-[0_25px_60px_rgba(0,0,0,0.35)] sm:px-9 sm:py-10';
+
+/**
+ * Tarjeta del login. Por debajo de `xl` no es tarjeta: la pantalla entera es blanca
+ * (ver `AuthSplitShell`) y el formulario va directo sobre ella, sin borde ni sombra,
+ * como en el diseño de móvil y tablet. Desde `xl` vuelve a ser la de las demás.
+ */
+export const authLoginCardClass =
+  'w-full max-w-[380px] bg-white xl:rounded-2xl xl:px-9 xl:py-10 xl:shadow-[0_25px_60px_rgba(0,0,0,0.35)]';
 
 export const authSolidLabelClass = 'mb-1.5 block text-sm font-semibold text-[#0d1526]';
 
@@ -72,18 +83,34 @@ export const authNavyActionClass =
  * tarjeta a la derecha sobre el azul institucional.
  *
  * El logo vive aquí y no dentro de la tarjeta porque el panel izquierdo ya lo
- * sostiene. Por debajo de `md` ese panel se oculta, así que el marco repone una
- * versión compacta arriba: si no, la pantalla de móvil se quedaría sin ninguna marca.
+ * sostiene. Por debajo de `xl` ese panel se oculta, así que el marco repone la marca
+ * arriba: si no, la pantalla de móvil se quedaría sin ninguna.
+ *
+ * ## Por qué el corte es `xl` y no `md`
+ *
+ * El diseño de móvil vale hasta la tablet grande incluida (iPad Pro 13", 1032 × 1376
+ * en vertical). `lg` empieza en 1024, así que esa tablet caía en el diseño partido,
+ * con dos columnas de 516 px; `xl` (1280) es el primer corte de la escala por encima
+ * (`2-convenciones` §10.1). La misma tablet en horizontal (1376) sí lo parte.
+ *
+ * ## El login, por debajo de `xl`, es otra pantalla
+ *
+ * Fondo blanco entero, el logo a color con «Panel de Administración» encima y el
+ * formulario sin tarjeta (`authLoginCardClass`). El resto del flujo sigue sobre el
+ * azul, con la marca compacta en blanco y su tarjeta. Por eso el marco mira la ruta:
+ * vive en el layout y es el único que pinta el fondo.
  *
  * El enlace de regreso al sitio también es del marco y no de cada pantalla: sale
  * igual en el acceso, en la elección de editor, en el primer ingreso y en la
  * recuperación.
  */
 export function AuthSplitShell({ children }: { children: ReactNode }) {
+  const esLogin = usePathname() === '/login';
+
   return (
-    <div className="flex min-h-dvh w-full bg-[#001631]">
+    <div className={`flex min-h-dvh w-full xl:bg-[#001631] ${esLogin ? 'bg-white' : 'bg-[#001631]'}`}>
       {/* Panel izquierdo — identidad sobre blanco, con la esquina derecha redondeada. */}
-      <div className="hidden w-[50%] shrink-0 items-center justify-center bg-white rounded-r-[16px] md:flex">
+      <div className="hidden w-[50%] shrink-0 items-center justify-center bg-white rounded-r-[16px] xl:flex">
         <div className="text-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/assets/logos/olo-logo-none.svg" alt="OLO Logo" className="mx-auto w-[210px]" />
@@ -95,25 +122,43 @@ export function AuthSplitShell({ children }: { children: ReactNode }) {
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col items-center justify-center gap-6 px-6 py-16">
-        {/* Marca compacta, solo mientras el panel izquierdo está oculto. Los dos
-            `h1` nunca coexisten: el que no toca está en `display:none` y no llega
-            al árbol de accesibilidad. */}
-        <div className="mb-2 text-center md:hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/assets/logos/olo-logo-none.svg"
-            alt="OLO Logo"
-            className="mx-auto mb-2 w-16 brightness-0 invert"
-          />
-          <h1 className="text-lg text-white">
-            Panel de <span className="font-bold">ADMINISTRACIÓN</span>
-          </h1>
-        </div>
+      <div className="flex min-w-0 flex-1 flex-col items-center justify-center gap-6 px-6 py-12 sm:py-16">
+        {/* Marca mientras el panel izquierdo está oculto. Los dos `h1` nunca
+            coexisten: el que no toca está en `display:none` y no llega al árbol
+            de accesibilidad. */}
+        {esLogin ? (
+          // Login: el logo a color y el título grande, con aire antes del formulario.
+          <div className="mb-4 text-center sm:mb-10 xl:hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/assets/logos/olo-logo-none.svg"
+              alt="OLO Logo"
+              className="mx-auto w-24 sm:w-28"
+            />
+            <h1 className="mt-4 leading-tight text-[#0d1526]">
+              <span className="block text-xl font-light sm:text-2xl">Panel de</span>{' '}
+              {/* El espacio de arriba es para el nombre accesible: dos `block`
+                  seguidos se leían «Panel deAdministración». */}
+              <span className="block text-2xl font-bold sm:text-3xl">Administración</span>
+            </h1>
+          </div>
+        ) : (
+          <div className="mb-2 text-center xl:hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/assets/logos/olo-logo-none.svg"
+              alt="OLO Logo"
+              className="mx-auto mb-2 w-16 brightness-0 invert"
+            />
+            <h1 className="text-lg text-white">
+              Panel de <span className="font-bold">ADMINISTRACIÓN</span>
+            </h1>
+          </div>
+        )}
 
         {children}
 
-        <BackToSiteLink label="Regresar al sitio web del Observatorio" />
+        <BackToSiteLink label="Regresar al sitio web del Observatorio" sobreBlanco={esLogin} />
       </div>
     </div>
   );
@@ -469,20 +514,30 @@ export function PasswordRequisitos({
 /**
  * Enlace de regreso al sitio público.
  *
- * Solo lo usa `AuthSplitShell`, que lo pone sobre el azul: de ahí el blanco fijo.
+ * Solo lo usa `AuthSplitShell`, que lo pone sobre el azul: de ahí el blanco. Con
+ * `sobreBlanco` (el login por debajo de `xl`, que va sobre fondo blanco) pasa a
+ * gris oscuro hasta ese corte; desde `xl` vuelve a estar sobre el azul.
  */
 export function BackToSiteLink({
   className = '',
   label = 'Ir al sitio web',
+  sobreBlanco = false,
 }: {
   className?: string;
   label?: string;
+  sobreBlanco?: boolean;
 }) {
+  const color = sobreBlanco
+    ? 'text-gray-600 hover:text-gray-900 xl:text-white/90 xl:hover:text-white'
+    : 'text-white/90 hover:text-white';
+
   return (
     <div className={`text-center ${className}`}>
       <Link
         href="/inicio"
-        className="inline-flex items-center justify-center gap-2 text-sm font-medium text-white/90 transition hover:-translate-y-px hover:text-white"
+        // `py-2.5`: el texto solo mide 20 px de alto, y en el móvil el objetivo
+        // táctil debe llegar a 24 (`2-convenciones` §10.4).
+        className={`inline-flex items-center justify-center gap-2 py-2.5 text-sm font-medium transition hover:-translate-y-px ${color}`}
       >
         <svg
           width="18"
