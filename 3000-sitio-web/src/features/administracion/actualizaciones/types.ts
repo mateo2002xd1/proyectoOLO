@@ -3,7 +3,7 @@
 export type EstadoCargaDatos = 'procesando' | 'completado' | 'error';
 
 /** Excel de ejemplo que sirve `GET /api/observatorio/formatos/:formato`, uno por tarjeta. */
-export type FormatoDeCarga = 'programas-sobresalientes' | 'tendencia-ocupacional';
+export type FormatoDeCarga = 'programas-sobresalientes' | 'tendencia-ocupacional' | 'fuentes-futuras';
 
 /** Una carga de Excel registrada en `cargas_datos`. */
 export interface CargaDatos {
@@ -117,6 +117,34 @@ export interface SeccionCiiu {
   nombre: string;
 }
 
+/** Un proyecto publicado, tal como lo lista `GET /api/alertas-inversion/proyectos` para poder borrarlo. */
+export interface ProyectoInversionPanel {
+  id: string;
+  tipo: 'nuevo' | 'expansion';
+  empresa: string;
+  descripcion: string;
+  sector: string;
+  ubicaciones: string;
+  fechaAnuncio: string;
+}
+
+/** Una actividad CIIU (código de 4 dígitos) del catálogo, asociada a su sector. */
+export interface ClaseCiiu {
+  id: string;
+  codigo: string;
+  nombre: string;
+  seccionId: string;
+}
+
+/** Respuesta de `POST /api/alertas-inversion/sectores`. */
+export interface ResultadoActualizarSectores {
+  creados: number;
+  actualizados: number;
+  sinCambios: number;
+  omitidos: number;
+  errores: { fila: number; mensaje: string }[];
+}
+
 /** Los campos del formulario "Agregar manualmente" — un proyecto por envío. */
 export interface DatosProyectoInversionManual {
   tipo: 'nuevo' | 'expansion';
@@ -131,4 +159,22 @@ export interface DatosProyectoInversionManual {
   empleosEstimados: number | null;
   departamento: string;
   ciudad: string | null;
+}
+
+// ---------------------------------------------------------------------------
+// Fuentes futuras de empleo
+// ---------------------------------------------------------------------------
+
+/** Respuesta de `POST /api/observatorio/fuentes-futuras-empleo/cargas`. */
+export interface CargaFuentesFuturasCreada {
+  cargaId: string;
+  /** Registros que quedaron publicados en el portal. */
+  filas: number;
+  message: string;
+}
+
+/** Respuesta de `DELETE /api/observatorio/fuentes-futuras-empleo/cargas/:id`. */
+export interface CargaFuentesFuturasEliminada {
+  /** `false` si el Excel se conservó porque otra carga usa el mismo archivo. */
+  archivoEliminado: boolean;
 }

@@ -176,8 +176,8 @@ export function CustomSelect({
                     onChange(opt.value);
                     setIsOpen(false);
                   }}
-                  className={`flex w-full items-center justify-between text-left text-sm transition duration-150 ${
-                    compacto ? "gap-3 rounded-lg px-2.5 py-1.5" : "rounded-xl px-3 py-2.5"
+                  className={`flex w-full items-center text-left text-sm transition duration-150 ${
+                    compacto ? "rounded-lg px-2.5 py-1.5" : "rounded-xl px-3 py-2.5"
                   } ${
                     opt.disabled
                       ? "cursor-not-allowed text-[#667085] dark:text-[#95a0b8]"
@@ -190,12 +190,6 @@ export function CustomSelect({
                   aria-disabled={opt.disabled || undefined}
                 >
                   <span className="font-medium">{opt.label}</span>
-                  {/* Compacto, solo el dato: el elegido ya se distingue por su fondo. */}
-                  {!compacto && (
-                    <span
-                      className={`h-2.5 w-2.5 rounded-full shrink-0 transition ${isSelected ? "bg-[#002237] shadow-[0_0_0_4px_rgba(0,34,55,0.12)] dark:bg-[#7c8db0]" : "bg-[#d8dde7] dark:bg-[#3a4660]"}`}
-                    />
-                  )}
                 </button>
               );
             })}

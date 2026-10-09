@@ -96,10 +96,10 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
     // La temporal se *comprueba*, no se elige: la emitió el sistema y ya cumple la
     // política. Medirla contra §1 aquí solo podría rechazar una clave válida.
     if (!tempPassword) e.tempPassword = 'La contraseña temporal es requerida';
-    if (!newPassword) e.newPassword = 'El nuevo passcode es requerido';
+    if (!newPassword) e.newPassword = 'La nueva contraseña es requerida';
     else if (!cumplePolitica(newPassword)) e.newPassword = primerFallo(newPassword) ?? '';
-    if (!confirmPassword) e.confirmPassword = 'Confirma tu passcode';
-    else if (newPassword !== confirmPassword) e.confirmPassword = 'Los passcodes no coinciden';
+    if (!confirmPassword) e.confirmPassword = 'Confirma tu contraseña';
+    else if (newPassword !== confirmPassword) e.confirmPassword = 'Las contraseñas no coinciden';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -254,7 +254,7 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
       <div className={authSolidCardClass}>
         <AuthCardTitle
           title={name ? `Hola ${name.split(' ')[0]}, actualiza tu seguridad` : 'Actualiza tu seguridad'}
-          description="Ingresaste con un código temporal. Crea ahora un passcode personal que solo tú conozcas."
+          description="Ingresaste con un código temporal. Crea ahora una contraseña personal que solo tú conozcas."
         />
 
         <form onSubmit={(e: FormEvent) => { e.preventDefault(); handleStep1(); }} noValidate>
@@ -271,7 +271,7 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
           />
           <PasswordField
             id="new-password"
-            label="Nuevo passcode"
+            label="Nueva contraseña"
             autoComplete="new-password"
             value={newPassword}
             onChange={(v) => { setNewPassword(v); setErrors({}); }}
@@ -281,7 +281,7 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
           <PasswordRequisitos password={newPassword} variant="solid" />
           <PasswordField
             id="confirm-password"
-            label="Ingresa nuevamente el passcode"
+            label="Ingresa nuevamente la contraseña"
             autoComplete="new-password"
             value={confirmPassword}
             onChange={(v) => { setConfirmPassword(v); setErrors({}); }}

@@ -37,6 +37,10 @@ interface IntranetTopbarProps {
   fondo?: string;
   onLogout?: () => void;
   isLoading?: boolean;
+  /** `false` para quien edita: su «Cerrar sesión» está en el botón flotante
+   *  (`PaginasFabSpeedDial`). Dirección y subdirección no tienen ese botón, así que
+   *  para ellas se queda aquí. */
+  mostrarCerrarSesion?: boolean;
 }
 
 const INTRANET_ESTATICO_FALLBACK: Array<{
@@ -119,6 +123,7 @@ export function IntranetTopbar({
   logoUrl = "/assets/svg/olo-logo-blanco.svg",
   onLogout,
   isLoading = false,
+  mostrarCerrarSesion = true,
 }: IntranetTopbarProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -324,7 +329,7 @@ export function IntranetTopbar({
       evento.preventDefault();
       const seleccionado = filteredResults[activo];
       if (seleccionado) {
-        irA(seleccionado.href, seleccionado.blockId, seleccionado.text);
+        irA(seleccionado.href, seleccionado.blockId, searchQuery.trim() || seleccionado.text);
       }
     }
   };
@@ -341,15 +346,32 @@ export function IntranetTopbar({
   }> = [];
   if (searchQuery.trim() !== "") {
     const q = normalizeText(searchQuery).replace(/[\s\u00A0]+/g, ' ').trim();
-    const palabrasQ = q.split(' ').filter((p) => p.length >= 2);
+    const palabrasQ = q.split(' ').filter((p) => p.length >= 3);
+
+    // Construir regex de frase difusa una sola vez (permite puntuación entre palabras)
+    let reFraseDifusa: RegExp | null = null;
+    if (q.includes(' ')) {
+      const palabrasQ2 = q.split(' ').filter((p) => p.length >= 2);
+      if (palabrasQ2.length >= 2) {
+        try {
+          const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          reFraseDifusa = new RegExp(palabrasQ2.map(escapeRe).join('[\\s\\W]*'));
+        } catch { /* ignorar */ }
+      }
+    }
+
     contenidoParaBuscar.forEach((page) => {
       const contexto = page.titulo || page.items[0]?.text || "Intranet";
       page.items.forEach((item) => {
         const itemNorm = normalizeText(item.text).replace(/[\s\u00A0]+/g, ' ');
         const contextoNorm = normalizeText(contexto);
         const coincide =
+          // 1. Frase exacta normalizada
           itemNorm.includes(q) ||
           contextoNorm.includes(q) ||
+          // 1.5. Frase difusa: tolera paréntesis y signos entre palabras
+          (reFraseDifusa !== null && (reFraseDifusa.test(itemNorm) || reFraseDifusa.test(contextoNorm))) ||
+          // 2. Todas las palabras significativas (>= 3 chars) presentes en el item o contexto
           (palabrasQ.length > 1 && palabrasQ.every((p) => itemNorm.includes(p) || contextoNorm.includes(p)));
 
         if (coincide) {
@@ -469,25 +491,27 @@ export function IntranetTopbar({
             </svg>
           </button>
 
-          <button
-            type="button"
-            className="intranet-login-btn"
-            aria-label="Cerrar sesión"
-            title="Cerrar sesión"
-            onClick={onLogout}
-            disabled={isLoading}
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20">
-              <path
-                d="M15 8l4 4m0 0-4 4m4-4H9m4-9H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
+          {mostrarCerrarSesion && (
+            <button
+              type="button"
+              className="intranet-login-btn"
+              aria-label="Cerrar sesión"
+              title="Cerrar sesión"
+              onClick={onLogout}
+              disabled={isLoading}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20">
+                <path
+                  d="M15 8l4 4m0 0-4 4m4-4H9m4-9H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 
@@ -582,7 +606,7 @@ export function IntranetTopbar({
                         tabIndex={-1}
                         onClick={(e) => {
                           e.preventDefault();
-                          irA(result.href, result.blockId, result.text);
+                          irA(result.href, result.blockId, searchQuery.trim() || result.text);
                         }}
                         className="block px-4 py-3 no-underline text-inherit cursor-pointer"
                       >

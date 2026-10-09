@@ -171,4 +171,85 @@ router.get('/formatos/plantilla', AlertasInversionController.descargarFormato);
  */
 router.post('/proyectos', validarCuerpo(crearProyectoManualSchema), AlertasInversionController.crearManual);
 
+/**
+ * @openapi
+ * /api/alertas-inversion/proyectos:
+ *   get:
+ *     tags: [AlertasInversion]
+ *     summary: Proyectos de inversión registrados (los 100 más recientes)
+ *     description: Para el panel de Actualizaciones. Lista tanto los de alta manual como los de Excel.
+ *     responses:
+ *       200: { description: Lista de proyectos. }
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
+ *   delete:
+ *     tags: [AlertasInversion]
+ *     summary: Elimina todos los proyectos de inversión («Limpiar»)
+ *     description: Borra todos los proyectos y sus ubicaciones; el sitio público queda sin datos.
+ *     responses:
+ *       200: { description: Cantidad de proyectos eliminados. }
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
+ * /api/alertas-inversion/proyectos/{id}:
+ *   delete:
+ *     tags: [AlertasInversion]
+ *     summary: Elimina un proyecto de inversión
+ *     description: Borra el proyecto y sus ubicaciones; deja de verse en el sitio público.
+ *     parameters:
+ *       - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+ *     responses:
+ *       204: { description: Eliminado. }
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
+ *       404: { description: Proyecto no encontrado. }
+ */
+/**
+ * @openapi
+ * /api/alertas-inversion/sectores:
+ *   post:
+ *     tags: [AlertasInversion]
+ *     summary: Actualiza el catálogo de sectores CIIU desde un Excel
+ *     description: |
+ *       Excel de dos columnas, código y nombre. Cada código de 4 dígitos se guarda como
+ *       actividad CIIU y se asocia a su sección por el prefijo (la división); los de
+ *       2 y 3 dígitos se omiten. Si el código existe se actualiza el nombre. No borra nada.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file: { type: string, format: binary }
+ *             required: [file]
+ *     responses:
+ *       200: { description: Resumen con creados, actualizados, sinCambios, omitidos y errores por fila. }
+ *       400: { description: Archivo ausente, dañado o sin filas válidas. }
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
+ *       415: { description: Tipo de archivo no permitido. }
+ */
+/**
+ * @openapi
+ * /api/alertas-inversion/formatos/sectores:
+ *   get:
+ *     tags: [AlertasInversion]
+ *     summary: Descarga el Excel de ejemplo de Actualizar sectores (CIIU)
+ *     responses:
+ *       200:
+ *         description: El Excel, como adjunto.
+ *         content:
+ *           application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+ *             schema: { type: string, format: binary }
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
+ *       404: { description: El formato no está disponible en el servidor. }
+ */
+router.get('/formatos/sectores', AlertasInversionController.descargarFormatoSectores);
+router.post('/sectores', subidaEnMemoria.single('file'), AlertasInversionController.actualizarSectores);
+
+router.get('/proyectos', AlertasInversionController.listarProyectos);
+router.delete('/proyectos', AlertasInversionController.eliminarTodosLosProyectos);
+router.delete('/proyectos/:id', AlertasInversionController.eliminarProyecto);
+
 export default router;

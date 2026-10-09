@@ -7,9 +7,11 @@ import { enlaceAlEditor, slugDeRutaPublica } from '../../model/rutas';
 import { SLUG_PLANTILLA } from '../../menu-y-pie/menu-y-pie';
 import { usePermisoDeSeccion } from '../hooks/use-permiso-de-seccion';
 import { permisosDeLaSesion } from '../services/secciones.service';
+import { cerrarSesionLocal } from '@/shared/lib/api-client';
 import { AUTH_ROLE_COOKIE_NAME } from '@/shared/lib/auth-cookies';
 import { ModalNuevaSeccion } from './modal-nueva-seccion';
 import { ModalEliminarSeccion } from './modal-eliminar-seccion';
+import { ModalCerrarSesion } from './modal-cerrar-sesion';
 import { Pencil, X } from 'lucide-react';
 
 function leerCookie(nombre: string): string | null {
@@ -101,9 +103,21 @@ export function PaginasFabSpeedDial() {
   const [abierto, setAbierto] = useState(false);
   const [modalNuevaAbierto, setModalNuevaAbierto] = useState(false);
   const [modalEliminarAbierto, setModalEliminarAbierto] = useState(false);
+  const [modalSalirAbierto, setModalSalirAbierto] = useState(false);
 
   const contenedorRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+
+  const [saliendo, setSaliendo] = useState(false);
+
+  // Cierra la sesión y recarga la misma página: sin cookie de sesión el FAB desaparece
+  // y el portal queda como lo ve un visitante.
+  const salirDelModoEdicion = async () => {
+    if (saliendo) return;
+    setSaliendo(true);
+    await cerrarSesionLocal();
+    window.location.reload();
+  };
 
   const alternarMenu = () => {
     setAbierto((prev) => !prev);
@@ -158,7 +172,7 @@ export function PaginasFabSpeedDial() {
     <>
       <div
         ref={contenedorRef}
-        className={`fab-speed-dial ${abierto ? 'fab-speed-dial--abierto' : ''}`}
+        className={`fab-speed-dial fab-speed-dial--con-salir ${abierto ? 'fab-speed-dial--abierto' : ''}`}
         aria-label="Acciones de administración de página"
       >
         {/* Submenú de acciones desplegables hacia arriba */}
@@ -169,19 +183,19 @@ export function PaginasFabSpeedDial() {
           role="menu"
           aria-hidden={!abierto}
         >
-          {/* 1. Editar sección (más cercano al disparador en column-reverse) */}
+          {/* 1. Editar página (más cercano al disparador en column-reverse) */}
           {puedeEditarSeccion && (
             <div className="fab-speed-dial__item" role="none">
               <span className="fab-speed-dial__tooltip" role="tooltip">
-                Editar sección
+                Editar página
               </span>
               <Link
                 href={enlaceAlEditor(slug, rutaActual || `/${slug}`)}
                 role="menuitem"
                 onClick={cerrarMenu}
                 className="fab-speed-dial__btn fab-speed-dial__btn--editar"
-                aria-label="Editar sección"
-                title="Editar sección"
+                aria-label="Editar página"
+                title="Editar página"
                 tabIndex={abierto ? 0 : -1}
               >
                 <svg
@@ -274,7 +288,7 @@ export function PaginasFabSpeedDial() {
 
           {/* 4. Eliminar página (extremo superior del menú desplegado) */}
           {puedeEliminarSeccion && (
-            <div className="fab-speed-dial__item" role="none">
+            <div className="fab-speed-dial__item fab-speed-dial__item--eliminar" role="none">
               <span className="fab-speed-dial__tooltip" role="tooltip">
                 Eliminar página
               </span>
@@ -311,26 +325,63 @@ export function PaginasFabSpeedDial() {
         </div>
 
         {/* Botón Principal (Trigger FAB fijo abajo) */}
-        <button
-          ref={triggerRef}
-          type="button"
-          onClick={alternarMenu}
-          className={`fab-speed-dial__trigger ${
-            abierto ? 'fab-speed-dial__trigger--activo' : ''
-          }`}
-          aria-haspopup="menu"
-          aria-expanded={abierto}
-          aria-label={abierto ? 'Cerrar menú de acciones' : 'Abrir menú de acciones'}
-          title={abierto ? 'Cerrar menú de acciones' : 'Acciones de página'}
-        >
-          <span className="fab-speed-dial__icono-wrapper">
-            {abierto ? (
-              <X className="fab-speed-dial__icono" size={22} strokeWidth={2.2} aria-hidden="true" />
-            ) : (
-              <Pencil className="fab-speed-dial__icono" size={20} strokeWidth={2.2} aria-hidden="true" />
-            )}
+        <div className="fab-speed-dial__item">
+          <span className="fab-speed-dial__tooltip" role="tooltip">
+            {abierto ? 'Cerrar opciones' : 'Opciones de edición'}
           </span>
-        </button>
+          <button
+            ref={triggerRef}
+            type="button"
+            onClick={alternarMenu}
+            className={`fab-speed-dial__trigger ${
+              abierto ? 'fab-speed-dial__trigger--activo' : ''
+            }`}
+            aria-haspopup="menu"
+            aria-expanded={abierto}
+            aria-label={abierto ? 'Cerrar menú de acciones' : 'Abrir menú de acciones'}
+          >
+            <span className="fab-speed-dial__icono-wrapper">
+              {abierto ? (
+                <X className="fab-speed-dial__icono" size={22} strokeWidth={2.2} aria-hidden="true" />
+              ) : (
+                <Pencil className="fab-speed-dial__icono" size={20} strokeWidth={2.2} aria-hidden="true" />
+              )}
+            </span>
+          </button>
+        </div>
+
+        {/* Salir del modo edición: siempre a la vista, debajo del lápiz */}
+        <div className="fab-speed-dial__item fab-speed-dial__item--salir">
+          <span className="fab-speed-dial__tooltip" role="tooltip">
+            Salir de modo edición
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              cerrarMenu();
+              setModalSalirAbierto(true);
+            }}
+            disabled={saliendo}
+            className="fab-speed-dial__btn fab-speed-dial__btn--salir"
+            aria-label="Salir de modo edición"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width={18}
+              height={18}
+              aria-hidden="true"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Diálogos modales controlados por el FAB */}
@@ -343,6 +394,13 @@ export function PaginasFabSpeedDial() {
         slug={slug}
         abierto={modalEliminarAbierto}
         alCerrar={() => setModalEliminarAbierto(false)}
+      />
+
+      <ModalCerrarSesion
+        abierto={modalSalirAbierto}
+        saliendo={saliendo}
+        alConfirmar={salirDelModoEdicion}
+        alCerrar={() => setModalSalirAbierto(false)}
       />
     </>
   );

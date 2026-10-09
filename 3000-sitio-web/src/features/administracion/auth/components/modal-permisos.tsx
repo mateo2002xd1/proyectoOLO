@@ -131,9 +131,8 @@ export function ModalPermisos({
     () => [...originales].filter((id) => !seleccionados.has(id)),
     [originales, seleccionados]
   );
-  const nombreCambio = rol && nombre !== undefined && nombre !== rol.nombre && nombre.trim() !== '';
   const descripcionCambio = rol && descripcion !== undefined && descripcion !== (rol.descripcion || '');
-  const hayCambios = anadidos.length > 0 || quitados.length > 0 || descripcionCambio || nombreCambio;
+  const hayCambios = anadidos.length > 0 || quitados.length > 0 || descripcionCambio;
 
   if (!abierto || typeof document === 'undefined') return null;
 
@@ -194,16 +193,21 @@ export function ModalPermisos({
           {rol && !mostrarPermisos && (
             <div className="mt-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">
-                  Nombre del rol
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1]">
+                    Nombre del rol
+                  </label>
+                  <span className="text-xs text-zinc-400 dark:text-zinc-500">
+                    No modificable
+                  </span>
+                </div>
                 <input
                   type="text"
-                  maxLength={70}
-                  value={nombre ?? ''}
-                  onChange={(e) => onCambiarNombre?.(e.target.value)}
-                  disabled={rol.nombre === 'Editor'}
-                  className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand-interactive focus:outline-none focus:ring-2 focus:ring-brand-interactive/20 disabled:bg-zinc-100 disabled:text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:disabled:bg-zinc-800/50"
+                  value={rol.nombre}
+                  disabled
+                  readOnly
+                  title="El nombre del rol no se puede modificar una vez creado"
+                  className="w-full rounded-xl border border-zinc-200 bg-zinc-100 px-3 py-2 text-sm text-zinc-500 cursor-not-allowed select-none dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-400"
                 />
               </div>
               <div>
@@ -226,7 +230,7 @@ export function ModalPermisos({
               
               <div className="pt-2">
                 <Button type="button" onClick={() => setMostrarPermisos(true)}>
-                  Editar roles
+                  Editar permisos
                 </Button>
               </div>
             </div>
@@ -250,7 +254,7 @@ export function ModalPermisos({
           {(rol && !mostrarPermisos) ? (
             <div className="flex h-full items-center justify-center">
               <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">
-                Haz clic en "Editar roles" para ver y modificar la lista.
+                Haz clic en "Editar permisos" para ver y modificar la lista.
               </p>
             </div>
           ) : gruposAPintar.length === 0 ? (
@@ -353,12 +357,6 @@ export function ModalPermisos({
           <p className="text-xs text-zinc-500 dark:text-[#94a3b8]">
             {hayCambios ? (
               <>
-                {nombreCambio && (
-                  <strong className="text-zinc-900 dark:text-white">
-                    Nombre actualizado
-                  </strong>
-                )}
-                {nombreCambio && (descripcionCambio || anadidos.length > 0 || quitados.length > 0) && ' · '}
                 {descripcionCambio && (
                   <strong className="text-zinc-900 dark:text-white">
                     Descripción actualizada

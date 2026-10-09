@@ -3,6 +3,9 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+/** La API vista desde este servidor: la misma que `shared/lib/url-de-la-api.ts`. */
+const URL_DE_LA_API = process.env.BACKEND_URL || 'http://localhost:4000';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
@@ -149,28 +152,45 @@ const nextConfig = {
   async rewrites() {
     return [
       /**
-       * `uploads` y `backup` viven físicamente en `public/storage/` (unificados ahí
-       * para no desparramar carpetas de almacenamiento en la raíz de `public`), pero
-       * la URL pública sigue siendo la de siempre: `/uploads/...` y `/backup/...`.
-       * Así el contenido ya publicado (que guarda esas rutas literales en la BD) no
-       * necesita ninguna migración.
+       * Los adjuntos de las páginas no viven en este proyecto: los guarda y los sirve la
+       * API, desde su filesystem (`3-seguridad-del-proyecto.md` §S1). Aquí solo se
+       * reenvían, con las URL públicas de siempre: `/uploads/...` y `/backup/...`, que
+       * es lo que el contenido publicado guarda literal en la BD. La subida del editor
+       * sigue siendo `POST /api/upload`.
+       *
+       * En el servidor nginx los manda directo a la API sin pasar por aquí
+       * (`nginx.servidor.conf`); esto cubre `npm run dev` y cualquier acceso directo al
+       * contenedor. Next fija los rewrites al compilar, así que la dirección es la de
+       * `BACKEND_URL` en ese momento (el Dockerfile la recibe como argumento).
        */
       {
         source: '/uploads/:path*',
-        destination: '/storage/uploads/:path*',
+        destination: `${URL_DE_LA_API}/api/archivos/sitio/uploads/:path*`,
       },
       {
         source: '/backup/:path*',
-        destination: '/storage/backup/:path*',
+        destination: `${URL_DE_LA_API}/api/archivos/sitio/backup/:path*`,
       },
       /**
-       * Retrocompatibilidad transparente: si un navegador o vista previa solicita
-       * una ruta histórica /backend/..., Next.js la sirve directamente desde el
-       * backup real.
+       * Retrocompatibilidad: rutas históricas `/backend/...` que aún pida un navegador o
+       * una vista previa. Son el backup.
        */
       {
         source: '/backend/:path*',
-        destination: '/storage/backup/:path*',
+        destination: `${URL_DE_LA_API}/api/archivos/sitio/backup/:path*`,
+      },
+      /**
+       * Y `/storage/uploads/...`, la ruta física de antes, que quedó escrita en algunos
+       * valores por defecto de bloques (Publicaciones) y en el contenido guardado con
+       * ellos. La API solo sirve lo que cuelgue de `uploads/` o `backup/`.
+       */
+      {
+        source: '/storage/:path*',
+        destination: `${URL_DE_LA_API}/api/archivos/sitio/:path*`,
+      },
+      {
+        source: '/api/upload',
+        destination: `${URL_DE_LA_API}/api/archivos/sitio`,
       },
     ];
   },

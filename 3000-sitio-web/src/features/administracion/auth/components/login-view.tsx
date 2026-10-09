@@ -138,7 +138,7 @@ function LoginForm() {
 
         <PasswordField
           id="password"
-          label="Passcode"
+          label="Contraseña"
           autoComplete="current-password"
           value={password}
           onChange={setPassword}

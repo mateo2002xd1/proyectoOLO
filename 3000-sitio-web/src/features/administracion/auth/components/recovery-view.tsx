@@ -66,7 +66,7 @@ export function RecoveryView() {
   return (
     <div className={authSolidCardClass}>
       <AuthCardTitle
-        title="¿Olvidaste tu passcode?"
+        title="¿Olvidaste tu contraseña?"
         description="Escribe tu correo institucional y te preguntaremos por tus preguntas de seguridad."
       />
 

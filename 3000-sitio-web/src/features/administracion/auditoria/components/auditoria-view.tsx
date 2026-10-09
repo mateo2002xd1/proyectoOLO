@@ -8,7 +8,8 @@ import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
 import { Paginador } from '@/shared/ui/molecules/paginador';
 import { DetalleRegistro } from './detalle-registro';
 import { ModalDepurarAuditoria } from './modal-depurar-auditoria';
-import { Eye, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
+import { BotonOjo } from '@/shared/ui/atoms/boton-ojo';
 import { useAuditoria } from '../hooks/use-auditoria';
 import { comentarioPrincipal, resumenDeCambios } from '../lib/cambios';
 
@@ -206,15 +207,11 @@ export function AuditoriaView() {
                       <span className="@max-3xl:line-clamp-3">{resumenDeCambios(registro) || '—'}</span>
                     </td>
                     <td data-etiqueta="Detalle" className="px-4 py-2 text-right">
-                      <button
-                        type="button"
+                      <BotonOjo
+                        etiqueta="Ver detalle"
                         onClick={() => setSeleccionado(registro)}
-                        aria-label="Ver detalle"
-                        title="Ver detalle"
                         className="rounded-lg p-1.5 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-[#94a3b8] dark:hover:bg-white/5 dark:hover:text-white"
-                      >
-                        <Eye size={18} />
-                      </button>
+                      />
                     </td>
                   </tr>
                 ))}

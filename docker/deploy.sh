@@ -18,6 +18,13 @@ cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 COMPOSE_FILE="docker/docker-compose.servidor.yml"
 ENV_FILE=".env"
 
+# Todo lo que sube la gente (adjuntos de paginas y Excel de cargas). Es `external` en el
+# compose para que un `down -v` no se lo lleve, asi que lo crea este script y no Compose.
+VOLUMEN_DE_ARCHIVOS="olo-app_filesystem"
+
+# Para copiar, empaquetar y desempaquetar el volumen sin instalar nada en el equipo.
+IMAGEN_UTILIDADES="alpine:3"
+
 # Cada uno de estos tumba algo si llega vacio: la API aborta el arranque sin
 # `JWT_SECRET`, Postgres no inicializa sin contrasena, Redis arranca sin clave, y sin las
 # dos direcciones publicas el navegador no encuentra la API ni la otra aplicacion.
@@ -81,8 +88,10 @@ Comandos:
   sembrar   - Cargar el contenido inicial (paginas, identidad visual)
   importar  - Copiar los datos de la base de origen (ORIGEN_DATABASE_URL), sin cuentas
   crear-admin - Crear la primera cuenta de Superadmin (solo instalacion nueva)
-  backup    - Backup de la base de datos
-  restore   - Restaurar backup (uso: ./docker/deploy.sh restore backup.sql)
+  backup    - Backup de la base de datos y de los archivos subidos
+  restore   - Restaurar backup de la base (uso: ./docker/deploy.sh restore backup.sql)
+  restore-archivos - Restaurar los archivos subidos (uso: ... restore-archivos archivos_X.tar.gz)
+  migrar-archivos  - Copiar al volumen los archivos de las carpetas del repo y de filesystem/
   help      - Mostrar esta ayuda
 AYUDA
 }
@@ -102,7 +111,19 @@ comprobar_requisitos() {
         morir "El demonio de Docker no responde. Esta arrancado? (sudo systemctl start docker)"
 
     [ -f "$COMPOSE_FILE" ] || morir "No existe el archivo compose '$COMPOSE_FILE'."
+
+    # El volumen de archivos es un requisito de la pila como lo es Docker: sin el, Compose
+    # se niega a levantar la API ("external volume not found"). Crearlo es idempotente.
+    if ! docker volume inspect "$VOLUMEN_DE_ARCHIVOS" >/dev/null 2>&1; then
+        docker volume create "$VOLUMEN_DE_ARCHIVOS" >/dev/null
+        verde "Volumen de archivos creado: $VOLUMEN_DE_ARCHIVOS"
+    fi
 }
+
+# Ruta de una carpeta del equipo tal como la entiende Docker. En Git Bash `pwd` da
+# /c/OLO y Docker Desktop espera C:/OLO, que es lo que da `pwd -W`; en Linux esa opcion
+# no existe y vale `pwd`.
+ruta_para_docker() { (cd "$1" && { pwd -W 2>/dev/null || pwd; }); }
 
 # Lee una clave del .env sin ejecutarlo.
 #
@@ -490,6 +511,117 @@ backup() {
     # que luego revienta al restaurarlo.
     componer exec -T db pg_dump -U "$usuario" "$base" > "$archivo"
     verde "Backup guardado en: $archivo"
+
+    # La base sola no es un respaldo completo: las paginas nombran archivos que viven en
+    # el volumen, y restaurar una sin los otros deja las imagenes y los PDF rotos. Van
+    # con la misma fecha para que se sepa que son pareja.
+    local archivos="archivos_${fecha}.tar.gz"
+    echo ""
+    echo "=== Respaldando los archivos subidos: $archivos ==="
+    MSYS_NO_PATHCONV=1 docker run --rm \
+        --mount "type=volume,source=$VOLUMEN_DE_ARCHIVOS,target=/filesystem,readonly" \
+        --mount "type=bind,source=$(ruta_para_docker .),target=/respaldo" \
+        "$IMAGEN_UTILIDADES" tar czf "/respaldo/$archivos" -C /filesystem .
+    verde "Archivos guardados en: $archivos"
+}
+
+restore_archivos() {
+    comprobar_requisitos
+
+    [ -n "${1:-}" ] || morir "Especifica el respaldo. Uso: ./docker/deploy.sh restore-archivos archivos_AAAAMMDD_HHMMSS.tar.gz"
+    [ -f "$1" ] || morir "No se encontro el archivo '$1'"
+
+    local respuesta
+    echo "=== Restaurando archivos subidos: $1 ==="
+    aviso "Se copia el respaldo dentro del volumen $VOLUMEN_DE_ARCHIVOS: lo que tenga el mismo"
+    aviso "nombre se sobrescribe y lo demas se conserva. Restaura tambien la base de la misma fecha."
+    read -r -p "Continuar? (s/n): " -n 1 respuesta
+    echo
+    if [[ ! $respuesta =~ ^[Ss]$ ]]; then
+        echo "Cancelado"
+        return 0
+    fi
+
+    MSYS_NO_PATHCONV=1 docker run --rm \
+        --mount "type=volume,source=$VOLUMEN_DE_ARCHIVOS,target=/filesystem" \
+        --mount "type=bind,source=$(ruta_para_docker "$(dirname "$1")"),target=/respaldo,readonly" \
+        "$IMAGEN_UTILIDADES" tar xzf "/respaldo/$(basename "$1")" -C /filesystem
+    verde "Archivos restaurados"
+}
+
+# Lleva al volumen lo subido que este fuera de el, de dos sitios:
+#
+#  - `filesystem/` en la raiz del repo: donde guarda la API en desarrollo (`npm run dev`).
+#    Solo existe en un equipo de desarrollo; sirve para probar en Docker lo que se hizo
+#    alli. Si alguien cambio FILESYSTEM_DIR en el .env de la API, esa otra carpeta no se ve.
+#  - Las carpetas de antes del 2026-10-06, montadas entonces en los contenedores: el
+#    `public/storage` del sitio y de la intranet, y `uploads/cargas-datos` de la API. Es la
+#    mudanza de una sola vez del servidor.
+#
+# Copia y no mueve, y nunca pisa lo que ya este en el volumen (ver filesystem.ts en la
+# API), asi que repetirlo no hace dano: recoge lo que se haya subido entre una vez y otra.
+migrar_archivos() {
+    comprobar_requisitos
+
+    local montajes=() par origen destino
+    for par in "filesystem:desarrollo" \
+               "3000-sitio-web/public/storage:sitio" "3001-intranet/public/storage:intranet" \
+               "4000-api-backend/uploads/cargas-datos:cargas-datos"; do
+        origen="${par%%:*}"
+        destino="${par##*:}"
+        [ -d "$origen" ] && montajes+=(--mount "type=bind,source=$(ruta_para_docker "$origen"),target=/origen/$destino,readonly")
+    done
+    if [ ${#montajes[@]} -eq 0 ]; then
+        echo "No hay filesystem/ ni carpetas de antes en el repositorio: nada que copiar."
+        return 0
+    fi
+
+    echo "=== Copiando los archivos subidos al volumen $VOLUMEN_DE_ARCHIVOS ==="
+    # Nunca pisa nada. El Excel heredado de "Fuentes futuras de empleo" no se copia: es del
+    # repositorio y la imagen de la API ya lo trae.
+    MSYS_NO_PATHCONV=1 docker run --rm \
+        --mount "type=volume,source=$VOLUMEN_DE_ARCHIVOS,target=/filesystem" \
+        "${montajes[@]}" \
+        "$IMAGEN_UTILIDADES" sh -euc '
+            # Archivo por archivo y no `cp -Rn origen/. destino/`: el cp de BusyBox (el de
+            # alpine) no copia nada de esa forma si el destino ya existe, sin dar error.
+            # El de Git Bash si, y por eso el fallo no se veia al probar fuera de Docker.
+            copiar() {
+                [ -d "$1" ] || return 0
+                ( cd "$1" && find . -type f ) | while IFS= read -r f; do
+                    [ -e "$2/$f" ] && continue
+                    mkdir -p "$2/$(dirname "$f")"
+                    cp -p "$1/$f" "$2/$f"
+                done
+            }
+            # Primero el de desarrollo, que ya tiene la estructura del volumen. Se copia
+            # carpeta por carpeta para dejar fuera sus marcas `.mudado-*` de la raiz.
+            for d in sitio intranet cargas-datos; do
+                copiar "/origen/desarrollo/$d" "/filesystem/$d"
+            done
+            for ambito in sitio intranet; do
+                copiar "/origen/$ambito/uploads" "/filesystem/$ambito/uploads"
+                copiar "/origen/$ambito/backup" "/filesystem/$ambito/backup"
+            done
+            if [ -d /origen/cargas-datos ]; then
+                mkdir -p /filesystem/cargas-datos
+                for f in /origen/cargas-datos/*; do
+                    [ -f "$f" ] || continue
+                    [ "$(basename "$f")" = fuentes-futuras-de-empleo.xlsx ] && continue
+                    cp -n "$f" /filesystem/cargas-datos/
+                done
+            fi
+            echo ""
+            echo "Archivos en el volumen, por carpeta:"
+            for d in sitio/uploads sitio/backup intranet/uploads intranet/backup cargas-datos; do
+                [ -d "/filesystem/$d" ] || continue
+                printf "  %-18s %5s\n" "$d" "$(find "/filesystem/$d" -type f | wc -l)"
+            done
+        '
+    echo ""
+    verde "Copia terminada. Los origenes quedan como estaban. Las carpetas de antes se pueden"
+    verde "vaciar cuando compruebes que las paginas ven sus imagenes y PDF (ver docker/guia-bash.md);"
+    verde "filesystem/ no: es donde guarda la API en desarrollo."
 }
 
 restore() {
@@ -533,5 +665,7 @@ case "${1:-help}" in
     crear-admin) crear_admin ;;
     backup)  backup ;;
     restore) restore "${2:-}" ;;
+    restore-archivos) restore_archivos "${2:-}" ;;
+    migrar-archivos)  migrar_archivos ;;
     help|*)  show_help ;;
 esac

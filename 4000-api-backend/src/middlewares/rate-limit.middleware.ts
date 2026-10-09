@@ -251,6 +251,37 @@ export const limitadorDeEscritura = crearLimitador({
 });
 
 /**
+ * Visitas de páginas públicas. La ruta no tiene sesión y suma a un contador que sale
+ * en el panel, así que sin esto un bucle de `curl` lo infla a voluntad: el techo
+ * global (300/min por IP) dejaba subir miles de visitas por hora desde una sola IP.
+ *
+ * Dos cubos, porque protegen cosas distintas:
+ *  - por IP y página: unas pocas visitas cada 10 minutos. El navegador ya cuenta una
+ *    por sesión; más que eso desde la misma IP es recarga o automatización. Se deja
+ *    margen (no 1) porque una sede entera comparte IP tras el mismo NAT.
+ *  - por IP: techo general, para que rotar de slug no esquive el primero.
+ */
+const claveDeVisita = (req: Request): string => {
+  const slug = typeof req.body?.slug === 'string' ? req.body.slug.trim().toLowerCase().slice(0, 100) : '';
+  return `ip:${ipKeyGenerator(req.ip ?? '')}:${slug}`;
+};
+
+export const limitadorDeVisitasPorPagina = crearLimitador({
+  nombre: 'visita-pagina',
+  ventanaMs: 10 * 60 * 1000,
+  limite: 5,
+  mensaje: 'Visita ya registrada.',
+  clave: claveDeVisita,
+});
+
+export const limitadorDeVisitas = crearLimitador({
+  nombre: 'visita-ip',
+  ventanaMs: 60 * 1000,
+  limite: 30,
+  mensaje: 'Demasiadas solicitudes. Espere un momento antes de continuar.',
+});
+
+/**
  * Cierra las conexiones de límites al apagar el proceso.
  *
  * Sin esto el proceso no termina de morir: ioredis mantiene el socket abierto y

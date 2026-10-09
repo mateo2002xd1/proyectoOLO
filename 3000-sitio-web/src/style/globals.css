@@ -654,8 +654,9 @@
 }
 
 .olo-gov-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-xs);
   padding: 6px 14px;
   font-size: 16px;
@@ -664,12 +665,16 @@
   background: #002237;
   border: none;
   border-radius: 10px;
+  text-decoration: none;
   transition: all var(--transition-fast);
   letter-spacing: 0.02em;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .olo-gov-btn:hover {
   background: #001a2b;
+  color: white;
 }
 
 .olo-menu-btn {
@@ -689,8 +694,8 @@
 
 .olo-mobile-menu {
   display: none;
-  position: fixed;
-  top: var(--header-height);
+  position: absolute;
+  top: 100%;
   left: 0;
   right: 0;
   background: white;
@@ -699,6 +704,8 @@
   box-shadow: var(--shadow-xl);
   animation: fadeIn 200ms ease;
   z-index: 999;
+  max-height: calc(100dvh - 100%);
+  overflow-y: auto;
 }
 
 .olo-mobile-menu-open {
@@ -746,17 +753,70 @@
   font-size: var(--fs-sm);
 }
 
+.olo-mobile-menu-footer {
+  margin-top: var(--space-sm);
+  padding-top: var(--space-md);
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.olo-mobile-gov-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  width: 100%;
+  padding: 10px 16px;
+  font-size: 15px;
+  font-weight: var(--fw-semibold);
+  color: white;
+  background: #002237;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: background var(--transition-fast);
+}
+
+.olo-mobile-gov-btn:hover {
+  background: #001a2b;
+  color: white;
+}
+
 @media (width < 64rem) {
   .olo-nav {
     display: none;
   }
 
   .olo-gov-btn {
-    display: none;
+    display: none !important;
   }
 
   .olo-menu-btn {
     display: flex;
+  }
+}
+
+@media (width >= 64rem) {
+  .olo-mobile-menu {
+    display: none !important;
+  }
+}
+
+@media (width < 48rem) {
+  .olo-header {
+    height: 72px;
+  }
+
+  .olo-header-inner {
+    padding: 0 var(--space-md);
+  }
+
+  .olo-nav-actions {
+    gap: var(--space-xs);
+  }
+}
+
+@media (width < 25rem) {
+  .olo-header-inner {
+    padding: 0 var(--space-sm);
   }
 }
 
@@ -2936,51 +2996,127 @@ button.text-link,
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
-  background: #f1f5f9;
+  background: rgba(0, 22, 49, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  animation: fadeInModal 0.4s ease-out forwards;
+}
+
+@keyframes fadeInModal {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .olo-ocupado-caja {
-  max-width: 460px;
-  padding: 32px;
-  border-radius: 14px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 10px 30px rgba(0, 22, 49, 0.1);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(160deg, #ffffff 0%, #f4f7fb 100%);
   text-align: center;
+  animation: fadeInModal 0.4s ease-out forwards;
+  position: relative;
+  overflow: auto;
 }
 
-.olo-ocupado-icono {
-  color: #001631;
-  margin-bottom: 12px;
+.olo-ocupado-contenido {
+  padding: 0 40px 40px;
+  max-width: 500px;
+  width: 100%;
 }
 
 .olo-ocupado-titulo {
-  margin: 0 0 10px;
-  font-size: 20px;
-  font-weight: 700;
-  color: #001631;
-}
-
-.olo-ocupado-texto {
-  margin: 0 0 8px;
-  font-size: 14.5px;
-  line-height: 1.55;
-  color: #334155;
-}
-
-.olo-ocupado-apunte {
-  margin: 0 0 22px;
-  font-size: 13px;
-  line-height: 1.5;
-  color: #64748b;
+  margin: 0 0 32px;
+  font-family: var(--font-heading), system-ui, sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  background-color: #001631;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
 
 .olo-ocupado-acciones {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.olo-ocupado-acciones .olo-editor-btn {
+  width: 100%;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
   justify-content: center;
+  gap: 8px;
+}
+
+.olo-ocupado-acciones .olo-editor-btn:active {
+  transform: scale(0.98);
+}
+
+.olo-ocupado-acciones .olo-editor-btn--guardar {
+  background: #001631;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 22, 49, 0.3);
+}
+
+.olo-ocupado-acciones .olo-editor-btn--guardar:hover:not(:disabled) {
+  background: #002a5c;
+  box-shadow: 0 6px 16px rgba(0, 22, 49, 0.4);
+  transform: translateY(-1px);
+}
+
+.olo-ocupado-acciones .olo-editor-btn--enviar {
+  background: #001631;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 22, 49, 0.3);
+}
+
+.olo-ocupado-acciones .olo-editor-btn--enviar:hover:not(:disabled) {
+  background: #002a5c;
+  box-shadow: 0 6px 16px rgba(0, 22, 49, 0.4);
+  transform: translateY(-1px);
+}
+
+.olo-ocupado-acciones .olo-editor-btn--salir {
+  background: #f1f5f9;
+  color: #475569;
+  box-shadow: none;
+}
+
+.olo-ocupado-acciones .olo-editor-btn--salir:hover:not(:disabled) {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+@media (width >= 40rem) {
+  .olo-ocupado-acciones {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .olo-ocupado-acciones .olo-editor-btn {
+    flex: 1;
+  }
+
+  .olo-ocupado-acciones .olo-editor-btn--enviar {
+    flex: 100%;
+  }
 }
 
 /*
@@ -3483,6 +3619,8 @@ button.text-link,
 
 /* --- Pantalla de Envío Exitoso --- */
 
+/* Pantalla completa en blanco por encima de todo (editor, botón flotante, cabecera):
+   el envío cierra la edición y aquí no queda nada detrás que mirar. */
 .olo-pantalla-exito {
   position: fixed;
   inset: 0;
@@ -3491,19 +3629,15 @@ button.text-link,
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
-  background: rgba(15, 23, 42, 0.55);
-  backdrop-filter: blur(6px);
+  background: #ffffff;
   animation: oloExitoFadeIn 0.2s ease-out;
 }
 
+/* Sin `position: relative`: así la X se ancla a la esquina de la pantalla y no a
+   la del texto. */
 .olo-pantalla-exito-tarjeta {
-  position: relative;
   width: 100%;
-  max-width: 420px;
-  background: #ffffff;
-  border-radius: 14px;
-  padding: 2.25rem 2rem 1.75rem;
-  box-shadow: 0 24px 48px -12px rgba(0, 22, 49, 0.28), 0 0 0 1px rgba(0, 22, 49, 0.05);
+  max-width: 32rem;
   text-align: center;
   animation: oloExitoSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -3553,16 +3687,15 @@ button.text-link,
 
 .olo-pantalla-exito-acciones {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
 }
 
 .olo-pantalla-exito-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  width: 100%;
-  padding: 0.75rem 1.25rem;
+  min-width: 14rem;
+  padding: 0.75rem 1.75rem;
   border-radius: 8px;
   border: 1px solid #001631;
   background: #001631;
@@ -3776,6 +3909,43 @@ button.text-link,
   box-shadow: 0 4px 14px rgba(179, 38, 30, 0.3);
 }
 
+/* Salir del modo edición: botón rojo debajo del lápiz. El lápiz queda arriba de la
+   columna, así que el menú desplegable ya sale desde encima de él con el `bottom`
+   general de `.fab-speed-dial__acciones`: no hay que moverlo. Bajarlo 3.5rem (como
+   si el lápiz estuviera abajo) escondía «Editar página» detrás del lápiz. */
+.fab-speed-dial--con-salir {
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.fab-speed-dial__btn--salir {
+  background: #b3261e;
+  color: #ffffff;
+  border: 1.5px solid #b3261e;
+}
+
+.fab-speed-dial__btn--salir:hover:not(:disabled) {
+  background: #8c1d18;
+  border-color: #8c1d18;
+  transform: scale(1.08);
+  box-shadow: 0 4px 14px rgba(179, 38, 30, 0.35);
+}
+
+.fab-speed-dial__btn--salir:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.fab-speed-dial__item--eliminar .fab-speed-dial__tooltip,
+.fab-speed-dial__item--salir .fab-speed-dial__tooltip {
+  background: #b3261e;
+  color: #ffffff;
+}
+
+.fab-speed-dial__item--salir {
+  pointer-events: auto;
+}
+
 /* Tooltip accesible flotante a la izquierda del botón */
 .fab-speed-dial__tooltip {
   position: absolute;
@@ -3818,8 +3988,9 @@ button.text-link,
 .nueva-seccion-fondo {
   position: fixed;
   inset: 0;
-  z-index: 60;
-  /* por encima de los botones flotantes, que están en 50 */
+  /* Por encima de todo lo que se ve detrás: la cabecera (1000-1001) y el botón
+     flotante de edición (9999). Con 60 el desenfoque no los cubría. */
+  z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;

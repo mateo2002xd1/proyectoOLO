@@ -33,11 +33,14 @@ export interface ListadoPublico {
 export interface OpcionesAlertasInversion {
   secciones: { id: string; letra: string; nombre: string }[];
   anios: number[];
+  departamentos: { codigoDane: string; nombre: string }[];
 }
 
 export interface FiltrosAlertasInversion {
   /** Letra de sección CIIU (A–U); vacío = todas. */
   seccion: string;
+  /** Código DANE de dos dígitos; vacío = todo el país. */
+  departamento: string;
   /** Vacío = todos los años. */
   anio: string;
 }

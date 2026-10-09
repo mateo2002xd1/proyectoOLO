@@ -34,24 +34,6 @@ export function AvisoEditorOcupado({
   return (
     <div className="olo-ocupado" role="alert">
       <div className="olo-ocupado-caja">
-        <div className="olo-ocupado-icono-wrapper">
-          <svg
-            viewBox="0 0 24 24"
-            width={40}
-            height={40}
-            aria-hidden="true"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.8}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="olo-ocupado-icono"
-          >
-            <rect x="3" y="11" width="18" height="11" rx="2" />
-            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-          </svg>
-        </div>
-
         <div className="olo-ocupado-contenido">
           <h1 className="olo-ocupado-titulo">Esta sección está siendo editada por {nombre}</h1>
           <div className="olo-ocupado-acciones">

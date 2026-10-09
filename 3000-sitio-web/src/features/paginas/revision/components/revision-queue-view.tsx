@@ -1,7 +1,8 @@
 'use client';
 
 import { useMemo, useState, useRef, useEffect } from 'react';
-import { CheckCircle, XCircle, Trash2, ExternalLink } from 'lucide-react';
+import { XCircle } from 'lucide-react';
+import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { BarraFiltros, CampoFiltro } from '@/shared/ui/molecules/barra-filtros';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
 import { DatePicker } from '@/shared/ui/molecules/date-picker';
@@ -27,6 +28,9 @@ function enlaceDeVistaPrevia(pagina: PaginaEnRevision): string {
 }
 
 
+
+const BOTON =
+  'flex h-11 items-center justify-center gap-2 rounded-[16px] border border-transparent px-3 text-sm font-medium transition-colors focus:outline-none focus:ring-2 @3xl:h-9 @3xl:w-12 @3xl:px-0';
 
 const fecha = (iso: string) => {
   try {
@@ -208,10 +212,11 @@ export function RevisionQueueView() {
         <p className="text-sm text-zinc-500">Ninguna página coincide con los filtros aplicados.</p>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-[#7db828]/30">
-          <table className="olo-tabla-apilable w-full min-w-[56rem] text-left text-sm">
+          <table className="olo-tabla-apilable w-full min-w-[64rem] text-left text-sm">
             <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-[#131b2f]">
               <tr>
                 <th scope="col" className="px-4 py-3 font-medium">Página</th>
+                <th scope="col" className="px-4 py-3 font-medium">Cambios</th>
                 <th scope="col" className="px-4 py-3 font-medium">Ámbito</th>
                 <th scope="col" className="px-4 py-3 font-medium">Autor</th>
                 <th scope="col" className="px-4 py-3 font-medium">Enviado el</th>
@@ -224,14 +229,18 @@ export function RevisionQueueView() {
               {paginasPagina.map((pagina) => (
                 <tr key={pagina.id} className="bg-white dark:bg-[#0f1626] transition-colors hover:bg-zinc-50/60 dark:hover:bg-[#131b2f]/50">
                   <td className="px-4 py-3">
-                    <p className="font-medium text-zinc-900 dark:text-[#f6f6f6]">{pagina.titulo}</p>
-                    <p className="text-xs text-zinc-500">/{pagina.slug} · versión {pagina.numeroVersion}</p>
-                    {/* Lo que el editor dice que cambió: se lee antes de decidir, como la
-                        descripción de un pull request. */}
-                    {pagina.comentario && (
-                      <p className="mt-1 max-w-md text-sm text-zinc-700 dark:text-zinc-300">
-                        «{pagina.comentario}»
-                      </p>
+                    <p className="font-medium text-zinc-900 dark:text-[#f6f6f6]">
+                      {pagina.titulo}
+                      <span className="font-normal text-zinc-500"> · versión {pagina.numeroVersion}</span>
+                    </p>
+                  </td>
+                  {/* Lo que el editor dice que cambió: se lee antes de decidir, como la
+                      descripción de un pull request. */}
+                  <td data-etiqueta="Cambios" className="px-4 py-3">
+                    {pagina.comentario ? (
+                      <p className="max-w-md text-sm text-zinc-700 dark:text-zinc-300">«{pagina.comentario}»</p>
+                    ) : (
+                      <p className="text-sm text-zinc-400">Sin comentario</p>
                     )}
                   </td>
                   <td data-etiqueta="Ámbito" className="px-4 py-3">
@@ -266,9 +275,12 @@ export function RevisionQueueView() {
                         target="_blank"
                         rel="noopener noreferrer"
                         title="Ver página"
-                        className="flex h-11 items-center justify-center gap-2 rounded-[16px] px-3 text-sm font-medium text-white transition-colors focus:outline-none focus:ring-2 @3xl:h-9 @3xl:w-12 @3xl:px-0 bg-blue-600 hover:bg-blue-700 focus:ring-blue-500/50"
+                        className={`group ${BOTON} bg-[#1FACE3] text-white hover:brightness-95 focus:ring-[#1FACE3]/50`}
                       >
-                        <ExternalLink className="h-4 w-4 shrink-0" aria-hidden="true" />
+                        <span className="relative inline-block h-6 w-6">
+                          <span className="absolute inset-0 flex items-center justify-center group-hover:hidden group-focus-visible:hidden"><IconoMascara nombre="eye-closed" tamano="h-6 w-6" /></span>
+                          <span className="absolute inset-0 hidden items-center justify-center group-hover:flex group-focus-visible:flex"><IconoMascara nombre="eye-open" tamano="h-6 w-6" /></span>
+                        </span>
                         <span className="@3xl:sr-only">Ver página</span>
                       </a>
                       <button
@@ -276,9 +288,9 @@ export function RevisionQueueView() {
                         disabled={busySlug === pagina.slug}
                         onClick={() => handleAprobar(pagina)}
                         title="Aprobar"
-                        className="flex h-11 items-center justify-center gap-2 rounded-[16px] px-3 text-sm font-medium text-white transition-colors focus:outline-none focus:ring-2 @3xl:h-9 @3xl:w-12 @3xl:px-0 bg-green-700 hover:bg-green-800 focus:ring-green-500/50 disabled:cursor-not-allowed disabled:opacity-50"
+                        className={`${BOTON} bg-[#7DB728] text-white hover:brightness-95 focus:ring-[#7DB728]/50 disabled:cursor-not-allowed disabled:opacity-50`}
                       >
-                        <CheckCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+                        <IconoMascara nombre="send" />
                         <span className="@3xl:sr-only">Aprobar</span>
                       </button>
                       <button
@@ -286,9 +298,9 @@ export function RevisionQueueView() {
                         disabled={busySlug === pagina.slug}
                         onClick={() => abrirRechazar(pagina)}
                         title="Rechazar"
-                        className="flex h-11 items-center justify-center gap-2 rounded-[16px] px-3 text-sm font-medium text-white transition-colors focus:outline-none focus:ring-2 @3xl:h-9 @3xl:w-12 @3xl:px-0 bg-amber-700 hover:bg-amber-800 focus:ring-amber-500/50 disabled:cursor-not-allowed disabled:opacity-50"
+                        className={`${BOTON} border-[#FF1F1F] bg-[#FFE9E9] text-[#FF1F1F] hover:brightness-95 focus:ring-[#FF1F1F]/50 disabled:cursor-not-allowed disabled:opacity-50`}
                       >
-                        <XCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+                        <IconoMascara nombre="equiz" />
                         <span className="@3xl:sr-only">Rechazar</span>
                       </button>
                       <button
@@ -296,9 +308,9 @@ export function RevisionQueueView() {
                         disabled={busySlug === pagina.slug}
                         onClick={() => abrirEliminar(pagina)}
                         title="Descartar esta versión sin publicar"
-                        className="flex h-11 items-center justify-center gap-2 rounded-[16px] px-3 text-sm font-medium text-white transition-colors focus:outline-none focus:ring-2 @3xl:h-9 @3xl:w-12 @3xl:px-0 bg-red-600 hover:bg-red-700 focus:ring-red-500/50 disabled:cursor-not-allowed disabled:opacity-50"
+                        className={`${BOTON} bg-[#FF1F1F] text-white hover:brightness-95 focus:ring-[#FF1F1F]/50 disabled:cursor-not-allowed disabled:opacity-50`}
                       >
-                        <Trash2 className="h-4 w-4 shrink-0" aria-hidden="true" />
+                        <IconoMascara nombre="trash" tamano="h-5 w-5" />
                         <span className="@3xl:sr-only">Descartar</span>
                       </button>
                     </div>

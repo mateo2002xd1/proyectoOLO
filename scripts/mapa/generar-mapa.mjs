@@ -33,7 +33,7 @@ const re = (patron) => new RegExp(patron);
 const sinPuerto = (texto) => texto.replace(/(?<![\w/-])\d+-(?=(?:sitio-web|intranet|api-backend)\b)/g, '');
 
 /** Lo que no es estructura: datos subidos, generados y dependencias instaladas. */
-const IGNORAR = re(String.raw`(^|/)(node_modules|\.next|dist)/|(^|/)public/storage/|^${API}/uploads/`);
+const IGNORAR = re(String.raw`(^|/)(node_modules|\.next|dist)/|(^|/)public/storage/|^${API}/uploads/|^filesystem/`);
 
 /** Hasta qué profundidad se dibuja cada zona en el árbol de carpetas. */
 const PROFUNDIDAD = [

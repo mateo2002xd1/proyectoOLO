@@ -4,9 +4,10 @@ import { useEffect, useState } from 'react';
 import { Alert, AlertActions, AlertDescription, AlertTitle } from '@/shared/ui/molecules/alert';
 import { Button } from '@/shared/ui/atoms/button';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
+import { DatePicker } from '@/shared/ui/molecules/date-picker';
 import { mensajeDeErrorApi } from '@/shared/lib/errores-api';
-import { crearProyectoInversionManual, obtenerSeccionesCiiu } from '../services/observatorio.service';
-import type { SeccionCiiu } from '../types';
+import { crearProyectoInversionManual, obtenerOpcionesProyectoInversion } from '../services/observatorio.service';
+import type { ClaseCiiu, SeccionCiiu } from '../types';
 
 const CAMPO =
   'w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:text-[#f6f6f6] dark:focus:border-white dark:focus:ring-white';
@@ -17,6 +18,7 @@ const ESTADO_INICIAL = {
   descripcion: '',
   empresa: '',
   seccionId: '',
+  claseId: '',
   fechaAnuncio: '',
   fuenteUrl: '',
   fuenteMedio: '',
@@ -40,6 +42,8 @@ interface FormularioProyectoInversionProps {
  */
 export function FormularioProyectoInversion({ open, onClose, onCreado }: FormularioProyectoInversionProps) {
   const [secciones, setSecciones] = useState<SeccionCiiu[]>([]);
+  const [departamentos, setDepartamentos] = useState<string[]>([]);
+  const [clases, setClases] = useState<ClaseCiiu[]>([]);
   const [datos, setDatos] = useState(ESTADO_INICIAL);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,16 +53,31 @@ export function FormularioProyectoInversion({ open, onClose, onCreado }: Formula
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setDatos(ESTADO_INICIAL);
     setError(null);
-    obtenerSeccionesCiiu()
-      .then(setSecciones)
-      .catch(() => setError('No se pudieron cargar los sectores CIIU.'));
+    obtenerOpcionesProyectoInversion()
+      .then((opciones) => {
+        setSecciones(opciones.secciones);
+        setDepartamentos(opciones.departamentos.map((d) => d.nombre));
+        setClases(opciones.clases);
+      })
+      .catch(() => setError('No se pudieron cargar los sectores y departamentos.'));
   }, [open]);
 
   const actualizar = <K extends keyof typeof ESTADO_INICIAL>(campo: K, valor: (typeof ESTADO_INICIAL)[K]) =>
     setDatos((actual) => ({ ...actual, [campo]: valor }));
 
+  const clasesDelSector = clases.filter((k) => k.seccionId === datos.seccionId);
+
   const enviar = async (evento: React.FormEvent) => {
     evento.preventDefault();
+    // El selector de fecha propio no es un <input required>: se valida a mano.
+    if (!datos.departamento) {
+      setError('Elija el departamento.');
+      return;
+    }
+    if (!datos.fechaAnuncio) {
+      setError('Elija la fecha del anuncio.');
+      return;
+    }
     setEnviando(true);
     setError(null);
     try {
@@ -67,7 +86,7 @@ export function FormularioProyectoInversion({ open, onClose, onCreado }: Formula
         descripcion: datos.descripcion,
         empresa: datos.empresa,
         seccionId: datos.seccionId,
-        claseId: null,
+        claseId: datos.claseId || null,
         fechaAnuncio: datos.fechaAnuncio,
         fuenteUrl: datos.fuenteUrl,
         fuenteMedio: datos.fuenteMedio || null,
@@ -86,7 +105,7 @@ export function FormularioProyectoInversion({ open, onClose, onCreado }: Formula
   };
 
   return (
-    <Alert open={open} onClose={(abierto) => !enviando && !abierto && onClose()}>
+    <Alert open={open} onClose={(abierto) => !enviando && !abierto && onClose()} anchoMaximo="max-w-3xl">
       <AlertTitle>Agregar proyecto de inversión</AlertTitle>
       <AlertDescription>Se publica de inmediato en /alertas-inversion, sin paso de aprobación.</AlertDescription>
 
@@ -134,23 +153,38 @@ export function FormularioProyectoInversion({ open, onClose, onCreado }: Formula
           <CustomSelect
             ariaLabel="Sector"
             value={datos.seccionId}
-            onChange={(v) => actualizar('seccionId', v)}
+            // Al cambiar de sector, la actividad elegida ya no le pertenece.
+            onChange={(v) => setDatos((actual) => ({ ...actual, seccionId: v, claseId: '' }))}
             placeholder="Selecciona un sector"
             options={secciones.map((s) => ({ value: s.id, label: `${s.letra} · ${s.nombre}` }))}
           />
         </div>
 
+        {clasesDelSector.length > 0 && (
+          <div>
+            <label className={ETIQUETA}>Actividad (CIIU, opcional)</label>
+            <CustomSelect
+              ariaLabel="Actividad"
+              value={datos.claseId}
+              onChange={(v) => actualizar('claseId', v)}
+              placeholder="Sin actividad específica"
+              options={[
+                { value: '', label: 'Sin actividad específica' },
+                ...clasesDelSector.map((k) => ({ value: k.id, label: `${k.codigo} · ${k.nombre}` })),
+              ]}
+            />
+          </div>
+        )}
+
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className={ETIQUETA}>Departamento</label>
-            <input
-              type="text"
-              required
-              maxLength={100}
-              placeholder="Nombre oficial del departamento"
+            <CustomSelect
+              ariaLabel="Departamento"
               value={datos.departamento}
-              onChange={(e) => actualizar('departamento', e.target.value)}
-              className={CAMPO}
+              onChange={(v) => actualizar('departamento', v)}
+              placeholder="Selecciona un departamento"
+              options={departamentos}
             />
           </div>
           <div>
@@ -167,12 +201,10 @@ export function FormularioProyectoInversion({ open, onClose, onCreado }: Formula
 
         <div>
           <label className={ETIQUETA}>Fecha del anuncio</label>
-          <input
-            type="date"
-            required
+          <DatePicker
+            ariaLabel="Fecha del anuncio"
             value={datos.fechaAnuncio}
-            onChange={(e) => actualizar('fechaAnuncio', e.target.value)}
-            className={CAMPO}
+            onChange={(valor) => actualizar('fechaAnuncio', valor)}
           />
         </div>
 

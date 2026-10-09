@@ -68,15 +68,15 @@ export function FirstLoginView() {
     }
 
     if (!newPassword) {
-      newErrors.newPassword = 'El nuevo passcode es requerido';
+      newErrors.newPassword = 'La nueva contraseña es requerida';
     } else if (!cumplePolitica(newPassword)) {
       newErrors.newPassword = primerFallo(newPassword) ?? '';
     }
 
     if (!confirmPassword) {
-      newErrors.confirmPassword = 'Confirma tu passcode';
+      newErrors.confirmPassword = 'Confirma tu contraseña';
     } else if (newPassword !== confirmPassword) {
-      newErrors.confirmPassword = 'Los passcodes no coinciden';
+      newErrors.confirmPassword = 'Las contraseñas no coinciden';
     }
 
     setErrors(newErrors);
@@ -168,7 +168,7 @@ export function FirstLoginView() {
           error={errors.tempPassword}
         />
 
-        <h2 className="fl-card-title">Nuevo passcode</h2>
+        <h2 className="fl-card-title">Nueva contraseña</h2>
         <PasswordField
           classPrefix="fl"
           value={newPassword}
@@ -177,7 +177,7 @@ export function FirstLoginView() {
         />
         <PasswordRequisitos classPrefix="fl" password={newPassword} />
 
-        <h2 className="fl-card-title">Ingresa nuevamente el passcode</h2>
+        <h2 className="fl-card-title">Ingresa nuevamente la contraseña</h2>
         <PasswordField
           classPrefix="fl"
           value={confirmPassword}

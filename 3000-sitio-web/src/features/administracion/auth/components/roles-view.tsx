@@ -149,6 +149,8 @@ export default function RolesView() {
     fetchRolePermissions,
     assignPermissionToRole,
     revokePermissionFromRole,
+    users,
+    fetchUsers,
   } = useUsuarios();
 
   const [loading, setLoading] = useState(true);
@@ -172,7 +174,8 @@ export default function RolesView() {
   const [rolEditando, setRolEditando] = useState<Role | null>(null);
   const [guardandoRol, setGuardandoRol] = useState(false);
 
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [rolAEliminar, setRolAEliminar] = useState<Role | null>(null);
+  const [eliminandoRol, setEliminandoRol] = useState(false);
 
   const [rolPermisos, setRolPermisos] = useState<Role | null>(null);
   const [nombreEdicion, setNombreEdicion] = useState('');
@@ -184,11 +187,11 @@ export default function RolesView() {
 
   useEffect(() => {
     let cancelado = false;
-    Promise.all([fetchRoles(), fetchPermissions()]).finally(() => {
+    Promise.all([fetchRoles(), fetchPermissions(), fetchUsers()]).finally(() => {
       if (!cancelado) setLoading(false);
     });
     return () => { cancelado = true; };
-  }, [fetchRoles, fetchPermissions]);
+  }, [fetchRoles, fetchPermissions, fetchUsers]);
 
   const normalizar = (t: string) =>
     t.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
@@ -254,20 +257,29 @@ export default function RolesView() {
     }
   };
 
+  const usuariosDelRolAEliminar = useMemo(() => {
+    if (!rolAEliminar) return [];
+    return users.filter((u) => u.role_id === rolAEliminar.id || u.role?.id === rolAEliminar.id);
+  }, [rolAEliminar, users]);
+  const tieneUsuariosAsignados = usuariosDelRolAEliminar.length > 0;
+
   const handleEliminar = async () => {
-    if (!deleteConfirmId) return;
+    if (!rolAEliminar) return;
+    setEliminandoRol(true);
     try {
-      const res = await fetch(`/api/roles/${deleteConfirmId}`, {
+      const res = await fetch(`/api/roles/${rolAEliminar.id}`, {
         method: 'DELETE',
         credentials: 'include',
       });
-      if (!res.ok) throw new Error((await res.json()).error || 'Error al eliminar');
-      notificar('Rol eliminado', 'El rol se elimino exitosamente.');
-      await fetchRoles();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Error al eliminar');
+      notificar('Rol eliminado', `El rol «${rolAEliminar.name}» se eliminó exitosamente.`);
+      await Promise.all([fetchRoles(), fetchUsers()]);
     } catch (err) {
       notificar('Error', mensajeDeError(err) || 'No se pudo eliminar el rol.', 'error');
     } finally {
-      setDeleteConfirmId(null);
+      setEliminandoRol(false);
+      setRolAEliminar(null);
     }
   };
 
@@ -309,16 +321,14 @@ export default function RolesView() {
       ];
 
       const descripcionCambiada = descripcionEdicion !== (rolPermisos.description || '');
-      const nombreCambiado = nombreEdicion !== rolPermisos.name && nombreEdicion.trim() !== '';
-      if (descripcionCambiada || nombreCambiado) {
+      if (descripcionCambiada) {
         promises.push(
           fetch(`/api/roles/${rolPermisos.id}`, {
             method: 'PATCH',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
-              ...(nombreCambiado && { name: nombreEdicion.trim() }),
-              ...(descripcionCambiada && { description: descripcionEdicion }),
+              description: descripcionEdicion,
             }),
           }).then(async res => {
              if (!res.ok) throw new Error((await res.json()).error || 'Error al actualizar detalles del rol');
@@ -328,7 +338,7 @@ export default function RolesView() {
 
       await Promise.all(promises);
 
-      if (descripcionCambiada || nombreCambiado) {
+      if (descripcionCambiada) {
         await fetchRoles();
       }
 
@@ -425,7 +435,7 @@ export default function RolesView() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => !noEliminable && setDeleteConfirmId(rol.id)}
+                          onClick={() => !noEliminable && setRolAEliminar(rol)}
                           disabled={noEliminable}
                           className={`rounded-lg p-1.5 transition-colors ${
                             noEliminable
@@ -469,14 +479,46 @@ export default function RolesView() {
         permisos={permissions}
       />
 
-      <Alert open={!!deleteConfirmId} onClose={() => setDeleteConfirmId(null)}>
-        <AlertTitle>Eliminar este rol?</AlertTitle>
-        <AlertDescription>Esta accion no se puede deshacer. Los usuarios con este rol quedaran sin rol asignado.</AlertDescription>
-        <AlertActions>
-          <Button type="button" plain onClick={() => setDeleteConfirmId(null)}>Cancelar</Button>
-          <Button type="button" onClick={handleEliminar}>Eliminar</Button>
-        </AlertActions>
-      </Alert>
+      {rolAEliminar && (
+        <Alert open={!!rolAEliminar} onClose={() => !eliminandoRol && setRolAEliminar(null)}>
+          <AlertTitle>
+            {tieneUsuariosAsignados ? 'No se puede eliminar este rol' : '¿Eliminar este rol?'}
+          </AlertTitle>
+          <AlertDescription>
+            {tieneUsuariosAsignados ? (
+              <>
+                El rol <strong>«{rolAEliminar.name}»</strong> está asignado a {usuariosDelRolAEliminar.length}{' '}
+                usuario{usuariosDelRolAEliminar.length === 1 ? '' : 's'}. Cada usuario debe tener siempre un rol asignado. Para eliminar este rol, primero debes dirigirte al módulo de Usuarios y reasignar a los funcionarios a otro rol.
+              </>
+            ) : (
+              <>
+                ¿Estás seguro de que deseas eliminar el rol <strong>«{rolAEliminar.name}»</strong>? Esta acción es definitiva y no se puede deshacer.
+              </>
+            )}
+          </AlertDescription>
+          <AlertActions>
+            {tieneUsuariosAsignados ? (
+              <Button type="button" onClick={() => setRolAEliminar(null)}>
+                Entendido
+              </Button>
+            ) : (
+              <>
+                <Button type="button" plain onClick={() => setRolAEliminar(null)} disabled={eliminandoRol}>
+                  Cancelar
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleEliminar}
+                  disabled={eliminandoRol}
+                  className="!bg-red-600 !text-white hover:!bg-red-700"
+                >
+                  {eliminandoRol ? 'Eliminando...' : 'Eliminar'}
+                </Button>
+              </>
+            )}
+          </AlertActions>
+        </Alert>
+      )}
 
       <ModalPermisos
         abierto={!!rolPermisos}

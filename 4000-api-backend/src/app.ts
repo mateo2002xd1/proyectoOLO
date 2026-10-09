@@ -21,6 +21,7 @@ import securityQuestionRoutes from './routes/security-question.routes';
 import paginaRoutes from './routes/pagina.routes';
 import observatorioRoutes from './routes/observatorio.routes';
 import alertasInversionRoutes from './routes/alertas-inversion.routes';
+import archivosRoutes from './routes/archivos.routes';
 
 const app = express();
 
@@ -75,6 +76,11 @@ app.get('/health', (_req, res) => {
 // de archivos estáticos de golpe y no tiene sentido gastarle a nadie su cupo por minuto
 // leyendo documentación. Los endpoints que el visor prueba sí pasan por los límites.
 montarDocumentacion(app);
+
+// Los adjuntos de las páginas, también antes del techo general: una página pública pide
+// una docena de imágenes de golpe. La subida lleva el limitador puesto a mano; el porqué,
+// en `archivos.routes.ts`.
+app.use('/api/archivos', archivosRoutes);
 
 // Techo general de la API: ninguna ruta queda sin límite aunque su router no declare
 // el suyo. Va después de `/health` a propósito — nginx y Docker lo consultan en bucle

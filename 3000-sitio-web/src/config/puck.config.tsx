@@ -1235,8 +1235,8 @@ const puckConfigBase: Config = {
         ajusteImagen: 'contain',
         redondeado: 'grande',
       },
-      render: (props: BlockRender<ComponentProps<typeof ImagenDestacada>>) => (
-        <ImagenDestacada {...props} />
+      render: ({ puck, ...props }: BlockRender<ComponentProps<typeof ImagenDestacada>> & { puck?: { isEditing?: boolean } }) => (
+        <ImagenDestacada {...props} puck={puck} esEdicion={Boolean(puck?.isEditing)} />
       ),
     },
     TarjetaArticulo: {

@@ -46,11 +46,11 @@ export function ResetPasswordView() {
     if (!datos) return;
     const problemas: Record<string, string> = {};
 
-    if (!password) problemas.password = 'El nuevo passcode es requerido';
+    if (!password) problemas.password = 'La nueva contraseña es requerida';
     else if (!cumplePolitica(password)) problemas.password = primerFallo(password) ?? '';
 
-    if (!confirmacion) problemas.confirmacion = 'Confirma tu passcode';
-    else if (password !== confirmacion) problemas.confirmacion = 'Los passcodes no coinciden';
+    if (!confirmacion) problemas.confirmacion = 'Confirma tu contraseña';
+    else if (password !== confirmacion) problemas.confirmacion = 'Las contraseñas no coinciden';
 
     if (Object.keys(problemas).length > 0) {
       setErrors(problemas);
@@ -75,7 +75,7 @@ export function ResetPasswordView() {
   return (
     <div className={authSolidCardClass}>
       <AuthCardTitle
-        title="Crea tu nuevo passcode"
+        title="Crea tu nueva contraseña"
         description="Verificamos tu identidad. Elige una clave que no hayas usado antes."
       />
 
@@ -84,7 +84,7 @@ export function ResetPasswordView() {
 
         <PasswordField
           id="nuevo-password"
-          label="Nuevo passcode"
+          label="Nueva contraseña"
           autoComplete="new-password"
           value={password}
           onChange={(v) => { setPassword(v); setErrors({}); }}
@@ -95,7 +95,7 @@ export function ResetPasswordView() {
 
         <PasswordField
           id="confirmar-password"
-          label="Ingresa nuevamente el passcode"
+          label="Ingresa nuevamente la contraseña"
           autoComplete="new-password"
           value={confirmacion}
           onChange={(v) => { setConfirmacion(v); setErrors({}); }}
@@ -104,7 +104,7 @@ export function ResetPasswordView() {
         />
 
         <Button type="submit" variant="navy" disabled={isLoading || terminada} className="w-full">
-          {isLoading ? 'Guardando…' : 'Guardar passcode'}
+          {isLoading ? 'Guardando…' : 'Guardar contraseña'}
         </Button>
       </form>
     </div>

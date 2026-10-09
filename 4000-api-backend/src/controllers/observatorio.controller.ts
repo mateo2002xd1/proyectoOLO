@@ -3,7 +3,6 @@ import { iniciarCargaObservatorio, ErrorDeSubida } from '../use-cases/observator
 import { listarCargasObservatorio, obtenerCargaObservatorio } from '../use-cases/observatorio/listar-cargas.usecase';
 import { eliminarCargaObservatorio, ErrorAlEliminarCarga } from '../use-cases/observatorio/eliminar-carga.usecase';
 import { consultarObservatorioActual } from '../use-cases/observatorio/consultar-actual.usecase';
-import { consultarFuentesFuturasActual } from '../use-cases/observatorio/consultar-fuentes-futuras-actual.usecase';
 import { resolverFormatoDeCarga, ErrorDeFormato } from '../use-cases/observatorio/formatos-de-carga';
 import { idReferenciable } from '../shared/auditoria-request';
 
@@ -97,17 +96,6 @@ export const ObservatorioController = {
     } catch (error) {
       console.error('[observatorio] Error al consultar los datos actuales:', error);
       res.status(500).json({ error: 'Error al consultar los datos.' });
-    }
-  },
-
-  /** Datos de fuentes futuras de empleo leídos desde fuentes-futuras-de-empleo.xlsx — público, sin sesión. */
-  async obtenerFuentesFuturasEmpleo(_req: Request, res: Response) {
-    try {
-      const datos = await consultarFuentesFuturasActual();
-      res.json(datos);
-    } catch (error) {
-      console.error('[observatorio] Error al consultar fuentes futuras de empleo:', error);
-      res.status(500).json({ error: 'Error al consultar los datos de fuentes futuras de empleo.' });
     }
   },
 };

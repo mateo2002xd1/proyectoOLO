@@ -4,10 +4,12 @@ import { useRef, useState } from 'react';
 import { ArrowDownTrayIcon, ArrowUpTrayIcon, InformationCircleIcon, PlusIcon } from '@heroicons/react/20/solid';
 import { mensajeDeErrorApi } from '@/shared/lib/errores-api';
 import { useCargasAlertasInversion } from '../hooks/use-cargas-alertas-inversion';
-import { descargarFormatoAlertasInversion } from '../services/observatorio.service';
+import { descargarFormatoAlertasInversion, descargarFormatoSectoresCiiu } from '../services/observatorio.service';
+import { ActualizarSectoresCiiu } from './actualizar-sectores-ciiu';
 import { BarraDeProgreso } from './barra-de-progreso';
 import { HistorialCargasGrid } from './historial-cargas-grid';
 import { FormularioProyectoInversion } from './formulario-proyecto-inversion';
+import { ListaProyectosInversion } from './lista-proyectos-inversion';
 
 /** 50% es donde `importarAlertasInversionExcel` pasa de leer el Excel a escribir en la base. */
 const etiquetaFase = (progreso: number) => (progreso < 50 ? 'Leyendo el archivo' : 'Guardando en la base de datos');
@@ -24,12 +26,23 @@ interface CargaAlertasInversionProps {
  * que "Programa + Sobresalientes".
  */
 export function CargaAlertasInversion({ puedeActualizar }: CargaAlertasInversionProps) {
-  const { cargas, cargando, subiendo, error, subirArchivo, cargaEnProceso, eliminarCarga, refrescar } =
-    useCargasAlertasInversion();
+  const {
+    cargas,
+    proyectos,
+    cargando,
+    subiendo,
+    error,
+    subirArchivo,
+    cargaEnProceso,
+    eliminarCarga,
+    eliminarProyecto,
+    limpiarProyectos,
+    refrescar,
+  } = useCargasAlertasInversion();
   const inputRef = useRef<HTMLInputElement>(null);
   const [formularioAbierto, setFormularioAbierto] = useState(false);
   const [errorDescarga, setErrorDescarga] = useState<string | null>(null);
-  const [descargando, setDescargando] = useState(false);
+  const [descargando, setDescargando] = useState<'proyectos' | 'sectores' | null>(null);
   const procesando = subiendo || cargaEnProceso !== null;
 
   const alElegirArchivo = async (evento: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,21 +52,21 @@ export function CargaAlertasInversion({ puedeActualizar }: CargaAlertasInversion
     if (inputRef.current) inputRef.current.value = '';
   };
 
-  const descargarFormato = async () => {
-    setDescargando(true);
+  const descargarFormato = async (cual: 'proyectos' | 'sectores') => {
+    setDescargando(cual);
     setErrorDescarga(null);
     try {
-      const archivo = await descargarFormatoAlertasInversion();
+      const archivo = await (cual === 'proyectos' ? descargarFormatoAlertasInversion() : descargarFormatoSectoresCiiu());
       const url = URL.createObjectURL(archivo);
       const enlace = document.createElement('a');
       enlace.href = url;
-      enlace.download = 'formato-alertas-inversion.xlsx';
+      enlace.download = cual === 'proyectos' ? 'formato-alertas-inversion.xlsx' : 'formato-actualizar-ciiu.xlsx';
       enlace.click();
       URL.revokeObjectURL(url);
     } catch (err) {
       setErrorDescarga(mensajeDeErrorApi(err, 'No se pudo descargar el formato.'));
     } finally {
-      setDescargando(false);
+      setDescargando(null);
     }
   };
 
@@ -62,15 +75,25 @@ export function CargaAlertasInversion({ puedeActualizar }: CargaAlertasInversion
       <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
         <h2 className="font-semibold text-[#001631] dark:text-[#f6f6f6]">Alertas de inversión</h2>
         {puedeActualizar && (
-          <button
-            type="button"
-            onClick={descargarFormato}
-            disabled={descargando}
-            className="inline-flex items-center gap-2 rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 transition-colors hover:border-brand-interactive disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-600 dark:bg-transparent dark:text-zinc-200"
-          >
-            <ArrowDownTrayIcon className="size-4 text-brand-interactive" />
-            {descargando ? 'Descargando...' : 'Descargar formato'}
-          </button>
+          <div className="flex flex-wrap gap-2">
+            {(
+              [
+                ['proyectos', 'Descargar formato'],
+                ['sectores', 'Descargar formato CIIU'],
+              ] as const
+            ).map(([cual, etiqueta]) => (
+              <button
+                key={cual}
+                type="button"
+                onClick={() => descargarFormato(cual)}
+                disabled={descargando !== null}
+                className="inline-flex items-center gap-2 rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 transition-colors hover:border-brand-interactive disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-600 dark:bg-transparent dark:text-zinc-200"
+              >
+                <ArrowDownTrayIcon className="size-4 text-brand-interactive" />
+                {descargando === cual ? 'Descargando...' : etiqueta}
+              </button>
+            ))}
+          </div>
         )}
       </div>
 
@@ -103,6 +126,8 @@ export function CargaAlertasInversion({ puedeActualizar }: CargaAlertasInversion
             <PlusIcon className="size-4 text-brand-interactive" />
             Agregar manualmente
           </button>
+
+          <ActualizarSectoresCiiu />
         </div>
       ) : (
         <p className="mt-4 text-sm text-gray-500 dark:text-[#94a3b8]">
@@ -134,6 +159,19 @@ export function CargaAlertasInversion({ puedeActualizar }: CargaAlertasInversion
           <p className="text-sm text-gray-500 dark:text-[#94a3b8]">Cargando historial...</p>
         ) : (
           <HistorialCargasGrid cargas={cargas} onEliminar={puedeActualizar ? eliminarCarga : undefined} />
+        )}
+      </div>
+
+      <div className="mt-6">
+        <h3 className="mb-2 text-sm font-medium text-gray-700 dark:text-zinc-300">Proyectos registrados</h3>
+        {cargando ? (
+          <p className="text-sm text-gray-500 dark:text-[#94a3b8]">Cargando proyectos...</p>
+        ) : (
+          <ListaProyectosInversion
+            proyectos={proyectos}
+            onEliminar={puedeActualizar ? eliminarProyecto : undefined}
+            onLimpiar={puedeActualizar ? limpiarProyectos : undefined}
+          />
         )}
       </div>
 

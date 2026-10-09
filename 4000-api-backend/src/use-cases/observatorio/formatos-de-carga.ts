@@ -7,14 +7,17 @@ import path from 'path';
  *
  * Lista cerrada a propósito: la URL trae un identificador, nunca un nombre de archivo, así
  * que por aquí no se puede pedir nada de `uploads/` que no esté en esta tabla (ni los Excel
- * de las cargas, ni un `../`). Viven en `uploads/formatos-carga/`, la carpeta que el
- * servidor monta en el contenedor (`docker-compose.servidor.yml`): para cambiar un formato
- * basta con reemplazar el archivo con el mismo nombre, sin volver a desplegar.
+ * de las cargas, ni un `../`). Viven en `uploads/formatos-carga/` del repositorio, no en el
+ * filesystem: son parte del código. El servidor monta esa carpeta en el contenedor, de
+ * solo lectura (`docker-compose.servidor.yml`), así que para cambiar un formato basta con
+ * reemplazar el archivo con el mismo nombre, sin volver a desplegar.
  */
 const FORMATOS = new Map<string, string>([
-  ['programas-sobresalientes', 'formatdata-sobresalientes.xlsx'],
-  ['tendencia-ocupacional', 'formatdata-criterios-tendencias.xlsx'],
-  ['alertas-inversion', 'formatdata-alertas-inversion.xlsx'],
+  ['programas-sobresalientes', 'formato-sobresalientes.xlsx'],
+  ['tendencia-ocupacional', 'formato-criterios-tendencias.xlsx'],
+  ['alertas-inversion', 'formato-alertas-inversion.xlsx'],
+  ['actualizar-ciiu', 'formato-actualizar-CIIU.xlsx'],
+  ['fuentes-futuras', 'formato-fuentes-futuras.xlsx'],
 ]);
 
 const DIRECTORIO_FORMATOS = path.join(process.cwd(), 'uploads', 'formatos-carga');

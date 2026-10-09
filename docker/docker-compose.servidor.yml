@@ -39,7 +39,7 @@ services:
     image: redis:7-alpine
     container_name: redis
     restart: unless-stopped
-    command: redis-server --requirepass ${REDIS_PASSWORD}
+    command: redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes
     volumes:
       - redis_data:/data
     healthcheck:
@@ -72,21 +72,20 @@ services:
       SITIO_WEB_URL: http://sitio-web:3000
       REVALIDAR_SECRET: ${REVALIDAR_SECRET}
       NODE_ENV: production
+      # Ver `src/infrastructure/storage/filesystem.ts`. Es también el valor por
+      # defecto dentro de la imagen; va explícito para que se lea junto al volumen.
+      FILESYSTEM_DIR: /filesystem
     volumes:
-      # Las mismas carpetas del repo que usa el proyecto en desarrollo, compartidas con
-      # los contenedores que las sirven:
-      #  - uploads/: los Excel de las cargas del observatorio. Los de programas y
-      #    tendencia ocupacional se guardan aquí al subirlos y el worker los lee una vez
-      #    para cargarlos en la base; fuentes futuras todavía lee su archivo de aquí en
-      #    cada consulta. La imagen no los trae.
-      #  - */public/storage: al publicar o revertir una página la API copia y mueve
-      #    archivos entre uploads/ y backup/. Resuelve esas carpetas subiendo cuatro
-      #    niveles desde dist/infrastructure/storage (`backup-uploads.service.ts`), o sea desde
-      #    la raíz del contenedor: de ahí /3000-sitio-web y /3001-intranet. Esos nombres
-      #    salen de `CARPETA_DE_APP` en ese archivo: si cambian allí, cambian aquí.
-      - ./4000-api-backend/uploads:/app/uploads
-      - ./3000-sitio-web/public/storage:/3000-sitio-web/public/storage
-      - ./3001-intranet/public/storage:/3001-intranet/public/storage
+      # Todo lo que sube la gente: los adjuntos de las páginas del sitio y de la
+      # intranet (PDF, imágenes, Excel, Word, PowerPoint, con su backup por página) y los
+      # Excel de las cargas del observatorio. Solo la API lo monta: el sitio y la
+      # intranet piden cada archivo por HTTP (`/api/archivos/...`) y no ven el disco
+      # (3-seguridad-del-proyecto.md §S1). Estructura y comandos: docker/guia-bash.md,
+      # "Los archivos subidos".
+      - filesystem:/filesystem
+      # Los formatos de ejemplo de "Actualizaciones" son código, no datos: vienen con el
+      # repositorio y se montan de solo lectura para poder cambiarlos sin reconstruir.
+      - ./4000-api-backend/uploads/formatos-carga:/app/uploads/formatos-carga:ro
     depends_on:
       db:
         condition: service_healthy
@@ -137,11 +136,8 @@ services:
       NEXT_PUBLIC_INTRANET_URL: ${INTRANET_URL_PUBLICA}
       JWT_SECRET: ${JWT_SECRET}
       REVALIDAR_SECRET: ${REVALIDAR_SECRET}
-    volumes:
-      # El standalone corre en /app/app (ver el Dockerfile). Montar la carpeta del repo
-      # y no un volumen de Docker hace que lo subido se vea en el Explorador de Windows,
-      # sobreviva a cualquier rebuild y se respalde copiando una carpeta.
-      - ./3000-sitio-web/public/storage:/app/app/public/storage
+    # Sin volúmenes: los archivos subidos los guarda y los sirve la API. nginx le manda
+    # directo /uploads/, /backup/ y /api/upload (nginx.servidor.conf).
     depends_on:
       - api-backend
     networks:
@@ -162,8 +158,8 @@ services:
       API_BACKEND_URL: http://api-backend:4000
       JWT_SECRET: ${JWT_SECRET}
       NEXT_PUBLIC_SITIO_WEB_URL: ${SITIO_WEB_URL_PUBLICA}
-    volumes:
-      - ./3001-intranet/public/storage:/app/app/public/storage
+    # Sin volúmenes: los adjuntos los pide a la API por su `next.config`, con la cookie
+    # de sesión, que la API comprueba antes de servir nada de la intranet.
     depends_on:
       - api-backend
     networks:
@@ -198,6 +194,13 @@ volumes:
     name: olo-app_redis_data
   nginx_logs:
     name: olo-app_nginx_logs
+  # Externo a propósito, a diferencia de los de arriba: Compose no lo crea ni lo borra.
+  # Un `docker compose down -v` se lleva los volúmenes que gestiona él, y aquí estarían
+  # todos los archivos que se han subido. Lo crea `deploy.sh` la primera vez (docker
+  # volume create) y solo se borra a mano.
+  filesystem:
+    name: olo-app_filesystem
+    external: true
 
 networks:
   olo-network:

@@ -268,13 +268,33 @@ en `borrador` y se crea con `INSERT` sin `ON CONFLICT`; la opción «reemplazar�
 **Eliminar una carga de tendencia** (`DELETE /api/observatorio/tendencia-ocupacional/cargas/:id`,
 papelera del historial): `cargas_datos` + `cargas_datos_ocupacionales` son la trazabilidad de
 cada año y periodo, así que borrar es explícito y confirmado. Se van la fila, su reporte y el Excel
-de `uploads/cargas-datos/` —salvo que otra carga lo use: los archivos se deduplican por contenido—.
+de `cargas-datos/` del filesystem —salvo que otra carga lo use: los archivos se deduplican por contenido—.
 Si la carga es la **vigente** de su celda, se borra también el corte con sus indicadores (CASCADE);
 sin eso quedarían datos sin la carga que los trajo. Una reemplazada o fallida no toca los datos.
 Corre con el candado de la celda sin esperarlo (409 si una carga está guardando en ella), y el
 cargador comprueba con el candado tomado que su carga sigue existiendo, porque el Excel se lee antes.
 La ruta de "Programa + Sobresalientes" (`DELETE /api/observatorio/cargas/:id`) las sigue rechazando
 con 409: no sabe borrar el corte.
+
+#### 4.6.2 Fuentes futuras de empleo — sin tablas propias
+
+El único módulo de "Actualizaciones" cuyo Excel **no se importa**: el archivo *es* el dato. Solo
+usa `cargas_datos` (con `modulo = 'fuentes_futuras_empleo'`) y `archivos`; no hay tabla de hechos
+ni cola, porque son dos docenas de filas de cuatro columnas que se validan y publican en la misma
+petición (`POST /api/observatorio/fuentes-futuras-empleo/cargas`, 201 y no 202).
+
+`GET /api/observatorio/fuentes-futuras-empleo` —público— lee el Excel de la **carga vigente**: la
+última completada del módulo. Cada carga reemplaza entera a la anterior, así que eliminar una
+desde el historial devuelve el portal a la que había antes, y eliminarlas todas deja la sección
+sin datos. Es el único módulo donde borrar una carga cambia lo que ve el público; en los demás
+solo se borra la auditoría. El Excel de disco y su fila en `archivos` se van con la carga salvo
+que otra la comparta, con la misma `eliminarArchivoSiQuedaSuelto` del resto.
+
+Hasta el 03-10-2026 no pasaba por aquí: la API leía un `fuentes-futuras-de-empleo.xlsx` de nombre
+fijo dejado a mano en `uploads/cargas-datos/` (versionado en git con una excepción del
+`.gitignore`), sin registro ni forma de cambiarlo desde el panel. Ese archivo sigue como respaldo
+mientras no haya ninguna carga, para que el portal no se quede en blanco donde todavía no se ha
+subido.
 
 ### 4.7 Alertas de inversión — migraciones 038/039
 

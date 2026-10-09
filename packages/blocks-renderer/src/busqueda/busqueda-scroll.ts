@@ -57,10 +57,29 @@ export function resaltarCoincidenciaTexto(
     pos = idx + qLimpia.length;
   }
 
-  // 2. Si no hubo coincidencia continua o tiene varias palabras, buscar palabras individuales
+  // 1.5. Frase difusa: permite signos de puntuación entre palabras
+  // Ej.: buscar "Aprendizaje SENA" encuentra "Aprendizaje (SENA)" en el texto.
+  if (rangos.length === 0 && qLimpia.includes(' ')) {
+    const palabrasQ2 = qLimpia.split(/\s+/).filter((p) => p.length >= 2);
+    if (palabrasQ2.length >= 2) {
+      const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const patronFuzzy = palabrasQ2.map(escapeRe).join('[\\s\\W]*');
+      try {
+        const reFuzzy = new RegExp(patronFuzzy, 'g');
+        let mFuzzy: RegExpExecArray | null;
+        while ((mFuzzy = reFuzzy.exec(textoNorm)) !== null) {
+          rangos.push({ inicio: mFuzzy.index, fin: mFuzzy.index + mFuzzy[0].length });
+          if (mFuzzy[0].length === 0) { reFuzzy.lastIndex++; }
+        }
+      } catch { /* ignorar expresión regular inválida */ }
+    }
+  }
+
+  // 2. Si no hubo coincidencia, buscar palabras individuales significativas (>= 3 chars)
+  // Se excluyen artículos/preposiciones cortas ("el", "de") para no resaltar todo el texto.
   if (rangos.length === 0) {
     const palabras = Array.from(
-      new Set(qLimpia.split(/\s+/).filter((p) => p.length >= 2))
+      new Set(qLimpia.split(/\s+/).filter((p) => p.length >= 3))
     );
     for (const palabra of palabras) {
       let pPos = 0;
@@ -180,13 +199,21 @@ export function buscarElementoPorTexto(texto: string): HTMLElement | null {
         if (rect.width === 0 && rect.height === 0) continue;
       }
 
-      // Si tiene mayor puntuación, o misma puntuación pero menor longitud (es más específico),
+      // Penalizar elementos cuyo texto sea demasiado largo en comparación con lo buscado:
+      // un párrafo con 500 caracteres que contiene la palabra buscada (10 chars) debe perder
+      // frente a un <span> o <strong> de 12 caracteres que dice exactamente lo buscado.
+      const ratioLongitud = textoEl.length / Math.max(limpio.length, 1);
+      // Penalización proporcional: cuanto más largo, menos puntuación efectiva
+      const penalizacion = ratioLongitud > 3 ? Math.min(ratioLongitud * 15, 300) : 0;
+      const puntuacionEfectiva = puntuacion - penalizacion;
+
+      // Si tiene mayor puntuación efectiva, o misma puntuación pero menor longitud (es más específico),
       // lo elegimos como mejor coincidencia
       if (
-        puntuacion > mejorPuntuacion ||
-        (puntuacion === mejorPuntuacion && textoEl.length < menorLongitud)
+        puntuacionEfectiva > mejorPuntuacion ||
+        (puntuacionEfectiva === mejorPuntuacion && textoEl.length < menorLongitud)
       ) {
-        mejorPuntuacion = puntuacion;
+        mejorPuntuacion = puntuacionEfectiva;
         menorLongitud = textoEl.length;
         mejorElemento = el;
       }
@@ -204,16 +231,23 @@ interface TemporizadoresElemento {
 const temporizadoresDestello = new WeakMap<HTMLElement, TemporizadoresElemento>();
 
 /**
- * Aplica un destello de acento visual (halo difuso #fed754 al 25% de opacidad y fondo suave) temporal sobre el elemento encontrado.
- * - Sin borde sólido exterior (sin 0 0 0 4px).
+ * Aplica un destello de acento visual temporal sobre el elemento encontrado.
+ * - Si el textContent del elemento es mucho más largo que el texto buscado,
+ *   inyecta un <mark> temporal que resalta SOLO la coincidencia en vez de
+ *   pintar todo el bloque.
  * - Sin alterar el border-radius original del elemento.
  * - Idempotente: cancela cualquier temporizador anterior sobre el mismo elemento.
  * - Limpieza total garantizada: remueve completamente los estilos inline al finalizar.
+ *
+ * @param elemento  El elemento DOM sobre el que aplicar el destello.
+ * @param textoBuscado  Opcional. Cuando se provee y el elemento contiene mucho más
+ *                      texto del buscado, el destello se aplica solo sobre la
+ *                      coincidencia mediante un <mark> temporal.
  */
-export function aplicarDestello(elemento: HTMLElement): void {
+export function aplicarDestello(elemento: HTMLElement, textoBuscado?: string): void {
   if (!elemento) return;
 
-  // 1. Si ya existía un temporizador activo para este elemento, cancelarlo limpiamente
+  // Cancelar cualquier temporizador activo previo sobre este elemento
   const timerPrevio = temporizadoresDestello.get(elemento);
   if (timerPrevio) {
     clearTimeout(timerPrevio.fadeTimer);
@@ -221,35 +255,160 @@ export function aplicarDestello(elemento: HTMLElement): void {
     temporizadoresDestello.delete(elemento);
   }
 
-  // 2. Aplicar resaltado de alta visibilidad (fondo amarillo + contorno brillante dorado)
-  elemento.style.transition = 'all 0.35s ease';
-  elemento.style.removeProperty('box-shadow');
-  elemento.style.backgroundColor = '#fff201';
-  elemento.style.color = '#001631';
-  elemento.style.outline = '3px solid #facc15';
-  elemento.style.outlineOffset = '3px';
-  elemento.style.borderRadius = elemento.style.borderRadius || '4px';
+  // -- Estrategia de resaltado preciso --
+  // Siempre que el elemento tenga más texto que el término buscado (más de 4 chars de diferencia),
+  // inyectamos un <mark> temporal solo sobre la coincidencia en vez de colorear todo el bloque.
+  // Se usa split manual del nodo de texto (más fiable que Range.surroundContents, que lanza
+  // excepciones cuando el rango cruza límites de elementos hijos).
+  const textoContenido = (elemento.textContent || '').trim();
+  const terminoTrim = textoBuscado?.trim() ?? '';
+  const esBotonOLink = ['A', 'BUTTON'].includes(elemento.tagName) || !!elemento.closest('button, a, [role="button"], .btn, .boton');
+  const esCorto = textoContenido.length <= 60;
 
-  // Reiniciar clase de animación de apoyo CSS
-  elemento.classList.remove('resaltado-busqueda-anim');
-  void elemento.offsetWidth;
-  elemento.classList.add('resaltado-busqueda-anim');
+  const usarMarkPreciso =
+    terminoTrim.length > 0 &&
+    textoContenido.length > terminoTrim.length + 4 &&
+    !esBotonOLink &&
+    !esCorto;
 
-  // 3. A los 3.2s, desvanecer suavemente
+  let markInyectado: HTMLElement | null = null;
+
+  if (usarMarkPreciso) {
+    const terminoNorm = terminoTrim
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+
+    // Recorrer los nodos de texto directos del elemento buscando la coincidencia
+    const walker = document.createTreeWalker(elemento, NodeFilter.SHOW_TEXT);
+    let nodo: Text | null;
+    let nodoEncontrado: Text | null = null;
+    let idxEnOriginal = -1;
+    // Por defecto la longitud del fragmento a marcar es la del término buscado;
+    // el paso 3 (fuzzy) puede sobreescribirla si la coincidencia incluye puntuación extra.
+    let longitudCoincidencia = terminoTrim.length;
+
+    while ((nodo = walker.nextNode() as Text | null)) {
+      const textoNodo = nodo.nodeValue || '';
+
+      // 1. Coincidencia directa case-insensitive — índice correcto en el DOM
+      const idxDirecto = textoNodo.toLowerCase().indexOf(terminoTrim.toLowerCase());
+      if (idxDirecto !== -1) {
+        nodoEncontrado = nodo;
+        idxEnOriginal = idxDirecto;
+        break;
+      }
+
+      // Normalizar una sola vez para los pasos 2 y 3
+      const textoNodoNorm = textoNodo
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+
+      // 2. Fallback: coincidencia insensible a tildes
+      const idxNorm = textoNodoNorm.indexOf(terminoNorm);
+      if (idxNorm !== -1) {
+        nodoEncontrado = nodo;
+        // El índice en la cadena normalizada es equivalente al del original
+        // para texto latino precompuesto (NFD expande y luego se contrae al mismo largo)
+        idxEnOriginal = idxNorm;
+        break;
+      }
+
+      // 3. Frase difusa: permite signos de puntuación/paréntesis entre palabras
+      // Cubre casos como buscar "Aprendizaje SENA" cuando el DOM tiene "Aprendizaje (SENA)"
+      const palabrasSignificativas = terminoNorm.split(/\s+/).filter((p) => p.length >= 3);
+      if (palabrasSignificativas.length >= 2) {
+        const escRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const patronFuzzy = palabrasSignificativas.map(escRe).join('[\\s\\W]*');
+        try {
+          const reFuzzy = new RegExp(patronFuzzy);
+          const mFuzzy = reFuzzy.exec(textoNodoNorm);
+          if (mFuzzy) {
+            nodoEncontrado = nodo;
+            idxEnOriginal = mFuzzy.index;
+            longitudCoincidencia = mFuzzy[0].length; // puede incluir puntuación extra
+            break;
+          }
+        } catch { /* ignorar expresión regular inválida */ }
+      }
+    }
+
+    if (nodoEncontrado !== null && idxEnOriginal !== -1) {
+      try {
+        // Split manual: más robusto que surroundContents
+        const textoOriginal = nodoEncontrado.nodeValue ?? '';
+        const antes = textoOriginal.substring(0, idxEnOriginal);
+        const coincidencia = textoOriginal.substring(idxEnOriginal, idxEnOriginal + longitudCoincidencia);
+        const despues = textoOriginal.substring(idxEnOriginal + longitudCoincidencia);
+
+        const mark = document.createElement('mark');
+        mark.textContent = coincidencia;
+        mark.style.backgroundColor = '#fff201';
+        mark.style.color = '#001631';
+        mark.style.outline = '2px solid #facc15';
+        mark.style.outlineOffset = '1px';
+        mark.style.borderRadius = '3px';
+        mark.style.transition = 'all 0.35s ease';
+        mark.classList.add('resaltado-busqueda-anim');
+
+        const parentNode = nodoEncontrado.parentNode!;
+        if (antes) parentNode.insertBefore(document.createTextNode(antes), nodoEncontrado);
+        parentNode.insertBefore(mark, nodoEncontrado);
+        if (despues) parentNode.insertBefore(document.createTextNode(despues), nodoEncontrado);
+        parentNode.removeChild(nodoEncontrado);
+
+        markInyectado = mark;
+      } catch {
+        // En caso de error inesperado, caemos al resaltado de bloque completo
+        markInyectado = null;
+      }
+    }
+  }
+
+
+  // Si no se pudo inyectar el mark preciso, resaltar el elemento completo
+  if (!markInyectado) {
+    elemento.style.transition = 'all 0.35s ease';
+    elemento.style.removeProperty('box-shadow');
+    elemento.style.backgroundColor = '#fff201';
+    elemento.style.color = '#001631';
+    elemento.style.outline = '3px solid #facc15';
+    elemento.style.outlineOffset = '3px';
+    elemento.style.borderRadius = elemento.style.borderRadius || '4px';
+
+    elemento.classList.remove('resaltado-busqueda-anim');
+    void elemento.offsetWidth;
+    elemento.classList.add('resaltado-busqueda-anim');
+  }
+
+  const objetoALimpiar = markInyectado ?? elemento;
+
+  // A los 3.2s, desvanecer suavemente
   const fadeTimer = setTimeout(() => {
-    elemento.style.backgroundColor = 'transparent';
-    elemento.style.removeProperty('outline');
-    elemento.style.removeProperty('outline-offset');
+    objetoALimpiar.style.backgroundColor = 'transparent';
+    objetoALimpiar.style.removeProperty('outline');
+    objetoALimpiar.style.removeProperty('outline-offset');
 
-    // 4. Tras los 450ms de transición suave, remover completamente los estilos inline y clase
+    // Tras los 450ms de transición, limpiar todo
     const cleanupTimer = setTimeout(() => {
-      elemento.style.removeProperty('box-shadow');
-      elemento.style.removeProperty('background-color');
-      elemento.style.removeProperty('color');
-      elemento.style.removeProperty('transition');
-      elemento.style.removeProperty('outline');
-      elemento.style.removeProperty('outline-offset');
-      elemento.classList.remove('resaltado-busqueda-anim');
+      if (markInyectado && markInyectado.parentNode) {
+        // Reemplazar el <mark> por su contenido de texto original
+        const parent = markInyectado.parentNode;
+        while (markInyectado.firstChild) {
+          parent.insertBefore(markInyectado.firstChild, markInyectado);
+        }
+        parent.removeChild(markInyectado);
+        parent.normalize();
+      } else {
+        elemento.style.removeProperty('box-shadow');
+        elemento.style.removeProperty('background-color');
+        elemento.style.removeProperty('color');
+        elemento.style.removeProperty('transition');
+        elemento.style.removeProperty('outline');
+        elemento.style.removeProperty('outline-offset');
+      }
+      objetoALimpiar.classList.remove('resaltado-busqueda-anim');
       temporizadoresDestello.delete(elemento);
     }, 450);
 
@@ -343,6 +502,10 @@ export function activarPestanaDeElemento(elemento: HTMLElement): boolean {
  * Desplaza la vista suavemente hasta el bloque o elemento correspondiente,
  * respetando la barra superior fija (topbar) y aplicando el resaltado de acento.
  * Si el elemento pertenece a una pestaña inactiva, la activa automáticamente antes del scroll.
+ *
+ * Después del primer scroll, vigila la posición del elemento durante 4 segundos:
+ * si contenedores asíncronos (tablas con API, mapas, etc.) que cargan por encima del
+ * elemento lo empujan hacia abajo, se re-ajusta el scroll automáticamente.
  */
 export function desplazarAElemento(opciones: {
   blockId?: string;
@@ -370,6 +533,41 @@ export function desplazarAElemento(opciones: {
   if (el) {
     // Si el elemento pertenece a una pestaña o es una pestaña, activarla primero
     const seActivoPestana = activarPestanaDeElemento(el);
+
+    /**
+     * Vigila la posición del elemento durante maxMs milisegundos y hace re-scroll
+     * si detecta que se desplazó más de umbralPx (ocurre cuando contenedores
+     * asíncronos que cargan encima empujan el elemento hacia abajo).
+     */
+    const vigilarPosicion = (
+      target: HTMLElement,
+      posTopInicial: number,
+      centroObjetivo: number,
+      maxMs = 4000,
+      umbralPx = 80
+    ) => {
+      const fin = Date.now() + maxMs;
+      let ultimaPosTop = posTopInicial;
+
+      const verificar = () => {
+        if (Date.now() >= fin) return;
+        if (!document.body.contains(target)) return;
+
+        const rActual = target.getBoundingClientRect();
+        const posActual = window.pageYOffset + rActual.top;
+        const compensacion = Math.min(Math.max(rActual.height / 2, 20), 120);
+        const posTopActual = Math.max(0, posActual + compensacion - centroObjetivo);
+
+        if (Math.abs(posTopActual - ultimaPosTop) > umbralPx) {
+          window.scrollTo({ top: posTopActual, behavior: 'smooth' });
+          ultimaPosTop = posTopActual;
+        }
+
+        setTimeout(verificar, 250);
+      };
+
+      setTimeout(verificar, 250);
+    };
 
     const intentarDesplazarYResaltar = (intentosRestantes = 5) => {
       let target: HTMLElement | null = el;
@@ -415,8 +613,15 @@ export function desplazarAElemento(opciones: {
           behavior: 'smooth',
         });
 
-        // Resaltar visualmente con destello
-        aplicarDestello(target);
+        // Vigilar desplazamientos posteriores causados por carga asíncrona
+        vigilarPosicion(target, posicionTop, centroObjetivo);
+
+        // Resaltar visualmente:
+        // - Con texto buscado → resaltado preciso de la coincidencia
+        // - Solo blockId (navegación por hash) → no aplicar destello para no pintar todo el bloque
+        if (opciones.texto) {
+          aplicarDestello(target, opciones.texto);
+        }
         return;
       }
 

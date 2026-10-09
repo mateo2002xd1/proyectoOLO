@@ -14,6 +14,8 @@
  *   4. Borra `.next` cuando es de otra carpeta, de otras dependencias o de otra
  *      versión de Next.
  *   5. Activa los hooks del repositorio (`.githooks`) si el clon no usa otros.
+ *   6. Copia una vez los archivos subidos de su carpeta de antes (`public/storage`,
+ *      `uploads/cargas-datos`) al filesystem de la API (`filesystem/`).
  *
  * ── 1. La carpeta vieja ─────────────────────────────────────────────────────────
  * Git solo muda lo que está en el repositorio. Al hacer `git pull` del cambio de
@@ -450,3 +452,79 @@ function activarHooks() {
 }
 
 activarHooks();
+
+// ── 6. Archivos subidos al filesystem ─────────────────────────────────────────
+
+/** De dónde sale lo subido en cada app (las carpetas de antes) y a dónde va. */
+const ARCHIVOS_DE_ANTES = {
+  '3000-sitio-web': [
+    ['public/storage/uploads', 'sitio/uploads'],
+    ['public/storage/backup', 'sitio/backup'],
+  ],
+  '3001-intranet': [
+    ['public/storage/uploads', 'intranet/uploads'],
+    ['public/storage/backup', 'intranet/backup'],
+  ],
+  '4000-api-backend': [['uploads/cargas-datos', 'cargas-datos']],
+};
+
+/** Viven en esas carpetas pero son del repositorio, no algo que alguien subió. */
+const DEL_REPOSITORIO = new Set(['fuentes-futuras-de-empleo.xlsx', '.gitkeep']);
+
+/**
+ * La misma raíz que usa la API (`filesystem.ts`): `FILESYSTEM_DIR` del entorno o
+ * del `.env` de la API, relativa a su carpeta; si no hay, `filesystem/` en la raíz.
+ */
+function raizDelFilesystem() {
+  const dirApi = path.resolve(dirApp, '..', '4000-api-backend');
+  let valor = process.env.FILESYSTEM_DIR;
+  if (!valor) {
+    try {
+      valor = /^FILESYSTEM_DIR=(.*)$/m.exec(fs.readFileSync(path.join(dirApi, '.env'), 'utf8'))?.[1]?.trim();
+    } catch {
+      // Sin `.env` vale el valor por defecto, igual que en la API.
+    }
+  }
+  return valor ? path.resolve(dirApi, valor) : path.resolve(dirApp, '..', 'filesystem');
+}
+
+/**
+ * Desde el 2026-10-06 lo subido vive en el filesystem y solo lo toca la API; antes
+ * cada app lo tenía en su carpeta, y un `git pull` no lo muda. Se copia una vez por app,
+ * sin pisar nada, y se deja una marca para no repetirlo: copiar en cada arranque haría
+ * reaparecer lo que la API ya borró por huérfano. Las carpetas de antes no se tocan.
+ */
+function mudarArchivosSubidos() {
+  const pares = ARCHIVOS_DE_ANTES[nombreApp];
+  if (!pares) return;
+  const raiz = raizDelFilesystem();
+  const marca = path.join(raiz, `.mudado-${nombreApp}`);
+  if (fs.existsSync(marca)) return;
+
+  let copiados = 0;
+  for (const [origenRelativo, destinoRelativo] of pares) {
+    const origen = path.join(dirApp, origenRelativo);
+    for (const relativo of archivosDe(origen, new Set())) {
+      if (DEL_REPOSITORIO.has(path.posix.basename(relativo))) continue;
+      const destino = path.join(raiz, destinoRelativo, relativo);
+      if (fs.existsSync(destino)) continue;
+      fs.mkdirSync(path.dirname(destino), { recursive: true });
+      fs.copyFileSync(path.join(origen, relativo), destino);
+      copiados++;
+    }
+  }
+
+  fs.mkdirSync(raiz, { recursive: true });
+  fs.writeFileSync(
+    marca,
+    `Los archivos subidos de ${nombreApp} ya se copiaron aquí. Borra esta marca para repetirlo.\n`,
+  );
+  if (copiados > 0) {
+    const carpetas = pares.map(([origen]) => origen).join(' y ');
+    console.log(`[olo] ${nombreApp}: ${copiados} archivo(s) subidos copiados a ${path.relative(path.resolve(dirApp, '..'), raiz)}/.`);
+    console.log(`[olo]   La API ya no los lee de ${carpetas}: cuando compruebes que todo se ve, se pueden`);
+    console.log('[olo]   borrar de ahí (lo que viene con el repositorio, no: git lo volvería a traer).');
+  }
+}
+
+mudarArchivosSubidos();

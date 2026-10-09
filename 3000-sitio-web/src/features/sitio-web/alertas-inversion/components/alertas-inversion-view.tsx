@@ -4,13 +4,45 @@ import { useAlertasInversion } from '../hooks/use-alertas-inversion';
 import { GraficoSectores } from './grafico-sectores';
 import { ListadoProyectos } from './listado-proyectos';
 
+/** Un filtro del panel: etiqueta + selector con la opción "todos" al inicio. */
+function CampoFiltro({
+  id,
+  etiqueta,
+  valor,
+  onCambio,
+  todos,
+  children,
+}: {
+  id: string;
+  etiqueta: string;
+  valor: string;
+  onCambio: (valor: string) => void;
+  todos: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex min-w-0 flex-col gap-1">
+      <label className="text-sm font-medium text-[#344054]" htmlFor={id}>{etiqueta}</label>
+      <select
+        id={id}
+        value={valor}
+        onChange={(e) => onCambio(e.target.value)}
+        className="max-w-full rounded-lg border border-[#d0d5dd] bg-white px-3 py-2 text-sm text-[#344054]"
+      >
+        <option value="">{todos}</option>
+        {children}
+      </select>
+    </div>
+  );
+}
+
 /**
  * Panel público "Alertas de inversión": proyectos de inversión anunciados, agrupados
  * por sector económico (CIIU). El gráfico y el listado comparten los mismos filtros
- * (año, sector) — clic en una barra filtra la tabla por ese sector.
+ * (sector, departamento, año) — clic en una barra filtra la tabla por ese sector.
  */
 export function AlertasInversionView() {
-  const { opciones, grafico, listado, anio, seccion, pagina, cargando, error, seleccionarSector, seleccionarAnio, irAPagina } =
+  const { opciones, grafico, listado, anio, departamento, seccion, pagina, cargando, actualizando, error, seleccionarSector, seleccionarDepartamento, seleccionarAnio, irAPagina } =
     useAlertasInversion();
 
   return (
@@ -22,28 +54,22 @@ export function AlertasInversionView() {
         </p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <label className="text-sm font-medium text-[#344054]" htmlFor="filtro-anio">Año</label>
-        <select
-          id="filtro-anio"
-          value={anio}
-          onChange={(e) => seleccionarAnio(e.target.value)}
-          className="rounded-lg border border-[#d0d5dd] bg-white px-3 py-2 text-sm text-[#344054]"
-        >
-          <option value="">Todos</option>
+      <div className="flex flex-wrap items-end gap-4">
+        <CampoFiltro id="filtro-sector" etiqueta="Sector" valor={seccion} onCambio={seleccionarSector} todos="Todos">
+          {opciones.secciones.map((s) => (
+            <option key={s.letra} value={s.letra}>{s.letra} · {s.nombre}</option>
+          ))}
+        </CampoFiltro>
+        <CampoFiltro id="filtro-departamento" etiqueta="Departamento" valor={departamento} onCambio={seleccionarDepartamento} todos="Todos">
+          {opciones.departamentos.map((d) => (
+            <option key={d.codigoDane} value={d.codigoDane}>{d.nombre}</option>
+          ))}
+        </CampoFiltro>
+        <CampoFiltro id="filtro-anio" etiqueta="Año" valor={anio} onCambio={seleccionarAnio} todos="Todos">
           {opciones.anios.map((a) => (
             <option key={a} value={a}>{a}</option>
           ))}
-        </select>
-        {seccion && (
-          <button
-            type="button"
-            onClick={() => seleccionarSector(seccion)}
-            className="inline-flex items-center gap-1 rounded-full bg-[#7db828]/10 px-3 py-1 text-sm font-medium text-[#4d7a13]"
-          >
-            Sector: {seccion} · quitar filtro
-          </button>
-        )}
+        </CampoFiltro>
       </div>
 
       {error ? (
@@ -55,7 +81,7 @@ export function AlertasInversionView() {
           <p className="text-sm text-[#667085]">Cargando datos...</p>
         </div>
       ) : (
-        <div className="flex flex-col gap-8">
+        <div className={`flex flex-col gap-8 transition-opacity ${actualizando ? 'opacity-60' : ''}`} aria-busy={actualizando}>
           <GraficoSectores datos={grafico} seccionSeleccionada={seccion} onSeleccionar={seleccionarSector} />
           <ListadoProyectos
             proyectos={listado.proyectos}

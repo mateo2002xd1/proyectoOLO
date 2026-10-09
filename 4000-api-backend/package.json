@@ -1,7 +1,7 @@
 {
   "name": "@olo/api-backend",
   "version": "1.0.0",
-  "description": "API Backend - Observatorio Laboral y Ocupacional (OLO)",
+  "description": "API Backend - Sistema integrado de control de contenidos para el sitio web del Observatorio Laboral SENA",
   "main": "dist/server.js",
   "scripts": {
     "sync:paquetes": "node ../scripts/sincronizar-paquetes-locales.mjs",
@@ -21,6 +21,7 @@
     "db:esquema-diagrama": "ts-node scripts/db/generar-pdf-esquema.ts",
     "db:esquema-pdf": "ts-node scripts/db/html-a-pdf.ts",
     "uploads:limpiar-huerfanos": "ts-node scripts/archivos/limpiar-huerfanos-uploads.ts",
+    "cargas:limpiar-huerfanos": "ts-node scripts/archivos/limpiar-huerfanos-cargas.ts",
     "uploads:renombrar-carpeta": "ts-node scripts/archivos/renombrar-carpeta-uploads.ts",
     "ambito:auditar": "ts-node scripts/verificaciones/auditar-ambito.ts",
     "ambito:verificar": "ts-node scripts/verificaciones/verificar-ambito.ts",

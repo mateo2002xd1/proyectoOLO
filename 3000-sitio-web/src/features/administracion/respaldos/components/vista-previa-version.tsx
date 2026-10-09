@@ -1,7 +1,8 @@
 'use client';
 
+import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { useEffect, useRef, useState } from 'react';
-import { ExternalLink, RotateCcw, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { RotateCcw, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { codigoDeError, estadoHttp, mensajeDeErrorApi } from '@/shared/lib/errores-api';
 import type { RegistroRespaldo } from '../types';
 import { restaurarRespaldo, verificarBloqueo } from '../services/respaldos.service';
@@ -181,9 +182,12 @@ export function VistaPreviaVersion({
                 href={enlaceDeVistaPrevia(registro)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm font-semibold text-zinc-700 shadow-sm transition hover:border-[#002237]/40 hover:bg-[#002237]/5 hover:text-[#002237] dark:border-zinc-600 dark:bg-transparent dark:text-zinc-200 dark:hover:bg-zinc-800 dark:hover:text-white"
+                className="group flex flex-1 items-center justify-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm font-semibold text-zinc-700 shadow-sm transition hover:border-[#002237]/40 hover:bg-[#002237]/5 hover:text-[#002237] dark:border-zinc-600 dark:bg-transparent dark:text-zinc-200 dark:hover:bg-zinc-800 dark:hover:text-white"
               >
-                <ExternalLink className="h-4 w-4" />
+                <span className="relative inline-block h-5 w-5">
+                  <span className="absolute inset-0 group-hover:hidden"><IconoMascara nombre="eye-closed" tamano="h-5 w-5" /></span>
+                  <span className="absolute inset-0 hidden group-hover:block"><IconoMascara nombre="eye-open" tamano="h-5 w-5" /></span>
+                </span>
                 Ver vista previa
               </a>
               <button

@@ -52,7 +52,7 @@ no sabes qué poner, esa es la señal de que la carpeta no tiene un lugar claro 
 - `4000-api-backend/src/infrastructure/` — lo que habla con afuera: base, Redis, archivos
 - `4000-api-backend/src/infrastructure/db/` — modelos Sequelize y migraciones
 - `4000-api-backend/src/infrastructure/redis/` — conexión, colas BullMQ e invalidación de caché
-- `4000-api-backend/src/infrastructure/storage/` — respaldo y restauración de los archivos de una página
+- `4000-api-backend/src/infrastructure/storage/` — el filesystem de lo subido, fuera del código, y el respaldo de los archivos de cada página
 - `4000-api-backend/src/middlewares/` — sesión, permisos, Zod, límites de tasa, caché y errores
 - `4000-api-backend/src/policies/` — quién puede hacer qué, por acción
 - `4000-api-backend/src/repositories/` — única capa que consulta los modelos Sequelize
@@ -60,6 +60,7 @@ no sabes qué poner, esa es la señal de que la carpeta no tiene un lugar claro 
 - `4000-api-backend/src/shared/` — utilidades transversales: sanitización, permisos, auditoría
 - `4000-api-backend/src/types/` — tipos globales (extensión del `Request` de Express)
 - `4000-api-backend/src/use-cases/` — la lógica de negocio: una acción, una función
+- `4000-api-backend/src/use-cases/archivos/` — subida de los adjuntos de las páginas (RF-02)
 - `4000-api-backend/src/use-cases/auditoria/` — consulta de la bitácora de cambios (RF-07)
 - `4000-api-backend/src/use-cases/auth/` — login, primer ingreso y preguntas de seguridad
 - `4000-api-backend/src/use-cases/observatorio/` — cargas de Excel del Observatorio y tendencia ocupacional
@@ -84,7 +85,7 @@ no sabes qué poner, esa es la señal de que la carpeta no tiene un lugar claro 
 
 ## 3000-sitio-web
 
-- `3000-sitio-web/public/` — estáticos: imágenes, logos, PWA y `storage/` con lo subido
+- `3000-sitio-web/public/` — estáticos: imágenes, logos y PWA
 - `3000-sitio-web/src/` — código del sitio
 - `3000-sitio-web/src/app/` — solo enrutamiento: `(public)`, `(auth)`, `admin`, `editor`, `preview`, `api`
 - `3000-sitio-web/src/config/` — catálogo de bloques del editor (`puck.config.tsx`)
@@ -122,7 +123,7 @@ no sabes qué poner, esa es la señal de que la carpeta no tiene un lugar claro 
 
 ## 3001-intranet
 
-- `3001-intranet/public/` — estáticos: imágenes, íconos de la PWA y `storage/` con lo subido
+- `3001-intranet/public/` — estáticos: imágenes e íconos de la PWA
 - `3001-intranet/src/` — código de la intranet
 - `3001-intranet/src/app/` — solo enrutamiento: `(secciones)` (comodín Puck), `(auth)`, `editor`, `preview`
 - `3001-intranet/src/config/` — catálogo de bloques del editor de la intranet

@@ -99,17 +99,17 @@ export const PaginaRepository = {
     }),
 
   /**
-   * Incrementa el contador de visitas de una página según su slug y ámbito.
+   * Suma una visita en una sola sentencia atómica. Antes eran tres idas a la base
+   * (buscar, incrementar, releer) y un `increment` sobre una instancia cargada, que
+   * con visitas simultáneas pisaba el valor de otra. Devuelve el nuevo total, o
+   * `null` si la página no existe.
    */
   incrementarVisitas: async (slug: string, ambito: string, tx?: Transaction): Promise<number | null> => {
-    const pagina = await Pagina.findOne({
-      where: { slug, ambito },
-      transaction: tx,
-    });
-    if (!pagina) return null;
-    await pagina.increment('visitas', { by: 1, transaction: tx });
-    await pagina.reload({ transaction: tx });
-    return pagina.visitas;
+    const filas = await sequelize.query<{ visitas: number }>(
+      'UPDATE paginas SET visitas = visitas + 1 WHERE slug = :slug AND ambito = :ambito RETURNING visitas',
+      { replacements: { slug, ambito }, type: QueryTypes.SELECT, transaction: tx }
+    );
+    return filas.length ? Number(filas[0].visitas) : null;
   },
 
   /**

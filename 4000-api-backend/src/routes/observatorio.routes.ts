@@ -2,6 +2,7 @@ import { Router } from 'express';
 import multer from 'multer';
 import { ObservatorioController } from '../controllers/observatorio.controller';
 import { TendenciaOcupacionalController } from '../controllers/tendencia-ocupacional.controller';
+import { FuentesFuturasEmpleoController } from '../controllers/fuentes-futuras-empleo.controller';
 import { requireAuth } from '../middlewares/auth.middleware';
 import { requierePermisoObservatorio } from '../middlewares/permisos.middleware';
 import { validarCuerpo } from '../middlewares/validar.middleware';
@@ -96,7 +97,21 @@ router.get('/tendencia-ocupacional', TendenciaOcupacionalController.buscar);
  */
 router.get('/tendencia-ocupacional/opciones', TendenciaOcupacionalController.opciones);
 
-router.get('/fuentes-futuras-empleo', ObservatorioController.obtenerFuentesFuturasEmpleo);
+/**
+ * @openapi
+ * /api/observatorio/fuentes-futuras-empleo:
+ *   get:
+ *     tags: [Observatorio]
+ *     summary: Registros vigentes de "Fuentes futuras de empleo"
+ *     description: |
+ *       Departamento, sector, cuenta de proyecto y principales fuentes, leídos del Excel
+ *       de la última carga de esa tarjeta de "Actualizaciones". Pública, sin sesión, como
+ *       el resto del observatorio. Sin ninguna carga responde `[]`, nunca un error.
+ *     security: []
+ *     responses:
+ *       200: { description: Registros vigentes. }
+ */
+router.get('/fuentes-futuras-empleo', FuentesFuturasEmpleoController.obtenerActual);
 
 router.use(requireAuth);
 router.use(requierePermisoObservatorio('puedeActualizarDatos'));
@@ -195,7 +210,7 @@ router.delete('/cargas/:id', ObservatorioController.eliminarCarga);
  *       - name: formato
  *         in: path
  *         required: true
- *         schema: { type: string, enum: [programas-sobresalientes, tendencia-ocupacional] }
+ *         schema: { type: string, enum: [programas-sobresalientes, tendencia-ocupacional, fuentes-futuras] }
  *     responses:
  *       200:
  *         description: El Excel, como adjunto `formato-{formato}.xlsx`.
@@ -207,6 +222,72 @@ router.delete('/cargas/:id', ObservatorioController.eliminarCarga);
  *       404: { description: Formato desconocido o sin archivo en el servidor. }
  */
 router.get('/formatos/:formato', ObservatorioController.descargarFormato);
+
+/**
+ * @openapi
+ * /api/observatorio/fuentes-futuras-empleo/cargas:
+ *   get:
+ *     tags: [Observatorio]
+ *     summary: Historial de cargas de "Fuentes futuras de empleo"
+ *     responses:
+ *       200: { description: Historial de cargas del módulo. }
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
+ *   post:
+ *     tags: [Observatorio]
+ *     summary: Sube el Excel y lo deja vigente en el portal
+ *     description: |
+ *       La única carga que no pasa por la cola: el Excel no se importa a ninguna tabla,
+ *       el portal lo lee tal cual, así que se valida y se publica en la misma petición
+ *       (201, no 202). Un archivo sin las columnas Departamento, Sector y Cuenta de
+ *       Proyecto se rechaza con 422 sin dejar nada guardado.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file: { type: string, format: binary }
+ *             required: [file]
+ *     responses:
+ *       201: { description: Archivo publicado. }
+ *       400: { description: No se envió archivo. }
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
+ *       415: { description: Tipo de archivo no permitido. }
+ *       422: { description: El Excel no tiene las columnas o las filas que espera el módulo. }
+ */
+router.get('/fuentes-futuras-empleo/cargas', FuentesFuturasEmpleoController.listarCargas);
+router.post(
+  '/fuentes-futuras-empleo/cargas',
+  subidaEnMemoria.single('file'),
+  FuentesFuturasEmpleoController.subir
+);
+
+/**
+ * @openapi
+ * /api/observatorio/fuentes-futuras-empleo/cargas/{id}:
+ *   delete:
+ *     tags: [Observatorio]
+ *     summary: Elimina una carga de "Fuentes futuras de empleo"
+ *     description: |
+ *       Borra la fila del historial y, si ninguna otra carga comparte el mismo archivo,
+ *       también el Excel de `uploads/cargas-datos/` y su fila en `archivos`. Aquí sí
+ *       cambia lo público: el portal vuelve a la carga anterior, o deja de mostrar datos
+ *       si no queda ninguna.
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200: { description: Eliminada; `archivoEliminado` dice si el Excel se borró del disco. }
+ *       401: { $ref: '#/components/responses/NoAutenticado' }
+ *       403: { $ref: '#/components/responses/SinPermiso' }
+ *       404: { description: Carga no encontrada. }
+ */
+router.delete('/fuentes-futuras-empleo/cargas/:id', FuentesFuturasEmpleoController.eliminarCarga);
 
 /**
  * @openapi

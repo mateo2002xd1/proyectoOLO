@@ -33,11 +33,17 @@
 
 ## 2. Controles por superficie
 
-### S1 — Subida de archivos CRÍTICO (controles de entrada puestos; el almacenamiento sigue en el webroot)
+### S1 — Subida de archivos CRÍTICO (controles de entrada puestos; filesystem fuera del webroot desde 2026-10-06)
 
 Este es el vector más peligroso del proyecto. **Los cinco controles de entrada ya están**
-en las dos apps vía `packages/upload-policy` (ver §4.4); lo que sigue abierto es dónde se
-guarda lo subido. Al mover el almacenamiento a `infrastructure/storage` (donde ya vive el respaldo y el borrado del disco):
+vía `packages/upload-policy` (ver §4.4), y desde el 2026-10-06 **solo la API guarda y sirve
+lo subido**: `POST /api/archivos/{ambito}` valida y escribe, y
+`GET /api/archivos/{ambito}/{uploads|backup}/...` sirve, desde un filesystem fuera del
+código y de cualquier `public/` (`infrastructure/storage/filesystem.ts`; en el servidor,
+el volumen `olo-app_filesystem`, montado solo en la API). Los frontends ya no tocan el
+disco: reenvían `/api/upload`, `/uploads/...` y `/backup/...` a la API (nginx en el
+servidor, `next.config` en desarrollo). Lo de la intranet exige sesión en la propia API, no
+solo en el middleware de Next. Pendiente: el antivirus de abajo. Los controles:
 
 - **Validar el tipo real, no la extensión ni el `Content-Type`** declarado (ambos se falsifican). Inspeccionar los *magic bytes* del archivo.
 - **Lista blanca estricta** de tipos permitidos (PDF, xlsx, JPG, PNG, SVG) — nunca lista negra.
@@ -46,7 +52,7 @@ guarda lo subido. Al mover el almacenamiento a `infrastructure/storage` (donde y
 - **Renombrar el archivo** a un identificador generado (UUID); nunca usar el nombre original en el path (evita path traversal como `../../etc/passwd`).
 - **Almacenar fuera del webroot** o en almacenamiento de objetos; servir mediante un endpoint controlado, no exponiendo el directorio.
 - **Escanear con antivirus** si el volumen lo justifica (ClamAV).
-- **Nota sobre el upload actual**: el `/api/upload` de los frontends hoy escribe directo a `public/uploads` sin validación — esto debe migrarse a la API central con todos los controles anteriores antes de producción.
+- ~~**Nota sobre el upload actual**: el `/api/upload` de los frontends hoy escribe directo a `public/uploads` sin validación~~ — cerrado: desde el 2026-10-06 `/api/upload` es solo un reenvío a la API, que exige sesión con permiso de edición (antes bastaba cualquier sesión) y aplica los controles de arriba. El `DELETE` que tenían esos handlers no lo usaba nadie y dejaba a cualquier sesión borrar archivos publicados: no se trasladó. Borrar sigue siendo cosa de `borrarArchivosHuerfanos`.
 
 ### S2 — XSS del contenido (Editor.js) CRÍTICO
 
@@ -500,10 +506,9 @@ repartidos por §4.1 a §4.7. Lo que queda, y por qué queda:
 - **`client_max_body_size` está en 10M y la política de subida admite 50 MB** para
   documentos. Hoy nginx cortaría antes. Hay que igualar los dos números en la dirección
   que se decida.
-- **Las subidas siguen dentro del webroot** (`public/uploads`). §S1 pide almacenarlas
-  fuera y servirlas por un endpoint controlado; sigue siendo la deuda técnica anotada en
-  los dos handlers. El riesgo inmediato —cualquiera subiendo cualquier cosa— está
-  cerrado; el estructural no.
+- ~~**Las subidas siguen dentro del webroot** (`public/uploads`)~~. *Cerrado el
+  2026-10-06: viven en el filesystem de la API y se sirven por `/api/archivos` — ver
+  §S1.*
 - **Zod cubre usuarios y borradores de página, no toda la API.** Es donde estaban el
   *mass assignment* y la entrada más grande, pero §3 dice «todo endpoint que reciba
   datos». Los que faltan siguen leyendo `req.body` directo.
@@ -551,7 +556,7 @@ equivalente — y se nota: un cambio de tres valores hex revirtió media fase de
 | RF | Control obligatorio antes de producción | Estado |
 |---|---|---|
 | RF-01 | Sanitizar HTML de Editor.js en el servidor | ✅ `sanitizarContenidoPuck()` al guardar — 2026-08-11. El objeto de EditorJS, `intro` y `zones` quedaban fuera hasta el 2026-09-25: desde entonces se sanea todo texto con `<`, también al aprobar y restaurar (§4.4) |
-| RF-02 | Validar magic bytes, sanitizar SVG, renombrar a UUID, tamaño en servidor, fuera del webroot | 🟡 Parcial: la subida de la **intranet** cumple los cinco controles (`file-type`, lista blanca, UUID, límites, auth con firma) — 2026-08-11. La de **sitio-web** aplica los mismos desde 2026-08-20 vía `packages/upload-policy`. Ambas siguen escribiendo dentro del webroot — ver §4.8 |
+| RF-02 | Validar magic bytes, sanitizar SVG, renombrar a UUID, tamaño en servidor, fuera del webroot | ✅ Los cinco controles vía `packages/upload-policy` (intranet 2026-08-11, sitio-web 2026-08-20; SVG fuera de la lista blanca). Fuera del webroot desde 2026-10-06: la API es la única que escribe y sirve, desde su filesystem (§S1). Sin antivirus |
 | RF-04/05/06 | Doble capa RBAC (ruta + policy) aplicada en TODA operación sensible | ✅ Extendido a usuarios, roles, permisos, secciones, contenidos, adjuntos y trabajos; propiedad de objeto comprobada contra la BD — `npm run propiedad:verificar` — 2026-08-17 |
 | RF-08 | Lista blanca de dominios de iframe + validación de URL en servidor + sandbox | ⏳ Pendiente implementación completa |
 | RF-09 | API key solo en backend, nunca expuesta al frontend | ⏳ Pendiente al construir buscador CNO |
@@ -568,7 +573,7 @@ La lista original de este documento está casi entera cerrada. Lo que queda, en 
 
 | # | Qué | Por qué sigue arriba |
 |---|---|---|
-| 1 | **Sacar las subidas del webroot** (§S1) | Los cinco controles de entrada están puestos en las dos apps vía `packages/upload-policy`, así que el riesgo inmediato —cualquiera subiendo cualquier cosa— está cerrado. El estructural no: siguen escribiéndose en `public/uploads` y sirviéndose por path, en vez de fuera del webroot y por un endpoint controlado. `4000-api-backend/src/infrastructure/storage/backup-uploads.service.ts` (hasta el 2026-09-25 en `shared/storage/`, junto a un stub vacío que se borró) resuelve las carpetas y trabaja sobre `public/storage/uploads` — es decir, el código real existe, pero sigue apuntando dentro del webroot. Es ahí donde debe vivir el cambio |
+| 1 | **Sacar las subidas del webroot** (§S1) | Los cinco controles de entrada están puestos en las dos apps vía `packages/upload-policy`, así que el riesgo inmediato —cualquiera subiendo cualquier cosa— está cerrado. El estructural no: siguen escribiéndose en `public/uploads` y sirviéndose por path, en vez de fuera del webroot y por un endpoint controlado. `4000-api-backend/src/infrastructure/storage/backup-uploads.service.ts` (hasta el 2026-09-25 en `shared/storage/`, junto a un stub vacío que se borró) resuelve las carpetas y trabaja sobre `public/storage/uploads` — es decir, el código real existe, pero sigue apuntando dentro del webroot. Es ahí donde debe vivir el cambio. *2026-10-06: hecho. Lo subido vive en el filesystem de la API (`infrastructure/storage/filesystem.ts`, volumen `olo-app_filesystem` en el servidor), que lo escribe y lo sirve por `/api/archivos`; los frontends solo reenvían. Queda el antivirus de §S1* |
 | 2 | **Decidir el prefijo de nginx** (§4.8) | Bloquea el despliegue, y de paso decide si `/api/revalidar` (§S11) queda expuesta. *2026-09-27: el prefijo ya es `/api-backend/` en `nginx.servidor.conf` y `/api/revalidar` se corta ahí* |
 | 3 | **Extender Zod al resto de la API** (§4.8) | Cubre usuarios y borradores de página, que es donde estaban el *mass assignment* y la entrada más grande. El resto sigue leyendo `req.body` directo |
 | 4 | **S6 Power BI** — lista blanca de dominios, validación de URL en servidor, `sandbox` | La tabla `tableros_bi` existe; falta toda la capa de aplicación encima. Hoy los tokens de informe están escritos a mano en tres componentes |

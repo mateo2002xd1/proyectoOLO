@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
-import path from 'path';
 import { ObservatorioRepository as Repo } from '../../repositories/observatorio.repository';
+import { resolverRutaDeCarga } from '../../infrastructure/storage/filesystem';
 import { MODULO_CARGA as MODULO_CARGA_TENDENCIA } from '../../repositories/tendencia-ocupacional.repository';
 
 export class ErrorAlEliminarCarga extends Error {
@@ -12,7 +12,7 @@ export class ErrorAlEliminarCarga extends Error {
 /**
  * Borra una carga del historial de "Actualizaciones" y, si nadie más comparte
  * el archivo (mismo Excel subido dos veces, o adjunto en un contenido de RF-02),
- * también el Excel físico en `uploads/cargas-datos/` y su fila en `archivos`.
+ * también el Excel físico en `cargas-datos/` del filesystem y su fila en `archivos`.
  *
  * Nunca borra los datos ya importados a `programas_sobresalientes` — esto es
  * solo la auditoría de la carga, no un "deshacer" de lo que ya se publicó.
@@ -65,7 +65,7 @@ export async function eliminarArchivoSiQuedaSuelto(archivoId: string, cargaId: s
 
   await Repo.eliminarArchivo(archivoId);
 
-  const rutaAbsoluta = path.join(process.cwd(), archivo.get('rutaRelativa') as string);
+  const rutaAbsoluta = resolverRutaDeCarga(archivo.get('rutaRelativa') as string);
   await fs.unlink(rutaAbsoluta).catch((error) => {
     console.error(`[observatorio] No se pudo borrar el archivo físico de la carga ${cargaId}:`, error);
   });

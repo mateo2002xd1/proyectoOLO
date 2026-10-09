@@ -7,9 +7,11 @@ type AlertProps = {
   open: boolean;
   onClose: (value: boolean) => void;
   children: ReactNode;
+  /** Ancho máximo del cuadro (clase de Tailwind); por defecto . */
+  anchoMaximo?: string;
 };
 
-export function Alert({ open, onClose, children }: AlertProps) {
+export function Alert({ open, onClose, children, anchoMaximo = "max-w-md" }: AlertProps) {
   if (!open || typeof document === "undefined") return null;
 
   return createPortal(
@@ -29,7 +31,7 @@ export function Alert({ open, onClose, children }: AlertProps) {
       }}
     >
       <div
-        className="w-full max-w-md rounded-3xl bg-white shadow-[0_24px_48px_-20px_rgba(0,0,0,0.15)] dark:bg-[#1e2538] overflow-visible"
+        className={`w-full ${anchoMaximo} rounded-3xl bg-white shadow-[0_24px_48px_-20px_rgba(0,0,0,0.15)] dark:bg-[#1e2538] overflow-visible`}
         role="alertdialog"
         aria-modal="true"
       >

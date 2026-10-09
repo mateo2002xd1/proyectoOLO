@@ -96,7 +96,11 @@ export function permisosDeLaSesion(): Promise<string[]> {
     return cachePromesaPermisos;
   }
 
-  cachePromesaPermisos = api.get('/api/me')
+  // 20 s y no los 5 s del cliente: tras un rato sin tráfico la base (Neon) se duerme y
+  // la primera consulta tarda más de 5 s en despertarla. Con el corte en 5 s los permisos
+  // llegaban vacíos y el menú flotante se quedaba sin «Editar página» hasta volver a la
+  // pestaña. Aquí esperar no cuesta nada: los botones simplemente aparecen un poco después.
+  cachePromesaPermisos = api.get('/api/me', { timeout: 20000 })
     .then(({ data }) => {
       return Array.isArray(data?.permisos) ? data.permisos.map(String) : [];
     })
