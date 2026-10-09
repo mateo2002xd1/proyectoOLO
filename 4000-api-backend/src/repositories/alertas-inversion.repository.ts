@@ -98,7 +98,7 @@ export const AlertasInversionRepository = {
   /** Resuelve una letra de sección ('A'..'U') exacta. */
   buscarSeccionPorLetra: (letra: string) => CiiuSeccion.findOne({ where: { letra: letra.toUpperCase() } }),
 
-  /** Resuelve una clase por su código de 4 dígitos, sin importar la sección (el código ya es único por sección). */
+  /** Resuelve una clase por su código de 4 dígitos: es único en todo el catálogo (`uq_ciiu_clases_codigo`). */
   buscarClasePorCodigo: (codigo: string) => CiiuClase.findOne({ where: { codigo } }),
 
   /** `empresas`: resuelve por nombre (case-insensitive) o crea. */

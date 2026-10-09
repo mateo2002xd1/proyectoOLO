@@ -131,17 +131,11 @@ ProgramaSobresaliente.init(
         fields: ['departamento_id'],
         name: 'idx_sobresalientes_departamento',
       },
+      // Respalda la FK compuesta `(programa_id, nivel_formacion_id)`. Los de nivel, sexo y
+      // tasa se quitaron en la 041: nadie los leía y se reescribían en cada recarga.
       {
-        fields: ['nivel_formacion_id'],
-        name: 'idx_sobresalientes_nivel',
-      },
-      {
-        fields: ['sexo'],
-        name: 'idx_sobresalientes_sexo',
-      },
-      {
-        fields: ['tasa_vinculacion'],
-        name: 'idx_sobresalientes_tasa',
+        fields: ['programa_id', 'nivel_formacion_id'],
+        name: 'idx_sobresalientes_programa',
       },
     ],
   }
