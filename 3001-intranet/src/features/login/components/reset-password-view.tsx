@@ -197,7 +197,7 @@ export function ResetPasswordView() {
           </form>
         </div>
 
-        <ReturnToSiteLink classPrefix="rp" />
+        <ReturnToSiteLink classPrefix="rp" cerrarSesion={mode === 'forced'} />
       </div>
     </div>
   );

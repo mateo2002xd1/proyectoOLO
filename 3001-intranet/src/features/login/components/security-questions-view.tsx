@@ -264,7 +264,7 @@ export function SecurityQuestionsView() {
           </form>
         </div>
 
-        <ReturnToSiteLink classPrefix="sq" />
+        <ReturnToSiteLink classPrefix="sq" cerrarSesion={mode === 'setup'} />
       </div>
     </div>
   );

@@ -24,7 +24,7 @@ export function AuthSuccessScreen({ title, subtitle, hint, loginLabel = 'Iniciar
           {loginLabel}
         </button>
 
-        <ReturnToSiteLink classPrefix="rs" />
+        <ReturnToSiteLink classPrefix="rs" cerrarSesion />
       </div>
     </div>
   );

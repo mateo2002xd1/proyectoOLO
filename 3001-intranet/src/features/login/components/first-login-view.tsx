@@ -404,7 +404,7 @@ export function FirstLoginView() {
           </button>
         </div>
 
-        <ReturnToSiteLink classPrefix="fl" />
+        <ReturnToSiteLink classPrefix="fl" cerrarSesion />
       </div>
     </div>
   );
