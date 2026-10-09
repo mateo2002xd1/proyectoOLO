@@ -102,6 +102,14 @@ export function permisosDeLaSesion(): Promise<string[]> {
   // pestaña. Aquí esperar no cuesta nada: los botones simplemente aparecen un poco después.
   cachePromesaPermisos = api.get('/api/me', { timeout: 20000 })
     .then(({ data }) => {
+      // Sesión abierta con la contraseña temporal o sin preguntas de seguridad (se
+      // cerró la pestaña a mitad del primer ingreso). La API ya no le deja hacer nada
+      // más, así que en vez de dejarla en el portal con los botones de edición a la
+      // vista, se la lleva a terminar la configuración.
+      if (data?.configuracionPendiente === true) {
+        window.location.href = '/first-login';
+        return [];
+      }
       return Array.isArray(data?.permisos) ? data.permisos.map(String) : [];
     })
     .catch((error) => {

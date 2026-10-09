@@ -204,7 +204,7 @@ export function FirstLoginFlow() {
   /* ---------- Mientras se sabe qué falta ---------- */
   if (!pendiente) {
     return (
-      <MarcoDePasos titulo="Configura tu acceso">
+      <MarcoDePasos cerrarSesionAlSalir titulo="Configura tu acceso">
         <div className={`${authPasosCardClass} text-center`}>
           {errors.general ? (
             <>
@@ -230,6 +230,7 @@ export function FirstLoginFlow() {
   if (!pendiente.debeCambiarPassword && !pendiente.debeConfigurarPreguntas && step !== 3) {
     return (
       <MarcoDePasos
+        cerrarSesionAlSalir
         titulo="Tu cuenta ya está configurada"
         descripcion="No hay nada pendiente: tu contraseña y tus preguntas de seguridad están al día."
       >
@@ -270,6 +271,7 @@ export function FirstLoginFlow() {
   if (step === 3) {
     return (
       <MarcoDePasos
+        cerrarSesionAlSalir
         titulo="¡Configuración completada!"
         descripcion={
           // El aviso sobre las respuestas solo tiene sentido si se acaban de elegir.
@@ -294,6 +296,7 @@ export function FirstLoginFlow() {
   if (step === 1) {
     return (
       <MarcoDePasos
+        cerrarSesionAlSalir
         titulo="Actualiza tu seguridad"
         descripcion="Has ingresado con una contraseña temporal. Por tu seguridad, es necesario que crees una contraseña personal y privada que solo tú conozcas."
         pasos={pasos(FORM_CONTRASENA)}
@@ -355,6 +358,7 @@ export function FirstLoginFlow() {
   /* ---------- Paso 2 — preguntas de seguridad ---------- */
   return (
     <MarcoDePasos
+      cerrarSesionAlSalir
       titulo="Protege el acceso a tu cuenta"
       // El texto cambia según por qué se está aquí: a quien solo le restablecieron
       // las preguntas hay que decírselo, o no entiende por qué se le piden otra vez.

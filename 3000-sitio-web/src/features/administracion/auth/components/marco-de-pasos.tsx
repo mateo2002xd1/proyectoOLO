@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import type { MouseEvent, ReactNode } from 'react';
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/20/solid';
 import { BackToSiteLink } from './auth-ui';
 
@@ -39,6 +39,7 @@ export function MarcoDePasos({
   descripcion,
   pasos,
   conLogo = false,
+  cerrarSesionAlSalir = false,
   children,
 }: {
   titulo: ReactNode;
@@ -51,6 +52,14 @@ export function MarcoDePasos({
    * entrada y la única pantalla del flujo que en el mockup de móvil lo lleva.
    */
   conLogo?: boolean;
+  /**
+   * «Regresar al sitio web» cierra antes la sesión. Para el primer ingreso: esa sesión
+   * solo sirve para terminar la configuración (la API le niega lo demás), y si se
+   * quedaba abierta el portal seguía mostrando la cuenta como conectada, con los
+   * botones de edición a la vista y fallando al usarlos. Al volver a entrar con la
+   * contraseña temporal, el primer ingreso aparece otra vez.
+   */
+  cerrarSesionAlSalir?: boolean;
   /** El formulario (`authPasosCardClass`), o lo que haga sus veces. */
   children: ReactNode;
 }) {
@@ -85,10 +94,28 @@ export function MarcoDePasos({
 
       <div className="mt-10 flex flex-col items-center px-4 sm:px-6 md:mt-11 xl:mt-0 xl:flex-1 xl:justify-center xl:rounded-l-[32px] xl:bg-[#001a39] xl:py-12">
         {children}
-        <BackToSiteLink label="Regresar al sitio web del Observatorio" className="mt-8 xl:mt-4" />
+        {/* `contents`: la envoltura no existe para la maqueta, solo para el clic. Se
+            captura antes que el del `Link`, que no navega si ya se le impidió. */}
+        <div className="contents" onClickCapture={cerrarSesionAlSalir ? salirCerrandoSesion : undefined}>
+          <BackToSiteLink label="Regresar al sitio web del Observatorio" className="mt-8 xl:mt-4" />
+        </div>
       </div>
     </div>
   );
+}
+
+/** El enlace de regreso, pero cerrando antes la sesión. */
+async function salirCerrandoSesion(evento: MouseEvent<HTMLDivElement>) {
+  const enlace = (evento.target as HTMLElement).closest('a');
+  if (!enlace) return;
+  evento.preventDefault();
+  try {
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+  } catch {
+    // Sin conexión no se puede cerrar: se sale igual y el proxy volverá a pedir el
+    // primer ingreso en cuanto se pida algo del panel.
+  }
+  window.location.href = enlace.href;
 }
 
 export interface PasosDelMarco {
