@@ -40,10 +40,7 @@ const fecha = (iso: string) => {
   }
 };
 
-const normalizar = (t: string) =>
-  t.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
-
-const FILTROS_VACIOS = { busqueda: '', ambito: '', autor: '', desde: '', hasta: '' };
+const FILTROS_VACIOS = { ambito: '', autor: '', desde: '', hasta: '' };
 
 export function RevisionQueueView() {
   const { paginas, isLoading, error, aprobar, rechazar, eliminar } = useRevisionQueue();
@@ -68,9 +65,7 @@ export function RevisionQueueView() {
   );
 
   const paginasFiltradas = useMemo(() => {
-    const q = normalizar(filtros.busqueda);
     return paginas.filter((p) => {
-      if (q && !normalizar(`${p.titulo} ${p.slug} ${p.comentario ?? ''}`).includes(q)) return false;
       if (filtros.ambito && p.ambito !== filtros.ambito) return false;
       if (filtros.autor && p.autor?.nombre !== filtros.autor) return false;
       // Comparación de texto sobre `YYYY-MM-DD...`: válida porque la fecha es la
@@ -138,16 +133,6 @@ export function RevisionQueueView() {
 
       {!isLoading && paginas.length > 0 && (
         <BarraFiltros activos={Object.values(filtros).filter(Boolean).length}>
-          <CampoFiltro etiqueta="Página">
-            <input
-              type="search"
-              value={filtros.busqueda}
-              onChange={(e) => cambiarFiltro('busqueda', e.target.value)}
-              placeholder="Título, slug o comentario…"
-              className="h-11 w-full rounded-[16px] border border-[#d0d5dd] bg-white px-3 text-sm text-zinc-900 placeholder:text-[#8a95ad] focus:border-[#002237] focus:outline-none focus:ring-2 focus:ring-[#002237]/20 dark:border-[#2d3649] dark:bg-[#252f47] dark:text-[#e6e8f0]"
-            />
-          </CampoFiltro>
-
           <CampoFiltro etiqueta="Ámbito">
             <CustomSelect
               ariaLabel="Ámbito"

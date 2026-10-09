@@ -82,6 +82,12 @@ export async function proxy(request: NextRequest) {
         return response;
       }
 
+      // La pantalla de éxito de restablecimiento se debe poder ver tras completar el cambio
+      // o para verificar su visualización, sin rebotar a /inicio.
+      if (pathname === '/reset-success') {
+        return NextResponse.next();
+      }
+
       if (isRestricted) {
         if (RUTAS_DE_CONFIGURACION_PENDIENTE.includes(pathname)) {
           return NextResponse.next();

@@ -114,18 +114,18 @@ export function RespaldosView() {
             />
           </CampoFiltro>
 
-          <CampoFiltro etiqueta="Editor">
+          <CampoFiltro etiqueta="Autor">
             <CustomSelect
-              ariaLabel="Editor"
+              ariaLabel="Autor"
               value={filtros.editor}
               onChange={(valor) => cambiarFiltro('editor', valor)}
               options={[{ value: '', label: 'Todos' }, ...editores.map((n) => ({ value: n, label: n }))]}
             />
           </CampoFiltro>
 
-          <CampoFiltro etiqueta="Publicador">
+          <CampoFiltro etiqueta="Publicado por">
             <CustomSelect
-              ariaLabel="Publicador"
+              ariaLabel="Publicado por"
               value={filtros.publicador}
               onChange={(valor) => cambiarFiltro('publicador', valor)}
               options={[{ value: '', label: 'Todos' }, ...publicadores.map((n) => ({ value: n, label: n }))]}
@@ -176,7 +176,7 @@ export function RespaldosView() {
             <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-[#131b2f]">
               <tr>
                 <th scope="col" className="px-4 py-3.5 font-medium">Página</th>
-                <th scope="col" className="px-4 py-3.5 font-medium">Editado por</th>
+                <th scope="col" className="px-4 py-3.5 font-medium">Autor</th>
                 <th scope="col" className="px-4 py-3.5 font-medium">Publicado por</th>
                 <th scope="col" className="px-4 py-3.5 font-medium">Editado el</th>
                 <th scope="col" className="px-4 py-3.5 font-medium">Publicado el</th>
@@ -203,7 +203,7 @@ export function RespaldosView() {
                       <span className="text-xs text-zinc-500">· versión {registro.numeroVersion}</span>
                     </div>
                   </td>
-                  <td data-etiqueta="Editado por" className="px-4 py-2 text-zinc-600 dark:text-zinc-300">{registro.editadoPor.nombre}</td>
+                  <td data-etiqueta="Autor" className="px-4 py-2 text-zinc-600 dark:text-zinc-300">{registro.editadoPor.nombre}</td>
                   <td data-etiqueta="Publicado por" className="px-4 py-2 text-zinc-600 dark:text-zinc-300">{registro.publicadoPor.nombre}</td>
                   <td data-etiqueta="Editado el" className="whitespace-nowrap px-4 py-2 text-zinc-600 dark:text-zinc-300">
                     {fecha(registro.editadoEn)}

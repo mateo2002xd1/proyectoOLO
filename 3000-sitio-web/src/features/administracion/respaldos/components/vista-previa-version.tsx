@@ -159,8 +159,8 @@ export function VistaPreviaVersion({
               <Dato etiqueta="Reemplazada el">
                 {new Date(registro.publicadoEn).toLocaleString('es-CO', { dateStyle: 'full', timeStyle: 'medium' })}
               </Dato>
-              <Dato etiqueta="Editada por">{registro.editadoPor.nombre}</Dato>
-              <Dato etiqueta="Publicada por">{registro.publicadoPor.nombre}</Dato>
+              <Dato etiqueta="Autor">{registro.editadoPor.nombre}</Dato>
+              <Dato etiqueta="Publicado por">{registro.publicadoPor.nombre}</Dato>
             </dl>
 
             {errorRestaurar && (

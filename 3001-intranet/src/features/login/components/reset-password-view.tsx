@@ -38,7 +38,7 @@ function leerDatosDeRecuperacion(): { email: string; answers: Array<{ key: strin
 }
 
 export function ResetPasswordView() {
-  const { user, isLoading: authLoading, logout } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
 
   // Solo `mode` necesita ser reactivo: el correo y las respuestas se leen
@@ -54,12 +54,14 @@ export function ResetPasswordView() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState<{ currentPassword?: string; password?: string; confirm?: string; general?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   useEffect(() => {
+    if (isSubmitted) return;
     if (mode === 'forced' && !authLoading && !user) {
       router.push('/login');
     }
-  }, [mode, authLoading, user, router]);
+  }, [mode, authLoading, user, router, isSubmitted]);
 
   const validate = (): boolean => {
     const newErrors: typeof errors = {};
@@ -98,106 +100,110 @@ export function ResetPasswordView() {
       if (mode === 'recovery') {
         const { email, answers } = leerDatosDeRecuperacion();
         await authApi.recoverPassword(email, answers, password);
-        sessionStorage.removeItem('recoveryEmail');
-        sessionStorage.removeItem('recoveryQuestions');
-        sessionStorage.removeItem('recoveryAnswers');
       } else {
         await authApi.changePassword(currentPassword, password);
       }
 
+      setIsSubmitted(true);
       router.push('/reset-success');
     } catch (error) {
+      setIsSubmitted(false);
       setErrors({ general: mensajeDeError(error, 'Error de conexión con el servidor') });
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (mode === null || (mode === 'forced' && (authLoading || !user))) {
+  if (!isSubmitted && (mode === null || (mode === 'forced' && (authLoading || !user)))) {
     return null;
   }
 
   return (
-    <div className="rp-page">
-      {/* Panel izquierdo — Branding */}
-      <div className="rp-left">
-        <div className="rp-left-content">
-          {mode === 'forced' ? (
-            <>
-              <h1 className="rp-brand-title">
-                Hola {user?.name ? user.name.split(' ')[0] : ''}, Actualiza tu seguridad.
-              </h1>
-              <p className="rp-brand-subtitle">
-                Has ingresado con un código temporal. Por tu seguridad, es necesario que crees un nuevo código de acceso personal y privado que solo tú conozcas.
-              </p>
-            </>
-          ) : (
-            <>
-              <h1 className="rp-brand-title">Crea tu nueva contraseña</h1>
-              <p className="rp-brand-subtitle">
-                Elige una nueva contraseña personal y privada que solo tú conozcas para volver a acceder a tu cuenta.
-              </p>
-            </>
-          )}
+    <div className="login-page">
+      {/* Panel izquierdo — Branding institucional con logo blanco de la intranet */}
+      <div className="login-left">
+        <div className="login-left-content">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/assets/svg/olo-logo-blanco.svg"
+            alt="Logo intranet"
+            className="mx-auto w-[96px] sm:w-[150px] lg:w-[210px]"
+          />
+          <h1 className="mt-6 text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
+            INTRANET
+          </h1>
         </div>
       </div>
 
       {/* Panel derecho — Card */}
-      <div className="rp-right">
-        <div className="rp-card">
-          <form onSubmit={handleSubmit} className="rp-form">
-            <h2 className="rp-card-title">Crea tu nueva contraseña</h2>
+      <div className="login-right">
+        <div className="w-full max-w-[380px] rounded-[24px] bg-white px-6 py-8 shadow-[0_25px_60px_rgba(0,0,0,0.35)] sm:px-9 sm:py-10">
+          <form onSubmit={handleSubmit} noValidate>
+            <h2 className="text-[19px] font-bold leading-snug text-[#0d1526]">
+              Crea tu nueva contraseña
+            </h2>
+            <p className="mb-6 mt-1.5 text-[13px] leading-relaxed text-gray-500">
+              {mode === 'forced'
+                ? 'Has ingresado con un código temporal. Por tu seguridad, crea una nueva clave privada.'
+                : 'Verificamos tu identidad. Elige una clave que no hayas usado antes.'}
+            </p>
+
+            {errors.general && (
+              <div
+                className="mb-4 rounded-lg border border-red-300 bg-red-50 px-3.5 py-2.5 text-sm text-red-600"
+                role="alert"
+              >
+                {errors.general}
+              </div>
+            )}
 
             {mode === 'forced' && (
               <PasswordField
                 id="currentPassword"
-                classPrefix="rp"
                 label="Contraseña actual"
                 placeholder="Tu contraseña actual"
+                autoComplete="current-password"
                 value={currentPassword}
                 onChange={(v) => { setCurrentPassword(v); setErrors({}); }}
                 error={errors.currentPassword}
+                className="mb-4"
               />
             )}
 
             <PasswordField
               id="password"
-              classPrefix="rp"
               label="Nueva contraseña"
+              autoComplete="new-password"
+              placeholder="Mínimo 12 caracteres"
               value={password}
               onChange={(v) => { setPassword(v); setErrors({}); }}
               error={errors.password}
+              className="mb-2"
             />
-            <PasswordRequisitos classPrefix="rp" password={password} />
+            <PasswordRequisitos password={password} variant="solid" className="mb-4" />
 
             <PasswordField
               id="confirmPassword"
-              classPrefix="rp"
               label="Ingresa nuevamente la contraseña"
+              autoComplete="new-password"
+              placeholder="Mínimo 12 caracteres"
               value={confirmPassword}
               onChange={(v) => { setConfirmPassword(v); setErrors({}); }}
               error={errors.confirm}
+              className="mb-6"
             />
-
-            {errors.general && (
-              <div className="rp-general-error">{errors.general}</div>
-            )}
 
             <button
               type="submit"
               disabled={isLoading}
-              className={`rp-submit ${isLoading ? 'rp-submit-disabled' : ''}`}
+              className="inline-flex w-full items-center justify-center rounded-[16px] bg-[#0d1526] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_8px_-2px_rgba(13,21,38,0.4)] transition hover:bg-[#1a2340] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0d1526] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isLoading ? 'Guardando...' : 'Guardar'}
-            </button>
-
-            <button type="button" onClick={() => logout()} className="rp-login-link">
-              Iniciar sesión
+              {isLoading ? 'Guardando…' : 'Guardar contraseña'}
             </button>
           </form>
         </div>
 
-        <ReturnToSiteLink classPrefix="rp" />
+        <ReturnToSiteLink classPrefix="login" />
       </div>
     </div>
   );
