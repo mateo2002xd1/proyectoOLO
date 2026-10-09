@@ -38,7 +38,7 @@ export function ModalBloqueoRestauracion({
           <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-500">
             <Lock className="h-5 w-5" />
           </div>
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-[#f6f6f6]">
+          <h2 className="text-lg font-bold text-zinc-900 dark:text-[#f6f6f6]">
             Página en uso
           </h2>
         </div>

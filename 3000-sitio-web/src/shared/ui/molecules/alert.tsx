@@ -44,7 +44,7 @@ export function Alert({ open, onClose, children, anchoMaximo = "max-w-md" }: Ale
 
 export function AlertTitle({ children }: { children: ReactNode }) {
   return (
-    <h2 className="m-0 text-base font-semibold text-[#1f2340] dark:text-[#e6e8f0]">
+    <h2 className="m-0 text-base font-bold text-[#1f2340] dark:text-[#e6e8f0]">
       {children}
     </h2>
   );

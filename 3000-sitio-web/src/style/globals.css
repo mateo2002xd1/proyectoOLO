@@ -1848,12 +1848,15 @@
     appearance: base-select;
   }
 
-  /* En modo base la pregunta elegida se parte en dos líneas; en una, como la
-     nativa, recortada. */
+  /* En modo base la pregunta elegida se deja partir en dos líneas y el campo crece
+     hacia abajo, como la caja de la pregunta en la recuperación. Hasta el
+     2026-10-09 iba en una, recortada, pero en este modo el recorte cae en el borde
+     de la caja y no en el relleno: la pregunta pasaba por debajo de la flecha y los
+     puntos suspensivos no salían. */
   .admin-auth-select {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    height: auto;
+    min-height: 2.75rem;
+    white-space: normal;
   }
 
   /* La flecha la pone el SVG del componente. */
@@ -1865,14 +1868,14 @@
     margin-block: 4px;
     padding: 4px;
     border: 1.5px solid #001a39;
-    border-radius: 8px;
+    border-radius: 16px;
     background: #fff;
     box-shadow: 0 8px 24px rgb(0 26 57 / 0.15);
   }
 
   .admin-auth-select option {
-    padding: 8px 10px;
-    border-radius: 6px;
+    padding: 8px 12px;
+    border-radius: 12px;
   }
 
   .admin-auth-select option::checkmark {
@@ -1903,18 +1906,23 @@
 
    El tamaño es fluido: el título va de 24px en un móvil de 360px a 30px desde
    ~770px, sin saltos entre medias. Con 30px fijos, «Gestion de Roles» ocupaba
-   dos líneas en el móvil y apretaba el botón que tiene al lado. */
+   dos líneas en el móvil y apretaba el botón que tiene al lado.
+
+   La regla del panel (2026-10-09): todo título va en negrita, a su tamaño, y la
+   descripción que lo acompaña va en un tamaño menor que él (bajo el título de
+   página, `text-sm`; bajo el de un modal o una tarjeta, `text-sm` o `text-xs`).
+   La letra, Poppins, la pone `LetraDelPanel` cambiando `--font-heading`. */
 .admin-header {
   font-family: var(--font-heading);
   font-size: clamp(1.5rem, 1.1rem + 1.6vw, 1.875rem);
   line-height: 1.25;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-bold);
 }
 
 .admin-subtitle {
   font-family: var(--font-heading);
   font-size: clamp(1.0625rem, 0.95rem + 0.5vw, 1.25rem);
-  font-weight: var(--fw-regular);
+  font-weight: var(--fw-bold);
 }
 
 /* ============================================
@@ -2289,7 +2297,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 .navegacion-mobile-hoja-titulo {
   margin: 0;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .navegacion-mobile-hoja-cerrar {

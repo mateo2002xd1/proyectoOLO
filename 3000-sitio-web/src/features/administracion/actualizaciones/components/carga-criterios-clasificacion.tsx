@@ -241,7 +241,7 @@ export function CargaCriteriosClasificacion({ puedeActualizar }: CargaCriteriosC
     >
       <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
         <div>
-          <h2 id="titulo-criterios-clasificacion" className="font-semibold text-[#001631] dark:text-[#f6f6f6]">
+          <h2 id="titulo-criterios-clasificacion" className="font-bold text-[#001631] dark:text-[#f6f6f6]">
             Criterios de clasificación de resultados
           </h2>
           <p className="mt-1 text-sm text-gray-600 dark:text-[#94a3b8]">

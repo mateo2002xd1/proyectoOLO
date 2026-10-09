@@ -35,7 +35,7 @@ export function PreferenciaSonidoAvisos() {
         <div className="flex min-w-0 items-start gap-3">
           <SpeakerWaveIcon aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-gray-500 dark:text-[#94a3b8]" />
           <div className="min-w-0">
-            <h2 id="titulo-sonido-avisos" className="font-semibold text-[#001631] dark:text-[#f6f6f6]">
+            <h2 id="titulo-sonido-avisos" className="font-bold text-[#001631] dark:text-[#f6f6f6]">
               Sonido de los avisos
             </h2>
             <p className="mt-1 text-sm text-gray-500 dark:text-[#94a3b8]">

@@ -277,7 +277,7 @@ export function DetalleRegistro({
               </Dato>
             </dl>
 
-            <h3 className="mt-6 text-sm font-semibold">Campos modificados</h3>
+            <h3 className="mt-6 text-sm font-bold">Campos modificados</h3>
             {comentarios ? (
               <ComentariosDelCambio
                 comentarios={comentarios}

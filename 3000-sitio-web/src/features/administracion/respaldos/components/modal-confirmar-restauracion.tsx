@@ -44,7 +44,7 @@ export function ModalConfirmarRestauracion({
           <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-500">
             <AlertTriangle className="h-5 w-5" />
           </div>
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-[#f6f6f6]">
+          <h2 className="text-lg font-bold text-zinc-900 dark:text-[#f6f6f6]">
             ¿Restaurar versión anterior?
           </h2>
         </div>

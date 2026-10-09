@@ -85,7 +85,7 @@ export function HistorialCargasTendencia({
   return (
     <div>
       <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <h3 className="text-sm font-medium text-gray-700 dark:text-zinc-300">
+        <h3 className="text-sm font-bold text-gray-700 dark:text-zinc-300">
           Historial de cargas
           {historial && (
             <span className="ml-2 font-normal text-zinc-500 dark:text-[#94a3b8]">

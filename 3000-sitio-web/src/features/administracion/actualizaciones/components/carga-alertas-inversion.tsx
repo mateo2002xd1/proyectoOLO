@@ -73,7 +73,7 @@ export function CargaAlertasInversion({ puedeActualizar }: CargaAlertasInversion
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 ease-out hover:translate-x-1 hover:border-gray-300 hover:shadow-md dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
       <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
-        <h2 className="font-semibold text-[#001631] dark:text-[#f6f6f6]">Alertas de inversión</h2>
+        <h2 className="font-bold text-[#001631] dark:text-[#f6f6f6]">Alertas de inversión</h2>
         {puedeActualizar && (
           <div className="flex flex-wrap gap-2">
             {(
@@ -154,7 +154,7 @@ export function CargaAlertasInversion({ puedeActualizar }: CargaAlertasInversion
       )}
 
       <div className="mt-6">
-        <h3 className="mb-2 text-sm font-medium text-gray-700 dark:text-zinc-300">Historial de cargas</h3>
+        <h3 className="mb-2 text-sm font-bold text-gray-700 dark:text-zinc-300">Historial de cargas</h3>
         {cargando ? (
           <p className="text-sm text-gray-500 dark:text-[#94a3b8]">Cargando historial...</p>
         ) : (
@@ -163,7 +163,7 @@ export function CargaAlertasInversion({ puedeActualizar }: CargaAlertasInversion
       </div>
 
       <div className="mt-6">
-        <h3 className="mb-2 text-sm font-medium text-gray-700 dark:text-zinc-300">Proyectos registrados</h3>
+        <h3 className="mb-2 text-sm font-bold text-gray-700 dark:text-zinc-300">Proyectos registrados</h3>
         {cargando ? (
           <p className="text-sm text-gray-500 dark:text-[#94a3b8]">Cargando proyectos...</p>
         ) : (

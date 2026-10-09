@@ -103,7 +103,7 @@ export function Notification({
       >
         <div className="flex items-start gap-3 p-4">
           <div className="flex-1 min-w-0">
-            <p className={`m-0 text-sm font-semibold ${text}`}>{title}</p>
+            <p className={`m-0 text-sm font-bold ${text}`}>{title}</p>
             {message && (
               <p className={`m-0 mt-1 text-xs ${subtle}`}>{message}</p>
             )}
