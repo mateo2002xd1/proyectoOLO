@@ -14,6 +14,8 @@ import { URL_DE_LA_API } from '@/shared/lib/url-de-la-api';
 export const apiConSesion = axios.create({
   baseURL: URL_DE_LA_API,
   withCredentials: true,
-  timeout: 5000,
+  // 15 s y no 5: la cola de revisión y las demás pantallas con sesión encadenan varias
+  // consultas a Neon, y con la red lenta pasaban de 5 s sin estar caída la API.
+  timeout: 15000,
   headers: CABECERAS_DEL_SITIO,
 });
