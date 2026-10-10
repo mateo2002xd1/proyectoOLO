@@ -1,4 +1,6 @@
+import type { CSSProperties } from 'react';
 import { redirect } from 'next/navigation';
+import { poppins } from '@/shared/lib/fonts';
 import {
   AvisoSeccionNueva,
   rutaPublicaDeSlug,
@@ -67,11 +69,26 @@ export default async function EditorPage({
   ]);
 
   return (
-    <>
+    // Todo el editor en Poppins, como el panel (pedido del usuario, 2026-10-09): la
+    // interfaz de Puck (pinta con `--puck-font-family`, Inter de serie, que no se carga),
+    // la barra de Salir/Guardar/Enviar y sus modales. El lienzo no cambia: Puck lo dibuja
+    // en un iframe y le copia las hojas de estilo, no los estilos en línea de aquí, así que
+    // la página que se edita sigue con su letra. `contents`: el envoltorio no ocupa caja.
+    <div
+      className={poppins.className}
+      style={
+        {
+          display: 'contents',
+          '--puck-font-family': poppins.style.fontFamily,
+          '--font-heading': poppins.style.fontFamily,
+          '--font-body': poppins.style.fontFamily,
+        } as CSSProperties
+      }
+    >
       {/* Solo al venir de «Nueva página»: es donde se entrega el enlace de la ruta
           recién creada, que es lo que hay que pegar en el menú para poder llegar. */}
       {nueva === '1' && <AvisoSeccionNueva slug={slug} />}
       <EditorClient slug={slug} plantilla={plantilla} paginaDeReferencia={paginaDeReferencia} />
-    </>
+    </div>
   );
 }

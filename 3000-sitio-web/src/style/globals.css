@@ -3446,6 +3446,13 @@ button.text-link,
 
 /* --- Confirmación de salida --- */
 
+/* Las medidas de todos los modales del panel y del editor son las de las pantallas de
+   acceso (pedido del usuario, 2026-10-09; en Tailwind, `shared/ui/molecules/alert.tsx`):
+   caja con esquinas de 32, título de 20 px, texto de 16, campos y botones de 44 px de
+   alto con esquinas de 32, borde #d9d9d9 y la acción principal en #001631. Lo que puede
+   ocupar varias líneas (el comentario del envío) lleva 16, como los mensajes de estado.
+   La letra (Poppins) la pone `app/editor/[slug]/page.tsx` para todo el editor. */
+
 .olo-modal {
   border: none;
   padding: 0;
@@ -3462,22 +3469,26 @@ button.text-link,
 
 .olo-modal-caja {
   background: #ffffff;
-  border-radius: 12px;
-  padding: 1.5rem;
+  border-radius: 32px;
+  padding: 2rem;
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
   color: #1f2937;
 }
 
+/* `inherit`: los h1–h6 piden `--font-heading`, que fuera del panel vale «Open Sans», una
+   letra que no se carga (salían en Arial). El título toma la de su caja, Poppins. */
 .olo-modal-titulo {
-  margin: 0 0 0.6rem;
-  font-size: 1.15rem;
-  font-weight: 700;
+  margin: 0 0 0.75rem;
+  font-family: inherit;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.3;
   color: #001631;
 }
 
 .olo-modal-texto {
   margin: 0 0 0.85rem;
-  font-size: 0.925rem;
+  font-size: 1rem;
   line-height: 1.5;
   color: #4b5563;
 }
@@ -3497,20 +3508,24 @@ button.text-link,
 }
 
 .olo-modal-btn {
-  padding: 0.55rem 1.15rem;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
+  height: 2.75rem;
+  padding: 0 1.5rem;
+  border-radius: 32px;
+  border: 1px solid #d9d9d9;
   background: #ffffff;
-  color: #374151;
-  font-size: 0.9rem;
-  font-weight: 600;
+  color: #001631;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 500;
+  /* 44 px fijos: el texto no se parte (`.olo-modal-acciones` ya hace `wrap`). */
+  white-space: nowrap;
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .olo-modal-btn:hover {
-  background: #f9fafb;
-  border-color: #9ca3af;
+  background: #f5f7fa;
+  border-color: #b3b3b3;
 }
 
 .olo-modal-btn--peligro {
@@ -3569,10 +3584,10 @@ button.text-link,
 
 .olo-modal-comentario-etiqueta {
   display: block;
-  margin-bottom: 0.4rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #001631;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #001a39;
 }
 
 .olo-modal-comentario-obligatorio {
@@ -3584,26 +3599,27 @@ button.text-link,
   display: block;
   width: 100%;
   box-sizing: border-box;
-  padding: 0.65rem 0.8rem;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
+  padding: 0.75rem 1.25rem;
+  border: 1px solid #d9d9d9;
+  border-radius: 16px;
   font: inherit;
-  font-size: 0.925rem;
+  font-size: 1rem;
   line-height: 1.45;
-  color: #1f2937;
+  color: #001a39;
   background: #ffffff;
   resize: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .olo-modal-comentario-campo::placeholder {
-  color: #9ca3af;
+  color: #b3b3b3;
 }
 
+/* El mismo anillo que los campos del acceso (`focus:ring-2 focus:ring-[#001631]`). */
 .olo-modal-comentario-campo:focus-visible {
   outline: none;
   border-color: #001631;
-  box-shadow: 0 0 0 3px rgba(0, 22, 49, 0.12);
+  box-shadow: 0 0 0 2px #001631;
 }
 
 .olo-modal-comentario-campo[aria-invalid='true'] {
@@ -3616,7 +3632,7 @@ button.text-link,
   justify-content: space-between;
   gap: 0.75rem;
   margin-top: 0.4rem;
-  font-size: 0.8rem;
+  font-size: 0.875rem;
   color: #6b7280;
 }
 
@@ -4007,43 +4023,54 @@ button.text-link,
   backdrop-filter: blur(4px);
 }
 
+/* Las mismas medidas que `.olo-modal-*` y los modales del panel (ver el comentario de
+   «Confirmación de salida»). La letra (Poppins) la pone cada modal con su clase. */
 .nueva-seccion-caja {
   width: 100%;
   max-width: 27rem;
   background: #fff;
-  border-radius: 0.75rem;
-  padding: 1.5rem;
+  border-radius: 32px;
+  padding: 2rem;
   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.3);
 }
 
+/* `inherit`, como `.olo-modal-titulo`: si no, `--font-heading` lo deja en Arial. */
 .nueva-seccion-titulo {
   margin: 0 0 1rem;
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #002c46;
+  font-family: inherit;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #001631;
 }
 
 .nueva-seccion-etiqueta {
   display: block;
-  margin-bottom: 0.35rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #33475b;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #001a39;
 }
 
 .nueva-seccion-campo {
   width: 100%;
-  padding: 0.6rem 0.75rem;
-  border: 1px solid #c7d0d9;
-  border-radius: 0.5rem;
-  font-size: 0.95rem;
-  color: #12222f;
+  height: 2.75rem;
+  padding: 0 1.25rem;
+  border: 1px solid #d9d9d9;
+  border-radius: 32px;
+  font: inherit;
+  font-size: 1rem;
+  color: #001a39;
+}
+
+.nueva-seccion-campo::placeholder {
+  color: #b3b3b3;
 }
 
 .nueva-seccion-campo:focus {
-  outline: 2px solid #002c46;
-  outline-offset: 1px;
-  border-color: transparent;
+  outline: none;
+  border-color: #001631;
+  box-shadow: 0 0 0 2px #001631;
 }
 
 .nueva-seccion-campo:disabled {
@@ -4054,8 +4081,9 @@ button.text-link,
    dirección— y no como parte de la frase. */
 .nueva-seccion-ruta {
   margin: 0.5rem 0 0;
-  font-size: 0.85rem;
-  color: #52667a;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #4b5563;
 }
 
 .nueva-seccion-ruta code {
@@ -4084,35 +4112,41 @@ button.text-link,
   margin-top: 0.3rem;
 }
 
+/* `wrap` y `nowrap` en los botones: con 44 px de alto fijo el texto no puede partirse
+   («Crear y editar» se salía a 360 px); si no caben juntos, el segundo baja de línea. */
 .nueva-seccion-acciones {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
   gap: 0.5rem;
   margin-top: 1.35rem;
 }
 
 .nueva-seccion-boton {
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  border: 1px solid #c7d0d9;
+  height: 2.75rem;
+  padding: 0 1.5rem;
+  border-radius: 32px;
+  border: 1px solid #d9d9d9;
   background: #fff;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #33475b;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 500;
+  white-space: nowrap;
+  color: #001631;
 }
 
 .nueva-seccion-boton:hover:not(:disabled) {
-  background: #f1f4f7;
+  background: #f5f7fa;
 }
 
 .nueva-seccion-boton--principal {
-  border-color: #002c46;
-  background: #002c46;
+  border-color: #001631;
+  background: #001631;
   color: #fff;
 }
 
 .nueva-seccion-boton--principal:hover:not(:disabled) {
-  background: #001a2a;
+  background: #002a5c;
 }
 
 .nueva-seccion-boton:disabled {
@@ -4165,13 +4199,14 @@ button.text-link,
 /* Botón de confirmar un borrado dentro del diálogo. Se deshabilita hasta que el nombre
    tecleado coincide, así que la mayor parte del tiempo se ve apagado a propósito. */
 .nueva-seccion-boton--peligro {
-  border-color: #b3261e;
-  background: #b3261e;
+  border-color: #dc2626;
+  background: #dc2626;
   color: #fff;
 }
 
 .nueva-seccion-boton--peligro:hover:not(:disabled) {
-  background: #8c1d18;
+  border-color: #b91c1c;
+  background: #b91c1c;
 }
 
 /* ─── Maquetación del editor (@olo/blocks-renderer) ─────────────────────────

@@ -1,5 +1,7 @@
 'use client';
 
+import { poppins } from '@/shared/lib/fonts';
+
 export interface ModalCerrarSesionProps {
   abierto: boolean;
   /** Mientras se cierra la sesión el modal no se puede descartar. */
@@ -33,7 +35,8 @@ export function ModalCerrarSesion({ abierto, saliendo, alConfirmar, alCerrar }: 
         if (evento.key === 'Escape') cerrar();
       }}
     >
-      <div className="nueva-seccion-caja">
+      {/* Poppins, como todos los modales del panel y del editor. */}
+      <div className={`nueva-seccion-caja ${poppins.className}`}>
         <h2 id="cerrar-sesion-titulo" className="nueva-seccion-titulo">
           ¿Cerrar sesión?
         </h2>

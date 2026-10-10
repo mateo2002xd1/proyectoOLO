@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { poppins } from '@/shared/lib/fonts';
 import {
   analizarEliminacion,
   eliminarSeccion,
@@ -99,7 +100,8 @@ export function ModalEliminarSeccion({ slug, abierto, alCerrar }: ModalEliminarS
         if (evento.key === 'Escape') cerrar();
       }}
     >
-      <form className="nueva-seccion-caja" onSubmit={enviar}>
+      {/* Poppins, como todos los modales del panel y del editor. */}
+      <form className={`nueva-seccion-caja ${poppins.className}`} onSubmit={enviar}>
         <h2 id="eliminar-seccion-titulo" className="nueva-seccion-titulo">
           Eliminar página
         </h2>

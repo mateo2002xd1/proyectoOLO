@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { BellAlertIcon } from '@heroicons/react/24/outline';
+import { poppins } from '@/shared/lib/fonts';
 
 export interface Rechazo {
   /** Puede faltar en versiones rechazadas antes de que el motivo fuera obligatorio. */
@@ -125,7 +126,10 @@ export function AvisoRechazo({ motivo, numeroVersion }: Rechazo) {
                 flexDirection: 'column',
                 background: '#ffe9e9',
                 border: '1px solid #dc2626',
-                borderRadius: 12,
+                // 16, como todos los mensajes de estado del panel; y Poppins, como el resto
+                // del editor: sale por portal a `<body>`, fuera de donde se pone la letra.
+                borderRadius: 16,
+                fontFamily: poppins.style.fontFamily,
                 boxShadow: '0 20px 40px -12px rgba(0,0,0,0.35)',
                 textAlign: 'left',
               }}

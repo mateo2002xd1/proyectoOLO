@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { poppins } from '@/shared/lib/fonts';
 import {
   slugificar,
   motivoSlugInvalido,
@@ -69,7 +70,8 @@ export function ModalNuevaSeccion({ abierto, alCerrar }: ModalNuevaSeccionProps)
         if (evento.key === 'Escape') cerrar();
       }}
     >
-      <form className="nueva-seccion-caja" onSubmit={enviar}>
+      {/* Poppins, como todos los modales del panel y del editor. */}
+      <form className={`nueva-seccion-caja ${poppins.className}`} onSubmit={enviar}>
         <h2 id="nueva-seccion-titulo" className="nueva-seccion-titulo">
           Nueva página
         </h2>
