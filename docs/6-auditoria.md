@@ -5,6 +5,71 @@
 
 ---
 
+## sesión 10-10-2026 (3.ª parte): el final de la página temblaba en el móvil y la tablet
+
+**Qué se reportó.** En el panel, en el móvil y la tablet, al deslizar hasta el final la
+pantalla «se queda brincando muy rápido, como si estuviera sacudiendo», justo cuando la barra
+inferior de navegación vuelve a subir.
+
+**La causa.** La barra se oculta al bajar y se muestra al llegar al final
+(`use-ocultar-al-bajar.ts`). Su hueco (`navegacion-mobile-reserva`, 80 px) estaba en la
+columna, fuera del `<main>` que hace scroll, y una regla de `globals.css` lo quitaba con la
+barra oculta. Así, cada vez que la barra cambiaba, cambiaba el alto del `<main>`: al llegar al
+final la barra se mostraba, el final se alejaba 80 px; con la inercia del dedo se seguía
+bajando, la barra se ocultaba, el final volvía a acercarse, el navegador recolocaba el scroll
+en el final y la barra se mostraba otra vez. Un bucle.
+
+**Lo que se hizo.**
+
+| Archivo | Cambio |
+|---|---|
+| `sidebar-layout.tsx` | La reserva pasa de la columna al `<main>`: es relleno al final de lo que hace scroll. La barra pasa por encima del contenido y mostrarla u ocultarla ya no cambia ningún alto |
+| `globals.css` | Se quita la regla que anulaba la reserva con la barra oculta. Con la barra oculta solo queda espacio al final de la página, no una franja fija |
+| `use-ocultar-al-bajar.ts` | Defensa extra: si entre un `scroll` y el siguiente cambió lo que se puede bajar, ese `scroll` lo provocó la maquetación y no el dedo, y no oculta ni muestra la barra. Así ningún cambio de alto futuro puede volver a armar el bucle |
+
+Nadie usaba `sticky bottom-0` dentro del `<main>` (la razón por la que la reserva estaba en la
+columna). La intranet no tiene el fallo: su hueco va en el `<body>` y no se quita nunca.
+
+**Cómo se probó.** Arnés de siempre (panel y «Páginas en revisión» con las 8 solicitudes
+desplegadas, página de 1.700 px), a 360 y 768 px. Chrome sin ventana no ejecuta gestos táctiles
+sintéticos, así que la inercia se emuló moviendo el scroll del `<main>` 30 px por cuadro
+durante 4 s: llega al final y sigue empujando. Resultado: la barra se oculta una vez al bajar y
+se muestra una vez al final, sin más cambios en los 4 s ni rebotes del scroll; lo último de la
+lista queda justo encima de la barra (su borde a 820 px, la barra empieza en 820); al subir un
+poco, la barra vuelve. Tipos y `eslint` de los dos archivos, limpios. No se reprodujo el
+fallo con la versión anterior en el arnés: la causa se dedujo del código. Queda probarlo con el
+dedo en un teléfono real.
+
+---
+
+## sesión 10-10-2026 (2.ª parte): «Auditoría» en acordeón en el móvil y la tablet, con piezas compartidas
+
+**Qué se pidió.** Llevar a `/admin/auditoria` el mismo acordeón de «Páginas en revisión»,
+con la misma lógica.
+
+**Lo que se hizo.**
+
+| Archivo | Cambio |
+|---|---|
+| `shared/ui/molecules/fila-acordeon.tsx` (nuevo) | Lo que se repetía de una lista a otra: `useFilasAbiertas` (qué filas están desplegadas), `ResumenDeFila` (el botón con la frase y la flecha, `aria-expanded`, 44 px mínimo), `fechaDeFila` («9 de octubre de 2026 a las 5:30 p. m.») y `RESALTE_DE_FILA` |
+| `revision-queue-view.tsx` | Usa esas piezas en vez de su copia propia. Se ve igual |
+| `auditoria-view.tsx` | `olo-tabla-acordeon`, con la frase que pidió el usuario a mitad del trabajo y sin la entidad («Usuario», «Página»), que junto al nombre de una persona confundía. Plegado: «El usuario **Ana Gómez** hizo la acción de [Edición]», con la píldora de la acción y su color de severidad (el usuario la pidió así tras probar «El usuario Ana Gómez • [Edición]»). Desplegado: «El usuario **Ana Gómez** hizo la acción de [Publicación]: publicó la versión 4 de /inicio el **9 de octubre de 2026 a las 3:00 p. m.**» (lo que cambió, entero, con la primera letra en minúscula; «El sistema» si no hay usuario). Debajo (`td[data-detalle]`), un botón «Ver detalle» con nombre e icono, a todo el ancho: el ojo solo no se entiende en una pantalla táctil. Las seis celdas de la tabla pasan a `data-solo-tabla` |
+| `manual-de-usuario-formato.md` | Paso 2 de la auditoría: la lista plegable |
+
+**Cómo se probó.** Arnés de siempre (panel y bitácora reales, 8 registros simulados de
+distintas acciones: edición con comentario, inicio de sesión, publicación, cuenta que expiró
+sin usuario, rechazo con motivo, cambio de permisos, eliminación y creación), a 360, 768, 1032,
+1280 y 1920 px. Se volvió a probar «Páginas en revisión» con las piezas compartidas.
+
+| Lista | Móvil y tablet | Escritorio |
+|---|---|---|
+| Auditoría | Filas plegadas de 53 px (las 8 en 423); desplegada, 174 px a 360 y 134 en la tablet, solo la frase y «Ver detalle»; se vuelve a plegar. Las 8 frases desplegadas, revisadas una a una (comentario, inicio de sesión, publicación, «El sistema», rechazo con motivo, permisos, eliminación, creación) | Tabla como antes |
+| Revisión | Igual que en la 1.ª parte (61 / 53 px plegadas, 263 / 223 desplegadas) | Tabla como antes |
+
+Sin desborde ni errores de consola. Tipos y `eslint` de los tres archivos, limpios.
+
+---
+
 ## sesión 10-10-2026 (1.ª parte): el acordeón de «Páginas en revisión» se despliega en una frase
 
 **Qué se pidió.** En el móvil y la tablet, al desplegar una solicitud se veía una ficha con
