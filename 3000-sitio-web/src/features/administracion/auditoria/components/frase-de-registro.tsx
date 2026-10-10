@@ -28,7 +28,8 @@ export function PildoraDeAccion({ registro }: { registro: RegistroAuditoria }) {
  * («Usuario», «Página»): junto al nombre de una persona confundía.
  *
  * La usan Auditoría y «Actividad reciente» del dashboard, para que las dos lean igual un
- * registro. Va dentro de `ResumenDeFila`.
+ * registro. En Auditoría va dentro de `ResumenDeFila`; en el dashboard, siempre entera
+ * (`abierta`), una por línea de la lista.
  */
 export function FraseDeRegistro({
   registro,

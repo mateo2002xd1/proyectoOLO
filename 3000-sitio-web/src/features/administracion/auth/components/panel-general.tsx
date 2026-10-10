@@ -68,11 +68,8 @@ import {
   listarAuditoria,
   ErrorAuditoria,
   FraseDeRegistro,
-  PildoraDeAccion,
-  resumenDeCambios,
   type RegistroAuditoria,
 } from '@/features/administracion/auditoria';
-import { ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
 import { useUsuarios } from '../hooks/use-usuarios';
 import { listarAlertasCaducidad, type AlertaCaducidad } from '../services/alertas-caducidad.service';
 import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
@@ -147,15 +144,6 @@ function sinPlantilla(resumen: ResumenPaginasPublicadas): ResumenPaginasPublicad
   const intranet = resumen.intranet.filter((p) => p.slug !== SLUG_PLANTILLA);
   return { sitio, intranet, total: sitio.length + intranet.length };
 }
-
-/** Fecha corta: la tarjeta es angosta y la hora exacta se consulta en Auditoría. */
-const fechaCorta = (iso: string) =>
-  new Date(iso).toLocaleString('es-CO', {
-    day: '2-digit',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
 
 /** Botón de la barra superior del móvil (buscar y tema). */
 const BOTON_BARRA_MOVIL =
@@ -607,8 +595,7 @@ export function PanelGeneralLayout({
 /**
  * Título, subtítulo y el enlace a la bitácora completa de la tarjeta «Actividad
  * Reciente». Se repite igual en sus tres estados (con datos, sin acceso/con error y
- * vacía) — con datos va dentro de un `<caption>` de la tabla; sin ellos, en un `<div>`
- * suelto — así que sale a un componente en vez de copiarlo tres veces.
+ * vacía), así que sale a un componente en vez de copiarlo tres veces.
  */
 function CabeceraActividad({ sinAccesoAuditoria }: { sinAccesoAuditoria: boolean }) {
   return (
@@ -640,8 +627,6 @@ export function PanelGeneralDashboard() {
   // Solo en el dashboard: 12 en vez de los 15 de Roles/Usuarios/Auditoría, para que
   // la tarjeta de Actividad Reciente no crezca más que las demás del mismo grid.
   const [itemsPorPaginaActividad, setItemsPorPaginaActividad] = useState(12);
-  // Registros desplegados del acordeón (móvil y tablet). En la tabla de escritorio no se usa.
-  const { estaAbierta, alternar } = useFilasAbiertas();
   const [paginasPublicadas, setPaginasPublicadas] = useState<ResumenPaginasPublicadas | null>(null);
   const [errorPaginas, setErrorPaginas] = useState<string | null>(null);
 
@@ -731,10 +716,9 @@ export function PanelGeneralDashboard() {
 
       <div className="w-full">
         {/* Mismo patrón de tarjeta que Auditoría/Roles/Usuarios (borde + fondo +
-            sombra al pasar el ratón), pero sin `p-4`: el título, la tabla y el
-            paginador llevan su propio espaciado, como en el componente de
-            referencia (caption + thead + tbody a ancho completo, sin margen
-            perdido a los lados). */}
+            sombra al pasar el ratón), pero sin `p-4`: el título, la lista y el
+            paginador llevan su propio espaciado, y las líneas entre registros van
+            de borde a borde. */}
         <div className="min-w-0 overflow-hidden rounded-xl border border-zinc-200 bg-white transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
           {errorActividad ? (
             <div className="p-5">
@@ -751,66 +735,25 @@ export function PanelGeneralDashboard() {
             </div>
           ) : (actividad || []).length > 0 ? (
             <>
-              {/* `overflow-y-hidden` junto al `-x-auto` es lo que hace falta para que
-                  el redondeo del contenedor recorte la cabecera en las cuatro
-                  esquinas: con un solo eje explícito, algunos navegadores no lo
-                  clipan igual. */}
-              <div className="overflow-x-auto overflow-y-hidden">
-                {/* En el móvil y la tablet, acordeón con la misma frase que Auditoría
-                    (`FraseDeRegistro`): «El usuario Ana Gómez hizo la acción de [Edición]»
-                    y, al tocarla, lo que cambió y la fecha. Piezas en `fila-acordeon.tsx`;
-                    reglas en globals.css (`olo-tabla-acordeon`). */}
-                <table className="olo-tabla-apilable olo-tabla-acordeon w-full min-w-[40rem] text-left text-sm">
-                  <caption className="p-5 text-left">
-                    <CabeceraActividad sinAccesoAuditoria={sinAccesoAuditoria} />
-                  </caption>
-                  <thead className="border-y border-zinc-200 bg-zinc-50 text-xs text-zinc-500 dark:border-zinc-700 dark:bg-white/5 dark:text-[#94a3b8]">
-                    <tr>
-                      <th scope="col" className="px-5 py-3 font-medium">Fecha y hora</th>
-                      <th scope="col" className="px-5 py-3 font-medium">Usuario</th>
-                      <th scope="col" className="px-5 py-3 font-medium">Acción</th>
-                      <th scope="col" className="px-5 py-3 font-medium">Cambios</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
-                    {actividadPaginada.map((registro) => {
-                      const abierta = estaAbierta(registro.id);
-                      return (
-                      <tr key={registro.id} data-abierta={abierta || undefined}>
-                        {/* Solo en acordeón. Desplegada no lleva botones: la tabla tampoco
-                            tiene acciones por fila; el detalle se ve con «Ver más». */}
-                        <td data-resumen>
-                          <ResumenDeFila abierta={abierta} onAlternar={() => alternar(registro.id)}>
-                            <FraseDeRegistro registro={registro} nombre={registro.usuarioNombre} abierta={abierta} />
-                          </ResumenDeFila>
-                        </td>
-                        <td data-solo-tabla data-etiqueta="Fecha y hora" className="whitespace-nowrap px-5 py-2 text-zinc-600 dark:text-zinc-300">
-                          {fechaCorta(registro.fecha)}
-                        </td>
-                        <td data-solo-tabla data-etiqueta="Usuario" className="max-w-[10rem] truncate px-5 py-2 font-medium text-zinc-900 dark:text-[#f6f6f6]">
-                          {registro.usuarioNombre ?? <span className="font-normal text-zinc-500">Sin usuario</span>}
-                        </td>
-                        <td data-solo-tabla data-etiqueta="Acción" className="px-5 py-2">
-                          <PildoraDeAccion registro={registro} />
-                        </td>
-                        {/* Lo que de verdad cambió (el comentario del envío, o el
-                            motivo de un rechazo), no los nombres de los campos
-                            tocados: mismo resumen que ya usa la tabla de
-                            Auditoría, para que las dos lean igual un registro. */}
-                        <td
-                          data-solo-tabla
-                          data-etiqueta="Cambios"
-                          className="max-w-[16rem] truncate px-5 py-2 text-zinc-500 dark:text-[#94a3b8]"
-                          title={resumenDeCambios(registro)}
-                        >
-                          {resumenDeCambios(registro) || '—'}
-                        </td>
-                      </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+              <div className="p-5">
+                <CabeceraActividad sinAccesoAuditoria={sinAccesoAuditoria} />
               </div>
+              {/* Una lista con la frase entera de cada registro, en todas las pantallas
+                  (pedido del usuario, 2026-10-10): «El usuario David Tejada hizo la acción
+                  de [Autenticación]: inició sesión en el sitio web el 10 de octubre de 2026
+                  a las 5:41 p. m.». Antes era una tabla de cuatro columnas que en el móvil
+                  y la tablet pasaba a acordeón; ahora no hay nada que desplegar. La frase es
+                  la de Auditoría (`FraseDeRegistro`), para que las dos lean igual. */}
+              <ul
+                aria-label="Actividad reciente"
+                className="divide-y divide-zinc-200 border-t border-zinc-200 dark:divide-zinc-700 dark:border-zinc-700"
+              >
+                {actividadPaginada.map((registro) => (
+                  <li key={registro.id} className="px-5 py-3 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
+                    <FraseDeRegistro registro={registro} nombre={registro.usuarioNombre} abierta />
+                  </li>
+                ))}
+              </ul>
 
               <Paginador
                 pagina={paginaActualActividad}
