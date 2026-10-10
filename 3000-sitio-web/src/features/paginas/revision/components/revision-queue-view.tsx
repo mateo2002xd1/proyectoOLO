@@ -325,7 +325,7 @@ export function RevisionQueueView() {
         key={`rechazar-${modalState.pagina?.id ?? 'cerrado'}`}
         abierto={modalState.tipo === 'rechazar'}
         titulo={modalState.pagina ? `Rechazar versión ${modalState.pagina.numeroVersion}` : ''}
-        descripcion={`Se devolverá el borrador a su autor original (${modalState.pagina?.autor?.nombre || 'desconocido'}) para que lo corrija.`}
+        descripcion={`Devolveremos el borrador a su autor original para que lo corrija.`}
         textoAccion="Rechazar"
         colorAccion="red"
         onConfirmar={confirmarModal}
@@ -369,7 +369,7 @@ function ModalAccionConMotivo({
   onConfirmar: (motivo: string) => void;
   onCancelar: () => void;
   requiereMotivo?: boolean;
-  /** Aviso y campo del motivo en rojo: para lo que no tiene vuelta atrás. */
+  /** La descripción como aviso rojo: para lo que no tiene vuelta atrás. */
   destructivo?: boolean;
 }) {
   const dialogo = useRef<HTMLDialogElement>(null);
@@ -428,7 +428,7 @@ function ModalAccionConMotivo({
               maxLength={MOTIVO_MAX}
               aria-describedby="motivo-accion-cuenta"
               className={`mt-1 block w-full resize-none rounded-xl border bg-transparent px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-1 dark:bg-[#1a233a] dark:text-white ${
-                destructivo
+                colorAccion === 'red'
                   ? 'border-red-300 focus:border-red-500 focus:ring-red-500 dark:border-red-900/60 dark:focus:border-red-400 dark:focus:ring-red-400'
                   : 'border-zinc-300 focus:border-brand-interactive focus:ring-brand-interactive dark:border-zinc-700'
               }`}
