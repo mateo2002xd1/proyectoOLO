@@ -25,8 +25,8 @@ import { verificarRespuestas } from '../services/recuperacion.service';
  * es lo único que le falta a la cuenta. Aquí no: esa configuración, sola o junto a la
  * contraseña, la resuelve entera `/first-login`, que pregunta al servidor qué falta.
  *
- * Diseño nuevo desde el 2026-10-09 (mockups de tablet): el número de la pregunta va bajo
- * «Preguntas de seguridad», y la pregunta se ve en una caja con la forma de un campo.
+ * Diseño nuevo desde el 2026-10-09 (mockups de tablet): bajo «Preguntas de seguridad»
+ * la pregunta se ve en una caja con la forma de un campo, y el avance en tres barras.
  * Esa caja es la `<label>` de la respuesta: pulsarla lleva al campo y el lector de
  * pantalla anuncia la pregunta al entrar en él.
  */
@@ -105,14 +105,9 @@ export function SecurityQuestionsView() {
         <form onSubmit={siguientePregunta} noValidate>
           {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
 
-          {/* El número de la pregunta va aquí, junto a la pregunta, y no en el título de la
-              página (así hasta el 2026-10-09). */}
-          <h2 className={`mb-3 ${authPasosCardHeadingClass}`}>
-            Preguntas de seguridad{' '}
-            <span className="block text-base font-normal">
-              (Pregunta {preguntaActual + 1} de {total})
-            </span>
-          </h2>
+          {/* Sin el número de la pregunta a la vista (lo quitó el usuario): el avance lo dan
+              las barras, y el lector de pantalla lo oye en la caja de la pregunta. */}
+          <h2 className={`mb-3 ${authPasosCardHeadingClass}`}>Preguntas de seguridad</h2>
 
           {/* Mide lo mismo que un campo (`authPasosInputClass`): 44 px de alto y el mismo
               relleno. Si la pregunta es larga, crece hacia abajo; por eso sus esquinas son de
