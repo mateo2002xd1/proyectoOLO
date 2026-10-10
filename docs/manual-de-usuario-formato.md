@@ -1078,13 +1078,13 @@ El Panel Administrativo cuenta con un buscador global diseñado para navegar ág
 
 Al ingresar al Panel Administrativo (`/admin/dashboard`), el Administrador visualiza el resumen consolidado de la actividad del observatorio:
 
-1. **Tarjeta de Páginas Publicadas:** Muestra el total de páginas activas en el observatorio. El usuario puede hacer clic en las categorías (Sitio Web o Intranet) para desplegar la lista exacta de las páginas publicadas en cada entorno; al hacer clic sobre el título de una página específica en esa lista, el sistema navega directamente a su vista pública para consultarla.
+1. **Tarjeta de Páginas Publicadas:** Muestra el total de páginas activas en el observatorio y, debajo, un diagrama en forma de árbol con dos ramas: **"Sitio web"** (verde) e **"Intranet"** (azul), cada una con su número de páginas. Al hacer clic (o tocar) una rama, se despliegan sus páginas como hojas unidas por líneas rectas en escalera, como las carpetas de un explorador; al volver a tocarla, se pliega. Al pasar el cursor sobre una página, un recuadro muestra su título completo y su ruta (por ejemplo, */contacto*). Al hacer clic sobre una página, el sistema navega directamente a su vista pública para consultarla; las de la Intranet se abren en otra pestaña. Una rama sin páginas aparece en gris y no se despliega. Quien navega con el teclado (tecla *Tab*) o con lector de pantalla encuentra las mismas páginas como una lista de enlaces, que aparece debajo del árbol al llegar a ella.
 
 > **[Captura: Tarjeta de Páginas Publicadas]**
-> *Tarjeta de páginas publicadas mostrando el acordeón desplegado con enlaces directos a cada página.*
+> *Tarjeta de páginas publicadas con el árbol desplegado: las ramas Sitio web e Intranet y sus páginas.*
 >
 > **[Captura: Tarjeta de Páginas Publicadas (Móvil)]**
-> *Tarjeta de páginas publicadas mostrando el acordeón desplegado con enlaces directos a cada página. (Móvil).*
+> *Tarjeta de páginas publicadas con el árbol desplegado: las ramas Sitio web e Intranet y sus páginas. (Móvil).*
 
 2. **Gráficos Interactivos de Visitas y Usuarios:** Las tarjetas adyacentes no solo muestran totales numéricos, sino que incluyen visualizaciones con las que se puede interactuar pasando el cursor del mouse (o tocando en la pantalla móvil):
 
@@ -2540,7 +2540,7 @@ Durante el uso del buscador global del Panel Administrativo (cuyo procedimiento 
 El Tablero Principal (Dashboard) recopila métricas y registros consolidados del observatorio. Al interactuar con este entorno, pueden presentarse las siguientes situaciones:
 
 ##### 1. Tarjeta de Páginas Publicadas sin resultados o vacía
-* **Situación:** Al hacer clic en las categorías (Sitio Web o Intranet) dentro de la tarjeta, el acordeón se despliega pero no muestra ningún enlace, o la tarjeta completa no carga.
+* **Situación:** Una rama del árbol (Sitio web o Intranet) aparece en gris con el número **0** y no se despliega al tocarla, o la tarjeta completa no carga (muestra un guion "—" y un mensaje en rojo).
 * **Posible causa:** (1) No existen páginas publicadas en ese entorno en el momento de la consulta. (2) Un fallo de red temporal impidió que el componente obtuviera la lista desde la base de datos al abrir el panel.
 * **Acción correctiva:**
   1. Verificar en el menú de "Páginas en revisión" si los borradores aún están pendientes de aprobación (las páginas no aprobadas no aparecerán en esta tarjeta).

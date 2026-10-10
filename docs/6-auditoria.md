@@ -5,6 +5,113 @@
 
 ---
 
+## sesión 10-10-2026 (10.ª parte): «Actividad reciente» del dashboard en acordeón en el móvil y la tablet
+
+**Qué se pidió.** Llevar el acordeón de las demás listas a la tarjeta «Actividad reciente» del
+dashboard, en el modo tablet y móvil.
+
+**Cómo quedó.** Por debajo de 48rem de tarjeta, cada registro es una línea con la misma frase
+que Auditoría: «El usuario **Ana Gómez** hizo la acción de [Publicación]» («**El sistema**…»
+sin usuario). Al tocarla se completa con lo que cambió y la fecha: «…: publicó la versión 4 de
+/inicio el **9 de octubre de 2026, 3:00 p. m.**». Desplegada no lleva botones, porque la tabla
+tampoco tiene acciones por fila: el detalle sigue en «Ver más». Pueden abrirse varias. En
+escritorio sigue la tabla de cuatro columnas.
+
+**Lo que se hizo.**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Sitio | `auditoria/components/frase-de-registro.tsx` (nuevo) | `FraseDeRegistro` y `PildoraDeAccion`, sacadas de `auditoria-view.tsx` con `enMinuscula`; exportadas en `auditoria/index.ts` |
+| Sitio | `auditoria/components/auditoria-view.tsx` | Usa las dos piezas en vez de su copia; mismo resultado |
+| Sitio | `auth/components/panel-general.tsx` | `olo-tabla-acordeon`, `td[data-resumen]` con `ResumenDeFila` + `FraseDeRegistro`, `useFilasAbiertas`, y `data-solo-tabla` en las cuatro celdas. Fuera el `line-clamp` de «Cambios», que solo servía en las tarjetas |
+
+**Decisiones.**
+
+- **Una sola frase para la bitácora**: Auditoría y el dashboard muestran los mismos registros;
+  con la frase en un componente del módulo no pueden contar lo mismo de dos maneras.
+- **Sin botón en la fila desplegada**: no hay acción por fila que ocultar; añadir «Ver detalle»
+  pediría traer aquí el modal de Auditoría, y eso no se pidió.
+
+**Cómo se probó.**
+
+| Qué | Resultado |
+|---|---|
+| Dashboard real pintado con React y datos de prueba (sin API ni sesión), CSS compilado, Chrome sin ventana | A 360 y 768, acordeón sin cabecera; a 1032, 1280 y 1920, la tabla. Sin desborde en ninguno. Frase plegada y desplegada, «El sistema» sin usuario, nombre largo partido, claro y oscuro |
+| Botón de cada fila | 44 px de alto o más |
+| `tsc`, ESLint de lo tocado | Limpios (`tsc` solo marca `.next/dev/types`, generado por el servidor de desarrollo) |
+| Tocar de verdad para abrir y cerrar | **No probado aquí**: la página de prueba no tiene React vivo. Es el mismo `useFilasAbiertas` de las otras listas |
+
+**Pendiente al cierre.** Probar en el panel con el móvil o la tablet: abrir y cerrar filas, y
+que Auditoría se vea igual que antes.
+
+---
+
+## sesión 10-10-2026 (9.ª parte): «Páginas publicadas» del dashboard, un árbol de ECharts
+
+**Qué se pidió.** En el dashboard, hacer con ECharts «el mismo desplegable de rutas» de la
+tarjeta «Páginas publicadas», con una UX/UI cuidada, y que al elegir una página publicada
+lleve a ella como hasta ahora.
+
+**Cómo quedó.** Un árbol (`series.type: 'tree'`, de izquierda a derecha): dos ramas en
+píldora, «Sitio web» (verde) e «Intranet» (azul) con su número y una flecha; al tocar una, sus
+páginas salen como hojas unidas por líneas rectas en escalera, como las carpetas de un
+explorador, y el gráfico crece con lo desplegado (30 px por página). Primero fueron curvas; el
+usuario las vio difíciles de seguir y eligió la escalera (`edgeShape: 'polyline'`). La línea
+vertical va 16 px antes de las páginas (`edgeForkPosition`, calculado con el ancho medido), y
+el hueco del título crece con la tarjeta (de 90 a 260 px): en escritorio ancho cabe entero.
+
+**Lo que vio el usuario después, y se corrigió.** (1) Al cerrar una rama quedaban trazos de la
+escalera: ECharts no borra las líneas `polyline` de las hojas que se van al plegar. El gráfico
+se monta de nuevo (`key` con las ramas abiertas) cada vez que se abre o se cierra una, con la
+animación inicial en 350 ms. (2) En pantalla estrecha la línea vertical cruzaba la píldora
+(«Sitio web 10» es más ancha que con una cifra): el ancho de cada píldora se mide con
+`measureText` en la letra del panel y la línea va siempre detrás de la más ancha. (3) Al
+achicar la ventana la tarjeta no se encogía y se salía de la pantalla: el lienzo de ECharts
+lleva su ancho en píxeles y la rejilla no dejaba a la tarjeta ser más estrecha que él, así que
+el `ResizeObserver` nunca se enteraba. `GraficoEcharts` lleva `contain: inline-size`: el
+lienzo ya no cuenta para el ancho del contenedor. Lo arregla en todos los gráficos del panel
+(«Visitas» y «Usuarios» tenían lo mismo) y en el de sectores del sitio público. Tocar una hoja navega: el sitio con el enrutador de Next (`router.push`), la intranet
+en otra pestaña con `noopener,noreferrer`, igual que los enlaces de antes. Al pasar el cursor,
+el título entero (en la hoja se corta con «…») y su ruta. Rama sin páginas: gris, sin flecha y
+sin mano. Colores de «Visitas» y modo oscuro.
+
+**Accesibilidad.** Un lienzo no se recorre con el teclado ni lo lee un lector de pantalla: el
+árbol va con `aria-hidden` y la lista de enlaces de antes sigue en el HTML, oculta con
+`not-focus-within:sr-only`, y aparece bajo el árbol en cuanto el tabulador llega a ella.
+
+| Archivo | Cambio |
+|---|---|
+| `tarjeta-paginas-publicadas.tsx` | `ArbolDePaginas`: una serie `tree` por portal, apiladas, en escalera, con el plegado en el estado del componente (`collapsed` + `expandAndCollapse: false`) para que el alto crezca y el toque en una hoja navegue. La lista `Grupo` queda como alternativa accesible. Títulos escapados en el tooltip (es HTML y los escriben los editores) |
+| `grafico-echarts.tsx` | Registra `TreeChart`. `onClickElemento` recibe además la serie y el elemento de `data` con sus campos propios (compatible con quien solo usa el índice). Al cambiar `alto`, `resize()` antes de `setOption`: si no, la opción nueva se repartía en el alto viejo |
+| `manual-de-usuario-formato.md` | Dashboard, paso 1, y su problema frecuente: el árbol |
+
+**Trampas que costaron.**
+
+- ECharts mete los datos del árbol bajo una raíz invisible (índice 0) y da la posición de cada
+  nodo relativa al recuadro de su serie (`seriesModel.layoutInfo`), no al gráfico.
+- Lo que se pone en `label` de la serie lo heredan todos los nodos: el estilo de píldora va en
+  el nodo de la rama, y el ancho con recorte, en cada hoja (heredado, la píldora salía ancha y
+  con el número montado sobre el nombre).
+- ECharts guarda en caché el ancho de cada texto la primera vez que lo mide. Medido antes de
+  que cargara Poppins, el número seguía montado aunque se repintara: ahora el árbol no se pinta
+  hasta `document.fonts.load` de los pesos 400, 500 y 700 (con el hueco reservado mientras).
+- El `.sr-only` sin capa de `globals.css` le gana a `focus-within:not-sr-only` (utilidad en
+  capa): la lista no aparecía nunca. `not-focus-within:sr-only` es otra clase y no choca.
+- En oscuro, el fondo semitransparente de la píldora dejaba ver las líneas a través: es opaco,
+  ya mezclado con el de la tarjeta.
+
+**Cómo se probó.** Arnés del scratchpad con el ECharts de verdad (`dist/echarts.min.js` y
+`mocks/echarts-real.ts`, con `ECHARTS_REAL=1` al empaquetar; `entrada-dashboard.tsx`,
+`probar-dashboard.cjs`, con 10 páginas en el sitio) a 320, 360, 768, 1280 y 1920, más una
+ventana que se achica de 1280 a 320 con las dos ramas abiertas (la tarjeta queda en 288 px): plegado 92 px; con el sitio abierto 202 y sus
+5 hojas; con las dos, 222; toque en «Contacto» → `/contacto`; en «Bienestar» →
+`window.open('http://localhost:3001/bienestar', '_blank', 'noopener,noreferrer')`; tooltip con
+`<b>` escapado; intranet vacía sin desplegar; la lista con el foco del teclado, visible
+(294×48). Sin desborde ni errores de consola. Tipos limpios en los seis archivos que usan
+`GraficoEcharts` (también `grafico-sectores.tsx` del sitio público) y ESLint limpio.
+
+---
+
 ## sesión 10-10-2026 (8.ª parte): identidad visual — el logo y el icono se cargan en su propia tarjeta
 
 **Qué se pidió.** Sobre la 7.ª parte: que la carga del logo y del icono no sea un botón aparte,
