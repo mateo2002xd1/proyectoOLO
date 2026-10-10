@@ -8,6 +8,8 @@ import {
   compararPassword,
   INTENTOS_MAXIMOS_LOGIN,
   MINUTOS_BLOQUEO_LOGIN,
+  MENSAJE_TEMPORAL_VENCIDA,
+  temporalVencida,
 } from '../../shared/password-policy';
 import { esDominioInstitucional, normalizarEmail } from '../../shared/email-policy';
 import { RolePermissionRepository } from '../../repositories/role-permissions.repository';
@@ -166,6 +168,12 @@ export const loginUseCase = async (email: string, password: string, contexto?: C
   if (!valid) {
     await registrarFalloDeLogin(user, contexto);
     throw Object.assign(new Error('Credenciales inválidas'), { status: 401 });
+  }
+
+  // Temporal vencida (72 h). Va **después** de comprobar la contraseña: antes, cualquiera
+  // que probara el correo sabría que esa cuenta existe y no se ha estrenado.
+  if (temporalVencida(user)) {
+    throw Object.assign(new Error(MENSAJE_TEMPORAL_VENCIDA), { status: 403 });
   }
 
   // Un acierto cierra la racha. Si no se limpiara, los fallos se acumularían entre

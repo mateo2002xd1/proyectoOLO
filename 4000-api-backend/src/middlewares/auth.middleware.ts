@@ -5,6 +5,8 @@ import jwt from 'jsonwebtoken';
 import {
   MINUTOS_DE_INACTIVIDAD_API,
   MINUTOS_ENTRE_REFRESCOS_DE_ACCESO,
+  MENSAJE_TEMPORAL_VENCIDA,
+  temporalVencida,
 } from '../shared/password-policy';
 
 const MS_DE_INACTIVIDAD = MINUTOS_DE_INACTIVIDAD_API * 60 * 1000;
@@ -145,6 +147,12 @@ async function autenticar(req: Request, res: Response, next: NextFunction, admit
       must_change_password: Boolean((user as any).must_change_password),
       must_setup_security_questions: Boolean((user as any).must_setup_security_questions),
     };
+
+    // Una sesión abierta con la temporal no sobrevive a su vencimiento: sin esto, quien
+    // entró a las 71 horas podía seguir días con ella (el token dura 7).
+    if (temporalVencida(user as any)) {
+      return res.status(401).json({ error: MENSAJE_TEMPORAL_VENCIDA });
+    }
 
     if (!admitePendiente && tieneConfiguracionPendiente(req.user)) {
       return res.status(403).json({

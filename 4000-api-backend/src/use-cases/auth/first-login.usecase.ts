@@ -110,6 +110,7 @@ export const firstLoginUseCase = async (
 
     cambios.password_hash = await hashearPassword(newPassword);
     cambios.must_change_password = false;
+    cambios.temp_password_expires_at = null;
   }
 
   // Se preparan **antes** de escribir nada: si las preguntas vienen mal, no debe
