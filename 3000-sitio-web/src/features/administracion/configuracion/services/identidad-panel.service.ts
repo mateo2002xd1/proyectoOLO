@@ -23,13 +23,21 @@ export async function guardarColoresDeAcciones(
   return data;
 }
 
+/** Lo mismo para los tipos de botón (principal, peligro…). */
+export async function guardarColoresDeBotones(
+  botones: Partial<Record<string, ColoresDeAccion>>
+): Promise<IdentidadPanel> {
+  const { data } = await api.patch<IdentidadPanel>(RUTA, { botones });
+  return data;
+}
+
 /** Si el logo y el icono subidos pasan a blanco en modo oscuro. */
 export async function guardarBlancoEnModoOscuro(blancoEnModoOscuro: boolean): Promise<IdentidadPanel> {
   const { data } = await api.patch<IdentidadPanel>(RUTA, { blancoEnModoOscuro });
   return data;
 }
 
-/** Sube el logo o el icono; reemplaza el anterior. */
+/** Sube el logo o el icono (solo PNG); reemplaza el anterior. */
 export async function subirImagenDeIdentidad(pieza: PiezaDeIdentidad, archivo: File): Promise<IdentidadPanel> {
   const formulario = new FormData();
   formulario.append('file', archivo);

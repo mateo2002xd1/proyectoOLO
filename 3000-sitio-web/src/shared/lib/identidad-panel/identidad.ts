@@ -1,4 +1,5 @@
 import { ACCIONES_DEL_PANEL, type IdDeAccion } from './acciones';
+import { BOTONES_DEL_PANEL, type IdDeBoton } from './botones';
 
 export interface ColoresDeAccion {
   fondo: string;
@@ -15,6 +16,8 @@ export interface IdentidadPanel {
   icono: string | null;
   blancoEnModoOscuro: boolean;
   acciones: Partial<Record<string, ColoresDeAccion>>;
+  /** Los tipos de botón con color propio (`botones.ts`). */
+  botones: Partial<Record<string, ColoresDeAccion>>;
   actualizadoEn: string | null;
 }
 
@@ -23,6 +26,7 @@ export const IDENTIDAD_DE_FABRICA: IdentidadPanel = {
   icono: null,
   blancoEnModoOscuro: true,
   acciones: {},
+  botones: {},
   actualizadoEn: null,
 };
 
@@ -44,8 +48,8 @@ export const iconoDelPanel = (identidad: IdentidadPanel) =>
 /**
  * Si en modo oscuro se pinta en blanco (`brightness(0) invert(1)`). Lo de fábrica siempre:
  * es azul oscuro sobre transparente y sin el filtro no se vería. Lo subido, según
- * `blancoEnModoOscuro`: a un PNG transparente le sirve, pero un JPG con fondo blanco
- * saldría como un bloque blanco.
+ * `blancoEnModoOscuro`: a un PNG transparente le sirve, pero uno con fondo propio saldría
+ * como un bloque blanco.
  */
 export const logoEnBlancoEnOscuro = (identidad: IdentidadPanel) => !identidad.logo || identidad.blancoEnModoOscuro;
 export const iconoEnBlancoEnOscuro = (identidad: IdentidadPanel) => !identidad.icono || identidad.blancoEnModoOscuro;
@@ -57,15 +61,27 @@ export const iconoEnBlancoEnOscuro = (identidad: IdentidadPanel) => !identidad.i
 export const esColorHex = (valor: unknown): valor is string =>
   typeof valor === 'string' && /^#[0-9a-fA-F]{6}$/.test(valor);
 
-/** Los colores con que sale una acción: los guardados si son válidos, si no los de fábrica. */
-export function coloresDe(identidad: IdentidadPanel, id: IdDeAccion): ColoresDeAccion {
-  const deFabrica = ACCIONES_DEL_PANEL.find((accion) => accion.id === id)!;
-  const guardados = identidad.acciones[id];
+/** Los colores con que sale un elemento: los guardados si son válidos, si no los de fábrica. */
+function coloresDeElemento(
+  catalogo: readonly { id: string; fondo: string; texto: string }[],
+  conjunto: IdentidadPanel['acciones'] | undefined,
+  id: string
+): ColoresDeAccion {
+  const deFabrica = catalogo.find((elemento) => elemento.id === id)!;
+  const guardados = conjunto?.[id];
   return {
     fondo: esColorHex(guardados?.fondo) ? guardados.fondo.toLowerCase() : deFabrica.fondo,
     texto: esColorHex(guardados?.texto) ? guardados.texto.toLowerCase() : deFabrica.texto,
   };
 }
+
+/** El color de una etiqueta de acción (`acciones.ts`). */
+export const coloresDe = (identidad: IdentidadPanel, id: IdDeAccion) =>
+  coloresDeElemento(ACCIONES_DEL_PANEL, identidad.acciones, id);
+
+/** El color de un tipo de botón (`botones.ts`). */
+export const coloresDeBoton = (identidad: IdentidadPanel, id: IdDeBoton) =>
+  coloresDeElemento(BOTONES_DEL_PANEL, identidad.botones, id);
 
 /** Luminancia relativa de WCAG 2.x. */
 function luminancia(hex: string): number {

@@ -327,6 +327,7 @@ export const ETIQUETA_CAMPO: Record<string, string> = {
   icono_del_panel: 'Icono del panel',
   blanco_en_modo_oscuro: 'Logo e icono en blanco en modo oscuro',
   colores_de_acciones: 'Colores de las etiquetas de acción',
+  colores_de_botones: 'Colores de los botones',
 };
 
 export const etiquetaDeCampo = (campo: string) => {

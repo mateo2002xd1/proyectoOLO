@@ -3,7 +3,7 @@ import { PanelGeneralLayout } from '@/features/administracion/auth/components/pa
 import { LetraDelPanel } from '@/features/administracion/auth/components/letra-del-panel';
 import { getAuthUserProfile } from '@/shared/lib/session';
 import { VigilanteSesion } from '@/shared/lib/inactividad';
-import { EstilosDeAcciones, metadataDeIdentidad, obtenerIdentidadPanel } from '@/shared/lib/identidad-panel/servidor';
+import { EstilosDeIdentidad, metadataDeIdentidad, obtenerIdentidadPanel } from '@/shared/lib/identidad-panel/servidor';
 
 /** El icono de la pestaña: el de Configuración → Identidad visual, o el de fábrica. */
 export function generateMetadata(): Promise<Metadata> {
@@ -23,7 +23,7 @@ export function generateMetadata(): Promise<Metadata> {
  * página y también los modales y avisos que salen por portal.
  *
  * La identidad visual (Configuración) se lee aquí una vez por carga: el logo y el icono
- * van a la barra lateral y a la del móvil, y `EstilosDeAcciones` escribe el color de las
+ * van a la barra lateral y a la del móvil, y `EstilosDeIdentidad` escribe el color de las
  * etiquetas de acción. Al guardarla, Configuración hace `router.refresh()` y este layout
  * se vuelve a pintar con la nueva.
  */
@@ -32,7 +32,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
   return (
     <>
       <LetraDelPanel />
-      <EstilosDeAcciones identidad={identidad} />
+      <EstilosDeIdentidad identidad={identidad} />
       <PanelGeneralLayout userProfile={userProfile} identidad={identidad}>
         {children}
         <VigilanteSesion />

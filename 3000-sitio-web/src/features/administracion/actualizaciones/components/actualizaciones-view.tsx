@@ -4,7 +4,7 @@ import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
 import { CargaCriteriosClasificacion } from './carga-criterios-clasificacion';
 import { CargaProgramaSobresalientes } from './carga-programa-sobresalientes';
 import { CargaAlertasInversion } from './carga-alertas-inversion';
-import { SeccionAcordeon } from './seccion-acordeon';
+import { SeccionAcordeon } from '@/shared/ui/molecules/seccion-acordeon';
 
 interface ActualizacionesViewProps {
   /** Rol de la sesión (cookie legible, no la fuente de verdad — ver `middleware.ts`). Solo Administrador/Superadmin puede cargar; el resto ve el historial. */

@@ -5,7 +5,7 @@
  * color de fábrica de cada una, que es el que tenían escrito en cada pantalla.
  *
  * Cada etiqueta pinta su fondo y su letra con dos variables CSS
- * (`--olo-accion-{id}-fondo` y `-texto`) que escribe `EstilosDeAcciones` en el panel y en
+ * (`--olo-accion-{id}-fondo` y `-texto`) que escribe `EstilosDeIdentidad` en el panel y en
  * el editor. La API solo guarda las que alguien cambió; las demás salen de aquí.
  *
  * Un id nuevo: añadirlo a `ACCIONES_DEL_PANEL` y a `COLOR_DE_ACCION`. El id viaja a la API
@@ -40,7 +40,8 @@ export interface AccionDelPanel {
 export const ACCIONES_DEL_PANEL: readonly AccionDelPanel[] = [
   { id: 'visualizar', nombre: 'Visualizar', dondeAparece: 'Páginas en revisión', grupo: 'panel', fondo: '#1face3', texto: '#ffffff' },
   { id: 'ver-detalle', nombre: 'Ver detalle', dondeAparece: 'El ojo de Auditoría y Respaldos', grupo: 'panel', fondo: '#7db728', texto: '#ffffff' },
-  { id: 'aprobar', nombre: 'Aprobar', dondeAparece: 'Páginas en revisión', grupo: 'panel', fondo: '#7db728', texto: '#ffffff' },
+  // El id sigue siendo `aprobar` (es la clave guardada); el botón se llama «Publicar» desde 230a930d.
+  { id: 'aprobar', nombre: 'Publicar', dondeAparece: 'Páginas en revisión', grupo: 'panel', fondo: '#7db728', texto: '#ffffff' },
   // La única con fondo claro y borde: así se distingue de «Eliminar», que también es roja.
   { id: 'rechazar', nombre: 'Rechazar', dondeAparece: 'Páginas en revisión', grupo: 'panel', fondo: '#ffe9e9', texto: '#d11a1a' },
   { id: 'editar', nombre: 'Editar', dondeAparece: 'Usuarios y Roles', grupo: 'panel', fondo: '#7db728', texto: '#ffffff' },

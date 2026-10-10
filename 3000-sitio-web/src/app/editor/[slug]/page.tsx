@@ -11,7 +11,7 @@ import {
   slugDeOrigen,
 } from '@/features/paginas';
 import { getAuthSessionSnapshot, getSessionPermissionsSnapshot } from '@/shared/lib/session';
-import { EstilosDeAcciones, metadataDeIdentidad, obtenerIdentidadPanel } from '@/shared/lib/identidad-panel/servidor';
+import { EstilosDeIdentidad, metadataDeIdentidad, obtenerIdentidadPanel } from '@/shared/lib/identidad-panel/servidor';
 import { EditorClient } from './editor-client';
 
 /** El icono de la pestaña, el mismo del panel (Configuración → Identidad visual). */
@@ -94,7 +94,7 @@ export default async function EditorPage({
       }
     >
       {/* Los colores de Salir, Guardar borrador y Enviar a revisión (`.olo-editor-tooltip`). */}
-      <EstilosDeAcciones identidad={identidad} />
+      <EstilosDeIdentidad identidad={identidad} />
       {/* Solo al venir de «Nueva página»: es donde se entrega el enlace de la ruta
           recién creada, que es lo que hay que pegar en el menú para poder llegar. */}
       {nueva === '1' && <AvisoSeccionNueva slug={slug} />}

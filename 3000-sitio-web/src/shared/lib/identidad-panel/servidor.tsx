@@ -5,7 +5,8 @@ import { AUTH_COOKIE_NAME } from '@/shared/lib/auth-cookies';
 import { URL_DE_LA_API } from '@/shared/lib/url-de-la-api';
 import { ICONO_APPLE } from '@/shared/lib/pwa';
 import { ACCIONES_DEL_PANEL } from './acciones';
-import { coloresDe, iconoDelPanel, IDENTIDAD_DE_FABRICA, type IdentidadPanel } from './identidad';
+import { BOTONES_DEL_PANEL } from './botones';
+import { coloresDe, coloresDeBoton, iconoDelPanel, IDENTIDAD_DE_FABRICA, type IdentidadPanel } from './identidad';
 
 /**
  * La identidad visual del panel, leída en el servidor con la sesión de quien carga la
@@ -34,20 +35,25 @@ export const obtenerIdentidadPanel = cache(async (): Promise<IdentidadPanel> => 
 });
 
 /**
- * Escribe las variables de color de cada etiqueta de acción (`--olo-accion-{id}-fondo` y
- * `-texto`). Va en el panel (`app/admin/layout.tsx`) y en el editor: sin esto, sus
- * etiquetas saldrían sin fondo.
+ * Escribe las variables de color de la identidad: las de cada etiqueta de acción
+ * (`--olo-accion-{id}-fondo` y `-texto`) y las de cada tipo de botón (`--olo-boton-{id}-…`).
+ * Va en el panel (`app/admin/layout.tsx`) y en el editor: sin esto, las etiquetas saldrían
+ * sin fondo (los botones no: `button.tsx` lleva el de fábrica de respaldo).
  *
- * `coloresDe` solo deja pasar `#rrggbb` y si no, el de fábrica: lo que se escribe aquí
- * nunca es texto libre, ni aunque la API devolviera otra cosa.
+ * `coloresDe` y `coloresDeBoton` solo dejan pasar `#rrggbb` y si no, el de fábrica: lo que
+ * se escribe aquí nunca es texto libre, ni aunque la API devolviera otra cosa.
  */
-export function EstilosDeAcciones({ identidad }: { identidad: IdentidadPanel }) {
-  const variables = ACCIONES_DEL_PANEL.map(({ id }) => {
+export function EstilosDeIdentidad({ identidad }: { identidad: IdentidadPanel }) {
+  const acciones = ACCIONES_DEL_PANEL.map(({ id }) => {
     const { fondo, texto } = coloresDe(identidad, id);
     return `--olo-accion-${id}-fondo:${fondo};--olo-accion-${id}-texto:${texto};`;
-  }).join('');
+  });
+  const botones = BOTONES_DEL_PANEL.map(({ id }) => {
+    const { fondo, texto } = coloresDeBoton(identidad, id);
+    return `--olo-boton-${id}-fondo:${fondo};--olo-boton-${id}-texto:${texto};`;
+  });
 
-  return <style>{`:root{${variables}}`}</style>;
+  return <style>{`:root{${[...acciones, ...botones].join('')}}`}</style>;
 }
 
 /**

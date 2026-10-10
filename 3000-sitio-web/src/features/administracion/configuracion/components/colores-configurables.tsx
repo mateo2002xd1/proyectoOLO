@@ -1,74 +1,94 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/20/solid';
 import { Button } from '@/shared/ui/atoms/button';
+import { SeccionAcordeon } from '@/shared/ui/molecules/seccion-acordeon';
 import {
-  ACCIONES_DEL_PANEL,
   CONTRASTE_MINIMO,
-  coloresDe,
   contraste,
   letraLegible,
-  type AccionDelPanel,
   type ColoresDeAccion,
-  type IdDeAccion,
   type IdentidadPanel,
 } from '@/shared/lib/identidad-panel';
-import { guardarColoresDeAcciones } from '../services/identidad-panel.service';
 
-type Colores = Record<IdDeAccion, ColoresDeAccion>;
+/** Lo que tienen en común una etiqueta de acción (`acciones.ts`) y un tipo de botón (`botones.ts`). */
+export interface ElementoConColor {
+  id: string;
+  nombre: string;
+  dondeAparece: string;
+  grupo: string;
+  /** Colores de fábrica. */
+  fondo: string;
+  texto: string;
+}
 
-const GRUPOS: { grupo: AccionDelPanel['grupo']; titulo: string }[] = [
-  { grupo: 'panel', titulo: 'En el panel' },
-  { grupo: 'editor', titulo: 'En el editor' },
-];
-
-const coloresGuardados = (identidad: IdentidadPanel) =>
-  Object.fromEntries(ACCIONES_DEL_PANEL.map(({ id }) => [id, coloresDe(identidad, id)])) as Colores;
-
-const COLORES_DE_FABRICA = Object.fromEntries(
-  ACCIONES_DEL_PANEL.map(({ id, fondo, texto }) => [id, { fondo, texto }])
-) as Colores;
+type Colores = Record<string, ColoresDeAccion>;
 
 const iguales = (a: ColoresDeAccion, b: ColoresDeAccion) => a.fondo === b.fondo && a.texto === b.texto;
 
 /**
- * El color de cada etiqueta de acción: un selector para el fondo y otro para la letra, con
- * la etiqueta tal como saldrá y su contraste. Los cambios no se aplican hasta «Guardar».
+ * Cómo se pinta la muestra de cada elemento: `etiqueta`, la forma de `TOOLTIP_ENCIMA`;
+ * `boton`, la de `Button` fuera de un modal.
  */
-export function ColoresDeAcciones({
-  identidad,
+const MUESTRA = {
+  etiqueta: 'rounded-md px-2.5 py-1 text-xs shadow-[0_2px_8px_rgba(0,0,0,0.25)]',
+  boton: 'rounded-[16px] px-4 py-2 text-sm',
+};
+
+/**
+ * Un bloque de colores de la identidad visual: los elementos de un catálogo, cada grupo en
+ * un acordeón («En el panel», «En el editor»…), y en cada elemento su muestra, un selector
+ * para el fondo y otro para la letra, y si se lee bien. Los cambios no se aplican hasta
+ * «Guardar». Lo usan las etiquetas de acción y los botones (`identidad-visual-panel.tsx`).
+ */
+export function ColoresConfigurables({
+  titulo,
+  descripcion,
+  catalogo,
+  grupos,
+  guardados,
+  muestra,
+  textoGuardar,
   puedeEditar,
+  onGuardar,
   onGuardado,
   onError,
 }: {
-  identidad: IdentidadPanel;
+  titulo: string;
+  descripcion: string;
+  catalogo: readonly ElementoConColor[];
+  /** El orden y el nombre de cada acordeón. */
+  grupos: { grupo: string; titulo: string }[];
+  /** Los colores con que sale hoy cada elemento (guardados o de fábrica), por id. */
+  guardados: Colores;
+  muestra: keyof typeof MUESTRA;
+  textoGuardar: string;
   puedeEditar: boolean;
+  /** Recibe solo los que difieren de fábrica. */
+  onGuardar: (propios: Colores) => Promise<IdentidadPanel>;
   onGuardado: (nueva: IdentidadPanel) => void;
   onError: (error: unknown) => void;
 }) {
-  const guardados = useMemo(() => coloresGuardados(identidad), [identidad]);
   const [colores, setColores] = useState<Colores>(guardados);
   const [guardando, setGuardando] = useState(false);
 
-  const hayCambios = ACCIONES_DEL_PANEL.some(({ id }) => !iguales(colores[id], guardados[id]));
-  const sonLosDeFabrica = ACCIONES_DEL_PANEL.every(({ id }) => iguales(colores[id], COLORES_DE_FABRICA[id]));
+  const deFabrica = (elemento: ElementoConColor) => ({ fondo: elemento.fondo, texto: elemento.texto });
+  const sinGuardar = (elemento: ElementoConColor) => !iguales(colores[elemento.id], guardados[elemento.id]);
+  const propio = (elemento: ElementoConColor) => !iguales(colores[elemento.id], deFabrica(elemento));
 
-  const cambiar = (id: IdDeAccion, campo: keyof ColoresDeAccion, valor: string) =>
+  const hayCambios = catalogo.some(sinGuardar);
+  const sonLosDeFabrica = !catalogo.some(propio);
+
+  const cambiar = (id: string, campo: keyof ColoresDeAccion, valor: string) =>
     setColores((previos) => ({ ...previos, [id]: { ...previos[id], [campo]: valor.toLowerCase() } }));
 
   const guardar = async () => {
     setGuardando(true);
     try {
-      // Solo las que difieren de fábrica: así, si un día cambia el color de fábrica, le
-      // llega a quien nunca tocó el suyo.
-      const propias = Object.fromEntries(
-        ACCIONES_DEL_PANEL.filter(({ id }) => !iguales(colores[id], COLORES_DE_FABRICA[id])).map(({ id }) => [
-          id,
-          colores[id],
-        ])
-      );
-      onGuardado(await guardarColoresDeAcciones(propias));
+      // Solo los que difieren de fábrica: así, si un día cambia el de fábrica, le llega a
+      // quien nunca tocó el suyo.
+      onGuardado(await onGuardar(Object.fromEntries(catalogo.filter(propio).map(({ id }) => [id, colores[id]]))));
     } catch (error) {
       onError(error);
     } finally {
@@ -78,39 +98,62 @@ export function ColoresDeAcciones({
 
   return (
     <div className="mt-8">
-      <h3 className="text-sm font-semibold text-[#001631] dark:text-[#f6f6f6]">Colores de las etiquetas de acción</h3>
+      <h3 className="text-sm font-semibold text-[#001631] dark:text-[#f6f6f6]">{titulo}</h3>
       <p className="mt-1 text-sm text-gray-500 dark:text-[#94a3b8]">
-        La etiqueta aparece al pasar el puntero o llegar con el teclado a cada botón. Para que se
-        lea bien, la letra debe contrastar al menos {String(CONTRASTE_MINIMO).replace('.', ',')}:1
-        con el fondo.
+        {descripcion} Para que se lea bien, la letra debe contrastar al menos{' '}
+        {String(CONTRASTE_MINIMO).replace('.', ',')}:1 con el fondo.
       </p>
 
-      {GRUPOS.map(({ grupo, titulo }) => (
-        <div key={grupo} className="mt-5">
-          <h4 className="text-xs font-semibold tracking-wide text-zinc-600 uppercase dark:text-[#b7c0d6]">{titulo}</h4>
-          <ul className="mt-2 grid gap-3 @xl:grid-cols-2 @4xl:grid-cols-3">
-            {ACCIONES_DEL_PANEL.filter((accion) => accion.grupo === grupo).map((accion) => (
-              <FilaDeAccion
-                key={accion.id}
-                accion={accion}
-                colores={colores[accion.id]}
-                cambiada={!iguales(colores[accion.id], guardados[accion.id])}
-                puedeEditar={puedeEditar && !guardando}
-                onCambiar={(campo, valor) => cambiar(accion.id, campo, valor)}
-              />
-            ))}
-          </ul>
-        </div>
-      ))}
+      <div className="mt-4 flex flex-col gap-3">
+        {grupos.map(({ grupo, titulo: tituloDelGrupo }) => {
+          const elementos = catalogo.filter((elemento) => elemento.grupo === grupo);
+          const pendientes = elementos.filter(sinGuardar).length;
+          const propios = elementos.filter(propio).length;
+          return (
+            <SeccionAcordeon
+              key={grupo}
+              titulo={tituloDelGrupo}
+              variante="anidada"
+              nivel="h4"
+              detalle={
+                // Visible con el acordeón plegado: que no se olvide un cambio sin guardar.
+                pendientes > 0 ? (
+                  <span className="text-xs font-medium text-[#2a7d00] dark:text-[#9ad14a]">
+                    {pendientes} sin guardar
+                  </span>
+                ) : (
+                  <span className="text-xs text-gray-500 dark:text-[#94a3b8]">
+                    {propios > 0 ? `${propios} de ${elementos.length} con color propio` : `${elementos.length} de fábrica`}
+                  </span>
+                )
+              }
+            >
+              <ul className="grid gap-3 @xl:grid-cols-2 @4xl:grid-cols-3">
+                {elementos.map((elemento) => (
+                  <FilaDeColor
+                    key={elemento.id}
+                    elemento={elemento}
+                    colores={colores[elemento.id]}
+                    muestra={muestra}
+                    cambiada={sinGuardar(elemento)}
+                    puedeEditar={puedeEditar && !guardando}
+                    onCambiar={(campo, valor) => cambiar(elemento.id, campo, valor)}
+                  />
+                ))}
+              </ul>
+            </SeccionAcordeon>
+          );
+        })}
+      </div>
 
       {puedeEditar && (
-        <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button
             type="button"
             plain
             className="min-h-11"
             disabled={guardando || sonLosDeFabrica}
-            onClick={() => setColores(COLORES_DE_FABRICA)}
+            onClick={() => setColores(Object.fromEntries(catalogo.map((elemento) => [elemento.id, deFabrica(elemento)])))}
           >
             Volver a los de fábrica
           </Button>
@@ -118,7 +161,7 @@ export function ColoresDeAcciones({
             Descartar cambios
           </Button>
           <Button type="button" className="min-h-11" disabled={guardando || !hayCambios} onClick={() => void guardar()}>
-            {guardando ? 'Guardando…' : 'Guardar colores'}
+            {guardando ? 'Guardando…' : textoGuardar}
           </Button>
         </div>
       )}
@@ -126,24 +169,34 @@ export function ColoresDeAcciones({
   );
 }
 
-/** Una acción: su etiqueta de muestra, los dos selectores y si se lee bien. */
-function FilaDeAccion({
-  accion,
+/** Un elemento: su muestra, los dos selectores y si se lee bien. */
+function FilaDeColor({
+  elemento,
   colores,
+  muestra,
   cambiada,
   puedeEditar,
   onCambiar,
 }: {
-  accion: AccionDelPanel;
+  elemento: ElementoConColor;
   colores: ColoresDeAccion;
+  muestra: keyof typeof MUESTRA;
   cambiada: boolean;
   puedeEditar: boolean;
   onCambiar: (campo: keyof ColoresDeAccion, valor: string) => void;
 }) {
-  const { nombre, dondeAparece, id } = accion;
+  const { nombre, dondeAparece, id } = elemento;
   const relacion = contraste(colores.fondo, colores.texto);
   const legible = relacion >= CONTRASTE_MINIMO;
   const sugerida = letraLegible(colores.fondo);
+  // Con borde los que lo llevan en el panel: «Rechazar» (del color de la letra) y los
+  // botones secundarios (gris), que sin él se perderían sobre el fondo blanco.
+  const borde =
+    muestra === 'etiqueta' && id === 'rechazar'
+      ? 'border border-current'
+      : muestra === 'boton' && id.startsWith('secundario')
+        ? 'border border-[#d0d5dd]'
+        : '';
 
   return (
     <li
@@ -159,12 +212,9 @@ function FilaDeAccion({
           </p>
           <p className="text-xs text-gray-500 dark:text-[#94a3b8]">{dondeAparece}</p>
         </div>
-        {/* La etiqueta tal como sale: la forma de `TOOLTIP_ENCIMA`, con estos colores. */}
         <span
           aria-hidden="true"
-          className={`shrink-0 rounded-md px-2.5 py-1 text-xs font-semibold whitespace-nowrap shadow-[0_2px_8px_rgba(0,0,0,0.25)] ${
-            id === 'rechazar' ? 'border border-current' : ''
-          }`}
+          className={`shrink-0 font-semibold whitespace-nowrap ${MUESTRA[muestra]} ${borde}`}
           style={{ backgroundColor: colores.fondo, color: colores.texto }}
         >
           {nombre}
@@ -174,14 +224,14 @@ function FilaDeAccion({
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <SelectorDeColor
           etiqueta="Fondo"
-          nombreAccesible={`Color de fondo de la etiqueta «${nombre}»`}
+          nombreAccesible={`Color de fondo de «${nombre}»`}
           valor={colores.fondo}
           disabled={!puedeEditar}
           onCambiar={(valor) => onCambiar('fondo', valor)}
         />
         <SelectorDeColor
           etiqueta="Letra"
-          nombreAccesible={`Color de la letra de la etiqueta «${nombre}»`}
+          nombreAccesible={`Color de la letra de «${nombre}»`}
           valor={colores.texto}
           disabled={!puedeEditar}
           onCambiar={(valor) => onCambiar('texto', valor)}
