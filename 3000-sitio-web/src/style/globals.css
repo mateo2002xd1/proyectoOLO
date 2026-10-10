@@ -2239,9 +2239,12 @@ body:has(.navegacion-mobile.es-oculta:not(:focus-within)) .navegacion-mobile-res
    Es un `<dialog>`: el navegador le pone `display: none` cerrado, así que el
    `display: flex` va solo con `[open]`. Cabe siempre (2-convenciones §10.4): alto
    máximo con `dvh` y la lista con su propio scroll. */
+/* Todo el ancho hasta tablet (`md`, 48rem): en un móvil grande los 32rem dejaban franjas a
+   los lados. Desde tablet vuelve a 32rem centrada, que una hoja de dos filas a lo ancho de
+   una pantalla de 1000 px queda perdida. */
 .navegacion-mobile-hoja {
   width: 100%;
-  max-width: 32rem;
+  max-width: none;
   max-height: calc(100dvh - 2rem);
   margin: auto auto 0;
   padding: 0 0 env(safe-area-inset-bottom, 0px);
@@ -2250,6 +2253,12 @@ body:has(.navegacion-mobile.es-oculta:not(:focus-within)) .navegacion-mobile-res
   background: var(--navegacion-mobile-fondo);
   color: var(--navegacion-mobile-hoja-texto);
   box-shadow: 0 -8px 32px rgb(0 0 0 / 0.2);
+}
+
+@media (width >= 48rem) {
+  .navegacion-mobile-hoja {
+    max-width: 32rem;
+  }
 }
 
 .navegacion-mobile-hoja[open] {

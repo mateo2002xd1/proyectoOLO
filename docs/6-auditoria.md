@@ -5,6 +5,21 @@
 
 ---
 
+## sesión 09-10-2026 (29.ª parte): la hoja de «Accesos» del móvil, a todo el ancho hasta tablet
+
+**Qué se pidió.** Que las opciones que suben desde abajo al tocar «Accesos» en la barra móvil
+(Usuarios, Roles y Permisos) ocupen todo el ancho hasta el breakpoint de tablet.
+
+**Lo que se hizo.** `.navegacion-mobile-hoja` (`globals.css` del sitio) pasa de `max-width: 32rem`
+a `none`, y desde `md` (48rem, tablet según 2-convenciones) vuelve a `32rem` centrada hasta que
+la barra móvil se oculta en `lg`. Antes, entre 512 y 768 px, la hoja dejaba franjas a los lados.
+
+**Cómo se probó.** El CSS del servidor de desarrollo trae la regla base con `max-width: none` y
+la de `@media (min-width: 48rem)` con `32rem`. No se vio en el navegador. La intranet tiene su
+propia barra móvil y no se tocó.
+
+---
+
 ## sesión 09-10-2026 (28.ª parte): los tooltips ya no se parten letra por letra en tarjetas
 
 **Qué era.** Con la tabla de Usuarios en tarjetas, «Editar usuario» salía en una columna de
