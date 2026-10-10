@@ -2,7 +2,10 @@ import { GooLoader } from '@/shared/ui/atoms/goo-loader';
 
 interface CargandoSeccionProps {
   label?: string;
-  /** Clases extra del contenedor (p. ej. otro alto mínimo dentro de una tabla). */
+  /**
+   * Solo para un loader dentro de una tarjeta (p. ej. `min-h-[14rem]` en Actualizaciones):
+   * queda en el flujo con ese alto. Sin `className`, llena el espacio de la sección.
+   */
   className?: string;
 }
 
@@ -12,16 +15,16 @@ interface CargandoSeccionProps {
  * panel ya descuenta la barra superior y lateral, así que ocupar la pantalla
  * entera empujaba la animación fuera del recuadro visible y se veía cortada.
  *
- * Por defecto cubre el 100 % del ancho y del alto de `<main>` (`absolute inset-0`;
- * `<main>` es `relative` en `sidebar-layout.tsx`) y queda en su centro. Con
- * `min-h-[60vh]` se dibujaba arriba del área y se veía alto. Sirve porque la
- * transición entre rutas anima `margin-top` y no `transform`: un `transform` haría de
- * su contenedor, sin alto, el bloque de referencia. Dentro de una tabla o tarjeta se
- * pasa `className` (p. ej. `min-h-[40vh]`) y se queda en el flujo.
+ * Por defecto llena lo que le queda a su sección dentro de `<main>`, sea cual sea el
+ * encabezado o los filtros que tenga encima, y se centra ahí: lo hace la clase
+ * `cargando-seccion--relleno` con la regla de `globals.css` («Loader que llena su
+ * sección»), solo con CSS. Antes cada sección le daba un alto fijo (`min-h-[40vh]`) que no
+ * tenía que ver con el espacio real.
  */
-export function CargandoSeccion({ label = 'Cargando...', className = 'absolute inset-0' }: CargandoSeccionProps) {
+export function CargandoSeccion({ label = 'Cargando...', className }: CargandoSeccionProps) {
+  const clase = className ?? 'cargando-seccion--relleno';
   return (
-    <div role="status" aria-live="polite" className={`flex w-full items-center justify-center py-8 ${className}`}>
+    <div role="status" aria-live="polite" className={`flex w-full items-center justify-center py-8 ${clase}`}>
       <GooLoader label={label} />
     </div>
   );

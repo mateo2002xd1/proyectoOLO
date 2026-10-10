@@ -165,7 +165,7 @@ export function RespaldosView() {
       {error && !registros.length ? (
         <p className="text-sm text-red-600">{error}</p>
       ) : isLoading ? (
-        <CargandoSeccion label="Cargando respaldos..." className="min-h-[40vh]" />
+        <CargandoSeccion label="Cargando respaldos..." />
       ) : registrosRestaurables.length === 0 ? (
         <p className="text-sm text-zinc-500">No hay páginas con versiones anteriores disponibles para restaurar.</p>
       ) : registrosFiltrados.length === 0 ? (

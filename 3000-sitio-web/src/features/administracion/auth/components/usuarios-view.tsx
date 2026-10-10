@@ -457,6 +457,11 @@ export default function UsuariosView() {
         />
       </div>
 
+      {/* Cargando, el loader va en lugar de la tabla y no en una de sus filas: así llena el
+          espacio de la sección como en las demás (una celda no se puede estirar). */}
+      {loading ? (
+        <CargandoSeccion label="Cargando usuarios..." />
+      ) : (
       <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-[#7db828]/30 dark:bg-[#0b1121]">
         <div className="overflow-x-auto">
           <table className="olo-tabla-apilable min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -483,13 +488,7 @@ export default function UsuariosView() {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-              {loading ? (
-                <tr className="block md:table-row">
-                  <td colSpan={6} className="block md:table-cell">
-                    <CargandoSeccion label="Cargando usuarios..." className="min-h-[40vh]" />
-                  </td>
-                </tr>
-              ) : usuariosFiltrados.length === 0 ? (
+              {usuariosFiltrados.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-8 text-center text-sm text-zinc-500">
                     {busqueda ? `Sin resultados para "${busqueda}"` : 'No hay usuarios registrados.'}
@@ -591,6 +590,7 @@ export default function UsuariosView() {
           className="px-6"
         />
       </div>
+      )}
 
       {showNotification && (
         <Notification

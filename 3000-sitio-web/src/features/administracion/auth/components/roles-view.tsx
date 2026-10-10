@@ -401,6 +401,11 @@ export default function RolesView() {
         />
       </div>
 
+      {/* Cargando, el loader va en lugar de la tabla y no en una de sus filas: así llena el
+          espacio de la sección como en las demás (una celda no se puede estirar). */}
+      {loading ? (
+        <CargandoSeccion label="Cargando roles..." />
+      ) : (
       <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-[#7db828]/30 dark:bg-[#131b2f]">
         <table className="olo-tabla-apilable w-full text-left text-sm">
           <thead className="border-b border-zinc-100 bg-zinc-50 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:border-zinc-800 dark:bg-[#0f1624] dark:text-[#94a3b8]">
@@ -412,13 +417,7 @@ export default function RolesView() {
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-            {loading ? (
-              <tr>
-                <td colSpan={5}>
-                  <CargandoSeccion label="Cargando roles..." className="min-h-[40vh]" />
-                </td>
-              </tr>
-            ) : rolesPagina.length === 0 ? (
+            {rolesPagina.length === 0 ? (
               <tr>
                 <td colSpan={5} className="py-12 text-center text-sm text-zinc-400 dark:text-zinc-500">
                   {busqueda ? `Sin resultados para "${busqueda}"` : 'No hay roles registrados.'}
@@ -504,6 +503,7 @@ export default function RolesView() {
           className="px-5"
         />
       </div>
+      )}
 
       <ModalNuevoEditor
         key={aperturaModalRol}

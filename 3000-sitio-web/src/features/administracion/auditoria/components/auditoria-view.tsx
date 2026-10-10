@@ -149,7 +149,7 @@ export function AuditoriaView() {
       {error ? (
         <p className="text-sm text-red-600">{error}</p>
       ) : isLoading ? (
-        <CargandoSeccion label="Cargando bitácora..." className="min-h-[40vh]" />
+        <CargandoSeccion label="Cargando bitácora..." />
       ) : registros.length === 0 ? (
         <p className="text-sm text-zinc-500">
           {hayFiltros
