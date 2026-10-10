@@ -56,6 +56,27 @@ La regla está una sola vez, en `shared/password-policy.ts` (`HORAS_DE_VIGENCIA_
 
 ---
 
+## sesión 09-10-2026 (15.ª parte): encabezado «Preguntas de seguridad» en el primer ingreso y en la recuperación
+
+**Qué se pidió.** Un `h2` «Preguntas de seguridad» sobre la pregunta. Se hizo primero en el
+primer ingreso (en lugar de la etiqueta del desplegable); el usuario aclaró después que lo
+quería en la recuperación, en lugar de «Responde tus preguntas». Quedaron las dos iguales.
+
+**Lo que se hizo.**
+
+| Archivo | Cambio |
+|---|---|
+| `first-login-flow.tsx` | `h2` «Preguntas de seguridad» (20 px, Medium) con «(Pregunta 1 de 3)» debajo en 16 px sin negrita: el mismo patrón que «Responde tus preguntas» en la recuperación |
+| `auth-ui.tsx` | `AuthSelectField` admite `etiquetaOculta`: la etiqueta queda solo para el lector de pantalla (`sr-only`), así el desplegable sigue teniendo nombre sin repetir lo que ya dice el encabezado |
+| `security-questions-view.tsx` | «Responde tus preguntas» pasa a «Preguntas de seguridad», y el contador a «(Pregunta 1 de 3)» para no repetir «de seguridad» |
+| `manual-de-usuario-formato.md` | El paso 2 del primer ingreso y el paso 3 de la recuperación nombran el encabezado |
+
+**Cómo se probó.** Arnés de siempre en Chrome sin ventana a 6 anchos, primer ingreso y
+recuperación completos, sin errores en la consola; capturas a 360 y 1280 con el encabezado y
+el contador. `tsc --noEmit` del sitio y `eslint` de los dos archivos, limpios.
+
+---
+
 ## sesión 09-10-2026 (14.ª parte): mitad izquierda en blanco y el número de la pregunta junto a la pregunta
 
 **Qué se pidió.** En las pantallas de acceso del panel, que la mitad izquierda del escritorio,
