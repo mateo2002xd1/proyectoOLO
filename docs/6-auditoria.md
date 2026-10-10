@@ -5,6 +5,85 @@
 
 ---
 
+## sesión 09-10-2026 (19.ª parte): respaldos — cada fila dice «Sitio web /inicio · versión 43»
+
+**Qué se pidió.** En `/admin/respaldos`, la columna «Página» se leía «inicio Sitio web
+· versión 43»: el título, después la etiqueta del ámbito y la versión. El usuario la quiere
+en el orden ámbito → página o sección → versión: «Sitio web /inicio · versión 43».
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| FE | `3000-sitio-web/.../respaldos/components/respaldos-view.tsx` | La etiqueta del ámbito va primero; en vez del título, la ruta (`/{slug}`), que es como ya la nombran los modales de restaurar y de vista previa y sirve igual para una página que para una sección; la versión al final |
+
+**Cómo se probó.** `tsc --noEmit` y `eslint` del archivo, limpios. No se miró en el navegador:
+la pantalla pide sesión de administrador.
+
+> **Aviso.** El título de la página deja de verse en la fila. Si dos páginas se titulan
+> distinto de su ruta y hace falta el título, puede volver como segunda línea.
+
+**Pendiente al cierre.** Mirar `/admin/respaldos` con sesión, a 360 y 1280 (en el móvil la
+fila pasa a tarjeta, `olo-tabla-apilable`).
+
+---
+
+## sesión 09-10-2026 (18.ª parte): los modales del panel y del editor con las medidas del acceso, y el editor en Poppins
+
+**Qué se pidió.** Dar a todos los modales del panel y del editor (los de cerrar sesión, enviar
+a revisión...) la misma simetría de las pantallas de acceso: los bordes de los campos y de los
+botones, y llevar la letra del panel (Poppins) también al editor.
+
+**Las medidas** (las de `auth-ui.tsx`): caja con esquinas de 32; título de 20 px Semibold en
+`#001631`; texto de 16; etiquetas de 16 Medium; campos y botones de 44 px de alto con
+esquinas de 32 y borde `#d9d9d9`; acción principal en `#001631` (en los modales deja de ser
+verde); «Eliminar» sigue en rojo; áreas de texto y mensajes de estado con esquinas de 16.
+
+**Lo que se hizo.** Se centralizó en vez de tocar botón por botón:
+
+| Pieza | Cambio |
+|---|---|
+| `shared/ui/atoms/button.tsx` | `FormaDeModal` (contexto) y `useEnModal`. Dentro de un modal, `Button` toma las medidas y colores de modal; fuera, no cambia nada |
+| `shared/ui/molecules/alert.tsx` | `Alert` pone `FormaDeModal`; caja de 32, título de 20, texto de 16; exporta `campoDeModalClass`, `areaDeModalClass` y `etiquetaDeModalClass` |
+| `custom-select.tsx`, `date-picker.tsx` | Dentro de un modal, esquinas de 32, borde `#d9d9d9` y letra de 16 (con `useEnModal`; el `compacto` no cambia) |
+| `roles-view.tsx` (Nuevo editor), `formulario-proyecto-inversion.tsx`, `modal-permisos.tsx` | Campos, áreas y etiquetas con las clases de `alert.tsx`; «Añadir permisos» pasa a `Button`; permisos usa `FormaDeModal` en su caja propia; el error del formulario de inversión pasa a banda de 16 |
+| `modal-depurar-auditoria.tsx`, `modal-depurar-versiones.tsx`, `modal-diagrama-visitas.tsx`, Notificaciones (`panel-general.tsx`) | Caja de 32, título de 20 en `#001631`, botones de 44 con esquinas de 32; los rojos no parten el texto y el pie hace `wrap` |
+| `buscador-modal.tsx` | El campo de búsqueda con esquinas de 32 y borde `#d9d9d9` |
+| `globals.css` `.olo-modal-*` (Enviar a revisión, Guardar borrador, Hay cambios sin guardar) y `.nueva-seccion-*` (Cerrar sesión, Nueva página, Eliminar página) | Las mismas medidas en CSS; títulos con `font-family: inherit` (si no, `--font-heading` los dejaba en Arial) y botones sin partir el texto |
+| `modal-cerrar-sesion.tsx`, `modal-nueva-seccion.tsx`, `modal-eliminar-seccion.tsx` | `poppins.className` en la caja: salen también en el portal público, donde no hay `LetraDelPanel` |
+| `app/editor/[slug]/page.tsx` | Envoltorio `display: contents` con `poppins.className` y `--puck-font-family`, `--font-heading` y `--font-body` en Poppins: la interfaz de Puck (pedía Inter, que no se carga), la barra y los modales. El lienzo no cambia: Puck lo dibuja en un iframe y le copia las hojas de estilo, no los estilos en línea |
+| `aviso-rechazo.tsx`, `editor-client.tsx` | Avisos de estado con esquinas de 16; el de rechazo en Poppins (sale por portal) |
+| `manual-de-usuario-formato.md` | «Copiar» y «Editar permisos» pasan de «botón verde» a «botón azul oscuro» |
+
+**Cómo se probó.** Con el arnés de siempre (componentes reales, API simulada, Chrome sin
+ventana), sin tocar Neon ni el servidor de desarrollo: 8 modales (formulario en `Alert` con
+campo, desplegable, fecha y área; permisos con rol y con la lista; depurar versiones; cerrar
+sesión; nueva página; eliminar página; enviar a revisión del editor) a 360 y a 1280 px.
+
+| Comprobación | Resultado |
+|---|---|
+| Caja | 32 px en los 8 |
+| Título | 20 px, 600, `#001631`, Poppins pintada en los 8 |
+| Campos, desplegables, fecha | 44 px, esquinas de 32, borde `#d9d9d9`, 16 px |
+| Áreas de texto | Esquinas de 16 |
+| Botones | 44 px, esquinas de 32; principal `#001631`, peligro rojo; Poppins pintada |
+| Desborde horizontal, errores de consola | Ninguno |
+
+En la primera pasada salieron dos fallos, ya corregidos: los títulos de los modales del editor y
+de secciones en Arial, y «Crear y editar» y «Depurar 12 versiones» partidos en dos o tres
+líneas a 360 px. Tipos de los 25 archivos tocados o afectados, limpios (con la API de
+TypeScript archivo por archivo: el `tsc` completo se cortaba en los marcadores del merge, ya
+resuelto). `eslint`, limpio salvo errores que ya estaban en `modal-permisos.tsx` y
+`roles-view.tsx` (las mismas reglas en el último commit).
+
+**Pendiente al cierre:**
+
+- Los tres campos de texto de «Nuevo usuario» (`usuarios-view.tsx`) siguen con la forma vieja:
+  el archivo tiene cambios de otra persona sin commitear y no se tocó. Sus botones,
+  desplegable y fecha ya cambian solos. Falta poner `campoDeModalClass` y
+  `etiquetaDeModalClass` cuando eso entre.
+- No se probó en el navegador con sesión real (el editor completo con Puck).
+
+---
+
 ## sesión 09-10-2026 (17.ª parte): merge de la PR #140 de Mateo con los cambios propios conservados
 
 **Qué era.** Al traer `OLO/dev` (4 commits de Mateo, PR #140) chocaron 6 archivos. Mateo

@@ -1177,7 +1177,7 @@ En este apartado se gestionan las cuentas individuales de los funcionarios que i
 > *Formulario modal de registro de nuevo usuario. (Móvil).*
 
    Al confirmar la creación mediante el botón **"Guardar"**, el sistema genera automáticamente una **contraseña temporal provisoria** y la despliega en una segunda ventana modal ("Contraseña temporal generada").
-   * **Validación de copiado obligatorio:** Por seguridad, el sistema advierte que la contraseña no se podrá volver a visualizar y **bloquea el botón "Cerrar"** de la ventana hasta que el Administrador presione obligatoriamente el botón verde de **"Copiar"**.
+   * **Validación de copiado obligatorio:** Por seguridad, el sistema advierte que la contraseña no se podrá volver a visualizar y **bloquea el botón "Cerrar"** de la ventana hasta que el Administrador presione obligatoriamente el botón azul oscuro de **"Copiar"**.
    * **Responsabilidad de comunicación:** Una vez copiada, el Administrador debe hacerle llegar esta clave al nuevo funcionario a través de los canales internos del SENA (correo electrónico corporativo, chat interno u otro medio formal), ya que la plataforma no envía notificaciones de bienvenida de forma automática.
    * En el primer inicio de sesión del funcionario, el sistema le exigirá de forma obligatoria el cambio de clave y la configuración de sus preguntas de seguridad (ver [Sección 3.4.1.1: Flujo de Primer Ingreso](#3411-flujo-de-primer-ingreso)).
 
@@ -2566,7 +2566,7 @@ La administración de cuentas en el sistema (detallada operativamente en la [Sec
 ##### 2. Interfaz de Credenciales "Atrapada" (Botón de Cerrar Bloqueado)
 * **Situación:** Se acaba de generar la contraseña temporal para un funcionario nuevo (o tras restablecerla), pero el botón de "Cerrar" aparece deshabilitado y no se puede salir de la ventana.
 * **Posible causa:** Como mecanismo de prevención contra pérdida de claves irrecuperables, el aplicativo exige constancia de respaldo antes de cerrar.
-* **Acción correctiva:** Presionar obligatoriamente el botón verde **"Copiar"**. Inmediatamente después de pulsarlo, el sistema liberará la acción y habilitará el botón de cierre.
+* **Acción correctiva:** Presionar obligatoriamente el botón azul oscuro **"Copiar"**. Inmediatamente después de pulsarlo, el sistema liberará la acción y habilitará el botón de cierre.
 
 ##### 3. Alerta de "Fecha de caducidad vencida" al Intentar Activar
 * **Situación:** Al encender el interruptor de "Estado" para devolver el acceso a un funcionario previamente suspendido, el sistema muestra una alerta de error y apaga el interruptor por la fuerza.
@@ -2629,7 +2629,7 @@ La configuración de roles y la asignación de permisos (cuyo procedimiento oper
 * **Acción correctiva:**
   1. Ingresar a este módulo (**Roles y Permisos**).
   2. Localizar el rol derivado y hacer clic en el ícono de **lápiz**.
-  3. Pulsar el botón verde **"Editar permisos"**.
+  3. Pulsar el botón azul oscuro **"Editar permisos"**.
   4. Ubicar la página creada dentro de la sección correspondiente (*"Secciones del sitio web"* o *"Secciones de la intranet"*), utilizando el buscador interno si es necesario.
   5. Activar el interruptor de la página (el sistema mostrará la insignia *«se añade»*) y hacer clic en **"Guardar permisos"**.
 
