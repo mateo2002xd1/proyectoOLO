@@ -321,9 +321,6 @@ function ModalConfirmarAccion({
           <p className="olo-modal-texto">{contenido.descripcion}</p>
           {contenido.pideComentario && (
             <div className="olo-modal-comentario">
-              <label htmlFor="olo-modal-comentario-campo" className="olo-modal-comentario-etiqueta">
-                Describe tus cambios <span className="olo-modal-comentario-obligatorio">(requerido)</span>
-              </label>
               {/* Primer elemento enfocable del diálogo: `showModal()` lo enfoca solo, así
                   que se puede escribir sin tener que hacer clic. */}
               <textarea
@@ -517,17 +514,7 @@ function PantallaEnvioExitoso({
           Tus cambios quedaron guardados y fueron enviados al administrador para su revisión y publicación.
         </p>
 
-        <div className="olo-pantalla-exito-acciones">
-          <button
-            type="button"
-            onClick={onCerrar}
-            className="olo-pantalla-exito-btn"
-            autoFocus
-          >
-            Volver al inicio
-          </button>
         </div>
-      </div>
     </div>
   );
 }

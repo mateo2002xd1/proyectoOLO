@@ -343,9 +343,6 @@ function ModalConfirmarAccion({
           <p className="olo-modal-texto">{contenido.descripcion}</p>
           {contenido.pideComentario && (
             <div className="olo-modal-comentario">
-              <label htmlFor="olo-modal-comentario-campo" className="olo-modal-comentario-etiqueta">
-                Describe tus cambios <span className="olo-modal-comentario-obligatorio">(requerido)</span>
-              </label>
               {/* Primer elemento enfocable del diálogo: `showModal()` lo enfoca solo, así
                   que se puede escribir sin tener que hacer clic. */}
               <textarea
@@ -537,16 +534,6 @@ function PantallaEnvioExitoso({
           Tus cambios quedaron guardados y fueron enviados al administrador para su revisión y publicación.
         </p>
 
-        <div className="olo-pantalla-exito-acciones">
-          <button
-            type="button"
-            onClick={onCerrar}
-            className="olo-pantalla-exito-btn"
-            autoFocus
-          >
-            Volver al inicio
-          </button>
-        </div>
       </div>
     </div>
   );
@@ -610,12 +597,12 @@ export function PuckEditorWrapper({
   const [initialPuckData] = useState<Data>(() => {
     const raw = Array.isArray(initialData)
       ? {
-          content: initialData.map((bloque) => ({
-            type: bloque.type,
-            props: bloque.props,
-          })),
-          root: {},
-        }
+        content: initialData.map((bloque) => ({
+          type: bloque.type,
+          props: bloque.props,
+        })),
+        root: {},
+      }
       : (initialData as Data) ?? { content: [], root: {} };
 
     const contentNormalizado = (raw.content ?? []).map((item: any, idx: number) => {
@@ -916,17 +903,17 @@ export function PuckEditorWrapper({
     ? null
     : accionPendiente.tipo === 'guardar'
       ? {
-          titulo: '¿Guardar como borrador?',
-          descripcion:
-            'Se guarda tu progreso actual. Todavía no se envía a revisión ni se publica en el sitio.',
-          textoConfirmar: 'Guardar borrador',
-        }
+        titulo: '¿Guardar como borrador?',
+        descripcion:
+          'Se guarda tu progreso actual. Todavía no se envía a revisión ni se publica en el sitio.',
+        textoConfirmar: 'Guardar borrador',
+      }
       : {
-          titulo: '¿Enviar a revisión?',
-          descripcion: 'Un administrador revisará tus cambios antes de publicarlos.',
-          textoConfirmar: 'Enviar',
-          pideComentario: true,
-        };
+        titulo: '¿Enviar a revisión?',
+        descripcion: 'Un administrador revisará tus cambios antes de publicarlos.',
+        textoConfirmar: 'Enviar',
+        pideComentario: true,
+      };
 
   // Memorizado porque Puck reconstruye su store cada vez que cambia la identidad
   // de `overrides`.
