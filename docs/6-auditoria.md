@@ -5,6 +5,59 @@
 
 ---
 
+## sesión 09-10-2026 (24.ª parte): cargador centrado, hover de los iconos del menú, «Volver» en la vista previa y tooltips en la cola
+
+**Qué se pidió.** Centrar el cargador «Cargando panel general...», que los iconos del menú
+lateral cambien de color con el puntero, abrir la vista previa en la misma pestaña con un
+«Volver» a la derecha, tooltips del color de cada botón en la cola de revisión, y el cargador
+en Actualizaciones.
+
+**Lo que se hizo.**
+
+| Pieza | Archivo | Cambio |
+|---|---|---|
+| Cargador | `shared/ui/molecules/cargando-seccion.tsx` | Por defecto `absolute inset-0`: cubre el 100 % de ancho y alto de `<main>` (que es `relative`) y queda en su centro. Antes `min-h-[60vh]` lo dejaba arriba. Quien pasa `className` (tablas, tarjetas) sigue en el flujo |
+| Menú lateral | `shared/ui/organisms/sidebar.tsx` | `group-hover:[&>svg]` → `hover:[&>svg]` |
+| Grupo «Accesos» | `auth/components/panel-general.tsx` | No tenía regla de hover para el icono: se añade `hover:[&>svg]` |
+| Menú desplegable | `shared/ui/molecules/dropdown.tsx` | El mismo `group-hover` sobre sí mismo, corregido igual |
+| Ojo de la cola | `revision/components/revision-queue-view.tsx` | Sin `target="_blank"`: misma pestaña |
+| Vista previa del sitio | `app/preview/[slug]/page.tsx` | «Volver» a la derecha (44 px de alto): a `/admin/respaldos` si hay `versionId`, si no a `/admin/revision` |
+| Vista previa de la intranet | `3001-intranet/.../preview/[slug]/page.tsx` y `globals.css` | El mismo «Volver», al panel del sitio (`SITE_URL`); clase `.preview-aviso-volver` |
+| Botones de la cola | `revision-queue-view.tsx` | Tooltip encima de cada botón («Visualizar», «Aprobar», «Rechazar», «Eliminar»), del color del botón y con la forma de `.fab-speed-dial__tooltip`; solo con la tabla completa. Se quitan los `title` (salían dos tooltips) y los rótulos pasan a «Visualizar» y «Eliminar» |
+| Actualizaciones | `carga-fuentes-futuras`, `carga-programa-sobresalientes`, `historial-cargas-tendencia`, `carga-alertas-inversion` | `CargandoSeccion` en vez del texto «Cargando historial...»; en Alertas uno solo para historial y proyectos, que llegan juntos |
+
+**Por qué el hover no cambiaba el color.** El elemento del menú lleva `group` y sus iconos se
+pintaban con `group-hover:[&>svg]:…`. En Tailwind 4 eso compila a
+`:is(:where(.group):hover *) > svg`: exige estar *dentro* de un `.group` con el puntero encima, y
+aquí el `.group` es el propio elemento, así que nunca aplicaba.
+
+**Por qué `absolute` sirve en el cargador.** La transición entre rutas (`.olo-route-transition`)
+anima `margin-top` y no `transform`. Un `transform` haría de su contenedor, sin alto, el bloque
+de referencia del `absolute`.
+
+**Contraste de los tooltips.** Letra `#0d1526` sobre el azul, el verde y el rojo (7,0, 7,5 y
+4,7:1); con blanco serían 2,6, 2,4 y 3,8:1, por debajo del 4,5:1 que pide un texto de 12 px.
+En «Rechazar», fondo rosa con borde `#FF1F1F` y letra `#d11a1a` (4,7:1; la del icono da 3,3:1).
+
+**Cómo se probó.**
+
+| Comprobación | Resultado |
+|---|---|
+| `tsc --noEmit` del sitio y de la intranet | Limpios |
+| `eslint` de los archivos tocados | Limpio salvo los 2 avisos que ya había (el `<img>` del logo en `panel-general.tsx`) |
+| CSS del servidor de desarrollo | Genera `group-hover/accion:opacity-100`, `hover:[&>svg]:text-[#7DB728]` (`:hover > svg`), `text-[#d11a1a]`, `@3xl:block`, `inset-0` |
+
+No se vio en el navegador.
+
+**Pendiente al cierre:**
+
+- Respaldos sigue abriendo la vista previa en pestaña nueva; su «Volver» lleva a Respaldos en esa pestaña.
+- La barra de la vista previa de la intranet sigue en ámbar.
+- El comentario de `revision-queue-view.tsx` dice que la sesión es la misma en las dos apps;
+  desde que tienen cookies separadas, ir a la vista previa de la intranet puede pedir entrar.
+
+---
+
 ## sesión 09-10-2026 (23.ª parte): la barra de la vista previa, solo «Vista previa» en azul
 
 **Qué se pidió.** En la vista previa del sitio (`app/preview/[slug]/page.tsx`), dejar solo la

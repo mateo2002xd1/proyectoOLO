@@ -6059,6 +6059,27 @@ body:has(.preview-page) .intranet-topbar {
   opacity: 0.85;
 }
 
+/* 44 px de alto: es lo único pulsable de la barra y se toca con el dedo. */
+.preview-aviso-volver {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 0.75rem;
+  border-radius: 16px;
+  font-weight: 600;
+  color: inherit;
+  text-decoration: none;
+}
+
+.preview-aviso-volver:hover {
+  background: rgb(0 0 0 / 0.06);
+}
+
+.preview-aviso-volver:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
 @media (width < 48rem) {
   .preview-aviso-nota {
     margin-left: 0;

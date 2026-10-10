@@ -29,7 +29,20 @@ function enlaceDeVistaPrevia(pagina: PaginaEnRevision): string {
 
 
 const BOTON =
-  'flex h-11 items-center justify-center gap-2 rounded-[16px] border border-transparent px-3 text-sm font-medium transition-colors focus:outline-none focus:ring-2 @3xl:h-9 @3xl:w-12 @3xl:px-0';
+  'group/accion relative flex h-11 items-center justify-center gap-2 rounded-[16px] border border-transparent px-3 text-sm font-medium transition-colors focus:outline-none focus:ring-2 @3xl:h-9 @3xl:w-12 @3xl:px-0';
+
+/**
+ * El nombre de cada acción al pasar el puntero o llegar con el teclado, del color de su
+ * botón y con la forma de los del botón de edición (`.fab-speed-dial__tooltip`). Solo con
+ * la tabla completa: en tarjetas el botón ya lleva el nombre escrito. Va encima del botón
+ * porque a la derecha no cabe. Es `aria-hidden`: el nombre ya lo dice el `sr-only`.
+ *
+ * La letra va en azul oscuro sobre los colores vivos y no en blanco: con blanco, el azul
+ * y el verde dan 2,6 y 2,4:1 y el rojo 3,8:1, y a 12 px hace falta 4,5:1
+ * (9-accesibilidad.md §2.1). En azul oscuro dan 7,0, 7,5 y 4,7:1.
+ */
+const TOOLTIP =
+  'pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden -translate-x-1/2 translate-y-1 whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold opacity-0 shadow-[0_2px_8px_rgba(0,0,0,0.25)] transition duration-150 group-hover/accion:translate-y-0 group-hover/accion:opacity-100 group-focus-visible/accion:translate-y-0 group-focus-visible/accion:opacity-100 motion-reduce:transition-none @3xl:block';
 
 const fecha = (iso: string) => {
   try {
@@ -256,46 +269,45 @@ export function RevisionQueueView() {
                     <div className="grid grid-cols-2 gap-2 @3xl:flex @3xl:items-center @3xl:justify-end">
                       <a
                         href={enlaceDeVistaPrevia(pagina)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title="Ver página"
                         className={`group ${BOTON} bg-[#1FACE3] text-white hover:brightness-95 focus:ring-[#1FACE3]/50`}
                       >
                         <span className="relative inline-block h-6 w-6">
                           <span className="absolute inset-0 flex items-center justify-center group-hover:hidden group-focus-visible:hidden"><IconoMascara nombre="eye-closed" tamano="h-6 w-6" /></span>
                           <span className="absolute inset-0 hidden items-center justify-center group-hover:flex group-focus-visible:flex"><IconoMascara nombre="eye-open" tamano="h-6 w-6" /></span>
                         </span>
-                        <span className="@3xl:sr-only">Ver página</span>
+                        <span className="@3xl:sr-only">Visualizar</span>
+                        <span aria-hidden="true" className={`${TOOLTIP} bg-[#1FACE3] text-[#0d1526]`}>Visualizar</span>
                       </a>
                       <button
                         type="button"
                         disabled={busySlug === pagina.slug}
                         onClick={() => handleAprobar(pagina)}
-                        title="Aprobar"
                         className={`${BOTON} bg-[#7DB728] text-white hover:brightness-95 focus:ring-[#7DB728]/50 disabled:cursor-not-allowed disabled:opacity-50`}
                       >
                         <IconoMascara nombre="send" />
                         <span className="@3xl:sr-only">Aprobar</span>
+                        <span aria-hidden="true" className={`${TOOLTIP} bg-[#7DB728] text-[#0d1526]`}>Aprobar</span>
                       </button>
                       <button
                         type="button"
                         disabled={busySlug === pagina.slug}
                         onClick={() => abrirRechazar(pagina)}
-                        title="Rechazar"
                         className={`${BOTON} border-[#FF1F1F] bg-[#FFE9E9] text-[#FF1F1F] hover:brightness-95 focus:ring-[#FF1F1F]/50 disabled:cursor-not-allowed disabled:opacity-50`}
                       >
                         <IconoMascara nombre="equiz" />
                         <span className="@3xl:sr-only">Rechazar</span>
+                        {/* `#d11a1a` y no el `#FF1F1F` del icono: sobre el rosa da 4,7:1; el del icono, 3,3:1. */}
+                        <span aria-hidden="true" className={`${TOOLTIP} border border-[#FF1F1F] bg-[#FFE9E9] text-[#d11a1a]`}>Rechazar</span>
                       </button>
                       <button
                         type="button"
                         disabled={busySlug === pagina.slug}
                         onClick={() => abrirEliminar(pagina)}
-                        title="Descartar esta versión sin publicar"
                         className={`${BOTON} bg-[#FF1F1F] text-white hover:brightness-95 focus:ring-[#FF1F1F]/50 disabled:cursor-not-allowed disabled:opacity-50`}
                       >
                         <IconoMascara nombre="trash" tamano="h-5 w-5" />
-                        <span className="@3xl:sr-only">Descartar</span>
+                        <span className="@3xl:sr-only">Eliminar</span>
+                        <span aria-hidden="true" className={`${TOOLTIP} bg-[#FF1F1F] text-[#0d1526]`}>Eliminar</span>
                       </button>
                     </div>
                   </td>

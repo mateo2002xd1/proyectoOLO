@@ -96,7 +96,7 @@ function SidebarGroup({
         onClick={() => setOpen((v) => !v)}
         className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-base font-semibold transition [&>svg]:size-5 [&>svg]:shrink-0 ${isActive
           ? 'bg-zinc-100 text-[#7DB728] dark:bg-brand-interactive/20 dark:text-brand-interactive [&>svg]:text-[#7DB728] dark:[&>svg]:text-brand-interactive'
-          : 'text-zinc-600 hover:bg-[#001631]/10 hover:text-[#7DB728] dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive [&>svg]:text-zinc-500 dark:[&>svg]:text-slate-400'
+          : 'text-zinc-600 hover:bg-[#001631]/10 hover:text-[#7DB728] dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive [&>svg]:text-zinc-500 dark:[&>svg]:text-slate-400 hover:[&>svg]:text-[#7DB728] dark:hover:[&>svg]:text-brand-interactive'
           }`}
         aria-expanded={open}
       >

@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import { ArrowDownTrayIcon, ArrowUpTrayIcon, InformationCircleIcon, PlusIcon } from '@heroicons/react/20/solid';
 import { mensajeDeErrorApi } from '@/shared/lib/errores-api';
+import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
 import { useCargasAlertasInversion } from '../hooks/use-cargas-alertas-inversion';
 import { descargarFormatoAlertasInversion, descargarFormatoSectoresCiiu } from '../services/observatorio.service';
 import { ActualizarSectoresCiiu } from './actualizar-sectores-ciiu';
@@ -153,27 +154,29 @@ export function CargaAlertasInversion({ puedeActualizar }: CargaAlertasInversion
         />
       )}
 
-      <div className="mt-6">
-        <h3 className="mb-2 text-sm font-bold text-gray-700 dark:text-zinc-300">Historial de cargas</h3>
-        {cargando ? (
-          <p className="text-sm text-gray-500 dark:text-[#94a3b8]">Cargando historial...</p>
-        ) : (
-          <HistorialCargasGrid cargas={cargas} onEliminar={puedeActualizar ? eliminarCarga : undefined} />
-        )}
-      </div>
+      {/* Historial y proyectos llegan en la misma carga (`cargando` es uno): un solo loader
+          para los dos, no dos animaciones seguidas en la misma tarjeta. */}
+      {cargando ? (
+        <div className="mt-6">
+          <CargandoSeccion label="Cargando historial y proyectos..." className="min-h-[14rem]" />
+        </div>
+      ) : (
+        <>
+          <div className="mt-6">
+            <h3 className="mb-2 text-sm font-bold text-gray-700 dark:text-zinc-300">Historial de cargas</h3>
+            <HistorialCargasGrid cargas={cargas} onEliminar={puedeActualizar ? eliminarCarga : undefined} />
+          </div>
 
-      <div className="mt-6">
-        <h3 className="mb-2 text-sm font-bold text-gray-700 dark:text-zinc-300">Proyectos registrados</h3>
-        {cargando ? (
-          <p className="text-sm text-gray-500 dark:text-[#94a3b8]">Cargando proyectos...</p>
-        ) : (
-          <ListaProyectosInversion
-            proyectos={proyectos}
-            onEliminar={puedeActualizar ? eliminarProyecto : undefined}
-            onLimpiar={puedeActualizar ? limpiarProyectos : undefined}
-          />
-        )}
-      </div>
+          <div className="mt-6">
+            <h3 className="mb-2 text-sm font-bold text-gray-700 dark:text-zinc-300">Proyectos registrados</h3>
+            <ListaProyectosInversion
+              proyectos={proyectos}
+              onEliminar={puedeActualizar ? eliminarProyecto : undefined}
+              onLimpiar={puedeActualizar ? limpiarProyectos : undefined}
+            />
+          </div>
+        </>
+      )}
 
       <FormularioProyectoInversion
         open={formularioAbierto}

@@ -3,6 +3,7 @@
 import { useRef } from 'react';
 import { ArrowUpTrayIcon, InformationCircleIcon } from '@heroicons/react/20/solid';
 import { useCargasProgramaSobresalientes } from '../hooks/use-cargas-programa-sobresalientes';
+import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
 import { BarraDeProgreso } from './barra-de-progreso';
 import { DescargarFormato } from './descargar-formato';
 import { HistorialCargasGrid } from './historial-cargas-grid';
@@ -83,7 +84,7 @@ export function CargaProgramaSobresalientes({ puedeActualizar }: CargaProgramaSo
       <div className="mt-6">
         <h3 className="mb-2 text-sm font-bold text-gray-700 dark:text-zinc-300">Historial de cargas</h3>
         {cargando ? (
-          <p className="text-sm text-gray-500 dark:text-[#94a3b8]">Cargando historial...</p>
+          <CargandoSeccion label="Cargando historial..." className="min-h-[14rem]" />
         ) : (
           <HistorialCargasGrid cargas={cargas} onEliminar={puedeActualizar ? eliminarCarga : undefined} />
         )}
