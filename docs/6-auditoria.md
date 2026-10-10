@@ -5,6 +5,23 @@
 
 ---
 
+## sesión 09-10-2026 (16.ª parte): sin «(Pregunta 1 de 3)» a la vista
+
+**Qué se pidió.** Quitar «(Pregunta 1 de 3)» de bajo el encabezado «Preguntas de seguridad».
+
+**Lo que se hizo.** Se quitó en las dos pantallas que lo tenían, la recuperación
+(`security-questions-view.tsx`) y el primer ingreso (`first-login-flow.tsx`), para que sigan
+iguales. El avance lo siguen dando las tres barras (`AuthProgressDots`), y el lector de
+pantalla sigue oyendo el número: en la recuperación, en el `sr-only` de la caja de la
+pregunta; en el primer ingreso, en la etiqueta oculta del desplegable. Manual actualizado en los
+dos pasos.
+
+**Cómo se probó.** Arnés de siempre en Chrome sin ventana a 6 anchos, primer ingreso y
+recuperación completos, sin errores en la consola. `tsc --noEmit` del sitio y `eslint` de los
+dos archivos, limpios.
+
+---
+
 ## sesión 09-10-2026 (15.ª parte): la contraseña temporal vence a las 72 horas (migración 043)
 
 **Qué se pidió.** Lo que quedó abierto en la 13.ª parte: que la contraseña temporal no valga

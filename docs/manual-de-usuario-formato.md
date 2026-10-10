@@ -550,7 +550,7 @@ Este procedimiento describe el paso a paso para el funcionario que inicia sesió
 > **[Captura: Contraseña Definitiva Sitio Web (Móvil)]**
 > *Campos de ingreso de contraseña temporal, nueva clave y confirmación con validador de políticas de seguridad en el Sitio Web. (Móvil).*
 
-5. **Configuración de preguntas de seguridad (paso 2):** En la pantalla "Protege el acceso a tu cuenta", se deben configurar obligatoriamente las tres preguntas de seguridad, una a la vez: bajo el encabezado **"Preguntas de seguridad"** se indica en cuál se va («Pregunta 1 de 3»). Así se habilita la recuperación de la cuenta ante un posible olvido:
+5. **Configuración de preguntas de seguridad (paso 2):** En la pantalla "Protege el acceso a tu cuenta", se deben configurar obligatoriamente las tres preguntas de seguridad, una a la vez, bajo el encabezado **"Preguntas de seguridad"**; tres barras indican en cuál se va. Así se habilita la recuperación de la cuenta ante un posible olvido:
    * Se despliega el menú selector y se elige una pregunta de la lista predefinida del sistema. Una pregunta ya elegida no se puede repetir.
    * Se escribe la respuesta correspondiente en el campo de texto. La respuesta es confidencial; no distingue mayúsculas de minúsculas ni tiene en cuenta los espacios al principio o al final.
    * Se pulsa el botón **"Continuar"** para repetir la selección con la segunda y tercera pregunta del catálogo. En la tercera, el botón dice **"Guardar"**.
@@ -799,7 +799,7 @@ Este procedimiento permite a cualquier funcionario restablecer de forma autónom
 > **[Captura: Ingreso de Correo de Recuperación Sitio Web (Móvil)]**
 > *Casilla de correo institucional diligenciada y botón 'Continuar' en el formulario de recuperación del Sitio Web. (Móvil).*
 
-3. **Respuesta a las preguntas de seguridad:** En la pantalla *"Validación de identidad"*, la interfaz despliega una a una las tres preguntas de seguridad seleccionadas por el usuario durante su primer ingreso; el avance se indica con tres barras. Bajo **"Preguntas de seguridad"** se indica el número de la pregunta (*"Pregunta 1 de 3"*) y se muestra la pregunta en un recuadro; se digita la respuesta en el campo **"Respuesta"** y se pulsa **"Continuar"**. La respuesta no distingue mayúsculas de minúsculas ni tiene en cuenta los espacios al principio o al final. Desde la segunda pregunta, **"Volver a la pregunta anterior"** permite corregir la anterior. Las tres se verifican juntas al final: si alguna no coincide, el sistema lo indica sin decir cuál y el cuestionario vuelve a empezar desde la primera pregunta.
+3. **Respuesta a las preguntas de seguridad:** En la pantalla *"Validación de identidad"*, la interfaz despliega una a una las tres preguntas de seguridad seleccionadas por el usuario durante su primer ingreso; el avance se indica con tres barras. Bajo **"Preguntas de seguridad"** se muestra la pregunta en un recuadro; se digita la respuesta en el campo **"Respuesta"** y se pulsa **"Continuar"**. La respuesta no distingue mayúsculas de minúsculas ni tiene en cuenta los espacios al principio o al final. Desde la segunda pregunta, **"Volver a la pregunta anterior"** permite corregir la anterior. Las tres se verifican juntas al final: si alguna no coincide, el sistema lo indica sin decir cuál y el cuestionario vuelve a empezar desde la primera pregunta.
 
 > **[Captura: Preguntas de Seguridad en Recuperación Sitio Web]**
 > *Cuestionario presentando las preguntas de seguridad registradas y campo de respuesta en el Sitio Web.*
