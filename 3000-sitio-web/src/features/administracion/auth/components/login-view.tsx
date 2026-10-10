@@ -149,16 +149,16 @@ function LoginForm() {
 
       {/* RF-13: el aviso va antes de enviar nada, no después.
 
-          Los dos enlaces van a `/inicio/politica-de-privacidad`, la ruta canónica.
-          `/privacidad` y `/politica-de-privacidad` son alias que redirigen ahí (ver
-          `next.config.mjs`): enlazarlos manda al mismo sitio pagando un salto de más. */}
+          Los dos enlaces van a `/politica-de-privacidad`, la ruta canónica.
+          `/privacidad` e `/inicio/politica-de-privacidad` son alias que redirigen ahí
+          (ver `next.config.mjs`): enlazarlos manda al mismo sitio pagando un salto de más. */}
       <p className="mb-6 text-sm leading-relaxed text-[#737373]">
         Al ingresar a este sitio aceptas la{' '}
-        <Link href="/inicio/politica-de-privacidad" className="font-semibold hover:underline">
+        <Link href="/politica-de-privacidad" className="font-semibold hover:underline">
           política de privacidad
         </Link>{' '}
         y{' '}
-        <Link href="/inicio/politica-de-privacidad" className="font-semibold hover:underline">
+        <Link href="/politica-de-privacidad" className="font-semibold hover:underline">
           protección de datos
         </Link>
         .

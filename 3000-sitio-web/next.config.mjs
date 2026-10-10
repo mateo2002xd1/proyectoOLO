@@ -85,6 +85,11 @@ const nextConfig = {
         permanent: false,
       },
       {
+        source: '/inicio/politica-de-privacidad',
+        destination: '/politica-de-privacidad',
+        permanent: false,
+      },
+      {
         // CNO y CUOC se movieron bajo `/clasificacion`, junto al buscador. Mismo motivo
         // que el de arriba: sin esto el comodín `[slug]` las seguiría sirviendo en la
         // raíz, y el menú publicado en la base todavía enlaza `/cno` y `/cuoc`.

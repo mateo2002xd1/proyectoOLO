@@ -248,11 +248,11 @@ function LoginForm() {
                   pulsara al propio login del que venía. */}
               <p className="mb-6 text-xs leading-relaxed text-white/85 xl:text-gray-500">
                 Al ingresar a este sitio aceptas la{' '}
-                <a href={`${SITE_URL}/inicio/politica-de-privacidad`} className="font-semibold text-white hover:underline xl:text-gray-700">
+                <a href={`${SITE_URL}/politica-de-privacidad`} className="font-semibold text-white hover:underline xl:text-gray-700">
                   política de privacidad
                 </a>{' '}
                 y{' '}
-                <a href={`${SITE_URL}/inicio/politica-de-privacidad`} className="font-semibold text-white hover:underline xl:text-gray-700">
+                <a href={`${SITE_URL}/politica-de-privacidad`} className="font-semibold text-white hover:underline xl:text-gray-700">
                   protección de datos
                 </a>
                 .

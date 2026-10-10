@@ -4,7 +4,7 @@ import { useState, FormEvent, useEffect, useMemo, useSyncExternalStore } from 'r
 import { useRouter } from 'next/navigation';
 import { authApi, useAuth } from '@/features/login';
 import { ReturnToSiteLink } from '@/shared/ui/molecules/return-to-site-link';
-import { QuestionPicker, type CatalogQuestion } from './question-picker';
+import { type CatalogQuestion } from './question-picker';
 import { AuthSuccessScreen } from './auth-success-screen';
 import { mensajeDeError } from '@/shared/lib/errors';
 
@@ -174,97 +174,187 @@ export function SecurityQuestionsView() {
   }
 
   return (
-    <div className="sq-page">
-      {/* Panel izquierdo — Branding */}
-      <div className="sq-left">
-        <div className="sq-left-content">
-          <h1 className="sq-brand-title">
-            {mode === 'setup' ? 'Protege el acceso a tu cuenta' : 'Por tu seguridad...'}
+    <div className="login-page">
+      {/* Panel izquierdo — Branding institucional con logo blanco de la intranet */}
+      <div className="login-left">
+        <div className="login-left-content">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/assets/svg/olo-logo-blanco.svg"
+            alt="Logo intranet"
+            className="mx-auto w-[96px] sm:w-[150px] lg:w-[210px]"
+          />
+          <h1 className="mt-6 text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
+            INTRANET
           </h1>
-          <p className="sq-brand-subtitle">
-            {mode === 'setup'
-              ? 'Elige 3 preguntas de seguridad de la lista y asigna una respuesta para cada una.'
-              : 'Responde correctamente a las 3 preguntas.'}
-          </p>
-          {mode === 'verify' && (
-            <p className="sq-brand-hint">
-              Recuerda que las respuestas deben coincidir exactamente con las que asignaste la primera vez.
-            </p>
-          )}
         </div>
       </div>
 
-      {/* Panel derecho — Card */}
-      <div className="sq-right">
-        <div className="sq-card" key={currentStep}>
-          <form onSubmit={handleSubmit} className="sq-form">
-            <h2 className="sq-card-title">
-              {mode === 'setup' ? 'Escoge tus preguntas y respuestas' : 'Responde tus preguntas'}
+      {/* Panel derecho — Card con la misma estructura y estilos del Sitio Web */}
+      <div className="login-right">
+        <div
+          key={currentStep}
+          className="w-full max-w-[380px] rounded-[24px] bg-white px-6 py-8 shadow-[0_25px_60px_rgba(0,0,0,0.35)] sm:px-9 sm:py-10"
+        >
+          <form onSubmit={handleSubmit} noValidate>
+            <h2 className="text-[19px] font-bold leading-snug text-[#0d1526]">
+              {mode === 'setup' ? 'Protege el acceso a tu cuenta' : 'Verifica tu identidad'}
             </h2>
-
-            {mode === 'verify' ? (
-              <>
-                <div className="sq-field">
-                  <label className="sq-label-question">
-                    {questions[currentStep]?.label}
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Respuesta"
-                    value={answers[currentStep]}
-                    onChange={(e) => handleAnswerChange(e.target.value)}
-                    className={`sq-input ${errors.answer ? 'sq-input-error' : ''}`}
-                    autoFocus
-                  />
-                  {errors.answer && <span className="sq-error">{errors.answer}</span>}
-                </div>
-
-                <div className="sq-progress">
-                  {Array.from({ length: totalQuestions }).map((_, i) => (
-                    <div
-                      key={i}
-                      className={`sq-progress-dot ${i === currentStep ? 'sq-progress-active' : ''} ${i < currentStep ? 'sq-progress-done' : ''}`}
-                    />
-                  ))}
-                </div>
-              </>
-            ) : (
-              <QuestionPicker
-                classPrefix="sq"
-                catalogQuestions={catalogQuestions}
-                totalQuestions={totalQuestions}
-                currentIndex={currentStep}
-                selectedKeys={selectedKeys}
-                answers={answers}
-                errors={errors}
-                onSelectQuestion={handleSelectQuestion}
-                onAnswerChange={handleAnswerChange}
-              />
-            )}
+            <p className="mb-6 mt-1.5 text-[13px] leading-relaxed text-gray-500">
+              {mode === 'setup'
+                ? 'Elige 3 preguntas de seguridad y asigna una respuesta para cada una.'
+                : `Responde las ${totalQuestions} preguntas que elegiste al configurar tu cuenta.`}
+            </p>
 
             {errors.general && (
-              <div className="sq-general-error">{errors.general}</div>
+              <div
+                className="mb-4 rounded-lg border border-red-300 bg-red-50 px-3.5 py-2.5 text-sm text-red-600"
+                role="alert"
+              >
+                {errors.general}
+              </div>
             )}
+
+            {mode === 'verify' ? (
+              <div className="mb-5">
+                <label htmlFor="respuesta-seguridad" className="mb-1.5 block text-sm font-semibold text-[#0d1526]">
+                  <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    Pregunta {currentStep + 1} de {totalQuestions}
+                  </span>
+                  {questions[currentStep]?.label}
+                </label>
+                <input
+                  id="respuesta-seguridad"
+                  type="text"
+                  value={answers[currentStep]}
+                  onChange={(e) => handleAnswerChange(e.target.value)}
+                  autoComplete="off"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  autoFocus
+                  className={`w-full rounded-lg border px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:outline-none focus:ring-2 ${
+                    errors.answer
+                      ? 'border-red-400 focus:border-red-500 focus:ring-red-500'
+                      : 'border-gray-300 focus:border-[#0d1526] focus:ring-[#0d1526]'
+                  }`}
+                />
+                {errors.answer && <p className="mt-1 text-xs text-red-600">{errors.answer}</p>}
+              </div>
+            ) : (
+              <>
+                <div className="mb-4">
+                  <label htmlFor="select-pregunta" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    Pregunta {currentStep + 1} de {totalQuestions}
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="select-pregunta"
+                      className={`w-full appearance-none rounded-lg border bg-white px-3.5 py-2.5 pr-10 text-sm text-gray-900 transition-colors focus:outline-none focus:ring-2 ${
+                        errors.question
+                          ? 'border-red-400 focus:border-red-500 focus:ring-red-500'
+                          : 'border-gray-300 focus:border-[#0d1526] focus:ring-[#0d1526]'
+                      }`}
+                      value={selectedKeys[currentStep] || ''}
+                      onChange={(e) => handleSelectQuestion(e.target.value)}
+                    >
+                      <option value="" disabled>Selecciona una opción...</option>
+                      {catalogQuestions.map((q) => (
+                        <option
+                          key={q.key}
+                          value={q.key}
+                          disabled={selectedKeys.includes(q.key) && selectedKeys[currentStep] !== q.key}
+                        >
+                          {q.label}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M6 9l6 6 6-6" />
+                      </svg>
+                    </div>
+                  </div>
+                  {errors.question && <p className="mt-1 text-xs text-red-600">{errors.question}</p>}
+                </div>
+
+                <div className="mb-5">
+                  <label htmlFor="respuesta-setup" className="mb-1.5 block text-sm font-semibold text-[#0d1526]">
+                    Tu respuesta
+                  </label>
+                  <input
+                    id="respuesta-setup"
+                    type="text"
+                    maxLength={255}
+                    placeholder="Escribe tu respuesta..."
+                    value={answers[currentStep]}
+                    onChange={(e) => handleAnswerChange(e.target.value)}
+                    className={`w-full rounded-lg border px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:outline-none focus:ring-2 ${
+                      errors.answer
+                        ? 'border-red-400 focus:border-red-500 focus:ring-red-500'
+                        : 'border-gray-300 focus:border-[#0d1526] focus:ring-[#0d1526]'
+                    }`}
+                  />
+                  {errors.answer && <p className="mt-1 text-xs text-red-600">{errors.answer}</p>}
+                </div>
+              </>
+            )}
+
+            {/* Indicador de progreso (Progress Dots) exactamente como en Sitio Web */}
+            <div className="mb-5 flex justify-center gap-1.5" aria-hidden="true">
+              {Array.from({ length: totalQuestions }).map((_, i) => (
+                <span
+                  key={i}
+                  className={`h-1.5 rounded-full transition-all ${
+                    i === currentStep
+                      ? 'w-6 bg-[#0d1526]'
+                      : i < currentStep
+                        ? 'w-1.5 bg-[#0d1526]/45'
+                        : 'w-1.5 bg-gray-300'
+                  }`}
+                />
+              ))}
+            </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className={`sq-submit ${isLoading ? 'sq-submit-disabled' : ''}`}
+              className="inline-flex w-full items-center justify-center rounded-[16px] bg-[#0d1526] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_8px_-2px_rgba(13,21,38,0.4)] transition hover:bg-[#1a2340] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0d1526] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isLoading
-                ? (mode === 'verify' ? 'Verificando...' : 'Guardando...')
+                ? (mode === 'verify' ? 'Verificando…' : 'Guardando…')
                 : currentStep === totalQuestions - 1
-                  ? (mode === 'verify' ? 'Verificar respuestas' : 'Guardar')
-                  : 'Continuar'}
+                  ? (mode === 'verify' ? 'Verificar' : 'Guardar')
+                  : 'Siguiente'}
             </button>
 
-            <button type="button" onClick={() => logout()} className="sq-login-link">
-              Iniciar sesión
-            </button>
+            {currentStep > 0 ? (
+              <div className="mt-4 text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCurrentStep((n) => Math.max(0, n - 1));
+                    setErrors({});
+                  }}
+                  className="rounded text-xs text-gray-500 transition-colors hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d1526]"
+                >
+                  Volver a la pregunta anterior
+                </button>
+              </div>
+            ) : mode === 'setup' ? (
+              <div className="mt-4 text-center">
+                <button
+                  type="button"
+                  onClick={() => logout()}
+                  className="rounded text-xs text-gray-500 transition-colors hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d1526]"
+                >
+                  Iniciar sesión
+                </button>
+              </div>
+            ) : null}
           </form>
         </div>
 
-        <ReturnToSiteLink classPrefix="sq" cerrarSesion={mode === 'setup'} />
+        <ReturnToSiteLink classPrefix="login" cerrarSesion={mode === 'setup'} />
       </div>
     </div>
   );
