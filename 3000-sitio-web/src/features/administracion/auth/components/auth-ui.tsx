@@ -249,6 +249,7 @@ export function AuthSelectField({
   options,
   placeholder = 'Selecciona una opción…',
   className = 'mb-6',
+  etiquetaOculta = false,
 }: {
   id: string;
   label: ReactNode;
@@ -258,10 +259,12 @@ export function AuthSelectField({
   options: { value: string; label: string; disabled?: boolean }[];
   placeholder?: string;
   className?: string;
+  /** La etiqueta solo para el lector de pantalla: cuando un encabezado encima ya dice qué se elige. */
+  etiquetaOculta?: boolean;
 }) {
   return (
     <div className={className}>
-      <label htmlFor={id} className={authPasosLabelClass}>
+      <label htmlFor={id} className={etiquetaOculta ? 'sr-only' : authPasosLabelClass}>
         {label}
       </label>
       <div className="relative">

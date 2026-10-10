@@ -26,7 +26,7 @@ import { verificarRespuestas } from '../services/recuperacion.service';
  * contraseña, la resuelve entera `/first-login`, que pregunta al servidor qué falta.
  *
  * Diseño nuevo desde el 2026-10-09 (mockups de tablet): el número de la pregunta va bajo
- * «Responde tus preguntas», y la pregunta se ve en una caja con la forma de un campo.
+ * «Preguntas de seguridad», y la pregunta se ve en una caja con la forma de un campo.
  * Esa caja es la `<label>` de la respuesta: pulsarla lleva al campo y el lector de
  * pantalla anuncia la pregunta al entrar en él.
  */
@@ -108,9 +108,9 @@ export function SecurityQuestionsView() {
           {/* El número de la pregunta va aquí, junto a la pregunta, y no en el título de la
               página (así hasta el 2026-10-09). */}
           <h2 className={`mb-3 ${authPasosCardHeadingClass}`}>
-            Responde tus preguntas{' '}
+            Preguntas de seguridad{' '}
             <span className="block text-base font-normal">
-              (Pregunta de seguridad {preguntaActual + 1} de {total})
+              (Pregunta {preguntaActual + 1} de {total})
             </span>
           </h2>
 

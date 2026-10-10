@@ -12,6 +12,7 @@ import {
   PasswordField,
   PasswordRequisitos,
   authPasosCardClass,
+  authPasosCardHeadingClass,
   authPasosPrimaryClass,
   authPasosQuietLinkClass,
   authPasosSecondaryClass,
@@ -373,8 +374,19 @@ export function FirstLoginFlow() {
         <form id={FORM_PREGUNTAS} onSubmit={(e: FormEvent) => { e.preventDefault(); handleQuestionNext(); }} noValidate>
           {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
 
+          {/* Como en la recuperación: encabezado y, debajo, en qué pregunta se va. Hasta el
+              2026-10-09 eso lo decía la etiqueta del desplegable, que ahora solo la oye el
+              lector de pantalla. */}
+          <h2 className={`mb-3 ${authPasosCardHeadingClass}`}>
+            Preguntas de seguridad{' '}
+            <span className="block text-base font-normal">
+              (Pregunta {currentQuestion + 1} de {TOTAL_QUESTIONS})
+            </span>
+          </h2>
+
           <AuthSelectField
             id="security-question"
+            etiquetaOculta
             label={`Pregunta ${currentQuestion + 1} de ${TOTAL_QUESTIONS}`}
             value={selectedKeys[currentQuestion] || ''}
             onChange={(valor) => {
