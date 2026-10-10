@@ -10,6 +10,9 @@ import { DetalleRegistro } from './detalle-registro';
 import { ModalDepurarAuditoria } from './modal-depurar-auditoria';
 import { Trash2 } from 'lucide-react';
 import { BotonOjo } from '@/shared/ui/atoms/boton-ojo';
+import { COLOR_DE_ACCION } from '@/shared/lib/identidad-panel';
+import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
+import { fechaDeFila, RESALTE_DE_FILA, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
 import { useAuditoria } from '../hooks/use-auditoria';
 import { comentarioPrincipal, resumenDeCambios } from '../lib/cambios';
 
@@ -26,6 +29,13 @@ import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
 
 // Misma altura y mismas esquinas que los filtros, para que la fila se lea como
 // una sola banda de controles.
+/**
+ * Lo que cambió, para ir detrás de «El usuario Ana Gómez:» en la frase del acordeón:
+ * «Publicó la versión 4» pasa a «publicó…». Lo que empieza por comillas (un comentario)
+ * queda igual.
+ */
+const enMinuscula = (texto: string) => (texto ? texto.charAt(0).toLocaleLowerCase('es') + texto.slice(1) : texto);
+
 const CLASE_BOTON =
   'h-11 rounded-[16px] border border-[#d0d5dd] px-4 text-sm font-medium text-zinc-700 transition hover:border-[#002237]/40 hover:bg-[#002237]/5 hover:text-[#002237] disabled:opacity-60 dark:border-[#2d3649] dark:text-zinc-200 dark:hover:bg-white/5 dark:hover:text-[#f6f6f6]';
 
@@ -56,6 +66,8 @@ export function AuditoriaView() {
   } = useAuditoria();
 
   const [seleccionado, setSeleccionado] = useState<RegistroAuditoria | null>(null);
+  // Registros desplegados del acordeón (móvil y tablet). En la tabla de escritorio no se usa.
+  const { estaAbierta, alternar } = useFilasAbiertas();
   const [modalDepurarAbierto, setModalDepurarAbierto] = useState(false);
 
   return (
@@ -159,7 +171,11 @@ export function AuditoriaView() {
       ) : (
         <>
           <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-[#7db828]/30">
-            <table className="olo-tabla-apilable w-full min-w-[52rem] text-left text-sm">
+            {/* En el móvil y la tablet, acordeón, como «Páginas en revisión»: cada registro
+                es una frase («El usuario Ana Gómez hizo la acción de [Edición]») y al tocarlo se completa con
+                lo que cambió y la fecha, y debajo sale «Ver detalle». Piezas en
+                `fila-acordeon.tsx`; reglas en globals.css (`olo-tabla-acordeon`). */}
+            <table className="olo-tabla-apilable olo-tabla-acordeon w-full min-w-[52rem] text-left text-sm">
               <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-[#131b2f]">
                 <tr>
                   <th scope="col" className="px-4 py-3 font-medium">Fecha y hora</th>
@@ -173,28 +189,72 @@ export function AuditoriaView() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
-                {registros.map((registro) => (
-                  <tr key={registro.id} className="bg-white dark:bg-[#0f1626]">
-                    <td data-etiqueta="Fecha y hora" className="whitespace-nowrap px-4 py-2 text-zinc-600 dark:text-zinc-300">
+                {registros.map((registro) => {
+                  const abierta = estaAbierta(registro.id);
+                  const nombre =
+                    (registro.usuarioId ? usuarios.find((u) => u.id === registro.usuarioId)?.nombre : null) ??
+                    registro.usuarioNombre;
+                  const accion = (
+                    <span
+                      className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${COLOR_ACCION[registro.accion] ?? ''}`}
+                    >
+                      {etiquetaDeAccion(registro.accion, registro.categoria)}
+                    </span>
+                  );
+                  return (
+                  <tr key={registro.id} data-abierta={abierta || undefined} className="bg-white dark:bg-[#0f1626]">
+                    {/* Solo en acordeón: la frase, como la pidió el usuario (2026-10-10). Plegada,
+                        «El usuario Ana Gómez hizo la acción de [Edición]»; desplegada, con lo que
+                        cambió y la fecha: «… hizo la acción de [Publicación]: publicó la versión 4
+                        de /inicio el 9 de octubre de 2026 a las 3:00 p. m.». Sin la entidad
+                        («Usuario», «Página»): junto al nombre de una persona confundía. */}
+                    <td data-resumen>
+                      <ResumenDeFila abierta={abierta} onAlternar={() => alternar(registro.id)}>
+                        {nombre ? (
+                          <>
+                            El usuario <span className={RESALTE_DE_FILA}>{nombre}</span>
+                          </>
+                        ) : (
+                          <span className={RESALTE_DE_FILA}>El sistema</span>
+                        )}{' '}
+                        hizo la acción de {accion}
+                        {abierta && (
+                          <>
+                            : {enMinuscula(resumenDeCambios(registro)) || 'sin cambios registrados'} el{' '}
+                            <span className={RESALTE_DE_FILA}>{fechaDeFila(registro.fecha)}</span>
+                          </>
+                        )}
+                      </ResumenDeFila>
+                    </td>
+                    {/* Solo en acordeón y desplegada: el detalle con su nombre (el ojo solo no
+                        se entiende en una pantalla táctil). Lo que cambió ya va en la frase. */}
+                    <td data-detalle>
+                      <button
+                        type="button"
+                        onClick={() => setSeleccionado(registro)}
+                        className="mb-1 flex h-11 w-full items-center justify-center gap-2 rounded-[16px] bg-[#7DB728] px-3 text-sm font-medium text-white transition-colors hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-[#7DB728]/50"
+                      >
+                        <IconoMascara nombre="eye-closed" tamano="h-6 w-6" />
+                        Ver detalle
+                      </button>
+                    </td>
+                    <td data-solo-tabla data-etiqueta="Fecha y hora" className="whitespace-nowrap px-4 py-2 text-zinc-600 dark:text-zinc-300">
                       {new Date(registro.fecha).toLocaleString('es-CO')}
                     </td>
-                    <td data-etiqueta="Usuario" className="px-4 py-2 text-zinc-900 dark:text-[#f6f6f6]">
-                      {(registro.usuarioId ? usuarios.find(u => u.id === registro.usuarioId)?.nombre : null) ?? registro.usuarioNombre ?? <span className="text-zinc-500">Sin usuario</span>}
+                    <td data-solo-tabla data-etiqueta="Usuario" className="px-4 py-2 text-zinc-900 dark:text-[#f6f6f6]">
+                      {nombre ?? <span className="text-zinc-500">Sin usuario</span>}
                     </td>
-                    <td data-etiqueta="Acción" className="px-4 py-2">
-                      <span
-                        className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${COLOR_ACCION[registro.accion] ?? ''}`}
-                      >
-                        {etiquetaDeAccion(registro.accion, registro.categoria)}
-                      </span>
+                    <td data-solo-tabla data-etiqueta="Acción" className="px-4 py-2">
+                      {accion}
                     </td>
-                    <td data-etiqueta="Entidad" className="px-4 py-2 text-zinc-600 dark:text-zinc-300">
+                    <td data-solo-tabla data-etiqueta="Entidad" className="px-4 py-2 text-zinc-600 dark:text-zinc-300">
                       {etiquetaDeEntidad(registro.entidadTipo)}
                     </td>
                     {/* Se corta en la tabla y se lee completo en el `title` o en el detalle.
                         El comentario de un envío va más oscuro que los campos internos:
                         es lo que se escribió para ser leído. */}
                     <td
+                      data-solo-tabla
                       data-etiqueta="Cambios"
                       className={`max-w-xs truncate px-4 py-2 ${
                         comentarioPrincipal(registro)
@@ -206,7 +266,7 @@ export function AuditoriaView() {
                       {/* Cuando la tabla pasa a tarjetas, el texto no se corta en una línea: se parte, hasta tres. */}
                       <span className="@max-3xl:line-clamp-3">{resumenDeCambios(registro) || '—'}</span>
                     </td>
-                    <td data-etiqueta="Detalle" className="px-4 py-2 text-right">
+                    <td data-solo-tabla data-etiqueta="Detalle" className="px-4 py-2 text-right">
                       {/* Ojo y tooltip en el verde de la marca, como pidió el usuario. El ojo
                           verde sobre blanco da 2,4:1 y un icono pide 3:1 (SC 1.4.11); la letra
                           blanca del tooltip, 2,4:1 de los 4,5:1 de un texto de 12 px. */}
@@ -214,11 +274,12 @@ export function AuditoriaView() {
                         etiqueta="Ver detalle"
                         onClick={() => setSeleccionado(registro)}
                         className="rounded-lg p-1.5 text-[#7DB728] transition-colors hover:bg-[#7DB728]/10"
-                        claseTooltip="bg-[#7DB728] text-white"
+                        claseTooltip={COLOR_DE_ACCION['ver-detalle']}
                       />
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
