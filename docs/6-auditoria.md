@@ -5,6 +5,71 @@
 
 ---
 
+## sesión 10-10-2026 (7.ª parte): identidad visual — solo PNG, colores en acordeón y color de los botones
+
+**Qué se pidió.** Sobre la 5.ª parte: que el logo de la barra lateral y el de la pestaña se
+carguen en PNG; que los colores de las etiquetas de acción vayan en acordeón («En el panel» y
+«En el editor»); y un apartado nuevo, también en acordeón, para cambiar el color de los
+botones de todo el panel. Decisiones del usuario: **dos cargas, solo PNG** (logo horizontal e
+icono cuadrado por separado) y **botones por tipo** (principal, secundario, peligro…), no por
+acción.
+
+**Cómo quedó.**
+
+- «Logo de la barra lateral» e «Icono de la pestaña», cada uno con «Cargar … en PNG». La API
+  rechaza un JPG con 415; uno ya guardado se sigue mostrando.
+- «Colores de las etiquetas de acción» y «Colores de los botones», cada uno con sus grupos en
+  acordeón, cerrados al abrir la página. A la derecha de cada título, «3 de fábrica», «1 de 3
+  con color propio» o, si hay algo a medias, «2 sin guardar» en verde, para no perder un
+  cambio al plegar. Cada bloque guarda por su lado.
+- Siete tipos de botón: en las pantallas Principal, Secundario y Azul oscuro; en los modales
+  Principal, Secundario, Peligro y Verde (las variantes roja y verde solo se usan en
+  ventanas). En modo oscuro, el principal de los modales se invierte (fondo del color de la
+  letra), como ya hacía, y los secundarios siguen transparentes.
+- «Aprobar» se llama ahora «Publicar» en el catálogo, como en la pantalla desde `230a930d`
+  (el id guardado sigue siendo `aprobar`).
+
+**Lo que se hizo.**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| API | `configuracion.validators.ts`, `identidad-panel.usecase.ts`, `configuracion.routes.ts` | Conjunto `botones` junto a `acciones` (misma forma y mismo control `#rrggbb`); en la bitácora como `colores_de_botones`. Solo PNG al subir |
+| Sitio | `shared/lib/identidad-panel/botones.ts` (nuevo), `identidad.ts`, `servidor.tsx`, `index.ts` | Catálogo de los siete tipos; `coloresDeBoton`; `EstilosDeAcciones` pasa a `EstilosDeIdentidad` y escribe también `--olo-boton-{id}-fondo` y `-texto` |
+| Sitio | `shared/ui/atoms/button.tsx` | Cada variante lee su variable con el de fábrica de respaldo (`var(--olo-boton-principal-fondo,#7db828)`); el paso del puntero se calcula con `color-mix` |
+| Sitio | `shared/ui/molecules/seccion-acordeon.tsx` | El acordeón de Actualizaciones, movido aquí (`git mv`) con variante `anidada`, nivel de título y `detalle`. Actualizaciones lo importa de aquí |
+| Sitio | `colores-configurables.tsx` (antes `colores-de-acciones.tsx`) | Un solo componente para las etiquetas y los botones, con los grupos en `SeccionAcordeon` |
+| Sitio | `identidad-visual-panel.tsx`, su servicio, `auditoria/types.ts`, `app/admin/layout.tsx`, `app/editor/[slug]/page.tsx` | Solo PNG, textos nuevos, los dos bloques, `guardarColoresDeBotones`, nombre del campo nuevo en la bitácora |
+
+**Decisiones.**
+
+- **El color de fábrica de los botones está dos veces** (en `botones.ts` y como respaldo dentro
+  de cada `var()` de `button.tsx`). Hace falta: `Button` sale también en el acceso y en el
+  sitio público, donde no se escriben las variables, y ahí tiene que verse como siempre. Se
+  comprobó por script que los dos coinciden.
+- **Botones por tipo y no por pantalla**: cambiar «Principal» cambia todos los botones
+  principales de todas las pantallas a la vez, que es lo que se pidió («en todo el panel»).
+- **Secundario: el color elegido es del modo claro.** En oscuro sigue transparente con borde;
+  pintarle un fondo claro rompería el modo oscuro.
+- **Se reutilizó el acordeón de Actualizaciones** (`<details>` nativo) en vez de escribir otro.
+
+**Cómo se probó.**
+
+| Qué | Resultado |
+|---|---|
+| Postgres 18 desechable con las 44 migraciones y API de prueba en el 4100 (`probar-identidad.cjs`) | 40 de 40: lo de antes, más `botones` → 200 aparte de `acciones`, `blue` → 400, Editor → 403, fila `colores_de_botones` en la bitácora, y un JPG real → 415 «Solo se aceptan imágenes PNG» |
+| Lógica (`probar-logica.cjs`) | 17 de 17: además, las 14 variables de botón, y que un valor inválido de botón sale con el de fábrica |
+| CSS compilado | `bg-[color:var(--olo-boton-…,#…)]` y el `color-mix` del paso del puntero se generan |
+| Pantalla real con React y Chrome sin ventana | Con los de fábrica, los `Button` de muestra salen como antes; con colores cambiados, Principal, Peligro y Principal de modal toman los nuevos (en oscuro, el de modal invertido: fondo amarillo, letra morada). Acordeones cerrados con su resumen, y abiertos: una columna a 360, dos a 768 y tres desde 1032, sin desborde |
+| `tsc` de las dos apps; ESLint de lo tocado | Limpios |
+
+**Pendiente al cierre.**
+
+- Reiniciar la API (no hay migración nueva: `botones` vive en la misma fila JSONB).
+- Probar en el panel: cambiar el color del botón principal y verlo en Usuarios, Roles y
+  Actualizaciones; abrir un modal en modo oscuro.
+
+---
+
 ## sesión 10-10-2026 (6.ª parte): «Usuarios» y «Gestión de roles» en acordeón en el móvil y la tablet
 
 **Qué se pidió.** El acordeón también en Usuarios («solo deja el usuario en el encabezado de
