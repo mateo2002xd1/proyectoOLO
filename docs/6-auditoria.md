@@ -5,6 +5,58 @@
 
 ---
 
+## sesión 09-10-2026 (25.ª parte): sin «timeout of 15000ms exceeded» a la vista, reintentos solos en la cola y el ojo de Auditoría en verde
+
+**Qué se pidió.** Que /admin/revision no muestre `Error: timeout of 15000ms exceeded` sino un
+mensaje que diga qué hacer, o que se recargue solo. Después: en Auditoría, el ojo y su
+tooltip en `#7DB728`.
+
+**Por qué pasó de 15 s.** La API se reinició a las 22:15 con el pool nuevo. La primera
+petición después de un reinicio paga despertar a Neon y abrir la conexión (11 s medidos ese
+día) más las consultas. Neon respondía normal minutos después (~100 ms por ida y vuelta).
+
+**Lo que se hizo.**
+
+| Pieza | Archivo | Cambio |
+|---|---|---|
+| Traducción del fallo | `shared/lib/errores-api.ts` | `esFalloDeConexion` (axios sin `response`: tiempo agotado o sin red; no cuenta `ERR_CANCELED`) y `MENSAJE_SIN_RESPUESTA`. `mensajeDeErrorApi` lo devuelve en vez del `message` de axios |
+| Aviso | `shared/ui/molecules/aviso-error-de-carga.tsx` (nuevo) | Ámbar, `role="alert"`: qué no cargó, por qué, «Espera unos segundos y pulsa Reintentar. Si sigue igual, avisa al equipo técnico.» y botón «Reintentar» (`Button` `navy`) |
+| Cola | `revision/hooks/use-revision-queue.ts` | `listarConReintentos`: ante un fallo sin respuesta reintenta solo a 1 s y a 3 s, con el loader a la vista; un 4xx o 5xx sale al primero. Expone `reintentar` |
+| Cola | `revision-queue-view.tsx` | `AvisoErrorDeCarga` en vez de `Error: {error}` |
+| Tooltip | `shared/ui/atoms/tooltip.ts` (nuevo) | Las clases del tooltip salen de la cola y se comparten: `GRUPO_TOOLTIP`, `TOOLTIP_ENCIMA` (centrado) y `TOOLTIP_ENCIMA_A_LA_DERECHA` |
+| Ojo | `shared/ui/atoms/boton-ojo.tsx` | `claseTooltip` opcional: tooltip propio en vez del `title`. Respaldos, que no lo pasa, sigue igual |
+| Auditoría | `auditoria-view.tsx` | Ojo `text-[#7DB728]`, fondo `#7DB728/10` al pasar, tooltip `bg-[#7DB728]` con letra blanca |
+
+**Por qué dos reintentos.** El primer intento suele despertar a Neon y abrir la conexión
+aunque el navegador se canse antes: la API sigue y la deja lista. El segundo casi siempre
+entra. Con el `timeout` de 15 s, lo peor son unos 50 s de loader antes del aviso.
+
+**Por qué el tooltip del ojo va a la derecha.** El ojo está en la última columna de una tabla
+con `overflow-x-auto`. Centrado sobre un botón de 32 px, «Ver detalle» sobresalía unos 11 px
+por la derecha y, aunque invisible (`opacity-0`), le daba a la tabla una barra horizontal.
+
+> **Contraste.** El ojo verde sobre blanco da 2,4:1 (un icono pide 3:1, SC 1.4.11) y la letra
+> blanca del tooltip verde, 2,4:1 (12 px pide 4,5:1). Se dejó así a pedido del usuario; queda
+> anotado en el código.
+
+**Cómo se probó.**
+
+| Comprobación | Resultado |
+|---|---|
+| `tsc --noEmit` del sitio y `eslint` de los archivos tocados | Limpios |
+| CSS del servidor de desarrollo | Genera `group-hover/tooltip:opacity-100`, `group-focus-visible/tooltip:translate-y-0`, `text-[#7DB728]`, `hover:bg-[#7DB728]/10` y `right-0` |
+
+No se vio en el navegador ni se provocó un tiempo agotado de verdad.
+
+**Pendiente al cierre:**
+
+- Otras 8 pantallas muestran `err.message` tal cual (`use-auditoria`, `use-usuarios`,
+  `use-respaldos`, `use-pagina`, `panel-general`, `modal-depurar-auditoria` y los dos
+  subidores de archivos). Pasarlas a `mensajeDeErrorApi` y `AvisoErrorDeCarga` les quita el
+  inglés también.
+
+---
+
 ## sesión 09-10-2026 (24.ª parte): cargador centrado, hover de los iconos del menú, «Volver» en la vista previa y tooltips en la cola
 
 **Qué se pidió.** Centrar el cargador «Cargando panel general...», que los iconos del menú
@@ -35,8 +87,9 @@ aquí el `.group` es el propio elemento, así que nunca aplicaba.
 anima `margin-top` y no `transform`. Un `transform` haría de su contenedor, sin alto, el bloque
 de referencia del `absolute`.
 
-**Contraste de los tooltips.** Letra `#0d1526` sobre el azul, el verde y el rojo (7,0, 7,5 y
-4,7:1); con blanco serían 2,6, 2,4 y 3,8:1, por debajo del 4,5:1 que pide un texto de 12 px.
+**Contraste de los tooltips.** Letra blanca sobre el azul, el verde y el rojo, como pidió el
+usuario: da 2,6, 2,4 y 3,8:1, por debajo del 4,5:1 que pide un texto de 12 px
+(9-accesibilidad.md §2.1). Con `#0d1526` serían 7,0, 7,5 y 4,7:1; se propuso y se descartó.
 En «Rechazar», fondo rosa con borde `#FF1F1F` y letra `#d11a1a` (4,7:1; la del icono da 3,3:1).
 
 **Cómo se probó.**

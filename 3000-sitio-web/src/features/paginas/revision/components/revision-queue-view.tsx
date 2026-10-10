@@ -10,6 +10,8 @@ import { Paginador } from '@/shared/ui/molecules/paginador';
 import { useRevisionQueue } from '../hooks/use-revision-queue';
 import type { PaginaEnRevision } from '../../model/pagina.types';
 import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
+import { GRUPO_TOOLTIP, TOOLTIP_ENCIMA } from '@/shared/ui/atoms/tooltip';
+import { AvisoErrorDeCarga } from '@/shared/ui/molecules/aviso-error-de-carga';
 
 /**
  * Dónde se ve una página que aún no está publicada.
@@ -29,20 +31,17 @@ function enlaceDeVistaPrevia(pagina: PaginaEnRevision): string {
 
 
 const BOTON =
-  'group/accion relative flex h-11 items-center justify-center gap-2 rounded-[16px] border border-transparent px-3 text-sm font-medium transition-colors focus:outline-none focus:ring-2 @3xl:h-9 @3xl:w-12 @3xl:px-0';
+  `${GRUPO_TOOLTIP} flex h-11 items-center justify-center gap-2 rounded-[16px] border border-transparent px-3 text-sm font-medium transition-colors focus:outline-none focus:ring-2 @3xl:h-9 @3xl:w-12 @3xl:px-0`;
 
 /**
- * El nombre de cada acción al pasar el puntero o llegar con el teclado, del color de su
- * botón y con la forma de los del botón de edición (`.fab-speed-dial__tooltip`). Solo con
- * la tabla completa: en tarjetas el botón ya lleva el nombre escrito. Va encima del botón
- * porque a la derecha no cabe. Es `aria-hidden`: el nombre ya lo dice el `sr-only`.
+ * El nombre de cada acción, del color de su botón (ver `shared/ui/atoms/tooltip.ts`).
+ * Solo con la tabla completa: en tarjetas el botón ya lleva el nombre escrito.
  *
- * La letra va en azul oscuro sobre los colores vivos y no en blanco: con blanco, el azul
- * y el verde dan 2,6 y 2,4:1 y el rojo 3,8:1, y a 12 px hace falta 4,5:1
- * (9-accesibilidad.md §2.1). En azul oscuro dan 7,0, 7,5 y 4,7:1.
+ * Letra blanca, como el icono de su botón: así lo pidió el usuario. No llega al 4,5:1 que
+ * pide un texto de 12 px (9-accesibilidad.md §2.1): sobre el azul da 2,6:1, sobre el verde
+ * 2,4:1 y sobre el rojo 3,8:1. Con `#0d1526` darían 7,0, 7,5 y 4,7:1.
  */
-const TOOLTIP =
-  'pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden -translate-x-1/2 translate-y-1 whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold opacity-0 shadow-[0_2px_8px_rgba(0,0,0,0.25)] transition duration-150 group-hover/accion:translate-y-0 group-hover/accion:opacity-100 group-focus-visible/accion:translate-y-0 group-focus-visible/accion:opacity-100 motion-reduce:transition-none @3xl:block';
+const TOOLTIP = `${TOOLTIP_ENCIMA} hidden @3xl:block`;
 
 const fecha = (iso: string) => {
   try {
@@ -55,7 +54,7 @@ const fecha = (iso: string) => {
 const FILTROS_VACIOS = { ambito: '', autor: '', desde: '', hasta: '' };
 
 export function RevisionQueueView() {
-  const { paginas, isLoading, error, aprobar, rechazar, eliminar } = useRevisionQueue();
+  const { paginas, isLoading, error, reintentar, aprobar, rechazar, eliminar } = useRevisionQueue();
   const [busySlug, setBusySlug] = useState<string | null>(null);
   const [filtros, setFiltros] = useState(FILTROS_VACIOS);
   // Nombrado "numeroPagina" y no "pagina": ese nombre ya lo usa cada fila de la
@@ -198,7 +197,12 @@ export function RevisionQueueView() {
       )}
 
       {error ? (
-        <p className="text-sm text-red-600">Error: {error}</p>
+        <AvisoErrorDeCarga
+          titulo="No pudimos cargar las páginas en revisión"
+          mensaje={error}
+          onReintentar={reintentar}
+          reintentando={isLoading}
+        />
       ) : isLoading ? (
         <CargandoSeccion label="Cargando páginas en revisión..." className="min-h-[40vh]" />
       ) : paginas.length === 0 ? (
@@ -276,7 +280,7 @@ export function RevisionQueueView() {
                           <span className="absolute inset-0 hidden items-center justify-center group-hover:flex group-focus-visible:flex"><IconoMascara nombre="eye-open" tamano="h-6 w-6" /></span>
                         </span>
                         <span className="@3xl:sr-only">Visualizar</span>
-                        <span aria-hidden="true" className={`${TOOLTIP} bg-[#1FACE3] text-[#0d1526]`}>Visualizar</span>
+                        <span aria-hidden="true" className={`${TOOLTIP} bg-[#1FACE3] text-white`}>Visualizar</span>
                       </a>
                       <button
                         type="button"
@@ -286,7 +290,7 @@ export function RevisionQueueView() {
                       >
                         <IconoMascara nombre="send" />
                         <span className="@3xl:sr-only">Aprobar</span>
-                        <span aria-hidden="true" className={`${TOOLTIP} bg-[#7DB728] text-[#0d1526]`}>Aprobar</span>
+                        <span aria-hidden="true" className={`${TOOLTIP} bg-[#7DB728] text-white`}>Aprobar</span>
                       </button>
                       <button
                         type="button"
@@ -307,7 +311,7 @@ export function RevisionQueueView() {
                       >
                         <IconoMascara nombre="trash" tamano="h-5 w-5" />
                         <span className="@3xl:sr-only">Eliminar</span>
-                        <span aria-hidden="true" className={`${TOOLTIP} bg-[#FF1F1F] text-[#0d1526]`}>Eliminar</span>
+                        <span aria-hidden="true" className={`${TOOLTIP} bg-[#FF1F1F] text-white`}>Eliminar</span>
                       </button>
                     </div>
                   </td>

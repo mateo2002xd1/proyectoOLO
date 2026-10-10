@@ -35,14 +35,33 @@ export function codigoDeError(error: unknown): string | undefined {
   return typeof codigo === 'string' ? codigo : undefined;
 }
 
+/** Lo que se le dice a quien usa el panel cuando la API no llegó a contestar. */
+export const MENSAJE_SIN_RESPUESTA =
+  'El servidor está tardando en responder. Puede ser la conexión o que se esté reiniciando.';
+
+/**
+ * Si la petición se quedó sin respuesta: se agotó el tiempo (`ECONNABORTED`,
+ * `ETIMEDOUT`) o no hubo conexión (`ERR_NETWORK`, p. ej. la API reiniciándose). Son
+ * los fallos que vale la pena reintentar solos: un 4xx o un 5xx ya es una respuesta.
+ * Una petición cancelada a propósito no cuenta.
+ */
+export function esFalloDeConexion(error: unknown): boolean {
+  return axios.isAxiosError(error) && !error.response && error.code !== 'ERR_CANCELED';
+}
+
 /**
  * Mensaje en español para mostrar al usuario: el que mandó la API, el de la
  * excepción, o el de respaldo. Nunca devuelve el objeto de error crudo — §6 pide
  * no filtrar internals (ni stack traces, ni nombres de tabla).
+ *
+ * Un fallo sin respuesta da `MENSAJE_SIN_RESPUESTA` y no el `message` de axios, que
+ * llegaba tal cual a la pantalla: «timeout of 15000ms exceeded», en inglés.
  */
 export function mensajeDeErrorApi(error: unknown, porDefecto: string): string {
   const mensajeApi = cuerpoDeError(error)?.error;
   if (typeof mensajeApi === 'string' && mensajeApi.trim()) return mensajeApi;
+
+  if (esFalloDeConexion(error)) return MENSAJE_SIN_RESPUESTA;
 
   if (error instanceof Error && error.message.trim()) return error.message;
 

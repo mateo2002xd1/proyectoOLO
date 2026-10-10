@@ -207,10 +207,14 @@ export function AuditoriaView() {
                       <span className="@max-3xl:line-clamp-3">{resumenDeCambios(registro) || '—'}</span>
                     </td>
                     <td data-etiqueta="Detalle" className="px-4 py-2 text-right">
+                      {/* Ojo y tooltip en el verde de la marca, como pidió el usuario. El ojo
+                          verde sobre blanco da 2,4:1 y un icono pide 3:1 (SC 1.4.11); la letra
+                          blanca del tooltip, 2,4:1 de los 4,5:1 de un texto de 12 px. */}
                       <BotonOjo
                         etiqueta="Ver detalle"
                         onClick={() => setSeleccionado(registro)}
-                        className="rounded-lg p-1.5 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-[#94a3b8] dark:hover:bg-white/5 dark:hover:text-white"
+                        className="rounded-lg p-1.5 text-[#7DB728] transition-colors hover:bg-[#7DB728]/10"
+                        claseTooltip="bg-[#7DB728] text-white"
                       />
                     </td>
                   </tr>
