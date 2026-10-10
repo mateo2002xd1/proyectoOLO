@@ -5,6 +5,31 @@
 
 ---
 
+## sesión 10-10-2026 (1.ª parte): el acordeón de «Páginas en revisión» se despliega en una frase
+
+**Qué se pidió.** En el móvil y la tablet, al desplegar una solicitud se veía una ficha con
+cuatro datos etiquetados (Cambios, Ámbito, Autor, Enviado el) y los botones: el usuario la vio
+«muy saturada». Pidió un mensaje: «Usuario envió la versión N de la sección (/inicio) del
+(ámbito) el (fecha)» y debajo los botones. La tabla de escritorio no cambia.
+
+**Lo que se hizo.**
+
+| Archivo | Cambio |
+|---|---|
+| `revision-queue-view.tsx` | La frase del botón crece al desplegar en vez de repetirse debajo: plegada, «**Ana Gómez** envió la versión 3 de **Contacto**»; desplegada, «**Ana Gómez** envió la versión 3 de la sección **/contacto** del **sitio web** el **9 de octubre de 2026 a las 5:30 p. m.**» (ruta con `rutaPublicaDeSlug`, «de la intranet» cuando toca). Debajo, el comentario del editor en cursiva y sin etiqueta (`td[data-detalle]`) y los cuatro botones. Cambios, Ámbito, Autor y Enviado el pasan a `data-solo-tabla` |
+| `globals.css` | `td[data-detalle]` junto a `td[data-resumen]`: no existen en la tabla y en acordeón solo se ven desplegadas |
+| `manual-de-usuario-formato.md` | Paso 2 de la revisión con la frase completa |
+
+El comentario se dejó: es lo que se lee antes de decidir (el «commit» del envío). Si sobra, se
+quita la celda `data-detalle`.
+
+**Cómo se probó.** Arnés de siempre (panel y cola reales, 8 solicitudes simuladas), a 360, 768,
+1032, 1280 y 1920 px. Desplegada, la fila pasa de 365 a 263 px a 360 y a 223 px en la tablet;
+se ven solo la frase, el comentario y los botones. En escritorio, la tabla igual. Sin desborde
+ni errores de consola; tipos y `eslint` del archivo, limpios.
+
+---
+
 ## sesión 09-10-2026 (38.ª parte): el loader llena el espacio de su sección, medido con CSS
 
 **Qué se pidió.** Que el loader de cualquier sección del panel ocupe el tamaño de su
