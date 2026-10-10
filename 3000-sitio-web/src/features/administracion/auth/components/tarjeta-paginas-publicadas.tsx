@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { rutaPublicaDeSlug, type PaginaPublicada, type ResumenPaginasPublicadas } from '@/features/paginas';
 import type { TreeSeriesOption } from 'echarts/charts';
 import { GraficoEcharts, useEsOscuro, type OpcionGrafico } from '@/shared/ui/molecules/grafico-echarts';
@@ -31,7 +29,7 @@ const URL_INTRANET = process.env.NEXT_PUBLIC_INTRANET_URL || 'http://localhost:3
 
 type Ambito = 'sitio' | 'intranet';
 
-/** Cómo se llega a cada página. La intranet vive en otro origen y abre en otra pestaña. */
+/** La dirección de cada página. La intranet vive en otro origen: lleva su URL completa. */
 const hrefDe = (pagina: PaginaPublicada, externo: boolean) =>
   externo ? `${URL_INTRANET}${rutaPublicaDeSlug(pagina.slug)}` : rutaPublicaDeSlug(pagina.slug);
 
@@ -62,6 +60,13 @@ interface GrupoProps {
   paginas: PaginaPublicada[];
   externo: boolean;
 }
+
+/**
+ * Las páginas se abren en otra pestaña, también las del sitio (pedido del usuario,
+ * 2026-10-10): quien está en el dashboard consulta una página y vuelve sin perderlo.
+ * `noopener` porque sin él la página destino recibe `window.opener` y puede redirigir esta.
+ */
+const abrirEnOtraPestana = (href: string) => window.open(href, '_blank', 'noopener,noreferrer');
 
 /** La lista de enlaces de un ámbito: lo que usan el teclado y el lector de pantalla. */
 function Grupo({ etiqueta, paginas, externo }: GrupoProps) {
@@ -101,18 +106,11 @@ function Grupo({ etiqueta, paginas, externo }: GrupoProps) {
 
             return (
               <li key={pagina.id}>
-                {externo ? (
-                  // Otro origen: pestaña nueva, y `noopener` porque sin él la página
-                  // destino recibe `window.opener` y puede redirigir esta.
-                  <a href={href} target="_blank" rel="noopener noreferrer" className={clases} title={pagina.titulo}>
-                    {pagina.titulo}
-                    <span className="sr-only"> (se abre en otra pestaña)</span>
-                  </a>
-                ) : (
-                  <Link href={href} className={clases} title={pagina.titulo}>
-                    {pagina.titulo}
-                  </Link>
-                )}
+                {/* En otra pestaña, como en el árbol (`abrirEnOtraPestana`). */}
+                <a href={href} target="_blank" rel="noopener noreferrer" className={clases} title={pagina.titulo}>
+                  {pagina.titulo}
+                  <span className="sr-only"> (se abre en otra pestaña)</span>
+                </a>
               </li>
             );
           })}
@@ -161,7 +159,7 @@ const anchoDePildora = (etiqueta: string, total: number, flecha: string) =>
   24;
 
 /** Lo que cuelga de cada nodo del árbol, para saber qué hacer al tocarlo. */
-type DatosDeNodo = { ambito?: Ambito; href?: string; ruta?: string; externo?: boolean };
+type DatosDeNodo = { ambito?: Ambito; href?: string; ruta?: string };
 
 /**
  * Un nodo del árbol con esos campos propios: ECharts los guarda y los devuelve en el clic
@@ -187,7 +185,6 @@ function coloresDe(ambito: Ambito, oscuro: boolean) {
 
 /** Las dos ramas en un árbol de ECharts. Tocar una rama la abre o la cierra; una hoja, abre su página. */
 function ArbolDePaginas({ resumen }: { resumen: ResumenPaginasPublicadas | null }) {
-  const router = useRouter();
   const oscuro = useEsOscuro();
   const [abiertas, setAbiertas] = useState<ReadonlySet<Ambito>>(() => new Set());
   // El ancho del árbol: la línea vertical de la escalera va justo antes de las páginas, a
@@ -267,7 +264,6 @@ function ArbolDePaginas({ resumen }: { resumen: ResumenPaginasPublicadas | null 
           name: pagina.titulo,
           href: hrefDe(pagina, rama.externo),
           ruta: rutaPublicaDeSlug(pagina.slug),
-          externo: rama.externo,
           symbolSize: 7,
           // En cada hoja y no en la serie: la rama lo heredaba y su píldora salía con este
           // ancho fijo y el número montado sobre el nombre.
@@ -328,7 +324,7 @@ function ArbolDePaginas({ resumen }: { resumen: ResumenPaginasPublicadas | null 
           if (!nodo?.href) return '';
           return (
             `<strong>${escaparHtml(String(nodo.name))}</strong><br/>${escaparHtml(nodo.ruta ?? '')}` +
-            (nodo.externo ? '<br/><span style="opacity:.7">Se abre en otra pestaña</span>' : '')
+            '<br/><span style="opacity:.7">Se abre en otra pestaña</span>'
           );
         },
         extraCssText: 'max-width:16rem;white-space:normal;',
@@ -341,8 +337,7 @@ function ArbolDePaginas({ resumen }: { resumen: ResumenPaginasPublicadas | null 
   const alTocar = (_indice: number, { datos }: { serie: number; datos: unknown }) => {
     const nodo = datos as DatosDeNodo | undefined;
     if (nodo?.href) {
-      if (nodo.externo) window.open(nodo.href, '_blank', 'noopener,noreferrer');
-      else router.push(nodo.href);
+      abrirEnOtraPestana(nodo.href);
       return;
     }
     const ambito = nodo?.ambito;
