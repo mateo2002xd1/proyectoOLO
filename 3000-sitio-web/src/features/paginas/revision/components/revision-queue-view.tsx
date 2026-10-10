@@ -97,9 +97,13 @@ export function RevisionQueueView() {
   );
 
   const [modalState, setModalState] = useState<{
-    tipo: 'rechazar' | 'eliminar' | null;
+    tipo: 'aprobar' | 'rechazar' | 'eliminar' | null;
     pagina: PaginaEnRevision | null;
   }>({ tipo: null, pagina: null });
+
+  function abrirAprobar(pagina: PaginaEnRevision) {
+    setModalState({ tipo: 'aprobar', pagina });
+  }
 
   function abrirRechazar(pagina: PaginaEnRevision) {
     setModalState({ tipo: 'rechazar', pagina });
@@ -116,20 +120,13 @@ export function RevisionQueueView() {
     setBusySlug(pagina.slug);
 
     try {
-      if (tipo === 'rechazar') {
+      if (tipo === 'aprobar') {
+        await aprobar(pagina.slug, pagina.ambito);
+      } else if (tipo === 'rechazar') {
         await rechazar(pagina.slug, motivo, pagina.ambito);
       } else if (tipo === 'eliminar') {
         await eliminar(pagina.slug, pagina.id, motivo, pagina.ambito);
       }
-    } finally {
-      setBusySlug(null);
-    }
-  }
-
-  async function handleAprobar(pagina: PaginaEnRevision) {
-    setBusySlug(pagina.slug);
-    try {
-      await aprobar(pagina.slug, pagina.ambito);
     } finally {
       setBusySlug(null);
     }
@@ -285,7 +282,7 @@ export function RevisionQueueView() {
                       <button
                         type="button"
                         disabled={busySlug === pagina.slug}
-                        onClick={() => handleAprobar(pagina)}
+                        onClick={() => abrirAprobar(pagina)}
                         className={`${BOTON} bg-[#7DB728] text-white hover:brightness-95 focus:ring-[#7DB728]/50 disabled:cursor-not-allowed disabled:opacity-50`}
                       >
                         <IconoMascara nombre="send" />
@@ -337,6 +334,25 @@ export function RevisionQueueView() {
       )}
 
       {/* `key` por versión: cada página abre un modal nuevo, con el motivo en blanco. */}
+      {/* Publicar reemplaza lo que ve el público: se confirma antes, como rechazar y eliminar. */}
+      <ModalAccionConMotivo
+        key={`aprobar-${modalState.pagina?.id ?? 'cerrado'}`}
+        abierto={modalState.tipo === 'aprobar'}
+        titulo="¿Estás seguro de que deseas publicar esta versión?"
+        descripcion={
+          modalState.pagina
+            ? `Se publicará la versión ${modalState.pagina.numeroVersion} de ${modalState.pagina.slug} en ${
+                modalState.pagina.ambito === 'intranet' ? 'la intranet' : 'el sitio web'
+              }. Si ya hay una versión publicada, pasará a Respaldos.`
+            : ''
+        }
+        textoAccion="Publicar"
+        colorAccion="brand"
+        requiereMotivo={false}
+        onConfirmar={confirmarModal}
+        onCancelar={() => setModalState({ tipo: null, pagina: null })}
+      />
+
       <ModalAccionConMotivo
         key={`rechazar-${modalState.pagina?.id ?? 'cerrado'}`}
         abierto={modalState.tipo === 'rechazar'}
@@ -464,11 +480,13 @@ function ModalAccionConMotivo({
           </div>
         )}
 
-        <div className="mt-6 flex flex-col-reverse justify-end gap-3 sm:flex-row">
+        {/* Los dos botones miden lo mismo (`flex-1`, 44 px de alto): «Cancelar» sin color y
+            con borde gris, la acción con el suyo. Apilados en el móvil, la acción arriba. */}
+        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row">
           <button
             type="button"
             onClick={onCancelar}
-            className="inline-flex w-full justify-center rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 shadow-sm hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-brand-interactive/50 sm:w-auto dark:border-zinc-600 dark:bg-transparent dark:text-zinc-200 dark:hover:bg-zinc-800"
+            className="inline-flex h-11 w-full items-center justify-center rounded-lg border border-zinc-300 bg-white px-4 text-sm font-medium text-zinc-700 shadow-sm hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-brand-interactive/50 sm:flex-1 dark:border-zinc-600 dark:bg-transparent dark:text-zinc-200 dark:hover:bg-zinc-800"
           >
             Cancelar
           </button>
@@ -476,7 +494,7 @@ function ModalAccionConMotivo({
             type="button"
             onClick={() => onConfirmar(motivo)}
             disabled={requiereMotivo && !motivo.trim()}
-            className={`inline-flex w-full justify-center rounded-lg px-4 py-2 text-sm font-medium text-white shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto ${
+            className={`inline-flex h-11 w-full items-center justify-center rounded-lg px-4 text-sm font-medium text-white shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50 sm:flex-1 ${
               colorAccion === 'red'
                 ? 'bg-red-600 hover:bg-red-700'
                 : 'bg-brand-interactive hover:bg-brand-interactive-hover'

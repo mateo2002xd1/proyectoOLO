@@ -5,6 +5,23 @@
 
 ---
 
+## sesión 09-10-2026 (27.ª parte): confirmar antes de publicar desde la cola de revisión
+
+**Qué se pidió.** Un modal al publicar: «¿Estás seguro de que deseas publicar esta versión?»,
+con un botón sin color y borde gris y otro verde, simétricos.
+
+**Lo que se hizo.** En `revision-queue-view.tsx`, «Aprobar» ya no publica al pulsar: abre
+`ModalAccionConMotivo` con `tipo: 'aprobar'`, sin campo de motivo (`requiereMotivo={false}`),
+`colorAccion="brand"` y el texto «Se publicará la versión N de <sección> en el sitio web / la
+intranet. Si ya hay una versión publicada, pasará a Respaldos.» Al confirmar llama a
+`aprobar`; `handleAprobar` sobraba y se quitó. Los botones del modal miden lo mismo
+(`sm:flex-1`, `h-11`), así que Rechazar y Eliminar quedan igual de simétricos.
+
+**Cómo se probó.** `tsc --noEmit` del sitio y `eslint` del archivo, limpios. No se vio en
+el navegador.
+
+---
+
 ## sesión 09-10-2026 (26.ª parte): «Editar usuario» con icono propio y tooltip
 
 **Qué se pidió.** Cambiar el lápiz de Usuarios por un SVG dado (persona gris con lápiz verde)
