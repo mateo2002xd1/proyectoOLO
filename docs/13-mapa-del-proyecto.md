@@ -14,19 +14,20 @@
 
 | | Carpetas | Features | Rutas de Next | Endpoints | Librerías |
 |---|--:|--:|--:|--:|--:|
-| `3000-sitio-web` | 48 | 3 | 53 | — | 33 |
+| `3000-sitio-web` | 49 | 3 | 53 | — | 33 |
 | `3001-intranet` | 31 | 2 | 11 | — | 27 |
 | `4000-api-backend` | 35 | — | — | 96 | 42 |
 
 Paquetes compartidos: 7 · migraciones: 44 · modelos: 23.
 
-## Carpetas sin descripción (5)
+## Carpetas sin descripción (6)
 
 Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scripts/mapa/descripciones.md` con una línea: `` - `ruta/` — para qué es ``.
 
 - `3000-sitio-web/data_temporal/`
 - `3000-sitio-web/src/features/sitio-web/alertas-inversion/`
 - `3000-sitio-web/src/features/sitio-web/fuentes-futuras-empleo/`
+- `3000-sitio-web/src/shared/lib/identidad-panel/`
 - `4000-api-backend/src/use-cases/alertas-inversion/`
 - `4000-api-backend/src/use-cases/configuracion/`
 
@@ -76,6 +77,7 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
     ├── shared/                                lo transversal del sitio: sistema de diseño y utilidades
     │   ├── lib/                               utilidades transversales: cliente HTTP, sesión, bloques
     │   │   ├── blocks/                        los bloques Puck de esta app
+    │   │   ├── identidad-panel/               ⚠ sin descripción
     │   │   ├── inactividad/                   aviso y cierre de sesión por inactividad
     │   │   ├── mobile/                        navegación mobile del panel: barra de abajo con el logo al centro
     │   │   ├── pwa/                           manifiesto, íconos y registro del service worker
@@ -193,7 +195,7 @@ test/                                          pruebas de carga con k6
 
 | Feature | Para qué | Subcarpetas | `index.ts` | Archivos |
 |---|---|---|:-:|--:|
-| `administracion/` | el panel: usuarios, roles, auditoría, respaldos, cargas | `actualizaciones/` `auditoria/` `auth/` `buscador/` `configuracion/` `mi-perfil/` `respaldos/` | **no** | 75 |
+| `administracion/` | el panel: usuarios, roles, auditoría, respaldos, cargas | `actualizaciones/` `auditoria/` `auth/` `buscador/` `configuracion/` `mi-perfil/` `respaldos/` | **no** | 78 |
 | `paginas/` | páginas editables con Puck, organizadas por etapa del ciclo | `edicion/` `menu-y-pie/` `model/` `publicacion/` `revision/` `secciones/` | sí | 39 |
 | `sitio-web/` | agrupador de lo público | `alertas-inversion/` `buscador-ocupaciones/` `fuentes-futuras-empleo/` `inicio/` `programas-sobresalientes/` `tendencia-ocupacional/` | **no** | 49 |
 

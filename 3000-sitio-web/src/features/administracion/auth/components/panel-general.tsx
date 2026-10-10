@@ -14,6 +14,14 @@ import {
 } from '@/shared/ui/molecules/dropdown';
 import { Navbar, NavbarSection, NavbarSpacer } from '@/shared/ui/organisms/navbar';
 import { NavegacionMobilePanel } from '@/shared/lib/mobile';
+import {
+  IDENTIDAD_DE_FABRICA,
+  iconoDelPanel,
+  iconoEnBlancoEnOscuro,
+  logoDelPanel,
+  logoEnBlancoEnOscuro,
+  type IdentidadPanel,
+} from '@/shared/lib/identidad-panel';
 import { BuscadorModal } from '@/features/administracion/buscador';
 import {
   Sidebar,
@@ -290,10 +298,13 @@ function ModalAlertas({
 export function PanelGeneralLayout({
   children,
   userProfile,
+  identidad = IDENTIDAD_DE_FABRICA,
   className,
 }: {
   children: React.ReactNode;
   userProfile?: { name: string; email: string };
+  /** Logo e icono de Configuración → Identidad visual; la lee `app/admin/layout.tsx`. */
+  identidad?: IdentidadPanel;
   className?: string;
 }) {
   const router = useRouter();
@@ -419,15 +430,26 @@ export function PanelGeneralLayout({
             </NavbarSection>
           </Navbar>
         }
-        navegacionMobile={<NavegacionMobilePanel pendientesRevision={enRevision.length} />}
+        navegacionMobile={<NavegacionMobilePanel
+            pendientesRevision={enRevision.length}
+            logo={iconoDelPanel(identidad)}
+            logoEnBlancoEnOscuro={iconoEnBlancoEnOscuro(identidad)}
+          />}
         sidebar={
           <Sidebar>
             <SidebarHeader>
               <div className="flex items-center justify-between w-full">
-                {/* SVG estático servido desde /public: next/image no aporta optimización aquí. */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                {/* El de fábrica (SVG de /public) o el subido en Configuración: next/image no
+                    aporta optimización aquí. En modo oscuro, en blanco según
+                    `logoEnBlancoEnOscuro`.
+                    `max-w-full object-contain`: un logo subido puede ser más ancho que la barra. */}
                 <Link href="/" className="group cursor-pointer pt-7" title="Ir al sitio web">
-                  <img src="/assets/logos/olo-logo-horizontal.svg" alt="OLO" className="h-16 transition-all duration-300 group-hover:scale-105 group-hover:drop-shadow-md dark:brightness-0 dark:invert cursor-pointer" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={logoDelPanel(identidad)}
+                    alt="OLO"
+                    className={`h-16 max-w-full cursor-pointer object-contain object-left transition-all duration-300 group-hover:scale-105 group-hover:drop-shadow-md ${logoEnBlancoEnOscuro(identidad) ? 'dark:brightness-0 dark:invert' : ''}`}
+                  />
                 </Link>
               </div>
             </SidebarHeader>

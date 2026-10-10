@@ -16,6 +16,9 @@ const RUTAS_DE_MAS = ['/admin/actualizaciones', '/admin/respaldos', '/admin/dash
 interface NavegacionMobilePanelProps {
   /** Páginas esperando aprobación: el globo de «Revisión». */
   pendientesRevision: number;
+  /** El icono del centro: el de Configuración → Identidad visual, o el de fábrica. */
+  logo: string;
+  logoEnBlancoEnOscuro: boolean;
 }
 
 /**
@@ -24,7 +27,7 @@ interface NavegacionMobilePanelProps {
  * del centro lleva al Dashboard. La cuenta y los avisos no van aquí: están arriba, en
  * la barra superior del móvil (`panel-general.tsx`).
  */
-export function NavegacionMobilePanel({ pendientesRevision }: NavegacionMobilePanelProps) {
+export function NavegacionMobilePanel({ pendientesRevision, logo, logoEnBlancoEnOscuro }: NavegacionMobilePanelProps) {
   const pathname = usePathname();
   const enMas = RUTAS_DE_MAS.some((ruta) => pathname.startsWith(ruta));
 
@@ -74,7 +77,8 @@ export function NavegacionMobilePanel({ pendientesRevision }: NavegacionMobilePa
       inicio={{
         href: '/admin/dashboard',
         etiqueta: 'Dashboard',
-        logo: '/assets/logos/olo-logo-none.svg',
+        logo,
+        logoEnBlancoEnOscuro,
         activo: pathname.startsWith('/admin/dashboard') && !enMas,
       }}
     />

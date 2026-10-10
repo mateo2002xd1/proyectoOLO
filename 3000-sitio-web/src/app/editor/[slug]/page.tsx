@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { poppins } from '@/shared/lib/fonts';
 import {
@@ -10,7 +11,13 @@ import {
   slugDeOrigen,
 } from '@/features/paginas';
 import { getAuthSessionSnapshot, getSessionPermissionsSnapshot } from '@/shared/lib/session';
+import { EstilosDeAcciones, metadataDeIdentidad, obtenerIdentidadPanel } from '@/shared/lib/identidad-panel/servidor';
 import { EditorClient } from './editor-client';
+
+/** El icono de la pestaña, el mismo del panel (Configuración → Identidad visual). */
+export function generateMetadata(): Promise<Metadata> {
+  return metadataDeIdentidad();
+}
 
 /**
  * El editor visual de una página.
@@ -63,9 +70,10 @@ export default async function EditorPage({
   // plantilla. Ninguna de las dos llamadas puede lanzar (ver `obtenerPlantilla` y
   // `obtenerPaginaPublicadaCacheada`), así que el editor nunca se cae por esto.
   const esPlantilla = slug === SLUG_PLANTILLA;
-  const [plantilla, paginaDeReferencia] = await Promise.all([
+  const [plantilla, paginaDeReferencia, identidad] = await Promise.all([
     esPlantilla ? Promise.resolve(null) : obtenerPlantilla(),
     esPlantilla ? obtenerPaginaPublicadaCacheada(slugDeOrigen(volver)) : Promise.resolve(null),
+    obtenerIdentidadPanel(),
   ]);
 
   return (
@@ -85,6 +93,8 @@ export default async function EditorPage({
         } as CSSProperties
       }
     >
+      {/* Los colores de Salir, Guardar borrador y Enviar a revisión (`.olo-editor-tooltip`). */}
+      <EstilosDeAcciones identidad={identidad} />
       {/* Solo al venir de «Nueva página»: es donde se entrega el enlace de la ruta
           recién creada, que es lo que hay que pegar en el menú para poder llegar. */}
       {nueva === '1' && <AvisoSeccionNueva slug={slug} />}

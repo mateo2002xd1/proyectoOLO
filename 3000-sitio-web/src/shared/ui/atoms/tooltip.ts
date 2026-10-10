@@ -4,7 +4,8 @@
  * entrada corta hacia arriba. Lo usan la cola de revisión y el ojo de Auditoría.
  *
  * El botón lleva `GRUPO_TOOLTIP` y dentro un `<span aria-hidden="true">` con
- * `TOOLTIP_ENCIMA` más su fondo y su letra. `aria-hidden` porque el nombre ya lo da el
+ * `TOOLTIP_ENCIMA` más su fondo y su letra. Si es la etiqueta de una acción, el color sale
+ * de `COLOR_DE_ACCION` (`shared/lib/identidad-panel`), que se cambia en Configuración. `aria-hidden` porque el nombre ya lo da el
  * botón (`aria-label` o un `sr-only`); sin eso el lector lo leería dos veces. Aparece al
  * pasar el puntero y al llegar con el teclado (`focus-visible`). Si el grupo es un
  * envoltorio y el foco lo recibe algo de dentro (el `Switch` de Usuarios, que no acepta

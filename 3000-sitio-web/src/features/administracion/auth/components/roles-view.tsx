@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { GRUPO_TOOLTIP, TOOLTIP_ENCIMA, TOOLTIP_ENCIMA_A_LA_DERECHA } from '@/shared/ui/atoms/tooltip';
+import { COLOR_DE_ACCION } from '@/shared/lib/identidad-panel';
 import {
   useUsuarios,
   mensajeDeError,
@@ -445,7 +446,8 @@ export default function RolesView() {
                     <td data-etiqueta="Acciones" className="px-5 py-2">
                       <div className="flex items-center gap-1 @3xl:justify-end">
                         {/* Deslizadores de Font Awesome (`deslizadores.svg`, un color: va por máscara
-                            y toma `currentColor`). En el verde de «Editar usuario» y su tooltip. */}
+                            y toma `currentColor`). En el verde de «Editar usuario»; el tooltip, del
+                            color de «Editar» en Configuración → Identidad visual. */}
                         <button
                           type="button"
                           onClick={() => abrirModalPermisos(rol)}
@@ -453,7 +455,7 @@ export default function RolesView() {
                           className={`${GRUPO_TOOLTIP} rounded-lg p-1.5 text-[#7DB728] transition-colors hover:bg-[#7DB728]/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7DB728]`}
                         >
                           <IconoMascara nombre="deslizadores" tamano="h-6 w-6" />
-                          <span aria-hidden="true" className={`${TOOLTIP_ENCIMA} bg-[#7DB728] text-white`}>
+                          <span aria-hidden="true" className={`${TOOLTIP_ENCIMA} ${COLOR_DE_ACCION.editar}`}>
                             Editar rol
                           </span>
                         </button>
@@ -475,7 +477,7 @@ export default function RolesView() {
                           <TrashIcon className="size-6" />
                           <span
                             aria-hidden="true"
-                            className={`${TOOLTIP_ENCIMA_A_LA_DERECHA} ${noEliminable ? 'bg-zinc-600 text-white' : 'bg-red-500 text-white'}`}
+                            className={`${TOOLTIP_ENCIMA_A_LA_DERECHA} ${noEliminable ? 'bg-zinc-600 text-white' : COLOR_DE_ACCION.eliminar}`}
                           >
                             {noEliminable ? 'No se puede eliminar el rol base de Editor' : 'Eliminar rol'}
                           </span>

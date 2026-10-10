@@ -3475,7 +3475,8 @@ button.text-link,
    sobresalía de la pantalla y, aunque invisible, daba scroll horizontal.
    Los colores de cada uno salen de Configuración → Identidad visual: las variables
    `--olo-accion-*` las escribe `EstilosDeAcciones` en `app/editor/[slug]/page.tsx`, con
-   los de fábrica de `shared/lib/identidad-panel/acciones.ts`. */
+   los de fábrica de `shared/lib/identidad-panel/acciones.ts`. El segundo valor de cada
+   `var()` es ese mismo de fábrica, por si la página no trae las variables. */
 .olo-editor-btn {
   position: relative;
 }
@@ -3517,18 +3518,18 @@ button.text-link,
 }
 
 .olo-editor-btn--salir .olo-editor-tooltip {
-  background: var(--olo-accion-salir-del-editor-fondo);
-  color: var(--olo-accion-salir-del-editor-texto);
+  background: var(--olo-accion-salir-del-editor-fondo, #dc2626);
+  color: var(--olo-accion-salir-del-editor-texto, #ffffff);
 }
 
 .olo-editor-btn--guardar .olo-editor-tooltip {
-  background: var(--olo-accion-guardar-borrador-fondo);
-  color: var(--olo-accion-guardar-borrador-texto);
+  background: var(--olo-accion-guardar-borrador-fondo, #3b82f6);
+  color: var(--olo-accion-guardar-borrador-texto, #ffffff);
 }
 
 .olo-editor-btn--enviar .olo-editor-tooltip {
-  background: var(--olo-accion-enviar-a-revision-fondo);
-  color: var(--olo-accion-enviar-a-revision-texto);
+  background: var(--olo-accion-enviar-a-revision-fondo, #7db728);
+  color: var(--olo-accion-enviar-a-revision-texto, #001631);
 }
 
 @media (prefers-reduced-motion: reduce) {

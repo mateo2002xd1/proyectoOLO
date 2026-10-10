@@ -197,6 +197,15 @@ const nextConfig = {
         source: '/api/upload',
         destination: `${URL_DE_LA_API}/api/archivos/sitio`,
       },
+      /**
+       * El logo y el icono del panel que se suben en Configuración → Identidad visual.
+       * Los guarda la API aparte de `uploads/` (`filesystem/panel/identidad/`). En el
+       * servidor también pasan por aquí: nginx manda a Next todo lo que no conoce.
+       */
+      {
+        source: '/identidad-panel/:nombre',
+        destination: `${URL_DE_LA_API}/api/configuracion/identidad-panel/archivos/:nombre`,
+      },
     ];
   },
 };

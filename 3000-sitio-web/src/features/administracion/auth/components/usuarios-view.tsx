@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import { GRUPO_TOOLTIP, TOOLTIP_ENCIMA } from '@/shared/ui/atoms/tooltip';
+import { COLOR_DE_ACCION } from '@/shared/lib/identidad-panel';
 import { validarEmail } from '@olo/email-policy';
 import {
   useUsuarios,
@@ -518,7 +519,7 @@ export default function UsuariosView() {
                         />
                         <span
                           aria-hidden="true"
-                          className={`${TOOLTIP_ENCIMA} ${user.status === 'active' ? 'bg-zinc-600' : 'bg-[#7DB728]'} text-white`}
+                          className={`${TOOLTIP_ENCIMA} ${user.status === 'active' ? COLOR_DE_ACCION.desactivar : COLOR_DE_ACCION.activar}`}
                         >
                           {user.status === 'active' ? 'Desactivar' : 'Activar'}
                         </span>
@@ -552,7 +553,7 @@ export default function UsuariosView() {
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element -- SVG estático de /public: next/image no aporta nada aquí. */}
                           <img src="/assets/svg/editar-usuario.svg" alt="" aria-hidden="true" className="h-6 w-auto" />
-                          <span aria-hidden="true" className={`${TOOLTIP_ENCIMA} bg-[#7DB728] text-white`}>
+                          <span aria-hidden="true" className={`${TOOLTIP_ENCIMA} ${COLOR_DE_ACCION.editar}`}>
                             Editar usuario
                           </span>
                         </button>
@@ -563,7 +564,7 @@ export default function UsuariosView() {
                           className={`${GRUPO_TOOLTIP} rounded-lg p-1.5 text-red-500 transition-colors hover:bg-red-500/10 hover:text-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:text-red-400`}
                         >
                           <TrashIcon className="size-5" />
-                          <span aria-hidden="true" className={`${TOOLTIP_ENCIMA} bg-red-500 text-white`}>
+                          <span aria-hidden="true" className={`${TOOLTIP_ENCIMA} ${COLOR_DE_ACCION.eliminar}`}>
                             Eliminar
                           </span>
                         </button>
