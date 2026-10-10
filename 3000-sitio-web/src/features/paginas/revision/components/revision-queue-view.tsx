@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState, useRef, useEffect } from 'react';
-import { XCircle } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { BarraFiltros, CampoFiltro } from '@/shared/ui/molecules/barra-filtros';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
@@ -337,9 +337,10 @@ export function RevisionQueueView() {
         key={`eliminar-${modalState.pagina?.id ?? 'cerrado'}`}
         abierto={modalState.tipo === 'eliminar'}
         titulo={modalState.pagina ? `Eliminar versión ${modalState.pagina.numeroVersion} de /${modalState.pagina.slug}` : ''}
-        descripcion="Se descarta el trabajo sin publicar. Si es la única versión de la página, la próxima edición empezará de nuevo desde la versión 1."
+        descripcion="Si eliminas los cambios sin publicar, el trabajo se perderá. Al no haber versiones previas, la página volverá a empezar desde la Versión 1."
         textoAccion="Eliminar"
         colorAccion="red"
+        destructivo
         onConfirmar={confirmarModal}
         onCancelar={() => setModalState({ tipo: null, pagina: null })}
       />
@@ -356,6 +357,7 @@ function ModalAccionConMotivo({
   onConfirmar,
   onCancelar,
   requiereMotivo = true,
+  destructivo = false,
 }: {
   abierto: boolean;
   titulo: string;
@@ -365,6 +367,8 @@ function ModalAccionConMotivo({
   onConfirmar: (motivo: string) => void;
   onCancelar: () => void;
   requiereMotivo?: boolean;
+  /** Aviso y campo del motivo en rojo: para lo que no tiene vuelta atrás. */
+  destructivo?: boolean;
 }) {
   const dialogo = useRef<HTMLDialogElement>(null);
   const [motivo, setMotivo] = useState('');
@@ -396,15 +400,19 @@ function ModalAccionConMotivo({
     >
       <div className="flex flex-col p-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">
-            <XCircle className="h-5 w-5" />
-          </div>
           <h2 className="text-lg font-semibold text-zinc-900 dark:text-[#f6f6f6]">
             {titulo}
           </h2>
         </div>
 
-        <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-300">{descripcion}</p>
+        {destructivo ? (
+          <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
+            <AlertTriangle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
+            <p>{descripcion}</p>
+          </div>
+        ) : (
+          <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-300">{descripcion}</p>
+        )}
 
         {requiereMotivo && (
           <div className="mt-4">
@@ -412,12 +420,15 @@ function ModalAccionConMotivo({
               htmlFor="motivo-accion"
               className="block text-xs font-medium text-zinc-700 dark:text-zinc-300"
             >
-              Motivo (obligatorio)
             </label>
             <textarea
               id="motivo-accion"
               rows={3}
-              className="mt-1 block w-full rounded-xl border border-zinc-300 bg-transparent px-3 py-2 text-sm text-zinc-900 focus:border-brand-interactive focus:outline-none focus:ring-1 focus:ring-brand-interactive dark:border-zinc-700 dark:bg-[#1a233a] dark:text-white"
+              className={`mt-1 block w-full rounded-xl border bg-transparent px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-1 dark:bg-[#1a233a] dark:text-white ${
+                destructivo
+                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500 dark:border-red-900/60 dark:focus:border-red-400 dark:focus:ring-red-400'
+                  : 'border-zinc-300 focus:border-brand-interactive focus:ring-brand-interactive dark:border-zinc-700'
+              }`}
               placeholder="Explica la razón…"
               value={motivo}
               onChange={(e) => setMotivo(e.target.value)}

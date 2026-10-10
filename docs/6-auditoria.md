@@ -5,7 +5,24 @@
 
 ---
 
-## sesión 09-10-2026 (18.ª parte): /admin/revision daba «timeout of 5000ms exceeded»
+## sesión 09-10-2026 (21.ª parte): el aviso del modal «Eliminar versión» en rojo
+
+**Qué se pidió.** Que el mensaje del modal de Eliminar de la cola de revisión se vea como
+aviso de estado, en rojo transparente o en amarillo.
+
+**Lo que se hizo.** Rojo: en el panel el rojo marca lo que no tiene vuelta atrás y el ámbar
+lo que pide confirmar, y eliminar una versión sin publicar pierde el trabajo. Mismo estilo
+que el error de `modal-depurar-versiones.tsx` (borde `red-200`, fondo `red-50`, icono
+`AlertTriangle`). `ModalAccionConMotivo` recibe `destructivo` (aviso y borde del motivo en rojo); solo lo usa Eliminar,
+Rechazar sigue con el texto gris. El import de `XCircle`, que quedó sin uso al quitar el
+icono del encabezado, pasa a `AlertTriangle`.
+
+**Cómo se probó.** `tsc --noEmit` del sitio y `eslint` del archivo, limpios. No se vio en
+el navegador.
+
+---
+
+## sesión 09-10-2026 (20.ª parte): /admin/revision daba «timeout of 5000ms exceeded»
 
 **Qué era.** La cola de revisión fallaba a veces con `timeout of 5000ms exceeded`. No era
 código nuevo: el límite de 5 s es del 18-09 y el pool del commit inicial. Medido contra Neon:
