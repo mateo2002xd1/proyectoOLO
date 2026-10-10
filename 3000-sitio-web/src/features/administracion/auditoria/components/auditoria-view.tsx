@@ -244,18 +244,20 @@ export function AuditoriaView() {
                 })}
               </tbody>
             </table>
-          </div>
 
-          <Paginador
-            pagina={pagina}
-            totalPaginas={totalPaginas}
-            onCambiarPagina={irAPagina}
-            total={total}
-            porPagina={porPagina}
-            onCambiarPorPagina={cambiarPorPagina}
-            etiqueta="registros"
-            className="mt-4 rounded-xl border border-zinc-200 px-4 dark:border-[#7db828]/30"
-          />
+            {/* Dentro de la tarjeta de la tabla, como en las demás listas, y con el fondo de
+                sus filas. Antes era una caja aparte con su propio borde. */}
+            <Paginador
+              pagina={pagina}
+              totalPaginas={totalPaginas}
+              onCambiarPagina={irAPagina}
+              total={total}
+              porPagina={porPagina}
+              onCambiarPorPagina={cambiarPorPagina}
+              etiqueta="registros"
+              className="bg-white px-4 dark:bg-[#0f1626]"
+            />
+          </div>
         </>
       )}
 
