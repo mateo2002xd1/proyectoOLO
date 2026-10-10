@@ -82,7 +82,7 @@ export default function UsuariosView() {
 
 
   // Credentials state
-  const [newUserCredentials, setNewUserCredentials] = useState<{ name: string, email: string, password: string } | null>(null);
+  const [newUserCredentials, setNewUserCredentials] = useState<{ name: string, email: string, password: string, vence?: string | null } | null>(null);
   const [copiedPassword, setCopiedPassword] = useState(false);
 
   useEffect(() => {
@@ -165,7 +165,8 @@ export default function UsuariosView() {
         setNewUserCredentials({
           name: response.name || name,
           email: response.email || email,
-          password: response.temporaryPassword
+          password: response.temporaryPassword,
+          vence: response.temp_password_expires_at,
         });
         setCopiedPassword(false);
       }
@@ -187,7 +188,8 @@ export default function UsuariosView() {
         setNewUserCredentials({
           name: res.name || user.name,
           email: res.email || user.email,
-          password: res.temporaryPassword
+          password: res.temporaryPassword,
+          vence: res.temp_password_expires_at,
         });
         setCopiedPassword(false);
       }
@@ -389,6 +391,20 @@ export default function UsuariosView() {
               <p className="m-0 mt-2 text-xs text-zinc-500 dark:text-[#94a3b8]">
                 Copia la contraseña antes de cerrar. No podrás verla de nuevo.
               </p>
+              {/* La API la emite con 72 horas de vigencia: si la persona no entra antes,
+                  habrá que restablecerla. Se dice aquí para que quien la entrega lo avise. */}
+              {newUserCredentials.vence && (
+                <p className="m-0 mt-2 text-xs text-zinc-500 dark:text-[#94a3b8]">
+                  Vale hasta el{' '}
+                  <span className="font-semibold text-zinc-900 dark:text-[#f6f6f6]">
+                    {new Date(newUserCredentials.vence).toLocaleString('es-CO', {
+                      dateStyle: 'long',
+                      timeStyle: 'short',
+                    })}
+                  </span>
+                  . Si no se usa antes, habrá que restablecerla.
+                </p>
+              )}
               <div className="mt-3 flex items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-[#7db828]/30 dark:bg-[#0b1121]/50">
                 <span className="min-w-0 flex-1 truncate font-mono text-sm tracking-wide text-zinc-900 dark:text-[#f6f6f6]">
                   {newUserCredentials.password}

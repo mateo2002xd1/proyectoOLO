@@ -48,6 +48,8 @@ export type User = {
   locked_until?: string | null;
   failed_login_attempts?: number;
   failed_security_attempts?: number;
+  /** Hasta cuándo vale la contraseña temporal (72 h desde que se emite); `null` si no hay. */
+  temp_password_expires_at?: string | null;
 };
 
 export type NuevoUsuario = {
