@@ -3401,6 +3401,72 @@ button.text-link,
   background: #8fcc32;
 }
 
+/* Tooltip de los botones de la cabecera del editor: la forma del de los botones
+   flotantes (`.fab-speed-dial__tooltip`) con el color de su botón. Va debajo porque la
+   cabecera está arriba del todo. El del último botón se alinea a la derecha: centrado
+   sobresalía de la pantalla y, aunque invisible, daba scroll horizontal. */
+.olo-editor-btn {
+  position: relative;
+}
+
+.olo-editor-tooltip {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 50%;
+  z-index: 10;
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -4px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.olo-editor-btn:last-child .olo-editor-tooltip {
+  left: auto;
+  right: 0;
+  transform: translateY(-4px);
+}
+
+.olo-editor-btn:hover .olo-editor-tooltip,
+.olo-editor-btn:focus-visible .olo-editor-tooltip {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.olo-editor-btn:last-child:hover .olo-editor-tooltip,
+.olo-editor-btn:last-child:focus-visible .olo-editor-tooltip {
+  transform: translateY(0);
+}
+
+.olo-editor-btn--salir .olo-editor-tooltip {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.olo-editor-btn--guardar .olo-editor-tooltip {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+/* Como el botón: azul marino sobre el verde (7.6:1); blanco quedaría en 2.4:1. */
+.olo-editor-btn--enviar .olo-editor-tooltip {
+  background: #7db828;
+  color: #001631;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .olo-editor-tooltip {
+    transition: none;
+  }
+}
+
 /* ── Panel lateral del inspector de bloques en Puck ────────────────────────
    Cuando un bloque está anidado (por ejemplo, dentro de Seccion con Pestañas
    o Grid), Puck renderiza una miga de pan junto con el título del bloque en la

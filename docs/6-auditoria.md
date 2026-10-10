@@ -5,6 +5,32 @@
 
 ---
 
+## sesión 09-10-2026 (37.ª parte): tooltips en los tres botones de la cabecera del editor
+
+**Qué se pidió.** Tooltip en los tres botones del editor.
+
+**Lo que se hizo.** En los dos editores (`puck-editor-wrapper.tsx` del sitio y de la intranet),
+Salir, Guardar borrador y Enviar a revisión dejan el `title` y llevan un
+`<span className="olo-editor-tooltip" aria-hidden="true">` con el mismo texto que decía el
+`title` («Salir sin publicar», «Guardar borrador» / «Guardando…», «Enviar a revisión» /
+«Enviando…», o «Ya no tienes esta página/sección reservada»). El nombre lo sigue dando el
+`aria-label`.
+
+`.olo-editor-tooltip` va en el `globals.css` de cada app, en CSS y no en Tailwind como el resto
+de la cabecera: la forma de `.fab-speed-dial__tooltip`, debajo del botón (la cabecera está
+arriba del todo), del color de su botón (rojo `#dc2626`, azul `#3b82f6`, verde `#7db828` con
+letra `#001631` como el botón) y alineado a la derecha en el último botón, que centrado se
+salía de la pantalla.
+
+**Cómo se probó.** `tsc --noEmit` de las dos apps, limpio. `eslint` del editor de la intranet,
+limpio; el del sitio solo marca un `any` de la línea 617, de un commit viejo. No se vio en el
+navegador.
+
+**Pendiente al cierre:** comprobar en el navegador que la cabecera de Puck no recorte el
+tooltip (si tiene `overflow: hidden`, no se vería debajo).
+
+---
+
 ## sesión 09-10-2026 (36.ª parte): el interruptor de estado de Usuarios con tooltip y sin «Activo/Inactivo» al lado
 
 **Qué se pidió.** En Usuarios, un tooltip en el interruptor de estado con la acción («Activar» o

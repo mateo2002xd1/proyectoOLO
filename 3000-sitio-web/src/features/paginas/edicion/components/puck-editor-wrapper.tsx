@@ -191,20 +191,27 @@ function AccionesCabecera({
         onClick={() => onSalir(hayCambiosSinGuardar)}
         disabled={busy}
         aria-label="Salir"
-        title="Volver a la página sin publicar nada"
         className="olo-editor-btn olo-editor-btn--salir"
       >
         <IconoDetener />
+        {/* Tooltip propio (`.olo-editor-tooltip` en globals.css) y no `title`: del color
+            del botón y debajo, que encima queda fuera de la pantalla. `aria-hidden`: el
+            nombre ya lo da el `aria-label`. */}
+        <span className="olo-editor-tooltip" aria-hidden="true">
+          Salir sin publicar
+        </span>
       </button>
       <button
         type="button"
         onClick={() => onGuardar(indiceHistoria)}
         disabled={busy || sinCandado}
         aria-label={isSaving ? 'Guardando…' : 'Guardar borrador'}
-        title={sinCandado ? 'Ya no tienes esta página reservada' : (isSaving ? 'Guardando…' : 'Guardar borrador')}
         className="olo-editor-btn olo-editor-btn--guardar"
       >
         <IconoGuardar />
+        <span className="olo-editor-tooltip" aria-hidden="true">
+          {sinCandado ? 'Ya no tienes esta página reservada' : (isSaving ? 'Guardando…' : 'Guardar borrador')}
+        </span>
       </button>
       {puedeEnviar && (
         <button
@@ -212,10 +219,12 @@ function AccionesCabecera({
           onClick={() => onEnviar(indiceHistoria)}
           disabled={busy || bloqueado || sinCandado}
           aria-label={isSubmitting ? 'Enviando…' : 'Enviar a revisión'}
-          title={sinCandado ? 'Ya no tienes esta página reservada' : (isSubmitting ? 'Enviando…' : 'Enviar a revisión')}
           className="olo-editor-btn olo-editor-btn--enviar"
         >
           <IconoEnviar />
+          <span className="olo-editor-tooltip" aria-hidden="true">
+            {sinCandado ? 'Ya no tienes esta página reservada' : (isSubmitting ? 'Enviando…' : 'Enviar a revisión')}
+          </span>
         </button>
       )}
     </div>
