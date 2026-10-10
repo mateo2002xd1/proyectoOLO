@@ -58,18 +58,12 @@ export default async function PreviewPage({
 
   return (
     <div className="min-h-dvh bg-white">
-      <div className="sticky top-0 z-[200] flex flex-wrap items-center gap-3 border-b border-amber-300 bg-amber-100 px-4 py-2.5 text-sm text-amber-900 lg:px-8">
-        <span className="rounded-full bg-amber-900 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-amber-100">
+      {/* El fondo es opaco (el azul mezclado con blanco, no `/10`): la barra es fija y la
+          página pasa por debajo al bajar. La etiqueta va en azul oscuro y no en blanco:
+          sobre `brand-blue` el blanco da 2,6:1 y el `#0d1526`, 7:1 (9-accesibilidad.md §2.1). */}
+      <div className="sticky top-0 z-[200] flex items-center border-b border-brand-blue/40 bg-[color-mix(in_srgb,var(--color-brand-blue)_12%,white)] px-4 py-2.5 lg:px-8">
+        <span className="rounded-full bg-brand-blue px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-[#0d1526]">
           Vista previa
-        </span>
-        <span>
-          /{slug} · {version?.numeroVersion ? `versión ${version.numeroVersion}` : 'versión sin publicar'}
-          {version?.estado ? ` · ${String(version.estado).replace('_', ' ')}` : ''}
-        </span>
-        <span className="ml-auto opacity-85">
-          {version?.estado === 'archivado'
-            ? 'Esta es una versión archivada (respaldo). Puedes restaurarla desde la sección de respaldos.'
-            : 'Así quedará la página. Para publicarla, vuelve a la cola de revisión.'}
         </span>
       </div>
 

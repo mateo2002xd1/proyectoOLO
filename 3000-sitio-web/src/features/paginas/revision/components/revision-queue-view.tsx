@@ -324,7 +324,7 @@ export function RevisionQueueView() {
       <ModalAccionConMotivo
         key={`rechazar-${modalState.pagina?.id ?? 'cerrado'}`}
         abierto={modalState.tipo === 'rechazar'}
-        titulo={modalState.pagina ? `Rechazar versión ${modalState.pagina.numeroVersion}` : ''}
+        titulo={modalState.pagina ? `Rechazar versión ${modalState.pagina.numeroVersion} de ${modalState.pagina.slug}` : ''}
         descripcion={`Devolveremos el borrador a su autor original para que lo corrija.`}
         textoAccion="Rechazar"
         colorAccion="red"
@@ -439,7 +439,7 @@ function ModalAccionConMotivo({
             />
             <p
               id="motivo-accion-cuenta"
-              className={`mt-1 text-right text-xs tabular-nums ${
+              className={`mt-2 text-right text-xs tabular-nums ${
                 motivo.length >= MOTIVO_MAX ? 'text-red-600 dark:text-red-400' : 'text-zinc-500 dark:text-zinc-400'
               }`}
             >

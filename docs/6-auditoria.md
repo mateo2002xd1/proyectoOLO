@@ -5,6 +5,44 @@
 
 ---
 
+## sesión 09-10-2026 (23.ª parte): la barra de la vista previa, solo «Vista previa» en azul
+
+**Qué se pidió.** En la vista previa del sitio (`app/preview/[slug]/page.tsx`), dejar solo la
+etiqueta «Vista previa», con fondo `#1FACE3`, y la barra en un tono más suave del mismo azul.
+
+**Lo que se hizo.**
+
+| Pieza | Antes | Ahora |
+|---|---|---|
+| Etiqueta | `amber-900`, letra `amber-100` | `bg-brand-blue` (el token de `#1FACE3`), letra `#0d1526` |
+| Barra | `amber-100`, borde `amber-300` | `color-mix(brand-blue 12 %, blanco)` = `#e4f5fc`, borde `brand-blue/40` |
+| Texto | Ruta, versión, estado y el aviso de la derecha | Solo la etiqueta |
+
+La letra de la etiqueta va en azul oscuro y no en blanco: `brand-blue` está marcado «sin texto
+encima» en `globals.css`; con blanco da 2,6:1 y con `#0d1526`, 7,0:1. El fondo de la barra es
+una mezcla opaca y no `bg-brand-blue/10` porque la barra es `sticky` y la página pasa por debajo
+al bajar.
+
+> **Se perdió el aviso de las versiones archivadas.** La barra decía «Esta es una versión
+> archivada (respaldo). Puedes restaurarla desde la sección de respaldos.» cuando se abría
+> desde Respaldos. Se quitó con el resto del texto, como se pidió.
+
+**Cómo se probó.**
+
+| Comprobación | Resultado |
+|---|---|
+| `tsc --noEmit` del sitio y `eslint` del archivo | Limpios |
+| CSS que sirve el servidor de desarrollo | Genera `.bg-brand-blue`, `.text-[#0d1526]`, `.border-brand-blue/40` y la mezcla (`#e4f5fc`) |
+
+No se vio en el navegador.
+
+**Pendiente al cierre:**
+
+- La vista previa de la intranet (`3001-intranet/src/app/preview/[slug]/page.tsx`) sigue con
+  la barra de antes.
+
+---
+
 ## sesión 09-10-2026 (22.ª parte): el motivo de rechazar o eliminar, con 100 caracteres y contador, el título sin la barra y Rechazar con borde rojo
 
 **Qué se pidió.** Limitar el motivo a 100 caracteres, contándolos al escribir, y que el campo
@@ -12,13 +50,13 @@ no se pueda agrandar.
 
 **Lo que se hizo.** En `ModalAccionConMotivo` (`revision-queue-view.tsx`), que sirve a
 Rechazar y a Eliminar: `maxLength={MOTIVO_MAX}` (100, el mismo largo que el comentario del
-editor), `resize-none` y un contador `n/100` bajo el campo, a la derecha, que pasa a rojo al
+editor), `resize-none` y un contador `n/100` bajo el campo (`mt-2`), a la derecha, que pasa a rojo al
 llegar al tope y está enlazado con `aria-describedby`. Se quitó el import de `AlertTriangle`,
 sin uso desde que se quitó el icono del aviso.
 El título pasa de «Eliminar versión 11 de /tendencias» a «Eliminar versión 11 de
 tendencias», sin la barra. El borde rojo del campo ya no depende de `destructivo` sino del botón
 (`colorAccion === 'red'`): Rechazar también lo lleva, y el aviso rojo sigue siendo solo de
-Eliminar.
+Eliminar. Rechazar también nombra la sección: «Rechazar versión 11 de tendencias».
 
 **Cómo se probó.** `tsc --noEmit` del sitio y `eslint` del archivo, limpios. No se vio en el
 navegador.
