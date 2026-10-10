@@ -1360,13 +1360,13 @@ Módulo vital para el flujo de publicación, accesible desde el menú lateral (o
 > **[Captura: Paso 1 (Móvil)]**
 > *Clic en el ítem Páginas en Revisión. (Móvil).*
 
-2. **Revisión de la tabla:** El sistema mostrará la lista de borradores. Se debe identificar la página a evaluar.
+2. **Revisión de la tabla:** El sistema mostrará la lista de borradores. Se debe identificar la página a evaluar. En el computador es una tabla. En el móvil y la tablet es una lista plegable: cada borrador ocupa una línea («Ana Gómez envió la versión 3 de Contacto») y, al tocarla, se despliegan los cambios descritos por el editor, el ámbito, el autor, la fecha de envío y los botones de acción; se vuelve a tocar para plegarla.
 
 > **[Captura: Paso 2]**
 > *Tabla de borradores pendientes mostrando título y editor.*
 >
 > **[Captura: Paso 2 (Móvil)]**
-> *Tabla de borradores pendientes mostrando título y editor. (Móvil).*
+> *Lista plegable de borradores pendientes, con uno desplegado. (Móvil).*
 
 3. **Previsualización:** Se debe hacer clic en el botón con **ícono de Ojo** en la fila del borrador.
 

@@ -5,6 +5,73 @@
 
 ---
 
+## sesión 09-10-2026 (38.ª parte): el loader llena el espacio de su sección, medido con CSS
+
+**Qué se pidió.** Que el loader de cualquier sección del panel ocupe el tamaño de su
+contenedor, que cambia de una sección a otra, calculado con CSS.
+
+**Lo que se hizo.**
+
+| Pieza | Archivo | Cambio |
+|---|---|---|
+| Loader | `shared/ui/molecules/cargando-seccion.tsx` | Sin `className` lleva `cargando-seccion--relleno` (antes `absolute inset-0`); con `className` queda en el flujo con ese alto |
+| Regla | `style/globals.css` («Loader que llena su sección») | `main:has(.cargando-seccion--relleno)` y cada contenedor entre `<main>` y el loader (`:has()`) pasan a columna flex con `flex: 1 0 auto`; el loader crece con `min-height: 16rem` |
+| Auditoría, Respaldos, Revisión | `*-view.tsx` | Sin `min-h-[40vh]` |
+| Usuarios, Roles | `usuarios-view.tsx`, `roles-view.tsx` | El loader va en lugar de la tabla y no en una fila suya: una celda no se puede estirar |
+| Actualizaciones | — | Sigue con `min-h-[14rem]`: su loader está dentro de cada fila del acordeón |
+
+Así el loader toma justo el alto que dejan el encabezado y los filtros de esa sección y se
+centra ahí, sin medir nada con JavaScript. Al irse el loader, `:has()` deja de cumplirse y el
+diseño vuelve a bloque. El Dashboard y la carga entre secciones (`app/admin/loading.tsx`)
+también lo usan.
+
+**Cómo se probó.** `tsc --noEmit` limpio; `eslint` sin nada nuevo (Roles mantiene sus 2). La
+regla, en una página que imita el panel (barra de 288 px, `<main>` con scroll, encabezado,
+filtros y loader), abierta en Chrome sin ventana:
+
+| Ventana | `<main>` | Loader (arriba → abajo) | Centro del loader = centro del contenido | Scroll |
+|---|---|---|---|---|
+| 1366×768 | 672 | 220 → 640 | 430 = 430 | No |
+| 1024×700 | 604 | 220 → 572 | 396 = 396 | No |
+| 390×844 | 748 | 220 → 716 | 468 = 468 | No |
+
+No se vio en el panel real.
+
+> **Ojo.** Durante la carga, los contenedores de la sección son flex: un hijo directo con
+> `mx-auto` se encogería a su contenido mientras dure. Hoy ninguna sección lo tiene en ese camino.
+
+---
+
+## sesión 09-10-2026 (38.ª parte): «Páginas en revisión» en acordeón en el móvil y la tablet
+
+**Qué se pidió.** Mejorar cómo se ven las listas en el móvil y la tablet, empezando por
+`/admin/revision`. Cada solicitud era una tarjeta entera (unos 365 px de alto a 360), así que
+con muchas el scroll se hacía eterno. El usuario pidió un acordeón: una línea por solicitud
+(«el autor envió la versión N de la sección») y, al desplegarla, los cambios, las opciones, la
+fecha y lo demás.
+
+**Lo que se hizo.**
+
+| Archivo | Cambio |
+|---|---|
+| `globals.css` | `olo-tabla-acordeon`, que se suma a `olo-tabla-apilable`: el mismo HTML de la tabla. Por debajo de 48rem de contenedor (el corte de las tarjetas) cada fila muestra solo `td[data-resumen]`; con `tr[data-abierta]` se ven las demás celdas; `td[data-solo-tabla]` se oculta. En escritorio `td[data-resumen]` no se pinta. Reutilizable para las demás listas |
+| `revision-queue-view.tsx` | Celda de resumen con un botón (`aria-expanded`, 44 px mínimo, flecha que gira): «**Autor** envió la versión N de **Página**». El título pasa a `data-solo-tabla` (el resumen ya lo dice). Estado `abiertas` por fila; se pueden abrir varias |
+| `revision-queue-view.tsx` (modal Publicar / Rechazar / Eliminar) | Se había quedado fuera de la 18.ª parte: ahora con las medidas de todos los modales (caja de 32, título de 20 en `#001631`, texto de 16, botones de 44 con esquinas de 32, Publicar en `#001631` y no en verde). Su `<label>` estaba vacía: ahora dice «Motivo» para el lector de pantalla |
+| `manual-de-usuario-formato.md` | Paso 2 de la revisión: lista plegable en el móvil y la tablet |
+
+**Cómo se probó.** Con el arnés de siempre (el panel real y la cola real, 8 solicitudes
+simuladas), sin tocar Neon ni el servidor de desarrollo, a 360, 768, 1032, 1280 y 1920 px:
+
+| Ancho | Resultado |
+|---|---|
+| 360 | Acordeón. Fila plegada de 61 px (botón de 52); las 8 miden 479 px. Abierta: Cambios, Ámbito, Autor, Enviado el y las 4 acciones; se vuelve a plegar |
+| 768 y 1032 | Acordeón, filas de 53 px (botón de 44); las 8 en 423 px |
+| 1280 y 1920 | Tabla como antes; el resumen no se pinta |
+
+Sin desborde horizontal ni errores de consola. Tipos y `eslint` del archivo, limpios.
+
+---
+
 ## sesión 09-10-2026 (37.ª parte): tooltips en los tres botones de la cabecera del editor
 
 **Qué se pidió.** Tooltip en los tres botones del editor.
