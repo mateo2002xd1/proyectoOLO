@@ -5,6 +5,26 @@
 
 ---
 
+## sesión 10-10-2026 (12.ª parte): las páginas del árbol del dashboard se abren en otra pestaña
+
+**Qué se pidió.** Que al elegir una ruta del árbol de «Páginas publicadas» (por ejemplo, «Mapa
+de sitio») se abra en una pestaña nueva.
+
+**Lo que se hizo.** `tarjeta-paginas-publicadas.tsx`: todas las páginas, también las del sitio,
+se abren con `abrirEnOtraPestana` (`window.open(href, '_blank', 'noopener,noreferrer')`); antes
+las del sitio navegaban en la misma pestaña con `router.push` y solo las de la intranet abrían
+otra. La lista accesible hace lo mismo (`<a target="_blank" rel="noopener noreferrer">` con
+«(se abre en otra pestaña)» para el lector de pantalla, en vez de `<Link>`), y el tooltip de
+cada página lo avisa. `externo` queda solo para armar la URL de la intranet (otro origen).
+Fuera `next/link` y `useRouter` de la tarjeta. `manual-de-usuario-formato.md`: el dashboard lo dice.
+
+**Cómo se probó.** Arnés del dashboard (`probar-dashboard.cjs`) a 320, 360, 768, 1280 y 1920:
+tocar «Contacto» → `window.open('/contacto', '_blank', 'noopener,noreferrer')` y el historial
+del enrutador sigue vacío (el dashboard no se mueve); «Bienestar» → la URL de la intranet en otra
+pestaña; tooltip con «Se abre en otra pestaña». Sin errores de consola. Tipos y ESLint limpios.
+
+---
+
 ## sesión 10-10-2026 (11.ª parte): el dashboard muestra dos tarjetas por fila por debajo de 1440 px
 
 **Qué se pidió.** Que la tarjeta «Usuarios» (con su gráfico) pase de fila en pantallas de menos
