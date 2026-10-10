@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useSyncExternalStore } from 'react';
 import * as echarts from 'echarts/core';
-import { BarChart, LineChart, PieChart } from 'echarts/charts';
+import { BarChart, LineChart, PieChart, TreeChart } from 'echarts/charts';
 import {
   TooltipComponent,
   GridComponent,
@@ -10,7 +10,7 @@ import {
 } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 import type { ComposeOption } from 'echarts/core';
-import type { BarSeriesOption, LineSeriesOption, PieSeriesOption } from 'echarts/charts';
+import type { BarSeriesOption, LineSeriesOption, PieSeriesOption, TreeSeriesOption } from 'echarts/charts';
 import type {
   TooltipComponentOption,
   GridComponentOption,
@@ -24,6 +24,8 @@ echarts.use([
   BarChart,
   LineChart,
   PieChart,
+  // El árbol de «Páginas publicadas» del dashboard (`tarjeta-paginas-publicadas.tsx`).
+  TreeChart,
   TooltipComponent,
   GridComponent,
   LegendComponent,
@@ -34,6 +36,7 @@ export type OpcionGrafico = ComposeOption<
   | BarSeriesOption
   | LineSeriesOption
   | PieSeriesOption
+  | TreeSeriesOption
   | TooltipComponentOption
   | GridComponentOption
   | LegendComponentOption
@@ -68,8 +71,12 @@ export function GraficoEcharts({
   option: OpcionGrafico;
   className?: string;
   alto?: number | string;
-  /** Clic en una barra/porción: recibe su índice en `series[0].data`. */
-  onClickElemento?: (indice: number) => void;
+  /**
+   * Clic en una barra/porción: recibe su índice en `series[0].data`. Con varias series, o
+   * en un árbol (donde el índice es el del recorrido de nodos), el segundo argumento dice
+   * de qué serie es y trae el elemento de `data` tal cual se pasó, con sus campos propios.
+   */
+  onClickElemento?: (indice: number, elemento: { serie: number; datos: unknown }) => void;
 }) {
   const contenedorRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<echarts.ECharts | null>(null);
@@ -84,7 +91,9 @@ export function GraficoEcharts({
     const chart = echarts.init(contenedorRef.current);
     chartRef.current = chart;
     chart.on('click', (evento) => {
-      if (typeof evento.dataIndex === 'number') onClickRef.current?.(evento.dataIndex);
+      if (typeof evento.dataIndex === 'number') {
+        onClickRef.current?.(evento.dataIndex, { serie: evento.seriesIndex ?? 0, datos: evento.data });
+      }
     });
 
     const resizeObserver = new ResizeObserver(() => chart.resize());
@@ -97,9 +106,23 @@ export function GraficoEcharts({
     };
   }, []);
 
+  // Antes que la opción: si el alto cambia a la vez (el árbol que se despliega), la
+  // opción nueva se reparte ya en el alto nuevo. ECharts guarda el tamaño de cuando lo
+  // midió y el `ResizeObserver` avisa tarde: sin esto se dibujaba en el alto viejo y
+  // saltaba un instante después.
+  useEffect(() => {
+    chartRef.current?.resize();
+  }, [alto]);
+
   useEffect(() => {
     chartRef.current?.setOption(option, true);
   }, [option]);
 
-  return <div ref={contenedorRef} className={className} style={{ width: '100%', height: alto }} />;
+  // `contain: inline-size`: el ancho del lienzo no cuenta para el del contenedor. ECharts le
+  // pone al lienzo su ancho en píxeles, y en la rejilla del dashboard la tarjeta no podía
+  // ser más estrecha que él: al achicar la ventana se quedaba ancha, se salía de la
+  // pantalla y el `ResizeObserver` nunca veía el cambio (2026-10-10).
+  return (
+    <div ref={contenedorRef} className={className} style={{ width: '100%', height: alto, contain: 'inline-size' }} />
+  );
 }
