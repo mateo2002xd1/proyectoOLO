@@ -25,8 +25,8 @@ import { verificarRespuestas } from '../services/recuperacion.service';
  * es lo único que le falta a la cuenta. Aquí no: esa configuración, sola o junto a la
  * contraseña, la resuelve entera `/first-login`, que pregunta al servidor qué falta.
  *
- * Diseño nuevo desde el 2026-10-09 (mockups de tablet): el número de la pregunta va en
- * el título, y en la tarjeta la pregunta se ve en una caja con la forma de un campo.
+ * Diseño nuevo desde el 2026-10-09 (mockups de tablet): el número de la pregunta va bajo
+ * «Responde tus preguntas», y la pregunta se ve en una caja con la forma de un campo.
  * Esa caja es la `<label>` de la respuesta: pulsarla lleva al campo y el lector de
  * pantalla anuncia la pregunta al entrar en él.
  */
@@ -93,14 +93,7 @@ export function SecurityQuestionsView() {
 
   return (
     <MarcoDePasos
-      titulo={
-        <>
-          Validación de identidad{' '}
-          <span className="block">
-            (Pregunta de seguridad {preguntaActual + 1} de {total})
-          </span>
-        </>
-      }
+      titulo="Validación de identidad"
       descripcion={[
         'Responde correctamente a tus preguntas de seguridad.',
         // El mockup dice «coincidir exactamente», pero el servidor compara sin
@@ -112,7 +105,14 @@ export function SecurityQuestionsView() {
         <form onSubmit={siguientePregunta} noValidate>
           {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
 
-          <h2 className={`mb-3 ${authPasosCardHeadingClass}`}>Responde tus preguntas</h2>
+          {/* El número de la pregunta va aquí, junto a la pregunta, y no en el título de la
+              página (así hasta el 2026-10-09). */}
+          <h2 className={`mb-3 ${authPasosCardHeadingClass}`}>
+            Responde tus preguntas{' '}
+            <span className="block text-base font-normal">
+              (Pregunta de seguridad {preguntaActual + 1} de {total})
+            </span>
+          </h2>
 
           {/* Mide lo mismo que un campo (`authPasosInputClass`): 44 px de alto y el mismo
               relleno. Si la pregunta es larga, crece hacia abajo; por eso sus esquinas son de

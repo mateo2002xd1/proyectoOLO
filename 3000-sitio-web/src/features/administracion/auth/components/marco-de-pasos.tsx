@@ -12,12 +12,14 @@ import { BackToSiteLink } from './auth-ui';
  *   qué se pide, paginador si lo hay, el formulario y el enlace de regreso. Sin logo,
  *   salvo en el login (`conLogo`). El corte es `xl`: la tablet grande en vertical
  *   (1032 px) va en una columna.
- * - **Escritorio (`xl`)**: dos mitades azules. A la izquierda, sobre `#001631`, el logo,
- *   el título, el texto y el paginador, en blanco. A la derecha, sobre `#001a39` y con las
- *   esquinas izquierdas redondeadas, la tarjeta y el enlace de regreso.
+ * - **Escritorio (`xl`)**: dos mitades. A la izquierda, sobre blanco como en el móvil, el
+ *   logo, el título, el texto y el paginador, en `#001631`. A la derecha, sobre `#001a39` y
+ *   con las esquinas izquierdas redondeadas, la tarjeta y el enlace de regreso.
  *
  * Hasta el 2026-10-09 el primer ingreso iba sobre azul también en el móvil (`tema`
- * oscuro) y la recuperación sobre blanco. El usuario pidió el mismo estilo para todas.
+ * oscuro) y la recuperación sobre blanco. El usuario pidió el mismo estilo para todas, y
+ * después la mitad izquierda del escritorio en blanco, donde va el logo (antes `#001631`
+ * con el texto en blanco).
  *
  * ## Tamaños de letra
  *
@@ -66,8 +68,8 @@ export function MarcoDePasos({
   const parrafos = descripcion === undefined ? [] : Array.isArray(descripcion) ? descripcion : [descripcion];
 
   return (
-    <div className="flex min-h-dvh w-full flex-col justify-center bg-white py-12 xl:flex-row xl:bg-[#001631] xl:py-0">
-      <section className="flex flex-col items-center px-4 text-center text-[#001631] sm:px-6 xl:w-1/2 xl:shrink-0 xl:justify-center xl:py-12 xl:text-white">
+    <div className="flex min-h-dvh w-full flex-col justify-center bg-white py-12 xl:flex-row xl:py-0">
+      <section className="flex flex-col items-center px-4 text-center text-[#001631] sm:px-6 xl:w-1/2 xl:shrink-0 xl:justify-center xl:py-12">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/assets/logos/olo-logo-none.svg"
@@ -142,7 +144,7 @@ export interface PasosDelMarco {
  *   que se puede corregir desde las preguntas.
  * - Hacia adelante, solo pasando por el formulario. Los números de los pasos que faltan
  *   no son botones: saltar un paso dejaría la cuenta a medias.
- * - Sobre blanco en `#001631` y, desde `xl`, sobre el azul en blanco.
+ * - En `#001631` sobre blanco, en todos los anchos.
  * - Por debajo de 384 px de ancho disponible (`@sm` del contenedor), «Anterior» y
  *   «Siguiente» se quedan en la flecha; el nombre lo da su `aria-label` en todos los
  *   anchos. Con las palabras en español, la fila no cabía a 360 px. Se mide el
@@ -156,7 +158,7 @@ function PaginadorDePasos({ nombres, actual, volverA, formulario }: PasosDelMarc
   const total = nombres.length;
   const puedeVolver = !!volverA && actual > 0;
   const flecha =
-    'inline-flex h-8 items-center gap-2 rounded-full px-3 text-base text-[#001631] transition-colors hover:bg-[#001631]/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001631] disabled:cursor-default disabled:text-[#001631]/40 disabled:hover:bg-transparent xl:text-white xl:hover:bg-white/10 xl:focus-visible:ring-white xl:disabled:text-white/50';
+    'inline-flex h-8 items-center gap-2 rounded-full px-3 text-base text-[#001631] transition-colors hover:bg-[#001631]/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001631] disabled:cursor-default disabled:text-[#001631]/40 disabled:hover:bg-transparent';
   const numero = 'flex size-8 items-center justify-center rounded-full text-base';
 
   return (
@@ -172,7 +174,7 @@ function PaginadorDePasos({ nombres, actual, volverA, formulario }: PasosDelMarc
           return (
             <li key={nombre}>
               {i === actual ? (
-                <span aria-current="step" className={`${numero} bg-[#001631] text-white xl:bg-white xl:text-[#001631]`}>
+                <span aria-current="step" className={`${numero} bg-[#001631] text-white`}>
                   <span aria-hidden="true">{i + 1}</span>
                   <span className="sr-only">{etiqueta}</span>
                 </span>
@@ -181,12 +183,12 @@ function PaginadorDePasos({ nombres, actual, volverA, formulario }: PasosDelMarc
                   type="button"
                   onClick={() => volverA(i)}
                   aria-label={`Volver al ${etiqueta.charAt(0).toLowerCase()}${etiqueta.slice(1)}`}
-                  className={`${numero} text-[#001631] transition-colors hover:bg-[#001631]/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001631] xl:text-white xl:hover:bg-white/10 xl:focus-visible:ring-white`}
+                  className={`${numero} text-[#001631] transition-colors hover:bg-[#001631]/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001631]`}
                 >
                   {i + 1}
                 </button>
               ) : (
-                <span className={`${numero} text-[#001631] xl:text-white`}>
+                <span className={`${numero} text-[#001631]`}>
                   <span aria-hidden="true">{i + 1}</span>
                   <span className="sr-only">{etiqueta}</span>
                 </span>
