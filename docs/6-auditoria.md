@@ -5,6 +5,28 @@
 
 ---
 
+## sesión 10-10-2026 (11.ª parte): el dashboard muestra dos tarjetas por fila por debajo de 1440 px
+
+**Qué se pidió.** Que la tarjeta «Usuarios» (con su gráfico) pase de fila en pantallas de menos
+de 1440 px, y que la fila muestre solo «Páginas publicadas» y «Visitas».
+
+**Lo que se hizo.** `panel-general.tsx`: la rejilla de las tarjetas pasa de
+`sm:grid-cols-2 lg:grid-cols-3` a `sm:grid-cols-2 min-[90rem]:grid-cols-3`, y «Usuarios» va en
+`sm:col-span-2 min-[90rem]:col-span-1`: por debajo de 1440 px, en su propia fila a todo el ancho;
+desde 1440, las tres en fila como antes; en el móvil, una debajo de otra. Se movió y no se
+ocultó: el gráfico de roles sigue a la vista. `manual-de-usuario-formato.md`: el dashboard lo dice.
+
+**Trampa.** Con `min-[1440px]` no cambiaba nunca: Tailwind no sabe ordenar un `min-[…]` en px
+con `sm:` (en rem), lo ponía antes y `sm:grid-cols-2` le ganaba. En rem (`90rem`) lo ordena bien.
+
+**Cómo se probó.** El `PanelGeneralDashboard` real en el arnés (`entrada-panel-real.tsx`,
+`probar-panel-real.cjs`, con `fetch` simulado y el ECharts de verdad), midiendo cada tarjeta: a
+360, una columna; a 768, 1024, 1280 y 1439, «Páginas publicadas» y «Visitas» en la primera
+fila y «Usuarios» debajo a todo el ancho; a 1440, 1600 y 1920, las tres en fila. Sin desborde
+ni errores de consola. Tipos y ESLint limpios.
+
+---
+
 ## sesión 10-10-2026 (10.ª parte): «Actividad reciente» del dashboard en acordeón en el móvil y la tablet
 
 **Qué se pidió.** Llevar el acordeón de las demás listas a la tarjeta «Actividad reciente» del
