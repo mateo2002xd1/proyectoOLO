@@ -5,6 +5,34 @@
 
 ---
 
+## sesión 09-10-2026 (31.ª parte): el modal de permisos, con «Marcar todos» como interruptor y el resumen junto al título
+
+**Qué se pidió.** En el modal de permisos de Roles: quitar el contador «1/2» de cada grupo,
+cambiar «Todas» por un interruptor a la izquierda que diga «Marcar todos», el botón «Guardar»
+en `#7DB728`, y el resumen («1 permiso añadido») junto a «Permisos a asignar» y a su tamaño.
+
+**Lo que se hizo** (`modal-permisos.tsx`):
+
+| Pieza | Antes | Ahora |
+|---|---|---|
+| Contador de cada grupo | `activos/total` gris junto al título | Quitado |
+| Atajo del grupo | Enlace «Todas» / «Quitar todas» | `Switch` + «Marcar todos» dentro de un `<label>` (el texto también lo conmuta); `aria-label` con el nombre del grupo |
+| Resumen de cambios | Pie, `text-xs` | Junto al título, `text-xl` como él, `aria-live="polite"`; sin cambios no dice nada (se quitó «Sin cambios que guardar.») |
+| «Guardar permisos» | `#001631` (acción principal de modal) | `bg-[#7DB728]!`, `hover:bg-[#6da020]!`, letra blanca, también en oscuro |
+
+> **El `!` del botón.** `variantStylesDeModal` ya pone `bg-[#001631]`; dos clases de fondo con
+> la misma especificidad compiten y Tailwind no asegura el orden. Blanco sobre `#7DB728` da
+> 2,4:1; se dejó así a pedido del usuario y queda comentado.
+
+**Cómo se probó.** `tsc --noEmit` limpio. `eslint` da los mismos 2 avisos y 3 errores que la
+versión ya commiteada (parámetros sin uso, un `setState` dentro de `useMemo` y comillas sin
+escapar); no se agregó ninguno. El CSS del servidor genera `bg-[#7DB728]!` y su `hover`. No se
+vio en el navegador.
+
+**Pendiente al cierre:** esos 3 errores de `eslint` en `modal-permisos.tsx`, anteriores a esto.
+
+---
+
 ## sesión 09-10-2026 (30.ª parte): «Editar rol» con el icono de deslizadores y tooltip
 
 **Qué se pidió.** Cambiar el lápiz de Roles por un SVG dado (los deslizadores de Font Awesome
@@ -14,9 +42,14 @@ Free) con un tooltip «Editar rol».
 licencia (Font Awesome Free, CC BY 4.0, pide conservarlo). Es de un color, así que va con
 `IconoMascara` y toma `currentColor`. El botón (`roles-view.tsx`) deja `PencilIcon` y el
 `title`: lleva `aria-label="Editar rol"`, icono y tooltip en `#7DB728` como «Editar usuario»,
-fondo verde suave al pasar y anillo de foco verde.
+fondo verde suave al pasar y anillo de foco verde. La papelera lleva tooltip «Eliminar rol» en
+`red-500`; en el rol base de Editor, desactivada, explica «No se puede eliminar el rol base de
+Editor» en gris. Va alineado a la derecha (`TOOLTIP_ENCIMA_A_LA_DERECHA`): es el último botón y
+ese texto, centrado, se salía de la tabla. Los dos iconos pasan de 16 a 24 px (`h-6 w-6`,
+`size-6`).
 
-**Cómo se probó.** `tsc --noEmit` y `eslint` del archivo, limpios; el servidor sirve el SVG.
+**Cómo se probó.** `tsc --noEmit` limpio; `eslint` solo marca lo que ya había (un
+`Promise<any>` y una dependencia de `useCallback`); el servidor sirve el SVG.
 No se vio en el navegador.
 
 ---

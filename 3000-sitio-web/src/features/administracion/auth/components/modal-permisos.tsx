@@ -175,10 +175,24 @@ export function ModalPermisos({
         <FormaDeModal>
         <header className="border-b border-zinc-100 px-6 py-5 dark:border-zinc-800/80">
           <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
+            {/* El resumen va junto al título y a su tamaño (antes estaba en el pie, en letra
+                pequeña): es lo que se va a guardar. `aria-live` para que el lector lo diga. */}
+            <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
               <h3 id="permisos-titulo" className="text-xl font-semibold text-[#001631] dark:text-[#e6e8f0]">
                 Permisos {rol ? `del rol «${rol.nombre}»` : 'a asignar'}
               </h3>
+              <p aria-live="polite" className="text-xl font-medium text-zinc-500 dark:text-[#94a3b8]">
+                {hayCambios && (
+                  <>
+                    {descripcionCambio && 'Descripción actualizada'}
+                    {descripcionCambio && (anadidos.length > 0 || quitados.length > 0) && ' · '}
+                    {anadidos.length > 0 &&
+                      `${anadidos.length} ${anadidos.length === 1 ? 'permiso añadido' : 'permisos añadidos'}`}
+                    {anadidos.length > 0 && quitados.length > 0 && ' · '}
+                    {quitados.length > 0 && `${quitados.length} ${quitados.length === 1 ? 'quitado' : 'quitados'}`}
+                  </>
+                )}
+              </p>
             </div>
             <button
               type="button"
@@ -289,19 +303,19 @@ export function ModalPermisos({
                       >
                         {grupo.sensible && <ShieldExclamationIcon className="size-4 shrink-0" />}
                         {grupo.titulo}
-                        <span className="font-normal normal-case tracking-normal text-zinc-400">
-                          {activos}/{ids.length}
-                        </span>
                       </h4>
                     </div>
+                    {/* Interruptor a la izquierda y el texto a su derecha. El `<label>` hace
+                        que pulsar «Marcar todos» también lo conmute, como en las filas. */}
                     {conAtajo && (
-                      <button
-                        type="button"
-                        onClick={() => alternarGrupo(ids, !todos)}
-                        className="shrink-0 rounded-md px-2 py-0.5 text-[11px] font-semibold text-brand-blue-dark underline-offset-2 hover:underline dark:text-sky-300"
-                      >
-                        {todos ? 'Quitar todas' : 'Todas'}
-                      </button>
+                      <label className="flex shrink-0 cursor-pointer items-center gap-2">
+                        <Switch
+                          checked={todos}
+                          onChange={(marcar) => alternarGrupo(ids, marcar)}
+                          aria-label={`Marcar todos los permisos de ${grupo.titulo}`}
+                        />
+                        <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Marcar todos</span>
+                      </label>
                     )}
                   </div>
 
@@ -359,37 +373,21 @@ export function ModalPermisos({
           )}
         </div>
 
-        <footer className="flex items-center justify-between gap-4 border-t border-zinc-100 bg-zinc-50/60 px-6 py-4 dark:border-zinc-800/80 dark:bg-[#161b27]/60">
-          <p className="text-xs text-zinc-500 dark:text-[#94a3b8]">
-            {hayCambios ? (
-              <>
-                {descripcionCambio && (
-                  <strong className="text-zinc-900 dark:text-white">
-                    Descripción actualizada
-                  </strong>
-                )}
-                {descripcionCambio && (anadidos.length > 0 || quitados.length > 0) && ' · '}
-                {anadidos.length > 0 && (
-                  <strong className="text-zinc-900 dark:text-white">
-                    {anadidos.length} {anadidos.length === 1 ? 'permiso añadido' : 'permisos añadidos'}
-                  </strong>
-                )}
-                {anadidos.length > 0 && quitados.length > 0 && ' · '}
-                {quitados.length > 0 && (
-                  <strong className="text-zinc-900 dark:text-white">
-                    {quitados.length} {quitados.length === 1 ? 'quitado' : 'quitados'}
-                  </strong>
-                )}
-              </>
-            ) : (
-              'Sin cambios que guardar.'
-            )}
-          </p>
+        <footer className="flex items-center justify-end gap-4 border-t border-zinc-100 bg-zinc-50/60 px-6 py-4 dark:border-zinc-800/80 dark:bg-[#161b27]/60">
           <div className="flex items-center gap-2">
             <Button type="button" plain onClick={onCerrar} disabled={guardando}>
               Cancelar
             </Button>
-            <Button type="button" onClick={() => void onGuardar()} disabled={!hayCambios || guardando}>
+            {/* Verde #7DB728 a pedido del usuario, aunque en los modales la acción principal
+                es `#001631` (`variantStylesDeModal`). Con `!` porque las dos clases de fondo
+                compiten y Tailwind no garantiza cuál sale después. Blanco sobre este verde
+                da 2,4:1 (9-accesibilidad.md §2.1). */}
+            <Button
+              type="button"
+              onClick={() => void onGuardar()}
+              disabled={!hayCambios || guardando}
+              className="bg-[#7DB728]! text-white! hover:bg-[#6da020]! dark:bg-[#7DB728]! dark:text-white! dark:hover:bg-[#6da020]!"
+            >
               {guardando ? 'Guardando…' : 'Guardar permisos'}
             </Button>
           </div>
