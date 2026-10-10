@@ -346,7 +346,7 @@ export default function UsuariosView() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">Fecha de caducidad (Opcional)</label>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">Fecha de caducidad</label>
             <DatePicker
               ariaLabel="Fecha de caducidad"
               value={expirationDate}
@@ -358,7 +358,7 @@ export default function UsuariosView() {
             <div className="pt-2 flex flex-col gap-3">
               <div className="flex items-center gap-2">
                 <input type="checkbox" id="reset_pwd" checked={resetPassword} onChange={e => setResetPassword(e.target.checked)} className="size-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:checked:bg-white dark:focus:ring-white" />
-                <label htmlFor="reset_pwd" className="text-sm font-medium text-zinc-700 dark:text-[#cbd5e1]">Restablecer contraseña (generará una temporal)</label>
+                <label htmlFor="reset_pwd" className="text-sm font-medium text-zinc-700 dark:text-[#cbd5e1]">Restablecer contraseña</label>
               </div>
               <div className="flex items-center gap-2">
                 <input type="checkbox" id="reset_sq" checked={resetSecurityQuestions} onChange={e => setResetSecurityQuestions(e.target.checked)} className="size-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:checked:bg-white dark:focus:ring-white" />
@@ -383,26 +383,18 @@ export default function UsuariosView() {
         <AlertDescription>
           {newUserCredentials && (
             <>
-              <p className="m-0 text-xs text-zinc-500 dark:text-[#94a3b8]">
-                <span className="font-semibold text-zinc-900 dark:text-[#f6f6f6]">{newUserCredentials.name}</span>
-                {" · "}
-                {newUserCredentials.email}
-              </p>
-              <p className="m-0 mt-2 text-xs text-zinc-500 dark:text-[#94a3b8]">
-                Copia la contraseña antes de cerrar. No podrás verla de nuevo.
-              </p>
-              {/* La API la emite con 72 horas de vigencia: si la persona no entra antes,
+             {/* La API la emite con 72 horas de vigencia: si la persona no entra antes,
                   habrá que restablecerla. Se dice aquí para que quien la entrega lo avise. */}
               {newUserCredentials.vence && (
                 <p className="m-0 mt-2 text-xs text-zinc-500 dark:text-[#94a3b8]">
-                  Vale hasta el{' '}
+                  Estará vigente hasta el{' '}
                   <span className="font-semibold text-zinc-900 dark:text-[#f6f6f6]">
                     {new Date(newUserCredentials.vence).toLocaleString('es-CO', {
                       dateStyle: 'long',
                       timeStyle: 'short',
                     })}
                   </span>
-                  . Si no se usa antes, habrá que restablecerla.
+                   <br />En caso de vencerse debe generar una nueva.
                 </p>
               )}
               <div className="mt-3 flex items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-[#7db828]/30 dark:bg-[#0b1121]/50">
@@ -412,7 +404,7 @@ export default function UsuariosView() {
               </div>
               {!copiedPassword && (
                 <p className="m-0 mt-2 text-xs font-medium text-amber-600 dark:text-amber-500">
-                  ⚠ Debes copiar la contraseña para poder cerrar.
+                  ⚠ Debes copiar la contraseña para poder cerrar, no la podrás ver de nuevo.
                 </p>
               )}
             </>

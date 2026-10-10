@@ -310,7 +310,7 @@ export function FirstLoginFlow() {
               id="temp-password"
               label="Contraseña temporal"
               // La da el administrador al crear o restablecer la cuenta; no llega por correo.
-              placeholder="La que te entregaron"
+              placeholder="Ingresar contraseña"
               autoComplete="current-password"
               value={tempPassword}
               onChange={(v) => { setTempPassword(v); setErrors({}); }}
