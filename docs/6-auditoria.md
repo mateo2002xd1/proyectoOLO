@@ -5,6 +5,32 @@
 
 ---
 
+## sesión 09-10-2026 (33.ª parte): editar rol con las medidas del acceso, sin «No modificable» y «Editar permisos» en verde
+
+**Qué se pidió.** En el modal de editar rol: quitar «No modificable», la misma simetría de
+textos y bordes que en el login, y «Editar permisos» en verde.
+
+**Lo que se hizo** (`modal-permisos.tsx`, la vista del rol antes de abrir los permisos):
+
+| Pieza | Antes | Ahora (como en `auth-ui.tsx`) |
+|---|---|---|
+| Título | `text-xl font-semibold` | `text-xl font-medium #001631` (`authPasosCardHeadingClass`) |
+| «Nombre del rol» | Etiqueta con «No modificable» a la derecha | Solo la etiqueta; el campo desactivado y su `title` ya lo dicen |
+| Aviso ámbar | `text-xs`, `py-2.5`, borde `amber-200/60` | `text-sm`, `px-4 py-3`, borde `amber-300`, esquinas de 16 (`AuthGeneralNotice`) |
+| «Editar permisos» | `#001631`, ancho del texto | `variant="verde"`, `w-full` como el botón principal del acceso |
+
+Campos y etiquetas ya tenían las medidas del acceso (`campoDeModalClass`, `etiquetaDeModalClass`:
+44 px, esquinas de 32, borde `#d9d9d9`, 16 px). El área de texto sigue con esquinas de 16:
+`alert.tsx` las reserva para lo que ocupa varias líneas.
+
+**Cómo se probó.** `tsc --noEmit` limpio; `eslint` da los mismos 5 que la versión commiteada.
+No se vio en el navegador.
+
+**Pendiente al cierre:** la descripción de este modal sigue con tope de 200 y estirable
+(en «Nuevo Editor» ya es de 100, fija y con contador).
+
+---
+
 ## sesión 09-10-2026 (32.ª parte): «Nuevo Editor» con «Guardar» verde y la descripción a 100 caracteres
 
 **Qué se pidió.** En el modal «Nuevo Editor» de Roles, «Guardar» en verde y la descripción sin

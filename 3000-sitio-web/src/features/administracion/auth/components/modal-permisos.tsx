@@ -178,7 +178,7 @@ export function ModalPermisos({
             {/* El resumen va junto al título y a su tamaño (antes estaba en el pie, en letra
                 pequeña): es lo que se va a guardar. `aria-live` para que el lector lo diga. */}
             <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
-              <h3 id="permisos-titulo" className="text-xl font-semibold text-[#001631] dark:text-[#e6e8f0]">
+              <h3 id="permisos-titulo" className="text-xl font-medium text-[#001631] dark:text-[#e6e8f0]">
                 Permisos {rol ? `del rol «${rol.nombre}»` : 'a asignar'}
               </h3>
               <p aria-live="polite" className="text-xl font-medium text-zinc-500 dark:text-[#94a3b8]">
@@ -210,14 +210,9 @@ export function ModalPermisos({
           {rol && !mostrarPermisos && (
             <div className="mt-4 space-y-4">
               <div>
-                <div className="flex items-baseline justify-between">
-                  <label htmlFor="permisos-rol-nombre" className={etiquetaDeModalClass}>
-                    Nombre del rol
-                  </label>
-                  <span className="text-xs text-zinc-400 dark:text-zinc-500">
-                    No modificable
-                  </span>
-                </div>
+                <label htmlFor="permisos-rol-nombre" className={etiquetaDeModalClass}>
+                  Nombre del rol
+                </label>
                 <input
                   id="permisos-rol-nombre"
                   type="text"
@@ -242,13 +237,13 @@ export function ModalPermisos({
                   className={areaDeModalClass}
                 />
               </div>
-              <p className="rounded-xl border border-amber-200/60 bg-amber-50 px-4 py-2.5 text-xs text-amber-900 dark:border-amber-800/40 dark:bg-amber-950/30 dark:text-amber-300">
+              <p className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-300">
                 Esto afecta a <strong>todas las personas con el rol «{rol.nombre}»</strong>, no solo
                 a la que estés editando. El cambio se aplica en cuanto guardas.
               </p>
               
               <div className="pt-2">
-                <Button type="button" onClick={() => setMostrarPermisos(true)}>
+                <Button type="button" variant="verde" onClick={() => setMostrarPermisos(true)} className="w-full">
                   Editar permisos
                 </Button>
               </div>
