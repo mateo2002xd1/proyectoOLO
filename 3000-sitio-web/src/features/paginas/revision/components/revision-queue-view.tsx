@@ -10,6 +10,7 @@ import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
 import { Paginador } from '@/shared/ui/molecules/paginador';
 import { useRevisionQueue } from '../hooks/use-revision-queue';
 import type { PaginaEnRevision } from '../../model/pagina.types';
+import { rutaPublicaDeSlug } from '../../model/rutas';
 import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
 import { GRUPO_TOOLTIP, TOOLTIP_ENCIMA } from '@/shared/ui/atoms/tooltip';
 import { AvisoErrorDeCarga } from '@/shared/ui/molecules/aviso-error-de-carga';
@@ -51,6 +52,18 @@ const fecha = (iso: string) => {
     return iso;
   }
 };
+
+/** La fecha dentro de la frase del acordeón: «9 de octubre de 2026, 5:30 p. m.». */
+const fechaLarga = (iso: string) => {
+  try {
+    return new Date(iso).toLocaleString('es-CO', { dateStyle: 'long', timeStyle: 'short' });
+  } catch {
+    return iso;
+  }
+};
+
+/** Lo que se destaca en la frase del acordeón: quién, qué y cuándo. */
+const RESALTE = 'font-semibold text-zinc-900 dark:text-[#f6f6f6]';
 
 const FILTROS_VACIOS = { ambito: '', autor: '', desde: '', hasta: '' };
 
@@ -246,7 +259,11 @@ export function RevisionQueueView() {
                   data-abierta={abierta || undefined}
                   className="bg-white dark:bg-[#0f1626] transition-colors hover:bg-zinc-50/60 dark:hover:bg-[#131b2f]/50"
                 >
-                  {/* Solo en acordeón (en la tabla, `display: none`): la frase de la fila. */}
+                  {/* Solo en acordeón (en la tabla, `display: none`): la frase de la fila.
+                      Plegada, la corta; desplegada, la frase entera en vez de una ficha de
+                      datos con etiquetas (pedido del usuario, 2026-10-10: «muy saturada»):
+                      «Ana envió la versión 3 de la sección /contacto del sitio web el …».
+                      Debajo, el comentario y los botones. */}
                   <td data-resumen>
                     <button
                       type="button"
@@ -255,17 +272,31 @@ export function RevisionQueueView() {
                       className="flex min-h-11 w-full items-center gap-3 rounded-[16px] py-1.5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#001631] dark:focus-visible:ring-white"
                     >
                       <span className="min-w-0 flex-1 text-sm leading-5 text-zinc-600 dark:text-zinc-300">
-                        <span className="font-semibold text-zinc-900 dark:text-[#f6f6f6]">
-                          {pagina.autor?.nombre || 'Alguien'}
-                        </span>{' '}
-                        envió la versión {pagina.numeroVersion} de{' '}
-                        <span className="font-semibold text-zinc-900 dark:text-[#f6f6f6]">{pagina.titulo}</span>
+                        <span className={RESALTE}>{pagina.autor?.nombre || 'Alguien'}</span> envió la
+                        versión {pagina.numeroVersion} de{' '}
+                        {abierta ? (
+                          <>
+                            la sección <span className={RESALTE}>{rutaPublicaDeSlug(pagina.slug)}</span> de
+                            {pagina.ambito === 'intranet' ? ' la ' : 'l '}
+                            <span className={RESALTE}>{pagina.ambito === 'intranet' ? 'intranet' : 'sitio web'}</span> el{' '}
+                            <span className={RESALTE}>{fechaLarga(pagina.creadoEn)}</span>
+                          </>
+                        ) : (
+                          <span className={RESALTE}>{pagina.titulo}</span>
+                        )}
                       </span>
                       <ChevronDownIcon
                         aria-hidden="true"
                         className={`size-5 shrink-0 text-zinc-500 transition-transform duration-200 motion-reduce:transition-none dark:text-zinc-400 ${abierta ? 'rotate-180' : ''}`}
                       />
                     </button>
+                  </td>
+                  {/* Solo en acordeón y desplegada: lo que el editor dice que cambió, sin
+                      etiqueta. Se lee antes de decidir, como la descripción de un pull request. */}
+                  <td data-detalle>
+                    {pagina.comentario && (
+                      <p className="mb-3 text-sm italic text-zinc-500 dark:text-zinc-400">«{pagina.comentario}»</p>
+                    )}
                   </td>
                   <td data-solo-tabla className="px-4 py-3">
                     <p className="font-medium text-zinc-900 dark:text-[#f6f6f6]">
@@ -275,14 +306,14 @@ export function RevisionQueueView() {
                   </td>
                   {/* Lo que el editor dice que cambió: se lee antes de decidir, como la
                       descripción de un pull request. */}
-                  <td data-etiqueta="Cambios" className="px-4 py-3">
+                  <td data-solo-tabla data-etiqueta="Cambios" className="px-4 py-3">
                     {pagina.comentario ? (
                       <p className="max-w-md text-sm text-zinc-700 dark:text-zinc-300">«{pagina.comentario}»</p>
                     ) : (
                       <p className="text-sm text-zinc-400">Sin comentario</p>
                     )}
                   </td>
-                  <td data-etiqueta="Ámbito" className="px-4 py-3">
+                  <td data-solo-tabla data-etiqueta="Ámbito" className="px-4 py-3">
                     <span
                       className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold ${
                         pagina.ambito === 'intranet'
@@ -293,13 +324,13 @@ export function RevisionQueueView() {
                       {pagina.ambito === 'intranet' ? 'Intranet' : 'Sitio web'}
                     </span>
                   </td>
-                  <td data-etiqueta="Autor" className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
+                  <td data-solo-tabla data-etiqueta="Autor" className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
                     <p className="text-sm">{pagina.autor?.nombre || 'Desconocido'}</p>
                     {pagina.autor?.email && (
                       <p className="text-xs text-zinc-400">{pagina.autor.email}</p>
                     )}
                   </td>
-                  <td data-etiqueta="Enviado el" className="whitespace-nowrap px-4 py-3 text-zinc-600 dark:text-zinc-300">
+                  <td data-solo-tabla data-etiqueta="Enviado el" className="whitespace-nowrap px-4 py-3 text-zinc-600 dark:text-zinc-300">
                     {fecha(pagina.creadoEn)}
                   </td>
                   <td className="px-4 py-3 text-right">

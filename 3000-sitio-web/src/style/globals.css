@@ -2549,17 +2549,20 @@ body:has(.navegacion-mobile-hoja[open]) {
 
    - `td[data-resumen]`: la frase de una línea con el botón que pliega y despliega
      (`aria-expanded`). Solo existe por debajo de 48rem; en la tabla no se pinta.
+   - `td[data-detalle]`: lo que se añade al desplegar, sin etiqueta (en revisión, el
+     comentario). Tampoco existe en la tabla.
    - `tr[data-abierta]`: la fila desplegada. Plegada, solo se ve el resumen.
-   - `td[data-solo-tabla]`: lo que el resumen ya dice (el título de la página), que en
-     acordeón sobra.
+   - `td[data-solo-tabla]`: las celdas que en acordeón sobran porque la frase ya lo dice.
+     El 2026-10-10 el usuario vio «muy saturada» la ficha de datos con etiquetas: al
+     desplegar, una frase y los botones, nada más.
 
    Sin capa, como la tabla apilable, y con más especificidad que su `display: block`. */
-.olo-tabla-acordeon > tbody > tr > td[data-resumen] {
+.olo-tabla-acordeon > tbody > tr > td:is([data-resumen], [data-detalle]) {
   display: none;
 }
 
 @container (width < 48rem) {
-  .olo-tabla-acordeon > tbody > tr > td[data-resumen] {
+  .olo-tabla-acordeon > tbody > tr > td:is([data-resumen], [data-detalle]) {
     display: block;
     padding: 0;
   }
