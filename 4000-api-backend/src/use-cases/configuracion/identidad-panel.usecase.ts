@@ -31,8 +31,12 @@ const LIMITE_POR_PIEZA: Record<PiezaDeIdentidad, number> = {
   icono: 512 * KB,
 };
 
-/** De la lista blanca de la política, solo las imágenes: un PDF no es un logo. */
-const EXTENSIONES_DE_IMAGEN = new Set(['png', 'jpg']);
+/**
+ * De la lista blanca de la política, solo PNG (decisión del usuario, 10-10-2026): un PDF no
+ * es un logo, y un JPG no tiene transparencia, así que sobre la barra lateral sale con su
+ * rectángulo de fondo.
+ */
+const EXTENSIONES_DE_IMAGEN = new Set(['png']);
 
 /** Cómo se llama cada pieza en la bitácora. */
 const CAMPO_DE_PIEZA: Record<PiezaDeIdentidad, string> = {
@@ -46,8 +50,10 @@ export interface IdentidadPanel {
   logo: string | null;
   icono: string | null;
   blancoEnModoOscuro: boolean;
-  /** Solo las acciones con color propio; las demás van con el de fábrica. */
+  /** Solo las etiquetas de acción con color propio; las demás van con el de fábrica. */
   acciones: NonNullable<IdentidadGuardada['acciones']>;
+  /** Lo mismo para los tipos de botón (principal, peligro…). */
+  botones: NonNullable<IdentidadGuardada['botones']>;
   actualizadoEn: string | null;
 }
 
@@ -71,6 +77,7 @@ const aDto = (guardada: IdentidadGuardada, actualizadoEn: Date | null): Identida
   // El logo de fábrica es oscuro sobre transparente y en modo oscuro se pinta en blanco.
   blancoEnModoOscuro: guardada.blancoEnModoOscuro ?? true,
   acciones: guardada.acciones ?? {},
+  botones: guardada.botones ?? {},
   actualizadoEn: actualizadoEn ? actualizadoEn.toISOString() : null,
 });
 
@@ -80,17 +87,19 @@ export async function obtenerIdentidadPanel(): Promise<IdentidadPanel> {
   return aDto(interpretar(fila?.valor), fila?.updated_at ?? null);
 }
 
+type ConjuntoDeColores = IdentidadGuardada['acciones'];
+
 /** «aprobar: #7db728 / #ffffff · rechazar: de fábrica», para leerlo en la bitácora. */
-const describirAcciones = (acciones: IdentidadGuardada['acciones'], ids: string[]) =>
+const describirColores = (conjunto: ConjuntoDeColores, ids: string[]) =>
   ids
     .map((id) => {
-      const colores = acciones?.[id];
+      const colores = conjunto?.[id];
       return `${id}: ${colores ? `${colores.fondo} / ${colores.texto}` : 'de fábrica'}`;
     })
     .join(' · ');
 
 /** Los ids cuyo color cambió entre dos conjuntos. */
-const accionesCambiadas = (antes: IdentidadGuardada['acciones'], despues: IdentidadGuardada['acciones']) => {
+const idsCambiados = (antes: ConjuntoDeColores, despues: ConjuntoDeColores) => {
   const ids = new Set([...Object.keys(antes ?? {}), ...Object.keys(despues ?? {})]);
   return [...ids].filter((id) => {
     const a = antes?.[id];
@@ -100,8 +109,8 @@ const accionesCambiadas = (antes: IdentidadGuardada['acciones'], despues: Identi
 };
 
 /**
- * `PATCH /api/configuracion/identidad-panel`: los colores y el ajuste del logo en modo
- * oscuro. Si no cambió nada, no escribe ni deja fila en la bitácora.
+ * `PATCH /api/configuracion/identidad-panel`: los colores (etiquetas y botones) y el
+ * ajuste del logo en modo oscuro. Si no cambió nada, no escribe ni deja fila en la bitácora.
  */
 export async function actualizarIdentidadPanel(
   cambios: CambiosDeIdentidad,
@@ -114,13 +123,17 @@ export async function actualizarIdentidadPanel(
     const despues: IdentidadGuardada = { ...antes, ...cambios };
 
     const campos: CampoModificado[] = [];
-    if (cambios.acciones !== undefined) {
-      const ids = accionesCambiadas(antes.acciones, despues.acciones);
+    for (const [conjunto, campo] of [
+      ['acciones', 'colores_de_acciones'],
+      ['botones', 'colores_de_botones'],
+    ] as const) {
+      if (cambios[conjunto] === undefined) continue;
+      const ids = idsCambiados(antes[conjunto], despues[conjunto]);
       if (ids.length > 0) {
         campos.push({
-          campo: 'colores_de_acciones',
-          antes: describirAcciones(antes.acciones, ids),
-          despues: describirAcciones(despues.acciones, ids),
+          campo,
+          antes: describirColores(antes[conjunto], ids),
+          despues: describirColores(despues[conjunto], ids),
         });
       }
     }
@@ -201,7 +214,7 @@ async function cambiarImagen(
  * `POST /api/configuracion/identidad-panel/{logo|icono}`.
  *
  * Los controles de `@olo/upload-policy` (tipo real por magic bytes, lista blanca, nombre
- * UUID) más dos propios: solo PNG o JPG —sin SVG, que la política ya excluye porque
+ * UUID) más dos propios: solo PNG —sin SVG, que la política ya excluye porque
  * ejecuta script— y el límite de cada pieza.
  *
  * @throws Error con `status` 400, 413 o 415 si el archivo no sirve.
@@ -214,7 +227,7 @@ export async function subirImagenDeIdentidad(
 ): Promise<IdentidadPanel> {
   const resultado = await validarArchivoSubido(datos, detectarTipoDeArchivo, () => crypto.randomUUID());
   if (fueRechazada(resultado)) throw errorConEstado(resultado.error, resultado.status);
-  if (!EXTENSIONES_DE_IMAGEN.has(resultado.ext)) throw errorConEstado('Solo se aceptan imágenes PNG o JPG.', 415);
+  if (!EXTENSIONES_DE_IMAGEN.has(resultado.ext)) throw errorConEstado('Solo se aceptan imágenes PNG.', 415);
   if (datos.length > LIMITE_POR_PIEZA[pieza]) {
     throw errorConEstado(`La imagen supera el límite de ${LIMITE_POR_PIEZA[pieza] / KB} KB.`, 413);
   }

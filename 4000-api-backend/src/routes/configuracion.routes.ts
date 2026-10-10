@@ -67,14 +67,17 @@ router.get('/identidad-panel/archivos/:nombre', ConfiguracionController.servirAr
  *                     properties:
  *                       fondo: { type: string, example: '#7db728' }
  *                       texto: { type: string, example: '#ffffff' }
+ *                 botones:
+ *                   type: object
+ *                   description: Igual que acciones, para los tipos de botón (principal, peligro…).
  *                 actualizadoEn: { type: string, format: date-time, nullable: true }
  *       401: { $ref: '#/components/responses/NoAutenticado' }
  *   patch:
  *     tags: [Configuración]
- *     summary: Cambiar los colores de las acciones o el logo en modo oscuro
+ *     summary: Cambiar los colores de las etiquetas y los botones, o el logo en modo oscuro
  *     description: |
- *       `acciones` reemplaza el conjunto entero: una acción que no viene vuelve a la de
- *       fábrica. Los colores solo como `#rrggbb`: el panel los escribe en una etiqueta
+ *       `acciones` y `botones` reemplazan su conjunto entero: lo que no viene vuelve a
+ *       lo de fábrica. Los colores solo como `#rrggbb`: el panel los escribe en una etiqueta
  *       `<style>`. Queda en la bitácora como `actualizar` sobre `configuracion`.
  *     requestBody:
  *       required: true
@@ -84,6 +87,7 @@ router.get('/identidad-panel/archivos/:nombre', ConfiguracionController.servirAr
  *             type: object
  *             properties:
  *               acciones: { type: object }
+ *               botones: { type: object }
  *               blancoEnModoOscuro: { type: boolean }
  *     responses:
  *       200: { description: La identidad ya guardada }
@@ -106,7 +110,7 @@ router.patch(
  *     tags: [Configuración]
  *     summary: Subir el logo o el icono del panel
  *     description: |
- *       PNG o JPG, comprobado por magic bytes con `@olo/upload-policy`. Logo hasta 1 MB,
+ *       Solo PNG, comprobado por magic bytes con `@olo/upload-policy`. Logo hasta 1 MB,
  *       icono hasta 512 KB. Reemplaza y borra el anterior.
  *     parameters:
  *       - { name: pieza, in: path, required: true, schema: { type: string, enum: [logo, icono] } }
@@ -125,7 +129,7 @@ router.patch(
  *       401: { $ref: '#/components/responses/NoAutenticado' }
  *       403: { $ref: '#/components/responses/SinPermiso' }
  *       413: { description: Supera el tamaño de su pieza }
- *       415: { description: No es PNG ni JPG }
+ *       415: { description: No es PNG }
  *   delete:
  *     tags: [Configuración]
  *     summary: Volver al logo o al icono de fábrica

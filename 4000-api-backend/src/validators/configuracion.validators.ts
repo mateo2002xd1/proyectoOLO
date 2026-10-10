@@ -22,23 +22,27 @@ const colorHex = z
   .transform((valor) => valor.toLowerCase());
 
 /**
- * Las acciones son un catálogo del frontend (dónde hay etiquetas y de qué color salen de
- * fábrica); la API no lo duplica. Se acota la forma del identificador y cuántos caben,
- * para que nadie llene la fila con claves inventadas.
+ * Las etiquetas de acción y los tipos de botón son catálogos del frontend (dónde están y de
+ * qué color salen de fábrica); la API no los duplica. Se acota la forma del identificador y
+ * cuántos caben, para que nadie llene la fila con claves inventadas.
  */
-const idDeAccion = z.string().regex(/^[a-z][a-z-]{0,39}$/, 'Identificador de acción no válido.');
+const idDeColor = z.string().regex(/^[a-z][a-z-]{0,39}$/, 'Identificador no válido.');
 
-const MAXIMO_DE_ACCIONES = 40;
+const MAXIMO_POR_CONJUNTO = 40;
 
-const coloresDeAccion = z.object({ fondo: colorHex, texto: colorHex }).strict();
+const fondoYTexto = z.object({ fondo: colorHex, texto: colorHex }).strict();
 
-const acciones = z
-  .record(idDeAccion, coloresDeAccion)
-  .refine((valor) => Object.keys(valor).length <= MAXIMO_DE_ACCIONES, {
-    message: `Como máximo ${MAXIMO_DE_ACCIONES} acciones.`,
+/** Id → `{fondo, texto}`. Lo usan `acciones` (las etiquetas) y `botones` (los tipos de botón). */
+const conjuntoDeColores = z
+  .record(idDeColor, fondoYTexto)
+  .refine((valor) => Object.keys(valor).length <= MAXIMO_POR_CONJUNTO, {
+    message: `Como máximo ${MAXIMO_POR_CONJUNTO} colores.`,
   });
 
-/** El nombre que pone la subida: UUID y extensión de imagen. */
+/**
+ * El nombre que pone la subida: UUID y `.png`. Hasta el 10-10-2026 se aceptaba también JPG:
+ * se sigue leyendo por si quedó alguno guardado, pero ya no se sube.
+ */
 const nombreDeArchivo = z
   .string()
   .regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(png|jpg)$/);
@@ -52,7 +56,8 @@ export const identidadGuardadaSchema = z.object({
   logo: nombreDeArchivo.nullable().optional(),
   icono: nombreDeArchivo.nullable().optional(),
   blancoEnModoOscuro: z.boolean().optional(),
-  acciones: acciones.optional(),
+  acciones: conjuntoDeColores.optional(),
+  botones: conjuntoDeColores.optional(),
 });
 
 export type IdentidadGuardada = z.infer<typeof identidadGuardadaSchema>;
@@ -61,12 +66,13 @@ export type IdentidadGuardada = z.infer<typeof identidadGuardadaSchema>;
  * `PATCH /api/configuracion/identidad-panel`. Los archivos van por su propia ruta
  * (multipart); aquí solo los ajustes que caben en JSON.
  *
- * `acciones` reemplaza el conjunto entero: el panel manda solo las que difieren de
- * fábrica, y una acción que ya no viene vuelve a la de fábrica.
+ * `acciones` y `botones` reemplazan su conjunto entero: el panel manda solo los que
+ * difieren de fábrica, y el que ya no viene vuelve al de fábrica.
  */
 export const actualizarIdentidadSchema = z
   .object({
-    acciones: acciones.optional(),
+    acciones: conjuntoDeColores.optional(),
+    botones: conjuntoDeColores.optional(),
     blancoEnModoOscuro: z.boolean().optional(),
   })
   .strict()
