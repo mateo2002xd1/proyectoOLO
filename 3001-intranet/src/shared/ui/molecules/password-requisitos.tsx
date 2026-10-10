@@ -12,19 +12,29 @@ import { requisitosDe } from '@olo/password-policy';
  *
  * Sigue el patrón `classPrefix` del resto de moléculas de auth (`rp-`, `fl-`…) para
  * heredar el mismo aspecto que el formulario donde se inserta.
+ *
+ * `resumirAlCumplir`: cumplidos todos, la lista se queda en una sola línea («Cumple todos
+ * los requisitos»), para que el formulario quepa sin scroll en el móvil (2026-10-10). Mientras
+ * falte alguno se ve entera, por lo dicho arriba. Igual que en el acceso del sitio web.
  */
 export function PasswordRequisitos({
   classPrefix,
   password,
   className = 'mb-4',
   variant,
+  resumirAlCumplir = false,
 }: {
   classPrefix?: string;
   password: string;
   className?: string;
   variant?: 'panel' | 'solid';
+  resumirAlCumplir?: boolean;
 }) {
-  const requisitos = requisitosDe(password);
+  const todos = requisitosDe(password);
+  const requisitos =
+    resumirAlCumplir && todos.every((r) => r.cumplido)
+      ? [{ id: 'todos', etiqueta: 'Cumple todos los requisitos', cumplido: true }]
+      : todos;
   const esSolido = variant === 'solid';
 
   if (esSolido) {

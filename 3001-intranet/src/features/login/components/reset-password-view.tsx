@@ -180,7 +180,7 @@ export function ResetPasswordView() {
               error={errors.password}
               className="mb-2"
             />
-            <PasswordRequisitos password={password} variant="solid" className="mb-4" />
+            <PasswordRequisitos password={password} variant="solid" className="mb-4" resumirAlCumplir />
 
             <PasswordField
               id="confirmPassword"

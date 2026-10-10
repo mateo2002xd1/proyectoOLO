@@ -36,6 +36,13 @@ export function FirstLoginView() {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
+
+  // Los requisitos de la nueva contraseña aparecen al entrar en el campo (o si ya tiene
+  // algo) y desde entonces se quedan, como en el acceso del sitio web. En reposo no ocupan
+  // sitio: con ellos a la vista el paso no cabía en el móvil sin scroll (2026-10-10). No se
+  // ocultan al salir del campo: el formulario encogería justo al pulsar el de abajo.
+  const [requisitosEnfocados, setRequisitosEnfocados] = useState(false);
+  const verRequisitos = requisitosEnfocados || newPassword !== '';
   const [catalogQuestions, setCatalogQuestions] = useState<CatalogQuestion[]>([]);
 
   useEffect(() => {
@@ -169,13 +176,17 @@ export function FirstLoginView() {
         />
 
         <h2 className="fl-card-title">Nueva contraseña</h2>
-        <PasswordField
-          classPrefix="fl"
-          value={newPassword}
-          onChange={(v) => { setNewPassword(v); setErrors({}); }}
-          error={errors.newPassword}
-        />
-        <PasswordRequisitos classPrefix="fl" password={newPassword} />
+        {/* `contents`: la envoltura solo está para enterarse del foco; el hueco entre
+            campos lo sigue dando el `gap` del formulario. */}
+        <div className="contents" onFocus={() => setRequisitosEnfocados(true)}>
+          <PasswordField
+            classPrefix="fl"
+            value={newPassword}
+            onChange={(v) => { setNewPassword(v); setErrors({}); }}
+            error={errors.newPassword}
+          />
+        </div>
+        {verRequisitos && <PasswordRequisitos classPrefix="fl" password={newPassword} resumirAlCumplir />}
 
         <h2 className="fl-card-title">Ingresa nuevamente la contraseña</h2>
         <PasswordField
@@ -260,7 +271,9 @@ export function FirstLoginView() {
     if (currentStep === 1) {
       return {
         title: `Hola ${user?.name ? user.name.split(' ')[0] : ''}, Actualiza tu seguridad.`,
-        subtitle: 'Has ingresado con un código temporal. Por tu seguridad, es necesario que crees un nuevo código de acceso personal y privado que solo tú conozcas.',
+        // Acortado el 2026-10-10 para que el paso quepa sin scroll en el móvil; es el mismo
+        // texto que en el acceso del sitio web.
+        subtitle: 'Has ingresado con una contraseña temporal. Por tu seguridad, crea una contraseña personal que solo tú conozcas.',
       };
     }
     if (currentStep === 2) {
@@ -270,7 +283,7 @@ export function FirstLoginView() {
         // las preguntas hay que decírselo, o no entiende por qué se le piden otra vez
         // ni si su contraseña sigue sirviendo.
         subtitle: pendiente?.debeCambiarPassword
-          ? 'Elige 3 preguntas de seguridad de la lista y asigna una respuesta para cada una. Estas preguntas nos servirán para verificar tu identidad de forma segura en caso de que necesites recuperar tu cuenta.'
+          ? 'Elige 3 preguntas y responde cada una. Con ellas verificaremos tu identidad si necesitas recuperar tu cuenta.'
           : 'Tus preguntas de seguridad fueron restablecidas. Elige 3 de la lista y asigna una respuesta para cada una. Tu contraseña actual no cambia.',
       };
     }

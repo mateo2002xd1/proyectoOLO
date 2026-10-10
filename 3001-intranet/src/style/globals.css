@@ -3989,7 +3989,13 @@ body:has(.navegacion-mobile-hoja[open]) {
   }
 }
 
-/* Móvil (por debajo de `sm`) */
+/* Móvil (por debajo de `sm`).
+
+   Todo tiene que caber en el alto de la pantalla sin scroll (pedido del usuario,
+   2026-10-10): los rellenos y huecos verticales se encogen con el alto visible (`dvh`),
+   con el valor de antes como máximo. En un teléfono de 640 px de alto quedan en unos
+   dos tercios; en uno de 800, casi como estaban. Lo mismo hace el acceso al panel del
+   sitio web (`authPasosHuecoClass`). */
 @media (width < 40rem) {
 
   .login-left,
@@ -3997,7 +4003,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   .sq-left,
   .rp-left,
   .fl-left {
-    padding: 2rem 1rem 0;
+    padding: clamp(0.75rem, 3dvh, 2rem) 1rem 0;
   }
 
   .login-brand-title,
@@ -4005,7 +4011,14 @@ body:has(.navegacion-mobile-hoja[open]) {
   .sq-brand-title,
   .rp-brand-title,
   .fl-brand-title {
-    font-size: 1.5rem;
+    font-size: clamp(1.25rem, 3.6dvh, 1.5rem);
+  }
+
+  .recovery-brand-title,
+  .sq-brand-title,
+  .rp-brand-title,
+  .fl-brand-title {
+    margin-bottom: clamp(0.375rem, 1.2dvh, 0.75rem);
   }
 
   .login-logo {
@@ -4017,17 +4030,36 @@ body:has(.navegacion-mobile-hoja[open]) {
   .sq-right,
   .rp-right,
   .fl-right {
-    padding: 1.5rem 1rem;
+    padding: clamp(0.75rem, 2.5dvh, 1.5rem) 1rem;
   }
 
   .recovery-card,
   .sq-card,
   .rp-card,
   .fl-card {
-    padding: 1.5rem 1.25rem;
+    padding: clamp(1rem, 2.5dvh, 1.5rem) 1.25rem;
     box-shadow: var(--shadow-card);
     border-radius: var(--radius-lg);
     max-width: 100%;
+  }
+
+  .recovery-form,
+  .sq-form,
+  .rp-form,
+  .fl-form {
+    gap: clamp(0.5rem, 1.4dvh, 0.875rem);
+  }
+
+  .fl-pagination {
+    margin-top: clamp(0.5rem, 2dvh, 1.5rem);
+  }
+
+  .login-return,
+  .recovery-return,
+  .sq-return,
+  .rp-return,
+  .fl-return {
+    margin-top: clamp(0.25rem, 1.5dvh, 1.25rem);
   }
 }
 

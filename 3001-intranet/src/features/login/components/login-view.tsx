@@ -142,14 +142,16 @@ function LoginForm() {
         <div className="login-left-content">
           {/* Por debajo de `xl` (móvil y tablet, ver globals.css) manda el diseño de
               móvil: el título primero y el logo debajo, grande y atenuado, como fondo
-              de marca antes del formulario. Desde `xl`, logo arriba y título debajo. */}
+              de marca antes del formulario. Desde `xl`, logo arriba y título debajo.
+              En el móvil el logo y los huecos se encogen con el alto de la pantalla
+              (`dvh`), para que el login quepa entero sin scroll (2026-10-10). */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/assets/svg/olo-logo-blanco.svg"
             alt="Logo intranet"
-            className="order-2 mx-auto w-48 opacity-30 sm:w-56 xl:order-1 xl:w-[210px] xl:opacity-100"
+            className="order-2 mx-auto w-[clamp(4.5rem,14dvh,12rem)] opacity-30 sm:w-56 xl:order-1 xl:w-[210px] xl:opacity-100"
           />
-          <h1 className="order-1 mb-8 text-3xl font-bold leading-tight text-white sm:text-4xl xl:order-2 xl:mb-0 xl:font-light">
+          <h1 className="order-1 mb-[clamp(0.75rem,3dvh,2rem)] text-[clamp(1.5rem,4.4dvh,1.875rem)] font-bold leading-tight text-white sm:mb-8 sm:text-4xl xl:order-2 xl:mb-0 xl:font-light">
             Bienvenido a <span className="font-bold xl:uppercase"><br />nuestra Intranet</span>
           </h1>
         </div>
@@ -187,7 +189,7 @@ function LoginForm() {
                 </div>
               )}
 
-              <div className="mb-4">
+              <div className="mb-3 sm:mb-4">
                 <label htmlFor="email" className="mb-1.5 block text-sm font-semibold text-white xl:text-[#0d1526]">
                   Correo SENA
                 </label>
@@ -208,7 +210,7 @@ function LoginForm() {
                 {errors.email && <p className="mt-1 text-xs text-red-300 xl:text-red-600">{errors.email}</p>}
               </div>
 
-              <div className="mb-5">
+              <div className="mb-3 sm:mb-5">
                 <label htmlFor="password" className="mb-1.5 block text-sm font-semibold text-white xl:text-[#0d1526]">
                   Contraseña
                 </label>
@@ -246,7 +248,7 @@ function LoginForm() {
                   relativas (`/politica-de-privacidad`, `/privacidad`), así que el
                   middleware las tomaba por pantalla protegida y devolvía a quien las
                   pulsara al propio login del que venía. */}
-              <p className="mb-6 text-xs leading-relaxed text-white/85 xl:text-gray-500">
+              <p className="mb-[clamp(0.75rem,2.5dvh,1.5rem)] text-xs leading-relaxed text-white/85 sm:mb-6 xl:text-gray-500">
                 Al ingresar a este sitio aceptas la{' '}
                 <a href={`${SITE_URL}/politica-de-privacidad`} className="font-semibold text-white hover:underline xl:text-gray-700">
                   política de privacidad
@@ -266,7 +268,7 @@ function LoginForm() {
                 {isLoading ? 'Ingresando...' : 'Ingresar'}
               </button>
 
-              <div className="mt-4 text-center">
+              <div className="mt-[clamp(0.5rem,2dvh,1rem)] text-center sm:mt-4">
                 <Link
                   href="/recovery"
                   className="rounded text-sm text-white/90 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white xl:text-xs xl:text-gray-500 xl:hover:text-gray-700 xl:focus-visible:ring-[#0d1526]"
