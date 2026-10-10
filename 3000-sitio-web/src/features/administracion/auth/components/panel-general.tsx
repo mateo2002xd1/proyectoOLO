@@ -715,10 +715,18 @@ export function PanelGeneralDashboard() {
         </p>
       )}
 
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Tres en fila solo desde 1440 px (pedido del usuario, 2026-10-10): por debajo, con
+          la barra lateral, las tres quedaban estrechas y el árbol de páginas cortaba los
+          títulos. Entonces la fila es «Páginas publicadas» y «Visitas», y «Usuarios» baja a
+          una fila propia a todo el ancho. En el móvil, una debajo de otra, como antes.
+          `min-[90rem]` (1440 px) y no `min-[1440px]`: en px, Tailwind no sabe ordenarlo
+          con `sm:` (en rem) y lo ponía antes, así que `sm:grid-cols-2` le ganaba siempre. */}
+      <div className="mb-8 grid gap-4 sm:grid-cols-2 min-[90rem]:grid-cols-3">
         <TarjetaPaginasPublicadas resumen={paginasPublicadas} error={errorPaginas} />
         <TarjetaVisitas resumen={paginasPublicadas} error={errorPaginas} />
-        <TarjetaUsuarios users={users} loading={loading} />
+        <div className="sm:col-span-2 min-[90rem]:col-span-1">
+          <TarjetaUsuarios users={users} loading={loading} />
+        </div>
       </div>
 
       <div className="w-full">
