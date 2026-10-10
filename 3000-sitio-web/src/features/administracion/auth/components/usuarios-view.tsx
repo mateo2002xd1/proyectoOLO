@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { TrashIcon } from '@heroicons/react/24/outline';
+import { GRUPO_TOOLTIP, TOOLTIP_ENCIMA } from '@/shared/ui/atoms/tooltip';
 import { validarEmail } from '@olo/email-policy';
 import {
   useUsuarios,
@@ -532,8 +533,20 @@ export default function UsuariosView() {
                     </td>
                     <td data-etiqueta="Acciones" className="px-6 py-2 text-sm text-right">
                       <div className="flex items-center gap-2 @3xl:justify-end">
-                        <button type="button" onClick={() => startEdit(user)} className="p-1.5 text-zinc-500 hover:text-zinc-900 dark:text-[#94a3b8] dark:hover:text-white transition-colors" title="Editar">
-                          <PencilIcon className="size-5" />
+                        {/* Icono de dos colores (persona gris, lápiz verde): va como imagen y no con
+                            `IconoMascara`, que pinta todo de un solo color. El nombre lo da el
+                            `aria-label`; el tooltip es `aria-hidden` para no leerlo dos veces. */}
+                        <button
+                          type="button"
+                          onClick={() => startEdit(user)}
+                          aria-label="Editar usuario"
+                          className={`${GRUPO_TOOLTIP} rounded-lg p-1.5 transition-colors hover:bg-[#7DB728]/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7DB728]`}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element -- SVG estático de /public: next/image no aporta nada aquí. */}
+                          <img src="/assets/svg/editar-usuario.svg" alt="" aria-hidden="true" className="h-6 w-auto" />
+                          <span aria-hidden="true" className={`${TOOLTIP_ENCIMA} bg-[#7DB728] text-white`}>
+                            Editar usuario
+                          </span>
                         </button>
                         <button type="button" onClick={() => setDeleteConfirmId(user.id)} className="p-1.5 text-red-500 hover:text-red-600 dark:text-red-400 transition-colors" title="Eliminar">
                           <TrashIcon className="size-5" />

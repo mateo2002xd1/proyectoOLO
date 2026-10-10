@@ -5,6 +5,22 @@
 
 ---
 
+## sesión 09-10-2026 (26.ª parte): «Editar usuario» con icono propio y tooltip
+
+**Qué se pidió.** Cambiar el lápiz de Usuarios por un SVG dado (persona gris con lápiz verde)
+y ponerle un tooltip «Editar usuario».
+
+**Lo que se hizo.** El SVG queda en `public/assets/svg/editar-usuario.svg`, junto a los demás.
+Va como `<img>` y no con `IconoMascara` porque tiene dos colores y la máscara pinta todo de uno.
+El botón (`usuarios-view.tsx`) deja `PencilIcon` y `title="Editar"`: lleva
+`aria-label="Editar usuario"`, fondo `#7DB728/10` al pasar, anillo de foco verde y el tooltip
+compartido (`shared/ui/atoms/tooltip.ts`, centrado) en verde con letra blanca.
+
+**Cómo se probó.** `tsc --noEmit` del sitio y `eslint` del archivo, limpios; el servidor
+de desarrollo sirve el SVG (200, `image/svg+xml`). No se vio en el navegador.
+
+---
+
 ## sesión 09-10-2026 (25.ª parte): sin «timeout of 15000ms exceeded» a la vista, reintentos solos en la cola y el ojo de Auditoría en verde
 
 **Qué se pidió.** Que /admin/revision no muestre `Error: timeout of 15000ms exceeded` sino un
