@@ -13,6 +13,8 @@ import {
   authPasosCardClass,
   authPasosPrimaryClass,
   authPasosQuietLinkClass,
+  authPasosHuecoClass,
+  authPasosHuecoArribaClass,
 } from './auth-ui';
 import { MarcoDePasos } from './marco-de-pasos';
 
@@ -144,7 +146,7 @@ function LoginForm() {
         value={password}
         onChange={setPassword}
         error={errors.password}
-        className="mb-4"
+        className="mb-3 md:mb-4"
       />
 
       {/* RF-13: el aviso va antes de enviar nada, no después.
@@ -152,7 +154,7 @@ function LoginForm() {
           Los dos enlaces van a `/politica-de-privacidad`, la ruta canónica.
           `/privacidad` e `/inicio/politica-de-privacidad` son alias que redirigen ahí
           (ver `next.config.mjs`): enlazarlos manda al mismo sitio pagando un salto de más. */}
-      <p className="mb-6 text-sm leading-relaxed text-[#737373]">
+      <p className={`${authPasosHuecoClass} text-sm leading-relaxed text-[#737373]`}>
         Al ingresar a este sitio aceptas la{' '}
         <Link href="/politica-de-privacidad" className="font-semibold hover:underline">
           política de privacidad
@@ -168,7 +170,7 @@ function LoginForm() {
         {isLoading ? 'Iniciando sesión…' : 'Ingresar'}
       </button>
 
-      <div className="mt-6 text-center">
+      <div className={`${authPasosHuecoArribaClass} text-center`}>
         <Link href="/recovery" className={authPasosQuietLinkClass}>
           ¿Olvidaste tu contraseña?
         </Link>

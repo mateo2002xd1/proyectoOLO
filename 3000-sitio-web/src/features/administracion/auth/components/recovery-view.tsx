@@ -10,6 +10,8 @@ import {
   authPasosCardClass,
   authPasosPrimaryClass,
   authPasosQuietLinkClass,
+  authPasosHuecoClass,
+  authPasosHuecoArribaClass,
 } from './auth-ui';
 import { MarcoDePasos } from './marco-de-pasos';
 import { useFlujoDeRecuperacion } from './flujo-de-recuperacion';
@@ -88,7 +90,7 @@ export function RecoveryView() {
             value={email}
             onChange={(valor) => { setEmail(valor); setErrors({}); }}
             error={errors.email}
-            className="mb-6"
+            className={authPasosHuecoClass}
           />
 
           <button type="submit" disabled={isLoading} className={authPasosPrimaryClass}>
@@ -96,7 +98,7 @@ export function RecoveryView() {
           </button>
         </form>
 
-        <div className="mt-6 text-center">
+        <div className={`${authPasosHuecoArribaClass} text-center`}>
           <Link href="/login" className={authPasosQuietLinkClass}>
             Iniciar sesión
           </Link>

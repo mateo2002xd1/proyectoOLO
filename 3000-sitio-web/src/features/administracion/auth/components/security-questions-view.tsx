@@ -12,6 +12,8 @@ import {
   authPasosInputClass,
   authPasosPrimaryClass,
   authPasosQuietLinkClass,
+  authPasosHuecoClass,
+  authPasosHuecoArribaClass,
 } from './auth-ui';
 import { MarcoDePasos } from './marco-de-pasos';
 import { useFlujoDeRecuperacion } from './flujo-de-recuperacion';
@@ -114,7 +116,7 @@ export function SecurityQuestionsView() {
               16 (`rounded-xl` en este sitio), como los mensajes de estado, y no de 32. */}
           <label
             htmlFor="respuesta"
-            className="mb-6 block min-h-11 rounded-xl border border-[#d9d9d9] px-5 py-2 text-base text-[#001a39]"
+            className={`${authPasosHuecoClass} block min-h-11 rounded-xl border border-[#d9d9d9] px-5 py-2 text-base text-[#001a39]`}
           >
             <span className="sr-only">
               Pregunta {preguntaActual + 1} de {total}:{' '}
@@ -122,7 +124,7 @@ export function SecurityQuestionsView() {
             {pregunta?.label}
           </label>
 
-          <div className="mb-6">
+          <div className={authPasosHuecoClass}>
             <input
               id="respuesta"
               type="text"
@@ -150,7 +152,7 @@ export function SecurityQuestionsView() {
             )}
           </div>
 
-          <AuthProgressDots total={total} current={preguntaActual} className="mb-6" />
+          <AuthProgressDots total={total} current={preguntaActual} className={authPasosHuecoClass} />
 
           <button type="submit" disabled={isLoading} className={authPasosPrimaryClass}>
             {isLoading ? 'Verificando…' : 'Continuar'}
@@ -159,7 +161,7 @@ export function SecurityQuestionsView() {
 
         {/* En la primera pregunta, la salida al login del mockup; en las siguientes, el
             mockup deja ese hueco vacío y aquí va la vuelta a la pregunta anterior. */}
-        <div className="mt-6 text-center">
+        <div className={`${authPasosHuecoArribaClass} text-center`}>
           {preguntaActual === 0 ? (
             <Link href="/login" className={authPasosQuietLinkClass}>
               Iniciar sesión

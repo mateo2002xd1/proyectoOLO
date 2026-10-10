@@ -16,6 +16,8 @@ import {
   authPasosPrimaryClass,
   authPasosQuietLinkClass,
   authPasosSecondaryClass,
+  authPasosHuecoClass,
+  authPasosHuecoArribaClass,
 } from './auth-ui';
 import { MarcoDePasos, type PasosDelMarco } from './marco-de-pasos';
 import { useRequisitosAlEnfocar } from '../hooks/use-requisitos-al-enfocar';
@@ -76,7 +78,7 @@ async function cerrarSesionEIrAlLogin() {
  */
 function EnlaceIniciarSesion() {
   return (
-    <div className="mt-6 text-center">
+    <div className={`${authPasosHuecoArribaClass} text-center`}>
       <button type="button" onClick={cerrarSesionEIrAlLogin} className={authPasosQuietLinkClass}>
         Iniciar sesión
       </button>
@@ -284,7 +286,7 @@ export function FirstLoginFlow() {
       >
         <div className={`${authPasosCardClass} text-center`}>
           <AuthSuccessBadge />
-          <p className="mb-6 text-base text-[#001a39]">Vuelve a iniciar sesión para entrar al panel.</p>
+          <p className={`${authPasosHuecoClass} text-base text-[#001a39]`}>Vuelve a iniciar sesión para entrar al panel.</p>
           <button type="button" onClick={cerrarSesionEIrAlLogin} className={authPasosPrimaryClass}>
             Iniciar sesión
           </button>
@@ -299,7 +301,9 @@ export function FirstLoginFlow() {
       <MarcoDePasos
         cerrarSesionAlSalir
         titulo="Actualiza tu seguridad"
-        descripcion="Has ingresado con una contraseña temporal. Por tu seguridad, es necesario que crees una contraseña personal y privada que solo tú conozcas."
+        // Acortado el 2026-10-10 para que el paso quepa sin scroll en el móvil; antes decía «es
+        // necesario que crees una contraseña personal y privada que solo tú conozcas».
+        descripcion="Has ingresado con una contraseña temporal. Por tu seguridad, crea una contraseña personal que solo tú conozcas."
         pasos={pasos(FORM_CONTRASENA)}
       >
         <Tarjeta>
@@ -315,7 +319,7 @@ export function FirstLoginFlow() {
               value={tempPassword}
               onChange={(v) => { setTempPassword(v); setErrors({}); }}
               error={errors.tempPassword}
-              className="mb-6"
+              className={authPasosHuecoClass}
             />
             <PasswordField
               id="new-password"
@@ -326,14 +330,15 @@ export function FirstLoginFlow() {
               onFocus={requisitos.alEnfocar}
               describedBy={requisitos.visibles ? 'requisitos-contrasena' : undefined}
               error={errors.newPassword}
-              className={requisitos.visibles ? 'mb-3' : 'mb-6'}
+              className={requisitos.visibles ? 'mb-2 md:mb-3' : authPasosHuecoClass}
             />
             {requisitos.visibles && (
               <PasswordRequisitos
                 id="requisitos-contrasena"
                 password={newPassword}
                 variant="solid"
-                className="mb-6"
+                resumirAlCumplir
+                className={authPasosHuecoClass}
               />
             )}
             <PasswordField
@@ -343,7 +348,7 @@ export function FirstLoginFlow() {
               value={confirmPassword}
               onChange={(v) => { setConfirmPassword(v); setErrors({}); }}
               error={errors.confirmPassword}
-              className="mb-6"
+              className={authPasosHuecoClass}
             />
 
             <button type="submit" disabled={isLoading} className={authPasosPrimaryClass}>
@@ -365,7 +370,7 @@ export function FirstLoginFlow() {
       // las preguntas hay que decírselo, o no entiende por qué se le piden otra vez.
       descripcion={
         pendiente.debeCambiarPassword
-          ? 'Elige 3 preguntas y asigna una respuesta a cada una. Con ellas verificaremos tu identidad si algún día necesitas recuperar tu cuenta.'
+          ? 'Elige 3 preguntas y responde cada una. Con ellas verificaremos tu identidad si necesitas recuperar tu cuenta.'
           : 'Tus preguntas de seguridad fueron restablecidas. Elige 3 y asigna una respuesta a cada una; tu contraseña actual no cambia.'
       }
       pasos={pasos(FORM_PREGUNTAS)}
@@ -397,7 +402,7 @@ export function FirstLoginFlow() {
               // Ya elegida en otro paso: se ve, pero no se puede repetir.
               disabled: selectedKeys.includes(q.key) && selectedKeys[currentQuestion] !== q.key,
             }))}
-            className="mb-6"
+            className={authPasosHuecoClass}
           />
 
           <AuthTextField
@@ -416,10 +421,10 @@ export function FirstLoginFlow() {
             // autocorrector del móvil solo puede estorbar.
             autoCapitalize="none"
             autoCorrect="off"
-            className="mb-6"
+            className={authPasosHuecoClass}
           />
 
-          <AuthProgressDots total={TOTAL_QUESTIONS} current={currentQuestion} className="mb-6" />
+          <AuthProgressDots total={TOTAL_QUESTIONS} current={currentQuestion} className={authPasosHuecoClass} />
 
           <div className="flex gap-2.5">
             {currentQuestion > 0 && (

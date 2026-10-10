@@ -27,11 +27,21 @@ import { BackToSiteLink } from './auth-ui';
  *
  * | Qué | Escala | Tamaño |
  * |---|---|---|
- * | Título (`h1`) | Heading 5 → Heading 4, Semibold | 24 px en el móvil, 30 desde `md` |
- * | Texto bajo el título | Body Large, Regular | 18 px |
- * | Encabezado del formulario | Headline, Medium | 20 px (`authPasosCardHeadingClass`) |
- * | Etiquetas, campos, botones, enlaces | Body | 16 px |
+ * | Título (`h1`) | Heading 5 → Heading 4, Semibold | 20-24 px en el móvil, 30 desde `md` |
+ * | Texto bajo el título | Body Large, Regular | 14-16 px en el móvil, 18 desde `md` |
+ * | Encabezado del formulario | Headline, Medium | 18 px en el móvil, 20 desde `md` (`authPasosCardHeadingClass`) |
+ * | Etiquetas, enlaces | Body | 14 px en el móvil, 16 desde `md` |
+ * | Campos y botones | Body | 16 px |
  * | Errores y avisos | Footnote | 14 px |
+ *
+ * ## Sin scroll en el móvil (2026-10-10)
+ *
+ * El usuario pidió que en el teléfono todo quepa en el alto de la pantalla. Por debajo de
+ * `md`, los rellenos, los huecos, el logo, el título y el texto se encogen con el alto visible
+ * (`clamp()` con `dvh`): el máximo es el valor de antes, que es lo que se ve en un teléfono
+ * alto; el mínimo, lo que deja caber el login y cada paso en 360 × 640 en reposo. Con el
+ * teclado abierto el navegador hace scroll de todos modos. Los huecos del formulario son
+ * `authPasosHuecoClass` y `authPasosHuecoArribaClass` (`auth-ui.tsx`).
  *
  * El título es el `h1` de la página en los dos diseños: es el mismo elemento, que solo
  * cambia de sitio.
@@ -68,38 +78,38 @@ export function MarcoDePasos({
   const parrafos = descripcion === undefined ? [] : Array.isArray(descripcion) ? descripcion : [descripcion];
 
   return (
-    <div className="flex min-h-dvh w-full flex-col justify-center bg-white py-12 xl:flex-row xl:py-0">
+    <div className="flex min-h-dvh w-full flex-col justify-center bg-white py-[clamp(0.75rem,3dvh,3rem)] md:py-12 xl:flex-row xl:py-0">
       <section className="flex flex-col items-center px-4 text-center text-[#001631] sm:px-6 xl:w-1/2 xl:shrink-0 xl:justify-center xl:py-12">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/assets/logos/olo-logo-none.svg"
           alt="OLO Logo"
-          className={`mb-6 w-28 md:w-32 xl:mb-8 xl:block xl:w-[200px] ${conLogo ? 'block' : 'hidden'}`}
+          className={`mb-[clamp(0.75rem,2.5dvh,1.5rem)] w-[clamp(4rem,12dvh,7rem)] md:mb-6 md:w-32 xl:mb-8 xl:block xl:w-[200px] ${conLogo ? 'block' : 'hidden'}`}
         />
         {/* `text-balance` reparte las líneas parejas («Recupera el acceso / a tu cuenta»). */}
-        <h1 className="max-w-[330px] text-2xl font-semibold leading-tight text-balance md:max-w-[480px] md:text-3xl">
+        <h1 className="max-w-[330px] text-[clamp(1.25rem,3.6dvh,1.5rem)] font-semibold leading-tight text-balance md:max-w-[480px] md:text-3xl">
           {titulo}
         </h1>
         {parrafos.length > 0 && (
-          <div className="mt-6 max-w-[330px] space-y-6 text-lg leading-7 text-pretty md:mt-8 md:max-w-[440px] xl:max-w-[400px]">
+          <div className="mt-[clamp(0.5rem,2dvh,1.5rem)] max-w-[330px] space-y-2 text-[clamp(0.875rem,2.35dvh,1rem)] leading-[1.45] text-pretty md:mt-8 md:max-w-[440px] md:space-y-6 md:text-lg md:leading-7 xl:max-w-[400px]">
             {parrafos.map((texto) => (
               <p key={texto}>{texto}</p>
             ))}
           </div>
         )}
         {pasos && (
-          <div className="@container mt-10 w-full md:mt-[72px]">
+          <div className="@container mt-[clamp(0.75rem,3dvh,2.5rem)] w-full md:mt-[72px]">
             <PaginadorDePasos {...pasos} />
           </div>
         )}
       </section>
 
-      <div className="mt-10 flex flex-col items-center px-4 sm:px-6 md:mt-11 xl:mt-0 xl:flex-1 xl:justify-center xl:rounded-l-[32px] xl:bg-[#001a39] xl:py-12">
+      <div className="mt-[clamp(1rem,3.5dvh,2.5rem)] flex flex-col items-center px-4 sm:px-6 md:mt-11 xl:mt-0 xl:flex-1 xl:justify-center xl:rounded-l-[32px] xl:bg-[#001a39] xl:py-12">
         {children}
         {/* `contents`: la envoltura no existe para la maqueta, solo para el clic. Se
             captura antes que el del `Link`, que no navega si ya se le impidió. */}
         <div className="contents" onClickCapture={cerrarSesionAlSalir ? salirCerrandoSesion : undefined}>
-          <BackToSiteLink label="Regresar al sitio web del Observatorio" className="mt-8 xl:mt-4" />
+          <BackToSiteLink label="Regresar al sitio web del Observatorio" className="mt-[clamp(0.5rem,2.5dvh,2rem)] md:mt-8 xl:mt-4" />
         </div>
       </div>
     </div>

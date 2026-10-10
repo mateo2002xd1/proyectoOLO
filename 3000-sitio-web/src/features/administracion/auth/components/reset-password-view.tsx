@@ -12,6 +12,8 @@ import {
   authPasosCardHeadingClass,
   authPasosPrimaryClass,
   authPasosQuietLinkClass,
+  authPasosHuecoClass,
+  authPasosHuecoArribaClass,
 } from './auth-ui';
 import { MarcoDePasos } from './marco-de-pasos';
 import { useFlujoDeRecuperacion } from './flujo-de-recuperacion';
@@ -94,7 +96,7 @@ export function ResetPasswordView() {
         <form onSubmit={guardarPassword} noValidate>
           {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
 
-          <h2 className={`mb-6 ${authPasosCardHeadingClass}`}>Crea tu nueva contraseña</h2>
+          <h2 className={`${authPasosHuecoClass} ${authPasosCardHeadingClass}`}>Crea tu nueva contraseña</h2>
 
           <PasswordField
             id="nuevo-password"
@@ -105,10 +107,10 @@ export function ResetPasswordView() {
             onFocus={requisitos.alEnfocar}
             describedBy={requisitos.visibles ? 'requisitos-nueva' : undefined}
             error={errors.password}
-            className={requisitos.visibles ? 'mb-3' : 'mb-6'}
+            className={requisitos.visibles ? 'mb-2 md:mb-3' : authPasosHuecoClass}
           />
           {requisitos.visibles && (
-            <PasswordRequisitos id="requisitos-nueva" password={password} variant="solid" className="mb-6" />
+            <PasswordRequisitos id="requisitos-nueva" password={password} variant="solid" resumirAlCumplir className={authPasosHuecoClass} />
           )}
 
           <PasswordField
@@ -118,7 +120,7 @@ export function ResetPasswordView() {
             value={confirmacion}
             onChange={(v) => { setConfirmacion(v); setErrors({}); }}
             error={errors.confirmacion}
-            className="mb-6"
+            className={authPasosHuecoClass}
           />
 
           <button type="submit" disabled={isLoading || terminada} className={authPasosPrimaryClass}>
@@ -127,7 +129,7 @@ export function ResetPasswordView() {
         </form>
 
         {/* Salir del flujo: la contraseña sigue siendo la de antes. */}
-        <div className="mt-6 text-center">
+        <div className={`${authPasosHuecoArribaClass} text-center`}>
           <Link href="/login" className={authPasosQuietLinkClass}>
             Iniciar sesión
           </Link>

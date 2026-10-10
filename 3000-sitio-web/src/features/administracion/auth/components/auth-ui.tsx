@@ -57,19 +57,32 @@ export const authPasosSecondaryClass =
 
 /** El enlace discreto bajo el botón («Iniciar sesión», «¿Olvidaste tu contraseña?»). */
 export const authPasosQuietLinkClass =
-  'rounded px-1 py-1 text-base text-[#001631] underline-offset-4 transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001631]';
+  'rounded px-1 py-1 text-sm text-[#001631] md:text-base underline-offset-4 transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001631]';
 
-// 16 px en peso medio. Con Poppins, «Ingresa nuevamente la contraseña» mide unos 290 px, y
-// el formulario tiene 328 en un móvil de 360 (sin tarjeta, ver arriba) y 388 por dentro de
-// la tarjeta: cabe en una línea en todos los anchos.
-const authPasosLabelClass = 'mb-2 block text-base font-medium text-[#001a39]';
+/**
+ * Aire entre los bloques del formulario (campo y campo, aviso y campo, barras y botón).
+ *
+ * En el móvil todo tiene que caber en el alto de la pantalla sin scroll (pedido del usuario,
+ * 2026-10-10): el hueco se encoge con el alto visible, de 12 px a 24, y en un teléfono de
+ * 640 px queda en 14. Desde `md`, los 24 de siempre. Usar estas dos y no `mb-6`/`mt-6`
+ * sueltos: son las que hacen que las pantallas quepan y sigan siendo iguales entre sí.
+ */
+export const authPasosHuecoClass = 'mb-[clamp(0.75rem,2.2dvh,1.5rem)] md:mb-6';
+/** El mismo hueco, por arriba: el enlace discreto bajo el botón. */
+export const authPasosHuecoArribaClass = 'mt-[clamp(0.5rem,2.2dvh,1.5rem)] md:mt-6';
+
+// 16 px en peso medio desde `md`; en el móvil, 14 y más pegada al campo, para que el
+// formulario quepa sin scroll. Con Poppins, «Ingresa nuevamente la contraseña» mide unos
+// 290 px a 16 px, y el formulario tiene 328 en un móvil de 360 (sin tarjeta, ver arriba) y
+// 388 por dentro de la tarjeta: cabe en una línea en todos los anchos.
+const authPasosLabelClass = 'mb-1 block text-sm font-medium text-[#001a39] md:mb-2 md:text-base';
 
 /**
  * Encabezado dentro del formulario («Crea tu nueva contraseña», «Responde tus
  * preguntas»): 20 px en peso medio («Headline»), entre el título de la pantalla y las
  * etiquetas. Va en un `h2`: el `h1` es el título del marco.
  */
-export const authPasosCardHeadingClass = 'text-xl font-medium text-[#001631]';
+export const authPasosCardHeadingClass = 'text-lg font-medium text-[#001631] md:text-xl';
 
 /**
  * Exportada para el campo que no cabe en los de abajo (la respuesta a la pregunta).
@@ -99,7 +112,7 @@ export const authPasosErrorTextClass = 'mt-1.5 text-sm text-red-600';
 export function AuthGeneralError({ children }: { children: ReactNode }) {
   return (
     <div
-      className="mb-6 rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-600"
+      className={`${authPasosHuecoClass} rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-600`}
       role="alert"
     >
       {children}
@@ -121,7 +134,7 @@ export function AuthGeneralError({ children }: { children: ReactNode }) {
 export function AuthGeneralNotice({ children }: { children: ReactNode }) {
   return (
     <div
-      className="mb-6 rounded-xl border border-blue-300 bg-blue-50 px-4 py-3 text-sm text-blue-800"
+      className={`${authPasosHuecoClass} rounded-xl border border-blue-300 bg-blue-50 px-4 py-3 text-sm text-blue-800`}
       role="status"
     >
       {children}
@@ -197,7 +210,7 @@ export function AuthTextField({
   autoComplete,
   autoCapitalize,
   autoCorrect,
-  className = 'mb-6',
+  className = authPasosHuecoClass,
 }: {
   id: string;
   label: ReactNode;
@@ -248,7 +261,7 @@ export function AuthSelectField({
   error,
   options,
   placeholder = 'Selecciona una opción…',
-  className = 'mb-6',
+  className = authPasosHuecoClass,
   etiquetaOculta = false,
 }: {
   id: string;
@@ -332,7 +345,7 @@ export function PasswordField({
   placeholder = `Mínimo ${LONGITUD_MINIMA} caracteres`,
   autoComplete,
   describedBy,
-  className = 'mb-6',
+  className = authPasosHuecoClass,
 }: {
   id: string;
   label: string;
@@ -394,20 +407,31 @@ export function PasswordField({
  *
  * Es la única primitiva con dos variantes, porque además de estas pantallas la usa
  * el perfil dentro del panel, que sí tiene tema oscuro (`variant="panel"`).
+ *
+ * `resumirAlCumplir`: cumplidos todos, la lista se queda en una sola línea («Cumple todos los
+ * requisitos»). La usan las pantallas de acceso, que en el móvil tienen que caber sin scroll
+ * (2026-10-10): eran cinco líneas que seguían ocupando sitio cuando ya no pedían nada. Mientras
+ * falte alguno se ve entera, por lo dicho arriba.
  */
 export function PasswordRequisitos({
   id,
   password,
   className = 'mb-4',
   variant = 'panel',
+  resumirAlCumplir = false,
 }: {
   /** Para que el campo lo nombre en su `aria-describedby`. */
   id?: string;
   password: string;
   className?: string;
   variant?: 'panel' | 'solid';
+  resumirAlCumplir?: boolean;
 }) {
-  const requisitos = requisitosDe(password);
+  const todos = requisitosDe(password);
+  const requisitos =
+    resumirAlCumplir && todos.every((r) => r.cumplido)
+      ? [{ id: 'todos', etiqueta: 'Cumple todos los requisitos', cumplido: true }]
+      : todos;
   const esSolido = variant === 'solid';
 
   return (
@@ -456,7 +480,7 @@ export function BackToSiteLink({
         href="/inicio"
         // En línea y no `inline-flex`: a 360 px el texto parte en dos y la casa debe ir
         // pegada a la primera palabra, no sola a la izquierda.
-        className="inline-block rounded py-2.5 text-base text-[#001631] transition hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001631] xl:text-white xl:focus-visible:ring-white"
+        className="inline-block rounded py-1.5 text-sm text-[#001631] md:py-2.5 md:text-base transition hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001631] xl:text-white xl:focus-visible:ring-white"
       >
         <HomeIcon aria-hidden="true" className="mr-2 inline-block size-5 align-[-4px]" />
         {label}
