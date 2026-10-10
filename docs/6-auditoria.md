@@ -5,6 +5,65 @@
 
 ---
 
+## sesión 10-10-2026 (15.ª parte): el acceso cabe en la pantalla del móvil, sin scroll
+
+**Qué se pidió.** En el móvil, el login y el primer ingreso de la intranet y del sitio web
+obligaban a bajar; el primer ingreso, además, crecía al aparecer los requisitos de la
+contraseña. Que todo quepa en el alto de la pantalla, reduciendo un poco el texto si hacía falta.
+
+**Lo que se midió antes** (`scrollHeight − innerHeight`, en Chrome sin ventana; altos
+visibles reales, sin las barras del navegador):
+
+| Pantalla | 360 × 640 | 390 × 664 | 412 × 780 |
+|---|---|---|---|
+| Sitio: login | 163 px | 115 | 0 |
+| Sitio: primer ingreso, contraseña | 262 | 214 | 98 |
+| Sitio: idem, con requisitos | 366 | 318 | 202 |
+| Sitio: primer ingreso, preguntas | 202 | 154 | 38 |
+| Intranet: login | 135 | 111 | 0 |
+| Intranet: primer ingreso, contraseña | 194 | 133 | 17 |
+
+**Lo que se hizo.** Por debajo de `md` (sitio) y de `sm` (intranet, su corte de móvil),
+rellenos, huecos, logo, título y texto se encogen con el alto visible: `clamp()` con `dvh`,
+con el valor de antes como máximo (un teléfono alto se ve casi igual) y el mínimo justo para
+360 × 640. Desde `md`/`sm`, nada cambia.
+
+| Capa | Cambio |
+|---|---|
+| `auth-ui.tsx` (sitio) | `authPasosHuecoClass` y `authPasosHuecoArribaClass`: el único hueco entre bloques del formulario (12-24 px según el alto; 24 desde `md`). Sustituyen los `mb-6`/`mt-6` sueltos de las seis pantallas. Etiquetas, enlace discreto y de regreso a 14 px en el móvil; encabezado de la tarjeta a 18. `PasswordRequisitos` con `resumirAlCumplir`. |
+| `marco-de-pasos.tsx` (sitio) | Relleno, logo (64-112 px), título (20-24), texto (14-16) y huecos del paginador y del formulario, fluidos. Tabla de tamaños del comentario al día. |
+| Vistas del sitio | Login, primer ingreso, recuperación (correo, preguntas, nueva) usan los huecos compartidos. Primer ingreso: las dos descripciones, un poco más cortas. |
+| `globals.css` (intranet) | Bloque `width < 40rem`: rellenos de `*-left`, `*-right` y `*-card`, título, `gap` de los formularios, paginador y enlace de regreso, con `dvh`. |
+| `login-view.tsx` (intranet) | Logo de fondo de 192 px a 72-192 según el alto; título y huecos fluidos. |
+| `first-login-view.tsx` (intranet) | Los requisitos aparecen al entrar en «Nueva contraseña» (como en el sitio; antes siempre a la vista) y se resumen al cumplirse. Mismas descripciones cortas que el sitio («contraseña temporal», no «código»). |
+| `password-requisitos.tsx` (intranet) | `resumirAlCumplir`, también en la nueva contraseña de la recuperación. |
+
+`resumirAlCumplir`: cumplidos los cuatro requisitos, la lista (cinco líneas) pasa a una sola,
+«✓ Cumple todos los requisitos». Mientras falte alguno se ve entera, que es lo que pide la
+política (no descubrir reglas a base de rechazos). El perfil del panel no la usa.
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| Sitio: las 16 pantallas y estados del acceso con el arnés (componentes reales, API simulada) a 360×640, 375×553, 375×600, 390×664, 412×780, 768×1024, 1280×800 | En reposo, 0 px de scroll en todas desde 360×640 (login, login con error, contraseña vacía y rellena, preguntas, preguntas con error, recuperación entera). 768 y 1280 como antes. |
+| Intranet: en vivo sobre su `next dev`, API simulada desde Chrome (`Fetch.requestPaused`) | Login, login con error, primer ingreso (contraseña, rellena, preguntas, preguntas con error, fin), recuperación (correo, preguntas): 0 px desde 360×640. Escritorio igual. |
+| Sitio: login y recuperación en vivo sobre su `next dev` | Igual que en el arnés (clases arbitrarias generadas). |
+| `tsc --noEmit` y ESLint de los archivos tocados, en las dos apps | Limpios. |
+| Capturas a 360×640 y 1280×800 | Sin cortes, sin desborde horizontal; escritorio sin cambios. |
+
+> **Lo que sigue haciendo scroll, a sabiendas.** Con los requisitos a medio cumplir (60-95 px
+> de más a 360×640) y con los tres errores de «Continuar» en vacío (140-175): en el teléfono esos
+> estados se ven con el teclado abierto, que se come media pantalla, y el navegador hace scroll
+> de todos modos. A 375×553 (iPhone SE en Safari con las dos barras) varias pantallas sobran
+> 15-65 px (login con error, primer ingreso, correo de la recuperación en la intranet). Bajar más los mínimos dejaba los campos por debajo de 44 px o
+> la letra por debajo de 14, y no se hizo.
+
+**Pendiente al cierre.** Mirarlo en el teléfono real del usuario. El arnés quedó en el
+scratchpad de la sesión (`alto/probar-alto-sitio.cjs`, `alto/probar-alto-intranet.cjs`).
+
+---
+
 ## sesión 10-10-2026 (14.ª parte): «Actividad reciente» del dashboard, una lista con la frase entera
 
 **Qué se pidió.** Cambiar «Actividad reciente» a una lista que muestre todo el mensaje del

@@ -547,7 +547,7 @@ Este procedimiento describe el paso a paso para el funcionario que inicia sesió
 
 4. **Establecimiento de la contraseña definitiva (paso 1, «Actualiza tu seguridad»):** En la pantalla de cambio de clave, el funcionario debe registrar su nueva contraseña personal:
    * En el campo **"Contraseña temporal"**, se digita la clave provisoria recibida.
-   * En el campo **"Nueva contraseña"**, se escribe la nueva clave personal. Al entrar en este campo aparece la lista de requisitos de la política (mínimo 12 caracteres, combinar 3 de 4 opciones: mayúsculas, minúsculas, números o símbolos, sin emojis ni tabulaciones, y no demasiado larga), que se van marcando a medida que se cumplen.
+   * En el campo **"Nueva contraseña"**, se escribe la nueva clave personal. Al entrar en este campo aparece la lista de requisitos de la política (mínimo 12 caracteres, combinar 3 de 4 opciones: mayúsculas, minúsculas, números o símbolos, sin emojis ni tabulaciones, y no demasiado larga), que se van marcando a medida que se cumplen; cuando se cumplen todos, la lista se resume en una línea: **"Cumple todos los requisitos"**.
    * En el campo **"Ingresa nuevamente la contraseña"**, se reescribe la nueva clave para certificar la coincidencia exacta.
    * El ícono del ojo muestra u oculta lo escrito en cada campo: cerrado mientras la clave está oculta, abierto cuando se ve.
    * Se hace clic en el botón oscuro **"Continuar"** (o en «Siguiente» del paginador), que revisa los tres campos y pasa al paso 2. Si algo falta o no coincide, lo indica debajo del campo.
@@ -611,7 +611,7 @@ Este procedimiento lo ejecutan los funcionarios (Administradores, Editores autor
 
 4. **Establecimiento de la contraseña definitiva:** En el formulario de cambio de clave, el usuario registra su nueva contraseña personal:
    * En el primer campo, se digita la clave provisoria en **"Contraseña temporal"**.
-   * En el segundo campo, se escribe la **"Nueva contraseña"**. El recuadro interactivo comprueba en tiempo real el cumplimiento de las políticas (mínimo 12 caracteres, combinar 3 de 4 opciones: mayúsculas, minúsculas, números o símbolos, sin emojis ni tabulaciones, y no demasiado larga).
+   * En el segundo campo, se escribe la **"Nueva contraseña"**. Al entrar en este campo aparece la lista de requisitos de la política (mínimo 12 caracteres, combinar 3 de 4 opciones: mayúsculas, minúsculas, números o símbolos, sin emojis ni tabulaciones, y no demasiado larga), que se van marcando en tiempo real; cuando se cumplen todos, la lista se resume en una línea: **"Cumple todos los requisitos"**.
    * En el tercer campo, se reescribe la clave en **"Ingresa nuevamente la contraseña"**.
    * Se hace clic en el botón **"Continuar"** (o en el control de navegación siguiente) para validar la información y avanzar.
 
@@ -823,7 +823,7 @@ Este procedimiento permite a cualquier funcionario restablecer de forma autónom
 > **[Captura: Preguntas de Seguridad en Recuperación Sitio Web (Móvil)]**
 > *Cuestionario presentando las preguntas de seguridad registradas y campo de respuesta en el Sitio Web. (Móvil).*
 
-4. **Establecimiento de la nueva contraseña:** Al validar satisfactoriamente las respuestas, la pantalla saluda por el nombre (*"¡Enhorabuena, [nombre]!"*) y, bajo **"Crea tu nueva contraseña"**, habilita los campos **"Nueva contraseña"** e **"Ingresa nuevamente la contraseña"**. Al entrar en el primero aparece la lista de requisitos de la política de seguridad, que se van marcando a medida que se cumplen. El usuario digita su nueva clave personal y presiona el botón **"Guardar"**. El enlace **"Iniciar sesión"** abandona el proceso sin cambiar la contraseña.
+4. **Establecimiento de la nueva contraseña:** Al validar satisfactoriamente las respuestas, la pantalla saluda por el nombre (*"¡Enhorabuena, [nombre]!"*) y, bajo **"Crea tu nueva contraseña"**, habilita los campos **"Nueva contraseña"** e **"Ingresa nuevamente la contraseña"**. Al entrar en el primero aparece la lista de requisitos de la política de seguridad, que se van marcando a medida que se cumplen y se resumen en **"Cumple todos los requisitos"** cuando se cumplen todos. El usuario digita su nueva clave personal y presiona el botón **"Guardar"**. El enlace **"Iniciar sesión"** abandona el proceso sin cambiar la contraseña.
 
 > **[Captura: Restablecimiento de Contraseña Sitio Web]**
 > *Formulario de ingreso de nueva contraseña con validador de requisitos de seguridad en el Sitio Web.*
