@@ -5,6 +5,34 @@
 
 ---
 
+## sesión 09-10-2026 (34.ª parte): Actualizaciones como acordeón, sin «Fuentes futuras de empleo»
+
+**Qué se pidió.** Que cada submódulo de Actualizaciones (Programa + Sobresalientes, Alertas de
+inversión, Criterios de clasificación de resultados) sea una fila de acordeón que se despliega
+para mostrar sus opciones, y quitar «Fuentes futuras de empleo».
+
+**Lo que se hizo.**
+
+| Pieza | Archivo | Cambio |
+|---|---|---|
+| Fila de acordeón | `actualizaciones/components/seccion-acordeon.tsx` (nuevo) | `<details>` nativo: título (`h2`) y flecha que gira al abrir; borde, sombra y colores de las tarjetas de antes; cerrado al inicio |
+| Vista | `actualizaciones-view.tsx` | De rejilla de 2 columnas a una pila de tres `SeccionAcordeon`; sin `CargaFuentesFuturas` |
+| Tarjetas | `carga-programa-sobresalientes`, `carga-alertas-inversion`, `carga-criterios-clasificacion` | Sin caja ni título propios (los pone el acordeón) ni el desplazamiento al pasar; los botones de formato y la descripción de Criterios quedan al principio del cuerpo |
+
+`<details>` y no un acordeón con estado, como en `detalle-ocupacion.tsx`: se abre con Enter o
+Espacio, el lector anuncia si está abierto y no hace falta JavaScript. El contenido se monta
+cerrado, así que cada sección ya trae su historial cuando se abre.
+
+**Cómo se probó.** `tsc --noEmit` y `eslint` de `actualizaciones/`, limpios. El CSS del servidor
+genera `group-open:rotate-180`, `group-open:rounded-b-none` y el que esconde el triángulo nativo.
+No se vio en el navegador.
+
+**Pendiente al cierre:** quedan sin uso `carga-fuentes-futuras.tsx`, `use-cargas-fuentes-futuras.ts`
+y las funciones de fuentes futuras de `observatorio.service.ts`. La página pública de Fuentes
+futuras de empleo (`features/sitio-web/fuentes-futuras-empleo`) y su API siguen como estaban.
+
+---
+
 ## sesión 09-10-2026 (33.ª parte): editar rol con las medidas del acceso, sin «No modificable» y «Editar permisos» en verde
 
 **Qué se pidió.** En el modal de editar rol: quitar «No modificable», la misma simetría de

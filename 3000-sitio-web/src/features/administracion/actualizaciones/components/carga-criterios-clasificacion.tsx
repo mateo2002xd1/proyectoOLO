@@ -235,19 +235,12 @@ export function CargaCriteriosClasificacion({ puedeActualizar }: CargaCriteriosC
     .sort((a, b) => b.anio - a.anio);
 
   return (
-    <section
-      aria-labelledby="titulo-criterios-clasificacion"
-      className="col-span-full rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f]"
-    >
+    // Sin caja ni título propios: los pone `SeccionAcordeon` en `actualizaciones-view.tsx`.
+    <div>
       <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
-        <div>
-          <h2 id="titulo-criterios-clasificacion" className="font-bold text-[#001631] dark:text-[#f6f6f6]">
-            Criterios de clasificación de resultados
-          </h2>
-          <p className="mt-1 text-sm text-gray-600 dark:text-[#94a3b8]">
-            Percentiles de inscritos y vacantes para Tendencia Ocupacional. Un archivo .xlsx por año y periodo.
-          </p>
-        </div>
+        <p className="text-sm text-gray-600 dark:text-[#94a3b8]">
+          Percentiles de inscritos y vacantes para Tendencia Ocupacional. Un archivo .xlsx por año y periodo.
+        </p>
         {puedeActualizar && <DescargarFormato formato="tendencia-ocupacional" />}
       </div>
 
@@ -424,6 +417,6 @@ export function CargaCriteriosClasificacion({ puedeActualizar }: CargaCriteriosC
           cargaEnEliminacion={t.cargaEnEliminacion}
         />
       </div>
-    </section>
+    </div>
   );
 }

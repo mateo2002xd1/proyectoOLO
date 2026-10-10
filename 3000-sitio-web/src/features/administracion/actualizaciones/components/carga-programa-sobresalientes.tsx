@@ -36,11 +36,9 @@ export function CargaProgramaSobresalientes({ puedeActualizar }: CargaProgramaSo
   };
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 ease-out hover:translate-x-1 hover:border-gray-300 hover:shadow-md dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
-      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
-        <h2 className="font-bold text-[#001631] dark:text-[#f6f6f6]">Programa + Sobresalientes</h2>
-        {puedeActualizar && <DescargarFormato formato="programas-sobresalientes" />}
-      </div>
+    // Sin caja ni título propios: los pone `SeccionAcordeon` en `actualizaciones-view.tsx`.
+    <div>
+      {puedeActualizar && <DescargarFormato formato="programas-sobresalientes" />}
       {puedeActualizar ? (
         <div className="mt-4">
           <label
