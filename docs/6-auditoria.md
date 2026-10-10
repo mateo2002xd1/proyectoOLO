@@ -5,7 +5,7 @@
 
 ---
 
-## sesión 09-10-2026 (22.ª parte): el motivo de rechazar o eliminar, con 100 caracteres y contador
+## sesión 09-10-2026 (22.ª parte): el motivo de rechazar o eliminar, con 100 caracteres y contador, y el título sin la barra
 
 **Qué se pidió.** Limitar el motivo a 100 caracteres, contándolos al escribir, y que el campo
 no se pueda agrandar.
@@ -15,6 +15,8 @@ Rechazar y a Eliminar: `maxLength={MOTIVO_MAX}` (100, el mismo largo que el come
 editor), `resize-none` y un contador `n/100` bajo el campo, a la derecha, que pasa a rojo al
 llegar al tope y está enlazado con `aria-describedby`. Se quitó el import de `AlertTriangle`,
 sin uso desde que se quitó el icono del aviso.
+El título pasa de «Eliminar versión 11 de /tendencias» a «Eliminar versión 11 de
+tendencias», sin la barra.
 
 **Cómo se probó.** `tsc --noEmit` del sitio y `eslint` del archivo, limpios. No se vio en el
 navegador.

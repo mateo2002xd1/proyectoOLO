@@ -335,7 +335,7 @@ export function RevisionQueueView() {
       <ModalAccionConMotivo
         key={`eliminar-${modalState.pagina?.id ?? 'cerrado'}`}
         abierto={modalState.tipo === 'eliminar'}
-        titulo={modalState.pagina ? `Eliminar versión ${modalState.pagina.numeroVersion} de /${modalState.pagina.slug}` : ''}
+        titulo={modalState.pagina ? `Eliminar versión ${modalState.pagina.numeroVersion} de ${modalState.pagina.slug}` : ''}
         descripcion="Si eliminas los cambios sin publicar, el trabajo se perderá. Al no haber versiones previas, la página volverá a empezar desde la Versión 1."
         textoAccion="Eliminar"
         colorAccion="red"
