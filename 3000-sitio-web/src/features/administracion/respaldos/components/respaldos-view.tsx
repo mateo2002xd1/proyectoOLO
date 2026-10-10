@@ -8,7 +8,7 @@ import { BarraFiltros, CampoFiltro } from '@/shared/ui/molecules/barra-filtros';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
 import { DatePicker } from '@/shared/ui/molecules/date-picker';
 import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
-import { fechaDeFila, RESALTE_DE_FILA, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
+import { BotonDeFila, fechaDeFila, RESALTE_DE_FILA, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
 import { rutaPublicaDeSlug } from '@/features/paginas';
 import { useRespaldos } from '../hooks/use-respaldos';
 import { VistaPreviaVersion } from './vista-previa-version';
@@ -226,14 +226,12 @@ export function RespaldosView() {
                   {/* Solo en acordeón y desplegada: la versión anterior con su nombre (el ojo
                       solo no se entiende en una pantalla táctil), del color de «Ver detalle». */}
                   <td data-detalle>
-                    <button
-                      type="button"
-                      onClick={() => setSeleccionado(registro)}
-                      className={`mb-1 flex h-11 w-full items-center justify-center gap-2 rounded-[16px] px-3 text-sm font-medium transition hover:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#001631] dark:focus-visible:ring-white ${COLOR_DE_ACCION['ver-detalle']}`}
-                    >
-                      <IconoMascara nombre="eye-closed" tamano="h-6 w-6" />
-                      Ver versión {registro.versionAnteriorNumero}
-                    </button>
+                    <div className="mb-1">
+                      <BotonDeFila color={COLOR_DE_ACCION['ver-detalle']} onClick={() => setSeleccionado(registro)}>
+                        <IconoMascara nombre="eye-closed" tamano="h-6 w-6" />
+                        Ver versión {registro.versionAnteriorNumero}
+                      </BotonDeFila>
+                    </div>
                   </td>
                   <td data-solo-tabla className="px-4 py-2">
                     {/* «Sitio web /inicio · versión 43»: primero dónde (el ámbito), luego

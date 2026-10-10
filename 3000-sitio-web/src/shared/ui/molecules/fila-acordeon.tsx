@@ -50,6 +50,35 @@ export function fechaDeFila(iso: string): string {
   }
 }
 
+/**
+ * Un botón de la fila desplegada (en `td[data-detalle]`): icono y nombre, a todo el ancho de
+ * su hueco y 44 px de alto. En la tabla esas acciones son iconos con tooltip, que en una
+ * pantalla táctil no se ven. `color`: la clase de `COLOR_DE_ACCION`, la que se configura en
+ * Identidad visual. Varios van en `<div className="grid grid-cols-2 gap-2">`.
+ */
+export function BotonDeFila({
+  color,
+  onClick,
+  disabled,
+  children,
+}: {
+  color: string;
+  onClick: () => void;
+  disabled?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`flex h-11 w-full items-center justify-center gap-2 rounded-[16px] px-3 text-sm font-medium transition hover:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#001631] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:brightness-100 dark:focus-visible:ring-white ${color}`}
+    >
+      {children}
+    </button>
+  );
+}
+
 /** El botón de la fila en acordeón: la frase y la flecha que gira. 44 px de alto mínimo. */
 export function ResumenDeFila({
   abierta,

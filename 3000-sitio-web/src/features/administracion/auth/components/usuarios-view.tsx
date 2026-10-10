@@ -18,6 +18,8 @@ import { DatePicker } from '@/shared/ui/molecules/date-picker';
 import { Notification } from '@/shared/ui/molecules/notification';
 import { Alert, AlertTitle, AlertDescription, AlertActions } from '@/shared/ui/molecules/alert';
 import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
+import { BotonDeFila, RESALTE_DE_FILA, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
+import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { Paginador } from '@/shared/ui/molecules/paginador';
 import { Switch } from '@/shared/ui/atoms/switch';
 import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
@@ -70,6 +72,7 @@ export default function UsuariosView() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState('');
   const [paginaUsuarios, setPaginaUsuarios] = useState(1);
+  const { estaAbierta, alternar } = useFilasAbiertas();
   const [itemsPorPaginaUsuarios, setItemsPorPaginaUsuarios] = useState(15);
 
   // Form state
@@ -465,7 +468,11 @@ export default function UsuariosView() {
       ) : (
       <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-[#7db828]/30 dark:bg-[#0b1121]">
         <div className="overflow-x-auto">
-          <table className="olo-tabla-apilable min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
+          {/* En el móvil y la tablet, acordeón, como las demás listas: el encabezado de cada
+              fila es solo el nombre (pedido del usuario, 2026-10-10) y al tocarlo salen el
+              correo, el rol, el estado y el bloqueo con su etiqueta, y debajo «Editar» y
+              «Eliminar» con su nombre. Piezas en `fila-acordeon.tsx`; reglas en globals.css. */}
+          <table className="olo-tabla-apilable olo-tabla-acordeon min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
             <thead className="bg-zinc-50 dark:bg-[#0b1121]/50">
               <tr>
                 <th scope="col" className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-[#94a3b8]">
@@ -490,16 +497,25 @@ export default function UsuariosView() {
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
               {usuariosFiltrados.length === 0 ? (
-                <tr>
+                // `data-abierta`: en acordeón, una fila plegada solo enseña el resumen, y esta no tiene.
+                <tr data-abierta>
                   <td colSpan={6} className="px-6 py-8 text-center text-sm text-zinc-500">
                     {busqueda ? `Sin resultados para "${busqueda}"` : 'No hay usuarios registrados.'}
                   </td>
                 </tr>
               ) : (
-                usuariosPaginados.map((user) => (
-                  <tr key={user.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                    <td className="px-6 py-2 text-sm font-medium text-zinc-900 dark:text-[#f6f6f6]">
-                      {[user.name, user.apellidos].filter(Boolean).join(' ')}
+                usuariosPaginados.map((user) => {
+                  const nombre = [user.name, user.apellidos].filter(Boolean).join(' ');
+                  const abierta = estaAbierta(user.id);
+                  return (
+                  <tr key={user.id} data-abierta={abierta || undefined} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                    <td data-resumen>
+                      <ResumenDeFila abierta={abierta} onAlternar={() => alternar(user.id)}>
+                        <span className={RESALTE_DE_FILA}>{nombre || user.email}</span>
+                      </ResumenDeFila>
+                    </td>
+                    <td data-solo-tabla className="px-6 py-2 text-sm font-medium text-zinc-900 dark:text-[#f6f6f6]">
+                      {nombre}
                     </td>
                     <td data-etiqueta="Correo" className="px-6 py-2 text-sm text-zinc-500 dark:text-[#94a3b8]">
                       {user.email}
@@ -540,7 +556,7 @@ export default function UsuariosView() {
                         );
                       })()}
                     </td>
-                    <td data-etiqueta="Acciones" className="px-6 py-2 text-sm text-right">
+                    <td data-solo-tabla data-etiqueta="Acciones" className="px-6 py-2 text-sm text-right">
                       <div className="flex items-center gap-2 @3xl:justify-end">
                         {/* Icono de dos colores (persona gris, lápiz verde): va como imagen y no con
                             `IconoMascara`, que pinta todo de un solo color. El nombre lo da el
@@ -570,8 +586,22 @@ export default function UsuariosView() {
                         </button>
                       </div>
                     </td>
+                    {/* Solo en acordeón y desplegada: las acciones con su nombre, al final. */}
+                    <td data-detalle>
+                      <div className="mb-1 mt-2 grid grid-cols-2 gap-2">
+                        <BotonDeFila color={COLOR_DE_ACCION.editar} onClick={() => startEdit(user)}>
+                          <IconoMascara nombre="editar-usuario" tamano="h-5 w-6" />
+                          Editar
+                        </BotonDeFila>
+                        <BotonDeFila color={COLOR_DE_ACCION.eliminar} onClick={() => setDeleteConfirmId(user.id)}>
+                          <TrashIcon className="size-5" aria-hidden="true" />
+                          Eliminar
+                        </BotonDeFila>
+                      </div>
+                    </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>

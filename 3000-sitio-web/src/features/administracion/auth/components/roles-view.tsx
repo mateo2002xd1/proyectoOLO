@@ -23,6 +23,7 @@ import {
   etiquetaDeModalClass,
 } from '@/shared/ui/molecules/alert';
 import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
+import { BotonDeFila, RESALTE_DE_FILA, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
 import { Paginador } from '@/shared/ui/molecules/paginador';
 import { ModalPermisos } from './modal-permisos';
 import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
@@ -184,6 +185,7 @@ export default function RolesView() {
 
   const [busqueda, setBusqueda] = useState('');
   const [pagina, setPagina] = useState(1);
+  const { estaAbierta, alternar } = useFilasAbiertas();
   const [itemsPorPagina, setItemsPorPagina] = useState(15);
 
   const [modalRolAbierto, setModalRolAbierto] = useState(false);
@@ -408,7 +410,10 @@ export default function RolesView() {
         <CargandoSeccion label="Cargando roles..." />
       ) : (
       <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-[#7db828]/30 dark:bg-[#131b2f]">
-        <table className="olo-tabla-apilable w-full text-left text-sm">
+        {/* En el móvil y la tablet, acordeón, como Usuarios: el encabezado de cada fila es
+            solo el nombre del rol y al tocarlo salen la descripción y los permisos, y debajo
+            «Editar» y «Eliminar» con su nombre. Piezas en `fila-acordeon.tsx`. */}
+        <table className="olo-tabla-apilable olo-tabla-acordeon w-full text-left text-sm">
           <thead className="border-b border-zinc-100 bg-zinc-50 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:border-zinc-800 dark:bg-[#0f1624] dark:text-[#94a3b8]">
             <tr>
               <th className="px-5 py-3">Rol</th>
@@ -419,7 +424,8 @@ export default function RolesView() {
           </thead>
           <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
             {rolesPagina.length === 0 ? (
-              <tr>
+              // `data-abierta`: en acordeón, una fila plegada solo enseña el resumen, y esta no tiene.
+              <tr data-abierta>
                 <td colSpan={5} className="py-12 text-center text-sm text-zinc-400 dark:text-zinc-500">
                   {busqueda ? `Sin resultados para "${busqueda}"` : 'No hay roles registrados.'}
                 </td>
@@ -428,9 +434,15 @@ export default function RolesView() {
               rolesPagina.map((rol) => {
                 const numPermisos = rol.permissions?.length ?? 0;
                 const noEliminable = rol.name === 'Editor';
+                const abierta = estaAbierta(rol.id);
                 return (
-                  <tr key={rol.id} className="transition-colors hover:bg-zinc-50 dark:hover:bg-[#0f1624]/60">
-                    <td className="px-5 py-2">
+                  <tr key={rol.id} data-abierta={abierta || undefined} className="transition-colors hover:bg-zinc-50 dark:hover:bg-[#0f1624]/60">
+                    <td data-resumen>
+                      <ResumenDeFila abierta={abierta} onAlternar={() => alternar(rol.id)}>
+                        <span className={RESALTE_DE_FILA}>{rol.name}</span>
+                      </ResumenDeFila>
+                    </td>
+                    <td data-solo-tabla className="px-5 py-2">
                       <span className="font-medium text-zinc-900 dark:text-[#f6f6f6]">{rol.name}</span>
                     </td>
                     <td data-etiqueta="Descripción" className="max-w-xs px-5 py-2">
@@ -443,7 +455,7 @@ export default function RolesView() {
                         {numPermisos} permiso{numPermisos !== 1 ? 's' : ''}
                       </span>
                     </td>
-                    <td data-etiqueta="Acciones" className="px-5 py-2">
+                    <td data-solo-tabla data-etiqueta="Acciones" className="px-5 py-2">
                       <div className="flex items-center gap-1 @3xl:justify-end">
                         {/* Deslizadores de Font Awesome (`deslizadores.svg`, un color: va por máscara
                             y toma `currentColor`). En el verde de «Editar usuario»; el tooltip, del
@@ -483,6 +495,29 @@ export default function RolesView() {
                           </span>
                         </button>
                       </div>
+                    </td>
+                    {/* Solo en acordeón y desplegada: las acciones con su nombre, al final. El rol
+                        base de Editor no se elimina: el botón queda gris y dice por qué. */}
+                    <td data-detalle>
+                      <div className="mb-1 mt-2 grid grid-cols-2 gap-2">
+                        <BotonDeFila color={COLOR_DE_ACCION.editar} onClick={() => abrirModalPermisos(rol)}>
+                          <IconoMascara nombre="deslizadores" tamano="h-5 w-5" />
+                          Editar
+                        </BotonDeFila>
+                        <BotonDeFila
+                          color={noEliminable ? 'bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-300' : COLOR_DE_ACCION.eliminar}
+                          onClick={() => setRolAEliminar(rol)}
+                          disabled={noEliminable}
+                        >
+                          <TrashIcon className="size-5" aria-hidden="true" />
+                          Eliminar
+                        </BotonDeFila>
+                      </div>
+                      {noEliminable && (
+                        <p className="mb-1 mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+                          El rol base de Editor no se puede eliminar.
+                        </p>
+                      )}
                     </td>
                   </tr>
                 );

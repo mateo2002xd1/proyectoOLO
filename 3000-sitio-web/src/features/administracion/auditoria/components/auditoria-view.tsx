@@ -12,7 +12,7 @@ import { Trash2 } from 'lucide-react';
 import { BotonOjo } from '@/shared/ui/atoms/boton-ojo';
 import { COLOR_DE_ACCION } from '@/shared/lib/identidad-panel';
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
-import { fechaDeFila, RESALTE_DE_FILA, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
+import { BotonDeFila, fechaDeFila, RESALTE_DE_FILA, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
 import { useAuditoria } from '../hooks/use-auditoria';
 import { comentarioPrincipal, resumenDeCambios } from '../lib/cambios';
 
@@ -20,7 +20,6 @@ import {
   COLOR_ACCION,
   ETIQUETA_CATEGORIA,
   etiquetaDeAccion,
-  etiquetaDeEntidad,
   opcionesDeAccion,
   type CategoriaAuditoria,
   type RegistroAuditoria,
@@ -181,7 +180,6 @@ export function AuditoriaView() {
                   <th scope="col" className="px-4 py-3 font-medium">Fecha y hora</th>
                   <th scope="col" className="px-4 py-3 font-medium">Usuario</th>
                   <th scope="col" className="px-4 py-3 font-medium">Acción</th>
-                  <th scope="col" className="px-4 py-3 font-medium">Entidad</th>
                   <th scope="col" className="px-4 py-3 font-medium">Cambios</th>
                   <th scope="col" className="px-4 py-3 font-medium">
                     <span className="sr-only">Detalle</span>
@@ -229,14 +227,12 @@ export function AuditoriaView() {
                     {/* Solo en acordeón y desplegada: el detalle con su nombre (el ojo solo no
                         se entiende en una pantalla táctil). Lo que cambió ya va en la frase. */}
                     <td data-detalle>
-                      <button
-                        type="button"
-                        onClick={() => setSeleccionado(registro)}
-                        className="mb-1 flex h-11 w-full items-center justify-center gap-2 rounded-[16px] bg-[#7DB728] px-3 text-sm font-medium text-white transition-colors hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-[#7DB728]/50"
-                      >
-                        <IconoMascara nombre="eye-closed" tamano="h-6 w-6" />
-                        Ver detalle
-                      </button>
+                      <div className="mb-1">
+                        <BotonDeFila color={COLOR_DE_ACCION['ver-detalle']} onClick={() => setSeleccionado(registro)}>
+                          <IconoMascara nombre="eye-closed" tamano="h-6 w-6" />
+                          Ver detalle
+                        </BotonDeFila>
+                      </div>
                     </td>
                     <td data-solo-tabla data-etiqueta="Fecha y hora" className="whitespace-nowrap px-4 py-2 text-zinc-600 dark:text-zinc-300">
                       {new Date(registro.fecha).toLocaleString('es-CO')}
@@ -246,9 +242,6 @@ export function AuditoriaView() {
                     </td>
                     <td data-solo-tabla data-etiqueta="Acción" className="px-4 py-2">
                       {accion}
-                    </td>
-                    <td data-solo-tabla data-etiqueta="Entidad" className="px-4 py-2 text-zinc-600 dark:text-zinc-300">
-                      {etiquetaDeEntidad(registro.entidadTipo)}
                     </td>
                     {/* Se corta en la tabla y se lee completo en el `title` o en el detalle.
                         El comentario de un envío va más oscuro que los campos internos:
