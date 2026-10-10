@@ -5,6 +5,28 @@
 
 ---
 
+## sesión 09-10-2026 (35.ª parte): el ojo se abre al pasar el puntero, y el de Respaldos en verde con «Ver versión»
+
+**Qué se pidió.** En Respaldos, el ojo con el color y el tooltip de Auditoría («Ver versión»), y
+que se abra al poner el puntero encima; lo mismo en Auditoría.
+
+**Lo que se hizo.**
+
+| Pieza | Archivo | Cambio |
+|---|---|---|
+| Ojo | `shared/ui/atoms/boton-ojo.tsx` | Los dos ojos montados; el abierto aparece con `group-hover/ojo` y `group-focus-visible/ojo` (puntero o teclado) y al pulsar, como antes |
+| Respaldos | `respaldos-view.tsx` | `text-[#7DB728]`, fondo `#7DB728/10` al pasar, tooltip `bg-[#7DB728]` «Ver versión» (antes «Ver versión anterior» en el `title`) |
+| Auditoría | — | Toma el cambio del ojo sin tocar su vista: ya era verde con «Ver detalle» (25.ª parte) |
+
+Se montan los dos ojos y se esconde uno, en vez de cambiar el `nombre` de `IconoMascara` al
+pasar el puntero: así el navegador pide los dos SVG al cargar y no parpadea la primera vez.
+
+**Cómo se probó.** `tsc --noEmit` y `eslint` de los dos archivos, limpios. El CSS del servidor
+genera `group-hover/ojo:flex`, `group-hover/ojo:hidden` y `group-focus-visible/ojo:flex`. No se
+vio en el navegador.
+
+---
+
 ## sesión 09-10-2026 (34.ª parte): Actualizaciones como acordeón, sin «Fuentes futuras de empleo»
 
 **Qué se pidió.** Que cada submódulo de Actualizaciones (Programa + Sobresalientes, Alertas de

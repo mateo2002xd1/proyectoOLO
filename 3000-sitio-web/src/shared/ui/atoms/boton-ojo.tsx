@@ -7,8 +7,9 @@ import { GRUPO_TOOLTIP, TOOLTIP_ENCIMA_A_LA_DERECHA } from './tooltip';
 const RETRASO_MS = 350;
 
 /**
- * Botón "ver" con ojo cerrado en reposo. Al pulsarlo el ojo se abre y, tras un
- * instante para que se vea el cambio, ejecuta la acción (abrir el detalle).
+ * Botón "ver" con ojo cerrado en reposo. Se abre al pasar el puntero o al llegar con el
+ * teclado (como el ojo de la cola de revisión), y al pulsarlo se queda abierto un instante
+ * antes de ejecutar la acción (abrir el detalle), para que se vea el cambio.
  *
  * Con `claseTooltip` (su fondo y su letra) muestra la etiqueta en un tooltip propio
  * (`./tooltip.ts`) en vez del `title` del navegador; sin ella sigue con el `title`.
@@ -48,9 +49,22 @@ export function BotonOjo({
       onClick={pulsar}
       aria-label={etiqueta}
       title={claseTooltip ? undefined : etiqueta}
-      className={claseTooltip ? `${GRUPO_TOOLTIP} ${className ?? ''}` : className}
+      className={`group/ojo ${claseTooltip ? GRUPO_TOOLTIP : ''} ${className ?? ''}`}
     >
-      <IconoMascara nombre={abierto ? 'eye-open' : 'eye-closed'} tamano="h-5 w-5" />
+      {/* Los dos ojos montados y uno oculto: cambiar el `nombre` de la máscara al pasar el
+          puntero haría pedir el SVG del abierto la primera vez y se vería un parpadeo. */}
+      <span className="relative block h-5 w-5">
+        <span
+          className={`absolute inset-0 ${abierto ? 'hidden' : 'flex group-hover/ojo:hidden group-focus-visible/ojo:hidden'}`}
+        >
+          <IconoMascara nombre="eye-closed" tamano="h-5 w-5" />
+        </span>
+        <span
+          className={`absolute inset-0 ${abierto ? 'flex' : 'hidden group-hover/ojo:flex group-focus-visible/ojo:flex'}`}
+        >
+          <IconoMascara nombre="eye-open" tamano="h-5 w-5" />
+        </span>
+      </span>
       {claseTooltip && (
         <span aria-hidden="true" className={`${TOOLTIP_ENCIMA_A_LA_DERECHA} ${claseTooltip}`}>
           {etiqueta}

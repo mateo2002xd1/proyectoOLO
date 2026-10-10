@@ -216,10 +216,12 @@ export function RespaldosView() {
                     {fecha(registro.publicadoEn)}
                   </td>
                   <td data-etiqueta="Versión anterior" className="px-4 py-2 text-center">
+                    {/* Como el ojo de Auditoría: verde #7DB728 con su tooltip. */}
                     <BotonOjo
-                      etiqueta="Ver versión anterior"
+                      etiqueta="Ver versión"
                       onClick={() => setSeleccionado(registro)}
-                      className="rounded-lg p-1.25 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-[#94a3b8] dark:hover:bg-white/5 dark:hover:text-white"
+                      className="rounded-lg p-1.5 text-[#7DB728] transition-colors hover:bg-[#7DB728]/10"
+                      claseTooltip="bg-[#7DB728] text-white"
                     />
                   </td>
                 </tr>
