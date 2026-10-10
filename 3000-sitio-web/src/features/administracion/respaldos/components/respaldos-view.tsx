@@ -187,8 +187,11 @@ export function RespaldosView() {
               {registrosFiltrados.map((registro) => (
                 <tr key={registro.id} className="bg-white dark:bg-[#0f1626]">
                   <td className="px-4 py-2">
+                    {/* «Sitio web /inicio · versión 43»: primero dónde (el ámbito), luego
+                        qué página o sección (su ruta, como en los modales de restaurar)
+                        y al final la versión. Antes iba el título primero y el ámbito
+                        detrás, y se leía «inicio Sitio web · versión 43». */}
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                      <p className="font-medium text-zinc-900 dark:text-[#f6f6f6]">{registro.titulo}</p>
                       {registro.ambito && (
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold ${
@@ -200,6 +203,7 @@ export function RespaldosView() {
                           {registro.ambito === 'intranet' ? 'Intranet' : 'Sitio web'}
                         </span>
                       )}
+                      <p className="font-medium text-zinc-900 dark:text-[#f6f6f6]">/{registro.slug}</p>
                       <span className="text-xs text-zinc-500">· versión {registro.numeroVersion}</span>
                     </div>
                   </td>
