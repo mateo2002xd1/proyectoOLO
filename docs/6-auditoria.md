@@ -5,6 +5,50 @@
 
 ---
 
+## sesión 09-10-2026 (18.ª parte): /admin/revision daba «timeout of 5000ms exceeded»
+
+**Qué era.** La cola de revisión fallaba a veces con `timeout of 5000ms exceeded`. No era
+código nuevo: el límite de 5 s es del 18-09 y el pool del commit inicial. Medido contra Neon:
+
+| Paso | Tiempo |
+|---|---|
+| Abrir una conexión nueva | 2,7 – 3,4 s (11 s con Neon dormida) |
+| La consulta de la cola (2 versiones, ~9 KB) | 0,9 – 1,3 s |
+| Ida y vuelta TCP a Neon (us-east-1) | 92 – 628 ms; lo normal ronda 90 ms |
+
+El pool tenía `min: 0, idle: 10000`: a los 10 s sin uso cerraba todas las conexiones y la
+siguiente petición pagaba la reconexión entera. Con la red inestable, eso más las consultas
+de sesión, permisos y cola pasaba de 5 s.
+
+**Lo que se hizo.**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| API | `config/database.ts` | Pool `min: 1, idle: 60000` y `keepAlive: true` |
+| Sitio | `features/paginas/model/api-con-sesion.ts` | `timeout` de 5 s a 15 s |
+
+`keepAlive` solo actúa con Postgres normal: el conector de Neon va por WebSocket y su
+`setKeepAlive` no hace nada. No hace falta ahí, porque Sequelize marca `_invalid` la
+conexión que recibe `error` o `end` y su `validate` la descarta antes de prestarla.
+
+> **Ojo.** Si la conexión abierta impide que Neon se duerma, la base queda encendida y gasta
+> horas de cómputo del plan. Mirar el consumo en el panel de Neon los próximos días.
+
+**Cómo se probó.**
+
+| Comprobación | Resultado |
+|---|---|
+| `SELECT 1` tras 15 s sin uso, con el pool nuevo | 104 ms (antes había que reconectar: ~2,7 s) |
+| `tsc --noEmit` de la API | Limpio |
+
+**Pendiente al cierre:**
+
+- Reiniciar la API (no recarga sola) y abrir /admin/revision en el navegador: no se probó ahí.
+- `publicacion.service.ts` (el cliente público) sigue con 5 s.
+- Vigilar el consumo de horas de Neon.
+
+---
+
 ## sesión 09-10-2026 (19.ª parte): respaldos — cada fila dice «Sitio web /inicio · versión 43»
 
 **Qué se pidió.** En `/admin/respaldos`, la columna «Página» se leía «inicio Sitio web
