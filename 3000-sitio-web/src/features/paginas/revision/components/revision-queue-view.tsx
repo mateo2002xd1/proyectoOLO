@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState, useRef, useEffect } from 'react';
+import { ChevronDownIcon } from '@heroicons/react/20/solid';
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { BarraFiltros, CampoFiltro } from '@/shared/ui/molecules/barra-filtros';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
@@ -62,6 +63,15 @@ export function RevisionQueueView() {
   // en este mismo archivo.
   const [numeroPagina, setNumeroPagina] = useState(1);
   const [itemsPorPagina, setItemsPorPagina] = useState(15);
+  // Filas desplegadas del acordeón (móvil y tablet). En la tabla de escritorio no se usa.
+  const [abiertas, setAbiertas] = useState<Set<string>>(() => new Set());
+  const alternarFila = (id: string) =>
+    setAbiertas((previas) => {
+      const nuevas = new Set(previas);
+      if (nuevas.has(id)) nuevas.delete(id);
+      else nuevas.add(id);
+      return nuevas;
+    });
 
   const cambiarFiltro = (campo: keyof typeof FILTROS_VACIOS, valor: string) => {
     setFiltros((previos) => ({ ...previos, [campo]: valor }));
@@ -201,7 +211,7 @@ export function RevisionQueueView() {
           reintentando={isLoading}
         />
       ) : isLoading ? (
-        <CargandoSeccion label="Cargando páginas en revisión..." className="min-h-[40vh]" />
+        <CargandoSeccion label="Cargando páginas en revisión..." />
       ) : paginas.length === 0 ? (
         <p className="text-sm text-zinc-500">
           No hay páginas pendientes de revisión. Cuando los editores envíen borradores, aparecerán aquí para tu aprobación.
@@ -210,7 +220,11 @@ export function RevisionQueueView() {
         <p className="text-sm text-zinc-500">Ninguna página coincide con los filtros aplicados.</p>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-[#7db828]/30">
-          <table className="olo-tabla-apilable w-full min-w-[64rem] text-left text-sm">
+          {/* En el móvil y la tablet, acordeón: cada solicitud es una línea («Ana envió la
+              versión 3 de Contacto») y al tocarla se despliegan los cambios, el resto de datos
+              y las acciones. Con muchas solicitudes, las tarjetas enteras hacían eterno el
+              scroll. Las reglas, en globals.css (`olo-tabla-acordeon`). */}
+          <table className="olo-tabla-apilable olo-tabla-acordeon w-full min-w-[64rem] text-left text-sm">
             <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-[#131b2f]">
               <tr>
                 <th scope="col" className="px-4 py-3 font-medium">Página</th>
@@ -224,9 +238,36 @@ export function RevisionQueueView() {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
-              {paginasPagina.map((pagina) => (
-                <tr key={pagina.id} className="bg-white dark:bg-[#0f1626] transition-colors hover:bg-zinc-50/60 dark:hover:bg-[#131b2f]/50">
-                  <td className="px-4 py-3">
+              {paginasPagina.map((pagina) => {
+                const abierta = abiertas.has(pagina.id);
+                return (
+                <tr
+                  key={pagina.id}
+                  data-abierta={abierta || undefined}
+                  className="bg-white dark:bg-[#0f1626] transition-colors hover:bg-zinc-50/60 dark:hover:bg-[#131b2f]/50"
+                >
+                  {/* Solo en acordeón (en la tabla, `display: none`): la frase de la fila. */}
+                  <td data-resumen>
+                    <button
+                      type="button"
+                      aria-expanded={abierta}
+                      onClick={() => alternarFila(pagina.id)}
+                      className="flex min-h-11 w-full items-center gap-3 rounded-[16px] py-1.5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#001631] dark:focus-visible:ring-white"
+                    >
+                      <span className="min-w-0 flex-1 text-sm leading-5 text-zinc-600 dark:text-zinc-300">
+                        <span className="font-semibold text-zinc-900 dark:text-[#f6f6f6]">
+                          {pagina.autor?.nombre || 'Alguien'}
+                        </span>{' '}
+                        envió la versión {pagina.numeroVersion} de{' '}
+                        <span className="font-semibold text-zinc-900 dark:text-[#f6f6f6]">{pagina.titulo}</span>
+                      </span>
+                      <ChevronDownIcon
+                        aria-hidden="true"
+                        className={`size-5 shrink-0 text-zinc-500 transition-transform duration-200 motion-reduce:transition-none dark:text-zinc-400 ${abierta ? 'rotate-180' : ''}`}
+                      />
+                    </button>
+                  </td>
+                  <td data-solo-tabla className="px-4 py-3">
                     <p className="font-medium text-zinc-900 dark:text-[#f6f6f6]">
                       {pagina.titulo}
                       <span className="font-normal text-zinc-500"> · versión {pagina.numeroVersion}</span>
@@ -313,7 +354,8 @@ export function RevisionQueueView() {
                     </div>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
 
@@ -430,11 +472,13 @@ function ModalAccionConMotivo({
       onMouseDown={(e) => {
         if (e.target === dialogo.current) onCancelar();
       }}
-      className="m-auto w-full max-w-md rounded-xl border border-zinc-200 bg-white p-0 text-zinc-900 backdrop:bg-[#0f172a]/50 backdrop:backdrop-blur-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:text-[#f6f6f6]"
+      // Las medidas de todos los modales (`shared/ui/molecules/alert.tsx`): caja de 32,
+      // título de 20 en `#001631`, texto de 16, botones de 44 con esquinas de 32.
+      className="m-auto w-[calc(100%-2rem)] max-w-md rounded-[32px] border border-zinc-200 bg-white p-0 text-zinc-900 backdrop:bg-[#0f172a]/50 backdrop:backdrop-blur-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:text-[#f6f6f6]"
     >
-      <div className="flex flex-col p-6">
+      <div className="flex flex-col p-6 sm:p-8">
         <div className="flex items-center gap-3">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-[#f6f6f6]">
+          <h2 className="text-xl font-semibold text-[#001631] dark:text-[#e6e8f0]">
             {titulo}
           </h2>
         </div>
@@ -444,25 +488,24 @@ function ModalAccionConMotivo({
           <p>{descripcion}</p>
           </div>
         ) : (
-          <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-300">{descripcion}</p>
+          <p className="mt-3 text-base text-[#4b5563] dark:text-zinc-300">{descripcion}</p>
         )}
 
         {requiereMotivo && (
           <div className="mt-4">
-            <label
-              htmlFor="motivo-accion"
-              className="block text-xs font-medium text-zinc-700 dark:text-zinc-300"
-            >
+            {/* La etiqueta estaba vacía: el campo no tenía nombre para el lector de pantalla. */}
+            <label htmlFor="motivo-accion" className="sr-only">
+              Motivo
             </label>
             <textarea
               id="motivo-accion"
               rows={3}
               maxLength={MOTIVO_MAX}
               aria-describedby="motivo-accion-cuenta"
-              className={`mt-1 block w-full resize-none rounded-xl border bg-transparent px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-1 dark:bg-[#1a233a] dark:text-white ${
+              className={`mt-1 block w-full resize-none rounded-xl border bg-transparent px-5 py-3 text-base text-[#001a39] placeholder:text-[#b3b3b3] focus:outline-none focus:ring-2 dark:bg-[#1a233a] dark:text-white ${
                 colorAccion === 'red'
                   ? 'border-red-300 focus:border-red-500 focus:ring-red-500 dark:border-red-900/60 dark:focus:border-red-400 dark:focus:ring-red-400'
-                  : 'border-zinc-300 focus:border-brand-interactive focus:ring-brand-interactive dark:border-zinc-700'
+                  : 'border-[#d9d9d9] focus:border-[#001631] focus:ring-[#001631] dark:border-zinc-700'
               }`}
               placeholder="Explica la razón…"
               value={motivo}
@@ -486,7 +529,7 @@ function ModalAccionConMotivo({
           <button
             type="button"
             onClick={onCancelar}
-            className="inline-flex h-11 w-full items-center justify-center rounded-lg border border-zinc-300 bg-white px-4 text-sm font-medium text-zinc-700 shadow-sm hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-brand-interactive/50 sm:flex-1 dark:border-zinc-600 dark:bg-transparent dark:text-zinc-200 dark:hover:bg-zinc-800"
+            className="inline-flex h-11 w-full items-center justify-center rounded-[32px] border border-[#d9d9d9] bg-white px-6 text-base font-medium text-[#001631] hover:bg-[#f5f7fa] focus:outline-none focus:ring-2 focus:ring-[#001631] sm:flex-1 dark:border-zinc-600 dark:bg-transparent dark:text-zinc-200 dark:hover:bg-zinc-800"
           >
             Cancelar
           </button>
@@ -494,10 +537,10 @@ function ModalAccionConMotivo({
             type="button"
             onClick={() => onConfirmar(motivo)}
             disabled={requiereMotivo && !motivo.trim()}
-            className={`inline-flex h-11 w-full items-center justify-center rounded-lg px-4 text-sm font-medium text-white shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50 sm:flex-1 ${
+            className={`inline-flex h-11 w-full items-center justify-center rounded-[32px] px-6 text-base font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-50 sm:flex-1 ${
               colorAccion === 'red'
                 ? 'bg-red-600 hover:bg-red-700'
-                : 'bg-brand-interactive hover:bg-brand-interactive-hover'
+                : 'bg-[#001631] hover:bg-[#002a5c] dark:bg-white dark:text-[#001631] dark:hover:bg-[#e6e8f0]'
             }`}
           >
             {textoAccion}
