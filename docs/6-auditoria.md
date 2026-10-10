@@ -5,6 +5,86 @@
 
 ---
 
+## sesión 10-10-2026 (14.ª parte): «Actividad reciente» del dashboard, una lista con la frase entera
+
+**Qué se pidió.** Cambiar «Actividad reciente» a una lista que muestre todo el mensaje del
+acordeón, por ejemplo: «El usuario David Tejada hizo la acción de Autenticación: inició sesión en
+el sitio web el 10 de octubre de 2026 a las 5:41 p. m.».
+
+**Lo que se hizo.** `panel-general.tsx`: la tabla de cuatro columnas (que en el móvil y la
+tablet pasaba a acordeón) es ahora un `<ul aria-label="Actividad reciente">` con una línea por
+registro y la frase siempre entera (`FraseDeRegistro` con `abierta`), la misma de Auditoría, en
+todas las pantallas. Sin nada que desplegar. Se van la fecha corta, el estado del acordeón y las
+piezas que solo usaba la tabla (`PildoraDeAccion`, `resumenDeCambios`, `ResumenDeFila`,
+`useFilasAbiertas`). La cabecera y el paginador no cambian. `frase-de-registro.tsx`: su
+comentario dice que en el dashboard va entera. `manual-de-usuario-formato.md`: el dashboard,
+paso 3, y su problema frecuente hablan de la lista.
+
+**Cómo se probó.** El `PanelGeneralDashboard` real en el arnés (`entrada-panel-real.tsx`, con
+ocho registros simulados, uno de David Tejada iniciando sesión) a 360, 768, 1280 y 1920: ocho
+líneas, ninguna tabla, la frase del ejemplo tal cual, «El sistema» en el que caducó. Sin
+desborde ni errores de consola. Tipos y ESLint limpios.
+
+---
+
+## sesión 10-10-2026 (13.ª parte): simetría del paginador en todo el panel
+
+**Qué se pidió.** Mejorar la simetría, los tamaños y los bordes del paginador de todas las
+tablas del panel: el pie entero, de «Mostrando…» a «Filas por página».
+
+**Lo que se midió antes** (con `getComputedStyle`, en Chrome sin ventana). Las alturas (36 px)
+y las esquinas (12 px) ya coincidían. Lo que rompía la simetría era:
+
+- tres tamaños de letra en la misma fila: «Mostrando» a 12 px, etiquetas a 14 medium y el
+  número del campo a 14 normal;
+- «Anterior» medía 75 px y «Siguiente» 84, así que el grupo de casillas quedaba torcido;
+- el campo de «Ir a la página» medía 48 px y el desplegable de «Filas por página», 72;
+- cuando no cabía en una línea, «Mostrando» iba a la izquierda y el resto centrado, partido
+  donde cayera: a 768 px «Filas por página» quedaba sola en una fila;
+- en Auditoría el paginador era una caja aparte con su propio borde; en las demás listas va
+  dentro de la tarjeta de la tabla.
+
+**Cómo quedó.**
+
+- Todo a 14 px medium y con números tabulares; las dos flechas de 88 px; el campo y el
+  desplegable de 72, con el número del campo centrado como en las casillas.
+- El pie mide su propio ancho (`@container`). Si todo cabe en una línea (72rem), «Mostrando» va
+  a la izquierda y el resto a la derecha. Si no, todo centrado y por filas: «Mostrando»; las
+  casillas; y debajo «Ir a la página» y «Filas por página» juntas (separadas en dos filas en el
+  móvil).
+- Auditoría: el paginador va dentro de la tarjeta de la tabla, con el fondo de sus filas.
+
+**Lo que se hizo.**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Sitio | `shared/ui/molecules/paginacion.tsx` | `FLECHA` de ancho fijo (`w-8 sm:w-[5.5rem]`), `ANCHO_DE_CAMPO` para el campo y el desplegable, campo centrado y medium; `@max-6xl:` para que las casillas tengan su propia fila |
+| Sitio | `shared/ui/molecules/paginador.tsx` | `@container` y dos disposiciones (una línea o centrada por filas); «Mostrando» a 14 px |
+| Sitio | `auditoria/components/auditoria-view.tsx` | Paginador dentro de la tarjeta de la tabla |
+
+**Decisiones.**
+
+- **Se mantienen 32/36 px y las esquinas de 12**, no los 44 px del resto de controles del panel:
+  con 44 px las siete posiciones y las dos flechas (396 px) no caben en un móvil de 360.
+- **Las piezas son compartidas**, así que el cambio llega también a las tablas públicas del sitio
+  (tendencia ocupacional, fuentes futuras, programas sobresalientes) y al historial de cargas de
+  Actualizaciones. En el historial, sin `Paginador` alrededor, no hay contenedor que mida y se
+  queda como estaba (centrado, sin «Mostrando»).
+- **El relleno lateral de cada tabla no se tocó** (16, 20 o 24 px): coincide con el de sus celdas.
+
+**Cómo se probó.**
+
+| Qué | Resultado |
+|---|---|
+| `Paginador` real pintado con React, CSS compilado y Chrome sin ventana, en claro y oscuro, con 12 páginas y con una sola | 360, 768, 1280 y 1920 px sin desborde; una sola altura por ancho (32 en el móvil, 36 desde 640) y un solo radio (12 px) en casillas, campo y desplegable; flechas de 88 y 88 |
+| Ancho que necesita la línea única | 1075 px (67rem): el corte en 72rem deja margen para totales de cuatro cifras |
+| `tsc`, ESLint de lo tocado | Limpios |
+
+**Pendiente al cierre.** Mirarlo en el panel en Roles, Usuarios, Revisión, Auditoría y Actividad
+reciente, y en una tabla pública con varias páginas.
+
+---
+
 ## sesión 10-10-2026 (12.ª parte): las páginas del árbol del dashboard se abren en otra pestaña
 
 **Qué se pidió.** Que al elegir una ruta del árbol de «Páginas publicadas» (por ejemplo, «Mapa

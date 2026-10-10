@@ -1110,19 +1110,15 @@ Al ingresar al Panel Administrativo (`/admin/dashboard`), el Administrador visua
 > **[Captura: Gráfico Circular de Usuarios (Móvil)]**
 > *Gráfico circular de usuarios mostrando sus cuadros de detalle al interactuar con las proporciones. (Móvil).*
 
-3. **Bitácora de Actividad Reciente:** En la zona inferior del tablero, se encuentra una tabla con el registro de las acciones más recientes ejecutadas en el sistema. La tabla se compone de cuatro columnas que detallan cada evento:
-   * **Fecha y hora:** Indica el momento cronológico exacto en que ocurrió la operación.
-   * **Usuario:** Muestra el nombre del funcionario que la ejecutó.
-   * **Acción:** Presenta una etiqueta que clasifica el evento (ej. *Inicio de sesión*, *Creó página*, *Eliminó rol*, *Rechazó borrador*).
-   * **Cambios:** Ofrece un texto breve que resume el detalle de la operación (ej. el motivo de rechazo, o los campos puntuales que se modificaron).
+3. **Bitácora de Actividad Reciente:** En la zona inferior del tablero, se encuentra una lista con las acciones más recientes ejecutadas en el sistema. Cada línea cuenta un evento completo en una frase: quién lo hizo, la acción (en una etiqueta de color), qué cambió y cuándo; por ejemplo, *«El usuario David Tejada hizo la acción de Autenticación: inició sesión en el sitio web el 10 de octubre de 2026 a las 5:41 p. m.»*. Cuando la acción la realizó el propio sistema (por ejemplo, una cuenta que caducó), la frase empieza por *«El sistema»*. La frase es la misma que se lee en el módulo de Auditoría y se ve igual en el computador y en el móvil, sin nada que desplegar.
 
-   A diferencia de un listado estático, esta tabla cuenta con **controles de paginación** para navegar por el historial sin salir del panel, y un enlace **"Ver más"** en la cabecera que traslada directamente al módulo completo de Auditoría (Ver [Sección 3.4.2.6: Auditoría y Bitácora de Eventos](#3426-auditoría-y-bitácora-de-eventos)).
+   La lista cuenta con **controles de paginación** para navegar por el historial sin salir del panel, y un enlace **"Ver más"** en la cabecera que traslada directamente al módulo completo de Auditoría (Ver [Sección 3.4.2.6: Auditoría y Bitácora de Eventos](#3426-auditoría-y-bitácora-de-eventos)).
 
-> **[Captura: Tabla de Actividad Reciente]**
-> *Vista general de la tabla de Actividad Reciente.*
+> **[Captura: Lista de Actividad Reciente]**
+> *Vista general de la lista de Actividad Reciente, con una frase por evento.*
 >
-> **[Captura: Tabla de Actividad Reciente (Móvil)]**
-> *Vista general de la tabla de Actividad Reciente. (Móvil).*
+> **[Captura: Lista de Actividad Reciente (Móvil)]**
+> *Vista general de la lista de Actividad Reciente, con una frase por evento. (Móvil).*
 
 ---
 
@@ -2553,11 +2549,11 @@ El Tablero Principal (Dashboard) recopila métricas y registros consolidados del
   1. Revisar y pausar temporalmente cualquier extensión de bloqueo de anuncios (ej. AdBlock) instalada en el navegador, ya que pueden interferir con la visualización.
   2. Recargar el panel administrativo (`F5`). Si el gráfico de usuarios se visualiza pero el de tráfico no, el sistema puede estar procesando aún los datos de visitas de ese periodo.
 
-##### 3. Tabla de Actividad Reciente desactualizada
-* **Situación:** Se acaba de realizar una acción (ej. aprobar una página) pero no aparece inmediatamente en la tabla inferior del tablero principal.
+##### 3. Lista de Actividad Reciente desactualizada
+* **Situación:** Se acaba de realizar una acción (ej. aprobar una página) pero no aparece inmediatamente en la lista inferior del tablero principal.
 * **Posible causa:** Para agilizar los tiempos de carga, el tablero principal retiene una memoria temporal (*caché*) de las últimas operaciones por breves instantes.
 * **Acción correctiva:**
-  1. Si se requiere consultar la trazabilidad exacta e inmediata, hacer clic en el enlace **"Ver más"** ubicado en la esquina superior derecha de la tabla.
+  1. Si se requiere consultar la trazabilidad exacta e inmediata, hacer clic en el enlace **"Ver más"** ubicado en la esquina superior derecha de la lista.
   2. Esto abrirá el módulo de **Auditoría**, el cual extrae los registros en tiempo real directo desde la base de datos sin tiempos de espera.
 
 #### 3.5.1.8. Validaciones y Solución de Problemas en la Gestión de Usuarios
