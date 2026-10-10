@@ -5,6 +5,33 @@
 
 ---
 
+## sesión 09-10-2026 (32.ª parte): «Nuevo Editor» con «Guardar» verde y la descripción a 100 caracteres
+
+**Qué se pidió.** En el modal «Nuevo Editor» de Roles, «Guardar» en verde y la descripción sin
+poder agrandarse y con máximo 100 caracteres.
+
+**Lo que se hizo.**
+
+| Pieza | Archivo | Cambio |
+|---|---|---|
+| Variante `verde` | `shared/ui/atoms/button.tsx` | `bg-[#7DB728]` con `hover:bg-[#6da020]`, dentro y fuera de modal (en modal, igual en oscuro) |
+| «Guardar permisos» | `modal-permisos.tsx` | Deja las clases con `!` de la 31.ª parte y usa `variant="verde"` |
+| «Nuevo Editor» | `roles-view.tsx` | «Guardar» con `variant="verde"`; descripción `maxLength={DESCRIPCION_MAX}` (100, antes 200), `resize-none` y contador `n/100` que pasa a rojo en el tope, enlazado con `aria-describedby` |
+
+Se hizo variante y no otra tanda de `!`: eran dos modales con el mismo verde, y el `!` peleaba
+con `variantStylesDeModal` en vez de decir qué botón es.
+
+**Cómo se probó.** `tsc --noEmit` limpio; `eslint` solo da lo que ya tenía `roles-view.tsx`
+(`Promise<any>` y la dependencia de `useCallback`). No se vio en el navegador.
+
+**Pendiente al cierre:**
+
+- La API no limita la descripción del rol (`roles.descripcion` es `TEXT`).
+- La descripción se puede editar luego en el modal de permisos (`modal-permisos.tsx`), que
+  sigue sin tope de 100 y con el campo estirable.
+
+---
+
 ## sesión 09-10-2026 (31.ª parte): el modal de permisos, con «Marcar todos» como interruptor y el resumen junto al título
 
 **Qué se pidió.** En el modal de permisos de Roles: quitar el contador «1/2» de cada grupo,

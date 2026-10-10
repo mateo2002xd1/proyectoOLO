@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
-import { GRUPO_TOOLTIP, TOOLTIP_ENCIMA } from '@/shared/ui/atoms/tooltip';
+import { GRUPO_TOOLTIP, TOOLTIP_ENCIMA, TOOLTIP_ENCIMA_A_LA_DERECHA } from '@/shared/ui/atoms/tooltip';
 import {
   useUsuarios,
   mensajeDeError,
@@ -25,6 +25,9 @@ import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
 import { Paginador } from '@/shared/ui/molecules/paginador';
 import { ModalPermisos } from './modal-permisos';
 import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
+
+/** Largo máximo de la descripción de un rol nuevo. */
+const DESCRIPCION_MAX = 100;
 
 function ModalNuevoEditor({
   open,
@@ -86,14 +89,25 @@ function ModalNuevoEditor({
             <label htmlFor="rol-descripcion" className={etiquetaDeModalClass}>
               Descripción
             </label>
+            {/* 100 caracteres contados al escribir y sin el agarre para estirarlo, como el
+                motivo de la cola de revisión. La API no lo limita (`descripcion` es TEXT). */}
             <textarea
               id="rol-descripcion"
-              maxLength={200}
+              maxLength={DESCRIPCION_MAX}
               rows={3}
               value={descripcion}
               onChange={(e) => setDescripcion(e.target.value)}
-              className={areaDeModalClass}
+              aria-describedby="rol-descripcion-cuenta"
+              className={`${areaDeModalClass} resize-none`}
             />
+            <p
+              id="rol-descripcion-cuenta"
+              className={`mt-2 text-right text-xs tabular-nums ${
+                descripcion.length >= DESCRIPCION_MAX ? 'text-red-600 dark:text-red-400' : 'text-zinc-500 dark:text-zinc-400'
+              }`}
+            >
+              {descripcion.length}/{DESCRIPCION_MAX}
+            </p>
           </div>
           <div>
             <p className={etiquetaDeModalClass}>Permisos</p>
@@ -111,7 +125,7 @@ function ModalNuevoEditor({
             <Button type="button" plain onClick={onClose} disabled={guardando}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={guardando}>
+            <Button type="submit" variant="verde" disabled={guardando}>
               {guardando ? 'Guardando...' : 'Guardar'}
             </Button>
           </AlertActions>
@@ -439,23 +453,33 @@ export default function RolesView() {
                           aria-label="Editar rol"
                           className={`${GRUPO_TOOLTIP} rounded-lg p-1.5 text-[#7DB728] transition-colors hover:bg-[#7DB728]/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7DB728]`}
                         >
-                          <IconoMascara nombre="deslizadores" />
+                          <IconoMascara nombre="deslizadores" tamano="h-6 w-6" />
                           <span aria-hidden="true" className={`${TOOLTIP_ENCIMA} bg-[#7DB728] text-white`}>
                             Editar rol
                           </span>
                         </button>
+                        {/* Tooltip alineado a la derecha: es el último botón de la fila y el texto
+                            del rol base es largo; centrado se saldría de la tabla. Desactivado,
+                            explica por qué en gris (el `:hover` de CSS sí llega a un botón
+                            `disabled`). */}
                         <button
                           type="button"
                           onClick={() => !noEliminable && setRolAEliminar(rol)}
                           disabled={noEliminable}
-                          className={`rounded-lg p-1.5 transition-colors ${
+                          aria-label={noEliminable ? 'No se puede eliminar el rol base de Editor' : 'Eliminar rol'}
+                          className={`${GRUPO_TOOLTIP} rounded-lg p-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 ${
                             noEliminable
                               ? 'cursor-not-allowed text-zinc-300 dark:text-zinc-600'
                               : 'text-red-400 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-900/30 dark:hover:text-red-300'
                           }`}
-                          title={noEliminable ? 'No se puede eliminar el rol base de Editor' : 'Eliminar rol'}
                         >
-                          <TrashIcon className="size-4" />
+                          <TrashIcon className="size-6" />
+                          <span
+                            aria-hidden="true"
+                            className={`${TOOLTIP_ENCIMA_A_LA_DERECHA} ${noEliminable ? 'bg-zinc-600 text-white' : 'bg-red-500 text-white'}`}
+                          >
+                            {noEliminable ? 'No se puede eliminar el rol base de Editor' : 'Eliminar rol'}
+                          </span>
                         </button>
                       </div>
                     </td>

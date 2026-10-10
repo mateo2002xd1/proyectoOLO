@@ -379,14 +379,12 @@ export function ModalPermisos({
               Cancelar
             </Button>
             {/* Verde #7DB728 a pedido del usuario, aunque en los modales la acción principal
-                es `#001631` (`variantStylesDeModal`). Con `!` porque las dos clases de fondo
-                compiten y Tailwind no garantiza cuál sale después. Blanco sobre este verde
-                da 2,4:1 (9-accesibilidad.md §2.1). */}
+                es `#001631`: variante `verde` de `Button`. */}
             <Button
               type="button"
+              variant="verde"
               onClick={() => void onGuardar()}
               disabled={!hayCambios || guardando}
-              className="bg-[#7DB728]! text-white! hover:bg-[#6da020]! dark:bg-[#7DB728]! dark:text-white! dark:hover:bg-[#6da020]!"
             >
               {guardando ? 'Guardando…' : 'Guardar permisos'}
             </Button>

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, type ButtonHTMLAttributes, type ReactNode } from "react";
 
-type ButtonVariant = "plain" | "primary" | "danger" | "success" | "navy";
+type ButtonVariant = "plain" | "primary" | "danger" | "success" | "navy" | "verde";
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
@@ -29,6 +29,11 @@ const variantStyles: Record<ButtonVariant, string> = {
   // `@theme`, así que Tailwind no genera utilidad para ellos.
   navy:
     "bg-[#0d1526] text-white shadow-[0_2px_8px_-2px_rgba(13,21,38,0.4)] hover:bg-[#1a2340] active:scale-95",
+  // El verde de identidad (#7DB728) tal cual, pedido por el usuario para «Guardar» en los
+  // modales de Roles. Ojo: blanco encima da 2.42:1, por debajo del 4.5:1 de AA (por eso
+  // `primary` usa `brand-interactive`). Ver 9-accesibilidad.md §2.1.
+  verde:
+    "bg-[#7DB728] text-white shadow-[0_2px_8px_-2px_rgba(42,125,0,0.4)] hover:bg-[#6da020] active:scale-95",
 };
 
 /**
@@ -46,6 +51,8 @@ const variantStylesDeModal: Record<ButtonVariant, string> = {
   success:
     "bg-[#001631] text-white hover:bg-[#002a5c] dark:bg-white dark:text-[#001631] dark:hover:bg-[#e6e8f0]",
   navy: "bg-[#001631] text-white hover:bg-[#002a5c] dark:bg-white dark:text-[#001631] dark:hover:bg-[#e6e8f0]",
+  // La excepción verde a la acción principal en `#001631`: igual en claro y en oscuro.
+  verde: "bg-[#7DB728] text-white hover:bg-[#6da020]",
 };
 
 const EnModal = createContext(false);
