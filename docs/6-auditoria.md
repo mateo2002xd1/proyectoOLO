@@ -65,7 +65,9 @@ y ponerle un tooltip «Editar usuario».
 Va como `<img>` y no con `IconoMascara` porque tiene dos colores y la máscara pinta todo de uno.
 El botón (`usuarios-view.tsx`) deja `PencilIcon` y `title="Editar"`: lleva
 `aria-label="Editar usuario"`, fondo `#7DB728/10` al pasar, anillo de foco verde y el tooltip
-compartido (`shared/ui/atoms/tooltip.ts`, centrado) en verde con letra blanca.
+compartido (`shared/ui/atoms/tooltip.ts`, centrado) en verde con letra blanca. La papelera de al lado lleva
+el mismo tooltip, «Eliminar», en `red-500` (el color del icono), `aria-label="Eliminar usuario"`
+y fondo rojo suave al pasar; deja el `title`.
 
 **Cómo se probó.** `tsc --noEmit` del sitio y `eslint` del archivo, limpios; el servidor
 de desarrollo sirve el SVG (200, `image/svg+xml`). No se vio en el navegador.

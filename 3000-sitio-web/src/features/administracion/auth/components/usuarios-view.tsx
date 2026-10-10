@@ -548,8 +548,16 @@ export default function UsuariosView() {
                             Editar usuario
                           </span>
                         </button>
-                        <button type="button" onClick={() => setDeleteConfirmId(user.id)} className="p-1.5 text-red-500 hover:text-red-600 dark:text-red-400 transition-colors" title="Eliminar">
+                        <button
+                          type="button"
+                          onClick={() => setDeleteConfirmId(user.id)}
+                          aria-label="Eliminar usuario"
+                          className={`${GRUPO_TOOLTIP} rounded-lg p-1.5 text-red-500 transition-colors hover:bg-red-500/10 hover:text-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:text-red-400`}
+                        >
                           <TrashIcon className="size-5" />
+                          <span aria-hidden="true" className={`${TOOLTIP_ENCIMA} bg-red-500 text-white`}>
+                            Eliminar
+                          </span>
                         </button>
                       </div>
                     </td>
