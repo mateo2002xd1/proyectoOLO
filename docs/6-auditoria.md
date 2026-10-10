@@ -5,6 +5,129 @@
 
 ---
 
+## sesión 10-10-2026 (5.ª parte): identidad visual del panel en Configuración
+
+**Qué se pidió.** En Configuración del panel, una sección a todo el ancho con la identidad
+visual: primero, cambiar el icono; segundo, cambiar con un selector el color de las
+etiquetas de todas las acciones (los tooltips de «Aprobar», «Eliminar», «Guardar
+borrador»…). Decisiones del usuario: **aplica a todo el panel** (no por navegador), se
+cambian **el logo de la barra lateral y el icono** (pestaña y centro de la barra del móvil),
+y **un color por acción**.
+
+**Cómo quedó.**
+
+- Configuración → «Identidad visual del panel», a todo el ancho y antes del sonido de los
+  avisos. Logo e icono con su vista previa en modo claro y oscuro, «Subir» (PNG o JPG; logo
+  hasta 1 MB, icono hasta 512 KB) y «Volver al de fábrica». Un interruptor decide si lo
+  subido pasa a blanco en modo oscuro (lo de fábrica pasa siempre, como antes).
+- Once acciones en dos grupos (panel y editor), cada una con su etiqueta de muestra, un
+  selector para el fondo y otro para la letra, y el contraste: «Se lee bien (4,7:1)» o «Poco
+  contraste (2,4:1)» con un botón «Usar letra blanca / azul oscuro». Se guardan con «Guardar
+  colores»; también «Descartar cambios» y «Volver a los de fábrica».
+- Sin el permiso nuevo `configuracion.identidad` se ve todo y no se puede cambiar nada.
+- Al guardar, `router.refresh()`: la barra lateral, el favicon y los colores cambian sin
+  recargar.
+
+**Lo que se hizo.**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| BD | `044-identidad-del-panel.ts` | Tabla `configuracion` (clave → JSONB, `CHECK` de objeto, `actualizado_por`), fila `identidad-panel` vacía y permiso `configuracion.identidad` para Superadmin y Administrador |
+| API | `configuracion.routes.ts`, `.controller.ts`, `use-cases/configuracion/identidad-panel.usecase.ts`, `configuracion.repository.ts`, `configuracion.validators.ts` | `GET/PATCH /api/configuracion/identidad-panel`, `POST/DELETE …/{logo, icono}` y `GET …/archivos/{nombre}` (sin sesión, caché inmutable). Reemplazo con `SELECT … FOR UPDATE` y borrado del archivo anterior; cada cambio a la bitácora como `actualizar` sobre `configuracion` |
+| API | `recibir-archivo.middleware.ts` | Lo que hacía `archivos.routes.ts` con multer, sacado para usarlo en las dos rutas en vez de copiarlo |
+| API | `filesystem.ts` | `panel/identidad/` y `resolverArchivoDeIdentidad` (solo `{uuid}.png` o `.jpg`) |
+| API | `catalogo-permisos.ts`, `openapi.ts`, `app.ts`, `descripciones-tablas.ts` | Permiso y grupo `configuracion`, etiqueta de la documentación, montaje de la ruta, descripción de la tabla |
+| Sitio | `shared/lib/identidad-panel/` | Catálogo de las 11 acciones con sus colores de fábrica (`acciones.ts`), tipos, contraste WCAG y rutas (`identidad.ts`), y en `servidor.tsx` la lectura con `cache` de React, el favicon y `EstilosDeAcciones`, que escribe `--olo-accion-{id}-fondo` y `-texto` |
+| Sitio | `app/admin/layout.tsx`, `app/editor/[slug]/page.tsx` | Leen la identidad, escriben las variables y ponen el favicon |
+| Sitio | `panel-general.tsx`, `navegacion-mobile*.tsx`, `globals.css` | Logo de la barra lateral e icono del móvil; el filtro de modo oscuro según el interruptor (`.es-a-color`) |
+| Sitio | `revision-queue-view.tsx`, `usuarios-view.tsx`, `roles-view.tsx`, `auditoria-view.tsx`, `respaldos-view.tsx`, `globals.css` (`.olo-editor-tooltip`) | Las etiquetas pasan de colores escritos a `COLOR_DE_ACCION` o a las variables |
+| Sitio | `features/administracion/configuracion/` | `identidad-visual-panel.tsx`, `colores-de-acciones.tsx`, su servicio, y la página, que lee identidad y permiso en el servidor |
+| Sitio | `next.config.mjs` | Rewrite `/identidad-panel/:nombre` → la API (en el servidor, nginx ya manda a Next lo que no conoce) |
+| Sitio | `auditoria/types.ts` | Nombres legibles de los cuatro campos nuevos de la bitácora |
+| Docs | `11-base-de-datos.md` §4.9 y 044, `12-diccionario` §3.15.1, `3-seguridad` §4.4 | La tabla, sus columnas y la superficie nueva |
+
+**Decisiones y descartes.**
+
+- **Carpeta propia para el logo, no `sitio/uploads/`.** Reutilizar `subirArchivoDePagina`
+  era lo más corto, pero `npm run uploads:limpiar-huerfanos -- --aplicar` borra de
+  `uploads/` todo lo que no nombre una versión de página: se habría llevado el logo.
+- **Clave → JSONB y no una tabla con columnas.** Configuración va a crecer; a cambio, la
+  forma la valida la API con el mismo esquema al escribir y al leer.
+- **La API guarda solo las acciones que difieren de fábrica.** Los colores de fábrica viven en
+  el frontend (es quien sabe dónde hay etiquetas); así, cambiar uno de fábrica llega a quien
+  nunca tocó el suyo.
+- **Fondo y letra por separado**, no solo el fondo. Con un solo color, «Rechazar» (rosa claro
+  con letra roja y borde) perdía su forma, y la letra no se podía arreglar cuando el fondo
+  elegido no contrasta. El aviso mide 4,5:1 (AA, `9-accesibilidad.md` §2.1): **los verdes de
+  fábrica con letra blanca dan 2,4:1** y salen marcados. No se cambiaron, porque así lo pidió
+  el usuario en su día; ahora se arreglan con un clic.
+- **El permiso no sale en el modal de Roles.** Desde `8abf9888` ese modal oculta a propósito
+  lo que es solo de administración (Personas, Bitácora, `acceso.panel`), y esto es de esa
+  clase. Lo reciben Superadmin y Administrador por la migración.
+- **Los «Eliminar» se unifican en `#ef4444`.** Revisión usaba `#ff1f1f` y Usuarios y Roles
+  `red-500`; con un solo color por acción hacía falta uno.
+
+> **Commit cruzado.** El commit `0117e77d` («el final de la página ya no tiembla») se llevó
+> dentro, sin querer, la parte de esta función que está en `globals.css` (las etiquetas del
+> editor leyendo `--olo-accion-*`). Para que no dependa del orden en que se suba, esas reglas
+> llevan el color de fábrica como respaldo (`var(--x, #dc2626)`). Si se cambia un color de
+> fábrica del editor, hay que cambiarlo en los dos sitios (lo dice `acciones.ts`).
+
+**Cómo se probó.**
+
+| Qué | Resultado |
+|---|---|
+| Migraciones 001–044 sobre Postgres 18 vacío (Docker), y la 044 `down` + `up` con los roles sembrados | Aplican; el permiso queda en Superadmin y Administrador |
+| API de prueba en el 4100 contra esa base, 37 comprobaciones (`probar-identidad.cjs`) | 36 OK. Sin sesión 401, Editor 403; `red`, `</style>`, `url()`, ids raros, campos de más, cuerpo vacío y 41 acciones → 400; colores en minúsculas; una fila de bitácora por cambio y ninguna si no cambia nada; PNG → nombre UUID, servido sin sesión con caché inmutable; reemplazar borra el anterior; PDF renombrado y SVG → 415; logo de más de 1 MB e icono de 600 KB → 413 sin archivos sueltos; `..%2F`, otro nombre, `.pdf` y `%00` → 404; valor basura en la base → GET de fábrica. La que no pasó: `archivos/..`, que `fetch` normaliza a la ruta de arriba (401); no sirve ningún archivo |
+| Lógica del frontend (`probar-logica.cjs`, 14) | Contraste WCAG, letra sugerida, y que `EstilosDeAcciones` no escribe nada que no sea `#rrggbb` aunque la API devuelva `</style><script>` |
+| CSS compilado con el Tailwind del sitio | `bg-(--olo-accion-…)` y `text-(color:--…)` generan `background-color` y `color` con la variable |
+| Pantalla real pintada con React y Chrome sin ventana, a 360, 768, 1032, 1280 y 1920, claro y oscuro, con y sin permiso | Sin desborde; una columna a 360, dos a 768, tres desde 1032 |
+| `tsc` de las dos apps; ESLint de lo tocado en el sitio | Limpios. En `roles-view.tsx` siguen un `any` y un aviso de dependencias que ya estaban |
+
+No se probó con el panel de verdad en marcha: hace falta la migración en Neon y reiniciar la
+API, y la pantalla con sesión no se puede abrir desde aquí.
+
+**Pendiente al cierre.**
+
+- `npm run migrate` en `4000-api-backend` (Neon) y reiniciar `npm run dev` de la API.
+- Probar en el panel: subir un logo y un icono, cambiar un color y verlo en Revisión, Usuarios
+  y el editor; mirar el favicon.
+- Decidir si los verdes de fábrica pasan a letra azul oscuro (AA).
+
+---
+
+## sesión 10-10-2026 (4.ª parte): «Respaldos» en acordeón en el móvil y la tablet
+
+**Qué se pidió.** Llevar el acordeón de «Páginas en revisión» y «Auditoría» a Respaldos
+(`/admin/respaldos`), «con el mensaje UX coherente».
+
+**La frase.** La de Revisión, con el verbo de esta lista: quién, qué versión y de qué sección.
+
+- Plegada: «**Carlos Ruiz** publicó la versión 43 de **/inicio**».
+- Desplegada, una sola frase (la ficha con etiquetas se vio «muy saturada» en Revisión):
+  «… publicó la versión 43 de la sección **/inicio** del **sitio web** el **10 de octubre de
+  2026 a las 9:00 a. m.**, editada por **Ana Gómez** el **9 de octubre…**». «de la intranet»
+  en la intranet; sin ámbito, se omite.
+- Debajo, el botón verde «Ver versión 42», que abre el mismo visor que el ojo de la tabla. El
+  ojo solo no se entiende en una pantalla táctil.
+
+**Lo que se hizo.**
+
+| Archivo | Cambio |
+|---|---|
+| `respaldos-view.tsx` | `olo-tabla-acordeon` sobre la tabla; `td[data-resumen]` con `ResumenDeFila`, `td[data-detalle]` con «Ver versión N», y las seis celdas de la tabla `data-solo-tabla`. Estado y piezas de `fila-acordeon.tsx`, sin copiar nada. La ruta sale de `rutaPublicaDeSlug` (así `cno` se lee `/clasificacion/cno`, como en Revisión). El botón toma el color de «Ver detalle» de Configuración → Identidad visual (`COLOR_DE_ACCION['ver-detalle']`) |
+| `manual-de-usuario-formato.md` | Respaldos, pasos 1 y 3: la lista plegable y el botón «Ver versión» |
+
+En escritorio la tabla no cambia. No hizo falta CSS nuevo: las reglas del acordeón ya estaban.
+
+**Cómo se probó.** Arnés del scratchpad (`entrada-respaldos.tsx`, `probar-respaldos.cjs`) con
+cinco publicaciones de ejemplo (una sin versión anterior, que no se lista): a 360, 768 y 1032
+el acordeón (fila plegada de 44–52 px, desplegada con la frase entera y el botón de 44 px en
+verde #7db728 con letra blanca; vuelve al alto inicial al plegarla); a 1280 y 1920 la tabla
+con sus seis columnas. Sin desborde horizontal ni errores de consola. Tipos y ESLint limpios.
+
+---
+
 ## sesión 10-10-2026 (3.ª parte): el final de la página temblaba en el móvil y la tablet
 
 **Qué se reportó.** En el panel, en el móvil y la tablet, al deslizar hasta el final la

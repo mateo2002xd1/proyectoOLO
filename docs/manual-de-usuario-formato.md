@@ -1412,13 +1412,13 @@ Herramienta de control forense, accesible desde el menú lateral (o barra inferi
 > **[Captura: Paso 1 (Móvil)]**
 > *Evidencia visual de la acción descrita en el paso 1. (Móvil).*
 
-2. **Tabla de Registros Inmutables:** Despliega cronológicamente los eventos, mostrando la marca de tiempo (fecha y hora exacta), la dirección IP, el actor y el detalle técnico de la operación realizada. Estos registros no poseen botón de eliminación, garantizando transparencia total.
+2. **Tabla de Registros Inmutables:** Despliega cronológicamente los eventos, mostrando la marca de tiempo (fecha y hora exacta), la dirección IP, el actor y el detalle técnico de la operación realizada. Estos registros no poseen botón de eliminación, garantizando transparencia total. En el móvil y la tablet la tabla es una lista plegable: cada registro ocupa una línea con quién lo hizo y la acción, con su color («El usuario Ana Gómez hizo la acción de Edición»; «El sistema» cuando no lo hizo una persona, como una cuenta que caducó). Al tocarla, la frase se completa con lo que cambió y la fecha («El usuario Ana Gómez hizo la acción de Publicación: publicó la versión 4 de /inicio el 9 de octubre de 2026 a las 3:00 p. m.») y debajo aparece el botón **"Ver detalle"**; se vuelve a tocar para plegarla.
 
 > **[Captura: Paso 2]**
 > *Evidencia visual de la acción descrita en el paso 2.*
 >
 > **[Captura: Paso 2 (Móvil)]**
-> *Evidencia visual de la acción descrita en el paso 2. (Móvil).*
+> *Lista plegable de registros de auditoría, con uno desplegado. (Móvil).*
 
 ##### 3.4.2.6.1. Exportación de la Bitácora de Auditoría
 
@@ -1474,11 +1474,13 @@ El módulo de **Respaldos** (`/admin/respaldos`) constituye el centro de control
    * **Fechas:** Marcas de tiempo de edición (*Editado el*) y de publicación formal (*Publicado el*).
    * **Versión anterior:** Botón con ícono de **Ojo** (*Ver versión anterior*) para acceder al visor de respaldo.
 
+   En el móvil y la tablet la tabla es una lista plegable, como en *Páginas en revisión* y *Auditoría*: cada publicación ocupa una línea con quién la publicó, qué versión y de qué sección («Carlos Ruiz publicó la versión 43 de /inicio»). Al tocarla, la frase se completa con el ámbito, la fecha de publicación y quién la editó («Carlos Ruiz publicó la versión 43 de la sección /inicio del sitio web el 10 de octubre de 2026 a las 9:00 a. m., editada por Ana Gómez el 9 de octubre de 2026 a las 10:00 a. m.») y debajo aparece el botón verde **"Ver versión 42"**, que abre el visor de la versión anterior; se vuelve a tocar para plegarla.
+
 > **[Captura: Paso 1]**
 > *Tabla principal del módulo de Respaldos con listado de páginas con versiones archivadas disponibles.*
 >
 > **[Captura: Paso 1 (Móvil)]**
-> *Tabla principal del módulo de Respaldos con listado de páginas con versiones archivadas disponibles. (Móvil).*
+> *Lista plegable de respaldos, con una publicación desplegada y su botón "Ver versión". (Móvil).*
 
 2. **Barra de filtros de búsqueda:**
    Permite localizar rápidamente páginas respaldadas mediante criterios específicos:
@@ -1494,7 +1496,7 @@ El módulo de **Respaldos** (`/admin/respaldos`) constituye el centro de control
 > *Uso de la barra de filtros para ubicar versiones por ámbito, autor, publicado por y fechas. (Móvil).*
 
 3. **Previsualización de la versión anterior archivada:**
-   Al hacer clic en el ícono de **Ojo** de cualquier fila, el sistema despliega la ventana modal de consulta de respaldo:
+   Al hacer clic en el ícono de **Ojo** de cualquier fila (en el móvil y la tablet, en el botón **"Ver versión"** de la publicación desplegada), el sistema despliega la ventana modal de consulta de respaldo:
    * Presenta los metadatos completos de la versión archivada (número de versión, autor, fecha y ámbito).
    * Proporciona un enlace interactivo directo para **abrir la vista previa de la página** en el visor Puck (`/preview/[slug]?versionId=...`), permitiendo al Administrador inspeccionar con total fidelidad cómo lucía el contenido antes de ser reemplazado.
 
