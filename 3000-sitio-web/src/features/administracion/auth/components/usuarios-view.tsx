@@ -508,13 +508,22 @@ export default function UsuariosView() {
                       {user.role?.name || 'Sin rol'}
                     </td>
                     <td data-etiqueta="Estado" className="px-6 py-2 text-sm">
-                      <div className="flex items-center gap-2">
+                      {/* Sin «Activo/Inactivo» al lado: el interruptor ya lo muestra, y el
+                          lector lo dice por `role="switch"` + `aria-checked`. El tooltip dice
+                          la acción que hará al pulsarlo. */}
+                      <span className={`${GRUPO_TOOLTIP} inline-flex`}>
                         <Switch
                           checked={user.status === 'active'}
                           onChange={() => toggleStatus(user)}
+                          aria-label="Usuario activo"
                         />
-                        <span className="text-zinc-500 dark:text-[#94a3b8] text-xs">{user.status === 'active' ? 'Activo' : 'Inactivo'}</span>
-                      </div>
+                        <span
+                          aria-hidden="true"
+                          className={`${TOOLTIP_ENCIMA} ${user.status === 'active' ? 'bg-zinc-600' : 'bg-[#7DB728]'} text-white`}
+                        >
+                          {user.status === 'active' ? 'Desactivar' : 'Activar'}
+                        </span>
+                      </span>
                     </td>
                     <td data-etiqueta="Bloqueo" className="px-6 py-2 text-sm">
                       {(() => {

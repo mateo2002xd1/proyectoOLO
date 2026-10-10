@@ -184,7 +184,8 @@ export function VistaPreviaVersion({
                 rel="noopener noreferrer"
                 className="group flex flex-1 items-center justify-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm font-semibold text-zinc-700 shadow-sm transition hover:border-[#002237]/40 hover:bg-[#002237]/5 hover:text-[#002237] dark:border-zinc-600 dark:bg-transparent dark:text-zinc-200 dark:hover:bg-zinc-800 dark:hover:text-white"
               >
-                <span className="relative inline-block h-5 w-5">
+                {/* El ojo en verde #7DB728, como el de la tabla de Respaldos y el de Auditoría. */}
+                <span className="relative inline-block h-5 w-5 text-[#7DB728]">
                   <span className="absolute inset-0 group-hover:hidden"><IconoMascara nombre="eye-closed" tamano="h-5 w-5" /></span>
                   <span className="absolute inset-0 hidden group-hover:block"><IconoMascara nombre="eye-open" tamano="h-5 w-5" /></span>
                 </span>

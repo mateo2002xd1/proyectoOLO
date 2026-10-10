@@ -5,6 +5,23 @@
 
 ---
 
+## sesión 09-10-2026 (36.ª parte): el interruptor de estado de Usuarios con tooltip y sin «Activo/Inactivo» al lado
+
+**Qué se pidió.** En Usuarios, un tooltip en el interruptor de estado con la acción («Activar» o
+«Desactivar») y quitar el texto de estado que tenía al lado.
+
+**Lo que se hizo.**
+
+| Pieza | Archivo | Cambio |
+|---|---|---|
+| Celda «Estado» | `usuarios-view.tsx` | Sin el `<span>` «Activo/Inactivo». El `Switch` lleva `aria-label="Usuario activo"` (el lector dice el estado por `role="switch"` + `aria-checked`) y va envuelto en un `span` con `GRUPO_TOOLTIP`. Tooltip «Desactivar» en `zinc-600` si está activo, «Activar» en `#7DB728` si no |
+| Tooltip | `shared/ui/atoms/tooltip.ts` | Aparece también con `group-has-[:focus-visible]`: aquí el grupo es el envoltorio y el foco lo recibe el `Switch`, que no acepta `className` |
+
+**Cómo se probó.** `tsc --noEmit` y `eslint` de los dos archivos, limpios; el CSS del servidor
+genera `group-has-[:focus-visible]/tooltip:opacity-100`. No se vio en el navegador.
+
+---
+
 ## sesión 09-10-2026 (35.ª parte): el ojo se abre al pasar el puntero, y el de Respaldos en verde con «Ver versión»
 
 **Qué se pidió.** En Respaldos, el ojo con el color y el tooltip de Auditoría («Ver versión»), y
@@ -17,6 +34,7 @@ que se abra al poner el puntero encima; lo mismo en Auditoría.
 | Ojo | `shared/ui/atoms/boton-ojo.tsx` | Los dos ojos montados; el abierto aparece con `group-hover/ojo` y `group-focus-visible/ojo` (puntero o teclado) y al pulsar, como antes |
 | Respaldos | `respaldos-view.tsx` | `text-[#7DB728]`, fondo `#7DB728/10` al pasar, tooltip `bg-[#7DB728]` «Ver versión» (antes «Ver versión anterior» en el `title`) |
 | Auditoría | — | Toma el cambio del ojo sin tocar su vista: ya era verde con «Ver detalle» (25.ª parte) |
+| Modal de la versión | `respaldos/components/vista-previa-version.tsx` | El ojo del botón «Ver vista previa» en `#7DB728`; sin tooltip porque el botón ya dice su nombre |
 
 Se montan los dos ojos y se esconde uno, en vez de cambiar el `nombre` de `IconoMascara` al
 pasar el puntero: así el navegador pide los dos SVG al cargar y no parpadea la primera vez.
