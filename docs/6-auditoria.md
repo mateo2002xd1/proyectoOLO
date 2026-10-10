@@ -5,6 +5,46 @@
 
 ---
 
+## sesión 10-10-2026 (8.ª parte): identidad visual — el logo y el icono se cargan en su propia tarjeta
+
+**Qué se pidió.** Sobre la 7.ª parte: que la carga del logo y del icono no sea un botón aparte,
+sino la misma tarjeta donde se ve la imagen.
+
+**Cómo quedó.** La vista previa (modo claro y modo oscuro) es ahora la zona de carga: un recuadro
+punteado que se pone verde al pasar el puntero o al arrastrar un archivo encima. Abajo dice
+«Haz clic o arrastra aquí el logo en PNG» («Toca aquí para cargar…» en pantallas táctiles);
+mientras arrastras, «Suelta el PNG para cargarlo»; al subir, «Subiendo…». Se sube al soltar o
+elegir el archivo, sin «Guardar». El botón «Cargar … en PNG» desaparece; «Volver al de fábrica»
+sigue debajo, solo si hay una imagen subida. Sin permiso se ven las vistas previas sin recuadro.
+
+**Lo que se hizo.**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Sitio | `configuracion/components/identidad-visual-panel.tsx` | Las dos vistas, dentro de un `<button>` con `onDragOver`/`onDragLeave`/`onDrop`; nombre accesible «Cargar el logo en PNG» y la recomendación como descripción (`aria-describedby`) |
+
+**Decisiones.**
+
+- **`aria-disabled` y no `disabled` mientras sube**: un botón desactivado no recibe el `drop`, y
+  el navegador abriría el PNG soltado en la pestaña, sacando a la persona del panel.
+- **Sin componente de arrastrar y soltar compartido**: no había ninguno en el sitio. Es el único
+  uso por ahora; si aparece otro, se saca a `shared/ui/`.
+- **`figure` pasa a `span`**: dentro de un `<button>` solo vale contenido en línea.
+
+**Cómo se probó.**
+
+| Qué | Resultado |
+|---|---|
+| Pantalla real pintada con React y el CSS compilado, en Chrome sin ventana | Tarjeta punteada con sus dos vistas y el texto a 1280 (claro) y a 360 (oscuro); sin desborde a 360; las dos zonas de 260 × 180 px a 360 |
+| CSS compilado | `pointer-coarse:hidden/inline` y `aria-disabled:cursor-wait` se generan |
+| ESLint del archivo; `tsc` | ESLint limpio. `tsc` solo marca `.next/dev/types/validator.ts`, generado por el servidor de desarrollo, ajeno al cambio |
+| Arrastrar de verdad | **No probado aquí**: la página de prueba no tiene React vivo. Queda para probarlo en el panel |
+
+**Pendiente al cierre.** Probar en el panel: arrastrar un PNG a cada tarjeta, hacer clic, y
+soltar un JPG (debe avisar «Formato no admitido»).
+
+---
+
 ## sesión 10-10-2026 (7.ª parte): identidad visual — solo PNG, colores en acordeón y color de los botones
 
 **Qué se pidió.** Sobre la 5.ª parte: que el logo de la barra lateral y el de la pestaña se

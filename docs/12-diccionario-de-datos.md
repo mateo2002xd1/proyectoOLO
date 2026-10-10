@@ -341,7 +341,7 @@ La especificación exhaustiva columna por columna de estas tablas se encuentra d
 |:---:|:---|:---|:---:|:---:|:---:|:---|:---|:---|
 | 1 | `id` | `UUID` | — | NO (NOT NULL) | **PK** | — | `gen_random_uuid()` | Identificador del ajuste; es el `entidad_id` de sus filas en `auditoria_cambios`. |
 | 2 | `clave` | `TEXT` | — | NO (NOT NULL) | **UNIQUE** | `uq_configuracion_clave` | — | Nombre del ajuste (`identidad-panel`). |
-| 3 | `valor` | `JSONB` | — | NO (NOT NULL) | Ninguna | `ck_configuracion_valor_objeto` | `'{}'` | El ajuste. Para `identidad-panel`: `logo` e `icono` (nombre UUID del archivo o `null`), `blancoEnModoOscuro` (booleano) y `acciones` (id → `{fondo, texto}` en `#rrggbb`). |
+| 3 | `valor` | `JSONB` | — | NO (NOT NULL) | Ninguna | `ck_configuracion_valor_objeto` | `'{}'` | El ajuste. Para `identidad-panel`: `logo` e `icono` (nombre UUID del archivo o `null`), `blancoEnModoOscuro` (booleano), `acciones` y `botones` (id → `{fondo, texto}` en `#rrggbb`). |
 | 4 | `actualizado_por` | `UUID` | — | SÍ (NULL) | **FK** | `usuarios.id` (ON DELETE SET NULL) | — | Quién lo cambió por última vez. `NULL` para la cuenta maestra local, que no vive en `usuarios`. |
 | 5 | `created_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | `now()` | Creación de la fila. |
 | 6 | `updated_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | `now()` | Último cambio. |
