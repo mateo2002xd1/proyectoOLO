@@ -5,6 +5,22 @@
 
 ---
 
+## sesión 09-10-2026 (30.ª parte): «Editar rol» con el icono de deslizadores y tooltip
+
+**Qué se pidió.** Cambiar el lápiz de Roles por un SVG dado (los deslizadores de Font Awesome
+Free) con un tooltip «Editar rol».
+
+**Lo que se hizo.** El SVG queda en `public/assets/svg/deslizadores.svg`, con su comentario de
+licencia (Font Awesome Free, CC BY 4.0, pide conservarlo). Es de un color, así que va con
+`IconoMascara` y toma `currentColor`. El botón (`roles-view.tsx`) deja `PencilIcon` y el
+`title`: lleva `aria-label="Editar rol"`, icono y tooltip en `#7DB728` como «Editar usuario»,
+fondo verde suave al pasar y anillo de foco verde.
+
+**Cómo se probó.** `tsc --noEmit` y `eslint` del archivo, limpios; el servidor sirve el SVG.
+No se vio en el navegador.
+
+---
+
 ## sesión 09-10-2026 (29.ª parte): la hoja de «Accesos» del móvil, a todo el ancho hasta tablet
 
 **Qué se pidió.** Que las opciones que suben desde abajo al tocar «Accesos» en la barra móvil

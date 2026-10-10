@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { TrashIcon } from '@heroicons/react/24/outline';
+import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
+import { GRUPO_TOOLTIP, TOOLTIP_ENCIMA } from '@/shared/ui/atoms/tooltip';
 import {
   useUsuarios,
   mensajeDeError,
@@ -429,13 +431,18 @@ export default function RolesView() {
                     </td>
                     <td data-etiqueta="Acciones" className="px-5 py-2">
                       <div className="flex items-center gap-1 @3xl:justify-end">
+                        {/* Deslizadores de Font Awesome (`deslizadores.svg`, un color: va por máscara
+                            y toma `currentColor`). En el verde de «Editar usuario» y su tooltip. */}
                         <button
                           type="button"
                           onClick={() => abrirModalPermisos(rol)}
-                          className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
-                          title="Editar rol y permisos"
+                          aria-label="Editar rol"
+                          className={`${GRUPO_TOOLTIP} rounded-lg p-1.5 text-[#7DB728] transition-colors hover:bg-[#7DB728]/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7DB728]`}
                         >
-                          <PencilIcon className="size-4" />
+                          <IconoMascara nombre="deslizadores" />
+                          <span aria-hidden="true" className={`${TOOLTIP_ENCIMA} bg-[#7DB728] text-white`}>
+                            Editar rol
+                          </span>
                         </button>
                         <button
                           type="button"
