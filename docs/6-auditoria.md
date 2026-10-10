@@ -5,6 +5,36 @@
 
 ---
 
+## sesión 10-10-2026 (6.ª parte): «Usuarios» y «Gestión de roles» en acordeón en el móvil y la tablet
+
+**Qué se pidió.** El acordeón también en Usuarios («solo deja el usuario en el encabezado de
+cada acordeón») y en Gestión de roles.
+
+**Cómo quedó.** Aquí no hay un suceso que contar con una frase (como en Revisión, Auditoría o
+Respaldos): es un catálogo. El encabezado es solo el nombre (del funcionario o del rol); al
+desplegar salen sus datos con etiqueta —correo, rol, estado con su interruptor y bloqueo; o
+descripción y permisos— y debajo «Editar» y «Eliminar» con su nombre, en los colores de
+Identidad visual. En el rol base Editor, «Eliminar» sale gris y deshabilitado con la nota «El
+rol base de Editor no se puede eliminar.» (en la tabla lo decía el tooltip, que en una pantalla
+táctil no se ve). En escritorio las tablas no cambian.
+
+| Archivo | Cambio |
+|---|---|
+| `fila-acordeon.tsx` | Nueva pieza `BotonDeFila`: el botón con nombre de la fila desplegada (44 px, esquinas 16, el color de `COLOR_DE_ACCION`). La usan ya las cuatro listas |
+| `usuarios-view.tsx`, `roles-view.tsx` | `olo-tabla-acordeon`; `td[data-resumen]` con el nombre; la celda del nombre y la de Acciones (iconos con tooltip) `data-solo-tabla`; `td[data-detalle]` con los dos botones. La fila de «sin resultados» lleva `data-abierta`, porque una fila plegada solo enseña el resumen y esta no tiene |
+| `auditoria-view.tsx`, `respaldos-view.tsx` | «Ver detalle» y «Ver versión N» pasan a `BotonDeFila`. Auditoría deja el verde fijo y toma el color de «Ver detalle» de Identidad visual, como ya hacía Respaldos |
+| `manual-de-usuario-formato.md` | Usuarios y Roles, paso 2: la lista plegable |
+
+**Cómo se probó.** Arnés del scratchpad (`entrada-accesos.tsx`, `probar-accesos.cjs
+<usuarios|roles>`): a 360, 768 y 1032 el acordeón (plegada 53 px con solo el nombre;
+desplegada con sus celdas con etiqueta y los dos botones de 44 px, verde #7db728 y rojo
+#ef4444; Eliminar del rol Editor deshabilitado; vuelve a 53 px al plegarse); a 1280 y 1920 la
+tabla con sus columnas. Sin desborde horizontal ni errores de consola. Tipos limpios en los
+cinco archivos; ESLint limpio salvo dos avisos que `roles-view.tsx` ya tenía (un `any` y una
+dependencia de `useCallback`, de septiembre).
+
+---
+
 ## sesión 10-10-2026 (5.ª parte): identidad visual del panel en Configuración
 
 **Qué se pidió.** En Configuración del panel, una sección a todo el ancho con la identidad

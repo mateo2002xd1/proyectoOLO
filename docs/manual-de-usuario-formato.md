@@ -1154,11 +1154,13 @@ En este apartado se gestionan las cuentas individuales de los funcionarios que i
      * **Ícono de lápiz (Editar Usuario):** Abre la ventana modal para modificar datos del usuario, reasignar rol, gestionar fecha de caducidad y opciones de restablecimiento de contraseña o preguntas de seguridad.
      * **Ícono de basurero (Eliminar usuario):** Despliega la ventana modal de confirmación para eliminar de forma definitiva la cuenta del sistema.
 
+   En el móvil y la tablet la tabla es una lista plegable: cada fila muestra solo el nombre del funcionario. Al tocarla aparecen el correo, el rol, el estado (con su interruptor) y el bloqueo, y debajo los botones **"Editar"** (verde) y **"Eliminar"** (rojo), que hacen lo mismo que el lápiz y el basurero de la tabla; se vuelve a tocar para plegarla.
+
 > **[Captura: Tabla General de Usuarios]**
 > *Vista de la tabla de usuarios detallando sus columnas, buscador superior y el paginador inferior.*
 >
 > **[Captura: Tabla General de Usuarios (Móvil)]**
-> *Vista de la tabla de usuarios detallando sus columnas, buscador superior y el paginador inferior. (Móvil).*
+> *Lista plegable de usuarios, con uno desplegado y sus botones "Editar" y "Eliminar". (Móvil).*
 
 3. **Creación de Cuentas y Generación de Credenciales:** En la cabecera del módulo, hacer clic en el botón **"Crear Usuario"** para abrir el modal de registro de funcionarios. Se deben diligenciar los campos obligatorios:
    * **Nombre y Apellidos**
@@ -1251,11 +1253,13 @@ Por motivos de seguridad estructural del sistema, la tabla **oculta** deliberada
      * **Ícono de lápiz (Editar rol y permisos):** Abre la ventana modal para modificar la denominación, descripción y los permisos asignados al rol.
      * **Ícono de basurero (Eliminar rol):** Permite suprimir roles personalizados derivados. En el rol base **"Editor"**, este botón permanece permanentemente **deshabilitado y bloqueado en gris**, impidiendo su eliminación por ser un componente estructural del sistema.
 
+   En el móvil y la tablet la tabla es una lista plegable: cada fila muestra solo el nombre del rol. Al tocarla aparecen la descripción y el número de permisos, y debajo los botones **"Editar"** (verde) y **"Eliminar"** (rojo); en el rol base **"Editor"** el botón **"Eliminar"** sale en gris, deshabilitado, con la nota *"El rol base de Editor no se puede eliminar."*. Se vuelve a tocar para plegarla.
+
 > **[Captura: Tabla General de Roles]**
 > *Vista de la tabla de roles detallando sus columnas, contador de permisos y buscador superior.*
 >
 > **[Captura: Tabla General de Roles (Móvil)]**
-> *Vista de la tabla de roles detallando sus columnas, contador de permisos y buscador superior. (Móvil).*
+> *Lista plegable de roles, con el rol Editor desplegado y su botón "Eliminar" deshabilitado. (Móvil).*
 
 3. **Creación de Roles Derivados (Botón "Nuevo Editor"):** En la cabecera superior del módulo, hacer clic en el botón **"Nuevo Editor"** para abrir la ventana modal de configuración. Se deben diligenciar los siguientes campos:
    * **Nombre del rol:** Campo de texto donde el prefijo **"Editor"** ya viene fijado por el sistema de forma obligatoria. Solo se debe ingresar la denominación complementaria según el área o función (ej. *«Inicio»*, *«Prensa»*, *«Regional Antioquia»*, con un máximo de 70 caracteres).
