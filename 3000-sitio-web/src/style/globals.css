@@ -2012,8 +2012,9 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
   --navegacion-mobile-logo-filtro: brightness(0) invert(1);
 }
 
-/* Reserva el hueco de la barra en la columna que hace scroll (`sidebar-layout.tsx`),
-   para que lo último de la página no quede debajo. */
+/* Reserva el hueco de la barra al final del `<main>` que hace scroll
+   (`sidebar-layout.tsx`), para que lo último de la página no quede debajo. Es fijo: no se
+   quita al ocultarse la barra (ver más abajo). */
 .navegacion-mobile-reserva {
   padding-bottom: var(--navegacion-mobile-alto);
 }
@@ -2044,12 +2045,12 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
   translate: none;
 }
 
-/* Con la barra oculta, la columna deja de reservarle el hueco: la reserva está fuera
-   del `<main>` que hace scroll, y si no se quitaba quedaba una franja vacía fija al pie
-   de la pantalla. Sin transición: la barra se desliza por encima del contenido. */
-body:has(.navegacion-mobile.es-oculta:not(:focus-within)) .navegacion-mobile-reserva {
-  padding-bottom: 0;
-}
+/* Con la barra oculta, el hueco NO se quita. Hasta el 2026-10-10 se quitaba (la reserva
+   estaba en la columna, fuera del `<main>`, y dejaba una franja vacía fija al pie), pero
+   eso cambiaba el alto de lo que hace scroll: al llegar al final la barra se mostraba, el
+   final se alejaba 80 px, se ocultaba, volvía… y la pantalla temblaba. Ahora la reserva
+   es relleno al final del `<main>`: con la barra oculta solo queda espacio al final de la
+   página, y ocultarla o mostrarla no mueve nada. */
 
 /* Sin movimiento, se desvanece en vez de deslizarse. */
 @media (prefers-reduced-motion: reduce) {
@@ -2235,6 +2236,13 @@ body:has(.navegacion-mobile.es-oculta:not(:focus-within)) .navegacion-mobile-res
   height: auto;
   filter: var(--navegacion-mobile-logo-filtro);
   translate: 0 3px; /* x  y — negativo sube / va a la izquierda; positivo baja / va a la derecha */
+}
+
+/* Un icono subido en Configuración que no pasa a blanco en modo oscuro. Sin el ajuste de
+   3 px, que es para centrar la forma del de fábrica. */
+.navegacion-mobile-logo.es-a-color img {
+  filter: none;
+  translate: none;
 }
 
 .navegacion-mobile-inicio.es-activo .navegacion-mobile-logo {
@@ -3464,7 +3472,10 @@ button.text-link,
 /* Tooltip de los botones de la cabecera del editor: la forma del de los botones
    flotantes (`.fab-speed-dial__tooltip`) con el color de su botón. Va debajo porque la
    cabecera está arriba del todo. El del último botón se alinea a la derecha: centrado
-   sobresalía de la pantalla y, aunque invisible, daba scroll horizontal. */
+   sobresalía de la pantalla y, aunque invisible, daba scroll horizontal.
+   Los colores de cada uno salen de Configuración → Identidad visual: las variables
+   `--olo-accion-*` las escribe `EstilosDeAcciones` en `app/editor/[slug]/page.tsx`, con
+   los de fábrica de `shared/lib/identidad-panel/acciones.ts`. */
 .olo-editor-btn {
   position: relative;
 }
@@ -3506,19 +3517,18 @@ button.text-link,
 }
 
 .olo-editor-btn--salir .olo-editor-tooltip {
-  background: #dc2626;
-  color: #ffffff;
+  background: var(--olo-accion-salir-del-editor-fondo);
+  color: var(--olo-accion-salir-del-editor-texto);
 }
 
 .olo-editor-btn--guardar .olo-editor-tooltip {
-  background: #3b82f6;
-  color: #ffffff;
+  background: var(--olo-accion-guardar-borrador-fondo);
+  color: var(--olo-accion-guardar-borrador-texto);
 }
 
-/* Como el botón: azul marino sobre el verde (7.6:1); blanco quedaría en 2.4:1. */
 .olo-editor-btn--enviar .olo-editor-tooltip {
-  background: #7db828;
-  color: #001631;
+  background: var(--olo-accion-enviar-a-revision-fondo);
+  color: var(--olo-accion-enviar-a-revision-texto);
 }
 
 @media (prefers-reduced-motion: reduce) {
