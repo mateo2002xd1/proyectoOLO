@@ -5,6 +5,82 @@
 
 ---
 
+## sesión 09-10-2026 (15.ª parte): la contraseña temporal vence a las 72 horas (migración 043)
+
+**Qué se pidió.** Lo que quedó abierto en la 13.ª parte: que la contraseña temporal no valga
+para siempre. El usuario eligió **caducidad de 72 horas** frente a quemarla al primer uso.
+
+**Cómo funciona.**
+
+| Momento | Qué pasa con `password_temporal_vence_en` |
+|---|---|
+| Alta, «Restablecer contraseña», reactivación | Ahora + 72 h (`vencimientoDeTemporal`) |
+| Primer ingreso completado, cambio voluntario, recuperación por preguntas | `NULL` |
+| Login con la temporal vencida | 403 «Tu contraseña temporal venció (dura 72 horas). Pide al administrador que te genere una nueva.» — **después** de comprobar la contraseña, para no delatar el estado de la cuenta a quien no la sabe |
+| Sesión abierta con la temporal cuando vence | `requireAuth` (las dos variantes) responde 401 con el mismo mensaje: el token dura 7 días y sin esto quien entró a las 71 h seguía |
+| Fecha vacía con `debe_cambiar_password` | No vence (cuentas que no pasaron por la 043) |
+
+La regla está una sola vez, en `shared/password-policy.ts` (`HORAS_DE_VIGENCIA_TEMPORAL`,
+`vencimientoDeTemporal`, `temporalVencida`, `MENSAJE_TEMPORAL_VENCIDA`).
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| DB | `migrations/043-password-temporal-vence.ts` (nueva) + `index.ts`; modelo `user.ts` | Columna `password_temporal_vence_en`; las cuentas con temporal pendiente reciben 72 h desde que se aplica |
+| API | `shared/password-policy.ts` | La regla y el mensaje |
+| API | `use-cases/usuarios/listar-usuarios.usecase.ts` | Fija el vencimiento al crear y al restablecer o reactivar; lo vacía cuando llega `must_change_password: false` |
+| API | `use-cases/auth/login.usecase.ts`, `middlewares/auth.middleware.ts` | Rechazan la temporal vencida |
+| API | `use-cases/auth/first-login.usecase.ts` | Vacía la fecha al cambiar la contraseña |
+| API | `use-cases/auth/security-questions.usecase.ts` | La recuperación apaga además `debe_cambiar_password`: con una temporal vencida, quien recuperaba seguía marcado y el login lo habría rechazado por una clave que ya no es la suya |
+| Sitio | `usuarios-view.tsx`, `use-usuarios.ts` | El aviso de la contraseña temporal dice hasta cuándo vale |
+| Docs | `11-base-de-datos.md`, `12-diccionario-de-datos.md`, `3-seguridad-del-proyecto.md` | Fila de la 043, columna 18 de `usuarios`, fila de S10 al día |
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| Login y `requireAuth` reales con repositorios, `jwt` y bcrypt simulados, sin base | ✅ vencida → 403 en el login y 401 en la sesión; vigente (71 h), sin fecha y ya cambiada pasan el control |
+| `createUser` y `updateUser` con `reset_password` | ✅ 72 h; el cambio voluntario deja `null` |
+| SQL de la 043 sobre una tabla **temporal** en Neon, dentro de una transacción deshecha | ✅ 72 h solo donde `debe_cambiar_password`; el `DROP` funciona; `usuarios` sin tocar |
+| `tsc --noEmit` en la API y el sitio; `eslint` de los archivos del sitio | ✅ |
+
+> **Aviso.** El modelo ya pide la columna: **hasta aplicar la 043 en Neon, cualquier consulta
+> de usuarios falla** (login incluido). Primero `npm run migrate`, después reiniciar la API.
+
+**Pendiente al cierre.**
+
+- **`npm run migrate`** en `4000-api-backend`, reiniciar la API y `npm run db:verificar`.
+- Probar con una cuenta real: crear un usuario (el aviso dice hasta cuándo vale), entrar con
+  la temporal y completar el primer ingreso.
+- La lista de usuarios no marca las temporales vencidas: el administrador lo sabe cuando la
+  persona avisa. Se podría añadir una etiqueta «Temporal vencida» en la fila.
+
+---
+
+## sesión 09-10-2026 (14.ª parte): mitad izquierda en blanco y el número de la pregunta junto a la pregunta
+
+**Qué se pidió.** En las pantallas de acceso del panel, que la mitad izquierda del escritorio,
+donde está el logo, vaya sobre blanco. Y en la recuperación de contraseña, quitar
+«(Pregunta de seguridad 1 de 3)» del título de la página y ponerlo bajo «Responde tus
+preguntas».
+
+**Lo que se hizo.**
+
+| Archivo | Cambio |
+|---|---|
+| `marco-de-pasos.tsx` | Desde `xl` la mitad izquierda ya no es `#001631` con texto blanco: queda blanca con el texto en `#001631`, como en el móvil. Se quitaron los `xl:` que pasaban a blanco el título y el paginador. La mitad derecha (`#001a39`, esquinas de 32) no cambia. Afecta a todas las pantallas del marco: login, primer ingreso y recuperación |
+| `security-questions-view.tsx` | El título queda en «Validación de identidad». El contador va dentro del `h2` «Responde tus preguntas», en una segunda línea de 16 px sin negrita, para que no compita con el encabezado |
+| `manual-de-usuario-formato.md` | Primer ingreso, login y recuperación: la mitad izquierda va sobre blanco; dónde está ahora el número de la pregunta |
+
+**Cómo se probó.** Con el arnés de siempre (componentes reales, `fetch` simulado, Chrome sin
+ventana, a 360, 440, 768, 1032, 1280 y 1920 px), sin tocar Neon ni el servidor de desarrollo:
+login, primer ingreso completo y recuperación completa hasta «Genial», sin errores en la
+consola. En las capturas de 1280 y 1920 la mitad izquierda es blanca y el logo, el título y el
+paginador se leen en `#001631`; la pregunta muestra «Validación de identidad» arriba y el
+contador bajo «Responde tus preguntas» a 360 y a 1280. `tsc --noEmit` del sitio y `eslint` de
+los dos archivos, limpios.
+
+---
+
 ## sesión 09-10-2026 (13.ª parte): la sesión de primer ingreso solo sirve para terminarlo
 
 **Qué se pidió.** Revisar qué pasa cuando alguien entra con un correo nuevo y la contraseña
