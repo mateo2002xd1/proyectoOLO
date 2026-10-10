@@ -12,14 +12,13 @@ import { Trash2 } from 'lucide-react';
 import { BotonOjo } from '@/shared/ui/atoms/boton-ojo';
 import { COLOR_DE_ACCION } from '@/shared/lib/identidad-panel';
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
-import { BotonDeFila, fechaDeFila, RESALTE_DE_FILA, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
+import { BotonDeFila, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
 import { useAuditoria } from '../hooks/use-auditoria';
 import { comentarioPrincipal, resumenDeCambios } from '../lib/cambios';
+import { FraseDeRegistro, PildoraDeAccion } from './frase-de-registro';
 
 import {
-  COLOR_ACCION,
   ETIQUETA_CATEGORIA,
-  etiquetaDeAccion,
   opcionesDeAccion,
   type CategoriaAuditoria,
   type RegistroAuditoria,
@@ -28,13 +27,6 @@ import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
 
 // Misma altura y mismas esquinas que los filtros, para que la fila se lea como
 // una sola banda de controles.
-/**
- * Lo que cambió, para ir detrás de «El usuario Ana Gómez:» en la frase del acordeón:
- * «Publicó la versión 4» pasa a «publicó…». Lo que empieza por comillas (un comentario)
- * queda igual.
- */
-const enMinuscula = (texto: string) => (texto ? texto.charAt(0).toLocaleLowerCase('es') + texto.slice(1) : texto);
-
 const CLASE_BOTON =
   'h-11 rounded-[16px] border border-[#d0d5dd] px-4 text-sm font-medium text-zinc-700 transition hover:border-[#002237]/40 hover:bg-[#002237]/5 hover:text-[#002237] disabled:opacity-60 dark:border-[#2d3649] dark:text-zinc-200 dark:hover:bg-white/5 dark:hover:text-[#f6f6f6]';
 
@@ -192,36 +184,13 @@ export function AuditoriaView() {
                   const nombre =
                     (registro.usuarioId ? usuarios.find((u) => u.id === registro.usuarioId)?.nombre : null) ??
                     registro.usuarioNombre;
-                  const accion = (
-                    <span
-                      className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${COLOR_ACCION[registro.accion] ?? ''}`}
-                    >
-                      {etiquetaDeAccion(registro.accion, registro.categoria)}
-                    </span>
-                  );
                   return (
                   <tr key={registro.id} data-abierta={abierta || undefined} className="bg-white dark:bg-[#0f1626]">
-                    {/* Solo en acordeón: la frase, como la pidió el usuario (2026-10-10). Plegada,
-                        «El usuario Ana Gómez hizo la acción de [Edición]»; desplegada, con lo que
-                        cambió y la fecha: «… hizo la acción de [Publicación]: publicó la versión 4
-                        de /inicio el 9 de octubre de 2026 a las 3:00 p. m.». Sin la entidad
-                        («Usuario», «Página»): junto al nombre de una persona confundía. */}
+                    {/* Solo en acordeón: la frase (`FraseDeRegistro`, la misma de «Actividad
+                        reciente» en el dashboard). */}
                     <td data-resumen>
                       <ResumenDeFila abierta={abierta} onAlternar={() => alternar(registro.id)}>
-                        {nombre ? (
-                          <>
-                            El usuario <span className={RESALTE_DE_FILA}>{nombre}</span>
-                          </>
-                        ) : (
-                          <span className={RESALTE_DE_FILA}>El sistema</span>
-                        )}{' '}
-                        hizo la acción de {accion}
-                        {abierta && (
-                          <>
-                            : {enMinuscula(resumenDeCambios(registro)) || 'sin cambios registrados'} el{' '}
-                            <span className={RESALTE_DE_FILA}>{fechaDeFila(registro.fecha)}</span>
-                          </>
-                        )}
+                        <FraseDeRegistro registro={registro} nombre={nombre} abierta={abierta} />
                       </ResumenDeFila>
                     </td>
                     {/* Solo en acordeón y desplegada: el detalle con su nombre (el ojo solo no
@@ -241,7 +210,7 @@ export function AuditoriaView() {
                       {nombre ?? <span className="text-zinc-500">Sin usuario</span>}
                     </td>
                     <td data-solo-tabla data-etiqueta="Acción" className="px-4 py-2">
-                      {accion}
+                      <PildoraDeAccion registro={registro} />
                     </td>
                     {/* Se corta en la tabla y se lee completo en el `title` o en el detalle.
                         El comentario de un envío va más oscuro que los campos internos:

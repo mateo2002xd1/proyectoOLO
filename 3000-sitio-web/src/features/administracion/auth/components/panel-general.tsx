@@ -67,11 +67,12 @@ import { TarjetaUsuarios } from './tarjeta-usuarios';
 import {
   listarAuditoria,
   ErrorAuditoria,
-  COLOR_ACCION,
-  etiquetaDeAccion,
+  FraseDeRegistro,
+  PildoraDeAccion,
   resumenDeCambios,
   type RegistroAuditoria,
 } from '@/features/administracion/auditoria';
+import { ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
 import { useUsuarios } from '../hooks/use-usuarios';
 import { listarAlertasCaducidad, type AlertaCaducidad } from '../services/alertas-caducidad.service';
 import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
@@ -639,6 +640,8 @@ export function PanelGeneralDashboard() {
   // Solo en el dashboard: 12 en vez de los 15 de Roles/Usuarios/Auditoría, para que
   // la tarjeta de Actividad Reciente no crezca más que las demás del mismo grid.
   const [itemsPorPaginaActividad, setItemsPorPaginaActividad] = useState(12);
+  // Registros desplegados del acordeón (móvil y tablet). En la tabla de escritorio no se usa.
+  const { estaAbierta, alternar } = useFilasAbiertas();
   const [paginasPublicadas, setPaginasPublicadas] = useState<ResumenPaginasPublicadas | null>(null);
   const [errorPaginas, setErrorPaginas] = useState<string | null>(null);
 
@@ -745,7 +748,11 @@ export function PanelGeneralDashboard() {
                   esquinas: con un solo eje explícito, algunos navegadores no lo
                   clipan igual. */}
               <div className="overflow-x-auto overflow-y-hidden">
-                <table className="olo-tabla-apilable w-full min-w-[40rem] text-left text-sm">
+                {/* En el móvil y la tablet, acordeón con la misma frase que Auditoría
+                    (`FraseDeRegistro`): «El usuario Ana Gómez hizo la acción de [Edición]»
+                    y, al tocarla, lo que cambió y la fecha. Piezas en `fila-acordeon.tsx`;
+                    reglas en globals.css (`olo-tabla-acordeon`). */}
+                <table className="olo-tabla-apilable olo-tabla-acordeon w-full min-w-[40rem] text-left text-sm">
                   <caption className="p-5 text-left">
                     <CabeceraActividad sinAccesoAuditoria={sinAccesoAuditoria} />
                   </caption>
@@ -758,34 +765,41 @@ export function PanelGeneralDashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
-                    {actividadPaginada.map((registro) => (
-                      <tr key={registro.id}>
-                        <td data-etiqueta="Fecha y hora" className="whitespace-nowrap px-5 py-2 text-zinc-600 dark:text-zinc-300">
+                    {actividadPaginada.map((registro) => {
+                      const abierta = estaAbierta(registro.id);
+                      return (
+                      <tr key={registro.id} data-abierta={abierta || undefined}>
+                        {/* Solo en acordeón. Desplegada no lleva botones: la tabla tampoco
+                            tiene acciones por fila; el detalle se ve con «Ver más». */}
+                        <td data-resumen>
+                          <ResumenDeFila abierta={abierta} onAlternar={() => alternar(registro.id)}>
+                            <FraseDeRegistro registro={registro} nombre={registro.usuarioNombre} abierta={abierta} />
+                          </ResumenDeFila>
+                        </td>
+                        <td data-solo-tabla data-etiqueta="Fecha y hora" className="whitespace-nowrap px-5 py-2 text-zinc-600 dark:text-zinc-300">
                           {fechaCorta(registro.fecha)}
                         </td>
-                        <td data-etiqueta="Usuario" className="max-w-[10rem] truncate px-5 py-2 font-medium text-zinc-900 dark:text-[#f6f6f6]">
+                        <td data-solo-tabla data-etiqueta="Usuario" className="max-w-[10rem] truncate px-5 py-2 font-medium text-zinc-900 dark:text-[#f6f6f6]">
                           {registro.usuarioNombre ?? <span className="font-normal text-zinc-500">Sin usuario</span>}
                         </td>
-                        <td data-etiqueta="Acción" className="px-5 py-2">
-                          <span
-                            className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${COLOR_ACCION[registro.accion] ?? ''}`}
-                          >
-                            {etiquetaDeAccion(registro.accion, registro.categoria)}
-                          </span>
+                        <td data-solo-tabla data-etiqueta="Acción" className="px-5 py-2">
+                          <PildoraDeAccion registro={registro} />
                         </td>
                         {/* Lo que de verdad cambió (el comentario del envío, o el
                             motivo de un rechazo), no los nombres de los campos
                             tocados: mismo resumen que ya usa la tabla de
                             Auditoría, para que las dos lean igual un registro. */}
                         <td
+                          data-solo-tabla
                           data-etiqueta="Cambios"
                           className="max-w-[16rem] truncate px-5 py-2 text-zinc-500 dark:text-[#94a3b8]"
                           title={resumenDeCambios(registro)}
                         >
-                          <span className="@max-3xl:line-clamp-3">{resumenDeCambios(registro) || '—'}</span>
+                          {resumenDeCambios(registro) || '—'}
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
