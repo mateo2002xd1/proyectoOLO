@@ -5,6 +5,25 @@
 
 ---
 
+## sesión 09-10-2026 (28.ª parte): los tooltips ya no se parten letra por letra en tarjetas
+
+**Qué era.** Con la tabla de Usuarios en tarjetas, «Editar usuario» salía en una columna de
+una letra por línea.
+
+**Por qué.** `.olo-tabla-apilable … td :where(*)` pone `white-space: normal`, y la celda
+`overflow-wrap: anywhere` (`globals.css`, modo tarjetas). Están fuera de las capas de Tailwind,
+así que le ganaban a `whitespace-nowrap`. Un `absolute` dentro de un botón de 36 px se encoge a
+su ancho mínimo, y con `anywhere` ese mínimo es una letra.
+
+**Lo que se hizo.** `whitespace-nowrap!` en `shared/ui/atoms/tooltip.ts`: un `!important`
+dentro de una capa sí gana a una declaración normal sin capa. Arregla todos los que usan el
+tooltip compartido (Usuarios, el ojo de Auditoría y la cola de revisión).
+
+**Cómo se probó.** `tsc --noEmit` limpio; el CSS del servidor de desarrollo genera
+`.whitespace-nowrap\!` con `white-space: nowrap !important`. No se vio en el navegador.
+
+---
+
 ## sesión 09-10-2026 (27.ª parte): confirmar antes de publicar desde la cola de revisión
 
 **Qué se pidió.** Un modal al publicar: «¿Estás seguro de que deseas publicar esta versión?»,

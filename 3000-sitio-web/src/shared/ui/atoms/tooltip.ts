@@ -10,11 +10,17 @@
  *
  * Son cadenas enteras a propósito: Tailwind solo genera las clases que encuentra
  * escritas tal cual en el código.
+ *
+ * `whitespace-nowrap!` (importante) y no `whitespace-nowrap`: con la tabla en tarjetas,
+ * `.olo-tabla-apilable … td :where(*)` pone `white-space: normal` y la celda
+ * `overflow-wrap: anywhere`, fuera de las capas de Tailwind, así que ganaban. El
+ * tooltip, `absolute` dentro de un botón angosto, se encogía al ancho del botón y se
+ * partía letra por letra. Un `!important` dentro de una capa sí gana.
  */
 export const GRUPO_TOOLTIP = 'group/tooltip relative';
 
 const TOOLTIP =
-  'pointer-events-none absolute bottom-full z-10 mb-2 translate-y-1 whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-semibold opacity-0 shadow-[0_2px_8px_rgba(0,0,0,0.25)] transition duration-150 group-hover/tooltip:translate-y-0 group-hover/tooltip:opacity-100 group-focus-visible/tooltip:translate-y-0 group-focus-visible/tooltip:opacity-100 motion-reduce:transition-none';
+  'pointer-events-none absolute bottom-full z-10 mb-2 translate-y-1 whitespace-nowrap! rounded-md px-2.5 py-1 text-xs font-semibold opacity-0 shadow-[0_2px_8px_rgba(0,0,0,0.25)] transition duration-150 group-hover/tooltip:translate-y-0 group-hover/tooltip:opacity-100 group-focus-visible/tooltip:translate-y-0 group-focus-visible/tooltip:opacity-100 motion-reduce:transition-none';
 
 /** Centrado sobre el botón. */
 export const TOOLTIP_ENCIMA = `${TOOLTIP} left-1/2 -translate-x-1/2`;
