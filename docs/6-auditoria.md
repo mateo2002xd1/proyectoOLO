@@ -5,6 +5,45 @@
 
 ---
 
+## sesión 09-10-2026 (17.ª parte): merge de la PR #140 de Mateo con los cambios propios conservados
+
+**Qué era.** Al traer `OLO/dev` (4 commits de Mateo, PR #140) chocaron 6 archivos. Mateo
+pasó la recuperación de contraseña de la intranet (preguntas, nueva contraseña, pantalla de
+éxito) a la maqueta del login (`login-page`, tarjeta blanca, logo y «INTRANET»), dio a
+`PasswordField` y `PasswordRequisitos` una variante sin `classPrefix`, renombró «Editor» a
+«Autor» en Respaldos, quitó el buscador de texto de la cola de revisión y devolvió los
+enlaces de la política a `/politica-de-privacidad`, con un redirect desde
+`/inicio/politica-de-privacidad`. Eso cierra el pendiente del 404 anotado el 25-09-2026.
+
+**Cómo se resolvió.** Se conservan todas las líneas cambiadas aquí; de Mateo se toma solo lo
+que aquí no se tocó.
+
+| Archivo | Queda |
+|---|---|
+| `sitio-web/.../auth/components/login-view.tsx` | El diseño propio (texto 14 px `#737373`), con los enlaces de Mateo a `/politica-de-privacidad` |
+| `intranet/.../login/components/login-view.tsx` | El título propio («Bienvenido a nuestra Intranet») y los colores propios del aviso, con los enlaces de Mateo |
+| `auth-success-screen.tsx`, `reset-password-view.tsx`, `security-questions-view.tsx` | La maqueta de Mateo con el `cerrarSesion` propio en `ReturnToSiteLink` y `classPrefix="login"` (el de su maqueta) |
+| `docs/manual-de-usuario-formato.md` | Los dos pasos del sitio web en su versión propia: «Correo SENA» y la recuperación con tres barras. El texto de Mateo («Verifica tu identidad», puntos) describía la intranet, no el sitio |
+
+> **Ojo.** En `auth-success-screen.tsx` quedarse con «lo mío» tal cual borraba la tarjeta de
+> Mateo y dejaba el JSX roto: el bloque en conflicto empezaba en mitad de su maqueta nueva.
+
+**Cómo se probó.**
+
+| Comprobación | Resultado |
+|---|---|
+| Marcadores de conflicto en los 6 archivos | Ninguno |
+| `tsc --noEmit` de la intranet y del sitio | Limpios |
+
+**Pendiente al cierre:**
+
+- Probar en el navegador la recuperación de la intranet con la maqueta de Mateo (no se corrió).
+- Lo que Mateo dejó en el manual sobre el aviso de privacidad del login del sitio
+  (`/politica-de-privacidad`) no entró, porque chocaba con el paso propio; se puede añadir
+  como viñeta aparte.
+
+---
+
 ## sesión 09-10-2026 (16.ª parte): sin «(Pregunta 1 de 3)» a la vista
 
 **Qué se pidió.** Quitar «(Pregunta 1 de 3)» de bajo el encabezado «Preguntas de seguridad».
