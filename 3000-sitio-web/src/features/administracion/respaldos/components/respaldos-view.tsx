@@ -3,10 +3,13 @@
 import { useMemo, useState } from 'react';
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { BotonOjo } from '@/shared/ui/atoms/boton-ojo';
+import { COLOR_DE_ACCION } from '@/shared/lib/identidad-panel';
 import { BarraFiltros, CampoFiltro } from '@/shared/ui/molecules/barra-filtros';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
 import { DatePicker } from '@/shared/ui/molecules/date-picker';
 import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
+import { fechaDeFila, RESALTE_DE_FILA, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
+import { rutaPublicaDeSlug } from '@/features/paginas';
 import { useRespaldos } from '../hooks/use-respaldos';
 import { VistaPreviaVersion } from './vista-previa-version';
 import { ModalDepurarVersiones } from './modal-depurar-versiones';
@@ -31,6 +34,7 @@ const FILTROS_VACIOS = { ambito: '', editor: '', publicador: '', desde: '', hast
 export function RespaldosView() {
   const { registros, isLoading, isRefreshing, error, recargar } = useRespaldos();
   const [seleccionado, setSeleccionado] = useState<RegistroRespaldo | null>(null);
+  const { estaAbierta, alternar } = useFilasAbiertas();
   const [modalDepurarAbierto, setModalDepurarAbierto] = useState(false);
   // Contador de aperturas usado como `key` del modal de depuración: cambiarlo al abrir
   // lo monta de cero, que es la forma de que los filtros y el resultado empiecen
@@ -172,7 +176,12 @@ export function RespaldosView() {
         <p className="text-sm text-zinc-500">Ningún registro coincide con los filtros aplicados.</p>
       ) : (
         <div className={`overflow-x-auto rounded-xl border border-zinc-200 dark:border-[#7db828]/30 transition-opacity ${isRefreshing ? 'opacity-70' : 'opacity-100'}`}>
-          <table className="olo-tabla-apilable w-full min-w-[56rem] text-left text-sm">
+          {/* En el móvil y la tablet, acordeón, como «Páginas en revisión» y «Auditoría»:
+              cada publicación es una frase («Carlos Ruiz publicó la versión 43 de /inicio») y
+              al tocarla se completa con el ámbito, las fechas y quién la editó, y debajo
+              sale «Ver versión 42». Piezas en `fila-acordeon.tsx`; reglas en globals.css
+              (`olo-tabla-acordeon`). */}
+          <table className="olo-tabla-apilable olo-tabla-acordeon w-full min-w-[56rem] text-left text-sm">
             <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-[#131b2f]">
               <tr>
                 <th scope="col" className="px-4 py-3.5 font-medium">Página</th>
@@ -184,9 +193,49 @@ export function RespaldosView() {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
-              {registrosFiltrados.map((registro) => (
-                <tr key={registro.id} className="bg-white dark:bg-[#0f1626]">
-                  <td className="px-4 py-2">
+              {registrosFiltrados.map((registro) => {
+                const abierta = estaAbierta(registro.id);
+                return (
+                <tr key={registro.id} data-abierta={abierta || undefined} className="bg-white dark:bg-[#0f1626]">
+                  {/* Solo en acordeón: la frase. Plegada, quién publicó qué versión de qué
+                      sección; desplegada, una sola frase con el ámbito, la fecha y quién la
+                      editó: «… de la sección /inicio del sitio web el 10 de octubre de 2026
+                      a las 9:00 a. m., editada por Ana Gómez el 9 de octubre…». */}
+                  <td data-resumen>
+                    <ResumenDeFila abierta={abierta} onAlternar={() => alternar(registro.id)}>
+                      <span className={RESALTE_DE_FILA}>{registro.publicadoPor.nombre}</span> publicó la versión{' '}
+                      {registro.numeroVersion} de{' '}
+                      {abierta ? (
+                        <>
+                          la sección <span className={RESALTE_DE_FILA}>{rutaPublicaDeSlug(registro.slug)}</span>
+                          {registro.ambito && (
+                            <>
+                              {registro.ambito === 'intranet' ? ' de la ' : ' del '}
+                              <span className={RESALTE_DE_FILA}>{registro.ambito === 'intranet' ? 'intranet' : 'sitio web'}</span>
+                            </>
+                          )}{' '}
+                          el <span className={RESALTE_DE_FILA}>{fechaDeFila(registro.publicadoEn)}</span>, editada por{' '}
+                          <span className={RESALTE_DE_FILA}>{registro.editadoPor.nombre}</span> el{' '}
+                          <span className={RESALTE_DE_FILA}>{fechaDeFila(registro.editadoEn)}</span>
+                        </>
+                      ) : (
+                        <span className={RESALTE_DE_FILA}>{rutaPublicaDeSlug(registro.slug)}</span>
+                      )}
+                    </ResumenDeFila>
+                  </td>
+                  {/* Solo en acordeón y desplegada: la versión anterior con su nombre (el ojo
+                      solo no se entiende en una pantalla táctil), del color de «Ver detalle». */}
+                  <td data-detalle>
+                    <button
+                      type="button"
+                      onClick={() => setSeleccionado(registro)}
+                      className={`mb-1 flex h-11 w-full items-center justify-center gap-2 rounded-[16px] px-3 text-sm font-medium transition hover:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#001631] dark:focus-visible:ring-white ${COLOR_DE_ACCION['ver-detalle']}`}
+                    >
+                      <IconoMascara nombre="eye-closed" tamano="h-6 w-6" />
+                      Ver versión {registro.versionAnteriorNumero}
+                    </button>
+                  </td>
+                  <td data-solo-tabla className="px-4 py-2">
                     {/* «Sitio web /inicio · versión 43»: primero dónde (el ámbito), luego
                         qué página o sección (su ruta, como en los modales de restaurar)
                         y al final la versión. Antes iba el título primero y el ámbito
@@ -207,25 +256,26 @@ export function RespaldosView() {
                       <span className="text-xs text-zinc-500">· versión {registro.numeroVersion}</span>
                     </div>
                   </td>
-                  <td data-etiqueta="Autor" className="px-4 py-2 text-zinc-600 dark:text-zinc-300">{registro.editadoPor.nombre}</td>
-                  <td data-etiqueta="Publicado por" className="px-4 py-2 text-zinc-600 dark:text-zinc-300">{registro.publicadoPor.nombre}</td>
-                  <td data-etiqueta="Editado el" className="whitespace-nowrap px-4 py-2 text-zinc-600 dark:text-zinc-300">
+                  <td data-solo-tabla data-etiqueta="Autor" className="px-4 py-2 text-zinc-600 dark:text-zinc-300">{registro.editadoPor.nombre}</td>
+                  <td data-solo-tabla data-etiqueta="Publicado por" className="px-4 py-2 text-zinc-600 dark:text-zinc-300">{registro.publicadoPor.nombre}</td>
+                  <td data-solo-tabla data-etiqueta="Editado el" className="whitespace-nowrap px-4 py-2 text-zinc-600 dark:text-zinc-300">
                     {fecha(registro.editadoEn)}
                   </td>
-                  <td data-etiqueta="Publicado el" className="whitespace-nowrap px-4 py-2 text-zinc-600 dark:text-zinc-300">
+                  <td data-solo-tabla data-etiqueta="Publicado el" className="whitespace-nowrap px-4 py-2 text-zinc-600 dark:text-zinc-300">
                     {fecha(registro.publicadoEn)}
                   </td>
-                  <td data-etiqueta="Versión anterior" className="px-4 py-2 text-center">
-                    {/* Como el ojo de Auditoría: verde #7DB728 con su tooltip. */}
+                  <td data-solo-tabla data-etiqueta="Versión anterior" className="px-4 py-2 text-center">
+                    {/* Como el ojo de Auditoría: verde #7DB728; el tooltip, del color de «Ver detalle». */}
                     <BotonOjo
                       etiqueta="Ver versión"
                       onClick={() => setSeleccionado(registro)}
                       className="rounded-lg p-1.5 text-[#7DB728] transition-colors hover:bg-[#7DB728]/10"
-                      claseTooltip="bg-[#7DB728] text-white"
+                      claseTooltip={COLOR_DE_ACCION['ver-detalle']}
                     />
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
