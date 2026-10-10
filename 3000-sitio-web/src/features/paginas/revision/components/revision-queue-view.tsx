@@ -1,18 +1,19 @@
 'use client';
 
 import { useMemo, useState, useRef, useEffect } from 'react';
-import { ChevronDownIcon } from '@heroicons/react/20/solid';
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { BarraFiltros, CampoFiltro } from '@/shared/ui/molecules/barra-filtros';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
 import { DatePicker } from '@/shared/ui/molecules/date-picker';
 import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
+import { fechaDeFila, RESALTE_DE_FILA, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
 import { Paginador } from '@/shared/ui/molecules/paginador';
 import { useRevisionQueue } from '../hooks/use-revision-queue';
 import type { PaginaEnRevision } from '../../model/pagina.types';
 import { rutaPublicaDeSlug } from '../../model/rutas';
 import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
 import { GRUPO_TOOLTIP, TOOLTIP_ENCIMA } from '@/shared/ui/atoms/tooltip';
+import { COLOR_DE_ACCION } from '@/shared/lib/identidad-panel';
 import { AvisoErrorDeCarga } from '@/shared/ui/molecules/aviso-error-de-carga';
 
 /**
@@ -53,18 +54,6 @@ const fecha = (iso: string) => {
   }
 };
 
-/** La fecha dentro de la frase del acordeón: «9 de octubre de 2026, 5:30 p. m.». */
-const fechaLarga = (iso: string) => {
-  try {
-    return new Date(iso).toLocaleString('es-CO', { dateStyle: 'long', timeStyle: 'short' });
-  } catch {
-    return iso;
-  }
-};
-
-/** Lo que se destaca en la frase del acordeón: quién, qué y cuándo. */
-const RESALTE = 'font-semibold text-zinc-900 dark:text-[#f6f6f6]';
-
 const FILTROS_VACIOS = { ambito: '', autor: '', desde: '', hasta: '' };
 
 export function RevisionQueueView() {
@@ -77,14 +66,7 @@ export function RevisionQueueView() {
   const [numeroPagina, setNumeroPagina] = useState(1);
   const [itemsPorPagina, setItemsPorPagina] = useState(15);
   // Filas desplegadas del acordeón (móvil y tablet). En la tabla de escritorio no se usa.
-  const [abiertas, setAbiertas] = useState<Set<string>>(() => new Set());
-  const alternarFila = (id: string) =>
-    setAbiertas((previas) => {
-      const nuevas = new Set(previas);
-      if (nuevas.has(id)) nuevas.delete(id);
-      else nuevas.add(id);
-      return nuevas;
-    });
+  const { estaAbierta, alternar } = useFilasAbiertas();
 
   const cambiarFiltro = (campo: keyof typeof FILTROS_VACIOS, valor: string) => {
     setFiltros((previos) => ({ ...previos, [campo]: valor }));
@@ -252,7 +234,7 @@ export function RevisionQueueView() {
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
               {paginasPagina.map((pagina) => {
-                const abierta = abiertas.has(pagina.id);
+                const abierta = estaAbierta(pagina.id);
                 return (
                 <tr
                   key={pagina.id}
@@ -265,31 +247,20 @@ export function RevisionQueueView() {
                       «Ana envió la versión 3 de la sección /contacto del sitio web el …».
                       Debajo, el comentario y los botones. */}
                   <td data-resumen>
-                    <button
-                      type="button"
-                      aria-expanded={abierta}
-                      onClick={() => alternarFila(pagina.id)}
-                      className="flex min-h-11 w-full items-center gap-3 rounded-[16px] py-1.5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#001631] dark:focus-visible:ring-white"
-                    >
-                      <span className="min-w-0 flex-1 text-sm leading-5 text-zinc-600 dark:text-zinc-300">
-                        <span className={RESALTE}>{pagina.autor?.nombre || 'Alguien'}</span> envió la
-                        versión {pagina.numeroVersion} de{' '}
-                        {abierta ? (
-                          <>
-                            la sección <span className={RESALTE}>{rutaPublicaDeSlug(pagina.slug)}</span> de
-                            {pagina.ambito === 'intranet' ? ' la ' : 'l '}
-                            <span className={RESALTE}>{pagina.ambito === 'intranet' ? 'intranet' : 'sitio web'}</span> el{' '}
-                            <span className={RESALTE}>{fechaLarga(pagina.creadoEn)}</span>
-                          </>
-                        ) : (
-                          <span className={RESALTE}>{pagina.titulo}</span>
-                        )}
-                      </span>
-                      <ChevronDownIcon
-                        aria-hidden="true"
-                        className={`size-5 shrink-0 text-zinc-500 transition-transform duration-200 motion-reduce:transition-none dark:text-zinc-400 ${abierta ? 'rotate-180' : ''}`}
-                      />
-                    </button>
+                    <ResumenDeFila abierta={abierta} onAlternar={() => alternar(pagina.id)}>
+                      <span className={RESALTE_DE_FILA}>{pagina.autor?.nombre || 'Alguien'}</span> envió la
+                      versión {pagina.numeroVersion} de{' '}
+                      {abierta ? (
+                        <>
+                          la sección <span className={RESALTE_DE_FILA}>{rutaPublicaDeSlug(pagina.slug)}</span> de
+                          {pagina.ambito === 'intranet' ? ' la ' : 'l '}
+                          <span className={RESALTE_DE_FILA}>{pagina.ambito === 'intranet' ? 'intranet' : 'sitio web'}</span> el{' '}
+                          <span className={RESALTE_DE_FILA}>{fechaDeFila(pagina.creadoEn)}</span>
+                        </>
+                      ) : (
+                        <span className={RESALTE_DE_FILA}>{pagina.titulo}</span>
+                      )}
+                    </ResumenDeFila>
                   </td>
                   {/* Solo en acordeón y desplegada: lo que el editor dice que cambió, sin
                       etiqueta. Se lee antes de decidir, como la descripción de un pull request. */}
@@ -349,7 +320,7 @@ export function RevisionQueueView() {
                           <span className="absolute inset-0 hidden items-center justify-center group-hover:flex group-focus-visible:flex"><IconoMascara nombre="eye-open" tamano="h-6 w-6" /></span>
                         </span>
                         <span className="@3xl:sr-only">Visualizar</span>
-                        <span aria-hidden="true" className={`${TOOLTIP} bg-[#1FACE3] text-white`}>Visualizar</span>
+                        <span aria-hidden="true" className={`${TOOLTIP} ${COLOR_DE_ACCION.visualizar}`}>Visualizar</span>
                       </a>
                       <button
                         type="button"
@@ -358,8 +329,8 @@ export function RevisionQueueView() {
                         className={`${BOTON} bg-[#7DB728] text-white hover:brightness-95 focus:ring-[#7DB728]/50 disabled:cursor-not-allowed disabled:opacity-50`}
                       >
                         <IconoMascara nombre="send" />
-                        <span className="@3xl:sr-only">Aprobar</span>
-                        <span aria-hidden="true" className={`${TOOLTIP} bg-[#7DB728] text-white`}>Aprobar</span>
+                        <span className="@3xl:sr-only">Publicar</span>
+                        <span aria-hidden="true" className={`${TOOLTIP} ${COLOR_DE_ACCION.aprobar}`}>Publicar</span>
                       </button>
                       <button
                         type="button"
@@ -370,7 +341,7 @@ export function RevisionQueueView() {
                         <IconoMascara nombre="equiz" />
                         <span className="@3xl:sr-only">Rechazar</span>
                         {/* `#d11a1a` y no el `#FF1F1F` del icono: sobre el rosa da 4,7:1; el del icono, 3,3:1. */}
-                        <span aria-hidden="true" className={`${TOOLTIP} border border-[#FF1F1F] bg-[#FFE9E9] text-[#d11a1a]`}>Rechazar</span>
+                        <span aria-hidden="true" className={`${TOOLTIP} ${COLOR_DE_ACCION.rechazar}`}>Rechazar</span>
                       </button>
                       <button
                         type="button"
@@ -380,7 +351,7 @@ export function RevisionQueueView() {
                       >
                         <IconoMascara nombre="trash" tamano="h-5 w-5" />
                         <span className="@3xl:sr-only">Eliminar</span>
-                        <span aria-hidden="true" className={`${TOOLTIP} bg-[#FF1F1F] text-white`}>Eliminar</span>
+                        <span aria-hidden="true" className={`${TOOLTIP} ${COLOR_DE_ACCION.eliminar}`}>Eliminar</span>
                       </button>
                     </div>
                   </td>
@@ -420,7 +391,7 @@ export function RevisionQueueView() {
             : ''
         }
         textoAccion="Publicar"
-        colorAccion="brand"
+        colorAccion="green"
         requiereMotivo={false}
         onConfirmar={confirmarModal}
         onCancelar={() => setModalState({ tipo: null, pagina: null })}
@@ -470,7 +441,7 @@ function ModalAccionConMotivo({
   titulo: string;
   descripcion: string;
   textoAccion: string;
-  colorAccion?: 'red' | 'brand';
+  colorAccion?: 'red' | 'brand' | 'green';
   onConfirmar: (motivo: string) => void;
   onCancelar: () => void;
   requiereMotivo?: boolean;
@@ -571,6 +542,8 @@ function ModalAccionConMotivo({
             className={`inline-flex h-11 w-full items-center justify-center rounded-[32px] px-6 text-base font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-50 sm:flex-1 ${
               colorAccion === 'red'
                 ? 'bg-red-600 hover:bg-red-700'
+                : colorAccion === 'green'
+                ? 'bg-[#7DB728] hover:bg-[#6da020]'
                 : 'bg-[#001631] hover:bg-[#002a5c] dark:bg-white dark:text-[#001631] dark:hover:bg-[#e6e8f0]'
             }`}
           >
