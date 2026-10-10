@@ -14,11 +14,11 @@
 
 El modelo de datos del Observatorio Laboral y Ocupacional (OLO) está implementado en **PostgreSQL** bajo el esquema `public`. Fue diseñado siguiendo principios de normalización relacional (3FN), segregación estricta de responsabilidades (RBAC), gobernanza de contenido mediante versionamiento inmutable, concurrencia pesimista en maquetación visual y trazabilidad integral requerida por la **Ley 1581 de 2012 (Habeas Data)**.
 
-### Métricas Generales del Esquema (tras la migración 043):
-- **Total de Tablas Base:** 33 (32 del dominio, 23 de ellas con modelo Sequelize, + 1 tabla técnica de control `migraciones_aplicadas`).
-- **Total de Columnas:** 234, dos de ellas generadas (`ocupaciones.codigo_nc`, `indicadores_ocupacionales.criterio_codigo`).
-- **Total de Llaves Foráneas (FK):** 46, cinco de ellas compuestas (las que impiden que una copia contradiga a su origen: invariantes I22 e I23 de `11-base-de-datos.md`), con políticas `RESTRICT`, `CASCADE` y `SET NULL`.
-- **Total de Restricciones CHECK:** 41 restricciones de dominio y reglas de negocio validadas en el motor de base de datos.
+### Métricas Generales del Esquema (tras la migración 044):
+- **Total de Tablas Base:** 34 (33 del dominio, 23 de ellas con modelo Sequelize, + 1 tabla técnica de control `migraciones_aplicadas`).
+- **Total de Columnas:** 240, dos de ellas generadas (`ocupaciones.codigo_nc`, `indicadores_ocupacionales.criterio_codigo`).
+- **Total de Llaves Foráneas (FK):** 47, cinco de ellas compuestas (las que impiden que una copia contradiga a su origen: invariantes I22 e I23 de `11-base-de-datos.md`), con políticas `RESTRICT`, `CASCADE` y `SET NULL`.
+- **Total de Restricciones CHECK:** 42 restricciones de dominio y reglas de negocio validadas en el motor de base de datos.
 - **Estrategia de Identificadores (PK):** UUID versión 4 (`DEFAULT gen_random_uuid()`) en todas las entidades del dominio, garantizando unicidad global y previniendo enumeración secuencial maliciosa.
 - **Control de Estados:** Implementado mediante restricciones `CHECK` con tipos de texto nativos en lugar de `ENUM` de PostgreSQL, permitiendo modificaciones y mantenimientos no bloqueantes.
 
@@ -30,7 +30,7 @@ En respuesta a la verificación de componentes adicionales del motor PostgreSQL:
 
 | Tipo de Objeto | Cantidad | Estado / Detalle |
 |---|---|---|
-| **Tablas Base (`BASE TABLE`)** | **33** | Activas en producción y desarrollo (32 de dominio + 1 de control). Cubren los 17 Requerimientos Funcionales (RF) y los módulos del Observatorio. |
+| **Tablas Base (`BASE TABLE`)** | **34** | Activas en producción y desarrollo (33 de dominio + 1 de control). Cubren los 17 Requerimientos Funcionales (RF) y los módulos del Observatorio. |
 | **Vistas (`VIEW`)** | **2** | `v_buscador_ocupacional` y `v_estado_cargas_ocupacional`, de la tendencia ocupacional (migraciones 033 y 035). |
 | **Vistas Materializadas (`MATERIALIZED VIEW`)** | **0** | Las agregaciones analíticas se delegan a Power BI (RF-08), datos dinámicos del Observatorio y caché en memoria Redis. |
 | **Procedimientos Almacenados (`PROCEDURE`)** | **0** | La lógica transaccional reside en la capa de servicios y casos de uso de la API (Node.js/TypeScript). |
@@ -40,7 +40,7 @@ En respuesta a la verificación de componentes adicionales del motor PostgreSQL:
 | **Extensiones (`EXTENSION`)** | **3** | `plpgsql` (v1.0), `pgcrypto` (v1.4, la crea la 001) y `uuid-ossp` (v1.1, solo en Neon). Ninguna se usa: `gen_random_uuid()` es nativa desde PostgreSQL 13. |
 | **Tipos Personalizados / `ENUM`** | **0** | Decisión de diseño D4: se utilizan tipos primitivos (`text`, `varchar`) con restricciones `CHECK`. |
 | **Secuencias (`SEQUENCE`)** | **0** | No se utilizan secuencias auto-incrementales; todas las llaves primarias son UUID. |
-| **Índices Secundarios** | **55** | Índices B-Tree en llaves foráneas, restricciones de unicidad (también las que sirven de destino a las FK compuestas) e índices compuestos para el buscador ocupacional y la bitácora. El índice GIN de `contenidos.busqueda` se fue con la tabla (migración 036). Criterio para crear o quitar uno: `11-base-de-datos.md` D9 y §9.3. |
+| **Índices Secundarios** | **56** | Índices B-Tree en llaves foráneas, restricciones de unicidad (también las que sirven de destino a las FK compuestas) e índices compuestos para el buscador ocupacional y la bitácora. El índice GIN de `contenidos.busqueda` se fue con la tabla (migración 036). Criterio para crear o quitar uno: `11-base-de-datos.md` D9 y §9.3. |
 
 ---
 
@@ -331,6 +331,26 @@ La especificación exhaustiva columna por columna de estas tablas se encuentra d
 
 ---
 
+### 3.15.1. Tabla: `configuracion`
+
+- **Módulo / Dominio:** Configuración del panel administrativo
+- **Requerimientos Asociados:** RF-03, RF-07
+- **Propósito General:** Ajustes que valen para todo el panel, uno por fila (clave → objeto JSON). Hoy solo `identidad-panel`: logo, icono y color de las etiquetas de acción (migración 044). La forma de cada valor la valida la API (`configuracion.validators.ts`); lo que falta en él es «lo de fábrica».
+
+| No. | Campo | Tipo de Dato | Longitud | Permite Nulos | Tipo Llave | Referencia / Restricción | Valor por Defecto | Descripción y Reglas de Negocio |
+|:---:|:---|:---|:---:|:---:|:---:|:---|:---|:---|
+| 1 | `id` | `UUID` | — | NO (NOT NULL) | **PK** | — | `gen_random_uuid()` | Identificador del ajuste; es el `entidad_id` de sus filas en `auditoria_cambios`. |
+| 2 | `clave` | `TEXT` | — | NO (NOT NULL) | **UNIQUE** | `uq_configuracion_clave` | — | Nombre del ajuste (`identidad-panel`). |
+| 3 | `valor` | `JSONB` | — | NO (NOT NULL) | Ninguna | `ck_configuracion_valor_objeto` | `'{}'` | El ajuste. Para `identidad-panel`: `logo` e `icono` (nombre UUID del archivo o `null`), `blancoEnModoOscuro` (booleano) y `acciones` (id → `{fondo, texto}` en `#rrggbb`). |
+| 4 | `actualizado_por` | `UUID` | — | SÍ (NULL) | **FK** | `usuarios.id` (ON DELETE SET NULL) | — | Quién lo cambió por última vez. `NULL` para la cuenta maestra local, que no vive en `usuarios`. |
+| 5 | `created_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | `now()` | Creación de la fila. |
+| 6 | `updated_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | `now()` | Último cambio. |
+
+**Restricciones de Integridad (CHECK) de `configuracion`:**
+- **`ck_configuracion_valor_objeto`**: `(jsonb_typeof(valor) = 'object')`
+
+---
+
 ### 3.16. Módulo: Observatorio Laboral y Ocupacional (Datos Dinámicos)
 
 - **Módulo / Dominio:** Análisis Estadístico y Empleabilidad
@@ -413,6 +433,7 @@ La especificación exhaustiva columna por columna de estas tablas se encuentra d
 | `paginas_versiones` | `publicado_por` | `usuarios` | `id` | `SET NULL` | `CASCADE` |
 | `paginas` | `creado_por` | `usuarios` | `id` | `SET NULL` | `CASCADE` |
 | `subidas_pendientes` | `pagina_id` | `paginas` | `id` | `CASCADE` | `CASCADE` |
+| `configuracion` | `actualizado_por` | `usuarios` | `id` | `SET NULL` | `NO ACTION` |
 | `centros_formacion` | `departamento_id` | `departamentos` | `id` | `RESTRICT` | `CASCADE` |
 | `programas_formacion` | `nivel_formacion_id` | `niveles_formacion` | `id` | `RESTRICT` | `CASCADE` |
 | `programas_sobresalientes` | `departamento_id` | `departamentos` | `id` | `RESTRICT` | `CASCADE` |

@@ -12,7 +12,7 @@
 
 ## 0. Las tres preguntas que responde el diseño
 
-1. **¿Qué se guarda?** 32 tablas de dominio y 2 vistas, en siete grupos (§4), más `migraciones_aplicadas`, que es del runner y no del dominio. 23 de las 32 tienen modelo Sequelize; las ocho de la tendencia ocupacional y `departamentos_alias` se consultan con SQL directo.
+1. **¿Qué se guarda?** 33 tablas de dominio y 2 vistas, en ocho grupos (§4), más `migraciones_aplicadas`, que es del runner y no del dominio. 23 de las 33 tienen modelo Sequelize; las ocho de la tendencia ocupacional, `departamentos_alias` y `configuracion` se consultan con SQL directo.
 2. **¿Qué NO se guarda en Postgres?** Lo que parece tabla y no lo es (§6).
 3. **¿Qué impide que los datos queden inconsistentes?** Veintiuna invariantes declaradas en el esquema, no en el código (§5).
 
@@ -98,6 +98,7 @@ bloqueos_edicion ··· (ambito, slug) ··· paginas    sin FK: candado efímer
 ```
 auditoria_cambios ──▶ usuarios (SET NULL)      + entidad_tipo/entidad_id sin FK (abajo)
 archivos ──▶ usuarios (SET NULL)
+configuracion ──▶ usuarios (actualizado_por, SET NULL)
 cargas_datos ──▶ archivos, usuarios (SET NULL)
 cargas_datos_ocupacionales ──▶ cargas_datos (CASCADE)      1:1, comparte la clave
 ```
@@ -350,6 +351,14 @@ En Neon tiene dos filas de más: `025-observatorio-programas-sobresalientes` y `
 
 *(Las tablas legacy `FileStatuses` y `_obsoleto_attachment` ya no existen. La segunda no estaba en Neon, pero ninguna migración la borraba: en una base nueva seguía viva hasta la 041, que la quita si está vacía.)*
 
+### 4.9 Configuración del panel — migración 044
+
+| Tabla | Qué información guarda | Restricciones clave |
+|---|---|---|
+| **`configuracion`** | Ajustes de todo el panel, uno por fila: `clave` → `valor` (JSONB). Hoy solo `identidad-panel`: el logo y el icono subidos (nombre del archivo en `filesystem/panel/identidad/`), si pasan a blanco en modo oscuro y el color de las etiquetas de acción que alguien cambió. Lo que no está es «lo de fábrica», que decide el frontend (`shared/lib/identidad-panel/acciones.ts`) | `UNIQUE (clave)`; `CHECK (jsonb_typeof(valor) = 'object')`; `actualizado_por` → `usuarios` (`SET NULL`) |
+
+**Por qué clave → valor y no columnas.** Configuración va a seguir creciendo, y cada ajuste nuevo sería una migración con una tabla de una sola fila. El precio: la forma del `valor` no la garantiza el esquema sino un validador de la API (`configuracion.validators.ts`), el mismo para escribir y para leer; si la fila trae algo que no encaja, el panel vuelve a lo de fábrica en vez de pintarlo. Los colores solo como `#rrggbb`, porque el panel los escribe dentro de una etiqueta `<style>`. El `id` UUID existe para la bitácora: los cambios quedan en `auditoria_cambios` como `actualizar` sobre `configuracion`, una entidad que el `CHECK` admitía desde la 006.
+
 ---
 
 ## 5. Invariantes garantizadas por el esquema
@@ -413,7 +422,7 @@ Y uno que **sí es tabla aunque parezca de Redis**: el candado de edición (`blo
 |---|---|
 | RF-01 contenidos | `paginas`, `paginas_versiones`, `bloqueos_edicion`, `subidas_pendientes` |
 | RF-02 documentos | Filesystem de la API (§4.3); `archivos` para los Excel de las cargas |
-| RF-03 identidad visual | La página `menu-y-pie` de cada ámbito (`paginas` + `paginas_versiones`) |
+| RF-03 identidad visual | La página `menu-y-pie` de cada ámbito (`paginas` + `paginas_versiones`); la del panel, en `configuracion` (§4.9) |
 | RF-04 roles | `usuarios`, `roles`, `permisos`, `roles_permisos` |
 | RF-05 restricción al editor | `roles_permisos` (claves `editar.{ambito}.{slug}`) + policies |
 | RF-06 aprobación | `paginas_versiones` (I1–I4, I14, I21) |
@@ -492,6 +501,7 @@ eso la tabla lleva el porqué en vez de un número de riesgo.
 | 041 | `integridad-e-indices` | Lo que encontró la revisión del §9: los `UNIQUE` que faltaban, FK compuestas para las copias (I22, I23), `NOT NULL` y `DEFAULT` donde `sync` los había dejado sin poner, las reglas I21–I26, seis índices que nadie leía fuera y cuatro que solo existían en Neon unificados. En su propia transacción. El `down` quita las reglas y devuelve los índices; no devuelve los `NULL`, el `DEFAULT 'post'` ni `_obsoleto_attachment` |
 | 042 | `catalogos-sin-duplicados` | Que las cargas no dupliquen filas en las tablas maestras (§9.5). Función `normalizar_nombre()`, gemela en SQL de `normalizarParaComparar()`; únicos sobre el nombre normalizado en `departamentos`, `municipios` y `empresas`; `CHECK` de los 33 códigos DANE; columna `codigo` (SENA) con su único en niveles, centros y programas, sin los únicos por nombre; funde «Medellin» en «Medellín» y borra cinco filas de catálogo sin hechos. `codigo` entra nulo: lo rellena la siguiente carga del Excel. Revertir falla sin tocar nada si ya hay dos programas o centros con el mismo nombre en su nivel o departamento |
 | 043 | `password-temporal-vence` | La contraseña temporal vale 72 horas (decisión del usuario, 09-10-2026): `usuarios.password_temporal_vence_en`. Se fija al emitirla y se vacía al reemplazarla; la regla está en `shared/password-policy.ts`. Las cuentas que ya tenían una temporal pendiente reciben 72 h desde que se aplica la migración, porque no se sabe cuándo se emitió la suya. El `down` quita la columna |
+| 044 | `identidad-del-panel` | `configuracion` (§4.9), sembrada con la fila vacía `identidad-panel`, y el permiso `configuracion.identidad` para Superadmin y Administrador. El logo y el icono van al filesystem en `panel/identidad/`, aparte de `sitio/uploads/`: el script de huérfanos de `uploads/` los borraría |
 
 Cuatro lecciones de este tramo que vale más recordar que releer:
 

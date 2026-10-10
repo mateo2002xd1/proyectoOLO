@@ -368,6 +368,15 @@ oculta, el backend prohíbe*, y aquí el backend no prohíbe.
   estaba escrita dentro del handler de la intranet y el del sitio no tenía **ninguno** de
   los cinco: el endurecimiento se aplicó a una app y la otra quedó fuera de vista. Con la
   política compartida, arreglar una y olvidar la otra deja de ser posible.
+- **La identidad visual del panel** (Configuración, migración 044) es una tercera subida y
+  usa esa misma política, más dos límites propios: solo PNG o JPG (un PDF pasa la lista
+  blanca pero no es un logo) y 1 MB el logo, 512 KB el icono. Cambiarla pide
+  `configuracion.identidad`; los archivos se sirven sin sesión por
+  `/api/configuracion/identidad-panel/archivos/{uuid}.{png|jpg}`, que solo acepta ese
+  formato de nombre. Los **colores** acaban dentro de una etiqueta `<style>` del panel, así
+  que se aceptan solo como `#rrggbb` en la API (`configuracion.validators.ts`) y se vuelven
+  a filtrar al escribirlos (`EstilosDeAcciones`): un `}` o un `</style>` guardado sería CSS
+  o HTML inyectado en la página de todas las personas del panel.
 - **Tope de cuerpo de petición**: 1 MB en Express, 10 MB en nginx.
 
 ### 4.5 Límites de tasa y abuso automatizado
