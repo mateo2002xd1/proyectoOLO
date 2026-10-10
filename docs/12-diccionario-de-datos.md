@@ -14,9 +14,9 @@
 
 El modelo de datos del Observatorio Laboral y Ocupacional (OLO) está implementado en **PostgreSQL** bajo el esquema `public`. Fue diseñado siguiendo principios de normalización relacional (3FN), segregación estricta de responsabilidades (RBAC), gobernanza de contenido mediante versionamiento inmutable, concurrencia pesimista en maquetación visual y trazabilidad integral requerida por la **Ley 1581 de 2012 (Habeas Data)**.
 
-### Métricas Generales del Esquema (tras la migración 042):
+### Métricas Generales del Esquema (tras la migración 043):
 - **Total de Tablas Base:** 33 (32 del dominio, 23 de ellas con modelo Sequelize, + 1 tabla técnica de control `migraciones_aplicadas`).
-- **Total de Columnas:** 233, dos de ellas generadas (`ocupaciones.codigo_nc`, `indicadores_ocupacionales.criterio_codigo`).
+- **Total de Columnas:** 234, dos de ellas generadas (`ocupaciones.codigo_nc`, `indicadores_ocupacionales.criterio_codigo`).
 - **Total de Llaves Foráneas (FK):** 46, cinco de ellas compuestas (las que impiden que una copia contradiga a su origen: invariantes I22 e I23 de `11-base-de-datos.md`), con políticas `RESTRICT`, `CASCADE` y `SET NULL`.
 - **Total de Restricciones CHECK:** 41 restricciones de dominio y reglas de negocio validadas en el motor de base de datos.
 - **Estrategia de Identificadores (PK):** UUID versión 4 (`DEFAULT gen_random_uuid()`) en todas las entidades del dominio, garantizando unicidad global y previniendo enumeración secuencial maliciosa.
@@ -307,6 +307,7 @@ La especificación exhaustiva columna por columna de estas tablas se encuentra d
 | 15 | `creado_por` | `UUID` | — | SÍ | **FK** | `usuarios.id` (ON DELETE SET NULL) | — | Usuario que registró esta cuenta en el sistema (auto-referencia). |
 | 16 | `apellidos` | `TEXT` | — | SÍ | Ninguna | — | — | Apellidos del usuario. |
 | 17 | `intentos_fallidos_login` | `INTEGER` | — | NO (NOT NULL) | Ninguna | — | `0` | Contador de intentos fallidos de login con contraseña (5 intentos / 15 min). |
+| 18 | `password_temporal_vence_en` | `TIMESTAMPTZ` | — | SÍ | Ninguna | — | — | Hasta cuándo vale la contraseña temporal: 72 horas desde que se emite (alta, restablecimiento, reactivación). Se vacía al reemplazarla. Solo cuenta con `debe_cambiar_password`; vencida, el login y la sesión la rechazan (043). |
 
 **Restricciones de Integridad (CHECK) de `usuarios`:**
 - **`ck_usuarios_estado`**: `(estado = ANY (ARRAY['active'::text, 'inactive'::text, 'locked'::text, 'expired'::text]))`
