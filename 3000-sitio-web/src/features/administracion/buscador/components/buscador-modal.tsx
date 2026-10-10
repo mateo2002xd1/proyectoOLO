@@ -151,7 +151,7 @@ export function BuscadorModal({ onClose }: { onClose?: () => void }) {
             // `type="search"` trae de fábrica una "x" para vaciar el campo (WebKit)
             // o un ojo/borrador (Edge/IE): se apagan a mano, el campo ya tiene su
             // propia forma de vaciarse (seleccionar y borrar, o Escape para cerrar).
-            className="h-16 w-full rounded-[16px] border border-zinc-200 bg-white pr-5 pl-14 text-lg text-zinc-950 shadow-sm transition-colors outline-none placeholder:text-zinc-400 focus:border-transparent focus:ring-2 focus:ring-[var(--color-brand-focus)] [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none [&::-ms-clear]:hidden [&::-ms-reveal]:hidden dark:border-[#1e293b] dark:bg-[#131b2f] dark:text-[#f6f6f6] dark:placeholder:text-[#94a3b8]"
+            className="h-16 w-full rounded-[32px] border border-[#d9d9d9] bg-white pr-5 pl-14 text-lg text-zinc-950 shadow-sm transition-colors outline-none placeholder:text-zinc-400 focus:border-transparent focus:ring-2 focus:ring-[var(--color-brand-focus)] [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none [&::-ms-clear]:hidden [&::-ms-reveal]:hidden dark:border-[#1e293b] dark:bg-[#131b2f] dark:text-[#f6f6f6] dark:placeholder:text-[#94a3b8]"
           />
         </div>
 

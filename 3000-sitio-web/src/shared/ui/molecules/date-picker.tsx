@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useEnModal } from '@/shared/ui/atoms/button';
 
 /**
  * Selector de fecha con calendario propio.
@@ -115,6 +116,8 @@ export function DatePicker({
   ariaLabel,
 }: DatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
+  // En un modal, la forma de sus campos: esquinas de 32 y 16 px de letra (`alert.tsx`).
+  const enModal = useEnModal();
   const [mesVisible, setMesVisible] = useState(() => {
     const elegida = aFecha(value) ?? new Date();
     return new Date(elegida.getFullYear(), elegida.getMonth(), 1);
@@ -207,13 +210,18 @@ export function DatePicker({
         aria-haspopup="dialog"
         aria-expanded={isOpen}
         aria-label={ariaLabel}
-        className={`group flex h-11 w-full items-center justify-between gap-2 rounded-[16px] border px-3 text-left outline-none transition duration-200 ${isOpen
+        className={`group flex h-11 w-full items-center justify-between gap-2 border text-left outline-none transition duration-200 ${enModal ? 'rounded-[32px] pl-5 pr-2' : 'rounded-[16px] px-3'
+          } ${isOpen
           ? 'border-[#002237] bg-white shadow-[0_0_0_3px_rgba(0,34,55,0.12)] dark:bg-[#252f47]'
-          : 'border-[#d0d5dd] bg-white hover:border-[#002237]/40 hover:bg-[#002237]/5 dark:border-[#2d3649] dark:bg-[#252f47] dark:hover:border-[#3a4660] dark:hover:bg-white/5'
+          : enModal
+            ? 'border-[#d9d9d9] bg-white hover:border-[#001631]/40 dark:border-[#2d3649] dark:bg-[#131b2f] dark:hover:border-[#3a4660]'
+            : 'border-[#d0d5dd] bg-white hover:border-[#002237]/40 hover:bg-[#002237]/5 dark:border-[#2d3649] dark:bg-[#252f47] dark:hover:border-[#3a4660] dark:hover:bg-white/5'
           } ${disabled ? 'cursor-not-allowed opacity-60' : ''}`}
       >
         <span
-          className={`truncate text-sm font-medium ${texto ? 'text-[#344054] dark:text-[#e6e8f0]' : 'text-[#8a95ad] dark:text-[#95a0b8]'
+          className={`truncate ${enModal ? 'text-base' : 'text-sm font-medium'} ${texto
+            ? enModal ? 'text-[#001a39] dark:text-[#f6f6f6]' : 'text-[#344054] dark:text-[#e6e8f0]'
+            : enModal ? 'text-[#b3b3b3] dark:text-[#64748b]' : 'text-[#8a95ad] dark:text-[#95a0b8]'
             }`}
         >
           {texto || placeholder}

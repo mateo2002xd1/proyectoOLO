@@ -1,7 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Alert, AlertActions, AlertDescription, AlertTitle } from '@/shared/ui/molecules/alert';
+import {
+  Alert,
+  AlertActions,
+  AlertDescription,
+  AlertTitle,
+  areaDeModalClass,
+  campoDeModalClass,
+  etiquetaDeModalClass,
+} from '@/shared/ui/molecules/alert';
 import { Button } from '@/shared/ui/atoms/button';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
 import { DatePicker } from '@/shared/ui/molecules/date-picker';
@@ -9,9 +17,9 @@ import { mensajeDeErrorApi } from '@/shared/lib/errores-api';
 import { crearProyectoInversionManual, obtenerOpcionesProyectoInversion } from '../services/observatorio.service';
 import type { ClaseCiiu, SeccionCiiu } from '../types';
 
-const CAMPO =
-  'w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:text-[#f6f6f6] dark:focus:border-white dark:focus:ring-white';
-const ETIQUETA = 'mb-1 block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1]';
+// Las medidas de todos los modales (`alert.tsx`): las de las pantallas de acceso.
+const CAMPO = campoDeModalClass;
+const ETIQUETA = etiquetaDeModalClass;
 
 const ESTADO_INICIAL = {
   tipo: 'nuevo' as 'nuevo' | 'expansion',
@@ -118,7 +126,7 @@ export function FormularioProyectoInversion({ open, onClose, onCreado }: Formula
             rows={3}
             value={datos.descripcion}
             onChange={(e) => actualizar('descripcion', e.target.value)}
-            className={CAMPO}
+            className={areaDeModalClass}
           />
         </div>
 
@@ -254,7 +262,11 @@ export function FormularioProyectoInversion({ open, onClose, onCreado }: Formula
           </div>
         </div>
 
-        {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+        {error && (
+          <p role="alert" className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400">
+            {error}
+          </p>
+        )}
 
         <AlertActions>
           <Button type="button" plain onClick={onClose} disabled={enviando}>

@@ -10,7 +10,15 @@ import {
 } from '../hooks/use-usuarios';
 import { Button } from '@/shared/ui/atoms/button';
 import { Notification } from '@/shared/ui/molecules/notification';
-import { Alert, AlertTitle, AlertDescription, AlertActions } from '@/shared/ui/molecules/alert';
+import {
+  Alert,
+  AlertTitle,
+  AlertDescription,
+  AlertActions,
+  areaDeModalClass,
+  campoDeModalClass,
+  etiquetaDeModalClass,
+} from '@/shared/ui/molecules/alert';
 import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
 import { Paginador } from '@/shared/ui/molecules/paginador';
 import { ModalPermisos } from './modal-permisos';
@@ -55,46 +63,42 @@ function ModalNuevoEditor({
         </AlertDescription>
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">
+            <label htmlFor="rol-nombre" className={etiquetaDeModalClass}>
               Nombre del rol
             </label>
             <div className="flex items-center gap-2">
-              <span className="px-3 py-2 text-sm bg-zinc-100 border border-zinc-300 rounded-lg dark:bg-[#0f1624] dark:border-zinc-800 text-zinc-500 font-medium">Editor</span>
+              <span className="flex h-11 shrink-0 items-center rounded-[32px] border border-[#d9d9d9] bg-zinc-100 px-5 text-base font-medium text-zinc-500 dark:border-[#2d3649] dark:bg-[#0f1624]">Editor</span>
               <input
+                id="rol-nombre"
                 type="text"
                 required
                 maxLength={70}
                 placeholder="ej: Inicio"
                 value={nombreExtra}
                 onChange={(e) => setNombreExtra(e.target.value)}
-                className="w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:text-[#f6f6f6] dark:focus:border-white dark:focus:ring-white"
+                className={campoDeModalClass}
               />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">
-              Descripcion
+            <label htmlFor="rol-descripcion" className={etiquetaDeModalClass}>
+              Descripción
             </label>
             <textarea
+              id="rol-descripcion"
               maxLength={200}
               rows={3}
               value={descripcion}
               onChange={(e) => setDescripcion(e.target.value)}
-              className="w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:text-[#f6f6f6] dark:focus:border-white dark:focus:ring-white"
+              className={areaDeModalClass}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">
-              Permisos
-            </label>
+            <p className={etiquetaDeModalClass}>Permisos</p>
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setMostrandoPermisos(true)}
-                className="rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 shadow-sm hover:bg-zinc-50 dark:border-zinc-700 dark:bg-[#131b2f] dark:text-zinc-300 dark:hover:bg-zinc-800/50"
-              >
+              <Button type="button" plain onClick={() => setMostrandoPermisos(true)}>
                 Añadir permisos
-              </button>
+              </Button>
               <span className="text-sm text-zinc-500 dark:text-[#94a3b8]">
                 {selecionados.size} seleccionados
               </span>

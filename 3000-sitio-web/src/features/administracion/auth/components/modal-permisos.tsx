@@ -4,7 +4,8 @@ import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { MagnifyingGlassIcon, ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import { Switch } from '@/shared/ui/atoms/switch';
-import { Button } from '@/shared/ui/atoms/button';
+import { Button, FormaDeModal } from '@/shared/ui/atoms/button';
+import { areaDeModalClass, campoDeModalClass, etiquetaDeModalClass } from '@/shared/ui/molecules/alert';
 import type { Permission } from '../hooks/use-usuarios';
 
 /**
@@ -165,15 +166,17 @@ export function ModalPermisos({
       }}
     >
       <div
-        className="flex max-h-[88dvh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-[#121824]"
+        className="flex max-h-[88dvh] w-full max-w-3xl flex-col overflow-hidden rounded-[32px] border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-[#121824]"
         role="dialog"
         aria-modal="true"
         aria-labelledby="permisos-titulo"
       >
+        {/* Las medidas de todos los modales (`alert.tsx`): botones y campos de 44 px. */}
+        <FormaDeModal>
         <header className="border-b border-zinc-100 px-6 py-5 dark:border-zinc-800/80">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <h3 id="permisos-titulo" className="admin-subtitle text-zinc-900 dark:text-[#f6f6f6]">
+              <h3 id="permisos-titulo" className="text-xl font-semibold text-[#001631] dark:text-[#e6e8f0]">
                 Permisos {rol ? `del rol «${rol.nombre}»` : 'a asignar'}
               </h3>
             </div>
@@ -193,8 +196,8 @@ export function ModalPermisos({
           {rol && !mostrarPermisos && (
             <div className="mt-4 space-y-4">
               <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1]">
+                <div className="flex items-baseline justify-between">
+                  <label htmlFor="permisos-rol-nombre" className={etiquetaDeModalClass}>
                     Nombre del rol
                   </label>
                   <span className="text-xs text-zinc-400 dark:text-zinc-500">
@@ -202,25 +205,27 @@ export function ModalPermisos({
                   </span>
                 </div>
                 <input
+                  id="permisos-rol-nombre"
                   type="text"
                   value={rol.nombre}
                   disabled
                   readOnly
                   title="El nombre del rol no se puede modificar una vez creado"
-                  className="w-full rounded-xl border border-zinc-200 bg-zinc-100 px-3 py-2 text-sm text-zinc-500 cursor-not-allowed select-none dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-400"
+                  className={`${campoDeModalClass} select-none`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">
+                <label htmlFor="permisos-rol-descripcion" className={etiquetaDeModalClass}>
                   Descripción del rol
                 </label>
                 <textarea
+                  id="permisos-rol-descripcion"
                   maxLength={200}
                   rows={2}
                   value={descripcion ?? ''}
                   onChange={(e) => onCambiarDescripcion?.(e.target.value)}
                   placeholder="Sin descripción"
-                  className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand-interactive focus:outline-none focus:ring-2 focus:ring-brand-interactive/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                  className={areaDeModalClass}
                 />
               </div>
               <p className="rounded-xl border border-amber-200/60 bg-amber-50 px-4 py-2.5 text-xs text-amber-900 dark:border-amber-800/40 dark:bg-amber-950/30 dark:text-amber-300">
@@ -238,13 +243,14 @@ export function ModalPermisos({
 
           {(!rol || mostrarPermisos) && (
             <div className="relative mt-5">
-              <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
+              <MagnifyingGlassIcon className="pointer-events-none absolute left-5 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
               <input
                 type="search"
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
                 placeholder="Buscar un permiso…"
-                className="w-full rounded-xl border border-zinc-200 bg-white py-2 pl-9 pr-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-brand-interactive focus:outline-none focus:ring-2 focus:ring-brand-focus/30 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                aria-label="Buscar un permiso"
+                className={`${campoDeModalClass} pl-11`}
               />
             </div>
           )}
@@ -388,6 +394,7 @@ export function ModalPermisos({
             </Button>
           </div>
         </footer>
+        </FormaDeModal>
       </div>
     </div>,
     document.body

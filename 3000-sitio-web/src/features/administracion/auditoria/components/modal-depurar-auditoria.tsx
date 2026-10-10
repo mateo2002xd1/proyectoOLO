@@ -20,6 +20,7 @@ import {
   type ResultadoDepuracionAuditoriaDTO,
 } from '../services/auditoria.service';
 import { aCsv, descargarCsv } from '../lib/csv';
+import { FormaDeModal } from '@/shared/ui/atoms/button';
 
 interface ModalDepurarAuditoriaProps {
   abierto: boolean;
@@ -138,12 +139,14 @@ export function ModalDepurarAuditoria({
       aria-modal="true"
       aria-labelledby="titulo-modal-depurar-auditoria"
     >
-      <div className="relative flex max-h-[calc(100dvh-2rem-var(--navegacion-mobile-alto))] w-full max-w-2xl flex-col overflow-hidden rounded-[24px] border border-zinc-200 bg-white shadow-2xl lg:max-h-[calc(100dvh-2rem)] dark:border-[#2d3649] dark:bg-[#151d30]">
+      <div className="relative flex max-h-[calc(100dvh-2rem-var(--navegacion-mobile-alto))] w-full max-w-2xl flex-col overflow-hidden rounded-[32px] border border-zinc-200 bg-white shadow-2xl lg:max-h-[calc(100dvh-2rem)] dark:border-[#2d3649] dark:bg-[#151d30]">
+        {/* Las medidas de todos los modales (`alert.tsx`): esquinas de 32, botones de 44 px. */}
+        <FormaDeModal>
         {/* Cabecera */}
         <div className="flex items-center justify-between gap-3 border-b border-zinc-100 px-6 py-4 dark:border-[#202b42]">
           <h2
             id="titulo-modal-depurar-auditoria"
-            className="text-lg font-bold text-zinc-900 dark:text-[#f6f6f6]"
+            className="text-xl font-semibold text-[#001631] dark:text-[#e6e8f0]"
           >
             Depurar tabla de auditoría
           </h2>
@@ -289,7 +292,7 @@ export function ModalDepurarAuditoria({
                         disabled={ejecutando}
                         aria-label={csvDescargado ? 'Volver a descargar el respaldo CSV' : 'Descargar el respaldo CSV'}
                         title={csvDescargado ? 'Volver a descargar el respaldo CSV' : 'Descargar el respaldo CSV'}
-                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[16px] bg-[#7DB728] text-white shadow-sm transition hover:bg-[#6ea321] active:bg-[#5f8f1c] disabled:opacity-50"
+                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#7DB728] text-white shadow-sm transition hover:bg-[#6ea321] active:bg-[#5f8f1c] disabled:opacity-50"
                       >
                         {csvDescargado ? <Check size={20} /> : <Download size={20} />}
                       </button>
@@ -307,7 +310,7 @@ export function ModalDepurarAuditoria({
             type="button"
             onClick={onCerrar}
             disabled={ejecutando}
-            className="h-11 rounded-[16px] border border-[#d0d5dd] bg-white px-4 text-sm font-medium sm:px-5 text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50 dark:border-[#2d3649] dark:bg-[#1a233a] dark:text-zinc-200 dark:hover:bg-[#202b42]"
+            className="h-11 rounded-[32px] border border-[#d9d9d9] bg-white px-4 text-base font-medium sm:px-6 text-[#001631] transition hover:bg-zinc-50 disabled:opacity-50 dark:border-[#2d3649] dark:bg-[#1a233a] dark:text-zinc-200 dark:hover:bg-[#202b42]"
           >
             {resultadoExito ? 'Cerrar' : 'Cancelar'}
           </button>
@@ -318,7 +321,7 @@ export function ModalDepurarAuditoria({
               onClick={handleEjecutar}
               disabled={!csvDescargado || ejecutando}
               title={csvDescargado ? undefined : 'Descarga primero el respaldo CSV'}
-              className="flex h-11 items-center gap-2 whitespace-nowrap rounded-[16px] bg-red-600 px-4 text-sm font-semibold text-white sm:px-5 shadow-sm transition hover:bg-red-700 active:bg-red-800 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex h-11 items-center gap-2 whitespace-nowrap rounded-[32px] bg-red-600 px-4 text-base font-medium text-white sm:px-6 shadow-sm transition hover:bg-red-700 active:bg-red-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {ejecutando ? (
                 <>
@@ -335,6 +338,7 @@ export function ModalDepurarAuditoria({
             </button>
           )}
         </div>
+        </FormaDeModal>
       </div>
     </div>,
     document.body,
