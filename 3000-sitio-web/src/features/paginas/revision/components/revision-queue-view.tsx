@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo, useState, useRef, useEffect } from 'react';
-import { AlertTriangle } from 'lucide-react';
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { BarraFiltros, CampoFiltro } from '@/shared/ui/molecules/barra-filtros';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
@@ -348,6 +347,9 @@ export function RevisionQueueView() {
   );
 }
 
+/** Largo máximo del motivo de rechazar o eliminar, el mismo que el comentario del editor. */
+const MOTIVO_MAX = 100;
+
 function ModalAccionConMotivo({
   abierto,
   titulo,
@@ -407,8 +409,7 @@ function ModalAccionConMotivo({
 
         {destructivo ? (
           <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
-            <AlertTriangle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
-            <p>{descripcion}</p>
+          <p>{descripcion}</p>
           </div>
         ) : (
           <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-300">{descripcion}</p>
@@ -424,7 +425,9 @@ function ModalAccionConMotivo({
             <textarea
               id="motivo-accion"
               rows={3}
-              className={`mt-1 block w-full rounded-xl border bg-transparent px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-1 dark:bg-[#1a233a] dark:text-white ${
+              maxLength={MOTIVO_MAX}
+              aria-describedby="motivo-accion-cuenta"
+              className={`mt-1 block w-full resize-none rounded-xl border bg-transparent px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-1 dark:bg-[#1a233a] dark:text-white ${
                 destructivo
                   ? 'border-red-300 focus:border-red-500 focus:ring-red-500 dark:border-red-900/60 dark:focus:border-red-400 dark:focus:ring-red-400'
                   : 'border-zinc-300 focus:border-brand-interactive focus:ring-brand-interactive dark:border-zinc-700'
@@ -434,6 +437,14 @@ function ModalAccionConMotivo({
               onChange={(e) => setMotivo(e.target.value)}
               autoFocus
             />
+            <p
+              id="motivo-accion-cuenta"
+              className={`mt-1 text-right text-xs tabular-nums ${
+                motivo.length >= MOTIVO_MAX ? 'text-red-600 dark:text-red-400' : 'text-zinc-500 dark:text-zinc-400'
+              }`}
+            >
+              {motivo.length}/{MOTIVO_MAX}
+            </p>
           </div>
         )}
 

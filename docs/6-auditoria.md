@@ -5,6 +5,29 @@
 
 ---
 
+## sesión 09-10-2026 (22.ª parte): el motivo de rechazar o eliminar, con 100 caracteres y contador
+
+**Qué se pidió.** Limitar el motivo a 100 caracteres, contándolos al escribir, y que el campo
+no se pueda agrandar.
+
+**Lo que se hizo.** En `ModalAccionConMotivo` (`revision-queue-view.tsx`), que sirve a
+Rechazar y a Eliminar: `maxLength={MOTIVO_MAX}` (100, el mismo largo que el comentario del
+editor), `resize-none` y un contador `n/100` bajo el campo, a la derecha, que pasa a rojo al
+llegar al tope y está enlazado con `aria-describedby`. Se quitó el import de `AlertTriangle`,
+sin uso desde que se quitó el icono del aviso.
+
+**Cómo se probó.** `tsc --noEmit` del sitio y `eslint` del archivo, limpios. No se vio en el
+navegador.
+
+**Pendiente al cierre:**
+
+- La API no limita el motivo (`motivo_rechazo` es `TEXT` y el controlador no lo valida):
+  quien llame a la API directamente puede mandar más de 100.
+- La `<label>` del motivo quedó sin texto, así que el campo no tiene nombre para un lector de
+  pantalla.
+
+---
+
 ## sesión 09-10-2026 (21.ª parte): el aviso del modal «Eliminar versión» en rojo
 
 **Qué se pidió.** Que el mensaje del modal de Eliminar de la cola de revisión se vea como
