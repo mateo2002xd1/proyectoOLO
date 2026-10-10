@@ -96,6 +96,7 @@ export const GRUPOS_DE_PERMISO = [
   'secciones-sitio',
   'secciones-intranet',
   'editor',
+  'configuracion',
   'personas',
   'auditoria',
 ] as const;
@@ -157,6 +158,14 @@ const PERMISOS_FIJOS: PermisoDelCatalogo[] = [
     descripcion:
       'Borrar páginas creadas desde el editor, con su contenido y su historial de versiones. No se puede deshacer. Las secciones del sistema nunca se pueden borrar.',
     grupo: 'editor',
+    esFrontera: true,
+  },
+  {
+    clave: 'configuracion.identidad',
+    etiqueta: 'Identidad visual del panel',
+    descripcion:
+      'Cambiar el logo, el icono y el color de las etiquetas de las acciones. Lo ven todas las personas del panel.',
+    grupo: 'configuracion',
     esFrontera: true,
   },
   {

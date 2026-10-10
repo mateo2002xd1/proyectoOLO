@@ -22,6 +22,7 @@ import paginaRoutes from './routes/pagina.routes';
 import observatorioRoutes from './routes/observatorio.routes';
 import alertasInversionRoutes from './routes/alertas-inversion.routes';
 import archivosRoutes from './routes/archivos.routes';
+import configuracionRoutes from './routes/configuracion.routes';
 
 const app = express();
 
@@ -131,6 +132,7 @@ app.use('/api/paginas', paginaRoutes);
 app.use('/api/audit-logs', auditRoutes);
 app.use('/api/observatorio', observatorioRoutes);
 app.use('/api/alertas-inversion', alertasInversionRoutes);
+app.use('/api/configuracion', configuracionRoutes);
 
 app.use(errorHandler);
 

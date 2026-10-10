@@ -16,11 +16,11 @@
 |---|--:|--:|--:|--:|--:|
 | `3000-sitio-web` | 48 | 3 | 53 | — | 33 |
 | `3001-intranet` | 31 | 2 | 11 | — | 27 |
-| `4000-api-backend` | 34 | — | — | 91 | 42 |
+| `4000-api-backend` | 35 | — | — | 96 | 42 |
 
-Paquetes compartidos: 7 · migraciones: 43 · modelos: 23.
+Paquetes compartidos: 7 · migraciones: 44 · modelos: 23.
 
-## Carpetas sin descripción (4)
+## Carpetas sin descripción (5)
 
 Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scripts/mapa/descripciones.md` con una línea: `` - `ruta/` — para qué es ``.
 
@@ -28,6 +28,7 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
 - `3000-sitio-web/src/features/sitio-web/alertas-inversion/`
 - `3000-sitio-web/src/features/sitio-web/fuentes-futuras-empleo/`
 - `4000-api-backend/src/use-cases/alertas-inversion/`
+- `4000-api-backend/src/use-cases/configuracion/`
 
 ## Carpetas
 
@@ -150,6 +151,7 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
     │   ├── archivos/                          subida de los adjuntos de las páginas (RF-02)
     │   ├── auditoria/                         consulta de la bitácora de cambios (RF-07)
     │   ├── auth/                              login, primer ingreso y preguntas de seguridad
+    │   ├── configuracion/                     ⚠ sin descripción
     │   ├── observatorio/                      cargas de Excel del Observatorio y tendencia ocupacional
     │   ├── paginas/                           gobernanza de páginas: borrador, revisión, publicación, bloqueo
     │   └── usuarios/                          usuarios, roles, permisos y caducidad
@@ -337,6 +339,16 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | POST | `/api/logout` | 🔓 limitadorDeLogout | AuthController.logout |
 | GET | `/api/me` | requireAuthConConfiguracionPendiente | AuthController.me |
 | POST | `/api/change-password` | requireAuthConConfiguracionPendiente | AuthController.changePassword |
+
+### `routes/configuracion.routes.ts`
+
+| Método | Ruta | Protección y validación | Manejador |
+|---|---|---|---|
+| GET | `/api/configuracion/identidad-panel/archivos/:nombre` | 🔓 — | ConfiguracionController.servirArchivo |
+| GET | `/api/configuracion/identidad-panel` | requireAuth | ConfiguracionController.obtenerIdentidad |
+| PATCH | `/api/configuracion/identidad-panel` | 🔓 ...puedeCambiarla, validarCuerpo(actualizarIdentidadSchema) | ConfiguracionController.actualizarIdentidad |
+| POST | `/api/configuracion/identidad-panel/${pieza}` | 🔓 ...puedeCambiarla, recibirArchivo(LIMITE_DE_SUBIDA) | ConfiguracionController.subirImagen(pieza) |
+| DELETE | `/api/configuracion/identidad-panel/${pieza}` | 🔓 ...puedeCambiarla | ConfiguracionController.restablecerImagen(pieza) |
 
 ### `routes/observatorio.routes.ts`
 
@@ -615,6 +627,7 @@ En el orden del manifiesto (`migrations/index.ts`), que es el orden en que corre
 - `041-integridad-e-indices`
 - `042-catalogos-sin-duplicados`
 - `043-password-temporal-vence`
+- `044-identidad-del-panel`
 
 ### Modelos
 

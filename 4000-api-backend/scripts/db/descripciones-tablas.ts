@@ -20,6 +20,7 @@ export const DESCRIPCION_DE_TABLA: Record<string, string> = {
   subidas_pendientes: 'Archivos subidos a un borrador que aún no se ha publicado',
   archivos: 'Archivos guardados en disco (los Excel de las cargas), deduplicados por SHA-256',
   auditoria_cambios: 'Bitácora (RF-07): quién hizo qué, cuándo y desde dónde',
+  configuracion: 'Ajustes de todo el panel, clave → JSON: hoy, su identidad visual (logo, icono y colores de las acciones)',
   cargas_datos: 'Cada carga de Excel de «Actualizaciones», con su estado y progreso',
   departamentos: 'Catálogo único de los 33 departamentos, con su código DANE',
   departamentos_alias: 'Cómo viene escrito cada departamento en los Excel, normalizado, y a cuál corresponde',

@@ -148,6 +148,10 @@ const definicion = {
         'El editor visual y su ciclo editorial: borrador → revisión → publicado (RF-01, RF-06).',
     },
     { name: 'Auditoría', description: 'Historial de cambios: quién, qué, cuándo (RF-07).' },
+    {
+      name: 'Configuración',
+      description: 'Ajustes del panel. Hoy, su identidad visual: logo, icono y color de las etiquetas de acción.',
+    },
   ],
 
   /**
