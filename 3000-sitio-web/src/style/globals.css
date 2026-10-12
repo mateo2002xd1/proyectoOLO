@@ -2453,8 +2453,18 @@ body:has(.navegacion-mobile-hoja[open]) {
    Se mide el contenedor y no la ventana: la misma tabla va a pantalla completa en
    Auditoría y dentro de una tarjeta de 300px en Actualizaciones, y con el corte
    de la ventana la segunda seguía siendo tabla, con scroll lateral, en un monitor.
-   Dentro de la tabla, lo que cambie a la vez que ella usa `@3xl:` (el mismo
-   48rem, medido sobre el mismo contenedor), no `md:`.
+
+   En el panel, además, por debajo de 64rem (lg) siempre es tarjeta. Medir solo el
+   contenedor fallaba allí (2026-10-12): con la barra lateral (288px) el contenido baja
+   de 48rem desde los ~1122px de ventana y la lista pasaba a tarjetas, pero a 1023px la
+   barra se oculta, el contenido recupera esos 288px (~960px) y la lista volvía a ser
+   tabla de escritorio en plena tablet. El panel se reconoce por su `<main>`
+   (`navegacion-mobile-reserva`, de `SidebarLayout`); las tablas del sitio público no
+   cambian.
+
+   Las dos condiciones son la variante `apilada` y su contraria, `en-tabla`. Dentro de
+   la tabla, lo que cambie a la vez que ella usa `en-tabla:` / `apilada:` en el JSX, no
+   `@3xl:` ni `md:`, para que cambie en el mismo píxel.
 
    La celda es una rejilla de dos columnas: la etiqueta en la primera fila de la
    primera columna y cada hijo del contenido en la segunda, así que la celda mide lo
@@ -2462,62 +2472,104 @@ body:has(.navegacion-mobile-hoja[open]) {
    versión— la celda no crecía con ella, y una etiqueta de dos líneas («NIVEL
    OCUPACIONAL») pisaba la siguiente. El límite: el texto suelto que va *después* de
    un elemento («<b>3</b> días») caería en la primera columna; hoy ninguna celda lo
-   tiene, y si hace falta se envuelve en un `<span>`. */
+   tiene, y si hace falta se envuelve en un `<span>`.
+
+   Los `::before` van anidados dentro de la variante (`&::before`) y no en el selector:
+   la rama del panel añade `&:where(...)`, y un pseudoelemento no puede ir dentro de
+   `&`. */
+@custom-variant apilada {
+  @container (width < 48rem) {
+    @slot;
+  }
+  @media (width < 64rem) {
+    &:where(.navegacion-mobile-reserva *) {
+      @slot;
+    }
+  }
+}
+
+@custom-variant en-tabla {
+  @container (width >= 48rem) {
+    @media (width >= 64rem) {
+      @slot;
+    }
+    &:not(:where(.navegacion-mobile-reserva *)) {
+      @slot;
+    }
+  }
+}
+
 :where(:has(> .olo-tabla-apilable)) {
   container-type: inline-size;
 }
 
-@container (width < 48rem) {
-  .olo-tabla-apilable,
-  .olo-tabla-apilable > :is(tbody, tfoot),
-  .olo-tabla-apilable > :is(tbody, tfoot) > tr > td {
+.olo-tabla-apilable,
+.olo-tabla-apilable > :is(tbody, tfoot),
+.olo-tabla-apilable > :is(tbody, tfoot) > tr > td {
+  @variant apilada {
     display: block;
     width: 100%;
   }
+}
 
-  /* En columna flexible para que la celda con `data-titulo` encabece la tarjeta
-     aunque en la tabla no sea la primera columna (el nombre de la ocupación va
-     tercero). El lector de pantalla sigue el orden del HTML. */
-  .olo-tabla-apilable > :is(tbody, tfoot) > tr {
+/* En columna flexible para que la celda con `data-titulo` encabece la tarjeta
+   aunque en la tabla no sea la primera columna (el nombre de la ocupación va
+   tercero). El lector de pantalla sigue el orden del HTML. */
+.olo-tabla-apilable > :is(tbody, tfoot) > tr {
+  @variant apilada {
     display: flex;
     flex-direction: column;
     width: 100%;
     padding: 0.75rem 1rem;
   }
+}
 
-  .olo-tabla-apilable > :is(tbody, tfoot) > tr > td[data-titulo] {
+.olo-tabla-apilable > :is(tbody, tfoot) > tr > td[data-titulo] {
+  @variant apilada {
     order: -1;
   }
+}
 
-  /* Le gana al `min-w-[52rem]` que la tabla trae para escritorio: este CSS no
-     está en ninguna capa y las utilidades sí. */
-  .olo-tabla-apilable {
+/* Le gana al `min-w-[52rem]` que la tabla trae para escritorio: este CSS no
+   está en ninguna capa y las utilidades sí. */
+.olo-tabla-apilable {
+  @variant apilada {
     min-width: 0;
   }
+}
 
-  .olo-tabla-apilable > thead {
+.olo-tabla-apilable > thead {
+  @variant apilada {
     display: none;
   }
+}
 
-  .olo-tabla-apilable > caption {
+.olo-tabla-apilable > caption {
+  @variant apilada {
     display: block;
   }
+}
 
-  .olo-tabla-apilable > :is(tbody, tfoot) > tr > td {
+.olo-tabla-apilable > :is(tbody, tfoot) > tr > td {
+  @variant apilada {
     padding: 0.3rem 0;
     min-width: 0;
     max-width: none;
     white-space: normal;
     overflow-wrap: anywhere;
   }
+}
 
-  /* Lo que en escritorio no se parte (fechas, píldoras) en un móvil sí puede:
-     es eso o que la tarjeta se salga de la pantalla. */
-  .olo-tabla-apilable > :is(tbody, tfoot) > tr > td :where(*) {
+/* Lo que en escritorio no se parte (fechas, píldoras) en un móvil sí puede:
+   es eso o que la tarjeta se salga de la pantalla. */
+.olo-tabla-apilable > :is(tbody, tfoot) > tr > td :where(*) {
+  @variant apilada {
     white-space: normal;
   }
+}
 
-  .olo-tabla-apilable > :is(tbody, tfoot) > tr > td[data-etiqueta] {
+.olo-tabla-apilable > :is(tbody, tfoot) > tr > td[data-etiqueta] {
+  @variant apilada {
     display: grid;
     grid-template-columns: min(38%, 9rem) minmax(0, 1fr);
     column-gap: 0.75rem;
@@ -2526,28 +2578,34 @@ body:has(.navegacion-mobile-hoja[open]) {
        ocupaban la columna entera. */
     justify-items: start;
     text-align: left;
-  }
 
-  .olo-tabla-apilable > :is(tbody, tfoot) > tr > td[data-etiqueta] > * {
+    &::before {
+      content: attr(data-etiqueta);
+      grid-column: 1;
+      grid-row: 1;
+      /* Baja la etiqueta de 11px hasta la primera línea del valor, de 14px. */
+      padding-top: 0.2rem;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      line-height: 1.3;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #667085;
+    }
+  }
+}
+
+.olo-tabla-apilable > :is(tbody, tfoot) > tr > td[data-etiqueta] > * {
+  @variant apilada {
     grid-column: 2;
   }
+}
 
-  .olo-tabla-apilable > :is(tbody, tfoot) > tr > td[data-etiqueta]::before {
-    content: attr(data-etiqueta);
-    grid-column: 1;
-    grid-row: 1;
-    /* Baja la etiqueta de 11px hasta la primera línea del valor, de 14px. */
-    padding-top: 0.2rem;
-    font-size: 0.6875rem;
-    font-weight: 600;
-    line-height: 1.3;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: #667085;
-  }
-
-  .dark .olo-tabla-apilable > :is(tbody, tfoot) > tr > td[data-etiqueta]::before {
-    color: #94a3b8;
+.dark .olo-tabla-apilable > :is(tbody, tfoot) > tr > td[data-etiqueta] {
+  @variant apilada {
+    &::before {
+      color: #94a3b8;
+    }
   }
 }
 
@@ -2556,7 +2614,7 @@ body:has(.navegacion-mobile-hoja[open]) {
    hacían muy largo el scroll en el móvil y la tablet. Mismo HTML que la tabla:
 
    - `td[data-resumen]`: la frase de una línea con el botón que pliega y despliega
-     (`aria-expanded`). Solo existe por debajo de 48rem; en la tabla no se pinta.
+     (`aria-expanded`). Solo existe en `apilada`; en la tabla no se pinta.
    - `td[data-detalle]`: lo que se añade al desplegar, sin etiqueta (en revisión, el
      comentario). Tampoco existe en la tabla.
    - `tr[data-abierta]`: la fila desplegada. Plegada, solo se ve el resumen.
@@ -2567,25 +2625,29 @@ body:has(.navegacion-mobile-hoja[open]) {
    Sin capa, como la tabla apilable, y con más especificidad que su `display: block`. */
 .olo-tabla-acordeon > tbody > tr > td:is([data-resumen], [data-detalle]) {
   display: none;
-}
 
-@container (width < 48rem) {
-  .olo-tabla-acordeon > tbody > tr > td:is([data-resumen], [data-detalle]) {
+  @variant apilada {
     display: block;
     padding: 0;
   }
+}
 
-  .olo-tabla-acordeon > tbody > tr:not([data-abierta]) > td:not([data-resumen]),
-  .olo-tabla-acordeon > tbody > tr > td[data-solo-tabla] {
+.olo-tabla-acordeon > tbody > tr:not([data-abierta]) > td:not([data-resumen]),
+.olo-tabla-acordeon > tbody > tr > td[data-solo-tabla] {
+  @variant apilada {
     display: none;
   }
+}
 
-  /* Plegada, la fila es solo el botón: que el área táctil sea la fila entera. */
-  .olo-tabla-acordeon > tbody > tr:not([data-abierta]) {
+/* Plegada, la fila es solo el botón: que el área táctil sea la fila entera. */
+.olo-tabla-acordeon > tbody > tr:not([data-abierta]) {
+  @variant apilada {
     padding-block: 0.25rem;
   }
+}
 
-  .olo-tabla-acordeon > tbody > tr[data-abierta] > td[data-resumen] {
+.olo-tabla-acordeon > tbody > tr[data-abierta] > td[data-resumen] {
+  @variant apilada {
     margin-bottom: 0.5rem;
   }
 }

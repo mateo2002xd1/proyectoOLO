@@ -38,7 +38,7 @@ import { MarcoDePasos } from './marco-de-pasos';
  * @see 3-seguridad-del-proyecto.md  (la sesión la emite y valida la API :4000)
  */
 
-function LoginForm({ onEntrando }: { onEntrando: () => void }) {
+function LoginForm({ onEntrando }: { onEntrando: (modo: 'panel' | 'edicion') => void }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectParam = searchParams.get('redirect');
@@ -105,13 +105,13 @@ function LoginForm({ onEntrando }: { onEntrando: () => void }) {
       );
 
       if (hasAccesoPanel) {
-        onEntrando();
+        onEntrando('panel');
         window.location.href = redirectParam ? redirectTo : '/admin/dashboard';
         return;
       }
 
       if (hasPermisosEdicion) {
-        onEntrando();
+        onEntrando('edicion');
         window.location.href = redirectParam ? redirectTo : '/';
         return;
       }
@@ -184,9 +184,10 @@ function LoginForm({ onEntrando }: { onEntrando: () => void }) {
 
 export function LoginView() {
   // Ya autenticado, mientras carga la página de destino: sin la tarjeta, solo el cargador
-  // (pedido del usuario, 2026-10-12, como en el login de la intranet). Para ir al primer
-  // ingreso no se muestra: allí no se entra al panel.
-  const [entrando, setEntrando] = useState(false);
+  // (pedido del usuario, 2026-10-12, como en el login de la intranet). Quien solo edita va
+  // al portal en modo edición y el texto lo dice. Para ir al primer ingreso no se muestra:
+  // allí no se entra a ninguno de los dos.
+  const [entrando, setEntrando] = useState<'panel' | 'edicion' | null>(null);
 
   return (
     <MarcoDePasos
@@ -207,7 +208,7 @@ export function LoginView() {
           aria-live="polite"
           className="login-panel-cargando flex w-full max-w-[330px] justify-center py-[clamp(1.5rem,5dvh,3rem)] md:max-w-[452px]"
         >
-          <GooLoader label="Ingresando al panel administrativo..." />
+          <GooLoader label={entrando === 'edicion' ? 'Cargando modo edición...' : 'Ingresando al panel administrativo...'} />
         </div>
       ) : (
         <div className={authPasosCardClass}>
@@ -221,7 +222,7 @@ export function LoginView() {
               </p>
             }
           >
-            <LoginForm onEntrando={() => setEntrando(true)} />
+            <LoginForm onEntrando={setEntrando} />
           </Suspense>
         </div>
       )}
