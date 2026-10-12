@@ -312,7 +312,7 @@ function ModalConfirmarAccion({
   return (
     <dialog
       ref={ref}
-      className="olo-modal"
+      className="olo-modal olo-anim-dialogo"
       aria-labelledby="olo-modal-confirmar-titulo"
       onCancel={(evento) => {
         evento.preventDefault();
@@ -409,7 +409,7 @@ function ModalSalir({ abierto, onCancelar, onConfirmar }: ModalSalirProps) {
   return (
     <dialog
       ref={ref}
-      className="olo-modal"
+      className="olo-modal olo-anim-dialogo"
       aria-labelledby="olo-modal-titulo"
       // Escape dispara `cancel`. Se corta el cierre por defecto para que el
       // estado de React no se quede creyendo que el diálogo sigue abierto.

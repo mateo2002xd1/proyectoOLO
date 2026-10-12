@@ -6391,3 +6391,145 @@ body:has(.preview-page) .intranet-topbar {
   content: "Sin bloques";
   font-size: 14px;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Entrada y salida de los modales (`@starting-style`)
+
+   Un modal aparece de golpe porque el navegador no tiene «antes» desde el que
+   animar: el elemento no existía (lo monta React) o estaba en `display: none`
+   (un `<dialog>` cerrado). `@starting-style` le da ese antes, el estilo con el que
+   arranca la transición en su primer pintado, sin JavaScript ni `@keyframes`.
+
+   Hay dos familias de modales y una clase para cada una:
+
+   - `olo-anim-dialogo`, en un `<dialog>` que se abre con `showModal()`. Entra y
+     sale solo con CSS: al cerrarse pierde `[open]` y se va a su estado cerrado; con
+     `display` y `overlay` en `allow-discrete` el navegador lo mantiene pintado (y en
+     la capa superior) hasta que termina de desvanecerse. Solo Chromium sabe
+     transicionar `overlay`; en los demás el `<dialog>` sale de la capa superior al
+     instante y, si siguiera pintado, caería en el flujo de la página un momento.
+     Por eso la salida va dentro de `@supports (overlay: auto)` y en el resto se
+     cierra de golpe, como antes. La entrada funciona en todos.
+   - `olo-anim-fondo` (el velo) y `olo-anim-caja` (el cuadro), en los que React
+     monta por portal. La entrada es igual; la salida necesita que el modal siga
+     montado con `data-cerrando` lo que dura, y de eso se encarga
+     `useCierreAnimado` (`src/shared/lib/use-cierre-animado.ts`).
+
+   Las propiedades que se mueven son `translate` y `scale`, no `transform`: así no
+   pisan un `transform` que la caja ya tenga. Con «reducir movimiento» solo queda el
+   fundido. La salida es más corta que la entrada: cerrar no debe hacer esperar.
+   Si cambias `--olo-modal-salida`, cambia también `SALIDA_DEL_MODAL_MS` en el hook.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --olo-modal-entrada: 220ms;
+  --olo-modal-salida: 150ms;
+  --olo-modal-curva-entrada: cubic-bezier(0.16, 1, 0.3, 1);
+  --olo-modal-curva-salida: cubic-bezier(0.4, 0, 1, 1);
+  --olo-modal-desde: 0 0.75rem;
+  --olo-modal-escala: 0.96;
+}
+
+/* En el móvil los modales salen desde abajo (`2-convenciones` §10.4): suben, sin encoger. */
+@media (width < 40rem) {
+  :root {
+    --olo-modal-desde: 0 2rem;
+    --olo-modal-escala: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --olo-modal-desde: 0 0;
+    --olo-modal-escala: 1;
+  }
+}
+
+/* --- Modales montados por React: velo + cuadro --- */
+
+.olo-anim-fondo {
+  transition: opacity var(--olo-modal-entrada) var(--olo-modal-curva-entrada);
+}
+
+.olo-anim-caja {
+  transition:
+    opacity var(--olo-modal-entrada) var(--olo-modal-curva-entrada),
+    translate var(--olo-modal-entrada) var(--olo-modal-curva-entrada),
+    scale var(--olo-modal-entrada) var(--olo-modal-curva-entrada);
+}
+
+@starting-style {
+  .olo-anim-fondo {
+    opacity: 0;
+  }
+
+  .olo-anim-caja {
+    opacity: 0;
+    translate: var(--olo-modal-desde);
+    scale: var(--olo-modal-escala);
+  }
+}
+
+/* Mientras se va, ya no recibe clics: el que cae en ese momento es para lo de detrás. */
+.olo-anim-fondo[data-cerrando] {
+  opacity: 0;
+  pointer-events: none;
+  transition-duration: var(--olo-modal-salida);
+  transition-timing-function: var(--olo-modal-curva-salida);
+}
+
+.olo-anim-fondo[data-cerrando] .olo-anim-caja,
+.olo-anim-caja[data-cerrando] {
+  opacity: 0;
+  translate: var(--olo-modal-desde);
+  scale: var(--olo-modal-escala);
+  transition-duration: var(--olo-modal-salida);
+  transition-timing-function: var(--olo-modal-curva-salida);
+}
+
+/* --- `<dialog>` nativo --- */
+
+.olo-anim-dialogo[open] {
+  transition:
+    opacity var(--olo-modal-entrada) var(--olo-modal-curva-entrada),
+    translate var(--olo-modal-entrada) var(--olo-modal-curva-entrada),
+    scale var(--olo-modal-entrada) var(--olo-modal-curva-entrada);
+}
+
+.olo-anim-dialogo[open]::backdrop {
+  transition: opacity var(--olo-modal-entrada) var(--olo-modal-curva-entrada);
+}
+
+@starting-style {
+  .olo-anim-dialogo[open] {
+    opacity: 0;
+    translate: var(--olo-modal-desde);
+    scale: var(--olo-modal-escala);
+  }
+
+  .olo-anim-dialogo[open]::backdrop {
+    opacity: 0;
+  }
+}
+
+@supports (overlay: auto) {
+  .olo-anim-dialogo:not([open]) {
+    opacity: 0;
+    translate: var(--olo-modal-desde);
+    scale: var(--olo-modal-escala);
+    transition:
+      opacity var(--olo-modal-salida) var(--olo-modal-curva-salida),
+      translate var(--olo-modal-salida) var(--olo-modal-curva-salida),
+      scale var(--olo-modal-salida) var(--olo-modal-curva-salida),
+      overlay var(--olo-modal-salida) allow-discrete,
+      display var(--olo-modal-salida) allow-discrete;
+  }
+
+  .olo-anim-dialogo:not([open])::backdrop {
+    opacity: 0;
+    transition:
+      opacity var(--olo-modal-salida) var(--olo-modal-curva-salida),
+      overlay var(--olo-modal-salida) allow-discrete,
+      display var(--olo-modal-salida) allow-discrete;
+  }
+}
