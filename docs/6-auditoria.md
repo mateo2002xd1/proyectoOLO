@@ -5,6 +5,30 @@
 
 ---
 
+## sesión 11-10-2026 (8.ª parte): sin el enlace «Volver» en el primer ingreso, en el sitio y la intranet
+
+**Qué se pidió:** «elimina el botón de volver en sitio e intranet». Es el enlace de solo texto
+bajo «Continuar» en los pasos de contraseña y de preguntas del primer ingreso, que se llamaba
+«Iniciar sesión» y el usuario había renombrado a «Volver» (sin commitear). Cerraba la sesión
+a medias y llevaba al login.
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `first-login-flow.tsx` (sitio) | Fuera `EnlaceIniciarSesion` y sus dos usos, y el import de `authPasosHuecoArribaClass`, que solo usaba él. |
+| `first-login-view.tsx` (intranet) | Fuera `enlaceIniciarSesion` y sus dos usos, y el import de `accesoHuecoArribaClass`. |
+
+**Lo que no cambia.** La salida sigue estando: «Regresar al sitio web del Observatorio», bajo el
+formulario, cierra la sesión a medias en esos pasos en las dos apps (`cerrarSesionAlSalir`). Se
+queda «Volver a iniciar sesión» de la pantalla de error del primer ingreso (cuando no se pudo
+saber qué falta), que es otro enlace, y «Atrás» entre preguntas.
+
+**Cómo se probó.** ESLint y `tsc --noEmit` de los dos archivos, limpios. Intranet en vivo, paso 1
+a 390 × 844: el botón «Continuar» y debajo el regreso al sitio, sin scroll.
+
+---
+
 ## sesión 11-10-2026 (7.ª parte): la lista de preguntas del primer ingreso de la intranet, con el estilo del sitio
 
 **Qué se pidió**, con una captura de la lista que abría el sistema (blanca, cuadrada, con la
