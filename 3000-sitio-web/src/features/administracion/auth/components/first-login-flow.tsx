@@ -17,7 +17,6 @@ import {
   authPasosQuietLinkClass,
   authPasosSecondaryClass,
   authPasosHuecoClass,
-  authPasosHuecoArribaClass,
 } from './auth-ui';
 import { MarcoDePasos, type PasosDelMarco } from './marco-de-pasos';
 import { useRequisitosAlEnfocar } from '../hooks/use-requisitos-al-enfocar';
@@ -69,21 +68,6 @@ async function cerrarSesionEIrAlLogin() {
     // Si falla la petición de logout, igualmente se va al login.
   }
   window.location.href = '/login';
-}
-
-/**
- * «Iniciar sesión», debajo del botón de la tarjeta, como en el mockup. Cierra la sesión
- * temporal y lleva al login: es la salida para quien entró con otra cuenta o quiere
- * dejarlo para después.
- */
-function EnlaceIniciarSesion() {
-  return (
-    <div className={`${authPasosHuecoArribaClass} text-center`}>
-      <button type="button" onClick={cerrarSesionEIrAlLogin} className={authPasosQuietLinkClass}>
-        Iniciar sesión
-      </button>
-    </div>
-  );
 }
 
 export function FirstLoginFlow() {
@@ -355,7 +339,6 @@ export function FirstLoginFlow() {
               {isLoading ? 'Guardando…' : 'Continuar'}
             </button>
           </form>
-          <EnlaceIniciarSesion />
         </Tarjeta>
       </MarcoDePasos>
     );
@@ -445,7 +428,6 @@ export function FirstLoginFlow() {
             </button>
           </div>
         </form>
-        <EnlaceIniciarSesion />
       </Tarjeta>
     </MarcoDePasos>
   );

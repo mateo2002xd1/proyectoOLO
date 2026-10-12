@@ -15,7 +15,6 @@ import {
   accesoEncabezadoClass,
   accesoEnlaceClass,
   accesoErrorGeneralClass,
-  accesoHuecoArribaClass,
   accesoHuecoClass,
 } from './acceso-ui';
 
@@ -175,15 +174,6 @@ export function FirstLoginView() {
   };
 
   /* ---------- Piezas comunes ---------- */
-
-  /** «Iniciar sesión», bajo el botón: cierra la sesión a medias y vuelve al login. */
-  const enlaceIniciarSesion = (
-    <div className={`${accesoHuecoArribaClass} text-center`}>
-      <button type="button" onClick={() => logout()} className={accesoEnlaceClass}>
-        Iniciar sesión
-      </button>
-    </div>
-  );
 
   /** Insignia de «listo», como en los avisos de éxito de la recuperación. */
   const insignia = (
@@ -399,7 +389,6 @@ export function FirstLoginView() {
             {isLoading ? 'Guardando…' : 'Continuar'}
           </button>
         </form>
-        {enlaceIniciarSesion}
       </MarcoAcceso>
     );
   }
@@ -464,7 +453,6 @@ export function FirstLoginView() {
           </button>
         </div>
       </form>
-      {enlaceIniciarSesion}
     </MarcoAcceso>
   );
 }
