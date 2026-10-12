@@ -1,7 +1,7 @@
 'use client';
 
 import type { MouseEvent, ReactNode } from 'react';
-import { BackToSiteLink } from './auth-ui';
+import { BackToSiteLink, authPasosHuecoClass } from './auth-ui';
 
 /**
  * Marco de todas las pantallas de acceso: login, primer ingreso y recuperación de
@@ -50,6 +50,7 @@ import { BackToSiteLink } from './auth-ui';
 export function MarcoDePasos({
   titulo,
   descripcion,
+  descripcionEnTarjeta = false,
   conLogo = false,
   cerrarSesionAlSalir = false,
   children,
@@ -57,6 +58,13 @@ export function MarcoDePasos({
   titulo: ReactNode;
   /** Uno o varios párrafos. */
   descripcion?: string | string[];
+  /**
+   * Desde `md` (tablet y escritorio) la descripción no va bajo el título: la pinta la
+   * pantalla dentro de su tarjeta (`DescripcionEnTarjeta`, aquí abajo). En el móvil, bajo el
+   * título como siempre. Lo pidió el usuario para el aviso de «cuenta ya configurada»
+   * (2026-10-11), igual que en la intranet (`MarcoAcceso`).
+   */
+  descripcionEnTarjeta?: boolean;
   /**
    * El logo también por debajo de `xl`, encima del título. Solo el login: es la puerta de
    * entrada y la única pantalla del flujo que en el mockup de móvil lo lleva.
@@ -89,7 +97,7 @@ export function MarcoDePasos({
           {titulo}
         </h1>
         {parrafos.length > 0 && (
-          <div className="mt-[clamp(0.5rem,2dvh,1.5rem)] max-w-[330px] space-y-2 text-[clamp(0.875rem,2.35dvh,1rem)] leading-[1.45] text-pretty md:mt-8 md:max-w-[440px] md:space-y-6 md:text-lg md:leading-7 xl:max-w-[400px]">
+          <div className={`${descripcionEnTarjeta ? 'md:hidden ' : ''}mt-[clamp(0.5rem,2dvh,1.5rem)] max-w-[330px] space-y-2 text-[clamp(0.875rem,2.35dvh,1rem)] leading-[1.45] text-pretty md:mt-8 md:max-w-[440px] md:space-y-6 md:text-lg md:leading-7 xl:max-w-[400px]`}>
             {parrafos.map((texto) => (
               <p key={texto}>{texto}</p>
             ))}
@@ -105,6 +113,21 @@ export function MarcoDePasos({
           <BackToSiteLink label="Regresar al sitio web del Observatorio" className="mt-[clamp(0.5rem,2.5dvh,2rem)] md:mt-8 xl:mt-4" />
         </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * La descripción dentro de la tarjeta, desde `md`: la otra mitad de `descripcionEnTarjeta`.
+ * Se pasa el mismo texto que a `MarcoDePasos`. Cada copia lleva `display: none` en el ancho
+ * en que no toca, así que el lector de pantalla oye una sola.
+ */
+export function DescripcionEnTarjeta({ descripcion }: { descripcion: string[] }) {
+  return (
+    <div className={`hidden space-y-3 text-base leading-relaxed text-pretty text-[#001a39] md:block ${authPasosHuecoClass}`}>
+      {descripcion.map((texto) => (
+        <p key={texto}>{texto}</p>
+      ))}
     </div>
   );
 }

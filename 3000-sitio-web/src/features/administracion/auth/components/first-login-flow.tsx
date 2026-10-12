@@ -7,7 +7,6 @@ import {
   AuthGeneralError,
   AuthProgressDots,
   AuthSelectField,
-  AuthSuccessBadge,
   AuthTextField,
   PasswordField,
   PasswordRequisitos,
@@ -18,7 +17,7 @@ import {
   authPasosSecondaryClass,
   authPasosHuecoClass,
 } from './auth-ui';
-import { MarcoDePasos } from './marco-de-pasos';
+import { DescripcionEnTarjeta, MarcoDePasos } from './marco-de-pasos';
 import { useRequisitosAlEnfocar } from '../hooks/use-requisitos-al-enfocar';
 
 /**
@@ -203,19 +202,22 @@ export function FirstLoginFlow() {
   // configuración en otra pestaña. Antes el formulario se pintaba igual y pedía una
   // contraseña temporal que ya no existía.
   if (!pendiente.debeCambiarPassword && !pendiente.debeConfigurarPreguntas && step !== 3) {
+    // Texto del usuario (2026-10-11); antes «Tu cuenta ya está configurada» y «No hay nada
+    // pendiente: tu contraseña y tus preguntas de seguridad están al día.». Desde la tablet va
+    // dentro de la tarjeta, encima del botón; en el móvil, bajo el título.
+    const aviso = [
+      'Tu cuenta ya es segura.',
+      'Es muy importante que recuerdes o guardes tus respuestas en un lugar seguro, ya que serán el único método para validar tu identidad y permitirte cambiar tu clave en el futuro si llegas a olvidarla.',
+    ];
     return (
       <MarcoDePasos
         cerrarSesionAlSalir
-        // Texto del usuario (2026-10-11); antes «Tu cuenta ya está configurada» y «No hay nada
-        // pendiente: tu contraseña y tus preguntas de seguridad están al día.».
         titulo="¡Configuración completada con éxito!"
-        descripcion={[
-          'Tu cuenta ya es segura.',
-          'Es muy importante que recuerdes o guardes tus respuestas en un lugar seguro, ya que serán el único método para validar tu identidad y permitirte cambiar tu clave en el futuro si llegas a olvidarla.',
-        ]}
+        descripcion={aviso}
+        descripcionEnTarjeta
       >
         <div className={`${authPasosCardClass} text-center`}>
-          <AuthSuccessBadge />
+          <DescripcionEnTarjeta descripcion={aviso} />
           <Link href="/admin/dashboard" className={authPasosPrimaryClass}>
             Iniciar sesión
           </Link>
@@ -241,7 +243,6 @@ export function FirstLoginFlow() {
         }
       >
         <div className={`${authPasosCardClass} text-center`}>
-          <AuthSuccessBadge />
           <p className={`${authPasosHuecoClass} text-base text-[#001a39]`}>Vuelve a iniciar sesión para entrar al panel.</p>
           <button type="button" onClick={cerrarSesionEIrAlLogin} className={authPasosPrimaryClass}>
             Iniciar sesión
