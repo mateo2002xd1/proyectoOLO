@@ -5,6 +5,26 @@
 
 ---
 
+## sesión 11-10-2026 (12.ª parte): en la tablet y el escritorio, el aviso de «cuenta ya configurada» dentro del formulario (intranet)
+
+**Qué se pidió:** en tablet y escritorio, que «Tu cuenta ya es segura.» y el aviso de guardar las
+respuestas vayan dentro del recuadro, encima de «Iniciar sesión». Se hizo en la intranet, la
+única donde esa pantalla tiene ese botón (en el sitio es «Ir al panel» y no se tocó).
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `marco-acceso.tsx` | Prop nueva `descripcionEnTarjeta`: desde `md` la descripción se pinta dentro del formulario, encima de los hijos (16 px, blanco al 85 %, con el hueco de siempre), y la de bajo el título se oculta (`md:hidden`). En el móvil no cambia nada. Cada copia lleva `display: none` en el ancho en que no toca, así que el lector de pantalla oye una sola. |
+| `first-login-view.tsx` | La pantalla sin nada pendiente pasa `descripcionEnTarjeta`. |
+
+**Cómo se probó.** ESLint y `tsc --noEmit` de la intranet, limpios. En vivo con el estado
+simulado sin nada pendiente: a 360 × 640 el texto bajo el título, como antes; a 768 × 1024 y
+1280 × 800, dentro del recuadro, encima del botón, y a la izquierda solo el título (y el logo
+en escritorio). Sin scroll en los tres.
+
+---
+
 ## sesión 11-10-2026 (11.ª parte): el texto nuevo iba en «Tu cuenta ya está configurada», no en la pantalla final
 
 **Qué pasó:** en la 10.ª parte el texto del usuario se puso en la pantalla final del primer
