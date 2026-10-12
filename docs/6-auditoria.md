@@ -5,6 +5,27 @@
 
 ---
 
+## sesión 11-10-2026 (11.ª parte): el texto nuevo iba en «Tu cuenta ya está configurada», no en la pantalla final
+
+**Qué pasó:** en la 10.ª parte el texto del usuario se puso en la pantalla final del primer
+ingreso (paso 3), pero el usuario aclaró que era para reemplazar «Tu cuenta ya está
+configurada / No hay nada pendiente: tu contraseña y tus preguntas de seguridad están al día.»,
+la pantalla que sale cuando se entra a `/first-login` sin nada pendiente. La 10.ª parte ya
+estaba commiteada (`6ae1713f`, `5c984af5`).
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `first-login-flow.tsx` (sitio) y `first-login-view.tsx` (intranet) | El paso 3 vuelve a como estaba: «¡Configuración completada!» y el aviso corto de las respuestas (o «Tu cuenta ya es segura.» si no se eligieron preguntas). La pantalla sin nada pendiente pasa a «¡Configuración completada con éxito!», «Tu cuenta ya es segura.» y el aviso largo de las respuestas, siempre los dos párrafos. Sus botones no cambian («Ir al panel» en el sitio, «Iniciar sesión» en la intranet). |
+| `manual-de-usuario-formato.md` | El paso 3 de las dos apps vuelve a «¡Configuración completada!» (el de la intranet ya decía «con éxito» antes de la 10.ª parte, sin que la pantalla lo dijera: corregido). El aviso de «Cuenta sin configuraciones pendientes» con el texto nuevo. Lo del paginador corregido en la 10.ª parte se queda. |
+
+**Cómo se probó.** ESLint y `tsc --noEmit` de las dos apps, limpios. Intranet en vivo con el
+estado simulado sin nada pendiente, a 360 × 640, 390 × 844 y 1280 × 800: el texto nuevo, sin
+scroll. El sitio no se miró en vivo.
+
+---
+
 ## sesión 11-10-2026 (10.ª parte): el mensaje final del primer ingreso, con el texto del usuario
 
 **Qué se pidió:** el usuario pasó el texto de la pantalla final del primer ingreso: «¡Configuración
