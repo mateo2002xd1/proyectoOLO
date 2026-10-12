@@ -56,8 +56,8 @@ export function PasswordField({
             className={`${classPrefix}-eye-btn`}
             aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
           >
-            <span className="text-[#6c757d]">
-              <IconoMascara nombre={visible ? 'eye-open' : 'eye-closed'} tamano="h-5 w-5" />
+            <span className="text-white/80">
+              <IconoMascara nombre={visible ? 'eye-open' : 'eye-closed'} tamano="h-4 w-5" />
             </span>
           </button>
         </div>
@@ -66,12 +66,13 @@ export function PasswordField({
     );
   }
 
-  // Medidas de letra del acceso (`features/login/components/acceso-ui.ts`, las del sitio
-  // web): etiqueta de 14/16 px en peso medio, campo de 44 px de alto con texto de 16.
+  // Las clases de `features/login/components/acceso-ui.ts` (las medidas del sitio web):
+  // texto blanco y campo transparente sobre el azul del acceso. Escritas aquí y no
+  // importadas: `shared/` no depende de `features/`.
   return (
     <div className={className}>
       {label && (
-        <label htmlFor={id} className="mb-1 block text-sm font-medium text-[#0d1526] md:mb-2 md:text-base">
+        <label htmlFor={id} className="mb-1 block text-sm font-medium text-white md:mb-2 md:text-base">
           {label}
         </label>
       )}
@@ -84,22 +85,22 @@ export function PasswordField({
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className={`h-11 w-full rounded-lg border bg-white px-4 pr-12 text-base text-gray-900 placeholder:text-gray-400 transition-colors focus:outline-none focus:ring-2 ${
+          className={`h-11 w-full rounded-[32px] border bg-transparent px-5 pr-14 text-base text-white placeholder:text-white/65 autofill:shadow-[inset_0_0_0_1000px_#001A39] autofill:[-webkit-text-fill-color:#fff] transition-colors focus:outline-none focus:ring-2 ${
             error
-              ? 'border-red-400 focus:border-red-500 focus:ring-red-500'
-              : 'border-gray-300 focus:border-[#0d1526] focus:ring-[#0d1526]'
+              ? 'border-red-300 focus:border-red-300 focus:ring-red-300'
+              : 'border-white/50 focus:border-white focus:ring-white'
           }`}
         />
         <button
           type="button"
           onClick={() => setVisible(!visible)}
           aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-          className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-gray-500 transition-colors hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d1526]"
+          className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-white/80 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
         >
-          <IconoMascara nombre={visible ? 'eye-open' : 'eye-closed'} tamano="h-5 w-5" />
+          <IconoMascara nombre={visible ? 'eye-open' : 'eye-closed'} tamano="h-4 w-5" />
         </button>
       </div>
-      {error && <p className="mt-1.5 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-1.5 text-sm text-red-300">{error}</p>}
     </div>
   );
 }

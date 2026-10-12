@@ -5,12 +5,23 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { validarEmail } from '@olo/email-policy';
 import { useAuth } from '@/features/login';
-import { ReturnToSiteLink } from '@/shared/ui/molecules/return-to-site-link';
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { GooLoader } from '@/shared/ui/atoms/goo-loader';
 import { mensajeDeError } from '@/shared/lib/errors';
 import { mensajeDeCierre } from '@/shared/lib/inactividad';
 import { SITE_URL } from '@/shared/lib/constants';
+import {
+  accesoBotonClass,
+  accesoCampoClass,
+  accesoEnlaceClass,
+  accesoErrorClass,
+  accesoErrorGeneralClass,
+  accesoEtiquetaClass,
+  accesoHuecoArribaClass,
+  accesoHuecoClass,
+  accesoIconoCampoClass,
+} from './acceso-ui';
+import { MarcoAcceso } from './marco-acceso';
 
 /**
  * Mensajes de error del formulario, por campo. `general` es el del servidor, que no
@@ -27,41 +38,6 @@ interface ErroresLogin {
  * `useSearchParams` obliga a un límite de Suspense y, sin él, el prerender de `/login`
  * falla en el build en vez de avisar en desarrollo.
  */
-/**
- * Tarjeta del formulario. Por debajo de `xl` no es tarjeta: el formulario va directo
- * sobre el azul, con etiquetas y textos en blanco (diseño de móvil y tablet). Desde
- * `xl` vuelve la tarjeta blanca, igual que el login del panel del sitio web.
- *
- * Las medidas de letra son las del acceso del sitio web (`acceso-ui.ts`, 2026-10-11): título
- * de 20-24 px en el móvil y 30 desde `md`; etiquetas y enlaces de 14/16; campos y botón de
- * 44 px con texto de 16; errores y el aviso de privacidad, de 14.
- */
-const TARJETA_LOGIN =
-  'w-full max-w-[380px] md:max-w-[452px] xl:rounded-[24px] xl:bg-white xl:px-9 xl:py-10 xl:shadow-[0_25px_60px_rgba(0,0,0,0.35)]';
-
-/**
- * Campo del login. Sobre el azul (por debajo de `xl`) es transparente, con borde, texto y
- * marcador claros (pedido del usuario, 2026-10-11; antes era blanco). En la tarjeta blanca
- * de `xl`, blanco con texto oscuro, como antes.
- *
- * Contraste sobre `#001A39`: el marcador (blanco al 65 %) da 7.8:1 y el borde (blanco al
- * 50 %) 5.1:1, por encima de 4.5 y de 3 (WCAG 1.4.3 y 1.4.11). El autorrelleno de Chrome
- * pinta su propio fondo claro encima de cualquier `background`; se tapa con una sombra
- * interior del color del fondo, que es la única forma de cambiarlo.
- */
-const campoLogin = (conError: boolean, extra = '') =>
-  [
-    'h-11 w-full rounded-lg border bg-transparent px-4 text-base text-white placeholder:text-white/65',
-    'autofill:shadow-[inset_0_0_0_1000px_#001A39] autofill:[-webkit-text-fill-color:#fff]',
-    'xl:bg-white xl:text-gray-900 xl:placeholder:text-gray-400',
-    'xl:autofill:shadow-[inset_0_0_0_1000px_#fff] xl:autofill:[-webkit-text-fill-color:#111827]',
-    'transition-colors focus:outline-none focus:ring-2',
-    conError
-      ? 'border-red-300 focus:border-red-300 focus:ring-red-300 xl:border-red-400 xl:focus:border-red-500 xl:focus:ring-red-500'
-      : 'border-white/50 focus:border-white focus:ring-white xl:border-gray-300 xl:focus:border-[#0d1526] xl:focus:ring-[#0d1526]',
-    extra,
-  ].join(' ');
-
 function LoginForm() {
   const { login } = useAuth();
   const router = useRouter();
@@ -163,150 +139,121 @@ function LoginForm() {
   };
 
   return (
-    <div className="login-page">
-      {/* Panel izquierdo — Branding */}
-      <div className="login-left">
-        <div className="login-left-content">
-          {/* Logo arriba y «Bienvenido a nuestra Intranet» debajo en todos los anchos
-              (pedido del usuario, 2026-10-11; antes, por debajo de `xl`, el título iba
-              primero). Por debajo de `xl` el logo va atenuado, como fondo de marca sobre
-              el azul. En el móvil el logo y los huecos se encogen con el alto de la
-              pantalla (`dvh`), para que el login quepa entero sin scroll (2026-10-10). */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/assets/svg/olo-logo-blanco.svg"
-            alt="Logo intranet"
-            className="mx-auto mb-[clamp(0.75rem,3dvh,2rem)] w-[clamp(4.5rem,14dvh,12rem)] opacity-30 sm:mb-8 sm:w-56 xl:mb-0 xl:w-[210px] xl:opacity-100"
-          />
-          {/* Aire bajo el título antes del formulario (pedido del usuario, 2026-10-11); se
-              encoge con el alto en el móvil para que siga cabiendo sin scroll. Desde `xl` el
-              título está en la columna izquierda y no lo necesita. */}
-          <h1 className="mb-[clamp(1rem,4dvh,2.5rem)] text-[clamp(1.25rem,3.6dvh,1.5rem)] font-bold leading-tight text-white sm:mb-10 md:text-3xl xl:mb-0 xl:font-light">
-            Bienvenido a <span className="font-bold xl:uppercase"><br />nuestra Intranet</span>
-          </h1>
+    // El mismo marco que el resto del acceso (`MarcoAcceso`, la maqueta del sitio web en
+    // azul): logo y título arriba en el móvil, a la izquierda desde `xl`; el formulario
+    // directo sobre el azul. Es la única pantalla con el logo en todos los anchos (`conLogo`),
+    // como en el sitio.
+    <MarcoAcceso
+      conLogo
+      titulo={
+        <>
+          {/* El espacio entre los dos es para el nombre accesible: dos `block` seguidos se
+              leerían «Bienvenido anuestra Intranet». */}
+          <span className="block font-normal">Bienvenido a</span>{' '}
+          <span className="block">nuestra Intranet</span>
+        </>
+      }
+    >
+      {isSuccess ? (
+        <div className="login-success-loader">
+          <GooLoader label="Preparando tu espacio..." />
         </div>
-      </div>
-
-      {/* Panel derecho — Login Card */}
-      <div className="login-right">
-        {/* Desde `xl`, misma tarjeta que el login del panel de administración:
-            clases de Tailwind literales, no la hoja `.login-*` que tenía valores
-            propios y se desalineaba de sitio-web cada vez que uno de los dos
-            cambiaba. Por debajo, sin tarjeta (ver `TARJETA_LOGIN`). */}
-        <div className={TARJETA_LOGIN}>
-          {isSuccess ? (
-            <div className="login-success-loader">
-              <GooLoader label="Preparando tu espacio..." />
+      ) : (
+        <form onSubmit={handleSubmit} noValidate>
+          {/* Antes que el error: explica por qué se está aquí, no qué se hizo mal. */}
+          {avisoDeCierre && (
+            <div
+              className="mb-[clamp(0.75rem,2.2dvh,1.5rem)] rounded-[16px] border border-blue-300 bg-blue-50 px-4 py-2.5 text-sm text-blue-800 md:mb-6"
+              role="status"
+            >
+              {avisoDeCierre}
             </div>
-          ) : (
-            <form onSubmit={handleSubmit} noValidate>
-              {/* Antes que el error: explica por qué se está aquí, no qué se hizo mal. */}
-              {avisoDeCierre && (
-                <div
-                  className="mb-4 rounded-lg border border-blue-300 bg-blue-50 px-3.5 py-2.5 text-sm text-blue-800"
-                  role="status"
-                >
-                  {avisoDeCierre}
-                </div>
-              )}
-
-              {errors.general && (
-                <div
-                  className="mb-4 rounded-lg border border-red-300 bg-red-50 px-3.5 py-2.5 text-sm text-red-600"
-                  role="alert"
-                >
-                  {errors.general}
-                </div>
-              )}
-
-              <div className="mb-3 sm:mb-4">
-                <label htmlFor="email" className="mb-1 block text-sm font-medium text-white md:mb-2 md:text-base xl:text-[#0d1526]">
-                  Correo SENA
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  maxLength={100}
-                  placeholder="usuario@sena.edu.co"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className={campoLogin(!!errors.email)}
-                />
-                {errors.email && <p className="mt-1.5 text-sm text-red-300 xl:text-red-600">{errors.email}</p>}
-              </div>
-
-              <div className="mb-3 sm:mb-5">
-                <label htmlFor="password" className="mb-1 block text-sm font-medium text-white md:mb-2 md:text-base xl:text-[#0d1526]">
-                  Contraseña
-                </label>
-                <div className="relative">
-                  <input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    maxLength={50}
-                    autoComplete="current-password"
-                    placeholder="Mínimo 12 caracteres"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className={campoLogin(!!errors.password, 'pr-10')}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((v) => !v)}
-                    aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-white/80 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white xl:text-gray-500 xl:hover:text-gray-700 xl:focus-visible:ring-[#0d1526]"
-                  >
-                    <IconoMascara nombre={showPassword ? 'eye-open' : 'eye-closed'} tamano="h-5 w-5" />
-                  </button>
-                </div>
-                {errors.password && <p className="mt-1.5 text-sm text-red-300 xl:text-red-600">{errors.password}</p>}
-              </div>
-
-              {/* RF-13: aviso de políticas de privacidad y datos.
-
-                  Los dos enlaces apuntan al SITIO WEB, no a la intranet: la política es
-                  una sección del portal público y aquí no existe esa ruta. Eran
-                  relativas (`/politica-de-privacidad`, `/privacidad`), así que el
-                  middleware las tomaba por pantalla protegida y devolvía a quien las
-                  pulsara al propio login del que venía.
-
-                  El texto llena el ancho, como en el sitio web, y dice «nuestra» política
-                  (las dos apps, 2026-10-11). */}
-              <p className="mb-[clamp(0.75rem,2.5dvh,1.5rem)] text-sm leading-relaxed text-white/85 sm:mb-6 xl:text-gray-500">
-                Al ingresar a este sitio aceptas nuestra{' '}
-                <a href={`${SITE_URL}/politica-de-privacidad`} className="font-semibold text-white hover:underline xl:text-gray-700">
-                  política de privacidad
-                </a>{' '}
-                y{' '}
-                <a href={`${SITE_URL}/politica-de-privacidad`} className="font-semibold text-white hover:underline xl:text-gray-700">
-                  protección de datos
-                </a>
-                .
-              </p>
-
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="inline-flex w-full items-center justify-center h-11 rounded-[16px] bg-white px-6 text-base font-medium text-[#0d1526] shadow-[0_2px_8px_-2px_rgba(13,21,38,0.4)] transition hover:bg-gray-100 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#001A39] disabled:cursor-not-allowed disabled:opacity-50 xl:bg-[#0d1526] xl:text-white xl:hover:bg-[#1a2340] xl:focus-visible:ring-[#0d1526] xl:focus-visible:ring-offset-white"
-              >
-                {isLoading ? 'Ingresando...' : 'Ingresar'}
-              </button>
-
-              <div className="mt-[clamp(0.5rem,2dvh,1rem)] text-center sm:mt-4">
-                <Link
-                  href="/recovery"
-                  className="rounded px-1 py-1 text-sm text-white/90 underline-offset-4 transition-colors hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white md:text-base xl:text-[#0d1526] xl:hover:text-[#0d1526] xl:focus-visible:ring-[#0d1526]"
-                >
-                  ¿Olvidaste tu contraseña?
-                </Link>
-              </div>
-            </form>
           )}
-        </div>
-        <ReturnToSiteLink classPrefix="login" />
-      </div>
-    </div>
+
+          {errors.general && (
+            <div className={accesoErrorGeneralClass} role="alert">
+              {errors.general}
+            </div>
+          )}
+
+          <div className={accesoHuecoClass}>
+            <label htmlFor="email" className={accesoEtiquetaClass}>
+              Correo SENA
+            </label>
+            <input
+              id="email"
+              type="email"
+              maxLength={100}
+              placeholder="usuario@sena.edu.co"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={accesoCampoClass(!!errors.email)}
+            />
+            {errors.email && <p className={accesoErrorClass}>{errors.email}</p>}
+          </div>
+
+          <div className={accesoHuecoClass}>
+            <label htmlFor="password" className={accesoEtiquetaClass}>
+              Contraseña
+            </label>
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                maxLength={50}
+                autoComplete="current-password"
+                placeholder="Mínimo 12 caracteres"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={accesoCampoClass(!!errors.password, 'pr-14')}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                className={`absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white ${accesoIconoCampoClass}`}
+              >
+                <IconoMascara nombre={showPassword ? 'eye-open' : 'eye-closed'} tamano="h-4 w-5" />
+              </button>
+            </div>
+            {errors.password && <p className={accesoErrorClass}>{errors.password}</p>}
+          </div>
+
+          {/* RF-13: aviso de políticas de privacidad y datos.
+
+              Los dos enlaces apuntan al SITIO WEB, no a la intranet: la política es
+              una sección del portal público y aquí no existe esa ruta. Eran
+              relativas (`/politica-de-privacidad`, `/privacidad`), así que el
+              middleware las tomaba por pantalla protegida y devolvía a quien las
+              pulsara al propio login del que venía.
+
+              El texto llena el ancho, como en el sitio web, y dice «nuestra» política
+              (las dos apps, 2026-10-11). */}
+          <p className={`${accesoHuecoClass} text-sm leading-relaxed text-white/85`}>
+            Al ingresar a este sitio aceptas nuestra{' '}
+            <a href={`${SITE_URL}/politica-de-privacidad`} className="font-semibold text-white hover:underline">
+              política de privacidad
+            </a>{' '}
+            y{' '}
+            <a href={`${SITE_URL}/politica-de-privacidad`} className="font-semibold text-white hover:underline">
+              protección de datos
+            </a>
+            .
+          </p>
+
+          <button type="submit" disabled={isLoading} className={accesoBotonClass}>
+            {isLoading ? 'Ingresando...' : 'Ingresar'}
+          </button>
+
+          <div className={`${accesoHuecoArribaClass} text-center`}>
+            <Link href="/recovery" className={accesoEnlaceClass}>
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </div>
+        </form>
+      )}
+    </MarcoAcceso>
   );
 }
 
@@ -314,11 +261,7 @@ export function LoginView() {
   return (
     <Suspense
       fallback={
-        <div className="login-page">
-          <div className="login-right w-full">
-            <div className={TARJETA_LOGIN} />
-          </div>
-        </div>
+        <div className="min-h-dvh w-full bg-[#001A39]" />
       }
     >
       <LoginForm />

@@ -5,9 +5,19 @@ import { authApi, useAuth } from '@/features/login';
 import { cumplePolitica, primerFallo } from '@olo/password-policy';
 import { PasswordField } from '@/shared/ui/molecules/password-field';
 import { PasswordRequisitos } from '@/shared/ui/molecules/password-requisitos';
-import { ReturnToSiteLink } from '@/shared/ui/molecules/return-to-site-link';
+import { ArrowLeftIcon, ArrowRightIcon, CheckIcon } from '@heroicons/react/20/solid';
 import { QuestionPicker, type CatalogQuestion } from './question-picker';
 import { mensajeDeError } from '@/shared/lib/errors';
+import { MarcoAcceso } from './marco-acceso';
+import {
+  accesoBotonClass,
+  accesoBotonSecundarioClass,
+  accesoEncabezadoClass,
+  accesoEnlaceClass,
+  accesoErrorGeneralClass,
+  accesoHuecoArribaClass,
+  accesoHuecoClass,
+} from './acceso-ui';
 
 const TOTAL_QUESTIONS = 3;
 
@@ -20,7 +30,7 @@ const TOTAL_QUESTIONS = 3;
 type Pendiente = { debeCambiarPassword: boolean; debeConfigurarPreguntas: boolean };
 
 export function FirstLoginView() {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const [pendiente, setPendiente] = useState<Pendiente | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -164,64 +174,265 @@ export function FirstLoginView() {
     await enviar();
   };
 
-  const renderStep1 = () => (
-    <div className="fl-card">
-      <form onSubmit={(e) => { e.preventDefault(); handleNextStep1(); }} className="fl-form">
-        <h2 className="fl-card-title">Contraseña temporal</h2>
-        <PasswordField
-          classPrefix="fl"
-          value={tempPassword}
-          onChange={(v) => { setTempPassword(v); setErrors({}); }}
-          error={errors.tempPassword}
-        />
+  /* ---------- Piezas comunes ---------- */
 
-        <h2 className="fl-card-title">Nueva contraseña</h2>
-        {/* `contents`: la envoltura solo está para enterarse del foco; el hueco entre
-            campos lo sigue dando el `gap` del formulario. */}
-        <div className="contents" onFocus={() => setRequisitosEnfocados(true)}>
-          <PasswordField
-            classPrefix="fl"
-            value={newPassword}
-            onChange={(v) => { setNewPassword(v); setErrors({}); }}
-            error={errors.newPassword}
-          />
-        </div>
-        {verRequisitos && <PasswordRequisitos classPrefix="fl" password={newPassword} resumirAlCumplir />}
-
-        <h2 className="fl-card-title">Ingresa nuevamente la contraseña</h2>
-        <PasswordField
-          classPrefix="fl"
-          value={confirmPassword}
-          onChange={(v) => { setConfirmPassword(v); setErrors({}); }}
-          error={errors.confirmPassword}
-        />
-
-        {errors.general && <div className="fl-general-error">{errors.general}</div>}
-
-        <button type="submit" className="fl-submit">Continuar</button>
-
-        <button type="button" onClick={() => logout()} className="fl-login-link">Iniciar sesión</button>
-      </form>
+  /** «Iniciar sesión», bajo el botón: cierra la sesión a medias y vuelve al login. */
+  const enlaceIniciarSesion = (
+    <div className={`${accesoHuecoArribaClass} text-center`}>
+      <button type="button" onClick={() => logout()} className={accesoEnlaceClass}>
+        Iniciar sesión
+      </button>
     </div>
   );
 
-  const renderStep2 = () => (
-    <div className="fl-card">
+  /** Insignia de «listo», como en los avisos de éxito de la recuperación. */
+  const insignia = (
+    <div className="mx-auto mb-[clamp(0.75rem,2.2dvh,1.5rem)] flex size-12 items-center justify-center rounded-full bg-white">
+      <CheckIcon aria-hidden="true" className="size-6 text-[#0d1526]" />
+    </div>
+  );
+
+  /* ---------- Mientras se sabe qué falta ---------- */
+  if (!pendiente) {
+    return (
+      <MarcoAcceso cerrarSesionAlSalir titulo="Configura tu acceso" claseTarjeta="text-center">
+        {errors.general ? (
+          <>
+            <div className={accesoErrorGeneralClass} role="alert">{errors.general}</div>
+            <button type="button" onClick={() => logout()} className={accesoEnlaceClass}>
+              Volver a iniciar sesión
+            </button>
+          </>
+        ) : (
+          <p className="text-base text-white/85" role="status">
+            Comprobando tu cuenta…
+          </p>
+        )}
+      </MarcoAcceso>
+    );
+  }
+
+  /* ---------- Nada pendiente ---------- */
+  // Puede pasar si se llega por la URL, o si se completó en otra pestaña. Antes el
+  // formulario se pintaba igual y pedía una contraseña temporal que ya no existía.
+  if (!pendiente.debeCambiarPassword && !pendiente.debeConfigurarPreguntas && currentStep !== 3) {
+    return (
+      <MarcoAcceso
+        cerrarSesionAlSalir
+        titulo="Tu cuenta ya está configurada"
+        descripcion="No hay nada pendiente: tu contraseña y tus preguntas de seguridad están al día."
+        claseTarjeta="text-center"
+        antesDelFormulario={insignia}
+      >
+        <button type="button" onClick={() => logout()} className={accesoBotonClass}>
+          Iniciar sesión
+        </button>
+      </MarcoAcceso>
+    );
+  }
+
+  // El paso 1 (contraseñas) solo existe si hay contraseña que cambiar.
+  const primerPaso = pendiente.debeCambiarPassword ? 1 : 2;
+  const pasosVisibles = pendiente.debeCambiarPassword ? [1, 2, 3] : [2, 3];
+
+  /* ---------- Paginador ---------- */
+  // «← Anterior 1 2 3 Siguiente →» bajo el texto del paso, como en el primer ingreso del
+  // sitio web (`PaginadorDePasos` en `marco-de-pasos.tsx`), en blanco sobre el azul (pedido
+  // del usuario, 2026-10-11; antes iba debajo del formulario y en inglés).
+  //
+  // Los pasos se acotan a los que aplican: sin `primerPaso`, quien solo tiene que configurar
+  // preguntas podía retroceder al paso 1 y encontrarse otra vez el formulario de contraseña
+  // temporal — el fallo que esto arregla, por la puerta de atrás. Se numeran por posición
+  // para no mostrar un «2 3» suelto. Hacia adelante solo se avanza por el formulario, con sus
+  // validaciones: «Siguiente» hace lo mismo que el botón principal. Terminado, ya no hay
+  // nada a lo que volver.
+  const NOMBRES_DE_PASO: Record<number, string> = { 1: 'Contraseña', 2: 'Preguntas de seguridad', 3: 'Listo' };
+  const puedeVolver = currentStep < 3 && (currentStep > primerPaso || (currentStep === 2 && currentQuestion > 0));
+  const volver = () => {
+    if (currentStep === 2 && currentQuestion > 0) {
+      handlePrevQuestion();
+    } else if (currentStep > primerPaso && currentStep < 3) {
+      if (currentStep === 2) setCurrentQuestion(0);
+      setCurrentStep(currentStep - 1);
+    }
+  };
+  const avanzar = () => {
+    if (currentStep === 1) {
+      handleNextStep1();
+    } else if (currentStep === 2) {
+      if (currentQuestion < TOTAL_QUESTIONS - 1) handleNextQuestion();
+      else handleSubmitStep2();
+    }
+  };
+  const flecha =
+    'inline-flex h-8 items-center gap-2 rounded-full px-3 text-base text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:cursor-default disabled:text-white/40 disabled:hover:bg-transparent';
+  const numero = 'flex size-8 items-center justify-center rounded-full text-base';
+  const total = pasosVisibles.length;
+
+  // Por debajo de 384 px de ancho disponible (`@sm` del contenedor, que pone el marco),
+  // «Anterior» y «Siguiente» se quedan en la flecha; el nombre lo da su `aria-label`.
+  const paginador = (
+    <nav aria-label="Pasos para configurar tu cuenta" className="flex items-center justify-center gap-3 @sm:gap-5">
+      <button type="button" aria-label="Anterior" className={flecha} disabled={!puedeVolver} onClick={volver}>
+        <ArrowLeftIcon aria-hidden="true" className="size-4" />
+        <span aria-hidden="true" className="hidden @sm:inline">Anterior</span>
+      </button>
+
+      <ol className="flex items-center gap-2.5">
+        {pasosVisibles.map((step, i) => {
+          const etiqueta = `Paso ${i + 1} de ${total}: ${NOMBRES_DE_PASO[step]}`;
+          return (
+            <li key={step}>
+              {step === currentStep ? (
+                <span aria-current="step" className={`${numero} bg-white text-[#0d1526]`}>
+                  <span aria-hidden="true">{i + 1}</span>
+                  <span className="sr-only">{etiqueta}</span>
+                </span>
+              ) : step < currentStep && currentStep < 3 ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (step === 2) setCurrentQuestion(0);
+                    setCurrentStep(step);
+                  }}
+                  aria-label={`Volver al ${etiqueta.charAt(0).toLowerCase()}${etiqueta.slice(1)}`}
+                  className={`${numero} text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white`}
+                >
+                  {i + 1}
+                </button>
+              ) : (
+                <span className={`${numero} text-white`}>
+                  <span aria-hidden="true">{i + 1}</span>
+                  <span className="sr-only">{etiqueta}</span>
+                </span>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+
+      <button type="button" aria-label="Siguiente" className={flecha} disabled={currentStep === 3} onClick={avanzar}>
+        <span aria-hidden="true" className="hidden @sm:inline">Siguiente</span>
+        <ArrowRightIcon aria-hidden="true" className="size-4" />
+      </button>
+    </nav>
+  );
+
+  /* ---------- Paso 3: listo ---------- */
+  if (currentStep === 3) {
+    return (
+      <MarcoAcceso
+        cerrarSesionAlSalir
+        titulo="¡Configuración completada!"
+        descripcion={
+          // El aviso sobre las respuestas solo tiene sentido si se acaban de elegir.
+          pendiente.debeConfigurarPreguntas
+            ? 'Guarda tus respuestas en un lugar seguro: serán el único método para validar tu identidad si olvidas tu clave en el futuro.'
+            : 'Tu cuenta ya es segura.'
+        }
+        pasos={paginador}
+        claseTarjeta="text-center"
+        antesDelFormulario={insignia}
+      >
+        <p className={`${accesoHuecoClass} text-base text-white/85`}>
+          Vuelve a iniciar sesión para entrar a la intranet.
+        </p>
+        <button type="button" onClick={() => logout()} className={accesoBotonClass}>
+          Iniciar sesión
+        </button>
+      </MarcoAcceso>
+    );
+  }
+
+  /* ---------- Paso 1: contraseñas ---------- */
+  if (currentStep === 1) {
+    return (
+      <MarcoAcceso
+        cerrarSesionAlSalir
+        titulo="Actualiza tu seguridad"
+        // Acortado el 2026-10-10 para que el paso quepa sin scroll en el móvil; es el mismo
+        // texto que en el acceso del sitio web.
+        descripcion="Has ingresado con una contraseña temporal. Por tu seguridad, crea una contraseña personal que solo tú conozcas."
+        pasos={paginador}
+        claveTarjeta={currentStep}
+      >
+        <form onSubmit={(e) => { e.preventDefault(); handleNextStep1(); }} noValidate>
+          {errors.general && <div className={accesoErrorGeneralClass} role="alert">{errors.general}</div>}
+
+          <PasswordField
+            id="temp-password"
+            label="Contraseña temporal"
+            // La da el administrador al crear o restablecer la cuenta; no llega por correo.
+            placeholder="Ingresar contraseña"
+            autoComplete="current-password"
+            value={tempPassword}
+            onChange={(v) => { setTempPassword(v); setErrors({}); }}
+            error={errors.tempPassword}
+            className={accesoHuecoClass}
+          />
+          {/* `contents`: la envoltura solo está para enterarse del foco. */}
+          <div className="contents" onFocus={() => setRequisitosEnfocados(true)}>
+            <PasswordField
+              id="new-password"
+              label="Nueva contraseña"
+              autoComplete="new-password"
+              value={newPassword}
+              onChange={(v) => { setNewPassword(v); setErrors({}); }}
+              error={errors.newPassword}
+              className={verRequisitos ? 'mb-2 md:mb-3' : accesoHuecoClass}
+            />
+          </div>
+          {verRequisitos && (
+            <PasswordRequisitos password={newPassword} variant="solid" resumirAlCumplir className={accesoHuecoClass} />
+          )}
+          <PasswordField
+            id="confirm-password"
+            label="Ingresa nuevamente la contraseña"
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={(v) => { setConfirmPassword(v); setErrors({}); }}
+            error={errors.confirmPassword}
+            className={accesoHuecoClass}
+          />
+
+          <button type="submit" disabled={isLoading} className={accesoBotonClass}>
+            {isLoading ? 'Guardando…' : 'Continuar'}
+          </button>
+        </form>
+        {enlaceIniciarSesion}
+      </MarcoAcceso>
+    );
+  }
+
+  /* ---------- Paso 2: preguntas de seguridad ---------- */
+  return (
+    <MarcoAcceso
+      cerrarSesionAlSalir
+      titulo="Protege el acceso a tu cuenta"
+      // El texto cambia según por qué se está aquí: a quien solo le restablecieron
+      // las preguntas hay que decírselo, o no entiende por qué se le piden otra vez
+      // ni si su contraseña sigue sirviendo.
+      descripcion={
+        pendiente.debeCambiarPassword
+          ? 'Elige 3 preguntas y responde cada una. Con ellas verificaremos tu identidad si necesitas recuperar tu cuenta.'
+          : 'Tus preguntas de seguridad fueron restablecidas. Elige 3 y asigna una respuesta a cada una; tu contraseña actual no cambia.'
+      }
+      pasos={paginador}
+      claveTarjeta={currentStep}
+    >
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          if (currentQuestion === TOTAL_QUESTIONS - 1) {
-            handleSubmitStep2();
-          } else {
-            handleNextQuestion();
-          }
+          if (currentQuestion === TOTAL_QUESTIONS - 1) handleSubmitStep2();
+          else handleNextQuestion();
         }}
-        className="fl-form"
+        noValidate
       >
-        <h2 className="fl-card-title">Escoge tus preguntas y respuestas</h2>
+        {errors.general && <div className={accesoErrorGeneralClass} role="alert">{errors.general}</div>}
+
+        <h2 className={`mb-3 ${accesoEncabezadoClass}`}>Preguntas de seguridad</h2>
 
         <QuestionPicker
-          classPrefix="fl"
           catalogQuestions={catalogQuestions}
           totalQuestions={TOTAL_QUESTIONS}
           currentIndex={currentQuestion}
@@ -242,183 +453,18 @@ export function FirstLoginView() {
           }}
         />
 
-        {errors.general && <div className="fl-general-error">{errors.general}</div>}
-
-        <button type="submit" className="fl-submit">
-          {isLoading ? 'Guardando...' : currentQuestion === TOTAL_QUESTIONS - 1 ? 'Guardar' : 'Continuar'}
-        </button>
-
-        <button type="button" onClick={() => logout()} className="fl-login-link">Iniciar sesión</button>
-      </form>
-    </div>
-  );
-
-  const renderStep3 = () => (
-    <div className="fl-success">
-      <h1 className="fl-success-title">¡Configuración completada con éxito!</h1>
-      <p className="fl-success-subtitle">Tu cuenta ya es segura.</p>
-      {/* El aviso sobre las respuestas solo tiene sentido si se acaban de elegir. */}
-      {pendiente?.debeConfigurarPreguntas && (
-        <p className="fl-success-text">
-          Es muy importante que recuerdes o guardes tus respuestas en un lugar seguro, ya que serán el único método para validar tu identidad y permitirte cambiar tu clave en el futuro si llegas a olvidarla.
-        </p>
-      )}
-      <button type="button" onClick={() => logout()} className="fl-success-btn">Iniciar sesión</button>
-    </div>
-  );
-
-  const getLeftContent = () => {
-    if (currentStep === 1) {
-      return {
-        title: `Hola ${user?.name ? user.name.split(' ')[0] : ''}, Actualiza tu seguridad.`,
-        // Acortado el 2026-10-10 para que el paso quepa sin scroll en el móvil; es el mismo
-        // texto que en el acceso del sitio web.
-        subtitle: 'Has ingresado con una contraseña temporal. Por tu seguridad, crea una contraseña personal que solo tú conozcas.',
-      };
-    }
-    if (currentStep === 2) {
-      return {
-        title: 'Protege el acceso a tu cuenta',
-        // El texto cambia según por qué se está aquí: a quien solo le restablecieron
-        // las preguntas hay que decírselo, o no entiende por qué se le piden otra vez
-        // ni si su contraseña sigue sirviendo.
-        subtitle: pendiente?.debeCambiarPassword
-          ? 'Elige 3 preguntas y responde cada una. Con ellas verificaremos tu identidad si necesitas recuperar tu cuenta.'
-          : 'Tus preguntas de seguridad fueron restablecidas. Elige 3 de la lista y asigna una respuesta para cada una. Tu contraseña actual no cambia.',
-      };
-    }
-    if (currentStep === 3) {
-      return {
-        title: '¡Configuración completada con éxito!',
-        subtitle: 'Tu cuenta ya es segura.',
-      };
-    }
-    return null;
-  };
-
-  const leftContent = getLeftContent();
-
-  /* ---------- Mientras se sabe qué falta ---------- */
-  if (!pendiente) {
-    return (
-      <div className="fl-page">
-        <div className="fl-right">
-          <div className="fl-card">
-            {errors.general ? (
-              <>
-                <div className="fl-general-error">{errors.general}</div>
-                <button type="button" onClick={() => logout()} className="fl-success-btn">Volver a iniciar sesión</button>
-              </>
-            ) : (
-              <p className="fl-card-title">Comprobando tu cuenta…</p>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  /* ---------- Nada pendiente ---------- */
-  // Puede pasar si se llega por la URL, o si se completó en otra pestaña. Antes el
-  // formulario se pintaba igual y pedía una contraseña temporal que ya no existía.
-  if (!pendiente.debeCambiarPassword && !pendiente.debeConfigurarPreguntas && currentStep !== 3) {
-    return (
-      <div className="fl-page">
-        <div className="fl-right">
-          <div className="fl-success">
-            <h1 className="fl-success-title">Tu cuenta ya está configurada</h1>
-            <p className="fl-success-text">
-              No hay nada pendiente: tu contraseña y tus preguntas de seguridad están al día.
-            </p>
-            <button type="button" onClick={() => logout()} className="fl-success-btn">Iniciar sesión</button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // El paso 1 (contraseñas) solo existe si hay contraseña que cambiar.
-  const primerPaso = pendiente.debeCambiarPassword ? 1 : 2;
-  const pasosVisibles = pendiente.debeCambiarPassword ? [1, 2, 3] : [2, 3];
-
-  return (
-    <div className="fl-page">
-      {/* Panel izquierdo — Branding */}
-      {currentStep !== 3 && (
-        <div className="fl-left">
-          <div className="fl-left-content">
-            <h1 className="fl-brand-title">{leftContent?.title}</h1>
-            <p className="fl-brand-subtitle">{leftContent?.subtitle}</p>
-          </div>
-        </div>
-      )}
-
-      {/* Panel derecho — Card / Content */}
-      <div className="fl-right">
-        <div className="fl-step-container" key={currentStep}>
-          {currentStep === 1 && renderStep1()}
-          {currentStep === 2 && renderStep2()}
-          {currentStep === 3 && renderStep3()}
-        </div>
-
-        {/* Pagination */}
-        {/* Los pasos se acotan a los que aplican: sin `primerPaso`, quien solo tiene
-            que configurar preguntas podía retroceder al paso 1 y encontrarse otra vez
-            el formulario de contraseña temporal — el fallo que esto arregla, por la
-            puerta de atrás. Se numeran por posición para no mostrar un «2 3» suelto. */}
-        <div className="fl-pagination">
-          <button
-            onClick={() => {
-              if (currentStep === 2 && currentQuestion > 0) {
-                handlePrevQuestion();
-              } else if (currentStep > primerPaso && currentStep < 3) {
-                if (currentStep === 2) setCurrentQuestion(0);
-                setCurrentStep(currentStep - 1);
-              }
-            }}
-            disabled={currentStep === primerPaso}
-            className="fl-pagination-btn"
-          >
-            ← Previous
-          </button>
-
-          {pasosVisibles.map((step, i) => (
-            <button
-              key={step}
-              onClick={() => {
-                if (step < currentStep) {
-                  if (step === 2) setCurrentQuestion(0);
-                  setCurrentStep(step);
-                }
-              }}
-              disabled={step > currentStep}
-              className={`fl-pagination-num ${step === currentStep ? 'fl-pagination-active' : ''}`}
-            >
-              {i + 1}
+        <div className="flex gap-2.5">
+          {currentQuestion > 0 && (
+            <button type="button" onClick={handlePrevQuestion} className={`${accesoBotonSecundarioClass} shrink-0`}>
+              Atrás
             </button>
-          ))}
-
-          <button
-            onClick={() => {
-              if (currentStep === 1) {
-                handleNextStep1();
-              } else if (currentStep === 2) {
-                if (currentQuestion < TOTAL_QUESTIONS - 1) {
-                  handleNextQuestion();
-                } else {
-                  handleSubmitStep2();
-                }
-              }
-            }}
-            disabled={currentStep === 3}
-            className="fl-pagination-btn"
-          >
-            Next →
+          )}
+          <button type="submit" disabled={isLoading} className={`${accesoBotonClass} flex-1`}>
+            {isLoading ? 'Guardando…' : currentQuestion === TOTAL_QUESTIONS - 1 ? 'Guardar' : 'Continuar'}
           </button>
         </div>
-
-        <ReturnToSiteLink classPrefix="fl" cerrarSesion />
-      </div>
-    </div>
+      </form>
+      {enlaceIniciarSesion}
+    </MarcoAcceso>
   );
 }

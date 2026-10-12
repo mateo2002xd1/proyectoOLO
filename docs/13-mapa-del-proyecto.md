@@ -203,7 +203,7 @@ test/                                          pruebas de carga con k6
 
 | Feature | Para qué | Subcarpetas | `index.ts` | Archivos |
 |---|---|---|:-:|--:|
-| `login/` | pantallas del flujo de acceso | `components/` `hooks/` `services/` | sí | 13 |
+| `login/` | pantallas del flujo de acceso | `components/` `hooks/` `services/` | sí | 14 |
 | `paginas/` | secciones editables con Puck, gemela de la del sitio | `edicion/` `menu-y-pie/` `model/` `publicacion/` `secciones/` | sí | 26 |
 
 ## Rutas de Next

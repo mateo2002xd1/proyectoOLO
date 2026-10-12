@@ -5,13 +5,19 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { authApi, useAuth } from '@/features/login';
 import { MarcoAcceso } from './marco-acceso';
+import { BarrasDeAvance } from './barras-de-avance';
 import {
   accesoBotonClass,
   accesoCampoClass,
   accesoEnlaceClass,
   accesoErrorClass,
   accesoErrorGeneralClass,
+  accesoHuecoArribaClass,
+  accesoHuecoClass,
   accesoEtiquetaClass,
+  accesoIconoCampoClass,
+  accesoOpcionesClass,
+  accesoRotuloClass,
 } from './acceso-ui';
 import { type CatalogQuestion } from './question-picker';
 import { AuthSuccessScreen } from './auth-success-screen';
@@ -204,9 +210,9 @@ export function SecurityQuestionsView() {
         )}
 
         {mode === 'verify' ? (
-          <div className="mb-5">
+          <div className={accesoHuecoClass}>
             <label htmlFor="respuesta-seguridad" className={accesoEtiquetaClass}>
-              <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+              <span className={`mb-1 ${accesoRotuloClass}`}>
                 Pregunta {currentStep + 1} de {totalQuestions}
               </span>
               {questions[currentStep]?.label}
@@ -226,18 +232,14 @@ export function SecurityQuestionsView() {
           </div>
         ) : (
           <>
-            <div className="mb-4">
-              <label htmlFor="select-pregunta" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <div className={accesoHuecoClass}>
+              <label htmlFor="select-pregunta" className={`mb-1.5 ${accesoRotuloClass}`}>
                 Pregunta {currentStep + 1} de {totalQuestions}
               </label>
               <div className="relative">
                 <select
                   id="select-pregunta"
-                  className={`w-full appearance-none h-11 rounded-lg border bg-white px-4 pr-10 text-base text-gray-900 transition-colors focus:outline-none focus:ring-2 ${
-                    errors.question
-                      ? 'border-red-400 focus:border-red-500 focus:ring-red-500'
-                      : 'border-gray-300 focus:border-[#0d1526] focus:ring-[#0d1526]'
-                  }`}
+                  className={accesoCampoClass(!!errors.question, `appearance-none pr-10 ${accesoOpcionesClass}`, 'rounded-[16px]')}
                   value={selectedKeys[currentStep] || ''}
                   onChange={(e) => handleSelectQuestion(e.target.value)}
                 >
@@ -252,7 +254,7 @@ export function SecurityQuestionsView() {
                     </option>
                   ))}
                 </select>
-                <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                <div className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 ${accesoIconoCampoClass}`}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M6 9l6 6 6-6" />
                   </svg>
@@ -261,7 +263,7 @@ export function SecurityQuestionsView() {
               {errors.question && <p className={accesoErrorClass}>{errors.question}</p>}
             </div>
 
-            <div className="mb-5">
+            <div className={accesoHuecoClass}>
               <label htmlFor="respuesta-setup" className={accesoEtiquetaClass}>
                 Tu respuesta
               </label>
@@ -279,21 +281,7 @@ export function SecurityQuestionsView() {
           </>
         )}
 
-        {/* Indicador de progreso (Progress Dots) exactamente como en Sitio Web */}
-        <div className="mb-5 flex justify-center gap-1.5" aria-hidden="true">
-          {Array.from({ length: totalQuestions }).map((_, i) => (
-            <span
-              key={i}
-              className={`h-1.5 rounded-full transition-all ${
-                i === currentStep
-                  ? 'w-6 bg-[#0d1526]'
-                  : i < currentStep
-                    ? 'w-1.5 bg-[#0d1526]/45'
-                    : 'w-1.5 bg-gray-300'
-              }`}
-            />
-          ))}
-        </div>
+        <BarrasDeAvance total={totalQuestions} actual={currentStep} variante="puntos" />
 
         <button
           type="submit"
@@ -308,7 +296,7 @@ export function SecurityQuestionsView() {
         </button>
 
         {currentStep > 0 ? (
-          <div className="mt-4 text-center">
+          <div className={`${accesoHuecoArribaClass} text-center`}>
             <button
               type="button"
               onClick={() => {
@@ -321,7 +309,7 @@ export function SecurityQuestionsView() {
             </button>
           </div>
         ) : mode === 'setup' ? (
-          <div className="mt-4 text-center">
+          <div className={`${accesoHuecoArribaClass} text-center`}>
             <button
               type="button"
               onClick={() => logout()}
@@ -333,7 +321,7 @@ export function SecurityQuestionsView() {
         ) : (
           // En la recuperación no hay sesión que cerrar: se vuelve al login, como desde
           // el paso del correo (`recovery-view.tsx`).
-          <div className="mt-4 text-center">
+          <div className={`${accesoHuecoArribaClass} text-center`}>
             <Link
               href="/login"
               className={accesoEnlaceClass}

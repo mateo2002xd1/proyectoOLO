@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/features/login';
 import { MarcoAcceso } from './marco-acceso';
-import { accesoBotonClass } from './acceso-ui';
+import { accesoBotonClass, accesoHuecoClass, accesoTextoSecundarioClass } from './acceso-ui';
 
 interface AuthSuccessScreenProps {
   title: string;
@@ -25,10 +25,10 @@ export function AuthSuccessScreen({
       descripcion={subtitle}
       cerrarSesionAlSalir
       claseTarjeta="text-center"
-      antesDelTitulo={
-        // Insignia con el check institucional. Va también desde `xl`, cuando el título
-        // ya se fue a la izquierda: es lo que dice «listo» dentro de la tarjeta.
-        <div className="mx-auto mb-5 flex size-12 items-center justify-center rounded-full bg-[#0d1526]">
+      antesDelFormulario={
+        // Insignia con el check: es lo que dice «listo» junto al botón. Blanca, como el
+        // botón, sobre el azul.
+        <div className="mx-auto mb-[clamp(0.75rem,2.2dvh,1.5rem)] flex size-12 items-center justify-center rounded-full bg-white">
           <svg
             width="22"
             height="22"
@@ -38,7 +38,7 @@ export function AuthSuccessScreen({
             strokeWidth="2.5"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="text-white"
+            className="text-[#0d1526]"
             aria-hidden="true"
           >
             <polyline points="20 6 9 17 4 12" />
@@ -46,7 +46,7 @@ export function AuthSuccessScreen({
         </div>
       }
     >
-      {hint && <p className="mb-6 text-sm text-gray-500">{hint}</p>}
+      {hint && <p className={`${accesoHuecoClass} ${accesoTextoSecundarioClass}`}>{hint}</p>}
 
       <button type="button" onClick={() => logout()} className={accesoBotonClass}>
         {loginLabel}

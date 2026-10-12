@@ -6,7 +6,13 @@ import { HomeIcon } from '@heroicons/react/20/solid';
 import { SITE_URL } from '@/shared/lib/constants';
 
 interface ReturnToSiteLinkProps {
-  classPrefix: string;
+  /**
+   * Clases del enlace. Las pone el marco del acceso (`accesoRegresoClass` en
+   * `features/login/components/acceso-ui.ts`, las medidas del sitio web); hasta el
+   * 2026-10-11 eran las de `globals.css` (`.login-return`, `.fl-return`…), con medidas
+   * distintas en cada pantalla.
+   */
+  className: string;
   /**
    * Cierra la sesión antes de salir. Para las pantallas del primer ingreso (contraseña
    * temporal, preguntas de seguridad): esa sesión solo sirve para terminar la
@@ -28,12 +34,12 @@ async function salirCerrandoSesion(evento: MouseEvent<HTMLAnchorElement>) {
   window.location.href = SITE_URL;
 }
 
-export function ReturnToSiteLink({ classPrefix, cerrarSesion = false }: ReturnToSiteLinkProps) {
+export function ReturnToSiteLink({ className, cerrarSesion = false }: ReturnToSiteLinkProps) {
   return (
     <Link
       href={SITE_URL}
       onClick={cerrarSesion ? salirCerrandoSesion : undefined}
-      className={`${classPrefix}-return site-return-link`}
+      className={className}
     >
       {/* La casa rellena del acceso del sitio web (`BackToSiteLink`), del mismo tamaño. */}
       <HomeIcon aria-hidden="true" className="mr-2 size-5 shrink-0" />

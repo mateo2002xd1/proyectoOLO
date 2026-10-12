@@ -41,9 +41,11 @@ export function PasswordRequisitos({
     return (
       <ul className={`${className} space-y-1`} aria-live="polite">
         {requisitos.map((requisito) => {
+          // Claros: van sobre el azul del acceso, sin tarjeta. Ver
+          // `features/login/components/acceso-ui.ts`.
           const claseEstado = requisito.cumplido
-            ? 'text-green-700'
-            : 'text-gray-500';
+            ? 'text-green-300'
+            : 'text-white/70';
 
           return (
             <li key={requisito.id} className={`flex items-start gap-1.5 text-xs ${claseEstado}`}>

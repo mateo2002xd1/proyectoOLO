@@ -12,6 +12,8 @@ import {
   accesoEnlaceClass,
   accesoErrorClass,
   accesoErrorGeneralClass,
+  accesoHuecoArribaClass,
+  accesoHuecoClass,
   accesoEtiquetaClass,
 } from './acceso-ui';
 import { mensajeDeError } from '@/shared/lib/errors';
@@ -70,7 +72,7 @@ export function RecoveryView() {
           </div>
         )}
 
-        <div className="mb-6">
+        <div className={accesoHuecoClass}>
           <label htmlFor="email" className={accesoEtiquetaClass}>
             Correo SENA
           </label>
@@ -91,7 +93,7 @@ export function RecoveryView() {
           {isLoading ? 'Buscando...' : 'Continuar'}
         </button>
 
-        <div className="mt-4 text-center">
+        <div className={`${accesoHuecoArribaClass} text-center`}>
           <Link href="/login" className={accesoEnlaceClass}>
             Volver a iniciar sesión
           </Link>

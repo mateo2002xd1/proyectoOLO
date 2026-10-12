@@ -8,7 +8,13 @@ import { cumplePolitica, primerFallo } from '@olo/password-policy';
 import { PasswordField } from '@/shared/ui/molecules/password-field';
 import { PasswordRequisitos } from '@/shared/ui/molecules/password-requisitos';
 import { MarcoAcceso } from './marco-acceso';
-import { accesoBotonClass, accesoEnlaceClass, accesoErrorGeneralClass } from './acceso-ui';
+import {
+  accesoBotonClass,
+  accesoEnlaceClass,
+  accesoErrorGeneralClass,
+  accesoHuecoArribaClass,
+  accesoHuecoClass,
+} from './acceso-ui';
 import { mensajeDeError } from '@/shared/lib/errors';
 
 /* sessionStorage es un sistema externo a React. Se lee con useSyncExternalStore
@@ -146,7 +152,7 @@ export function ResetPasswordView() {
             value={currentPassword}
             onChange={(v) => { setCurrentPassword(v); setErrors({}); }}
             error={errors.currentPassword}
-            className="mb-4"
+            className={accesoHuecoClass}
           />
         )}
 
@@ -158,9 +164,9 @@ export function ResetPasswordView() {
           value={password}
           onChange={(v) => { setPassword(v); setErrors({}); }}
           error={errors.password}
-          className="mb-2"
+          className="mb-2 md:mb-3"
         />
-        <PasswordRequisitos password={password} variant="solid" className="mb-4" resumirAlCumplir />
+        <PasswordRequisitos password={password} variant="solid" className={accesoHuecoClass} resumirAlCumplir />
 
         <PasswordField
           id="confirmPassword"
@@ -170,7 +176,7 @@ export function ResetPasswordView() {
           value={confirmPassword}
           onChange={(v) => { setConfirmPassword(v); setErrors({}); }}
           error={errors.confirm}
-          className="mb-6"
+          className={accesoHuecoClass}
         />
 
         <button
@@ -185,7 +191,7 @@ export function ResetPasswordView() {
             los demás enlaces de salida del acceso. Con sesión (cambio forzado) hay que
             cerrarla, o el proxy devolvería aquí; en la recuperación se sueltan sus datos
             para que el próximo intento empiece por el correo. */}
-        <div className="mt-4 text-center">
+        <div className={`${accesoHuecoArribaClass} text-center`}>
           {mode === 'forced' ? (
             <button
               type="button"

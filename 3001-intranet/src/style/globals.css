@@ -3363,6 +3363,15 @@ body:has(.navegacion-mobile-hoja[open]) {
   color: var(--color-success, #15803d);
 }
 
+/* Primer ingreso: sin tarjeta blanca, los requisitos van sobre el azul (2026-10-11). */
+.fl-requisito {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.fl-requisito-ok {
+  color: #86efac;
+}
+
 .rp-label {
   font-size: clamp(0.8rem, 1.5vw, 0.875rem);
   font-weight: 600;
@@ -3633,12 +3642,8 @@ body:has(.navegacion-mobile-hoja[open]) {
 
 /* --- Card --- */
 .fl-card {
-  background: var(--color-white);
-  border-radius: 24px;
-  padding: 2.5rem 2.25rem;
   width: 100%;
-  max-width: 380px;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+  max-width: 452px;
   animation: scaleIn 0.4s ease-out;
 }
 
@@ -3652,7 +3657,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 .fl-card-title {
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--color-navy-800);
+  color: var(--color-white);
 }
 
 .fl-field {
@@ -3663,28 +3668,38 @@ body:has(.navegacion-mobile-hoja[open]) {
 
 .fl-input {
   width: 100%;
-  padding: 0 1rem;
+  padding: 0 1.25rem;
   font-size: 1rem;
-  color: var(--color-text-primary);
-  background: var(--color-white);
-  border: 1.5px solid var(--color-gray-200);
-  border-radius: 12px;
+  color: var(--color-white);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 32px;
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   height: 2.75rem;
 }
 
+.fl-input::placeholder {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* El autorrelleno de Chrome pinta su propio fondo claro: se tapa con el azul. */
+.fl-input:autofill {
+  box-shadow: inset 0 0 0 1000px #001a39;
+  -webkit-text-fill-color: #fff;
+}
+
 .fl-input:focus {
-  border-color: var(--color-navy-800);
-  box-shadow: 0 0 0 3px rgba(13, 31, 60, 0.1);
+  border-color: var(--color-white);
+  box-shadow: 0 0 0 2px var(--color-white);
 }
 
 .fl-input-error {
-  border-color: var(--color-error);
+  border-color: #fca5a5;
 }
 
 .fl-input-password {
-  padding-right: 3rem;
+  padding-right: 3.5rem;
 }
 
 .fl-password-wrap {
@@ -3705,35 +3720,40 @@ body:has(.navegacion-mobile-hoja[open]) {
 .fl-select {
   width: 100%;
   height: 2.75rem;
-  padding: 0 2.75rem 0 1rem;
+  padding: 0 2.75rem 0 1.25rem;
   font-size: 1rem;
   font-weight: 400;
-  color: var(--color-text-primary);
-  background: var(--color-white);
-  border: 1.5px solid var(--color-gray-200);
-  border-radius: var(--radius-md);
+  color: var(--color-white);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 16px;
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   appearance: none;
   -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6 9L12 15L18 9' stroke='%230d1f3c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6 9L12 15L18 9' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   cursor: pointer;
+  background-color: transparent;
+}
+
+/* La lista que abre el navegador es blanca: las opciones van en oscuro. */
+.fl-select option {
+  color: #111827;
 }
 
 .fl-select.placeholder {
-  color: var(--color-gray-500);
+  color: rgba(255, 255, 255, 0.65);
 }
 
 .fl-select:focus {
-  border-color: var(--color-navy-800);
-  box-shadow: 0 0 0 3px rgba(13, 31, 60, 0.1);
+  border-color: var(--color-white);
+  box-shadow: 0 0 0 2px var(--color-white);
 }
 
 .fl-error {
   font-size: 0.875rem;
-  color: var(--color-error);
+  color: #fca5a5;
   margin-top: 2px;
 }
 
@@ -3759,18 +3779,18 @@ body:has(.navegacion-mobile-hoja[open]) {
   width: 32px;
   height: 6px;
   border-radius: 3px;
-  background: var(--color-gray-200);
+  background: rgba(255, 255, 255, 0.25);
   transition: background 0.3s ease, transform 0.2s ease;
 }
 
 .fl-progress-active {
-  background: var(--color-navy-800);
+  background: var(--color-white);
   transform: scaleX(1.1);
 }
 
 .fl-progress-done {
-  background: var(--color-navy-800);
-  opacity: 0.6;
+  background: var(--color-white);
+  opacity: 0.55;
 }
 
 /* --- Submit Button --- */
@@ -3779,10 +3799,10 @@ body:has(.navegacion-mobile-hoja[open]) {
   padding: 0 1.5rem;
   font-size: 1rem;
   font-weight: 500;
-  color: var(--color-white);
-  background: var(--color-navy-800);
+  color: var(--color-navy-800);
+  background: var(--color-white);
   border: none;
-  border-radius: 16px;
+  border-radius: 32px;
   cursor: pointer;
   transition: background 0.2s ease, transform 0.15s ease;
   margin-top: 0.25rem;
@@ -3790,7 +3810,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 }
 
 .fl-submit:hover {
-  background: #091729;
+  background: #f3f4f6;
   transform: translateY(-1px);
 }
 
@@ -3805,7 +3825,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 
 .fl-login-link {
   font-size: 0.875rem;
-  color: var(--color-navy-800);
+  color: rgba(255, 255, 255, 0.9);
   text-align: center;
   text-decoration: underline;
   margin-top: -0.25rem;
@@ -3813,7 +3833,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 }
 
 .fl-login-link:hover {
-  opacity: 0.7;
+  color: var(--color-white);
 }
 
 /* --- Pagination --- */
@@ -3909,7 +3929,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   color: var(--color-navy-800);
   background: var(--color-white);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: 32px;
   cursor: pointer;
   transition: opacity 0.2s ease, transform 0.15s ease;
   text-decoration: none;
@@ -3986,11 +4006,6 @@ body:has(.navegacion-mobile-hoja[open]) {
     background: transparent;
   }
 
-  /* En el login el formulario va sin tarjeta, directo sobre el azul: el texto del
-     cargador (navy) desaparecería. */
-  .login-page .goo-loader-label {
-    color: var(--color-white);
-  }
 }
 
 /* Móvil (por debajo de `sm`).
@@ -4039,8 +4054,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 
   .recovery-card,
   .sq-card,
-  .rp-card,
-  .fl-card {
+  .rp-card {
     padding: clamp(1rem, 2.5dvh, 1.5rem) 1.25rem;
     box-shadow: var(--shadow-card);
     border-radius: var(--radius-lg);
@@ -4115,8 +4129,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 
   .recovery-card,
   .sq-card,
-  .rp-card,
-  .fl-card {
+  .rp-card {
     padding: 1rem;
   }
 
@@ -4179,8 +4192,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 
   .recovery-card,
   .sq-card,
-  .rp-card,
-  .fl-card {
+  .rp-card {
     padding: 1.5rem;
   }
 }
@@ -4210,8 +4222,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 
   .recovery-card,
   .sq-card,
-  .rp-card,
-  .fl-card {
+  .rp-card {
     max-width: 440px;
     padding: 3rem;
   }
@@ -4232,11 +4243,9 @@ body:has(.navegacion-mobile-hoja[open]) {
 .auth-slide-forward .recovery-card,
 .auth-slide-forward .sq-card,
 .auth-slide-forward .rp-card,
-.auth-slide-forward .fl-card,
 .auth-slide-backward .recovery-card,
 .auth-slide-backward .sq-card,
-.auth-slide-backward .rp-card,
-.auth-slide-backward .fl-card {
+.auth-slide-backward .rp-card {
   animation: none;
 }
 
@@ -4247,8 +4256,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 
 .auth-page-transition .recovery-card,
 .auth-page-transition .sq-card,
-.auth-page-transition .rp-card,
-.auth-page-transition .fl-card {
+.auth-page-transition .rp-card {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
   transition: box-shadow 0.4s ease;
 }
@@ -4256,8 +4264,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 /* Hover sin efecto 3D acumulativo */
 .auth-page-transition .recovery-card:hover,
 .auth-page-transition .sq-card:hover,
-.auth-page-transition .rp-card:hover,
-.auth-page-transition .fl-card:hover {
+.auth-page-transition .rp-card:hover {
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
 }
 
@@ -4377,6 +4384,12 @@ body:has(.navegacion-mobile-hoja[open]) {
   animation: authBrandingFadeUp 0.4s ease-out both;
   gap: 1.5rem;
   text-align: center;
+}
+
+/* El login va sin tarjeta, directo sobre el azul, en todos los anchos (2026-10-11): el texto
+   del cargador, navy por defecto, desaparecería. */
+.login-success-loader .goo-loader-label {
+  color: var(--color-white);
 }
 
 .goo-loader {
