@@ -5,6 +5,38 @@
 
 ---
 
+## sesión 12-10-2026 (6.ª parte): el primer ingreso de la intranet, en tarjeta blanca
+
+**Qué se pidió:** en tablet y escritorio, la tarjeta blanca también en `/first-login`: «Actualiza
+tu seguridad» (paso 1, contraseñas), «Preguntas de seguridad» (paso 2) y, durante la misma tarea,
+las de «¡Configuración completada con éxito!», «sin modificar texto ni nada».
+
+**Lo que se hizo.** Solo colores; textos, pasos y estados iguales.
+
+| Dónde | Cambio |
+|---|---|
+| `first-login-view.tsx` | `enBlanco` del marco en el paso 1, el paso 2, la pantalla final y la de «nada pendiente»; clases `…EnBlanco` en los tres `PasswordField`, los requisitos, el `h2`, «Atrás», «Continuar»/«Guardar», «Cancelar», «Iniciar sesión» y «Vuelve a iniciar sesión…». «Comprobando tu cuenta…» sigue sobre el azul. |
+| `question-picker.tsx` | Prop `enBlanco`: desplegable y respuesta en `#001a39` con borde `#d9d9d9` (sin elegir, en `#b3b3b3`, el marcador del sitio), flecha `#334861`, errores en rojo 600. |
+| `barras-de-avance.tsx` | `enBlanco` también en la variante `barras`: la actual `#001A39`, el resto `#ccd3d7`. |
+| `acceso-ui.ts` | `accesoBotonSecundarioEnBlancoClass` («Atrás», como `authPasosSecondaryClass` del sitio) y `accesoEncabezadoEnBlancoClass`. |
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| `tsc --noEmit` y ESLint de los componentes del acceso | Limpios |
+| Chrome headless a 390, 768 y 1440 px, con `/me`, `/first-login/status`, el catálogo y `POST /first-login` simulados **en el propio navegador** (`Fetch.fulfillRequest`, sin llegar a la API) | Paso 1, paso 2 (sin elegir, elegida y pregunta 2 con «Atrás»), final y «nada pendiente»: tarjeta blanca, botón `#001A39`, etiquetas, `h2`, campos y textos en `#001a39`, borde `#d9d9d9`, barras `#001A39`/`#ccd3d7` desde 768. A 390, todo como antes. Sin scroll horizontal. |
+
+> **Ojo con los commits:** `globals.css` de la 4.ª parte (el texto del cargador en blanco en
+> todos los anchos) no entró en ninguno; `login-view.tsx`, que va con él, sí. Va en el commit de
+> esta parte.
+
+**Pendiente al cierre:** con esto, del acceso de la intranet solo quedan sobre el azul en tablet y
+escritorio las preguntas pendientes (`/security-questions` en modo `setup`), su aviso «¡Preguntas
+de seguridad configuradas!» y «Comprobando tu cuenta…».
+
+---
+
 ## sesión 12-10-2026 (5.ª parte): el cambio de contraseña del primer ingreso y el aviso final, en tarjeta blanca; nuevos textos del aviso
 
 **Qué se pidió:** en tablet y escritorio, la tarjeta blanca también en «Crea tu nueva contraseña»
