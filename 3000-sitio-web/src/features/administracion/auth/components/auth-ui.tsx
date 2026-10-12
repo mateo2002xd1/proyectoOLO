@@ -346,6 +346,10 @@ export function AuthSelectField({
  * `/assets/svg` que usan los botones de «ver» del panel. Muestran el estado, como en el
  * mockup: cerrado mientras la contraseña está oculta, abierto cuando se ve. El nombre
  * accesible dice la acción («Mostrar contraseña»).
+ *
+ * El ojo va en una caja de 16 × 16 (antes 24 × 20; el usuario lo pidió más pequeño el
+ * 2026-10-11, igual que en la intranet). `IconoMascara` lo ajusta con `contain` y el ojo es el
+ * doble de ancho que de alto: manda el ancho de la caja, no el alto.
  */
 export function PasswordField({
   id,
@@ -399,7 +403,7 @@ export function PasswordField({
           aria-label={show ? 'Ocultar contraseña' : 'Mostrar contraseña'}
           className="absolute right-3 top-1/2 flex -translate-y-1/2 rounded-full p-1.5 text-[#334861] transition-colors hover:text-[#001a39] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001631]"
         >
-          <IconoMascara nombre={show ? 'eye-open' : 'eye-closed'} tamano="h-5 w-6" />
+          <IconoMascara nombre={show ? 'eye-open' : 'eye-closed'} tamano="h-4 w-4" />
         </button>
       </div>
       {error && <p id={`${id}-error`} className={authPasosErrorTextClass}>{error}</p>}
