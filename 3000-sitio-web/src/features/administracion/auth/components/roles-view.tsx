@@ -456,7 +456,7 @@ export default function RolesView() {
                       </span>
                     </td>
                     <td data-solo-tabla data-etiqueta="Acciones" className="px-5 py-2">
-                      <div className="flex items-center gap-1 @3xl:justify-end">
+                      <div className="flex items-center gap-1 en-tabla:justify-end">
                         {/* Deslizadores de Font Awesome (`deslizadores.svg`, un color: va por máscara
                             y toma `currentColor`). En el verde de «Editar usuario»; el tooltip, del
                             color de «Editar» en Configuración → Identidad visual. */}

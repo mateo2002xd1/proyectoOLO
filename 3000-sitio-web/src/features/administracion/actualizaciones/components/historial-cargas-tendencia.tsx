@@ -175,7 +175,7 @@ export function HistorialCargasTendencia({
                     </td>
                     {hayAcciones && (
                       <td className="whitespace-nowrap px-3 py-3">
-                        <div className="flex flex-wrap items-center gap-2 @3xl:justify-end">
+                        <div className="flex flex-wrap items-center gap-2 en-tabla:justify-end">
                           {vigente && corteId !== null && carga.corteEstado !== 'publicado' && onPublicar && (
                             <button
                               type="button"

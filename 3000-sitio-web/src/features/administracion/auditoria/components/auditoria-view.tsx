@@ -233,7 +233,7 @@ export function AuditoriaView() {
                       title={resumenDeCambios(registro)}
                     >
                       {/* Cuando la tabla pasa a tarjetas, el texto no se corta en una línea: se parte, hasta tres. */}
-                      <span className="@max-3xl:line-clamp-3">{resumenDeCambios(registro) || '—'}</span>
+                      <span className="apilada:line-clamp-3">{resumenDeCambios(registro) || '—'}</span>
                     </td>
                     <td data-solo-tabla data-etiqueta="Detalle" className="px-4 py-2 text-right">
                       {/* Ojo y tooltip en el verde de la marca, como pidió el usuario. El ojo

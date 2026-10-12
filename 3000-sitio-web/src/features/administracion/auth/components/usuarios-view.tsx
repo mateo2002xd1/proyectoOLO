@@ -557,7 +557,7 @@ export default function UsuariosView() {
                       })()}
                     </td>
                     <td data-solo-tabla data-etiqueta="Acciones" className="px-6 py-2 text-sm text-right">
-                      <div className="flex items-center gap-2 @3xl:justify-end">
+                      <div className="flex items-center gap-2 en-tabla:justify-end">
                         {/* Icono de dos colores (persona gris, lápiz verde): va como imagen y no con
                             `IconoMascara`, que pinta todo de un solo color. El nombre lo da el
                             `aria-label`; el tooltip es `aria-hidden` para no leerlo dos veces. */}
