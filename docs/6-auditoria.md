@@ -5,6 +5,43 @@
 
 ---
 
+## sesión 12-10-2026 (8.ª parte): «Cargando modo edición...» en el cargador de los dos logins cuando entra quien edita
+
+**Qué se pidió:** que el cargador de la 7.ª parte diga «Cargando modo edición» si quien entra es
+un editor, y lo mismo en la intranet.
+
+**Quién cuenta como editor.** Se tomó la regla que ya usaba cada app, sin inventar otra:
+
+- **Sitio:** quien no tiene `acceso.panel` pero sí permisos `editar.*`, `secciones.*` o
+  `editor.*`: es la rama del login que lo manda al portal en vez de al panel. Quien tiene
+  `acceso.panel` sigue viendo «Ingresando al panel administrativo...».
+- **Intranet:** la de `puedeEditarPaginas`: rol superadmin, administrador o editor, o algún
+  permiso `editar.intranet.*` o `secciones.crear`. Dirección y subdirección siguen viendo
+  «Iniciando sesión...». En la intranet no hay panel: los administradores entran a editar.
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `3001-intranet/src/shared/lib/edicion.ts` (nuevo) | `rolEdita` y `permisosEditan`: la regla de `puedeEditarPaginas` como funciones puras. Estaba solo en `sesion.ts`, que importa `next/headers` y no se puede usar en el navegador. |
+| `sesion.ts` (intranet) | `puedeEditarPaginas` usa esas dos; fuera `ROLES_QUE_EDITAN` de aquí. El orden no cambia: primero el rol, y solo si no basta, `/me`. |
+| `use-auth.ts` (intranet) | `role?: string` en `User`: lo devuelve `POST /login` (`role: user.role?.name`) y no estaba en el tipo. |
+| `login-view.tsx` (intranet) | `entraEditando`, calculado al autenticarse; el cargador dice «Cargando modo edición...» o «Iniciando sesión...». |
+| `login-view.tsx` (sitio) | `entrando` pasa de booleano a `'panel' \| 'edicion' \| null`; el cargador dice «Cargando modo edición...» o «Ingresando al panel administrativo...». |
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| `tsc --noEmit` y ESLint de las dos apps (archivos tocados) | Limpios |
+| Intranet, Chrome headless a 1440, `POST /login` simulado en el navegador con `role: 'editor'` y con `role: 'direccion'` | «Cargando modo edición...» y «Iniciando sesión...» |
+| Sitio, a 1440, login simulado con `['editar.inicio']` (navegación a `/` abortada) y con `['acceso.panel']` (a `/admin/dashboard` abortada) | «Cargando modo edición...» y «Ingresando al panel administrativo...» |
+
+**Pendiente al cierre:** no se probó una cuenta de dirección con un permiso `editar.intranet.*`
+suelto; la regla es la misma función que ya decide los botones de edición.
+
+---
+
 ## sesión 12-10-2026 (7.ª parte): el login del panel administrativo, con el cargador sin tarjeta al autenticarse
 
 **Qué se pidió:** lo mismo que en el login de la intranet (4.ª parte) en el del panel
