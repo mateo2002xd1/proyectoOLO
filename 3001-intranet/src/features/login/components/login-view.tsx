@@ -10,6 +10,7 @@ import { GooLoader } from '@/shared/ui/atoms/goo-loader';
 import { mensajeDeError } from '@/shared/lib/errors';
 import { mensajeDeCierre } from '@/shared/lib/inactividad';
 import { SITE_URL } from '@/shared/lib/constants';
+import { permisosEditan, rolEdita } from '@/shared/lib/edicion';
 import {
   accesoBotonClass,
   accesoBotonEnBlancoClass,
@@ -80,6 +81,9 @@ function LoginForm() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  // Quien edita entra a la intranet con los botones de edición: el cargador lo dice
+  // (pedido del usuario, 2026-10-12). Con la misma regla que `puedeEditarPaginas`.
+  const [entraEditando, setEntraEditando] = useState(false);
 
   const validate = (): boolean => {
     const newErrors: typeof errors = {};
@@ -126,6 +130,7 @@ function LoginForm() {
         return;
       }
 
+      setEntraEditando(rolEdita(data.user.role) || permisosEditan(data.user.permisos ?? []));
       setIsSuccess(true);
 
       setTimeout(() => {
@@ -168,7 +173,7 @@ function LoginForm() {
     >
       {isSuccess ? (
         <div className="login-success-loader">
-          <GooLoader label="Iniciando sesión..." />
+          <GooLoader label={entraEditando ? 'Cargando modo edición...' : 'Iniciando sesión...'} />
         </div>
       ) : (
         <form onSubmit={handleSubmit} noValidate>

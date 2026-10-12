@@ -16,6 +16,7 @@ import { cache } from 'react';
 import { cookies } from 'next/headers';
 import { decodeJwt } from 'jose';
 import { apiClient } from './api-client';
+import { permisosEditan, rolEdita } from './edicion';
 
 export interface Sesion {
   id: string;
@@ -23,9 +24,6 @@ export interface Sesion {
   nombre: string;
   rol: string;
 }
-
-/** Roles con permiso de edición. Debe coincidir con `paginasPolicies` en la API. */
-const ROLES_QUE_EDITAN = ['superadmin', 'administrador', 'editor'];
 
 export async function obtenerSesion(): Promise<Sesion | null> {
   const token = (await cookies()).get('token')?.value;
@@ -48,13 +46,13 @@ export async function obtenerSesion(): Promise<Sesion | null> {
 
 /**
  * Si el usuario puede editar páginas. Dirección y subdirección entran a la intranet
- * pero no editan, así que para ellas esto es `false`.
+ * pero no editan, así que para ellas esto es `false`. Las reglas están en `edicion.ts`,
+ * que comparte con el login.
  */
 export async function puedeEditarPaginas(): Promise<boolean> {
   const sesion = await obtenerSesion();
-  const lowerRole = (sesion?.rol ?? '').trim().toLowerCase();
 
-  if (ROLES_QUE_EDITAN.includes(lowerRole)) {
+  if (rolEdita(sesion?.rol)) {
     return true;
   }
 
@@ -62,8 +60,7 @@ export async function puedeEditarPaginas(): Promise<boolean> {
     return false;
   }
 
-  const permisos = await permisosDeLaSesion();
-  return permisos.some(p => p.startsWith('editar.intranet.') || p === 'secciones.crear');
+  return permisosEditan(await permisosDeLaSesion());
 }
 
 /**

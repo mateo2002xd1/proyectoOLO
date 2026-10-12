@@ -8,6 +8,8 @@ export interface User {
   name?: string;
   email: string;
   roles?: string[];
+  /** El nombre del rol, como lo devuelve `POST /login` (`role: user.role?.name`). */
+  role?: string;
   permissions?: string[];
   permisos?: string[];
   must_change_password?: boolean;
