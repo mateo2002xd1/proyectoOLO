@@ -5,6 +5,48 @@
 
 ---
 
+## sesión 11-10-2026 (6.ª parte): el acceso de la intranet, con la maqueta del sitio sobre el azul y sin tarjeta blanca
+
+**Qué se pidió**, en varios mensajes seguidos: cambiar el estilo de «¿Olvidaste tu contraseña?»
+y del primer ingreso de la intranet como en el sitio web, con los mensajes del flujo encima y
+sin tarjeta blanca; quitar el color blanco de la tarjeta también en escritorio; «copia el mismo
+estilo de sitio web, el mismo UI… sin el fondo blanco sino el azul» (con una captura del primer
+ingreso del sitio); «la misma simetría en sus márgenes y padding»; y, por último, llevar al
+sitio el diseño de «Verifica tu identidad» de la intranet (rótulo «PREGUNTA 1 DE 3», la pregunta
+como etiqueta y los puntos de avance).
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `features/login/components/marco-acceso.tsx` (intranet) | Ahora es `MarcoDePasos` del sitio en Tailwind, con los mismos anchos, rellenos y huecos (`clamp()` con `dvh` en el móvil), sobre `#001A39` y, desde `xl`, la mitad izquierda en `#001631` con las esquinas derechas de 30. Título, texto, paginador (`pasos`) y logo (`conLogo`) como en el sitio. Lo usan **todas** las pantallas del acceso: login, primer ingreso, correo, preguntas, nueva contraseña y avisos de éxito. Antes cada una tenía su maqueta en `globals.css` (`.login-*`, `.fl-*`). |
+| `features/login/components/acceso-ui.ts` | Un solo fondo: texto blanco, campos transparentes en píldora (32 px; el desplegable, 16), botón blanco en píldora, enlaces blancos. El formulario mide 330 px en el móvil y 452 desde `md` con un borde blanco tenue y relleno de 32 × 40 (la tarjeta del sitio, sin fondo). Huecos `accesoHuecoClass` / `accesoHuecoArribaClass` (los `authPasosHueco*` del sitio). Botón secundario, encabezado, rótulo, enlace de regreso. |
+| Login | Sobre el marco con `conLogo`. El logo ya no va atenuado y el título se compone como el del sitio: «Bienvenido a» en peso normal, «nuestra Intranet» en semibold (antes en mayúsculas desde `xl`). |
+| Primer ingreso | Reescrito sobre el marco, como `first-login-flow.tsx` del sitio: títulos del sitio («Actualiza tu seguridad», «Protege el acceso a tu cuenta», «¡Configuración completada!»), el paginador «← Anterior 1 2 3 Siguiente →» bajo el texto (antes debajo del formulario y en inglés, «Previous/Next»), «Contraseña temporal» con marcador «Ingresar contraseña», encabezado «Preguntas de seguridad», «Atrás» en las preguntas. La lógica de pasos (qué falta, a qué paso se puede volver) no cambia. |
+| `question-picker.tsx` | En Tailwind (era `fl-*`): desplegable con etiqueta oculta, «Respuesta», barras. |
+| `barras-de-avance.tsx` (nuevo) | Las barras/puntos de avance, compartidas por las dos pantallas de preguntas: `puntos` en la verificación, `barras` en el primer ingreso (las dos variantes de `AuthProgressDots`). |
+| `shared/ui/molecules/password-field.tsx`, `password-requisitos.tsx`, `return-to-site-link.tsx` | En blanco sobre el azul y en píldora. `ReturnToSiteLink` recibe sus clases (`className`) en vez del prefijo de `globals.css`. |
+| Ojo de la contraseña (intranet) | Más pequeño, a pedido del usuario: de 20 × 20 a 16 × 20 px (`IconoMascara` en `login-view.tsx` y en las dos ramas de `PasswordField`). El área que se toca no cambia: la da el relleno del botón. |
+| `globals.css` | El cargador del login en blanco en todos los anchos. Las reglas `fl-*` se pasaron al azul antes de reescribir el primer ingreso; ya no las usa nadie (ver pendiente). |
+| **Sitio**: `security-questions-view.tsx` y `AuthProgressDots` (`auth-ui.tsx`) | «Verifica tu identidad» con el diseño de la intranet: «PREGUNTA 1 DE 3» en pequeño y mayúsculas, la pregunta como etiqueta del campo y los puntos (`variante="puntos"`; la actual, píldora). Se van el encabezado «Preguntas de seguridad» y la caja con borde de la pregunta. **Ojo:** el número de la pregunta lo había quitado el usuario el 2026-10-09; ahora lo pidió de vuelta con este diseño. Los textos del sitio no cambian. |
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| `tsc --noEmit` y ESLint, las dos apps | Limpios. |
+| Intranet en vivo (`next dev`): login, correo, preguntas, nueva contraseña y éxito con datos de prueba en `sessionStorage`; primer ingreso (pasos 1 y 2) y configuración de preguntas con `/me`, `/first-login/status` y el catálogo simulados desde Chrome (`Fetch.fulfillRequest`), a 360 × 640, 390 × 844, 768 × 1024 y 1280 × 800 | Sin scroll en todas, también «Crea tu nueva contraseña» a 360 × 640, que antes sobraba 94 px (la tarjeta ya no suma relleno en el móvil). |
+| Simetría medida (`getBoundingClientRect`) de la recuperación y el login, sitio contra intranet, a 390, 768 y 1280 | Campo, botón y regreso en la misma x y con el mismo ancho (330 en el móvil, 386 por dentro del recuadro desde `md`); misma letra (título 24/30 px, campos 16). Las diferencias verticales son de contenido (los títulos del sitio ocupan dos líneas). |
+| Sitio en vivo: `/recovery` → preguntas con la API de preguntas simulada, a 360 × 640 y 1280 × 800 | El diseño nuevo, sin scroll. |
+| Envío real (verificar respuestas, guardar el primer ingreso) | **No se probó**: hace falta una cuenta. |
+
+**Pendiente al cierre.**
+
+- Mirarlo con una cuenta real (primer ingreso de punta a punta).
+- CSS muerto en `globals.css` de la intranet: `.login-page/-left/-right`, `.fl-*` (tarjeta, campos, paginador, éxito…), `.recovery-*`, `.site-return-link` y las variantes `*-return`, y las reglas de transición de página (`.auth-page-transition`, `.auth-slide-*`) que apuntaban a esas tarjetas. Igual en las ramas `classPrefix` de `PasswordField` y `PasswordRequisitos`. No se borró en esta entrega.
+
+---
+
 ## sesión 11-10-2026 (5.ª parte): campos del login de la intranet transparentes sobre el azul
 
 **Qué se pidió.** En el login de la intranet, «Correo SENA» y «Contraseña» eran blancos sobre el
