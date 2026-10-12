@@ -1,0 +1,50 @@
+import type { SVGProps } from 'react';
+
+export interface IconoAccesosProps extends SVGProps<SVGSVGElement> {
+  /** Color de los trazos y rellenos del icono. Por defecto usa `currentColor` para integrarse con los estados del menú. */
+  colorIcono?: string;
+}
+
+/**
+ * Logotipo / icono de la sección «Accesos» del panel (usuario con llave).
+ *
+ * viewBox="0 0 25 26"
+ */
+export function IconoAccesos({
+  colorIcono,
+  className = '',
+  fill,
+  ...props
+}: IconoAccesosProps) {
+  const color = colorIcono ?? (fill && fill !== 'none' ? fill : 'currentColor');
+
+  return (
+    <svg
+      width="25"
+      height="26"
+      viewBox="0 0 25 26"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      className={className}
+      {...props}
+    >
+      <path
+        d="M17.352 23.8865L15.1388 24.9128C14.5356 25.1925 13.8325 24.8166 13.7301 24.1597L13.4246 22.2008C13.389 21.9727 13.4335 21.7394 13.5504 21.5403L17.3056 15.1465C17.5853 14.6702 18.1981 14.5109 18.6743 14.7906L20.9542 16.1296C21.4304 16.4093 21.5897 17.0221 21.31 17.4983L17.7936 23.4857C17.6906 23.6611 17.5365 23.8009 17.352 23.8865Z"
+        fill={color}
+        stroke={color}
+      />
+      <path
+        d="M21.7385 14.795L19.4585 13.4559C18.9822 13.1762 18.8117 12.5568 19.0973 12.084C19.8139 10.8977 20.78 9.74468 22.5584 10.7894C24.6074 11.9931 23.9953 13.09 23.1291 14.4526C22.8329 14.9186 22.2146 15.0746 21.7385 14.795Z"
+        fill={color}
+        stroke={color}
+      />
+      <path
+        d="M13.1009 16.901C11.7967 18.5199 11.1068 20.8861 10.8343 22.5439C10.7646 22.9681 10.454 23.3209 10.0328 23.4068C2.95649 24.8509 0.763004 23.3365 0.51277 22.2747C0.495292 22.2006 0.497912 22.1206 0.507401 22.045C1.51454 14.0203 7.90695 13.3483 12.6575 14.3661C13.594 14.5667 13.7017 16.1551 13.1009 16.901Z"
+        fill={color}
+        stroke={color}
+      />
+      <circle cx="9.49316" cy="6" r="6" fill={color} />
+    </svg>
+  );
+}

@@ -97,8 +97,8 @@ export function ColoresConfigurables({
   };
 
   return (
-    <div className="mt-8">
-      <h3 className="text-sm font-semibold text-[#001631] dark:text-[#f6f6f6]">{titulo}</h3>
+    <div className="mt-8 rounded-lg border border-gray-200 p-4 dark:border-[#2d3649]">
+      <h3 className="text-base font-semibold text-[#001631] dark:text-[#f6f6f6]">{titulo}</h3>
       <p className="mt-1 text-sm text-gray-500 dark:text-[#94a3b8]">
         {descripcion} Para que se lea bien, la letra debe contrastar al menos{' '}
         {String(CONTRASTE_MINIMO).replace('.', ',')}:1 con el fondo.
@@ -121,11 +121,11 @@ export function ColoresConfigurables({
                   <span className="text-xs font-medium text-[#2a7d00] dark:text-[#9ad14a]">
                     {pendientes} sin guardar
                   </span>
-                ) : (
+                ) : propios > 0 ? (
                   <span className="text-xs text-gray-500 dark:text-[#94a3b8]">
-                    {propios > 0 ? `${propios} de ${elementos.length} con color propio` : `${elementos.length} de fábrica`}
+                    {propios} de {elementos.length} con color propio
                   </span>
-                )
+                ) : null
               }
             >
               <ul className="grid gap-3 @xl:grid-cols-2 @4xl:grid-cols-3">

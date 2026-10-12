@@ -1,13 +1,14 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { Cog8ToothIcon, ShieldCheckIcon, UserIcon } from '@heroicons/react/16/solid';
+import { Cog8ToothIcon, ShieldCheckIcon } from '@heroicons/react/16/solid';
 import {
   ArchiveBoxIcon,
-  ArrowUpTrayIcon,
   ClipboardDocumentCheckIcon,
   EllipsisHorizontalIcon,
 } from '@heroicons/react/20/solid';
+import { IconoActualizaciones } from '@/shared/ui/atoms/icono-actualizaciones';
+import { IconoAccesos } from '@/shared/ui/atoms/icono-accesos';
 import { NavegacionMobile, type DestinoMobile } from './navegacion-mobile';
 
 /** Las secciones que van dentro de «Más»: si se está en una, «Más» sale marcado. */
@@ -35,7 +36,7 @@ export function NavegacionMobilePanel({ pendientesRevision, logo, logoEnBlancoEn
     {
       clave: 'accesos',
       etiqueta: 'Accesos',
-      icono: <UserIcon />,
+      icono: <IconoAccesos />,
       activo: pathname.startsWith('/admin/users') || pathname.startsWith('/admin/roles'),
       hijos: [
         { clave: 'usuarios', etiqueta: 'Usuarios', href: '/admin/users', activo: pathname.startsWith('/admin/users') },
@@ -63,7 +64,7 @@ export function NavegacionMobilePanel({ pendientesRevision, logo, logoEnBlancoEn
       icono: <EllipsisHorizontalIcon />,
       activo: enMas,
       hijos: [
-        { clave: 'actualizaciones', etiqueta: 'Actualizaciones', icono: <ArrowUpTrayIcon />, href: '/admin/actualizaciones', activo: pathname.startsWith('/admin/actualizaciones') },
+        { clave: 'actualizaciones', etiqueta: 'Actualizaciones', icono: <IconoActualizaciones />, href: '/admin/actualizaciones', activo: pathname.startsWith('/admin/actualizaciones') },
         { clave: 'respaldos', etiqueta: 'Respaldos', icono: <ArchiveBoxIcon />, href: '/admin/respaldos', activo: pathname.startsWith('/admin/respaldos') },
         { clave: 'configuracion', etiqueta: 'Configuración', icono: <Cog8ToothIcon />, href: '/admin/dashboard/configuracion', activo: pathname.startsWith('/admin/dashboard/configuracion') },
       ],

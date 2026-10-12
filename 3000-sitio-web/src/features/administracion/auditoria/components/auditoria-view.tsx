@@ -89,6 +89,25 @@ export function AuditoriaView() {
       <BarraFiltros
         activos={Object.values(filtros).filter(Boolean).length}
       >
+        {/* La categoría va la primera (pedido del usuario, 2026-10-12) y antes que la acción:
+            la segunda depende de la primera (Rechazo es de Administración, Expiró de
+            Seguridad), y ese es el orden en que se piensa — de qué mundo hablo, y qué pasó
+            en él. */}
+        <CampoFiltro etiqueta="Categoría">
+          <CustomSelect
+            ariaLabel="Categoría"
+            value={filtros.categoria}
+            onChange={(valor) => cambiarFiltro('categoria', valor)}
+            options={[
+              { value: '', label: 'Todas' },
+              ...(Object.keys(ETIQUETA_CATEGORIA) as CategoriaAuditoria[]).map((value) => ({
+                value,
+                label: ETIQUETA_CATEGORIA[value],
+              })),
+            ]}
+          />
+        </CampoFiltro>
+
         <CampoFiltro etiqueta="Desde">
           <DatePicker
             ariaLabel="Desde"
@@ -115,24 +134,6 @@ export function AuditoriaView() {
             options={[
               { value: '', label: 'Todos' },
               ...usuarios.map((u) => ({ value: u.id, label: u.nombre })),
-            ]}
-          />
-        </CampoFiltro>
-
-        {/* Primero la categoría y después la acción: la segunda depende de la primera
-            (Rechazo es de Administración, Expiró de Seguridad), y ese es el orden en
-            que se piensa — de qué mundo hablo, y qué pasó en él. */}
-        <CampoFiltro etiqueta="Categoría">
-          <CustomSelect
-            ariaLabel="Categoría"
-            value={filtros.categoria}
-            onChange={(valor) => cambiarFiltro('categoria', valor)}
-            options={[
-              { value: '', label: 'Todas' },
-              ...(Object.keys(ETIQUETA_CATEGORIA) as CategoriaAuditoria[]).map((value) => ({
-                value,
-                label: ETIQUETA_CATEGORIA[value],
-              })),
             ]}
           />
         </CampoFiltro>

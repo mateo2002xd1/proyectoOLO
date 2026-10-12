@@ -48,10 +48,11 @@ import {
   ArchiveBoxIcon,
   BellIcon,
   ClipboardDocumentCheckIcon,
-  ArrowUpTrayIcon,
   HomeIcon,
   MagnifyingGlassIcon,
 } from '@heroicons/react/20/solid';
+import { IconoActualizaciones } from '@/shared/ui/atoms/icono-actualizaciones';
+import { IconoAccesos } from '@/shared/ui/atoms/icono-accesos';
 import { ThemeToggle } from '@/shared/ui/molecules/theme-toggle';
 import { Paginador } from '@/shared/ui/molecules/paginador';
 import { RouteTransition } from '@/shared/ui/atoms/route-transition';
@@ -460,7 +461,7 @@ export function PanelGeneralLayout({
                 </SidebarItem>
                 <SidebarGroup
                   label="Accesos"
-                  icon={UserIcon}
+                  icon={IconoAccesos}
                   prefixes={['/admin/users', '/admin/roles']}
                 >
                   {(pathname) => (
@@ -515,7 +516,7 @@ export function PanelGeneralLayout({
                   current={pathname.startsWith('/admin/actualizaciones')}
                   className="font-semibold"
                 >
-                  <ArrowUpTrayIcon />
+                  <IconoActualizaciones />
                   <SidebarLabel>Actualizaciones</SidebarLabel>
                 </SidebarItem>
               </SidebarSection>
