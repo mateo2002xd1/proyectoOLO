@@ -5,6 +5,45 @@
 
 ---
 
+## sesión 11-10-2026 (4.ª parte): el acceso de la intranet copia el del sitio, con los mensajes de cada paso a la izquierda y la misma escala de letra
+
+**Qué se pidió.** En la intranet, al pulsar «¿Olvidaste tu contraseña?» el panel izquierdo
+se quedaba en «INTRANET» y los mensajes iban dentro de la tarjeta. Que se comporte como el
+acceso del sitio web, dejando los mensajes en la tarjeta en el móvil. Que la letra tenga el
+mismo tamaño y tipo que en el sitio, y la casa de «Regresar al sitio web» también. **El sitio
+web no se toca** (el usuario lo pidió expresamente).
+
+**Lo que se hizo.** La intranet conserva su identidad: fondo azul, colores, esquinas.
+
+| Dónde | Cambio |
+|---|---|
+| `features/login/components/acceso-ui.ts` (nuevo) | Las medidas de letra del acceso del sitio (`auth-ui.tsx`, `marco-de-pasos.tsx`) en los colores de la intranet: título del panel izquierdo de 30 px Semibold y su texto de 18; encabezado de la tarjeta de 18/20 Medium; texto de la tarjeta de 14-16/18; etiquetas y enlaces de 14/16 Medium/Regular; campos y botón de 44 px con texto de 16; errores de 14. Tarjeta de hasta 452 px desde `md`, como en el sitio. |
+| `features/login/components/marco-acceso.tsx` (nuevo) | Marco de la recuperación (correo, preguntas, nueva contraseña) y de los avisos de éxito, en vez de la misma maqueta copiada cuatro veces. Desde `xl`, logo + título + texto del paso a la izquierda y la tarjeta solo con el formulario; por debajo, «INTRANET» arriba y el título y el texto en la tarjeta, como estaba. Los dos títulos están en el HTML y cada corte oculta uno con `display: none`: el lector de pantalla solo encuentra el que se ve. |
+| `recovery-view`, `security-questions-view`, `reset-password-view`, `auth-success-screen` | Sobre `MarcoAcceso` y con las clases de `acceso-ui`. Los textos no cambian. El rótulo «PREGUNTA 1 DE 3» se deja como estaba: en el sitio no hay nada equivalente. |
+| `login-view.tsx` | Misma escala: título de 20-24 px en el móvil y 30 desde `md` (antes 36), etiquetas de 14/16 en Medium (antes 14 Semibold), campos y botón de 44 px con 16 (antes 14), aviso de privacidad y errores de 14 (antes 12), «¿Olvidaste tu contraseña?» de 14/16 en el azul de la tarjeta (antes 12 gris). La maqueta no cambia. |
+| `shared/ui/molecules/password-field.tsx` | Las mismas medidas en el campo de contraseña de Tailwind (el del prefijo `fl` va por CSS). |
+| `shared/ui/molecules/return-to-site-link.tsx` + `globals.css` | La casa rellena de Heroicons de 20 px (`HomeIcon` sólido, la del sitio) en vez de la de contorno, y el texto de 14 px en el móvil y 16 desde `md` en peso normal (antes 13-15 px Medium) en todas las variantes (`login`, `recovery`, `sq`, `rp`, `fl`, `rs`). |
+| `globals.css`, primer ingreso (`fl-*`) | Título del paso de 30 px Semibold (antes 24-40 Bold) y su texto de 18 (14-16 en el móvil); etiquetas de 14/16 Medium; campos y botones de 44 px con 16; errores de 14. |
+| Móvil | El logo, «INTRANET», el relleno de la tarjeta y el hueco bajo el texto se encogen con el alto (`dvh`), como en el sitio: con la letra más grande, las preguntas se salían 24 px a 360 × 640. |
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| `tsc --noEmit` y ESLint de `features/login` y las dos piezas compartidas | Limpios. |
+| Capturas en vivo sobre el `next dev` de la intranet (recuperación con datos de prueba en `sessionStorage`), a 1280 × 800, 768 × 1024, 390 × 844 y 360 × 640: login, correo, preguntas, nueva contraseña y aviso de éxito | Desde `xl`, título y texto de cada paso a la izquierda y la tarjeta solo con el formulario; por debajo, como antes. Sin scroll en todas salvo «Crea tu nueva contraseña» a 360 × 640 (ver abajo). |
+| Primer ingreso (`fl-*`) | **No se probó**: hace falta una cuenta con contraseña temporal. |
+| El sitio web | Sin cambios (`git status` limpio en `3000-sitio-web`). |
+
+> **«Crea tu nueva contraseña» sigue sin caber a 360 × 640.** Sobran 94 px (antes 135): la lista
+> de requisitos está siempre a la vista. Es el pendiente de la 3.ª parte.
+
+**Pendiente al cierre.** Probar el primer ingreso con una cuenta temporal. Decidir lo de la
+nueva contraseña en el móvil. Las clases `.recovery-*` de `globals.css` ya no las usa ningún
+componente (la recuperación usaba Tailwind desde antes); no se borraron.
+
+---
+
 ## sesión 11-10-2026 (3.ª parte): «Cancelar» debajo de guardar la nueva contraseña, igual en las dos apps
 
 **Qué se pidió.** En «Crea tu nueva contraseña», debajo del botón de guardar, un «Cancelar»
