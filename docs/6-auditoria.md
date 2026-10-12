@@ -5,6 +5,38 @@
 
 ---
 
+## sesión 12-10-2026 (7.ª parte): el login del panel administrativo, con el cargador sin tarjeta al autenticarse
+
+**Qué se pidió:** lo mismo que en el login de la intranet (4.ª parte) en el del panel
+(`localhost:3000/login`): al autenticarse, quitar la tarjeta y dejar el cargador con «Ingresando al
+panel administrativo». Hasta ahora no había cargador: el botón decía «Iniciando sesión…» y la página
+se iba.
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `login-view.tsx` (sitio) | Estado `entrando` en `LoginView`; `LoginForm` lo activa con `onEntrando` justo antes de `window.location.href` (al panel y, para quien solo edita, al portal). Con él, en lugar de la tarjeta (`authPasosCardClass`) va el `GooLoader` del sitio con «Ingresando al panel administrativo...» dentro de un `role="status"`. Para ir a `/first-login` no se muestra: ahí no se entra al panel. |
+| `globals.css` (sitio) | `.login-panel-cargando .goo-loader-label` en blanco desde `xl`, sobre el azul de la mitad derecha; por debajo, el navy de siempre sobre el blanco. Va en el CSS y no con Tailwind: `.goo-loader-label` no está en ninguna capa y le gana a cualquier utilidad. |
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| `tsc --noEmit` y ESLint del sitio (`login-view.tsx`) | Limpios |
+| Chrome headless contra el dev de la 3000, a 390, 768 y 1440 px: `POST /api/auth/login` respondido **en el propio navegador** con `acceso.panel` (`Fetch.fulfillRequest`, sin llegar a la API) y la navegación a `/admin/dashboard` abortada para que el cargador quede a la vista | Sin formulario ni tarjeta (sin fondo, borde 0); texto «Ingresando al panel administrativo...» en Poppins, `#0d1f3c` a 390 y 768, blanco a 1440. Sin scroll horizontal. |
+
+> **Trampa de la prueba:** si en vez de abortar la navegación se deja en pausa
+> (`Fetch.requestPaused` sin responder), la pestaña deja de contestar a `Runtime.evaluate` y a
+> `Page.captureScreenshot`. Hay que hacerle `Fetch.failRequest` con `Aborted`: la página se queda
+> en `/login` con su estado.
+
+**Pendiente al cierre:** quien solo tiene permisos de edición va al portal y no al panel, pero ve el
+mismo texto; el usuario pidió uno solo. El punto navy del cargador no se distingue sobre el azul del
+escritorio, como en la intranet.
+
+---
+
 ## sesión 12-10-2026 (6.ª parte): el primer ingreso de la intranet, en tarjeta blanca
 
 **Qué se pidió:** en tablet y escritorio, la tarjeta blanca también en `/first-login`: «Actualiza
