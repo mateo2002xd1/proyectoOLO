@@ -16,7 +16,6 @@ import {
   accesoErrorGeneralClass,
   accesoHuecoArribaClass,
   accesoHuecoClass,
-  accesoTarjetaBlancaClass,
 } from './acceso-ui';
 import { mensajeDeError } from '@/shared/lib/errors';
 
@@ -134,13 +133,11 @@ export function ResetPasswordView() {
     return null;
   }
 
-  // La recuperación va en tarjeta blanca desde `md`, como el login (2026-10-12). El cambio
-  // forzado sigue sobre el azul.
-  const enBlanco = mode === 'recovery';
-
   return (
+    // Tarjeta blanca desde `md`, como el login (2026-10-12): primero en la recuperación y el
+    // mismo día también en el cambio forzado del primer ingreso.
     <MarcoAcceso
-      claseTarjeta={enBlanco ? accesoTarjetaBlancaClass : ''}
+      enBlanco
       // En la recuperación, los textos del sitio web (pedido del usuario, 2026-10-11): el
       // saludo con el primer nombre y dos párrafos. Antes, «Crea tu nueva contraseña» y «Elige
       // una clave que no hayas usado antes.». El cambio forzado (con sesión) no cambia.
@@ -177,7 +174,7 @@ export function ResetPasswordView() {
             value={currentPassword}
             onChange={(v) => { setCurrentPassword(v); setErrors({}); }}
             error={errors.currentPassword}
-            enBlanco={enBlanco}
+            enBlanco
             className={accesoHuecoClass}
           />
         )}
@@ -190,10 +187,10 @@ export function ResetPasswordView() {
           value={password}
           onChange={(v) => { setPassword(v); setErrors({}); }}
           error={errors.password}
-          enBlanco={enBlanco}
+          enBlanco
           className="mb-2 md:mb-3"
         />
-        <PasswordRequisitos password={password} variant="solid" className={accesoHuecoClass} resumirAlCumplir enBlanco={enBlanco} />
+        <PasswordRequisitos password={password} variant="solid" className={accesoHuecoClass} resumirAlCumplir enBlanco />
 
         <PasswordField
           id="confirmPassword"
@@ -203,14 +200,14 @@ export function ResetPasswordView() {
           value={confirmPassword}
           onChange={(v) => { setConfirmPassword(v); setErrors({}); }}
           error={errors.confirm}
-          enBlanco={enBlanco}
+          enBlanco
           className={accesoHuecoClass}
         />
 
         <button
           type="submit"
           disabled={isLoading}
-          className={enBlanco ? `${accesoBotonClass} ${accesoBotonEnBlancoClass}` : accesoBotonClass}
+          className={`${accesoBotonClass} ${accesoBotonEnBlancoClass}`}
         >
           {isLoading ? 'Guardando…' : 'Guardar contraseña'}
         </button>
@@ -224,7 +221,7 @@ export function ResetPasswordView() {
             <button
               type="button"
               onClick={() => logout()}
-              className={accesoEnlaceClass}
+              className={`${accesoEnlaceClass} ${accesoEnlaceEnBlancoClass}`}
             >
               Cancelar
             </button>

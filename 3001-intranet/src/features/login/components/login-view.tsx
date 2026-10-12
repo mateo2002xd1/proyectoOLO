@@ -26,7 +26,7 @@ import {
   accesoHuecoClass,
   accesoIconoCampoClass,
   accesoIconoCampoEnBlancoClass,
-  accesoTarjetaBlancaClass,
+  accesoSinTarjetaClass,
   accesoTextoEnBlancoClass,
 } from './acceso-ui';
 import { MarcoAcceso } from './marco-acceso';
@@ -149,11 +149,14 @@ function LoginForm() {
   return (
     // El mismo marco que el resto del acceso (`MarcoAcceso`, la maqueta del sitio web en
     // azul): logo y título arriba en el móvil, a la izquierda desde `xl`. Es la única pantalla
-    // con el logo en todos los anchos (`conLogo`), como en el sitio, y la única con la tarjeta
-    // blanca desde `md` (las clases `…EnBlanco`, 2026-10-12); en el móvil, directo sobre el azul.
+    // con el logo en todos los anchos (`conLogo`), como en el sitio. Tarjeta blanca desde `md`
+    // (las clases `…EnBlanco`, 2026-10-12), como la recuperación; en el móvil, directo sobre el
+    // azul. Ya autenticado, sin tarjeta ni borde: solo el cargador sobre el azul (pedido del
+    // usuario, 2026-10-12).
     <MarcoAcceso
       conLogo
-      claseTarjeta={accesoTarjetaBlancaClass}
+      enBlanco={!isSuccess}
+      claseTarjeta={isSuccess ? accesoSinTarjetaClass : ''}
       titulo={
         <>
           {/* El espacio entre los dos es para el nombre accesible: dos `block` seguidos se
@@ -165,7 +168,7 @@ function LoginForm() {
     >
       {isSuccess ? (
         <div className="login-success-loader">
-          <GooLoader label="Preparando tu espacio..." />
+          <GooLoader label="Iniciando sesión..." />
         </div>
       ) : (
         <form onSubmit={handleSubmit} noValidate>

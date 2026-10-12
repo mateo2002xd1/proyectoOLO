@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { ReturnToSiteLink } from '@/shared/ui/molecules/return-to-site-link';
-import { accesoHuecoClass, accesoRegresoClass, accesoTarjetaClass } from './acceso-ui';
+import { accesoHuecoClass, accesoRegresoClass, accesoTarjetaBlancaClass, accesoTarjetaClass } from './acceso-ui';
 
 /**
  * Marco de todas las pantallas de acceso de la intranet: login, primer ingreso, recuperación
@@ -38,6 +38,7 @@ export function MarcoAcceso({
   claveTarjeta,
   claseTarjeta = '',
   descripcionEnTarjeta = false,
+  enBlanco = false,
   children,
 }: {
   titulo: ReactNode;
@@ -51,6 +52,12 @@ export function MarcoAcceso({
    * lector de pantalla oye solo uno.
    */
   descripcionEnTarjeta?: boolean;
+  /**
+   * Tarjeta blanca desde `md` (login, recuperación, cambio de contraseña y su aviso final,
+   * 2026-10-12), con la descripción de dentro en oscuro. Los hijos ponen sus clases
+   * `…EnBlanco` de `acceso-ui.ts`. En el móvil no cambia nada.
+   */
+  enBlanco?: boolean;
   /** El logo también por debajo de `xl`, encima del título. Solo el login, como en el sitio. */
   conLogo?: boolean;
   /** Peso del título; el login lo compone con dos pesos y pasa el suyo. */
@@ -87,9 +94,9 @@ export function MarcoAcceso({
       </section>
 
       <div className="mt-[clamp(1rem,3.5dvh,2.5rem)] flex flex-col items-center px-4 sm:px-6 md:mt-11 xl:mt-0 xl:flex-1 xl:justify-center xl:py-12">
-        <div key={claveTarjeta} className={`${accesoTarjetaClass} ${claseTarjeta}`}>
+        <div key={claveTarjeta} className={`${accesoTarjetaClass} ${enBlanco ? accesoTarjetaBlancaClass : ''} ${claseTarjeta}`}>
           {descripcionEnTarjeta && parrafos.length > 0 && (
-            <div className={`hidden space-y-3 text-base leading-relaxed text-pretty text-white/85 md:block ${accesoHuecoClass}`}>
+            <div className={`hidden space-y-3 text-base leading-relaxed text-pretty text-white/85 md:block ${enBlanco ? 'md:text-[#001a39]' : ''} ${accesoHuecoClass}`}>
               {parrafos.map((texto) => (
                 <p key={texto}>{texto}</p>
               ))}

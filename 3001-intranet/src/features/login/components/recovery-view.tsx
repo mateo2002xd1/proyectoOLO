@@ -20,7 +20,6 @@ import {
   accesoHuecoClass,
   accesoEtiquetaClass,
   accesoEtiquetaEnBlancoClass,
-  accesoTarjetaBlancaClass,
 } from './acceso-ui';
 import { mensajeDeError } from '@/shared/lib/errors';
 
@@ -69,7 +68,7 @@ export function RecoveryView() {
   return (
     // Tarjeta blanca desde `md`, como el login (las clases `…EnBlanco`, 2026-10-12).
     <MarcoAcceso
-      claseTarjeta={accesoTarjetaBlancaClass}
+      enBlanco
       titulo="¿Olvidaste tu contraseña?"
       descripcion="No te preocupes, vamos a ayudarte a restablecerla, verifica que eres tú."
     >

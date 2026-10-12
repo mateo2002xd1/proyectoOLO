@@ -24,7 +24,6 @@ import {
   accesoOpcionesClass,
   accesoRotuloClass,
   accesoRotuloEnBlancoClass,
-  accesoTarjetaBlancaClass,
 } from './acceso-ui';
 import { type CatalogQuestion } from './question-picker';
 import { AuthSuccessScreen } from './auth-success-screen';
@@ -216,7 +215,7 @@ export function SecurityQuestionsView() {
       }
       cerrarSesionAlSalir={mode === 'setup'}
       claveTarjeta={currentStep}
-      claseTarjeta={enBlanco ? accesoTarjetaBlancaClass : ''}
+      enBlanco={enBlanco}
     >
       <form onSubmit={handleSubmit} noValidate>
         {errors.general && (
