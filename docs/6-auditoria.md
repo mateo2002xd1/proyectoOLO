@@ -25,6 +25,17 @@ botón no cambia.
 | Capturas en vivo a 360 × 640, 768 × 1024 y 1280 × 800 | Transparentes sobre el azul en el móvil y la tablet; en la tarjeta de escritorio, blancos como antes. Sin scroll. |
 | Autorrelleno de Chrome | **No se probó**: hace falta una contraseña guardada en el navegador. |
 
+**Después, el aviso de privacidad.** Al subir a 14 px (4.ª parte), «Al ingresar a este sitio
+aceptas la política de privacidad…» se partía en «política de» / «privacidad» y el «de» quedaba
+colgando. Los dos enlaces llevan `whitespace-nowrap`: ahora pasan enteros a la segunda línea
+(«política de privacidad y protección de datos.»). Comprobado en capturas a 360 × 640,
+390 × 844, 768 × 1024 y 1280 × 800, sin scroll. El sitio web tiene el mismo corte y no se tocó.
+
+**Y el título bajo el logo.** Por debajo de `xl`, «Bienvenido a nuestra Intranet» iba encima del
+logo (`order-*`); el usuario lo pidió debajo, como ya estaba en escritorio. Se quitó el cambio de
+orden y el hueco pasó del título al logo; el logo sigue atenuado sobre el azul. Capturas a
+360 × 640, 768 × 1024 y 1280 × 800: sin scroll, y el escritorio igual que antes.
+
 **Pendiente al cierre.** Mirar el autorrelleno en el navegador del usuario.
 
 ---
