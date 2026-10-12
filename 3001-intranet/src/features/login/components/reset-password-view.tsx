@@ -34,6 +34,10 @@ const getModeSnapshot = (): 'recovery' | 'forced' =>
 /** En el servidor no hay sessionStorage: sin modo aun. */
 const getModeServerSnapshot = (): null => null;
 
+/** Primer nombre que dio el servidor al verificar las respuestas (`recoveryName`). */
+const getNombreSnapshot = (): string | null => sessionStorage.getItem('recoveryName');
+const getNombreServerSnapshot = (): null => null;
+
 /** Datos de recuperacion guardados por el paso anterior del flujo. */
 function leerDatosDeRecuperacion(): { email: string; answers: Array<{ key: string; answer: string }> } {
   const email = sessionStorage.getItem('recoveryEmail') ?? '';
@@ -56,6 +60,7 @@ export function ResetPasswordView() {
     getModeSnapshot,
     getModeServerSnapshot,
   );
+  const nombre = useSyncExternalStore(subscribeToSessionStorage, getNombreSnapshot, getNombreServerSnapshot);
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [password, setPassword] = useState('');
@@ -128,11 +133,23 @@ export function ResetPasswordView() {
 
   return (
     <MarcoAcceso
-      titulo="Crea tu nueva contraseña"
+      // En la recuperación, los textos del sitio web (pedido del usuario, 2026-10-11): el
+      // saludo con el primer nombre y dos párrafos. Antes, «Crea tu nueva contraseña» y «Elige
+      // una clave que no hayas usado antes.». El cambio forzado (con sesión) no cambia.
+      titulo={
+        mode === 'forced'
+          ? 'Crea tu nueva contraseña'
+          : nombre
+            ? `¡Enhorabuena, ${nombre}!`
+            : '¡Enhorabuena!'
+      }
       descripcion={
         mode === 'forced'
           ? 'Has ingresado con un código temporal. Por tu seguridad, crea una nueva clave privada.'
-          : 'Elige una clave que no hayas usado antes.'
+          : [
+              'Ahora puedes crear tu nueva contraseña.',
+              'Asegúrate de que sea fácil de recordar para ti, pero difícil de adivinar para otros.',
+            ]
       }
       cerrarSesionAlSalir={mode === 'forced'}
     >
@@ -207,6 +224,7 @@ export function ResetPasswordView() {
                 sessionStorage.removeItem('recoveryEmail');
                 sessionStorage.removeItem('recoveryQuestions');
                 sessionStorage.removeItem('recoveryAnswers');
+                sessionStorage.removeItem('recoveryName');
               }}
               className={accesoEnlaceClass}
             >

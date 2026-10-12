@@ -115,8 +115,13 @@ export function SecurityQuestionsView() {
 
     try {
       // El correo solo hace falta aquí, así que se lee directo del storage.
-      await authApi.verifyAnswers(sessionStorage.getItem('recoveryEmail') ?? '', payload);
+      const respuesta = await authApi.verifyAnswers(sessionStorage.getItem('recoveryEmail') ?? '', payload);
       sessionStorage.setItem('recoveryAnswers', JSON.stringify(payload));
+      // El primer nombre que da el servidor, para el saludo de la nueva contraseña
+      // («¡Enhorabuena, <nombre>!»), como en el sitio web.
+      const nombre = typeof respuesta?.nombre === 'string' ? respuesta.nombre.trim() : '';
+      if (nombre) sessionStorage.setItem('recoveryName', nombre);
+      else sessionStorage.removeItem('recoveryName');
       router.push('/reset-password');
     } catch (error) {
       setErrors({ general: mensajeDeError(error, 'Las respuestas no coinciden. Intenta de nuevo.') });

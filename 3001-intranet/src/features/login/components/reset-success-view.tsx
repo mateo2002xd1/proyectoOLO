@@ -8,6 +8,7 @@ export function ResetSuccessView() {
     sessionStorage.removeItem('recoveryEmail');
     sessionStorage.removeItem('recoveryQuestions');
     sessionStorage.removeItem('recoveryAnswers');
+    sessionStorage.removeItem('recoveryName');
   }, []);
 
   return (
