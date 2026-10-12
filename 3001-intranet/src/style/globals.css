@@ -199,8 +199,10 @@
   align-items: center;
   justify-content: center;
   margin-top: clamp(1.25rem, 2.5vw, 1.75rem);
-  font-size: clamp(0.85rem, 1.5vw, 0.925rem);
-  font-weight: 500;
+  /* 14 px en el móvil y 16 desde `md`, peso normal: los del acceso del sitio web
+     (`BackToSiteLink`), pedido del usuario el 2026-10-11. */
+  font-size: 0.875rem;
+  font-weight: 400;
   color: #ffffff;
   text-decoration: none;
   opacity: 0.9;
@@ -2974,8 +2976,8 @@ body:has(.navegacion-mobile-hoja[open]) {
   align-items: center;
   justify-content: center;
   margin-top: clamp(1rem, 2vw, 1.5rem);
-  font-size: clamp(0.8rem, 1.5vw, 0.875rem);
-  font-weight: 500;
+  font-size: 0.875rem;
+  font-weight: 400;
   color: var(--color-white);
   opacity: 0.85;
   transition: opacity 0.2s ease, transform 0.15s ease;
@@ -3225,8 +3227,8 @@ body:has(.navegacion-mobile-hoja[open]) {
   align-items: center;
   justify-content: center;
   margin-top: clamp(1rem, 2vw, 1.5rem);
-  font-size: clamp(0.8rem, 1.5vw, 0.875rem);
-  font-weight: 500;
+  font-size: 0.875rem;
+  font-weight: 400;
   color: var(--color-white);
   opacity: 0.85;
   transition: opacity 0.2s ease, transform 0.15s ease;
@@ -3469,8 +3471,8 @@ body:has(.navegacion-mobile-hoja[open]) {
   align-items: center;
   justify-content: center;
   margin-top: clamp(1rem, 2vw, 1.5rem);
-  font-size: clamp(0.8rem, 1.5vw, 0.875rem);
-  font-weight: 500;
+  font-size: 0.875rem;
+  font-weight: 400;
   color: var(--color-white);
   opacity: 0.85;
   transition: opacity 0.2s ease, transform 0.15s ease;
@@ -3552,8 +3554,8 @@ body:has(.navegacion-mobile-hoja[open]) {
   align-items: center;
   justify-content: center;
   margin-top: clamp(1.5rem, 3vw, 2rem);
-  font-size: clamp(0.8rem, 1.5vw, 0.875rem);
-  font-weight: 500;
+  font-size: 0.875rem;
+  font-weight: 400;
   color: var(--color-white);
   opacity: 0.85;
   transition: opacity 0.2s ease, transform 0.15s ease;
@@ -3593,18 +3595,18 @@ body:has(.navegacion-mobile-hoja[open]) {
 }
 
 .fl-brand-title {
-  font-size: clamp(1.5rem, 3.5vw, 2.5rem);
-  font-weight: 700;
+  font-size: 1.875rem;
+  font-weight: 600;
   color: var(--color-white);
   line-height: 1.2;
   margin-bottom: clamp(0.75rem, 2vw, 1.25rem);
 }
 
 .fl-brand-subtitle {
-  font-size: clamp(0.85rem, 1.5vw, 1rem);
+  font-size: 1.125rem;
   color: var(--color-white);
   opacity: 0.8;
-  line-height: 1.6;
+  line-height: 1.75rem;
 }
 
 .fl-success-left {
@@ -3648,8 +3650,8 @@ body:has(.navegacion-mobile-hoja[open]) {
 }
 
 .fl-card-title {
-  font-size: clamp(0.8rem, 1.3vw, 0.875rem);
-  font-weight: 600;
+  font-size: 0.875rem;
+  font-weight: 500;
   color: var(--color-navy-800);
 }
 
@@ -3661,14 +3663,15 @@ body:has(.navegacion-mobile-hoja[open]) {
 
 .fl-input {
   width: 100%;
-  padding: clamp(0.625rem, 1.5vw, 0.75rem) 1rem;
-  font-size: clamp(0.85rem, 1.5vw, 0.9375rem);
+  padding: 0 1rem;
+  font-size: 1rem;
   color: var(--color-text-primary);
   background: var(--color-white);
   border: 1.5px solid var(--color-gray-200);
   border-radius: 12px;
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  height: 2.75rem;
 }
 
 .fl-input:focus {
@@ -3703,8 +3706,8 @@ body:has(.navegacion-mobile-hoja[open]) {
   width: 100%;
   height: 2.75rem;
   padding: 0 2.75rem 0 1rem;
-  font-size: clamp(0.85rem, 1.5vw, 0.9375rem);
-  font-weight: 500;
+  font-size: 1rem;
+  font-weight: 400;
   color: var(--color-text-primary);
   background: var(--color-white);
   border: 1.5px solid var(--color-gray-200);
@@ -3729,7 +3732,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 }
 
 .fl-error {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   color: var(--color-error);
   margin-top: 2px;
 }
@@ -3773,9 +3776,9 @@ body:has(.navegacion-mobile-hoja[open]) {
 /* --- Submit Button --- */
 .fl-submit {
   width: 100%;
-  padding: clamp(0.75rem, 1.5vw, 0.875rem);
-  font-size: clamp(0.9rem, 1.5vw, 1rem);
-  font-weight: 600;
+  padding: 0 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
   color: var(--color-white);
   background: var(--color-navy-800);
   border: none;
@@ -3783,6 +3786,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   cursor: pointer;
   transition: background 0.2s ease, transform 0.15s ease;
   margin-top: 0.25rem;
+  height: 2.75rem;
 }
 
 .fl-submit:hover {
@@ -3800,7 +3804,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 }
 
 .fl-login-link {
-  font-size: clamp(0.8rem, 1.5vw, 0.875rem);
+  font-size: 0.875rem;
   color: var(--color-navy-800);
   text-align: center;
   text-decoration: underline;
@@ -3900,8 +3904,8 @@ body:has(.navegacion-mobile-hoja[open]) {
 .fl-success-btn {
   display: inline-block;
   padding: clamp(0.75rem, 1.5vw, 0.875rem) clamp(2rem, 4vw, 3rem);
-  font-size: clamp(0.9rem, 1.5vw, 1rem);
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 500;
   color: var(--color-navy-800);
   background: var(--color-white);
   border: none;
@@ -3927,8 +3931,8 @@ body:has(.navegacion-mobile-hoja[open]) {
   align-items: center;
   justify-content: center;
   margin-top: clamp(1rem, 2vw, 1.5rem);
-  font-size: clamp(0.8rem, 1.5vw, 0.875rem);
-  font-weight: 500;
+  font-size: 0.875rem;
+  font-weight: 400;
   color: var(--color-white);
   opacity: 0.85;
   transition: opacity 0.2s ease, transform 0.15s ease;
@@ -4137,7 +4141,6 @@ body:has(.navegacion-mobile-hoja[open]) {
   .rp-return,
   .fl-return {
     margin-top: 0.75rem;
-    font-size: 0.75rem;
   }
 }
 
@@ -6531,5 +6534,35 @@ body:has(.preview-page) .intranet-topbar {
       opacity var(--olo-modal-salida) var(--olo-modal-curva-salida),
       overlay var(--olo-modal-salida) allow-discrete,
       display var(--olo-modal-salida) allow-discrete;
+  }
+}
+
+/* Enlace de regreso al sitio: 16 px desde `md`, como en el acceso del sitio web. */
+@media (width >= 48rem) {
+  .site-return-link,
+  .login-return,
+  .recovery-return,
+  .sq-return,
+  .rp-return,
+  .fl-return,
+  .rs-return {
+    font-size: 1rem;
+  }
+}
+
+/* Primer ingreso: lo que crece desde `md` en la escala del acceso del sitio web (2026-10-11):
+   etiquetas y enlaces a 16 px. Por debajo, 14, como en el sitio. */
+@media (width >= 48rem) {
+  .fl-card-title,
+  .fl-login-link {
+    font-size: 1rem;
+  }
+}
+
+/* Y el texto bajo el título del paso, en el móvil: 14-16 px según el alto, como en el sitio. */
+@media (width < 48rem) {
+  .fl-brand-subtitle {
+    font-size: clamp(0.875rem, 2.35dvh, 1rem);
+    line-height: 1.45;
   }
 }

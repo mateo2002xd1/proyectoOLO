@@ -31,9 +31,13 @@ interface ErroresLogin {
  * Tarjeta del formulario. Por debajo de `xl` no es tarjeta: el formulario va directo
  * sobre el azul, con etiquetas y textos en blanco (diseño de móvil y tablet). Desde
  * `xl` vuelve la tarjeta blanca, igual que el login del panel del sitio web.
+ *
+ * Las medidas de letra son las del acceso del sitio web (`acceso-ui.ts`, 2026-10-11): título
+ * de 20-24 px en el móvil y 30 desde `md`; etiquetas y enlaces de 14/16; campos y botón de
+ * 44 px con texto de 16; errores y el aviso de privacidad, de 14.
  */
 const TARJETA_LOGIN =
-  'w-full max-w-[380px] xl:rounded-[24px] xl:bg-white xl:px-9 xl:py-10 xl:shadow-[0_25px_60px_rgba(0,0,0,0.35)]';
+  'w-full max-w-[380px] md:max-w-[452px] xl:rounded-[24px] xl:bg-white xl:px-9 xl:py-10 xl:shadow-[0_25px_60px_rgba(0,0,0,0.35)]';
 
 function LoginForm() {
   const { login } = useAuth();
@@ -151,7 +155,7 @@ function LoginForm() {
             alt="Logo intranet"
             className="order-2 mx-auto w-[clamp(4.5rem,14dvh,12rem)] opacity-30 sm:w-56 xl:order-1 xl:w-[210px] xl:opacity-100"
           />
-          <h1 className="order-1 mb-[clamp(0.75rem,3dvh,2rem)] text-[clamp(1.5rem,4.4dvh,1.875rem)] font-bold leading-tight text-white sm:mb-8 sm:text-4xl xl:order-2 xl:mb-0 xl:font-light">
+          <h1 className="order-1 mb-[clamp(0.75rem,3dvh,2rem)] text-[clamp(1.25rem,3.6dvh,1.5rem)] font-bold leading-tight text-white sm:mb-8 md:text-3xl xl:order-2 xl:mb-0 xl:font-light">
             Bienvenido a <span className="font-bold xl:uppercase"><br />nuestra Intranet</span>
           </h1>
         </div>
@@ -190,7 +194,7 @@ function LoginForm() {
               )}
 
               <div className="mb-3 sm:mb-4">
-                <label htmlFor="email" className="mb-1.5 block text-sm font-semibold text-white xl:text-[#0d1526]">
+                <label htmlFor="email" className="mb-1 block text-sm font-medium text-white md:mb-2 md:text-base xl:text-[#0d1526]">
                   Correo SENA
                 </label>
                 <input
@@ -201,17 +205,17 @@ function LoginForm() {
                   autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className={`w-full rounded-lg border bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:outline-none focus:ring-2 ${
+                  className={`h-11 w-full rounded-lg border bg-white px-4 text-base text-gray-900 placeholder:text-gray-400 transition-colors focus:outline-none focus:ring-2 ${
                     errors.email
                       ? 'border-red-400 focus:border-red-500 focus:ring-red-500'
                       : 'border-gray-300 focus:border-[#0d1526] focus:ring-white xl:focus:ring-[#0d1526]'
                   }`}
                 />
-                {errors.email && <p className="mt-1 text-xs text-red-300 xl:text-red-600">{errors.email}</p>}
+                {errors.email && <p className="mt-1.5 text-sm text-red-300 xl:text-red-600">{errors.email}</p>}
               </div>
 
               <div className="mb-3 sm:mb-5">
-                <label htmlFor="password" className="mb-1.5 block text-sm font-semibold text-white xl:text-[#0d1526]">
+                <label htmlFor="password" className="mb-1 block text-sm font-medium text-white md:mb-2 md:text-base xl:text-[#0d1526]">
                   Contraseña
                 </label>
                 <div className="relative">
@@ -223,7 +227,7 @@ function LoginForm() {
                     placeholder="Mínimo 12 caracteres"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className={`w-full rounded-lg border bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:outline-none focus:ring-2 pr-10 ${
+                    className={`h-11 w-full rounded-lg border bg-white px-4 text-base text-gray-900 placeholder:text-gray-400 transition-colors focus:outline-none focus:ring-2 pr-10 ${
                       errors.password
                         ? 'border-red-400 focus:border-red-500 focus:ring-red-500'
                         : 'border-gray-300 focus:border-[#0d1526] focus:ring-white xl:focus:ring-[#0d1526]'
@@ -238,7 +242,7 @@ function LoginForm() {
                     <IconoMascara nombre={showPassword ? 'eye-open' : 'eye-closed'} tamano="h-5 w-5" />
                   </button>
                 </div>
-                {errors.password && <p className="mt-1 text-xs text-red-300 xl:text-red-600">{errors.password}</p>}
+                {errors.password && <p className="mt-1.5 text-sm text-red-300 xl:text-red-600">{errors.password}</p>}
               </div>
 
               {/* RF-13: aviso de políticas de privacidad y datos.
@@ -248,7 +252,7 @@ function LoginForm() {
                   relativas (`/politica-de-privacidad`, `/privacidad`), así que el
                   middleware las tomaba por pantalla protegida y devolvía a quien las
                   pulsara al propio login del que venía. */}
-              <p className="mb-[clamp(0.75rem,2.5dvh,1.5rem)] text-xs leading-relaxed text-white/85 sm:mb-6 xl:text-gray-500">
+              <p className="mb-[clamp(0.75rem,2.5dvh,1.5rem)] text-sm leading-relaxed text-white/85 sm:mb-6 xl:text-gray-500">
                 Al ingresar a este sitio aceptas la{' '}
                 <a href={`${SITE_URL}/politica-de-privacidad`} className="font-semibold text-white hover:underline xl:text-gray-700">
                   política de privacidad
@@ -263,7 +267,7 @@ function LoginForm() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="inline-flex w-full items-center justify-center rounded-[16px] bg-white px-4 py-2.5 text-sm font-semibold text-[#0d1526] shadow-[0_2px_8px_-2px_rgba(13,21,38,0.4)] transition hover:bg-gray-100 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#001A39] disabled:cursor-not-allowed disabled:opacity-50 xl:bg-[#0d1526] xl:text-white xl:hover:bg-[#1a2340] xl:focus-visible:ring-[#0d1526] xl:focus-visible:ring-offset-white"
+                className="inline-flex w-full items-center justify-center h-11 rounded-[16px] bg-white px-6 text-base font-medium text-[#0d1526] shadow-[0_2px_8px_-2px_rgba(13,21,38,0.4)] transition hover:bg-gray-100 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#001A39] disabled:cursor-not-allowed disabled:opacity-50 xl:bg-[#0d1526] xl:text-white xl:hover:bg-[#1a2340] xl:focus-visible:ring-[#0d1526] xl:focus-visible:ring-offset-white"
               >
                 {isLoading ? 'Ingresando...' : 'Ingresar'}
               </button>
@@ -271,7 +275,7 @@ function LoginForm() {
               <div className="mt-[clamp(0.5rem,2dvh,1rem)] text-center sm:mt-4">
                 <Link
                   href="/recovery"
-                  className="rounded text-sm text-white/90 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white xl:text-xs xl:text-gray-500 xl:hover:text-gray-700 xl:focus-visible:ring-[#0d1526]"
+                  className="rounded px-1 py-1 text-sm text-white/90 underline-offset-4 transition-colors hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white md:text-base xl:text-[#0d1526] xl:hover:text-[#0d1526] xl:focus-visible:ring-[#0d1526]"
                 >
                   ¿Olvidaste tu contraseña?
                 </Link>

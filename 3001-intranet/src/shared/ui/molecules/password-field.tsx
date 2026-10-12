@@ -66,10 +66,12 @@ export function PasswordField({
     );
   }
 
+  // Medidas de letra del acceso (`features/login/components/acceso-ui.ts`, las del sitio
+  // web): etiqueta de 14/16 px en peso medio, campo de 44 px de alto con texto de 16.
   return (
     <div className={className}>
       {label && (
-        <label htmlFor={id} className="mb-1.5 block text-sm font-semibold text-[#0d1526]">
+        <label htmlFor={id} className="mb-1 block text-sm font-medium text-[#0d1526] md:mb-2 md:text-base">
           {label}
         </label>
       )}
@@ -82,7 +84,7 @@ export function PasswordField({
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className={`w-full rounded-lg border px-3.5 py-2.5 pr-10 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:outline-none focus:ring-2 ${
+          className={`h-11 w-full rounded-lg border bg-white px-4 pr-12 text-base text-gray-900 placeholder:text-gray-400 transition-colors focus:outline-none focus:ring-2 ${
             error
               ? 'border-red-400 focus:border-red-500 focus:ring-red-500'
               : 'border-gray-300 focus:border-[#0d1526] focus:ring-[#0d1526]'
@@ -97,7 +99,7 @@ export function PasswordField({
           <IconoMascara nombre={visible ? 'eye-open' : 'eye-closed'} tamano="h-5 w-5" />
         </button>
       </div>
-      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+      {error && <p className="mt-1.5 text-sm text-red-600">{error}</p>}
     </div>
   );
 }
