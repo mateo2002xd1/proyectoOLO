@@ -5,6 +5,41 @@
 
 ---
 
+## sesión 12-10-2026 (11.ª parte): Páginas en revisión y Respaldos — iconos más pequeños en la tabla, el ámbito dentro de «Página», el filtro renombrado y la hora debajo de la fecha
+
+**Qué se pidió:** a 1330px los botones Visualizar, Publicar, Rechazar y Eliminar se veían
+grandes; la columna Ámbito iba separada de la página a la que pertenece y debía quedar
+«Sitio web» encima de «Inicio · versión 3», sin columna propia; y el filtro «Ámbito» pasa a
+llamarse «Página».
+
+| Dónde | Cambio |
+|---|---|
+| `revision-queue-view.tsx`, `BOTON` | En la tabla, 36×48 desde 72rem de contenedor (`en-tabla:@6xl:`) y 44×32 por debajo (`en-tabla:@max-6xl:w-11 h-8`; el usuario probó 36×32, 44×32 y 60×32 y se quedó con 44×32). 72rem es el corte del paginador; con la barra lateral equivale a ~1505px de ventana |
+| `revision-queue-view.tsx`, iconos | `ICONO_OJO` 24→20, `ICONO_PAPELERA` 20→16, `ICONO_PEQUENO` (enviar, ✕) 16→14, solo en esa tabla compacta. En el acordeón no cambian |
+| Columna «Página» | La píldora del ámbito (verde sitio web, azul intranet) arriba y debajo «título · versión N». Fuera el `<th>` y el `<td data-etiqueta="Ámbito">` |
+| Filtro | Etiqueta y `ariaLabel` «Página»; las opciones (Todos, Sitio web, Intranet) y el campo `ambito` que filtra no cambian |
+| Columnas Autor, Enviado el y acciones | Padding lateral a la mitad, `px-4` → `px-2` (16→8px), en sus `td` y sus `th` (para que el título no quede corrido). Página y Cambios siguen en `px-4`: primero se aplicó a toda la tabla y el usuario lo dejó en estas tres. En el acordeón no cambia: allí manda el `padding` de `olo-tabla-apilable` en `globals.css` |
+| Columna «Enviado el» | `FechaDeCelda` (nueva en `shared/ui/molecules/fila-acordeon.tsx`, junto a `fechaDeFila`; la usan revisión y Respaldos): el día arriba (`text-sm`) y la hora debajo, más pequeña (`text-xs`) y fina (`font-light`). El usuario pidió `thin`, pero Poppins se carga en 300–700 (`shared/lib/fonts.ts`) y `font-thin` (100) se vería igual que 300; cargar el peso 100 solo para esto suma una descarga a todo el panel |
+| `respaldos-view.tsx` | Lo mismo en Respaldos, en las columnas que pidió el usuario: filtro «Ámbito» → «Página» (sigue filtrando `ambito`); columna Página en dos líneas, la píldora del ámbito arriba y «/inicio · versión 43» debajo (antes en una sola línea con `flex-wrap`), esa segunda línea en `text-xs`, el tamaño de la hora; «Editado el» y «Publicado el» con `FechaDeCelda`. Fuera el `fecha()` local de los dos archivos. Respaldos conserva la ruta (`/inicio`) y no el título, como sus modales de restaurar |
+| Ancho de la tabla | Fuera el `min-w-[64rem]` (1024px): con una columna menos, botones compactos y la hora debajo ya cabe, y a 1330px la caja mide ~976px, así que la tabla se cortaba con scroll lateral (captura del usuario). El correo del autor lleva `wrap-anywhere`: uno largo sin espacios dejaba 4px de scroll justo por encima del corte del acordeón |
+
+> **Por qué rangos que se excluyen:** `en-tabla:h-9` y `en-tabla:@max-6xl:h-8` se cumplirían a la
+> vez por debajo de 72rem y ganaría el que Tailwind escriba después (las variantes propias van
+> detrás de las de contenedor). Con `@6xl` / `@max-6xl` en las dos, nunca coinciden.
+
+**Verificación.**
+
+| Qué | Resultado |
+|---|---|
+| `tsc --noEmit` del sitio | Sin errores en el archivo |
+| `globals.css` compilado + Chrome headless con la maqueta del panel | Botón / ojo / icono pequeño: 1920 → 48×36 / 24 / 16; 1500, 1440, 1330 y 1280 → 44×32 / 20 / 14; sin scroll lateral de 1920 a 1130 (también con 60px); 1100 y menos, acordeón |
+| Chrome headless, tabla sin `min-w` y dos filas (una con título largo, comentario de 100 caracteres y correo de 45) | Sin scroll lateral de 1920 a 1130px (el borde del acordeón); a 1330px, caja y tabla de 976px y fila de 90px. Sin `wrap-anywhere`, 4px de scroll a 1130px |
+| Finales de línea | CRLF uniforme |
+
+**Pendiente al cierre:** verlo en el panel real con datos largos (comentario de 100 caracteres, título largo).
+
+---
+
 ## sesión 12-10-2026 (10.ª parte): filas más bajas en Notificaciones del panel
 
 **Qué se pidió:** en el panel administrativo, en Notificaciones, reducir el alto de cada contenedor

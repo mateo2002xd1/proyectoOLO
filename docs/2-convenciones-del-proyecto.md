@@ -276,8 +276,12 @@ bloque de Puck, un modal— responde a **su contenedor** (`@container` y las var
 - **Tablas:** clase `olo-tabla-apilable` en la `<table>` y `data-etiqueta` en cada `<td>`.
   Cuando su contenedor mide menos de 48rem, cada fila pasa a tarjeta «ETIQUETA · valor». La
   celda sin `data-etiqueta` ocupa el ancho entero (el título de la fila o las acciones).
-  **Dentro de esa tabla se usa `@3xl:`, no `md:`**: es el mismo corte medido sobre el mismo
-  contenedor. Hoy existe en el sitio (`globals.css`, «RESPONSIVE: PIEZAS COMPARTIDAS»).
+  **En el panel, además, por debajo de `lg` (64rem) siempre es tarjeta**: sin la barra
+  lateral el contenido recupera 288px y, midiendo solo el contenedor, la lista volvía a ser
+  tabla de escritorio entre 768 y 1023px. **Dentro de esa tabla se usa `apilada:` /
+  `en-tabla:`, no `@3xl:` ni `md:`**: son las dos variantes que juntan ambas condiciones y
+  cambian en el mismo píxel que la tabla. Hoy existe en el sitio (`globals.css`,
+  «RESPONSIVE: PIEZAS COMPARTIDAS»).
 - Una tabla que de verdad necesita todas sus columnas a la vez (una hoja de datos) puede
   quedarse con scroll lateral **dentro de su caja**, nunca de la página, y con un comentario
   que diga por qué.
