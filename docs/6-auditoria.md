@@ -5,6 +5,30 @@
 
 ---
 
+## sesión 11-10-2026 (13.ª parte): el sitio, como la intranet: aviso dentro de la tarjeta y sin el check
+
+**Qué se pidió:** «ahora en sitio web» (lo de la 12.ª parte: en tablet y escritorio, el aviso de
+la cuenta ya configurada dentro de la tarjeta, encima del botón) y, a mitad de camino, «quita en
+sitio web el check y su fondo».
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `marco-de-pasos.tsx` | Prop `descripcionEnTarjeta` (oculta desde `md` la descripción de bajo el título) y `DescripcionEnTarjeta`, que la pinta dentro de la tarjeta desde `md` (16 px, `#001a39`, hueco de siempre). Va en dos piezas, y no todo en el marco como en la intranet, porque en el sitio la tarjeta la pone cada pantalla. |
+| `first-login-flow.tsx` | La pantalla sin nada pendiente usa las dos, con el texto en una sola constante. Su botón «Iniciar sesión» (que el usuario había cambiado de «Ir al panel») no se tocó. |
+| `auth-ui.tsx` | Fuera `AuthSuccessBadge`, el check blanco sobre un círculo `#001631` que salía desde `md`. |
+| `first-login-flow.tsx`, `reset-success-view.tsx` | Sin la insignia: la pantalla sin nada pendiente, el paso 3 del primer ingreso y «¡Genial, tu clave ha sido actualizada con éxito!» de la recuperación. |
+
+**Cómo se probó.** ESLint de los cuatro archivos y `tsc --noEmit` del sitio, limpios (el ESLint de
+la carpeta entera sigue fallando por `modal-permisos.tsx` y `roles-view.tsx`, de antes y sin
+tocar). En vivo, la recuperación recorrida de punta a punta con la API simulada hasta
+`/reset-success`, a 390 × 844 y 1280 × 800: sin el check, sin scroll. **No se miró en vivo** la
+pantalla sin nada pendiente del sitio: `/first-login` exige una sesión firmada que el arnés no
+puede simular sin tocar secretos. Usa las mismas clases que la intranet, que sí se miró.
+
+---
+
 ## sesión 11-10-2026 (12.ª parte): en la tablet y el escritorio, el aviso de «cuenta ya configurada» dentro del formulario (intranet)
 
 **Qué se pidió:** en tablet y escritorio, que «Tu cuenta ya es segura.» y el aviso de guardar las
