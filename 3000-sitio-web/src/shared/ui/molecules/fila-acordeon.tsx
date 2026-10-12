@@ -55,14 +55,17 @@ export function fechaDeFila(iso: string): string {
  * pequeña y fina. Pedido del usuario el 2026-10-12 en «Páginas en revisión» y Respaldos.
  * `font-light` (300) y no `font-thin`: Poppins se carga en 300–700 (`shared/lib/fonts.ts`)
  * y el 100 caería en el mismo 300.
+ *
+ * `exacta`: «12/10/2026» y «5:30:15 p. m.», con segundos, para Auditoría, donde el orden
+ * exacto de los sucesos importa. Sin ella, «12 oct 2026» y «5:30 p. m.».
  */
-export function FechaDeCelda({ iso }: { iso: string }) {
+export function FechaDeCelda({ iso, exacta = false }: { iso: string; exacta?: boolean }) {
   let dia = iso;
   let hora = '';
   try {
     const d = new Date(iso);
-    dia = d.toLocaleDateString('es-CO', { dateStyle: 'medium' });
-    hora = d.toLocaleTimeString('es-CO', { timeStyle: 'short' });
+    dia = exacta ? d.toLocaleDateString('es-CO') : d.toLocaleDateString('es-CO', { dateStyle: 'medium' });
+    hora = exacta ? d.toLocaleTimeString('es-CO') : d.toLocaleTimeString('es-CO', { timeStyle: 'short' });
   } catch {
     // Fecha ilegible: se muestra tal cual llegó.
   }

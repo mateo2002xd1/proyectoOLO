@@ -12,7 +12,7 @@ import { Trash2 } from 'lucide-react';
 import { BotonOjo } from '@/shared/ui/atoms/boton-ojo';
 import { COLOR_DE_ACCION } from '@/shared/lib/identidad-panel';
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
-import { BotonDeFila, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
+import { BotonDeFila, FechaDeCelda, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
 import { useAuditoria } from '../hooks/use-auditoria';
 import { comentarioPrincipal, resumenDeCambios } from '../lib/cambios';
 import { FraseDeRegistro, PildoraDeAccion } from './frase-de-registro';
@@ -211,7 +211,9 @@ export function AuditoriaView() {
                       </div>
                     </td>
                     <td data-solo-tabla data-etiqueta="Fecha y hora" className="whitespace-nowrap px-4 py-2 text-zinc-600 dark:text-zinc-300">
-                      {new Date(registro.fecha).toLocaleString('es-CO')}
+                      {/* La hora debajo y más pequeña (pedido del usuario, 2026-10-12). Mismo
+                          formato de antes, con segundos: `exacta`. */}
+                      <FechaDeCelda iso={registro.fecha} exacta />
                     </td>
                     <td data-solo-tabla data-etiqueta="Usuario" className="px-4 py-2 text-zinc-900 dark:text-[#f6f6f6]">
                       {nombre ?? <span className="text-zinc-500">Sin usuario</span>}
