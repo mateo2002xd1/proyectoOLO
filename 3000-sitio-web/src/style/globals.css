@@ -3027,6 +3027,14 @@ button.text-link,
 
 /* En el panel oscuro el azul marino no se lee: la etiqueta y el punto oscuro
    pasan a tonos claros. */
+/* El cargador del login del panel, ya autenticado (2026-10-12): desde `xl` va sobre el azul de
+   la mitad derecha, donde el navy del texto no se vería. Por debajo, sobre el blanco. */
+@media (width >= 80rem) {
+  .login-panel-cargando .goo-loader-label {
+    color: #fff;
+  }
+}
+
 .dark .goo-loader-label {
   color: #e2e8f0;
 }

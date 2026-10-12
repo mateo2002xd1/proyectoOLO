@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense, useState, FormEvent } from 'react';
+import { GooLoader } from '@/shared/ui/atoms/goo-loader';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { validarEmail } from '@olo/email-policy';
@@ -37,7 +38,7 @@ import { MarcoDePasos } from './marco-de-pasos';
  * @see 3-seguridad-del-proyecto.md  (la sesión la emite y valida la API :4000)
  */
 
-function LoginForm() {
+function LoginForm({ onEntrando }: { onEntrando: () => void }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectParam = searchParams.get('redirect');
@@ -104,11 +105,13 @@ function LoginForm() {
       );
 
       if (hasAccesoPanel) {
+        onEntrando();
         window.location.href = redirectParam ? redirectTo : '/admin/dashboard';
         return;
       }
 
       if (hasPermisosEdicion) {
+        onEntrando();
         window.location.href = redirectParam ? redirectTo : '/';
         return;
       }
@@ -180,6 +183,11 @@ function LoginForm() {
 }
 
 export function LoginView() {
+  // Ya autenticado, mientras carga la página de destino: sin la tarjeta, solo el cargador
+  // (pedido del usuario, 2026-10-12, como en el login de la intranet). Para ir al primer
+  // ingreso no se muestra: allí no se entra al panel.
+  const [entrando, setEntrando] = useState(false);
+
   return (
     <MarcoDePasos
       conLogo
@@ -192,20 +200,31 @@ export function LoginView() {
         </>
       }
     >
-      <div className={authPasosCardClass}>
-        {/* `useSearchParams` obliga a un límite de Suspense: sin él, la ruta entera se
-            renderiza en cliente. Va solo alrededor del formulario, para que el marco y el
-            título lleguen ya en el HTML del servidor. */}
-        <Suspense
-          fallback={
-            <p className="text-center text-base text-[#001a39]" role="status">
-              Cargando…
-            </p>
-          }
+      {entrando ? (
+        // `login-panel-cargando`: el texto en blanco sobre el azul del escritorio (globals.css).
+        <div
+          role="status"
+          aria-live="polite"
+          className="login-panel-cargando flex w-full max-w-[330px] justify-center py-[clamp(1.5rem,5dvh,3rem)] md:max-w-[452px]"
         >
-          <LoginForm />
-        </Suspense>
-      </div>
+          <GooLoader label="Ingresando al panel administrativo..." />
+        </div>
+      ) : (
+        <div className={authPasosCardClass}>
+          {/* `useSearchParams` obliga a un límite de Suspense: sin él, la ruta entera se
+              renderiza en cliente. Va solo alrededor del formulario, para que el marco y el
+              título lleguen ya en el HTML del servidor. */}
+          <Suspense
+            fallback={
+              <p className="text-center text-base text-[#001a39]" role="status">
+                Cargando…
+              </p>
+            }
+          >
+            <LoginForm onEntrando={() => setEntrando(true)} />
+          </Suspense>
+        </div>
+      )}
     </MarcoDePasos>
   );
 }
