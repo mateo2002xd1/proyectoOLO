@@ -5,6 +5,30 @@
 
 ---
 
+## sesión 11-10-2026 (7.ª parte): la lista de preguntas del primer ingreso de la intranet, con el estilo del sitio
+
+**Qué se pidió**, con una captura de la lista que abría el sistema (blanca, cuadrada, con la
+opción marcada en azul de Windows): darle al desplegable de preguntas de seguridad de la
+intranet el estilo que tiene en el sitio web.
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `src/style/globals.css` (intranet) | `.acceso-select`, la misma regla que `.admin-auth-select` del sitio: con el select personalizable (`appearance: base-select`, Chrome/Edge 135+) la lista abierta es blanca, con borde `#001A39` de 1.5 px, esquinas de 16, sombra, opciones con esquinas de 12, la elegida en semibold y la que se señala en `#001A39` con letra blanca; sin la marca ✓ del navegador. La pregunta elegida se parte en dos líneas y el campo crece. Sigue siendo el `<select>` nativo; donde no hay soporte (Firefox, Safari) queda la lista del sistema. |
+| Ídem, solo en la intranet | La lista no pasa del ancho de la pantalla menos 16 px por lado y sus opciones se parten en dos líneas: a 360 y 390 px la lista se ajustaba a la pregunta más larga, se salía por la derecha y la cortaba («…mejor amigo de la inf»). En el sitio pasa lo mismo, pero el sitio no se toca sin pedirlo. |
+| `question-picker.tsx` | El desplegable lleva `acceso-select` y `py-2` (el `py-2` de `authPasosInputClass`): sin él, «Selecciona una opción…» quedaba pegado arriba en el campo. |
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| ESLint de `question-picker.tsx`; Tailwind compilado con PostCSS | Limpio; la regla sale en el CSS. |
+| Intranet en vivo, `/first-login` paso 2 con el catálogo simulado, lista abierta con un clic real (CDP) a 360 × 640, 390 × 844 y 1280 × 800 | Lista con el estilo del sitio, dentro de la pantalla, preguntas largas en dos líneas; cerrada, el texto centrado; elegida una pregunta larga, el campo crece a dos líneas. Sin scroll en reposo. |
+| **Ojo:** el `next dev` de la 3001 no recompiló `globals.css` (el TSX sí); la prueba inyectó en la página la regla compilada | Si no se ve el cambio, reiniciar `npm run dev` de la intranet. |
+
+---
+
 ## sesión 11-10-2026 (6.ª parte): el acceso de la intranet, con la maqueta del sitio sobre el azul y sin tarjeta blanca
 
 **Qué se pidió**, en varios mensajes seguidos: cambiar el estilo de «¿Olvidaste tu contraseña?»
