@@ -31,6 +31,14 @@ colgando. Los dos enlaces llevan `whitespace-nowrap`: ahora pasan enteros a la s
 («política de privacidad y protección de datos.»). Comprobado en capturas a 360 × 640,
 390 × 844, 768 × 1024 y 1280 × 800, sin scroll. El sitio web tiene el mismo corte y no se tocó.
 
+**Corregido después:** el usuario prefirió que el texto llene el ancho como en el sitio (con los
+enlaces enteros, la primera línea quedaba corta), y que diga «Al ingresar a este sitio aceptas
+**nuestra** política de privacidad y protección de datos.», en las dos apps. Se quitó el
+`whitespace-nowrap` y se cambió «la» por «nuestra» en los dos `login-view.tsx`. Capturas a
+360 × 640 y 1280 × 800 de las dos apps: cortan en el mismo sitio. En el móvil, «…aceptas
+nuestra» / «política de privacidad y protección de datos.»; en la tarjeta de escritorio,
+«…política de» / «privacidad y…» (a 14 px la frase hasta «privacidad» no cabe en una línea).
+
 **Y el título bajo el logo.** Por debajo de `xl`, «Bienvenido a nuestra Intranet» iba encima del
 logo (`order-*`); el usuario lo pidió debajo, como ya estaba en escritorio. Se quitó el cambio de
 orden y el hueco pasó del título al logo; el logo sigue atenuado sobre el azul. Capturas a
