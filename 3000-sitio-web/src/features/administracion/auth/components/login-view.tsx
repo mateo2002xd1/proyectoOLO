@@ -155,7 +155,7 @@ function LoginForm() {
           `/privacidad` e `/inicio/politica-de-privacidad` son alias que redirigen ahí
           (ver `next.config.mjs`): enlazarlos manda al mismo sitio pagando un salto de más. */}
       <p className={`${authPasosHuecoClass} text-sm leading-relaxed text-[#737373]`}>
-        Al ingresar a este sitio aceptas la{' '}
+        Al ingresar a este sitio aceptas nuestra{' '}
         <Link href="/politica-de-privacidad" className="font-semibold hover:underline">
           política de privacidad
         </Link>{' '}
