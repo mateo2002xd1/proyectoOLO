@@ -208,7 +208,7 @@ export function FirstLoginFlow() {
     // dentro de la tarjeta, encima del botón; en el móvil, bajo el título.
     const aviso = [
       'Tu cuenta ya es segura.',
-      'Es muy importante que recuerdes o guardes tus respuestas en un lugar seguro, ya que serán el único método para validar tu identidad y permitirte cambiar tu clave en el futuro si llegas a olvidarla.',
+      'Guarda tus respuestas en un lugar seguro, las usarás para validar tu identidad y restablecer tu clave si la olvidas.',
     ];
     return (
       <MarcoDePasos
@@ -238,7 +238,7 @@ export function FirstLoginFlow() {
     const aviso = [
       'Tu cuenta ya es segura.',
       ...(pendiente.debeConfigurarPreguntas
-        ? ['Es muy importante que recuerdes o guardes tus respuestas en un lugar seguro, ya que serán el único método para validar tu identidad y permitirte cambiar tu clave en el futuro si llegas a olvidarla.']
+        ? ['Guarda tus respuestas en un lugar seguro, las usarás para validar tu identidad y restablecer tu clave si la olvidas.']
         : []),
     ];
     return (
@@ -250,7 +250,7 @@ export function FirstLoginFlow() {
       >
         <div className={`${authPasosCardClass} text-center`}>
           <DescripcionEnTarjeta descripcion={aviso} />
-          <p className={`${authPasosHuecoClass} text-base text-[#001a39]`}>Vuelve a iniciar sesión para entrar al panel.</p>
+          <p className={`${authPasosHuecoClass} text-base text-[#001a39]`}>Vuelve a iniciar sesión para entrar a la intranet.</p>
           <button type="button" onClick={cerrarSesionEIrAlLogin} className={authPasosPrimaryClass}>
             Iniciar sesión
           </button>

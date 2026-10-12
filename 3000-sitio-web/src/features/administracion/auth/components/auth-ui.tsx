@@ -183,8 +183,30 @@ export function AuthProgressDots({
   );
 }
 
-/* Hasta el 2026-10-11 aquí estaba `AuthSuccessBadge`, el check blanco sobre un círculo
-   #001631 de las pantallas de cierre. Lo quitó el usuario, como en la intranet. */
+/**
+ * Marca de operación terminada, para las pantallas de cierre del flujo. Solo desde `md`,
+ * donde el formulario es tarjeta: en el mockup de móvil la confirmación no la lleva.
+ */
+export function AuthSuccessBadge() {
+  return (
+    <div className="mx-auto mb-5 hidden size-12 items-center justify-center rounded-full bg-[#001631] md:flex">
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="text-white"
+        aria-hidden="true"
+      >
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+    </div>
+  );
+}
 
 /* ---------- Campos ---------- */
 

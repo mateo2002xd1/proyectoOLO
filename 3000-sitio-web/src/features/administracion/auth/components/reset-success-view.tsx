@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { authPasosCardClass, authPasosPrimaryClass } from './auth-ui';
+import { AuthSuccessBadge, authPasosCardClass, authPasosPrimaryClass } from './auth-ui';
 import { MarcoDePasos } from './marco-de-pasos';
 import { useFlujoDeRecuperacion } from './flujo-de-recuperacion';
 
@@ -14,8 +14,8 @@ import { useFlujoDeRecuperacion } from './flujo-de-recuperacion';
  * actualizó algo que nadie tocó, así que en ese caso devuelve al principio.
  *
  * El botón va en el mismo formulario que el resto de pantallas, con sus medidas: en el
- * móvil, suelto bajo el texto como en el mockup; desde `md`, en la tarjeta, como el último
- * paso del primer ingreso (sin la marca de hecho, el check, desde el 2026-10-11). Hasta el 2026-10-09 medía 272 px en
+ * móvil, suelto bajo el texto como en el mockup; desde `md`, en la tarjeta con la marca
+ * de hecho, como el último paso del primer ingreso. Hasta el 2026-10-09 medía 272 px en
  * el móvil y la tablet, distinto de los campos de las otras pantallas.
  */
 export function ResetSuccessView() {
@@ -35,6 +35,7 @@ export function ResetSuccessView() {
       descripcion={['Ya puedes ingresar a tu cuenta con tu nueva contraseña.', '¡Tu seguridad es nuestra prioridad!']}
     >
       <div className={`${authPasosCardClass} text-center`}>
+        <AuthSuccessBadge />
         <Link href="/login" className={authPasosPrimaryClass}>
           Iniciar sesión
         </Link>
