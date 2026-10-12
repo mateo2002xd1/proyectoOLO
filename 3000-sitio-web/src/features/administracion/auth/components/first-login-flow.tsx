@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, FormEvent, ReactNode } from 'react';
-import Link from 'next/link';
 import { cumplePolitica, primerFallo } from '@olo/password-policy';
 import {
   AuthGeneralError,
@@ -219,9 +218,12 @@ export function FirstLoginFlow() {
       >
         <div className={`${authPasosCardClass} text-center`}>
           <DescripcionEnTarjeta descripcion={aviso} />
-          <Link href="/admin/dashboard" className={authPasosPrimaryClass}>
+          {/* Cierra la sesión y va al login, como el botón del paso 3 y la intranet. Hasta el
+              2026-10-11 decía «Ir al panel» y era un enlace a `/admin/dashboard`; al renombrarlo
+              «Iniciar sesión» siguió llevando al panel. */}
+          <button type="button" onClick={cerrarSesionEIrAlLogin} className={authPasosPrimaryClass}>
             Iniciar sesión
-          </Link>
+          </button>
         </div>
       </MarcoDePasos>
     );
