@@ -537,20 +537,20 @@ Este procedimiento describe el paso a paso para el funcionario que inicia sesió
 > **[Captura: Formulario de Inicio de Sesión Sitio Web (Móvil)]**
 > *Formulario de acceso del Sitio Web Público diligenciado con correo corporativo y contraseña provisoria. (Móvil).*
 
-3. **Pantalla de bienvenida y configuración obligatoria:** Al comprobar los datos de acceso, el sistema identifica que se trata del primer ingreso del funcionario y presenta de forma automática la pantalla de primer ingreso (`/first-login`). En esta vista se solicita actualizar la seguridad de la cuenta antes de continuar hacia el portal. A un lado (arriba en el móvil y la tablet) se indica qué se pide en cada paso, con un paginador **«Anterior 1 2 3 Siguiente»** que muestra en qué paso se está; al otro lado está el formulario. Como el inicio de sesión y la recuperación de contraseña, en el móvil y la tablet va sobre fondo blanco; en el computador, el logo y lo que se pide quedan a la izquierda sobre blanco y el formulario a la derecha, sobre el azul institucional.
+3. **Pantalla de bienvenida y configuración obligatoria:** Al comprobar los datos de acceso, el sistema identifica que se trata del primer ingreso del funcionario y presenta de forma automática la pantalla de primer ingreso (`/first-login`). En esta vista se solicita actualizar la seguridad de la cuenta antes de continuar hacia el portal. A un lado (arriba en el móvil y la tablet) se indica qué se pide en cada paso; al otro lado está el formulario. Como el inicio de sesión y la recuperación de contraseña, en el móvil y la tablet va sobre fondo blanco; en el computador, el logo y lo que se pide quedan a la izquierda sobre blanco y el formulario a la derecha, sobre el azul institucional.
 
 > **[Captura: Pantalla de Bienvenida y Configuración Inicial Sitio Web]**
-> *Pantalla de primer ingreso en el Sitio Web con la indicación del paso, el paginador y el formulario de actualización de seguridad.*
+> *Pantalla de primer ingreso en el Sitio Web con la indicación del paso y el formulario de actualización de seguridad.*
 >
 > **[Captura: Pantalla de Bienvenida y Configuración Inicial Sitio Web (Móvil)]**
-> *Pantalla de primer ingreso en el Sitio Web con la indicación del paso, el paginador y el formulario de actualización de seguridad. (Móvil).*
+> *Pantalla de primer ingreso en el Sitio Web con la indicación del paso y el formulario de actualización de seguridad. (Móvil).*
 
 4. **Establecimiento de la contraseña definitiva (paso 1, «Actualiza tu seguridad»):** En la pantalla de cambio de clave, el funcionario debe registrar su nueva contraseña personal:
    * En el campo **"Contraseña temporal"**, se digita la clave provisoria recibida.
    * En el campo **"Nueva contraseña"**, se escribe la nueva clave personal. Al entrar en este campo aparece la lista de requisitos de la política (mínimo 12 caracteres, combinar 3 de 4 opciones: mayúsculas, minúsculas, números o símbolos, sin emojis ni tabulaciones, y no demasiado larga), que se van marcando a medida que se cumplen; cuando se cumplen todos, la lista se resume en una línea: **"Cumple todos los requisitos"**.
    * En el campo **"Ingresa nuevamente la contraseña"**, se reescribe la nueva clave para certificar la coincidencia exacta.
    * El ícono del ojo muestra u oculta lo escrito en cada campo: cerrado mientras la clave está oculta, abierto cuando se ve.
-   * Se hace clic en el botón oscuro **"Continuar"** (o en «Siguiente» del paginador), que revisa los tres campos y pasa al paso 2. Si algo falta o no coincide, lo indica debajo del campo.
+   * Se hace clic en el botón oscuro **"Continuar"**, que revisa los tres campos y pasa al paso 2. Si algo falta o no coincide, lo indica debajo del campo.
 
 > **[Captura: Contraseña Definitiva Sitio Web]**
 > *Campos de ingreso de contraseña temporal, nueva clave y confirmación con validador de políticas de seguridad en el Sitio Web.*
@@ -562,7 +562,7 @@ Este procedimiento describe el paso a paso para el funcionario que inicia sesió
    * Se despliega el menú selector y se elige una pregunta de la lista predefinida del sistema. Una pregunta ya elegida no se puede repetir.
    * Se escribe la respuesta correspondiente en el campo de texto. La respuesta es confidencial; no distingue mayúsculas de minúsculas ni tiene en cuenta los espacios al principio o al final.
    * Se pulsa el botón **"Continuar"** para repetir la selección con la segunda y tercera pregunta del catálogo. En la tercera, el botón dice **"Guardar"**.
-   * **"Atrás"** vuelve a la pregunta anterior; **«Anterior»** en el paginador vuelve al paso 1 sin perder lo escrito.
+   * **"Atrás"** vuelve a la pregunta anterior. Para corregir la contraseña del paso 1 hay que salir con **"Regresar al sitio web del Observatorio"** y entrar otra vez con la contraseña temporal.
 
 > **[Captura: Preguntas de Seguridad Sitio Web]**
 > *Selector de preguntas del catálogo del sistema y registro de respuestas de seguridad en el Sitio Web.*
@@ -570,7 +570,7 @@ Este procedimiento describe el paso a paso para el funcionario que inicia sesió
 > **[Captura: Preguntas de Seguridad Sitio Web (Móvil)]**
 > *Selector de preguntas del catálogo del sistema y registro de respuestas de seguridad en el Sitio Web. (Móvil).*
 
-6. **Confirmación, cierre de sesión y evaluación de permisos (paso 3):** Al procesar las respuestas de seguridad, el sistema guarda la configuración definitiva y muestra el mensaje de confirmación **"¡Configuración completada!"**, recordando guardar las respuestas en un lugar seguro. Al presionar el botón **"Iniciar sesión"**, el sistema finaliza la sesión provisional y regresa a la pantalla de inicio de sesión (`/login`). Si se quiere salir antes de terminar, el enlace «Iniciar sesión» bajo el formulario cierra la sesión temporal sin guardar nada. El funcionario debe iniciar sesión con su contraseña definitiva recién creada, tras lo cual el aplicativo evalúa los permisos específicos de su cuenta:
+6. **Confirmación, cierre de sesión y evaluación de permisos (paso 3):** Al procesar las respuestas de seguridad, el sistema guarda la configuración definitiva y muestra el mensaje de confirmación **"¡Configuración completada con éxito! Tu cuenta ya es segura."**, recordando guardar las respuestas en un lugar seguro, porque serán el único método para validar la identidad y cambiar la clave si se olvida. Al presionar el botón **"Iniciar sesión"**, el sistema finaliza la sesión provisional y regresa a la pantalla de inicio de sesión (`/login`). Si se quiere salir antes de terminar, **"Regresar al sitio web del Observatorio"** cierra la sesión temporal sin guardar nada. El funcionario debe iniciar sesión con su contraseña definitiva recién creada, tras lo cual el aplicativo evalúa los permisos específicos de su cuenta:
    * **Administradores:** El sistema los redirige de forma directa al **Panel Administrativo** (`/admin/dashboard`) para gestionar usuarios, roles, bitácora de auditoría y revisión de contenidos.
    * **Editores de Contenido (y roles derivados autorizados):** El sistema los redirige a la **página de inicio del Sitio Web Público** (`/inicio`), donde se despliega de inmediato el **botón flotante de edición** en la esquina de la pantalla para maquetar páginas y gestionar contenidos autorizados.
    * **Directores y Subdirectores (cuentas sin permisos para este portal):** Al estar configurados exclusivamente para la consulta analítica en la Intranet y no poseer permisos de edición ni de acceso al panel en el Sitio Web, el sistema detiene el acceso y muestra la alerta: *"Tu cuenta no tiene permisos de edición ni de acceso al panel."*, orientándolos a ingresar a través del portal de la Intranet (ver [Sección 3.5.1.1: Validaciones en el Primer Ingreso](#3511-validaciones-en-el-primer-ingreso)).
@@ -601,25 +601,25 @@ Este procedimiento lo ejecutan los funcionarios (Administradores, Editores autor
 > **[Captura: Formulario de Inicio de Sesión Intranet (Móvil)]**
 > *Diligenciamiento de correo corporativo del SENA y contraseña temporal en el formulario de la Intranet. (Móvil).*
 
-3. **Bienvenida y pasos guiados de configuración:** Al verificar las credenciales temporales, el aplicativo reconoce que la cuenta requiere su configuración inicial y da paso a la pantalla de primer ingreso de la Intranet (`/first-login`). En esta vista se despliega un panel explicativo con el saludo y una barra de pasos guiados para orientar al funcionario durante el proceso.
+3. **Bienvenida y pasos guiados de configuración:** Al verificar las credenciales temporales, el aplicativo reconoce que la cuenta requiere su configuración inicial y da paso a la pantalla de primer ingreso de la Intranet (`/first-login`). En esta vista se despliega un panel explicativo que indica qué se pide en cada paso (a la izquierda en el computador, arriba en el móvil) y el formulario.
 
 > **[Captura: Pantalla de Pasos Guiados Intranet]**
-> *Interfaz de primer ingreso de la Intranet con panel informativo izquierdo, formulario de configuración y barra de pasos inferior.*
+> *Interfaz de primer ingreso de la Intranet con panel informativo izquierdo y formulario de configuración.*
 >
 > **[Captura: Pantalla de Pasos Guiados Intranet (Móvil)]**
-> *Interfaz de primer ingreso de la Intranet con panel informativo, formulario de configuración y barra de pasos inferior. (Móvil).*
+> *Interfaz de primer ingreso de la Intranet con panel informativo y formulario de configuración. (Móvil).*
 
 4. **Establecimiento de la contraseña definitiva:** En el formulario de cambio de clave, el usuario registra su nueva contraseña personal:
    * En el primer campo, se digita la clave provisoria en **"Contraseña temporal"**.
    * En el segundo campo, se escribe la **"Nueva contraseña"**. Al entrar en este campo aparece la lista de requisitos de la política (mínimo 12 caracteres, combinar 3 de 4 opciones: mayúsculas, minúsculas, números o símbolos, sin emojis ni tabulaciones, y no demasiado larga), que se van marcando en tiempo real; cuando se cumplen todos, la lista se resume en una línea: **"Cumple todos los requisitos"**.
    * En el tercer campo, se reescribe la clave en **"Ingresa nuevamente la contraseña"**.
-   * Se hace clic en el botón **"Continuar"** (o en el control de navegación siguiente) para validar la información y avanzar.
+   * Se hace clic en el botón **"Continuar"** para validar la información y avanzar.
 
 > **[Captura: Contraseña Definitiva Intranet]**
-> *Formulario de actualización de contraseña de la Intranet con validador de requisitos de seguridad y controles de navegación.*
+> *Formulario de actualización de contraseña de la Intranet con validador de requisitos de seguridad.*
 >
 > **[Captura: Contraseña Definitiva Intranet (Móvil)]**
-> *Formulario de actualización de contraseña de la Intranet con validador de requisitos de seguridad y controles de navegación. (Móvil).*
+> *Formulario de actualización de contraseña de la Intranet con validador de requisitos de seguridad. (Móvil).*
 
 5. **Configuración de preguntas de seguridad:** En la pantalla "Escoge tus preguntas y respuestas":
    * Mediante el selector interactivo, se elige la primera pregunta de seguridad del catálogo oficial del sistema.
@@ -633,7 +633,7 @@ Este procedimiento lo ejecutan los funcionarios (Administradores, Editores autor
 > **[Captura: Preguntas de Seguridad Intranet (Móvil)]**
 > *Formulario de selección de preguntas y respuestas de seguridad con guía paso a paso en la Intranet. (Móvil).*
 
-6. **Confirmación, cierre de sesión y evaluación de permisos:** La pantalla presenta la confirmación: **"¡Configuración completada con éxito! Tu cuenta ya es segura."**, recordando que estas respuestas serán el único método para recuperar la cuenta ante olvidos. Al hacer clic en el botón **"Iniciar sesión"**, el sistema cierra la sesión provisional y regresa al formulario de acceso de la Intranet (`/login`). El usuario debe ingresar sus nuevas credenciales definitivas, momento en el cual el sistema valida su identidad y los permisos asignados:
+6. **Confirmación, cierre de sesión y evaluación de permisos:** La pantalla presenta la confirmación: **"¡Configuración completada con éxito! Tu cuenta ya es segura."**, recordando guardar las respuestas en un lugar seguro, porque serán el único método para validar la identidad y cambiar la clave si se olvida. Al hacer clic en el botón **"Iniciar sesión"**, el sistema cierra la sesión provisional y regresa al formulario de acceso de la Intranet (`/login`). El usuario debe ingresar sus nuevas credenciales definitivas, momento en el cual el sistema valida su identidad y los permisos asignados:
    * **Administradores:** Acceden a la Intranet con plenas facultades de visualización, supervisión editorial y navegación global.
    * **Editores de Contenido (y roles derivados autorizados):** Acceden a la Intranet con el botón flotante habilitado para maquetar y actualizar las páginas internas autorizadas en su rol.
    * **Directores y Subdirectores:** Ingresan a la **pantalla principal de la Intranet** (`/inicio`), habilitando la visualización interactiva de tableros de Power BI, indicadores ocupacionales y descarga de reportes en modalidad de **solo lectura**, sin menú de edición ni acceso al Panel Administrativo.

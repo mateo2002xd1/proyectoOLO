@@ -5,6 +5,57 @@
 
 ---
 
+## sesión 11-10-2026 (10.ª parte): el mensaje final del primer ingreso, con el texto del usuario
+
+**Qué se pidió:** el usuario pasó el texto de la pantalla final del primer ingreso: «¡Configuración
+completada con éxito!», «Tu cuenta ya es segura.» y «Es muy importante que recuerdes o guardes
+tus respuestas en un lugar seguro, ya que serán el único método para validar tu identidad y
+permitirte cambiar tu clave en el futuro si llegas a olvidarla.». Se aplicó en el sitio y la
+intranet, que llevan el mismo texto.
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `first-login-flow.tsx` (sitio) y `first-login-view.tsx` (intranet) | Título «¡Configuración completada con éxito!» (antes «¡Configuración completada!») y dos párrafos: «Tu cuenta ya es segura.» y el aviso de las respuestas. El aviso solo sale si en esta pasada se eligieron las preguntas, como antes: a quien solo tenía que cambiar la contraseña le queda «Tu cuenta ya es segura.». |
+| `manual-de-usuario-formato.md` | El paso 3 del sitio y de la intranet con el texto nuevo. Además, el manual seguía hablando del paginador «Anterior 1 2 3 Siguiente», de «Siguiente» como otra forma de avanzar, de «Anterior» para volver al paso 1 y del enlace «Iniciar sesión» bajo el formulario, que se quitaron en las partes 8 y 9 de hoy: corregido, y explicado que para corregir la contraseña hay que salir con «Regresar al sitio web» y volver a entrar. |
+
+**Cómo se probó.** ESLint y `tsc --noEmit` de las dos apps, limpios. Intranet en vivo, el primer
+ingreso recorrido de punta a punta con la API simulada (estado, catálogo y el `POST
+/first-login`) hasta el paso 3, a 360 × 640, 390 × 844, 768 × 1024 y 1280 × 800: el texto entra
+sin scroll en todos. El sitio no se miró en vivo; usa el mismo marco y las
+mismas medidas.
+
+---
+
+## sesión 11-10-2026 (9.ª parte): sin paginador en el primer ingreso (sitio e intranet) y sin insignia de check en la intranet
+
+**Qué se pidió:** quitar en el sitio y la intranet el paginador «← Anterior 1 2 3 Siguiente →»
+del primer ingreso, y en la intranet «el logo de check con su fondo» (la insignia blanca
+redonda con el check).
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `marco-de-pasos.tsx` (sitio) | Fuera la prop `pasos`, `PasosDelMarco` y `PaginadorDePasos`, y los iconos de flecha. |
+| `first-login-flow.tsx` (sitio) | Fuera `Etapa`, `NOMBRE_DE_ETAPA`, `ETAPA_DEL_PASO`, `pasos()` y los `id` de formulario (`FORM_CONTRASENA`, `FORM_PREGUNTAS`), que solo servían para que «Siguiente» enviara el formulario. La insignia del sitio (`AuthSuccessBadge`) se queda: el pedido era solo para la intranet. |
+| `first-login-view.tsx` (intranet) | Fuera el paginador (`paginador`, `puedeVolver`, `volver`, `avanzar`, `primerPaso`, `pasosVisibles`) y la insignia de «Tu cuenta ya está configurada» y «¡Configuración completada!». |
+| `auth-success-screen.tsx` (intranet) | Fuera la insignia de los avisos de éxito de la recuperación. |
+| `marco-acceso.tsx` (intranet) | Fuera las props `pasos` y `antesDelFormulario`, que ya no usa nadie. |
+
+**Lo que cambia para quien lo usa.** El paginador era la única forma de volver de las
+preguntas al paso de la contraseña (que no se envía hasta el final) para corregirla. Ahora no
+se puede: para cambiarla hay que salir («Regresar al sitio web», que cierra la sesión) y
+entrar otra vez con la contraseña temporal. «Atrás» sigue moviendo entre preguntas.
+
+**Cómo se probó.** ESLint y `tsc --noEmit` de las dos apps, limpios. Intranet en vivo, primer
+ingreso pasos 1 y 2 a 360 × 640 y 1280 × 800: sin paginador, sin scroll. El primer ingreso del
+sitio no se miró en vivo (hace falta una sesión a medias); el cambio ahí es solo quitar el
+paginador.
+
+---
+
 ## sesión 11-10-2026 (8.ª parte): sin el enlace «Volver» en el primer ingreso, en el sitio y la intranet
 
 **Qué se pidió:** «elimina el botón de volver en sitio e intranet». Es el enlace de solo texto
