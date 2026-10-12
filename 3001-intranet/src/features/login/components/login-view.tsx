@@ -167,18 +167,18 @@ function LoginForm() {
       {/* Panel izquierdo — Branding */}
       <div className="login-left">
         <div className="login-left-content">
-          {/* Por debajo de `xl` (móvil y tablet, ver globals.css) manda el diseño de
-              móvil: el título primero y el logo debajo, grande y atenuado, como fondo
-              de marca antes del formulario. Desde `xl`, logo arriba y título debajo.
-              En el móvil el logo y los huecos se encogen con el alto de la pantalla
-              (`dvh`), para que el login quepa entero sin scroll (2026-10-10). */}
+          {/* Logo arriba y «Bienvenido a nuestra Intranet» debajo en todos los anchos
+              (pedido del usuario, 2026-10-11; antes, por debajo de `xl`, el título iba
+              primero). Por debajo de `xl` el logo va atenuado, como fondo de marca sobre
+              el azul. En el móvil el logo y los huecos se encogen con el alto de la
+              pantalla (`dvh`), para que el login quepa entero sin scroll (2026-10-10). */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/assets/svg/olo-logo-blanco.svg"
             alt="Logo intranet"
-            className="order-2 mx-auto w-[clamp(4.5rem,14dvh,12rem)] opacity-30 sm:w-56 xl:order-1 xl:w-[210px] xl:opacity-100"
+            className="mx-auto mb-[clamp(0.75rem,3dvh,2rem)] w-[clamp(4.5rem,14dvh,12rem)] opacity-30 sm:mb-8 sm:w-56 xl:mb-0 xl:w-[210px] xl:opacity-100"
           />
-          <h1 className="order-1 mb-[clamp(0.75rem,3dvh,2rem)] text-[clamp(1.25rem,3.6dvh,1.5rem)] font-bold leading-tight text-white sm:mb-8 md:text-3xl xl:order-2 xl:mb-0 xl:font-light">
+          <h1 className="text-[clamp(1.25rem,3.6dvh,1.5rem)] font-bold leading-tight text-white md:text-3xl xl:font-light">
             Bienvenido a <span className="font-bold xl:uppercase"><br />nuestra Intranet</span>
           </h1>
         </div>
@@ -266,14 +266,17 @@ function LoginForm() {
                   una sección del portal público y aquí no existe esa ruta. Eran
                   relativas (`/politica-de-privacidad`, `/privacidad`), así que el
                   middleware las tomaba por pantalla protegida y devolvía a quien las
-                  pulsara al propio login del que venía. */}
+                  pulsara al propio login del que venía.
+
+                  Cada enlace va entero en una línea (`whitespace-nowrap`): a 14 px se partía
+                  en «política de» / «privacidad» y el «de» quedaba colgando (2026-10-11). */}
               <p className="mb-[clamp(0.75rem,2.5dvh,1.5rem)] text-sm leading-relaxed text-white/85 sm:mb-6 xl:text-gray-500">
                 Al ingresar a este sitio aceptas la{' '}
-                <a href={`${SITE_URL}/politica-de-privacidad`} className="font-semibold text-white hover:underline xl:text-gray-700">
+                <a href={`${SITE_URL}/politica-de-privacidad`} className="whitespace-nowrap font-semibold text-white hover:underline xl:text-gray-700">
                   política de privacidad
                 </a>{' '}
                 y{' '}
-                <a href={`${SITE_URL}/politica-de-privacidad`} className="font-semibold text-white hover:underline xl:text-gray-700">
+                <a href={`${SITE_URL}/politica-de-privacidad`} className="whitespace-nowrap font-semibold text-white hover:underline xl:text-gray-700">
                   protección de datos
                 </a>
                 .
