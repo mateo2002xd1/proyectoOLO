@@ -1,7 +1,6 @@
 'use client';
 
 import type { MouseEvent, ReactNode } from 'react';
-import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/20/solid';
 import { BackToSiteLink } from './auth-ui';
 
 /**
@@ -9,12 +8,14 @@ import { BackToSiteLink } from './auth-ui';
  * contraseña (mockups del usuario, 2026-10-09).
  *
  * - **Móvil y tablet**: una sola columna sobre blanco, con el texto en `#001631`: título,
- *   qué se pide, paginador si lo hay, el formulario y el enlace de regreso. Sin logo,
- *   salvo en el login (`conLogo`). El corte es `xl`: la tablet grande en vertical
- *   (1032 px) va en una columna.
+ *   qué se pide, el formulario y el enlace de regreso. Sin logo, salvo en el login
+ *   (`conLogo`). El corte es `xl`: la tablet grande en vertical (1032 px) va en una columna.
  * - **Escritorio (`xl`)**: dos mitades. A la izquierda, sobre blanco como en el móvil, el
- *   logo, el título, el texto y el paginador, en `#001631`. A la derecha, sobre `#001a39` y
- *   con las esquinas izquierdas redondeadas, la tarjeta y el enlace de regreso.
+ *   logo, el título y el texto, en `#001631`. A la derecha, sobre `#001a39` y con las
+ *   esquinas izquierdas redondeadas, la tarjeta y el enlace de regreso.
+ *
+ * El primer ingreso llevaba bajo el texto el paginador «← Anterior 1 2 3 Siguiente →»
+ * (`PaginadorDePasos`); lo quitó el usuario el 2026-10-11.
  *
  * Hasta el 2026-10-09 el primer ingreso iba sobre azul también en el móvil (`tema`
  * oscuro) y la recuperación sobre blanco. El usuario pidió el mismo estilo para todas, y
@@ -49,7 +50,6 @@ import { BackToSiteLink } from './auth-ui';
 export function MarcoDePasos({
   titulo,
   descripcion,
-  pasos,
   conLogo = false,
   cerrarSesionAlSalir = false,
   children,
@@ -57,8 +57,6 @@ export function MarcoDePasos({
   titulo: ReactNode;
   /** Uno o varios párrafos. */
   descripcion?: string | string[];
-  /** El paginador del primer ingreso. */
-  pasos?: PasosDelMarco;
   /**
    * El logo también por debajo de `xl`, encima del título. Solo el login: es la puerta de
    * entrada y la única pantalla del flujo que en el mockup de móvil lo lleva.
@@ -97,11 +95,6 @@ export function MarcoDePasos({
             ))}
           </div>
         )}
-        {pasos && (
-          <div className="@container mt-[clamp(0.75rem,3dvh,2.5rem)] w-full md:mt-[72px]">
-            <PaginadorDePasos {...pasos} />
-          </div>
-        )}
       </section>
 
       <div className="mt-[clamp(1rem,3.5dvh,2.5rem)] flex flex-col items-center px-4 sm:px-6 md:mt-11 xl:mt-0 xl:flex-1 xl:justify-center xl:rounded-l-[32px] xl:bg-[#001a39] xl:py-12">
@@ -128,90 +121,4 @@ async function salirCerrandoSesion(evento: MouseEvent<HTMLDivElement>) {
     // primer ingreso en cuanto se pida algo del panel.
   }
   window.location.href = enlace.href;
-}
-
-export interface PasosDelMarco {
-  /** Nombre de cada paso, para el lector de pantalla («Paso 1 de 3: Contraseña»). */
-  nombres: string[];
-  /** Índice del paso en que se está, desde 0. */
-  actual: number;
-  /**
-   * Volver a un paso anterior. Sin él, «Anterior» y los números de atrás no hacen nada:
-   * es lo que pasa al terminar, cuando ya no hay nada que corregir.
-   */
-  volverA?: (indice: number) => void;
-  /**
-   * `id` del formulario del paso. «Siguiente» lo envía, así que hace lo mismo que el
-   * botón principal de la tarjeta, con sus validaciones. Sin él, «Siguiente» se apaga.
-   */
-  formulario?: string;
-}
-
-/**
- * «← Anterior 1 2 3 Siguiente →», como en el mockup.
- *
- * - Hacia atrás se puede ir: el paso de la contraseña no se envía hasta el final, así
- *   que se puede corregir desde las preguntas.
- * - Hacia adelante, solo pasando por el formulario. Los números de los pasos que faltan
- *   no son botones: saltar un paso dejaría la cuenta a medias.
- * - En `#001631` sobre blanco, en todos los anchos.
- * - Por debajo de 384 px de ancho disponible (`@sm` del contenedor), «Anterior» y
- *   «Siguiente» se quedan en la flecha; el nombre lo da su `aria-label` en todos los
- *   anchos. Con las palabras en español, la fila no cabía a 360 px. Se mide el
- *   contenedor y no la pantalla, como pide `2-convenciones` §10.1.
- *
- *   No se usa `sr-only` + `@sm:not-sr-only`: `globals.css` define un `.sr-only` fuera
- *   de las capas de Tailwind, y una regla sin capa gana a cualquier utilidad, así que
- *   `not-sr-only` no hace nada en este sitio.
- */
-function PaginadorDePasos({ nombres, actual, volverA, formulario }: PasosDelMarco) {
-  const total = nombres.length;
-  const puedeVolver = !!volverA && actual > 0;
-  const flecha =
-    'inline-flex h-8 items-center gap-2 rounded-full px-3 text-base text-[#001631] transition-colors hover:bg-[#001631]/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001631] disabled:cursor-default disabled:text-[#001631]/40 disabled:hover:bg-transparent';
-  const numero = 'flex size-8 items-center justify-center rounded-full text-base';
-
-  return (
-    <nav aria-label="Pasos para configurar tu cuenta" className="flex items-center justify-center gap-3 @sm:gap-5">
-      <button type="button" aria-label="Anterior" className={flecha} disabled={!puedeVolver} onClick={() => volverA?.(actual - 1)}>
-        <ArrowLeftIcon aria-hidden="true" className="size-4" />
-        <span aria-hidden="true" className="hidden @sm:inline">Anterior</span>
-      </button>
-
-      <ol className="flex items-center gap-2.5">
-        {nombres.map((nombre, i) => {
-          const etiqueta = `Paso ${i + 1} de ${total}: ${nombre}`;
-          return (
-            <li key={nombre}>
-              {i === actual ? (
-                <span aria-current="step" className={`${numero} bg-[#001631] text-white`}>
-                  <span aria-hidden="true">{i + 1}</span>
-                  <span className="sr-only">{etiqueta}</span>
-                </span>
-              ) : i < actual && volverA ? (
-                <button
-                  type="button"
-                  onClick={() => volverA(i)}
-                  aria-label={`Volver al ${etiqueta.charAt(0).toLowerCase()}${etiqueta.slice(1)}`}
-                  className={`${numero} text-[#001631] transition-colors hover:bg-[#001631]/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001631]`}
-                >
-                  {i + 1}
-                </button>
-              ) : (
-                <span className={`${numero} text-[#001631]`}>
-                  <span aria-hidden="true">{i + 1}</span>
-                  <span className="sr-only">{etiqueta}</span>
-                </span>
-              )}
-            </li>
-          );
-        })}
-      </ol>
-
-      <button type="submit" form={formulario} aria-label="Siguiente" className={flecha} disabled={!formulario}>
-        <span aria-hidden="true" className="hidden @sm:inline">Siguiente</span>
-        <ArrowRightIcon aria-hidden="true" className="size-4" />
-      </button>
-    </nav>
-  );
 }

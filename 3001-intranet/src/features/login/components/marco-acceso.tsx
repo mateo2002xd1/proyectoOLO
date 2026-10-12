@@ -15,11 +15,14 @@ import { accesoRegresoClass, accesoTarjetaClass } from './acceso-ui';
  * entonces cada pantalla tenía su maqueta en `globals.css` (`.login-*`, `.fl-*`) con
  * medidas propias.
  *
- * - **Móvil y tablet**: una sola columna. Título, texto, paginador si lo hay, el formulario y
- *   el enlace de regreso. Sin logo, salvo en el login (`conLogo`).
+ * - **Móvil y tablet**: una sola columna. Título, texto, el formulario y el enlace de
+ *   regreso. Sin logo, salvo en el login (`conLogo`).
  * - **Escritorio (`xl`)**: dos mitades. A la izquierda, sobre `#001631` y con las esquinas
- *   derechas redondeadas, el logo, el título, el texto y el paginador; a la derecha, sobre
- *   `#001A39`, el formulario y el enlace de regreso.
+ *   derechas redondeadas, el logo, el título y el texto; a la derecha, sobre `#001A39`, el
+ *   formulario y el enlace de regreso.
+ *
+ * Sin el paginador del primer ingreso ni la insignia de check de los avisos de éxito: los
+ * quitó el usuario el 2026-10-11 (props `pasos` y `antesDelFormulario`).
  *
  * Por debajo de `md` los huecos, el logo, el título y el texto se encogen con el alto visible
  * (`clamp()` con `dvh`), como en el sitio, para que cada paso quepa en 360 × 640 sin scroll.
@@ -28,20 +31,16 @@ import { accesoRegresoClass, accesoTarjetaClass } from './acceso-ui';
 export function MarcoAcceso({
   titulo,
   descripcion,
-  pasos,
   conLogo = false,
   claseTitulo = 'font-semibold',
   cerrarSesionAlSalir = false,
   claveTarjeta,
   claseTarjeta = '',
-  antesDelFormulario,
   children,
 }: {
   titulo: ReactNode;
   /** Uno o varios párrafos. */
   descripcion?: string | string[];
-  /** El paginador del primer ingreso. */
-  pasos?: ReactNode;
   /** El logo también por debajo de `xl`, encima del título. Solo el login, como en el sitio. */
   conLogo?: boolean;
   /** Peso del título; el login lo compone con dos pesos y pasa el suyo. */
@@ -51,8 +50,6 @@ export function MarcoAcceso({
   /** `key` del formulario: cambiarla lo monta de nuevo (cada pregunta de seguridad). */
   claveTarjeta?: string | number;
   claseTarjeta?: string;
-  /** Lo que va encima del formulario (la insignia de los avisos de éxito). */
-  antesDelFormulario?: ReactNode;
   children: ReactNode;
 }) {
   const parrafos = descripcion === undefined ? [] : Array.isArray(descripcion) ? descripcion : [descripcion];
@@ -77,12 +74,10 @@ export function MarcoAcceso({
             ))}
           </div>
         )}
-        {pasos && <div className="@container mt-[clamp(0.75rem,3dvh,2.5rem)] w-full md:mt-[72px]">{pasos}</div>}
       </section>
 
       <div className="mt-[clamp(1rem,3.5dvh,2.5rem)] flex flex-col items-center px-4 sm:px-6 md:mt-11 xl:mt-0 xl:flex-1 xl:justify-center xl:py-12">
         <div key={claveTarjeta} className={`${accesoTarjetaClass} ${claseTarjeta}`}>
-          {antesDelFormulario}
           {children}
         </div>
         <div className="mt-[clamp(0.5rem,2.5dvh,2rem)] text-center md:mt-8 xl:mt-4">

@@ -18,7 +18,7 @@ import {
   authPasosSecondaryClass,
   authPasosHuecoClass,
 } from './auth-ui';
-import { MarcoDePasos, type PasosDelMarco } from './marco-de-pasos';
+import { MarcoDePasos } from './marco-de-pasos';
 import { useRequisitosAlEnfocar } from '../hooks/use-requisitos-al-enfocar';
 
 /**
@@ -31,7 +31,7 @@ import { useRequisitosAlEnfocar } from '../hooks/use-requisitos-al-enfocar';
  * ruta, como en la intranet.
  *
  * Desde el 2026-10-09 lleva el diseño nuevo (`MarcoDePasos`): el título y lo que se
- * pide en cada paso van fuera de la tarjeta, con el paginador debajo, y la tarjeta
+ * pide en cada paso van fuera de la tarjeta (con un paginador debajo hasta el 2026-10-11), y la tarjeta
  * solo trae el formulario. Ese mismo día pasó del azul al fondo blanco, como la
  * recuperación.
  */
@@ -48,18 +48,6 @@ type CatalogQuestion = { key: string; label: string };
  * pantalla distinta.
  */
 type Pendiente = { debeCambiarPassword: boolean; debeConfigurarPreguntas: boolean };
-
-/** Los pasos que puede tener el flujo, en orden. Cuáles salen depende de `Pendiente`. */
-type Etapa = 'contrasena' | 'preguntas' | 'listo';
-const NOMBRE_DE_ETAPA: Record<Etapa, string> = {
-  contrasena: 'Contraseña',
-  preguntas: 'Preguntas de seguridad',
-  listo: 'Listo',
-};
-const ETAPA_DEL_PASO: Record<1 | 2 | 3, Etapa> = { 1: 'contrasena', 2: 'preguntas', 3: 'listo' };
-
-const FORM_CONTRASENA = 'form-contrasena';
-const FORM_PREGUNTAS = 'form-preguntas';
 
 async function cerrarSesionEIrAlLogin() {
   try {
@@ -224,49 +212,30 @@ export function FirstLoginFlow() {
         <div className={`${authPasosCardClass} text-center`}>
           <AuthSuccessBadge />
           <Link href="/admin/dashboard" className={authPasosPrimaryClass}>
-            Ir al panel
+            Iniciar sesión
           </Link>
         </div>
       </MarcoDePasos>
     );
   }
 
-  // Los pasos que tiene esta cuenta: el paginador muestra 3 cuando falta todo y 2
-  // cuando solo falta la contraseña o solo las preguntas.
-  const etapas: Etapa[] = [
-    ...(pendiente.debeCambiarPassword ? (['contrasena'] as const) : []),
-    ...(pendiente.debeConfigurarPreguntas ? (['preguntas'] as const) : []),
-    'listo',
-  ];
-  const pasos = (formulario?: string): PasosDelMarco => ({
-    nombres: etapas.map((e) => NOMBRE_DE_ETAPA[e]),
-    actual: etapas.indexOf(ETAPA_DEL_PASO[step]),
-    formulario,
-    // Solo se vuelve desde las preguntas a la contraseña, que aún no se ha enviado.
-    // Terminado, ya no hay nada que corregir.
-    volverA:
-      step === 2 && pendiente.debeCambiarPassword
-        ? (indice) => {
-            if (etapas[indice] !== 'contrasena') return;
-            setErrors({});
-            setStep(1);
-          }
-        : undefined,
-  });
+  // Sin el paginador «← Anterior 1 2 3 Siguiente →» bajo el texto: lo quitó el usuario el
+  // 2026-10-11. Se avanza con el botón del formulario; «Atrás» mueve entre preguntas.
 
   /* ---------- Paso 3: éxito ---------- */
   if (step === 3) {
     return (
       <MarcoDePasos
         cerrarSesionAlSalir
-        titulo="¡Configuración completada!"
-        descripcion={
-          // El aviso sobre las respuestas solo tiene sentido si se acaban de elegir.
-          pendiente.debeConfigurarPreguntas
-            ? 'Guarda tus respuestas en un lugar seguro: serán el único método para validar tu identidad si olvidas tu clave en el futuro.'
-            : 'Tu cuenta ya es segura.'
-        }
-        pasos={pasos()}
+        titulo="¡Configuración completada con éxito!"
+        // Texto del usuario (2026-10-11). El aviso sobre las respuestas solo tiene sentido si
+        // se acaban de elegir: a quien solo cambió la contraseña no se le muestra.
+        descripcion={[
+          'Tu cuenta ya es segura.',
+          ...(pendiente.debeConfigurarPreguntas
+            ? ['Es muy importante que recuerdes o guardes tus respuestas en un lugar seguro, ya que serán el único método para validar tu identidad y permitirte cambiar tu clave en el futuro si llegas a olvidarla.']
+            : []),
+        ]}
       >
         <div className={`${authPasosCardClass} text-center`}>
           <AuthSuccessBadge />
@@ -288,10 +257,9 @@ export function FirstLoginFlow() {
         // Acortado el 2026-10-10 para que el paso quepa sin scroll en el móvil; antes decía «es
         // necesario que crees una contraseña personal y privada que solo tú conozcas».
         descripcion="Has ingresado con una contraseña temporal. Por tu seguridad, crea una contraseña personal que solo tú conozcas."
-        pasos={pasos(FORM_CONTRASENA)}
       >
         <Tarjeta>
-          <form id={FORM_CONTRASENA} onSubmit={(e: FormEvent) => { e.preventDefault(); handleStep1(); }} noValidate>
+          <form onSubmit={(e: FormEvent) => { e.preventDefault(); handleStep1(); }} noValidate>
             {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
 
             <PasswordField
@@ -356,10 +324,9 @@ export function FirstLoginFlow() {
           ? 'Elige 3 preguntas y responde cada una. Con ellas verificaremos tu identidad si necesitas recuperar tu cuenta.'
           : 'Tus preguntas de seguridad fueron restablecidas. Elige 3 y asigna una respuesta a cada una; tu contraseña actual no cambia.'
       }
-      pasos={pasos(FORM_PREGUNTAS)}
     >
       <Tarjeta>
-        <form id={FORM_PREGUNTAS} onSubmit={(e: FormEvent) => { e.preventDefault(); handleQuestionNext(); }} noValidate>
+        <form onSubmit={(e: FormEvent) => { e.preventDefault(); handleQuestionNext(); }} noValidate>
           {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
 
           {/* Como en la recuperación: el encabezado, sin el número de la pregunta a la vista
