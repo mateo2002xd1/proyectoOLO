@@ -65,7 +65,7 @@ function PendientesDePublicar({
   return (
     <div
       role="status"
-      className="mt-4 flex flex-wrap items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm dark:border-amber-900/60 dark:bg-amber-900/20"
+      className="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm dark:border-amber-900/60 dark:bg-amber-900/20"
     >
       <EstadoFlag estado={{ tono: 'borrador', texto: 'Sin publicar' }} />
       {celdas.map((c) => {
@@ -235,19 +235,12 @@ export function CargaCriteriosClasificacion({ puedeActualizar }: CargaCriteriosC
     .sort((a, b) => b.anio - a.anio);
 
   return (
-    <section
-      aria-labelledby="titulo-criterios-clasificacion"
-      className="col-span-full rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f]"
-    >
+    // Sin caja ni título propios: los pone `SeccionAcordeon` en `actualizaciones-view.tsx`.
+    <div>
       <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
-        <div>
-          <h2 id="titulo-criterios-clasificacion" className="font-semibold text-[#001631] dark:text-[#f6f6f6]">
-            Criterios de clasificación de resultados
-          </h2>
-          <p className="mt-1 text-sm text-gray-600 dark:text-[#94a3b8]">
-            Percentiles de inscritos y vacantes para Tendencia Ocupacional. Un archivo .xlsx por año y periodo.
-          </p>
-        </div>
+        <p className="text-sm text-gray-600 dark:text-[#94a3b8]">
+          Percentiles de inscritos y vacantes para Tendencia Ocupacional. Un archivo .xlsx por año y periodo.
+        </p>
         {puedeActualizar && <DescargarFormato formato="tendencia-ocupacional" />}
       </div>
 
@@ -366,7 +359,7 @@ export function CargaCriteriosClasificacion({ puedeActualizar }: CargaCriteriosC
           )}
 
           {ultima && estadoUltima && (
-            <div role="status" className={`mt-4 rounded-lg border px-3 py-2.5 text-sm ${CAJA[estadoUltima.tono]}`}>
+            <div role="status" className={`mt-4 rounded-xl border px-3 py-2.5 text-sm ${CAJA[estadoUltima.tono]}`}>
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 <EstadoFlag estado={estadoUltima} />
                 <span className="font-medium text-[#001631] dark:text-[#f6f6f6]">
@@ -424,6 +417,6 @@ export function CargaCriteriosClasificacion({ puedeActualizar }: CargaCriteriosC
           cargaEnEliminacion={t.cargaEnEliminacion}
         />
       </div>
-    </section>
+    </div>
   );
 }

@@ -14,20 +14,22 @@
 
 | | Carpetas | Features | Rutas de Next | Endpoints | Librerías |
 |---|--:|--:|--:|--:|--:|
-| `3000-sitio-web` | 46 | 3 | 53 | — | 33 |
+| `3000-sitio-web` | 49 | 3 | 53 | — | 33 |
 | `3001-intranet` | 31 | 2 | 11 | — | 27 |
-| `4000-api-backend` | 34 | — | — | 91 | 42 |
+| `4000-api-backend` | 35 | — | — | 96 | 42 |
 
-Paquetes compartidos: 7 · migraciones: 40 · modelos: 23.
+Paquetes compartidos: 7 · migraciones: 44 · modelos: 23.
 
-## Carpetas sin descripción (4)
+## Carpetas sin descripción (6)
 
 Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scripts/mapa/descripciones.md` con una línea: `` - `ruta/` — para qué es ``.
 
 - `3000-sitio-web/data_temporal/`
 - `3000-sitio-web/src/features/sitio-web/alertas-inversion/`
 - `3000-sitio-web/src/features/sitio-web/fuentes-futuras-empleo/`
+- `3000-sitio-web/src/shared/lib/identidad-panel/`
 - `4000-api-backend/src/use-cases/alertas-inversion/`
+- `4000-api-backend/src/use-cases/configuracion/`
 
 ## Carpetas
 
@@ -55,6 +57,7 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
     │   │   ├── auditoria/                     historial de cambios (RF-07)
     │   │   ├── auth/                          login, primer ingreso, recuperación, usuarios y roles
     │   │   ├── buscador/                      buscador del propio panel
+    │   │   ├── configuracion/                 preferencias del panel en este navegador, como el sonido de los avisos
     │   │   ├── mi-perfil/                     la cuenta de quien inició sesión
     │   │   └── respaldos/                     restaurar versiones archivadas de una página
     │   ├── paginas/                           páginas editables con Puck, organizadas por etapa del ciclo
@@ -74,9 +77,11 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
     ├── shared/                                lo transversal del sitio: sistema de diseño y utilidades
     │   ├── lib/                               utilidades transversales: cliente HTTP, sesión, bloques
     │   │   ├── blocks/                        los bloques Puck de esta app
+    │   │   ├── identidad-panel/               ⚠ sin descripción
     │   │   ├── inactividad/                   aviso y cierre de sesión por inactividad
     │   │   ├── mobile/                        navegación mobile del panel: barra de abajo con el logo al centro
     │   │   ├── pwa/                           manifiesto, íconos y registro del service worker
+    │   │   ├── sonido-avisos/                 el tono de los avisos flotantes y la preferencia de silenciarlo
     │   │   └── tema/                          tema oscuro del panel, sin parpadeo al cargar
     │   └── ui/                                sistema de diseño institucional y catálogo del editor
     │       ├── atoms/                         piezas mínimas: botón, avatar, interruptor…
@@ -148,6 +153,7 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
     │   ├── archivos/                          subida de los adjuntos de las páginas (RF-02)
     │   ├── auditoria/                         consulta de la bitácora de cambios (RF-07)
     │   ├── auth/                              login, primer ingreso y preguntas de seguridad
+    │   ├── configuracion/                     ⚠ sin descripción
     │   ├── observatorio/                      cargas de Excel del Observatorio y tendencia ocupacional
     │   ├── paginas/                           gobernanza de páginas: borrador, revisión, publicación, bloqueo
     │   └── usuarios/                          usuarios, roles, permisos y caducidad
@@ -189,7 +195,7 @@ test/                                          pruebas de carga con k6
 
 | Feature | Para qué | Subcarpetas | `index.ts` | Archivos |
 |---|---|---|:-:|--:|
-| `administracion/` | el panel: usuarios, roles, auditoría, respaldos, cargas | `actualizaciones/` `auditoria/` `auth/` `buscador/` `mi-perfil/` `respaldos/` | **no** | 68 |
+| `administracion/` | el panel: usuarios, roles, auditoría, respaldos, cargas | `actualizaciones/` `auditoria/` `auth/` `buscador/` `configuracion/` `mi-perfil/` `respaldos/` | **no** | 78 |
 | `paginas/` | páginas editables con Puck, organizadas por etapa del ciclo | `edicion/` `menu-y-pie/` `model/` `publicacion/` `revision/` `secciones/` | sí | 39 |
 | `sitio-web/` | agrupador de lo público | `alertas-inversion/` `buscador-ocupaciones/` `fuentes-futuras-empleo/` `inicio/` `programas-sobresalientes/` `tendencia-ocupacional/` | **no** | 49 |
 
@@ -197,7 +203,7 @@ test/                                          pruebas de carga con k6
 
 | Feature | Para qué | Subcarpetas | `index.ts` | Archivos |
 |---|---|---|:-:|--:|
-| `login/` | pantallas del flujo de acceso | `components/` `hooks/` `services/` | sí | 11 |
+| `login/` | pantallas del flujo de acceso | `components/` `hooks/` `services/` | sí | 14 |
 | `paginas/` | secciones editables con Puck, gemela de la del sitio | `edicion/` `menu-y-pie/` `model/` `publicacion/` `secciones/` | sí | 26 |
 
 ## Rutas de Next
@@ -330,11 +336,21 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | Método | Ruta | Protección y validación | Manejador |
 |---|---|---|---|
 | POST | `/api/login` | 🔓 limitadorDeLogin | AuthController.login |
-| GET | `/api/first-login/status` | requireAuth | AuthController.firstLoginStatus |
-| POST | `/api/first-login` | requireAuth | AuthController.firstLogin |
+| GET | `/api/first-login/status` | requireAuthConConfiguracionPendiente | AuthController.firstLoginStatus |
+| POST | `/api/first-login` | requireAuthConConfiguracionPendiente | AuthController.firstLogin |
 | POST | `/api/logout` | 🔓 limitadorDeLogout | AuthController.logout |
-| GET | `/api/me` | requireAuth | AuthController.me |
-| POST | `/api/change-password` | requireAuth | AuthController.changePassword |
+| GET | `/api/me` | requireAuthConConfiguracionPendiente | AuthController.me |
+| POST | `/api/change-password` | requireAuthConConfiguracionPendiente | AuthController.changePassword |
+
+### `routes/configuracion.routes.ts`
+
+| Método | Ruta | Protección y validación | Manejador |
+|---|---|---|---|
+| GET | `/api/configuracion/identidad-panel/archivos/:nombre` | 🔓 — | ConfiguracionController.servirArchivo |
+| GET | `/api/configuracion/identidad-panel` | requireAuth | ConfiguracionController.obtenerIdentidad |
+| PATCH | `/api/configuracion/identidad-panel` | 🔓 ...puedeCambiarla, validarCuerpo(actualizarIdentidadSchema) | ConfiguracionController.actualizarIdentidad |
+| POST | `/api/configuracion/identidad-panel/${pieza}` | 🔓 ...puedeCambiarla, recibirArchivo(LIMITE_DE_SUBIDA) | ConfiguracionController.subirImagen(pieza) |
+| DELETE | `/api/configuracion/identidad-panel/${pieza}` | 🔓 ...puedeCambiarla | ConfiguracionController.restablecerImagen(pieza) |
 
 ### `routes/observatorio.routes.ts`
 
@@ -419,7 +435,7 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 |---|---|---|---|
 | GET | `/api/security-questions/catalog` | 🔓 — | SecurityQuestionController.getCatalog |
 | POST | `/api/security-questions/user-questions` | 🔓 limitadorDePreguntas | SecurityQuestionController.getQuestionKeysForUser |
-| POST | `/api/security-questions/setup` | requireAuth | SecurityQuestionController.setupQuestions |
+| POST | `/api/security-questions/setup` | requireAuthConConfiguracionPendiente | SecurityQuestionController.setupQuestions |
 | POST | `/api/security-questions/verify` | 🔓 limitadorDeVerificacion | SecurityQuestionController.verifyAnswersCtrl |
 | POST | `/api/security-questions/recover-password` | 🔓 limitadorDeRecuperacion | SecurityQuestionController.recoverPasswordCtrl |
 
@@ -610,6 +626,10 @@ En el orden del manifiesto (`migrations/index.ts`), que es el orden en que corre
 - `038-alertas-inversion-catalogos`
 - `039-alertas-inversion-proyectos`
 - `040-auditoria-autoguardado`
+- `041-integridad-e-indices`
+- `042-catalogos-sin-duplicados`
+- `043-password-temporal-vence`
+- `044-identidad-del-panel`
 
 ### Modelos
 

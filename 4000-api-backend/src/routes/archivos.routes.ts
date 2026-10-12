@@ -1,10 +1,9 @@
-import { Router, type RequestHandler } from 'express';
-import multer from 'multer';
-import { LIMITE_ABSOLUTO_BYTES } from '@olo/upload-policy';
+import { Router } from 'express';
 import { ArchivosController } from '../controllers/archivos.controller';
 import { requireAuth } from '../middlewares/auth.middleware';
 import { requierePermisoPagina } from '../middlewares/permisos.middleware';
 import { limitadorGlobal } from '../middlewares/rate-limit.middleware';
+import { recibirArchivo } from '../middlewares/recibir-archivo.middleware';
 
 /**
  * Los adjuntos de las páginas: la única puerta al filesystem desde fuera.
@@ -23,34 +22,12 @@ import { limitadorGlobal } from '../middlewares/rate-limit.middleware';
  */
 const router = Router();
 
-const subidaEnMemoria = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: LIMITE_ABSOLUTO_BYTES, files: 1 },
-  // El navegador manda el nombre en UTF-8; multer lo lee como latin1 si no se le dice, y
-  // «Informe técnico.pdf» llegaba como «Informe tÃ©cnico.pdf». Multer 2 acepta la
-  // opción, pero `@types/multer` todavía no la declara: de ahí el `as`.
-  defParamCharset: 'utf8',
-} as multer.Options);
-
-/**
- * Recibe el campo `file`. Lo que supera el límite absoluto sale como 413 y no como el 500
- * que daría el error de multer: el límite por tipo, más fino, lo aplica después la política.
- */
-const recibirArchivo: RequestHandler = (req, res, next) => {
-  subidaEnMemoria.single('file')(req, res, (error: unknown) => {
-    if (error instanceof multer.MulterError && error.code === 'LIMIT_FILE_SIZE') {
-      return res.status(413).json({ error: 'El archivo supera el tamaño máximo permitido.' });
-    }
-    next(error);
-  });
-};
-
 /**
  * Subir: quien puede editar páginas, con el mismo criterio que guardar un borrador. Los
  * route handlers de los frontends que hacían esto antes solo pedían sesión; cualquier
  * cuenta, aunque no editara nada, podía llenar el disco.
  */
-const guardiasDeSubida = [limitadorGlobal, requireAuth, requierePermisoPagina('puedeEditar'), recibirArchivo];
+const guardiasDeSubida = [limitadorGlobal, requireAuth, requierePermisoPagina('puedeEditar'), recibirArchivo()];
 
 /**
  * @openapi

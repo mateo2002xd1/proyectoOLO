@@ -8,7 +8,31 @@ import {
   rechazarPagina,
 } from '../services/revision.service';
 import { notificarRevisionActualizada } from '../../model/eventos';
+import { esFalloDeConexion, mensajeDeErrorApi } from '@/shared/lib/errores-api';
 import type { PaginaEnRevision, Ambito } from '../../model/pagina.types';
+
+const MENSAJE_POR_DEFECTO = 'No se pudieron cargar las páginas en revisión.';
+
+/**
+ * Esperas antes de cada reintento cuando la API no contestó. Dos y no más: el primer
+ * intento suele despertar a Neon y abrir la conexión aunque el navegador se canse
+ * antes (la API sigue y la deja lista), así que el segundo casi siempre entra. Con el
+ * `timeout` de 15 s, lo peor son unos 50 s de loader antes del aviso.
+ */
+const ESPERAS_REINTENTO_MS = [1000, 3000];
+
+/** `listarEnRevision` que reintenta solo si no hubo respuesta; un 4xx o 5xx sale al primero. */
+async function listarConReintentos(cancelado: () => boolean): Promise<PaginaEnRevision[]> {
+  for (let intento = 0; ; intento++) {
+    try {
+      return await listarEnRevision();
+    } catch (err) {
+      const espera = ESPERAS_REINTENTO_MS[intento];
+      if (!esFalloDeConexion(err) || espera === undefined || cancelado()) throw err;
+      await new Promise((resolver) => setTimeout(resolver, espera));
+    }
+  }
+}
 
 export function useRevisionQueue() {
   const [paginas, setPaginas] = useState<PaginaEnRevision[]>([]);
@@ -18,11 +42,11 @@ export function useRevisionQueue() {
   const cargar = useCallback(async () => {
     setIsLoading(true);
     try {
-      const data = await listarEnRevision();
+      const data = await listarConReintentos(() => false);
       setPaginas(data);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al cargar páginas en revisión');
+      setError(mensajeDeErrorApi(err, MENSAJE_POR_DEFECTO));
     } finally {
       setIsLoading(false);
     }
@@ -35,13 +59,13 @@ export function useRevisionQueue() {
     let cancelado = false;
     (async () => {
       try {
-        const data = await listarEnRevision();
+        const data = await listarConReintentos(() => cancelado);
         if (cancelado) return;
         setPaginas(data);
         setError(null);
       } catch (err) {
         if (cancelado) return;
-        setError(err instanceof Error ? err.message : 'Error al cargar páginas en revisión');
+        setError(mensajeDeErrorApi(err, MENSAJE_POR_DEFECTO));
       } finally {
         if (!cancelado) setIsLoading(false);
       }
@@ -78,5 +102,5 @@ export function useRevisionQueue() {
     [cargar],
   );
 
-  return { paginas, isLoading, error, aprobar, rechazar, eliminar };
+  return { paginas, isLoading, error, reintentar: cargar, aprobar, rechazar, eliminar };
 }

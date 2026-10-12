@@ -14,7 +14,8 @@
  *   │   ├── uploads/<tipo>/        lo que nombran las versiones vigentes (img, pdf, excel…)
  *   │   └── backup/<paginaId>/     lo de la última versión archivada de cada página
  *   ├── intranet/                  lo mismo para las páginas de la intranet
- *   └── cargas-datos/              los Excel de "Actualizaciones"; no se sirven nunca
+ *   ├── cargas-datos/              los Excel de "Actualizaciones"; no se sirven nunca
+ *   └── panel/identidad/           el logo y el icono del panel (Configuración)
  */
 import path from 'path';
 import { mimeParaServir } from '@olo/upload-policy';
@@ -65,6 +66,33 @@ export function rutaRelativaDeCarga(nombreArchivo: string): string {
 export function resolverRutaDeCarga(rutaRelativa: string): string {
   const nombre = rutaRelativa.split(/[\\/]/).pop() ?? '';
   return path.join(directorioDeCargas(), nombre);
+}
+
+/**
+ * Donde viven el logo y el icono que se suben en Configuración → Identidad visual.
+ *
+ * Aparte de `sitio/uploads/` a propósito: `npm run uploads:limpiar-huerfanos -- --aplicar`
+ * borra de ahí todo lo que no nombre una versión de página, y el logo del panel no lo
+ * nombra ninguna.
+ */
+export function directorioDeIdentidadDelPanel(): string {
+  return path.join(raizDelFilesystem(), 'panel', 'identidad');
+}
+
+/** Lo único que puede haber en esa carpeta: un UUID con la extensión de una imagen. */
+const NOMBRE_DE_IDENTIDAD = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}.(png|jpg)$/;
+
+/**
+ * El archivo de identidad que se puede servir con ese nombre, o `null`.
+ *
+ * Solo acepta el formato exacto que pone la subida, así que un `..` o una barra no
+ * llegan a `path.join`. Tampoco comprueba si existe: eso lo resuelve quien lo envía.
+ */
+export function resolverArchivoDeIdentidad(nombre: string): { rutaAbsoluta: string; mime: string } | null {
+  if (!NOMBRE_DE_IDENTIDAD.test(nombre)) return null;
+  const rutaAbsoluta = path.join(directorioDeIdentidadDelPanel(), nombre);
+  const mime = mimeParaServir(rutaAbsoluta);
+  return mime ? { rutaAbsoluta, mime } : null;
 }
 
 /** Las dos carpetas de un ámbito que se pueden pedir desde fuera. */

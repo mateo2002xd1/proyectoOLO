@@ -322,6 +322,12 @@ export const ETIQUETA_CAMPO: Record<string, string> = {
   creado_por: 'Creado por',
   description: 'Descripción',
   es_sistema: 'Es de sistema',
+  // Configuración → Identidad visual del panel (`identidad-panel.usecase.ts`).
+  logo_del_panel: 'Logo del panel',
+  icono_del_panel: 'Icono del panel',
+  blanco_en_modo_oscuro: 'Logo e icono en blanco en modo oscuro',
+  colores_de_acciones: 'Colores de las etiquetas de acción',
+  colores_de_botones: 'Colores de los botones',
 };
 
 export const etiquetaDeCampo = (campo: string) => {

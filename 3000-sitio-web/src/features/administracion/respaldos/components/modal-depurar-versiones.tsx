@@ -3,6 +3,7 @@
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
 import {
   AlertTriangle,
   CheckCircle2,
@@ -13,6 +14,8 @@ import {
   X,
 } from 'lucide-react';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
+import { FormaDeModal } from '@/shared/ui/atoms/button';
+import { etiquetaDeModalClass } from '@/shared/ui/molecules/alert';
 import { mensajeDeErrorApi } from '@/shared/lib/errores-api';
 import { analizarDepuracion, ejecutarDepuracion } from '../services/respaldos.service';
 import type { AnalisisDepuracionDTO, FiltrosDepuracion, RegistroRespaldo } from '../types';
@@ -137,7 +140,9 @@ export function ModalDepurarVersiones({
   // son exactamente los valores del reset— y con `fechaMaximaPermitida` recalculada al
   // día de hoy, que el efecto anterior no hacía (su `useMemo` sin dependencias se
   // quedaba con la fecha del primer montaje).
-  if (!abierto || typeof document === 'undefined') return null;
+  const { montado, cerrando } = useCierreAnimado(abierto);
+
+  if (!montado || typeof document === 'undefined') return null;
 
   const handleEjecutar = async () => {
     setEjecutando(true);
@@ -169,17 +174,20 @@ export function ModalDepurarVersiones({
   // entre el borde de arriba y ella, y lo que no quepa hace scroll dentro.
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center-safe justify-center overflow-y-auto bg-[#0f172a]/40 p-4 pb-[calc(var(--navegacion-mobile-alto)+1rem)] backdrop-blur-sm animate-in fade-in duration-200 lg:pb-4"
+      className="olo-anim-fondo fixed inset-0 z-50 flex items-center-safe justify-center overflow-y-auto bg-[#0f172a]/40 p-4 pb-[calc(var(--navegacion-mobile-alto)+1rem)] backdrop-blur-sm lg:pb-4"
+      data-cerrando={cerrando || undefined}
       role="dialog"
       aria-modal="true"
       aria-labelledby="titulo-modal-depuracion"
     >
-      <div className="relative flex max-h-[calc(100dvh-2rem-var(--navegacion-mobile-alto))] w-full max-w-2xl flex-col overflow-hidden rounded-[24px] border border-zinc-200 bg-white shadow-2xl lg:max-h-[calc(100dvh-2rem)] dark:border-[#2d3649] dark:bg-[#151d30]">
+      <div className="olo-anim-caja relative flex max-h-[calc(100dvh-2rem-var(--navegacion-mobile-alto))] w-full max-w-2xl flex-col overflow-hidden rounded-[32px] border border-zinc-200 bg-white shadow-2xl lg:max-h-[calc(100dvh-2rem)] dark:border-[#2d3649] dark:bg-[#151d30]">
+        {/* Las medidas de todos los modales (`alert.tsx`): esquinas de 32, campos y botones de 44 px. */}
+        <FormaDeModal>
         {/* Cabecera */}
         <div className="flex items-center justify-between gap-3 border-b border-zinc-100 px-6 py-4 dark:border-[#202b42]">
           <h2
             id="titulo-modal-depuracion"
-            className="text-lg font-bold text-zinc-900 dark:text-[#f6f6f6]"
+            className="text-xl font-semibold text-[#001631] dark:text-[#e6e8f0]"
           >
             Depurar versiones antiguas
           </h2>
@@ -230,7 +238,7 @@ export function ModalDepurarVersiones({
               {/* Formulario de filtros */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                  <label className={etiquetaDeModalClass}>
                     Ámbito
                   </label>
                   <CustomSelect
@@ -252,7 +260,7 @@ export function ModalDepurarVersiones({
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                  <label className={etiquetaDeModalClass}>
                     Página
                   </label>
                   <CustomSelect
@@ -378,12 +386,12 @@ export function ModalDepurarVersiones({
 
         {/* Pie de modal con botones de acción */}
         {!resultadoExito && (
-          <div className="flex items-center justify-end gap-3 border-t border-zinc-100 bg-zinc-50/60 px-6 py-4 dark:border-[#202b42] dark:bg-[#111726]">
+          <div className="flex flex-wrap items-center justify-end gap-3 border-t border-zinc-100 bg-zinc-50/60 px-6 py-4 dark:border-[#202b42] dark:bg-[#111726]">
             <button
               type="button"
               onClick={confirmando ? () => setConfirmando(false) : onCerrar}
               disabled={ejecutando}
-              className="h-11 rounded-[16px] border border-[#d0d5dd] bg-white px-5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 dark:border-[#2d3649] dark:bg-[#1a233a] dark:text-zinc-200 dark:hover:bg-[#202b42]"
+              className="h-11 rounded-[32px] border border-[#d9d9d9] bg-white px-6 text-base font-medium text-[#001631] transition hover:bg-zinc-50 dark:border-[#2d3649] dark:bg-[#1a233a] dark:text-zinc-200 dark:hover:bg-[#202b42]"
             >
               Cancelar
             </button>
@@ -398,7 +406,7 @@ export function ModalDepurarVersiones({
                   totalEncontradas === 0 ||
                   Boolean(errorAnalisis)
                 }
-                className="flex h-11 items-center gap-2 rounded-[16px] bg-red-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 active:bg-red-800 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-11 items-center gap-2 whitespace-nowrap rounded-[32px] bg-red-600 px-6 text-base font-medium text-white shadow-sm transition hover:bg-red-700 active:bg-red-800 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <IconoMascara nombre="trash" tamano="h-5 w-5" />
                 {cargandoAnalisis
@@ -412,7 +420,7 @@ export function ModalDepurarVersiones({
                 type="button"
                 onClick={handleEjecutar}
                 disabled={ejecutando}
-                className="flex h-11 items-center gap-2 rounded-[16px] bg-red-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 active:bg-red-800 disabled:opacity-50"
+                className="flex h-11 items-center gap-2 whitespace-nowrap rounded-[32px] bg-red-600 px-6 text-base font-medium text-white shadow-sm transition hover:bg-red-700 active:bg-red-800 disabled:opacity-50"
               >
                 {ejecutando ? (
                   <>
@@ -429,6 +437,7 @@ export function ModalDepurarVersiones({
             )}
           </div>
         )}
+        </FormaDeModal>
       </div>
     </div>,
     document.body,

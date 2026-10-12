@@ -55,7 +55,7 @@ export function ModalInactividad({ msRestantes, onSeguir }: ModalInactividadProp
   return (
     <dialog
       ref={ref}
-      className="olo-modal"
+      className="olo-modal olo-anim-dialogo"
       aria-labelledby="olo-inactividad-titulo"
       aria-describedby="olo-inactividad-texto"
       // Escape equivale a «seguir trabajando»: es la opción que no interrumpe a nadie.

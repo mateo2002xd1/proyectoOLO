@@ -48,6 +48,8 @@ export type User = {
   locked_until?: string | null;
   failed_login_attempts?: number;
   failed_security_attempts?: number;
+  /** Hasta cuándo vale la contraseña temporal (72 h desde que se emite); `null` si no hay. */
+  temp_password_expires_at?: string | null;
 };
 
 export type NuevoUsuario = {
@@ -66,7 +68,8 @@ export type CambiosUsuario = Partial<{
   email: string;
   role_id: string;
   status: string;
-  expiration_date: string;
+  /** `null` quita la caducidad. */
+  expiration_date: string | null;
   reset_password: boolean;
   reset_security_questions: boolean;
   permissions?: string[]; // lista de permission IDs a asignar al rol

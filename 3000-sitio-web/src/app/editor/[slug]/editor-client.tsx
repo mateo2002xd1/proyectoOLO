@@ -106,7 +106,8 @@ export function EditorClient({ slug, plantilla, paginaDeReferencia }: EditorClie
             backgroundColor: '#fee4e2',
             color: '#b42318',
             border: '1px solid #fda29b',
-            borderRadius: 8,
+            // 16, como todos los mensajes de estado del panel.
+            borderRadius: 16,
             padding: '10px 16px',
             fontSize: 13,
             boxShadow: '0 4px 12px rgba(16, 24, 40, 0.15)',

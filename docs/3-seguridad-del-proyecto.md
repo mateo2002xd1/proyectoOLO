@@ -134,6 +134,7 @@ Lo que estaba abierto y ya no:
 | `GET /api/contenidos/:id` | Leer borradores y material rechazado con solo tener sesión | 404 salvo autor o `puedeVerNoPublicado` (cierra también **S8**). **Hoy no existe:** se retiró con el CMS de contenidos (migración 036) |
 | `/api/alerts` | Correo y caducidad de toda la plantilla | `puedeAdministrarUsuarios` |
 | Rol tomado del JWT | Degradar a alguien no surtía efecto durante 7 días | `auth.middleware.ts` lo lee de la fila, sin consulta extra |
+| Cualquier ruta con sesión de primer ingreso a medias (2026-10-09) | Entrar con la contraseña temporal, salir de `/first-login` sin cambiarla y seguir usando la API con todo el rol: solo los proxies de las apps redirigían pantallas | `requireAuth` responde 403 `CONFIGURACION_PENDIENTE` mientras la fila tenga `debe_cambiar_password` o `debe_configurar_preguntas`; solo `requireAuthConConfiguracionPendiente` (estado, primer ingreso, `/me`, cambio de contraseña, guardar preguntas) la deja pasar. El login enciende `debe_configurar_preguntas` si la cuenta no tiene sus 3 preguntas. Desde la 043 la temporal vence a las 72 horas: el login la rechaza (403, después de comprobarla) y `requireAuth` corta la sesión abierta con ella (401) |
 
 Reglas que deja fijadas:
 
@@ -367,6 +368,15 @@ oculta, el backend prohíbe*, y aquí el backend no prohíbe.
   estaba escrita dentro del handler de la intranet y el del sitio no tenía **ninguno** de
   los cinco: el endurecimiento se aplicó a una app y la otra quedó fuera de vista. Con la
   política compartida, arreglar una y olvidar la otra deja de ser posible.
+- **La identidad visual del panel** (Configuración, migración 044) es una tercera subida y
+  usa esa misma política, más dos límites propios: solo PNG (un PDF pasa la lista blanca
+  pero no es un logo; JPG se quitó el 10-10-2026) y 1 MB el logo, 512 KB el icono. Cambiarla pide
+  `configuracion.identidad`; los archivos se sirven sin sesión por
+  `/api/configuracion/identidad-panel/archivos/{uuid}.{png|jpg}`, que solo acepta ese
+  formato de nombre. Los **colores** acaban dentro de una etiqueta `<style>` del panel, así
+  que se aceptan solo como `#rrggbb` en la API (`configuracion.validators.ts`) y se vuelven
+  a filtrar al escribirlos (`EstilosDeAcciones`): un `}` o un `</style>` guardado sería CSS
+  o HTML inyectado en la página de todas las personas del panel.
 - **Tope de cuerpo de petición**: 1 MB en Express, 10 MB en nginx.
 
 ### 4.5 Límites de tasa y abuso automatizado

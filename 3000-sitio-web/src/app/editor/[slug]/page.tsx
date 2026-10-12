@@ -1,4 +1,7 @@
+import type { CSSProperties } from 'react';
+import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { poppins } from '@/shared/lib/fonts';
 import {
   AvisoSeccionNueva,
   rutaPublicaDeSlug,
@@ -8,7 +11,13 @@ import {
   slugDeOrigen,
 } from '@/features/paginas';
 import { getAuthSessionSnapshot, getSessionPermissionsSnapshot } from '@/shared/lib/session';
+import { EstilosDeIdentidad, metadataDeIdentidad, obtenerIdentidadPanel } from '@/shared/lib/identidad-panel/servidor';
 import { EditorClient } from './editor-client';
+
+/** El icono de la pestaña, el mismo del panel (Configuración → Identidad visual). */
+export function generateMetadata(): Promise<Metadata> {
+  return metadataDeIdentidad();
+}
 
 /**
  * El editor visual de una página.
@@ -61,17 +70,35 @@ export default async function EditorPage({
   // plantilla. Ninguna de las dos llamadas puede lanzar (ver `obtenerPlantilla` y
   // `obtenerPaginaPublicadaCacheada`), así que el editor nunca se cae por esto.
   const esPlantilla = slug === SLUG_PLANTILLA;
-  const [plantilla, paginaDeReferencia] = await Promise.all([
+  const [plantilla, paginaDeReferencia, identidad] = await Promise.all([
     esPlantilla ? Promise.resolve(null) : obtenerPlantilla(),
     esPlantilla ? obtenerPaginaPublicadaCacheada(slugDeOrigen(volver)) : Promise.resolve(null),
+    obtenerIdentidadPanel(),
   ]);
 
   return (
-    <>
+    // Todo el editor en Poppins, como el panel (pedido del usuario, 2026-10-09): la
+    // interfaz de Puck (pinta con `--puck-font-family`, Inter de serie, que no se carga),
+    // la barra de Salir/Guardar/Enviar y sus modales. El lienzo no cambia: Puck lo dibuja
+    // en un iframe y le copia las hojas de estilo, no los estilos en línea de aquí, así que
+    // la página que se edita sigue con su letra. `contents`: el envoltorio no ocupa caja.
+    <div
+      className={poppins.className}
+      style={
+        {
+          display: 'contents',
+          '--puck-font-family': poppins.style.fontFamily,
+          '--font-heading': poppins.style.fontFamily,
+          '--font-body': poppins.style.fontFamily,
+        } as CSSProperties
+      }
+    >
+      {/* Los colores de Salir, Guardar borrador y Enviar a revisión (`.olo-editor-tooltip`). */}
+      <EstilosDeIdentidad identidad={identidad} />
       {/* Solo al venir de «Nueva página»: es donde se entrega el enlace de la ruta
           recién creada, que es lo que hay que pegar en el menú para poder llegar. */}
       {nueva === '1' && <AvisoSeccionNueva slug={slug} />}
       <EditorClient slug={slug} plantilla={plantilla} paginaDeReferencia={paginaDeReferencia} />
-    </>
+    </div>
   );
 }

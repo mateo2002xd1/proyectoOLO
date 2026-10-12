@@ -27,7 +27,14 @@ interface NavegacionMobileProps {
   /** Los destinos a los lados del logo, en orden: la primera mitad va a la izquierda. */
   destinos: DestinoMobile[];
   /** El botón del centro: el logo de OLO, que lleva al Dashboard. */
-  inicio: { href: string; etiqueta: string; logo: string; activo?: boolean };
+  inicio: {
+    href: string;
+    etiqueta: string;
+    logo: string;
+    activo?: boolean;
+    /** `false` para un icono subido en Configuración que no debe pasar a blanco en modo oscuro. */
+    logoEnBlancoEnOscuro?: boolean;
+  };
   /** Nombre del `<nav>` para lectores de pantalla. */
   etiqueta?: string;
 }
@@ -211,8 +218,8 @@ export function NavegacionMobile({ destinos, inicio, etiqueta = 'Navegación' }:
             className={`navegacion-mobile-inicio${inicio.activo ? ' es-activo' : ''}`}
             aria-current={inicio.activo ? 'page' : undefined}
           >
-            <span className="navegacion-mobile-logo">
-              {/* SVG estático de `public/`: next/image no aporta optimización aquí. */}
+            <span className={`navegacion-mobile-logo${inicio.logoEnBlancoEnOscuro === false ? ' es-a-color' : ''}`}>
+              {/* SVG de `public/` o el icono de Configuración: next/image no aporta nada aquí. */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={inicio.logo} alt="" width={28} height={32} />
             </span>

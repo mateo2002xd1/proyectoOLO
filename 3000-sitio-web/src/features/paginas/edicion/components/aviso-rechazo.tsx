@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
 import { BellAlertIcon } from '@heroicons/react/24/outline';
+import { poppins } from '@/shared/lib/fonts';
 
 export interface Rechazo {
   /** Puede faltar en versiones rechazadas antes de que el motivo fuera obligatorio. */
@@ -27,6 +29,7 @@ export interface Rechazo {
  */
 export function AvisoRechazo({ motivo, numeroVersion }: Rechazo) {
   const [abierto, setAbierto] = useState(false);
+  const { montado, cerrando } = useCierreAnimado(abierto);
 
   // Solo Escape: el modal ya tiene su propio fondo clicable para cerrar.
   useEffect(() => {
@@ -80,11 +83,13 @@ export function AvisoRechazo({ motivo, numeroVersion }: Rechazo) {
         />
       </button>
 
-      {abierto &&
+      {montado &&
         typeof document !== 'undefined' &&
         createPortal(
           <div
             role="presentation"
+            className="olo-anim-fondo"
+            data-cerrando={cerrando || undefined}
             // Cerrar al pulsar fuera, pero solo si el clic empieza en el fondo:
             // arrastrar desde dentro del diálogo hasta soltarlo fuera no debe cerrarlo.
             onMouseDown={(evento) => {
@@ -107,6 +112,7 @@ export function AvisoRechazo({ motivo, numeroVersion }: Rechazo) {
           >
             <div
               role="dialog"
+              className="olo-anim-caja"
               aria-modal="true"
               aria-label="Motivo del rechazo"
               style={{
@@ -125,7 +131,10 @@ export function AvisoRechazo({ motivo, numeroVersion }: Rechazo) {
                 flexDirection: 'column',
                 background: '#ffe9e9',
                 border: '1px solid #dc2626',
-                borderRadius: 12,
+                // 16, como todos los mensajes de estado del panel; y Poppins, como el resto
+                // del editor: sale por portal a `<body>`, fuera de donde se pone la letra.
+                borderRadius: 16,
+                fontFamily: poppins.style.fontFamily,
                 boxShadow: '0 20px 40px -12px rgba(0,0,0,0.35)',
                 textAlign: 'left',
               }}

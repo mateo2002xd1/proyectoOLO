@@ -1,5 +1,8 @@
 'use client';
 
+import { poppins } from '@/shared/lib/fonts';
+import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
+
 export interface ModalCerrarSesionProps {
   abierto: boolean;
   /** Mientras se cierra la sesión el modal no se puede descartar. */
@@ -13,7 +16,9 @@ export interface ModalCerrarSesionProps {
  * junto al lápiz y un toque sin querer cerraba la sesión de golpe.
  */
 export function ModalCerrarSesion({ abierto, saliendo, alConfirmar, alCerrar }: ModalCerrarSesionProps) {
-  if (!abierto) return null;
+  const { montado, cerrando } = useCierreAnimado(abierto);
+
+  if (!montado) return null;
 
   const cerrar = () => {
     if (!saliendo) alCerrar();
@@ -21,7 +26,8 @@ export function ModalCerrarSesion({ abierto, saliendo, alConfirmar, alCerrar }: 
 
   return (
     <div
-      className="nueva-seccion-fondo"
+      className="nueva-seccion-fondo olo-anim-fondo"
+      data-cerrando={cerrando || undefined}
       role="dialog"
       aria-modal="true"
       aria-labelledby="cerrar-sesion-titulo"
@@ -33,7 +39,8 @@ export function ModalCerrarSesion({ abierto, saliendo, alConfirmar, alCerrar }: 
         if (evento.key === 'Escape') cerrar();
       }}
     >
-      <div className="nueva-seccion-caja">
+      {/* Poppins, como todos los modales del panel y del editor. */}
+      <div className={`nueva-seccion-caja olo-anim-caja ${poppins.className}`}>
         <h2 id="cerrar-sesion-titulo" className="nueva-seccion-titulo">
           ¿Cerrar sesión?
         </h2>

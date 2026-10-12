@@ -4,7 +4,7 @@ import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
 import { CargaCriteriosClasificacion } from './carga-criterios-clasificacion';
 import { CargaProgramaSobresalientes } from './carga-programa-sobresalientes';
 import { CargaAlertasInversion } from './carga-alertas-inversion';
-import { CargaFuentesFuturas } from './carga-fuentes-futuras';
+import { SeccionAcordeon } from '@/shared/ui/molecules/seccion-acordeon';
 
 interface ActualizacionesViewProps {
   /** Rol de la sesión (cookie legible, no la fuente de verdad — ver `middleware.ts`). Solo Administrador/Superadmin puede cargar; el resto ve el historial. */
@@ -15,9 +15,9 @@ interface ActualizacionesViewProps {
  * Sección "Actualizaciones" del panel de administración — antes "Soporte", un
  * enlace del sidebar sin página real detrás (`/admin/dashboard/soporte`, 404).
  *
- * Las cuatro tarjetas cargan. "Criterios de clasificación de resultados" (percentiles de
- * la tendencia ocupacional) ocupa todo el ancho: lleva formulario de año y periodo e
- * historial por celda.
+ * Cada submódulo es una fila de acordeón (`SeccionAcordeon`) que se despliega para mostrar
+ * sus opciones: formato, carga e historial. "Fuentes futuras de empleo" se quitó de aquí el
+ * 2026-10-09 a pedido del usuario; su tarjeta (`carga-fuentes-futuras.tsx`) queda sin uso.
  */
 export function ActualizacionesView({ puedeActualizar }: ActualizacionesViewProps) {
   return (
@@ -27,12 +27,16 @@ export function ActualizacionesView({ puedeActualizar }: ActualizacionesViewProp
         descripcion="Cargas de archivos que actualizan datos públicos del sitio."
       />
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-        <CargaProgramaSobresalientes puedeActualizar={puedeActualizar} />
-        <CargaAlertasInversion puedeActualizar={puedeActualizar} />
-        <CargaFuentesFuturas puedeActualizar={puedeActualizar} />
-
-        <CargaCriteriosClasificacion puedeActualizar={puedeActualizar} />
+      <div className="flex flex-col gap-4">
+        <SeccionAcordeon titulo="Programa + Sobresalientes">
+          <CargaProgramaSobresalientes puedeActualizar={puedeActualizar} />
+        </SeccionAcordeon>
+        <SeccionAcordeon titulo="Alertas de inversión">
+          <CargaAlertasInversion puedeActualizar={puedeActualizar} />
+        </SeccionAcordeon>
+        <SeccionAcordeon titulo="Criterios de clasificación de resultados">
+          <CargaCriteriosClasificacion puedeActualizar={puedeActualizar} />
+        </SeccionAcordeon>
       </div>
     </div>
   );

@@ -13,6 +13,14 @@ import {
 
 export const MODULO_CARGA = 'alertas_inversion';
 
+/**
+ * Condición «el nombre normalizado es este» para un `where`. Usa la misma función de la
+ * base que los índices únicos de `empresas` y `municipios` (`normalizar_nombre()`,
+ * migración 042), así la búsqueda y la unicidad no pueden discrepar.
+ */
+const mismoNombreNormalizado = (nombre: string) =>
+  sequelize.where(sequelize.fn('normalizar_nombre', sequelize.col('nombre')), sequelize.fn('normalizar_nombre', nombre));
+
 export interface UbicacionEntrada {
   departamentoId: string;
   municipioId: string | null;
@@ -98,21 +106,27 @@ export const AlertasInversionRepository = {
   /** Resuelve una letra de sección ('A'..'U') exacta. */
   buscarSeccionPorLetra: (letra: string) => CiiuSeccion.findOne({ where: { letra: letra.toUpperCase() } }),
 
-  /** Resuelve una clase por su código de 4 dígitos, sin importar la sección (el código ya es único por sección). */
+  /** Resuelve una clase por su código de 4 dígitos: es único en todo el catálogo (`uq_ciiu_clases_codigo`). */
   buscarClasePorCodigo: (codigo: string) => CiiuClase.findOne({ where: { codigo } }),
 
-  /** `empresas`: resuelve por nombre (case-insensitive) o crea. */
-  async resolverOCrearEmpresa(nombre: string): Promise<Empresa> {
-    const existente = await Empresa.findOne({ where: sequelize.where(sequelize.fn('lower', sequelize.col('nombre')), nombre.toLowerCase()) });
-    if (existente) return existente;
-    return Empresa.create({ nombre });
+  /**
+   * `empresas`: resuelve por nombre normalizado o crea. «Grupo Éxito», «GRUPO EXITO» y
+   * «Grupo  Exito.» son la misma: compara con `normalizar_nombre()`, la función de la base
+   * sobre la que está el único `uq_empresas_nombre` (migración 042).
+   */
+  async resolverOCrearEmpresa(nombre: string): Promise<{ registro: Empresa; creado: boolean }> {
+    const existente = await Empresa.findOne({ where: mismoNombreNormalizado(nombre) });
+    if (existente) return { registro: existente, creado: false };
+    return { registro: await Empresa.create({ nombre }), creado: true };
   },
 
-  /** `municipios`: catálogo abierto, resuelve por (departamento, nombre) o crea. */
-  async resolverOCrearMunicipio(departamentoId: string, nombre: string): Promise<Municipio> {
-    const existente = await Municipio.findOne({ where: { departamento_id: departamentoId, nombre } });
-    if (existente) return existente;
-    return Municipio.create({ departamento_id: departamentoId, nombre });
+  /** `municipios`: catálogo abierto, resuelve por departamento y nombre normalizado («Medellín» = «Medellin») o crea. */
+  async resolverOCrearMunicipio(departamentoId: string, nombre: string): Promise<{ registro: Municipio; creado: boolean }> {
+    const existente = await Municipio.findOne({
+      where: { [Op.and]: [{ departamento_id: departamentoId }, mismoNombreNormalizado(nombre)] },
+    });
+    if (existente) return { registro: existente, creado: false };
+    return { registro: await Municipio.create({ departamento_id: departamentoId, nombre }), creado: true };
   },
 
   // --- Proyectos ---

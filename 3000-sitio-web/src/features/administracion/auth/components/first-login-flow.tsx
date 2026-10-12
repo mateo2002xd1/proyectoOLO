@@ -1,22 +1,24 @@
 'use client';
 
-import { useState, useEffect, FormEvent } from 'react';
-import Link from 'next/link';
-import { Button } from '@/shared/ui/atoms/button';
+import { useState, useEffect, FormEvent, ReactNode } from 'react';
 import { cumplePolitica, primerFallo } from '@olo/password-policy';
 import {
-  AuthCardTitle,
   AuthGeneralError,
   AuthProgressDots,
   AuthSelectField,
-  AuthSuccessBadge,
   AuthTextField,
   PasswordField,
   PasswordRequisitos,
-  authNavyActionClass,
-  authQuietLinkClass,
-  authSolidCardClass,
+  authPasosCardClass,
+  authPasosCardHeadingClass,
+  authPasosPrimaryClass,
+  authPasosQuietLinkClass,
+  authPasosSecondaryClass,
+  authPasosHuecoClass,
+  authPasosHuecoArribaClass,
 } from './auth-ui';
+import { DescripcionEnTarjeta, MarcoDePasos } from './marco-de-pasos';
+import { useRequisitosAlEnfocar } from '../hooks/use-requisitos-al-enfocar';
 
 /**
  * Configuración obligatoria de primer ingreso: contraseña definitiva y preguntas
@@ -27,18 +29,15 @@ import {
  * Hasta el 2026-09-18 el login la pintaba dentro de su propia pantalla; ahora es una
  * ruta, como en la intranet.
  *
- * El marco (`AuthSplitShell`) lo pone `app/(auth)/layout.tsx`: este componente
- * aporta solo la tarjeta.
+ * Desde el 2026-10-09 lleva el diseño nuevo (`MarcoDePasos`): el título y lo que se
+ * pide en cada paso van fuera de la tarjeta (con un paginador debajo hasta el 2026-10-11), y la tarjeta
+ * solo trae el formulario. Ese mismo día pasó del azul al fondo blanco, como la
+ * recuperación.
  */
 
 const TOTAL_QUESTIONS = 3;
 
 type CatalogQuestion = { key: string; label: string };
-
-interface FirstLoginFlowProps {
-  /** Nombre del usuario, para saludar en el primer paso. */
-  name?: string;
-}
 
 /**
  * Qué le falta a la cuenta. `null` mientras se consulta.
@@ -49,7 +48,16 @@ interface FirstLoginFlowProps {
  */
 type Pendiente = { debeCambiarPassword: boolean; debeConfigurarPreguntas: boolean };
 
-export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
+async function cerrarSesionEIrAlLogin() {
+  try {
+    await fetch('/api/auth/logout', { method: 'POST' });
+  } catch {
+    // Si falla la petición de logout, igualmente se va al login.
+  }
+  window.location.href = '/login';
+}
+
+export function FirstLoginFlow() {
   const [pendiente, setPendiente] = useState<Pendiente | null>(null);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -58,6 +66,7 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
   const [tempPassword, setTempPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const requisitos = useRequisitosAlEnfocar(newPassword);
 
   // Paso 2 — preguntas de seguridad
   const [selectedKeys, setSelectedKeys] = useState<string[]>(Array(TOTAL_QUESTIONS).fill(''));
@@ -169,29 +178,22 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
   /* ---------- Mientras se sabe qué falta ---------- */
   if (!pendiente) {
     return (
-      <div className={`${authSolidCardClass} text-center`}>
-        {errors.general ? (
-          <>
-            <AuthGeneralError>{errors.general}</AuthGeneralError>
-            <button
-              type="button"
-              onClick={async () => {
-                try {
-                  await fetch('/api/auth/logout', { method: 'POST' });
-                } catch {
-                  // ignorar error de red
-                }
-                window.location.href = '/login';
-              }}
-              className={authQuietLinkClass}
-            >
-              Volver a iniciar sesión
-            </button>
-          </>
-        ) : (
-          <p className="text-sm text-gray-500">Comprobando tu cuenta…</p>
-        )}
-      </div>
+      <MarcoDePasos cerrarSesionAlSalir titulo="Configura tu acceso">
+        <div className={`${authPasosCardClass} text-center`}>
+          {errors.general ? (
+            <>
+              <AuthGeneralError>{errors.general}</AuthGeneralError>
+              <button type="button" onClick={cerrarSesionEIrAlLogin} className={authPasosQuietLinkClass}>
+                Volver a iniciar sesión
+              </button>
+            </>
+          ) : (
+            <p className="text-base text-[#001a39]" role="status">
+              Comprobando tu cuenta…
+            </p>
+          )}
+        </div>
+      </MarcoDePasos>
     );
   }
 
@@ -200,183 +202,229 @@ export function FirstLoginFlow({ name }: FirstLoginFlowProps) {
   // configuración en otra pestaña. Antes el formulario se pintaba igual y pedía una
   // contraseña temporal que ya no existía.
   if (!pendiente.debeCambiarPassword && !pendiente.debeConfigurarPreguntas && step !== 3) {
+    // Texto del usuario (2026-10-11); antes «Tu cuenta ya está configurada» y «No hay nada
+    // pendiente: tu contraseña y tus preguntas de seguridad están al día.». Desde la tablet va
+    // dentro de la tarjeta, encima del botón; en el móvil, bajo el título.
+    const aviso = [
+      'Tu cuenta ya es segura.',
+      'Guarda tus respuestas en un lugar seguro, las usarás para validar tu identidad y restablecer tu clave si la olvidas.',
+    ];
     return (
-      <div className={`${authSolidCardClass} text-center`}>
-        <AuthSuccessBadge />
-        <AuthCardTitle
-          className="mb-6"
-          title="Tu cuenta ya está configurada"
-          description="No hay nada pendiente: tu contraseña y tus preguntas de seguridad están al día."
-        />
-        <Link href="/admin/dashboard" className={authNavyActionClass}>
-          Ir al panel
-        </Link>
-      </div>
+      <MarcoDePasos
+        cerrarSesionAlSalir
+        titulo="¡Configuración completada con éxito!"
+        descripcion={aviso}
+        descripcionEnTarjeta
+      >
+        <div className={`${authPasosCardClass} text-center`}>
+          <DescripcionEnTarjeta descripcion={aviso} />
+          {/* Cierra la sesión y va al login, como el botón del paso 3 y la intranet. Hasta el
+              2026-10-11 decía «Ir al panel» y era un enlace a `/admin/dashboard`; al renombrarlo
+              «Iniciar sesión» siguió llevando al panel. */}
+          <button type="button" onClick={cerrarSesionEIrAlLogin} className={authPasosPrimaryClass}>
+            Iniciar sesión
+          </button>
+        </div>
+      </MarcoDePasos>
     );
   }
 
+  // Sin el paginador «← Anterior 1 2 3 Siguiente →» bajo el texto: lo quitó el usuario el
+  // 2026-10-11. Se avanza con el botón del formulario; «Atrás» mueve entre preguntas.
+
   /* ---------- Paso 3: éxito ---------- */
   if (step === 3) {
+    // Texto del usuario (2026-10-11). Desde la tablet va dentro de la tarjeta, encima del
+    // botón; en el móvil, bajo el título. El aviso sobre las respuestas solo tiene sentido si
+    // se acaban de elegir: a quien solo cambió la contraseña le queda la primera frase.
+    const aviso = [
+      'Tu cuenta ya es segura.',
+      ...(pendiente.debeConfigurarPreguntas
+        ? ['Guarda tus respuestas en un lugar seguro, las usarás para validar tu identidad y restablecer tu clave si la olvidas.']
+        : []),
+    ];
     return (
-      <div className={`${authSolidCardClass} text-center`}>
-        <AuthSuccessBadge />
-        <AuthCardTitle
-          className="mb-6"
-          title="¡Configuración completada!"
-          description={
-            // El aviso sobre las respuestas solo tiene sentido si se acaban de elegir.
-            pendiente.debeConfigurarPreguntas
-              ? 'Guarda tus respuestas en un lugar seguro: serán el único método para validar tu identidad si olvidas tu clave en el futuro.'
-              : 'Tu cuenta ya es segura.'
-          }
-        />
-        <button
-          type="button"
-          onClick={async () => {
-            try {
-              await fetch('/api/auth/logout', { method: 'POST' });
-            } catch {
-              // Si falla la petición de logout, igualmente forzar la navegación al login
-            }
-            window.location.href = '/login';
-          }}
-          className={authNavyActionClass}
-        >
-          Iniciar sesión
-        </button>
-      </div>
+      <MarcoDePasos
+        cerrarSesionAlSalir
+        titulo="¡Configuración completada con éxito!"
+        descripcion={aviso}
+        descripcionEnTarjeta
+      >
+        <div className={`${authPasosCardClass} text-center`}>
+          <DescripcionEnTarjeta descripcion={aviso} />
+          <p className={`${authPasosHuecoClass} text-base text-[#001a39]`}>Vuelve a iniciar sesión para entrar a la intranet.</p>
+          <button type="button" onClick={cerrarSesionEIrAlLogin} className={authPasosPrimaryClass}>
+            Iniciar sesión
+          </button>
+        </div>
+      </MarcoDePasos>
     );
   }
 
   /* ---------- Paso 1 — contraseñas ---------- */
   if (step === 1) {
     return (
-      <div className={authSolidCardClass}>
-        <AuthCardTitle
-          title={name ? `Hola ${name.split(' ')[0]}, actualiza tu seguridad` : 'Actualiza tu seguridad'}
-          description="Ingresaste con un código temporal. Crea ahora una contraseña personal que solo tú conozcas."
-        />
+      <MarcoDePasos
+        cerrarSesionAlSalir
+        titulo="Actualiza tu seguridad"
+        // Acortado el 2026-10-10 para que el paso quepa sin scroll en el móvil; antes decía «es
+        // necesario que crees una contraseña personal y privada que solo tú conozcas».
+        descripcion="Has ingresado con una contraseña temporal. Por tu seguridad, crea una contraseña personal que solo tú conozcas."
+      >
+        <Tarjeta>
+          <form onSubmit={(e: FormEvent) => { e.preventDefault(); handleStep1(); }} noValidate>
+            {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
 
-        <form onSubmit={(e: FormEvent) => { e.preventDefault(); handleStep1(); }} noValidate>
-          {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
+            <PasswordField
+              id="temp-password"
+              label="Contraseña temporal"
+              // La da el administrador al crear o restablecer la cuenta; no llega por correo.
+              placeholder="Ingresar contraseña"
+              autoComplete="current-password"
+              value={tempPassword}
+              onChange={(v) => { setTempPassword(v); setErrors({}); }}
+              error={errors.tempPassword}
+              className={authPasosHuecoClass}
+            />
+            <PasswordField
+              id="new-password"
+              label="Nueva contraseña"
+              autoComplete="new-password"
+              value={newPassword}
+              onChange={(v) => { setNewPassword(v); setErrors({}); }}
+              onFocus={requisitos.alEnfocar}
+              describedBy={requisitos.visibles ? 'requisitos-contrasena' : undefined}
+              error={errors.newPassword}
+              className={requisitos.visibles ? 'mb-2 md:mb-3' : authPasosHuecoClass}
+            />
+            {requisitos.visibles && (
+              <PasswordRequisitos
+                id="requisitos-contrasena"
+                password={newPassword}
+                variant="solid"
+                resumirAlCumplir
+                className={authPasosHuecoClass}
+              />
+            )}
+            <PasswordField
+              id="confirm-password"
+              label="Ingresa nuevamente la contraseña"
+              autoComplete="new-password"
+              value={confirmPassword}
+              onChange={(v) => { setConfirmPassword(v); setErrors({}); }}
+              error={errors.confirmPassword}
+              className={authPasosHuecoClass}
+            />
 
-          <PasswordField
-            id="temp-password"
-            label="Contraseña temporal"
-            placeholder="Tu contraseña temporal"
-            autoComplete="current-password"
-            value={tempPassword}
-            onChange={(v) => { setTempPassword(v); setErrors({}); }}
-            error={errors.tempPassword}
-          />
-          <PasswordField
-            id="new-password"
-            label="Nueva contraseña"
-            autoComplete="new-password"
-            value={newPassword}
-            onChange={(v) => { setNewPassword(v); setErrors({}); }}
-            error={errors.newPassword}
-            className="mb-2"
-          />
-          <PasswordRequisitos password={newPassword} variant="solid" />
-          <PasswordField
-            id="confirm-password"
-            label="Ingresa nuevamente la contraseña"
-            autoComplete="new-password"
-            value={confirmPassword}
-            onChange={(v) => { setConfirmPassword(v); setErrors({}); }}
-            error={errors.confirmPassword}
-            className="mb-6"
-          />
-
-          <Button type="submit" variant="navy" disabled={isLoading} className="w-full">
-            {isLoading ? 'Guardando…' : 'Continuar'}
-          </Button>
-        </form>
-      </div>
+            <button type="submit" disabled={isLoading} className={authPasosPrimaryClass}>
+              {isLoading ? 'Guardando…' : 'Continuar'}
+            </button>
+          </form>
+        </Tarjeta>
+      </MarcoDePasos>
     );
   }
 
   /* ---------- Paso 2 — preguntas de seguridad ---------- */
   return (
-    <div className={authSolidCardClass}>
-      <AuthCardTitle
-        title="Protege el acceso a tu cuenta"
-        // El texto cambia según por qué se está aquí: a quien solo le restablecieron
-        // las preguntas hay que decírselo, o no entiende por qué se le piden otra vez.
-        description={
-          pendiente.debeCambiarPassword
-            ? 'Elige 3 preguntas y asigna una respuesta a cada una. Con ellas verificaremos tu identidad si algún día necesitas recuperar tu cuenta.'
-            : 'Tus preguntas de seguridad fueron restablecidas. Elige 3 y asigna una respuesta a cada una; tu contraseña actual no cambia.'
-        }
-      />
+    <MarcoDePasos
+      cerrarSesionAlSalir
+      titulo="Protege el acceso a tu cuenta"
+      // El texto cambia según por qué se está aquí: a quien solo le restablecieron
+      // las preguntas hay que decírselo, o no entiende por qué se le piden otra vez.
+      descripcion={
+        pendiente.debeCambiarPassword
+          ? 'Elige 3 preguntas y responde cada una. Con ellas verificaremos tu identidad si necesitas recuperar tu cuenta.'
+          : 'Tus preguntas de seguridad fueron restablecidas. Elige 3 y asigna una respuesta a cada una; tu contraseña actual no cambia.'
+      }
+    >
+      <Tarjeta>
+        <form onSubmit={(e: FormEvent) => { e.preventDefault(); handleQuestionNext(); }} noValidate>
+          {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
 
-      <form
-        onSubmit={(e: FormEvent) => { e.preventDefault(); handleQuestionNext(); }}
-        noValidate
-      >
-        {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
+          {/* Como en la recuperación: el encabezado, sin el número de la pregunta a la vista
+              (el avance lo dan las barras). Hasta el 2026-10-09 el número lo decía la etiqueta
+              del desplegable, que ahora solo la oye el lector de pantalla. */}
+          <h2 className={`mb-3 ${authPasosCardHeadingClass}`}>Preguntas de seguridad</h2>
 
-        <AuthSelectField
-          id="security-question"
-          label={`Pregunta ${currentQuestion + 1} de ${TOTAL_QUESTIONS}`}
-          value={selectedKeys[currentQuestion] || ''}
-          onChange={(valor) => {
-            const next = [...selectedKeys];
-            next[currentQuestion] = valor;
-            setSelectedKeys(next);
-            setErrors({});
-          }}
-          error={errors.question}
-          options={catalog.map((q) => ({
-            value: q.key,
-            label: q.label,
-            // Ya elegida en otro paso: se ve, pero no se puede repetir.
-            disabled: selectedKeys.includes(q.key) && selectedKeys[currentQuestion] !== q.key,
-          }))}
-        />
+          <AuthSelectField
+            id="security-question"
+            etiquetaOculta
+            label={`Pregunta ${currentQuestion + 1} de ${TOTAL_QUESTIONS}`}
+            value={selectedKeys[currentQuestion] || ''}
+            onChange={(valor) => {
+              const next = [...selectedKeys];
+              next[currentQuestion] = valor;
+              setSelectedKeys(next);
+              setErrors({});
+            }}
+            error={errors.question}
+            options={catalog.map((q) => ({
+              value: q.key,
+              label: q.label,
+              // Ya elegida en otro paso: se ve, pero no se puede repetir.
+              disabled: selectedKeys.includes(q.key) && selectedKeys[currentQuestion] !== q.key,
+            }))}
+            className={authPasosHuecoClass}
+          />
 
-        <AuthTextField
-          id="security-answer"
-          label="Respuesta"
-          placeholder="Tu respuesta"
-          value={answers[currentQuestion]}
-          onChange={(valor) => {
-            const next = [...answers];
-            next[currentQuestion] = valor;
-            setAnswers(next);
-            setErrors({});
-          }}
-          error={errors.answer}
-          // Se compara en minúsculas y sin espacios en el servidor, así que el
-          // autocorrector del móvil solo puede estorbar.
-          autoCapitalize="none"
-          autoCorrect="off"
-          className="mb-5"
-        />
+          <AuthTextField
+            id="security-answer"
+            label="Respuesta"
+            placeholder="Tu respuesta"
+            value={answers[currentQuestion]}
+            onChange={(valor) => {
+              const next = [...answers];
+              next[currentQuestion] = valor;
+              setAnswers(next);
+              setErrors({});
+            }}
+            error={errors.answer}
+            // Se compara en minúsculas y sin espacios en el servidor, así que el
+            // autocorrector del móvil solo puede estorbar.
+            autoCapitalize="none"
+            autoCorrect="off"
+            className={authPasosHuecoClass}
+          />
 
-        <AuthProgressDots total={TOTAL_QUESTIONS} current={currentQuestion} />
+          <AuthProgressDots total={TOTAL_QUESTIONS} current={currentQuestion} className={authPasosHuecoClass} />
 
-        <div className="flex gap-2.5">
-          {currentQuestion > 0 && (
-            <Button
-              type="button"
-              plain
-              onClick={() => { setCurrentQuestion((q) => q - 1); setErrors({}); }}
-              className="shrink-0"
-            >
-              Atrás
-            </Button>
+          <div className="flex gap-2.5">
+            {currentQuestion > 0 && (
+              <button
+                type="button"
+                onClick={() => { setCurrentQuestion((q) => q - 1); setErrors({}); }}
+                className={`${authPasosSecondaryClass} shrink-0`}
+              >
+                Atrás
+              </button>
+            )}
+            <button type="submit" disabled={isLoading} className={`${authPasosPrimaryClass} flex-1`}>
+              {isLoading
+                ? 'Guardando…'
+                : currentQuestion === TOTAL_QUESTIONS - 1
+                  ? 'Guardar'
+                  : 'Continuar'}
+            </button>
+          </div>
+
+          {/* Solo en la primera pregunta (pedido del usuario, 2026-10-11); desde la segunda
+              está «Atrás». Solo texto, como «Cancelar» de la nueva contraseña. Cierra la
+              sesión temporal y va al login sin guardar nada: la contraseña y las preguntas
+              se envían juntas al final. */}
+          {currentQuestion === 0 && (
+            <div className={`${authPasosHuecoArribaClass} text-center`}>
+              <button type="button" onClick={cerrarSesionEIrAlLogin} className={authPasosQuietLinkClass}>
+                Cancelar
+              </button>
+            </div>
           )}
-          <Button type="submit" variant="navy" disabled={isLoading} className="flex-1">
-            {isLoading
-              ? 'Guardando…'
-              : currentQuestion === TOTAL_QUESTIONS - 1
-                ? 'Guardar'
-                : 'Continuar'}
-          </Button>
-        </div>
-      </form>
-    </div>
+        </form>
+      </Tarjeta>
+    </MarcoDePasos>
   );
+}
+
+function Tarjeta({ children }: { children: ReactNode }) {
+  return <div className={authPasosCardClass}>{children}</div>;
 }

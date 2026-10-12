@@ -7,6 +7,7 @@ import {
 } from '@/features/paginas';
 import { puedeEditarPaginas, cabecerasConSesion } from '@/shared/lib/sesion';
 import { VigilanteSesion } from '@/shared/lib/inactividad';
+import { SITE_URL } from '@/shared/lib/constants';
 
 export const metadata = {
   title: 'Previsualización | Intranet',
@@ -38,6 +39,9 @@ export default async function PreviewPage({
   const { slug } = await params;
   const query = await searchParams;
   const versionId = query?.versionId;
+  // La cola de revisión y Respaldos viven en el panel del sitio: «Volver» cruza de
+  // aplicación. Con `versionId` se llega desde Respaldos; sin él, desde la cola.
+  const volverA = `${SITE_URL}${versionId ? '/admin/respaldos' : '/admin/revision'}`;
 
   // Quien no puede ni editar ni aprobar no tiene por qué ver borradores.
   if (!(await puedeEditarPaginas())) {
@@ -69,6 +73,9 @@ export default async function PreviewPage({
             ? 'Así quedarán el menú y el pie en todas las secciones.'
             : 'Así quedará la página. Para publicarla, vuelve a la cola de revisión.'}
         </span>
+        <a href={volverA} className="preview-aviso-volver">
+          ← Volver
+        </a>
       </div>
 
       {esPlantilla ? contenido : <MarcoSecciones>{contenido}</MarcoSecciones>}

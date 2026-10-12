@@ -24,7 +24,8 @@ export const estadoPrimerIngreso = async (userId: string): Promise<EstadoPrimerI
   };
 };
 
-const TOTAL_PREGUNTAS = 3;
+/** Las preguntas que pide una cuenta; con menos, la recuperación no funciona. */
+export const TOTAL_PREGUNTAS = 3;
 
 /**
  * Valida y prepara las preguntas de seguridad para guardar.
@@ -109,6 +110,7 @@ export const firstLoginUseCase = async (
 
     cambios.password_hash = await hashearPassword(newPassword);
     cambios.must_change_password = false;
+    cambios.temp_password_expires_at = null;
   }
 
   // Se preparan **antes** de escribir nada: si las preguntas vienen mal, no debe

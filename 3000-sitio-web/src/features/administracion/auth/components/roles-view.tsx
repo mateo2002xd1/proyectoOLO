@@ -1,7 +1,10 @@
 'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { TrashIcon } from '@heroicons/react/24/outline';
+import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
+import { GRUPO_TOOLTIP, TOOLTIP_ENCIMA, TOOLTIP_ENCIMA_A_LA_DERECHA } from '@/shared/ui/atoms/tooltip';
+import { COLOR_DE_ACCION } from '@/shared/lib/identidad-panel';
 import {
   useUsuarios,
   mensajeDeError,
@@ -10,11 +13,23 @@ import {
 } from '../hooks/use-usuarios';
 import { Button } from '@/shared/ui/atoms/button';
 import { Notification } from '@/shared/ui/molecules/notification';
-import { Alert, AlertTitle, AlertDescription, AlertActions } from '@/shared/ui/molecules/alert';
+import {
+  Alert,
+  AlertTitle,
+  AlertDescription,
+  AlertActions,
+  areaDeModalClass,
+  campoDeModalClass,
+  etiquetaDeModalClass,
+} from '@/shared/ui/molecules/alert';
 import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
+import { BotonDeFila, RESALTE_DE_FILA, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
 import { Paginador } from '@/shared/ui/molecules/paginador';
 import { ModalPermisos } from './modal-permisos';
 import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
+
+/** Largo máximo de la descripción de un rol nuevo. */
+const DESCRIPCION_MAX = 100;
 
 function ModalNuevoEditor({
   open,
@@ -55,46 +70,53 @@ function ModalNuevoEditor({
         </AlertDescription>
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">
+            <label htmlFor="rol-nombre" className={etiquetaDeModalClass}>
               Nombre del rol
             </label>
             <div className="flex items-center gap-2">
-              <span className="px-3 py-2 text-sm bg-zinc-100 border border-zinc-300 rounded-lg dark:bg-[#0f1624] dark:border-zinc-800 text-zinc-500 font-medium">Editor</span>
+              <span className="flex h-11 shrink-0 items-center rounded-[32px] border border-[#d9d9d9] bg-zinc-100 px-5 text-base font-medium text-zinc-500 dark:border-[#2d3649] dark:bg-[#0f1624]">Editor</span>
               <input
+                id="rol-nombre"
                 type="text"
                 required
                 maxLength={70}
                 placeholder="ej: Inicio"
                 value={nombreExtra}
                 onChange={(e) => setNombreExtra(e.target.value)}
-                className="w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:text-[#f6f6f6] dark:focus:border-white dark:focus:ring-white"
+                className={campoDeModalClass}
               />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">
-              Descripcion
+            <label htmlFor="rol-descripcion" className={etiquetaDeModalClass}>
+              Descripción
             </label>
+            {/* 100 caracteres contados al escribir y sin el agarre para estirarlo, como el
+                motivo de la cola de revisión. La API no lo limita (`descripcion` es TEXT). */}
             <textarea
-              maxLength={200}
+              id="rol-descripcion"
+              maxLength={DESCRIPCION_MAX}
               rows={3}
               value={descripcion}
               onChange={(e) => setDescripcion(e.target.value)}
-              className="w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:text-[#f6f6f6] dark:focus:border-white dark:focus:ring-white"
+              aria-describedby="rol-descripcion-cuenta"
+              className={`${areaDeModalClass} resize-none`}
             />
+            <p
+              id="rol-descripcion-cuenta"
+              className={`mt-2 text-right text-xs tabular-nums ${
+                descripcion.length >= DESCRIPCION_MAX ? 'text-red-600 dark:text-red-400' : 'text-zinc-500 dark:text-zinc-400'
+              }`}
+            >
+              {descripcion.length}/{DESCRIPCION_MAX}
+            </p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">
-              Permisos
-            </label>
+            <p className={etiquetaDeModalClass}>Permisos</p>
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setMostrandoPermisos(true)}
-                className="rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 shadow-sm hover:bg-zinc-50 dark:border-zinc-700 dark:bg-[#131b2f] dark:text-zinc-300 dark:hover:bg-zinc-800/50"
-              >
+              <Button type="button" plain onClick={() => setMostrandoPermisos(true)}>
                 Añadir permisos
-              </button>
+              </Button>
               <span className="text-sm text-zinc-500 dark:text-[#94a3b8]">
                 {selecionados.size} seleccionados
               </span>
@@ -105,7 +127,7 @@ function ModalNuevoEditor({
             <Button type="button" plain onClick={onClose} disabled={guardando}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={guardando}>
+            <Button type="submit" variant="verde" disabled={guardando}>
               {guardando ? 'Guardando...' : 'Guardar'}
             </Button>
           </AlertActions>
@@ -163,6 +185,7 @@ export default function RolesView() {
 
   const [busqueda, setBusqueda] = useState('');
   const [pagina, setPagina] = useState(1);
+  const { estaAbierta, alternar } = useFilasAbiertas();
   const [itemsPorPagina, setItemsPorPagina] = useState(15);
 
   const [modalRolAbierto, setModalRolAbierto] = useState(false);
@@ -381,8 +404,16 @@ export default function RolesView() {
         />
       </div>
 
+      {/* Cargando, el loader va en lugar de la tabla y no en una de sus filas: así llena el
+          espacio de la sección como en las demás (una celda no se puede estirar). */}
+      {loading ? (
+        <CargandoSeccion label="Cargando roles..." />
+      ) : (
       <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-[#7db828]/30 dark:bg-[#131b2f]">
-        <table className="olo-tabla-apilable w-full text-left text-sm">
+        {/* En el móvil y la tablet, acordeón, como Usuarios: el encabezado de cada fila es
+            solo el nombre del rol y al tocarlo salen la descripción y los permisos, y debajo
+            «Editar» y «Eliminar» con su nombre. Piezas en `fila-acordeon.tsx`. */}
+        <table className="olo-tabla-apilable olo-tabla-acordeon w-full text-left text-sm">
           <thead className="border-b border-zinc-100 bg-zinc-50 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:border-zinc-800 dark:bg-[#0f1624] dark:text-[#94a3b8]">
             <tr>
               <th className="px-5 py-3">Rol</th>
@@ -392,14 +423,9 @@ export default function RolesView() {
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-            {loading ? (
-              <tr>
-                <td colSpan={5}>
-                  <CargandoSeccion label="Cargando roles..." className="min-h-[40vh]" />
-                </td>
-              </tr>
-            ) : rolesPagina.length === 0 ? (
-              <tr>
+            {rolesPagina.length === 0 ? (
+              // `data-abierta`: en acordeón, una fila plegada solo enseña el resumen, y esta no tiene.
+              <tr data-abierta>
                 <td colSpan={5} className="py-12 text-center text-sm text-zinc-400 dark:text-zinc-500">
                   {busqueda ? `Sin resultados para "${busqueda}"` : 'No hay roles registrados.'}
                 </td>
@@ -408,9 +434,15 @@ export default function RolesView() {
               rolesPagina.map((rol) => {
                 const numPermisos = rol.permissions?.length ?? 0;
                 const noEliminable = rol.name === 'Editor';
+                const abierta = estaAbierta(rol.id);
                 return (
-                  <tr key={rol.id} className="transition-colors hover:bg-zinc-50 dark:hover:bg-[#0f1624]/60">
-                    <td className="px-5 py-2">
+                  <tr key={rol.id} data-abierta={abierta || undefined} className="transition-colors hover:bg-zinc-50 dark:hover:bg-[#0f1624]/60">
+                    <td data-resumen>
+                      <ResumenDeFila abierta={abierta} onAlternar={() => alternar(rol.id)}>
+                        <span className={RESALTE_DE_FILA}>{rol.name}</span>
+                      </ResumenDeFila>
+                    </td>
+                    <td data-solo-tabla className="px-5 py-2">
                       <span className="font-medium text-zinc-900 dark:text-[#f6f6f6]">{rol.name}</span>
                     </td>
                     <td data-etiqueta="Descripción" className="max-w-xs px-5 py-2">
@@ -423,30 +455,69 @@ export default function RolesView() {
                         {numPermisos} permiso{numPermisos !== 1 ? 's' : ''}
                       </span>
                     </td>
-                    <td data-etiqueta="Acciones" className="px-5 py-2">
-                      <div className="flex items-center gap-1 @3xl:justify-end">
+                    <td data-solo-tabla data-etiqueta="Acciones" className="px-5 py-2">
+                      <div className="flex items-center gap-1 en-tabla:justify-end">
+                        {/* Deslizadores de Font Awesome (`deslizadores.svg`, un color: va por máscara
+                            y toma `currentColor`). En el verde de «Editar usuario»; el tooltip, del
+                            color de «Editar» en Configuración → Identidad visual. */}
                         <button
                           type="button"
                           onClick={() => abrirModalPermisos(rol)}
-                          className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
-                          title="Editar rol y permisos"
+                          aria-label="Editar rol"
+                          className={`${GRUPO_TOOLTIP} rounded-lg p-1.5 text-[#7DB728] transition-colors hover:bg-[#7DB728]/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7DB728]`}
                         >
-                          <PencilIcon className="size-4" />
+                          <IconoMascara nombre="deslizadores" tamano="h-6 w-6" />
+                          <span aria-hidden="true" className={`${TOOLTIP_ENCIMA} ${COLOR_DE_ACCION.editar}`}>
+                            Editar rol
+                          </span>
                         </button>
+                        {/* Tooltip alineado a la derecha: es el último botón de la fila y el texto
+                            del rol base es largo; centrado se saldría de la tabla. Desactivado,
+                            explica por qué en gris (el `:hover` de CSS sí llega a un botón
+                            `disabled`). */}
                         <button
                           type="button"
                           onClick={() => !noEliminable && setRolAEliminar(rol)}
                           disabled={noEliminable}
-                          className={`rounded-lg p-1.5 transition-colors ${
+                          aria-label={noEliminable ? 'No se puede eliminar el rol base de Editor' : 'Eliminar rol'}
+                          className={`${GRUPO_TOOLTIP} rounded-lg p-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 ${
                             noEliminable
                               ? 'cursor-not-allowed text-zinc-300 dark:text-zinc-600'
                               : 'text-red-400 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-900/30 dark:hover:text-red-300'
                           }`}
-                          title={noEliminable ? 'No se puede eliminar el rol base de Editor' : 'Eliminar rol'}
                         >
-                          <TrashIcon className="size-4" />
+                          <TrashIcon className="size-6" />
+                          <span
+                            aria-hidden="true"
+                            className={`${TOOLTIP_ENCIMA_A_LA_DERECHA} ${noEliminable ? 'bg-zinc-600 text-white' : COLOR_DE_ACCION.eliminar}`}
+                          >
+                            {noEliminable ? 'No se puede eliminar el rol base de Editor' : 'Eliminar rol'}
+                          </span>
                         </button>
                       </div>
+                    </td>
+                    {/* Solo en acordeón y desplegada: las acciones con su nombre, al final. El rol
+                        base de Editor no se elimina: el botón queda gris y dice por qué. */}
+                    <td data-detalle>
+                      <div className="mb-1 mt-2 grid grid-cols-2 gap-2">
+                        <BotonDeFila color={COLOR_DE_ACCION.editar} onClick={() => abrirModalPermisos(rol)}>
+                          <IconoMascara nombre="deslizadores" tamano="h-5 w-5" />
+                          Editar
+                        </BotonDeFila>
+                        <BotonDeFila
+                          color={noEliminable ? 'bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-300' : COLOR_DE_ACCION.eliminar}
+                          onClick={() => setRolAEliminar(rol)}
+                          disabled={noEliminable}
+                        >
+                          <TrashIcon className="size-5" aria-hidden="true" />
+                          Eliminar
+                        </BotonDeFila>
+                      </div>
+                      {noEliminable && (
+                        <p className="mb-1 mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+                          El rol base de Editor no se puede eliminar.
+                        </p>
+                      )}
                     </td>
                   </tr>
                 );
@@ -469,6 +540,7 @@ export default function RolesView() {
           className="px-5"
         />
       </div>
+      )}
 
       <ModalNuevoEditor
         key={aperturaModalRol}

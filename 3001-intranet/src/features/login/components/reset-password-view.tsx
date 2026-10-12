@@ -2,11 +2,21 @@
 
 import { useState, FormEvent, useEffect, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { authApi, useAuth } from '@/features/login';
 import { cumplePolitica, primerFallo } from '@olo/password-policy';
 import { PasswordField } from '@/shared/ui/molecules/password-field';
 import { PasswordRequisitos } from '@/shared/ui/molecules/password-requisitos';
-import { ReturnToSiteLink } from '@/shared/ui/molecules/return-to-site-link';
+import { MarcoAcceso } from './marco-acceso';
+import {
+  accesoBotonClass,
+  accesoBotonEnBlancoClass,
+  accesoEnlaceClass,
+  accesoEnlaceEnBlancoClass,
+  accesoErrorGeneralClass,
+  accesoHuecoArribaClass,
+  accesoHuecoClass,
+} from './acceso-ui';
 import { mensajeDeError } from '@/shared/lib/errors';
 
 /* sessionStorage es un sistema externo a React. Se lee con useSyncExternalStore
@@ -25,6 +35,10 @@ const getModeSnapshot = (): 'recovery' | 'forced' =>
 
 /** En el servidor no hay sessionStorage: sin modo aun. */
 const getModeServerSnapshot = (): null => null;
+
+/** Primer nombre que dio el servidor al verificar las respuestas (`recoveryName`). */
+const getNombreSnapshot = (): string | null => sessionStorage.getItem('recoveryName');
+const getNombreServerSnapshot = (): null => null;
 
 /** Datos de recuperacion guardados por el paso anterior del flujo. */
 function leerDatosDeRecuperacion(): { email: string; answers: Array<{ key: string; answer: string }> } {
@@ -48,18 +62,21 @@ export function ResetPasswordView() {
     getModeSnapshot,
     getModeServerSnapshot,
   );
+  const nombre = useSyncExternalStore(subscribeToSessionStorage, getNombreSnapshot, getNombreServerSnapshot);
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState<{ currentPassword?: string; password?: string; confirm?: string; general?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   useEffect(() => {
+    if (isSubmitted) return;
     if (mode === 'forced' && !authLoading && !user) {
       router.push('/login');
     }
-  }, [mode, authLoading, user, router]);
+  }, [mode, authLoading, user, router, isSubmitted]);
 
   const validate = (): boolean => {
     const newErrors: typeof errors = {};
@@ -98,107 +115,132 @@ export function ResetPasswordView() {
       if (mode === 'recovery') {
         const { email, answers } = leerDatosDeRecuperacion();
         await authApi.recoverPassword(email, answers, password);
-        sessionStorage.removeItem('recoveryEmail');
-        sessionStorage.removeItem('recoveryQuestions');
-        sessionStorage.removeItem('recoveryAnswers');
       } else {
         await authApi.changePassword(currentPassword, password);
       }
 
+      setIsSubmitted(true);
       router.push('/reset-success');
     } catch (error) {
+      setIsSubmitted(false);
       setErrors({ general: mensajeDeError(error, 'Error de conexión con el servidor') });
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (mode === null || (mode === 'forced' && (authLoading || !user))) {
+  if (!isSubmitted && (mode === null || (mode === 'forced' && (authLoading || !user)))) {
     return null;
   }
 
   return (
-    <div className="rp-page">
-      {/* Panel izquierdo — Branding */}
-      <div className="rp-left">
-        <div className="rp-left-content">
+    // Tarjeta blanca desde `md`, como el login (2026-10-12): primero en la recuperación y el
+    // mismo día también en el cambio forzado del primer ingreso.
+    <MarcoAcceso
+      enBlanco
+      // En la recuperación, los textos del sitio web (pedido del usuario, 2026-10-11): el
+      // saludo con el primer nombre y dos párrafos. Antes, «Crea tu nueva contraseña» y «Elige
+      // una clave que no hayas usado antes.». El cambio forzado (con sesión) no cambia.
+      titulo={
+        mode === 'forced'
+          ? 'Crea tu nueva contraseña'
+          : nombre
+            ? `¡Enhorabuena, ${nombre}!`
+            : '¡Enhorabuena!'
+      }
+      descripcion={
+        mode === 'forced'
+          ? 'Has ingresado con un código temporal. Por tu seguridad, crea una nueva clave privada.'
+          : [
+              'Ahora puedes crear tu nueva contraseña.',
+              'Asegúrate de que sea fácil de recordar para ti, pero difícil de adivinar para otros.',
+            ]
+      }
+      cerrarSesionAlSalir={mode === 'forced'}
+    >
+      <form onSubmit={handleSubmit} noValidate>
+        {errors.general && (
+          <div className={accesoErrorGeneralClass} role="alert">
+            {errors.general}
+          </div>
+        )}
+
+        {mode === 'forced' && (
+          <PasswordField
+            id="currentPassword"
+            label="Contraseña actual"
+            placeholder="Tu contraseña actual"
+            autoComplete="current-password"
+            value={currentPassword}
+            onChange={(v) => { setCurrentPassword(v); setErrors({}); }}
+            error={errors.currentPassword}
+            enBlanco
+            className={accesoHuecoClass}
+          />
+        )}
+
+        <PasswordField
+          id="password"
+          label="Nueva contraseña"
+          autoComplete="new-password"
+          placeholder="Mínimo 12 caracteres"
+          value={password}
+          onChange={(v) => { setPassword(v); setErrors({}); }}
+          error={errors.password}
+          enBlanco
+          className="mb-2 md:mb-3"
+        />
+        <PasswordRequisitos password={password} variant="solid" className={accesoHuecoClass} resumirAlCumplir enBlanco />
+
+        <PasswordField
+          id="confirmPassword"
+          label="Ingresa nuevamente la contraseña"
+          autoComplete="new-password"
+          placeholder="Mínimo 12 caracteres"
+          value={confirmPassword}
+          onChange={(v) => { setConfirmPassword(v); setErrors({}); }}
+          error={errors.confirm}
+          enBlanco
+          className={accesoHuecoClass}
+        />
+
+        <button
+          type="submit"
+          disabled={isLoading}
+          className={`${accesoBotonClass} ${accesoBotonEnBlancoClass}`}
+        >
+          {isLoading ? 'Guardando…' : 'Guardar contraseña'}
+        </button>
+
+        {/* Cancelar: la contraseña sigue siendo la de antes. Solo texto, sin fondo, como
+            los demás enlaces de salida del acceso. Con sesión (cambio forzado) hay que
+            cerrarla, o el proxy devolvería aquí; en la recuperación se sueltan sus datos
+            para que el próximo intento empiece por el correo. */}
+        <div className={`${accesoHuecoArribaClass} text-center`}>
           {mode === 'forced' ? (
-            <>
-              <h1 className="rp-brand-title">
-                Hola {user?.name ? user.name.split(' ')[0] : ''}, Actualiza tu seguridad.
-              </h1>
-              <p className="rp-brand-subtitle">
-                Has ingresado con un código temporal. Por tu seguridad, es necesario que crees un nuevo código de acceso personal y privado que solo tú conozcas.
-              </p>
-            </>
+            <button
+              type="button"
+              onClick={() => logout()}
+              className={`${accesoEnlaceClass} ${accesoEnlaceEnBlancoClass}`}
+            >
+              Cancelar
+            </button>
           ) : (
-            <>
-              <h1 className="rp-brand-title">Crea tu nueva contraseña</h1>
-              <p className="rp-brand-subtitle">
-                Elige una nueva contraseña personal y privada que solo tú conozcas para volver a acceder a tu cuenta.
-              </p>
-            </>
+            <Link
+              href="/login"
+              onClick={() => {
+                sessionStorage.removeItem('recoveryEmail');
+                sessionStorage.removeItem('recoveryQuestions');
+                sessionStorage.removeItem('recoveryAnswers');
+                sessionStorage.removeItem('recoveryName');
+              }}
+              className={`${accesoEnlaceClass} ${accesoEnlaceEnBlancoClass}`}
+            >
+              Cancelar
+            </Link>
           )}
         </div>
-      </div>
-
-      {/* Panel derecho — Card */}
-      <div className="rp-right">
-        <div className="rp-card">
-          <form onSubmit={handleSubmit} className="rp-form">
-            <h2 className="rp-card-title">Crea tu nueva contraseña</h2>
-
-            {mode === 'forced' && (
-              <PasswordField
-                id="currentPassword"
-                classPrefix="rp"
-                label="Contraseña actual"
-                placeholder="Tu contraseña actual"
-                value={currentPassword}
-                onChange={(v) => { setCurrentPassword(v); setErrors({}); }}
-                error={errors.currentPassword}
-              />
-            )}
-
-            <PasswordField
-              id="password"
-              classPrefix="rp"
-              label="Nueva contraseña"
-              value={password}
-              onChange={(v) => { setPassword(v); setErrors({}); }}
-              error={errors.password}
-            />
-            <PasswordRequisitos classPrefix="rp" password={password} />
-
-            <PasswordField
-              id="confirmPassword"
-              classPrefix="rp"
-              label="Ingresa nuevamente la contraseña"
-              value={confirmPassword}
-              onChange={(v) => { setConfirmPassword(v); setErrors({}); }}
-              error={errors.confirm}
-            />
-
-            {errors.general && (
-              <div className="rp-general-error">{errors.general}</div>
-            )}
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className={`rp-submit ${isLoading ? 'rp-submit-disabled' : ''}`}
-            >
-              {isLoading ? 'Guardando...' : 'Guardar'}
-            </button>
-
-            <button type="button" onClick={() => logout()} className="rp-login-link">
-              Iniciar sesión
-            </button>
-          </form>
-        </div>
-
-        <ReturnToSiteLink classPrefix="rp" />
-      </div>
-    </div>
+      </form>
+    </MarcoAcceso>
   );
 }

@@ -1,10 +1,12 @@
 # Diccionario de Datos — Proyecto OLO (SENA)
 
 > **Documento Técnico de Referencia de Base de Datos**  
-> **Sistema Gestor:** PostgreSQL 16+ (Esquema `public`)  
+> **Sistema Gestor:** PostgreSQL 18 (Esquema `public`; Neon en desarrollo, `postgres:18-alpine` en el servidor)  
 > **Proyecto:** Observatorio Laboral y Ocupacional (OLO) — SENA  
-> **Fecha de Generación:** 4 de septiembre de 2026  
+> **Fecha de Generación:** 4 de septiembre de 2026; cifras y fichas afectadas por la migración 041 revisadas el 8 de octubre de 2026  
 > **Base de Integración:** Migraciones activas (`4000-api-backend/src/infrastructure/db/migrations/`) y especificación técnica de persistencia ([11-base-de-datos.md](11-base-de-datos.md)).
+>
+> **Alcance.** Este diccionario tiene ficha columna a columna de las tablas de identidad, páginas, auditoría, archivos y Programa + Sobresalientes. Las de la tendencia ocupacional (§3.4), `cargas_datos` y las seis de alertas de inversión todavía no tienen ficha propia: qué guarda cada una está en `11-base-de-datos.md` §4, y sus columnas exactas, en las migraciones 027, 028, 033, 037, 038 y 039.
 
 ---
 
@@ -12,11 +14,11 @@
 
 El modelo de datos del Observatorio Laboral y Ocupacional (OLO) está implementado en **PostgreSQL** bajo el esquema `public`. Fue diseñado siguiendo principios de normalización relacional (3FN), segregación estricta de responsabilidades (RBAC), gobernanza de contenido mediante versionamiento inmutable, concurrencia pesimista en maquetación visual y trazabilidad integral requerida por la **Ley 1581 de 2012 (Habeas Data)**.
 
-### Métricas Generales del Esquema:
-- **Total de Tablas Base:** 20 tablas documentadas (19 tablas del dominio con modelos Sequelize + 1 tabla técnica de control `migraciones_aplicadas`).
-- **Total de Columnas:** 152 atributos documentados y tipificados.
-- **Total de Llaves Foráneas (FK):** 26 relaciones de integridad referencial activas con políticas declarativas `RESTRICT`, `CASCADE` y `SET NULL`.
-- **Total de Restricciones CHECK:** 20 restricciones de dominio y reglas de negocio validadas en el motor de base de datos.
+### Métricas Generales del Esquema (tras la migración 044):
+- **Total de Tablas Base:** 34 (33 del dominio, 23 de ellas con modelo Sequelize, + 1 tabla técnica de control `migraciones_aplicadas`).
+- **Total de Columnas:** 240, dos de ellas generadas (`ocupaciones.codigo_nc`, `indicadores_ocupacionales.criterio_codigo`).
+- **Total de Llaves Foráneas (FK):** 47, cinco de ellas compuestas (las que impiden que una copia contradiga a su origen: invariantes I22 e I23 de `11-base-de-datos.md`), con políticas `RESTRICT`, `CASCADE` y `SET NULL`.
+- **Total de Restricciones CHECK:** 42 restricciones de dominio y reglas de negocio validadas en el motor de base de datos.
 - **Estrategia de Identificadores (PK):** UUID versión 4 (`DEFAULT gen_random_uuid()`) en todas las entidades del dominio, garantizando unicidad global y previniendo enumeración secuencial maliciosa.
 - **Control de Estados:** Implementado mediante restricciones `CHECK` con tipos de texto nativos en lugar de `ENUM` de PostgreSQL, permitiendo modificaciones y mantenimientos no bloqueantes.
 
@@ -28,23 +30,23 @@ En respuesta a la verificación de componentes adicionales del motor PostgreSQL:
 
 | Tipo de Objeto | Cantidad | Estado / Detalle |
 |---|---|---|
-| **Tablas Base (`BASE TABLE`)** | **20** | Activas en producción y desarrollo (19 de dominio + 1 de control). Cubren los 17 Requerimientos Funcionales (RF). |
-| **Vistas (`VIEW`)** | **0** | No se utilizan vistas estándar. Las proyecciones se realizan mediante Sequelize / QueryBuilder. |
+| **Tablas Base (`BASE TABLE`)** | **34** | Activas en producción y desarrollo (33 de dominio + 1 de control). Cubren los 17 Requerimientos Funcionales (RF) y los módulos del Observatorio. |
+| **Vistas (`VIEW`)** | **2** | `v_buscador_ocupacional` y `v_estado_cargas_ocupacional`, de la tendencia ocupacional (migraciones 033 y 035). |
 | **Vistas Materializadas (`MATERIALIZED VIEW`)** | **0** | Las agregaciones analíticas se delegan a Power BI (RF-08), datos dinámicos del Observatorio y caché en memoria Redis. |
 | **Procedimientos Almacenados (`PROCEDURE`)** | **0** | La lógica transaccional reside en la capa de servicios y casos de uso de la API (Node.js/TypeScript). |
-| **Funciones de Negocio (`FUNCTION`)** | **0** | No hay funciones PL/pgSQL propietarias. El motor ejecuta exclusivamente las funciones criptográficas provistas por la extensión `pgcrypto`. |
+| **Funciones de Negocio (`FUNCTION`)** | **1** | `normalizar_nombre(text)` (SQL, `IMMUTABLE`, migración 042): sin tildes, minúsculas, signos como espacio. Es la gemela de `normalizarParaComparar()` y la base de los únicos por nombre de `departamentos`, `municipios` y `empresas`. No hay funciones PL/pgSQL propias. |
 | **Disparadores (`TRIGGER`)** | **0** | La auditoría y reglas de negocio se aplican por software y restricciones declarativas (`CHECK`, `UNIQUE`, `FK`), evitando efectos colaterales ocultos en BD. |
 | **Paquetes (`PACKAGE`)** | **No aplica** | PostgreSQL no soporta paquetes estilo Oracle. La modularización se logra a nivel de esquemas y módulos de software. |
-| **Extensiones (`EXTENSION`)** | **2** | `plpgsql` (v1.0) y `pgcrypto` (v1.4 - soporte para `gen_random_uuid()` y hashing). |
+| **Extensiones (`EXTENSION`)** | **3** | `plpgsql` (v1.0), `pgcrypto` (v1.4, la crea la 001) y `uuid-ossp` (v1.1, solo en Neon). Ninguna se usa: `gen_random_uuid()` es nativa desde PostgreSQL 13. |
 | **Tipos Personalizados / `ENUM`** | **0** | Decisión de diseño D4: se utilizan tipos primitivos (`text`, `varchar`) con restricciones `CHECK`. |
 | **Secuencias (`SEQUENCE`)** | **0** | No se utilizan secuencias auto-incrementales; todas las llaves primarias son UUID. |
-| **Índices Secundarios** | **56** | Índices B-Tree en llaves foráneas, restricciones de unicidad, índices compuestos y un índice **GIN** especializado en `contenidos.busqueda` para búsqueda de texto completo (`tsvector`). |
+| **Índices Secundarios** | **56** | Índices B-Tree en llaves foráneas, restricciones de unicidad (también las que sirven de destino a las FK compuestas) e índices compuestos para el buscador ocupacional y la bitácora. El índice GIN de `contenidos.busqueda` se fue con la tabla (migración 036). Criterio para crear o quitar uno: `11-base-de-datos.md` D9 y §9.3. |
 
 ---
 
 ## 3. Diccionario Detallado por Entidad
 
-A continuación se detalla la ficha técnica y matriz de atributos para cada una de las 14 tablas del sistema.
+A continuación se detalla la ficha técnica y matriz de atributos de cada tabla con ficha (ver «Alcance» arriba).
 
 
 ### 3.1. Tabla: `archivos`
@@ -87,17 +89,17 @@ A continuación se detalla la ficha técnica y matriz de atributos para cada una
 |:---:|:---|:---|:---:|:---:|:---:|:---|:---|:---|
 | 1 | `id` | `UUID` | — | NO (NOT NULL) | **PK** | — | `gen_random_uuid()` | Identificador único del evento de auditoría (UUID). |
 | 2 | `entidad_id` | `UUID` | — | NO (NOT NULL) | Ninguna | — | — | Identificador UUID de la entidad modificada (referencia polimórfica sin FK dura). |
-| 3 | `entidad_tipo` | `TEXT` | — | SÍ | Ninguna | — | `'post'::text` | Nombre de la entidad auditada ('contenido', 'pagina', 'seccion', 'usuario', etc.). Restringido por CHECK. |
+| 3 | `entidad_tipo` | `TEXT` | — | NO (NOT NULL) | Ninguna | — | — | Nombre de la entidad auditada. Hoy se escriben 'pagina', 'usuario' y 'rol' (y hay 2 filas viejas de 'configuracion'). Restringido por CHECK. Hasta la migración 041 admitía NULL y tenía `DEFAULT 'post'`, un valor que su propio CHECK rechaza. |
 | 4 | `usuario_id` | `UUID` | — | SÍ | **FK** | `usuarios.id` (ON DELETE SET NULL) | — | Clave foránea hacia el usuario que ejecutó la operación (NULL si es cuenta maestra local o usuario eliminado). |
 | 5 | `usuario_nombre` | `TEXT` | — | SÍ | Ninguna | — | — | Nombre desnormalizado del usuario para preservar trazabilidad histórica (D6). Almacena el nombre del usuario (`name` o email de fallback), tanto en peticiones web como en procesos de respaldo (`despublicar` y `publicar`). |
-| 6 | `accion` | `TEXT` | — | NO (NOT NULL) | Ninguna | — | — | Operación ejecutada ('crear', 'actualizar', 'eliminar', 'publicar', 'despublicar', 'aprobar', 'rechazar', 'enviar_revision', 'cambiar_password', 'guardar_borrador', 'autenticar', 'expirar', 'inactivar'). Restringido por CHECK. Los tres últimos (migración 030) son de seguridad y administración: inicio de sesión, cuenta caducada por su fecha y cuenta inactivada a mano. |
-| 7 | `campos_modificados` | `JSONB` | — | SÍ | Ninguna | — | `'[]'::jsonb` | Detalle JSONB con los deltas de campos alterados: [{campo, antes, despues}]. |
-| 8 | `created_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | — | Marca temporal exacta del evento auditado. |
+| 6 | `accion` | `TEXT` | — | NO (NOT NULL) | Ninguna | — | — | Operación ejecutada ('crear', 'actualizar', 'eliminar', 'publicar', 'despublicar', 'aprobar', 'rechazar', 'enviar_revision', 'cambiar_password', 'guardar_borrador', 'autenticar', 'expirar', 'inactivar', 'bloquear', 'verificar_preguntas', 'autoguardar_borrador'). Restringido por CHECK. 'autenticar', 'expirar' e 'inactivar' (030) y 'bloquear' y 'verificar_preguntas' (031) son de seguridad; 'autoguardar_borrador' (040) es el guardado automático del editor. |
+| 7 | `campos_modificados` | `JSONB` | — | NO (NOT NULL) | Ninguna | — | `'[]'::jsonb` | Detalle JSONB con los deltas de campos alterados: [{campo, antes, despues}]. |
+| 8 | `created_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | `now()` | Marca temporal exacta del evento auditado. |
 | 9 | `ip` | `INET` | — | SÍ | Ninguna | — | — | Dirección de red INET (IPv4/IPv6) desde la que se originó la petición web, proceso editorial o restauración de respaldos. |
 | 10 | `user_agent` | `TEXT` | — | SÍ | Ninguna | — | — | Encabezado User-Agent del navegador o cliente HTTP que originó la operación (incluye peticiones web y restauración de respaldos). |
 
 **Restricciones de Integridad (CHECK) de `auditoria_cambios`:**
-- **`ck_auditoria_accion`**: `(accion = ANY (ARRAY['crear'::text, 'actualizar'::text, 'eliminar'::text, 'publicar'::text, 'despublicar'::text, 'aprobar'::text, 'rechazar'::text, 'enviar_revision'::text, 'cambiar_password'::text, 'guardar_borrador'::text, 'autenticar'::text, 'expirar'::text, 'inactivar'::text]))`
+- **`ck_auditoria_accion`**: `(accion = ANY (ARRAY['crear'::text, 'actualizar'::text, 'eliminar'::text, 'publicar'::text, 'despublicar'::text, 'aprobar'::text, 'rechazar'::text, 'enviar_revision'::text, 'guardar_borrador'::text, 'cambiar_password'::text, 'autenticar'::text, 'expirar'::text, 'inactivar'::text, 'bloquear'::text, 'verificar_preguntas'::text, 'autoguardar_borrador'::text]))`
 - **`ck_auditoria_entidad`**: `(entidad_tipo = ANY (ARRAY['contenido'::text, 'pagina'::text, 'seccion'::text, 'usuario'::text, 'rol'::text, 'marca'::text, 'configuracion'::text, 'archivo'::text]))`
 
 ---
@@ -163,14 +165,15 @@ La especificación exhaustiva columna por columna de estas tablas se encuentra d
 
 | No. | Campo | Tipo de Dato | Longitud | Permite Nulos | Tipo Llave | Referencia / Restricción | Valor por Defecto | Descripción y Reglas de Negocio |
 |:---:|:---|:---|:---:|:---:|:---:|:---|:---|:---|
-| 1 | `id` | `UUID` | — | NO (NOT NULL) | **PK** | — | — | Identificador único universal de la página (UUID). |
-| 2 | `slug` | `VARCHAR(255)` | 255 | NO (NOT NULL) | Ninguna | — | — | Ruta relativa amigable de la página. |
+| 1 | `id` | `UUID` | — | NO (NOT NULL) | **PK** | — | `gen_random_uuid()` | Identificador único universal de la página (UUID). |
+| 2 | `slug` | `VARCHAR(255)` | 255 | NO (NOT NULL) | **UK** (con `ambito`) | — | — | Ruta relativa amigable de la página. Único por ámbito (`uq_paginas_ambito_slug`). |
 | 3 | `titulo` | `VARCHAR(255)` | 255 | NO (NOT NULL) | Ninguna | — | — | Título legible asignado a la página. |
-| 4 | `version_publicada_id` | `UUID` | — | SÍ | **FK** | `paginas_versiones.id` (ON DELETE SET NULL) | — | Clave foránea circular hacia paginas_versiones (versión viva). |
+| 4 | `version_publicada_id` | `UUID` | — | SÍ | **FK** | `(version_publicada_id, id)` → `paginas_versiones (id, pagina_id)` (ON DELETE SET NULL (version_publicada_id), DEFERRABLE INITIALLY DEFERRED) | — | Clave foránea circular hacia la versión viva. Desde la 041 es compuesta: solo puede apuntar a una versión **de la misma página** (invariante I23). |
 | 5 | `creado_por` | `UUID` | — | SÍ | **FK** | `usuarios.id` (ON DELETE SET NULL) | — | Usuario que creó la página originalmente. |
-| 6 | `created_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | — | Fecha y hora de creación de la página. |
-| 7 | `updated_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | — | Fecha y hora de actualización. |
-| 8 | `ambito` | `TEXT` | — | NO (NOT NULL) | Ninguna | — | `'sitio'::text` | Entorno de destino ('sitio' para portal público, 'intranet' para uso interno). Restringido por CHECK. |
+| 6 | `created_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | `now()` | Fecha y hora de creación de la página. |
+| 7 | `updated_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | `now()` | Fecha y hora de actualización. |
+| 8 | `ambito` | `TEXT` | — | NO (NOT NULL) | **UK** (con `slug`) | — | `'sitio'::text` | Entorno de destino ('sitio' para portal público, 'intranet' para uso interno). Restringido por CHECK. |
+| 9 | `visitas` | `INTEGER` | — | NO (NOT NULL) | Ninguna | — | `0` | Contador de visitas de la página (migración 025). |
 
 **Restricciones de Integridad (CHECK) de `paginas`:**
 - **`ck_paginas_ambito`**: `(ambito = ANY (ARRAY['sitio'::text, 'intranet'::text]))`
@@ -185,17 +188,17 @@ La especificación exhaustiva columna por columna de estas tablas se encuentra d
 
 | No. | Campo | Tipo de Dato | Longitud | Permite Nulos | Tipo Llave | Referencia / Restricción | Valor por Defecto | Descripción y Reglas de Negocio |
 |:---:|:---|:---|:---:|:---:|:---:|:---|:---|:---|
-| 1 | `id` | `UUID` | — | NO (NOT NULL) | **PK** | — | — | Identificador único de la versión (UUID). |
-| 2 | `pagina_id` | `UUID` | — | NO (NOT NULL) | **FK** | `paginas.id` (ON DELETE CASCADE) | — | Clave foránea hacia la página a la que pertenece esta versión. |
+| 1 | `id` | `UUID` | — | NO (NOT NULL) | **PK** | — | `gen_random_uuid()` | Identificador único de la versión (UUID). |
+| 2 | `pagina_id` | `UUID` | — | NO (NOT NULL) | **FK** | `paginas.id` (ON DELETE CASCADE) | — | Clave foránea hacia la página a la que pertenece esta versión. `(id, pagina_id)` es único (`uq_paginas_versiones_id_pagina`): es el destino de la FK compuesta de `paginas`. |
 | 3 | `contenido` | `JSONB` | — | NO (NOT NULL) | Ninguna | — | — | Estructura serializada de componentes Puck en formato JSONB. |
-| 4 | `layout` | `JSONB` | — | SÍ | Ninguna | — | — | Metadatos de disposición y plantilla en formato JSONB. |
+| 4 | `layout` | `JSONB` | — | SÍ | Ninguna | — | — | Reservada. Vacía en todas las versiones (medido el 08-10-2026); la API pública la devuelve igual. |
 | 5 | `numero_version` | `INTEGER` | — | NO (NOT NULL) | **UK** | — | — | Entero secuencial correlativo único por página (1, 2, 3...). |
-| 6 | `estado` | `VARCHAR(20)` | 20 | SÍ | Ninguna | — | `'borrador'::character varying` | Estado del ciclo editorial ('borrador', 'en_revision', 'publicado', 'rechazado', 'archivado'). |
+| 6 | `estado` | `VARCHAR(20)` | 20 | NO (NOT NULL) | Ninguna | — | `'borrador'::character varying` | Estado del ciclo editorial ('borrador', 'en_revision', 'publicado', 'rechazado', 'archivado'). Obligatorio desde la 041: un CHECK deja pasar NULL, y una versión sin estado esquivaba las invariantes I1–I4. |
 | 7 | `motivo_rechazo` | `TEXT` | — | SÍ | Ninguna | — | — | Justificación documentada en caso de rechazo por parte del revisor. |
 | 8 | `revisor_id` | `UUID` | — | SÍ | **FK** | `usuarios.id` (ON DELETE SET NULL) | — | Usuario con rol revisor/administrador que evaluó la versión. |
 | 9 | `publicado_por` | `UUID` | — | SÍ | **FK** | `usuarios.id` (ON DELETE SET NULL) | — | Usuario que autorizó la publicación de la versión. |
 | 10 | `publicado_en` | `TIMESTAMPTZ` | — | SÍ | Ninguna | — | — | Fecha y hora efectiva de publicación. |
-| 11 | `creado_en` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | — | Fecha y hora de creación de la versión. |
+| 11 | `creado_en` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | `now()` | Fecha y hora de creación de la versión. |
 | 12 | `creado_por` | `UUID` | — | SÍ | **FK** | `usuarios.id` (ON DELETE SET NULL) | — | Usuario autor que redactó o modificó esta versión. |
 | 13 | `revisado_en` | `TIMESTAMPTZ` | — | SÍ | Ninguna | — | — | Fecha y hora de la evaluación editorial. |
 | 14 | `comentario_cambios` | `VARCHAR(100)` | 100 | SÍ | Ninguna | `CHECK ck_paginas_versiones_comentario` | — | «Commit» de la versión: qué cambió, escrito por el editor al enviarla a revisión (10 a 100 caracteres, en una línea). Obligatorio para estar en `en_revision`; la bitácora lo registra al enviar, aprobar, rechazar, descartar y restaurar. Nulo en borradores nunca enviados y en versiones anteriores a la migración 029. |
@@ -203,6 +206,8 @@ La especificación exhaustiva columna por columna de estas tablas se encuentra d
 **Restricciones de Integridad (CHECK) de `paginas_versiones`:**
 - **`ck_paginas_versiones_estado`**: `((estado)::text = ANY ((ARRAY['borrador'::character varying, 'en_revision'::character varying, 'publicado'::character varying, 'rechazado'::character varying, 'archivado'::character varying])::text[]))`
 - **`ck_paginas_versiones_comentario`**: `((estado)::text <> 'en_revision'::text OR btrim(COALESCE(comentario_cambios, ''::character varying)::text) <> ''::text)`
+- **`ck_paginas_versiones_motivo`**: `((estado)::text <> 'rechazado'::text OR motivo_rechazo IS NOT NULL)` (invariante I4)
+- **`ck_paginas_versiones_publicado_en`**: `((estado)::text <> 'publicado'::text OR publicado_en IS NOT NULL)` (invariante I21, migración 041)
 
 ---
 
@@ -216,8 +221,8 @@ La especificación exhaustiva columna por columna de estas tablas se encuentra d
 |:---:|:---|:---|:---:|:---:|:---:|:---|:---|:---|
 | 1 | `id` | `UUID` | — | NO (NOT NULL) | **PK** | — | `gen_random_uuid()` | Identificador único universal del permiso (UUID). |
 | 2 | `clave` | `TEXT` | — | NO (NOT NULL) | **UK** | — | — | Identificador técnico único en formato recurso.accion (ej. paginas.aprobar). |
-| 3 | `created_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | — | Fecha y hora de registro del permiso. |
-| 4 | `updated_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | — | Fecha y hora de actualización. |
+| 3 | `created_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | `now()` | Fecha y hora de registro del permiso. |
+| 4 | `updated_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | `now()` | Fecha y hora de actualización. |
 
 ---
 
@@ -233,9 +238,11 @@ La especificación exhaustiva columna por columna de estas tablas se encuentra d
 | 2 | `usuario_id` | `UUID` | — | NO (NOT NULL) | **FK** | `usuarios.id` (ON DELETE CASCADE) | — | Clave foránea hacia usuarios. En cascada al eliminar el usuario. |
 | 3 | `pregunta_clave` | `TEXT` | — | NO (NOT NULL) | Ninguna | — | — | Código o texto identificador de la pregunta de seguridad. |
 | 4 | `respuesta_hash` | `TEXT` | — | NO (NOT NULL) | Ninguna | — | — | Hash criptográfico unidireccional de la respuesta suministrada. |
-| 5 | `orden` | `INTEGER` | — | SÍ | Ninguna | — | `0` | Posición ordinal de la pregunta en la secuencia de verificación. |
-| 6 | `created_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | — | Fecha y hora de creación. |
-| 7 | `updated_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | — | Fecha y hora de actualización. |
+| 5 | `orden` | `INTEGER` | — | NO (NOT NULL) | Ninguna | — | `0` | Posición ordinal de la pregunta en la secuencia de verificación. |
+| 6 | `created_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | `now()` | Fecha y hora de creación. |
+| 7 | `updated_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | `now()` | Fecha y hora de actualización. |
+
+**Unicidad:** `(usuario_id, pregunta_clave)`. En Neon es un índice único (`security_questions_user_id_question_key`); en una base nueva, la restricción `uq_security_questions_user_key`. Mismo efecto.
 
 ---
 
@@ -250,8 +257,8 @@ La especificación exhaustiva columna por columna de estas tablas se encuentra d
 | 1 | `id` | `UUID` | — | NO (NOT NULL) | **PK** | — | `gen_random_uuid()` | Identificador único del rol (UUID). |
 | 2 | `nombre` | `TEXT` | — | NO (NOT NULL) | **UK** | — | — | Nombre único descriptivo del rol (ej. superadmin, editor). |
 | 3 | `descripcion` | `TEXT` | — | SÍ | Ninguna | — | — | Descripción detallada de las funciones y alcance del rol. |
-| 4 | `created_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | — | Fecha y hora de creación del registro. |
-| 5 | `updated_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | — | Fecha y hora de última modificación. |
+| 4 | `created_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | `now()` | Fecha y hora de creación del registro. |
+| 5 | `updated_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | `now()` | Fecha y hora de última modificación. |
 | 6 | `es_sistema` | `BOOLEAN` | — | NO (NOT NULL) | Ninguna | — | `false` | Bandera booleana. Si es true, el rol es basal y no puede ser eliminado desde el panel. |
 
 ---
@@ -271,26 +278,7 @@ La especificación exhaustiva columna por columna de estas tablas se encuentra d
 
 ### 3.13. Tabla: `secciones`
 
-- **Módulo / Dominio:** Arquitectura de Información y Navegación
-- **Requerimientos Asociados:** RF-01, RF-11
-- **Propósito General:** Estructura jerárquica en árbol que organiza las categorías temáticas y de navegación. Garantiza a nivel de base de datos el principio de accesibilidad de navegación a máximo tres clics (`CHECK nivel BETWEEN 1 AND 3`).
-
-| No. | Campo | Tipo de Dato | Longitud | Permite Nulos | Tipo Llave | Referencia / Restricción | Valor por Defecto | Descripción y Reglas de Negocio |
-|:---:|:---|:---|:---:|:---:|:---:|:---|:---|:---|
-| 1 | `id` | `UUID` | — | NO (NOT NULL) | **PK** | — | `gen_random_uuid()` | Identificador único universal de la sección (UUID). |
-| 2 | `nombre` | `TEXT` | — | NO (NOT NULL) | **UK** | — | — | Nombre visible de la sección en la estructura del sitio. |
-| 3 | `slug` | `TEXT` | — | NO (NOT NULL) | **UK** | — | — | Slug amigable para URLs, único en el sistema. |
-| 4 | `descripcion` | `TEXT` | — | SÍ | Ninguna | — | — | Resumen o descripción del contenido de la sección. |
-| 5 | `created_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | — | Fecha y hora de creación. |
-| 6 | `updated_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | — | Fecha y hora de actualización. |
-| 7 | `padre_id` | `UUID` | — | SÍ | **FK** | `secciones.id` (ON DELETE RESTRICT) | — | Auto-referencia a la sección contenedora (árbol jerárquico). |
-| 8 | `orden` | `SMALLINT` | — | NO (NOT NULL) | Ninguna | — | `0` | Número de orden secuencial para renderizado en menú. |
-| 9 | `nivel` | `SMALLINT` | — | NO (NOT NULL) | Ninguna | — | `1` | Nivel de profundidad jerárquica (1, 2 o 3). Restringido por CHECK. |
-| 10 | `visible_en_menu` | `BOOLEAN` | — | NO (NOT NULL) | Ninguna | — | `true` | Indica si se despliega visualmente en el menú público. |
-
-**Restricciones de Integridad (CHECK) de `secciones`:**
-- **`ck_secciones_nivel`**: `((nivel >= 1) AND (nivel <= 3))`
-- **`ck_secciones_padre`**: `((padre_id IS NULL) OR (padre_id <> id))`
+**Tabla eliminada** en la migración `036-eliminar-cms-tradicional`, junto con `contenidos` y `contenidos_archivos`. La navegación vive hoy en el contenido de la página `menu-y-pie` de cada ámbito, y con la tabla se retiró la invariante I6 (máximo tres niveles). La ficha se conserva solo en el historial de git.
 
 ---
 
@@ -304,24 +292,28 @@ La especificación exhaustiva columna por columna de estas tablas se encuentra d
 |:---:|:---|:---|:---:|:---:|:---:|:---|:---|:---|
 | 1 | `id` | `UUID` | — | NO (NOT NULL) | **PK** | — | `gen_random_uuid()` | Identificador único universal (UUID v4) del usuario. |
 | 2 | `nombre` | `TEXT` | — | NO (NOT NULL) | Ninguna | — | — | Nombres de pila del usuario. |
-| 3 | `email` | `TEXT` | — | NO (NOT NULL) | **UK** | — | — | Correo electrónico único institucional. Normalizado a minúsculas. |
+| 3 | `email` | `TEXT` | — | NO (NOT NULL) | **UK** | `uq_usuarios_email`, `ck_usuarios_email_minusculas` | — | Correo electrónico único institucional, en minúsculas. Desde la 041 lo exige la base (I25): un solo `UNIQUE (email)` y `CHECK (email = lower(email))`, en lugar de los dos índices únicos de antes (`lower(email)` y una copia de `sync`). |
 | 4 | `rol_id` | `UUID` | — | NO (NOT NULL) | **FK** | `roles.id` (ON DELETE NO ACTION) | — | Clave foránea hacia la tabla roles. Define los privilegios base. |
 | 5 | `estado` | `TEXT` | — | NO (NOT NULL) | Ninguna | — | `'active'::text` | Estado de la cuenta ('active', 'inactive', 'locked', 'expired'). Restringido por CHECK. |
 | 6 | `fecha_caducidad` | `TIMESTAMPTZ` | — | SÍ | Ninguna | — | — | Fecha de expiración de la cuenta (RF-16). NULL indica que la cuenta no caduca. |
 | 7 | `ultimo_acceso_en` | `TIMESTAMPTZ` | — | SÍ | Ninguna | — | — | Marca temporal del último request autenticado. Soporta cierre por inactividad. |
 | 8 | `password_hash` | `TEXT` | — | SÍ | Ninguna | — | — | Hash criptográfico de la contraseña del usuario (Bcrypt / Argon2id). |
-| 9 | `created_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | — | Fecha y hora de creación del registro. |
-| 10 | `updated_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | — | Fecha y hora de la última modificación del registro. |
-| 11 | `debe_cambiar_password` | `BOOLEAN` | — | SÍ | Ninguna | — | `false` | Booleano que obliga al usuario a renovar su contraseña en el siguiente inicio de sesión. |
-| 12 | `debe_configurar_preguntas` | `BOOLEAN` | — | SÍ | Ninguna | — | `true` | Booleano que exige la configuración de preguntas de seguridad. |
-| 13 | `intentos_fallidos` | `INTEGER` | — | SÍ | Ninguna | — | `0` | Contador de intentos fallidos en preguntas de seguridad (3 intentos / 30 min). |
+| 9 | `created_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | `now()` | Fecha y hora de creación del registro. |
+| 10 | `updated_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | `now()` | Fecha y hora de la última modificación del registro. |
+| 11 | `debe_cambiar_password` | `BOOLEAN` | — | NO (NOT NULL) | Ninguna | — | `false` | Booleano que obliga al usuario a renovar su contraseña en el siguiente inicio de sesión. |
+| 12 | `debe_configurar_preguntas` | `BOOLEAN` | — | NO (NOT NULL) | Ninguna | — | `true` | Booleano que exige la configuración de preguntas de seguridad. |
+| 13 | `intentos_fallidos` | `INTEGER` | — | NO (NOT NULL) | Ninguna | — | `0` | Contador de intentos fallidos en preguntas de seguridad (3 intentos / 30 min). |
 | 14 | `bloqueado_hasta` | `TIMESTAMPTZ` | — | SÍ | Ninguna | — | — | Marca de tiempo hasta la cual la cuenta permanece bloqueada. |
 | 15 | `creado_por` | `UUID` | — | SÍ | **FK** | `usuarios.id` (ON DELETE SET NULL) | — | Usuario que registró esta cuenta en el sistema (auto-referencia). |
 | 16 | `apellidos` | `TEXT` | — | SÍ | Ninguna | — | — | Apellidos del usuario. |
 | 17 | `intentos_fallidos_login` | `INTEGER` | — | NO (NOT NULL) | Ninguna | — | `0` | Contador de intentos fallidos de login con contraseña (5 intentos / 15 min). |
+| 18 | `password_temporal_vence_en` | `TIMESTAMPTZ` | — | SÍ | Ninguna | — | — | Hasta cuándo vale la contraseña temporal: 72 horas desde que se emite (alta, restablecimiento, reactivación). Se vacía al reemplazarla. Solo cuenta con `debe_cambiar_password`; vencida, el login y la sesión la rechazan (043). |
 
 **Restricciones de Integridad (CHECK) de `usuarios`:**
 - **`ck_usuarios_estado`**: `(estado = ANY (ARRAY['active'::text, 'inactive'::text, 'locked'::text, 'expired'::text]))`
+- **`ck_usuarios_email_minusculas`**: `(email = lower(email))` (migración 041)
+
+**Índices:** `idx_usuarios_rol (rol_id)`. Ninguno sobre `ultimo_acceso_en`, a propósito: se escribe en cada petición y, sin índice que tocar, esas escrituras son HOT (`11-base-de-datos.md` D9).
 
 ---
 
@@ -339,6 +331,26 @@ La especificación exhaustiva columna por columna de estas tablas se encuentra d
 
 ---
 
+### 3.15.1. Tabla: `configuracion`
+
+- **Módulo / Dominio:** Configuración del panel administrativo
+- **Requerimientos Asociados:** RF-03, RF-07
+- **Propósito General:** Ajustes que valen para todo el panel, uno por fila (clave → objeto JSON). Hoy solo `identidad-panel`: logo, icono y color de las etiquetas de acción (migración 044). La forma de cada valor la valida la API (`configuracion.validators.ts`); lo que falta en él es «lo de fábrica».
+
+| No. | Campo | Tipo de Dato | Longitud | Permite Nulos | Tipo Llave | Referencia / Restricción | Valor por Defecto | Descripción y Reglas de Negocio |
+|:---:|:---|:---|:---:|:---:|:---:|:---|:---|:---|
+| 1 | `id` | `UUID` | — | NO (NOT NULL) | **PK** | — | `gen_random_uuid()` | Identificador del ajuste; es el `entidad_id` de sus filas en `auditoria_cambios`. |
+| 2 | `clave` | `TEXT` | — | NO (NOT NULL) | **UNIQUE** | `uq_configuracion_clave` | — | Nombre del ajuste (`identidad-panel`). |
+| 3 | `valor` | `JSONB` | — | NO (NOT NULL) | Ninguna | `ck_configuracion_valor_objeto` | `'{}'` | El ajuste. Para `identidad-panel`: `logo` e `icono` (nombre UUID del archivo o `null`), `blancoEnModoOscuro` (booleano), `acciones` y `botones` (id → `{fondo, texto}` en `#rrggbb`). |
+| 4 | `actualizado_por` | `UUID` | — | SÍ (NULL) | **FK** | `usuarios.id` (ON DELETE SET NULL) | — | Quién lo cambió por última vez. `NULL` para la cuenta maestra local, que no vive en `usuarios`. |
+| 5 | `created_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | `now()` | Creación de la fila. |
+| 6 | `updated_at` | `TIMESTAMPTZ` | — | NO (NOT NULL) | Ninguna | — | `now()` | Último cambio. |
+
+**Restricciones de Integridad (CHECK) de `configuracion`:**
+- **`ck_configuracion_valor_objeto`**: `(jsonb_typeof(valor) = 'object')`
+
+---
+
 ### 3.16. Módulo: Observatorio Laboral y Ocupacional (Datos Dinámicos)
 
 - **Módulo / Dominio:** Análisis Estadístico y Empleabilidad
@@ -347,15 +359,18 @@ La especificación exhaustiva columna por columna de estas tablas se encuentra d
 
 #### Catálogos Dinámicos (Dimensiones)
 
-1. **`departamentos`:** catálogo cerrado de los 33 oficiales, compartido con la tendencia ocupacional (§3.17). Ya no se autogenera: los importadores lo resuelven por alias (migración 032).
-   - Campos: `id` (UUID PK, `DEFAULT gen_random_uuid()`), `nombre` (VARCHAR 100, NOT NULL, Único `uq_departamentos_nombre`, nombre oficial), `codigo_dane` (CHAR 2, NOT NULL, Único `uq_departamentos_codigo_dane`, `CHECK ~ '^[0-9]{2}$'`), `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ).
+1. **`departamentos`:** catálogo cerrado de los 32 departamentos y Bogotá D.C. (33 filas), compartido con la tendencia ocupacional y alertas de inversión. Ningún importador lo crea: lo resuelven por alias (migración 032).
+   - Campos: `id` (UUID PK, `DEFAULT gen_random_uuid()`), `nombre` (VARCHAR 100, NOT NULL, nombre oficial), `codigo_dane` (CHAR 2, NOT NULL, Único `uq_departamentos_codigo_dane`), `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ).
+   - Unicidad del nombre: índice `uq_departamentos_nombre` sobre `normalizar_nombre(nombre)` (042): «Vaupés» y «Vaupes» no pueden convivir. `ck_departamentos_codigo_dane`: `codigo_dane IN ('05', '08', '11', …, '99')`, los 33 códigos DANE (042; antes solo `~ '^[0-9]{2}$'`).
    - **`departamentos_alias`:** `alias_normalizado` (VARCHAR 120 PK: minúsculas, sin tildes, signos como espacio), `departamento_id` (UUID FK -> `departamentos.id`, ON DELETE CASCADE).
 2. **`centros_formacion`:** 
-   - Campos: `id` (UUID PK, `DEFAULT gen_random_uuid()`), `departamento_id` (UUID FK -> `departamentos.id`, ON DELETE RESTRICT, ON UPDATE CASCADE), `nombre` (VARCHAR 255, NOT NULL), `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ). Llave única compuesta: `(departamento_id, nombre)` (`uq_centros_formacion_depto_nombre`).
+   - Campos: `id` (UUID PK, `DEFAULT gen_random_uuid()`), `codigo` (VARCHAR 20, Único `uq_centros_formacion_codigo`, `CHECK ~ '^[0-9]+$'`: el `Cod. Centro` del SENA; nulo solo hasta la primera carga después de la 042), `departamento_id` (UUID FK -> `departamentos.id`, ON DELETE RESTRICT, ON UPDATE CASCADE), `nombre` (VARCHAR 255, NOT NULL), `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ). El nombre **no** es único: hay cinco centros llamados «Centro de Comercio y Servicios». `(id, departamento_id)` es único (`uq_centros_formacion_id_departamento`, 041): es el destino de la FK compuesta de los hechos.
 3. **`niveles_formacion`:** 
-   - Campos: `id` (UUID PK, `DEFAULT gen_random_uuid()`), `nombre` (VARCHAR 50, NOT NULL, Único `uq_niveles_formacion_nombre`), `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ).
+   - Campos: `id` (UUID PK, `DEFAULT gen_random_uuid()`), `codigo` (VARCHAR 20, Único `uq_niveles_formacion_codigo`, `CHECK ~ '^[0-9]+$'`: el `Cod. Nivel de formación`), `nombre` (VARCHAR 50, NOT NULL), `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ).
 4. **`programas_formacion`:** 
-   - Campos: `id` (UUID PK, `DEFAULT gen_random_uuid()`), `nivel_formacion_id` (UUID FK -> `niveles_formacion.id`, ON DELETE RESTRICT, ON UPDATE CASCADE), `nombre` (VARCHAR 255, NOT NULL), `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ). Llave única compuesta: `(nivel_formacion_id, nombre)` (`uq_programas_formacion_nivel_nombre`).
+   - Campos: `id` (UUID PK, `DEFAULT gen_random_uuid()`), `codigo` (VARCHAR 20, Único `uq_programas_formacion_codigo`, `CHECK ~ '^[0-9]+$'`: el `Cod. Programa`), `nivel_formacion_id` (UUID FK -> `niveles_formacion.id`, ON DELETE RESTRICT, ON UPDATE CASCADE), `nombre` (VARCHAR 255, NOT NULL), `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ). El nombre **no** es único ni dentro del nivel: «Apoyo administrativo en salud» es el 134507 y el 134508. `(id, nivel_formacion_id)` es único (`uq_programas_formacion_id_nivel`, 041).
+
+> Desde la migración 042 estos tres catálogos se identifican por el **código SENA**, no por el nombre (`11-base-de-datos.md` D10 y §9.5). El importador los crea o actualiza por código y borra los que ya no usa ningún hecho. Los únicos por nombre que hubo antes (`uq_niveles_formacion_nombre`, `uq_centros_formacion_depto_nombre`, `uq_programas_formacion_nivel_nombre`) se quitaron. Los de `departamentos.nombre` y `niveles_formacion.nombre` estaban documentados desde la 026 pero **no existieron hasta la 041**: la 026 los pidió con `unique: 'uq_…'` dentro de `createTable`, que no crea nada (§9.1).
 
 #### Tabla Central: `programas_sobresalientes` (Hechos)
 
@@ -375,8 +390,10 @@ La especificación exhaustiva columna por columna de estas tablas se encuentra d
 | 12 | `updated_at` | `TIMESTAMPTZ` | — | NO | Ninguna | — | `now()` | Fecha y hora de última actualización del registro. |
 
 **Índices y Restricciones del Observatorio:**
-- **Restricción de Idempotencia:** `uq_sobresalientes_registro UNIQUE (centro_id, programa_id, sexo)`. Garantiza que ejecuciones sucesivas del importador de Excel actualicen las métricas existentes sin duplicar filas.
-- **Índices de Cobertura:** `idx_sobresalientes_departamento`, `idx_sobresalientes_nivel`, `idx_sobresalientes_sexo` e `idx_sobresalientes_tasa`.
+- **Restricción de Idempotencia:** `uq_sobresalientes_registro UNIQUE (centro_id, programa_id, sexo)`. Una fila por grano: el importador vacía y recarga la tabla, y fusiona antes las filas repetidas del Excel.
+- **Coherencia de las copias (041, I22):** `fk_sobresalientes_centro_departamento FOREIGN KEY (centro_id, departamento_id) REFERENCES centros_formacion (id, departamento_id)` y `fk_sobresalientes_programa_nivel FOREIGN KEY (programa_id, nivel_formacion_id) REFERENCES programas_formacion (id, nivel_formacion_id)`, las dos `ON UPDATE CASCADE ON DELETE RESTRICT`. `departamento_id` y `nivel_formacion_id` repiten lo que dicen el centro y el programa; así no pueden contradecirlos.
+- **Índices:** `idx_sobresalientes_departamento (departamento_id)` e `idx_sobresalientes_programa (programa_id, nivel_formacion_id)`. Los de `nivel_formacion_id`, `sexo` y `tasa_vinculacion` se quitaron en la 041: nadie los leía y se reescribían enteros en cada importación.
+- **Columna derivada:** `tasa_vinculacion` coincide con `round(vinculados / certificados, 4)` en todas las filas; convertirla en columna generada está pendiente (`11-base-de-datos.md` §9.4).
 
 ---
 
@@ -404,7 +421,7 @@ La especificación exhaustiva columna por columna de estas tablas se encuentra d
 |:---|:---|:---|:---|:---:|:---:|
 | `roles_permisos` | `rol_id` | `roles` | `id` | `CASCADE` | `CASCADE` |
 | `roles_permisos` | `permiso_id` | `permisos` | `id` | `CASCADE` | `CASCADE` |
-| `paginas` | `version_publicada_id` | `paginas_versiones` | `id` | `SET NULL` | `NO ACTION` |
+| `paginas` | `version_publicada_id`, `id` | `paginas_versiones` | `id`, `pagina_id` | `SET NULL (version_publicada_id)` | `NO ACTION` |
 | `archivos` | `subido_por` | `usuarios` | `id` | `SET NULL` | `NO ACTION` |
 | `usuarios` | `creado_por` | `usuarios` | `id` | `SET NULL` | `NO ACTION` |
 | `paginas_versiones` | `creado_por` | `usuarios` | `id` | `SET NULL` | `NO ACTION` |
@@ -416,12 +433,17 @@ La especificación exhaustiva columna por columna de estas tablas se encuentra d
 | `paginas_versiones` | `publicado_por` | `usuarios` | `id` | `SET NULL` | `CASCADE` |
 | `paginas` | `creado_por` | `usuarios` | `id` | `SET NULL` | `CASCADE` |
 | `subidas_pendientes` | `pagina_id` | `paginas` | `id` | `CASCADE` | `CASCADE` |
+| `configuracion` | `actualizado_por` | `usuarios` | `id` | `SET NULL` | `NO ACTION` |
 | `centros_formacion` | `departamento_id` | `departamentos` | `id` | `RESTRICT` | `CASCADE` |
 | `programas_formacion` | `nivel_formacion_id` | `niveles_formacion` | `id` | `RESTRICT` | `CASCADE` |
 | `programas_sobresalientes` | `departamento_id` | `departamentos` | `id` | `RESTRICT` | `CASCADE` |
 | `programas_sobresalientes` | `centro_id` | `centros_formacion` | `id` | `RESTRICT` | `CASCADE` |
 | `programas_sobresalientes` | `programa_id` | `programas_formacion` | `id` | `RESTRICT` | `CASCADE` |
 | `programas_sobresalientes` | `nivel_formacion_id` | `niveles_formacion` | `id` | `RESTRICT` | `CASCADE` |
+| `programas_sobresalientes` | `centro_id`, `departamento_id` | `centros_formacion` | `id`, `departamento_id` | `RESTRICT` | `CASCADE` |
+| `programas_sobresalientes` | `programa_id`, `nivel_formacion_id` | `programas_formacion` | `id`, `nivel_formacion_id` | `RESTRICT` | `CASCADE` |
+| `proyectos_inversion` | `clase_id`, `seccion_id` | `ciiu_clases` | `id`, `seccion_id` | `RESTRICT` | `CASCADE` |
+| `proyectos_inversion_ubicaciones` | `municipio_id`, `departamento_id` | `municipios` | `id`, `departamento_id` | `RESTRICT` | `CASCADE` |
 | `departamentos_alias` | `departamento_id` | `departamentos` | `id` | `CASCADE` | `NO ACTION` |
 | `niveles_cualificacion` | `nivel_ocupacional_id` | `niveles_ocupacionales` | `id` | `NO ACTION` | `NO ACTION` |
 | `ocupaciones` | `codigo_nc` | `niveles_cualificacion` | `codigo_nc` | `NO ACTION` | `NO ACTION` |

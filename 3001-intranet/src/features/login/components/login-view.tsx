@@ -5,12 +5,32 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { validarEmail } from '@olo/email-policy';
 import { useAuth } from '@/features/login';
-import { ReturnToSiteLink } from '@/shared/ui/molecules/return-to-site-link';
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { GooLoader } from '@/shared/ui/atoms/goo-loader';
 import { mensajeDeError } from '@/shared/lib/errors';
 import { mensajeDeCierre } from '@/shared/lib/inactividad';
 import { SITE_URL } from '@/shared/lib/constants';
+import { permisosEditan, rolEdita } from '@/shared/lib/edicion';
+import {
+  accesoBotonClass,
+  accesoBotonEnBlancoClass,
+  accesoCampoClass,
+  accesoCampoEnBlancoClass,
+  accesoEnlaceClass,
+  accesoEnlaceEnBlancoClass,
+  accesoErrorClass,
+  accesoErrorEnBlancoClass,
+  accesoErrorGeneralClass,
+  accesoEtiquetaClass,
+  accesoEtiquetaEnBlancoClass,
+  accesoHuecoArribaClass,
+  accesoHuecoClass,
+  accesoIconoCampoClass,
+  accesoIconoCampoEnBlancoClass,
+  accesoSinTarjetaClass,
+  accesoTextoEnBlancoClass,
+} from './acceso-ui';
+import { MarcoAcceso } from './marco-acceso';
 
 /**
  * Mensajes de error del formulario, por campo. `general` es el del servidor, que no
@@ -61,6 +81,9 @@ function LoginForm() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  // Quien edita entra a la intranet con los botones de edición: el cargador lo dice
+  // (pedido del usuario, 2026-10-12). Con la misma regla que `puedeEditarPaginas`.
+  const [entraEditando, setEntraEditando] = useState(false);
 
   const validate = (): boolean => {
     const newErrors: typeof errors = {};
@@ -107,6 +130,7 @@ function LoginForm() {
         return;
       }
 
+      setEntraEditando(rolEdita(data.user.role) || permisosEditan(data.user.permisos ?? []));
       setIsSuccess(true);
 
       setTimeout(() => {
@@ -128,148 +152,125 @@ function LoginForm() {
   };
 
   return (
-    <div className="login-page">
-      {/* Panel izquierdo — Branding */}
-      <div className="login-left">
-        <div className="login-left-content">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/assets/svg/olo-logo-blanco.svg"
-            alt="Logo intranet"
-            // En el móvil el panel de marca va encima del formulario: con 210px de logo
-            // y el título a 36px, el formulario quedaba debajo del pliegue.
-            className="mx-auto w-[96px] sm:w-[150px] lg:w-[210px]"
-          />
-          <h1 className="text-2xl font-light text-white sm:text-3xl lg:text-4xl">
-            Bienvenido a <span className="font-bold"><br />NUESTRA INTRANET</span>
-          </h1>
+    // El mismo marco que el resto del acceso (`MarcoAcceso`, la maqueta del sitio web en
+    // azul): logo y título arriba en el móvil, a la izquierda desde `xl`. Es la única pantalla
+    // con el logo en todos los anchos (`conLogo`), como en el sitio. Tarjeta blanca desde `md`
+    // (las clases `…EnBlanco`, 2026-10-12), como la recuperación; en el móvil, directo sobre el
+    // azul. Ya autenticado, sin tarjeta ni borde: solo el cargador sobre el azul (pedido del
+    // usuario, 2026-10-12).
+    <MarcoAcceso
+      conLogo
+      enBlanco={!isSuccess}
+      claseTarjeta={isSuccess ? accesoSinTarjetaClass : ''}
+      titulo={
+        <>
+          {/* El espacio entre los dos es para el nombre accesible: dos `block` seguidos se
+              leerían «Bienvenido anuestra Intranet». */}
+          <span className="block font-normal">Bienvenido a</span>{' '}
+          <span className="block">nuestra Intranet</span>
+        </>
+      }
+    >
+      {isSuccess ? (
+        <div className="login-success-loader">
+          <GooLoader label={entraEditando ? 'Cargando modo edición...' : 'Iniciando sesión...'} />
         </div>
-      </div>
-
-      {/* Panel derecho — Login Card */}
-      <div className="login-right">
-        {/* Misma tarjeta que el login del panel de administración: clases de
-            Tailwind literales, no la hoja `.login-*` que tenía valores propios
-            y se desalineaba de sitio-web cada vez que uno de los dos cambiaba. */}
-        <div className="w-full max-w-[380px] rounded-[24px] bg-white px-6 py-8 shadow-[0_25px_60px_rgba(0,0,0,0.35)] sm:px-9 sm:py-10">
-          {isSuccess ? (
-            <div className="login-success-loader">
-              <GooLoader label="Preparando tu espacio..." />
+      ) : (
+        <form onSubmit={handleSubmit} noValidate>
+          {/* Antes que el error: explica por qué se está aquí, no qué se hizo mal. */}
+          {avisoDeCierre && (
+            <div
+              className="mb-[clamp(0.75rem,2.2dvh,1.5rem)] rounded-[16px] border border-blue-300 bg-blue-50 px-4 py-2.5 text-sm text-blue-800 md:mb-6"
+              role="status"
+            >
+              {avisoDeCierre}
             </div>
-          ) : (
-            <form onSubmit={handleSubmit} noValidate>
-              {/* Antes que el error: explica por qué se está aquí, no qué se hizo mal. */}
-              {avisoDeCierre && (
-                <div
-                  className="mb-4 rounded-lg border border-blue-300 bg-blue-50 px-3.5 py-2.5 text-sm text-blue-800"
-                  role="status"
-                >
-                  {avisoDeCierre}
-                </div>
-              )}
-
-              {errors.general && (
-                <div
-                  className="mb-4 rounded-lg border border-red-300 bg-red-50 px-3.5 py-2.5 text-sm text-red-600"
-                  role="alert"
-                >
-                  {errors.general}
-                </div>
-              )}
-
-              <div className="mb-4">
-                <label htmlFor="email" className="mb-1.5 block text-sm font-semibold text-[#0d1526]">
-                  Correo SENA
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  maxLength={100}
-                  placeholder="usuario@sena.edu.co"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className={`w-full rounded-lg border px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:outline-none focus:ring-2 ${
-                    errors.email
-                      ? 'border-red-400 focus:border-red-500 focus:ring-red-500'
-                      : 'border-gray-300 focus:border-[#0d1526] focus:ring-[#0d1526]'
-                  }`}
-                />
-                {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email}</p>}
-              </div>
-
-              <div className="mb-5">
-                <label htmlFor="password" className="mb-1.5 block text-sm font-semibold text-[#0d1526]">
-                  Contraseña
-                </label>
-                <div className="relative">
-                  <input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    maxLength={50}
-                    autoComplete="current-password"
-                    placeholder="Mínimo 12 caracteres"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className={`w-full rounded-lg border px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:outline-none focus:ring-2 pr-10 ${
-                      errors.password
-                        ? 'border-red-400 focus:border-red-500 focus:ring-red-500'
-                        : 'border-gray-300 focus:border-[#0d1526] focus:ring-[#0d1526]'
-                    }`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((v) => !v)}
-                    aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-gray-500 transition-colors hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d1526]"
-                  >
-                    <IconoMascara nombre={showPassword ? 'eye-open' : 'eye-closed'} tamano="h-5 w-5" />
-                  </button>
-                </div>
-                {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password}</p>}
-              </div>
-
-              {/* RF-13: aviso de políticas de privacidad y datos.
-
-                  Los dos enlaces apuntan al SITIO WEB, no a la intranet: la política es
-                  una sección del portal público y aquí no existe esa ruta. Eran
-                  relativas (`/politica-de-privacidad`, `/privacidad`), así que el
-                  middleware las tomaba por pantalla protegida y devolvía a quien las
-                  pulsara al propio login del que venía. */}
-              <p className="mb-6 text-xs leading-relaxed text-gray-500">
-                Al ingresar a este sitio aceptas la{' '}
-                <a href={`${SITE_URL}/inicio/politica-de-privacidad`} className="font-semibold text-gray-700 hover:underline">
-                  política de privacidad
-                </a>{' '}
-                y{' '}
-                <a href={`${SITE_URL}/inicio/politica-de-privacidad`} className="font-semibold text-gray-700 hover:underline">
-                  protección de datos
-                </a>
-                .
-              </p>
-
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="inline-flex w-full items-center justify-center rounded-[16px] bg-[#0d1526] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_8px_-2px_rgba(13,21,38,0.4)] transition hover:bg-[#1a2340] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0d1526] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {isLoading ? 'Ingresando...' : 'Ingresar'}
-              </button>
-
-              <div className="mt-4 text-center">
-                <Link
-                  href="/recovery"
-                  className="rounded text-xs text-gray-500 transition-colors hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d1526]"
-                >
-                  ¿Olvidaste tu contraseña?
-                </Link>
-              </div>
-            </form>
           )}
-        </div>
-        <ReturnToSiteLink classPrefix="login" />
-      </div>
-    </div>
+
+          {errors.general && (
+            <div className={accesoErrorGeneralClass} role="alert">
+              {errors.general}
+            </div>
+          )}
+
+          <div className={accesoHuecoClass}>
+            <label htmlFor="email" className={`${accesoEtiquetaClass} ${accesoEtiquetaEnBlancoClass}`}>
+              Correo SENA
+            </label>
+            <input
+              id="email"
+              type="email"
+              maxLength={100}
+              placeholder="usuario@sena.edu.co"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={accesoCampoClass(!!errors.email, accesoCampoEnBlancoClass(!!errors.email))}
+            />
+            {errors.email && <p className={`${accesoErrorClass} ${accesoErrorEnBlancoClass}`}>{errors.email}</p>}
+          </div>
+
+          <div className={accesoHuecoClass}>
+            <label htmlFor="password" className={`${accesoEtiquetaClass} ${accesoEtiquetaEnBlancoClass}`}>
+              Contraseña
+            </label>
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                maxLength={50}
+                autoComplete="current-password"
+                placeholder="Mínimo 12 caracteres"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={accesoCampoClass(!!errors.password, `pr-14 ${accesoCampoEnBlancoClass(!!errors.password)}`)}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                className={`absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white ${accesoIconoCampoClass} ${accesoIconoCampoEnBlancoClass}`}
+              >
+                <IconoMascara nombre={showPassword ? 'eye-open' : 'eye-closed'} tamano="h-4 w-4" />
+              </button>
+            </div>
+            {errors.password && <p className={`${accesoErrorClass} ${accesoErrorEnBlancoClass}`}>{errors.password}</p>}
+          </div>
+
+          {/* RF-13: aviso de políticas de privacidad y datos.
+
+              Los dos enlaces apuntan al SITIO WEB, no a la intranet: la política es
+              una sección del portal público y aquí no existe esa ruta. Eran
+              relativas (`/politica-de-privacidad`, `/privacidad`), así que el
+              middleware las tomaba por pantalla protegida y devolvía a quien las
+              pulsara al propio login del que venía.
+
+              El texto llena el ancho, como en el sitio web, y dice «nuestra» política
+              (las dos apps, 2026-10-11). */}
+          <p className={`${accesoHuecoClass} text-sm leading-relaxed text-white/85 ${accesoTextoEnBlancoClass}`}>
+            Al ingresar a este sitio aceptas nuestra{' '}
+            <a href={`${SITE_URL}/politica-de-privacidad`} className={`font-semibold text-white hover:underline ${accesoTextoEnBlancoClass}`}>
+              política de privacidad
+            </a>{' '}
+            y{' '}
+            <a href={`${SITE_URL}/politica-de-privacidad`} className={`font-semibold text-white hover:underline ${accesoTextoEnBlancoClass}`}>
+              protección de datos
+            </a>
+            .
+          </p>
+
+          <button type="submit" disabled={isLoading} className={`${accesoBotonClass} ${accesoBotonEnBlancoClass}`}>
+            {isLoading ? 'Ingresando...' : 'Ingresar'}
+          </button>
+
+          <div className={`${accesoHuecoArribaClass} text-center`}>
+            <Link href="/recovery" className={`${accesoEnlaceClass} ${accesoEnlaceEnBlancoClass}`}>
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </div>
+        </form>
+      )}
+    </MarcoAcceso>
   );
 }
 
@@ -277,11 +278,7 @@ export function LoginView() {
   return (
     <Suspense
       fallback={
-        <div className="login-page">
-          <div className="login-right w-full">
-            <div className="w-full max-w-[380px] rounded-[24px] bg-white px-9 py-10 shadow-[0_25px_60px_rgba(0,0,0,0.35)]" />
-          </div>
-        </div>
+        <div className="min-h-dvh w-full bg-[#001A39]" />
       }
     >
       <LoginForm />

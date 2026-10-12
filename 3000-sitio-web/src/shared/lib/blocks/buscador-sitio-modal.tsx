@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/20/solid';
 import { resaltarCoincidenciaTexto } from '@olo/blocks-renderer';
 import type { PaginaIndiceBusqueda, ResultadoBusqueda } from '@/features/paginas';
+import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
 
 export interface BuscadorSitioModalProps {
   isOpen: boolean;
@@ -27,6 +28,19 @@ export function BuscadorSitioModal({
   const [searchQuery, setSearchQuery] = useState('');
   const [activo, setActivo] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const { montado, cerrando } = useCierreAnimado(isOpen);
+
+  // La búsqueda se vacía al abrir y no al cerrar: al cerrar, el buscador sigue a la vista
+  // lo que dura su salida, y se veía la lista desaparecer de golpe antes del fundido. Es
+  // el ajuste de estado durante el render que recomienda React, sin efecto.
+  const [estabaAbierto, setEstabaAbierto] = useState(isOpen);
+  if (isOpen !== estabaAbierto) {
+    setEstabaAbierto(isOpen);
+    if (isOpen) {
+      setSearchQuery('');
+      setActivo(0);
+    }
+  }
   const listaRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
@@ -59,8 +73,6 @@ export function BuscadorSitioModal({
   };
 
   const handleCerrar = useCallback(() => {
-    setSearchQuery('');
-    setActivo(0);
     onClose();
   }, [onClose]);
 
@@ -135,14 +147,15 @@ export function BuscadorSitioModal({
     }
   };
 
-  if (!isOpen) return null;
+  if (!montado) return null;
 
   return (
     <div
       role="dialog"
       aria-modal="true"
       aria-label="Buscar en el sitio web"
-      className="fixed inset-0 z-50 h-[100dvh] w-screen overflow-y-auto bg-[#001631]/95 backdrop-blur-md"
+      data-cerrando={cerrando || undefined}
+      className="olo-anim-fondo fixed inset-0 z-50 h-[100dvh] w-screen overflow-y-auto bg-[#001631]/95 backdrop-blur-md"
       // Usamos `onMouseDown` y no `onClick`: si el usuario selecciona texto en el
       // buscador y suelta el ratón fuera, el clic se contabiliza en el fondo y
       // el buscador se cerraba en mitad de la selección.

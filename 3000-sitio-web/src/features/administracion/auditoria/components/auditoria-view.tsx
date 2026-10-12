@@ -10,14 +10,15 @@ import { DetalleRegistro } from './detalle-registro';
 import { ModalDepurarAuditoria } from './modal-depurar-auditoria';
 import { Trash2 } from 'lucide-react';
 import { BotonOjo } from '@/shared/ui/atoms/boton-ojo';
+import { COLOR_DE_ACCION } from '@/shared/lib/identidad-panel';
+import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
+import { BotonDeFila, FechaDeCelda, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
 import { useAuditoria } from '../hooks/use-auditoria';
 import { comentarioPrincipal, resumenDeCambios } from '../lib/cambios';
+import { FraseDeRegistro, PildoraDeAccion } from './frase-de-registro';
 
 import {
-  COLOR_ACCION,
   ETIQUETA_CATEGORIA,
-  etiquetaDeAccion,
-  etiquetaDeEntidad,
   opcionesDeAccion,
   type CategoriaAuditoria,
   type RegistroAuditoria,
@@ -56,7 +57,13 @@ export function AuditoriaView() {
   } = useAuditoria();
 
   const [seleccionado, setSeleccionado] = useState<RegistroAuditoria | null>(null);
+  // Registros desplegados del acordeón (móvil y tablet). En la tabla de escritorio no se usa.
+  const { estaAbierta, alternar } = useFilasAbiertas();
   const [modalDepurarAbierto, setModalDepurarAbierto] = useState(false);
+  // Como en Respaldos: la `key` del modal cambia en cada apertura y lo monta de cero, con
+  // el análisis y el resultado limpios. Así puede seguir montado al cerrarse, que es lo
+  // que necesita su animación de salida (`useCierreAnimado`).
+  const [aperturaDepurar, setAperturaDepurar] = useState(0);
 
   return (
 
@@ -67,7 +74,10 @@ export function AuditoriaView() {
         acciones={
           <button
             type="button"
-            onClick={() => setModalDepurarAbierto(true)}
+            onClick={() => {
+              setAperturaDepurar((n) => n + 1);
+              setModalDepurarAbierto(true);
+            }}
             className="flex h-11 shrink-0 items-center gap-2 rounded-[16px] px-4 text-sm font-semibold text-red-600 transition hover:bg-red-50 hover:text-red-700 active:bg-red-100 dark:text-red-400 dark:hover:bg-red-950/40 dark:hover:text-red-300 dark:active:bg-red-950/60"
           >
             <Trash2 size={16} />
@@ -149,7 +159,7 @@ export function AuditoriaView() {
       {error ? (
         <p className="text-sm text-red-600">{error}</p>
       ) : isLoading ? (
-        <CargandoSeccion label="Cargando bitácora..." className="min-h-[40vh]" />
+        <CargandoSeccion label="Cargando bitácora..." />
       ) : registros.length === 0 ? (
         <p className="text-sm text-zinc-500">
           {hayFiltros
@@ -159,13 +169,16 @@ export function AuditoriaView() {
       ) : (
         <>
           <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-[#7db828]/30">
-            <table className="olo-tabla-apilable w-full min-w-[52rem] text-left text-sm">
+            {/* En el móvil y la tablet, acordeón, como «Páginas en revisión»: cada registro
+                es una frase («El usuario Ana Gómez hizo la acción de [Edición]») y al tocarlo se completa con
+                lo que cambió y la fecha, y debajo sale «Ver detalle». Piezas en
+                `fila-acordeon.tsx`; reglas en globals.css (`olo-tabla-acordeon`). */}
+            <table className="olo-tabla-apilable olo-tabla-acordeon w-full min-w-[52rem] text-left text-sm">
               <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-[#131b2f]">
                 <tr>
                   <th scope="col" className="px-4 py-3 font-medium">Fecha y hora</th>
                   <th scope="col" className="px-4 py-3 font-medium">Usuario</th>
                   <th scope="col" className="px-4 py-3 font-medium">Acción</th>
-                  <th scope="col" className="px-4 py-3 font-medium">Entidad</th>
                   <th scope="col" className="px-4 py-3 font-medium">Cambios</th>
                   <th scope="col" className="px-4 py-3 font-medium">
                     <span className="sr-only">Detalle</span>
@@ -173,28 +186,46 @@ export function AuditoriaView() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
-                {registros.map((registro) => (
-                  <tr key={registro.id} className="bg-white dark:bg-[#0f1626]">
-                    <td data-etiqueta="Fecha y hora" className="whitespace-nowrap px-4 py-2 text-zinc-600 dark:text-zinc-300">
-                      {new Date(registro.fecha).toLocaleString('es-CO')}
+                {registros.map((registro) => {
+                  const abierta = estaAbierta(registro.id);
+                  const nombre =
+                    (registro.usuarioId ? usuarios.find((u) => u.id === registro.usuarioId)?.nombre : null) ??
+                    registro.usuarioNombre;
+                  return (
+                  <tr key={registro.id} data-abierta={abierta || undefined} className="bg-white dark:bg-[#0f1626]">
+                    {/* Solo en acordeón: la frase (`FraseDeRegistro`, la misma de «Actividad
+                        reciente» en el dashboard). */}
+                    <td data-resumen>
+                      <ResumenDeFila abierta={abierta} onAlternar={() => alternar(registro.id)}>
+                        <FraseDeRegistro registro={registro} nombre={nombre} abierta={abierta} />
+                      </ResumenDeFila>
                     </td>
-                    <td data-etiqueta="Usuario" className="px-4 py-2 text-zinc-900 dark:text-[#f6f6f6]">
-                      {(registro.usuarioId ? usuarios.find(u => u.id === registro.usuarioId)?.nombre : null) ?? registro.usuarioNombre ?? <span className="text-zinc-500">Sin usuario</span>}
+                    {/* Solo en acordeón y desplegada: el detalle con su nombre (el ojo solo no
+                        se entiende en una pantalla táctil). Lo que cambió ya va en la frase. */}
+                    <td data-detalle>
+                      <div className="mb-1">
+                        <BotonDeFila color={COLOR_DE_ACCION['ver-detalle']} onClick={() => setSeleccionado(registro)}>
+                          <IconoMascara nombre="eye-closed" tamano="h-6 w-6" />
+                          Ver detalle
+                        </BotonDeFila>
+                      </div>
                     </td>
-                    <td data-etiqueta="Acción" className="px-4 py-2">
-                      <span
-                        className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${COLOR_ACCION[registro.accion] ?? ''}`}
-                      >
-                        {etiquetaDeAccion(registro.accion, registro.categoria)}
-                      </span>
+                    <td data-solo-tabla data-etiqueta="Fecha y hora" className="whitespace-nowrap px-4 py-2 text-zinc-600 dark:text-zinc-300">
+                      {/* La hora debajo y más pequeña (pedido del usuario, 2026-10-12). Mismo
+                          formato de antes, con segundos: `exacta`. */}
+                      <FechaDeCelda iso={registro.fecha} exacta />
                     </td>
-                    <td data-etiqueta="Entidad" className="px-4 py-2 text-zinc-600 dark:text-zinc-300">
-                      {etiquetaDeEntidad(registro.entidadTipo)}
+                    <td data-solo-tabla data-etiqueta="Usuario" className="px-4 py-2 text-zinc-900 dark:text-[#f6f6f6]">
+                      {nombre ?? <span className="text-zinc-500">Sin usuario</span>}
+                    </td>
+                    <td data-solo-tabla data-etiqueta="Acción" className="px-4 py-2">
+                      <PildoraDeAccion registro={registro} />
                     </td>
                     {/* Se corta en la tabla y se lee completo en el `title` o en el detalle.
                         El comentario de un envío va más oscuro que los campos internos:
                         es lo que se escribió para ser leído. */}
                     <td
+                      data-solo-tabla
                       data-etiqueta="Cambios"
                       className={`max-w-xs truncate px-4 py-2 ${
                         comentarioPrincipal(registro)
@@ -204,46 +235,52 @@ export function AuditoriaView() {
                       title={resumenDeCambios(registro)}
                     >
                       {/* Cuando la tabla pasa a tarjetas, el texto no se corta en una línea: se parte, hasta tres. */}
-                      <span className="@max-3xl:line-clamp-3">{resumenDeCambios(registro) || '—'}</span>
+                      <span className="apilada:line-clamp-3">{resumenDeCambios(registro) || '—'}</span>
                     </td>
-                    <td data-etiqueta="Detalle" className="px-4 py-2 text-right">
+                    <td data-solo-tabla data-etiqueta="Detalle" className="px-4 py-2 text-right">
+                      {/* Ojo y tooltip en el verde de la marca, como pidió el usuario. El ojo
+                          verde sobre blanco da 2,4:1 y un icono pide 3:1 (SC 1.4.11); la letra
+                          blanca del tooltip, 2,4:1 de los 4,5:1 de un texto de 12 px. */}
                       <BotonOjo
                         etiqueta="Ver detalle"
                         onClick={() => setSeleccionado(registro)}
-                        className="rounded-lg p-1.5 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-[#94a3b8] dark:hover:bg-white/5 dark:hover:text-white"
+                        className="rounded-lg p-1.5 text-[#7DB728] transition-colors hover:bg-[#7DB728]/10"
+                        claseTooltip={COLOR_DE_ACCION['ver-detalle']}
                       />
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
-          </div>
 
-          <Paginador
-            pagina={pagina}
-            totalPaginas={totalPaginas}
-            onCambiarPagina={irAPagina}
-            total={total}
-            porPagina={porPagina}
-            onCambiarPorPagina={cambiarPorPagina}
-            etiqueta="registros"
-            className="mt-4 rounded-xl border border-zinc-200 px-4 dark:border-[#7db828]/30"
-          />
+            {/* Dentro de la tarjeta de la tabla, como en las demás listas, y con el fondo de
+                sus filas. Antes era una caja aparte con su propio borde. */}
+            <Paginador
+              pagina={pagina}
+              totalPaginas={totalPaginas}
+              onCambiarPagina={irAPagina}
+              total={total}
+              porPagina={porPagina}
+              onCambiarPorPagina={cambiarPorPagina}
+              etiqueta="registros"
+              className="bg-white px-4 dark:bg-[#0f1626]"
+            />
+          </div>
         </>
       )}
 
       <DetalleRegistro registro={seleccionado} usuarios={usuarios} onCerrar={() => setSeleccionado(null)} />
 
-      {modalDepurarAbierto && (
-        <ModalDepurarAuditoria
-          abierto={modalDepurarAbierto}
-          onCerrar={() => setModalDepurarAbierto(false)}
-          onExito={() => {
-            setModalDepurarAbierto(false);
-            recargar();
-          }}
-        />
-      )}
+      <ModalDepurarAuditoria
+        key={aperturaDepurar}
+        abierto={modalDepurarAbierto}
+        onCerrar={() => setModalDepurarAbierto(false)}
+        onExito={() => {
+          setModalDepurarAbierto(false);
+          recargar();
+        }}
+      />
 
     </div>
   );

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -14,6 +15,14 @@ import {
 } from '@/shared/ui/molecules/dropdown';
 import { Navbar, NavbarSection, NavbarSpacer } from '@/shared/ui/organisms/navbar';
 import { NavegacionMobilePanel } from '@/shared/lib/mobile';
+import {
+  IDENTIDAD_DE_FABRICA,
+  iconoDelPanel,
+  iconoEnBlancoEnOscuro,
+  logoDelPanel,
+  logoEnBlancoEnOscuro,
+  type IdentidadPanel,
+} from '@/shared/lib/identidad-panel';
 import { BuscadorModal } from '@/features/administracion/buscador';
 import {
   Sidebar,
@@ -59,9 +68,7 @@ import { TarjetaUsuarios } from './tarjeta-usuarios';
 import {
   listarAuditoria,
   ErrorAuditoria,
-  COLOR_ACCION,
-  etiquetaDeAccion,
-  resumenDeCambios,
+  FraseDeRegistro,
   type RegistroAuditoria,
 } from '@/features/administracion/auditoria';
 import { useUsuarios } from '../hooks/use-usuarios';
@@ -96,7 +103,7 @@ function SidebarGroup({
         onClick={() => setOpen((v) => !v)}
         className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-base font-semibold transition [&>svg]:size-5 [&>svg]:shrink-0 ${isActive
           ? 'bg-zinc-100 text-[#7DB728] dark:bg-brand-interactive/20 dark:text-brand-interactive [&>svg]:text-[#7DB728] dark:[&>svg]:text-brand-interactive'
-          : 'text-zinc-600 hover:bg-[#001631]/10 hover:text-[#7DB728] dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive [&>svg]:text-zinc-500 dark:[&>svg]:text-slate-400'
+          : 'text-zinc-600 hover:bg-[#001631]/10 hover:text-[#7DB728] dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive [&>svg]:text-zinc-500 dark:[&>svg]:text-slate-400 hover:[&>svg]:text-[#7DB728] dark:hover:[&>svg]:text-brand-interactive'
           }`}
         aria-expanded={open}
       >
@@ -139,15 +146,6 @@ function sinPlantilla(resumen: ResumenPaginasPublicadas): ResumenPaginasPublicad
   return { sitio, intranet, total: sitio.length + intranet.length };
 }
 
-/** Fecha corta: la tarjeta es angosta y la hora exacta se consulta en Auditoría. */
-const fechaCorta = (iso: string) =>
-  new Date(iso).toLocaleString('es-CO', {
-    day: '2-digit',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-
 /** Botón de la barra superior del móvil (buscar y tema). */
 const BOTON_BARRA_MOVIL =
   'flex size-11 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-[#94a3b8] dark:hover:bg-zinc-800 dark:hover:text-white [&>svg]:size-5 [&>svg]:shrink-0';
@@ -177,12 +175,15 @@ function ModalAlertas({
   onDismissCuenta: (email: string) => void;
   onDismissRevision: (id: string) => void;
 }) {
-  if (!abierto || typeof document === 'undefined') return null;
+  const { montado, cerrando } = useCierreAnimado(abierto);
+
+  if (!montado || typeof document === 'undefined') return null;
   const total = cuentasPorVencer.length + enRevision.length;
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-[#0f172a]/50 p-3 backdrop-blur-sm sm:p-6"
+      className="olo-anim-fondo fixed inset-0 z-[60] flex items-center justify-center bg-[#0f172a]/50 p-3 backdrop-blur-sm sm:p-6"
+      data-cerrando={cerrando || undefined}
       // Usamos `onMouseDown` y no `onClick`: si el usuario selecciona texto dentro
       // del panel y suelta el ratón fuera, el clic se contabiliza en el fondo y
       // el panel se cerraba en mitad de la selección.
@@ -193,7 +194,7 @@ function ModalAlertas({
       <div
         // Sin alto mínimo: la caja mide lo que su contenido, hasta el 88 % de la
         // pantalla; con más alertas, la lista hace scroll dentro.
-        className="flex max-h-[88dvh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-[#121824]"
+        className="olo-anim-caja flex max-h-[88dvh] w-full max-w-2xl flex-col overflow-hidden rounded-[32px] border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-[#121824]"
         role="dialog"
         aria-modal="true"
         aria-labelledby="alertas-titulo"
@@ -201,7 +202,7 @@ function ModalAlertas({
         <header className="border-b border-zinc-100 px-5 py-4 sm:px-8 sm:py-6 dark:border-zinc-800/80">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <h3 id="alertas-titulo" className="admin-subtitle text-xl text-zinc-900 dark:text-[#f6f6f6]">
+              <h3 id="alertas-titulo" className="text-xl font-semibold text-[#001631] dark:text-[#e6e8f0]">
                 Notificaciones
               </h3>
               <p className="mt-1 text-base text-zinc-500 dark:text-[#94a3b8]">
@@ -231,7 +232,9 @@ function ModalAlertas({
               {cuentasPorVencer.map((a) => (
                 // Sin fondo ni borde en la fila: el estado lo dicen la etiqueta y el
                 // color del texto, que es el mismo de la etiqueta.
-                <div key={a.userId || a.email} className="group flex h-11 w-full items-center gap-2">
+                // 28 px de alto (`h-7`; antes 44, pedido del usuario el 2026-10-12): lo mismo que el
+                // botón de la derecha, que es el área táctil.
+                <div key={a.userId || a.email} className="group flex h-7 w-full items-center gap-2">
                   <span className="shrink-0 rounded-full bg-amber-200/80 px-2.5 py-1 text-xs font-semibold text-amber-900 dark:bg-amber-800/60 dark:text-amber-100">
                     Por vencer
                   </span>
@@ -256,7 +259,7 @@ function ModalAlertas({
               ))}
 
               {enRevision.map((p) => (
-                <div key={p.id} className="group flex h-11 w-full items-center gap-2">
+                <div key={p.id} className="group flex h-7 w-full items-center gap-2">
                   <span className="shrink-0 rounded-full bg-blue-200/80 px-2.5 py-1 text-xs font-semibold text-blue-900 dark:bg-blue-800/60 dark:text-blue-100">
                     En revisión
                   </span>
@@ -290,10 +293,13 @@ function ModalAlertas({
 export function PanelGeneralLayout({
   children,
   userProfile,
+  identidad = IDENTIDAD_DE_FABRICA,
   className,
 }: {
   children: React.ReactNode;
   userProfile?: { name: string; email: string };
+  /** Logo e icono de Configuración → Identidad visual; la lee `app/admin/layout.tsx`. */
+  identidad?: IdentidadPanel;
   className?: string;
 }) {
   const router = useRouter();
@@ -419,15 +425,26 @@ export function PanelGeneralLayout({
             </NavbarSection>
           </Navbar>
         }
-        navegacionMobile={<NavegacionMobilePanel pendientesRevision={enRevision.length} />}
+        navegacionMobile={<NavegacionMobilePanel
+            pendientesRevision={enRevision.length}
+            logo={iconoDelPanel(identidad)}
+            logoEnBlancoEnOscuro={iconoEnBlancoEnOscuro(identidad)}
+          />}
         sidebar={
           <Sidebar>
             <SidebarHeader>
               <div className="flex items-center justify-between w-full">
-                {/* SVG estático servido desde /public: next/image no aporta optimización aquí. */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                {/* El de fábrica (SVG de /public) o el subido en Configuración: next/image no
+                    aporta optimización aquí. En modo oscuro, en blanco según
+                    `logoEnBlancoEnOscuro`.
+                    `max-w-full object-contain`: un logo subido puede ser más ancho que la barra. */}
                 <Link href="/" className="group cursor-pointer pt-7" title="Ir al sitio web">
-                  <img src="/assets/logos/olo-logo-horizontal.svg" alt="OLO" className="h-16 transition-all duration-300 group-hover:scale-105 group-hover:drop-shadow-md dark:brightness-0 dark:invert cursor-pointer" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={logoDelPanel(identidad)}
+                    alt="OLO"
+                    className={`h-16 max-w-full cursor-pointer object-contain object-left transition-all duration-300 group-hover:scale-105 group-hover:drop-shadow-md ${logoEnBlancoEnOscuro(identidad) ? 'dark:brightness-0 dark:invert' : ''}`}
+                  />
                 </Link>
               </div>
             </SidebarHeader>
@@ -584,8 +601,7 @@ export function PanelGeneralLayout({
 /**
  * Título, subtítulo y el enlace a la bitácora completa de la tarjeta «Actividad
  * Reciente». Se repite igual en sus tres estados (con datos, sin acceso/con error y
- * vacía) — con datos va dentro de un `<caption>` de la tabla; sin ellos, en un `<div>`
- * suelto — así que sale a un componente en vez de copiarlo tres veces.
+ * vacía), así que sale a un componente en vez de copiarlo tres veces.
  */
 function CabeceraActividad({ sinAccesoAuditoria }: { sinAccesoAuditoria: boolean }) {
   return (
@@ -685,23 +701,30 @@ export function PanelGeneralDashboard() {
       />
 
       {error && (
-        <p className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
+        <p className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
           {error}
         </p>
       )}
 
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Tres en fila solo desde 1440 px (pedido del usuario, 2026-10-10): por debajo, con
+          la barra lateral, las tres quedaban estrechas y el árbol de páginas cortaba los
+          títulos. Entonces la fila es «Páginas publicadas» y «Visitas», y «Usuarios» baja a
+          una fila propia a todo el ancho. En el móvil, una debajo de otra, como antes.
+          `min-[90rem]` (1440 px) y no `min-[1440px]`: en px, Tailwind no sabe ordenarlo
+          con `sm:` (en rem) y lo ponía antes, así que `sm:grid-cols-2` le ganaba siempre. */}
+      <div className="mb-8 grid gap-4 sm:grid-cols-2 min-[90rem]:grid-cols-3">
         <TarjetaPaginasPublicadas resumen={paginasPublicadas} error={errorPaginas} />
         <TarjetaVisitas resumen={paginasPublicadas} error={errorPaginas} />
-        <TarjetaUsuarios users={users} loading={loading} />
+        <div className="sm:col-span-2 min-[90rem]:col-span-1">
+          <TarjetaUsuarios users={users} loading={loading} />
+        </div>
       </div>
 
       <div className="w-full">
         {/* Mismo patrón de tarjeta que Auditoría/Roles/Usuarios (borde + fondo +
-            sombra al pasar el ratón), pero sin `p-4`: el título, la tabla y el
-            paginador llevan su propio espaciado, como en el componente de
-            referencia (caption + thead + tbody a ancho completo, sin margen
-            perdido a los lados). */}
+            sombra al pasar el ratón), pero sin `p-4`: el título, la lista y el
+            paginador llevan su propio espaciado, y las líneas entre registros van
+            de borde a borde. */}
         <div className="min-w-0 overflow-hidden rounded-xl border border-zinc-200 bg-white transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
           {errorActividad ? (
             <div className="p-5">
@@ -718,55 +741,25 @@ export function PanelGeneralDashboard() {
             </div>
           ) : (actividad || []).length > 0 ? (
             <>
-              {/* `overflow-y-hidden` junto al `-x-auto` es lo que hace falta para que
-                  el redondeo del contenedor recorte la cabecera en las cuatro
-                  esquinas: con un solo eje explícito, algunos navegadores no lo
-                  clipan igual. */}
-              <div className="overflow-x-auto overflow-y-hidden">
-                <table className="olo-tabla-apilable w-full min-w-[40rem] text-left text-sm">
-                  <caption className="p-5 text-left">
-                    <CabeceraActividad sinAccesoAuditoria={sinAccesoAuditoria} />
-                  </caption>
-                  <thead className="border-y border-zinc-200 bg-zinc-50 text-xs text-zinc-500 dark:border-zinc-700 dark:bg-white/5 dark:text-[#94a3b8]">
-                    <tr>
-                      <th scope="col" className="px-5 py-3 font-medium">Fecha y hora</th>
-                      <th scope="col" className="px-5 py-3 font-medium">Usuario</th>
-                      <th scope="col" className="px-5 py-3 font-medium">Acción</th>
-                      <th scope="col" className="px-5 py-3 font-medium">Cambios</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
-                    {actividadPaginada.map((registro) => (
-                      <tr key={registro.id}>
-                        <td data-etiqueta="Fecha y hora" className="whitespace-nowrap px-5 py-2 text-zinc-600 dark:text-zinc-300">
-                          {fechaCorta(registro.fecha)}
-                        </td>
-                        <td data-etiqueta="Usuario" className="max-w-[10rem] truncate px-5 py-2 font-medium text-zinc-900 dark:text-[#f6f6f6]">
-                          {registro.usuarioNombre ?? <span className="font-normal text-zinc-500">Sin usuario</span>}
-                        </td>
-                        <td data-etiqueta="Acción" className="px-5 py-2">
-                          <span
-                            className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${COLOR_ACCION[registro.accion] ?? ''}`}
-                          >
-                            {etiquetaDeAccion(registro.accion, registro.categoria)}
-                          </span>
-                        </td>
-                        {/* Lo que de verdad cambió (el comentario del envío, o el
-                            motivo de un rechazo), no los nombres de los campos
-                            tocados: mismo resumen que ya usa la tabla de
-                            Auditoría, para que las dos lean igual un registro. */}
-                        <td
-                          data-etiqueta="Cambios"
-                          className="max-w-[16rem] truncate px-5 py-2 text-zinc-500 dark:text-[#94a3b8]"
-                          title={resumenDeCambios(registro)}
-                        >
-                          <span className="@max-3xl:line-clamp-3">{resumenDeCambios(registro) || '—'}</span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="p-5">
+                <CabeceraActividad sinAccesoAuditoria={sinAccesoAuditoria} />
               </div>
+              {/* Una lista con la frase entera de cada registro, en todas las pantallas
+                  (pedido del usuario, 2026-10-10): «El usuario David Tejada hizo la acción
+                  de [Autenticación]: inició sesión en el sitio web el 10 de octubre de 2026
+                  a las 5:41 p. m.». Antes era una tabla de cuatro columnas que en el móvil
+                  y la tablet pasaba a acordeón; ahora no hay nada que desplegar. La frase es
+                  la de Auditoría (`FraseDeRegistro`), para que las dos lean igual. */}
+              <ul
+                aria-label="Actividad reciente"
+                className="divide-y divide-zinc-200 border-t border-zinc-200 dark:divide-zinc-700 dark:border-zinc-700"
+              >
+                {actividadPaginada.map((registro) => (
+                  <li key={registro.id} className="px-5 py-3 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
+                    <FraseDeRegistro registro={registro} nombre={registro.usuarioNombre} abierta />
+                  </li>
+                ))}
+              </ul>
 
               <Paginador
                 pagina={paginaActualActividad}

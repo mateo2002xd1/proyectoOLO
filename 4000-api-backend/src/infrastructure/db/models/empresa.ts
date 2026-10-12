@@ -22,6 +22,10 @@ Empresa.init(
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at',
+    // Único por nombre normalizado («Grupo Éxito» = «GRUPO EXITO»): migración 042.
+    indexes: [
+      { unique: true, fields: [sequelize.fn('normalizar_nombre', sequelize.col('nombre'))], name: 'uq_empresas_nombre' },
+    ],
   }
 );
 

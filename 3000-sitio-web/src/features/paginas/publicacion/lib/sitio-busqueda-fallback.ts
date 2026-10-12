@@ -35,7 +35,7 @@ export const SITIO_ESTATICO_FALLBACK: PaginaIndiceBusqueda[] = [
   {
     slug: 'politica-de-privacidad',
     titulo: 'Políticas de Privacidad y Tratamiento de Datos',
-    href: '/inicio/politica-de-privacidad',
+    href: '/politica-de-privacidad',
     items: [
       { type: 'h1', text: 'Políticas de Seguridad, Privacidad y Tratamiento de Datos' },
       { type: 'h2', text: 'Documentos y Recursos Normativos Oficiales', blockId: 'visor-documentos-static' },

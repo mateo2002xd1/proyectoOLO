@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { TrashIcon } from '@heroicons/react/20/solid';
 import { Alert, AlertActions, AlertDescription, AlertTitle } from '@/shared/ui/molecules/alert';
 import { Button } from '@/shared/ui/atoms/button';
+import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
 import { Paginacion } from '@/shared/ui/molecules/paginacion';
 import { YearPicker } from '@/shared/ui/molecules/year-picker';
@@ -85,7 +86,7 @@ export function HistorialCargasTendencia({
   return (
     <div>
       <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <h3 className="text-sm font-medium text-gray-700 dark:text-zinc-300">
+        <h3 className="text-sm font-bold text-gray-700 dark:text-zinc-300">
           Historial de cargas
           {historial && (
             <span className="ml-2 font-normal text-zinc-500 dark:text-[#94a3b8]">
@@ -114,7 +115,7 @@ export function HistorialCargasTendencia({
       </div>
 
       {!historial ? (
-        <p className="text-sm text-gray-500 dark:text-[#94a3b8]">Cargando historial...</p>
+        <CargandoSeccion label="Cargando historial..." className="min-h-[14rem]" />
       ) : cargas.length === 0 ? (
         <p className="rounded-lg border border-dashed border-zinc-200 px-4 py-6 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:text-[#94a3b8]">
           {hayFiltro ? 'Sin cargas para ese año y periodo.' : 'Todavía no hay cargas.'}
@@ -174,7 +175,7 @@ export function HistorialCargasTendencia({
                     </td>
                     {hayAcciones && (
                       <td className="whitespace-nowrap px-3 py-3">
-                        <div className="flex flex-wrap items-center gap-2 @3xl:justify-end">
+                        <div className="flex flex-wrap items-center gap-2 en-tabla:justify-end">
                           {vigente && corteId !== null && carga.corteEstado !== 'publicado' && onPublicar && (
                             <button
                               type="button"

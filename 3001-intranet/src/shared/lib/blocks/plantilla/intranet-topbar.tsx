@@ -11,6 +11,7 @@ import {
 } from '@/features/paginas/client';
 import { desplazarAElemento, resaltarCoincidenciaTexto } from '@olo/blocks-renderer';
 import { NavegacionMobileIntranet } from '@/shared/lib/mobile';
+import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
 
 /** Valores de Puck para `justify-content`/`align-items` dentro de `.intranet-brand`. */
 type AlineacionFlex = 'flex-start' | 'center' | 'flex-end';
@@ -130,6 +131,7 @@ export function IntranetTopbar({
   const [searchQuery, setSearchQuery] = useState("");
   const [activo, setActivo] = useState(0);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const buscador = useCierreAnimado(isDropdownOpen);
   // Índice del enlace cuyo submenú está abierto por clic o toque. El `:hover` sigue
   // abriéndolo con ratón, pero solo con él no se abría con teclado ni de forma fiable
   // en una pantalla táctil.
@@ -260,20 +262,24 @@ export function IntranetTopbar({
     setActivo(0);
   };
 
+  // La búsqueda se vacía al abrir y no al cerrar: al cerrar, el buscador sigue a la vista
+  // lo que dura su salida, y se veía la lista desaparecer de golpe antes del fundido.
+  const abrirBuscador = useCallback(() => {
+    setSearchQuery('');
+    setActivo(0);
+    setIsDropdownOpen(true);
+  }, []);
+
   const cerrarBuscador = useCallback(() => {
     document.body.style.overflow = '';
     setIsDropdownOpen(false);
-    setSearchQuery('');
-    setActivo(0);
   }, []);
 
   const irA = useCallback(
     (href: string, blockId?: string, texto?: string) => {
-      // 1. Restaurar scroll del body, limpiar filtro de búsqueda y cerrar el modal
+      // 1. Restaurar scroll del body y cerrar el modal (la búsqueda se vacía al reabrirlo)
       document.body.style.overflow = '';
       setIsDropdownOpen(false);
-      setSearchQuery('');
-      setActivo(0);
 
       if (typeof window === 'undefined') {
         router.push(href);
@@ -482,7 +488,7 @@ export function IntranetTopbar({
               if (isDropdownOpen) {
                 cerrarBuscador();
               } else {
-                setIsDropdownOpen(true);
+                abrirBuscador();
               }
             }}
           >
@@ -515,12 +521,13 @@ export function IntranetTopbar({
         </div>
       </div>
 
-      {isDropdownOpen && (
+      {buscador.montado && (
         <div
           role="dialog"
           aria-modal="true"
           aria-label="Buscar en la intranet"
-          className="fixed inset-0 z-50 h-[100dvh] w-screen overflow-y-auto bg-[#001631]/95 backdrop-blur-md"
+          data-cerrando={buscador.cerrando || undefined}
+          className="olo-anim-fondo fixed inset-0 z-50 h-[100dvh] w-screen overflow-y-auto bg-[#001631]/95 backdrop-blur-md"
           // Usamos `onMouseDown` y no `onClick`: si el usuario selecciona texto en
           // el buscador y suelta el ratón fuera, el clic se contabiliza en el
           // fondo y el buscador se cerraba en mitad de la selección.
@@ -646,7 +653,7 @@ export function IntranetTopbar({
           pulgar; arriba quedan el nombre y «Cerrar sesión». Va dentro de la barra y no
           en `MarcoSecciones` para que el editor y la vista previa de la plantilla la
           pinten con el menú del borrador. */}
-      <NavegacionMobileIntranet menuItems={menuItems} fondo={fondo} onBuscar={() => setIsDropdownOpen(true)} />
+      <NavegacionMobileIntranet menuItems={menuItems} fondo={fondo} onBuscar={abrirBuscador} />
     </header>
   );
 }

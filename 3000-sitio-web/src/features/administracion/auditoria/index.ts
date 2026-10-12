@@ -7,6 +7,7 @@
 
 // Components
 export { AuditoriaView } from './components/auditoria-view';
+export { FraseDeRegistro, PildoraDeAccion } from './components/frase-de-registro';
 
 // Hooks
 export { useAuditoria } from './hooks/use-auditoria';

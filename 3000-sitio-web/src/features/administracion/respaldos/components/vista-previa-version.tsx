@@ -132,7 +132,7 @@ export function VistaPreviaVersion({
             if (!mostrarConfirmacion && !mostrarBloqueo) onCerrar();
           }
         }}
-        className="m-auto w-full max-w-2xl rounded-xl border border-zinc-200 bg-white p-0 text-zinc-900 backdrop:bg-[#0f172a]/50 backdrop:backdrop-blur-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:text-[#f6f6f6]"
+        className="olo-anim-dialogo m-auto w-full max-w-2xl rounded-xl border border-zinc-200 bg-white p-0 text-zinc-900 backdrop:bg-[#0f172a]/50 backdrop:backdrop-blur-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:text-[#f6f6f6]"
       >
         {registro && (
           <div className="flex max-h-[80dvh] flex-col">
@@ -159,8 +159,8 @@ export function VistaPreviaVersion({
               <Dato etiqueta="Reemplazada el">
                 {new Date(registro.publicadoEn).toLocaleString('es-CO', { dateStyle: 'full', timeStyle: 'medium' })}
               </Dato>
-              <Dato etiqueta="Editada por">{registro.editadoPor.nombre}</Dato>
-              <Dato etiqueta="Publicada por">{registro.publicadoPor.nombre}</Dato>
+              <Dato etiqueta="Autor">{registro.editadoPor.nombre}</Dato>
+              <Dato etiqueta="Publicado por">{registro.publicadoPor.nombre}</Dato>
             </dl>
 
             {errorRestaurar && (
@@ -184,7 +184,8 @@ export function VistaPreviaVersion({
                 rel="noopener noreferrer"
                 className="group flex flex-1 items-center justify-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm font-semibold text-zinc-700 shadow-sm transition hover:border-[#002237]/40 hover:bg-[#002237]/5 hover:text-[#002237] dark:border-zinc-600 dark:bg-transparent dark:text-zinc-200 dark:hover:bg-zinc-800 dark:hover:text-white"
               >
-                <span className="relative inline-block h-5 w-5">
+                {/* El ojo en verde #7DB728, como el de la tabla de Respaldos y el de Auditoría. */}
+                <span className="relative inline-block h-5 w-5 text-[#7DB728]">
                   <span className="absolute inset-0 group-hover:hidden"><IconoMascara nombre="eye-closed" tamano="h-5 w-5" /></span>
                   <span className="absolute inset-0 hidden group-hover:block"><IconoMascara nombre="eye-open" tamano="h-5 w-5" /></span>
                 </span>

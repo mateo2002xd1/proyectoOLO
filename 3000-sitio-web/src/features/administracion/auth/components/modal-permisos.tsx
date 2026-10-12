@@ -2,9 +2,11 @@
 
 import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useCierreAnimado, useUltimoValorAbierto } from '@/shared/lib/use-cierre-animado';
 import { MagnifyingGlassIcon, ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import { Switch } from '@/shared/ui/atoms/switch';
-import { Button } from '@/shared/ui/atoms/button';
+import { Button, FormaDeModal } from '@/shared/ui/atoms/button';
+import { areaDeModalClass, campoDeModalClass, etiquetaDeModalClass } from '@/shared/ui/molecules/alert';
 import type { Permission } from '../hooks/use-usuarios';
 
 /**
@@ -92,7 +94,7 @@ const normalizar = (t: string) =>
 export function ModalPermisos({
   abierto,
   onCerrar,
-  rol,
+  rol: rolAbierto,
   permisos,
   originales,
   seleccionados,
@@ -104,6 +106,9 @@ export function ModalPermisos({
   onGuardar,
   guardando,
 }: ModalPermisosProps) {
+  // Al cerrar, `roles-view` vuelve el rol a `null` y el modal pasaría a «Permisos a
+  // asignar» en plena salida; mientras se va, conserva el rol que tenía.
+  const rol = useUltimoValorAbierto(abierto, rolAbierto);
   const [busqueda, setBusqueda] = useState('');
   const [mostrarPermisos, setMostrarPermisos] = useState(false);
 
@@ -134,7 +139,9 @@ export function ModalPermisos({
   const descripcionCambio = rol && descripcion !== undefined && descripcion !== (rol.descripcion || '');
   const hayCambios = anadidos.length > 0 || quitados.length > 0 || descripcionCambio;
 
-  if (!abierto || typeof document === 'undefined') return null;
+  const { montado, cerrando } = useCierreAnimado(abierto);
+
+  if (!montado || typeof document === 'undefined') return null;
 
   const alternar = (id: string) => {
     const siguiente = new Set(seleccionados);
@@ -156,7 +163,8 @@ export function ModalPermisos({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-[#0f172a]/50 p-3 backdrop-blur-sm sm:p-6"
+      className="olo-anim-fondo fixed inset-0 z-[60] flex items-center justify-center bg-[#0f172a]/50 p-3 backdrop-blur-sm sm:p-6"
+      data-cerrando={cerrando || undefined}
       // Usamos `onMouseDown` y no `onClick`: si el usuario selecciona texto dentro
       // del panel y suelta el ratón fuera, el clic se contabiliza en el fondo y
       // el panel se cerraba en mitad de la selección.
@@ -165,17 +173,33 @@ export function ModalPermisos({
       }}
     >
       <div
-        className="flex max-h-[88dvh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-[#121824]"
+        className="olo-anim-caja flex max-h-[88dvh] w-full max-w-3xl flex-col overflow-hidden rounded-[32px] border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-[#121824]"
         role="dialog"
         aria-modal="true"
         aria-labelledby="permisos-titulo"
       >
+        {/* Las medidas de todos los modales (`alert.tsx`): botones y campos de 44 px. */}
+        <FormaDeModal>
         <header className="border-b border-zinc-100 px-6 py-5 dark:border-zinc-800/80">
           <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <h3 id="permisos-titulo" className="admin-subtitle text-zinc-900 dark:text-[#f6f6f6]">
+            {/* El resumen va junto al título y a su tamaño (antes estaba en el pie, en letra
+                pequeña): es lo que se va a guardar. `aria-live` para que el lector lo diga. */}
+            <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
+              <h3 id="permisos-titulo" className="text-xl font-medium text-[#001631] dark:text-[#e6e8f0]">
                 Permisos {rol ? `del rol «${rol.nombre}»` : 'a asignar'}
               </h3>
+              <p aria-live="polite" className="text-xl font-medium text-zinc-500 dark:text-[#94a3b8]">
+                {hayCambios && (
+                  <>
+                    {descripcionCambio && 'Descripción actualizada'}
+                    {descripcionCambio && (anadidos.length > 0 || quitados.length > 0) && ' · '}
+                    {anadidos.length > 0 &&
+                      `${anadidos.length} ${anadidos.length === 1 ? 'permiso añadido' : 'permisos añadidos'}`}
+                    {anadidos.length > 0 && quitados.length > 0 && ' · '}
+                    {quitados.length > 0 && `${quitados.length} ${quitados.length === 1 ? 'quitado' : 'quitados'}`}
+                  </>
+                )}
+              </p>
             </div>
             <button
               type="button"
@@ -193,43 +217,40 @@ export function ModalPermisos({
           {rol && !mostrarPermisos && (
             <div className="mt-4 space-y-4">
               <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1]">
-                    Nombre del rol
-                  </label>
-                  <span className="text-xs text-zinc-400 dark:text-zinc-500">
-                    No modificable
-                  </span>
-                </div>
+                <label htmlFor="permisos-rol-nombre" className={etiquetaDeModalClass}>
+                  Nombre del rol
+                </label>
                 <input
+                  id="permisos-rol-nombre"
                   type="text"
                   value={rol.nombre}
                   disabled
                   readOnly
                   title="El nombre del rol no se puede modificar una vez creado"
-                  className="w-full rounded-xl border border-zinc-200 bg-zinc-100 px-3 py-2 text-sm text-zinc-500 cursor-not-allowed select-none dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-400"
+                  className={`${campoDeModalClass} select-none`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">
+                <label htmlFor="permisos-rol-descripcion" className={etiquetaDeModalClass}>
                   Descripción del rol
                 </label>
                 <textarea
+                  id="permisos-rol-descripcion"
                   maxLength={200}
                   rows={2}
                   value={descripcion ?? ''}
                   onChange={(e) => onCambiarDescripcion?.(e.target.value)}
                   placeholder="Sin descripción"
-                  className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand-interactive focus:outline-none focus:ring-2 focus:ring-brand-interactive/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                  className={areaDeModalClass}
                 />
               </div>
-              <p className="rounded-xl border border-amber-200/60 bg-amber-50 px-4 py-2.5 text-xs text-amber-900 dark:border-amber-800/40 dark:bg-amber-950/30 dark:text-amber-300">
+              <p className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-300">
                 Esto afecta a <strong>todas las personas con el rol «{rol.nombre}»</strong>, no solo
                 a la que estés editando. El cambio se aplica en cuanto guardas.
               </p>
               
               <div className="pt-2">
-                <Button type="button" onClick={() => setMostrarPermisos(true)}>
+                <Button type="button" variant="verde" onClick={() => setMostrarPermisos(true)} className="w-full">
                   Editar permisos
                 </Button>
               </div>
@@ -238,13 +259,14 @@ export function ModalPermisos({
 
           {(!rol || mostrarPermisos) && (
             <div className="relative mt-5">
-              <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
+              <MagnifyingGlassIcon className="pointer-events-none absolute left-5 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
               <input
                 type="search"
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
                 placeholder="Buscar un permiso…"
-                className="w-full rounded-xl border border-zinc-200 bg-white py-2 pl-9 pr-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-brand-interactive focus:outline-none focus:ring-2 focus:ring-brand-focus/30 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                aria-label="Buscar un permiso"
+                className={`${campoDeModalClass} pl-11`}
               />
             </div>
           )}
@@ -283,19 +305,19 @@ export function ModalPermisos({
                       >
                         {grupo.sensible && <ShieldExclamationIcon className="size-4 shrink-0" />}
                         {grupo.titulo}
-                        <span className="font-normal normal-case tracking-normal text-zinc-400">
-                          {activos}/{ids.length}
-                        </span>
                       </h4>
                     </div>
+                    {/* Interruptor a la izquierda y el texto a su derecha. El `<label>` hace
+                        que pulsar «Marcar todos» también lo conmute, como en las filas. */}
                     {conAtajo && (
-                      <button
-                        type="button"
-                        onClick={() => alternarGrupo(ids, !todos)}
-                        className="shrink-0 rounded-md px-2 py-0.5 text-[11px] font-semibold text-brand-blue-dark underline-offset-2 hover:underline dark:text-sky-300"
-                      >
-                        {todos ? 'Quitar todas' : 'Todas'}
-                      </button>
+                      <label className="flex shrink-0 cursor-pointer items-center gap-2">
+                        <Switch
+                          checked={todos}
+                          onChange={(marcar) => alternarGrupo(ids, marcar)}
+                          aria-label={`Marcar todos los permisos de ${grupo.titulo}`}
+                        />
+                        <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Marcar todos</span>
+                      </label>
                     )}
                   </div>
 
@@ -353,41 +375,24 @@ export function ModalPermisos({
           )}
         </div>
 
-        <footer className="flex items-center justify-between gap-4 border-t border-zinc-100 bg-zinc-50/60 px-6 py-4 dark:border-zinc-800/80 dark:bg-[#161b27]/60">
-          <p className="text-xs text-zinc-500 dark:text-[#94a3b8]">
-            {hayCambios ? (
-              <>
-                {descripcionCambio && (
-                  <strong className="text-zinc-900 dark:text-white">
-                    Descripción actualizada
-                  </strong>
-                )}
-                {descripcionCambio && (anadidos.length > 0 || quitados.length > 0) && ' · '}
-                {anadidos.length > 0 && (
-                  <strong className="text-zinc-900 dark:text-white">
-                    {anadidos.length} {anadidos.length === 1 ? 'permiso añadido' : 'permisos añadidos'}
-                  </strong>
-                )}
-                {anadidos.length > 0 && quitados.length > 0 && ' · '}
-                {quitados.length > 0 && (
-                  <strong className="text-zinc-900 dark:text-white">
-                    {quitados.length} {quitados.length === 1 ? 'quitado' : 'quitados'}
-                  </strong>
-                )}
-              </>
-            ) : (
-              'Sin cambios que guardar.'
-            )}
-          </p>
+        <footer className="flex items-center justify-end gap-4 border-t border-zinc-100 bg-zinc-50/60 px-6 py-4 dark:border-zinc-800/80 dark:bg-[#161b27]/60">
           <div className="flex items-center gap-2">
             <Button type="button" plain onClick={onCerrar} disabled={guardando}>
               Cancelar
             </Button>
-            <Button type="button" onClick={() => void onGuardar()} disabled={!hayCambios || guardando}>
+            {/* Verde #7DB728 a pedido del usuario, aunque en los modales la acción principal
+                es `#001631`: variante `verde` de `Button`. */}
+            <Button
+              type="button"
+              variant="verde"
+              onClick={() => void onGuardar()}
+              disabled={!hayCambios || guardando}
+            >
               {guardando ? 'Guardando…' : 'Guardar permisos'}
             </Button>
           </div>
         </footer>
+        </FormaDeModal>
       </div>
     </div>,
     document.body

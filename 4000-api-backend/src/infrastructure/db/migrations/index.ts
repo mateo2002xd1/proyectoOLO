@@ -41,6 +41,10 @@ import * as tendenciaClavesUuid from './037-tendencia-ocupacional-claves-uuid';
 import * as alertasInversionCatalogos from './038-alertas-inversion-catalogos';
 import * as alertasInversionProyectos from './039-alertas-inversion-proyectos';
 import * as auditoriaAutoguardado from './040-auditoria-autoguardado';
+import * as integridadEIndices from './041-integridad-e-indices';
+import * as catalogosSinDuplicados from './042-catalogos-sin-duplicados';
+import * as passwordTemporalVence from './043-password-temporal-vence';
+import * as identidadDelPanel from './044-identidad-del-panel';
 
 export interface Migracion {
   nombre: string;
@@ -92,6 +96,10 @@ const migraciones: Migracion[] = [
   alertasInversionCatalogos,
   alertasInversionProyectos,
   auditoriaAutoguardado,
+  integridadEIndices,
+  catalogosSinDuplicados,
+  passwordTemporalVence,
+  identidadDelPanel,
 ];
 
 const TABLA_CONTROL = 'migraciones_aplicadas';

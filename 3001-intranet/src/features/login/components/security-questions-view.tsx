@@ -2,9 +2,30 @@
 
 import { useState, FormEvent, useEffect, useMemo, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { authApi, useAuth } from '@/features/login';
-import { ReturnToSiteLink } from '@/shared/ui/molecules/return-to-site-link';
-import { QuestionPicker, type CatalogQuestion } from './question-picker';
+import { MarcoAcceso } from './marco-acceso';
+import { BarrasDeAvance } from './barras-de-avance';
+import {
+  accesoBotonClass,
+  accesoBotonEnBlancoClass,
+  accesoCampoClass,
+  accesoCampoEnBlancoClass,
+  accesoEnlaceClass,
+  accesoEnlaceEnBlancoClass,
+  accesoErrorClass,
+  accesoErrorEnBlancoClass,
+  accesoErrorGeneralClass,
+  accesoHuecoArribaClass,
+  accesoHuecoClass,
+  accesoEtiquetaClass,
+  accesoEtiquetaEnBlancoClass,
+  accesoIconoCampoClass,
+  accesoOpcionesClass,
+  accesoRotuloClass,
+  accesoRotuloEnBlancoClass,
+} from './acceso-ui';
+import { type CatalogQuestion } from './question-picker';
 import { AuthSuccessScreen } from './auth-success-screen';
 import { mensajeDeError } from '@/shared/lib/errors';
 
@@ -100,8 +121,13 @@ export function SecurityQuestionsView() {
 
     try {
       // El correo solo hace falta aquí, así que se lee directo del storage.
-      await authApi.verifyAnswers(sessionStorage.getItem('recoveryEmail') ?? '', payload);
+      const respuesta = await authApi.verifyAnswers(sessionStorage.getItem('recoveryEmail') ?? '', payload);
       sessionStorage.setItem('recoveryAnswers', JSON.stringify(payload));
+      // El primer nombre que da el servidor, para el saludo de la nueva contraseña
+      // («¡Enhorabuena, <nombre>!»), como en el sitio web.
+      const nombre = typeof respuesta?.nombre === 'string' ? respuesta.nombre.trim() : '';
+      if (nombre) sessionStorage.setItem('recoveryName', nombre);
+      else sessionStorage.removeItem('recoveryName');
       router.push('/reset-password');
     } catch (error) {
       setErrors({ general: mensajeDeError(error, 'Las respuestas no coinciden. Intenta de nuevo.') });
@@ -163,6 +189,12 @@ export function SecurityQuestionsView() {
     return null;
   }
 
+  // Verificar la identidad (la recuperación) va en tarjeta blanca desde `md`, como el login
+  // (2026-10-12). Las preguntas pendientes (`setup`) siguen sobre el azul.
+  const enBlanco = mode === 'verify';
+  const botonClass = enBlanco ? `${accesoBotonClass} ${accesoBotonEnBlancoClass}` : accesoBotonClass;
+  const enlaceClass = enBlanco ? `${accesoEnlaceClass} ${accesoEnlaceEnBlancoClass}` : accesoEnlaceClass;
+
   if (setupComplete) {
     return (
       <AuthSuccessScreen
@@ -174,98 +206,149 @@ export function SecurityQuestionsView() {
   }
 
   return (
-    <div className="sq-page">
-      {/* Panel izquierdo — Branding */}
-      <div className="sq-left">
-        <div className="sq-left-content">
-          <h1 className="sq-brand-title">
-            {mode === 'setup' ? 'Protege el acceso a tu cuenta' : 'Por tu seguridad...'}
-          </h1>
-          <p className="sq-brand-subtitle">
-            {mode === 'setup'
-              ? 'Elige 3 preguntas de seguridad de la lista y asigna una respuesta para cada una.'
-              : 'Responde correctamente a las 3 preguntas.'}
-          </p>
-          {mode === 'verify' && (
-            <p className="sq-brand-hint">
-              Recuerda que las respuestas deben coincidir exactamente con las que asignaste la primera vez.
-            </p>
-          )}
-        </div>
-      </div>
+    <MarcoAcceso
+      titulo={mode === 'setup' ? 'Protege el acceso a tu cuenta' : 'Verifica tu identidad'}
+      descripcion={
+        mode === 'setup'
+          ? 'Elige 3 preguntas de seguridad y asigna una respuesta para cada una.'
+          : 'Responde las preguntas de seguridad que elegiste al configurar tu cuenta.'
+      }
+      cerrarSesionAlSalir={mode === 'setup'}
+      claveTarjeta={currentStep}
+      enBlanco={enBlanco}
+    >
+      <form onSubmit={handleSubmit} noValidate>
+        {errors.general && (
+          <div
+            className={accesoErrorGeneralClass}
+            role="alert"
+          >
+            {errors.general}
+          </div>
+        )}
 
-      {/* Panel derecho — Card */}
-      <div className="sq-right">
-        <div className="sq-card" key={currentStep}>
-          <form onSubmit={handleSubmit} className="sq-form">
-            <h2 className="sq-card-title">
-              {mode === 'setup' ? 'Escoge tus preguntas y respuestas' : 'Responde tus preguntas'}
-            </h2>
-
-            {mode === 'verify' ? (
-              <>
-                <div className="sq-field">
-                  <label className="sq-label-question">
-                    {questions[currentStep]?.label}
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Respuesta"
-                    value={answers[currentStep]}
-                    onChange={(e) => handleAnswerChange(e.target.value)}
-                    className={`sq-input ${errors.answer ? 'sq-input-error' : ''}`}
-                    autoFocus
-                  />
-                  {errors.answer && <span className="sq-error">{errors.answer}</span>}
-                </div>
-
-                <div className="sq-progress">
-                  {Array.from({ length: totalQuestions }).map((_, i) => (
-                    <div
-                      key={i}
-                      className={`sq-progress-dot ${i === currentStep ? 'sq-progress-active' : ''} ${i < currentStep ? 'sq-progress-done' : ''}`}
-                    />
+        {mode === 'verify' ? (
+          <div className={accesoHuecoClass}>
+            <label htmlFor="respuesta-seguridad" className={`${accesoEtiquetaClass} ${accesoEtiquetaEnBlancoClass}`}>
+              <span className={`mb-1 ${accesoRotuloClass} ${accesoRotuloEnBlancoClass}`}>
+                Pregunta {currentStep + 1} de {totalQuestions}
+              </span>
+              {questions[currentStep]?.label}
+            </label>
+            <input
+              id="respuesta-seguridad"
+              type="text"
+              value={answers[currentStep]}
+              onChange={(e) => handleAnswerChange(e.target.value)}
+              autoComplete="off"
+              autoCapitalize="none"
+              autoCorrect="off"
+              autoFocus
+              className={accesoCampoClass(!!errors.answer, accesoCampoEnBlancoClass(!!errors.answer))}
+            />
+            {errors.answer && <p className={`${accesoErrorClass} ${accesoErrorEnBlancoClass}`}>{errors.answer}</p>}
+          </div>
+        ) : (
+          <>
+            <div className={accesoHuecoClass}>
+              <label htmlFor="select-pregunta" className={`mb-1.5 ${accesoRotuloClass}`}>
+                Pregunta {currentStep + 1} de {totalQuestions}
+              </label>
+              <div className="relative">
+                <select
+                  id="select-pregunta"
+                  className={accesoCampoClass(!!errors.question, `appearance-none pr-10 ${accesoOpcionesClass}`, 'rounded-[16px]')}
+                  value={selectedKeys[currentStep] || ''}
+                  onChange={(e) => handleSelectQuestion(e.target.value)}
+                >
+                  <option value="" disabled>Selecciona una opción...</option>
+                  {catalogQuestions.map((q) => (
+                    <option
+                      key={q.key}
+                      value={q.key}
+                      disabled={selectedKeys.includes(q.key) && selectedKeys[currentStep] !== q.key}
+                    >
+                      {q.label}
+                    </option>
                   ))}
+                </select>
+                <div className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 ${accesoIconoCampoClass}`}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
                 </div>
-              </>
-            ) : (
-              <QuestionPicker
-                classPrefix="sq"
-                catalogQuestions={catalogQuestions}
-                totalQuestions={totalQuestions}
-                currentIndex={currentStep}
-                selectedKeys={selectedKeys}
-                answers={answers}
-                errors={errors}
-                onSelectQuestion={handleSelectQuestion}
-                onAnswerChange={handleAnswerChange}
+              </div>
+              {errors.question && <p className={accesoErrorClass}>{errors.question}</p>}
+            </div>
+
+            <div className={accesoHuecoClass}>
+              <label htmlFor="respuesta-setup" className={accesoEtiquetaClass}>
+                Tu respuesta
+              </label>
+              <input
+                id="respuesta-setup"
+                type="text"
+                maxLength={255}
+                placeholder="Escribe tu respuesta..."
+                value={answers[currentStep]}
+                onChange={(e) => handleAnswerChange(e.target.value)}
+                className={accesoCampoClass(!!errors.answer)}
               />
-            )}
+              {errors.answer && <p className={accesoErrorClass}>{errors.answer}</p>}
+            </div>
+          </>
+        )}
 
-            {errors.general && (
-              <div className="sq-general-error">{errors.general}</div>
-            )}
+        <BarrasDeAvance total={totalQuestions} actual={currentStep} variante="puntos" enBlanco={enBlanco} />
 
+        <button
+          type="submit"
+          disabled={isLoading}
+          className={botonClass}
+        >
+          {isLoading
+            ? (mode === 'verify' ? 'Verificando…' : 'Guardando…')
+            : currentStep === totalQuestions - 1
+              ? (mode === 'verify' ? 'Verificar' : 'Guardar')
+              : 'Siguiente'}
+        </button>
+
+        {currentStep > 0 ? (
+          <div className={`${accesoHuecoArribaClass} text-center`}>
             <button
-              type="submit"
-              disabled={isLoading}
-              className={`sq-submit ${isLoading ? 'sq-submit-disabled' : ''}`}
+              type="button"
+              onClick={() => {
+                setCurrentStep((n) => Math.max(0, n - 1));
+                setErrors({});
+              }}
+              className={enlaceClass}
             >
-              {isLoading
-                ? (mode === 'verify' ? 'Verificando...' : 'Guardando...')
-                : currentStep === totalQuestions - 1
-                  ? (mode === 'verify' ? 'Verificar respuestas' : 'Guardar')
-                  : 'Continuar'}
+              Volver a la pregunta anterior
             </button>
-
-            <button type="button" onClick={() => logout()} className="sq-login-link">
+          </div>
+        ) : mode === 'setup' ? (
+          <div className={`${accesoHuecoArribaClass} text-center`}>
+            <button
+              type="button"
+              onClick={() => logout()}
+              className={accesoEnlaceClass}
+            >
               Iniciar sesión
             </button>
-          </form>
-        </div>
-
-        <ReturnToSiteLink classPrefix="sq" />
-      </div>
-    </div>
+          </div>
+        ) : (
+          // En la recuperación no hay sesión que cerrar: se vuelve al login, como desde
+          // el paso del correo (`recovery-view.tsx`).
+          <div className={`${accesoHuecoArribaClass} text-center`}>
+            <Link
+              href="/login"
+              className={enlaceClass}
+            >
+              Volver a iniciar sesión
+            </Link>
+          </div>
+        )}
+      </form>
+    </MarcoAcceso>
   );
 }

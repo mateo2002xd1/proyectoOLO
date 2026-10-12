@@ -226,3 +226,34 @@ export const generarPasswordTemporal = (): string => {
   }
   throw new Error('No se pudo generar una contraseña temporal que cumpla la política');
 };
+
+/**
+ * Cuánto vale una contraseña temporal desde que se emite (decisión del usuario,
+ * 09-10-2026). No se quema al primer uso: quien cierra la pestaña sin terminar el primer
+ * ingreso puede volver a entrar con ella mientras no venza.
+ */
+export const HORAS_DE_VIGENCIA_TEMPORAL = 72;
+
+/** Cuándo vence una temporal emitida ahora (o en `desde`). */
+export const vencimientoDeTemporal = (desde: Date = new Date()): Date =>
+  new Date(desde.getTime() + HORAS_DE_VIGENCIA_TEMPORAL * 60 * 60 * 1000);
+
+/**
+ * Si la cuenta tiene una temporal pendiente y ya venció.
+ *
+ * Solo cuenta con `must_change_password`: sin esa marca no hay temporal que vigilar, y la
+ * fecha que quede no significa nada. Una fecha vacía con la marca puesta (cuentas
+ * anteriores a la migración 043 que no pasaron por ella) no se da por vencida.
+ */
+export const temporalVencida = (cuenta: {
+  must_change_password?: boolean | null;
+  temp_password_expires_at?: Date | string | null;
+}): boolean =>
+  Boolean(cuenta.must_change_password) &&
+  !!cuenta.temp_password_expires_at &&
+  new Date(cuenta.temp_password_expires_at).getTime() <= Date.now();
+
+/** Lo que se le dice a quien llega con una temporal vencida. */
+export const MENSAJE_TEMPORAL_VENCIDA =
+  `Tu contraseña temporal venció (dura ${HORAS_DE_VIGENCIA_TEMPORAL} horas). ` +
+  'Pide al administrador que te genere una nueva.';

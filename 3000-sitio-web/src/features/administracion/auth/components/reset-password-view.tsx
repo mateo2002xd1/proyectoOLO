@@ -1,17 +1,22 @@
 'use client';
 
 import { useEffect, useState, FormEvent } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cumplePolitica, primerFallo } from '@olo/password-policy';
-import { Button } from '@/shared/ui/atoms/button';
 import {
-  AuthCardTitle,
   AuthGeneralError,
   PasswordField,
   PasswordRequisitos,
-  authSolidCardClass,
+  authPasosCardClass,
+  authPasosPrimaryClass,
+  authPasosQuietLinkClass,
+  authPasosHuecoClass,
+  authPasosHuecoArribaClass,
 } from './auth-ui';
+import { MarcoDePasos } from './marco-de-pasos';
 import { useFlujoDeRecuperacion } from './flujo-de-recuperacion';
+import { useRequisitosAlEnfocar } from '../hooks/use-requisitos-al-enfocar';
 import { recuperarPassword } from '../services/recuperacion.service';
 
 /**
@@ -19,6 +24,9 @@ import { recuperarPassword } from '../services/recuperacion.service';
  *
  * En la intranet esta ruta sirve también para el cambio forzado de una cuenta con
  * sesión. Aquí no: ese caso lo resuelve `/first-login`.
+ *
+ * Diseño nuevo desde el 2026-10-09 (mockup de tablet): saluda por el primer nombre, que
+ * el servidor da al verificar las respuestas del paso anterior.
  */
 export function ResetPasswordView() {
   const router = useRouter();
@@ -32,6 +40,7 @@ export function ResetPasswordView() {
   const [confirmacion, setConfirmacion] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const requisitos = useRequisitosAlEnfocar(password);
 
   // Sin respuestas verificadas no hay con qué cambiar la contraseña: el flujo
   // empieza por el correo.
@@ -72,41 +81,59 @@ export function ResetPasswordView() {
     }
   };
 
+  const nombre = datos?.nombre;
+
   return (
-    <div className={authSolidCardClass}>
-      <AuthCardTitle
-        title="Crea tu nueva contraseña"
-        description="Verificamos tu identidad. Elige una clave que no hayas usado antes."
-      />
+    <MarcoDePasos
+      titulo={nombre ? `¡Enhorabuena, ${nombre}!` : '¡Enhorabuena!'}
+      descripcion={[
+        'Ahora puedes crear tu nueva contraseña.',
+        'Asegúrate de que sea fácil de recordar para ti, pero difícil de adivinar para otros.',
+      ]}
+    >
+      <div className={authPasosCardClass}>
+        <form onSubmit={guardarPassword} noValidate>
+          {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
 
-      <form onSubmit={guardarPassword} noValidate>
-        {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
+          {/* Sin el encabezado «Crea tu nueva contraseña» (lo quitó el usuario el 2026-10-11). */}
+          <PasswordField
+            id="nuevo-password"
+            label="Nueva contraseña"
+            autoComplete="new-password"
+            value={password}
+            onChange={(v) => { setPassword(v); setErrors({}); }}
+            onFocus={requisitos.alEnfocar}
+            describedBy={requisitos.visibles ? 'requisitos-nueva' : undefined}
+            error={errors.password}
+            className={requisitos.visibles ? 'mb-2 md:mb-3' : authPasosHuecoClass}
+          />
+          {requisitos.visibles && (
+            <PasswordRequisitos id="requisitos-nueva" password={password} variant="solid" resumirAlCumplir className={authPasosHuecoClass} />
+          )}
 
-        <PasswordField
-          id="nuevo-password"
-          label="Nueva contraseña"
-          autoComplete="new-password"
-          value={password}
-          onChange={(v) => { setPassword(v); setErrors({}); }}
-          error={errors.password}
-          className="mb-2"
-        />
-        <PasswordRequisitos password={password} variant="solid" />
+          <PasswordField
+            id="confirmar-password"
+            label="Ingresa nuevamente la contraseña"
+            autoComplete="new-password"
+            value={confirmacion}
+            onChange={(v) => { setConfirmacion(v); setErrors({}); }}
+            error={errors.confirmacion}
+            className={authPasosHuecoClass}
+          />
 
-        <PasswordField
-          id="confirmar-password"
-          label="Ingresa nuevamente la contraseña"
-          autoComplete="new-password"
-          value={confirmacion}
-          onChange={(v) => { setConfirmacion(v); setErrors({}); }}
-          error={errors.confirmacion}
-          className="mb-6"
-        />
+          <button type="submit" disabled={isLoading || terminada} className={authPasosPrimaryClass}>
+            {isLoading ? 'Guardando…' : 'Guardar contraseña'}
+          </button>
+        </form>
 
-        <Button type="submit" variant="navy" disabled={isLoading || terminada} className="w-full">
-          {isLoading ? 'Guardando…' : 'Guardar contraseña'}
-        </Button>
-      </form>
-    </div>
+        {/* Cancelar: sale del flujo y la contraseña sigue siendo la de antes. Solo texto,
+            sin fondo, como en la intranet. */}
+        <div className={`${authPasosHuecoArribaClass} text-center`}>
+          <Link href="/login" className={authPasosQuietLinkClass}>
+            Cancelar
+          </Link>
+        </div>
+      </div>
+    </MarcoDePasos>
   );
 }

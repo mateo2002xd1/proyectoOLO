@@ -66,12 +66,17 @@ const COLORES: Record<
  * `-space-x-px` se montan un píxel sobre cada borde y lo taparían.
  *
  * 32px en móvil y 36px desde `sm`: con siete posiciones y las dos flechas la fila
- * cabe en un teléfono de 375px.
+ * cabe en un teléfono de 375px. Todo el pie usa esa misma altura, las mismas esquinas
+ * (`rounded-lg`) y la misma letra (14 px, medium): casillas, «Ir a la página» y «Filas
+ * por página» (pedido del usuario, 2026-10-10: simetría de tamaños y bordes).
  */
 const CASILLA =
   'flex h-8 items-center justify-center border text-sm font-medium leading-5 tabular-nums transition-colors focus-visible:relative focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-focus sm:h-9';
 const NUMERO = 'w-8 sm:w-9';
-const FLECHA = 'gap-1 px-2 disabled:pointer-events-none disabled:shadow-none sm:px-3';
+/** Las dos flechas, del mismo ancho: «Anterior» y «Siguiente» no miden lo mismo y el grupo quedaba torcido. */
+const FLECHA = 'w-8 gap-1 disabled:pointer-events-none disabled:shadow-none sm:w-[5.5rem]';
+/** El campo de «Ir a la página» y el desplegable de «Filas por página», del mismo ancho. */
+const ANCHO_DE_CAMPO = 'w-[4.5rem]';
 
 function ChevronIcon({ direccion }: { direccion: 'izquierda' | 'derecha' }) {
   return (
@@ -160,7 +165,7 @@ function IrAPagina({
         // Solo dígitos: el campo es de texto (un `type="number"` pinta flechas que no
         // caben en este ancho) y así no hace falta avisar de nada al enviar.
         onChange={(e) => setValor(e.target.value.replace(/\D/g, ''))}
-        className={`block h-8 w-12 rounded-lg border px-2.5 text-sm shadow-xs focus:outline-none focus:ring-1 sm:h-9 ${colores.campo}`}
+        className={`block h-8 ${ANCHO_DE_CAMPO} rounded-lg border px-2.5 text-center text-sm font-medium tabular-nums shadow-xs focus:outline-none focus:ring-1 sm:h-9 ${colores.campo}`}
       />
       <span id={`${id}-total`} className={`text-sm font-medium ${colores.texto}`}>
         de {totalPaginas}
@@ -195,7 +200,7 @@ function FilasPorPagina({
         value={String(valor)}
         onChange={(v) => onCambiar(Number(v))}
         options={opciones.map(String)}
-        className="w-[4.5rem]"
+        className={ANCHO_DE_CAMPO}
       />
     </div>
   );
@@ -223,12 +228,15 @@ export function Paginacion({
   const variasPaginas = totalPaginas > 1;
 
   return (
+    // Dentro de `Paginador` (que es el contenedor), cuando no cabe en una línea: las casillas
+    // en su propia fila, centradas, y debajo «Ir a la página» y «Filas por página», también
+    // centradas. Antes se partía donde caía y «Filas por página» quedaba sola, descolgada.
     <nav
       aria-label={ariaLabel}
-      className={`flex flex-wrap items-center justify-center gap-x-4 gap-y-3 ${className}`}
+      className={`flex flex-wrap items-center justify-center gap-x-4 gap-y-3 @max-6xl:w-full ${className}`}
     >
       {variasPaginas && (
-        <ul className="flex -space-x-px text-sm">
+        <ul className="flex -space-x-px text-sm @max-6xl:basis-full @max-6xl:justify-center">
           <li>
             <button
               type="button"

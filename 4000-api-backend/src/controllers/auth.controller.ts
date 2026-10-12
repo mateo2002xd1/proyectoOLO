@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { loginUseCase, permisosDeRol } from '../use-cases/auth/login.usecase';
 import { firstLoginUseCase, estadoPrimerIngreso } from '../use-cases/auth/first-login.usecase';
 import { UserRepository } from '../repositories/usuarios.repository';
+import { tieneConfiguracionPendiente } from '../middlewares/auth.middleware';
 import { updateUser } from '../use-cases/usuarios/listar-usuarios.usecase';
 import { logCambioDePassword } from '../use-cases/auditoria/audit.usecase';
 import {
@@ -118,6 +119,12 @@ export const AuthController = {
       const user: any = await UserRepository.findById(req.user?.id as string);
       if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
 
+      // A medio configurar, la API le niega todo lo que no sea terminar el primer
+      // ingreso (`requireAuth`), así que anunciar sus permisos solo pintaría botones
+      // que responden 403. `configuracionPendiente` es lo que lee el sitio para
+      // mandarla de vuelta a `/first-login`.
+      const configuracionPendiente = tieneConfiguracionPendiente(req.user);
+
       res.json({
         user: {
           ...req.user,
@@ -125,7 +132,8 @@ export const AuthController = {
           apellidos: user.apellidos,
           email: user.email
         },
-        permisos
+        permisos: configuracionPendiente ? [] : permisos,
+        configuracionPendiente,
       });
     } catch (err) {
       next(err);

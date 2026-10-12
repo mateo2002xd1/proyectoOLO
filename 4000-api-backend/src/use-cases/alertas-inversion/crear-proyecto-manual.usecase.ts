@@ -41,11 +41,11 @@ export async function crearProyectoInversionManual(
     );
   }
 
-  const empresa = await Repo.resolverOCrearEmpresa(datos.empresa);
+  const { registro: empresa } = await Repo.resolverOCrearEmpresa(datos.empresa);
 
   let municipioId: string | null = null;
   if (datos.ciudad) {
-    const municipio = await Repo.resolverOCrearMunicipio(departamento.id, datos.ciudad);
+    const { registro: municipio } = await Repo.resolverOCrearMunicipio(departamento.id, datos.ciudad);
     municipioId = municipio.get('id') as string;
   }
 

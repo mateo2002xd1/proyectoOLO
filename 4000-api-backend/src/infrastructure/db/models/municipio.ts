@@ -35,7 +35,14 @@ Municipio.init(
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at',
-    indexes: [{ unique: true, fields: ['departamento_id', 'nombre'], name: 'uq_municipios_depto_nombre' }],
+    // Único por departamento y nombre normalizado («Medellín» = «Medellin»): migración 042.
+    indexes: [
+      {
+        unique: true,
+        fields: ['departamento_id', sequelize.fn('normalizar_nombre', sequelize.col('nombre'))],
+        name: 'uq_municipios_depto_nombre',
+      },
+    ],
   }
 );
 

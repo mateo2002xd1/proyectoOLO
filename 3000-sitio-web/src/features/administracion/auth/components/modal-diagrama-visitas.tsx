@@ -2,6 +2,7 @@
 
 import { useMemo, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
 import { type PaginaPublicada, type ResumenPaginasPublicadas } from '@/features/paginas';
 import { GraficoEcharts, useEsOscuro, type OpcionGrafico } from '@/shared/ui/molecules/grafico-echarts';
 
@@ -150,7 +151,9 @@ export function ModalDiagramaVisitas({ abierto, onCerrar, resumen }: Props) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [abierto, onCerrar]);
 
-  if (!abierto || typeof document === 'undefined') return null;
+  const { montado, cerrando } = useCierreAnimado(abierto);
+
+  if (!montado || typeof document === 'undefined') return null;
 
   const paginasSitio = resumen?.sitio ?? [];
   const paginasIntranet = resumen?.intranet ?? [];
@@ -164,7 +167,8 @@ export function ModalDiagramaVisitas({ abierto, onCerrar, resumen }: Props) {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[70] flex items-center justify-center bg-[#0f172a]/60 p-3 backdrop-blur-md sm:p-6"
+      className="olo-anim-fondo fixed inset-0 z-[70] flex items-center justify-center bg-[#0f172a]/60 p-3 backdrop-blur-md sm:p-6"
+      data-cerrando={cerrando || undefined}
       // Usamos `onMouseDown` y no `onClick`: si el usuario selecciona texto dentro
       // del panel y suelta el ratón fuera, el clic se contabiliza en el fondo y
       // el panel se cerraba en mitad de la selección.
@@ -173,7 +177,7 @@ export function ModalDiagramaVisitas({ abierto, onCerrar, resumen }: Props) {
       }}
     >
       <div
-        className="flex max-h-[92dvh] min-h-[min(30rem,92dvh)] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-[#121824]"
+        className="olo-anim-caja flex max-h-[92dvh] min-h-[min(30rem,92dvh)] w-full max-w-5xl flex-col overflow-hidden rounded-[32px] border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-[#121824]"
         role="dialog"
         aria-modal="true"
         aria-labelledby="titulo-ventana-visitas"
@@ -183,7 +187,7 @@ export function ModalDiagramaVisitas({ abierto, onCerrar, resumen }: Props) {
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h3 id="titulo-ventana-visitas" className="admin-subtitle text-xl text-zinc-900 dark:text-[#f6f6f6]">
+                <h3 id="titulo-ventana-visitas" className="text-xl font-semibold text-[#001631] dark:text-[#e6e8f0]">
                   Ventana de Vistas y Gráfica de Visitas
                 </h3>
               </div>
@@ -277,7 +281,8 @@ export function ModalDiagramaVisitas({ abierto, onCerrar, resumen }: Props) {
           <button
             type="button"
             onClick={onCerrar}
-            className="rounded-xl bg-zinc-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+            // Las medidas de todos los modales (`alert.tsx`): 44 px, esquinas de 32, `#001631`.
+            className="h-11 rounded-[32px] bg-[#001631] px-6 text-base font-medium text-white transition hover:bg-[#002a5c] dark:bg-white dark:text-[#001631] dark:hover:bg-[#e6e8f0]"
           >
             Cerrar ventana
           </button>

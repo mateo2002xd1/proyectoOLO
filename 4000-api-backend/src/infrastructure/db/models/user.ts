@@ -17,6 +17,7 @@ export class User extends Model {
   declare last_access_at: Date | null;
   declare must_setup_security_questions: boolean;
   declare must_change_password: boolean;
+  declare temp_password_expires_at: Date | null;
   declare failed_security_attempts: number;
   declare failed_login_attempts: number;
   declare locked_until: Date | null;
@@ -50,6 +51,9 @@ User.init(
       defaultValue: false,
       field: 'debe_cambiar_password',
     },
+    // Hasta cuándo vale la contraseña temporal (72 h, migración 043). Solo se mira con
+    // `must_change_password`; la regla está en `shared/password-policy.ts`.
+    temp_password_expires_at: { type: DataTypes.DATE, field: 'password_temporal_vence_en' },
     // Cuenta los fallos de las *preguntas de seguridad* (3 intentos, 30 min). El
     // login lleva el suyo aparte porque §3 le pide otro umbral.
     failed_security_attempts: {

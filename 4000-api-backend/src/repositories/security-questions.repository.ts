@@ -8,6 +8,10 @@ export const SecurityQuestionRepository = {
       order: [['sort_order', 'ASC']],
     }),
 
+  /** Cuántas preguntas de seguridad tiene configuradas una cuenta. */
+  countByUserId: (userId: string) =>
+    SecurityQuestion.count({ where: { user_id: userId } }),
+
   /** Borra todas las preguntas de seguridad de una cuenta. */
   deleteByUserId: (userId: string) =>
     SecurityQuestion.destroy({ where: { user_id: userId } }),

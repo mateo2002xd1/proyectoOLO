@@ -7,6 +7,7 @@ class ProgramaFormacion extends Model {
   declare id: string;
   declare nivel_formacion_id: string;
   declare nombre: string;
+  declare codigo: string | null;
   declare readonly created_at: Date;
   declare readonly updated_at: Date;
   
@@ -32,6 +33,13 @@ ProgramaFormacion.init(
       type: DataTypes.STRING(255),
       allowNull: false,
     },
+    // Código SENA (`Cod. Programa`): identifica al programa desde la migración 042. Dos
+    // programas del mismo nivel pueden llamarse igual (134507 y 134508).
+    codigo: {
+      type: DataTypes.STRING(20),
+      allowNull: true,
+      unique: true,
+    },
     created_at: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -49,13 +57,6 @@ ProgramaFormacion.init(
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at',
-    indexes: [
-      {
-        unique: true,
-        fields: ['nivel_formacion_id', 'nombre'],
-        name: 'uq_programas_formacion_nivel_nombre',
-      },
-    ],
   }
 );
 

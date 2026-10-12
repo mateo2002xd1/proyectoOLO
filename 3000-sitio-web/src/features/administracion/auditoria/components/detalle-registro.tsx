@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useUltimoValorAbierto } from '@/shared/lib/use-cierre-animado';
 import { COLOR_ACCION, etiquetaDeAccion, etiquetaDeEntidad, etiquetaDeCampo, type RegistroAuditoria } from '../types';
 import { comentariosDe, explicacionDeComentarios, type ComentariosDelRegistro } from '../lib/cambios';
 
@@ -203,7 +204,7 @@ function normalizarCamposModificados(campos: { campo: string; antes: unknown; de
 }
 
 export function DetalleRegistro({
-  registro,
+  registro: registroAbierto,
   usuarios = [],
   onCerrar,
 }: {
@@ -212,14 +213,19 @@ export function DetalleRegistro({
   onCerrar: () => void;
 }) {
   const dialogo = useRef<HTMLDialogElement>(null);
+
+  // Al cerrar, el padre vuelve `registro` a `null` en el mismo clic, pero el `<dialog>`
+  // tarda lo que dura su animación de salida (`olo-anim-dialogo`) en irse. Mientras
+  // tanto sigue enseñando el último registro, en vez de una caja vacía.
+  const registro = useUltimoValorAbierto(registroAbierto !== null, registroAbierto);
   const nombresRoles = useNombresRoles();
 
   useEffect(() => {
     const el = dialogo.current;
     if (!el) return;
-    if (registro && !el.open) el.showModal();
-    if (!registro && el.open) el.close();
-  }, [registro]);
+    if (registroAbierto && !el.open) el.showModal();
+    if (!registroAbierto && el.open) el.close();
+  }, [registroAbierto]);
 
   const camposNormalizados = registro ? normalizarCamposModificados(registro.camposModificados) : [];
   // Del ciclo editorial: en vez de slug, versión y estado, el comentario de cambios.
@@ -232,7 +238,7 @@ export function DetalleRegistro({
       onMouseDown={(e) => {
         if (e.target === dialogo.current) onCerrar();
       }}
-      className="m-auto w-full max-w-2xl rounded-xl border border-zinc-200 bg-white p-0 text-zinc-900 backdrop:bg-[#0f172a]/50 backdrop:backdrop-blur-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:text-[#f6f6f6]"
+      className="olo-anim-dialogo m-auto w-full max-w-2xl rounded-xl border border-zinc-200 bg-white p-0 text-zinc-900 backdrop:bg-[#0f172a]/50 backdrop:backdrop-blur-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:text-[#f6f6f6]"
     >
       {registro && (
         <div className="flex max-h-[80dvh] flex-col">
@@ -277,7 +283,7 @@ export function DetalleRegistro({
               </Dato>
             </dl>
 
-            <h3 className="mt-6 text-sm font-semibold">Campos modificados</h3>
+            <h3 className="mt-6 text-sm font-bold">Campos modificados</h3>
             {comentarios ? (
               <ComentariosDelCambio
                 comentarios={comentarios}

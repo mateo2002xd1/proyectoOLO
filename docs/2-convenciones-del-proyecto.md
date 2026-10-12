@@ -276,8 +276,12 @@ bloque de Puck, un modal— responde a **su contenedor** (`@container` y las var
 - **Tablas:** clase `olo-tabla-apilable` en la `<table>` y `data-etiqueta` en cada `<td>`.
   Cuando su contenedor mide menos de 48rem, cada fila pasa a tarjeta «ETIQUETA · valor». La
   celda sin `data-etiqueta` ocupa el ancho entero (el título de la fila o las acciones).
-  **Dentro de esa tabla se usa `@3xl:`, no `md:`**: es el mismo corte medido sobre el mismo
-  contenedor. Hoy existe en el sitio (`globals.css`, «RESPONSIVE: PIEZAS COMPARTIDAS»).
+  **En el panel, además, por debajo de `lg` (64rem) siempre es tarjeta**: sin la barra
+  lateral el contenido recupera 288px y, midiendo solo el contenedor, la lista volvía a ser
+  tabla de escritorio entre 768 y 1023px. **Dentro de esa tabla se usa `apilada:` /
+  `en-tabla:`, no `@3xl:` ni `md:`**: son las dos variantes que juntan ambas condiciones y
+  cambian en el mismo píxel que la tabla. Hoy existe en el sitio (`globals.css`,
+  «RESPONSIVE: PIEZAS COMPARTIDAS»).
 - Una tabla que de verdad necesita todas sus columnas a la vez (una hoja de datos) puede
   quedarse con scroll lateral **dentro de su caja**, nunca de la página, y con un comentario
   que diga por qué.
@@ -302,7 +306,10 @@ bloque de Puck, un modal— responde a **su contenedor** (`@container` y las var
 | `olo-tabla-apilable` | `3000-sitio-web/src/style/globals.css` | Tablas que pasan a tarjetas (§10.3) |
 | `BarraFiltros` + `CampoFiltro` | `3000-sitio-web/src/shared/ui/molecules/barra-filtros.tsx` | Filtros de una tabla: fila en escritorio, plegados tras «Filtros (n)» por debajo de `lg` |
 | `EncabezadoPanel` | `3000-sitio-web/src/shared/ui/molecules/encabezado-panel.tsx` | Título, descripción y acciones de cada pantalla del panel |
+| `MarcoDePasos` (sitio) y `MarcoAcceso` (intranet) | `3000-sitio-web/src/features/administracion/auth/components/marco-de-pasos.tsx` y `3001-intranet/src/features/login/components/marco-acceso.tsx` | Toda pantalla de acceso (login, primer ingreso, recuperación). Misma maqueta, anchos y huecos; el sitio en blanco con tarjeta, la intranet en azul sin tarjeta (`acceso-ui.ts`). Un cambio de medidas en uno se revisa en el otro |
 | `Alert` | `3000-sitio-web/src/shared/ui/molecules/alert.tsx` | Diálogo corto: hoja inferior en el móvil, centrado desde `sm` |
+| `olo-anim-dialogo`, `olo-anim-fondo` + `olo-anim-caja`, `useCierreAnimado` | `src/style/globals.css` y `src/shared/lib/use-cierre-animado.ts` de cada frontend | Entrada y salida de un modal con `@starting-style`: la primera clase en un `<dialog>` nativo; las otras dos (velo y cuadro) y el hook en uno que monta React. `Alert` ya las lleva |
+| `Notification` | `3000-sitio-web/src/shared/ui/molecules/notification.tsx` | Aviso flotante de éxito, advertencia, error o información. Los tres primeros suenan, salvo que se silencien en Configuración (`9-accesibilidad` §3.4) |
 | `NavegacionMobile` | `src/shared/lib/mobile/` de cada frontend | Por debajo de `lg`, las secciones en una barra abajo con el logo al centro y una hoja para lo que no cabe |
 
 Antes de escribir una tabla, una banda de filtros o un encabezado, se usa la pieza. Si no

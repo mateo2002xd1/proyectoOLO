@@ -63,6 +63,7 @@ export function useOcultarAlBajar(fija: boolean): boolean {
 
   useEffect(() => {
     const ultimas = new WeakMap<Element, number>();
+    const maximos = new WeakMap<Element, number>();
     let estado: EstadoDesplazamiento = { acumulado: 0, oculta: false };
     let rutaDelEstado = rutaRef.current;
 
@@ -83,8 +84,15 @@ export function useOcultarAlBajar(fija: boolean): boolean {
       const maximo = elemento.scrollHeight - elemento.clientHeight;
       const actual = elemento.scrollTop;
       const previo = ultimas.get(elemento);
+      const maximoPrevio = maximos.get(elemento);
       ultimas.set(elemento, actual);
+      maximos.set(elemento, maximo);
       if (previo === undefined || maximo <= 0) return;
+      // Si cambió lo que se puede bajar, este `scroll` lo provocó la maquetación (el
+      // navegador recoloca la posición), no el dedo: no cuenta. Así un cambio de alto
+      // que dependa de la barra no puede volver a ocultarla y mostrarla en bucle, que
+      // es lo que hacía temblar el final de la página (2026-10-10).
+      if (maximoPrevio !== undefined && maximoPrevio !== maximo) return;
 
       const siguiente = siguienteEstado(estado, previo, actual, maximo);
       if (siguiente.oculta !== estado.oculta) setOcultaEn(siguiente.oculta ? rutaRef.current : null);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useEnModal } from "@/shared/ui/atoms/button";
 
 type Option = {
   value: string;
@@ -74,6 +75,8 @@ export function CustomSelect({
 }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
+  // En un modal, la forma de sus campos: esquinas de 32 y 16 px de letra (`alert.tsx`).
+  const enModal = useEnModal() && !compacto;
 
   const normalizedOptions: Option[] = options.map((opt) =>
     typeof opt === "string" ? { value: opt, label: opt } : opt,
@@ -116,11 +119,17 @@ export function CustomSelect({
         disabled={disabled}
         onClick={() => !disabled && setIsOpen((current) => !current)}
         className={`group flex w-full items-center justify-between border text-left outline-none transition duration-200 ${
-          compacto ? "h-8 gap-1.5 rounded-lg pl-2.5 pr-1.5 shadow-xs sm:h-9" : "h-11 rounded-[16px] px-3"
+          compacto
+            ? "h-8 gap-1.5 rounded-lg pl-2.5 pr-1.5 shadow-xs sm:h-9"
+            : enModal
+              ? "h-11 rounded-[32px] pl-5 pr-2"
+              : "h-11 rounded-[16px] px-3"
         } ${
           isOpen
             ? "border-[#002237] bg-white shadow-[0_0_0_3px_rgba(0,34,55,0.12)] dark:bg-[#252f47]"
-            : paleta
+            : enModal
+              ? "border-[#d9d9d9] bg-white hover:border-[#001631]/40 dark:border-[#2d3649] dark:bg-[#131b2f] dark:hover:border-[#3a4660]"
+              : paleta
         } ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
@@ -128,10 +137,14 @@ export function CustomSelect({
       >
         <span className="flex min-w-0 items-center gap-2">
           <span
-            className={`truncate text-sm font-medium ${
+            className={`truncate ${enModal ? "text-base" : "text-sm font-medium"} ${
               selectedOption
-                ? "text-[#344054] dark:text-[#e6e8f0]"
-                : "text-[#8a95ad] dark:text-[#95a0b8]"
+                ? enModal
+                  ? "text-[#001a39] dark:text-[#f6f6f6]"
+                  : "text-[#344054] dark:text-[#e6e8f0]"
+                : enModal
+                  ? "text-[#b3b3b3] dark:text-[#64748b]"
+                  : "text-[#8a95ad] dark:text-[#95a0b8]"
             }`}
           >
             {displayLabel}

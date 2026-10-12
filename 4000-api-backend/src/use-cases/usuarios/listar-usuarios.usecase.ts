@@ -5,6 +5,7 @@ import { config } from '../../config';
 import {
   generarPasswordTemporal,
   hashearPassword,
+  vencimientoDeTemporal,
   BCRYPT_ROUNDS,
 } from '../../shared/password-policy';
 import { exigirEmailInstitucional } from '../../shared/email-policy';
@@ -56,6 +57,7 @@ export const createUser = async (data: any) => {
     password_hash,
     role_id,
     must_change_password: true,
+    temp_password_expires_at: vencimientoDeTemporal(),
   });
 
   const userJson = user.toJSON ? user.toJSON() : { ...user };
@@ -191,6 +193,10 @@ export const updateUser = async (id: string, data: any, actor?: Actor) => {
   // comprobaba absolutamente nada, ni siquiera la longitud.
   if (password) updateData.password_hash = await hashearPassword(password);
 
+  // Quien llama con `must_change_password: false` (el cambio voluntario) acaba de
+  // reemplazar la temporal: su vencimiento deja de tener sentido.
+  if (updateData.must_change_password === false) updateData.temp_password_expires_at = null;
+
   if (reset_security_questions === true) {
     updateData.must_setup_security_questions = true;
     // Se borran, no solo se marca la bandera. Si se dejaran, las preguntas viejas
@@ -216,6 +222,8 @@ export const updateUser = async (id: string, data: any, actor?: Actor) => {
     const temporaryPassword = generarPasswordTemporal();
     updateData.password_hash = await bcrypt.hash(temporaryPassword, BCRYPT_ROUNDS);
     updateData.must_change_password = true;
+    // Cada temporal nueva trae sus 72 horas, también al reactivar una cuenta.
+    updateData.temp_password_expires_at = vencimientoDeTemporal();
     // Un restablecimiento tiene que devolver el acceso: si la cuenta venía
     // bloqueada por §3, dejarla bloqueada haría inútil la contraseña recién emitida.
     updateData.failed_login_attempts = 0;

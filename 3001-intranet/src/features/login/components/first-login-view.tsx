@@ -5,9 +5,23 @@ import { authApi, useAuth } from '@/features/login';
 import { cumplePolitica, primerFallo } from '@olo/password-policy';
 import { PasswordField } from '@/shared/ui/molecules/password-field';
 import { PasswordRequisitos } from '@/shared/ui/molecules/password-requisitos';
-import { ReturnToSiteLink } from '@/shared/ui/molecules/return-to-site-link';
 import { QuestionPicker, type CatalogQuestion } from './question-picker';
 import { mensajeDeError } from '@/shared/lib/errors';
+import { MarcoAcceso } from './marco-acceso';
+import {
+  accesoBotonClass,
+  accesoBotonEnBlancoClass,
+  accesoBotonSecundarioClass,
+  accesoBotonSecundarioEnBlancoClass,
+  accesoEncabezadoClass,
+  accesoEncabezadoEnBlancoClass,
+  accesoEnlaceClass,
+  accesoEnlaceEnBlancoClass,
+  accesoErrorGeneralClass,
+  accesoHuecoClass,
+  accesoHuecoArribaClass,
+  accesoTextoEnBlancoClass,
+} from './acceso-ui';
 
 const TOTAL_QUESTIONS = 3;
 
@@ -20,7 +34,7 @@ const TOTAL_QUESTIONS = 3;
 type Pendiente = { debeCambiarPassword: boolean; debeConfigurarPreguntas: boolean };
 
 export function FirstLoginView() {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const [pendiente, setPendiente] = useState<Pendiente | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -36,6 +50,13 @@ export function FirstLoginView() {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
+
+  // Los requisitos de la nueva contraseña aparecen al entrar en el campo (o si ya tiene
+  // algo) y desde entonces se quedan, como en el acceso del sitio web. En reposo no ocupan
+  // sitio: con ellos a la vista el paso no cabía en el móvil sin scroll (2026-10-10). No se
+  // ocultan al salir del campo: el formulario encogería justo al pulsar el de abajo.
+  const [requisitosEnfocados, setRequisitosEnfocados] = useState(false);
+  const verRequisitos = requisitosEnfocados || newPassword !== '';
   const [catalogQuestions, setCatalogQuestions] = useState<CatalogQuestion[]>([]);
 
   useEffect(() => {
@@ -157,66 +178,187 @@ export function FirstLoginView() {
     await enviar();
   };
 
-  const renderStep1 = () => (
-    <div className="fl-card">
-      <form onSubmit={(e) => { e.preventDefault(); handleNextStep1(); }} className="fl-form">
-        <h2 className="fl-card-title">Contraseña temporal</h2>
-        <PasswordField
-          classPrefix="fl"
-          value={tempPassword}
-          onChange={(v) => { setTempPassword(v); setErrors({}); }}
-          error={errors.tempPassword}
-        />
+  /* ---------- Mientras se sabe qué falta ---------- */
+  if (!pendiente) {
+    return (
+      <MarcoAcceso cerrarSesionAlSalir titulo="Configura tu acceso" claseTarjeta="text-center">
+        {errors.general ? (
+          <>
+            <div className={accesoErrorGeneralClass} role="alert">{errors.general}</div>
+            <button type="button" onClick={() => logout()} className={accesoEnlaceClass}>
+              Volver a iniciar sesión
+            </button>
+          </>
+        ) : (
+          <p className="text-base text-white/85" role="status">
+            Comprobando tu cuenta…
+          </p>
+        )}
+      </MarcoAcceso>
+    );
+  }
 
-        <h2 className="fl-card-title">Nueva contraseña</h2>
-        <PasswordField
-          classPrefix="fl"
-          value={newPassword}
-          onChange={(v) => { setNewPassword(v); setErrors({}); }}
-          error={errors.newPassword}
-        />
-        <PasswordRequisitos classPrefix="fl" password={newPassword} />
+  /* ---------- Nada pendiente ---------- */
+  // Puede pasar si se llega por la URL, o si se completó en otra pestaña. Antes el
+  // formulario se pintaba igual y pedía una contraseña temporal que ya no existía.
+  if (!pendiente.debeCambiarPassword && !pendiente.debeConfigurarPreguntas && currentStep !== 3) {
+    return (
+      <MarcoAcceso
+        cerrarSesionAlSalir
+        // Texto del usuario (2026-10-11); antes «Tu cuenta ya está configurada» y «No hay nada
+        // pendiente: tu contraseña y tus preguntas de seguridad están al día.».
+        titulo="¡Configuración completada con éxito!"
+        descripcion={[
+          'Tu cuenta ya es segura.',
+          'Guarda tus respuestas en un lugar seguro, las usarás para validar tu identidad y restablecer tu clave si la olvidas.',
+        ]}
+        // Desde la tablet, el texto dentro del formulario, encima de «Iniciar sesión».
+        descripcionEnTarjeta
+        claseTarjeta="text-center"
+        enBlanco
+      >
+        <button type="button" onClick={() => logout()} className={`${accesoBotonClass} ${accesoBotonEnBlancoClass}`}>
+          Iniciar sesión
+        </button>
+      </MarcoAcceso>
+    );
+  }
 
-        <h2 className="fl-card-title">Ingresa nuevamente la contraseña</h2>
-        <PasswordField
-          classPrefix="fl"
-          value={confirmPassword}
-          onChange={(v) => { setConfirmPassword(v); setErrors({}); }}
-          error={errors.confirmPassword}
-        />
+  // Sin paginador «← Anterior 1 2 3 Siguiente →» ni insignia de check: los quitó el usuario
+  // el 2026-10-11. Se avanza con el botón del formulario; «Atrás» mueve entre preguntas.
 
-        {errors.general && <div className="fl-general-error">{errors.general}</div>}
+  /* ---------- Paso 3: listo ---------- */
+  if (currentStep === 3) {
+    return (
+      <MarcoAcceso
+        cerrarSesionAlSalir
+        titulo="¡Configuración completada con éxito!"
+        // Texto del usuario (2026-10-11). Desde la tablet va dentro del formulario, encima
+        // del botón; en el móvil, bajo el título. El aviso sobre las respuestas solo tiene
+        // sentido si se acaban de elegir: a quien solo cambió la contraseña le queda la
+        // primera frase.
+        descripcion={[
+          'Tu cuenta ya es segura.',
+          ...(pendiente.debeConfigurarPreguntas
+            ? ['Guarda tus respuestas en un lugar seguro, las usarás para validar tu identidad y restablecer tu clave si la olvidas.']
+            : []),
+        ]}
+        descripcionEnTarjeta
+        claseTarjeta="text-center"
+        enBlanco
+      >
+        <p className={`${accesoHuecoClass} text-base text-white/85 ${accesoTextoEnBlancoClass}`}>
+          Vuelve a iniciar sesión para entrar a la intranet.
+        </p>
+        <button type="button" onClick={() => logout()} className={`${accesoBotonClass} ${accesoBotonEnBlancoClass}`}>
+          Iniciar sesión
+        </button>
+      </MarcoAcceso>
+    );
+  }
 
-        <button type="submit" className="fl-submit">Continuar</button>
+  // Los pasos 1 y 2 y las dos de «¡Configuración completada con éxito!» van en tarjeta blanca
+  // desde `md`, como el login (pedido del usuario, 2026-10-12). «Comprobando tu cuenta…»
+  // sigue sobre el azul.
 
-        <button type="button" onClick={() => logout()} className="fl-login-link">Iniciar sesión</button>
-      </form>
-    </div>
-  );
+  /* ---------- Paso 1: contraseñas ---------- */
+  if (currentStep === 1) {
+    return (
+      <MarcoAcceso
+        cerrarSesionAlSalir
+        enBlanco
+        titulo="Actualiza tu seguridad"
+        // Acortado el 2026-10-10 para que el paso quepa sin scroll en el móvil; es el mismo
+        // texto que en el acceso del sitio web.
+        descripcion="Has ingresado con una contraseña temporal. Por tu seguridad, crea una contraseña personal que solo tú conozcas."
+        claveTarjeta={currentStep}
+      >
+        <form onSubmit={(e) => { e.preventDefault(); handleNextStep1(); }} noValidate>
+          {errors.general && <div className={accesoErrorGeneralClass} role="alert">{errors.general}</div>}
 
-  const renderStep2 = () => (
-    <div className="fl-card">
+          <PasswordField
+            id="temp-password"
+            label="Contraseña temporal"
+            // La da el administrador al crear o restablecer la cuenta; no llega por correo.
+            placeholder="Ingresar contraseña"
+            autoComplete="current-password"
+            value={tempPassword}
+            onChange={(v) => { setTempPassword(v); setErrors({}); }}
+            error={errors.tempPassword}
+            enBlanco
+            className={accesoHuecoClass}
+          />
+          {/* `contents`: la envoltura solo está para enterarse del foco. */}
+          <div className="contents" onFocus={() => setRequisitosEnfocados(true)}>
+            <PasswordField
+              id="new-password"
+              label="Nueva contraseña"
+              autoComplete="new-password"
+              value={newPassword}
+              onChange={(v) => { setNewPassword(v); setErrors({}); }}
+              error={errors.newPassword}
+              enBlanco
+              className={verRequisitos ? 'mb-2 md:mb-3' : accesoHuecoClass}
+            />
+          </div>
+          {verRequisitos && (
+            <PasswordRequisitos password={newPassword} variant="solid" resumirAlCumplir className={accesoHuecoClass} enBlanco />
+          )}
+          <PasswordField
+            id="confirm-password"
+            label="Ingresa nuevamente la contraseña"
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={(v) => { setConfirmPassword(v); setErrors({}); }}
+            error={errors.confirmPassword}
+            enBlanco
+            className={accesoHuecoClass}
+          />
+
+          <button type="submit" disabled={isLoading} className={`${accesoBotonClass} ${accesoBotonEnBlancoClass}`}>
+            {isLoading ? 'Guardando…' : 'Continuar'}
+          </button>
+        </form>
+      </MarcoAcceso>
+    );
+  }
+
+  /* ---------- Paso 2: preguntas de seguridad ---------- */
+  return (
+    <MarcoAcceso
+      cerrarSesionAlSalir
+      enBlanco
+      titulo="Protege el acceso a tu cuenta"
+      // El texto cambia según por qué se está aquí: a quien solo le restablecieron
+      // las preguntas hay que decírselo, o no entiende por qué se le piden otra vez
+      // ni si su contraseña sigue sirviendo.
+      descripcion={
+        pendiente.debeCambiarPassword
+          ? 'Elige 3 preguntas y responde cada una. Con ellas verificaremos tu identidad si necesitas recuperar tu cuenta.'
+          : 'Tus preguntas de seguridad fueron restablecidas. Elige 3 y asigna una respuesta a cada una; tu contraseña actual no cambia.'
+      }
+      claveTarjeta={currentStep}
+    >
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          if (currentQuestion === TOTAL_QUESTIONS - 1) {
-            handleSubmitStep2();
-          } else {
-            handleNextQuestion();
-          }
+          if (currentQuestion === TOTAL_QUESTIONS - 1) handleSubmitStep2();
+          else handleNextQuestion();
         }}
-        className="fl-form"
+        noValidate
       >
-        <h2 className="fl-card-title">Escoge tus preguntas y respuestas</h2>
+        {errors.general && <div className={accesoErrorGeneralClass} role="alert">{errors.general}</div>}
+
+        <h2 className={`mb-3 ${accesoEncabezadoClass} ${accesoEncabezadoEnBlancoClass}`}>Preguntas de seguridad</h2>
 
         <QuestionPicker
-          classPrefix="fl"
           catalogQuestions={catalogQuestions}
           totalQuestions={TOTAL_QUESTIONS}
           currentIndex={currentQuestion}
           selectedKeys={selectedKeys}
           answers={answers}
           errors={errors}
+          enBlanco
           onSelectQuestion={(key) => {
             const newSelected = [...selectedKeys];
             newSelected[currentQuestion] = key;
@@ -231,181 +373,29 @@ export function FirstLoginView() {
           }}
         />
 
-        {errors.general && <div className="fl-general-error">{errors.general}</div>}
-
-        <button type="submit" className="fl-submit">
-          {isLoading ? 'Guardando...' : currentQuestion === TOTAL_QUESTIONS - 1 ? 'Guardar' : 'Continuar'}
-        </button>
-
-        <button type="button" onClick={() => logout()} className="fl-login-link">Iniciar sesión</button>
-      </form>
-    </div>
-  );
-
-  const renderStep3 = () => (
-    <div className="fl-success">
-      <h1 className="fl-success-title">¡Configuración completada con éxito!</h1>
-      <p className="fl-success-subtitle">Tu cuenta ya es segura.</p>
-      {/* El aviso sobre las respuestas solo tiene sentido si se acaban de elegir. */}
-      {pendiente?.debeConfigurarPreguntas && (
-        <p className="fl-success-text">
-          Es muy importante que recuerdes o guardes tus respuestas en un lugar seguro, ya que serán el único método para validar tu identidad y permitirte cambiar tu clave en el futuro si llegas a olvidarla.
-        </p>
-      )}
-      <button type="button" onClick={() => logout()} className="fl-success-btn">Iniciar sesión</button>
-    </div>
-  );
-
-  const getLeftContent = () => {
-    if (currentStep === 1) {
-      return {
-        title: `Hola ${user?.name ? user.name.split(' ')[0] : ''}, Actualiza tu seguridad.`,
-        subtitle: 'Has ingresado con un código temporal. Por tu seguridad, es necesario que crees un nuevo código de acceso personal y privado que solo tú conozcas.',
-      };
-    }
-    if (currentStep === 2) {
-      return {
-        title: 'Protege el acceso a tu cuenta',
-        // El texto cambia según por qué se está aquí: a quien solo le restablecieron
-        // las preguntas hay que decírselo, o no entiende por qué se le piden otra vez
-        // ni si su contraseña sigue sirviendo.
-        subtitle: pendiente?.debeCambiarPassword
-          ? 'Elige 3 preguntas de seguridad de la lista y asigna una respuesta para cada una. Estas preguntas nos servirán para verificar tu identidad de forma segura en caso de que necesites recuperar tu cuenta.'
-          : 'Tus preguntas de seguridad fueron restablecidas. Elige 3 de la lista y asigna una respuesta para cada una. Tu contraseña actual no cambia.',
-      };
-    }
-    if (currentStep === 3) {
-      return {
-        title: '¡Configuración completada con éxito!',
-        subtitle: 'Tu cuenta ya es segura.',
-      };
-    }
-    return null;
-  };
-
-  const leftContent = getLeftContent();
-
-  /* ---------- Mientras se sabe qué falta ---------- */
-  if (!pendiente) {
-    return (
-      <div className="fl-page">
-        <div className="fl-right">
-          <div className="fl-card">
-            {errors.general ? (
-              <>
-                <div className="fl-general-error">{errors.general}</div>
-                <button type="button" onClick={() => logout()} className="fl-success-btn">Volver a iniciar sesión</button>
-              </>
-            ) : (
-              <p className="fl-card-title">Comprobando tu cuenta…</p>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  /* ---------- Nada pendiente ---------- */
-  // Puede pasar si se llega por la URL, o si se completó en otra pestaña. Antes el
-  // formulario se pintaba igual y pedía una contraseña temporal que ya no existía.
-  if (!pendiente.debeCambiarPassword && !pendiente.debeConfigurarPreguntas && currentStep !== 3) {
-    return (
-      <div className="fl-page">
-        <div className="fl-right">
-          <div className="fl-success">
-            <h1 className="fl-success-title">Tu cuenta ya está configurada</h1>
-            <p className="fl-success-text">
-              No hay nada pendiente: tu contraseña y tus preguntas de seguridad están al día.
-            </p>
-            <button type="button" onClick={() => logout()} className="fl-success-btn">Iniciar sesión</button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // El paso 1 (contraseñas) solo existe si hay contraseña que cambiar.
-  const primerPaso = pendiente.debeCambiarPassword ? 1 : 2;
-  const pasosVisibles = pendiente.debeCambiarPassword ? [1, 2, 3] : [2, 3];
-
-  return (
-    <div className="fl-page">
-      {/* Panel izquierdo — Branding */}
-      {currentStep !== 3 && (
-        <div className="fl-left">
-          <div className="fl-left-content">
-            <h1 className="fl-brand-title">{leftContent?.title}</h1>
-            <p className="fl-brand-subtitle">{leftContent?.subtitle}</p>
-          </div>
-        </div>
-      )}
-
-      {/* Panel derecho — Card / Content */}
-      <div className="fl-right">
-        <div className="fl-step-container" key={currentStep}>
-          {currentStep === 1 && renderStep1()}
-          {currentStep === 2 && renderStep2()}
-          {currentStep === 3 && renderStep3()}
-        </div>
-
-        {/* Pagination */}
-        {/* Los pasos se acotan a los que aplican: sin `primerPaso`, quien solo tiene
-            que configurar preguntas podía retroceder al paso 1 y encontrarse otra vez
-            el formulario de contraseña temporal — el fallo que esto arregla, por la
-            puerta de atrás. Se numeran por posición para no mostrar un «2 3» suelto. */}
-        <div className="fl-pagination">
-          <button
-            onClick={() => {
-              if (currentStep === 2 && currentQuestion > 0) {
-                handlePrevQuestion();
-              } else if (currentStep > primerPaso && currentStep < 3) {
-                if (currentStep === 2) setCurrentQuestion(0);
-                setCurrentStep(currentStep - 1);
-              }
-            }}
-            disabled={currentStep === primerPaso}
-            className="fl-pagination-btn"
-          >
-            ← Previous
-          </button>
-
-          {pasosVisibles.map((step, i) => (
-            <button
-              key={step}
-              onClick={() => {
-                if (step < currentStep) {
-                  if (step === 2) setCurrentQuestion(0);
-                  setCurrentStep(step);
-                }
-              }}
-              disabled={step > currentStep}
-              className={`fl-pagination-num ${step === currentStep ? 'fl-pagination-active' : ''}`}
-            >
-              {i + 1}
+        <div className="flex gap-2.5">
+          {currentQuestion > 0 && (
+            <button type="button" onClick={handlePrevQuestion} className={`${accesoBotonSecundarioClass} ${accesoBotonSecundarioEnBlancoClass} shrink-0`}>
+              Atrás
             </button>
-          ))}
-
-          <button
-            onClick={() => {
-              if (currentStep === 1) {
-                handleNextStep1();
-              } else if (currentStep === 2) {
-                if (currentQuestion < TOTAL_QUESTIONS - 1) {
-                  handleNextQuestion();
-                } else {
-                  handleSubmitStep2();
-                }
-              }
-            }}
-            disabled={currentStep === 3}
-            className="fl-pagination-btn"
-          >
-            Next →
+          )}
+          <button type="submit" disabled={isLoading} className={`${accesoBotonClass} ${accesoBotonEnBlancoClass} flex-1`}>
+            {isLoading ? 'Guardando…' : currentQuestion === TOTAL_QUESTIONS - 1 ? 'Guardar' : 'Continuar'}
           </button>
         </div>
 
-        <ReturnToSiteLink classPrefix="fl" />
-      </div>
-    </div>
+        {/* Solo en la primera pregunta (pedido del usuario, 2026-10-11); desde la segunda está
+            «Atrás». Solo texto, como «Cancelar» de la nueva contraseña. Cierra la sesión
+            temporal y va al login sin guardar nada: la contraseña y las preguntas se envían
+            juntas al final. */}
+        {currentQuestion === 0 && (
+          <div className={`${accesoHuecoArribaClass} text-center`}>
+            <button type="button" onClick={() => logout()} className={`${accesoEnlaceClass} ${accesoEnlaceEnBlancoClass}`}>
+              Cancelar
+            </button>
+          </div>
+        )}
+      </form>
+    </MarcoAcceso>
   );
 }

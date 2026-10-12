@@ -85,6 +85,11 @@ const nextConfig = {
         permanent: false,
       },
       {
+        source: '/inicio/politica-de-privacidad',
+        destination: '/politica-de-privacidad',
+        permanent: false,
+      },
+      {
         // CNO y CUOC se movieron bajo `/clasificacion`, junto al buscador. Mismo motivo
         // que el de arriba: sin esto el comodín `[slug]` las seguiría sirviendo en la
         // raíz, y el menú publicado en la base todavía enlaza `/cno` y `/cuoc`.
@@ -191,6 +196,15 @@ const nextConfig = {
       {
         source: '/api/upload',
         destination: `${URL_DE_LA_API}/api/archivos/sitio`,
+      },
+      /**
+       * El logo y el icono del panel que se suben en Configuración → Identidad visual.
+       * Los guarda la API aparte de `uploads/` (`filesystem/panel/identidad/`). En el
+       * servidor también pasan por aquí: nginx manda a Next todo lo que no conoce.
+       */
+      {
+        source: '/identidad-panel/:nombre',
+        destination: `${URL_DE_LA_API}/api/configuracion/identidad-panel/archivos/:nombre`,
       },
     ];
   },

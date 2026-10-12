@@ -33,7 +33,8 @@ CiiuClase.init(
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at',
-    indexes: [{ unique: true, fields: ['seccion_id', 'codigo'], name: 'uq_ciiu_clases_seccion_codigo' }],
+    // El código CIIU ya identifica la clase (y por él se deduce la sección): migración 041.
+    indexes: [{ unique: true, fields: ['codigo'], name: 'uq_ciiu_clases_codigo' }],
   }
 );
 

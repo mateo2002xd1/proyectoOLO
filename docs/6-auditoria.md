@@ -5,6 +5,3133 @@
 
 ---
 
+## sesión 12-10-2026 (11.ª parte): Páginas en revisión, Respaldos y Auditoría — iconos más pequeños en la tabla, el ámbito dentro de «Página», el filtro renombrado y la hora debajo de la fecha
+
+**Qué se pidió:** a 1330px los botones Visualizar, Publicar, Rechazar y Eliminar se veían
+grandes; la columna Ámbito iba separada de la página a la que pertenece y debía quedar
+«Sitio web» encima de «Inicio · versión 3», sin columna propia; y el filtro «Ámbito» pasa a
+llamarse «Página».
+
+| Dónde | Cambio |
+|---|---|
+| `revision-queue-view.tsx`, `BOTON` | En la tabla, 36×48 desde 72rem de contenedor (`en-tabla:@6xl:`) y 44×32 por debajo (`en-tabla:@max-6xl:w-11 h-8`; el usuario probó 36×32, 44×32 y 60×32 y se quedó con 44×32). 72rem es el corte del paginador; con la barra lateral equivale a ~1505px de ventana |
+| `revision-queue-view.tsx`, iconos | `ICONO_OJO` 24→20, `ICONO_PAPELERA` 20→16, `ICONO_PEQUENO` (enviar, ✕) 16→14, solo en esa tabla compacta. En el acordeón no cambian |
+| Columna «Página» | La píldora del ámbito (verde sitio web, azul intranet) arriba y debajo «título · versión N». Fuera el `<th>` y el `<td data-etiqueta="Ámbito">` |
+| Filtro | Etiqueta y `ariaLabel` «Página»; las opciones (Todos, Sitio web, Intranet) y el campo `ambito` que filtra no cambian |
+| Columnas Autor, Enviado el y acciones | Padding lateral a la mitad, `px-4` → `px-2` (16→8px), en sus `td` y sus `th` (para que el título no quede corrido). Página y Cambios siguen en `px-4`: primero se aplicó a toda la tabla y el usuario lo dejó en estas tres. En el acordeón no cambia: allí manda el `padding` de `olo-tabla-apilable` en `globals.css` |
+| Columna «Enviado el» | `FechaDeCelda` (nueva en `shared/ui/molecules/fila-acordeon.tsx`, junto a `fechaDeFila`; la usan revisión y Respaldos): el día arriba (`text-sm`) y la hora debajo, más pequeña (`text-xs`) y fina (`font-light`). El usuario pidió `thin`, pero Poppins se carga en 300–700 (`shared/lib/fonts.ts`) y `font-thin` (100) se vería igual que 300; cargar el peso 100 solo para esto suma una descarga a todo el panel |
+| `respaldos-view.tsx` | Lo mismo en Respaldos, en las columnas que pidió el usuario: filtro «Ámbito» → «Página» (sigue filtrando `ambito`); columna Página en dos líneas, la píldora del ámbito arriba y «/inicio · versión 43» debajo (antes en una sola línea con `flex-wrap`), esa segunda línea en `text-xs`, el tamaño de la hora; «Editado el» y «Publicado el» con `FechaDeCelda`. Fuera el `fecha()` local de los dos archivos. Respaldos conserva la ruta (`/inicio`) y no el título, como sus modales de restaurar |
+| `auditoria-view.tsx` | «Fecha y hora» con `FechaDeCelda exacta`: la hora debajo y más pequeña, con el mismo formato de antes (`12/10/2026` / `5:30:15 p. m.`, con segundos: en la bitácora el orden exacto importa). `exacta` es una opción nueva de `FechaDeCelda`; sin ella sigue el formato corto de revisión y Respaldos |
+| Ancho de la tabla | Fuera el `min-w-[64rem]` (1024px): con una columna menos, botones compactos y la hora debajo ya cabe, y a 1330px la caja mide ~976px, así que la tabla se cortaba con scroll lateral (captura del usuario). El correo del autor lleva `wrap-anywhere`: uno largo sin espacios dejaba 4px de scroll justo por encima del corte del acordeón |
+
+> **Por qué rangos que se excluyen:** `en-tabla:h-9` y `en-tabla:@max-6xl:h-8` se cumplirían a la
+> vez por debajo de 72rem y ganaría el que Tailwind escriba después (las variantes propias van
+> detrás de las de contenedor). Con `@6xl` / `@max-6xl` en las dos, nunca coinciden.
+
+**Verificación.**
+
+| Qué | Resultado |
+|---|---|
+| `tsc --noEmit` del sitio | Sin errores en el archivo |
+| `globals.css` compilado + Chrome headless con la maqueta del panel | Botón / ojo / icono pequeño: 1920 → 48×36 / 24 / 16; 1500, 1440, 1330 y 1280 → 44×32 / 20 / 14; sin scroll lateral de 1920 a 1130 (también con 60px); 1100 y menos, acordeón |
+| Chrome headless, tabla sin `min-w` y dos filas (una con título largo, comentario de 100 caracteres y correo de 45) | Sin scroll lateral de 1920 a 1130px (el borde del acordeón); a 1330px, caja y tabla de 976px y fila de 90px. Sin `wrap-anywhere`, 4px de scroll a 1130px |
+| Finales de línea | CRLF uniforme |
+
+**Pendiente al cierre:** verlo en el panel real con datos largos (comentario de 100 caracteres, título largo).
+
+---
+
+## sesión 12-10-2026 (10.ª parte): filas más bajas en Notificaciones del panel
+
+**Qué se pidió:** en el panel administrativo, en Notificaciones, reducir el alto de cada contenedor
+de las alertas.
+
+**Lo que se hizo.** En `panel-general.tsx` (sitio), las filas «Por vencer» y «En revisión» del
+modal pasan de `h-11` (44 px) a `h-7` (28 px, el alto del botón de la derecha; primero se probó `h-9`, 36 px, y el usuario pidió más). El hueco entre filas (`space-y-3`), la etiqueta, el
+texto y el botón de 28 px para marcar como solucionada no cambian: el área táctil es ese botón, no
+la fila.
+
+**Cómo se probó.** ESLint del archivo, limpio. **No se miró en vivo:** el panel exige una sesión
+firmada y no se falsifica una (ver la memoria de pruebas); queda que el usuario lo mire con su
+cuenta.
+
+---
+
+## sesión 12-10-2026 (9.ª parte): las listas del panel no vuelven a tabla de escritorio al ocultarse la barra lateral
+
+**Qué pasaba.** Las listas del panel (Páginas en revisión, Auditoría, Respaldos, Usuarios,
+Roles) pasan a su modo limpio —acordeón o tarjetas— cuando **su contenedor** mide menos de
+48rem. Con la barra lateral (288px) eso ocurre desde ~1122px de ventana. Pero a 1023px la
+barra se oculta (`lg:flex`), el contenido recupera esos 288px (~960px) y la lista volvía a ser
+la tabla de escritorio, en plena tablet, hasta bajar de unos 830px.
+
+**El arreglo.** En el panel, por debajo de `lg` (64rem), la lista siempre está en modo limpio;
+en el resto sigue mandando el contenedor. Las dos condiciones van en dos variantes de Tailwind
+en `globals.css`, para que las reglas de la tabla y las utilidades del JSX cambien en el mismo
+píxel:
+
+| Variante | Cuándo |
+|---|---|
+| `apilada` | contenedor < 48rem **o** (ventana < 64rem **y** dentro del `<main>` del panel) |
+| `en-tabla` | la contraria: contenedor ≥ 48rem **y** (ventana ≥ 64rem **o** fuera del panel) |
+
+El panel se reconoce por `navegacion-mobile-reserva`, la clase del `<main>` de `SidebarLayout`,
+que solo usa `PanelGeneralLayout`. Las tablas del sitio público (tendencia, fuentes futuras,
+programas, alertas de inversión) no cambian: siguen midiendo solo su contenedor.
+
+| Dónde | Cambio |
+|---|---|
+| `3000-sitio-web/src/style/globals.css` | `@custom-variant apilada` y `en-tabla`. Los dos bloques `@container (width < 48rem)` de `olo-tabla-apilable` y `olo-tabla-acordeon` pasan a `@variant apilada` dentro de cada selector, mismas declaraciones. Los `::before` de las etiquetas, anidados (`&::before`) |
+| `revision-queue-view.tsx`, `auditoria-view.tsx`, `usuarios-view.tsx`, `roles-view.tsx`, `historial-cargas-tendencia.tsx` | `@3xl:` → `en-tabla:` y `@max-3xl:` → `apilada:` (botones de acción, tooltips, `line-clamp`) |
+| `docs/2-convenciones-del-proyecto.md` §10.3 | Dentro de una tabla apilable se usa `apilada:` / `en-tabla:`, no `@3xl:` |
+
+**Descartado.**
+
+- *Subir el corte del contenedor* (p. ej. a 60rem): a 1280px con barra el contenido mide
+  ~920px y la lista de escritorio pasaría a acordeón.
+- *Container style queries* (`@container style(--x: 1) or (width < 48rem)`): Firefox no las
+  soporta para propiedades personalizadas.
+- *Copiar las reglas en un `@media (width < 64rem)`*: duplicaba ~100 líneas y las `@3xl:` del
+  JSX seguían midiendo solo el contenedor (botones de escritorio en una lista en acordeón).
+
+> **Trampa:** un pseudoelemento no puede ir en `&` del anidamiento CSS. La rama del panel de
+> la variante añade `&:where(...)`, así que `td[data-etiqueta]::before` dentro de
+> `@variant apilada` daría un selector inválido. Por eso los `::before` van como `&::before`
+> **dentro** de la variante. También: un selector en lista con `@variant` sale como `:is(a, b)`
+> en la rama del panel, con la especificidad del más fuerte; hoy no cambia ningún resultado.
+
+**Verificación.**
+
+| Qué | Resultado |
+|---|---|
+| `globals.css` real compilado con `@tailwindcss/postcss` del proyecto | Genera las dos ramas (`@container not (min-width: 48rem)` y `@media not all and (min-width: 64rem)` con `:where(.navegacion-mobile-reserva *)`), `::before` fuera del `:where`, y las utilidades `en-tabla:*` / `apilada:*` usadas en el JSX |
+| Chrome headless sobre ese CSS, maqueta de `SidebarLayout` + lista en acordeón + tabla pública | 1280: barra y tabla. 1130/1110/1024: barra y modo limpio. **1023 y 900: sin barra y modo limpio** (antes, tabla). 768/360: modo limpio. Botones de acción en rejilla con texto en todos los de modo limpio. La tabla pública sigue siendo tabla hasta 768 |
+| Finales de línea | CRLF uniforme en los archivos tocados |
+
+**Pendiente al cierre:** verlo en el panel real a 1023, 900 y 768 (el `next dev` recoge el
+CSS solo). Actualizaciones aún no tiene acordeón; su tabla de tendencia ya sigue la regla nueva.
+
+---
+
+## sesión 12-10-2026 (8.ª parte): «Cargando modo edición...» en el cargador de los dos logins cuando entra quien edita
+
+**Qué se pidió:** que el cargador de la 7.ª parte diga «Cargando modo edición» si quien entra es
+un editor, y lo mismo en la intranet.
+
+**Quién cuenta como editor.** Se tomó la regla que ya usaba cada app, sin inventar otra:
+
+- **Sitio:** quien no tiene `acceso.panel` pero sí permisos `editar.*`, `secciones.*` o
+  `editor.*`: es la rama del login que lo manda al portal en vez de al panel. Quien tiene
+  `acceso.panel` sigue viendo «Ingresando al panel administrativo...».
+- **Intranet:** la de `puedeEditarPaginas`: rol superadmin, administrador o editor, o algún
+  permiso `editar.intranet.*` o `secciones.crear`. Dirección y subdirección siguen viendo
+  «Iniciando sesión...». En la intranet no hay panel: los administradores entran a editar.
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `3001-intranet/src/shared/lib/edicion.ts` (nuevo) | `rolEdita` y `permisosEditan`: la regla de `puedeEditarPaginas` como funciones puras. Estaba solo en `sesion.ts`, que importa `next/headers` y no se puede usar en el navegador. |
+| `sesion.ts` (intranet) | `puedeEditarPaginas` usa esas dos; fuera `ROLES_QUE_EDITAN` de aquí. El orden no cambia: primero el rol, y solo si no basta, `/me`. |
+| `use-auth.ts` (intranet) | `role?: string` en `User`: lo devuelve `POST /login` (`role: user.role?.name`) y no estaba en el tipo. |
+| `login-view.tsx` (intranet) | `entraEditando`, calculado al autenticarse; el cargador dice «Cargando modo edición...» o «Iniciando sesión...». |
+| `login-view.tsx` (sitio) | `entrando` pasa de booleano a `'panel' \| 'edicion' \| null`; el cargador dice «Cargando modo edición...» o «Ingresando al panel administrativo...». |
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| `tsc --noEmit` y ESLint de las dos apps (archivos tocados) | Limpios |
+| Intranet, Chrome headless a 1440, `POST /login` simulado en el navegador con `role: 'editor'` y con `role: 'direccion'` | «Cargando modo edición...» y «Iniciando sesión...» |
+| Sitio, a 1440, login simulado con `['editar.inicio']` (navegación a `/` abortada) y con `['acceso.panel']` (a `/admin/dashboard` abortada) | «Cargando modo edición...» y «Ingresando al panel administrativo...» |
+
+**Pendiente al cierre:** no se probó una cuenta de dirección con un permiso `editar.intranet.*`
+suelto; la regla es la misma función que ya decide los botones de edición.
+
+---
+
+## sesión 12-10-2026 (7.ª parte): el login del panel administrativo, con el cargador sin tarjeta al autenticarse
+
+**Qué se pidió:** lo mismo que en el login de la intranet (4.ª parte) en el del panel
+(`localhost:3000/login`): al autenticarse, quitar la tarjeta y dejar el cargador con «Ingresando al
+panel administrativo». Hasta ahora no había cargador: el botón decía «Iniciando sesión…» y la página
+se iba.
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `login-view.tsx` (sitio) | Estado `entrando` en `LoginView`; `LoginForm` lo activa con `onEntrando` justo antes de `window.location.href` (al panel y, para quien solo edita, al portal). Con él, en lugar de la tarjeta (`authPasosCardClass`) va el `GooLoader` del sitio con «Ingresando al panel administrativo...» dentro de un `role="status"`. Para ir a `/first-login` no se muestra: ahí no se entra al panel. |
+| `globals.css` (sitio) | `.login-panel-cargando .goo-loader-label` en blanco desde `xl`, sobre el azul de la mitad derecha; por debajo, el navy de siempre sobre el blanco. Va en el CSS y no con Tailwind: `.goo-loader-label` no está en ninguna capa y le gana a cualquier utilidad. |
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| `tsc --noEmit` y ESLint del sitio (`login-view.tsx`) | Limpios |
+| Chrome headless contra el dev de la 3000, a 390, 768 y 1440 px: `POST /api/auth/login` respondido **en el propio navegador** con `acceso.panel` (`Fetch.fulfillRequest`, sin llegar a la API) y la navegación a `/admin/dashboard` abortada para que el cargador quede a la vista | Sin formulario ni tarjeta (sin fondo, borde 0); texto «Ingresando al panel administrativo...» en Poppins, `#0d1f3c` a 390 y 768, blanco a 1440. Sin scroll horizontal. |
+
+> **Trampa de la prueba:** si en vez de abortar la navegación se deja en pausa
+> (`Fetch.requestPaused` sin responder), la pestaña deja de contestar a `Runtime.evaluate` y a
+> `Page.captureScreenshot`. Hay que hacerle `Fetch.failRequest` con `Aborted`: la página se queda
+> en `/login` con su estado.
+
+**Pendiente al cierre:** quien solo tiene permisos de edición va al portal y no al panel, pero ve el
+mismo texto; el usuario pidió uno solo. El punto navy del cargador no se distingue sobre el azul del
+escritorio, como en la intranet.
+
+---
+
+## sesión 12-10-2026 (6.ª parte): el primer ingreso de la intranet, en tarjeta blanca
+
+**Qué se pidió:** en tablet y escritorio, la tarjeta blanca también en `/first-login`: «Actualiza
+tu seguridad» (paso 1, contraseñas), «Preguntas de seguridad» (paso 2) y, durante la misma tarea,
+las de «¡Configuración completada con éxito!», «sin modificar texto ni nada».
+
+**Lo que se hizo.** Solo colores; textos, pasos y estados iguales.
+
+| Dónde | Cambio |
+|---|---|
+| `first-login-view.tsx` | `enBlanco` del marco en el paso 1, el paso 2, la pantalla final y la de «nada pendiente»; clases `…EnBlanco` en los tres `PasswordField`, los requisitos, el `h2`, «Atrás», «Continuar»/«Guardar», «Cancelar», «Iniciar sesión» y «Vuelve a iniciar sesión…». «Comprobando tu cuenta…» sigue sobre el azul. |
+| `question-picker.tsx` | Prop `enBlanco`: desplegable y respuesta en `#001a39` con borde `#d9d9d9` (sin elegir, en `#b3b3b3`, el marcador del sitio), flecha `#334861`, errores en rojo 600. |
+| `barras-de-avance.tsx` | `enBlanco` también en la variante `barras`: la actual `#001A39`, el resto `#ccd3d7`. |
+| `acceso-ui.ts` | `accesoBotonSecundarioEnBlancoClass` («Atrás», como `authPasosSecondaryClass` del sitio) y `accesoEncabezadoEnBlancoClass`. |
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| `tsc --noEmit` y ESLint de los componentes del acceso | Limpios |
+| Chrome headless a 390, 768 y 1440 px, con `/me`, `/first-login/status`, el catálogo y `POST /first-login` simulados **en el propio navegador** (`Fetch.fulfillRequest`, sin llegar a la API) | Paso 1, paso 2 (sin elegir, elegida y pregunta 2 con «Atrás»), final y «nada pendiente»: tarjeta blanca, botón `#001A39`, etiquetas, `h2`, campos y textos en `#001a39`, borde `#d9d9d9`, barras `#001A39`/`#ccd3d7` desde 768. A 390, todo como antes. Sin scroll horizontal. |
+
+> **Ojo con los commits:** `globals.css` de la 4.ª parte (el texto del cargador en blanco en
+> todos los anchos) no entró en ninguno; `login-view.tsx`, que va con él, sí. Va en el commit de
+> esta parte.
+
+**Pendiente al cierre:** con esto, del acceso de la intranet solo quedan sobre el azul en tablet y
+escritorio las preguntas pendientes (`/security-questions` en modo `setup`), su aviso «¡Preguntas
+de seguridad configuradas!» y «Comprobando tu cuenta…».
+
+---
+
+## sesión 12-10-2026 (5.ª parte): el cambio de contraseña del primer ingreso y el aviso final, en tarjeta blanca; nuevos textos del aviso
+
+**Qué se pidió:** en tablet y escritorio, la tarjeta blanca también en «Crea tu nueva contraseña»
+(el cambio forzado de `/reset-password`, al que se llega desde el login con un código temporal) y en
+`/reset-success`. En la primera, solo colores: ni textos ni estados. En el aviso final: el título de
+la izquierda «¡Genial, tu clave ha sido actualizada con éxito!» (antes «Tu contraseña se
+actualizó»), dentro de la tarjeta «Ya puedes ingresar a tu cuenta con tu nueva contraseña.» y
+«¡Tu seguridad es nuestra prioridad!» (antes «Ya puedes entrar a la intranet con tu nueva
+contraseña.», bajo el título) y sin la insignia del check.
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `marco-acceso.tsx` | Prop `enBlanco`: pone `accesoTarjetaBlancaClass` y la descripción de dentro de la tarjeta (`descripcionEnTarjeta`) en `#001a39` desde `md`. Login, recuperación y verificación pasan a usarla en vez de `claseTarjeta={accesoTarjetaBlancaClass}`. |
+| `reset-password-view.tsx` | `enBlanco` en los dos modos (antes solo en la recuperación): tarjeta, campos, requisitos, botón y «Cancelar» del cambio forzado. Textos sin tocar. |
+| `auth-success-screen.tsx` | `subtitle` admite varios párrafos; props `enBlanco`, `descripcionEnTarjeta` y `conInsignia` (por defecto `true`). «¡Preguntas de seguridad configuradas!» no las pasa y no cambia. |
+| `reset-success-view.tsx` | Los textos del usuario, `enBlanco`, `descripcionEnTarjeta` y `conInsignia={false}`. En el móvil los dos párrafos siguen bajo el título. |
+| `docs/manual-de-usuario-formato.md` | §3.4 (paso 5) y el control de `/reset-success`: título y mensaje nuevos, sin la insignia. |
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| `tsc --noEmit` y ESLint de la intranet | Limpios |
+| Chrome headless a 390, 768 y 1440 px; el cambio forzado con `/api-backend/me` simulado **en el propio navegador** (`Fetch.fulfillRequest`, sin firmar nada ni llegar a la API) | Forzado: textos iguales, tarjeta blanca, etiquetas `#001a39`, borde `#d9d9d9` desde 768. Aviso final: título nuevo, párrafos en la tarjeta en `#001a39` desde 768 y bajo el título en el móvil, sin `polyline` del check, botón `#001A39`. Sin scroll horizontal. |
+| Login, recuperación, verificación y el cargador (las pruebas de las partes 2 a 4) | Sin cambios tras pasar a `enBlanco` del marco. |
+
+**Pendiente al cierre:** las capturas del manual de `/reset-success` (escritorio y móvil) muestran
+aún la insignia y el texto viejo; hay que rehacerlas.
+
+---
+
+## sesión 12-10-2026 (4.ª parte): al autenticarse, el login de la intranet quita la tarjeta y deja el cargador con «Iniciando sesión...»
+
+**Qué se pidió:** cuando el login se autentica, quitar la tarjeta blanca y dejar solo el cargador
+con el mensaje «Iniciando sesión». Sustituye lo de la 3.ª parte, que ocultaba el texto desde `md`.
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `login-view.tsx` | Con `isSuccess`, `claseTarjeta={accesoSinTarjetaClass}` en vez de la tarjeta blanca; el texto del `GooLoader` pasa de «Preparando tu espacio...» a «Iniciando sesión...». |
+| `acceso-ui.ts` | Nueva `accesoSinTarjetaClass` (`md:border-transparent!`); `accesoTarjetaBlancaClass` lleva también el `!`. |
+| `globals.css` | Fuera la regla que ocultaba el texto desde `md`: `.login-success-loader .goo-loader-label` vuelve a ser blanco en todos los anchos. |
+
+> **Trampa:** `md:border-transparent` sin `!` no quita el borde tenue: `md:border-white/20` de
+> `accesoTarjetaClass` sale después en el CSS compilado y gana, aunque la clase se ponga detrás en
+> el atributo. Medido: `borderTopColor` seguía en blanco al 20 %.
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| `tsc --noEmit` y ESLint del login y `acceso-ui.ts` | Limpios |
+| Chrome headless, con la respuesta de `POST /api-backend/login` simulada **en el propio navegador** (`Fetch.fulfillRequest`, no llega a la API), a 390, 768 y 1440 px | Texto «Iniciando sesión...» en blanco; contenedor sin fondo y con borde `rgba(0,0,0,0)` desde 768. |
+| El formulario sin autenticar, a los 4 anchos | Sigue con tarjeta blanca y botón `#001A39` desde 768. |
+
+**Pendiente al cierre:** el punto azul marino del cargador (`.goo-loader-dot1`) no se distingue del
+fondo azul; ya pasaba en el móvil y no se pidió cambiarlo.
+
+---
+
+## sesión 12-10-2026 (3.ª parte): la recuperación de la intranet, también en tarjeta blanca; el cargador del login, sin texto desde la tablet
+
+**Qué se pidió:** en tablet y escritorio, la misma tarjeta blanca del login (2.ª parte) en las tres
+pantallas de la recuperación de la intranet: «¿Olvidaste tu contraseña?» (`/recovery`),
+«Verifica tu identidad» (`/security-questions` con datos de recuperación) y «¡Enhorabuena,
+<nombre>!» (`/reset-password` en la recuperación). La tarjeta de la derecha, no el texto bajo el
+título. Y quitar «Preparando tu espacio...» del cargador del login sobre la tarjeta blanca (se
+preguntó si quitarlo o dejarlo en oscuro: quitarlo).
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `acceso-ui.ts` | El bloque `…EnBlanco` cubre ya login y recuperación; nueva `accesoRotuloEnBlancoClass` («PREGUNTA 1 DE 3» en `#334861`, 9:1). |
+| `recovery-view.tsx` | Tarjeta blanca y clases `…EnBlanco` en etiqueta, campo, error, botón y enlace. |
+| `security-questions-view.tsx` | Lo mismo, **solo en `mode === 'verify'`**: las preguntas pendientes (`setup`) siguen sobre el azul. |
+| `reset-password-view.tsx` | Lo mismo, **solo en `mode === 'recovery'`**: el cambio forzado sigue sobre el azul. |
+| `PasswordField`, `PasswordRequisitos` (`shared/ui/molecules`), `BarrasDeAvance` | Prop `enBlanco` (por defecto `false`): desde `md`, campos, ojo, requisitos (`#334861`, cumplidos en verde 700) y puntos (`#001A39`, `#ccd3d7`) en oscuro. El primer ingreso no la pasa y no cambia. |
+| `globals.css` | Desde `md`, `.login-success-loader .goo-loader-label` se oculta a la vista con el patrón `sr-only` (el lector de pantalla lo sigue leyendo). En el móvil, igual que antes, en blanco. |
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| `tsc --noEmit` y ESLint de la intranet (componentes del acceso y las dos moléculas) | Limpios |
+| Chrome headless contra el dev de la 3001, a 390, 768 y 1440 px, con `sessionStorage` de recuperación falso (sin llamar a la API) | Desde 768, en las tres: tarjeta blanca, botón `rgb(0,26,57)`, etiquetas y campos `#001a39`, borde `#d9d9d9`; rótulo, ojo y requisitos `#334861`; punto actual `#001A39`. A 390, todo como antes. Sin scroll horizontal. |
+| Cargador montado a mano en `/login` | A 390: 208 × 25 px, blanco. Desde 768: 1 × 1 px con `clip-path: inset(50%)`. |
+
+**Pendiente al cierre:** el aviso de éxito de la recuperación (`/reset-success`) no se pidió y
+sigue sin tarjeta; los errores de verificación reales (respuestas que no coinciden) solo se vieron
+por color de clase, no con la API.
+
+---
+
+## sesión 12-10-2026 (2.ª parte): el login de la intranet, en tarjeta blanca desde la tablet y con «Ingresar» en `#001A39`
+
+**Qué se pidió:** en escritorio y tablet, la tarjeta de iniciar sesión con fondo blanco y el botón
+en `#001A39`. Se entendió como el login de la **intranet** (`localhost:3001/login`): el del sitio
+ya va en tarjeta blanca. Solo el login: la recuperación y el primer ingreso de la intranet siguen
+sin tarjeta, sobre el azul.
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `acceso-ui.ts` (intranet) | Clases nuevas `…EnBlanco` (tarjeta, etiqueta, campo, ojo, error, texto de la política, botón, enlace) que se suman a las de siempre y solo actúan desde `md`, con los colores del formulario del sitio: etiquetas y campos `#001a39`, borde `#d9d9d9`, marcador `#b3b3b3`, ojo `#334861`, errores en rojo 600 y botón `#001A39` con texto blanco (17:1). |
+| `login-view.tsx` (intranet) | Pasa `claseTarjeta={accesoTarjetaBlancaClass}` a `MarcoAcceso` y suma las clases `…EnBlanco` a cada elemento del formulario. |
+| `globals.css` (intranet) | El texto blanco de «Preparando tu espacio...» (`.login-success-loader .goo-loader-label`) queda solo por debajo de `md`; desde `md` vuelve al navy de la tarjeta. |
+
+En el móvil (menos de 768 px) nada cambia: formulario directo sobre el azul y botón blanco.
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| `tsc --noEmit` de la intranet | Limpio |
+| Chrome headless contra el dev de la 3001, a 390, 768, 1024 y 1440 px | Desde 768: tarjeta `rgb(255,255,255)`, botón `rgb(0,26,57)` con texto blanco, etiquetas y textos `#001a39`, borde de campo `#d9d9d9`, errores en rojo 600. A 390: igual que antes (tarjeta transparente, botón blanco). Sin scroll horizontal en ninguno. La regla del cargador compiló con `not (min-width: 48rem)`. |
+| Anillo de foco del campo | No se pudo medir: en headless la pestaña no tiene el foco de la ventana. |
+
+**Pendiente al cierre:** mirar a mano el anillo de foco de los campos sobre el blanco y la
+pantalla «Preparando tu espacio...» (exige un login correcto).
+
+---
+
+## sesión 12-10-2026: la nueva contraseña de la recuperación, con el saludo del sitio en la intranet; el sitio sin encabezado y con «Guardar contraseña»
+
+**Qué se pidió:** en `localhost:3001/reset-password` (intranet), el texto de la izquierda como en
+el sitio: «¡Enhorabuena, David!», «Ahora puedes crear tu nueva contraseña.» y «Asegúrate de que
+sea fácil de recordar para ti, pero difícil de adivinar para otros.». En
+`localhost:3000/reset-password` (sitio), quitar «Crea tu nueva contraseña» y que el botón diga
+«Guardar contraseña».
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `security-questions-view.tsx` (intranet) | Al verificar las respuestas guarda en `sessionStorage` (`recoveryName`) el primer nombre que ya devolvía `POST /security-questions/verify` y que el sitio usa para el mismo saludo. Sin nombre, borra la clave. |
+| `reset-password-view.tsx` (intranet) | En la recuperación: título `¡Enhorabuena, <nombre>!` (o «¡Enhorabuena!» sin nombre) y los dos párrafos del sitio; antes «Crea tu nueva contraseña» y «Elige una clave que no hayas usado antes.». El nombre se lee con `useSyncExternalStore`, como el modo. El cambio forzado (con sesión) conserva sus textos: el pedido era para el flujo de recuperación. «Cancelar» borra también `recoveryName`. |
+| `reset-success-view.tsx` (intranet) | Borra `recoveryName` con los demás datos de la recuperación. |
+| `reset-password-view.tsx` (sitio) | Fuera el encabezado «Crea tu nueva contraseña» (y el import de `authPasosCardHeadingClass`); el botón dice «Guardar contraseña» (antes «Guardar»). |
+
+**Cómo se probó.** ESLint y `tsc --noEmit` de las dos apps, limpios. **No se miró en vivo:** los
+servidores de desarrollo del 3000 y el 3001 estaban apagados al cierre y no se levantaron.
+
+---
+
+## sesión 11-10-2026 (19.ª parte): «Iniciar sesión» de la cuenta sin pendientes del sitio no llevaba al login
+
+**Qué se reportó:** en el sitio, el botón «Iniciar sesión» no llevaba al login.
+
+**Causa.** En `first-login-flow.tsx`, la pantalla «sin nada pendiente» (la que sale, por ejemplo,
+al recargar `/first-login` después de guardar las preguntas) tenía un enlace a `/admin/dashboard`
+que decía «Ir al panel»; al renombrarlo «Iniciar sesión» (2026-10-11) siguió llevando al panel. El
+botón del paso 3 sí cerraba la sesión e iba a `/login` (`cerrarSesionEIrAlLogin`): la ruta de
+cierre borra las mismas cookies, con la misma `path`, que pone el login.
+
+**Lo que se hizo.** El enlace pasa a botón con `cerrarSesionEIrAlLogin`, como el paso 3 del sitio
+y la misma pantalla de la intranet (`logout()`). Fuera el `import Link`, que ya no usaba nadie.
+El manual decía «Ir al panel»: corregido.
+
+**Cómo se probó.** ESLint del archivo y `tsc --noEmit` del sitio, limpios. No se probó el clic en
+vivo (`/first-login` del sitio exige una sesión firmada).
+
+---
+
+## sesión 11-10-2026 (18.ª parte): última frase de la pantalla final del primer ingreso del sitio
+
+**Qué se pidió:** el mensaje de la pantalla final de `localhost:3000/first-login`: «Tu cuenta ya es
+segura.», «Guarda tus respuestas en un lugar seguro, las usarás para validar tu identidad y
+restablecer tu clave si la olvidas.» y «Vuelve a iniciar sesión para entrar a la intranet.».
+
+**Lo que se hizo.** Las dos primeras frases ya estaban así (partes 15 y 16). En
+`first-login-flow.tsx` solo cambió la tercera: «…para entrar al panel.» → «…para entrar a la
+intranet.», tal como la escribió el usuario. El manual no cita esa frase.
+
+**Cómo se probó.** ESLint del archivo, limpio. No se miró en vivo (`/first-login` del sitio exige
+una sesión firmada).
+
+---
+
+## sesión 11-10-2026 (17.ª parte): el check vuelve a la recuperación (sitio e intranet)
+
+**Qué se pidió:** el usuario aclaró que los cambios eran para el final del primer ingreso
+(`/first-login`) y que, si se había cambiado algo del login o de la recuperación, se deshiciera.
+
+**Lo que se deshizo.** Lo único del login o la recuperación cambiado hoy sin pedirlo era la
+insignia con el check de la pantalla de éxito de la recuperación, quitada junto con la del primer
+ingreso (partes 9 y 13):
+
+| Dónde | Cambio |
+|---|---|
+| `auth-ui.tsx`, `reset-success-view.tsx` (sitio) | Vueltos a como estaban antes de `dc5f04a0`: `AuthSuccessBadge` existe otra vez y la lleva «¡Genial, tu clave ha sido actualizada con éxito!». El comentario de la vista aclara que el primer ingreso ya no la lleva. |
+| `auth-success-screen.tsx` (intranet) | La insignia blanca con el check, otra vez encima del botón, como primer hijo de la tarjeta (la prop `antesDelFormulario` de `MarcoAcceso` ya no existe y no se repuso). |
+
+El primer ingreso sigue sin check, sin paginador y sin «Volver», y con los textos de las
+partes 15 y 16. Los demás cambios del login y la recuperación de hoy los pidió el usuario
+(«Cancelar», aviso de privacidad, ojo, «Verifica tu identidad») y se quedan.
+
+**Cómo se probó.** ESLint y `tsc --noEmit` de las dos apps, limpios. En vivo: la recuperación del
+sitio de punta a punta con la API simulada hasta `/reset-success` (1280 × 800), con el check; la
+`/reset-success` de la intranet a 360 × 640 y 1280 × 800, con el check, sin scroll.
+
+---
+
+## sesión 11-10-2026 (16.ª parte): aviso de las respuestas más corto (sitio e intranet)
+
+**Qué se pidió:** cambiar «Es muy importante que recuerdes o guardes tus respuestas en un lugar
+seguro, ya que serán el único método…» por «Guarda tus respuestas en un lugar seguro, las usarás
+para validar tu identidad y restablecer tu clave si la olvidas.», en el sitio y la intranet.
+
+**Lo que se hizo.** Reemplazado el texto en sus cuatro apariciones: la pantalla final del primer
+ingreso y la de «sin nada pendiente», en `first-login-flow.tsx` (sitio) y `first-login-view.tsx`
+(intranet). Nada más cambió. El manual no copia la frase literal («recordando guardar las
+respuestas en un lugar seguro…») y no se tocó.
+
+**Cómo se probó.** ESLint y `tsc --noEmit` de las dos apps, limpios. Intranet en vivo hasta el
+paso 3 a 360 × 640 y 1280 × 800: el texto nuevo, sin scroll. El sitio no se miró en vivo
+(`/first-login` exige una sesión firmada).
+
+---
+
+## sesión 11-10-2026 (15.ª parte): la pantalla final del primer ingreso, con el texto del usuario dentro de la tarjeta
+
+**Qué se pidió:** el usuario aclaró que el texto de la 10.ª parte era para la pantalla que sale al
+guardar las preguntas («¡Configuración completada!»): título «¡Configuración completada con
+éxito!» y, dentro de la tarjeta, encima de «Iniciar sesión», «Tu cuenta ya es segura.» y el
+aviso de guardar las respuestas. En el sitio y la intranet. Pidió también no cambiar nada que no
+diga: la pantalla «sin nada pendiente» (partes 11 a 13) se dejó como estaba.
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `first-login-flow.tsx` (sitio) | Paso 3: título nuevo; `descripcion` con los dos párrafos, `descripcionEnTarjeta` y `DescripcionEnTarjeta` dentro de la tarjeta, encima de «Vuelve a iniciar sesión para entrar al panel.» y del botón. |
+| `first-login-view.tsx` (intranet) | Lo mismo con `descripcionEnTarjeta` de `MarcoAcceso`. |
+| `manual-de-usuario-formato.md` | El paso 3 de las dos apps con el texto nuevo. |
+
+Igual que en la pantalla sin nada pendiente: desde `md` el texto va en la tarjeta y en el móvil
+bajo el título. El aviso de las respuestas sale solo si se acaban de elegir (como antes); a quien
+solo cambió la contraseña le queda «Tu cuenta ya es segura.». «Vuelve a iniciar sesión…» sigue
+encima del botón.
+
+**Cómo se probó.** ESLint y `tsc --noEmit` de las dos apps, limpios. Intranet en vivo, el primer
+ingreso de punta a punta con la API simulada hasta el paso 3, a 360 × 640, 768 × 1024 y
+1280 × 800: sin scroll. El sitio no se miró en vivo (`/first-login` exige una sesión firmada).
+
+---
+
+## sesión 11-10-2026 (14.ª parte): «Cancelar» en la primera pregunta de seguridad del primer ingreso (sitio e intranet)
+
+**Qué se pidió:** en «Preguntas de seguridad» del primer ingreso, solo en la pantalla de la
+primera pregunta, un botón «Cancelar» debajo.
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `first-login-flow.tsx` (sitio) | Bajo «Continuar», con `currentQuestion === 0`: «Cancelar» en solo texto (`authPasosQuietLinkClass`, como «Cancelar» de la nueva contraseña), que llama a `cerrarSesionEIrAlLogin`. |
+| `first-login-view.tsx` (intranet) | Lo mismo con `accesoEnlaceClass` y `logout()`. |
+| `manual-de-usuario-formato.md` | El paso de las preguntas, en las dos apps, lo menciona. |
+
+Cierra la sesión temporal y lleva al login **sin guardar nada**: la contraseña nueva y las
+preguntas se envían juntas al final, así que quien cancela vuelve a entrar con la contraseña
+temporal. Desde la segunda pregunta no sale: ahí está «Atrás».
+
+**Cómo se probó.** ESLint y `tsc --noEmit` de las dos apps, limpios. Intranet en vivo con la API
+simulada, a 360 × 640 y 1280 × 800: en la primera pregunta está «Cancelar» bajo «Continuar»;
+en la segunda no, y sale «Atrás». Sin scroll. El sitio no se miró en vivo (`/first-login` exige
+una sesión firmada).
+
+---
+
+## sesión 11-10-2026 (13.ª parte): el sitio, como la intranet: aviso dentro de la tarjeta y sin el check
+
+**Qué se pidió:** «ahora en sitio web» (lo de la 12.ª parte: en tablet y escritorio, el aviso de
+la cuenta ya configurada dentro de la tarjeta, encima del botón) y, a mitad de camino, «quita en
+sitio web el check y su fondo».
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `marco-de-pasos.tsx` | Prop `descripcionEnTarjeta` (oculta desde `md` la descripción de bajo el título) y `DescripcionEnTarjeta`, que la pinta dentro de la tarjeta desde `md` (16 px, `#001a39`, hueco de siempre). Va en dos piezas, y no todo en el marco como en la intranet, porque en el sitio la tarjeta la pone cada pantalla. |
+| `first-login-flow.tsx` | La pantalla sin nada pendiente usa las dos, con el texto en una sola constante. Su botón «Iniciar sesión» (que el usuario había cambiado de «Ir al panel») no se tocó. |
+| `auth-ui.tsx` | Fuera `AuthSuccessBadge`, el check blanco sobre un círculo `#001631` que salía desde `md`. |
+| `first-login-flow.tsx`, `reset-success-view.tsx` | Sin la insignia: la pantalla sin nada pendiente, el paso 3 del primer ingreso y «¡Genial, tu clave ha sido actualizada con éxito!» de la recuperación. |
+
+**Cómo se probó.** ESLint de los cuatro archivos y `tsc --noEmit` del sitio, limpios (el ESLint de
+la carpeta entera sigue fallando por `modal-permisos.tsx` y `roles-view.tsx`, de antes y sin
+tocar). En vivo, la recuperación recorrida de punta a punta con la API simulada hasta
+`/reset-success`, a 390 × 844 y 1280 × 800: sin el check, sin scroll. **No se miró en vivo** la
+pantalla sin nada pendiente del sitio: `/first-login` exige una sesión firmada que el arnés no
+puede simular sin tocar secretos. Usa las mismas clases que la intranet, que sí se miró.
+
+---
+
+## sesión 11-10-2026 (12.ª parte): en la tablet y el escritorio, el aviso de «cuenta ya configurada» dentro del formulario (intranet)
+
+**Qué se pidió:** en tablet y escritorio, que «Tu cuenta ya es segura.» y el aviso de guardar las
+respuestas vayan dentro del recuadro, encima de «Iniciar sesión». Se hizo en la intranet, la
+única donde esa pantalla tiene ese botón (en el sitio es «Ir al panel» y no se tocó).
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `marco-acceso.tsx` | Prop nueva `descripcionEnTarjeta`: desde `md` la descripción se pinta dentro del formulario, encima de los hijos (16 px, blanco al 85 %, con el hueco de siempre), y la de bajo el título se oculta (`md:hidden`). En el móvil no cambia nada. Cada copia lleva `display: none` en el ancho en que no toca, así que el lector de pantalla oye una sola. |
+| `first-login-view.tsx` | La pantalla sin nada pendiente pasa `descripcionEnTarjeta`. |
+
+**Cómo se probó.** ESLint y `tsc --noEmit` de la intranet, limpios. En vivo con el estado
+simulado sin nada pendiente: a 360 × 640 el texto bajo el título, como antes; a 768 × 1024 y
+1280 × 800, dentro del recuadro, encima del botón, y a la izquierda solo el título (y el logo
+en escritorio). Sin scroll en los tres.
+
+---
+
+## sesión 11-10-2026 (11.ª parte): el texto nuevo iba en «Tu cuenta ya está configurada», no en la pantalla final
+
+**Qué pasó:** en la 10.ª parte el texto del usuario se puso en la pantalla final del primer
+ingreso (paso 3), pero el usuario aclaró que era para reemplazar «Tu cuenta ya está
+configurada / No hay nada pendiente: tu contraseña y tus preguntas de seguridad están al día.»,
+la pantalla que sale cuando se entra a `/first-login` sin nada pendiente. La 10.ª parte ya
+estaba commiteada (`6ae1713f`, `5c984af5`).
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `first-login-flow.tsx` (sitio) y `first-login-view.tsx` (intranet) | El paso 3 vuelve a como estaba: «¡Configuración completada!» y el aviso corto de las respuestas (o «Tu cuenta ya es segura.» si no se eligieron preguntas). La pantalla sin nada pendiente pasa a «¡Configuración completada con éxito!», «Tu cuenta ya es segura.» y el aviso largo de las respuestas, siempre los dos párrafos. Sus botones no cambian («Ir al panel» en el sitio, «Iniciar sesión» en la intranet). |
+| `manual-de-usuario-formato.md` | El paso 3 de las dos apps vuelve a «¡Configuración completada!» (el de la intranet ya decía «con éxito» antes de la 10.ª parte, sin que la pantalla lo dijera: corregido). El aviso de «Cuenta sin configuraciones pendientes» con el texto nuevo. Lo del paginador corregido en la 10.ª parte se queda. |
+
+**Cómo se probó.** ESLint y `tsc --noEmit` de las dos apps, limpios. Intranet en vivo con el
+estado simulado sin nada pendiente, a 360 × 640, 390 × 844 y 1280 × 800: el texto nuevo, sin
+scroll. El sitio no se miró en vivo.
+
+---
+
+## sesión 11-10-2026 (10.ª parte): el mensaje final del primer ingreso, con el texto del usuario
+
+**Qué se pidió:** el usuario pasó el texto de la pantalla final del primer ingreso: «¡Configuración
+completada con éxito!», «Tu cuenta ya es segura.» y «Es muy importante que recuerdes o guardes
+tus respuestas en un lugar seguro, ya que serán el único método para validar tu identidad y
+permitirte cambiar tu clave en el futuro si llegas a olvidarla.». Se aplicó en el sitio y la
+intranet, que llevan el mismo texto.
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `first-login-flow.tsx` (sitio) y `first-login-view.tsx` (intranet) | Título «¡Configuración completada con éxito!» (antes «¡Configuración completada!») y dos párrafos: «Tu cuenta ya es segura.» y el aviso de las respuestas. El aviso solo sale si en esta pasada se eligieron las preguntas, como antes: a quien solo tenía que cambiar la contraseña le queda «Tu cuenta ya es segura.». |
+| `manual-de-usuario-formato.md` | El paso 3 del sitio y de la intranet con el texto nuevo. Además, el manual seguía hablando del paginador «Anterior 1 2 3 Siguiente», de «Siguiente» como otra forma de avanzar, de «Anterior» para volver al paso 1 y del enlace «Iniciar sesión» bajo el formulario, que se quitaron en las partes 8 y 9 de hoy: corregido, y explicado que para corregir la contraseña hay que salir con «Regresar al sitio web» y volver a entrar. |
+
+**Cómo se probó.** ESLint y `tsc --noEmit` de las dos apps, limpios. Intranet en vivo, el primer
+ingreso recorrido de punta a punta con la API simulada (estado, catálogo y el `POST
+/first-login`) hasta el paso 3, a 360 × 640, 390 × 844, 768 × 1024 y 1280 × 800: el texto entra
+sin scroll en todos. El sitio no se miró en vivo; usa el mismo marco y las
+mismas medidas.
+
+---
+
+## sesión 11-10-2026 (9.ª parte): sin paginador en el primer ingreso (sitio e intranet) y sin insignia de check en la intranet
+
+**Qué se pidió:** quitar en el sitio y la intranet el paginador «← Anterior 1 2 3 Siguiente →»
+del primer ingreso, y en la intranet «el logo de check con su fondo» (la insignia blanca
+redonda con el check).
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `marco-de-pasos.tsx` (sitio) | Fuera la prop `pasos`, `PasosDelMarco` y `PaginadorDePasos`, y los iconos de flecha. |
+| `first-login-flow.tsx` (sitio) | Fuera `Etapa`, `NOMBRE_DE_ETAPA`, `ETAPA_DEL_PASO`, `pasos()` y los `id` de formulario (`FORM_CONTRASENA`, `FORM_PREGUNTAS`), que solo servían para que «Siguiente» enviara el formulario. La insignia del sitio (`AuthSuccessBadge`) se queda: el pedido era solo para la intranet. |
+| `first-login-view.tsx` (intranet) | Fuera el paginador (`paginador`, `puedeVolver`, `volver`, `avanzar`, `primerPaso`, `pasosVisibles`) y la insignia de «Tu cuenta ya está configurada» y «¡Configuración completada!». |
+| `auth-success-screen.tsx` (intranet) | Fuera la insignia de los avisos de éxito de la recuperación. |
+| `marco-acceso.tsx` (intranet) | Fuera las props `pasos` y `antesDelFormulario`, que ya no usa nadie. |
+
+**Lo que cambia para quien lo usa.** El paginador era la única forma de volver de las
+preguntas al paso de la contraseña (que no se envía hasta el final) para corregirla. Ahora no
+se puede: para cambiarla hay que salir («Regresar al sitio web», que cierra la sesión) y
+entrar otra vez con la contraseña temporal. «Atrás» sigue moviendo entre preguntas.
+
+**Cómo se probó.** ESLint y `tsc --noEmit` de las dos apps, limpios. Intranet en vivo, primer
+ingreso pasos 1 y 2 a 360 × 640 y 1280 × 800: sin paginador, sin scroll. El primer ingreso del
+sitio no se miró en vivo (hace falta una sesión a medias); el cambio ahí es solo quitar el
+paginador.
+
+---
+
+## sesión 11-10-2026 (8.ª parte): sin el enlace «Volver» en el primer ingreso, en el sitio y la intranet
+
+**Qué se pidió:** «elimina el botón de volver en sitio e intranet». Es el enlace de solo texto
+bajo «Continuar» en los pasos de contraseña y de preguntas del primer ingreso, que se llamaba
+«Iniciar sesión» y el usuario había renombrado a «Volver» (sin commitear). Cerraba la sesión
+a medias y llevaba al login.
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `first-login-flow.tsx` (sitio) | Fuera `EnlaceIniciarSesion` y sus dos usos, y el import de `authPasosHuecoArribaClass`, que solo usaba él. |
+| `first-login-view.tsx` (intranet) | Fuera `enlaceIniciarSesion` y sus dos usos, y el import de `accesoHuecoArribaClass`. |
+
+**Lo que no cambia.** La salida sigue estando: «Regresar al sitio web del Observatorio», bajo el
+formulario, cierra la sesión a medias en esos pasos en las dos apps (`cerrarSesionAlSalir`). Se
+queda «Volver a iniciar sesión» de la pantalla de error del primer ingreso (cuando no se pudo
+saber qué falta), que es otro enlace, y «Atrás» entre preguntas.
+
+**Cómo se probó.** ESLint y `tsc --noEmit` de los dos archivos, limpios. Intranet en vivo, paso 1
+a 390 × 844: el botón «Continuar» y debajo el regreso al sitio, sin scroll.
+
+---
+
+## sesión 11-10-2026 (7.ª parte): la lista de preguntas del primer ingreso de la intranet, con el estilo del sitio
+
+**Qué se pidió**, con una captura de la lista que abría el sistema (blanca, cuadrada, con la
+opción marcada en azul de Windows): darle al desplegable de preguntas de seguridad de la
+intranet el estilo que tiene en el sitio web.
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `src/style/globals.css` (intranet) | `.acceso-select`, la misma regla que `.admin-auth-select` del sitio: con el select personalizable (`appearance: base-select`, Chrome/Edge 135+) la lista abierta es blanca, con borde `#001A39` de 1.5 px, esquinas de 16, sombra, opciones con esquinas de 12, la elegida en semibold y la que se señala en `#001A39` con letra blanca; sin la marca ✓ del navegador. La pregunta elegida se parte en dos líneas y el campo crece. Sigue siendo el `<select>` nativo; donde no hay soporte (Firefox, Safari) queda la lista del sistema. |
+| Ídem, solo en la intranet | La lista no pasa del ancho de la pantalla menos 16 px por lado y sus opciones se parten en dos líneas: a 360 y 390 px la lista se ajustaba a la pregunta más larga, se salía por la derecha y la cortaba («…mejor amigo de la inf»). En el sitio pasa lo mismo, pero el sitio no se toca sin pedirlo. |
+| `question-picker.tsx` | El desplegable lleva `acceso-select` y `py-2` (el `py-2` de `authPasosInputClass`): sin él, «Selecciona una opción…» quedaba pegado arriba en el campo. |
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| ESLint de `question-picker.tsx`; Tailwind compilado con PostCSS | Limpio; la regla sale en el CSS. |
+| Intranet en vivo, `/first-login` paso 2 con el catálogo simulado, lista abierta con un clic real (CDP) a 360 × 640, 390 × 844 y 1280 × 800 | Lista con el estilo del sitio, dentro de la pantalla, preguntas largas en dos líneas; cerrada, el texto centrado; elegida una pregunta larga, el campo crece a dos líneas. Sin scroll en reposo. |
+| **Ojo:** el `next dev` de la 3001 no recompiló `globals.css` (el TSX sí); la prueba inyectó en la página la regla compilada | Si no se ve el cambio, reiniciar `npm run dev` de la intranet. |
+
+---
+
+## sesión 11-10-2026 (6.ª parte): el acceso de la intranet, con la maqueta del sitio sobre el azul y sin tarjeta blanca
+
+**Qué se pidió**, en varios mensajes seguidos: cambiar el estilo de «¿Olvidaste tu contraseña?»
+y del primer ingreso de la intranet como en el sitio web, con los mensajes del flujo encima y
+sin tarjeta blanca; quitar el color blanco de la tarjeta también en escritorio; «copia el mismo
+estilo de sitio web, el mismo UI… sin el fondo blanco sino el azul» (con una captura del primer
+ingreso del sitio); «la misma simetría en sus márgenes y padding»; y, por último, llevar al
+sitio el diseño de «Verifica tu identidad» de la intranet (rótulo «PREGUNTA 1 DE 3», la pregunta
+como etiqueta y los puntos de avance).
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `features/login/components/marco-acceso.tsx` (intranet) | Ahora es `MarcoDePasos` del sitio en Tailwind, con los mismos anchos, rellenos y huecos (`clamp()` con `dvh` en el móvil), sobre `#001A39` y, desde `xl`, la mitad izquierda en `#001631` con las esquinas derechas de 30. Título, texto, paginador (`pasos`) y logo (`conLogo`) como en el sitio. Lo usan **todas** las pantallas del acceso: login, primer ingreso, correo, preguntas, nueva contraseña y avisos de éxito. Antes cada una tenía su maqueta en `globals.css` (`.login-*`, `.fl-*`). |
+| `features/login/components/acceso-ui.ts` | Un solo fondo: texto blanco, campos transparentes en píldora (32 px; el desplegable, 16), botón blanco en píldora, enlaces blancos. El formulario mide 330 px en el móvil y 452 desde `md` con un borde blanco tenue y relleno de 32 × 40 (la tarjeta del sitio, sin fondo). Huecos `accesoHuecoClass` / `accesoHuecoArribaClass` (los `authPasosHueco*` del sitio). Botón secundario, encabezado, rótulo, enlace de regreso. |
+| Login | Sobre el marco con `conLogo`. El logo ya no va atenuado y el título se compone como el del sitio: «Bienvenido a» en peso normal, «nuestra Intranet» en semibold (antes en mayúsculas desde `xl`). |
+| Primer ingreso | Reescrito sobre el marco, como `first-login-flow.tsx` del sitio: títulos del sitio («Actualiza tu seguridad», «Protege el acceso a tu cuenta», «¡Configuración completada!»), el paginador «← Anterior 1 2 3 Siguiente →» bajo el texto (antes debajo del formulario y en inglés, «Previous/Next»), «Contraseña temporal» con marcador «Ingresar contraseña», encabezado «Preguntas de seguridad», «Atrás» en las preguntas. La lógica de pasos (qué falta, a qué paso se puede volver) no cambia. |
+| `question-picker.tsx` | En Tailwind (era `fl-*`): desplegable con etiqueta oculta, «Respuesta», barras. |
+| `barras-de-avance.tsx` (nuevo) | Las barras/puntos de avance, compartidas por las dos pantallas de preguntas: `puntos` en la verificación, `barras` en el primer ingreso (las dos variantes de `AuthProgressDots`). |
+| `shared/ui/molecules/password-field.tsx`, `password-requisitos.tsx`, `return-to-site-link.tsx` | En blanco sobre el azul y en píldora. `ReturnToSiteLink` recibe sus clases (`className`) en vez del prefijo de `globals.css`. |
+| Ojo de la contraseña (intranet y sitio) | Más pequeño, a pedido del usuario: caja de 16 × 16 px en la intranet (antes 20 × 20; `login-view.tsx` y las dos ramas de `PasswordField`) y en el sitio (antes 24 × 20; `PasswordField` de `auth-ui.tsx`, el único campo de contraseña con ojo: login, primer ingreso y nueva contraseña). El ojo cerrado queda en 16 px de ancho en las dos apps. Los demás ojos del sitio son botones de «ver» de las tablas y no cambian. **Trampa:** `IconoMascara` ajusta el SVG con `mask-size: contain`, y el ojo es el doble de ancho que de alto (61 × 31): manda el **ancho** de la caja. Un primer intento bajó solo el alto (16 × 20) y el icono se quedó igual. El área que se toca no cambia: la da el relleno del botón. |
+| `globals.css` | El cargador del login en blanco en todos los anchos. Las reglas `fl-*` se pasaron al azul antes de reescribir el primer ingreso; ya no las usa nadie (ver pendiente). |
+| **Sitio**: `security-questions-view.tsx` y `AuthProgressDots` (`auth-ui.tsx`) | «Verifica tu identidad» con el diseño de la intranet: «PREGUNTA 1 DE 3» en pequeño y mayúsculas, la pregunta como etiqueta del campo y los puntos (`variante="puntos"`; la actual, píldora). Se van el encabezado «Preguntas de seguridad» y la caja con borde de la pregunta. **Ojo:** el número de la pregunta lo había quitado el usuario el 2026-10-09; ahora lo pidió de vuelta con este diseño. Los textos del sitio no cambian. |
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| `tsc --noEmit` y ESLint, las dos apps | Limpios. |
+| Intranet en vivo (`next dev`): login, correo, preguntas, nueva contraseña y éxito con datos de prueba en `sessionStorage`; primer ingreso (pasos 1 y 2) y configuración de preguntas con `/me`, `/first-login/status` y el catálogo simulados desde Chrome (`Fetch.fulfillRequest`), a 360 × 640, 390 × 844, 768 × 1024 y 1280 × 800 | Sin scroll en todas, también «Crea tu nueva contraseña» a 360 × 640, que antes sobraba 94 px (la tarjeta ya no suma relleno en el móvil). |
+| Simetría medida (`getBoundingClientRect`) de la recuperación y el login, sitio contra intranet, a 390, 768 y 1280 | Campo, botón y regreso en la misma x y con el mismo ancho (330 en el móvil, 386 por dentro del recuadro desde `md`); misma letra (título 24/30 px, campos 16). Las diferencias verticales son de contenido (los títulos del sitio ocupan dos líneas). |
+| Sitio en vivo: `/recovery` → preguntas con la API de preguntas simulada, a 360 × 640 y 1280 × 800 | El diseño nuevo, sin scroll. |
+| Envío real (verificar respuestas, guardar el primer ingreso) | **No se probó**: hace falta una cuenta. |
+
+**Pendiente al cierre.**
+
+- Mirarlo con una cuenta real (primer ingreso de punta a punta).
+- CSS muerto en `globals.css` de la intranet: `.login-page/-left/-right`, `.fl-*` (tarjeta, campos, paginador, éxito…), `.recovery-*`, `.site-return-link` y las variantes `*-return`, y las reglas de transición de página (`.auth-page-transition`, `.auth-slide-*`) que apuntaban a esas tarjetas. Igual en las ramas `classPrefix` de `PasswordField` y `PasswordRequisitos`. No se borró en esta entrega.
+
+---
+
+## sesión 11-10-2026 (5.ª parte): campos del login de la intranet transparentes sobre el azul
+
+**Qué se pidió.** En el login de la intranet, «Correo SENA» y «Contraseña» eran blancos sobre el
+azul; probarlos transparentes, con el marcador en contraste. El botón «Ingresar» sigue blanco.
+
+**Lo que se hizo.** `login-view.tsx`: los dos campos usan `campoLogin()`, en vez de dos copias
+de la misma clase. Por debajo de `xl` (formulario directo sobre el azul): fondo transparente,
+borde blanco al 50 %, texto blanco, marcador blanco al 65 %, anillo de foco blanco y el ojo de
+la contraseña en blanco al 80 %. Desde `xl` (tarjeta blanca), como estaban. El autorrelleno de
+Chrome pinta su propio fondo claro encima de cualquier `background`: se tapa con una sombra
+interior del color del fondo (`autofill:shadow-[inset_…]`) y `-webkit-text-fill-color`. El
+botón no cambia.
+
+| Prueba | Resultado |
+|---|---|
+| Contraste calculado sobre `#001A39` (y `#001631`) | Marcador 7.8:1, borde 5.1:1, ojo 11.3:1: pasan 4.5 (texto) y 3 (borde), WCAG 1.4.3 y 1.4.11. |
+| `tsc --noEmit` y ESLint | Limpios. |
+| Capturas en vivo a 360 × 640, 768 × 1024 y 1280 × 800 | Transparentes sobre el azul en el móvil y la tablet; en la tarjeta de escritorio, blancos como antes. Sin scroll. |
+| Autorrelleno de Chrome | **No se probó**: hace falta una contraseña guardada en el navegador. |
+
+**Después, el aviso de privacidad.** Al subir a 14 px (4.ª parte), «Al ingresar a este sitio
+aceptas la política de privacidad…» se partía en «política de» / «privacidad» y el «de» quedaba
+colgando. Los dos enlaces llevan `whitespace-nowrap`: ahora pasan enteros a la segunda línea
+(«política de privacidad y protección de datos.»). Comprobado en capturas a 360 × 640,
+390 × 844, 768 × 1024 y 1280 × 800, sin scroll. El sitio web tiene el mismo corte y no se tocó.
+
+**Corregido después:** el usuario prefirió que el texto llene el ancho como en el sitio (con los
+enlaces enteros, la primera línea quedaba corta), y que diga «Al ingresar a este sitio aceptas
+**nuestra** política de privacidad y protección de datos.», en las dos apps. Se quitó el
+`whitespace-nowrap` y se cambió «la» por «nuestra» en los dos `login-view.tsx`. Capturas a
+360 × 640 y 1280 × 800 de las dos apps: cortan en el mismo sitio. En el móvil, «…aceptas
+nuestra» / «política de privacidad y protección de datos.»; en la tarjeta de escritorio,
+«…política de» / «privacidad y…» (a 14 px la frase hasta «privacidad» no cabe en una línea).
+
+**Y el título bajo el logo.** Por debajo de `xl`, «Bienvenido a nuestra Intranet» iba encima del
+logo (`order-*`); el usuario lo pidió debajo, como ya estaba en escritorio. Se quitó el cambio de
+orden y el hueco pasó del título al logo; el logo sigue atenuado sobre el azul. Capturas a
+360 × 640, 768 × 1024 y 1280 × 800: sin scroll, y el escritorio igual que antes. Después, más
+aire bajo el título antes del formulario: `mb-[clamp(1rem,4dvh,2.5rem)]` (unos 26 px en un
+teléfono de 640 de alto) y 40 px desde `sm`; nada desde `xl`. Capturas a 360 × 640, 390 × 844,
+768 × 1024 y 1280 × 800: sin scroll.
+
+**Pendiente al cierre.** Mirar el autorrelleno en el navegador del usuario.
+
+---
+
+## sesión 11-10-2026 (4.ª parte): el acceso de la intranet copia el del sitio, con los mensajes de cada paso a la izquierda y la misma escala de letra
+
+**Qué se pidió.** En la intranet, al pulsar «¿Olvidaste tu contraseña?» el panel izquierdo
+se quedaba en «INTRANET» y los mensajes iban dentro de la tarjeta. Que se comporte como el
+acceso del sitio web, dejando los mensajes en la tarjeta en el móvil. Que la letra tenga el
+mismo tamaño y tipo que en el sitio, y la casa de «Regresar al sitio web» también. **El sitio
+web no se toca** (el usuario lo pidió expresamente).
+
+**Lo que se hizo.** La intranet conserva su identidad: fondo azul, colores, esquinas.
+
+| Dónde | Cambio |
+|---|---|
+| `features/login/components/acceso-ui.ts` (nuevo) | Las medidas de letra del acceso del sitio (`auth-ui.tsx`, `marco-de-pasos.tsx`) en los colores de la intranet: título del panel izquierdo de 30 px Semibold y su texto de 18; encabezado de la tarjeta de 18/20 Medium; texto de la tarjeta de 14-16/18; etiquetas y enlaces de 14/16 Medium/Regular; campos y botón de 44 px con texto de 16; errores de 14. Tarjeta de hasta 452 px desde `md`, como en el sitio. |
+| `features/login/components/marco-acceso.tsx` (nuevo) | Marco de la recuperación (correo, preguntas, nueva contraseña) y de los avisos de éxito, en vez de la misma maqueta copiada cuatro veces. Desde `xl`, logo + título + texto del paso a la izquierda y la tarjeta solo con el formulario; por debajo, «INTRANET» arriba y el título y el texto en la tarjeta, como estaba. Los dos títulos están en el HTML y cada corte oculta uno con `display: none`: el lector de pantalla solo encuentra el que se ve. |
+| `recovery-view`, `security-questions-view`, `reset-password-view`, `auth-success-screen` | Sobre `MarcoAcceso` y con las clases de `acceso-ui`. Los textos no cambian. El rótulo «PREGUNTA 1 DE 3» se deja como estaba: en el sitio no hay nada equivalente. |
+| `login-view.tsx` | Misma escala: título de 20-24 px en el móvil y 30 desde `md` (antes 36), etiquetas de 14/16 en Medium (antes 14 Semibold), campos y botón de 44 px con 16 (antes 14), aviso de privacidad y errores de 14 (antes 12), «¿Olvidaste tu contraseña?» de 14/16 en el azul de la tarjeta (antes 12 gris). La maqueta no cambia. |
+| `shared/ui/molecules/password-field.tsx` | Las mismas medidas en el campo de contraseña de Tailwind (el del prefijo `fl` va por CSS). |
+| `shared/ui/molecules/return-to-site-link.tsx` + `globals.css` | La casa rellena de Heroicons de 20 px (`HomeIcon` sólido, la del sitio) en vez de la de contorno, y el texto de 14 px en el móvil y 16 desde `md` en peso normal (antes 13-15 px Medium) en todas las variantes (`login`, `recovery`, `sq`, `rp`, `fl`, `rs`). |
+| `globals.css`, primer ingreso (`fl-*`) | Título del paso de 30 px Semibold (antes 24-40 Bold) y su texto de 18 (14-16 en el móvil); etiquetas de 14/16 Medium; campos y botones de 44 px con 16; errores de 14. |
+| Móvil | El logo, «INTRANET», el relleno de la tarjeta y el hueco bajo el texto se encogen con el alto (`dvh`), como en el sitio: con la letra más grande, las preguntas se salían 24 px a 360 × 640. |
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| `tsc --noEmit` y ESLint de `features/login` y las dos piezas compartidas | Limpios. |
+| Capturas en vivo sobre el `next dev` de la intranet (recuperación con datos de prueba en `sessionStorage`), a 1280 × 800, 768 × 1024, 390 × 844 y 360 × 640: login, correo, preguntas, nueva contraseña y aviso de éxito | Desde `xl`, título y texto de cada paso a la izquierda y la tarjeta solo con el formulario; por debajo, como antes. Sin scroll en todas salvo «Crea tu nueva contraseña» a 360 × 640 (ver abajo). |
+| Primer ingreso (`fl-*`) | **No se probó**: hace falta una cuenta con contraseña temporal. |
+| El sitio web | Sin cambios (`git status` limpio en `3000-sitio-web`). |
+
+> **«Crea tu nueva contraseña» sigue sin caber a 360 × 640.** Sobran 94 px (antes 135): la lista
+> de requisitos está siempre a la vista. Es el pendiente de la 3.ª parte.
+
+**Pendiente al cierre.** Probar el primer ingreso con una cuenta temporal. Decidir lo de la
+nueva contraseña en el móvil. Las clases `.recovery-*` de `globals.css` ya no las usa ningún
+componente (la recuperación usaba Tailwind desde antes); no se borraron.
+
+---
+
+## sesión 11-10-2026 (3.ª parte): «Cancelar» debajo de guardar la nueva contraseña, igual en las dos apps
+
+**Qué se pidió.** En «Crea tu nueva contraseña», debajo del botón de guardar, un «Cancelar»
+que lleve al inicio de sesión, solo texto y sin fondo, y que el sitio web quede igual.
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| Intranet, `reset-password-view.tsx` | Debajo de «Guardar contraseña», «Cancelar» con el estilo de los demás enlaces de salida del acceso (texto gris de 12 px, sin fondo, el de «Volver a iniciar sesión» de la recuperación). En la recuperación es un enlace a `/login` que antes borra `recoveryEmail`, `recoveryQuestions` y `recoveryAnswers` de `sessionStorage`, como hace `reset-success-view.tsx` al terminar: el siguiente intento empieza por el correo. En el cambio forzado (con sesión) llama a `logout()`, que ya manda a `/login?logout=1`: sin cerrar la sesión, el proxy devolvería a esta pantalla. |
+| Sitio web, `reset-password-view.tsx` | Ya tenía debajo de «Guardar» un enlace solo de texto a `/login`, pero decía «Iniciar sesión». Ahora dice «Cancelar». Allí el flujo vive en un contexto de React (`useFlujoDeRecuperacion`) y no en `sessionStorage`, así que no hay nada que borrar. |
+| `manual-de-usuario-formato.md` | Las dos pantallas («Crea tu nueva contraseña» del sitio y de la intranet) explican el «Cancelar». |
+
+| Prueba | Resultado |
+|---|---|
+| `tsc --noEmit` y ESLint de los dos archivos | Limpios. |
+| Intranet en vivo sobre su `next dev`, en modo recuperación (datos de prueba en `sessionStorage`; la pantalla no llama a la API hasta enviar), a 360 × 640 y a 1280 × 800 | «Cancelar» sale debajo del botón, fondo transparente, 12 px. Al pulsarlo va a `/login` y los tres datos de la recuperación quedan borrados. |
+| Sitio web en vivo | **No se probó**: la pantalla necesita el paso anterior del flujo en su contexto. Es un cambio de texto en un enlace que ya existía. |
+| Cancelar en el cambio forzado de la intranet | **No se probó**: hace falta una sesión con contraseña temporal. |
+
+> **Ya estaba antes:** a 360 × 640, «Crea tu nueva contraseña» de la intranet no cabe sin
+> scroll (135 px de más con el enlace), porque la lista de requisitos está siempre a la vista.
+> El ajuste del 10-10 (requisitos al enfocar y resumidos al cumplirse) se hizo en el primer
+> ingreso, el login y los pasos del correo y las preguntas, no en esta pantalla.
+
+**Pendiente al cierre.** Decidir si esta pantalla de la intranet recibe el mismo ajuste que el
+primer ingreso para caber en el móvil.
+
+---
+
+## sesión 11-10-2026 (2.ª parte): «Volver a iniciar sesión» en las preguntas de la recuperación (intranet)
+
+**Qué se pidió.** En la intranet, debajo del botón «Siguiente», un «Volver a iniciar sesión».
+
+**Qué pasaba.** En la recuperación de la contraseña, la pantalla de las preguntas de seguridad
+(`security-questions-view.tsx` en modo `verify`) no tenía nada debajo del botón en la primera
+pregunta: no había forma de volver al login sin la flecha del navegador. Desde la segunda
+pregunta sale «Volver a la pregunta anterior», y en el modo de configurar (primer ingreso),
+«Iniciar sesión», que cierra la sesión. El sitio web ya tenía su enlace al login en ese punto.
+
+**Lo que se hizo.** En la primera pregunta de la recuperación, un enlace a `/login` con el
+texto y el estilo del paso anterior (el del correo, `recovery-view.tsx`). Es un `<Link>` y no un
+`logout()`, porque en la recuperación no hay sesión que cerrar. Lo demás no cambia.
+
+| Prueba | Resultado |
+|---|---|
+| `tsc --noEmit` y ESLint del archivo | Limpios. |
+| En vivo sobre el `next dev` de la intranet, con preguntas de prueba en `sessionStorage` (la pantalla no llama a la API hasta enviar), a 360 × 640 y a 1280 × 800 | El enlace sale debajo de «Siguiente» y lleva a `/login`. Sigue cabiendo sin scroll (0 px de más), como se dejó el 10-10. |
+
+**Pendiente al cierre.** Nada.
+
+---
+
+## sesión 11-10-2026: los modales entran y salen con animación (`@starting-style`)
+
+**Qué se pidió.** Animaciones de entrada y salida en los modales, con la regla
+`@starting-style`.
+
+**Por qué hacía falta esa regla.** Un modal aparecía de golpe porque el navegador no tenía un
+«antes» desde el que animar: el elemento no existía (lo monta React) o estaba en
+`display: none` (un `<dialog>` cerrado). `@starting-style` le da ese antes, el estilo con el
+que arranca la transición en su primer pintado, sin JavaScript ni `@keyframes`. Para la salida
+hay dos casos:
+
+- **`<dialog>` nativo** (`showModal()`): sale solo con CSS. Al cerrarse pierde `[open]`; con
+  `display` y `overlay` en `transition-behavior: allow-discrete` el navegador lo deja pintado,
+  y en la capa superior, hasta que termina el fundido.
+- **Modal que React monta por portal**: al dejar de pintarlo desaparece en el acto y no queda
+  nada que animar. `useCierreAnimado(abierto)` lo deja montado 150 ms más con `data-cerrando`,
+  y el CSS anima hacia el estado cerrado.
+
+**Lo que se hizo.**
+
+| Capa | Cambio |
+|---|---|
+| `globals.css` (las dos apps, al final) | Bloque «Entrada y salida de los modales». Variables `--olo-modal-*` (entrada 220 ms con curva de frenado, salida 150 ms con curva de aceleración, desde 0.75 rem más abajo y al 96 %). Por debajo de `sm` suben 2 rem sin encoger (en el móvil salen desde abajo, §10.4). Con «reducir movimiento», solo el fundido. Tres clases: `olo-anim-dialogo`, `olo-anim-fondo` y `olo-anim-caja`. Se mueven `translate` y `scale`, no `transform`, para no pisar el `transform` que ya tenga una caja. |
+| `shared/lib/use-cierre-animado.ts` (las dos apps, nuevo) | `useCierreAnimado(abierto)` → `{ montado, cerrando }`. `useUltimoValorAbierto(abierto, valor)`: mientras se va, el modal enseña lo último que tuvo abierto, porque casi todos se cierran con el padre vaciando lo que pintan (`aEliminar` vuelve a `null`), y sin esto el título cambiaba o la caja se vaciaba en plena salida. |
+| `Alert` (sitio) | Entrada y salida, y conserva su contenido mientras se va. Cubre de una vez los 11 usos: usuarios, roles, cargas, proyectos de inversión. |
+| `<dialog>` nativos | Con `olo-anim-dialogo`: detalle de Auditoría (conserva el registro al salir), vista previa de versión y sus dos confirmaciones (Respaldos), motivo de Revisión, los dos diálogos del editor en las dos apps (salir y enviar) y `ModalInactividad` (`packages/inactividad`). |
+| Portales del panel | Depurar auditoría, depurar versiones, permisos (conserva el rol al salir), diagrama de visitas y notificaciones (`ModalAlertas`). |
+| Editor y secciones (las dos apps) | Aviso de rechazo, nueva página, eliminar página y cerrar sesión. |
+| Sitio público | Modal de ocupaciones (y descripción de proyectos de inversión: conserva título, contenido y pie al salir), buscador del sitio, documento a pantalla completa. Intranet: buscador del menú superior. |
+| `auditoria-view.tsx` | El modal de depurar ya no se monta con `{abierto && …}` sino siempre, con `key` por apertura como en Respaldos: si el padre lo desmonta, el modal no se entera de que se cierra. |
+| Vaciado de formularios | Nueva página y los dos buscadores se vaciaban al cerrar; ahora al abrir (ajuste de estado durante el render, el que recomienda React, sin efecto). Eliminar página: el análisis se vacía en el efecto que ya lo pedía al abrir. Si no, durante la salida se veía el campo quedarse en blanco o la lista desaparecer antes del fundido. |
+| `modal-depurar-*.tsx` | Fuera `animate-in fade-in duration-200` del fondo: son clases de `tw-animate-css`, que el proyecto no tiene instalado, y no hacían nada. |
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| `tsc --noEmit`, sitio y intranet | Limpios. |
+| ESLint de los 30 archivos tocados | Nada nuevo. Salen 4 errores que ya estaban en `dev`: `setState` dentro de `useMemo` y dos comillas sin escapar en `modal-permisos.tsx`, y un `any` en `puck-editor-wrapper.tsx` del sitio. |
+| CSS real de cada app (compilado con su Tailwind) en Chrome sin ventana, medido fotograma a fotograma, a 1280 × 800 y a 360 × 740 | `<dialog>`: entra de 0 a 1 en ~220 ms, con el velo a la par; al cerrar sigue en `display: block` mientras baja y a los ~150 ms pasa a `none`. Portal: igual, y con `data-cerrando` la opacidad llega a 0 justo a los 150 ms, cuando el hook lo desmonta. Desde 12 px y al 96 % en escritorio, desde 32 px y al 100 % en el móvil. |
+| Lo mismo con «reducir movimiento» | Sitio: solo el fundido, sin desplazamiento. Intranet: sin animación, porque su `globals.css` ya tenía una regla global que deja toda transición en 0.01 ms; solo el velo del `<dialog>` (`::backdrop` no lo alcanza `*`) hace el fundido. Se dejó así. |
+| Hooks reales con React 19 en happy-dom (StrictMode), las dos apps | 10/10: se monta en el mismo render al abrir; al cerrar sigue montado con `data-cerrando` y el último texto; a los 80 ms sigue, a los 200 ya no; reabierto a mitad de la salida, se cancela el desmontaje y enseña el texto nuevo; sin bucle de renders. |
+| Pantallas reales del panel con sesión | **No se probó**: hace falta la cuenta del usuario. |
+| Firefox y Safari | **No se probó.** |
+
+> **Trampas para quien venga.**
+>
+> - `useUltimoValorAbierto` necesita un valor estable entre renders: una prop o un estado. Un
+>   objeto o un JSX creados en el propio render son nuevos cada vez y lo meten en un bucle.
+>   Por eso el modal de ocupaciones hace cuatro llamadas (una por prop) y no una con un objeto.
+> - La salida del `<dialog>` va dentro de `@supports (overlay: auto)`, que hoy solo cumple
+>   Chromium. En Firefox el `<dialog>` sale de la capa superior al instante y, si siguiera
+>   pintado, caería un momento en el flujo de la página: ahí se cierra de golpe, como antes. La
+>   entrada funciona en todos.
+> - Los 150 ms de la salida están en dos sitios: `--olo-modal-salida` (CSS) y
+>   `SALIDA_DEL_MODAL_MS` (hook). Si se cambia uno, el otro.
+> - Un modal nuevo que el padre monte con `{abierto && <Modal />}` no tendrá salida: hay que
+>   dejarlo montado con `key` por apertura (`respaldos-view.tsx`, `auditoria-view.tsx`).
+
+**Lo que se descartó.**
+
+- **Esperar a `transitionend` o a `getAnimations()` en vez del temporizador.** No hace falta
+  duplicar los 150 ms, pero obliga a pasar un `ref` hasta el fondo de cada modal, y
+  `transitionend` no llega cuando no hay transición (un modal sin las clases, o una regla
+  con `transition: none`): el modal se quedaría montado e invisible tapando la página.
+- **`@keyframes`.** Sirven para entrar, pero no para salir de `display: none`: es justo lo que
+  resuelven `@starting-style` y `allow-discrete`.
+- **Animar `transform`.** Pisaría el `transform` que ya tenga la caja; `translate` y `scale`
+  son propiedades aparte.
+
+**Pendiente al cierre.**
+
+- Mirarlo en el panel con la cuenta del usuario: crear usuario, eliminar rol, permisos,
+  Auditoría (detalle y depurar), Respaldos, Revisión y el editor, en escritorio y en el móvil.
+- Solo con entrada, a sabiendas: `VistaPreviaVersion` (su `key` pasa a `'cerrado'` al cerrar
+  y lo vuelve a montar), `ModalInactividad` (el paquete lo desmonta al cerrar) y el buscador
+  del panel (lo monta el padre o es su propia página). La pantalla de envío exitoso del editor
+  y la hoja de la navegación mobile tienen su propia animación y no se tocaron.
+- Clases y CSS muertos que se vieron de paso: `animate-in zoom-in-95` en el aviso de éxito de
+  los dos `modal-depurar-*` (sin `tw-animate-css` no hacen nada) y `.olo-search-modal` /
+  `.intranet-search-modal` con sus `@keyframes` en los `globals.css`, que ya no usa ningún
+  componente.
+- Los 4 errores de ESLint que ya estaban (ver arriba).
+
+---
+
+## sesión 10-10-2026 (15.ª parte): el acceso cabe en la pantalla del móvil, sin scroll
+
+**Qué se pidió.** En el móvil, el login y el primer ingreso de la intranet y del sitio web
+obligaban a bajar; el primer ingreso, además, crecía al aparecer los requisitos de la
+contraseña. Que todo quepa en el alto de la pantalla, reduciendo un poco el texto si hacía falta.
+
+**Lo que se midió antes** (`scrollHeight − innerHeight`, en Chrome sin ventana; altos
+visibles reales, sin las barras del navegador):
+
+| Pantalla | 360 × 640 | 390 × 664 | 412 × 780 |
+|---|---|---|---|
+| Sitio: login | 163 px | 115 | 0 |
+| Sitio: primer ingreso, contraseña | 262 | 214 | 98 |
+| Sitio: idem, con requisitos | 366 | 318 | 202 |
+| Sitio: primer ingreso, preguntas | 202 | 154 | 38 |
+| Intranet: login | 135 | 111 | 0 |
+| Intranet: primer ingreso, contraseña | 194 | 133 | 17 |
+
+**Lo que se hizo.** Por debajo de `md` (sitio) y de `sm` (intranet, su corte de móvil),
+rellenos, huecos, logo, título y texto se encogen con el alto visible: `clamp()` con `dvh`,
+con el valor de antes como máximo (un teléfono alto se ve casi igual) y el mínimo justo para
+360 × 640. Desde `md`/`sm`, nada cambia.
+
+| Capa | Cambio |
+|---|---|
+| `auth-ui.tsx` (sitio) | `authPasosHuecoClass` y `authPasosHuecoArribaClass`: el único hueco entre bloques del formulario (12-24 px según el alto; 24 desde `md`). Sustituyen los `mb-6`/`mt-6` sueltos de las seis pantallas. Etiquetas, enlace discreto y de regreso a 14 px en el móvil; encabezado de la tarjeta a 18. `PasswordRequisitos` con `resumirAlCumplir`. |
+| `marco-de-pasos.tsx` (sitio) | Relleno, logo (64-112 px), título (20-24), texto (14-16) y huecos del paginador y del formulario, fluidos. Tabla de tamaños del comentario al día. |
+| Vistas del sitio | Login, primer ingreso, recuperación (correo, preguntas, nueva) usan los huecos compartidos. Primer ingreso: las dos descripciones, un poco más cortas. |
+| `globals.css` (intranet) | Bloque `width < 40rem`: rellenos de `*-left`, `*-right` y `*-card`, título, `gap` de los formularios, paginador y enlace de regreso, con `dvh`. |
+| `login-view.tsx` (intranet) | Logo de fondo de 192 px a 72-192 según el alto; título y huecos fluidos. |
+| `first-login-view.tsx` (intranet) | Los requisitos aparecen al entrar en «Nueva contraseña» (como en el sitio; antes siempre a la vista) y se resumen al cumplirse. Mismas descripciones cortas que el sitio («contraseña temporal», no «código»). |
+| `password-requisitos.tsx` (intranet) | `resumirAlCumplir`, también en la nueva contraseña de la recuperación. |
+
+`resumirAlCumplir`: cumplidos los cuatro requisitos, la lista (cinco líneas) pasa a una sola,
+«✓ Cumple todos los requisitos». Mientras falte alguno se ve entera, que es lo que pide la
+política (no descubrir reglas a base de rechazos). El perfil del panel no la usa.
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| Sitio: las 16 pantallas y estados del acceso con el arnés (componentes reales, API simulada) a 360×640, 375×553, 375×600, 390×664, 412×780, 768×1024, 1280×800 | En reposo, 0 px de scroll en todas desde 360×640 (login, login con error, contraseña vacía y rellena, preguntas, preguntas con error, recuperación entera). 768 y 1280 como antes. |
+| Intranet: en vivo sobre su `next dev`, API simulada desde Chrome (`Fetch.requestPaused`) | Login, login con error, primer ingreso (contraseña, rellena, preguntas, preguntas con error, fin), recuperación (correo, preguntas): 0 px desde 360×640. Escritorio igual. |
+| Sitio: login y recuperación en vivo sobre su `next dev` | Igual que en el arnés (clases arbitrarias generadas). |
+| `tsc --noEmit` y ESLint de los archivos tocados, en las dos apps | Limpios. |
+| Capturas a 360×640 y 1280×800 | Sin cortes, sin desborde horizontal; escritorio sin cambios. |
+
+> **Lo que sigue haciendo scroll, a sabiendas.** Con los requisitos a medio cumplir (60-95 px
+> de más a 360×640) y con los tres errores de «Continuar» en vacío (140-175): en el teléfono esos
+> estados se ven con el teclado abierto, que se come media pantalla, y el navegador hace scroll
+> de todos modos. A 375×553 (iPhone SE en Safari con las dos barras) varias pantallas sobran
+> 15-65 px (login con error, primer ingreso, correo de la recuperación en la intranet). Bajar más los mínimos dejaba los campos por debajo de 44 px o
+> la letra por debajo de 14, y no se hizo.
+
+**Pendiente al cierre.** Mirarlo en el teléfono real del usuario. El arnés quedó en el
+scratchpad de la sesión (`alto/probar-alto-sitio.cjs`, `alto/probar-alto-intranet.cjs`).
+
+---
+
+## sesión 10-10-2026 (14.ª parte): «Actividad reciente» del dashboard, una lista con la frase entera
+
+**Qué se pidió.** Cambiar «Actividad reciente» a una lista que muestre todo el mensaje del
+acordeón, por ejemplo: «El usuario David Tejada hizo la acción de Autenticación: inició sesión en
+el sitio web el 10 de octubre de 2026 a las 5:41 p. m.».
+
+**Lo que se hizo.** `panel-general.tsx`: la tabla de cuatro columnas (que en el móvil y la
+tablet pasaba a acordeón) es ahora un `<ul aria-label="Actividad reciente">` con una línea por
+registro y la frase siempre entera (`FraseDeRegistro` con `abierta`), la misma de Auditoría, en
+todas las pantallas. Sin nada que desplegar. Se van la fecha corta, el estado del acordeón y las
+piezas que solo usaba la tabla (`PildoraDeAccion`, `resumenDeCambios`, `ResumenDeFila`,
+`useFilasAbiertas`). La cabecera y el paginador no cambian. `frase-de-registro.tsx`: su
+comentario dice que en el dashboard va entera. `manual-de-usuario-formato.md`: el dashboard,
+paso 3, y su problema frecuente hablan de la lista.
+
+**Cómo se probó.** El `PanelGeneralDashboard` real en el arnés (`entrada-panel-real.tsx`, con
+ocho registros simulados, uno de David Tejada iniciando sesión) a 360, 768, 1280 y 1920: ocho
+líneas, ninguna tabla, la frase del ejemplo tal cual, «El sistema» en el que caducó. Sin
+desborde ni errores de consola. Tipos y ESLint limpios.
+
+---
+
+## sesión 10-10-2026 (13.ª parte): simetría del paginador en todo el panel
+
+**Qué se pidió.** Mejorar la simetría, los tamaños y los bordes del paginador de todas las
+tablas del panel: el pie entero, de «Mostrando…» a «Filas por página».
+
+**Lo que se midió antes** (con `getComputedStyle`, en Chrome sin ventana). Las alturas (36 px)
+y las esquinas (12 px) ya coincidían. Lo que rompía la simetría era:
+
+- tres tamaños de letra en la misma fila: «Mostrando» a 12 px, etiquetas a 14 medium y el
+  número del campo a 14 normal;
+- «Anterior» medía 75 px y «Siguiente» 84, así que el grupo de casillas quedaba torcido;
+- el campo de «Ir a la página» medía 48 px y el desplegable de «Filas por página», 72;
+- cuando no cabía en una línea, «Mostrando» iba a la izquierda y el resto centrado, partido
+  donde cayera: a 768 px «Filas por página» quedaba sola en una fila;
+- en Auditoría el paginador era una caja aparte con su propio borde; en las demás listas va
+  dentro de la tarjeta de la tabla.
+
+**Cómo quedó.**
+
+- Todo a 14 px medium y con números tabulares; las dos flechas de 88 px; el campo y el
+  desplegable de 72, con el número del campo centrado como en las casillas.
+- El pie mide su propio ancho (`@container`). Si todo cabe en una línea (72rem), «Mostrando» va
+  a la izquierda y el resto a la derecha. Si no, todo centrado y por filas: «Mostrando»; las
+  casillas; y debajo «Ir a la página» y «Filas por página» juntas (separadas en dos filas en el
+  móvil).
+- Auditoría: el paginador va dentro de la tarjeta de la tabla, con el fondo de sus filas.
+
+**Lo que se hizo.**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Sitio | `shared/ui/molecules/paginacion.tsx` | `FLECHA` de ancho fijo (`w-8 sm:w-[5.5rem]`), `ANCHO_DE_CAMPO` para el campo y el desplegable, campo centrado y medium; `@max-6xl:` para que las casillas tengan su propia fila |
+| Sitio | `shared/ui/molecules/paginador.tsx` | `@container` y dos disposiciones (una línea o centrada por filas); «Mostrando» a 14 px |
+| Sitio | `auditoria/components/auditoria-view.tsx` | Paginador dentro de la tarjeta de la tabla |
+
+**Decisiones.**
+
+- **Se mantienen 32/36 px y las esquinas de 12**, no los 44 px del resto de controles del panel:
+  con 44 px las siete posiciones y las dos flechas (396 px) no caben en un móvil de 360.
+- **Las piezas son compartidas**, así que el cambio llega también a las tablas públicas del sitio
+  (tendencia ocupacional, fuentes futuras, programas sobresalientes) y al historial de cargas de
+  Actualizaciones. En el historial, sin `Paginador` alrededor, no hay contenedor que mida y se
+  queda como estaba (centrado, sin «Mostrando»).
+- **El relleno lateral de cada tabla no se tocó** (16, 20 o 24 px): coincide con el de sus celdas.
+
+**Cómo se probó.**
+
+| Qué | Resultado |
+|---|---|
+| `Paginador` real pintado con React, CSS compilado y Chrome sin ventana, en claro y oscuro, con 12 páginas y con una sola | 360, 768, 1280 y 1920 px sin desborde; una sola altura por ancho (32 en el móvil, 36 desde 640) y un solo radio (12 px) en casillas, campo y desplegable; flechas de 88 y 88 |
+| Ancho que necesita la línea única | 1075 px (67rem): el corte en 72rem deja margen para totales de cuatro cifras |
+| `tsc`, ESLint de lo tocado | Limpios |
+
+**Pendiente al cierre.** Mirarlo en el panel en Roles, Usuarios, Revisión, Auditoría y Actividad
+reciente, y en una tabla pública con varias páginas.
+
+---
+
+## sesión 10-10-2026 (12.ª parte): las páginas del árbol del dashboard se abren en otra pestaña
+
+**Qué se pidió.** Que al elegir una ruta del árbol de «Páginas publicadas» (por ejemplo, «Mapa
+de sitio») se abra en una pestaña nueva.
+
+**Lo que se hizo.** `tarjeta-paginas-publicadas.tsx`: todas las páginas, también las del sitio,
+se abren con `abrirEnOtraPestana` (`window.open(href, '_blank', 'noopener,noreferrer')`); antes
+las del sitio navegaban en la misma pestaña con `router.push` y solo las de la intranet abrían
+otra. La lista accesible hace lo mismo (`<a target="_blank" rel="noopener noreferrer">` con
+«(se abre en otra pestaña)» para el lector de pantalla, en vez de `<Link>`), y el tooltip de
+cada página lo avisa. `externo` queda solo para armar la URL de la intranet (otro origen).
+Fuera `next/link` y `useRouter` de la tarjeta. `manual-de-usuario-formato.md`: el dashboard lo dice.
+
+**Cómo se probó.** Arnés del dashboard (`probar-dashboard.cjs`) a 320, 360, 768, 1280 y 1920:
+tocar «Contacto» → `window.open('/contacto', '_blank', 'noopener,noreferrer')` y el historial
+del enrutador sigue vacío (el dashboard no se mueve); «Bienestar» → la URL de la intranet en otra
+pestaña; tooltip con «Se abre en otra pestaña». Sin errores de consola. Tipos y ESLint limpios.
+
+---
+
+## sesión 10-10-2026 (11.ª parte): el dashboard muestra dos tarjetas por fila por debajo de 1440 px
+
+**Qué se pidió.** Que la tarjeta «Usuarios» (con su gráfico) pase de fila en pantallas de menos
+de 1440 px, y que la fila muestre solo «Páginas publicadas» y «Visitas».
+
+**Lo que se hizo.** `panel-general.tsx`: la rejilla de las tarjetas pasa de
+`sm:grid-cols-2 lg:grid-cols-3` a `sm:grid-cols-2 min-[90rem]:grid-cols-3`, y «Usuarios» va en
+`sm:col-span-2 min-[90rem]:col-span-1`: por debajo de 1440 px, en su propia fila a todo el ancho;
+desde 1440, las tres en fila como antes; en el móvil, una debajo de otra. Se movió y no se
+ocultó: el gráfico de roles sigue a la vista. `manual-de-usuario-formato.md`: el dashboard lo dice.
+
+**Trampa.** Con `min-[1440px]` no cambiaba nunca: Tailwind no sabe ordenar un `min-[…]` en px
+con `sm:` (en rem), lo ponía antes y `sm:grid-cols-2` le ganaba. En rem (`90rem`) lo ordena bien.
+
+**Cómo se probó.** El `PanelGeneralDashboard` real en el arnés (`entrada-panel-real.tsx`,
+`probar-panel-real.cjs`, con `fetch` simulado y el ECharts de verdad), midiendo cada tarjeta: a
+360, una columna; a 768, 1024, 1280 y 1439, «Páginas publicadas» y «Visitas» en la primera
+fila y «Usuarios» debajo a todo el ancho; a 1440, 1600 y 1920, las tres en fila. Sin desborde
+ni errores de consola. Tipos y ESLint limpios.
+
+---
+
+## sesión 10-10-2026 (10.ª parte): «Actividad reciente» del dashboard en acordeón en el móvil y la tablet
+
+**Qué se pidió.** Llevar el acordeón de las demás listas a la tarjeta «Actividad reciente» del
+dashboard, en el modo tablet y móvil.
+
+**Cómo quedó.** Por debajo de 48rem de tarjeta, cada registro es una línea con la misma frase
+que Auditoría: «El usuario **Ana Gómez** hizo la acción de [Publicación]» («**El sistema**…»
+sin usuario). Al tocarla se completa con lo que cambió y la fecha: «…: publicó la versión 4 de
+/inicio el **9 de octubre de 2026, 3:00 p. m.**». Desplegada no lleva botones, porque la tabla
+tampoco tiene acciones por fila: el detalle sigue en «Ver más». Pueden abrirse varias. En
+escritorio sigue la tabla de cuatro columnas.
+
+**Lo que se hizo.**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Sitio | `auditoria/components/frase-de-registro.tsx` (nuevo) | `FraseDeRegistro` y `PildoraDeAccion`, sacadas de `auditoria-view.tsx` con `enMinuscula`; exportadas en `auditoria/index.ts` |
+| Sitio | `auditoria/components/auditoria-view.tsx` | Usa las dos piezas en vez de su copia; mismo resultado |
+| Sitio | `auth/components/panel-general.tsx` | `olo-tabla-acordeon`, `td[data-resumen]` con `ResumenDeFila` + `FraseDeRegistro`, `useFilasAbiertas`, y `data-solo-tabla` en las cuatro celdas. Fuera el `line-clamp` de «Cambios», que solo servía en las tarjetas |
+
+**Decisiones.**
+
+- **Una sola frase para la bitácora**: Auditoría y el dashboard muestran los mismos registros;
+  con la frase en un componente del módulo no pueden contar lo mismo de dos maneras.
+- **Sin botón en la fila desplegada**: no hay acción por fila que ocultar; añadir «Ver detalle»
+  pediría traer aquí el modal de Auditoría, y eso no se pidió.
+
+**Cómo se probó.**
+
+| Qué | Resultado |
+|---|---|
+| Dashboard real pintado con React y datos de prueba (sin API ni sesión), CSS compilado, Chrome sin ventana | A 360 y 768, acordeón sin cabecera; a 1032, 1280 y 1920, la tabla. Sin desborde en ninguno. Frase plegada y desplegada, «El sistema» sin usuario, nombre largo partido, claro y oscuro |
+| Botón de cada fila | 44 px de alto o más |
+| `tsc`, ESLint de lo tocado | Limpios (`tsc` solo marca `.next/dev/types`, generado por el servidor de desarrollo) |
+| Tocar de verdad para abrir y cerrar | **No probado aquí**: la página de prueba no tiene React vivo. Es el mismo `useFilasAbiertas` de las otras listas |
+
+**Pendiente al cierre.** Probar en el panel con el móvil o la tablet: abrir y cerrar filas, y
+que Auditoría se vea igual que antes.
+
+---
+
+## sesión 10-10-2026 (9.ª parte): «Páginas publicadas» del dashboard, un árbol de ECharts
+
+**Qué se pidió.** En el dashboard, hacer con ECharts «el mismo desplegable de rutas» de la
+tarjeta «Páginas publicadas», con una UX/UI cuidada, y que al elegir una página publicada
+lleve a ella como hasta ahora.
+
+**Cómo quedó.** Un árbol (`series.type: 'tree'`, de izquierda a derecha): dos ramas en
+píldora, «Sitio web» (verde) e «Intranet» (azul) con su número y una flecha; al tocar una, sus
+páginas salen como hojas unidas por líneas rectas en escalera, como las carpetas de un
+explorador, y el gráfico crece con lo desplegado (30 px por página). Primero fueron curvas; el
+usuario las vio difíciles de seguir y eligió la escalera (`edgeShape: 'polyline'`). La línea
+vertical va 16 px antes de las páginas (`edgeForkPosition`, calculado con el ancho medido), y
+el hueco del título crece con la tarjeta (de 90 a 260 px): en escritorio ancho cabe entero.
+
+**Lo que vio el usuario después, y se corrigió.** (1) Al cerrar una rama quedaban trazos de la
+escalera: ECharts no borra las líneas `polyline` de las hojas que se van al plegar. El gráfico
+se monta de nuevo (`key` con las ramas abiertas) cada vez que se abre o se cierra una, con la
+animación inicial en 350 ms. (2) En pantalla estrecha la línea vertical cruzaba la píldora
+(«Sitio web 10» es más ancha que con una cifra): el ancho de cada píldora se mide con
+`measureText` en la letra del panel y la línea va siempre detrás de la más ancha. (3) Al
+achicar la ventana la tarjeta no se encogía y se salía de la pantalla: el lienzo de ECharts
+lleva su ancho en píxeles y la rejilla no dejaba a la tarjeta ser más estrecha que él, así que
+el `ResizeObserver` nunca se enteraba. `GraficoEcharts` lleva `contain: inline-size`: el
+lienzo ya no cuenta para el ancho del contenedor. Lo arregla en todos los gráficos del panel
+(«Visitas» y «Usuarios» tenían lo mismo) y en el de sectores del sitio público. Tocar una hoja navega: el sitio con el enrutador de Next (`router.push`), la intranet
+en otra pestaña con `noopener,noreferrer`, igual que los enlaces de antes. Al pasar el cursor,
+el título entero (en la hoja se corta con «…») y su ruta. Rama sin páginas: gris, sin flecha y
+sin mano. Colores de «Visitas» y modo oscuro.
+
+**Accesibilidad.** Un lienzo no se recorre con el teclado ni lo lee un lector de pantalla: el
+árbol va con `aria-hidden` y la lista de enlaces de antes sigue en el HTML, oculta con
+`not-focus-within:sr-only`, y aparece bajo el árbol en cuanto el tabulador llega a ella.
+
+| Archivo | Cambio |
+|---|---|
+| `tarjeta-paginas-publicadas.tsx` | `ArbolDePaginas`: una serie `tree` por portal, apiladas, en escalera, con el plegado en el estado del componente (`collapsed` + `expandAndCollapse: false`) para que el alto crezca y el toque en una hoja navegue. La lista `Grupo` queda como alternativa accesible. Títulos escapados en el tooltip (es HTML y los escriben los editores) |
+| `grafico-echarts.tsx` | Registra `TreeChart`. `onClickElemento` recibe además la serie y el elemento de `data` con sus campos propios (compatible con quien solo usa el índice). Al cambiar `alto`, `resize()` antes de `setOption`: si no, la opción nueva se repartía en el alto viejo |
+| `manual-de-usuario-formato.md` | Dashboard, paso 1, y su problema frecuente: el árbol |
+
+**Trampas que costaron.**
+
+- ECharts mete los datos del árbol bajo una raíz invisible (índice 0) y da la posición de cada
+  nodo relativa al recuadro de su serie (`seriesModel.layoutInfo`), no al gráfico.
+- Lo que se pone en `label` de la serie lo heredan todos los nodos: el estilo de píldora va en
+  el nodo de la rama, y el ancho con recorte, en cada hoja (heredado, la píldora salía ancha y
+  con el número montado sobre el nombre).
+- ECharts guarda en caché el ancho de cada texto la primera vez que lo mide. Medido antes de
+  que cargara Poppins, el número seguía montado aunque se repintara: ahora el árbol no se pinta
+  hasta `document.fonts.load` de los pesos 400, 500 y 700 (con el hueco reservado mientras).
+- El `.sr-only` sin capa de `globals.css` le gana a `focus-within:not-sr-only` (utilidad en
+  capa): la lista no aparecía nunca. `not-focus-within:sr-only` es otra clase y no choca.
+- En oscuro, el fondo semitransparente de la píldora dejaba ver las líneas a través: es opaco,
+  ya mezclado con el de la tarjeta.
+
+**Cómo se probó.** Arnés del scratchpad con el ECharts de verdad (`dist/echarts.min.js` y
+`mocks/echarts-real.ts`, con `ECHARTS_REAL=1` al empaquetar; `entrada-dashboard.tsx`,
+`probar-dashboard.cjs`, con 10 páginas en el sitio) a 320, 360, 768, 1280 y 1920, más una
+ventana que se achica de 1280 a 320 con las dos ramas abiertas (la tarjeta queda en 288 px): plegado 92 px; con el sitio abierto 202 y sus
+5 hojas; con las dos, 222; toque en «Contacto» → `/contacto`; en «Bienestar» →
+`window.open('http://localhost:3001/bienestar', '_blank', 'noopener,noreferrer')`; tooltip con
+`<b>` escapado; intranet vacía sin desplegar; la lista con el foco del teclado, visible
+(294×48). Sin desborde ni errores de consola. Tipos limpios en los seis archivos que usan
+`GraficoEcharts` (también `grafico-sectores.tsx` del sitio público) y ESLint limpio.
+
+---
+
+## sesión 10-10-2026 (8.ª parte): identidad visual — el logo y el icono se cargan en su propia tarjeta
+
+**Qué se pidió.** Sobre la 7.ª parte: que la carga del logo y del icono no sea un botón aparte,
+sino la misma tarjeta donde se ve la imagen.
+
+**Cómo quedó.** La vista previa (modo claro y modo oscuro) es ahora la zona de carga: un recuadro
+punteado que se pone verde al pasar el puntero o al arrastrar un archivo encima. Abajo dice
+«Haz clic o arrastra aquí el logo en PNG» («Toca aquí para cargar…» en pantallas táctiles);
+mientras arrastras, «Suelta el PNG para cargarlo»; al subir, «Subiendo…». Se sube al soltar o
+elegir el archivo, sin «Guardar». El botón «Cargar … en PNG» desaparece; «Volver al de fábrica»
+sigue debajo, solo si hay una imagen subida. Sin permiso se ven las vistas previas sin recuadro.
+
+**Lo que se hizo.**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Sitio | `configuracion/components/identidad-visual-panel.tsx` | Las dos vistas, dentro de un `<button>` con `onDragOver`/`onDragLeave`/`onDrop`; nombre accesible «Cargar el logo en PNG» y la recomendación como descripción (`aria-describedby`) |
+
+**Decisiones.**
+
+- **`aria-disabled` y no `disabled` mientras sube**: un botón desactivado no recibe el `drop`, y
+  el navegador abriría el PNG soltado en la pestaña, sacando a la persona del panel.
+- **Sin componente de arrastrar y soltar compartido**: no había ninguno en el sitio. Es el único
+  uso por ahora; si aparece otro, se saca a `shared/ui/`.
+- **`figure` pasa a `span`**: dentro de un `<button>` solo vale contenido en línea.
+
+**Cómo se probó.**
+
+| Qué | Resultado |
+|---|---|
+| Pantalla real pintada con React y el CSS compilado, en Chrome sin ventana | Tarjeta punteada con sus dos vistas y el texto a 1280 (claro) y a 360 (oscuro); sin desborde a 360; las dos zonas de 260 × 180 px a 360 |
+| CSS compilado | `pointer-coarse:hidden/inline` y `aria-disabled:cursor-wait` se generan |
+| ESLint del archivo; `tsc` | ESLint limpio. `tsc` solo marca `.next/dev/types/validator.ts`, generado por el servidor de desarrollo, ajeno al cambio |
+| Arrastrar de verdad | **No probado aquí**: la página de prueba no tiene React vivo. Queda para probarlo en el panel |
+
+**Pendiente al cierre.** Probar en el panel: arrastrar un PNG a cada tarjeta, hacer clic, y
+soltar un JPG (debe avisar «Formato no admitido»).
+
+---
+
+## sesión 10-10-2026 (7.ª parte): identidad visual — solo PNG, colores en acordeón y color de los botones
+
+**Qué se pidió.** Sobre la 5.ª parte: que el logo de la barra lateral y el de la pestaña se
+carguen en PNG; que los colores de las etiquetas de acción vayan en acordeón («En el panel» y
+«En el editor»); y un apartado nuevo, también en acordeón, para cambiar el color de los
+botones de todo el panel. Decisiones del usuario: **dos cargas, solo PNG** (logo horizontal e
+icono cuadrado por separado) y **botones por tipo** (principal, secundario, peligro…), no por
+acción.
+
+**Cómo quedó.**
+
+- «Logo de la barra lateral» e «Icono de la pestaña», cada uno con «Cargar … en PNG». La API
+  rechaza un JPG con 415; uno ya guardado se sigue mostrando.
+- «Colores de las etiquetas de acción» y «Colores de los botones», cada uno con sus grupos en
+  acordeón, cerrados al abrir la página. A la derecha de cada título, «3 de fábrica», «1 de 3
+  con color propio» o, si hay algo a medias, «2 sin guardar» en verde, para no perder un
+  cambio al plegar. Cada bloque guarda por su lado.
+- Siete tipos de botón: en las pantallas Principal, Secundario y Azul oscuro; en los modales
+  Principal, Secundario, Peligro y Verde (las variantes roja y verde solo se usan en
+  ventanas). En modo oscuro, el principal de los modales se invierte (fondo del color de la
+  letra), como ya hacía, y los secundarios siguen transparentes.
+- «Aprobar» se llama ahora «Publicar» en el catálogo, como en la pantalla desde `230a930d`
+  (el id guardado sigue siendo `aprobar`).
+
+**Lo que se hizo.**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| API | `configuracion.validators.ts`, `identidad-panel.usecase.ts`, `configuracion.routes.ts` | Conjunto `botones` junto a `acciones` (misma forma y mismo control `#rrggbb`); en la bitácora como `colores_de_botones`. Solo PNG al subir |
+| Sitio | `shared/lib/identidad-panel/botones.ts` (nuevo), `identidad.ts`, `servidor.tsx`, `index.ts` | Catálogo de los siete tipos; `coloresDeBoton`; `EstilosDeAcciones` pasa a `EstilosDeIdentidad` y escribe también `--olo-boton-{id}-fondo` y `-texto` |
+| Sitio | `shared/ui/atoms/button.tsx` | Cada variante lee su variable con el de fábrica de respaldo (`var(--olo-boton-principal-fondo,#7db828)`); el paso del puntero se calcula con `color-mix` |
+| Sitio | `shared/ui/molecules/seccion-acordeon.tsx` | El acordeón de Actualizaciones, movido aquí (`git mv`) con variante `anidada`, nivel de título y `detalle`. Actualizaciones lo importa de aquí |
+| Sitio | `colores-configurables.tsx` (antes `colores-de-acciones.tsx`) | Un solo componente para las etiquetas y los botones, con los grupos en `SeccionAcordeon` |
+| Sitio | `identidad-visual-panel.tsx`, su servicio, `auditoria/types.ts`, `app/admin/layout.tsx`, `app/editor/[slug]/page.tsx` | Solo PNG, textos nuevos, los dos bloques, `guardarColoresDeBotones`, nombre del campo nuevo en la bitácora |
+
+**Decisiones.**
+
+- **El color de fábrica de los botones está dos veces** (en `botones.ts` y como respaldo dentro
+  de cada `var()` de `button.tsx`). Hace falta: `Button` sale también en el acceso y en el
+  sitio público, donde no se escriben las variables, y ahí tiene que verse como siempre. Se
+  comprobó por script que los dos coinciden.
+- **Botones por tipo y no por pantalla**: cambiar «Principal» cambia todos los botones
+  principales de todas las pantallas a la vez, que es lo que se pidió («en todo el panel»).
+- **Secundario: el color elegido es del modo claro.** En oscuro sigue transparente con borde;
+  pintarle un fondo claro rompería el modo oscuro.
+- **Se reutilizó el acordeón de Actualizaciones** (`<details>` nativo) en vez de escribir otro.
+
+**Cómo se probó.**
+
+| Qué | Resultado |
+|---|---|
+| Postgres 18 desechable con las 44 migraciones y API de prueba en el 4100 (`probar-identidad.cjs`) | 40 de 40: lo de antes, más `botones` → 200 aparte de `acciones`, `blue` → 400, Editor → 403, fila `colores_de_botones` en la bitácora, y un JPG real → 415 «Solo se aceptan imágenes PNG» |
+| Lógica (`probar-logica.cjs`) | 17 de 17: además, las 14 variables de botón, y que un valor inválido de botón sale con el de fábrica |
+| CSS compilado | `bg-[color:var(--olo-boton-…,#…)]` y el `color-mix` del paso del puntero se generan |
+| Pantalla real con React y Chrome sin ventana | Con los de fábrica, los `Button` de muestra salen como antes; con colores cambiados, Principal, Peligro y Principal de modal toman los nuevos (en oscuro, el de modal invertido: fondo amarillo, letra morada). Acordeones cerrados con su resumen, y abiertos: una columna a 360, dos a 768 y tres desde 1032, sin desborde |
+| `tsc` de las dos apps; ESLint de lo tocado | Limpios |
+
+**Pendiente al cierre.**
+
+- Reiniciar la API (no hay migración nueva: `botones` vive en la misma fila JSONB).
+- Probar en el panel: cambiar el color del botón principal y verlo en Usuarios, Roles y
+  Actualizaciones; abrir un modal en modo oscuro.
+
+---
+
+## sesión 10-10-2026 (6.ª parte): «Usuarios» y «Gestión de roles» en acordeón en el móvil y la tablet
+
+**Qué se pidió.** El acordeón también en Usuarios («solo deja el usuario en el encabezado de
+cada acordeón») y en Gestión de roles.
+
+**Cómo quedó.** Aquí no hay un suceso que contar con una frase (como en Revisión, Auditoría o
+Respaldos): es un catálogo. El encabezado es solo el nombre (del funcionario o del rol); al
+desplegar salen sus datos con etiqueta —correo, rol, estado con su interruptor y bloqueo; o
+descripción y permisos— y debajo «Editar» y «Eliminar» con su nombre, en los colores de
+Identidad visual. En el rol base Editor, «Eliminar» sale gris y deshabilitado con la nota «El
+rol base de Editor no se puede eliminar.» (en la tabla lo decía el tooltip, que en una pantalla
+táctil no se ve). En escritorio las tablas no cambian.
+
+| Archivo | Cambio |
+|---|---|
+| `fila-acordeon.tsx` | Nueva pieza `BotonDeFila`: el botón con nombre de la fila desplegada (44 px, esquinas 16, el color de `COLOR_DE_ACCION`). La usan ya las cuatro listas |
+| `usuarios-view.tsx`, `roles-view.tsx` | `olo-tabla-acordeon`; `td[data-resumen]` con el nombre; la celda del nombre y la de Acciones (iconos con tooltip) `data-solo-tabla`; `td[data-detalle]` con los dos botones. La fila de «sin resultados» lleva `data-abierta`, porque una fila plegada solo enseña el resumen y esta no tiene |
+| `auditoria-view.tsx`, `respaldos-view.tsx` | «Ver detalle» y «Ver versión N» pasan a `BotonDeFila`. Auditoría deja el verde fijo y toma el color de «Ver detalle» de Identidad visual, como ya hacía Respaldos |
+| `manual-de-usuario-formato.md` | Usuarios y Roles, paso 2: la lista plegable |
+
+**Cómo se probó.** Arnés del scratchpad (`entrada-accesos.tsx`, `probar-accesos.cjs
+<usuarios|roles>`): a 360, 768 y 1032 el acordeón (plegada 53 px con solo el nombre;
+desplegada con sus celdas con etiqueta y los dos botones de 44 px, verde #7db728 y rojo
+#ef4444; Eliminar del rol Editor deshabilitado; vuelve a 53 px al plegarse); a 1280 y 1920 la
+tabla con sus columnas. Sin desborde horizontal ni errores de consola. Tipos limpios en los
+cinco archivos; ESLint limpio salvo dos avisos que `roles-view.tsx` ya tenía (un `any` y una
+dependencia de `useCallback`, de septiembre).
+
+---
+
+## sesión 10-10-2026 (5.ª parte): identidad visual del panel en Configuración
+
+**Qué se pidió.** En Configuración del panel, una sección a todo el ancho con la identidad
+visual: primero, cambiar el icono; segundo, cambiar con un selector el color de las
+etiquetas de todas las acciones (los tooltips de «Aprobar», «Eliminar», «Guardar
+borrador»…). Decisiones del usuario: **aplica a todo el panel** (no por navegador), se
+cambian **el logo de la barra lateral y el icono** (pestaña y centro de la barra del móvil),
+y **un color por acción**.
+
+**Cómo quedó.**
+
+- Configuración → «Identidad visual del panel», a todo el ancho y antes del sonido de los
+  avisos. Logo e icono con su vista previa en modo claro y oscuro, «Subir» (PNG o JPG; logo
+  hasta 1 MB, icono hasta 512 KB) y «Volver al de fábrica». Un interruptor decide si lo
+  subido pasa a blanco en modo oscuro (lo de fábrica pasa siempre, como antes).
+- Once acciones en dos grupos (panel y editor), cada una con su etiqueta de muestra, un
+  selector para el fondo y otro para la letra, y el contraste: «Se lee bien (4,7:1)» o «Poco
+  contraste (2,4:1)» con un botón «Usar letra blanca / azul oscuro». Se guardan con «Guardar
+  colores»; también «Descartar cambios» y «Volver a los de fábrica».
+- Sin el permiso nuevo `configuracion.identidad` se ve todo y no se puede cambiar nada.
+- Al guardar, `router.refresh()`: la barra lateral, el favicon y los colores cambian sin
+  recargar.
+
+**Lo que se hizo.**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| BD | `044-identidad-del-panel.ts` | Tabla `configuracion` (clave → JSONB, `CHECK` de objeto, `actualizado_por`), fila `identidad-panel` vacía y permiso `configuracion.identidad` para Superadmin y Administrador |
+| API | `configuracion.routes.ts`, `.controller.ts`, `use-cases/configuracion/identidad-panel.usecase.ts`, `configuracion.repository.ts`, `configuracion.validators.ts` | `GET/PATCH /api/configuracion/identidad-panel`, `POST/DELETE …/{logo, icono}` y `GET …/archivos/{nombre}` (sin sesión, caché inmutable). Reemplazo con `SELECT … FOR UPDATE` y borrado del archivo anterior; cada cambio a la bitácora como `actualizar` sobre `configuracion` |
+| API | `recibir-archivo.middleware.ts` | Lo que hacía `archivos.routes.ts` con multer, sacado para usarlo en las dos rutas en vez de copiarlo |
+| API | `filesystem.ts` | `panel/identidad/` y `resolverArchivoDeIdentidad` (solo `{uuid}.png` o `.jpg`) |
+| API | `catalogo-permisos.ts`, `openapi.ts`, `app.ts`, `descripciones-tablas.ts` | Permiso y grupo `configuracion`, etiqueta de la documentación, montaje de la ruta, descripción de la tabla |
+| Sitio | `shared/lib/identidad-panel/` | Catálogo de las 11 acciones con sus colores de fábrica (`acciones.ts`), tipos, contraste WCAG y rutas (`identidad.ts`), y en `servidor.tsx` la lectura con `cache` de React, el favicon y `EstilosDeAcciones`, que escribe `--olo-accion-{id}-fondo` y `-texto` |
+| Sitio | `app/admin/layout.tsx`, `app/editor/[slug]/page.tsx` | Leen la identidad, escriben las variables y ponen el favicon |
+| Sitio | `panel-general.tsx`, `navegacion-mobile*.tsx`, `globals.css` | Logo de la barra lateral e icono del móvil; el filtro de modo oscuro según el interruptor (`.es-a-color`) |
+| Sitio | `revision-queue-view.tsx`, `usuarios-view.tsx`, `roles-view.tsx`, `auditoria-view.tsx`, `respaldos-view.tsx`, `globals.css` (`.olo-editor-tooltip`) | Las etiquetas pasan de colores escritos a `COLOR_DE_ACCION` o a las variables |
+| Sitio | `features/administracion/configuracion/` | `identidad-visual-panel.tsx`, `colores-de-acciones.tsx`, su servicio, y la página, que lee identidad y permiso en el servidor |
+| Sitio | `next.config.mjs` | Rewrite `/identidad-panel/:nombre` → la API (en el servidor, nginx ya manda a Next lo que no conoce) |
+| Sitio | `auditoria/types.ts` | Nombres legibles de los cuatro campos nuevos de la bitácora |
+| Docs | `11-base-de-datos.md` §4.9 y 044, `12-diccionario` §3.15.1, `3-seguridad` §4.4 | La tabla, sus columnas y la superficie nueva |
+
+**Decisiones y descartes.**
+
+- **Carpeta propia para el logo, no `sitio/uploads/`.** Reutilizar `subirArchivoDePagina`
+  era lo más corto, pero `npm run uploads:limpiar-huerfanos -- --aplicar` borra de
+  `uploads/` todo lo que no nombre una versión de página: se habría llevado el logo.
+- **Clave → JSONB y no una tabla con columnas.** Configuración va a crecer; a cambio, la
+  forma la valida la API con el mismo esquema al escribir y al leer.
+- **La API guarda solo las acciones que difieren de fábrica.** Los colores de fábrica viven en
+  el frontend (es quien sabe dónde hay etiquetas); así, cambiar uno de fábrica llega a quien
+  nunca tocó el suyo.
+- **Fondo y letra por separado**, no solo el fondo. Con un solo color, «Rechazar» (rosa claro
+  con letra roja y borde) perdía su forma, y la letra no se podía arreglar cuando el fondo
+  elegido no contrasta. El aviso mide 4,5:1 (AA, `9-accesibilidad.md` §2.1): **los verdes de
+  fábrica con letra blanca dan 2,4:1** y salen marcados. No se cambiaron, porque así lo pidió
+  el usuario en su día; ahora se arreglan con un clic.
+- **El permiso no sale en el modal de Roles.** Desde `8abf9888` ese modal oculta a propósito
+  lo que es solo de administración (Personas, Bitácora, `acceso.panel`), y esto es de esa
+  clase. Lo reciben Superadmin y Administrador por la migración.
+- **Los «Eliminar» se unifican en `#ef4444`.** Revisión usaba `#ff1f1f` y Usuarios y Roles
+  `red-500`; con un solo color por acción hacía falta uno.
+
+> **Commit cruzado.** El commit `0117e77d` («el final de la página ya no tiembla») se llevó
+> dentro, sin querer, la parte de esta función que está en `globals.css` (las etiquetas del
+> editor leyendo `--olo-accion-*`). Para que no dependa del orden en que se suba, esas reglas
+> llevan el color de fábrica como respaldo (`var(--x, #dc2626)`). Si se cambia un color de
+> fábrica del editor, hay que cambiarlo en los dos sitios (lo dice `acciones.ts`).
+
+**Cómo se probó.**
+
+| Qué | Resultado |
+|---|---|
+| Migraciones 001–044 sobre Postgres 18 vacío (Docker), y la 044 `down` + `up` con los roles sembrados | Aplican; el permiso queda en Superadmin y Administrador |
+| API de prueba en el 4100 contra esa base, 37 comprobaciones (`probar-identidad.cjs`) | 36 OK. Sin sesión 401, Editor 403; `red`, `</style>`, `url()`, ids raros, campos de más, cuerpo vacío y 41 acciones → 400; colores en minúsculas; una fila de bitácora por cambio y ninguna si no cambia nada; PNG → nombre UUID, servido sin sesión con caché inmutable; reemplazar borra el anterior; PDF renombrado y SVG → 415; logo de más de 1 MB e icono de 600 KB → 413 sin archivos sueltos; `..%2F`, otro nombre, `.pdf` y `%00` → 404; valor basura en la base → GET de fábrica. La que no pasó: `archivos/..`, que `fetch` normaliza a la ruta de arriba (401); no sirve ningún archivo |
+| Lógica del frontend (`probar-logica.cjs`, 14) | Contraste WCAG, letra sugerida, y que `EstilosDeAcciones` no escribe nada que no sea `#rrggbb` aunque la API devuelva `</style><script>` |
+| CSS compilado con el Tailwind del sitio | `bg-(--olo-accion-…)` y `text-(color:--…)` generan `background-color` y `color` con la variable |
+| Pantalla real pintada con React y Chrome sin ventana, a 360, 768, 1032, 1280 y 1920, claro y oscuro, con y sin permiso | Sin desborde; una columna a 360, dos a 768, tres desde 1032 |
+| `tsc` de las dos apps; ESLint de lo tocado en el sitio | Limpios. En `roles-view.tsx` siguen un `any` y un aviso de dependencias que ya estaban |
+
+No se probó con el panel de verdad en marcha: hace falta la migración en Neon y reiniciar la
+API, y la pantalla con sesión no se puede abrir desde aquí.
+
+**Pendiente al cierre.**
+
+- `npm run migrate` en `4000-api-backend` (Neon) y reiniciar `npm run dev` de la API.
+- Probar en el panel: subir un logo y un icono, cambiar un color y verlo en Revisión, Usuarios
+  y el editor; mirar el favicon.
+- Decidir si los verdes de fábrica pasan a letra azul oscuro (AA).
+
+---
+
+## sesión 10-10-2026 (4.ª parte): «Respaldos» en acordeón en el móvil y la tablet
+
+**Qué se pidió.** Llevar el acordeón de «Páginas en revisión» y «Auditoría» a Respaldos
+(`/admin/respaldos`), «con el mensaje UX coherente».
+
+**La frase.** La de Revisión, con el verbo de esta lista: quién, qué versión y de qué sección.
+
+- Plegada: «**Carlos Ruiz** publicó la versión 43 de **/inicio**».
+- Desplegada, una sola frase (la ficha con etiquetas se vio «muy saturada» en Revisión):
+  «… publicó la versión 43 de la sección **/inicio** del **sitio web** el **10 de octubre de
+  2026 a las 9:00 a. m.**, editada por **Ana Gómez** el **9 de octubre…**». «de la intranet»
+  en la intranet; sin ámbito, se omite.
+- Debajo, el botón verde «Ver versión 42», que abre el mismo visor que el ojo de la tabla. El
+  ojo solo no se entiende en una pantalla táctil.
+
+**Lo que se hizo.**
+
+| Archivo | Cambio |
+|---|---|
+| `respaldos-view.tsx` | `olo-tabla-acordeon` sobre la tabla; `td[data-resumen]` con `ResumenDeFila`, `td[data-detalle]` con «Ver versión N», y las seis celdas de la tabla `data-solo-tabla`. Estado y piezas de `fila-acordeon.tsx`, sin copiar nada. La ruta sale de `rutaPublicaDeSlug` (así `cno` se lee `/clasificacion/cno`, como en Revisión). El botón toma el color de «Ver detalle» de Configuración → Identidad visual (`COLOR_DE_ACCION['ver-detalle']`) |
+| `manual-de-usuario-formato.md` | Respaldos, pasos 1 y 3: la lista plegable y el botón «Ver versión» |
+
+En escritorio la tabla no cambia. No hizo falta CSS nuevo: las reglas del acordeón ya estaban.
+
+**Cómo se probó.** Arnés del scratchpad (`entrada-respaldos.tsx`, `probar-respaldos.cjs`) con
+cinco publicaciones de ejemplo (una sin versión anterior, que no se lista): a 360, 768 y 1032
+el acordeón (fila plegada de 44–52 px, desplegada con la frase entera y el botón de 44 px en
+verde #7db728 con letra blanca; vuelve al alto inicial al plegarla); a 1280 y 1920 la tabla
+con sus seis columnas. Sin desborde horizontal ni errores de consola. Tipos y ESLint limpios.
+
+---
+
+## sesión 10-10-2026 (3.ª parte): el final de la página temblaba en el móvil y la tablet
+
+**Qué se reportó.** En el panel, en el móvil y la tablet, al deslizar hasta el final la
+pantalla «se queda brincando muy rápido, como si estuviera sacudiendo», justo cuando la barra
+inferior de navegación vuelve a subir.
+
+**La causa.** La barra se oculta al bajar y se muestra al llegar al final
+(`use-ocultar-al-bajar.ts`). Su hueco (`navegacion-mobile-reserva`, 80 px) estaba en la
+columna, fuera del `<main>` que hace scroll, y una regla de `globals.css` lo quitaba con la
+barra oculta. Así, cada vez que la barra cambiaba, cambiaba el alto del `<main>`: al llegar al
+final la barra se mostraba, el final se alejaba 80 px; con la inercia del dedo se seguía
+bajando, la barra se ocultaba, el final volvía a acercarse, el navegador recolocaba el scroll
+en el final y la barra se mostraba otra vez. Un bucle.
+
+**Lo que se hizo.**
+
+| Archivo | Cambio |
+|---|---|
+| `sidebar-layout.tsx` | La reserva pasa de la columna al `<main>`: es relleno al final de lo que hace scroll. La barra pasa por encima del contenido y mostrarla u ocultarla ya no cambia ningún alto |
+| `globals.css` | Se quita la regla que anulaba la reserva con la barra oculta. Con la barra oculta solo queda espacio al final de la página, no una franja fija |
+| `use-ocultar-al-bajar.ts` | Defensa extra: si entre un `scroll` y el siguiente cambió lo que se puede bajar, ese `scroll` lo provocó la maquetación y no el dedo, y no oculta ni muestra la barra. Así ningún cambio de alto futuro puede volver a armar el bucle |
+
+Nadie usaba `sticky bottom-0` dentro del `<main>` (la razón por la que la reserva estaba en la
+columna). La intranet no tiene el fallo: su hueco va en el `<body>` y no se quita nunca.
+
+**Cómo se probó.** Arnés de siempre (panel y «Páginas en revisión» con las 8 solicitudes
+desplegadas, página de 1.700 px), a 360 y 768 px. Chrome sin ventana no ejecuta gestos táctiles
+sintéticos, así que la inercia se emuló moviendo el scroll del `<main>` 30 px por cuadro
+durante 4 s: llega al final y sigue empujando. Resultado: la barra se oculta una vez al bajar y
+se muestra una vez al final, sin más cambios en los 4 s ni rebotes del scroll; lo último de la
+lista queda justo encima de la barra (su borde a 820 px, la barra empieza en 820); al subir un
+poco, la barra vuelve. Tipos y `eslint` de los dos archivos, limpios. No se reprodujo el
+fallo con la versión anterior en el arnés: la causa se dedujo del código. Queda probarlo con el
+dedo en un teléfono real.
+
+---
+
+## sesión 10-10-2026 (2.ª parte): «Auditoría» en acordeón en el móvil y la tablet, con piezas compartidas
+
+**Qué se pidió.** Llevar a `/admin/auditoria` el mismo acordeón de «Páginas en revisión»,
+con la misma lógica.
+
+**Lo que se hizo.**
+
+| Archivo | Cambio |
+|---|---|
+| `shared/ui/molecules/fila-acordeon.tsx` (nuevo) | Lo que se repetía de una lista a otra: `useFilasAbiertas` (qué filas están desplegadas), `ResumenDeFila` (el botón con la frase y la flecha, `aria-expanded`, 44 px mínimo), `fechaDeFila` («9 de octubre de 2026 a las 5:30 p. m.») y `RESALTE_DE_FILA` |
+| `revision-queue-view.tsx` | Usa esas piezas en vez de su copia propia. Se ve igual |
+| `auditoria-view.tsx` | `olo-tabla-acordeon`, con la frase que pidió el usuario a mitad del trabajo y sin la entidad («Usuario», «Página»), que junto al nombre de una persona confundía. Plegado: «El usuario **Ana Gómez** hizo la acción de [Edición]», con la píldora de la acción y su color de severidad (el usuario la pidió así tras probar «El usuario Ana Gómez • [Edición]»). Desplegado: «El usuario **Ana Gómez** hizo la acción de [Publicación]: publicó la versión 4 de /inicio el **9 de octubre de 2026 a las 3:00 p. m.**» (lo que cambió, entero, con la primera letra en minúscula; «El sistema» si no hay usuario). Debajo (`td[data-detalle]`), un botón «Ver detalle» con nombre e icono, a todo el ancho: el ojo solo no se entiende en una pantalla táctil. Las seis celdas de la tabla pasan a `data-solo-tabla` |
+| `manual-de-usuario-formato.md` | Paso 2 de la auditoría: la lista plegable |
+
+**Cómo se probó.** Arnés de siempre (panel y bitácora reales, 8 registros simulados de
+distintas acciones: edición con comentario, inicio de sesión, publicación, cuenta que expiró
+sin usuario, rechazo con motivo, cambio de permisos, eliminación y creación), a 360, 768, 1032,
+1280 y 1920 px. Se volvió a probar «Páginas en revisión» con las piezas compartidas.
+
+| Lista | Móvil y tablet | Escritorio |
+|---|---|---|
+| Auditoría | Filas plegadas de 53 px (las 8 en 423); desplegada, 174 px a 360 y 134 en la tablet, solo la frase y «Ver detalle»; se vuelve a plegar. Las 8 frases desplegadas, revisadas una a una (comentario, inicio de sesión, publicación, «El sistema», rechazo con motivo, permisos, eliminación, creación) | Tabla como antes |
+| Revisión | Igual que en la 1.ª parte (61 / 53 px plegadas, 263 / 223 desplegadas) | Tabla como antes |
+
+Sin desborde ni errores de consola. Tipos y `eslint` de los tres archivos, limpios.
+
+---
+
+## sesión 10-10-2026 (1.ª parte): el acordeón de «Páginas en revisión» se despliega en una frase
+
+**Qué se pidió.** En el móvil y la tablet, al desplegar una solicitud se veía una ficha con
+cuatro datos etiquetados (Cambios, Ámbito, Autor, Enviado el) y los botones: el usuario la vio
+«muy saturada». Pidió un mensaje: «Usuario envió la versión N de la sección (/inicio) del
+(ámbito) el (fecha)» y debajo los botones. La tabla de escritorio no cambia.
+
+**Lo que se hizo.**
+
+| Archivo | Cambio |
+|---|---|
+| `revision-queue-view.tsx` | La frase del botón crece al desplegar en vez de repetirse debajo: plegada, «**Ana Gómez** envió la versión 3 de **Contacto**»; desplegada, «**Ana Gómez** envió la versión 3 de la sección **/contacto** del **sitio web** el **9 de octubre de 2026 a las 5:30 p. m.**» (ruta con `rutaPublicaDeSlug`, «de la intranet» cuando toca). Debajo, el comentario del editor en cursiva y sin etiqueta (`td[data-detalle]`) y los cuatro botones. Cambios, Ámbito, Autor y Enviado el pasan a `data-solo-tabla` |
+| `globals.css` | `td[data-detalle]` junto a `td[data-resumen]`: no existen en la tabla y en acordeón solo se ven desplegadas |
+| `manual-de-usuario-formato.md` | Paso 2 de la revisión con la frase completa |
+
+El comentario se dejó: es lo que se lee antes de decidir (el «commit» del envío). Si sobra, se
+quita la celda `data-detalle`.
+
+**Cómo se probó.** Arnés de siempre (panel y cola reales, 8 solicitudes simuladas), a 360, 768,
+1032, 1280 y 1920 px. Desplegada, la fila pasa de 365 a 263 px a 360 y a 223 px en la tablet;
+se ven solo la frase, el comentario y los botones. En escritorio, la tabla igual. Sin desborde
+ni errores de consola; tipos y `eslint` del archivo, limpios.
+
+---
+
+## sesión 09-10-2026 (38.ª parte): el loader llena el espacio de su sección, medido con CSS
+
+**Qué se pidió.** Que el loader de cualquier sección del panel ocupe el tamaño de su
+contenedor, que cambia de una sección a otra, calculado con CSS.
+
+**Lo que se hizo.**
+
+| Pieza | Archivo | Cambio |
+|---|---|---|
+| Loader | `shared/ui/molecules/cargando-seccion.tsx` | Sin `className` lleva `cargando-seccion--relleno` (antes `absolute inset-0`); con `className` queda en el flujo con ese alto |
+| Regla | `style/globals.css` («Loader que llena su sección») | `main:has(.cargando-seccion--relleno)` y cada contenedor entre `<main>` y el loader (`:has()`) pasan a columna flex con `flex: 1 0 auto`; el loader crece con `min-height: 16rem` |
+| Auditoría, Respaldos, Revisión | `*-view.tsx` | Sin `min-h-[40vh]` |
+| Usuarios, Roles | `usuarios-view.tsx`, `roles-view.tsx` | El loader va en lugar de la tabla y no en una fila suya: una celda no se puede estirar |
+| Actualizaciones | — | Sigue con `min-h-[14rem]`: su loader está dentro de cada fila del acordeón |
+
+Así el loader toma justo el alto que dejan el encabezado y los filtros de esa sección y se
+centra ahí, sin medir nada con JavaScript. Al irse el loader, `:has()` deja de cumplirse y el
+diseño vuelve a bloque. El Dashboard y la carga entre secciones (`app/admin/loading.tsx`)
+también lo usan.
+
+**Cómo se probó.** `tsc --noEmit` limpio; `eslint` sin nada nuevo (Roles mantiene sus 2). La
+regla, en una página que imita el panel (barra de 288 px, `<main>` con scroll, encabezado,
+filtros y loader), abierta en Chrome sin ventana:
+
+| Ventana | `<main>` | Loader (arriba → abajo) | Centro del loader = centro del contenido | Scroll |
+|---|---|---|---|---|
+| 1366×768 | 672 | 220 → 640 | 430 = 430 | No |
+| 1024×700 | 604 | 220 → 572 | 396 = 396 | No |
+| 390×844 | 748 | 220 → 716 | 468 = 468 | No |
+
+No se vio en el panel real.
+
+> **Ojo.** Durante la carga, los contenedores de la sección son flex: un hijo directo con
+> `mx-auto` se encogería a su contenido mientras dure. Hoy ninguna sección lo tiene en ese camino.
+
+---
+
+## sesión 09-10-2026 (38.ª parte): «Páginas en revisión» en acordeón en el móvil y la tablet
+
+**Qué se pidió.** Mejorar cómo se ven las listas en el móvil y la tablet, empezando por
+`/admin/revision`. Cada solicitud era una tarjeta entera (unos 365 px de alto a 360), así que
+con muchas el scroll se hacía eterno. El usuario pidió un acordeón: una línea por solicitud
+(«el autor envió la versión N de la sección») y, al desplegarla, los cambios, las opciones, la
+fecha y lo demás.
+
+**Lo que se hizo.**
+
+| Archivo | Cambio |
+|---|---|
+| `globals.css` | `olo-tabla-acordeon`, que se suma a `olo-tabla-apilable`: el mismo HTML de la tabla. Por debajo de 48rem de contenedor (el corte de las tarjetas) cada fila muestra solo `td[data-resumen]`; con `tr[data-abierta]` se ven las demás celdas; `td[data-solo-tabla]` se oculta. En escritorio `td[data-resumen]` no se pinta. Reutilizable para las demás listas |
+| `revision-queue-view.tsx` | Celda de resumen con un botón (`aria-expanded`, 44 px mínimo, flecha que gira): «**Autor** envió la versión N de **Página**». El título pasa a `data-solo-tabla` (el resumen ya lo dice). Estado `abiertas` por fila; se pueden abrir varias |
+| `revision-queue-view.tsx` (modal Publicar / Rechazar / Eliminar) | Se había quedado fuera de la 18.ª parte: ahora con las medidas de todos los modales (caja de 32, título de 20 en `#001631`, texto de 16, botones de 44 con esquinas de 32, Publicar en `#001631` y no en verde). Su `<label>` estaba vacía: ahora dice «Motivo» para el lector de pantalla |
+| `manual-de-usuario-formato.md` | Paso 2 de la revisión: lista plegable en el móvil y la tablet |
+
+**Cómo se probó.** Con el arnés de siempre (el panel real y la cola real, 8 solicitudes
+simuladas), sin tocar Neon ni el servidor de desarrollo, a 360, 768, 1032, 1280 y 1920 px:
+
+| Ancho | Resultado |
+|---|---|
+| 360 | Acordeón. Fila plegada de 61 px (botón de 52); las 8 miden 479 px. Abierta: Cambios, Ámbito, Autor, Enviado el y las 4 acciones; se vuelve a plegar |
+| 768 y 1032 | Acordeón, filas de 53 px (botón de 44); las 8 en 423 px |
+| 1280 y 1920 | Tabla como antes; el resumen no se pinta |
+
+Sin desborde horizontal ni errores de consola. Tipos y `eslint` del archivo, limpios.
+
+---
+
+## sesión 09-10-2026 (37.ª parte): tooltips en los tres botones de la cabecera del editor
+
+**Qué se pidió.** Tooltip en los tres botones del editor.
+
+**Lo que se hizo.** En los dos editores (`puck-editor-wrapper.tsx` del sitio y de la intranet),
+Salir, Guardar borrador y Enviar a revisión dejan el `title` y llevan un
+`<span className="olo-editor-tooltip" aria-hidden="true">` con el mismo texto que decía el
+`title` («Salir sin publicar», «Guardar borrador» / «Guardando…», «Enviar a revisión» /
+«Enviando…», o «Ya no tienes esta página/sección reservada»). El nombre lo sigue dando el
+`aria-label`.
+
+`.olo-editor-tooltip` va en el `globals.css` de cada app, en CSS y no en Tailwind como el resto
+de la cabecera: la forma de `.fab-speed-dial__tooltip`, debajo del botón (la cabecera está
+arriba del todo), del color de su botón (rojo `#dc2626`, azul `#3b82f6`, verde `#7db828` con
+letra `#001631` como el botón) y alineado a la derecha en el último botón, que centrado se
+salía de la pantalla.
+
+**Cómo se probó.** `tsc --noEmit` de las dos apps, limpio. `eslint` del editor de la intranet,
+limpio; el del sitio solo marca un `any` de la línea 617, de un commit viejo. No se vio en el
+navegador.
+
+**Pendiente al cierre:** comprobar en el navegador que la cabecera de Puck no recorte el
+tooltip (si tiene `overflow: hidden`, no se vería debajo).
+
+---
+
+## sesión 09-10-2026 (36.ª parte): el interruptor de estado de Usuarios con tooltip y sin «Activo/Inactivo» al lado
+
+**Qué se pidió.** En Usuarios, un tooltip en el interruptor de estado con la acción («Activar» o
+«Desactivar») y quitar el texto de estado que tenía al lado.
+
+**Lo que se hizo.**
+
+| Pieza | Archivo | Cambio |
+|---|---|---|
+| Celda «Estado» | `usuarios-view.tsx` | Sin el `<span>` «Activo/Inactivo». El `Switch` lleva `aria-label="Usuario activo"` (el lector dice el estado por `role="switch"` + `aria-checked`) y va envuelto en un `span` con `GRUPO_TOOLTIP`. Tooltip «Desactivar» en `zinc-600` si está activo, «Activar» en `#7DB728` si no |
+| Tooltip | `shared/ui/atoms/tooltip.ts` | Aparece también con `group-has-[:focus-visible]`: aquí el grupo es el envoltorio y el foco lo recibe el `Switch`, que no acepta `className` |
+
+**Cómo se probó.** `tsc --noEmit` y `eslint` de los dos archivos, limpios; el CSS del servidor
+genera `group-has-[:focus-visible]/tooltip:opacity-100`. No se vio en el navegador.
+
+---
+
+## sesión 09-10-2026 (35.ª parte): el ojo se abre al pasar el puntero, y el de Respaldos en verde con «Ver versión»
+
+**Qué se pidió.** En Respaldos, el ojo con el color y el tooltip de Auditoría («Ver versión»), y
+que se abra al poner el puntero encima; lo mismo en Auditoría.
+
+**Lo que se hizo.**
+
+| Pieza | Archivo | Cambio |
+|---|---|---|
+| Ojo | `shared/ui/atoms/boton-ojo.tsx` | Los dos ojos montados; el abierto aparece con `group-hover/ojo` y `group-focus-visible/ojo` (puntero o teclado) y al pulsar, como antes |
+| Respaldos | `respaldos-view.tsx` | `text-[#7DB728]`, fondo `#7DB728/10` al pasar, tooltip `bg-[#7DB728]` «Ver versión» (antes «Ver versión anterior» en el `title`) |
+| Auditoría | — | Toma el cambio del ojo sin tocar su vista: ya era verde con «Ver detalle» (25.ª parte) |
+| Modal de la versión | `respaldos/components/vista-previa-version.tsx` | El ojo del botón «Ver vista previa» en `#7DB728`; sin tooltip porque el botón ya dice su nombre |
+
+Se montan los dos ojos y se esconde uno, en vez de cambiar el `nombre` de `IconoMascara` al
+pasar el puntero: así el navegador pide los dos SVG al cargar y no parpadea la primera vez.
+
+**Cómo se probó.** `tsc --noEmit` y `eslint` de los dos archivos, limpios. El CSS del servidor
+genera `group-hover/ojo:flex`, `group-hover/ojo:hidden` y `group-focus-visible/ojo:flex`. No se
+vio en el navegador.
+
+---
+
+## sesión 09-10-2026 (34.ª parte): Actualizaciones como acordeón, sin «Fuentes futuras de empleo»
+
+**Qué se pidió.** Que cada submódulo de Actualizaciones (Programa + Sobresalientes, Alertas de
+inversión, Criterios de clasificación de resultados) sea una fila de acordeón que se despliega
+para mostrar sus opciones, y quitar «Fuentes futuras de empleo».
+
+**Lo que se hizo.**
+
+| Pieza | Archivo | Cambio |
+|---|---|---|
+| Fila de acordeón | `actualizaciones/components/seccion-acordeon.tsx` (nuevo) | `<details>` nativo: título (`h2`) y flecha que gira al abrir; borde, sombra y colores de las tarjetas de antes; cerrado al inicio |
+| Vista | `actualizaciones-view.tsx` | De rejilla de 2 columnas a una pila de tres `SeccionAcordeon`; sin `CargaFuentesFuturas` |
+| Tarjetas | `carga-programa-sobresalientes`, `carga-alertas-inversion`, `carga-criterios-clasificacion` | Sin caja ni título propios (los pone el acordeón) ni el desplazamiento al pasar; los botones de formato y la descripción de Criterios quedan al principio del cuerpo |
+
+`<details>` y no un acordeón con estado, como en `detalle-ocupacion.tsx`: se abre con Enter o
+Espacio, el lector anuncia si está abierto y no hace falta JavaScript. El contenido se monta
+cerrado, así que cada sección ya trae su historial cuando se abre.
+
+**Cómo se probó.** `tsc --noEmit` y `eslint` de `actualizaciones/`, limpios. El CSS del servidor
+genera `group-open:rotate-180`, `group-open:rounded-b-none` y el que esconde el triángulo nativo.
+No se vio en el navegador.
+
+**Pendiente al cierre:** quedan sin uso `carga-fuentes-futuras.tsx`, `use-cargas-fuentes-futuras.ts`
+y las funciones de fuentes futuras de `observatorio.service.ts`. La página pública de Fuentes
+futuras de empleo (`features/sitio-web/fuentes-futuras-empleo`) y su API siguen como estaban.
+
+---
+
+## sesión 09-10-2026 (33.ª parte): editar rol con las medidas del acceso, sin «No modificable» y «Editar permisos» en verde
+
+**Qué se pidió.** En el modal de editar rol: quitar «No modificable», la misma simetría de
+textos y bordes que en el login, y «Editar permisos» en verde.
+
+**Lo que se hizo** (`modal-permisos.tsx`, la vista del rol antes de abrir los permisos):
+
+| Pieza | Antes | Ahora (como en `auth-ui.tsx`) |
+|---|---|---|
+| Título | `text-xl font-semibold` | `text-xl font-medium #001631` (`authPasosCardHeadingClass`) |
+| «Nombre del rol» | Etiqueta con «No modificable» a la derecha | Solo la etiqueta; el campo desactivado y su `title` ya lo dicen |
+| Aviso ámbar | `text-xs`, `py-2.5`, borde `amber-200/60` | `text-sm`, `px-4 py-3`, borde `amber-300`, esquinas de 16 (`AuthGeneralNotice`) |
+| «Editar permisos» | `#001631`, ancho del texto | `variant="verde"`, `w-full` como el botón principal del acceso |
+
+Campos y etiquetas ya tenían las medidas del acceso (`campoDeModalClass`, `etiquetaDeModalClass`:
+44 px, esquinas de 32, borde `#d9d9d9`, 16 px). El área de texto sigue con esquinas de 16:
+`alert.tsx` las reserva para lo que ocupa varias líneas.
+
+**Cómo se probó.** `tsc --noEmit` limpio; `eslint` da los mismos 5 que la versión commiteada.
+No se vio en el navegador.
+
+**Pendiente al cierre:** la descripción de este modal sigue con tope de 200 y estirable
+(en «Nuevo Editor» ya es de 100, fija y con contador).
+
+---
+
+## sesión 09-10-2026 (32.ª parte): «Nuevo Editor» con «Guardar» verde y la descripción a 100 caracteres
+
+**Qué se pidió.** En el modal «Nuevo Editor» de Roles, «Guardar» en verde y la descripción sin
+poder agrandarse y con máximo 100 caracteres.
+
+**Lo que se hizo.**
+
+| Pieza | Archivo | Cambio |
+|---|---|---|
+| Variante `verde` | `shared/ui/atoms/button.tsx` | `bg-[#7DB728]` con `hover:bg-[#6da020]`, dentro y fuera de modal (en modal, igual en oscuro) |
+| «Guardar permisos» | `modal-permisos.tsx` | Deja las clases con `!` de la 31.ª parte y usa `variant="verde"` |
+| «Nuevo Editor» | `roles-view.tsx` | «Guardar» con `variant="verde"`; descripción `maxLength={DESCRIPCION_MAX}` (100, antes 200), `resize-none` y contador `n/100` que pasa a rojo en el tope, enlazado con `aria-describedby` |
+
+Se hizo variante y no otra tanda de `!`: eran dos modales con el mismo verde, y el `!` peleaba
+con `variantStylesDeModal` en vez de decir qué botón es.
+
+**Cómo se probó.** `tsc --noEmit` limpio; `eslint` solo da lo que ya tenía `roles-view.tsx`
+(`Promise<any>` y la dependencia de `useCallback`). No se vio en el navegador.
+
+**Pendiente al cierre:**
+
+- La API no limita la descripción del rol (`roles.descripcion` es `TEXT`).
+- La descripción se puede editar luego en el modal de permisos (`modal-permisos.tsx`), que
+  sigue sin tope de 100 y con el campo estirable.
+
+---
+
+## sesión 09-10-2026 (31.ª parte): el modal de permisos, con «Marcar todos» como interruptor y el resumen junto al título
+
+**Qué se pidió.** En el modal de permisos de Roles: quitar el contador «1/2» de cada grupo,
+cambiar «Todas» por un interruptor a la izquierda que diga «Marcar todos», el botón «Guardar»
+en `#7DB728`, y el resumen («1 permiso añadido») junto a «Permisos a asignar» y a su tamaño.
+
+**Lo que se hizo** (`modal-permisos.tsx`):
+
+| Pieza | Antes | Ahora |
+|---|---|---|
+| Contador de cada grupo | `activos/total` gris junto al título | Quitado |
+| Atajo del grupo | Enlace «Todas» / «Quitar todas» | `Switch` + «Marcar todos» dentro de un `<label>` (el texto también lo conmuta); `aria-label` con el nombre del grupo |
+| Resumen de cambios | Pie, `text-xs` | Junto al título, `text-xl` como él, `aria-live="polite"`; sin cambios no dice nada (se quitó «Sin cambios que guardar.») |
+| «Guardar permisos» | `#001631` (acción principal de modal) | `bg-[#7DB728]!`, `hover:bg-[#6da020]!`, letra blanca, también en oscuro |
+
+> **El `!` del botón.** `variantStylesDeModal` ya pone `bg-[#001631]`; dos clases de fondo con
+> la misma especificidad compiten y Tailwind no asegura el orden. Blanco sobre `#7DB728` da
+> 2,4:1; se dejó así a pedido del usuario y queda comentado.
+
+**Cómo se probó.** `tsc --noEmit` limpio. `eslint` da los mismos 2 avisos y 3 errores que la
+versión ya commiteada (parámetros sin uso, un `setState` dentro de `useMemo` y comillas sin
+escapar); no se agregó ninguno. El CSS del servidor genera `bg-[#7DB728]!` y su `hover`. No se
+vio en el navegador.
+
+**Pendiente al cierre:** esos 3 errores de `eslint` en `modal-permisos.tsx`, anteriores a esto.
+
+---
+
+## sesión 09-10-2026 (30.ª parte): «Editar rol» con el icono de deslizadores y tooltip
+
+**Qué se pidió.** Cambiar el lápiz de Roles por un SVG dado (los deslizadores de Font Awesome
+Free) con un tooltip «Editar rol».
+
+**Lo que se hizo.** El SVG queda en `public/assets/svg/deslizadores.svg`, con su comentario de
+licencia (Font Awesome Free, CC BY 4.0, pide conservarlo). Es de un color, así que va con
+`IconoMascara` y toma `currentColor`. El botón (`roles-view.tsx`) deja `PencilIcon` y el
+`title`: lleva `aria-label="Editar rol"`, icono y tooltip en `#7DB728` como «Editar usuario»,
+fondo verde suave al pasar y anillo de foco verde. La papelera lleva tooltip «Eliminar rol» en
+`red-500`; en el rol base de Editor, desactivada, explica «No se puede eliminar el rol base de
+Editor» en gris. Va alineado a la derecha (`TOOLTIP_ENCIMA_A_LA_DERECHA`): es el último botón y
+ese texto, centrado, se salía de la tabla. Los dos iconos pasan de 16 a 24 px (`h-6 w-6`,
+`size-6`).
+
+**Cómo se probó.** `tsc --noEmit` limpio; `eslint` solo marca lo que ya había (un
+`Promise<any>` y una dependencia de `useCallback`); el servidor sirve el SVG.
+No se vio en el navegador.
+
+---
+
+## sesión 09-10-2026 (29.ª parte): la hoja de «Accesos» del móvil, a todo el ancho hasta tablet
+
+**Qué se pidió.** Que las opciones que suben desde abajo al tocar «Accesos» en la barra móvil
+(Usuarios, Roles y Permisos) ocupen todo el ancho hasta el breakpoint de tablet.
+
+**Lo que se hizo.** `.navegacion-mobile-hoja` (`globals.css` del sitio) pasa de `max-width: 32rem`
+a `none`, y desde `md` (48rem, tablet según 2-convenciones) vuelve a `32rem` centrada hasta que
+la barra móvil se oculta en `lg`. Antes, entre 512 y 768 px, la hoja dejaba franjas a los lados.
+
+**Cómo se probó.** El CSS del servidor de desarrollo trae la regla base con `max-width: none` y
+la de `@media (min-width: 48rem)` con `32rem`. No se vio en el navegador. La intranet tiene su
+propia barra móvil y no se tocó.
+
+---
+
+## sesión 09-10-2026 (28.ª parte): los tooltips ya no se parten letra por letra en tarjetas
+
+**Qué era.** Con la tabla de Usuarios en tarjetas, «Editar usuario» salía en una columna de
+una letra por línea.
+
+**Por qué.** `.olo-tabla-apilable … td :where(*)` pone `white-space: normal`, y la celda
+`overflow-wrap: anywhere` (`globals.css`, modo tarjetas). Están fuera de las capas de Tailwind,
+así que le ganaban a `whitespace-nowrap`. Un `absolute` dentro de un botón de 36 px se encoge a
+su ancho mínimo, y con `anywhere` ese mínimo es una letra.
+
+**Lo que se hizo.** `whitespace-nowrap!` en `shared/ui/atoms/tooltip.ts`: un `!important`
+dentro de una capa sí gana a una declaración normal sin capa. Arregla todos los que usan el
+tooltip compartido (Usuarios, el ojo de Auditoría y la cola de revisión).
+
+**Cómo se probó.** `tsc --noEmit` limpio; el CSS del servidor de desarrollo genera
+`.whitespace-nowrap\!` con `white-space: nowrap !important`. No se vio en el navegador.
+
+---
+
+## sesión 09-10-2026 (27.ª parte): confirmar antes de publicar desde la cola de revisión
+
+**Qué se pidió.** Un modal al publicar: «¿Estás seguro de que deseas publicar esta versión?»,
+con un botón sin color y borde gris y otro verde, simétricos.
+
+**Lo que se hizo.** En `revision-queue-view.tsx`, «Aprobar» ya no publica al pulsar: abre
+`ModalAccionConMotivo` con `tipo: 'aprobar'`, sin campo de motivo (`requiereMotivo={false}`),
+`colorAccion="brand"` y el texto «Se publicará la versión N de <sección> en el sitio web / la
+intranet. Si ya hay una versión publicada, pasará a Respaldos.» Al confirmar llama a
+`aprobar`; `handleAprobar` sobraba y se quitó. Los botones del modal miden lo mismo
+(`sm:flex-1`, `h-11`), así que Rechazar y Eliminar quedan igual de simétricos.
+
+**Cómo se probó.** `tsc --noEmit` del sitio y `eslint` del archivo, limpios. No se vio en
+el navegador.
+
+---
+
+## sesión 09-10-2026 (26.ª parte): «Editar usuario» con icono propio y tooltip
+
+**Qué se pidió.** Cambiar el lápiz de Usuarios por un SVG dado (persona gris con lápiz verde)
+y ponerle un tooltip «Editar usuario».
+
+**Lo que se hizo.** El SVG queda en `public/assets/svg/editar-usuario.svg`, junto a los demás.
+Va como `<img>` y no con `IconoMascara` porque tiene dos colores y la máscara pinta todo de uno.
+El botón (`usuarios-view.tsx`) deja `PencilIcon` y `title="Editar"`: lleva
+`aria-label="Editar usuario"`, fondo `#7DB728/10` al pasar, anillo de foco verde y el tooltip
+compartido (`shared/ui/atoms/tooltip.ts`, centrado) en verde con letra blanca. La papelera de al lado lleva
+el mismo tooltip, «Eliminar», en `red-500` (el color del icono), `aria-label="Eliminar usuario"`
+y fondo rojo suave al pasar; deja el `title`.
+
+**Cómo se probó.** `tsc --noEmit` del sitio y `eslint` del archivo, limpios; el servidor
+de desarrollo sirve el SVG (200, `image/svg+xml`). No se vio en el navegador.
+
+---
+
+## sesión 09-10-2026 (25.ª parte): sin «timeout of 15000ms exceeded» a la vista, reintentos solos en la cola y el ojo de Auditoría en verde
+
+**Qué se pidió.** Que /admin/revision no muestre `Error: timeout of 15000ms exceeded` sino un
+mensaje que diga qué hacer, o que se recargue solo. Después: en Auditoría, el ojo y su
+tooltip en `#7DB728`.
+
+**Por qué pasó de 15 s.** La API se reinició a las 22:15 con el pool nuevo. La primera
+petición después de un reinicio paga despertar a Neon y abrir la conexión (11 s medidos ese
+día) más las consultas. Neon respondía normal minutos después (~100 ms por ida y vuelta).
+
+**Lo que se hizo.**
+
+| Pieza | Archivo | Cambio |
+|---|---|---|
+| Traducción del fallo | `shared/lib/errores-api.ts` | `esFalloDeConexion` (axios sin `response`: tiempo agotado o sin red; no cuenta `ERR_CANCELED`) y `MENSAJE_SIN_RESPUESTA`. `mensajeDeErrorApi` lo devuelve en vez del `message` de axios |
+| Aviso | `shared/ui/molecules/aviso-error-de-carga.tsx` (nuevo) | Ámbar, `role="alert"`: qué no cargó, por qué, «Espera unos segundos y pulsa Reintentar. Si sigue igual, avisa al equipo técnico.» y botón «Reintentar» (`Button` `navy`) |
+| Cola | `revision/hooks/use-revision-queue.ts` | `listarConReintentos`: ante un fallo sin respuesta reintenta solo a 1 s y a 3 s, con el loader a la vista; un 4xx o 5xx sale al primero. Expone `reintentar` |
+| Cola | `revision-queue-view.tsx` | `AvisoErrorDeCarga` en vez de `Error: {error}` |
+| Tooltip | `shared/ui/atoms/tooltip.ts` (nuevo) | Las clases del tooltip salen de la cola y se comparten: `GRUPO_TOOLTIP`, `TOOLTIP_ENCIMA` (centrado) y `TOOLTIP_ENCIMA_A_LA_DERECHA` |
+| Ojo | `shared/ui/atoms/boton-ojo.tsx` | `claseTooltip` opcional: tooltip propio en vez del `title`. Respaldos, que no lo pasa, sigue igual |
+| Auditoría | `auditoria-view.tsx` | Ojo `text-[#7DB728]`, fondo `#7DB728/10` al pasar, tooltip `bg-[#7DB728]` con letra blanca |
+
+**Por qué dos reintentos.** El primer intento suele despertar a Neon y abrir la conexión
+aunque el navegador se canse antes: la API sigue y la deja lista. El segundo casi siempre
+entra. Con el `timeout` de 15 s, lo peor son unos 50 s de loader antes del aviso.
+
+**Por qué el tooltip del ojo va a la derecha.** El ojo está en la última columna de una tabla
+con `overflow-x-auto`. Centrado sobre un botón de 32 px, «Ver detalle» sobresalía unos 11 px
+por la derecha y, aunque invisible (`opacity-0`), le daba a la tabla una barra horizontal.
+
+> **Contraste.** El ojo verde sobre blanco da 2,4:1 (un icono pide 3:1, SC 1.4.11) y la letra
+> blanca del tooltip verde, 2,4:1 (12 px pide 4,5:1). Se dejó así a pedido del usuario; queda
+> anotado en el código.
+
+**Cómo se probó.**
+
+| Comprobación | Resultado |
+|---|---|
+| `tsc --noEmit` del sitio y `eslint` de los archivos tocados | Limpios |
+| CSS del servidor de desarrollo | Genera `group-hover/tooltip:opacity-100`, `group-focus-visible/tooltip:translate-y-0`, `text-[#7DB728]`, `hover:bg-[#7DB728]/10` y `right-0` |
+
+No se vio en el navegador ni se provocó un tiempo agotado de verdad.
+
+**Pendiente al cierre:**
+
+- Otras 8 pantallas muestran `err.message` tal cual (`use-auditoria`, `use-usuarios`,
+  `use-respaldos`, `use-pagina`, `panel-general`, `modal-depurar-auditoria` y los dos
+  subidores de archivos). Pasarlas a `mensajeDeErrorApi` y `AvisoErrorDeCarga` les quita el
+  inglés también.
+
+---
+
+## sesión 09-10-2026 (24.ª parte): cargador centrado, hover de los iconos del menú, «Volver» en la vista previa y tooltips en la cola
+
+**Qué se pidió.** Centrar el cargador «Cargando panel general...», que los iconos del menú
+lateral cambien de color con el puntero, abrir la vista previa en la misma pestaña con un
+«Volver» a la derecha, tooltips del color de cada botón en la cola de revisión, y el cargador
+en Actualizaciones.
+
+**Lo que se hizo.**
+
+| Pieza | Archivo | Cambio |
+|---|---|---|
+| Cargador | `shared/ui/molecules/cargando-seccion.tsx` | Por defecto `absolute inset-0`: cubre el 100 % de ancho y alto de `<main>` (que es `relative`) y queda en su centro. Antes `min-h-[60vh]` lo dejaba arriba. Quien pasa `className` (tablas, tarjetas) sigue en el flujo |
+| Menú lateral | `shared/ui/organisms/sidebar.tsx` | `group-hover:[&>svg]` → `hover:[&>svg]` |
+| Grupo «Accesos» | `auth/components/panel-general.tsx` | No tenía regla de hover para el icono: se añade `hover:[&>svg]` |
+| Menú desplegable | `shared/ui/molecules/dropdown.tsx` | El mismo `group-hover` sobre sí mismo, corregido igual |
+| Ojo de la cola | `revision/components/revision-queue-view.tsx` | Sin `target="_blank"`: misma pestaña |
+| Vista previa del sitio | `app/preview/[slug]/page.tsx` | «Volver» a la derecha (44 px de alto): a `/admin/respaldos` si hay `versionId`, si no a `/admin/revision` |
+| Vista previa de la intranet | `3001-intranet/.../preview/[slug]/page.tsx` y `globals.css` | El mismo «Volver», al panel del sitio (`SITE_URL`); clase `.preview-aviso-volver` |
+| Botones de la cola | `revision-queue-view.tsx` | Tooltip encima de cada botón («Visualizar», «Aprobar», «Rechazar», «Eliminar»), del color del botón y con la forma de `.fab-speed-dial__tooltip`; solo con la tabla completa. Se quitan los `title` (salían dos tooltips) y los rótulos pasan a «Visualizar» y «Eliminar» |
+| Actualizaciones | `carga-fuentes-futuras`, `carga-programa-sobresalientes`, `historial-cargas-tendencia`, `carga-alertas-inversion` | `CargandoSeccion` en vez del texto «Cargando historial...»; en Alertas uno solo para historial y proyectos, que llegan juntos |
+
+**Por qué el hover no cambiaba el color.** El elemento del menú lleva `group` y sus iconos se
+pintaban con `group-hover:[&>svg]:…`. En Tailwind 4 eso compila a
+`:is(:where(.group):hover *) > svg`: exige estar *dentro* de un `.group` con el puntero encima, y
+aquí el `.group` es el propio elemento, así que nunca aplicaba.
+
+**Por qué `absolute` sirve en el cargador.** La transición entre rutas (`.olo-route-transition`)
+anima `margin-top` y no `transform`. Un `transform` haría de su contenedor, sin alto, el bloque
+de referencia del `absolute`.
+
+**Contraste de los tooltips.** Letra blanca sobre el azul, el verde y el rojo, como pidió el
+usuario: da 2,6, 2,4 y 3,8:1, por debajo del 4,5:1 que pide un texto de 12 px
+(9-accesibilidad.md §2.1). Con `#0d1526` serían 7,0, 7,5 y 4,7:1; se propuso y se descartó.
+En «Rechazar», fondo rosa con borde `#FF1F1F` y letra `#d11a1a` (4,7:1; la del icono da 3,3:1).
+
+**Cómo se probó.**
+
+| Comprobación | Resultado |
+|---|---|
+| `tsc --noEmit` del sitio y de la intranet | Limpios |
+| `eslint` de los archivos tocados | Limpio salvo los 2 avisos que ya había (el `<img>` del logo en `panel-general.tsx`) |
+| CSS del servidor de desarrollo | Genera `group-hover/accion:opacity-100`, `hover:[&>svg]:text-[#7DB728]` (`:hover > svg`), `text-[#d11a1a]`, `@3xl:block`, `inset-0` |
+
+No se vio en el navegador.
+
+**Pendiente al cierre:**
+
+- Respaldos sigue abriendo la vista previa en pestaña nueva; su «Volver» lleva a Respaldos en esa pestaña.
+- La barra de la vista previa de la intranet sigue en ámbar.
+- El comentario de `revision-queue-view.tsx` dice que la sesión es la misma en las dos apps;
+  desde que tienen cookies separadas, ir a la vista previa de la intranet puede pedir entrar.
+
+---
+
+## sesión 09-10-2026 (23.ª parte): la barra de la vista previa, solo «Vista previa» en azul
+
+**Qué se pidió.** En la vista previa del sitio (`app/preview/[slug]/page.tsx`), dejar solo la
+etiqueta «Vista previa», con fondo `#1FACE3`, y la barra en un tono más suave del mismo azul.
+
+**Lo que se hizo.**
+
+| Pieza | Antes | Ahora |
+|---|---|---|
+| Etiqueta | `amber-900`, letra `amber-100` | `bg-brand-blue` (el token de `#1FACE3`), letra `#0d1526` |
+| Barra | `amber-100`, borde `amber-300` | `color-mix(brand-blue 12 %, blanco)` = `#e4f5fc`, borde `brand-blue/40` |
+| Texto | Ruta, versión, estado y el aviso de la derecha | Solo la etiqueta |
+
+La letra de la etiqueta va en azul oscuro y no en blanco: `brand-blue` está marcado «sin texto
+encima» en `globals.css`; con blanco da 2,6:1 y con `#0d1526`, 7,0:1. El fondo de la barra es
+una mezcla opaca y no `bg-brand-blue/10` porque la barra es `sticky` y la página pasa por debajo
+al bajar.
+
+> **Se perdió el aviso de las versiones archivadas.** La barra decía «Esta es una versión
+> archivada (respaldo). Puedes restaurarla desde la sección de respaldos.» cuando se abría
+> desde Respaldos. Se quitó con el resto del texto, como se pidió.
+
+**Cómo se probó.**
+
+| Comprobación | Resultado |
+|---|---|
+| `tsc --noEmit` del sitio y `eslint` del archivo | Limpios |
+| CSS que sirve el servidor de desarrollo | Genera `.bg-brand-blue`, `.text-[#0d1526]`, `.border-brand-blue/40` y la mezcla (`#e4f5fc`) |
+
+No se vio en el navegador.
+
+**Pendiente al cierre:**
+
+- La vista previa de la intranet (`3001-intranet/src/app/preview/[slug]/page.tsx`) sigue con
+  la barra de antes.
+
+---
+
+## sesión 09-10-2026 (22.ª parte): el motivo de rechazar o eliminar, con 100 caracteres y contador, el título sin la barra y Rechazar con borde rojo
+
+**Qué se pidió.** Limitar el motivo a 100 caracteres, contándolos al escribir, y que el campo
+no se pueda agrandar.
+
+**Lo que se hizo.** En `ModalAccionConMotivo` (`revision-queue-view.tsx`), que sirve a
+Rechazar y a Eliminar: `maxLength={MOTIVO_MAX}` (100, el mismo largo que el comentario del
+editor), `resize-none` y un contador `n/100` bajo el campo (`mt-2`), a la derecha, que pasa a rojo al
+llegar al tope y está enlazado con `aria-describedby`. Se quitó el import de `AlertTriangle`,
+sin uso desde que se quitó el icono del aviso.
+El título pasa de «Eliminar versión 11 de /tendencias» a «Eliminar versión 11 de
+tendencias», sin la barra. El borde rojo del campo ya no depende de `destructivo` sino del botón
+(`colorAccion === 'red'`): Rechazar también lo lleva, y el aviso rojo sigue siendo solo de
+Eliminar. Rechazar también nombra la sección: «Rechazar versión 11 de tendencias».
+
+**Cómo se probó.** `tsc --noEmit` del sitio y `eslint` del archivo, limpios. No se vio en el
+navegador.
+
+**Pendiente al cierre:**
+
+- La API no limita el motivo (`motivo_rechazo` es `TEXT` y el controlador no lo valida):
+  quien llame a la API directamente puede mandar más de 100.
+- La `<label>` del motivo quedó sin texto, así que el campo no tiene nombre para un lector de
+  pantalla.
+
+---
+
+## sesión 09-10-2026 (21.ª parte): el aviso del modal «Eliminar versión» en rojo
+
+**Qué se pidió.** Que el mensaje del modal de Eliminar de la cola de revisión se vea como
+aviso de estado, en rojo transparente o en amarillo.
+
+**Lo que se hizo.** Rojo: en el panel el rojo marca lo que no tiene vuelta atrás y el ámbar
+lo que pide confirmar, y eliminar una versión sin publicar pierde el trabajo. Mismo estilo
+que el error de `modal-depurar-versiones.tsx` (borde `red-200`, fondo `red-50`, icono
+`AlertTriangle`). `ModalAccionConMotivo` recibe `destructivo` (aviso y borde del motivo en rojo); solo lo usa Eliminar,
+Rechazar sigue con el texto gris. El import de `XCircle`, que quedó sin uso al quitar el
+icono del encabezado, pasa a `AlertTriangle`.
+
+**Cómo se probó.** `tsc --noEmit` del sitio y `eslint` del archivo, limpios. No se vio en
+el navegador.
+
+---
+
+## sesión 09-10-2026 (20.ª parte): /admin/revision daba «timeout of 5000ms exceeded»
+
+**Qué era.** La cola de revisión fallaba a veces con `timeout of 5000ms exceeded`. No era
+código nuevo: el límite de 5 s es del 18-09 y el pool del commit inicial. Medido contra Neon:
+
+| Paso | Tiempo |
+|---|---|
+| Abrir una conexión nueva | 2,7 – 3,4 s (11 s con Neon dormida) |
+| La consulta de la cola (2 versiones, ~9 KB) | 0,9 – 1,3 s |
+| Ida y vuelta TCP a Neon (us-east-1) | 92 – 628 ms; lo normal ronda 90 ms |
+
+El pool tenía `min: 0, idle: 10000`: a los 10 s sin uso cerraba todas las conexiones y la
+siguiente petición pagaba la reconexión entera. Con la red inestable, eso más las consultas
+de sesión, permisos y cola pasaba de 5 s.
+
+**Lo que se hizo.**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| API | `config/database.ts` | Pool `min: 1, idle: 60000` y `keepAlive: true` |
+| Sitio | `features/paginas/model/api-con-sesion.ts` | `timeout` de 5 s a 15 s |
+
+`keepAlive` solo actúa con Postgres normal: el conector de Neon va por WebSocket y su
+`setKeepAlive` no hace nada. No hace falta ahí, porque Sequelize marca `_invalid` la
+conexión que recibe `error` o `end` y su `validate` la descarta antes de prestarla.
+
+> **Ojo.** Si la conexión abierta impide que Neon se duerma, la base queda encendida y gasta
+> horas de cómputo del plan. Mirar el consumo en el panel de Neon los próximos días.
+
+**Cómo se probó.**
+
+| Comprobación | Resultado |
+|---|---|
+| `SELECT 1` tras 15 s sin uso, con el pool nuevo | 104 ms (antes había que reconectar: ~2,7 s) |
+| `tsc --noEmit` de la API | Limpio |
+
+**Pendiente al cierre:**
+
+- Reiniciar la API (no recarga sola) y abrir /admin/revision en el navegador: no se probó ahí.
+- `publicacion.service.ts` (el cliente público) sigue con 5 s.
+- Vigilar el consumo de horas de Neon.
+
+---
+
+## sesión 09-10-2026 (19.ª parte): respaldos — cada fila dice «Sitio web /inicio · versión 43»
+
+**Qué se pidió.** En `/admin/respaldos`, la columna «Página» se leía «inicio Sitio web
+· versión 43»: el título, después la etiqueta del ámbito y la versión. El usuario la quiere
+en el orden ámbito → página o sección → versión: «Sitio web /inicio · versión 43».
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| FE | `3000-sitio-web/.../respaldos/components/respaldos-view.tsx` | La etiqueta del ámbito va primero; en vez del título, la ruta (`/{slug}`), que es como ya la nombran los modales de restaurar y de vista previa y sirve igual para una página que para una sección; la versión al final |
+
+**Cómo se probó.** `tsc --noEmit` y `eslint` del archivo, limpios. No se miró en el navegador:
+la pantalla pide sesión de administrador.
+
+> **Aviso.** El título de la página deja de verse en la fila. Si dos páginas se titulan
+> distinto de su ruta y hace falta el título, puede volver como segunda línea.
+
+**Pendiente al cierre.** Mirar `/admin/respaldos` con sesión, a 360 y 1280 (en el móvil la
+fila pasa a tarjeta, `olo-tabla-apilable`).
+
+---
+
+## sesión 09-10-2026 (18.ª parte): los modales del panel y del editor con las medidas del acceso, y el editor en Poppins
+
+**Qué se pidió.** Dar a todos los modales del panel y del editor (los de cerrar sesión, enviar
+a revisión...) la misma simetría de las pantallas de acceso: los bordes de los campos y de los
+botones, y llevar la letra del panel (Poppins) también al editor.
+
+**Las medidas** (las de `auth-ui.tsx`): caja con esquinas de 32; título de 20 px Semibold en
+`#001631`; texto de 16; etiquetas de 16 Medium; campos y botones de 44 px de alto con
+esquinas de 32 y borde `#d9d9d9`; acción principal en `#001631` (en los modales deja de ser
+verde); «Eliminar» sigue en rojo; áreas de texto y mensajes de estado con esquinas de 16.
+
+**Lo que se hizo.** Se centralizó en vez de tocar botón por botón:
+
+| Pieza | Cambio |
+|---|---|
+| `shared/ui/atoms/button.tsx` | `FormaDeModal` (contexto) y `useEnModal`. Dentro de un modal, `Button` toma las medidas y colores de modal; fuera, no cambia nada |
+| `shared/ui/molecules/alert.tsx` | `Alert` pone `FormaDeModal`; caja de 32, título de 20, texto de 16; exporta `campoDeModalClass`, `areaDeModalClass` y `etiquetaDeModalClass` |
+| `custom-select.tsx`, `date-picker.tsx` | Dentro de un modal, esquinas de 32, borde `#d9d9d9` y letra de 16 (con `useEnModal`; el `compacto` no cambia) |
+| `roles-view.tsx` (Nuevo editor), `formulario-proyecto-inversion.tsx`, `modal-permisos.tsx` | Campos, áreas y etiquetas con las clases de `alert.tsx`; «Añadir permisos» pasa a `Button`; permisos usa `FormaDeModal` en su caja propia; el error del formulario de inversión pasa a banda de 16 |
+| `modal-depurar-auditoria.tsx`, `modal-depurar-versiones.tsx`, `modal-diagrama-visitas.tsx`, Notificaciones (`panel-general.tsx`) | Caja de 32, título de 20 en `#001631`, botones de 44 con esquinas de 32; los rojos no parten el texto y el pie hace `wrap` |
+| `buscador-modal.tsx` | El campo de búsqueda con esquinas de 32 y borde `#d9d9d9` |
+| `globals.css` `.olo-modal-*` (Enviar a revisión, Guardar borrador, Hay cambios sin guardar) y `.nueva-seccion-*` (Cerrar sesión, Nueva página, Eliminar página) | Las mismas medidas en CSS; títulos con `font-family: inherit` (si no, `--font-heading` los dejaba en Arial) y botones sin partir el texto |
+| `modal-cerrar-sesion.tsx`, `modal-nueva-seccion.tsx`, `modal-eliminar-seccion.tsx` | `poppins.className` en la caja: salen también en el portal público, donde no hay `LetraDelPanel` |
+| `app/editor/[slug]/page.tsx` | Envoltorio `display: contents` con `poppins.className` y `--puck-font-family`, `--font-heading` y `--font-body` en Poppins: la interfaz de Puck (pedía Inter, que no se carga), la barra y los modales. El lienzo no cambia: Puck lo dibuja en un iframe y le copia las hojas de estilo, no los estilos en línea |
+| `aviso-rechazo.tsx`, `editor-client.tsx` | Avisos de estado con esquinas de 16; el de rechazo en Poppins (sale por portal) |
+| `manual-de-usuario-formato.md` | «Copiar» y «Editar permisos» pasan de «botón verde» a «botón azul oscuro» |
+
+**Cómo se probó.** Con el arnés de siempre (componentes reales, API simulada, Chrome sin
+ventana), sin tocar Neon ni el servidor de desarrollo: 8 modales (formulario en `Alert` con
+campo, desplegable, fecha y área; permisos con rol y con la lista; depurar versiones; cerrar
+sesión; nueva página; eliminar página; enviar a revisión del editor) a 360 y a 1280 px.
+
+| Comprobación | Resultado |
+|---|---|
+| Caja | 32 px en los 8 |
+| Título | 20 px, 600, `#001631`, Poppins pintada en los 8 |
+| Campos, desplegables, fecha | 44 px, esquinas de 32, borde `#d9d9d9`, 16 px |
+| Áreas de texto | Esquinas de 16 |
+| Botones | 44 px, esquinas de 32; principal `#001631`, peligro rojo; Poppins pintada |
+| Desborde horizontal, errores de consola | Ninguno |
+
+En la primera pasada salieron dos fallos, ya corregidos: los títulos de los modales del editor y
+de secciones en Arial, y «Crear y editar» y «Depurar 12 versiones» partidos en dos o tres
+líneas a 360 px. Tipos de los 25 archivos tocados o afectados, limpios (con la API de
+TypeScript archivo por archivo: el `tsc` completo se cortaba en los marcadores del merge, ya
+resuelto). `eslint`, limpio salvo errores que ya estaban en `modal-permisos.tsx` y
+`roles-view.tsx` (las mismas reglas en el último commit).
+
+**Pendiente al cierre:**
+
+- Los tres campos de texto de «Nuevo usuario» (`usuarios-view.tsx`) siguen con la forma vieja:
+  el archivo tiene cambios de otra persona sin commitear y no se tocó. Sus botones,
+  desplegable y fecha ya cambian solos. Falta poner `campoDeModalClass` y
+  `etiquetaDeModalClass` cuando eso entre.
+- No se probó en el navegador con sesión real (el editor completo con Puck).
+
+---
+
+## sesión 09-10-2026 (17.ª parte): merge de la PR #140 de Mateo con los cambios propios conservados
+
+**Qué era.** Al traer `OLO/dev` (4 commits de Mateo, PR #140) chocaron 6 archivos. Mateo
+pasó la recuperación de contraseña de la intranet (preguntas, nueva contraseña, pantalla de
+éxito) a la maqueta del login (`login-page`, tarjeta blanca, logo y «INTRANET»), dio a
+`PasswordField` y `PasswordRequisitos` una variante sin `classPrefix`, renombró «Editor» a
+«Autor» en Respaldos, quitó el buscador de texto de la cola de revisión y devolvió los
+enlaces de la política a `/politica-de-privacidad`, con un redirect desde
+`/inicio/politica-de-privacidad`. Eso cierra el pendiente del 404 anotado el 25-09-2026.
+
+**Cómo se resolvió.** Se conservan todas las líneas cambiadas aquí; de Mateo se toma solo lo
+que aquí no se tocó.
+
+| Archivo | Queda |
+|---|---|
+| `sitio-web/.../auth/components/login-view.tsx` | El diseño propio (texto 14 px `#737373`), con los enlaces de Mateo a `/politica-de-privacidad` |
+| `intranet/.../login/components/login-view.tsx` | El título propio («Bienvenido a nuestra Intranet») y los colores propios del aviso, con los enlaces de Mateo |
+| `auth-success-screen.tsx`, `reset-password-view.tsx`, `security-questions-view.tsx` | La maqueta de Mateo con el `cerrarSesion` propio en `ReturnToSiteLink` y `classPrefix="login"` (el de su maqueta) |
+| `docs/manual-de-usuario-formato.md` | Los dos pasos del sitio web en su versión propia: «Correo SENA» y la recuperación con tres barras. El texto de Mateo («Verifica tu identidad», puntos) describía la intranet, no el sitio |
+
+> **Ojo.** En `auth-success-screen.tsx` quedarse con «lo mío» tal cual borraba la tarjeta de
+> Mateo y dejaba el JSX roto: el bloque en conflicto empezaba en mitad de su maqueta nueva.
+
+**Cómo se probó.**
+
+| Comprobación | Resultado |
+|---|---|
+| Marcadores de conflicto en los 6 archivos | Ninguno |
+| `tsc --noEmit` de la intranet y del sitio | Limpios |
+
+**Pendiente al cierre:**
+
+- Probar en el navegador la recuperación de la intranet con la maqueta de Mateo (no se corrió).
+- Lo que Mateo dejó en el manual sobre el aviso de privacidad del login del sitio
+  (`/politica-de-privacidad`) no entró, porque chocaba con el paso propio; se puede añadir
+  como viñeta aparte.
+
+---
+
+## sesión 09-10-2026 (16.ª parte): sin «(Pregunta 1 de 3)» a la vista
+
+**Qué se pidió.** Quitar «(Pregunta 1 de 3)» de bajo el encabezado «Preguntas de seguridad».
+
+**Lo que se hizo.** Se quitó en las dos pantallas que lo tenían, la recuperación
+(`security-questions-view.tsx`) y el primer ingreso (`first-login-flow.tsx`), para que sigan
+iguales. El avance lo siguen dando las tres barras (`AuthProgressDots`), y el lector de
+pantalla sigue oyendo el número: en la recuperación, en el `sr-only` de la caja de la
+pregunta; en el primer ingreso, en la etiqueta oculta del desplegable. Manual actualizado en los
+dos pasos.
+
+**Cómo se probó.** Arnés de siempre en Chrome sin ventana a 6 anchos, primer ingreso y
+recuperación completos, sin errores en la consola. `tsc --noEmit` del sitio y `eslint` de los
+dos archivos, limpios.
+
+---
+
+## sesión 09-10-2026 (15.ª parte): la contraseña temporal vence a las 72 horas (migración 043)
+
+**Qué se pidió.** Lo que quedó abierto en la 13.ª parte: que la contraseña temporal no valga
+para siempre. El usuario eligió **caducidad de 72 horas** frente a quemarla al primer uso.
+
+**Cómo funciona.**
+
+| Momento | Qué pasa con `password_temporal_vence_en` |
+|---|---|
+| Alta, «Restablecer contraseña», reactivación | Ahora + 72 h (`vencimientoDeTemporal`) |
+| Primer ingreso completado, cambio voluntario, recuperación por preguntas | `NULL` |
+| Login con la temporal vencida | 403 «Tu contraseña temporal venció (dura 72 horas). Pide al administrador que te genere una nueva.» — **después** de comprobar la contraseña, para no delatar el estado de la cuenta a quien no la sabe |
+| Sesión abierta con la temporal cuando vence | `requireAuth` (las dos variantes) responde 401 con el mismo mensaje: el token dura 7 días y sin esto quien entró a las 71 h seguía |
+| Fecha vacía con `debe_cambiar_password` | No vence (cuentas que no pasaron por la 043) |
+
+La regla está una sola vez, en `shared/password-policy.ts` (`HORAS_DE_VIGENCIA_TEMPORAL`,
+`vencimientoDeTemporal`, `temporalVencida`, `MENSAJE_TEMPORAL_VENCIDA`).
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| DB | `migrations/043-password-temporal-vence.ts` (nueva) + `index.ts`; modelo `user.ts` | Columna `password_temporal_vence_en`; las cuentas con temporal pendiente reciben 72 h desde que se aplica |
+| API | `shared/password-policy.ts` | La regla y el mensaje |
+| API | `use-cases/usuarios/listar-usuarios.usecase.ts` | Fija el vencimiento al crear y al restablecer o reactivar; lo vacía cuando llega `must_change_password: false` |
+| API | `use-cases/auth/login.usecase.ts`, `middlewares/auth.middleware.ts` | Rechazan la temporal vencida |
+| API | `use-cases/auth/first-login.usecase.ts` | Vacía la fecha al cambiar la contraseña |
+| API | `use-cases/auth/security-questions.usecase.ts` | La recuperación apaga además `debe_cambiar_password`: con una temporal vencida, quien recuperaba seguía marcado y el login lo habría rechazado por una clave que ya no es la suya |
+| Sitio | `usuarios-view.tsx`, `use-usuarios.ts` | El aviso de la contraseña temporal dice hasta cuándo vale |
+| Docs | `11-base-de-datos.md`, `12-diccionario-de-datos.md`, `3-seguridad-del-proyecto.md` | Fila de la 043, columna 18 de `usuarios`, fila de S10 al día |
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| Login y `requireAuth` reales con repositorios, `jwt` y bcrypt simulados, sin base | ✅ vencida → 403 en el login y 401 en la sesión; vigente (71 h), sin fecha y ya cambiada pasan el control |
+| `createUser` y `updateUser` con `reset_password` | ✅ 72 h; el cambio voluntario deja `null` |
+| SQL de la 043 sobre una tabla **temporal** en Neon, dentro de una transacción deshecha | ✅ 72 h solo donde `debe_cambiar_password`; el `DROP` funciona; `usuarios` sin tocar |
+| `tsc --noEmit` en la API y el sitio; `eslint` de los archivos del sitio | ✅ |
+
+> **Aviso.** El modelo ya pide la columna: **hasta aplicar la 043 en Neon, cualquier consulta
+> de usuarios falla** (login incluido). Primero `npm run migrate`, después reiniciar la API.
+
+**Pendiente al cierre.**
+
+- **`npm run migrate`** en `4000-api-backend`, reiniciar la API y `npm run db:verificar`.
+- Probar con una cuenta real: crear un usuario (el aviso dice hasta cuándo vale), entrar con
+  la temporal y completar el primer ingreso.
+- La lista de usuarios no marca las temporales vencidas: el administrador lo sabe cuando la
+  persona avisa. Se podría añadir una etiqueta «Temporal vencida» en la fila.
+
+---
+
+## sesión 09-10-2026 (15.ª parte): encabezado «Preguntas de seguridad» en el primer ingreso y en la recuperación
+
+**Qué se pidió.** Un `h2` «Preguntas de seguridad» sobre la pregunta. Se hizo primero en el
+primer ingreso (en lugar de la etiqueta del desplegable); el usuario aclaró después que lo
+quería en la recuperación, en lugar de «Responde tus preguntas». Quedaron las dos iguales.
+
+**Lo que se hizo.**
+
+| Archivo | Cambio |
+|---|---|
+| `first-login-flow.tsx` | `h2` «Preguntas de seguridad» (20 px, Medium) con «(Pregunta 1 de 3)» debajo en 16 px sin negrita: el mismo patrón que «Responde tus preguntas» en la recuperación |
+| `auth-ui.tsx` | `AuthSelectField` admite `etiquetaOculta`: la etiqueta queda solo para el lector de pantalla (`sr-only`), así el desplegable sigue teniendo nombre sin repetir lo que ya dice el encabezado |
+| `security-questions-view.tsx` | «Responde tus preguntas» pasa a «Preguntas de seguridad», y el contador a «(Pregunta 1 de 3)» para no repetir «de seguridad» |
+| `manual-de-usuario-formato.md` | El paso 2 del primer ingreso y el paso 3 de la recuperación nombran el encabezado |
+
+**Cómo se probó.** Arnés de siempre en Chrome sin ventana a 6 anchos, primer ingreso y
+recuperación completos, sin errores en la consola; capturas a 360 y 1280 con el encabezado y
+el contador. `tsc --noEmit` del sitio y `eslint` de los dos archivos, limpios.
+
+---
+
+## sesión 09-10-2026 (14.ª parte): mitad izquierda en blanco y el número de la pregunta junto a la pregunta
+
+**Qué se pidió.** En las pantallas de acceso del panel, que la mitad izquierda del escritorio,
+donde está el logo, vaya sobre blanco. Y en la recuperación de contraseña, quitar
+«(Pregunta de seguridad 1 de 3)» del título de la página y ponerlo bajo «Responde tus
+preguntas».
+
+**Lo que se hizo.**
+
+| Archivo | Cambio |
+|---|---|
+| `marco-de-pasos.tsx` | Desde `xl` la mitad izquierda ya no es `#001631` con texto blanco: queda blanca con el texto en `#001631`, como en el móvil. Se quitaron los `xl:` que pasaban a blanco el título y el paginador. La mitad derecha (`#001a39`, esquinas de 32) no cambia. Afecta a todas las pantallas del marco: login, primer ingreso y recuperación |
+| `security-questions-view.tsx` | El título queda en «Validación de identidad». El contador va dentro del `h2` «Responde tus preguntas», en una segunda línea de 16 px sin negrita, para que no compita con el encabezado |
+| `manual-de-usuario-formato.md` | Primer ingreso, login y recuperación: la mitad izquierda va sobre blanco; dónde está ahora el número de la pregunta |
+
+**Cómo se probó.** Con el arnés de siempre (componentes reales, `fetch` simulado, Chrome sin
+ventana, a 360, 440, 768, 1032, 1280 y 1920 px), sin tocar Neon ni el servidor de desarrollo:
+login, primer ingreso completo y recuperación completa hasta «Genial», sin errores en la
+consola. En las capturas de 1280 y 1920 la mitad izquierda es blanca y el logo, el título y el
+paginador se leen en `#001631`; la pregunta muestra «Validación de identidad» arriba y el
+contador bajo «Responde tus preguntas» a 360 y a 1280. `tsc --noEmit` del sitio y `eslint` de
+los dos archivos, limpios.
+
+---
+
+## sesión 09-10-2026 (13.ª parte): la sesión de primer ingreso solo sirve para terminarlo
+
+**Qué se pidió.** Revisar qué pasa cuando alguien entra con un correo nuevo y la contraseña
+temporal y sale de la pantalla sin cambiarla; que esa sesión sea «de un único uso», que el
+primer ingreso vuelva a aparecer, y que también aparezca si la cuenta no tiene preguntas.
+
+**Lo que se encontró.**
+
+| Pregunta | Respuesta antes del cambio |
+|---|---|
+| ¿Vuelve a salir el primer ingreso al entrar otra vez con la temporal? | **Sí.** El login devuelve las marcas y las dos apps mandan a `/first-login` (sitio) o a la pantalla pendiente (intranet) |
+| ¿Qué pasa al salir sin terminar? | «Regresar al sitio web» **no cerraba la sesión**. En el portal la cuenta seguía conectada, con los botones de edición a la vista (los decide la cookie de rol) |
+| ¿La API exigía terminar? | **No.** `requireAuth` no miraba `must_change_password` ni `must_setup_security_questions`: solo los proxies redirigían pantallas, y cualquier llamada directa funcionaba con todo el rol |
+| ¿Se detecta una cuenta sin preguntas? | **No.** Solo se miraba la marca, que se enciende al crear la cuenta o al restablecerlas. En Neon (solo `SELECT`): de 12 cuentas activas, 9 tienen sus 3 preguntas, 2 no y ya están marcadas, y **1 no las tiene y no está marcada**: nunca se le pedían |
+
+**Lo que se hizo.**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| API | `middlewares/auth.middleware.ts` | `requireAuth` responde 403 `CONFIGURACION_PENDIENTE` si la fila tiene algo pendiente; `requireAuthConConfiguracionPendiente` para lo que hace falta para terminar; `req.user.must_*` salen de la fila, no del token; `tieneConfiguracionPendiente()` |
+| API | `routes/auth.routes.ts`, `routes/security-question.routes.ts` | `first-login/status`, `first-login`, `me`, `change-password` y `security-questions/setup` usan la variante que admite pendiente |
+| API | `use-cases/auth/login.usecase.ts`, `security-questions.repository.ts`, `first-login.usecase.ts` | El login cuenta las preguntas y, con menos de 3, enciende `debe_configurar_preguntas` antes de firmar el token (`countByUserId`, `TOTAL_PREGUNTAS` exportado) |
+| API | `controllers/auth.controller.ts` | `/me` devuelve `configuracionPendiente` y, si lo está, `permisos: []` |
+| Sitio | `marco-de-pasos.tsx`, `first-login-flow.tsx` | `cerrarSesionAlSalir`: en los cinco estados del primer ingreso, «Regresar al sitio web» cierra la sesión antes de salir |
+| Sitio | `secciones.service.ts` | Si `/me` dice `configuracionPendiente`, el portal manda a `/first-login` en vez de pintar botones de edición |
+| Intranet | `return-to-site-link.tsx` + `first-login-view`, `security-questions-view` (modo `setup`), `reset-password-view` (modo `forced`), `auth-success-screen` | `cerrarSesion`: cierra la sesión antes de ir al sitio |
+| Docs | `3-seguridad-del-proyecto.md` | Fila nueva en la tabla de S10 |
+
+**Cómo se probó.** El middleware y el login reales, con `jwt`, los repositorios y bcrypt
+simulados y variables de entorno falsas (sin base ni token reales). `tsc --noEmit` en las tres
+apps y `eslint` de los archivos tocados del sitio y de la intranet, limpios.
+
+| Caso | Resultado |
+|---|---|
+| Cuenta configurada | ✅ pasa por `requireAuth` y por la variante |
+| Contraseña temporal pendiente; solo preguntas pendientes | ✅ `requireAuth` → 403 `CONFIGURACION_PENDIENTE`; la variante pasa |
+| Token viejo que dice «pendiente», fila ya al día | ✅ pasa |
+| Login con 3, 1 y 0 preguntas | ✅ con 3 no toca nada; con 1 y 0 marca la cuenta y el token sale con la marca |
+
+No se probó en el navegador con una cuenta real (hace falta sesión): queda para el usuario.
+
+> **Aviso.** El token se firma al entrar y no cambia: tras terminar el primer ingreso sigue
+> diciendo «pendiente». La API ya no se fía de él (mira la fila); los proxies sí, por eso las
+> dos apps cierran la sesión al terminar y piden volver a entrar.
+
+**Lo que se descartó (por ahora).**
+
+- **Quemar la contraseña temporal al primer uso.** Es lo que más se parece a «un único uso»,
+  pero quien cierra la pestaña por error se queda fuera hasta que un administrador le emita
+  otra. Se dejó la temporal válida hasta que se cambie y se limitó lo que esa sesión puede
+  hacer. Queda planteado al usuario junto con la alternativa de darle caducidad.
+
+**Pendiente al cierre.**
+
+- **Reiniciar la API** y probar: crear una cuenta, entrar con la temporal, pulsar «Regresar al
+  sitio web» (debe salir sin sesión), volver a entrar (debe salir el primer ingreso).
+- La cuenta activa sin preguntas verá la configuración en su próximo ingreso.
+- Decidir si la contraseña temporal caduca o se quema al primer uso.
+
+---
+
+## sesión 09-10-2026 (12.ª parte): mensajes de estado y preguntas de seguridad con esquinas de 16 px
+
+**Qué se pidió.** Esquinas de 16 px, y no las de 32 de los botones, en los mensajes de estado
+(error, éxito, advertencia…) y en donde se muestran las preguntas de seguridad.
+
+**Por qué parecían botones.** `globals.css` redefine la escala de radios en un `:root` sin capa,
+que gana a la de Tailwind: en este sitio `rounded-xl` mide 16 px (12 en Tailwind) y `rounded-2xl`
+mide 24 (16 en Tailwind). Las bandas del acceso y los avisos flotantes usaban `rounded-2xl`, 24, y
+un botón de 44 px de alto con esquinas de 32 se ve con 22: casi igual.
+
+**Cómo quedó.** Todos con `rounded-xl` (16 px), el mismo que ya llevaban las bandas de los
+modales de Respaldos, Auditoría y Permisos.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| FE | `auth/components/auth-ui.tsx` | `AuthGeneralError` y `AuthGeneralNotice`, de 24 a 16. `authPasosInputClass` admite otras esquinas, y el desplegable de preguntas del primer ingreso pasa `rounded-xl`. Va como parámetro y no como clase añadida: dos clases de radio en el mismo elemento las resuelve el orden del CSS |
+| FE | `auth/components/security-questions-view.tsx` | La caja de la pregunta, de 32 a 16 |
+| FE | `shared/ui/molecules/notification.tsx` | Los avisos flotantes (éxito, error, advertencia, información), de 24 a 16 |
+| FE | `carga-criterios-clasificacion.tsx` (dos), `panel-general.tsx`, `usuarios-view.tsx`, `mi-perfil/components/profile.tsx` | Las bandas de estado del panel que iban a 12, a 16 |
+
+Las respuestas siguen siendo campos, con esquinas de 32.
+
+**Cómo se probó.** En el arnés, a 360 px, radio calculado con `getComputedStyle`. La banda
+«Correo o contraseña incorrectos» del login, la caja de la pregunta y el desplegable de preguntas
+dan 16 px; el campo de correo, el de la respuesta y los botones, 32. `tsc --noEmit` del sitio y
+`eslint` de lo tocado: ✅.
+
+---
+
+## sesión 09-10-2026 (11.ª parte): simetría en las pantallas de acceso — escala tipográfica, campos y botones iguales, fondo blanco y el login en el diseño nuevo
+
+**Qué se pidió.** Con dos imágenes: la escala tipográfica del usuario (Heading 1 a 5 en
+60/50/40/30/24 Semibold, Headline 20, Body Large 18, Body 16, Footnote 14, Caption 13 y Small 12)
+y los mockups de móvil (440 px) del login y de la recuperación. Darle simetría a todas las rutas
+del acceso (login, primer ingreso, recuperación):
+
+- títulos con los tamaños de la escala, en Poppins, y no en Work Sans ni en Inter;
+- campos y botones del mismo largo y alto, con esquinas de 32 px, como la tarjeta, y con medidas
+  responsivas;
+- el primer ingreso sobre blanco, como la recuperación.
+
+Durante el trabajo llegaron dos cosas más: el color de los botones (`#001631`) y los dos ojos del
+campo de contraseña, en SVG.
+
+**Lo que había** (medido con canvas sobre los mockups). En el móvil el campo medía 330 px en el
+login, 320 en la recuperación y 283 en las preguntas, y el botón de la confirmación, 272. Los
+campos eran de 40 px y los botones de 44 (40 en el escritorio), con esquinas de 4 a 6. El login
+seguía con su marco viejo (`AuthSplitShell`, piel `tarjeta`) y el primer ingreso iba sobre azul.
+
+**Cómo quedó.**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| FE | `auth/components/auth-ui.tsx` | Un solo juego de medidas para todas las pantallas. Campos, caja de la pregunta y botones: 44 px de alto, a todo el ancho y con esquinas de 32. Formulario: sin tarjeta y de 330 px como máximo en el móvil; desde `md`, tarjeta de 452 con borde `#d9d9d9` y esquinas de 32. Etiquetas a 16 px en peso medio, encabezado del formulario a 20 (Headline Medium) y errores a 14. Botón y barras en `#001631`. Se quitan la piel `tarjeta`, el contexto `PielAuth`, `AuthSplitShell`, `AuthCardTitle` y las clases que solo usaba el login viejo |
+| FE | `auth/components/marco-de-pasos.tsx` | Un solo tema: blanco con texto `#001631` por debajo de `xl` y las dos mitades azules desde `xl`. Título a 24 px en el móvil y 30 desde `md` (Heading 5 → 4, Semibold); texto a 18 (Body Large). `conLogo` para el login. El paginador se lee sobre blanco y sobre azul, con números redondos |
+| FE | `auth/components/login-view.tsx` | El login pasa al marco nuevo, como el mockup de móvil: logo, «Panel de Administración» y el formulario con las mismas medidas. El límite de Suspense rodea solo el formulario, así que el marco llega ya en el HTML del servidor |
+| FE | `first-login-flow.tsx`, `recovery-view.tsx`, `security-questions-view.tsx`, `reset-password-view.tsx`, `reset-success-view.tsx` | Sin `tema`: todo va sobre blanco. El título de las preguntas pierde su tamaño propio. La caja de la pregunta mide lo que un campo. El botón de la confirmación va en el mismo formulario (antes, 272 px) |
+| FE | `app/(auth)/layout.tsx`, `auth/index.ts` | Sin `AuthSplitShell`: cada pantalla pinta su marco |
+| FE | `public/assets/svg/eye-closed.svg`, `eye-open.svg` | Los ojos que pasó el usuario. El campo de contraseña los usa con `IconoMascara`: cerrado mientras la clave está oculta, abierto cuando se ve. Son los mismos archivos de los botones de «ver» de Respaldos y Revisión, que también cambian |
+| FE | `style/globals.css` | El desplegable de preguntas (el select personalizable de Chrome) deja partir la pregunta en dos líneas y crece hacia abajo, como la caja de la recuperación: en una línea el recorte caía bajo la flecha. Su lista abierta, con esquinas de 16 |
+| Docs | `manual-de-usuario-formato.md` §3.4.1.1 y §3.4.1.2 | El login nuevo, el primer ingreso sobre blanco y cómo se lee el ojo. Se corrige la casilla «Correo electrónico», que en pantalla es «Correo SENA» |
+
+**Decisiones.**
+
+- **Títulos de la escala, en Semibold, como ella:** 24 px (Heading 5) en el móvil y 30
+  (Heading 4) desde la tablet, en todas las pantallas. En el mockup de móvil miden unos 32, y el
+  de las preguntas ocupaba cuatro líneas; a 24 son cuatro como máximo.
+- **Sin tarjeta en el móvil**, como en el mockup de móvil. Desde `md`, la tarjeta con esquinas
+  de 32.
+- **Etiquetas a 16 en peso medio** (Body Medium) en todas las pantallas. En el mockup unas iban
+  en negrita y otras no. «Ingresa nuevamente la contraseña» cabe en una línea en todos los anchos.
+- **«¿Olvidaste tu contraseña?» en `#001631`**, como los demás enlaces, y no en el gris claro del
+  mockup (`#929292`, con 3,2:1, por debajo del 4,5:1 de AA).
+- **«Passcode» sigue siendo «Contraseña».**
+
+**Cómo se probó.** El arnés de la 9.ª parte, ahora con lo que monta el layout real
+(`LetraDelPanel` y `FlujoDeRecuperacionProvider`). Ocho vistas a 360, 440, 768, 1032, 1280 y
+1920 px, y los tres flujos con la API simulada.
+
+| Prueba | Resultado |
+|---|---|
+| Medidas de campos y botones | ✅ En cada ancho, iguales en todas las pantallas: 328 px a 360, 330 a 440 y 386 desde 768. Todos de 44 de alto y con esquinas de 32. La caja de la pregunta crece a 66 cuando la pregunta ocupa dos líneas |
+| Tarjeta | ✅ Ninguna por debajo de 768. Desde ahí, 452 px, borde `#d9d9d9` y esquinas de 32 |
+| Letra | ✅ Títulos, etiquetas, botones y enlaces pintados en Poppins (`CSS.getPlatformFontsForNode`) |
+| Tamaños | ✅ Título a 24/600 hasta 767 px y a 30/600 desde 768. Texto a 18, encabezado del formulario a 20/500, etiquetas a 16/500 y en una línea |
+| Fondo | ✅ Blanco hasta 1279 px en todas las pantallas, también en el primer ingreso. Azul desde 1280 |
+| Paginador | ✅ `#001631` sobre blanco y blanco sobre azul. El paso actual va relleno |
+| Login | ✅ Vacío: los dos errores. Con un `@gmail.com`: «Debe ser un correo institucional @sena.edu.co». Con la API respondiendo 401: «Correo o contraseña incorrectos» |
+| Primer ingreso y recuperación | ✅ Completos de punta a punta |
+| Ojo | ✅ Cerrado con la clave oculta y abierto al mostrarla. El nombre accesible dice la acción |
+| Desborde y consola | ✅ Sin desborde horizontal en ningún ancho, sin errores ni avisos |
+| `/login` y `/recovery` en el dev | ✅ El diseño nuevo, en Poppins y con las mismas medidas |
+| `tsc --noEmit` del sitio; `eslint` de lo tocado | ✅ |
+
+**Queda.**
+
+- Mirar el primer ingreso y la recuperación con una cuenta real.
+- La intranet tiene sus propias pantallas de acceso: no se tocaron.
+
+---
+
+## sesión 09-10-2026 (10.ª parte): el panel y sus pantallas de acceso en Poppins, títulos incluidos y en negrita
+
+**Qué se pidió.** Una sola letra para todo el panel de administración y sus pantallas de acceso.
+Primero se pidió Work Sans; a mitad de camino, Inter, la de los mockups; y en la 11.ª parte,
+Poppins, la que ya tenía el panel: «es mejor que Inter». Con una regla para el panel: los títulos
+en negrita, cada uno a su tamaño, y las descripciones en un tamaño menor que su título.
+
+**Cómo quedó.**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| FE | `features/administracion/auth/components/letra-del-panel.tsx` (nuevo) | Pone Poppins (la de `shared/lib/fonts.ts`) en `<body>`, en `--font-heading` y `--font-body`, mientras el panel o una pantalla de acceso están montados. Va en `<body>` y no en el contenedor porque los modales y los avisos salen por portal a `<body>`. Al ir al sitio público o al editor se desmonta y vuelve la letra de antes |
+| FE | `app/admin/layout.tsx`, `app/(auth)/layout.tsx`, `auth/index.ts` | Montan `LetraDelPanel` en lugar de poner `poppins.className` en su contenedor |
+| FE | `style/globals.css` | `.admin-header` (títulos de página) y `.admin-subtitle` (de sección y de modal) pasan a negrita, igual que `.navegacion-mobile-hoja-titulo`. La regla queda escrita junto a ellas |
+| FE | `carga-alertas-inversion`, `carga-criterios-clasificacion`, `carga-fuentes-futuras`, `carga-programa-sobresalientes`, `historial-cargas-tendencia`, `preferencia-sonido-avisos`, `detalle-registro`, `modal-bloqueo-restauracion`, `modal-confirmar-restauracion`, `alert`, `notification` | Los títulos escritos a mano pasan de `font-semibold`/`font-medium` a `font-bold` |
+| FE | `shared/lib/fonts.ts` | Solo el comentario |
+
+**Qué cambia de verdad.** El texto del panel ya era Poppins. Lo nuevo es que **los títulos** (los
+h1–h6, `.admin-header` y `.admin-subtitle`) salían en la letra del sistema, Arial en Windows, por
+el hallazgo de abajo, y ahora salen en Poppins.
+
+**Decisiones.**
+
+- **Inter se probó y se descartó.** Iba en su propio módulo, para no precargarse en el sitio
+  público. Poppins se queda en `shared/lib/fonts.ts`, el único punto donde se declara.
+- **No es título y se queda como estaba:** las cifras de las tarjetas del Dashboard (etiqueta
+  pequeña y número grande en negrita), las etiquetas de campo y los nombres en listas y tablas.
+- **Las descripciones ya eran menores** que su título en todo el panel: bajo el título de página
+  van a 14 px, y bajo el de un modal o una tarjeta a 14 o 12. No hubo que cambiarlas.
+
+**Hallazgo, sin tocar: los títulos del sitio público no salen en Work Sans.** `app/layout.tsx`
+carga Work Sans en `--font-heading`, pero el `:root` de `globals.css` define esa misma variable
+como `'Open Sans'`. Los dos van sin capa y con la misma especificidad, y en el CSS que arma Next
+globals.css va después, así que gana el segundo (comprobado en `.next/dev`). Open Sans no se
+carga en ningún lado, de modo que los títulos públicos salen en la letra del sistema: Arial en
+Windows, Helvetica en Mac. Era también lo que les pasaba a los títulos del panel. Arreglarlo
+cambia cómo se ve el sitio público, así que queda para que se decida aparte. El panel ya no
+depende de esto, porque `LetraDelPanel` fija sus dos variables.
+
+**Cómo se probó.** Con `CSS.getPlatformFontsForNode` de Chrome, que dice con qué letra se pintó
+de verdad cada texto y no solo la que se pidió. Un segundo arnés monta `PanelGeneralLayout` con
+una página de ejemplo; Puck, axios y echarts van simulados, porque sus paquetes son de Node.
+
+| Prueba | Resultado |
+|---|---|
+| Panel a 1280, 768 y 360 | ✅ Barra lateral, barra superior, navegación de abajo en el móvil, título, subtítulo y párrafo pintados en Poppins |
+| Aviso que sale por portal a `<body>` | ✅ En Poppins, en el panel y en el acceso |
+| Sin `LetraDelPanel` (como estaba antes) | ✅ Se reproduce el fallo: el texto en Poppins y los títulos en Arial |
+| Jerarquía en el panel | ✅ Título de página de 24 a 30 px a 700, con descripción de 14. Subtítulo de 17 a 20 a 700, con descripción de 14 |
+| Consola | ✅ Sin errores ni avisos |
+| `tsc --noEmit` del sitio; `eslint` de lo tocado | ✅ |
+
+**Queda.**
+
+- Mirar el panel en el navegador con una sesión real. El arnés monta el marco y una página de
+  ejemplo, no cada pantalla con sus datos.
+- Decidir los títulos del sitio público (el hallazgo de arriba).
+- Visto al revisar `/login` en el dev: la página carga la hoja de estilos del editor Puck, con su
+  `@import` de Inter desde `rsms.me`, un servidor externo. Llega por el barril de `auth`, que
+  exporta `panel-general`, y este importa `@/features/paginas`, que incluye
+  `puck-editor-wrapper.tsx`. Ya pasaba antes de estos cambios. No cambia la letra, pero el login
+  descarga CSS que no usa.
+
+---
+
+## sesión 09-10-2026 (9.ª parte): la recuperación de contraseña del panel con el diseño nuevo (mockups de tablet)
+
+**Qué se pidió.** Las cuatro pantallas de la recuperación (`/recovery`, `/security-questions`,
+`/reset-password`, `/reset-success`) según seis mockups de tablet (1032 px), y el móvil a
+partir de ellos. A diferencia del primer ingreso, van sobre **blanco**: título, texto y enlace
+de regreso en `#001631`, tarjeta de 452 px con borde `#d9d9d9` y, en las preguntas, barras de
+avance de 32 × 6 px (`#002237` / `#ccd3d7`). Colores medidos sobre los PNG con canvas.
+
+**Cómo quedó.**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| FE | `.../auth/components/marco-de-pasos.tsx` | `tema="claro"`: blanco y texto `#001631` por debajo de `xl`. Título como `ReactNode` con `text-balance`; descripción en uno o varios párrafos (`text-pretty`) |
+| FE | `.../auth/components/auth-ui.tsx` | Las cuatro rutas pasan a `RUTAS_CON_MARCO_PROPIO`. En la piel `pasos`, `AuthProgressDots` son las barras del mockup, y también las ve el paso 2 del primer ingreso. `BackToSiteLink` en navy sobre blanco. Nuevos `authPasosCardHeadingClass` y los exportados `authPasosInputClass` y `authPasosErrorTextClass` |
+| FE | `recovery-view.tsx` | «Recupera el acceso / a tu cuenta», «Ingresa tu correo SENA» en negrita, «Comenzar», «Iniciar sesión» |
+| FE | `security-questions-view.tsx` | «Validación de identidad (Pregunta de seguridad n de 3)». La pregunta va en una caja con forma de campo, que es la `<label>` de la respuesta: pulsarla lleva al campo, y el lector la anuncia con «Pregunta n de 3». Debajo, «Respuesta», las barras y «Continuar» |
+| FE | `reset-password-view.tsx` | «¡Enhorabuena, <nombre>!», «Crea tu nueva contraseña», «Guardar», requisitos al enfocar |
+| FE | `reset-success-view.tsx` | Sin tarjeta, como el mockup: título, dos párrafos y «Iniciar sesión» de 272 px |
+| FE | `hooks/use-requisitos-al-enfocar.ts` (nuevo) | La regla de cuándo se ve la lista de requisitos, compartida con el primer ingreso, que la tenía dentro |
+| FE | `flujo-de-recuperacion.tsx`, `recuperacion.service.ts` | El nombre que da el servidor viaja al paso de la contraseña |
+| API | `controllers/security-questions.controller.ts`, `routes/security-question.routes.ts` | `POST /api/security-questions/verify` devuelve también `nombre`, el primer nombre de la cuenta. Solo sale con las tres respuestas correctas, así que no sirve para averiguar de quién es un correo. Documentado en OpenAPI. La intranet ignora el campo |
+| Docs | `manual-de-usuario-formato.md` §3.4.1.3 y §3.5.1.3 | Textos y botones nuevos de la recuperación del Sitio Web. Se corrigió además «Ir a iniciar sesión» |
+
+**Decisiones sin mockup, y por qué.**
+
+- **Escritorio:** no hubo mockup. Usa el del primer ingreso: dos mitades azules, con el logo,
+  el título y el texto a la izquierda, y la tarjeta a la derecha. Así los dos flujos se ven
+  iguales en pantalla grande. En la confirmación, el botón azul sobre el azul de la derecha no
+  se distinguía: ahí va dentro de una tarjeta con la marca de hecho.
+- **Móvil:** el de la tablet en 330 px. El subtítulo de las preguntas baja a 24 px, porque a 32
+  el título ocupaba cuatro líneas en grande.
+- **«coincidir exactamente»** pasa a «deben coincidir… No importan las mayúsculas»: el servidor
+  compara con `trim().toLowerCase()`. **«passcode»** pasa a «contraseña» y **«Preguntas de
+  Seguridad 1»** a «Pregunta de seguridad 1 de 3», en minúsculas como el resto del sitio.
+- **En las preguntas 2 y 3** el mockup deja vacío el hueco del enlace. Ahí va «Volver a la
+  pregunta anterior», que ya existía. En la 1, «Iniciar sesión».
+- **El ojo de mostrar** es el relleno de la piel `pasos` y no el de pestañas del mockup de
+  `/reset-password`, para que sea el mismo en todo el diseño nuevo.
+
+**Cómo se probó.** El arnés de la 7.ª parte, ahora con un enrutador simulado que cambia de
+página como el de Next dentro del mismo layout. Monta el layout real (`FlujoDeRecuperacionProvider`
++ `AuthSplitShell`) y recorre el flujo con la API simulada.
+
+| Prueba | Resultado |
+|---|---|
+| Las cuatro pantallas a 360, 440, 768, 1032, 1280 y 1920 px | ✅ Sin desborde y un solo `h1` visible. Blanco y `#001631` hasta `xl`; azul y blanco desde `xl`, con logo. Tarjeta de 312/330/452/452/320/320. Botón de 44/40 |
+| Correo vacío / sin preguntas | ✅ «El correo es requerido» / el aviso general de siempre |
+| Preguntas | ✅ El nombre accesible de la respuesta es «Pregunta 1 de 3: …». Respuesta vacía: error con `aria-invalid`. «Volver a la pregunta anterior» conserva lo escrito |
+| Verificación fallida | ✅ «Una o más respuestas son incorrectas», vuelve a la 1 y borra las respuestas |
+| Contraseña nueva | ✅ «¡Enhorabuena, Prueba!» con el nombre que manda la API. Requisitos ocultos hasta enfocar. «Las contraseñas no coinciden». Un solo envío con correo, tres respuestas y la clave |
+| Éxito | ✅ «¡Genial, tu clave ha sido actualizada con éxito!» y «Iniciar sesión» → `/login` |
+| Abrir `/security-questions`, `/reset-password` o `/reset-success` a mano | ✅ Vuelven a `/recovery` |
+| Primer ingreso tras el cambio | ✅ Sigue en azul, con el mismo tamaño de tarjeta |
+| Consola | ✅ Sin errores ni avisos |
+| `tsc --noEmit` del sitio y de la API; `eslint` de lo tocado | ✅ |
+
+No se probó la API con una base: el cambio es una línea sobre el usuario que `verifyAnswers` ya
+devolvía. **Hay que reiniciar la API** de desarrollo para que salga el nombre: `ts-node` no
+recarga solo. Sin reiniciar, el título dice «¡Enhorabuena!» sin nombre.
+
+**Queda.**
+
+- Mirar el flujo con una cuenta real a 360 y 1032.
+- Los mockups de escritorio de la recuperación, si los hay, y los del login.
+- La intranet tiene su propia recuperación (`3001-intranet`), con su marco: no se tocó.
+
+---
+
+## sesión 09-10-2026 (8.ª parte): el manual de usuario pasa a `manual-de-usuario-formato.md`
+
+**Qué pasó.** Al bajar `OLO/dev` llegó el PR #138 (rama `mateo`). En el commit `31873fe0` se borró
+`docs/manual-de-usuario.md` y quedó `docs/manual-de-usuario-formato.md`, con otra numeración
+(el manual empieza en §3) y el primer ingreso y el inicio de sesión separados por portal. Aquí, mientras
+tanto, se había editado el manual viejo en la 6.ª y la 7.ª parte. El merge se detuvo con el
+conflicto «deleted by them».
+
+**Decisión del usuario.** Queda el manual nuevo. Lo de estas dos sesiones se pasa al nuevo y las
+referencias al nombre viejo se cambian.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Docs | `manual-de-usuario.md` | Se acepta el borrado del merge |
+| Docs | `manual-de-usuario-formato.md` §3.4.1.1, «Primer Ingreso desde el Sitio Web Público», pasos 3 a 6 | El paginador, los requisitos al entrar en «Nueva contraseña», el ojo, «Continuar»/«Siguiente», las preguntas una a la vez sin repetir, «Atrás»/«Anterior», «Guardar» en la tercera y el enlace «Iniciar sesión» que sale sin guardar. Se corrige que la respuesta «es sensible a mayúsculas»: no distingue mayúsculas ni cuenta los espacios de los extremos (`trim().toLowerCase()`). La captura ya no dice «con saludo al funcionario», que se quitó en la 7.ª parte |
+| Docs | `manual-de-usuario-formato.md` §3.4.2.9.2, «Configuración» | El punto «Sonido de los avisos». La captura describe el interruptor y los botones, que es lo que hay en la pantalla |
+| Docs | `6-auditoria.md`, 6.ª y 7.ª parte | Las referencias a `manual-de-usuario.md` §8.5.2 y §10.9.2 apuntan a las secciones nuevas, con la antigua entre paréntesis |
+
+**Lo que no se tocó.** El primer ingreso **de la intranet** (mismo §3.4.1.1) es otra pantalla y no
+tiene el diseño nuevo: se deja como lo escribió Mateo.
+
+**Verificación.**
+
+| Prueba | Resultado |
+|---|---|
+| Búsqueda de `manual-de-usuario` (sin `-formato`) en el repositorio, sin `node_modules` | ✅ Solo quedan las menciones «era `manual-de-usuario.md`» de esta bitácora |
+| Finales de línea del manual y la bitácora, medidos con node | ✅ CRLF entero en los dos, antes y después |
+
+**Queda.**
+
+- Acordar con Mateo que `manual-de-usuario-formato.md` es el manual oficial, y si conviene que
+  vuelva a llamarse `manual-de-usuario.md`.
+- §3.4.2.9.2 sigue describiendo «preguntas de seguridad» y «notificaciones» en Configuración, que
+  no existen todavía (ya anotado en la 6.ª parte).
+
+---
+
+## sesión 09-10-2026 (7.ª parte): el primer ingreso del panel con el diseño nuevo (mockups de escritorio, tablet y móvil)
+
+**Qué se pidió.** El usuario va a pasar los mockups de las pantallas del panel de una en una,
+«con sus mensajes y experiencia de usuario». La primera es el primer ingreso (`/first-login`),
+en tres tamaños:
+
+- **Escritorio:** dos azules. A la izquierda, el logo, «Actualiza tu seguridad», el texto y un
+  paginador «← Previous 1 2 3 Next →». A la derecha, una tarjeta blanca con borde, sin título,
+  con los tres campos, «Continuar», el enlace «Iniciar sesión» y «Regresar al sitio web» debajo.
+- **Tablet (1032) y móvil (440):** lo mismo en una columna, sin logo.
+
+Colores medidos sobre el mockup de escritorio, píxel a píxel con un canvas en Chrome:
+
+| Elemento | Color |
+|---|---|
+| Fondo izquierdo | `#001631` |
+| Fondo derecho | `#001a39`, con las esquinas izquierdas redondeadas |
+| Borde de la tarjeta y de los campos | `#d9d9d9` |
+| Etiquetas | `#001a39` |
+| Texto de ejemplo | `#b3b3b3` |
+| Ojo | `#334861` |
+| Botón | `#002237` |
+| «Previous» apagado | blanco al 50 % |
+
+**Cómo quedó.**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| FE | `3000-sitio-web/.../auth/components/marco-de-pasos.tsx` (nuevo) | `MarcoDePasos`: las dos mitades en `xl`, una columna por debajo, el título del paso como `h1`. Su `PaginadorDePasos` se puede ver en «Paginador», más abajo |
+| FE | `.../auth/components/auth-ui.tsx` | La piel `pasos`: tarjeta de 330/452/320 px según el tamaño (los tres mockups), botón de 44 px por debajo de `xl` (§10.4) y 40 en escritorio, campos de 40 px con texto de 16, ojo relleno. La elige el marco con el contexto `PielAuth`, así que los campos (`PasswordField`, `AuthTextField`, `AuthSelectField`) y `BackToSiteLink` cambian solos. Sin el marco, la piel de siempre: login y recuperación no cambian. Los tres campos anuncian ya su error (`aria-invalid` + `aria-describedby`). `AuthSplitShell` deja pasar `/first-login` sin pintar su marco |
+| FE | `.../auth/components/first-login-flow.tsx` | Sobre `MarcoDePasos`: título y texto de cada paso fuera de la tarjeta. Es el mismo flujo (lo que falta, las validaciones y el envío no cambian), con la tarjeta, los textos y el paginador nuevos |
+| FE | `app/(auth)/first-login/page.tsx` | Sin el saludo por nombre, que el mockup no tiene |
+| Docs | `manual-de-usuario-formato.md` §3.4.1.1 («Primer Ingreso desde el Sitio Web Público»; era `manual-de-usuario.md` §8.5.2) | El flujo como es: tres campos, requisitos, paginador, «Guardar» y el paso final. Se corrigió además que la respuesta «es sensible a mayúsculas»: el servidor la compara con `trim().toLowerCase()` |
+
+**Paginador.**
+
+- **«Anterior»** vuelve de las preguntas a la contraseña, que no se envía hasta el final, sin perder lo escrito.
+- **«Siguiente»** envía el formulario del paso (`form=`), así que valida igual que «Continuar».
+- **Los números** de los pasos que faltan no son botones, porque saltarse uno dejaría la cuenta a medias. Los anteriores sí.
+- **Al terminar** se apaga todo.
+- **Pasos según lo pendiente:** si a la cuenta solo le falta la contraseña o solo las preguntas, el paginador muestra 2 pasos.
+
+**Lo que se adaptó del mockup, y por qué.**
+
+- **«passcode» y «código de acceso» pasan a «contraseña»**, que es como lo llama el resto del sitio y la propia etiqueta «Contraseña temporal» del mockup. **«Previous / Next»** pasan a «Anterior / Siguiente».
+- **«mínimo 8 caracteres» pasa a «Mínimo 12 caracteres»**, que es la política (`LONGITUD_MINIMA`). La temporal dice «La que te entregaron»: la da el administrador y no llega por correo.
+- **Los requisitos de la contraseña** no salen en el mockup. Aparecen al entrar en «Nueva contraseña» (o si el navegador la rellena) y ya no se van: en reposo la pantalla es la del mockup, y nadie descubre las reglas a base de rechazos. Si se fueran al salir del campo, la tarjeta encogería justo al pulsar el de abajo.
+- **El ojo para mostrar la contraseña** se mantiene en tablet y móvil, aunque esos mockups no lo dibujan.
+- **Las etiquetas van a 15 px y no a 16.** La letra del mockup es más estrecha que Poppins: a 16, «Ingresa nuevamente la contraseña» mide 282 px y la tarjeta de escritorio tiene 270 por dentro. Poppins es la del panel, y el título usa Work Sans, la de los encabezados del sitio.
+- **El enlace «Iniciar sesión»** de la tarjeta cierra la sesión temporal y lleva al login.
+
+**Cómo se probó.** Al no poder abrir `/first-login` sin una sesión real, se montó el componente
+real con React 19 de desarrollo, el CSS de la app compilado con su Tailwind, Poppins y Work Sans,
+y la API simulada. Se empaquetó con un empaquetador de 70 líneas en el scratchpad (el proyecto
+no tiene esbuild) y se recorrió en Chrome sin ventana.
+
+| Prueba | Resultado |
+|---|---|
+| 360, 440, 768, 1032, 1280 y 1920 px | ✅ Sin desborde y un solo `h1`. Logo solo desde `xl`. Tarjeta de 312/330/452/452/320/320. «Anterior / Siguiente» con palabras desde 440 y solo flechas a 360. Botón de 44/40 |
+| «Siguiente» con todo vacío | ✅ Los tres errores bajo sus campos, con `aria-invalid` y `aria-describedby`; sigue en el paso 1 |
+| Requisitos | ✅ Ocultos en reposo, aparecen al enfocar, se marcan al escribir y siguen al pasar al campo de abajo |
+| Contraseñas distintas, luego iguales | ✅ «Las contraseñas no coinciden», y después al paso 2 |
+| «Anterior» desde el paso 2, luego «Siguiente» | ✅ Vuelve con los tres campos intactos y la revalida |
+| Tres preguntas | ✅ No deja repetir una ya elegida. Un solo POST con la temporal, la nueva y las tres respuestas |
+| Paso 3 | ✅ «¡Configuración completada!», con el paginador apagado |
+| Solo preguntas / solo contraseña | ✅ Paginador de 2. Con solo la contraseña, «Continuar» envía directo |
+| Nada pendiente / fallo al consultar | ✅ «Tu cuenta ya está configurada» con «Ir al panel» / «Configura tu acceso» con el error |
+| Consola del navegador | ✅ Sin errores ni avisos de React |
+| `tsc --noEmit` del sitio; `eslint` de los cuatro archivos | ✅ |
+
+> **Trampa encontrada:** `3000-sitio-web/src/style/globals.css` define `.sr-only` **fuera de
+> las capas** de Tailwind, y una regla sin capa gana a cualquier utilidad. Por eso
+> `md:not-sr-only` o `@sm:not-sr-only` no hacen nada en este sitio. El paginador usa
+> `aria-label` y `hidden @sm:inline`. Arreglarlo (meter la regla en `@layer utilities` o
+> borrarla, porque Tailwind ya trae `sr-only`) toca todo el sitio y queda pendiente.
+
+**Queda.**
+
+- **Revisar con una cuenta real:** crear una cuenta de prueba y entrar con su temporal, a 360 y a 1032.
+- **El resto de pantallas del flujo, con sus mockups:** login, recuperación, preguntas y restablecer. Cuando no quede ninguna con la piel `tarjeta`, sobran ella y `AuthSplitShell`.
+- **La regla `.sr-only` sin capa** de `globals.css`.
+
+---
+
+## sesión 09-10-2026 (6.ª parte): los avisos de éxito, advertencia y error suenan, y Configuración deja de estar «en construcción»
+
+**Qué se pidió.** Añadir sonido a los avisos de estado: error, aprobado (éxito) y advertencia.
+
+**Lo que había.** Los avisos de estado no siguen un solo patrón:
+
+- `Notification` (el aviso flotante del panel) es el único con los cuatro estados, y hoy solo lo usan Usuarios y Roles.
+- Mi perfil, Revisión y las cargas muestran su propio mensaje dentro de la página. Al aprobar en Revisión no aparece ningún aviso de éxito.
+- La intranet no tiene aviso flotante.
+
+No había audio en ninguna de las dos apps. `/admin/dashboard/configuracion` era una página «en construcción» y el buscador del panel la excluía por eso.
+
+**Decisión del usuario.**
+
+- **Alcance:** solo suena el aviso flotante. Cualquier pantalla que pase a usarlo sonará sin cambiar nada más.
+- **Control:** suena por defecto y se puede silenciar desde Configuración.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| FE | `3000-sitio-web/src/shared/lib/sonido-avisos/` (nuevo) | Tres tonos de menos de medio segundo, generados con Web Audio y sin archivos: éxito sube una quinta, advertencia repite un la, error baja un tritono. `info` no suena. La preferencia se guarda en `localStorage` (`olo-sonido-avisos`): solo se escribe `'apagado'`, y sin valor suena. Se sincroniza entre pestañas. Si el navegador tarda más de 300 ms en dejar sonar, no suena |
+| FE | `3000-sitio-web/src/shared/ui/molecules/notification.tsx` | Suena con cada aviso nuevo, incluido el que cambia de texto sin desmontarse, y no con cada render. El `setTimeout` cancelable evita que el modo estricto de React lo toque dos veces |
+| FE | `3000-sitio-web/src/features/administracion/configuracion/` (nuevo) y `app/admin/dashboard/configuracion/page.tsx` | La pantalla con `EncabezadoPanel`, un interruptor (el `Switch` de siempre) y los botones «Escuchar: Éxito / Advertencia / Error», que suenan aunque esté silenciado |
+| FE | `features/administracion/buscador/lib/indice-panel.ts` | Configuración entra al buscador del panel («sonido», «silenciar», «preferencias»…) |
+| Docs | `9-accesibilidad.md` §3.4, `2-convenciones` §10.5, `manual-de-usuario-formato.md` §3.4.2.9.2 (era `manual-de-usuario.md` §10.9.2), `scripts/mapa/descripciones.md` | La regla (el sonido acompaña, nunca es el único canal), `Notification` en las piezas compartidas, el manual y el mapa |
+
+**Por qué en el navegador y no en la cuenta.** Se hizo igual que el tema oscuro (`CLAVE_TEMA`). Quien comparte oficina quiere silencio en ese equipo, no en todos. Además, así no hace falta columna, migración ni endpoint.
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| Módulo real en Chrome sin ventana, cada sonido renderizado con `OfflineAudioContext` | ✅ Duran 0,25–0,37 s, pico 0,18 sobre 1 y la primera nota a 660, 880 y 520 Hz (la esperada). Sin chasquidos: el salto máximo entre muestras es 0,023 |
+| Preferencia en el mismo Chrome | ✅ Por defecto suena. Apagar guarda `'apagado'` y encender borra la clave. Silenciado no crea ni el contexto de audio. `info` no suena. La muestra suena aunque esté silenciado. El suscriptor se entera y deja de enterarse al quitarlo |
+| Primer gesto (Safari solo deja arrancar el audio dentro de un clic) | ✅ Con sonido, el primer clic o tecla prepara el contexto una vez. Silenciado no crea nada |
+| Navegador que tarda 400 ms en dejar sonar | ✅ Silencio en vez de un tono a destiempo |
+| `Notification` real en `<StrictMode>` (React 19 de desarrollo, happy-dom) | ✅ Cada aviso suena una vez. Un render con el mismo aviso no repite. Otro aviso sin desmontar sí suena. `info` y el silenciado, no |
+| Control de esa prueba: el mismo efecto sin el `setTimeout` | Suena dos veces al montar. La prueba sí detecta el doble montaje |
+| `ConfiguracionView` real con el CSS de la app, a 360, 768, 1024 y 1440 px en claro y oscuro | ✅ Sin desborde, 16 px de margen en el móvil, el interruptor dentro de la tarjeta y los botones de 42 px de alto en una fila. A 360 px «Escuchar:» baja a su propia línea; antes, «Error» quedaba solo en una segunda fila |
+| `tsc --noEmit` del sitio; `eslint` de lo tocado | ✅ |
+
+No se probó con altavoces ni dentro del panel con sesión. Las dos cosas quedan para el usuario: escuchar los tonos en Configuración y crear o borrar algo en Usuarios.
+
+**Queda.**
+
+- Mi perfil, Revisión y las cargas siguen con sus mensajes propios, que no suenan. Si se quiere sonido ahí, que usen `Notification`, no un audio aparte (`9-accesibilidad` §3.4).
+- El manual (`manual-de-usuario-formato.md` §3.4.2.9.2) describe en Configuración «preguntas de seguridad» y «notificaciones», que no existen todavía.
+
+---
+
+## sesión 09-10-2026 (5.ª parte): quitar la fecha de caducidad de un usuario no llegaba a la base
+
+**Qué pasaba.** En `/admin/users`, al editar una cuenta y pulsar «Borrar» en el calendario de
+la fecha de caducidad, se guardaba sin error pero la fecha seguía en la base: una cuenta con
+caducidad ya no podía quedarse sin ella.
+
+**Por qué.** Dos fallos, uno tapando al otro:
+
+1. El formulario solo mandaba `expiration_date` si tenía valor (`if (expirationDate)`). Al
+   borrarla, el campo no viajaba, y para un PATCH parcial «no viene» es «no se toca».
+2. Aunque se hubiera mandado vacía, el validador dejaba pasar `''` tal cual hasta el modelo,
+   y `''` no es una fecha válida para la columna `fecha_caducidad`.
+
+El resto ya estaba preparado para el `null`: el esquema lo admitía, la regla de reactivar con
+fecha vencida lo trata bien y la bitácora ya sabe decir «Se quitó la fecha de caducidad, que
+era …».
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| FE | `3000-sitio-web/.../auth/components/usuarios-view.tsx` | Al editar, `expiration_date` va siempre: la fecha o `null` |
+| FE | `3000-sitio-web/.../auth/hooks/use-usuarios.ts` | `CambiosUsuario.expiration_date` admite `null` |
+| API | `4000-api-backend/src/validators/usuarios.validators.ts` | `fechaOpcional` convierte la cadena vacía (y la de solo espacios) en `null`, en el alta y en la edición |
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| `actualizarUsuarioSchema` con fecha, `''`, `'  '`, `null`, sin el campo y un número | ✅ fecha intacta; `''`, `'  '` y `null` → `null`; sin campo no aparece; el número, rechazado |
+| `crearUsuarioSchema` con `expiration_date: ''` | ✅ `null` |
+| `tsc --noEmit` en el sitio y en la API; `eslint` de los dos archivos del sitio | ✅ |
+
+No se probó de punta a punta contra Neon: hace falta una sesión de administrador real, así
+que queda para el usuario.
+
+> **Aviso.** Ahora cada edición manda la fecha aunque no cambie. No ensucia la auditoría:
+> `cambioDeVerdad` compara la fecha por día y `null` con `null` como iguales.
+
+**Pendiente al cierre.**
+
+- **Reiniciar la API** (ts-node sin recarga) y probar en `/admin/users`: editar una cuenta con
+  caducidad, «Borrar», guardar, y volver a abrirla; en la auditoría debe salir «Se quitó la
+  fecha de caducidad».
+
+---
+
+## sesión 09-10-2026 (4.ª parte): acceso a la intranet en móvil y tablet
+
+**Qué se pidió.** Lo mismo que en la 3.ª parte, para la intranet: el login con su propio
+mockup de móvil y el resto del flujo (`/first-login`, `/recovery`, `/security-questions`,
+`/reset-password`, `/reset-success`) igual que en el sitio web. En el mockup, todo va sobre
+el azul: «Bienvenido a nuestra Intranet» en blanco arriba, el logo grande y atenuado debajo,
+y el formulario sin tarjeta, con etiquetas blancas, campos blancos y botón blanco.
+
+**Cómo está hecha la intranet.** No tiene un marco común como el sitio: cada pantalla trae
+dos paneles (`.login-left`/`.login-right`, `.recovery-*`, `.sq-*`, `.rp-*`, `.fl-*`) en su
+`globals.css`, y por debajo de `md` se apilaban. El panel de arriba ya pinta el título y la
+descripción del paso en blanco, que es justo lo que muestran los mockups del flujo; bastaba
+con subir el corte.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| FE | `3001-intranet/src/style/globals.css` | El apilado de los cinco pares de paneles pasa de `width < 48rem` a `width < 80rem` (`xl`); apilados, un solo azul de fondo, sin la esquina redondeada y centrados en vertical. El texto del cargador del login, en blanco por debajo de `xl` |
+| FE | `3001-intranet/src/features/login/components/login-view.tsx` | Por debajo de `xl`: título arriba y en negrita, logo de 192/224 px al 30 % debajo; `TARJETA_LOGIN` sin tarjeta; etiquetas, aviso legal y enlaces en blanco; campos con `bg-white` y anillo de foco blanco; errores de campo en `red-300`; botón blanco con texto navy. Desde `xl`, todo como estaba |
+
+**Cómo se probó.** Igual que la 3.ª parte: CDP contra el `next dev` de la intranet (3001).
+`tsc --noEmit` y `eslint` del archivo, limpios.
+
+| Ruta | 360 | 768 | 1032 | 1280 |
+|---|---|---|---|---|
+| `/login` | ✅ el mockup, sin desborde | ✅ | ✅ | ✅ dos columnas, como antes |
+| `/recovery` | ✅ marca arriba, tarjeta debajo | ✅ | ✅ | ✅ dos columnas |
+
+No se abrieron `/first-login`, `/security-questions`, `/reset-password` ni `/reset-success`:
+piden sesión o lo que deja el paso anterior en `sessionStorage`. Usan las mismas reglas de
+apilado que `/recovery`.
+
+**Lo que se descartó.**
+
+- **Pasar la intranet al marco del sitio (`AuthSplitShell`)**: es otra app con su identidad y
+  su hoja (`2-convenciones` §10.5); el corte común se decide igual en las dos y se cita en
+  ambos comentarios.
+
+**Pendiente al cierre.**
+
+- El botón principal sigue en 40 px de alto (§10.4 pide 44 en el móvil), como en el sitio.
+- Mirar los pasos con sesión con una cuenta real a 360 y 1032.
+
+---
+
+## sesión 09-10-2026 (3.ª parte): acceso al panel de administración en móvil y tablet
+
+**Qué se pidió.** Adaptar a móvil y tablet las pantallas de acceso del panel (`/login`,
+`/first-login` y la recuperación: `/recovery`, `/security-questions`, `/reset-password`,
+`/reset-success`) según los mockups del usuario: por debajo de la tablet grande (iPad Pro 13",
+1032 × 1376) el login va sobre fondo blanco, con el logo a color y «Panel de Administración»
+encima y el formulario sin tarjeta; el resto del flujo se apila en una columna sobre el azul.
+
+**El corte.** El diseño partido empezaba en `md` (768), así que toda tablet lo recibía. La
+tablet del mockup mide 1032 y `lg` empieza en 1024, de modo que `lg` tampoco servía: el
+corte pasa a **`xl` (1280)**, el primero de la escala por encima (`2-convenciones` §10.1).
+La misma tablet en horizontal (1376) sí ve el diseño partido.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| FE | `3000-sitio-web/.../auth/components/auth-ui.tsx` | `AuthSplitShell`: panel izquierdo y marca compacta de `md` a `xl`; mira la ruta y, en `/login`, fondo blanco y marca a color (logo + «Panel de / Administración») hasta `xl`. `authLoginCardClass` nueva (sin tarjeta hasta `xl`). `authSolidCardClass` con `px-6 py-8` en el móvil. `BackToSiteLink` con `sobreBlanco` (gris hasta `xl`) y `py-2.5` para el objetivo táctil |
+| FE | `3000-sitio-web/.../auth/components/login-view.tsx` | El formulario y su estado de carga usan `authLoginCardClass` |
+
+**Cómo se probó.** Chrome headless contra el `next dev` del usuario, con emulación de
+dispositivo por CDP (la ventana de `--headless=new` no baja de ~500 px y falsea el ancho de
+360). `tsc --noEmit` y `eslint` de los dos archivos, limpios.
+
+| Ruta | 360 | 768 | 1032 | 1280 |
+|---|---|---|---|---|
+| `/login` | ✅ blanco, sin tarjeta, sin desborde | ✅ igual | ✅ igual (el mockup) | ✅ partido, tarjeta sobre azul |
+| `/recovery` | ✅ azul, marca compacta, tarjeta | ✅ igual | ✅ igual | ✅ partido |
+
+Se comprobó también el color del enlace de regreso (gris sobre blanco, blanco sobre azul) y
+que solo hay un `h1` visible en cada ancho. No se miró el tema oscuro (estas pantallas pintan
+su propio fondo y no llevan `dark:`) ni las pantallas que piden sesión o datos del paso
+anterior (`/first-login`, `/security-questions`, `/reset-password`, `/reset-success`): usan
+el mismo marco y la misma tarjeta, pero se mostraron sin abrirlas.
+
+**Lo que se descartó.**
+
+- **Un corte propio en 1033 px**: lo prohíbe §10.1; `xl` cubre la tablet sin salirse de la escala.
+- **Sacar el título de cada paso fuera de la tarjeta**, en blanco, como en los mockups de la
+  recuperación: `auth-ui.tsx` ya explica por qué va dentro (el texto oscuro sobre el azul se
+  perdía) y el pedido para el resto del flujo era apilar, no rediseñar.
+- **Los textos de los mockups** («Passcode», «Comenzar», «Validación de identidad»…): no se
+  tocaron; el cambio es de maqueta.
+
+**Pendiente al cierre.**
+
+- El botón principal (`Button`, `py-2.5`) mide 40 px de alto; §10.4 pide 44 en el móvil para
+  la acción principal. Es la pieza compartida de todo el sitio: cambiarlo es otra decisión.
+- La intranet (`3001-intranet`, `features/login`) tiene el mismo diseño partido con sus propios
+  cortes; no se tocó.
+- Mirar `/first-login` y los pasos de recuperación con una cuenta real a 360 y 1032.
+
+---
+
+## sesión 09-10-2026 (2.ª parte): las cargas ya no duplican filas en las tablas maestras (migración 042)
+
+**Qué se pidió.** Revisar que las cargas de «Programa + Sobresalientes», «Alertas de inversión»
+y «Criterios» (tendencia ocupacional) no dupliquen datos en las tablas maestras —el ejemplo:
+que `departamentos` no tenga «Vaupes» y «Vaúpes», «entendiendo que son 32 departamentos»— y
+analizar esas tablas.
+
+**Cómo se analizó.** El código de resolución de cada importador; los catálogos de Neon en
+solo lectura (duplicados por nombre normalizado, distancia de edición ≤ 2, nombres que solo
+cambian en artículos o sufijos societarios); y los Excel reales ya cargados
+(`filesystem/cargas-datos/`), comparando códigos con nombres.
+
+**Lo que se encontró.**
+
+| Catálogo | Hallazgo |
+|---|---|
+| `departamentos` | Sin duplicados y bien protegido: los tres importadores y el alta manual resuelven por alias normalizado. Son **33** (32 + Bogotá D.C., código DANE 11), no 32 |
+| `niveles_formacion`, `centros_formacion`, `programas_formacion` | Se resolvían por nombre exacto. «Tecnico» junto a «Técnico», un centro repetido con una errata, dos centros sin hechos. Y lo importante: **el nombre no identifica**. El Excel trae `Cod. Centro`, `Cod. Nivel` y `Cod. Programa` (el importador los ignoraba), y hay programas distintos con el mismo nombre: por nombre exacto se **sumaban** dos de ellos («Mantenimiento Electromecánico Industrial», 223201 + 223213) |
+| `municipios` | Nombre exacto: «Medellín» y «Medellin» |
+| `empresas` | Solo ignoraba mayúsculas: «Grupo Éxito» y «GRUPO EXITO» habrían sido dos |
+| `ocupaciones`, CIIU, semillas de la tendencia | Sin duplicados: por código, con V3/V4 en la carga |
+
+**La decisión.** La primera idea era deduplicar por nombre normalizado. Los códigos del Excel
+lo descartaron: habría fundido programas que el SENA da como distintos. Se le preguntó al
+usuario y eligió **el código SENA como identidad** de niveles, centros y programas. El nombre
+normalizado queda solo donde la fuente no trae código (municipios y empresas).
+
+**Lo que se hizo.**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| DB | `migrations/042-catalogos-sin-duplicados.ts` (nuevo) + `index.ts` | `normalizar_nombre()` (gemela SQL de `normalizarParaComparar`); únicos sobre el nombre normalizado en `departamentos`, `municipios` y `empresas`; `CHECK` de los 33 códigos DANE; `codigo` con su único en niveles, centros y programas, sin los únicos por nombre; funde «Medellin»; borra 5 filas de catálogo sin hechos. Una transacción |
+| API | `importar-programas-excel.usecase.ts` | Lee los cuatro códigos; exige que `Cod. Regional` sea el DANE del alias; rechaza códigos que se contradicen dentro del archivo; crea o actualiza los catálogos por código (`ON CONFLICT (codigo)`); agrupa las cohortes por código; borra lo que ningún hecho usa |
+| API | `alertas-inversion.repository.ts`, `importar-excel.usecase.ts`, `crear-proyecto-manual.usecase.ts` | Empresas y municipios se resuelven con `normalizar_nombre()` en la consulta y devuelven si se crearon; el importador deja de repetir la búsqueda para contarlos |
+| API | modelos de nivel, centro, programa, municipio y empresa; `shared/normalizar-texto.ts` | `codigo` en los modelos y los índices declarados al día; el normalizador avisa de su gemela |
+| Docs | `11-base-de-datos.md`, `12-diccionario-de-datos.md` | D10 (identidad por la clave de la fuente), §4.6 y §4.7, I24 al día, I27 nueva, fila de la 042 y §9.5 con este análisis; fichas y cifras del diccionario |
+
+**Cómo se probó.** Copia de Neon (ya con la 041) en un `postgres:18-alpine` desechable y la
+API copiada al scratchpad sin `.env`.
+
+| Prueba | Resultado |
+|---|---|
+| `up` de la 042 sobre la copia | ✅ hechos intactos (671; 21.663 certificados, 16.860 vinculados); 5 filas sin uso fuera; «Medellin» fundido con sus sedes |
+| `normalizar_nombre()` frente a `normalizarParaComparar()` en los 1.201 nombres de la base y 17 casos difíciles | ✅ iguales salvo «Ā š», fuera del español, documentado |
+| 8 intentos de duplicar («Vaupes» con otro código, un departamento 34, renombrar Vichada a «VAUPÉS», «MEDELLIN», «GRUPO  EXITO.», código SENA repetido, código no numérico) | ✅ los 8 rechazados |
+| Válidos: «Medellín» en otro departamento, dos «Cocina» del mismo nivel con códigos distintos | ✅ |
+| Importador real de sobresalientes con el Excel real | ✅ 672 hechos (los dos «Mantenimiento…» ya no se suman), mismos totales, 185 programas = 185 códigos, ninguna fila sin código |
+| La misma carga otra vez; con un programa en mayúsculas | ✅ nada nuevo; solo cambia el nombre |
+| Archivo que se contradice (código con dos nombres, regional con otro código, centro en dos regionales); «VAÚPES» | ✅ rechazado con la fila exacta y sin tocar nada; «VAÚPES» se resuelve |
+| Importador real de alertas con empresas y ciudades en mayúsculas, sin tildes y con signos | ✅ 17 proyectos, 0 empresas y 0 municipios nuevos |
+| Base vacía 001 → 042; `down` y `up` de la 042 | ✅ |
+| `down` de la 042 sobre la copia ya recargada | Falla sin tocar nada (dos programas con el mismo nombre en un nivel), como dice la migración |
+| `db:verificar` en las dos bases; `tsc --noEmit` | ✅ |
+
+> **Trampa.** El nombre de un centro o de un programa del SENA **no lo identifica**: hay cinco
+> «Centro de Comercio y Servicios» y dos «Apoyo administrativo en salud» (134507 y 134508).
+> Cualquier cruce de datos del Observatorio va por código, nunca por nombre.
+
+**Lo que se descartó.**
+
+- **Deduplicar sobresalientes por nombre normalizado**: fundía programas distintos.
+- **Resolver el departamento por `Cod. Regional` en vez de por alias**: el alias ya es el
+  mecanismo de los tres importadores; el código se usa para comprobarlo.
+- **`unaccent` para la función SQL**: es otra extensión que instalar en Neon y en el servidor,
+  y no es `IMMUTABLE`; `translate` cubre el español y no depende del locale.
+
+**Pendiente al cierre.**
+
+- **Aplicar la 042 en Neon** (`npm run migrate`, reiniciar la API, `npm run db:verificar`) y
+  **volver a subir el Excel de «Programa + Sobresalientes»** una vez: es lo que les pone código
+  a los catálogos y separa los dos «Mantenimiento Electromecánico Industrial».
+- El sitio no muestra el código del programa: dos programas del mismo centro con el mismo
+  nombre se ven iguales.
+- Un «municipio» llamado «Varios municipios» en Santander, y la empresa «Prueba 1» sin
+  proyectos: decidir qué hacer con ellos.
+
+---
+
+## sesión 09-10-2026: revisión del esquema de la base — integridad, normalización e índices (migración 041)
+
+**Qué se pidió.** Revisar todas las tablas, ver si se puede normalizar más y mejorar el
+rendimiento, corregir lo que haga falta y dejar en `11-base-de-datos.md` qué información
+guarda cada tabla. Primero el análisis, después las correcciones, al final el documento.
+
+**Cómo se analizó.** Solo lectura sobre Neon (08-10-2026), en transacciones `READ ONLY`: el
+catálogo (`pg_constraint`, `pg_index`, `information_schema`), los contadores de uso
+(`pg_stat_user_tables`, `pg_stat_user_indexes`), ~40 consultas de coherencia sobre los datos
+(duplicados, nulos, copias que no coinciden) y `EXPLAIN ANALYZE` del buscador ocupacional, el
+listado de la bitácora, la matriz de cargas y la lectura de sobresalientes. Se contrastó cada
+afirmación de `11` y `12` con lo que de verdad hay.
+
+**Lo que se encontró.**
+
+| Hallazgo | Gravedad |
+|---|---|
+| `UNIQUE` en `departamentos.nombre`, `niveles_formacion.nombre` y `ciiu_secciones.letra` documentados y **nunca creados**: la 026 y la 038 los pidieron con `unique: 'uq_…'` en `createTable`, que no crea nada | Alta: los importadores resuelven por nombre |
+| Cuatro copias de datos (dependencias transitivas) sin nada que impida que se contradigan: `programas_sobresalientes.departamento_id` y `.nivel_formacion_id`, `proyectos_inversion.seccion_id`, `proyectos_inversion_ubicaciones.departamento_id`. Y `paginas.version_publicada_id` podía apuntar a la versión de otra página | Media (hoy coinciden en el 100 % de las filas) |
+| `paginas_versiones.estado`, tres columnas de `usuarios`, `preguntas_seguridad.orden` y `auditoria_cambios.entidad_tipo` admitían `NULL`; esta última con `DEFAULT 'post'`, que su propio `CHECK` rechaza | Media |
+| Dos índices únicos de correo; seis índices sin lecturas (tres en la tabla que se reescribe entera en cada importación); doce fechas y dos `id` sin `DEFAULT` en Neon | Baja (rendimiento y trampas de SQL plano) |
+| Neon y una base nueva **no tienen el mismo esquema**: cuatro índices muy leídos solo existían en Neon (nombres de `sync`) y `_obsoleto_attachment` seguía viva en toda base nueva | Media: el servidor no tenía esos índices |
+| `npm run respaldo`, el respaldo que el documento manda correr antes de migrar, tenía la lista de tablas de antes de la 005 y **fallaba en la primera** | Alta para quien vaya a migrar |
+| `11-base-de-datos.md` describía tablas borradas (`contenidos`, `secciones`, `respaldos`…), invariantes de esas tablas, un mapa RF → tabla obsoleto y dos invariantes con el mismo número (I14) | Documental |
+
+**Lo que se hizo.**
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| DB | `migrations/041-integridad-e-indices.ts` (nuevo) + `index.ts` | En una transacción propia: los cuatro `UNIQUE` (con `ciiu_clases.codigo`, la clave natural real); cinco FK compuestas con sus únicos de destino; `NOT NULL` y `DEFAULT`; `CHECK` de fecha de publicación, módulo de carga y correo en minúsculas; un solo único de correo; seis índices fuera, uno nuevo (`idx_sobresalientes_programa`) y cuatro unificados; `_obsoleto_attachment` fuera si está vacía. Funciona igual sobre Neon y sobre una base nueva (lo que depende de nombres de `sync` se resuelve por definición) |
+| API | `models/ciiu-clase.ts`, `models/programa-sobresaliente.ts`, `repositories/alertas-inversion.repository.ts` | Los índices que declaran los modelos y un comentario, al día con la 041 |
+| Scripts | `scripts/db/respaldo.ts` | Pide la lista de tablas a la base en cada ejecución |
+| Scripts | `scripts/db/descripciones-tablas.ts` | Las siete tablas que le faltaban (alias y alertas) |
+| Docs | `11-base-de-datos.md` | Reescrito: qué guarda cada una de las 33 tablas (§4), mapa de relaciones por dominio, invariantes renumeradas sin reutilizar números (I20–I26 nuevas, I5–I9 retiradas), mapa RF → tabla actual, migraciones 027/028/031/036/041 en §8.0, D6 y D9 nuevas, y la revisión completa en §9 |
+| Docs | `12-diccionario-de-datos.md` | Cifras de cabecera reales, fichas afectadas por la 041, `secciones` retirada, FK compuestas en la matriz, y un «Alcance» que dice qué tablas no tienen ficha todavía |
+
+**Cómo se probó.** Sin tocar Neon: una copia (`pg_dump` de solo lectura, sin los datos de la
+bitácora ni de las preguntas de seguridad) restaurada en un `postgres:18-alpine` desechable, y
+una API copiada al scratchpad, sin `.env`, contra esa base.
+
+| Prueba | Resultado |
+|---|---|
+| `up` de la 041 sobre la copia de Neon; `down`; `up` otra vez | ✅ las tres |
+| Base vacía migrada de la 001 a la 041 | ✅ |
+| Comparar las dos bases por definición (restricciones, índices, columnas) | Iguales salvo nombres heredados de `sync` y `ON UPDATE CASCADE` sobre UUID: sin efecto |
+| 15 intentos de romper las reglas nuevas (duplicados, copias incoherentes, página con versión ajena, publicado sin fecha, módulo desconocido, correo con mayúsculas…) | ✅ los 15 rechazados |
+| 5 casos válidos: borrar la versión publicada deja la página sin puntero, mover un centro arrastra sus hechos, proyecto sin clase y sede sin municipio, `INSERT` en SQL plano sin fechas, login por índice | ✅ |
+| Ciclo editorial con los casos de uso reales: crear sección, borrador, revisión, aprobar v1 y v2, rechazar v3, restaurar v1, eliminar la sección; escribir y listar la bitácora | ✅ en cada paso la publicada tiene fecha y es de su página |
+| `db:verificar` en las dos bases | ✅ 23 modelos |
+| Recarga de `programas_sobresalientes` (671 filas, mediana de 15), antes / después | 30,5 / 31,9 ms: igual dentro del ruido. Índices de la tabla: 496 → 352 kB |
+| `npm run respaldo` arreglado, sobre la copia | ✅ 33 tablas |
+| `tsc --noEmit` de la API | ✅ |
+
+> **Trampa.** En `queryInterface.createTable`, `unique: 'uq_nombre'` (una cadena) **no crea
+> ninguna restricción** y no avisa: solo `unique: true` lo hace. Para nombrarla, `addConstraint`
+> o SQL. Después de migrar, comprobar en `pg_constraint`, no en el código de la migración.
+
+> **Trampa.** Neon nació de `sequelize.sync()` y una base nueva de la 001: no son el mismo
+> esquema aunque las dos tengan las mismas migraciones aplicadas. Una migración que quite o
+> renombre algo creado por `sync` tiene que buscarlo por definición (como la 008), y conviene
+> probarla en las dos.
+
+**Lo que se descartó.**
+
+- **Quitar las columnas copiadas** (tercera forma normal estricta): obliga a cambiar dos
+  importadores y cada filtro; la FK compuesta da la misma garantía sin tocar código.
+- **Quitar las FK simples** que la compuesta ya implica: se dejan, no cuestan y los diagramas
+  las leen.
+- **`tasa_vinculacion` como columna generada**: rompe el `bulkCreate` del importador. Y un
+  `CHECK` que la compare con `vinculados / certificados` rechazaría una carga entera por una
+  diferencia de redondeo del Excel. Queda en §9.4.
+- **Conservar el único de `lower(email)` y cambiar el login a `lower(email) = …`**: cambia
+  código; con el `CHECK` de minúsculas el único simple es equivalente y el login ya lo usa.
+- **FK de `bloqueos_edicion` a `paginas`**: el latido de 45 s fallaría con error de base sobre
+  un slug inexistente. El candado huérfano que hay (de una sección de prueba) está caducado y es
+  inofensivo.
+- **Renombrar los nombres heredados de `sync`** (`users_pkey`, `…_key61`): ruido sin efecto.
+- **Fusionar «Tecnico» con «Técnico»**: es una decisión sobre los datos y debe ir con la
+  normalización del nombre en el importador.
+
+**Pendiente al cierre.**
+
+- **Aplicar la 041 en Neon** (no lo hice): respaldo con `npm run respaldo -- <ruta.json>` (o una
+  rama de Neon), `npm run migrate`, reiniciar `npm run dev` de la API y `npm run db:verificar`.
+  Mientras no se aplique, el servidor de quien tenga este código se niega a arrancar. En el
+  servidor la aplica `deploy.sh start`.
+- Lo que quedó sin corregir, con su porqué, en `11-base-de-datos.md` §9.4: tasa de vinculación
+  derivada, «Tecnico»/«Técnico», columnas sin uso (`layout`, `texto_alternativo`,
+  `reemplazar`), el candado huérfano, el `CHECK` de entidades de la bitácora, el filtro por año
+  de alertas y el coste lineal del listado de la bitácora.
+- `12-diccionario-de-datos.md` no tiene ficha de 15 tablas (tendencia, `cargas_datos`, alertas).
+- Los comentarios de `publicaciones.tsx` (sitio e intranet) citan la I5 y la tabla `contenidos`,
+  que ya no existen.
+- En Neon sobran dos filas en `migraciones_aplicadas` (nombres viejos de la 026 y la 040).
+
+---
+
 ## sesión 07-10-2026: fase 0 del filesystem — verificación de punta a punta
 
 **Cómo se probó.** En desarrollo, contra los servidores en marcha y sin escribir en la base.

@@ -3,7 +3,8 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { AuthCardTitle, AuthSuccessBadge, authNavyActionClass, authSolidCardClass } from './auth-ui';
+import { AuthSuccessBadge, authPasosCardClass, authPasosPrimaryClass } from './auth-ui';
+import { MarcoDePasos } from './marco-de-pasos';
 import { useFlujoDeRecuperacion } from './flujo-de-recuperacion';
 
 /**
@@ -11,6 +12,12 @@ import { useFlujoDeRecuperacion } from './flujo-de-recuperacion';
  *
  * Solo se pinta si la contraseña se acaba de cambiar. Abierta a mano diría que se
  * actualizó algo que nadie tocó, así que en ese caso devuelve al principio.
+ *
+ * El botón va en el mismo formulario que el resto de pantallas, con sus medidas: en el
+ * móvil, suelto bajo el texto como en el mockup; desde `md`, en la tarjeta con la marca
+ * de hecho (el primer ingreso ya no la lleva desde el 2026-10-11; aquí se queda, pedido del
+ * usuario: la recuperación no se toca). Hasta el 2026-10-09 medía 272 px en
+ * el móvil y la tablet, distinto de los campos de las otras pantallas.
  */
 export function ResetSuccessView() {
   const router = useRouter();
@@ -24,16 +31,16 @@ export function ResetSuccessView() {
   if (!terminada) return null;
 
   return (
-    <div className={`${authSolidCardClass} text-center`}>
-      <AuthSuccessBadge />
-      <AuthCardTitle
-        className="mb-6"
-        title="Tu contraseña se actualizó"
-        description="Ya puedes entrar al panel con tu nueva contraseña."
-      />
-      <Link href="/login" className={authNavyActionClass}>
-        Ir a iniciar sesión
-      </Link>
-    </div>
+    <MarcoDePasos
+      titulo="¡Genial, tu clave ha sido actualizada con éxito!"
+      descripcion={['Ya puedes ingresar a tu cuenta con tu nueva contraseña.', '¡Tu seguridad es nuestra prioridad!']}
+    >
+      <div className={`${authPasosCardClass} text-center`}>
+        <AuthSuccessBadge />
+        <Link href="/login" className={authPasosPrimaryClass}>
+          Iniciar sesión
+        </Link>
+      </div>
+    </MarcoDePasos>
   );
 }

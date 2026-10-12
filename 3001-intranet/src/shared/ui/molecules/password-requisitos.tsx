@@ -12,25 +12,70 @@ import { requisitosDe } from '@olo/password-policy';
  *
  * Sigue el patrón `classPrefix` del resto de moléculas de auth (`rp-`, `fl-`…) para
  * heredar el mismo aspecto que el formulario donde se inserta.
+ *
+ * `resumirAlCumplir`: cumplidos todos, la lista se queda en una sola línea («Cumple todos
+ * los requisitos»), para que el formulario quepa sin scroll en el móvil (2026-10-10). Mientras
+ * falte alguno se ve entera, por lo dicho arriba. Igual que en el acceso del sitio web.
  */
 export function PasswordRequisitos({
   classPrefix,
   password,
+  className = 'mb-4',
+  variant,
+  resumirAlCumplir = false,
+  enBlanco = false,
 }: {
-  classPrefix: string;
+  classPrefix?: string;
   password: string;
+  className?: string;
+  variant?: 'panel' | 'solid';
+  resumirAlCumplir?: boolean;
+  /** Desde `md`, en oscuro para la tarjeta blanca de la recuperación (2026-10-12). */
+  enBlanco?: boolean;
 }) {
-  const requisitos = requisitosDe(password);
+  const todos = requisitosDe(password);
+  const requisitos =
+    resumirAlCumplir && todos.every((r) => r.cumplido)
+      ? [{ id: 'todos', etiqueta: 'Cumple todos los requisitos', cumplido: true }]
+      : todos;
+  const esSolido = variant === 'solid';
+
+  if (esSolido) {
+    return (
+      <ul className={`${className} space-y-1`} aria-live="polite">
+        {requisitos.map((requisito) => {
+          // Claros: van sobre el azul del acceso, sin tarjeta. Ver
+          // `features/login/components/acceso-ui.ts`.
+          // `enBlanco`: verde 700 (5:1) y `#334861` (9:1) sobre el blanco, desde `md`.
+          const claseEstado = requisito.cumplido
+            ? `text-green-300 ${enBlanco ? 'md:text-green-700' : ''}`
+            : `text-white/70 ${enBlanco ? 'md:text-[#334861]' : ''}`;
+
+          return (
+            <li key={requisito.id} className={`flex items-start gap-1.5 text-xs ${claseEstado}`}>
+              <span aria-hidden="true" className="mt-px leading-none">
+                {requisito.cumplido ? '✓' : '○'}
+              </span>
+              <span className="sr-only">{requisito.cumplido ? 'Cumplido:' : 'Pendiente:'}</span>
+              <span>{requisito.etiqueta}</span>
+            </li>
+          );
+        })}
+      </ul>
+    );
+  }
+
+  const prefix = classPrefix || 'rp';
 
   return (
     // `aria-live` para que un lector de pantalla anuncie los que se van cumpliendo;
     // sin eso la lista es información puramente visual.
-    <ul className={`${classPrefix}-requisitos`} aria-live="polite">
+    <ul className={`${prefix}-requisitos`} aria-live="polite">
       {requisitos.map((requisito) => (
         <li
           key={requisito.id}
-          className={`${classPrefix}-requisito ${
-            requisito.cumplido ? `${classPrefix}-requisito-ok` : ''
+          className={`${prefix}-requisito ${
+            requisito.cumplido ? `${prefix}-requisito-ok` : ''
           }`}
         >
           <span aria-hidden="true">{requisito.cumplido ? '✓' : '○'}</span>

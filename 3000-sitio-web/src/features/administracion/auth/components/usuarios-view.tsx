@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { TrashIcon } from '@heroicons/react/24/outline';
+import { GRUPO_TOOLTIP, TOOLTIP_ENCIMA } from '@/shared/ui/atoms/tooltip';
+import { COLOR_DE_ACCION } from '@/shared/lib/identidad-panel';
 import { validarEmail } from '@olo/email-policy';
 import {
   useUsuarios,
@@ -16,6 +18,8 @@ import { DatePicker } from '@/shared/ui/molecules/date-picker';
 import { Notification } from '@/shared/ui/molecules/notification';
 import { Alert, AlertTitle, AlertDescription, AlertActions } from '@/shared/ui/molecules/alert';
 import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
+import { BotonDeFila, RESALTE_DE_FILA, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
+import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { Paginador } from '@/shared/ui/molecules/paginador';
 import { Switch } from '@/shared/ui/atoms/switch';
 import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
@@ -68,6 +72,7 @@ export default function UsuariosView() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState('');
   const [paginaUsuarios, setPaginaUsuarios] = useState(1);
+  const { estaAbierta, alternar } = useFilasAbiertas();
   const [itemsPorPaginaUsuarios, setItemsPorPaginaUsuarios] = useState(15);
 
   // Form state
@@ -82,7 +87,7 @@ export default function UsuariosView() {
 
 
   // Credentials state
-  const [newUserCredentials, setNewUserCredentials] = useState<{ name: string, email: string, password: string } | null>(null);
+  const [newUserCredentials, setNewUserCredentials] = useState<{ name: string, email: string, password: string, vence?: string | null } | null>(null);
   const [copiedPassword, setCopiedPassword] = useState(false);
 
   useEffect(() => {
@@ -131,8 +136,16 @@ export default function UsuariosView() {
     try {
       let response;
       if (editingUserId) {
-        const data: CambiosUsuario = { name, apellidos, email, role_id: roleId };
-        if (expirationDate) data.expiration_date = expirationDate;
+        // La fecha va siempre, también vacía: `null` es «sin caducidad». Mandarla solo
+        // si tenía valor hacía que «Borrar» en el calendario no llegara a la base, y la
+        // API —que no recibía el campo— dejaba la fecha anterior.
+        const data: CambiosUsuario = {
+          name,
+          apellidos,
+          email,
+          role_id: roleId,
+          expiration_date: expirationDate || null,
+        };
         if (resetPassword) data.reset_password = true;
         if (resetSecurityQuestions) data.reset_security_questions = true;
         response = await updateUser(editingUserId, data);
@@ -157,7 +170,8 @@ export default function UsuariosView() {
         setNewUserCredentials({
           name: response.name || name,
           email: response.email || email,
-          password: response.temporaryPassword
+          password: response.temporaryPassword,
+          vence: response.temp_password_expires_at,
         });
         setCopiedPassword(false);
       }
@@ -179,7 +193,8 @@ export default function UsuariosView() {
         setNewUserCredentials({
           name: res.name || user.name,
           email: res.email || user.email,
-          password: res.temporaryPassword
+          password: res.temporaryPassword,
+          vence: res.temp_password_expires_at,
         });
         setCopiedPassword(false);
       }
@@ -281,7 +296,7 @@ export default function UsuariosView() {
       />
 
       {error && (
-        <div className="mb-6 rounded-lg bg-red-50 p-4 text-sm text-red-800 dark:bg-red-950/50 dark:text-red-200">
+        <div className="mb-6 rounded-xl bg-red-50 p-4 text-sm text-red-800 dark:bg-red-950/50 dark:text-red-200">
           {error}
         </div>
       )}
@@ -336,7 +351,7 @@ export default function UsuariosView() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">Fecha de caducidad (Opcional)</label>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">Fecha de caducidad</label>
             <DatePicker
               ariaLabel="Fecha de caducidad"
               value={expirationDate}
@@ -348,7 +363,7 @@ export default function UsuariosView() {
             <div className="pt-2 flex flex-col gap-3">
               <div className="flex items-center gap-2">
                 <input type="checkbox" id="reset_pwd" checked={resetPassword} onChange={e => setResetPassword(e.target.checked)} className="size-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:checked:bg-white dark:focus:ring-white" />
-                <label htmlFor="reset_pwd" className="text-sm font-medium text-zinc-700 dark:text-[#cbd5e1]">Restablecer contraseña (generará una temporal)</label>
+                <label htmlFor="reset_pwd" className="text-sm font-medium text-zinc-700 dark:text-[#cbd5e1]">Restablecer contraseña</label>
               </div>
               <div className="flex items-center gap-2">
                 <input type="checkbox" id="reset_sq" checked={resetSecurityQuestions} onChange={e => setResetSecurityQuestions(e.target.checked)} className="size-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:checked:bg-white dark:focus:ring-white" />
@@ -373,14 +388,20 @@ export default function UsuariosView() {
         <AlertDescription>
           {newUserCredentials && (
             <>
-              <p className="m-0 text-xs text-zinc-500 dark:text-[#94a3b8]">
-                <span className="font-semibold text-zinc-900 dark:text-[#f6f6f6]">{newUserCredentials.name}</span>
-                {" · "}
-                {newUserCredentials.email}
-              </p>
-              <p className="m-0 mt-2 text-xs text-zinc-500 dark:text-[#94a3b8]">
-                Copia la contraseña antes de cerrar. No podrás verla de nuevo.
-              </p>
+             {/* La API la emite con 72 horas de vigencia: si la persona no entra antes,
+                  habrá que restablecerla. Se dice aquí para que quien la entrega lo avise. */}
+              {newUserCredentials.vence && (
+                <p className="m-0 mt-2 text-xs text-zinc-500 dark:text-[#94a3b8]">
+                  Estará vigente hasta el{' '}
+                  <span className="font-semibold text-zinc-900 dark:text-[#f6f6f6]">
+                    {new Date(newUserCredentials.vence).toLocaleString('es-CO', {
+                      dateStyle: 'long',
+                      timeStyle: 'short',
+                    })}
+                  </span>
+                   <br />En caso de vencerse debe generar una nueva.
+                </p>
+              )}
               <div className="mt-3 flex items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-[#7db828]/30 dark:bg-[#0b1121]/50">
                 <span className="min-w-0 flex-1 truncate font-mono text-sm tracking-wide text-zinc-900 dark:text-[#f6f6f6]">
                   {newUserCredentials.password}
@@ -388,7 +409,7 @@ export default function UsuariosView() {
               </div>
               {!copiedPassword && (
                 <p className="m-0 mt-2 text-xs font-medium text-amber-600 dark:text-amber-500">
-                  ⚠ Debes copiar la contraseña para poder cerrar.
+                  ⚠ Debes copiar la contraseña para poder cerrar, no la podrás ver de nuevo.
                 </p>
               )}
             </>
@@ -440,9 +461,18 @@ export default function UsuariosView() {
         />
       </div>
 
+      {/* Cargando, el loader va en lugar de la tabla y no en una de sus filas: así llena el
+          espacio de la sección como en las demás (una celda no se puede estirar). */}
+      {loading ? (
+        <CargandoSeccion label="Cargando usuarios..." />
+      ) : (
       <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-[#7db828]/30 dark:bg-[#0b1121]">
         <div className="overflow-x-auto">
-          <table className="olo-tabla-apilable min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
+          {/* En el móvil y la tablet, acordeón, como las demás listas: el encabezado de cada
+              fila es solo el nombre (pedido del usuario, 2026-10-10) y al tocarlo salen el
+              correo, el rol, el estado y el bloqueo con su etiqueta, y debajo «Editar» y
+              «Eliminar» con su nombre. Piezas en `fila-acordeon.tsx`; reglas en globals.css. */}
+          <table className="olo-tabla-apilable olo-tabla-acordeon min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
             <thead className="bg-zinc-50 dark:bg-[#0b1121]/50">
               <tr>
                 <th scope="col" className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-[#94a3b8]">
@@ -466,23 +496,26 @@ export default function UsuariosView() {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-              {loading ? (
-                <tr className="block md:table-row">
-                  <td colSpan={6} className="block md:table-cell">
-                    <CargandoSeccion label="Cargando usuarios..." className="min-h-[40vh]" />
-                  </td>
-                </tr>
-              ) : usuariosFiltrados.length === 0 ? (
-                <tr>
+              {usuariosFiltrados.length === 0 ? (
+                // `data-abierta`: en acordeón, una fila plegada solo enseña el resumen, y esta no tiene.
+                <tr data-abierta>
                   <td colSpan={6} className="px-6 py-8 text-center text-sm text-zinc-500">
                     {busqueda ? `Sin resultados para "${busqueda}"` : 'No hay usuarios registrados.'}
                   </td>
                 </tr>
               ) : (
-                usuariosPaginados.map((user) => (
-                  <tr key={user.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                    <td className="px-6 py-2 text-sm font-medium text-zinc-900 dark:text-[#f6f6f6]">
-                      {[user.name, user.apellidos].filter(Boolean).join(' ')}
+                usuariosPaginados.map((user) => {
+                  const nombre = [user.name, user.apellidos].filter(Boolean).join(' ');
+                  const abierta = estaAbierta(user.id);
+                  return (
+                  <tr key={user.id} data-abierta={abierta || undefined} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                    <td data-resumen>
+                      <ResumenDeFila abierta={abierta} onAlternar={() => alternar(user.id)}>
+                        <span className={RESALTE_DE_FILA}>{nombre || user.email}</span>
+                      </ResumenDeFila>
+                    </td>
+                    <td data-solo-tabla className="px-6 py-2 text-sm font-medium text-zinc-900 dark:text-[#f6f6f6]">
+                      {nombre}
                     </td>
                     <td data-etiqueta="Correo" className="px-6 py-2 text-sm text-zinc-500 dark:text-[#94a3b8]">
                       {user.email}
@@ -491,13 +524,22 @@ export default function UsuariosView() {
                       {user.role?.name || 'Sin rol'}
                     </td>
                     <td data-etiqueta="Estado" className="px-6 py-2 text-sm">
-                      <div className="flex items-center gap-2">
+                      {/* Sin «Activo/Inactivo» al lado: el interruptor ya lo muestra, y el
+                          lector lo dice por `role="switch"` + `aria-checked`. El tooltip dice
+                          la acción que hará al pulsarlo. */}
+                      <span className={`${GRUPO_TOOLTIP} inline-flex`}>
                         <Switch
                           checked={user.status === 'active'}
                           onChange={() => toggleStatus(user)}
+                          aria-label="Usuario activo"
                         />
-                        <span className="text-zinc-500 dark:text-[#94a3b8] text-xs">{user.status === 'active' ? 'Activo' : 'Inactivo'}</span>
-                      </div>
+                        <span
+                          aria-hidden="true"
+                          className={`${TOOLTIP_ENCIMA} ${user.status === 'active' ? COLOR_DE_ACCION.desactivar : COLOR_DE_ACCION.activar}`}
+                        >
+                          {user.status === 'active' ? 'Desactivar' : 'Activar'}
+                        </span>
+                      </span>
                     </td>
                     <td data-etiqueta="Bloqueo" className="px-6 py-2 text-sm">
                       {(() => {
@@ -514,18 +556,52 @@ export default function UsuariosView() {
                         );
                       })()}
                     </td>
-                    <td data-etiqueta="Acciones" className="px-6 py-2 text-sm text-right">
-                      <div className="flex items-center gap-2 @3xl:justify-end">
-                        <button type="button" onClick={() => startEdit(user)} className="p-1.5 text-zinc-500 hover:text-zinc-900 dark:text-[#94a3b8] dark:hover:text-white transition-colors" title="Editar">
-                          <PencilIcon className="size-5" />
+                    <td data-solo-tabla data-etiqueta="Acciones" className="px-6 py-2 text-sm text-right">
+                      <div className="flex items-center gap-2 en-tabla:justify-end">
+                        {/* Icono de dos colores (persona gris, lápiz verde): va como imagen y no con
+                            `IconoMascara`, que pinta todo de un solo color. El nombre lo da el
+                            `aria-label`; el tooltip es `aria-hidden` para no leerlo dos veces. */}
+                        <button
+                          type="button"
+                          onClick={() => startEdit(user)}
+                          aria-label="Editar usuario"
+                          className={`${GRUPO_TOOLTIP} rounded-lg p-1.5 transition-colors hover:bg-[#7DB728]/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7DB728]`}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element -- SVG estático de /public: next/image no aporta nada aquí. */}
+                          <img src="/assets/svg/editar-usuario.svg" alt="" aria-hidden="true" className="h-6 w-auto" />
+                          <span aria-hidden="true" className={`${TOOLTIP_ENCIMA} ${COLOR_DE_ACCION.editar}`}>
+                            Editar usuario
+                          </span>
                         </button>
-                        <button type="button" onClick={() => setDeleteConfirmId(user.id)} className="p-1.5 text-red-500 hover:text-red-600 dark:text-red-400 transition-colors" title="Eliminar">
+                        <button
+                          type="button"
+                          onClick={() => setDeleteConfirmId(user.id)}
+                          aria-label="Eliminar usuario"
+                          className={`${GRUPO_TOOLTIP} rounded-lg p-1.5 text-red-500 transition-colors hover:bg-red-500/10 hover:text-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:text-red-400`}
+                        >
                           <TrashIcon className="size-5" />
+                          <span aria-hidden="true" className={`${TOOLTIP_ENCIMA} ${COLOR_DE_ACCION.eliminar}`}>
+                            Eliminar
+                          </span>
                         </button>
                       </div>
                     </td>
+                    {/* Solo en acordeón y desplegada: las acciones con su nombre, al final. */}
+                    <td data-detalle>
+                      <div className="mb-1 mt-2 grid grid-cols-2 gap-2">
+                        <BotonDeFila color={COLOR_DE_ACCION.editar} onClick={() => startEdit(user)}>
+                          <IconoMascara nombre="editar-usuario" tamano="h-5 w-6" />
+                          Editar
+                        </BotonDeFila>
+                        <BotonDeFila color={COLOR_DE_ACCION.eliminar} onClick={() => setDeleteConfirmId(user.id)}>
+                          <TrashIcon className="size-5" aria-hidden="true" />
+                          Eliminar
+                        </BotonDeFila>
+                      </div>
+                    </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -545,6 +621,7 @@ export default function UsuariosView() {
           className="px-6"
         />
       </div>
+      )}
 
       {showNotification && (
         <Notification

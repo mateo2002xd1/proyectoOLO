@@ -191,20 +191,27 @@ function AccionesCabecera({
         onClick={() => onSalir(hayCambiosSinGuardar)}
         disabled={busy}
         aria-label="Salir"
-        title="Volver a la página sin publicar nada"
         className="olo-editor-btn olo-editor-btn--salir"
       >
         <IconoDetener />
+        {/* Tooltip propio (`.olo-editor-tooltip` en globals.css) y no `title`: del color
+            del botón y debajo, que encima queda fuera de la pantalla. `aria-hidden`: el
+            nombre ya lo da el `aria-label`. */}
+        <span className="olo-editor-tooltip" aria-hidden="true">
+          Salir sin publicar
+        </span>
       </button>
       <button
         type="button"
         onClick={() => onGuardar(indiceHistoria)}
         disabled={busy || sinCandado}
         aria-label={isSaving ? 'Guardando…' : 'Guardar borrador'}
-        title={sinCandado ? 'Ya no tienes esta página reservada' : (isSaving ? 'Guardando…' : 'Guardar borrador')}
         className="olo-editor-btn olo-editor-btn--guardar"
       >
         <IconoGuardar />
+        <span className="olo-editor-tooltip" aria-hidden="true">
+          {sinCandado ? 'Ya no tienes esta página reservada' : (isSaving ? 'Guardando…' : 'Guardar borrador')}
+        </span>
       </button>
       {puedeEnviar && (
         <button
@@ -212,10 +219,12 @@ function AccionesCabecera({
           onClick={() => onEnviar(indiceHistoria)}
           disabled={busy || bloqueado || sinCandado}
           aria-label={isSubmitting ? 'Enviando…' : 'Enviar a revisión'}
-          title={sinCandado ? 'Ya no tienes esta página reservada' : (isSubmitting ? 'Enviando…' : 'Enviar a revisión')}
           className="olo-editor-btn olo-editor-btn--enviar"
         >
           <IconoEnviar />
+          <span className="olo-editor-tooltip" aria-hidden="true">
+            {sinCandado ? 'Ya no tienes esta página reservada' : (isSubmitting ? 'Enviando…' : 'Enviar a revisión')}
+          </span>
         </button>
       )}
     </div>
@@ -325,7 +334,7 @@ function ModalConfirmarAccion({
   return (
     <dialog
       ref={ref}
-      className="olo-modal"
+      className="olo-modal olo-anim-dialogo"
       aria-labelledby="olo-modal-confirmar-titulo"
       onCancel={(evento) => {
         evento.preventDefault();
@@ -343,9 +352,6 @@ function ModalConfirmarAccion({
           <p className="olo-modal-texto">{contenido.descripcion}</p>
           {contenido.pideComentario && (
             <div className="olo-modal-comentario">
-              <label htmlFor="olo-modal-comentario-campo" className="olo-modal-comentario-etiqueta">
-                Describe tus cambios <span className="olo-modal-comentario-obligatorio">(requerido)</span>
-              </label>
               {/* Primer elemento enfocable del diálogo: `showModal()` lo enfoca solo, así
                   que se puede escribir sin tener que hacer clic. */}
               <textarea
@@ -425,7 +431,7 @@ function ModalSalir({ abierto, onCancelar, onConfirmar }: ModalSalirProps) {
   return (
     <dialog
       ref={ref}
-      className="olo-modal"
+      className="olo-modal olo-anim-dialogo"
       aria-labelledby="olo-modal-titulo"
       // Escape dispara `cancel`. Se corta el cierre por defecto para que el
       // estado de React no se quede creyendo que el diálogo sigue abierto.
@@ -537,16 +543,6 @@ function PantallaEnvioExitoso({
           Tus cambios quedaron guardados y fueron enviados al administrador para su revisión y publicación.
         </p>
 
-        <div className="olo-pantalla-exito-acciones">
-          <button
-            type="button"
-            onClick={onCerrar}
-            className="olo-pantalla-exito-btn"
-            autoFocus
-          >
-            Volver al inicio
-          </button>
-        </div>
       </div>
     </div>
   );
@@ -610,12 +606,12 @@ export function PuckEditorWrapper({
   const [initialPuckData] = useState<Data>(() => {
     const raw = Array.isArray(initialData)
       ? {
-          content: initialData.map((bloque) => ({
-            type: bloque.type,
-            props: bloque.props,
-          })),
-          root: {},
-        }
+        content: initialData.map((bloque) => ({
+          type: bloque.type,
+          props: bloque.props,
+        })),
+        root: {},
+      }
       : (initialData as Data) ?? { content: [], root: {} };
 
     const contentNormalizado = (raw.content ?? []).map((item: any, idx: number) => {
@@ -916,17 +912,17 @@ export function PuckEditorWrapper({
     ? null
     : accionPendiente.tipo === 'guardar'
       ? {
-          titulo: '¿Guardar como borrador?',
-          descripcion:
-            'Se guarda tu progreso actual. Todavía no se envía a revisión ni se publica en el sitio.',
-          textoConfirmar: 'Guardar borrador',
-        }
+        titulo: '¿Guardar como borrador?',
+        descripcion:
+          'Se guarda tu progreso actual. Todavía no se envía a revisión ni se publica en el sitio.',
+        textoConfirmar: 'Guardar borrador',
+      }
       : {
-          titulo: '¿Enviar a revisión?',
-          descripcion: 'Un administrador revisará tus cambios antes de publicarlos.',
-          textoConfirmar: 'Enviar',
-          pideComentario: true,
-        };
+        titulo: '¿Enviar a revisión?',
+        descripcion: 'Un administrador revisará tus cambios antes de publicarlos.',
+        textoConfirmar: 'Enviar',
+        pideComentario: true,
+      };
 
   // Memorizado porque Puck reconstruye su store cada vez que cambia la identidad
   // de `overrides`.

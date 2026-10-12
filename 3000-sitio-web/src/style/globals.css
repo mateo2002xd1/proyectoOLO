@@ -380,6 +380,27 @@
   }
 }
 
+/* Loader que llena su sección (`cargando-seccion.tsx`). Mientras haya uno dentro de
+   `<main>`, `<main>` y cada contenedor entre él y el loader pasan a columna flex que crece:
+   el loader toma justo el alto que dejan el encabezado y los filtros de esa sección, sea
+   cual sea, y se centra ahí. Los hermanos (encabezado, filtros) no crecen. Solo dura lo
+   que dura la carga: al irse el loader, `:has()` deja de cumplirse y todo vuelve a bloque.
+   `min-height` por si en un móvil queda poco: entonces `<main>` hace scroll. */
+main:has(.cargando-seccion--relleno),
+main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
+  display: flex;
+  flex-direction: column;
+}
+
+main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
+  flex: 1 0 auto;
+}
+
+.cargando-seccion--relleno {
+  flex: 1 0 auto;
+  min-height: 16rem;
+}
+
 /* --- Utility Classes --- */
 .container {
   width: 100%;
@@ -1848,12 +1869,15 @@
     appearance: base-select;
   }
 
-  /* En modo base la pregunta elegida se parte en dos líneas; en una, como la
-     nativa, recortada. */
+  /* En modo base la pregunta elegida se deja partir en dos líneas y el campo crece
+     hacia abajo, como la caja de la pregunta en la recuperación. Hasta el
+     2026-10-09 iba en una, recortada, pero en este modo el recorte cae en el borde
+     de la caja y no en el relleno: la pregunta pasaba por debajo de la flecha y los
+     puntos suspensivos no salían. */
   .admin-auth-select {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    height: auto;
+    min-height: 2.75rem;
+    white-space: normal;
   }
 
   /* La flecha la pone el SVG del componente. */
@@ -1865,14 +1889,14 @@
     margin-block: 4px;
     padding: 4px;
     border: 1.5px solid #001a39;
-    border-radius: 8px;
+    border-radius: 16px;
     background: #fff;
     box-shadow: 0 8px 24px rgb(0 26 57 / 0.15);
   }
 
   .admin-auth-select option {
-    padding: 8px 10px;
-    border-radius: 6px;
+    padding: 8px 12px;
+    border-radius: 12px;
   }
 
   .admin-auth-select option::checkmark {
@@ -1903,18 +1927,23 @@
 
    El tamaño es fluido: el título va de 24px en un móvil de 360px a 30px desde
    ~770px, sin saltos entre medias. Con 30px fijos, «Gestion de Roles» ocupaba
-   dos líneas en el móvil y apretaba el botón que tiene al lado. */
+   dos líneas en el móvil y apretaba el botón que tiene al lado.
+
+   La regla del panel (2026-10-09): todo título va en negrita, a su tamaño, y la
+   descripción que lo acompaña va en un tamaño menor que él (bajo el título de
+   página, `text-sm`; bajo el de un modal o una tarjeta, `text-sm` o `text-xs`).
+   La letra, Poppins, la pone `LetraDelPanel` cambiando `--font-heading`. */
 .admin-header {
   font-family: var(--font-heading);
   font-size: clamp(1.5rem, 1.1rem + 1.6vw, 1.875rem);
   line-height: 1.25;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-bold);
 }
 
 .admin-subtitle {
   font-family: var(--font-heading);
   font-size: clamp(1.0625rem, 0.95rem + 0.5vw, 1.25rem);
-  font-weight: var(--fw-regular);
+  font-weight: var(--fw-bold);
 }
 
 /* ============================================
@@ -1983,8 +2012,9 @@
   --navegacion-mobile-logo-filtro: brightness(0) invert(1);
 }
 
-/* Reserva el hueco de la barra en la columna que hace scroll (`sidebar-layout.tsx`),
-   para que lo último de la página no quede debajo. */
+/* Reserva el hueco de la barra al final del `<main>` que hace scroll
+   (`sidebar-layout.tsx`), para que lo último de la página no quede debajo. Es fijo: no se
+   quita al ocultarse la barra (ver más abajo). */
 .navegacion-mobile-reserva {
   padding-bottom: var(--navegacion-mobile-alto);
 }
@@ -2015,12 +2045,12 @@
   translate: none;
 }
 
-/* Con la barra oculta, la columna deja de reservarle el hueco: la reserva está fuera
-   del `<main>` que hace scroll, y si no se quitaba quedaba una franja vacía fija al pie
-   de la pantalla. Sin transición: la barra se desliza por encima del contenido. */
-body:has(.navegacion-mobile.es-oculta:not(:focus-within)) .navegacion-mobile-reserva {
-  padding-bottom: 0;
-}
+/* Con la barra oculta, el hueco NO se quita. Hasta el 2026-10-10 se quitaba (la reserva
+   estaba en la columna, fuera del `<main>`, y dejaba una franja vacía fija al pie), pero
+   eso cambiaba el alto de lo que hace scroll: al llegar al final la barra se mostraba, el
+   final se alejaba 80 px, se ocultaba, volvía… y la pantalla temblaba. Ahora la reserva
+   es relleno al final del `<main>`: con la barra oculta solo queda espacio al final de la
+   página, y ocultarla o mostrarla no mueve nada. */
 
 /* Sin movimiento, se desvanece en vez de deslizarse. */
 @media (prefers-reduced-motion: reduce) {
@@ -2208,6 +2238,13 @@ body:has(.navegacion-mobile.es-oculta:not(:focus-within)) .navegacion-mobile-res
   translate: 0 3px; /* x  y — negativo sube / va a la izquierda; positivo baja / va a la derecha */
 }
 
+/* Un icono subido en Configuración que no pasa a blanco en modo oscuro. Sin el ajuste de
+   3 px, que es para centrar la forma del de fábrica. */
+.navegacion-mobile-logo.es-a-color img {
+  filter: none;
+  translate: none;
+}
+
 .navegacion-mobile-inicio.es-activo .navegacion-mobile-logo {
   box-shadow:
     0 0 0 2px var(--navegacion-mobile-fondo),
@@ -2231,9 +2268,12 @@ body:has(.navegacion-mobile.es-oculta:not(:focus-within)) .navegacion-mobile-res
    Es un `<dialog>`: el navegador le pone `display: none` cerrado, así que el
    `display: flex` va solo con `[open]`. Cabe siempre (2-convenciones §10.4): alto
    máximo con `dvh` y la lista con su propio scroll. */
+/* Todo el ancho hasta tablet (`md`, 48rem): en un móvil grande los 32rem dejaban franjas a
+   los lados. Desde tablet vuelve a 32rem centrada, que una hoja de dos filas a lo ancho de
+   una pantalla de 1000 px queda perdida. */
 .navegacion-mobile-hoja {
   width: 100%;
-  max-width: 32rem;
+  max-width: none;
   max-height: calc(100dvh - 2rem);
   margin: auto auto 0;
   padding: 0 0 env(safe-area-inset-bottom, 0px);
@@ -2242,6 +2282,12 @@ body:has(.navegacion-mobile.es-oculta:not(:focus-within)) .navegacion-mobile-res
   background: var(--navegacion-mobile-fondo);
   color: var(--navegacion-mobile-hoja-texto);
   box-shadow: 0 -8px 32px rgb(0 0 0 / 0.2);
+}
+
+@media (width >= 48rem) {
+  .navegacion-mobile-hoja {
+    max-width: 32rem;
+  }
 }
 
 .navegacion-mobile-hoja[open] {
@@ -2289,7 +2335,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 .navegacion-mobile-hoja-titulo {
   margin: 0;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .navegacion-mobile-hoja-cerrar {
@@ -2407,8 +2453,18 @@ body:has(.navegacion-mobile-hoja[open]) {
    Se mide el contenedor y no la ventana: la misma tabla va a pantalla completa en
    Auditoría y dentro de una tarjeta de 300px en Actualizaciones, y con el corte
    de la ventana la segunda seguía siendo tabla, con scroll lateral, en un monitor.
-   Dentro de la tabla, lo que cambie a la vez que ella usa `@3xl:` (el mismo
-   48rem, medido sobre el mismo contenedor), no `md:`.
+
+   En el panel, además, por debajo de 64rem (lg) siempre es tarjeta. Medir solo el
+   contenedor fallaba allí (2026-10-12): con la barra lateral (288px) el contenido baja
+   de 48rem desde los ~1122px de ventana y la lista pasaba a tarjetas, pero a 1023px la
+   barra se oculta, el contenido recupera esos 288px (~960px) y la lista volvía a ser
+   tabla de escritorio en plena tablet. El panel se reconoce por su `<main>`
+   (`navegacion-mobile-reserva`, de `SidebarLayout`); las tablas del sitio público no
+   cambian.
+
+   Las dos condiciones son la variante `apilada` y su contraria, `en-tabla`. Dentro de
+   la tabla, lo que cambie a la vez que ella usa `en-tabla:` / `apilada:` en el JSX, no
+   `@3xl:` ni `md:`, para que cambie en el mismo píxel.
 
    La celda es una rejilla de dos columnas: la etiqueta en la primera fila de la
    primera columna y cada hijo del contenido en la segunda, así que la celda mide lo
@@ -2416,62 +2472,104 @@ body:has(.navegacion-mobile-hoja[open]) {
    versión— la celda no crecía con ella, y una etiqueta de dos líneas («NIVEL
    OCUPACIONAL») pisaba la siguiente. El límite: el texto suelto que va *después* de
    un elemento («<b>3</b> días») caería en la primera columna; hoy ninguna celda lo
-   tiene, y si hace falta se envuelve en un `<span>`. */
+   tiene, y si hace falta se envuelve en un `<span>`.
+
+   Los `::before` van anidados dentro de la variante (`&::before`) y no en el selector:
+   la rama del panel añade `&:where(...)`, y un pseudoelemento no puede ir dentro de
+   `&`. */
+@custom-variant apilada {
+  @container (width < 48rem) {
+    @slot;
+  }
+  @media (width < 64rem) {
+    &:where(.navegacion-mobile-reserva *) {
+      @slot;
+    }
+  }
+}
+
+@custom-variant en-tabla {
+  @container (width >= 48rem) {
+    @media (width >= 64rem) {
+      @slot;
+    }
+    &:not(:where(.navegacion-mobile-reserva *)) {
+      @slot;
+    }
+  }
+}
+
 :where(:has(> .olo-tabla-apilable)) {
   container-type: inline-size;
 }
 
-@container (width < 48rem) {
-  .olo-tabla-apilable,
-  .olo-tabla-apilable > :is(tbody, tfoot),
-  .olo-tabla-apilable > :is(tbody, tfoot) > tr > td {
+.olo-tabla-apilable,
+.olo-tabla-apilable > :is(tbody, tfoot),
+.olo-tabla-apilable > :is(tbody, tfoot) > tr > td {
+  @variant apilada {
     display: block;
     width: 100%;
   }
+}
 
-  /* En columna flexible para que la celda con `data-titulo` encabece la tarjeta
-     aunque en la tabla no sea la primera columna (el nombre de la ocupación va
-     tercero). El lector de pantalla sigue el orden del HTML. */
-  .olo-tabla-apilable > :is(tbody, tfoot) > tr {
+/* En columna flexible para que la celda con `data-titulo` encabece la tarjeta
+   aunque en la tabla no sea la primera columna (el nombre de la ocupación va
+   tercero). El lector de pantalla sigue el orden del HTML. */
+.olo-tabla-apilable > :is(tbody, tfoot) > tr {
+  @variant apilada {
     display: flex;
     flex-direction: column;
     width: 100%;
     padding: 0.75rem 1rem;
   }
+}
 
-  .olo-tabla-apilable > :is(tbody, tfoot) > tr > td[data-titulo] {
+.olo-tabla-apilable > :is(tbody, tfoot) > tr > td[data-titulo] {
+  @variant apilada {
     order: -1;
   }
+}
 
-  /* Le gana al `min-w-[52rem]` que la tabla trae para escritorio: este CSS no
-     está en ninguna capa y las utilidades sí. */
-  .olo-tabla-apilable {
+/* Le gana al `min-w-[52rem]` que la tabla trae para escritorio: este CSS no
+   está en ninguna capa y las utilidades sí. */
+.olo-tabla-apilable {
+  @variant apilada {
     min-width: 0;
   }
+}
 
-  .olo-tabla-apilable > thead {
+.olo-tabla-apilable > thead {
+  @variant apilada {
     display: none;
   }
+}
 
-  .olo-tabla-apilable > caption {
+.olo-tabla-apilable > caption {
+  @variant apilada {
     display: block;
   }
+}
 
-  .olo-tabla-apilable > :is(tbody, tfoot) > tr > td {
+.olo-tabla-apilable > :is(tbody, tfoot) > tr > td {
+  @variant apilada {
     padding: 0.3rem 0;
     min-width: 0;
     max-width: none;
     white-space: normal;
     overflow-wrap: anywhere;
   }
+}
 
-  /* Lo que en escritorio no se parte (fechas, píldoras) en un móvil sí puede:
-     es eso o que la tarjeta se salga de la pantalla. */
-  .olo-tabla-apilable > :is(tbody, tfoot) > tr > td :where(*) {
+/* Lo que en escritorio no se parte (fechas, píldoras) en un móvil sí puede:
+   es eso o que la tarjeta se salga de la pantalla. */
+.olo-tabla-apilable > :is(tbody, tfoot) > tr > td :where(*) {
+  @variant apilada {
     white-space: normal;
   }
+}
 
-  .olo-tabla-apilable > :is(tbody, tfoot) > tr > td[data-etiqueta] {
+.olo-tabla-apilable > :is(tbody, tfoot) > tr > td[data-etiqueta] {
+  @variant apilada {
     display: grid;
     grid-template-columns: min(38%, 9rem) minmax(0, 1fr);
     column-gap: 0.75rem;
@@ -2480,28 +2578,77 @@ body:has(.navegacion-mobile-hoja[open]) {
        ocupaban la columna entera. */
     justify-items: start;
     text-align: left;
-  }
 
-  .olo-tabla-apilable > :is(tbody, tfoot) > tr > td[data-etiqueta] > * {
+    &::before {
+      content: attr(data-etiqueta);
+      grid-column: 1;
+      grid-row: 1;
+      /* Baja la etiqueta de 11px hasta la primera línea del valor, de 14px. */
+      padding-top: 0.2rem;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      line-height: 1.3;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #667085;
+    }
+  }
+}
+
+.olo-tabla-apilable > :is(tbody, tfoot) > tr > td[data-etiqueta] > * {
+  @variant apilada {
     grid-column: 2;
   }
+}
 
-  .olo-tabla-apilable > :is(tbody, tfoot) > tr > td[data-etiqueta]::before {
-    content: attr(data-etiqueta);
-    grid-column: 1;
-    grid-row: 1;
-    /* Baja la etiqueta de 11px hasta la primera línea del valor, de 14px. */
-    padding-top: 0.2rem;
-    font-size: 0.6875rem;
-    font-weight: 600;
-    line-height: 1.3;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: #667085;
+.dark .olo-tabla-apilable > :is(tbody, tfoot) > tr > td[data-etiqueta] {
+  @variant apilada {
+    &::before {
+      color: #94a3b8;
+    }
   }
+}
 
-  .dark .olo-tabla-apilable > :is(tbody, tfoot) > tr > td[data-etiqueta]::before {
-    color: #94a3b8;
+/* Tabla apilable en acordeón (`olo-tabla-apilable olo-tabla-acordeon`), pedido del usuario
+   el 2026-10-09 empezando por «Páginas en revisión»: con muchas filas, las tarjetas enteras
+   hacían muy largo el scroll en el móvil y la tablet. Mismo HTML que la tabla:
+
+   - `td[data-resumen]`: la frase de una línea con el botón que pliega y despliega
+     (`aria-expanded`). Solo existe en `apilada`; en la tabla no se pinta.
+   - `td[data-detalle]`: lo que se añade al desplegar, sin etiqueta (en revisión, el
+     comentario). Tampoco existe en la tabla.
+   - `tr[data-abierta]`: la fila desplegada. Plegada, solo se ve el resumen.
+   - `td[data-solo-tabla]`: las celdas que en acordeón sobran porque la frase ya lo dice.
+     El 2026-10-10 el usuario vio «muy saturada» la ficha de datos con etiquetas: al
+     desplegar, una frase y los botones, nada más.
+
+   Sin capa, como la tabla apilable, y con más especificidad que su `display: block`. */
+.olo-tabla-acordeon > tbody > tr > td:is([data-resumen], [data-detalle]) {
+  display: none;
+
+  @variant apilada {
+    display: block;
+    padding: 0;
+  }
+}
+
+.olo-tabla-acordeon > tbody > tr:not([data-abierta]) > td:not([data-resumen]),
+.olo-tabla-acordeon > tbody > tr > td[data-solo-tabla] {
+  @variant apilada {
+    display: none;
+  }
+}
+
+/* Plegada, la fila es solo el botón: que el área táctil sea la fila entera. */
+.olo-tabla-acordeon > tbody > tr:not([data-abierta]) {
+  @variant apilada {
+    padding-block: 0.25rem;
+  }
+}
+
+.olo-tabla-acordeon > tbody > tr[data-abierta] > td[data-resumen] {
+  @variant apilada {
+    margin-bottom: 0.5rem;
   }
 }
 
@@ -2942,6 +3089,14 @@ button.text-link,
 
 /* En el panel oscuro el azul marino no se lee: la etiqueta y el punto oscuro
    pasan a tonos claros. */
+/* El cargador del login del panel, ya autenticado (2026-10-12): desde `xl` va sobre el azul de
+   la mitad derecha, donde el navy del texto no se vería. Por debajo, sobre el blanco. */
+@media (width >= 80rem) {
+  .login-panel-cargando .goo-loader-label {
+    color: #fff;
+  }
+}
+
 .dark .goo-loader-label {
   color: #e2e8f0;
 }
@@ -3384,6 +3539,75 @@ button.text-link,
   background: #8fcc32;
 }
 
+/* Tooltip de los botones de la cabecera del editor: la forma del de los botones
+   flotantes (`.fab-speed-dial__tooltip`) con el color de su botón. Va debajo porque la
+   cabecera está arriba del todo. El del último botón se alinea a la derecha: centrado
+   sobresalía de la pantalla y, aunque invisible, daba scroll horizontal.
+   Los colores de cada uno salen de Configuración → Identidad visual: las variables
+   `--olo-accion-*` las escribe `EstilosDeIdentidad` en `app/editor/[slug]/page.tsx`, con
+   los de fábrica de `shared/lib/identidad-panel/acciones.ts`. El segundo valor de cada
+   `var()` es ese mismo de fábrica, por si la página no trae las variables. */
+.olo-editor-btn {
+  position: relative;
+}
+
+.olo-editor-tooltip {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 50%;
+  z-index: 10;
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -4px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.olo-editor-btn:last-child .olo-editor-tooltip {
+  left: auto;
+  right: 0;
+  transform: translateY(-4px);
+}
+
+.olo-editor-btn:hover .olo-editor-tooltip,
+.olo-editor-btn:focus-visible .olo-editor-tooltip {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.olo-editor-btn:last-child:hover .olo-editor-tooltip,
+.olo-editor-btn:last-child:focus-visible .olo-editor-tooltip {
+  transform: translateY(0);
+}
+
+.olo-editor-btn--salir .olo-editor-tooltip {
+  background: var(--olo-accion-salir-del-editor-fondo, #dc2626);
+  color: var(--olo-accion-salir-del-editor-texto, #ffffff);
+}
+
+.olo-editor-btn--guardar .olo-editor-tooltip {
+  background: var(--olo-accion-guardar-borrador-fondo, #3b82f6);
+  color: var(--olo-accion-guardar-borrador-texto, #ffffff);
+}
+
+.olo-editor-btn--enviar .olo-editor-tooltip {
+  background: var(--olo-accion-enviar-a-revision-fondo, #7db728);
+  color: var(--olo-accion-enviar-a-revision-texto, #001631);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .olo-editor-tooltip {
+    transition: none;
+  }
+}
+
 /* ── Panel lateral del inspector de bloques en Puck ────────────────────────
    Cuando un bloque está anidado (por ejemplo, dentro de Seccion con Pestañas
    o Grid), Puck renderiza una miga de pan junto con el título del bloque en la
@@ -3438,6 +3662,13 @@ button.text-link,
 
 /* --- Confirmación de salida --- */
 
+/* Las medidas de todos los modales del panel y del editor son las de las pantallas de
+   acceso (pedido del usuario, 2026-10-09; en Tailwind, `shared/ui/molecules/alert.tsx`):
+   caja con esquinas de 32, título de 20 px, texto de 16, campos y botones de 44 px de
+   alto con esquinas de 32, borde #d9d9d9 y la acción principal en #001631. Lo que puede
+   ocupar varias líneas (el comentario del envío) lleva 16, como los mensajes de estado.
+   La letra (Poppins) la pone `app/editor/[slug]/page.tsx` para todo el editor. */
+
 .olo-modal {
   border: none;
   padding: 0;
@@ -3454,22 +3685,26 @@ button.text-link,
 
 .olo-modal-caja {
   background: #ffffff;
-  border-radius: 12px;
-  padding: 1.5rem;
+  border-radius: 32px;
+  padding: 2rem;
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
   color: #1f2937;
 }
 
+/* `inherit`: los h1–h6 piden `--font-heading`, que fuera del panel vale «Open Sans», una
+   letra que no se carga (salían en Arial). El título toma la de su caja, Poppins. */
 .olo-modal-titulo {
-  margin: 0 0 0.6rem;
-  font-size: 1.15rem;
-  font-weight: 700;
+  margin: 0 0 0.75rem;
+  font-family: inherit;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.3;
   color: #001631;
 }
 
 .olo-modal-texto {
   margin: 0 0 0.85rem;
-  font-size: 0.925rem;
+  font-size: 1rem;
   line-height: 1.5;
   color: #4b5563;
 }
@@ -3489,20 +3724,24 @@ button.text-link,
 }
 
 .olo-modal-btn {
-  padding: 0.55rem 1.15rem;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
+  height: 2.75rem;
+  padding: 0 1.5rem;
+  border-radius: 32px;
+  border: 1px solid #d9d9d9;
   background: #ffffff;
-  color: #374151;
-  font-size: 0.9rem;
-  font-weight: 600;
+  color: #001631;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 500;
+  /* 44 px fijos: el texto no se parte (`.olo-modal-acciones` ya hace `wrap`). */
+  white-space: nowrap;
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .olo-modal-btn:hover {
-  background: #f9fafb;
-  border-color: #9ca3af;
+  background: #f5f7fa;
+  border-color: #b3b3b3;
 }
 
 .olo-modal-btn--peligro {
@@ -3561,10 +3800,10 @@ button.text-link,
 
 .olo-modal-comentario-etiqueta {
   display: block;
-  margin-bottom: 0.4rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #001631;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #001a39;
 }
 
 .olo-modal-comentario-obligatorio {
@@ -3576,26 +3815,27 @@ button.text-link,
   display: block;
   width: 100%;
   box-sizing: border-box;
-  padding: 0.65rem 0.8rem;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
+  padding: 0.75rem 1.25rem;
+  border: 1px solid #d9d9d9;
+  border-radius: 16px;
   font: inherit;
-  font-size: 0.925rem;
+  font-size: 1rem;
   line-height: 1.45;
-  color: #1f2937;
+  color: #001a39;
   background: #ffffff;
   resize: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .olo-modal-comentario-campo::placeholder {
-  color: #9ca3af;
+  color: #b3b3b3;
 }
 
+/* El mismo anillo que los campos del acceso (`focus:ring-2 focus:ring-[#001631]`). */
 .olo-modal-comentario-campo:focus-visible {
   outline: none;
   border-color: #001631;
-  box-shadow: 0 0 0 3px rgba(0, 22, 49, 0.12);
+  box-shadow: 0 0 0 2px #001631;
 }
 
 .olo-modal-comentario-campo[aria-invalid='true'] {
@@ -3608,7 +3848,7 @@ button.text-link,
   justify-content: space-between;
   gap: 0.75rem;
   margin-top: 0.4rem;
-  font-size: 0.8rem;
+  font-size: 0.875rem;
   color: #6b7280;
 }
 
@@ -3999,43 +4239,54 @@ button.text-link,
   backdrop-filter: blur(4px);
 }
 
+/* Las mismas medidas que `.olo-modal-*` y los modales del panel (ver el comentario de
+   «Confirmación de salida»). La letra (Poppins) la pone cada modal con su clase. */
 .nueva-seccion-caja {
   width: 100%;
   max-width: 27rem;
   background: #fff;
-  border-radius: 0.75rem;
-  padding: 1.5rem;
+  border-radius: 32px;
+  padding: 2rem;
   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.3);
 }
 
+/* `inherit`, como `.olo-modal-titulo`: si no, `--font-heading` lo deja en Arial. */
 .nueva-seccion-titulo {
   margin: 0 0 1rem;
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #002c46;
+  font-family: inherit;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #001631;
 }
 
 .nueva-seccion-etiqueta {
   display: block;
-  margin-bottom: 0.35rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #33475b;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #001a39;
 }
 
 .nueva-seccion-campo {
   width: 100%;
-  padding: 0.6rem 0.75rem;
-  border: 1px solid #c7d0d9;
-  border-radius: 0.5rem;
-  font-size: 0.95rem;
-  color: #12222f;
+  height: 2.75rem;
+  padding: 0 1.25rem;
+  border: 1px solid #d9d9d9;
+  border-radius: 32px;
+  font: inherit;
+  font-size: 1rem;
+  color: #001a39;
+}
+
+.nueva-seccion-campo::placeholder {
+  color: #b3b3b3;
 }
 
 .nueva-seccion-campo:focus {
-  outline: 2px solid #002c46;
-  outline-offset: 1px;
-  border-color: transparent;
+  outline: none;
+  border-color: #001631;
+  box-shadow: 0 0 0 2px #001631;
 }
 
 .nueva-seccion-campo:disabled {
@@ -4046,8 +4297,9 @@ button.text-link,
    dirección— y no como parte de la frase. */
 .nueva-seccion-ruta {
   margin: 0.5rem 0 0;
-  font-size: 0.85rem;
-  color: #52667a;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #4b5563;
 }
 
 .nueva-seccion-ruta code {
@@ -4076,35 +4328,41 @@ button.text-link,
   margin-top: 0.3rem;
 }
 
+/* `wrap` y `nowrap` en los botones: con 44 px de alto fijo el texto no puede partirse
+   («Crear y editar» se salía a 360 px); si no caben juntos, el segundo baja de línea. */
 .nueva-seccion-acciones {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
   gap: 0.5rem;
   margin-top: 1.35rem;
 }
 
 .nueva-seccion-boton {
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  border: 1px solid #c7d0d9;
+  height: 2.75rem;
+  padding: 0 1.5rem;
+  border-radius: 32px;
+  border: 1px solid #d9d9d9;
   background: #fff;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #33475b;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 500;
+  white-space: nowrap;
+  color: #001631;
 }
 
 .nueva-seccion-boton:hover:not(:disabled) {
-  background: #f1f4f7;
+  background: #f5f7fa;
 }
 
 .nueva-seccion-boton--principal {
-  border-color: #002c46;
-  background: #002c46;
+  border-color: #001631;
+  background: #001631;
   color: #fff;
 }
 
 .nueva-seccion-boton--principal:hover:not(:disabled) {
-  background: #001a2a;
+  background: #002a5c;
 }
 
 .nueva-seccion-boton:disabled {
@@ -4157,13 +4415,14 @@ button.text-link,
 /* Botón de confirmar un borrado dentro del diálogo. Se deshabilita hasta que el nombre
    tecleado coincide, así que la mayor parte del tiempo se ve apagado a propósito. */
 .nueva-seccion-boton--peligro {
-  border-color: #b3261e;
-  background: #b3261e;
+  border-color: #dc2626;
+  background: #dc2626;
   color: #fff;
 }
 
 .nueva-seccion-boton--peligro:hover:not(:disabled) {
-  background: #8c1d18;
+  border-color: #b91c1c;
+  background: #b91c1c;
 }
 
 /* ─── Maquetación del editor (@olo/blocks-renderer) ─────────────────────────
@@ -4984,5 +5243,144 @@ button.text-link,
   font-size: 14px;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   Entrada y salida de los modales (`@starting-style`)
 
+   Un modal aparece de golpe porque el navegador no tiene «antes» desde el que
+   animar: el elemento no existía (lo monta React) o estaba en `display: none`
+   (un `<dialog>` cerrado). `@starting-style` le da ese antes, el estilo con el que
+   arranca la transición en su primer pintado, sin JavaScript ni `@keyframes`.
 
+   Hay dos familias de modales y una clase para cada una:
+
+   - `olo-anim-dialogo`, en un `<dialog>` que se abre con `showModal()`. Entra y
+     sale solo con CSS: al cerrarse pierde `[open]` y se va a su estado cerrado; con
+     `display` y `overlay` en `allow-discrete` el navegador lo mantiene pintado (y en
+     la capa superior) hasta que termina de desvanecerse. Solo Chromium sabe
+     transicionar `overlay`; en los demás el `<dialog>` sale de la capa superior al
+     instante y, si siguiera pintado, caería en el flujo de la página un momento.
+     Por eso la salida va dentro de `@supports (overlay: auto)` y en el resto se
+     cierra de golpe, como antes. La entrada funciona en todos.
+   - `olo-anim-fondo` (el velo) y `olo-anim-caja` (el cuadro), en los que React
+     monta por portal. La entrada es igual; la salida necesita que el modal siga
+     montado con `data-cerrando` lo que dura, y de eso se encarga
+     `useCierreAnimado` (`src/shared/lib/use-cierre-animado.ts`).
+
+   Las propiedades que se mueven son `translate` y `scale`, no `transform`: así no
+   pisan un `transform` que la caja ya tenga. Con «reducir movimiento» solo queda el
+   fundido. La salida es más corta que la entrada: cerrar no debe hacer esperar.
+   Si cambias `--olo-modal-salida`, cambia también `SALIDA_DEL_MODAL_MS` en el hook.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --olo-modal-entrada: 220ms;
+  --olo-modal-salida: 150ms;
+  --olo-modal-curva-entrada: cubic-bezier(0.16, 1, 0.3, 1);
+  --olo-modal-curva-salida: cubic-bezier(0.4, 0, 1, 1);
+  --olo-modal-desde: 0 0.75rem;
+  --olo-modal-escala: 0.96;
+}
+
+/* En el móvil los modales salen desde abajo (`2-convenciones` §10.4): suben, sin encoger. */
+@media (width < 40rem) {
+  :root {
+    --olo-modal-desde: 0 2rem;
+    --olo-modal-escala: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --olo-modal-desde: 0 0;
+    --olo-modal-escala: 1;
+  }
+}
+
+/* --- Modales montados por React: velo + cuadro --- */
+
+.olo-anim-fondo {
+  transition: opacity var(--olo-modal-entrada) var(--olo-modal-curva-entrada);
+}
+
+.olo-anim-caja {
+  transition:
+    opacity var(--olo-modal-entrada) var(--olo-modal-curva-entrada),
+    translate var(--olo-modal-entrada) var(--olo-modal-curva-entrada),
+    scale var(--olo-modal-entrada) var(--olo-modal-curva-entrada);
+}
+
+@starting-style {
+  .olo-anim-fondo {
+    opacity: 0;
+  }
+
+  .olo-anim-caja {
+    opacity: 0;
+    translate: var(--olo-modal-desde);
+    scale: var(--olo-modal-escala);
+  }
+}
+
+/* Mientras se va, ya no recibe clics: el que cae en ese momento es para lo de detrás. */
+.olo-anim-fondo[data-cerrando] {
+  opacity: 0;
+  pointer-events: none;
+  transition-duration: var(--olo-modal-salida);
+  transition-timing-function: var(--olo-modal-curva-salida);
+}
+
+.olo-anim-fondo[data-cerrando] .olo-anim-caja,
+.olo-anim-caja[data-cerrando] {
+  opacity: 0;
+  translate: var(--olo-modal-desde);
+  scale: var(--olo-modal-escala);
+  transition-duration: var(--olo-modal-salida);
+  transition-timing-function: var(--olo-modal-curva-salida);
+}
+
+/* --- `<dialog>` nativo --- */
+
+.olo-anim-dialogo[open] {
+  transition:
+    opacity var(--olo-modal-entrada) var(--olo-modal-curva-entrada),
+    translate var(--olo-modal-entrada) var(--olo-modal-curva-entrada),
+    scale var(--olo-modal-entrada) var(--olo-modal-curva-entrada);
+}
+
+.olo-anim-dialogo[open]::backdrop {
+  transition: opacity var(--olo-modal-entrada) var(--olo-modal-curva-entrada);
+}
+
+@starting-style {
+  .olo-anim-dialogo[open] {
+    opacity: 0;
+    translate: var(--olo-modal-desde);
+    scale: var(--olo-modal-escala);
+  }
+
+  .olo-anim-dialogo[open]::backdrop {
+    opacity: 0;
+  }
+}
+
+@supports (overlay: auto) {
+  .olo-anim-dialogo:not([open]) {
+    opacity: 0;
+    translate: var(--olo-modal-desde);
+    scale: var(--olo-modal-escala);
+    transition:
+      opacity var(--olo-modal-salida) var(--olo-modal-curva-salida),
+      translate var(--olo-modal-salida) var(--olo-modal-curva-salida),
+      scale var(--olo-modal-salida) var(--olo-modal-curva-salida),
+      overlay var(--olo-modal-salida) allow-discrete,
+      display var(--olo-modal-salida) allow-discrete;
+  }
+
+  .olo-anim-dialogo:not([open])::backdrop {
+    opacity: 0;
+    transition:
+      opacity var(--olo-modal-salida) var(--olo-modal-curva-salida),
+      overlay var(--olo-modal-salida) allow-discrete,
+      display var(--olo-modal-salida) allow-discrete;
+  }
+}

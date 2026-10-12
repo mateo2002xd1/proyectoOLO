@@ -199,8 +199,10 @@
   align-items: center;
   justify-content: center;
   margin-top: clamp(1.25rem, 2.5vw, 1.75rem);
-  font-size: clamp(0.85rem, 1.5vw, 0.925rem);
-  font-weight: 500;
+  /* 14 px en el móvil y 16 desde `md`, peso normal: los del acceso del sitio web
+     (`BackToSiteLink`), pedido del usuario el 2026-10-11. */
+  font-size: 0.875rem;
+  font-weight: 400;
   color: #ffffff;
   text-decoration: none;
   opacity: 0.9;
@@ -1953,6 +1955,72 @@ body:has(.navegacion-mobile-hoja[open]) {
   background: #8fcc32;
 }
 
+/* Tooltip de los botones de la cabecera del editor: la forma del de los botones
+   flotantes (`.fab-speed-dial__tooltip`) con el color de su botón. Va debajo porque la
+   cabecera está arriba del todo. El del último botón se alinea a la derecha: centrado
+   sobresalía de la pantalla y, aunque invisible, daba scroll horizontal. */
+.olo-editor-btn {
+  position: relative;
+}
+
+.olo-editor-tooltip {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 50%;
+  z-index: 10;
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -4px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.olo-editor-btn:last-child .olo-editor-tooltip {
+  left: auto;
+  right: 0;
+  transform: translateY(-4px);
+}
+
+.olo-editor-btn:hover .olo-editor-tooltip,
+.olo-editor-btn:focus-visible .olo-editor-tooltip {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.olo-editor-btn:last-child:hover .olo-editor-tooltip,
+.olo-editor-btn:last-child:focus-visible .olo-editor-tooltip {
+  transform: translateY(0);
+}
+
+.olo-editor-btn--salir .olo-editor-tooltip {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.olo-editor-btn--guardar .olo-editor-tooltip {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+/* Como el botón: azul marino sobre el verde (7.6:1); blanco quedaría en 2.4:1. */
+.olo-editor-btn--enviar .olo-editor-tooltip {
+  background: #7db828;
+  color: #001631;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .olo-editor-tooltip {
+    transition: none;
+  }
+}
+
 /* --- Confirmación de salida --- */
 
 .olo-modal {
@@ -2908,8 +2976,8 @@ body:has(.navegacion-mobile-hoja[open]) {
   align-items: center;
   justify-content: center;
   margin-top: clamp(1rem, 2vw, 1.5rem);
-  font-size: clamp(0.8rem, 1.5vw, 0.875rem);
-  font-weight: 500;
+  font-size: 0.875rem;
+  font-weight: 400;
   color: var(--color-white);
   opacity: 0.85;
   transition: opacity 0.2s ease, transform 0.15s ease;
@@ -3159,8 +3227,8 @@ body:has(.navegacion-mobile-hoja[open]) {
   align-items: center;
   justify-content: center;
   margin-top: clamp(1rem, 2vw, 1.5rem);
-  font-size: clamp(0.8rem, 1.5vw, 0.875rem);
-  font-weight: 500;
+  font-size: 0.875rem;
+  font-weight: 400;
   color: var(--color-white);
   opacity: 0.85;
   transition: opacity 0.2s ease, transform 0.15s ease;
@@ -3295,6 +3363,15 @@ body:has(.navegacion-mobile-hoja[open]) {
   color: var(--color-success, #15803d);
 }
 
+/* Primer ingreso: sin tarjeta blanca, los requisitos van sobre el azul (2026-10-11). */
+.fl-requisito {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.fl-requisito-ok {
+  color: #86efac;
+}
+
 .rp-label {
   font-size: clamp(0.8rem, 1.5vw, 0.875rem);
   font-weight: 600;
@@ -3403,8 +3480,8 @@ body:has(.navegacion-mobile-hoja[open]) {
   align-items: center;
   justify-content: center;
   margin-top: clamp(1rem, 2vw, 1.5rem);
-  font-size: clamp(0.8rem, 1.5vw, 0.875rem);
-  font-weight: 500;
+  font-size: 0.875rem;
+  font-weight: 400;
   color: var(--color-white);
   opacity: 0.85;
   transition: opacity 0.2s ease, transform 0.15s ease;
@@ -3486,8 +3563,8 @@ body:has(.navegacion-mobile-hoja[open]) {
   align-items: center;
   justify-content: center;
   margin-top: clamp(1.5rem, 3vw, 2rem);
-  font-size: clamp(0.8rem, 1.5vw, 0.875rem);
-  font-weight: 500;
+  font-size: 0.875rem;
+  font-weight: 400;
   color: var(--color-white);
   opacity: 0.85;
   transition: opacity 0.2s ease, transform 0.15s ease;
@@ -3527,18 +3604,18 @@ body:has(.navegacion-mobile-hoja[open]) {
 }
 
 .fl-brand-title {
-  font-size: clamp(1.5rem, 3.5vw, 2.5rem);
-  font-weight: 700;
+  font-size: 1.875rem;
+  font-weight: 600;
   color: var(--color-white);
   line-height: 1.2;
   margin-bottom: clamp(0.75rem, 2vw, 1.25rem);
 }
 
 .fl-brand-subtitle {
-  font-size: clamp(0.85rem, 1.5vw, 1rem);
+  font-size: 1.125rem;
   color: var(--color-white);
   opacity: 0.8;
-  line-height: 1.6;
+  line-height: 1.75rem;
 }
 
 .fl-success-left {
@@ -3565,12 +3642,8 @@ body:has(.navegacion-mobile-hoja[open]) {
 
 /* --- Card --- */
 .fl-card {
-  background: var(--color-white);
-  border-radius: 24px;
-  padding: 2.5rem 2.25rem;
   width: 100%;
-  max-width: 380px;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+  max-width: 452px;
   animation: scaleIn 0.4s ease-out;
 }
 
@@ -3582,9 +3655,9 @@ body:has(.navegacion-mobile-hoja[open]) {
 }
 
 .fl-card-title {
-  font-size: clamp(0.8rem, 1.3vw, 0.875rem);
-  font-weight: 600;
-  color: var(--color-navy-800);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-white);
 }
 
 .fl-field {
@@ -3595,27 +3668,38 @@ body:has(.navegacion-mobile-hoja[open]) {
 
 .fl-input {
   width: 100%;
-  padding: clamp(0.625rem, 1.5vw, 0.75rem) 1rem;
-  font-size: clamp(0.85rem, 1.5vw, 0.9375rem);
-  color: var(--color-text-primary);
-  background: var(--color-white);
-  border: 1.5px solid var(--color-gray-200);
-  border-radius: 12px;
+  padding: 0 1.25rem;
+  font-size: 1rem;
+  color: var(--color-white);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 32px;
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  height: 2.75rem;
+}
+
+.fl-input::placeholder {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* El autorrelleno de Chrome pinta su propio fondo claro: se tapa con el azul. */
+.fl-input:autofill {
+  box-shadow: inset 0 0 0 1000px #001a39;
+  -webkit-text-fill-color: #fff;
 }
 
 .fl-input:focus {
-  border-color: var(--color-navy-800);
-  box-shadow: 0 0 0 3px rgba(13, 31, 60, 0.1);
+  border-color: var(--color-white);
+  box-shadow: 0 0 0 2px var(--color-white);
 }
 
 .fl-input-error {
-  border-color: var(--color-error);
+  border-color: #fca5a5;
 }
 
 .fl-input-password {
-  padding-right: 3rem;
+  padding-right: 3.5rem;
 }
 
 .fl-password-wrap {
@@ -3636,35 +3720,40 @@ body:has(.navegacion-mobile-hoja[open]) {
 .fl-select {
   width: 100%;
   height: 2.75rem;
-  padding: 0 2.75rem 0 1rem;
-  font-size: clamp(0.85rem, 1.5vw, 0.9375rem);
-  font-weight: 500;
-  color: var(--color-text-primary);
-  background: var(--color-white);
-  border: 1.5px solid var(--color-gray-200);
-  border-radius: var(--radius-md);
+  padding: 0 2.75rem 0 1.25rem;
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--color-white);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 16px;
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   appearance: none;
   -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6 9L12 15L18 9' stroke='%230d1f3c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6 9L12 15L18 9' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   cursor: pointer;
+  background-color: transparent;
+}
+
+/* La lista que abre el navegador es blanca: las opciones van en oscuro. */
+.fl-select option {
+  color: #111827;
 }
 
 .fl-select.placeholder {
-  color: var(--color-gray-500);
+  color: rgba(255, 255, 255, 0.65);
 }
 
 .fl-select:focus {
-  border-color: var(--color-navy-800);
-  box-shadow: 0 0 0 3px rgba(13, 31, 60, 0.1);
+  border-color: var(--color-white);
+  box-shadow: 0 0 0 2px var(--color-white);
 }
 
 .fl-error {
-  font-size: 0.75rem;
-  color: var(--color-error);
+  font-size: 0.875rem;
+  color: #fca5a5;
   margin-top: 2px;
 }
 
@@ -3690,37 +3779,38 @@ body:has(.navegacion-mobile-hoja[open]) {
   width: 32px;
   height: 6px;
   border-radius: 3px;
-  background: var(--color-gray-200);
+  background: rgba(255, 255, 255, 0.25);
   transition: background 0.3s ease, transform 0.2s ease;
 }
 
 .fl-progress-active {
-  background: var(--color-navy-800);
+  background: var(--color-white);
   transform: scaleX(1.1);
 }
 
 .fl-progress-done {
-  background: var(--color-navy-800);
-  opacity: 0.6;
+  background: var(--color-white);
+  opacity: 0.55;
 }
 
 /* --- Submit Button --- */
 .fl-submit {
   width: 100%;
-  padding: clamp(0.75rem, 1.5vw, 0.875rem);
-  font-size: clamp(0.9rem, 1.5vw, 1rem);
-  font-weight: 600;
-  color: var(--color-white);
-  background: var(--color-navy-800);
+  padding: 0 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-navy-800);
+  background: var(--color-white);
   border: none;
-  border-radius: 16px;
+  border-radius: 32px;
   cursor: pointer;
   transition: background 0.2s ease, transform 0.15s ease;
   margin-top: 0.25rem;
+  height: 2.75rem;
 }
 
 .fl-submit:hover {
-  background: #091729;
+  background: #f3f4f6;
   transform: translateY(-1px);
 }
 
@@ -3734,8 +3824,8 @@ body:has(.navegacion-mobile-hoja[open]) {
 }
 
 .fl-login-link {
-  font-size: clamp(0.8rem, 1.5vw, 0.875rem);
-  color: var(--color-navy-800);
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.9);
   text-align: center;
   text-decoration: underline;
   margin-top: -0.25rem;
@@ -3743,7 +3833,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 }
 
 .fl-login-link:hover {
-  opacity: 0.7;
+  color: var(--color-white);
 }
 
 /* --- Pagination --- */
@@ -3834,12 +3924,12 @@ body:has(.navegacion-mobile-hoja[open]) {
 .fl-success-btn {
   display: inline-block;
   padding: clamp(0.75rem, 1.5vw, 0.875rem) clamp(2rem, 4vw, 3rem);
-  font-size: clamp(0.9rem, 1.5vw, 1rem);
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 500;
   color: var(--color-navy-800);
   background: var(--color-white);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: 32px;
   cursor: pointer;
   transition: opacity 0.2s ease, transform 0.15s ease;
   text-decoration: none;
@@ -3861,8 +3951,8 @@ body:has(.navegacion-mobile-hoja[open]) {
   align-items: center;
   justify-content: center;
   margin-top: clamp(1rem, 2vw, 1.5rem);
-  font-size: clamp(0.8rem, 1.5vw, 0.875rem);
-  font-weight: 500;
+  font-size: 0.875rem;
+  font-weight: 400;
   color: var(--color-white);
   opacity: 0.85;
   transition: opacity 0.2s ease, transform 0.15s ease;
@@ -3873,12 +3963,83 @@ body:has(.navegacion-mobile-hoja[open]) {
   transform: translateY(-1px);
 }
 
+/* Lista abierta del desplegable de preguntas del primer ingreso (`QuestionPicker`).
+   Es la de `.admin-auth-select` del acceso al panel del sitio web (pedido del usuario,
+   2026-10-11), más el tope de ancho de la lista: la de un <select> la pinta el sistema y no admite
+   CSS; con el select personalizable (`appearance: base-select`, Chrome/Edge 135+) sí.
+   Lista blanca con borde #001A39 y esquinas de 16 sobre el azul del acceso. Sigue
+   siendo el <select> nativo: teclado, lector de pantalla y envío del formulario no
+   cambian. Sin soporte, queda la lista del sistema. Sin capa a propósito: le gana a
+   `h-11` y a `[&_option]:text-gray-900` de Tailwind. */
+@supports (appearance: base-select) {
+  .acceso-select,
+  .acceso-select::picker(select) {
+    appearance: base-select;
+  }
+
+  /* La pregunta elegida se deja partir en dos líneas y el campo crece hacia abajo:
+     en este modo el recorte cae en el borde de la caja, no en el relleno, y la
+     pregunta pasaba por debajo de la flecha. */
+  .acceso-select {
+    height: auto;
+    min-height: 2.75rem;
+    white-space: normal;
+  }
+
+  /* La flecha la pone el icono del componente. */
+  .acceso-select::picker-icon {
+    display: none;
+  }
+
+  /* Nunca más ancha que la pantalla (con 16 px a cada lado): en el móvil la lista se
+     ajustaba a la pregunta más larga, se salía por la derecha y la cortaba. Así la
+     opción larga se parte en dos líneas. */
+  .acceso-select::picker(select) {
+    max-inline-size: calc(100vw - 2rem);
+    margin-block: 4px;
+    padding: 4px;
+    border: 1.5px solid #001a39;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgb(0 26 57 / 0.15);
+  }
+
+  .acceso-select option {
+    padding: 8px 12px;
+    border-radius: 12px;
+    white-space: normal;
+  }
+
+  .acceso-select option::checkmark {
+    display: none;
+  }
+
+  .acceso-select option:checked {
+    font-weight: 600;
+  }
+
+  /* Blanco sobre #001A39: 17:1. */
+  .acceso-select option:not(:disabled):hover,
+  .acceso-select option:not(:disabled):focus-visible {
+    background: #001a39;
+    color: #fff;
+    outline: none;
+  }
+
+  .acceso-select option:disabled {
+    color: #9ca3af;
+  }
+}
+
 /* ============================================
    RESPONSIVE — Mobile-first breakpoints
    ============================================ */
 
-/* Por debajo de `md` los dos paneles se apilan: marca arriba, formulario debajo. */
-@media (width < 48rem) {
+/* Por debajo de `xl` los dos paneles se apilan: marca (o título del paso) arriba,
+   formulario debajo, todo centrado sobre un solo azul. Es `xl` y no `md` por la tablet
+   grande (iPad Pro 13", 1032 px en vertical): con `md` o `lg` le tocaban dos columnas
+   de 516 px. El mismo corte que el acceso al panel del sitio web (`AuthSplitShell`). */
+@media (width < 80rem) {
 
   .login-page,
   .recovery-page,
@@ -3886,6 +4047,8 @@ body:has(.navegacion-mobile-hoja[open]) {
   .rp-page,
   .fl-page {
     flex-direction: column;
+    justify-content: center;
+    background: var(--color-right-panel);
   }
 
   .login-left,
@@ -3895,7 +4058,9 @@ body:has(.navegacion-mobile-hoja[open]) {
   .fl-left {
     flex: 0 0 auto;
     min-height: auto;
-    padding: clamp(2rem, 8vw, 4rem) clamp(1rem, 4vw, 2rem);
+    padding: clamp(2rem, 8vw, 4rem) clamp(1rem, 4vw, 2rem) 0;
+    background: transparent;
+    border-radius: 0;
   }
 
   .login-right,
@@ -3903,13 +4068,21 @@ body:has(.navegacion-mobile-hoja[open]) {
   .sq-right,
   .rp-right,
   .fl-right {
-    flex: 1 1 auto;
+    flex: 0 0 auto;
     min-height: auto;
     padding: clamp(2rem, 6vw, 3rem) clamp(1rem, 4vw, 2rem);
+    background: transparent;
   }
+
 }
 
-/* Móvil (por debajo de `sm`) */
+/* Móvil (por debajo de `sm`).
+
+   Todo tiene que caber en el alto de la pantalla sin scroll (pedido del usuario,
+   2026-10-10): los rellenos y huecos verticales se encogen con el alto visible (`dvh`),
+   con el valor de antes como máximo. En un teléfono de 640 px de alto quedan en unos
+   dos tercios; en uno de 800, casi como estaban. Lo mismo hace el acceso al panel del
+   sitio web (`authPasosHuecoClass`). */
 @media (width < 40rem) {
 
   .login-left,
@@ -3917,7 +4090,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   .sq-left,
   .rp-left,
   .fl-left {
-    padding: 2rem 1rem;
+    padding: clamp(0.75rem, 3dvh, 2rem) 1rem 0;
   }
 
   .login-brand-title,
@@ -3925,7 +4098,14 @@ body:has(.navegacion-mobile-hoja[open]) {
   .sq-brand-title,
   .rp-brand-title,
   .fl-brand-title {
-    font-size: 1.5rem;
+    font-size: clamp(1.25rem, 3.6dvh, 1.5rem);
+  }
+
+  .recovery-brand-title,
+  .sq-brand-title,
+  .rp-brand-title,
+  .fl-brand-title {
+    margin-bottom: clamp(0.375rem, 1.2dvh, 0.75rem);
   }
 
   .login-logo {
@@ -3937,17 +4117,35 @@ body:has(.navegacion-mobile-hoja[open]) {
   .sq-right,
   .rp-right,
   .fl-right {
-    padding: 1.5rem 1rem;
+    padding: clamp(0.75rem, 2.5dvh, 1.5rem) 1rem;
   }
 
   .recovery-card,
   .sq-card,
-  .rp-card,
-  .fl-card {
-    padding: 1.5rem 1.25rem;
+  .rp-card {
+    padding: clamp(1rem, 2.5dvh, 1.5rem) 1.25rem;
     box-shadow: var(--shadow-card);
     border-radius: var(--radius-lg);
     max-width: 100%;
+  }
+
+  .recovery-form,
+  .sq-form,
+  .rp-form,
+  .fl-form {
+    gap: clamp(0.5rem, 1.4dvh, 0.875rem);
+  }
+
+  .fl-pagination {
+    margin-top: clamp(0.5rem, 2dvh, 1.5rem);
+  }
+
+  .login-return,
+  .recovery-return,
+  .sq-return,
+  .rp-return,
+  .fl-return {
+    margin-top: clamp(0.25rem, 1.5dvh, 1.25rem);
   }
 }
 
@@ -3999,8 +4197,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 
   .recovery-card,
   .sq-card,
-  .rp-card,
-  .fl-card {
+  .rp-card {
     padding: 1rem;
   }
 
@@ -4025,7 +4222,6 @@ body:has(.navegacion-mobile-hoja[open]) {
   .rp-return,
   .fl-return {
     margin-top: 0.75rem;
-    font-size: 0.75rem;
   }
 }
 
@@ -4064,8 +4260,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 
   .recovery-card,
   .sq-card,
-  .rp-card,
-  .fl-card {
+  .rp-card {
     padding: 1.5rem;
   }
 }
@@ -4095,8 +4290,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 
   .recovery-card,
   .sq-card,
-  .rp-card,
-  .fl-card {
+  .rp-card {
     max-width: 440px;
     padding: 3rem;
   }
@@ -4117,11 +4311,9 @@ body:has(.navegacion-mobile-hoja[open]) {
 .auth-slide-forward .recovery-card,
 .auth-slide-forward .sq-card,
 .auth-slide-forward .rp-card,
-.auth-slide-forward .fl-card,
 .auth-slide-backward .recovery-card,
 .auth-slide-backward .sq-card,
-.auth-slide-backward .rp-card,
-.auth-slide-backward .fl-card {
+.auth-slide-backward .rp-card {
   animation: none;
 }
 
@@ -4132,8 +4324,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 
 .auth-page-transition .recovery-card,
 .auth-page-transition .sq-card,
-.auth-page-transition .rp-card,
-.auth-page-transition .fl-card {
+.auth-page-transition .rp-card {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
   transition: box-shadow 0.4s ease;
 }
@@ -4141,8 +4332,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 /* Hover sin efecto 3D acumulativo */
 .auth-page-transition .recovery-card:hover,
 .auth-page-transition .sq-card:hover,
-.auth-page-transition .rp-card:hover,
-.auth-page-transition .fl-card:hover {
+.auth-page-transition .rp-card:hover {
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
 }
 
@@ -4262,6 +4452,12 @@ body:has(.navegacion-mobile-hoja[open]) {
   animation: authBrandingFadeUp 0.4s ease-out both;
   gap: 1.5rem;
   text-align: center;
+}
+
+/* El cargador del login va directo sobre el azul en todos los anchos: ya autenticado, la
+   tarjeta blanca se quita (2026-10-12). El texto, navy por defecto, desaparecería. */
+.login-success-loader .goo-loader-label {
+  color: var(--color-white);
 }
 
 .goo-loader {
@@ -6045,6 +6241,27 @@ body:has(.preview-page) .intranet-topbar {
   opacity: 0.85;
 }
 
+/* 44 px de alto: es lo único pulsable de la barra y se toca con el dedo. */
+.preview-aviso-volver {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 0.75rem;
+  border-radius: 16px;
+  font-weight: 600;
+  color: inherit;
+  text-decoration: none;
+}
+
+.preview-aviso-volver:hover {
+  background: rgb(0 0 0 / 0.06);
+}
+
+.preview-aviso-volver:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
 @media (width < 48rem) {
   .preview-aviso-nota {
     margin-left: 0;
@@ -6257,4 +6474,176 @@ body:has(.preview-page) .intranet-topbar {
 [class*="_LayerTree-helper_"]::before {
   content: "Sin bloques";
   font-size: 14px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Entrada y salida de los modales (`@starting-style`)
+
+   Un modal aparece de golpe porque el navegador no tiene «antes» desde el que
+   animar: el elemento no existía (lo monta React) o estaba en `display: none`
+   (un `<dialog>` cerrado). `@starting-style` le da ese antes, el estilo con el que
+   arranca la transición en su primer pintado, sin JavaScript ni `@keyframes`.
+
+   Hay dos familias de modales y una clase para cada una:
+
+   - `olo-anim-dialogo`, en un `<dialog>` que se abre con `showModal()`. Entra y
+     sale solo con CSS: al cerrarse pierde `[open]` y se va a su estado cerrado; con
+     `display` y `overlay` en `allow-discrete` el navegador lo mantiene pintado (y en
+     la capa superior) hasta que termina de desvanecerse. Solo Chromium sabe
+     transicionar `overlay`; en los demás el `<dialog>` sale de la capa superior al
+     instante y, si siguiera pintado, caería en el flujo de la página un momento.
+     Por eso la salida va dentro de `@supports (overlay: auto)` y en el resto se
+     cierra de golpe, como antes. La entrada funciona en todos.
+   - `olo-anim-fondo` (el velo) y `olo-anim-caja` (el cuadro), en los que React
+     monta por portal. La entrada es igual; la salida necesita que el modal siga
+     montado con `data-cerrando` lo que dura, y de eso se encarga
+     `useCierreAnimado` (`src/shared/lib/use-cierre-animado.ts`).
+
+   Las propiedades que se mueven son `translate` y `scale`, no `transform`: así no
+   pisan un `transform` que la caja ya tenga. Con «reducir movimiento» solo queda el
+   fundido. La salida es más corta que la entrada: cerrar no debe hacer esperar.
+   Si cambias `--olo-modal-salida`, cambia también `SALIDA_DEL_MODAL_MS` en el hook.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --olo-modal-entrada: 220ms;
+  --olo-modal-salida: 150ms;
+  --olo-modal-curva-entrada: cubic-bezier(0.16, 1, 0.3, 1);
+  --olo-modal-curva-salida: cubic-bezier(0.4, 0, 1, 1);
+  --olo-modal-desde: 0 0.75rem;
+  --olo-modal-escala: 0.96;
+}
+
+/* En el móvil los modales salen desde abajo (`2-convenciones` §10.4): suben, sin encoger. */
+@media (width < 40rem) {
+  :root {
+    --olo-modal-desde: 0 2rem;
+    --olo-modal-escala: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --olo-modal-desde: 0 0;
+    --olo-modal-escala: 1;
+  }
+}
+
+/* --- Modales montados por React: velo + cuadro --- */
+
+.olo-anim-fondo {
+  transition: opacity var(--olo-modal-entrada) var(--olo-modal-curva-entrada);
+}
+
+.olo-anim-caja {
+  transition:
+    opacity var(--olo-modal-entrada) var(--olo-modal-curva-entrada),
+    translate var(--olo-modal-entrada) var(--olo-modal-curva-entrada),
+    scale var(--olo-modal-entrada) var(--olo-modal-curva-entrada);
+}
+
+@starting-style {
+  .olo-anim-fondo {
+    opacity: 0;
+  }
+
+  .olo-anim-caja {
+    opacity: 0;
+    translate: var(--olo-modal-desde);
+    scale: var(--olo-modal-escala);
+  }
+}
+
+/* Mientras se va, ya no recibe clics: el que cae en ese momento es para lo de detrás. */
+.olo-anim-fondo[data-cerrando] {
+  opacity: 0;
+  pointer-events: none;
+  transition-duration: var(--olo-modal-salida);
+  transition-timing-function: var(--olo-modal-curva-salida);
+}
+
+.olo-anim-fondo[data-cerrando] .olo-anim-caja,
+.olo-anim-caja[data-cerrando] {
+  opacity: 0;
+  translate: var(--olo-modal-desde);
+  scale: var(--olo-modal-escala);
+  transition-duration: var(--olo-modal-salida);
+  transition-timing-function: var(--olo-modal-curva-salida);
+}
+
+/* --- `<dialog>` nativo --- */
+
+.olo-anim-dialogo[open] {
+  transition:
+    opacity var(--olo-modal-entrada) var(--olo-modal-curva-entrada),
+    translate var(--olo-modal-entrada) var(--olo-modal-curva-entrada),
+    scale var(--olo-modal-entrada) var(--olo-modal-curva-entrada);
+}
+
+.olo-anim-dialogo[open]::backdrop {
+  transition: opacity var(--olo-modal-entrada) var(--olo-modal-curva-entrada);
+}
+
+@starting-style {
+  .olo-anim-dialogo[open] {
+    opacity: 0;
+    translate: var(--olo-modal-desde);
+    scale: var(--olo-modal-escala);
+  }
+
+  .olo-anim-dialogo[open]::backdrop {
+    opacity: 0;
+  }
+}
+
+@supports (overlay: auto) {
+  .olo-anim-dialogo:not([open]) {
+    opacity: 0;
+    translate: var(--olo-modal-desde);
+    scale: var(--olo-modal-escala);
+    transition:
+      opacity var(--olo-modal-salida) var(--olo-modal-curva-salida),
+      translate var(--olo-modal-salida) var(--olo-modal-curva-salida),
+      scale var(--olo-modal-salida) var(--olo-modal-curva-salida),
+      overlay var(--olo-modal-salida) allow-discrete,
+      display var(--olo-modal-salida) allow-discrete;
+  }
+
+  .olo-anim-dialogo:not([open])::backdrop {
+    opacity: 0;
+    transition:
+      opacity var(--olo-modal-salida) var(--olo-modal-curva-salida),
+      overlay var(--olo-modal-salida) allow-discrete,
+      display var(--olo-modal-salida) allow-discrete;
+  }
+}
+
+/* Enlace de regreso al sitio: 16 px desde `md`, como en el acceso del sitio web. */
+@media (width >= 48rem) {
+  .site-return-link,
+  .login-return,
+  .recovery-return,
+  .sq-return,
+  .rp-return,
+  .fl-return,
+  .rs-return {
+    font-size: 1rem;
+  }
+}
+
+/* Primer ingreso: lo que crece desde `md` en la escala del acceso del sitio web (2026-10-11):
+   etiquetas y enlaces a 16 px. Por debajo, 14, como en el sitio. */
+@media (width >= 48rem) {
+  .fl-card-title,
+  .fl-login-link {
+    font-size: 1rem;
+  }
+}
+
+/* Y el texto bajo el título del paso, en el móvil: 14-16 px según el alto, como en el sitio. */
+@media (width < 48rem) {
+  .fl-brand-subtitle {
+    font-size: clamp(0.875rem, 2.35dvh, 1rem);
+    line-height: 1.45;
+  }
 }

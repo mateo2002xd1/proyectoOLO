@@ -189,6 +189,11 @@ export const recoverPassword = async (
   const passwordHash = await hashearPassword(newPassword);
   await UserRepository.update(user.id, {
     password_hash: passwordHash,
+    // La contraseña que acaba de elegir reemplaza a cualquier temporal pendiente. Sin
+    // esto, quien recuperaba con una temporal ya vencida (72 h) seguía marcado como
+    // «debe cambiarla» y el login lo rechazaba por una clave que ya no es la suya.
+    must_change_password: false,
+    temp_password_expires_at: null,
     failed_security_attempts: 0,
     // Recuperar la contraseña con éxito también libera el bloqueo del login: es el
     // camino que §3 deja abierto a quien se quedó fuera por intentos fallidos.

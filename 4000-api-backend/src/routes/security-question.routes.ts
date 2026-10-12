@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { SecurityQuestionController } from '../controllers/security-questions.controller';
-import { requireAuth } from '../middlewares/auth.middleware';
+import { requireAuthConConfiguracionPendiente } from '../middlewares/auth.middleware';
 import {
   limitadorDePreguntas,
   limitadorDeVerificacion,
@@ -120,7 +120,7 @@ router.post('/user-questions', limitadorDePreguntas, SecurityQuestionController.
  *             schema: { $ref: '#/components/schemas/Error' }
  *       401: { $ref: '#/components/responses/NoAutenticado' }
  */
-router.post('/setup', requireAuth, SecurityQuestionController.setupQuestions);
+router.post('/setup', requireAuthConConfiguracionPendiente, SecurityQuestionController.setupQuestions);
 
 /**
  * @openapi
@@ -153,7 +153,16 @@ router.post('/setup', requireAuth, SecurityQuestionController.setupQuestions);
  *             required: [email, answers]
  *     responses:
  *       200:
- *         description: Respuestas correctas. Habilita el paso de recuperación.
+ *         description: |
+ *           Respuestas correctas. Habilita el paso de recuperación. Trae el primer nombre
+ *           de la cuenta para saludar en ese paso; solo sale con las tres respuestas bien.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string }
+ *                 nombre: { type: string, nullable: true }
  *       401:
  *         description: Respuestas incorrectas, o cuenta bloqueada por intentos.
  *         content:

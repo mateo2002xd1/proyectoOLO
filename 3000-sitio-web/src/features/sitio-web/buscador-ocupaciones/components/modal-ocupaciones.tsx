@@ -10,6 +10,7 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { XMarkIcon } from '@heroicons/react/20/solid';
+import { useCierreAnimado, useUltimoValorAbierto } from '@/shared/lib/use-cierre-animado';
 
 interface ModalOcupacionesProps {
   abierto: boolean;
@@ -73,11 +74,11 @@ const SELECTOR_ENFOCABLES =
 export function ModalOcupaciones({
   abierto,
   onCerrar,
-  antetitulo,
-  titulo,
+  antetitulo: antetituloAbierto,
+  titulo: tituloAbierto,
   claveContenido,
-  pie,
-  children,
+  pie: pieAbierto,
+  children: contenidoAbierto,
 }: ModalOcupacionesProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const focoPrevioRef = useRef<HTMLElement | null>(null);
@@ -147,11 +148,20 @@ export function ModalOcupaciones({
     [onCerrar],
   );
 
-  if (!abierto || !montado) return null;
+  // Mientras se va, lo último que enseñó abierto: el padre vacía lo que pinta al cerrar
+  // (en Alertas de inversión, el proyecto vuelve a `null`).
+  const { montado: presente, cerrando } = useCierreAnimado(abierto);
+  const antetitulo = useUltimoValorAbierto(abierto, antetituloAbierto);
+  const titulo = useUltimoValorAbierto(abierto, tituloAbierto);
+  const pie = useUltimoValorAbierto(abierto, pieAbierto);
+  const children = useUltimoValorAbierto(abierto, contenidoAbierto);
+
+  if (!presente || !montado) return null;
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[2000] flex items-center justify-center overflow-y-auto bg-[#001631]/80 p-4 backdrop-blur-sm sm:p-6"
+      className="olo-anim-fondo fixed inset-0 z-[2000] flex items-center justify-center overflow-y-auto bg-[#001631]/80 p-4 backdrop-blur-sm sm:p-6"
+      data-cerrando={cerrando || undefined}
       onMouseDown={(evento) => {
         // `onMouseDown` y no `onClick`: al seleccionar texto dentro del panel y
         // soltar el ratón fuera, el clic se contabiliza en el fondo y el panel
@@ -172,7 +182,7 @@ export function ModalOcupaciones({
            fondo le deja. El alto es un *máximo*, no una altura fija —una búsqueda
            con dos resultados no tiene por qué pintar un panel medio vacío—, y en
            `dvh` para que la barra del navegador móvil no lo desborde. */
-        className="flex max-h-[calc(100dvh-2rem)] w-full flex-col overflow-hidden rounded-[16px] bg-white shadow-2xl outline-none sm:max-h-[80dvh] sm:w-[75vw]"
+        className="olo-anim-caja flex max-h-[calc(100dvh-2rem)] w-full flex-col overflow-hidden rounded-[16px] bg-white shadow-2xl outline-none sm:max-h-[80dvh] sm:w-[75vw]"
       >
         <header className="flex items-start gap-4 bg-[#001631] px-5 py-4 text-white sm:px-7 sm:py-5">
           <div className="min-w-0 flex-1">
