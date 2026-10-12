@@ -5,6 +5,30 @@
 
 ---
 
+## sesión 11-10-2026 (5.ª parte): campos del login de la intranet transparentes sobre el azul
+
+**Qué se pidió.** En el login de la intranet, «Correo SENA» y «Contraseña» eran blancos sobre el
+azul; probarlos transparentes, con el marcador en contraste. El botón «Ingresar» sigue blanco.
+
+**Lo que se hizo.** `login-view.tsx`: los dos campos usan `campoLogin()`, en vez de dos copias
+de la misma clase. Por debajo de `xl` (formulario directo sobre el azul): fondo transparente,
+borde blanco al 50 %, texto blanco, marcador blanco al 65 %, anillo de foco blanco y el ojo de
+la contraseña en blanco al 80 %. Desde `xl` (tarjeta blanca), como estaban. El autorrelleno de
+Chrome pinta su propio fondo claro encima de cualquier `background`: se tapa con una sombra
+interior del color del fondo (`autofill:shadow-[inset_…]`) y `-webkit-text-fill-color`. El
+botón no cambia.
+
+| Prueba | Resultado |
+|---|---|
+| Contraste calculado sobre `#001A39` (y `#001631`) | Marcador 7.8:1, borde 5.1:1, ojo 11.3:1: pasan 4.5 (texto) y 3 (borde), WCAG 1.4.3 y 1.4.11. |
+| `tsc --noEmit` y ESLint | Limpios. |
+| Capturas en vivo a 360 × 640, 768 × 1024 y 1280 × 800 | Transparentes sobre el azul en el móvil y la tablet; en la tarjeta de escritorio, blancos como antes. Sin scroll. |
+| Autorrelleno de Chrome | **No se probó**: hace falta una contraseña guardada en el navegador. |
+
+**Pendiente al cierre.** Mirar el autorrelleno en el navegador del usuario.
+
+---
+
 ## sesión 11-10-2026 (4.ª parte): el acceso de la intranet copia el del sitio, con los mensajes de cada paso a la izquierda y la misma escala de letra
 
 **Qué se pidió.** En la intranet, al pulsar «¿Olvidaste tu contraseña?» el panel izquierdo
