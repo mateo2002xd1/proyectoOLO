@@ -154,19 +154,31 @@ export function AuthProgressDots({
   total,
   current,
   className = 'mb-5',
+  variante = 'barras',
 }: {
   total: number;
   current: number;
   className?: string;
+  /**
+   * `puntos`: la actual, una píldora; las ya respondidas, puntos medio atenuados; las que
+   * faltan, puntos claros. Es el diseño de «Verifica tu identidad» de la intranet, que el
+   * usuario pidió también aquí para la recuperación (2026-10-11). `barras`, el de siempre.
+   */
+  variante?: 'barras' | 'puntos';
 }) {
   return (
-    <div className={`flex justify-center gap-2 ${className}`} aria-hidden="true">
-      {Array.from({ length: total }).map((_, i) => (
-        <span
-          key={i}
-          className={`h-1.5 w-8 rounded-full transition-colors ${i === current ? 'bg-[#001631]' : 'bg-[#ccd3d7]'}`}
-        />
-      ))}
+    <div className={`flex justify-center ${variante === 'puntos' ? 'gap-1.5' : 'gap-2'} ${className}`} aria-hidden="true">
+      {Array.from({ length: total }).map((_, i) => {
+        const clase =
+          variante === 'puntos'
+            ? i === current
+              ? 'w-6 bg-[#001631]'
+              : i < current
+                ? 'w-1.5 bg-[#001631]/45'
+                : 'w-1.5 bg-[#ccd3d7]'
+            : `w-8 ${i === current ? 'bg-[#001631]' : 'bg-[#ccd3d7]'}`;
+        return <span key={i} className={`h-1.5 rounded-full transition-all ${clase}`} />;
+      })}
     </div>
   );
 }

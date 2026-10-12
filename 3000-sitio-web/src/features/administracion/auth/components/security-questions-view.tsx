@@ -7,7 +7,6 @@ import {
   AuthGeneralError,
   AuthProgressDots,
   authPasosCardClass,
-  authPasosCardHeadingClass,
   authPasosErrorTextClass,
   authPasosInputClass,
   authPasosPrimaryClass,
@@ -107,24 +106,18 @@ export function SecurityQuestionsView() {
         <form onSubmit={siguientePregunta} noValidate>
           {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
 
-          {/* Sin el número de la pregunta a la vista (lo quitó el usuario): el avance lo dan
-              las barras, y el lector de pantalla lo oye en la caja de la pregunta. */}
-          <h2 className={`mb-3 ${authPasosCardHeadingClass}`}>Preguntas de seguridad</h2>
-
-          {/* Mide lo mismo que un campo (`authPasosInputClass`): 44 px de alto y el mismo
-              relleno. Si la pregunta es larga, crece hacia abajo; por eso sus esquinas son de
-              16 (`rounded-xl` en este sitio), como los mensajes de estado, y no de 32. */}
-          <label
-            htmlFor="respuesta"
-            className={`${authPasosHuecoClass} block min-h-11 rounded-xl border border-[#d9d9d9] px-5 py-2 text-base text-[#001a39]`}
-          >
-            <span className="sr-only">
-              Pregunta {preguntaActual + 1} de {total}:{' '}
-            </span>
-            {pregunta?.label}
-          </label>
-
+          {/* El diseño de «Verifica tu identidad» de la intranet (pedido del usuario,
+              2026-10-11): «PREGUNTA 1 DE 3» en pequeño y mayúsculas, la pregunta como
+              etiqueta del campo y, bajo el campo, los puntos de avance. Antes iba el
+              encabezado «Preguntas de seguridad», la pregunta en una caja con borde y sin el
+              número a la vista (que el usuario había quitado el 2026-10-09). */}
           <div className={authPasosHuecoClass}>
+            <label htmlFor="respuesta" className="mb-1 block text-sm font-medium text-[#001a39] md:mb-2 md:text-base">
+              <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[#737373]">
+                Pregunta {preguntaActual + 1} de {total}
+              </span>
+              {pregunta?.label}
+            </label>
             <input
               id="respuesta"
               type="text"
@@ -152,7 +145,7 @@ export function SecurityQuestionsView() {
             )}
           </div>
 
-          <AuthProgressDots total={total} current={preguntaActual} className={authPasosHuecoClass} />
+          <AuthProgressDots total={total} current={preguntaActual} variante="puntos" className={authPasosHuecoClass} />
 
           <button type="submit" disabled={isLoading} className={authPasosPrimaryClass}>
             {isLoading ? 'Verificando…' : 'Continuar'}
