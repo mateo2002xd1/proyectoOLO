@@ -57,7 +57,7 @@ export function PasswordField({
             aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
           >
             <span className="text-white/80">
-              <IconoMascara nombre={visible ? 'eye-open' : 'eye-closed'} tamano="h-4 w-5" />
+              <IconoMascara nombre={visible ? 'eye-open' : 'eye-closed'} tamano="h-4 w-4" />
             </span>
           </button>
         </div>
@@ -97,7 +97,7 @@ export function PasswordField({
           aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
           className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-white/80 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
         >
-          <IconoMascara nombre={visible ? 'eye-open' : 'eye-closed'} tamano="h-4 w-5" />
+          <IconoMascara nombre={visible ? 'eye-open' : 'eye-closed'} tamano="h-4 w-4" />
         </button>
       </div>
       {error && <p className="mt-1.5 text-sm text-red-300">{error}</p>}

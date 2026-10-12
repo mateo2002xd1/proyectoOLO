@@ -214,7 +214,7 @@ function LoginForm() {
                 aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 className={`absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white ${accesoIconoCampoClass}`}
               >
-                <IconoMascara nombre={showPassword ? 'eye-open' : 'eye-closed'} tamano="h-4 w-5" />
+                <IconoMascara nombre={showPassword ? 'eye-open' : 'eye-closed'} tamano="h-4 w-4" />
               </button>
             </div>
             {errors.password && <p className={accesoErrorClass}>{errors.password}</p>}
