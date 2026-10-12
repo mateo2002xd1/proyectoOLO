@@ -5,6 +5,69 @@
 
 ---
 
+## sesión 12-10-2026 (5.ª parte): el cambio de contraseña del primer ingreso y el aviso final, en tarjeta blanca; nuevos textos del aviso
+
+**Qué se pidió:** en tablet y escritorio, la tarjeta blanca también en «Crea tu nueva contraseña»
+(el cambio forzado de `/reset-password`, al que se llega desde el login con un código temporal) y en
+`/reset-success`. En la primera, solo colores: ni textos ni estados. En el aviso final: el título de
+la izquierda «¡Genial, tu clave ha sido actualizada con éxito!» (antes «Tu contraseña se
+actualizó»), dentro de la tarjeta «Ya puedes ingresar a tu cuenta con tu nueva contraseña.» y
+«¡Tu seguridad es nuestra prioridad!» (antes «Ya puedes entrar a la intranet con tu nueva
+contraseña.», bajo el título) y sin la insignia del check.
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `marco-acceso.tsx` | Prop `enBlanco`: pone `accesoTarjetaBlancaClass` y la descripción de dentro de la tarjeta (`descripcionEnTarjeta`) en `#001a39` desde `md`. Login, recuperación y verificación pasan a usarla en vez de `claseTarjeta={accesoTarjetaBlancaClass}`. |
+| `reset-password-view.tsx` | `enBlanco` en los dos modos (antes solo en la recuperación): tarjeta, campos, requisitos, botón y «Cancelar» del cambio forzado. Textos sin tocar. |
+| `auth-success-screen.tsx` | `subtitle` admite varios párrafos; props `enBlanco`, `descripcionEnTarjeta` y `conInsignia` (por defecto `true`). «¡Preguntas de seguridad configuradas!» no las pasa y no cambia. |
+| `reset-success-view.tsx` | Los textos del usuario, `enBlanco`, `descripcionEnTarjeta` y `conInsignia={false}`. En el móvil los dos párrafos siguen bajo el título. |
+| `docs/manual-de-usuario-formato.md` | §3.4 (paso 5) y el control de `/reset-success`: título y mensaje nuevos, sin la insignia. |
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| `tsc --noEmit` y ESLint de la intranet | Limpios |
+| Chrome headless a 390, 768 y 1440 px; el cambio forzado con `/api-backend/me` simulado **en el propio navegador** (`Fetch.fulfillRequest`, sin firmar nada ni llegar a la API) | Forzado: textos iguales, tarjeta blanca, etiquetas `#001a39`, borde `#d9d9d9` desde 768. Aviso final: título nuevo, párrafos en la tarjeta en `#001a39` desde 768 y bajo el título en el móvil, sin `polyline` del check, botón `#001A39`. Sin scroll horizontal. |
+| Login, recuperación, verificación y el cargador (las pruebas de las partes 2 a 4) | Sin cambios tras pasar a `enBlanco` del marco. |
+
+**Pendiente al cierre:** las capturas del manual de `/reset-success` (escritorio y móvil) muestran
+aún la insignia y el texto viejo; hay que rehacerlas.
+
+---
+
+## sesión 12-10-2026 (4.ª parte): al autenticarse, el login de la intranet quita la tarjeta y deja el cargador con «Iniciando sesión...»
+
+**Qué se pidió:** cuando el login se autentica, quitar la tarjeta blanca y dejar solo el cargador
+con el mensaje «Iniciando sesión». Sustituye lo de la 3.ª parte, que ocultaba el texto desde `md`.
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `login-view.tsx` | Con `isSuccess`, `claseTarjeta={accesoSinTarjetaClass}` en vez de la tarjeta blanca; el texto del `GooLoader` pasa de «Preparando tu espacio...» a «Iniciando sesión...». |
+| `acceso-ui.ts` | Nueva `accesoSinTarjetaClass` (`md:border-transparent!`); `accesoTarjetaBlancaClass` lleva también el `!`. |
+| `globals.css` | Fuera la regla que ocultaba el texto desde `md`: `.login-success-loader .goo-loader-label` vuelve a ser blanco en todos los anchos. |
+
+> **Trampa:** `md:border-transparent` sin `!` no quita el borde tenue: `md:border-white/20` de
+> `accesoTarjetaClass` sale después en el CSS compilado y gana, aunque la clase se ponga detrás en
+> el atributo. Medido: `borderTopColor` seguía en blanco al 20 %.
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| `tsc --noEmit` y ESLint del login y `acceso-ui.ts` | Limpios |
+| Chrome headless, con la respuesta de `POST /api-backend/login` simulada **en el propio navegador** (`Fetch.fulfillRequest`, no llega a la API), a 390, 768 y 1440 px | Texto «Iniciando sesión...» en blanco; contenedor sin fondo y con borde `rgba(0,0,0,0)` desde 768. |
+| El formulario sin autenticar, a los 4 anchos | Sigue con tarjeta blanca y botón `#001A39` desde 768. |
+
+**Pendiente al cierre:** el punto azul marino del cargador (`.goo-loader-dot1`) no se distingue del
+fondo azul; ya pasaba en el móvil y no se pidió cambiarlo.
+
+---
+
 ## sesión 12-10-2026 (3.ª parte): la recuperación de la intranet, también en tarjeta blanca; el cargador del login, sin texto desde la tablet
 
 **Qué se pidió:** en tablet y escritorio, la misma tarjeta blanca del login (2.ª parte) en las tres

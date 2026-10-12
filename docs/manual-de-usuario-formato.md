@@ -874,7 +874,7 @@ Este procedimiento permite a cualquier funcionario restablecer de forma autónom
 > **[Captura: Restablecimiento de Contraseña Intranet (Móvil)]**
 > *Formulario de nueva contraseña con lista interactiva de requisitos en la Intranet. (Móvil).*
 
-5. **Confirmación de actualización y retorno al acceso:** La interfaz presenta la pantalla de confirmación exitosa con la insignia de confirmación y el mensaje: *"Tu contraseña se actualizó. Ya puedes entrar a la intranet con tu nueva contraseña."*. Al presionar el botón **"Ir a iniciar sesión"**, el sistema redirige automáticamente a la pantalla de acceso de la Intranet (`/login`) para ingresar con la nueva clave (ver [Sección 3.4.1.2: Flujo de Inicio de Sesión Habitual](#3412-flujo-de-inicio-de-sesión-habitual)).
+5. **Confirmación de actualización y retorno al acceso:** La interfaz presenta la pantalla de confirmación exitosa con el título *"¡Genial, tu clave ha sido actualizada con éxito!"* y el mensaje *"Ya puedes ingresar a tu cuenta con tu nueva contraseña. ¡Tu seguridad es nuestra prioridad!"* (en tablet y escritorio, dentro de la tarjeta blanca). Al presionar el botón **"Ir a iniciar sesión"**, el sistema redirige automáticamente a la pantalla de acceso de la Intranet (`/login`) para ingresar con la nueva clave (ver [Sección 3.4.1.2: Flujo de Inicio de Sesión Habitual](#3412-flujo-de-inicio-de-sesión-habitual)).
 
 > **[Captura: Confirmación de Clave Actualizada Intranet]**
 > *Pantalla de éxito indicando la actualización correcta de la contraseña y botón de retorno al inicio de sesión.*
@@ -2372,14 +2372,14 @@ Durante el procedimiento de recuperación de contraseña (descrito operativament
 > *Verificador de directivas de seguridad y aviso de falta de coincidencia en la confirmación en la Intranet. (Móvil).*
 
 5. **Confirmación y retorno seguro:**
-   * *Situación de control:* Tras procesar el cambio en el servidor, la pantalla `/reset-success` confirma la operación con la insignia de verificación y el mensaje *"Tu contraseña se actualizó"*, bloqueando retornos involuntarios con el botón de retroceso del navegador y obligando a iniciar sesión formalmente.
+   * *Situación de control:* Tras procesar el cambio en el servidor, la pantalla `/reset-success` confirma la operación con el título *"¡Genial, tu clave ha sido actualizada con éxito!"*, bloqueando retornos involuntarios con el botón de retroceso del navegador y obligando a iniciar sesión formalmente.
    * *Acción de corrección:* Hacer clic sobre el botón "Ir a iniciar sesión" y autenticarse con la nueva contraseña definitiva en la pantalla de acceso de la Intranet (`/login`).
 
 > **[Captura: Pantalla de Éxito en Recuperación Intranet]**
-> *Insignia circular de verificación, mensaje 'Tu contraseña se actualizó' y botón 'Ir a iniciar sesión' en la Intranet.*
+> *Título '¡Genial, tu clave ha sido actualizada con éxito!', mensaje en la tarjeta blanca y botón 'Ir a iniciar sesión' en la Intranet.*
 >
 > **[Captura: Pantalla de Éxito en Recuperación Intranet (Móvil)]**
-> *Insignia circular de verificación, mensaje 'Tu contraseña se actualizó' y botón 'Ir a iniciar sesión' en la Intranet. (Móvil).*
+> *Título '¡Genial, tu clave ha sido actualizada con éxito!', mensaje y botón 'Ir a iniciar sesión' en la Intranet. (Móvil).*
 
 #### 3.5.1.4. Cierre de Sesión por Inactividad y Alertas de Expiración
 
