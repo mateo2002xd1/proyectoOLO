@@ -5,6 +5,29 @@
 
 ---
 
+## sesión 11-10-2026 (2.ª parte): «Volver a iniciar sesión» en las preguntas de la recuperación (intranet)
+
+**Qué se pidió.** En la intranet, debajo del botón «Siguiente», un «Volver a iniciar sesión».
+
+**Qué pasaba.** En la recuperación de la contraseña, la pantalla de las preguntas de seguridad
+(`security-questions-view.tsx` en modo `verify`) no tenía nada debajo del botón en la primera
+pregunta: no había forma de volver al login sin la flecha del navegador. Desde la segunda
+pregunta sale «Volver a la pregunta anterior», y en el modo de configurar (primer ingreso),
+«Iniciar sesión», que cierra la sesión. El sitio web ya tenía su enlace al login en ese punto.
+
+**Lo que se hizo.** En la primera pregunta de la recuperación, un enlace a `/login` con el
+texto y el estilo del paso anterior (el del correo, `recovery-view.tsx`). Es un `<Link>` y no un
+`logout()`, porque en la recuperación no hay sesión que cerrar. Lo demás no cambia.
+
+| Prueba | Resultado |
+|---|---|
+| `tsc --noEmit` y ESLint del archivo | Limpios. |
+| En vivo sobre el `next dev` de la intranet, con preguntas de prueba en `sessionStorage` (la pantalla no llama a la API hasta enviar), a 360 × 640 y a 1280 × 800 | El enlace sale debajo de «Siguiente» y lleva a `/login`. Sigue cabiendo sin scroll (0 px de más), como se dejó el 10-10. |
+
+**Pendiente al cierre.** Nada.
+
+---
+
 ## sesión 11-10-2026: los modales entran y salen con animación (`@starting-style`)
 
 **Qué se pidió.** Animaciones de entrada y salida en los modales, con la regla
