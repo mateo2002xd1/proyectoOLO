@@ -19,7 +19,7 @@ export function BarrasDeAvance({
   total: number;
   actual: number;
   variante?: 'barras' | 'puntos';
-  /** Desde `md`, en `#001A39` para la tarjeta blanca de la recuperación (2026-10-12). */
+  /** Desde `md`, en `#001A39` para la tarjeta blanca (recuperación y primer ingreso, 2026-10-12). */
   enBlanco?: boolean;
 }) {
   return (
@@ -32,7 +32,7 @@ export function BarrasDeAvance({
               : i < actual
                 ? `w-1.5 bg-white/55 ${enBlanco ? 'md:bg-[#001A39]/45' : ''}`
                 : `w-1.5 bg-white/25 ${enBlanco ? 'md:bg-[#ccd3d7]' : ''}`
-            : `w-8 ${i === actual ? 'bg-white' : 'bg-white/30'}`;
+            : `w-8 ${i === actual ? `bg-white ${enBlanco ? 'md:bg-[#001A39]' : ''}` : `bg-white/30 ${enBlanco ? 'md:bg-[#ccd3d7]' : ''}`}`;
         return <span key={i} className={`h-1.5 rounded-full transition-all ${clase}`} />;
       })}
     </div>

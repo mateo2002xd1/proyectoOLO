@@ -10,12 +10,17 @@ import { mensajeDeError } from '@/shared/lib/errors';
 import { MarcoAcceso } from './marco-acceso';
 import {
   accesoBotonClass,
+  accesoBotonEnBlancoClass,
   accesoBotonSecundarioClass,
+  accesoBotonSecundarioEnBlancoClass,
   accesoEncabezadoClass,
+  accesoEncabezadoEnBlancoClass,
   accesoEnlaceClass,
+  accesoEnlaceEnBlancoClass,
   accesoErrorGeneralClass,
   accesoHuecoClass,
   accesoHuecoArribaClass,
+  accesoTextoEnBlancoClass,
 } from './acceso-ui';
 
 const TOTAL_QUESTIONS = 3;
@@ -210,8 +215,9 @@ export function FirstLoginView() {
         // Desde la tablet, el texto dentro del formulario, encima de «Iniciar sesión».
         descripcionEnTarjeta
         claseTarjeta="text-center"
+        enBlanco
       >
-        <button type="button" onClick={() => logout()} className={accesoBotonClass}>
+        <button type="button" onClick={() => logout()} className={`${accesoBotonClass} ${accesoBotonEnBlancoClass}`}>
           Iniciar sesión
         </button>
       </MarcoAcceso>
@@ -239,22 +245,28 @@ export function FirstLoginView() {
         ]}
         descripcionEnTarjeta
         claseTarjeta="text-center"
+        enBlanco
       >
-        <p className={`${accesoHuecoClass} text-base text-white/85`}>
+        <p className={`${accesoHuecoClass} text-base text-white/85 ${accesoTextoEnBlancoClass}`}>
           Vuelve a iniciar sesión para entrar a la intranet.
         </p>
-        <button type="button" onClick={() => logout()} className={accesoBotonClass}>
+        <button type="button" onClick={() => logout()} className={`${accesoBotonClass} ${accesoBotonEnBlancoClass}`}>
           Iniciar sesión
         </button>
       </MarcoAcceso>
     );
   }
 
+  // Los pasos 1 y 2 y las dos de «¡Configuración completada con éxito!» van en tarjeta blanca
+  // desde `md`, como el login (pedido del usuario, 2026-10-12). «Comprobando tu cuenta…»
+  // sigue sobre el azul.
+
   /* ---------- Paso 1: contraseñas ---------- */
   if (currentStep === 1) {
     return (
       <MarcoAcceso
         cerrarSesionAlSalir
+        enBlanco
         titulo="Actualiza tu seguridad"
         // Acortado el 2026-10-10 para que el paso quepa sin scroll en el móvil; es el mismo
         // texto que en el acceso del sitio web.
@@ -273,6 +285,7 @@ export function FirstLoginView() {
             value={tempPassword}
             onChange={(v) => { setTempPassword(v); setErrors({}); }}
             error={errors.tempPassword}
+            enBlanco
             className={accesoHuecoClass}
           />
           {/* `contents`: la envoltura solo está para enterarse del foco. */}
@@ -284,11 +297,12 @@ export function FirstLoginView() {
               value={newPassword}
               onChange={(v) => { setNewPassword(v); setErrors({}); }}
               error={errors.newPassword}
+              enBlanco
               className={verRequisitos ? 'mb-2 md:mb-3' : accesoHuecoClass}
             />
           </div>
           {verRequisitos && (
-            <PasswordRequisitos password={newPassword} variant="solid" resumirAlCumplir className={accesoHuecoClass} />
+            <PasswordRequisitos password={newPassword} variant="solid" resumirAlCumplir className={accesoHuecoClass} enBlanco />
           )}
           <PasswordField
             id="confirm-password"
@@ -297,10 +311,11 @@ export function FirstLoginView() {
             value={confirmPassword}
             onChange={(v) => { setConfirmPassword(v); setErrors({}); }}
             error={errors.confirmPassword}
+            enBlanco
             className={accesoHuecoClass}
           />
 
-          <button type="submit" disabled={isLoading} className={accesoBotonClass}>
+          <button type="submit" disabled={isLoading} className={`${accesoBotonClass} ${accesoBotonEnBlancoClass}`}>
             {isLoading ? 'Guardando…' : 'Continuar'}
           </button>
         </form>
@@ -312,6 +327,7 @@ export function FirstLoginView() {
   return (
     <MarcoAcceso
       cerrarSesionAlSalir
+      enBlanco
       titulo="Protege el acceso a tu cuenta"
       // El texto cambia según por qué se está aquí: a quien solo le restablecieron
       // las preguntas hay que decírselo, o no entiende por qué se le piden otra vez
@@ -333,7 +349,7 @@ export function FirstLoginView() {
       >
         {errors.general && <div className={accesoErrorGeneralClass} role="alert">{errors.general}</div>}
 
-        <h2 className={`mb-3 ${accesoEncabezadoClass}`}>Preguntas de seguridad</h2>
+        <h2 className={`mb-3 ${accesoEncabezadoClass} ${accesoEncabezadoEnBlancoClass}`}>Preguntas de seguridad</h2>
 
         <QuestionPicker
           catalogQuestions={catalogQuestions}
@@ -342,6 +358,7 @@ export function FirstLoginView() {
           selectedKeys={selectedKeys}
           answers={answers}
           errors={errors}
+          enBlanco
           onSelectQuestion={(key) => {
             const newSelected = [...selectedKeys];
             newSelected[currentQuestion] = key;
@@ -358,11 +375,11 @@ export function FirstLoginView() {
 
         <div className="flex gap-2.5">
           {currentQuestion > 0 && (
-            <button type="button" onClick={handlePrevQuestion} className={`${accesoBotonSecundarioClass} shrink-0`}>
+            <button type="button" onClick={handlePrevQuestion} className={`${accesoBotonSecundarioClass} ${accesoBotonSecundarioEnBlancoClass} shrink-0`}>
               Atrás
             </button>
           )}
-          <button type="submit" disabled={isLoading} className={`${accesoBotonClass} flex-1`}>
+          <button type="submit" disabled={isLoading} className={`${accesoBotonClass} ${accesoBotonEnBlancoClass} flex-1`}>
             {isLoading ? 'Guardando…' : currentQuestion === TOTAL_QUESTIONS - 1 ? 'Guardar' : 'Continuar'}
           </button>
         </div>
@@ -373,7 +390,7 @@ export function FirstLoginView() {
             juntas al final. */}
         {currentQuestion === 0 && (
           <div className={`${accesoHuecoArribaClass} text-center`}>
-            <button type="button" onClick={() => logout()} className={accesoEnlaceClass}>
+            <button type="button" onClick={() => logout()} className={`${accesoEnlaceClass} ${accesoEnlaceEnBlancoClass}`}>
               Cancelar
             </button>
           </div>

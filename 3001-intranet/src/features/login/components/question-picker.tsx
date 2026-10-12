@@ -1,10 +1,14 @@
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
 import {
   accesoCampoClass,
+  accesoCampoEnBlancoClass,
   accesoErrorClass,
+  accesoErrorEnBlancoClass,
   accesoEtiquetaClass,
+  accesoEtiquetaEnBlancoClass,
   accesoHuecoClass,
   accesoIconoCampoClass,
+  accesoIconoCampoEnBlancoClass,
   accesoOpcionesClass,
 } from './acceso-ui';
 import { BarrasDeAvance } from './barras-de-avance';
@@ -23,6 +27,8 @@ interface QuestionPickerProps {
   errors: { question?: string; answer?: string };
   onSelectQuestion: (key: string) => void;
   onAnswerChange: (value: string) => void;
+  /** Desde `md`, en oscuro para la tarjeta blanca (2026-10-12): las clases `…EnBlanco`. */
+  enBlanco?: boolean;
 }
 
 /**
@@ -43,8 +49,10 @@ export function QuestionPicker({
   errors,
   onSelectQuestion,
   onAnswerChange,
+  enBlanco = false,
 }: QuestionPickerProps) {
   const valor = selectedKeys[currentIndex] || '';
+  const conBlanco = (base: string, claseEnBlanco: string) => (enBlanco ? `${base} ${claseEnBlanco}` : base);
 
   return (
     <>
@@ -64,10 +72,16 @@ export function QuestionPicker({
             // orden del CSS, no el del atributo. `acceso-select`: la lista abierta con el
             // estilo del sitio web (globals.css). `py-2`, como `authPasosInputClass` del
             // sitio: el `select` pinta el texto arriba de su caja, no centrado.
+            // Sobre el blanco, lo mismo: sin elegir, en el marcador del sitio (`#b3b3b3`).
             className={(() => {
+              const blanco = !enBlanco
+                ? ''
+                : valor
+                  ? accesoCampoEnBlancoClass(!!errors.question)
+                  : accesoCampoEnBlancoClass(!!errors.question).replace('md:text-[#001a39]', 'md:text-[#b3b3b3]');
               const clases = accesoCampoClass(
                 !!errors.question,
-                `acceso-select appearance-none py-2 pr-12 ${accesoOpcionesClass}`,
+                `acceso-select appearance-none py-2 pr-12 ${accesoOpcionesClass} ${blanco}`,
                 'rounded-[16px]',
               );
               return valor ? clases : clases.replace(' text-white ', ' text-white/65 ');
@@ -89,18 +103,18 @@ export function QuestionPicker({
           </select>
           <ChevronDownIcon
             aria-hidden="true"
-            className={`pointer-events-none absolute right-5 top-1/2 size-5 -translate-y-1/2 ${accesoIconoCampoClass}`}
+            className={`pointer-events-none absolute right-5 top-1/2 size-5 -translate-y-1/2 ${conBlanco(accesoIconoCampoClass, accesoIconoCampoEnBlancoClass)}`}
           />
         </div>
         {errors.question && (
-          <p id="pregunta-seguridad-error" className={accesoErrorClass}>
+          <p id="pregunta-seguridad-error" className={conBlanco(accesoErrorClass, accesoErrorEnBlancoClass)}>
             {errors.question}
           </p>
         )}
       </div>
 
       <div className={accesoHuecoClass}>
-        <label htmlFor="respuesta-seguridad" className={accesoEtiquetaClass}>
+        <label htmlFor="respuesta-seguridad" className={conBlanco(accesoEtiquetaClass, accesoEtiquetaEnBlancoClass)}>
           Respuesta
         </label>
         <input
@@ -116,16 +130,16 @@ export function QuestionPicker({
           autoCorrect="off"
           aria-invalid={errors.answer ? true : undefined}
           aria-describedby={errors.answer ? 'respuesta-seguridad-error' : undefined}
-          className={accesoCampoClass(!!errors.answer)}
+          className={accesoCampoClass(!!errors.answer, enBlanco ? accesoCampoEnBlancoClass(!!errors.answer) : '')}
         />
         {errors.answer && (
-          <p id="respuesta-seguridad-error" className={accesoErrorClass}>
+          <p id="respuesta-seguridad-error" className={conBlanco(accesoErrorClass, accesoErrorEnBlancoClass)}>
             {errors.answer}
           </p>
         )}
       </div>
 
-      <BarrasDeAvance total={totalQuestions} actual={currentIndex} />
+      <BarrasDeAvance total={totalQuestions} actual={currentIndex} enBlanco={enBlanco} />
     </>
   );
 }

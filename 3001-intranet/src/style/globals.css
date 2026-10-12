@@ -4454,27 +4454,10 @@ body:has(.navegacion-mobile-hoja[open]) {
   text-align: center;
 }
 
-/* En el móvil el login va directo sobre el azul (2026-10-11): el texto del cargador, navy por
-   defecto, desaparecería. Desde `md` va en la tarjeta blanca y el usuario pidió quitar el texto
-   (2026-10-12): solo las bolitas. Se oculta a la vista, no al lector de pantalla. */
-@media (width < 48rem) {
-  .login-success-loader .goo-loader-label {
-    color: var(--color-white);
-  }
-}
-
-@media (width >= 48rem) {
-  .login-success-loader .goo-loader-label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-    border: 0;
-  }
+/* El cargador del login va directo sobre el azul en todos los anchos: ya autenticado, la
+   tarjeta blanca se quita (2026-10-12). El texto, navy por defecto, desaparecería. */
+.login-success-loader .goo-loader-label {
+  color: var(--color-white);
 }
 
 .goo-loader {
