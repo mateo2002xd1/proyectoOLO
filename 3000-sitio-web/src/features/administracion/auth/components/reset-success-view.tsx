@@ -15,7 +15,8 @@ import { useFlujoDeRecuperacion } from './flujo-de-recuperacion';
  *
  * El botón va en el mismo formulario que el resto de pantallas, con sus medidas: en el
  * móvil, suelto bajo el texto como en el mockup; desde `md`, en la tarjeta con la marca
- * de hecho, como el último paso del primer ingreso. Hasta el 2026-10-09 medía 272 px en
+ * de hecho (el primer ingreso ya no la lleva desde el 2026-10-11; aquí se queda, pedido del
+ * usuario: la recuperación no se toca). Hasta el 2026-10-09 medía 272 px en
  * el móvil y la tablet, distinto de los campos de las otras pantallas.
  */
 export function ResetSuccessView() {

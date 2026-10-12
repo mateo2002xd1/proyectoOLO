@@ -21,8 +21,9 @@ import { accesoHuecoClass, accesoRegresoClass, accesoTarjetaClass } from './acce
  *   derechas redondeadas, el logo, el título y el texto; a la derecha, sobre `#001A39`, el
  *   formulario y el enlace de regreso.
  *
- * Sin el paginador del primer ingreso ni la insignia de check de los avisos de éxito: los
- * quitó el usuario el 2026-10-11 (props `pasos` y `antesDelFormulario`).
+ * Sin el paginador del primer ingreso ni la insignia de check del primer ingreso: los quitó
+ * el usuario el 2026-10-11 (props `pasos` y `antesDelFormulario`). La insignia de los avisos
+ * de éxito de la recuperación la pone `AuthSuccessScreen` como primer hijo.
  *
  * Por debajo de `md` los huecos, el logo, el título y el texto se encogen con el alto visible
  * (`clamp()` con `dvh`), como en el sitio, para que cada paso quepa en 360 × 640 sin scroll.
