@@ -232,7 +232,9 @@ function ModalAlertas({
               {cuentasPorVencer.map((a) => (
                 // Sin fondo ni borde en la fila: el estado lo dicen la etiqueta y el
                 // color del texto, que es el mismo de la etiqueta.
-                <div key={a.userId || a.email} className="group flex h-11 w-full items-center gap-2">
+                // 28 px de alto (`h-7`; antes 44, pedido del usuario el 2026-10-12): lo mismo que el
+                // botón de la derecha, que es el área táctil.
+                <div key={a.userId || a.email} className="group flex h-7 w-full items-center gap-2">
                   <span className="shrink-0 rounded-full bg-amber-200/80 px-2.5 py-1 text-xs font-semibold text-amber-900 dark:bg-amber-800/60 dark:text-amber-100">
                     Por vencer
                   </span>
@@ -257,7 +259,7 @@ function ModalAlertas({
               ))}
 
               {enRevision.map((p) => (
-                <div key={p.id} className="group flex h-11 w-full items-center gap-2">
+                <div key={p.id} className="group flex h-7 w-full items-center gap-2">
                   <span className="shrink-0 rounded-full bg-blue-200/80 px-2.5 py-1 text-xs font-semibold text-blue-900 dark:bg-blue-800/60 dark:text-blue-100">
                     En revisión
                   </span>
