@@ -205,7 +205,7 @@ export function FirstLoginView() {
         titulo="¡Configuración completada con éxito!"
         descripcion={[
           'Tu cuenta ya es segura.',
-          'Es muy importante que recuerdes o guardes tus respuestas en un lugar seguro, ya que serán el único método para validar tu identidad y permitirte cambiar tu clave en el futuro si llegas a olvidarla.',
+          'Guarda tus respuestas en un lugar seguro, las usarás para validar tu identidad y restablecer tu clave si la olvidas.',
         ]}
         // Desde la tablet, el texto dentro del formulario, encima de «Iniciar sesión».
         descripcionEnTarjeta
@@ -234,7 +234,7 @@ export function FirstLoginView() {
         descripcion={[
           'Tu cuenta ya es segura.',
           ...(pendiente.debeConfigurarPreguntas
-            ? ['Es muy importante que recuerdes o guardes tus respuestas en un lugar seguro, ya que serán el único método para validar tu identidad y permitirte cambiar tu clave en el futuro si llegas a olvidarla.']
+            ? ['Guarda tus respuestas en un lugar seguro, las usarás para validar tu identidad y restablecer tu clave si la olvidas.']
             : []),
         ]}
         descripcionEnTarjeta
