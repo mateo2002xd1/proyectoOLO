@@ -61,11 +61,13 @@ export function QuestionPicker({
             aria-describedby={errors.question ? 'pregunta-seguridad-error' : undefined}
             // Sin elegir, el texto en el tono del marcador de los campos. Se cambia el color
             // en vez de añadir otro: dos clases de color en el mismo elemento las resuelve el
-            // orden del CSS, no el del atributo.
+            // orden del CSS, no el del atributo. `acceso-select`: la lista abierta con el
+            // estilo del sitio web (globals.css). `py-2`, como `authPasosInputClass` del
+            // sitio: el `select` pinta el texto arriba de su caja, no centrado.
             className={(() => {
               const clases = accesoCampoClass(
                 !!errors.question,
-                `appearance-none pr-12 ${accesoOpcionesClass}`,
+                `acceso-select appearance-none py-2 pr-12 ${accesoOpcionesClass}`,
                 'rounded-[16px]',
               );
               return valor ? clases : clases.replace(' text-white ', ' text-white/65 ');

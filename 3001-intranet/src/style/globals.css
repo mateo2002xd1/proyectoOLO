@@ -3963,6 +3963,74 @@ body:has(.navegacion-mobile-hoja[open]) {
   transform: translateY(-1px);
 }
 
+/* Lista abierta del desplegable de preguntas del primer ingreso (`QuestionPicker`).
+   Es la de `.admin-auth-select` del acceso al panel del sitio web (pedido del usuario,
+   2026-10-11), más el tope de ancho de la lista: la de un <select> la pinta el sistema y no admite
+   CSS; con el select personalizable (`appearance: base-select`, Chrome/Edge 135+) sí.
+   Lista blanca con borde #001A39 y esquinas de 16 sobre el azul del acceso. Sigue
+   siendo el <select> nativo: teclado, lector de pantalla y envío del formulario no
+   cambian. Sin soporte, queda la lista del sistema. Sin capa a propósito: le gana a
+   `h-11` y a `[&_option]:text-gray-900` de Tailwind. */
+@supports (appearance: base-select) {
+  .acceso-select,
+  .acceso-select::picker(select) {
+    appearance: base-select;
+  }
+
+  /* La pregunta elegida se deja partir en dos líneas y el campo crece hacia abajo:
+     en este modo el recorte cae en el borde de la caja, no en el relleno, y la
+     pregunta pasaba por debajo de la flecha. */
+  .acceso-select {
+    height: auto;
+    min-height: 2.75rem;
+    white-space: normal;
+  }
+
+  /* La flecha la pone el icono del componente. */
+  .acceso-select::picker-icon {
+    display: none;
+  }
+
+  /* Nunca más ancha que la pantalla (con 16 px a cada lado): en el móvil la lista se
+     ajustaba a la pregunta más larga, se salía por la derecha y la cortaba. Así la
+     opción larga se parte en dos líneas. */
+  .acceso-select::picker(select) {
+    max-inline-size: calc(100vw - 2rem);
+    margin-block: 4px;
+    padding: 4px;
+    border: 1.5px solid #001a39;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgb(0 26 57 / 0.15);
+  }
+
+  .acceso-select option {
+    padding: 8px 12px;
+    border-radius: 12px;
+    white-space: normal;
+  }
+
+  .acceso-select option::checkmark {
+    display: none;
+  }
+
+  .acceso-select option:checked {
+    font-weight: 600;
+  }
+
+  /* Blanco sobre #001A39: 17:1. */
+  .acceso-select option:not(:disabled):hover,
+  .acceso-select option:not(:disabled):focus-visible {
+    background: #001a39;
+    color: #fff;
+    outline: none;
+  }
+
+  .acceso-select option:disabled {
+    color: #9ca3af;
+  }
+}
+
 /* ============================================
    RESPONSIVE — Mobile-first breakpoints
    ============================================ */
