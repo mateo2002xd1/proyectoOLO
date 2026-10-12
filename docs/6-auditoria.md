@@ -5,6 +5,57 @@
 
 ---
 
+## sesión 11-10-2026 (15.ª parte): la pantalla final del primer ingreso, con el texto del usuario dentro de la tarjeta
+
+**Qué se pidió:** el usuario aclaró que el texto de la 10.ª parte era para la pantalla que sale al
+guardar las preguntas («¡Configuración completada!»): título «¡Configuración completada con
+éxito!» y, dentro de la tarjeta, encima de «Iniciar sesión», «Tu cuenta ya es segura.» y el
+aviso de guardar las respuestas. En el sitio y la intranet. Pidió también no cambiar nada que no
+diga: la pantalla «sin nada pendiente» (partes 11 a 13) se dejó como estaba.
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `first-login-flow.tsx` (sitio) | Paso 3: título nuevo; `descripcion` con los dos párrafos, `descripcionEnTarjeta` y `DescripcionEnTarjeta` dentro de la tarjeta, encima de «Vuelve a iniciar sesión para entrar al panel.» y del botón. |
+| `first-login-view.tsx` (intranet) | Lo mismo con `descripcionEnTarjeta` de `MarcoAcceso`. |
+| `manual-de-usuario-formato.md` | El paso 3 de las dos apps con el texto nuevo. |
+
+Igual que en la pantalla sin nada pendiente: desde `md` el texto va en la tarjeta y en el móvil
+bajo el título. El aviso de las respuestas sale solo si se acaban de elegir (como antes); a quien
+solo cambió la contraseña le queda «Tu cuenta ya es segura.». «Vuelve a iniciar sesión…» sigue
+encima del botón.
+
+**Cómo se probó.** ESLint y `tsc --noEmit` de las dos apps, limpios. Intranet en vivo, el primer
+ingreso de punta a punta con la API simulada hasta el paso 3, a 360 × 640, 768 × 1024 y
+1280 × 800: sin scroll. El sitio no se miró en vivo (`/first-login` exige una sesión firmada).
+
+---
+
+## sesión 11-10-2026 (14.ª parte): «Cancelar» en la primera pregunta de seguridad del primer ingreso (sitio e intranet)
+
+**Qué se pidió:** en «Preguntas de seguridad» del primer ingreso, solo en la pantalla de la
+primera pregunta, un botón «Cancelar» debajo.
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `first-login-flow.tsx` (sitio) | Bajo «Continuar», con `currentQuestion === 0`: «Cancelar» en solo texto (`authPasosQuietLinkClass`, como «Cancelar» de la nueva contraseña), que llama a `cerrarSesionEIrAlLogin`. |
+| `first-login-view.tsx` (intranet) | Lo mismo con `accesoEnlaceClass` y `logout()`. |
+| `manual-de-usuario-formato.md` | El paso de las preguntas, en las dos apps, lo menciona. |
+
+Cierra la sesión temporal y lleva al login **sin guardar nada**: la contraseña nueva y las
+preguntas se envían juntas al final, así que quien cancela vuelve a entrar con la contraseña
+temporal. Desde la segunda pregunta no sale: ahí está «Atrás».
+
+**Cómo se probó.** ESLint y `tsc --noEmit` de las dos apps, limpios. Intranet en vivo con la API
+simulada, a 360 × 640 y 1280 × 800: en la primera pregunta está «Cancelar» bajo «Continuar»;
+en la segunda no, y sale «Atrás». Sin scroll. El sitio no se miró en vivo (`/first-login` exige
+una sesión firmada).
+
+---
+
 ## sesión 11-10-2026 (13.ª parte): el sitio, como la intranet: aviso dentro de la tarjeta y sin el check
 
 **Qué se pidió:** «ahora en sitio web» (lo de la 12.ª parte: en tablet y escritorio, el aviso de
