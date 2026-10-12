@@ -5,6 +5,78 @@
 
 ---
 
+## sesión 12-10-2026 (10.ª parte): filas más bajas en Notificaciones del panel
+
+**Qué se pidió:** en el panel administrativo, en Notificaciones, reducir el alto de cada contenedor
+de las alertas.
+
+**Lo que se hizo.** En `panel-general.tsx` (sitio), las filas «Por vencer» y «En revisión» del
+modal pasan de `h-11` (44 px) a `h-7` (28 px, el alto del botón de la derecha; primero se probó `h-9`, 36 px, y el usuario pidió más). El hueco entre filas (`space-y-3`), la etiqueta, el
+texto y el botón de 28 px para marcar como solucionada no cambian: el área táctil es ese botón, no
+la fila.
+
+**Cómo se probó.** ESLint del archivo, limpio. **No se miró en vivo:** el panel exige una sesión
+firmada y no se falsifica una (ver la memoria de pruebas); queda que el usuario lo mire con su
+cuenta.
+
+---
+
+## sesión 12-10-2026 (9.ª parte): las listas del panel no vuelven a tabla de escritorio al ocultarse la barra lateral
+
+**Qué pasaba.** Las listas del panel (Páginas en revisión, Auditoría, Respaldos, Usuarios,
+Roles) pasan a su modo limpio —acordeón o tarjetas— cuando **su contenedor** mide menos de
+48rem. Con la barra lateral (288px) eso ocurre desde ~1122px de ventana. Pero a 1023px la
+barra se oculta (`lg:flex`), el contenido recupera esos 288px (~960px) y la lista volvía a ser
+la tabla de escritorio, en plena tablet, hasta bajar de unos 830px.
+
+**El arreglo.** En el panel, por debajo de `lg` (64rem), la lista siempre está en modo limpio;
+en el resto sigue mandando el contenedor. Las dos condiciones van en dos variantes de Tailwind
+en `globals.css`, para que las reglas de la tabla y las utilidades del JSX cambien en el mismo
+píxel:
+
+| Variante | Cuándo |
+|---|---|
+| `apilada` | contenedor < 48rem **o** (ventana < 64rem **y** dentro del `<main>` del panel) |
+| `en-tabla` | la contraria: contenedor ≥ 48rem **y** (ventana ≥ 64rem **o** fuera del panel) |
+
+El panel se reconoce por `navegacion-mobile-reserva`, la clase del `<main>` de `SidebarLayout`,
+que solo usa `PanelGeneralLayout`. Las tablas del sitio público (tendencia, fuentes futuras,
+programas, alertas de inversión) no cambian: siguen midiendo solo su contenedor.
+
+| Dónde | Cambio |
+|---|---|
+| `3000-sitio-web/src/style/globals.css` | `@custom-variant apilada` y `en-tabla`. Los dos bloques `@container (width < 48rem)` de `olo-tabla-apilable` y `olo-tabla-acordeon` pasan a `@variant apilada` dentro de cada selector, mismas declaraciones. Los `::before` de las etiquetas, anidados (`&::before`) |
+| `revision-queue-view.tsx`, `auditoria-view.tsx`, `usuarios-view.tsx`, `roles-view.tsx`, `historial-cargas-tendencia.tsx` | `@3xl:` → `en-tabla:` y `@max-3xl:` → `apilada:` (botones de acción, tooltips, `line-clamp`) |
+| `docs/2-convenciones-del-proyecto.md` §10.3 | Dentro de una tabla apilable se usa `apilada:` / `en-tabla:`, no `@3xl:` |
+
+**Descartado.**
+
+- *Subir el corte del contenedor* (p. ej. a 60rem): a 1280px con barra el contenido mide
+  ~920px y la lista de escritorio pasaría a acordeón.
+- *Container style queries* (`@container style(--x: 1) or (width < 48rem)`): Firefox no las
+  soporta para propiedades personalizadas.
+- *Copiar las reglas en un `@media (width < 64rem)`*: duplicaba ~100 líneas y las `@3xl:` del
+  JSX seguían midiendo solo el contenedor (botones de escritorio en una lista en acordeón).
+
+> **Trampa:** un pseudoelemento no puede ir en `&` del anidamiento CSS. La rama del panel de
+> la variante añade `&:where(...)`, así que `td[data-etiqueta]::before` dentro de
+> `@variant apilada` daría un selector inválido. Por eso los `::before` van como `&::before`
+> **dentro** de la variante. También: un selector en lista con `@variant` sale como `:is(a, b)`
+> en la rama del panel, con la especificidad del más fuerte; hoy no cambia ningún resultado.
+
+**Verificación.**
+
+| Qué | Resultado |
+|---|---|
+| `globals.css` real compilado con `@tailwindcss/postcss` del proyecto | Genera las dos ramas (`@container not (min-width: 48rem)` y `@media not all and (min-width: 64rem)` con `:where(.navegacion-mobile-reserva *)`), `::before` fuera del `:where`, y las utilidades `en-tabla:*` / `apilada:*` usadas en el JSX |
+| Chrome headless sobre ese CSS, maqueta de `SidebarLayout` + lista en acordeón + tabla pública | 1280: barra y tabla. 1130/1110/1024: barra y modo limpio. **1023 y 900: sin barra y modo limpio** (antes, tabla). 768/360: modo limpio. Botones de acción en rejilla con texto en todos los de modo limpio. La tabla pública sigue siendo tabla hasta 768 |
+| Finales de línea | CRLF uniforme en los archivos tocados |
+
+**Pendiente al cierre:** verlo en el panel real a 1023, 900 y 768 (el `next dev` recoge el
+CSS solo). Actualizaciones aún no tiene acordeón; su tabla de tendencia ya sigue la regla nueva.
+
+---
+
 ## sesión 12-10-2026 (8.ª parte): «Cargando modo edición...» en el cargador de los dos logins cuando entra quien edita
 
 **Qué se pidió:** que el cargador de la 7.ª parte diga «Cargando modo edición» si quien entra es
