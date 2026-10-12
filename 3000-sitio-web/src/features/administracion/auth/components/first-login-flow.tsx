@@ -16,6 +16,7 @@ import {
   authPasosQuietLinkClass,
   authPasosSecondaryClass,
   authPasosHuecoClass,
+  authPasosHuecoArribaClass,
 } from './auth-ui';
 import { DescripcionEnTarjeta, MarcoDePasos } from './marco-de-pasos';
 import { useRequisitosAlEnfocar } from '../hooks/use-requisitos-al-enfocar';
@@ -231,18 +232,24 @@ export function FirstLoginFlow() {
 
   /* ---------- Paso 3: éxito ---------- */
   if (step === 3) {
+    // Texto del usuario (2026-10-11). Desde la tablet va dentro de la tarjeta, encima del
+    // botón; en el móvil, bajo el título. El aviso sobre las respuestas solo tiene sentido si
+    // se acaban de elegir: a quien solo cambió la contraseña le queda la primera frase.
+    const aviso = [
+      'Tu cuenta ya es segura.',
+      ...(pendiente.debeConfigurarPreguntas
+        ? ['Es muy importante que recuerdes o guardes tus respuestas en un lugar seguro, ya que serán el único método para validar tu identidad y permitirte cambiar tu clave en el futuro si llegas a olvidarla.']
+        : []),
+    ];
     return (
       <MarcoDePasos
         cerrarSesionAlSalir
-        titulo="¡Configuración completada!"
-        descripcion={
-          // El aviso sobre las respuestas solo tiene sentido si se acaban de elegir.
-          pendiente.debeConfigurarPreguntas
-            ? 'Guarda tus respuestas en un lugar seguro: serán el único método para validar tu identidad si olvidas tu clave en el futuro.'
-            : 'Tu cuenta ya es segura.'
-        }
+        titulo="¡Configuración completada con éxito!"
+        descripcion={aviso}
+        descripcionEnTarjeta
       >
         <div className={`${authPasosCardClass} text-center`}>
+          <DescripcionEnTarjeta descripcion={aviso} />
           <p className={`${authPasosHuecoClass} text-base text-[#001a39]`}>Vuelve a iniciar sesión para entrar al panel.</p>
           <button type="button" onClick={cerrarSesionEIrAlLogin} className={authPasosPrimaryClass}>
             Iniciar sesión
@@ -398,6 +405,18 @@ export function FirstLoginFlow() {
                   : 'Continuar'}
             </button>
           </div>
+
+          {/* Solo en la primera pregunta (pedido del usuario, 2026-10-11); desde la segunda
+              está «Atrás». Solo texto, como «Cancelar» de la nueva contraseña. Cierra la
+              sesión temporal y va al login sin guardar nada: la contraseña y las preguntas
+              se envían juntas al final. */}
+          {currentQuestion === 0 && (
+            <div className={`${authPasosHuecoArribaClass} text-center`}>
+              <button type="button" onClick={cerrarSesionEIrAlLogin} className={authPasosQuietLinkClass}>
+                Cancelar
+              </button>
+            </div>
+          )}
         </form>
       </Tarjeta>
     </MarcoDePasos>

@@ -15,6 +15,7 @@ import {
   accesoEnlaceClass,
   accesoErrorGeneralClass,
   accesoHuecoClass,
+  accesoHuecoArribaClass,
 } from './acceso-ui';
 
 const TOTAL_QUESTIONS = 3;
@@ -225,13 +226,18 @@ export function FirstLoginView() {
     return (
       <MarcoAcceso
         cerrarSesionAlSalir
-        titulo="¡Configuración completada!"
-        descripcion={
-          // El aviso sobre las respuestas solo tiene sentido si se acaban de elegir.
-          pendiente.debeConfigurarPreguntas
-            ? 'Guarda tus respuestas en un lugar seguro: serán el único método para validar tu identidad si olvidas tu clave en el futuro.'
-            : 'Tu cuenta ya es segura.'
-        }
+        titulo="¡Configuración completada con éxito!"
+        // Texto del usuario (2026-10-11). Desde la tablet va dentro del formulario, encima
+        // del botón; en el móvil, bajo el título. El aviso sobre las respuestas solo tiene
+        // sentido si se acaban de elegir: a quien solo cambió la contraseña le queda la
+        // primera frase.
+        descripcion={[
+          'Tu cuenta ya es segura.',
+          ...(pendiente.debeConfigurarPreguntas
+            ? ['Es muy importante que recuerdes o guardes tus respuestas en un lugar seguro, ya que serán el único método para validar tu identidad y permitirte cambiar tu clave en el futuro si llegas a olvidarla.']
+            : []),
+        ]}
+        descripcionEnTarjeta
         claseTarjeta="text-center"
       >
         <p className={`${accesoHuecoClass} text-base text-white/85`}>
@@ -360,6 +366,18 @@ export function FirstLoginView() {
             {isLoading ? 'Guardando…' : currentQuestion === TOTAL_QUESTIONS - 1 ? 'Guardar' : 'Continuar'}
           </button>
         </div>
+
+        {/* Solo en la primera pregunta (pedido del usuario, 2026-10-11); desde la segunda está
+            «Atrás». Solo texto, como «Cancelar» de la nueva contraseña. Cierra la sesión
+            temporal y va al login sin guardar nada: la contraseña y las preguntas se envían
+            juntas al final. */}
+        {currentQuestion === 0 && (
+          <div className={`${accesoHuecoArribaClass} text-center`}>
+            <button type="button" onClick={() => logout()} className={accesoEnlaceClass}>
+              Cancelar
+            </button>
+          </div>
+        )}
       </form>
     </MarcoAcceso>
   );
