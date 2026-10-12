@@ -5,7 +5,7 @@
 
 ---
 
-## sesión 12-10-2026 (11.ª parte): Páginas en revisión y Respaldos — iconos más pequeños en la tabla, el ámbito dentro de «Página», el filtro renombrado y la hora debajo de la fecha
+## sesión 12-10-2026 (11.ª parte): Páginas en revisión, Respaldos y Auditoría — iconos más pequeños en la tabla, el ámbito dentro de «Página», el filtro renombrado y la hora debajo de la fecha
 
 **Qué se pidió:** a 1330px los botones Visualizar, Publicar, Rechazar y Eliminar se veían
 grandes; la columna Ámbito iba separada de la página a la que pertenece y debía quedar
@@ -21,6 +21,7 @@ llamarse «Página».
 | Columnas Autor, Enviado el y acciones | Padding lateral a la mitad, `px-4` → `px-2` (16→8px), en sus `td` y sus `th` (para que el título no quede corrido). Página y Cambios siguen en `px-4`: primero se aplicó a toda la tabla y el usuario lo dejó en estas tres. En el acordeón no cambia: allí manda el `padding` de `olo-tabla-apilable` en `globals.css` |
 | Columna «Enviado el» | `FechaDeCelda` (nueva en `shared/ui/molecules/fila-acordeon.tsx`, junto a `fechaDeFila`; la usan revisión y Respaldos): el día arriba (`text-sm`) y la hora debajo, más pequeña (`text-xs`) y fina (`font-light`). El usuario pidió `thin`, pero Poppins se carga en 300–700 (`shared/lib/fonts.ts`) y `font-thin` (100) se vería igual que 300; cargar el peso 100 solo para esto suma una descarga a todo el panel |
 | `respaldos-view.tsx` | Lo mismo en Respaldos, en las columnas que pidió el usuario: filtro «Ámbito» → «Página» (sigue filtrando `ambito`); columna Página en dos líneas, la píldora del ámbito arriba y «/inicio · versión 43» debajo (antes en una sola línea con `flex-wrap`), esa segunda línea en `text-xs`, el tamaño de la hora; «Editado el» y «Publicado el» con `FechaDeCelda`. Fuera el `fecha()` local de los dos archivos. Respaldos conserva la ruta (`/inicio`) y no el título, como sus modales de restaurar |
+| `auditoria-view.tsx` | «Fecha y hora» con `FechaDeCelda exacta`: la hora debajo y más pequeña, con el mismo formato de antes (`12/10/2026` / `5:30:15 p. m.`, con segundos: en la bitácora el orden exacto importa). `exacta` es una opción nueva de `FechaDeCelda`; sin ella sigue el formato corto de revisión y Respaldos |
 | Ancho de la tabla | Fuera el `min-w-[64rem]` (1024px): con una columna menos, botones compactos y la hora debajo ya cabe, y a 1330px la caja mide ~976px, así que la tabla se cortaba con scroll lateral (captura del usuario). El correo del autor lleva `wrap-anywhere`: uno largo sin espacios dejaba 4px de scroll justo por encima del corte del acordeón |
 
 > **Por qué rangos que se excluyen:** `en-tabla:h-9` y `en-tabla:@max-6xl:h-8` se cumplirían a la
