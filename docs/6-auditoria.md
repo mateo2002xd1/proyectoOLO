@@ -5,6 +5,70 @@
 
 ---
 
+## sesión 12-10-2026 (3.ª parte): la recuperación de la intranet, también en tarjeta blanca; el cargador del login, sin texto desde la tablet
+
+**Qué se pidió:** en tablet y escritorio, la misma tarjeta blanca del login (2.ª parte) en las tres
+pantallas de la recuperación de la intranet: «¿Olvidaste tu contraseña?» (`/recovery`),
+«Verifica tu identidad» (`/security-questions` con datos de recuperación) y «¡Enhorabuena,
+<nombre>!» (`/reset-password` en la recuperación). La tarjeta de la derecha, no el texto bajo el
+título. Y quitar «Preparando tu espacio...» del cargador del login sobre la tarjeta blanca (se
+preguntó si quitarlo o dejarlo en oscuro: quitarlo).
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `acceso-ui.ts` | El bloque `…EnBlanco` cubre ya login y recuperación; nueva `accesoRotuloEnBlancoClass` («PREGUNTA 1 DE 3» en `#334861`, 9:1). |
+| `recovery-view.tsx` | Tarjeta blanca y clases `…EnBlanco` en etiqueta, campo, error, botón y enlace. |
+| `security-questions-view.tsx` | Lo mismo, **solo en `mode === 'verify'`**: las preguntas pendientes (`setup`) siguen sobre el azul. |
+| `reset-password-view.tsx` | Lo mismo, **solo en `mode === 'recovery'`**: el cambio forzado sigue sobre el azul. |
+| `PasswordField`, `PasswordRequisitos` (`shared/ui/molecules`), `BarrasDeAvance` | Prop `enBlanco` (por defecto `false`): desde `md`, campos, ojo, requisitos (`#334861`, cumplidos en verde 700) y puntos (`#001A39`, `#ccd3d7`) en oscuro. El primer ingreso no la pasa y no cambia. |
+| `globals.css` | Desde `md`, `.login-success-loader .goo-loader-label` se oculta a la vista con el patrón `sr-only` (el lector de pantalla lo sigue leyendo). En el móvil, igual que antes, en blanco. |
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| `tsc --noEmit` y ESLint de la intranet (componentes del acceso y las dos moléculas) | Limpios |
+| Chrome headless contra el dev de la 3001, a 390, 768 y 1440 px, con `sessionStorage` de recuperación falso (sin llamar a la API) | Desde 768, en las tres: tarjeta blanca, botón `rgb(0,26,57)`, etiquetas y campos `#001a39`, borde `#d9d9d9`; rótulo, ojo y requisitos `#334861`; punto actual `#001A39`. A 390, todo como antes. Sin scroll horizontal. |
+| Cargador montado a mano en `/login` | A 390: 208 × 25 px, blanco. Desde 768: 1 × 1 px con `clip-path: inset(50%)`. |
+
+**Pendiente al cierre:** el aviso de éxito de la recuperación (`/reset-success`) no se pidió y
+sigue sin tarjeta; los errores de verificación reales (respuestas que no coinciden) solo se vieron
+por color de clase, no con la API.
+
+---
+
+## sesión 12-10-2026 (2.ª parte): el login de la intranet, en tarjeta blanca desde la tablet y con «Ingresar» en `#001A39`
+
+**Qué se pidió:** en escritorio y tablet, la tarjeta de iniciar sesión con fondo blanco y el botón
+en `#001A39`. Se entendió como el login de la **intranet** (`localhost:3001/login`): el del sitio
+ya va en tarjeta blanca. Solo el login: la recuperación y el primer ingreso de la intranet siguen
+sin tarjeta, sobre el azul.
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `acceso-ui.ts` (intranet) | Clases nuevas `…EnBlanco` (tarjeta, etiqueta, campo, ojo, error, texto de la política, botón, enlace) que se suman a las de siempre y solo actúan desde `md`, con los colores del formulario del sitio: etiquetas y campos `#001a39`, borde `#d9d9d9`, marcador `#b3b3b3`, ojo `#334861`, errores en rojo 600 y botón `#001A39` con texto blanco (17:1). |
+| `login-view.tsx` (intranet) | Pasa `claseTarjeta={accesoTarjetaBlancaClass}` a `MarcoAcceso` y suma las clases `…EnBlanco` a cada elemento del formulario. |
+| `globals.css` (intranet) | El texto blanco de «Preparando tu espacio...» (`.login-success-loader .goo-loader-label`) queda solo por debajo de `md`; desde `md` vuelve al navy de la tarjeta. |
+
+En el móvil (menos de 768 px) nada cambia: formulario directo sobre el azul y botón blanco.
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| `tsc --noEmit` de la intranet | Limpio |
+| Chrome headless contra el dev de la 3001, a 390, 768, 1024 y 1440 px | Desde 768: tarjeta `rgb(255,255,255)`, botón `rgb(0,26,57)` con texto blanco, etiquetas y textos `#001a39`, borde de campo `#d9d9d9`, errores en rojo 600. A 390: igual que antes (tarjeta transparente, botón blanco). Sin scroll horizontal en ninguno. La regla del cargador compiló con `not (min-width: 48rem)`. |
+| Anillo de foco del campo | No se pudo medir: en headless la pestaña no tiene el foco de la ventana. |
+
+**Pendiente al cierre:** mirar a mano el anillo de foco de los campos sobre el blanco y la
+pantalla «Preparando tu espacio...» (exige un login correcto).
+
+---
+
 ## sesión 12-10-2026: la nueva contraseña de la recuperación, con el saludo del sitio en la intranet; el sitio sin encabezado y con «Guardar contraseña»
 
 **Qué se pidió:** en `localhost:3001/reset-password` (intranet), el texto de la izquierda como en
