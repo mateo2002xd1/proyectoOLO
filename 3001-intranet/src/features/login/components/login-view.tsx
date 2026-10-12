@@ -39,6 +39,29 @@ interface ErroresLogin {
 const TARJETA_LOGIN =
   'w-full max-w-[380px] md:max-w-[452px] xl:rounded-[24px] xl:bg-white xl:px-9 xl:py-10 xl:shadow-[0_25px_60px_rgba(0,0,0,0.35)]';
 
+/**
+ * Campo del login. Sobre el azul (por debajo de `xl`) es transparente, con borde, texto y
+ * marcador claros (pedido del usuario, 2026-10-11; antes era blanco). En la tarjeta blanca
+ * de `xl`, blanco con texto oscuro, como antes.
+ *
+ * Contraste sobre `#001A39`: el marcador (blanco al 65 %) da 7.8:1 y el borde (blanco al
+ * 50 %) 5.1:1, por encima de 4.5 y de 3 (WCAG 1.4.3 y 1.4.11). El autorrelleno de Chrome
+ * pinta su propio fondo claro encima de cualquier `background`; se tapa con una sombra
+ * interior del color del fondo, que es la única forma de cambiarlo.
+ */
+const campoLogin = (conError: boolean, extra = '') =>
+  [
+    'h-11 w-full rounded-lg border bg-transparent px-4 text-base text-white placeholder:text-white/65',
+    'autofill:shadow-[inset_0_0_0_1000px_#001A39] autofill:[-webkit-text-fill-color:#fff]',
+    'xl:bg-white xl:text-gray-900 xl:placeholder:text-gray-400',
+    'xl:autofill:shadow-[inset_0_0_0_1000px_#fff] xl:autofill:[-webkit-text-fill-color:#111827]',
+    'transition-colors focus:outline-none focus:ring-2',
+    conError
+      ? 'border-red-300 focus:border-red-300 focus:ring-red-300 xl:border-red-400 xl:focus:border-red-500 xl:focus:ring-red-500'
+      : 'border-white/50 focus:border-white focus:ring-white xl:border-gray-300 xl:focus:border-[#0d1526] xl:focus:ring-[#0d1526]',
+    extra,
+  ].join(' ');
+
 function LoginForm() {
   const { login } = useAuth();
   const router = useRouter();
@@ -205,11 +228,7 @@ function LoginForm() {
                   autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className={`h-11 w-full rounded-lg border bg-white px-4 text-base text-gray-900 placeholder:text-gray-400 transition-colors focus:outline-none focus:ring-2 ${
-                    errors.email
-                      ? 'border-red-400 focus:border-red-500 focus:ring-red-500'
-                      : 'border-gray-300 focus:border-[#0d1526] focus:ring-white xl:focus:ring-[#0d1526]'
-                  }`}
+                  className={campoLogin(!!errors.email)}
                 />
                 {errors.email && <p className="mt-1.5 text-sm text-red-300 xl:text-red-600">{errors.email}</p>}
               </div>
@@ -227,17 +246,13 @@ function LoginForm() {
                     placeholder="Mínimo 12 caracteres"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className={`h-11 w-full rounded-lg border bg-white px-4 text-base text-gray-900 placeholder:text-gray-400 transition-colors focus:outline-none focus:ring-2 pr-10 ${
-                      errors.password
-                        ? 'border-red-400 focus:border-red-500 focus:ring-red-500'
-                        : 'border-gray-300 focus:border-[#0d1526] focus:ring-white xl:focus:ring-[#0d1526]'
-                    }`}
+                    className={campoLogin(!!errors.password, 'pr-10')}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
                     aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-gray-500 transition-colors hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d1526]"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-white/80 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white xl:text-gray-500 xl:hover:text-gray-700 xl:focus-visible:ring-[#0d1526]"
                   >
                     <IconoMascara nombre={showPassword ? 'eye-open' : 'eye-closed'} tamano="h-5 w-5" />
                   </button>
