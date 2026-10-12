@@ -5,6 +5,36 @@
 
 ---
 
+## sesión 11-10-2026 (3.ª parte): «Cancelar» debajo de guardar la nueva contraseña, igual en las dos apps
+
+**Qué se pidió.** En «Crea tu nueva contraseña», debajo del botón de guardar, un «Cancelar»
+que lleve al inicio de sesión, solo texto y sin fondo, y que el sitio web quede igual.
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| Intranet, `reset-password-view.tsx` | Debajo de «Guardar contraseña», «Cancelar» con el estilo de los demás enlaces de salida del acceso (texto gris de 12 px, sin fondo, el de «Volver a iniciar sesión» de la recuperación). En la recuperación es un enlace a `/login` que antes borra `recoveryEmail`, `recoveryQuestions` y `recoveryAnswers` de `sessionStorage`, como hace `reset-success-view.tsx` al terminar: el siguiente intento empieza por el correo. En el cambio forzado (con sesión) llama a `logout()`, que ya manda a `/login?logout=1`: sin cerrar la sesión, el proxy devolvería a esta pantalla. |
+| Sitio web, `reset-password-view.tsx` | Ya tenía debajo de «Guardar» un enlace solo de texto a `/login`, pero decía «Iniciar sesión». Ahora dice «Cancelar». Allí el flujo vive en un contexto de React (`useFlujoDeRecuperacion`) y no en `sessionStorage`, así que no hay nada que borrar. |
+| `manual-de-usuario-formato.md` | Las dos pantallas («Crea tu nueva contraseña» del sitio y de la intranet) explican el «Cancelar». |
+
+| Prueba | Resultado |
+|---|---|
+| `tsc --noEmit` y ESLint de los dos archivos | Limpios. |
+| Intranet en vivo sobre su `next dev`, en modo recuperación (datos de prueba en `sessionStorage`; la pantalla no llama a la API hasta enviar), a 360 × 640 y a 1280 × 800 | «Cancelar» sale debajo del botón, fondo transparente, 12 px. Al pulsarlo va a `/login` y los tres datos de la recuperación quedan borrados. |
+| Sitio web en vivo | **No se probó**: la pantalla necesita el paso anterior del flujo en su contexto. Es un cambio de texto en un enlace que ya existía. |
+| Cancelar en el cambio forzado de la intranet | **No se probó**: hace falta una sesión con contraseña temporal. |
+
+> **Ya estaba antes:** a 360 × 640, «Crea tu nueva contraseña» de la intranet no cabe sin
+> scroll (135 px de más con el enlace), porque la lista de requisitos está siempre a la vista.
+> El ajuste del 10-10 (requisitos al enfocar y resumidos al cumplirse) se hizo en el primer
+> ingreso, el login y los pasos del correo y las preguntas, no en esta pantalla.
+
+**Pendiente al cierre.** Decidir si esta pantalla de la intranet recibe el mismo ajuste que el
+primer ingreso para caber en el móvil.
+
+---
+
 ## sesión 11-10-2026 (2.ª parte): «Volver a iniciar sesión» en las preguntas de la recuperación (intranet)
 
 **Qué se pidió.** En la intranet, debajo del botón «Siguiente», un «Volver a iniciar sesión».

@@ -823,7 +823,7 @@ Este procedimiento permite a cualquier funcionario restablecer de forma autónom
 > **[Captura: Preguntas de Seguridad en Recuperación Sitio Web (Móvil)]**
 > *Cuestionario presentando las preguntas de seguridad registradas y campo de respuesta en el Sitio Web. (Móvil).*
 
-4. **Establecimiento de la nueva contraseña:** Al validar satisfactoriamente las respuestas, la pantalla saluda por el nombre (*"¡Enhorabuena, [nombre]!"*) y, bajo **"Crea tu nueva contraseña"**, habilita los campos **"Nueva contraseña"** e **"Ingresa nuevamente la contraseña"**. Al entrar en el primero aparece la lista de requisitos de la política de seguridad, que se van marcando a medida que se cumplen y se resumen en **"Cumple todos los requisitos"** cuando se cumplen todos. El usuario digita su nueva clave personal y presiona el botón **"Guardar"**. El enlace **"Iniciar sesión"** abandona el proceso sin cambiar la contraseña.
+4. **Establecimiento de la nueva contraseña:** Al validar satisfactoriamente las respuestas, la pantalla saluda por el nombre (*"¡Enhorabuena, [nombre]!"*) y, bajo **"Crea tu nueva contraseña"**, habilita los campos **"Nueva contraseña"** e **"Ingresa nuevamente la contraseña"**. Al entrar en el primero aparece la lista de requisitos de la política de seguridad, que se van marcando a medida que se cumplen y se resumen en **"Cumple todos los requisitos"** cuando se cumplen todos. El usuario digita su nueva clave personal y presiona el botón **"Guardar"**. El enlace **"Cancelar"**, debajo del botón, abandona el proceso sin cambiar la contraseña y vuelve al inicio de sesión.
 
 > **[Captura: Restablecimiento de Contraseña Sitio Web]**
 > *Formulario de ingreso de nueva contraseña con validador de requisitos de seguridad en el Sitio Web.*
@@ -865,7 +865,7 @@ Este procedimiento permite a cualquier funcionario restablecer de forma autónom
 > **[Captura: Preguntas de Seguridad en Recuperación Intranet (Móvil)]**
 > *Asistente guiado de preguntas de seguridad con indicador de avance en la Intranet. (Móvil).*
 
-4. **Establecimiento de la nueva contraseña:** Al validar satisfactoriamente las respuestas, la pantalla *"Crea tu nueva contraseña"* habilita los campos **"Nueva contraseña"** y **"Ingresa nuevamente la contraseña"**. El usuario digita su nueva clave personal verificando que cumpla con los requisitos de la política de seguridad institucional y presiona el botón **"Guardar contraseña"**.
+4. **Establecimiento de la nueva contraseña:** Al validar satisfactoriamente las respuestas, la pantalla *"Crea tu nueva contraseña"* habilita los campos **"Nueva contraseña"** y **"Ingresa nuevamente la contraseña"**. El usuario digita su nueva clave personal verificando que cumpla con los requisitos de la política de seguridad institucional y presiona el botón **"Guardar contraseña"**. El enlace **"Cancelar"**, debajo del botón, abandona el proceso sin cambiar la contraseña y vuelve al inicio de sesión.
 
 > **[Captura: Restablecimiento de Contraseña Intranet]**
 > *Formulario de nueva contraseña con lista interactiva de requisitos y botón 'Guardar contraseña' en la Intranet.*
