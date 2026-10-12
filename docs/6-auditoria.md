@@ -5,6 +5,62 @@
 
 ---
 
+## sesión 11-10-2026 (18.ª parte): última frase de la pantalla final del primer ingreso del sitio
+
+**Qué se pidió:** el mensaje de la pantalla final de `localhost:3000/first-login`: «Tu cuenta ya es
+segura.», «Guarda tus respuestas en un lugar seguro, las usarás para validar tu identidad y
+restablecer tu clave si la olvidas.» y «Vuelve a iniciar sesión para entrar a la intranet.».
+
+**Lo que se hizo.** Las dos primeras frases ya estaban así (partes 15 y 16). En
+`first-login-flow.tsx` solo cambió la tercera: «…para entrar al panel.» → «…para entrar a la
+intranet.», tal como la escribió el usuario. El manual no cita esa frase.
+
+**Cómo se probó.** ESLint del archivo, limpio. No se miró en vivo (`/first-login` del sitio exige
+una sesión firmada).
+
+---
+
+## sesión 11-10-2026 (17.ª parte): el check vuelve a la recuperación (sitio e intranet)
+
+**Qué se pidió:** el usuario aclaró que los cambios eran para el final del primer ingreso
+(`/first-login`) y que, si se había cambiado algo del login o de la recuperación, se deshiciera.
+
+**Lo que se deshizo.** Lo único del login o la recuperación cambiado hoy sin pedirlo era la
+insignia con el check de la pantalla de éxito de la recuperación, quitada junto con la del primer
+ingreso (partes 9 y 13):
+
+| Dónde | Cambio |
+|---|---|
+| `auth-ui.tsx`, `reset-success-view.tsx` (sitio) | Vueltos a como estaban antes de `dc5f04a0`: `AuthSuccessBadge` existe otra vez y la lleva «¡Genial, tu clave ha sido actualizada con éxito!». El comentario de la vista aclara que el primer ingreso ya no la lleva. |
+| `auth-success-screen.tsx` (intranet) | La insignia blanca con el check, otra vez encima del botón, como primer hijo de la tarjeta (la prop `antesDelFormulario` de `MarcoAcceso` ya no existe y no se repuso). |
+
+El primer ingreso sigue sin check, sin paginador y sin «Volver», y con los textos de las
+partes 15 y 16. Los demás cambios del login y la recuperación de hoy los pidió el usuario
+(«Cancelar», aviso de privacidad, ojo, «Verifica tu identidad») y se quedan.
+
+**Cómo se probó.** ESLint y `tsc --noEmit` de las dos apps, limpios. En vivo: la recuperación del
+sitio de punta a punta con la API simulada hasta `/reset-success` (1280 × 800), con el check; la
+`/reset-success` de la intranet a 360 × 640 y 1280 × 800, con el check, sin scroll.
+
+---
+
+## sesión 11-10-2026 (16.ª parte): aviso de las respuestas más corto (sitio e intranet)
+
+**Qué se pidió:** cambiar «Es muy importante que recuerdes o guardes tus respuestas en un lugar
+seguro, ya que serán el único método…» por «Guarda tus respuestas en un lugar seguro, las usarás
+para validar tu identidad y restablecer tu clave si la olvidas.», en el sitio y la intranet.
+
+**Lo que se hizo.** Reemplazado el texto en sus cuatro apariciones: la pantalla final del primer
+ingreso y la de «sin nada pendiente», en `first-login-flow.tsx` (sitio) y `first-login-view.tsx`
+(intranet). Nada más cambió. El manual no copia la frase literal («recordando guardar las
+respuestas en un lugar seguro…») y no se tocó.
+
+**Cómo se probó.** ESLint y `tsc --noEmit` de las dos apps, limpios. Intranet en vivo hasta el
+paso 3 a 360 × 640 y 1280 × 800: el texto nuevo, sin scroll. El sitio no se miró en vivo
+(`/first-login` exige una sesión firmada).
+
+---
+
 ## sesión 11-10-2026 (15.ª parte): la pantalla final del primer ingreso, con el texto del usuario dentro de la tarjeta
 
 **Qué se pidió:** el usuario aclaró que el texto de la 10.ª parte era para la pantalla que sale al
