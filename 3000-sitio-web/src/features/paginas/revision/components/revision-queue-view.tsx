@@ -6,7 +6,7 @@ import { BarraFiltros, CampoFiltro } from '@/shared/ui/molecules/barra-filtros';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
 import { DatePicker } from '@/shared/ui/molecules/date-picker';
 import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
-import { fechaDeFila, RESALTE_DE_FILA, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
+import { FechaDeCelda, fechaDeFila, RESALTE_DE_FILA, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
 import { Paginador } from '@/shared/ui/molecules/paginador';
 import { useRevisionQueue } from '../hooks/use-revision-queue';
 import type { PaginaEnRevision } from '../../model/pagina.types';
@@ -33,8 +33,20 @@ function enlaceDeVistaPrevia(pagina: PaginaEnRevision): string {
 
 
 
+/**
+ * En la tabla, botones de 36×48 desde 72rem de contenedor (`@6xl`, ~1505px de ventana con
+ * la barra lateral) y de 32×44 por debajo: a 1330px los cuatro se veían muy grandes
+ * (pedido del usuario, 2026-10-12). Los dos rangos se excluyen (`@6xl` / `@max-6xl`) para
+ * no depender del orden en que Tailwind escribe `en-tabla` y `@6xl`. En el acordeón no
+ * cambian: llevan el nombre escrito y 44px de alto.
+ */
 const BOTON =
-  `${GRUPO_TOOLTIP} flex h-11 items-center justify-center gap-2 rounded-[16px] border border-transparent px-3 text-sm font-medium transition-colors focus:outline-none focus:ring-2 @3xl:h-9 @3xl:w-12 @3xl:px-0`;
+  `${GRUPO_TOOLTIP} flex h-11 items-center justify-center gap-2 rounded-[16px] border border-transparent px-3 text-sm font-medium transition-colors focus:outline-none focus:ring-2 en-tabla:px-0 en-tabla:@6xl:h-9 en-tabla:@6xl:w-12 en-tabla:@max-6xl:h-8 en-tabla:@max-6xl:w-11`;
+
+/** El icono de cada botón, a su tamaño de siempre o un paso menos donde el botón se achica. */
+const ICONO_OJO = 'h-6 w-6 en-tabla:@max-6xl:h-5 en-tabla:@max-6xl:w-5';
+const ICONO_PAPELERA = 'h-5 w-5 en-tabla:@max-6xl:h-4 en-tabla:@max-6xl:w-4';
+const ICONO_PEQUENO = 'h-4 w-4 en-tabla:@max-6xl:h-3.5 en-tabla:@max-6xl:w-3.5';
 
 /**
  * El nombre de cada acción, del color de su botón (ver `shared/ui/atoms/tooltip.ts`).
@@ -44,15 +56,7 @@ const BOTON =
  * pide un texto de 12 px (9-accesibilidad.md §2.1): sobre el azul da 2,6:1, sobre el verde
  * 2,4:1 y sobre el rojo 3,8:1. Con `#0d1526` darían 7,0, 7,5 y 4,7:1.
  */
-const TOOLTIP = `${TOOLTIP_ENCIMA} hidden @3xl:block`;
-
-const fecha = (iso: string) => {
-  try {
-    return new Date(iso).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' });
-  } catch {
-    return iso;
-  }
-};
+const TOOLTIP = `${TOOLTIP_ENCIMA} hidden en-tabla:block`;
 
 const FILTROS_VACIOS = { ambito: '', autor: '', desde: '', hasta: '' };
 
@@ -146,9 +150,11 @@ export function RevisionQueueView() {
 
       {!isLoading && paginas.length > 0 && (
         <BarraFiltros activos={Object.values(filtros).filter(Boolean).length}>
-          <CampoFiltro etiqueta="Ámbito">
+          {/* «Página» y no «Ámbito» (pedido del usuario, 2026-10-12): la columna del ámbito
+              se unió a la de la página. Por dentro sigue filtrando `ambito`. */}
+          <CampoFiltro etiqueta="Página">
             <CustomSelect
-              ariaLabel="Ámbito"
+              ariaLabel="Página"
               value={filtros.ambito}
               onChange={(valor) => cambiarFiltro('ambito', valor)}
               options={[
@@ -219,23 +225,21 @@ export function RevisionQueueView() {
               versión 3 de Contacto») y al tocarla se despliegan los cambios, el resto de datos
               y las acciones. Con muchas solicitudes, las tarjetas enteras hacían eterno el
               scroll. Las reglas, en globals.css (`olo-tabla-acordeon`). */}
-          <table className="olo-tabla-apilable olo-tabla-acordeon w-full min-w-[64rem] text-left text-sm">
+          <table className="olo-tabla-apilable olo-tabla-acordeon w-full text-left text-sm">
             <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-[#131b2f]">
               <tr>
                 <th scope="col" className="px-4 py-3 font-medium">Página</th>
                 <th scope="col" className="px-4 py-3 font-medium">Cambios</th>
-                <th scope="col" className="px-4 py-3 font-medium">Ámbito</th>
-                <th scope="col" className="px-4 py-3 font-medium">Autor</th>
-                <th scope="col" className="px-4 py-3 font-medium">Enviado el</th>
-                <th scope="col" className="px-4 py-3 font-medium text-right">
+                <th scope="col" className="px-2 py-3 font-medium">Autor</th>
+                <th scope="col" className="px-2 py-3 font-medium">Enviado el</th>
+                <th scope="col" className="px-2 py-3 font-medium text-right">
                   <span className="sr-only">Acciones</span>
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
               {paginasPagina.map((pagina) => {
-                const abierta = estaAbierta(pagina.id);
-                return (
+                const abierta = estaAbierta(pagina.id);                return (
                 <tr
                   key={pagina.id}
                   data-abierta={abierta || undefined}
@@ -269,8 +273,20 @@ export function RevisionQueueView() {
                       <p className="mb-3 text-sm italic text-zinc-500 dark:text-zinc-400">«{pagina.comentario}»</p>
                     )}
                   </td>
+                  {/* El ámbito arriba y debajo la página con su versión («Sitio web» /
+                      «Inicio · versión 3»): antes el ámbito tenía columna propia y se leía
+                      separado de la página a la que pertenece (pedido del usuario, 2026-10-12). */}
                   <td data-solo-tabla className="px-4 py-3">
-                    <p className="font-medium text-zinc-900 dark:text-[#f6f6f6]">
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold ${
+                        pagina.ambito === 'intranet'
+                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300'
+                          : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300'
+                      }`}
+                    >
+                      {pagina.ambito === 'intranet' ? 'Intranet' : 'Sitio web'}
+                    </span>
+                    <p className="mt-1 font-medium text-zinc-900 dark:text-[#f6f6f6]">
                       {pagina.titulo}
                       <span className="font-normal text-zinc-500"> · versión {pagina.numeroVersion}</span>
                     </p>
@@ -284,42 +300,31 @@ export function RevisionQueueView() {
                       <p className="text-sm text-zinc-400">Sin comentario</p>
                     )}
                   </td>
-                  <td data-solo-tabla data-etiqueta="Ámbito" className="px-4 py-3">
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold ${
-                        pagina.ambito === 'intranet'
-                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300'
-                          : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300'
-                      }`}
-                    >
-                      {pagina.ambito === 'intranet' ? 'Intranet' : 'Sitio web'}
-                    </span>
-                  </td>
-                  <td data-solo-tabla data-etiqueta="Autor" className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
+                  <td data-solo-tabla data-etiqueta="Autor" className="px-2 py-3 text-zinc-600 dark:text-zinc-300">
                     <p className="text-sm">{pagina.autor?.nombre || 'Desconocido'}</p>
                     {pagina.autor?.email && (
-                      <p className="text-xs text-zinc-400">{pagina.autor.email}</p>
+                      <p className="text-xs text-zinc-400 wrap-anywhere">{pagina.autor.email}</p>
                     )}
                   </td>
-                  <td data-solo-tabla data-etiqueta="Enviado el" className="whitespace-nowrap px-4 py-3 text-zinc-600 dark:text-zinc-300">
-                    {fecha(pagina.creadoEn)}
+                  <td data-solo-tabla data-etiqueta="Enviado el" className="whitespace-nowrap px-2 py-3 text-zinc-600 dark:text-zinc-300">
+                    <FechaDeCelda iso={pagina.creadoEn} />
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-2 py-3 text-right">
                     {/* Con la tabla en tarjetas cada botón dice lo que hace, en una rejilla de 2×2: el
                         `title` no aparece en una pantalla táctil y cuatro iconos solos no
                         se distinguen. Con la tabla completa, el texto queda para el lector de pantalla.
                         Tonos 600-700 y no 500: el blanco sobre verde o amarillo 500 no llega
                         al 3:1 ni para un icono. */}
-                    <div className="grid grid-cols-2 gap-2 @3xl:flex @3xl:items-center @3xl:justify-end">
+                    <div className="grid grid-cols-2 gap-2 en-tabla:flex en-tabla:items-center en-tabla:justify-end">
                       <a
                         href={enlaceDeVistaPrevia(pagina)}
                         className={`group ${BOTON} bg-[#1FACE3] text-white hover:brightness-95 focus:ring-[#1FACE3]/50`}
                       >
-                        <span className="relative inline-block h-6 w-6">
-                          <span className="absolute inset-0 flex items-center justify-center group-hover:hidden group-focus-visible:hidden"><IconoMascara nombre="eye-closed" tamano="h-6 w-6" /></span>
-                          <span className="absolute inset-0 hidden items-center justify-center group-hover:flex group-focus-visible:flex"><IconoMascara nombre="eye-open" tamano="h-6 w-6" /></span>
+                        <span className={`relative inline-block ${ICONO_OJO}`}>
+                          <span className="absolute inset-0 flex items-center justify-center group-hover:hidden group-focus-visible:hidden"><IconoMascara nombre="eye-closed" tamano={ICONO_OJO} /></span>
+                          <span className="absolute inset-0 hidden items-center justify-center group-hover:flex group-focus-visible:flex"><IconoMascara nombre="eye-open" tamano={ICONO_OJO} /></span>
                         </span>
-                        <span className="@3xl:sr-only">Visualizar</span>
+                        <span className="en-tabla:sr-only">Visualizar</span>
                         <span aria-hidden="true" className={`${TOOLTIP} ${COLOR_DE_ACCION.visualizar}`}>Visualizar</span>
                       </a>
                       <button
@@ -328,8 +333,8 @@ export function RevisionQueueView() {
                         onClick={() => abrirAprobar(pagina)}
                         className={`${BOTON} bg-[#7DB728] text-white hover:brightness-95 focus:ring-[#7DB728]/50 disabled:cursor-not-allowed disabled:opacity-50`}
                       >
-                        <IconoMascara nombre="send" />
-                        <span className="@3xl:sr-only">Publicar</span>
+                        <IconoMascara nombre="send" tamano={ICONO_PEQUENO} />
+                        <span className="en-tabla:sr-only">Publicar</span>
                         <span aria-hidden="true" className={`${TOOLTIP} ${COLOR_DE_ACCION.aprobar}`}>Publicar</span>
                       </button>
                       <button
@@ -338,8 +343,8 @@ export function RevisionQueueView() {
                         onClick={() => abrirRechazar(pagina)}
                         className={`${BOTON} border-[#FF1F1F] bg-[#FFE9E9] text-[#FF1F1F] hover:brightness-95 focus:ring-[#FF1F1F]/50 disabled:cursor-not-allowed disabled:opacity-50`}
                       >
-                        <IconoMascara nombre="equiz" />
-                        <span className="@3xl:sr-only">Rechazar</span>
+                        <IconoMascara nombre="equiz" tamano={ICONO_PEQUENO} />
+                        <span className="en-tabla:sr-only">Rechazar</span>
                         {/* `#d11a1a` y no el `#FF1F1F` del icono: sobre el rosa da 4,7:1; el del icono, 3,3:1. */}
                         <span aria-hidden="true" className={`${TOOLTIP} ${COLOR_DE_ACCION.rechazar}`}>Rechazar</span>
                       </button>
@@ -349,8 +354,8 @@ export function RevisionQueueView() {
                         onClick={() => abrirEliminar(pagina)}
                         className={`${BOTON} bg-[#FF1F1F] text-white hover:brightness-95 focus:ring-[#FF1F1F]/50 disabled:cursor-not-allowed disabled:opacity-50`}
                       >
-                        <IconoMascara nombre="trash" tamano="h-5 w-5" />
-                        <span className="@3xl:sr-only">Eliminar</span>
+                        <IconoMascara nombre="trash" tamano={ICONO_PAPELERA} />
+                        <span className="en-tabla:sr-only">Eliminar</span>
                         <span aria-hidden="true" className={`${TOOLTIP} ${COLOR_DE_ACCION.eliminar}`}>Eliminar</span>
                       </button>
                     </div>

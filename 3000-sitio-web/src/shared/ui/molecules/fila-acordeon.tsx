@@ -51,6 +51,30 @@ export function fechaDeFila(iso: string): string {
 }
 
 /**
+ * La fecha en una celda de la tabla (escritorio): el día arriba y la hora debajo, más
+ * pequeña y fina. Pedido del usuario el 2026-10-12 en «Páginas en revisión» y Respaldos.
+ * `font-light` (300) y no `font-thin`: Poppins se carga en 300–700 (`shared/lib/fonts.ts`)
+ * y el 100 caería en el mismo 300.
+ */
+export function FechaDeCelda({ iso }: { iso: string }) {
+  let dia = iso;
+  let hora = '';
+  try {
+    const d = new Date(iso);
+    dia = d.toLocaleDateString('es-CO', { dateStyle: 'medium' });
+    hora = d.toLocaleTimeString('es-CO', { timeStyle: 'short' });
+  } catch {
+    // Fecha ilegible: se muestra tal cual llegó.
+  }
+  return (
+    <>
+      <p className="text-sm">{dia}</p>
+      {hora && <p className="text-xs font-light">{hora}</p>}
+    </>
+  );
+}
+
+/**
  * Un botón de la fila desplegada (en `td[data-detalle]`): icono y nombre, a todo el ancho de
  * su hueco y 44 px de alto. En la tabla esas acciones son iconos con tooltip, que en una
  * pantalla táctil no se ven. `color`: la clase de `COLOR_DE_ACCION`, la que se configura en

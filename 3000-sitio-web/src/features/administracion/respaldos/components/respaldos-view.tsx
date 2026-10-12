@@ -8,15 +8,13 @@ import { BarraFiltros, CampoFiltro } from '@/shared/ui/molecules/barra-filtros';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
 import { DatePicker } from '@/shared/ui/molecules/date-picker';
 import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
-import { BotonDeFila, fechaDeFila, RESALTE_DE_FILA, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
+import { BotonDeFila, FechaDeCelda, fechaDeFila, RESALTE_DE_FILA, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
 import { rutaPublicaDeSlug } from '@/features/paginas';
 import { useRespaldos } from '../hooks/use-respaldos';
 import { VistaPreviaVersion } from './vista-previa-version';
 import { ModalDepurarVersiones } from './modal-depurar-versiones';
 import type { RegistroRespaldo } from '../types';
 import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
-
-const fecha = (iso: string) => new Date(iso).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' });
 
 const FILTROS_VACIOS = { ambito: '', editor: '', publicador: '', desde: '', hasta: '' };
 
@@ -105,9 +103,11 @@ export function RespaldosView() {
 
       {!isLoading && registrosRestaurables.length > 0 && (
         <BarraFiltros activos={Object.values(filtros).filter(Boolean).length}>
-          <CampoFiltro etiqueta="Ámbito">
+          {/* «Página» y no «Ámbito», como en «Páginas en revisión» (pedido del usuario,
+              2026-10-12): el ámbito va en la columna Página. Por dentro sigue filtrando `ambito`. */}
+          <CampoFiltro etiqueta="Página">
             <CustomSelect
-              ariaLabel="Ámbito"
+              ariaLabel="Página"
               value={filtros.ambito}
               onChange={(valor) => cambiarFiltro('ambito', valor)}
               options={[
@@ -234,33 +234,33 @@ export function RespaldosView() {
                     </div>
                   </td>
                   <td data-solo-tabla className="px-4 py-2">
-                    {/* «Sitio web /inicio · versión 43»: primero dónde (el ámbito), luego
-                        qué página o sección (su ruta, como en los modales de restaurar)
-                        y al final la versión. Antes iba el título primero y el ámbito
-                        detrás, y se leía «inicio Sitio web · versión 43». */}
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                      {registro.ambito && (
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold ${
-                            registro.ambito === 'intranet'
-                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300'
-                              : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300'
-                          }`}
-                        >
-                          {registro.ambito === 'intranet' ? 'Intranet' : 'Sitio web'}
-                        </span>
-                      )}
-                      <p className="font-medium text-zinc-900 dark:text-[#f6f6f6]">/{registro.slug}</p>
-                      <span className="text-xs text-zinc-500">· versión {registro.numeroVersion}</span>
-                    </div>
+                    {/* En dos líneas, como en «Páginas en revisión» (pedido del usuario,
+                        2026-10-12): arriba dónde (el ámbito) y debajo qué página o sección (su
+                        ruta, como en los modales de restaurar) con la versión: «Sitio web» /
+                        «/inicio · versión 43». */}
+                    {registro.ambito && (
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold ${
+                          registro.ambito === 'intranet'
+                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300'
+                            : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300'
+                        }`}
+                      >
+                        {registro.ambito === 'intranet' ? 'Intranet' : 'Sitio web'}
+                      </span>
+                    )}
+                    <p className="mt-1 text-xs font-medium text-zinc-900 dark:text-[#f6f6f6]">
+                      /{registro.slug}
+                      <span className="font-normal text-zinc-500"> · versión {registro.numeroVersion}</span>
+                    </p>
                   </td>
                   <td data-solo-tabla data-etiqueta="Autor" className="px-4 py-2 text-zinc-600 dark:text-zinc-300">{registro.editadoPor.nombre}</td>
                   <td data-solo-tabla data-etiqueta="Publicado por" className="px-4 py-2 text-zinc-600 dark:text-zinc-300">{registro.publicadoPor.nombre}</td>
                   <td data-solo-tabla data-etiqueta="Editado el" className="whitespace-nowrap px-4 py-2 text-zinc-600 dark:text-zinc-300">
-                    {fecha(registro.editadoEn)}
+                    <FechaDeCelda iso={registro.editadoEn} />
                   </td>
                   <td data-solo-tabla data-etiqueta="Publicado el" className="whitespace-nowrap px-4 py-2 text-zinc-600 dark:text-zinc-300">
-                    {fecha(registro.publicadoEn)}
+                    <FechaDeCelda iso={registro.publicadoEn} />
                   </td>
                   <td data-solo-tabla data-etiqueta="Versión anterior" className="px-4 py-2 text-center">
                     {/* Como el ojo de Auditoría: verde #7DB728; el tooltip, del color de «Ver detalle». */}
