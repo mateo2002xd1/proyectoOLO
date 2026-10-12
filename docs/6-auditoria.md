@@ -5,6 +5,47 @@
 
 ---
 
+## sesión 12-10-2026: la nueva contraseña de la recuperación, con el saludo del sitio en la intranet; el sitio sin encabezado y con «Guardar contraseña»
+
+**Qué se pidió:** en `localhost:3001/reset-password` (intranet), el texto de la izquierda como en
+el sitio: «¡Enhorabuena, David!», «Ahora puedes crear tu nueva contraseña.» y «Asegúrate de que
+sea fácil de recordar para ti, pero difícil de adivinar para otros.». En
+`localhost:3000/reset-password` (sitio), quitar «Crea tu nueva contraseña» y que el botón diga
+«Guardar contraseña».
+
+**Lo que se hizo.**
+
+| Dónde | Cambio |
+|---|---|
+| `security-questions-view.tsx` (intranet) | Al verificar las respuestas guarda en `sessionStorage` (`recoveryName`) el primer nombre que ya devolvía `POST /security-questions/verify` y que el sitio usa para el mismo saludo. Sin nombre, borra la clave. |
+| `reset-password-view.tsx` (intranet) | En la recuperación: título `¡Enhorabuena, <nombre>!` (o «¡Enhorabuena!» sin nombre) y los dos párrafos del sitio; antes «Crea tu nueva contraseña» y «Elige una clave que no hayas usado antes.». El nombre se lee con `useSyncExternalStore`, como el modo. El cambio forzado (con sesión) conserva sus textos: el pedido era para el flujo de recuperación. «Cancelar» borra también `recoveryName`. |
+| `reset-success-view.tsx` (intranet) | Borra `recoveryName` con los demás datos de la recuperación. |
+| `reset-password-view.tsx` (sitio) | Fuera el encabezado «Crea tu nueva contraseña» (y el import de `authPasosCardHeadingClass`); el botón dice «Guardar contraseña» (antes «Guardar»). |
+
+**Cómo se probó.** ESLint y `tsc --noEmit` de las dos apps, limpios. **No se miró en vivo:** los
+servidores de desarrollo del 3000 y el 3001 estaban apagados al cierre y no se levantaron.
+
+---
+
+## sesión 11-10-2026 (19.ª parte): «Iniciar sesión» de la cuenta sin pendientes del sitio no llevaba al login
+
+**Qué se reportó:** en el sitio, el botón «Iniciar sesión» no llevaba al login.
+
+**Causa.** En `first-login-flow.tsx`, la pantalla «sin nada pendiente» (la que sale, por ejemplo,
+al recargar `/first-login` después de guardar las preguntas) tenía un enlace a `/admin/dashboard`
+que decía «Ir al panel»; al renombrarlo «Iniciar sesión» (2026-10-11) siguió llevando al panel. El
+botón del paso 3 sí cerraba la sesión e iba a `/login` (`cerrarSesionEIrAlLogin`): la ruta de
+cierre borra las mismas cookies, con la misma `path`, que pone el login.
+
+**Lo que se hizo.** El enlace pasa a botón con `cerrarSesionEIrAlLogin`, como el paso 3 del sitio
+y la misma pantalla de la intranet (`logout()`). Fuera el `import Link`, que ya no usaba nadie.
+El manual decía «Ir al panel»: corregido.
+
+**Cómo se probó.** ESLint del archivo y `tsc --noEmit` del sitio, limpios. No se probó el clic en
+vivo (`/first-login` del sitio exige una sesión firmada).
+
+---
+
 ## sesión 11-10-2026 (18.ª parte): última frase de la pantalla final del primer ingreso del sitio
 
 **Qué se pidió:** el mensaje de la pantalla final de `localhost:3000/first-login`: «Tu cuenta ya es

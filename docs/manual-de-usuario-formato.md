@@ -1987,7 +1987,7 @@ Durante el primer ingreso (cuyo procedimiento operativo regular se detalla en la
 3. **Pantalla de bienvenida y verificación del estado de cuenta:**
    * *Situaciones anómalas y respuestas del sistema:*
      * **Sesión provisional expirada o no iniciada:** Si el usuario ingresa de forma manual a la ruta `/first-login` sin una sesión activa o si la sesión caducó por inactividad, la plataforma detiene la carga con la alerta: `"No se pudo comprobar el estado de tu cuenta. Vuelve a iniciar sesión."`, facilitando el enlace directo para regresar a la pantalla de acceso.
-     * **Cuenta sin configuraciones pendientes:** Si la cuenta ya había completado el proceso con anterioridad (por ejemplo, desde otra pestaña del navegador), el sistema no solicita credenciales temporales inexistentes; en su lugar, presenta el aviso: `"¡Configuración completada con éxito! Tu cuenta ya es segura."`, con el recordatorio de guardar las respuestas de seguridad en un lugar seguro, junto con el botón `"Ir al panel"`.
+     * **Cuenta sin configuraciones pendientes:** Si la cuenta ya había completado el proceso con anterioridad (por ejemplo, desde otra pestaña del navegador), el sistema no solicita credenciales temporales inexistentes; en su lugar, presenta el aviso: `"¡Configuración completada con éxito! Tu cuenta ya es segura."`, con el recordatorio de guardar las respuestas de seguridad en un lugar seguro, junto con el botón `"Iniciar sesión"`, que cierra la sesión y lleva a la pantalla de inicio de sesión.
    * *Acción de corrección:* Iniciar sesión nuevamente en el portal para que el aplicativo evalúe los pendientes activos de la cuenta.
 
 > **[Captura: Alerta de Estado de Cuenta en Primer Ingreso Sitio Web]**
