@@ -42,7 +42,10 @@ nuestra» / «política de privacidad y protección de datos.»; en la tarjeta d
 **Y el título bajo el logo.** Por debajo de `xl`, «Bienvenido a nuestra Intranet» iba encima del
 logo (`order-*`); el usuario lo pidió debajo, como ya estaba en escritorio. Se quitó el cambio de
 orden y el hueco pasó del título al logo; el logo sigue atenuado sobre el azul. Capturas a
-360 × 640, 768 × 1024 y 1280 × 800: sin scroll, y el escritorio igual que antes.
+360 × 640, 768 × 1024 y 1280 × 800: sin scroll, y el escritorio igual que antes. Después, más
+aire bajo el título antes del formulario: `mb-[clamp(1rem,4dvh,2.5rem)]` (unos 26 px en un
+teléfono de 640 de alto) y 40 px desde `sm`; nada desde `xl`. Capturas a 360 × 640, 390 × 844,
+768 × 1024 y 1280 × 800: sin scroll.
 
 **Pendiente al cierre.** Mirar el autorrelleno en el navegador del usuario.
 
