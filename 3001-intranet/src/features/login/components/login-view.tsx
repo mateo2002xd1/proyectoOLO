@@ -178,7 +178,10 @@ function LoginForm() {
             alt="Logo intranet"
             className="mx-auto mb-[clamp(0.75rem,3dvh,2rem)] w-[clamp(4.5rem,14dvh,12rem)] opacity-30 sm:mb-8 sm:w-56 xl:mb-0 xl:w-[210px] xl:opacity-100"
           />
-          <h1 className="text-[clamp(1.25rem,3.6dvh,1.5rem)] font-bold leading-tight text-white md:text-3xl xl:font-light">
+          {/* Aire bajo el título antes del formulario (pedido del usuario, 2026-10-11); se
+              encoge con el alto en el móvil para que siga cabiendo sin scroll. Desde `xl` el
+              título está en la columna izquierda y no lo necesita. */}
+          <h1 className="mb-[clamp(1rem,4dvh,2.5rem)] text-[clamp(1.25rem,3.6dvh,1.5rem)] font-bold leading-tight text-white sm:mb-10 md:text-3xl xl:mb-0 xl:font-light">
             Bienvenido a <span className="font-bold xl:uppercase"><br />nuestra Intranet</span>
           </h1>
         </div>
