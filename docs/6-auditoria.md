@@ -5,6 +5,92 @@
 
 ---
 
+## sesión 11-10-2026: los modales entran y salen con animación (`@starting-style`)
+
+**Qué se pidió.** Animaciones de entrada y salida en los modales, con la regla
+`@starting-style`.
+
+**Por qué hacía falta esa regla.** Un modal aparecía de golpe porque el navegador no tenía un
+«antes» desde el que animar: el elemento no existía (lo monta React) o estaba en
+`display: none` (un `<dialog>` cerrado). `@starting-style` le da ese antes, el estilo con el
+que arranca la transición en su primer pintado, sin JavaScript ni `@keyframes`. Para la salida
+hay dos casos:
+
+- **`<dialog>` nativo** (`showModal()`): sale solo con CSS. Al cerrarse pierde `[open]`; con
+  `display` y `overlay` en `transition-behavior: allow-discrete` el navegador lo deja pintado,
+  y en la capa superior, hasta que termina el fundido.
+- **Modal que React monta por portal**: al dejar de pintarlo desaparece en el acto y no queda
+  nada que animar. `useCierreAnimado(abierto)` lo deja montado 150 ms más con `data-cerrando`,
+  y el CSS anima hacia el estado cerrado.
+
+**Lo que se hizo.**
+
+| Capa | Cambio |
+|---|---|
+| `globals.css` (las dos apps, al final) | Bloque «Entrada y salida de los modales». Variables `--olo-modal-*` (entrada 220 ms con curva de frenado, salida 150 ms con curva de aceleración, desde 0.75 rem más abajo y al 96 %). Por debajo de `sm` suben 2 rem sin encoger (en el móvil salen desde abajo, §10.4). Con «reducir movimiento», solo el fundido. Tres clases: `olo-anim-dialogo`, `olo-anim-fondo` y `olo-anim-caja`. Se mueven `translate` y `scale`, no `transform`, para no pisar el `transform` que ya tenga una caja. |
+| `shared/lib/use-cierre-animado.ts` (las dos apps, nuevo) | `useCierreAnimado(abierto)` → `{ montado, cerrando }`. `useUltimoValorAbierto(abierto, valor)`: mientras se va, el modal enseña lo último que tuvo abierto, porque casi todos se cierran con el padre vaciando lo que pintan (`aEliminar` vuelve a `null`), y sin esto el título cambiaba o la caja se vaciaba en plena salida. |
+| `Alert` (sitio) | Entrada y salida, y conserva su contenido mientras se va. Cubre de una vez los 11 usos: usuarios, roles, cargas, proyectos de inversión. |
+| `<dialog>` nativos | Con `olo-anim-dialogo`: detalle de Auditoría (conserva el registro al salir), vista previa de versión y sus dos confirmaciones (Respaldos), motivo de Revisión, los dos diálogos del editor en las dos apps (salir y enviar) y `ModalInactividad` (`packages/inactividad`). |
+| Portales del panel | Depurar auditoría, depurar versiones, permisos (conserva el rol al salir), diagrama de visitas y notificaciones (`ModalAlertas`). |
+| Editor y secciones (las dos apps) | Aviso de rechazo, nueva página, eliminar página y cerrar sesión. |
+| Sitio público | Modal de ocupaciones (y descripción de proyectos de inversión: conserva título, contenido y pie al salir), buscador del sitio, documento a pantalla completa. Intranet: buscador del menú superior. |
+| `auditoria-view.tsx` | El modal de depurar ya no se monta con `{abierto && …}` sino siempre, con `key` por apertura como en Respaldos: si el padre lo desmonta, el modal no se entera de que se cierra. |
+| Vaciado de formularios | Nueva página y los dos buscadores se vaciaban al cerrar; ahora al abrir (ajuste de estado durante el render, el que recomienda React, sin efecto). Eliminar página: el análisis se vacía en el efecto que ya lo pedía al abrir. Si no, durante la salida se veía el campo quedarse en blanco o la lista desaparecer antes del fundido. |
+| `modal-depurar-*.tsx` | Fuera `animate-in fade-in duration-200` del fondo: son clases de `tw-animate-css`, que el proyecto no tiene instalado, y no hacían nada. |
+
+**Cómo se probó.**
+
+| Prueba | Resultado |
+|---|---|
+| `tsc --noEmit`, sitio y intranet | Limpios. |
+| ESLint de los 30 archivos tocados | Nada nuevo. Salen 4 errores que ya estaban en `dev`: `setState` dentro de `useMemo` y dos comillas sin escapar en `modal-permisos.tsx`, y un `any` en `puck-editor-wrapper.tsx` del sitio. |
+| CSS real de cada app (compilado con su Tailwind) en Chrome sin ventana, medido fotograma a fotograma, a 1280 × 800 y a 360 × 740 | `<dialog>`: entra de 0 a 1 en ~220 ms, con el velo a la par; al cerrar sigue en `display: block` mientras baja y a los ~150 ms pasa a `none`. Portal: igual, y con `data-cerrando` la opacidad llega a 0 justo a los 150 ms, cuando el hook lo desmonta. Desde 12 px y al 96 % en escritorio, desde 32 px y al 100 % en el móvil. |
+| Lo mismo con «reducir movimiento» | Sitio: solo el fundido, sin desplazamiento. Intranet: sin animación, porque su `globals.css` ya tenía una regla global que deja toda transición en 0.01 ms; solo el velo del `<dialog>` (`::backdrop` no lo alcanza `*`) hace el fundido. Se dejó así. |
+| Hooks reales con React 19 en happy-dom (StrictMode), las dos apps | 10/10: se monta en el mismo render al abrir; al cerrar sigue montado con `data-cerrando` y el último texto; a los 80 ms sigue, a los 200 ya no; reabierto a mitad de la salida, se cancela el desmontaje y enseña el texto nuevo; sin bucle de renders. |
+| Pantallas reales del panel con sesión | **No se probó**: hace falta la cuenta del usuario. |
+| Firefox y Safari | **No se probó.** |
+
+> **Trampas para quien venga.**
+>
+> - `useUltimoValorAbierto` necesita un valor estable entre renders: una prop o un estado. Un
+>   objeto o un JSX creados en el propio render son nuevos cada vez y lo meten en un bucle.
+>   Por eso el modal de ocupaciones hace cuatro llamadas (una por prop) y no una con un objeto.
+> - La salida del `<dialog>` va dentro de `@supports (overlay: auto)`, que hoy solo cumple
+>   Chromium. En Firefox el `<dialog>` sale de la capa superior al instante y, si siguiera
+>   pintado, caería un momento en el flujo de la página: ahí se cierra de golpe, como antes. La
+>   entrada funciona en todos.
+> - Los 150 ms de la salida están en dos sitios: `--olo-modal-salida` (CSS) y
+>   `SALIDA_DEL_MODAL_MS` (hook). Si se cambia uno, el otro.
+> - Un modal nuevo que el padre monte con `{abierto && <Modal />}` no tendrá salida: hay que
+>   dejarlo montado con `key` por apertura (`respaldos-view.tsx`, `auditoria-view.tsx`).
+
+**Lo que se descartó.**
+
+- **Esperar a `transitionend` o a `getAnimations()` en vez del temporizador.** No hace falta
+  duplicar los 150 ms, pero obliga a pasar un `ref` hasta el fondo de cada modal, y
+  `transitionend` no llega cuando no hay transición (un modal sin las clases, o una regla
+  con `transition: none`): el modal se quedaría montado e invisible tapando la página.
+- **`@keyframes`.** Sirven para entrar, pero no para salir de `display: none`: es justo lo que
+  resuelven `@starting-style` y `allow-discrete`.
+- **Animar `transform`.** Pisaría el `transform` que ya tenga la caja; `translate` y `scale`
+  son propiedades aparte.
+
+**Pendiente al cierre.**
+
+- Mirarlo en el panel con la cuenta del usuario: crear usuario, eliminar rol, permisos,
+  Auditoría (detalle y depurar), Respaldos, Revisión y el editor, en escritorio y en el móvil.
+- Solo con entrada, a sabiendas: `VistaPreviaVersion` (su `key` pasa a `'cerrado'` al cerrar
+  y lo vuelve a montar), `ModalInactividad` (el paquete lo desmonta al cerrar) y el buscador
+  del panel (lo monta el padre o es su propia página). La pantalla de envío exitoso del editor
+  y la hoja de la navegación mobile tienen su propia animación y no se tocaron.
+- Clases y CSS muertos que se vieron de paso: `animate-in zoom-in-95` en el aviso de éxito de
+  los dos `modal-depurar-*` (sin `tw-animate-css` no hacen nada) y `.olo-search-modal` /
+  `.intranet-search-modal` con sus `@keyframes` en los `globals.css`, que ya no usa ningún
+  componente.
+- Los 4 errores de ESLint que ya estaban (ver arriba).
+
+---
+
 ## sesión 10-10-2026 (15.ª parte): el acceso cabe en la pantalla del móvil, sin scroll
 
 **Qué se pidió.** En el móvil, el login y el primer ingreso de la intranet y del sitio web
