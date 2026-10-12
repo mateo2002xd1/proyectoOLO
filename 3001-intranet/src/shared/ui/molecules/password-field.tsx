@@ -15,6 +15,12 @@ interface PasswordFieldProps {
   maxLength?: number;
   autoComplete?: string;
   className?: string;
+  /**
+   * Desde `md`, en oscuro para la tarjeta blanca del acceso (login y recuperación,
+   * 2026-10-12). En el móvil sigue en blanco sobre el azul. Son las clases `…EnBlanco` de
+   * `acceso-ui.ts`, escritas aquí por la misma razón que las de abajo.
+   */
+  enBlanco?: boolean;
 }
 
 export function PasswordField({
@@ -28,6 +34,7 @@ export function PasswordField({
   maxLength = 50,
   autoComplete,
   className = 'mb-4',
+  enBlanco = false,
 }: PasswordFieldProps) {
   const [visible, setVisible] = useState(false);
 
@@ -72,7 +79,7 @@ export function PasswordField({
   return (
     <div className={className}>
       {label && (
-        <label htmlFor={id} className="mb-1 block text-sm font-medium text-white md:mb-2 md:text-base">
+        <label htmlFor={id} className={`mb-1 block text-sm font-medium text-white md:mb-2 md:text-base ${enBlanco ? 'md:text-[#001a39]' : ''}`}>
           {label}
         </label>
       )}
@@ -89,18 +96,28 @@ export function PasswordField({
             error
               ? 'border-red-300 focus:border-red-300 focus:ring-red-300'
               : 'border-white/50 focus:border-white focus:ring-white'
+          } ${
+            enBlanco
+              ? `md:text-[#001a39] md:placeholder:text-[#b3b3b3] md:autofill:shadow-[inset_0_0_0_1000px_#fff] md:autofill:[-webkit-text-fill-color:#001a39] ${
+                  error
+                    ? 'md:border-red-500 md:focus:border-red-600 md:focus:ring-red-600'
+                    : 'md:border-[#d9d9d9] md:focus:border-[#001A39] md:focus:ring-[#001A39]'
+                }`
+              : ''
           }`}
         />
         <button
           type="button"
           onClick={() => setVisible(!visible)}
           aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-          className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-white/80 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          className={`absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-white/80 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white ${
+            enBlanco ? 'md:text-[#334861] md:hover:text-[#001a39] md:focus-visible:ring-[#001A39]' : ''
+          }`}
         >
           <IconoMascara nombre={visible ? 'eye-open' : 'eye-closed'} tamano="h-4 w-4" />
         </button>
       </div>
-      {error && <p className="mt-1.5 text-sm text-red-300">{error}</p>}
+      {error && <p className={`mt-1.5 text-sm text-red-300 ${enBlanco ? 'md:text-red-600' : ''}`}>{error}</p>}
     </div>
   );
 }

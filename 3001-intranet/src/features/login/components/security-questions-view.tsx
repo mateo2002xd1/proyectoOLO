@@ -8,16 +8,23 @@ import { MarcoAcceso } from './marco-acceso';
 import { BarrasDeAvance } from './barras-de-avance';
 import {
   accesoBotonClass,
+  accesoBotonEnBlancoClass,
   accesoCampoClass,
+  accesoCampoEnBlancoClass,
   accesoEnlaceClass,
+  accesoEnlaceEnBlancoClass,
   accesoErrorClass,
+  accesoErrorEnBlancoClass,
   accesoErrorGeneralClass,
   accesoHuecoArribaClass,
   accesoHuecoClass,
   accesoEtiquetaClass,
+  accesoEtiquetaEnBlancoClass,
   accesoIconoCampoClass,
   accesoOpcionesClass,
   accesoRotuloClass,
+  accesoRotuloEnBlancoClass,
+  accesoTarjetaBlancaClass,
 } from './acceso-ui';
 import { type CatalogQuestion } from './question-picker';
 import { AuthSuccessScreen } from './auth-success-screen';
@@ -183,6 +190,12 @@ export function SecurityQuestionsView() {
     return null;
   }
 
+  // Verificar la identidad (la recuperación) va en tarjeta blanca desde `md`, como el login
+  // (2026-10-12). Las preguntas pendientes (`setup`) siguen sobre el azul.
+  const enBlanco = mode === 'verify';
+  const botonClass = enBlanco ? `${accesoBotonClass} ${accesoBotonEnBlancoClass}` : accesoBotonClass;
+  const enlaceClass = enBlanco ? `${accesoEnlaceClass} ${accesoEnlaceEnBlancoClass}` : accesoEnlaceClass;
+
   if (setupComplete) {
     return (
       <AuthSuccessScreen
@@ -203,6 +216,7 @@ export function SecurityQuestionsView() {
       }
       cerrarSesionAlSalir={mode === 'setup'}
       claveTarjeta={currentStep}
+      claseTarjeta={enBlanco ? accesoTarjetaBlancaClass : ''}
     >
       <form onSubmit={handleSubmit} noValidate>
         {errors.general && (
@@ -216,8 +230,8 @@ export function SecurityQuestionsView() {
 
         {mode === 'verify' ? (
           <div className={accesoHuecoClass}>
-            <label htmlFor="respuesta-seguridad" className={accesoEtiquetaClass}>
-              <span className={`mb-1 ${accesoRotuloClass}`}>
+            <label htmlFor="respuesta-seguridad" className={`${accesoEtiquetaClass} ${accesoEtiquetaEnBlancoClass}`}>
+              <span className={`mb-1 ${accesoRotuloClass} ${accesoRotuloEnBlancoClass}`}>
                 Pregunta {currentStep + 1} de {totalQuestions}
               </span>
               {questions[currentStep]?.label}
@@ -231,9 +245,9 @@ export function SecurityQuestionsView() {
               autoCapitalize="none"
               autoCorrect="off"
               autoFocus
-              className={accesoCampoClass(!!errors.answer)}
+              className={accesoCampoClass(!!errors.answer, accesoCampoEnBlancoClass(!!errors.answer))}
             />
-            {errors.answer && <p className={accesoErrorClass}>{errors.answer}</p>}
+            {errors.answer && <p className={`${accesoErrorClass} ${accesoErrorEnBlancoClass}`}>{errors.answer}</p>}
           </div>
         ) : (
           <>
@@ -286,12 +300,12 @@ export function SecurityQuestionsView() {
           </>
         )}
 
-        <BarrasDeAvance total={totalQuestions} actual={currentStep} variante="puntos" />
+        <BarrasDeAvance total={totalQuestions} actual={currentStep} variante="puntos" enBlanco={enBlanco} />
 
         <button
           type="submit"
           disabled={isLoading}
-          className={accesoBotonClass}
+          className={botonClass}
         >
           {isLoading
             ? (mode === 'verify' ? 'Verificando…' : 'Guardando…')
@@ -308,7 +322,7 @@ export function SecurityQuestionsView() {
                 setCurrentStep((n) => Math.max(0, n - 1));
                 setErrors({});
               }}
-              className={accesoEnlaceClass}
+              className={enlaceClass}
             >
               Volver a la pregunta anterior
             </button>
@@ -329,7 +343,7 @@ export function SecurityQuestionsView() {
           <div className={`${accesoHuecoArribaClass} text-center`}>
             <Link
               href="/login"
-              className={accesoEnlaceClass}
+              className={enlaceClass}
             >
               Volver a iniciar sesión
             </Link>

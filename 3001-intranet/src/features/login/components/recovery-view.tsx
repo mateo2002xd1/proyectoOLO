@@ -8,13 +8,19 @@ import { authApi } from '@/features/login';
 import { MarcoAcceso } from './marco-acceso';
 import {
   accesoBotonClass,
+  accesoBotonEnBlancoClass,
   accesoCampoClass,
+  accesoCampoEnBlancoClass,
   accesoEnlaceClass,
+  accesoEnlaceEnBlancoClass,
   accesoErrorClass,
+  accesoErrorEnBlancoClass,
   accesoErrorGeneralClass,
   accesoHuecoArribaClass,
   accesoHuecoClass,
   accesoEtiquetaClass,
+  accesoEtiquetaEnBlancoClass,
+  accesoTarjetaBlancaClass,
 } from './acceso-ui';
 import { mensajeDeError } from '@/shared/lib/errors';
 
@@ -61,7 +67,9 @@ export function RecoveryView() {
   };
 
   return (
+    // Tarjeta blanca desde `md`, como el login (las clases `…EnBlanco`, 2026-10-12).
     <MarcoAcceso
+      claseTarjeta={accesoTarjetaBlancaClass}
       titulo="¿Olvidaste tu contraseña?"
       descripcion="No te preocupes, vamos a ayudarte a restablecerla, verifica que eres tú."
     >
@@ -73,7 +81,7 @@ export function RecoveryView() {
         )}
 
         <div className={accesoHuecoClass}>
-          <label htmlFor="email" className={accesoEtiquetaClass}>
+          <label htmlFor="email" className={`${accesoEtiquetaClass} ${accesoEtiquetaEnBlancoClass}`}>
             Correo SENA
           </label>
           <input
@@ -84,17 +92,17 @@ export function RecoveryView() {
             autoComplete="email"
             value={email}
             onChange={(e) => { setEmail(e.target.value); setError(''); }}
-            className={accesoCampoClass(!!error)}
+            className={accesoCampoClass(!!error, accesoCampoEnBlancoClass(!!error))}
           />
-          {error && <p className={accesoErrorClass}>{error}</p>}
+          {error && <p className={`${accesoErrorClass} ${accesoErrorEnBlancoClass}`}>{error}</p>}
         </div>
 
-        <button type="submit" disabled={isLoading} className={accesoBotonClass}>
+        <button type="submit" disabled={isLoading} className={`${accesoBotonClass} ${accesoBotonEnBlancoClass}`}>
           {isLoading ? 'Buscando...' : 'Continuar'}
         </button>
 
         <div className={`${accesoHuecoArribaClass} text-center`}>
-          <Link href="/login" className={accesoEnlaceClass}>
+          <Link href="/login" className={`${accesoEnlaceClass} ${accesoEnlaceEnBlancoClass}`}>
             Volver a iniciar sesión
           </Link>
         </div>

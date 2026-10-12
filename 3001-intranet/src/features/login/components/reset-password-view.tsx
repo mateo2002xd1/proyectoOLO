@@ -10,10 +10,13 @@ import { PasswordRequisitos } from '@/shared/ui/molecules/password-requisitos';
 import { MarcoAcceso } from './marco-acceso';
 import {
   accesoBotonClass,
+  accesoBotonEnBlancoClass,
   accesoEnlaceClass,
+  accesoEnlaceEnBlancoClass,
   accesoErrorGeneralClass,
   accesoHuecoArribaClass,
   accesoHuecoClass,
+  accesoTarjetaBlancaClass,
 } from './acceso-ui';
 import { mensajeDeError } from '@/shared/lib/errors';
 
@@ -131,8 +134,13 @@ export function ResetPasswordView() {
     return null;
   }
 
+  // La recuperación va en tarjeta blanca desde `md`, como el login (2026-10-12). El cambio
+  // forzado sigue sobre el azul.
+  const enBlanco = mode === 'recovery';
+
   return (
     <MarcoAcceso
+      claseTarjeta={enBlanco ? accesoTarjetaBlancaClass : ''}
       // En la recuperación, los textos del sitio web (pedido del usuario, 2026-10-11): el
       // saludo con el primer nombre y dos párrafos. Antes, «Crea tu nueva contraseña» y «Elige
       // una clave que no hayas usado antes.». El cambio forzado (con sesión) no cambia.
@@ -169,6 +177,7 @@ export function ResetPasswordView() {
             value={currentPassword}
             onChange={(v) => { setCurrentPassword(v); setErrors({}); }}
             error={errors.currentPassword}
+            enBlanco={enBlanco}
             className={accesoHuecoClass}
           />
         )}
@@ -181,9 +190,10 @@ export function ResetPasswordView() {
           value={password}
           onChange={(v) => { setPassword(v); setErrors({}); }}
           error={errors.password}
+          enBlanco={enBlanco}
           className="mb-2 md:mb-3"
         />
-        <PasswordRequisitos password={password} variant="solid" className={accesoHuecoClass} resumirAlCumplir />
+        <PasswordRequisitos password={password} variant="solid" className={accesoHuecoClass} resumirAlCumplir enBlanco={enBlanco} />
 
         <PasswordField
           id="confirmPassword"
@@ -193,13 +203,14 @@ export function ResetPasswordView() {
           value={confirmPassword}
           onChange={(v) => { setConfirmPassword(v); setErrors({}); }}
           error={errors.confirm}
+          enBlanco={enBlanco}
           className={accesoHuecoClass}
         />
 
         <button
           type="submit"
           disabled={isLoading}
-          className={accesoBotonClass}
+          className={enBlanco ? `${accesoBotonClass} ${accesoBotonEnBlancoClass}` : accesoBotonClass}
         >
           {isLoading ? 'Guardando…' : 'Guardar contraseña'}
         </button>
@@ -226,7 +237,7 @@ export function ResetPasswordView() {
                 sessionStorage.removeItem('recoveryAnswers');
                 sessionStorage.removeItem('recoveryName');
               }}
-              className={accesoEnlaceClass}
+              className={`${accesoEnlaceClass} ${accesoEnlaceEnBlancoClass}`}
             >
               Cancelar
             </Link>

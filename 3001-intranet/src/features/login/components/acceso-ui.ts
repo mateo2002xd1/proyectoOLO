@@ -115,17 +115,23 @@ export const accesoBotonSecundarioClass =
 /** Encabezado dentro del formulario («Preguntas de seguridad»): 18/20 px, Medium. */
 export const accesoEncabezadoClass = 'text-lg font-medium text-white md:text-xl';
 
-/* ---------- El login, en tarjeta blanca desde `md` ---------- *
+/* ---------- Login y recuperación, en tarjeta blanca desde `md` ---------- *
  * Lo pidió el usuario el 2026-10-12: en tablet y escritorio la tarjeta del login va en blanco
- * y el botón en `#001A39`. En el móvil sigue directo sobre el azul, y el resto de las
- * pantallas de acceso no cambia. Cada clase se suma a la de arriba del mismo elemento y solo
- * actúa desde `md`, con los colores del formulario del sitio web (`auth-ui.tsx`): etiquetas y
- * campos `#001a39`, borde `#d9d9d9`, marcador `#b3b3b3`, ojo `#334861`, errores en rojo 600. */
+ * y el botón en `#001A39`; el mismo día, también las tres de la recuperación (correo,
+ * verificar la identidad y la nueva contraseña). En el móvil siguen directo sobre el azul;
+ * el primer ingreso, las preguntas pendientes y el cambio forzado de contraseña no cambian.
+ * Cada clase se suma a la de arriba del mismo elemento y solo actúa desde `md`, con los
+ * colores del formulario del sitio web (`auth-ui.tsx`): etiquetas y campos `#001a39`, borde
+ * `#d9d9d9`, marcador `#b3b3b3`, ojo `#334861`, errores en rojo 600. Las piezas de `shared/`
+ * (`PasswordField`, `PasswordRequisitos`) y `BarrasDeAvance` lo hacen con la prop `enBlanco`. */
 
 /** La tarjeta: blanca, sin el borde tenue (sobre el blanco no se vería). */
 export const accesoTarjetaBlancaClass = 'md:border-transparent md:bg-white';
 
 export const accesoEtiquetaEnBlancoClass = 'md:text-[#001a39]';
+
+/** «PREGUNTA 1 DE 3»: 9:1 sobre el blanco. */
+export const accesoRotuloEnBlancoClass = 'md:text-[#334861]';
 
 /** Para el `extra` de `accesoCampoClass`. El autorrelleno se tapa ahora con blanco. */
 export const accesoCampoEnBlancoClass = (conError: boolean) =>

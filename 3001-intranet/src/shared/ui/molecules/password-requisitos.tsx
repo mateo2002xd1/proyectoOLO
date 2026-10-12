@@ -23,12 +23,15 @@ export function PasswordRequisitos({
   className = 'mb-4',
   variant,
   resumirAlCumplir = false,
+  enBlanco = false,
 }: {
   classPrefix?: string;
   password: string;
   className?: string;
   variant?: 'panel' | 'solid';
   resumirAlCumplir?: boolean;
+  /** Desde `md`, en oscuro para la tarjeta blanca de la recuperación (2026-10-12). */
+  enBlanco?: boolean;
 }) {
   const todos = requisitosDe(password);
   const requisitos =
@@ -43,9 +46,10 @@ export function PasswordRequisitos({
         {requisitos.map((requisito) => {
           // Claros: van sobre el azul del acceso, sin tarjeta. Ver
           // `features/login/components/acceso-ui.ts`.
+          // `enBlanco`: verde 700 (5:1) y `#334861` (9:1) sobre el blanco, desde `md`.
           const claseEstado = requisito.cumplido
-            ? 'text-green-300'
-            : 'text-white/70';
+            ? `text-green-300 ${enBlanco ? 'md:text-green-700' : ''}`
+            : `text-white/70 ${enBlanco ? 'md:text-[#334861]' : ''}`;
 
           return (
             <li key={requisito.id} className={`flex items-start gap-1.5 text-xs ${claseEstado}`}>

@@ -14,10 +14,13 @@ export function BarrasDeAvance({
   total,
   actual,
   variante = 'barras',
+  enBlanco = false,
 }: {
   total: number;
   actual: number;
   variante?: 'barras' | 'puntos';
+  /** Desde `md`, en `#001A39` para la tarjeta blanca de la recuperación (2026-10-12). */
+  enBlanco?: boolean;
 }) {
   return (
     <div className={`flex justify-center ${variante === 'puntos' ? 'gap-1.5' : 'gap-2'} ${accesoHuecoClass}`} aria-hidden="true">
@@ -25,10 +28,10 @@ export function BarrasDeAvance({
         const clase =
           variante === 'puntos'
             ? i === actual
-              ? 'w-6 bg-white'
+              ? `w-6 bg-white ${enBlanco ? 'md:bg-[#001A39]' : ''}`
               : i < actual
-                ? 'w-1.5 bg-white/55'
-                : 'w-1.5 bg-white/25'
+                ? `w-1.5 bg-white/55 ${enBlanco ? 'md:bg-[#001A39]/45' : ''}`
+                : `w-1.5 bg-white/25 ${enBlanco ? 'md:bg-[#ccd3d7]' : ''}`
             : `w-8 ${i === actual ? 'bg-white' : 'bg-white/30'}`;
         return <span key={i} className={`h-1.5 rounded-full transition-all ${clase}`} />;
       })}
