@@ -128,10 +128,11 @@ export function ResetPasswordView() {
           </button>
         </form>
 
-        {/* Salir del flujo: la contraseña sigue siendo la de antes. */}
+        {/* Cancelar: sale del flujo y la contraseña sigue siendo la de antes. Solo texto,
+            sin fondo, como en la intranet. */}
         <div className={`${authPasosHuecoArribaClass} text-center`}>
           <Link href="/login" className={authPasosQuietLinkClass}>
-            Iniciar sesión
+            Cancelar
           </Link>
         </div>
       </div>
