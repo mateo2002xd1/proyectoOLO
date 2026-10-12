@@ -2,6 +2,7 @@
 
 import { useState, FormEvent, useEffect, useMemo, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { authApi, useAuth } from '@/features/login';
 import { ReturnToSiteLink } from '@/shared/ui/molecules/return-to-site-link';
 import { type CatalogQuestion } from './question-picker';
@@ -350,7 +351,18 @@ export function SecurityQuestionsView() {
                   Iniciar sesión
                 </button>
               </div>
-            ) : null}
+            ) : (
+              // En la recuperación no hay sesión que cerrar: se vuelve al login, como desde
+              // el paso del correo (`recovery-view.tsx`).
+              <div className="mt-4 text-center">
+                <Link
+                  href="/login"
+                  className="rounded text-xs text-gray-500 transition-colors hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d1526]"
+                >
+                  Volver a iniciar sesión
+                </Link>
+              </div>
+            )}
           </form>
         </div>
 
