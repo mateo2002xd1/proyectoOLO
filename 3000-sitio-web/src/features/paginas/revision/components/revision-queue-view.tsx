@@ -476,7 +476,7 @@ function ModalAccionConMotivo({
       }}
       // Las medidas de todos los modales (`shared/ui/molecules/alert.tsx`): caja de 32,
       // título de 20 en `#001631`, texto de 16, botones de 44 con esquinas de 32.
-      className="m-auto w-[calc(100%-2rem)] max-w-md rounded-[32px] border border-zinc-200 bg-white p-0 text-zinc-900 backdrop:bg-[#0f172a]/50 backdrop:backdrop-blur-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:text-[#f6f6f6]"
+      className="olo-anim-dialogo m-auto w-[calc(100%-2rem)] max-w-md rounded-[32px] border border-zinc-200 bg-white p-0 text-zinc-900 backdrop:bg-[#0f172a]/50 backdrop:backdrop-blur-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:text-[#f6f6f6]"
     >
       <div className="flex flex-col p-6 sm:p-8">
         <div className="flex items-center gap-3">

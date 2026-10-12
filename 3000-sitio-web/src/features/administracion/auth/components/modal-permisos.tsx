@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useCierreAnimado, useUltimoValorAbierto } from '@/shared/lib/use-cierre-animado';
 import { MagnifyingGlassIcon, ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import { Switch } from '@/shared/ui/atoms/switch';
 import { Button, FormaDeModal } from '@/shared/ui/atoms/button';
@@ -93,7 +94,7 @@ const normalizar = (t: string) =>
 export function ModalPermisos({
   abierto,
   onCerrar,
-  rol,
+  rol: rolAbierto,
   permisos,
   originales,
   seleccionados,
@@ -105,6 +106,9 @@ export function ModalPermisos({
   onGuardar,
   guardando,
 }: ModalPermisosProps) {
+  // Al cerrar, `roles-view` vuelve el rol a `null` y el modal pasaría a «Permisos a
+  // asignar» en plena salida; mientras se va, conserva el rol que tenía.
+  const rol = useUltimoValorAbierto(abierto, rolAbierto);
   const [busqueda, setBusqueda] = useState('');
   const [mostrarPermisos, setMostrarPermisos] = useState(false);
 
@@ -135,7 +139,9 @@ export function ModalPermisos({
   const descripcionCambio = rol && descripcion !== undefined && descripcion !== (rol.descripcion || '');
   const hayCambios = anadidos.length > 0 || quitados.length > 0 || descripcionCambio;
 
-  if (!abierto || typeof document === 'undefined') return null;
+  const { montado, cerrando } = useCierreAnimado(abierto);
+
+  if (!montado || typeof document === 'undefined') return null;
 
   const alternar = (id: string) => {
     const siguiente = new Set(seleccionados);
@@ -157,7 +163,8 @@ export function ModalPermisos({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-[#0f172a]/50 p-3 backdrop-blur-sm sm:p-6"
+      className="olo-anim-fondo fixed inset-0 z-[60] flex items-center justify-center bg-[#0f172a]/50 p-3 backdrop-blur-sm sm:p-6"
+      data-cerrando={cerrando || undefined}
       // Usamos `onMouseDown` y no `onClick`: si el usuario selecciona texto dentro
       // del panel y suelta el ratón fuera, el clic se contabiliza en el fondo y
       // el panel se cerraba en mitad de la selección.
@@ -166,7 +173,7 @@ export function ModalPermisos({
       }}
     >
       <div
-        className="flex max-h-[88dvh] w-full max-w-3xl flex-col overflow-hidden rounded-[32px] border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-[#121824]"
+        className="olo-anim-caja flex max-h-[88dvh] w-full max-w-3xl flex-col overflow-hidden rounded-[32px] border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-[#121824]"
         role="dialog"
         aria-modal="true"
         aria-labelledby="permisos-titulo"

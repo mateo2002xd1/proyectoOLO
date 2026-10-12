@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
 import { poppins } from '@/shared/lib/fonts';
 import {
   analizarEliminacion,
@@ -32,6 +33,7 @@ export function ModalEliminarSeccion({ slug, abierto, alCerrar }: ModalEliminarS
     let vigente = true;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setCargando(true);
+    setAnalisis(null);
     setError(null);
     setConfirmacion('');
 
@@ -53,13 +55,14 @@ export function ModalEliminarSeccion({ slug, abierto, alCerrar }: ModalEliminarS
     };
   }, [abierto, slug]);
 
-  if (!abierto) return null;
+  const { montado, cerrando } = useCierreAnimado(abierto);
+
+  if (!montado) return null;
 
   const cerrar = () => {
     if (borrando) return;
-    setAnalisis(null);
-    setError(null);
-    setConfirmacion('');
+    // No se vacía aquí: el modal sigue a la vista durante su salida. Lo vacía el
+    // efecto de arriba al volver a abrirlo.
     alCerrar();
   };
 
@@ -87,7 +90,8 @@ export function ModalEliminarSeccion({ slug, abierto, alCerrar }: ModalEliminarS
 
   return (
     <div
-      className="nueva-seccion-fondo"
+      className="nueva-seccion-fondo olo-anim-fondo"
+      data-cerrando={cerrando || undefined}
       role="dialog"
       aria-modal="true"
       aria-labelledby="eliminar-seccion-titulo"
@@ -101,7 +105,7 @@ export function ModalEliminarSeccion({ slug, abierto, alCerrar }: ModalEliminarS
       }}
     >
       {/* Poppins, como todos los modales del panel y del editor. */}
-      <form className={`nueva-seccion-caja ${poppins.className}`} onSubmit={enviar}>
+      <form className={`nueva-seccion-caja olo-anim-caja ${poppins.className}`} onSubmit={enviar}>
         <h2 id="eliminar-seccion-titulo" className="nueva-seccion-titulo">
           Eliminar página
         </h2>

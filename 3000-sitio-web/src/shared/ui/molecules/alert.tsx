@@ -3,6 +3,7 @@
 import { createPortal } from "react-dom";
 import type { ReactNode } from "react";
 import { FormaDeModal } from "@/shared/ui/atoms/button";
+import { useCierreAnimado, useUltimoValorAbierto } from "@/shared/lib/use-cierre-animado";
 
 /**
  * Las medidas de los modales son las de las pantallas de acceso (`auth-ui.tsx`), que el
@@ -36,7 +37,13 @@ type AlertProps = {
 };
 
 export function Alert({ open, onClose, children, anchoMaximo = "max-w-md" }: AlertProps) {
-  if (!open || typeof document === "undefined") return null;
+  const { montado, cerrando } = useCierreAnimado(open);
+
+  // Mientras se va, lo último que tuvo abierto: casi todos los que lo usan cierran
+  // vaciando lo que cita el texto (`aEliminar` vuelve a `null`).
+  const contenido = useUltimoValorAbierto(open, children);
+
+  if (!montado || typeof document === "undefined") return null;
 
   return createPortal(
     // En el móvil el cuadro sale desde abajo, al alcance del pulgar; desde `sm`,
@@ -46,7 +53,8 @@ export function Alert({ open, onClose, children, anchoMaximo = "max-w-md" }: Ale
     // variantes `-safe` lo alinean arriba cuando no cabe; sin ellas, la parte de
     // arriba del formulario quedaba fuera de la pantalla y fuera del scroll.
     <div
-      className="fixed inset-0 z-50 flex items-end-safe justify-center overflow-y-auto bg-[#0f172a]/40 p-4 backdrop-blur-sm sm:items-center-safe"
+      className="olo-anim-fondo fixed inset-0 z-50 flex items-end-safe justify-center overflow-y-auto bg-[#0f172a]/40 p-4 backdrop-blur-sm sm:items-center-safe"
+      data-cerrando={cerrando || undefined}
       // Usamos `onMouseDown` y no `onClick`: si el usuario selecciona texto dentro
       // del cuadro y suelta el ratón fuera, el clic se contabiliza en el fondo y
       // el cuadro se cerraba en mitad de la selección.
@@ -55,12 +63,12 @@ export function Alert({ open, onClose, children, anchoMaximo = "max-w-md" }: Ale
       }}
     >
       <div
-        className={`w-full ${anchoMaximo} rounded-[32px] bg-white shadow-[0_24px_48px_-20px_rgba(0,0,0,0.15)] dark:bg-[#1e2538] overflow-visible`}
+        className={`olo-anim-caja w-full ${anchoMaximo} rounded-[32px] bg-white shadow-[0_24px_48px_-20px_rgba(0,0,0,0.15)] dark:bg-[#1e2538] overflow-visible`}
         role="alertdialog"
         aria-modal="true"
       >
         <div className="px-6 py-6 sm:px-8 sm:py-8 overflow-visible">
-          <FormaDeModal>{children}</FormaDeModal>
+          <FormaDeModal>{contenido}</FormaDeModal>
         </div>
       </div>
     </div>,

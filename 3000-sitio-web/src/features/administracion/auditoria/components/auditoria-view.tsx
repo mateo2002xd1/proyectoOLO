@@ -60,6 +60,10 @@ export function AuditoriaView() {
   // Registros desplegados del acordeón (móvil y tablet). En la tabla de escritorio no se usa.
   const { estaAbierta, alternar } = useFilasAbiertas();
   const [modalDepurarAbierto, setModalDepurarAbierto] = useState(false);
+  // Como en Respaldos: la `key` del modal cambia en cada apertura y lo monta de cero, con
+  // el análisis y el resultado limpios. Así puede seguir montado al cerrarse, que es lo
+  // que necesita su animación de salida (`useCierreAnimado`).
+  const [aperturaDepurar, setAperturaDepurar] = useState(0);
 
   return (
 
@@ -70,7 +74,10 @@ export function AuditoriaView() {
         acciones={
           <button
             type="button"
-            onClick={() => setModalDepurarAbierto(true)}
+            onClick={() => {
+              setAperturaDepurar((n) => n + 1);
+              setModalDepurarAbierto(true);
+            }}
             className="flex h-11 shrink-0 items-center gap-2 rounded-[16px] px-4 text-sm font-semibold text-red-600 transition hover:bg-red-50 hover:text-red-700 active:bg-red-100 dark:text-red-400 dark:hover:bg-red-950/40 dark:hover:text-red-300 dark:active:bg-red-950/60"
           >
             <Trash2 size={16} />
@@ -263,16 +270,15 @@ export function AuditoriaView() {
 
       <DetalleRegistro registro={seleccionado} usuarios={usuarios} onCerrar={() => setSeleccionado(null)} />
 
-      {modalDepurarAbierto && (
-        <ModalDepurarAuditoria
-          abierto={modalDepurarAbierto}
-          onCerrar={() => setModalDepurarAbierto(false)}
-          onExito={() => {
-            setModalDepurarAbierto(false);
-            recargar();
-          }}
-        />
-      )}
+      <ModalDepurarAuditoria
+        key={aperturaDepurar}
+        abierto={modalDepurarAbierto}
+        onCerrar={() => setModalDepurarAbierto(false)}
+        onExito={() => {
+          setModalDepurarAbierto(false);
+          recargar();
+        }}
+      />
 
     </div>
   );

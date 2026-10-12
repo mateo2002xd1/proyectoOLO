@@ -100,7 +100,9 @@ export function BuscadorModal({ onClose }: { onClose?: () => void }) {
       role="dialog"
       aria-modal="true"
       aria-label="Buscar en el panel"
-      className="fixed inset-0 z-50 flex h-[100dvh] w-screen items-center justify-center overflow-y-auto bg-white px-4 dark:bg-[#0b1121]"
+      // Solo entrada (`@starting-style`): es una capa opaca que el panel monta mientras está
+      // abierta (o la página `/admin/dashboard/buscar`), y al cerrar no hay nada que fundir.
+      className="olo-anim-fondo fixed inset-0 z-50 flex h-[100dvh] w-screen items-center justify-center overflow-y-auto bg-white px-4 dark:bg-[#0b1121]"
     >
       {/* Se aparta del borde derecho para no caer debajo del conmutador de tema, que
           está fijo en `top-4 right-4` con un z-index mayor. */}

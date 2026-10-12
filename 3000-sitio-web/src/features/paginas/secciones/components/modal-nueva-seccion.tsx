@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
 import { poppins } from '@/shared/lib/fonts';
 import {
   slugificar,
@@ -26,12 +27,24 @@ export function ModalNuevaSeccion({ abierto, alCerrar }: ModalNuevaSeccionProps)
   const motivo = useMemo(() => motivoSlugInvalido(slug), [slug]);
   const avisoDeRuta = nombre.trim() && motivo ? mensajeDeSlugInvalido(motivo) : null;
 
-  if (!abierto) return null;
+  // El formulario se vacía al abrir y no al cerrar: al cerrar sigue a la vista lo que
+  // dura su salida, y se veía el campo quedarse en blanco. Es el ajuste de estado
+  // durante el render que recomienda React para «cuando cambia una prop», sin efecto.
+  const [estabaAbierto, setEstabaAbierto] = useState(abierto);
+  if (abierto !== estabaAbierto) {
+    setEstabaAbierto(abierto);
+    if (abierto) {
+      setNombre('');
+      setError(null);
+    }
+  }
+
+  const { montado, cerrando } = useCierreAnimado(abierto);
+
+  if (!montado) return null;
 
   const cerrar = () => {
     if (creando) return;
-    setNombre('');
-    setError(null);
     alCerrar();
   };
 
@@ -57,7 +70,8 @@ export function ModalNuevaSeccion({ abierto, alCerrar }: ModalNuevaSeccionProps)
 
   return (
     <div
-      className="nueva-seccion-fondo"
+      className="nueva-seccion-fondo olo-anim-fondo"
+      data-cerrando={cerrando || undefined}
       role="dialog"
       aria-modal="true"
       aria-labelledby="nueva-seccion-titulo"
@@ -71,7 +85,7 @@ export function ModalNuevaSeccion({ abierto, alCerrar }: ModalNuevaSeccionProps)
       }}
     >
       {/* Poppins, como todos los modales del panel y del editor. */}
-      <form className={`nueva-seccion-caja ${poppins.className}`} onSubmit={enviar}>
+      <form className={`nueva-seccion-caja olo-anim-caja ${poppins.className}`} onSubmit={enviar}>
         <h2 id="nueva-seccion-titulo" className="nueva-seccion-titulo">
           Nueva página
         </h2>

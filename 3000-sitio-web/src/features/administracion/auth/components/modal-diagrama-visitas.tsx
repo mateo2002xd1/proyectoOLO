@@ -2,6 +2,7 @@
 
 import { useMemo, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
 import { type PaginaPublicada, type ResumenPaginasPublicadas } from '@/features/paginas';
 import { GraficoEcharts, useEsOscuro, type OpcionGrafico } from '@/shared/ui/molecules/grafico-echarts';
 
@@ -150,7 +151,9 @@ export function ModalDiagramaVisitas({ abierto, onCerrar, resumen }: Props) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [abierto, onCerrar]);
 
-  if (!abierto || typeof document === 'undefined') return null;
+  const { montado, cerrando } = useCierreAnimado(abierto);
+
+  if (!montado || typeof document === 'undefined') return null;
 
   const paginasSitio = resumen?.sitio ?? [];
   const paginasIntranet = resumen?.intranet ?? [];
@@ -164,7 +167,8 @@ export function ModalDiagramaVisitas({ abierto, onCerrar, resumen }: Props) {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[70] flex items-center justify-center bg-[#0f172a]/60 p-3 backdrop-blur-md sm:p-6"
+      className="olo-anim-fondo fixed inset-0 z-[70] flex items-center justify-center bg-[#0f172a]/60 p-3 backdrop-blur-md sm:p-6"
+      data-cerrando={cerrando || undefined}
       // Usamos `onMouseDown` y no `onClick`: si el usuario selecciona texto dentro
       // del panel y suelta el ratón fuera, el clic se contabiliza en el fondo y
       // el panel se cerraba en mitad de la selección.
@@ -173,7 +177,7 @@ export function ModalDiagramaVisitas({ abierto, onCerrar, resumen }: Props) {
       }}
     >
       <div
-        className="flex max-h-[92dvh] min-h-[min(30rem,92dvh)] w-full max-w-5xl flex-col overflow-hidden rounded-[32px] border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-[#121824]"
+        className="olo-anim-caja flex max-h-[92dvh] min-h-[min(30rem,92dvh)] w-full max-w-5xl flex-col overflow-hidden rounded-[32px] border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-[#121824]"
         role="dialog"
         aria-modal="true"
         aria-labelledby="titulo-ventana-visitas"

@@ -8,6 +8,7 @@ import {
   ArrowsPointingInIcon
 } from '@heroicons/react/24/outline';
 import { poppins } from '@/shared/lib/fonts';
+import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
 
 interface VisorDocumentoProps {
   titulo: React.ReactNode;
@@ -32,6 +33,7 @@ export function VisorDocumento({
   nombreArchivo,
 }: VisorDocumentoProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const pantallaCompleta = useCierreAnimado(isFullscreen);
 
   /** URL que se muestra al usuario en acciones externas */
   const urlAcciones = urlExterna ?? url;
@@ -112,16 +114,17 @@ export function VisorDocumento({
       </div>
 
       {/* Modal de Pantalla Completa */}
-      {isFullscreen && (
+      {pantallaCompleta.montado && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+          className="olo-anim-fondo fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+          data-cerrando={pantallaCompleta.cerrando || undefined}
           // Usamos `onMouseDown` y no `onClick`: si el usuario selecciona texto
           // dentro del visor y suelta el ratón fuera, el clic se contabiliza en
           // el fondo y el visor se cerraba en mitad de la selección.
           onMouseDown={() => setIsFullscreen(false)}
         >
           <div
-            className="relative flex h-[94dvh] w-full max-w-6xl flex-col rounded-2xl bg-white dark:bg-[#131b2f] shadow-2xl overflow-hidden border border-transparent dark:border-[#1e293b]"
+            className="olo-anim-caja relative flex h-[94dvh] w-full max-w-6xl flex-col rounded-2xl bg-white dark:bg-[#131b2f] shadow-2xl overflow-hidden border border-transparent dark:border-[#1e293b]"
             onMouseDown={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-gray-200 dark:border-[#1e293b] px-6 py-4 bg-gray-50 dark:bg-[#0b1121]">

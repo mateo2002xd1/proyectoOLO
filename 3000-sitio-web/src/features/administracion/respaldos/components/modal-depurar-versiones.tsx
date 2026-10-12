@@ -3,6 +3,7 @@
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
 import {
   AlertTriangle,
   CheckCircle2,
@@ -139,7 +140,9 @@ export function ModalDepurarVersiones({
   // son exactamente los valores del reset— y con `fechaMaximaPermitida` recalculada al
   // día de hoy, que el efecto anterior no hacía (su `useMemo` sin dependencias se
   // quedaba con la fecha del primer montaje).
-  if (!abierto || typeof document === 'undefined') return null;
+  const { montado, cerrando } = useCierreAnimado(abierto);
+
+  if (!montado || typeof document === 'undefined') return null;
 
   const handleEjecutar = async () => {
     setEjecutando(true);
@@ -171,12 +174,13 @@ export function ModalDepurarVersiones({
   // entre el borde de arriba y ella, y lo que no quepa hace scroll dentro.
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center-safe justify-center overflow-y-auto bg-[#0f172a]/40 p-4 pb-[calc(var(--navegacion-mobile-alto)+1rem)] backdrop-blur-sm animate-in fade-in duration-200 lg:pb-4"
+      className="olo-anim-fondo fixed inset-0 z-50 flex items-center-safe justify-center overflow-y-auto bg-[#0f172a]/40 p-4 pb-[calc(var(--navegacion-mobile-alto)+1rem)] backdrop-blur-sm lg:pb-4"
+      data-cerrando={cerrando || undefined}
       role="dialog"
       aria-modal="true"
       aria-labelledby="titulo-modal-depuracion"
     >
-      <div className="relative flex max-h-[calc(100dvh-2rem-var(--navegacion-mobile-alto))] w-full max-w-2xl flex-col overflow-hidden rounded-[32px] border border-zinc-200 bg-white shadow-2xl lg:max-h-[calc(100dvh-2rem)] dark:border-[#2d3649] dark:bg-[#151d30]">
+      <div className="olo-anim-caja relative flex max-h-[calc(100dvh-2rem-var(--navegacion-mobile-alto))] w-full max-w-2xl flex-col overflow-hidden rounded-[32px] border border-zinc-200 bg-white shadow-2xl lg:max-h-[calc(100dvh-2rem)] dark:border-[#2d3649] dark:bg-[#151d30]">
         {/* Las medidas de todos los modales (`alert.tsx`): esquinas de 32, campos y botones de 44 px. */}
         <FormaDeModal>
         {/* Cabecera */}
