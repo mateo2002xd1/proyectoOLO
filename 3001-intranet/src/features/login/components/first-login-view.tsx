@@ -206,6 +206,8 @@ export function FirstLoginView() {
           'Tu cuenta ya es segura.',
           'Es muy importante que recuerdes o guardes tus respuestas en un lugar seguro, ya que serán el único método para validar tu identidad y permitirte cambiar tu clave en el futuro si llegas a olvidarla.',
         ]}
+        // Desde la tablet, el texto dentro del formulario, encima de «Iniciar sesión».
+        descripcionEnTarjeta
         claseTarjeta="text-center"
       >
         <button type="button" onClick={() => logout()} className={accesoBotonClass}>

@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { ReturnToSiteLink } from '@/shared/ui/molecules/return-to-site-link';
-import { accesoRegresoClass, accesoTarjetaClass } from './acceso-ui';
+import { accesoHuecoClass, accesoRegresoClass, accesoTarjetaClass } from './acceso-ui';
 
 /**
  * Marco de todas las pantallas de acceso de la intranet: login, primer ingreso, recuperación
@@ -36,11 +36,20 @@ export function MarcoAcceso({
   cerrarSesionAlSalir = false,
   claveTarjeta,
   claseTarjeta = '',
+  descripcionEnTarjeta = false,
   children,
 }: {
   titulo: ReactNode;
   /** Uno o varios párrafos. */
   descripcion?: string | string[];
+  /**
+   * Desde `md` (tablet y escritorio), la descripción va dentro del formulario, encima de lo
+   * que se pase como hijos, y no bajo el título. En el móvil se queda bajo el título. Lo
+   * pidió el usuario para el aviso de «cuenta ya configurada» (2026-10-11). El texto está
+   * dos veces en el DOM, pero con `display: none` en uno de los dos según el ancho: el
+   * lector de pantalla oye solo uno.
+   */
+  descripcionEnTarjeta?: boolean;
   /** El logo también por debajo de `xl`, encima del título. Solo el login, como en el sitio. */
   conLogo?: boolean;
   /** Peso del título; el login lo compone con dos pesos y pasa el suyo. */
@@ -68,7 +77,7 @@ export function MarcoAcceso({
           {titulo}
         </h1>
         {parrafos.length > 0 && (
-          <div className="mt-[clamp(0.5rem,2dvh,1.5rem)] max-w-[330px] space-y-2 text-[clamp(0.875rem,2.35dvh,1rem)] leading-[1.45] text-pretty text-white/85 md:mt-8 md:max-w-[440px] md:space-y-6 md:text-lg md:leading-7 xl:max-w-[400px]">
+          <div className={`${descripcionEnTarjeta ? 'md:hidden ' : ''}mt-[clamp(0.5rem,2dvh,1.5rem)] max-w-[330px] space-y-2 text-[clamp(0.875rem,2.35dvh,1rem)] leading-[1.45] text-pretty text-white/85 md:mt-8 md:max-w-[440px] md:space-y-6 md:text-lg md:leading-7 xl:max-w-[400px]`}>
             {parrafos.map((texto) => (
               <p key={texto}>{texto}</p>
             ))}
@@ -78,6 +87,13 @@ export function MarcoAcceso({
 
       <div className="mt-[clamp(1rem,3.5dvh,2.5rem)] flex flex-col items-center px-4 sm:px-6 md:mt-11 xl:mt-0 xl:flex-1 xl:justify-center xl:py-12">
         <div key={claveTarjeta} className={`${accesoTarjetaClass} ${claseTarjeta}`}>
+          {descripcionEnTarjeta && parrafos.length > 0 && (
+            <div className={`hidden space-y-3 text-base leading-relaxed text-pretty text-white/85 md:block ${accesoHuecoClass}`}>
+              {parrafos.map((texto) => (
+                <p key={texto}>{texto}</p>
+              ))}
+            </div>
+          )}
           {children}
         </div>
         <div className="mt-[clamp(0.5rem,2.5dvh,2rem)] text-center md:mt-8 xl:mt-4">
