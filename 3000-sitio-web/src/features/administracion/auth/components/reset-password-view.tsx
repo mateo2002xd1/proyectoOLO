@@ -9,7 +9,6 @@ import {
   PasswordField,
   PasswordRequisitos,
   authPasosCardClass,
-  authPasosCardHeadingClass,
   authPasosPrimaryClass,
   authPasosQuietLinkClass,
   authPasosHuecoClass,
@@ -96,8 +95,7 @@ export function ResetPasswordView() {
         <form onSubmit={guardarPassword} noValidate>
           {errors.general && <AuthGeneralError>{errors.general}</AuthGeneralError>}
 
-          <h2 className={`${authPasosHuecoClass} ${authPasosCardHeadingClass}`}>Crea tu nueva contraseña</h2>
-
+          {/* Sin el encabezado «Crea tu nueva contraseña» (lo quitó el usuario el 2026-10-11). */}
           <PasswordField
             id="nuevo-password"
             label="Nueva contraseña"
@@ -124,7 +122,7 @@ export function ResetPasswordView() {
           />
 
           <button type="submit" disabled={isLoading || terminada} className={authPasosPrimaryClass}>
-            {isLoading ? 'Guardando…' : 'Guardar'}
+            {isLoading ? 'Guardando…' : 'Guardar contraseña'}
           </button>
         </form>
 
