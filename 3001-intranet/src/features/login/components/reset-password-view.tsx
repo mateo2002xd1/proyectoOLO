@@ -2,6 +2,7 @@
 
 import { useState, FormEvent, useEffect, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { authApi, useAuth } from '@/features/login';
 import { cumplePolitica, primerFallo } from '@olo/password-policy';
 import { PasswordField } from '@/shared/ui/molecules/password-field';
@@ -38,7 +39,7 @@ function leerDatosDeRecuperacion(): { email: string; answers: Array<{ key: strin
 }
 
 export function ResetPasswordView() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading, logout } = useAuth();
   const router = useRouter();
 
   // Solo `mode` necesita ser reactivo: el correo y las respuestas se leen
@@ -145,7 +146,7 @@ export function ResetPasswordView() {
             <p className="mb-6 mt-1.5 text-[13px] leading-relaxed text-gray-500">
               {mode === 'forced'
                 ? 'Has ingresado con un código temporal. Por tu seguridad, crea una nueva clave privada.'
-                : 'Verificamos tu identidad. Elige una clave que no hayas usado antes.'}
+                : 'Elige una clave que no hayas usado antes.'}
             </p>
 
             {errors.general && (
@@ -200,6 +201,34 @@ export function ResetPasswordView() {
             >
               {isLoading ? 'Guardando…' : 'Guardar contraseña'}
             </button>
+
+            {/* Cancelar: la contraseña sigue siendo la de antes. Solo texto, sin fondo, como
+                los demás enlaces de salida del acceso. Con sesión (cambio forzado) hay que
+                cerrarla, o el proxy devolvería aquí; en la recuperación se sueltan sus datos
+                para que el próximo intento empiece por el correo. */}
+            <div className="mt-4 text-center">
+              {mode === 'forced' ? (
+                <button
+                  type="button"
+                  onClick={() => logout()}
+                  className="rounded text-xs text-gray-500 transition-colors hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d1526]"
+                >
+                  Cancelar
+                </button>
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={() => {
+                    sessionStorage.removeItem('recoveryEmail');
+                    sessionStorage.removeItem('recoveryQuestions');
+                    sessionStorage.removeItem('recoveryAnswers');
+                  }}
+                  className="rounded text-xs text-gray-500 transition-colors hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d1526]"
+                >
+                  Cancelar
+                </Link>
+              )}
+            </div>
           </form>
         </div>
 
