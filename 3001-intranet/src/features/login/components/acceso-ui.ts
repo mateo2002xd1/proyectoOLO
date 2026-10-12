@@ -114,3 +114,39 @@ export const accesoBotonSecundarioClass =
 
 /** Encabezado dentro del formulario («Preguntas de seguridad»): 18/20 px, Medium. */
 export const accesoEncabezadoClass = 'text-lg font-medium text-white md:text-xl';
+
+/* ---------- El login, en tarjeta blanca desde `md` ---------- *
+ * Lo pidió el usuario el 2026-10-12: en tablet y escritorio la tarjeta del login va en blanco
+ * y el botón en `#001A39`. En el móvil sigue directo sobre el azul, y el resto de las
+ * pantallas de acceso no cambia. Cada clase se suma a la de arriba del mismo elemento y solo
+ * actúa desde `md`, con los colores del formulario del sitio web (`auth-ui.tsx`): etiquetas y
+ * campos `#001a39`, borde `#d9d9d9`, marcador `#b3b3b3`, ojo `#334861`, errores en rojo 600. */
+
+/** La tarjeta: blanca, sin el borde tenue (sobre el blanco no se vería). */
+export const accesoTarjetaBlancaClass = 'md:border-transparent md:bg-white';
+
+export const accesoEtiquetaEnBlancoClass = 'md:text-[#001a39]';
+
+/** Para el `extra` de `accesoCampoClass`. El autorrelleno se tapa ahora con blanco. */
+export const accesoCampoEnBlancoClass = (conError: boolean) =>
+  [
+    'md:text-[#001a39] md:placeholder:text-[#b3b3b3]',
+    'md:autofill:shadow-[inset_0_0_0_1000px_#fff] md:autofill:[-webkit-text-fill-color:#001a39]',
+    conError
+      ? 'md:border-red-500 md:focus:border-red-600 md:focus:ring-red-600'
+      : 'md:border-[#d9d9d9] md:focus:border-[#001A39] md:focus:ring-[#001A39]',
+  ].join(' ');
+
+export const accesoIconoCampoEnBlancoClass =
+  'md:text-[#334861] md:hover:text-[#001a39] md:focus-visible:ring-[#001A39]';
+
+export const accesoErrorEnBlancoClass = 'md:text-red-600';
+
+/** El aviso de la política y sus enlaces. */
+export const accesoTextoEnBlancoClass = 'md:text-[#001a39]';
+
+/** «Ingresar» en `#001A39` con el texto blanco: 17:1 sobre el blanco. */
+export const accesoBotonEnBlancoClass =
+  'md:bg-[#001A39] md:text-white md:shadow-none md:hover:bg-[#0d2c4f] md:focus-visible:ring-[#001A39] md:focus-visible:ring-offset-white';
+
+export const accesoEnlaceEnBlancoClass = 'md:text-[#001a39] md:hover:text-[#001a39] md:focus-visible:ring-[#001A39]';

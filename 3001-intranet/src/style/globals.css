@@ -4454,10 +4454,12 @@ body:has(.navegacion-mobile-hoja[open]) {
   text-align: center;
 }
 
-/* El login va sin tarjeta, directo sobre el azul, en todos los anchos (2026-10-11): el texto
-   del cargador, navy por defecto, desaparecería. */
-.login-success-loader .goo-loader-label {
-  color: var(--color-white);
+/* En el móvil el login va directo sobre el azul (2026-10-11): el texto del cargador, navy por
+   defecto, desaparecería. Desde `md` va en la tarjeta blanca (2026-10-12) y vuelve al navy. */
+@media (width < 48rem) {
+  .login-success-loader .goo-loader-label {
+    color: var(--color-white);
+  }
 }
 
 .goo-loader {

@@ -12,14 +12,22 @@ import { mensajeDeCierre } from '@/shared/lib/inactividad';
 import { SITE_URL } from '@/shared/lib/constants';
 import {
   accesoBotonClass,
+  accesoBotonEnBlancoClass,
   accesoCampoClass,
+  accesoCampoEnBlancoClass,
   accesoEnlaceClass,
+  accesoEnlaceEnBlancoClass,
   accesoErrorClass,
+  accesoErrorEnBlancoClass,
   accesoErrorGeneralClass,
   accesoEtiquetaClass,
+  accesoEtiquetaEnBlancoClass,
   accesoHuecoArribaClass,
   accesoHuecoClass,
   accesoIconoCampoClass,
+  accesoIconoCampoEnBlancoClass,
+  accesoTarjetaBlancaClass,
+  accesoTextoEnBlancoClass,
 } from './acceso-ui';
 import { MarcoAcceso } from './marco-acceso';
 
@@ -140,11 +148,12 @@ function LoginForm() {
 
   return (
     // El mismo marco que el resto del acceso (`MarcoAcceso`, la maqueta del sitio web en
-    // azul): logo y título arriba en el móvil, a la izquierda desde `xl`; el formulario
-    // directo sobre el azul. Es la única pantalla con el logo en todos los anchos (`conLogo`),
-    // como en el sitio.
+    // azul): logo y título arriba en el móvil, a la izquierda desde `xl`. Es la única pantalla
+    // con el logo en todos los anchos (`conLogo`), como en el sitio, y la única con la tarjeta
+    // blanca desde `md` (las clases `…EnBlanco`, 2026-10-12); en el móvil, directo sobre el azul.
     <MarcoAcceso
       conLogo
+      claseTarjeta={accesoTarjetaBlancaClass}
       titulo={
         <>
           {/* El espacio entre los dos es para el nombre accesible: dos `block` seguidos se
@@ -177,7 +186,7 @@ function LoginForm() {
           )}
 
           <div className={accesoHuecoClass}>
-            <label htmlFor="email" className={accesoEtiquetaClass}>
+            <label htmlFor="email" className={`${accesoEtiquetaClass} ${accesoEtiquetaEnBlancoClass}`}>
               Correo SENA
             </label>
             <input
@@ -188,13 +197,13 @@ function LoginForm() {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={accesoCampoClass(!!errors.email)}
+              className={accesoCampoClass(!!errors.email, accesoCampoEnBlancoClass(!!errors.email))}
             />
-            {errors.email && <p className={accesoErrorClass}>{errors.email}</p>}
+            {errors.email && <p className={`${accesoErrorClass} ${accesoErrorEnBlancoClass}`}>{errors.email}</p>}
           </div>
 
           <div className={accesoHuecoClass}>
-            <label htmlFor="password" className={accesoEtiquetaClass}>
+            <label htmlFor="password" className={`${accesoEtiquetaClass} ${accesoEtiquetaEnBlancoClass}`}>
               Contraseña
             </label>
             <div className="relative">
@@ -206,18 +215,18 @@ function LoginForm() {
                 placeholder="Mínimo 12 caracteres"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className={accesoCampoClass(!!errors.password, 'pr-14')}
+                className={accesoCampoClass(!!errors.password, `pr-14 ${accesoCampoEnBlancoClass(!!errors.password)}`)}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
                 aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                className={`absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white ${accesoIconoCampoClass}`}
+                className={`absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white ${accesoIconoCampoClass} ${accesoIconoCampoEnBlancoClass}`}
               >
                 <IconoMascara nombre={showPassword ? 'eye-open' : 'eye-closed'} tamano="h-4 w-4" />
               </button>
             </div>
-            {errors.password && <p className={accesoErrorClass}>{errors.password}</p>}
+            {errors.password && <p className={`${accesoErrorClass} ${accesoErrorEnBlancoClass}`}>{errors.password}</p>}
           </div>
 
           {/* RF-13: aviso de políticas de privacidad y datos.
@@ -230,24 +239,24 @@ function LoginForm() {
 
               El texto llena el ancho, como en el sitio web, y dice «nuestra» política
               (las dos apps, 2026-10-11). */}
-          <p className={`${accesoHuecoClass} text-sm leading-relaxed text-white/85`}>
+          <p className={`${accesoHuecoClass} text-sm leading-relaxed text-white/85 ${accesoTextoEnBlancoClass}`}>
             Al ingresar a este sitio aceptas nuestra{' '}
-            <a href={`${SITE_URL}/politica-de-privacidad`} className="font-semibold text-white hover:underline">
+            <a href={`${SITE_URL}/politica-de-privacidad`} className={`font-semibold text-white hover:underline ${accesoTextoEnBlancoClass}`}>
               política de privacidad
             </a>{' '}
             y{' '}
-            <a href={`${SITE_URL}/politica-de-privacidad`} className="font-semibold text-white hover:underline">
+            <a href={`${SITE_URL}/politica-de-privacidad`} className={`font-semibold text-white hover:underline ${accesoTextoEnBlancoClass}`}>
               protección de datos
             </a>
             .
           </p>
 
-          <button type="submit" disabled={isLoading} className={accesoBotonClass}>
+          <button type="submit" disabled={isLoading} className={`${accesoBotonClass} ${accesoBotonEnBlancoClass}`}>
             {isLoading ? 'Ingresando...' : 'Ingresar'}
           </button>
 
           <div className={`${accesoHuecoArribaClass} text-center`}>
-            <Link href="/recovery" className={accesoEnlaceClass}>
+            <Link href="/recovery" className={`${accesoEnlaceClass} ${accesoEnlaceEnBlancoClass}`}>
               ¿Olvidaste tu contraseña?
             </Link>
           </div>
