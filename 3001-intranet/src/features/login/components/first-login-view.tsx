@@ -199,8 +199,13 @@ export function FirstLoginView() {
     return (
       <MarcoAcceso
         cerrarSesionAlSalir
-        titulo="Tu cuenta ya está configurada"
-        descripcion="No hay nada pendiente: tu contraseña y tus preguntas de seguridad están al día."
+        // Texto del usuario (2026-10-11); antes «Tu cuenta ya está configurada» y «No hay nada
+        // pendiente: tu contraseña y tus preguntas de seguridad están al día.».
+        titulo="¡Configuración completada con éxito!"
+        descripcion={[
+          'Tu cuenta ya es segura.',
+          'Es muy importante que recuerdes o guardes tus respuestas en un lugar seguro, ya que serán el único método para validar tu identidad y permitirte cambiar tu clave en el futuro si llegas a olvidarla.',
+        ]}
         claseTarjeta="text-center"
       >
         <button type="button" onClick={() => logout()} className={accesoBotonClass}>
@@ -218,15 +223,13 @@ export function FirstLoginView() {
     return (
       <MarcoAcceso
         cerrarSesionAlSalir
-        titulo="¡Configuración completada con éxito!"
-        // Texto del usuario (2026-10-11). El aviso sobre las respuestas solo tiene sentido si
-        // se acaban de elegir: a quien solo cambió la contraseña no se le muestra.
-        descripcion={[
-          'Tu cuenta ya es segura.',
-          ...(pendiente.debeConfigurarPreguntas
-            ? ['Es muy importante que recuerdes o guardes tus respuestas en un lugar seguro, ya que serán el único método para validar tu identidad y permitirte cambiar tu clave en el futuro si llegas a olvidarla.']
-            : []),
-        ]}
+        titulo="¡Configuración completada!"
+        descripcion={
+          // El aviso sobre las respuestas solo tiene sentido si se acaban de elegir.
+          pendiente.debeConfigurarPreguntas
+            ? 'Guarda tus respuestas en un lugar seguro: serán el único método para validar tu identidad si olvidas tu clave en el futuro.'
+            : 'Tu cuenta ya es segura.'
+        }
         claseTarjeta="text-center"
       >
         <p className={`${accesoHuecoClass} text-base text-white/85`}>
