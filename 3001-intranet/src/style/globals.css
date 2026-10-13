@@ -94,6 +94,7 @@
   scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
   scrollbar-width: thin;
 }
+
 .dark * {
   scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
@@ -102,19 +103,24 @@
   width: 8px;
   height: 8px;
 }
+
 *::-webkit-scrollbar-track {
   background: transparent;
 }
+
 *::-webkit-scrollbar-thumb {
   background: rgba(0, 0, 0, 0.2);
   border-radius: 4px;
 }
+
 *::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.4);
 }
+
 .dark *::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.2);
 }
+
 .dark *::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.4);
 }
@@ -844,7 +850,7 @@
 }
 
 /* Desde `lg` la intranet tiene su menú arriba: el mismo corte que `lg:` de Tailwind. */
-@media (width >= 64rem) {
+@media (width >=64rem) {
   .navegacion-mobile {
     display: none;
   }
@@ -901,13 +907,13 @@
   list-style: none;
 }
 
-.navegacion-mobile-lista > li {
+.navegacion-mobile-lista>li {
   display: flex;
   flex: 1 1 0;
   min-width: 0;
 }
 
-.navegacion-mobile-lista > .navegacion-mobile-centro {
+.navegacion-mobile-lista>.navegacion-mobile-centro {
   flex: 0 0 5.75rem;
 }
 
@@ -953,7 +959,7 @@
   height: 2rem;
 }
 
-.navegacion-mobile-icono > svg {
+.navegacion-mobile-icono>svg {
   width: 1.5rem;
   height: 1.5rem;
   flex-shrink: 0;
@@ -1059,7 +1065,8 @@
 .navegacion-mobile-logo img {
   width: 3.25rem;
   height: auto;
-  translate: 0 3px; /* x  y — negativo sube / va a la izquierda; positivo baja / va a la derecha */
+  translate: 0 3px;
+  /* x  y — negativo sube / va a la izquierda; positivo baja / va a la derecha */
 }
 
 .navegacion-mobile-inicio.es-activo .navegacion-mobile-logo {
@@ -1200,6 +1207,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 }
 
 @media (hover: hover) {
+
   .navegacion-mobile-hoja-fila:not(.es-activo):hover,
   .navegacion-mobile-hoja-cerrar:hover {
     background: var(--navegacion-mobile-hover-fondo);
@@ -1220,7 +1228,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   color: inherit;
 }
 
-.navegacion-mobile-hoja-icono > svg {
+.navegacion-mobile-hoja-icono>svg {
   width: 1.5rem;
   height: 1.5rem;
 }
@@ -1690,7 +1698,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   color: #1e293b;
 }
 
-@media (width >= 40rem) {
+@media (width >=40rem) {
   .olo-ocupado-acciones {
     flex-direction: row;
     flex-wrap: wrap;
@@ -1881,6 +1889,24 @@ body:has(.navegacion-mobile-hoja[open]) {
 .olo-editor[data-estado="rechazado"] [class*="PuckHeader-path"] {
   background: rgba(252, 165, 165, 0.16);
   color: #fca5a5;
+}
+
+/* La envoltura de la cabecera (`PuckLayout-header`) trae de Puck `overflow: auto` en
+   cuanto la barra izquierda está abierta, y eso recortaba lo que cuelga por debajo de
+   la cabecera: los tooltips de las acciones salían cortados contra el lienzo. Aquí se
+   deja visible y por encima de las barras y del lienzo, que van después en el DOM.
+   `min-width: 0` hace lo que el `overflow` hacía de paso: que una cabecera ancha no
+   ensanche las columnas de la rejilla. Va por `PuckLayout-inner >` para ganarle en
+   especificidad a la regla de Puck sin depender del orden de carga del CSS. Solo en
+   escritorio: en móvil Puck pliega la fila de la cabecera a 0 y la esconde con ese
+   mismo `overflow`. */
+@media (min-width: 638px) {
+  .olo-editor [class*="PuckLayout-inner"]>[class*="PuckLayout-header"] {
+    position: relative;
+    z-index: 2;
+    min-width: 0;
+    overflow: visible;
+  }
 }
 
 .olo-editor-acciones {
@@ -2309,6 +2335,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -2319,6 +2346,7 @@ body:has(.navegacion-mobile-hoja[open]) {
     opacity: 0;
     transform: translateY(12px) scale(0.98);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -2326,10 +2354,13 @@ body:has(.navegacion-mobile-hoja[open]) {
 }
 
 @keyframes oloExitoPulse {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
     opacity: 0.6;
   }
+
   50% {
     transform: scale(1.15);
     opacity: 0.25;
@@ -3972,6 +4003,7 @@ body:has(.navegacion-mobile-hoja[open]) {
    cambian. Sin soporte, queda la lista del sistema. Sin capa a propósito: le gana a
    `h-11` y a `[&_option]:text-gray-900` de Tailwind. */
 @supports (appearance: base-select) {
+
   .acceso-select,
   .acceso-select::picker(select) {
     appearance: base-select;
@@ -4150,7 +4182,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 }
 
 /* Landscape mobile (altura limitada) */
-@media (height <= 500px) and (orientation: landscape) {
+@media (height <=500px) and (orientation: landscape) {
 
   .login-page,
   .recovery-page,
@@ -4227,7 +4259,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 
 /* Apaisado bajo desde `lg` (portátiles con poca altura). Desde `lg` y no desde `md`:
    un teléfono apaisado mide 800-930px de ancho y aquí le crecería el logo. */
-@media (width >= 64rem) and (orientation: landscape) and (height <= 600px) {
+@media (width >=64rem) and (orientation: landscape) and (height <=600px) {
 
   .login-left,
   .recovery-left,
@@ -4266,7 +4298,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 }
 
 /* Pantallas muy anchas (desde `2xl`) */
-@media (width >= 96rem) {
+@media (width >=96rem) {
 
   .login-left-content,
   .recovery-left-content,
@@ -4733,7 +4765,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   overflow-x: hidden;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
 
   .matriz-section-gray,
   .matriz-section-white,
@@ -4798,7 +4830,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   margin: 0;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .matriz-content-container-datoolo {
     flex-direction: row;
     gap: 3.5rem;
@@ -4862,7 +4894,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   position: relative;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .matriz-carousel-wrapper {
     padding: 2rem 4rem;
   }
@@ -4937,7 +4969,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   right: 0;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .matriz-carousel-btn {
     width: 50px;
     height: 50px;
@@ -4969,7 +5001,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   z-index: 10;
 }
 
-@media (width >= 64rem) {
+@media (width >=64rem) {
   .tasa-banner-content {
     flex-direction: row;
     justify-content: space-between;
@@ -5010,7 +5042,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   max-width: 1200px;
 }
 
-@media (width >= 64rem) {
+@media (width >=64rem) {
   .encuesta-banner-content {
     gap: clamp(2rem, 4vw, 5rem);
   }
@@ -5040,7 +5072,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   margin-bottom: 0;
 }
 
-@media (width >= 64rem) {
+@media (width >=64rem) {
   .tasa-concept-row {
     flex-direction: row;
     justify-content: space-between;
@@ -5074,7 +5106,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   margin-top: 1rem;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .tasa-concept-desc {
     font-size: 1.125rem;
     text-align: justify;
@@ -5390,7 +5422,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   gap: 4rem;
 }
 
-@media (width >= 64rem) {
+@media (width >=64rem) {
   .tasa-ppt-container {
     flex-direction: row;
     justify-content: space-between;
@@ -5444,7 +5476,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 /* Reproductor y lista lado a lado desde `lg`: a 768px la columna de la lista medía
    210px y, con la miniatura de 110px, el título se quedaba en 60px y hacía scroll
    lateral. En tablet van uno encima del otro. */
-@media (width >= 64rem) {
+@media (width >=64rem) {
   .rv-container {
     grid-template-columns: 1.8fr 1fr;
     padding: 1.5rem;
@@ -5632,7 +5664,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   overflow: hidden;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .publicaciones-container {
     padding: 2rem;
   }
@@ -5692,7 +5724,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   overflow: hidden;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .publicaciones-card-title {
     font-size: 1rem;
   }
@@ -5771,10 +5803,11 @@ body:has(.navegacion-mobile-hoja[open]) {
   right: -0.5rem;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .publicaciones-nav-prev {
     left: 0.25rem;
   }
+
   .publicaciones-nav-next {
     right: 0.25rem;
   }
@@ -5874,7 +5907,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   width: 100%;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .preguntas-section {
     padding-top: 5rem;
     padding-bottom: 5rem;
@@ -5890,7 +5923,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   padding: 0 1rem;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .preguntas-title {
     font-size: 2.25rem;
     margin-bottom: 3rem;
@@ -5911,7 +5944,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   padding: 0 1rem;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .preguntas-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 2.5rem;
@@ -6060,7 +6093,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   padding: 3rem 1.5rem;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .olo-tabs-section {
     padding: 4rem 2rem;
   }
@@ -6116,7 +6149,8 @@ body:has(.navegacion-mobile-hoja[open]) {
 .olo-tabs--verde .olo-tabs-btn--active {
   background-color: #39A900 !important;
   border-color: #39A900 !important;
-  color: #001A39 !important; /* WCAG AA 4.5:1 (5.2:1) */
+  color: #001A39 !important;
+  /* WCAG AA 4.5:1 (5.2:1) */
   box-shadow: 0 4px 12px rgba(57, 169, 0, 0.25) !important;
 }
 
@@ -6321,7 +6355,7 @@ body:has(.preview-page) .intranet-topbar {
   align-items: stretch;
 }
 
-.olo-sectorial-grid > * {
+.olo-sectorial-grid>* {
   width: 100%;
   display: flex !important;
   justify-content: center;
@@ -6471,6 +6505,7 @@ body:has(.preview-page) .intranet-topbar {
 [class*="_LayerTree-helper_"] {
   font-size: 0 !important;
 }
+
 [class*="_LayerTree-helper_"]::before {
   content: "Sin bloques";
   font-size: 14px;
@@ -6619,7 +6654,8 @@ body:has(.preview-page) .intranet-topbar {
 }
 
 /* Enlace de regreso al sitio: 16 px desde `md`, como en el acceso del sitio web. */
-@media (width >= 48rem) {
+@media (width >=48rem) {
+
   .site-return-link,
   .login-return,
   .recovery-return,
@@ -6633,7 +6669,8 @@ body:has(.preview-page) .intranet-topbar {
 
 /* Primer ingreso: lo que crece desde `md` en la escala del acceso del sitio web (2026-10-11):
    etiquetas y enlaces a 16 px. Por debajo, 14, como en el sitio. */
-@media (width >= 48rem) {
+@media (width >=48rem) {
+
   .fl-card-title,
   .fl-login-link {
     font-size: 1rem;
