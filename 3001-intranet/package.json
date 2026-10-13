@@ -24,7 +24,7 @@
     "@olo/password-policy": "file:../packages/password-policy",
     "@olo/slug-policy": "file:../packages/slug-policy",
     "@olo/upload-policy": "file:../packages/upload-policy",
-    "@puckeditor/core": "^0.22.2",
+    "@puckeditor/core": "^0.22.4",
     "clsx": "^2.1.1",
     "file-type": "^22.0.1",
     "jose": "^6.2.3",
@@ -39,7 +39,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.10",
+    "eslint-config-next": "16.4.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   },

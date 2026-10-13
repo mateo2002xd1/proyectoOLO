@@ -480,7 +480,7 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `@olo/password-policy` | `file:../packages/password-policy` | producción |
 | `@olo/slug-policy` | `file:../packages/slug-policy` | producción |
 | `@olo/upload-policy` | `file:../packages/upload-policy` | producción |
-| `@puckeditor/core` | `^0.22.0` | producción |
+| `@puckeditor/core` | `^0.22.4` | producción |
 | `@tailwindcss/postcss` | `^4` | desarrollo |
 | `@types/node` | `^20` | desarrollo |
 | `@types/react` | `^19` | desarrollo |
@@ -489,7 +489,7 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `docx-preview` | `^0.4.0` | producción |
 | `echarts` | `^6.1.0` | producción |
 | `eslint` | `^9` | desarrollo |
-| `eslint-config-next` | `16.2.10` | desarrollo |
+| `eslint-config-next` | `16.4.0` | desarrollo |
 | `file-type` | `^22.0.2` | producción |
 | `framer-motion` | `^12.42.2` | producción |
 | `handsontable` | `^18.0.0` | producción |
@@ -516,14 +516,14 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `@olo/password-policy` | `file:../packages/password-policy` | producción |
 | `@olo/slug-policy` | `file:../packages/slug-policy` | producción |
 | `@olo/upload-policy` | `file:../packages/upload-policy` | producción |
-| `@puckeditor/core` | `^0.22.2` | producción |
+| `@puckeditor/core` | `^0.22.4` | producción |
 | `@tailwindcss/postcss` | `^4` | desarrollo |
 | `@types/node` | `^20` | desarrollo |
 | `@types/react` | `^19` | desarrollo |
 | `@types/react-dom` | `^19` | desarrollo |
 | `clsx` | `^2.1.1` | producción |
 | `eslint` | `^9` | desarrollo |
-| `eslint-config-next` | `16.2.10` | desarrollo |
+| `eslint-config-next` | `16.4.0` | desarrollo |
 | `file-type` | `^22.0.1` | producción |
 | `jose` | `^6.2.3` | producción |
 | `next` | `^16.3.0` | producción |
