@@ -17,9 +17,9 @@ import { MOTIVO_SESION_EXPIRADA, MOTIVO_SIN_PERMISOS } from '../auth-cookies';
 export const mensajeDeCierre = (motivo: string | null): string | null => {
   switch (motivo) {
     case MOTIVO_INACTIVIDAD:
-      return `Cerramos tu sesión porque estuviste ${MINUTOS_DE_INACTIVIDAD} minutos sin actividad. Vuelve a entrar para continuar.`;
+      return `Cerramos tu sesión por inactividad.\nVuelve a iniciar sesión para continuar.`;
     case MOTIVO_INACTIVIDAD_SIN_GUARDAR:
-      return `Cerramos tu sesión por inactividad, pero no pudimos guardar los últimos cambios del editor. Revisa la página antes de seguir.`;
+      return `Cerramos tu sesión por inactividad, pero no pudimos guardar los últimos cambios del editor.\nVuelve a iniciar sesión para continuar.`;
     // No es lo mismo que la inactividad: aquí la sesión dejó de ser válida por su
     // cuenta —caducó, o la API dejó de aceptar el token—, sin que la persona hiciera
     // nada. Antes esto no llegaba a decirse: el panel se quedaba vacío y en silencio,
