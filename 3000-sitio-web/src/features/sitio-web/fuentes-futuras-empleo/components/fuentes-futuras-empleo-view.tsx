@@ -69,13 +69,13 @@ export function FuentesFuturasEmpleoView({
     modoSeleccionDepartamento || 'mapa'
   );
 
-
-
-  useEffect(() => {
-    if (modoSeleccionDepartamento) {
-      setModoSeleccion(modoSeleccionDepartamento);
-    }
-  }, [modoSeleccionDepartamento]);
+  // Si el editor cambia el modo por defecto, se aplica. Se compara con el valor anterior
+  // durante el render, como recomienda React, y no en un efecto.
+  const [modoAntes, setModoAntes] = useState(modoSeleccionDepartamento);
+  if (modoSeleccionDepartamento !== modoAntes) {
+    setModoAntes(modoSeleccionDepartamento);
+    if (modoSeleccionDepartamento) setModoSeleccion(modoSeleccionDepartamento);
+  }
 
   const [filtros, setFiltros] = useState<IFiltrosFuentesFuturas>({
     departamento: 'Nacional',
@@ -99,14 +99,10 @@ export function FuentesFuturasEmpleoView({
       ? descripcion
       : '';
 
-  // Carga de datos desde backend
+  // Carga de datos desde backend. Solo al montar: `cargando`, `pagina` y `filtros` ya
+  // arrancan en su valor inicial, así que no hace falta reiniciarlos aquí.
   useEffect(() => {
     let montado = true;
-    setCargando(true);
-    setPagina(1);
-    setFiltros({
-      departamento: 'Nacional',
-    });
 
     obtenerFuentesFuturasEmpleoActual()
       .then((registros) => {

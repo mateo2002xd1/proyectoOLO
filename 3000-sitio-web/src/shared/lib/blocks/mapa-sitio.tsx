@@ -35,18 +35,15 @@ export function MapaSitio({
   paginas,
 }: MapaSitioProps) {
   const [paginasCargadas, setPaginasCargadas] = useState<PaginaIndiceBusqueda[]>(paginas || []);
-  const [cargando, setCargando] = useState(!paginas || paginas.length === 0);
+  // Se decide una vez, al montar: si Puck o el SSR ya trajeron las páginas, el estado
+  // inicial ya las tiene y no hay nada que pedir.
+  const [faltanPaginas] = useState(() => !paginas || paginas.length === 0);
+  const [cargando, setCargando] = useState(faltanPaginas);
 
   useEffect(() => {
+    if (!faltanPaginas) return;
     let activo = true;
-    
-    // Si Puck ya inyectó páginas estáticamente o si SSR ya las tiene
-    if (paginas && paginas.length > 0) {
-      setPaginasCargadas(paginas);
-      setCargando(false);
-      return;
-    }
-    
+
     // Solo hacemos la petición una vez al montar
     obtenerIndiceBusqueda().then((datos) => {
       if (activo) {
@@ -54,9 +51,9 @@ export function MapaSitio({
         setCargando(false);
       }
     });
-    
+
     return () => { activo = false; };
-  }, []); // ¡Dependencia vacía para que solo se ejecute al montar!
+  }, [faltanPaginas]);
 
   const paginasOrdenadas = ordenarPaginas(paginasCargadas);
 

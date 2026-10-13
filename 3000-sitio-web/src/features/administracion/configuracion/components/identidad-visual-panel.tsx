@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowUpTrayIcon, ArrowUturnLeftIcon, SwatchIcon } from '@heroicons/react/24/outline';
+import { ArrowUpTrayIcon, ArrowUturnLeftIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/shared/ui/atoms/button';
 import { Switch } from '@/shared/ui/atoms/switch';
 import { Notification, type NotificationType } from '@/shared/ui/molecules/notification';

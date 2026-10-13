@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useProgramasSobresalientes } from '../hooks/use-programas-sobresalientes';
 import { FiltrosProgramasSobresalientes } from './filtros-programas-sobresalientes';
 import { MapaDepartamentos } from './mapa-departamentos';
@@ -66,11 +66,13 @@ export function ProgramasSobresalientesView({
     modoSeleccionDepartamento || 'mapa',
   );
 
-  useEffect(() => {
-    if (modoSeleccionDepartamento) {
-      setModoSeleccion(modoSeleccionDepartamento);
-    }
-  }, [modoSeleccionDepartamento]);
+  // Si el editor cambia el modo por defecto, se aplica. Se compara con el valor anterior
+  // durante el render, como recomienda React, y no en un efecto.
+  const [modoAntes, setModoAntes] = useState(modoSeleccionDepartamento);
+  if (modoSeleccionDepartamento !== modoAntes) {
+    setModoAntes(modoSeleccionDepartamento);
+    if (modoSeleccionDepartamento) setModoSeleccion(modoSeleccionDepartamento);
+  }
 
   const codigosConDatos = useMemo(
     () => new Set(departamentosConDatos.map((d) => d.codigoDane)),

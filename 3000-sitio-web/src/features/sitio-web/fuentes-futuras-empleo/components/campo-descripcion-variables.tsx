@@ -20,12 +20,16 @@ export function CampoDescripcionConVariables({
   // Estado local para evitar el salto del cursor al final al editar o borrar texto
   const [textoLocal, setTextoLocal] = useState<string>(value ?? '');
 
-  // Sincronizar si cambia externamente (ej. cambio de componente o reset)
-  useEffect(() => {
+  // Sincronizar si cambia externamente (ej. cambio de componente o reset). Se compara con el
+  // valor anterior durante el render, como recomienda React, y no en un efecto: así no hay un
+  // render intermedio con el texto viejo.
+  const [valueAntes, setValueAntes] = useState(value);
+  if (value !== valueAntes) {
+    setValueAntes(value);
     if (value !== undefined && value !== textoLocal) {
       setTextoLocal(value);
     }
-  }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
+  }
 
   // Restaurar la posición del cursor de forma síncrona en el DOM tras la reconciliación de React
   useIsomorphicLayoutEffect(() => {

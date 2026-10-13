@@ -329,7 +329,7 @@ export default function RolesView() {
     } finally {
       setLoadingRolePerms(false);
     }
-  }, [fetchRolePermissions]);
+  }, [fetchPermissions, fetchRolePermissions]);
 
   const guardarPermisos = useCallback(async () => {
     if (!rolPermisos) return;
@@ -338,7 +338,7 @@ export default function RolesView() {
       const aAsignar = [...selectedPermissionIds].filter((id) => !originalPermissionIds.has(id));
       const aRevocar = [...originalPermissionIds].filter((id) => !selectedPermissionIds.has(id));
       
-      const promises: Promise<any>[] = [
+      const promises: Promise<unknown>[] = [
         ...aAsignar.map((permId) => assignPermissionToRole(rolPermisos.id, permId)),
         ...aRevocar.map((permId) => revokePermissionFromRole(rolPermisos.id, permId)),
       ];

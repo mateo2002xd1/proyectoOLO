@@ -99,8 +99,6 @@ export function ModalPermisos({
   originales,
   seleccionados,
   onCambiarSeleccion,
-  nombre,
-  onCambiarNombre,
   descripcion,
   onCambiarDescripcion,
   onGuardar,
@@ -112,10 +110,14 @@ export function ModalPermisos({
   const [busqueda, setBusqueda] = useState('');
   const [mostrarPermisos, setMostrarPermisos] = useState(false);
 
-  // Resetear el estado al abrir
-  useMemo(() => {
+  // Cada vez que se abre, vuelve a la vista del rol. Se compara con el valor anterior
+  // durante el render, como recomienda React para reiniciar estado según una prop: antes era
+  // un `setState` dentro de `useMemo`, que React no garantiza ejecutar ni una sola vez.
+  const [abiertoAntes, setAbiertoAntes] = useState(abierto);
+  if (abierto !== abiertoAntes) {
+    setAbiertoAntes(abierto);
     if (abierto) setMostrarPermisos(false);
-  }, [abierto]);
+  }
 
   const visibles = useMemo(() => {
     // Ocultar acceso.panel porque es solo para administradores
@@ -276,7 +278,7 @@ export function ModalPermisos({
           {(rol && !mostrarPermisos) ? (
             <div className="flex h-full items-center justify-center">
               <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">
-                Haz clic en "Editar permisos" para ver y modificar la lista.
+                Haz clic en «Editar permisos» para ver y modificar la lista.
               </p>
             </div>
           ) : gruposAPintar.length === 0 ? (

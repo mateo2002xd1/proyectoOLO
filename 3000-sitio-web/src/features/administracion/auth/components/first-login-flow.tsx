@@ -54,6 +54,7 @@ async function cerrarSesionEIrAlLogin() {
   } catch {
     // Si falla la petición de logout, igualmente se va al login.
   }
+  // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- recarga completa a propósito: tras cerrar sesión no debe quedar nada de ella en la caché del cliente
   window.location.href = '/login';
 }
 

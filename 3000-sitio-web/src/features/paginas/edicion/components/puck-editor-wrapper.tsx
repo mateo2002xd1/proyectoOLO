@@ -614,7 +614,7 @@ export function PuckEditorWrapper({
       }
       : (initialData as Data) ?? { content: [], root: {} };
 
-    const contentNormalizado = (raw.content ?? []).map((item: any, idx: number) => {
+    const contentNormalizado = (raw.content ?? []).map((item: Data['content'][number], idx: number) => {
       const id = item.props?.id || `${item.type || 'bloque'}-${idx + 1}`;
 
       if (item.type === 'TendenciaOcupacional') {

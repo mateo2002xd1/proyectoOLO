@@ -169,6 +169,7 @@ export function RecursosVisualesBloque({
                     <div className="rv-thumb-wrap">
                       {/* src dinamico y tamano por CSS: next/image exigiria width/height fijos o remotePatterns */}
                       {thumbSrc ? (
+                        // eslint-disable-next-line @next/next/no-img-element -- miniatura con src dinámico y tamaño por CSS
                         <img
                           src={thumbSrc}
                           alt={typeof video.titulo === 'string' ? video.titulo : ''}

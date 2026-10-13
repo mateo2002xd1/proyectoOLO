@@ -44,7 +44,7 @@ export async function proxyToBackend(path: string, request: Request) {
 
     const data = await res.json().catch(() => null);
     return NextResponse.json(data, { status: res.status });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Error de conexión con el servidor.' },
       { status: 502 }

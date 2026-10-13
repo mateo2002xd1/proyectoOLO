@@ -54,6 +54,7 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}): Promise
 async function handleResponse<T>(response: Response): Promise<T> {
   if (response.status === 401) {
     if (typeof window !== 'undefined') {
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- cliente de la API fuera de React, sin router; con la sesión caducada se recarga del todo
       window.location.href = '/login?logout=1';
     }
     throw new ApiError(401, 'No autenticado');

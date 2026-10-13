@@ -102,6 +102,7 @@ export function PaginasFabSpeedDial({
     } catch {
       // Sin red igualmente se sale hacia el login.
     }
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- recarga completa a propósito: tras cerrar sesión no debe quedar nada de ella en la caché del cliente
     window.location.href = '/login?logout=1';
   };
 
