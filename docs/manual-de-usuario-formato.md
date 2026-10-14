@@ -1098,9 +1098,10 @@ El entorno del Panel Administrativo está diseñado para facilitar la gestión e
 ---
 
 #### 3.4.2.2. Buscador Global del Panel Administrativo
+*(Nota: Para consultar las posibles situaciones de error, validaciones de búsqueda y solución de problemas al interactuar con el buscador global o utilizar el botón Devolver, remitirse a la [Sección 3.5.1.6: Validaciones y Solución de Problemas en el Buscador Global del Panel Administrativo](#3516-validaciones-y-solución-de-problemas-en-el-buscador-global-del-panel-administrativo)).*
+
 El Panel Administrativo cuenta con un buscador global diseñado para navegar ágilmente entre los diferentes módulos, secciones, herramientas de gestión y configuraciones del sistema utilizando palabras clave. Este buscador no filtra registros dentro de tablas individuales, sino que opera como un localizador y acceso directo integral hacia cualquier área de la plataforma administrativa o páginas institucionales asociadas.
 
-*(Nota: Para consultar las posibles situaciones de error, validaciones de búsqueda y solución de problemas al interactuar con el buscador global o utilizar el botón Devolver, remitirse a la [Sección 3.5.1.6: Validaciones y Solución de Problemas en el Buscador Global del Panel Administrativo](#3516-validaciones-y-solución-de-problemas-en-el-buscador-global-del-panel-administrativo)).*
 
 1. **Apertura del buscador y despliegue de la pantalla de búsqueda:**
    * **En computadores de escritorio:** Se hace clic sobre la opción **"Buscar"** (identificada con el ícono de lupa) ubicada en la parte inferior de la barra lateral izquierda, inmediatamente encima del menú de usuario y junto al alternador de tema.
@@ -1431,6 +1432,8 @@ Por motivos de seguridad estructural del sistema, la tabla **oculta** deliberada
 ---
 
 #### 3.4.2.5. Aprobación y Publicación de Contenidos: Páginas en Revisión
+*(Nota: Para consultar las posibles situaciones de validación, modales bloqueados, límites de caracteres y solución de problemas en este flujo con sus respectivas capturas de pantalla, remitirse a la [Sección 3.5.1.10: Validaciones y Solución de Problemas en la Aprobación y Publicación de Contenidos (Páginas en Revisión)](#35110-validaciones-y-solución-de-problemas-en-la-aprobación-y-publicación-de-contenidos-páginas-en-revisión)).*
+
 Módulo vital para el flujo de publicación, accesible desde el menú lateral (o barra inferior en móviles) bajo **"Páginas en Revisión"**.
 
 1. **Acceso a la bandeja:** Se debe hacer clic en el ítem **"Páginas en Revisión"** en el menú lateral o en la barra inferior móvil.
@@ -1449,10 +1452,10 @@ Módulo vital para el flujo de publicación, accesible desde el menú lateral (o
    * **Acciones:** Controles operativos para gestionar cada borrador. En computadores de escritorio, se presentan como botones de solo ícono alineados a la derecha; al colocar el cursor sobre cualquiera de ellos (o enfocarlo con el teclado), se activa una etiqueta flotante de ayuda (tooltip) que indica su acción:
      * **Visualizar (ícono de ojo):** Botón con ícono de ojo (tooltip *«Visualizar»*). Abre la previsualización interactiva de la página para examinar los cambios antes de tomar una decisión.
      * **Publicar (ícono de enviar):** Botón con ícono de enviar (tooltip *«Publicar»*). Abre la ventana modal de confirmación para aprobar el borrador y desplegarlo de inmediato en producción.
-     * **Rechazar (ícono de equis):** Botón con ícono de equis (tooltip *«Rechazar»*). Abre la ventana modal para devolver el borrador al editor, exigiendo el registro obligatorio de observaciones antes de habilitar el envío.
+     * **Rechazar (ícono de equis):** Botón con ícono de equis (tooltip *«Rechazar»*). Abre la ventana modal para registrar observaciones de rechazo; el borrador conserva todos sus cambios en estado rechazado para poder editarlo, ajustarlo y reenviarlo.
      * **Descartar (ícono de papelera):** Botón con ícono de papelera (tooltip *«Eliminar»*). Abre la ventana modal para anular definitivamente el borrador, requiriendo el registro obligatorio del motivo para auditoría.
 
-   En dispositivos móviles y tabletas, la tabla se presenta en formato acordeón: cada fila resume el envío (*«[Autor] envió la versión [N] de [Título]»*) y, al desplegarla, muestra la ruta, el comentario de cambios y los cuatro controles organizados en una cuadrícula táctil de 2×2 con su ícono y nombre visible (*"Visualizar"*, *"Publicar"*, *"Rechazar"* y *"Eliminar"*).
+   En dispositivos móviles y tabletas, la tabla se presenta en formato acordeón: cada fila resume el envío (*«[Autor] envió la versión [N] de [Título]»*) y, al desplegarla, muestra la ruta, el comentario de cambios y los cuatro botones de acción con su ícono y nombre visible (*"Visualizar"*, *"Publicar"*, *"Rechazar"* y *"Eliminar"*).
 
 > **[Captura: Paso 2]**
 > *Tabla de borradores pendientes mostrando título, cambios y editor.*
@@ -1460,7 +1463,7 @@ Módulo vital para el flujo de publicación, accesible desde el menú lateral (o
 > **[Captura: Paso 2 (Móvil)]**
 > *Bandeja de páginas en revisión en formato acordeón en dispositivos móviles, con una solicitud desplegada detallando cambios y controles de decisión.*
 
-3. **Previsualización interactiva (Ícono de ojo):** Para evaluar una solicitud antes de tomar una decisión, se hace clic sobre el botón con **ícono de ojo** (tooltip *«Visualizar»*) en la fila del borrador, o sobre el botón táctil **"Visualizar"** en la tarjeta móvil.
+3. **Previsualización interactiva (Ícono de ojo):** Para evaluar una solicitud antes de tomar una decisión, se hace clic sobre el botón con **ícono de ojo** (tooltip *«Visualizar»*) en computadores, o sobre el botón **"Visualizar"** en dispositivos móviles.
 
 > **[Captura: Paso 3]**
 > *Clic en el botón de previsualización.*
@@ -1468,19 +1471,19 @@ Módulo vital para el flujo de publicación, accesible desde el menú lateral (o
 > **[Captura: Paso 3 (Móvil)]**
 > *Clic en el botón de previsualización. (Móvil).*
 
-4. **Verificación visual del diseño:** Se abrirá una ventana inmersiva con la vista preliminar interactiva. En esta pantalla se debe revisar la estructura, los bloques maquetados y el contenido de la página para comprobar que cumplan con las directrices institucionales.
+4. **Verificación visual del diseño:** El sistema abre una vista previa que refleja fielmente cómo se verá la página publicada en el sitio web o intranet. El Administrador revisa el diseño, textos y contenidos para verificar el cumplimiento de los lineamientos institucionales antes de su aprobación.
 
 > **[Captura: Paso 4]**
-> *Ventana inmersiva con página.*
+> *Vista previa interactiva de la página a publicar, mostrando cómo se verá una vez aprobada.*
 >
 > **[Captura: Paso 4 (Móvil)]**
-> *Ventana inmersiva con página. (Móvil).*
+> *Vista previa interactiva de la página a publicar en versión móvil, reflejando el diseño final para teléfonos y tabletas.*
 
 5. **Aprobación y publicación en producción (Ícono de enviar):**
    Si la página cumple con todos los requisitos y está lista para ser visible a los usuarios finales:
-   * **Apertura de la confirmación:** Hacer clic en el botón con **ícono de enviar** (que despliega el tooltip **«Publicar»** al pasar el cursor, o el botón táctil **"Publicar"** en móvil) ubicado en la fila del borrador.
-   * **Revisión del resumen de publicación:** El sistema despliega la ventana modal de confirmación (*«¿Estás seguro de que deseas publicar esta versión?»*), especificando el número de versión, la página y el ámbito correspondiente (*Sitio web* o *Intranet*), e informando que la versión actualmente activa pasará de forma automática al módulo de Respaldos.
-   * **Confirmación de publicación:** Hacer clic en el botón con título **"Publicar"** dentro de la ventana modal para confirmar el paso inmediato a producción (o presionar **"Cancelar"** para regresar sin aplicar cambios). Esta acción no requiere registrar motivos.
+   * **Apertura de la confirmación:** El Administrador presiona el botón **"Publicar"** (con ícono de enviar en computadores) de la página a aprobar. Esta acción abre la ventana modal de confirmación.
+   * **Revisión del resumen de publicación:** El sistema despliega la ventana de confirmación (*«¿Estás seguro de que deseas publicar esta versión?»*), especificando el número de versión, la página y el ámbito correspondiente (*Sitio web* o *Intranet*), e informando que la versión actualmente activa pasará de forma automática al módulo de Respaldos.
+   * **Confirmación de publicación:** El Administrador presiona el botón **"Publicar"** dentro de la ventana modal para confirmar el paso inmediato a producción (o presiona **"Cancelar"** para regresar sin aplicar cambios). Esta acción no requiere registrar motivos.
 
 > **[Captura: Paso 5]**
 > *Ventana modal de confirmación para publicar la versión directamente en producción.*
@@ -1489,21 +1492,21 @@ Módulo vital para el flujo de publicación, accesible desde el menú lateral (o
 > *Ventana modal de confirmación para publicar la versión directamente en producción. (Móvil).*
 
 6. **Rechazo de borrador con observaciones obligatorias (Ícono de equis):**
-   Si la versión contiene inconsistencias, errores de redacción o requiere ajustes por parte del editor:
-   * **Apertura de la ventana modal de rechazo:** Hacer clic en el botón con **ícono de equis** (que despliega el tooltip **«Rechazar»** al pasar el cursor, o el botón táctil **"Rechazar"** en móvil) en la fila del borrador. El sistema despliega la ventana modal *«Rechazar versión [N] de [Página]»*, indicando que el borrador será devuelto a su autor original para que lo corrija.
-   * **Registro obligatorio de observaciones:** En el campo de texto (*«Explica la razón…»*), el Administrador debe redactar de forma clara las correcciones o mejoras que debe realizar el editor. Dispone de un límite de hasta 100 caracteres con un contador numérico visible.
-     * **Validación de seguridad:** El botón de confirmación **"Rechazar"** en la ventana modal permanece deshabilitado e inactivo mientras el campo se encuentre vacío. Es obligatorio escribir la observación para habilitar el botón.
-   * **Confirmación del rechazo:** Una vez digitadas las observaciones, presionar el botón **"Rechazar"** dentro de la ventana modal. El borrador retorna de inmediato a la bandeja de trabajo del editor con las observaciones registradas y se remueve de la lista de páginas pendientes de aprobación.
+   Si la versión contiene inconsistencias o requiere ajustes:
+   * **Apertura de la ventana modal de rechazo:** El Administrador presiona el botón **"Rechazar"** (con ícono de equis en computadores) de la página a evaluar. El sistema abre la ventana modal *«Rechazar versión [N] de [Página]»* para registrar las observaciones; el borrador pasa a estado rechazado conservando todos sus cambios, de modo que al volver a editar la página se retoma para ajustar y reenviarlo a revisión.
+   * **Registro obligatorio de observaciones:** En el campo de texto (*«Explica la razón…»*), el Administrador redacta claramente el motivo del rechazo (hasta 100 caracteres con contador visible).
+     * **Validación de seguridad:** El botón de confirmación **"Rechazar"** permanece inactivo mientras el campo esté vacío; es obligatorio escribir las observaciones para habilitarlo.
+   * **Confirmación del rechazo:** Al presionar **"Rechazar"**, el borrador queda en estado rechazado con las observaciones registradas, sale de la bandeja de revisión y queda disponible para que al editar la página se ajuste el motivo de rechazo y se vuelva a enviar.
 
 > **[Captura: Modal Rechazo con Observaciones]**
-> *Ventana modal de rechazo requiriendo el registro obligatorio de observaciones para el editor antes de devolver el borrador.*
+> *Ventana modal de rechazo con registro obligatorio de observaciones para ajustar y reenviar el borrador.*
 >
 > **[Captura: Modal Rechazo con Observaciones (Móvil)]**
-> *Ventana modal de rechazo requiriendo el registro obligatorio de observaciones para el editor antes de devolver el borrador. (Móvil).*
+> *Ventana modal de rechazo con registro obligatorio de observaciones para ajustar y reenviar el borrador. (Móvil).*
 
 7. **Descarte definitivo con motivo obligatorio para auditoría (Ícono de papelera):**
    Si el borrador no procede, es un duplicado o fue remitido por error y debe anularse definitivamente:
-   * **Apertura de la advertencia destructiva:** Hacer clic en el botón con **ícono de papelera** (que despliega el tooltip **«Eliminar»** al pasar el cursor, o el botón táctil **"Eliminar"** en móvil) en la fila del borrador. El sistema despliega la ventana modal *«Eliminar versión [N] de [Página]»*, advirtiendo que los cambios no publicados se perderán de manera permanente e irreversible.
+   * **Apertura de la advertencia destructiva:** El Administrador presiona el botón **"Eliminar"** (con ícono de papelera en computadores) del borrador que se requiere anular. El sistema abre la ventana modal *«Eliminar versión [N] de [Página]»*, advirtiendo que los cambios no publicados se perderán de manera permanente e irreversible.
    * **Registro obligatorio del motivo:** En el campo de texto (*«Explica la razón…»*), registrar la justificación por la cual se descarta la versión (hasta 100 caracteres).
      * **Validación de seguridad:** El botón de confirmación **"Eliminar"** en la ventana modal permanece deshabilitado e inactivo mientras el campo se encuentre vacío. Es obligatorio ingresar el motivo para habilitar la confirmación.
    * **Confirmación del descarte:** Al presionar el botón **"Eliminar"** dentro de la ventana modal, la versión se elimina permanentemente de la plataforma y el motivo queda registrado de forma automática en la bitácora de auditoría.
@@ -1517,137 +1520,164 @@ Módulo vital para el flujo de publicación, accesible desde el menú lateral (o
 ---
 
 #### 3.4.2.6. Auditoría y Bitácora de Eventos
-Herramienta de control forense, accesible desde el menú lateral (o barra inferior en móviles) bajo **"Auditoría"** o **"Bitácora"**.
-1. **Filtros de Búsqueda:** En la parte superior existen barras desplegables para filtrar el historial por fecha (calendario), por correo del usuario que ejecutó la acción, o por tipo de evento (ej. "Borrado", "Edición", "Login"). Botón **"Aplicar Filtros"**.
+*(Nota: Para consultar las posibles situaciones de validación, reglas de conservación del último año, descarga obligatoria de respaldos CSV y la tabla de referencia de acciones de la bitácora, remitirse a la [Sección 3.5.1.11: Validaciones y Solución de Problemas en la Bitácora de Auditoría](#35111-validaciones-y-solución-de-problemas-en-la-bitácora-de-auditoría)).*
 
-> **[Captura: Paso 1]**
-> *Evidencia visual de la acción descrita en el paso 1.*
+Módulo de seguimiento y trazabilidad de eventos del sistema, accesible desde el menú lateral (o barra inferior en móviles) bajo **"Auditoría"**. Su propósito es registrar de forma transparente e inmutable las acciones ejecutadas en la plataforma: ciclo editorial de páginas, administración de usuarios, roles, permisos y seguridad.
+
+1. **Barra de Filtros de Búsqueda:** En la parte superior de la vista se dispone de una barra de controles para acotar la consulta en tiempo real (los resultados se actualizan automáticamente al seleccionar cada valor):
+   * **Categoría (filtro principal):** Clasifica los eventos según el ámbito operativo del sistema:
+     * *Todas:* Muestra la totalidad de los movimientos sin distinción de área.
+     * *Contenido editorial:* Agrupa las operaciones realizadas en el editor visual (creación de páginas, ediciones, guardado de borradores, autoguardados y envíos a revisión).
+     * *Administración:* Agrupa las decisiones tomadas sobre los borradores (publicaciones, rechazos y archivados).
+     * *Seguridad:* Agrupa el control de accesos, cuentas y permisos (autenticaciones, modificaciones de usuario o rol, expiración de vigencias, inactivaciones, bloqueos de cuenta, respuestas a preguntas de seguridad, cambios de contraseña y eliminaciones).
+   * **Desde:** Selector de fecha inicial con calendario interactivo. Bloquea automáticamente la selección de fechas posteriores a la indicada en el campo *Hasta*.
+   * **Hasta:** Selector de fecha final con calendario interactivo. Bloquea automáticamente la selección de fechas anteriores a la indicada en el campo *Desde*.
+   * **Usuario:** Menú desplegable para filtrar por el funcionario responsable de la acción (*"Todos"* o el nombre específico del funcionario).
+   * **Acción:** Menú desplegable contextual que adapta automáticamente sus opciones a la *Categoría* seleccionada previamente.
+   * **Botón "Limpiar filtros":** Se visualiza dinámicamente cuando hay al menos un criterio activo, permitiendo restablecer la consulta a los valores por defecto con un solo clic.
+
+> **[Captura: Filtros de Auditoría]**
+> *Barra de filtros de búsqueda desplegando selectores de categoría, fechas, usuario, acción y botón para limpiar filtros.*
 >
-> **[Captura: Paso 1 (Móvil)]**
-> *Evidencia visual de la acción descrita en el paso 1. (Móvil).*
+> **[Captura: Filtros de Auditoría (Móvil)]**
+> *Barra de filtros de auditoría adaptada en dispositivo móvil. (Móvil).*
 
-2. **Tabla de Registros Inmutables y Columnas:** Despliega cronológicamente los eventos registrados. En computadores de escritorio, la tabla organiza la información en 5 columnas (estos registros no poseen botón de eliminación):
-   * **Fecha y hora:** Fecha del suceso con la hora exacta (incluyendo segundos) visible debajo.
-   * **Usuario:** Nombre completo del funcionario que ejecutó la acción, o la indicación *"Sin usuario"* si correspondió a un proceso automático del sistema.
-   * **Acción:** Píldora visual con el tipo de evento registrado (ej. *Autenticación*, *Edición*, *Publicación*, *Creación*).
-   * **Cambios:** Resumen textual de lo modificado en el sistema o comentario descriptivo del evento.
-   * **Detalle:** Botón con título **"Ver detalle"** (ícono de ojo) para abrir la ventana modal con la auditoría técnica completa del registro.
+2. **Tabla de Registros de Auditoría y Columnas:** Despliega cronológicamente los eventos registrados. En computadores de escritorio, la tabla organiza la información en 5 columnas:
+   * **Fecha y hora:** Fecha del suceso (DD/MM/AAAA) con la hora exacta (incluyendo segundos) visible en la línea inferior.
+   * **Usuario:** Nombre completo del funcionario que ejecutó la acción, o la indicación *"Sin usuario"* en tono atenuado si correspondió a un proceso automatizado del sistema (ej. caducidad programada de cuenta o bloqueo preventivo).
+   * **Acción:** Etiqueta visual con la denominación del evento y código cromático según su nivel de importancia:
+     * *Verde de marca (Rutina):* Creación, Edición, Autoguardado, Modificación, Archivado, Autenticación, Preguntas de seguridad, Cambio de contraseña.
+     * *Verde esmeralda (Logro):* Publicación en producción.
+     * *Ámbar (Atención):* Rechazo de borrador o Expiración de vigencia de cuenta.
+     * *Rojo suave (Advertencia de acceso):* Inactivación o Bloqueo temporal.
+     * *Rojo intenso sólido (Acción crítica):* Eliminación definitiva.
+   * **Cambios:** Frase descriptiva redactada en lenguaje natural que resume lo ocurrido (ej. *«El usuario [Nombre] envió a revisión la versión [N] de [Página]»* o los comentarios de cambios registrados). En la tabla de escritorio se trunca en una línea mostrando el texto completo al posar el cursor, o hasta en tres líneas al apilarse.
+   * **Detalle:** Botón con ícono de ojo (con texto de ayuda *«Ver detalle»* al pasar el cursor) que abre la ventana modal con los detalles completos del registro.
 
-   En dispositivos móviles y tabletas, la tabla se presenta en formato acordeón: cada fila resume el evento mediante una frase (*«El usuario [Nombre] hizo la acción de...»*, o *«El sistema hizo la acción de...»* si no hubo un funcionario involucrado) y, al desplegarla, presenta el detalle de lo modificado junto con el botón **"Ver detalle"**.
+   En dispositivos móviles y tabletas, la tabla se presenta en formato acordeón: cada fila resume el evento mediante una frase explicativa (*«El usuario [Nombre] hizo la acción de...»*, o *«El sistema hizo la acción de...»*) y, al pulsar sobre ella para desplegarla, presenta la fecha exacta, el resumen de lo modificado y el botón **"Ver detalle"** con su ícono y texto visible.
 
-> **[Captura: Paso 2]**
-> *Evidencia visual de la acción descrita en el paso 2.*
+   En la parte inferior de la tabla se ubica el **Paginador**, el cual permite alternar entre páginas de registros y ajustar el número de filas mostradas por pantalla (15, 25, 50 o 100 registros).
+
+> **[Captura: Tabla de Auditoría]**
+> *Tabla de registros de auditoría mostrando fecha y hora con segundos, usuario, etiqueta de acción, resumen de cambios y botón de detalle.*
 >
-> **[Captura: Paso 2 (Móvil)]**
-> *Lista de registros de auditoría en formato acordeón en dispositivos móviles, con un evento desplegado y su botón táctil para ver detalle.*
+> **[Captura: Tabla de Auditoría (Móvil)]**
+> *Lista de registros de auditoría en formato acordeón en dispositivos móviles, con una fila desplegada mostrando detalle y botón de acceso.*
 
-##### 3.4.2.6.1. Exportación de la Bitácora de Auditoría
+3. **Ventana Modal de Detalle del Registro:** Al presionar el botón con ícono de ojo en cualquier fila, el sistema despliega una ventana modal interactiva con la información de trazabilidad:
+   * **Metadatos del evento:**
+     * *Fecha y hora:* Marca temporal completa en formato largo (día de la semana, fecha y hora con segundos).
+     * *Usuario:* Nombre del funcionario responsable o confirmación de ejecución automática por el sistema.
+     * *Acción:* Etiqueta visual con la clasificación del evento.
+     * *Entidad:* Tipo de elemento involucrado (*Página*, *Usuario*, *Rol*, *Configuración*).
+     * *Identificador de la entidad:* Número o código identificador del elemento intervenido.
+     * *Dirección IP:* Dirección IP de red desde la cual se emitió la solicitud.
+     * *Navegador:* Información del navegador web y sistema operativo utilizado.
+   * **Campos modificados:**
+     * En eventos de edición y publicación de páginas: Cuadro comparativo con el *«Comentario anterior»* versus *«Comentario después»*, junto con el motivo si se trató de un rechazo o descarte.
+     * En eventos de usuarios, roles o configuraciones: Lista detallada de cada atributo intervenido (ej. estado de cuenta, roles, fechas de caducidad) con su valor en estado **Antes** y **Después**.
 
-Tras aplicar los filtros deseados, el sistema permite exportar los registros visibles en la tabla:
-
-1. **Botón de exportación:** En la cabecera de la tabla de auditoría, se debe hacer clic en el botón **"Exportar"**.
-2. **Selección de formato:** El sistema ofrecerá los formatos de descarga disponibles (`.xlsx` o `.csv`).
-3. **Descarga:** El archivo se generará con los registros actualmente filtrados y se descargará automáticamente al dispositivo del Administrador.
-
-> **[Captura: Exportar Auditoría]**
-> *Botón de exportación en la tabla de auditoría y opciones de formato disponibles.*
+> **[Captura: Modal Detalle del Registro]**
+> *Ventana modal detallando metadatos de red (IP, navegador), entidad afectada y comparativa de campos modificados antes y después.*
 >
-> **[Captura: Exportar Auditoría (Móvil)]**
-> *Botón de exportación en la tabla de auditoría y opciones de formato disponibles. (Móvil).*
+> **[Captura: Modal Detalle del Registro (Móvil)]**
+> *Ventana modal de detalle del registro adaptada a dispositivos móviles. (Móvil).*
 
-> **Nota sobre retención de registros:** La bitácora conserva el historial de eventos de forma permanente e indefinida. Los registros no tienen fecha de expiración y no pueden ser eliminados por ningún rol.
+4. **Depuración y Respaldo de la Bitácora de Auditoría:** Para prevenir la saturación de la base de datos sin vulnerar la trazabilidad histórica, el sistema incorpora un mecanismo de mantenimiento programado mediante el botón **"Depurar"** (con ícono de papelera), ubicado en la esquina superior derecha del módulo. La depuración opera bajo un estricto protocolo de seguridad institucional:
+   * **Criterio de conservación y análisis previo:** El sistema **conserva de forma obligatoria e inmutable todos los registros del último año** (365 días continuos desde el momento de la consulta). Al presionar **"Depurar"**, evalúa la base de datos y calcula la fecha de corte exacta, informando la cantidad de registros mayores a un año candidatos a depuración (con su peso en disco) y los registros protegidos del último año. Si no existen registros con más de un año de antigüedad, emite un aviso informativo indicando que la tabla se encuentra al día.
+   * **Descarga obligatoria de respaldo en CSV antes de borrar:** Como salvaguarda de auditoría, el botón de confirmación **"Depurar [N] registros"** permanece **inactivo y bloqueado** hasta que el Administrador descargue el respaldo. Al hacer clic sobre el botón circular verde con ícono de descarga, el sistema genera y descarga en el equipo local el archivo oficial `respaldo-auditoria-depurada-[FECHA].csv`. Una vez confirmada la descarga, el botón circular muestra el ícono de verificación (check) y se habilita el botón rojo de confirmación.
+   * **Ejecución y registro inmutable:** Al presionar **"Depurar [N] registros"**, el sistema elimina de forma definitiva los registros respaldados y presenta un resumen de confirmación con la cantidad exacta de eventos depurados y el espacio liberado en disco. Esta misma acción de depuración queda grabada automáticamente como un nuevo registro en la bitácora de auditoría, garantizando la trazabilidad total de la operación de mantenimiento.
 
-##### 3.4.2.6.2. Tipos de Eventos Registrados en la Bitácora
-
-| Tipo de Evento | Descripción |
-| :--- | :--- |
-| `LOGIN` | Inicio de sesión exitoso |
-| `LOGIN_FAILED` | Intento de inicio de sesión fallido |
-| `LOGOUT` | Cierre de sesión |
-| `USER_CREATED` | Creación de nuevo usuario |
-| `USER_UPDATED` | Modificación de datos de usuario |
-| `USER_SUSPENDED` | Suspensión de cuenta |
-| `ROLE_CREATED` | Creación de nuevo rol |
-| `ROLE_UPDATED` | Modificación de permisos de un rol |
-| `ROLE_DELETED` | Eliminación de un rol |
-| `PAGE_CREATED` | Creación de nueva página |
-| `PAGE_DRAFT_SAVED` | Guardado de borrador |
-| `PAGE_SENT_TO_REVIEW` | Envío de borrador a revisión |
-| `PAGE_APPROVED` | Aprobación y publicación de página |
-| `PAGE_REJECTED` | Rechazo de borrador con observaciones |
-| `PAGE_DRAFT_DISCARDED` | Descarte de borrador (botón de basurero) |
-| `PAGE_DELETED` | Eliminación definitiva de página |
-| `DATA_BULK_UPLOAD` | Carga masiva de datos en Excel |
-| `BACKUP_GENERATED` | Creación de respaldo o restauración de versión de página |
-| `PASSWORD_RESET` | Restablecimiento de contraseña |
-| `SECURITY_QUESTIONS_UPDATED` | Actualización de preguntas de seguridad |
+> **[Captura: Modal de Depuración - Análisis y Respaldo]**
+> *Ventana modal de depuración mostrando el análisis de registros mayores a un año y el botón de descarga obligatoria de respaldo en CSV.*
+>
+> **[Captura: Modal de Depuración - Análisis y Respaldo (Móvil)]**
+> *Ventana modal de depuración y descarga de respaldo en dispositivo móvil. (Móvil).*
 
 ---
 
 #### 3.4.2.7. Respaldos y Restauración de Páginas
-El módulo de **Respaldos** (`/admin/respaldos`) constituye el centro de control de versiones históricas de todas las páginas creadas y administradas desde el Editor Visual, tanto para el Sitio Web Público como para la Intranet. Su propósito es permitir al Administrador auditar el historial de publicaciones, previsualizar versiones archivadas que fueron reemplazadas y restaurar cualquiera de ellas de manera atómica a producción en caso de errores o contingencias.
+*(Nota: Para consultar las posibles situaciones de validación, control de página en uso, advertencias de restauración y soporte de depuración, remitirse a la [Sección 3.5.1.12: Validaciones y Solución de Problemas en Respaldos y Restauración de Páginas](#35112-validaciones-y-solución-de-problemas-en-respaldos-y-restauración-de-páginas)).*
 
-1. **Tabla de páginas con respaldo activo y columnas:**
-   La interfaz lista de forma automática todas las páginas que cuentan con al menos una **versión anterior archivada** disponible para restaurar. En computadores de escritorio, la tabla expone 6 columnas de datos:
-   * **Página:** Título y ruta de la sección junto a su número de versión (ej. *«/inicio · versión 43»*), con la insignia de ámbito (*Sitio web* o *Intranet*) en la parte superior.
-   * **Autor:** Nombre del funcionario que elaboró y editó la versión.
+El módulo de **Respaldos** (`/admin/respaldos`) permite consultar y gestionar las versiones de respaldo de las páginas publicadas en el Sitio Web y en la Intranet. En la plataforma, el respaldo corresponde siempre a la **última versión que se quitó de estar publicada** cuando se aprobó una nueva publicación. Su objetivo es permitir al Administrador revisar cómo lucía la página antes de su última modificación y restaurar esa versión previa para que vuelva a estar publicada y visible en la plataforma si se necesita revertir algún cambio.
+
+La interfaz lista de forma automática únicamente aquellas páginas que cuentan con una **versión anterior** (la última versión que se quitó de estar publicada) disponible para restaurar.
+
+1. **Barra de filtros de búsqueda:**
+   Ubicada en la parte superior de la vista, permite acotar la consulta en tiempo real mediante los siguientes controles:
+   * **Página (Ámbito):** Menú desplegable para filtrar por el ámbito operativo de las páginas (*"Todos"*, *"Sitio web"* o *"Intranet"*).
+   * **Autor:** Menú desplegable que lista dinámicamente los nombres de los editores que elaboraron las versiones disponibles.
+   * **Publicado por:** Menú desplegable para filtrar por el funcionario o administrador que aprobó la versión.
+   * **Publicado desde:** Selector de fecha inicial con calendario interactivo. Bloquea automáticamente la selección de fechas posteriores a la indicada en el campo *Publicado hasta*.
+   * **Publicado hasta:** Selector de fecha final con calendario interactivo. Bloquea automáticamente la selección de fechas anteriores a la indicada en el campo *Publicado desde*.
+   * **Botón "Limpiar filtros":** Se visualiza dinámicamente cuando hay al menos un criterio activo, permitiendo restablecer la consulta a los valores por defecto con un solo clic.
+
+> **[Captura: Filtros de Respaldos]**
+> *Barra de filtros de búsqueda desplegando selectores de ámbito, autor, publicado por, fechas y botón de limpieza.*
+>
+> **[Captura: Filtros de Respaldos (Móvil)]**
+> *Barra de filtros de respaldos adaptada en dispositivo móvil. (Móvil).*
+
+2. **Tabla de páginas con respaldo activo y columnas:**
+   Presenta el historial cronológico de publicaciones. En computadores de escritorio, la tabla organiza la información en 6 columnas:
+   * **Página:** Presenta dos líneas informativas: en la parte superior la etiqueta de ámbito (*Sitio web* o *Intranet*), y en la línea inferior la ruta de la página y su número de versión publicado (ej. */inicio · versión 43*).
+   * **Autor:** Nombre completo del funcionario que elaboró y editó la versión.
    * **Publicado por:** Nombre del funcionario o administrador que aprobó y publicó la versión.
-   * **Editado el:** Fecha en que se realizó la edición con la hora debajo.
-   * **Publicado el:** Fecha de publicación formal con la hora debajo.
-   * **Versión anterior:** Botón con título **"Ver versión [N]"** (ícono de ojo) para acceder al visor de respaldo histórico.
+   * **Editado el:** Fecha en que se realizó la edición con la hora exacta debajo.
+   * **Publicado el:** Fecha formal de publicación con la hora exacta debajo.
+   * **Versión anterior:** Botón con ícono de ojo (en color verde de marca, con texto de ayuda flotante *«Ver versión»* al pasar el cursor) que abre el visor de la versión anterior de respaldo.
 
-   En dispositivos móviles y tabletas, la tabla se presenta en formato acordeón: cada fila resume la publicación y, al desplegarla, muestra las fechas, el autor de la edición y el botón **"Ver versión [N]"** para consultar la versión anterior.
+   En dispositivos móviles y tabletas, la tabla se adapta en formato acordeón: cada fila resume la publicación mediante una frase explicativa (*«[Nombre] publicó la versión [N] de [Página]...»*); al pulsar sobre ella para desplegarla, expone el ámbito, las fechas exactas de publicación y edición, el nombre del editor responsable y el botón **"Ver versión [N]"** con su ícono y texto visible.
 
-> **[Captura: Paso 1]**
-> *Tabla principal del módulo de Respaldos con listado de páginas con versiones archivadas disponibles.*
+> **[Captura: Tabla de Respaldos]**
+> *Tabla principal del módulo de Respaldos con listado de páginas que cuentan con una versión anterior disponible para restaurar.*
 >
-> **[Captura: Paso 1 (Móvil)]**
-> *Lista de respaldos en formato acordeón en dispositivos móviles, con una publicación desplegada y su botón táctil para ver la versión archivada.*
+> **[Captura: Tabla de Respaldos (Móvil)]**
+> *Lista de respaldos en formato acordeón en dispositivos móviles, con una fila desplegada mostrando detalle y botón de acceso. (Móvil).*
 
-2. **Barra de filtros de búsqueda:**
-   Permite localizar rápidamente páginas respaldadas mediante criterios específicos:
-   * **Página (Ámbito):** Lista desplegable para filtrar entre páginas del *Sitio web* o de la *Intranet*.
-   * **Autor / Publicado por:** Listas desplegables para filtrar por el autor de la versión o por el funcionario que la publicó.
-   * **Rango de fechas:** Selectores de calendario (*Publicado desde* / *Publicado hasta*).
-   * **Limpiar filtros:** Botón para reiniciar los parámetros de búsqueda.
+3. **Ventana modal de consulta y vista previa de la versión anterior:**
+   Al hacer clic en el botón con ícono de ojo de cualquier registro (o en el botón **"Ver versión [N]"** en dispositivos móviles), el sistema abre la ventana modal con el detalle del respaldo:
+   * **Información del respaldo:** Título de la página (*«Versión anterior de [Nombre de la página]»*) acompañado por su ruta y el número de versión que tenía en ese momento (ej. */inicio · versión 42*). Además, presenta el resumen de publicación: *Reemplazada por la versión* (número de la versión que quedó publicada en su lugar), *Reemplazada el* (fecha completa y hora exacta en que se publicó la nueva versión), *Autor* (editor responsable) y *Publicado por* (funcionario que la autorizó).
+   * **Botón "Ver vista previa":** Botón interactivo (con ícono de ojo) que abre en una pestaña nueva del navegador la previsualización de la página. Esta vista permite al Administrador navegar y examinar con total fidelidad los bloques, textos, imágenes y la estructura general tal como lucía antes de que fuera reemplazada.
 
-> **[Captura: Paso 2]**
-> *Uso de la barra de filtros para ubicar versiones por ámbito, autor, publicado por y fechas.*
+> **[Captura: Modal de Consulta y Vista Previa de Respaldo]**
+> *Ventana modal de consulta de la versión anterior de respaldo con sus datos de publicación y botón de acceso a la vista previa.*
 >
-> **[Captura: Paso 2 (Móvil)]**
-> *Uso de la barra de filtros para ubicar versiones por ámbito, autor, publicado por y fechas. (Móvil).*
+> **[Captura: Modal de Consulta y Vista Previa de Respaldo (Móvil)]**
+> *Ventana modal de consulta de la versión anterior adaptada a dispositivo móvil. (Móvil).*
 
-3. **Previsualización de la versión anterior archivada:**
-   Al hacer clic en el ícono de **Ojo** de cualquier fila (en el móvil y la tablet, en el botón **"Ver versión"** de la publicación desplegada), el sistema despliega la ventana modal de consulta de respaldo:
-   * Presenta los metadatos completos de la versión archivada (número de versión, autor, fecha y ámbito).
-   * Proporciona un enlace interactivo directo para **abrir la vista previa de la página** en la vista previa interactiva (`/preview/[slug]?versionId=...`), permitiendo al Administrador inspeccionar con total fidelidad cómo lucía el contenido antes de ser reemplazado.
+4. **Restauración de una versión previa y protección contra ediciones en curso:**
+   Dentro de la ventana modal de consulta, el Administrador dispone del botón **"Restaurar versión"**:
+   * **Validación de concurrencia en tiempo real (Página en uso):** Antes de autorizar cualquier cambio, el sistema verifica si algún editor se encuentra modificando la página en ese instante. Si detecta una sesión de edición activa, bloquea el proceso y despliega la ventana modal *«Página en uso»* informando: *«No se puede restaurar la página porque está siendo editada por [Nombre del funcionario]»*, evitando sobreescrituras accidentales.
+   * **Ventana modal de confirmación:** Si la página no se esta editando, se abre la ventana de confirmación *«¿Restaurar versión anterior?»*, advirtiendo que la versión anterior volverá a quedar publicada en el portal y que la versión actual pasará a ser el nuevo respaldo.
+   * **Publicación inmediata y trazabilidad:** Al presionar **"Aceptar"**, la versión anterior queda publicada automáticamente en el portal público o en la Intranet, y el evento queda grabado en la bitácora de auditoría.
 
-> **[Captura: Paso 3]**
-> *Ventana modal de vista previa de la versión anterior archivada con enlace.*
+> **[Captura: Confirmación de Restauración de Página]**
+> *Ventana modal de advertencia y confirmación previa para volver a publicar la versión anterior de respaldo.*
 >
-> **[Captura: Paso 3 (Móvil)]**
-> *Ventana modal de vista previa de la versión anterior archivada con enlace. (Móvil).*
+> **[Captura: Confirmación de Restauración de Página (Móvil)]**
+> *Ventana modal de confirmación de restauración en dispositivo móvil. (Móvil).*
 
-4. **Restauración atómica a producción:**
-   Dentro del modal de consulta, el Administrador dispone del botón **"Restaurar versión anterior"**:
-   * **Validación de concurrencia (Protección contra sobreescritura):** Antes de ejecutar la restauración, el sistema comprueba en tiempo real si algún editor está modificando la página en ese instante. Si detecta una sesión de edición activa, bloquea el proceso e informa el nombre del funcionario que la está interviniendo.
-   * **Confirmación de seguridad:** Si la página no está bloqueada, se abre una ventana modal de confirmación advirtiendo que la versión archivada pasará a ser la versión activa del portal.
-   * **Publicación inmediata:** Al confirmar, la versión anterior se publica automáticamente en el portal público o en la Intranet y el evento queda grabado de forma inmutable en la bitácora de auditoría.
+5. **Depuración de versiones anteriores (Ventana modal «Depurar versiones antiguas»):**
+   En la cabecera superior del módulo, al hacer clic en el botón **"Depurar"** (con ícono de papelera), el sistema abre la ventana modal **«Depurar versiones antiguas»** para optimizar el almacenamiento en base de datos bajo un estricto protocolo de seguridad:
+   * **Regla de seguridad «Respaldo siempre protegido»:** En la parte superior de la ventana modal se destaca un aviso informativo: el sistema **conserva de forma obligatoria la última versión que se quitó de estar publicada de cada página**. Esto asegura que ninguna operación de depuración elimine el respaldo, garantizando que siempre se pueda regresar a la versión previa.
+   * **Filtros de selección:** Menús desplegables para acotar la limpieza por *Ámbito* (*Todos los ámbitos*, *Sitio web*, *Intranet*) y por *Página* específica (o *Todas las páginas*).
+   * **Panel de impacto en vivo:** Muestra en tiempo real las métricas de la depuración: *Total encontradas*, *Páginas afectadas*, *Espacio total* estimado a liberar en disco, y el detalle individual por página con la cantidad de versiones antiguas y espacio correspondiente.
+   * **Protección contra ediciones en curso:** El sistema valida que ninguna de las páginas seleccionadas esté siendo editada en ese instante; de detectarse una sesión activa, cancela el proceso protegiendo el trabajo del editor.
+   * **Confirmación de seguridad en dos pasos:** Al presionar el botón **"Depurar [N] versiones"**, la modal despliega un recuadro de advertencia (*«¿Estás seguro de que deseas eliminar permanentemente estas [N] versiones?»*). El Administrador debe presionar **"Confirmar y eliminar [N] versiones"** para autorizar la eliminación definitiva.
+   * **Pantalla de éxito y cierre automático:** Al finalizar la operación, la modal presenta la pantalla informativa **«¡Depuración completada!»** confirmando la cantidad de versiones eliminadas y el espacio liberado en la base de datos. Esta ventana se cierra automáticamente tras un breve instante, regresando al usuario a la tabla principal actualizada y registrando el evento en la bitácora de auditoría.
 
-> **[Captura: Paso 4]**
-> *Ventana modal de confirmación y advertencia previa para restaurar la versión archivada a producción.*
+> **[Captura: Modal de Depuración de Versiones Antiguas]**
+> *Ventana modal «Depurar versiones antiguas» mostrando los filtros por ámbito, panel de impacto en vivo y métricas de espacio a liberar.*
 >
-> **[Captura: Paso 4 (Móvil)]**
-> *Ventana modal de confirmación y advertencia previa para restaurar la versión archivada a producción. (Móvil).*
-
-5. **Depuración y limpieza de versiones antiguas:**
-   En la cabecera superior del módulo, el botón **"Depurar"** permite al Administrador abrir el asistente de depuración para eliminar versiones históricas obsoletas o borradores antiguos que ya no sean requeridos, optimizando el rendimiento y almacenamiento de la plataforma.
-
-> **[Captura: Paso 5]**
-> *Ventana modal de depuración de versiones históricas de páginas.*
+> **[Captura: Modal de Depuración de Versiones Antiguas (Móvil)]**
+> *Ventana modal de depuración adaptada a dispositivos móviles. (Móvil).*
 >
-> **[Captura: Paso 5 (Móvil)]**
-> *Ventana modal de depuración de versiones históricas de páginas. (Móvil).*
+> **[Captura: Depuración Completada con Cierre Automático]**
+> *Pantalla de confirmación «¡Depuración completada!» con métricas de espacio liberado antes de su cierre automático.*
+>
+> **[Captura: Depuración Completada con Cierre Automático (Móvil)]**
+> *Pantalla de depuración completada en dispositivo móvil previa al cierre automático. (Móvil).*
 
 ---
 
@@ -2800,6 +2830,165 @@ La configuración de roles y la asignación de permisos (cuyo procedimiento oper
 >
 > **[Captura: Botón Guardar Deshabilitado sin Cambios (Móvil)]**
 > *Pie de la ventana modal mostrando el mensaje informativo de ausencia de cambios en dispositivo móvil. (Móvil).*
+
+#### 3.5.1.10. Validaciones y Solución de Problemas en la Aprobación y Publicación de Contenidos (Páginas en Revisión)
+
+El flujo editorial de revisión y paso a producción (cuyo procedimiento operativo se detalla en la [Sección 3.4.2.5: Aprobación y Publicación de Contenidos: Páginas en Revisión](#3425-aprobación-y-publicación-de-contenidos-páginas-en-revisión)) incorpora reglas estrictas de control y validación para evitar publicaciones incompletas, descartes no justificados o inconsistencias en la bitácora institucional. A continuación se presentan las principales situaciones, sus causas y las acciones correctivas correspondientes:
+
+##### 1. Botón "Rechazar" Deshabilitado en la Ventana Modal de Observaciones
+* **Situación:** El Administrador presiona el botón "Rechazar" para devolver una versión a corrección pero, dentro de la ventana modal, el botón de confirmación **"Rechazar"** permanece inactivo, deshabilitado y no responde al clic.
+* **Causa técnica y operativa:** Por directriz de auditoría y retroalimentación pedagógica, el sistema prohíbe rechazar un borrador sin dejar constancia escrita de los motivos. Mientras el campo de texto (*«Explica la razón…»*) permanezca vacío o contenga únicamente espacios, la validación de seguridad bloquea el envío.
+* **Acción correctiva:**
+  1. Hacer clic en el campo de texto (*«Explica la razón…»*) dentro de la ventana modal.
+  2. Redactar puntualmente los motivos del rechazo o las instrucciones de ajuste para el editor (hasta un máximo de 100 caracteres).
+  3. Al registrar el texto, el botón de confirmación **"Rechazar"** se habilitará automáticamente para autorizar el cierre del proceso.
+
+> **[Captura: Botón Rechazar Deshabilitado sin Observaciones]**
+> *Ventana modal de rechazo con el botón de confirmación deshabilitado ante la ausencia de observaciones obligatorias.*
+>
+> **[Captura: Botón Rechazar Deshabilitado sin Observaciones (Móvil)]**
+> *Ventana modal de rechazo con el botón deshabilitado en dispositivo móvil. (Móvil).*
+
+##### 2. Botón "Eliminar" Bloqueado en la Modal de Descarte Definitivo
+* **Situación:** Al presionar el botón con ícono de papelera para anular un borrador no procedente o duplicado, el botón de confirmación **"Eliminar"** dentro de la ventana modal no permite hacer clic.
+* **Causa técnica y operativa:** El descarte de una versión en revisión es una acción destructiva e irreversible que borra permanentemente el borrador. Por políticas de control y trazabilidad institucional, el sistema exige documentar obligatoriamente la justificación del descarte antes de autorizar la acción.
+* **Acción correctiva:**
+  1. Ingresar en el campo de texto el motivo justificado de la anulación (ej. *«Borrador duplicado remitido por error»* o *«Contenido descartado por actualización directiva»*).
+  2. Verificar que no se sobrepase el límite visible de 100 caracteres.
+  3. En cuanto exista texto registrado, el botón **"Eliminar"** se activará de inmediato para confirmar la operación y registrar el suceso en la bitácora de auditoría.
+
+> **[Captura: Botón Eliminar Deshabilitado sin Justificación]**
+> *Ventana modal de descarte permanente mostrando el botón Eliminar inactivo mientras no se registre el motivo.*
+>
+> **[Captura: Botón Eliminar Deshabilitado sin Justificación (Móvil)]**
+> *Ventana modal de descarte permanente con botón bloqueado en dispositivo móvil. (Móvil).*
+
+##### 3. Bandeja Vacía cuando un Editor Manifiesta Haber Enviado Cambios
+* **Situación:** Un funcionario con rol de Editor indica que ya modificó una página y la remitió para visto bueno, pero la bandeja de **Páginas en Revisión** no muestra ninguna solicitud pendiente (o muestra únicamente las de otros funcionarios).
+* **Causa técnica y operativa:** El editor guardó sus avances de forma local o como borrador de trabajo mediante el botón "Guardar Borrador", pero no completó la acción final de **"Enviar a revisión"** (o cerró el navegador antes de confirmar el envío). Mientras no se ejecute este paso, el borrador permanece exclusivamente en el entorno de edición y no entra al circuito de aprobación administrativa.
+* **Acción correctiva:**
+  1. Solicitar al funcionario que ingrese nuevamente al editor visual de la página correspondiente.
+  2. Verificar que haga clic en el botón **"Enviar a revisión"** y registre el comentario de cambios.
+  3. Tras confirmar el envío en el editor, el Administrador debe refrescar la bandeja de **Páginas en Revisión** para visualizar y gestionar la nueva solicitud.
+
+> **[Captura: Bandeja sin Páginas en Revisión]**
+> *Bandeja de revisión informando que no existen solicitudes de aprobación pendientes.*
+>
+> **[Captura: Bandeja sin Páginas en Revisión (Móvil)]**
+> *Bandeja de revisión sin solicitudes pendientes en dispositivo móvil. (Móvil).*
+
+##### 4. Necesidad de Revertir una Publicación Accidental en Producción
+* **Situación:** El Administrador aprobó y publicó por equivocación una versión que aún no debía salir a producción o que presentaba errores que pasaron inadvertidos en la revisión previa.
+* **Causa técnica y operativa:** Al confirmar la publicación en la ventana modal, la versión se despliega de inmediato en el entorno productivo visible a los usuarios y la versión previamente activa se traslada de forma automática al módulo de Respaldos.
+* **Acción correctiva:**
+  1. Dirigirse al menú lateral del Panel Administrativo y seleccionar el módulo **Respaldos** (o acceder a la herramienta de historial en el editor de la página).
+  2. Localizar la versión previa inmediata (la que se encontraba activa antes de la publicación accidental).
+  3. Presionar la opción de **Restaurar** sobre dicha versión para regresarla de inmediato al estado activo en producción, mitigando el impacto público mientras se corrige el nuevo contenido.
+
+> **[Captura: Confirmación de Publicación con Advertencia de Respaldo]**
+> *Ventana modal advirtiendo el traslado automático de la versión activa anterior al módulo de Respaldos.*
+>
+> **[Captura: Confirmación de Publicación con Advertencia de Respaldo (Móvil)]**
+> *Ventana modal de confirmación en dispositivo móvil. (Móvil).*
+
+##### 5. Exceso en el Límite de 100 Caracteres en Observaciones o Motivos
+* **Situación:** El Administrador intenta ingresar una explicación extensa o detallada en el campo de texto de las ventanas modales de rechazo o eliminación, pero el sistema bloquea la escritura de más caracteres.
+* **Causa técnica y operativa:** Para preservar la concisión de los registros y optimizar el almacenamiento en la bitácora inmutable de auditoría, los campos de observaciones y motivos cuentan con un límite estricto de 100 caracteres.
+* **Acción correctiva:**
+  1. Monitorear el contador numérico visible debajo del campo (ej. `80/100`).
+  2. Sintetizar las indicaciones en una frase concisa y concreta con los puntos esenciales a corregir o justificar.
+  3. Si se requiere una retroalimentación más extensa para el editor, consignar el resumen esencial en el modal y remitir las especificaciones detalladas por los canales institucionales de comunicación (correo corporativo `@sena.edu.co` o Teams), recordando que el borrador queda en estado rechazado conservando todos los cambios para su posterior ajuste.
+
+> **[Captura: Contador de Caracteres en Modal de Decisión]**
+> *Campo de observaciones en ventana modal evidenciando el límite numérico y contador de caracteres.*
+>
+> **[Captura: Contador de Caracteres en Modal de Decisión (Móvil)]**
+> *Campo de observaciones y contador en dispositivo móvil. (Móvil).*
+
+#### 3.5.1.11. Validaciones y Solución de Problemas en la Bitácora de Auditoría
+
+El módulo de Auditoría ([Sección 3.4.2.6](#3426-auditoría-y-bitácora-de-eventos)) garantiza la trazabilidad inmutable de la plataforma mediante reglas de seguridad y respaldo. A continuación se resumen las principales situaciones operativas y su solución:
+
+##### 1. Botón de Confirmación "Depurar" Deshabilitado en la Modal
+* **Situación:** El botón rojo *«Depurar [N] registros»* permanece inactivo y no responde al clic.
+* **Causa:** Es obligatorio resguardar una copia local antes de suprimir cualquier evento de la base de datos.
+* **Acción correctiva:** Presionar el botón circular verde con ícono de descarga (*«Descarga aquí el Logs de respaldo»*). Al completarse la descarga del archivo `respaldo-auditoria-depurada-[FECHA].csv`, el botón rojo de confirmación se habilitará automáticamente.
+
+> **[Captura: Botón Depurar Deshabilitado sin Descarga Previa]**
+> *Ventana modal de depuración con botón de confirmación bloqueado a la espera de la descarga obligatoria del respaldo CSV.*
+>
+> **[Captura: Botón Depurar Deshabilitado sin Descarga Previa (Móvil)]**
+> *Ventana modal de depuración con confirmación bloqueada en dispositivo móvil. (Móvil).*
+
+##### 2. Mensaje "No se encontraron registros de auditoría anteriores a [Fecha]"
+* **Situación:** La ventana de depuración informa 0 registros a depurar y no ofrece botón de eliminación.
+* **Causa:** El sistema aplica la **regla de retención obligatoria del último año** (365 días continuos inmutables). Si no existen movimientos con más de un año de antigüedad, no hay registros depurables.
+* **Acción correctiva:** No se requiere acción técnica; la tabla se encuentra al día. Cerrar la ventana mediante **"Cancelar"**.
+
+##### 3. Búsqueda sin Coincidencias o Fechas Bloqueadas en Filtros
+* **Situación:** La tabla indica *«Ningún registro coincide con los filtros aplicados»* o los calendarios impiden seleccionar determinados días.
+* **Causa:** Combinación de filtros restrictivos o validación cruzada automática (el campo *Desde* bloquea fechas posteriores a *Hasta*, y viceversa).
+* **Acción correctiva:** Presionar el botón **"Limpiar filtros"** en la barra superior para reiniciar la consulta a los valores por defecto y seleccionar nuevamente los criterios deseados.
+
+> **[Captura: Estado sin Coincidencias por Filtros]**
+> *Tabla de auditoría vacía con mensaje informativo y botón de limpieza de filtros visible.*
+>
+> **[Captura: Estado sin Coincidencias por Filtros (Móvil)]**
+> *Mensaje informativo de ausencia de coincidencias por filtros en dispositivo móvil. (Móvil).*
+
+---
+
+##### Aclaración y Referencia de Acciones Registradas en la Bitácora
+
+Los eventos reflejados en la columna **Acción** y en los filtros se clasifican en tres categorías operativas:
+
+| Categoría | Acciones Visibles | Nivel de Importancia / Color | Qué Representa en el Sistema |
+| :--- | :--- | :--- | :--- |
+| **Contenido editorial** | `Creación`, `Edición`, `Autoguardado` | Verde de marca (Rutina) | Creación y modificación de páginas, guardado de borradores y envíos a revisión desde el editor visual. |
+| **Administración** | `Publicación`, `Rechazo`, `Archivado` | Verde esmeralda (Logro: Publicación)<br>Ámbar (Atención: Rechazo)<br>Verde de marca (Archivado) | Decisiones tomadas por el Administrador sobre borradores y despublicación de contenidos. |
+| **Seguridad** | `Autenticación`, `Modificación`, `Expiró`, `Inactivación`, `Bloqueo`, `Preguntas de seguridad`, `Cambio de contraseña`, `Eliminación` | Verde de marca (Rutina: Login, cambios de clave/datos)<br>Ámbar (Atención: Expiración de cuenta)<br>Rojo suave (Advertencia: Inactivación/Bloqueo)<br>Rojo sólido (Crítico: Eliminación definitiva) | Movimientos de cuentas `@sena.edu.co`, asignación de roles, permisos, intentos fallidos y depuraciones. |
+
+---
+
+#### 3.5.1.12. Validaciones y Solución de Problemas en Respaldos y Restauración de Páginas
+
+El módulo de Respaldos ([Sección 3.4.2.7](#3427-respaldos-y-restauración-de-páginas)) protege la integridad de las publicaciones mediante validaciones de concurrencia y reglas de conservación. A continuación se presentan las principales situaciones operativas, sus causas y las acciones correspondientes:
+
+##### 1. Bloqueo de Restauración por Página en Uso
+* **Situación:** Al hacer clic en **"Restaurar versión"**, el sistema no abre la confirmación de restauración, sino que despliega la ventana modal **«Página en uso»** informando: *«No se puede restaurar la página porque está siendo editada por [Nombre del funcionario]»*.
+* **Causa:** El sistema verifica en tiempo real que ningún usuario tenga abierta la página en el Editor Visual. Si detecta una sesión de edición activa, bloquea la restauración para evitar sobreescrituras accidentales o pérdidas de cambios.
+* **Acción correctiva:**
+  1. Presionar el botón **"Entendido"** para cerrar el aviso.
+  2. Comunicarse con el funcionario indicado para que guarde sus cambios o cierre el Editor Visual liberando la página.
+  3. Una vez finalizada la sesión de edición (o transcurrido el tiempo de inactividad de 15 minutos que libera el bloqueo automáticamente), intentar nuevamente la restauración.
+
+> **[Captura: Modal de Bloqueo por Página en Uso]**
+> *Ventana modal «Página en uso» con aviso de bloqueo temporal informando el nombre del funcionario que se encuentra editando la página.*
+>
+> **[Captura: Modal de Bloqueo por Página en Uso (Móvil)]**
+> *Ventana modal de página en uso adaptada a dispositivo móvil. (Móvil).*
+
+##### 2. La Última Versión Anterior Sigue Visible tras una Depuración
+* **Situación:** El Administrador ejecuta la depuración de versiones de una página, pero observa que en la tabla principal de Respaldos continúa apareciendo un registro disponible para restaurar.
+* **Causa:** El sistema aplica la regla estricta **«Respaldo siempre protegido»**. La última versión que se quitó de estar publicada de cada página nunca se elimina en una depuración, garantizando que el punto de restauración inmediato permanezca siempre disponible.
+* **Acción correctiva:** No constituye un error; corresponde al comportamiento previsto por la plataforma para proteger la continuidad operativa del Sitio Web y la Intranet.
+
+> **[Captura: Aviso de Respaldo Protegido en Modal de Depuración]**
+> *Mensaje informativo en la ventana modal de depuración destacando la regla de respaldo siempre protegido.*
+>
+> **[Captura: Aviso de Respaldo Protegido en Modal de Depuración (Móvil)]**
+> *Aviso de respaldo siempre protegido en dispositivo móvil. (Móvil).*
+
+##### 3. Mensaje de Ausencia de Respaldos Disponibles
+* **Situación:** La interfaz muestra el mensaje *«No hay páginas con versiones anteriores disponibles para restaurar»* y no se listan registros en la tabla.
+* **Causa:** Las páginas recién creadas o que únicamente cuentan con su primera versión publicada no tienen aún una versión anterior que haya sido reemplazada.
+* **Acción correctiva:** No se requiere acción correctiva. Cuando se elabore y publique una nueva versión sobre cualquiera de estas páginas, la versión saliente se incorporará de forma automática a este listado como su respaldo activo.
+
+> **[Captura: Vista de Respaldos sin Registros]**
+> *Pantalla principal de Respaldos mostrando el estado informativo cuando no existen versiones anteriores disponibles.*
+>
+> **[Captura: Vista de Respaldos sin Registros (Móvil)]**
+> *Estado informativo de ausencia de respaldos en dispositivo móvil. (Móvil).*
 
 ---
 
