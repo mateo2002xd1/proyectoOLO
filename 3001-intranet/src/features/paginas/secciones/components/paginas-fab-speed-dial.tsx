@@ -173,19 +173,19 @@ export function PaginasFabSpeedDial({
           role="menu"
           aria-hidden={!abierto}
         >
-          {/* 1. Editar sección */}
+          {/* 1. Editar página */}
           {puedeEditarSeccion && (
             <div className="fab-speed-dial__item" role="none">
               <span className="fab-speed-dial__tooltip" role="tooltip">
-                Editar sección
+                Editar página
               </span>
               <Link
                 href={enlaceAlEditor(slug, rutaActual || `/${slug}`)}
                 role="menuitem"
                 onClick={cerrarMenu}
                 className="fab-speed-dial__btn fab-speed-dial__btn--editar"
-                aria-label="Editar sección"
-                title="Editar sección"
+                aria-label="Editar página"
+                title="Editar página"
                 tabIndex={abierto ? 0 : -1}
               >
                 <svg
@@ -244,7 +244,7 @@ export function PaginasFabSpeedDial({
           {puedeCrearSeccion && (
             <div className="fab-speed-dial__item" role="none">
               <span className="fab-speed-dial__tooltip" role="tooltip">
-                Nueva sección
+                Nueva página
               </span>
               <button
                 type="button"
@@ -254,8 +254,8 @@ export function PaginasFabSpeedDial({
                   setModalNuevaAbierto(true);
                 }}
                 className="fab-speed-dial__btn fab-speed-dial__btn--nueva"
-                aria-label="Nueva sección"
-                title="Nueva sección"
+                aria-label="Nueva página"
+                title="Nueva página"
                 tabIndex={abierto ? 0 : -1}
               >
                 <svg
@@ -280,7 +280,7 @@ export function PaginasFabSpeedDial({
           {puedeEliminarSeccion && (
             <div className="fab-speed-dial__item fab-speed-dial__item--eliminar" role="none">
               <span className="fab-speed-dial__tooltip" role="tooltip">
-                Eliminar sección
+                Eliminar página
               </span>
               <button
                 type="button"
@@ -290,8 +290,8 @@ export function PaginasFabSpeedDial({
                   setModalEliminarAbierto(true);
                 }}
                 className="fab-speed-dial__btn fab-speed-dial__btn--eliminar"
-                aria-label="Eliminar sección"
-                title="Eliminar sección"
+                aria-label="Eliminar página"
+                title="Eliminar página"
                 tabIndex={abierto ? 0 : -1}
               >
                 <svg
