@@ -129,7 +129,7 @@ export function DropdownItem({ href, children, className = '', onClick }: Dropdo
     onClick?.();
   };
 
-  const baseClasses = `group flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-zinc-700 transition hover:bg-[#002237]/5 hover:text-[#002237] dark:text-[#cbd5e1] dark:hover:bg-white/5 dark:hover:text-[#f6f6f6] [&>svg]:size-5 [&>svg]:shrink-0 [&>svg]:text-zinc-400 hover:[&>svg]:text-zinc-500 dark:[&>svg]:text-zinc-500 dark:hover:[&>svg]:text-zinc-400 ${className}`;
+  const baseClasses = `group flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-[#001631] transition hover:bg-[#001631]/5 hover:text-[#001631] dark:text-[#cbd5e1] dark:hover:bg-white/5 dark:hover:text-[#f6f6f6] [&>svg]:size-5 [&>svg]:shrink-0 [&>svg]:text-[#001631] hover:[&>svg]:text-[#001631] dark:[&>svg]:text-zinc-500 dark:hover:[&>svg]:text-zinc-400 ${className}`;
 
   if (href) {
     return (

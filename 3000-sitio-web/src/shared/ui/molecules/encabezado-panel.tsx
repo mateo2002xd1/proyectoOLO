@@ -21,9 +21,9 @@ export function EncabezadoPanel({ titulo, descripcion, acciones, className = 'mb
   return (
     <div className={`flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center ${className}`}>
       <div className="min-w-0">
-        <h1 className="admin-header text-zinc-950 dark:text-[#f6f6f6]">{titulo}</h1>
+        <h1 className="admin-header text-[#001631] dark:text-[#f6f6f6]">{titulo}</h1>
         {descripcion && (
-          <p className="mt-1 max-w-2xl text-sm text-zinc-500 dark:text-[#94a3b8]">{descripcion}</p>
+          <p className="mt-1 max-w-2xl text-sm text-[#001631] dark:text-[#94a3b8]">{descripcion}</p>
         )}
       </div>
       {acciones && <div className="flex flex-wrap items-center gap-3 sm:shrink-0">{acciones}</div>}
