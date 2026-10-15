@@ -1,6 +1,7 @@
 'use client';
 
 import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
+import { poppins } from '@/shared/lib/fonts';
 
 export interface ModalCerrarSesionProps {
   abierto: boolean;
@@ -38,7 +39,7 @@ export function ModalCerrarSesion({ abierto, saliendo, alConfirmar, alCerrar }: 
         if (evento.key === 'Escape') cerrar();
       }}
     >
-      <div className="nueva-seccion-caja olo-anim-caja">
+      <div className={`nueva-seccion-caja olo-anim-caja ${poppins.className}`}>
         <h2 id="cerrar-sesion-titulo" className="nueva-seccion-titulo">
           ¿Cerrar sesión?
         </h2>
