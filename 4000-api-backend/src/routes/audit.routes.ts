@@ -88,15 +88,6 @@ router.use(requireAuth, requierePermisoAuditoria('puedeVer'), requirePermission(
  *         schema:
  *           type: string
  *           enum: [editorial, administracion, seguridad]
- *       - name: ambito
- *         in: query
- *         description: |
- *           Solo las filas de páginas de ese portal (el filtro «Página» de la pantalla):
- *           la página que sigue en `paginas` con ese ámbito o, si se borró, la fila que lo
- *           guardó. Se combina con los demás filtros con «y». Un valor desconocido se descarta.
- *         schema:
- *           type: string
- *           enum: [sitio, intranet]
  *       - name: entidadTipo
  *         in: query
  *         description: Una o varias entidades separadas por coma.

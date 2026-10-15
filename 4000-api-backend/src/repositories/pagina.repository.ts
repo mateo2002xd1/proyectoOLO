@@ -9,13 +9,6 @@ export const PaginaRepository = {
   // otra aplicación.
   findBySlug: (slug: string, ambito: Ambito, tx?: Transaction) => Pagina.findOne({ where: { slug, ambito }, transaction: tx }),
 
-  /** Slug y ámbito de varias páginas en una consulta: la bitácora los pide por lote. */
-  findRutasByIds: (ids: string[]) =>
-    Pagina.findAll({
-      where: { id: { [Op.in]: ids } },
-      attributes: ['id', 'slug', 'ambito'],
-    }),
-
   /** Crea la fila de una página nueva. */
   crear: (data: any, tx?: Transaction) => Pagina.create(data, { transaction: tx }),
 

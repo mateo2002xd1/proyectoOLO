@@ -7,7 +7,6 @@ import {
   type FiltrosAuditoria,
 } from '../../repositories/auditoria.repository';
 import { UserRepository } from '../../repositories/usuarios.repository';
-import { PaginaRepository } from '../../repositories/pagina.repository';
 import { Role } from '../../infrastructure/db/models';
 import type { EntidadAuditable } from '../../infrastructure/db/models/content-audit-log';
 
@@ -210,33 +209,12 @@ const nombresDeRoles = async (filas: FilaDeLectura[]): Promise<Map<string, strin
  * un objeto y el análisis previo a la depuración: los tres leen las mismas frases.
  */
 export const contextoDeLectura = async (filas: FilaDeLectura[]) => {
-  const [emailPorUsuario, guardadosAutomaticos, rolPorId, paginaPorId] = await Promise.all([
+  const [emailPorUsuario, guardadosAutomaticos, rolPorId] = await Promise.all([
     correosDeCuentasAuditadas(filas),
     guardadosPreviosAEnvio(filas),
     nombresDeRoles(filas),
-    rutasDePaginasAuditadas(filas),
   ]);
-  return { emailPorUsuario, guardadosAutomaticos, rolPorId, paginaPorId };
-};
-
-/**
- * Slug y ámbito de las páginas de las que hablan estas filas, por id, para la columna
- * «Página» (`Sitio web` / `inicio · versión 3`). La mayoría de las filas del ciclo
- * editorial guardan el slug pero no el ámbito, y sin él no se sabe si `/inicio` es el
- * del sitio o el de la intranet. Una consulta para toda la página de resultados.
- *
- * Una página borrada no aparece: la fila cae en lo que recuerda (`auditoria-dto.ts`).
- */
-const rutasDePaginasAuditadas = async (
-  filas: FilaConEntidad[]
-): Promise<Map<string, { slug: string; ambito: string }>> => {
-  const ids = [
-    ...new Set(filas.filter((f) => f.entidad_tipo === 'pagina').map((f) => f.entidad_id)),
-  ];
-  if (ids.length === 0) return new Map();
-
-  const paginas = await PaginaRepository.findRutasByIds(ids);
-  return new Map(paginas.map((p) => [p.id, { slug: p.slug, ambito: p.ambito }] as const));
+  return { emailPorUsuario, guardadosAutomaticos, rolPorId };
 };
 
 /**
