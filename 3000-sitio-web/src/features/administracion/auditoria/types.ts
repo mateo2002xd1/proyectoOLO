@@ -73,6 +73,11 @@ export interface RegistroAuditoria {
    * contar ese cambio y hay que caer en lo de siempre. Ver `lib/cambios.ts`.
    */
   resumen: string | null;
+  /**
+   * La página de la que habla la fila, para la columna «Página»; `null` si no es de una
+   * página o la API no sabe de qué portal es. Ver `auditoria-dto.ts` en la API.
+   */
+  pagina: { ambito: 'sitio' | 'intranet'; slug: string; version: number | null } | null;
   ip: string | null;
   userAgent: string | null;
   /** ISO 8601. */
@@ -88,6 +93,8 @@ export interface FiltrosAuditoria {
    */
   accion: string;
   categoria: '' | CategoriaAuditoria;
+  /** El filtro «Página»: solo las filas de páginas de ese portal. */
+  ambito: '' | 'sitio' | 'intranet';
   /** `YYYY-MM-DD`; el backend interpreta `hasta` como el día completo. */
   desde: string;
   hasta: string;
@@ -105,6 +112,7 @@ export const FILTROS_VACIOS: FiltrosAuditoria = {
   usuarioId: '',
   accion: '',
   categoria: '',
+  ambito: '',
   desde: '',
   hasta: '',
 };

@@ -33,6 +33,7 @@ const conFiltros = (filtros: Partial<FiltrosAuditoria>, pagina: number, porPagin
   if (filtros.accion) params.set('accion', filtros.accion);
   // La API la combina con `accion` con «y»: es lo que separa «Edición» de «Modificación».
   if (filtros.categoria) params.set('categoria', filtros.categoria);
+  if (filtros.ambito) params.set('ambito', filtros.ambito);
   if (filtros.desde) params.set('desde', filtros.desde);
   if (filtros.hasta) params.set('hasta', filtros.hasta);
 

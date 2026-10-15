@@ -8,7 +8,7 @@ import { BarraFiltros, CampoFiltro } from '@/shared/ui/molecules/barra-filtros';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
 import { DatePicker } from '@/shared/ui/molecules/date-picker';
 import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
-import { BotonDeFila, FechaDeCelda, fechaDeFila, RESALTE_DE_FILA, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
+import { BotonDeFila, CeldaDePagina, FechaDeCelda, fechaDeFila, RESALTE_DE_FILA, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
 import { rutaPublicaDeSlug } from '@/features/paginas';
 import { useRespaldos } from '../hooks/use-respaldos';
 import { VistaPreviaVersion } from './vista-previa-version';
@@ -233,26 +233,11 @@ export function RespaldosView() {
                       </BotonDeFila>
                     </div>
                   </td>
-                  <td data-solo-tabla className="px-4 py-2">
-                    {/* En dos líneas, como en «Páginas en revisión» (pedido del usuario,
-                        2026-10-12): arriba dónde (el ámbito) y debajo qué página o sección (su
-                        ruta, como en los modales de restaurar) con la versión: «Sitio web» /
-                        «/inicio · versión 43». */}
-                    {registro.ambito && (
-                      <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold ${
-                          registro.ambito === 'intranet'
-                            ? 'bg-[#001631] text-white'
-                            : 'bg-[#EBF6E6] text-[#7DB728]'
-                        }`}
-                      >
-                        {registro.ambito === 'intranet' ? 'Intranet' : 'Sitio web'}
-                      </span>
-                    )}
-                    <p className="mt-1 text-xs font-medium text-zinc-900 dark:text-[#f6f6f6]">
-                      /{registro.slug}
-                      <span className="font-normal text-zinc-500"> · versión {registro.numeroVersion}</span>
-                    </p>
+                  <td data-solo-tabla className="px-4 py-2 text-zinc-600 dark:text-zinc-300">
+                    {/* En dos líneas (pedido del usuario, 2026-10-12): arriba dónde (el ámbito)
+                        y debajo qué página o sección con la versión, sin la barra y más fino
+                        desde el 2026-10-15: «Sitio web» / «inicio · versión 43». */}
+                    <CeldaDePagina ambito={registro.ambito} slug={registro.slug} version={registro.numeroVersion} />
                   </td>
                   <td data-solo-tabla data-etiqueta="Autor" className="px-4 py-2 text-zinc-600 dark:text-zinc-300">{registro.editadoPor.nombre}</td>
                   <td data-solo-tabla data-etiqueta="Publicado por" className="px-4 py-2 text-zinc-600 dark:text-zinc-300">{registro.publicadoPor.nombre}</td>

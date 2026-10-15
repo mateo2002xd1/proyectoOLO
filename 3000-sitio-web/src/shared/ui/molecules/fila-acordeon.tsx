@@ -78,6 +78,40 @@ export function FechaDeCelda({ iso, exacta = false }: { iso: string; exacta?: bo
 }
 
 /**
+ * La columna «Página» de Respaldos y Auditoría: arriba el portal en su píldora (Intranet en
+ * `#001631`, Sitio web en `#EBF6E6`) y debajo, como la hora de `FechaDeCelda`, más pequeño
+ * y fino, «menu-y-pie · versión 28» (pedido del usuario, 2026-10-15). Sin `ambito` no hay
+ * píldora; sin `version`, solo la ruta.
+ */
+export function CeldaDePagina({
+  ambito,
+  slug,
+  version,
+}: {
+  ambito?: string | null;
+  slug: string;
+  version?: number | null;
+}) {
+  return (
+    <>
+      {ambito && (
+        <span
+          className={`inline-flex items-center rounded px-2 py-0.5 text-[11px] font-semibold ${
+            ambito === 'intranet' ? 'bg-[#001631] text-white' : 'bg-[#EBF6E6] text-[#7DB728]'
+          }`}
+        >
+          {ambito === 'intranet' ? 'Intranet' : 'Sitio web'}
+        </span>
+      )}
+      <p className="mt-1 text-xs font-light">
+        {slug}
+        {version != null && ` · versión ${version}`}
+      </p>
+    </>
+  );
+}
+
+/**
  * Un botón de la fila desplegada (en `td[data-detalle]`): icono y nombre, a todo el ancho de
  * su hueco y 44 px de alto. En la tabla esas acciones son iconos con tooltip, que en una
  * pantalla táctil no se ven. `color`: la clase de `COLOR_DE_ACCION`, la que se configura en

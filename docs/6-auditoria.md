@@ -5,6 +5,40 @@
 
 ---
 
+## sesión 15-10-2026: Auditoría y Respaldos — columna y filtro «Página», con el portal arriba y la ruta fina debajo
+
+**Qué se pidió:** en Auditoría, una columna «Página» como la de Respaldos («Sitio web» /
+«menu-y-pie · versión 28»), en primera posición y sin la columna «Entidad»; y en las dos
+pantallas, la segunda línea más pequeña y fina, sin la barra delante.
+
+**Antecedente:** el commit `a447c5a5` (ingdave, 10-10-2026) quitó «Entidad» de Auditoría. Se
+volvió a poner y, a petición del usuario, se cambió por «Página»: «Entidad» ya no está.
+
+| Dónde | Cambio |
+|---|---|
+| `fila-acordeon.tsx`, `CeldaDePagina` | Pieza nueva, junto a `FechaDeCelda`: la píldora del portal (Intranet `bg-[#001631] text-white`, Sitio web `bg-[#EBF6E6] text-[#7DB728]`) y debajo «slug · versión N» en `text-xs font-light`, como la hora. La usan Auditoría y Respaldos. Revisión sigue con su píldora propia (no se pidió tocarla) |
+| `respaldos-view.tsx` | Columna Página con `CeldaDePagina`: sin la `/` delante y la segunda línea en `font-light` y el color de la celda (antes `font-medium`, el slug oscuro y la versión gris) |
+| `auditoria-view.tsx` | «Página» es la primera columna: Página, Fecha y hora, Usuario, Acción, Cambios. Las filas que no son de una página (usuarios, roles, inicios de sesión…) muestran «—». El ancho mínimo sigue en `52rem` |
+| API, `auditoria-dto.ts` | Campo nuevo `pagina: { ambito, slug, version } \| null` en cada registro. Slug y ámbito, de la tabla `paginas`; si la página ya no existe, de lo que guarda la fila (crear y eliminar guardan los dos). Sin ámbito, `null`: «inicio» a secas no dice de qué portal es. La versión sale del campo `version` de la fila |
+| API, `audit.usecase.ts` | `contextoDeLectura` suma `paginaPorId`: una consulta por página de resultados (`PaginaRepository.findRutasByIds`), como los correos. |
+| `openapi.ts` | Documentado el campo `pagina` (y el parámetro `ambito` en `audit.routes.ts`) |
+| Filtro «Página» en Auditoría | Todos / Sitio web / Intranet, como en Respaldos, detrás de Categoría (que el usuario pidió primera el 12-10). Viaja como `ambito` en `auditoria.service.ts`; `FILTROS_VACIOS` y `FiltrosAuditoria` lo suman |
+| API, `auditoria.repository.ts` | `ambito` filtra en el servidor (la bitácora se pagina allí): `entidad_tipo = pagina` y la página sigue en `paginas` con ese ámbito, o la fila lo guardó en `campos_modificados` (`@>`). Misma regla que la columna. Se suma con «y» a categoría, acción y fechas; el valor del SQL sale de `AMBITOS` |
+| API, `filtrosDesdeQuery` y `audit.routes.ts` | Lee `?ambito=sitio|intranet`; otro valor se descarta. Documentado en Swagger |
+
+**Verificación.**
+
+| Qué | Resultado |
+|---|---|
+| `tsc --noEmit` de la API y del sitio, `eslint` de lo tocado | Sin errores |
+| `aRegistroAuditoria` con filas de prueba (ts-node, sin base) | Página en la base → `sitio · menu-y-pie · 28`; borrada → `intranet · faq` de la fila; sin ámbito → `null`; usuario → `null` |
+| Filtro contra Neon, solo lectura (`getAllAudit` + `contextoDeLectura`) | Sin filtro 2194; Sitio web 606 e Intranet 618, cada una solo con su ámbito en la columna; Intranet + Seguridad 34; Sitio web + Administración 287; `ambito=otro` se descarta (2194) |
+| Columna con datos reales | En las 50 filas más recientes, 20 son de páginas y las 20 traen portal y ruta. Las demás (inicios de sesión, usuarios) no son de una página y muestran «—» |
+| Navegador | Pendiente. La API de dev no recarga sola: hay que reiniciarla para que lea `ambito` |
+| Finales de línea | CRLF uniforme |
+
+---
+
 ## sesión 12-10-2026 (11.ª parte): Páginas en revisión, Respaldos y Auditoría — iconos más pequeños en la tabla, el ámbito dentro de «Página», el filtro renombrado y la hora debajo de la fecha
 
 **Qué se pidió:** a 1330px los botones Visualizar, Publicar, Rechazar y Eliminar se veían
