@@ -2,12 +2,13 @@
 
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { useEffect, useRef, useState } from 'react';
-import { RotateCcw, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { RotateCcw } from 'lucide-react';
 import { codigoDeError, estadoHttp, mensajeDeErrorApi } from '@/shared/lib/errores-api';
 import type { RegistroRespaldo } from '../types';
 import { restaurarRespaldo, verificarBloqueo } from '../services/respaldos.service';
 import { ModalConfirmarRestauracion } from './modal-confirmar-restauracion';
 import { ModalBloqueoRestauracion } from './modal-bloqueo-restauracion';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 
 const URL_INTRANET = process.env.NEXT_PUBLIC_INTRANET_URL || 'http://localhost:3001';
 
@@ -164,17 +165,15 @@ export function VistaPreviaVersion({
             </dl>
 
             {errorRestaurar && (
-              <div className="mt-5 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 p-3.5 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">
-                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                <p>{errorRestaurar}</p>
-              </div>
+              <MensajeEstado tipo="error" rol="alert" className="mt-5">
+                {errorRestaurar}
+              </MensajeEstado>
             )}
 
             {exitoRestaurar && (
-              <div className="mt-5 flex items-start gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50 p-3.5 text-sm text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-900/20 dark:text-emerald-300">
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
-                <p>¡Versión {registro.versionAnteriorNumero} restaurada con éxito! La página ha sido publicada nuevamente.</p>
-              </div>
+              <MensajeEstado tipo="exito" className="mt-5">
+                ¡Versión {registro.versionAnteriorNumero} restaurada con éxito! La página ha sido publicada nuevamente.
+              </MensajeEstado>
             )}
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">

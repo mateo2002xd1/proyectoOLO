@@ -4,6 +4,7 @@ import { useState, ReactNode } from 'react';
 import Link from 'next/link';
 import { HomeIcon } from '@heroicons/react/20/solid';
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 import { LONGITUD_MINIMA, requisitosDe } from '@olo/password-policy';
 
 /**
@@ -103,20 +104,16 @@ export const authPasosInputClass = (hasError: boolean, esquinas = 'rounded-[32px
 export const authPasosErrorTextClass = 'mt-1.5 text-sm text-red-600';
 
 /* ---------- Avisos ---------- *
- * Los mensajes de estado llevan esquinas de 16 px, no las de 32 de campos y botones, para
- * que no se confundan con ellos (pedido del usuario, 2026-10-09). `rounded-xl` es 16 en este
- * sitio: globals.css redefine la escala de radios (en Tailwind sería 12), y `rounded-2xl`
- * es 24, que en una banda se veía igual que un botón. */
+ * Son los mensajes de estado del proyecto (`MensajeEstado`): esquinas de 16 px, no las de
+ * 32 de campos y botones, para que no se confundan con ellos (pedido del usuario,
+ * 2026-10-09). */
 
-/** Banda roja para errores que no pertenecen a un campo concreto. */
+/** Mensaje de error para lo que no pertenece a un campo concreto. */
 export function AuthGeneralError({ children }: { children: ReactNode }) {
   return (
-    <div
-      className={`${authPasosHuecoClass} rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-600`}
-      role="alert"
-    >
+    <MensajeEstado tipo="error" rol="alert" className={authPasosHuecoClass}>
       {children}
-    </div>
+    </MensajeEstado>
   );
 }
 
@@ -128,17 +125,15 @@ export function AuthGeneralError({ children }: { children: ReactNode }) {
  * trabajo, y pintarlo en rojo —junto a «Correo o contraseña incorrectos», que es lo
  * otro que aparece en este hueco— hace creer que uno se equivocó en algo.
  *
- * `role="status"` y no `"alert"`: se anuncia sin interrumpir lo que el lector de
- * pantalla esté diciendo, que es lo apropiado para algo que solo informa.
+ * Es el mensaje de estado informativo del proyecto (`MensajeEstado`), con `role="status"`
+ * y no `"alert"`: se anuncia sin interrumpir lo que el lector de pantalla esté diciendo,
+ * que es lo apropiado para algo que solo informa.
  */
 export function AuthGeneralNotice({ children }: { children: ReactNode }) {
   return (
-    <div
-      className={`${authPasosHuecoClass} rounded-xl border border-blue-300 bg-blue-50 px-4 py-3 text-sm text-blue-800`}
-      role="status"
-    >
+    <MensajeEstado tipo="info" className={authPasosHuecoClass}>
       {children}
-    </div>
+    </MensajeEstado>
   );
 }
 

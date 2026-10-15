@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
 import { poppins } from '@/shared/lib/fonts';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 import {
   slugificar,
   motivoSlugInvalido,
@@ -114,26 +115,10 @@ export function ModalNuevaSeccion({ abierto, alCerrar }: ModalNuevaSeccionProps)
         {avisoDeRuta && <p className="nueva-seccion-error">{avisoDeRuta}</p>}
         {error && <p className="nueva-seccion-error">{error}</p>}
 
-        <div className="nueva-seccion-aviso" role="note">
-          <svg
-            className="nueva-seccion-aviso-icono"
-            width="5"
-            height="12"
-            viewBox="0 0 10 25"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-          >
-            <path
-              d="M0.976562 20.7143H1.95312V13.6607H0.976562C0.437207 13.6607 0 13.2235 0 12.6841V10.3516C0 9.81221 0.437207 9.375 0.976562 9.375H6.44531C6.98467 9.375 7.42188 9.81221 7.42188 10.3516V20.7143H8.39844C8.93779 20.7143 9.375 21.1515 9.375 21.6909V24.0234C9.375 24.5628 8.93779 25 8.39844 25H0.976562C0.437207 25 0 24.5628 0 24.0234V21.6909C0 21.1515 0.437207 20.7143 0.976562 20.7143ZM4.6875 0C2.74585 0 1.17188 1.57397 1.17188 3.51562C1.17188 5.45728 2.74585 7.03125 4.6875 7.03125C6.62915 7.03125 8.20312 5.45728 8.20312 3.51562C8.20312 1.57397 6.6291 0 4.6875 0Z"
-              fill="currentColor"
-            />
-          </svg>
-          <p>
-            La página se creará en estado borrador privado, NO será pública hasta que
-            sea aprobada por el administrador.
-          </p>
-        </div>
+        <MensajeEstado tipo="info" rol="note" className="mt-4">
+          La página se creará en estado borrador, NO será pública hasta que sea
+          aprobada por el administrador.
+        </MensajeEstado>
 
         <div className="nueva-seccion-acciones">
           <button

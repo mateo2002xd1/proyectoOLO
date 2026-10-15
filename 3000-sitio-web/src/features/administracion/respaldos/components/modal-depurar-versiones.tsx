@@ -5,17 +5,16 @@ import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
 import {
-  AlertTriangle,
   CheckCircle2,
   Database,
   FileText,
-  Info,
   Loader2,
   X,
 } from 'lucide-react';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
 import { FormaDeModal } from '@/shared/ui/atoms/button';
 import { etiquetaDeModalClass } from '@/shared/ui/molecules/alert';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 import { mensajeDeErrorApi } from '@/shared/lib/errores-api';
 import { analizarDepuracion, ejecutarDepuracion } from '../services/respaldos.service';
 import type { AnalisisDepuracionDTO, FiltrosDepuracion, RegistroRespaldo } from '../types';
@@ -227,13 +226,10 @@ export function ModalDepurarVersiones({
           ) : (
             <div className="space-y-5">
               {/* Información fija de conservación de respaldo */}
-              <div className="flex items-start gap-2.5 rounded-xl border border-blue-100 bg-blue-50/60 p-3 text-xs text-blue-900 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-200">
-                <Info size={16} className="mt-0.5 shrink-0 text-blue-600 dark:text-blue-400" />
-                <p className="leading-relaxed">
-                  <strong>Respaldo siempre protegido:</strong> La versión archivada más reciente de cada página
-                  se conserva siempre de forma automática para asegurar que nunca se pierda el punto de restauración.
-                </p>
-              </div>
+              <MensajeEstado tipo="info" rol="note">
+                <strong>Respaldo siempre protegido:</strong> La versión archivada más reciente de cada página
+                se conserva siempre de forma automática para asegurar que nunca se pierda el punto de restauración.
+              </MensajeEstado>
 
               {/* Formulario de filtros */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -362,23 +358,22 @@ export function ModalDepurarVersiones({
               </div>
 
               {errorEjecucion && (
-                <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
-                  <AlertTriangle size={16} className="mt-0.5 shrink-0" />
-                  <span>{errorEjecucion}</span>
-                </div>
+                <MensajeEstado tipo="error" rol="alert">
+                  {errorEjecucion}
+                </MensajeEstado>
               )}
 
               {/* Paso de confirmación de seguridad */}
               {confirmando && (
-                <div className="rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-xs text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200 animate-in fade-in duration-150">
+                <MensajeEstado tipo="advertencia" className="animate-in fade-in duration-150">
                   <p className="font-semibold">
                     ¿Estás seguro de que deseas eliminar permanentemente estas {totalEncontradas} versiones archivadas?
                   </p>
-                  <p className="mt-1 text-[11px] leading-relaxed text-amber-800/90 dark:text-amber-300/80">
+                  <p className="mt-1">
                     Esta acción es irreversible y quedará registrada en la auditoría del sistema con tu
                     usuario y dirección IP. La versión publicada y la versión archivada más reciente nunca se tocarán.
                   </p>
-                </div>
+                </MensajeEstado>
               )}
             </div>
           )}
