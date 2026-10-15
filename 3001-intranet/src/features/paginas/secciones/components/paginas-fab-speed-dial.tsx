@@ -167,9 +167,8 @@ export function PaginasFabSpeedDial({
       >
         {/* Submenú de acciones desplegables hacia arriba */}
         <div
-          className={`fab-speed-dial__acciones ${
-            abierto ? 'fab-speed-dial__acciones--visible' : ''
-          }`}
+          className={`fab-speed-dial__acciones ${abierto ? 'fab-speed-dial__acciones--visible' : ''
+            }`}
           role="menu"
           aria-hidden={!abierto}
         >
@@ -280,7 +279,7 @@ export function PaginasFabSpeedDial({
           {puedeEliminarSeccion && (
             <div className="fab-speed-dial__item fab-speed-dial__item--eliminar" role="none">
               <span className="fab-speed-dial__tooltip" role="tooltip">
-                Eliminar página
+                Eliminar sección
               </span>
               <button
                 type="button"
@@ -290,8 +289,8 @@ export function PaginasFabSpeedDial({
                   setModalEliminarAbierto(true);
                 }}
                 className="fab-speed-dial__btn fab-speed-dial__btn--eliminar"
-                aria-label="Eliminar página"
-                title="Eliminar página"
+                aria-label="Eliminar sección"
+                title="Eliminar sección"
                 tabIndex={abierto ? 0 : -1}
               >
                 <svg
@@ -324,9 +323,8 @@ export function PaginasFabSpeedDial({
               ref={triggerRef}
               type="button"
               onClick={alternarMenu}
-              className={`fab-speed-dial__trigger ${
-                abierto ? 'fab-speed-dial__trigger--activo' : ''
-              }`}
+              className={`fab-speed-dial__trigger ${abierto ? 'fab-speed-dial__trigger--activo' : ''
+                }`}
               aria-haspopup="menu"
               aria-expanded={abierto}
               aria-label={abierto ? 'Cerrar menú de acciones' : 'Abrir menú de acciones'}
@@ -373,7 +371,7 @@ export function PaginasFabSpeedDial({
         {/* Cerrar sesión: siempre a la vista, debajo del lápiz */}
         <div className="fab-speed-dial__item fab-speed-dial__item--salir">
           <span className="fab-speed-dial__tooltip" role="tooltip">
-            Cerrar sesión
+            Salir del modo edición
           </span>
           <button
             type="button"

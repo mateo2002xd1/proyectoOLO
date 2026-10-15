@@ -41,11 +41,11 @@ export function ModalCerrarSesion({ abierto, saliendo, alConfirmar, alCerrar }: 
     >
       <div className={`nueva-seccion-caja olo-anim-caja ${poppins.className}`}>
         <h2 id="cerrar-sesion-titulo" className="nueva-seccion-titulo">
-          ¿Cerrar sesión?
+          Salir del modo edición
         </h2>
 
         <p className="nueva-seccion-ruta">
-          Volverás a la pantalla de inicio de sesión.
+          Saldrás del modo edición, volverás a la pantalla de inicio de sesión <br /><br /> Requiere volver a iniciar sesión para editar.
         </p>
 
         <div className="nueva-seccion-acciones">
@@ -65,7 +65,7 @@ export function ModalCerrarSesion({ abierto, saliendo, alConfirmar, alCerrar }: 
             className="nueva-seccion-boton nueva-seccion-boton--peligro"
             disabled={saliendo}
           >
-            {saliendo ? 'Cerrando sesión…' : 'Cerrar sesión'}
+            {saliendo ? 'Cerrando sesión...' : 'Aceptar'}
           </button>
         </div>
       </div>
