@@ -2,6 +2,7 @@ import { literal, Op, Transaction } from 'sequelize';
 import { ContentAuditLog } from '../infrastructure/db/models';
 import type { AccionAuditable, EntidadAuditable } from '../infrastructure/db/models/content-audit-log';
 import { REGLAS_POR_CATEGORIA, type CategoriaAuditoria } from '../shared/auditoria-categorias';
+import { AMBITOS, type Ambito } from '../shared/ambito';
 
 /** Un campo que cambió, con su valor anterior y el nuevo (RF-07). */
 export interface CampoModificado {
@@ -57,6 +58,11 @@ export interface FiltrosAuditoria {
    * de páginas, que también usan el verbo `actualizar`.
    */
   categoria?: CategoriaAuditoria;
+  /**
+   * Solo las filas de páginas de ese portal: el filtro «Página» de la pantalla. Se
+   * combina con los demás con «y»; las filas que no son de una página quedan fuera.
+   */
+  ambito?: Ambito;
   /** Inclusivo. */
   desde?: Date;
   /** Inclusivo: quien filtra por un día espera que ese día entre. */
@@ -144,6 +150,24 @@ const sinGuardadosAutomaticos = () => ({
   id: { [Op.notIn]: literal(`(${SQL_IDS_GUARDADOS_AUTOMATICOS})`) },
 });
 
+/**
+ * Las filas de páginas de un portal, con la misma regla que la columna «Página»
+ * (`auditoria-dto.ts`): la página que sigue en `paginas` con ese ámbito y, si ya se
+ * borró, lo que la fila recuerda (crear y eliminar guardan el ámbito). El valor del SQL
+ * sale de `AMBITOS`, nunca del querystring tal cual.
+ */
+const deLasPaginasDel = (ambito: Ambito) => {
+  const valor = AMBITOS.find((a) => a === ambito) ?? 'sitio';
+  return {
+    entidad_tipo: 'pagina',
+    [Op.or]: [
+      { entidad_id: { [Op.in]: literal(`(SELECT id FROM paginas WHERE ambito = '${valor}')`) } },
+      { campos_modificados: { [Op.contains]: [{ campo: 'ambito', antes: valor }] } },
+      { campos_modificados: { [Op.contains]: [{ campo: 'ambito', despues: valor }] } },
+    ],
+  };
+};
+
 export const AuditRepository = {
   /**
    * Traduce del dominio (camelCase) a las columnas del modelo (snake_case).
@@ -174,7 +198,7 @@ export const AuditRepository = {
    * Registros de la bitácora que cumplen los filtros, paginados y sin los guardados automáticos.
    */
   findAll: async (filtros: FiltrosAuditoria = {}) => {
-    const { entidadTipo, usuarioId, accion, categoria, desde, hasta } = filtros;
+    const { entidadTipo, usuarioId, accion, categoria, ambito, desde, hasta } = filtros;
 
     const where: Record<string, unknown> = { ...sinGuardadosAutomaticos() };
     // Un valor suelto sigue siendo `= valor` (usa el índice tal cual); solo la lista
@@ -200,20 +224,19 @@ export const AuditRepository = {
     }
 
     // Cada regla de la categoría es un «acción en (...) y entidad en (...)»; la fila entra
-    // si cumple alguna (`OR`), y todo eso se suma con «y» a los demás filtros.
-    const conCategoria = categoria
-      ? {
-          [Op.and]: [
-            where,
-            {
-              [Op.or]: REGLAS_POR_CATEGORIA[categoria].map((regla) => ({
-                accion: { [Op.in]: regla.acciones },
-                ...(regla.entidades ? { entidad_tipo: { [Op.in]: regla.entidades } } : {}),
-              })),
-            },
-          ],
-        }
-      : where;
+    // si cumple alguna (`OR`), y todo eso se suma con «y» a los demás filtros. El portal,
+    // igual: con «y», aparte, porque también fija `entidad_tipo`.
+    const condiciones: object[] = [where];
+    if (categoria) {
+      condiciones.push({
+        [Op.or]: REGLAS_POR_CATEGORIA[categoria].map((regla) => ({
+          accion: { [Op.in]: regla.acciones },
+          ...(regla.entidades ? { entidad_tipo: { [Op.in]: regla.entidades } } : {}),
+        })),
+      });
+    }
+    if (ambito) condiciones.push(deLasPaginasDel(ambito));
+    const conCategoria = condiciones.length > 1 ? { [Op.and]: condiciones } : where;
 
     const porPagina = Math.min(Math.max(filtros.porPagina || POR_PAGINA_POR_DEFECTO, 1), MAX_POR_PAGINA);
     const pagina = Math.max(filtros.pagina || 1, 1);

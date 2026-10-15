@@ -2,6 +2,7 @@ import type { AccionAuditable, EntidadAuditable } from '../infrastructure/db/mod
 import type { CampoModificado, FiltrosAuditoria } from '../repositories/auditoria.repository';
 import { categoriaDe, CATEGORIAS, type CategoriaAuditoria } from './auditoria-categorias';
 import { emailEnLaFila, resumenDeRegistro } from './auditoria-resumen';
+import { AMBITOS } from './ambito';
 
 /**
  * Lo que la API entrega de una entrada de bitácora.
@@ -33,6 +34,11 @@ export interface RegistroAuditoria {
    * «Cambios». La regla vive en `auditoria-resumen.ts`.
    */
   resumen: string;
+  /**
+   * La página de la que habla la fila, para la columna «Página»; `null` si la fila no es
+   * de una página o no se sabe cuál es. `version`, `null` si la fila no la guarda.
+   */
+  pagina: PaginaDelRegistro | null;
   ip: string | null;
   userAgent: string | null;
   fecha: string;
@@ -68,7 +74,39 @@ export interface ContextoDeLectura {
   guardadosAutomaticos?: Set<string>;
   /** Nombre de cada rol por su id: para decir «rol «Editor»» y no un UUID. */
   rolPorId?: Map<string, string>;
+  /** Slug y ámbito de cada página por su id, para las filas de `entidad_tipo: pagina`. */
+  paginaPorId?: Map<string, { slug: string; ambito: string }>;
 }
+
+export interface PaginaDelRegistro {
+  ambito: 'sitio' | 'intranet';
+  slug: string;
+  version: number | null;
+}
+
+/** El valor de un campo de la fila: el «después» y, si no hay, el «antes» (al eliminar). */
+const valorDeCampo = (campos: CampoModificado[], campo: string): unknown => {
+  const encontrado = campos.find((c) => c.campo === campo);
+  return encontrado?.despues ?? encontrado?.antes ?? null;
+};
+
+/**
+ * La página de una fila: lo que hay hoy en `paginas` y, si ya no existe, lo que la
+ * propia fila recuerda (al crear y al eliminar guarda slug y ámbito). Sin slug o sin
+ * ámbito, `null`: «inicio» a secas no dice de qué portal es, y no se adivina.
+ */
+const paginaDelRegistro = (
+  fila: Pick<FilaAuditoria, 'entidad_tipo' | 'entidad_id'>,
+  campos: CampoModificado[],
+  contexto: ContextoDeLectura
+): PaginaDelRegistro | null => {
+  if (fila.entidad_tipo !== 'pagina') return null;
+  const actual = contexto.paginaPorId?.get(fila.entidad_id);
+  const slug = actual?.slug ?? comoTexto(valorDeCampo(campos, 'slug'));
+  const ambito = actual?.ambito ?? comoTexto(valorDeCampo(campos, 'ambito'));
+  if (!slug || (ambito !== 'sitio' && ambito !== 'intranet')) return null;
+  return { ambito, slug, version: comoEntero(valorDeCampo(campos, 'version')) ?? null };
+};
 
 /**
  * Traduce una fila de `auditoria_cambios` a lo que pinta la pantalla de auditoría, con su resumen
@@ -100,6 +138,7 @@ export const aRegistroAuditoria = (
         contexto.emailPorUsuario?.get(fila.entidad_id) ?? emailEnLaFila(camposModificados),
       guardadoAutomatico: contexto.guardadosAutomaticos?.has(fila.id) ?? false,
     }),
+    pagina: paginaDelRegistro(fila, camposModificados, contexto),
     ip: fila.ip ?? null,
     userAgent: fila.user_agent ?? null,
     fecha: fecha instanceof Date ? fecha.toISOString() : String(fecha ?? ''),
@@ -182,6 +221,7 @@ export const filtrosDesdeQuery = (query: Record<string, unknown>): FiltrosAudito
   usuarioId: comoTexto(query.usuarioId ?? query.userId),
   accion: dentroDe(ACCIONES, query.accion ?? query.actionType),
   categoria: comoCategoria(query.categoria),
+  ambito: AMBITOS.find((ambito) => ambito === comoTexto(query.ambito)),
   desde: comoFecha(query.desde),
   hasta: comoFecha(query.hasta, true),
 });

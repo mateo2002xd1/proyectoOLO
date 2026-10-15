@@ -526,6 +526,17 @@ const definicion = {
             description:
               'Lo que pasó, en una frase ya redactada, para que la pantalla no tenga que traducir códigos internos ni resolver a quién apunta `entidad_id`. Siempre viene: cada acción tiene frases propias, y lo que ninguna sabe contar lo redacta una genérica con cada campo en español y su antes y después. Se calcula al leer, así que también explica las filas antiguas, y no se guarda en la tabla: `camposModificados` sigue siendo la evidencia intacta.',
           },
+          pagina: {
+            type: 'object',
+            nullable: true,
+            description:
+              'La página de la que habla la fila, para la columna «Página». Se lee de `paginas` y, si ya no existe, de lo que la fila recuerda. `null` si la fila no es de una página o no se sabe de qué portal es.',
+            properties: {
+              ambito: { type: 'string', enum: ['sitio', 'intranet'] },
+              slug: { type: 'string', example: 'menu-y-pie' },
+              version: { type: 'integer', nullable: true, example: 28 },
+            },
+          },
           ip: { type: 'string', nullable: true, example: '190.0.0.1' },
           user_agent: { type: 'string', nullable: true },
           created_at: { type: 'string', format: 'date-time' },
