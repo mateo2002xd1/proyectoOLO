@@ -5,6 +5,19 @@
 
 ---
 
+## sesión 15-10-2026 (6.ª parte): Permisos del rol — «Marcar todos» sin interruptor
+
+**Qué se pidió:** en el modal «Permisos del rol», quitar el interruptor de «Marcar todos» y dejar
+solo el texto; al pulsarlo se marca todo el grupo.
+
+| Dónde | Cambio |
+|---|---|
+| `modal-permisos.tsx` | El `<label>` con `Switch` pasa a un `<button>` de texto (mismo `text-xs font-semibold`, subrayado al pasar el ratón y anillo `brand-focus` con teclado). Marca todo el grupo; con todo marcado dice «Desmarcar todos» y lo vacía, que era lo que hacía apagar el interruptor. Los interruptores de cada permiso no cambian |
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta verlo en el navegador.
+
+---
+
 ## sesión 15-10-2026 (5.ª parte): Páginas en revisión — la columna «Página» con el estilo de Respaldos
 
 **Qué se pidió:** el mismo estilo de la columna Página de Respaldos (captura del usuario): la
