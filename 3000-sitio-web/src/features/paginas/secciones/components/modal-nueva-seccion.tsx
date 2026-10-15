@@ -87,11 +87,11 @@ export function ModalNuevaSeccion({ abierto, alCerrar }: ModalNuevaSeccionProps)
       {/* Poppins, como todos los modales del panel y del editor. */}
       <form className={`nueva-seccion-caja olo-anim-caja ${poppins.className}`} onSubmit={enviar}>
         <h2 id="nueva-seccion-titulo" className="nueva-seccion-titulo">
-          Nueva página
+          Crear nueva página
         </h2>
 
         <label className="nueva-seccion-etiqueta" htmlFor="nueva-seccion-nombre">
-          ¿Cómo se llama?
+          Nombre de la página
         </label>
         <input
           id="nueva-seccion-nombre"
@@ -102,31 +102,38 @@ export function ModalNuevaSeccion({ abierto, alCerrar }: ModalNuevaSeccionProps)
           maxLength={120}
           autoFocus
           disabled={creando}
-          aria-describedby="nueva-seccion-ruta"
+          aria-describedby={slug ? 'nueva-seccion-ruta' : undefined}
         />
 
-        <p id="nueva-seccion-ruta" className="nueva-seccion-ruta">
-          {slug ? (
-            <>
-              Su dirección será <code>/{slug}</code>
-            </>
-          ) : (
-            'La dirección se genera con el nombre que escribas.'
-          )}
-        </p>
+        {slug && (
+          <p id="nueva-seccion-ruta" className="nueva-seccion-ruta">
+            Su dirección será <code>/{slug}</code>
+          </p>
+        )}
 
         {avisoDeRuta && <p className="nueva-seccion-error">{avisoDeRuta}</p>}
         {error && <p className="nueva-seccion-error">{error}</p>}
 
-        <ul className="nueva-seccion-notas">
-          <li>
-            Se crea vacía y <strong>no se ve hasta que alguien la apruebe</strong>.
-          </li>
-          <li>
-            Podrás editarla tú y quien comparta tu rol, porque los permisos se dan por
-            rol.
-          </li>
-        </ul>
+        <div className="nueva-seccion-aviso" role="note">
+          <svg
+            className="nueva-seccion-aviso-icono"
+            width="5"
+            height="12"
+            viewBox="0 0 10 25"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path
+              d="M0.976562 20.7143H1.95312V13.6607H0.976562C0.437207 13.6607 0 13.2235 0 12.6841V10.3516C0 9.81221 0.437207 9.375 0.976562 9.375H6.44531C6.98467 9.375 7.42188 9.81221 7.42188 10.3516V20.7143H8.39844C8.93779 20.7143 9.375 21.1515 9.375 21.6909V24.0234C9.375 24.5628 8.93779 25 8.39844 25H0.976562C0.437207 25 0 24.5628 0 24.0234V21.6909C0 21.1515 0.437207 20.7143 0.976562 20.7143ZM4.6875 0C2.74585 0 1.17188 1.57397 1.17188 3.51562C1.17188 5.45728 2.74585 7.03125 4.6875 7.03125C6.62915 7.03125 8.20312 5.45728 8.20312 3.51562C8.20312 1.57397 6.6291 0 4.6875 0Z"
+              fill="currentColor"
+            />
+          </svg>
+          <p>
+            La página se creará en estado borrador privado, NO será pública hasta que
+            sea aprobada por el administrador.
+          </p>
+        </div>
 
         <div className="nueva-seccion-acciones">
           <button
