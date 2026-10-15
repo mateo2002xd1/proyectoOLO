@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { PptxViewer as AidenPptxViewer } from '@aiden0z/pptx-renderer';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 
 interface PptxViewerProps {
   fileUrl: string;
@@ -70,8 +71,10 @@ export function PptxViewer({ fileUrl }: PptxViewerProps) {
         </div>
       )}
       {error && (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#fef2f2' }}>
-          <p style={{ color: '#dc2626', fontWeight: 500 }}>{error}</p>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, backgroundColor: 'rgba(243, 244, 246, 0.5)' }}>
+          <MensajeEstado tipo="error" rol="alert">
+            {error}
+          </MensajeEstado>
         </div>
       )}
       <div

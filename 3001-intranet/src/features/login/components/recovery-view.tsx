@@ -22,6 +22,7 @@ import {
   accesoEtiquetaEnBlancoClass,
 } from './acceso-ui';
 import { mensajeDeError } from '@/shared/lib/errors';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 
 export function RecoveryView() {
   const router = useRouter();
@@ -54,7 +55,7 @@ export function RecoveryView() {
       if (data.questions && data.questions.length > 0) {
         sessionStorage.setItem('recoveryEmail', email);
         sessionStorage.setItem('recoveryQuestions', JSON.stringify(data.questions));
-        router.push('/security-questions');
+        router.push('/login/first-login/security-questions');
       } else {
         setGeneralError('No se encontraron preguntas de seguridad para este correo.');
       }
@@ -74,9 +75,9 @@ export function RecoveryView() {
     >
       <form onSubmit={handleSubmit} noValidate>
         {generalError && (
-          <div className={accesoErrorGeneralClass} role="alert">
+          <MensajeEstado tipo="error" rol="alert" className={accesoErrorGeneralClass}>
             {generalError}
-          </div>
+          </MensajeEstado>
         )}
 
         <div className={accesoHuecoClass}>

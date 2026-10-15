@@ -28,6 +28,7 @@ import {
 } from "@/features/paginas";
 import type { ContextoDeEdicion } from "@/config/puck.config";
 import { GooLoader } from "@/shared/ui/atoms/goo-loader";
+import { MensajeEstado } from "@/shared/ui/molecules/mensaje-estado";
 
 interface EditorClientProps {
   slug: string;
@@ -175,23 +176,20 @@ function EditorMounted({
   return (
     <>
       {error && (
+        // El mensaje de estado de error, flotando arriba y centrado sobre el editor.
         <div
-          role="alert"
           style={{
             position: "fixed",
             top: 12,
             left: "50%",
             transform: "translateX(-50%)",
             zIndex: 10000,
-            background: "#fef2f2",
-            border: "1px solid #fca5a5",
-            color: "#dc2626",
-            borderRadius: 8,
-            padding: "8px 16px",
-            fontSize: 14,
+            maxWidth: "90vw",
           }}
         >
-          {error}
+          <MensajeEstado tipo="error" rol="alert" className="shadow-[0_4px_12px_rgba(16,24,40,0.15)]">
+            {error}
+          </MensajeEstado>
         </div>
       )}
       <PuckEditorWrapper

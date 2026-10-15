@@ -7,6 +7,7 @@ import { validarEmail } from '@olo/email-policy';
 import { useAuth } from '@/features/login';
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { GooLoader } from '@/shared/ui/atoms/goo-loader';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 import { mensajeDeError } from '@/shared/lib/errors';
 import { mensajeDeCierre } from '@/shared/lib/inactividad';
 import { SITE_URL } from '@/shared/lib/constants';
@@ -135,11 +136,11 @@ function LoginForm() {
 
       setTimeout(() => {
         if (data.mustSetupSecurityQuestions && data.mustChangePassword) {
-          router.push('/first-login');
+          router.push('/login/first-login');
         } else if (data.mustSetupSecurityQuestions) {
-          router.push('/security-questions');
+          router.push('/login/first-login/security-questions');
         } else if (data.mustChangePassword) {
-          router.push('/reset-password');
+          router.push('/login/recovery/reset-password');
         } else {
           window.location.href = rutaDeVuelta;
         }
@@ -179,18 +180,15 @@ function LoginForm() {
         <form onSubmit={handleSubmit} noValidate>
           {/* Antes que el error: explica por qué se está aquí, no qué se hizo mal. */}
           {avisoDeCierre && (
-            <div
-              className="mb-[clamp(0.75rem,2.2dvh,1.5rem)] rounded-[16px] border border-blue-300 bg-blue-50 px-4 py-2.5 text-sm text-blue-800 md:mb-6"
-              role="status"
-            >
+            <MensajeEstado tipo="info" className="mb-[clamp(0.75rem,2.2dvh,1.5rem)] md:mb-6">
               {avisoDeCierre}
-            </div>
+            </MensajeEstado>
           )}
 
           {errors.general && (
-            <div className={accesoErrorGeneralClass} role="alert">
+            <MensajeEstado tipo="error" rol="alert" className={accesoErrorGeneralClass}>
               {errors.general}
-            </div>
+            </MensajeEstado>
           )}
 
           <div className={accesoHuecoClass}>
@@ -264,7 +262,7 @@ function LoginForm() {
           </button>
 
           <div className={`${accesoHuecoArribaClass} text-center`}>
-            <Link href="/recovery" className={`${accesoEnlaceClass} ${accesoEnlaceEnBlancoClass}`}>
+            <Link href="/login/recovery" className={`${accesoEnlaceClass} ${accesoEnlaceEnBlancoClass}`}>
               ¿Olvidaste tu contraseña?
             </Link>
           </div>

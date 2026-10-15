@@ -8,6 +8,7 @@ import { PasswordRequisitos } from '@/shared/ui/molecules/password-requisitos';
 import { QuestionPicker, type CatalogQuestion } from './question-picker';
 import { mensajeDeError } from '@/shared/lib/errors';
 import { MarcoAcceso } from './marco-acceso';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 import {
   accesoBotonClass,
   accesoBotonEnBlancoClass,
@@ -184,7 +185,7 @@ export function FirstLoginView() {
       <MarcoAcceso cerrarSesionAlSalir titulo="Configura tu acceso" claseTarjeta="text-center">
         {errors.general ? (
           <>
-            <div className={accesoErrorGeneralClass} role="alert">{errors.general}</div>
+            <MensajeEstado tipo="error" rol="alert" className={accesoErrorGeneralClass}>{errors.general}</MensajeEstado>
             <button type="button" onClick={() => logout()} className={accesoEnlaceClass}>
               Volver a iniciar sesión
             </button>
@@ -274,7 +275,7 @@ export function FirstLoginView() {
         claveTarjeta={currentStep}
       >
         <form onSubmit={(e) => { e.preventDefault(); handleNextStep1(); }} noValidate>
-          {errors.general && <div className={accesoErrorGeneralClass} role="alert">{errors.general}</div>}
+          {errors.general && <MensajeEstado tipo="error" rol="alert" className={accesoErrorGeneralClass}>{errors.general}</MensajeEstado>}
 
           <PasswordField
             id="temp-password"
@@ -347,7 +348,7 @@ export function FirstLoginView() {
         }}
         noValidate
       >
-        {errors.general && <div className={accesoErrorGeneralClass} role="alert">{errors.general}</div>}
+        {errors.general && <MensajeEstado tipo="error" rol="alert" className={accesoErrorGeneralClass}>{errors.general}</MensajeEstado>}
 
         <h2 className={`mb-3 ${accesoEncabezadoClass} ${accesoEncabezadoEnBlancoClass}`}>Preguntas de seguridad</h2>
 
