@@ -5,6 +5,20 @@
 
 ---
 
+## sesión 15-10-2026 (5.ª parte): Páginas en revisión — la columna «Página» con el estilo de Respaldos
+
+**Qué se pidió:** el mismo estilo de la columna Página de Respaldos (captura del usuario): la
+píldora del portal y debajo, pequeño y fino, «menu-y-pie · versión 28».
+
+| Dónde | Cambio |
+|---|---|
+| `revision-queue-view.tsx` | La celda usa `CeldaDePagina` (`fila-acordeon.tsx`) en vez de su píldora propia. Debajo va la ruta (`slug`) en `text-xs font-light` y el color de la celda; antes, el título en `font-medium` oscuro con la versión en gris. El acordeón y los modales siguen con el título |
+| `fila-acordeon.tsx` | Comentario de `CeldaDePagina`: la usan Respaldos y Páginas en revisión (Auditoría ya no, desde la 2.ª parte) |
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta verlo en el navegador.
+
+---
+
 ## sesión 15-10-2026 (4.ª parte): paginador del panel — la página actual en #001631
 
 **Qué se pidió:** el paginador marcaba la página actual en el verde `#7DB828`; pasa a

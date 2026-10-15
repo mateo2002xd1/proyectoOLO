@@ -78,7 +78,7 @@ export function FechaDeCelda({ iso, exacta = false }: { iso: string; exacta?: bo
 }
 
 /**
- * La columna «Página» de Respaldos y Auditoría: arriba el portal en su píldora (Intranet en
+ * La columna «Página» de Respaldos y Páginas en revisión: arriba el portal en su píldora (Intranet en
  * `#001631`, Sitio web en `#EBF6E6`) y debajo, como la hora de `FechaDeCelda`, más pequeño
  * y fino, «menu-y-pie · versión 28» (pedido del usuario, 2026-10-15). Sin `ambito` no hay
  * píldora; sin `version`, solo la ruta.

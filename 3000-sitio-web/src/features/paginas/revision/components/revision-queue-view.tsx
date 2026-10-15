@@ -6,7 +6,7 @@ import { BarraFiltros, CampoFiltro } from '@/shared/ui/molecules/barra-filtros';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
 import { DatePicker } from '@/shared/ui/molecules/date-picker';
 import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
-import { FechaDeCelda, fechaDeFila, RESALTE_DE_FILA, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
+import { CeldaDePagina, FechaDeCelda, fechaDeFila, RESALTE_DE_FILA, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
 import { Paginador } from '@/shared/ui/molecules/paginador';
 import { useRevisionQueue } from '../hooks/use-revision-queue';
 import type { PaginaEnRevision } from '../../model/pagina.types';
@@ -275,23 +275,11 @@ export function RevisionQueueView() {
                       <p className="mb-3 text-sm italic text-zinc-500 dark:text-zinc-400">«{pagina.comentario}»</p>
                     )}
                   </td>
-                  {/* El ámbito arriba y debajo la página con su versión («Sitio web» /
-                      «Inicio · versión 3»): antes el ámbito tenía columna propia y se leía
-                      separado de la página a la que pertenece (pedido del usuario, 2026-10-12). */}
-                  <td data-solo-tabla className="px-4 py-3">
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold ${
-                        pagina.ambito === 'intranet'
-                          ? 'bg-[#001631] text-white'
-                          : 'bg-[#EBF6E6] text-[#7DB728]'
-                      }`}
-                    >
-                      {pagina.ambito === 'intranet' ? 'Intranet' : 'Sitio web'}
-                    </span>
-                    <p className="mt-1 font-medium text-zinc-900 dark:text-[#f6f6f6]">
-                      {pagina.titulo}
-                      <span className="font-normal text-zinc-500"> · versión {pagina.numeroVersion}</span>
-                    </p>
+                  {/* La misma celda que Respaldos y Auditoría (pedido del usuario, 2026-10-15):
+                      arriba el ámbito y debajo, pequeño y fino, la ruta con su versión
+                      («Sitio web» / «inicio · versión 3»). Antes, el título en negrita. */}
+                  <td data-solo-tabla className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
+                    <CeldaDePagina ambito={pagina.ambito} slug={pagina.slug} version={pagina.numeroVersion} />
                   </td>
                   {/* Lo que el editor dice que cambió: se lee antes de decidir, como la
                       descripción de un pull request. */}
