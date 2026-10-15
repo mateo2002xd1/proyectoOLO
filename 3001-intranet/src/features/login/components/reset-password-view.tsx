@@ -18,6 +18,7 @@ import {
   accesoHuecoClass,
 } from './acceso-ui';
 import { mensajeDeError } from '@/shared/lib/errors';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 
 /* sessionStorage es un sistema externo a React. Se lee con useSyncExternalStore
    en vez de copiarlo a un useState desde un efecto: getServerSnapshot devuelve
@@ -120,7 +121,7 @@ export function ResetPasswordView() {
       }
 
       setIsSubmitted(true);
-      router.push('/reset-success');
+      router.push('/login/recovery/reset-success');
     } catch (error) {
       setIsSubmitted(false);
       setErrors({ general: mensajeDeError(error, 'Error de conexión con el servidor') });
@@ -160,9 +161,9 @@ export function ResetPasswordView() {
     >
       <form onSubmit={handleSubmit} noValidate>
         {errors.general && (
-          <div className={accesoErrorGeneralClass} role="alert">
+          <MensajeEstado tipo="error" rol="alert" className={accesoErrorGeneralClass}>
             {errors.general}
-          </div>
+          </MensajeEstado>
         )}
 
         {mode === 'forced' && (

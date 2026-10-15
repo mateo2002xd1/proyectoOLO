@@ -107,7 +107,14 @@ export function ModalEliminarSeccion({ slug, abierto, alCerrar }: ModalEliminarS
       {/* Poppins, como todos los modales del panel y del editor. */}
       <form className={`nueva-seccion-caja olo-anim-caja ${poppins.className}`} onSubmit={enviar}>
         <h2 id="eliminar-seccion-titulo" className="nueva-seccion-titulo">
-          Eliminar página
+          {analisis ? (
+            <>
+              ¿Eliminar la página{' '}
+              «<span className="nueva-seccion-nombre-peligro">{analisis.titulo}</span>»?
+            </>
+          ) : (
+            '¿Eliminar la página?'
+          )}
         </h2>
 
         {cargando && <p className="nueva-seccion-ruta">Comprobando…</p>}
@@ -135,30 +142,27 @@ export function ModalEliminarSeccion({ slug, abierto, alCerrar }: ModalEliminarS
 
         {!cargando && analisis?.puedeEliminarse && (
           <>
-            <p className="nueva-seccion-ruta">
-              Se borrará <strong>{analisis.titulo}</strong> (<code>/{analisis.slug}</code>),
-              sus {analisis.versiones} versión(es) y el permiso para editarla.
-              {analisis.publicada && ' Está publicada ahora mismo.'}
-            </p>
-            <p className="nueva-seccion-error">Esto no se puede deshacer.</p>
+            {analisis.publicada && (
+              <p className="nueva-seccion-ruta nueva-seccion-ruta--aviso">
+                La página está publicada actualmente, si la eliminas, dejará de estar
+                visible para el público de inmediato.
+              </p>
+            )}
 
             <label className="nueva-seccion-etiqueta" htmlFor="eliminar-seccion-confirmacion">
-              Escribe «{analisis.titulo}» para confirmar
+              Escribe{' '}
+              «<span className="nueva-seccion-nombre-peligro">{analisis.titulo}</span>» para
+              confirmar
             </label>
             <input
               id="eliminar-seccion-confirmacion"
-              className="nueva-seccion-campo"
+              className="nueva-seccion-campo nueva-seccion-campo--peligro"
               value={confirmacion}
               onChange={(evento) => setConfirmacion(evento.target.value)}
               autoFocus
               disabled={borrando}
               autoComplete="off"
             />
-
-            <ul className="nueva-seccion-notas">
-              <li>Queda registrado en la bitácora, con quién y cuándo.</li>
-              <li>El historial de lo que pasó en ella no se borra.</li>
-            </ul>
           </>
         )}
 

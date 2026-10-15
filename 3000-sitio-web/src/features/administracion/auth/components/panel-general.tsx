@@ -75,6 +75,7 @@ import {
 import { useUsuarios } from '../hooks/use-usuarios';
 import { listarAlertasCaducidad, type AlertaCaducidad } from '../services/alertas-caducidad.service';
 import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 
 /**
  * Grupo colapsable del sidebar con animación de acordeón.
@@ -104,14 +105,14 @@ function SidebarGroup({
         onClick={() => setOpen((v) => !v)}
         className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-base font-semibold transition [&>svg]:size-5 [&>svg]:shrink-0 ${isActive
           ? 'bg-zinc-100 text-[#7DB728] dark:bg-brand-interactive/20 dark:text-brand-interactive [&>svg]:text-[#7DB728] dark:[&>svg]:text-brand-interactive'
-          : 'text-zinc-600 hover:bg-[#001631]/10 hover:text-[#7DB728] dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive [&>svg]:text-zinc-500 dark:[&>svg]:text-slate-400 hover:[&>svg]:text-[#7DB728] dark:hover:[&>svg]:text-brand-interactive'
+          : 'text-[#001631] hover:bg-[#001631]/10 hover:text-[#7DB728] dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive [&>svg]:text-[#001631] dark:[&>svg]:text-slate-400 hover:[&>svg]:text-[#7DB728] dark:hover:[&>svg]:text-brand-interactive'
           }`}
         aria-expanded={open}
       >
         <Icon className="shrink-0" />
         <span className="flex-1 truncate text-left">{label}</span>
         <ChevronDownIcon
-          className={`size-4 shrink-0 text-zinc-400 transition-transform duration-200 ${open ? 'rotate-180' : ''
+          className={`size-4 shrink-0 text-[#001631] transition-transform duration-200 ${open ? 'rotate-180' : ''
             }`}
         />
       </button>
@@ -389,7 +390,7 @@ export function PanelGeneralLayout({
                 </DropdownButton>
                 {/* Esquinas de arriba rectas: el menú sale pegado a la barra. */}
                 <DropdownMenu className="min-w-56 rounded-t-none" anchor="bottom start">
-                  <DropdownItem href="/admin/mi-perfil">
+                  <DropdownItem href="/admin/perfil">
                     <UserIcon />
                     <DropdownLabel>Mi perfil</DropdownLabel>
                   </DropdownItem>
@@ -527,7 +528,7 @@ export function PanelGeneralLayout({
                 <MagnifyingGlassIcon />
                 <SidebarLabel>Buscar</SidebarLabel>
               </SidebarItem>
-              <ThemeToggle className="shrink-0 flex size-9 items-center justify-center rounded-lg text-zinc-500 hover:bg-[#001631]/10 hover:text-zinc-900 dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive transition-colors [&>svg]:size-5" />
+              <ThemeToggle className="shrink-0 flex size-9 items-center justify-center rounded-lg text-[#001631] hover:bg-[#001631]/10 hover:text-[#001631] dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive transition-colors [&>svg]:size-5" />
             </div>
 
             <SidebarFooter className="flex flex-row items-center gap-1">
@@ -535,22 +536,22 @@ export function PanelGeneralLayout({
                 <DropdownButton as={SidebarItem} className="w-full justify-between">
                   <span className="flex min-w-0 flex-1 items-center gap-3 text-left">
                     <span className="min-w-0">
-                      <span className="block truncate text-sm/5 font-medium text-zinc-950 dark:text-[#f6f6f6]">
+                      <span className="block truncate text-sm/5 font-medium text-[#001631] dark:text-[#f6f6f6]">
                         {userProfile?.name || 'Usuario'}
                       </span>
-                      <span className="block truncate text-xs/5 font-normal text-zinc-500 dark:text-[#94a3b8]">
+                      <span className="block truncate text-xs/5 font-normal text-[#001631] dark:text-[#94a3b8]">
                         {userProfile?.email || 'cargando...'}
                       </span>
                     </span>
                   </span>
-                  <ChevronUpIcon className="size-4 shrink-0 text-zinc-500" />
+                  <ChevronUpIcon className="size-4 shrink-0 text-[#001631] dark:text-[#94a3b8]" />
                 </DropdownButton>
                 <DropdownMenu className="min-w-64" anchor="top start">
-                  <DropdownItem href="/admin/mi-perfil">
+                  <DropdownItem href="/admin/perfil">
                     <UserIcon />
                     <DropdownLabel>Mi perfil</DropdownLabel>
                   </DropdownItem>
-                  <DropdownItem href="/admin/dashboard/configuracion">
+                  <DropdownItem href="/admin/configuracion">
                     <Cog8ToothIcon />
                     <DropdownLabel>Configuración</DropdownLabel>
                   </DropdownItem>
@@ -565,7 +566,7 @@ export function PanelGeneralLayout({
               <button
                 type="button"
                 onClick={() => setIsAlertasOpen(true)}
-                className="relative shrink-0 p-2 rounded-lg text-zinc-500 hover:bg-[#001631]/10 hover:text-zinc-900 dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive transition-colors group focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-interactive"
+                className="relative shrink-0 p-2 rounded-lg text-[#001631] hover:bg-[#001631]/10 hover:text-[#001631] dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive transition-colors group focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-interactive"
                 aria-label="Notificaciones"
               >
                 <div className="relative flex items-center justify-center">
@@ -702,9 +703,9 @@ export function PanelGeneralDashboard() {
       />
 
       {error && (
-        <p className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
+        <MensajeEstado tipo="error" rol="alert" className="mb-4">
           {error}
-        </p>
+        </MensajeEstado>
       )}
 
       {/* Tres en fila solo desde 1440 px (pedido del usuario, 2026-10-10): por debajo, con

@@ -27,8 +27,8 @@ import { MarcoDePasos } from './marco-de-pasos';
  * capa de enrutamiento acababa siendo la que decidía a dónde va cada rol.
  *
  * Solo pinta el formulario. Si la cuenta debe la configuración de primer ingreso,
- * manda a `/first-login` —hasta el 2026-09-18 la pintaba aquí mismo—, y el
- * «¿Olvidaste tu contraseña?» lleva a `/recovery`.
+ * manda a `/login/first-login` —hasta el 2026-09-18 la pintaba aquí mismo—, y el
+ * «¿Olvidaste tu contraseña?» lleva a `/login/recovery`.
  *
  * Desde el 2026-10-09 usa el mismo marco que el resto del acceso (`MarcoDePasos`, mockup de
  * móvil): el logo y «Panel de Administración» arriba, y el formulario con las mismas
@@ -94,7 +94,7 @@ function LoginForm({ onEntrando }: { onEntrando: (modo: 'panel' | 'edicion') => 
       }
 
       if (data.mustChangePassword || data.mustSetupSecurityQuestions) {
-        router.push('/first-login');
+        router.push('/login/first-login');
         return;
       }
 
@@ -174,7 +174,7 @@ function LoginForm({ onEntrando }: { onEntrando: (modo: 'panel' | 'edicion') => 
       </button>
 
       <div className={`${authPasosHuecoArribaClass} text-center`}>
-        <Link href="/recovery" className={authPasosQuietLinkClass}>
+        <Link href="/login/recovery" className={authPasosQuietLinkClass}>
           ¿Olvidaste tu contraseña?
         </Link>
       </div>

@@ -1,7 +1,8 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { ArrowDownTrayIcon, ArrowUpTrayIcon, InformationCircleIcon, PlusIcon } from '@heroicons/react/20/solid';
+import { ArrowDownTrayIcon, ArrowUpTrayIcon, PlusIcon } from '@heroicons/react/20/solid';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 import { mensajeDeErrorApi } from '@/shared/lib/errores-api';
 import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
 import { useCargasAlertasInversion } from '../hooks/use-cargas-alertas-inversion';
@@ -137,10 +138,9 @@ export function CargaAlertasInversion({ puedeActualizar }: CargaAlertasInversion
       )}
 
       {puedeActualizar && (
-        <p className="mt-2 flex w-fit items-center gap-1.5 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900/40 dark:text-blue-200">
-          <InformationCircleIcon className="size-3.5 shrink-0" />
+        <MensajeEstado tipo="info" rol="note" className="mt-2 w-fit">
           Formato admitido: .xlsx
-        </p>
+        </MensajeEstado>
       )}
       {(error || errorDescarga) && (
         <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error ?? errorDescarga}</p>

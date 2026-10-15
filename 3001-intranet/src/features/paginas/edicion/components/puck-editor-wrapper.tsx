@@ -80,6 +80,7 @@ const ETIQUETA_ESTADO: Record<string, string> = {
 
 /** Con selector, para no re-renderizar la cabecera ante cualquier cambio del editor. */
 import { VigilanteSesion } from '@/shared/lib/inactividad';
+import { MensajeEstado } from "@/shared/ui/molecules/mensaje-estado";
 
 const usePuckSel = createUsePuck();
 
@@ -218,27 +219,14 @@ function AccionesCabecera({
  */
 function AvisoAccesibilidad({ violaciones }: { violaciones: ViolacionAccesibilidad[] }) {
   return (
-    <div
-      role="alert"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 4,
-        maxWidth: 360,
-        padding: "8px 12px",
-        background: "#fef2f2",
-        border: "1px solid #fca5a5",
-        borderRadius: 6,
-        color: "#b91c1c",
-        fontSize: 13,
-        lineHeight: 1.4,
-      }}
-    >
-      <strong>No se puede enviar a revisión:</strong>
-      {violaciones.map((v, indice) => (
-        <span key={indice}>{mensajeDeViolacion(v)}</span>
-      ))}
-    </div>
+    <MensajeEstado tipo="error" rol="alert" className="max-w-[360px]">
+      <div className="flex flex-col gap-1">
+        <strong>No se puede enviar a revisión:</strong>
+        {violaciones.map((v, indice) => (
+          <span key={indice}>{mensajeDeViolacion(v)}</span>
+        ))}
+      </div>
+    </MensajeEstado>
   );
 }
 

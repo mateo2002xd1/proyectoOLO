@@ -12,7 +12,7 @@ import { IconoAccesos } from '@/shared/ui/atoms/icono-accesos';
 import { NavegacionMobile, type DestinoMobile } from './navegacion-mobile';
 
 /** Las secciones que van dentro de «Más»: si se está en una, «Más» sale marcado. */
-const RUTAS_DE_MAS = ['/admin/actualizaciones', '/admin/respaldos', '/admin/dashboard/configuracion'];
+const RUTAS_DE_MAS = ['/admin/actualizaciones', '/admin/respaldos', '/admin/configuracion'];
 
 interface NavegacionMobilePanelProps {
   /** Páginas esperando aprobación: el globo de «Revisión». */
@@ -66,7 +66,7 @@ export function NavegacionMobilePanel({ pendientesRevision, logo, logoEnBlancoEn
       hijos: [
         { clave: 'actualizaciones', etiqueta: 'Actualizaciones', icono: <IconoActualizaciones />, href: '/admin/actualizaciones', activo: pathname.startsWith('/admin/actualizaciones') },
         { clave: 'respaldos', etiqueta: 'Respaldos', icono: <ArchiveBoxIcon />, href: '/admin/respaldos', activo: pathname.startsWith('/admin/respaldos') },
-        { clave: 'configuracion', etiqueta: 'Configuración', icono: <Cog8ToothIcon />, href: '/admin/dashboard/configuracion', activo: pathname.startsWith('/admin/dashboard/configuracion') },
+        { clave: 'configuracion', etiqueta: 'Configuración', icono: <Cog8ToothIcon />, href: '/admin/configuracion', activo: pathname.startsWith('/admin/configuracion') },
       ],
     },
   ];

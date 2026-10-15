@@ -7,6 +7,7 @@ import { MagnifyingGlassIcon, ShieldExclamationIcon } from '@heroicons/react/24/
 import { Switch } from '@/shared/ui/atoms/switch';
 import { Button, FormaDeModal } from '@/shared/ui/atoms/button';
 import { areaDeModalClass, campoDeModalClass, etiquetaDeModalClass } from '@/shared/ui/molecules/alert';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 import type { Permission } from '../hooks/use-usuarios';
 
 /**
@@ -246,10 +247,10 @@ export function ModalPermisos({
                   className={areaDeModalClass}
                 />
               </div>
-              <p className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-300">
+              <MensajeEstado tipo="advertencia" rol="note">
                 Esto afecta a <strong>todas las personas con el rol «{rol.nombre}»</strong>, no solo
                 a la que estés editando. El cambio se aplica en cuanto guardas.
-              </p>
+              </MensajeEstado>
               
               <div className="pt-2">
                 <Button type="button" variant="verde" onClick={() => setMostrarPermisos(true)} className="w-full">

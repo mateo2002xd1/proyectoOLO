@@ -16,10 +16,10 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 
 | Descripción de pasos a realizar | Resultado obtenido |
 | :--- | :--- |
-| **1.** Entrar a login de Sitio Web con clave temporal | Detecta primer ingreso y traslada forzosamente a pantalla de configuración (`/first-login`) |
+| **1.** Entrar a login de Sitio Web con clave temporal | Detecta primer ingreso y traslada forzosamente a pantalla de configuración (`/login/first-login`) |
 | **2.** Configurar nueva clave definitiva en Sitio Web | Valida requisitos de política en tiempo real y traslada a pantalla de preguntas |
 | **3.** Configurar 3 preguntas de seguridad en Sitio Web | Guarda respuestas, presenta confirmación exitosa y botón para iniciar sesión |
-| **4.** Entrar a login de Intranet con clave temporal | Detecta primer ingreso y traslada forzosamente a pantalla de configuración (`/first-login`) |
+| **4.** Entrar a login de Intranet con clave temporal | Detecta primer ingreso y traslada forzosamente a pantalla de configuración (`/login/first-login`) |
 | **5.** Configurar nueva clave definitiva en Intranet | Valida requisitos de política en tiempo real y traslada a pantalla de preguntas |
 | **6.** Configurar 3 preguntas de seguridad en Intranet | Guarda respuestas, presenta confirmación exitosa y botón para iniciar sesión |
 
@@ -58,11 +58,11 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 
 | Descripción de pasos a realizar | Resultado obtenido |
 | :--- | :--- |
-| **1.** Clic en "¿Olvidaste tu contraseña?" en login de Sitio Web | Traslada a pantalla `/recovery` solicitando correo institucional |
-| **2.** Ingresar correo institucional `@sena.edu.co` y dar Continuar | Valida sintaxis, comprueba preguntas configuradas y navega a `/security-questions` |
-| **3.** Responder secuencialmente las 3 preguntas de seguridad | Valida respuestas confidenciales en servidor sin depender de correo externo y traslada a `/reset-password` |
+| **1.** Clic en "¿Olvidaste tu contraseña?" en login de Sitio Web | Traslada a pantalla `/login/recovery` solicitando correo institucional |
+| **2.** Ingresar correo institucional `@sena.edu.co` y dar Continuar | Valida sintaxis, comprueba preguntas configuradas y navega a `/login/first-login/security-questions` |
+| **3.** Responder secuencialmente las 3 preguntas de seguridad | Valida respuestas confidenciales en servidor sin depender de correo externo y traslada a `/login/recovery/reset-password` |
 | **4.** Definir nueva contraseña cumpliendo requisitos y confirmar | Valida política de seguridad (12 caracteres, símbolos, etc.) y coincidencia exacta |
-| **5.** Confirmar cambio de clave en Sitio Web | Muestra pantalla `/reset-success` y botón para volver a `/login` |
+| **5.** Confirmar cambio de clave en Sitio Web | Muestra pantalla `/login/recovery/reset-success` y botón para volver a `/login` |
 | **6.** Iniciar sesión en Intranet con la nueva contraseña | Comprueba acceso exitoso en Intranet validando la sincronización de la nueva clave |
 
 ---

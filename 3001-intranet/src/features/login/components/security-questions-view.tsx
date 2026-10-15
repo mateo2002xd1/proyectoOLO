@@ -28,6 +28,7 @@ import {
 import { type CatalogQuestion } from './question-picker';
 import { AuthSuccessScreen } from './auth-success-screen';
 import { mensajeDeError } from '@/shared/lib/errors';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 
 const TOTAL_SETUP_QUESTIONS = 3;
 
@@ -128,7 +129,7 @@ export function SecurityQuestionsView() {
       const nombre = typeof respuesta?.nombre === 'string' ? respuesta.nombre.trim() : '';
       if (nombre) sessionStorage.setItem('recoveryName', nombre);
       else sessionStorage.removeItem('recoveryName');
-      router.push('/reset-password');
+      router.push('/login/recovery/reset-password');
     } catch (error) {
       setErrors({ general: mensajeDeError(error, 'Las respuestas no coinciden. Intenta de nuevo.') });
       setCurrentStep(0);
@@ -219,12 +220,9 @@ export function SecurityQuestionsView() {
     >
       <form onSubmit={handleSubmit} noValidate>
         {errors.general && (
-          <div
-            className={accesoErrorGeneralClass}
-            role="alert"
-          >
+          <MensajeEstado tipo="error" rol="alert" className={accesoErrorGeneralClass}>
             {errors.general}
-          </div>
+          </MensajeEstado>
         )}
 
         {mode === 'verify' ? (

@@ -1,8 +1,14 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { Button, FormaDeModal } from '@/shared/ui/atoms/button';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 
+/**
+ * Las medidas son las de los demás modales del panel (`shared/ui/molecules/alert.tsx`):
+ * caja con esquinas de 32, título de 20 px, texto de 16 y botones de 44 px de alto con
+ * esquinas de 32 (los toman de `FormaDeModal`).
+ */
 export function ModalConfirmarRestauracion({
   abierto,
   versionAnteriorNumero,
@@ -37,43 +43,33 @@ export function ModalConfirmarRestauracion({
       onMouseDown={(e) => {
         if (e.target === dialogo.current) onCancelar();
       }}
-      className="olo-anim-dialogo m-auto w-full max-w-md rounded-xl border border-zinc-200 bg-white p-0 text-zinc-900 backdrop:bg-[#0f172a]/50 backdrop:backdrop-blur-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:text-[#f6f6f6]"
+      className="olo-anim-dialogo m-auto w-full max-w-md rounded-[32px] border-0 bg-white p-0 shadow-[0_24px_48px_-20px_rgba(0,0,0,0.15)] backdrop:bg-[#0f172a]/40 backdrop:backdrop-blur-sm dark:bg-[#1e2538]"
     >
-      <div className="flex flex-col p-6">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-500">
-            <AlertTriangle className="h-5 w-5" />
-          </div>
-          <h2 className="text-lg font-bold text-zinc-900 dark:text-[#f6f6f6]">
-            ¿Restaurar versión anterior?
-          </h2>
-        </div>
-        
-        <div className="mt-4 text-sm text-zinc-600 dark:text-zinc-300">
-          <p>
-            Estás a punto de restaurar la versión <strong>{versionAnteriorNumero}</strong> de <strong>/{slug}</strong>.
-          </p>
-          <p className="mt-2">
-            Esta acción publicará nuevamente la versión {versionAnteriorNumero} y pasará la versión actual ({numeroVersionActual}) al archivo histórico.
-          </p>
-        </div>
+      <div className="px-6 py-6 sm:px-8 sm:py-8">
+        <h2 className="m-0 text-xl font-semibold text-[#001631] dark:text-[#e6e8f0]">
+          Restaurar versión anterior
+        </h2>
 
-        <div className="mt-6 flex flex-col-reverse justify-end gap-3 sm:flex-row">
-          <button
-            type="button"
-            onClick={onCancelar}
-            className="inline-flex w-full justify-center rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 shadow-sm hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-brand-interactive/50 sm:w-auto dark:border-zinc-600 dark:bg-transparent dark:text-zinc-200 dark:hover:bg-zinc-800"
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            onClick={onConfirmar}
-            className="inline-flex w-full justify-center rounded-lg bg-brand-interactive px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand-interactive-hover focus:outline-none focus:ring-2 focus:ring-brand-interactive/50 sm:w-auto"
-          >
-            Aceptar
-          </button>
-        </div>
+        <p className="mt-2 text-base text-[#4b5563] dark:text-[#95a0b8]">
+          Estás a punto de restaurar la versión <strong>{versionAnteriorNumero}</strong> de{' '}
+          <strong>/{slug}</strong>.
+        </p>
+
+        <MensajeEstado tipo="advertencia" rol="note" className="mt-4">
+          Esta acción publicará nuevamente la versión {versionAnteriorNumero} y pasará la
+          versión actual ({numeroVersionActual}) al archivo histórico.
+        </MensajeEstado>
+
+        <FormaDeModal>
+          <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
+            <Button type="button" variant="plain" onClick={onCancelar}>
+              Cancelar
+            </Button>
+            <Button type="button" variant="primary" onClick={onConfirmar}>
+              Aceptar
+            </Button>
+          </div>
+        </FormaDeModal>
       </div>
     </dialog>
   );

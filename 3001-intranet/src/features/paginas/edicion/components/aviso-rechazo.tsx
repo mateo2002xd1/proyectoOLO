@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
 import { BellAlertIcon } from '@heroicons/react/24/outline';
+import { IconoError } from '@/shared/ui/molecules/mensaje-estado';
 
 export interface Rechazo {
   /** Puede faltar en versiones rechazadas antes de que el motivo fuera obligatorio. */
@@ -78,7 +79,7 @@ export function AvisoRechazo({ motivo, numeroVersion }: Rechazo) {
             right: 5,
             width: 8,
             height: 8,
-            background: '#dc2626',
+            background: '#d90000',
             borderRadius: '50%',
           }}
         />
@@ -130,9 +131,11 @@ export function AvisoRechazo({ motivo, numeroVersion }: Rechazo) {
                 paddingRight: 'clamp(1rem, 5vw, 3.75rem)',
                 display: 'flex',
                 flexDirection: 'column',
+                // Los colores del mensaje de estado de error (`MensajeEstado`): fondo
+                // #ffe9e9 y letra e icono #d90000, sin borde.
                 background: '#ffe9e9',
-                border: '1px solid #dc2626',
-                borderRadius: 12,
+                color: '#d90000',
+                borderRadius: 16,
                 boxShadow: '0 20px 40px -12px rgba(0,0,0,0.35)',
                 textAlign: 'left',
               }}
@@ -154,7 +157,7 @@ export function AvisoRechazo({ motivo, numeroVersion }: Rechazo) {
                   background: 'transparent',
                   border: 'none',
                   borderRadius: 6,
-                  color: '#dc2626',
+                  color: '#d90000',
                   cursor: 'pointer',
                   fontSize: 14,
                 }}
@@ -163,7 +166,19 @@ export function AvisoRechazo({ motivo, numeroVersion }: Rechazo) {
               </button>
 
               {/* Pegado arriba, fuera del bloque que se centra abajo. */}
-              <p style={{ margin: 0, paddingTop: 6, paddingRight: 28, fontSize: 15, fontWeight: 600, color: '#dc2626' }}>
+              <p
+                style={{
+                  margin: 0,
+                  paddingTop: 6,
+                  paddingRight: 28,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  fontSize: 15,
+                  fontWeight: 600,
+                }}
+              >
+                <IconoError />
                 {titulo}
               </p>
 
@@ -174,7 +189,6 @@ export function AvisoRechazo({ motivo, numeroVersion }: Rechazo) {
                     margin: 0,
                     fontSize: 14,
                     lineHeight: 1.6,
-                    color: '#374151',
                     whiteSpace: 'pre-wrap',
                   }}
                 >
@@ -182,7 +196,7 @@ export function AvisoRechazo({ motivo, numeroVersion }: Rechazo) {
                     ? motivo
                     : 'El administrador no dejó un motivo escrito. Consúltalo antes de reenviar.'}
                 </p>
-                <p style={{ margin: '12px 0 0', fontSize: 12, color: '#6b7280' }}>
+                <p style={{ margin: '12px 0 0', fontSize: 12 }}>
                   Estás editando esa misma versión. Corrige y vuelve a enviarla a revisión.
                 </p>
               </div>

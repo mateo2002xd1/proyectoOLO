@@ -4326,6 +4326,18 @@ button.text-link,
   box-shadow: 0 0 0 2px #001631;
 }
 
+/* Nombre de la página en el modal de eliminar (título y etiqueta), en el rojo del botón.
+   Solo el nombre: las comillas « » quedan del color del texto. */
+.nueva-seccion-nombre-peligro {
+  color: #dc2626;
+}
+
+/* Campo de confirmación del modal de eliminar: el resalte en el rojo del botón. */
+.nueva-seccion-campo--peligro:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 2px #dc2626;
+}
+
 .nueva-seccion-campo:disabled {
   background: #f1f4f7;
 }
@@ -4345,6 +4357,12 @@ button.text-link,
   border-radius: 0.25rem;
   font-size: 0.85rem;
   color: #002c46;
+}
+
+/* Párrafo de contexto del modal de eliminar: va justo bajo el título y deja aire
+   antes de la etiqueta del campo de confirmación. */
+.nueva-seccion-ruta--aviso {
+  margin: 0 0 1.25rem;
 }
 
 .nueva-seccion-error {

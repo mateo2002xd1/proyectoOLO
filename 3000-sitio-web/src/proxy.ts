@@ -79,7 +79,7 @@ export async function proxy(request: NextRequest) {
     }
     // Must change password or setup security questions
     if (mustChangePassword || mustSetupSecurityQuestions) {
-      return NextResponse.redirect(new URL('/first-login', request.url));
+      return NextResponse.redirect(new URL('/login/first-login', request.url));
     }
     return NextResponse.next();
   }
@@ -119,6 +119,35 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  // /admin/configuracion — requiere acceso al panel
+  if (pathname.startsWith('/admin/configuracion')) {
+    if (!hasAccesoPanel) {
+      return loginRedirect();
+    }
+  }
+
+  // /admin/respaldos — requiere acceso al panel
+  if (pathname.startsWith('/admin/respaldos')) {
+    if (!hasAccesoPanel) {
+      return loginRedirect();
+    }
+  }
+
+  // /admin/buscar — requiere acceso al panel
+  if (pathname.startsWith('/admin/buscar')) {
+    if (!hasAccesoPanel) {
+      return loginRedirect();
+    }
+  }
+
+  // /admin/perfil — requiere acceso al panel. `/admin/mi-perfil` no llega aquí: lo
+  // redirige `next.config.mjs`, que se evalúa antes.
+  if (pathname.startsWith('/admin/perfil')) {
+    if (!hasAccesoPanel) {
+      return loginRedirect();
+    }
+  }
+
   // /editor/* — cualquiera con permisos de edición. Vive fuera de /admin desde el
   // 2026-09-18; /admin/editor/* redirige aquí desde next.config.mjs.
   if (pathname.startsWith('/editor')) {
@@ -129,8 +158,8 @@ export async function proxy(request: NextRequest) {
 
   // Must change password or setup security questions
   if (mustChangePassword || mustSetupSecurityQuestions) {
-    if (!pathname.startsWith('/first-login')) {
-      return NextResponse.redirect(new URL('/first-login', request.url));
+    if (!pathname.startsWith('/login/first-login')) {
+      return NextResponse.redirect(new URL('/login/first-login', request.url));
     }
   }
 
@@ -145,12 +174,13 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Protege dashboard, usuarios/users, auditoría, revisión, mi-perfil, editor y
-  // maneja /login y /first-login.
+  // Protege dashboard, usuarios/users, auditoría, revisión, perfil, editor y
+  // maneja /login y /login/first-login.
   //
   // Es una lista explícita, no un prefijo: los pasos de la recuperación
-  // (`/recovery`, `/security-questions`, `/reset-password`, `/reset-success`) quedan
-  // fuera a propósito, porque quien va a recuperar su contraseña no tiene sesión.
+  // (`/login/recovery/*` y `/login/first-login/security-questions`) quedan fuera a
+  // propósito, porque quien va a recuperar su contraseña no tiene sesión. Por eso
+  // `/login/first-login` va sin `:path*`.
   matcher: [
     '/admin/dashboard/:path*',
     '/admin/users/:path*',
@@ -165,10 +195,16 @@ export const config = {
     '/admin/revision',
     '/admin/actualizaciones/:path*',
     '/admin/actualizaciones',
-    '/admin/mi-perfil/:path*',
-    '/admin/mi-perfil',
+    '/admin/configuracion/:path*',
+    '/admin/configuracion',
+    '/admin/respaldos/:path*',
+    '/admin/respaldos',
+    '/admin/buscar/:path*',
+    '/admin/buscar',
+    '/admin/perfil/:path*',
+    '/admin/perfil',
     '/editor/:path*',
     '/login',
-    '/first-login',
+    '/login/first-login',
   ],
 };

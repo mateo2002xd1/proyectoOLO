@@ -29,7 +29,7 @@ export function ResetSuccessView() {
   const terminada = recuperacion?.etapa === 'terminada';
 
   useEffect(() => {
-    if (!terminada) router.replace('/recovery');
+    if (!terminada) router.replace('/login/recovery');
   }, [terminada, router]);
 
   if (!terminada) return null;

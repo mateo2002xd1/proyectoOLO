@@ -12,6 +12,7 @@ import {
   type Plantilla,
 } from '@/features/paginas';
 import { GooLoader } from '@/shared/ui/atoms/goo-loader';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 
 // Tiempo mínimo del loader para que la animación se complete antes de mostrar el editor.
 // Debe coincidir con el editor de la intranet.
@@ -88,7 +89,9 @@ export function EditorClient({ slug, plantilla, paginaDeReferencia }: EditorClie
   if (error && !pagina) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100dvh' }}>
-        <p style={{ color: 'red' }}>Error: {error}</p>
+        <MensajeEstado tipo="error" rol="alert" className="max-w-md">
+          {error}
+        </MensajeEstado>
       </div>
     );
   }
@@ -96,43 +99,21 @@ export function EditorClient({ slug, plantilla, paginaDeReferencia }: EditorClie
   return (
     <>
       {error && pagina && (
-        <div
-          role="alert"
-          style={{
-            position: 'fixed',
-            top: 16,
-            right: 16,
-            zIndex: 99999,
-            backgroundColor: '#fee4e2',
-            color: '#b42318',
-            border: '1px solid #fda29b',
-            // 16, como todos los mensajes de estado del panel.
-            borderRadius: 16,
-            padding: '10px 16px',
-            fontSize: 13,
-            boxShadow: '0 4px 12px rgba(16, 24, 40, 0.15)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            maxWidth: '90vw',
-          }}
-        >
-          <span>{error}</span>
-          <button
-            type="button"
-            onClick={() => setError(null)}
-            style={{
-              border: 'none',
-              background: 'transparent',
-              color: '#b42318',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              fontSize: 14,
-            }}
-            aria-label="Cerrar aviso de error"
-          >
-            ✕
-          </button>
+        // El mensaje de estado de error, flotando arriba a la derecha sobre el editor.
+        <div style={{ position: 'fixed', top: 16, right: 16, zIndex: 99999, maxWidth: '90vw' }}>
+          <MensajeEstado tipo="error" rol="alert" className="shadow-[0_4px_12px_rgba(16,24,40,0.15)]">
+            <div className="flex items-start gap-3">
+              <span className="min-w-0 flex-1">{error}</span>
+              <button
+                type="button"
+                onClick={() => setError(null)}
+                className="shrink-0 cursor-pointer border-0 bg-transparent font-bold"
+                aria-label="Cerrar aviso de error"
+              >
+                ✕
+              </button>
+            </div>
+          </MensajeEstado>
         </div>
       )}
       <PuckEditorWrapper

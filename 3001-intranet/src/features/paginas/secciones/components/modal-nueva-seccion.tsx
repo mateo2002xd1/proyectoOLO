@@ -3,6 +3,8 @@
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
+import { poppins } from '@/shared/lib/fonts';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 import {
   slugificar,
   motivoSlugInvalido,
@@ -82,13 +84,13 @@ export function ModalNuevaSeccion({ abierto, alCerrar }: ModalNuevaSeccionProps)
         if (evento.key === 'Escape') cerrar();
       }}
     >
-      <form className="nueva-seccion-caja olo-anim-caja" onSubmit={enviar}>
+      <form className={`nueva-seccion-caja olo-anim-caja ${poppins.className}`} onSubmit={enviar}>
         <h2 id="nueva-seccion-titulo" className="nueva-seccion-titulo">
-          Nueva página
+          Crear nueva página
         </h2>
 
         <label className="nueva-seccion-etiqueta" htmlFor="nueva-seccion-nombre">
-          ¿Cómo se llama?
+          Nombre de la página
         </label>
         <input
           id="nueva-seccion-nombre"
@@ -99,31 +101,22 @@ export function ModalNuevaSeccion({ abierto, alCerrar }: ModalNuevaSeccionProps)
           maxLength={120}
           autoFocus
           disabled={creando}
-          aria-describedby="nueva-seccion-ruta"
+          aria-describedby={slug ? 'nueva-seccion-ruta' : undefined}
         />
 
-        <p id="nueva-seccion-ruta" className="nueva-seccion-ruta">
-          {slug ? (
-            <>
-              Su dirección será <code>/{slug}</code>
-            </>
-          ) : (
-            'La dirección se genera con el nombre que escribas.'
-          )}
-        </p>
+        {slug && (
+          <p id="nueva-seccion-ruta" className="nueva-seccion-ruta">
+            Su dirección será <code>/{slug}</code>
+          </p>
+        )}
 
         {avisoDeRuta && <p className="nueva-seccion-error">{avisoDeRuta}</p>}
         {error && <p className="nueva-seccion-error">{error}</p>}
 
-        <ul className="nueva-seccion-notas">
-          <li>
-            Se crea vacía y <strong>no se ve hasta que alguien la apruebe</strong>.
-          </li>
-          <li>
-            Podrás editarla tú y quien comparta tu rol, porque los permisos se dan por
-            rol.
-          </li>
-        </ul>
+        <MensajeEstado tipo="info" rol="note" className="mt-4">
+          La página se creará en estado borrador, NO será pública hasta que sea
+          aprobada por el administrador.
+        </MensajeEstado>
 
         <div className="nueva-seccion-acciones">
           <button

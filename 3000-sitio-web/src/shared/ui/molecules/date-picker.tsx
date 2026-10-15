@@ -103,6 +103,10 @@ type DatePickerProps = {
   className?: string;
   /** Necesario cuando la etiqueta visible no es un `<label>` asociado. */
   ariaLabel?: string;
+  /** Falta la fecha o no vale: borde en el rojo de los errores (`ErrorDeCampo`). */
+  invalido?: boolean;
+  /** El `id` del aviso que explica el error, para el lector de pantalla. */
+  ariaDescribedBy?: string;
 };
 
 export function DatePicker({
@@ -114,6 +118,8 @@ export function DatePicker({
   disabled = false,
   className = '',
   ariaLabel,
+  invalido = false,
+  ariaDescribedBy,
 }: DatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   // En un modal, la forma de sus campos: esquinas de 32 y 16 px de letra (`alert.tsx`).
@@ -210,10 +216,14 @@ export function DatePicker({
         aria-haspopup="dialog"
         aria-expanded={isOpen}
         aria-label={ariaLabel}
+        // Sin `aria-invalid`: no vale en un botón. El aviso se lee por `aria-describedby`.
+        aria-describedby={ariaDescribedBy}
         className={`group flex h-11 w-full items-center justify-between gap-2 border text-left outline-none transition duration-200 ${enModal ? 'rounded-[32px] pl-5 pr-2' : 'rounded-[16px] px-3'
           } ${isOpen
           ? 'border-[#002237] bg-white shadow-[0_0_0_3px_rgba(0,34,55,0.12)] dark:bg-[#252f47]'
-          : enModal
+          : invalido
+            ? 'border-[#d90000] bg-white dark:border-[#ff6b6b] dark:bg-[#131b2f]'
+            : enModal
             ? 'border-[#d9d9d9] bg-white hover:border-[#001631]/40 dark:border-[#2d3649] dark:bg-[#131b2f] dark:hover:border-[#3a4660]'
             : 'border-[#d0d5dd] bg-white hover:border-[#002237]/40 hover:bg-[#002237]/5 dark:border-[#2d3649] dark:bg-[#252f47] dark:hover:border-[#3a4660] dark:hover:bg-white/5'
           } ${disabled ? 'cursor-not-allowed opacity-60' : ''}`}

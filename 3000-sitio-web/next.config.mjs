@@ -112,12 +112,12 @@ const nextConfig = {
         // Era una sola pantalla con los cuatro pasos; ahora cada paso es una ruta y
         // esta es la primera.
         source: '/admin/recuperar',
-        destination: '/recovery',
+        destination: '/login/recovery',
         permanent: false,
       },
       {
         source: '/admin/cambiar-contrasena',
-        destination: '/first-login',
+        destination: '/login/first-login',
         permanent: false,
       },
       {
@@ -150,6 +150,51 @@ const nextConfig = {
       {
         source: '/admin/preview/:path*',
         destination: '/preview/:path*',
+        permanent: false,
+      },
+      {
+        // Desde el 2026-10-15 los pasos del acceso cuelgan de `/login`, igual que en la
+        // intranet: el primer ingreso en `/login/first-login` y la recuperación en
+        // `/login/recovery`. Antes eran hermanos de `/login` en la raíz.
+        source: '/first-login',
+        destination: '/login/first-login',
+        permanent: false,
+      },
+      {
+        source: '/security-questions',
+        destination: '/login/first-login/security-questions',
+        permanent: false,
+      },
+      {
+        source: '/recovery',
+        destination: '/login/recovery',
+        permanent: false,
+      },
+      {
+        source: '/reset-password',
+        destination: '/login/recovery/reset-password',
+        permanent: false,
+      },
+      {
+        source: '/reset-success',
+        destination: '/login/recovery/reset-success',
+        permanent: false,
+      },
+      {
+        // Configuración, el buscador y el perfil dejaron `/admin/dashboard/` y
+        // `/admin/mi-perfil` el 2026-10-15: cuelgan directamente de `/admin`.
+        source: '/admin/dashboard/configuracion',
+        destination: '/admin/configuracion',
+        permanent: false,
+      },
+      {
+        source: '/admin/dashboard/buscar',
+        destination: '/admin/buscar',
+        permanent: false,
+      },
+      {
+        source: '/admin/mi-perfil',
+        destination: '/admin/perfil',
         permanent: false,
       },
     ];

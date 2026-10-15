@@ -108,7 +108,7 @@ export function permisosDeLaSesion(): Promise<string[]> {
       // vista, se la lleva a terminar la configuración.
       if (data?.configuracionPendiente === true) {
         // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- servicio fuera de React, sin router; la recarga completa saca del portal la sesión a medio configurar
-        window.location.href = '/first-login';
+        window.location.href = '/login/first-login';
         return [];
       }
       return Array.isArray(data?.permisos) ? data.permisos.map(String) : [];

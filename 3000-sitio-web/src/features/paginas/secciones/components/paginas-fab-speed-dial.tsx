@@ -36,7 +36,7 @@ function esSuperadminSincrono(): boolean {
   return rol === 'superadmin';
 }
 
-const sinSuscripcion = () => () => {};
+const sinSuscripcion = () => () => { };
 const enCliente = () => true;
 const enServidor = () => false;
 
@@ -177,9 +177,8 @@ export function PaginasFabSpeedDial() {
       >
         {/* Submenú de acciones desplegables hacia arriba */}
         <div
-          className={`fab-speed-dial__acciones ${
-            abierto ? 'fab-speed-dial__acciones--visible' : ''
-          }`}
+          className={`fab-speed-dial__acciones ${abierto ? 'fab-speed-dial__acciones--visible' : ''
+            }`}
           role="menu"
           aria-hidden={!abierto}
         >
@@ -333,9 +332,8 @@ export function PaginasFabSpeedDial() {
             ref={triggerRef}
             type="button"
             onClick={alternarMenu}
-            className={`fab-speed-dial__trigger ${
-              abierto ? 'fab-speed-dial__trigger--activo' : ''
-            }`}
+            className={`fab-speed-dial__trigger ${abierto ? 'fab-speed-dial__trigger--activo' : ''
+              }`}
             aria-haspopup="menu"
             aria-expanded={abierto}
             aria-label={abierto ? 'Cerrar menú de acciones' : 'Abrir menú de acciones'}
@@ -353,7 +351,7 @@ export function PaginasFabSpeedDial() {
         {/* Salir del modo edición: siempre a la vista, debajo del lápiz */}
         <div className="fab-speed-dial__item fab-speed-dial__item--salir">
           <span className="fab-speed-dial__tooltip" role="tooltip">
-            Salir de modo edición
+            Salir del modo edición
           </span>
           <button
             type="button"
@@ -363,7 +361,7 @@ export function PaginasFabSpeedDial() {
             }}
             disabled={saliendo}
             className="fab-speed-dial__btn fab-speed-dial__btn--salir"
-            aria-label="Salir de modo edición"
+            aria-label="Salir del modo edición"
           >
             <svg
               viewBox="0 0 24 24"

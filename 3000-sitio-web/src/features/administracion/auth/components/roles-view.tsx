@@ -20,6 +20,8 @@ import {
   AlertActions,
   areaDeModalClass,
   campoDeModalClass,
+  campoDeModalConErrorClass,
+  ErrorDeCampo,
   etiquetaDeModalClass,
 } from '@/shared/ui/molecules/alert';
 import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
@@ -48,6 +50,8 @@ function ModalNuevoEditor({
   const [descripcion, setDescripcion] = useState('');
   const [selecionados, setSeleccionados] = useState<Set<string>>(new Set());
   const [mostrandoPermisos, setMostrandoPermisos] = useState(false);
+  // Se marca al pulsar «Guardar» sin nombre y se quita en cuanto se escribe.
+  const [faltaNombre, setFaltaNombre] = useState(false);
 
   // Aquí no hay efecto que limpie el formulario al abrir: el padre cambia la `key` en
   // cada apertura, así que este componente se monta de cero y el estado ya nace vacío.
@@ -56,7 +60,10 @@ function ModalNuevoEditor({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nombreExtra.trim()) return;
+    if (!nombreExtra.trim()) {
+      setFaltaNombre(true);
+      return;
+    }
     const nombreFinal = `Editor ${nombreExtra.trim()}`;
     await onGuardar(nombreFinal, descripcion.trim(), Array.from(selecionados));
   };
@@ -68,7 +75,8 @@ function ModalNuevoEditor({
         <AlertDescription>
           Completa los campos para crear un nuevo rol de editor.
         </AlertDescription>
-        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+        {/* `noValidate`: la falta del nombre la marca `handleSubmit` en el campo, no el globo del navegador. */}
+        <form onSubmit={handleSubmit} noValidate className="mt-4 space-y-4">
           <div>
             <label htmlFor="rol-nombre" className={etiquetaDeModalClass}>
               Nombre del rol
@@ -82,10 +90,16 @@ function ModalNuevoEditor({
                 maxLength={70}
                 placeholder="ej: Inicio"
                 value={nombreExtra}
-                onChange={(e) => setNombreExtra(e.target.value)}
-                className={campoDeModalClass}
+                onChange={(e) => {
+                  setNombreExtra(e.target.value);
+                  setFaltaNombre(false);
+                }}
+                aria-invalid={faltaNombre || undefined}
+                aria-describedby={faltaNombre ? 'rol-nombre-error' : undefined}
+                className={faltaNombre ? campoDeModalConErrorClass : campoDeModalClass}
               />
             </div>
+            {faltaNombre && <ErrorDeCampo id="rol-nombre-error">Falta el nombre del rol.</ErrorDeCampo>}
           </div>
           <div>
             <label htmlFor="rol-descripcion" className={etiquetaDeModalClass}>

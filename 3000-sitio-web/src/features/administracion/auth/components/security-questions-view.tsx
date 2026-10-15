@@ -24,7 +24,7 @@ import { verificarRespuestas } from '../services/recuperacion.service';
  *
  * En la intranet esta misma ruta sirve también para configurar las preguntas cuando
  * es lo único que le falta a la cuenta. Aquí no: esa configuración, sola o junto a la
- * contraseña, la resuelve entera `/first-login`, que pregunta al servidor qué falta.
+ * contraseña, la resuelve entera `/login/first-login`, que pregunta al servidor qué falta.
  *
  * Diseño nuevo desde el 2026-10-09 (mockups de tablet): bajo «Preguntas de seguridad»
  * la pregunta se ve en una caja con la forma de un campo, y el avance en tres barras.
@@ -45,7 +45,7 @@ export function SecurityQuestionsView() {
   // Sin correo ni preguntas (se abrió la URL a mano, o se recargó) no hay nada que
   // preguntar: el flujo empieza por el correo.
   useEffect(() => {
-    if (!datos) router.replace('/recovery');
+    if (!datos) router.replace('/login/recovery');
   }, [datos, router]);
 
   if (!datos) return null;
@@ -73,7 +73,7 @@ export function SecurityQuestionsView() {
       const verificadas = respuestasParaApi();
       const { nombre } = await verificarRespuestas(datos.email, verificadas);
       confirmarRespuestas(verificadas, nombre);
-      router.push('/reset-password');
+      router.push('/login/recovery/reset-password');
     } catch (error) {
       setErrors({ general: (error as Error).message });
       // Se vuelve al principio del cuestionario: dejar las respuestas puestas

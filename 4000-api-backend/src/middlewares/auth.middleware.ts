@@ -24,7 +24,7 @@ export const CODIGO_CONFIGURACION_PENDIENTE = 'CONFIGURACION_PENDIENTE';
  * o sin preguntas de seguridad, solo sirve para terminar esa configuración: para todo
  * lo demás responde 403 con `codigo: CONFIGURACION_PENDIENTE`. Hasta el 2026-10-09 solo
  * lo hacían cumplir los proxies de las dos apps, redirigiendo pantallas; la API
- * aceptaba la sesión entera, así que quien salía de `/first-login` sin terminar
+ * aceptaba la sesión entera, así que quien salía de `/login/first-login` sin terminar
  * («Regresar al sitio web») seguía en el portal con sus botones de edición y con todo
  * su rol detrás. Las rutas del propio primer ingreso usan
  * `requireAuthConConfiguracionPendiente`.

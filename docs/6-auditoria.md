@@ -3394,7 +3394,7 @@ la barra lateral, los modales con listas largas— tienen el mismo descuido.
 
 ---
 
-## sesión 02-10-2026: botón «Salir de modo edición» y tooltips en el botón flotante
+## sesión 02-10-2026: botón «Salir del modo edición» y tooltips en el botón flotante
 
 **Qué era.** El botón flotante del lápiz (`PaginasFabSpeedDial`) solo abría el menú de
 acciones; quien editaba no tenía cómo salir de ese modo sin ir al panel. Se añade, debajo del
@@ -3402,7 +3402,7 @@ lápiz, un botón rojo de salir y se rotulan con tooltip los botones que no lo t
 
 | App | Archivo | Cambio |
 |---|---|---|
-| Sitio | `features/paginas/secciones/components/paginas-fab-speed-dial.tsx` | Botón «Salir de modo edición» siempre visible bajo el lápiz: `cerrarSesionLocal()` y recarga de la misma página, así el portal queda como lo ve un visitante. Tooltip «Opciones de edición» en el lápiz («Cerrar opciones» con el menú abierto; se quitó su `title` para no duplicar) |
+| Sitio | `features/paginas/secciones/components/paginas-fab-speed-dial.tsx` | Botón «Salir del modo edición» siempre visible bajo el lápiz: `cerrarSesionLocal()` y recarga de la misma página, así el portal queda como lo ve un visitante. Tooltip «Opciones de edición» en el lápiz («Cerrar opciones» con el menú abierto; se quitó su `title` para no duplicar) |
 | Intranet | `features/paginas/secciones/components/paginas-fab-speed-dial.tsx` | Igual, pero la salida hace `POST /api-backend/logout` y lleva a `/login?logout=1`, como el resto de salidas de la intranet |
 | Ambas | `style/globals.css` | `.fab-speed-dial--con-salir` (columna), `.fab-speed-dial__btn--salir` (rojo `#b3261e`, icono blanco) y tooltip rojo para salir y para eliminar |
 

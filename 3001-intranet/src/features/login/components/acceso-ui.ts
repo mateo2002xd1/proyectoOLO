@@ -90,9 +90,11 @@ export const accesoIconoCampoClass = 'text-white/80 hover:text-white';
 /** Error bajo un campo. */
 export const accesoErrorClass = 'mt-1.5 text-sm text-red-300';
 
-/** Banda roja para el error que no es de un campo: clara, se lee sobre el azul. */
-export const accesoErrorGeneralClass =
-  'mb-[clamp(0.75rem,2.2dvh,1.5rem)] rounded-[16px] border border-red-300 bg-red-50 px-4 py-2.5 text-sm text-red-600 md:mb-6';
+/**
+ * Hueco del error que no es de un campo. El error en sí es el mensaje de estado del
+ * proyecto (`<MensajeEstado tipo="error">`): claro, se lee sobre el azul.
+ */
+export const accesoErrorGeneralClass = 'mb-[clamp(0.75rem,2.2dvh,1.5rem)] md:mb-6';
 
 /** Rótulo pequeño en mayúsculas («PREGUNTA 1 DE 3»). */
 export const accesoRotuloClass = 'block text-xs font-semibold uppercase tracking-wide text-white/70';

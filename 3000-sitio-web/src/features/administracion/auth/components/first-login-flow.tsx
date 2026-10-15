@@ -24,7 +24,7 @@ import { useRequisitosAlEnfocar } from '../hooks/use-requisitos-al-enfocar';
  * Configuración obligatoria de primer ingreso: contraseña definitiva y preguntas
  * de seguridad.
  *
- * Vive en `/first-login`. Llegan aquí el login, cuando responde que la cuenta lo
+ * Vive en `/login/first-login`. Llegan aquí el login, cuando responde que la cuenta lo
  * debe, y el middleware, que manda a esta ruta a cualquier sesión con algo pendiente.
  * Hasta el 2026-09-18 el login la pintaba dentro de su propia pantalla; ahora es una
  * ruta, como en la intranet.

@@ -73,7 +73,7 @@ export function SidebarItem({
   const baseClasses = `group flex items-center gap-3 rounded-lg px-3 py-2 text-base transition [&>svg]:size-5 [&>svg]:shrink-0 ${
     current
       ? 'bg-zinc-100 font-semibold text-[#7DB728] dark:bg-brand-interactive/20 dark:text-brand-interactive [&>svg]:text-[#7DB728] dark:[&>svg]:text-brand-interactive'
-      : 'text-zinc-600 hover:bg-[#001631]/10 hover:text-[#7DB728] dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive [&>svg]:text-zinc-500 dark:[&>svg]:text-slate-400 hover:[&>svg]:text-[#7DB728] dark:hover:[&>svg]:text-brand-interactive'
+      : 'text-[#001631] hover:bg-[#001631]/10 hover:text-[#7DB728] dark:text-slate-400 dark:hover:bg-brand-interactive/10 dark:hover:text-brand-interactive [&>svg]:text-[#001631] dark:[&>svg]:text-slate-400 hover:[&>svg]:text-[#7DB728] dark:hover:[&>svg]:text-brand-interactive'
   } ${className}`;
 
   if (href) {
@@ -120,7 +120,7 @@ interface SidebarHeadingProps {
 export function SidebarHeading({ children, className = '' }: SidebarHeadingProps) {
   return (
     <p
-      className={`px-3 pb-1 pt-4 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-[#94a3b8] ${className}`}
+      className={`px-3 pb-1 pt-4 text-xs font-semibold uppercase tracking-wider text-[#001631] dark:text-[#94a3b8] ${className}`}
     >
       {children}
     </p>
