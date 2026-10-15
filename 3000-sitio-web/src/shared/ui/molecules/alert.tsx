@@ -15,14 +15,43 @@ import { useCierreAnimado, useUltimoValorAbierto } from "@/shared/lib/use-cierre
  * Ojo: en este sitio `rounded-xl` mide 16 px y `rounded-2xl` 24 (globals.css redefine la
  * escala), por eso los 32 van con valor explícito.
  */
-const campoBase =
-  "w-full border border-[#d9d9d9] bg-white px-5 text-base text-[#001a39] placeholder:text-[#b3b3b3] transition-colors focus:border-[#001631] focus:outline-none focus:ring-2 focus:ring-[#001631] disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-500 dark:border-[#2d3649] dark:bg-[#131b2f] dark:text-[#f6f6f6] dark:placeholder:text-[#64748b] dark:focus:border-white dark:focus:ring-white dark:disabled:bg-[#1a2333] dark:disabled:text-[#94a3b8]";
+const campoComun =
+  "w-full border bg-white px-5 text-base text-[#001a39] placeholder:text-[#b3b3b3] transition-colors focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-500 dark:bg-[#131b2f] dark:text-[#f6f6f6] dark:placeholder:text-[#64748b] dark:disabled:bg-[#1a2333] dark:disabled:text-[#94a3b8]";
+
+const campoBase = `${campoComun} border-[#d9d9d9] focus:border-[#001631] focus:ring-[#001631] dark:border-[#2d3649] dark:focus:border-white dark:focus:ring-white`;
+
+/**
+ * El mismo campo cuando falta su dato o no es válido: borde y resalte en el rojo de los
+ * mensajes de error (`MensajeEstado`). Es otra clase entera y no un `border-red` añadido
+ * detrás: con dos colores de borde en la misma lista, gana el que Tailwind escriba
+ * después en su hoja, no el último de la lista.
+ */
+const campoBaseConError = `${campoComun} border-[#d90000] focus:border-[#d90000] focus:ring-[#d90000] dark:border-[#ff6b6b] dark:focus:border-[#ff6b6b] dark:focus:ring-[#ff6b6b]`;
 
 /** Campo de una línea dentro de un modal. */
 export const campoDeModalClass = `h-11 rounded-[32px] ${campoBase}`;
 
+/** Campo de una línea dentro de un modal, con error (ver `ErrorDeCampo`). */
+export const campoDeModalConErrorClass = `h-11 rounded-[32px] ${campoBaseConError}`;
+
 /** Área de texto dentro de un modal: crece hacia abajo, así que esquinas de 16. */
 export const areaDeModalClass = `min-h-24 rounded-xl py-3 ${campoBase}`;
+
+/** Área de texto dentro de un modal, con error. */
+export const areaDeModalConErrorClass = `min-h-24 rounded-xl py-3 ${campoBaseConError}`;
+
+/**
+ * El aviso en letra pequeña bajo un campo al que le falta su dato o lo tiene mal
+ * («Falta el nombre.»). El campo lleva `aria-invalid` y `aria-describedby` con este `id`,
+ * para que el lector de pantalla lo lea al llegar al campo.
+ */
+export function ErrorDeCampo({ id, children }: { id: string; children: ReactNode }) {
+  return (
+    <p id={id} className="mt-1.5 text-xs text-[#d90000] dark:text-[#ff6b6b]">
+      {children}
+    </p>
+  );
+}
 
 /** Etiqueta de un campo dentro de un modal (16 px, Medium, como en el acceso). */
 export const etiquetaDeModalClass =

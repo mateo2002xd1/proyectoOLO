@@ -15,6 +15,8 @@ import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
 import { GRUPO_TOOLTIP, TOOLTIP_ENCIMA } from '@/shared/ui/atoms/tooltip';
 import { COLOR_DE_ACCION } from '@/shared/lib/identidad-panel';
 import { AvisoErrorDeCarga } from '@/shared/ui/molecules/aviso-error-de-carga';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
+import { areaDeModalClass, areaDeModalConErrorClass, ErrorDeCampo } from '@/shared/ui/molecules/alert';
 
 /**
  * Dónde se ve una página que aún no está publicada.
@@ -280,8 +282,8 @@ export function RevisionQueueView() {
                     <span
                       className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold ${
                         pagina.ambito === 'intranet'
-                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300'
-                          : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300'
+                          ? 'bg-[#001631] text-white'
+                          : 'bg-[#EBF6E6] text-[#7DB728]'
                       }`}
                     >
                       {pagina.ambito === 'intranet' ? 'Intranet' : 'Sitio web'}
@@ -455,6 +457,10 @@ function ModalAccionConMotivo({
 }) {
   const dialogo = useRef<HTMLDialogElement>(null);
   const [motivo, setMotivo] = useState('');
+  // Se marca al pulsar la acción sin motivo y se quita en cuanto se escribe. Antes el
+  // botón se quedaba apagado sin decir por qué; ahora se puede pulsar y el campo dice
+  // lo que falta.
+  const [faltaMotivo, setFaltaMotivo] = useState(false);
 
   // Solo abre y cierra el `<dialog>`; no vacía `motivo`. De eso se encarga la `key` por
   // página que pone el padre: cada versión estrena modal y el campo nace vacío, en vez
@@ -491,9 +497,9 @@ function ModalAccionConMotivo({
         </div>
 
         {destructivo ? (
-          <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
-          <p>{descripcion}</p>
-          </div>
+          <MensajeEstado tipo="error" rol="note" className="mt-3">
+            {descripcion}
+          </MensajeEstado>
         ) : (
           <p className="mt-3 text-base text-[#4b5563] dark:text-zinc-300">{descripcion}</p>
         )}
@@ -508,17 +514,18 @@ function ModalAccionConMotivo({
               id="motivo-accion"
               rows={3}
               maxLength={MOTIVO_MAX}
-              aria-describedby="motivo-accion-cuenta"
-              className={`mt-1 block w-full resize-none rounded-xl border bg-transparent px-5 py-3 text-base text-[#001a39] placeholder:text-[#b3b3b3] focus:outline-none focus:ring-2 dark:bg-[#1a233a] dark:text-white ${
-                colorAccion === 'red'
-                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500 dark:border-red-900/60 dark:focus:border-red-400 dark:focus:ring-red-400'
-                  : 'border-[#d9d9d9] focus:border-[#001631] focus:ring-[#001631] dark:border-zinc-700'
-              }`}
+              aria-invalid={faltaMotivo || undefined}
+              aria-describedby={faltaMotivo ? 'motivo-accion-error motivo-accion-cuenta' : 'motivo-accion-cuenta'}
+              className={`mt-1 block resize-none ${faltaMotivo ? areaDeModalConErrorClass : areaDeModalClass}`}
               placeholder="Explica la razón…"
               value={motivo}
-              onChange={(e) => setMotivo(e.target.value)}
+              onChange={(e) => {
+                setMotivo(e.target.value);
+                setFaltaMotivo(false);
+              }}
               autoFocus
             />
+            {faltaMotivo && <ErrorDeCampo id="motivo-accion-error">Falta el motivo.</ErrorDeCampo>}
             <p
               id="motivo-accion-cuenta"
               className={`mt-2 text-right text-xs tabular-nums ${
@@ -542,8 +549,13 @@ function ModalAccionConMotivo({
           </button>
           <button
             type="button"
-            onClick={() => onConfirmar(motivo)}
-            disabled={requiereMotivo && !motivo.trim()}
+            onClick={() => {
+              if (requiereMotivo && !motivo.trim()) {
+                setFaltaMotivo(true);
+                return;
+              }
+              onConfirmar(motivo);
+            }}
             className={`inline-flex h-11 w-full items-center justify-center rounded-[32px] px-6 text-base font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-50 sm:flex-1 ${
               colorAccion === 'red'
                 ? 'bg-red-600 hover:bg-red-700'

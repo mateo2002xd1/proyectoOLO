@@ -16,13 +16,23 @@ import { Button } from '@/shared/ui/atoms/button';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
 import { DatePicker } from '@/shared/ui/molecules/date-picker';
 import { Notification } from '@/shared/ui/molecules/notification';
-import { Alert, AlertTitle, AlertDescription, AlertActions } from '@/shared/ui/molecules/alert';
+import {
+  Alert,
+  AlertTitle,
+  AlertDescription,
+  AlertActions,
+  ErrorDeCampo,
+  campoDeModalClass,
+  campoDeModalConErrorClass,
+  etiquetaDeModalClass,
+} from '@/shared/ui/molecules/alert';
 import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
 import { BotonDeFila, RESALTE_DE_FILA, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { Paginador } from '@/shared/ui/molecules/paginador';
 import { Switch } from '@/shared/ui/atoms/switch';
 import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 
 /**
  * Las etiquetas, descripciones y grupos de los permisos ya **no viven aquí**.
@@ -44,6 +54,10 @@ import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
  * igual, así que un solo indicador cubre los dos casos sin necesidad de adivinar cuál
  * de los dos disparó el bloqueo.
  */
+/** Los campos obligatorios del formulario de usuario, para marcar el que falta. */
+type CampoUsuario = 'name' | 'apellidos' | 'email' | 'roleId';
+type ErroresUsuario = Partial<Record<CampoUsuario, string>>;
+
 function infoBloqueo(user: User, ahora: number): string | null {
   if (!user.locked_until) return null;
   const msRestante = new Date(user.locked_until).getTime() - ahora;
@@ -54,6 +68,10 @@ function infoBloqueo(user: User, ahora: number): string | null {
   const tiempo = minutos > 0 ? `${minutos} min` : `${segundos} s`;
   return `Bloqueada · ${tiempo} restantes`;
 }
+
+/** `expiration_date` es una fecha sin hora: se lee a medianoche local para que no se corra un día. */
+const formatearCaducidad = (fecha: string) =>
+  new Date(`${fecha.split('T')[0]}T00:00:00`).toLocaleDateString('es-CO', { dateStyle: 'medium' });
 
 export default function UsuariosView() {
   const {
@@ -84,6 +102,19 @@ export default function UsuariosView() {
   const [resetPassword, setResetPassword] = useState(false);
   const [resetSecurityQuestions, setResetSecurityQuestions] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Lo que falta o está mal, campo por campo: se pinta en rojo bajo cada uno al pulsar
+  // «Guardar», y se borra el de un campo en cuanto se escribe en él.
+  const [errores, setErrores] = useState<ErroresUsuario>({});
+  const quitarError = useCallback(
+    (campo: CampoUsuario) =>
+      setErrores((previos) => {
+        if (!previos[campo]) return previos;
+        const siguientes = { ...previos };
+        delete siguientes[campo];
+        return siguientes;
+      }),
+    [],
+  );
 
 
   // Credentials state
@@ -104,33 +135,28 @@ export default function UsuariosView() {
 
   const handleRoleChange = useCallback((newRoleId: string) => {
     setRoleId(newRoleId);
-  }, []);
+    quitarError('roleId');
+  }, [quitarError]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !apellidos || !email) return;
 
-    // El rol dejó de ser un `<select required>` —ahora es una lista propia— así que
-    // el navegador ya no bloquea el envío por él. Sin este aviso, guardar sin rol
-    // no haría nada y no se vería por qué.
-    if (!roleId) {
-      setNotificationMsg({
-        title: 'Falta el rol',
-        message: 'Selecciona el rol del usuario antes de guardar.',
-        type: 'error',
-      });
-      setShowNotification(true);
-      return;
+    // Todo se revisa de una vez y cada falta se marca en su campo (borde rojo y aviso
+    // debajo), en vez del globo del navegador —que solo enseña el primero— o de un aviso
+    // flotante que no dice dónde está el problema. El correo lo exige igualmente el
+    // servidor: aquí se avisa antes de enviar para no perder el formulario entero.
+    const nuevos: ErroresUsuario = {};
+    if (!name.trim()) nuevos.name = 'Falta el nombre.';
+    if (!apellidos.trim()) nuevos.apellidos = 'Faltan los apellidos.';
+    if (!email.trim()) {
+      nuevos.email = 'Falta el correo electrónico.';
+    } else {
+      const falloEmail = validarEmail(email);
+      if (falloEmail) nuevos.email = falloEmail;
     }
-
-    // El servidor lo exige igualmente, tanto al crear como al editar. Aquí se avisa
-    // antes de enviar para no perder el formulario entero por el dominio del correo.
-    const falloEmail = validarEmail(email);
-    if (falloEmail) {
-      setNotificationMsg({ title: 'Correo no válido', message: falloEmail, type: 'error' });
-      setShowNotification(true);
-      return;
-    }
+    if (!roleId) nuevos.roleId = 'Falta el rol.';
+    setErrores(nuevos);
+    if (Object.keys(nuevos).length > 0) return;
 
     setIsSubmitting(true);
     try {
@@ -227,6 +253,7 @@ export default function UsuariosView() {
     setExpirationDate(user.expiration_date ? user.expiration_date.split('T')[0] : '');
     setResetPassword(false);
     setResetSecurityQuestions(false);
+    setErrores({});
     setIsCreating(true);
   };
 
@@ -238,6 +265,7 @@ export default function UsuariosView() {
     setExpirationDate('');
     setResetPassword(false);
     setResetSecurityQuestions(false);
+    setErrores({});
   }
 
   const handleCancel = () => {
@@ -296,9 +324,9 @@ export default function UsuariosView() {
       />
 
       {error && (
-        <div className="mb-6 rounded-xl bg-red-50 p-4 text-sm text-red-800 dark:bg-red-950/50 dark:text-red-200">
+        <MensajeEstado tipo="error" rol="alert" className="mb-6">
           {error}
-        </div>
+        </MensajeEstado>
       )}
 
       <Alert open={isCreating} onClose={(open) => !isSubmitting && !open && handleCancel()}>
@@ -306,52 +334,77 @@ export default function UsuariosView() {
         <AlertDescription>
           Completa los campos para {editingUserId ? 'actualizar el' : 'crear un nuevo'} usuario.
         </AlertDescription>
-        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+        {/* `noValidate`: las faltas las marca `handleSubmit` en cada campo, no el globo del navegador. */}
+        <form onSubmit={handleSubmit} noValidate className="mt-4 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">Nombres</label>
+            <label htmlFor="usuario-nombres" className={etiquetaDeModalClass}>Nombres</label>
             <input
+              id="usuario-nombres"
               type="text"
               maxLength={50}
               required
               value={name}
-              onChange={(e) => setName(e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, ''))}
-              className="w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:text-[#f6f6f6] dark:focus:border-white dark:focus:ring-white"
+              onChange={(e) => {
+                setName(e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, ''));
+                quitarError('name');
+              }}
+              aria-invalid={Boolean(errores.name) || undefined}
+              aria-describedby={errores.name ? 'usuario-nombres-error' : undefined}
+              className={errores.name ? campoDeModalConErrorClass : campoDeModalClass}
             />
+            {errores.name && <ErrorDeCampo id="usuario-nombres-error">{errores.name}</ErrorDeCampo>}
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">Apellidos</label>
+            <label htmlFor="usuario-apellidos" className={etiquetaDeModalClass}>Apellidos</label>
             <input
+              id="usuario-apellidos"
               type="text"
               maxLength={50}
               required
               value={apellidos}
-              onChange={(e) => setApellidos(e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, ''))}
-              className="w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:text-[#f6f6f6] dark:focus:border-white dark:focus:ring-white"
+              onChange={(e) => {
+                setApellidos(e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, ''));
+                quitarError('apellidos');
+              }}
+              aria-invalid={Boolean(errores.apellidos) || undefined}
+              aria-describedby={errores.apellidos ? 'usuario-apellidos-error' : undefined}
+              className={errores.apellidos ? campoDeModalConErrorClass : campoDeModalClass}
             />
+            {errores.apellidos && <ErrorDeCampo id="usuario-apellidos-error">{errores.apellidos}</ErrorDeCampo>}
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">Correo electrónico</label>
+            <label htmlFor="usuario-correo" className={etiquetaDeModalClass}>Correo electrónico</label>
             <input
+              id="usuario-correo"
               type="email"
               maxLength={100}
               required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-[#7db828]/30 dark:text-[#f6f6f6] dark:focus:border-white dark:focus:ring-white"
+              onChange={(e) => {
+                setEmail(e.target.value);
+                quitarError('email');
+              }}
+              aria-invalid={Boolean(errores.email) || undefined}
+              aria-describedby={errores.email ? 'usuario-correo-error' : undefined}
+              className={errores.email ? campoDeModalConErrorClass : campoDeModalClass}
             />
+            {errores.email && <ErrorDeCampo id="usuario-correo-error">{errores.email}</ErrorDeCampo>}
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">Rol</label>
+            <label className={etiquetaDeModalClass}>Rol</label>
             <CustomSelect
               ariaLabel="Rol"
               value={roleId}
               onChange={handleRoleChange}
               placeholder="Selecciona un rol"
               options={roles.map((r) => ({ value: r.id, label: r.name }))}
+              invalido={Boolean(errores.roleId)}
+              ariaDescribedBy={errores.roleId ? 'usuario-rol-error' : undefined}
             />
+            {errores.roleId && <ErrorDeCampo id="usuario-rol-error">{errores.roleId}</ErrorDeCampo>}
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-[#cbd5e1] mb-1">Fecha de caducidad</label>
+            <label className={etiquetaDeModalClass}>Fecha de caducidad</label>
             <DatePicker
               ariaLabel="Fecha de caducidad"
               value={expirationDate}
@@ -470,7 +523,7 @@ export default function UsuariosView() {
         <div className="overflow-x-auto">
           {/* En el móvil y la tablet, acordeón, como las demás listas: el encabezado de cada
               fila es solo el nombre (pedido del usuario, 2026-10-10) y al tocarlo salen el
-              correo, el rol, el estado y el bloqueo con su etiqueta, y debajo «Editar» y
+              correo, el rol, el estado, la caducidad y el bloqueo con su etiqueta, y debajo «Editar» y
               «Eliminar» con su nombre. Piezas en `fila-acordeon.tsx`; reglas en globals.css. */}
           <table className="olo-tabla-apilable olo-tabla-acordeon min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
             <thead className="bg-zinc-50 dark:bg-[#0b1121]/50">
@@ -488,6 +541,9 @@ export default function UsuariosView() {
                   Estado
                 </th>
                 <th scope="col" className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-[#94a3b8]">
+                  Caducidad
+                </th>
+                <th scope="col" className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-[#94a3b8]">
                   Bloqueo
                 </th>
                 <th scope="col" className="px-6 py-4 text-right text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-[#94a3b8]">
@@ -499,7 +555,7 @@ export default function UsuariosView() {
               {usuariosFiltrados.length === 0 ? (
                 // `data-abierta`: en acordeón, una fila plegada solo enseña el resumen, y esta no tiene.
                 <tr data-abierta>
-                  <td colSpan={6} className="px-6 py-8 text-center text-sm text-zinc-500">
+                  <td colSpan={7} className="px-6 py-8 text-center text-sm text-zinc-500">
                     {busqueda ? `Sin resultados para "${busqueda}"` : 'No hay usuarios registrados.'}
                   </td>
                 </tr>
@@ -540,6 +596,13 @@ export default function UsuariosView() {
                           {user.status === 'active' ? 'Desactivar' : 'Activar'}
                         </span>
                       </span>
+                    </td>
+                    <td data-etiqueta="Caducidad" className="px-6 py-2 text-sm text-zinc-500 dark:text-[#94a3b8]">
+                      {user.expiration_date ? (
+                        formatearCaducidad(user.expiration_date)
+                      ) : (
+                        <span className="text-zinc-400 dark:text-zinc-600">—</span>
+                      )}
                     </td>
                     <td data-etiqueta="Bloqueo" className="px-6 py-2 text-sm">
                       {(() => {

@@ -28,6 +28,10 @@ type CustomSelectProps = {
   paleta?: string;
   /** La lista se abre hacia arriba: para un desplegable al pie de la página. */
   abrirArriba?: boolean;
+  /** Falta elegir o lo elegido no vale: borde en el rojo de los errores (`ErrorDeCampo`). */
+  invalido?: boolean;
+  /** El `id` del aviso que explica el error, para el lector de pantalla. */
+  ariaDescribedBy?: string;
 };
 
 const PALETA_CERRADO =
@@ -72,6 +76,8 @@ export function CustomSelect({
   compacto = false,
   paleta = PALETA_CERRADO,
   abrirArriba = false,
+  invalido = false,
+  ariaDescribedBy,
 }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
@@ -127,13 +133,17 @@ export function CustomSelect({
         } ${
           isOpen
             ? "border-[#002237] bg-white shadow-[0_0_0_3px_rgba(0,34,55,0.12)] dark:bg-[#252f47]"
-            : enModal
+            : invalido
+              ? "border-[#d90000] bg-white dark:border-[#ff6b6b] dark:bg-[#131b2f]"
+              : enModal
               ? "border-[#d9d9d9] bg-white hover:border-[#001631]/40 dark:border-[#2d3649] dark:bg-[#131b2f] dark:hover:border-[#3a4660]"
               : paleta
         } ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-label={ariaLabel}
+        // Sin `aria-invalid`: no vale en un botón. El aviso se lee por `aria-describedby`.
+        aria-describedby={ariaDescribedBy}
       >
         <span className="flex min-w-0 items-center gap-2">
           <span

@@ -7,7 +7,10 @@ import {
   AlertDescription,
   AlertTitle,
   areaDeModalClass,
+  areaDeModalConErrorClass,
   campoDeModalClass,
+  campoDeModalConErrorClass,
+  ErrorDeCampo,
   etiquetaDeModalClass,
 } from '@/shared/ui/molecules/alert';
 import { Button } from '@/shared/ui/atoms/button';
@@ -16,6 +19,7 @@ import { DatePicker } from '@/shared/ui/molecules/date-picker';
 import { mensajeDeErrorApi } from '@/shared/lib/errores-api';
 import { crearProyectoInversionManual, obtenerOpcionesProyectoInversion } from '../services/observatorio.service';
 import type { ClaseCiiu, SeccionCiiu } from '../types';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 
 // Las medidas de todos los modales (`alert.tsx`): las de las pantallas de acceso.
 const CAMPO = campoDeModalClass;
@@ -36,6 +40,20 @@ const ESTADO_INICIAL = {
   ciudad: '',
 };
 
+/** Los campos obligatorios, para marcar el que falta. */
+type CampoObligatorio = 'descripcion' | 'empresa' | 'seccionId' | 'departamento' | 'fechaAnuncio' | 'fuenteUrl';
+type Errores = Partial<Record<CampoObligatorio, string>>;
+
+/** Si es una dirección web completa (`https://…`), como la pide la API. */
+function esUrlWeb(texto: string): boolean {
+  try {
+    const url = new URL(texto);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 interface FormularioProyectoInversionProps {
   open: boolean;
   onClose: () => void;
@@ -55,12 +73,16 @@ export function FormularioProyectoInversion({ open, onClose, onCreado }: Formula
   const [datos, setDatos] = useState(ESTADO_INICIAL);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Lo que falta o está mal, campo por campo: borde rojo y aviso debajo al pulsar
+  // «Guardar»; el de un campo se borra en cuanto se cambia.
+  const [errores, setErrores] = useState<Errores>({});
 
   useEffect(() => {
     if (!open) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setDatos(ESTADO_INICIAL);
     setError(null);
+    setErrores({});
     obtenerOpcionesProyectoInversion()
       .then((opciones) => {
         setSecciones(opciones.secciones);
@@ -70,22 +92,53 @@ export function FormularioProyectoInversion({ open, onClose, onCreado }: Formula
       .catch(() => setError('No se pudieron cargar los sectores y departamentos.'));
   }, [open]);
 
-  const actualizar = <K extends keyof typeof ESTADO_INICIAL>(campo: K, valor: (typeof ESTADO_INICIAL)[K]) =>
+  const quitarError = (campo: string) =>
+    setErrores((previos) => {
+      if (!(campo in previos)) return previos;
+      const siguientes = { ...previos };
+      delete siguientes[campo as CampoObligatorio];
+      return siguientes;
+    });
+
+  const actualizar = <K extends keyof typeof ESTADO_INICIAL>(campo: K, valor: (typeof ESTADO_INICIAL)[K]) => {
     setDatos((actual) => ({ ...actual, [campo]: valor }));
+    quitarError(campo);
+  };
+
+  /** Atributos de un campo de texto según tenga error o no. */
+  const propsDeCampo = (campo: CampoObligatorio, area = false) => ({
+    id: `proyecto-${campo}`,
+    className: errores[campo]
+      ? area ? areaDeModalConErrorClass : campoDeModalConErrorClass
+      : area ? areaDeModalClass : CAMPO,
+    'aria-invalid': Boolean(errores[campo]) || undefined,
+    'aria-describedby': errores[campo] ? `proyecto-${campo}-error` : undefined,
+  });
+
+  const avisoDe = (campo: CampoObligatorio) =>
+    errores[campo] ? <ErrorDeCampo id={`proyecto-${campo}-error`}>{errores[campo]}</ErrorDeCampo> : null;
 
   const clasesDelSector = clases.filter((k) => k.seccionId === datos.seccionId);
 
   const enviar = async (evento: React.FormEvent) => {
     evento.preventDefault();
-    // El selector de fecha propio no es un <input required>: se valida a mano.
-    if (!datos.departamento) {
-      setError('Elija el departamento.');
-      return;
+    // Todo se revisa de una vez y cada falta se marca en su campo, en vez del globo del
+    // navegador —que solo enseña el primero y no ve los desplegables ni la fecha, que son
+    // propios— o de un mensaje al pie que no dice dónde está el problema.
+    const nuevos: Errores = {};
+    if (!datos.descripcion.trim()) nuevos.descripcion = 'Falta la descripción.';
+    if (!datos.empresa.trim()) nuevos.empresa = 'Falta la empresa.';
+    if (!datos.seccionId) nuevos.seccionId = 'Falta el sector.';
+    if (!datos.departamento) nuevos.departamento = 'Falta el departamento.';
+    if (!datos.fechaAnuncio) nuevos.fechaAnuncio = 'Falta la fecha del anuncio.';
+    if (!datos.fuenteUrl.trim()) {
+      nuevos.fuenteUrl = 'Falta la URL de la noticia.';
+    } else if (!esUrlWeb(datos.fuenteUrl.trim())) {
+      nuevos.fuenteUrl = 'Debe ser una dirección web completa (https://…).';
     }
-    if (!datos.fechaAnuncio) {
-      setError('Elija la fecha del anuncio.');
-      return;
-    }
+    setErrores(nuevos);
+    if (Object.keys(nuevos).length > 0) return;
+
     setEnviando(true);
     setError(null);
     try {
@@ -117,30 +170,33 @@ export function FormularioProyectoInversion({ open, onClose, onCreado }: Formula
       <AlertTitle>Agregar proyecto de inversión</AlertTitle>
       <AlertDescription>Se publica de inmediato en /alertas-inversion, sin paso de aprobación.</AlertDescription>
 
-      <form onSubmit={enviar} className="mt-4 max-h-[70vh] space-y-4 overflow-y-auto pr-1">
+      {/* `noValidate`: las faltas las marca `enviar` en cada campo, no el globo del navegador. */}
+      <form onSubmit={enviar} noValidate className="mt-4 max-h-[70vh] space-y-4 overflow-y-auto pr-1">
         <div>
-          <label className={ETIQUETA}>Descripción</label>
+          <label htmlFor="proyecto-descripcion" className={ETIQUETA}>Descripción</label>
           <textarea
             required
             maxLength={2000}
             rows={3}
             value={datos.descripcion}
             onChange={(e) => actualizar('descripcion', e.target.value)}
-            className={areaDeModalClass}
+            {...propsDeCampo('descripcion', true)}
           />
+          {avisoDe('descripcion')}
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className={ETIQUETA}>Empresa</label>
+            <label htmlFor="proyecto-empresa" className={ETIQUETA}>Empresa</label>
             <input
               type="text"
               required
               maxLength={200}
               value={datos.empresa}
               onChange={(e) => actualizar('empresa', e.target.value)}
-              className={CAMPO}
+              {...propsDeCampo('empresa')}
             />
+            {avisoDe('empresa')}
           </div>
           <div>
             <label className={ETIQUETA}>Tipo</label>
@@ -162,10 +218,16 @@ export function FormularioProyectoInversion({ open, onClose, onCreado }: Formula
             ariaLabel="Sector"
             value={datos.seccionId}
             // Al cambiar de sector, la actividad elegida ya no le pertenece.
-            onChange={(v) => setDatos((actual) => ({ ...actual, seccionId: v, claseId: '' }))}
+            onChange={(v) => {
+              setDatos((actual) => ({ ...actual, seccionId: v, claseId: '' }));
+              quitarError('seccionId');
+            }}
             placeholder="Selecciona un sector"
             options={secciones.map((s) => ({ value: s.id, label: `${s.letra} · ${s.nombre}` }))}
+            invalido={Boolean(errores.seccionId)}
+            ariaDescribedBy={errores.seccionId ? 'proyecto-seccionId-error' : undefined}
           />
+          {avisoDe('seccionId')}
         </div>
 
         {clasesDelSector.length > 0 && (
@@ -193,7 +255,10 @@ export function FormularioProyectoInversion({ open, onClose, onCreado }: Formula
               onChange={(v) => actualizar('departamento', v)}
               placeholder="Selecciona un departamento"
               options={departamentos}
+              invalido={Boolean(errores.departamento)}
+              ariaDescribedBy={errores.departamento ? 'proyecto-departamento-error' : undefined}
             />
+            {avisoDe('departamento')}
           </div>
           <div>
             <label className={ETIQUETA}>Ciudad (opcional)</label>
@@ -213,19 +278,23 @@ export function FormularioProyectoInversion({ open, onClose, onCreado }: Formula
             ariaLabel="Fecha del anuncio"
             value={datos.fechaAnuncio}
             onChange={(valor) => actualizar('fechaAnuncio', valor)}
+            invalido={Boolean(errores.fechaAnuncio)}
+            ariaDescribedBy={errores.fechaAnuncio ? 'proyecto-fechaAnuncio-error' : undefined}
           />
+          {avisoDe('fechaAnuncio')}
         </div>
 
         <div>
-          <label className={ETIQUETA}>Fuente (URL de la noticia)</label>
+          <label htmlFor="proyecto-fuenteUrl" className={ETIQUETA}>Fuente (URL de la noticia)</label>
           <input
             type="url"
             required
             placeholder="https://..."
             value={datos.fuenteUrl}
             onChange={(e) => actualizar('fuenteUrl', e.target.value)}
-            className={CAMPO}
+            {...propsDeCampo('fuenteUrl')}
           />
+          {avisoDe('fuenteUrl')}
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -263,16 +332,16 @@ export function FormularioProyectoInversion({ open, onClose, onCreado }: Formula
         </div>
 
         {error && (
-          <p role="alert" className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400">
+          <MensajeEstado tipo="error" rol="alert">
             {error}
-          </p>
+          </MensajeEstado>
         )}
 
         <AlertActions>
           <Button type="button" plain onClick={onClose} disabled={enviando}>
             Cancelar
           </Button>
-          <Button type="submit" disabled={enviando || !datos.seccionId}>
+          <Button type="submit" disabled={enviando}>
             {enviando ? 'Guardando...' : 'Guardar'}
           </Button>
         </AlertActions>
