@@ -5,6 +5,24 @@
 
 ---
 
+## sesión 15-10-2026 (4.ª parte): paginador del panel — la página actual en #001631
+
+**Qué se pidió:** el paginador marcaba la página actual en el verde `#7DB828`; pasa a
+`#001631` en todas las vistas.
+
+| Dónde | Cambio |
+|---|---|
+| `shared/ui/molecules/paginacion.tsx`, `COLORES.panel.actual` | `border-brand-interactive bg-brand-interactive` → `border-[#001631] bg-[#001631] text-white`; en oscuro `dark:bg-white dark:text-[#001631]`, el mismo par que usan los demás elementos `#001631` del panel (sobre `#131b2f` el azul no se vería) |
+
+Es la única casilla verde del paginador, y la pieza es compartida: cambia en Auditoría,
+Usuarios, Roles, Páginas en revisión, Actividad reciente del dashboard e Historial de
+cargas. El tono `publico` (tablas del sitio) ya usaba `#001631`. La intranet no tiene paginador.
+
+**Verificación.** `tsc --noEmit` y `eslint` del archivo sin errores; CRLF uniforme. Falta
+verlo en el navegador.
+
+---
+
 ## sesión 15-10-2026 (3.ª parte): Auditoría — la columna «Cambios» en un solo color
 
 **Qué se pidió:** que el texto de la columna Cambios tuviera un solo color, acorde con las
