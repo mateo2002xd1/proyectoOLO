@@ -5,6 +5,25 @@
 
 ---
 
+## sesión 15-10-2026 (7.ª parte): Páginas en revisión — sin barra de scroll y tooltips que no se recortan
+
+**Qué se pidió:** que la lista no muestre barra de scroll y se ajuste al ancho de la tabla, y que
+los tooltips de los botones no se corten en el borde del contenedor de la lista (darles z-index).
+
+**Causa.** La caja de la tabla llevaba `overflow-x-auto`. El tooltip del último botón (Eliminar),
+centrado y aun invisible (`opacity-0`), sobresale por la derecha y daba la barra; y un
+`overflow` distinto de `visible` recorta todo lo que sale de la caja, tenga el `z-index` que tenga.
+
+| Dónde | Cambio |
+|---|---|
+| `revision-queue-view.tsx`, caja de la tabla | Fuera `overflow-x-auto`. La tabla ya cabía a lo ancho de 1920 a 1130px (11.ª parte del 12-10) y por debajo pasa a acordeón, así que no queda nada que desplazar |
+| Encabezado | El fondo pasa del `thead` a sus `th` (`[&>th]:bg-zinc-50`, `dark:[&>th]:bg-[#131b2f]`) con las esquinas de arriba en `rounded-tl-xl` / `rounded-tr-xl`: sin `overflow` la caja ya no recortaba sus esquinas. En acordeón, sin encabezado, se redondea la primera fila (`apilada:[&>tbody>tr:first-child]:rounded-t-xl`) |
+| Tooltips | `z-20!` sobre el `z-10` del átomo, solo en esta lista: el de una fila pasa por encima de la de arriba y del encabezado. El `!` porque las dos clases son de la misma propiedad |
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; las cinco clases nuevas están en el CSS que sirve el dev (`/_next/static/…css`); CRLF uniforme. Falta verlo en el navegador.
+
+---
+
 ## sesión 15-10-2026 (6.ª parte): Permisos del rol — «Marcar todos» sin interruptor
 
 **Qué se pidió:** en el modal «Permisos del rol», quitar el interruptor de «Marcar todos» y dejar

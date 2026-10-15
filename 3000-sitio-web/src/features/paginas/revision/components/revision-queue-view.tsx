@@ -57,8 +57,12 @@ const ICONO_PEQUENO = 'h-4 w-4 en-tabla:@max-6xl:h-3.5 en-tabla:@max-6xl:w-3.5';
  * Letra blanca, como el icono de su botón: así lo pidió el usuario. No llega al 4,5:1 que
  * pide un texto de 12 px (9-accesibilidad.md §2.1): sobre el azul da 2,6:1, sobre el verde
  * 2,4:1 y sobre el rojo 3,8:1. Con `#0d1526` darían 7,0, 7,5 y 4,7:1.
+ *
+ * `z-20!` sobre el `z-10` del átomo (pedido del usuario, 2026-10-15): el de la fila de abajo
+ * pasa por encima de la de arriba y del encabezado. El `!` porque las dos clases son de la
+ * misma propiedad y el orden en que Tailwind las escribe no lo decide el JSX.
  */
-const TOOLTIP = `${TOOLTIP_ENCIMA} hidden en-tabla:block`;
+const TOOLTIP = `${TOOLTIP_ENCIMA} z-20! hidden en-tabla:block`;
 
 const FILTROS_VACIOS = { ambito: '', autor: '', desde: '', hasta: '' };
 
@@ -222,14 +226,19 @@ export function RevisionQueueView() {
       ) : paginasFiltradas.length === 0 ? (
         <p className="text-sm text-zinc-500">Ninguna página coincide con los filtros aplicados.</p>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-[#7db828]/30">
+        <div className="rounded-xl border border-zinc-200 dark:border-[#7db828]/30">
+          {/* Sin `overflow-x-auto` (pedido del usuario, 2026-10-15): la tabla cabe a lo ancho
+              desde 1130px y por debajo pasa a acordeón, así que el scroll solo lo creaba el
+              tooltip de la última columna, que aun invisible sobresale; y la caja recortaba los
+              tooltips. Sin `overflow` tampoco recorta el fondo del encabezado: sus esquinas se
+              redondean en el `<tr>` del `thead` y, en acordeón (sin encabezado), en la primera fila. */}
           {/* En el móvil y la tablet, acordeón: cada solicitud es una línea («Ana envió la
               versión 3 de Contacto») y al tocarla se despliegan los cambios, el resto de datos
               y las acciones. Con muchas solicitudes, las tarjetas enteras hacían eterno el
               scroll. Las reglas, en globals.css (`olo-tabla-acordeon`). */}
-          <table className="olo-tabla-apilable olo-tabla-acordeon w-full text-left text-sm">
-            <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-[#131b2f]">
-              <tr>
+          <table className="olo-tabla-apilable olo-tabla-acordeon w-full text-left text-sm apilada:[&>tbody>tr:first-child]:rounded-t-xl">
+            <thead className="text-xs uppercase tracking-wide text-zinc-500">
+              <tr className="[&>th]:bg-zinc-50 dark:[&>th]:bg-[#131b2f] [&>th:first-child]:rounded-tl-xl [&>th:last-child]:rounded-tr-xl">
                 <th scope="col" className="px-4 py-3 font-medium">Página</th>
                 <th scope="col" className="px-4 py-3 font-medium">Cambios</th>
                 <th scope="col" className="px-2 py-3 font-medium">Autor</th>
