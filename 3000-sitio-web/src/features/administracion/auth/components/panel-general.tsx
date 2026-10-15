@@ -748,7 +748,7 @@ export function PanelGeneralDashboard() {
               </div>
               {/* Una lista con la frase entera de cada registro, en todas las pantallas
                   (pedido del usuario, 2026-10-10): «El usuario David Tejada hizo la acción
-                  de [Autenticación]: inició sesión en el sitio web el 10 de octubre de 2026
+                  de [Autenticado]: inició sesión en el sitio web el 10 de octubre de 2026
                   a las 5:41 p. m.». Antes era una tabla de cuatro columnas que en el móvil
                   y la tablet pasaba a acordeón; ahora no hay nada que desplegar. La frase es
                   la de Auditoría (`FraseDeRegistro`), para que las dos lean igual. */}

@@ -5,6 +5,45 @@
 
 ---
 
+## sesión 15-10-2026 (3.ª parte): Auditoría — la columna «Cambios» en un solo color
+
+**Qué se pidió:** que el texto de la columna Cambios tuviera un solo color, acorde con las
+demás columnas (usuario, fecha…).
+
+| Dónde | Cambio |
+|---|---|
+| `auditoria-view.tsx` | La celda Cambios deja de alternar entre `zinc-800` (filas con comentario) y `zinc-500` (el resto): siempre `text-zinc-900 dark:text-[#f6f6f6]`, el mismo de la columna Usuario. Se quita el import de `comentarioPrincipal`, que ya no se usa en la vista (sigue usándose dentro de `lib/cambios.ts`) |
+
+**Verificación.** `tsc --noEmit` y `eslint` del archivo; falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (2.ª parte): Auditoría — fuera la columna y el filtro «Página»; columna «Categoría» y acciones con nombre y color nuevos
+
+**Qué se pidió:** el usuario aclaró que Auditoría nunca tuvo columna «Página» (la que
+recordaba es la de Respaldos). La columna se queda, pero pasa a ser «Categoría»; se quita el
+filtro «Página», y las acciones cambian de nombre y llevan un color cada una.
+
+| Dónde | Cambio |
+|---|---|
+| `auditoria-view.tsx` | Primera columna «Categoría»: Contenido editorial, Administración o Seguridad (`ETIQUETA_CATEGORIA`, la misma del filtro), en `font-bold text-[#001631]`; sin categoría, «—». Fuera el filtro «Página» y `CeldaDePagina` de esta pantalla. Respaldos y `CeldaDePagina` siguen como en la 1.ª parte |
+| `types.ts`, nombres | Participios: Creado, Editado, Autoguardado, Rechazado, Publicado, Archivado, Autenticado, Modificado, Expirado, Inactivado, Bloqueado, Verificado (preguntas de seguridad), Actualizado (cambio de contraseña), Eliminado. Los mismos en la tabla, el desplegable «Acción», el detalle, el CSV, el acordeón y «Actividad reciente» del dashboard: es una sola lista. `actualizar` sin categoría queda «Modificado», para no chocar con «Actualizado» |
+| `types.ts`, colores | `COLOR_DE_ETIQUETA` por nombre (no por verbo: `actualizar` es Editado o Modificado según la categoría) y `colorDeAccion(accion, categoria)`; reemplazan `CLASES_BADGE`, `VARIANTE_ACCION` y `COLOR_ACCION` (los cuatro niveles de severidad). Letra blanca salvo Inactivado `#303030`, Rechazado `#FF1F1F` y Expirado `#8F6E00`. Los mismos en claro y oscuro |
+| `frase-de-registro.tsx`, `detalle-registro.tsx`, `index.ts` | Leen `colorDeAccion` |
+| API | Revertidos el filtro `ambito` y el campo `pagina` del commit `7e680437`: sin la columna ni el filtro, nadie los leía y costaban una consulta por página de resultados. Los seis archivos quedan como en `661457c5` |
+
+**Contraste de los colores elegidos** (AA pide 4.5 para la letra de 11 px): Editado 18.1,
+Actualizado 13.7, Verificado 13.0, Modificado 9.2, Inactivado 7.2, Autenticado 5.6 y
+Eliminado 4.6 cumplen; Expirado 4.1, Rechazado 3.3, Creado 3.1, Bloqueado 2.8,
+Autoguardado 2.6, Publicado 2.4 y Archivado 1.6 no. Se aplicaron tal cual los pidió el
+usuario y se le avisó.
+
+**Verificación.** `tsc --noEmit` del sitio y de la API, `eslint` de `features/administracion`:
+sin errores. CRLF uniforme (`git checkout` dejó `auditoria-view.tsx` en LF y se normalizó).
+Falta verlo en el navegador. La API hay que reiniciarla para que deje de mandar `pagina`.
+
+---
+
 ## sesión 15-10-2026: Auditoría y Respaldos — columna y filtro «Página», con el portal arriba y la ruta fina debajo
 
 **Qué se pidió:** en Auditoría, una columna «Página» como la de Respaldos («Sitio web» /

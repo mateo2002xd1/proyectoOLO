@@ -12,9 +12,9 @@ import { Trash2 } from 'lucide-react';
 import { BotonOjo } from '@/shared/ui/atoms/boton-ojo';
 import { COLOR_DE_ACCION } from '@/shared/lib/identidad-panel';
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
-import { BotonDeFila, CeldaDePagina, FechaDeCelda, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
+import { BotonDeFila, FechaDeCelda, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
 import { useAuditoria } from '../hooks/use-auditoria';
-import { comentarioPrincipal, resumenDeCambios } from '../lib/cambios';
+import { resumenDeCambios } from '../lib/cambios';
 import { FraseDeRegistro, PildoraDeAccion } from './frase-de-registro';
 
 import {
@@ -108,22 +108,6 @@ export function AuditoriaView() {
           />
         </CampoFiltro>
 
-        {/* Como en Respaldos (pedido del usuario, 2026-10-15): el portal de la columna
-            Página. Lo filtra la API, porque la bitácora se pagina allí. Detrás de
-            Categoría, que el usuario pidió primera el 2026-10-12. */}
-        <CampoFiltro etiqueta="Página">
-          <CustomSelect
-            ariaLabel="Página"
-            value={filtros.ambito}
-            onChange={(valor) => cambiarFiltro('ambito', valor)}
-            options={[
-              { value: '', label: 'Todos' },
-              { value: 'sitio', label: 'Sitio web' },
-              { value: 'intranet', label: 'Intranet' },
-            ]}
-          />
-        </CampoFiltro>
-
         <CampoFiltro etiqueta="Desde">
           <DatePicker
             ariaLabel="Desde"
@@ -187,13 +171,13 @@ export function AuditoriaView() {
         <>
           <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-[#7db828]/30">
             {/* En el móvil y la tablet, acordeón, como «Páginas en revisión»: cada registro
-                es una frase («El usuario Ana Gómez hizo la acción de [Edición]») y al tocarlo se completa con
+                es una frase («El usuario Ana Gómez hizo la acción de [Editado]») y al tocarlo se completa con
                 lo que cambió y la fecha, y debajo sale «Ver detalle». Piezas en
                 `fila-acordeon.tsx`; reglas en globals.css (`olo-tabla-acordeon`). */}
             <table className="olo-tabla-apilable olo-tabla-acordeon w-full min-w-[52rem] text-left text-sm">
               <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-[#131b2f]">
                 <tr>
-                  <th scope="col" className="px-4 py-3 font-medium">Página</th>
+                  <th scope="col" className="px-4 py-3 font-medium">Categoría</th>
                   <th scope="col" className="px-4 py-3 font-medium">Fecha y hora</th>
                   <th scope="col" className="px-4 py-3 font-medium">Usuario</th>
                   <th scope="col" className="px-4 py-3 font-medium">Acción</th>
@@ -228,19 +212,10 @@ export function AuditoriaView() {
                         </BotonDeFila>
                       </div>
                     </td>
-                    {/* La misma celda que Respaldos (pedido del usuario, 2026-10-15): «Sitio
-                        web» / «menu-y-pie · versión 28». Slug y ámbito los resuelve la API;
-                        las filas que no son de una página dejan la raya. */}
-                    <td data-solo-tabla data-etiqueta="Página" className="px-4 py-2 text-zinc-600 dark:text-zinc-300">
-                      {registro.pagina ? (
-                        <CeldaDePagina
-                          ambito={registro.pagina.ambito}
-                          slug={registro.pagina.slug}
-                          version={registro.pagina.version}
-                        />
-                      ) : (
-                        <span className="text-zinc-400">—</span>
-                      )}
+                    {/* La categoría de la fila, la misma del filtro (pedido del usuario,
+                        2026-10-15): en texto, #001631 en negrita; sin categoría, la raya. */}
+                    <td data-solo-tabla data-etiqueta="Categoría" className="whitespace-nowrap px-4 py-2 font-bold text-[#001631] dark:text-[#f6f6f6]">
+                      {registro.categoria ? ETIQUETA_CATEGORIA[registro.categoria] : <span className="font-normal text-zinc-400">—</span>}
                     </td>
                     <td data-solo-tabla data-etiqueta="Fecha y hora" className="whitespace-nowrap px-4 py-2 text-zinc-600 dark:text-zinc-300">
                       {/* La hora debajo y más pequeña (pedido del usuario, 2026-10-12). Mismo
@@ -254,16 +229,11 @@ export function AuditoriaView() {
                       <PildoraDeAccion registro={registro} />
                     </td>
                     {/* Se corta en la tabla y se lee completo en el `title` o en el detalle.
-                        El comentario de un envío va más oscuro que los campos internos:
-                        es lo que se escribió para ser leído. */}
+                        Un solo color, el de la columna Usuario (pedido del usuario, 2026-10-15). */}
                     <td
                       data-solo-tabla
                       data-etiqueta="Cambios"
-                      className={`max-w-xs truncate px-4 py-2 ${
-                        comentarioPrincipal(registro)
-                          ? 'text-zinc-800 dark:text-zinc-200'
-                          : 'text-zinc-500'
-                      }`}
+                      className="max-w-xs truncate px-4 py-2 text-zinc-900 dark:text-[#f6f6f6]"
                       title={resumenDeCambios(registro)}
                     >
                       {/* Cuando la tabla pasa a tarjetas, el texto no se corta en una línea: se parte, hasta tres. */}

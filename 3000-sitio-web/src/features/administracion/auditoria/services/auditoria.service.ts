@@ -31,9 +31,8 @@ const conFiltros = (filtros: Partial<FiltrosAuditoria>, pagina: number, porPagin
   if (filtros.usuarioId) params.set('usuarioId', filtros.usuarioId);
   // `accion` ya viaja como lista separada por comas cuando la etiqueta agrupa verbos.
   if (filtros.accion) params.set('accion', filtros.accion);
-  // La API la combina con `accion` con «y»: es lo que separa «Edición» de «Modificación».
+  // La API la combina con `accion` con «y»: es lo que separa «Editado» de «Modificado».
   if (filtros.categoria) params.set('categoria', filtros.categoria);
-  if (filtros.ambito) params.set('ambito', filtros.ambito);
   if (filtros.desde) params.set('desde', filtros.desde);
   if (filtros.hasta) params.set('hasta', filtros.hasta);
 

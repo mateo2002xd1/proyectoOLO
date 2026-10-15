@@ -6,7 +6,9 @@ import { CustomSelect } from './custom-select';
 /**
  * De qué zona son los colores. El diseño es uno solo en todas las tablas; lo que
  * cambia es la paleta, que es la que cada zona ya tenía:
- *   - `panel`: grises zinc con tema oscuro, y la página actual en el verde de marca;
+ *   - `panel`: grises zinc con tema oscuro, y la página actual en `#001631` (antes el
+ *     verde de marca; pedido del usuario, 2026-10-15), en blanco con letra `#001631` en
+ *     oscuro, como los demás elementos `#001631` del panel;
  *   - `publico`: los grises de las tablas del sitio (`#344054`, `#d0d5dd`) y la página
  *     actual en el azul institucional `#001631`. El sitio público no tiene tema oscuro.
  */
@@ -38,7 +40,7 @@ const COLORES: Record<
   panel: {
     boton:
       'border-zinc-300 bg-white text-zinc-500 shadow-xs hover:bg-zinc-100 hover:text-zinc-900 dark:border-zinc-700 dark:bg-[#131b2f] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white',
-    actual: 'border-brand-interactive bg-brand-interactive text-white',
+    actual: 'border-[#001631] bg-[#001631] text-white dark:border-white dark:bg-white dark:text-[#001631]',
     hueco: 'border-zinc-300 bg-white text-zinc-400 shadow-xs dark:border-zinc-700 dark:bg-[#131b2f]',
     deshabilitado: 'disabled:text-zinc-300 dark:disabled:text-zinc-600',
     texto: 'text-zinc-500 dark:text-[#94a3b8]',
