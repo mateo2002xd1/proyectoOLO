@@ -30,7 +30,7 @@ Personal directivo del SENA que inicia sesión con cuenta corporativa `@sena.edu
 
 ## 3.2. Prerrequisito de uso
 
-Define lo que el usuario necesita tener o saber listo antes de poder utilizar la aplicación: requerimientos técnicos y de conectividad, credenciales institucionales, asignación de roles y permisos, y los mecanismos de acceso a los portales del observatorio.
+Esta sección define los requerimientos que el usuario debe satisfacer antes de utilizar la plataforma: requerimientos técnicos y de conectividad, credenciales institucionales, asignación de roles y permisos, y los mecanismos de acceso a los portales del observatorio.
 
 ---
 
@@ -111,7 +111,7 @@ Corresponde a la máxima autoridad técnica y operativa dentro de la plataforma 
     * *Rechazar:* Devuelve la versión al editor responsable con las observaciones y justificación de los cambios requeridos.
     * *Descartar / Eliminar (ícono de basurero):* Elimina definitivamente el borrador no procedente o enviado por error. Esta acción exige registrar obligatoriamente el motivo para la bitácora de auditoría y depura los archivos e imágenes huérfanas sin alterar la versión publicada.
     *(Ver procedimiento operativo de revisión en [Sección 3.4.2.5: Páginas en Revisión](#3425-aprobación-y-publicación-de-contenidos-páginas-en-revisión)).*
-  * *Edición integral y gestión de páginas:* Accede al editor visual para maquetar directamente cualquier contenido en el Sitio Web o la Intranet, crear nuevas páginas y eliminar páginas dinámicas creadas por los editores (ver [Sección 3.4.3.2: Creación y Edición en el Lienzo](#3432-creación-y-edición-en-el-lienzo) y [Sección 3.4.3.4: Eliminación de Páginas Dinámicas](#3434-eliminación-de-páginas-dinámicas-paso-a-paso)).
+  * *Edición integral y gestión de páginas:* Accede al editor visual para maquetar directamente cualquier contenido en el Sitio Web o la Intranet, crear nuevas páginas y eliminar páginas dinámicas creadas por los editores (ver [Sección 3.4.3.3: Estructura y Funcionalidades del Editor Visual](#3433-estructura-y-funcionalidades-del-editor-visual), [Sección 3.4.3.4: Creación de Nuevas Páginas (Paso a Paso)](#3434-creación-de-nuevas-páginas-paso-a-paso) y [Sección 3.4.3.5: Eliminación de Páginas (Procedimiento Seguro)](#3435-eliminación-de-páginas-procedimiento-seguro)).
   * *Carga masiva de información en Excel:* Importa y procesa actualizaciones masivas de datos ocupacionales, estadísticas e indicadores del observatorio mediante archivos en formato `.xlsx` (ver paso a paso en [Sección 3.4.2.8: Carga Masiva de Datos en Excel](#3428-actualizaciones-y-carga-masiva-de-datos-en-excel)).
   * *Supervisión mediante bitácora de auditoría:* Inspecciona el registro cronológico inmutable de eventos para verificar qué usuario realizó cada acción, los cambios ejecutados, las marcas de tiempo y las direcciones de origen (ver paso a paso en [Sección 3.4.2.6: Bitácora de Auditoría](#3426-auditoría-y-bitácora-de-eventos)).
 
@@ -130,10 +130,10 @@ Corresponde al rol técnico general facultado para la producción, maquetación 
   Inicia sesión con su cuenta corporativa (`@sena.edu.co`) desde el Sitio Web público o desde la Intranet del OLO. Al autenticarse, el sistema dirige al usuario a la página de inicio correspondiente según el ambiente donde ingresó. Al navegar por las diferentes páginas, se le despliega un menú flotante con los botones de acción para editar página, editar cabecera/pie, crear o eliminar páginas.
 
 * **Funciones y facultades principales:**
-  * *Maquetación interactiva con bloques:* Diseña y estructura contenidos directamente en el editor visual mediante su entorno de tres paneles: seleccionando bloques prediseñados del catálogo izquierdo (textos, imágenes, tarjetas de indicadores, carruseles, acordeones), arrastrándolos al lienzo central en tiempo real y personalizando sus propiedades en el panel lateral derecho (ver paso a paso en [Sección 3.4.3.2: Creación y Edición en el Lienzo](#3432-creación-y-edición-en-el-lienzo)).
-  * *Cobertura total de edición:* Accede a la edición de cualquier página del portal o de la Intranet a través del botón flotante en pantalla (opción **"Editar página"**), disponiendo de permisos plenos sobre todos los contenidos existentes, sin importar qué editor los haya creado originalmente.
-  * *Creación y eliminación de páginas dinámicas:* Gestiona páginas dinámicas desde el menú del botón flotante mediante las opciones **"Crear página"** (definiendo título y ruta URL) y **"Eliminar página"** (con validaciones de seguridad y protección contra enlaces rotos). (Ver paso a paso de creación en [Sección 3.4.3.2: Creación y Edición en el Lienzo](#3432-creación-y-edición-en-el-lienzo) y de eliminación en [Sección 3.4.3.4: Eliminación de Páginas Dinámicas](#3434-eliminación-de-páginas-dinámicas-paso-a-paso)).
-  * *Flujo de trabajo mediante borradores:* Guarda su progreso de forma privada mediante el botón **"Guardar Borrador"** sin alterar el portal público, y traslada los cambios terminados mediante **"Enviar a revisión"** hacia la sección **"Páginas en revisión"** del Panel Administrativo para la evaluación y aprobación final por parte del Administrador (ver paso a paso en [Sección 3.4.3.2: Creación y Edición en el Lienzo](#3432-creación-y-edición-en-el-lienzo)).
+  * *Maquetación interactiva con bloques:* Diseña y estructura contenidos directamente en el editor visual mediante su entorno de paneles: seleccionando bloques prediseñados del catálogo izquierdo (textos, imágenes, tarjetas de indicadores, carruseles, acordeones), arrastrándolos al lienzo central en tiempo real y personalizando sus propiedades en el panel lateral derecho (ver paso a paso en [Sección 3.4.3.3: Estructura y Funcionalidades del Editor Visual](#3433-estructura-y-funcionalidades-del-editor-visual)).
+  * *Cobertura total de edición:* Accede a la edición de cualquier página del portal o de la Intranet a través del botón flotante en pantalla (opción **«Editar página»**), disponiendo de permisos plenos sobre todos los contenidos existentes, sin importar qué editor los haya creado originalmente.
+  * *Creación y eliminación de páginas dinámicas:* Gestiona páginas dinámicas desde el menú del botón flotante mediante las opciones **«Nueva página»** (definiendo título y ruta URL) y **«Eliminar página»** (con validaciones de seguridad y protección contra enlaces rotos). (Ver paso a paso de creación en [Sección 3.4.3.4: Creación de Nuevas Páginas (Paso a Paso)](#3434-creación-de-nuevas-páginas-paso-a-paso) y de eliminación en [Sección 3.4.3.5: Eliminación de Páginas (Procedimiento Seguro)](#3435-eliminación-de-páginas-procedimiento-seguro)).
+  * *Flujo de trabajo mediante borradores:* Guarda su progreso de forma privada mediante el botón **«Guardar borrador»** sin alterar el portal público, y traslada los cambios terminados mediante **«Enviar a revisión»** hacia la sección **«Páginas en revisión»** del Panel Administrativo para la evaluación y aprobación final por parte del Administrador (ver paso a paso en [Sección 3.4.3.3: Estructura y Funcionalidades del Editor Visual](#3433-estructura-y-funcionalidades-del-editor-visual)).
 
 * **Límites operativos y restricciones de seguridad:**
   * No tiene acceso al Panel Administrativo (`/admin`).
@@ -311,9 +311,9 @@ El cierre de sesión seguro es una práctica obligatoria para salvaguardar la pr
 
 ---
 
-## 3.3. Guía de navegación e interfaz general.
+## 3.3. Guía de navegación e interfaz general
 
-Familiariza al usuario con el diseño gráfico, los componentes estructurales fijos, los botones estandarizados de acción y las convenciones visuales del sistema de notificaciones y alertas de la plataforma.
+Esta sección familiariza al usuario con el diseño gráfico, los componentes estructurales fijos, los botones estandarizados de acción y las convenciones visuales del sistema de notificaciones y alertas de la plataforma.
 
 ---
 
@@ -346,7 +346,7 @@ El sistema se compone de tres portales complementarios, cada uno con propósitos
      * *Botón de Acceso a la Intranet:* Enlace fijo permanente ubicado en la esquina superior derecha del menú de navegación hacia el portal privado independiente de la Intranet del OLO.
      * *Páginas fijas del aplicativo:* Interfaces programadas de autenticación (`/login`, `/recuperar-password`) y pantallas de primer ingreso (`/first-login`), las cuales no forman parte de las páginas dinámicas y no pueden ser alteradas ni eliminadas desde el editor.
    * **Componentes ajustables de Cabecera y Pie de página:**
-     * Tanto la cabecera como el pie de página funcionan mediante componentes maquetables del editor visual: los editores autorizados (a través de la opción de plantilla "Menú y pie") pueden personalizar los enlaces del menú, logos, redes y textos informativos. Estos componentes son flexibles y ajustables, pudiendo adaptarse a las necesidades informativas de la plataforma o configurarse según el diseño requerido.
+     * Tanto la cabecera como el pie de página funcionan mediante componentes maquetables del editor visual: los editores autorizados (a través de la opción «Menú y pie») pueden personalizar los enlaces del menú, logos, redes y textos informativos. Estos componentes son flexibles y ajustables, pudiendo adaptarse a las necesidades informativas de la plataforma o configurarse según el diseño requerido.
    * **Área central dinámica:** Lienzo donde se despliegan los contenidos maquetados mediante bloques (artículos, cifras, visores y publicaciones).
 
 > **[Captura: Elementos Fijos Sitio Web]**
@@ -386,7 +386,7 @@ Uno de los elementos interactivos más importantes en el Sitio Web y la Intranet
 * **Caso 2: Usuario autenticado con rol de Administrador o Editor (y roles hijos autorizados):**
   * Si el funcionario cuenta con sesión activa y permisos administrativos o editoriales, el sistema despliega el botón circular flotante en la esquina inferior de la pantalla. Al hacer clic o pasar el cursor, el botón despliega exclusivamente las opciones para las que el usuario está autorizado:
     * **"Editar sección":** Aparece si el usuario es Administrador o tiene asignado el permiso para editar esa página específica (del Sitio Web o de la Intranet).
-    * **"Menú y pie":** Se activa si el usuario es Administrador o si el rol posee el permiso explícito para editar la cabecera y el pie de página de la plantilla en el editor visual.
+    * **"Menú y pie":** Se activa si el usuario es Administrador o si el rol posee el permiso explícito para editar la cabecera y el pie de página («Menú y pie de página») en el editor visual.
     * **"Nueva página":** Disponible si el usuario es Administrador o cuenta con la facultad de crear nuevas páginas en el sistema.
     * **"Eliminar página":** Se visualiza exclusivamente en páginas dinámicas creadas por usuarios, siempre que el usuario sea Administrador o que su rol tenga el permiso de borrado y la página no posea enlaces activos que generen enlaces rotos.
   * **Regla de restricción por página:** Si un editor con un rol personalizado navega por una página para la cual no tiene permisos asignados, las opciones no autorizadas no estarán visibles; si no tiene permisos para ninguna acción en dicha página, el botón flotante completo se oculta automáticamente.
@@ -579,7 +579,7 @@ Esta función opera de manera **exclusiva en el Panel Administrativo** (no aplic
 
 ## 3.4. Funcionalidades
 
-Paso a paso de las operaciones y flujos de trabajo de la plataforma: autenticación, búsquedas y filtros, gestión integral de información (CRUD), generación de reportes en pantalla, exportación de datos y demas procesos existentes en el aplicativo.
+Esta sección presenta el paso a paso de las operaciones y flujos de trabajo de la plataforma: autenticación, búsquedas y filtros, gestión integral de información (creación, consulta, modificación y eliminación), generación de reportes en pantalla, exportación de datos y demás procesos existentes en el aplicativo.
 
 ---
 
@@ -1599,9 +1599,9 @@ Módulo de seguimiento y trazabilidad de eventos del sistema, accesible desde el
 #### 3.4.2.7. Respaldos y Restauración de Páginas
 *(Nota: Para consultar las posibles situaciones de validación, control de página en uso, advertencias de restauración y soporte de depuración, remitirse a la [Sección 3.5.1.12: Validaciones y Solución de Problemas en Respaldos y Restauración de Páginas](#35112-validaciones-y-solución-de-problemas-en-respaldos-y-restauración-de-páginas)).*
 
-El módulo de **Respaldos** (`/admin/respaldos`) permite consultar y gestionar las versiones de respaldo de las páginas publicadas en el Sitio Web y en la Intranet. En la plataforma, el respaldo corresponde siempre a la **última versión que se quitó de estar publicada** cuando se aprobó una nueva publicación. Su objetivo es permitir al Administrador revisar cómo lucía la página antes de su última modificación y restaurar esa versión previa para que vuelva a estar publicada y visible en la plataforma si se necesita revertir algún cambio.
+El módulo de **Respaldos** (`/admin/respaldos`) permite consultar y gestionar las versiones de respaldo de las páginas publicadas en el Sitio Web y en la Intranet. En la plataforma, el respaldo corresponde siempre a la **versión anterior retirada de publicación** cuando se aprobó una nueva publicación. Su objetivo es permitir al Administrador revisar cómo lucía la página antes de su última modificación y restaurar esa versión previa para que vuelva a estar publicada y visible en la plataforma si se necesita revertir algún cambio.
 
-La interfaz lista de forma automática únicamente aquellas páginas que cuentan con una **versión anterior** (la última versión que se quitó de estar publicada) disponible para restaurar.
+La interfaz lista de forma automática únicamente aquellas páginas que cuentan con una **versión anterior** (la versión previa retirada de publicación) disponible para restaurar.
 
 1. **Barra de filtros de búsqueda:**
    Ubicada en la parte superior de la vista, permite acotar la consulta en tiempo real mediante los siguientes controles:
@@ -1660,7 +1660,7 @@ La interfaz lista de forma automática únicamente aquellas páginas que cuentan
 
 5. **Depuración de versiones anteriores (Ventana modal «Depurar versiones antiguas»):**
    En la cabecera superior del módulo, al hacer clic en el botón **"Depurar"** (con ícono de papelera), el sistema abre la ventana modal **«Depurar versiones antiguas»** para optimizar el almacenamiento en base de datos bajo un estricto protocolo de seguridad:
-   * **Regla de seguridad «Respaldo siempre protegido»:** En la parte superior de la ventana modal se destaca un aviso informativo: el sistema **conserva de forma obligatoria la última versión que se quitó de estar publicada de cada página**. Esto asegura que ninguna operación de depuración elimine el respaldo, garantizando que siempre se pueda regresar a la versión previa.
+   * **Regla de seguridad «Respaldo siempre protegido»:** En la parte superior de la ventana modal se destaca un aviso informativo: el sistema **conserva de forma obligatoria la versión anterior retirada de publicación de cada página**. Esto asegura que ninguna operación de depuración elimine el respaldo, garantizando que siempre se pueda regresar a la versión previa.
    * **Filtros de selección:** Menús desplegables para acotar la limpieza por *Ámbito* (*Todos los ámbitos*, *Sitio web*, *Intranet*) y por *Página* específica (o *Todas las páginas*).
    * **Panel de impacto en vivo:** Muestra en tiempo real las métricas de la depuración: *Total encontradas*, *Páginas afectadas*, *Espacio total* estimado a liberar en disco, y el detalle individual por página con la cantidad de versiones antiguas y espacio correspondiente.
    * **Protección contra ediciones en curso:** El sistema valida que ninguna de las páginas seleccionadas esté siendo editada en ese instante; de detectarse una sesión activa, cancela el proceso protegiendo el trabajo del editor.
@@ -1682,291 +1682,455 @@ La interfaz lista de forma automática únicamente aquellas páginas que cuentan
 ---
 
 #### 3.4.2.8. Actualizaciones y Carga Masiva de Datos en Excel
-Módulo de procesamiento masivo, accesible desde el menú lateral (o barra inferior en móviles) bajo **"Actualizaciones"** (o "Carga Masiva").
 
-La interfaz organiza los procesos de carga de datos mediante **tres secciones independientes en formato acordeón**:
-* **Programa + Sobresalientes:** Carga de datos de programas académicos y proyectos destacados del observatorio.
-* **Alertas de inversión:** Carga de registros e indicadores sobre convocatorias y fuentes de inversión laboral.
-* **Criterios de clasificación de resultados:** Carga de parámetros y tablas maestras de clasificación ocupacional.
+Disponible en la ruta `/admin/actualizaciones` (accesible desde el menú lateral izquierdo bajo **«Actualizaciones»** en escritorio, o desde la barra inferior móvil dentro de **«Más»**), permite cargar, actualizar y gestionar los conjuntos de datos analíticos en hojas de cálculo `.xlsx` que alimentan las visualizaciones públicas del observatorio.
 
-Cada sección se presenta como una tarjeta independiente con su título y flecha indicadora. Al hacer clic o pulsar sobre el encabezado de cualquiera de las tres secciones, esta se despliega revelando sus herramientas específicas de descarga de plantilla oficial, zona de carga de archivos e historial de cargas previas, permitiendo alternar entre procesos tanto en computadores como en dispositivos móviles sin saturar la pantalla.
+La interfaz organiza los procesos mediante **tres secciones en formato acordeón desplegable**:
+* **Programa + Sobresalientes:** Ingesta de programas académicos y proyectos formativos destacados.
+* **Alertas de inversión:** Carga masiva o registro manual de convocatorias e iniciativas de inversión laboral.
+* **Criterios de clasificación de resultados:** Carga y publicación de percentiles para Tendencia Ocupacional por año y periodo.
 
-1. **Acceso al módulo y despliegue de sección:** En el menú lateral o en la barra inferior móvil, hacer clic en **"Actualizaciones"** y presionar sobre el encabezado de la sección en acordeón correspondiente a la información que se desea cargar.
+Cada sección se presenta como una tarjeta independiente con su título y flecha indicadora. Al hacer clic o pulsar sobre el encabezado, se despliegan sus controles de descarga de formato, carga de archivo e historial, permitiendo alternar cómodamente entre procesos tanto en computadores como en dispositivos móviles.
 
-> **[Captura: Paso 1]**
-> *Acceso al módulo Actualizaciones con las tres secciones en acordeón desplegables.*
+1. **Carga de "Programa + Sobresalientes":**
+   Permite actualizar la información de programas y proyectos sobresalientes que se proyectan en el portal:
+   * **Descargar formato:** Botón que descarga la plantilla oficial estructurada en formato `.xlsx`. Diligenciar el archivo respetando los nombres de columna y formatos de celda originales.
+   * **Cargar archivo:** Hacer clic en el botón **«Cargar»** para abrir el explorador del equipo y seleccionar la plantilla diligenciada en formato `.xlsx`. Al elegir el archivo, la carga inicia inmediatamente.
+   * **Barra de progreso en tiempo real:** Durante el procesamiento, una barra interactiva muestra el porcentaje de avance, el conteo de filas procesadas sobre el total y la fase activa (*«Leyendo el archivo»* durante la lectura y validación, y *«Guardando en la base de datos»* a partir del 60%).
+   * **Impacto directo:** Al completarse la barra al 100%, los datos se guardan y reflejan de forma automática en el sitio web sin requerir aprobaciones adicionales.
+   * **Historial de cargas:** Grilla inferior que detalla la fecha, nombre de archivo, registros procesados y estado (*Completado*, *Procesando* o *Error*), con botón para eliminar la carga si se requiere revertirla.
+
+> **[Captura: Actualizaciones - Programa y Sobresalientes]**
+> *Sección desplegada de Programa + Sobresalientes mostrando los botones de descarga de formato y carga de archivo, la barra de progreso en vivo y el historial de cargas.*
 >
-> **[Captura: Paso 1 (Móvil)]**
-> *Acceso al módulo Actualizaciones con las tres secciones en acordeón en dispositivos móviles. (Móvil).*
+> **[Captura: Actualizaciones - Programa y Sobresalientes (Móvil)]**
+> *Sección de Programa + Sobresalientes adaptada a dispositivos móviles. (Móvil).*
 
-2. **Descarga de plantilla oficial:** Antes de subir cualquier dato, el usuario debe hacer clic en el botón **"Descargar Plantilla Excel"**. Esto asegura que las columnas, formatos de celda y encabezados coincidan de forma estricta con el esquema esperado por la base de datos.
+2. **Carga y Registro de "Alertas de inversión":**
+   Reúne las opciones para incorporar proyectos e iniciativas de inversión laboral al observatorio:
+   * **Descarga de formatos oficiales:** Botón **«Descargar formato»** (obtiene `formato-alertas-inversion.xlsx` para proyectos) y botón **«Descargar formato CIIU»** (`formato-actualizar-ciiu.xlsx` para clasificaciones sectoriales).
+   * **Carga masiva por Excel:** Pulsar **«Cargar Excel»** para seleccionar la plantilla diligenciada (`.xlsx`). Muestra la barra de progreso en vivo (*«Leyendo el archivo»* antes del 50% y *«Guardando en la base de datos»* a partir del 50%).
+   * **Registro manual de proyectos:** Pulsar el botón **«Agregar manualmente»** (con ícono de suma) para abrir una ventana modal con formulario completo. Permite registrar un proyecto individual digitando su título, entidad promotora, sector económico, monto de inversión, vigencia y descripción sin necesidad de preparar un archivo Excel.
+   * **Actualización de sectores CIIU:** Botón interactivo para cargar la actualización de la tabla maestra de actividades económicas.
+   * **Historial y gestión de proyectos:** Presenta dos tablas organizadas: el **Historial de cargas** de archivos Excel y la lista de **Proyectos registrados**, que permite consultar los proyectos vigentes, eliminar registros individuales o limpiar el listado completo.
 
-> **[Captura: Paso 2]**
-> *Botón para descargar la plantilla oficial en formato .xlsx.*
+> **[Captura: Actualizaciones - Alertas de Inversión]**
+> *Sección de Alertas de Inversión con botones de carga masiva, botón de alta manual, barra de progreso y tablas de historial y proyectos registrados.*
 >
-> **[Captura: Paso 2 (Móvil)]**
-> *Botón para descargar la plantilla oficial en formato .xlsx. (Móvil).*
+> **[Captura: Actualizaciones - Alertas de Inversión (Móvil)]**
+> *Sección de Alertas de Inversión en pantalla móvil. (Móvil).*
 
-3. **Diligenciamiento de la plantilla:** El usuario diligencia el archivo respetando los tipos de datos de cada columna sin alterar los nombres de las cabeceras.
-4. **Carga del archivo:** Se debe arrastrar el archivo diligenciado al área punteada de carga (**"Arrastra tu archivo aquí"**) o hacer clic para seleccionarlo desde el explorador de archivos del sistema operativo (formatos permitidos: `.xlsx`, `.xls`; peso máximo: 10 MB).
+3. **Carga de "Criterios de clasificación de resultados" (Tendencia Ocupacional):**
+   Gestiona la matriz de percentiles de inscritos y vacantes que alimenta los bloques interactivos de Tendencia Ocupacional a nivel nacional y departamental:
+   * **Descargar formato:** Botón que entrega la plantilla oficial `.xlsx` obligatoria, la cual contiene las hojas predefinidas *«percentiles nacional»* y *«percentiles departamental»*.
+   * **Selección de Año y Periodo:**
+     1. Seleccionar el **Año** en el calendario o escribiendo las cuatro cifras correspondientes.
+     2. Seleccionar el **Periodo** en el menú desplegable (trimestre o semestre).
+     3. *Autodetección inteligente:* Si el nombre del archivo contiene el año y periodo (ej. `percentiles_2025_T1.xlsx`), el sistema los identifica y preselecciona automáticamente.
+   * **Regla de celda libre:** Cada combinación de año y periodo admite una única carga activa. Si el periodo ya tiene datos cargados, el sistema exhibirá la etiqueta de advertencia y bloqueará la subida repetida; para reemplazar los datos de ese periodo, se debe eliminar primero la carga anterior desde el historial.
+   * **Carga y validación en 4 fases:** Al seleccionar el archivo y presionar **«Cargar»**, la barra de progreso avanza por cuatro fases reales:
+     1. *«Leyendo el archivo»* (0% - 39%)
+     2. *«Preparando las filas»* (40% - 59%)
+     3. *«Validando (V1–V9)»* (60% - 84%)
+     4. *«Guardando en la base de datos»* (85% - 100%)
+   * **Estado Borrador y Publicación:** Al finalizar con éxito, los datos quedan inicialmente en estado **Borrador («Sin publicar»)** con un resumen de filas procesadas y un botón de reporte detallado. La sección superior de **Pendientes de publicar** permite pulsar **«Publicar»** en el corte deseado o **«Publicar todos»** para hacer la información visible en el sitio web público.
+   * **Historial y control de cortes:** Tabla especializada con filtros por año y periodo, banderas de estado (`EstadoFlag`: *Libre*, *Borrador*, *Publicado* o *Error*) y botones de acción para **Publicar**, **Despublicar** (volver a borrador) y **Eliminar**.
 
-> **[Captura: Paso 4]**
-> *Zona de arrastre y selección del archivo Excel.*
+> **[Captura: Actualizaciones - Criterios de Clasificación]**
+> *Sección de Criterios de Clasificación mostrando los selectores de año y periodo, barra de validación en 4 fases, panel de pendientes de publicar y el historial de cortes con filtros.*
 >
-> **[Captura: Paso 4 (Móvil)]**
-> *Zona de arrastre y selección del archivo Excel. (Móvil).*
-
-5. **Prevalidación automática:** El sistema analiza la estructura del archivo antes de impactar la base de datos. Si detecta campos vacíos obligatorios, tipos de datos incorrectos o filas duplicadas, mostrará una lista detallada con el **número de fila exacto** y el **error encontrado**. El botón de procesamiento permanecerá bloqueado hasta que el usuario corrija los errores y cargue el archivo corregido.
-
-> **[Captura: Paso 5]**
-> *Panel de prevalidación con la lista de errores encontrados por fila.*
->
-> **[Captura: Paso 5 (Móvil)]**
-> *Panel de prevalidación con la lista de errores encontrados por fila. (Móvil).*
-
-6. **Confirmación y ejecución:** Con la prevalidación aprobada (0 errores), se habilitará el botón **"Procesar Carga"**. Al hacer clic, una barra de progreso indicará el avance del procesamiento.
-
-> **[Captura: Paso 6]**
-> *Barra de progreso de la carga masiva con porcentaje de avance.*
->
-> **[Captura: Paso 6 (Móvil)]**
-> *Barra de progreso de la carga masiva con porcentaje de avance. (Móvil).*
-
-7. **Confirmación de éxito:** Al finalizar, el sistema mostrará un resumen con el número de registros **procesados**, **creados**, **actualizados** y **omitidos**. Una notificación flotante confirmará que la operación fue exitosa y el evento quedará registrado en la bitácora de auditoría.
-
-> **[Captura: Paso 7]**
-> *Resumen de resultados de la carga masiva con el conteo de registros procesados, creados, actualizados y omitidos.*
->
-> **[Captura: Paso 7 (Móvil)]**
-> *Resumen de resultados de la carga masiva. (Móvil).*
+> **[Captura: Actualizaciones - Criterios de Clasificación (Móvil)]**
+> *Sección de Criterios de Clasificación adaptada a dispositivos móviles. (Móvil).*
 
 ---
 
 #### 3.4.2.9. Perfil de Usuario ("Mi perfil" y "Configuración")
-Accesible desde el menú desplegable de perfil ubicado en la base inferior del menú lateral izquierdo (en escritorio) o pulsando el nombre de usuario en la barra superior (en móvil). Permite al Administrador gestionar sus datos básicos y actualizar su contraseña institucional.
+
+Esta sección permite consultar los datos personales, cambiar la contraseña y ajustar las preferencias del panel administrativo:
+
+* **En computador:** Ambas opciones se abren haciendo clic sobre el nombre de usuario, al final del menú lateral izquierdo.
+* **En celular o tableta:** **"Mi perfil"** se abre tocando el nombre de usuario en la barra superior, y **"Configuración"** pulsando el botón **«Más»** en la barra inferior.
 
 ##### 3.4.2.9.1. Sección "Mi Perfil"
 
-Contiene la información de identificación del usuario dentro del sistema:
+*(Nota: Para consultar las posibles situaciones de validación, errores de contraseña actual, discrepancias de confirmación y soporte de campos en solo lectura, remitirse a la [Sección 3.5.1.13: Validaciones y Solución de Problemas en Mi Perfil](#35113-validaciones-y-solución-de-problemas-en-mi-perfil)).*
 
-* **Nombre y Apellidos:** Campos de texto editables para actualizar los nombres y apellidos del funcionario en el sistema.
-* **Correo Electrónico:** Dirección institucional `@sena.edu.co` registrada en la plataforma.
-* **Cambiar contraseña:** Opción desplegable interactiva que permite al usuario actualizar su contraseña sin salir del panel. Al activarla, solicita la contraseña actual, la nueva contraseña (con indicador en vivo del cumplimiento de los requisitos de seguridad) y la confirmación de la nueva clave.
+Disponible en la ruta `/admin/mi-perfil` (accesible desde el menú de usuario en la barra lateral en escritorio o tocando el nombre de usuario en la barra superior móvil), reúne la consulta de la cuenta y la actualización de la contraseña:
+
+1. **Datos del usuario (solo lectura):** Presenta el **Nombre**, **Apellidos** y **Correo Electrónico** (`@sena.edu.co`) asociados a la cuenta. Estos campos son de solo lectura en esta vista; para modificar el nombre, los apellidos o el correo de cualquier funcionario, el cambio se realiza desde el módulo **Accesos > Usuarios** (`/admin/users`), editando el registro correspondiente en la tabla (ver [Sección 3.4.2.4: Gestión de Usuarios y Control de Acceso](#3424-gestión-de-usuarios-y-control-de-acceso)).
+
+2. **Cambio de contraseña:** Para actualizar la clave de acceso, el usuario sigue estos pasos:
+   * **Contraseña actual:** Se digita la clave vigente en la primera casilla (incluye botón con ícono de ojo para ver u ocultar los caracteres).
+   * **Nueva contraseña:** Se ingresa la nueva clave (con botón para ver u ocultar), guiándose por el panel en vivo que evalúa los requisitos de seguridad (al menos 12 caracteres, combinación de mayúsculas, minúsculas, números o símbolos, y sin emojis).
+   * **Confirmar contraseña:** Se vuelve a escribir la nueva clave para asegurar que ambas coincidan.
+   * **Guardar cambios:** Se hace clic en el botón **"Cambiar Contraseña"** (mostrará el estado *«Guardando...»* mientras se procesa la solicitud). Al completarse, el sistema confirma la operación con el mensaje *«Contraseña actualizada exitosamente»*, limpia las casillas del formulario y registra el evento en la bitácora de auditoría.
 
 > **[Captura: Mi Perfil]**
-> *Vista del módulo "Mi Perfil" en el Panel Administrativo con los campos de nombre, apellidos, correo y cambio de contraseña.*
+> *Vista del módulo "Mi Perfil" en el Panel Administrativo con los datos de cuenta en solo lectura y el formulario de cambio de contraseña.*
 >
 > **[Captura: Mi Perfil (Móvil)]**
-> *Vista del módulo "Mi Perfil" en el Panel Administrativo con los campos de nombre, apellidos, correo y cambio de contraseña. (Móvil).*
-
-Flujo para actualizar los datos:
-1. El usuario modifica los campos deseados en el formulario.
-2. Se debe hacer clic en el botón **"Guardar cambios"**.
-3. El sistema muestra una notificación flotante confirmando la actualización exitosa de la información.
+> *Vista del módulo "Mi Perfil" en dispositivo móvil adaptada a una sola columna. (Móvil).*
 
 ##### 3.4.2.9.2. Sección "Configuración"
 
-El módulo de Configuración reúne tanto los parámetros visuales corporativos del sistema como las preferencias operativas del administrador:
+*(Nota: Para consultar las posibles situaciones de validación, restricciones de formato y peso de imagen, alertas de contraste y persistencia local de sonidos, remitirse a la [Sección 3.5.1.14: Validaciones y Solución de Problemas en Configuración](#35114-validaciones-y-solución-de-problemas-en-configuración)).*
 
-* **Identidad visual del panel:** (Disponible para administradores que cuenten con el permiso *«Identidad visual del panel»*). Permite personalizar la apariencia de los elementos fijos del Panel Administrativo y del Editor Visual de forma global, impactando en tiempo real sin requerir recargar la plataforma (estos ajustes no alteran las páginas públicas ni de la intranet):
-  * **Ícono / Logotipo del panel:** Carga y actualización de la imagen institucional del logotipo principal en formato PNG (respetando el límite de peso en KB especificado) ubicado en la cabecera de la barra lateral. Incluye botón para restaurar el logotipo predeterminado de fábrica.
-  * **Ícono de la pestaña / Favicon:** Carga del isotipo o ícono distintivo en formato PNG utilizado en la pestaña del navegador y en la barra superior móvil.
-  * **Logotipo en modo oscuro:** Interruptor que permite fijar el renderizado en alto contraste del logotipo cuando la interfaz opera con tema oscuro para preservar la legibilidad.
-  * **Botones en el panel (en pantallas):** Acordeón interactivo para personalizar las combinaciones de tonos de fondo y texto de los botones desplegados en las pantallas del panel administrativo según su función (botones principales, secundarios y de reintento).
-  * **Botones dentro de modales:** Acordeón interactivo para personalizar las combinaciones de tonos de fondo y texto de los botones ubicados al interior de ventanas modales (botones principales de confirmación, secundarios de cancelación y botones de peligro).
-  * **Etiquetas de ayuda contextual (Tooltips):** Acordeón interactivo para personalizar las combinaciones de tonos de fondo y texto de las etiquetas de acción contextual (en las tablas del panel y en las herramientas del editor visual), además de la posibilidad de activar o desactivar su visualización general.
-  * **Regla de textos fijos:** Los textos, rótulos de botones, nombres de etiquetas y mensajes son fijos del sistema y no pueden ser modificados desde esta sección ni desde ningún otro módulo, asegurando la consistencia institucional.
-* **Sonido de los avisos:** Preferencia individual del administrador almacenada en el navegador web local. Activa o silencia el tono corto que acompaña a los avisos flotantes de éxito, advertencia y error. Viene activado por defecto. Los botones interactivos **Éxito**, **Advertencia** y **Error** permiten reproducir y escuchar cada tono.
-* **Actualización de preguntas de seguridad:** Permite al usuario reconfigurar sus tres preguntas y respuestas de seguridad personales. Requiere confirmar la contraseña actual antes de realizar cambios.
-* **Notificaciones:** Activa o desactiva la recepción de alertas del sistema (ej. notificación cuando un borrador es aprobado o rechazado).
+Disponible en la ruta `/admin/configuracion` (accesible desde el menú de usuario en la base de la barra lateral izquierda en escritorio, o desde la barra inferior móvil dentro de **«Más»**), permite personalizar la identidad visual del panel y ajustar las preferencias de sonido:
 
-> **[Captura: Configuración Usuario]**
-> *Vista del módulo "Configuración" en el Panel Administrativo con el interruptor del sonido de los avisos y los botones para escuchar cada tono.*
+1. **Identidad visual (Logotipo, ícono de pestaña y tema oscuro):**
+   Permite personalizar los distintivos gráficos de la plataforma en tiempo real:
+   * **Logo de la barra lateral:** Se carga haciendo clic o arrastrando una imagen PNG horizontal (hasta 1 MB, recomendada con fondo transparente). El sistema la guarda de forma inmediata y ofrece previsualizaciones en vivo en modo claro y oscuro, además del botón **«Volver al de fábrica»** para restaurar el diseño original.
+   * **Ícono de la pestaña (Favicon):** Se carga arrastrando o seleccionando un PNG cuadrado (hasta 512 KB, mínimo 64 × 64 px) para la pestaña del navegador y la barra móvil, incluyendo su botón para restablecer el de fábrica.
+   * **Pasar a blanco en modo oscuro:** Interruptor para fijar en blanco logos o íconos oscuros con fondo transparente cuando se usa el tema oscuro. Debe mantenerse apagado si la imagen tiene fondo propio.
+
+> **[Captura: Configuración - Identidad Visual]**
+> *Gestión del logotipo de la barra lateral y del ícono de la pestaña con previsualizaciones simultáneas en tema claro y oscuro, e interruptor de modo oscuro.*
 >
-> **[Captura: Configuración Usuario (Móvil)]**
-> *Vista del módulo "Configuración" en el Panel Administrativo con el interruptor del sonido de los avisos y los botones para escuchar cada tono. (Móvil).*
+> **[Captura: Configuración - Identidad Visual (Móvil)]**
+> *Sección de identidad visual adaptada a pantallas móviles. (Móvil).*
+
+2. **Personalización de colores (Botones y Etiquetas):**
+   Permite ajustar la paleta de colores de la interfaz asegurando una óptima legibilidad:
+   * **Etiquetas de acción (Tooltips) y Botones:** Organizados en acordeones interactivos (*«En el panel»* / *«En el editor»* para etiquetas, y *«En las pantallas»* / *«En los modales»* para botones).
+   * **Ajuste y validación de contraste:** Para cada elemento se selecciona el color de **Fondo** y de la **Letra**. El sistema evalúa el contraste en tiempo real: si cumple la norma (mínimo 4,5:1) muestra **«Se lee bien»**; si no, advierte **«Poco contraste»** y ofrece botones asistidos (**«Usar letra blanca»** o **«Usar letra azul oscuro»**) para corregirlo con un clic.
+   * **Guardar o revertir:** Los cambios se confirman con **«Guardar colores de las etiquetas»** o **«Guardar colores de los botones»**. También se dispone de **«Descartar cambios»** y **«Volver a los de fábrica»**. Los textos y nombres de los botones son fijos del sistema y no son editables.
+
+> **[Captura: Configuración - Personalización de Colores]**
+> *Acordeones de botones y etiquetas con selectores de color, muestra previa interactiva en vivo e indicador de contraste accesible.*
+>
+> **[Captura: Configuración - Personalización de Colores (Móvil)]**
+> *Personalización de colores adaptada a dispositivos móviles con selectores táctiles nativos. (Móvil).*
+
+3. **Sonido de los avisos:**
+   Preferencia individual guardada localmente en el navegador web del usuario:
+   * **Interruptor de sonido:** Permite activar o silenciar el timbre corto que acompaña a las notificaciones emergentes de éxito, advertencia y error (activo por defecto).
+   * **Prueba de tonos:** Incluye los botones interactivos **«Éxito»**, **«Advertencia»** y **«Error»** para reproducir y verificar cada sonido al instante, incluso si el interruptor general está silenciado.
+
+> **[Captura: Configuración - Sonido de los Avisos]**
+> *Control del sonido de avisos con interruptor de activación local y botones interactivos para probar cada tono.*
+>
+> **[Captura: Configuración - Sonido de los Avisos (Móvil)]**
+> *Control del sonido de avisos en dispositivo móvil. (Móvil).*
 
 ---
 
 ### 3.4.3. Gestión Editorial y Contenido Dinámico en el Editor Visual
 
-Guía de operaciones para el diseño, maquetación y actualización de páginas y contenidos en el Sitio Web Público y la Intranet mediante el editor visual interactivo basado en bloques.
+Esta sección describe el uso del Editor Visual interactivo para diseñar, maquetar, actualizar y administrar las páginas del Observatorio Laboral y Ocupacional (OLO).
 
-Esta sección aborda el uso de la herramienta del Editor Visual, disponible para usuarios con rol de Administrador o Editor (incluyendo roles derivados autorizados), mediante la cual se diseña y actualiza el contenido del portal.
+Todo lo explicado en este numeral aplica de la misma forma tanto para el **Sitio Web Público** como para la **Intranet**. El botón flotante, la interfaz del editor, las herramientas de trabajo y los pasos para crear o eliminar páginas funcionan exactamente igual en ambos portales; lo único que cambia entre ellos es el catálogo de componentes disponibles para cada uno.
 
-#### 3.4.3.1. Acceso a las opciones de Edición (Botón Flotante)
-1. **Visualización del botón:** Al iniciar sesión con un rol autorizado (Administrador o Editor), se debe ubicar el **botón circular flotante con un ícono de lápiz** en la pantalla del portal.
+#### 3.4.3.1. Acceso a las Opciones de Edición (Botón Flotante)
 
-> **[Captura: Paso 1]**
-> *Botón flotante de edición.*
+El botón flotante permite a los usuarios con facultades editoriales gestionar contenidos directamente mientras navegan por el portal. Las opciones que se despliegan en este botón responden de manera dinámica a los permisos asignados a cada usuario; si cuenta con los permisos correspondientes para la página en la que se encuentra posicionado, podrá acceder a: **Editar página** (para maquetar la página actual), **Menú y pie** (para modificar la cabecera y el pie de página globales), **Nueva página** (para crear una nueva página) y **Eliminar página** (para retirar la página actual), además de disponer de un botón directo para **salir del modo de edición** (para cerrar sesion).
+
+1. **Visibilidad y estructura del botón flotante:**
+   El componente se fija en la esquina inferior derecha de la pantalla y permanece visible en cualquier página siempre que el usuario cuente con una sesión activa y permisos editoriales asignados (o rol de Administrador). Para visitantes públicos o usuarios sin facultades de edición, el botón no se dibuja en pantalla.
+   La estructura flotante está compuesta por dos controles principales apilados verticalmente:
+   * **Disparador principal de opciones (Círculo azul con lápiz):** Botón circular en color azul institucional con un ícono de lápiz. Al situar el cursor sobre él, despliega la etiqueta flotante informativa *«Opciones de edición»*.
+   * **Botón directo de salida (Círculo rojo con ícono de salida):** Ubicado de manera permanente justo debajo del disparador principal, en color rojo con un ícono de puerta y flecha de salida. Al pasar el cursor muestra la etiqueta *«Salir de modo edición»* (o *«Cerrar sesión»* en la Intranet). Para consultar el procedimiento de confirmación y salida en ambos portales, remitirse a la [Sección 3.4.1.4: Procedimiento de Cierre de Sesión](#3414-procedimiento-de-cierre-de-sesión).
+
+> **[Captura: Botón Flotante de Edición]**
+> *Botón flotante fijado en la esquina inferior derecha con disparador de opciones de edición y botón directo de salida.*
 >
-> **[Captura: Paso 1 (Móvil)]**
-> *Botón flotante de edición. (Móvil).*
+> **[Captura: Botón Flotante de Edición (Móvil)]**
+> *Visualización del botón flotante adaptado a dispositivos móviles. (Móvil).*
 
-2. **Despliegue del menú:** Se debe hacer clic sobre el botón circular. Se desplegará un menú con cuatro opciones (Editar pie, Editar página, Crear página, Eliminar página).
+2. **Despliegue del menú de acciones editoriales:**
+   Al hacer clic sobre el disparador principal de lápiz, el ícono rota 90° y se transforma en un ícono de equis, la etiqueta cambia a *«Cerrar opciones»*, y el submenú de herramientas se despliega verticalmente hacia arriba con animación fluida. Las opciones disponibles operan bajo la misma interfaz e interactividad en ambos entornos, evaluándose según los permisos concedidos al usuario:
+   * **Editar página (Ícono de lápiz sobre documento):** Botón en color azul. Abre de inmediato la página actual en el Editor Visual para modificar sus textos, imágenes y estructura de bloques. Se muestra si el usuario tiene asignado el permiso para editar esa página específica o si cuenta con el rol de Administrador.
+   * **Menú y pie (Ícono de capas):** Botón en color azul intermedio. Permite ingresar al editor para estructurar los elementos globales que comparten todas las páginas del portal (barra superior institucional, menú de navegación principal e información institucional del pie de página). Requiere el permiso de **«Menú y pie de página»** (*«Menú y pie del sitio web»* o *«Menú y pie de la intranet»*, dentro del grupo *Editar*) o el rol de Administrador.
+   * **Nueva página (Ícono de suma "+"):** Botón de fondo blanco con borde y texto azul oscuro. Despliega la ventana modal de creación, solicitando el nombre deseado y generando automáticamente su dirección web de acceso. Requiere el permiso de creación correspondiente o el rol de Administrador.
+   * **Eliminar página (Ícono de papelera):** Botón en color blanco con borde e ícono rojo, ubicado en la parte superior del menú desplegado. Inicia el procedimiento de retiro seguro y comprobación previa de enlaces activos. Solo aparece en páginas dinámicas creadas por editores y requiere el permiso para eliminar páginas o el rol de Administrador.
 
-> **[Captura: Paso 2]**
-> *Menú de opciones desplegado.*
+> **[Captura: Menú Flotante de Edición Desplegado]**
+> *Menú de herramientas editoriales desplegado verticalmente mostrando las opciones de Editar página, Menú y pie, Nueva página y Eliminar página con sus etiquetas flotantes.*
 >
-> **[Captura: Paso 2 (Móvil)]**
-> *Menú de opciones desplegado. (Móvil).*
+> **[Captura: Menú Flotante de Edición Desplegado (Móvil)]**
+> *Menú flotante desplegable adaptado a pantalla móvil. (Móvil).*
 
-#### 3.4.3.2. Creación y Edición en el Lienzo
-1. **Creación:** Se debe seleccionar la opción **"Crear página"** en el menú del botón flotante; el sistema solicitará digitar un título y una ruta URL. Al completar y confirmar el formulario, la nueva página se crea en estado de borrador.
-   * *Asignación automática de permisos:* De forma inmediata, el sistema habilita el permiso de edición únicamente para el Administrador, para el rol padre Editor base y para el rol del editor que la creó. Los demás roles hijos de editor quedan sin acceso a la página a menos que un Administrador les conceda el permiso manualmente desde el Panel Administrativo (**Accesos > Roles > Editar Rol**).
+3. **Cierre del menú desplegable:**
+   El submenú se cierra si el usuario hace clic nuevamente sobre el botón con ícono de equis o si pulsa en cualquier área de la pantalla fuera del menú flotante.
 
-> **[Captura: Paso 1]**
-> *Formulario de título y URL para la nueva página.*
+#### 3.4.3.2. Edición de Contenidos: Páginas y «Menú y pie de página»
+
+En la plataforma, una pantalla se divide visualmente en dos componentes fundamentales: el **cuerpo central de contenido** (exclusivo de cada página) y la **envoltura global de navegación** (la cabecera y el pie de página compartidos por todo el portal). Según la zona que se requiera intervenir, el usuario accede a dos modalidades de edición independientes:
+
+1. **Edición de Páginas Dinámicas (Opción «Editar página»):**
+   * **Propósito y alcance:** Permite estructurar, diseñar y actualizar los bloques de contenido situados en el cuerpo central de la página activa (por ejemplo: la página de Inicio, una página informativa de normatividad o un boletín temático). Los cambios introducidos afectan exclusivamente a la página en edición, sin alterar el resto de secciones del portal.
+   * **Comportamiento en pantalla:** Al pulsar **«Editar página»** en el menú flotante, el sistema carga el Editor Visual abriendo la versión de borrador de la página seleccionada. Los bloques se despliegan en el lienzo central de forma editable, mientras que la cabecera y el pie de página institucional permanecen visibles en modo de solo lectura para brindar una referencia gráfica fiel del diseño final.
+   * **Requisitos de acceso:** El botón se habilita únicamente si el usuario cuenta con el permiso específico asignado para maquetar dicha página o si posee el rol de Administrador.
+
+> **[Captura: Acceso a Edición de Página]**
+> *Selección de la opción «Editar página» en el menú flotante para ingresar a la maquetación del contenido específico de la página activa.*
 >
-> **[Captura: Paso 1 (Móvil)]**
-> *Formulario de título y URL para la nueva página. (Móvil).*
+> **[Captura: Acceso a Edición de Página (Móvil)]**
+> *Acceso a la edición de página individual adaptado a pantalla móvil. (Móvil).*
 
-2. **Acceso al lienzo:** Al crear o al seleccionar **"Editar página"**, se abrirá la interfaz del Editor Visual dividida en tres paneles (catálogo, lienzo y propiedades).
+2. **Edición Global de Menú y Pie de Página (Opción «Menú y pie»):**
+   * **Propósito y alcance:** Permite configurar y actualizar la estructura de navegación y la información institucional que rodea a todas las páginas del portal. Al guardar y aprobar cambios en esta modalidad, las modificaciones se propagan de manera automática y simultánea a la totalidad de las páginas de la aplicación correspondiente (Sitio Web o Intranet).
+   * **Elementos que comprende:**
+     * *Barra superior institucional:* Enlaces directos a entidades externas, avisos de accesibilidad y enlaces a redes oficiales.
+     * *Menú principal de navegación:* Estructura jerárquica de enlaces primarios, botones de acción y menús desplegables multinivel organizados por temáticas.
+     * *Pie de página institucional:* Franjas de contacto, logotipos institucionales del SENA y del Estado, políticas de tratamiento de datos, enlaces de interés institucional y derechos de autor.
+   * **Comportamiento en pantalla:** Al seleccionar **«Menú y pie»**, el Editor Visual enfoca su lienzo de trabajo exclusivamente en los bloques correspondientes a la cabecera y al pie de página, permitiendo ordenar enlaces, agregar nuevos ítems de menú y actualizar datos de contacto.
+   * **Requisitos de acceso:** Requiere contar expresamente con el permiso **«Menú y pie del sitio web»** o **«Menú y pie de la intranet»** (según el portal en el que se opere) dentro del grupo *Editar*, o contar con el rol de Administrador.
 
-> **[Captura: Paso 2]**
-> *Interfaz de 3 paneles del Editor Visual.*
+> **[Captura: Acceso a Edición de Menú y Pie]**
+> *Selección de la opción «Menú y pie» en el menú flotante para la personalización de los elementos globales de navegación.*
 >
-> **[Captura: Paso 2 (Móvil)]**
-> *Interfaz de 3 paneles del Editor Visual. (Móvil).*
+> **[Captura: Acceso a Edición de Menú y Pie (Móvil)]**
+> *Acceso a la edición global de menú y pie en dispositivo móvil. (Móvil).*
 
-3. **Arrastrar componente:** Se debe hacer clic sostenido sobre un componente del panel izquierdo y arrastrarlo hacia el centro.
+#### 3.4.3.3. Estructura y Funcionalidades del Editor Visual
 
-> **[Captura: Paso 3]**
-> *Acción de arrastrar un componente al lienzo.*
+El Editor Visual es un entorno interactivo que permite maquetar en vivo los contenidos mediante bloques modulares prediseñados, combinando sencillez de uso con flexibilidad gráfica.
+
+##### 3.4.3.3.1. Estructura y Paneles del Editor
+
+Al ingresar a la edición de una página o del menú y pie, la pantalla se organiza en cuatro zonas de trabajo principales y una barra de herramientas superior:
+
+> **[Captura: Interfaz General del Editor Visual]**
+> *Vista panorámica del Editor Visual mostrando la barra superior, la franja de modos, el panel izquierdo, el lienzo interactivo central y el inspector de propiedades derecho.*
 >
-> **[Captura: Paso 3 (Móvil)]**
-> *Acción de arrastrar un componente al lienzo. (Móvil).*
+> **[Captura: Interfaz General del Editor Visual (Móvil)]**
+> *Vista general del Editor Visual adaptada a pantallas móviles. (Móvil).*
 
-4. **Soltar componente:** Se debe soltar el clic para que el componente quede fijado en el lienzo de trabajo.
+1. **Franja lateral de selección de modo («Bloques» y «Capas»):**
+   Ubicada en el borde extremo izquierdo de la pantalla, permite alternar entre dos vistas de trabajo esenciales:
+   * *Pestaña «Bloques» (Ícono de cuadrícula):* Despliega el catálogo de componentes prediseñados disponibles para insertar en la página.
+   * *Pestaña «Capas» (Ícono de lista jerárquica):* Despliega el árbol ordenado de todos los bloques presentes actualmente en el lienzo, facilitando seleccionar cualquier elemento de forma directa sin necesidad de desplazarse verticalmente por la página.
 
-> **[Captura: Paso 4]**
-> *Componente fijado en el lienzo central.*
+> **[Captura: Franja Lateral de Modos - Bloques y Capas]**
+> *Franja vertical izquierda para alternar entre el catálogo de bloques y el árbol de capas.*
 >
-> **[Captura: Paso 4 (Móvil)]**
-> *Componente fijado en el lienzo central. (Móvil).*
+> **[Captura: Franja Lateral de Modos - Bloques y Capas (Móvil)]**
+> *Franja de modos adaptada a dispositivos móviles. (Móvil).*
 
-5. **Configuración de propiedades:** Se debe hacer clic sobre el componente recién colocado. El panel derecho mostrará sus campos editables (textos, estilos y contenidos visuales).
+2. **Panel lateral izquierdo (Catálogo de Bloques y Explorador de Capas):**
+   Panel desplegable cuyo contenido responde a la pestaña activa en la franja lateral:
+   * *En modo Bloques:* Muestra los componentes clasificados por categorías temáticas (textos, llamadas a la acción, multimedia, indicadores, etc.), listos para arrastrar hacia el lienzo.
+   * *En modo Capas:* Presenta la lista vertical de bloques ordenados de arriba hacia abajo tal como aparecen en la página; al hacer clic sobre una capa, el bloque se resalta inmediatamente en el lienzo y despliega sus propiedades en el panel derecho.
 
-> **[Captura: Paso 5]**
-> *Panel derecho habilitado con las propiedades del componente.*
+> **[Captura: Panel Izquierdo - Catálogo de Bloques y Capas]**
+> *Panel lateral izquierdo con la lista de bloques disponibles o el esquema jerárquico de capas.*
 >
-> **[Captura: Paso 5 (Móvil)]**
-> *Panel derecho habilitado con las propiedades del componente. (Móvil).*
+> **[Captura: Panel Izquierdo - Catálogo de Bloques y Capas (Móvil)]**
+> *Panel lateral izquierdo desplegado en pantalla móvil. (Móvil).*
 
-6. **Ingreso de contenido:** Se deben digitar los textos o cargar las imágenes necesarias en el panel derecho. Los cambios se reflejarán en tiempo real en el centro.
+3. **Lienzo interactivo central (Área de maquetación en vivo):**
+   Zona principal de trabajo donde se visualiza el contenido exactamente como se verá en el portal final (maquetación *WYSIWYG*). Permite soltar nuevos bloques en cualquier posición, seleccionarlos con un clic para editarlos, reorganizarlos verticalmente desde su agarradera de arrastre o retirarlos mediante su ícono de papelera.
 
-> **[Captura: Paso 6]**
-> *Ingreso de datos y visualización en tiempo real.*
+> **[Captura: Lienzo Interactivo Central]**
+> *Área central donde se maquetan y visualizan los contenidos en tiempo real.*
 >
-> **[Captura: Paso 6 (Móvil)]**
-> *Ingreso de datos y visualización en tiempo real. (Móvil).*
+> **[Captura: Lienzo Interactivo Central (Móvil)]**
+> *Lienzo interactivo central en vista móvil. (Móvil).*
 
-7. **Guardado y Revisión:** Finalmente, se debe hacer clic en el botón superior **"Guardar Borrador"** o **"Enviar a revisión"** para terminar el trabajo.
+4. **Inspector de propiedades (Panel lateral derecho):**
+   Formulario dinámico y contextual que se habilita al seleccionar cualquier bloque del lienzo o del árbol de capas. Presenta los campos para personalizar textos, tipografías, colores de fondo, márgenes, enlaces de destino y selectores de medios. Si no hay ningún bloque seleccionado, muestra las propiedades generales de la página (título, descripción y metadatos).
 
-> **[Captura: Paso 7]**
-> *Clic en los botones de guardado o revisión.*
+> **[Captura: Panel Derecho - Inspector de Propiedades]**
+> *Panel lateral derecho para configurar contenidos, medios, enlaces y estilos del bloque seleccionado.*
 >
-> **[Captura: Paso 7 (Móvil)]**
-> *Clic en los botones de guardado o revisión. (Móvil).*
+> **[Captura: Panel Derecho - Inspector de Propiedades (Móvil)]**
+> *Inspector de propiedades adaptado a pantalla móvil. (Móvil).*
 
-#### 3.4.3.3. Gestión Avanzada en el Editor Visual
+5. **Barra de herramientas superior (Cabecera editorial):**
+   Franja horizontal fija en la parte superior del editor que reúne los controles de gestión de la sesión:
+   * *Botón Salir (extremo izquierdo):* Cierra el entorno de edición y regresa al portal, alertando si existen cambios sin guardar.
+   * *Ruta y estado (centro):* Informa la dirección web de la página (`/[slug]`) y el estado vigente de la versión (*Borrador*, *En revisión*, *Publicado* o *Rechazado*).
+   * *Historial (intermedio):* Botones **Deshacer** y **Rehacer** para revertir o reaplicar modificaciones recientes.
+   * *Acciones editoriales (extremo derecho):* Botones para **«Guardar borrador»** y **«Enviar a revisión»** (en el Sitio Web) o guardado y publicación directa (en la Intranet).
 
-Esta sección complementa la Sección 3.4.3.2, cubriendo las operaciones sobre componentes ya colocados en el lienzo.
-
-##### 3.4.3.3.1. Reordenar Componentes en el Lienzo
-
-1. **Selección del componente:** El usuario debe hacer clic sobre el componente que desea mover. El sistema resaltará un borde de selección a su alrededor.
-2. **Arrastre de reposicionamiento:** Se debe mantener presionado el botón izquierdo del ratón sobre la barra de control superior del componente (ícono de agarradera de seis puntos) y desplazarlo hacia la nueva posición requerida.
-3. **Soltado:** Al soltar el botón del ratón, el componente queda fijado en su nueva ubicación y el lienzo reorganiza los demás bloques de forma automática.
-
-> **[Captura: Reordenar Componente]**
-> *Arrastre de un componente seleccionado hacia una nueva posición en el lienzo del Editor Visual.*
+> **[Captura: Barra de Herramientas Superior del Editor]**
+> *Barra superior del editor con botón de salida, ruta URL, estado de versión, historial y controles de guardado.*
 >
-> **[Captura: Reordenar Componente (Móvil)]**
-> *Arrastre de un componente seleccionado hacia una nueva posición en el lienzo del Editor Visual. (Móvil).*
+> **[Captura: Barra de Herramientas Superior del Editor (Móvil)]**
+> *Barra superior de herramientas adaptada a interfaz móvil. (Móvil).*
 
-##### 3.4.3.3.2. Eliminar un Componente del Lienzo
+##### 3.4.3.3.2. Funcionalidades y Operación en el Editor
 
-1. **Selección:** Se debe hacer clic sobre el componente que se desea retirar del lienzo.
-2. **Botón de eliminación:** En la barra de control superior del componente seleccionado, se debe hacer clic en el **ícono de basurero** para retirar el elemento.
-3. **Resultado:** El componente se retira del lienzo de manera inmediata. Esta acción puede revertirse mediante la función Deshacer (Sección 3.4.3.3.3) mientras no se guarde el borrador.
+El editor proporciona un conjunto de herramientas y flujos automáticos diseñados para una maquetación fluida y segura:
 
-> **[Captura: Eliminar Componente]**
-> *Barra de control del componente seleccionado con ícono de basurero para su eliminación.*
+1. **Inserción y fijación de bloques en el lienzo:**
+   * En el panel lateral izquierdo, seleccionar la categoría deseada en el catálogo de bloques.
+   * Mantener presionado el botón del ratón sobre el bloque elegido, arrastrarlo hacia el lienzo central y soltarlo en la posición vertical requerida.
+   * Al soltar el clic, el componente queda fijado en el lienzo de trabajo y reorganiza automáticamente los bloques adyacentes.
+
+> **[Captura: Inserción de Bloques al Lienzo]**
+> *Acción de arrastrar un bloque desde el catálogo izquierdo y soltarlo en la posición deseada del lienzo interactivo.*
 >
-> **[Captura: Eliminar Componente (Móvil)]**
-> *Barra de control del componente seleccionado con ícono de basurero para su eliminación. (Móvil).*
+> **[Captura: Inserción de Bloques al Lienzo (Móvil)]**
+> *Inserción de bloque en el lienzo interactivo en dispositivo móvil. (Móvil).*
 
-##### 3.4.3.3.3. Deshacer y Rehacer Cambios
+2. **Configuración de propiedades y edición en vivo:**
+   * Hacer clic sobre cualquier bloque en el lienzo o en el árbol de capas para seleccionarlo.
+   * En el panel derecho (Inspector de propiedades), ingresar los textos requeridos o seleccionar archivos multimedia mediante el botón de carga.
+   * Cada modificación digitada o seleccionada se actualiza en tiempo real en la vista previa del lienzo central sin demoras ni recargas.
 
-El Editor Visual dispone de un historial de acciones en sesión:
-
-* **Deshacer (Ctrl + Z / Cmd + Z):** Revierte la última acción realizada en el lienzo. Puede aplicarse múltiples veces de forma consecutiva.
-* **Rehacer (Ctrl + Y / Cmd + Shift + Z):** Vuelve a aplicar la acción que fue deshecha.
-
-> **Nota importante:** El historial de deshacer/rehacer es exclusivo de la sesión activa de edición. Al hacer clic en **"Guardar Borrador"** o al cerrar el editor, el historial se reinicia y no es posible revertir los cambios guardados mediante esta función.
-
-> **[Captura: Botones Deshacer Rehacer]**
-> *Botones de deshacer y rehacer en la barra de herramientas superior del Editor Visual.*
+> **[Captura: Edición de Propiedades en Vivo]**
+> *Modificación de textos y enlaces en el inspector derecho con previsualización en vivo en el lienzo.*
 >
-> **[Captura: Botones Deshacer Rehacer (Móvil)]**
-> *Botones de deshacer y rehacer en la barra de herramientas superior del Editor Visual. (Móvil).*
+> **[Captura: Edición de Propiedades en Vivo (Móvil)]**
+> *Edición de propiedades del bloque en pantalla móvil. (Móvil).*
 
-##### 3.4.3.3.4. Edición de la Cabecera y Pie de Página Globales
+3. **Reorganización de bloques en el lienzo:**
+   * Seleccionar el bloque que se desea desplazar en el lienzo para desplegar su barra contextual superior.
+   * Hacer clic sostenido sobre el ícono de agarradera de arrastre (seis puntos) y mover el bloque verticalmente hacia arriba o hacia abajo.
+   * Una línea guía de color azul indica la nueva posición; al soltar el ratón, el bloque queda reubicado en su nuevo orden.
 
-La cabecera y el pie de página son componentes envolventes globales del portal. Su edición está disponible para el rol **Administrador**, el rol **Editor base** y para los **Roles hijos** a quienes el Administrador haya habilitado explícitamente este permiso.
-
-1. **Acceso:** Desde el menú del botón flotante de edición en cualquier página, el usuario debe seleccionar la opción **"Editar cabecera"** o **"Editar pie"**.
-
-> **[Captura: Menú Editar Cabecera]**
-> *Opción de edición de cabecera en el menú flotante del editor.*
+> **[Captura: Reordenar Bloques en el Lienzo]**
+> *Desplazamiento vertical de un bloque mediante su agarradera de arrastre para alterar el orden de los elementos.*
 >
-> **[Captura: Menú Editar Cabecera (Móvil)]**
-> *Opción de edición de cabecera en el menú flotante del editor. (Móvil).*
+> **[Captura: Reordenar Bloques en el Lienzo (Móvil)]**
+> *Reordenamiento de bloques en el lienzo en dispositivo móvil. (Móvil).*
 
-2. **Lienzo de cabecera/pie:** Se abrirá el Editor Visual en modo de edición del componente global seleccionado. Los cambios aquí realizados se propagarán a **todas las páginas del portal simultáneamente**.
+4. **Eliminación de bloques del lienzo:**
+   * Hacer clic sobre el bloque que se desea retirar para seleccionarlo.
+   * En su barra contextual superior, pulsar el **ícono de papelera**.
+   * El componente se elimina de inmediato del lienzo y los bloques restantes se reacomodan fluidamente.
 
-> **Advertencia:** Dado que la cabecera y el pie son globales, cualquier modificación aprobada afectará la apariencia de toda la plataforma. Se recomienda especial cuidado y la previsualización detallada antes de enviar a revisión.
+> **[Captura: Eliminar Bloque del Lienzo]**
+> *Barra contextual de bloque con ícono de papelera para retirar el componente del lienzo.*
+>
+> **[Captura: Eliminar Bloque del Lienzo (Móvil)]**
+> *Eliminación de bloque desde la barra contextual en vista móvil. (Móvil).*
 
-3. **Guardado:** Al finalizar, se debe hacer clic en **"Guardar Borrador"** y enviar a revisión. El Administrador deberá aprobar los cambios antes de que sean visibles en el portal.
+5. **Historial de cambios (Deshacer y Rehacer):**
+   * **Botón Deshacer:** Revierte la última acción efectuada en el lienzo (inserción, desplazamiento, cambio de texto o borrado de un bloque).
+   * **Botón Rehacer:** Vuelve a aplicar la acción que había sido deshecha previamente.
+   *(Nota: El historial opera de manera local durante la sesión activa en el navegador. Al salir del editor o refrescar la página, el historial local se reinicia).*
 
-#### 3.4.3.4. Eliminación de Páginas Dinámicas (Paso a Paso)
+> **[Captura: Controles de Historial Deshacer Rehacer]**
+> *Botones de deshacer y rehacer ubicados en la barra superior de herramientas del editor.*
+>
+> **[Captura: Controles de Historial Deshacer Rehacer (Móvil)]**
+> *Botones de deshacer y rehacer en barra superior móvil. (Móvil).*
 
-La eliminación de páginas dinámicas retira de forma definitiva la página y sus versiones del portal. Esta acción está disponible únicamente para el rol **Administrador**, el rol **Editor base** y aquellos **Roles hijos de editor** a los que se les haya concedido manualmente el permiso de eliminación sobre páginas.
+6. **Autoguardado inteligente y guardado manual de borradores:**
+   * **Autoguardado en segundo plano:** El editor detecta las modificaciones y efectúa guardados automáticos de borrador periódicamente, mostrando avisos dinámicos en la barra superior (*«Guardando…»*, *«Sin guardar»* o *«Guardado a las [hora]»*).
+   * **Guardar borrador:** Botón con ícono de disquete que permite almacenar manualmente el estado vigente del borrador en el servidor en cualquier instante sin alterar la versión pública en producción.
 
-1. **Acceso desde el botón flotante:** El editor debe navegar hacia la página dinámica que desea eliminar y hacer clic en el botón circular flotante con ícono de lápiz para desplegar el menú de opciones (Sección 3.4.3.1).
-2. **Selección de la opción:** En el menú desplegado, se debe hacer clic en la opción **"Eliminar página"**.
+> **[Captura: Guardado Manual de Borrador]**
+> *Acción de clic sobre el botón «Guardar borrador» y confirmación de almacenamiento exitoso.*
+>
+> **[Captura: Guardado Manual de Borrador (Móvil)]**
+> *Guardado de borrador en interfaz móvil. (Móvil).*
+
+7. **Envío a revisión y publicación:**
+   * **Validación automática de accesibilidad:** Al pulsar el botón **«Enviar a revisión»** (en el Sitio Web) o publicar, el sistema ejecuta un escaneo preventivo de accesibilidad (asegurando textos alternativos en imágenes y títulos en recursos incrustados).
+   * **Comentario obligatorio de versión:** Si supera las comprobaciones, el sistema despliega una ventana modal donde es obligatorio redactar un **comentario de cambios** descriptivo (entre 10 y 100 caracteres) que resuma los ajustes efectuados para la bitácora de versiones.
+   * **Transferencia de versión:** Al confirmar, el borrador pasa a estado *En revisión* y queda disponible en la bandeja administrativa del Administrador para su aprobación y despliegue final (ver procedimiento de aprobación en [Sección 3.4.2.5: Páginas en Revisión](#3425-aprobación-y-publicación-de-contenidos-páginas-en-revisión)).
+   * **Panel de observaciones de rechazo:** Si una versión anterior fue devuelta por el Administrador, el editor exhibe un panel superior de alerta detallando los motivos y observaciones del rechazo para orientar las correcciones requeridas.
+
+> **[Captura: Envío a Revisión y Comentario de Versión]**
+> *Ventana modal para el ingreso obligatorio del comentario de cambios antes de remitir la página a revisión.*
+>
+> **[Captura: Envío a Revisión y Comentario de Versión (Móvil)]**
+> *Ventana modal de envío a revisión adaptada a dispositivo móvil. (Móvil).*
+
+#### 3.4.3.4. Creación de Nuevas Páginas (Paso a Paso)
+
+El procedimiento para crear una nueva página dinámica en el portal se realiza de forma directa desde la navegación:
+
+1. **Activación de la acción de creación:**
+   Navegar a cualquier página del portal, hacer clic sobre el botón flotante de edición en la esquina inferior derecha y seleccionar la opción **«Nueva página»** (ícono de suma "+").
+
+> **[Captura: Menú Flotante Opción Nueva Página]**
+> *Selección de la opción «Nueva página» en el menú flotante de acciones editoriales.*
+>
+> **[Captura: Menú Flotante Opción Nueva Página (Móvil)]**
+> *Opción «Nueva página» seleccionada en menú flotante móvil. (Móvil).*
+
+2. **Diligenciamiento del título y generación automática de dirección:**
+   Se despliega la ventana modal **«Nueva página»**:
+   * **Nombre:** Digitar el título descriptivo en la casilla *«¿Cómo se llama?»* (por ejemplo: *Observatorio Ocupacional Regional*).
+   * **Generación automática del enlace web permanente:** En tiempo real, el sistema genera la dirección web de acceso permanente (`slug` amigable) a partir del título digitado (por ejemplo: `/observatorio-ocupacional-regional`), garantizando una nomenclatura normalizada y libre de caracteres especiales.
+
+> **[Captura: Formulario de Nueva Página]**
+> *Ventana modal con el campo de título y la dirección web permanente generada automáticamente en tiempo real.*
+>
+> **[Captura: Formulario de Nueva Página (Móvil)]**
+> *Formulario de creación de nueva página adaptado a pantalla móvil. (Móvil).*
+
+3. **Confirmación y asignación automática de permisos:**
+   Hacer clic en el botón **«Crear y editar»**:
+   * El sistema registra la nueva página en estado inicial de *Borrador*.
+   * **Asignación inmediata de permisos:** El sistema concede automáticamente los permisos de edición sobre la nueva página al Administrador, al rol Editor base y a la cuenta del editor que efectuó la creación.
+   * **Redirección al Editor Visual:** La aplicación redirige de forma automática al usuario al entorno de maquetación interactiva con un lienzo en limpio, listo para comenzar a arrastrar y configurar bloques.
+
+> **[Captura: Redirección al Editor con Página Creada]**
+> *Lienzo del Editor Visual listo para maquetar tras la confirmación de creación de la nueva página.*
+>
+> **[Captura: Redirección al Editor con Página Creada (Móvil)]**
+> *Lienzo en limpio de nueva página en dispositivo móvil. (Móvil).*
+
+#### 3.4.3.5. Eliminación de Páginas (Procedimiento Seguro)
+
+La plataforma incorpora un mecanismo de seguridad para el retiro definitivo de páginas dinámicas que evita la generación de enlaces rotos y previene eliminaciones accidentales:
+
+1. **Acceso desde el botón flotante:**
+   Navegar hacia la página que se desea eliminar. Hacer clic en el botón flotante de edición y seleccionar la opción **«Eliminar página»** (ícono de papelera en color rojo).
 
 > **[Captura: Menú Flotante Eliminar Página]**
-> *Opción "Eliminar página" seleccionada en el menú flotante del editor visual.*
+> *Opción «Eliminar página» seleccionada en el menú flotante del editor visual.*
 >
 > **[Captura: Menú Flotante Eliminar Página (Móvil)]**
-> *Opción "Eliminar página" seleccionada en el menú flotante del editor visual. (Móvil).*
+> *Opción «Eliminar página» seleccionada en el menú flotante del editor visual. (Móvil).*
 
-3. **Validación automática de enlaces activos (Protección contra enlaces rotos):** El sistema escanea en tiempo real todo el portal. Si la página está vinculada en el menú de navegación principal (cabecera o pie) o referenciada en enlaces de otras páginas, el borrado se bloquea inmediatamente y el sistema arroja una alerta de bloqueo impidiendo la eliminación (ver [Sección 3.5.1.7: Prevención de enlaces rotos](#3517-prevención-de-enlaces-rotos-bloqueos-de-eliminación) y [Sección 3.5.2.3: Bloqueo al intentar eliminar páginas](#3523-bloqueo-al-intentar-eliminar-páginas)). En tal caso, el usuario debe ingresar primero a la edición de la cabecera/pie ([Sección 3.4.3.3: Gestión Avanzada en el Editor Visual](#3433-gestión-avanzada-en-el-editor-visual)) o a las páginas enlazadas para retirar dichos vínculos antes de repetir el intento.
+2. **Análisis automático de enlaces activos (Protección contra enlaces rotos):**
+   Antes de permitir cualquier acción, el sistema efectúa un escaneo integral en tiempo real por todo el portal:
+   * Si la página se encuentra enlazada en el menú principal de navegación (*Menú y pie*) o dentro del cuerpo de texto o botones de otras páginas, la eliminación se bloquea preventivamente.
+   * La ventana modal exhibe una alerta detallando la lista exacta de páginas y menús donde el enlace está activo.
+   * Para poder continuar, el usuario debe ingresar previamente a los menús o páginas indicadas y desvincular el enlace correspondiente.
 
 > **[Captura: Alerta Enlaces Rotos Bloqueo]**
-> *Alerta del sistema bloqueando el borrado de la página debido a enlaces activos detectados.*
+> *Alerta del sistema bloqueando el borrado de la página debido a enlaces activos detectados en la plataforma.*
 >
 > **[Captura: Alerta Enlaces Rotos Bloqueo (Móvil)]**
-> *Alerta del sistema bloqueando el borrado de la página debido a enlaces activos detectados. (Móvil).*
+> *Alerta de bloqueo por enlaces activos adaptada a pantalla móvil. (Móvil).*
 
-4. **Ventana modal de confirmación y digitación obligatoria del título:** Si no existen enlaces dependientes, el sistema desplegará la ventana modal de confirmación de seguridad. Para evitar eliminaciones accidentales, el usuario debe digitar de manera idéntica y exacta el título de la página en el campo de texto requerido.
+3. **Ventana modal de confirmación y comprobación de seguridad:**
+   Si la página no registra enlaces dependientes en el portal, el sistema habilita el diálogo de confirmación final:
+   * Informa el título de la página, su dirección web (`/[slug]`) y el número total de versiones que serán retiradas.
+   * **Digitación obligatoria de seguridad:** Para desbloquear el botón de borrado, es obligatorio escribir de manera textual y exacta el nombre de la página en la casilla *«Escribe [Nombre] para confirmar»*.
 
 > **[Captura: Modal Eliminar Página]**
-> *Ventana de confirmación de seguridad para la eliminación de páginas dinámicas con requisito de digitación exacta del título de la página.*
+> *Ventana de confirmación de seguridad para la eliminación de páginas con requisito de digitación exacta del título.*
 >
 > **[Captura: Modal Eliminar Página (Móvil)]**
-> *Ventana de confirmación de seguridad para la eliminación de páginas dinámicas con requisito de digitación exacta del título de la página. (Móvil).*
+> *Ventana de confirmación de seguridad para eliminación de página adaptada a pantalla móvil. (Móvil).*
 
-5. **Confirmación definitiva:** Una vez digitado el título idéntico, se activará el botón de confirmación **"Eliminar definitivamente"**. Al hacer clic, la página y sus borradores quedarán eliminados del sistema.
-6. **Constancia en auditoría:** La página desaparece de la vista pública y del editor, pero el evento queda grabado de forma automática e inmutable en la bitácora de auditoría del sistema (Sección 3.4.2.6), conservando el usuario ejecutor, la fecha, la hora y el registro de la acción.
+4. **Confirmación definitiva y registro de auditoría:**
+   Una vez digitado el nombre de forma exacta, hacer clic en el botón **«Eliminar»** (estilo de peligro en color rojo):
+   * La página y todas sus versiones de trabajo se retiran de manera definitiva de la base de datos.
+   * El sistema redirige automáticamente al usuario a la página de inicio (`/inicio`).
+   * El evento queda registrado de forma inmutable en la bitácora de auditoría con la identificación del usuario, la hora exacta y el nombre de la página eliminada.
+
+> **[Captura: Confirmación de Eliminación de Página]**
+> *Notificación de confirmación tras completar la eliminación segura de la página y redirección al inicio.*
+>
+> **[Captura: Confirmación de Eliminación de Página (Móvil)]**
+> *Notificación de eliminación segura en dispositivo móvil. (Móvil).*
+
+#### 3.4.3.6. Catálogo de Componentes del Sitio Web Público
+
+Este apartado reúne la documentación, especificaciones técnicas, campos configurables y directrices de uso de los componentes visuales prediseñados exclusivos para el Sitio Web Público del Observatorio Laboral y Ocupacional (OLO).
+
+*(Esta sección se encuentra reservada para la incorporación detallada de los componentes del Sitio Web Público).*
+
+#### 3.4.3.7. Catálogo de Componentes de la Intranet
+
+Este apartado reúne la documentación, especificaciones técnicas, campos configurables y directrices de uso de los componentes visuales prediseñados exclusivos para la Intranet institucional del Observatorio Laboral y Ocupacional (OLO).
+
+*(Esta sección se encuentra reservada para la incorporación detallada de los componentes de la Intranet).*
 
 ---
 
 ### 3.4.4. Consultas Ciudadanas, Búsquedas y Visualizadores de Información
 
-Procedimientos para la localización de contenidos en el portal público, consulta de tableros analíticos en la Intranet, visualización de documentos y descarga directa de información institucional.
+Esta sección describe los procedimientos para la localización de contenidos en el portal público, la consulta de tableros analíticos en la Intranet, la visualización de documentos y la descarga directa de información institucional.
 
 #### 3.4.4.1. Búsquedas y Filtros en el Portal Público
 
@@ -2072,8 +2236,7 @@ En las distintas páginas del portal y de la Intranet, los documentos cuentan co
 
 ### 3.4.5. Instalación como Aplicación Web Progresiva (PWA)
 
-Procedimientos para instalar la plataforma del OLO como aplicación web progresiva (PWA) en equipos de escritorio y teléfonos móviles, facilitando el acceso directo desde el sistema operativo.
-La plataforma del OLO puede instalarse en el dispositivo del usuario como una aplicación independiente.
+Esta sección describe los procedimientos para instalar la plataforma del OLO como aplicación web progresiva (PWA) en equipos de escritorio y dispositivos móviles, facilitando el acceso directo desde el sistema operativo como una aplicación independiente.
 
 #### 3.4.5.1. Instalación en Computador de Escritorio (Chrome / Edge)
 
@@ -2107,7 +2270,7 @@ La plataforma del OLO puede instalarse en el dispositivo del usuario como una ap
 
 ## 3.5. Soporte
 
-Solución de problemas, catálogo detallado de validaciones en pantalla, directrices de seguridad ante fallos operativos y respuestas a preguntas frecuentes sobre el funcionamiento del sistema.
+Esta sección contiene la guía de solución de problemas, el catálogo detallado de validaciones en pantalla, las directrices de seguridad ante fallos operativos y las respuestas a preguntas frecuentes sobre el funcionamiento del sistema.
 
 ---
 
@@ -2970,7 +3133,7 @@ El módulo de Respaldos ([Sección 3.4.2.7](#3427-respaldos-y-restauración-de-p
 
 ##### 2. La Última Versión Anterior Sigue Visible tras una Depuración
 * **Situación:** El Administrador ejecuta la depuración de versiones de una página, pero observa que en la tabla principal de Respaldos continúa apareciendo un registro disponible para restaurar.
-* **Causa:** El sistema aplica la regla estricta **«Respaldo siempre protegido»**. La última versión que se quitó de estar publicada de cada página nunca se elimina en una depuración, garantizando que el punto de restauración inmediato permanezca siempre disponible.
+* **Causa:** El sistema aplica la regla estricta **«Respaldo siempre protegido»**. La versión anterior retirada de publicación de cada página nunca se elimina en una depuración, garantizando que el punto de restauración inmediato permanezca siempre disponible.
 * **Acción correctiva:** No constituye un error; corresponde al comportamiento previsto por la plataforma para proteger la continuidad operativa del Sitio Web y la Intranet.
 
 > **[Captura: Aviso de Respaldo Protegido en Modal de Depuración]**
@@ -2989,6 +3152,137 @@ El módulo de Respaldos ([Sección 3.4.2.7](#3427-respaldos-y-restauración-de-p
 >
 > **[Captura: Vista de Respaldos sin Registros (Móvil)]**
 > *Estado informativo de ausencia de respaldos en dispositivo móvil. (Móvil).*
+
+---
+
+#### 3.5.1.13. Validaciones y Solución de Problemas en Mi Perfil
+
+El módulo de Mi Perfil ([Sección 3.4.2.9.1](#34291-sección-mi-perfil)) gestiona la información de identificación de la cuenta y el cambio voluntario de credenciales bajo estrictas reglas de seguridad y trazabilidad. A continuación se detallan las principales situaciones de soporte, sus causas y las acciones correctivas aplicables:
+
+##### 1. Campos de Identificación Bloqueados (Modo Solo Lectura)
+* **Situación:** El funcionario intenta hacer clic o escribir en las casillas de **Nombre**, **Apellidos** o **Correo Electrónico**, pero el cursor muestra el símbolo de bloqueo o no permitido, el fondo aparece en gris atenuado y el sistema no permite editar los textos.
+* **Causa:** Regla de integridad de datos maestros. La pantalla de "Mi Perfil" opera en modalidad de solo lectura para los datos personales; la actualización de nombres, apellidos y cuentas institucionales `@sena.edu.co` se encuentra centralizada en el módulo de control de accesos para resguardar la trazabilidad de seguridad y evitar modificaciones no supervisadas.
+* **Acción correctiva:** Si el funcionario requiere corregir o actualizar sus datos de identidad, debe solicitar el ajuste a un usuario con rol de Administrador. Si el funcionario cuenta con el permiso de gestión de usuarios, debe ingresar a la ruta `/admin/users` (**Accesos > Usuarios**) y editar el registro correspondiente en la tabla (ver [Sección 3.4.2.4: Gestión de Usuarios y Control de Acceso](#3424-gestión-de-usuarios-y-control-de-acceso)).
+
+> **[Captura: Mi Perfil - Datos en Solo Lectura]**
+> *Campos de Nombre, Apellidos y Correo Electrónico en modo solo lectura con cursor deshabilitado y texto explicativo.*
+>
+> **[Captura: Mi Perfil - Datos en Solo Lectura (Móvil)]**
+> *Visualización de datos de identificación en solo lectura adaptada a pantallas móviles. (Móvil).*
+
+##### 2. Error "Contraseña actual incorrecta"
+* **Situación:** Al enviar el formulario presionando el botón **"Cambiar Contraseña"**, la interfaz despliega un recuadro de notificación de error con el mensaje: *«Contraseña actual incorrecta»*.
+* **Causa:** La clave ingresada en la casilla *Contraseña Actual* no coincide con la contraseña cifrada almacenada actualmente en la base de datos para la cuenta en sesión.
+* **Acción correctiva:**
+  1. Hacer clic en el botón con ícono de ojo situado al extremo derecho del campo para revisar visualmente los caracteres escritos y confirmar que la tecla Bloq Mayús (Caps Lock) no se encuentre activada de forma inadvertida.
+  2. En caso de no recordar la clave vigente, el funcionario debe cerrar la sesión activa y dirigirse al enlace *«¿Olvidaste tu contraseña?»* en la pantalla de inicio de sesión (`/login`), completando el flujo de auto-recuperación mediante la validación de las tres preguntas de seguridad institucionales (ver [Sección 3.4.1.3: Flujo de Recuperación de Contraseña Olvidada](#3413-flujo-de-recuperación-de-contraseña-olvidada)).
+
+> **[Captura: Error Contraseña Actual Incorrecta]**
+> *Notificación de error destacada en color rojo informando que la contraseña actual ingresada es incorrecta.*
+>
+> **[Captura: Error Contraseña Actual Incorrecta (Móvil)]**
+> *Notificación de error de contraseña actual incorrecta en dispositivo móvil. (Móvil).*
+
+##### 3. Discrepancia entre la Nueva Contraseña y su Confirmación
+* **Situación:** Al intentar guardar el cambio de contraseña, el sistema no efectúa el envío y presenta la advertencia: *«Las contraseñas nuevas no coinciden»*.
+* **Causa:** El contenido de la casilla *Nueva Contraseña* difiere en uno o varios caracteres del texto ingresado en la casilla *Confirmar Contraseña*.
+* **Acción correctiva:** Hacer clic en los íconos de ojo en ambos campos para descubrir los caracteres y comparar su contenido, asegurando que ambas casillas contengan exactamente los mismos caracteres, respetando mayúsculas, minúsculas, números y símbolos.
+
+> **[Captura: Error Contraseñas No Coinciden]**
+> *Alerta en el formulario de Mi Perfil indicando la discrepancia entre la nueva contraseña y su confirmación.*
+>
+> **[Captura: Error Contraseñas No Coinciden (Móvil)]**
+> *Alerta de discrepancia de contraseñas adaptada a dispositivo móvil. (Móvil).*
+
+##### 4. Incumplimiento de la Política de Complejidad de Contraseña
+* **Situación:** Durante la digitación de la nueva clave, el panel inferior de verificación mantiene una o más condiciones con viñeta gris o roja, y al intentar enviar el formulario se emite el mensaje específico del requisito no satisfecho (por ejemplo: *«La contraseña debe tener al menos 12 caracteres»*, *«Debe combinar mayúsculas, minúsculas y números o símbolos»* o *«No se permiten emojis»*).
+* **Causa:** La contraseña propuesta no cumple los lineamientos obligatorios de la política de seguridad del aplicativo (`@olo/password-policy`).
+* **Acción correctiva:** Ajustar la clave ingresada guiándose en tiempo real por el panel interactivo de requisitos hasta que todos los puntos se transformen en marcas de verificación en color verde antes de hacer clic en **"Cambiar Contraseña"**.
+
+> **[Captura: Panel de Validación de Contraseña en Vivo]**
+> *Panel dinámico de requisitos de seguridad en Mi Perfil mostrando la validación en tiempo real de longitud y composición.*
+>
+> **[Captura: Panel de Validación de Contraseña en Vivo (Móvil)]**
+> *Panel de requisitos de contraseña adaptado a pantallas táctiles móviles. (Móvil).*
+
+---
+
+#### 3.5.1.14. Validaciones y Solución de Problemas en Configuración
+
+El módulo de Configuración ([Sección 3.4.2.9.2](#34292-sección-configuración)) permite personalizar la identidad visual institucional del panel administrativo y gestionar las preferencias auditivas del entorno de trabajo. A continuación se presentan las validaciones técnicas, reglas de accesibilidad y acciones correctivas para cada escenario operativo:
+
+##### 1. Rechazo de Archivo por "Formato no admitido"
+* **Situación:** Al arrastrar o seleccionar una imagen para el logotipo o para el ícono de la pestaña, el sistema interrumpe la carga y despliega una notificación flotante de advertencia: *«Formato no admitido. Sube una imagen PNG.»*.
+* **Causa:** Se intentó cargar un archivo en un formato gráfico no autorizado (por ejemplo: JPG, JPEG, GIF, WEBP, SVG o PDF). La plataforma admite exclusivamente el formato PNG para garantizar la compatibilidad con canales de transparencia y optimización de renderizado en múltiples resoluciones.
+* **Acción correctiva:** Abrir la imagen en un editor gráfico y exportarla o guardarla expresamente en formato `.png` (preferiblemente con fondo transparente) antes de repetir la carga en la plataforma.
+
+> **[Captura: Alerta Formato No Admitido PNG]**
+> *Notificación de advertencia emergente informando que únicamente se admiten archivos en formato PNG.*
+>
+> **[Captura: Alerta Formato No Admitido PNG (Móvil)]**
+> *Notificación de advertencia de formato no admitido en pantalla móvil. (Móvil).*
+
+##### 2. Rechazo de Archivo por Exceso de Peso ("La imagen pesa demasiado")
+* **Situación:** La interfaz rechaza la imagen cargada y emite una alerta flotante indicando: *«La imagen pesa demasiado. El logo de la barra lateral puede pesar hasta 1024 KB.»* (o *«El icono de la pestaña puede pesar hasta 512 KB.»*).
+* **Causa:** El peso del archivo seleccionado excede el umbral máximo de almacenamiento permitido por la API del sistema (1 MB para el logotipo horizontal y 512 KB para el ícono cuadrado de pestaña).
+* **Acción correctiva:** Comprimir o redimensionar la imagen PNG mediante una herramienta de optimización gráfica para reducir su peso por debajo de los límites autorizados (máximo 1.024 KB para el logo y 512 KB para el ícono, conservando unas dimensiones recomendadas mínimas de 64 × 64 px para el ícono).
+
+> **[Captura: Alerta Imagen Pesa Demasiado]**
+> *Aviso de advertencia flotante por exceso de tamaño en la carga de recursos de identidad visual.*
+>
+> **[Captura: Alerta Imagen Pesa Demasiado (Móvil)]**
+> *Alerta de imagen que pesa demasiado adaptada a pantalla móvil. (Móvil).*
+
+##### 3. Advertencia de "Poco contraste" en Colores de Botones o Etiquetas
+* **Situación:** Al ajustar el color de fondo o de texto de un botón o etiqueta de acción, la fila respectiva muestra un ícono de advertencia de color ámbar con el mensaje: *«Poco contraste ([Ratio]:1)»* y un enlace asistido con la recomendación: *«Usar letra blanca»* o *«Usar letra azul oscuro»*.
+* **Causa:** La combinación cromática elegida no alcanza la relación mínima de contraste de accesibilidad de 4,5:1 exigida por la normativa técnica WCAG AA, lo que provocaría dificultades de lectura para los usuarios.
+* **Acción correctiva:**
+  1. Hacer clic directamente en el texto interactivo asistido (**«Usar letra blanca»** o **«Usar letra azul oscuro»**) para que el sistema aplique automáticamente el tono de texto legible sugerido y alcance una relación óptima.
+  2. Modificar alternativamente el color de fondo con el selector de color hasta que el indicador cambie al estado en verde: *«Se lee bien ([Ratio]:1)»*.
+
+> **[Captura: Advertencia de Poco Contraste y Corrección Asistida]**
+> *Fila de configuración de color exhibiendo el indicador de poco contraste y el botón asistido para corregir la legibilidad.*
+>
+> **[Captura: Advertencia de Poco Contraste y Corrección Asistida (Móvil)]**
+> *Aviso de poco contraste y opción de corrección asistida en vista táctil móvil. (Móvil).*
+
+##### 4. Cambios Pendientes sin Guardar y Reversión
+* **Situación:** En la cabecera del acordeón se visualiza el indicador verde *«[N] sin guardar»*, la fila del elemento muestra la etiqueta *«Sin guardar»*, y los botones de acción inferior permanecen activos esperando confirmación.
+* **Causa:** Se modificaron colores en la vista previa interactiva, pero no se ha invocado la persistencia en el servidor. Si el funcionario sale del módulo sin guardar, las personalizaciones se perderán.
+* **Acción correctiva:**
+  * **Confirmar cambios:** Presionar el botón **«Guardar colores de las etiquetas»** o **«Guardar colores de los botones»** para asentar las configuraciones en la base de datos de manera definitiva.
+  * **Descartar ajustes no guardados:** Hacer clic en el botón plano **«Descartar cambios»** para regresar a la última paleta guardada.
+  * **Restaurar paleta de fábrica:** Hacer clic en **«Volver a los de fábrica»** para reinstaurar los colores institucionales originales predeterminados del sistema.
+
+> **[Captura: Indicador de Cambios Sin Guardar en Colores]**
+> *Acordeón de colores destacando elementos pendientes de guardar y botones de confirmación y descarte.*
+>
+> **[Captura: Indicador de Cambios Sin Guardar en Colores (Móvil)]**
+> *Gestión de cambios sin guardar y botones de acción en dispositivo móvil. (Móvil).*
+
+##### 5. Efecto de Bloque Blanco en Modo Oscuro
+* **Situación:** Al activar el tema oscuro en el panel administrativo, el logotipo cargado se visualiza como un recuadro o bloque blanco sólido que opaca los detalles del diseño.
+* **Causa:** El archivo PNG subido contiene un fondo blanco o coloreado propio (no es transparente). Al encontrarse encendido el interruptor *«Pasar a blanco en modo oscuro»*, la plataforma aplica una conversión de brillo total a la imagen completa, tornando todo el lienzo en blanco.
+* **Acción correctiva:**
+  1. Apagar el interruptor *«Pasar a blanco en modo oscuro»* para que el logotipo mantenga sus colores e ilustraciones originales en tema oscuro.
+  2. Para aprovechar el pase automático a blanco en fondos oscuros sin crear bloques, cargar una versión del logotipo que posea fondo transparente (canal alfa).
+
+> **[Captura: Interruptor Blanco en Modo Oscuro]**
+> *Interruptor «Pasar a blanco en modo oscuro» con su texto explicativo sobre imágenes con fondo propio.*
+>
+> **[Captura: Interruptor Blanco en Modo Oscuro (Móvil)]**
+> *Control de blanco en modo oscuro en pantalla móvil. (Móvil).*
+
+##### 6. Alcance Local de la Preferencia de Sonido de Avisos
+* **Situación:** El funcionario desactiva el interruptor *«Sonido de los avisos»* en su computador de trabajo, pero al iniciar sesión en un dispositivo móvil o en otro navegador, los avisos emergentes vuelven a emitir sonido audible.
+* **Causa:** La preferencia de sonido se guarda de manera exclusiva en el almacenamiento local (`localStorage`) del navegador específico en uso, permitiendo que cada usuario configure la experiencia auditiva de su equipo de trabajo sin alterar la configuración de los demás usuarios del sistema.
+* **Acción correctiva:** Configurar el interruptor en cada navegador o terminal desde donde opere el funcionario. Para comprobar el volumen y funcionamiento del sonido sin esperar alertas reales del sistema, hacer clic en cualquiera de los botones de prueba (**«Éxito»**, **«Advertencia»** y **«Error»**).
+
+> **[Captura: Configuración - Preferencia de Sonido de Avisos]**
+> *Bloque de sonido de los avisos con interruptor de activación local y botones interactivos para reproducción de muestras.*
+>
+> **[Captura: Configuración - Preferencia de Sonido de Avisos (Móvil)]**
+> *Preferencia de sonido de los avisos en dispositivo móvil. (Móvil).*
 
 ---
 
