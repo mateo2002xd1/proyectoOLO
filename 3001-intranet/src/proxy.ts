@@ -3,30 +3,30 @@ import type { NextRequest } from "next/server";
 import { verificarSesion } from "@/shared/lib/verificar-sesion";
 
 /**
- * Pantallas de acceso: `app/(auth)/`. Son hermanas de `/login` y no cuelgan de él
- * (`/recovery`, no `/login/recovery`), así que ya no basta con mirar el prefijo
- * `/login`: sin esta lista, quien va a recuperar su contraseña —que no tiene
- * sesión— rebotaría al login.
+ * Pantallas de acceso: `app/(auth)/login/`. Desde el 2026-10-15 cuelgan de `/login`
+ * (`/login/recovery`, `/login/first-login`...). La lista es explícita, no un prefijo,
+ * para que solo estas rutas se salten la exigencia de sesión: sin ella, quien va a
+ * recuperar su contraseña —que no tiene sesión— rebotaría al login.
  */
 const RUTAS_DE_ACCESO = [
   '/login',
-  '/first-login',
-  '/recovery',
-  '/security-questions',
-  '/reset-password',
-  '/reset-success',
+  '/login/first-login',
+  '/login/recovery',
+  '/login/first-login/security-questions',
+  '/login/recovery/reset-password',
+  '/login/recovery/reset-success',
 ];
 
 /**
  * Las que se pueden visitar con una sesión que aún debe cambiar la contraseña o
- * configurar las preguntas. `/login` y `/recovery` no: con sesión no tienen nada
+ * configurar las preguntas. `/login` y `/login/recovery` no: con sesión no tienen nada
  * que hacer y se manda a la pantalla pendiente.
  */
 const RUTAS_DE_CONFIGURACION_PENDIENTE = [
-  '/first-login',
-  '/reset-password',
-  '/reset-success',
-  '/security-questions',
+  '/login/first-login',
+  '/login/recovery/reset-password',
+  '/login/recovery/reset-success',
+  '/login/first-login/security-questions',
 ];
 
 /**
@@ -50,11 +50,11 @@ export async function proxy(request: NextRequest) {
 
   const getRestrictedRedirect = () => {
     if (mustSetupSecurityQuestions && mustChangePassword) {
-      return NextResponse.redirect(new URL('/first-login', request.url));
+      return NextResponse.redirect(new URL('/login/first-login', request.url));
     } else if (mustSetupSecurityQuestions) {
-      return NextResponse.redirect(new URL('/security-questions', request.url));
+      return NextResponse.redirect(new URL('/login/first-login/security-questions', request.url));
     } else if (mustChangePassword) {
-      return NextResponse.redirect(new URL('/reset-password', request.url));
+      return NextResponse.redirect(new URL('/login/recovery/reset-password', request.url));
     }
     return NextResponse.redirect(new URL('/inicio', request.url)); // Fallback
   };
@@ -73,7 +73,7 @@ export async function proxy(request: NextRequest) {
     // Si el usuario ya está logueado y trata de acceder a una pantalla de acceso, redirigir
     if (isTokenValid && esRutaDeAcceso) {
       // Bloquear si tiene sesión pero no permisos para intranet (p. ej. si llega directo
-      // a /first-login saltándose la vista de login, o redirigido desde el inicio)
+      // a /login/first-login saltándose la vista de login, o redirigido desde el inicio)
       if (!sesion?.permisos.includes('acceso.intranet')) {
         const response = NextResponse.redirect(new URL('/login?error=acceso_denegado', request.url));
         if (token) {
@@ -84,7 +84,7 @@ export async function proxy(request: NextRequest) {
 
       // La pantalla de éxito de restablecimiento se debe poder ver tras completar el cambio
       // o para verificar su visualización, sin rebotar a /inicio.
-      if (pathname === '/reset-success') {
+      if (pathname === '/login/recovery/reset-success') {
         return NextResponse.next();
       }
 

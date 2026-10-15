@@ -112,13 +112,33 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
-        // Los pasos del acceso dejaron de colgar de `/login` el 2026-09-18: viven en
-        // `app/(auth)/`, al lado del login, igual que en el sitio-web. Esto cubre
-        // marcadores y pestañas abiertas con la URL vieja. La lista es explícita a
-        // propósito: un comodín mandaría cualquier `/login/<algo>` a la raíz, donde
-        // podría caer en una sección.
-        source: "/login/:paso(first-login|recovery|security-questions|reset-password|reset-success)",
-        destination: "/:paso",
+        // Desde el 2026-10-15 los pasos del acceso cuelgan de `/login`
+        // (`app/(auth)/login/`), igual que en el sitio-web: el primer ingreso en
+        // `/login/first-login` y la recuperación en `/login/recovery`. Entre el
+        // 2026-09-18 y entonces fueron hermanos de `/login` en la raíz; estas reglas
+        // cubren marcadores y pestañas abiertas con esas URLs.
+        source: "/first-login",
+        destination: "/login/first-login",
+        permanent: false,
+      },
+      {
+        source: "/security-questions",
+        destination: "/login/first-login/security-questions",
+        permanent: false,
+      },
+      {
+        source: "/recovery",
+        destination: "/login/recovery",
+        permanent: false,
+      },
+      {
+        source: "/reset-password",
+        destination: "/login/recovery/reset-password",
+        permanent: false,
+      },
+      {
+        source: "/reset-success",
+        destination: "/login/recovery/reset-success",
         permanent: false,
       },
     ];

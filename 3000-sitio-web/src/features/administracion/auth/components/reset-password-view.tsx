@@ -23,7 +23,7 @@ import { recuperarPassword } from '../services/recuperacion.service';
  * Recuperación de contraseña (RF-05), paso 3 de 4: la contraseña nueva.
  *
  * En la intranet esta ruta sirve también para el cambio forzado de una cuenta con
- * sesión. Aquí no: ese caso lo resuelve `/first-login`.
+ * sesión. Aquí no: ese caso lo resuelve `/login/first-login`.
  *
  * Diseño nuevo desde el 2026-10-09 (mockup de tablet): saluda por el primer nombre, que
  * el servidor da al verificar las respuestas del paso anterior.
@@ -33,7 +33,7 @@ export function ResetPasswordView() {
   const { recuperacion, terminarRecuperacion } = useFlujoDeRecuperacion();
   const datos = recuperacion?.etapa === 'nueva-contrasena' ? recuperacion : null;
   // Recién guardada, el contexto ya soltó los datos pero la navegación a
-  // `/reset-success` aún no terminó: no es motivo para devolver al principio.
+  // `/login/recovery/reset-success` aún no terminó: no es motivo para devolver al principio.
   const terminada = recuperacion?.etapa === 'terminada';
 
   const [password, setPassword] = useState('');
@@ -45,7 +45,7 @@ export function ResetPasswordView() {
   // Sin respuestas verificadas no hay con qué cambiar la contraseña: el flujo
   // empieza por el correo.
   useEffect(() => {
-    if (!datos && !terminada) router.replace('/recovery');
+    if (!datos && !terminada) router.replace('/login/recovery');
   }, [datos, terminada, router]);
 
   if (!datos && !terminada) return null;
@@ -73,7 +73,7 @@ export function ResetPasswordView() {
       // el cliente no basta para cambiar una contraseña.
       await recuperarPassword(datos.email, datos.respuestas, password);
       terminarRecuperacion();
-      router.push('/reset-success');
+      router.push('/login/recovery/reset-success');
     } catch (error) {
       setErrors({ general: (error as Error).message });
     } finally {

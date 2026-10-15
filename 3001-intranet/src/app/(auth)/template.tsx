@@ -8,17 +8,17 @@ import { poppins } from '@/shared/lib/fonts';
  * Page order map — used to determine slide direction.
  * Higher number = deeper in the auth flow.
  *
- * Los pasos son hermanos de `/login` y no cuelgan de él: `(auth)` es un grupo de
- * rutas y no añade segmento a la URL. Las rutas viejas (`/login/recovery`...)
- * redirigen aquí desde `next.config.ts`.
+ * Desde el 2026-10-15 los pasos cuelgan de `/login` (`app/(auth)/login/`); `(auth)`
+ * es un grupo de rutas y no añade segmento a la URL. Las rutas viejas, hermanas de
+ * `/login` (`/recovery`...), redirigen aquí desde `next.config.ts`.
  */
 const PAGE_ORDER: Record<string, number> = {
   '/login': 0,
-  '/recovery': 1,
-  '/first-login': 1,
-  '/security-questions': 2,
-  '/reset-password': 3,
-  '/reset-success': 4,
+  '/login/recovery': 1,
+  '/login/first-login': 1,
+  '/login/first-login/security-questions': 2,
+  '/login/recovery/reset-password': 3,
+  '/login/recovery/reset-success': 4,
 };
 
 export default function LoginTemplate({ children }: { children: React.ReactNode }) {

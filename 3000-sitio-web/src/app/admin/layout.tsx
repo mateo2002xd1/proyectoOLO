@@ -14,7 +14,7 @@ export function generateMetadata(): Promise<Metadata> {
  * El marco del panel: envuelve todo lo que cuelga de `app/admin/`. El vigilante se
  * monta aquí para cubrir de una vez dashboard, usuarios, roles, revisión, auditoría,
  * respaldos, actualizaciones y mi-perfil. Quedan fuera, en otras ramas del árbol:
- * las pantallas de acceso (`app/(auth)/`: `/login`, `/first-login`, `/recovery`...,
+ * las pantallas de acceso (`app/(auth)/`: `/login`, `/login/first-login`, `/login/recovery`...,
  * sin panel), y el editor y la vista previa (`app/editor/`, `app/preview/`), que
  * montan su propio vigilante.
  *

@@ -16,10 +16,10 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 
 | Descripción de pasos a realizar | Resultado obtenido |
 | :--- | :--- |
-| **1.** Entrar a login de Sitio Web con clave temporal | Detecta primer ingreso y traslada forzosamente a pantalla de configuración (`/first-login`) |
+| **1.** Entrar a login de Sitio Web con clave temporal | Detecta primer ingreso y traslada forzosamente a pantalla de configuración (`/login/first-login`) |
 | **2.** Configurar nueva clave definitiva en Sitio Web | Valida requisitos de política en tiempo real y traslada a pantalla de preguntas |
 | **3.** Configurar 3 preguntas de seguridad en Sitio Web | Guarda respuestas, presenta confirmación exitosa y botón para iniciar sesión |
-| **4.** Entrar a login de Intranet con clave temporal | Detecta primer ingreso y traslada forzosamente a pantalla de configuración (`/first-login`) |
+| **4.** Entrar a login de Intranet con clave temporal | Detecta primer ingreso y traslada forzosamente a pantalla de configuración (`/login/first-login`) |
 | **5.** Configurar nueva clave definitiva en Intranet | Valida requisitos de política en tiempo real y traslada a pantalla de preguntas |
 | **6.** Configurar 3 preguntas de seguridad en Intranet | Guarda respuestas, presenta confirmación exitosa y botón para iniciar sesión |
 
@@ -58,11 +58,11 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 
 | Descripción de pasos a realizar | Resultado obtenido |
 | :--- | :--- |
-| **1.** Clic en "¿Olvidaste tu contraseña?" en login de Sitio Web | Traslada a pantalla `/recovery` solicitando correo institucional |
-| **2.** Ingresar correo institucional `@sena.edu.co` y dar Continuar | Valida sintaxis, comprueba preguntas configuradas y navega a `/security-questions` |
-| **3.** Responder secuencialmente las 3 preguntas de seguridad | Valida respuestas confidenciales en servidor sin depender de correo externo y traslada a `/reset-password` |
+| **1.** Clic en "¿Olvidaste tu contraseña?" en login de Sitio Web | Traslada a pantalla `/login/recovery` solicitando correo institucional |
+| **2.** Ingresar correo institucional `@sena.edu.co` y dar Continuar | Valida sintaxis, comprueba preguntas configuradas y navega a `/login/first-login/security-questions` |
+| **3.** Responder secuencialmente las 3 preguntas de seguridad | Valida respuestas confidenciales en servidor sin depender de correo externo y traslada a `/login/recovery/reset-password` |
 | **4.** Definir nueva contraseña cumpliendo requisitos y confirmar | Valida política de seguridad (12 caracteres, símbolos, etc.) y coincidencia exacta |
-| **5.** Confirmar cambio de clave en Sitio Web | Muestra pantalla `/reset-success` y botón para volver a `/login` |
+| **5.** Confirmar cambio de clave en Sitio Web | Muestra pantalla `/login/recovery/reset-success` y botón para volver a `/login` |
 | **6.** Iniciar sesión en Intranet con la nueva contraseña | Comprueba acceso exitoso en Intranet validando la sincronización de la nueva clave |
 
 ---
@@ -255,13 +255,13 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 
 ## MÓDULO 9: Cuenta Personal y Configuración
 
-### Escenario 13: Mi Perfil y Configuración (`/admin/mi-perfil`)
+### Escenario 13: Mi Perfil y Configuración (`/admin/perfil`)
 
 | **RESULTADO PRUEBA FUNCIONAL Y/O TÉCNICA** | |
 | :--- | :--- |
 | **Escenario:** | Consulta institucional y actualización de preguntas secretas |
 | **Resultado Esperado:** | Consulta de datos de cuenta en modo solo lectura y actualización segura de preguntas secretas mediante confirmación obligatoria con clave vigente. |
-| **Precondición:** | Usuario autenticado en el Panel Administrativo dentro de la ruta `/admin/mi-perfil`. |
+| **Precondición:** | Usuario autenticado en el Panel Administrativo dentro de la ruta `/admin/perfil`. |
 | **Datos de entrada** | **Usuario:** Funcionario autenticado (`admin@sena.edu.co` o `editor@sena.edu.co`)<br>**Contraseña:** Contraseña actual para confirmar la identidad del usuario<br>**Nuevas preguntas:** 3 preguntas seleccionadas del catálogo oficial y nuevas respuestas |
 
 | Descripción de pasos a realizar | Resultado obtenido |
@@ -279,7 +279,7 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 | **RESULTADO PRUEBA FUNCIONAL Y/O TÉCNICA** | |
 | :--- | :--- |
 | **Escenario:** | Maquetación visual, inserción, reordenamiento y eliminación de bloques |
-| **Resultado Esperado:** | Composición fluida de páginas mediante catálogo de componentes institucionales, edición de textos y propiedades, reordenamiento por arrastre y guardado en borrador privado. |
+| **Resultado Esperado:** | Composición fluida de páginas mediante catálogo de componentes institucionales, edición de textos y propiedades, reordenamiento por arrastre y guardado en borrador. |
 | **Precondición:** | Funcionario autenticado con rol Editor o Administrador sobre una página autorizada en modo edición (`/editor/[slug]`). |
 | **Datos de entrada** | **Usuario:** `editor@sena.edu.co` (Rol Editor autorizado)<br>**Contraseña:** Contraseña definitiva activa<br>**Componentes:** Título institucional, párrafo, tarjeta de contenido, botón de enlace |
 
@@ -291,7 +291,7 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 | **4.** Reordenar bloques en el lienzo mediante arrastre vertical | Desplaza la posición del bloque seleccionado hacia arriba o abajo sin alterar los demás elementos |
 | **5.** Probar botones de Deshacer y Rehacer en la barra superior | Revierte la última acción ejecutada en el lienzo y permite restablecerla de forma inmediata |
 | **6.** Eliminar un componente con el ícono de basurero | Remueve el bloque seleccionado de la estructura de la página |
-| **7.** Guardar cambios mediante el botón "Guardar Borrador" | Almacena el progreso en estado borrador privado sin publicar modificaciones en el portal público |
+| **7.** Guardar cambios mediante el botón "Guardar Borrador" | Almacena el progreso en estado borrador sin publicar modificaciones en el portal público |
 
 ---
 
