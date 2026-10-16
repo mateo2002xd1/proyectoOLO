@@ -15,6 +15,7 @@ import { VistaPreviaVersion } from './vista-previa-version';
 import { ModalDepurarVersiones } from './modal-depurar-versiones';
 import type { RegistroRespaldo } from '../types';
 import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
+import { AvisoErrorDeCarga } from '@/shared/ui/molecules/aviso-error-de-carga';
 
 const FILTROS_VACIOS = { ambito: '', editor: '', publicador: '', desde: '', hasta: '' };
 
@@ -30,7 +31,7 @@ const FILTROS_VACIOS = { ambito: '', editor: '', publicador: '', desde: '', hast
  * que enviar al servidor porque el servidor todavía no sabe filtrar esto.
  */
 export function RespaldosView() {
-  const { registros, isLoading, isRefreshing, error, recargar } = useRespaldos();
+  const { registros, isLoading, isRefreshing, error, recargar, reintentar } = useRespaldos();
   const [seleccionado, setSeleccionado] = useState<RegistroRespaldo | null>(null);
   const { estaAbierta, alternar } = useFilasAbiertas();
   const [modalDepurarAbierto, setModalDepurarAbierto] = useState(false);
@@ -167,7 +168,14 @@ export function RespaldosView() {
       )}
 
       {error && !registros.length ? (
-        <p className="text-sm text-red-600">{error}</p>
+        // Qué pasó, qué hacer y «Reintentar», como en «Páginas en revisión» (pedido del
+        // usuario, 2026-10-15). Antes, el mensaje suelto en rojo.
+        <AvisoErrorDeCarga
+          titulo="No pudimos cargar los respaldos"
+          mensaje={error}
+          onReintentar={reintentar}
+          reintentando={isLoading}
+        />
       ) : isLoading ? (
         <CargandoSeccion label="Cargando respaldos..." />
       ) : registrosRestaurables.length === 0 ? (

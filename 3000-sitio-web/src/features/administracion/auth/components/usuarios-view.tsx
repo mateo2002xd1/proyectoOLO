@@ -32,6 +32,7 @@ import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { Paginador } from '@/shared/ui/molecules/paginador';
 import { Switch } from '@/shared/ui/atoms/switch';
 import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
+import { AvisoErrorDeCarga } from '@/shared/ui/molecules/aviso-error-de-carga';
 import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 
 /**
@@ -323,10 +324,19 @@ export default function UsuariosView() {
         }
       />
 
+      {/* Qué pasó, qué hacer y «Reintentar», como en las demás listas del panel (pedido del
+          usuario, 2026-10-15). Antes, el mensaje suelto en rojo y sin forma de reintentar. */}
       {error && (
-        <MensajeEstado tipo="error" rol="alert" className="mb-6">
-          {error}
-        </MensajeEstado>
+        <AvisoErrorDeCarga
+          titulo="No pudimos cargar los usuarios"
+          mensaje={error}
+          onReintentar={() => {
+            fetchUsers();
+            fetchRoles();
+          }}
+          reintentando={loading}
+          className="mb-6"
+        />
       )}
 
       <Alert open={isCreating} onClose={(open) => !isSubmitting && !open && handleCancel()}>

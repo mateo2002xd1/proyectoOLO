@@ -24,6 +24,7 @@ import {
   type RegistroAuditoria,
 } from '../types';
 import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
+import { AvisoErrorDeCarga } from '@/shared/ui/molecules/aviso-error-de-carga';
 
 // Misma altura y mismas esquinas que los filtros, para que la fila se lea como
 // una sola banda de controles.
@@ -158,7 +159,14 @@ export function AuditoriaView() {
       </BarraFiltros>
 
       {error ? (
-        <p className="text-sm text-red-600">{error}</p>
+        // Qué pasó, qué hacer y «Reintentar», como en «Páginas en revisión» y Respaldos
+        // (pedido del usuario, 2026-10-15). Antes, el mensaje suelto en rojo.
+        <AvisoErrorDeCarga
+          titulo="No pudimos cargar la bitácora de auditoría"
+          mensaje={error}
+          onReintentar={recargar}
+          reintentando={isLoading}
+        />
       ) : isLoading ? (
         <CargandoSeccion label="Cargando bitácora..." />
       ) : registros.length === 0 ? (

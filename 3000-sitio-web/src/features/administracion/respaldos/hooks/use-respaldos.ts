@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { mensajeDeErrorApi } from '@/shared/lib/errores-api';
 import { listarRespaldos } from '../services/respaldos.service';
 import type { RegistroRespaldo } from '../types';
 
@@ -21,7 +22,8 @@ export function useRespaldos() {
       setRegistros(data);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al cargar los respaldos');
+      // Traducido: con la API caída, axios decía «Network Error», en inglés y sin pista.
+      setError(mensajeDeErrorApi(err, 'No se pudieron cargar los respaldos.'));
       if (!silencioso) setRegistros([]);
     } finally {
       setIsLoading(false);
@@ -42,5 +44,10 @@ export function useRespaldos() {
     return cargar(true);
   };
 
-  return { registros, isLoading, isRefreshing, error, recargar };
+  /** Tras un fallo de carga: vuelve a pedir el listado entero, con el cargador. */
+  const reintentar = () => {
+    return cargar(false);
+  };
+
+  return { registros, isLoading, isRefreshing, error, recargar, reintentar };
 }

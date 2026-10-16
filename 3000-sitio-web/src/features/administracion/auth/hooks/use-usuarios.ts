@@ -1,7 +1,16 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { pedirJson } from '@/shared/lib/api-client';
+import { ErrorApi, pedirJson } from '@/shared/lib/api-client';
+
+/**
+ * Registra en consola solo lo inesperado. Un `ErrorApi` es la API caída o una respuesta de
+ * error, y eso ya se le cuenta a quien usa el panel; registrarlo hacía que Next, en
+ * desarrollo, lo sacara como error en pantalla cada vez que la API no estaba (2026-10-15).
+ */
+function registrarSiInesperado(err: unknown) {
+  if (!(err instanceof ErrorApi)) console.error(err);
+}
 
 /**
  * Un permiso, tal y como lo devuelve `GET /api/permissions`.
@@ -116,7 +125,7 @@ export function useUsuarios() {
     try {
       setRoles(await pedirJson<Role[]>('/api/roles'));
     } catch (err) {
-      console.error(err);
+      registrarSiInesperado(err);
     }
   }, []);
 
@@ -127,7 +136,7 @@ export function useUsuarios() {
       setPermissions(data);
       return data;
     } catch (err) {
-      console.error(err);
+      registrarSiInesperado(err);
       return [] as Permission[];
     }
   }, []);
@@ -139,7 +148,7 @@ export function useUsuarios() {
       // Necesitamos cruzar con los permisos para obtener el nombre.
       return await pedirJson<Permission[]>(`/api/role-permissions/role/${roleId}`);
     } catch (err) {
-      console.error(err);
+      registrarSiInesperado(err);
       return [];
     }
   }, []);

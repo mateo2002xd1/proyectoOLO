@@ -29,6 +29,7 @@ import { BotonDeFila, RESALTE_DE_FILA, ResumenDeFila, useFilasAbiertas } from '@
 import { Paginador } from '@/shared/ui/molecules/paginador';
 import { ModalPermisos } from './modal-permisos';
 import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
+import { AvisoErrorDeCarga } from '@/shared/ui/molecules/aviso-error-de-carga';
 
 /** Largo máximo de la descripción de un rol nuevo. */
 const DESCRIPCION_MAX = 100;
@@ -187,6 +188,7 @@ export default function RolesView() {
     revokePermissionFromRole,
     users,
     fetchUsers,
+    error,
   } = useUsuarios();
 
   const [loading, setLoading] = useState(true);
@@ -229,6 +231,12 @@ export default function RolesView() {
     });
     return () => { cancelado = true; };
   }, [fetchRoles, fetchPermissions, fetchUsers]);
+
+  /** Tras un fallo de carga: vuelve a pedirlo todo, con el cargador. */
+  const reintentarCarga = () => {
+    setLoading(true);
+    Promise.all([fetchRoles(), fetchPermissions(), fetchUsers()]).finally(() => setLoading(false));
+  };
 
   const normalizar = (t: string) =>
     t.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
@@ -422,6 +430,11 @@ export default function RolesView() {
           espacio de la sección como en las demás (una celda no se puede estirar). */}
       {loading ? (
         <CargandoSeccion label="Cargando roles..." />
+      ) : error && roles.length === 0 ? (
+        // Sin roles que enseñar porque la API no contestó (pedido del usuario, 2026-10-15):
+        // antes, la tabla vacía sin decir nada. El error es el de `fetchUsers`, que va a la
+        // misma API; `fetchRoles` solo lo registra (ver `use-usuarios.ts`).
+        <AvisoErrorDeCarga titulo="No pudimos cargar los roles" mensaje={error} onReintentar={reintentarCarga} />
       ) : (
       <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-[#7db828]/30 dark:bg-[#131b2f]">
         {/* En el móvil y la tablet, acordeón, como Usuarios: el encabezado de cada fila es
