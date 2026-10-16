@@ -15,6 +15,8 @@ import type { CampoModificado } from '../repositories/auditoria.repository';
 const CAMPOS_SENSIBLES = new Set([
   'password',
   'password_hash',
+  'previous_password_hash',
+  'password_hash_anterior',
   'new_password',
   'current_password',
   'temporarypassword',

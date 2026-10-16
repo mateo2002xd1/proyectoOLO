@@ -16,9 +16,9 @@
 |---|--:|--:|--:|--:|--:|
 | `3000-sitio-web` | 49 | 3 | 54 | — | 33 |
 | `3001-intranet` | 31 | 2 | 14 | — | 27 |
-| `4000-api-backend` | 35 | — | — | 96 | 42 |
+| `4000-api-backend` | 35 | — | — | 96 | 43 |
 
-Paquetes compartidos: 7 · migraciones: 44 · modelos: 23.
+Paquetes compartidos: 7 · migraciones: 45 · modelos: 23.
 
 ## Carpetas sin descripción (6)
 
@@ -463,7 +463,7 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `@olo/blocks-renderer` | `packages/blocks-renderer/` | `3000-sitio-web`, `3001-intranet` |
 | `@olo/email-policy` | `packages/email-policy/` | `3000-sitio-web`, `3001-intranet` |
 | `@olo/inactividad` | `packages/inactividad/` | `3000-sitio-web`, `3001-intranet` |
-| `@olo/password-policy` | `packages/password-policy/` | `3000-sitio-web`, `3001-intranet` |
+| `@olo/password-policy` | `packages/password-policy/` | `3000-sitio-web`, `3001-intranet`, `4000-api-backend` |
 | `@olo/slug-policy` | `packages/slug-policy/` | `3000-sitio-web`, `3001-intranet`, `4000-api-backend` |
 | `@olo/upload-policy` | `packages/upload-policy/` | `3000-sitio-web`, `3001-intranet`, `4000-api-backend` |
 
@@ -543,6 +543,7 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 |---|---|---|
 | `@neondatabase/serverless` | `^1.1.0` | producción |
 | `@olo/accessibility-policy` | `file:../packages/accessibility-policy` | producción |
+| `@olo/password-policy` | `file:../packages/password-policy` | producción |
 | `@olo/slug-policy` | `file:../packages/slug-policy` | producción |
 | `@olo/upload-policy` | `file:../packages/upload-policy` | producción |
 | `@types/bcryptjs` | `^2.4.6` | desarrollo |
@@ -634,6 +635,7 @@ En el orden del manifiesto (`migrations/index.ts`), que es el orden en que corre
 - `042-catalogos-sin-duplicados`
 - `043-password-temporal-vence`
 - `044-identidad-del-panel`
+- `045-password-anterior`
 
 ### Modelos
 

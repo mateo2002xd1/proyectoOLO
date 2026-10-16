@@ -49,6 +49,7 @@
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
     "@olo/accessibility-policy": "file:../packages/accessibility-policy",
+    "@olo/password-policy": "file:../packages/password-policy",
     "@olo/slug-policy": "file:../packages/slug-policy",
     "@olo/upload-policy": "file:../packages/upload-policy",
     "bcryptjs": "^3.0.3",

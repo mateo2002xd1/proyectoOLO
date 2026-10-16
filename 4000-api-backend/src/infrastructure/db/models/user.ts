@@ -11,6 +11,8 @@ export class User extends Model {
   declare apellidos: string;
   declare email: string;
   declare password_hash: string;
+  /** La contraseña de antes de la actual (migración 045); `null` si no la hay. */
+  declare previous_password_hash: string | null;
   declare role_id: string;
   declare status: string;
   declare expiration_date: Date | null;
@@ -36,6 +38,7 @@ User.init(
     apellidos: { type: DataTypes.TEXT, allowNull: true },
     email: { type: DataTypes.TEXT, allowNull: false, unique: true },
     password_hash: { type: DataTypes.TEXT },
+    previous_password_hash: { type: DataTypes.TEXT, field: 'password_hash_anterior' },
     role_id: { type: DataTypes.UUID, allowNull: false, field: 'rol_id' },
     status: { type: DataTypes.TEXT, allowNull: false, defaultValue: 'active', field: 'estado' },
     // NULL significa "sin caducidad", y es lo que RF-16 reserva al administrador.

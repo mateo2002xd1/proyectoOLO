@@ -17,6 +17,11 @@
  * **Si cambias las reglas, cambia las dos.** El script
  * `npm run password:verificar` del backend comprueba la que manda.
  *
+ * La excepción es la contraseña repetida (final del archivo): su mensaje y su código
+ * viven **solo aquí** y también los importa la API (pedido del usuario, 2026-10-15).
+ * Son texto, no una regla que haya que decidir dos veces, y antes estaban copiados en
+ * tres sitios.
+ *
  * No importa `bcrypt` ni `crypto`: esto corre en el navegador. El hasheo, la
  * generación de temporales y la comparación viven solo en el servidor.
  */
@@ -116,3 +121,41 @@ export const primerFallo = (password: string): string | null => {
   const pendiente = requisitosDe(password).find((r) => !r.cumplido);
   return pendiente ? pendiente.etiqueta : null;
 };
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Contraseña repetida (2026-10-15)
+// ═════════════════════════════════════════════════════════════════════════════
+//
+// La nueva no puede repetir la actual ni la anterior. Lo decide la API, que es la
+// única que tiene los hashes (`nuevaPasswordSinRepetir` en
+// `4000-api-backend/src/shared/password-policy.ts`); aquí está lo que comparten la API
+// y las dos apps: el código, el mensaje y lo que el formulario puede ver por sí solo.
+
+/**
+ * Marca del error de una contraseña repetida. La API la manda como `code` en la
+ * respuesta, y las pantallas la usan para poner el mensaje bajo el campo de la nueva,
+ * con su borde rojo, y no en el aviso general.
+ */
+export const CODIGO_PASSWORD_REPETIDA = 'PASSWORD_REPETIDA';
+
+/**
+ * Un solo mensaje para las dos coincidencias, a propósito: decir cuál de las dos fue
+ * confirmaría cuál es la contraseña actual. Lo manda la API y lo muestran las apps
+ * cuando lo detectan antes de enviar.
+ */
+export const MENSAJE_PASSWORD_REPETIDA = 'Esta contraseña no es válida por seguridad, elige otra.';
+
+/**
+ * ¿La nueva es igual a la que se acaba de escribir en el mismo formulario (la temporal
+ * del primer ingreso, la actual de un cambio)? Es lo único que el formulario puede
+ * comprobar sin el servidor, y así se avisa en el paso de la contraseña y no al final.
+ * La anterior solo la conoce la API.
+ */
+export const repiteLaPassword = (nueva: string, escrita: string): boolean =>
+  nueva !== '' && nueva === escrita;
+
+/** ¿Trae el error (o la respuesta de error de la API) la marca de contraseña repetida? */
+export const esPasswordRepetida = (error: unknown): boolean =>
+  typeof error === 'object' &&
+  error !== null &&
+  (error as { code?: unknown }).code === CODIGO_PASSWORD_REPETIDA;
