@@ -1,4 +1,5 @@
 /** Contratos de la bitácora de cambios (RF-07). Espejo del DTO de la API. */
+import { CONTORNO_DE_ETIQUETA_EN_OSCURO } from '@/shared/ui/atoms/etiqueta';
 
 export type EntidadAuditable =
   | 'contenido'
@@ -204,9 +205,12 @@ export const COLOR_DE_ETIQUETA: Record<string, string> = {
   Eliminado: 'bg-[#E81C1C] text-white',
 };
 
-/** Las clases de la píldora de una acción, a partir de la etiqueta que lleva en esa fila. */
+/**
+ * Las clases de la píldora de una acción, a partir de la etiqueta que lleva en esa fila. En
+ * modo oscuro, con el contorno claro: las de fondo oscuro se fundían con la tabla.
+ */
 export const colorDeAccion = (accion: AccionAuditable, categoria?: CategoriaAuditoria | null) =>
-  COLOR_DE_ETIQUETA[etiquetaDeAccion(accion, categoria)] ?? 'bg-zinc-200 text-zinc-800';
+  `${COLOR_DE_ETIQUETA[etiquetaDeAccion(accion, categoria)] ?? 'bg-zinc-200 text-zinc-800'} ${CONTORNO_DE_ETIQUETA_EN_OSCURO}`;
 
 /**
  * Una entrada del desplegable «Acción».
