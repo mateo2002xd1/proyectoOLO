@@ -32,6 +32,7 @@ import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { Paginador } from '@/shared/ui/molecules/paginador';
 import { Switch } from '@/shared/ui/atoms/switch';
 import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
+import { AvisoErrorDeCarga } from '@/shared/ui/molecules/aviso-error-de-carga';
 import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 
 /**
@@ -323,10 +324,19 @@ export default function UsuariosView() {
         }
       />
 
+      {/* Qué pasó, qué hacer y «Reintentar», como en las demás listas del panel (pedido del
+          usuario, 2026-10-15). Antes, el mensaje suelto en rojo y sin forma de reintentar. */}
       {error && (
-        <MensajeEstado tipo="error" rol="alert" className="mb-6">
-          {error}
-        </MensajeEstado>
+        <AvisoErrorDeCarga
+          titulo="No pudimos cargar los usuarios"
+          mensaje={error}
+          onReintentar={() => {
+            fetchUsers();
+            fetchRoles();
+          }}
+          reintentando={loading}
+          className="mb-6"
+        />
       )}
 
       <Alert open={isCreating} onClose={(open) => !isSubmitting && !open && handleCancel()}>
@@ -461,9 +471,12 @@ export default function UsuariosView() {
                 </span>
               </div>
               {!copiedPassword && (
-                <p className="m-0 mt-2 text-xs font-medium text-amber-600 dark:text-amber-500">
-                  ⚠ Debes copiar la contraseña para poder cerrar, no la podrás ver de nuevo.
-                </p>
+                // Como mensaje de advertencia del proyecto, con su escudo (pedido del usuario,
+                // 2026-10-15). `note`: está a la vista desde que se abre, hasta que se copia.
+                <MensajeEstado tipo="advertencia" rol="note" className="mt-3">
+                  Debes copiar la contraseña para poder cerrar, NO podrás volver a verla después de
+                  cerrar esta ventana.
+                </MensajeEstado>
               )}
             </>
           )}

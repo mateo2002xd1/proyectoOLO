@@ -1,6 +1,7 @@
 'use client';
 
 import { poppins } from '@/shared/lib/fonts';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
 
 export interface ModalCerrarSesionProps {
@@ -45,9 +46,12 @@ export function ModalCerrarSesion({ abierto, saliendo, alConfirmar, alCerrar }: 
           Salir del modo edición
         </h2>
 
-        <p className="nueva-seccion-ruta">
-          Saldrás del modo edición, se requiere volver a iniciar sesión para editar.
-        </p>
+        {/* Las dos frases dentro del mensaje informativo, una por línea (pedido del usuario,
+            2026-10-15). Mismo texto en el sitio y la intranet. */}
+        <MensajeEstado tipo="info" rol="note">
+          <p>Saldrás del modo edición, volverás a la pantalla de inicio de sesión.</p>
+          <p className="mt-3">Requiere volver a iniciar sesión para editar.</p>
+        </MensajeEstado>
 
         <div className="nueva-seccion-acciones">
           {/* El foco arranca en «Cancelar»: Enter o Escape no cierran la sesión. */}

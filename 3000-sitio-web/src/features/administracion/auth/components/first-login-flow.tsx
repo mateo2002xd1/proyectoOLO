@@ -1,7 +1,20 @@
 'use client';
 
 import { useState, useEffect, FormEvent, ReactNode } from 'react';
-import { cumplePolitica, primerFallo } from '@olo/password-policy';
+import { useRouter } from 'next/navigation';
+import {
+  RUTAS_DEL_PRIMER_INGRESO,
+  modoDelPrimerIngreso,
+  type ModoPrimerIngreso,
+  type Pendiente,
+} from '@/shared/lib/ruta-del-primer-ingreso';
+import {
+  cumplePolitica,
+  esPasswordRepetida,
+  MENSAJE_PASSWORD_REPETIDA,
+  primerFallo,
+  repiteLaPassword,
+} from '@olo/password-policy';
 import {
   AuthGeneralError,
   AuthProgressDots,
@@ -24,10 +37,14 @@ import { useRequisitosAlEnfocar } from '../hooks/use-requisitos-al-enfocar';
  * Configuración obligatoria de primer ingreso: contraseña definitiva y preguntas
  * de seguridad.
  *
- * Vive en `/login/first-login`. Llegan aquí el login, cuando responde que la cuenta lo
- * debe, y el middleware, que manda a esta ruta a cualquier sesión con algo pendiente.
- * Hasta el 2026-09-18 el login la pintaba dentro de su propia pantalla; ahora es una
- * ruta, como en la intranet.
+ * Vive en tres direcciones, una por caso, como en la intranet (2026-10-15):
+ * `/login/first-login` (cuenta nueva), `/login/first-login/security-questions` (solo
+ * faltan las preguntas) y `/login/first-login/change-password` (solo falta la
+ * contraseña). Cada página le dice su `modo`; la pantalla es la misma y lo que pide lo
+ * decide el servidor. Si la dirección no es la del caso (alguien la escribió a mano, o
+ * la cuenta cambió desde otra pestaña), se corrige sola. Llegan aquí el login y el proxy,
+ * que mandan a la dirección del caso (`rutaDelPrimerIngreso`). Hasta el 2026-09-18 el
+ * login la pintaba dentro de su propia pantalla.
  *
  * Desde el 2026-10-09 lleva el diseño nuevo (`MarcoDePasos`): el título y lo que se
  * pide en cada paso van fuera de la tarjeta (con un paginador debajo hasta el 2026-10-11), y la tarjeta
@@ -39,14 +56,9 @@ const TOTAL_QUESTIONS = 3;
 
 type CatalogQuestion = { key: string; label: string };
 
-/**
- * Qué le falta a la cuenta. `null` mientras se consulta.
- *
- * Lo dice el servidor, no el formulario: un administrador puede restablecer solo las
- * preguntas, solo la contraseña, o las dos cosas, y cada combinación pide una
- * pantalla distinta.
- */
-type Pendiente = { debeCambiarPassword: boolean; debeConfigurarPreguntas: boolean };
+// Qué le falta a la cuenta (`Pendiente`, en `ruta-del-primer-ingreso.ts`). Lo dice el
+// servidor, no el formulario: un administrador puede restablecer solo las preguntas, solo
+// la contraseña, o las dos cosas, y cada combinación pide una pantalla distinta.
 
 async function cerrarSesionEIrAlLogin() {
   try {
@@ -58,7 +70,9 @@ async function cerrarSesionEIrAlLogin() {
   window.location.href = '/login';
 }
 
-export function FirstLoginFlow() {
+export function FirstLoginFlow({ modo }: { modo: ModoPrimerIngreso }) {
+  const router = useRouter();
+  /** Qué le falta a la cuenta. `null` mientras se consulta. */
   const [pendiente, setPendiente] = useState<Pendiente | null>(null);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -75,6 +89,9 @@ export function FirstLoginFlow() {
   const [catalog, setCatalog] = useState<CatalogQuestion[]>([]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  // Rechazada aunque cumple todos los requisitos (repite la temporal, la actual o la
+  // anterior): el aviso rojo va en el lugar de «Cumple todos los requisitos».
+  const rechazoDeLaNueva = errors.newPassword && cumplePolitica(newPassword) ? errors.newPassword : undefined;
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -90,6 +107,10 @@ export function FirstLoginFlow() {
     fetch('/api/auth/first-login/status')
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((data: Pendiente) => {
+        // La dirección tiene que decir el caso de verdad: si no, a la del caso. Sin nada
+        // pendiente se queda donde está, que ya sabe decirlo.
+        const caso = modoDelPrimerIngreso(data);
+        if (caso && caso !== modo) router.replace(RUTAS_DEL_PRIMER_INGRESO[caso]);
         setPendiente(data);
         // Si la contraseña ya está cambiada, el paso 1 no tiene nada que pedir: no
         // hay contraseña temporal que verificar y obligar a cambiarla otra vez sería
@@ -99,7 +120,7 @@ export function FirstLoginFlow() {
       .catch(() =>
         setErrors({ general: 'No se pudo comprobar el estado de tu cuenta. Vuelve a iniciar sesión.' })
       );
-  }, []);
+  }, [modo, router]);
 
   const validateStep1 = (): boolean => {
     const e: Record<string, string> = {};
@@ -108,6 +129,9 @@ export function FirstLoginFlow() {
     if (!tempPassword) e.tempPassword = 'La contraseña temporal es requerida';
     if (!newPassword) e.newPassword = 'La nueva contraseña es requerida';
     else if (!cumplePolitica(newPassword)) e.newPassword = primerFallo(newPassword) ?? '';
+    // Igual a la temporal que acaba de escribir: se avisa aquí y no al final, después de las
+    // preguntas (2026-10-15). La anterior a la temporal solo la sabe el servidor.
+    else if (repiteLaPassword(newPassword, tempPassword)) e.newPassword = MENSAJE_PASSWORD_REPETIDA;
     if (!confirmPassword) e.confirmPassword = 'Confirma tu contraseña';
     else if (newPassword !== confirmPassword) e.confirmPassword = 'Las contraseñas no coinciden';
     setErrors(e);
@@ -143,6 +167,14 @@ export function FirstLoginFlow() {
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) {
+        // Repite la temporal o la que tenía antes: se vuelve al paso de la contraseña con
+        // el aviso en el campo de la nueva y su borde rojo (pedido del usuario,
+        // 2026-10-15). Las respuestas ya escritas se conservan.
+        if (esPasswordRepetida(data)) {
+          setStep(1);
+          setErrors({ newPassword: data.error });
+          return;
+        }
         setErrors({ general: data?.error || 'No se pudo completar la configuración' });
         return;
       }
@@ -296,6 +328,7 @@ export function FirstLoginFlow() {
               onFocus={requisitos.alEnfocar}
               describedBy={requisitos.visibles ? 'requisitos-contrasena' : undefined}
               error={errors.newPassword}
+              textoDeErrorAparte={Boolean(rechazoDeLaNueva) && requisitos.visibles}
               className={requisitos.visibles ? 'mb-2 md:mb-3' : authPasosHuecoClass}
             />
             {requisitos.visibles && (
@@ -304,6 +337,7 @@ export function FirstLoginFlow() {
                 password={newPassword}
                 variant="solid"
                 resumirAlCumplir
+                rechazo={rechazoDeLaNueva}
                 className={authPasosHuecoClass}
               />
             )}

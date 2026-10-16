@@ -3,7 +3,7 @@
 import { useEffect, useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { cumplePolitica, primerFallo } from '@olo/password-policy';
+import { cumplePolitica, esPasswordRepetida, primerFallo } from '@olo/password-policy';
 import {
   AuthGeneralError,
   PasswordField,
@@ -39,6 +39,9 @@ export function ResetPasswordView() {
   const [password, setPassword] = useState('');
   const [confirmacion, setConfirmacion] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  // Rechazada aunque cumple todos los requisitos (repite la temporal, la actual o la
+  // anterior): el aviso rojo va en el lugar de «Cumple todos los requisitos».
+  const rechazoDeLaNueva = errors.password && cumplePolitica(password) ? errors.password : undefined;
   const [isLoading, setIsLoading] = useState(false);
   const requisitos = useRequisitosAlEnfocar(password);
 
@@ -75,6 +78,12 @@ export function ResetPasswordView() {
       terminarRecuperacion();
       router.push('/login/recovery/reset-success');
     } catch (error) {
+      // Repite la actual o la anterior: el aviso va en el campo de la nueva, con su borde
+      // rojo (pedido del usuario, 2026-10-15).
+      if (esPasswordRepetida(error)) {
+        setErrors({ password: (error as Error).message });
+        return;
+      }
       setErrors({ general: (error as Error).message });
     } finally {
       setIsLoading(false);
@@ -105,10 +114,18 @@ export function ResetPasswordView() {
             onFocus={requisitos.alEnfocar}
             describedBy={requisitos.visibles ? 'requisitos-nueva' : undefined}
             error={errors.password}
+            textoDeErrorAparte={Boolean(rechazoDeLaNueva) && requisitos.visibles}
             className={requisitos.visibles ? 'mb-2 md:mb-3' : authPasosHuecoClass}
           />
           {requisitos.visibles && (
-            <PasswordRequisitos id="requisitos-nueva" password={password} variant="solid" resumirAlCumplir className={authPasosHuecoClass} />
+            <PasswordRequisitos
+              id="requisitos-nueva"
+              password={password}
+              variant="solid"
+              resumirAlCumplir
+              rechazo={rechazoDeLaNueva}
+              className={authPasosHuecoClass}
+            />
           )}
 
           <PasswordField

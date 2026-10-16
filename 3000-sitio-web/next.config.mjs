@@ -155,14 +155,15 @@ const nextConfig = {
       {
         // Desde el 2026-10-15 los pasos del acceso cuelgan de `/login`, igual que en la
         // intranet: el primer ingreso en `/login/first-login` y la recuperación en
-        // `/login/recovery`. Antes eran hermanos de `/login` en la raíz.
+        // `/login/recovery`. Antes eran hermanos de `/login` en la raíz. Las preguntas de
+        // la recuperación viven en `/login/recovery/security-questions` desde el mismo día.
         source: '/first-login',
         destination: '/login/first-login',
         permanent: false,
       },
       {
         source: '/security-questions',
-        destination: '/login/first-login/security-questions',
+        destination: '/login/recovery/security-questions',
         permanent: false,
       },
       {

@@ -245,14 +245,16 @@ Contenido del proyecto en capa `3001-intranet/src/`:
 │   ├── editor/[slug]/                # Mesa de trabajo Puck
 │   ├── preview/[slug]/               # Vista previa de una versión en revisión
 │   ├── (auth)/                       # Pantallas de acceso, todas bajo /login:
-│   │   │                             #   /login, /login/first-login (+ /security-questions),
-│   │   │                             #   /login/recovery (+ /reset-password, /reset-success).
-│   │   │                             #   Mismas carpetas que el sitio-web. Las URLs
+│   │   │                             #   /login, /login/first-login (+ /security-questions,
+│   │   │                             #   /change-password, /change-success), /login/recovery
+│   │   │                             #   (+ /security-questions, /reset-password,
+│   │   │                             #   /reset-success). Cada flujo con su dirección aunque
+│   │   │                             #   comparta vistas. Las URLs
 │   │   │                             #   viejas (/recovery...) redirigen aquí (next.config.ts)
 │   │   ├── template.tsx              #   la animación de deslizamiento entre pasos
 │   │   └── login/
-│   │       ├── first-login/security-questions/
-│   │       └── recovery/ reset-password/ reset-success/
+│   │       ├── first-login/ security-questions/ change-password/ change-success/
+│   │       └── recovery/ security-questions/ reset-password/ reset-success/
 │   └── api/upload/                   # El único route handler propio
 │
 ├── features/                         # Solo dos, y es lo correcto para lo que hace la app

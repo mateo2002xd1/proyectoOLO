@@ -6,5 +6,5 @@ export const metadata = {
 };
 
 export default function SecurityQuestionsPage() {
-  return <SecurityQuestionsView />;
+  return <SecurityQuestionsView modo="elegir" />;
 }

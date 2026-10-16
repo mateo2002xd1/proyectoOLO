@@ -1899,11 +1899,16 @@ body:has(.navegacion-mobile-hoja[open]) {
    ensanche las columnas de la rejilla. Va por `PuckLayout-inner >` para ganarle en
    especificidad a la regla de Puck sin depender del orden de carga del CSS. Solo en
    escritorio: en móvil Puck pliega la fila de la cabecera a 0 y la esconde con ese
-   mismo `overflow`. */
+   mismo `overflow`.
+
+   `z-index: 20` y no 2 (2026-10-15): los campos de la barra derecha no crean capa propia
+   y algunos de Puck traen su `z-index` (el elemento desplegado de una lista, 2; el asa
+   para redimensionar, 10). Con 2 empataban y, al ir después en el DOM, tapaban los
+   tooltips de Salir, Guardar y Enviar en cuanto había una lista abierta debajo. */
 @media (min-width: 638px) {
   .olo-editor [class*="PuckLayout-inner"]>[class*="PuckLayout-header"] {
     position: relative;
-    z-index: 2;
+    z-index: 20;
     min-width: 0;
     overflow: visible;
   }
@@ -2714,28 +2719,10 @@ body:has(.navegacion-mobile-hoja[open]) {
   color: #002c46;
 }
 
-/* Párrafo de contexto del modal de eliminar: va justo bajo el título y deja aire
-   antes de la etiqueta del campo de confirmación. */
-.nueva-seccion-ruta--aviso {
-  margin: 0 0 1.25rem;
-}
-
 .nueva-seccion-error {
   margin: 0.6rem 0 0;
   font-size: 0.85rem;
   color: #b3261e;
-}
-
-.nueva-seccion-notas {
-  margin: 1rem 0 0;
-  padding-left: 1.1rem;
-  font-size: 0.8rem;
-  line-height: 1.45;
-  color: #52667a;
-}
-
-.nueva-seccion-notas li+li {
-  margin-top: 0.3rem;
 }
 
 /* `wrap` y `nowrap` en los botones: con 44 px de alto fijo el texto no puede partirse
@@ -6230,114 +6217,6 @@ body:has(.navegacion-mobile-hoja[open]) {
    la navegación acompaña al contenido mientras se revisa. */
 body:has(.preview-page) .intranet-topbar {
   position: relative;
-}
-
-/* Barra fija: la vista previa es la página entera, y sin este aviso siempre
-   visible es fácil confundirla con la publicada. */
-.preview-aviso {
-  position: sticky;
-  top: 0;
-  z-index: 200;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  padding: 0.7rem clamp(1rem, 2.4vw, 2.25rem);
-  background: #fef3c7;
-  border-bottom: 1px solid #fcd34d;
-  color: #78350f;
-  font-size: 0.85rem;
-}
-
-.preview-aviso-etiqueta {
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-size: 0.72rem;
-  background: #78350f;
-  color: #fef3c7;
-  padding: 0.2rem 0.6rem;
-  border-radius: 999px;
-}
-
-.preview-aviso-nota {
-  margin-left: auto;
-  opacity: 0.85;
-}
-
-@media (width < 48rem) {
-  .preview-aviso-nota {
-    margin-left: 0;
-    width: 100%;
-  }
-}
-
-/* La vista previa lleva el marco de las secciones, así que hay dos barras
-   pegajosas peleando por `top: 0`: la navegación y el aviso. Manda el aviso —que
-   la página no está publicada importa más que tener el menú siempre a mano—, y
-   la navegación acompaña al contenido mientras se revisa. */
-body:has(.preview-page) .intranet-topbar {
-  position: relative;
-}
-
-/* Barra fija: la vista previa es la página entera, y sin este aviso siempre
-   visible es fácil confundirla con la publicada. */
-.preview-aviso {
-  position: sticky;
-  top: 0;
-  z-index: 200;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  padding: 0.7rem clamp(1rem, 2.4vw, 2.25rem);
-  background: #fef3c7;
-  border-bottom: 1px solid #fcd34d;
-  color: #78350f;
-  font-size: 0.85rem;
-}
-
-.preview-aviso-etiqueta {
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-size: 0.72rem;
-  background: #78350f;
-  color: #fef3c7;
-  padding: 0.2rem 0.6rem;
-  border-radius: 999px;
-}
-
-.preview-aviso-nota {
-  margin-left: auto;
-  opacity: 0.85;
-}
-
-/* 44 px de alto: es lo único pulsable de la barra y se toca con el dedo. */
-.preview-aviso-volver {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2.75rem;
-  padding: 0 0.75rem;
-  border-radius: 16px;
-  font-weight: 600;
-  color: inherit;
-  text-decoration: none;
-}
-
-.preview-aviso-volver:hover {
-  background: rgb(0 0 0 / 0.06);
-}
-
-.preview-aviso-volver:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 2px;
-}
-
-@media (width < 48rem) {
-  .preview-aviso-nota {
-    margin-left: 0;
-  }
 }
 
 /* 

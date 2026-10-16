@@ -2,7 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { authApi, useAuth } from '@/features/login';
-import { cumplePolitica, primerFallo } from '@olo/password-policy';
+import {
+  cumplePolitica,
+  esPasswordRepetida,
+  MENSAJE_PASSWORD_REPETIDA,
+  primerFallo,
+  repiteLaPassword,
+} from '@olo/password-policy';
 import { PasswordField } from '@/shared/ui/molecules/password-field';
 import { PasswordRequisitos } from '@/shared/ui/molecules/password-requisitos';
 import { QuestionPicker, type CatalogQuestion } from './question-picker';
@@ -50,6 +56,9 @@ export function FirstLoginView() {
   const [answers, setAnswers] = useState<string[]>(Array(TOTAL_QUESTIONS).fill(''));
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  // Rechazada aunque cumple todos los requisitos (repite la temporal, la actual o la
+  // anterior): el aviso rojo va en el lugar de «Cumple todos los requisitos».
+  const rechazoDeLaNueva = errors.newPassword && cumplePolitica(newPassword) ? errors.newPassword : undefined;
   const [isLoading, setIsLoading] = useState(false);
 
   // Los requisitos de la nueva contraseña aparecen al entrar en el campo (o si ya tiene
@@ -93,6 +102,10 @@ export function FirstLoginView() {
       newErrors.newPassword = 'La nueva contraseña es requerida';
     } else if (!cumplePolitica(newPassword)) {
       newErrors.newPassword = primerFallo(newPassword) ?? '';
+    } else if (repiteLaPassword(newPassword, tempPassword)) {
+      // Igual a la temporal que acaba de escribir: se avisa aquí y no al final, después de
+      // las preguntas (2026-10-15). La anterior a la temporal solo la sabe el servidor.
+      newErrors.newPassword = MENSAJE_PASSWORD_REPETIDA;
     }
 
     if (!confirmPassword) {
@@ -168,6 +181,14 @@ export function FirstLoginView() {
 
       setCurrentStep(3);
     } catch (error) {
+      // Repite la temporal o la que tenía antes: se vuelve al paso de la contraseña con el
+      // aviso en el campo de la nueva y su borde rojo (pedido del usuario, 2026-10-15). Las
+      // respuestas ya escritas se conservan.
+      if (esPasswordRepetida(error)) {
+        setCurrentStep(1);
+        setErrors({ newPassword: mensajeDeError(error) });
+        return;
+      }
       setErrors({ general: mensajeDeError(error, 'Error de conexión con el servidor') });
     } finally {
       setIsLoading(false);
@@ -298,12 +319,20 @@ export function FirstLoginView() {
               value={newPassword}
               onChange={(v) => { setNewPassword(v); setErrors({}); }}
               error={errors.newPassword}
+              textoDeErrorAparte={Boolean(rechazoDeLaNueva) && verRequisitos}
               enBlanco
               className={verRequisitos ? 'mb-2 md:mb-3' : accesoHuecoClass}
             />
           </div>
           {verRequisitos && (
-            <PasswordRequisitos password={newPassword} variant="solid" resumirAlCumplir className={accesoHuecoClass} enBlanco />
+            <PasswordRequisitos
+              password={newPassword}
+              variant="solid"
+              resumirAlCumplir
+              rechazo={rechazoDeLaNueva}
+              className={accesoHuecoClass}
+              enBlanco
+            />
           )}
           <PasswordField
             id="confirm-password"

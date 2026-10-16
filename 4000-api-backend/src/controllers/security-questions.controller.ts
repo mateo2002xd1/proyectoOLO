@@ -8,7 +8,7 @@ import {
 } from '../use-cases/auth/security-questions.usecase';
 import { logCambioDePassword } from '../use-cases/auditoria/audit.usecase';
 import { datosDeAuditoria, origenDeLaPeticion } from '../shared/auditoria-request';
-import { esErrorDePolitica } from '../shared/password-policy';
+import { esErrorDePolitica, esErrorDePasswordRepetida } from '../shared/password-policy';
 
 export const SecurityQuestionController = {
   /** Devuelve el catálogo de preguntas de seguridad disponibles. */
@@ -83,6 +83,9 @@ export const SecurityQuestionController = {
       // Sin esto, quien eligiera una contraseña débil vería «verifica los datos» y
       // no tendría forma de averiguar qué corregir.
       if (esErrorDePolitica(err)) return res.status(400).json({ error: err.message });
+      // La nueva repite la actual o la anterior: solo se llega aquí tras responder bien
+      // las preguntas, así que tampoco revela nada a quien no lo hizo.
+      if (esErrorDePasswordRepetida(err)) return res.status(400).json({ error: err.message, code: err.code });
 
       const safeMessage = 'No fue posible recuperar la contraseña. Verifica los datos e intenta de nuevo.';
       const status = (err.status === 400 || err.status === 401 || err.status === 404) ? 401 : 500;

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { MagnifyingGlassIcon } from '@heroicons/react/20/solid';
+import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { buscarEnPanel } from '../lib/indice-panel';
 
 /**
@@ -112,26 +113,13 @@ export function BuscadorModal({ onClose }: { onClose?: () => void }) {
         aria-label="Cerrar el buscador"
         className="absolute top-4 right-20 rounded-full p-2 text-zinc-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-focus)] dark:text-[#94a3b8]"
       >
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className={`size-6 transition-transform duration-300 ease-out ${flechaEntrada ? 'translate-x-0' : '-translate-x-2'}`}
+        {/* El icono de cerrar del usuario (2026-10-15), antes una flecha hacia la izquierda.
+            Mantiene la entrada animada. */}
+        <span
+          className={`flex transition-transform duration-300 ease-out ${flechaEntrada ? 'translate-x-0' : '-translate-x-2'}`}
         >
-          <g clipPath="url(#clip0_913_5987)">
-            <path
-              d="M4.94363 5.60661L1.02463 9.52562C0.38826 10.1925 0.0332031 11.0788 0.0332031 12.0006C0.0332031 12.9224 0.38826 13.8088 1.02463 14.4756L4.94363 18.3946C5.08201 18.5379 5.24752 18.6522 5.43053 18.7308C5.61353 18.8094 5.81036 18.8508 6.00953 18.8525C6.2087 18.8542 6.40622 18.8163 6.59057 18.7409C6.77491 18.6654 6.94239 18.5541 7.08323 18.4132C7.22407 18.2724 7.33545 18.1049 7.41087 17.9206C7.48629 17.7362 7.52424 17.5387 7.52251 17.3395C7.52078 17.1404 7.4794 16.9435 7.40079 16.7605C7.32217 16.5775 7.2079 16.412 7.06464 16.2736L4.28563 13.4926L22.5356 13.4696C22.9335 13.4696 23.315 13.3116 23.5963 13.0303C23.8776 12.749 24.0356 12.3674 24.0356 11.9696C24.0356 11.5718 23.8776 11.1903 23.5963 10.909C23.315 10.6277 22.9335 10.4696 22.5356 10.4696L4.30063 10.4926L7.06464 7.72762C7.33787 7.44471 7.48906 7.06581 7.48565 6.67251C7.48223 6.27922 7.32447 5.903 7.04636 5.62489C6.76825 5.34677 6.39203 5.18902 5.99874 5.1856C5.60544 5.18219 5.22654 5.33338 4.94363 5.60661Z"
-              fill="currentColor"
-            />
-          </g>
-          <defs>
-            <clipPath id="clip0_913_5987">
-              <rect width="24" height="24" fill="white" />
-            </clipPath>
-          </defs>
-        </svg>
+          <IconoMascara nombre="cerrar" tamano="h-5 w-5" />
+        </span>
       </button>
 
       <div className="mx-auto w-full max-w-2xl">

@@ -6,7 +6,9 @@ import { FlujoDeRecuperacionProvider, LetraDelPanel } from '@/features/administr
  * recuperación de contraseña.
  *
  * Mismas carpetas que la intranet: `app/(auth)/login/`, y dentro `first-login/` (con
- * `security-questions/`) y `recovery/` (con `reset-password/` y `reset-success/`).
+ * `security-questions/` y `change-password/`, los casos de la misma pantalla) y
+ * `recovery/` (con `security-questions/`, `reset-password/` y `reset-success/`). Desde
+ * el 2026-10-15 cada paso cuelga del flujo al que pertenece.
  * `(auth)` es un grupo de rutas: agrupa sin añadir segmento a la URL, así que el login
  * es `/login` y la recuperación `/login/recovery`. Hasta el 2026-09-18 vivían en
  * `app/(auth)/admin/` (`/admin/login`, `/admin/recuperar`, `/admin/cambiar-contrasena`),

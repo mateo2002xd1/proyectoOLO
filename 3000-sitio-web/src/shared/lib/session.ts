@@ -59,6 +59,36 @@ export async function getSessionPermissionsSnapshot(): Promise<{ role: string | 
   }
 }
 
+/**
+ * Si a la sesión le queda algo del primer ingreso (la contraseña temporal o las preguntas
+ * de seguridad), según la base y no según el token.
+ *
+ * El proxy lo decide con las marcas del JWT, que se escriben al iniciar sesión: si después
+ * un administrador restablece la contraseña o las preguntas de esta cuenta, o el login
+ * descubre que le faltan preguntas, el token sigue diciendo «nada pendiente» y el panel se
+ * abre. La API, que lee la fila, le responde 403 a todo, y cada pantalla lo enseñaba como
+ * un fallo de carga con «Reintentar», que nunca lo arreglaba. `/api/me` sí lee la fila.
+ *
+ * Sin API, o con cualquier otro fallo, responde `false`: no se puede saber, y las
+ * pantallas ya cuentan esa caída con su propio aviso.
+ */
+export async function tieneConfiguracionPendiente(): Promise<boolean> {
+  const { token } = await getAuthSessionSnapshot();
+  if (!token) return false;
+
+  try {
+    const res = await fetch(`${process.env.BACKEND_URL || 'http://localhost:4000'}/api/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
+    });
+    if (!res.ok) return false;
+    const { configuracionPendiente } = await res.json();
+    return configuracionPendiente === true;
+  } catch {
+    return false;
+  }
+}
+
 export async function getAuthUserProfile(): Promise<{ name: string; email: string }> {
   try {
     const cookieStore = await cookies();

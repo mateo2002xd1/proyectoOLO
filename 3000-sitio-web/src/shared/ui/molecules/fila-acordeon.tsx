@@ -2,6 +2,7 @@
 
 import { useCallback, useState, type ReactNode } from 'react';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
+import { CONTORNO_DE_ETIQUETA_EN_OSCURO } from '@/shared/ui/atoms/etiqueta';
 
 /**
  * Las piezas de una tabla en acordeón (`olo-tabla-apilable olo-tabla-acordeon`, reglas en
@@ -73,6 +74,41 @@ export function FechaDeCelda({ iso, exacta = false }: { iso: string; exacta?: bo
     <>
       <p className="text-sm">{dia}</p>
       {hora && <p className="text-xs font-light">{hora}</p>}
+    </>
+  );
+}
+
+/**
+ * La columna «Página» de Respaldos y Páginas en revisión: arriba el portal en su píldora (Intranet en
+ * `#001631`, Sitio web en `#EBF6E6`) y debajo, como la hora de `FechaDeCelda`, más pequeño
+ * y fino, «menu-y-pie · versión 28» (pedido del usuario, 2026-10-15). Sin `ambito` no hay
+ * píldora; sin `version`, solo la ruta. En modo oscuro, con el contorno claro de las
+ * etiquetas: la de Intranet se fundía con el fondo de la tabla.
+ */
+export function CeldaDePagina({
+  ambito,
+  slug,
+  version,
+}: {
+  ambito?: string | null;
+  slug: string;
+  version?: number | null;
+}) {
+  return (
+    <>
+      {ambito && (
+        <span
+          className={`inline-flex items-center rounded px-2 py-0.5 text-[11px] font-semibold ${CONTORNO_DE_ETIQUETA_EN_OSCURO} ${
+            ambito === 'intranet' ? 'bg-[#001631] text-white' : 'bg-[#EBF6E6] text-[#7DB728]'
+          }`}
+        >
+          {ambito === 'intranet' ? 'Intranet' : 'Sitio web'}
+        </span>
+      )}
+      <p className="mt-1 text-xs font-light">
+        {slug}
+        {version != null && ` · versión ${version}`}
+      </p>
     </>
   );
 }

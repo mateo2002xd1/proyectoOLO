@@ -1,5 +1,6 @@
 /**
- * El sonido de los avisos flotantes del panel (`Notification`).
+ * El sonido de los avisos flotantes del panel (`Notification`) y el de las alertas que
+ * llegan a la campana de Notificaciones (`alerta`).
  *
  * Un tono corto por estado: el de éxito sube, el de advertencia se repite y el de error
  * baja. Se sintetizan con Web Audio en el momento, sin archivos de audio: no hay nada que
@@ -51,6 +52,16 @@ const SONIDOS = {
     notas: [
       { hz: 880, desde: 0, dura: 0.12 },
       { hz: 880, desde: 0.17, dura: 0.12 },
+    ],
+  },
+  // Campanita de dos notas (sol → do, una cuarta arriba), suave y algo más larga que las
+  // demás: «te llegó algo». La toca la campana de Notificaciones cuando aparece una alerta
+  // nueva sin recargar (pedido del usuario, 2026-10-15).
+  alerta: {
+    onda: 'sine',
+    notas: [
+      { hz: 783.99, desde: 0, dura: 0.22 },
+      { hz: 1046.5, desde: 0.14, dura: 0.42 },
     ],
   },
   // Baja un tritono (do → fa#) y queda más grave: «no se pudo».

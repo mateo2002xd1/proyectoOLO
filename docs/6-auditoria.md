@@ -5,6 +5,889 @@
 
 ---
 
+## sesión 15-10-2026 (39.ª parte): revisión de seguridad, lint, código muerto, espagueti y archivos sin uso (sin cambios)
+
+**Qué se pidió:** revisar errores de seguridad y de ESLint, código muerto, código espagueti, imágenes y repositorios que no se usan. Es solo diagnóstico: no se tocó código. Cada hallazgo de herramienta se comprobó a mano antes de anotarlo.
+
+**Seguridad**
+
+| Hallazgo | Riesgo | Qué hacer |
+|---|---|---|
+| `file-type@16.5.4` en la API (GHSA-5v7r-6r5c-r473): un archivo ASF malformado deja el detector en un bucle infinito | Medio. Un archivo armado a propósito congela la API entera (un solo hilo). Hace falta sesión para subir, así que solo lo dispara alguien con cuenta | Subir a ≥ 21.3.1. Es ESM puro y la API compila a CommonJS (nota en `guardar-excel-de-carga.ts`), pero Node 22.20 ya hace `require()` de ESM: probarlo antes de descartarlo |
+| La API no tiene ESLint; las apps usan solo `eslint-config-next`, sin reglas de seguridad | Bajo hoy, porque la revisión manual salió limpia; es lo que evita que vuelva | `typescript-eslint` + `eslint-plugin-security` en la API; el plugin también en las dos apps |
+| Revisión manual: `dangerouslySetInnerHTML`, `eval`, SQL interpolado, `child_process`, `decodeJwt`, CORS | Sin hallazgos | El HTML del editor y del pie de la intranet lo sanea la API al guardar (`sanitizar-contenido.ts`); `LetraDelPanel` es texto fijo; el único SQL interpolado es una constante (`pg_advisory_xact_lock`); `decodeJwt` de `intranet/sesion.ts` va detrás del proxy, que verifica la firma; CORS limitado a las dos apps |
+
+`npm audit --omit=dev`: sitio-web y la intranet, 0 vulnerabilidades; la API, solo la de `file-type`.
+
+**Código muerto (confirmado: nadie lo importa)**
+
+| Qué | Dónde |
+|---|---|
+| `shared/lib/auth-server.ts` (verificación para Route Handlers; quedó sin uso cuando las subidas pasaron a la API) | Las dos apps |
+| `shared/lib/types.ts` | Las dos apps |
+| `carga-fuentes-futuras.tsx`, `use-cargas-fuentes-futuras.ts` y tres funciones de `observatorio.service.ts` (`subir…`, `listar…`, `eliminarCargaFuentesFuturas`) | sitio-web. Se dejó así a propósito el 2026-10-09: decidir si se borra |
+| Import `MINUTOS_DE_INACTIVIDAD` sin uso en `inactividad/mensaje-de-cierre.ts` | Las dos apps (es el único aviso de ESLint) |
+| Dependencias sin ningún import: `docx-preview`, `file-type`, `framer-motion`, `handsontable` | sitio-web |
+| Dependencias sin ningún import: `@headlessui/react`, `@material-tailwind/react`, `clsx`, `tailwind-merge`, `file-type` | intranet |
+| `@types/bcryptjs`: `bcryptjs` 3 ya trae sus tipos | API (devDependency) |
+
+Además, knip cuenta ~120 exportaciones sin uso en sitio-web, ~30 en la intranet y ~30 en la API. Casi todas son reexportaciones de los `index.ts` de cada feature que nadie consume, o exportaciones usadas solo dentro de su propio archivo. Prioridad baja.
+
+**Archivos de `public/` que no menciona el código**
+
+| App | Archivos |
+|---|---|
+| sitio-web | `assets/docs/DE-POL-003-….pdf` y `GOR-POL-001-….pdf`: **no son PDF**, son la página HTML «404 Not Found» guardada con esa extensión (230 bytes); los PDF reales los sirve `api/docs/pdf` desde CompromISO. También `svg/accesos.svg`, `svg/actualizaciones.svg` (la navegación usa componentes) y `svg/olo-logo-blanco-intranet.svg` |
+| intranet | `img/poster3.png` (1,3 MB), `Video-encuesta.png` (832 KB), `Seguimiento-laboral.png` (597 KB), `editor-locked-illustration.jpg` (507 KB), `ilustracion-encuesta.jpg` (435 KB), `seguimiento-dashboard-2.svg` (136 KB), `pregunta-s1.png`, `preguntaf1.png`, `preguntaf2.png`, `svg/borrar.svg`, `svg/olo-logo-blanco-intranet.svg`: unos 3,8 MB |
+
+> Antes de borrar una imagen hay que buscarla también en el contenido de las páginas guardado en la base (Neon): un editor pudo elegirla en Puck, y eso no aparece en el código.
+
+**Espagueti y capas**
+
+| Hallazgo | Detalle |
+|---|---|
+| El controlador toca Sequelize | `pagina.controller.ts` abre 6 transacciones (`sequelize.transaction`); la guía (`1-guia` §4) dice que un controller nunca toca Sequelize |
+| Casos de uso que consultan sin repositorio | 16 archivos de `use-cases/` llaman a los modelos directamente (`listar-usuarios`, `eliminar-seccion`, `restaurar-version-anterior`, `obtener-version-editable`, `login`…) |
+| Archivos enormes | `puck.config.tsx`: 2310 líneas en sitio-web y 1442 en la intranet; `puck-editor-wrapper.tsx`: ~1000 en cada una; `panel-general.tsx`: 1023. Candidatos a partir por bloque |
+| Duplicado entre apps | 8 archivos idénticos y ~12 al 90 % o más. Casi todo es interfaz, que por decisión del proyecto se escribe en cada app; lo que sí es lógica y se podría unificar: `use-bloqueo-de-edicion.ts` (74 %), `edicion.service.ts`, `model/rutas.ts` |
+
+**Descartado tras comprobarlo** (falsos positivos de knip): `@olo/blocks-renderer` y `@olo/upload-policy` sí se usan (se copian con `sync:paquetes` y knip no lo ve); `pg` y `pg-hstore` los carga Sequelize por dentro; `pagina.routes.ts` (778 líneas) es documentación OpenAPI en un 77 %, no lógica; los 14 repositorios de la API y los 7 paquetes `@olo/*` tienen todos uso.
+
+**Verificación.**
+
+| Comprobación | Resultado |
+|---|---|
+| `npx eslint .` en sitio-web y en la intranet | 0 errores, 1 aviso en cada una (`MINUTOS_DE_INACTIVIDAD`) |
+| `tsc --noEmit --noUnusedLocals --noUnusedParameters` en la API | Solo `queryInterface` sin usar en la migración 036 (la firma la impone el migrador) |
+| `npm audit --omit=dev` en las tres | Solo `file-type` en la API |
+| `npx knip@5` en las tres | Resultados de arriba, revisados uno a uno con grep |
+| Script propio: archivos de `public/` sin mención en el repo | Listas de arriba |
+
+**Pendiente al cierre:** decidir qué se borra (código muerto, dependencias, imágenes tras consultar Neon, la tarjeta de fuentes futuras); actualizar `file-type` en la API; poner ESLint en la API.
+
+---
+
+## sesión 15-10-2026 (38.ª parte): icono de cerrar nuevo en las notificaciones y en el buscador
+
+**Qué se pidió:** cambiar la flecha de las notificaciones por un SVG del usuario (dos cheurones enfrentados, un «cerrar»), en el modal Buscar y en el de Notificaciones.
+
+| Dónde | Antes | Ahora |
+|---|---|---|
+| `public/assets/svg/cerrar.svg` (nuevo) | — | El SVG tal cual lo pasó el usuario |
+| Filas de notificación (`FilaAlertaCuenta`, `FilaAlertaRevision` en `panel-general.tsx`): modal y aviso flotante | Flecha → («Marcar como solucionada») | `IconoMascara nombre="cerrar"`, 14 px. Mismo botón y misma acción |
+| Cerrar del modal Notificaciones | X de heroicons | El mismo icono, 16 px |
+| Cerrar del buscador (`buscador-modal.tsx`) | Flecha ← | El mismo icono, 20 px, con su entrada animada (`flechaEntrada`) en una envoltura |
+
+Con `IconoMascara` (máscara + `bg-current`) el icono toma el color del texto de cada sitio: ámbar o azul en las filas, gris en los cierres, y claro en modo oscuro. El #002237 del archivo no se usa: con él no se vería en oscuro.
+
+**Verificación.** `eslint` sin errores; `tsc --noEmit` sin errores nuevos (solo los de `first-login-flow.tsx` de la otra sesión); CRLF uniforme. Falta verlo en pantalla.
+
+---
+
+## sesión 15-10-2026 (37.ª parte): acceso — la contraseña rechazada, en rojo en lugar de «Cumple todos los requisitos»
+
+**Qué se pidió:** si aparece «Esta contraseña no es válida por seguridad, elige otra.», quitar «Cumple todos los requisitos» (sin el error, dejarlo); y ese mensaje, en estado rojo. Además, que «Reintentar» del aviso de carga fallida no «brinque como si hiciera zoom» al pulsarlo.
+
+| Dónde | Cambio |
+|---|---|
+| `PasswordRequisitos` (`auth-ui.tsx` del sitio, `password-requisitos.tsx` de la intranet) | Prop `rechazo`: con la lista resumida, en vez del mensaje de éxito pinta `MensajeEstado tipo="error" rol="alert"` con ese texto. Sin `rechazo`, «Cumple todos los requisitos» como antes |
+| `PasswordField` (`auth-ui.tsx`, `password-field.tsx` de la intranet) | Prop `textoDeErrorAparte`: deja el borde rojo y no repite el texto debajo (ni lo nombra en `aria-describedby`) |
+| Primer ingreso y restablecer contraseña de las dos apps | `rechazoDeLaNueva = errors.<campo> && cumplePolitica(<nueva>) ? errors.<campo> : undefined`: solo una contraseña que cumple todo y aun así se rechaza (repite la temporal, la actual o la anterior). Un fallo de la política sigue bajo el campo con la lista entera. El campo oculta su texto solo si la lista está a la vista |
+| `aviso-error-de-carga.tsx` | «Reintentar» con `hover:transform-none! active:transform-none!` y `transition-colors`: `globals.css` sube todo botón 2 px al pasar y lo baja al pulsar, sin capa, así que hace falta `!`. En un texto sin fondo parecía un zoom |
+
+El perfil del panel no cambia: no resume la lista.
+
+**Depende de trabajo sin commit de otra sesión.** La función de contraseña repetida (`password-repetida.ts`, `MENSAJE_PASSWORD_REPETIDA`, migración `045-password-anterior.ts`, y ahora su paso a `packages/password-policy`) está a medias en el árbol de trabajo; estos archivos llevan los dos cambios mezclados.
+
+**Verificación.** `eslint` sin errores en las dos apps; `tsc --noEmit` de la intranet sin errores. El del sitio falla solo en los imports nuevos de `@olo/password-policy` que está añadiendo la otra sesión (la copia del paquete no se ha sincronizado); antes de ese cambio suyo pasaba. CRLF uniforme. Falta probarlo en pantalla.
+
+---
+
+## sesión 15-10-2026 (36.ª parte): «Reintentar» como texto rojo sin fondo
+
+**Qué se pidió:** en el aviso de carga fallida («No pudimos cargar los respaldos…»), que el botón «Reintentar» sea un texto rojo sin fondo.
+
+| Dónde | Cambio |
+|---|---|
+| `shared/ui/molecules/aviso-error-de-carga.tsx` | `Button variant="navy"` → `<button>` sin fondo, en el rojo del mensaje de error (#d90000), negrita, subrayado al pasar el ratón y anillo rojo con teclado. Sigue midiendo 44 px de alto; en el móvil queda alineado con el texto (`-ml-2`). «Terminar configuración» (cuenta pendiente) no cambia |
+
+Cubre todas las pantallas que usan el aviso: Respaldos, Auditoría, Usuarios, Roles, Páginas en revisión y el dashboard.
+
+**Salto al pulsarlo (corregido).** Al pulsar, el texto pasaba a «Reintentando…», más largo, y el botón cambiaba de ancho y se movía; sin fondo se notaba. Ahora las dos palabras van en la misma celda de un `grid`, la que no toca invisible: el botón mide siempre lo de «Reintentando…».
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta verlo en pantalla con la API apagada.
+
+---
+
+## sesión 15-10-2026 (35.ª parte): etiquetas con contorno en modo oscuro (Auditoría, Respaldos y Páginas en revisión)
+
+**Qué se pidió:** en modo oscuro, que las etiquetas (flags) de Auditoría, Respaldos y Páginas en revisión contrasten y no se mezclen con el fondo del contenedor.
+
+**Causa.** Las de fondo oscuro —«Intranet» y «Editado» en #001631, «Actualizado» en #00304D, «Verificado» (#3F1E6B), «Modificado» (#71277A)— quedaban sobre la tabla oscura (#0f1626) y solo se leía la letra.
+
+| Dónde | Cambio |
+|---|---|
+| `shared/ui/atoms/etiqueta.ts` (nuevo) | `CONTORNO_DE_ETIQUETA_EN_OSCURO` = `dark:ring-1 dark:ring-white/30`: un aro claro y fino solo en modo oscuro. No cambia los colores elegidos por el usuario; en las etiquetas claras apenas se nota |
+| `auditoria/types.ts` → `colorDeAccion` | Añade el contorno: cubre la píldora de la tabla, la frase del acordeón y el modal «Ver detalle» |
+| `shared/ui/molecules/fila-acordeon.tsx` → `CeldaDePagina` | La etiqueta «Sitio web» / «Intranet» de Respaldos y Páginas en revisión, con el contorno |
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta verlo en pantalla en modo oscuro.
+
+---
+
+## sesión 15-10-2026 (34.ª parte): pulsar una notificación lleva a donde se resuelve
+
+**Qué se pidió:** que al pulsar el cuerpo de una notificación, en el aviso flotante de arriba o en el modal, lleve al sitio al que se refiere.
+
+| Dónde | Cambio |
+|---|---|
+| `FilaAlertaRevision` / `FilaAlertaCuenta` (`panel-general.tsx`) | Etiqueta y frase forman un solo `Link` (`CUERPO_DE_ALERTA`): «En revisión» → `/admin/revision`, «Por vencer» → `/admin/users`. Fuera los enlaces sueltos del título y del nombre, que ahora van en negrita dentro. La flecha sigue siendo «Marcar como solucionada», aparte. Al pasar el ratón la fila se oscurece un tono (`has-[a:hover]`); con teclado, anillo de foco del color de la etiqueta |
+| `AvisoDeAlertas` | `onAbrir`: al pulsar una, el aviso se va |
+| `ModalAlertas` | `onAbrir={onCerrar}`: el modal se cierra; vive en el layout y, si no, seguiría abierto encima de la página nueva |
+
+No hay enlace a la página o a la cuenta concreta: Páginas en revisión y Usuarios no leen parámetros de la URL; lleva a la lista.
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta probarlo en pantalla.
+
+---
+
+## sesión 15-10-2026 (33.ª parte): notificaciones del panel en una sola frase, «… a la espera de tu …»
+
+**Qué se pidió:** un mensaje claro en las notificaciones que llegan al panel (campana y aviso de arriba a la derecha). Un primer intento en dos líneas no convenció; queda una sola frase con la estructura del usuario: **quién hizo qué, a la espera de tu (acción)**, sin paréntesis, y la misma estructura para toda notificación nueva.
+
+| Dónde | Antes | Ahora |
+|---|---|---|
+| `FilaAlertaRevision` (`panel-general.tsx`) | «En revisión · Inicio» | «**David Tejada** envió a revisión la versión 33 de **Inicio** del sitio web, a la espera de tu aprobación.» («de la intranet» en la otra; sin autor, «Se envió a revisión…»). La etiqueta «En revisión» se queda |
+| `FilaAlertaCuenta` | «Por vencer · correo vence en 3 días» | «La cuenta de **El pollo** vence en 3 días, a la espera de tu renovación.» («hoy» / «mañana» cuando toca). El nombre enlaza a Usuarios y enseña el correo al pasar el ratón |
+
+La frase se parte en varias líneas si no cabe, en vez de cortarse con «…». Las filas son las mismas en el modal de Notificaciones y en el aviso temporal. La regla de la estructura queda comentada encima de `cuandoVence`.
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta verlo en pantalla, también a 360 px.
+
+---
+
+## sesión 15-10-2026 (32.ª parte): la API usaba la sesión de la intranet en el panel del sitio web
+
+**Qué se pidió:** «Termina de configurar tu cuenta» le salía a dtejada@sena.edu.co, una cuenta ya configurada; la pendiente era elpollo@sena.edu.co, recién creada. Corregirlo, evitar que se repita y mejorar el texto del aviso (con lo de borrar las cookies).
+
+**Causa (bug).** Las cookies no se separan por puerto: en `localhost` el navegador manda a la API `token` (intranet, abierta como elpollo) y `sitio_token` (sitio web, dtejada) a la vez. `requireAuth` leía `req.cookies.token ?? req.cookies.sitio_token`, así que las llamadas directas del sitio a la API (los clientes axios con `withCredentials`, como Respaldos) iban **con la cuenta de la intranet**. Comprobado en la base: dtejada sin nada pendiente y con 3 preguntas; elpollo con las dos marcas, sin preguntas y con último acceso 30 s después del de dtejada. Las llamadas por el proxy de Next (`pedirJson`) no fallaban: mandan `Authorization: Bearer` con `sitio_token`.
+
+| Dónde | Cambio |
+|---|---|
+| `4000-api-backend/src/middlewares/auth.middleware.ts` | `tokenDeLaCookie(req)`: con `Origin` del sitio web (`FRONTEND_URL`) solo `sitio_token`; con el de la intranet (`INTRANET_URL`) solo `token`; sin `Origin` de ninguna de las dos, el orden de antes. CORS ya obliga a que el `Origin` sea uno de esos dos. Además, el sitio deja de entrar con la sesión de la intranet si no tiene la suya |
+| `4000-api-backend/scripts/verificaciones/verificar-cookie-de-sesion.ts` + `npm run sesion:verificar` | Para que no se repita: 9 casos (las dos sesiones a la vez, solo la de la otra app, cada una con la suya, sin `Origin`, sin cookies). Falla si alguien vuelve a leer las dos cookies sin mirar el origen. Sin base de datos, como `email:verificar` |
+| `shared/ui/molecules/aviso-error-de-carga.tsx` | Caso pendiente con su propio texto: título «Tu cuenta tiene la configuración pendiente», «Para continuar, termina de configurar tu contraseña y tus preguntas de seguridad.» y «Si crees que es un error, borra las cookies de este sitio y vuelve a iniciar sesión.», con «Terminar configuración» |
+
+**Verificación.** `tsc --noEmit` en la API y el sitio, `eslint` del aviso y `npm run sesion:verificar` (9/9) sin errores; CRLF uniforme. Falta reiniciar la API (ts-node sin watch) y abrir Respaldos con dtejada en el sitio y elpollo en la intranet a la vez.
+
+---
+
+## sesión 15-10-2026 (31.ª parte): el aviso de cuenta a medio configurar, en advertencia
+
+**Qué se pidió:** en ese aviso, quitar «Espera unos minutos y pulsa «Reintentar», si el problema persiste contacta al equipo técnico.» y que no vaya en rojo sino en advertencia.
+
+| Dónde | Cambio |
+|---|---|
+| `shared/lib/errores-api.ts` | `MENSAJE_CONFIGURACION_PENDIENTE`: el texto exacto del 403 de `requireAuth`. Las pantallas guardan el error como texto, así que se reconoce comparando; si la API cambia la frase, hay que cambiarla aquí |
+| `shared/ui/molecules/aviso-error-de-carga.tsx` | Con ese mensaje: `MensajeEstado` de advertencia, sin la línea de «Espera unos minutos…», y el botón «Terminar configuración» (carga completa a `/login/first-login`) en lugar de «Reintentar», que daría el mismo 403. Los demás fallos siguen en rojo con «Reintentar». Cubre Respaldos, Auditoría, Usuarios, Roles, Páginas en revisión y el dashboard |
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme; la frase coincide con `auth.middleware.ts`. Falta verlo en pantalla con una cuenta pendiente y el panel ya abierto.
+
+---
+
+## sesión 15-10-2026 (30.ª parte): cuenta con el primer ingreso pendiente — al primer ingreso, no a «Reintentar»
+
+**Qué se pidió:** en Respaldos salía «No pudimos cargar los respaldos — Termina de configurar tu cuenta (contraseña y preguntas de seguridad) para continuar» con «Espera unos minutos y pulsa Reintentar»: un error distinto, que no es de caída.
+
+**Causa.** Es el 403 `CONFIGURACION_PENDIENTE` de `requireAuth`, que lee las marcas `must_change_password` / `must_setup_security_questions` **de la fila**. El proxy del sitio las lee **del JWT**, escrito al iniciar sesión. Si después se restablece la contraseña o las preguntas de la cuenta (desde Usuarios), o el login enciende la marca por faltarle preguntas, el token sigue diciendo «nada pendiente»: el panel se abre y la API niega cada carga. «Reintentar» no podía arreglarlo nunca.
+
+| Dónde | Cambio |
+|---|---|
+| `shared/lib/session.ts` | `tieneConfiguracionPendiente()`: pregunta a `/api/me` (que ya devuelve `configuracionPendiente` desde la fila). Sin API o con cualquier fallo, `false`: no bloquea, y la caída la cuentan las pantallas |
+| `app/admin/layout.tsx` | Se consulta en paralelo con el perfil y la identidad; si hay algo pendiente, `redirect('/login/first-login')`, que también mira la base (`/api/auth/first-login/status`) |
+
+**Límite.** El layout corre al cargar o recargar el panel, no al pasar de una pantalla a otra: si la cuenta se restablece con el panel ya abierto, el desvío llega en la siguiente recarga. Solo sitio web: la intranet no tiene estas pantallas de carga.
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta recargar el panel con la cuenta pendiente.
+
+---
+
+## sesión 15-10-2026 (29.ª parte): dashboard — un solo aviso arriba cuando la API no responde
+
+**Qué se pidió:** con la API caída, el dashboard solo con el mensaje de arriba; las tarjetas, en blanco.
+
+| Dónde | Cambio |
+|---|---|
+| `panel-general.tsx` | Antes salían tres errores a la vez: el de usuarios arriba (`MensajeEstado` rojo), el de páginas en sus dos tarjetas y el de la bitácora en «Actividad reciente». Ahora `errorDeCarga` (usuarios, si no la bitácora, si no las páginas) en un solo `AvisoErrorDeCarga` arriba, «No pudimos cargar el panel», con `reintentarCarga`: limpia los errores y vuelve a pedirlo todo (`versionCarga` en el efecto) con el cargador. «Actividad reciente» deja solo su cabecera; el 403 («tu rol no tiene acceso») sigue explicándose ahí y no cuenta como avería |
+| `tarjeta-paginas-publicadas.tsx`, `tarjeta-visitas.tsx` | Con error, solo el «—»: fuera la línea roja con el porqué |
+| Tarjeta «Usuarios» | `loading={loading || Boolean(error)}`: «—» en vez de un 0, que sería un dato falso |
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta verlo con la API apagada.
+
+---
+
+## sesión 15-10-2026 (28.ª parte): el aviso de carga fallida, en rojo
+
+**Qué se pidió:** el aviso que sale cuando la API no responde, en estado rojo.
+
+| Dónde | Cambio |
+|---|---|
+| `aviso-error-de-carga.tsx` | `MensajeEstado tipo="advertencia"` → `tipo="error"` (`#ffe9e9` / `#d90000`, el círculo con ×). El botón «Reintentar» sigue en azul marino. Cambia en Revisión, Respaldos, Auditoría, Usuarios y Roles |
+
+**Verificación.** `eslint` sin errores; CRLF uniforme. Falta verlo con la API apagada.
+
+---
+
+## sesión 15-10-2026 (27.ª parte): API caída — sin error en la consola y textos del aviso nuevos
+
+**Qué se pidió:** quitar el «Console ErrorApi: Error de conexión con el servidor.» que Next mostraba en desarrollo, y cambiar los textos del aviso.
+
+| Dónde | Cambio |
+|---|---|
+| `use-usuarios.ts` | `fetchRoles`, `fetchPermissions` y `fetchRolePermissions` hacían `console.error(err)`; con la API caída, Next lo sacaba como error en pantalla. Ahora `registrarSiInesperado`: un `ErrorApi` (API caída o respuesta de error, que ya se le cuenta al usuario) no se registra; lo demás sí |
+| `errores-api.ts`, `MENSAJE_SIN_RESPUESTA` | «El servidor está tardando en responder, posibles causas: tu conexión a internet o que se esté reiniciando.» (el usuario escribió «pósibles causas;»: se corrigió la tilde y el punto y coma) |
+| `aviso-error-de-carga.tsx` | «Espera unos minutos y pulsa «Reintentar», si el problema persiste contacta al equipo técnico.» Sale en todos los avisos de carga: Revisión, Respaldos, Auditoría, Usuarios y Roles |
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta verlo con la API apagada.
+
+---
+
+## sesión 15-10-2026 (26.ª parte): API caída — Respaldos, Auditoría, Usuarios y Roles con el aviso de «Reintentar»
+
+**Qué se pidió:** cuando la API se cae o no responde, un mensaje de estado útil en vez de «Network Error» (Respaldos) o «No se pudo cargar la bitácora de auditoría.» (Auditoría).
+
+Se reutiliza `AvisoErrorDeCarga` (`shared/ui/molecules`), que ya usaba «Páginas en revisión»: mensaje de advertencia con qué no cargó, el porqué, «Espera unos segundos y pulsa «Reintentar». Si sigue igual, avisa al equipo técnico.» y el botón «Reintentar».
+
+| Dónde | Cambio |
+|---|---|
+| `use-respaldos.ts` + `respaldos-view.tsx` | El error pasa por `mensajeDeErrorApi` (sin respuesta: «El servidor está tardando en responder…», no el «Network Error» de axios) y se pinta con el aviso, «No pudimos cargar los respaldos». El hook expone `reintentar` (vuelve a cargar con el cargador) |
+| `auditoria.service.ts` + `auditoria-view.tsx` | `fetch` que falla, o 502/503/504 del proxy de Next (no llegó a la API): `MENSAJE_SIN_RESPUESTA`. Otro error: el que mande la API o «El servidor respondió con un error inesperado.». La vista usa el aviso, «No pudimos cargar la bitácora de auditoría», con `recargar`. El dashboard usa el mismo servicio, así que su «Actividad reciente» recibe los mensajes nuevos |
+| `usuarios-view.tsx` | El `MensajeEstado` rojo con el error suelto pasa al aviso, «No pudimos cargar los usuarios», que reintenta usuarios y roles |
+| `roles-view.tsx` | Antes, con la API caída, la tabla salía vacía sin decir nada (`fetchRoles` solo registra su error). Ahora, sin roles y con el error de `fetchUsers` (misma API): «No pudimos cargar los roles» y `reintentarCarga` |
+| `aviso-error-de-carga.tsx` | `className` opcional para los márgenes (Usuarios lo lleva encima de la tabla con `mb-6`) |
+
+**Quedan** el dashboard (`panel-general.tsx`, que estaba tocando otra sesión), el historial de Actualizaciones, Notificaciones y Mi perfil.
+
+**Verificación.** `tsc --noEmit` y `eslint` de lo tocado sin errores; CRLF uniforme. Falta verlo con la API apagada.
+
+---
+
+## sesión 15-10-2026 (25.ª parte): «Contraseña temporal generada» — el aviso de copiarla como mensaje de advertencia
+
+**Qué se pidió:** el aviso «Debes copiar la contraseña para poder cerrar, no la podrás ver de nuevo.» con el estado de advertencia, y el final cambiado por «NO podrás volver a verla después de cerrar esta ventana».
+
+| Dónde | Cambio |
+|---|---|
+| `usuarios-view.tsx` (sitio web) | La línea ámbar con «⚠» pasa a `MensajeEstado tipo="advertencia" rol="note"` (`#fff9e6` / `#b48a00`, el escudo): «Debes copiar la contraseña para poder cerrar, NO podrás volver a verla después de cerrar esta ventana.». Sigue saliendo solo mientras no se ha copiado. La intranet no gestiona usuarios |
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (24.ª parte): editor — los tooltips de la cabecera ya no se esconden bajo los campos de la derecha
+
+**Qué se pidió:** los tooltips de Salir, Guardar y Enviar se cortaban encima de las opciones del lado derecho (captura con una lista de Puck desplegada).
+
+**Causa.** La cabecera de Puck se dejó con `z-index: 2` (13-10, commit `871396e0`) dentro de la capa de `PuckLayout-inner`. La barra derecha no crea capa propia, así que sus campos compiten con la cabecera, y el elemento desplegado de una lista (`ArrayFieldItem--isExpanded`) trae `z-index: 2`: empate, y gana el que va después en el DOM. Sin una lista abierta no pasaba.
+
+| Dónde | Cambio |
+|---|---|
+| `globals.css` (sitio web e intranet), `.olo-editor [class*="PuckLayout-inner"]>[class*="PuckLayout-header"]` | `z-index: 2` → `20`, por encima de todo lo que Puck pone en los campos (el más alto, el asa para redimensionar, 10). Sigue dentro de la capa de `PuckLayout-inner`: no pasa por encima de los modales ni del portal de Puck |
+
+**Verificación.** Maqueta con las clases reales de Puck (su `index.css` de `node_modules`) y el CSS compilado del dev, tooltips forzados visibles y un `ArrayFieldItem--isExpanded` en la barra derecha: con 2 quedan tapados como en la captura; con 20, completos. Sin elemento desplegado no se reproducía (1280, 820 y 700 px). El dev ya sirve `z-index: 20`. CRLF uniforme. Falta verlo en el editor de verdad.
+
+---
+
+## sesión 15-10-2026 (23.ª parte): contraseña — «No demasiado larga» dice cuánto
+
+**Qué se pidió:** cambiar «No demasiado larga» por otros términos.
+
+| Dónde | Cambio |
+|---|---|
+| `packages/password-policy/src/index.ts`, requisito `maximo` | «Máximo 72 caracteres (tildes y ñ cuentan doble)», con `MAX_BYTES`. El límite es de 72 bytes (bcrypt) y en UTF-8 «á» y «ñ» ocupan 2: decir solo «72 caracteres» haría fallar una frase con tildes que el usuario contó por debajo. Es también el mensaje del campo cuando ese es el primer requisito pendiente (`primerFallo`). Lo ven el sitio web y la intranet |
+| `docs/manual-de-usuario-formato.md` | Las dos menciones de «no demasiado larga» pasan a «máximo 72 caracteres, donde las tildes y la ñ cuentan doble» |
+
+**Para verlo:** las apps usan una copia del paquete (`install-links=true`); el `predev` (`sincronizar-paquetes-locales.mjs`) recompila `dist/` y la vuelve a copiar, así que hay que reiniciar `npm run dev` del sitio y de la intranet.
+
+**Verificación.** `tsc --noEmit -p packages/password-policy` sin errores; con el módulo transpilado, `requisitosDe` da la etiqueta nueva y `primerFallo` la devuelve para una contraseña de 44 caracteres y 84 bytes. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (22.ª parte): acceso — «Cumple todos los requisitos» como mensaje de éxito y los requisitos con sus iconos
+
+**Qué se pidió:** la línea «✓ Cumple todos los requisitos» de la contraseña, con el estilo del mensaje de estado de éxito y su icono del panel.
+
+| Dónde | Cambio |
+|---|---|
+| `auth-ui.tsx` (sitio web) y `password-requisitos.tsx` (intranet), `PasswordRequisitos` | Con `resumirAlCumplir` y todo cumplido, en vez de la línea verde con «✓», `MensajeEstado tipo="exito" rol="note"` (`#ebf6e6` / `#005524`, el globo con ✓). Mientras falte algún requisito, la lista de siempre. Lo usan primer ingreso y nueva contraseña en las dos apps; el perfil del panel no resume y no cambia |
+| Lista de requisitos | Pedido después: cada requisito con el icono de los mensajes de estado, sin su fondo: cumplido, el globo con ✓ (`IconoExito`); pendiente, el círculo con × (`IconoError`), en vez de «✓» y «○». Toman el color del texto, que no cambia (verde / gris). En el sitio web también se ve en «Mi perfil», que usa la misma lista |
+| `mensaje-estado.tsx` (las dos apps) | `IconoExito` pasa a exportarse e `IconoError` y él aceptan `className` (por defecto, el tamaño y margen de la tarjeta, así que lo de antes no cambia). La lista los usa con `mt-px`, para su letra de 12 px. Los dos archivos siguen iguales salvo la línea que dice dónde vive el otro |
+| Accesibilidad | El `aria-live="polite"` pasa a un `div` que no se desmonta (con el `id` del `aria-describedby`); dentro, la lista o el mensaje. Si la región fuera la lista, al cambiarla por el mensaje se desmontaría y el lector podría no anunciarlo |
+
+**Ojo.** El mensaje mide unos 44 px y la línea de antes unos 16: las pantallas de acceso se pensaron para caber sin scroll en el móvil (`MarcoDePasos` / `MarcoAcceso`). Hay que mirarlo a 360 px.
+
+**Verificación.** `tsc --noEmit` y `eslint` del sitio y la intranet sin errores; finales de línea uniformes. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (21.ª parte): «Salir del modo edición» — las dos frases dentro del mensaje informativo
+
+**Qué se pidió:** meter «Requiere volver a iniciar sesión para editar.» en el mensaje de estado, debajo de «Saldrás del modo edición, volverás a la pantalla de inicio de sesión.»
+
+| Dónde | Cambio |
+|---|---|
+| `modal-cerrar-sesion.tsx` (sitio web e intranet) | Las dos frases, cada una en su `<p>` y con un espacio entre ellas (`mt-3`, 12 px), dentro del `MensajeEstado tipo="info"`. Fuera el párrafo gris de debajo (19.ª parte) |
+
+**Verificación.** `tsc --noEmit` y `eslint` del sitio y la intranet sin errores; finales de línea uniformes. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (20.ª parte): Auditoría — las etiquetas de acción con esquinas de 4 px
+
+**Qué se pidió:** en la columna Acción de la bitácora, las etiquetas con `border-radius` de 4 px.
+
+| Dónde | Cambio |
+|---|---|
+| `frase-de-registro.tsx`, `PildoraDeAccion` | `rounded-full` → `rounded-[4px]`. Es la misma pieza en la columna Acción, la frase del acordeón y «Actividad reciente» del dashboard: cambian las tres. La etiqueta del modal «Ver detalle» (`detalle-registro.tsx`) es otra y sigue redonda; se le preguntó al usuario |
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (19.ª parte): «Salir del modo edición» con mensaje informativo (sitio web e intranet)
+
+**Qué se pidió:** «Saldrás del modo edición, volverás a la pantalla de inicio de sesión» en un mensaje de estado informativo, en las dos apps.
+
+| Dónde | Cambio |
+|---|---|
+| `modal-cerrar-sesion.tsx` (sitio web e intranet) | `MensajeEstado tipo="info" rol="note"` (`#e8f2fc` / `#001631`) con «Saldrás del modo edición, volverás a la pantalla de inicio de sesión.» y debajo, en texto normal (16 px, `#4b5563`), «Requiere volver a iniciar sesión para editar.». Antes el sitio decía otra frase («…se requiere volver a iniciar sesión para editar.») y la intranet las separaba con `<br /><br />`; ahora las dos dicen lo mismo |
+
+**Verificación.** `tsc --noEmit` y `eslint` del sitio y la intranet sin errores; finales de línea uniformes. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (18.ª parte): dashboard — cifras y «Actividad reciente» en #001631
+
+**Qué se pidió:** «Páginas publicadas 16», «Visitas 2.316», «Usuarios 13» y la lista de «Actividad reciente» con «Consulta el resumen de la bitácora más reciente.», en `#001631`.
+
+| Dónde | Cambio |
+|---|---|
+| `tarjeta-paginas-publicadas.tsx`, `tarjeta-visitas.tsx`, `tarjeta-usuarios.tsx` | El nombre de la cifra (`zinc-500`) y la cifra (`zinc-950`) pasan a `text-[#001631]`. En oscuro se quedan `#94a3b8` / `#f6f6f6`: el azul no se vería sobre `#131b2f` |
+| `panel-general.tsx`, `CabeceraActividad` y la lista | «Actividad reciente», «Consulta el resumen…» y el texto de cada registro (`zinc-950`, `zinc-500`, `zinc-600`) pasan a `#001631`; en oscuro, como estaban. La lista la estaba tocando otra sesión (`FraseDeActividad`): solo se cambiaron esas tres clases |
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; finales de línea uniformes. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (17.ª parte): modal «Eliminar la página» — el aviso de página publicada en rojo
+
+**Qué se pidió:** «La página está publicada actualmente, si la eliminas, dejará de estar visible para
+el público de inmediato.» en un mensaje de estado rojo.
+
+| Dónde | Cambio |
+|---|---|
+| `modal-eliminar-seccion.tsx` (sitio web e intranet) | El párrafo gris pasa a `MensajeEstado tipo="error" rol="note"` (`#ffe9e9` / `#d90000`, con el icono del círculo), el mismo texto, y `mb-5`: el aire de antes hasta «Escribe … para confirmar» |
+| `globals.css` (las dos apps) | Fuera `.nueva-seccion-ruta--aviso`, que solo usaba ese párrafo |
+
+**Verificación.** `tsc --noEmit` y `eslint` del sitio y la intranet sin errores; finales de línea uniformes. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (16.ª parte): modal «Eliminar la página» — el paso 1 nombra «Editar Menú y pie»
+
+**Qué se pidió:** en el paso 1, «Editar Menú y pie» en vez de «Menú y pie».
+
+| Dónde | Cambio |
+|---|---|
+| `modal-eliminar-seccion.tsx` (sitio web e intranet) | «Ve al botón de **«Editar Menú y pie»**.» |
+
+**Ojo, sin cambiar:** el botón no se llama igual en las dos apps. En la intranet su tooltip dice «Editar menú y pie» (con minúscula) y en el sitio web «Menú y pie» (`paginas-fab-speed-dial.tsx` de cada una). Se dejó el texto del usuario y se le preguntó si igualarlo.
+
+**Verificación.** `tsc --noEmit` y `eslint` del sitio y la intranet sin errores; finales de línea uniformes. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (15.ª parte): intranet — el icono de los mensajes de estado a la altura de la primera línea
+
+**Qué se pidió:** en la intranet, el icono de la advertencia de «Eliminar la página» salía centrado en
+vertical; que quede a la altura del primer texto, como en el sitio web.
+
+| Dónde | Cambio |
+|---|---|
+| `3001-intranet/src/shared/ui/molecules/mensaje-estado.tsx` | Igualado al del sitio web, como pide su propio comentario: la tarjeta `items-start` (antes `items-center`) y cada icono con su margen superior para caer en la primera línea (`mt-1` la «i», `mt-[3px]` advertencia, error y éxito). Solo difieren en la línea que dice dónde vive el otro. Cambia en todos los mensajes de la intranet; en los de una línea no se nota |
+
+**Verificación.** `tsc --noEmit` y `eslint` de la intranet sin errores; `diff` con el del sitio web: solo esa línea. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (14.ª parte): modal «Eliminar la página» — los pasos 2 y 3 dicen dónde buscar y dónde borrar
+
+**Qué se pidió:** «Busca el botón «Inicio».» pasa a «Busca el componente que tiene el botón «Inicio» en el editor.»,
+y «Borra el enlace asignado.» a «Borra el enlace asignado en la configuración del componente.»
+
+| Dónde | Cambio |
+|---|---|
+| `modal-eliminar-seccion.tsx` (sitio web e intranet) | El paso 2 dice «Busca el componente que tiene el botón «Inicio» en el editor.»; en plural, «Busca los componentes que tienen los botones «Inicio» y «Empleo» en el editor.» |
+| Mismo archivo, paso 3 | «Borra el enlace asignado en la configuración del componente.»; en plural, «Borra los enlaces asignados en la configuración de los componentes.» |
+
+**Verificación.** `tsc --noEmit` y `eslint` del sitio y la intranet sin errores; finales de línea uniformes. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (14.ª parte): la contraseña repetida, en `@olo/password-policy`
+
+**Qué se pidió:** el usuario cambió el texto del aviso («Esta contraseña no es válida por seguridad,
+elige otra.») y tuvo que hacerlo en tres archivos. Como es política, propuso llevarlo a `packages/`;
+eligió una sola copia, que también importa la API. Además dijo que en la intranet no salía: probado
+en vivo (Chrome sin ventana contra su 3001, API simulada), sí sale y no deja avanzar. Su prueba fue 17 s
+después de que la intranet compilara el cambio; lo probable es una pestaña con el código anterior.
+
+| Dónde | Cambio |
+|---|---|
+| `packages/password-policy/src/index.ts` | `CODIGO_PASSWORD_REPETIDA`, `MENSAJE_PASSWORD_REPETIDA`, `repiteLaPassword(nueva, escrita)` (lo único que el formulario puede ver solo) y `esPasswordRepetida(error)`. El comentario de cabecera anota la excepción: el resto de la política sigue en dos copias, esto vive solo aquí |
+| `4000-api-backend` | Nueva dependencia `@olo/password-policy` (`package.json`, `package-lock.json`). `shared/password-policy.ts` reexporta el código y el mensaje del paquete y `esErrorDePasswordRepetida` es `esPasswordRepetida`; `nuevaPasswordSinRepetir` no cambia |
+| sitio web | Se borra `shared/lib/password-repetida.ts`. `FirstLoginFlow`, `ResetPasswordView` y «Mi perfil» importan del paquete y comparan con `repiteLaPassword` |
+| intranet | `shared/lib/errors.ts` pierde el código, el mensaje y `codigoDeError`. `FirstLoginView` y `ResetPasswordView` importan del paquete; `fetchAuth` sigue pasando el `code` en el error |
+
+**Instalación.** `npm run sync:paquetes` en las tres (lo mismo que hace `npm run dev` al arrancar): compiló `dist/` y refrescó la copia en `node_modules/@olo`.
+
+**Verificación.** `tsc --noEmit` de la API y las dos apps, `eslint` de las apps, sin errores. La regla de la API con el mensaje del paquete: rechaza la actual y la anterior (400, `PASSWORD_REPETIDA`) y acepta una distinta. El primer ingreso de la intranet en vivo muestra el aviso en el campo y se queda en el paso 1. **Pendiente:** reiniciar la API (`ts-node` sin recarga) para que cargue la dependencia nueva.
+
+---
+
+## sesión 15-10-2026 (13.ª parte): modal «Eliminar la página» — el paso 1 dice «Ve al botón de «Menú y pie»»
+
+**Qué se pidió:** cambiar «Ve a Menú y pie de página.» por «Ve al botón de «Menú y pie»».
+
+| Dónde | Cambio |
+|---|---|
+| `modal-eliminar-seccion.tsx` (sitio web e intranet) | Con enlaces en `menu-y-pie`: «Ve al botón de **«Menú y pie»**.» Los de otras páginas siguen por su nombre («Ve a **Contacto**.»), y si hay de los dos: «Ve al botón de «Menú y pie» y a Contacto.» `tituloDelMenu` evita nombrar la del menú dos veces |
+
+**Verificación.** `tsc --noEmit` y `eslint` del sitio y la intranet sin errores; finales de línea uniformes. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (13.ª parte): la contraseña repetida se avisa en el mismo paso
+
+**Qué pasó:** el usuario probó con `elpollo` y le pareció que el primer ingreso aceptaba la temporal
+como contraseña nueva. Consultado Neon (solo lectura; la comparación de hashes se hizo en local): la
+contraseña guardada **seguía siendo la temporal**, la cuenta seguía con las dos marcas pendientes y no
+había ningún `cambiar_password` después del restablecimiento de las 21:59. La API nueva sí corría: ese
+restablecimiento ya guardó `password_hash_anterior`. Lo que engañaba era la pantalla: con contraseña
+y preguntas pendientes, el paso 1 pasa a las preguntas y la API solo ve la contraseña al enviar todo.
+
+| Dónde | Cambio |
+|---|---|
+| `FirstLoginFlow` (sitio) y `FirstLoginView` (intranet) | En el paso 1, si la nueva es igual a la temporal escrita en el mismo formulario, el aviso sale en el campo y no se avanza |
+| `ResetPasswordView` (intranet, `cambio-obligatorio`) y «Mi perfil» (sitio) | Lo mismo frente a la contraseña actual escrita en el formulario |
+| `shared/lib/password-repetida.ts` (sitio) y `shared/lib/errors.ts` (intranet) | `MENSAJE_PASSWORD_REPETIDA`, el mismo texto de la API, para que el aviso no cambie según dónde se detecte |
+
+**Lo que sigue llegando al final:** la coincidencia con la contraseña **anterior** solo la sabe el servidor. En el primer ingreso con preguntas pendientes se detecta al enviar, y la pantalla vuelve al paso de la contraseña con el aviso en el campo (12.ª parte).
+
+**Verificación.** `tsc --noEmit` y `eslint` de las dos apps sin errores; CRLF uniforme. Falta repetir la prueba en el navegador.
+
+---
+
+## sesión 15-10-2026 (12.ª parte): Páginas en revisión — el campo del motivo con borde rojo al rechazar y eliminar
+
+**Qué se pidió:** en los modales «Rechazar versión» y «Eliminar versión», el borde de «Explica la razón…» en rojo.
+
+| Dónde | Cambio |
+|---|---|
+| `revision-queue-view.tsx`, `ModalAccionConMotivo` | El área de texto usa siempre `areaDeModalConErrorClass` (borde y foco `#d90000`, `#ff6b6b` en oscuro), el rojo de los mensajes de error, en vez de cambiar a ella solo cuando faltaba el motivo. Solo afecta a Rechazar y Eliminar: Publicar no pide motivo (`requiereMotivo={false}`). Cuando falta el motivo lo sigue diciendo `ErrorDeCampo` debajo, con `aria-invalid`. Fuera el import de `areaDeModalClass`, sin uso |
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (12.ª parte): la contraseña nueva no puede repetir la actual ni la anterior
+
+**Qué se pidió:** que al elegir contraseña (recuperación y primer ingreso) no se pueda poner la
+actual ni la anterior a ella; con un mensaje claro bajo el campo, su estado de error y el borde
+rojo, y sin que el mensaje delate de más.
+
+**Regla.** Un solo mensaje para los dos casos: «Esta contraseña ya la usaste. Elige una diferente a
+la actual y a la anterior.». No dice cuál de las dos coincidió, para no confirmar cuál es la actual.
+La política de formato se comprueba antes, así que un error de formato sale primero.
+
+| Dónde | Cambio |
+|---|---|
+| API, migración `045-password-anterior` | Columna `usuarios.password_hash_anterior` (`text`, nula). Las cuentas existentes empiezan sin anterior |
+| API, `models/user.ts` y `usuarios.repository.ts` | Atributo `previous_password_hash`. `findAll` y `findById` lo excluyen como a `password_hash`; `auditoria-campos.ts` lo trata como sensible |
+| API, `shared/password-policy.ts` | `nuevaPasswordSinRepetir`: aplica la política, compara con la actual y la anterior (`compararPassword`) y devuelve el hash nuevo con la actual como anterior. Error 400 con `code: 'PASSWORD_REPETIDA'` |
+| API, casos de uso | La usan el primer ingreso (no repetir la temporal ni la de antes de un restablecimiento), la recuperación y `updateUser` (cambio voluntario o forzado y la que fija un administrador). Al emitir una temporal, la contraseña real pasa a ser la anterior |
+| API, `security-questions.controller.ts` | La recuperación, que oculta los demás errores tras un mensaje genérico, deja pasar este con su `code`: solo llega tras responder bien las preguntas |
+| intranet | `fetchAuth` conserva el `code` (`codigoDeError`, `CODIGO_PASSWORD_REPETIDA` en `shared/lib/errors.ts`). Recuperación y cambio obligatorio (`ResetPasswordView`): el aviso va al campo «Nueva contraseña». Primer ingreso (`FirstLoginView`): vuelve al paso de la contraseña con el aviso en ese campo y conserva las respuestas |
+| sitio web | Las rutas `api/auth/first-login` y `api/security-questions/recover-password` pasan el `code`; `shared/lib/password-repetida.ts` (`esPasswordRepetida`). Recuperación, primer ingreso (`FirstLoginFlow`, igual que la intranet) y «Mi perfil» (`profile.actions.ts`, `profile.tsx`): el aviso va al campo de la nueva |
+
+**Seguridad.** Se probó `nuevaPasswordSinRepetir` con contraseñas de ejemplo: rechaza la actual y la anterior con el mismo mensaje y código, acepta una distinta (y la actual pasa a anterior), un error de formato sigue siendo `PASSWORD_INVALIDA`, y una cuenta sin hashes no rompe. Cada cambio de contraseña hace hasta dos comparaciones bcrypt más.
+
+**Pendiente del usuario:** aplicar la migración (`npm run migrate` en `4000-api-backend`) y reiniciar la API. Sin ella la API no arranca: el modelo ya pide la columna. La columna es nula, así que aplicarla no rompe a quien tenga el código anterior. El SQL se probó en una tabla temporal de Neon dentro de una transacción revertida.
+
+**Verificación.** `tsc --noEmit` de la API y de las dos apps sin errores; `eslint` de las apps sin errores (la API no tiene ESLint configurado); CRLF uniforme. Falta probar en el navegador, con la migración aplicada: primer ingreso con la temporal como nueva, recuperación con la actual y cambio tras un restablecimiento con la de antes.
+
+---
+
+## sesión 15-10-2026 (11.ª parte): modal «Eliminar la página» — el paso a paso con la redacción del usuario
+
+**Qué se pidió:** «Para quitar el enlace: 1. Ve a Menú y pie de página. 2. Busca el botón [Nombre del
+botón]. 3. Borra el enlace asignado. Cuando completes estos pasos, vuelve a abrir este diálogo para continuar.»
+
+| Dónde | Cambio |
+|---|---|
+| `modal-eliminar-seccion.tsx` (sitio web e intranet) | «Para quitar el enlace:» y tres pasos con número en círculo `#001631`. Los nombres son los reales: la página donde está el enlace (`referencia.titulo`) y el texto del botón (`referencia.texto`; si no tiene, «el botón que lleva a /slug»). Con varios: «Para quitar los enlaces:», «Ve a A y B», «Busca los botones «X» y «Y»» (con «(en A)» si están en páginas distintas) y «Borra los enlaces asignados». Debajo, en gris, «Cuando completes estos pasos, vuelve a abrir este diálogo para continuar.» |
+| Lo que se quitó | Las filas con cada enlace, «Cómo eliminarla», la pista «Los del menú y el pie se editan desde «Menú y pie»» y el paso «Vuelve a eliminar la página»: lo dicen ya los pasos y la frase final |
+| Mismo archivo | `unirConY` (une «A», «A y B», «A, B y C») y `paginasConEnlace` / `varios` junto a `enMenu` / `enOtras` |
+
+**Verificación.** `tsc --noEmit` y `eslint` del sitio y la intranet sin errores; finales de línea uniformes. Maqueta con las mismas clases en Chrome headless: se lee bien al ancho del modal. Falta el modal de verdad en el navegador.
+
+---
+
+## sesión 15-10-2026 (11.ª parte): intranet — la barra de la vista previa, igual a la del sitio web
+
+**Qué se pidió:** la vista previa de la intranet no tenía el diseño de la del sitio web; reutilizarlo.
+
+| Dónde | Cambio |
+|---|---|
+| `app/preview/[slug]/page.tsx` (intranet) | La barra es la del sitio (`3000-sitio-web/src/app/preview/[slug]/page.tsx`): fija arriba, fondo azul suave opaco, la etiqueta «Vista previa» en píldora azul y «Volver» con flecha (44 px, esquinas de 16). Mismas clases; el azul va escrito (`#1face3`) porque la intranet no tiene el token `brand-blue`. «Volver» sigue siendo `<a>`: lleva al panel del sitio |
+| `style/globals.css` (intranet) | Fuera las reglas `.preview-aviso*` del aviso ámbar, que estaban repetidas dos veces. Se quedan `.preview-page` (columna para el marco de las secciones) y la que suelta la barra de navegación |
+
+**Lo que se quita:** el aviso ámbar decía la ruta, el estado de la versión y una nota («Así quedará la página…», «Esta es una versión archivada…»). La barra del sitio no lo dice, y se dejó igual a ella.
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Sin sesión, `/preview/inicio` redirige al login. Falta verla en el navegador con sesión.
+
+---
+
+## sesión 15-10-2026 (10.ª parte): modal «Eliminar la página» — el texto de la advertencia del usuario
+
+**Qué se pidió:** cambiar la advertencia («Esta página todavía no se puede eliminar» / «1 enlace del
+portal lleva a /inicio…») por «Página en uso en la navegación» / «Esta página está enlazada en el menú
+principal, desvincula el botón antes de eliminarla para evitar enlaces rotos.»
+
+| Dónde | Cambio |
+|---|---|
+| `modal-eliminar-seccion.tsx` (sitio web e intranet) | El texto del usuario, tal cual, cuando todos los enlaces están en `menu-y-pie` (el caso de siempre). Si alguno está dentro de otra página, «el menú principal» no sería cierto: «Página en uso en el portal» / «Esta página está enlazada desde otras páginas (o en el menú principal y en otras páginas), quita esos enlaces antes de eliminarla para evitar enlaces rotos.» |
+| Mismo archivo | `enMenu` y `enOtras` se calculan una vez junto a `nombreCoincide`; la pista del paso 1 («Los del menú y el pie se editan desde «Menú y pie»») usa `enMenu` |
+
+**Verificación.** `tsc --noEmit` y `eslint` del sitio y la intranet sin errores; finales de línea uniformes. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (10.ª parte): sitio web — las direcciones del primer ingreso como en la intranet
+
+**Qué se pidió:** aplicar al sitio web la lógica de rutas del acceso de la intranet. El sitio
+resolvía el primer ingreso con una sola pantalla adaptable en `/login/first-login`, que pregunta al
+servidor qué falta. Entre copiar las pantallas separadas de la intranet o dar las mismas URLs a la
+pantalla que ya existe, el usuario eligió lo segundo.
+
+| Dónde | Cambio |
+|---|---|
+| `shared/lib/ruta-del-primer-ingreso.ts` (nuevo) | `modoDelPrimerIngreso` y `rutaDelPrimerIngreso`: contraseña y preguntas → `/login/first-login` (`completo`), solo preguntas → `/login/first-login/security-questions` (`solo-preguntas`), solo contraseña → `/login/first-login/change-password` (`solo-contrasena`). Un solo sitio para el login, el proxy y la pantalla |
+| `app/(auth)/login/first-login/` | Las páginas nuevas `security-questions/` y `change-password/`, y la de siempre, montan `FirstLoginFlow` con su `modo` |
+| `auth/components/first-login-flow.tsx` | Recibe `modo`. Lo que pide sigue saliendo de `/api/auth/first-login/status`; si la dirección no es la del caso, `router.replace` a la correcta. Sin nada pendiente se queda donde está |
+| `auth/components/login-view.tsx` y `proxy.ts` | Mandan a `rutaDelPrimerIngreso` en vez de siempre a `/login/first-login`. El `matcher` suma las dos direcciones nuevas: sin sesión, al login, como la primera |
+| Comentarios | `(auth)/layout.tsx`, `security-questions-view.tsx` y `api/auth/login/route.ts` |
+
+**Diferencia que queda con la intranet:** el aviso final del cambio de contraseña sale dentro de la misma pantalla (su paso 3), sin una dirección `change-success` propia. `secciones.service.ts` sigue mandando a `/login/first-login` cuando la API responde `CONFIGURACION_PENDIENTE`: no sabe qué falta, y la pantalla se corrige a la dirección del caso.
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. En el servidor de desarrollo, sin sesión, las tres direcciones del primer ingreso redirigen (307) al login y `/login/recovery/security-questions` da 200. Falta recorrer con sesión los tres casos: cuenta nueva, contraseña restablecida y preguntas restablecidas.
+
+---
+
+## sesión 15-10-2026 (9.ª parte): modal «Eliminar la página» — la advertencia arriba y el paso a paso debajo, aparte
+
+**Qué se pidió:** mejorar el mensaje del bloqueo como diseño UX/UI: dejar la advertencia y, debajo,
+de forma limpia, el paso a paso.
+
+| Dónde | Cambio |
+|---|---|
+| `modal-eliminar-seccion.tsx` (sitio web e intranet), advertencia | Solo el problema y por qué importa: «Esta página todavía no se puede eliminar» y «1 enlace del portal lleva a /inicio. Si la borras ahora, quedaría roto.» (plural según el número). La lista y las instrucciones salen del mensaje |
+| Paso a paso | Debajo y fuera del mensaje, «Cómo eliminarla» con dos pasos de número en círculo `#001631`: 1) «Quita el enlace» / «Quita los N enlaces», con cada enlace en una fila (`#f8fafc`, borde `#e4e7ec`, esquinas de 12 px): «Menú y pie de página · enlace «Inicio»»; 2) «Vuelve a eliminar la página». La pista «Los del menú y el pie se editan desde «Menú y pie»» solo sale si alguno de los enlaces está en `menu-y-pie` |
+| Lo que se quitó | «Qué hacer» dentro del mensaje y la frase final «Así el portal no queda con enlaces…»: lo dice ya la advertencia con «quedaría roto» |
+
+**Verificación.** `tsc --noEmit` y `eslint` del sitio y la intranet sin errores; finales de línea uniformes. Maqueta con las mismas clases en Chrome headless (Tailwind 4 del CDN): se lee bien a 27rem, el ancho del modal. El modal de verdad falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (9.ª parte): intranet — la página dice en qué modo trabaja cada pantalla compartida
+
+**Qué se pidió:** tras separar las direcciones por flujo (8.ª parte), el usuario preguntó si el
+código podía confundir. Sí: la página de cada ruta montaba la vista sin decirle nada, y la vista
+adivinaba su modo por lo que hubiera en `sessionStorage`. Se eligió que lo diga la página.
+
+| Dónde | Cambio |
+|---|---|
+| `features/login/components/reset-password-view.tsx` | Recibe `modo: 'recuperacion' \| 'cambio-obligatorio'` (tipo `ModoCambioDePassword`) en vez de deducir `recovery`/`forced`. `sessionStorage` solo se lee para los datos de la recuperación; si faltan, vuelve a `/login/recovery` |
+| `features/login/components/security-questions-view.tsx` | Recibe `modo: 'responder' \| 'elegir'` (tipo `ModoPreguntasDeSeguridad`) en vez de deducir `verify`/`setup`. Las preguntas guardadas se leen solo al responder; si faltan, vuelve a `/login/recovery` |
+| Las cuatro páginas de `app/(auth)/login/` | `recovery/reset-password` → `modo="recuperacion"`, `first-login/change-password` → `modo="cambio-obligatorio"`, `recovery/security-questions` → `modo="responder"`, `first-login/security-questions` → `modo="elegir"` |
+
+**Lo que corrige además:** unos datos de una recuperación a medias en la pestaña ya no ponen a «responder» a quien tenía que elegir sus preguntas, ni en modo recuperación a quien debía cambiar la temporal. Abrir suelto un paso de la recuperación devuelve a su principio (`/login/recovery`) y no al login.
+
+**Sin tocar:** los nombres de las vistas (`ResetPasswordView`, `ResetSuccessView`), las URLs y el sitio web.
+
+**Verificación.** `tsc --noEmit` y `eslint` de la intranet sin errores; CRLF uniforme. Las cuatro rutas dan 200 en el servidor de desarrollo. Falta recorrer los flujos en el navegador.
+
+---
+
+## sesión 15-10-2026 (8.ª parte): modal «Eliminar la página» — el bloqueo en un mensaje de advertencia con sus pasos
+
+**Qué se pidió:** cuando la página no se puede borrar porque hay enlaces que apuntan a ella, el
+aviso, la lista de enlaces y lo que hay que hacer van dentro de un mensaje de estado, con «Entendido»
+en `#001631`; y el nombre de la página del título, en el amarillo de ese mensaje.
+
+| Dónde | Cambio |
+|---|---|
+| `modal-eliminar-seccion.tsx` (sitio web e intranet) | Bloqueada: `MensajeEstado tipo="advertencia" rol="note"` con «Todavía no se puede eliminar: hay 1 enlace que apunta a /inicio.» (singular y plural bien escritos; antes «1 enlace(s)»), la lista de enlaces y «Qué hacer» en dos pasos: quitar los enlaces (los del menú y el pie, desde «Menú y pie») y volver a intentarlo. Advertencia y no error: no se perdió nada |
+| Botón | «Entendido» con `nueva-seccion-boton--principal` (`#001631`, la clase que ya existía en las dos apps). «Cancelar» del caso que sí se puede borrar no cambia |
+| Título | Bloqueada, el nombre en `text-[#b48a00]`, el amarillo del texto de la advertencia; si se puede borrar, sigue en el rojo de `nueva-seccion-nombre-peligro` |
+| `globals.css` (las dos apps) | Fuera `.nueva-seccion-notas`: ya no la usaba nadie |
+
+**Verificación.** `tsc --noEmit` y `eslint` del sitio y de la intranet sin errores; finales de línea uniformes. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (8.ª parte): acceso — cada flujo con su propia dirección
+
+**Qué se pidió:** al entrar con una clave temporal la intranet llevaba a
+`/login/recovery/reset-password`, y «¿Olvidaste tu contraseña?» pasaba por
+`/login/first-login/security-questions`. Primero, explicar por qué; luego se eligió la opción 1:
+una dirección por flujo, con las mismas pantallas por dentro.
+
+**Diagnóstico (bitácora y `usuarios` en Neon, solo lectura).** No era un fallo de la lógica. La
+cuenta probada hizo su primer ingreso en el sitio web (contraseña y preguntas, 8:11 p. m.) y luego
+un administrador le restableció la contraseña (8:23 p. m.): quedó con «debe cambiar contraseña» y
+sus 3 preguntas, y el login la mandó, como estaba previsto, a la pantalla de solo contraseña. Lo
+que confundía eran las URLs: la reorganización bajo `/login` (`ef1ed32a`) colgó cada pantalla
+compartida de uno solo de los dos flujos.
+
+| Dónde | Cambio |
+|---|---|
+| intranet, `app/(auth)/login/` | Páginas nuevas, envoltorios de las vistas que ya existían: `recovery/security-questions` (responder las preguntas, `SecurityQuestionsView`), `first-login/change-password` (cambio obligatorio de una temporal restablecida, `ResetPasswordView` en modo `forced`) y `first-login/change-success` (`ResetSuccessView`). `first-login/security-questions` queda para elegir las preguntas |
+| intranet, `login-view.tsx` y `proxy.ts` | «Solo debe cambiar la contraseña» va a `/login/first-login/change-password`. `RUTAS_DE_ACCESO` suma las tres; `RUTAS_DE_CONFIGURACION_PENDIENTE` son ahora solo las de `first-login` (con sesión pendiente, la recuperación rebota al paso que falta); las dos pantallas de éxito se ven con sesión |
+| intranet, `recovery-view.tsx`, `reset-password-view.tsx` | La recuperación sigue por `/login/recovery/security-questions`; el cambio obligatorio cierra en `/login/first-login/change-success` y la recuperación en `/login/recovery/reset-success` |
+| intranet, `template.tsx` y `next.config.ts` | Orden de las rutas nuevas para la animación; la vieja `/security-questions` redirige a la de la recuperación |
+| sitio web, `app/(auth)/login/` | `first-login/security-questions/` se mueve (`git mv`) a `recovery/security-questions/`: en el sitio solo era el paso de la recuperación. El primer ingreso ya iba entero por `/login/first-login`, que se adapta a lo que falte |
+| sitio web, `recovery-view.tsx`, `next.config.mjs` y comentarios | La recuperación sigue por `/login/recovery/security-questions`; `/security-questions` redirige allí. Comentarios de `(auth)/layout.tsx`, `flujo-de-recuperacion.tsx`, `security-questions-view.tsx` y `proxy.ts` al día |
+| `docs/` | `1-guia-del-proyecto.md` (árbol de la intranet), `plan-de-pruebas.md` y `manual-de-usuario-formato.md`. `13-mapa-del-proyecto.md` no se edita a mano: lo regenera el hook de pre-commit (`scripts/mapa/generar-mapa.mjs`) con las rutas nuevas |
+
+**Sin tocar:** las vistas siguen eligiendo su modo como antes (`sessionStorage` en la intranet), no por la ruta. La API no cambia.
+
+**Verificación.** `tsc --noEmit` y `eslint` de las dos apps sin errores. En los servidores de desarrollo, sin sesión: las tres rutas nuevas de la intranet y `/login/recovery/security-questions` del sitio dan 200; la vieja `/login/first-login/security-questions` del sitio da 404; `/security-questions` redirige (307) a la de la recuperación en las dos. Falta recorrer los flujos con sesión: primer ingreso, restablecimiento por un administrador y recuperación.
+
+---
+
+## sesión 15-10-2026 (7.ª parte): Páginas en revisión — sin barra de scroll y tooltips que no se recortan
+
+**Qué se pidió:** que la lista no muestre barra de scroll y se ajuste al ancho de la tabla, y que
+los tooltips de los botones no se corten en el borde del contenedor de la lista (darles z-index).
+
+**Causa.** La caja de la tabla llevaba `overflow-x-auto`. El tooltip del último botón (Eliminar),
+centrado y aun invisible (`opacity-0`), sobresale por la derecha y daba la barra; y un
+`overflow` distinto de `visible` recorta todo lo que sale de la caja, tenga el `z-index` que tenga.
+
+| Dónde | Cambio |
+|---|---|
+| `revision-queue-view.tsx`, caja de la tabla | Fuera `overflow-x-auto`. La tabla ya cabía a lo ancho de 1920 a 1130px (11.ª parte del 12-10) y por debajo pasa a acordeón, así que no queda nada que desplazar |
+| Encabezado | El fondo pasa del `thead` a sus `th` (`[&>th]:bg-zinc-50`, `dark:[&>th]:bg-[#131b2f]`) con las esquinas de arriba en `rounded-tl-xl` / `rounded-tr-xl`: sin `overflow` la caja ya no recortaba sus esquinas. En acordeón, sin encabezado, se redondea la primera fila (`apilada:[&>tbody>tr:first-child]:rounded-t-xl`) |
+| Tooltips | `z-20!` sobre el `z-10` del átomo, solo en esta lista: el de una fila pasa por encima de la de arriba y del encabezado. El `!` porque las dos clases son de la misma propiedad |
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; las cinco clases nuevas están en el CSS que sirve el dev (`/_next/static/…css`); CRLF uniforme. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (7.ª parte): Notificaciones — no sonaba, y aviso temporal arriba a la derecha
+
+**Qué se pidió:** la alerta llegó pero no sonó; además, que al llegar salga un mensaje temporal
+arriba a la derecha con el mismo estilo de la fila del modal, solo la alerta y sin la tarjeta.
+
+**Diagnóstico (probable, sin reproducir en el navegador).** La memoria de alertas ya vistas vivía
+solo en un `useRef` de `PanelGeneralLayout`. El editor (`/editor/[slug]`) está fuera del layout de
+`/admin`: al volver al panel tras enviar a revisión, el layout se monta de nuevo, la memoria arranca
+vacía y la página recién enviada cuenta como «ya estaba». Lo mismo al recargar.
+
+| Dónde | Cambio |
+|---|---|
+| `auth/components/panel-general.tsx` | Las alertas vistas se copian en `sessionStorage` (`olo-alertas-conocidas`, con try/catch): sobreviven a salir y volver al panel en la misma pestaña. Solo la primera consulta de la sesión entra en silencio |
+| `auth/components/panel-general.tsx` | Las filas del modal salen a `FilaAlertaCuenta` y `FilaAlertaRevision`, que usan el modal y el aviso nuevo |
+| `auth/components/panel-general.tsx`, `AvisoDeAlertas` | Aviso temporal arriba a la derecha con las alertas que acaban de llegar: la misma fila, con sombra de aviso flotante y fondo sólido debajo. Entra y sale con `olo-anim-caja` + `useCierreAnimado`, se va solo a los 8 s (cada alerta nueva reinicia la cuenta) y la flecha la marca como solucionada, igual que en el modal |
+
+**Límite del navegador:** sin un clic o una tecla en la página desde que se cargó, no suena; el aviso sale igual.
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta probarlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (6.ª parte): Permisos del rol — «Marcar todos» sin interruptor
+
+**Qué se pidió:** en el modal «Permisos del rol», quitar el interruptor de «Marcar todos» y dejar
+solo el texto; al pulsarlo se marca todo el grupo.
+
+| Dónde | Cambio |
+|---|---|
+| `modal-permisos.tsx` | El `<label>` con `Switch` pasa a un `<button>` de texto (mismo `text-xs font-semibold`, subrayado al pasar el ratón y anillo `brand-focus` con teclado). Marca todo el grupo; con todo marcado dice «Desmarcar todos» y lo vacía, que era lo que hacía apagar el interruptor. Los interruptores de cada permiso no cambian |
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (6.ª parte): Notificaciones — las alertas llegan solas, con sonido, y cada fila con su fondo
+
+**Qué se pidió:** en el modal de Notificaciones, que las alertas nuevas lleguen sin recargar la
+página y suenen, y que la fila del enlace y la flecha tenga un fondo suave del mismo color de
+su etiqueta.
+
+| Dónde | Cambio |
+|---|---|
+| `auth/components/panel-general.tsx`, `PanelGeneralLayout` | Las alertas (páginas en revisión y cuentas por vencer) se vuelven a pedir cada 30 s (`MS_ENTRE_CONSULTAS_DE_ALERTAS`), además de al cambiar de ruta y al volver a la pestaña. Un `useRef` guarda las claves ya vistas: si llega una nueva, suena `alerta` y la campana vuelve a marcar el número. Las que había al abrir el panel no suenan, y las marcadas como solucionadas no vuelven a sonar |
+| `auth/components/panel-general.tsx`, `ModalAlertas` | Cada fila con fondo suave del color de su etiqueta: `bg-blue-50` (En revisión) y `bg-amber-50` (Por vencer), con su versión oscura, esquinas de 16 px y `px-3 py-2`. Deja de medir 28 px fijos (`h-7`) |
+| `shared/lib/sonido-avisos/sonido-avisos.ts` | Nuevo sonido `alerta`: campanita sol → do, sintetizada como los demás. Respeta el silencio de Configuración |
+
+**Sin tocar:** la muestra de sonidos de Configuración sigue con éxito, advertencia y error; la de la alerta no se añadió. La flecha de cada fila sigue siendo «Marcar como solucionada», no navega.
+
+**Límite del navegador:** sin un clic o una tecla previos en la página (p. ej. justo después de recargar), el navegador no deja sonar; la alerta llega igual.
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta probarlo en el navegador con una página enviada a revisión desde otra sesión.
+
+---
+
+## sesión 15-10-2026 (5.ª parte): Páginas en revisión — la columna «Página» con el estilo de Respaldos
+
+**Qué se pidió:** el mismo estilo de la columna Página de Respaldos (captura del usuario): la
+píldora del portal y debajo, pequeño y fino, «menu-y-pie · versión 28».
+
+| Dónde | Cambio |
+|---|---|
+| `revision-queue-view.tsx` | La celda usa `CeldaDePagina` (`fila-acordeon.tsx`) en vez de su píldora propia. Debajo va la ruta (`slug`) en `text-xs font-light` y el color de la celda; antes, el título en `font-medium` oscuro con la versión en gris. El acordeón y los modales siguen con el título |
+| `fila-acordeon.tsx` | Comentario de `CeldaDePagina`: la usan Respaldos y Páginas en revisión (Auditoría ya no, desde la 2.ª parte) |
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (5.ª parte): el icono del mensaje de éxito, alineado con el texto
+
+**Qué se pidió:** en el modal de restaurar versión (Respaldos), el icono del mensaje «¡Versión N
+restaurada con éxito!…» quedaba más arriba que el texto; bajarlo un poco.
+
+| Dónde | Cambio |
+|---|---|
+| `shared/ui/molecules/mensaje-estado.tsx` (sitio-web) | `IconoExito` lleva `mt-[3px]`, como los iconos de advertencia y error: 14 px de icono centrados en la línea de 20 px del texto. Era el único sin ese margen |
+
+**Alcance:** el icono es del componente compartido, así que el ajuste se ve en todos los mensajes de éxito del sitio web, no solo en el modal. La copia de la intranet (`3001-intranet/src/shared/ui/molecules/mensaje-estado.tsx`) tiene el mismo desajuste y **no** se tocó.
+
+**Verificación.** Cambio de una clase; falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (4.ª parte): paginador del panel — la página actual en #001631
+
+**Qué se pidió:** el paginador marcaba la página actual en el verde `#7DB828`; pasa a
+`#001631` en todas las vistas.
+
+| Dónde | Cambio |
+|---|---|
+| `shared/ui/molecules/paginacion.tsx`, `COLORES.panel.actual` | `border-brand-interactive bg-brand-interactive` → `border-[#001631] bg-[#001631] text-white`; en oscuro `dark:bg-white dark:text-[#001631]`, el mismo par que usan los demás elementos `#001631` del panel (sobre `#131b2f` el azul no se vería) |
+
+Es la única casilla verde del paginador, y la pieza es compartida: cambia en Auditoría,
+Usuarios, Roles, Páginas en revisión, Actividad reciente del dashboard e Historial de
+cargas. El tono `publico` (tablas del sitio) ya usaba `#001631`. La intranet no tiene paginador.
+
+**Verificación.** `tsc --noEmit` y `eslint` del archivo sin errores; CRLF uniforme. Falta
+verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (4.ª parte): Dashboard — «Actividad reciente» con lo que pasó primero y la acción al final
+
+**Qué se pidió:** que cada línea de Actividad reciente lea así: «El usuario David Tejada inició
+sesión en el sitio web el 15 de octubre de 2026 a las 6:12 p. m. - Autenticado». Antes decía
+«El usuario David Tejada hizo la acción de [Autenticado]: inició sesión…».
+
+| Dónde | Cambio |
+|---|---|
+| `auditoria/components/frase-de-registro.tsx` | Nuevo `FraseDeActividad`: nombre, lo que pasó, la fecha y, tras un guion, la píldora de la acción. `enVozActiva` pasa a voz activa las frases que la API redacta en impersonal («Se publicó…» → «publicó…», «El usuario envió…» → «envió…», «Guardado automático…» → «guardó automáticamente…»); lo que no empieza por verbo va tras «registró que» o «registró:» |
+| `auditoria/index.ts` | Exporta `FraseDeActividad` |
+| `auth/components/panel-general.tsx` | La lista del dashboard usa `FraseDeActividad` en vez de `FraseDeRegistro` |
+
+**Lo que no cambia:** el acordeón de Auditoría sigue con `FraseDeRegistro` («hizo la acción de [X]: …»); solo se pidió el dashboard.
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (3.ª parte): Auditoría — la columna «Cambios» en un solo color
+
+**Qué se pidió:** que el texto de la columna Cambios tuviera un solo color, acorde con las
+demás columnas (usuario, fecha…).
+
+| Dónde | Cambio |
+|---|---|
+| `auditoria-view.tsx` | La celda Cambios deja de alternar entre `zinc-800` (filas con comentario) y `zinc-500` (el resto): siempre `text-zinc-900 dark:text-[#f6f6f6]`, el mismo de la columna Usuario. Se quita el import de `comentarioPrincipal`, que ya no se usa en la vista (sigue usándose dentro de `lib/cambios.ts`) |
+
+**Verificación.** `tsc --noEmit` y `eslint` del archivo; falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (2.ª parte): Auditoría — fuera la columna y el filtro «Página»; columna «Categoría» y acciones con nombre y color nuevos
+
+**Qué se pidió:** el usuario aclaró que Auditoría nunca tuvo columna «Página» (la que
+recordaba es la de Respaldos). La columna se queda, pero pasa a ser «Categoría»; se quita el
+filtro «Página», y las acciones cambian de nombre y llevan un color cada una.
+
+| Dónde | Cambio |
+|---|---|
+| `auditoria-view.tsx` | Primera columna «Categoría»: Contenido editorial, Administración o Seguridad (`ETIQUETA_CATEGORIA`, la misma del filtro), en `font-bold text-[#001631]`; sin categoría, «—». Fuera el filtro «Página» y `CeldaDePagina` de esta pantalla. Respaldos y `CeldaDePagina` siguen como en la 1.ª parte |
+| `types.ts`, nombres | Participios: Creado, Editado, Autoguardado, Rechazado, Publicado, Archivado, Autenticado, Modificado, Expirado, Inactivado, Bloqueado, Verificado (preguntas de seguridad), Actualizado (cambio de contraseña), Eliminado. Los mismos en la tabla, el desplegable «Acción», el detalle, el CSV, el acordeón y «Actividad reciente» del dashboard: es una sola lista. `actualizar` sin categoría queda «Modificado», para no chocar con «Actualizado» |
+| `types.ts`, colores | `COLOR_DE_ETIQUETA` por nombre (no por verbo: `actualizar` es Editado o Modificado según la categoría) y `colorDeAccion(accion, categoria)`; reemplazan `CLASES_BADGE`, `VARIANTE_ACCION` y `COLOR_ACCION` (los cuatro niveles de severidad). Letra blanca salvo Inactivado `#303030`, Rechazado `#FF1F1F` y Expirado `#8F6E00`. Los mismos en claro y oscuro |
+| `frase-de-registro.tsx`, `detalle-registro.tsx`, `index.ts` | Leen `colorDeAccion` |
+| API | Revertidos el filtro `ambito` y el campo `pagina` del commit `7e680437`: sin la columna ni el filtro, nadie los leía y costaban una consulta por página de resultados. Los seis archivos quedan como en `661457c5` |
+
+**Contraste de los colores elegidos** (AA pide 4.5 para la letra de 11 px): Editado 18.1,
+Actualizado 13.7, Verificado 13.0, Modificado 9.2, Inactivado 7.2, Autenticado 5.6 y
+Eliminado 4.6 cumplen; Expirado 4.1, Rechazado 3.3, Creado 3.1, Bloqueado 2.8,
+Autoguardado 2.6, Publicado 2.4 y Archivado 1.6 no. Se aplicaron tal cual los pidió el
+usuario y se le avisó.
+
+**Verificación.** `tsc --noEmit` del sitio y de la API, `eslint` de `features/administracion`:
+sin errores. CRLF uniforme (`git checkout` dejó `auditoria-view.tsx` en LF y se normalizó).
+Falta verlo en el navegador. La API hay que reiniciarla para que deje de mandar `pagina`.
+
+---
+
+## sesión 15-10-2026: Auditoría y Respaldos — columna y filtro «Página», con el portal arriba y la ruta fina debajo
+
+**Qué se pidió:** en Auditoría, una columna «Página» como la de Respaldos («Sitio web» /
+«menu-y-pie · versión 28»), en primera posición y sin la columna «Entidad»; y en las dos
+pantallas, la segunda línea más pequeña y fina, sin la barra delante.
+
+**Antecedente:** el commit `a447c5a5` (ingdave, 10-10-2026) quitó «Entidad» de Auditoría. Se
+volvió a poner y, a petición del usuario, se cambió por «Página»: «Entidad» ya no está.
+
+| Dónde | Cambio |
+|---|---|
+| `fila-acordeon.tsx`, `CeldaDePagina` | Pieza nueva, junto a `FechaDeCelda`: la píldora del portal (Intranet `bg-[#001631] text-white`, Sitio web `bg-[#EBF6E6] text-[#7DB728]`) y debajo «slug · versión N» en `text-xs font-light`, como la hora. La usan Auditoría y Respaldos. Revisión sigue con su píldora propia (no se pidió tocarla) |
+| `respaldos-view.tsx` | Columna Página con `CeldaDePagina`: sin la `/` delante y la segunda línea en `font-light` y el color de la celda (antes `font-medium`, el slug oscuro y la versión gris) |
+| `auditoria-view.tsx` | «Página» es la primera columna: Página, Fecha y hora, Usuario, Acción, Cambios. Las filas que no son de una página (usuarios, roles, inicios de sesión…) muestran «—». El ancho mínimo sigue en `52rem` |
+| API, `auditoria-dto.ts` | Campo nuevo `pagina: { ambito, slug, version } \| null` en cada registro. Slug y ámbito, de la tabla `paginas`; si la página ya no existe, de lo que guarda la fila (crear y eliminar guardan los dos). Sin ámbito, `null`: «inicio» a secas no dice de qué portal es. La versión sale del campo `version` de la fila |
+| API, `audit.usecase.ts` | `contextoDeLectura` suma `paginaPorId`: una consulta por página de resultados (`PaginaRepository.findRutasByIds`), como los correos. |
+| `openapi.ts` | Documentado el campo `pagina` (y el parámetro `ambito` en `audit.routes.ts`) |
+| Filtro «Página» en Auditoría | Todos / Sitio web / Intranet, como en Respaldos, detrás de Categoría (que el usuario pidió primera el 12-10). Viaja como `ambito` en `auditoria.service.ts`; `FILTROS_VACIOS` y `FiltrosAuditoria` lo suman |
+| API, `auditoria.repository.ts` | `ambito` filtra en el servidor (la bitácora se pagina allí): `entidad_tipo = pagina` y la página sigue en `paginas` con ese ámbito, o la fila lo guardó en `campos_modificados` (`@>`). Misma regla que la columna. Se suma con «y» a categoría, acción y fechas; el valor del SQL sale de `AMBITOS` |
+| API, `filtrosDesdeQuery` y `audit.routes.ts` | Lee `?ambito=sitio|intranet`; otro valor se descarta. Documentado en Swagger |
+
+**Verificación.**
+
+| Qué | Resultado |
+|---|---|
+| `tsc --noEmit` de la API y del sitio, `eslint` de lo tocado | Sin errores |
+| `aRegistroAuditoria` con filas de prueba (ts-node, sin base) | Página en la base → `sitio · menu-y-pie · 28`; borrada → `intranet · faq` de la fila; sin ámbito → `null`; usuario → `null` |
+| Filtro contra Neon, solo lectura (`getAllAudit` + `contextoDeLectura`) | Sin filtro 2194; Sitio web 606 e Intranet 618, cada una solo con su ámbito en la columna; Intranet + Seguridad 34; Sitio web + Administración 287; `ambito=otro` se descarta (2194) |
+| Columna con datos reales | En las 50 filas más recientes, 20 son de páginas y las 20 traen portal y ruta. Las demás (inicios de sesión, usuarios) no son de una página y muestran «—» |
+| Navegador | Pendiente. La API de dev no recarga sola: hay que reiniciarla para que lea `ambito` |
+| Finales de línea | CRLF uniforme |
+
+---
+
 ## sesión 12-10-2026 (11.ª parte): Páginas en revisión, Respaldos y Auditoría — iconos más pequeños en la tabla, el ámbito dentro de «Página», el filtro renombrado y la hora debajo de la fecha
 
 **Qué se pidió:** a 1330px los botones Visualizar, Publicar, Rechazar y Eliminar se veían

@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
+import { reproducirSonidoAviso } from '@/shared/lib/sonido-avisos';
+import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -69,13 +71,13 @@ import { TarjetaUsuarios } from './tarjeta-usuarios';
 import {
   listarAuditoria,
   ErrorAuditoria,
-  FraseDeRegistro,
+  FraseDeActividad,
   type RegistroAuditoria,
 } from '@/features/administracion/auditoria';
 import { useUsuarios } from '../hooks/use-usuarios';
 import { listarAlertasCaducidad, type AlertaCaducidad } from '../services/alertas-caducidad.service';
 import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
-import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
+import { AvisoErrorDeCarga } from '@/shared/ui/molecules/aviso-error-de-carga';
 
 /**
  * Grupo colapsable del sidebar con animación de acordeón.
@@ -148,6 +150,42 @@ function sinPlantilla(resumen: ResumenPaginasPublicadas): ResumenPaginasPublicad
   return { sitio, intranet, total: sitio.length + intranet.length };
 }
 
+/**
+ * Cada cuánto se vuelven a pedir las alertas de la campana con la página abierta, para que
+ * las nuevas lleguen sin recargar (pedido del usuario, 2026-10-15). Son dos consultas
+ * ligeras; en una pestaña de fondo el navegador las espacia solo.
+ */
+const MS_ENTRE_CONSULTAS_DE_ALERTAS = 30_000;
+
+/**
+ * Dónde se guardan las alertas ya vistas durante la sesión de la pestaña. Hace falta fuera
+ * de React: el editor (`/editor/[slug]`) está fuera del layout de `/admin`, y al volver
+ * el layout se monta de nuevo; con la memoria solo en un `useRef`, la página recién
+ * enviada a revisión contaba como «ya estaba» y no sonaba.
+ */
+const CLAVE_ALERTAS_CONOCIDAS = 'olo-alertas-conocidas';
+
+function leerAlertasConocidas(): Set<string> | null {
+  try {
+    const guardado = sessionStorage.getItem(CLAVE_ALERTAS_CONOCIDAS);
+    return guardado ? new Set(JSON.parse(guardado) as string[]) : null;
+  } catch {
+    return null;
+  }
+}
+
+function guardarAlertasConocidas(claves: Set<string>) {
+  try {
+    sessionStorage.setItem(CLAVE_ALERTAS_CONOCIDAS, JSON.stringify([...claves]));
+  } catch {
+    // Almacenamiento bloqueado: queda la memoria del `useRef` hasta salir del panel.
+  }
+}
+
+/** Cómo se reconoce una alerta entre dos consultas, para saber cuáles son nuevas. */
+const claveDeRevision = (p: PaginaEnRevision) => `revision:${p.id}`;
+const claveDeCuenta = (a: AlertaCaducidad) => `cuenta:${a.userId || a.email}`;
+
 /** Botón de la barra superior del móvil (buscar y tema). */
 const BOTON_BARRA_MOVIL =
   'flex size-11 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-[#94a3b8] dark:hover:bg-zinc-800 dark:hover:text-white [&>svg]:size-5 [&>svg]:shrink-0';
@@ -159,6 +197,182 @@ function ContadorSidebar({ cantidad }: { cantidad: number }) {
     <span className="ml-auto flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
       {cantidad}
     </span>
+  );
+}
+
+/**
+ * Las notificaciones son una sola frase con la misma estructura (pedido del usuario,
+ * 2026-10-15): quién o qué, qué pasó, y «a la espera de tu …», lo que le toca hacer a
+ * quien la lee. Sin paréntesis y sin segunda línea. Una notificación nueva sigue el patrón.
+ */
+
+/** El cuerpo clicable de una notificación: etiqueta y frase, todo lo que no es la flecha. */
+const CUERPO_DE_ALERTA =
+  'flex min-w-0 flex-1 items-center gap-2 rounded-[12px] outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
+
+/** Cuándo vence una cuenta, dicho como se diría: «hoy», «mañana» o «en 5 días». */
+function cuandoVence(alerta: AlertaCaducidad): string {
+  if (alerta.daysLeft <= 0) return 'hoy';
+  if (alerta.daysLeft === 1) return 'mañana';
+  return `en ${alerta.daysLeft} días`;
+}
+
+/**
+ * Una alerta de cuenta por vencer: la fila con fondo suave del color de su etiqueta
+ * (pedido del usuario, 2026-10-15; antes iba sin fondo). El texto lleva el color de la
+ * etiqueta y el botón de la derecha, de 28 px, es el área táctil. La misma fila sale en el
+ * modal de Notificaciones y en el aviso temporal de arriba a la derecha.
+ *
+ * Toda la fila salvo la flecha es un enlace a donde se resuelve (pedido del usuario,
+ * 2026-10-15): pulsar la notificación lleva a Usuarios. `onAbrir` cierra lo que la
+ * enseña (el modal o el aviso), que vive en el layout y sobreviviría a la navegación.
+ */
+function FilaAlertaCuenta({
+  alerta,
+  onSolucionar,
+  onAbrir,
+}: {
+  alerta: AlertaCaducidad;
+  onSolucionar: (email: string) => void;
+  onAbrir?: () => void;
+}) {
+  return (
+    <div
+      className="group flex w-full items-center gap-2 rounded-[16px] bg-amber-50 px-3 py-2 transition-colors has-[a:hover]:bg-amber-100 dark:bg-amber-950/40 dark:has-[a:hover]:bg-amber-900/40"
+    >
+      <Link
+        href="/admin/users"
+        onClick={onAbrir}
+        title={alerta.email}
+        className={`${CUERPO_DE_ALERTA} focus-visible:ring-amber-700`}
+      >
+        <span className="shrink-0 rounded-full bg-amber-200/80 px-2.5 py-1 text-xs font-semibold text-amber-900 dark:bg-amber-800/60 dark:text-amber-100">
+          Por vencer
+        </span>
+        <span className="min-w-0 flex-1 text-sm text-amber-900 dark:text-amber-100">
+          La cuenta de <strong className="font-semibold">{alerta.name?.trim() || alerta.email}</strong> vence{' '}
+          {cuandoVence(alerta)}, a la espera de tu renovación.
+        </span>
+      </Link>
+      <button
+        type="button"
+        onClick={() => onSolucionar(alerta.email)}
+        className="flex size-7 shrink-0 items-center justify-center rounded-full text-amber-900 hover:bg-amber-200/70 dark:text-amber-100 dark:hover:bg-amber-900/50"
+        aria-label={`Marcar como solucionada: ${alerta.email}`}
+        title="Marcar como solucionada"
+      >
+        {/* El icono de cerrar del usuario (2026-10-15), antes una flecha. */}
+        <IconoMascara nombre="cerrar" tamano="h-3.5 w-3.5" />
+      </button>
+    </div>
+  );
+}
+
+/**
+ * Una página en revisión, con la misma forma que `FilaAlertaCuenta` en azul; pulsarla
+ * lleva a Páginas en revisión.
+ */
+function FilaAlertaRevision({
+  pagina,
+  onSolucionar,
+  onAbrir,
+}: {
+  pagina: PaginaEnRevision;
+  onSolucionar: (id: string) => void;
+  onAbrir?: () => void;
+}) {
+  return (
+    <div
+      className="group flex w-full items-center gap-2 rounded-[16px] bg-blue-50 px-3 py-2 transition-colors has-[a:hover]:bg-blue-100 dark:bg-blue-950/40 dark:has-[a:hover]:bg-blue-900/40"
+    >
+      <Link href="/admin/revision" onClick={onAbrir} className={`${CUERPO_DE_ALERTA} focus-visible:ring-blue-700`}>
+        <span className="shrink-0 rounded-full bg-blue-200/80 px-2.5 py-1 text-xs font-semibold text-blue-900 dark:bg-blue-800/60 dark:text-blue-100">
+          En revisión
+        </span>
+        <span className="min-w-0 flex-1 text-sm text-blue-900 dark:text-blue-100">
+          {pagina.autor?.nombre ? (
+            <>
+              <strong className="font-semibold">{pagina.autor.nombre}</strong> envió a revisión
+            </>
+          ) : (
+            'Se envió a revisión'
+          )}{' '}
+          la versión {pagina.numeroVersion} de <strong className="font-semibold">{pagina.titulo}</strong>{' '}
+          {pagina.ambito === 'intranet' ? 'de la intranet' : 'del sitio web'}, a la espera de tu aprobación.
+        </span>
+      </Link>
+      <button
+        type="button"
+        onClick={() => onSolucionar(pagina.id)}
+        className="flex size-7 shrink-0 items-center justify-center rounded-full text-blue-900 hover:bg-blue-200/70 dark:text-blue-100 dark:hover:bg-blue-900/50"
+        aria-label={`Marcar como solucionada: ${pagina.titulo}`}
+        title="Marcar como solucionada"
+      >
+        {/* El icono de cerrar del usuario (2026-10-15), antes una flecha. */}
+        <IconoMascara nombre="cerrar" tamano="h-3.5 w-3.5" />
+      </button>
+    </div>
+  );
+}
+
+/** Cuánto se queda a la vista el aviso de una alerta nueva antes de irse solo. */
+const MS_AVISO_DE_ALERTA = 8_000;
+
+/**
+ * La caja de cada fila del aviso: la sombra de los avisos flotantes (`Notification`) y un
+ * fondo sólido debajo, porque el de la fila en modo oscuro es transparente.
+ */
+const SOMBRA_DE_AVISO = 'rounded-[16px] bg-white shadow-[0_12px_40px_-8px_rgba(0,0,0,0.2)] dark:bg-[#121824]';
+
+/**
+ * El aviso temporal de una alerta que acaba de llegar, arriba a la derecha (pedido del
+ * usuario, 2026-10-15): solo la fila de la alerta, igual que en el modal, sin la tarjeta
+ * de Notificaciones alrededor. Se va solo a los `MS_AVISO_DE_ALERTA`; la flecha hace lo
+ * mismo que en el modal, marcarla como solucionada.
+ */
+function AvisoDeAlertas({
+  cuentas,
+  revisiones,
+  onSolucionarCuenta,
+  onSolucionarRevision,
+  onAbrir,
+}: {
+  cuentas: AlertaCaducidad[];
+  revisiones: PaginaEnRevision[];
+  onSolucionarCuenta: (email: string) => void;
+  onSolucionarRevision: (id: string) => void;
+  /** Al pulsar una: el aviso se va, ya se está yendo a verla. */
+  onAbrir: () => void;
+}) {
+  const hayAlgo = cuentas.length + revisiones.length > 0;
+  const { montado, cerrando } = useCierreAnimado(hayAlgo);
+  // Lo último que se enseñó, para que la salida animada no se quede vacía. Se ajusta
+  // durante el render, como recomienda React para el estado que sigue a las props.
+  const [visibles, setVisibles] = useState({ cuentas, revisiones });
+  if (hayAlgo && (visibles.cuentas !== cuentas || visibles.revisiones !== revisiones)) {
+    setVisibles({ cuentas, revisiones });
+  }
+
+  if (!montado || typeof document === 'undefined') return null;
+
+  return createPortal(
+    <div
+      role="status"
+      className="olo-anim-caja fixed right-4 top-4 z-[100] flex w-[360px] max-w-[calc(100vw-2rem)] flex-col gap-2 sm:right-6 sm:top-6"
+      data-cerrando={cerrando || undefined}
+    >
+      {visibles.cuentas.map((a) => (
+        <div key={claveDeCuenta(a)} className={SOMBRA_DE_AVISO}>
+          <FilaAlertaCuenta alerta={a} onSolucionar={onSolucionarCuenta} onAbrir={onAbrir} />
+        </div>
+      ))}
+      {visibles.revisiones.map((p) => (
+        <div key={claveDeRevision(p)} className={SOMBRA_DE_AVISO}>
+          <FilaAlertaRevision pagina={p} onSolucionar={onSolucionarRevision} onAbrir={onAbrir} />
+        </div>
+      ))}
+    </div>,
+    document.body
   );
 }
 
@@ -217,9 +431,7 @@ function ModalAlertas({
               className="flex size-8 shrink-0 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
               aria-label="Cerrar"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <IconoMascara nombre="cerrar" tamano="h-4 w-4" />
             </button>
           </div>
         </header>
@@ -232,56 +444,11 @@ function ModalAlertas({
           ) : (
             <div className="space-y-3">
               {cuentasPorVencer.map((a) => (
-                // Sin fondo ni borde en la fila: el estado lo dicen la etiqueta y el
-                // color del texto, que es el mismo de la etiqueta.
-                // 28 px de alto (`h-7`; antes 44, pedido del usuario el 2026-10-12): lo mismo que el
-                // botón de la derecha, que es el área táctil.
-                <div key={a.userId || a.email} className="group flex h-7 w-full items-center gap-2">
-                  <span className="shrink-0 rounded-full bg-amber-200/80 px-2.5 py-1 text-xs font-semibold text-amber-900 dark:bg-amber-800/60 dark:text-amber-100">
-                    Por vencer
-                  </span>
-                  <p className="min-w-0 flex-1 truncate text-sm text-amber-900 dark:text-amber-100">
-                    <Link href="/admin/users" className="font-medium underline hover:no-underline">
-                      {a.email}
-                    </Link>
-                    {' '}vence en {a.daysLeft} día{a.daysLeft !== 1 ? 's' : ''}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => onDismissCuenta(a.email)}
-                    className="flex size-7 shrink-0 items-center justify-center rounded-full text-amber-900 hover:bg-amber-200/70 dark:text-amber-100 dark:hover:bg-amber-900/50"
-                    aria-label={`Marcar como solucionada: ${a.email}`}
-                    title="Marcar como solucionada"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-4" aria-hidden="true">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                    </svg>
-                  </button>
-                </div>
+                <FilaAlertaCuenta key={claveDeCuenta(a)} alerta={a} onSolucionar={onDismissCuenta} onAbrir={onCerrar} />
               ))}
 
               {enRevision.map((p) => (
-                <div key={p.id} className="group flex h-7 w-full items-center gap-2">
-                  <span className="shrink-0 rounded-full bg-blue-200/80 px-2.5 py-1 text-xs font-semibold text-blue-900 dark:bg-blue-800/60 dark:text-blue-100">
-                    En revisión
-                  </span>
-                  <p className="min-w-0 flex-1 truncate text-sm text-blue-900 dark:text-blue-100">
-                    <Link href="/admin/revision" className="font-medium underline hover:no-underline">
-                      {p.titulo}
-                    </Link>
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => onDismissRevision(p.id)}
-                    className="flex size-7 shrink-0 items-center justify-center rounded-full text-blue-900 hover:bg-blue-200/70 dark:text-blue-100 dark:hover:bg-blue-900/50"
-                    aria-label={`Marcar como solucionada: ${p.titulo}`}
-                    title="Marcar como solucionada"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-4" aria-hidden="true">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                    </svg>
-                  </button>
-                </div>
+                <FilaAlertaRevision key={claveDeRevision(p)} pagina={p} onSolucionar={onDismissRevision} onAbrir={onCerrar} />
               ))}
             </div>
           )}
@@ -311,14 +478,35 @@ export function PanelGeneralLayout({
   const [alertasVistas, setAlertasVistas] = useState(false);
   const [enRevision, setEnRevision] = useState<PaginaEnRevision[]>([]);
   const [cuentasPorVencer, setCuentasPorVencer] = useState<AlertaCaducidad[]>([]);
+  /**
+   * Las alertas que ya se vieron llegar, para que solo suene una nueva. `null` hasta la
+   * primera consulta de la sesión: las que ya había al entrar al panel no suenan. Las que
+   * se marcan como solucionadas siguen aquí, y no vuelven a sonar cuando la siguiente
+   * consulta las trae. Se copia en `sessionStorage` (`CLAVE_ALERTAS_CONOCIDAS`).
+   */
+  const alertasConocidas = useRef<Set<string> | null>(null);
+  /** Las que acaban de llegar, para el aviso temporal de arriba a la derecha. */
+  const [recientes, setRecientes] = useState<{ cuentas: AlertaCaducidad[]; revisiones: PaginaEnRevision[] }>({
+    cuentas: [],
+    revisiones: [],
+  });
 
   const handleDismissCuenta = useCallback((email: string) => {
     setCuentasPorVencer((prev) => prev.filter((c) => c.email !== email));
+    setRecientes((prev) => ({ ...prev, cuentas: prev.cuentas.filter((c) => c.email !== email) }));
   }, []);
 
   const handleDismissRevision = useCallback((id: string) => {
     setEnRevision((prev) => prev.filter((p) => p.id !== id));
+    setRecientes((prev) => ({ ...prev, revisiones: prev.revisiones.filter((p) => p.id !== id) }));
   }, []);
+
+  // El aviso temporal se va solo; cada alerta nueva vuelve a contar el tiempo.
+  useEffect(() => {
+    if (recientes.cuentas.length + recientes.revisiones.length === 0) return;
+    const temporizador = setTimeout(() => setRecientes({ cuentas: [], revisiones: [] }), MS_AVISO_DE_ALERTA);
+    return () => clearTimeout(temporizador);
+  }, [recientes]);
 
   useEffect(() => {
     let cancelado = false;
@@ -329,12 +517,35 @@ export function PanelGeneralLayout({
         listarAlertasCaducidad().then((r) => r.alerts, () => [] as AlertaCaducidad[]),
       ]).then(([pendientes, alertas]) => {
         if (cancelado) return;
+        const claves = [...pendientes.map(claveDeRevision), ...alertas.map(claveDeCuenta)];
+        alertasConocidas.current ??= leerAlertasConocidas();
+        const conocidas = alertasConocidas.current;
+        if (conocidas === null) {
+          alertasConocidas.current = new Set(claves);
+          guardarAlertasConocidas(alertasConocidas.current);
+        } else {
+          const cuentasNuevas = alertas.filter((a) => !conocidas.has(claveDeCuenta(a)));
+          const revisionesNuevas = pendientes.filter((p) => !conocidas.has(claveDeRevision(p)));
+          if (cuentasNuevas.length + revisionesNuevas.length > 0) {
+            claves.forEach((clave) => conocidas.add(clave));
+            guardarAlertasConocidas(conocidas);
+            // Suena (si no se silenció en Configuración), sale el aviso arriba a la
+            // derecha y la campana vuelve a marcar.
+            reproducirSonidoAviso('alerta');
+            setRecientes((prev) => ({
+              cuentas: [...prev.cuentas, ...cuentasNuevas],
+              revisiones: [...prev.revisiones, ...revisionesNuevas],
+            }));
+            setAlertasVistas(false);
+          }
+        }
         setEnRevision(pendientes);
         setCuentasPorVencer(alertas);
       });
     };
 
     cargar();
+    const temporizador = setInterval(cargar, MS_ENTRE_CONSULTAS_DE_ALERTAS);
 
     const handleRevisionActualizada = (e: Event) => {
       if (cancelado) return;
@@ -356,6 +567,7 @@ export function PanelGeneralLayout({
 
     return () => {
       cancelado = true;
+      clearInterval(temporizador);
       window.removeEventListener('olo:revision-actualizada', handleRevisionActualizada);
       window.removeEventListener('focus', cargar);
     };
@@ -585,6 +797,13 @@ export function PanelGeneralLayout({
         <RouteTransition>{children}</RouteTransition>
       </SidebarLayout>
       {isBuscarOpen && <BuscadorModal onClose={() => setIsBuscarOpen(false)} />}
+      <AvisoDeAlertas
+        cuentas={recientes.cuentas}
+        revisiones={recientes.revisiones}
+        onSolucionarCuenta={handleDismissCuenta}
+        onSolucionarRevision={handleDismissRevision}
+        onAbrir={() => setRecientes({ cuentas: [], revisiones: [] })}
+      />
       <ModalAlertas
         abierto={isAlertasOpen}
         onCerrar={() => {
@@ -609,8 +828,8 @@ function CabeceraActividad({ sinAccesoAuditoria }: { sinAccesoAuditoria: boolean
   return (
     <div className="flex items-start justify-between gap-3">
       <div>
-        <h2 className="admin-subtitle text-zinc-950 dark:text-[#f6f6f6]">Actividad reciente</h2>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-[#94a3b8]">
+        <h2 className="admin-subtitle text-[#001631] dark:text-[#f6f6f6]">Actividad reciente</h2>
+        <p className="mt-1 text-sm text-[#001631] dark:text-[#94a3b8]">
           Consulta el resumen de la bitácora más reciente.
         </p>
       </div>
@@ -637,7 +856,8 @@ export function PanelGeneralDashboard() {
   const [itemsPorPaginaActividad, setItemsPorPaginaActividad] = useState(12);
   const [paginasPublicadas, setPaginasPublicadas] = useState<ResumenPaginasPublicadas | null>(null);
   const [errorPaginas, setErrorPaginas] = useState<string | null>(null);
-
+  // Sube con «Reintentar» para volver a pedirlo todo (ver el aviso de arriba).
+  const [versionCarga, setVersionCarga] = useState(0);
 
   useEffect(() => {
     let cancelado = false;
@@ -678,10 +898,23 @@ export function PanelGeneralDashboard() {
     return () => {
       cancelado = true;
     };
-  }, [fetchUsers]);
+  }, [fetchUsers, versionCarga]);
 
   /** El 403 por rol no es una avería: se explica sin alarmar y sin enlace muerto. */
   const sinAccesoAuditoria = errorActividad instanceof ErrorAuditoria && errorActividad.sinAcceso;
+
+  // Con la API caída fallan las tres fuentes a la vez y antes salían tres errores (arriba,
+  // en las tarjetas y en la actividad). Ahora uno solo, arriba, y las tarjetas en blanco
+  // (pedido del usuario, 2026-10-15). El 403 de la bitácora no cuenta: no es una avería.
+  const errorDeCarga =
+    error ?? (errorActividad && !sinAccesoAuditoria ? errorActividad.message : null) ?? errorPaginas;
+
+  const reintentarCarga = () => {
+    setLoading(true);
+    setErrorActividad(null);
+    setErrorPaginas(null);
+    setVersionCarga((v) => v + 1);
+  };
 
   const totalPaginasActividad = Math.max(1, Math.ceil(actividad.length / itemsPorPaginaActividad));
   const paginaActualActividad = Math.min(paginaActividad, totalPaginasActividad);
@@ -702,10 +935,13 @@ export function PanelGeneralDashboard() {
         className="mb-8"
       />
 
-      {error && (
-        <MensajeEstado tipo="error" rol="alert" className="mb-4">
-          {error}
-        </MensajeEstado>
+      {errorDeCarga && (
+        <AvisoErrorDeCarga
+          titulo="No pudimos cargar el panel"
+          mensaje={errorDeCarga}
+          onReintentar={reintentarCarga}
+          className="mb-6"
+        />
       )}
 
       {/* Tres en fila solo desde 1440 px (pedido del usuario, 2026-10-10): por debajo, con
@@ -718,7 +954,8 @@ export function PanelGeneralDashboard() {
         <TarjetaPaginasPublicadas resumen={paginasPublicadas} error={errorPaginas} />
         <TarjetaVisitas resumen={paginasPublicadas} error={errorPaginas} />
         <div className="sm:col-span-2 min-[90rem]:col-span-1">
-          <TarjetaUsuarios users={users} loading={loading} />
+          {/* Sin usuarios por un error, «—» como mientras carga: un 0 sería un dato falso. */}
+          <TarjetaUsuarios users={users} loading={loading || Boolean(error)} />
         </div>
       </div>
 
@@ -731,15 +968,10 @@ export function PanelGeneralDashboard() {
           {errorActividad ? (
             <div className="p-5">
               <CabeceraActividad sinAccesoAuditoria={sinAccesoAuditoria} />
-              <p
-                className={
-                  sinAccesoAuditoria
-                    ? 'mt-3 text-sm text-zinc-500 dark:text-[#94a3b8]'
-                    : 'mt-3 text-sm text-red-600 dark:text-red-300'
-                }
-              >
-                {errorActividad.message}
-              </p>
+              {/* Solo el «sin acceso» se explica aquí; una avería ya la dice el aviso de arriba. */}
+              {sinAccesoAuditoria && (
+                <p className="mt-3 text-sm text-zinc-500 dark:text-[#94a3b8]">{errorActividad.message}</p>
+              )}
             </div>
           ) : (actividad || []).length > 0 ? (
             <>
@@ -747,18 +979,18 @@ export function PanelGeneralDashboard() {
                 <CabeceraActividad sinAccesoAuditoria={sinAccesoAuditoria} />
               </div>
               {/* Una lista con la frase entera de cada registro, en todas las pantallas
-                  (pedido del usuario, 2026-10-10): «El usuario David Tejada hizo la acción
-                  de [Autenticación]: inició sesión en el sitio web el 10 de octubre de 2026
-                  a las 5:41 p. m.». Antes era una tabla de cuatro columnas que en el móvil
-                  y la tablet pasaba a acordeón; ahora no hay nada que desplegar. La frase es
-                  la de Auditoría (`FraseDeRegistro`), para que las dos lean igual. */}
+                  (pedido del usuario, 2026-10-10). Desde el 2026-10-15, lo que pasó primero y
+                  la acción al final: «El usuario David Tejada inició sesión en el sitio web el
+                  15 de octubre de 2026 a las 6:12 p. m. - [Autenticado]» (`FraseDeActividad`).
+                  Antes era una tabla de cuatro columnas que en el móvil y la tablet pasaba a
+                  acordeón; ahora no hay nada que desplegar. */}
               <ul
                 aria-label="Actividad reciente"
                 className="divide-y divide-zinc-200 border-t border-zinc-200 dark:divide-zinc-700 dark:border-zinc-700"
               >
                 {actividadPaginada.map((registro) => (
-                  <li key={registro.id} className="px-5 py-3 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
-                    <FraseDeRegistro registro={registro} nombre={registro.usuarioNombre} abierta />
+                  <li key={registro.id} className="px-5 py-3 text-sm leading-6 text-[#001631] dark:text-zinc-300">
+                    <FraseDeActividad registro={registro} nombre={registro.usuarioNombre} />
                   </li>
                 ))}
               </ul>

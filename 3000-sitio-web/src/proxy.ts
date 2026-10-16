@@ -8,6 +8,7 @@ import {
   MOTIVO_SIN_PERMISOS,
 } from '@/shared/lib/auth-cookies';
 import { verificarSesion } from '@/shared/lib/verificar-sesion';
+import { rutaDelPrimerIngreso } from '@/shared/lib/ruta-del-primer-ingreso';
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -30,6 +31,17 @@ export async function proxy(request: NextRequest) {
   
   const mustChangePassword = sesion?.debeCambiarPassword ?? false;
   const mustSetupSecurityQuestions = sesion?.debeConfigurarPreguntas ?? false;
+  /** La pantalla del primer ingreso que le toca a esta sesión, según lo que le falte. */
+  const primerIngreso = () =>
+    NextResponse.redirect(
+      new URL(
+        rutaDelPrimerIngreso({
+          debeCambiarPassword: mustChangePassword,
+          debeConfigurarPreguntas: mustSetupSecurityQuestions,
+        }),
+        request.url,
+      ),
+    );
 
   // Los alias de login (/admin/login, /auth/login, /admin/auth...) los resuelve
   // `next.config.mjs`, que además se evalúa antes que este middleware. Aquí había
@@ -79,7 +91,7 @@ export async function proxy(request: NextRequest) {
     }
     // Must change password or setup security questions
     if (mustChangePassword || mustSetupSecurityQuestions) {
-      return NextResponse.redirect(new URL('/login/first-login', request.url));
+      return primerIngreso();
     }
     return NextResponse.next();
   }
@@ -159,7 +171,7 @@ export async function proxy(request: NextRequest) {
   // Must change password or setup security questions
   if (mustChangePassword || mustSetupSecurityQuestions) {
     if (!pathname.startsWith('/login/first-login')) {
-      return NextResponse.redirect(new URL('/login/first-login', request.url));
+      return primerIngreso();
     }
   }
 
@@ -175,12 +187,11 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   // Protege dashboard, usuarios/users, auditoría, revisión, perfil, editor y
-  // maneja /login y /login/first-login.
+  // maneja /login y las tres direcciones del primer ingreso.
   //
   // Es una lista explícita, no un prefijo: los pasos de la recuperación
-  // (`/login/recovery/*` y `/login/first-login/security-questions`) quedan fuera a
-  // propósito, porque quien va a recuperar su contraseña no tiene sesión. Por eso
-  // `/login/first-login` va sin `:path*`.
+  // (`/login/recovery/*`) quedan fuera a propósito, porque quien va a recuperar su
+  // contraseña no tiene sesión.
   matcher: [
     '/admin/dashboard/:path*',
     '/admin/users/:path*',
@@ -206,5 +217,7 @@ export const config = {
     '/editor/:path*',
     '/login',
     '/login/first-login',
+    '/login/first-login/security-questions',
+    '/login/first-login/change-password',
   ],
 };

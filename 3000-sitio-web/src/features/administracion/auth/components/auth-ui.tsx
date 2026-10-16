@@ -4,7 +4,7 @@ import { useState, ReactNode } from 'react';
 import Link from 'next/link';
 import { HomeIcon } from '@heroicons/react/20/solid';
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
-import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
+import { IconoError, IconoExito, MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 import { LONGITUD_MINIMA, requisitosDe } from '@olo/password-policy';
 
 /**
@@ -332,6 +332,7 @@ export function PasswordField({
   autoComplete,
   describedBy,
   className = authPasosHuecoClass,
+  textoDeErrorAparte = false,
 }: {
   id: string;
   label: string;
@@ -344,9 +345,15 @@ export function PasswordField({
   /** `id` de lo que explica el campo además de su error (la lista de requisitos). */
   describedBy?: string;
   className?: string;
+  /**
+   * El error lo enseña otro (el mensaje rojo de `PasswordRequisitos`, con `rechazo`): el
+   * campo se queda con el borde rojo y no repite el texto debajo.
+   */
+  textoDeErrorAparte?: boolean;
 }) {
   const [show, setShow] = useState(false);
-  const descripciones = [describedBy, error ? `${id}-error` : undefined].filter(Boolean).join(' ');
+  const textoDeError = error && !textoDeErrorAparte;
+  const descripciones = [describedBy, textoDeError ? `${id}-error` : undefined].filter(Boolean).join(' ');
 
   return (
     <div className={className}>
@@ -376,7 +383,7 @@ export function PasswordField({
           <IconoMascara nombre={show ? 'eye-open' : 'eye-closed'} tamano="h-4 w-4" />
         </button>
       </div>
-      {error && <p id={`${id}-error`} className={authPasosErrorTextClass}>{error}</p>}
+      {textoDeError && <p id={`${id}-error`} className={authPasosErrorTextClass}>{error}</p>}
     </div>
   );
 }
@@ -405,6 +412,7 @@ export function PasswordRequisitos({
   className = 'mb-4',
   variant = 'panel',
   resumirAlCumplir = false,
+  rechazo,
 }: {
   /** Para que el campo lo nombre en su `aria-describedby`. */
   id?: string;
@@ -412,37 +420,59 @@ export function PasswordRequisitos({
   className?: string;
   variant?: 'panel' | 'solid';
   resumirAlCumplir?: boolean;
+  /**
+   * Por qué se rechazó una contraseña que cumple todos los requisitos («Esta contraseña no
+   * es válida por seguridad, elige otra.»): ocupa el sitio de «Cumple todos los requisitos»
+   * como mensaje de error, en rojo (pedido del usuario, 2026-10-15). Los dos a la vez se
+   * contradecían. El campo deja solo su borde rojo (`textoDeErrorAparte`).
+   */
+  rechazo?: string;
 }) {
   const todos = requisitosDe(password);
-  const requisitos =
-    resumirAlCumplir && todos.every((r) => r.cumplido)
-      ? [{ id: 'todos', etiqueta: 'Cumple todos los requisitos', cumplido: true }]
-      : todos;
+  const resumida = resumirAlCumplir && todos.every((r) => r.cumplido);
   const esSolido = variant === 'solid';
 
+  // El `aria-live` va en un contenedor que no cambia: si fuera la propia lista, al resumirla
+  // se desmontaría y el lector de pantalla podría no anunciar el mensaje que la reemplaza.
   return (
-    <ul id={id} className={`${className} space-y-1`} aria-live="polite">
-      {requisitos.map((requisito) => {
-        const claseEstado = requisito.cumplido
-          ? esSolido
-            ? 'text-green-700'
-            : 'text-green-700 dark:text-green-400'
-          : esSolido
-            ? 'text-gray-500'
-            : 'text-gray-500 dark:text-slate-400';
+    <div id={id} className={className} aria-live="polite">
+      {resumida ? (
+        // Cumplidos todos, el mensaje de éxito del proyecto, con su globo y su ✓ (pedido del
+        // usuario, 2026-10-15). Antes, una línea verde con «✓».
+        rechazo ? (
+          <MensajeEstado tipo="error" rol="alert">{rechazo}</MensajeEstado>
+        ) : (
+          <MensajeEstado tipo="exito" rol="note">Cumple todos los requisitos</MensajeEstado>
+        )
+      ) : (
+        <ul className="space-y-1">
+          {todos.map((requisito) => {
+            const claseEstado = requisito.cumplido
+              ? esSolido
+                ? 'text-green-700'
+                : 'text-green-700 dark:text-green-400'
+              : esSolido
+                ? 'text-gray-500'
+                : 'text-gray-500 dark:text-slate-400';
 
-        return (
-          <li key={requisito.id} className={`flex items-start gap-1.5 text-xs ${claseEstado}`}>
-            <span aria-hidden="true" className="mt-px leading-none">
-              {requisito.cumplido ? '✓' : '○'}
-            </span>
-            {/* El estado va también en texto: el color y el símbolo solos no lo dicen. */}
-            <span className="sr-only">{requisito.cumplido ? 'Cumplido:' : 'Pendiente:'}</span>
-            <span>{requisito.etiqueta}</span>
-          </li>
-        );
-      })}
-    </ul>
+            return (
+              <li key={requisito.id} className={`flex items-start gap-1.5 text-xs ${claseEstado}`}>
+                {/* Los iconos de los mensajes de estado, sin su fondo (pedido del usuario, 2026-10-15):
+                    el globo con ✓ y el círculo con ×. Toman el color del texto (`currentColor`). */}
+                {requisito.cumplido ? (
+                  <IconoExito className="mt-px h-3.5 w-[13px] shrink-0" />
+                ) : (
+                  <IconoError className="mt-px h-3.5 w-3.5 shrink-0" />
+                )}
+                {/* El estado va también en texto: el color y el símbolo solos no lo dicen. */}
+                <span className="sr-only">{requisito.cumplido ? 'Cumplido:' : 'Pendiente:'}</span>
+                <span>{requisito.etiqueta}</span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
   );
 }
 

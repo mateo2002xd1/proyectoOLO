@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { validarEmail } from '@olo/email-policy';
 import { mensajeDeCierre } from '@/shared/lib/inactividad';
+import { rutaDelPrimerIngreso } from '@/shared/lib/ruta-del-primer-ingreso';
 import {
   AuthGeneralError,
   AuthGeneralNotice,
@@ -94,7 +95,14 @@ function LoginForm({ onEntrando }: { onEntrando: (modo: 'panel' | 'edicion') => 
       }
 
       if (data.mustChangePassword || data.mustSetupSecurityQuestions) {
-        router.push('/login/first-login');
+        // A la dirección de su caso, como en la intranet: cuenta nueva, solo preguntas o
+        // solo contraseña.
+        router.push(
+          rutaDelPrimerIngreso({
+            debeCambiarPassword: Boolean(data.mustChangePassword),
+            debeConfigurarPreguntas: Boolean(data.mustSetupSecurityQuestions),
+          }),
+        );
         return;
       }
 

@@ -22,9 +22,12 @@ import { verificarRespuestas } from '../services/recuperacion.service';
  * Recuperación de contraseña (RF-05), paso 2 de 4: las preguntas de seguridad, de
  * una en una.
  *
- * En la intranet esta misma ruta sirve también para configurar las preguntas cuando
+ * En la intranet esta misma vista sirve también para configurar las preguntas cuando
  * es lo único que le falta a la cuenta. Aquí no: esa configuración, sola o junto a la
- * contraseña, la resuelve entera `/login/first-login`, que pregunta al servidor qué falta.
+ * contraseña, la resuelve `FirstLoginFlow` en las direcciones de `/login/first-login`
+ * (`/login/first-login/security-questions` es la suya cuando solo faltan las preguntas).
+ * Esta vive en `/login/recovery/security-questions` desde el 2026-10-15; antes colgaba de
+ * `first-login` sin ser parte del primer ingreso.
  *
  * Diseño nuevo desde el 2026-10-09 (mockups de tablet): bajo «Preguntas de seguridad»
  * la pregunta se ve en una caja con la forma de un campo, y el avance en tres barras.

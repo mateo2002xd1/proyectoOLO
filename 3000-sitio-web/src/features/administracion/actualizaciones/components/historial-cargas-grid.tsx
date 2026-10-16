@@ -24,7 +24,7 @@ const ETIQUETA_ESTADO: Record<CargaDatos['estado'], string> = {
   error: 'Error',
 };
 
-/** Mismo criterio que `COLOR_ACCION` en auditoría: la píldora nunca depende solo
+/** Mismo criterio que `colorDeAccion` en auditoría: la píldora nunca depende solo
  *  del color, siempre lleva su etiqueta al lado (`9-accesibilidad.md`). */
 const COLOR_ESTADO: Record<CargaDatos['estado'], string> = {
   completado: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200',

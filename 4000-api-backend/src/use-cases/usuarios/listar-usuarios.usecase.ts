@@ -4,7 +4,7 @@ import { RoleRepository } from '../../repositories/roles.repository';
 import { config } from '../../config';
 import {
   generarPasswordTemporal,
-  hashearPassword,
+  nuevaPasswordSinRepetir,
   vencimientoDeTemporal,
   BCRYPT_ROUNDS,
 } from '../../shared/password-policy';
@@ -191,7 +191,18 @@ export const updateUser = async (id: string, data: any, actor?: Actor) => {
   // Este era el agujero grande de la consideración 1: por aquí un administrador
   // fijaba la contraseña de cualquiera y era el único de los cinco caminos que no
   // comprobaba absolutamente nada, ni siquiera la longitud.
-  if (password) updateData.password_hash = await hashearPassword(password);
+  // Desde el 15-10-2026, además, sin repetir la actual ni la anterior; la que había pasa
+  // a ser la anterior. `findById` no trae los hashes: se piden aparte, solo aquí.
+  if (password) {
+    const conHashes = await UserRepository.findByIdWithPassword(id);
+    Object.assign(
+      updateData,
+      await nuevaPasswordSinRepetir(password, {
+        actual: (conHashes as any)?.password_hash,
+        anterior: (conHashes as any)?.previous_password_hash,
+      }),
+    );
+  }
 
   // Quien llama con `must_change_password: false` (el cambio voluntario) acaba de
   // reemplazar la temporal: su vencimiento deja de tener sentido.
@@ -221,6 +232,10 @@ export const updateUser = async (id: string, data: any, actor?: Actor) => {
   if (shouldReset) {
     const temporaryPassword = generarPasswordTemporal();
     updateData.password_hash = await bcrypt.hash(temporaryPassword, BCRYPT_ROUNDS);
+    // La contraseña real que tenía pasa a ser la anterior: en el primer ingreso tras el
+    // restablecimiento no podrá volver a ella (ni a la temporal).
+    const conHashes = await UserRepository.findByIdWithPassword(id);
+    updateData.previous_password_hash = (conHashes as any)?.password_hash ?? null;
     updateData.must_change_password = true;
     // Cada temporal nueva trae sus 72 horas, también al reactivar una cuenta.
     updateData.temp_password_expires_at = vencimientoDeTemporal();

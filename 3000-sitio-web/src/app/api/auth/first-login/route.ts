@@ -47,7 +47,8 @@ export async function POST(request: NextRequest) {
   const data = await apiRes.json().catch(() => null);
   if (!apiRes.ok) {
     return NextResponse.json(
-      { error: data?.error || 'No se pudo completar la configuración' },
+      // `code` pasa tal cual: con `PASSWORD_REPETIDA` la pantalla marca el campo.
+      { error: data?.error || 'No se pudo completar la configuración', code: data?.code },
       { status: apiRes.status || 400 }
     );
   }

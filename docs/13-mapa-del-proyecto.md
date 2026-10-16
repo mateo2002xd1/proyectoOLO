@@ -14,11 +14,11 @@
 
 | | Carpetas | Features | Rutas de Next | Endpoints | Librerías |
 |---|--:|--:|--:|--:|--:|
-| `3000-sitio-web` | 49 | 3 | 52 | — | 33 |
-| `3001-intranet` | 31 | 2 | 11 | — | 27 |
-| `4000-api-backend` | 35 | — | — | 96 | 42 |
+| `3000-sitio-web` | 49 | 3 | 54 | — | 33 |
+| `3001-intranet` | 31 | 2 | 14 | — | 27 |
+| `4000-api-backend` | 35 | — | — | 96 | 43 |
 
-Paquetes compartidos: 7 · migraciones: 44 · modelos: 23.
+Paquetes compartidos: 7 · migraciones: 45 · modelos: 23.
 
 ## Carpetas sin descripción (6)
 
@@ -258,10 +258,12 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `/inicio` | página | `(public)` | `(public)/inicio/page.tsx` |
 | `/login` | página | `(auth)` | `(auth)/login/page.tsx` |
 | `/login/first-login` | página | `(auth)` | `(auth)/login/first-login/page.tsx` |
+| `/login/first-login/change-password` | página | `(auth)` | `(auth)/login/first-login/change-password/page.tsx` |
 | `/login/first-login/security-questions` | página | `(auth)` | `(auth)/login/first-login/security-questions/page.tsx` |
 | `/login/recovery` | página | `(auth)` | `(auth)/login/recovery/page.tsx` |
 | `/login/recovery/reset-password` | página | `(auth)` | `(auth)/login/recovery/reset-password/page.tsx` |
 | `/login/recovery/reset-success` | página | `(auth)` | `(auth)/login/recovery/reset-success/page.tsx` |
+| `/login/recovery/security-questions` | página | `(auth)` | `(auth)/login/recovery/security-questions/page.tsx` |
 | `/manifest.webmanifest` | metadatos |  | `manifest.ts` |
 | `/politica-de-privacidad` | página | `(public)` | `(public)/politica-de-privacidad/page.tsx` |
 | `/preview/[slug]` | página |  | `preview/[slug]/page.tsx` |
@@ -276,10 +278,13 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `/editor/[slug]` | página |  | `editor/[slug]/page.tsx` |
 | `/login` | página | `(auth)` | `(auth)/login/page.tsx` |
 | `/login/first-login` | página | `(auth)` | `(auth)/login/first-login/page.tsx` |
+| `/login/first-login/change-password` | página | `(auth)` | `(auth)/login/first-login/change-password/page.tsx` |
+| `/login/first-login/change-success` | página | `(auth)` | `(auth)/login/first-login/change-success/page.tsx` |
 | `/login/first-login/security-questions` | página | `(auth)` | `(auth)/login/first-login/security-questions/page.tsx` |
 | `/login/recovery` | página | `(auth)` | `(auth)/login/recovery/page.tsx` |
 | `/login/recovery/reset-password` | página | `(auth)` | `(auth)/login/recovery/reset-password/page.tsx` |
 | `/login/recovery/reset-success` | página | `(auth)` | `(auth)/login/recovery/reset-success/page.tsx` |
+| `/login/recovery/security-questions` | página | `(auth)` | `(auth)/login/recovery/security-questions/page.tsx` |
 | `/manifest.webmanifest` | metadatos |  | `manifest.ts` |
 | `/preview/[slug]` | página |  | `preview/[slug]/page.tsx` |
 
@@ -458,7 +463,7 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `@olo/blocks-renderer` | `packages/blocks-renderer/` | `3000-sitio-web`, `3001-intranet` |
 | `@olo/email-policy` | `packages/email-policy/` | `3000-sitio-web`, `3001-intranet` |
 | `@olo/inactividad` | `packages/inactividad/` | `3000-sitio-web`, `3001-intranet` |
-| `@olo/password-policy` | `packages/password-policy/` | `3000-sitio-web`, `3001-intranet` |
+| `@olo/password-policy` | `packages/password-policy/` | `3000-sitio-web`, `3001-intranet`, `4000-api-backend` |
 | `@olo/slug-policy` | `packages/slug-policy/` | `3000-sitio-web`, `3001-intranet`, `4000-api-backend` |
 | `@olo/upload-policy` | `packages/upload-policy/` | `3000-sitio-web`, `3001-intranet`, `4000-api-backend` |
 
@@ -538,6 +543,7 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 |---|---|---|
 | `@neondatabase/serverless` | `^1.1.0` | producción |
 | `@olo/accessibility-policy` | `file:../packages/accessibility-policy` | producción |
+| `@olo/password-policy` | `file:../packages/password-policy` | producción |
 | `@olo/slug-policy` | `file:../packages/slug-policy` | producción |
 | `@olo/upload-policy` | `file:../packages/upload-policy` | producción |
 | `@types/bcryptjs` | `^2.4.6` | desarrollo |
@@ -629,6 +635,7 @@ En el orden del manifiesto (`migrations/index.ts`), que es el orden en que corre
 - `042-catalogos-sin-duplicados`
 - `043-password-temporal-vence`
 - `044-identidad-del-panel`
+- `045-password-anterior`
 
 ### Modelos
 

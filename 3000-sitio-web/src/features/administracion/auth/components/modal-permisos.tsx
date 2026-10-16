@@ -310,17 +310,18 @@ export function ModalPermisos({
                         {grupo.titulo}
                       </h4>
                     </div>
-                    {/* Interruptor a la izquierda y el texto a su derecha. El `<label>` hace
-                        que pulsar «Marcar todos» también lo conmute, como en las filas. */}
+                    {/* Solo el texto, sin interruptor (pedido del usuario, 2026-10-15): pulsarlo
+                        marca todo el grupo. Con todo marcado dice «Desmarcar todos» y lo vacía,
+                        lo que antes hacía apagar el interruptor. */}
                     {conAtajo && (
-                      <label className="flex shrink-0 cursor-pointer items-center gap-2">
-                        <Switch
-                          checked={todos}
-                          onChange={(marcar) => alternarGrupo(ids, marcar)}
-                          aria-label={`Marcar todos los permisos de ${grupo.titulo}`}
-                        />
-                        <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Marcar todos</span>
-                      </label>
+                      <button
+                        type="button"
+                        onClick={() => alternarGrupo(ids, !todos)}
+                        aria-label={`${todos ? 'Desmarcar' : 'Marcar'} todos los permisos de ${grupo.titulo}`}
+                        className="shrink-0 cursor-pointer rounded text-xs font-semibold text-zinc-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-focus dark:text-zinc-300"
+                      >
+                        {todos ? 'Desmarcar todos' : 'Marcar todos'}
+                      </button>
                     )}
                   </div>
 

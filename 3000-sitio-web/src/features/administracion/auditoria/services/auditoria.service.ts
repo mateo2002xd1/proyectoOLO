@@ -1,5 +1,9 @@
 import type { FiltrosAuditoria, RespuestaAuditoria } from '../types';
 import { alLoginPorSesionExpirada } from '@/shared/lib/api-client';
+import { MENSAJE_SIN_RESPUESTA } from '@/shared/lib/errores-api';
+
+/** El proxy de Next responde 502 cuando no llega a la API; 503 y 504, un intermedio. */
+const SIN_RESPUESTA_DE_LA_API = new Set([502, 503, 504]);
 
 /** Necesario para que el navegador mande la cookie de sesión al proxy de Next. */
 const FETCH_OPTS: RequestInit = { credentials: 'include' };
@@ -31,7 +35,7 @@ const conFiltros = (filtros: Partial<FiltrosAuditoria>, pagina: number, porPagin
   if (filtros.usuarioId) params.set('usuarioId', filtros.usuarioId);
   // `accion` ya viaja como lista separada por comas cuando la etiqueta agrupa verbos.
   if (filtros.accion) params.set('accion', filtros.accion);
-  // La API la combina con `accion` con «y»: es lo que separa «Edición» de «Modificación».
+  // La API la combina con `accion` con «y»: es lo que separa «Editado» de «Modificado».
   if (filtros.categoria) params.set('categoria', filtros.categoria);
   if (filtros.desde) params.set('desde', filtros.desde);
   if (filtros.hasta) params.set('hasta', filtros.hasta);
@@ -44,7 +48,12 @@ export async function listarAuditoria(
   pagina = 1,
   porPagina = 50,
 ): Promise<RespuestaAuditoria> {
-  const res = await fetch(`/api/audit-logs?${conFiltros(filtros, pagina, porPagina)}`, FETCH_OPTS);
+  let res: Response;
+  try {
+    res = await fetch(`/api/audit-logs?${conFiltros(filtros, pagina, porPagina)}`, FETCH_OPTS);
+  } catch {
+    throw new ErrorAuditoria(MENSAJE_SIN_RESPUESTA);
+  }
 
   // 401 antes que 403: son cosas distintas y se resuelven distinto. «No sé quién eres»
   // se arregla volviendo a entrar, y de eso se encarga el cliente común; «no te toca»
@@ -57,8 +66,16 @@ export async function listarAuditoria(
   if (res.status === 403) {
     throw new ErrorAuditoria('Tu rol no tiene acceso a la bitácora de auditoría.', true);
   }
+  // Con la API caída se dice eso, y no un «no se pudo» que no explica nada (pedido del
+  // usuario, 2026-10-15). El título del aviso ya dice qué no cargó.
+  if (SIN_RESPUESTA_DE_LA_API.has(res.status)) {
+    throw new ErrorAuditoria(MENSAJE_SIN_RESPUESTA);
+  }
   if (!res.ok) {
-    throw new ErrorAuditoria('No se pudo cargar la bitácora de auditoría.');
+    // Si la API explicó el fallo, se dice eso; si no, uno genérico.
+    const cuerpo = await res.json().catch(() => null);
+    const mensaje = typeof cuerpo?.error === 'string' && cuerpo.error.trim() ? cuerpo.error : null;
+    throw new ErrorAuditoria(mensaje ?? 'El servidor respondió con un error inesperado.');
   }
 
   return res.json();

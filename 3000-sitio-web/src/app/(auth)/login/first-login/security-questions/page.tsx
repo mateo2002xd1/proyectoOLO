@@ -1,9 +1,12 @@
-import { SecurityQuestionsView } from '@/features/administracion/auth';
+import { FirstLoginFlow } from '@/features/administracion/auth';
 
 export const metadata = {
-  title: 'Preguntas de seguridad | Observatorio Laboral y Ocupacional',
+  title: 'Configurar tu acceso | Observatorio Laboral y Ocupacional',
 };
 
-export default function SecurityQuestionsPage() {
-  return <SecurityQuestionsView />;
+// A la cuenta solo le faltan las preguntas (un administrador las restableció). La misma
+// pantalla que `/login/first-login`, que salta directo a las preguntas; cada caso lleva su
+// dirección, como en la intranet (pedido del usuario, 2026-10-15).
+export default function FirstLoginSecurityQuestionsPage() {
+  return <FirstLoginFlow modo="solo-preguntas" />;
 }

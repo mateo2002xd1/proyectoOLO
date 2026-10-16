@@ -6,5 +6,5 @@ export const metadata = {
 };
 
 export default function ResetPasswordPage() {
-  return <ResetPasswordView />;
+  return <ResetPasswordView modo="recuperacion" />;
 }
