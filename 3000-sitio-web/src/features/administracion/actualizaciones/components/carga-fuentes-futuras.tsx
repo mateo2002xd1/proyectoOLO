@@ -1,7 +1,8 @@
 'use client';
 
 import { useRef } from 'react';
-import { ArrowUpTrayIcon, CheckCircleIcon, InformationCircleIcon } from '@heroicons/react/20/solid';
+import { ArrowUpTrayIcon } from '@heroicons/react/20/solid';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 import { useCargasFuentesFuturas } from '../hooks/use-cargas-fuentes-futuras';
 import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
 import { DescargarFormato } from './descargar-formato';
@@ -61,10 +62,9 @@ export function CargaFuentesFuturas({ puedeActualizar }: CargaFuentesFuturasProp
               className="hidden"
             />
           </label>
-          <p className="mt-2 flex w-fit items-center gap-1.5 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900/40 dark:text-blue-200">
-            <InformationCircleIcon className="size-3.5 shrink-0" />
+          <MensajeEstado tipo="info" rol="note" className="mt-2 w-fit">
             Formato admitido: .xlsx
-          </p>
+          </MensajeEstado>
           <p className="mt-2 text-xs text-gray-500 dark:text-[#94a3b8]">
             El archivo que se suba reemplaza lo que muestra la sección del sitio; el anterior queda
             en el historial.
@@ -75,10 +75,9 @@ export function CargaFuentesFuturas({ puedeActualizar }: CargaFuentesFuturasProp
             </p>
           )}
           {aviso && (
-            <p className="mt-2 flex items-center gap-1.5 text-sm text-green-700 dark:text-green-400">
-              <CheckCircleIcon className="size-4 shrink-0" />
+            <MensajeEstado tipo="exito" className="mt-2">
               {aviso}
-            </p>
+            </MensajeEstado>
           )}
         </div>
       ) : (

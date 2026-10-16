@@ -50,7 +50,10 @@ const RUTAS_PRIVADAS = [
   '/preview',
   '/api',
   '/api-backend',
+  // Cubre también los pasos del acceso, que cuelgan de él (`/login/first-login`,
+  // `/login/recovery`...).
   '/login',
+  // URLs de antes del 2026-10-15, que ahora redirigen a `/login/...`.
   '/first-login',
   '/recovery',
   '/security-questions',

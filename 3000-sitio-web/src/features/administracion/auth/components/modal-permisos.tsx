@@ -7,6 +7,7 @@ import { MagnifyingGlassIcon, ShieldExclamationIcon } from '@heroicons/react/24/
 import { Switch } from '@/shared/ui/atoms/switch';
 import { Button, FormaDeModal } from '@/shared/ui/atoms/button';
 import { areaDeModalClass, campoDeModalClass, etiquetaDeModalClass } from '@/shared/ui/molecules/alert';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 import type { Permission } from '../hooks/use-usuarios';
 
 /**
@@ -99,8 +100,6 @@ export function ModalPermisos({
   originales,
   seleccionados,
   onCambiarSeleccion,
-  nombre,
-  onCambiarNombre,
   descripcion,
   onCambiarDescripcion,
   onGuardar,
@@ -112,10 +111,14 @@ export function ModalPermisos({
   const [busqueda, setBusqueda] = useState('');
   const [mostrarPermisos, setMostrarPermisos] = useState(false);
 
-  // Resetear el estado al abrir
-  useMemo(() => {
+  // Cada vez que se abre, vuelve a la vista del rol. Se compara con el valor anterior
+  // durante el render, como recomienda React para reiniciar estado según una prop: antes era
+  // un `setState` dentro de `useMemo`, que React no garantiza ejecutar ni una sola vez.
+  const [abiertoAntes, setAbiertoAntes] = useState(abierto);
+  if (abierto !== abiertoAntes) {
+    setAbiertoAntes(abierto);
     if (abierto) setMostrarPermisos(false);
-  }, [abierto]);
+  }
 
   const visibles = useMemo(() => {
     // Ocultar acceso.panel porque es solo para administradores
@@ -244,10 +247,10 @@ export function ModalPermisos({
                   className={areaDeModalClass}
                 />
               </div>
-              <p className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-300">
+              <MensajeEstado tipo="advertencia" rol="note">
                 Esto afecta a <strong>todas las personas con el rol «{rol.nombre}»</strong>, no solo
                 a la que estés editando. El cambio se aplica en cuanto guardas.
-              </p>
+              </MensajeEstado>
               
               <div className="pt-2">
                 <Button type="button" variant="verde" onClick={() => setMostrarPermisos(true)} className="w-full">
@@ -276,7 +279,7 @@ export function ModalPermisos({
           {(rol && !mostrarPermisos) ? (
             <div className="flex h-full items-center justify-center">
               <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">
-                Haz clic en "Editar permisos" para ver y modificar la lista.
+                Haz clic en «Editar permisos» para ver y modificar la lista.
               </p>
             </div>
           ) : gruposAPintar.length === 0 ? (
@@ -307,17 +310,18 @@ export function ModalPermisos({
                         {grupo.titulo}
                       </h4>
                     </div>
-                    {/* Interruptor a la izquierda y el texto a su derecha. El `<label>` hace
-                        que pulsar «Marcar todos» también lo conmute, como en las filas. */}
+                    {/* Solo el texto, sin interruptor (pedido del usuario, 2026-10-15): pulsarlo
+                        marca todo el grupo. Con todo marcado dice «Desmarcar todos» y lo vacía,
+                        lo que antes hacía apagar el interruptor. */}
                     {conAtajo && (
-                      <label className="flex shrink-0 cursor-pointer items-center gap-2">
-                        <Switch
-                          checked={todos}
-                          onChange={(marcar) => alternarGrupo(ids, marcar)}
-                          aria-label={`Marcar todos los permisos de ${grupo.titulo}`}
-                        />
-                        <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Marcar todos</span>
-                      </label>
+                      <button
+                        type="button"
+                        onClick={() => alternarGrupo(ids, !todos)}
+                        aria-label={`${todos ? 'Desmarcar' : 'Marcar'} todos los permisos de ${grupo.titulo}`}
+                        className="shrink-0 cursor-pointer rounded text-xs font-semibold text-zinc-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-focus dark:text-zinc-300"
+                      >
+                        {todos ? 'Desmarcar todos' : 'Marcar todos'}
+                      </button>
                     )}
                   </div>
 

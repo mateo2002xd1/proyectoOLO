@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
 import {
-  AlertTriangle,
   Check,
   CheckCircle2,
   Database,
@@ -22,6 +21,7 @@ import {
 } from '../services/auditoria.service';
 import { aCsv, descargarCsv } from '../lib/csv';
 import { FormaDeModal } from '@/shared/ui/atoms/button';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 
 interface ModalDepurarAuditoriaProps {
   abierto: boolean;
@@ -193,20 +193,10 @@ export function ModalDepurarAuditoria({
           ) : (
             <div className="space-y-5">
               {/* Información de criterio y modo de prueba */}
-              <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-4 dark:border-amber-900/40 dark:bg-amber-950/20">
-                <div className="flex items-start gap-3">
-                  <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
-                  <div className="text-xs text-amber-800 dark:text-amber-300/90 leading-relaxed">
-                    <p className="font-semibold text-amber-900 dark:text-amber-200 mb-1">
-                      Importante:
-                    </p>
-                    <p>
-                      Se conserva el último año de la bitácora donde se depuran los registros posteriores con
-                      respaldo obligatorio previo en CSV.
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <MensajeEstado tipo="advertencia" rol="note">
+                <strong>Importante:</strong> Se conserva el último año de la bitácora donde se
+                depuran los registros posteriores con respaldo obligatorio previo en CSV.
+              </MensajeEstado>
 
               {/* Estado de carga */}
               {cargando && (
@@ -220,15 +210,15 @@ export function ModalDepurarAuditoria({
 
               {/* Errores */}
               {errorAnalisis && (
-                <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400">
+                <MensajeEstado tipo="error" rol="alert">
                   {errorAnalisis}
-                </div>
+                </MensajeEstado>
               )}
 
               {errorEjecucion && (
-                <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400">
+                <MensajeEstado tipo="error" rol="alert">
                   {errorEjecucion}
-                </div>
+                </MensajeEstado>
               )}
 
               {/* Resumen de análisis */}

@@ -1,6 +1,7 @@
 'use client';
 
 import { poppins } from '@/shared/lib/fonts';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
 
 export interface ModalCerrarSesionProps {
@@ -12,7 +13,7 @@ export interface ModalCerrarSesionProps {
 }
 
 /**
- * Confirmación antes de «Salir de modo edición»: el botón está siempre a la vista
+ * Confirmación antes de «Salir del modo edición edición»: el botón está siempre a la vista
  * junto al lápiz y un toque sin querer cerraba la sesión de golpe.
  */
 export function ModalCerrarSesion({ abierto, saliendo, alConfirmar, alCerrar }: ModalCerrarSesionProps) {
@@ -42,13 +43,15 @@ export function ModalCerrarSesion({ abierto, saliendo, alConfirmar, alCerrar }: 
       {/* Poppins, como todos los modales del panel y del editor. */}
       <div className={`nueva-seccion-caja olo-anim-caja ${poppins.className}`}>
         <h2 id="cerrar-sesion-titulo" className="nueva-seccion-titulo">
-          ¿Cerrar sesión?
+          Salir del modo edición
         </h2>
 
-        <p className="nueva-seccion-ruta">
-          Saldrás del modo edición y verás el portal como un visitante. Para volver a
-          editar tendrás que iniciar sesión de nuevo.
-        </p>
+        {/* Las dos frases dentro del mensaje informativo, una por línea (pedido del usuario,
+            2026-10-15). Mismo texto en el sitio y la intranet. */}
+        <MensajeEstado tipo="info" rol="note">
+          <p>Saldrás del modo edición, volverás a la pantalla de inicio de sesión.</p>
+          <p className="mt-3">Requiere volver a iniciar sesión para editar.</p>
+        </MensajeEstado>
 
         <div className="nueva-seccion-acciones">
           {/* El foco arranca en «Cancelar»: Enter o Escape no cierran la sesión. */}
@@ -67,7 +70,7 @@ export function ModalCerrarSesion({ abierto, saliendo, alConfirmar, alCerrar }: 
             className="nueva-seccion-boton nueva-seccion-boton--peligro"
             disabled={saliendo}
           >
-            {saliendo ? 'Cerrando sesión…' : 'Cerrar sesión'}
+            {saliendo ? 'Cerrando sesión...' : 'Aceptar'}
           </button>
         </div>
       </div>

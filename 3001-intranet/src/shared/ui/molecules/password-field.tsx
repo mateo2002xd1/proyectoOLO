@@ -21,6 +21,11 @@ interface PasswordFieldProps {
    * `acceso-ui.ts`, escritas aquí por la misma razón que las de abajo.
    */
   enBlanco?: boolean;
+  /**
+   * El error lo enseña otro (el mensaje rojo de `PasswordRequisitos`, con `rechazo`): el
+   * campo se queda con el borde rojo y no repite el texto debajo.
+   */
+  textoDeErrorAparte?: boolean;
 }
 
 export function PasswordField({
@@ -35,6 +40,7 @@ export function PasswordField({
   autoComplete,
   className = 'mb-4',
   enBlanco = false,
+  textoDeErrorAparte = false,
 }: PasswordFieldProps) {
   const [visible, setVisible] = useState(false);
 
@@ -68,7 +74,7 @@ export function PasswordField({
             </span>
           </button>
         </div>
-        {error && <span className={`${classPrefix}-error`}>{error}</span>}
+        {error && !textoDeErrorAparte && <span className={`${classPrefix}-error`}>{error}</span>}
       </div>
     );
   }
@@ -117,7 +123,9 @@ export function PasswordField({
           <IconoMascara nombre={visible ? 'eye-open' : 'eye-closed'} tamano="h-4 w-4" />
         </button>
       </div>
-      {error && <p className={`mt-1.5 text-sm text-red-300 ${enBlanco ? 'md:text-red-600' : ''}`}>{error}</p>}
+      {error && !textoDeErrorAparte && (
+        <p className={`mt-1.5 text-sm text-red-300 ${enBlanco ? 'md:text-red-600' : ''}`}>{error}</p>
+      )}
     </div>
   );
 }

@@ -102,6 +102,7 @@ export function PaginasFabSpeedDial({
     } catch {
       // Sin red igualmente se sale hacia el login.
     }
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- recarga completa a propósito: tras cerrar sesión no debe quedar nada de ella en la caché del cliente
     window.location.href = '/login?logout=1';
   };
 
@@ -166,25 +167,24 @@ export function PaginasFabSpeedDial({
       >
         {/* Submenú de acciones desplegables hacia arriba */}
         <div
-          className={`fab-speed-dial__acciones ${
-            abierto ? 'fab-speed-dial__acciones--visible' : ''
-          }`}
+          className={`fab-speed-dial__acciones ${abierto ? 'fab-speed-dial__acciones--visible' : ''
+            }`}
           role="menu"
           aria-hidden={!abierto}
         >
-          {/* 1. Editar sección */}
+          {/* 1. Editar página */}
           {puedeEditarSeccion && (
             <div className="fab-speed-dial__item" role="none">
               <span className="fab-speed-dial__tooltip" role="tooltip">
-                Editar sección
+                Editar página
               </span>
               <Link
                 href={enlaceAlEditor(slug, rutaActual || `/${slug}`)}
                 role="menuitem"
                 onClick={cerrarMenu}
                 className="fab-speed-dial__btn fab-speed-dial__btn--editar"
-                aria-label="Editar sección"
-                title="Editar sección"
+                aria-label="Editar página"
+                title="Editar página"
                 tabIndex={abierto ? 0 : -1}
               >
                 <svg
@@ -243,7 +243,7 @@ export function PaginasFabSpeedDial({
           {puedeCrearSeccion && (
             <div className="fab-speed-dial__item" role="none">
               <span className="fab-speed-dial__tooltip" role="tooltip">
-                Nueva sección
+                Nueva página
               </span>
               <button
                 type="button"
@@ -253,8 +253,8 @@ export function PaginasFabSpeedDial({
                   setModalNuevaAbierto(true);
                 }}
                 className="fab-speed-dial__btn fab-speed-dial__btn--nueva"
-                aria-label="Nueva sección"
-                title="Nueva sección"
+                aria-label="Nueva página"
+                title="Nueva página"
                 tabIndex={abierto ? 0 : -1}
               >
                 <svg
@@ -323,9 +323,8 @@ export function PaginasFabSpeedDial({
               ref={triggerRef}
               type="button"
               onClick={alternarMenu}
-              className={`fab-speed-dial__trigger ${
-                abierto ? 'fab-speed-dial__trigger--activo' : ''
-              }`}
+              className={`fab-speed-dial__trigger ${abierto ? 'fab-speed-dial__trigger--activo' : ''
+                }`}
               aria-haspopup="menu"
               aria-expanded={abierto}
               aria-label={abierto ? 'Cerrar menú de acciones' : 'Abrir menú de acciones'}
@@ -372,7 +371,7 @@ export function PaginasFabSpeedDial({
         {/* Cerrar sesión: siempre a la vista, debajo del lápiz */}
         <div className="fab-speed-dial__item fab-speed-dial__item--salir">
           <span className="fab-speed-dial__tooltip" role="tooltip">
-            Cerrar sesión
+            Salir del modo edición
           </span>
           <button
             type="button"

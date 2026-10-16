@@ -28,6 +28,7 @@ import {
 import { type CatalogQuestion } from './question-picker';
 import { AuthSuccessScreen } from './auth-success-screen';
 import { mensajeDeError } from '@/shared/lib/errors';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 
 const TOTAL_SETUP_QUESTIONS = 3;
 
@@ -39,32 +40,44 @@ function subscribeToSessionStorage() {
   return () => { };
 }
 
-const getModeSnapshot = (): 'verify' | 'setup' =>
-  sessionStorage.getItem('recoveryEmail') && sessionStorage.getItem('recoveryQuestions')
-    ? 'verify'
-    : 'setup';
+/**
+ * Para qué se usa la pantalla. Lo dice la página que la monta, porque cada flujo tiene
+ * su dirección (2026-10-15):
+ *
+ * - `responder` — `/login/recovery/security-questions`: quien olvidó su contraseña
+ *   responde las preguntas que ya tiene. Sin sesión; las preguntas las deja el paso del
+ *   correo.
+ * - `elegir` — `/login/first-login/security-questions`: a la cuenta solo le faltan las
+ *   preguntas y las elige. Con sesión.
+ *
+ * Antes la vista adivinaba el modo por lo que hubiera en `sessionStorage`, y unos datos
+ * de una recuperación a medias la ponían a «responder» a quien tenía que elegir.
+ */
+export type ModoPreguntasDeSeguridad = 'responder' | 'elegir';
 
-/** En el servidor no hay sessionStorage: sin modo aun. */
-const getModeServerSnapshot = (): null => null;
+/** Las preguntas que dejó el paso del correo, en crudo; `''` si no hay. */
+const getPreguntasSnapshot = (): string =>
+  sessionStorage.getItem('recoveryEmail') ? sessionStorage.getItem('recoveryQuestions') ?? '' : '';
 
-/** Preguntas que dejo guardadas el paso anterior del flujo de recuperacion. */
-function leerPreguntasGuardadas(): CatalogQuestion[] {
+/** En el servidor no hay sessionStorage: aún no se sabe. */
+const getPreguntasServerSnapshot = (): null => null;
+
+function leerPreguntas(crudas: string): CatalogQuestion[] {
   try {
-    const crudas = sessionStorage.getItem('recoveryQuestions');
     return crudas ? JSON.parse(crudas) : [];
   } catch {
     return [];
   }
 }
 
-export function SecurityQuestionsView() {
+export function SecurityQuestionsView({ modo }: { modo: ModoPreguntasDeSeguridad }) {
   const router = useRouter();
   const { user, isLoading: authLoading, logout } = useAuth();
 
-  const mode = useSyncExternalStore(
+  const preguntasGuardadas = useSyncExternalStore(
     subscribeToSessionStorage,
-    getModeSnapshot,
-    getModeServerSnapshot,
+    getPreguntasSnapshot,
+    getPreguntasServerSnapshot,
   );
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -72,38 +85,42 @@ export function SecurityQuestionsView() {
   const [errors, setErrors] = useState<{ question?: string; answer?: string; general?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
 
-  // Modo verify (recuperación de contraseña). Se derivan del modo en vez de
-  // copiarse a estado: mientras `mode` es null (servidor e hidratacion) no se
-  // toca sessionStorage, asi que no hay desajuste de hidratacion.
+  // Responder (recuperación de contraseña). Se derivan del snapshot en vez de
+  // copiarse a estado: mientras es null (servidor e hidratacion) no hay nada que
+  // leer, asi que no hay desajuste de hidratacion.
   const questions = useMemo<CatalogQuestion[]>(
-    () => (mode === 'verify' ? leerPreguntasGuardadas() : []),
-    [mode],
+    () => (modo === 'responder' && preguntasGuardadas ? leerPreguntas(preguntasGuardadas) : []),
+    [modo, preguntasGuardadas],
   );
 
-  // Modo setup (primer inicio de sesión / preguntas pendientes)
+  // Elegir (primer inicio de sesión / preguntas pendientes)
   const [catalogQuestions, setCatalogQuestions] = useState<CatalogQuestion[]>([]);
   const [selectedKeys, setSelectedKeys] = useState<string[]>(Array(TOTAL_SETUP_QUESTIONS).fill(''));
   const [setupComplete, setSetupComplete] = useState(false);
 
   useEffect(() => {
-    if (mode !== 'setup') return;
+    if (modo !== 'elegir') return;
     authApi.getCatalog()
       .then(setCatalogQuestions)
       .catch(() => setErrors({ general: 'No se pudieron cargar las preguntas de seguridad' }));
-  }, [mode]);
+  }, [modo]);
 
   useEffect(() => {
-    if (mode === 'setup' && !authLoading && !user) {
+    if (modo === 'elegir' && !authLoading && !user) {
       router.push('/login');
     }
-  }, [mode, authLoading, user, router]);
+    // Sin lo que deja el paso del correo no hay preguntas que responder: al principio.
+    if (modo === 'responder' && preguntasGuardadas === '') {
+      router.push('/login/recovery');
+    }
+  }, [modo, preguntasGuardadas, authLoading, user, router]);
 
-  const totalQuestions = mode === 'verify' ? (questions.length || 3) : TOTAL_SETUP_QUESTIONS;
+  const totalQuestions = modo === 'responder' ? (questions.length || 3) : TOTAL_SETUP_QUESTIONS;
 
   const validate = (): boolean => {
     const currentAnswer = answers[currentStep];
 
-    if (mode === 'setup' && !selectedKeys[currentStep]) {
+    if (modo === 'elegir' && !selectedKeys[currentStep]) {
       setErrors({ question: 'Selecciona una pregunta' });
       return false;
     }
@@ -128,7 +145,7 @@ export function SecurityQuestionsView() {
       const nombre = typeof respuesta?.nombre === 'string' ? respuesta.nombre.trim() : '';
       if (nombre) sessionStorage.setItem('recoveryName', nombre);
       else sessionStorage.removeItem('recoveryName');
-      router.push('/reset-password');
+      router.push('/login/recovery/reset-password');
     } catch (error) {
       setErrors({ general: mensajeDeError(error, 'Las respuestas no coinciden. Intenta de nuevo.') });
       setCurrentStep(0);
@@ -162,7 +179,7 @@ export function SecurityQuestionsView() {
       return;
     }
 
-    if (mode === 'verify') {
+    if (modo === 'responder') {
       const payload = questions.map((q, i) => ({ key: q.key, answer: answers[i] }));
       await handleSubmitVerify(payload);
     } else {
@@ -185,13 +202,13 @@ export function SecurityQuestionsView() {
     setErrors({});
   };
 
-  if (mode === null || (mode === 'setup' && (authLoading || !user))) {
+  if (modo === 'responder' ? !preguntasGuardadas : authLoading || !user) {
     return null;
   }
 
   // Verificar la identidad (la recuperación) va en tarjeta blanca desde `md`, como el login
-  // (2026-10-12). Las preguntas pendientes (`setup`) siguen sobre el azul.
-  const enBlanco = mode === 'verify';
+  // (2026-10-12). Las preguntas pendientes (`elegir`) siguen sobre el azul.
+  const enBlanco = modo === 'responder';
   const botonClass = enBlanco ? `${accesoBotonClass} ${accesoBotonEnBlancoClass}` : accesoBotonClass;
   const enlaceClass = enBlanco ? `${accesoEnlaceClass} ${accesoEnlaceEnBlancoClass}` : accesoEnlaceClass;
 
@@ -207,27 +224,24 @@ export function SecurityQuestionsView() {
 
   return (
     <MarcoAcceso
-      titulo={mode === 'setup' ? 'Protege el acceso a tu cuenta' : 'Verifica tu identidad'}
+      titulo={modo === 'elegir' ? 'Protege el acceso a tu cuenta' : 'Verifica tu identidad'}
       descripcion={
-        mode === 'setup'
+        modo === 'elegir'
           ? 'Elige 3 preguntas de seguridad y asigna una respuesta para cada una.'
           : 'Responde las preguntas de seguridad que elegiste al configurar tu cuenta.'
       }
-      cerrarSesionAlSalir={mode === 'setup'}
+      cerrarSesionAlSalir={modo === 'elegir'}
       claveTarjeta={currentStep}
       enBlanco={enBlanco}
     >
       <form onSubmit={handleSubmit} noValidate>
         {errors.general && (
-          <div
-            className={accesoErrorGeneralClass}
-            role="alert"
-          >
+          <MensajeEstado tipo="error" rol="alert" className={accesoErrorGeneralClass}>
             {errors.general}
-          </div>
+          </MensajeEstado>
         )}
 
-        {mode === 'verify' ? (
+        {modo === 'responder' ? (
           <div className={accesoHuecoClass}>
             <label htmlFor="respuesta-seguridad" className={`${accesoEtiquetaClass} ${accesoEtiquetaEnBlancoClass}`}>
               <span className={`mb-1 ${accesoRotuloClass} ${accesoRotuloEnBlancoClass}`}>
@@ -307,9 +321,9 @@ export function SecurityQuestionsView() {
           className={botonClass}
         >
           {isLoading
-            ? (mode === 'verify' ? 'Verificando…' : 'Guardando…')
+            ? (modo === 'responder' ? 'Verificando…' : 'Guardando…')
             : currentStep === totalQuestions - 1
-              ? (mode === 'verify' ? 'Verificar' : 'Guardar')
+              ? (modo === 'responder' ? 'Verificar' : 'Guardar')
               : 'Siguiente'}
         </button>
 
@@ -326,7 +340,7 @@ export function SecurityQuestionsView() {
               Volver a la pregunta anterior
             </button>
           </div>
-        ) : mode === 'setup' ? (
+        ) : modo === 'elegir' ? (
           <div className={`${accesoHuecoArribaClass} text-center`}>
             <button
               type="button"

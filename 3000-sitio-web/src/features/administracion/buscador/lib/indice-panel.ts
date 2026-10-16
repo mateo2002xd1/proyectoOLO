@@ -9,7 +9,7 @@
  * **Solo se indexan rutas que existen y tienen algo que hacer**: ofrecer otra sería
  * mandar a un 404 o a un «en construcción» desde un resultado de búsqueda. Lo fueron
  * `/admin/dashboard/soporte`, hasta que se repurpuso como `/admin/actualizaciones`, y
- * `/admin/dashboard/configuracion`, hasta que tuvo el sonido de los avisos (2026-10-09).
+ * `/admin/configuracion`, hasta que tuvo el sonido de los avisos (2026-10-09).
  */
 
 export interface DestinoPanel {
@@ -180,7 +180,7 @@ export const DESTINOS_PANEL: DestinoPanel[] = [
     id: 'mi-perfil',
     titulo: 'Mi perfil',
     descripcion: 'Tus datos de cuenta y el cambio de contraseña.',
-    href: '/admin/mi-perfil',
+    href: '/admin/perfil',
     grupo: 'Cuenta',
     sinonimos: ['contrasena', 'clave', 'password', 'mis datos', 'correo', 'cuenta'],
   },
@@ -188,7 +188,7 @@ export const DESTINOS_PANEL: DestinoPanel[] = [
     id: 'configuracion',
     titulo: 'Configuración',
     descripcion: 'Preferencias del panel en este navegador, como el sonido de los avisos.',
-    href: '/admin/dashboard/configuracion',
+    href: '/admin/configuracion',
     grupo: 'Cuenta',
     sinonimos: ['preferencias', 'ajustes', 'opciones', 'sonido', 'silenciar', 'audio', 'avisos', 'notificaciones'],
   },

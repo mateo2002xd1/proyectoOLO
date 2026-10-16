@@ -4,6 +4,7 @@ import { useState, ReactNode } from 'react';
 import Link from 'next/link';
 import { HomeIcon } from '@heroicons/react/20/solid';
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
+import { IconoError, IconoExito, MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 import { LONGITUD_MINIMA, requisitosDe } from '@olo/password-policy';
 
 /**
@@ -103,20 +104,16 @@ export const authPasosInputClass = (hasError: boolean, esquinas = 'rounded-[32px
 export const authPasosErrorTextClass = 'mt-1.5 text-sm text-red-600';
 
 /* ---------- Avisos ---------- *
- * Los mensajes de estado llevan esquinas de 16 px, no las de 32 de campos y botones, para
- * que no se confundan con ellos (pedido del usuario, 2026-10-09). `rounded-xl` es 16 en este
- * sitio: globals.css redefine la escala de radios (en Tailwind sería 12), y `rounded-2xl`
- * es 24, que en una banda se veía igual que un botón. */
+ * Son los mensajes de estado del proyecto (`MensajeEstado`): esquinas de 16 px, no las de
+ * 32 de campos y botones, para que no se confundan con ellos (pedido del usuario,
+ * 2026-10-09). */
 
-/** Banda roja para errores que no pertenecen a un campo concreto. */
+/** Mensaje de error para lo que no pertenece a un campo concreto. */
 export function AuthGeneralError({ children }: { children: ReactNode }) {
   return (
-    <div
-      className={`${authPasosHuecoClass} rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-600`}
-      role="alert"
-    >
+    <MensajeEstado tipo="error" rol="alert" className={authPasosHuecoClass}>
       {children}
-    </div>
+    </MensajeEstado>
   );
 }
 
@@ -128,17 +125,15 @@ export function AuthGeneralError({ children }: { children: ReactNode }) {
  * trabajo, y pintarlo en rojo —junto a «Correo o contraseña incorrectos», que es lo
  * otro que aparece en este hueco— hace creer que uno se equivocó en algo.
  *
- * `role="status"` y no `"alert"`: se anuncia sin interrumpir lo que el lector de
- * pantalla esté diciendo, que es lo apropiado para algo que solo informa.
+ * Es el mensaje de estado informativo del proyecto (`MensajeEstado`), con `role="status"`
+ * y no `"alert"`: se anuncia sin interrumpir lo que el lector de pantalla esté diciendo,
+ * que es lo apropiado para algo que solo informa.
  */
 export function AuthGeneralNotice({ children }: { children: ReactNode }) {
   return (
-    <div
-      className={`${authPasosHuecoClass} rounded-xl border border-blue-300 bg-blue-50 px-4 py-3 text-sm text-blue-800`}
-      role="status"
-    >
+    <MensajeEstado tipo="info" className={authPasosHuecoClass}>
       {children}
-    </div>
+    </MensajeEstado>
   );
 }
 
@@ -179,31 +174,6 @@ export function AuthProgressDots({
             : `w-8 ${i === current ? 'bg-[#001631]' : 'bg-[#ccd3d7]'}`;
         return <span key={i} className={`h-1.5 rounded-full transition-all ${clase}`} />;
       })}
-    </div>
-  );
-}
-
-/**
- * Marca de operación terminada, para las pantallas de cierre del flujo. Solo desde `md`,
- * donde el formulario es tarjeta: en el mockup de móvil la confirmación no la lleva.
- */
-export function AuthSuccessBadge() {
-  return (
-    <div className="mx-auto mb-5 hidden size-12 items-center justify-center rounded-full bg-[#001631] md:flex">
-      <svg
-        width="22"
-        height="22"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="text-white"
-        aria-hidden="true"
-      >
-        <polyline points="20 6 9 17 4 12" />
-      </svg>
     </div>
   );
 }
@@ -362,6 +332,7 @@ export function PasswordField({
   autoComplete,
   describedBy,
   className = authPasosHuecoClass,
+  textoDeErrorAparte = false,
 }: {
   id: string;
   label: string;
@@ -374,9 +345,15 @@ export function PasswordField({
   /** `id` de lo que explica el campo además de su error (la lista de requisitos). */
   describedBy?: string;
   className?: string;
+  /**
+   * El error lo enseña otro (el mensaje rojo de `PasswordRequisitos`, con `rechazo`): el
+   * campo se queda con el borde rojo y no repite el texto debajo.
+   */
+  textoDeErrorAparte?: boolean;
 }) {
   const [show, setShow] = useState(false);
-  const descripciones = [describedBy, error ? `${id}-error` : undefined].filter(Boolean).join(' ');
+  const textoDeError = error && !textoDeErrorAparte;
+  const descripciones = [describedBy, textoDeError ? `${id}-error` : undefined].filter(Boolean).join(' ');
 
   return (
     <div className={className}>
@@ -406,7 +383,7 @@ export function PasswordField({
           <IconoMascara nombre={show ? 'eye-open' : 'eye-closed'} tamano="h-4 w-4" />
         </button>
       </div>
-      {error && <p id={`${id}-error`} className={authPasosErrorTextClass}>{error}</p>}
+      {textoDeError && <p id={`${id}-error`} className={authPasosErrorTextClass}>{error}</p>}
     </div>
   );
 }
@@ -435,6 +412,7 @@ export function PasswordRequisitos({
   className = 'mb-4',
   variant = 'panel',
   resumirAlCumplir = false,
+  rechazo,
 }: {
   /** Para que el campo lo nombre en su `aria-describedby`. */
   id?: string;
@@ -442,37 +420,59 @@ export function PasswordRequisitos({
   className?: string;
   variant?: 'panel' | 'solid';
   resumirAlCumplir?: boolean;
+  /**
+   * Por qué se rechazó una contraseña que cumple todos los requisitos («Esta contraseña no
+   * es válida por seguridad, elige otra.»): ocupa el sitio de «Cumple todos los requisitos»
+   * como mensaje de error, en rojo (pedido del usuario, 2026-10-15). Los dos a la vez se
+   * contradecían. El campo deja solo su borde rojo (`textoDeErrorAparte`).
+   */
+  rechazo?: string;
 }) {
   const todos = requisitosDe(password);
-  const requisitos =
-    resumirAlCumplir && todos.every((r) => r.cumplido)
-      ? [{ id: 'todos', etiqueta: 'Cumple todos los requisitos', cumplido: true }]
-      : todos;
+  const resumida = resumirAlCumplir && todos.every((r) => r.cumplido);
   const esSolido = variant === 'solid';
 
+  // El `aria-live` va en un contenedor que no cambia: si fuera la propia lista, al resumirla
+  // se desmontaría y el lector de pantalla podría no anunciar el mensaje que la reemplaza.
   return (
-    <ul id={id} className={`${className} space-y-1`} aria-live="polite">
-      {requisitos.map((requisito) => {
-        const claseEstado = requisito.cumplido
-          ? esSolido
-            ? 'text-green-700'
-            : 'text-green-700 dark:text-green-400'
-          : esSolido
-            ? 'text-gray-500'
-            : 'text-gray-500 dark:text-slate-400';
+    <div id={id} className={className} aria-live="polite">
+      {resumida ? (
+        // Cumplidos todos, el mensaje de éxito del proyecto, con su globo y su ✓ (pedido del
+        // usuario, 2026-10-15). Antes, una línea verde con «✓».
+        rechazo ? (
+          <MensajeEstado tipo="error" rol="alert">{rechazo}</MensajeEstado>
+        ) : (
+          <MensajeEstado tipo="exito" rol="note">Cumple todos los requisitos</MensajeEstado>
+        )
+      ) : (
+        <ul className="space-y-1">
+          {todos.map((requisito) => {
+            const claseEstado = requisito.cumplido
+              ? esSolido
+                ? 'text-green-700'
+                : 'text-green-700 dark:text-green-400'
+              : esSolido
+                ? 'text-gray-500'
+                : 'text-gray-500 dark:text-slate-400';
 
-        return (
-          <li key={requisito.id} className={`flex items-start gap-1.5 text-xs ${claseEstado}`}>
-            <span aria-hidden="true" className="mt-px leading-none">
-              {requisito.cumplido ? '✓' : '○'}
-            </span>
-            {/* El estado va también en texto: el color y el símbolo solos no lo dicen. */}
-            <span className="sr-only">{requisito.cumplido ? 'Cumplido:' : 'Pendiente:'}</span>
-            <span>{requisito.etiqueta}</span>
-          </li>
-        );
-      })}
-    </ul>
+            return (
+              <li key={requisito.id} className={`flex items-start gap-1.5 text-xs ${claseEstado}`}>
+                {/* Los iconos de los mensajes de estado, sin su fondo (pedido del usuario, 2026-10-15):
+                    el globo con ✓ y el círculo con ×. Toman el color del texto (`currentColor`). */}
+                {requisito.cumplido ? (
+                  <IconoExito className="mt-px h-3.5 w-[13px] shrink-0" />
+                ) : (
+                  <IconoError className="mt-px h-3.5 w-3.5 shrink-0" />
+                )}
+                {/* El estado va también en texto: el color y el símbolo solos no lo dicen. */}
+                <span className="sr-only">{requisito.cumplido ? 'Cumplido:' : 'Pendiente:'}</span>
+                <span>{requisito.etiqueta}</span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
   );
 }
 

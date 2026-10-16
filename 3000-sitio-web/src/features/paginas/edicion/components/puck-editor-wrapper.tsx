@@ -12,6 +12,7 @@ import { Bloque, PuckData, EstadoPagina } from '../../model/pagina.types';
 import { AvisoRechazo, type Rechazo } from './aviso-rechazo';
 import { useAutoguardado, MS_ENTRE_AUTOGUARDADOS } from '../hooks/use-autoguardado';
 import { VigilanteSesion } from '@/shared/lib/inactividad';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 import { validarAccesibilidad, mensajeDeViolacion, type ViolacionAccesibilidad } from '@olo/accessibility-policy';
 import { TITULOS_TENDENCIA, type TipoTendenciaOcupacional } from '@/features/sitio-web/tendencia-ocupacional';
 
@@ -242,27 +243,14 @@ function AccionesCabecera({
  */
 function AvisoAccesibilidad({ violaciones }: { violaciones: ViolacionAccesibilidad[] }) {
   return (
-    <div
-      role="alert"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 4,
-        maxWidth: 360,
-        padding: '8px 12px',
-        background: '#fef2f2',
-        border: '1px solid #fca5a5',
-        borderRadius: 6,
-        color: '#b91c1c',
-        fontSize: 13,
-        lineHeight: 1.4,
-      }}
-    >
-      <strong>No se puede enviar a revisión:</strong>
-      {violaciones.map((v, indice) => (
-        <span key={indice}>{mensajeDeViolacion(v)}</span>
-      ))}
-    </div>
+    <MensajeEstado tipo="error" rol="alert" className="max-w-[360px]">
+      <div className="flex flex-col gap-1">
+        <strong>No se puede enviar a revisión:</strong>
+        {violaciones.map((v, indice) => (
+          <span key={indice}>{mensajeDeViolacion(v)}</span>
+        ))}
+      </div>
+    </MensajeEstado>
   );
 }
 
@@ -614,7 +602,7 @@ export function PuckEditorWrapper({
       }
       : (initialData as Data) ?? { content: [], root: {} };
 
-    const contentNormalizado = (raw.content ?? []).map((item: any, idx: number) => {
+    const contentNormalizado = (raw.content ?? []).map((item: Data['content'][number], idx: number) => {
       const id = item.props?.id || `${item.type || 'bloque'}-${idx + 1}`;
 
       if (item.type === 'TendenciaOcupacional') {

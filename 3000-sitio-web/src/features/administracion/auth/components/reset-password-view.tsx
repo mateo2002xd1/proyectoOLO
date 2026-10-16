@@ -3,7 +3,7 @@
 import { useEffect, useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { cumplePolitica, primerFallo } from '@olo/password-policy';
+import { cumplePolitica, esPasswordRepetida, primerFallo } from '@olo/password-policy';
 import {
   AuthGeneralError,
   PasswordField,
@@ -23,7 +23,7 @@ import { recuperarPassword } from '../services/recuperacion.service';
  * Recuperación de contraseña (RF-05), paso 3 de 4: la contraseña nueva.
  *
  * En la intranet esta ruta sirve también para el cambio forzado de una cuenta con
- * sesión. Aquí no: ese caso lo resuelve `/first-login`.
+ * sesión. Aquí no: ese caso lo resuelve `/login/first-login`.
  *
  * Diseño nuevo desde el 2026-10-09 (mockup de tablet): saluda por el primer nombre, que
  * el servidor da al verificar las respuestas del paso anterior.
@@ -33,19 +33,22 @@ export function ResetPasswordView() {
   const { recuperacion, terminarRecuperacion } = useFlujoDeRecuperacion();
   const datos = recuperacion?.etapa === 'nueva-contrasena' ? recuperacion : null;
   // Recién guardada, el contexto ya soltó los datos pero la navegación a
-  // `/reset-success` aún no terminó: no es motivo para devolver al principio.
+  // `/login/recovery/reset-success` aún no terminó: no es motivo para devolver al principio.
   const terminada = recuperacion?.etapa === 'terminada';
 
   const [password, setPassword] = useState('');
   const [confirmacion, setConfirmacion] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  // Rechazada aunque cumple todos los requisitos (repite la temporal, la actual o la
+  // anterior): el aviso rojo va en el lugar de «Cumple todos los requisitos».
+  const rechazoDeLaNueva = errors.password && cumplePolitica(password) ? errors.password : undefined;
   const [isLoading, setIsLoading] = useState(false);
   const requisitos = useRequisitosAlEnfocar(password);
 
   // Sin respuestas verificadas no hay con qué cambiar la contraseña: el flujo
   // empieza por el correo.
   useEffect(() => {
-    if (!datos && !terminada) router.replace('/recovery');
+    if (!datos && !terminada) router.replace('/login/recovery');
   }, [datos, terminada, router]);
 
   if (!datos && !terminada) return null;
@@ -73,8 +76,14 @@ export function ResetPasswordView() {
       // el cliente no basta para cambiar una contraseña.
       await recuperarPassword(datos.email, datos.respuestas, password);
       terminarRecuperacion();
-      router.push('/reset-success');
+      router.push('/login/recovery/reset-success');
     } catch (error) {
+      // Repite la actual o la anterior: el aviso va en el campo de la nueva, con su borde
+      // rojo (pedido del usuario, 2026-10-15).
+      if (esPasswordRepetida(error)) {
+        setErrors({ password: (error as Error).message });
+        return;
+      }
       setErrors({ general: (error as Error).message });
     } finally {
       setIsLoading(false);
@@ -105,10 +114,18 @@ export function ResetPasswordView() {
             onFocus={requisitos.alEnfocar}
             describedBy={requisitos.visibles ? 'requisitos-nueva' : undefined}
             error={errors.password}
+            textoDeErrorAparte={Boolean(rechazoDeLaNueva) && requisitos.visibles}
             className={requisitos.visibles ? 'mb-2 md:mb-3' : authPasosHuecoClass}
           />
           {requisitos.visibles && (
-            <PasswordRequisitos id="requisitos-nueva" password={password} variant="solid" resumirAlCumplir className={authPasosHuecoClass} />
+            <PasswordRequisitos
+              id="requisitos-nueva"
+              password={password}
+              variant="solid"
+              resumirAlCumplir
+              rechazo={rechazoDeLaNueva}
+              className={authPasosHuecoClass}
+            />
           )}
 
           <PasswordField

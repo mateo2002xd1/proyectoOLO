@@ -40,7 +40,7 @@ proyecto desde cero. Antes de mover o crear nada, debes auditar lo que ya existe
 8. **No mezcles zonas de acceso.** `sitio-web` tiene dos zonas: `(public)` —
    abierto, ISR, sin credenciales — y la protegida por `middleware.ts`:
    `admin/` (el panel, con su `layout.tsx` como marco común), `(auth)/`
-   (login, primer ingreso y recuperación: `/login`, `/first-login`, `/recovery`…,
+   (login, primer ingreso y recuperación: `/login`, `/login/first-login`, `/login/recovery`…,
    sin el marco del panel), `editor/` y `preview/`. Código de la zona protegida no se importa desde
    `(public)` ni al revés; lo que ambos necesiten
    sube a `features/` o `shared/`. La intranet es 100% protegida, así que no hay

@@ -20,6 +20,8 @@ import {
   AlertActions,
   areaDeModalClass,
   campoDeModalClass,
+  campoDeModalConErrorClass,
+  ErrorDeCampo,
   etiquetaDeModalClass,
 } from '@/shared/ui/molecules/alert';
 import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
@@ -27,6 +29,7 @@ import { BotonDeFila, RESALTE_DE_FILA, ResumenDeFila, useFilasAbiertas } from '@
 import { Paginador } from '@/shared/ui/molecules/paginador';
 import { ModalPermisos } from './modal-permisos';
 import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
+import { AvisoErrorDeCarga } from '@/shared/ui/molecules/aviso-error-de-carga';
 
 /** Largo máximo de la descripción de un rol nuevo. */
 const DESCRIPCION_MAX = 100;
@@ -48,6 +51,8 @@ function ModalNuevoEditor({
   const [descripcion, setDescripcion] = useState('');
   const [selecionados, setSeleccionados] = useState<Set<string>>(new Set());
   const [mostrandoPermisos, setMostrandoPermisos] = useState(false);
+  // Se marca al pulsar «Guardar» sin nombre y se quita en cuanto se escribe.
+  const [faltaNombre, setFaltaNombre] = useState(false);
 
   // Aquí no hay efecto que limpie el formulario al abrir: el padre cambia la `key` en
   // cada apertura, así que este componente se monta de cero y el estado ya nace vacío.
@@ -56,7 +61,10 @@ function ModalNuevoEditor({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nombreExtra.trim()) return;
+    if (!nombreExtra.trim()) {
+      setFaltaNombre(true);
+      return;
+    }
     const nombreFinal = `Editor ${nombreExtra.trim()}`;
     await onGuardar(nombreFinal, descripcion.trim(), Array.from(selecionados));
   };
@@ -68,7 +76,8 @@ function ModalNuevoEditor({
         <AlertDescription>
           Completa los campos para crear un nuevo rol de editor.
         </AlertDescription>
-        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+        {/* `noValidate`: la falta del nombre la marca `handleSubmit` en el campo, no el globo del navegador. */}
+        <form onSubmit={handleSubmit} noValidate className="mt-4 space-y-4">
           <div>
             <label htmlFor="rol-nombre" className={etiquetaDeModalClass}>
               Nombre del rol
@@ -82,10 +91,16 @@ function ModalNuevoEditor({
                 maxLength={70}
                 placeholder="ej: Inicio"
                 value={nombreExtra}
-                onChange={(e) => setNombreExtra(e.target.value)}
-                className={campoDeModalClass}
+                onChange={(e) => {
+                  setNombreExtra(e.target.value);
+                  setFaltaNombre(false);
+                }}
+                aria-invalid={faltaNombre || undefined}
+                aria-describedby={faltaNombre ? 'rol-nombre-error' : undefined}
+                className={faltaNombre ? campoDeModalConErrorClass : campoDeModalClass}
               />
             </div>
+            {faltaNombre && <ErrorDeCampo id="rol-nombre-error">Falta el nombre del rol.</ErrorDeCampo>}
           </div>
           <div>
             <label htmlFor="rol-descripcion" className={etiquetaDeModalClass}>
@@ -173,6 +188,7 @@ export default function RolesView() {
     revokePermissionFromRole,
     users,
     fetchUsers,
+    error,
   } = useUsuarios();
 
   const [loading, setLoading] = useState(true);
@@ -215,6 +231,12 @@ export default function RolesView() {
     });
     return () => { cancelado = true; };
   }, [fetchRoles, fetchPermissions, fetchUsers]);
+
+  /** Tras un fallo de carga: vuelve a pedirlo todo, con el cargador. */
+  const reintentarCarga = () => {
+    setLoading(true);
+    Promise.all([fetchRoles(), fetchPermissions(), fetchUsers()]).finally(() => setLoading(false));
+  };
 
   const normalizar = (t: string) =>
     t.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
@@ -329,7 +351,7 @@ export default function RolesView() {
     } finally {
       setLoadingRolePerms(false);
     }
-  }, [fetchRolePermissions]);
+  }, [fetchPermissions, fetchRolePermissions]);
 
   const guardarPermisos = useCallback(async () => {
     if (!rolPermisos) return;
@@ -338,7 +360,7 @@ export default function RolesView() {
       const aAsignar = [...selectedPermissionIds].filter((id) => !originalPermissionIds.has(id));
       const aRevocar = [...originalPermissionIds].filter((id) => !selectedPermissionIds.has(id));
       
-      const promises: Promise<any>[] = [
+      const promises: Promise<unknown>[] = [
         ...aAsignar.map((permId) => assignPermissionToRole(rolPermisos.id, permId)),
         ...aRevocar.map((permId) => revokePermissionFromRole(rolPermisos.id, permId)),
       ];
@@ -408,6 +430,11 @@ export default function RolesView() {
           espacio de la sección como en las demás (una celda no se puede estirar). */}
       {loading ? (
         <CargandoSeccion label="Cargando roles..." />
+      ) : error && roles.length === 0 ? (
+        // Sin roles que enseñar porque la API no contestó (pedido del usuario, 2026-10-15):
+        // antes, la tabla vacía sin decir nada. El error es el de `fetchUsers`, que va a la
+        // misma API; `fetchRoles` solo lo registra (ver `use-usuarios.ts`).
+        <AvisoErrorDeCarga titulo="No pudimos cargar los roles" mensaje={error} onReintentar={reintentarCarga} />
       ) : (
       <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-[#7db828]/30 dark:bg-[#131b2f]">
         {/* En el móvil y la tablet, acordeón, como Usuarios: el encabezado de cada fila es

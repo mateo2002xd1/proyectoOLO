@@ -35,7 +35,8 @@ export async function POST(request: Request) {
   const data = await apiRes.json().catch(() => null);
   if (!apiRes.ok) {
     return NextResponse.json(
-      { error: data?.error ?? 'No fue posible recuperar la contraseña' },
+      // `code` pasa tal cual: con `PASSWORD_REPETIDA` la pantalla marca el campo.
+      { error: data?.error ?? 'No fue posible recuperar la contraseña', code: data?.code },
       { status: apiRes.status || 500 }
     );
   }

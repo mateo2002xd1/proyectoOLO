@@ -1,4 +1,5 @@
 /** Contratos de la bitácora de cambios (RF-07). Espejo del DTO de la API. */
+import { CONTORNO_DE_ETIQUETA_EN_OSCURO } from '@/shared/ui/atoms/etiqueta';
 
 export type EntidadAuditable =
   | 'contenido'
@@ -110,32 +111,33 @@ export const FILTROS_VACIOS: FiltrosAuditoria = {
 };
 
 /**
- * Sustantivos y no verbos conjugados: la misma etiqueta sirve en el desplegable
- * del filtro («Publicación») y en la tabla, sin necesitar dos listas.
+ * Participios desde el 2026-10-15 («Publicado», «Editado»; antes sustantivos como
+ * «Publicación»): la misma etiqueta sirve en el desplegable del filtro y en la tabla,
+ * sin necesitar dos listas.
  *
  * Es la etiqueta **por defecto** de cada verbo de la base. Varios verbos comparten
- * etiqueta a propósito —«Edición» son `guardar_borrador` y `enviar_revision`;
- * «Publicación», `aprobar` y `publicar`— porque quien audita no piensa en los pasos
+ * etiqueta a propósito —«Editado» son `guardar_borrador` y `enviar_revision`;
+ * «Publicado», `aprobar` y `publicar`— porque quien audita no piensa en los pasos
  * internos del ciclo editorial sino en lo que ocurrió con la página. Y `actualizar`
  * cambia de nombre según la categoría de la fila: ver `etiquetaDeAccion`.
  */
 export const ETIQUETA_ACCION: Record<AccionAuditable, string> = {
-  crear: 'Creación',
-  actualizar: 'Actualización',
-  eliminar: 'Eliminación',
-  publicar: 'Publicación',
+  crear: 'Creado',
+  actualizar: 'Modificado',
+  eliminar: 'Eliminado',
+  publicar: 'Publicado',
   despublicar: 'Archivado',
-  aprobar: 'Publicación',
-  rechazar: 'Rechazo',
-  enviar_revision: 'Edición',
-  guardar_borrador: 'Edición',
+  aprobar: 'Publicado',
+  rechazar: 'Rechazado',
+  enviar_revision: 'Editado',
+  guardar_borrador: 'Editado',
   autoguardar_borrador: 'Autoguardado',
-  cambiar_password: 'Cambio de contraseña',
-  autenticar: 'Autenticación',
-  expirar: 'Expiró',
-  inactivar: 'Inactivación',
-  bloquear: 'Bloqueo',
-  verificar_preguntas: 'Preguntas de seguridad',
+  cambiar_password: 'Actualizado',
+  autenticar: 'Autenticado',
+  expirar: 'Expirado',
+  inactivar: 'Inactivado',
+  bloquear: 'Bloqueado',
+  verificar_preguntas: 'Verificado',
 };
 
 export const ETIQUETA_ENTIDAD: Record<EntidadAuditable, string> = {
@@ -159,99 +161,66 @@ export const ETIQUETA_CATEGORIA: Record<CategoriaAuditoria, string> = {
  * Cómo se nombra una acción cuando se sabe a qué categoría pertenece la fila.
  *
  * `actualizar` es el mismo verbo en la base para dos cosas que a quien audita le
- * importan por separado: editar una página o un contenido es «Edición» —el mismo nombre
+ * importan por separado: editar una página o un contenido es «Editado» —el mismo nombre
  * que guardar un borrador—, y cambiar un usuario o un rol (su rol, sus permisos, sus
- * datos) es «Modificación». Con solo el verbo no se puede distinguir; con la categoría
+ * datos) es «Modificado». Con solo el verbo no se puede distinguir; con la categoría
  * sí, y es la misma que usa el filtro, así que la píldora de una fila y lo que trae el
- * filtro «Edición» nunca discrepan: hay 165 filas de `pagina` con `actualizar` de antes
+ * filtro «Editado» nunca discrepan: hay 165 filas de `pagina` con `actualizar` de antes
  * de que existiera `guardar_borrador`, y el filtro las cuenta como ediciones. Sin
- * categoría queda «Actualización».
+ * categoría queda «Modificado»: «Actualizado» es el cambio de contraseña.
  */
 export const etiquetaDeAccion = (accion: AccionAuditable, categoria?: CategoriaAuditoria | null) => {
   if (accion === 'actualizar') {
-    if (categoria === 'editorial') return 'Edición';
-    if (categoria === 'seguridad') return 'Modificación';
+    if (categoria === 'editorial') return 'Editado';
+    if (categoria === 'seguridad') return 'Modificado';
   }
   return ETIQUETA_ACCION[accion] ?? accion;
 };
 
 /**
- * Severidad de cada acción, con los nombres de los cuatro niveles de un sistema de
- * diseño: `brand` (rutina), `success` (logro), `warning` (atención) y `danger`
- * (crítico). `dangerFuerte` es el mismo `danger` en su nivel más alto.
+ * El color de cada etiqueta de acción, fondo y letra, como los eligió el usuario
+ * (2026-10-15). Va por **etiqueta** y no por verbo: `actualizar` es «Editado» o
+ * «Modificado» según la categoría, y cada una lleva su color. Lo resuelve
+ * `colorDeAccion`, que usan la píldora de la tabla, la frase del acordeón y el detalle.
  *
- * Antes cada acción tenía su propio color —nueve tonos, sin más orden que ser
- * distintos—. Ahora el color dice **qué tan grave es o qué tan atento hay que estar**,
- * y son cuatro tonos que se aprenden de una vez:
- *
- * - `brand` — **Rutina.** Actividad normal del sistema, sin nada que mirar: crear,
- *   editar, modificar, autenticarse, archivar, cambiar contraseña. Verde de marca.
- * - `success` — **Logro.** Algo llegó a buen puerto y ya lo ve el público: publicar.
- * - `warning` — **Atención.** Nada se perdió, pero alguien tiene que hacer algo:
- *   corregir un rechazo o reactivar una cuenta que caducó.
- * - `danger` — **Crítico.** Se pierde algo o se cierra un acceso. `dangerFuerte` es la
- *   eliminación, que no se deshace y por eso es lo único en relleno sólido;
- *   `danger` a secas es inactivar una cuenta, que se puede revertir.
- *
- * El color **no es el único indicador**: la píldora siempre lleva su etiqueta al lado,
- * así que quien no distinga los tonos lee igual la acción. Es lo que exige
- * `9-accesibilidad.md`. Contrastes medidos con la paleta de Tailwind v4 y, en oscuro,
- * con el fondo translúcido compuesto sobre el del panel (`#131b2f`); texto contra
- * fondo, claro / oscuro: `success` 6.5 / 11.5, `warning` 8.1 / 11.4 —el ámbar mantiene
- * su `900` en el texto, que en `800` se queda corto—, `danger` 6.9 / 10.4,
- * `dangerFuerte` 6.4, y `brand` 7.0 / 6.3. AA pide 4.5.
+ * Reemplaza los cuatro niveles de severidad de antes (rutina, logro, atención,
+ * crítico). Los colores son fijos, los mismos en tema claro y oscuro: con relleno
+ * sólido se leen igual sobre los dos fondos. El color no es el único indicador: la
+ * píldora siempre lleva su nombre (`9-accesibilidad.md`).
  */
-export type VarianteBadge = 'brand' | 'success' | 'warning' | 'danger' | 'dangerFuerte';
-
-export const CLASES_BADGE: Record<VarianteBadge, string> = {
-  // El verde de marca (`--color-brand-interactive`, #7DB828) es de tono medio: como
-  // texto no llega a AA sobre su propio fondo, así que el texto va con sombras más
-  // oscuras (claro) o más claras (oscuro), las mismas familias del enlace «Ver más».
-  brand: 'bg-[#7DB828]/20 text-[#365812] dark:bg-[#7DB828]/25 dark:text-[#9ED65C]',
-  success: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200',
-  warning: 'bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-200',
-  danger: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200',
-  dangerFuerte: 'bg-red-700 text-white',
+export const COLOR_DE_ETIQUETA: Record<string, string> = {
+  Creado: 'bg-[#39A900] text-white',
+  Editado: 'bg-[#001631] text-white',
+  Autoguardado: 'bg-[#1FACE3] text-white',
+  Rechazado: 'bg-[#FFE9E9] text-[#FF1F1F]',
+  Publicado: 'bg-[#7DB728] text-white',
+  Archivado: 'bg-[#FDC300] text-white',
+  Autenticado: 'bg-[#007832] text-white',
+  Modificado: 'bg-[#71277A] text-white',
+  Expirado: 'bg-[#FEECB0] text-[#8F6E00]',
+  Inactivado: 'bg-[#BFBFBF] text-[#303030]',
+  Bloqueado: 'bg-[#FF6969] text-white',
+  Verificado: 'bg-[#3F1E6B] text-white',
+  Actualizado: 'bg-[#00304D] text-white',
+  Eliminado: 'bg-[#E81C1C] text-white',
 };
 
-export const VARIANTE_ACCION: Record<AccionAuditable, VarianteBadge> = {
-  crear: 'brand',
-  actualizar: 'brand',
-  guardar_borrador: 'brand',
-  autoguardar_borrador: 'brand',
-  enviar_revision: 'brand',
-  despublicar: 'brand',
-  cambiar_password: 'brand',
-  autenticar: 'brand',
-  publicar: 'success',
-  aprobar: 'success',
-  rechazar: 'warning',
-  expirar: 'warning',
-  inactivar: 'danger',
-  // Se cierra un acceso, aunque sea por un rato: mismo nivel que inactivar.
-  bloquear: 'danger',
-  // Rutina: el resultado —acierto o fallo— lo dice la frase, no el color.
-  verificar_preguntas: 'brand',
-  eliminar: 'dangerFuerte',
-};
-
-/** Las clases de la píldora de cada acción, ya resueltas a partir de su severidad. */
-export const COLOR_ACCION: Record<AccionAuditable, string> = Object.fromEntries(
-  (Object.keys(VARIANTE_ACCION) as AccionAuditable[]).map((accion) => [
-    accion,
-    CLASES_BADGE[VARIANTE_ACCION[accion]],
-  ]),
-) as Record<AccionAuditable, string>;
+/**
+ * Las clases de la píldora de una acción, a partir de la etiqueta que lleva en esa fila. En
+ * modo oscuro, con el contorno claro: las de fondo oscuro se fundían con la tabla.
+ */
+export const colorDeAccion = (accion: AccionAuditable, categoria?: CategoriaAuditoria | null) =>
+  `${COLOR_DE_ETIQUETA[etiquetaDeAccion(accion, categoria)] ?? 'bg-zinc-200 text-zinc-800'} ${CONTORNO_DE_ETIQUETA_EN_OSCURO}`;
 
 /**
  * Una entrada del desplegable «Acción».
  *
  * `value` puede llevar varios verbos de la base separados por coma, porque una etiqueta
- * agrupa: «Edición» es `actualizar`, `guardar_borrador` y `enviar_revision`. Cada acción
+ * agrupa: «Editado» es `actualizar`, `guardar_borrador` y `enviar_revision`. Cada acción
  * pertenece a **una sola** categoría: elegirla fija también la categoría, y con una
  * categoría elegida el desplegable oculta las de las otras dos.
  *
- * Por qué la acción viaja siempre con su categoría: «Edición» y «Modificación» incluyen
+ * Por qué la acción viaja siempre con su categoría: «Editado» y «Modificado» incluyen
  * las dos el verbo `actualizar`, y solo la categoría dice si se habla de una página o de
  * una cuenta. La API las combina con «y».
  */
@@ -262,22 +231,22 @@ export interface OpcionAccion {
 }
 
 export const OPCIONES_ACCION: OpcionAccion[] = [
-  { value: 'crear', label: 'Creación', categoria: 'editorial' },
-  { value: 'actualizar,guardar_borrador,enviar_revision', label: 'Edición', categoria: 'editorial' },
-  // Aparte de «Edición» a propósito: se escribe solo cada 30 s mientras alguien edita, y
-  // dentro de «Edición» taparía los guardados y envíos que sí decidió una persona.
+  { value: 'crear', label: 'Creado', categoria: 'editorial' },
+  { value: 'actualizar,guardar_borrador,enviar_revision', label: 'Editado', categoria: 'editorial' },
+  // Aparte de «Editado» a propósito: se escribe solo cada 30 s mientras alguien edita, y
+  // dentro de «Editado» taparía los guardados y envíos que sí decidió una persona.
   { value: 'autoguardar_borrador', label: 'Autoguardado', categoria: 'editorial' },
-  { value: 'rechazar', label: 'Rechazo', categoria: 'administracion' },
-  { value: 'aprobar,publicar', label: 'Publicación', categoria: 'administracion' },
+  { value: 'rechazar', label: 'Rechazado', categoria: 'administracion' },
+  { value: 'aprobar,publicar', label: 'Publicado', categoria: 'administracion' },
   { value: 'despublicar', label: 'Archivado', categoria: 'administracion' },
-  { value: 'autenticar', label: 'Autenticación', categoria: 'seguridad' },
-  { value: 'actualizar', label: 'Modificación', categoria: 'seguridad' },
-  { value: 'expirar', label: 'Expiró', categoria: 'seguridad' },
-  { value: 'inactivar', label: 'Inactivación', categoria: 'seguridad' },
-  { value: 'bloquear', label: 'Bloqueo', categoria: 'seguridad' },
-  { value: 'verificar_preguntas', label: 'Preguntas de seguridad', categoria: 'seguridad' },
-  { value: 'cambiar_password', label: 'Cambio de contraseña', categoria: 'seguridad' },
-  { value: 'eliminar', label: 'Eliminación', categoria: 'seguridad' },
+  { value: 'autenticar', label: 'Autenticado', categoria: 'seguridad' },
+  { value: 'actualizar', label: 'Modificado', categoria: 'seguridad' },
+  { value: 'expirar', label: 'Expirado', categoria: 'seguridad' },
+  { value: 'inactivar', label: 'Inactivado', categoria: 'seguridad' },
+  { value: 'bloquear', label: 'Bloqueado', categoria: 'seguridad' },
+  { value: 'verificar_preguntas', label: 'Verificado', categoria: 'seguridad' },
+  { value: 'cambiar_password', label: 'Actualizado', categoria: 'seguridad' },
+  { value: 'eliminar', label: 'Eliminado', categoria: 'seguridad' },
 ];
 
 /** Las acciones que caben con la categoría elegida (o todas, si no hay ninguna). */

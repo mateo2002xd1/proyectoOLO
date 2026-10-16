@@ -37,7 +37,16 @@ export function codigoDeError(error: unknown): string | undefined {
 
 /** Lo que se le dice a quien usa el panel cuando la API no llegó a contestar. */
 export const MENSAJE_SIN_RESPUESTA =
-  'El servidor está tardando en responder. Puede ser la conexión o que se esté reiniciando.';
+  'El servidor está tardando en responder, posibles causas: tu conexión a internet o que se esté reiniciando.';
+
+/**
+ * El 403 de `requireAuth` a una cuenta con el primer ingreso pendiente, con el texto
+ * exacto de la API. Todas las pantallas guardan el error como texto (`mensajeDeErrorApi`,
+ * `pedirJson` o el `fetch` de la bitácora), así que `AvisoErrorDeCarga` lo reconoce
+ * comparando: si la API cambia la frase, hay que cambiarla aquí también.
+ */
+export const MENSAJE_CONFIGURACION_PENDIENTE =
+  'Termina de configurar tu cuenta (contraseña y preguntas de seguridad) para continuar.';
 
 /**
  * Si la petición se quedó sin respuesta: se agotó el tiempo (`ECONNABORTED`,

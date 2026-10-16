@@ -3,30 +3,36 @@ import type { NextRequest } from "next/server";
 import { verificarSesion } from "@/shared/lib/verificar-sesion";
 
 /**
- * Pantallas de acceso: `app/(auth)/`. Son hermanas de `/login` y no cuelgan de él
- * (`/recovery`, no `/login/recovery`), así que ya no basta con mirar el prefijo
- * `/login`: sin esta lista, quien va a recuperar su contraseña —que no tiene
- * sesión— rebotaría al login.
+ * Pantallas de acceso: `app/(auth)/login/`. Desde el 2026-10-15 cuelgan de `/login`
+ * (`/login/recovery`, `/login/first-login`...), y cada flujo con su propia dirección:
+ * el primer ingreso bajo `/login/first-login` (también el cambio obligatorio de una
+ * temporal restablecida) y la recuperación bajo `/login/recovery`, aunque compartan
+ * vistas. La lista es explícita, no un prefijo,
+ * para que solo estas rutas se salten la exigencia de sesión: sin ella, quien va a
+ * recuperar su contraseña —que no tiene sesión— rebotaría al login.
  */
 const RUTAS_DE_ACCESO = [
   '/login',
-  '/first-login',
-  '/recovery',
-  '/security-questions',
-  '/reset-password',
-  '/reset-success',
+  '/login/first-login',
+  '/login/first-login/security-questions',
+  '/login/first-login/change-password',
+  '/login/first-login/change-success',
+  '/login/recovery',
+  '/login/recovery/security-questions',
+  '/login/recovery/reset-password',
+  '/login/recovery/reset-success',
 ];
 
 /**
  * Las que se pueden visitar con una sesión que aún debe cambiar la contraseña o
- * configurar las preguntas. `/login` y `/recovery` no: con sesión no tienen nada
- * que hacer y se manda a la pantalla pendiente.
+ * configurar las preguntas: las del primer ingreso. `/login` y la recuperación no: con
+ * sesión no tienen nada que hacer y se manda a la pantalla pendiente.
  */
 const RUTAS_DE_CONFIGURACION_PENDIENTE = [
-  '/first-login',
-  '/reset-password',
-  '/reset-success',
-  '/security-questions',
+  '/login/first-login',
+  '/login/first-login/security-questions',
+  '/login/first-login/change-password',
+  '/login/first-login/change-success',
 ];
 
 /**
@@ -50,11 +56,11 @@ export async function proxy(request: NextRequest) {
 
   const getRestrictedRedirect = () => {
     if (mustSetupSecurityQuestions && mustChangePassword) {
-      return NextResponse.redirect(new URL('/first-login', request.url));
+      return NextResponse.redirect(new URL('/login/first-login', request.url));
     } else if (mustSetupSecurityQuestions) {
-      return NextResponse.redirect(new URL('/security-questions', request.url));
+      return NextResponse.redirect(new URL('/login/first-login/security-questions', request.url));
     } else if (mustChangePassword) {
-      return NextResponse.redirect(new URL('/reset-password', request.url));
+      return NextResponse.redirect(new URL('/login/first-login/change-password', request.url));
     }
     return NextResponse.redirect(new URL('/inicio', request.url)); // Fallback
   };
@@ -73,7 +79,7 @@ export async function proxy(request: NextRequest) {
     // Si el usuario ya está logueado y trata de acceder a una pantalla de acceso, redirigir
     if (isTokenValid && esRutaDeAcceso) {
       // Bloquear si tiene sesión pero no permisos para intranet (p. ej. si llega directo
-      // a /first-login saltándose la vista de login, o redirigido desde el inicio)
+      // a /login/first-login saltándose la vista de login, o redirigido desde el inicio)
       if (!sesion?.permisos.includes('acceso.intranet')) {
         const response = NextResponse.redirect(new URL('/login?error=acceso_denegado', request.url));
         if (token) {
@@ -82,9 +88,9 @@ export async function proxy(request: NextRequest) {
         return response;
       }
 
-      // La pantalla de éxito de restablecimiento se debe poder ver tras completar el cambio
-      // o para verificar su visualización, sin rebotar a /inicio.
-      if (pathname === '/reset-success') {
+      // Las pantallas de éxito se deben poder ver tras completar el cambio o para
+      // verificar su visualización, sin rebotar a /inicio.
+      if (pathname === '/login/recovery/reset-success' || pathname === '/login/first-login/change-success') {
         return NextResponse.next();
       }
 

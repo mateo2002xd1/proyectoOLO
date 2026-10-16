@@ -256,6 +256,7 @@ export function Header({
         <div className="olo-gov-banner">
           <div className="olo-gov-banner-container">
             {govBannerImageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element -- la imagen la elige el editor (cualquier URL o SVG) y su tamaño va por CSS: next/image exigiría width/height fijos y remotePatterns
               <img src={govBannerImageUrl} alt="Banner Gobierno" className="olo-gov-banner-custom-img" />
             ) : (
               <a
@@ -304,6 +305,7 @@ export function Header({
           <div className="olo-logo-group">
             <a href="/inicio" className="olo-logo-mark" aria-label="Ir al inicio">
               {mainLogoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element -- la imagen la elige el editor (cualquier URL o SVG) y su tamaño va por CSS: next/image exigiría width/height fijos y remotePatterns
                 <img
                   src={mainLogoUrl}
                   alt="Logo SENA / Observatorio"

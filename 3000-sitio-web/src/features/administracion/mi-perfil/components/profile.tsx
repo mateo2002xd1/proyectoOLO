@@ -2,9 +2,31 @@
 
 import React, { useState, useEffect, useTransition } from 'react';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
-import { cumplePolitica, primerFallo } from '@olo/password-policy';
+import {
+  cumplePolitica,
+  esPasswordRepetida,
+  MENSAJE_PASSWORD_REPETIDA,
+  primerFallo,
+  repiteLaPassword,
+} from '@olo/password-policy';
+import { validarEmail } from '@olo/email-policy';
 import { getProfileData, updateProfileInfo, changePassword } from '../profile.actions';
 import { PasswordRequisitos } from '../../auth/components/auth-ui';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
+import { ErrorDeCampo } from '@/shared/ui/molecules/alert';
+
+type CampoPerfil = 'nombre' | 'apellidos' | 'correo' | 'password_actual' | 'password_nueva' | 'password_confirmacion';
+type ErroresPerfil = Partial<Record<CampoPerfil, string>>;
+
+/*
+ * El campo de este formulario, normal y con error. Dos clases enteras y no un borde rojo
+ * añadido detrás: con dos colores de borde en la misma lista gana el que Tailwind escriba
+ * después en su hoja, no el último de la lista. El rojo es el de los mensajes de error.
+ */
+const campoComun =
+    'w-full px-4 py-2 border rounded-lg focus:ring-2 transition-colors bg-white dark:bg-gray-800 dark:text-gray-100';
+const campoNormal = `${campoComun} border-gray-300 dark:border-gray-700 focus:ring-[#1FACE3] focus:border-[#1FACE3]`;
+const campoConError = `${campoComun} border-[#d90000] dark:border-[#ff6b6b] focus:ring-[#d90000] focus:border-[#d90000]`;
 
 export function ProfileForm() {
     const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -15,6 +37,23 @@ export function ProfileForm() {
     const [isPending, startTransition] = useTransition();
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
     const [passwordNueva, setPasswordNueva] = useState('');
+    // Lo que falta o está mal, campo por campo: borde rojo y aviso debajo al pulsar
+    // «Guardar Cambios»; el de un campo se borra en cuanto se escribe en él.
+    const [errores, setErrores] = useState<ErroresPerfil>({});
+    const quitarError = (campo: CampoPerfil) =>
+        setErrores((previos) => {
+            if (!previos[campo]) return previos;
+            const siguientes = { ...previos };
+            delete siguientes[campo];
+            return siguientes;
+        });
+
+    /** Atributos de un campo según tenga error o no: clase, `aria-invalid` y a qué aviso apunta. */
+    const propsDeCampo = (campo: CampoPerfil, extra = '') => ({
+        className: `${errores[campo] ? campoConError : campoNormal} ${extra}`.trim(),
+        'aria-invalid': Boolean(errores[campo]) || undefined,
+        'aria-describedby': errores[campo] ? `${campo}-error` : undefined,
+    });
 
     const [formData, setFormData] = useState({
         nombre: '',
@@ -42,6 +81,7 @@ export function ProfileForm() {
             value = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
         }
         setFormData(prev => ({ ...prev, [e.target.name]: value }));
+        quitarError(e.target.name as CampoPerfil);
     };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -51,19 +91,49 @@ export function ProfileForm() {
         const form = new FormData(e.currentTarget);
         const data = Object.fromEntries(form.entries());
 
+        // Todo se revisa de una vez y cada falta se marca en su campo, en vez del globo del
+        // navegador —que solo enseña el primero— o de un mensaje arriba que no dice dónde
+        // está el problema. El servidor lo exige igualmente; esto evita el viaje de ida y
+        // vuelta para decir lo que ya se ve en el formulario.
+        const texto = (clave: CampoPerfil) => String(data[clave] ?? '');
+        const nuevos: ErroresPerfil = {};
+        if (isChangingPassword) {
+            if (!texto('password_actual')) nuevos.password_actual = 'Falta la contraseña actual.';
+            if (!texto('password_nueva')) {
+                nuevos.password_nueva = 'Falta la nueva contraseña.';
+            } else if (!cumplePolitica(texto('password_nueva'))) {
+                nuevos.password_nueva = primerFallo(texto('password_nueva')) ?? 'La contraseña no cumple los requisitos.';
+            } else if (repiteLaPassword(texto('password_nueva'), texto('password_actual'))) {
+                // Igual a la actual que acaba de escribir: no hace falta preguntar al servidor.
+                nuevos.password_nueva = MENSAJE_PASSWORD_REPETIDA;
+            }
+            if (!texto('password_confirmacion')) {
+                nuevos.password_confirmacion = 'Falta confirmar la contraseña.';
+            } else if (texto('password_nueva') !== texto('password_confirmacion')) {
+                nuevos.password_confirmacion = 'Las contraseñas nuevas no coinciden.';
+            }
+        } else {
+            if (!texto('nombre').trim()) nuevos.nombre = 'Falta el nombre.';
+            if (!texto('apellidos').trim()) nuevos.apellidos = 'Faltan los apellidos.';
+            if (!texto('correo').trim()) {
+                nuevos.correo = 'Falta el correo electrónico.';
+            } else {
+                const falloCorreo = validarEmail(texto('correo'));
+                if (falloCorreo) nuevos.correo = falloCorreo;
+            }
+        }
+        setErrores(nuevos);
+        if (Object.keys(nuevos).length > 0) return;
+
         startTransition(async () => {
             if (isChangingPassword) {
-                if (data.password_nueva !== data.password_confirmacion) {
-                    setMessage({ type: 'error', text: 'Las contraseñas nuevas no coinciden' });
-                    return;
-                }
-                // El servidor la exige igualmente; esto solo evita el viaje de ida y
-                // vuelta para decir lo que ya se ve en la lista de requisitos.
-                if (!cumplePolitica(data.password_nueva as string)) {
-                    setMessage({ type: 'error', text: primerFallo(data.password_nueva as string) ?? '' });
-                    return;
-                }
                 const res = await changePassword(data);
+                // Repite la actual o la anterior: el aviso va en el campo de la nueva, con
+                // su borde rojo, y no arriba (pedido del usuario, 2026-10-15).
+                if (!res.success && esPasswordRepetida(res)) {
+                    setErrores({ password_nueva: res.error });
+                    return;
+                }
                 if (!res.success) {
                     setMessage({ type: 'error', text: res.error || 'Error al cambiar contraseña' });
                     return;
@@ -96,15 +166,21 @@ export function ProfileForm() {
 
     return (
         <div className="dark:bg-transparent">
-            <h2 className="admin-header text-gray-800 dark:text-gray-100 mb-6">Mi Perfil</h2>
+            <h2 className="admin-header text-[#001631] dark:text-gray-100 mb-6">Mi Perfil</h2>
 
-            {message && (
-                <div className={`p-4 mb-6 rounded-xl text-sm ${message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800' : 'bg-red-50 text-red-800 border border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800'}`}>
+            {message?.type === 'success' && (
+                <MensajeEstado tipo="exito" className="mb-6">
                     {message.text}
-                </div>
+                </MensajeEstado>
+            )}
+            {message && message.type !== 'success' && (
+                <MensajeEstado tipo="error" rol="alert" className="mb-6">
+                    {message.text}
+                </MensajeEstado>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            {/* `noValidate`: las faltas las marca `handleSubmit` en cada campo, no el globo del navegador. */}
+            <form onSubmit={handleSubmit} noValidate className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                         <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -118,9 +194,10 @@ export function ProfileForm() {
                             onChange={handleChange}
                             required
                             maxLength={50}
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors bg-white dark:bg-gray-800 dark:text-gray-100"
+                            {...propsDeCampo('nombre')}
                             placeholder="Tu nombre"
                         />
+                        {errores.nombre && <ErrorDeCampo id="nombre-error">{errores.nombre}</ErrorDeCampo>}
                     </div>
 
                     <div className="space-y-2">
@@ -135,9 +212,10 @@ export function ProfileForm() {
                             onChange={handleChange}
                             required
                             maxLength={50}
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors bg-white dark:bg-gray-800 dark:text-gray-100"
+                            {...propsDeCampo('apellidos')}
                             placeholder="Tus apellidos"
                         />
+                        {errores.apellidos && <ErrorDeCampo id="apellidos-error">{errores.apellidos}</ErrorDeCampo>}
                     </div>
 
                     <div className="space-y-2 md:col-span-2">
@@ -152,9 +230,10 @@ export function ProfileForm() {
                             onChange={handleChange}
                             required
                             maxLength={100}
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors bg-white dark:bg-gray-800 dark:text-gray-100"
+                            {...propsDeCampo('correo')}
                             placeholder="tu@correo.com"
                         />
+                        {errores.correo && <ErrorDeCampo id="correo-error">{errores.correo}</ErrorDeCampo>}
                     </div>
                 </div>
 
@@ -164,7 +243,10 @@ export function ProfileForm() {
                 <div>
                     <button
                         type="button"
-                        onClick={() => setIsChangingPassword(!isChangingPassword)}
+                        onClick={() => {
+                            setIsChangingPassword(!isChangingPassword);
+                            setErrores({});
+                        }}
                         className="text-[#4C7A1C] font-medium hover:text-brand transition-colors text-sm flex items-center gap-2"
                     >
                         <span>{isChangingPassword ? 'Cancelar cambio de contraseña' : 'Cambiar contraseña'}</span>
@@ -189,7 +271,8 @@ export function ProfileForm() {
                                         type={showActual ? "text" : "password"}
                                         id="password_actual"
                                         name="password_actual"
-                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors bg-white dark:bg-gray-800 dark:text-gray-100 pr-10"
+                                        onChange={() => quitarError('password_actual')}
+                                        {...propsDeCampo('password_actual', 'pr-10')}
                                         placeholder="••••••••"
                                     />
                                     <button
@@ -204,6 +287,9 @@ export function ProfileForm() {
                                         )}
                                     </button>
                                 </div>
+                                {errores.password_actual && (
+                                    <ErrorDeCampo id="password_actual-error">{errores.password_actual}</ErrorDeCampo>
+                                )}
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -220,8 +306,11 @@ export function ProfileForm() {
                                             // escribe; `name` se conserva porque el envío sigue leyéndose
                                             // con FormData, como el resto del formulario.
                                             value={passwordNueva}
-                                            onChange={(e) => setPasswordNueva(e.target.value)}
-                                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors bg-white dark:bg-gray-800 dark:text-gray-100 pr-10"
+                                            onChange={(e) => {
+                                                setPasswordNueva(e.target.value);
+                                                quitarError('password_nueva');
+                                            }}
+                                            {...propsDeCampo('password_nueva', 'pr-10')}
                                             placeholder="••••••••"
                                         />
                                         <button
@@ -236,6 +325,9 @@ export function ProfileForm() {
                                             )}
                                         </button>
                                     </div>
+                                    {errores.password_nueva && (
+                                        <ErrorDeCampo id="password_nueva-error">{errores.password_nueva}</ErrorDeCampo>
+                                    )}
                                     <PasswordRequisitos password={passwordNueva} className="" />
                                 </div>
                                 <div className="space-y-2">
@@ -247,7 +339,8 @@ export function ProfileForm() {
                                             type={showConfirm ? "text" : "password"}
                                             id="password_confirmacion"
                                             name="password_confirmacion"
-                                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#1FACE3] focus:border-[#1FACE3] transition-colors bg-white dark:bg-gray-800 dark:text-gray-100 pr-10"
+                                            onChange={() => quitarError('password_confirmacion')}
+                                            {...propsDeCampo('password_confirmacion', 'pr-10')}
                                             placeholder="••••••••"
                                         />
                                         <button
@@ -262,6 +355,9 @@ export function ProfileForm() {
                                             )}
                                         </button>
                                     </div>
+                                    {errores.password_confirmacion && (
+                                        <ErrorDeCampo id="password_confirmacion-error">{errores.password_confirmacion}</ErrorDeCampo>
+                                    )}
                                 </div>
                             </div>
                         </div>

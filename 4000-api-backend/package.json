@@ -41,6 +41,7 @@
     "probar:carga-observatorio": "ts-node scripts/verificaciones/probar-carga-observatorio.ts",
     "probar:versionamiento": "ts-node scripts/verificaciones/probar-versionamiento.ts",
     "email:verificar": "ts-node scripts/verificaciones/verificar-politica-email.ts",
+    "sesion:verificar": "ts-node scripts/verificaciones/verificar-cookie-de-sesion.ts",
     "seed:generar": "ts-node scripts/semillas/generar-seed-contenido.ts",
     "crear:superadmin": "ts-node scripts/semillas/crear-superadmin.ts",
     "contenido:revisar": "ts-node scripts/puntuales/revisar-contenido-guardado.ts"
@@ -48,6 +49,7 @@
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
     "@olo/accessibility-policy": "file:../packages/accessibility-policy",
+    "@olo/password-policy": "file:../packages/password-policy",
     "@olo/slug-policy": "file:../packages/slug-policy",
     "@olo/upload-policy": "file:../packages/upload-policy",
     "bcryptjs": "^3.0.3",
@@ -93,6 +95,9 @@
   },
   "overrides": {
     "sequelize": {
+      "uuid": "^11.1.1"
+    },
+    "exceljs": {
       "uuid": "^11.1.1"
     }
   }

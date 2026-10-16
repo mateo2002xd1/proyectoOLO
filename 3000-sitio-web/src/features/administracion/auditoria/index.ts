@@ -7,7 +7,7 @@
 
 // Components
 export { AuditoriaView } from './components/auditoria-view';
-export { FraseDeRegistro, PildoraDeAccion } from './components/frase-de-registro';
+export { FraseDeActividad, FraseDeRegistro, PildoraDeAccion } from './components/frase-de-registro';
 
 // Hooks
 export { useAuditoria } from './hooks/use-auditoria';
@@ -22,7 +22,7 @@ export { resumenDeCambios } from './lib/cambios';
 // Presentación compartida: el panel general resume la bitácora con las mismas
 // etiquetas, colores y resumen de cambios que la tabla de auditoría, para que no
 // haya dos lenguajes ni dos lecturas de qué cambió cada registro.
-export { COLOR_ACCION, etiquetaDeAccion, etiquetaDeEntidad } from './types';
+export { colorDeAccion, etiquetaDeAccion, etiquetaDeEntidad } from './types';
 
 // Types
 export type {

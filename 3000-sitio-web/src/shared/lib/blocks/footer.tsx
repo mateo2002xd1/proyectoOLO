@@ -130,6 +130,7 @@ export const VALORES_PIE_POR_DEFECTO: Required<Omit<FooterProps, 'block'>> = {
 function renderIconoRedSocial(red: RedSocialItem['red'], iconoPersonalizado?: string): ReactNode {
   if (iconoPersonalizado) {
     return (
+      // eslint-disable-next-line @next/next/no-img-element -- la imagen la elige el editor (cualquier URL o SVG) y su tamaño va por CSS: next/image exigiría width/height fijos y remotePatterns
       <img
         src={iconoPersonalizado}
         alt=""
@@ -227,7 +228,7 @@ export function Footer({
   const fila2 = footerPersonalizado ? enlacesFila2 : (enlacesFila2 && enlacesFila2.length > 0 ? enlacesFila2 : VALORES_PIE_POR_DEFECTO.enlacesFila2);
   const fila3 = footerPersonalizado ? enlacesFila3 : (enlacesFila3 && enlacesFila3.length > 0 ? enlacesFila3 : VALORES_PIE_POR_DEFECTO.enlacesFila3);
 
-  const hasText = (val: any) => {
+  const hasText = (val: unknown) => {
     if (typeof val === 'string') {
       const cleaned = val.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
       return cleaned.length > 0;
@@ -258,6 +259,7 @@ export function Footer({
           <div className="olo-logos-top">
             <div className="olo-logos-left">
               {logoSenaUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element -- la imagen la elige el editor (cualquier URL o SVG) y su tamaño va por CSS: next/image exigiría width/height fijos y remotePatterns
                 <img src={logoSenaUrl} alt={logoSenaAlt || 'Logotipo del SENA'} className="olo-logo" />
               ) : null}
               {(logoSenaUrl && logoOloUrl && separadorLogos) ? (
@@ -274,11 +276,13 @@ export function Footer({
                 </span>
               ) : null}
               {logoOloUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element -- la imagen la elige el editor (cualquier URL o SVG) y su tamaño va por CSS: next/image exigiría width/height fijos y remotePatterns
                 <img src={logoOloUrl} alt={logoOloAlt || 'Logotipo del OLO'} className="olo-logo" />
               ) : null}
             </div>
             <div className="olo-logos-right">
               {logoMintrabajoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element -- la imagen la elige el editor (cualquier URL o SVG) y su tamaño va por CSS: next/image exigiría width/height fijos y remotePatterns
                 <img src={logoMintrabajoUrl} alt={logoMintrabajoAlt || 'Logotipo del Ministerio del Trabajo'} className="olo-logo" />
               ) : null}
             </div>
@@ -347,9 +351,10 @@ export function Footer({
 
             {certificacionImgUrl ? (
               <div className="olo-certifications">
+                {/* eslint-disable-next-line @next/next/no-img-element -- la imagen la elige el editor (cualquier URL o SVG) y su tamaño va por CSS: next/image exigiría width/height fijos y remotePatterns */}
                 <img
                   src={certificacionImgUrl}
-                  alt={certificacionImgAlt || 'Sello de certificaci├│n'}
+                  alt={certificacionImgAlt || 'Sello de certificación'}
                   className="w-[clamp(140px,26vw,220px)] h-auto object-contain"
                 />
               </div>
@@ -392,9 +397,10 @@ export function Footer({
       {mostrarFranjaGov && (
         <div className="olo-gov-banner-bottom">
           {rutaCoImgUrl && (
+            // eslint-disable-next-line @next/next/no-img-element -- la imagen la elige el editor (cualquier URL o SVG) y su tamaño va por CSS: next/image exigiría width/height fijos y remotePatterns
             <img
               src={rutaCoImgUrl}
-              alt={rutaCoImgAlt || 'Marca pa├¡s de Colombia'}
+              alt={rutaCoImgAlt || 'Marca país de Colombia'}
               className="h-[clamp(18px,3vw,26px)] w-auto object-contain"
             />
           )}

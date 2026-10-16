@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { validarEmail } from '@olo/email-policy';
 import { mensajeDeCierre } from '@/shared/lib/inactividad';
+import { rutaDelPrimerIngreso } from '@/shared/lib/ruta-del-primer-ingreso';
 import {
   AuthGeneralError,
   AuthGeneralNotice,
@@ -27,8 +28,8 @@ import { MarcoDePasos } from './marco-de-pasos';
  * capa de enrutamiento acababa siendo la que decidía a dónde va cada rol.
  *
  * Solo pinta el formulario. Si la cuenta debe la configuración de primer ingreso,
- * manda a `/first-login` —hasta el 2026-09-18 la pintaba aquí mismo—, y el
- * «¿Olvidaste tu contraseña?» lleva a `/recovery`.
+ * manda a `/login/first-login` —hasta el 2026-09-18 la pintaba aquí mismo—, y el
+ * «¿Olvidaste tu contraseña?» lleva a `/login/recovery`.
  *
  * Desde el 2026-10-09 usa el mismo marco que el resto del acceso (`MarcoDePasos`, mockup de
  * móvil): el logo y «Panel de Administración» arriba, y el formulario con las mismas
@@ -94,7 +95,14 @@ function LoginForm({ onEntrando }: { onEntrando: (modo: 'panel' | 'edicion') => 
       }
 
       if (data.mustChangePassword || data.mustSetupSecurityQuestions) {
-        router.push('/first-login');
+        // A la dirección de su caso, como en la intranet: cuenta nueva, solo preguntas o
+        // solo contraseña.
+        router.push(
+          rutaDelPrimerIngreso({
+            debeCambiarPassword: Boolean(data.mustChangePassword),
+            debeConfigurarPreguntas: Boolean(data.mustSetupSecurityQuestions),
+          }),
+        );
         return;
       }
 
@@ -174,7 +182,7 @@ function LoginForm({ onEntrando }: { onEntrando: (modo: 'panel' | 'edicion') => 
       </button>
 
       <div className={`${authPasosHuecoArribaClass} text-center`}>
-        <Link href="/recovery" className={authPasosQuietLinkClass}>
+        <Link href="/login/recovery" className={authPasosQuietLinkClass}>
           ¿Olvidaste tu contraseña?
         </Link>
       </div>

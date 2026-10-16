@@ -14,11 +14,11 @@
 
 | | Carpetas | Features | Rutas de Next | Endpoints | Librerías |
 |---|--:|--:|--:|--:|--:|
-| `3000-sitio-web` | 49 | 3 | 53 | — | 33 |
-| `3001-intranet` | 31 | 2 | 11 | — | 27 |
-| `4000-api-backend` | 35 | — | — | 96 | 42 |
+| `3000-sitio-web` | 49 | 3 | 54 | — | 33 |
+| `3001-intranet` | 31 | 2 | 14 | — | 27 |
+| `4000-api-backend` | 35 | — | — | 96 | 43 |
 
-Paquetes compartidos: 7 · migraciones: 44 · modelos: 23.
+Paquetes compartidos: 7 · migraciones: 45 · modelos: 23.
 
 ## Carpetas sin descripción (6)
 
@@ -217,11 +217,10 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `/[slug]` | página | `(public)` | `(public)/[slug]/page.tsx` |
 | `/admin/actualizaciones` | página |  | `admin/actualizaciones/page.tsx` |
 | `/admin/auditoria` | página |  | `admin/auditoria/page.tsx` |
+| `/admin/buscar` | página |  | `admin/buscar/page.tsx` |
+| `/admin/configuracion` | página |  | `admin/configuracion/page.tsx` |
 | `/admin/dashboard` | página |  | `admin/dashboard/page.tsx` |
-| `/admin/dashboard/buscar` | página |  | `admin/dashboard/buscar/page.tsx` |
-| `/admin/dashboard/configuracion` | página |  | `admin/dashboard/configuracion/page.tsx` |
-| `/admin/dashboard/soporte` | página |  | `admin/dashboard/soporte/page.tsx` |
-| `/admin/mi-perfil` | página |  | `admin/mi-perfil/page.tsx` |
+| `/admin/perfil` | página |  | `admin/perfil/page.tsx` |
 | `/admin/respaldos` | página |  | `admin/respaldos/page.tsx` |
 | `/admin/revision` | página |  | `admin/revision/page.tsx` |
 | `/admin/roles` | página |  | `admin/roles/page.tsx` |
@@ -256,17 +255,19 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `/clasificacion/cno` | página | `(public)` | `(public)/clasificacion/cno/page.tsx` |
 | `/clasificacion/cuoc` | página | `(public)` | `(public)/clasificacion/cuoc/page.tsx` |
 | `/editor/[slug]` | página |  | `editor/[slug]/page.tsx` |
-| `/first-login` | página | `(auth)` | `(auth)/first-login/page.tsx` |
 | `/inicio` | página | `(public)` | `(public)/inicio/page.tsx` |
 | `/login` | página | `(auth)` | `(auth)/login/page.tsx` |
+| `/login/first-login` | página | `(auth)` | `(auth)/login/first-login/page.tsx` |
+| `/login/first-login/change-password` | página | `(auth)` | `(auth)/login/first-login/change-password/page.tsx` |
+| `/login/first-login/security-questions` | página | `(auth)` | `(auth)/login/first-login/security-questions/page.tsx` |
+| `/login/recovery` | página | `(auth)` | `(auth)/login/recovery/page.tsx` |
+| `/login/recovery/reset-password` | página | `(auth)` | `(auth)/login/recovery/reset-password/page.tsx` |
+| `/login/recovery/reset-success` | página | `(auth)` | `(auth)/login/recovery/reset-success/page.tsx` |
+| `/login/recovery/security-questions` | página | `(auth)` | `(auth)/login/recovery/security-questions/page.tsx` |
 | `/manifest.webmanifest` | metadatos |  | `manifest.ts` |
 | `/politica-de-privacidad` | página | `(public)` | `(public)/politica-de-privacidad/page.tsx` |
 | `/preview/[slug]` | página |  | `preview/[slug]/page.tsx` |
 | `/programas-sobresalientes` | página | `(public)` | `(public)/programas-sobresalientes/page.tsx` |
-| `/recovery` | página | `(auth)` | `(auth)/recovery/page.tsx` |
-| `/reset-password` | página | `(auth)` | `(auth)/reset-password/page.tsx` |
-| `/reset-success` | página | `(auth)` | `(auth)/reset-success/page.tsx` |
-| `/security-questions` | página | `(auth)` | `(auth)/security-questions/page.tsx` |
 
 ### 3001-intranet
 
@@ -275,14 +276,17 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `/` | página |  | `page.tsx` |
 | `/[...puckPath]` | página | `(secciones)` | `(secciones)/[...puckPath]/page.tsx` |
 | `/editor/[slug]` | página |  | `editor/[slug]/page.tsx` |
-| `/first-login` | página | `(auth)` | `(auth)/first-login/page.tsx` |
 | `/login` | página | `(auth)` | `(auth)/login/page.tsx` |
+| `/login/first-login` | página | `(auth)` | `(auth)/login/first-login/page.tsx` |
+| `/login/first-login/change-password` | página | `(auth)` | `(auth)/login/first-login/change-password/page.tsx` |
+| `/login/first-login/change-success` | página | `(auth)` | `(auth)/login/first-login/change-success/page.tsx` |
+| `/login/first-login/security-questions` | página | `(auth)` | `(auth)/login/first-login/security-questions/page.tsx` |
+| `/login/recovery` | página | `(auth)` | `(auth)/login/recovery/page.tsx` |
+| `/login/recovery/reset-password` | página | `(auth)` | `(auth)/login/recovery/reset-password/page.tsx` |
+| `/login/recovery/reset-success` | página | `(auth)` | `(auth)/login/recovery/reset-success/page.tsx` |
+| `/login/recovery/security-questions` | página | `(auth)` | `(auth)/login/recovery/security-questions/page.tsx` |
 | `/manifest.webmanifest` | metadatos |  | `manifest.ts` |
 | `/preview/[slug]` | página |  | `preview/[slug]/page.tsx` |
-| `/recovery` | página | `(auth)` | `(auth)/recovery/page.tsx` |
-| `/reset-password` | página | `(auth)` | `(auth)/reset-password/page.tsx` |
-| `/reset-success` | página | `(auth)` | `(auth)/reset-success/page.tsx` |
-| `/security-questions` | página | `(auth)` | `(auth)/security-questions/page.tsx` |
 
 ## Endpoints de la API
 
@@ -459,7 +463,7 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `@olo/blocks-renderer` | `packages/blocks-renderer/` | `3000-sitio-web`, `3001-intranet` |
 | `@olo/email-policy` | `packages/email-policy/` | `3000-sitio-web`, `3001-intranet` |
 | `@olo/inactividad` | `packages/inactividad/` | `3000-sitio-web`, `3001-intranet` |
-| `@olo/password-policy` | `packages/password-policy/` | `3000-sitio-web`, `3001-intranet` |
+| `@olo/password-policy` | `packages/password-policy/` | `3000-sitio-web`, `3001-intranet`, `4000-api-backend` |
 | `@olo/slug-policy` | `packages/slug-policy/` | `3000-sitio-web`, `3001-intranet`, `4000-api-backend` |
 | `@olo/upload-policy` | `packages/upload-policy/` | `3000-sitio-web`, `3001-intranet`, `4000-api-backend` |
 
@@ -480,7 +484,7 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `@olo/password-policy` | `file:../packages/password-policy` | producción |
 | `@olo/slug-policy` | `file:../packages/slug-policy` | producción |
 | `@olo/upload-policy` | `file:../packages/upload-policy` | producción |
-| `@puckeditor/core` | `^0.22.0` | producción |
+| `@puckeditor/core` | `^0.22.4` | producción |
 | `@tailwindcss/postcss` | `^4` | desarrollo |
 | `@types/node` | `^20` | desarrollo |
 | `@types/react` | `^19` | desarrollo |
@@ -489,7 +493,7 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `docx-preview` | `^0.4.0` | producción |
 | `echarts` | `^6.1.0` | producción |
 | `eslint` | `^9` | desarrollo |
-| `eslint-config-next` | `16.2.10` | desarrollo |
+| `eslint-config-next` | `16.4.0` | desarrollo |
 | `file-type` | `^22.0.2` | producción |
 | `framer-motion` | `^12.42.2` | producción |
 | `handsontable` | `^18.0.0` | producción |
@@ -516,14 +520,14 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `@olo/password-policy` | `file:../packages/password-policy` | producción |
 | `@olo/slug-policy` | `file:../packages/slug-policy` | producción |
 | `@olo/upload-policy` | `file:../packages/upload-policy` | producción |
-| `@puckeditor/core` | `^0.22.2` | producción |
+| `@puckeditor/core` | `^0.22.4` | producción |
 | `@tailwindcss/postcss` | `^4` | desarrollo |
 | `@types/node` | `^20` | desarrollo |
 | `@types/react` | `^19` | desarrollo |
 | `@types/react-dom` | `^19` | desarrollo |
 | `clsx` | `^2.1.1` | producción |
 | `eslint` | `^9` | desarrollo |
-| `eslint-config-next` | `16.2.10` | desarrollo |
+| `eslint-config-next` | `16.4.0` | desarrollo |
 | `file-type` | `^22.0.1` | producción |
 | `jose` | `^6.2.3` | producción |
 | `next` | `^16.3.0` | producción |
@@ -539,6 +543,7 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 |---|---|---|
 | `@neondatabase/serverless` | `^1.1.0` | producción |
 | `@olo/accessibility-policy` | `file:../packages/accessibility-policy` | producción |
+| `@olo/password-policy` | `file:../packages/password-policy` | producción |
 | `@olo/slug-policy` | `file:../packages/slug-policy` | producción |
 | `@olo/upload-policy` | `file:../packages/upload-policy` | producción |
 | `@types/bcryptjs` | `^2.4.6` | desarrollo |
@@ -630,6 +635,7 @@ En el orden del manifiesto (`migrations/index.ts`), que es el orden en que corre
 - `042-catalogos-sin-duplicados`
 - `043-password-temporal-vence`
 - `044-identidad-del-panel`
+- `045-password-anterior`
 
 ### Modelos
 

@@ -24,7 +24,7 @@ export const CODIGO_CONFIGURACION_PENDIENTE = 'CONFIGURACION_PENDIENTE';
  * o sin preguntas de seguridad, solo sirve para terminar esa configuración: para todo
  * lo demás responde 403 con `codigo: CONFIGURACION_PENDIENTE`. Hasta el 2026-10-09 solo
  * lo hacían cumplir los proxies de las dos apps, redirigiendo pantallas; la API
- * aceptaba la sesión entera, así que quien salía de `/first-login` sin terminar
+ * aceptaba la sesión entera, así que quien salía de `/login/first-login` sin terminar
  * («Regresar al sitio web») seguía en el portal con sus botones de edición y con todo
  * su rol detrás. Las rutas del propio primer ingreso usan
  * `requireAuthConConfiguracionPendiente`.
@@ -50,12 +50,40 @@ export function requireAuthConConfiguracionPendiente(req: Request, res: Response
   return autenticar(req, res, next, true);
 }
 
+/**
+ * La cookie de sesión de la app que hace la petición.
+ *
+ * `token` la usa la intranet (pasa la cookie de la API sin tocar); `sitio_token` la
+ * emite el sitio web con nombre propio para no compartir sesión con la intranet en el
+ * mismo navegador — ver `3000-sitio-web/src/shared/lib/auth-cookies.ts`.
+ *
+ * Pero las cookies no se separan por puerto: en `localhost` el navegador manda las dos
+ * a la API, sea cual sea la app que pide. Antes se leía `token ?? sitio_token`, así que
+ * con una sesión abierta en la intranet, las llamadas directas del sitio web (los
+ * clientes axios con `withCredentials`, como Respaldos) se hacían **con la cuenta de la
+ * intranet**. Visto el 2026-10-15: el panel del sitio con una cuenta ya configurada
+ * recibía «Termina de configurar tu cuenta…», que era de la cuenta recién creada
+ * abierta en la intranet.
+ *
+ * Por eso se mira el `Origin`, que el navegador pone en toda petición entre orígenes y
+ * que CORS ya obliga a que sea uno de estos dos: cada app usa solo su cookie. Sin
+ * `Origin` de una de las dos (llamadas de servidor, que van con Bearer, o herramientas)
+ * se mantiene el orden de antes.
+ *
+ * Exportada para `npm run sesion:verificar`, que comprueba estos casos y falla si
+ * alguien vuelve a leer las dos cookies sin mirar de dónde viene la petición.
+ */
+export function tokenDeLaCookie(req: Request): string | undefined {
+  const cookies = req.cookies ?? {};
+  const origen = req.headers.origin;
+  if (origen === config.frontendUrl) return cookies.sitio_token;
+  if (origen === config.intranetUrl) return cookies.token;
+  return cookies.token ?? cookies.sitio_token;
+}
+
 async function autenticar(req: Request, res: Response, next: NextFunction, admitePendiente: boolean) {
   const authHeader = req.headers.authorization;
-  // 'token' la usa la intranet (pasa la cookie de la API sin tocar); 'sitio_token'
-  // la emite el sitio web con nombre propio para no compartir sesión con la intranet
-  // en el mismo navegador — ver `3000-sitio-web/src/shared/lib/auth-cookies.ts`.
-  const tokenFromCookie = req.cookies?.token ?? req.cookies?.sitio_token;
+  const tokenFromCookie = tokenDeLaCookie(req);
   // Extrae el token priorizando el header Bearer o la cookie segura de sesión
   const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : tokenFromCookie;
 

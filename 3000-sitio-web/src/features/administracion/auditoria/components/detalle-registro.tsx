@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useUltimoValorAbierto } from '@/shared/lib/use-cierre-animado';
-import { COLOR_ACCION, etiquetaDeAccion, etiquetaDeEntidad, etiquetaDeCampo, type RegistroAuditoria } from '../types';
+import { colorDeAccion, etiquetaDeAccion, etiquetaDeEntidad, etiquetaDeCampo, type RegistroAuditoria } from '../types';
 import { comentariosDe, explicacionDeComentarios, type ComentariosDelRegistro } from '../lib/cambios';
 
 /** Un valor del JSONB puede ser texto, número, booleano u objeto. */
@@ -267,7 +267,7 @@ export function DetalleRegistro({
               <Dato etiqueta="Acción">
                 <span
                   className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
-                    COLOR_ACCION[registro.accion] ?? ''
+                    colorDeAccion(registro.accion, registro.categoria)
                   }`}
                 >
                   {etiquetaDeAccion(registro.accion, registro.categoria)}

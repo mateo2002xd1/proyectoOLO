@@ -94,6 +94,7 @@
   scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
   scrollbar-width: thin;
 }
+
 .dark * {
   scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
@@ -102,19 +103,24 @@
   width: 8px;
   height: 8px;
 }
+
 *::-webkit-scrollbar-track {
   background: transparent;
 }
+
 *::-webkit-scrollbar-thumb {
   background: rgba(0, 0, 0, 0.2);
   border-radius: 4px;
 }
+
 *::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.4);
 }
+
 .dark *::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.2);
 }
+
 .dark *::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.4);
 }
@@ -844,7 +850,7 @@
 }
 
 /* Desde `lg` la intranet tiene su menú arriba: el mismo corte que `lg:` de Tailwind. */
-@media (width >= 64rem) {
+@media (width >=64rem) {
   .navegacion-mobile {
     display: none;
   }
@@ -901,13 +907,13 @@
   list-style: none;
 }
 
-.navegacion-mobile-lista > li {
+.navegacion-mobile-lista>li {
   display: flex;
   flex: 1 1 0;
   min-width: 0;
 }
 
-.navegacion-mobile-lista > .navegacion-mobile-centro {
+.navegacion-mobile-lista>.navegacion-mobile-centro {
   flex: 0 0 5.75rem;
 }
 
@@ -953,7 +959,7 @@
   height: 2rem;
 }
 
-.navegacion-mobile-icono > svg {
+.navegacion-mobile-icono>svg {
   width: 1.5rem;
   height: 1.5rem;
   flex-shrink: 0;
@@ -1059,7 +1065,8 @@
 .navegacion-mobile-logo img {
   width: 3.25rem;
   height: auto;
-  translate: 0 3px; /* x  y — negativo sube / va a la izquierda; positivo baja / va a la derecha */
+  translate: 0 3px;
+  /* x  y — negativo sube / va a la izquierda; positivo baja / va a la derecha */
 }
 
 .navegacion-mobile-inicio.es-activo .navegacion-mobile-logo {
@@ -1200,6 +1207,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 }
 
 @media (hover: hover) {
+
   .navegacion-mobile-hoja-fila:not(.es-activo):hover,
   .navegacion-mobile-hoja-cerrar:hover {
     background: var(--navegacion-mobile-hover-fondo);
@@ -1220,7 +1228,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   color: inherit;
 }
 
-.navegacion-mobile-hoja-icono > svg {
+.navegacion-mobile-hoja-icono>svg {
   width: 1.5rem;
   height: 1.5rem;
 }
@@ -1690,7 +1698,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   color: #1e293b;
 }
 
-@media (width >= 40rem) {
+@media (width >=40rem) {
   .olo-ocupado-acciones {
     flex-direction: row;
     flex-wrap: wrap;
@@ -1881,6 +1889,29 @@ body:has(.navegacion-mobile-hoja[open]) {
 .olo-editor[data-estado="rechazado"] [class*="PuckHeader-path"] {
   background: rgba(252, 165, 165, 0.16);
   color: #fca5a5;
+}
+
+/* La envoltura de la cabecera (`PuckLayout-header`) trae de Puck `overflow: auto` en
+   cuanto la barra izquierda está abierta, y eso recortaba lo que cuelga por debajo de
+   la cabecera: los tooltips de las acciones salían cortados contra el lienzo. Aquí se
+   deja visible y por encima de las barras y del lienzo, que van después en el DOM.
+   `min-width: 0` hace lo que el `overflow` hacía de paso: que una cabecera ancha no
+   ensanche las columnas de la rejilla. Va por `PuckLayout-inner >` para ganarle en
+   especificidad a la regla de Puck sin depender del orden de carga del CSS. Solo en
+   escritorio: en móvil Puck pliega la fila de la cabecera a 0 y la esconde con ese
+   mismo `overflow`.
+
+   `z-index: 20` y no 2 (2026-10-15): los campos de la barra derecha no crean capa propia
+   y algunos de Puck traen su `z-index` (el elemento desplegado de una lista, 2; el asa
+   para redimensionar, 10). Con 2 empataban y, al ir después en el DOM, tapaban los
+   tooltips de Salir, Guardar y Enviar en cuanto había una lista abierta debajo. */
+@media (min-width: 638px) {
+  .olo-editor [class*="PuckLayout-inner"]>[class*="PuckLayout-header"] {
+    position: relative;
+    z-index: 20;
+    min-width: 0;
+    overflow: visible;
+  }
 }
 
 .olo-editor-acciones {
@@ -2309,6 +2340,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -2319,6 +2351,7 @@ body:has(.navegacion-mobile-hoja[open]) {
     opacity: 0;
     transform: translateY(12px) scale(0.98);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -2326,10 +2359,13 @@ body:has(.navegacion-mobile-hoja[open]) {
 }
 
 @keyframes oloExitoPulse {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
     opacity: 0.6;
   }
+
   50% {
     transform: scale(1.15);
     opacity: 0.25;
@@ -2599,43 +2635,67 @@ body:has(.navegacion-mobile-hoja[open]) {
   backdrop-filter: blur(4px);
 }
 
+/* Las mismas medidas que `.olo-modal-*` y los modales del panel (ver el comentario de
+   «Confirmación de salida»). La letra (Poppins) la pone cada modal con su clase.
+   Igual que en el sitio web: bordes de 32 px en la caja, el campo y los botones. */
 .nueva-seccion-caja {
   width: 100%;
   max-width: 27rem;
   background: #fff;
-  border-radius: 0.75rem;
-  padding: 1.5rem;
+  border-radius: 32px;
+  padding: 2rem;
   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.3);
 }
 
+/* `inherit`, como `.olo-modal-titulo`: si no, `--font-heading` lo deja en Arial. */
 .nueva-seccion-titulo {
   margin: 0 0 1rem;
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #002c46;
+  font-family: inherit;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #001631;
 }
 
 .nueva-seccion-etiqueta {
   display: block;
-  margin-bottom: 0.35rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #33475b;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #001a39;
 }
 
 .nueva-seccion-campo {
   width: 100%;
-  padding: 0.6rem 0.75rem;
-  border: 1px solid #c7d0d9;
-  border-radius: 0.5rem;
-  font-size: 0.95rem;
-  color: #12222f;
+  height: 2.75rem;
+  padding: 0 1.25rem;
+  border: 1px solid #d9d9d9;
+  border-radius: 32px;
+  font: inherit;
+  font-size: 1rem;
+  color: #001a39;
+}
+
+.nueva-seccion-campo::placeholder {
+  color: #b3b3b3;
 }
 
 .nueva-seccion-campo:focus {
-  outline: 2px solid #002c46;
-  outline-offset: 1px;
-  border-color: transparent;
+  outline: none;
+  border-color: #001631;
+  box-shadow: 0 0 0 2px #001631;
+}
+
+/* Nombre de la página en el modal de eliminar (título y etiqueta), en el rojo del botón.
+   Solo el nombre: las comillas « » quedan del color del texto. */
+.nueva-seccion-nombre-peligro {
+  color: #dc2626;
+}
+
+/* Campo de confirmación del modal de eliminar: el resalte en el rojo del botón. */
+.nueva-seccion-campo--peligro:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 2px #dc2626;
 }
 
 .nueva-seccion-campo:disabled {
@@ -2646,8 +2706,9 @@ body:has(.navegacion-mobile-hoja[open]) {
    dirección— y no como parte de la frase. */
 .nueva-seccion-ruta {
   margin: 0.5rem 0 0;
-  font-size: 0.85rem;
-  color: #52667a;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #4b5563;
 }
 
 .nueva-seccion-ruta code {
@@ -2664,47 +2725,41 @@ body:has(.navegacion-mobile-hoja[open]) {
   color: #b3261e;
 }
 
-.nueva-seccion-notas {
-  margin: 1rem 0 0;
-  padding-left: 1.1rem;
-  font-size: 0.8rem;
-  line-height: 1.45;
-  color: #52667a;
-}
-
-.nueva-seccion-notas li+li {
-  margin-top: 0.3rem;
-}
-
+/* `wrap` y `nowrap` en los botones: con 44 px de alto fijo el texto no puede partirse
+   («Crear y editar» se salía a 360 px); si no caben juntos, el segundo baja de línea. */
 .nueva-seccion-acciones {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
   gap: 0.5rem;
   margin-top: 1.35rem;
 }
 
 .nueva-seccion-boton {
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  border: 1px solid #c7d0d9;
+  height: 2.75rem;
+  padding: 0 1.5rem;
+  border-radius: 32px;
+  border: 1px solid #d9d9d9;
   background: #fff;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #33475b;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 500;
+  white-space: nowrap;
+  color: #001631;
 }
 
 .nueva-seccion-boton:hover:not(:disabled) {
-  background: #f1f4f7;
+  background: #f5f7fa;
 }
 
 .nueva-seccion-boton--principal {
-  border-color: #002c46;
-  background: #002c46;
+  border-color: #001631;
+  background: #001631;
   color: #fff;
 }
 
 .nueva-seccion-boton--principal:hover:not(:disabled) {
-  background: #001a2a;
+  background: #002a5c;
 }
 
 .nueva-seccion-boton:disabled {
@@ -2757,13 +2812,14 @@ body:has(.navegacion-mobile-hoja[open]) {
 /* Botón de confirmar un borrado dentro del diálogo. Se deshabilita hasta que el nombre
    tecleado coincide, así que la mayor parte del tiempo se ve apagado a propósito. */
 .nueva-seccion-boton--peligro {
-  border-color: #b3261e;
-  background: #b3261e;
+  border-color: #dc2626;
+  background: #dc2626;
   color: #fff;
 }
 
 .nueva-seccion-boton--peligro:hover:not(:disabled) {
-  background: #8c1d18;
+  border-color: #b91c1c;
+  background: #b91c1c;
 }
 
 /* ============================================
@@ -3972,6 +4028,7 @@ body:has(.navegacion-mobile-hoja[open]) {
    cambian. Sin soporte, queda la lista del sistema. Sin capa a propósito: le gana a
    `h-11` y a `[&_option]:text-gray-900` de Tailwind. */
 @supports (appearance: base-select) {
+
   .acceso-select,
   .acceso-select::picker(select) {
     appearance: base-select;
@@ -4150,7 +4207,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 }
 
 /* Landscape mobile (altura limitada) */
-@media (height <= 500px) and (orientation: landscape) {
+@media (height <=500px) and (orientation: landscape) {
 
   .login-page,
   .recovery-page,
@@ -4227,7 +4284,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 
 /* Apaisado bajo desde `lg` (portátiles con poca altura). Desde `lg` y no desde `md`:
    un teléfono apaisado mide 800-930px de ancho y aquí le crecería el logo. */
-@media (width >= 64rem) and (orientation: landscape) and (height <= 600px) {
+@media (width >=64rem) and (orientation: landscape) and (height <=600px) {
 
   .login-left,
   .recovery-left,
@@ -4266,7 +4323,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 }
 
 /* Pantallas muy anchas (desde `2xl`) */
-@media (width >= 96rem) {
+@media (width >=96rem) {
 
   .login-left-content,
   .recovery-left-content,
@@ -4733,7 +4790,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   overflow-x: hidden;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
 
   .matriz-section-gray,
   .matriz-section-white,
@@ -4798,7 +4855,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   margin: 0;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .matriz-content-container-datoolo {
     flex-direction: row;
     gap: 3.5rem;
@@ -4862,7 +4919,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   position: relative;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .matriz-carousel-wrapper {
     padding: 2rem 4rem;
   }
@@ -4937,7 +4994,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   right: 0;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .matriz-carousel-btn {
     width: 50px;
     height: 50px;
@@ -4969,7 +5026,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   z-index: 10;
 }
 
-@media (width >= 64rem) {
+@media (width >=64rem) {
   .tasa-banner-content {
     flex-direction: row;
     justify-content: space-between;
@@ -5010,7 +5067,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   max-width: 1200px;
 }
 
-@media (width >= 64rem) {
+@media (width >=64rem) {
   .encuesta-banner-content {
     gap: clamp(2rem, 4vw, 5rem);
   }
@@ -5040,7 +5097,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   margin-bottom: 0;
 }
 
-@media (width >= 64rem) {
+@media (width >=64rem) {
   .tasa-concept-row {
     flex-direction: row;
     justify-content: space-between;
@@ -5074,7 +5131,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   margin-top: 1rem;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .tasa-concept-desc {
     font-size: 1.125rem;
     text-align: justify;
@@ -5390,7 +5447,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   gap: 4rem;
 }
 
-@media (width >= 64rem) {
+@media (width >=64rem) {
   .tasa-ppt-container {
     flex-direction: row;
     justify-content: space-between;
@@ -5444,7 +5501,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 /* Reproductor y lista lado a lado desde `lg`: a 768px la columna de la lista medía
    210px y, con la miniatura de 110px, el título se quedaba en 60px y hacía scroll
    lateral. En tablet van uno encima del otro. */
-@media (width >= 64rem) {
+@media (width >=64rem) {
   .rv-container {
     grid-template-columns: 1.8fr 1fr;
     padding: 1.5rem;
@@ -5632,7 +5689,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   overflow: hidden;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .publicaciones-container {
     padding: 2rem;
   }
@@ -5692,7 +5749,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   overflow: hidden;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .publicaciones-card-title {
     font-size: 1rem;
   }
@@ -5771,10 +5828,11 @@ body:has(.navegacion-mobile-hoja[open]) {
   right: -0.5rem;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .publicaciones-nav-prev {
     left: 0.25rem;
   }
+
   .publicaciones-nav-next {
     right: 0.25rem;
   }
@@ -5874,7 +5932,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   width: 100%;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .preguntas-section {
     padding-top: 5rem;
     padding-bottom: 5rem;
@@ -5890,7 +5948,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   padding: 0 1rem;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .preguntas-title {
     font-size: 2.25rem;
     margin-bottom: 3rem;
@@ -5911,7 +5969,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   padding: 0 1rem;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .preguntas-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 2.5rem;
@@ -6060,7 +6118,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   padding: 3rem 1.5rem;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .olo-tabs-section {
     padding: 4rem 2rem;
   }
@@ -6116,7 +6174,8 @@ body:has(.navegacion-mobile-hoja[open]) {
 .olo-tabs--verde .olo-tabs-btn--active {
   background-color: #39A900 !important;
   border-color: #39A900 !important;
-  color: #001A39 !important; /* WCAG AA 4.5:1 (5.2:1) */
+  color: #001A39 !important;
+  /* WCAG AA 4.5:1 (5.2:1) */
   box-shadow: 0 4px 12px rgba(57, 169, 0, 0.25) !important;
 }
 
@@ -6158,114 +6217,6 @@ body:has(.navegacion-mobile-hoja[open]) {
    la navegación acompaña al contenido mientras se revisa. */
 body:has(.preview-page) .intranet-topbar {
   position: relative;
-}
-
-/* Barra fija: la vista previa es la página entera, y sin este aviso siempre
-   visible es fácil confundirla con la publicada. */
-.preview-aviso {
-  position: sticky;
-  top: 0;
-  z-index: 200;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  padding: 0.7rem clamp(1rem, 2.4vw, 2.25rem);
-  background: #fef3c7;
-  border-bottom: 1px solid #fcd34d;
-  color: #78350f;
-  font-size: 0.85rem;
-}
-
-.preview-aviso-etiqueta {
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-size: 0.72rem;
-  background: #78350f;
-  color: #fef3c7;
-  padding: 0.2rem 0.6rem;
-  border-radius: 999px;
-}
-
-.preview-aviso-nota {
-  margin-left: auto;
-  opacity: 0.85;
-}
-
-@media (width < 48rem) {
-  .preview-aviso-nota {
-    margin-left: 0;
-    width: 100%;
-  }
-}
-
-/* La vista previa lleva el marco de las secciones, así que hay dos barras
-   pegajosas peleando por `top: 0`: la navegación y el aviso. Manda el aviso —que
-   la página no está publicada importa más que tener el menú siempre a mano—, y
-   la navegación acompaña al contenido mientras se revisa. */
-body:has(.preview-page) .intranet-topbar {
-  position: relative;
-}
-
-/* Barra fija: la vista previa es la página entera, y sin este aviso siempre
-   visible es fácil confundirla con la publicada. */
-.preview-aviso {
-  position: sticky;
-  top: 0;
-  z-index: 200;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  padding: 0.7rem clamp(1rem, 2.4vw, 2.25rem);
-  background: #fef3c7;
-  border-bottom: 1px solid #fcd34d;
-  color: #78350f;
-  font-size: 0.85rem;
-}
-
-.preview-aviso-etiqueta {
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-size: 0.72rem;
-  background: #78350f;
-  color: #fef3c7;
-  padding: 0.2rem 0.6rem;
-  border-radius: 999px;
-}
-
-.preview-aviso-nota {
-  margin-left: auto;
-  opacity: 0.85;
-}
-
-/* 44 px de alto: es lo único pulsable de la barra y se toca con el dedo. */
-.preview-aviso-volver {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2.75rem;
-  padding: 0 0.75rem;
-  border-radius: 16px;
-  font-weight: 600;
-  color: inherit;
-  text-decoration: none;
-}
-
-.preview-aviso-volver:hover {
-  background: rgb(0 0 0 / 0.06);
-}
-
-.preview-aviso-volver:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 2px;
-}
-
-@media (width < 48rem) {
-  .preview-aviso-nota {
-    margin-left: 0;
-  }
 }
 
 /* 
@@ -6321,7 +6272,7 @@ body:has(.preview-page) .intranet-topbar {
   align-items: stretch;
 }
 
-.olo-sectorial-grid > * {
+.olo-sectorial-grid>* {
   width: 100%;
   display: flex !important;
   justify-content: center;
@@ -6471,6 +6422,7 @@ body:has(.preview-page) .intranet-topbar {
 [class*="_LayerTree-helper_"] {
   font-size: 0 !important;
 }
+
 [class*="_LayerTree-helper_"]::before {
   content: "Sin bloques";
   font-size: 14px;
@@ -6619,7 +6571,8 @@ body:has(.preview-page) .intranet-topbar {
 }
 
 /* Enlace de regreso al sitio: 16 px desde `md`, como en el acceso del sitio web. */
-@media (width >= 48rem) {
+@media (width >=48rem) {
+
   .site-return-link,
   .login-return,
   .recovery-return,
@@ -6633,7 +6586,8 @@ body:has(.preview-page) .intranet-topbar {
 
 /* Primer ingreso: lo que crece desde `md` en la escala del acceso del sitio web (2026-10-11):
    etiquetas y enlaces a 16 px. Por debajo, 14, como en el sitio. */
-@media (width >= 48rem) {
+@media (width >=48rem) {
+
   .fl-card-title,
   .fl-login-link {
     font-size: 1rem;

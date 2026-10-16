@@ -8,17 +8,20 @@ export const UserRepository = {
     User.findAll({
       where: { email: { [Op.ne]: config.localAuth.email.toLowerCase() } },
       include: [{ model: Role, as: 'role' }],
-      attributes: { exclude: ['password_hash'] },
+      attributes: { exclude: ['password_hash', 'previous_password_hash'] },
     }),
 
   /** Una cuenta por su id, con su rol y sin el hash de contraseña. */
   findById: (id: string) =>
     User.findByPk(id, {
       include: [{ model: Role, as: 'role' }],
-      attributes: { exclude: ['password_hash'] },
+      attributes: { exclude: ['password_hash', 'previous_password_hash'] },
     }),
 
-  /** Una cuenta por su id, con el hash: solo para comprobar la contraseña actual. */
+  /**
+   * Una cuenta por su id, con los hashes (el actual y el anterior): solo para comprobar
+   * la contraseña actual y que la nueva no repita ninguna de las dos.
+   */
   findByIdWithPassword: (id: string) =>
     User.findByPk(id, { include: [{ model: Role, as: 'role' }] }),
 

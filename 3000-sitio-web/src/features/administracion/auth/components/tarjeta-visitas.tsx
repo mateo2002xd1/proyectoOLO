@@ -113,20 +113,20 @@ export function TarjetaVisitas({ resumen, error }: Props) {
           {/* Encabezado con título y botón para abrir la ventana de vistas */}
           <div className="flex items-start justify-between gap-2">
             <div>
-              <p className="text-sm font-medium text-zinc-500 dark:text-[#94a3b8]">Visitas</p>
+              <p className="text-sm font-medium text-[#001631] dark:text-[#94a3b8]">Visitas</p>
               {error ? (
                 <p className="mt-1 text-2xl font-bold text-zinc-400 dark:text-zinc-600">—</p>
               ) : (
-                <p className="mt-1 text-2xl font-bold text-zinc-950 dark:text-[#f6f6f6] tabular-nums">
+                <p className="mt-1 text-2xl font-bold text-[#001631] dark:text-[#f6f6f6] tabular-nums">
                   {totalVisitas.toLocaleString('es-CO')}
                 </p>
               )}
             </div>
           </div>
 
-          {error ? (
-            <p className="mt-3 text-xs text-red-600 dark:text-red-300">{error}</p>
-          ) : (
+          {/* Con error, solo el «—» de arriba: el porqué lo dice el dashboard una sola vez
+              arriba (pedido del usuario, 2026-10-15). */}
+          {!error && (
             <div className="mt-3 border-t border-zinc-100 pt-3 dark:border-[#7db828]/20">
               {/* Selector de los 2 gráficos (Sitio Web e Intranet) */}
               <div className="mb-3 flex items-center justify-between gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800/70">

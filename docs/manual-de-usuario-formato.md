@@ -345,7 +345,7 @@ El sistema se compone de tres portales complementarios, cada uno con propósitos
      * *Franja superior GOV.CO (Fecha y hora en vivo):* Barra azul fija superior donde se ubica el texto interactivo de fecha y hora, que sirve como punto de acceso para que el personal administrativo y editorial inicie sesión (`/login`) en el portal.
      * *Botón de Búsqueda (Buscador Global):* Control fijo e inamovible ubicado en la zona superior, diseñado para consultar en tiempo real ocupaciones, publicaciones y páginas de todo el observatorio sin depender de la maquetación de la página.
      * *Botón de Acceso a la Intranet:* Enlace fijo permanente ubicado en la esquina superior derecha del menú de navegación hacia el portal privado independiente de la Intranet del OLO.
-     * *Páginas fijas del aplicativo:* Interfaces programadas de autenticación (`/login`, `/recuperar-password`) y pantallas de primer ingreso (`/first-login`), las cuales no forman parte de las páginas dinámicas y no pueden ser alteradas ni eliminadas desde el editor.
+     * *Páginas fijas del aplicativo:* Interfaces programadas de autenticación (`/login`, `/login/recovery`) y pantallas de primer ingreso (`/login/first-login`), las cuales no forman parte de las páginas dinámicas y no pueden ser alteradas ni eliminadas desde el editor.
    * **Componentes ajustables de Cabecera y Pie de página:**
      * Tanto la cabecera como el pie de página funcionan mediante componentes maquetables del editor visual: los editores autorizados (a través de la opción de plantilla "Menú y pie") pueden personalizar los enlaces del menú, logos, redes y textos informativos. Estos componentes son flexibles y ajustables, pudiendo adaptarse a las necesidades informativas de la plataforma o configurarse según el diseño requerido.
    * **Área central dinámica:** Lienzo donde se despliegan los contenidos maquetados mediante bloques (artículos, cifras, visores y publicaciones).
@@ -537,7 +537,7 @@ Este procedimiento describe el paso a paso para el funcionario que inicia sesió
 > **[Captura: Formulario de Inicio de Sesión Sitio Web (Móvil)]**
 > *Formulario de acceso del Sitio Web Público diligenciado con correo corporativo y contraseña provisoria. (Móvil).*
 
-3. **Pantalla de bienvenida y configuración obligatoria:** Al comprobar los datos de acceso, el sistema identifica que se trata del primer ingreso del funcionario y presenta de forma automática la pantalla de primer ingreso (`/first-login`). En esta vista se solicita actualizar la seguridad de la cuenta antes de continuar hacia el portal. A un lado (arriba en el móvil y la tablet) se indica qué se pide en cada paso; al otro lado está el formulario. Como el inicio de sesión y la recuperación de contraseña, en el móvil y la tablet va sobre fondo blanco; en el computador, el logo y lo que se pide quedan a la izquierda sobre blanco y el formulario a la derecha, sobre el azul institucional.
+3. **Pantalla de bienvenida y configuración obligatoria:** Al comprobar los datos de acceso, el sistema identifica que se trata del primer ingreso del funcionario y presenta de forma automática la pantalla de primer ingreso (`/login/first-login`). En esta vista se solicita actualizar la seguridad de la cuenta antes de continuar hacia el portal. A un lado (arriba en el móvil y la tablet) se indica qué se pide en cada paso; al otro lado está el formulario. Como el inicio de sesión y la recuperación de contraseña, en el móvil y la tablet va sobre fondo blanco; en el computador, el logo y lo que se pide quedan a la izquierda sobre blanco y el formulario a la derecha, sobre el azul institucional.
 
 > **[Captura: Pantalla de Bienvenida y Configuración Inicial Sitio Web]**
 > *Pantalla de primer ingreso en el Sitio Web con la indicación del paso y el formulario de actualización de seguridad.*
@@ -547,7 +547,7 @@ Este procedimiento describe el paso a paso para el funcionario que inicia sesió
 
 4. **Establecimiento de la contraseña definitiva (paso 1, «Actualiza tu seguridad»):** En la pantalla de cambio de clave, el funcionario debe registrar su nueva contraseña personal:
    * En el campo **"Contraseña temporal"**, se digita la clave provisoria recibida.
-   * En el campo **"Nueva contraseña"**, se escribe la nueva clave personal. Al entrar en este campo aparece la lista de requisitos de la política (mínimo 12 caracteres, combinar 3 de 4 opciones: mayúsculas, minúsculas, números o símbolos, sin emojis ni tabulaciones, y no demasiado larga), que se van marcando a medida que se cumplen; cuando se cumplen todos, la lista se resume en una línea: **"Cumple todos los requisitos"**.
+   * En el campo **"Nueva contraseña"**, se escribe la nueva clave personal. Al entrar en este campo aparece la lista de requisitos de la política (mínimo 12 caracteres, combinar 3 de 4 opciones: mayúsculas, minúsculas, números o símbolos, sin emojis ni tabulaciones, y máximo 72 caracteres, donde las tildes y la ñ cuentan doble), que se van marcando a medida que se cumplen; cuando se cumplen todos, la lista se resume en una línea: **"Cumple todos los requisitos"**.
    * En el campo **"Ingresa nuevamente la contraseña"**, se reescribe la nueva clave para certificar la coincidencia exacta.
    * El ícono del ojo muestra u oculta lo escrito en cada campo: cerrado mientras la clave está oculta, abierto cuando se ve.
    * Se hace clic en el botón oscuro **"Continuar"**, que revisa los tres campos y pasa al paso 2. Si algo falta o no coincide, lo indica debajo del campo.
@@ -602,7 +602,7 @@ Este procedimiento lo ejecutan los funcionarios (Administradores, Editores autor
 > **[Captura: Formulario de Inicio de Sesión Intranet (Móvil)]**
 > *Diligenciamiento de correo corporativo del SENA y contraseña temporal en el formulario de la Intranet. (Móvil).*
 
-3. **Bienvenida y pasos guiados de configuración:** Al verificar las credenciales temporales, el aplicativo reconoce que la cuenta requiere su configuración inicial y da paso a la pantalla de primer ingreso de la Intranet (`/first-login`). En esta vista se despliega un panel explicativo que indica qué se pide en cada paso (a la izquierda en el computador, arriba en el móvil) y el formulario.
+3. **Bienvenida y pasos guiados de configuración:** Al verificar las credenciales temporales, el aplicativo reconoce que la cuenta requiere su configuración inicial y da paso a la pantalla de primer ingreso de la Intranet (`/login/first-login`). En esta vista se despliega un panel explicativo que indica qué se pide en cada paso (a la izquierda en el computador, arriba en el móvil) y el formulario.
 
 > **[Captura: Pantalla de Pasos Guiados Intranet]**
 > *Interfaz de primer ingreso de la Intranet con panel informativo izquierdo y formulario de configuración.*
@@ -612,7 +612,7 @@ Este procedimiento lo ejecutan los funcionarios (Administradores, Editores autor
 
 4. **Establecimiento de la contraseña definitiva:** En el formulario de cambio de clave, el usuario registra su nueva contraseña personal:
    * En el primer campo, se digita la clave provisoria en **"Contraseña temporal"**.
-   * En el segundo campo, se escribe la **"Nueva contraseña"**. Al entrar en este campo aparece la lista de requisitos de la política (mínimo 12 caracteres, combinar 3 de 4 opciones: mayúsculas, minúsculas, números o símbolos, sin emojis ni tabulaciones, y no demasiado larga), que se van marcando en tiempo real; cuando se cumplen todos, la lista se resume en una línea: **"Cumple todos los requisitos"**.
+   * En el segundo campo, se escribe la **"Nueva contraseña"**. Al entrar en este campo aparece la lista de requisitos de la política (mínimo 12 caracteres, combinar 3 de 4 opciones: mayúsculas, minúsculas, números o símbolos, sin emojis ni tabulaciones, y máximo 72 caracteres, donde las tildes y la ñ cuentan doble), que se van marcando en tiempo real; cuando se cumplen todos, la lista se resume en una línea: **"Cumple todos los requisitos"**.
    * En el tercer campo, se reescribe la clave en **"Ingresa nuevamente la contraseña"**.
    * Se hace clic en el botón **"Continuar"** para validar la información y avanzar.
 
@@ -912,7 +912,7 @@ El Panel Administrativo mantiene su mecanismo centralizado de salida a través d
 
 En el portal público, los usuarios autenticados con permisos de edición disponen de un control flotante con confirmación previa:
 
-1. **Ubicación del control de salida flotante:** Mientras exista una sesión activa con privilegios de edición (roles de Administrador o Editor), en la esquina inferior derecha de la pantalla se visualiza el menú flotante de acciones. Justo debajo del botón principal de edición (ícono de lápiz), se encuentra permanentemente visible el **botón circular de salida** (con ícono de puerta y flecha, y texto indicativo *"Salir de modo edición"* al pasar el cursor).
+1. **Ubicación del control de salida flotante:** Mientras exista una sesión activa con privilegios de edición (roles de Administrador o Editor), en la esquina inferior derecha de la pantalla se visualiza el menú flotante de acciones. Justo debajo del botón principal de edición (ícono de lápiz), se encuentra permanentemente visible el **botón circular de salida** (con ícono de puerta y flecha, y texto indicativo *"Salir del modo edición"* al pasar el cursor).
 
 > **[Captura: Botón Flotante de Salida en Sitio Web]**
 > *Botón circular de salida situado justo debajo del botón del lápiz en la esquina inferior derecha del Sitio Web Público.*
@@ -1986,7 +1986,7 @@ Durante el primer ingreso (cuyo procedimiento operativo regular se detalla en la
 
 3. **Pantalla de bienvenida y verificación del estado de cuenta:**
    * *Situaciones anómalas y respuestas del sistema:*
-     * **Sesión provisional expirada o no iniciada:** Si el usuario ingresa de forma manual a la ruta `/first-login` sin una sesión activa o si la sesión caducó por inactividad, la plataforma detiene la carga con la alerta: `"No se pudo comprobar el estado de tu cuenta. Vuelve a iniciar sesión."`, facilitando el enlace directo para regresar a la pantalla de acceso.
+     * **Sesión provisional expirada o no iniciada:** Si el usuario ingresa de forma manual a la ruta `/login/first-login` sin una sesión activa o si la sesión caducó por inactividad, la plataforma detiene la carga con la alerta: `"No se pudo comprobar el estado de tu cuenta. Vuelve a iniciar sesión."`, facilitando el enlace directo para regresar a la pantalla de acceso.
      * **Cuenta sin configuraciones pendientes:** Si la cuenta ya había completado el proceso con anterioridad (por ejemplo, desde otra pestaña del navegador), el sistema no solicita credenciales temporales inexistentes; en su lugar, presenta el aviso: `"¡Configuración completada con éxito! Tu cuenta ya es segura."`, con el recordatorio de guardar las respuestas de seguridad en un lugar seguro, junto con el botón `"Iniciar sesión"`, que cierra la sesión y lleva a la pantalla de inicio de sesión.
    * *Acción de corrección:* Iniciar sesión nuevamente en el portal para que el aplicativo evalúe los pendientes activos de la cuenta.
 
@@ -2288,7 +2288,7 @@ Durante el procedimiento de recuperación de contraseña (descrito operativament
      * **Respuesta en blanco:** Si se pulsa "Continuar" sin redactar la respuesta a la pregunta activa, el formulario señala: `"La respuesta es requerida"`.
      * **Respuestas no coincidentes:** Al enviar el cuestionario, si las respuestas no coinciden con los registros guardados, el sistema emite la alerta: `"Las respuestas no coinciden con nuestros registros. Intenta nuevamente."`, restableciendo el cuestionario al inicio por seguridad y acumulando un intento fallido en el servidor.
      * **Bloqueo de cuenta por 3 intentos fallidos (30 minutos):** El mecanismo de seguridad interno restringe la recuperación a un máximo de **3 intentos fallidos consecutivos**. Si se alcanza este tope, la cuenta pasa automáticamente a estado bloqueado temporal durante **30 minutos**, impidiendo tanto la recuperación como el acceso normal al sistema con la alerta: `"Cuenta bloqueada temporalmente"`. Dicho evento queda asentado en la bitácora inmutable de auditoría.
-     * **Navegación forzada sin correo previo:** Si el usuario intenta cargar directamente la ruta `/security-questions` sin haber validado su correo, el sistema lo reconduce de forma automática a `/recovery`.
+     * **Navegación forzada sin correo previo:** Si el usuario intenta cargar directamente la ruta `/login/recovery/security-questions` sin haber validado su correo, el sistema lo reconduce de forma automática a `/recovery`.
    * *Acción de corrección:* Digitar con precisión la respuesta secreta configurada en el primer ingreso respetando caracteres y ortografía. En caso de bloqueo por 3 intentos fallidos, aguardar 30 minutos a que expire la restricción o solicitar el desbloqueo manual al Administrador.
 
 > **[Captura: Alerta de Respuestas No Coincidentes Sitio Web]**
@@ -2310,7 +2310,7 @@ Durante el procedimiento de recuperación de contraseña (descrito operativament
 > *Validador de seguridad de contraseña y alerta de confirmación discrepante en el Sitio Web. (Móvil).*
 
 5. **Confirmación y retorno seguro:**
-   * *Situación de control:* Tras procesar el cambio en el servidor, la pantalla `/reset-success` confirma la operación y bloquea retornos involuntarios con el botón de retroceso del navegador, obligando a iniciar sesión formalmente.
+   * *Situación de control:* Tras procesar el cambio en el servidor, la pantalla `/login/recovery/reset-success` confirma la operación y bloquea retornos involuntarios con el botón de retroceso del navegador, obligando a iniciar sesión formalmente.
    * *Acción de corrección:* Hacer clic sobre el botón "Iniciar sesión" y autenticarse con la nueva contraseña definitiva.
 
 > **[Captura: Pantalla de Éxito en Recuperación Sitio Web]**
@@ -2350,7 +2350,7 @@ Durante el procedimiento de recuperación de contraseña (descrito operativament
      * **Respuesta en blanco:** Si se pulsa "Siguiente" o "Verificar" sin redactar la respuesta a la pregunta activa, el formulario señala: `"La respuesta es requerida"`.
      * **Respuestas no coincidentes:** Al enviar el cuestionario, si las respuestas no coinciden con los registros guardados, el sistema emite la alerta: `"Las respuestas no coinciden. Intenta de nuevo."`, restableciendo el cuestionario al inicio por seguridad y acumulando un intento fallido en el servidor.
      * **Bloqueo de cuenta por 3 intentos fallidos (30 minutos):** El mecanismo de seguridad interno restringe la recuperación a un máximo de **3 intentos fallidos consecutivos**. Si se alcanza este tope, la plataforma bloquea la cuenta de forma automática durante **30 minutos** con la alerta: `"Cuenta bloqueada temporalmente"`. Dicho evento queda asentado en la bitácora inmutable de auditoría.
-     * **Navegación forzada sin correo previo:** Si el usuario intenta cargar directamente la ruta `/security-questions` sin haber validado su correo, el sistema lo reconduce de forma automática a `/recovery`.
+     * **Navegación forzada sin correo previo:** Si el usuario intenta cargar directamente la ruta `/login/recovery/security-questions` sin haber validado su correo, el sistema lo reconduce de forma automática a `/recovery`.
    * *Acción de corrección:* Digitar con precisión la respuesta secreta configurada en el primer ingreso respetando caracteres y ortografía. En caso de bloqueo por 3 intentos fallidos, aguardar 30 minutos a que expire la restricción o solicitar el desbloqueo manual al Administrador.
 
 > **[Captura: Alerta de Respuestas No Coincidentes Intranet]**
@@ -2372,7 +2372,7 @@ Durante el procedimiento de recuperación de contraseña (descrito operativament
 > *Verificador de directivas de seguridad y aviso de falta de coincidencia en la confirmación en la Intranet. (Móvil).*
 
 5. **Confirmación y retorno seguro:**
-   * *Situación de control:* Tras procesar el cambio en el servidor, la pantalla `/reset-success` confirma la operación con el título *"¡Genial, tu clave ha sido actualizada con éxito!"*, bloqueando retornos involuntarios con el botón de retroceso del navegador y obligando a iniciar sesión formalmente.
+   * *Situación de control:* Tras procesar el cambio en el servidor, la pantalla `/login/recovery/reset-success` confirma la operación con el título *"¡Genial, tu clave ha sido actualizada con éxito!"*, bloqueando retornos involuntarios con el botón de retroceso del navegador y obligando a iniciar sesión formalmente.
    * *Acción de corrección:* Hacer clic sobre el botón "Ir a iniciar sesión" y autenticarse con la nueva contraseña definitiva en la pantalla de acceso de la Intranet (`/login`).
 
 > **[Captura: Pantalla de Éxito en Recuperación Intranet]**

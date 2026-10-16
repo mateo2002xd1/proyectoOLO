@@ -494,9 +494,11 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
   .olo-gov-banner {
     height: 36px;
   }
+
   .olo-gov-banner-edit {
     font-size: 11px;
   }
+
   .olo-gov-banner-brand svg {
     height: 18px;
   }
@@ -815,7 +817,7 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
   }
 }
 
-@media (width >= 64rem) {
+@media (width >=64rem) {
   .olo-mobile-menu {
     display: none !important;
   }
@@ -1125,7 +1127,7 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
   padding: 0 1rem;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .olo-recursos-visuales {
     padding: 0 2rem;
   }
@@ -1161,7 +1163,7 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
   padding: 0 0.5rem;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .olo-recursos-visuales-body {
     padding: 0 1.5rem;
   }
@@ -1180,7 +1182,7 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
 /* Reproductor y lista lado a lado desde `lg`: a 768px la columna de la lista medía
    210px y, con la miniatura de 110px, el título se quedaba en 60px y hacía scroll
    lateral. En tablet van uno encima del otro. */
-@media (width >= 64rem) {
+@media (width >=64rem) {
   .rv-container {
     grid-template-columns: 1.8fr 1fr;
     padding: 1.5rem;
@@ -1352,7 +1354,7 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
   overflow-x: hidden;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .olo-publicaciones {
     padding: 4rem 2rem;
   }
@@ -1391,7 +1393,7 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
   justify-content: center;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .olo-publicaciones-body {
     padding: 0 2rem;
   }
@@ -1410,7 +1412,7 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
   cursor: grabbing;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .publicaciones-container {
     padding: 2rem;
   }
@@ -1424,13 +1426,13 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
   user-select: none;
 }
 
-@media (width >= 40rem) {
+@media (width >=40rem) {
   .publicaciones-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .publicaciones-grid {
     grid-template-columns: repeat(4, 1fr);
   }
@@ -1602,10 +1604,11 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
   right: -0.5rem;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .publicaciones-nav-prev {
     left: 0.25rem;
   }
+
   .publicaciones-nav-next {
     right: 0.25rem;
   }
@@ -1864,6 +1867,7 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
    pantalla y envío del formulario no cambian. Sin soporte, queda la lista del
    sistema. */
 @supports (appearance: base-select) {
+
   .admin-auth-select,
   .admin-auth-select::picker(select) {
     appearance: base-select;
@@ -2020,7 +2024,7 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
 }
 
 /* Desde `lg` el panel tiene su barra lateral: el mismo corte que `lg:` de Tailwind. */
-@media (width >= 64rem) {
+@media (width >=64rem) {
   .navegacion-mobile {
     display: none;
   }
@@ -2077,13 +2081,13 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
   list-style: none;
 }
 
-.navegacion-mobile-lista > li {
+.navegacion-mobile-lista>li {
   display: flex;
   flex: 1 1 0;
   min-width: 0;
 }
 
-.navegacion-mobile-lista > .navegacion-mobile-centro {
+.navegacion-mobile-lista>.navegacion-mobile-centro {
   flex: 0 0 5.75rem;
 }
 
@@ -2129,7 +2133,7 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
   height: 2rem;
 }
 
-.navegacion-mobile-icono > svg {
+.navegacion-mobile-icono>svg {
   width: 1.5rem;
   height: 1.5rem;
   flex-shrink: 0;
@@ -2235,7 +2239,8 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
   width: 3.25rem;
   height: auto;
   filter: var(--navegacion-mobile-logo-filtro);
-  translate: 0 3px; /* x  y — negativo sube / va a la izquierda; positivo baja / va a la derecha */
+  translate: 0 3px;
+  /* x  y — negativo sube / va a la izquierda; positivo baja / va a la derecha */
 }
 
 /* Un icono subido en Configuración que no pasa a blanco en modo oscuro. Sin el ajuste de
@@ -2284,7 +2289,7 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
   box-shadow: 0 -8px 32px rgb(0 0 0 / 0.2);
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .navegacion-mobile-hoja {
     max-width: 32rem;
   }
@@ -2392,6 +2397,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 }
 
 @media (hover: hover) {
+
   .navegacion-mobile-hoja-fila:not(.es-activo):hover,
   .navegacion-mobile-hoja-cerrar:hover {
     background: var(--navegacion-mobile-hover-fondo);
@@ -2412,7 +2418,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   color: inherit;
 }
 
-.navegacion-mobile-hoja-icono > svg {
+.navegacion-mobile-hoja-icono>svg {
   width: 1.5rem;
   height: 1.5rem;
 }
@@ -2481,6 +2487,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   @container (width < 48rem) {
     @slot;
   }
+
   @media (width < 64rem) {
     &:where(.navegacion-mobile-reserva *) {
       @slot;
@@ -2489,10 +2496,11 @@ body:has(.navegacion-mobile-hoja[open]) {
 }
 
 @custom-variant en-tabla {
-  @container (width >= 48rem) {
-    @media (width >= 64rem) {
+  @container (width >=48rem) {
+    @media (width >=64rem) {
       @slot;
     }
+
     &:not(:where(.navegacion-mobile-reserva *)) {
       @slot;
     }
@@ -2504,8 +2512,8 @@ body:has(.navegacion-mobile-hoja[open]) {
 }
 
 .olo-tabla-apilable,
-.olo-tabla-apilable > :is(tbody, tfoot),
-.olo-tabla-apilable > :is(tbody, tfoot) > tr > td {
+.olo-tabla-apilable> :is(tbody, tfoot),
+.olo-tabla-apilable> :is(tbody, tfoot)>tr>td {
   @variant apilada {
     display: block;
     width: 100%;
@@ -2515,7 +2523,7 @@ body:has(.navegacion-mobile-hoja[open]) {
 /* En columna flexible para que la celda con `data-titulo` encabece la tarjeta
    aunque en la tabla no sea la primera columna (el nombre de la ocupación va
    tercero). El lector de pantalla sigue el orden del HTML. */
-.olo-tabla-apilable > :is(tbody, tfoot) > tr {
+.olo-tabla-apilable> :is(tbody, tfoot)>tr {
   @variant apilada {
     display: flex;
     flex-direction: column;
@@ -2524,7 +2532,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   }
 }
 
-.olo-tabla-apilable > :is(tbody, tfoot) > tr > td[data-titulo] {
+.olo-tabla-apilable> :is(tbody, tfoot)>tr>td[data-titulo] {
   @variant apilada {
     order: -1;
   }
@@ -2538,19 +2546,19 @@ body:has(.navegacion-mobile-hoja[open]) {
   }
 }
 
-.olo-tabla-apilable > thead {
+.olo-tabla-apilable>thead {
   @variant apilada {
     display: none;
   }
 }
 
-.olo-tabla-apilable > caption {
+.olo-tabla-apilable>caption {
   @variant apilada {
     display: block;
   }
 }
 
-.olo-tabla-apilable > :is(tbody, tfoot) > tr > td {
+.olo-tabla-apilable> :is(tbody, tfoot)>tr>td {
   @variant apilada {
     padding: 0.3rem 0;
     min-width: 0;
@@ -2562,13 +2570,13 @@ body:has(.navegacion-mobile-hoja[open]) {
 
 /* Lo que en escritorio no se parte (fechas, píldoras) en un móvil sí puede:
    es eso o que la tarjeta se salga de la pantalla. */
-.olo-tabla-apilable > :is(tbody, tfoot) > tr > td :where(*) {
+.olo-tabla-apilable> :is(tbody, tfoot)>tr>td :where(*) {
   @variant apilada {
     white-space: normal;
   }
 }
 
-.olo-tabla-apilable > :is(tbody, tfoot) > tr > td[data-etiqueta] {
+.olo-tabla-apilable> :is(tbody, tfoot)>tr>td[data-etiqueta] {
   @variant apilada {
     display: grid;
     grid-template-columns: min(38%, 9rem) minmax(0, 1fr);
@@ -2595,13 +2603,13 @@ body:has(.navegacion-mobile-hoja[open]) {
   }
 }
 
-.olo-tabla-apilable > :is(tbody, tfoot) > tr > td[data-etiqueta] > * {
+.olo-tabla-apilable> :is(tbody, tfoot)>tr>td[data-etiqueta]>* {
   @variant apilada {
     grid-column: 2;
   }
 }
 
-.dark .olo-tabla-apilable > :is(tbody, tfoot) > tr > td[data-etiqueta] {
+.dark .olo-tabla-apilable> :is(tbody, tfoot)>tr>td[data-etiqueta] {
   @variant apilada {
     &::before {
       color: #94a3b8;
@@ -2623,7 +2631,7 @@ body:has(.navegacion-mobile-hoja[open]) {
      desplegar, una frase y los botones, nada más.
 
    Sin capa, como la tabla apilable, y con más especificidad que su `display: block`. */
-.olo-tabla-acordeon > tbody > tr > td:is([data-resumen], [data-detalle]) {
+.olo-tabla-acordeon>tbody>tr>td:is([data-resumen], [data-detalle]) {
   display: none;
 
   @variant apilada {
@@ -2632,21 +2640,21 @@ body:has(.navegacion-mobile-hoja[open]) {
   }
 }
 
-.olo-tabla-acordeon > tbody > tr:not([data-abierta]) > td:not([data-resumen]),
-.olo-tabla-acordeon > tbody > tr > td[data-solo-tabla] {
+.olo-tabla-acordeon>tbody>tr:not([data-abierta])>td:not([data-resumen]),
+.olo-tabla-acordeon>tbody>tr>td[data-solo-tabla] {
   @variant apilada {
     display: none;
   }
 }
 
 /* Plegada, la fila es solo el botón: que el área táctil sea la fila entera. */
-.olo-tabla-acordeon > tbody > tr:not([data-abierta]) {
+.olo-tabla-acordeon>tbody>tr:not([data-abierta]) {
   @variant apilada {
     padding-block: 0.25rem;
   }
 }
 
-.olo-tabla-acordeon > tbody > tr[data-abierta] > td[data-resumen] {
+.olo-tabla-acordeon>tbody>tr[data-abierta]>td[data-resumen] {
   @variant apilada {
     margin-bottom: 0.5rem;
   }
@@ -2665,6 +2673,7 @@ body:has(.navegacion-mobile-hoja[open]) {
   scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
   scrollbar-width: thin;
 }
+
 .dark * {
   scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
@@ -2673,19 +2682,24 @@ body:has(.navegacion-mobile-hoja[open]) {
   width: 8px;
   height: 8px;
 }
+
 *::-webkit-scrollbar-track {
   background: transparent;
 }
+
 *::-webkit-scrollbar-thumb {
   background: rgba(0, 0, 0, 0.2);
   border-radius: 4px;
 }
+
 *::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.4);
 }
+
 .dark *::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.2);
 }
+
 .dark *::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.4);
 }
@@ -3091,7 +3105,7 @@ button.text-link,
    pasan a tonos claros. */
 /* El cargador del login del panel, ya autenticado (2026-10-12): desde `xl` va sobre el azul de
    la mitad derecha, donde el navy del texto no se vería. Por debajo, sobre el blanco. */
-@media (width >= 80rem) {
+@media (width >=80rem) {
   .login-panel-cargando .goo-loader-label {
     color: #fff;
   }
@@ -3259,7 +3273,7 @@ button.text-link,
   color: #1e293b;
 }
 
-@media (width >= 40rem) {
+@media (width >=40rem) {
   .olo-ocupado-acciones {
     flex-direction: row;
     flex-wrap: wrap;
@@ -3465,6 +3479,29 @@ button.text-link,
 .olo-editor[data-estado="rechazado"] [class*="PuckHeader-path"] {
   background: rgba(252, 165, 165, 0.16);
   color: #fca5a5;
+}
+
+/* La envoltura de la cabecera (`PuckLayout-header`) trae de Puck `overflow: auto` en
+   cuanto la barra izquierda está abierta, y eso recortaba lo que cuelga por debajo de
+   la cabecera: los tooltips de las acciones salían cortados contra el lienzo. Aquí se
+   deja visible y por encima de las barras y del lienzo, que van después en el DOM.
+   `min-width: 0` hace lo que el `overflow` hacía de paso: que una cabecera ancha no
+   ensanche las columnas de la rejilla. Va por `PuckLayout-inner >` para ganarle en
+   especificidad a la regla de Puck sin depender del orden de carga del CSS. Solo en
+   escritorio: en móvil Puck pliega la fila de la cabecera a 0 y la esconde con ese
+   mismo `overflow`.
+
+   `z-index: 20` y no 2 (2026-10-15): los campos de la barra derecha no crean capa propia
+   y algunos de Puck traen su `z-index` (el elemento desplegado de una lista, 2; el asa
+   para redimensionar, 10). Con 2 empataban y, al ir después en el DOM, tapaban los
+   tooltips de Salir, Guardar y Enviar en cuanto había una lista abierta debajo. */
+@media (min-width: 638px) {
+  .olo-editor [class*="PuckLayout-inner"]>[class*="PuckLayout-header"] {
+    position: relative;
+    z-index: 20;
+    min-width: 0;
+    overflow: visible;
+  }
 }
 
 .olo-editor-acciones {
@@ -3963,6 +4000,7 @@ button.text-link,
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -3973,6 +4011,7 @@ button.text-link,
     opacity: 0;
     transform: translateY(12px) scale(0.98);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -3980,10 +4019,13 @@ button.text-link,
 }
 
 @keyframes oloExitoPulse {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
     opacity: 0.6;
   }
+
   50% {
     transform: scale(1.15);
     opacity: 0.25;
@@ -4289,6 +4331,18 @@ button.text-link,
   box-shadow: 0 0 0 2px #001631;
 }
 
+/* Nombre de la página en el modal de eliminar (título y etiqueta), en el rojo del botón.
+   Solo el nombre: las comillas « » quedan del color del texto. */
+.nueva-seccion-nombre-peligro {
+  color: #dc2626;
+}
+
+/* Campo de confirmación del modal de eliminar: el resalte en el rojo del botón. */
+.nueva-seccion-campo--peligro:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 2px #dc2626;
+}
+
 .nueva-seccion-campo:disabled {
   background: #f1f4f7;
 }
@@ -4314,18 +4368,6 @@ button.text-link,
   margin: 0.6rem 0 0;
   font-size: 0.85rem;
   color: #b3261e;
-}
-
-.nueva-seccion-notas {
-  margin: 1rem 0 0;
-  padding-left: 1.1rem;
-  font-size: 0.8rem;
-  line-height: 1.45;
-  color: #52667a;
-}
-
-.nueva-seccion-notas li+li {
-  margin-top: 0.3rem;
 }
 
 /* `wrap` y `nowrap` en los botones: con 44 px de alto fijo el texto no puede partirse
@@ -4568,7 +4610,7 @@ button.text-link,
   padding: 3rem 1rem;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
   .olo-tabs-section {
     padding: 4rem 2rem;
   }
@@ -4614,7 +4656,8 @@ button.text-link,
 
 .olo-tabs-btn--active {
   background-color: #39A900 !important;
-  color: #002237 !important; /* WCAG AA 4.5:1 (4.9:1) */
+  color: #002237 !important;
+  /* WCAG AA 4.5:1 (4.9:1) */
   border-color: #39A900 !important;
   box-shadow: 0 4px 12px rgba(57, 169, 0, 0.28) !important;
   transform: none;
@@ -4867,6 +4910,7 @@ button.text-link,
 
 /* Resaltado dinámico para resultados del buscador (estilo selección de texto con color #fff201) */
 @keyframes destelloBusqueda {
+
   0%,
   70% {
     background-color: #fff201 !important;
@@ -4910,7 +4954,7 @@ button.text-link,
   padding: 0 1rem;
 }
 
-@media (width >= 48rem) {
+@media (width >=48rem) {
 
   .matriz-section-gray,
   .matriz-section-white {
@@ -5067,7 +5111,7 @@ button.text-link,
   align-items: stretch;
 }
 
-.olo-sectorial-grid > * {
+.olo-sectorial-grid>* {
   width: 100%;
   display: flex !important;
   justify-content: center;
@@ -5238,6 +5282,7 @@ button.text-link,
 [class*="_LayerTree-helper_"] {
   font-size: 0 !important;
 }
+
 [class*="_LayerTree-helper_"]::before {
   content: "Sin bloques";
   font-size: 14px;

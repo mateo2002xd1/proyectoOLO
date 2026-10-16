@@ -1,5 +1,10 @@
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import {
+  CODIGO_PASSWORD_REPETIDA,
+  MENSAJE_PASSWORD_REPETIDA,
+  esPasswordRepetida,
+} from '@olo/password-policy';
 
 /**
  * Directivas de contraseñas de OLO — §1 y §3 de `4-reglas.md`.
@@ -206,6 +211,46 @@ export const compararPassword = async (candidato: string, hash: string): Promise
   const normalizado = normalizarPassword(candidato);
   if (normalizado === candidato) return false;
   return bcrypt.compare(normalizado, hash);
+};
+
+/**
+ * Contraseña repetida: el código y el mensaje vienen de `@olo/password-policy`, el mismo
+ * paquete que usan los formularios, para que no haya tres copias del texto (2026-10-15).
+ * El `code` viaja en la respuesta (`error.middleware.ts`) y las pantallas marcan con él
+ * el campo de la nueva. La recuperación, que oculta los demás errores tras un mensaje
+ * genérico, deja pasar este: solo llega después de responder bien las preguntas, así que
+ * no revela nada a quien no lo hizo.
+ */
+export { CODIGO_PASSWORD_REPETIDA, MENSAJE_PASSWORD_REPETIDA };
+
+/** ¿Es este error el de una contraseña repetida, y por tanto seguro de mostrar? */
+export const esErrorDePasswordRepetida = esPasswordRepetida;
+
+/**
+ * Lo que hay que guardar al cambiar la contraseña, si la nueva no repite la actual ni
+ * la anterior (pedido del usuario, 15-10-2026): el hash nuevo y, como anterior, el que
+ * había. Aplica la política antes de comparar, así que un error de formato sale primero.
+ *
+ * @throws 400 `PASSWORD_INVALIDA` si no cumple la política; 400 `PASSWORD_REPETIDA`
+ *   si coincide con la actual o con la anterior.
+ */
+export const nuevaPasswordSinRepetir = async (
+  nueva: unknown,
+  hashes: { actual?: string | null; anterior?: string | null },
+): Promise<{ password_hash: string; previous_password_hash: string | null }> => {
+  const valida = exigirPasswordValida(nueva);
+  for (const hash of [hashes.actual, hashes.anterior]) {
+    if (hash && (await compararPassword(valida, hash))) {
+      throw Object.assign(new Error(MENSAJE_PASSWORD_REPETIDA), {
+        status: 400,
+        code: CODIGO_PASSWORD_REPETIDA,
+      });
+    }
+  }
+  return {
+    password_hash: await bcrypt.hash(valida, BCRYPT_ROUNDS),
+    previous_password_hash: hashes.actual ?? null,
+  };
 };
 
 /**

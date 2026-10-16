@@ -7,5 +7,5 @@ export const metadata = {
 // Hasta el 2026-10-09 saludaba por el nombre de la cookie de sesión («Hola <nombre>,
 // actualiza tu seguridad»); el diseño nuevo titula el paso sin saludo.
 export default function FirstLoginPage() {
-  return <FirstLoginFlow />;
+  return <FirstLoginFlow modo="completo" />;
 }

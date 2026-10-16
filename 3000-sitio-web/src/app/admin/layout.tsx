@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { PanelGeneralLayout } from '@/features/administracion/auth/components/panel-general';
 import { LetraDelPanel } from '@/features/administracion/auth/components/letra-del-panel';
-import { getAuthUserProfile } from '@/shared/lib/session';
+import { getAuthUserProfile, tieneConfiguracionPendiente } from '@/shared/lib/session';
 import { VigilanteSesion } from '@/shared/lib/inactividad';
 import { EstilosDeIdentidad, metadataDeIdentidad, obtenerIdentidadPanel } from '@/shared/lib/identidad-panel/servidor';
 
@@ -14,7 +15,7 @@ export function generateMetadata(): Promise<Metadata> {
  * El marco del panel: envuelve todo lo que cuelga de `app/admin/`. El vigilante se
  * monta aquí para cubrir de una vez dashboard, usuarios, roles, revisión, auditoría,
  * respaldos, actualizaciones y mi-perfil. Quedan fuera, en otras ramas del árbol:
- * las pantallas de acceso (`app/(auth)/`: `/login`, `/first-login`, `/recovery`...,
+ * las pantallas de acceso (`app/(auth)/`: `/login`, `/login/first-login`, `/login/recovery`...,
  * sin panel), y el editor y la vista previa (`app/editor/`, `app/preview/`), que
  * montan su propio vigilante.
  *
@@ -26,9 +27,18 @@ export function generateMetadata(): Promise<Metadata> {
  * van a la barra lateral y a la del móvil, y `EstilosDeIdentidad` escribe el color de las
  * etiquetas de acción. Al guardarla, Configuración hace `router.refresh()` y este layout
  * se vuelve a pintar con la nueva.
+ *
+ * Una cuenta con el primer ingreso pendiente según la base va a terminarlo antes de ver
+ * el panel: la API le niega todo, y sin esto cada pantalla salía con «No pudimos
+ * cargar…» y un «Reintentar» que no servía (ver `tieneConfiguracionPendiente`).
  */
 export default async function Layout({ children }: { children: React.ReactNode }) {
-  const [userProfile, identidad] = await Promise.all([getAuthUserProfile(), obtenerIdentidadPanel()]);
+  const [userProfile, identidad, pendiente] = await Promise.all([
+    getAuthUserProfile(),
+    obtenerIdentidadPanel(),
+    tieneConfiguracionPendiente(),
+  ]);
+  if (pendiente) redirect('/login/first-login');
   return (
     <>
       <LetraDelPanel />

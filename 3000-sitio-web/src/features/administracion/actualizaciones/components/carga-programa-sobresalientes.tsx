@@ -1,7 +1,8 @@
 'use client';
 
 import { useRef } from 'react';
-import { ArrowUpTrayIcon, InformationCircleIcon } from '@heroicons/react/20/solid';
+import { ArrowUpTrayIcon } from '@heroicons/react/20/solid';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 import { useCargasProgramaSobresalientes } from '../hooks/use-cargas-programa-sobresalientes';
 import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
 import { BarraDeProgreso } from './barra-de-progreso';
@@ -59,10 +60,9 @@ export function CargaProgramaSobresalientes({ puedeActualizar }: CargaProgramaSo
               className="hidden"
             />
           </label>
-          <p className="mt-2 flex w-fit items-center gap-1.5 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900/40 dark:text-blue-200">
-            <InformationCircleIcon className="size-3.5 shrink-0" />
+          <MensajeEstado tipo="info" rol="note" className="mt-2 w-fit">
             Formato admitido: .xlsx
-          </p>
+          </MensajeEstado>
           {error && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>}
           {cargaEnProceso && (
             <BarraDeProgreso

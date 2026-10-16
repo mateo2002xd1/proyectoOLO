@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { reproducirSonidoAviso } from "@/shared/lib/sonido-avisos";
+import { MensajeEstado, type TipoMensajeEstado } from "@/shared/ui/molecules/mensaje-estado";
 
 export type NotificationType = "success" | "error" | "warning" | "info";
 
@@ -14,39 +15,13 @@ interface NotificationProps {
   duration?: number;
 }
 
-// Fondo Y color de texto por variante. No se puede fijar `text-white` para
-// todas: sobre el amarillo da 1.48:1, el peor contraste del sistema de diseño.
-// Cada par de abajo cumple el 4.5:1 de AA. Ver 9-accesibilidad.md §2.1.
-// Las clases se escriben completas y literales: Tailwind escanea el código
-// fuente, así que una clase construida por interpolación no se generaría.
-const variantStyles: Record<
-  NotificationType,
-  { surface: string; text: string; subtle: string; close: string }
-> = {
-  success: {
-    surface: "bg-brand-interactive",
-    text: "text-white",
-    subtle: "text-white/90",
-    close: "text-white/80 hover:text-white",
-  },
-  error: {
-    surface: "bg-[#dc2626]",
-    text: "text-white",
-    subtle: "text-white/90",
-    close: "text-white/80 hover:text-white",
-  },
-  warning: {
-    surface: "bg-[#fdcf33]",
-    text: "text-[#1f2937]",
-    subtle: "text-[#1f2937]/80",
-    close: "text-[#1f2937]/80 hover:text-[#1f2937]",
-  },
-  info: {
-    surface: "bg-brand-blue-dark",
-    text: "text-white",
-    subtle: "text-white/90",
-    close: "text-white/80 hover:text-white",
-  },
+// Cada aviso es el mensaje de estado del proyecto (`MensajeEstado`) de su tipo: mismos
+// colores e icono que las tarjetas del panel, del acceso y del editor.
+const TIPO_DE_ESTADO: Record<NotificationType, TipoMensajeEstado> = {
+  success: "exito",
+  error: "error",
+  warning: "advertencia",
+  info: "info",
 };
 
 export function Notification({
@@ -58,7 +33,6 @@ export function Notification({
 }: NotificationProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
-  const { surface, text, subtle, close } = variantStyles[type];
 
   useEffect(() => {
     requestAnimationFrame(() => setIsVisible(true));
@@ -91,44 +65,48 @@ export function Notification({
 
   return createPortal(
     // Por debajo de `lg` el panel tiene la navegación mobile abajo: el aviso sale por encima.
-    // Esquinas de 16 px, las de los mensajes de estado (`rounded-xl` es 16 en este sitio:
-    // globals.css redefine la escala). Con `rounded-2xl`, 24, se veía igual que un botón.
+    // Esquinas de 16 px, las de los mensajes de estado: la sombra va en la caja y tiene
+    // que seguir las esquinas de `MensajeEstado`.
     <div className="fixed bottom-[calc(var(--navegacion-mobile-alto)+1.5rem)] right-6 z-[100] flex items-end justify-end pointer-events-none sm:right-8 lg:bottom-8">
       <div
-        className={`pointer-events-auto w-[360px] max-w-[calc(100vw-3rem)] overflow-hidden rounded-xl ${surface} ${text} shadow-[0_12px_40px_-8px_rgba(0,0,0,0.2)] transition-all duration-300 ease-out ${
+        className={`pointer-events-auto w-[360px] max-w-[calc(100vw-3rem)] rounded-[16px] shadow-[0_12px_40px_-8px_rgba(0,0,0,0.2)] transition-all duration-300 ease-out ${
           isVisible && !isLeaving
             ? "opacity-100 translate-y-0 scale-100"
             : "opacity-0 translate-y-8 scale-95"
         }`}
-        role="alert"
-        aria-live="assertive"
       >
-        <div className="flex items-start gap-3 p-4">
-          <div className="flex-1 min-w-0">
-            <p className={`m-0 text-sm font-bold ${text}`}>{title}</p>
-            {message && (
-              <p className={`m-0 mt-1 text-xs ${subtle}`}>{message}</p>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={handleClose}
-            className={`shrink-0 rounded-lg p-1 transition hover:bg-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current ${close}`}
-            aria-label="Cerrar"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
+        {/* `alert` para lo que salió mal o pide atención; `status` para lo demás, que se
+            anuncia sin interrumpir. */}
+        <MensajeEstado
+          tipo={TIPO_DE_ESTADO[type]}
+          rol={type === "error" || type === "warning" ? "alert" : "status"}
+        >
+          <div className="flex items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="m-0 font-semibold">{title}</p>
+              {message && <p className="m-0 mt-0.5">{message}</p>}
+            </div>
+            <button
+              type="button"
+              onClick={handleClose}
+              className="shrink-0 rounded-lg p-1 transition hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current"
+              aria-label="Cerrar"
             >
-              <path d="M4 4l8 8M12 4l-8 8" />
-            </svg>
-          </button>
-        </div>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                aria-hidden="true"
+              >
+                <path d="M4 4l8 8M12 4l-8 8" />
+              </svg>
+            </button>
+          </div>
+        </MensajeEstado>
       </div>
     </div>,
     document.body

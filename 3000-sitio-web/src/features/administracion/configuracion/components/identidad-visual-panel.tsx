@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowUpTrayIcon, ArrowUturnLeftIcon, SwatchIcon } from '@heroicons/react/24/outline';
+import { ArrowUpTrayIcon, ArrowUturnLeftIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/shared/ui/atoms/button';
 import { Switch } from '@/shared/ui/atoms/switch';
 import { Notification, type NotificationType } from '@/shared/ui/molecules/notification';
@@ -136,14 +136,12 @@ export function IdentidadVisualPanel({
       className="@container rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6 dark:border-[#7db828]/30 dark:bg-[#131b2f]"
     >
       <div className="flex min-w-0 items-start gap-3">
-        <SwatchIcon aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-gray-500 dark:text-[#94a3b8]" />
         <div className="min-w-0">
           <h2 id="titulo-identidad-visual" className="font-bold text-[#001631] dark:text-[#f6f6f6]">
             Identidad visual del panel
           </h2>
           <p className="mt-1 text-sm text-gray-500 dark:text-[#94a3b8]">
-            El logo, el icono y los colores de las etiquetas y los botones. Lo que cambies aquí lo
-            ven todas las personas que usan el panel.
+            El logo, los iconos, los colores de las etiquetas y los botones.
           </p>
           {!puedeEditar && (
             <p className="mt-2 text-sm font-medium text-[#001631] dark:text-[#f6f6f6]">
@@ -153,45 +151,47 @@ export function IdentidadVisualPanel({
         </div>
       </div>
 
-      <div className="mt-6 grid gap-4 @xl:grid-cols-2">
-        <PiezaDeIdentidad
-          pieza="logo"
-          src={logoDelPanel(identidad)}
-          enBlancoEnOscuro={logoEnBlancoEnOscuro(identidad)}
-          personalizada={Boolean(identidad.logo)}
-          puedeEditar={puedeEditar}
-          onSubir={(archivo) => subir('logo', archivo)}
-          onRestablecer={() => restablecer('logo')}
-        />
-        <PiezaDeIdentidad
-          pieza="icono"
-          src={iconoDelPanel(identidad)}
-          enBlancoEnOscuro={iconoEnBlancoEnOscuro(identidad)}
-          personalizada={Boolean(identidad.icono)}
-          puedeEditar={puedeEditar}
-          onSubir={(archivo) => subir('icono', archivo)}
-          onRestablecer={() => restablecer('icono')}
-        />
-      </div>
-
-      <div className="mt-4 flex items-start justify-between gap-4 rounded-lg border border-gray-200 p-4 dark:border-[#2d3649]">
-        <div className="min-w-0">
-          <p id="etiqueta-blanco-oscuro" className="text-sm font-semibold text-[#001631] dark:text-[#f6f6f6]">
-            Pasar a blanco en modo oscuro
-          </p>
-          <p className="mt-1 text-sm text-gray-500 dark:text-[#94a3b8]">
-            Para un logo o un icono subidos que sean oscuros y con fondo transparente. Si tienen
-            fondo propio, apágalo o saldrán como un bloque blanco. Los de fábrica siempre pasan a
-            blanco.
-            {!haySubidas && ' Ahora no hay ninguno subido.'}
-          </p>
+      <div className="mt-6 flex flex-col gap-4 rounded-lg border border-gray-200 p-4 dark:border-[#2d3649]">
+        <div className="grid gap-4 @xl:grid-cols-2">
+          <PiezaDeIdentidad
+            pieza="logo"
+            src={logoDelPanel(identidad)}
+            enBlancoEnOscuro={logoEnBlancoEnOscuro(identidad)}
+            personalizada={Boolean(identidad.logo)}
+            puedeEditar={puedeEditar}
+            onSubir={(archivo) => subir('logo', archivo)}
+            onRestablecer={() => restablecer('logo')}
+          />
+          <PiezaDeIdentidad
+            pieza="icono"
+            src={iconoDelPanel(identidad)}
+            enBlancoEnOscuro={iconoEnBlancoEnOscuro(identidad)}
+            personalizada={Boolean(identidad.icono)}
+            puedeEditar={puedeEditar}
+            onSubir={(archivo) => subir('icono', archivo)}
+            onRestablecer={() => restablecer('icono')}
+          />
         </div>
-        <Switch
-          checked={identidad.blancoEnModoOscuro}
-          onChange={cambiarModoOscuro}
-          disabled={!puedeEditar || guardandoModoOscuro}
-          aria-label="Pasar a blanco en modo oscuro el logo y el icono subidos"
-        />
+
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p id="etiqueta-blanco-oscuro" className="text-sm font-semibold text-[#001631] dark:text-[#f6f6f6]">
+              Pasar a blanco en modo oscuro
+            </p>
+            <p className="mt-1 text-sm text-gray-500 dark:text-[#94a3b8]">
+              Para un logo o un icono subidos que sean oscuros y con fondo transparente. Si tienen
+              fondo propio, apágalo o saldrán como un bloque blanco. Los de fábrica siempre pasan a
+              blanco.
+              {!haySubidas && ' Ahora no hay ninguno subido.'}
+            </p>
+          </div>
+          <Switch
+            checked={identidad.blancoEnModoOscuro}
+            onChange={cambiarModoOscuro}
+            disabled={!puedeEditar || guardandoModoOscuro}
+            aria-label="Pasar a blanco en modo oscuro el logo y el icono subidos"
+          />
+        </div>
       </div>
 
       <ColoresConfigurables
@@ -303,7 +303,7 @@ function PiezaDeIdentidad({
   );
 
   return (
-    <div role="group" aria-labelledby={idTitulo} className="flex flex-col gap-4 rounded-lg border border-gray-200 p-4 dark:border-[#2d3649]">
+    <div role="group" aria-labelledby={idTitulo} className="flex flex-col gap-4">
       <div>
         <h3 id={idTitulo} className="flex flex-wrap items-center gap-2 text-sm font-semibold text-[#001631] dark:text-[#f6f6f6]">
           {titulo}

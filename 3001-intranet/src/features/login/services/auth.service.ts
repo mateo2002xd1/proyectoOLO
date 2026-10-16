@@ -23,13 +23,17 @@ async function fetchAuth(endpoint: string, options: RequestInit = {}) {
   
   if (!res.ok) {
     let message = 'Ocurrió un error inesperado';
+    let code: string | undefined;
     try {
       const errorData = await res.json();
       message = errorData.error || errorData.message || message;
+      code = errorData.code;
     } catch {
       // Ignorar si no es JSON
     }
-    throw new Error(message);
+    // El `code` de la API viaja con el error, para que la pantalla sepa a qué campo
+    // pertenece, p. ej. una contraseña repetida (`esPasswordRepetida`, @olo/password-policy).
+    throw Object.assign(new Error(message), { code });
   }
   
   return res.json();

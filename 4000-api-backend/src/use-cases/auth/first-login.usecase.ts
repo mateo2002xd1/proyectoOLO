@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { UserRepository } from '../../repositories/usuarios.repository';
 import { SecurityQuestionRepository } from '../../repositories/security-questions.repository';
-import { compararPassword, hashearPassword, BCRYPT_ROUNDS } from '../../shared/password-policy';
+import { compararPassword, nuevaPasswordSinRepetir, BCRYPT_ROUNDS } from '../../shared/password-policy';
 
 /** Lo que quedó pendiente de configurar, para que quien llama sepa qué pedir. */
 export interface EstadoPrimerIngreso {
@@ -108,7 +108,14 @@ export const firstLoginUseCase = async (
       throw Object.assign(new Error('La contraseña temporal es incorrecta'), { status: 401 });
     }
 
-    cambios.password_hash = await hashearPassword(newPassword);
+    // Ni la temporal ni la que tenía antes de ella (si un administrador la restableció).
+    Object.assign(
+      cambios,
+      await nuevaPasswordSinRepetir(newPassword, {
+        actual: (user as any).password_hash,
+        anterior: (user as any).previous_password_hash,
+      }),
+    );
     cambios.must_change_password = false;
     cambios.temp_password_expires_at = null;
   }

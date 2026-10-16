@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 
 /**
  * Reproductor con lista de videos al lado.
@@ -116,12 +117,9 @@ export function RecursosVisualesBloque({
         )}
 
         {usarEjemplo && (
-          <div className="mb-6 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200 shadow-sm mx-auto">
-            <svg className="w-4 h-4 text-amber-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>Vista previa de ejemplo · Añade videos desde el panel lateral derecho</span>
-          </div>
+          <MensajeEstado tipo="info" rol="note" className="mx-auto mb-6 w-fit">
+            Vista previa de ejemplo · Añade videos desde el panel lateral derecho
+          </MensajeEstado>
         )}
 
         <div className="w-full text-left px-2 md:px-6">
@@ -169,6 +167,7 @@ export function RecursosVisualesBloque({
                     <div className="rv-thumb-wrap">
                       {/* src dinamico y tamano por CSS: next/image exigiria width/height fijos o remotePatterns */}
                       {thumbSrc ? (
+                        // eslint-disable-next-line @next/next/no-img-element -- miniatura con src dinámico y tamaño por CSS
                         <img
                           src={thumbSrc}
                           alt={typeof video.titulo === 'string' ? video.titulo : ''}

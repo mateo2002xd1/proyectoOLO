@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { Carousel } from '@/shared/ui/organisms/carousel';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 
 /**
  * Un carrusel de imágenes con su título.
@@ -53,10 +54,9 @@ export function SeccionCarrusel({
   const carrusel = (
     <div className="w-full relative">
       {esVistaPrevia && (
-        <div className="w-full text-center py-1.5 px-3 mb-3 bg-blue-50/90 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 text-xs font-medium rounded-lg flex items-center justify-center gap-2">
-          <span>🖼️</span>
-          <span>Vista previa del carrusel — Añade o edita imágenes desde el panel lateral</span>
-        </div>
+        <MensajeEstado tipo="info" rol="note" className="mb-3">
+          Vista previa del carrusel — Añade o edita imágenes desde el panel lateral
+        </MensajeEstado>
       )}
       <Carousel
         images={listaFinal}

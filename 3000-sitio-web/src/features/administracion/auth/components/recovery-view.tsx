@@ -19,7 +19,8 @@ import { obtenerPreguntas } from '../services/recuperacion.service';
 
 /**
  * Recuperación de contraseña por preguntas de seguridad (RF-05), paso 1 de 4: el
- * correo. Siguen `/security-questions`, `/reset-password` y `/reset-success`.
+ * correo. Siguen `/login/recovery/security-questions`,
+ * `/login/recovery/reset-password` y `/login/recovery/reset-success`.
  *
  * Es la única pantalla del flujo que se puede abrir suelta: las demás dependen de
  * lo que esta deja en `useFlujoDeRecuperacion` (ver `flujo-de-recuperacion.tsx`).
@@ -59,7 +60,7 @@ export function RecoveryView() {
       }
 
       empezarRecuperacion(email, encontradas);
-      router.push('/security-questions');
+      router.push('/login/recovery/security-questions');
     } catch (error) {
       setErrors({ general: (error as Error).message });
     } finally {

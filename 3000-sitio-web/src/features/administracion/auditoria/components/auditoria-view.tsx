@@ -14,7 +14,7 @@ import { COLOR_DE_ACCION } from '@/shared/lib/identidad-panel';
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { BotonDeFila, FechaDeCelda, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
 import { useAuditoria } from '../hooks/use-auditoria';
-import { comentarioPrincipal, resumenDeCambios } from '../lib/cambios';
+import { resumenDeCambios } from '../lib/cambios';
 import { FraseDeRegistro, PildoraDeAccion } from './frase-de-registro';
 
 import {
@@ -24,6 +24,7 @@ import {
   type RegistroAuditoria,
 } from '../types';
 import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
+import { AvisoErrorDeCarga } from '@/shared/ui/molecules/aviso-error-de-carga';
 
 // Misma altura y mismas esquinas que los filtros, para que la fila se lea como
 // una sola banda de controles.
@@ -89,6 +90,25 @@ export function AuditoriaView() {
       <BarraFiltros
         activos={Object.values(filtros).filter(Boolean).length}
       >
+        {/* La categoría va la primera (pedido del usuario, 2026-10-12) y antes que la acción:
+            la segunda depende de la primera (Rechazo es de Administración, Expiró de
+            Seguridad), y ese es el orden en que se piensa — de qué mundo hablo, y qué pasó
+            en él. */}
+        <CampoFiltro etiqueta="Categoría">
+          <CustomSelect
+            ariaLabel="Categoría"
+            value={filtros.categoria}
+            onChange={(valor) => cambiarFiltro('categoria', valor)}
+            options={[
+              { value: '', label: 'Todas' },
+              ...(Object.keys(ETIQUETA_CATEGORIA) as CategoriaAuditoria[]).map((value) => ({
+                value,
+                label: ETIQUETA_CATEGORIA[value],
+              })),
+            ]}
+          />
+        </CampoFiltro>
+
         <CampoFiltro etiqueta="Desde">
           <DatePicker
             ariaLabel="Desde"
@@ -119,24 +139,6 @@ export function AuditoriaView() {
           />
         </CampoFiltro>
 
-        {/* Primero la categoría y después la acción: la segunda depende de la primera
-            (Rechazo es de Administración, Expiró de Seguridad), y ese es el orden en
-            que se piensa — de qué mundo hablo, y qué pasó en él. */}
-        <CampoFiltro etiqueta="Categoría">
-          <CustomSelect
-            ariaLabel="Categoría"
-            value={filtros.categoria}
-            onChange={(valor) => cambiarFiltro('categoria', valor)}
-            options={[
-              { value: '', label: 'Todas' },
-              ...(Object.keys(ETIQUETA_CATEGORIA) as CategoriaAuditoria[]).map((value) => ({
-                value,
-                label: ETIQUETA_CATEGORIA[value],
-              })),
-            ]}
-          />
-        </CampoFiltro>
-
         <CampoFiltro etiqueta="Acción">
           <CustomSelect
             ariaLabel="Acción"
@@ -157,7 +159,14 @@ export function AuditoriaView() {
       </BarraFiltros>
 
       {error ? (
-        <p className="text-sm text-red-600">{error}</p>
+        // Qué pasó, qué hacer y «Reintentar», como en «Páginas en revisión» y Respaldos
+        // (pedido del usuario, 2026-10-15). Antes, el mensaje suelto en rojo.
+        <AvisoErrorDeCarga
+          titulo="No pudimos cargar la bitácora de auditoría"
+          mensaje={error}
+          onReintentar={recargar}
+          reintentando={isLoading}
+        />
       ) : isLoading ? (
         <CargandoSeccion label="Cargando bitácora..." />
       ) : registros.length === 0 ? (
@@ -170,12 +179,13 @@ export function AuditoriaView() {
         <>
           <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-[#7db828]/30">
             {/* En el móvil y la tablet, acordeón, como «Páginas en revisión»: cada registro
-                es una frase («El usuario Ana Gómez hizo la acción de [Edición]») y al tocarlo se completa con
+                es una frase («El usuario Ana Gómez hizo la acción de [Editado]») y al tocarlo se completa con
                 lo que cambió y la fecha, y debajo sale «Ver detalle». Piezas en
                 `fila-acordeon.tsx`; reglas en globals.css (`olo-tabla-acordeon`). */}
             <table className="olo-tabla-apilable olo-tabla-acordeon w-full min-w-[52rem] text-left text-sm">
               <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-[#131b2f]">
                 <tr>
+                  <th scope="col" className="px-4 py-3 font-medium">Categoría</th>
                   <th scope="col" className="px-4 py-3 font-medium">Fecha y hora</th>
                   <th scope="col" className="px-4 py-3 font-medium">Usuario</th>
                   <th scope="col" className="px-4 py-3 font-medium">Acción</th>
@@ -210,6 +220,11 @@ export function AuditoriaView() {
                         </BotonDeFila>
                       </div>
                     </td>
+                    {/* La categoría de la fila, la misma del filtro (pedido del usuario,
+                        2026-10-15): en texto, #001631 en negrita; sin categoría, la raya. */}
+                    <td data-solo-tabla data-etiqueta="Categoría" className="whitespace-nowrap px-4 py-2 font-bold text-[#001631] dark:text-[#f6f6f6]">
+                      {registro.categoria ? ETIQUETA_CATEGORIA[registro.categoria] : <span className="font-normal text-zinc-400">—</span>}
+                    </td>
                     <td data-solo-tabla data-etiqueta="Fecha y hora" className="whitespace-nowrap px-4 py-2 text-zinc-600 dark:text-zinc-300">
                       {/* La hora debajo y más pequeña (pedido del usuario, 2026-10-12). Mismo
                           formato de antes, con segundos: `exacta`. */}
@@ -222,16 +237,11 @@ export function AuditoriaView() {
                       <PildoraDeAccion registro={registro} />
                     </td>
                     {/* Se corta en la tabla y se lee completo en el `title` o en el detalle.
-                        El comentario de un envío va más oscuro que los campos internos:
-                        es lo que se escribió para ser leído. */}
+                        Un solo color, el de la columna Usuario (pedido del usuario, 2026-10-15). */}
                     <td
                       data-solo-tabla
                       data-etiqueta="Cambios"
-                      className={`max-w-xs truncate px-4 py-2 ${
-                        comentarioPrincipal(registro)
-                          ? 'text-zinc-800 dark:text-zinc-200'
-                          : 'text-zinc-500'
-                      }`}
+                      className="max-w-xs truncate px-4 py-2 text-zinc-900 dark:text-[#f6f6f6]"
                       title={resumenDeCambios(registro)}
                     >
                       {/* Cuando la tabla pasa a tarjetas, el texto no se corta en una línea: se parte, hasta tres. */}

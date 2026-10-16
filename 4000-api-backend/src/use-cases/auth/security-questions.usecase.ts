@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { UserRepository } from '../../repositories/usuarios.repository';
 import { SecurityQuestionRepository } from '../../repositories/security-questions.repository';
-import { hashearPassword, exigirPasswordValida } from '../../shared/password-policy';
+import { nuevaPasswordSinRepetir, exigirPasswordValida } from '../../shared/password-policy';
 import { logBloqueoDeCuenta, logVerificacionDePreguntas } from '../auditoria/audit.usecase';
 
 /** Respuestas incorrectas seguidas antes del bloqueo, y cuánto dura (§3). */
@@ -186,9 +186,13 @@ export const recoverPassword = async (
   // y el éxito ya queda en la fila del cambio de contraseña. Un fallo aquí sí se registra.
   const user = await verifyAnswers(email, answersData, { origen, registrarAcierto: false });
 
-  const passwordHash = await hashearPassword(newPassword);
+  // Ni la actual ni la anterior. `findByEmail` trae los dos hashes.
+  const hashes = await nuevaPasswordSinRepetir(newPassword, {
+    actual: (user as any).password_hash,
+    anterior: (user as any).previous_password_hash,
+  });
   await UserRepository.update(user.id, {
-    password_hash: passwordHash,
+    ...hashes,
     // La contraseña que acaba de elegir reemplaza a cualquier temporal pendiente. Sin
     // esto, quien recuperaba con una temporal ya vencida (72 h) seguía marcado como
     // «debe cambiarla» y el login lo rechazaba por una clave que ya no es la suya.

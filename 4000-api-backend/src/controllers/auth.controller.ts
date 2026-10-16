@@ -122,7 +122,7 @@ export const AuthController = {
       // A medio configurar, la API le niega todo lo que no sea terminar el primer
       // ingreso (`requireAuth`), así que anunciar sus permisos solo pintaría botones
       // que responden 403. `configuracionPendiente` es lo que lee el sitio para
-      // mandarla de vuelta a `/first-login`.
+      // mandarla de vuelta a `/login/first-login`.
       const configuracionPendiente = tieneConfiguracionPendiente(req.user);
 
       res.json({

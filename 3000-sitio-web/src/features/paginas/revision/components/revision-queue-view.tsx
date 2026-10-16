@@ -6,7 +6,7 @@ import { BarraFiltros, CampoFiltro } from '@/shared/ui/molecules/barra-filtros';
 import { CustomSelect } from '@/shared/ui/molecules/custom-select';
 import { DatePicker } from '@/shared/ui/molecules/date-picker';
 import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
-import { FechaDeCelda, fechaDeFila, RESALTE_DE_FILA, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
+import { CeldaDePagina, FechaDeCelda, fechaDeFila, RESALTE_DE_FILA, ResumenDeFila, useFilasAbiertas } from '@/shared/ui/molecules/fila-acordeon';
 import { Paginador } from '@/shared/ui/molecules/paginador';
 import { useRevisionQueue } from '../hooks/use-revision-queue';
 import type { PaginaEnRevision } from '../../model/pagina.types';
@@ -15,6 +15,8 @@ import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
 import { GRUPO_TOOLTIP, TOOLTIP_ENCIMA } from '@/shared/ui/atoms/tooltip';
 import { COLOR_DE_ACCION } from '@/shared/lib/identidad-panel';
 import { AvisoErrorDeCarga } from '@/shared/ui/molecules/aviso-error-de-carga';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
+import { areaDeModalConErrorClass, ErrorDeCampo } from '@/shared/ui/molecules/alert';
 
 /**
  * Dónde se ve una página que aún no está publicada.
@@ -55,8 +57,12 @@ const ICONO_PEQUENO = 'h-4 w-4 en-tabla:@max-6xl:h-3.5 en-tabla:@max-6xl:w-3.5';
  * Letra blanca, como el icono de su botón: así lo pidió el usuario. No llega al 4,5:1 que
  * pide un texto de 12 px (9-accesibilidad.md §2.1): sobre el azul da 2,6:1, sobre el verde
  * 2,4:1 y sobre el rojo 3,8:1. Con `#0d1526` darían 7,0, 7,5 y 4,7:1.
+ *
+ * `z-20!` sobre el `z-10` del átomo (pedido del usuario, 2026-10-15): el de la fila de abajo
+ * pasa por encima de la de arriba y del encabezado. El `!` porque las dos clases son de la
+ * misma propiedad y el orden en que Tailwind las escribe no lo decide el JSX.
  */
-const TOOLTIP = `${TOOLTIP_ENCIMA} hidden en-tabla:block`;
+const TOOLTIP = `${TOOLTIP_ENCIMA} z-20! hidden en-tabla:block`;
 
 const FILTROS_VACIOS = { ambito: '', autor: '', desde: '', hasta: '' };
 
@@ -220,14 +226,19 @@ export function RevisionQueueView() {
       ) : paginasFiltradas.length === 0 ? (
         <p className="text-sm text-zinc-500">Ninguna página coincide con los filtros aplicados.</p>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-[#7db828]/30">
+        <div className="rounded-xl border border-zinc-200 dark:border-[#7db828]/30">
+          {/* Sin `overflow-x-auto` (pedido del usuario, 2026-10-15): la tabla cabe a lo ancho
+              desde 1130px y por debajo pasa a acordeón, así que el scroll solo lo creaba el
+              tooltip de la última columna, que aun invisible sobresale; y la caja recortaba los
+              tooltips. Sin `overflow` tampoco recorta el fondo del encabezado: sus esquinas se
+              redondean en el `<tr>` del `thead` y, en acordeón (sin encabezado), en la primera fila. */}
           {/* En el móvil y la tablet, acordeón: cada solicitud es una línea («Ana envió la
               versión 3 de Contacto») y al tocarla se despliegan los cambios, el resto de datos
               y las acciones. Con muchas solicitudes, las tarjetas enteras hacían eterno el
               scroll. Las reglas, en globals.css (`olo-tabla-acordeon`). */}
-          <table className="olo-tabla-apilable olo-tabla-acordeon w-full text-left text-sm">
-            <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500 dark:bg-[#131b2f]">
-              <tr>
+          <table className="olo-tabla-apilable olo-tabla-acordeon w-full text-left text-sm apilada:[&>tbody>tr:first-child]:rounded-t-xl">
+            <thead className="text-xs uppercase tracking-wide text-zinc-500">
+              <tr className="[&>th]:bg-zinc-50 dark:[&>th]:bg-[#131b2f] [&>th:first-child]:rounded-tl-xl [&>th:last-child]:rounded-tr-xl">
                 <th scope="col" className="px-4 py-3 font-medium">Página</th>
                 <th scope="col" className="px-4 py-3 font-medium">Cambios</th>
                 <th scope="col" className="px-2 py-3 font-medium">Autor</th>
@@ -273,23 +284,11 @@ export function RevisionQueueView() {
                       <p className="mb-3 text-sm italic text-zinc-500 dark:text-zinc-400">«{pagina.comentario}»</p>
                     )}
                   </td>
-                  {/* El ámbito arriba y debajo la página con su versión («Sitio web» /
-                      «Inicio · versión 3»): antes el ámbito tenía columna propia y se leía
-                      separado de la página a la que pertenece (pedido del usuario, 2026-10-12). */}
-                  <td data-solo-tabla className="px-4 py-3">
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold ${
-                        pagina.ambito === 'intranet'
-                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300'
-                          : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300'
-                      }`}
-                    >
-                      {pagina.ambito === 'intranet' ? 'Intranet' : 'Sitio web'}
-                    </span>
-                    <p className="mt-1 font-medium text-zinc-900 dark:text-[#f6f6f6]">
-                      {pagina.titulo}
-                      <span className="font-normal text-zinc-500"> · versión {pagina.numeroVersion}</span>
-                    </p>
+                  {/* La misma celda que Respaldos y Auditoría (pedido del usuario, 2026-10-15):
+                      arriba el ámbito y debajo, pequeño y fino, la ruta con su versión
+                      («Sitio web» / «inicio · versión 3»). Antes, el título en negrita. */}
+                  <td data-solo-tabla className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
+                    <CeldaDePagina ambito={pagina.ambito} slug={pagina.slug} version={pagina.numeroVersion} />
                   </td>
                   {/* Lo que el editor dice que cambió: se lee antes de decidir, como la
                       descripción de un pull request. */}
@@ -455,6 +454,10 @@ function ModalAccionConMotivo({
 }) {
   const dialogo = useRef<HTMLDialogElement>(null);
   const [motivo, setMotivo] = useState('');
+  // Se marca al pulsar la acción sin motivo y se quita en cuanto se escribe. Antes el
+  // botón se quedaba apagado sin decir por qué; ahora se puede pulsar y el campo dice
+  // lo que falta.
+  const [faltaMotivo, setFaltaMotivo] = useState(false);
 
   // Solo abre y cierra el `<dialog>`; no vacía `motivo`. De eso se encarga la `key` por
   // página que pone el padre: cada versión estrena modal y el campo nace vacío, en vez
@@ -491,9 +494,9 @@ function ModalAccionConMotivo({
         </div>
 
         {destructivo ? (
-          <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
-          <p>{descripcion}</p>
-          </div>
+          <MensajeEstado tipo="error" rol="note" className="mt-3">
+            {descripcion}
+          </MensajeEstado>
         ) : (
           <p className="mt-3 text-base text-[#4b5563] dark:text-zinc-300">{descripcion}</p>
         )}
@@ -508,17 +511,21 @@ function ModalAccionConMotivo({
               id="motivo-accion"
               rows={3}
               maxLength={MOTIVO_MAX}
-              aria-describedby="motivo-accion-cuenta"
-              className={`mt-1 block w-full resize-none rounded-xl border bg-transparent px-5 py-3 text-base text-[#001a39] placeholder:text-[#b3b3b3] focus:outline-none focus:ring-2 dark:bg-[#1a233a] dark:text-white ${
-                colorAccion === 'red'
-                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500 dark:border-red-900/60 dark:focus:border-red-400 dark:focus:ring-red-400'
-                  : 'border-[#d9d9d9] focus:border-[#001631] focus:ring-[#001631] dark:border-zinc-700'
-              }`}
+              aria-invalid={faltaMotivo || undefined}
+              aria-describedby={faltaMotivo ? 'motivo-accion-error motivo-accion-cuenta' : 'motivo-accion-cuenta'}
+              // Borde rojo siempre (pedido del usuario, 2026-10-15): el motivo solo se pide al
+              // rechazar o eliminar, y el campo va en el rojo de la acción. Es la clase de error
+              // de los modales; lo que falta lo sigue diciendo `ErrorDeCampo` debajo.
+              className={`mt-1 block resize-none ${areaDeModalConErrorClass}`}
               placeholder="Explica la razón…"
               value={motivo}
-              onChange={(e) => setMotivo(e.target.value)}
+              onChange={(e) => {
+                setMotivo(e.target.value);
+                setFaltaMotivo(false);
+              }}
               autoFocus
             />
+            {faltaMotivo && <ErrorDeCampo id="motivo-accion-error">Falta el motivo.</ErrorDeCampo>}
             <p
               id="motivo-accion-cuenta"
               className={`mt-2 text-right text-xs tabular-nums ${
@@ -542,8 +549,13 @@ function ModalAccionConMotivo({
           </button>
           <button
             type="button"
-            onClick={() => onConfirmar(motivo)}
-            disabled={requiereMotivo && !motivo.trim()}
+            onClick={() => {
+              if (requiereMotivo && !motivo.trim()) {
+                setFaltaMotivo(true);
+                return;
+              }
+              onConfirmar(motivo);
+            }}
             className={`inline-flex h-11 w-full items-center justify-center rounded-[32px] px-6 text-base font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-50 sm:flex-1 ${
               colorAccion === 'red'
                 ? 'bg-red-600 hover:bg-red-700'

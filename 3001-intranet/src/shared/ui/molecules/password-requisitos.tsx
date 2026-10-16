@@ -1,6 +1,7 @@
 'use client';
 
 import { requisitosDe } from '@olo/password-policy';
+import { IconoError, IconoExito, MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 
 /**
  * Lista de requisitos de contraseña (§1 de las directivas), marcando cuáles cumple
@@ -24,6 +25,7 @@ export function PasswordRequisitos({
   variant,
   resumirAlCumplir = false,
   enBlanco = false,
+  rechazo,
 }: {
   classPrefix?: string;
   password: string;
@@ -32,36 +34,61 @@ export function PasswordRequisitos({
   resumirAlCumplir?: boolean;
   /** Desde `md`, en oscuro para la tarjeta blanca de la recuperación (2026-10-12). */
   enBlanco?: boolean;
+  /**
+   * Por qué se rechazó una contraseña que cumple todos los requisitos («Esta contraseña no
+   * es válida por seguridad, elige otra.»): ocupa el sitio de «Cumple todos los requisitos»
+   * como mensaje de error, en rojo (pedido del usuario, 2026-10-15). Los dos a la vez se
+   * contradecían. El campo deja solo su borde rojo (`textoDeErrorAparte`).
+   */
+  rechazo?: string;
 }) {
   const todos = requisitosDe(password);
-  const requisitos =
-    resumirAlCumplir && todos.every((r) => r.cumplido)
-      ? [{ id: 'todos', etiqueta: 'Cumple todos los requisitos', cumplido: true }]
-      : todos;
+  const resumida = resumirAlCumplir && todos.every((r) => r.cumplido);
+  const requisitos = resumida
+    ? [{ id: 'todos', etiqueta: 'Cumple todos los requisitos', cumplido: true }]
+    : todos;
   const esSolido = variant === 'solid';
 
   if (esSolido) {
+    // El `aria-live` va en un contenedor que no cambia: si fuera la propia lista, al resumirla
+    // se desmontaría y el lector de pantalla podría no anunciar el mensaje que la reemplaza.
     return (
-      <ul className={`${className} space-y-1`} aria-live="polite">
-        {requisitos.map((requisito) => {
-          // Claros: van sobre el azul del acceso, sin tarjeta. Ver
-          // `features/login/components/acceso-ui.ts`.
-          // `enBlanco`: verde 700 (5:1) y `#334861` (9:1) sobre el blanco, desde `md`.
-          const claseEstado = requisito.cumplido
-            ? `text-green-300 ${enBlanco ? 'md:text-green-700' : ''}`
-            : `text-white/70 ${enBlanco ? 'md:text-[#334861]' : ''}`;
+      <div className={className} aria-live="polite">
+        {resumida ? (
+          // Cumplidos todos, el mensaje de éxito del proyecto, con su globo y su ✓ (pedido del
+          // usuario, 2026-10-15), como en el sitio web. Antes, una línea verde con «✓».
+          rechazo ? (
+            <MensajeEstado tipo="error" rol="alert">{rechazo}</MensajeEstado>
+          ) : (
+            <MensajeEstado tipo="exito" rol="note">Cumple todos los requisitos</MensajeEstado>
+          )
+        ) : (
+          <ul className="space-y-1">
+            {todos.map((requisito) => {
+              // Claros: van sobre el azul del acceso, sin tarjeta. Ver
+              // `features/login/components/acceso-ui.ts`.
+              // `enBlanco`: verde 700 (5:1) y `#334861` (9:1) sobre el blanco, desde `md`.
+              const claseEstado = requisito.cumplido
+                ? `text-green-300 ${enBlanco ? 'md:text-green-700' : ''}`
+                : `text-white/70 ${enBlanco ? 'md:text-[#334861]' : ''}`;
 
-          return (
-            <li key={requisito.id} className={`flex items-start gap-1.5 text-xs ${claseEstado}`}>
-              <span aria-hidden="true" className="mt-px leading-none">
-                {requisito.cumplido ? '✓' : '○'}
-              </span>
-              <span className="sr-only">{requisito.cumplido ? 'Cumplido:' : 'Pendiente:'}</span>
-              <span>{requisito.etiqueta}</span>
-            </li>
-          );
-        })}
-      </ul>
+              return (
+                <li key={requisito.id} className={`flex items-start gap-1.5 text-xs ${claseEstado}`}>
+                  {/* Los iconos de los mensajes de estado, sin su fondo (pedido del usuario, 2026-10-15):
+                      el globo con ✓ y el círculo con ×. Toman el color del texto (`currentColor`). */}
+                  {requisito.cumplido ? (
+                    <IconoExito className="mt-px h-3.5 w-[13px] shrink-0" />
+                  ) : (
+                    <IconoError className="mt-px h-3.5 w-3.5 shrink-0" />
+                  )}
+                  <span className="sr-only">{requisito.cumplido ? 'Cumplido:' : 'Pendiente:'}</span>
+                  <span>{requisito.etiqueta}</span>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
     );
   }
 

@@ -87,6 +87,7 @@ export function useAuth() {
       if (typeof document !== 'undefined') {
         document.cookie = 'token=; Max-Age=0; path=/;';
       }
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- recarga completa a propósito: tras cerrar sesión no debe quedar nada de ella en la caché del cliente
       window.location.href = '/login?logout=1';
     }
   };
