@@ -156,6 +156,31 @@ function sinPlantilla(resumen: ResumenPaginasPublicadas): ResumenPaginasPublicad
  */
 const MS_ENTRE_CONSULTAS_DE_ALERTAS = 30_000;
 
+/**
+ * Dónde se guardan las alertas ya vistas durante la sesión de la pestaña. Hace falta fuera
+ * de React: el editor (`/editor/[slug]`) está fuera del layout de `/admin`, y al volver
+ * el layout se monta de nuevo; con la memoria solo en un `useRef`, la página recién
+ * enviada a revisión contaba como «ya estaba» y no sonaba.
+ */
+const CLAVE_ALERTAS_CONOCIDAS = 'olo-alertas-conocidas';
+
+function leerAlertasConocidas(): Set<string> | null {
+  try {
+    const guardado = sessionStorage.getItem(CLAVE_ALERTAS_CONOCIDAS);
+    return guardado ? new Set(JSON.parse(guardado) as string[]) : null;
+  } catch {
+    return null;
+  }
+}
+
+function guardarAlertasConocidas(claves: Set<string>) {
+  try {
+    sessionStorage.setItem(CLAVE_ALERTAS_CONOCIDAS, JSON.stringify([...claves]));
+  } catch {
+    // Almacenamiento bloqueado: queda la memoria del `useRef` hasta salir del panel.
+  }
+}
+
 /** Cómo se reconoce una alerta entre dos consultas, para saber cuáles son nuevas. */
 const claveDeRevision = (p: PaginaEnRevision) => `revision:${p.id}`;
 const claveDeCuenta = (a: AlertaCaducidad) => `cuenta:${a.userId || a.email}`;
@@ -171,6 +196,140 @@ function ContadorSidebar({ cantidad }: { cantidad: number }) {
     <span className="ml-auto flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
       {cantidad}
     </span>
+  );
+}
+
+/**
+ * Una alerta de cuenta por vencer: la fila con fondo suave del color de su etiqueta
+ * (pedido del usuario, 2026-10-15; antes iba sin fondo). El texto lleva el color de la
+ * etiqueta y el botón de la derecha, de 28 px, es el área táctil. La misma fila sale en el
+ * modal de Notificaciones y en el aviso temporal de arriba a la derecha.
+ */
+function FilaAlertaCuenta({
+  alerta,
+  onSolucionar,
+}: {
+  alerta: AlertaCaducidad;
+  onSolucionar: (email: string) => void;
+}) {
+  return (
+    <div
+      className="group flex w-full items-center gap-2 rounded-[16px] bg-amber-50 px-3 py-2 dark:bg-amber-950/40"
+    >
+      <span className="shrink-0 rounded-full bg-amber-200/80 px-2.5 py-1 text-xs font-semibold text-amber-900 dark:bg-amber-800/60 dark:text-amber-100">
+        Por vencer
+      </span>
+      <p className="min-w-0 flex-1 truncate text-sm text-amber-900 dark:text-amber-100">
+        <Link href="/admin/users" className="font-medium underline hover:no-underline">
+          {alerta.email}
+        </Link>
+        {' '}vence en {alerta.daysLeft} día{alerta.daysLeft !== 1 ? 's' : ''}
+      </p>
+      <button
+        type="button"
+        onClick={() => onSolucionar(alerta.email)}
+        className="flex size-7 shrink-0 items-center justify-center rounded-full text-amber-900 hover:bg-amber-200/70 dark:text-amber-100 dark:hover:bg-amber-900/50"
+        aria-label={`Marcar como solucionada: ${alerta.email}`}
+        title="Marcar como solucionada"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-4" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
+/** Una página en revisión, con la misma forma que `FilaAlertaCuenta` en azul. */
+function FilaAlertaRevision({
+  pagina,
+  onSolucionar,
+}: {
+  pagina: PaginaEnRevision;
+  onSolucionar: (id: string) => void;
+}) {
+  return (
+    <div
+      className="group flex w-full items-center gap-2 rounded-[16px] bg-blue-50 px-3 py-2 dark:bg-blue-950/40"
+    >
+      <span className="shrink-0 rounded-full bg-blue-200/80 px-2.5 py-1 text-xs font-semibold text-blue-900 dark:bg-blue-800/60 dark:text-blue-100">
+        En revisión
+      </span>
+      <p className="min-w-0 flex-1 truncate text-sm text-blue-900 dark:text-blue-100">
+        <Link href="/admin/revision" className="font-medium underline hover:no-underline">
+          {pagina.titulo}
+        </Link>
+      </p>
+      <button
+        type="button"
+        onClick={() => onSolucionar(pagina.id)}
+        className="flex size-7 shrink-0 items-center justify-center rounded-full text-blue-900 hover:bg-blue-200/70 dark:text-blue-100 dark:hover:bg-blue-900/50"
+        aria-label={`Marcar como solucionada: ${pagina.titulo}`}
+        title="Marcar como solucionada"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-4" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
+/** Cuánto se queda a la vista el aviso de una alerta nueva antes de irse solo. */
+const MS_AVISO_DE_ALERTA = 8_000;
+
+/**
+ * La caja de cada fila del aviso: la sombra de los avisos flotantes (`Notification`) y un
+ * fondo sólido debajo, porque el de la fila en modo oscuro es transparente.
+ */
+const SOMBRA_DE_AVISO = 'rounded-[16px] bg-white shadow-[0_12px_40px_-8px_rgba(0,0,0,0.2)] dark:bg-[#121824]';
+
+/**
+ * El aviso temporal de una alerta que acaba de llegar, arriba a la derecha (pedido del
+ * usuario, 2026-10-15): solo la fila de la alerta, igual que en el modal, sin la tarjeta
+ * de Notificaciones alrededor. Se va solo a los `MS_AVISO_DE_ALERTA`; la flecha hace lo
+ * mismo que en el modal, marcarla como solucionada.
+ */
+function AvisoDeAlertas({
+  cuentas,
+  revisiones,
+  onSolucionarCuenta,
+  onSolucionarRevision,
+}: {
+  cuentas: AlertaCaducidad[];
+  revisiones: PaginaEnRevision[];
+  onSolucionarCuenta: (email: string) => void;
+  onSolucionarRevision: (id: string) => void;
+}) {
+  const hayAlgo = cuentas.length + revisiones.length > 0;
+  const { montado, cerrando } = useCierreAnimado(hayAlgo);
+  // Lo último que se enseñó, para que la salida animada no se quede vacía. Se ajusta
+  // durante el render, como recomienda React para el estado que sigue a las props.
+  const [visibles, setVisibles] = useState({ cuentas, revisiones });
+  if (hayAlgo && (visibles.cuentas !== cuentas || visibles.revisiones !== revisiones)) {
+    setVisibles({ cuentas, revisiones });
+  }
+
+  if (!montado || typeof document === 'undefined') return null;
+
+  return createPortal(
+    <div
+      role="status"
+      className="olo-anim-caja fixed right-4 top-4 z-[100] flex w-[360px] max-w-[calc(100vw-2rem)] flex-col gap-2 sm:right-6 sm:top-6"
+      data-cerrando={cerrando || undefined}
+    >
+      {visibles.cuentas.map((a) => (
+        <div key={claveDeCuenta(a)} className={SOMBRA_DE_AVISO}>
+          <FilaAlertaCuenta alerta={a} onSolucionar={onSolucionarCuenta} />
+        </div>
+      ))}
+      {visibles.revisiones.map((p) => (
+        <div key={claveDeRevision(p)} className={SOMBRA_DE_AVISO}>
+          <FilaAlertaRevision pagina={p} onSolucionar={onSolucionarRevision} />
+        </div>
+      ))}
+    </div>,
+    document.body
   );
 }
 
@@ -244,61 +403,11 @@ function ModalAlertas({
           ) : (
             <div className="space-y-3">
               {cuentasPorVencer.map((a) => (
-                // La fila con un fondo suave del mismo color de su etiqueta (pedido del
-                // usuario, 2026-10-15; antes iba sin fondo). El texto lleva el color de la
-                // etiqueta y el botón de la derecha, de 28 px, es el área táctil.
-                <div
-                  key={a.userId || a.email}
-                  className="group flex w-full items-center gap-2 rounded-[16px] bg-amber-50 px-3 py-2 dark:bg-amber-950/40"
-                >
-                  <span className="shrink-0 rounded-full bg-amber-200/80 px-2.5 py-1 text-xs font-semibold text-amber-900 dark:bg-amber-800/60 dark:text-amber-100">
-                    Por vencer
-                  </span>
-                  <p className="min-w-0 flex-1 truncate text-sm text-amber-900 dark:text-amber-100">
-                    <Link href="/admin/users" className="font-medium underline hover:no-underline">
-                      {a.email}
-                    </Link>
-                    {' '}vence en {a.daysLeft} día{a.daysLeft !== 1 ? 's' : ''}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => onDismissCuenta(a.email)}
-                    className="flex size-7 shrink-0 items-center justify-center rounded-full text-amber-900 hover:bg-amber-200/70 dark:text-amber-100 dark:hover:bg-amber-900/50"
-                    aria-label={`Marcar como solucionada: ${a.email}`}
-                    title="Marcar como solucionada"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-4" aria-hidden="true">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                    </svg>
-                  </button>
-                </div>
+                <FilaAlertaCuenta key={claveDeCuenta(a)} alerta={a} onSolucionar={onDismissCuenta} />
               ))}
 
               {enRevision.map((p) => (
-                <div
-                  key={p.id}
-                  className="group flex w-full items-center gap-2 rounded-[16px] bg-blue-50 px-3 py-2 dark:bg-blue-950/40"
-                >
-                  <span className="shrink-0 rounded-full bg-blue-200/80 px-2.5 py-1 text-xs font-semibold text-blue-900 dark:bg-blue-800/60 dark:text-blue-100">
-                    En revisión
-                  </span>
-                  <p className="min-w-0 flex-1 truncate text-sm text-blue-900 dark:text-blue-100">
-                    <Link href="/admin/revision" className="font-medium underline hover:no-underline">
-                      {p.titulo}
-                    </Link>
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => onDismissRevision(p.id)}
-                    className="flex size-7 shrink-0 items-center justify-center rounded-full text-blue-900 hover:bg-blue-200/70 dark:text-blue-100 dark:hover:bg-blue-900/50"
-                    aria-label={`Marcar como solucionada: ${p.titulo}`}
-                    title="Marcar como solucionada"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-4" aria-hidden="true">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                    </svg>
-                  </button>
-                </div>
+                <FilaAlertaRevision key={claveDeRevision(p)} pagina={p} onSolucionar={onDismissRevision} />
               ))}
             </div>
           )}
@@ -330,18 +439,33 @@ export function PanelGeneralLayout({
   const [cuentasPorVencer, setCuentasPorVencer] = useState<AlertaCaducidad[]>([]);
   /**
    * Las alertas que ya se vieron llegar, para que solo suene una nueva. `null` hasta la
-   * primera consulta: las que ya había al abrir el panel no suenan. Las que se marcan como
-   * solucionadas siguen aquí, y no vuelven a sonar cuando la siguiente consulta las trae.
+   * primera consulta de la sesión: las que ya había al entrar al panel no suenan. Las que
+   * se marcan como solucionadas siguen aquí, y no vuelven a sonar cuando la siguiente
+   * consulta las trae. Se copia en `sessionStorage` (`CLAVE_ALERTAS_CONOCIDAS`).
    */
   const alertasConocidas = useRef<Set<string> | null>(null);
+  /** Las que acaban de llegar, para el aviso temporal de arriba a la derecha. */
+  const [recientes, setRecientes] = useState<{ cuentas: AlertaCaducidad[]; revisiones: PaginaEnRevision[] }>({
+    cuentas: [],
+    revisiones: [],
+  });
 
   const handleDismissCuenta = useCallback((email: string) => {
     setCuentasPorVencer((prev) => prev.filter((c) => c.email !== email));
+    setRecientes((prev) => ({ ...prev, cuentas: prev.cuentas.filter((c) => c.email !== email) }));
   }, []);
 
   const handleDismissRevision = useCallback((id: string) => {
     setEnRevision((prev) => prev.filter((p) => p.id !== id));
+    setRecientes((prev) => ({ ...prev, revisiones: prev.revisiones.filter((p) => p.id !== id) }));
   }, []);
+
+  // El aviso temporal se va solo; cada alerta nueva vuelve a contar el tiempo.
+  useEffect(() => {
+    if (recientes.cuentas.length + recientes.revisiones.length === 0) return;
+    const temporizador = setTimeout(() => setRecientes({ cuentas: [], revisiones: [] }), MS_AVISO_DE_ALERTA);
+    return () => clearTimeout(temporizador);
+  }, [recientes]);
 
   useEffect(() => {
     let cancelado = false;
@@ -353,15 +477,24 @@ export function PanelGeneralLayout({
       ]).then(([pendientes, alertas]) => {
         if (cancelado) return;
         const claves = [...pendientes.map(claveDeRevision), ...alertas.map(claveDeCuenta)];
+        alertasConocidas.current ??= leerAlertasConocidas();
         const conocidas = alertasConocidas.current;
         if (conocidas === null) {
           alertasConocidas.current = new Set(claves);
+          guardarAlertasConocidas(alertasConocidas.current);
         } else {
-          const nuevas = claves.filter((clave) => !conocidas.has(clave));
-          if (nuevas.length > 0) {
-            nuevas.forEach((clave) => conocidas.add(clave));
-            // Suena (si no se silenció en Configuración) y la campana vuelve a marcar.
+          const cuentasNuevas = alertas.filter((a) => !conocidas.has(claveDeCuenta(a)));
+          const revisionesNuevas = pendientes.filter((p) => !conocidas.has(claveDeRevision(p)));
+          if (cuentasNuevas.length + revisionesNuevas.length > 0) {
+            claves.forEach((clave) => conocidas.add(clave));
+            guardarAlertasConocidas(conocidas);
+            // Suena (si no se silenció en Configuración), sale el aviso arriba a la
+            // derecha y la campana vuelve a marcar.
             reproducirSonidoAviso('alerta');
+            setRecientes((prev) => ({
+              cuentas: [...prev.cuentas, ...cuentasNuevas],
+              revisiones: [...prev.revisiones, ...revisionesNuevas],
+            }));
             setAlertasVistas(false);
           }
         }
@@ -623,6 +756,12 @@ export function PanelGeneralLayout({
         <RouteTransition>{children}</RouteTransition>
       </SidebarLayout>
       {isBuscarOpen && <BuscadorModal onClose={() => setIsBuscarOpen(false)} />}
+      <AvisoDeAlertas
+        cuentas={recientes.cuentas}
+        revisiones={recientes.revisiones}
+        onSolucionarCuenta={handleDismissCuenta}
+        onSolucionarRevision={handleDismissRevision}
+      />
       <ModalAlertas
         abierto={isAlertasOpen}
         onCerrar={() => {
