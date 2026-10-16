@@ -60,12 +60,14 @@ function IconoAdvertencia() {
 
 /**
  * El círculo con «×» del mockup, para errores y rechazos. Exportado para lo que no es una
- * tarjeta pero lleva el mismo icono (el diálogo del motivo de rechazo del editor).
+ * tarjeta pero lleva el mismo icono (el diálogo del motivo de rechazo del editor, los
+ * requisitos pendientes de la contraseña). `className` cambia tamaño y margen; sin ella, los
+ * de la tarjeta.
  */
-export function IconoError() {
+export function IconoError({ className = 'mt-[3px] h-3.5 w-3.5 shrink-0' }: { className?: string } = {}) {
   return (
     <svg
-      className="mt-[3px] h-3.5 w-3.5 shrink-0"
+      className={className}
       viewBox="0 0 25 25"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -79,11 +81,14 @@ export function IconoError() {
   );
 }
 
-/** El globo con «✓» del mockup, para lo que salió bien. */
-function IconoExito() {
+/**
+ * El globo con «✓» del mockup, para lo que salió bien. Exportado como `IconoError`: lo usan
+ * también los requisitos cumplidos de la contraseña.
+ */
+export function IconoExito({ className = 'mt-[3px] h-3.5 w-[13px] shrink-0' }: { className?: string } = {}) {
   return (
     <svg
-      className="mt-[3px] h-3.5 w-[13px] shrink-0"
+      className={className}
       viewBox="0 0 24 26"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"

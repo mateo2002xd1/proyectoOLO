@@ -5,6 +5,35 @@
 
 ---
 
+## sesión 15-10-2026 (22.ª parte): acceso — «Cumple todos los requisitos» como mensaje de éxito y los requisitos con sus iconos
+
+**Qué se pidió:** la línea «✓ Cumple todos los requisitos» de la contraseña, con el estilo del mensaje de estado de éxito y su icono del panel.
+
+| Dónde | Cambio |
+|---|---|
+| `auth-ui.tsx` (sitio web) y `password-requisitos.tsx` (intranet), `PasswordRequisitos` | Con `resumirAlCumplir` y todo cumplido, en vez de la línea verde con «✓», `MensajeEstado tipo="exito" rol="note"` (`#ebf6e6` / `#005524`, el globo con ✓). Mientras falte algún requisito, la lista de siempre. Lo usan primer ingreso y nueva contraseña en las dos apps; el perfil del panel no resume y no cambia |
+| Lista de requisitos | Pedido después: cada requisito con el icono de los mensajes de estado, sin su fondo: cumplido, el globo con ✓ (`IconoExito`); pendiente, el círculo con × (`IconoError`), en vez de «✓» y «○». Toman el color del texto, que no cambia (verde / gris). En el sitio web también se ve en «Mi perfil», que usa la misma lista |
+| `mensaje-estado.tsx` (las dos apps) | `IconoExito` pasa a exportarse e `IconoError` y él aceptan `className` (por defecto, el tamaño y margen de la tarjeta, así que lo de antes no cambia). La lista los usa con `mt-px`, para su letra de 12 px. Los dos archivos siguen iguales salvo la línea que dice dónde vive el otro |
+| Accesibilidad | El `aria-live="polite"` pasa a un `div` que no se desmonta (con el `id` del `aria-describedby`); dentro, la lista o el mensaje. Si la región fuera la lista, al cambiarla por el mensaje se desmontaría y el lector podría no anunciarlo |
+
+**Ojo.** El mensaje mide unos 44 px y la línea de antes unos 16: las pantallas de acceso se pensaron para caber sin scroll en el móvil (`MarcoDePasos` / `MarcoAcceso`). Hay que mirarlo a 360 px.
+
+**Verificación.** `tsc --noEmit` y `eslint` del sitio y la intranet sin errores; finales de línea uniformes. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (21.ª parte): «Salir del modo edición» — las dos frases dentro del mensaje informativo
+
+**Qué se pidió:** meter «Requiere volver a iniciar sesión para editar.» en el mensaje de estado, debajo de «Saldrás del modo edición, volverás a la pantalla de inicio de sesión.»
+
+| Dónde | Cambio |
+|---|---|
+| `modal-cerrar-sesion.tsx` (sitio web e intranet) | Las dos frases, cada una en su `<p>` y con un espacio entre ellas (`mt-3`, 12 px), dentro del `MensajeEstado tipo="info"`. Fuera el párrafo gris de debajo (19.ª parte) |
+
+**Verificación.** `tsc --noEmit` y `eslint` del sitio y la intranet sin errores; finales de línea uniformes. Falta verlo en el navegador.
+
+---
+
 ## sesión 15-10-2026 (20.ª parte): Auditoría — las etiquetas de acción con esquinas de 4 px
 
 **Qué se pidió:** en la columna Acción de la bitácora, las etiquetas con `border-radius` de 4 px.
@@ -199,6 +228,28 @@ centrado y aun invisible (`opacity-0`), sobresale por la derecha y daba la barra
 | Tooltips | `z-20!` sobre el `z-10` del átomo, solo en esta lista: el de una fila pasa por encima de la de arriba y del encabezado. El `!` porque las dos clases son de la misma propiedad |
 
 **Verificación.** `tsc --noEmit` y `eslint` sin errores; las cinco clases nuevas están en el CSS que sirve el dev (`/_next/static/…css`); CRLF uniforme. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (7.ª parte): Notificaciones — no sonaba, y aviso temporal arriba a la derecha
+
+**Qué se pidió:** la alerta llegó pero no sonó; además, que al llegar salga un mensaje temporal
+arriba a la derecha con el mismo estilo de la fila del modal, solo la alerta y sin la tarjeta.
+
+**Diagnóstico (probable, sin reproducir en el navegador).** La memoria de alertas ya vistas vivía
+solo en un `useRef` de `PanelGeneralLayout`. El editor (`/editor/[slug]`) está fuera del layout de
+`/admin`: al volver al panel tras enviar a revisión, el layout se monta de nuevo, la memoria arranca
+vacía y la página recién enviada cuenta como «ya estaba». Lo mismo al recargar.
+
+| Dónde | Cambio |
+|---|---|
+| `auth/components/panel-general.tsx` | Las alertas vistas se copian en `sessionStorage` (`olo-alertas-conocidas`, con try/catch): sobreviven a salir y volver al panel en la misma pestaña. Solo la primera consulta de la sesión entra en silencio |
+| `auth/components/panel-general.tsx` | Las filas del modal salen a `FilaAlertaCuenta` y `FilaAlertaRevision`, que usan el modal y el aviso nuevo |
+| `auth/components/panel-general.tsx`, `AvisoDeAlertas` | Aviso temporal arriba a la derecha con las alertas que acaban de llegar: la misma fila, con sombra de aviso flotante y fondo sólido debajo. Entra y sale con `olo-anim-caja` + `useCierreAnimado`, se va solo a los 8 s (cada alerta nueva reinicia la cuenta) y la flecha la marca como solucionada, igual que en el modal |
+
+**Límite del navegador:** sin un clic o una tecla en la página desde que se cargó, no suena; el aviso sale igual.
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta probarlo en el navegador.
 
 ---
 

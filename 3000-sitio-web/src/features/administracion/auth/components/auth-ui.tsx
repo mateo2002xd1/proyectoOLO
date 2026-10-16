@@ -4,7 +4,7 @@ import { useState, ReactNode } from 'react';
 import Link from 'next/link';
 import { HomeIcon } from '@heroicons/react/20/solid';
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
-import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
+import { IconoError, IconoExito, MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 import { LONGITUD_MINIMA, requisitosDe } from '@olo/password-policy';
 
 /**
@@ -414,35 +414,46 @@ export function PasswordRequisitos({
   resumirAlCumplir?: boolean;
 }) {
   const todos = requisitosDe(password);
-  const requisitos =
-    resumirAlCumplir && todos.every((r) => r.cumplido)
-      ? [{ id: 'todos', etiqueta: 'Cumple todos los requisitos', cumplido: true }]
-      : todos;
+  const resumida = resumirAlCumplir && todos.every((r) => r.cumplido);
   const esSolido = variant === 'solid';
 
+  // El `aria-live` va en un contenedor que no cambia: si fuera la propia lista, al resumirla
+  // se desmontaría y el lector de pantalla podría no anunciar el mensaje que la reemplaza.
   return (
-    <ul id={id} className={`${className} space-y-1`} aria-live="polite">
-      {requisitos.map((requisito) => {
-        const claseEstado = requisito.cumplido
-          ? esSolido
-            ? 'text-green-700'
-            : 'text-green-700 dark:text-green-400'
-          : esSolido
-            ? 'text-gray-500'
-            : 'text-gray-500 dark:text-slate-400';
+    <div id={id} className={className} aria-live="polite">
+      {resumida ? (
+        // Cumplidos todos, el mensaje de éxito del proyecto, con su globo y su ✓ (pedido del
+        // usuario, 2026-10-15). Antes, una línea verde con «✓».
+        <MensajeEstado tipo="exito" rol="note">Cumple todos los requisitos</MensajeEstado>
+      ) : (
+        <ul className="space-y-1">
+          {todos.map((requisito) => {
+            const claseEstado = requisito.cumplido
+              ? esSolido
+                ? 'text-green-700'
+                : 'text-green-700 dark:text-green-400'
+              : esSolido
+                ? 'text-gray-500'
+                : 'text-gray-500 dark:text-slate-400';
 
-        return (
-          <li key={requisito.id} className={`flex items-start gap-1.5 text-xs ${claseEstado}`}>
-            <span aria-hidden="true" className="mt-px leading-none">
-              {requisito.cumplido ? '✓' : '○'}
-            </span>
-            {/* El estado va también en texto: el color y el símbolo solos no lo dicen. */}
-            <span className="sr-only">{requisito.cumplido ? 'Cumplido:' : 'Pendiente:'}</span>
-            <span>{requisito.etiqueta}</span>
-          </li>
-        );
-      })}
-    </ul>
+            return (
+              <li key={requisito.id} className={`flex items-start gap-1.5 text-xs ${claseEstado}`}>
+                {/* Los iconos de los mensajes de estado, sin su fondo (pedido del usuario, 2026-10-15):
+                    el globo con ✓ y el círculo con ×. Toman el color del texto (`currentColor`). */}
+                {requisito.cumplido ? (
+                  <IconoExito className="mt-px h-3.5 w-[13px] shrink-0" />
+                ) : (
+                  <IconoError className="mt-px h-3.5 w-3.5 shrink-0" />
+                )}
+                {/* El estado va también en texto: el color y el símbolo solos no lo dicen. */}
+                <span className="sr-only">{requisito.cumplido ? 'Cumplido:' : 'Pendiente:'}</span>
+                <span>{requisito.etiqueta}</span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
   );
 }
 
