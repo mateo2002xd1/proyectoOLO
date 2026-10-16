@@ -5,6 +5,98 @@
 
 ---
 
+## sesión 15-10-2026 (19.ª parte): «Salir del modo edición» con mensaje informativo (sitio web e intranet)
+
+**Qué se pidió:** «Saldrás del modo edición, volverás a la pantalla de inicio de sesión» en un mensaje de estado informativo, en las dos apps.
+
+| Dónde | Cambio |
+|---|---|
+| `modal-cerrar-sesion.tsx` (sitio web e intranet) | `MensajeEstado tipo="info" rol="note"` (`#e8f2fc` / `#001631`) con «Saldrás del modo edición, volverás a la pantalla de inicio de sesión.» y debajo, en texto normal (16 px, `#4b5563`), «Requiere volver a iniciar sesión para editar.». Antes el sitio decía otra frase («…se requiere volver a iniciar sesión para editar.») y la intranet las separaba con `<br /><br />`; ahora las dos dicen lo mismo |
+
+**Verificación.** `tsc --noEmit` y `eslint` del sitio y la intranet sin errores; finales de línea uniformes. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (18.ª parte): dashboard — cifras y «Actividad reciente» en #001631
+
+**Qué se pidió:** «Páginas publicadas 16», «Visitas 2.316», «Usuarios 13» y la lista de «Actividad reciente» con «Consulta el resumen de la bitácora más reciente.», en `#001631`.
+
+| Dónde | Cambio |
+|---|---|
+| `tarjeta-paginas-publicadas.tsx`, `tarjeta-visitas.tsx`, `tarjeta-usuarios.tsx` | El nombre de la cifra (`zinc-500`) y la cifra (`zinc-950`) pasan a `text-[#001631]`. En oscuro se quedan `#94a3b8` / `#f6f6f6`: el azul no se vería sobre `#131b2f` |
+| `panel-general.tsx`, `CabeceraActividad` y la lista | «Actividad reciente», «Consulta el resumen…» y el texto de cada registro (`zinc-950`, `zinc-500`, `zinc-600`) pasan a `#001631`; en oscuro, como estaban. La lista la estaba tocando otra sesión (`FraseDeActividad`): solo se cambiaron esas tres clases |
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; finales de línea uniformes. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (17.ª parte): modal «Eliminar la página» — el aviso de página publicada en rojo
+
+**Qué se pidió:** «La página está publicada actualmente, si la eliminas, dejará de estar visible para
+el público de inmediato.» en un mensaje de estado rojo.
+
+| Dónde | Cambio |
+|---|---|
+| `modal-eliminar-seccion.tsx` (sitio web e intranet) | El párrafo gris pasa a `MensajeEstado tipo="error" rol="note"` (`#ffe9e9` / `#d90000`, con el icono del círculo), el mismo texto, y `mb-5`: el aire de antes hasta «Escribe … para confirmar» |
+| `globals.css` (las dos apps) | Fuera `.nueva-seccion-ruta--aviso`, que solo usaba ese párrafo |
+
+**Verificación.** `tsc --noEmit` y `eslint` del sitio y la intranet sin errores; finales de línea uniformes. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (16.ª parte): modal «Eliminar la página» — el paso 1 nombra «Editar Menú y pie»
+
+**Qué se pidió:** en el paso 1, «Editar Menú y pie» en vez de «Menú y pie».
+
+| Dónde | Cambio |
+|---|---|
+| `modal-eliminar-seccion.tsx` (sitio web e intranet) | «Ve al botón de **«Editar Menú y pie»**.» |
+
+**Ojo, sin cambiar:** el botón no se llama igual en las dos apps. En la intranet su tooltip dice «Editar menú y pie» (con minúscula) y en el sitio web «Menú y pie» (`paginas-fab-speed-dial.tsx` de cada una). Se dejó el texto del usuario y se le preguntó si igualarlo.
+
+**Verificación.** `tsc --noEmit` y `eslint` del sitio y la intranet sin errores; finales de línea uniformes. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (15.ª parte): intranet — el icono de los mensajes de estado a la altura de la primera línea
+
+**Qué se pidió:** en la intranet, el icono de la advertencia de «Eliminar la página» salía centrado en
+vertical; que quede a la altura del primer texto, como en el sitio web.
+
+| Dónde | Cambio |
+|---|---|
+| `3001-intranet/src/shared/ui/molecules/mensaje-estado.tsx` | Igualado al del sitio web, como pide su propio comentario: la tarjeta `items-start` (antes `items-center`) y cada icono con su margen superior para caer en la primera línea (`mt-1` la «i», `mt-[3px]` advertencia, error y éxito). Solo difieren en la línea que dice dónde vive el otro. Cambia en todos los mensajes de la intranet; en los de una línea no se nota |
+
+**Verificación.** `tsc --noEmit` y `eslint` de la intranet sin errores; `diff` con el del sitio web: solo esa línea. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (14.ª parte): modal «Eliminar la página» — los pasos 2 y 3 dicen dónde buscar y dónde borrar
+
+**Qué se pidió:** «Busca el botón «Inicio».» pasa a «Busca el componente que tiene el botón «Inicio» en el editor.»,
+y «Borra el enlace asignado.» a «Borra el enlace asignado en la configuración del componente.»
+
+| Dónde | Cambio |
+|---|---|
+| `modal-eliminar-seccion.tsx` (sitio web e intranet) | El paso 2 dice «Busca el componente que tiene el botón «Inicio» en el editor.»; en plural, «Busca los componentes que tienen los botones «Inicio» y «Empleo» en el editor.» |
+| Mismo archivo, paso 3 | «Borra el enlace asignado en la configuración del componente.»; en plural, «Borra los enlaces asignados en la configuración de los componentes.» |
+
+**Verificación.** `tsc --noEmit` y `eslint` del sitio y la intranet sin errores; finales de línea uniformes. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (13.ª parte): modal «Eliminar la página» — el paso 1 dice «Ve al botón de «Menú y pie»»
+
+**Qué se pidió:** cambiar «Ve a Menú y pie de página.» por «Ve al botón de «Menú y pie»».
+
+| Dónde | Cambio |
+|---|---|
+| `modal-eliminar-seccion.tsx` (sitio web e intranet) | Con enlaces en `menu-y-pie`: «Ve al botón de **«Menú y pie»**.» Los de otras páginas siguen por su nombre («Ve a **Contacto**.»), y si hay de los dos: «Ve al botón de «Menú y pie» y a Contacto.» `tituloDelMenu` evita nombrar la del menú dos veces |
+
+**Verificación.** `tsc --noEmit` y `eslint` del sitio y la intranet sin errores; finales de línea uniformes. Falta verlo en el navegador.
+
+---
+
 ## sesión 15-10-2026 (12.ª parte): Páginas en revisión — el campo del motivo con borde rojo al rechazar y eliminar
 
 **Qué se pidió:** en los modales «Rechazar versión» y «Eliminar versión», el borde de «Explica la razón…» en rojo.
