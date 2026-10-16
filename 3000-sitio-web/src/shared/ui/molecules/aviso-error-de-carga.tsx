@@ -73,9 +73,26 @@ export function AvisoErrorDeCarga({
             Terminar configuración
           </Button>
         ) : (
-          <Button variant="navy" onClick={onReintentar} disabled={reintentando} className="shrink-0">
-            {reintentando ? 'Reintentando…' : 'Reintentar'}
-          </Button>
+          // Texto rojo sin fondo, el rojo del mensaje de error (pedido del usuario,
+          // 2026-10-15): antes era el botón azul marino. 44 px de alto para el dedo.
+          // Sin el «salto» de todos los botones (globals.css: sube 2 px al pasar y baja al
+          // pulsar): en un texto sin fondo parecía un zoom. Con `!`, porque esa regla no va
+          // en capa y gana a las utilidades.
+          <button
+            type="button"
+            onClick={onReintentar}
+            disabled={reintentando}
+            className="flex h-11 shrink-0 -ml-2 items-center self-start rounded-lg px-2 text-sm font-semibold text-[#d90000] underline-offset-4 transition-colors hover:underline hover:transform-none! active:transform-none! focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d90000] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:no-underline sm:ml-0 sm:self-center"
+          >
+            {/* Las dos palabras en la misma celda, la que no toca invisible: el botón mide
+                siempre lo que «Reintentando…» y no salta de sitio al pulsarlo. */}
+            <span className="grid">
+              <span className="invisible col-start-1 row-start-1" aria-hidden="true">
+                Reintentando…
+              </span>
+              <span className="col-start-1 row-start-1">{reintentando ? 'Reintentando…' : 'Reintentar'}</span>
+            </span>
+          </button>
         )}
       </div>
     </MensajeEstado>

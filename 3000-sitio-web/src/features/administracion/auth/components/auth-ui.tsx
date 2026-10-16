@@ -332,6 +332,7 @@ export function PasswordField({
   autoComplete,
   describedBy,
   className = authPasosHuecoClass,
+  textoDeErrorAparte = false,
 }: {
   id: string;
   label: string;
@@ -344,9 +345,15 @@ export function PasswordField({
   /** `id` de lo que explica el campo además de su error (la lista de requisitos). */
   describedBy?: string;
   className?: string;
+  /**
+   * El error lo enseña otro (el mensaje rojo de `PasswordRequisitos`, con `rechazo`): el
+   * campo se queda con el borde rojo y no repite el texto debajo.
+   */
+  textoDeErrorAparte?: boolean;
 }) {
   const [show, setShow] = useState(false);
-  const descripciones = [describedBy, error ? `${id}-error` : undefined].filter(Boolean).join(' ');
+  const textoDeError = error && !textoDeErrorAparte;
+  const descripciones = [describedBy, textoDeError ? `${id}-error` : undefined].filter(Boolean).join(' ');
 
   return (
     <div className={className}>
@@ -376,7 +383,7 @@ export function PasswordField({
           <IconoMascara nombre={show ? 'eye-open' : 'eye-closed'} tamano="h-4 w-4" />
         </button>
       </div>
-      {error && <p id={`${id}-error`} className={authPasosErrorTextClass}>{error}</p>}
+      {textoDeError && <p id={`${id}-error`} className={authPasosErrorTextClass}>{error}</p>}
     </div>
   );
 }
@@ -405,6 +412,7 @@ export function PasswordRequisitos({
   className = 'mb-4',
   variant = 'panel',
   resumirAlCumplir = false,
+  rechazo,
 }: {
   /** Para que el campo lo nombre en su `aria-describedby`. */
   id?: string;
@@ -412,6 +420,13 @@ export function PasswordRequisitos({
   className?: string;
   variant?: 'panel' | 'solid';
   resumirAlCumplir?: boolean;
+  /**
+   * Por qué se rechazó una contraseña que cumple todos los requisitos («Esta contraseña no
+   * es válida por seguridad, elige otra.»): ocupa el sitio de «Cumple todos los requisitos»
+   * como mensaje de error, en rojo (pedido del usuario, 2026-10-15). Los dos a la vez se
+   * contradecían. El campo deja solo su borde rojo (`textoDeErrorAparte`).
+   */
+  rechazo?: string;
 }) {
   const todos = requisitosDe(password);
   const resumida = resumirAlCumplir && todos.every((r) => r.cumplido);
@@ -424,7 +439,11 @@ export function PasswordRequisitos({
       {resumida ? (
         // Cumplidos todos, el mensaje de éxito del proyecto, con su globo y su ✓ (pedido del
         // usuario, 2026-10-15). Antes, una línea verde con «✓».
-        <MensajeEstado tipo="exito" rol="note">Cumple todos los requisitos</MensajeEstado>
+        rechazo ? (
+          <MensajeEstado tipo="error" rol="alert">{rechazo}</MensajeEstado>
+        ) : (
+          <MensajeEstado tipo="exito" rol="note">Cumple todos los requisitos</MensajeEstado>
+        )
       ) : (
         <ul className="space-y-1">
           {todos.map((requisito) => {

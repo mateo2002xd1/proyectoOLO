@@ -25,6 +25,7 @@ export function PasswordRequisitos({
   variant,
   resumirAlCumplir = false,
   enBlanco = false,
+  rechazo,
 }: {
   classPrefix?: string;
   password: string;
@@ -33,6 +34,13 @@ export function PasswordRequisitos({
   resumirAlCumplir?: boolean;
   /** Desde `md`, en oscuro para la tarjeta blanca de la recuperación (2026-10-12). */
   enBlanco?: boolean;
+  /**
+   * Por qué se rechazó una contraseña que cumple todos los requisitos («Esta contraseña no
+   * es válida por seguridad, elige otra.»): ocupa el sitio de «Cumple todos los requisitos»
+   * como mensaje de error, en rojo (pedido del usuario, 2026-10-15). Los dos a la vez se
+   * contradecían. El campo deja solo su borde rojo (`textoDeErrorAparte`).
+   */
+  rechazo?: string;
 }) {
   const todos = requisitosDe(password);
   const resumida = resumirAlCumplir && todos.every((r) => r.cumplido);
@@ -49,7 +57,11 @@ export function PasswordRequisitos({
         {resumida ? (
           // Cumplidos todos, el mensaje de éxito del proyecto, con su globo y su ✓ (pedido del
           // usuario, 2026-10-15), como en el sitio web. Antes, una línea verde con «✓».
-          <MensajeEstado tipo="exito" rol="note">Cumple todos los requisitos</MensajeEstado>
+          rechazo ? (
+            <MensajeEstado tipo="error" rol="alert">{rechazo}</MensajeEstado>
+          ) : (
+            <MensajeEstado tipo="exito" rol="note">Cumple todos los requisitos</MensajeEstado>
+          )
         ) : (
           <ul className="space-y-1">
             {todos.map((requisito) => {

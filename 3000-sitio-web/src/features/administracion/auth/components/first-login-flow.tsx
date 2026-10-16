@@ -8,7 +8,13 @@ import {
   type ModoPrimerIngreso,
   type Pendiente,
 } from '@/shared/lib/ruta-del-primer-ingreso';
-import { cumplePolitica, primerFallo } from '@olo/password-policy';
+import {
+  cumplePolitica,
+  esPasswordRepetida,
+  MENSAJE_PASSWORD_REPETIDA,
+  primerFallo,
+  repiteLaPassword,
+} from '@olo/password-policy';
 import {
   AuthGeneralError,
   AuthProgressDots,
@@ -83,6 +89,9 @@ export function FirstLoginFlow({ modo }: { modo: ModoPrimerIngreso }) {
   const [catalog, setCatalog] = useState<CatalogQuestion[]>([]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  // Rechazada aunque cumple todos los requisitos (repite la temporal, la actual o la
+  // anterior): el aviso rojo va en el lugar de «Cumple todos los requisitos».
+  const rechazoDeLaNueva = errors.newPassword && cumplePolitica(newPassword) ? errors.newPassword : undefined;
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -120,6 +129,9 @@ export function FirstLoginFlow({ modo }: { modo: ModoPrimerIngreso }) {
     if (!tempPassword) e.tempPassword = 'La contraseña temporal es requerida';
     if (!newPassword) e.newPassword = 'La nueva contraseña es requerida';
     else if (!cumplePolitica(newPassword)) e.newPassword = primerFallo(newPassword) ?? '';
+    // Igual a la temporal que acaba de escribir: se avisa aquí y no al final, después de las
+    // preguntas (2026-10-15). La anterior a la temporal solo la sabe el servidor.
+    else if (repiteLaPassword(newPassword, tempPassword)) e.newPassword = MENSAJE_PASSWORD_REPETIDA;
     if (!confirmPassword) e.confirmPassword = 'Confirma tu contraseña';
     else if (newPassword !== confirmPassword) e.confirmPassword = 'Las contraseñas no coinciden';
     setErrors(e);
@@ -155,6 +167,14 @@ export function FirstLoginFlow({ modo }: { modo: ModoPrimerIngreso }) {
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) {
+        // Repite la temporal o la que tenía antes: se vuelve al paso de la contraseña con
+        // el aviso en el campo de la nueva y su borde rojo (pedido del usuario,
+        // 2026-10-15). Las respuestas ya escritas se conservan.
+        if (esPasswordRepetida(data)) {
+          setStep(1);
+          setErrors({ newPassword: data.error });
+          return;
+        }
         setErrors({ general: data?.error || 'No se pudo completar la configuración' });
         return;
       }
@@ -308,6 +328,7 @@ export function FirstLoginFlow({ modo }: { modo: ModoPrimerIngreso }) {
               onFocus={requisitos.alEnfocar}
               describedBy={requisitos.visibles ? 'requisitos-contrasena' : undefined}
               error={errors.newPassword}
+              textoDeErrorAparte={Boolean(rechazoDeLaNueva) && requisitos.visibles}
               className={requisitos.visibles ? 'mb-2 md:mb-3' : authPasosHuecoClass}
             />
             {requisitos.visibles && (
@@ -316,6 +337,7 @@ export function FirstLoginFlow({ modo }: { modo: ModoPrimerIngreso }) {
                 password={newPassword}
                 variant="solid"
                 resumirAlCumplir
+                rechazo={rechazoDeLaNueva}
                 className={authPasosHuecoClass}
               />
             )}

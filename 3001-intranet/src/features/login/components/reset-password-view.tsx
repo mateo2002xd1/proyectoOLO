@@ -4,7 +4,13 @@ import { useState, FormEvent, useEffect, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { authApi, useAuth } from '@/features/login';
-import { cumplePolitica, primerFallo } from '@olo/password-policy';
+import {
+  cumplePolitica,
+  esPasswordRepetida,
+  MENSAJE_PASSWORD_REPETIDA,
+  primerFallo,
+  repiteLaPassword,
+} from '@olo/password-policy';
 import { PasswordField } from '@/shared/ui/molecules/password-field';
 import { PasswordRequisitos } from '@/shared/ui/molecules/password-requisitos';
 import { MarcoAcceso } from './marco-acceso';
@@ -82,6 +88,9 @@ export function ResetPasswordView({ modo }: { modo: ModoCambioDePassword }) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState<{ currentPassword?: string; password?: string; confirm?: string; general?: string }>({});
+  // Rechazada aunque cumple todos los requisitos (repite la actual o la anterior): el aviso
+  // rojo va en el lugar de «Cumple todos los requisitos».
+  const rechazoDeLaNueva = errors.password && cumplePolitica(password) ? errors.password : undefined;
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -110,6 +119,9 @@ export function ResetPasswordView({ modo }: { modo: ModoCambioDePassword }) {
       newErrors.password = 'La contraseña es requerida';
     } else if (!cumplePolitica(password)) {
       newErrors.password = primerFallo(password) ?? '';
+    } else if (modo === 'cambio-obligatorio' && repiteLaPassword(password, currentPassword)) {
+      // Igual a la actual que acaba de escribir: no hace falta preguntar al servidor.
+      newErrors.password = MENSAJE_PASSWORD_REPETIDA;
     }
 
     if (!confirmPassword) {
@@ -142,6 +154,12 @@ export function ResetPasswordView({ modo }: { modo: ModoCambioDePassword }) {
       router.push(modo === 'recuperacion' ? '/login/recovery/reset-success' : '/login/first-login/change-success');
     } catch (error) {
       setIsSubmitted(false);
+      // Repite la actual o la anterior: el aviso va en el campo de la nueva, con su borde
+      // rojo (pedido del usuario, 2026-10-15).
+      if (esPasswordRepetida(error)) {
+        setErrors({ password: mensajeDeError(error) });
+        return;
+      }
       setErrors({ general: mensajeDeError(error, 'Error de conexión con el servidor') });
     } finally {
       setIsLoading(false);
@@ -206,10 +224,18 @@ export function ResetPasswordView({ modo }: { modo: ModoCambioDePassword }) {
           value={password}
           onChange={(v) => { setPassword(v); setErrors({}); }}
           error={errors.password}
+          textoDeErrorAparte={Boolean(rechazoDeLaNueva)}
           enBlanco
           className="mb-2 md:mb-3"
         />
-        <PasswordRequisitos password={password} variant="solid" className={accesoHuecoClass} resumirAlCumplir enBlanco />
+        <PasswordRequisitos
+          password={password}
+          variant="solid"
+          className={accesoHuecoClass}
+          resumirAlCumplir
+          rechazo={rechazoDeLaNueva}
+          enBlanco
+        />
 
         <PasswordField
           id="confirmPassword"
