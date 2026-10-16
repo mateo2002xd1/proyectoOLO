@@ -88,6 +88,8 @@ export function ModalEliminarSeccion({ slug, abierto, alCerrar }: ModalEliminarS
   // Para el paso a paso: en qué páginas están (sin repetir) y si se habla en plural.
   const paginasConEnlace = [...new Set(analisis?.referencias.map((referencia) => referencia.titulo) ?? [])];
   const varios = (analisis?.referencias.length ?? 0) > 1;
+  // Cómo se llama la página del menú y pie, para no nombrarla dos veces en el paso 1.
+  const tituloDelMenu = analisis?.referencias.find((referencia) => referencia.slug === 'menu-y-pie')?.titulo;
 
   const enviar = async (evento: React.FormEvent) => {
     evento.preventDefault();
@@ -174,19 +176,33 @@ export function ModalEliminarSeccion({ slug, abierto, alCerrar }: ModalEliminarS
             </p>
             <ol className="mt-3 space-y-3">
               {[
+                // Los del menú y pie se quitan desde el botón «Editar Menú y pie» (pedido del usuario,
+                // 2026-10-15); los de otras páginas, en esa página, por su nombre.
                 <>
-                  Ve a{' '}
-                  {unirConY(
-                    paginasConEnlace.map((titulo) => (
-                      <strong key={titulo} className="font-semibold">
-                        {titulo}
-                      </strong>
-                    )),
+                  {enMenu && (
+                    <>
+                      Ve al botón de <strong className="font-semibold">«Editar Menú y pie»</strong>
+                    </>
+                  )}
+                  {enMenu && enOtras && ' y '}
+                  {enOtras && (
+                    <>
+                      {enMenu ? 'a ' : 'Ve a '}
+                      {unirConY(
+                        paginasConEnlace
+                          .filter((titulo) => titulo !== tituloDelMenu)
+                          .map((titulo) => (
+                            <strong key={titulo} className="font-semibold">
+                              {titulo}
+                            </strong>
+                          )),
+                      )}
+                    </>
                   )}
                   .
                 </>,
                 <>
-                  {varios ? 'Busca los botones ' : 'Busca el botón '}
+                  {varios ? 'Busca los componentes que tienen los botones ' : 'Busca el componente que tiene el botón '}
                   {unirConY(
                     analisis.referencias.map((referencia, indice) => (
                       <span key={`${referencia.slug}-${indice}`}>
@@ -197,9 +213,12 @@ export function ModalEliminarSeccion({ slug, abierto, alCerrar }: ModalEliminarS
                       </span>
                     )),
                   )}
-                  .
+                  {/* Dónde buscarlos (pedido del usuario, 2026-10-15). */}
+                  {' en el editor.'}
                 </>,
-                varios ? 'Borra los enlaces asignados.' : 'Borra el enlace asignado.',
+                varios
+                  ? 'Borra los enlaces asignados en la configuración de los componentes.'
+                  : 'Borra el enlace asignado en la configuración del componente.',
               ].map((paso, indice) => (
                 <li key={indice} className="flex items-start gap-3 text-sm text-[#001631]">
                   <span
@@ -221,10 +240,12 @@ export function ModalEliminarSeccion({ slug, abierto, alCerrar }: ModalEliminarS
         {!cargando && analisis?.puedeEliminarse && (
           <>
             {analisis.publicada && (
-              <p className="nueva-seccion-ruta nueva-seccion-ruta--aviso">
+              // En rojo (pedido del usuario, 2026-10-15): al borrarla deja de verse ya, y no
+              // tiene vuelta atrás. Deja el mismo aire de antes antes del campo de confirmación.
+              <MensajeEstado tipo="error" rol="note" className="mb-5">
                 La página está publicada actualmente, si la eliminas, dejará de estar
                 visible para el público de inmediato.
-              </p>
+              </MensajeEstado>
             )}
 
             <label className="nueva-seccion-etiqueta" htmlFor="eliminar-seccion-confirmacion">

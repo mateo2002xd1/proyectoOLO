@@ -2714,12 +2714,6 @@ body:has(.navegacion-mobile-hoja[open]) {
   color: #002c46;
 }
 
-/* Párrafo de contexto del modal de eliminar: va justo bajo el título y deja aire
-   antes de la etiqueta del campo de confirmación. */
-.nueva-seccion-ruta--aviso {
-  margin: 0 0 1.25rem;
-}
-
 .nueva-seccion-error {
   margin: 0.6rem 0 0;
   font-size: 0.85rem;
