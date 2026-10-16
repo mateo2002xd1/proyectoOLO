@@ -101,7 +101,12 @@ export async function changePassword(data: DatosCambioPassword) {
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      return { success: false, error: err.error || err.message || 'Error al cambiar la contraseña' };
+      return {
+        success: false,
+        error: err.error || err.message || 'Error al cambiar la contraseña',
+        // Con `PASSWORD_REPETIDA` el formulario pone el aviso bajo «Nueva contraseña».
+        code: typeof err.code === 'string' ? err.code : undefined,
+      };
     }
 
     return { success: true };

@@ -2,7 +2,13 @@
 
 import React, { useState, useEffect, useTransition } from 'react';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
-import { cumplePolitica, primerFallo } from '@olo/password-policy';
+import {
+  cumplePolitica,
+  esPasswordRepetida,
+  MENSAJE_PASSWORD_REPETIDA,
+  primerFallo,
+  repiteLaPassword,
+} from '@olo/password-policy';
 import { validarEmail } from '@olo/email-policy';
 import { getProfileData, updateProfileInfo, changePassword } from '../profile.actions';
 import { PasswordRequisitos } from '../../auth/components/auth-ui';
@@ -97,6 +103,9 @@ export function ProfileForm() {
                 nuevos.password_nueva = 'Falta la nueva contraseña.';
             } else if (!cumplePolitica(texto('password_nueva'))) {
                 nuevos.password_nueva = primerFallo(texto('password_nueva')) ?? 'La contraseña no cumple los requisitos.';
+            } else if (repiteLaPassword(texto('password_nueva'), texto('password_actual'))) {
+                // Igual a la actual que acaba de escribir: no hace falta preguntar al servidor.
+                nuevos.password_nueva = MENSAJE_PASSWORD_REPETIDA;
             }
             if (!texto('password_confirmacion')) {
                 nuevos.password_confirmacion = 'Falta confirmar la contraseña.';
@@ -119,6 +128,12 @@ export function ProfileForm() {
         startTransition(async () => {
             if (isChangingPassword) {
                 const res = await changePassword(data);
+                // Repite la actual o la anterior: el aviso va en el campo de la nueva, con
+                // su borde rojo, y no arriba (pedido del usuario, 2026-10-15).
+                if (!res.success && esPasswordRepetida(res)) {
+                    setErrores({ password_nueva: res.error });
+                    return;
+                }
                 if (!res.success) {
                     setMessage({ type: 'error', text: res.error || 'Error al cambiar contraseña' });
                     return;

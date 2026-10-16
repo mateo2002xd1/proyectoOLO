@@ -80,5 +80,10 @@ export const recuperarPassword = async (
     body: JSON.stringify({ email, answers, newPassword }),
   });
 
-  if (!res.ok) throw new Error(await mensajeDeError(res, 'No fue posible recuperar la contraseña'));
+  if (!res.ok) {
+    // Se lee aquí y no con `mensajeDeError`: además del texto hace falta el `code`, para
+    // que la pantalla ponga una contraseña repetida bajo su campo.
+    const data = await res.json().catch(() => null);
+    throw Object.assign(new Error(data?.error || 'No fue posible recuperar la contraseña'), { code: data?.code });
+  }
 };
