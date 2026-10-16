@@ -461,9 +461,12 @@ export default function UsuariosView() {
                 </span>
               </div>
               {!copiedPassword && (
-                <p className="m-0 mt-2 text-xs font-medium text-amber-600 dark:text-amber-500">
-                  ⚠ Debes copiar la contraseña para poder cerrar, no la podrás ver de nuevo.
-                </p>
+                // Como mensaje de advertencia del proyecto, con su escudo (pedido del usuario,
+                // 2026-10-15). `note`: está a la vista desde que se abre, hasta que se copia.
+                <MensajeEstado tipo="advertencia" rol="note" className="mt-3">
+                  Debes copiar la contraseña para poder cerrar, NO podrás volver a verla después de
+                  cerrar esta ventana.
+                </MensajeEstado>
               )}
             </>
           )}

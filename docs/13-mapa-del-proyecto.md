@@ -258,10 +258,10 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `/inicio` | página | `(public)` | `(public)/inicio/page.tsx` |
 | `/login` | página | `(auth)` | `(auth)/login/page.tsx` |
 | `/login/first-login` | página | `(auth)` | `(auth)/login/first-login/page.tsx` |
-| `/login/first-login/security-questions` | página | `(auth)` | `(auth)/login/first-login/security-questions/page.tsx` |
 | `/login/recovery` | página | `(auth)` | `(auth)/login/recovery/page.tsx` |
 | `/login/recovery/reset-password` | página | `(auth)` | `(auth)/login/recovery/reset-password/page.tsx` |
 | `/login/recovery/reset-success` | página | `(auth)` | `(auth)/login/recovery/reset-success/page.tsx` |
+| `/login/recovery/security-questions` | página | `(auth)` | `(auth)/login/recovery/security-questions/page.tsx` |
 | `/manifest.webmanifest` | metadatos |  | `manifest.ts` |
 | `/politica-de-privacidad` | página | `(public)` | `(public)/politica-de-privacidad/page.tsx` |
 | `/preview/[slug]` | página |  | `preview/[slug]/page.tsx` |

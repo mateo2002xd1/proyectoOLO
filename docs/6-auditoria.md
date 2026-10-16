@@ -5,6 +5,18 @@
 
 ---
 
+## sesión 15-10-2026 (25.ª parte): «Contraseña temporal generada» — el aviso de copiarla como mensaje de advertencia
+
+**Qué se pidió:** el aviso «Debes copiar la contraseña para poder cerrar, no la podrás ver de nuevo.» con el estado de advertencia, y el final cambiado por «NO podrás volver a verla después de cerrar esta ventana».
+
+| Dónde | Cambio |
+|---|---|
+| `usuarios-view.tsx` (sitio web) | La línea ámbar con «⚠» pasa a `MensajeEstado tipo="advertencia" rol="note"` (`#fff9e6` / `#b48a00`, el escudo): «Debes copiar la contraseña para poder cerrar, NO podrás volver a verla después de cerrar esta ventana.». Sigue saliendo solo mientras no se ha copiado. La intranet no gestiona usuarios |
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta verlo en el navegador.
+
+---
+
 ## sesión 15-10-2026 (24.ª parte): editor — los tooltips de la cabecera ya no se esconden bajo los campos de la derecha
 
 **Qué se pidió:** los tooltips de Salir, Guardar y Enviar se cortaban encima de las opciones del lado derecho (captura con una lista de Puck desplegada).
@@ -238,6 +250,36 @@ en `#001631`; y el nombre de la página del título, en el amarillo de ese mensa
 | `globals.css` (las dos apps) | Fuera `.nueva-seccion-notas`: ya no la usaba nadie |
 
 **Verificación.** `tsc --noEmit` y `eslint` del sitio y de la intranet sin errores; finales de línea uniformes. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (8.ª parte): acceso — cada flujo con su propia dirección
+
+**Qué se pidió:** al entrar con una clave temporal la intranet llevaba a
+`/login/recovery/reset-password`, y «¿Olvidaste tu contraseña?» pasaba por
+`/login/first-login/security-questions`. Primero, explicar por qué; luego se eligió la opción 1:
+una dirección por flujo, con las mismas pantallas por dentro.
+
+**Diagnóstico (bitácora y `usuarios` en Neon, solo lectura).** No era un fallo de la lógica. La
+cuenta probada hizo su primer ingreso en el sitio web (contraseña y preguntas, 8:11 p. m.) y luego
+un administrador le restableció la contraseña (8:23 p. m.): quedó con «debe cambiar contraseña» y
+sus 3 preguntas, y el login la mandó, como estaba previsto, a la pantalla de solo contraseña. Lo
+que confundía eran las URLs: la reorganización bajo `/login` (`ef1ed32a`) colgó cada pantalla
+compartida de uno solo de los dos flujos.
+
+| Dónde | Cambio |
+|---|---|
+| intranet, `app/(auth)/login/` | Páginas nuevas, envoltorios de las vistas que ya existían: `recovery/security-questions` (responder las preguntas, `SecurityQuestionsView`), `first-login/change-password` (cambio obligatorio de una temporal restablecida, `ResetPasswordView` en modo `forced`) y `first-login/change-success` (`ResetSuccessView`). `first-login/security-questions` queda para elegir las preguntas |
+| intranet, `login-view.tsx` y `proxy.ts` | «Solo debe cambiar la contraseña» va a `/login/first-login/change-password`. `RUTAS_DE_ACCESO` suma las tres; `RUTAS_DE_CONFIGURACION_PENDIENTE` son ahora solo las de `first-login` (con sesión pendiente, la recuperación rebota al paso que falta); las dos pantallas de éxito se ven con sesión |
+| intranet, `recovery-view.tsx`, `reset-password-view.tsx` | La recuperación sigue por `/login/recovery/security-questions`; el cambio obligatorio cierra en `/login/first-login/change-success` y la recuperación en `/login/recovery/reset-success` |
+| intranet, `template.tsx` y `next.config.ts` | Orden de las rutas nuevas para la animación; la vieja `/security-questions` redirige a la de la recuperación |
+| sitio web, `app/(auth)/login/` | `first-login/security-questions/` se mueve (`git mv`) a `recovery/security-questions/`: en el sitio solo era el paso de la recuperación. El primer ingreso ya iba entero por `/login/first-login`, que se adapta a lo que falte |
+| sitio web, `recovery-view.tsx`, `next.config.mjs` y comentarios | La recuperación sigue por `/login/recovery/security-questions`; `/security-questions` redirige allí. Comentarios de `(auth)/layout.tsx`, `flujo-de-recuperacion.tsx`, `security-questions-view.tsx` y `proxy.ts` al día |
+| `docs/` | `13-mapa-del-proyecto.md` (rutas de las dos apps), `1-guia-del-proyecto.md` (árbol de la intranet), `plan-de-pruebas.md` y `manual-de-usuario-formato.md` |
+
+**Sin tocar:** las vistas siguen eligiendo su modo como antes (`sessionStorage` en la intranet), no por la ruta. La API no cambia.
+
+**Verificación.** `tsc --noEmit` y `eslint` de las dos apps sin errores. En los servidores de desarrollo, sin sesión: las tres rutas nuevas de la intranet y `/login/recovery/security-questions` del sitio dan 200; la vieja `/login/first-login/security-questions` del sitio da 404; `/security-questions` redirige (307) a la de la recuperación en las dos. Falta recorrer los flujos con sesión: primer ingreso, restablecimiento por un administrador y recuperación.
 
 ---
 
