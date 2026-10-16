@@ -59,7 +59,7 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 | Descripción de pasos a realizar | Resultado obtenido |
 | :--- | :--- |
 | **1.** Clic en "¿Olvidaste tu contraseña?" en login de Sitio Web | Traslada a pantalla `/login/recovery` solicitando correo institucional |
-| **2.** Ingresar correo institucional `@sena.edu.co` y dar Continuar | Valida sintaxis, comprueba preguntas configuradas y navega a `/login/first-login/security-questions` |
+| **2.** Ingresar correo institucional `@sena.edu.co` y dar Continuar | Valida sintaxis, comprueba preguntas configuradas y navega a `/login/recovery/security-questions` |
 | **3.** Responder secuencialmente las 3 preguntas de seguridad | Valida respuestas confidenciales en servidor sin depender de correo externo y traslada a `/login/recovery/reset-password` |
 | **4.** Definir nueva contraseña cumpliendo requisitos y confirmar | Valida política de seguridad (12 caracteres, símbolos, etc.) y coincidencia exacta |
 | **5.** Confirmar cambio de clave en Sitio Web | Muestra pantalla `/login/recovery/reset-success` y botón para volver a `/login` |

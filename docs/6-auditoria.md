@@ -5,6 +5,112 @@
 
 ---
 
+## sesión 15-10-2026 (32.ª parte): la API usaba la sesión de la intranet en el panel del sitio web
+
+**Qué se pidió:** «Termina de configurar tu cuenta» le salía a dtejada@sena.edu.co, una cuenta ya configurada; la pendiente era elpollo@sena.edu.co, recién creada. Corregirlo, evitar que se repita y mejorar el texto del aviso (con lo de borrar las cookies).
+
+**Causa (bug).** Las cookies no se separan por puerto: en `localhost` el navegador manda a la API `token` (intranet, abierta como elpollo) y `sitio_token` (sitio web, dtejada) a la vez. `requireAuth` leía `req.cookies.token ?? req.cookies.sitio_token`, así que las llamadas directas del sitio a la API (los clientes axios con `withCredentials`, como Respaldos) iban **con la cuenta de la intranet**. Comprobado en la base: dtejada sin nada pendiente y con 3 preguntas; elpollo con las dos marcas, sin preguntas y con último acceso 30 s después del de dtejada. Las llamadas por el proxy de Next (`pedirJson`) no fallaban: mandan `Authorization: Bearer` con `sitio_token`.
+
+| Dónde | Cambio |
+|---|---|
+| `4000-api-backend/src/middlewares/auth.middleware.ts` | `tokenDeLaCookie(req)`: con `Origin` del sitio web (`FRONTEND_URL`) solo `sitio_token`; con el de la intranet (`INTRANET_URL`) solo `token`; sin `Origin` de ninguna de las dos, el orden de antes. CORS ya obliga a que el `Origin` sea uno de esos dos. Además, el sitio deja de entrar con la sesión de la intranet si no tiene la suya |
+| `4000-api-backend/scripts/verificaciones/verificar-cookie-de-sesion.ts` + `npm run sesion:verificar` | Para que no se repita: 9 casos (las dos sesiones a la vez, solo la de la otra app, cada una con la suya, sin `Origin`, sin cookies). Falla si alguien vuelve a leer las dos cookies sin mirar el origen. Sin base de datos, como `email:verificar` |
+| `shared/ui/molecules/aviso-error-de-carga.tsx` | Caso pendiente con su propio texto: título «Tu cuenta tiene la configuración pendiente», «Para continuar, termina de configurar tu contraseña y tus preguntas de seguridad.» y «Si crees que es un error, borra las cookies de este sitio y vuelve a iniciar sesión.», con «Terminar configuración» |
+
+**Verificación.** `tsc --noEmit` en la API y el sitio, `eslint` del aviso y `npm run sesion:verificar` (9/9) sin errores; CRLF uniforme. Falta reiniciar la API (ts-node sin watch) y abrir Respaldos con dtejada en el sitio y elpollo en la intranet a la vez.
+
+---
+
+## sesión 15-10-2026 (31.ª parte): el aviso de cuenta a medio configurar, en advertencia
+
+**Qué se pidió:** en ese aviso, quitar «Espera unos minutos y pulsa «Reintentar», si el problema persiste contacta al equipo técnico.» y que no vaya en rojo sino en advertencia.
+
+| Dónde | Cambio |
+|---|---|
+| `shared/lib/errores-api.ts` | `MENSAJE_CONFIGURACION_PENDIENTE`: el texto exacto del 403 de `requireAuth`. Las pantallas guardan el error como texto, así que se reconoce comparando; si la API cambia la frase, hay que cambiarla aquí |
+| `shared/ui/molecules/aviso-error-de-carga.tsx` | Con ese mensaje: `MensajeEstado` de advertencia, sin la línea de «Espera unos minutos…», y el botón «Terminar configuración» (carga completa a `/login/first-login`) en lugar de «Reintentar», que daría el mismo 403. Los demás fallos siguen en rojo con «Reintentar». Cubre Respaldos, Auditoría, Usuarios, Roles, Páginas en revisión y el dashboard |
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme; la frase coincide con `auth.middleware.ts`. Falta verlo en pantalla con una cuenta pendiente y el panel ya abierto.
+
+---
+
+## sesión 15-10-2026 (30.ª parte): cuenta con el primer ingreso pendiente — al primer ingreso, no a «Reintentar»
+
+**Qué se pidió:** en Respaldos salía «No pudimos cargar los respaldos — Termina de configurar tu cuenta (contraseña y preguntas de seguridad) para continuar» con «Espera unos minutos y pulsa Reintentar»: un error distinto, que no es de caída.
+
+**Causa.** Es el 403 `CONFIGURACION_PENDIENTE` de `requireAuth`, que lee las marcas `must_change_password` / `must_setup_security_questions` **de la fila**. El proxy del sitio las lee **del JWT**, escrito al iniciar sesión. Si después se restablece la contraseña o las preguntas de la cuenta (desde Usuarios), o el login enciende la marca por faltarle preguntas, el token sigue diciendo «nada pendiente»: el panel se abre y la API niega cada carga. «Reintentar» no podía arreglarlo nunca.
+
+| Dónde | Cambio |
+|---|---|
+| `shared/lib/session.ts` | `tieneConfiguracionPendiente()`: pregunta a `/api/me` (que ya devuelve `configuracionPendiente` desde la fila). Sin API o con cualquier fallo, `false`: no bloquea, y la caída la cuentan las pantallas |
+| `app/admin/layout.tsx` | Se consulta en paralelo con el perfil y la identidad; si hay algo pendiente, `redirect('/login/first-login')`, que también mira la base (`/api/auth/first-login/status`) |
+
+**Límite.** El layout corre al cargar o recargar el panel, no al pasar de una pantalla a otra: si la cuenta se restablece con el panel ya abierto, el desvío llega en la siguiente recarga. Solo sitio web: la intranet no tiene estas pantallas de carga.
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta recargar el panel con la cuenta pendiente.
+
+---
+
+## sesión 15-10-2026 (29.ª parte): dashboard — un solo aviso arriba cuando la API no responde
+
+**Qué se pidió:** con la API caída, el dashboard solo con el mensaje de arriba; las tarjetas, en blanco.
+
+| Dónde | Cambio |
+|---|---|
+| `panel-general.tsx` | Antes salían tres errores a la vez: el de usuarios arriba (`MensajeEstado` rojo), el de páginas en sus dos tarjetas y el de la bitácora en «Actividad reciente». Ahora `errorDeCarga` (usuarios, si no la bitácora, si no las páginas) en un solo `AvisoErrorDeCarga` arriba, «No pudimos cargar el panel», con `reintentarCarga`: limpia los errores y vuelve a pedirlo todo (`versionCarga` en el efecto) con el cargador. «Actividad reciente» deja solo su cabecera; el 403 («tu rol no tiene acceso») sigue explicándose ahí y no cuenta como avería |
+| `tarjeta-paginas-publicadas.tsx`, `tarjeta-visitas.tsx` | Con error, solo el «—»: fuera la línea roja con el porqué |
+| Tarjeta «Usuarios» | `loading={loading || Boolean(error)}`: «—» en vez de un 0, que sería un dato falso |
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta verlo con la API apagada.
+
+---
+
+## sesión 15-10-2026 (28.ª parte): el aviso de carga fallida, en rojo
+
+**Qué se pidió:** el aviso que sale cuando la API no responde, en estado rojo.
+
+| Dónde | Cambio |
+|---|---|
+| `aviso-error-de-carga.tsx` | `MensajeEstado tipo="advertencia"` → `tipo="error"` (`#ffe9e9` / `#d90000`, el círculo con ×). El botón «Reintentar» sigue en azul marino. Cambia en Revisión, Respaldos, Auditoría, Usuarios y Roles |
+
+**Verificación.** `eslint` sin errores; CRLF uniforme. Falta verlo con la API apagada.
+
+---
+
+## sesión 15-10-2026 (27.ª parte): API caída — sin error en la consola y textos del aviso nuevos
+
+**Qué se pidió:** quitar el «Console ErrorApi: Error de conexión con el servidor.» que Next mostraba en desarrollo, y cambiar los textos del aviso.
+
+| Dónde | Cambio |
+|---|---|
+| `use-usuarios.ts` | `fetchRoles`, `fetchPermissions` y `fetchRolePermissions` hacían `console.error(err)`; con la API caída, Next lo sacaba como error en pantalla. Ahora `registrarSiInesperado`: un `ErrorApi` (API caída o respuesta de error, que ya se le cuenta al usuario) no se registra; lo demás sí |
+| `errores-api.ts`, `MENSAJE_SIN_RESPUESTA` | «El servidor está tardando en responder, posibles causas: tu conexión a internet o que se esté reiniciando.» (el usuario escribió «pósibles causas;»: se corrigió la tilde y el punto y coma) |
+| `aviso-error-de-carga.tsx` | «Espera unos minutos y pulsa «Reintentar», si el problema persiste contacta al equipo técnico.» Sale en todos los avisos de carga: Revisión, Respaldos, Auditoría, Usuarios y Roles |
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta verlo con la API apagada.
+
+---
+
+## sesión 15-10-2026 (26.ª parte): API caída — Respaldos, Auditoría, Usuarios y Roles con el aviso de «Reintentar»
+
+**Qué se pidió:** cuando la API se cae o no responde, un mensaje de estado útil en vez de «Network Error» (Respaldos) o «No se pudo cargar la bitácora de auditoría.» (Auditoría).
+
+Se reutiliza `AvisoErrorDeCarga` (`shared/ui/molecules`), que ya usaba «Páginas en revisión»: mensaje de advertencia con qué no cargó, el porqué, «Espera unos segundos y pulsa «Reintentar». Si sigue igual, avisa al equipo técnico.» y el botón «Reintentar».
+
+| Dónde | Cambio |
+|---|---|
+| `use-respaldos.ts` + `respaldos-view.tsx` | El error pasa por `mensajeDeErrorApi` (sin respuesta: «El servidor está tardando en responder…», no el «Network Error» de axios) y se pinta con el aviso, «No pudimos cargar los respaldos». El hook expone `reintentar` (vuelve a cargar con el cargador) |
+| `auditoria.service.ts` + `auditoria-view.tsx` | `fetch` que falla, o 502/503/504 del proxy de Next (no llegó a la API): `MENSAJE_SIN_RESPUESTA`. Otro error: el que mande la API o «El servidor respondió con un error inesperado.». La vista usa el aviso, «No pudimos cargar la bitácora de auditoría», con `recargar`. El dashboard usa el mismo servicio, así que su «Actividad reciente» recibe los mensajes nuevos |
+| `usuarios-view.tsx` | El `MensajeEstado` rojo con el error suelto pasa al aviso, «No pudimos cargar los usuarios», que reintenta usuarios y roles |
+| `roles-view.tsx` | Antes, con la API caída, la tabla salía vacía sin decir nada (`fetchRoles` solo registra su error). Ahora, sin roles y con el error de `fetchUsers` (misma API): «No pudimos cargar los roles» y `reintentarCarga` |
+| `aviso-error-de-carga.tsx` | `className` opcional para los márgenes (Usuarios lo lleva encima de la tabla con `mb-6`) |
+
+**Quedan** el dashboard (`panel-general.tsx`, que estaba tocando otra sesión), el historial de Actualizaciones, Notificaciones y Mi perfil.
+
+**Verificación.** `tsc --noEmit` y `eslint` de lo tocado sin errores; CRLF uniforme. Falta verlo con la API apagada.
+
+---
+
 ## sesión 15-10-2026 (25.ª parte): «Contraseña temporal generada» — el aviso de copiarla como mensaje de advertencia
 
 **Qué se pidió:** el aviso «Debes copiar la contraseña para poder cerrar, no la podrás ver de nuevo.» con el estado de advertencia, y el final cambiado por «NO podrás volver a verla después de cerrar esta ventana».
@@ -221,6 +327,27 @@ principal, desvincula el botón antes de eliminarla para evitar enlaces rotos.»
 
 ---
 
+## sesión 15-10-2026 (10.ª parte): sitio web — las direcciones del primer ingreso como en la intranet
+
+**Qué se pidió:** aplicar al sitio web la lógica de rutas del acceso de la intranet. El sitio
+resolvía el primer ingreso con una sola pantalla adaptable en `/login/first-login`, que pregunta al
+servidor qué falta. Entre copiar las pantallas separadas de la intranet o dar las mismas URLs a la
+pantalla que ya existe, el usuario eligió lo segundo.
+
+| Dónde | Cambio |
+|---|---|
+| `shared/lib/ruta-del-primer-ingreso.ts` (nuevo) | `modoDelPrimerIngreso` y `rutaDelPrimerIngreso`: contraseña y preguntas → `/login/first-login` (`completo`), solo preguntas → `/login/first-login/security-questions` (`solo-preguntas`), solo contraseña → `/login/first-login/change-password` (`solo-contrasena`). Un solo sitio para el login, el proxy y la pantalla |
+| `app/(auth)/login/first-login/` | Las páginas nuevas `security-questions/` y `change-password/`, y la de siempre, montan `FirstLoginFlow` con su `modo` |
+| `auth/components/first-login-flow.tsx` | Recibe `modo`. Lo que pide sigue saliendo de `/api/auth/first-login/status`; si la dirección no es la del caso, `router.replace` a la correcta. Sin nada pendiente se queda donde está |
+| `auth/components/login-view.tsx` y `proxy.ts` | Mandan a `rutaDelPrimerIngreso` en vez de siempre a `/login/first-login`. El `matcher` suma las dos direcciones nuevas: sin sesión, al login, como la primera |
+| Comentarios | `(auth)/layout.tsx`, `security-questions-view.tsx` y `api/auth/login/route.ts` |
+
+**Diferencia que queda con la intranet:** el aviso final del cambio de contraseña sale dentro de la misma pantalla (su paso 3), sin una dirección `change-success` propia. `secciones.service.ts` sigue mandando a `/login/first-login` cuando la API responde `CONFIGURACION_PENDIENTE`: no sabe qué falta, y la pantalla se corrige a la dirección del caso.
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. En el servidor de desarrollo, sin sesión, las tres direcciones del primer ingreso redirigen (307) al login y `/login/recovery/security-questions` da 200. Falta recorrer con sesión los tres casos: cuenta nueva, contraseña restablecida y preguntas restablecidas.
+
+---
+
 ## sesión 15-10-2026 (9.ª parte): modal «Eliminar la página» — la advertencia arriba y el paso a paso debajo, aparte
 
 **Qué se pidió:** mejorar el mensaje del bloqueo como diseño UX/UI: dejar la advertencia y, debajo,
@@ -233,6 +360,26 @@ de forma limpia, el paso a paso.
 | Lo que se quitó | «Qué hacer» dentro del mensaje y la frase final «Así el portal no queda con enlaces…»: lo dice ya la advertencia con «quedaría roto» |
 
 **Verificación.** `tsc --noEmit` y `eslint` del sitio y la intranet sin errores; finales de línea uniformes. Maqueta con las mismas clases en Chrome headless (Tailwind 4 del CDN): se lee bien a 27rem, el ancho del modal. El modal de verdad falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (9.ª parte): intranet — la página dice en qué modo trabaja cada pantalla compartida
+
+**Qué se pidió:** tras separar las direcciones por flujo (8.ª parte), el usuario preguntó si el
+código podía confundir. Sí: la página de cada ruta montaba la vista sin decirle nada, y la vista
+adivinaba su modo por lo que hubiera en `sessionStorage`. Se eligió que lo diga la página.
+
+| Dónde | Cambio |
+|---|---|
+| `features/login/components/reset-password-view.tsx` | Recibe `modo: 'recuperacion' \| 'cambio-obligatorio'` (tipo `ModoCambioDePassword`) en vez de deducir `recovery`/`forced`. `sessionStorage` solo se lee para los datos de la recuperación; si faltan, vuelve a `/login/recovery` |
+| `features/login/components/security-questions-view.tsx` | Recibe `modo: 'responder' \| 'elegir'` (tipo `ModoPreguntasDeSeguridad`) en vez de deducir `verify`/`setup`. Las preguntas guardadas se leen solo al responder; si faltan, vuelve a `/login/recovery` |
+| Las cuatro páginas de `app/(auth)/login/` | `recovery/reset-password` → `modo="recuperacion"`, `first-login/change-password` → `modo="cambio-obligatorio"`, `recovery/security-questions` → `modo="responder"`, `first-login/security-questions` → `modo="elegir"` |
+
+**Lo que corrige además:** unos datos de una recuperación a medias en la pestaña ya no ponen a «responder» a quien tenía que elegir sus preguntas, ni en modo recuperación a quien debía cambiar la temporal. Abrir suelto un paso de la recuperación devuelve a su principio (`/login/recovery`) y no al login.
+
+**Sin tocar:** los nombres de las vistas (`ResetPasswordView`, `ResetSuccessView`), las URLs y el sitio web.
+
+**Verificación.** `tsc --noEmit` y `eslint` de la intranet sin errores; CRLF uniforme. Las cuatro rutas dan 200 en el servidor de desarrollo. Falta recorrer los flujos en el navegador.
 
 ---
 
@@ -275,7 +422,7 @@ compartida de uno solo de los dos flujos.
 | intranet, `template.tsx` y `next.config.ts` | Orden de las rutas nuevas para la animación; la vieja `/security-questions` redirige a la de la recuperación |
 | sitio web, `app/(auth)/login/` | `first-login/security-questions/` se mueve (`git mv`) a `recovery/security-questions/`: en el sitio solo era el paso de la recuperación. El primer ingreso ya iba entero por `/login/first-login`, que se adapta a lo que falte |
 | sitio web, `recovery-view.tsx`, `next.config.mjs` y comentarios | La recuperación sigue por `/login/recovery/security-questions`; `/security-questions` redirige allí. Comentarios de `(auth)/layout.tsx`, `flujo-de-recuperacion.tsx`, `security-questions-view.tsx` y `proxy.ts` al día |
-| `docs/` | `13-mapa-del-proyecto.md` (rutas de las dos apps), `1-guia-del-proyecto.md` (árbol de la intranet), `plan-de-pruebas.md` y `manual-de-usuario-formato.md` |
+| `docs/` | `1-guia-del-proyecto.md` (árbol de la intranet), `plan-de-pruebas.md` y `manual-de-usuario-formato.md`. `13-mapa-del-proyecto.md` no se edita a mano: lo regenera el hook de pre-commit (`scripts/mapa/generar-mapa.mjs`) con las rutas nuevas |
 
 **Sin tocar:** las vistas siguen eligiendo su modo como antes (`sessionStorage` en la intranet), no por la ruta. La API no cambia.
 
