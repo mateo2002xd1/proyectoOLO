@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
+import { reproducirSonidoAviso } from '@/shared/lib/sonido-avisos';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -148,6 +149,17 @@ function sinPlantilla(resumen: ResumenPaginasPublicadas): ResumenPaginasPublicad
   return { sitio, intranet, total: sitio.length + intranet.length };
 }
 
+/**
+ * Cada cuánto se vuelven a pedir las alertas de la campana con la página abierta, para que
+ * las nuevas lleguen sin recargar (pedido del usuario, 2026-10-15). Son dos consultas
+ * ligeras; en una pestaña de fondo el navegador las espacia solo.
+ */
+const MS_ENTRE_CONSULTAS_DE_ALERTAS = 30_000;
+
+/** Cómo se reconoce una alerta entre dos consultas, para saber cuáles son nuevas. */
+const claveDeRevision = (p: PaginaEnRevision) => `revision:${p.id}`;
+const claveDeCuenta = (a: AlertaCaducidad) => `cuenta:${a.userId || a.email}`;
+
 /** Botón de la barra superior del móvil (buscar y tema). */
 const BOTON_BARRA_MOVIL =
   'flex size-11 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-[#94a3b8] dark:hover:bg-zinc-800 dark:hover:text-white [&>svg]:size-5 [&>svg]:shrink-0';
@@ -232,11 +244,13 @@ function ModalAlertas({
           ) : (
             <div className="space-y-3">
               {cuentasPorVencer.map((a) => (
-                // Sin fondo ni borde en la fila: el estado lo dicen la etiqueta y el
-                // color del texto, que es el mismo de la etiqueta.
-                // 28 px de alto (`h-7`; antes 44, pedido del usuario el 2026-10-12): lo mismo que el
-                // botón de la derecha, que es el área táctil.
-                <div key={a.userId || a.email} className="group flex h-7 w-full items-center gap-2">
+                // La fila con un fondo suave del mismo color de su etiqueta (pedido del
+                // usuario, 2026-10-15; antes iba sin fondo). El texto lleva el color de la
+                // etiqueta y el botón de la derecha, de 28 px, es el área táctil.
+                <div
+                  key={a.userId || a.email}
+                  className="group flex w-full items-center gap-2 rounded-[16px] bg-amber-50 px-3 py-2 dark:bg-amber-950/40"
+                >
                   <span className="shrink-0 rounded-full bg-amber-200/80 px-2.5 py-1 text-xs font-semibold text-amber-900 dark:bg-amber-800/60 dark:text-amber-100">
                     Por vencer
                   </span>
@@ -261,7 +275,10 @@ function ModalAlertas({
               ))}
 
               {enRevision.map((p) => (
-                <div key={p.id} className="group flex h-7 w-full items-center gap-2">
+                <div
+                  key={p.id}
+                  className="group flex w-full items-center gap-2 rounded-[16px] bg-blue-50 px-3 py-2 dark:bg-blue-950/40"
+                >
                   <span className="shrink-0 rounded-full bg-blue-200/80 px-2.5 py-1 text-xs font-semibold text-blue-900 dark:bg-blue-800/60 dark:text-blue-100">
                     En revisión
                   </span>
@@ -311,6 +328,12 @@ export function PanelGeneralLayout({
   const [alertasVistas, setAlertasVistas] = useState(false);
   const [enRevision, setEnRevision] = useState<PaginaEnRevision[]>([]);
   const [cuentasPorVencer, setCuentasPorVencer] = useState<AlertaCaducidad[]>([]);
+  /**
+   * Las alertas que ya se vieron llegar, para que solo suene una nueva. `null` hasta la
+   * primera consulta: las que ya había al abrir el panel no suenan. Las que se marcan como
+   * solucionadas siguen aquí, y no vuelven a sonar cuando la siguiente consulta las trae.
+   */
+  const alertasConocidas = useRef<Set<string> | null>(null);
 
   const handleDismissCuenta = useCallback((email: string) => {
     setCuentasPorVencer((prev) => prev.filter((c) => c.email !== email));
@@ -329,12 +352,26 @@ export function PanelGeneralLayout({
         listarAlertasCaducidad().then((r) => r.alerts, () => [] as AlertaCaducidad[]),
       ]).then(([pendientes, alertas]) => {
         if (cancelado) return;
+        const claves = [...pendientes.map(claveDeRevision), ...alertas.map(claveDeCuenta)];
+        const conocidas = alertasConocidas.current;
+        if (conocidas === null) {
+          alertasConocidas.current = new Set(claves);
+        } else {
+          const nuevas = claves.filter((clave) => !conocidas.has(clave));
+          if (nuevas.length > 0) {
+            nuevas.forEach((clave) => conocidas.add(clave));
+            // Suena (si no se silenció en Configuración) y la campana vuelve a marcar.
+            reproducirSonidoAviso('alerta');
+            setAlertasVistas(false);
+          }
+        }
         setEnRevision(pendientes);
         setCuentasPorVencer(alertas);
       });
     };
 
     cargar();
+    const temporizador = setInterval(cargar, MS_ENTRE_CONSULTAS_DE_ALERTAS);
 
     const handleRevisionActualizada = (e: Event) => {
       if (cancelado) return;
@@ -356,6 +393,7 @@ export function PanelGeneralLayout({
 
     return () => {
       cancelado = true;
+      clearInterval(temporizador);
       window.removeEventListener('olo:revision-actualizada', handleRevisionActualizada);
       window.removeEventListener('focus', cargar);
     };
