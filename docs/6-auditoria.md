@@ -5,6 +5,37 @@
 
 ---
 
+## sesión 15-10-2026 (34.ª parte): pulsar una notificación lleva a donde se resuelve
+
+**Qué se pidió:** que al pulsar el cuerpo de una notificación, en el aviso flotante de arriba o en el modal, lleve al sitio al que se refiere.
+
+| Dónde | Cambio |
+|---|---|
+| `FilaAlertaRevision` / `FilaAlertaCuenta` (`panel-general.tsx`) | Etiqueta y frase forman un solo `Link` (`CUERPO_DE_ALERTA`): «En revisión» → `/admin/revision`, «Por vencer» → `/admin/users`. Fuera los enlaces sueltos del título y del nombre, que ahora van en negrita dentro. La flecha sigue siendo «Marcar como solucionada», aparte. Al pasar el ratón la fila se oscurece un tono (`has-[a:hover]`); con teclado, anillo de foco del color de la etiqueta |
+| `AvisoDeAlertas` | `onAbrir`: al pulsar una, el aviso se va |
+| `ModalAlertas` | `onAbrir={onCerrar}`: el modal se cierra; vive en el layout y, si no, seguiría abierto encima de la página nueva |
+
+No hay enlace a la página o a la cuenta concreta: Páginas en revisión y Usuarios no leen parámetros de la URL; lleva a la lista.
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta probarlo en pantalla.
+
+---
+
+## sesión 15-10-2026 (33.ª parte): notificaciones del panel en una sola frase, «… a la espera de tu …»
+
+**Qué se pidió:** un mensaje claro en las notificaciones que llegan al panel (campana y aviso de arriba a la derecha). Un primer intento en dos líneas no convenció; queda una sola frase con la estructura del usuario: **quién hizo qué, a la espera de tu (acción)**, sin paréntesis, y la misma estructura para toda notificación nueva.
+
+| Dónde | Antes | Ahora |
+|---|---|---|
+| `FilaAlertaRevision` (`panel-general.tsx`) | «En revisión · Inicio» | «**David Tejada** envió a revisión la versión 33 de **Inicio** del sitio web, a la espera de tu aprobación.» («de la intranet» en la otra; sin autor, «Se envió a revisión…»). La etiqueta «En revisión» se queda |
+| `FilaAlertaCuenta` | «Por vencer · correo vence en 3 días» | «La cuenta de **El pollo** vence en 3 días, a la espera de tu renovación.» («hoy» / «mañana» cuando toca). El nombre enlaza a Usuarios y enseña el correo al pasar el ratón |
+
+La frase se parte en varias líneas si no cabe, en vez de cortarse con «…». Las filas son las mismas en el modal de Notificaciones y en el aviso temporal. La regla de la estructura queda comentada encima de `cuandoVence`.
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta verlo en pantalla, también a 360 px.
+
+---
+
 ## sesión 15-10-2026 (32.ª parte): la API usaba la sesión de la intranet en el panel del sitio web
 
 **Qué se pidió:** «Termina de configurar tu cuenta» le salía a dtejada@sena.edu.co, una cuenta ya configurada; la pendiente era elpollo@sena.edu.co, recién creada. Corregirlo, evitar que se repita y mejorar el texto del aviso (con lo de borrar las cookies).
@@ -309,6 +340,21 @@ botón]. 3. Borra el enlace asignado. Cuando completes estos pasos, vuelve a abr
 | Mismo archivo | `unirConY` (une «A», «A y B», «A, B y C») y `paginasConEnlace` / `varios` junto a `enMenu` / `enOtras` |
 
 **Verificación.** `tsc --noEmit` y `eslint` del sitio y la intranet sin errores; finales de línea uniformes. Maqueta con las mismas clases en Chrome headless: se lee bien al ancho del modal. Falta el modal de verdad en el navegador.
+
+---
+
+## sesión 15-10-2026 (11.ª parte): intranet — la barra de la vista previa, igual a la del sitio web
+
+**Qué se pidió:** la vista previa de la intranet no tenía el diseño de la del sitio web; reutilizarlo.
+
+| Dónde | Cambio |
+|---|---|
+| `app/preview/[slug]/page.tsx` (intranet) | La barra es la del sitio (`3000-sitio-web/src/app/preview/[slug]/page.tsx`): fija arriba, fondo azul suave opaco, la etiqueta «Vista previa» en píldora azul y «Volver» con flecha (44 px, esquinas de 16). Mismas clases; el azul va escrito (`#1face3`) porque la intranet no tiene el token `brand-blue`. «Volver» sigue siendo `<a>`: lleva al panel del sitio |
+| `style/globals.css` (intranet) | Fuera las reglas `.preview-aviso*` del aviso ámbar, que estaban repetidas dos veces. Se quedan `.preview-page` (columna para el marco de las secciones) y la que suelta la barra de navegación |
+
+**Lo que se quita:** el aviso ámbar decía la ruta, el estado de la versión y una nota («Así quedará la página…», «Esta es una versión archivada…»). La barra del sitio no lo dice, y se dejó igual a ella.
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Sin sesión, `/preview/inicio` redirige al login. Falta verla en el navegador con sesión.
 
 ---
 

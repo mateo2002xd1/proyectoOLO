@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { ArrowLeftIcon } from '@heroicons/react/20/solid';
 import {
   ClientPuckRender,
   MarcoSecciones,
@@ -60,21 +61,23 @@ export default async function PreviewPage({
 
   return (
     <div className="preview-page">
-      <div className="preview-aviso">
-        <span className="preview-aviso-etiqueta">Vista previa</span>
-        <span>
-          /{slug} · {version.versionId ? 'versión previsualizada' : 'versión sin publicar'}
-          {version.estado ? ` · ${version.estado.replace('_', ' ')}` : ''}
+      {/* La barra de la vista previa del sitio web, igual (pedido del usuario, 2026-10-15):
+          la etiqueta «Vista previa» y «Volver». Antes era un aviso ámbar propio con la ruta,
+          el estado y una nota. El azul va escrito (`#1face3`, el `brand-blue` del sitio)
+          porque la intranet no tiene ese token. Fondo opaco (el azul mezclado con blanco, no
+          `/10`): la barra es fija y la página pasa por debajo al bajar. La etiqueta va en azul
+          oscuro y no en blanco: sobre el azul, el blanco da 2,6:1 y el `#0d1526`, 7:1. */}
+      <div className="sticky top-0 z-[200] flex items-center border-b border-[#1face3]/40 bg-[color-mix(in_srgb,#1face3_12%,white)] px-4 py-1.5 lg:px-8">
+        <span className="rounded-full bg-[#1face3] px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-[#0d1526]">
+          Vista previa
         </span>
-        <span className="preview-aviso-nota">
-          {version.estado === 'archivado'
-            ? 'Esta es una versión archivada (respaldo). Puedes restaurarla desde la sección de respaldos.'
-            : esPlantilla
-            ? 'Así quedarán el menú y el pie en todas las secciones.'
-            : 'Así quedará la página. Para publicarla, vuelve a la cola de revisión.'}
-        </span>
-        <a href={volverA} className="preview-aviso-volver">
-          ← Volver
+        {/* `<a>` y no `Link`: la cola de revisión y Respaldos están en el sitio web. */}
+        <a
+          href={volverA}
+          className="ml-auto inline-flex h-11 items-center gap-1.5 rounded-[16px] px-3 text-sm font-semibold text-[#0d1526] transition-colors hover:bg-[#1face3]/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0d1526]"
+        >
+          <ArrowLeftIcon className="size-4" aria-hidden="true" />
+          Volver
         </a>
       </div>
 
