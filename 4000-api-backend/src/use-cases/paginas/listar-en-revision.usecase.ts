@@ -13,33 +13,53 @@ import { Op } from 'sequelize';
 export const listarEnRevision = async () => {
   const versiones = await PaginaRepository.listarEnRevision();
 
-  // Si alguna versión no tiene autor directo ni creador de página enlazado (ej. registros previos o seeds),
-  // buscamos en la bitácora de auditoría el nombre de usuario que envió a revisión o guardó el borrador.
-  const paginasSinAutor = versiones
-    .filter((v) => !v.autor && !v.pagina?.creador)
-    .map((v) => v.paginaId)
-    .filter(Boolean);
-
+  // Consultamos en la bitácora de auditoría la fecha exacta del envío ('enviar_revision')
+  // y el autor si la versión no lo tiene enlazado directamente.
+  const todasPaginaIds = versiones.map((v) => v.paginaId).filter(Boolean);
   const logsPorPagina = new Map<string, string>();
-  if (paginasSinAutor.length > 0) {
+  const fechasEnvio = new Map<string, Date>();
+
+  if (todasPaginaIds.length > 0) {
     try {
       const logs = await ContentAuditLog.findAll({
         where: {
-          entidad_id: { [Op.in]: paginasSinAutor },
+          entidad_id: { [Op.in]: todasPaginaIds },
           accion: { [Op.in]: ['enviar_revision', 'guardar_borrador', 'autoguardar_borrador', 'crear'] },
-          usuario_nombre: { [Op.ne]: null },
         },
         order: [['created_at', 'DESC']],
       });
+
       for (const log of logs) {
         if (log.usuario_nombre && !logsPorPagina.has(log.entidad_id)) {
           logsPorPagina.set(log.entidad_id, log.usuario_nombre);
+        }
+
+        if (log.accion === 'enviar_revision') {
+          const campoVersion = log.campos_modificados?.find((c: any) => c.campo === 'version');
+          const numVer = campoVersion?.despues;
+          const clave = numVer !== undefined && numVer !== null ? `${log.entidad_id}:${numVer}` : log.entidad_id;
+          const fechaLog = (log as any).createdAt || log.created_at || (log as any).dataValues?.createdAt;
+          if (fechaLog) {
+            if (!fechasEnvio.has(clave)) {
+              fechasEnvio.set(clave, fechaLog);
+            }
+            if (!fechasEnvio.has(log.entidad_id)) {
+              fechasEnvio.set(log.entidad_id, fechaLog);
+            }
+          }
         }
       }
     } catch {
       // Si la consulta de auditoría falla, continúa con los datos disponibles
     }
   }
+
+  // Ordenamos para que las páginas enviadas más recientemente aparezcan primero
+  versiones.sort((a, b) => {
+    const fA = fechasEnvio.get(`${a.paginaId}:${a.numeroVersion}`) || fechasEnvio.get(a.paginaId) || a.creadoEn;
+    const fB = fechasEnvio.get(`${b.paginaId}:${b.numeroVersion}`) || fechasEnvio.get(b.paginaId) || b.creadoEn;
+    return new Date(fB).getTime() - new Date(fA).getTime();
+  });
 
   return versiones.map((v) => {
     const usuarioRelacionado = v.autor || v.pagina?.creador;
@@ -57,6 +77,11 @@ export const listarEnRevision = async () => {
       nombreCompleto = logsPorPagina.get(v.paginaId) || null;
     }
 
+    const fechaEnvio =
+      fechasEnvio.get(`${v.paginaId}:${v.numeroVersion}`) ||
+      fechasEnvio.get(v.paginaId) ||
+      v.creadoEn;
+
     return {
       id: v.id,
       paginaId: v.paginaId,
@@ -67,7 +92,7 @@ export const listarEnRevision = async () => {
       // Lo que quien editó dice que cambió: es lo primero que necesita leer quien
       // va a aprobar o rechazar, antes incluso de abrir la vista previa.
       comentario: v.comentarioCambios ?? null,
-      creadoEn: v.creadoEn,
+      creadoEn: fechaEnvio,
       autor: nombreCompleto
         ? {
             id: id || '',

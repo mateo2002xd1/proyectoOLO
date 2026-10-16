@@ -1891,47 +1891,64 @@ El Editor Visual es un entorno interactivo que permite maquetar en vivo los cont
 
 ##### 3.4.3.3.1. Estructura y Paneles del Editor
 
-Al ingresar a la edición de una página o del menú y pie, la pantalla se organiza en cuatro zonas de trabajo principales y una barra de herramientas superior:
+Al ingresar a la edición de una página o del menú y pie, la pantalla se organiza en cuatro zonas de trabajo principales:
 
 > **[Captura: Interfaz General del Editor Visual]**
-> *Vista panorámica del Editor Visual mostrando la barra superior, la franja de modos, el panel izquierdo, el lienzo interactivo central y el inspector de propiedades derecho.*
+> *Vista panorámica del Editor Visual mostrando el panel izquierdo (bloques y capas), la barra superior de herramientas, el lienzo interactivo central y el inspector de propiedades derecho.*
 >
 > **[Captura: Interfaz General del Editor Visual (Móvil)]**
 > *Vista general del Editor Visual adaptada a pantallas móviles. (Móvil).*
 
-1. **Franja lateral de selección de modo («Bloques» y «Capas»):**
-   Ubicada en el borde extremo izquierdo de la pantalla, permite alternar entre dos vistas de trabajo esenciales:
-   * *Pestaña «Bloques» (Ícono de cuadrícula):* Despliega el catálogo de componentes prediseñados disponibles para insertar en la página.
-   * *Pestaña «Capas» (Ícono de lista jerárquica):* Despliega el árbol ordenado de todos los bloques presentes actualmente en el lienzo, facilitando seleccionar cualquier elemento de forma directa sin necesidad de desplazarse verticalmente por la página.
+1. **Panel lateral izquierdo (Selector de modos: Catálogo de Bloques y Explorador de Capas):**
+   Ubicado en el costado izquierdo de la pantalla, dispone de un selector superior con dos pestañas para alternar entre dos vistas de trabajo esenciales:
+   * **Modo «Bloques» (Ícono de cuadrícula):** Despliega el catálogo de componentes prediseñados organizados por categorías temáticas (textos, llamadas a la acción, multimedia, indicadores, etc.), listos para arrastrar y soltar hacia el lienzo de trabajo.
 
-> **[Captura: Franja Lateral de Modos - Bloques y Capas]**
-> *Franja vertical izquierda para alternar entre el catálogo de bloques y el árbol de capas.*
+> **[Captura: Panel Izquierdo - Catálogo de Bloques]**
+> *Panel lateral izquierdo desplegando el catálogo de componentes disponibles clasificados por categorías temáticas.*
 >
-> **[Captura: Franja Lateral de Modos - Bloques y Capas (Móvil)]**
-> *Franja de modos adaptada a dispositivos móviles. (Móvil).*
+> **[Captura: Panel Izquierdo - Catálogo de Bloques (Móvil)]**
+> *Catálogo de componentes en el panel lateral adaptado a dispositivo móvil. (Móvil).*
 
-2. **Panel lateral izquierdo (Catálogo de Bloques y Explorador de Capas):**
-   Panel desplegable cuyo contenido responde a la pestaña activa en la franja lateral:
-   * *En modo Bloques:* Muestra los componentes clasificados por categorías temáticas (textos, llamadas a la acción, multimedia, indicadores, etc.), listos para arrastrar hacia el lienzo.
-   * *En modo Capas:* Presenta la lista vertical de bloques ordenados de arriba hacia abajo tal como aparecen en la página; al hacer clic sobre una capa, el bloque se resalta inmediatamente en el lienzo y despliega sus propiedades en el panel derecho.
+   * **Modo «Capas» (Ícono de lista jerárquica):** Despliega el árbol ordenado de todos los bloques presentes actualmente en la página; al hacer clic sobre una capa, el bloque correspondiente se resalta de inmediato en el lienzo y abre sus propiedades en el inspector derecho, permitiendo seleccionar cualquier elemento sin tener que desplazarse verticalmente por la página.
 
-> **[Captura: Panel Izquierdo - Catálogo de Bloques y Capas]**
-> *Panel lateral izquierdo con la lista de bloques disponibles o el esquema jerárquico de capas.*
+> **[Captura: Panel Izquierdo - Explorador de Capas]**
+> *Panel lateral izquierdo mostrando el esquema jerárquico de bloques y capas ordenados según su posición en la página.*
 >
-> **[Captura: Panel Izquierdo - Catálogo de Bloques y Capas (Móvil)]**
-> *Panel lateral izquierdo desplegado en pantalla móvil. (Móvil).*
+> **[Captura: Panel Izquierdo - Explorador de Capas (Móvil)]**
+> *Explorador jerárquico de capas en el panel lateral adaptado a dispositivo móvil. (Móvil).*
 
-3. **Lienzo interactivo central (Área de maquetación en vivo):**
-   Zona principal de trabajo donde se visualiza el contenido exactamente como se verá en el portal final (maquetación *WYSIWYG*). Permite soltar nuevos bloques en cualquier posición, seleccionarlos con un clic para editarlos, reorganizarlos verticalmente desde su agarradera de arrastre o retirarlos mediante su ícono de papelera.
+2. **Barra de herramientas superior (Cabecera editorial y controles de sesión):**
+   Franja horizontal fija en la parte superior del editor que organiza la información de contexto y los controles operativos:
+   * **Sector izquierdo (Identificación y estado de la página):**
+     * *Plegado del panel lateral:* Botón con ícono para ocultar o desplegar el panel izquierdo de bloques y capas según se requiera mayor espacio de trabajo en el lienzo.
+     * *Bandera de la página (Ruta y estado de versión):* Recuadro informativo que presenta la ruta de la página (por ejemplo: `/inicio`) y la etiqueta con el estado vigente de la versión (*Borrador*, *En revisión*, *Publicado* o *Rechazado*).
+     * *Aviso de observaciones de rechazo:* Si la versión fue devuelta previamente por el Administrador, se ubica una alerta interactiva junto a la bandera que permite consultar las correcciones solicitadas sin salir del editor.
+   * **Sector derecho (Herramientas, historial y acciones editoriales):**
+     * *Historial de edición:* Botones con íconos de flecha curva para **Deshacer** y **Rehacer** modificaciones efectuadas durante la sesión activa en el navegador.
+     * *Avisos de accesibilidad y concurrencia:* Mensajes de advertencia contextuales si faltan textos alternativos obligatorios en imágenes antes de remitir a revisión, o si otro funcionario tomó el control de la página.
+     * *Indicador de autoguardado:* Notificación en tiempo real que señala el estado del respaldo automático en segundo plano (*«Guardando…»*, *«Sin guardar»* cuando existen cambios recientes o *«Guardado a las [hora]»*).
+     * *Botonera de acciones editoriales:*
+       * **Botón Salir** (Ícono de detener, con texto de ayuda *«Salir sin publicar»*): Cierra el editor y devuelve al usuario al portal. Si existen cambios pendientes de almacenar, despliega la ventana modal de confirmación (*«¿Salir del editor?»*) para evitar pérdidas involuntarias de trabajo.
+       * **Botón Guardar borrador** (Ícono de disquete, con texto de ayuda *«Guardar borrador»*): Almacena manualmente el estado actual del borrador en el servidor sin publicarlo ni remitirlo a revisión.
+       * **Botón Enviar a revisión** (Ícono de envío, con texto de ayuda *«Enviar a revisión»*): Disponible para los editores tanto en el Sitio Web como en la Intranet. Despliega la ventana modal para ingresar el comentario descriptivo de cambios obligatorio y traslada la versión a la cola de revisión del Administrador. El editor nunca publica directamente; toda versión requiere obligatoriamente la aprobación y publicación por parte del Administrador desde el Panel Administrativo.
 
-> **[Captura: Lienzo Interactivo Central]**
-> *Área central donde se maquetan y visualizan los contenidos en tiempo real.*
+> **[Captura: Barra de Herramientas Superior del Editor]**
+> *Barra superior del editor mostrando la bandera de ruta y estado a la izquierda, y el historial, estado de autoguardado y botones de acción a la derecha.*
 >
-> **[Captura: Lienzo Interactivo Central (Móvil)]**
-> *Lienzo interactivo central en vista móvil. (Móvil).*
+> **[Captura: Barra de Herramientas Superior del Editor (Móvil)]**
+> *Barra superior de herramientas adaptada a interfaz móvil. (Móvil).*
 
-4. **Inspector de propiedades (Panel lateral derecho):**
-   Formulario dinámico y contextual que se habilita al seleccionar cualquier bloque del lienzo o del árbol de capas. Presenta los campos para personalizar textos, tipografías, colores de fondo, márgenes, enlaces de destino y selectores de medios. Si no hay ningún bloque seleccionado, muestra las propiedades generales de la página (título, descripción y metadatos).
+3. **Lienzo central de trabajo (Área visual de edición):**
+   Espacio principal donde se construye la página y se visualiza en tiempo real tal como la verá el usuario al publicarse. Cada bloque incorporado exhibe sus colores, tipografías y estructura definitiva de forma inmediata, permitiendo maquetar con total fidelidad visual sin requerir ventanas intermedias ni recargas.
+
+> **[Captura: Lienzo Central de Trabajo]**
+> *Área central del editor donde se visualiza y construye la página en tiempo real.*
+>
+> **[Captura: Lienzo Central de Trabajo (Móvil)]**
+> *Lienzo central de trabajo adaptado a pantalla móvil. (Móvil).*
+
+4. **Inspector de propiedades (Panel lateral derecho de configuración):**
+   Formulario dinámico y contextual que se habilita al seleccionar cualquier bloque del lienzo o del árbol de capas. Presenta los campos para personalizar contenidos, títulos, textos, tipografías, alineación, colores de fondo, márgenes, enlaces de destino y selectores de medios (con carga de imágenes o documentos adjuntos). Si no hay ningún bloque seleccionado, muestra las propiedades generales de la página (título, descripción y metadatos).
 
 > **[Captura: Panel Derecho - Inspector de Propiedades]**
 > *Panel lateral derecho para configurar contenidos, medios, enlaces y estilos del bloque seleccionado.*
@@ -1939,20 +1956,90 @@ Al ingresar a la edición de una página o del menú y pie, la pantalla se organ
 > **[Captura: Panel Derecho - Inspector de Propiedades (Móvil)]**
 > *Inspector de propiedades adaptado a pantalla móvil. (Móvil).*
 
-5. **Barra de herramientas superior (Cabecera editorial):**
-   Franja horizontal fija en la parte superior del editor que reúne los controles de gestión de la sesión:
-   * *Botón Salir (extremo izquierdo):* Cierra el entorno de edición y regresa al portal, alertando si existen cambios sin guardar.
-   * *Ruta y estado (centro):* Informa la dirección web de la página (`/[slug]`) y el estado vigente de la versión (*Borrador*, *En revisión*, *Publicado* o *Rechazado*).
-   * *Historial (intermedio):* Botones **Deshacer** y **Rehacer** para revertir o reaplicar modificaciones recientes.
-   * *Acciones editoriales (extremo derecho):* Botones para **«Guardar borrador»** y **«Enviar a revisión»** (en el Sitio Web) o guardado y publicación directa (en la Intranet).
+##### 3.4.3.3.2. Barra de Herramientas Contextual del Bloque (Controles de Acción en el Lienzo)
 
-> **[Captura: Barra de Herramientas Superior del Editor]**
-> *Barra superior del editor con botón de salida, ruta URL, estado de versión, historial y controles de guardado.*
+Al hacer clic o situar el cursor sobre cualquier bloque en el lienzo, el componente queda delimitado por un marco de selección y despliega en su parte superior una barra flotante de herramientas con controles de acción directa:
+
+1. **Agarradera de arrastre (Ícono de seis puntos):**
+   Permite mantener presionado el botón del ratón sobre el bloque para moverlo y reubicarlo verticalmente a lo largo de la página. Durante el movimiento, el editor traza una línea guía indicadora que señala la posición exacta donde se insertará el bloque al soltar el cursor.
+
+> **[Captura: Agarradera de Arrastre de Bloque]**
+> *Uso de la agarradera de arrastre de seis puntos para desplazar libremente un bloque en el lienzo.*
 >
-> **[Captura: Barra de Herramientas Superior del Editor (Móvil)]**
-> *Barra superior de herramientas adaptada a interfaz móvil. (Móvil).*
+> **[Captura: Agarradera de Arrastre de Bloque (Móvil)]**
+> *Control de arrastre para mover bloques en pantalla móvil. (Móvil).*
 
-##### 3.4.3.3.2. Funcionalidades y Operación en el Editor
+2. **Controles de desplazamiento vertical (Flechas Arriba y Abajo):**
+   Permiten subir o bajar el bloque una posición con un solo clic. Esta opción facilita reorganizar el orden de los elementos con total precisión sin necesidad de arrastrar el componente.
+
+> **[Captura: Botones de Desplazamiento Vertical de Bloque]**
+> *Controles de flechas en la barra contextual para subir o bajar el bloque una posición.*
+>
+> **[Captura: Botones de Desplazamiento Vertical de Bloque (Móvil)]**
+> *Botones de desplazamiento vertical en dispositivo móvil. (Móvil).*
+
+3. **Botón Duplicar (Ícono de páginas superpuestas):**
+   Genera una copia idéntica del bloque seleccionado, duplicando todos sus textos, imágenes, enlaces y opciones de estilo, e insertándolo inmediatamente debajo del original. Resulta de gran utilidad para crear secuencias repetitivas de contenido rápidamente.
+
+> **[Captura: Botón Duplicar Bloque]**
+> *Acción de duplicar para clonar un bloque seleccionado conservando todas sus configuraciones.*
+>
+> **[Captura: Botón Duplicar Bloque (Móvil)]**
+> *Botón de duplicación de bloque en vista móvil. (Móvil).*
+
+4. **Botón Eliminar (Ícono de papelera):**
+   Retira de inmediato el bloque seleccionado del lienzo. El espacio liberado es reacomodado automáticamente por los componentes adyacentes. En caso de supresión accidental, la acción se puede revertir inmediatamente desde el botón **Deshacer** de la barra superior de herramientas.
+
+> **[Captura: Botón Eliminar Bloque]**
+> *Ícono de papelera en la barra flotante para retirar el componente del lienzo.*
+>
+> **[Captura: Botón Eliminar Bloque (Móvil)]**
+> *Botón de eliminación de bloque en interfaz móvil. (Móvil).*
+
+##### 3.4.3.3.3. Opciones de Edición y Configuración de Bloques (Menú Lateral)
+
+Al hacer clic sobre cualquier bloque en el lienzo o al seleccionarlo desde la lista de capas, el menú lateral de configuración despliega el formulario de propiedades correspondiente al elemento activo. Las opciones varían según el tipo de bloque seleccionado, permitiendo personalizar aspectos como la información visual, la estructura, los contenidos y los recursos adjuntos:
+
+1. **Visibilidad de elementos (Mostrar u ocultar títulos y secciones):**
+   * **Conmutadores de visibilidad:** Casillas o botones de selección (*«Sí»* / *«No»*) para definir si el bloque debe exhibir u ocultar su título principal, subtítulos, fechas de actualización o franjas informativas.
+   * **Adaptabilidad de presentación:** Permite mantener una estructura limpia y compacta cuando se requiere presentar solo el contenido esencial, o desplegar encabezados completos para guiar al lector en secciones más extensas.
+
+2. **Personalización visual y colores de fondo:**
+   * **Esquemas y tonalidades de fondo:** Selectores para escoger el estilo de fondo del bloque (como fondo claro, fondo neutro atenuado o tono institucional destacado), facilitando la separación visual ordenada entre las distintas secciones de la página.
+   * **Alineación y espaciado:** Opciones para definir la orientación de los contenidos (alineación a la izquierda, centrada o justificada) y regular la separación superior e inferior para evitar saturación visual.
+
+3. **Redacción de textos y edición enriquecida:**
+   * **Campos de texto directo:** Casillas para escribir títulos, subtítulos, nombres de tarjetas y etiquetas breves.
+   * **Editor de texto enriquecido:** En bloques descriptivos o de contenido informativo extenso, el menú integra una barra de herramientas de redacción que permite estructurar el texto con formato:
+     * Aplicar **negrita**, *cursiva* y destacados.
+     * Crear listas con viñetas o listas numeradas ordenadas paso a paso.
+     * Insertar citas textuales o párrafos destacados.
+     * Vincular palabras clave con enlaces hacia otras secciones del portal o portales externos.
+
+4. **Carga y subida de archivos multimedia:**
+   * **Subir imágenes desde el equipo:** Botón de carga directa para incorporar fotografías, gráficos, logotipos o infografías almacenados en el computador del usuario.
+   * **Texto alternativo obligatorio:** Para cumplir las normas de accesibilidad y permitir que personas con discapacidad visual o lectores de pantalla comprendan la imagen, el sistema exige ingresar una descripción textual breve en la casilla *«Texto alternativo»*.
+   * **Subir documentos adjuntos:** Selector para cargar y asociar archivos descargables en formato PDF o planillas oficiales a los bloques de recursos o boletines.
+   * **Enlaces de videos externos:** Casilla para pegar enlaces de videos de plataformas oficiales (como YouTube), donde el sistema detecta de forma automática el identificador y genera una previsualización de la miniatura en tiempo real.
+
+5. **Configuración de enlaces y botones de destino:**
+   * **Texto del botón:** Campo para escribir la frase o llamado a la acción visible para el usuario (por ejemplo: *«Consultar catálogo»*, *«Descargar reporte»*).
+   * **Dirección de destino:** Casilla para registrar la ruta interna del portal (como `/contacto`) o una dirección web externa protegida.
+   * **Estilo y presentación del botón:** Selección del aspecto visual (botón de acción principal con fondo resaltado, botón secundario delineado o botón acompañado de un ícono representativo).
+
+6. **Administración de colecciones y listas de elementos:**
+   * En componentes estructurados con múltiples elementos repetitivos (como acordeones de preguntas frecuentes, tarjetas de indicadores, listas de enlaces o pestañas temáticas), el panel lateral incluye controles para:
+     * **Añadir nuevos elementos:** Botón con ícono de suma (*«Añadir elemento»*) para agregar una nueva tarjeta o fila a la colección.
+     * **Reordenar la lista:** Controles para desplazar los ítems hacia arriba o hacia abajo y modificar su orden de presentación en pantalla.
+     * **Eliminar elementos individuales:** Botón de papelera para retirar un ítem específico de la colección sin alterar el resto del bloque.
+
+> **[Captura: Opciones de Edición y Configuración de Bloque]**
+> *Menú lateral desplegando los campos para editar textos, visibilidad de títulos, colores, carga de imágenes y enlaces.*
+>
+> **[Captura: Opciones de Edición y Configuración de Bloque (Móvil)]**
+> *Opciones de configuración del bloque adaptadas a pantalla móvil. (Móvil).*
+
+##### 3.4.3.3.4. Funcionalidades y Operación en el Editor
 
 El editor proporciona un conjunto de herramientas y flujos automáticos diseñados para una maquetación fluida y segura:
 
@@ -1978,29 +2065,7 @@ El editor proporciona un conjunto de herramientas y flujos automáticos diseñad
 > **[Captura: Edición de Propiedades en Vivo (Móvil)]**
 > *Edición de propiedades del bloque en pantalla móvil. (Móvil).*
 
-3. **Reorganización de bloques en el lienzo:**
-   * Seleccionar el bloque que se desea desplazar en el lienzo para desplegar su barra contextual superior.
-   * Hacer clic sostenido sobre el ícono de agarradera de arrastre (seis puntos) y mover el bloque verticalmente hacia arriba o hacia abajo.
-   * Una línea guía indicadora resalta la nueva posición; al soltar el ratón, el bloque queda reubicado en su nuevo orden.
-
-> **[Captura: Reordenar Bloques en el Lienzo]**
-> *Desplazamiento vertical de un bloque mediante su agarradera de arrastre para alterar el orden de los elementos.*
->
-> **[Captura: Reordenar Bloques en el Lienzo (Móvil)]**
-> *Reordenamiento de bloques en el lienzo en dispositivo móvil. (Móvil).*
-
-4. **Eliminación de bloques del lienzo:**
-   * Hacer clic sobre el bloque que se desea retirar para seleccionarlo.
-   * En su barra contextual superior, pulsar el **ícono de papelera**.
-   * El componente se elimina de inmediato del lienzo y los bloques restantes se reacomodan fluidamente.
-
-> **[Captura: Eliminar Bloque del Lienzo]**
-> *Barra contextual de bloque con ícono de papelera para retirar el componente del lienzo.*
->
-> **[Captura: Eliminar Bloque del Lienzo (Móvil)]**
-> *Eliminación de bloque desde la barra contextual en vista móvil. (Móvil).*
-
-5. **Historial de cambios (Deshacer y Rehacer):**
+3. **Historial de cambios (Deshacer y Rehacer):**
    * **Botón Deshacer:** Revierte la última acción efectuada en el lienzo (inserción, desplazamiento, cambio de texto o borrado de un bloque).
    * **Botón Rehacer:** Vuelve a aplicar la acción que había sido deshecha previamente.
    *(Nota: El historial opera de manera local durante la sesión activa en el navegador. Al salir del editor o refrescar la página, el historial local se reinicia).*
@@ -2011,7 +2076,7 @@ El editor proporciona un conjunto de herramientas y flujos automáticos diseñad
 > **[Captura: Controles de Historial Deshacer Rehacer (Móvil)]**
 > *Botones de deshacer y rehacer en barra superior móvil. (Móvil).*
 
-6. **Autoguardado inteligente y guardado manual de borradores:**
+4. **Autoguardado inteligente y guardado manual de borradores:**
    * **Autoguardado en segundo plano:** El editor detecta las modificaciones y efectúa guardados automáticos de borrador periódicamente, mostrando avisos dinámicos en la barra superior (*«Guardando…»*, *«Sin guardar»* o *«Guardado a las [hora]»*).
    * **Guardar borrador:** Botón con ícono de disquete que permite almacenar manualmente el estado vigente del borrador en el servidor en cualquier instante sin alterar la versión pública en producción.
 
@@ -2021,11 +2086,11 @@ El editor proporciona un conjunto de herramientas y flujos automáticos diseñad
 > **[Captura: Guardado Manual de Borrador (Móvil)]**
 > *Guardado de borrador en interfaz móvil. (Móvil).*
 
-7. **Envío a revisión y publicación:**
-   * **Validación automática de accesibilidad:** Al pulsar el botón **«Enviar a revisión»** (en el Sitio Web) o publicar, el sistema ejecuta un escaneo preventivo de accesibilidad (asegurando textos alternativos en imágenes y títulos en recursos incrustados).
+5. **Envío a revisión del contenido:**
+   * **Validación automática de accesibilidad:** Al pulsar el botón **«Enviar a revisión»** (disponible tanto en el Sitio Web como en la Intranet), el sistema ejecuta una comprobación preventiva asegurando la presencia de textos alternativos obligatorios en imágenes y títulos en recursos incrustados.
    * **Comentario obligatorio de versión:** Si supera las comprobaciones, el sistema despliega una ventana modal donde es obligatorio redactar un **comentario de cambios** descriptivo (entre 10 y 100 caracteres) que resuma los ajustes efectuados para la bitácora de versiones.
-   * **Transferencia de versión:** Al confirmar, el borrador pasa a estado *En revisión* y queda disponible en la bandeja administrativa del Administrador para su aprobación y despliegue final (ver procedimiento de aprobación en [Sección 3.4.2.5: Páginas en Revisión](#3425-aprobación-y-publicación-de-contenidos-páginas-en-revisión)).
-   * **Panel de observaciones de rechazo:** Si una versión anterior fue devuelta por el Administrador, el editor exhibe un panel superior de alerta detallando los motivos y observaciones del rechazo para orientar las correcciones requeridas.
+   * **Transferencia de versión a la cola administrativa:** Al confirmar el envío, la versión adquiere el estado *En revisión* y se traslada a la bandeja de **«Páginas en revisión»** del Administrador, quien es la única persona que puede evaluarla, aprobarla y publicarla definitivamente en producción (ver procedimiento de aprobación en [Sección 3.4.2.5: Páginas en Revisión](#3425-aprobación-y-publicación-de-contenidos-páginas-en-revisión)).
+   * **Aviso de observaciones de rechazo:** Si una versión anterior fue devuelta por el Administrador, el editor exhibe un panel superior de alerta detallando los motivos del rechazo para guiar las correcciones requeridas.
 
 > **[Captura: Envío a Revisión y Comentario de Versión]**
 > *Ventana modal para el ingreso obligatorio del comentario de cambios antes de remitir la página a revisión.*
@@ -2049,7 +2114,7 @@ El procedimiento para crear una nueva página dinámica en el portal se realiza 
 2. **Diligenciamiento del título y generación automática de dirección:**
    Se despliega la ventana modal **«Nueva página»**:
    * **Nombre:** Digitar el título descriptivo en la casilla *«¿Cómo se llama?»* (por ejemplo: *Observatorio Ocupacional Regional*).
-   * **Generación automática del enlace web permanente:** En tiempo real, el sistema genera la dirección web de acceso permanente (`slug` amigable) a partir del título digitado (por ejemplo: `/observatorio-ocupacional-regional`), garantizando una nomenclatura normalizada y libre de caracteres especiales.
+   * **Generación automática del enlace web permanente:** En tiempo real, el sistema genera la dirección web de acceso permanente a partir del título digitado (por ejemplo: `/observatorio-ocupacional-regional`), garantizando una nomenclatura normalizada y libre de caracteres especiales.
 
 > **[Captura: Formulario de Nueva Página]**
 > *Ventana modal con el campo de título y la dirección web permanente generada automáticamente en tiempo real.*
@@ -2100,7 +2165,7 @@ La plataforma incorpora un mecanismo de seguridad para el retiro definitivo de p
 3. **Ventana modal de confirmación y comprobación de seguridad:**
    Si la página no tiene enlaces activos dependientes en el portal, el sistema habilita el diálogo de confirmación final:
    * **Alerta de página publicada:** Si la página se encuentra publicada en el portal en ese momento, el sistema resalta un mensaje de advertencia prioritario: *«La página está publicada actualmente, si la eliminas, dejará de estar visible para el público de inmediato.»*.
-   * **Información de la página:** Presenta el título de la página y su dirección web (`/[slug]`).
+   * **Información de la página:** Presenta el título de la página y su ruta o dirección web (por ejemplo: `/observatorio-ocupacional-regional`).
    * **Digitación obligatoria de seguridad:** Para habilitar la confirmación, es obligatorio escribir de manera textual y exacta el nombre de la página en la casilla *«Escribe «[Nombre]» para confirmar»*.
 
 > **[Captura: Modal Eliminar Página]**
