@@ -76,7 +76,7 @@ import {
 import { useUsuarios } from '../hooks/use-usuarios';
 import { listarAlertasCaducidad, type AlertaCaducidad } from '../services/alertas-caducidad.service';
 import { CargandoSeccion } from '@/shared/ui/molecules/cargando-seccion';
-import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
+import { AvisoErrorDeCarga } from '@/shared/ui/molecules/aviso-error-de-carga';
 
 /**
  * Grupo colapsable del sidebar con animación de acordeón.
@@ -200,31 +200,59 @@ function ContadorSidebar({ cantidad }: { cantidad: number }) {
 }
 
 /**
+ * Las notificaciones son una sola frase con la misma estructura (pedido del usuario,
+ * 2026-10-15): quién o qué, qué pasó, y «a la espera de tu …», lo que le toca hacer a
+ * quien la lee. Sin paréntesis y sin segunda línea. Una notificación nueva sigue el patrón.
+ */
+
+/** El cuerpo clicable de una notificación: etiqueta y frase, todo lo que no es la flecha. */
+const CUERPO_DE_ALERTA =
+  'flex min-w-0 flex-1 items-center gap-2 rounded-[12px] outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
+
+/** Cuándo vence una cuenta, dicho como se diría: «hoy», «mañana» o «en 5 días». */
+function cuandoVence(alerta: AlertaCaducidad): string {
+  if (alerta.daysLeft <= 0) return 'hoy';
+  if (alerta.daysLeft === 1) return 'mañana';
+  return `en ${alerta.daysLeft} días`;
+}
+
+/**
  * Una alerta de cuenta por vencer: la fila con fondo suave del color de su etiqueta
  * (pedido del usuario, 2026-10-15; antes iba sin fondo). El texto lleva el color de la
  * etiqueta y el botón de la derecha, de 28 px, es el área táctil. La misma fila sale en el
  * modal de Notificaciones y en el aviso temporal de arriba a la derecha.
+ *
+ * Toda la fila salvo la flecha es un enlace a donde se resuelve (pedido del usuario,
+ * 2026-10-15): pulsar la notificación lleva a Usuarios. `onAbrir` cierra lo que la
+ * enseña (el modal o el aviso), que vive en el layout y sobreviviría a la navegación.
  */
 function FilaAlertaCuenta({
   alerta,
   onSolucionar,
+  onAbrir,
 }: {
   alerta: AlertaCaducidad;
   onSolucionar: (email: string) => void;
+  onAbrir?: () => void;
 }) {
   return (
     <div
-      className="group flex w-full items-center gap-2 rounded-[16px] bg-amber-50 px-3 py-2 dark:bg-amber-950/40"
+      className="group flex w-full items-center gap-2 rounded-[16px] bg-amber-50 px-3 py-2 transition-colors has-[a:hover]:bg-amber-100 dark:bg-amber-950/40 dark:has-[a:hover]:bg-amber-900/40"
     >
-      <span className="shrink-0 rounded-full bg-amber-200/80 px-2.5 py-1 text-xs font-semibold text-amber-900 dark:bg-amber-800/60 dark:text-amber-100">
-        Por vencer
-      </span>
-      <p className="min-w-0 flex-1 truncate text-sm text-amber-900 dark:text-amber-100">
-        <Link href="/admin/users" className="font-medium underline hover:no-underline">
-          {alerta.email}
-        </Link>
-        {' '}vence en {alerta.daysLeft} día{alerta.daysLeft !== 1 ? 's' : ''}
-      </p>
+      <Link
+        href="/admin/users"
+        onClick={onAbrir}
+        title={alerta.email}
+        className={`${CUERPO_DE_ALERTA} focus-visible:ring-amber-700`}
+      >
+        <span className="shrink-0 rounded-full bg-amber-200/80 px-2.5 py-1 text-xs font-semibold text-amber-900 dark:bg-amber-800/60 dark:text-amber-100">
+          Por vencer
+        </span>
+        <span className="min-w-0 flex-1 text-sm text-amber-900 dark:text-amber-100">
+          La cuenta de <strong className="font-semibold">{alerta.name?.trim() || alerta.email}</strong> vence{' '}
+          {cuandoVence(alerta)}, a la espera de tu renovación.
+        </span>
+      </Link>
       <button
         type="button"
         onClick={() => onSolucionar(alerta.email)}
@@ -240,26 +268,39 @@ function FilaAlertaCuenta({
   );
 }
 
-/** Una página en revisión, con la misma forma que `FilaAlertaCuenta` en azul. */
+/**
+ * Una página en revisión, con la misma forma que `FilaAlertaCuenta` en azul; pulsarla
+ * lleva a Páginas en revisión.
+ */
 function FilaAlertaRevision({
   pagina,
   onSolucionar,
+  onAbrir,
 }: {
   pagina: PaginaEnRevision;
   onSolucionar: (id: string) => void;
+  onAbrir?: () => void;
 }) {
   return (
     <div
-      className="group flex w-full items-center gap-2 rounded-[16px] bg-blue-50 px-3 py-2 dark:bg-blue-950/40"
+      className="group flex w-full items-center gap-2 rounded-[16px] bg-blue-50 px-3 py-2 transition-colors has-[a:hover]:bg-blue-100 dark:bg-blue-950/40 dark:has-[a:hover]:bg-blue-900/40"
     >
-      <span className="shrink-0 rounded-full bg-blue-200/80 px-2.5 py-1 text-xs font-semibold text-blue-900 dark:bg-blue-800/60 dark:text-blue-100">
-        En revisión
-      </span>
-      <p className="min-w-0 flex-1 truncate text-sm text-blue-900 dark:text-blue-100">
-        <Link href="/admin/revision" className="font-medium underline hover:no-underline">
-          {pagina.titulo}
-        </Link>
-      </p>
+      <Link href="/admin/revision" onClick={onAbrir} className={`${CUERPO_DE_ALERTA} focus-visible:ring-blue-700`}>
+        <span className="shrink-0 rounded-full bg-blue-200/80 px-2.5 py-1 text-xs font-semibold text-blue-900 dark:bg-blue-800/60 dark:text-blue-100">
+          En revisión
+        </span>
+        <span className="min-w-0 flex-1 text-sm text-blue-900 dark:text-blue-100">
+          {pagina.autor?.nombre ? (
+            <>
+              <strong className="font-semibold">{pagina.autor.nombre}</strong> envió a revisión
+            </>
+          ) : (
+            'Se envió a revisión'
+          )}{' '}
+          la versión {pagina.numeroVersion} de <strong className="font-semibold">{pagina.titulo}</strong>{' '}
+          {pagina.ambito === 'intranet' ? 'de la intranet' : 'del sitio web'}, a la espera de tu aprobación.
+        </span>
+      </Link>
       <button
         type="button"
         onClick={() => onSolucionar(pagina.id)}
@@ -295,11 +336,14 @@ function AvisoDeAlertas({
   revisiones,
   onSolucionarCuenta,
   onSolucionarRevision,
+  onAbrir,
 }: {
   cuentas: AlertaCaducidad[];
   revisiones: PaginaEnRevision[];
   onSolucionarCuenta: (email: string) => void;
   onSolucionarRevision: (id: string) => void;
+  /** Al pulsar una: el aviso se va, ya se está yendo a verla. */
+  onAbrir: () => void;
 }) {
   const hayAlgo = cuentas.length + revisiones.length > 0;
   const { montado, cerrando } = useCierreAnimado(hayAlgo);
@@ -320,12 +364,12 @@ function AvisoDeAlertas({
     >
       {visibles.cuentas.map((a) => (
         <div key={claveDeCuenta(a)} className={SOMBRA_DE_AVISO}>
-          <FilaAlertaCuenta alerta={a} onSolucionar={onSolucionarCuenta} />
+          <FilaAlertaCuenta alerta={a} onSolucionar={onSolucionarCuenta} onAbrir={onAbrir} />
         </div>
       ))}
       {visibles.revisiones.map((p) => (
         <div key={claveDeRevision(p)} className={SOMBRA_DE_AVISO}>
-          <FilaAlertaRevision pagina={p} onSolucionar={onSolucionarRevision} />
+          <FilaAlertaRevision pagina={p} onSolucionar={onSolucionarRevision} onAbrir={onAbrir} />
         </div>
       ))}
     </div>,
@@ -403,11 +447,11 @@ function ModalAlertas({
           ) : (
             <div className="space-y-3">
               {cuentasPorVencer.map((a) => (
-                <FilaAlertaCuenta key={claveDeCuenta(a)} alerta={a} onSolucionar={onDismissCuenta} />
+                <FilaAlertaCuenta key={claveDeCuenta(a)} alerta={a} onSolucionar={onDismissCuenta} onAbrir={onCerrar} />
               ))}
 
               {enRevision.map((p) => (
-                <FilaAlertaRevision key={claveDeRevision(p)} pagina={p} onSolucionar={onDismissRevision} />
+                <FilaAlertaRevision key={claveDeRevision(p)} pagina={p} onSolucionar={onDismissRevision} onAbrir={onCerrar} />
               ))}
             </div>
           )}
@@ -761,6 +805,7 @@ export function PanelGeneralLayout({
         revisiones={recientes.revisiones}
         onSolucionarCuenta={handleDismissCuenta}
         onSolucionarRevision={handleDismissRevision}
+        onAbrir={() => setRecientes({ cuentas: [], revisiones: [] })}
       />
       <ModalAlertas
         abierto={isAlertasOpen}
@@ -814,7 +859,8 @@ export function PanelGeneralDashboard() {
   const [itemsPorPaginaActividad, setItemsPorPaginaActividad] = useState(12);
   const [paginasPublicadas, setPaginasPublicadas] = useState<ResumenPaginasPublicadas | null>(null);
   const [errorPaginas, setErrorPaginas] = useState<string | null>(null);
-
+  // Sube con «Reintentar» para volver a pedirlo todo (ver el aviso de arriba).
+  const [versionCarga, setVersionCarga] = useState(0);
 
   useEffect(() => {
     let cancelado = false;
@@ -855,10 +901,23 @@ export function PanelGeneralDashboard() {
     return () => {
       cancelado = true;
     };
-  }, [fetchUsers]);
+  }, [fetchUsers, versionCarga]);
 
   /** El 403 por rol no es una avería: se explica sin alarmar y sin enlace muerto. */
   const sinAccesoAuditoria = errorActividad instanceof ErrorAuditoria && errorActividad.sinAcceso;
+
+  // Con la API caída fallan las tres fuentes a la vez y antes salían tres errores (arriba,
+  // en las tarjetas y en la actividad). Ahora uno solo, arriba, y las tarjetas en blanco
+  // (pedido del usuario, 2026-10-15). El 403 de la bitácora no cuenta: no es una avería.
+  const errorDeCarga =
+    error ?? (errorActividad && !sinAccesoAuditoria ? errorActividad.message : null) ?? errorPaginas;
+
+  const reintentarCarga = () => {
+    setLoading(true);
+    setErrorActividad(null);
+    setErrorPaginas(null);
+    setVersionCarga((v) => v + 1);
+  };
 
   const totalPaginasActividad = Math.max(1, Math.ceil(actividad.length / itemsPorPaginaActividad));
   const paginaActualActividad = Math.min(paginaActividad, totalPaginasActividad);
@@ -879,10 +938,13 @@ export function PanelGeneralDashboard() {
         className="mb-8"
       />
 
-      {error && (
-        <MensajeEstado tipo="error" rol="alert" className="mb-4">
-          {error}
-        </MensajeEstado>
+      {errorDeCarga && (
+        <AvisoErrorDeCarga
+          titulo="No pudimos cargar el panel"
+          mensaje={errorDeCarga}
+          onReintentar={reintentarCarga}
+          className="mb-6"
+        />
       )}
 
       {/* Tres en fila solo desde 1440 px (pedido del usuario, 2026-10-10): por debajo, con
@@ -895,7 +957,8 @@ export function PanelGeneralDashboard() {
         <TarjetaPaginasPublicadas resumen={paginasPublicadas} error={errorPaginas} />
         <TarjetaVisitas resumen={paginasPublicadas} error={errorPaginas} />
         <div className="sm:col-span-2 min-[90rem]:col-span-1">
-          <TarjetaUsuarios users={users} loading={loading} />
+          {/* Sin usuarios por un error, «—» como mientras carga: un 0 sería un dato falso. */}
+          <TarjetaUsuarios users={users} loading={loading || Boolean(error)} />
         </div>
       </div>
 
@@ -908,15 +971,10 @@ export function PanelGeneralDashboard() {
           {errorActividad ? (
             <div className="p-5">
               <CabeceraActividad sinAccesoAuditoria={sinAccesoAuditoria} />
-              <p
-                className={
-                  sinAccesoAuditoria
-                    ? 'mt-3 text-sm text-zinc-500 dark:text-[#94a3b8]'
-                    : 'mt-3 text-sm text-red-600 dark:text-red-300'
-                }
-              >
-                {errorActividad.message}
-              </p>
+              {/* Solo el «sin acceso» se explica aquí; una avería ya la dice el aviso de arriba. */}
+              {sinAccesoAuditoria && (
+                <p className="mt-3 text-sm text-zinc-500 dark:text-[#94a3b8]">{errorActividad.message}</p>
+              )}
             </div>
           ) : (actividad || []).length > 0 ? (
             <>
