@@ -113,11 +113,11 @@ export function TarjetaVisitas({ resumen, error }: Props) {
           {/* Encabezado con título y botón para abrir la ventana de vistas */}
           <div className="flex items-start justify-between gap-2">
             <div>
-              <p className="text-sm font-medium text-zinc-500 dark:text-[#94a3b8]">Visitas</p>
+              <p className="text-sm font-medium text-[#001631] dark:text-[#94a3b8]">Visitas</p>
               {error ? (
                 <p className="mt-1 text-2xl font-bold text-zinc-400 dark:text-zinc-600">—</p>
               ) : (
-                <p className="mt-1 text-2xl font-bold text-zinc-950 dark:text-[#f6f6f6] tabular-nums">
+                <p className="mt-1 text-2xl font-bold text-[#001631] dark:text-[#f6f6f6] tabular-nums">
                   {totalVisitas.toLocaleString('es-CO')}
                 </p>
               )}

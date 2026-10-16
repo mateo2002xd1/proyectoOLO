@@ -377,7 +377,7 @@ interface Props {
 export function TarjetaPaginasPublicadas({ resumen, error }: Props) {
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 ease-out hover:translate-x-1 hover:border-zinc-300 hover:shadow-sm dark:border-[#7db828]/30 dark:bg-[#131b2f] dark:hover:border-[#334155]">
-      <p className="text-sm text-zinc-500 dark:text-[#94a3b8]">Páginas publicadas</p>
+      <p className="text-sm text-[#001631] dark:text-[#94a3b8]">Páginas publicadas</p>
 
       {error ? (
         // Un guion, no un cero: cero es un dato y aquí no se pudo leer ninguno.
@@ -387,7 +387,7 @@ export function TarjetaPaginasPublicadas({ resumen, error }: Props) {
         </>
       ) : (
         <>
-          <p className="mt-1 text-2xl font-bold text-zinc-950 dark:text-[#f6f6f6]">
+          <p className="mt-1 text-2xl font-bold text-[#001631] dark:text-[#f6f6f6]">
             {resumen?.total ?? 0}
           </p>
 
