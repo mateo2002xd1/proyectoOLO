@@ -5,6 +5,68 @@
 
 ---
 
+## sesión 15-10-2026 (39.ª parte): revisión de seguridad, lint, código muerto, espagueti y archivos sin uso (sin cambios)
+
+**Qué se pidió:** revisar errores de seguridad y de ESLint, código muerto, código espagueti, imágenes y repositorios que no se usan. Es solo diagnóstico: no se tocó código. Cada hallazgo de herramienta se comprobó a mano antes de anotarlo.
+
+**Seguridad**
+
+| Hallazgo | Riesgo | Qué hacer |
+|---|---|---|
+| `file-type@16.5.4` en la API (GHSA-5v7r-6r5c-r473): un archivo ASF malformado deja el detector en un bucle infinito | Medio. Un archivo armado a propósito congela la API entera (un solo hilo). Hace falta sesión para subir, así que solo lo dispara alguien con cuenta | Subir a ≥ 21.3.1. Es ESM puro y la API compila a CommonJS (nota en `guardar-excel-de-carga.ts`), pero Node 22.20 ya hace `require()` de ESM: probarlo antes de descartarlo |
+| La API no tiene ESLint; las apps usan solo `eslint-config-next`, sin reglas de seguridad | Bajo hoy, porque la revisión manual salió limpia; es lo que evita que vuelva | `typescript-eslint` + `eslint-plugin-security` en la API; el plugin también en las dos apps |
+| Revisión manual: `dangerouslySetInnerHTML`, `eval`, SQL interpolado, `child_process`, `decodeJwt`, CORS | Sin hallazgos | El HTML del editor y del pie de la intranet lo sanea la API al guardar (`sanitizar-contenido.ts`); `LetraDelPanel` es texto fijo; el único SQL interpolado es una constante (`pg_advisory_xact_lock`); `decodeJwt` de `intranet/sesion.ts` va detrás del proxy, que verifica la firma; CORS limitado a las dos apps |
+
+`npm audit --omit=dev`: sitio-web y la intranet, 0 vulnerabilidades; la API, solo la de `file-type`.
+
+**Código muerto (confirmado: nadie lo importa)**
+
+| Qué | Dónde |
+|---|---|
+| `shared/lib/auth-server.ts` (verificación para Route Handlers; quedó sin uso cuando las subidas pasaron a la API) | Las dos apps |
+| `shared/lib/types.ts` | Las dos apps |
+| `carga-fuentes-futuras.tsx`, `use-cargas-fuentes-futuras.ts` y tres funciones de `observatorio.service.ts` (`subir…`, `listar…`, `eliminarCargaFuentesFuturas`) | sitio-web. Se dejó así a propósito el 2026-10-09: decidir si se borra |
+| Import `MINUTOS_DE_INACTIVIDAD` sin uso en `inactividad/mensaje-de-cierre.ts` | Las dos apps (es el único aviso de ESLint) |
+| Dependencias sin ningún import: `docx-preview`, `file-type`, `framer-motion`, `handsontable` | sitio-web |
+| Dependencias sin ningún import: `@headlessui/react`, `@material-tailwind/react`, `clsx`, `tailwind-merge`, `file-type` | intranet |
+| `@types/bcryptjs`: `bcryptjs` 3 ya trae sus tipos | API (devDependency) |
+
+Además, knip cuenta ~120 exportaciones sin uso en sitio-web, ~30 en la intranet y ~30 en la API. Casi todas son reexportaciones de los `index.ts` de cada feature que nadie consume, o exportaciones usadas solo dentro de su propio archivo. Prioridad baja.
+
+**Archivos de `public/` que no menciona el código**
+
+| App | Archivos |
+|---|---|
+| sitio-web | `assets/docs/DE-POL-003-….pdf` y `GOR-POL-001-….pdf`: **no son PDF**, son la página HTML «404 Not Found» guardada con esa extensión (230 bytes); los PDF reales los sirve `api/docs/pdf` desde CompromISO. También `svg/accesos.svg`, `svg/actualizaciones.svg` (la navegación usa componentes) y `svg/olo-logo-blanco-intranet.svg` |
+| intranet | `img/poster3.png` (1,3 MB), `Video-encuesta.png` (832 KB), `Seguimiento-laboral.png` (597 KB), `editor-locked-illustration.jpg` (507 KB), `ilustracion-encuesta.jpg` (435 KB), `seguimiento-dashboard-2.svg` (136 KB), `pregunta-s1.png`, `preguntaf1.png`, `preguntaf2.png`, `svg/borrar.svg`, `svg/olo-logo-blanco-intranet.svg`: unos 3,8 MB |
+
+> Antes de borrar una imagen hay que buscarla también en el contenido de las páginas guardado en la base (Neon): un editor pudo elegirla en Puck, y eso no aparece en el código.
+
+**Espagueti y capas**
+
+| Hallazgo | Detalle |
+|---|---|
+| El controlador toca Sequelize | `pagina.controller.ts` abre 6 transacciones (`sequelize.transaction`); la guía (`1-guia` §4) dice que un controller nunca toca Sequelize |
+| Casos de uso que consultan sin repositorio | 16 archivos de `use-cases/` llaman a los modelos directamente (`listar-usuarios`, `eliminar-seccion`, `restaurar-version-anterior`, `obtener-version-editable`, `login`…) |
+| Archivos enormes | `puck.config.tsx`: 2310 líneas en sitio-web y 1442 en la intranet; `puck-editor-wrapper.tsx`: ~1000 en cada una; `panel-general.tsx`: 1023. Candidatos a partir por bloque |
+| Duplicado entre apps | 8 archivos idénticos y ~12 al 90 % o más. Casi todo es interfaz, que por decisión del proyecto se escribe en cada app; lo que sí es lógica y se podría unificar: `use-bloqueo-de-edicion.ts` (74 %), `edicion.service.ts`, `model/rutas.ts` |
+
+**Descartado tras comprobarlo** (falsos positivos de knip): `@olo/blocks-renderer` y `@olo/upload-policy` sí se usan (se copian con `sync:paquetes` y knip no lo ve); `pg` y `pg-hstore` los carga Sequelize por dentro; `pagina.routes.ts` (778 líneas) es documentación OpenAPI en un 77 %, no lógica; los 14 repositorios de la API y los 7 paquetes `@olo/*` tienen todos uso.
+
+**Verificación.**
+
+| Comprobación | Resultado |
+|---|---|
+| `npx eslint .` en sitio-web y en la intranet | 0 errores, 1 aviso en cada una (`MINUTOS_DE_INACTIVIDAD`) |
+| `tsc --noEmit --noUnusedLocals --noUnusedParameters` en la API | Solo `queryInterface` sin usar en la migración 036 (la firma la impone el migrador) |
+| `npm audit --omit=dev` en las tres | Solo `file-type` en la API |
+| `npx knip@5` en las tres | Resultados de arriba, revisados uno a uno con grep |
+| Script propio: archivos de `public/` sin mención en el repo | Listas de arriba |
+
+**Pendiente al cierre:** decidir qué se borra (código muerto, dependencias, imágenes tras consultar Neon, la tarjeta de fuentes futuras); actualizar `file-type` en la API; poner ESLint en la API.
+
+---
+
 ## sesión 15-10-2026 (38.ª parte): icono de cerrar nuevo en las notificaciones y en el buscador
 
 **Qué se pidió:** cambiar la flecha de las notificaciones por un SVG del usuario (dos cheurones enfrentados, un «cerrar»), en el modal Buscar y en el de Notificaciones.
