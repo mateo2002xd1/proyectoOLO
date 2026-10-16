@@ -5,6 +5,51 @@
 
 ---
 
+## sesión 15-10-2026 (11.ª parte): modal «Eliminar la página» — el paso a paso con la redacción del usuario
+
+**Qué se pidió:** «Para quitar el enlace: 1. Ve a Menú y pie de página. 2. Busca el botón [Nombre del
+botón]. 3. Borra el enlace asignado. Cuando completes estos pasos, vuelve a abrir este diálogo para continuar.»
+
+| Dónde | Cambio |
+|---|---|
+| `modal-eliminar-seccion.tsx` (sitio web e intranet) | «Para quitar el enlace:» y tres pasos con número en círculo `#001631`. Los nombres son los reales: la página donde está el enlace (`referencia.titulo`) y el texto del botón (`referencia.texto`; si no tiene, «el botón que lleva a /slug»). Con varios: «Para quitar los enlaces:», «Ve a A y B», «Busca los botones «X» y «Y»» (con «(en A)» si están en páginas distintas) y «Borra los enlaces asignados». Debajo, en gris, «Cuando completes estos pasos, vuelve a abrir este diálogo para continuar.» |
+| Lo que se quitó | Las filas con cada enlace, «Cómo eliminarla», la pista «Los del menú y el pie se editan desde «Menú y pie»» y el paso «Vuelve a eliminar la página»: lo dicen ya los pasos y la frase final |
+| Mismo archivo | `unirConY` (une «A», «A y B», «A, B y C») y `paginasConEnlace` / `varios` junto a `enMenu` / `enOtras` |
+
+**Verificación.** `tsc --noEmit` y `eslint` del sitio y la intranet sin errores; finales de línea uniformes. Maqueta con las mismas clases en Chrome headless: se lee bien al ancho del modal. Falta el modal de verdad en el navegador.
+
+---
+
+## sesión 15-10-2026 (10.ª parte): modal «Eliminar la página» — el texto de la advertencia del usuario
+
+**Qué se pidió:** cambiar la advertencia («Esta página todavía no se puede eliminar» / «1 enlace del
+portal lleva a /inicio…») por «Página en uso en la navegación» / «Esta página está enlazada en el menú
+principal, desvincula el botón antes de eliminarla para evitar enlaces rotos.»
+
+| Dónde | Cambio |
+|---|---|
+| `modal-eliminar-seccion.tsx` (sitio web e intranet) | El texto del usuario, tal cual, cuando todos los enlaces están en `menu-y-pie` (el caso de siempre). Si alguno está dentro de otra página, «el menú principal» no sería cierto: «Página en uso en el portal» / «Esta página está enlazada desde otras páginas (o en el menú principal y en otras páginas), quita esos enlaces antes de eliminarla para evitar enlaces rotos.» |
+| Mismo archivo | `enMenu` y `enOtras` se calculan una vez junto a `nombreCoincide`; la pista del paso 1 («Los del menú y el pie se editan desde «Menú y pie»») usa `enMenu` |
+
+**Verificación.** `tsc --noEmit` y `eslint` del sitio y la intranet sin errores; finales de línea uniformes. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (9.ª parte): modal «Eliminar la página» — la advertencia arriba y el paso a paso debajo, aparte
+
+**Qué se pidió:** mejorar el mensaje del bloqueo como diseño UX/UI: dejar la advertencia y, debajo,
+de forma limpia, el paso a paso.
+
+| Dónde | Cambio |
+|---|---|
+| `modal-eliminar-seccion.tsx` (sitio web e intranet), advertencia | Solo el problema y por qué importa: «Esta página todavía no se puede eliminar» y «1 enlace del portal lleva a /inicio. Si la borras ahora, quedaría roto.» (plural según el número). La lista y las instrucciones salen del mensaje |
+| Paso a paso | Debajo y fuera del mensaje, «Cómo eliminarla» con dos pasos de número en círculo `#001631`: 1) «Quita el enlace» / «Quita los N enlaces», con cada enlace en una fila (`#f8fafc`, borde `#e4e7ec`, esquinas de 12 px): «Menú y pie de página · enlace «Inicio»»; 2) «Vuelve a eliminar la página». La pista «Los del menú y el pie se editan desde «Menú y pie»» solo sale si alguno de los enlaces está en `menu-y-pie` |
+| Lo que se quitó | «Qué hacer» dentro del mensaje y la frase final «Así el portal no queda con enlaces…»: lo dice ya la advertencia con «quedaría roto» |
+
+**Verificación.** `tsc --noEmit` y `eslint` del sitio y la intranet sin errores; finales de línea uniformes. Maqueta con las mismas clases en Chrome headless (Tailwind 4 del CDN): se lee bien a 27rem, el ancho del modal. El modal de verdad falta verlo en el navegador.
+
+---
+
 ## sesión 15-10-2026 (8.ª parte): modal «Eliminar la página» — el bloqueo en un mensaje de advertencia con sus pasos
 
 **Qué se pidió:** cuando la página no se puede borrar porque hay enlaces que apuntan a ella, el

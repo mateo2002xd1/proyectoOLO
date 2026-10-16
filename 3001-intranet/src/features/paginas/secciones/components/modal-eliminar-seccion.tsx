@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
 import { poppins } from '@/shared/lib/fonts';
@@ -10,6 +10,16 @@ import {
   eliminarSeccion,
   type AnalisisDeEliminacion,
 } from '../services/secciones.service';
+
+/** «A», «A y B», «A, B y C»: para nombrar páginas y botones dentro de una frase. */
+function unirConY(partes: ReactNode[]) {
+  return partes.map((parte, indice) => (
+    <Fragment key={indice}>
+      {indice > 0 && (indice === partes.length - 1 ? ' y ' : ', ')}
+      {parte}
+    </Fragment>
+  ));
+}
 
 export interface ModalEliminarSeccionProps {
   slug: string;
@@ -71,6 +81,14 @@ export function ModalEliminarSeccion({ slug, abierto, alCerrar }: ModalEliminarS
     analisis != null &&
     confirmacion.trim().toLowerCase() === analisis.titulo.trim().toLowerCase();
 
+  // Dónde están los enlaces que bloquean el borrado: en el menú y pie, en otras páginas o en
+  // los dos. Deciden el texto de la advertencia.
+  const enMenu = analisis?.referencias.some((referencia) => referencia.slug === 'menu-y-pie') ?? false;
+  const enOtras = analisis?.referencias.some((referencia) => referencia.slug !== 'menu-y-pie') ?? false;
+  // Para el paso a paso: en qué páginas están (sin repetir) y si se habla en plural.
+  const paginasConEnlace = [...new Set(analisis?.referencias.map((referencia) => referencia.titulo) ?? [])];
+  const varios = (analisis?.referencias.length ?? 0) > 1;
+
   const enviar = async (evento: React.FormEvent) => {
     evento.preventDefault();
     if (!analisis?.puedeEliminarse || !nombreCoincide || borrando) return;
@@ -128,36 +146,76 @@ export function ModalEliminarSeccion({ slug, abierto, alCerrar }: ModalEliminarS
 
         {cargando && <p className="nueva-seccion-ruta">Comprobando…</p>}
 
-        {/* Bloqueada: todo va en un mensaje de advertencia, qué pasa, dónde están los enlaces
-            y qué hacer (pedido del usuario, 2026-10-15). Advertencia y no error: no se perdió
-            nada, solo hay que quitar los enlaces antes. `note`: está fijo desde que se abre. */}
+        {/* Bloqueada (pedido del usuario, 2026-10-15): arriba la advertencia, solo qué pasa y
+            por qué importa; debajo, fuera de ella, el paso a paso. Así el mensaje no mezcla el
+            problema con la solución, y los enlaces se nombran dentro de los pasos, donde hay
+            que buscarlos. Advertencia y no error: no se perdió nada. */}
         {!cargando && analisis && !analisis.puedeEliminarse && (
-          <MensajeEstado tipo="advertencia" rol="note" className="mt-4">
-            <p className="font-semibold">
-              Todavía no se puede eliminar:{' '}
-              {analisis.referencias.length === 1
-                ? 'hay 1 enlace que apunta'
-                : `hay ${analisis.referencias.length} enlaces que apuntan`}{' '}
-              a <code>/{analisis.slug}</code>.
+          <>
+            {/* El texto del usuario (2026-10-15) para lo de siempre, un enlace del menú. Si
+                alguno está dentro de otra página, «el menú principal» no sería verdad: se dice
+                dónde, con la misma forma. */}
+            <MensajeEstado tipo="advertencia" rol="note" className="mt-4">
+              <p className="font-semibold">
+                {enOtras ? 'Página en uso en el portal' : 'Página en uso en la navegación'}
+              </p>
+              <p className="mt-0.5">
+                {!enOtras
+                  ? 'Esta página está enlazada en el menú principal, desvincula el botón antes de eliminarla para evitar enlaces rotos.'
+                  : `Esta página está enlazada ${enMenu ? 'en el menú principal y en otras páginas' : 'desde otras páginas'}, quita esos enlaces antes de eliminarla para evitar enlaces rotos.`}
+              </p>
+            </MensajeEstado>
+
+            {/* El paso a paso con la redacción del usuario (2026-10-15): dónde ir, qué botón
+                buscar y qué borrar, con los nombres de verdad (`titulo` de la página donde está
+                el enlace y `texto` del botón). Con varios, en plural y nombrándolos todos. */}
+            <p className="mt-5 text-sm font-semibold text-[#001631]">
+              {varios ? 'Para quitar los enlaces:' : 'Para quitar el enlace:'}
             </p>
-            <ul className="mt-2 list-disc space-y-1 pl-5">
-              {analisis.referencias.map((referencia, indice) => (
-                <li key={`${referencia.slug}-${indice}`}>
-                  <strong>{referencia.titulo}</strong>
-                  {referencia.texto ? ` → «${referencia.texto}»` : ''}
+            <ol className="mt-3 space-y-3">
+              {[
+                <>
+                  Ve a{' '}
+                  {unirConY(
+                    paginasConEnlace.map((titulo) => (
+                      <strong key={titulo} className="font-semibold">
+                        {titulo}
+                      </strong>
+                    )),
+                  )}
+                  .
+                </>,
+                <>
+                  {varios ? 'Busca los botones ' : 'Busca el botón '}
+                  {unirConY(
+                    analisis.referencias.map((referencia, indice) => (
+                      <span key={`${referencia.slug}-${indice}`}>
+                        <strong className="font-semibold">
+                          {referencia.texto ? `«${referencia.texto}»` : `que lleva a /${analisis.slug}`}
+                        </strong>
+                        {paginasConEnlace.length > 1 && ` (en ${referencia.titulo})`}
+                      </span>
+                    )),
+                  )}
+                  .
+                </>,
+                varios ? 'Borra los enlaces asignados.' : 'Borra el enlace asignado.',
+              ].map((paso, indice) => (
+                <li key={indice} className="flex items-start gap-3 text-sm text-[#001631]">
+                  <span
+                    aria-hidden="true"
+                    className="flex size-6 shrink-0 items-center justify-center rounded-full bg-[#001631] text-xs font-semibold text-white"
+                  >
+                    {indice + 1}
+                  </span>
+                  <span className="min-w-0 flex-1 pt-0.5">{paso}</span>
                 </li>
               ))}
-            </ul>
-            <p className="mt-3 font-semibold">Qué hacer</p>
-            <ol className="mt-1 list-decimal space-y-1 pl-5">
-              <li>
-                Quita {analisis.referencias.length === 1 ? 'ese enlace' : 'esos enlaces'}. Los del
-                menú y el pie se editan desde «Menú y pie».
-              </li>
-              <li>Vuelve a intentar eliminar la página.</li>
             </ol>
-            <p className="mt-2">Así el portal no queda con enlaces que no llevan a ninguna parte.</p>
-          </MensajeEstado>
+            <p className="mt-4 text-xs text-[#4b5563]">
+              Cuando completes estos pasos, vuelve a abrir este diálogo para continuar.
+            </p>
+          </>
         )}
 
         {!cargando && analisis?.puedeEliminarse && (
