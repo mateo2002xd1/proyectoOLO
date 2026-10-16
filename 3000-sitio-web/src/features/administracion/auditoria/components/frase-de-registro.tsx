@@ -13,7 +13,8 @@ const enMinuscula = (texto: string) => (texto ? texto.charAt(0).toLocaleLowerCas
 export function PildoraDeAccion({ registro }: { registro: RegistroAuditoria }) {
   return (
     <span
-      className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${colorDeAccion(registro.accion, registro.categoria)}`}
+      // Esquinas de 4 px y no de píldora (pedido del usuario, 2026-10-15).
+      className={`whitespace-nowrap rounded-[4px] px-2 py-0.5 text-[11px] font-medium ${colorDeAccion(registro.accion, registro.categoria)}`}
     >
       {etiquetaDeAccion(registro.accion, registro.categoria)}
     </span>

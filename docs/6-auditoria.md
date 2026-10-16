@@ -5,6 +5,18 @@
 
 ---
 
+## sesión 15-10-2026 (20.ª parte): Auditoría — las etiquetas de acción con esquinas de 4 px
+
+**Qué se pidió:** en la columna Acción de la bitácora, las etiquetas con `border-radius` de 4 px.
+
+| Dónde | Cambio |
+|---|---|
+| `frase-de-registro.tsx`, `PildoraDeAccion` | `rounded-full` → `rounded-[4px]`. Es la misma pieza en la columna Acción, la frase del acordeón y «Actividad reciente» del dashboard: cambian las tres. La etiqueta del modal «Ver detalle» (`detalle-registro.tsx`) es otra y sigue redonda; se le preguntó al usuario |
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta verlo en el navegador.
+
+---
+
 ## sesión 15-10-2026 (19.ª parte): «Salir del modo edición» con mensaje informativo (sitio web e intranet)
 
 **Qué se pidió:** «Saldrás del modo edición, volverás a la pantalla de inicio de sesión» en un mensaje de estado informativo, en las dos apps.
@@ -200,6 +212,26 @@ solo el texto; al pulsarlo se marca todo el grupo.
 | `modal-permisos.tsx` | El `<label>` con `Switch` pasa a un `<button>` de texto (mismo `text-xs font-semibold`, subrayado al pasar el ratón y anillo `brand-focus` con teclado). Marca todo el grupo; con todo marcado dice «Desmarcar todos» y lo vacía, que era lo que hacía apagar el interruptor. Los interruptores de cada permiso no cambian |
 
 **Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (6.ª parte): Notificaciones — las alertas llegan solas, con sonido, y cada fila con su fondo
+
+**Qué se pidió:** en el modal de Notificaciones, que las alertas nuevas lleguen sin recargar la
+página y suenen, y que la fila del enlace y la flecha tenga un fondo suave del mismo color de
+su etiqueta.
+
+| Dónde | Cambio |
+|---|---|
+| `auth/components/panel-general.tsx`, `PanelGeneralLayout` | Las alertas (páginas en revisión y cuentas por vencer) se vuelven a pedir cada 30 s (`MS_ENTRE_CONSULTAS_DE_ALERTAS`), además de al cambiar de ruta y al volver a la pestaña. Un `useRef` guarda las claves ya vistas: si llega una nueva, suena `alerta` y la campana vuelve a marcar el número. Las que había al abrir el panel no suenan, y las marcadas como solucionadas no vuelven a sonar |
+| `auth/components/panel-general.tsx`, `ModalAlertas` | Cada fila con fondo suave del color de su etiqueta: `bg-blue-50` (En revisión) y `bg-amber-50` (Por vencer), con su versión oscura, esquinas de 16 px y `px-3 py-2`. Deja de medir 28 px fijos (`h-7`) |
+| `shared/lib/sonido-avisos/sonido-avisos.ts` | Nuevo sonido `alerta`: campanita sol → do, sintetizada como los demás. Respeta el silencio de Configuración |
+
+**Sin tocar:** la muestra de sonidos de Configuración sigue con éxito, advertencia y error; la de la alerta no se añadió. La flecha de cada fila sigue siendo «Marcar como solucionada», no navega.
+
+**Límite del navegador:** sin un clic o una tecla previos en la página (p. ej. justo después de recargar), el navegador no deja sonar; la alerta llega igual.
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta probarlo en el navegador con una página enviada a revisión desde otra sesión.
 
 ---
 
