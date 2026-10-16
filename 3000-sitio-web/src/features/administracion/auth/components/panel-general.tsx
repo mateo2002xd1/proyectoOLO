@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
 import { reproducirSonidoAviso } from '@/shared/lib/sonido-avisos';
+import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -260,9 +261,8 @@ function FilaAlertaCuenta({
         aria-label={`Marcar como solucionada: ${alerta.email}`}
         title="Marcar como solucionada"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-4" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-        </svg>
+        {/* El icono de cerrar del usuario (2026-10-15), antes una flecha. */}
+        <IconoMascara nombre="cerrar" tamano="h-3.5 w-3.5" />
       </button>
     </div>
   );
@@ -308,9 +308,8 @@ function FilaAlertaRevision({
         aria-label={`Marcar como solucionada: ${pagina.titulo}`}
         title="Marcar como solucionada"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-4" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-        </svg>
+        {/* El icono de cerrar del usuario (2026-10-15), antes una flecha. */}
+        <IconoMascara nombre="cerrar" tamano="h-3.5 w-3.5" />
       </button>
     </div>
   );
@@ -432,9 +431,7 @@ function ModalAlertas({
               className="flex size-8 shrink-0 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
               aria-label="Cerrar"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <IconoMascara nombre="cerrar" tamano="h-4 w-4" />
             </button>
           </div>
         </header>
