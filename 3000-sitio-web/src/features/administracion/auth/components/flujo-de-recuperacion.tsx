@@ -7,7 +7,7 @@ import type { PreguntaDeUsuario, RespuestaDeUsuario } from '../services/recupera
  * Lo que un paso de la recuperación de contraseña le deja al siguiente.
  *
  * Desde el 2026-09-18 cada paso es una ruta propia (`/login/recovery`,
- * `/login/first-login/security-questions`, `/login/recovery/reset-password`,
+ * `/login/recovery/security-questions`, `/login/recovery/reset-password`,
  * `/login/recovery/reset-success`), con las mismas carpetas que la intranet. La intranet se pasa estos datos por `sessionStorage`,
  * **respuestas de seguridad incluidas y en claro**, que se quedan escritas en el
  * navegador hasta que algo las borra. Aquí viven en memoria, en este contexto, que

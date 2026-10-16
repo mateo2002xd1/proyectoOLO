@@ -1,6 +1,13 @@
 'use client';
 
 import { useState, useEffect, FormEvent, ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+  RUTAS_DEL_PRIMER_INGRESO,
+  modoDelPrimerIngreso,
+  type ModoPrimerIngreso,
+  type Pendiente,
+} from '@/shared/lib/ruta-del-primer-ingreso';
 import { cumplePolitica, primerFallo } from '@olo/password-policy';
 import {
   AuthGeneralError,
@@ -24,10 +31,14 @@ import { useRequisitosAlEnfocar } from '../hooks/use-requisitos-al-enfocar';
  * Configuración obligatoria de primer ingreso: contraseña definitiva y preguntas
  * de seguridad.
  *
- * Vive en `/login/first-login`. Llegan aquí el login, cuando responde que la cuenta lo
- * debe, y el middleware, que manda a esta ruta a cualquier sesión con algo pendiente.
- * Hasta el 2026-09-18 el login la pintaba dentro de su propia pantalla; ahora es una
- * ruta, como en la intranet.
+ * Vive en tres direcciones, una por caso, como en la intranet (2026-10-15):
+ * `/login/first-login` (cuenta nueva), `/login/first-login/security-questions` (solo
+ * faltan las preguntas) y `/login/first-login/change-password` (solo falta la
+ * contraseña). Cada página le dice su `modo`; la pantalla es la misma y lo que pide lo
+ * decide el servidor. Si la dirección no es la del caso (alguien la escribió a mano, o
+ * la cuenta cambió desde otra pestaña), se corrige sola. Llegan aquí el login y el proxy,
+ * que mandan a la dirección del caso (`rutaDelPrimerIngreso`). Hasta el 2026-09-18 el
+ * login la pintaba dentro de su propia pantalla.
  *
  * Desde el 2026-10-09 lleva el diseño nuevo (`MarcoDePasos`): el título y lo que se
  * pide en cada paso van fuera de la tarjeta (con un paginador debajo hasta el 2026-10-11), y la tarjeta
@@ -39,14 +50,9 @@ const TOTAL_QUESTIONS = 3;
 
 type CatalogQuestion = { key: string; label: string };
 
-/**
- * Qué le falta a la cuenta. `null` mientras se consulta.
- *
- * Lo dice el servidor, no el formulario: un administrador puede restablecer solo las
- * preguntas, solo la contraseña, o las dos cosas, y cada combinación pide una
- * pantalla distinta.
- */
-type Pendiente = { debeCambiarPassword: boolean; debeConfigurarPreguntas: boolean };
+// Qué le falta a la cuenta (`Pendiente`, en `ruta-del-primer-ingreso.ts`). Lo dice el
+// servidor, no el formulario: un administrador puede restablecer solo las preguntas, solo
+// la contraseña, o las dos cosas, y cada combinación pide una pantalla distinta.
 
 async function cerrarSesionEIrAlLogin() {
   try {
@@ -58,7 +64,9 @@ async function cerrarSesionEIrAlLogin() {
   window.location.href = '/login';
 }
 
-export function FirstLoginFlow() {
+export function FirstLoginFlow({ modo }: { modo: ModoPrimerIngreso }) {
+  const router = useRouter();
+  /** Qué le falta a la cuenta. `null` mientras se consulta. */
   const [pendiente, setPendiente] = useState<Pendiente | null>(null);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -90,6 +98,10 @@ export function FirstLoginFlow() {
     fetch('/api/auth/first-login/status')
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((data: Pendiente) => {
+        // La dirección tiene que decir el caso de verdad: si no, a la del caso. Sin nada
+        // pendiente se queda donde está, que ya sabe decirlo.
+        const caso = modoDelPrimerIngreso(data);
+        if (caso && caso !== modo) router.replace(RUTAS_DEL_PRIMER_INGRESO[caso]);
         setPendiente(data);
         // Si la contraseña ya está cambiada, el paso 1 no tiene nada que pedir: no
         // hay contraseña temporal que verificar y obligar a cambiarla otra vez sería
@@ -99,7 +111,7 @@ export function FirstLoginFlow() {
       .catch(() =>
         setErrors({ general: 'No se pudo comprobar el estado de tu cuenta. Vuelve a iniciar sesión.' })
       );
-  }, []);
+  }, [modo, router]);
 
   const validateStep1 = (): boolean => {
     const e: Record<string, string> = {};
