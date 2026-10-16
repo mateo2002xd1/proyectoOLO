@@ -81,28 +81,30 @@ export function RespaldosView() {
         titulo="Respaldos"
         descripcion="Historial de publicaciones con versión anterior archivada: páginas con respaldo disponible para consultar y restaurar."
         acciones={
-          <>
-            {isRefreshing && (
-              <span className="text-xs font-medium text-brand-interactive animate-pulse">
-                Actualizando respaldos…
-              </span>
-            )}
-            <button
-              type="button"
-              onClick={() => {
-                setAperturaDepurar((n) => n + 1);
-                setModalDepurarAbierto(true);
-              }}
-              className="flex h-11 shrink-0 items-center gap-2 rounded-[16px] px-4 text-sm font-semibold text-red-600 transition hover:bg-red-50 hover:text-red-700 active:bg-red-100 dark:text-red-400 dark:hover:bg-red-950/40 dark:hover:text-red-300 dark:active:bg-red-950/60"
-            >
-              <IconoMascara nombre="trash" tamano="h-5 w-5" />
-              Depurar
-            </button>
-          </>
+          !error ? (
+            <>
+              {isRefreshing && (
+                <span className="text-xs font-medium text-brand-interactive animate-pulse">
+                  Actualizando respaldos…
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setAperturaDepurar((n) => n + 1);
+                  setModalDepurarAbierto(true);
+                }}
+                className="flex h-11 shrink-0 items-center gap-2 rounded-[16px] px-4 text-sm font-semibold text-red-600 transition hover:bg-red-50 hover:text-red-700 active:bg-red-100 dark:text-red-400 dark:hover:bg-red-950/40 dark:hover:text-red-300 dark:active:bg-red-950/60"
+              >
+                <IconoMascara nombre="trash" tamano="h-5 w-5" />
+                Depurar
+              </button>
+            </>
+          ) : undefined
         }
       />
 
-      {!isLoading && registrosRestaurables.length > 0 && (
+      {!isLoading && !error && registrosRestaurables.length > 0 && (
         <BarraFiltros activos={Object.values(filtros).filter(Boolean).length}>
           {/* «Página» y no «Ámbito», como en «Páginas en revisión» (pedido del usuario,
               2026-10-12): el ámbito va en la columna Página. Por dentro sigue filtrando `ambito`. */}

@@ -314,30 +314,17 @@ export default function UsuariosView() {
         descripcion="Controla los usuarios que actúan en las diferentes plataformas"
         className="mb-8"
         acciones={
-          <Button onClick={() => {
-            setEditingUserId(null);
-            resetForm();
-            setIsCreating(true);
-          }}>
-            Crear Usuario
-          </Button>
+          !error ? (
+            <Button onClick={() => {
+              setEditingUserId(null);
+              resetForm();
+              setIsCreating(true);
+            }}>
+              Crear Usuario
+            </Button>
+          ) : undefined
         }
       />
-
-      {/* Qué pasó, qué hacer y «Reintentar», como en las demás listas del panel (pedido del
-          usuario, 2026-10-15). Antes, el mensaje suelto en rojo y sin forma de reintentar. */}
-      {error && (
-        <AvisoErrorDeCarga
-          titulo="No pudimos cargar los usuarios"
-          mensaje={error}
-          onReintentar={() => {
-            fetchUsers();
-            fetchRoles();
-          }}
-          reintentando={loading}
-          className="mb-6"
-        />
-      )}
 
       <Alert open={isCreating} onClose={(open) => !isSubmitting && !open && handleCancel()}>
         <AlertTitle>{editingUserId ? 'Editar Usuario' : 'Nuevo Usuario'}</AlertTitle>
@@ -513,26 +500,35 @@ export default function UsuariosView() {
           </Button>
         </AlertActions>
       </Alert>
-
-      <div className="mb-6">
-        <input
-          type="search"
-          value={busqueda}
-          onChange={(e) => {
-            setBusqueda(e.target.value);
-            setPaginaUsuarios(1);
+      {error ? (
+        <AvisoErrorDeCarga
+          titulo="No pudimos cargar los usuarios"
+          mensaje={error}
+          onReintentar={() => {
+            fetchUsers();
+            fetchRoles();
           }}
-          placeholder="Buscar usuarios..."
-          className="w-full max-w-sm rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-brand-interactive focus:outline-none focus:ring-2 focus:ring-brand-interactive/20 dark:border-zinc-700 dark:bg-[#131b2f] dark:text-zinc-100 dark:placeholder:text-zinc-500"
+          reintentando={loading}
+          className="mb-6"
         />
-      </div>
-
-      {/* Cargando, el loader va en lugar de la tabla y no en una de sus filas: así llena el
-          espacio de la sección como en las demás (una celda no se puede estirar). */}
-      {loading ? (
+      ) : loading ? (
         <CargandoSeccion label="Cargando usuarios..." />
       ) : (
-      <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-[#7db828]/30 dark:bg-[#0b1121]">
+        <>
+          <div className="mb-6">
+            <input
+              type="search"
+              value={busqueda}
+              onChange={(e) => {
+                setBusqueda(e.target.value);
+                setPaginaUsuarios(1);
+              }}
+              placeholder="Buscar usuarios..."
+              className="w-full max-w-sm rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-brand-interactive focus:outline-none focus:ring-2 focus:ring-brand-interactive/20 dark:border-zinc-700 dark:bg-[#131b2f] dark:text-zinc-100 dark:placeholder:text-zinc-500"
+            />
+          </div>
+
+          <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-[#7db828]/30 dark:bg-[#0b1121]">
         <div className="overflow-x-auto">
           {/* En el móvil y la tablet, acordeón, como las demás listas: el encabezado de cada
               fila es solo el nombre (pedido del usuario, 2026-10-10) y al tocarlo salen el
@@ -697,6 +693,7 @@ export default function UsuariosView() {
           className="px-6"
         />
       </div>
+        </>
       )}
 
       {showNotification && (

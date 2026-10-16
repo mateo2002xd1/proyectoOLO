@@ -154,7 +154,7 @@ export function RevisionQueueView() {
         descripcion="Borradores enviados por editores del sitio y de la intranet, pendientes de aprobación."
       />
 
-      {!isLoading && paginas.length > 0 && (
+      {!isLoading && !error && paginas.length > 0 && (
         <BarraFiltros activos={Object.values(filtros).filter(Boolean).length}>
           {/* «Página» y no «Ámbito» (pedido del usuario, 2026-10-12): la columna del ámbito
               se unió a la de la página. Por dentro sigue filtrando `ambito`. */}
