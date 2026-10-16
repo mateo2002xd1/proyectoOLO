@@ -69,7 +69,7 @@ import { TarjetaUsuarios } from './tarjeta-usuarios';
 import {
   listarAuditoria,
   ErrorAuditoria,
-  FraseDeRegistro,
+  FraseDeActividad,
   type RegistroAuditoria,
 } from '@/features/administracion/auditoria';
 import { useUsuarios } from '../hooks/use-usuarios';
@@ -609,8 +609,8 @@ function CabeceraActividad({ sinAccesoAuditoria }: { sinAccesoAuditoria: boolean
   return (
     <div className="flex items-start justify-between gap-3">
       <div>
-        <h2 className="admin-subtitle text-zinc-950 dark:text-[#f6f6f6]">Actividad reciente</h2>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-[#94a3b8]">
+        <h2 className="admin-subtitle text-[#001631] dark:text-[#f6f6f6]">Actividad reciente</h2>
+        <p className="mt-1 text-sm text-[#001631] dark:text-[#94a3b8]">
           Consulta el resumen de la bitácora más reciente.
         </p>
       </div>
@@ -747,18 +747,18 @@ export function PanelGeneralDashboard() {
                 <CabeceraActividad sinAccesoAuditoria={sinAccesoAuditoria} />
               </div>
               {/* Una lista con la frase entera de cada registro, en todas las pantallas
-                  (pedido del usuario, 2026-10-10): «El usuario David Tejada hizo la acción
-                  de [Autenticado]: inició sesión en el sitio web el 10 de octubre de 2026
-                  a las 5:41 p. m.». Antes era una tabla de cuatro columnas que en el móvil
-                  y la tablet pasaba a acordeón; ahora no hay nada que desplegar. La frase es
-                  la de Auditoría (`FraseDeRegistro`), para que las dos lean igual. */}
+                  (pedido del usuario, 2026-10-10). Desde el 2026-10-15, lo que pasó primero y
+                  la acción al final: «El usuario David Tejada inició sesión en el sitio web el
+                  15 de octubre de 2026 a las 6:12 p. m. - [Autenticado]» (`FraseDeActividad`).
+                  Antes era una tabla de cuatro columnas que en el móvil y la tablet pasaba a
+                  acordeón; ahora no hay nada que desplegar. */}
               <ul
                 aria-label="Actividad reciente"
                 className="divide-y divide-zinc-200 border-t border-zinc-200 dark:divide-zinc-700 dark:border-zinc-700"
               >
                 {actividadPaginada.map((registro) => (
-                  <li key={registro.id} className="px-5 py-3 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
-                    <FraseDeRegistro registro={registro} nombre={registro.usuarioNombre} abierta />
+                  <li key={registro.id} className="px-5 py-3 text-sm leading-6 text-[#001631] dark:text-zinc-300">
+                    <FraseDeActividad registro={registro} nombre={registro.usuarioNombre} />
                   </li>
                 ))}
               </ul>
