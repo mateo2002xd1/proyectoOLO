@@ -91,9 +91,11 @@ export const requisitosDe = (password: string): RequisitoPassword[] => {
     },
     {
       id: 'maximo',
-      // Se enuncia en caracteres aunque se mida en bytes: nadie cuenta bytes. El
-      // caso realista que lo dispara es una frase larga con muchas tildes.
-      etiqueta: 'No demasiado larga',
+      // Se enuncia en caracteres aunque se mida en bytes: nadie cuenta bytes. El caso
+      // realista que lo dispara es una frase larga con muchas tildes, por eso se avisa de
+      // que cuentan doble (en UTF-8, «á» y «ñ» ocupan 2). Antes «No demasiado larga», que
+      // no decía cuánto (pedido del usuario, 2026-10-15).
+      etiqueta: `Máximo ${MAX_BYTES} caracteres (tildes y ñ cuentan doble)`,
       cumplido: caracteres > 0 && bytesDe(normalizada) <= MAX_BYTES,
     },
   ];

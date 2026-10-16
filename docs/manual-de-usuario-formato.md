@@ -547,7 +547,7 @@ Este procedimiento describe el paso a paso para el funcionario que inicia sesió
 
 4. **Establecimiento de la contraseña definitiva (paso 1, «Actualiza tu seguridad»):** En la pantalla de cambio de clave, el funcionario debe registrar su nueva contraseña personal:
    * En el campo **"Contraseña temporal"**, se digita la clave provisoria recibida.
-   * En el campo **"Nueva contraseña"**, se escribe la nueva clave personal. Al entrar en este campo aparece la lista de requisitos de la política (mínimo 12 caracteres, combinar 3 de 4 opciones: mayúsculas, minúsculas, números o símbolos, sin emojis ni tabulaciones, y no demasiado larga), que se van marcando a medida que se cumplen; cuando se cumplen todos, la lista se resume en una línea: **"Cumple todos los requisitos"**.
+   * En el campo **"Nueva contraseña"**, se escribe la nueva clave personal. Al entrar en este campo aparece la lista de requisitos de la política (mínimo 12 caracteres, combinar 3 de 4 opciones: mayúsculas, minúsculas, números o símbolos, sin emojis ni tabulaciones, y máximo 72 caracteres, donde las tildes y la ñ cuentan doble), que se van marcando a medida que se cumplen; cuando se cumplen todos, la lista se resume en una línea: **"Cumple todos los requisitos"**.
    * En el campo **"Ingresa nuevamente la contraseña"**, se reescribe la nueva clave para certificar la coincidencia exacta.
    * El ícono del ojo muestra u oculta lo escrito en cada campo: cerrado mientras la clave está oculta, abierto cuando se ve.
    * Se hace clic en el botón oscuro **"Continuar"**, que revisa los tres campos y pasa al paso 2. Si algo falta o no coincide, lo indica debajo del campo.
@@ -612,7 +612,7 @@ Este procedimiento lo ejecutan los funcionarios (Administradores, Editores autor
 
 4. **Establecimiento de la contraseña definitiva:** En el formulario de cambio de clave, el usuario registra su nueva contraseña personal:
    * En el primer campo, se digita la clave provisoria en **"Contraseña temporal"**.
-   * En el segundo campo, se escribe la **"Nueva contraseña"**. Al entrar en este campo aparece la lista de requisitos de la política (mínimo 12 caracteres, combinar 3 de 4 opciones: mayúsculas, minúsculas, números o símbolos, sin emojis ni tabulaciones, y no demasiado larga), que se van marcando en tiempo real; cuando se cumplen todos, la lista se resume en una línea: **"Cumple todos los requisitos"**.
+   * En el segundo campo, se escribe la **"Nueva contraseña"**. Al entrar en este campo aparece la lista de requisitos de la política (mínimo 12 caracteres, combinar 3 de 4 opciones: mayúsculas, minúsculas, números o símbolos, sin emojis ni tabulaciones, y máximo 72 caracteres, donde las tildes y la ñ cuentan doble), que se van marcando en tiempo real; cuando se cumplen todos, la lista se resume en una línea: **"Cumple todos los requisitos"**.
    * En el tercer campo, se reescribe la clave en **"Ingresa nuevamente la contraseña"**.
    * Se hace clic en el botón **"Continuar"** para validar la información y avanzar.
 

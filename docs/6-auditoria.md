@@ -5,6 +5,21 @@
 
 ---
 
+## sesión 15-10-2026 (23.ª parte): contraseña — «No demasiado larga» dice cuánto
+
+**Qué se pidió:** cambiar «No demasiado larga» por otros términos.
+
+| Dónde | Cambio |
+|---|---|
+| `packages/password-policy/src/index.ts`, requisito `maximo` | «Máximo 72 caracteres (tildes y ñ cuentan doble)», con `MAX_BYTES`. El límite es de 72 bytes (bcrypt) y en UTF-8 «á» y «ñ» ocupan 2: decir solo «72 caracteres» haría fallar una frase con tildes que el usuario contó por debajo. Es también el mensaje del campo cuando ese es el primer requisito pendiente (`primerFallo`). Lo ven el sitio web y la intranet |
+| `docs/manual-de-usuario-formato.md` | Las dos menciones de «no demasiado larga» pasan a «máximo 72 caracteres, donde las tildes y la ñ cuentan doble» |
+
+**Para verlo:** las apps usan una copia del paquete (`install-links=true`); el `predev` (`sincronizar-paquetes-locales.mjs`) recompila `dist/` y la vuelve a copiar, así que hay que reiniciar `npm run dev` del sitio y de la intranet.
+
+**Verificación.** `tsc --noEmit -p packages/password-policy` sin errores; con el módulo transpilado, `requisitosDe` da la etiqueta nueva y `primerFallo` la devuelve para una contraseña de 44 caracteres y 84 bytes. Falta verlo en el navegador.
+
+---
+
 ## sesión 15-10-2026 (22.ª parte): acceso — «Cumple todos los requisitos» como mensaje de éxito y los requisitos con sus iconos
 
 **Qué se pidió:** la línea «✓ Cumple todos los requisitos» de la contraseña, con el estilo del mensaje de estado de éxito y su icono del panel.
