@@ -5,6 +5,23 @@
 
 ---
 
+## sesión 15-10-2026 (38.ª parte): icono de cerrar nuevo en las notificaciones y en el buscador
+
+**Qué se pidió:** cambiar la flecha de las notificaciones por un SVG del usuario (dos cheurones enfrentados, un «cerrar»), en el modal Buscar y en el de Notificaciones.
+
+| Dónde | Antes | Ahora |
+|---|---|---|
+| `public/assets/svg/cerrar.svg` (nuevo) | — | El SVG tal cual lo pasó el usuario |
+| Filas de notificación (`FilaAlertaCuenta`, `FilaAlertaRevision` en `panel-general.tsx`): modal y aviso flotante | Flecha → («Marcar como solucionada») | `IconoMascara nombre="cerrar"`, 14 px. Mismo botón y misma acción |
+| Cerrar del modal Notificaciones | X de heroicons | El mismo icono, 16 px |
+| Cerrar del buscador (`buscador-modal.tsx`) | Flecha ← | El mismo icono, 20 px, con su entrada animada (`flechaEntrada`) en una envoltura |
+
+Con `IconoMascara` (máscara + `bg-current`) el icono toma el color del texto de cada sitio: ámbar o azul en las filas, gris en los cierres, y claro en modo oscuro. El #002237 del archivo no se usa: con él no se vería en oscuro.
+
+**Verificación.** `eslint` sin errores; `tsc --noEmit` sin errores nuevos (solo los de `first-login-flow.tsx` de la otra sesión); CRLF uniforme. Falta verlo en pantalla.
+
+---
+
 ## sesión 15-10-2026 (37.ª parte): acceso — la contraseña rechazada, en rojo en lugar de «Cumple todos los requisitos»
 
 **Qué se pidió:** si aparece «Esta contraseña no es válida por seguridad, elige otra.», quitar «Cumple todos los requisitos» (sin el error, dejarlo); y ese mensaje, en estado rojo. Además, que «Reintentar» del aviso de carga fallida no «brinque como si hiciera zoom» al pulsarlo.
