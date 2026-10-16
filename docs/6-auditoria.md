@@ -5,6 +5,18 @@
 
 ---
 
+## sesión 15-10-2026 (12.ª parte): Páginas en revisión — el campo del motivo con borde rojo al rechazar y eliminar
+
+**Qué se pidió:** en los modales «Rechazar versión» y «Eliminar versión», el borde de «Explica la razón…» en rojo.
+
+| Dónde | Cambio |
+|---|---|
+| `revision-queue-view.tsx`, `ModalAccionConMotivo` | El área de texto usa siempre `areaDeModalConErrorClass` (borde y foco `#d90000`, `#ff6b6b` en oscuro), el rojo de los mensajes de error, en vez de cambiar a ella solo cuando faltaba el motivo. Solo afecta a Rechazar y Eliminar: Publicar no pide motivo (`requiereMotivo={false}`). Cuando falta el motivo lo sigue diciendo `ErrorDeCampo` debajo, con `aria-invalid`. Fuera el import de `areaDeModalClass`, sin uso |
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta verlo en el navegador.
+
+---
+
 ## sesión 15-10-2026 (11.ª parte): modal «Eliminar la página» — el paso a paso con la redacción del usuario
 
 **Qué se pidió:** «Para quitar el enlace: 1. Ve a Menú y pie de página. 2. Busca el botón [Nombre del

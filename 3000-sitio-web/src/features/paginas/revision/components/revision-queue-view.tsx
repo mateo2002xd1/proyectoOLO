@@ -16,7 +16,7 @@ import { GRUPO_TOOLTIP, TOOLTIP_ENCIMA } from '@/shared/ui/atoms/tooltip';
 import { COLOR_DE_ACCION } from '@/shared/lib/identidad-panel';
 import { AvisoErrorDeCarga } from '@/shared/ui/molecules/aviso-error-de-carga';
 import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
-import { areaDeModalClass, areaDeModalConErrorClass, ErrorDeCampo } from '@/shared/ui/molecules/alert';
+import { areaDeModalConErrorClass, ErrorDeCampo } from '@/shared/ui/molecules/alert';
 
 /**
  * Dónde se ve una página que aún no está publicada.
@@ -513,7 +513,10 @@ function ModalAccionConMotivo({
               maxLength={MOTIVO_MAX}
               aria-invalid={faltaMotivo || undefined}
               aria-describedby={faltaMotivo ? 'motivo-accion-error motivo-accion-cuenta' : 'motivo-accion-cuenta'}
-              className={`mt-1 block resize-none ${faltaMotivo ? areaDeModalConErrorClass : areaDeModalClass}`}
+              // Borde rojo siempre (pedido del usuario, 2026-10-15): el motivo solo se pide al
+              // rechazar o eliminar, y el campo va en el rojo de la acción. Es la clase de error
+              // de los modales; lo que falta lo sigue diciendo `ErrorDeCampo` debajo.
+              className={`mt-1 block resize-none ${areaDeModalConErrorClass}`}
               placeholder="Explica la razón…"
               value={motivo}
               onChange={(e) => {
