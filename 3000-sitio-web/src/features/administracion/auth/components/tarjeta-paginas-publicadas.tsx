@@ -380,11 +380,9 @@ export function TarjetaPaginasPublicadas({ resumen, error }: Props) {
       <p className="text-sm text-[#001631] dark:text-[#94a3b8]">Páginas publicadas</p>
 
       {error ? (
-        // Un guion, no un cero: cero es un dato y aquí no se pudo leer ninguno.
-        <>
-          <p className="mt-1 text-2xl font-bold text-zinc-400 dark:text-zinc-600">—</p>
-          <p className="mt-2 text-xs text-red-600 dark:text-red-300">{error}</p>
-        </>
+        // Un guion, no un cero: cero es un dato y aquí no se pudo leer ninguno. Sin el
+        // porqué: el dashboard lo dice una sola vez arriba (pedido del usuario, 2026-10-15).
+        <p className="mt-1 text-2xl font-bold text-zinc-400 dark:text-zinc-600">—</p>
       ) : (
         <>
           <p className="mt-1 text-2xl font-bold text-[#001631] dark:text-[#f6f6f6]">

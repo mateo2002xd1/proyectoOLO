@@ -124,9 +124,9 @@ export function TarjetaVisitas({ resumen, error }: Props) {
             </div>
           </div>
 
-          {error ? (
-            <p className="mt-3 text-xs text-red-600 dark:text-red-300">{error}</p>
-          ) : (
+          {/* Con error, solo el «—» de arriba: el porqué lo dice el dashboard una sola vez
+              arriba (pedido del usuario, 2026-10-15). */}
+          {!error && (
             <div className="mt-3 border-t border-zinc-100 pt-3 dark:border-[#7db828]/20">
               {/* Selector de los 2 gráficos (Sitio Web e Intranet) */}
               <div className="mb-3 flex items-center justify-between gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800/70">
