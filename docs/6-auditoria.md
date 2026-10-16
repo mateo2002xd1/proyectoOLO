@@ -5,6 +5,23 @@
 
 ---
 
+## sesión 15-10-2026 (8.ª parte): modal «Eliminar la página» — el bloqueo en un mensaje de advertencia con sus pasos
+
+**Qué se pidió:** cuando la página no se puede borrar porque hay enlaces que apuntan a ella, el
+aviso, la lista de enlaces y lo que hay que hacer van dentro de un mensaje de estado, con «Entendido»
+en `#001631`; y el nombre de la página del título, en el amarillo de ese mensaje.
+
+| Dónde | Cambio |
+|---|---|
+| `modal-eliminar-seccion.tsx` (sitio web e intranet) | Bloqueada: `MensajeEstado tipo="advertencia" rol="note"` con «Todavía no se puede eliminar: hay 1 enlace que apunta a /inicio.» (singular y plural bien escritos; antes «1 enlace(s)»), la lista de enlaces y «Qué hacer» en dos pasos: quitar los enlaces (los del menú y el pie, desde «Menú y pie») y volver a intentarlo. Advertencia y no error: no se perdió nada |
+| Botón | «Entendido» con `nueva-seccion-boton--principal` (`#001631`, la clase que ya existía en las dos apps). «Cancelar» del caso que sí se puede borrar no cambia |
+| Título | Bloqueada, el nombre en `text-[#b48a00]`, el amarillo del texto de la advertencia; si se puede borrar, sigue en el rojo de `nueva-seccion-nombre-peligro` |
+| `globals.css` (las dos apps) | Fuera `.nueva-seccion-notas`: ya no la usaba nadie |
+
+**Verificación.** `tsc --noEmit` y `eslint` del sitio y de la intranet sin errores; finales de línea uniformes. Falta verlo en el navegador.
+
+---
+
 ## sesión 15-10-2026 (7.ª parte): Páginas en revisión — sin barra de scroll y tooltips que no se recortan
 
 **Qué se pidió:** que la lista no muestre barra de scroll y se ajuste al ancho de la tabla, y que
@@ -51,6 +68,21 @@ píldora del portal y debajo, pequeño y fino, «menu-y-pie · versión 28».
 
 ---
 
+## sesión 15-10-2026 (5.ª parte): el icono del mensaje de éxito, alineado con el texto
+
+**Qué se pidió:** en el modal de restaurar versión (Respaldos), el icono del mensaje «¡Versión N
+restaurada con éxito!…» quedaba más arriba que el texto; bajarlo un poco.
+
+| Dónde | Cambio |
+|---|---|
+| `shared/ui/molecules/mensaje-estado.tsx` (sitio-web) | `IconoExito` lleva `mt-[3px]`, como los iconos de advertencia y error: 14 px de icono centrados en la línea de 20 px del texto. Era el único sin ese margen |
+
+**Alcance:** el icono es del componente compartido, así que el ajuste se ve en todos los mensajes de éxito del sitio web, no solo en el modal. La copia de la intranet (`3001-intranet/src/shared/ui/molecules/mensaje-estado.tsx`) tiene el mismo desajuste y **no** se tocó.
+
+**Verificación.** Cambio de una clase; falta verlo en el navegador.
+
+---
+
 ## sesión 15-10-2026 (4.ª parte): paginador del panel — la página actual en #001631
 
 **Qué se pidió:** el paginador marcaba la página actual en el verde `#7DB828`; pasa a
@@ -66,6 +98,24 @@ cargas. El tono `publico` (tablas del sitio) ya usaba `#001631`. La intranet no 
 
 **Verificación.** `tsc --noEmit` y `eslint` del archivo sin errores; CRLF uniforme. Falta
 verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (4.ª parte): Dashboard — «Actividad reciente» con lo que pasó primero y la acción al final
+
+**Qué se pidió:** que cada línea de Actividad reciente lea así: «El usuario David Tejada inició
+sesión en el sitio web el 15 de octubre de 2026 a las 6:12 p. m. - Autenticado». Antes decía
+«El usuario David Tejada hizo la acción de [Autenticado]: inició sesión…».
+
+| Dónde | Cambio |
+|---|---|
+| `auditoria/components/frase-de-registro.tsx` | Nuevo `FraseDeActividad`: nombre, lo que pasó, la fecha y, tras un guion, la píldora de la acción. `enVozActiva` pasa a voz activa las frases que la API redacta en impersonal («Se publicó…» → «publicó…», «El usuario envió…» → «envió…», «Guardado automático…» → «guardó automáticamente…»); lo que no empieza por verbo va tras «registró que» o «registró:» |
+| `auditoria/index.ts` | Exporta `FraseDeActividad` |
+| `auth/components/panel-general.tsx` | La lista del dashboard usa `FraseDeActividad` en vez de `FraseDeRegistro` |
+
+**Lo que no cambia:** el acordeón de Auditoría sigue con `FraseDeRegistro` («hizo la acción de [X]: …»); solo se pidió el dashboard.
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta verlo en el navegador.
 
 ---
 

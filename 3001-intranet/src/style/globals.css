@@ -2726,18 +2726,6 @@ body:has(.navegacion-mobile-hoja[open]) {
   color: #b3261e;
 }
 
-.nueva-seccion-notas {
-  margin: 1rem 0 0;
-  padding-left: 1.1rem;
-  font-size: 0.8rem;
-  line-height: 1.45;
-  color: #52667a;
-}
-
-.nueva-seccion-notas li+li {
-  margin-top: 0.3rem;
-}
-
 /* `wrap` y `nowrap` en los botones: con 44 px de alto fijo el texto no puede partirse
    («Crear y editar» se salía a 360 px); si no caben juntos, el segundo baja de línea. */
 .nueva-seccion-acciones {

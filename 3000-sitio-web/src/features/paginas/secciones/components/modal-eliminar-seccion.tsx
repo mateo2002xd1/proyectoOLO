@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
 import { poppins } from '@/shared/lib/fonts';
+import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 import {
   analizarEliminacion,
   eliminarSeccion,
@@ -109,8 +110,17 @@ export function ModalEliminarSeccion({ slug, abierto, alCerrar }: ModalEliminarS
         <h2 id="eliminar-seccion-titulo" className="nueva-seccion-titulo">
           {analisis ? (
             <>
+              {/* Bloqueada, el nombre en el amarillo del mensaje de advertencia (#b48a00):
+                  primero hay que seguir sus pasos. Si se puede borrar, en el rojo de peligro
+                  (pedido del usuario, 2026-10-15). */}
               ¿Eliminar la página{' '}
-              «<span className="nueva-seccion-nombre-peligro">{analisis.titulo}</span>»?
+              «<span
+                className={
+                  analisis.puedeEliminarse ? 'nueva-seccion-nombre-peligro' : 'text-[#b48a00]'
+                }
+              >
+                {analisis.titulo}
+              </span>»?
             </>
           ) : (
             '¿Eliminar la página?'
@@ -119,13 +129,19 @@ export function ModalEliminarSeccion({ slug, abierto, alCerrar }: ModalEliminarS
 
         {cargando && <p className="nueva-seccion-ruta">Comprobando…</p>}
 
+        {/* Bloqueada: todo va en un mensaje de advertencia, qué pasa, dónde están los enlaces
+            y qué hacer (pedido del usuario, 2026-10-15). Advertencia y no error: no se perdió
+            nada, solo hay que quitar los enlaces antes. `note`: está fijo desde que se abre. */}
         {!cargando && analisis && !analisis.puedeEliminarse && (
-          <>
-            <p className="nueva-seccion-error">
-              Todavía no se puede borrar: hay {analisis.referencias.length} enlace(s)
-              apuntando a <code>/{analisis.slug}</code>.
+          <MensajeEstado tipo="advertencia" rol="note" className="mt-4">
+            <p className="font-semibold">
+              Todavía no se puede eliminar:{' '}
+              {analisis.referencias.length === 1
+                ? 'hay 1 enlace que apunta'
+                : `hay ${analisis.referencias.length} enlaces que apuntan`}{' '}
+              a <code>/{analisis.slug}</code>.
             </p>
-            <ul className="nueva-seccion-notas">
+            <ul className="mt-2 list-disc space-y-1 pl-5">
               {analisis.referencias.map((referencia, indice) => (
                 <li key={`${referencia.slug}-${indice}`}>
                   <strong>{referencia.titulo}</strong>
@@ -133,11 +149,16 @@ export function ModalEliminarSeccion({ slug, abierto, alCerrar }: ModalEliminarS
                 </li>
               ))}
             </ul>
-            <p className="nueva-seccion-ruta">
-              Quítalos primero (los del menú, desde «Menú y pie») y vuelve a
-              intentarlo. Así el portal no queda con enlaces a ninguna parte.
-            </p>
-          </>
+            <p className="mt-3 font-semibold">Qué hacer</p>
+            <ol className="mt-1 list-decimal space-y-1 pl-5">
+              <li>
+                Quita {analisis.referencias.length === 1 ? 'ese enlace' : 'esos enlaces'}. Los del
+                menú y el pie se editan desde «Menú y pie».
+              </li>
+              <li>Vuelve a intentar eliminar la página.</li>
+            </ol>
+            <p className="mt-2">Así el portal no queda con enlaces que no llevan a ninguna parte.</p>
+          </MensajeEstado>
         )}
 
         {!cargando && analisis?.puedeEliminarse && (
@@ -172,7 +193,7 @@ export function ModalEliminarSeccion({ slug, abierto, alCerrar }: ModalEliminarS
           <button
             type="button"
             onClick={cerrar}
-            className="nueva-seccion-boton"
+            className={analisis?.puedeEliminarse ? 'nueva-seccion-boton' : 'nueva-seccion-boton nueva-seccion-boton--principal'}
             disabled={borrando}
           >
             {analisis?.puedeEliminarse ? 'Cancelar' : 'Entendido'}
