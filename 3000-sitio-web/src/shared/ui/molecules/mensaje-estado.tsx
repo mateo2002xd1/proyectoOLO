@@ -83,7 +83,7 @@ export function IconoError() {
 function IconoExito() {
   return (
     <svg
-      className="h-3.5 w-[13px] shrink-0"
+      className="mt-[3px] h-3.5 w-[13px] shrink-0"
       viewBox="0 0 24 26"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
