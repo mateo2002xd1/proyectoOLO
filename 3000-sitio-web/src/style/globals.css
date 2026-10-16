@@ -3489,11 +3489,16 @@ button.text-link,
    ensanche las columnas de la rejilla. Va por `PuckLayout-inner >` para ganarle en
    especificidad a la regla de Puck sin depender del orden de carga del CSS. Solo en
    escritorio: en móvil Puck pliega la fila de la cabecera a 0 y la esconde con ese
-   mismo `overflow`. */
+   mismo `overflow`.
+
+   `z-index: 20` y no 2 (2026-10-15): los campos de la barra derecha no crean capa propia
+   y algunos de Puck traen su `z-index` (el elemento desplegado de una lista, 2; el asa
+   para redimensionar, 10). Con 2 empataban y, al ir después en el DOM, tapaban los
+   tooltips de Salir, Guardar y Enviar en cuanto había una lista abierta debajo. */
 @media (min-width: 638px) {
   .olo-editor [class*="PuckLayout-inner"]>[class*="PuckLayout-header"] {
     position: relative;
-    z-index: 2;
+    z-index: 20;
     min-width: 0;
     overflow: visible;
   }

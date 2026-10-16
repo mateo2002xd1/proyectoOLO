@@ -5,6 +5,20 @@
 
 ---
 
+## sesión 15-10-2026 (24.ª parte): editor — los tooltips de la cabecera ya no se esconden bajo los campos de la derecha
+
+**Qué se pidió:** los tooltips de Salir, Guardar y Enviar se cortaban encima de las opciones del lado derecho (captura con una lista de Puck desplegada).
+
+**Causa.** La cabecera de Puck se dejó con `z-index: 2` (13-10, commit `871396e0`) dentro de la capa de `PuckLayout-inner`. La barra derecha no crea capa propia, así que sus campos compiten con la cabecera, y el elemento desplegado de una lista (`ArrayFieldItem--isExpanded`) trae `z-index: 2`: empate, y gana el que va después en el DOM. Sin una lista abierta no pasaba.
+
+| Dónde | Cambio |
+|---|---|
+| `globals.css` (sitio web e intranet), `.olo-editor [class*="PuckLayout-inner"]>[class*="PuckLayout-header"]` | `z-index: 2` → `20`, por encima de todo lo que Puck pone en los campos (el más alto, el asa para redimensionar, 10). Sigue dentro de la capa de `PuckLayout-inner`: no pasa por encima de los modales ni del portal de Puck |
+
+**Verificación.** Maqueta con las clases reales de Puck (su `index.css` de `node_modules`) y el CSS compilado del dev, tooltips forzados visibles y un `ArrayFieldItem--isExpanded` en la barra derecha: con 2 quedan tapados como en la captura; con 20, completos. Sin elemento desplegado no se reproducía (1280, 820 y 700 px). El dev ya sirve `z-index: 20`. CRLF uniforme. Falta verlo en el editor de verdad.
+
+---
+
 ## sesión 15-10-2026 (23.ª parte): contraseña — «No demasiado larga» dice cuánto
 
 **Qué se pidió:** cambiar «No demasiado larga» por otros términos.
