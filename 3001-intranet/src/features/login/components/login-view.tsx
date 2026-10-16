@@ -140,7 +140,9 @@ function LoginForm() {
         } else if (data.mustSetupSecurityQuestions) {
           router.push('/login/first-login/security-questions');
         } else if (data.mustChangePassword) {
-          router.push('/login/recovery/reset-password');
+          // Solo la contraseña: la cuenta ya tiene sus preguntas (un administrador la
+          // restableció). Es parte del primer ingreso, no de la recuperación.
+          router.push('/login/first-login/change-password');
         } else {
           window.location.href = rutaDeVuelta;
         }

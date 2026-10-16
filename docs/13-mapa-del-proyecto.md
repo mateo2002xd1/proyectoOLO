@@ -15,7 +15,7 @@
 | | Carpetas | Features | Rutas de Next | Endpoints | Librerías |
 |---|--:|--:|--:|--:|--:|
 | `3000-sitio-web` | 49 | 3 | 52 | — | 33 |
-| `3001-intranet` | 31 | 2 | 11 | — | 27 |
+| `3001-intranet` | 31 | 2 | 14 | — | 27 |
 | `4000-api-backend` | 35 | — | — | 96 | 42 |
 
 Paquetes compartidos: 7 · migraciones: 44 · modelos: 23.
@@ -276,10 +276,13 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `/editor/[slug]` | página |  | `editor/[slug]/page.tsx` |
 | `/login` | página | `(auth)` | `(auth)/login/page.tsx` |
 | `/login/first-login` | página | `(auth)` | `(auth)/login/first-login/page.tsx` |
+| `/login/first-login/change-password` | página | `(auth)` | `(auth)/login/first-login/change-password/page.tsx` |
+| `/login/first-login/change-success` | página | `(auth)` | `(auth)/login/first-login/change-success/page.tsx` |
 | `/login/first-login/security-questions` | página | `(auth)` | `(auth)/login/first-login/security-questions/page.tsx` |
 | `/login/recovery` | página | `(auth)` | `(auth)/login/recovery/page.tsx` |
 | `/login/recovery/reset-password` | página | `(auth)` | `(auth)/login/recovery/reset-password/page.tsx` |
 | `/login/recovery/reset-success` | página | `(auth)` | `(auth)/login/recovery/reset-success/page.tsx` |
+| `/login/recovery/security-questions` | página | `(auth)` | `(auth)/login/recovery/security-questions/page.tsx` |
 | `/manifest.webmanifest` | metadatos |  | `manifest.ts` |
 | `/preview/[slug]` | página |  | `preview/[slug]/page.tsx` |
 

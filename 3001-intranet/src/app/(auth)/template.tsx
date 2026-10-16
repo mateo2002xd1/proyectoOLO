@@ -17,6 +17,9 @@ const PAGE_ORDER: Record<string, number> = {
   '/login/recovery': 1,
   '/login/first-login': 1,
   '/login/first-login/security-questions': 2,
+  '/login/first-login/change-password': 2,
+  '/login/first-login/change-success': 3,
+  '/login/recovery/security-questions': 2,
   '/login/recovery/reset-password': 3,
   '/login/recovery/reset-success': 4,
 };

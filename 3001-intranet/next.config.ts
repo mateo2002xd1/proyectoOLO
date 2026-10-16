@@ -116,14 +116,16 @@ const nextConfig: NextConfig = {
         // (`app/(auth)/login/`), igual que en el sitio-web: el primer ingreso en
         // `/login/first-login` y la recuperación en `/login/recovery`. Entre el
         // 2026-09-18 y entonces fueron hermanos de `/login` en la raíz; estas reglas
-        // cubren marcadores y pestañas abiertas con esas URLs.
+        // cubren marcadores y pestañas abiertas con esas URLs. `/security-questions` y
+        // `/reset-password` servían a los dos flujos; van a los de la recuperación, y
+        // quien tenga el primer ingreso pendiente rebota desde ahí a su paso (`proxy.ts`).
         source: "/first-login",
         destination: "/login/first-login",
         permanent: false,
       },
       {
         source: "/security-questions",
-        destination: "/login/first-login/security-questions",
+        destination: "/login/recovery/security-questions",
         permanent: false,
       },
       {
