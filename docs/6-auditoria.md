@@ -5,6 +5,57 @@
 
 ---
 
+## sesión 15-10-2026 (37.ª parte): acceso — la contraseña rechazada, en rojo en lugar de «Cumple todos los requisitos»
+
+**Qué se pidió:** si aparece «Esta contraseña no es válida por seguridad, elige otra.», quitar «Cumple todos los requisitos» (sin el error, dejarlo); y ese mensaje, en estado rojo. Además, que «Reintentar» del aviso de carga fallida no «brinque como si hiciera zoom» al pulsarlo.
+
+| Dónde | Cambio |
+|---|---|
+| `PasswordRequisitos` (`auth-ui.tsx` del sitio, `password-requisitos.tsx` de la intranet) | Prop `rechazo`: con la lista resumida, en vez del mensaje de éxito pinta `MensajeEstado tipo="error" rol="alert"` con ese texto. Sin `rechazo`, «Cumple todos los requisitos» como antes |
+| `PasswordField` (`auth-ui.tsx`, `password-field.tsx` de la intranet) | Prop `textoDeErrorAparte`: deja el borde rojo y no repite el texto debajo (ni lo nombra en `aria-describedby`) |
+| Primer ingreso y restablecer contraseña de las dos apps | `rechazoDeLaNueva = errors.<campo> && cumplePolitica(<nueva>) ? errors.<campo> : undefined`: solo una contraseña que cumple todo y aun así se rechaza (repite la temporal, la actual o la anterior). Un fallo de la política sigue bajo el campo con la lista entera. El campo oculta su texto solo si la lista está a la vista |
+| `aviso-error-de-carga.tsx` | «Reintentar» con `hover:transform-none! active:transform-none!` y `transition-colors`: `globals.css` sube todo botón 2 px al pasar y lo baja al pulsar, sin capa, así que hace falta `!`. En un texto sin fondo parecía un zoom |
+
+El perfil del panel no cambia: no resume la lista.
+
+**Depende de trabajo sin commit de otra sesión.** La función de contraseña repetida (`password-repetida.ts`, `MENSAJE_PASSWORD_REPETIDA`, migración `045-password-anterior.ts`, y ahora su paso a `packages/password-policy`) está a medias en el árbol de trabajo; estos archivos llevan los dos cambios mezclados.
+
+**Verificación.** `eslint` sin errores en las dos apps; `tsc --noEmit` de la intranet sin errores. El del sitio falla solo en los imports nuevos de `@olo/password-policy` que está añadiendo la otra sesión (la copia del paquete no se ha sincronizado); antes de ese cambio suyo pasaba. CRLF uniforme. Falta probarlo en pantalla.
+
+---
+
+## sesión 15-10-2026 (36.ª parte): «Reintentar» como texto rojo sin fondo
+
+**Qué se pidió:** en el aviso de carga fallida («No pudimos cargar los respaldos…»), que el botón «Reintentar» sea un texto rojo sin fondo.
+
+| Dónde | Cambio |
+|---|---|
+| `shared/ui/molecules/aviso-error-de-carga.tsx` | `Button variant="navy"` → `<button>` sin fondo, en el rojo del mensaje de error (#d90000), negrita, subrayado al pasar el ratón y anillo rojo con teclado. Sigue midiendo 44 px de alto; en el móvil queda alineado con el texto (`-ml-2`). «Terminar configuración» (cuenta pendiente) no cambia |
+
+Cubre todas las pantallas que usan el aviso: Respaldos, Auditoría, Usuarios, Roles, Páginas en revisión y el dashboard.
+
+**Salto al pulsarlo (corregido).** Al pulsar, el texto pasaba a «Reintentando…», más largo, y el botón cambiaba de ancho y se movía; sin fondo se notaba. Ahora las dos palabras van en la misma celda de un `grid`, la que no toca invisible: el botón mide siempre lo de «Reintentando…».
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta verlo en pantalla con la API apagada.
+
+---
+
+## sesión 15-10-2026 (35.ª parte): etiquetas con contorno en modo oscuro (Auditoría, Respaldos y Páginas en revisión)
+
+**Qué se pidió:** en modo oscuro, que las etiquetas (flags) de Auditoría, Respaldos y Páginas en revisión contrasten y no se mezclen con el fondo del contenedor.
+
+**Causa.** Las de fondo oscuro —«Intranet» y «Editado» en #001631, «Actualizado» en #00304D, «Verificado» (#3F1E6B), «Modificado» (#71277A)— quedaban sobre la tabla oscura (#0f1626) y solo se leía la letra.
+
+| Dónde | Cambio |
+|---|---|
+| `shared/ui/atoms/etiqueta.ts` (nuevo) | `CONTORNO_DE_ETIQUETA_EN_OSCURO` = `dark:ring-1 dark:ring-white/30`: un aro claro y fino solo en modo oscuro. No cambia los colores elegidos por el usuario; en las etiquetas claras apenas se nota |
+| `auditoria/types.ts` → `colorDeAccion` | Añade el contorno: cubre la píldora de la tabla, la frase del acordeón y el modal «Ver detalle» |
+| `shared/ui/molecules/fila-acordeon.tsx` → `CeldaDePagina` | La etiqueta «Sitio web» / «Intranet» de Respaldos y Páginas en revisión, con el contorno |
+
+**Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta verlo en pantalla en modo oscuro.
+
+---
+
 ## sesión 15-10-2026 (34.ª parte): pulsar una notificación lleva a donde se resuelve
 
 **Qué se pidió:** que al pulsar el cuerpo de una notificación, en el aviso flotante de arriba o en el modal, lleve al sitio al que se refiere.
@@ -304,6 +355,27 @@ y «Borra el enlace asignado.» a «Borra el enlace asignado en la configuració
 
 ---
 
+## sesión 15-10-2026 (14.ª parte): la contraseña repetida, en `@olo/password-policy`
+
+**Qué se pidió:** el usuario cambió el texto del aviso («Esta contraseña no es válida por seguridad,
+elige otra.») y tuvo que hacerlo en tres archivos. Como es política, propuso llevarlo a `packages/`;
+eligió una sola copia, que también importa la API. Además dijo que en la intranet no salía: probado
+en vivo (Chrome sin ventana contra su 3001, API simulada), sí sale y no deja avanzar. Su prueba fue 17 s
+después de que la intranet compilara el cambio; lo probable es una pestaña con el código anterior.
+
+| Dónde | Cambio |
+|---|---|
+| `packages/password-policy/src/index.ts` | `CODIGO_PASSWORD_REPETIDA`, `MENSAJE_PASSWORD_REPETIDA`, `repiteLaPassword(nueva, escrita)` (lo único que el formulario puede ver solo) y `esPasswordRepetida(error)`. El comentario de cabecera anota la excepción: el resto de la política sigue en dos copias, esto vive solo aquí |
+| `4000-api-backend` | Nueva dependencia `@olo/password-policy` (`package.json`, `package-lock.json`). `shared/password-policy.ts` reexporta el código y el mensaje del paquete y `esErrorDePasswordRepetida` es `esPasswordRepetida`; `nuevaPasswordSinRepetir` no cambia |
+| sitio web | Se borra `shared/lib/password-repetida.ts`. `FirstLoginFlow`, `ResetPasswordView` y «Mi perfil» importan del paquete y comparan con `repiteLaPassword` |
+| intranet | `shared/lib/errors.ts` pierde el código, el mensaje y `codigoDeError`. `FirstLoginView` y `ResetPasswordView` importan del paquete; `fetchAuth` sigue pasando el `code` en el error |
+
+**Instalación.** `npm run sync:paquetes` en las tres (lo mismo que hace `npm run dev` al arrancar): compiló `dist/` y refrescó la copia en `node_modules/@olo`.
+
+**Verificación.** `tsc --noEmit` de la API y las dos apps, `eslint` de las apps, sin errores. La regla de la API con el mensaje del paquete: rechaza la actual y la anterior (400, `PASSWORD_REPETIDA`) y acepta una distinta. El primer ingreso de la intranet en vivo muestra el aviso en el campo y se queda en el paso 1. **Pendiente:** reiniciar la API (`ts-node` sin recarga) para que cargue la dependencia nueva.
+
+---
+
 ## sesión 15-10-2026 (13.ª parte): modal «Eliminar la página» — el paso 1 dice «Ve al botón de «Menú y pie»»
 
 **Qué se pidió:** cambiar «Ve a Menú y pie de página.» por «Ve al botón de «Menú y pie»».
@@ -316,6 +388,27 @@ y «Borra el enlace asignado.» a «Borra el enlace asignado en la configuració
 
 ---
 
+## sesión 15-10-2026 (13.ª parte): la contraseña repetida se avisa en el mismo paso
+
+**Qué pasó:** el usuario probó con `elpollo` y le pareció que el primer ingreso aceptaba la temporal
+como contraseña nueva. Consultado Neon (solo lectura; la comparación de hashes se hizo en local): la
+contraseña guardada **seguía siendo la temporal**, la cuenta seguía con las dos marcas pendientes y no
+había ningún `cambiar_password` después del restablecimiento de las 21:59. La API nueva sí corría: ese
+restablecimiento ya guardó `password_hash_anterior`. Lo que engañaba era la pantalla: con contraseña
+y preguntas pendientes, el paso 1 pasa a las preguntas y la API solo ve la contraseña al enviar todo.
+
+| Dónde | Cambio |
+|---|---|
+| `FirstLoginFlow` (sitio) y `FirstLoginView` (intranet) | En el paso 1, si la nueva es igual a la temporal escrita en el mismo formulario, el aviso sale en el campo y no se avanza |
+| `ResetPasswordView` (intranet, `cambio-obligatorio`) y «Mi perfil» (sitio) | Lo mismo frente a la contraseña actual escrita en el formulario |
+| `shared/lib/password-repetida.ts` (sitio) y `shared/lib/errors.ts` (intranet) | `MENSAJE_PASSWORD_REPETIDA`, el mismo texto de la API, para que el aviso no cambie según dónde se detecte |
+
+**Lo que sigue llegando al final:** la coincidencia con la contraseña **anterior** solo la sabe el servidor. En el primer ingreso con preguntas pendientes se detecta al enviar, y la pantalla vuelve al paso de la contraseña con el aviso en el campo (12.ª parte).
+
+**Verificación.** `tsc --noEmit` y `eslint` de las dos apps sin errores; CRLF uniforme. Falta repetir la prueba en el navegador.
+
+---
+
 ## sesión 15-10-2026 (12.ª parte): Páginas en revisión — el campo del motivo con borde rojo al rechazar y eliminar
 
 **Qué se pidió:** en los modales «Rechazar versión» y «Eliminar versión», el borde de «Explica la razón…» en rojo.
@@ -325,6 +418,34 @@ y «Borra el enlace asignado.» a «Borra el enlace asignado en la configuració
 | `revision-queue-view.tsx`, `ModalAccionConMotivo` | El área de texto usa siempre `areaDeModalConErrorClass` (borde y foco `#d90000`, `#ff6b6b` en oscuro), el rojo de los mensajes de error, en vez de cambiar a ella solo cuando faltaba el motivo. Solo afecta a Rechazar y Eliminar: Publicar no pide motivo (`requiereMotivo={false}`). Cuando falta el motivo lo sigue diciendo `ErrorDeCampo` debajo, con `aria-invalid`. Fuera el import de `areaDeModalClass`, sin uso |
 
 **Verificación.** `tsc --noEmit` y `eslint` sin errores; CRLF uniforme. Falta verlo en el navegador.
+
+---
+
+## sesión 15-10-2026 (12.ª parte): la contraseña nueva no puede repetir la actual ni la anterior
+
+**Qué se pidió:** que al elegir contraseña (recuperación y primer ingreso) no se pueda poner la
+actual ni la anterior a ella; con un mensaje claro bajo el campo, su estado de error y el borde
+rojo, y sin que el mensaje delate de más.
+
+**Regla.** Un solo mensaje para los dos casos: «Esta contraseña ya la usaste. Elige una diferente a
+la actual y a la anterior.». No dice cuál de las dos coincidió, para no confirmar cuál es la actual.
+La política de formato se comprueba antes, así que un error de formato sale primero.
+
+| Dónde | Cambio |
+|---|---|
+| API, migración `045-password-anterior` | Columna `usuarios.password_hash_anterior` (`text`, nula). Las cuentas existentes empiezan sin anterior |
+| API, `models/user.ts` y `usuarios.repository.ts` | Atributo `previous_password_hash`. `findAll` y `findById` lo excluyen como a `password_hash`; `auditoria-campos.ts` lo trata como sensible |
+| API, `shared/password-policy.ts` | `nuevaPasswordSinRepetir`: aplica la política, compara con la actual y la anterior (`compararPassword`) y devuelve el hash nuevo con la actual como anterior. Error 400 con `code: 'PASSWORD_REPETIDA'` |
+| API, casos de uso | La usan el primer ingreso (no repetir la temporal ni la de antes de un restablecimiento), la recuperación y `updateUser` (cambio voluntario o forzado y la que fija un administrador). Al emitir una temporal, la contraseña real pasa a ser la anterior |
+| API, `security-questions.controller.ts` | La recuperación, que oculta los demás errores tras un mensaje genérico, deja pasar este con su `code`: solo llega tras responder bien las preguntas |
+| intranet | `fetchAuth` conserva el `code` (`codigoDeError`, `CODIGO_PASSWORD_REPETIDA` en `shared/lib/errors.ts`). Recuperación y cambio obligatorio (`ResetPasswordView`): el aviso va al campo «Nueva contraseña». Primer ingreso (`FirstLoginView`): vuelve al paso de la contraseña con el aviso en ese campo y conserva las respuestas |
+| sitio web | Las rutas `api/auth/first-login` y `api/security-questions/recover-password` pasan el `code`; `shared/lib/password-repetida.ts` (`esPasswordRepetida`). Recuperación, primer ingreso (`FirstLoginFlow`, igual que la intranet) y «Mi perfil» (`profile.actions.ts`, `profile.tsx`): el aviso va al campo de la nueva |
+
+**Seguridad.** Se probó `nuevaPasswordSinRepetir` con contraseñas de ejemplo: rechaza la actual y la anterior con el mismo mensaje y código, acepta una distinta (y la actual pasa a anterior), un error de formato sigue siendo `PASSWORD_INVALIDA`, y una cuenta sin hashes no rompe. Cada cambio de contraseña hace hasta dos comparaciones bcrypt más.
+
+**Pendiente del usuario:** aplicar la migración (`npm run migrate` en `4000-api-backend`) y reiniciar la API. Sin ella la API no arranca: el modelo ya pide la columna. La columna es nula, así que aplicarla no rompe a quien tenga el código anterior. El SQL se probó en una tabla temporal de Neon dentro de una transacción revertida.
+
+**Verificación.** `tsc --noEmit` de la API y de las dos apps sin errores; `eslint` de las apps sin errores (la API no tiene ESLint configurado); CRLF uniforme. Falta probar en el navegador, con la migración aplicada: primer ingreso con la temporal como nueva, recuperación con la actual y cambio tras un restablecimiento con la de antes.
 
 ---
 
