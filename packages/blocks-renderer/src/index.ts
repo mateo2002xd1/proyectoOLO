@@ -20,6 +20,8 @@ export type { DestinoTabConfig } from './primitives/destino-tab-field';
 // ─── Campo de color (selector visual + hex) para cualquier bloque ───
 export { ColorPickerField, campoColor } from './primitives/color-picker-field';
 export type { ColorPickerFieldProps } from './primitives/color-picker-field';
+export { AcordeonDeCampo, campoEnAcordeon, campoGrupoEnAcordeones } from './primitives/campos-en-acordeon';
+export type { CampoDeAcordeon, OpcionesDeAcordeon } from './primitives/campos-en-acordeon';
 
 // ─── Campos para Icono y Color de Icono ───
 export { IconSelectorField, campoIcono, IconoRenderer, ICONOS_DISPONIBLES } from './primitives/icon-selector-field';

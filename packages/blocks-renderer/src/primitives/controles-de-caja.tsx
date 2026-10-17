@@ -33,6 +33,7 @@
  */
 
 import { campoColor } from './color-picker-field';
+import { campoGrupoEnAcordeones, type CampoDeAcordeon } from './campos-en-acordeon';
 
 // ─── Tipos mínimos de Puck ───────────────────────────────────────────────────
 /**
@@ -133,71 +134,70 @@ const ANCHOS: Record<string, string | null> = {
 /**
  * El grupo de campos que `conCaja` inyecta en cada bloque.
  *
- * Va como un único campo `object`, así que en el panel de la derecha se ve como
- * una sección plegable y no como seis campos sueltos mezclados con los del
- * bloque.
+ * Va como un único campo con valor objeto, así que en el panel de la derecha
+ * se ve como un grupo y no como seis campos sueltos mezclados con los del
+ * bloque. Cada opción es un acordeón con su valor actual a la vista
+ * (`campos-en-acordeon.tsx`).
  */
-export const campoCaja = {
-  type: 'object' as const,
-  label: 'Espaciado y Ancho',
-  objectFields: {
-    interiorY: {
-      type: 'select' as const,
-      label: 'Espacio interior · arriba y abajo',
-      options: OPCIONES_ESPACIO,
-    },
-    interiorX: {
-      type: 'select' as const,
-      label: 'Espacio interior · a los lados',
-      options: OPCIONES_ESPACIO,
-    },
-    superior: {
-      type: 'select' as const,
-      label: 'Separación con el bloque de arriba',
-      options: OPCIONES_ESPACIO,
-    },
-    inferior: {
-      type: 'select' as const,
-      label: 'Separación con el bloque de abajo',
-      options: OPCIONES_ESPACIO,
-    },
-    ancho: {
-      type: 'select' as const,
-      label: 'Ancho máximo',
-      options: [
-        { label: 'Todo el ancho', value: 'completo' },
-        { label: 'Ancho del contenido (1200px)', value: 'contenido' },
-        { label: 'Medio (960px)', value: 'medio' },
-        { label: 'Estrecho, para leer (720px)', value: 'lectura' },
-      ],
-    },
-    alineacion: {
-      type: 'radio' as const,
-      label: 'Posición (si tiene ancho máximo)',
-      options: [
-        { label: 'Centrado', value: 'centro' },
-        { label: 'Izquierda', value: 'izquierda' },
-        { label: 'Derecha', value: 'derecha' },
-      ],
-    },
-    /**
-     * El fondo pinta **la caja**, no la franja de pantalla.
-     *
-     * Con el ancho en «Todo el ancho» —que es lo que trae por defecto— las dos
-     * cosas coinciden y el color va de borde a borde, que es el caso normal. Si
-     * además se estrecha el bloque, el color se estrecha con él: sale un
-     * rectángulo de color con el contenido dentro, no una franja con el
-     * contenido centrado.
-     *
-     * Se deja así a propósito en vez de sacar el fondo a un `<div>` de fuera:
-     * eso cambiaría el DOM de todas las páginas ya guardadas —justo lo que la
-     * decisión 2 de la cabecera evita— y traería colapso de márgenes entre las
-     * dos capas. Y como el editor enseña el resultado mientras se elige, el
-     * comportamiento se ve, no hay que adivinarlo.
-     */
-    fondo: campoColor('Color de fondo'),
+const CAMPOS_CAJA: Record<string, CampoDeAcordeon> = {
+  interiorY: {
+    type: 'select' as const,
+    label: 'Espacio interior · arriba y abajo',
+    options: OPCIONES_ESPACIO,
   },
+  interiorX: {
+    type: 'select' as const,
+    label: 'Espacio interior · a los lados',
+    options: OPCIONES_ESPACIO,
+  },
+  superior: {
+    type: 'select' as const,
+    label: 'Separación con el bloque de arriba',
+    options: OPCIONES_ESPACIO,
+  },
+  inferior: {
+    type: 'select' as const,
+    label: 'Separación con el bloque de abajo',
+    options: OPCIONES_ESPACIO,
+  },
+  ancho: {
+    type: 'select' as const,
+    label: 'Ancho máximo',
+    options: [
+      { label: 'Todo el ancho', value: 'completo' },
+      { label: 'Ancho del contenido (1200px)', value: 'contenido' },
+      { label: 'Medio (960px)', value: 'medio' },
+      { label: 'Estrecho, para leer (720px)', value: 'lectura' },
+    ],
+  },
+  alineacion: {
+    type: 'radio' as const,
+    label: 'Posición (si tiene ancho máximo)',
+    options: [
+      { label: 'Centrado', value: 'centro' },
+      { label: 'Izquierda', value: 'izquierda' },
+      { label: 'Derecha', value: 'derecha' },
+    ],
+  },
+  /**
+   * El fondo pinta **la caja**, no la franja de pantalla.
+   *
+   * Con el ancho en «Todo el ancho» —que es lo que trae por defecto— las dos
+   * cosas coinciden y el color va de borde a borde, que es el caso normal. Si
+   * además se estrecha el bloque, el color se estrecha con él: sale un
+   * rectángulo de color con el contenido dentro, no una franja con el
+   * contenido centrado.
+   *
+   * Se deja así a propósito en vez de sacar el fondo a un `<div>` de fuera:
+   * eso cambiaría el DOM de todas las páginas ya guardadas —justo lo que la
+   * decisión 2 de la cabecera evita— y traería colapso de márgenes entre las
+   * dos capas. Y como el editor enseña el resultado mientras se elige, el
+   * comportamiento se ve, no hay que adivinarlo.
+   */
+  fondo: { type: 'color', label: 'Color de fondo' },
 };
+
+export const campoCaja = campoGrupoEnAcordeones('Espaciado y Ancho', CAMPOS_CAJA);
 
 export const campoHashtag = {
   type: 'object' as const,
@@ -344,7 +344,19 @@ export function estiloDeCaja(caja: ValoresCaja | undefined): EstiloDeCaja {
 // ─── Envoltorio ──────────────────────────────────────────────────────────────
 const YA_TIENE_CAJA = '__oloConCaja';
 
-export function conCaja<T extends ConfigDeBloque>(config: T): T {
+const { fondo: _fondo, ...camposCajaSinFondo } = CAMPOS_CAJA;
+const campoCajaSinFondo = campoGrupoEnAcordeones('Espaciado y Ancho', camposCajaSinFondo);
+
+/**
+ * Con `conHashtag: false` el bloque no recibe el campo «Hashtag decorativo»,
+ * y con `conFondo: false` la caja pierde su «Color de fondo» (para bloques
+ * que ya traen el suyo). En los dos casos tampoco se pinta lo que venga
+ * guardado.
+ */
+export function conCaja<T extends ConfigDeBloque>(
+  config: T,
+  { conHashtag = true, conFondo = true }: { conHashtag?: boolean; conFondo?: boolean } = {}
+): T {
   if (config[YA_TIENE_CAJA]) return config;
 
   return {
@@ -352,17 +364,19 @@ export function conCaja<T extends ConfigDeBloque>(config: T): T {
     [YA_TIENE_CAJA]: true,
     fields: {
       ...(config.fields ?? {}),
-      caja: campoCaja,
-      hashtag: campoHashtag,
+      caja: conFondo ? campoCaja : campoCajaSinFondo,
+      ...(conHashtag ? { hashtag: campoHashtag } : {}),
     },
     defaultProps: {
       ...(config.defaultProps ?? {}),
       caja: { ...cajaPorDefecto, ...config.defaultProps?.caja },
-      hashtag: { ...hashtagPorDefecto, ...config.defaultProps?.hashtag },
+      ...(conHashtag ? { hashtag: { ...hashtagPorDefecto, ...config.defaultProps?.hashtag } } : {}),
     },
     render: (props: any) => {
       const contenido = config.render(props);
-      const { className, style } = estiloDeCaja(props?.caja);
+      const { className, style } = estiloDeCaja(
+        conFondo ? props?.caja : { ...props?.caja, fondo: '' }
+      );
 
       const aplica =
         props?.caja &&
@@ -373,7 +387,7 @@ export function conCaja<T extends ConfigDeBloque>(config: T): T {
             (props.caja as any)[k] !== 'completo'
         );
 
-      const habilitarHashtag = props?.hashtag?.habilitar === 'si';
+      const habilitarHashtag = conHashtag && props?.hashtag?.habilitar === 'si';
       const textoHashtag = props?.hashtag?.texto;
       const colorHashtag = props?.hashtag?.color || '#333333';
       const tamanoHashtag = props?.hashtag?.tamano || '2rem';
@@ -447,17 +461,27 @@ export function conCaja<T extends ConfigDeBloque>(config: T): T {
  * `<div>` que mide lo mismo que ella la deja sin recorrido donde pegarse, así
  * que dejaría de seguir al scroll. Como esos bloques los coloca la plantilla y
  * no se arrastran por sección, tampoco se pierde nada quitándoles los controles.
+ *
+ * `sinHashtag` y `sinFondo` conservan la caja pero le quitan el «Hashtag
+ * decorativo» o el «Color de fondo».
  */
 export function conCajaEnTodos<T extends Record<string, ConfigDeBloque>>(
   componentes: T,
-  opciones: { excepto?: string[] } = {}
+  opciones: { excepto?: string[]; sinHashtag?: string[]; sinFondo?: string[] } = {}
 ): T {
   const excepto = new Set(opciones.excepto ?? []);
+  const sinHashtag = new Set(opciones.sinHashtag ?? []);
+  const sinFondo = new Set(opciones.sinFondo ?? []);
 
   return Object.fromEntries(
     Object.entries(componentes).map(([nombre, config]) => [
       nombre,
-      excepto.has(nombre) ? config : conCaja(config),
+      excepto.has(nombre)
+        ? config
+        : conCaja(config, {
+            conHashtag: !sinHashtag.has(nombre),
+            conFondo: !sinFondo.has(nombre),
+          }),
     ])
   ) as T;
 }

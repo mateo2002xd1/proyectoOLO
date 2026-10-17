@@ -5,6 +5,44 @@
 
 ---
 
+## sesión 17-10-2026: «Imagen destacada» del sitio-web, el editor solo pide la imagen
+
+**Qué se pidió:** primer paso del rediseño del bloque `ImagenDestacada` en el editor del sitio-web: quitar del panel lateral todas las opciones salvo la carga de la imagen. Los siguientes pasos (el estilo) los irá dando el usuario.
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/config/puck.config.tsx` | `fields` y `defaultProps` de `ImagenDestacada` quedan en `imagenSrc` e `imagenAlt`. Fuera: «Mostrar título», «Título», «Ancho», «Fondo», «Ajuste de la imagen» y «Bordes redondeados» |
+| `packages/blocks-renderer/src/blocks/imagen-destacada.tsx` | La imagen de muestra del editor (SVG de cuando no hay imagen) decía «Imagen Destacada (Vista Previa)»; ahora dice «Imagen Destacada». Después se le quitó el fondo (degradado, cuadrícula y el círculo detrás del icono) y el icono de línea azul se cambió por uno relleno en gris `#9ca3af`; quedan el borde punteado y los dos textos. El SVG ahora se escribe legible y se codifica con `encodeURIComponent` en vez de ir ya codificado a mano. Afecta a los dos editores |
+| `imagen-destacada.tsx` + panel del sitio-web | Nueva prop `colorFondo` (campo «Color de fondo (por defecto blanco)», el `campoColor` de siempre). Se aplica con `style` en la sección y gana sobre la clase `matriz-section-white/gray`, que no lleva `!important`. Vacío = como antes |
+| `controles-de-caja.tsx` | `conCaja(config, { conHashtag, conFondo })` y `conCajaEnTodos(..., { sinHashtag, sinFondo })`: listas de bloques que conservan «Espaciado y Ancho» pero sin «Hashtag decorativo» o sin el «Color de fondo» de la caja. Tampoco se pinta lo que venga guardado. Por defecto todo sigue igual para los demás bloques |
+| `3000-sitio-web/src/config/puck.config.tsx` | `sinHashtag` y `sinFondo` con `ImagenDestacada`: el color de la caja quedaba repetido con el del bloque y, además, la clase de fondo del bloque lo tapaba |
+| `imagen-destacada.tsx` | Sin `shadow-sm` en la `<img>` mientras se ve la imagen de muestra: con `rounded-xl` dibujaba una línea gris fina por fuera del borde punteado. Con imagen real la sombra sigue |
+| `packages/blocks-renderer/src/primitives/campos-en-acordeon.tsx` (nuevo) | `campoEnAcordeon(campo)` y `campoGrupoEnAcordeones(label, campos)`: campos `custom` de Puck que pintan cada opción como acordeón cerrado (cabecera de 44 px con el valor actual: opción elegida, muestra del color, texto recortado con «…») y controles con borde (select, botones segmentados para `radio`, texto, `ColorPickerField`, o el `render` de un `custom`). Estilos en línea como `ColorPickerField`: el paquete no tiene hoja propia |
+| `controles-de-caja.tsx` | «Espaciado y Ancho» pasa de campo `object` de Puck a `campoGrupoEnAcordeones` sobre `CAMPOS_CAJA`; el color de la caja es `{ type: 'color' }`. Mismas claves y valores en `props.caja`: lo guardado sigue igual. **Cambia en todos los bloques de los dos editores** |
+| Panel de «Imagen destacada» (sitio-web) | Imagen (abierta al entrar, resumen «Cargada / Sin imagen»), Texto alternativo y Color de fondo, cada uno en su acordeón. La clave `imagenAlt` no cambia, así que la regla de accesibilidad sigue igual |
+| Intranet | Sin tocar su panel. El componente sigue aceptando todas las props y la intranet conserva su panel completo |
+
+> **Por qué se dejó «Texto alternativo»:** `@olo/accessibility-policy` tiene la regla `alt` para `ImagenDestacada`, y `enviar-a-revision.usecase.ts` rechaza la página si hay imagen sin alt. Sin el campo, cualquier página con este bloque quedaría imposible de enviar a revisión.
+
+> **Descartado:** marcar el bloque con `sinHashtag: true` dentro de su config. El tipo `Config` de Puck rechaza claves desconocidas (TS2353), por eso la lista va como opción de `conCajaEnTodos`, igual que `excepto`.
+
+> **Bloques ya guardados:** el componente sigue leyendo `titulo`, `ancho`, `fondo`, etc. si un bloque viejo los trae guardados, pero ya no se pueden editar desde el sitio-web. Los nuevos usan los valores por defecto del componente (`ancho` completo, fondo blanco, `contain`, redondeado grande, sin título).
+
+| Verificación | Resultado |
+|---|---|
+| `npx tsc --noEmit` en 3000-sitio-web | Sin errores en `puck.config.tsx` |
+| Finales de línea del archivo (medido con node) | Todo CRLF, sin mezcla |
+| SVG de muestra extraído y abierto en Chrome headless | Sin fondo, icono gris centrado sobre los textos, borde punteado |
+| `npx tsc --noEmit` en packages/blocks-renderer | Sin errores |
+| `npx tsc --noEmit` en blocks-renderer, sitio-web e intranet (tras color, hashtag y fondo de caja) | Sin errores |
+| Campos en acordeón pintados con `react-dom/server` y fotografiados en Chrome headless (cerrados y abiertos) | Bordes, resúmenes y botones segmentados correctos; el resumen largo se recorta con «…» tras corregirlo |
+| `npx tsc --noEmit` en blocks-renderer, sitio-web e intranet (tras los acordeones) | Sin errores |
+| Editor en navegador | Sin verificar |
+
+**Pendiente al cierre:** ver el panel en el navegador; decidir qué hacer con los bloques que ya traen título u otras opciones guardadas; seguir con el estilo según indique el usuario.
+
+---
+
 ## sesión 15-10-2026 (39.ª parte): revisión de seguridad, lint, código muerto, espagueti y archivos sin uso (sin cambios)
 
 **Qué se pidió:** revisar errores de seguridad y de ESLint, código muerto, código espagueti, imágenes y repositorios que no se usan. Es solo diagnóstico: no se tocó código. Cada hallazgo de herramienta se comprobó a mano antes de anotarlo.

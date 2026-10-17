@@ -8,6 +8,7 @@ import {
   conCajaEnTodos,
   BLOQUES_SIN_CAJA,
   campoColor,
+  campoEnAcordeon,
   TextoRico,
   ImagenDestacada,
   TarjetaArticulo,
@@ -1185,55 +1186,19 @@ const puckConfigBase: Config = {
     },
     ImagenDestacada: {
       label: 'Imagen destacada',
+      // El alt lo exige @olo/accessibility-policy al enviar a revisión.
       fields: {
-        mostrarTitulo: {
-          type: 'radio',
-          label: 'Mostrar título',
-          options: [
-            { label: 'Sí', value: true },
-            { label: 'No', value: false },
-          ],
-        },
-        titulo: { type: 'richtext', label: 'Título', contentEditable: true },
-        imagenSrc: campoImagen('Imagen'),
-        imagenAlt: { type: 'text', label: 'Texto alternativo' },
-        ancho: {
-          type: 'radio',
-          label: 'Ancho',
-          options: [
-            { label: 'Completo', value: 'completo' },
-            { label: 'Caja centrada', value: 'contenido' },
-          ],
-        },
-        fondo: campoFondo,
-        ajusteImagen: {
-          type: 'radio',
-          label: 'Ajuste de la imagen (solo ancho «Completo»)',
-          options: [
-            { label: 'Cubrir el espacio', value: 'cover' },
-            { label: 'Verse completa', value: 'contain' },
-          ],
-        },
-        redondeado: {
-          type: 'select',
-          label: 'Bordes redondeados (solo ancho «Completo»)',
-          options: [
-            { label: 'Ninguno', value: 'ninguno' },
-            { label: 'Pequeño', value: 'pequeno' },
-            { label: 'Grande', value: 'grande' },
-            { label: 'Circular', value: 'circular' },
-          ],
-        },
+        imagenSrc: campoEnAcordeon(campoImagen('Imagen'), {
+          abierto: true,
+          resumen: (src) => (src ? 'Cargada' : 'Sin imagen'),
+        }),
+        imagenAlt: campoEnAcordeon({ type: 'text', label: 'Texto alternativo' }),
+        colorFondo: campoEnAcordeon({ type: 'color', label: 'Color de fondo' }),
       },
       defaultProps: {
-        mostrarTitulo: true,
-        titulo: '',
         imagenSrc: '',
         imagenAlt: '',
-        ancho: 'completo',
-        fondo: 'blanco',
-        ajusteImagen: 'contain',
-        redondeado: 'grande',
+        colorFondo: '',
       },
       render: ({ puck, ...props }: BlockRender<ComponentProps<typeof ImagenDestacada>> & { puck?: { isEditing?: boolean } }) => (
         <ImagenDestacada {...props} puck={puck} esEdicion={Boolean(puck?.isEditing)} />
@@ -2075,7 +2040,11 @@ const puckConfigBase: Config = {
  */
 export const puckConfig: Config = {
   ...puckConfigBase,
-  components: conCajaEnTodos(puckConfigBase.components, { excepto: BLOQUES_SIN_CAJA }),
+  components: conCajaEnTodos(puckConfigBase.components, {
+    excepto: BLOQUES_SIN_CAJA,
+    sinHashtag: ['ImagenDestacada'],
+    sinFondo: ['ImagenDestacada'],
+  }),
 };
 
 /**
