@@ -7,6 +7,7 @@ import {
 } from '@/features/paginas';
 import { RouteTransition } from '@/shared/ui/atoms/route-transition';
 import { ResaltadorBusquedaClient } from '@/shared/ui/atoms/resaltador-busqueda-client';
+import { MigasDePan } from '@/shared/ui/organisms/migas-de-pan';
 import { Accesibilidad } from '@/shared/lib/accesibilidad';
 import { lexend } from '@/shared/lib/fonts';
 
@@ -28,6 +29,9 @@ import { lexend } from '@/shared/lib/fonts';
  * y su panel): sus preferencias son del sitio público (9-accesibilidad.md §0).
  *
  * `lexend.variable` define `--font-dislexia`, la letra de «Fuente dislexia».
+ *
+ * Las migas de pan van fijas debajo de la cabecera, fuera de lo que se edita: toman los
+ * nombres del menú de la plantilla (sin cabecera, de la tabla de `migas-de-pan.tsx`).
  */
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const plantilla = await obtenerPlantilla();
@@ -35,6 +39,7 @@ export default async function PublicLayout({ children }: { children: React.React
   return (
     <div className={`publico-layout min-h-dvh flex flex-col ${lexend.variable}`}>
       {plantilla.cabecera && <Header block={{ id: 'header-plantilla' }} {...plantilla.cabecera} />}
+      <MigasDePan menu={plantilla.cabecera?.navLinks ?? []} />
       <main className="flex-grow">
         <RouteTransition>{children}</RouteTransition>
       </main>

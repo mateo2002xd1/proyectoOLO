@@ -840,141 +840,120 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
   }
 }
 
-/* --- External Portals --- */
-.olo-portals {
-  padding: var(--space-4xl) var(--space-lg);
-  background: var(--color-gray-50);
+/* --- External Portals ---
+   Fila de tarjetas de color unidas por una punta de flecha (ver external-portals.tsx).
+   El color de cada tarjeta llega en `--olo-portal-fondo`; la flecha lo hereda. */
+.olo-portales {
+  padding: clamp(32px, 5vw, 64px) 16px;
 }
 
-.olo-portals-inner {
+.olo-portales__fila {
+  display: flex;
   max-width: var(--max-width);
   margin: 0 auto;
 }
 
-.olo-portals-header {
-  text-align: center;
-  margin-bottom: var(--space-3xl);
-}
-
-.olo-portals-title {
-  font-family: var(--font-heading);
-  /* Antes se quedaba en 2rem incluso en móvil, aunque la rejilla de abajo sí
-     colapsara a una columna en el mismo punto. El clamp() escala solo con el
-     ancho de la ventana, sin depender de un @media. */
-  font-size: clamp(1.5rem, 1.2rem + 1.5vw, var(--fs-2xl));
-  /* El peso base es el ligero: lo que va entre ** se pone en negrita. */
-  font-weight: var(--fw-regular);
-  color: var(--color-primary-dark);
-  margin-bottom: var(--space-sm);
-}
-
-.olo-portals-title strong {
-  font-weight: var(--fw-bold);
-}
-
-.olo-portals-subtitle {
-  font-size: var(--fs-base);
-  color: var(--color-gray-500);
-}
-
-.olo-portals-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-xl);
-}
-
-/* La tarjeta entera es el enlace: se pulsa en cualquier punto, no solo sobre el
-   texto. Por eso lleva aquí el `display: flex` y el contenido va en un `<span>`
-   por dentro — un `<a>` no puede envolver `<div>` sin marcado inválido. */
-.olo-portal-card {
+.olo-portal {
   position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 182px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  aspect-ratio: 4 / 5;
-  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 24px 28px;
+  background: var(--olo-portal-fondo, #001145);
+  color: var(--color-white);
+  text-align: center;
   text-decoration: none;
-  transition: transform var(--transition-slow), box-shadow var(--transition-slow);
 }
 
-.olo-portal-card:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--shadow-xl);
-}
-
-/* El foco de teclado tiene que verse sobre el fondo oscuro de la tarjeta, así que
-   el anillo va por fuera del borde (SC 2.4.7 / 1.4.11). */
-.olo-portal-card:focus-visible {
-  outline: 3px solid var(--color-brand-focus);
-  outline-offset: 3px;
-}
-
-/* La ilustración, al 60% sobre el degradado que da el color de la tarjeta. */
-.olo-portal-bg {
+/* La punta hacia la tarjeta siguiente: un triángulo del color de esta, montado sobre
+   el borde. La última no la lleva. */
+.olo-portal:not(:last-child)::after {
+  content: '';
   position: absolute;
-  inset: 0;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: cover;
-  opacity: 0.6;
+  z-index: 1;
+  top: 50%;
+  right: -20px;
+  width: 20px;
+  height: 40px;
+  transform: translateY(-50%);
+  background: var(--olo-portal-fondo, #001145);
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+
+.olo-portal__icono {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  background: var(--color-white);
   transition: transform var(--transition-slow);
 }
 
-.olo-portal-card:hover .olo-portal-bg {
-  transform: scale(1.05);
+a.olo-portal:hover .olo-portal__icono {
+  transform: scale(1.08);
 }
 
-/* Vela oscura bajo el texto: la ilustración puede tener zonas claras y el texto
-   es blanco, así que sin esto el contraste depende de qué imagen se suba. */
-.olo-portal-content {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  padding: var(--space-xl);
-  background: linear-gradient(to top, rgba(6, 20, 44, 0.92) 0%, rgba(6, 20, 44, 0.72) 55%, rgba(6, 20, 44, 0) 100%);
+/* El anillo va por dentro en blanco y por fuera en azul: las tarjetas van pegadas y
+   pueden ser claras u oscuras (SC 2.4.7 / 1.4.11). */
+a.olo-portal:focus-visible {
+  z-index: 2;
+  outline: 3px solid var(--color-white);
+  outline-offset: -7px;
+  box-shadow: 0 0 0 3px #001145;
 }
 
-.olo-portal-label {
+/* Peso normal de base: lo que va en negrita lo decide el texto enriquecido. */
+.olo-portal__texto {
+  max-width: 10.5em;
   font-family: var(--font-heading);
-  font-size: clamp(1.125rem, 0.95rem + 1vw, var(--fs-xl));
-  font-weight: var(--fw-bold);
-  color: var(--color-white);
-  margin-bottom: var(--space-sm);
+  font-size: clamp(1.0625rem, 0.95rem + 0.45vw, 1.25rem);
+  font-weight: var(--fw-regular);
+  line-height: 1.25;
 }
 
-.olo-portal-description {
-  font-size: var(--fs-sm);
-  color: var(--color-white);
-  line-height: 1.5;
+.olo-portal__texto p {
+  margin: 0;
 }
 
-.olo-portal-description strong {
+.olo-portal__texto strong {
   font-weight: var(--fw-bold);
 }
 
-@media (width < 64rem) {
-  .olo-portals-grid {
-    grid-template-columns: 1fr;
-    max-width: 500px;
-    margin: 0 auto;
+/* Apiladas: la flecha pasa al borde de abajo y apunta hacia abajo. */
+@media (width < 40rem) {
+  .olo-portales__fila {
+    flex-direction: column;
+  }
+
+  .olo-portal {
+    min-height: 150px;
+  }
+
+  .olo-portal:not(:last-child)::after {
+    top: auto;
+    right: auto;
+    bottom: -20px;
+    left: 50%;
+    width: 40px;
+    height: 20px;
+    transform: translateX(-50%);
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
   }
 }
 
-/* Quien pide menos movimiento no debería recibir el desplazamiento ni el zoom. */
 @media (prefers-reduced-motion: reduce) {
-
-  .olo-portal-card,
-  .olo-portal-bg {
+  .olo-portal__icono {
     transition: none;
   }
 
-  .olo-portal-card:hover {
-    transform: none;
-  }
-
-  .olo-portal-card:hover .olo-portal-bg {
+  a.olo-portal:hover .olo-portal__icono {
     transform: none;
   }
 }
@@ -5579,6 +5558,32 @@ a.olo-tarjeta-destacada:focus-visible {
       opacity var(--olo-modal-salida) var(--olo-modal-curva-salida),
       overlay var(--olo-modal-salida) allow-discrete,
       display var(--olo-modal-salida) allow-discrete;
+  }
+}
+
+/* --- Migas de pan del sitio público (`MigasDePan`, debajo de la cabecera) ---
+   Alineadas con el contenido de la cabecera (`.olo-header-inner`). No son `sticky`: la
+   cabecera ya lo es y las dos juntas le quitarían demasiada pantalla al móvil. */
+.migas-de-pan {
+  background: #ffffff;
+}
+
+.migas-de-pan__contenido {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0.625rem var(--space-lg);
+}
+
+/* Los mismos cortes y rellenos que `.olo-header-inner`, para empezar donde el logo. */
+@media (width < 48rem) {
+  .migas-de-pan__contenido {
+    padding-inline: var(--space-md);
+  }
+}
+
+@media (width < 25rem) {
+  .migas-de-pan__contenido {
+    padding-inline: var(--space-sm);
   }
 }
 
