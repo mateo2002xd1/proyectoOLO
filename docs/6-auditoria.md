@@ -5,6 +5,33 @@
 
 ---
 
+## sesión 18-10-2026 (6.ª parte): «Buscador de Ocupaciones» de la portada con el diseño nuevo
+
+**Qué se pidió:** cambiar el banner del buscador de ocupaciones por la maqueta «¿Sabes qué es una ocupación?» (titular, descripción y un recuadro azul con el buscador, sobre una imagen de fondo), reemplazando el bloque que ya se usa desde el editor. Configurable: textos enriquecidos, imagen de fondo y color del recuadro. Después: transparencia de la imagen de fondo.
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/features/sitio-web/buscador-ocupaciones/components/portada-buscador-ocupaciones.tsx` (nuevo) | `PortadaBuscadorOcupaciones`, solo presentación: sección con la imagen de fondo en una capa propia (`absolute`, `-z-10`, `opacity`), contenedor de 852 px, titular en `<h2>` (#001145, 28/36/40 px), descripción (17/20/22 px) y recuadro de esquinas de 16 px con su texto y el buscador (campo blanco de esquinas de 12 px y botón redondo del color del recuadro). Colores tomados de la maqueta (#001145) |
+| `hero-buscador-ocupaciones.tsx` | Usa `PortadaBuscadorOcupaciones` en vez de `OcupacionSearchBanner`. Props nuevas `tituloSeccion`, `descripcion`, `imagenFondo` y `transparenciaFondo`; fuera logo e ilustración. Textos por defecto en nodos, porque Puck entrega un `richtext` vacío o ausente como `null` |
+| `config/puck.config.tsx` (`Hero`) | Mismo tipo y etiqueta, así que la portada guardada sigue sirviendo. Campos: «Titular», «Descripción» y «Texto del recuadro» (`richtext`, editables en el lienzo; los dos de una línea sin encabezados, listas ni citas —`OPCIONES_TEXTO_EN_LINEA`— porque van dentro de un `<h2>`), y en acordeón «Texto de ejemplo del buscador», «Imagen de fondo», «Transparencia de la imagen» (0–100 %, vacío = 0) y «Color del recuadro». `titulo` y `colorFondo` conservan el nombre y pasan a ser el texto y el color del recuadro. `resolveData` completa titular y descripción de una portada vieja al abrirla |
+| `features/paginas/model/home-fallback-data.ts` | La portada de respaldo con las props nuevas |
+| `packages/accessibility-policy/src/index.ts` | Fuera la regla `Hero` (alt de `imageUrl`): el logo ya no se pinta y la imagen de fondo es decorativa. Reconstruido `dist/` |
+
+> **`OcupacionSearchBanner` no se tocó**: lo sigue usando /clasificacion (`BuscadorOcupacionesBanner`) con el diseño de antes.
+
+> **Un titular o una descripción borrados del todo vuelven al texto por defecto**: Puck no distingue «vacío» de «no guardado».
+
+| Verificación | Resultado |
+|---|---|
+| `npx tsc --noEmit` en sitio-web, intranet y api-backend | Sin errores (salvo `shared/lib/accesibilidad/`, que no es de este trabajo) |
+| `/inicio` del dev por CDP a 1440, 1024, 768 y 375 px | La portada guardada se ve con el diseño nuevo y los textos por defecto; sin scroll horizontal; a 375 px el placeholder del buscador se corta |
+| Imagen de fondo con transparencia (capa inyectada por CDP, al 40 %) | Se ve detrás del texto sin aclararlo |
+| Editor real (cargar imagen, cambiar color y transparencia, publicar) | Sin verificar |
+
+**Pendiente al cierre:** reiniciar la API para que tome la política de accesibilidad nueva; probar el bloque en el editor y publicar la portada.
+
+---
+
 ## sesión 18-10-2026 (5.ª parte): panel de accesibilidad en el sitio público
 
 **Qué se pidió:** incorporar la accesibilidad al sitio web (solo al sitio, no a la intranet) con las opciones de la maqueta: un panel que se abre desde un botón que acompaña el scroll, con el icono que dio el usuario.
@@ -29,11 +56,11 @@
 | Pausar animación | El «catch-all» de la intranet: animaciones y transiciones a 0,01 ms; además pausa los `<video>` que suenan |
 | Fuente dislexia | Lexend en todo el sitio |
 | Interlineado / Interletrado | Tres niveles; el 2.º es lo que pide WCAG 1.4.12 (0,12 em entre letras, 0,16 em entre palabras) |
-| Daltonismo | Filtro SVG «daltonize» para rojo-verde (la matriz y el porqué, en `FiltroDaltonismo`) |
+| Daltonismo | Al encender el interruptor se despliegan tres tarjetas: Protanopia, Deuteranopia (la que queda elegida al encender, por ser la más frecuente) y Tritanopia (pedido después, con su maqueta). Cada una es un filtro SVG «daltonize» con su matriz (`MATRICES_DE_DALTONISMO`, con la simulación de la que sale cada una). En las preferencias, `daltonismo` pasó de sí/no a un número: 0 apagado, 1–3 el tipo, y se aplica como los niveles (`data-a11y-daltonismo="2"`). Las tarjetas son radios nativos: las flechas cambian de tipo. Plegadas, llevan `inert` |
 | Resaltar títulos / enlaces, Texto en negrita, Cursor grande | Contorno en h1–h6; enlaces en amarillo con negro y subrayados; todo a 700; flecha de 48 px con borde blanco (azul sobre lo pulsable) |
 | Guía de lectura | Oscurece por encima y por debajo de una franja que sigue al puntero o al dedo |
 
-> **Los filtros van en el `<html>` y en ningún otro sitio.** Un `filter` en cualquier contenedor lo vuelve el marco de sus hijos `position: fixed` (la misma trampa del `transform` de `.olo-route-transition`): la cabecera, el FAB y el propio botón dejarían de anclarse a la ventana. El elemento raíz es la única excepción. Medido: con saturación + daltonismo y 1.056 px de scroll, el botón sigue en y = 420.
+> **Los filtros van en el `<html>` y en ningún otro sitio.** Un `filter` en cualquier contenedor lo vuelve el marco de sus hijos `position: fixed` (la misma trampa del `transform` de `.olo-route-transition`): la cabecera, el FAB y el propio botón dejarían de anclarse a la ventana. El elemento raíz es la única excepción. Medido: con saturación + daltonismo y 1.056 px de scroll, el botón sigue en y = 420. Daltonismo y saturación dejan cada uno su parte en una variable (`--olo-filtro-daltonismo`, `--olo-filtro-saturacion`) y una sola regla las encadena, en vez de una regla por cada pareja.
 
 > **El botón, el panel y la guía salen por portal al `<body>`**, fuera de `.publico-layout`, contra el que se escriben las reglas de contraste, negrita y espaciado: si no, el alto contraste pintaba de negro los interruptores con los que se apaga. El filtro SVG del daltonismo sí se pinta en la página, porque tiene que estar en el HTML del servidor cuando el script ya lo pidió.
 
@@ -52,7 +79,8 @@
 | `/inicio` del dev en Chrome headless por CDP, solo GET (el resto bloqueado: ninguna visita ni nada escrito en Neon) | Botón de 56 × 60 a la derecha y centrado; el script está en el `<head>`; al abrir, `aria-expanded="true"`, el foco en el panel y la pestaña escondida tras el borde |
 | Mismo, cambiando opciones | Más grande → `font-size` del `<html>` 20,8 px; contraste → fondo de `main` negro; dislexia → Lexend; se guardan en `localStorage` |
 | Recarga | Los atributos ya están puestos (los puso el script) |
-| Saturación + daltonismo y scroll | `filter: url("#olo-a11y-daltonismo") saturate(0.5)`; el botón sigue en la misma posición de la ventana |
+| Saturación + daltonismo y scroll | `filter: url("#olo-a11y-daltonismo-2") saturate(0.5)`; el botón sigue en la misma posición de la ventana |
+| Tipos de daltonismo | Apagado: tarjetas con alto 0 e `inert`. Encendido: alto 108 px, Deuteranopia elegida, filtro `-2`. Clic en Tritanopia → `-3`; flecha izquierda con el teclado → `-2`. Tras recargar sigue elegido. Apagado de nuevo: se pliega y queda solo la saturación. A 360 px las tres tarjetas miden 90 px sin desbordarse |
 | Cerrar con la X | El panel se desmonta y el foco vuelve al botón |
 | Restablecer | Sin atributos y la clave borrada del almacenamiento |
 | Lector (con `speechSynthesis.speak` espiado) | Dijo «Lector de pantalla activado» y «Título: texto de prueba» en `es-CO`, y marcó un elemento |
