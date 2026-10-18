@@ -14,7 +14,7 @@
 
 | | Carpetas | Features | Rutas de Next | Endpoints | Librerías |
 |---|--:|--:|--:|--:|--:|
-| `3000-sitio-web` | 49 | 3 | 54 | — | 33 |
+| `3000-sitio-web` | 50 | 3 | 54 | — | 33 |
 | `3001-intranet` | 31 | 2 | 14 | — | 27 |
 | `4000-api-backend` | 35 | — | — | 96 | 43 |
 
@@ -76,6 +76,7 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
     │       └── tendencia-ocupacional/         tendencia ocupacional (bloque Puck)
     ├── shared/                                lo transversal del sitio: sistema de diseño y utilidades
     │   ├── lib/                               utilidades transversales: cliente HTTP, sesión, bloques
+    │   │   ├── accesibilidad/                 botón y panel de accesibilidad del sitio público, y las preferencias del visitante
     │   │   ├── blocks/                        los bloques Puck de esta app
     │   │   ├── identidad-panel/               ⚠ sin descripción
     │   │   ├── inactividad/                   aviso y cierre de sesión por inactividad

@@ -7,6 +7,8 @@ import {
 } from '@/features/paginas';
 import { RouteTransition } from '@/shared/ui/atoms/route-transition';
 import { ResaltadorBusquedaClient } from '@/shared/ui/atoms/resaltador-busqueda-client';
+import { Accesibilidad } from '@/shared/lib/accesibilidad';
+import { lexend } from '@/shared/lib/fonts';
 
 /**
  * Marco común de todo el sitio público: cabecera arriba, pie abajo.
@@ -22,13 +24,16 @@ import { ResaltadorBusquedaClient } from '@/shared/ui/atoms/resaltador-busqueda-
  *
  * El editor, la vista previa y el panel quedan fuera: viven en `app/editor/`,
  * `app/preview/` y `app/admin/`, fuera de este grupo de rutas, y no deben llevar la
- * navegación del sitio encima.
+ * navegación del sitio encima. Tampoco llevan `Accesibilidad` (el botón del borde derecho
+ * y su panel): sus preferencias son del sitio público (9-accesibilidad.md §0).
+ *
+ * `lexend.variable` define `--font-dislexia`, la letra de «Fuente dislexia».
  */
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const plantilla = await obtenerPlantilla();
 
   return (
-    <div className="publico-layout min-h-dvh flex flex-col">
+    <div className={`publico-layout min-h-dvh flex flex-col ${lexend.variable}`}>
       {plantilla.cabecera && <Header block={{ id: 'header-plantilla' }} {...plantilla.cabecera} />}
       <main className="flex-grow">
         <RouteTransition>{children}</RouteTransition>
@@ -38,6 +43,7 @@ export default async function PublicLayout({ children }: { children: React.React
       <PaginasFabSpeedDial />
       <ResaltadorBusquedaClient />
       <RastreadorVisitas ambito="sitio" />
+      <Accesibilidad />
     </div>
   );
 }
