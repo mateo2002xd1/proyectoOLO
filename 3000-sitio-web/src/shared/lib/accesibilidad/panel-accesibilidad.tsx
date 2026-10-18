@@ -5,6 +5,8 @@ import {
   ALargeSmall,
   AudioLines,
   Bold,
+  Circle,
+  CircleDot,
   CirclePause,
   Contrast,
   Droplet,
@@ -24,7 +26,14 @@ import { poppins } from '@/shared/lib/fonts';
 import { Switch } from '@/shared/ui/atoms/switch';
 import { useCierreAnimado } from '@/shared/lib/use-cierre-animado';
 import { FiguraAccesibilidad } from './icono-accesibilidad';
-import { NIVELES, type ConNiveles, type Interruptor, type PreferenciasAccesibilidad } from './preferencias';
+import {
+  DALTONISMO_AL_ENCENDER,
+  NIVELES,
+  TIPOS_DE_DALTONISMO,
+  type ConNiveles,
+  type Interruptor,
+  type PreferenciasAccesibilidad,
+} from './preferencias';
 import { leerEnVozAlta, vozAltaDisponible } from './use-lector-en-voz-alta';
 
 export const ID_PANEL_ACCESIBILIDAD = 'olo-panel-accesibilidad';
@@ -35,6 +44,7 @@ const NOMBRES_DE_NIVEL: Record<ConNiveles, readonly string[]> = {
   saturacion: ['Saturación', 'Saturación baja', 'Saturación alta', 'Sin color'],
   interlineado: ['Interlineado', 'Interlineado amplio', 'Interlineado más amplio', 'Interlineado máximo'],
   interletrado: ['Interletrado', 'Interletrado amplio', 'Interletrado más amplio', 'Interletrado máximo'],
+  daltonismo: ['Sin corrección', ...TIPOS_DE_DALTONISMO.map((tipo) => tipo.nombre)],
 };
 
 /** Lo que se anuncia (y se lee en voz alta si el lector está encendido) al cambiar un nivel. */
@@ -43,6 +53,7 @@ const QUE_ES: Record<ConNiveles, string> = {
   saturacion: 'Color',
   interlineado: 'Espacio entre líneas',
   interletrado: 'Espacio entre letras',
+  daltonismo: 'Daltonismo',
 };
 
 interface PanelAccesibilidadProps {
@@ -125,22 +136,38 @@ export function PanelAccesibilidad({ abierto, preferencias, cambiar, restablecer
     />
   );
 
-  const fila = (clave: Interruptor, nombre: string, Icono: LucideIcon) => (
+  const filaConInterruptor = (nombre: string, Icono: LucideIcon, encendido: boolean, alCambiar: () => void) => (
     // Toda la fila responde al clic para que el blanco no sea solo el interruptor, que es
     // pequeño; con teclado se usa el interruptor, que es el que tiene el rol y el nombre.
     <div
       className="flex min-h-12 cursor-pointer items-center gap-3 rounded-2xl border border-[#d6dae1] p-1.5 pr-3 transition-colors hover:bg-[#f4f5f7]"
-      onClick={() => alternar(clave, nombre)}
+      onClick={alCambiar}
     >
       <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[#e4e7ec]" aria-hidden="true">
         <Icono size={18} strokeWidth={1.75} />
       </span>
       <span className="flex-1 text-sm">{nombre}</span>
       <span onClick={(evento) => evento.stopPropagation()}>
-        <Switch checked={preferencias[clave]} onChange={() => alternar(clave, nombre)} aria-label={nombre} />
+        <Switch checked={encendido} onChange={alCambiar} aria-label={nombre} />
       </span>
     </div>
   );
+
+  const fila = (clave: Interruptor, nombre: string, Icono: LucideIcon) =>
+    filaConInterruptor(nombre, Icono, preferencias[clave], () => alternar(clave, nombre));
+
+  const daltonismo = preferencias.daltonismo;
+
+  const alternarDaltonismo = () => {
+    const tipo = daltonismo > 0 ? 0 : DALTONISMO_AL_ENCENDER;
+    cambiar({ daltonismo: tipo });
+    anunciar(tipo ? `Daltonismo activado: ${NOMBRES_DE_NIVEL.daltonismo[tipo].toLowerCase()}` : 'Daltonismo desactivado');
+  };
+
+  const elegirDaltonismo = (tipo: number) => {
+    cambiar({ daltonismo: tipo });
+    anunciar(`Daltonismo: ${NOMBRES_DE_NIVEL.daltonismo[tipo].toLowerCase()}`);
+  };
 
   return (
     <div data-a11y-panel className="olo-a11y-capa">
@@ -184,7 +211,57 @@ export function PanelAccesibilidad({ abierto, preferencias, cambiar, restablecer
           {tarjetaNivel('interletrado', MoveHorizontal)}
         </div>
 
-        <div className="mt-2.5">{fila('daltonismo', 'Daltonismo', Eye)}</div>
+        <div className="mt-2.5">
+          {filaConInterruptor('Daltonismo', Eye, daltonismo > 0, alternarDaltonismo)}
+
+          {/* Los tipos se despliegan al encender el interruptor. Siempre montados, para que la
+              altura se anime (`grid-template-rows` de 0fr a 1fr); `inert` los saca del
+              teclado y del lector mientras están plegados. Son radios nativos: las flechas
+              cambian de tipo sin código propio. */}
+          <div
+            className={`grid transition-[grid-template-rows] duration-200 ease-out ${daltonismo > 0 ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
+            inert={daltonismo === 0}
+          >
+            <div className="overflow-hidden">
+              {/* `p-1`: el contorno de foco y el anillo del elegido salen 4 px de la tarjeta y
+                  el `overflow-hidden` de arriba los cortaría. */}
+              <fieldset className="grid grid-cols-3 gap-2 p-1 pt-2">
+                <legend className="sr-only">Tipo de daltonismo</legend>
+                {TIPOS_DE_DALTONISMO.map(({ valor, nombre, ayuda }) => {
+                  const elegido = daltonismo === valor;
+                  const Marca = elegido ? CircleDot : Circle;
+                  return (
+                    <label
+                      key={valor}
+                      className={`flex min-h-24 cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border px-1 py-3 text-center text-xs transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-focus ${
+                        elegido
+                          ? 'border-[#001631] bg-[#e4e7ec] font-semibold ring-1 ring-[#001631]'
+                          : 'border-[#d6dae1] bg-white hover:bg-[#f4f5f7]'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="olo-tipo-daltonismo"
+                        value={valor}
+                        checked={elegido}
+                        onChange={() => elegirDaltonismo(valor)}
+                        className="sr-only"
+                      />
+                      <span
+                        className={`grid size-9 place-items-center rounded-xl ${elegido ? 'bg-[#001631] text-white' : 'bg-[#e4e7ec]'}`}
+                        aria-hidden="true"
+                      >
+                        <Marca size={18} strokeWidth={2} />
+                      </span>
+                      <span className="leading-tight">{nombre}</span>
+                      <span className="sr-only">, {ayuda}</span>
+                    </label>
+                  );
+                })}
+              </fieldset>
+            </div>
+          </div>
+        </div>
 
         <h3 className="mb-2 mt-4 text-xs font-semibold uppercase tracking-wide text-[#5b6675]">Opciones avanzadas</h3>
         <div className="flex flex-col gap-2">

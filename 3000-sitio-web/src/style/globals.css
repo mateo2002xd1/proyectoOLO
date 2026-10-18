@@ -5776,29 +5776,38 @@ html[data-a11y-texto='3'] {
 
 /* --- Saturación y daltonismo: filtros, en el `<html>` (ver arriba por qué) --- */
 
+/* Cada opción deja su parte del filtro en una variable y una sola regla las encadena: así
+   se combinan los tres tipos de daltonismo con los tres niveles de saturación sin escribir
+   cada pareja. `var(--x,)` vale vacío si la opción está apagada, y la regla solo aplica
+   con al menos una encendida, así que el `filter` nunca queda vacío. Los filtros SVG
+   `#olo-a11y-daltonismo-N` los pinta `FiltroDaltonismo` (accesibilidad.tsx). */
+html[data-a11y-daltonismo='1'] {
+  --olo-filtro-daltonismo: url('#olo-a11y-daltonismo-1');
+}
+
+html[data-a11y-daltonismo='2'] {
+  --olo-filtro-daltonismo: url('#olo-a11y-daltonismo-2');
+}
+
+html[data-a11y-daltonismo='3'] {
+  --olo-filtro-daltonismo: url('#olo-a11y-daltonismo-3');
+}
+
 html[data-a11y-saturacion='1'] {
-  filter: saturate(0.5);
+  --olo-filtro-saturacion: saturate(0.5);
 }
 
 html[data-a11y-saturacion='2'] {
-  filter: saturate(2);
+  --olo-filtro-saturacion: saturate(2);
 }
 
-html[data-a11y-saturacion='3'],
-html[data-a11y-daltonismo][data-a11y-saturacion='3'] {
-  filter: grayscale(1);
+html[data-a11y-saturacion='3'] {
+  --olo-filtro-saturacion: grayscale(1);
 }
 
-html[data-a11y-daltonismo] {
-  filter: url('#olo-a11y-daltonismo');
-}
-
-html[data-a11y-daltonismo][data-a11y-saturacion='1'] {
-  filter: url('#olo-a11y-daltonismo') saturate(0.5);
-}
-
-html[data-a11y-daltonismo][data-a11y-saturacion='2'] {
-  filter: url('#olo-a11y-daltonismo') saturate(2);
+html[data-a11y-daltonismo],
+html[data-a11y-saturacion] {
+  filter: var(--olo-filtro-daltonismo,) var(--olo-filtro-saturacion,);
 }
 
 /* --- Alto contraste (RF-14, 9-accesibilidad.md fase 4): blanco sobre negro, 21:1 --- */

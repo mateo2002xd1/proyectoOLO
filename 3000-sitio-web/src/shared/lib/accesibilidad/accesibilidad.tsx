@@ -119,22 +119,32 @@ export function Accesibilidad() {
 }
 
 /**
- * Corrección para la ceguera al rojo y al verde (deuteranopía y protanopía, la gran
- * mayoría de los daltónicos): el método «daltonize». Se simula cómo ve la página una
- * persona con deuteranopía, se toma lo que pierde (la diferencia con el original) y se
- * reparte hacia los canales que sí distingue. La matriz es `I + M · (I − S)`, con `S` la
- * simulación y `M` el reparto; cada fila suma 1, así que el blanco y el gris no cambian.
- * Lo usa `html[data-a11y-daltonismo]` en `globals.css`.
+ * Una matriz por tipo de daltonismo, en el orden de `TIPOS_DE_DALTONISMO` (1, 2, 3).
+ *
+ * Es el método «daltonize»: se simula cómo ve la página esa persona (`S`), se toma lo que
+ * pierde (la diferencia con el original) y se reparte hacia los canales que sí distingue
+ * (`M`). La matriz es `I + M · (I − S)`; cada fila suma 1, así que el blanco y el gris no
+ * cambian. `M` es la del daltonize original, [[0,0,0],[0.7,1,0],[0.7,0,1]], y `S`:
+ *
+ * - protanopia:   [[0.567,0.433,0],[0.558,0.442,0],[0,0.242,0.758]]
+ * - deuteranopia: [[0.625,0.375,0],[0.7,0.3,0],[0,0.3,0.7]]
+ * - tritanopia:   [[0.95,0.05,0],[0,0.433,0.567],[0,0.475,0.525]]
  */
+const MATRICES_DE_DALTONISMO = [
+  '1 0 0 0 0  -0.2549 1.2549 0 0 0  0.3031 -0.5451 1.242 0 0  0 0 0 1 0',
+  '1 0 0 0 0  -0.4375 1.4375 0 0 0  0.2625 -0.5625 1.3 0 0  0 0 0 1 0',
+  '1 0 0 0 0  0.035 1.532 -0.567 0 0  0.035 -0.51 1.475 0 0  0 0 0 1 0',
+];
+
+/** Los filtros `#olo-a11y-daltonismo-1..3`, que pide `html[data-a11y-daltonismo]` en `globals.css`. */
 function FiltroDaltonismo() {
   return (
     <svg className="olo-a11y-filtros" aria-hidden="true" focusable="false">
-      <filter id="olo-a11y-daltonismo" colorInterpolationFilters="sRGB">
-        <feColorMatrix
-          type="matrix"
-          values="1 0 0 0 0  -0.4375 1.4375 0 0 0  0.2625 -0.5625 1.3 0 0  0 0 0 1 0"
-        />
-      </filter>
+      {MATRICES_DE_DALTONISMO.map((matriz, i) => (
+        <filter key={matriz} id={`olo-a11y-daltonismo-${i + 1}`} colorInterpolationFilters="sRGB">
+          <feColorMatrix type="matrix" values={matriz} />
+        </filter>
+      ))}
     </svg>
   );
 }

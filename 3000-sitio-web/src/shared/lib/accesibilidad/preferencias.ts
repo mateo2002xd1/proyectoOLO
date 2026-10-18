@@ -28,7 +28,6 @@ export const INTERRUPTORES = [
   'contraste',
   'pausarAnimaciones',
   'dislexia',
-  'daltonismo',
   'titulos',
   'enlaces',
   'negrita',
@@ -36,13 +35,28 @@ export const INTERRUPTORES = [
   'cursor',
 ] as const;
 
-/** Las que tienen varios niveles; `0` es «como viene el sitio». El número es el nivel más alto. */
+/**
+ * Las que tienen varios niveles; `0` es «como viene el sitio». El número es el nivel más alto.
+ * `daltonismo` no es una escala sino el tipo (ver `TIPOS_DE_DALTONISMO`), pero se guarda y
+ * se aplica igual: un número en su atributo, y `0` es apagado.
+ */
 export const NIVELES = {
   texto: 3,
   saturacion: 3,
   interlineado: 3,
   interletrado: 3,
+  daltonismo: 3,
 } as const;
+
+/** El valor de `daltonismo` para cada tipo; el filtro SVG de cada uno está en `FiltroDaltonismo`. */
+export const TIPOS_DE_DALTONISMO = [
+  { valor: 1, nombre: 'Protanopia', ayuda: 'dificultad para ver el rojo' },
+  { valor: 2, nombre: 'Deuteranopia', ayuda: 'dificultad para ver el verde' },
+  { valor: 3, nombre: 'Tritanopia', ayuda: 'dificultad para ver el azul' },
+] as const;
+
+/** Al encender el interruptor: la deuteranopía es la más frecuente. */
+export const DALTONISMO_AL_ENCENDER = 2;
 
 export type Interruptor = (typeof INTERRUPTORES)[number];
 export type ConNiveles = keyof typeof NIVELES;
@@ -54,7 +68,6 @@ export const PREFERENCIAS_PREDETERMINADAS: PreferenciasAccesibilidad = {
   contraste: false,
   pausarAnimaciones: false,
   dislexia: false,
-  daltonismo: false,
   titulos: false,
   enlaces: false,
   negrita: false,
@@ -64,6 +77,7 @@ export const PREFERENCIAS_PREDETERMINADAS: PreferenciasAccesibilidad = {
   saturacion: 0,
   interlineado: 0,
   interletrado: 0,
+  daltonismo: 0,
 };
 
 /** Las que no se resuelven con CSS y por eso no ponen atributo. */
