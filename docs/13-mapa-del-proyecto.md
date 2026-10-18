@@ -198,7 +198,7 @@ test/                                          pruebas de carga con k6
 |---|---|---|:-:|--:|
 | `administracion/` | el panel: usuarios, roles, auditoría, respaldos, cargas | `actualizaciones/` `auditoria/` `auth/` `buscador/` `configuracion/` `mi-perfil/` `respaldos/` | **no** | 78 |
 | `paginas/` | páginas editables con Puck, organizadas por etapa del ciclo | `edicion/` `menu-y-pie/` `model/` `publicacion/` `revision/` `secciones/` | sí | 39 |
-| `sitio-web/` | agrupador de lo público | `alertas-inversion/` `buscador-ocupaciones/` `fuentes-futuras-empleo/` `inicio/` `programas-sobresalientes/` `tendencia-ocupacional/` | **no** | 49 |
+| `sitio-web/` | agrupador de lo público | `alertas-inversion/` `buscador-ocupaciones/` `fuentes-futuras-empleo/` `inicio/` `programas-sobresalientes/` `tendencia-ocupacional/` | **no** | 50 |
 
 ### 3001-intranet
 

@@ -6,13 +6,14 @@ export const homeFallbackData: Data = {
       type: 'Hero',
       props: {
         id: 'hero-static',
+        tituloSeccion: '<p>¿Sabes qué es una<br><strong>ocupación?</strong></p>',
+        descripcion:
+          '<p>Es un conjunto de cargos, empleos u oficios que incluyen categorías homogéneas de funciones, independientemente del lugar o tiempo donde se desarrollen.</p>',
         titulo:
           '<p><em>Explora las ocupaciones clave de los</em> <strong>sectores productivos en Colombia.</strong></p>',
         searchPlaceholder: 'Buscar ocupación, código o denominación',
-        imageUrl: '/assets/img/nos-ocupa-el-pais.png',
-        imageAlt: 'Nos ocupa el país',
-        modelSrc: '/assets/img/modelo-uno.png',
-        modelAlt: 'Modelo',
+        imagenFondo: '',
+        transparenciaFondo: '',
         colorFondo: '',
       },
     },

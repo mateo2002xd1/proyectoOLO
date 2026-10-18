@@ -76,12 +76,12 @@ type Manifiesto = Record<string, DefinicionBloque>;
  * fuera a propósito: hoy no tienen ningún campo de alt editable en Puck (el
  * texto alternativo está fijo en el componente), así que no hay nada que
  * validar todavía. Agregarles un campo de alt editable es una mejora aparte.
+ *
+ * `Hero` (Buscador de Ocupaciones) tampoco está: desde el rediseño del 18-10-2026 su
+ * única imagen es el fondo de la sección, decorativo y pintado como fondo CSS. El logo
+ * que pedía alt (`imageUrl`/`imageAlt`) ya no se pinta.
  */
 const MANIFIESTO_SITIO: Manifiesto = {
-  Hero: {
-    etiqueta: 'Buscador de Ocupaciones (Banner)',
-    reglas: [{ tipo: 'alt', campoImagen: 'imageUrl', campoAlt: 'imageAlt' }],
-  },
   IntranetHero: {
     etiqueta: 'Banner Principal',
     reglas: [{ tipo: 'alt', campoImagen: 'imageSrc', campoAlt: 'imageAlt' }],
