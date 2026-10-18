@@ -300,6 +300,7 @@ tokens del `@theme` y calcule los ratios, en la línea de los `*:verificar` que 
 
 **Riesgo: bajo-medio.**
 
+- Migas de pan en todo el sitio público (SC 2.4.8, nivel AAA; las pide la guía de GOV.CO): **hechas el 2026-10-18**, fijas debajo de la cabecera y fuera del editor (`shared/ui/organisms/migas-de-pan.tsx`). Toman los nombres del menú de «Menú y pie».
 - Enlace de salto al contenido (SC 2.4.1), visible al recibir foco. Sigue sin existir: ni una coincidencia de `skip` ni de `saltar` en `3000-sitio-web/src`.
 - Verificar orden de tabulación y que ningún elemento interactivo sea inalcanzable.
 - Foco visible en **todos** los controles, no solo en botones. Ojo con el punto anterior: hoy el anillo de foco está a 2.40:1, así que "visible" y "conforme" no son lo mismo.

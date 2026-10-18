@@ -5,6 +5,35 @@
 
 ---
 
+## sesión 18-10-2026 (7.ª parte): «Portales externos» como fila de tarjetas con flecha
+
+**Qué se pidió:** rediseñar el bloque «Portales Externos» como en la maqueta: tarjetas de color unidas por una punta de flecha, cada una con un ícono en un círculo blanco y un texto. En el panel, solo cambiar el ícono (el usuario dejará un paquete de íconos SVG) y el texto enriquecido, una tarjeta por portal con la posibilidad de agregar más; de partida, las tres de la maqueta.
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/shared/lib/blocks/external-portals.tsx` | Reescrito. Prop `tarjetas` (`icono`, `texto` enriquecido, `enlace`, `colorFondo`); fuera título, subtítulo, `portals`, degradados e ilustraciones. Cada tarjeta entera es el enlace; en el editor (`esEdicion`) o sin enlace se pinta como `div`, para que el clic no navegue. Sin `tarjetas` (portada guardada con la versión anterior) se ven las tres del diseño |
+| `shared/lib/blocks/iconos-de-portales.ts` (nuevo) | Catálogo de íconos del bloque, sin imports. Cada ícono es un SVG de una tinta en `public/assets/svg/portales/`, que `IconoRenderer` pinta como máscara en el azul #001145. Para sumar uno: copiar el `.svg` a la carpeta y agregar su fila |
+| `public/assets/svg/portales/` (nuevo) | `pqrs.svg`, `denuncia.svg` y `transparencia.svg`, provisionales: salen de Lucide (ISC) hasta que llegue el paquete propio |
+| `packages/blocks-renderer/src/primitives/icon-selector-field.tsx` | `IconSelectorField` acepta `catalogo` (por defecto `ICONOS_DISPONIBLES`) y `permitirRuta` (por defecto sí). Quien ya lo usaba no cambia. Tipo `IconoDelCatalogo` exportado |
+| `config/puck.config.tsx` (`ExternalPortals`) | Un solo campo «Tarjetas» (lista de Puck con «+»), cada una con «Ícono» (el selector con el catálogo de portales, sin ruta a mano), «Texto» (`richtext` editable en el lienzo, sin encabezados, listas ni enlaces: va dentro del enlace de la tarjeta), «Hipervínculo» y «Color de fondo» (pinta también la flecha). `resolveData` pone las tres del diseño a una portada vieja al abrirla |
+| `style/globals.css` | Fuera `.olo-portals*` y `.olo-portal-card/-bg/-content/-label/-description`. Nuevas `.olo-portales`, `.olo-portal` (fondo en `--olo-portal-fondo`, 182 px de alto), la flecha en `::after` con `clip-path` (20 × 40 px, la última no la lleva), círculo blanco de 74 px, texto de peso normal (la negrita la pone el texto enriquecido). Bajo 40rem se apilan y la flecha apunta hacia abajo. Foco: anillo blanco por dentro y azul por fuera |
+| `features/paginas/model/home-fallback-data.ts` | La portada de respaldo con las tres tarjetas |
+
+> **Agregué «Hipervínculo» y «Color de fondo» por tarjeta** aunque el pedido decía solo ícono y texto: sin enlace un portal no lleva a ningún lado, y sin color una tarjeta nueva no se distingue de la anterior. Colores de la maqueta: #001145, #85e501 y #07ecfc.
+
+> **Contraste:** el texto blanco sobre el verde y el cian de la maqueta no llega al 4,5:1 de WCAG (sobre #07ecfc, cerca de 1,4:1).
+
+| Verificación | Resultado |
+|---|---|
+| `npx tsc --noEmit` en sitio-web, intranet y blocks-renderer | Sin errores (salvo `shared/lib/accesibilidad/`, que no es de este trabajo) |
+| Componente real con el CSS real, servido desde el origen del dev y fotografiado por CDP a 1440, 1024, 768 y 375 px | Las tres tarjetas como la maqueta, con los íconos en azul por máscara; una lista de cuatro con colores propios, una sin ícono y otra sin enlace; sin scroll horizontal; a 375 px apiladas con la flecha hacia abajo |
+| `/inicio` del dev | La portada guardada en Neon no lleva este bloque, así que no se pudo ver ahí |
+| Panel del editor (selector de íconos, texto, agregar tarjeta, publicar) | Sin verificar |
+
+**Pendiente al cierre:** cargar el paquete de íconos SVG del usuario en `public/assets/svg/portales/` y en `ICONOS_DE_PORTALES`; probar el bloque en el editor.
+
+---
+
 ## sesión 18-10-2026 (6.ª parte): «Buscador de Ocupaciones» de la portada con el diseño nuevo
 
 **Qué se pidió:** cambiar el banner del buscador de ocupaciones por la maqueta «¿Sabes qué es una ocupación?» (titular, descripción y un recuadro azul con el buscador, sobre una imagen de fondo), reemplazando el bloque que ya se usa desde el editor. Configurable: textos enriquecidos, imagen de fondo y color del recuadro. Después: transparencia de la imagen de fondo.
@@ -16,6 +45,9 @@
 | `config/puck.config.tsx` (`Hero`) | Mismo tipo y etiqueta, así que la portada guardada sigue sirviendo. Campos: «Titular», «Descripción» y «Texto del recuadro» (`richtext`, editables en el lienzo; los dos de una línea sin encabezados, listas ni citas —`OPCIONES_TEXTO_EN_LINEA`— porque van dentro de un `<h2>`), y en acordeón «Texto de ejemplo del buscador», «Imagen de fondo», «Transparencia de la imagen» (0–100 %, vacío = 0) y «Color del recuadro». `titulo` y `colorFondo` conservan el nombre y pasan a ser el texto y el color del recuadro. `resolveData` completa titular y descripción de una portada vieja al abrirla |
 | `features/paginas/model/home-fallback-data.ts` | La portada de respaldo con las props nuevas |
 | `packages/accessibility-policy/src/index.ts` | Fuera la regla `Hero` (alt de `imageUrl`): el logo ya no se pinta y la imagen de fondo es decorativa. Reconstruido `dist/` |
+| Modales del buscador con el color del recuadro (pedido después) | `ModalOcupaciones` acepta `colorAcento` y lo deja en la variable `--olo-modal-acento` del fondo del modal; el encabezado y las etiquetas de código de `ResultadosOcupaciones` y de las ocupaciones relacionadas de `DetalleOcupacion` usan `var(--olo-modal-acento, #001631)`. El buscador de la portada pasa el color del recuadro (vacío = #001145, `AZUL_PORTADA`). Alertas de inversión, que usa el mismo modal sin pasar color, sigue en #001631 |
+| Modales del buscador a pantalla completa (pedido después) | `ModalOcupaciones` acepta `pantallaCompleta`: el panel ocupa toda la ventana (`h-dvh`, sin márgenes ni esquinas) y sigue siendo diálogo modal (foco encerrado, Escape, fondo bloqueado). Encabezado, cuerpo y pie centran su contenido a 1200 px como máximo, para que en pantallas anchas no se estire. Lo pasa solo el buscador de la portada, para resultados y detalle; Alertas de inversión sigue con el panel centrado |
+| Título del modal de resultados (pedido después) | «Clasificación Nacional de Ocupaciones - Buscador de Ocupaciones» (`TITULO_RESULTADOS` en `hero-buscador-ocupaciones.tsx`), también mientras carga. Si la búsqueda llega con `?tipo=cuoc` o `?tipo=cno`, se sigue mostrando el nombre de esa clasificación |
 
 > **`OcupacionSearchBanner` no se tocó**: lo sigue usando /clasificacion (`BuscadorOcupacionesBanner`) con el diseño de antes.
 
@@ -26,6 +58,8 @@
 | `npx tsc --noEmit` en sitio-web, intranet y api-backend | Sin errores (salvo `shared/lib/accesibilidad/`, que no es de este trabajo) |
 | `/inicio` del dev por CDP a 1440, 1024, 768 y 375 px | La portada guardada se ve con el diseño nuevo y los textos por defecto; sin scroll horizontal; a 375 px el placeholder del buscador se corta |
 | Imagen de fondo con transparencia (capa inyectada por CDP, al 40 %) | Se ve detrás del texto sin aclararlo |
+| Búsqueda «enfermer» en `/inicio` del dev por CDP (solo lectura) | Encabezado del modal en el azul del recuadro; con `--olo-modal-acento: #7a1fa2` el encabezado y los códigos de los resultados pasan a morado, y en el detalle también el código de las ocupaciones relacionadas |
+| Modal a pantalla completa en `/inicio` del dev por CDP, a 1440 y 375 px | El diálogo mide lo mismo que la ventana (1440 × 860 y 375 × 860); a 1440 la tabla de resultados queda en 1198 px centrada. El botón fijo de accesibilidad queda por encima del modal, tapando un poco el contenido en el borde derecho |
 | Editor real (cargar imagen, cambiar color y transparencia, publicar) | Sin verificar |
 
 **Pendiente al cierre:** reiniciar la API para que tome la política de accesibilidad nueva; probar el bloque en el editor y publicar la portada.
@@ -66,7 +100,20 @@
 
 > **No es un modal**: sin el fondo borroso de los demás ni foco atrapado, porque el visitante tiene que ver la página cambiar mientras elige. Se cierra con la X, Escape o tocando fuera; el foco entra al abrir y vuelve al botón al cerrar. Usa los tiempos `--olo-modal-*` y `useCierreAnimado`, entrando desde la derecha.
 
+**Migas de pan (pedido después: «la accesibilidad también incluye las migas de pan; esto es fijo, no se puede editar»).**
+
+| Capa | Cambio |
+|---|---|
+| `shared/ui/organisms/migas-de-pan.tsx` (nuevo) | `MigasDePan` (cliente, lee la ruta con `usePathname`) y `eslabonesDeLaRuta(ruta, menu)`. Pinta con la molécula `Breadcrumb` que ya existía (patrón WAI-ARIA: `nav` rotulado, lista ordenada, `aria-current="page"` en la última) |
+| `app/(public)/layout.tsx` | `<MigasDePan menu={plantilla.cabecera?.navLinks ?? []} />` entre la cabecera y el `<main>`: en todas las páginas públicas menos Inicio, y fuera de Puck, así que no se edita |
+| `shared/ui/molecules/breadcrumb.tsx` | `Link` en vez de `<a>` (volver a una sección ya no recarga la página). Estilo pedido por el usuario: todo en #001145, sin subrayado; los eslabones anteriores en letra fina (Poppins 300) y más suaves (#001145 al 70 %, unos 7:1 sobre blanco), el separador al 40 % y la página actual en negrita (700) a tono pleno. Al pasar el ratón el enlace toma el tono pleno. `MigasDePan` lleva `poppins.className`: el `'Poppins'` de `--font-body` no es la letra que carga next/font y el 300 caería en la del sistema (medido con `CSS.getPlatformFontsForNode`: Poppins-Light y Poppins-Bold) |
+| `buscador-ocupaciones-view.tsx` | Fuera sus migas propias: salían repetidas en `/clasificacion`. Con ellas se va el tercer eslabón de los enlaces viejos con `?tipo=` |
+| `globals.css` | `.migas-de-pan`: franja blanca sin borde (se quitó a pedido del usuario), alineada con el contenido de la cabecera y con sus mismos rellenos por ancho. No es `sticky` |
+
+De dónde sale cada nombre: **del menú de «Menú y pie»**, que manda (si se renombra una sección en el menú, cambia también aquí); si no está en el menú, de `NOMBRES_FIJOS` (las páginas con carpeta propia: clasificaciones, CNO, CUOC, alertas de inversión, política de privacidad, programas sobresalientes); y si tampoco, el tramo de la URL legible (`tasa-de-empleo` → «Tasa de empleo»). Un tramo intermedio solo es enlace si se sabe que existe, para no mandar a un 404. Si la página es un enlace de un submenú cuya sección no es parte de la URL («Servicios» → `/ape`), la sección entra como eslabón sin enlace.
+
 **Decisiones que tomé sin preguntar (revisables):**
+- **Migas de pan:** no van en Inicio, ni fijas al hacer scroll (la cabecera ya es `sticky`); separador «/», el de la molécula.
 - **Lexend y no OpenDyslexic** para «Fuente dislexia»: OpenDyslexic no está en Google Fonts y habría que meter los archivos de la letra en el repo. Cambiarla es tocar `lexend` en `fonts.ts`.
 - **«Restablecer configuración»**, no «Reestablecer» como en la maqueta (la RAE da la primera).
 - En «Tamaño del texto» la tarjeta muestra el nombre del nivel (como la maqueta muestra «Normal»); en «Saturación» también, porque bajo/alto/sin color no se distinguen solo con las barras. Interlineado e interletrado se quedan con su nombre y las barras.
@@ -86,6 +133,13 @@
 | Lector (con `speechSynthesis.speak` espiado) | Dijo «Lector de pantalla activado» y «Título: texto de prueba» en `es-CO`, y marcó un elemento |
 | Pausar animación | La transición del panel queda en 0,01 ms |
 | 360 y 768 px | Sin scroll horizontal; el panel cabe (328 y 336 px de ancho) con su scroll propio |
+| `eslabonesDeLaRuta` real (transpilado) con 10 rutas | `/inicio` y `/` sin migas; `/clasificacion/cuoc` → Inicio › Clasificaciones (enlace) › nombre del menú; `/ape` bajo «Servicios» con `#` → Servicios sin enlace; `/encuestas/tasa-de-empleo` → tramos legibles sin enlace; sin menú → los nombres fijos |
+| Migas en el dev por CDP (5 rutas) | Las de arriba, con `aria-label="Ruta de navegación"` y `aria-current` en la última; empiezan justo debajo de la cabecera |
+| Clic en «Clasificaciones» de las migas | Navega a `/clasificacion` sin recargar la página y las migas se actualizan |
+| Alineación con el logo a 360 / 768 / 1280 px | 8/8, 24/24 y 64/64 px; sin scroll horizontal |
+| Migas con alto contraste | Blanco y amarillo sobre negro |
+| Estilo nuevo en el dev por CDP | Enlace: 300, #001145 al 70 %, sin subrayado; actual: 700, rgb(0, 17, 69) |
+| Borde quitado | `globals.css` compilado aparte con su Tailwind: `.migas-de-pan` solo con fondo. El `next dev` siguió sirviendo la regla vieja con borde aun después de `touch` al archivo: hay que recargar sin caché o reiniciar `next dev` para verlo |
 | Con un lector de pantalla real (NVDA) y en Safari/iOS | Sin verificar |
 
 **Pendiente al cierre:**
