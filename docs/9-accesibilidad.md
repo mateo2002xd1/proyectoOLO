@@ -304,12 +304,21 @@ tokens del `@theme` y calcule los ratios, en la línea de los `*:verificar` que 
 - Verificar orden de tabulación y que ningún elemento interactivo sea inalcanzable.
 - Foco visible en **todos** los controles, no solo en botones. Ojo con el punto anterior: hoy el anillo de foco está a 2.40:1, así que "visible" y "conforme" no son lo mismo.
 
-### Fase 4 — Alto contraste (RF-14) — ⏳ SIN EMPEZAR
+### Fase 4 — Alto contraste (RF-14) — 🟡 EN MARCHA (2026-10-18)
 
 **Riesgo: medio.** Modo de alto contraste conmutable. Se apoya en el mismo mecanismo de tokens de la fase 1: si los colores son tokens, el modo es otro juego de valores, no otro CSS.
 
-Es la única fase que cubre una parte de RF-14 explícitamente pedida por el requerimiento
-y que hoy no existe de ninguna forma.
+Es la única fase que cubre una parte de RF-14 explícitamente pedida por el requerimiento.
+
+**Desde el 2026-10-18 el sitio público tiene un panel de accesibilidad** (botón pegado al
+borde derecho; código en `3000-sitio-web/src/shared/lib/accesibilidad/`, estilos en la
+sección «Accesibilidad del sitio público» de `globals.css`). Entre sus opciones está el
+alto contraste, más tamaño del texto, saturación, daltonismo, interlineado, interletrado,
+fuente para dislexia, pausar animación, lectura en voz alta y las avanzadas. El contraste
+**no** salió de los tokens como dice el párrafo de arriba: los bloques de Puck guardan sus
+colores en línea, así que un juego de tokens no los alcanzaba; es una capa de reglas con
+`!important` sobre `.publico-layout`. Lo que falta para cerrar la fase está en la bitácora
+de esa fecha (6-auditoria.md).
 
 ### Fase 5 — El editor no deja publicar contenido inaccesible
 **Riesgo: medio-alto. Es la fase que hace real la promesa de "por construcción".**

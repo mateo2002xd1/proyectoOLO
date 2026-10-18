@@ -5,6 +5,212 @@
 
 ---
 
+## sesión 18-10-2026 (5.ª parte): panel de accesibilidad en el sitio público
+
+**Qué se pidió:** incorporar la accesibilidad al sitio web (solo al sitio, no a la intranet) con las opciones de la maqueta: un panel que se abre desde un botón que acompaña el scroll, con el icono que dio el usuario.
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/shared/lib/accesibilidad/` (nuevo) | `Accesibilidad` (botón + panel + filtro del daltonismo + script antes de pintar), `PanelAccesibilidad`, `GuiaDeLectura`, `useLectorEnVozAlta`, `usePreferenciasAccesibilidad`, el icono (`icono-accesibilidad.tsx`, los trazos del SVG del usuario en `currentColor`) y `preferencias.ts` (modelo, almacén, atributos del `<html>` y el script) |
+| `app/(public)/layout.tsx` | Monta `<Accesibilidad />` y pone `lexend.variable` en `.publico-layout`. El panel, el editor y la vista previa no lo llevan |
+| `shared/lib/fonts.ts` | `lexend` (`--font-dislexia`, `preload: false`: solo lo descarga quien activa «Fuente dislexia») |
+| `style/globals.css` | Sección nueva al final, «Accesibilidad del sitio público»: botón, panel, guía y una regla por preferencia |
+| `docs/9-accesibilidad.md` | Fase 4 (alto contraste) pasa a «en marcha», con el porqué de no haberla hecho con tokens |
+| `scripts/mapa/descripciones.md` | Propósito de la carpeta nueva |
+
+**Cómo funciona.** Cada preferencia es un atributo `data-a11y-*` en el `<html>` (`data-a11y-texto="2"`, `data-a11y-contraste`…) y el CSS hace el resto. Se guardan en `localStorage` (`olo-accesibilidad`), como el tema del panel: el visitante no tiene cuenta. Un script inyectado con `useServerInsertedHTML` (el patrón de `SincronizarTema`) las pone antes del primer pintado, así que quien pidió letra grande no la ve crecer al cargar. Al salir de `(public)` los atributos se quitan.
+
+| Opción | Qué hace |
+|---|---|
+| Lector de pantalla | Lee en voz alta (Web Speech API, voz del navegador en `es-CO`) lo que se toca o se enfoca con el teclado, y lo marca con un contorno. No reemplaza a NVDA/JAWS: es para quien ve pero lee con dificultad. Deshabilitado si el navegador no tiene voz |
+| Tamaño del texto | Normal / Grande / Más grande / Máximo: `font-size` del `<html>` al 115/130/150 %. Crece todo lo que mide en `rem` |
+| Alto contraste | Blanco sobre negro (21:1), enlaces en amarillo (19:1), fuera los degradados; se quedan las imágenes y las fotos de fondo en línea |
+| Saturación | Baja (50 %) / Alta (200 %) / Sin color |
+| Pausar animación | El «catch-all» de la intranet: animaciones y transiciones a 0,01 ms; además pausa los `<video>` que suenan |
+| Fuente dislexia | Lexend en todo el sitio |
+| Interlineado / Interletrado | Tres niveles; el 2.º es lo que pide WCAG 1.4.12 (0,12 em entre letras, 0,16 em entre palabras) |
+| Daltonismo | Filtro SVG «daltonize» para rojo-verde (la matriz y el porqué, en `FiltroDaltonismo`) |
+| Resaltar títulos / enlaces, Texto en negrita, Cursor grande | Contorno en h1–h6; enlaces en amarillo con negro y subrayados; todo a 700; flecha de 48 px con borde blanco (azul sobre lo pulsable) |
+| Guía de lectura | Oscurece por encima y por debajo de una franja que sigue al puntero o al dedo |
+
+> **Los filtros van en el `<html>` y en ningún otro sitio.** Un `filter` en cualquier contenedor lo vuelve el marco de sus hijos `position: fixed` (la misma trampa del `transform` de `.olo-route-transition`): la cabecera, el FAB y el propio botón dejarían de anclarse a la ventana. El elemento raíz es la única excepción. Medido: con saturación + daltonismo y 1.056 px de scroll, el botón sigue en y = 420.
+
+> **El botón, el panel y la guía salen por portal al `<body>`**, fuera de `.publico-layout`, contra el que se escriben las reglas de contraste, negrita y espaciado: si no, el alto contraste pintaba de negro los interruptores con los que se apaga. El filtro SVG del daltonismo sí se pinta en la página, porque tiene que estar en el HTML del servidor cuando el script ya lo pidió.
+
+> **No es un modal**: sin el fondo borroso de los demás ni foco atrapado, porque el visitante tiene que ver la página cambiar mientras elige. Se cierra con la X, Escape o tocando fuera; el foco entra al abrir y vuelve al botón al cerrar. Usa los tiempos `--olo-modal-*` y `useCierreAnimado`, entrando desde la derecha.
+
+**Decisiones que tomé sin preguntar (revisables):**
+- **Lexend y no OpenDyslexic** para «Fuente dislexia»: OpenDyslexic no está en Google Fonts y habría que meter los archivos de la letra en el repo. Cambiarla es tocar `lexend` en `fonts.ts`.
+- **«Restablecer configuración»**, no «Reestablecer» como en la maqueta (la RAE da la primera).
+- En «Tamaño del texto» la tarjeta muestra el nombre del nivel (como la maqueta muestra «Normal»); en «Saturación» también, porque bajo/alto/sin color no se distinguen solo con las barras. Interlineado e interletrado se quedan con su nombre y las barras.
+- La pestaña mide 56 × 60 px fijos (no `rem`), para que no crezca con «Tamaño del texto».
+
+| Verificación | Resultado |
+|---|---|
+| `npx tsc --noEmit` en sitio-web | Sin errores |
+| `npx eslint` de la carpeta nueva, el layout y `fonts.ts` | Sin avisos |
+| `/inicio` del dev en Chrome headless por CDP, solo GET (el resto bloqueado: ninguna visita ni nada escrito en Neon) | Botón de 56 × 60 a la derecha y centrado; el script está en el `<head>`; al abrir, `aria-expanded="true"`, el foco en el panel y la pestaña escondida tras el borde |
+| Mismo, cambiando opciones | Más grande → `font-size` del `<html>` 20,8 px; contraste → fondo de `main` negro; dislexia → Lexend; se guardan en `localStorage` |
+| Recarga | Los atributos ya están puestos (los puso el script) |
+| Saturación + daltonismo y scroll | `filter: url("#olo-a11y-daltonismo") saturate(0.5)`; el botón sigue en la misma posición de la ventana |
+| Cerrar con la X | El panel se desmonta y el foco vuelve al botón |
+| Restablecer | Sin atributos y la clave borrada del almacenamiento |
+| Lector (con `speechSynthesis.speak` espiado) | Dijo «Lector de pantalla activado» y «Título: texto de prueba» en `es-CO`, y marcó un elemento |
+| Pausar animación | La transición del panel queda en 0,01 ms |
+| 360 y 768 px | Sin scroll horizontal; el panel cabe (328 y 336 px de ancho) con su scroll propio |
+| Con un lector de pantalla real (NVDA) y en Safari/iOS | Sin verificar |
+
+**Pendiente al cierre:**
+- Lo que está en `px` no crece con «Tamaño del texto»: 19 `font-size` en px en `globals.css` y unos 30 `text-[…px]` en los bloques. Pasarlos a `rem` cuando se toque cada bloque.
+- Con alto contraste, un logo o icono con color fijo oscuro sobre fondo transparente se pierde sobre el negro.
+- «Pausar animación» no detiene lo que se anima con JavaScript (framer-motion, carruseles con temporizador).
+- El cursor grande es la misma flecha en azul sobre lo pulsable, no una mano.
+- Probar con NVDA que la región viva anuncia cada cambio, y el panel en Safari.
+
+---
+
+## sesión 18-10-2026 (4.ª parte): panel del «Pie de página» en tarjetas
+
+**Qué se pidió:** ordenar el panel del pie: acordeones, campos relacionados juntos en tarjetas y los mismos controles con borde y esquinas redondeadas que el resto del editor.
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/features/paginas/menu-y-pie/campos-del-pie.ts` (nuevo) | `crearCamposDelPie(campoImagen)`: los ~30 campos sueltos pasan a 9 tarjetas (`campoGrupoEnUnAcordeon`): Colores, Logos, Entidad y dirección, WhatsApp, Líneas de atención y PQRS, Mesa de ayuda, Horario, Sello de certificación y Franja GOV.CO inferior. Redes sociales y las tres filas de enlaces pasan a `campoListaEnAcordeones` (subir/bajar/eliminar y «+ Agregar»); esas cuatro siguen siendo sus mismas props, así que no cambian de forma. Orden: el del pie, de arriba abajo. Etiquetas más claras («Texto alternativo del logo del SENA», «Hipervínculo…») |
+| Mismo archivo | `resolverGruposDelPie` (el `resolveData` del bloque): un grupo que falta se arma desde las props sueltas, y después las props sueltas se copian de su grupo. **Las props sueltas siguen siendo la fuente** para `Footer`, `obtenerPlantilla` y el pie publicado: no hubo que migrar ni tocar el componente. Es idempotente |
+| `3000-sitio-web/src/config/puck.config.tsx` | `Footer.fields = crearCamposDelPie(campoImagen)` y `resolveData: resolverGruposDelPie`. Va en un módulo aparte que no importa de `@/features/paginas` (el ciclo de `TAMANOS_TEXTO_MENU`) |
+| Franja GOV.CO del pie (pedido después) | `.olo-gov-banner-bottom` con la altura y el borde izquierdo de la de la cabecera: 40 px (36 bajo 40rem), relleno lateral `max(clamp(16px, 4vw, 40px), calc((100% - 1920px) / 2 + 40px))` —lo mismo que `.olo-gov-banner-container`, que se centra con 1920 px de ancho máximo— y la marca GOV.CO a 20 px (18 en móvil). Antes: `padding: 14px 20px` y la marca a 24 px |
+| Color de fondo de las dos franjas (pedido después) | `colorFranjaGov` en `Header` (campo «Color de fondo de la franja GOV.CO», junto a la imagen de la franja) y en `Footer` (dentro de la tarjeta «Franja GOV.CO inferior», que lo copia a la prop suelta). `VALORES_PIE_POR_DEFECTO.colorFranjaGov: ''`. **Sin color, las dos franjas son blancas** (antes azules #0943B5), a pedido del usuario. La marca GOV.CO, el «|» del pie y la hora de la cabecera estaban en blanco y habrían desaparecido: ahora van con `currentColor` (7 trazos en cada SVG) y `estiloDeFranjaGov` (`shared/lib/blocks/tinta-de-franja.ts`, sin imports de la app) elige la tinta por luminancia: azul #0943B5 sobre fondos claros (y el blanco por defecto, desde el CSS), blanca sobre oscuros; un nombre CSS cuenta como oscuro |
+| Franja GOV.CO superior sin marca dibujada (pedido después) | Se quitó el SVG de GOV.CO que la cabecera pintaba cuando no había imagen: ahora solo se ve la imagen que se sube en «Imagen de la franja», dentro del mismo enlace a gov.co (`aria-label` en el enlace, `alt=""` en la imagen). Sin imagen, la franja queda con la fecha y la hora, que se quedan a la derecha con `margin-left: auto` en `.olo-gov-banner-edit` (el contenedor es `space-between`). Fuera las reglas `.olo-gov-banner-brand svg`. Ayuda del campo y resumen («Cargada / Sin imagen») al día. Comprobado en `/inicio` del dev: la franja queda solo con la hora, a la derecha |
+| Franja GOV.CO inferior: imagen subible, cajas y márgenes (pedido después) | Nuevas props `govCoImgUrl`/`govCoImgAlt` (la imagen va dentro del enlace a gov.co, con el nombre del enlace en `aria-label` y `alt=""`) y seis márgenes en px: `rutaCoMargen{Arriba,Abajo,Lados}` y `govCoMargen{Arriba,Abajo,Lados}`, en la tarjeta «Franja GOV.CO inferior». Cada imagen va en `.olo-franja-imagen`: caja del alto de la franja (40/36 px), con el margen como relleno, imagen a `height: 100%` y `object-fit: contain`, `max-width: 45%`: por grande que se suba, no agranda la franja. Margen vacío (`''`, lo que guarda el editor al borrarlo) o sin guardar = el de siempre (Colombia 7/7/0, GOV.CO 10/10/0), que el campo enseña como placeholder; los demás se recortan a 0–40 |
+| Sin SVG en la franja inferior (pedido después) | Fuera la marca GOV.CO dibujada en el código (y sus reglas `.olo-gov-banner-bottom svg`): sin imagen subida no se muestra. El «|» solo aparece si están las dos imágenes. Las dos franjas quedan sin marcas en el código |
+| Franja inferior: alineación y separación (pedido después) | Fuera «Margen a los lados» de cada imagen. Para toda la franja: «Alineación de las imágenes» (Izquierda / Centro / Derecha → `justify-content`) y «Separación entre las imágenes» (`gap`), una escala que acompaña a la pantalla: `SEPARACIONES_FRANJA` en `shared/lib/blocks/disposicion-de-franja.ts`, cada paso un `clamp(mín, vw, máx)` (8–16, 12–32, 16–64, 24–120 px); vacío = los 12 px del CSS. No es un número de px porque no sería responsivo |
+| Franja superior en una sola tarjeta (pedido después) | «Franja superior GOV.CO» (`grupoFranjaGov`, `campoGrupoEnUnAcordeon`) con Franja (mostrar/ocultar), Imagen de GOV.CO, márgenes arriba/abajo (por defecto 4/4 = los 32 px de alto de antes), color de fondo, alineación de la imagen y separación con la fecha. La imagen va en `.olo-franja-imagen` (ya no `.olo-gov-banner-custom-img`, que se borró). Alineación (`posicionDeLaMarca` en header.tsx): a la izquierda como antes; centrada en `position: absolute` respecto a `.olo-gov-banner-container` (ahora `relative`), para quedar en el centro de la franja y no del hueco que deja la fecha; a la derecha, `margin-left: auto` en la imagen y la separación elegida como margen de la fecha. La fecha y la hora se quedan siempre a la derecha |
+| Hipervínculo de la imagen de GOV.CO (pedido después) | Campo «Hipervínculo de la imagen» (`govBannerEnlace`) en la tarjeta de la franja superior; antes el enlace era fijo a gov.co. `enlaceDeGovCo` (`disposicion-de-franja.ts`) solo acepta `https://`, `http://` o una ruta `/…`; vacío, `javascript:`, `//otro-sitio` o `www.…` sin protocolo caen en https://www.gov.co. El enlace de la fecha y la hora (al panel o al acceso) sigue fijo, a propósito. Probado con 10 entradas |
+| `features/paginas/menu-y-pie/grupos-de-props.ts` (nuevo) | `resolverGruposDeProps(props, clavesPorGrupo)`: el mecanismo grupo ⇄ props sueltas del pie, sacado para reutilizarlo; lo usan `resolverGruposDelPie` y el `resolveData` de la cabecera (que además conserva el paso de `intranetText` a `botonIntranet`). `rellenoDeImagenDeFranja` también pasó a `disposicion-de-franja.ts`, compartido por las dos franjas |
+| `campos-en-acordeon.tsx` (número) | Control `number`: `min`, `max`, `sufijo` («px») y `placeholder`; recorta al rango y guarda `''` si se vacía |
+| `campos-en-acordeon.tsx` | Control `textarea` (3 filas, se estira en vertical) para dirección, horarios y teléfonos. Lista vacía: «Todavía está vacía.» (antes «ninguna», que no casaba con «enlace») |
+
+> **Se pierde la edición en el lienzo** de los textos del pie que tenían `contentEditable` (nombre de la entidad, dirección, WhatsApp, líneas, mesa de ayuda, horario): ahora se editan en su tarjeta.
+
+> **Datos duplicados a propósito:** al guardar, el pie lleva cada valor dos veces (`grupoLogos.logoSenaUrl` y `logoSenaUrl`). Es el precio de no migrar; si algún día `Footer` lee los grupos, sobran las sueltas.
+
+> **Descartado:** anidar las props en objetos y aplanarlas al pintar. Obligaba a tocar `Footer`, `obtenerPlantilla` y cualquier pie publicado, para el mismo resultado en el panel.
+
+| Verificación | Resultado |
+|---|---|
+| `resolverGruposDelPie` real (transpilado) con `assert` | Pie viejo: arma los grupos sin tocar las sueltas; cambio en una tarjeta: la suelta lo sigue; segunda pasada: idéntica |
+| Panel pintado en Chrome headless | 9 tarjetas y 4 listas en el orden del pie; resumen de la red social «X (Twitter)» |
+| `/inicio` del dev en Chrome headless | Carga con su `<footer>` y sin errores nuevos |
+| `npx tsc --noEmit` en blocks-renderer, sitio-web e intranet | Sin errores |
+| Las dos franjas en `/inicio` del dev, medidas por CDP a 375, 1440 y 2200 px | Alto 36/40/40 en las dos; el contenido empieza en x = 16/40/175 en las dos; sin color propio, fondo blanco y marca rgb(9, 67, 181) en las dos |
+| `estiloDeFranjaGov` real con varios colores | vacío → nada (CSS); #0943B5, #39a900 y `navy` → tinta blanca; #fff, #f3f4f6 y #13e3f5 → tinta azul |
+| Franja del pie en el dev por CDP, con los márgenes por defecto | 40/36 px de alto como antes; imagen de Colombia de 26 px en computador (22 en celular; antes 18, el `clamp`). Tras quitar el SVG: solo la imagen de Colombia en su caja, sin «|» |
+| Tarjeta «Franja GOV.CO inferior» con los campos de número pintada en Chrome headless | Campos de número con «px», placeholders y ayuda |
+| Franja superior con el CSS real y los estilos en línea de header.tsx, a 900 y 375 px | Izquierda, centro (centrada en la franja, sin pisar la fecha en 375 px) y derecha con 12 px y con la separación «Muy grande» |
+| Pruebas de `resolverGruposDelPie` con el resolver compartido | Los 3 casos siguen bien |
+| `/inicio` del dev tras el cambio | La primera carga dio un error de hidratación entre varias recompilaciones en caliente (había archivos cambiando, entre ellos la carpeta sin versionar `shared/lib/accesibilidad/`, que no es de este trabajo); la segunda, sin errores |
+| Editor real | Sin verificar |
+
+**Pendiente al cierre:** abrir «Menú y pie» en el editor, cambiar algo de una tarjeta y publicar, para ver que el pie publicado lo toma.
+
+---
+
+## sesión 18-10-2026 (3.ª parte): «Espaciado y Ancho» con medidas en px
+
+**Qué se pidió:** que las cuatro medidas de «Espaciado y Ancho» (espacio interior arriba/abajo y a los lados, separación con el bloque de arriba y de abajo) ofrezcan seis valores en px: 10, 12, 14, 20, 26 y 32.
+
+| Capa | Cambio |
+|---|---|
+| `controles-de-caja.tsx` | `ESCALA_ESPACIO` suma `px10` … `px32`; `OPCIONES_ESPACIO` pasa a «Ninguno» + «10 px» … «32 px». «Ninguno» se queda porque es el valor por defecto de la caja: sin él, todo bloque recién soltado tendría espacio. La decisión 3 de la cabecera del archivo se reescribió (antes: «escala con nombres, no píxeles») |
+| `controles-de-caja.tsx` | Las claves de nombre (`minimo` 8, `poco` 16, `medio` 24, `amplio` 40, `maximo` 64) **siguen en la escala**: hay páginas guardadas con ellas y Grid, Flex y Espacio las usan como separación por defecto (`layout-primitives.tsx`). No se ofrecen en la caja; van en `OPCIONES_ESPACIO_ANTERIORES` |
+| `campos-en-acordeon.tsx` | El `select` acepta `anteriores`: si el valor guardado es uno de ellos, el desplegable lo añade («Medio · 24 px (anterior)») y la cabecera lo muestra, en vez de enseñar «Ninguno» con un valor que no es |
+
+> **Choca con el consejo de la 2.ª parte:** las tarjetas de «Imagen destacada» cuelgan 5,5rem (88 px) sobre el bloque siguiente, y ahora la caja llega como mucho a 32 px. «Amplio» y «Muy amplio» ya no se ofrecen, así que ese bloque no puede abrirse hueco solo con la caja.
+
+> En celular la caja sigue multiplicando por 0,6 (`globals.css`, `.olo-caja`): 10 px quedan en 6 px y 32 px en 19 px.
+
+| Verificación | Resultado |
+|---|---|
+| `pixelesDeEspacio` real (transpilado) | px10…px32 = 10, 12, 14, 20, 26, 32; `medio` sigue en 24; `ninguno` 0 |
+| `estiloDeCaja({ interiorY: 'px20', superior: 'medio' })` | `--olo-caja-interior-y: 20px`, `--olo-caja-superior: 24px` |
+| Grupo pintado en Chrome headless con un valor nuevo y uno anterior | «20 px», «32 px» y «Medio · 24 px (anterior)» en las cabeceras |
+| `npx tsc --noEmit` en blocks-renderer, sitio-web e intranet | Sin errores |
+
+**Pendiente al cierre:** ver el panel en el editor; decidir cómo abrir hueco bajo las tarjetas de «Imagen destacada» ahora que la caja llega a 32 px.
+
+---
+
+## sesión 18-10-2026 (2.ª parte): «Imagen destacada» con dos tarjetas sobre el borde de la imagen
+
+**Qué se pidió:** dos tarjetas como las del diseño del inicio («Emprender» y «Buscar empleo»), montadas sobre el borde inferior de la imagen, con sus opciones en el editor para la imagen y el hipervínculo.
+
+| Capa | Cambio |
+|---|---|
+| `packages/blocks-renderer/src/blocks/imagen-destacada.tsx` | Props `tarjeta1` y `tarjeta2` (`TarjetaDestacada`: `imagen`, `titulo`, `enlace`, `nuevaPestana`) y `TarjetasDestacadas` debajo de la imagen, en los dos anchos. Con enlace la tarjeta es un `<a>` (con `target="_blank"` + `rel="noopener noreferrer"` si se pidió pestaña nueva) y lleva la flecha verde; sin enlace es un `<div>` sin flecha. Sin imagen ni título no se pinta; en el editor deja un hueco punteado que dice qué falta |
+| `3000-sitio-web/src/style/globals.css` | `.olo-tarjetas-destacadas` y `.olo-tarjeta-destacada*` junto a los estilos de «Imagen destacada»: 156 × 176 px, esquinas de 12 px, sombra, panel interior gris claro (`::before`), flecha `#39a900`, subida de 4 px al pasar el cursor (sin movimiento con `prefers-reduced-motion`), foco `#001631`. Bajo 40rem: 136 × 152 px y 16 px de separación. Van en CSS y no en Tailwind porque Tailwind del sitio no recorre `packages/` |
+| Tarjetas a caballo con el bloque de abajo (pedido después) | Con tarjetas, la sección lleva `.olo-imagen-destacada--con-tarjetas`: sin relleno inferior, `position: relative; z-index: 2` para pintarse sobre el bloque siguiente, y las tarjetas con `margin-bottom` negativo de media tarjeta (`--olo-tarjetas-desplazamiento`: 5,5rem; 4,75rem bajo 40rem). La decisión de pintarlas se sacó a `hayTarjetas()` para que el componente sepa poner la clase |
+| Sin flecha verde (pedido después) | Se quitó la flecha de las tarjetas y su CSS (`.olo-tarjeta-destacada__flecha`): con hipervínculo, la tarjeta entera es el `<a>` y lleva a su ruta al hacer clic; la subida al pasar el cursor queda como señal. Ayuda del campo: «A dónde lleva la tarjeta al hacer clic en ella. Vacío: la tarjeta no lleva a ningún lado.» Comprobado en el render: las tarjetas siguen siendo `<a href>` y no queda rastro de la flecha |
+| Tarjetas en una sola sección con «+ Agregar tarjeta» (pedido después) | `tarjeta1`/`tarjeta2` pasan a la lista `tarjetas` con `campoListaEnAcordeones` (nuevo en `campos-en-acordeon.tsx`): título «Tarjetas», un acordeón por tarjeta («Tarjeta N» + su título como resumen) con Subir, Bajar y Eliminar, y un botón «+ Agregar tarjeta» que abre la nueva. Cada tarjeta lleva un `id` para que los acordeones no se confundan al mover o borrar. Las tarjetas pasan a otra fila si no caben (`flex-wrap`, 24 px entre filas). `defaultProps.tarjetas: []`. `resolveData` pasa a la lista un bloque guardado con `tarjeta1`/`tarjeta2` (descarta las vacías) y el componente aún las lee si no hay `tarjetas`. Los controles de un grupo se sacaron a `ControlesDeGrupo`, compartido con `campoGrupoEnUnAcordeon` |
+| `3000-sitio-web/src/config/puck.config.tsx` | «Tarjeta 1» y «Tarjeta 2», cada una en un solo acordeón (`campoGrupoEnUnAcordeon`): imagen (el `campoImagen` de siempre), título, hipervínculo y «Abrir en» (misma pestaña / pestaña nueva), con ayudas |
+
+> **`.matriz-section-*` recortaba las tarjetas:** trae `overflow-x: hidden`, y un eje en `hidden` convierte el otro en `auto`, así que todo lo que colgaba bajo la sección se cortaba en el borde. En la sección con tarjetas va `overflow-x: clip` + `overflow-y: visible`: `clip` no arrastra al otro eje.
+
+> **El título no estaba en el pedido** (imagen e hipervínculo); se añadió porque está en el diseño y es el nombre del enlace para un lector de pantalla. Por eso la imagen de la tarjeta lleva `alt=""` cuando hay título.
+
+> **La intranet no ve las tarjetas:** también usa este componente, pero su panel no las ofrece. Si un bloque no trae ninguna de las dos props (la intranet, o un bloque del sitio guardado antes), `TarjetasDestacadas` no pinta nada, ni siquiera los huecos del editor.
+
+> **Descartado:** reutilizar `campoDestinoBoton` para el enlace. Trae su propio selector enlace/archivo/ninguno con otro aspecto; para una tarjeta bastaba un texto con la URL y la opción de pestaña nueva, con los mismos controles del resto del panel.
+
+| Verificación | Resultado |
+|---|---|
+| Componente pintado con `react-dom/server` y el CSS real del sitio, fotografiado en Chrome headless a 1250 px | Igual al diseño: dos tarjetas centradas montadas sobre el borde inferior |
+| Mismo render a 375 y 320 px (en iframes, porque la ventana headless no baja de cierto ancho) | Sin desborde lateral; tarjetas de 136 px |
+| Editor con una tarjeta vacía | Hueco punteado con «Tarjeta 2: añade su imagen y su título en el panel» |
+| `npx tsc --noEmit` en blocks-renderer, sitio-web e intranet | Sin errores |
+| Render con un bloque gris debajo, a 1250 y 375 px | Las tarjetas cruzan el borde con media altura sobre el bloque siguiente; tapan el comienzo de ese bloque si su relleno superior es menor de ~5,5rem |
+| Lista del panel pintada en Chrome headless; bloque con cuatro tarjetas a 1250 y 375 px | Lista con resúmenes y «+ Agregar tarjeta»; cuatro tarjetas en una fila en computador y dos filas en celular. Agregar, subir, bajar y eliminar no se pudieron probar sin el editor |
+| Editor real y página publicada | Sin verificar |
+
+**Pendiente al cierre:** probar en el editor la subida de las imágenes de las tarjetas y una página publicada; en celular, con imágenes bajas, las tarjetas tapan buena parte de la imagen (subida de 40 px): ajustar si molesta. El bloque que vaya debajo necesita relleno superior (en su «Espaciado y Ancho», «Espacio interior · arriba y abajo» en Amplio o Muy amplio) para que las tarjetas no tapen su comienzo.
+
+---
+
+## sesión 18-10-2026: «Cabecera / Menú» del sitio-web, color de fondo y panel en acordeones
+
+**Qué se pidió:** que la cabecera permita cambiar el fondo y que su panel tenga el mismo aspecto que el de «Imagen destacada» (acordeón por opción, controles con borde, mensajes claros).
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/shared/lib/blocks/header.tsx` | Prop `colorFondo`: `style` con `backgroundColor` en el `<header class="olo-header">`. Vacío = el blanco del CSS, como antes |
+| `menu-y-pie/cabecera-por-defecto.ts` | `colorFondo?` en `CabeceraPorDefecto`. No hace falta tocar `obtenerPlantilla`: ya pasa todas las props guardadas del bloque al layout público |
+| `3000-sitio-web/src/config/puck.config.tsx` | Panel de `Header`: franja GOV.CO (Mostrar/Ocultar), imagen de la franja (resumen «Propia/Oficial»), logo («Propio/Por defecto»), color de fondo de la barra y texto del botón de intranet, cada uno con `campoEnAcordeon` y una línea de ayuda. El menú de navegación se queda como la lista de Puck y pasa al final |
+| `campos-en-acordeon.tsx` | Nueva clave `ayuda` en cualquier campo: una línea gris bajo el control |
+| Menú de navegación (cada sección) | Tres campos nuevos en `arrayFields`: «Color del texto», «Color al pasar el cursor» y «Tamaño del texto» (5 tamaños con nombre en `TAMANOS_TEXTO_MENU` de header.tsx: 14, 15 —el de hoy—, 16, 18 y 20 px). Solo los enlaces de primer nivel y solo en computador |
+| Submenú desplegable (pedido después) | Campo «Color de fondo del submenú» en cada sección (`colorFondoSubmenu`, junto a la lista del submenú): `backgroundColor` en línea sobre `.olo-nav-dropdown`; vacío deja el blanco. Comprobado en el dev: `/inicio` carga sin errores nuevos y sin color el desplegable no lleva `style` |
+| Submenú: esquinas y color del texto (pedido después) | `.olo-nav-dropdown` con `border-radius: 0 0 32px 32px` (solo abajo) y 1rem de relleno inferior para que el último enlace no roce la curva. **El color del texto de la sección no llegaba a los enlaces del submenú** (CUOC y CNO seguían en azul con el texto en blanco): las variables `--olo-nav-*` iban en el botón y los enlaces están fuera de él. Ahora, en una sección con submenú, van en su `.olo-nav-item` y las heredan el botón y `.olo-nav-dropdown-link`, que lee `--olo-nav-color` y al pasar el cursor `--olo-nav-hover`, con un fondo `color-mix` del 12 % del propio color del texto (se nota en fondo claro y oscuro). Afecta a todos los submenús. Probado con el CSS real en Chrome headless: enlaces en blanco, hover en cyan, esquinas de 32 px |
+| `globals.css` (`.olo-nav-link`, `.olo-gov-btn`, `.olo-mobile-gov-btn`) | Leen `--olo-nav-color`, `--olo-nav-hover`, `--olo-nav-tamano`, `--olo-intranet-fondo` y `--olo-intranet-texto` con los valores de antes como respaldo. Van como variables porque el `:hover` no se puede en línea. El hover del botón es `color-mix` 85 % con negro del fondo elegido (sin color: #001d2f, casi el #001a2b de antes); el hover del móvil se unió al del computador |
+| Botón de intranet | `intranetText` pasa a `botonIntranet: { texto, colorFondo, colorTexto }`, un solo acordeón (`campoGrupoEnUnAcordeon`, nuevo). `resolveData` del bloque mueve el `intranetText` guardado a `botonIntranet.texto` una vez y lo deja vacío; la cabecera usa `botonIntranet.texto || intranetText || 'Intranet'`, así que una plantilla publicada sin abrir sigue igual |
+| `estilos-de-campos.tsx` (nuevo) + `campos-en-acordeon.tsx` + `color-picker-field.tsx` | Esquinas de 8 px en todos los controles y borde `#001631` con halo suave al enfocarlos; anillo `#001631` con teclado en cabeceras y botones segmentados; la opción elegida lleva borde interior `#001631`. El `:focus` va en una hoja corta con `<style href precedence>` (React 19 la deja una vez en el `<head>`); `!important` para ganarle al borde en línea. **El selector de color cambia en todos los bloques de los dos editores** (40 px, borde #d1d5db) |
+
+> **Import circular (lo encontró el usuario en /inicio):** `TAMANOS_TEXTO_MENU` se exportó primero desde `header.tsx` y daba «Cannot access 'TAMANOS_TEXTO_MENU' before initialization». `header.tsx` importa de `@/features/paginas`, que termina cargando `puck.config.tsx`, y este lo usaba al cargarse (`Object.entries` en `arrayFields`). Ahora vive en `shared/lib/blocks/tamanos-texto-menu.ts`, sin imports. Cualquier constante que `puck.config.tsx` lea al cargarse no puede venir de `header.tsx`.
+
+> **Se perdió la edición en el lienzo del texto del botón de intranet.** Era `text` con `contentEditable: true`; como campo `custom` del acordeón ya no se edita sobre la cabecera, solo en el panel.
+
+> **Las ayudas se comprobaron contra `header.tsx`:** sin imagen de franja se pinta la marca oficial de GOV.CO; sin logo, el SVG del SENA con el del OLO (no solo el del OLO, como decía la primera versión de la ayuda).
+
+| Verificación | Resultado |
+|---|---|
+| Campos de la cabecera pintados con `react-dom/server` y fotografiados en Chrome headless | Acordeones, resúmenes y ayudas correctos |
+| `npx tsc --noEmit` en blocks-renderer, sitio-web e intranet | Sin errores |
+| Reglas reales de `globals.css` en Chrome headless con `getComputedStyle` (`:hover` simulado con clase) | Sin variables: #002237 a 15 px y botón #002237/blanco. Con variables: color, 20 px, hover verde; hover sin color propio = color del texto; fondo del botón oscurecido con `color-mix` |
+| Panel con foco en un input, fotografiado en Chrome headless | Borde #001631, esquinas de 8 px, opción elegida con borde azul |
+| `/inicio` del dev en Chrome headless tras sacar la constante | 200 y sin el error en la consola (queda un aviso de un `<path d>` mal formado que no viene de estos cambios) |
+| Editor y sitio público en navegador | Sin verificar |
+
+**Pendiente al cierre:** ver el panel en «Menú y pie» y una cabecera publicada con colores propios; abrir y guardar «Menú y pie» una vez para que el texto del botón pase a `botonIntranet`; los submenús desplegables y el menú del celular no toman los colores ni el tamaño de cada sección.
+
+---
+
 ## sesión 17-10-2026: «Imagen destacada» del sitio-web, el editor solo pide la imagen
 
 **Qué se pidió:** primer paso del rediseño del bloque `ImagenDestacada` en el editor del sitio-web: quitar del panel lateral todas las opciones salvo la carga de la imagen. Los siguientes pasos (el estilo) los irá dando el usuario.
