@@ -9,6 +9,9 @@ import {
   BLOQUES_SIN_CAJA,
   campoColor,
   campoEnAcordeon,
+  campoGrupoEnUnAcordeon,
+  campoListaEnAcordeones,
+  type CampoDeAcordeon,
   TextoRico,
   ImagenDestacada,
   TarjetaArticulo,
@@ -16,8 +19,12 @@ import {
   SeccionBotonesIcono,
   campoIcono,
   campoDestinoBoton,
+  IconSelectorField,
 } from '@olo/blocks-renderer';
-import { ExternalPortals } from '@/shared/lib/blocks/external-portals';
+import { ExternalPortals, type TarjetaDePortal } from '@/shared/lib/blocks/external-portals';
+import { ICONOS_DE_PORTALES } from '@/shared/lib/blocks/iconos-de-portales';
+import { VideoEmbebido, idDeVideoDeYoutube } from '@/shared/lib/blocks/video-embebido';
+import { CampoVideoDeYoutube } from '@/shared/lib/blocks/campo-video-de-youtube';
 import { Services } from '@/shared/lib/blocks/services';
 import { DatoOloSemana } from '@/shared/lib/blocks/dato-olo-semana';
 import { RecursosVisualesBloque, extraerYoutubeId } from '@/shared/lib/blocks/recursos-visuales-bloque';
@@ -26,6 +33,10 @@ import { PoliticaPrivacidadEncabezado } from '@/shared/lib/blocks/politica-priva
 import { VisorDocumentosNormativos, type DocumentoNormativo } from '@/shared/lib/blocks/visor-documentos-normativos';
 import { CanalesAtencion, type CanalDeAtencion } from '@/shared/lib/blocks/canales-atencion';
 import { Header } from '@/shared/lib/blocks/header';
+import { TAMANOS_TEXTO_MENU } from '@/shared/lib/blocks/tamanos-texto-menu';
+import { crearCamposDelPie, resolverGruposDelPie } from '@/features/paginas/menu-y-pie/campos-del-pie';
+import { resolverGruposDeProps } from '@/features/paginas/menu-y-pie/grupos-de-props';
+import { ALINEACIONES_FRANJA, SEPARACIONES_FRANJA } from '@/shared/lib/blocks/disposicion-de-franja';
 import { Footer } from '@/shared/lib/blocks/footer';
 import { MapaSitio, VALORES_MAPA_SITIO_POR_DEFECTO } from '@/shared/lib/blocks/mapa-sitio';
 import { obtenerIndiceBusqueda } from '@/features/paginas/publicacion/services/publicacion.service';
@@ -71,6 +82,76 @@ const campoImagen = (label: string) => ({
     <ImageUploaderField value={value} onChange={onChange} />
   ),
 });
+
+/**
+ * Barra de formato de un titular: negrita, cursiva, subrayado, enlaces y saltos de línea,
+ * sin encabezados, listas ni citas. El texto ya va dentro de un `<h2>`, y un encabezado
+ * dentro de otro lo parte en dos.
+ */
+const OPCIONES_TEXTO_EN_LINEA = {
+  heading: false,
+  blockquote: false,
+  bulletList: false,
+  orderedList: false,
+  codeBlock: false,
+  horizontalRule: false,
+} as const;
+
+/**
+ * La tarjeta «Franja superior GOV.CO» de la cabecera. Las opciones siguen siendo props
+ * sueltas de `Header`; la tarjeta las guarda en `grupoFranjaGov` y `resolverGruposDeProps`
+ * las copia (ver `grupos-de-props.ts`).
+ */
+const CAMPOS_FRANJA_SUPERIOR = {
+  govBannerEnabled: {
+    type: 'radio',
+    label: 'Franja',
+    options: [
+      { label: 'Mostrar', value: true },
+      { label: 'Ocultar', value: false },
+    ],
+  },
+  govBannerImageUrl: {
+    ...campoImagen('Imagen de GOV.CO'),
+    ayuda: 'Sin imagen, la franja queda solo con la fecha y la hora.',
+  },
+  govBannerEnlace: {
+    type: 'text',
+    label: 'Hipervínculo de la imagen',
+    placeholder: 'https://www.gov.co',
+    ayuda: 'A dónde lleva la imagen (se abre en otra pestaña). Vacío: gov.co. El de la fecha y la hora no se cambia: lleva siempre al panel.',
+  },
+  govBannerMargenArriba: { type: 'number', label: 'Margen arriba', min: 0, max: 40, sufijo: 'px', placeholder: '4' },
+  govBannerMargenAbajo: {
+    type: 'number',
+    label: 'Margen abajo',
+    min: 0,
+    max: 40,
+    sufijo: 'px',
+    placeholder: '4',
+    ayuda: 'La franja mide 40 px de alto: más margen arriba y abajo achica la imagen. Vacío usa el valor de siempre.',
+  },
+  colorFranjaGov: {
+    type: 'color',
+    label: 'Color de fondo',
+    ayuda: 'Vacío: franja blanca con la fecha en azul. Con un fondo oscuro, la fecha pasa a blanco sola.',
+  },
+  alineacionFranjaGov: {
+    type: 'radio',
+    label: 'Alineación de la imagen',
+    options: Object.entries(ALINEACIONES_FRANJA).map(([value, { label }]) => ({ label, value })),
+    ayuda: 'La fecha y la hora se quedan a la derecha. Si no hay ninguna marcada, la imagen va a la izquierda.',
+  },
+  separacionFranjaGov: {
+    type: 'select',
+    label: 'Separación con la fecha',
+    options: [
+      { label: 'La de siempre (12 px)', value: '' },
+      ...Object.entries(SEPARACIONES_FRANJA).map(([value, { label }]) => ({ label, value })),
+    ],
+    ayuda: 'Solo con la imagen a la derecha. Se adapta a la pantalla.',
+  },
+} satisfies Record<string, CampoDeAcordeon>;
 
 /**
  * Campo con entrada para enlace o ID de YouTube y vista previa en vivo de la miniatura.
@@ -203,6 +284,7 @@ const puckConfigBase: Config = {
         'Services',
         'DatoOloSemana',
         'RecursosVisualesBloque',
+        'VideoEmbebido',
         'Publicaciones',
         'RichText',
         'PoliticaPrivacidadEncabezado',
@@ -250,29 +332,44 @@ const puckConfigBase: Config = {
     // cada sección: así el menú es uno solo para todo el sitio.
     Header: {
       label: 'Cabecera / Menú',
+      // Cada opción en su acordeón, con una línea que dice qué pasa si se deja
+      // vacía. El menú sigue siendo la lista de Puck: añadir, quitar y ordenar
+      // enlaces es cosa suya.
       fields: {
-        govBannerEnabled: {
-          type: 'radio',
-          label: 'Mostrar franja superior GOV.CO',
-          options: [
-            { label: 'Sí', value: true },
-            { label: 'No', value: false },
-          ],
-        },
-        govBannerImageUrl: {
-          type: 'custom',
-          label: 'Imagen de la franja (opcional)',
-          render: ({ value, onChange }: CustomFieldRender<string>) => (
-            <ImageUploaderField value={value} onChange={onChange} />
-          ),
-        },
-        mainLogoUrl: {
-          type: 'custom',
-          label: 'Logo principal (opcional)',
-          render: ({ value, onChange }: CustomFieldRender<string>) => (
-            <ImageUploaderField value={value} onChange={onChange} />
-          ),
-        },
+        grupoFranjaGov: campoGrupoEnUnAcordeon('Franja superior GOV.CO', CAMPOS_FRANJA_SUPERIOR, {
+          resumen: (grupo) => (grupo?.govBannerEnabled === false ? 'Oculta' : grupo?.govBannerImageUrl ? 'Con imagen' : 'Sin imagen'),
+        }),
+        mainLogoUrl: campoEnAcordeon(
+          { ...campoImagen('Logo principal'), ayuda: 'Opcional. Si no subes uno, se muestra el logo del SENA con el del OLO.' },
+          { resumen: (src) => (src ? 'Propio' : 'Por defecto') }
+        ),
+        colorFondo: campoEnAcordeon({
+          type: 'color',
+          label: 'Color de fondo de la barra',
+          ayuda: 'Vacío deja el blanco. Con un color oscuro, el texto del menú puede dejar de leerse.',
+        }),
+        botonIntranet: campoGrupoEnUnAcordeon(
+          'Botón de intranet',
+          {
+            texto: {
+              type: 'text',
+              label: 'Texto',
+              placeholder: 'Intranet',
+              ayuda: 'Se ve a la derecha del menú. El botón lleva siempre a la intranet.',
+            },
+            colorFondo: {
+              type: 'color',
+              label: 'Color del botón',
+              ayuda: 'Vacío deja el azul oscuro. Al pasar el cursor se oscurece un poco solo.',
+            },
+            colorTexto: {
+              type: 'color',
+              label: 'Color del texto',
+              ayuda: 'Vacío deja el blanco. Elige uno que contraste con el color del botón.',
+            },
+          },
+          { resumen: (boton) => boton?.texto || 'Intranet' }
+        ),
         navLinks: {
           type: 'array',
           label: 'Menú de navegación',
@@ -296,14 +393,56 @@ const puckConfigBase: Config = {
               },
               getItemSummary: (item: { label?: string }) => item.label || 'Enlace',
             },
+            colorFondoSubmenu: campoEnAcordeon({
+              type: 'color',
+              label: 'Color de fondo del submenú',
+              ayuda: 'Solo se ve si esta sección tiene submenú. Vacío deja el blanco. Con un color oscuro, los enlaces del submenú (azul oscuro) pueden dejar de leerse.',
+            }),
+            colorTexto: campoEnAcordeon({
+              type: 'color',
+              label: 'Color del texto',
+              ayuda: 'Vacío deja el azul oscuro de siempre.',
+            }),
+            colorHover: campoEnAcordeon({
+              type: 'color',
+              label: 'Color al pasar el cursor',
+              ayuda: 'El color del texto cuando el visitante pone el cursor encima. Vacío = el mismo color del texto.',
+            }),
+            tamanoTexto: campoEnAcordeon({
+              type: 'select',
+              label: 'Tamaño del texto',
+              options: Object.entries(TAMANOS_TEXTO_MENU).map(([value, { label }]) => ({ label, value })),
+              ayuda: 'Solo en computador; en el celular el menú desplegable conserva su tamaño. Con tamaños grandes, revisa que el menú quepa a lo ancho.',
+            }),
           },
           getItemSummary: (item: { label?: string }) => item.label || 'Enlace',
         },
-        intranetText: { type: 'text', label: 'Texto del botón de intranet', contentEditable: true },
       },
       // Los mismos valores que usa la cabecera cuando no hay «Menú y pie» guardado:
       // arrastrar el bloque al lienzo da la cabecera que ya se ve hoy, no una vacía.
-      defaultProps: { ...CABECERA_POR_DEFECTO },
+      defaultProps: {
+        ...CABECERA_POR_DEFECTO,
+        colorFondo: '',
+        colorFranjaGov: '',
+        govBannerEnlace: '',
+        govBannerMargenArriba: '',
+        govBannerMargenAbajo: '',
+        alineacionFranjaGov: 'izquierda',
+        separacionFranjaGov: '',
+        botonIntranet: { texto: '', colorFondo: '', colorTexto: '' },
+      },
+      // El texto del botón vivía en `intranetText`; ahora va en `botonIntranet.texto`.
+      // Al abrir una cabecera de antes se pasa una sola vez y `intranetText` queda
+      // vacío: si no, borrar el texto del campo lo volvería a rellenar con el viejo.
+      // Además, la tarjeta de la franja GOV.CO: grupo ⇄ props sueltas.
+      resolveData: ({ props }: { props: Record<string, any> }) => {
+        const boton = props.botonIntranet ?? {};
+        const migrar = !boton.texto && typeof props.intranetText === 'string' && props.intranetText;
+        const conBoton = migrar
+          ? { ...props, intranetText: '', botonIntranet: { ...boton, texto: props.intranetText } }
+          : props;
+        return { props: resolverGruposDeProps(conBoton, { grupoFranjaGov: Object.keys(CAMPOS_FRANJA_SUPERIOR) }) };
+      },
       render: (props: BlockRender<Omit<ComponentProps<typeof Header>, 'block'>>) => (
         <Header {...props} block={{ id: props.id || 'header-preview' }} />
       ),
@@ -341,197 +480,130 @@ const puckConfigBase: Config = {
         mostrarFranjaGov: false,
         rutaCoImgUrl: '',
         rutaCoImgAlt: '',
+        alineacionFranjaGov: 'izquierda',
+        separacionFranjaGov: '',
         redesSociales: [],
         certificaciones: [],
         enlacesFila1: [],
         enlacesFila2: [],
         enlacesFila3: []
       },
-      fields: {
-        colorFondo: campoColor('Color de fondo (zona baja)'),
-        colorFondoSuperior: campoColor('Color de fondo (zona alta)'),
-        colorTarjeta: campoColor('Color de la tarjeta (interior)'),
-        // Logos superiores
-        logoSenaUrl: campoImagen('Logo SENA'),
-        logoSenaAlt: { type: 'text', label: 'Texto alternativo - Logo SENA' },
-        logoOloUrl: campoImagen('Logo OLO horizontal'),
-        logoOloAlt: { type: 'text', label: 'Texto alternativo - Logo OLO' },
-        separadorLogos: { type: 'text', label: 'Símbolo separador de logos' },
-        tamanoSeparadorLogos: {
-          type: 'select',
-          label: 'Tamaño del separador (px)',
-          options: [20, 25, 30, 35, 40].map(v => ({ label: `${v}px`, value: v }))
-        },
-        logoMintrabajoUrl: campoImagen('Logo Ministerio del Trabajo'),
-        logoMintrabajoAlt: { type: 'text', label: 'Texto alternativo - Logo MinTrabajo' },
-
-        // Bloques de información institucional y contacto
-        nombreEntidad: { type: 'text', label: 'Nombre de la entidad', contentEditable: true },
-        direccion: { type: 'textarea', label: 'Dirección física', contentEditable: true },
-        atencionPresencial: { type: 'textarea', label: 'Atención presencial', contentEditable: true },
-        puntosAtencionTexto: { type: 'textarea', label: 'Texto de puntos de atención', contentEditable: true },
-        puntosAtencionUrl: { type: 'text', label: 'URL puntos de atención' },
-
-        whatsappTitulo: { type: 'text', label: 'Título WhatsApp', contentEditable: true },
-        whatsappNumero: { type: 'textarea', label: 'Número WhatsApp', contentEditable: true },
-
-        lineasAtencionTitulo: { type: 'text', label: 'Título líneas de atención / PQRS', contentEditable: true },
-        lineasAtencionTexto: { type: 'textarea', label: 'Líneas de atención y teléfonos', contentEditable: true },
-
-        mesaAyudaTitulo: { type: 'text', label: 'Título mesa de ayuda', contentEditable: true },
-        mesaAyudaTelefono: { type: 'textarea', label: 'Teléfono / PBX mesa de ayuda', contentEditable: true },
-        mesaAyudaEmail: { type: 'textarea', label: 'Correo mesa de ayuda', contentEditable: true },
-
-        horarioTitulo: { type: 'text', label: 'Título horario de atención', contentEditable: true },
-        horarioTexto: { type: 'textarea', label: 'Horario de atención', contentEditable: true },
-
-        // Redes sociales
-        redesSociales: {
-          type: 'array',
-          label: 'Redes sociales',
-          arrayFields: {
-            red: {
-              type: 'select',
-              label: 'Red social / Ícono',
-              options: [
-                { label: 'X (Twitter)', value: 'x' },
-                { label: 'Facebook', value: 'facebook' },
-                { label: 'Instagram', value: 'instagram' },
-                { label: 'YouTube', value: 'youtube' },
-                { label: 'LinkedIn', value: 'linkedin' },
-                { label: 'Radio SENA', value: 'radio' },
-                { label: 'Otro / Personalizado', value: 'otro' },
-              ],
-            },
-            nombre: { type: 'text', label: 'Nombre o usuario (@...)' },
-            url: { type: 'text', label: 'URL del perfil' },
-            iconoPersonalizado: { type: 'text', label: 'URL/Ruta ícono personalizado (si es Otro)' },
-          },
-          getItemSummary: (item: { nombre?: string; red?: string }) => item.nombre || item.red || 'Red social',
-        },
-
-        // Certificación
-        certificacionImgUrl: campoImagen('Sello de certificación'),
-        certificacionImgAlt: { type: 'text', label: 'Texto alternativo - Certificación' },
-
-        // Enlaces inferiores (filas)
-        enlacesFila1: {
-          type: 'array',
-          label: 'Enlaces inferiores · Fila 1',
-          arrayFields: {
-            texto: { type: 'text', label: 'Texto del enlace' },
-            url: { type: 'text', label: 'URL' },
-          },
-          getItemSummary: (item: { texto?: string }) => item.texto || 'Enlace',
-        },
-        enlacesFila2: {
-          type: 'array',
-          label: 'Enlaces inferiores · Fila 2',
-          arrayFields: {
-            texto: { type: 'text', label: 'Texto del enlace' },
-            url: { type: 'text', label: 'URL' },
-          },
-          getItemSummary: (item: { texto?: string }) => item.texto || 'Enlace',
-        },
-        enlacesFila3: {
-          type: 'array',
-          label: 'Enlaces inferiores · Fila 3',
-          arrayFields: {
-            texto: { type: 'text', label: 'Texto del enlace' },
-            url: { type: 'text', label: 'URL' },
-          },
-          getItemSummary: (item: { texto?: string }) => item.texto || 'Enlace',
-        },
-
-        // Franja GOV.CO inferior
-        mostrarFranjaGov: {
-          type: 'radio',
-          label: 'Mostrar franja inferior GOV.CO',
-          options: [
-            { label: 'Sí', value: true },
-            { label: 'No', value: false },
-          ],
-        },
-        rutaCoImgUrl: campoImagen('Distintivo Colombia (franja inferior)'),
-        rutaCoImgAlt: { type: 'text', label: 'Texto alternativo - Distintivo Colombia' },
-      },
+      // Tarjetas por tema y listas con «+ Agregar»; las props sueltas que leen el pie
+      // publicado y `Footer` las mantiene `resolverGruposDelPie` (ver campos-del-pie.ts).
+      fields: crearCamposDelPie(campoImagen),
+      resolveData: resolverGruposDelPie,
       render: (props: BlockRender<Omit<ComponentProps<typeof Footer>, 'block'>>) => (
         <Footer {...props} block={{ id: props.id || 'footer-preview' }} />
       ),
     },
 
     /**
-     * Banner de la portada.
+     * Sección «¿Sabes qué es una ocupación?» de la portada: titular, descripción y un
+     * recuadro con el buscador, sobre una imagen de fondo (`PortadaBuscadorOcupaciones`).
      *
-     * Tres cosas que el bloque pintaba y el editor no dejaba tocar: el titular
-     * —escrito a mano en el JSX de `OcupacionSearchBanner`—, la ilustración de
-     * fondo (`modelSrc`) y el color del banner. El JSON guardado llegó a llevar
-     * un prop `heading` con la frase del titular, pero no había campo que lo
-     * editara ni render que lo leyera: se guardaba y se ignoraba.
+     * Reemplazó al banner azul con logo e ilustración. Conserva el tipo `Hero` y los
+     * nombres `titulo` (ahora el texto del recuadro) y `colorFondo` (ahora el color del
+     * recuadro) para que la portada guardada siga sirviendo; `imageUrl`, `imageAlt`,
+     * `modelSrc` y `modelAlt` quedan en el JSON viejo y ya no se leen.
      */
     Hero: {
       label: 'Buscador de Ocupaciones (Banner)',
       fields: {
+        tituloSeccion: {
+          type: 'richtext' as const,
+          label: 'Titular',
+          contentEditable: true,
+          options: OPCIONES_TEXTO_EN_LINEA,
+        },
+        descripcion: {
+          type: 'richtext' as const,
+          label: 'Descripción',
+          contentEditable: true,
+          options: { heading: false },
+        },
         titulo: {
           type: 'richtext' as const,
-          label: 'Titular sobre el buscador',
+          label: 'Texto del recuadro',
           contentEditable: true,
+          options: OPCIONES_TEXTO_EN_LINEA,
         },
-        searchPlaceholder: {
-          type: 'text' as const,
-          label: 'Texto de ejemplo dentro del buscador',
-        },
-        imageUrl: campoImagen('Logo (esquina superior)'),
-        imageAlt: {
-          type: 'text' as const,
-          label: 'Texto alternativo del logo',
-        },
-        modelSrc: campoImagen('Ilustración de fondo'),
-        modelAlt: {
-          type: 'text' as const,
-          label: 'Texto alternativo de la ilustración',
-        },
-        // Campo personalizado que integra ColorPickerField para definir el color de fondo del banner 
-        // (si se deja vacío, conserva el estilo CSS por defecto).
-        colorFondo: campoColor('Color del banner'),
+        searchPlaceholder: campoEnAcordeon({
+          type: 'text',
+          label: 'Texto de ejemplo del buscador',
+          placeholder: 'Buscar ocupación, código o denominación',
+        }),
+        imagenFondo: campoEnAcordeon(
+          {
+            ...campoImagen('Imagen de fondo'),
+            ayuda: 'Cubre toda la sección y se recorta para llenarla. Es decorativa: no lleva texto alternativo. Sin imagen, el fondo queda blanco.',
+          },
+          { abierto: true, resumen: (src) => (src ? 'Cargada' : 'Sin imagen') }
+        ),
+        transparenciaFondo: campoEnAcordeon({
+          type: 'number',
+          label: 'Transparencia de la imagen',
+          min: 0,
+          max: 100,
+          sufijo: '%',
+          placeholder: '0',
+          ayuda: '0 %: la imagen se ve tal cual. 100 %: no se ve y queda el fondo blanco. Vacío: 0 %.',
+        }),
+        colorFondo: campoEnAcordeon({
+          type: 'color',
+          label: 'Color del recuadro',
+          ayuda: 'El del recuadro del buscador y su botón. Vacío: el azul del diseño.',
+        }),
       },
       defaultProps: {
         id: 'hero-1',
+        tituloSeccion: '<p>¿Sabes qué es una<br><strong>ocupación?</strong></p>',
+        descripcion:
+          '<p>Es un conjunto de cargos, empleos u oficios que incluyen categorías homogéneas de funciones, independientemente del lugar o tiempo donde se desarrollen.</p>',
         titulo:
           '<p><em>Explora las ocupaciones clave de los</em> <strong>sectores productivos en Colombia.</strong></p>',
         searchPlaceholder: 'Buscar ocupación, código o denominación',
-        imageUrl: '/assets/img/nos-ocupa-el-pais.png',
-        imageAlt: 'Nos ocupa el país',
-        modelSrc: '/assets/img/modelo-uno.png',
-        modelAlt: 'Modelo',
+        imagenFondo: '',
+        transparenciaFondo: '',
         colorFondo: '',
       },
+      // Una portada guardada antes del rediseño no trae titular ni descripción: se
+      // completan al abrirla en el editor, para que se vean y se puedan corregir.
+      resolveData: ({ props }: { props: Record<string, any> }) => {
+        if (props.tituloSeccion !== undefined && props.descripcion !== undefined) return { props };
+        return {
+          props: {
+            ...props,
+            tituloSeccion: props.tituloSeccion ?? '<p>¿Sabes qué es una<br><strong>ocupación?</strong></p>',
+            descripcion: props.descripcion ?? '<p>Es un conjunto de cargos, empleos u oficios que incluyen categorías homogéneas de funciones, independientemente del lugar o tiempo donde se desarrollen.</p>',
+          },
+        };
+      },
       render: ({
+        tituloSeccion,
+        descripcion,
         titulo,
         searchPlaceholder,
-        imageUrl,
-        imageAlt,
-        modelSrc,
-        modelAlt,
+        imagenFondo,
+        transparenciaFondo,
         colorFondo,
       }: BlockRender<{
         // `ReactNode` y no `string`: Puck convierte los campos `richtext` a nodos
         // antes de llamar al render, igual que en `TextoRico` de la intranet.
+        tituloSeccion?: ReactNode;
+        descripcion?: ReactNode;
         titulo?: ReactNode;
         searchPlaceholder?: string;
-        imageUrl?: string;
-        imageAlt?: string;
-        modelSrc?: string;
-        modelAlt?: string;
+        imagenFondo?: string;
+        transparenciaFondo?: number | '';
         colorFondo?: string;
       }>) => (
         <HeroBuscadorOcupaciones
+          tituloSeccion={tituloSeccion}
+          descripcion={descripcion}
           titulo={titulo}
           searchPlaceholder={searchPlaceholder}
-          imageUrl={imageUrl}
-          imageAlt={imageAlt}
-          modelSrc={modelSrc}
-          modelAlt={modelAlt}
+          imagenFondo={imagenFondo}
+          transparenciaFondo={transparenciaFondo}
           colorFondo={colorFondo}
         />
       ),
@@ -1010,128 +1082,205 @@ const puckConfigBase: Config = {
         />
       ),
     },
+    /**
+     * Fila de tarjetas de color con ícono y texto, unidas por una flecha
+     * (`ExternalPortals`). Reemplazó a la rejilla con título, subtítulo e ilustraciones:
+     * una portada guardada así trae `portals` y no `tarjetas`, y se ve con las tres
+     * tarjetas del diseño hasta que se abra en el editor.
+     */
     ExternalPortals: {
       label: 'Portales Externos',
       fields: {
-        title: {
-          type: 'richtext' as const,
-          label: 'Título de la sección',
-          contentEditable: true,
-        },
-        subtitle: {
-          type: 'text' as const,
-          label: 'Subtítulo (opcional)',
-          contentEditable: true,
-        },
-        colorTitle: campoColor('Color del título (opcional)'),
-        colorSubtitle: campoColor('Color del subtítulo (opcional)'),
-        portals: {
+        tarjetas: {
           type: 'array' as const,
-          label: 'Lista de portales',
+          label: 'Tarjetas',
           arrayFields: {
-            id: { type: 'text' as const, label: 'Identificador' },
-            label: { type: 'text' as const, label: 'Etiqueta', contentEditable: true },
-            description: { type: 'richtext' as const, label: 'Descripción', contentEditable: true },
-            href: { type: 'text' as const, label: 'URL de destino' },
-            imagen: campoImagen('Ilustración de fondo (se pinta al 60%)'),
-            /**
-             * El degradado de la tarjeta, en dos colores en vez de una línea de CSS.
-             *
-             * Antes era un campo de texto donde había que escribir
-             * `linear-gradient(135deg, #0b4ea2 0%, #0a2f6b 100%)` a mano: sintaxis
-             * de programador en un panel que usa un funcionario, y un paréntesis
-             * mal cerrado deja la tarjeta sin fondo sin decir por qué.
-             *
-             * `gradient` se conserva como respaldo para las tarjetas ya guardadas
-             * que todavía no tengan los dos colores; ver `ExternalPortals.tsx`.
-             */
-            colorInicio: campoColor('Color del degradado · arriba'),
-            colorFin: campoColor('Color del degradado · abajo'),
-            gradient: { type: 'text' as const, label: 'Degradado CSS (heredado, opcional)' },
+            icono: campoEnAcordeon(
+              {
+                type: 'custom',
+                label: 'Ícono',
+                render: ({ value, onChange }) => (
+                  <IconSelectorField
+                    value={value}
+                    onChange={onChange}
+                    catalogo={ICONOS_DE_PORTALES}
+                    permitirRuta={false}
+                  />
+                ),
+                ayuda: 'Va en el círculo blanco, en azul.',
+              },
+              {
+                abierto: true,
+                resumen: (ruta) =>
+                  ICONOS_DE_PORTALES.find((icono) => icono.id === ruta)?.nombre ?? (ruta ? 'Otro' : 'Sin ícono'),
+              }
+            ),
+            texto: {
+              type: 'richtext' as const,
+              label: 'Texto',
+              contentEditable: true,
+              // La tarjeta entera ya es un enlace: un enlace dentro de otro no vale.
+              options: { ...OPCIONES_TEXTO_EN_LINEA, link: false },
+            },
+            enlace: campoEnAcordeon({
+              type: 'text',
+              label: 'Hipervínculo',
+              placeholder: '/pqrs o https://…',
+              ayuda: 'A dónde lleva la tarjeta al hacer clic en ella. Vacío: no lleva a ningún lado.',
+            }),
+            colorFondo: campoEnAcordeon({
+              type: 'color',
+              label: 'Color de fondo',
+              ayuda: 'También pinta la flecha hacia la tarjeta siguiente. Vacío: azul #001145.',
+            }),
           },
           defaultItemProps: {
-            id: 'nuevo-portal',
-            label: 'Nuevo portal',
-            description: '<p>Descripción del portal.</p>',
-            href: '#',
-            imagen: '',
-            colorInicio: '#0b4ea2',
-            colorFin: '#0a2f6b',
+            icono: '',
+            texto: '<p><strong>Nuevo portal</strong></p>',
+            enlace: '',
+            colorFondo: '#001145',
           },
-          getItemSummary: (item: { label?: string }) => item.label || 'Portal',
+          getItemSummary: (tarjeta: { texto?: unknown }) =>
+            String(tarjeta?.texto ?? '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() || 'Tarjeta',
         },
+        radioEsquinas: campoEnAcordeon({
+          type: 'number',
+          label: 'Esquinas redondeadas',
+          min: 0,
+          max: 100,
+          sufijo: 'px',
+          placeholder: '0',
+          ayuda: 'Redondea las cuatro esquinas de afuera de la fila; donde se unen las tarjetas quedan rectas. Vacío o 0: rectas.',
+        }),
       },
       defaultProps: {
         id: 'portals-1',
-        title: '<p><strong>Portales externos</strong> de la ciudadanía</p>',
-        subtitle: '',
-        colorTitle: '',
-        colorSubtitle: '',
-        portals: [
+        radioEsquinas: '',
+        tarjetas: [
           {
-            id: 'pqrs',
-            label: 'PQRS',
-            description:
-              '<p><strong>Registrar tus peticiones, quejas, reclamos y sugerencias</strong>. Tu participación es fundamental para seguir mejorando.</p>',
-            href: '#',
-            imagen: '/assets/img/pqrs.png',
-            colorInicio: '#0b4ea2',
-            colorFin: '#0a2f6b',
+            icono: '/assets/svg/portales/pqrs.svg',
+            texto: '<p><strong>Molestia referente<br>a PQRS</strong></p>',
+            enlace: '#',
+            colorFondo: '#001145',
           },
           {
-            id: 'denuncias',
-            label: 'Denuncias por corrupción',
-            description:
-              '<p><strong>Reportar actos de corrupción</strong> por un canal seguro. Tu identidad será protegida en todo momento.</p>',
-            href: '#',
-            imagen: '/assets/img/corrupcion.png',
-            colorInicio: '#0d1526',
-            colorFin: '#1a2e50',
+            icono: '/assets/svg/portales/denuncia.svg',
+            texto: '<p><strong>Denuncia por<br>corrupción</strong></p>',
+            enlace: '#',
+            colorFondo: '#85e501',
           },
           {
-            id: 'transparencia',
-            label: 'Transparencia',
-            description:
-              '<p><strong>Consultar información pública</strong> y datos abiertos del observatorio, con rendición de cuentas al día.</p>',
-            href: '#',
-            imagen: '/assets/img/transparencia.png',
-            colorInicio: '#1478c6',
-            colorFin: '#0d4f8b',
+            icono: '/assets/svg/portales/transparencia.svg',
+            texto: '<p><strong>Transparencia</strong></p>',
+            enlace: '#',
+            colorFondo: '#07ecfc',
           },
         ],
       },
+      // Una portada guardada antes del rediseño no trae `tarjetas`: se le ponen las del
+      // diseño al abrirla, para que se puedan editar.
+      resolveData: ({ props }: { props: Record<string, any> }) =>
+        props.tarjetas !== undefined
+          ? { props }
+          : {
+              props: {
+                ...props,
+                tarjetas: [
+              {
+                icono: '/assets/svg/portales/pqrs.svg',
+                texto: '<p><strong>Molestia referente<br>a PQRS</strong></p>',
+                enlace: '#',
+                colorFondo: '#001145',
+              },
+              {
+                icono: '/assets/svg/portales/denuncia.svg',
+                texto: '<p><strong>Denuncia por<br>corrupción</strong></p>',
+                enlace: '#',
+                colorFondo: '#85e501',
+              },
+              {
+                icono: '/assets/svg/portales/transparencia.svg',
+                texto: '<p><strong>Transparencia</strong></p>',
+                enlace: '#',
+                colorFondo: '#07ecfc',
+              },
+            ],
+              },
+            },
       render: ({
         id,
-        title,
-        subtitle,
-        colorTitle,
-        colorSubtitle,
-        portals,
+        tarjetas,
+        radioEsquinas,
+        puck,
       }: {
         id: string;
-        title?: ReactNode;
-        subtitle?: ReactNode;
-        colorTitle?: string;
-        colorSubtitle?: string;
-        portals?: {
-          id: string;
-          label: ReactNode;
-          description: ReactNode;
-          href: string;
-          gradient?: string;
-          colorInicio?: string;
-          colorFin?: string;
-          imagen?: string;
-        }[];
+        tarjetas?: TarjetaDePortal[];
+        radioEsquinas?: number | '';
+        puck?: { isEditing?: boolean };
       }) => (
         <ExternalPortals
           block={{ id: id || 'portals-preview' }}
-          title={title}
-          subtitle={subtitle}
-          colorTitle={colorTitle}
-          colorSubtitle={colorSubtitle}
-          portals={portals}
+          tarjetas={tarjetas}
+          radioEsquinas={radioEsquinas}
+          esEdicion={Boolean(puck?.isEditing)}
         />
+      ),
+    },
+    /**
+     * Un video de YouTube en un marco blanco con titular, sobre un fondo de color
+     * (`VideoEmbebido`). Traído del «Video embebido» de la intranet, sin la descarga.
+     * Solo acepta YouTube: el ID o un enlace, del que se saca el ID (`idDeVideoDeYoutube`).
+     */
+    VideoEmbebido: {
+      label: 'Video embebido',
+      fields: {
+        titulo: {
+          type: 'richtext' as const,
+          label: 'Título',
+          contentEditable: true,
+          options: OPCIONES_TEXTO_EN_LINEA,
+        },
+        subtitulo: {
+          type: 'richtext' as const,
+          label: 'Subtítulo (opcional)',
+          contentEditable: true,
+          options: OPCIONES_TEXTO_EN_LINEA,
+        },
+        video: campoEnAcordeon(
+          {
+            type: 'custom',
+            label: 'Video de YouTube',
+            render: ({ value, onChange }) => <CampoVideoDeYoutube value={value} onChange={onChange} />,
+          },
+          { abierto: true, resumen: (valor) => (idDeVideoDeYoutube(valor) ? 'Reconocido' : valor ? 'No válido' : 'Sin video') }
+        ),
+        tituloVideo: campoEnAcordeon({
+          type: 'text',
+          label: 'Nombre del video',
+          placeholder: 'Todo lo que somos en un solo video',
+          ayuda: 'Lo anuncia el lector de pantalla al llegar al video. Obligatorio para enviar a revisión.',
+        }),
+        colorFondo: campoEnAcordeon({
+          type: 'color',
+          label: 'Color de fondo',
+          ayuda: 'El de toda la sección. Vacío: azul #001145. El título va en blanco.',
+        }),
+      },
+      defaultProps: {
+        titulo: '<p><em>Todo</em> <strong>lo que somos</strong> <em>en un solo video</em></p>',
+        subtitulo: '<p>Aquí te lo explicamos</p>',
+        video: '',
+        tituloVideo: 'Todo lo que somos en un solo video',
+        colorFondo: '',
+      },
+      render: ({
+        id,
+        puck,
+        ...props
+      }: BlockRender<Omit<ComponentProps<typeof VideoEmbebido>, 'block' | 'esEdicion'>> & {
+        puck?: { isEditing?: boolean };
+      }) => (
+        <VideoEmbebido {...props} block={{ id: id || 'video-preview' }} esEdicion={Boolean(puck?.isEditing)} />
       ),
     },
     // ─── Texto e imagen ───
@@ -1194,11 +1343,48 @@ const puckConfigBase: Config = {
         }),
         imagenAlt: campoEnAcordeon({ type: 'text', label: 'Texto alternativo' }),
         colorFondo: campoEnAcordeon({ type: 'color', label: 'Color de fondo' }),
+        tarjetas: campoListaEnAcordeones(
+          'Tarjetas',
+          {
+            imagen: { ...campoImagen('Imagen'), ayuda: 'Un icono o logo pequeño; se ve arriba en la tarjeta.' },
+            titulo: { type: 'text', label: 'Título', placeholder: 'Emprender' },
+            enlace: {
+              type: 'text',
+              label: 'Hipervínculo',
+              placeholder: '/emprender o https://…',
+              ayuda: 'A dónde lleva la tarjeta al hacer clic en ella. Vacío: la tarjeta no lleva a ningún lado.',
+            },
+            nuevaPestana: {
+              type: 'radio',
+              label: 'Abrir en',
+              options: [
+                { label: 'La misma pestaña', value: false },
+                { label: 'Pestaña nueva', value: true },
+              ],
+            },
+          },
+          {
+            elemento: 'Tarjeta',
+            nuevo: { imagen: '', titulo: '', enlace: '', nuevaPestana: false },
+            resumen: (t) => t?.titulo || (t?.imagen ? 'Sin título' : 'Vacía'),
+            ayuda: 'Montan sobre el borde inferior de la imagen. Si no caben en una fila, pasan a la siguiente.',
+          }
+        ),
       },
       defaultProps: {
         imagenSrc: '',
         imagenAlt: '',
         colorFondo: '',
+        tarjetas: [],
+      },
+      // La primera versión tenía dos tarjetas fijas (`tarjeta1`, `tarjeta2`). Un bloque
+      // guardado así pasa a la lista al abrirlo; las vacías se descartan.
+      resolveData: ({ props }: { props: Record<string, any> }) => {
+        if (Array.isArray(props.tarjetas) && props.tarjetas.length > 0) return { props };
+        const viejas = [props.tarjeta1, props.tarjeta2].filter((t) => t && (t.imagen || t.titulo));
+        if (viejas.length === 0) return { props };
+        const { tarjeta1: _t1, tarjeta2: _t2, ...resto } = props;
+        return { props: { ...resto, tarjetas: viejas } };
       },
       render: ({ puck, ...props }: BlockRender<ComponentProps<typeof ImagenDestacada>> & { puck?: { isEditing?: boolean } }) => (
         <ImagenDestacada {...props} puck={puck} esEdicion={Boolean(puck?.isEditing)} />

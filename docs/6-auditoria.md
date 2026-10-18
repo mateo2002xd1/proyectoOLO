@@ -5,6 +5,48 @@
 
 ---
 
+## sesión 18-10-2026 (9.ª parte): esquinas redondeadas en «Portales externos»
+
+**Qué se pidió:** en el bloque «Portales Externos» del sitio web, una opción para redondear las esquinas con una medida en px escrita a mano.
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/config/puck.config.tsx` (`ExternalPortals`) | Campo nuevo del bloque «Esquinas redondeadas» (número, 0–100 px, en acordeón, después de «Tarjetas»). `defaultProps` con `radioEsquinas: ''` y el `render` lo pasa al componente |
+| `shared/lib/blocks/external-portals.tsx` | Prop `radioEsquinas`, acotada a 0–100 (`RADIO_MAXIMO`); vacío, 0 o un valor que no es número dejan las esquinas rectas. Va a la fila como variable `--olo-portales-radio` solo si es mayor que 0 |
+| `style/globals.css` | `.olo-portal:first-child`, `:last-child` y `:only-child` redondean las esquinas de afuera con `var(--olo-portales-radio, 0)`: en fila, las de la izquierda de la primera y las de la derecha de la última; apiladas (bajo 40rem), las de arriba de la primera y las de abajo de la última. Una sola tarjeta: las cuatro |
+
+> **Se redondea la fila, no cada tarjeta:** las tarjetas van pegadas y unidas por la flecha, así que redondear cada una dejaría muescas en las uniones. El radio va en las tarjetas de punta y no con `overflow: hidden` en la fila, que recortaría el anillo de foco (su `box-shadow` de afuera ya sigue la curva).
+
+| Verificación | Resultado |
+|---|---|
+| `npx tsc --noEmit` en sitio-web | Sin errores |
+| Finales de línea de los tres archivos | Siguen todos en CRLF |
+| Bloque en el editor y en la página, a 1440, 1024, 768 y 375 px | Sin verificar |
+
+---
+
+## sesión 18-10-2026 (8.ª parte): el banner de inicio saltaba al recargar
+
+**Qué se pidió:** al recargar inicio, el banner subía desde abajo y por un momento se separaba de la cabecera dejando ver una línea blanca.
+
+**Causa (medida por CDP con `PerformanceObserver` de `layout-shift`):** la animación de entrada de vista `olo-route-in` bajaba todo el contenido 8 px con `margin-top` y lo subía en 320 ms. El primer bloque arrancaba en y = 138 con `<main>` en 130: esos 8 px eran el fondo blanco entre la cabecera y el banner oscuro. Corría también en la primera carga, aunque no hubiera vista anterior, y contaba como salto de diseño (CLS 0,003 por carga).
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/style/globals.css` | `olo-route-in` queda como fundido de opacidad, sin `margin-top`. Comentario al día: por qué no se mueve ni con `margin-top` ni con `transform` |
+| `shared/ui/atoms/route-transition.tsx` | La clase `olo-route-transition` se pone desde la primera navegación (estado ajustado durante el render al cambiar `pathname`); entrar o recargar no anima. Sirve igual al layout público y al del panel (`panel-general.tsx`) |
+
+| Verificación | Resultado |
+|---|---|
+| Recarga de `/inicio` del dev por CDP, a 1440 y 375 px | Sin `layout-shift`; el banner pegado a la cabecera (y = 130 / 108) desde la primera muestra |
+| Navegación interna a /publicaciones con el enrutador de Next | La clase aparece, la opacidad sube desde 0 y `margin-top` es 0 |
+| `npx tsc --noEmit` y `eslint` del componente | Sin errores |
+| Panel de administración | Sin verificar en el navegador |
+
+> Los enlaces del menú de la cabecera recargan la página entera (son `<a>` normales, no `<Link>`), así que desde el menú ya no se ve ningún fundido. No se tocó.
+
+---
+
 ## sesión 18-10-2026 (7.ª parte): «Portales externos» como fila de tarjetas con flecha
 
 **Qué se pidió:** rediseñar el bloque «Portales Externos» como en la maqueta: tarjetas de color unidas por una punta de flecha, cada una con un ícono en un círculo blanco y un texto. En el panel, solo cambiar el ícono (el usuario dejará un paquete de íconos SVG) y el texto enriquecido, una tarjeta por portal con la posibilidad de agregar más; de partida, las tres de la maqueta.

@@ -343,8 +343,16 @@
 
 /* Transición de vista, ver route-transition.tsx: qué se anima al pasar de una
    sección a otra. El key={pathname} del componente monta un nodo nuevo por cada
-   ruta, así que esto arranca solo, sin JS de por medio.
-   `margin-top` y no `transform: translateY()` a propósito: cualquier `transform`
+   ruta, así que esto arranca solo, sin JS de por medio. La primera carga no lleva la
+   clase (la pone el componente desde la primera navegación).
+
+   Solo un fundido, sin desplazamiento. Hasta el 18-10-2026 también bajaba 8 px con
+   `margin-top`: era un salto de diseño en cada carga y, mientras duraba, dejaba ver una
+   franja del fondo blanco entre la cabecera y el primer bloque (se notaba sobre el
+   banner oscuro de inicio). Si algún día se quiere volver a mover, que no sea con
+   `margin-top` ni con `transform`:
+
+   Por qué no `transform: translateY()`: cualquier `transform`
    en este contenedor —incluso en reposo, con `animation-fill-mode: both` deja
    `translateY(0)` puesto para siempre, que no es `none`— vuelve a este `<div>` el
    *containing block* de sus descendientes `position: fixed`. Cualquier elemento fijo
@@ -355,16 +363,14 @@
    borrado el 2026-09-18; hoy lo reemplaza `PaginasFabSpeedDial`, que el layout monta
    FUERA de este contenedor): con `transform`, medido en el navegador, acababa 2.578 px
    por debajo del borde inferior en vez de fijo abajo a la derecha. `margin-top`
-   consigue el mismo desplazamiento sin crear ese marco de referencia. */
+   lo evitaba, pero traía el salto de diseño de más arriba. */
 @keyframes olo-route-in {
   from {
     opacity: 0;
-    margin-top: 8px;
   }
 
   to {
     opacity: 1;
-    margin-top: 0;
   }
 }
 
@@ -870,6 +876,20 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
   text-decoration: none;
 }
 
+/* Esquinas redondeadas («Esquinas redondeadas» del bloque): solo las de afuera de la
+   fila, que van en la primera y la última tarjeta. Las del medio quedan rectas. */
+.olo-portal:first-child {
+  border-radius: var(--olo-portales-radio, 0) 0 0 var(--olo-portales-radio, 0);
+}
+
+.olo-portal:last-child {
+  border-radius: 0 var(--olo-portales-radio, 0) var(--olo-portales-radio, 0) 0;
+}
+
+.olo-portal:only-child {
+  border-radius: var(--olo-portales-radio, 0);
+}
+
 /* La punta hacia la tarjeta siguiente: un triángulo del color de esta, montado sobre
    el borde. La última no la lleva. */
 .olo-portal:not(:last-child)::after {
@@ -936,6 +956,20 @@ a.olo-portal:focus-visible {
     min-height: 150px;
   }
 
+  /* Apiladas, las esquinas de afuera son las de arriba de la primera y las de abajo
+     de la última. */
+  .olo-portal:first-child {
+    border-radius: var(--olo-portales-radio, 0) var(--olo-portales-radio, 0) 0 0;
+  }
+
+  .olo-portal:last-child {
+    border-radius: 0 0 var(--olo-portales-radio, 0) var(--olo-portales-radio, 0);
+  }
+
+  .olo-portal:only-child {
+    border-radius: var(--olo-portales-radio, 0);
+  }
+
   .olo-portal:not(:last-child)::after {
     top: auto;
     right: auto;
@@ -956,6 +990,77 @@ a.olo-portal:focus-visible {
   a.olo-portal:hover .olo-portal__icono {
     transform: none;
   }
+}
+
+/* --- Video embebido (ver video-embebido.tsx) ---
+   Titular en blanco sobre el color de la sección (`--olo-video-fondo`) y el video en un
+   marco blanco de esquinas redondeadas. */
+.olo-video-embebido {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(20px, 3vw, 32px);
+  padding: clamp(32px, 5vw, 64px) 16px;
+  background: var(--olo-video-fondo, #001145);
+  color: var(--color-white);
+}
+
+.olo-video-embebido__encabezado {
+  max-width: 800px;
+  text-align: center;
+}
+
+.olo-video-embebido__titulo {
+  font-family: var(--font-heading);
+  font-size: clamp(1.125rem, 0.95rem + 0.8vw, 1.625rem);
+  font-weight: var(--fw-regular);
+  line-height: 1.3;
+  color: inherit;
+}
+
+.olo-video-embebido__subtitulo {
+  margin-top: 4px;
+  font-size: clamp(0.9375rem, 0.88rem + 0.3vw, 1.125rem);
+  line-height: 1.4;
+}
+
+.olo-video-embebido__titulo p,
+.olo-video-embebido__subtitulo p {
+  margin: 0;
+}
+
+.olo-video-embebido__titulo strong,
+.olo-video-embebido__subtitulo strong {
+  font-weight: var(--fw-bold);
+}
+
+.olo-video-embebido__marco {
+  width: 100%;
+  max-width: 860px;
+  padding: clamp(8px, 1.4vw, 14px);
+  border-radius: clamp(18px, 3vw, 32px);
+  background: var(--color-white);
+  box-shadow: 0 20px 40px -16px rgba(0, 0, 0, 0.45);
+}
+
+.olo-video-embebido__video,
+.olo-video-embebido__vacio {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  border-radius: clamp(10px, 2vw, 20px);
+}
+
+.olo-video-embebido__vacio {
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  border: 2px dashed #9ca3af;
+  color: #4b5563;
+  font-size: 14px;
+  text-align: center;
+  background: #f3f4f6;
 }
 
 /* --- Services ("¿Qué hacemos?") --- */
