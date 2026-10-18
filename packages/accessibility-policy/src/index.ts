@@ -100,6 +100,12 @@ const MANIFIESTO_SITIO: Manifiesto = {
     etiqueta: 'Últimas publicaciones',
     reglas: [{ tipo: 'alt-array', campoArray: 'publicaciones', campoImagen: 'pdfUrl', campoAlt: 'titulo' }],
   },
+  /* El iframe del video lleva `title={tituloVideo}`: sin él, un lector de pantalla
+     lo anuncia como «marco» a secas. */
+  VideoEmbebido: {
+    etiqueta: 'Video embebido',
+    reglas: [{ tipo: 'titulo', campoTitulo: 'tituloVideo' }],
+  },
   /* Cada documento pinta un `<iframe title={titulo}>`: sin título el iframe
      queda mudo para un lector de pantalla. */
   VisorDocumentosNormativos: {
