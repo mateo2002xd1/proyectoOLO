@@ -5,7 +5,30 @@
 
 ---
 
-## sesión 18-10-2026 (9.ª parte): esquinas redondeadas en «Portales externos»
+## sesión 18-10-2026 (11.ª parte): miniatura propia en «Video embebido»
+
+**Qué se pidió:** poder ponerle una miniatura (imagen) al video del bloque «Video embebido» del sitio web.
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/shared/lib/blocks/reproductor-de-video.tsx` (nuevo, cliente) | `ReproductorDeVideo`: con miniatura, un `<button>` con la imagen (`object-fit: cover`, `alt=""`) y un círculo de play; nombre accesible «Reproducir video: {nombre del video}». Al pulsarlo se cambia por el iframe con `autoplay=1` (y `autoplay` en `allow`): el clic ya fue la orden de reproducir. En el editor la miniatura es un `div` y no se cambia por el video, porque el clic es para seleccionar el bloque. Sin miniatura, el iframe de siempre. Se llevó aquí `urlDeInsercion` y los atributos del iframe (`sandbox`, `referrerPolicy`, `loading`) |
+| `shared/lib/blocks/video-embebido.tsx` | Prop `miniatura`; el marco usa `ReproductorDeVideo`. El componente sigue sin `'use client'` |
+| `config/puck.config.tsx` (`VideoEmbebido`) | Campo «Miniatura (opcional)» (el subidor de imágenes, en acordeón, después de «Nombre del video»), `miniatura: ''` en `defaultProps` |
+| `style/globals.css` | `.olo-video-embebido__miniatura` con el mismo 16:9 y las mismas esquinas que el iframe; `__play` redondo del color de la sección con un aro blanco, que crece un poco al pasar el ratón (no con movimiento reducido); foco con anillo blanco por dentro y del color de la sección por fuera |
+
+> **YouTube no se carga hasta el clic** cuando hay miniatura: la página no pide el reproductor de nadie que no vaya a ver el video.
+
+> **La miniatura es decorativa (`alt=""`):** lo que hace el botón ya lo dice su nombre, que lleva el «Nombre del video». No hizo falta una regla nueva en `accessibility-policy`.
+
+| Verificación | Resultado |
+|---|---|
+| `npx tsc --noEmit` en sitio-web | Sin errores (salvo `shared/lib/accesibilidad/`, que no es de este trabajo) |
+| `eslint` de los dos componentes | Sin avisos |
+| Bloque en el editor y en la página (subir miniatura, clic para reproducir, 1440/1024/768/375 px) | Sin verificar |
+
+---
+
+## sesión 18-10-2026 (10.ª parte): esquinas redondeadas en «Portales externos»
 
 **Qué se pidió:** en el bloque «Portales Externos» del sitio web, una opción para redondear las esquinas con una medida en px escrita a mano.
 
@@ -22,6 +45,32 @@
 | `npx tsc --noEmit` en sitio-web | Sin errores |
 | Finales de línea de los tres archivos | Siguen todos en CRLF |
 | Bloque en el editor y en la página, a 1440, 1024, 768 y 375 px | Sin verificar |
+
+---
+
+## sesión 18-10-2026 (9.ª parte): bloque «Video embebido» en el sitio-web
+
+**Qué se pidió:** un bloque con un video de YouTube, título arriba y color de fondo editable, como la maqueta; traer el «Video embebido» de la intranet (`TasaVideo`, no Recursos visuales) y reorganizarlo. Que el video solo admita el ID o el enlace, por seguridad.
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/shared/lib/blocks/video-embebido.tsx` (nuevo) | `VideoEmbebido`: título y subtítulo enriquecidos en blanco, el video en un marco blanco de esquinas redondeadas (16:9, hasta 860 px) y el fondo en `--olo-video-fondo` (vacío = #001145). Sin la descarga de `TasaVideo`. Sin video válido no se pinta en el sitio; en el editor deja un aviso |
+| Mismo archivo: `idDeVideoDeYoutube` | Acepta el ID de 11 caracteres o un enlace de `youtube.com`, `www.`/`m.`, `youtu.be` o `youtube-nocookie.com` (`watch?v=`, `/embed/`, `/shorts/`, `/live/`), leído con `new URL` y con el dominio en lista blanca. **El iframe nunca recibe lo que se pegó**: la dirección se arma con el ID, en `youtube-nocookie.com` (sin cookies de seguimiento hasta que se da play). Más estricto que `extraerYoutubeId` de Recursos visuales, que devuelve el texto tal cual si no lo reconoce |
+| Iframe | `sandbox` con lo justo para el reproductor (sin `allow-top-navigation`), `referrerPolicy`, `loading="lazy"` y `title` del campo «Nombre del video» |
+| `shared/lib/blocks/campo-video-de-youtube.tsx` (nuevo) | Campo del editor: el texto, y debajo «Video reconocido (ID …)» o «No es un enlace de YouTube…», con borde rojo si no sirve |
+| `config/puck.config.tsx` | Bloque `VideoEmbebido` en «Contenido Principal», tras Recursos visuales: «Título» y «Subtítulo» (`richtext` en el lienzo, sin encabezados ni listas), y en acordeón «Video de YouTube», «Nombre del video» y «Color de fondo» |
+| `style/globals.css` | Sección «Video embebido» (`.olo-video-embebido*`), con `box-sizing` propio en el marco |
+| `packages/accessibility-policy/src/index.ts` | `VideoEmbebido` en el manifiesto del sitio: «Nombre del video» (`tituloVideo`) obligatorio para enviar a revisión. Reconstruido `dist/` |
+
+| Verificación | Resultado |
+|---|---|
+| `idDeVideoDeYoutube` con 20 entradas | 9 válidas dan el ID (con `&t=`, `?si=`, espacios); otro dominio, `youtube.com.evil.com`, `javascript:`, HTML inyectado, `/embed/ID/../../evil`, `ftp:`, Vimeo e IDs de 10 o 12 caracteres dan `null` |
+| `validarAccesibilidad` | Sin nombre del video: `titulo_faltante` en `tituloVideo`; con nombre, nada |
+| Componente real con el CSS real, desde el origen del dev, a 1440, 1024, 768 y 375 px | Como la maqueta; el iframe apunta a `youtube-nocookie.com/embed/ID?rel=0` y carga; sin scroll horizontal (antes del `box-sizing` se salía 36 px en 768 y 375); en el editor con un enlace de Vimeo, el aviso; fuera del editor un enlace inválido no pinta nada |
+| `npx tsc --noEmit` y `eslint` en sitio-web | Sin errores (salvo `shared/lib/accesibilidad/`, que no es de este trabajo) |
+| Editor real y publicar | Sin verificar |
+
+> **La validación es en el navegador y al pintar, no al guardar**: la API no revisa el campo. No hace falta para la seguridad —lo guardado nunca llega al iframe sin pasar por `idDeVideoDeYoutube`—, pero un valor inválido se puede guardar y el bloque queda oculto en el sitio. Pendiente, si se quiere, la CSP `frame-src` del sitio (§S6 de `3-seguridad-del-proyecto.md`).
 
 ---
 

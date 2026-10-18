@@ -1260,6 +1260,13 @@ const puckConfigBase: Config = {
           placeholder: 'Todo lo que somos en un solo video',
           ayuda: 'Lo anuncia el lector de pantalla al llegar al video. Obligatorio para enviar a revisión.',
         }),
+        miniatura: campoEnAcordeon(
+          {
+            ...campoImagen('Miniatura (opcional)'),
+            ayuda: 'Se ve en lugar del video, con un botón de reproducir; al pulsarlo arranca el video. Mejor en 16:9: se recorta para llenar el marco. Sin imagen: el reproductor de YouTube directo.',
+          },
+          { resumen: (src) => (src ? 'Cargada' : 'Sin imagen') }
+        ),
         colorFondo: campoEnAcordeon({
           type: 'color',
           label: 'Color de fondo',
@@ -1271,6 +1278,7 @@ const puckConfigBase: Config = {
         subtitulo: '<p>Aquí te lo explicamos</p>',
         video: '',
         tituloVideo: 'Todo lo que somos en un solo video',
+        miniatura: '',
         colorFondo: '',
       },
       render: ({
