@@ -17,7 +17,10 @@ const RUTAS_PERMITIDAS = [
 
 async function reenviar(request: Request, { params }: RouteContext) {
   const { path: segmentos } = await params;
-  const ruta = `/${segmentos.join('/')}`;
+  // Se valida la ruta ya resuelta, no el texto recibido: `proxyToBackend` la arma con
+  // `new URL`, que resuelve `..` (también `%2e%2e` y `\`). Comparando el texto,
+  // `/api/paginas/%2e%2e/usuarios` pasaba el filtro y llegaba a la API como `/api/usuarios`.
+  const ruta = new URL(`/${segmentos.join('/')}`, 'http://proxy.invalid').pathname;
 
   const rutaPermitida = RUTAS_PERMITIDAS.some(
     (prefijo) => ruta === prefijo || ruta.startsWith(`${prefijo}/`)

@@ -5,7 +5,37 @@ import { conCabecerasDeCliente } from '@/shared/lib/reenviar-cliente';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000';
 
+/**
+ * Si la petición viene de otro origen y no es de solo lectura.
+ *
+ * El proxy convierte la cookie `sitio_token` en `Authorization: Bearer`, así que la API
+ * ya no ve el `Origin` del navegador y su propia comprobación no aplica. Sin esto, la
+ * única defensa contra CSRF sería `SameSite=lax`, que deja pasar a cualquier subdominio
+ * u otro puerto del mismo host. `Sec-Fetch-Site` lo ponen todos los navegadores
+ * actuales; si falta, se compara `Origin` con el host. Sin ninguna de las dos no es un
+ * navegador, y sin navegador no hay cookie ajena que aprovechar.
+ */
+function esPeticionAjena(request: Request): boolean {
+  if (request.method === 'GET' || request.method === 'HEAD') return false;
+
+  const sitio = request.headers.get('sec-fetch-site');
+  if (sitio) return sitio !== 'same-origin';
+
+  const origen = request.headers.get('origin');
+  if (!origen) return false;
+  const host = request.headers.get('x-forwarded-host') ?? request.headers.get('host');
+  try {
+    return new URL(origen).host !== host;
+  } catch {
+    return true;
+  }
+}
+
 export async function proxyToBackend(path: string, request: Request) {
+  if (esPeticionAjena(request)) {
+    return NextResponse.json({ error: 'Origen no permitido.' }, { status: 403 });
+  }
+
   const cookieStore = await cookies();
   const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
 
@@ -42,6 +72,11 @@ export async function proxyToBackend(path: string, request: Request) {
       const value = res.headers.get(name);
       if (value) responseHeaders.set(name, value);
     }
+    // La respuesta se sirve desde el origen del sitio con el `content-type` de la API.
+    // `helmet` pone estas protecciones en la API, pero no se copian: sin ellas, un HTML
+    // o SVG subido por un usuario se ejecutaría aquí como script del sitio.
+    responseHeaders.set('X-Content-Type-Options', 'nosniff');
+    responseHeaders.set('Content-Security-Policy', "default-src 'none'; sandbox");
 
     if ([204, 205, 304].includes(res.status)) {
       return new NextResponse(null, { status: res.status, headers: responseHeaders });
