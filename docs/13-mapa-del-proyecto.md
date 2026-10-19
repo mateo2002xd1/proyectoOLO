@@ -14,7 +14,7 @@
 
 | | Carpetas | Features | Rutas de Next | Endpoints | Librerías |
 |---|--:|--:|--:|--:|--:|
-| `3000-sitio-web` | 49 | 3 | 47 | — | 33 |
+| `3000-sitio-web` | 49 | 3 | 48 | — | 33 |
 | `3001-intranet` | 31 | 2 | 14 | — | 27 |
 | `4000-api-backend` | 35 | — | — | 96 | 43 |
 
@@ -236,6 +236,7 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `/api/auth/first-login/status` | manejador |  | `api/auth/first-login/status/route.ts` |
 | `/api/auth/login` | manejador |  | `api/auth/login/route.ts` |
 | `/api/auth/logout` | manejador |  | `api/auth/logout/route.ts` |
+| `/api/backend/[...path]` | manejador |  | `api/backend/[...path]/route.ts` |
 | `/api/docs/pdf` | manejador |  | `api/docs/pdf/route.ts` |
 | `/api/ocupaciones` | manejador |  | `api/ocupaciones/route.ts` |
 | `/api/ocupaciones/[codigo]` | manejador |  | `api/ocupaciones/[codigo]/route.ts` |
