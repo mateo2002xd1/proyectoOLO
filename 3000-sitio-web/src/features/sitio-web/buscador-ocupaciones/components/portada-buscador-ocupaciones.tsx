@@ -3,7 +3,7 @@
 import { useId, useState, type FormEvent, type ReactNode } from 'react';
 
 /** Azul del recuadro y del titular en el diseño de la portada. */
-const AZUL_PORTADA = '#001145';
+export const AZUL_PORTADA = '#001145';
 
 function IconoLupa() {
   return (

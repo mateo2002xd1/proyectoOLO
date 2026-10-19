@@ -8,12 +8,15 @@ import { useDetalleOcupacion } from '../hooks/use-detalle-ocupacion';
 import { ModalOcupaciones } from './modal-ocupaciones';
 import { ResultadosOcupaciones } from './resultados-ocupaciones';
 import { DetalleOcupacion } from './detalle-ocupacion';
-import { PortadaBuscadorOcupaciones } from './portada-buscador-ocupaciones';
+import { AZUL_PORTADA, PortadaBuscadorOcupaciones } from './portada-buscador-ocupaciones';
 
 const ETIQUETAS_TIPO: Record<string, string> = {
   cuoc: 'Clasificación Única de Ocupaciones para Colombia',
   cno: 'Clasificación Nacional de Ocupaciones',
 };
+
+/** Título del modal de resultados cuando la búsqueda no viene de una clasificación concreta. */
+const TITULO_RESULTADOS = 'Clasificación Nacional de Ocupaciones - Buscador de Ocupaciones';
 
 /*
  * Textos del diseño. Puck entrega un campo `richtext` vacío —o ausente, como en una
@@ -72,7 +75,7 @@ function TituloModal({
     );
   }
 
-  return <span>{etiquetaTipo || 'Clasificación Nacional de Ocupaciones'}</span>;
+  return <span>{etiquetaTipo || TITULO_RESULTADOS}</span>;
 }
 
 /**
@@ -127,9 +130,11 @@ export function HeroBuscadorOcupaciones({
         abierto={consultaRealizada}
         onCerrar={cerrarTodo}
         claveContenido={codigoAbierto ?? 'resultados'}
+        colorAcento={colorFondo || AZUL_PORTADA}
+        pantallaCompleta
         antetitulo={codigoAbierto ? 'Ocupación' : 'Resultados de la búsqueda'}
         titulo={
-          <Suspense fallback={<span>Clasificación Nacional de Ocupaciones</span>}>
+          <Suspense fallback={<span>{TITULO_RESULTADOS}</span>}>
             <TituloModal
               codigoAbierto={codigoAbierto}
               codigoTitulo={codigoTitulo}

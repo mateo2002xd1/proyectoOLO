@@ -92,7 +92,7 @@ export function ResultadosOcupaciones({
                   className="grid w-full cursor-pointer grid-cols-1 gap-3 px-4 py-3.5 text-left transition-colors hover:bg-[#f8f9fa] focus:outline-none focus-visible:bg-[#f8f9fa] focus-visible:ring-2 focus-visible:ring-[#7DB828] focus-visible:ring-inset sm:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] sm:gap-4"
                 >
                   <span className="flex items-start gap-2.5">
-                    <span className="mt-0.5 shrink-0 rounded-[8px] bg-[#001631] px-2 py-1 font-mono text-[11px] text-white tabular-nums">
+                    <span className="mt-0.5 shrink-0 rounded-[8px] bg-[var(--olo-modal-acento,#001631)] px-2 py-1 font-mono text-[11px] text-white tabular-nums">
                       {resaltarCoincidenciaTexto(
                         ocupacion.codigoOcupacion,
                         termino,

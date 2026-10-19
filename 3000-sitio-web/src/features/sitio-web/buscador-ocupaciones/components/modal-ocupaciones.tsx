@@ -5,6 +5,7 @@ import {
   useEffect,
   useRef,
   useSyncExternalStore,
+  type CSSProperties,
   type KeyboardEvent,
   type ReactNode,
 } from 'react';
@@ -27,6 +28,17 @@ interface ModalOcupacionesProps {
   claveContenido?: string;
   /** Acción secundaria en el pie (por ejemplo, volver a los resultados). */
   pie?: ReactNode;
+  /**
+   * Color del encabezado y de las etiquetas de código del contenido. Vacío = #001631.
+   * El buscador de la portada pasa el color de su recuadro, para que el modal haga juego.
+   */
+  colorAcento?: string;
+  /**
+   * Ocupa toda la ventana, sin esquinas ni márgenes, y sigue siendo un diálogo modal
+   * (foco encerrado, Escape, fondo bloqueado). El contenido se centra a 1200 px para
+   * que en pantallas anchas las líneas no se estiren. Lo usa el buscador de la portada.
+   */
+  pantallaCompleta?: boolean;
   children: ReactNode;
 }
 
@@ -78,6 +90,8 @@ export function ModalOcupaciones({
   titulo: tituloAbierto,
   claveContenido,
   pie: pieAbierto,
+  colorAcento,
+  pantallaCompleta = false,
   children: contenidoAbierto,
 }: ModalOcupacionesProps) {
   const panelRef = useRef<HTMLDivElement>(null);
@@ -158,10 +172,16 @@ export function ModalOcupaciones({
 
   if (!presente || !montado) return null;
 
+  /** Ancho del contenido del encabezado, el cuerpo y el pie a pantalla completa. */
+  const ancho = pantallaCompleta ? 'mx-auto w-full max-w-[1200px]' : '';
+
   return createPortal(
     <div
-      className="olo-anim-fondo fixed inset-0 z-[2000] flex items-center justify-center overflow-y-auto bg-[#001631]/80 p-4 backdrop-blur-sm sm:p-6"
+      className={`olo-anim-fondo fixed inset-0 z-[2000] flex items-center justify-center overflow-y-auto bg-[#001631]/80 backdrop-blur-sm ${pantallaCompleta ? '' : 'p-4 sm:p-6'}`}
       data-cerrando={cerrando || undefined}
+      // En una variable y no en cada pieza: las etiquetas de código las pintan
+      // `ResultadosOcupaciones` y `DetalleOcupacion`, que no reciben el color.
+      style={colorAcento ? ({ '--olo-modal-acento': colorAcento } as CSSProperties) : undefined}
       onMouseDown={(evento) => {
         // `onMouseDown` y no `onClick`: al seleccionar texto dentro del panel y
         // soltar el ratón fuera, el clic se contabiliza en el fondo y el panel
@@ -182,38 +202,46 @@ export function ModalOcupaciones({
            fondo le deja. El alto es un *máximo*, no una altura fija —una búsqueda
            con dos resultados no tiene por qué pintar un panel medio vacío—, y en
            `dvh` para que la barra del navegador móvil no lo desborde. */
-        className="olo-anim-caja flex max-h-[calc(100dvh-2rem)] w-full flex-col overflow-hidden rounded-[16px] bg-white shadow-2xl outline-none sm:max-h-[80dvh] sm:w-[75vw]"
+        className={`olo-anim-caja flex w-full flex-col overflow-hidden bg-white shadow-2xl outline-none ${
+          pantallaCompleta
+            ? 'h-dvh'
+            : 'max-h-[calc(100dvh-2rem)] rounded-[16px] sm:max-h-[80dvh] sm:w-[75vw]'
+        }`}
       >
-        <header className="flex items-start gap-4 bg-[#001631] px-5 py-4 text-white sm:px-7 sm:py-5">
-          <div className="min-w-0 flex-1">
-            {antetitulo && (
-              <p className="text-[11px] tracking-[0.14em] text-white/60 uppercase">
-                {antetitulo}
-              </p>
-            )}
-            <h2
-              id="modal-ocupaciones-titulo"
-              className="mt-1 text-base leading-snug text-balance sm:text-lg"
-            >
-              {titulo}
-            </h2>
-          </div>
+        <header className="bg-[var(--olo-modal-acento,#001631)] px-5 py-4 text-white sm:px-7 sm:py-5">
+          <div className={`flex items-start gap-4 ${ancho}`}>
+            <div className="min-w-0 flex-1">
+              {antetitulo && (
+                <p className="text-[11px] tracking-[0.14em] text-white/60 uppercase">
+                  {antetitulo}
+                </p>
+              )}
+              <h2
+                id="modal-ocupaciones-titulo"
+                className="mt-1 text-base leading-snug text-balance sm:text-lg"
+              >
+                {titulo}
+              </h2>
+            </div>
 
-          <button
-            type="button"
-            onClick={onCerrar}
-            aria-label="Cerrar"
-            className="-mr-1 shrink-0 cursor-pointer rounded-[10px] p-1.5 text-white/70 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7DB828]"
-          >
-            <XMarkIcon className="size-5" />
-          </button>
+            <button
+              type="button"
+              onClick={onCerrar}
+              aria-label="Cerrar"
+              className="-mr-1 shrink-0 cursor-pointer rounded-[10px] p-1.5 text-white/70 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7DB828]"
+            >
+              <XMarkIcon className="size-5" />
+            </button>
+          </div>
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-7 sm:py-6">{children}</div>
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-7 sm:py-6">
+          <div className={ancho}>{children}</div>
+        </div>
 
         {pie && (
-          <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-[#eaecf0] bg-[#f8f9fa] px-5 py-3 sm:px-7">
-            {pie}
+          <footer className="border-t border-[#eaecf0] bg-[#f8f9fa] px-5 py-3 sm:px-7">
+            <div className={`flex flex-wrap items-center justify-between gap-3 ${ancho}`}>{pie}</div>
           </footer>
         )}
       </div>
