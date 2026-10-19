@@ -5,6 +5,39 @@
 
 ---
 
+## sesión 19-10-2026: prueba de off-by-slash (nginx, proxies de Next, rutas en disco y `?redirect=`)
+
+**Qué se pidió:** revisar si el proyecto tiene vulnerabilidades de off-by-slash y dejar un informe como evidencia. El informe completo está en `auditorias/2026-10-19-off-by-slash.md` (la carpeta está en `.gitignore`, igual que el de Web Cache Deception del mismo día).
+
+**Resultado:** el off-by-slash clásico de nginx **no existe** (no hay `alias` ni `root`; cada `location` de prefijo y su `proxy_pass` llevan la barra a los dos lados), y la API sirve los archivos con la contención bien hecha (`base + path.sep`). Salieron tres fallos de la misma familia, «a la comprobación de prefijo le falta la frontera», y una observación fuera de alcance:
+
+| # | Dónde | Qué | Gravedad | Comprobado |
+|---|---|---|---|---|
+| H1 | `backup-uploads.service.ts:160, 219, 230` | Publicar y restaurar resuelven las rutas `/uploads/...` del contenido **sin** la contención que sí tiene `borrarDeUploads`: con `../` un archivo de fuera (adjunto de la intranet, Excel de `cargas-datos/`) acaba en el backup público del sitio y se borra el original | Media-alta | Código |
+| H2 | `login-view.tsx` (sitio e intranet) | El filtro del `redirect` descarta `//` pero no `/\` ni `/%09/`: redirección abierta después del login | Media | `new URL` de Node |
+| H3 | `3001-intranet/src/proxy.ts:71` | `startsWith('/api-backend')` sin barra: `/api-backendx` responde 200 sin sesión con el marco de la intranet | Baja | `curl` al `next dev` |
+| O1 | `pagina.routes.ts:74-84` | `publica/:slug` e `indice-busqueda` sin `requireAuth`, con el ámbito tomado de `X-Ambito`: contenido de la intranet sin sesión. No es off-by-slash | Alta (a confirmar) | Código |
+
+| Verificación | Resultado |
+|---|---|
+| Lectura de `nginx.servidor.conf`, los dos `next.config` y los dos `proxy.ts` | Sin `alias`; barras coherentes |
+| `grep` de `startsWith(`, `path.join/resolve`, `sendFile`, `download`, `express.static` en la API | Cinco resoluciones correctas; H1 en las tres restantes |
+| `new URL('/\evil.example', origen)` y `'/\t/evil.example'` | Las dos salen a `http://evil.example/` y pasan el filtro |
+| `GET /api-backendx` y `GET /inicio` sin cookies en 3001 | `200` y `307 → /login` |
+| Prueba de H1 en carpeta desechable | **No se ejecutó** (se detuvo al prepararla) |
+| nginx en contenedor | **No se ejecutó**; Docker Desktop quedó arrancado |
+
+> **Trampa para quien arregle H1:** `extraerRutasUploads` **decodifica** cada ruta (`decodeURIComponent`), así que un `%2e%2e%2f` guardado en la base se convierte en `../` justo antes del `path.join`. Filtrar el texto crudo al guardar no basta: la contención tiene que estar en el `path.join`.
+
+**No se cambió código.** Los arreglos propuestos (una función `dentroDe(base, ruta)` compartida, comparar orígenes en el `redirect`, la barra en `proxy.ts`, sesión para el ámbito intranet en `publica`) están en el informe.
+
+**Pendiente al cierre:**
+- Decidir y arreglar O1, H1, H2 y H3, en ese orden.
+- Buscar en `paginas_versiones.contenido` rutas `/uploads/` seguidas de `..` o `%2e%2e`, por si alguien ya lo hubiera aprovechado.
+- Correr la prueba de nginx en contenedor (la misma que quedó pendiente en el informe de WCD).
+
+---
+
 ## sesión 18-10-2026 (18.ª parte): revisión del PR #144 de Mateo al traerlo a `dev`
 
 **Qué se pidió:** auditar lo que trae Mateo (`OLO/dev`, PR #144) al hacer el merge en `dev`: dejar lo que mejora, dejar lo que no toca lo del usuario y conservar lo del usuario donde Mateo deshacía algo que ya estaba arreglado. «Mi perfil» se deja como lo dejó Mateo, por decisión del usuario.
