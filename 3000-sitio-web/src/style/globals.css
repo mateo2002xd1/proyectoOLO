@@ -4735,6 +4735,73 @@ button.text-link,
   }
 }
 
+/* --- Botón «Subir» (`shared/ui/atoms/boton-subir.tsx`) ---
+   Esquina inferior derecha; aparece al bajar por la página. Azul oscuro con flecha y
+   texto blancos, como la insignia de fecha de «Últimas publicaciones». Mismos valores en
+   el global de la otra app. Si en la página está el botón flotante de edición (3,5rem en
+   la misma esquina), se pone a su izquierda, centrado con él. */
+
+.olo-boton-subir {
+  position: fixed;
+  right: 2rem;
+  bottom: 2rem;
+  /* Por encima del contenido y de la barra del móvil (40); por debajo de los modales. */
+  z-index: 45;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 2.75rem;
+  padding: 0 1.125rem 0 0.875rem;
+  border: 0;
+  border-radius: 9999px;
+  background-color: #001631;
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  /* El anillo blanco lo separa de las franjas del mismo azul (el pie, la del vídeo). */
+  box-shadow: 0 0 0 2px #ffffff, 0 6px 16px rgb(0 22 49 / 0.25);
+  /* Oculto: ni se ve, ni se pulsa, ni se tabula. */
+  opacity: 0;
+  visibility: hidden;
+  translate: 0 0.75rem;
+  transition: opacity 0.2s ease, translate 0.2s ease, visibility 0.2s, background-color 0.2s ease;
+}
+
+.olo-boton-subir[data-visible] {
+  opacity: 1;
+  visibility: visible;
+  translate: 0 0;
+}
+
+.olo-boton-subir:hover {
+  background-color: #0b2a55;
+}
+
+.olo-boton-subir:focus-visible {
+  outline: 3px solid #39A900;
+  outline-offset: 3px;
+}
+
+body:has(.fab-speed-dial) .olo-boton-subir {
+  right: calc(2rem + 3.5rem + 0.75rem);
+  bottom: calc(2rem + (3.5rem - 2.75rem) / 2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .olo-boton-subir {
+    translate: none;
+    transition: none;
+  }
+}
+
+@media print {
+  .olo-boton-subir {
+    display: none;
+  }
+}
+
 /* --- Menú Flotante FAB / Speed Dial (fab-speed-dial) --- */
 
 .fab-speed-dial {

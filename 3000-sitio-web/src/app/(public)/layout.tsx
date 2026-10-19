@@ -7,6 +7,7 @@ import {
 } from '@/features/paginas';
 import { RouteTransition } from '@/shared/ui/atoms/route-transition';
 import { ResaltadorBusquedaClient } from '@/shared/ui/atoms/resaltador-busqueda-client';
+import { BotonSubir } from '@/shared/ui/atoms/boton-subir';
 import { MigasDePan } from '@/shared/ui/organisms/migas-de-pan';
 import { Accesibilidad } from '@/shared/lib/accesibilidad';
 import { lexend } from '@/shared/lib/fonts';
@@ -46,6 +47,7 @@ export default async function PublicLayout({ children }: { children: React.React
       {plantilla.pie && <Footer block={{ id: 'footer-plantilla' }} {...plantilla.pie} />}
 
       <PaginasFabSpeedDial />
+      <BotonSubir />
       <ResaltadorBusquedaClient />
       <RastreadorVisitas ambito="sitio" />
       <Accesibilidad />

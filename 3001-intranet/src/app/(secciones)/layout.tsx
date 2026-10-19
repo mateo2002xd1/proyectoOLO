@@ -9,6 +9,7 @@ import {
   puedeEditarPaginas,
 } from '@/shared/lib/sesion';
 import { VigilanteSesion } from '@/shared/lib/inactividad';
+import { BotonSubir } from '@/shared/ui/atoms/boton-subir';
 
 /**
  * Marco común de las secciones de la intranet: menú arriba, pie abajo.
@@ -41,6 +42,7 @@ export default async function SeccionesLayout({
         esSuperadmin={esSuperadmin}
         conCerrarSesion={cerrarSesionEnFlotante}
       />
+      <BotonSubir />
       <RastreadorVisitas ambito="intranet" />
       {/* Cubre las cinco secciones de una vez. El editor y la vista previa cuelgan
           fuera de este grupo de rutas y montan el suyo. */}
