@@ -5,6 +5,92 @@
 
 ---
 
+## sesión 19-10-2026 (3.ª parte): «Últimas publicaciones» pasa a ser una cinta que corre sola, en el sitio web y en la intranet
+
+**Qué se pidió:** cambiar la interfaz del bloque «Últimas publicaciones» según una maqueta: un carrusel que se mueve solo, desde el punto 0, de derecha a izquierda; tarjetas iguales («simétricas»); color de fondo para el bloque; la fecha con texto enriquecido; una URL a la que lleve la flecha; y la miniatura tomada del PDF o de una imagen que se suba. Se preguntó y respondió: **las dos apps**, «simétrico» = **todas las tarjetas miden lo mismo**, el fondo es **el del bloque entero**.
+
+**Cómo quedó:** la lista se pinta dos veces en fila y una animación CSS (`olo-cinta-publicaciones`) la desplaza de `translateX(0)` a `-50%`, lineal e infinita. Al llegar a la mitad, la segunda copia está donde empezó la primera, y la vuelta no se nota. Si la lista no llena el ancho, `useCinta` la repite dentro de cada copia las veces necesarias (mide la cinta y la primera tarjeta con `ResizeObserver`). La duración sale de lo que mide una copia dividido entre la velocidad elegida (25, 45 o 70 px/s), así que la velocidad no depende de cuántas publicaciones haya. Lo repetido va `inert` + `aria-hidden`: el lector de pantalla y el tabulador encuentran cada publicación una sola vez. La cinta se para al pasar el ratón, con el foco del teclado y con un botón de pausa de 44 px (el único recurso en el móvil, y el que pide WCAG 2.2.2). Con «reducir movimiento» no corre: queda una sola copia en una fila que se desplaza a mano, sin botón. En el editor arranca en pausa, porque no se puede escribir en una tarjeta que se mueve; el botón la pone en marcha para ver cómo queda.
+
+La tarjeta sigue la maqueta: portada 16:10 con esquinas de 24 px, flecha verde lima (`#84CC16`, `#39A900` al pasar el ratón) colgando del borde inferior, título a la izquierda (dos renglones siempre, `pre-line`: el Enter del editor parte la línea) e insignia azul oscuro (`#001631`) a la derecha. Ancho `min(20rem, 80cqi)`: igual para todas y medido sobre el contenedor, no sobre la ventana.
+
+| Campo del editor | Antes | Ahora |
+|---|---|---|
+| `titulo` | `text` | `textarea` (sigue siendo texto: no cambia el `alt` ni el nombre de descarga) |
+| `miniatura` | — | Imagen (`campoImagen`). Sin ella, la primera página del PDF con pdf.js, como antes |
+| `url` | — | Texto: ruta `/…` (misma pestaña) o `https://…` (pestaña nueva). Vacío: abre o descarga el PDF, como antes |
+| `mes` / `dia` | `text` | `richtext` con la barra en línea (sin encabezados ni listas): «línea pequeña» y «línea grande» de la insignia. **Las claves no se renombraron**: el JSON guardado sigue sirviendo y un texto plano viejo («Mar», «15») se pinta igual |
+| `fondo` | — | `campoColor`, solo pasa al `style` un hexadecimal |
+| `velocidad` | — | Radio Lenta / Normal / Rápida |
+| `porPagina` | «Tarjetas visibles a la vez» | Quitado: con una cinta continua no significa nada. Lo guardado se ignora |
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Componente | `3000-sitio-web/src/shared/lib/blocks/publicaciones.tsx` | Reescrito: `useCinta`, `Tarjeta`, `enlaceSeguro`, `destinoDe`; sin flechas, puntos ni arrastre |
+| Componente | `3001-intranet/src/shared/lib/blocks/inicio/publicaciones.tsx` | El mismo cuerpo, con su envoltorio `.matriz-*` y `resaltar()`; ya no usa `useCuantosCaben` (sigue en uso en los otros carruseles) |
+| Editor | `3000-sitio-web/src/config/puck.config.tsx`, `3001-intranet/src/config/puck.config.tsx` | Campos de la tabla de arriba. La intranet gana su propio `OPCIONES_TEXTO_EN_LINEA`, igual que el del sitio |
+| Estilos | Los dos `globals.css` | La sección del carrusel se reemplaza por `.publicaciones-cinta*` / `.publicaciones-tarjeta*` con los mismos valores en las dos apps. En el sitio se van `.animate-fade-in` y su `@keyframes fade-in`, que solo usaba este bloque |
+| Accesibilidad | `packages/accessibility-policy/src/index.ts` | `Publicaciones` también exige título si hay `miniatura`. `revisarBloque` no repite un `alt_faltante` del mismo campo cuando dos reglas lo piden |
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` de sitio-web e intranet | Sin errores |
+| `eslint` de los dos componentes | Sin errores. En `puck.config.tsx` del sitio salen 6 `no-explicit-any` que ya estaban (líneas que no se tocaron) |
+| Componente real empaquetado (transpilado con `typescript`) + `globals.css` compilado con el Tailwind de cada app, en Chrome headless, a 360, 768, 1024 y 1280 px, las dos apps | Avanza 45 px/s; pista = 2 × copia exacta (3440 = 2 × 5 × 344); un solo ancho y un solo alto de tarjeta en cada medida; 0 px de scroll horizontal; 5 elementos tabulables (4 enlaces + pausa) con 10 tarjetas en el DOM |
+| Botón de pausa | La cinta queda quieta; la etiqueta pasa a «Reanudar el carrusel de publicaciones» |
+| 2 publicaciones a 1280 px con fondo `#EAF4E1` | Se repiten hasta 8 tarjetas (2 accesibles), la pista cubre los 1200 px; el fondo se aplica a la franja |
+| `esEdicion` | Arranca quieta |
+| `prefers-reduced-motion: reduce` | `animation: none`, 5 tarjetas visibles, sin botón, `overflow-x: auto` |
+| Enlaces | `/estudios` sin `target`; `https://…` en pestaña nueva; `javascript:alert(1)` descartado (la tarjeta no es enlace); sin `url`, al PDF con `download` |
+| Miniatura del PDF | Un PDF real de `filesystem/intranet/uploads/pdf/` se dibuja con pdf.js |
+| En el editor real de Puck (barra lateral, edición en línea de las fechas) | **No se probó**: el editor pide sesión. Queda para el usuario |
+
+> **Trampa:** con la cinta, la misma tarjeta se monta varias veces a la vez, y cada `PortadaDePdf` llamaba a `dibujarPortada` por su cuenta: la caché solo se llenaba al terminar, así que el mismo PDF se descargaba y dibujaba una vez por copia (lo mostró la consola del arnés: tres intentos para un PDF). Ahora `dibujosEnCurso` comparte la promesa en marcha, y una falla deja de estar en curso para que se pueda reintentar más tarde.
+
+> **Aviso:** `packages/accessibility-policy` se usa compilado (`dist/`, fuera de git), y las tres apps tienen **una copia** en `node_modules`, no un enlace. Se recompiló con el `tsc` de la API y se copió el `dist` a las tres para el dev. En otra máquina hace falta `npm install` (o el paso de compilación del despliegue) para que la API exija el título con miniatura.
+
+**Descartado:**
+- Mantener flechas, puntos y arrastre sobre la cinta: con un movimiento continuo no hay «página» a la que ir, y la maqueta no los tiene.
+- Reutilizar `campoDestinoBoton` para la URL: trae su propia subida de archivo, y aquí el PDF ya tiene campo. Bastó un texto llamado `url`, que la API ya sanea al guardar (`CAMPOS_URL` en `sanitizar-contenido.ts`). Al pintarlo se filtra otra vez, para lo que se ve en el editor antes de guardar.
+- `ayuda` en el campo de miniatura: solo se pinta dentro de los acordeones; la indicación fue a la etiqueta.
+
+**Pendiente al cierre:**
+- Que el usuario lo vea en el editor real de las dos apps (`/editor/inicio` en la intranet; en el sitio, la página donde esté el bloque; la portada publicada hoy no lo lleva).
+- `etiqueta` (#OLOtecuenta) se conserva y se pinta sobre el título si está llena; la maqueta no la muestra. Vaciarla en cada publicación o quitar el campo, si se quiere como en la maqueta.
+- `3000-sitio-web/public/assets/docs/DE-POL-003-…pdf` y `GOR-POL-001-…pdf` son HTML de 230 bytes, no PDF (salió al usarlos en la prueba). No es de este cambio.
+
+---
+
+## sesión 19-10-2026 (2.ª parte): el buscador del sitio web se despliega en la cabecera en vez de abrir un modal
+
+**Qué se pidió:** que la lupa de la cabecera del sitio web no abra el modal a pantalla completa, sino un campo que salga con transición desde la lupa, como en la maqueta (píldora blanca, «Buscar» en azul oscuro y la lupa a la derecha). Tras verlo: que la píldora fuera la mitad de ancha, que no cortara el texto del menú (correr el menú hacia el logo y llevar la píldora hasta «Publicaciones») y sin el hover azul claro que se había puesto al principio.
+
+**Cómo quedó:** al pulsar la lupa, una píldora blanca crece hacia la izquierda desde la lupa. A la vez, el menú se corre hacia el logo (hasta 8 px del logo, `translateX`) y la píldora ocupa el hueco que queda entre el último enlace y la lupa (a 1280 px, 162 px). Si ese hueco no llega a 144 px, los últimos enlaces se desvanecen enteros (`data-tapado`) en vez de quedar cortados: a 1024 px se oculta «Publicaciones». Las medidas las toma `moverMenuAnteElBuscador` en `header.tsx` antes de pintar, y el ancho llega al CSS como `--olo-buscador-ancho-ajustado`. En móvil el menú está oculto y la píldora mide 11rem. Los resultados cuelgan debajo con su propio ancho (22rem), porque en el de la píldora no se leían. La búsqueda es la misma de antes (frase exacta, frase difusa y todas las palabras); solo cambió dónde se pinta. Con la píldora abierta, la lupa lleva al resultado marcado; sin nada escrito, la cierra. También se cierra con Escape (el foco vuelve a la lupa), al tocar fuera o al elegir un resultado. Sin hover azul: el resultado marcado lleva un fondo gris azulado y el texto no cambia de color.
+
+**Descartado:** la primera versión dejaba quieto el menú y tapaba con la píldora lo que quedara debajo; se veía «Tendencias de las Oc». Tampoco sirvió correr el menú solo lo justo para el ancho fijo de 11rem: a 1280 px faltaban 12 px y «Publicaciones» se ocultaba.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Componente | `3000-sitio-web/src/shared/lib/blocks/buscador-sitio.tsx` (nuevo) | Campo desplegable con su lista; el filtrado pasa a una función `buscar` |
+| Componente | `3000-sitio-web/src/shared/lib/blocks/buscador-sitio-modal.tsx` | Borrado: solo lo usaba la cabecera |
+| Cabecera | `3000-sitio-web/src/shared/lib/blocks/header.tsx` | `BuscadorSitio` en lugar del botón y del modal; `moverMenuAnteElBuscador` corre el menú y mide la píldora |
+| Estilos | `3000-sitio-web/src/style/globals.css` | Bloque `.olo-buscador*`, transición del menú y `.olo-nav > [data-tapado]` |
+
+| Verificación | Resultado |
+|---|---|
+| `eslint` de `buscador-sitio.tsx` y `header.tsx` | Sin errores |
+| `tsc --noEmit` del sitio web | Sin errores en estos archivos (el único que sale es de `puck.config.tsx`, de Publicaciones, en curso en otra sesión) |
+| Chrome headless a 1440, 1280, 1024 y 390 px en `/inicio`: abrir, escribir «ocupaciones», Escape | Se abre con el foco en el campo; sin scroll horizontal; Escape cierra y devuelve el foco a la lupa |
+| Menú con la píldora abierta, mismo recorrido | 1440 y 1280: menú −59 px, píldora de 162 px, los 4 enlaces enteros. 1024: «Publicaciones» oculto, píldora de 168 px. 390: píldora de 176 px |
+
+> **Trampa:** el campo no puede ocultarse con `visibility` mientras la píldora crece. Con `visibility` y un `transition-delay`, el campo seguía oculto en el momento del `focus()` al abrir, y el foco no entraba (salió en la primera prueba). Se oculta solo con opacidad, ancho 0 y `tabIndex={-1}`.
+
+**Pendiente al cierre:**
+- En móvil, la píldora tapa el logo mientras está abierta. Es intencional, pero falta que el usuario lo confirme.
+- Si un editor agrega más enlaces al menú desde «Menú y pie», se ocultarán más al abrir el buscador entre 1024 y 1280 px. No hay más sitio en la barra.
+- La lupa cerrada sigue en `--color-gray-500`, que sobre la cabecera azul oscuro se ve apagada. No se pidió cambiarlo.
+
+---
+
 ## sesión 19-10-2026: prueba de off-by-slash (nginx, proxies de Next, rutas en disco y `?redirect=`)
 
 **Qué se pidió:** revisar si el proyecto tiene vulnerabilidades de off-by-slash y dejar un informe como evidencia. El informe completo está en `auditorias/2026-10-19-off-by-slash.md` (la carpeta está en `.gitignore`, igual que el de Web Cache Deception del mismo día).
