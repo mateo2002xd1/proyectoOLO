@@ -5,6 +5,41 @@
 
 ---
 
+## sesión 19-10-2026 (4.ª parte): `deploy.sh importar-paginas` lleva solo las páginas y sus archivos, y `importar` ya no puede borrar las cuentas de un servidor en uso
+
+**Qué se pidió:** «cuando le doy `deploy.sh importar` me borra los usuarios; solo quiero migrar las tablas de las páginas publicadas y sus archivos con el filesystem», conservando los usuarios que ya están en la base del servidor y que no se borren nunca.
+
+**Por qué pasaba:** `importar` está hecho para una instalación nueva. `importar-antes.sql` hace `TRUNCATE` de todas las tablas, `usuarios` incluida, y las cuentas no viajan desde el origen. En un servidor en uso, eso deja la base sin cuentas.
+
+**Cómo quedó:**
+- **`./docker/deploy.sh importar-paginas`** (nuevo): reemplaza solo `paginas` y `paginas_versiones` con las del origen. `importar-paginas-antes.sql` aparta las visitas y hace `DELETE FROM paginas` (las versiones y `subidas_pendientes` caen en cascada); nada más. Del origen se leen además los correos de sus cuentas y quién podía editar cada página (`COPY … TO STDOUT` a tablas temporales). `importar-paginas-despues.sql` traduce lo que no coincide entre bases: la autoría pasa a la cuenta del servidor con el mismo correo (o queda vacía); se crea el permiso `editar.{ambito}.{slug}` de cada página y se conceden los del origen **por nombre de rol** (con `WARNING` si un rol no existe aquí); se devuelven las visitas del servidor; y se comprueban las llaves foráneas de las dos tablas, incluida la I23. Todo en una transacción. Después: `sembrar:permisos` (quita el `editar.*` de las páginas que ya no existen), borrar solo `cache:*` en Redis (un `FLUSHALL` se llevaría la cola y los contadores de intentos de un servidor en uso) y copiar al volumen `filesystem/sitio` y `filesystem/intranet` sin pisar nada.
+- **`importar` se niega** si la base ya tiene algún usuario, y remite a `importar-paginas`. Así ningún comando del script puede borrar las cuentas de un servidor en uso.
+- `migrar-archivos` pasa a ser `copiar_archivos_al_volumen "sitio intranet cargas-datos"`; `importar-paginas` lo llama solo con `"sitio intranet"`. `url_de_origen` sale de `importar` para que lo compartan los dos (escribe el error en stderr: con `morir` dentro de `$(...)` el mensaje se quedaba en la variable).
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Script | `docker/deploy.sh` | `importar_paginas`, `contar_usuarios`, `url_de_origen`, `copiar_archivos_al_volumen`; guarda en `importar`; ayuda y `case` |
+| SQL | `docker/sql/importar-paginas-antes.sql`, `docker/sql/importar-paginas-despues.sql` (nuevos) | Vaciado solo de páginas, tablas temporales, autoría por correo, permisos por rol, visitas, comprobación de llaves |
+| Guía | `docker/guia-bash.md` | Sección A6b y aviso de `importar` |
+
+| Verificación | Resultado |
+|---|---|
+| `bash -n docker/deploy.sh` | Sin errores |
+| Postgres 18 desechable con dos bases (`origen`, `destino`) y las 45 migraciones reales; pasos 2 y 3 copiados tal cual (lectura con `docker run postgres:18-alpine`) | Las 2 cuentas del destino intactas, y la del origen sin cuenta aquí no entra. Páginas reemplazadas: la que solo existía en el destino desaparece. `sitio/inicio` conserva sus 999 visitas. La autoría de Ana pasa a la Ana del destino (otro UUID, mismo correo) y la de Luis queda vacía. `editar.sitio.nueva-seccion` concedido a Editor; `WARNING` por «Editor Marketing» |
+| `sembrar:permisos` contra `destino` | Quita `editar.sitio.vieja`, el de la página que ya no existe; 2 usuarios |
+| Repetir la importación | Mismo resultado: 3 páginas, 4 versiones, 2 usuarios, 999 visitas |
+| Fallo a mitad de carga (`SELECT 1/0` tras el «antes») | Se deshace todo: siguen las 3 páginas |
+| Consulta de `contar_usuarios` | 2 con usuarios; vacío en una base sin migrar (el script lo toma como 0) |
+| `deploy.sh importar-paginas` completo en el servidor real (Compose, Redis, volumen) | **No se ejecutó**: queda para el usuario |
+
+> **Trampa:** los UUID de `usuarios` y de `roles` no coinciden entre el origen y un servidor que no se instaló con `importar`. Por eso la autoría se traduce por correo y los permisos por nombre de rol, nunca por id.
+
+**Pendiente al cierre:**
+- Correrlo en el servidor: `git pull` (trae `filesystem/`), `build` si hubo cambios de código y `./docker/deploy.sh importar-paginas`.
+- El volcado temporal lleva los correos de las cuentas del origen. Se borra al terminar; si la carga falla se conserva para revisarlo, y hay que borrarlo a mano.
+
+---
+
 ## sesión 19-10-2026 (3.ª parte): «Últimas publicaciones» pasa a ser una cinta que corre sola, a todo el ancho, en el sitio web y en la intranet
 
 **Qué se pidió:** cambiar la interfaz del bloque «Últimas publicaciones» según una maqueta: un carrusel que se mueve solo, desde el punto 0, de derecha a izquierda; tarjetas iguales («simétricas»); color de fondo para el bloque; la fecha con texto enriquecido; una URL a la que lleve la flecha; y la miniatura tomada del PDF o de una imagen que se suba. Se preguntó y respondió: **las dos apps**, «simétrico» = **todas las tarjetas miden lo mismo**, el fondo es **el del bloque entero**.
