@@ -5,6 +5,30 @@
 
 ---
 
+## sesión 19-10-2026 (6.ª parte): la «Lista de videos» del sitio web daba «Error 153» en el servidor
+
+**Qué pasaba:** en el servidor, el reproductor de la «Lista de videos» (`RecursosVisualesBloque`) mostraba el «Error 153» de YouTube, y el «Video embebido» de la misma página sí reproducía. El 153 es el aviso de YouTube cuando el iframe no le dice desde qué sitio se inserta el video (la cabecera `Referer`). El «Video embebido» lleva `referrerPolicy="strict-origin-when-cross-origin"` en el propio iframe; la lista no lo llevaba y dependía de la política de la página, que en el servidor (nginx + túnel) no le llegaba a YouTube. Además la lista usaba `youtube.com/embed` en vez de `youtube-nocookie.com`.
+
+**Cómo quedó:** en vez de copiar los atributos, `reproductor-de-video.tsx` exporta `urlDeInsercion` y `ATRIBUTOS_DEL_IFRAME_DE_YOUTUBE` (`loading`, `referrerPolicy`, `sandbox`, `allow`, `allowFullScreen`), y los usan los dos bloques. La lista pasa a `youtube-nocookie.com/embed/{id}?rel=0`.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Reproductor | `3000-sitio-web/src/shared/lib/blocks/reproductor-de-video.tsx` | Exporta `urlDeInsercion` (con `reproducir` opcional) y `ATRIBUTOS_DEL_IFRAME_DE_YOUTUBE`; su iframe usa ese objeto |
+| Lista de videos | `3000-sitio-web/src/shared/lib/blocks/recursos-visuales-bloque.tsx` | El iframe usa `urlDeInsercion(idActivo)` y los mismos atributos |
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` y `eslint` de los dos archivos (sitio web) | Sin errores |
+| En el servidor | No se pudo probar desde aquí: falta verlo tras desplegar |
+
+> La intranet tiene el mismo bloque (`3001-intranet/src/shared/lib/blocks/inicio/recursos-visuales-bloque.tsx`) y su «Video embebido» (`TasaVideo`) con el mismo iframe sin `referrerPolicy`: si dan el 153 en el servidor, es el mismo arreglo.
+
+**Pendiente al cierre:**
+- Desplegar y comprobar la «Lista de videos» en el servidor.
+- Decidir si se aplica lo mismo en la intranet.
+
+---
+
 ## sesión 19-10-2026 (5.ª parte): botón «Subir» en el sitio web y en la intranet
 
 **Qué se pidió:** un botón para volver al principio que aparezca al bajar, abajo a la derecha, con el mismo diseño azul de fondo y letras blancas. Se preguntó y se respondió: **sitio web e intranet** (no el panel ni el editor) y **flecha con «Subir»**.
