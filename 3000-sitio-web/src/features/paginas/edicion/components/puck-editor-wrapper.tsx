@@ -14,6 +14,7 @@ import { useAutoguardado, MS_ENTRE_AUTOGUARDADOS } from '../hooks/use-autoguarda
 import { VigilanteSesion } from '@/shared/lib/inactividad';
 import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
 import { validarAccesibilidad, mensajeDeViolacion, type ViolacionAccesibilidad } from '@olo/accessibility-policy';
+import { ObjetoEnAcordeon } from '@olo/blocks-renderer';
 import { TITULOS_TENDENCIA, type TipoTendenciaOcupacional } from '@/features/sitio-web/tendencia-ocupacional';
 
 /**
@@ -916,6 +917,9 @@ export function PuckEditorWrapper({
   // de `overrides`.
   const overrides = useMemo(
     () => ({
+      // Los `object` marcados con `campoObjetoEnAcordeon` se pliegan como los demás
+      // campos del panel; el resto se pinta como siempre.
+      fieldTypes: { object: ObjetoEnAcordeon },
       headerActions: () => (
         // Puck envuelve esto en su propio `PuckHeader-tools`, que es
         // `display:flex; justify-content:flex-end` — un `marginRight:auto` interno

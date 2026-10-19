@@ -5,7 +5,32 @@
 
 ---
 
-## sesión 18-10-2026 (11.ª parte): miniatura propia en «Video embebido»
+## sesión 18-10-2026 (13.ª parte): «Dato OLO de la semana» como mini carrusel de infografías
+
+**Qué se pidió:** rediseñar el bloque «Dato OLO de la semana» como en la maqueta (una infografía a lo ancho con el dato dibujado). En el panel, solo adjuntar imágenes, cambiar el fondo y redondear las esquinas. Es un mini carrusel que pasa solo, sin flechas, con el ubicador de puntos; misma simetría que los bloques rediseñados hoy. Después: la imagen la sube el usuario, sin imagen por defecto, y mientras no hay ninguna se ve la vista previa de «Imagen destacada».
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/shared/lib/blocks/dato-olo-semana.tsx` | Reescrito, ahora de cliente. Props `imagenes` (`imagen`, `alt`), `colorFondo` y `radioEsquinas` (0–100 px, como «Portales externos»); fuera `tituloResaltado` y `tituloNormal` (el título va dibujado en la infografía). Una por vez con fundido, apiladas en la misma celda de una rejilla (no salta), las ocultas con `inert`. Pasa cada 6 s y se detiene con el cursor o el foco dentro, con «menos movimiento» y en el editor; con una sola imagen no se mueve. Sin imágenes: en el editor, la muestra de «Imagen destacada» (`muestraDeImagen`, «Sube o selecciona una imagen en el panel lateral derecho»); en el sitio, nada. Una portada guardada con la versión anterior (`imagenSrc`) se ve con esa imagen sola. Conserva `id="dato-olo-semana"` |
+| `shared/lib/blocks/carrusel-de-imagenes.tsx` | Solo se exportan `INTERVALO_MS`, `estiloDeFondo` y `usePrefiereMenosMovimiento`, para no duplicarlos. Su comportamiento no cambia |
+| `config/puck.config.tsx` (`DatoOloSemana`) | «Imágenes» (lista en acordeones: imagen y texto alternativo), «Color de fondo» y «Esquinas redondeadas» (px). `imagenes: []` por defecto. `resolveData` pasa `imagenSrc`/`imagenAlt` de una portada vieja a la lista al abrirla |
+| `style/globals.css` | Fuera `.olo-dato-semana-inner/-title/-frame/-img`. `.olo-dato-semana` con el relleno de «Portales» y «Video» (`clamp(32px, 5vw, 64px) 16px`), fondo blanco y texto azul por defecto; escenario de `--max-width`, fundido de 0,6 s (sin él con menos movimiento), imagen con `border-radius: var(--olo-dato-radio, 0)`. El ubicador usa las clases `.olo-carrusel__ubicador` y `__punto` del carrusel: azul sobre fondos claros, blanco sobre oscuros (`estiloDeFondo`) |
+| `features/paginas/model/home-fallback-data.ts` | La portada de respaldo con `imagenes: []`: sin la API, el bloque no se pinta |
+| `packages/accessibility-policy/src/index.ts` | La regla de `DatoOloSemana` pasa a `alt-array` sobre `imagenes` (`imagen` / `alt`). Reconstruido `dist/` |
+
+> **Agregué «Texto alternativo» por imagen** aunque el pedido decía solo adjuntar: el dato va dibujado dentro de la infografía y, sin ese texto, un lector de pantalla no lo puede leer. Es obligatorio para enviar a revisión, como en el «Carrusel de imágenes».
+
+> **Las semillas de la API** (`scripts/semillas/sembrar-inicio-sitio.ts`, `seed/contenido-inicial.sql`) siguen con `imagenSrc`: se ven con la imagen sola y pasan al formato nuevo al abrirlas en el editor. No se tocaron.
+
+| Verificación | Resultado |
+|---|---|
+| `npx tsc --noEmit` en sitio-web | Sin errores (salvo `shared/lib/accesibilidad/`, que no es de este trabajo) |
+| `eslint` de los dos componentes | Sin avisos |
+| Bloque en el editor y en la página (subir imágenes, paso automático, puntos, fondo, redondeo, 1440/1024/768/375 px) | Sin verificar |
+
+---
+
+## sesión 18-10-2026 (12.ª parte): miniatura propia en «Video embebido»
 
 **Qué se pidió:** poder ponerle una miniatura (imagen) al video del bloque «Video embebido» del sitio web.
 

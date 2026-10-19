@@ -11,6 +11,7 @@ import {
   campoEnAcordeon,
   campoGrupoEnUnAcordeon,
   campoListaEnAcordeones,
+  campoObjetoEnAcordeon,
   type CampoDeAcordeon,
   TextoRico,
   ImagenDestacada,
@@ -25,6 +26,7 @@ import { ExternalPortals, type TarjetaDePortal } from '@/shared/lib/blocks/exter
 import { ICONOS_DE_PORTALES } from '@/shared/lib/blocks/iconos-de-portales';
 import { VideoEmbebido, idDeVideoDeYoutube } from '@/shared/lib/blocks/video-embebido';
 import { CampoVideoDeYoutube } from '@/shared/lib/blocks/campo-video-de-youtube';
+import { CarruselDeImagenes } from '@/shared/lib/blocks/carrusel-de-imagenes';
 import { Services } from '@/shared/lib/blocks/services';
 import { DatoOloSemana } from '@/shared/lib/blocks/dato-olo-semana';
 import { RecursosVisualesBloque, extraerYoutubeId } from '@/shared/lib/blocks/recursos-visuales-bloque';
@@ -96,6 +98,22 @@ const OPCIONES_TEXTO_EN_LINEA = {
   codeBlock: false,
   horizontalRule: false,
 } as const;
+
+/**
+ * Barra de formato del título y el párrafo del carrusel: encabezados H1–H4 para subir o
+ * bajar el tamaño, viñetas, negrita, cursiva, subrayado y alineación. Sin citas, código,
+ * tachado, listas numeradas ni enlaces.
+ */
+const OPCIONES_TEXTO_DEL_CARRUSEL = {
+  heading: { levels: [1, 2, 3, 4] as (1 | 2 | 3 | 4)[] },
+  blockquote: false as const,
+  code: false as const,
+  codeBlock: false as const,
+  horizontalRule: false as const,
+  strike: false as const,
+  orderedList: false as const,
+  link: false as const,
+};
 
 /**
  * La tarjeta «Franja superior GOV.CO» de la cabecera. Las opciones siguen siendo props
@@ -285,6 +303,7 @@ const puckConfigBase: Config = {
         'DatoOloSemana',
         'RecursosVisualesBloque',
         'VideoEmbebido',
+        'CarruselDeImagenes',
         'Publicaciones',
         'RichText',
         'PoliticaPrivacidadEncabezado',
@@ -675,58 +694,73 @@ const puckConfigBase: Config = {
         />
       ),
     },
+    /**
+     * Mini carrusel de infografías del dato semanal (`DatoOloSemana`): pasa solo, sin
+     * flechas, con el ubicador de puntos. Solo imágenes, fondo y redondeo. Reemplazó a
+     * la infografía única con título: una portada guardada así trae `imagenSrc` y se ve
+     * con esa imagen sola hasta que se abra en el editor.
+     */
     DatoOloSemana: {
       label: 'Dato OLO de la semana',
       fields: {
-        tituloResaltado: {
-          type: 'text' as const,
-          label: 'Título (parte destacada)',
-          contentEditable: true,
-        },
-        tituloNormal: {
-          type: 'text' as const,
-          label: 'Título (resto)',
-          contentEditable: true,
-        },
-        imagenSrc: {
-          type: 'custom',
-          label: 'Infografía del dato',
-          render: ({ value, onChange }: CustomFieldRender<string>) => (
-            <ImageUploaderField value={value} onChange={onChange} />
-          ),
-        },
-        imagenAlt: {
-          type: 'text' as const,
-          label: 'Texto alternativo de la imagen',
-        },
+        imagenes: campoListaEnAcordeones(
+          'Imágenes',
+          {
+            imagen: { ...campoImagen('Imagen'), ayuda: 'La infografía entera, con el dato dibujado. Todas conviene que tengan la misma proporción.' },
+            alt: {
+              type: 'text',
+              label: 'Texto alternativo',
+              placeholder: 'El dato que dice la imagen',
+              ayuda: 'Lo lee el lector de pantalla: escribe el dato completo, porque está dentro de la imagen. Obligatorio para enviar a revisión.',
+            },
+          },
+          {
+            elemento: 'Imagen',
+            nuevo: { imagen: '', alt: '' },
+            resumen: (d) => d?.alt || (d?.imagen ? 'Sin texto alternativo' : 'Vacía'),
+            ayuda: 'Pasan solas cada 6 segundos, en este orden. Con una sola, no se mueve.',
+          }
+        ),
+        colorFondo: campoEnAcordeon({
+          type: 'color',
+          label: 'Color de fondo',
+          ayuda: 'El de toda la sección. Vacío: blanco. Los puntos de abajo van en azul sobre fondos claros y en blanco sobre oscuros.',
+        }),
+        radioEsquinas: campoEnAcordeon({
+          type: 'number',
+          label: 'Esquinas redondeadas',
+          min: 0,
+          max: 100,
+          sufijo: 'px',
+          placeholder: '0',
+          ayuda: 'Redondea las cuatro esquinas de las imágenes. Vacío o 0: rectas.',
+        }),
       },
       defaultProps: {
         id: 'dato-olo-semana-1',
-        tituloResaltado: 'Dato OLO',
-        tituloNormal: 'de la semana',
-        imagenSrc: '/assets/img/dato-olo-semana.png',
-        imagenAlt: 'Dato OLO de la semana',
+        imagenes: [],
+        colorFondo: '',
+        radioEsquinas: '',
       },
+      // Una portada guardada antes del rediseño trae una sola imagen en `imagenSrc`: se
+      // pasa a la lista al abrirla, para que se pueda editar.
+      resolveData: ({ props }: { props: Record<string, any> }) =>
+        props.imagenes !== undefined
+          ? { props }
+          : {
+              props: {
+                ...props,
+                imagenes: props.imagenSrc ? [{ imagen: props.imagenSrc, alt: props.imagenAlt ?? '' }] : [],
+              },
+            },
       render: ({
         id,
-        tituloResaltado,
-        tituloNormal,
-        imagenSrc,
-        imagenAlt,
-      }: {
-        id: string;
-        tituloResaltado?: ReactNode;
-        tituloNormal?: ReactNode;
-        imagenSrc?: string;
-        imagenAlt?: string;
+        puck,
+        ...props
+      }: BlockRender<Omit<ComponentProps<typeof DatoOloSemana>, 'block' | 'esEdicion'>> & {
+        puck?: { isEditing?: boolean };
       }) => (
-        <DatoOloSemana
-          block={{ id: id || 'dato-olo-semana-preview' }}
-          tituloResaltado={tituloResaltado}
-          tituloNormal={tituloNormal}
-          imagenSrc={imagenSrc}
-          imagenAlt={imagenAlt}
-        />
+        <DatoOloSemana {...props} block={{ id: id || 'dato-olo-semana-preview' }} esEdicion={Boolean(puck?.isEditing)} />
       ),
     },
     RecursosVisualesBloque: {
@@ -1289,6 +1323,88 @@ const puckConfigBase: Config = {
         puck?: { isEditing?: boolean };
       }) => (
         <VideoEmbebido {...props} block={{ id: id || 'video-preview' }} esEdicion={Boolean(puck?.isEditing)} />
+      ),
+    },
+    /**
+     * Carrusel de imágenes a lo ancho, una por vez, con titular y párrafo encima, sobre
+     * un color de fondo (`CarruselDeImagenes`). Pasa solo y lleva dos flechas de estilo
+     * fijo. No es el carrusel de la intranet (`SeccionCarrusel`, varias a la vez).
+     */
+    CarruselDeImagenes: {
+      label: 'Carrusel de imágenes',
+      fields: {
+        textos: campoObjetoEnAcordeon(
+          'Título y párrafo',
+          {
+            titulo: {
+              type: 'richtext' as const,
+              label: 'Título',
+              contentEditable: true,
+              options: OPCIONES_TEXTO_DEL_CARRUSEL,
+            },
+            parrafo: {
+              type: 'richtext' as const,
+              label: 'Párrafo',
+              contentEditable: true,
+              options: OPCIONES_TEXTO_DEL_CARRUSEL,
+            },
+            // El de la franja del texto, aparte del banner de imágenes.
+            colorFondo: campoColor('Color de fondo'),
+          },
+          { abierto: true }
+        ),
+        diapositivas: campoListaEnAcordeones(
+          'Imágenes',
+          {
+            imagen: { ...campoImagen('Imagen'), ayuda: 'Se ve a lo ancho del carrusel; todas conviene que tengan la misma proporción.' },
+            alt: {
+              type: 'text',
+              label: 'Texto alternativo',
+              placeholder: 'Qué muestra la imagen',
+              ayuda: 'Lo lee el lector de pantalla. Obligatorio para enviar a revisión.',
+            },
+            enlace: {
+              type: 'text',
+              label: 'Hipervínculo (opcional)',
+              placeholder: '/alertas-de-inversion o https://…',
+              ayuda: 'A dónde lleva el botón de abajo o, si no hay botón, la imagen al hacer clic en ella. Vacío: no lleva a ningún lado.',
+            },
+            textoBoton: {
+              type: 'text',
+              label: 'Texto del botón (opcional)',
+              placeholder: 'Consulta más proyectos aquí',
+              ayuda: 'Pone un botón debajo de la imagen que lleva al hipervínculo. Sin hipervínculo no se muestra.',
+            },
+            colorFondo: {
+              type: 'color',
+              label: 'Color de fondo',
+              ayuda: 'El de la franja del banner mientras se ve esta imagen; por defecto, blanco (#FFFFFF). El título y el párrafo tienen el suyo, en «Título y párrafo».',
+            },
+          },
+          {
+            elemento: 'Imagen',
+            nuevo: { imagen: '', alt: '', enlace: '', textoBoton: '', colorFondo: '#FFFFFF' },
+            resumen: (d) => d?.alt || (d?.imagen ? 'Sin texto alternativo' : 'Vacía'),
+            ayuda: 'Pasan solas cada 6 segundos, en este orden.',
+          }
+        ),
+      },
+      defaultProps: {
+        textos: {
+          titulo: '<h2>Título principal</h2>',
+          parrafo: '<p>Agrega una descripción</p>',
+          colorFondo: '#FFFFFF',
+        },
+        diapositivas: [],
+      },
+      render: ({
+        id,
+        puck,
+        ...props
+      }: BlockRender<Omit<ComponentProps<typeof CarruselDeImagenes>, 'block' | 'esEdicion'>> & {
+        puck?: { isEditing?: boolean };
+      }) => (
+        <CarruselDeImagenes {...props} block={{ id: id || 'carrusel-preview' }} esEdicion={Boolean(puck?.isEditing)} />
       ),
     },
     // ─── Texto e imagen ───
@@ -2236,7 +2352,6 @@ export const puckConfig: Config = {
   ...puckConfigBase,
   components: conCajaEnTodos(puckConfigBase.components, {
     excepto: BLOQUES_SIN_CAJA,
-    sinHashtag: ['ImagenDestacada'],
     sinFondo: ['ImagenDestacada'],
   }),
 };

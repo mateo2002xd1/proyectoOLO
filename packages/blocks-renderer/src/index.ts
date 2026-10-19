@@ -20,12 +20,20 @@ export type { DestinoTabConfig } from './primitives/destino-tab-field';
 // ─── Campo de color (selector visual + hex) para cualquier bloque ───
 export { ColorPickerField, campoColor } from './primitives/color-picker-field';
 export type { ColorPickerFieldProps } from './primitives/color-picker-field';
-export { AcordeonDeCampo, campoEnAcordeon, campoGrupoEnAcordeones } from './primitives/campos-en-acordeon';
-export type { CampoDeAcordeon, OpcionesDeAcordeon } from './primitives/campos-en-acordeon';
+export {
+  AcordeonDeCampo,
+  campoEnAcordeon,
+  campoGrupoEnAcordeones,
+  campoGrupoEnUnAcordeon,
+  campoListaEnAcordeones,
+  campoObjetoEnAcordeon,
+  ObjetoEnAcordeon,
+} from './primitives/campos-en-acordeon';
+export type { CampoDeAcordeon, OpcionesDeAcordeon, OpcionesDeLista } from './primitives/campos-en-acordeon';
 
 // ─── Campos para Icono y Color de Icono ───
 export { IconSelectorField, campoIcono, IconoRenderer, ICONOS_DISPONIBLES } from './primitives/icon-selector-field';
-export type { IconSelectorFieldProps } from './primitives/icon-selector-field';
+export type { IconSelectorFieldProps, IconoDelCatalogo } from './primitives/icon-selector-field';
 
 // ─── Selector de Destino para Botón (Enlace o Archivo) ───
 export { SelectorDestinoBotonField, campoDestinoBoton } from './primitives/selector-destino-boton-field';
@@ -66,7 +74,7 @@ export type { ResaltadorDeBusquedaProps } from './busqueda/resaltador-de-busqued
 export { TextoRico } from './blocks/texto-rico';
 export type { TextoRicoProps } from './blocks/texto-rico';
 
-export { ImagenDestacada } from './blocks/imagen-destacada';
+export { ImagenDestacada, muestraDeImagen } from './blocks/imagen-destacada';
 export type { ImagenDestacadaProps } from './blocks/imagen-destacada';
 
 export { BotonPersonalizado } from './blocks/boton-personalizado';

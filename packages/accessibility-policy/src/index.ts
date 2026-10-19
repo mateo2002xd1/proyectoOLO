@@ -88,7 +88,7 @@ const MANIFIESTO_SITIO: Manifiesto = {
   },
   DatoOloSemana: {
     etiqueta: 'Dato OLO de la semana',
-    reglas: [{ tipo: 'alt', campoImagen: 'imagenSrc', campoAlt: 'imagenAlt' }],
+    reglas: [{ tipo: 'alt-array', campoArray: 'imagenes', campoImagen: 'imagen', campoAlt: 'alt' }],
   },
   RecursosVisualesBloque: {
     etiqueta: 'Recursos Visuales',
@@ -99,6 +99,10 @@ const MANIFIESTO_SITIO: Manifiesto = {
   Publicaciones: {
     etiqueta: 'Últimas publicaciones',
     reglas: [{ tipo: 'alt-array', campoArray: 'publicaciones', campoImagen: 'pdfUrl', campoAlt: 'titulo' }],
+  },
+  CarruselDeImagenes: {
+    etiqueta: 'Carrusel de imágenes',
+    reglas: [{ tipo: 'alt-array', campoArray: 'diapositivas', campoImagen: 'imagen', campoAlt: 'alt' }],
   },
   /* El iframe del video lleva `title={tituloVideo}`: sin él, un lector de pantalla
      lo anuncia como «marco» a secas. */

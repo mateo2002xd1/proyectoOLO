@@ -1459,47 +1459,66 @@ a.olo-carrusel__boton:focus-visible {
 }
 
 /* --- Dato OLO de la semana --- */
+/* Dato OLO de la semana (ver dato-olo-semana.tsx): mini carrusel de infografías, una
+   por vez con un fundido, sin flechas y con el ubicador de puntos del «Carrusel de
+   imágenes» debajo. Fondo blanco con texto azul por defecto; el componente pone en
+   línea el color elegido y el texto (los puntos) en blanco sobre oscuros. El redondeo
+   llega en --olo-dato-radio. */
 .olo-dato-semana {
-  padding: var(--space-3xl) var(--space-lg);
-  background: var(--color-white);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(32px, 5vw, 64px) 16px;
+  background: #ffffff;
+  color: #001145;
 }
 
-.olo-dato-semana-inner {
+.olo-dato-semana__escenario {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(14px, 2vw, 20px);
+  width: 100%;
   max-width: var(--max-width);
-  margin: 0 auto;
 }
 
-.olo-dato-semana-title {
-  font-family: var(--font-heading);
-  font-size: clamp(1.5rem, 1.2rem + 1.5vw, var(--fs-2xl));
-  font-weight: var(--fw-bold);
-  color: var(--color-primary-dark);
-  text-align: center;
-  margin-bottom: var(--space-2xl);
+.olo-dato-semana__pista {
+  display: grid;
+  width: 100%;
 }
 
-.olo-dato-semana-title-normal {
-  font-weight: var(--fw-regular);
+.olo-dato-semana__diapositiva {
+  grid-area: 1 / 1;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.6s ease, visibility 0s linear 0.6s;
 }
 
-.olo-dato-semana-frame {
-  background: #F5F5F4;
-  border-radius: var(--radius-xl);
-  padding: var(--space-xl);
-  overflow: hidden;
+.olo-dato-semana__diapositiva[data-visible] {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.6s ease;
 }
 
-.olo-dato-semana-img {
+.olo-dato-semana__imagen {
   display: block;
-  max-width: 100%;
+  width: 100%;
   height: auto;
-  margin: 0 auto;
-  border-radius: var(--radius-lg);
+  border-radius: var(--olo-dato-radio, 0);
 }
 
-@media (width < 40rem) {
-  .olo-dato-semana-frame {
-    padding: var(--space-md);
+/* La vista previa de «Imagen destacada» en el editor, sin caja alrededor. */
+.olo-dato-semana__muestra {
+  display: block;
+  width: 100%;
+  max-width: var(--max-width);
+  height: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .olo-dato-semana__diapositiva,
+  .olo-dato-semana__diapositiva[data-visible] {
+    transition: none;
   }
 }
 
