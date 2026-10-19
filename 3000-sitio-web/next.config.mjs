@@ -90,9 +90,10 @@ const nextConfig = {
         permanent: false,
       },
       {
-        // CNO y CUOC se movieron bajo `/clasificacion`, junto al buscador. Mismo motivo
-        // que el de arriba: sin esto el comodín `[slug]` las seguiría sirviendo en la
-        // raíz, y el menú publicado en la base todavía enlaza `/cno` y `/cuoc`.
+        // CNO y CUOC se movieron bajo `/clasificacion`, junto al buscador (desde la
+        // migración 046 sus slugs son `clasificacion-cno` y `clasificacion-cuoc`). Se
+        // redirigen las URLs viejas porque el menú publicado en la base todavía puede
+        // enlazar `/cno` y `/cuoc`, y sin esto darían 404.
         source: '/cno',
         destination: '/clasificacion/cno',
         permanent: false,

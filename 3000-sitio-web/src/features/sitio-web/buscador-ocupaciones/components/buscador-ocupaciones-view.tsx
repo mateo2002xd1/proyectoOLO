@@ -11,17 +11,20 @@ import { BuscadorOcupacionesBanner } from './buscador-ocupaciones-banner';
  * componente que pinta el bloque del editor: así esta página y la portada
  * consultan el catálogo por el mismo camino.
  *
+ * Se monta como el bloque `BuscadorOcupaciones` de Puck (página `clasificacion`); el
+ * texto de ayuda lo pone el editor.
+ *
  * Las migas de pan ya no van aquí: las pone el layout público en todas las páginas
  * (`MigasDePan`). Con ellas se fue el tercer eslabón de los enlaces viejos con `?tipo=`.
  */
-export function BuscadorOcupacionesView() {
+export function BuscadorOcupacionesView({
+  ayuda = 'Ingresa un código, denominación u ocupación para consultar el catálogo CNO/CUOC.',
+}: { ayuda?: string } = {}) {
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-10 sm:px-6 lg:px-8">
       <BuscadorOcupacionesBanner />
 
-      <p className="text-sm text-[#667085]">
-        Ingresa un código, denominación u ocupación para consultar el catálogo CNO/CUOC.
-      </p>
+      {ayuda && <p className="text-sm text-[#667085]">{ayuda}</p>}
     </div>
   );
 }

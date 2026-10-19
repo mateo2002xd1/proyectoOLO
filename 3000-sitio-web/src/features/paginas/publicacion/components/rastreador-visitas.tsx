@@ -31,8 +31,8 @@ export function RastreadorVisitas({ ambito = 'sitio' }: Props) {
       return;
     }
 
-    // "/" -> "inicio", "/cno" -> "cno", "/encuestas/tasa" -> "encuestas-tasa", y las
-    // páginas movidas a una subcarpeta a su slug real (ver `RUTAS_PROPIAS`).
+    // "/" -> "inicio", "/tendencias" -> "tendencias", "/clasificacion/cno" ->
+    // "clasificacion-cno": la misma cuenta que hace el comodín `[...puckPath]`.
     const slug = slugDeRutaPublica(pathname);
 
     const storageKey = `olo_visita_${ambito}_${slug}`;

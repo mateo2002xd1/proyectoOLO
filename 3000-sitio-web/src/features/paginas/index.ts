@@ -40,7 +40,6 @@ export {
   obtenerIndiceBusqueda,
 } from "./publicacion/services/publicacion.service";
 export { ClientPuckRender } from "./publicacion/components/client-puck-render";
-export { PaginaPuckFija } from "./publicacion/components/pagina-puck-fija";
 export { RastreadorVisitas } from "./publicacion/components/rastreador-visitas";
 export { etiquetaDePagina } from "./publicacion/lib/etiquetas-cache";
 

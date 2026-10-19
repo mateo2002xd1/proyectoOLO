@@ -45,7 +45,8 @@ import { MapaSitio, VALORES_MAPA_SITIO_POR_DEFECTO } from '@/shared/lib/blocks/m
 import { obtenerIndiceBusqueda } from '@/features/paginas/publicacion/services/publicacion.service';
 
 import { CABECERA_POR_DEFECTO } from '@/features/paginas/client';
-import { HeroBuscadorOcupaciones } from '@/features/sitio-web/buscador-ocupaciones';
+import { HeroBuscadorOcupaciones, BuscadorOcupacionesView } from '@/features/sitio-web/buscador-ocupaciones';
+import { AlertasInversionView } from '@/features/sitio-web/alertas-inversion';
 import { ProgramasSobresalientesView } from '@/features/sitio-web/programas-sobresalientes';
 import {
   TendenciaOcupacionalView,
@@ -344,6 +345,8 @@ const puckConfigBase: Config = {
         'VisorDocumentosNormativos',
         'CanalesAtencion',
         'ProgramasSobresalientes',
+        'BuscadorOcupaciones',
+        'AlertasInversion',
         'TendenciaOcupacional',
         'FuentesFuturasEmpleo',
         'MapaSitio',
@@ -1859,6 +1862,53 @@ const puckConfigBase: Config = {
           alineacionDescripcion={props.alineacionDescripcion}
           colorDescripcion={props.colorDescripcion}
         />
+      ),
+    },
+    /**
+     * El buscador de ocupaciones completo: el banner de búsqueda con sus resultados y el
+     * detalle en el diálogo. Es lo que sirve la página `clasificacion` (`/clasificacion`),
+     * que hasta la migración 046 era una carpeta propia en `app/(public)/`.
+     */
+    BuscadorOcupaciones: {
+      label: 'Buscador de Ocupaciones',
+      fields: {
+        ayuda: {
+          type: 'textarea',
+          label: 'Texto de ayuda (debajo del buscador; vacío no se muestra)',
+        },
+      },
+      defaultProps: {
+        ayuda: 'Ingresa un código, denominación u ocupación para consultar el catálogo CNO/CUOC.',
+      },
+      render: (props: BlockRender<{ ayuda?: string }>) => (
+        <BuscadorOcupacionesView ayuda={props.ayuda ?? ''} />
+      ),
+    },
+    /**
+     * El panel de alertas de inversión: filtros, gráfico por sector y listado de
+     * proyectos. Es lo que sirve la página `alertas-inversion`, que hasta la migración
+     * 046 era una carpeta propia en `app/(public)/`.
+     */
+    AlertasInversion: {
+      label: 'Alertas de Inversión',
+      fields: {
+        titulo: {
+          type: 'text',
+          label: 'Título',
+          contentEditable: true,
+        },
+        descripcion: {
+          type: 'textarea',
+          label: 'Descripción',
+        },
+      },
+      defaultProps: {
+        titulo: 'Alertas de inversión',
+        descripcion:
+          'Proyectos de inversión, nuevos o de expansión, anunciados en Colombia — agrupados por sector económico.',
+      },
+      render: (props: BlockRender<{ titulo?: string; descripcion?: string }>) => (
+        <AlertasInversionView titulo={props.titulo ?? ''} descripcion={props.descripcion ?? ''} />
       ),
     },
     TendenciaOcupacional: {

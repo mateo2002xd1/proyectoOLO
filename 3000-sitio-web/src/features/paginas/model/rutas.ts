@@ -24,27 +24,20 @@ export function enlaceAlEditor(slug: string, volverA: string): string {
 }
 
 /**
- * Páginas que no viven en `/{slug}` sino en una carpeta propia de `app/(public)/`.
+ * Las carpetas del sitio: un slug `{carpeta}-{resto}` vive en `/{carpeta}/{resto}`.
  *
- * El slug es la llave de todo lo demás —el contenido en `paginas`, el permiso
- * `editar.sitio.{slug}`, el contador de visitas, la etiqueta de caché—, así que mover
- * una página de carpeta no lo cambia: cambia solo su URL, y esta tabla traduce entre
- * las dos. **Al mover una página a una subcarpeta hay que añadirla aquí.** Si no, el
- * botón de editar, el de eliminar y el contador de visitas sacan el slug de la URL con
- * la regla general (segmentos unidos con guion) y apuntan a una página que no existe.
+ * Todas las páginas las sirve el comodín `app/(public)/[...puckPath]`, que une los
+ * segmentos de la URL con guion para sacar el slug (`/clasificacion/cno` →
+ * `clasificacion-cno`). Esa ida no necesita nada; la vuelta sí, porque un guion no dice
+ * si separa carpetas o palabras: `clasificacion-cno` podría ser `/clasificacion-cno`.
+ * Esta lista lo decide. Es la misma regla que la intranet aplica a `encuestas-`.
  *
- * El buscador arma sus enlaces en la API, así que la API lleva su propia copia de
- * esta tabla (`resolverHref` en `api-backend/src/shared/extraer-textos-puck.ts`). La
- * URL vieja queda redirigida en `next.config.mjs` para los enlaces ya repartidos.
+ * Una página nueva dentro de una carpeta que ya está aquí no toca código: basta con que
+ * su slug empiece por `{carpeta}-`. Solo una carpeta nueva se añade a esta lista y a su
+ * copia de la API (`CARPETAS` en `api-backend/src/shared/extraer-textos-puck.ts`), que
+ * es la que arma los enlaces del buscador.
  */
-const RUTAS_PROPIAS: Record<string, string> = {
-  cno: '/clasificacion/cno',
-  cuoc: '/clasificacion/cuoc',
-};
-
-const SLUG_DE_RUTA_PROPIA = new Map(
-  Object.entries(RUTAS_PROPIAS).map(([slug, ruta]) => [ruta, slug])
-);
+const CARPETAS = ['clasificacion'];
 
 /**
  * La ruta pública de un slug.
@@ -55,20 +48,18 @@ const SLUG_DE_RUTA_PROPIA = new Map(
  * (ver `next.config.mjs`).
  */
 export function rutaPublicaDeSlug(slug: string): string {
-  return RUTAS_PROPIAS[slug] ?? `/${slug}`;
+  const carpeta = CARPETAS.find((c) => slug.startsWith(`${c}-`));
+  return carpeta ? `/${carpeta}/${slug.slice(carpeta.length + 1)}` : `/${slug}`;
 }
 
 /**
  * El slug de una ruta pública: el inverso de `rutaPublicaDeSlug`.
  *
- * Fuera de `RUTAS_PROPIAS` rige la regla general: los segmentos unidos con guion
- * (`/encuestas/tasa` → `encuestas-tasa`) y la raíz es `inicio`.
+ * Los segmentos unidos con guion (`/clasificacion/cno` → `clasificacion-cno`) y la
+ * raíz es `inicio`. Es la misma cuenta que hace el comodín `[...puckPath]`.
  */
 export function slugDeRutaPublica(ruta: string): string {
-  const limpia = ruta.split(/[?#]/)[0].replace(/\/+$/, '');
-  const propia = SLUG_DE_RUTA_PROPIA.get(limpia);
-  if (propia) return propia;
-  const segmentos = limpia.split('/').filter(Boolean);
+  const segmentos = ruta.split(/[?#]/)[0].split('/').filter(Boolean);
   return segmentos.length === 0 ? 'inicio' : segmentos.join('-');
 }
 

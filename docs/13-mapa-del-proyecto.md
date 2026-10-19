@@ -14,7 +14,7 @@
 
 | | Carpetas | Features | Rutas de Next | Endpoints | Librerías |
 |---|--:|--:|--:|--:|--:|
-| `3000-sitio-web` | 50 | 3 | 54 | — | 33 |
+| `3000-sitio-web` | 49 | 3 | 47 | — | 33 |
 | `3001-intranet` | 31 | 2 | 14 | — | 27 |
 | `4000-api-backend` | 35 | — | — | 96 | 43 |
 
@@ -72,7 +72,6 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
     │       ├── alertas-inversion/             ⚠ sin descripción
     │       ├── buscador-ocupaciones/          buscador CNO/CUOC (RF-09)
     │       ├── fuentes-futuras-empleo/        ⚠ sin descripción
-    │       ├── inicio/                        composición de la portada
     │       ├── programas-sobresalientes/      mapa, filtros y tabla del Observatorio
     │       └── tendencia-ocupacional/         tendencia ocupacional (bloque Puck)
     ├── shared/                                lo transversal del sitio: sistema de diseño y utilidades
@@ -200,8 +199,8 @@ test/                                          pruebas de carga con k6
 | Feature | Para qué | Subcarpetas | `index.ts` | Archivos |
 |---|---|---|:-:|--:|
 | `administracion/` | el panel: usuarios, roles, auditoría, respaldos, cargas | `actualizaciones/` `auditoria/` `auth/` `buscador/` `configuracion/` `mi-perfil/` `respaldos/` | **no** | 78 |
-| `paginas/` | páginas editables con Puck, organizadas por etapa del ciclo | `edicion/` `menu-y-pie/` `model/` `publicacion/` `revision/` `secciones/` | sí | 41 |
-| `sitio-web/` | agrupador de lo público | `alertas-inversion/` `buscador-ocupaciones/` `fuentes-futuras-empleo/` `inicio/` `programas-sobresalientes/` `tendencia-ocupacional/` | **no** | 50 |
+| `paginas/` | páginas editables con Puck, organizadas por etapa del ciclo | `edicion/` `menu-y-pie/` `model/` `publicacion/` `revision/` `secciones/` | sí | 40 |
+| `sitio-web/` | agrupador de lo público | `alertas-inversion/` `buscador-ocupaciones/` `fuentes-futuras-empleo/` `programas-sobresalientes/` `tendencia-ocupacional/` | **no** | 48 |
 
 ### 3001-intranet
 
@@ -218,7 +217,7 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 
 | URL | Tipo | Grupo | Archivo |
 |---|---|---|---|
-| `/[slug]` | página | `(public)` | `(public)/[slug]/page.tsx` |
+| `/[...puckPath]` | página | `(public)` | `(public)/[...puckPath]/page.tsx` |
 | `/admin/actualizaciones` | página |  | `admin/actualizaciones/page.tsx` |
 | `/admin/auditoria` | página |  | `admin/auditoria/page.tsx` |
 | `/admin/buscar` | página |  | `admin/buscar/page.tsx` |
@@ -229,7 +228,6 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `/admin/revision` | página |  | `admin/revision/page.tsx` |
 | `/admin/roles` | página |  | `admin/roles/page.tsx` |
 | `/admin/users` | página |  | `admin/users/page.tsx` |
-| `/alertas-inversion` | página | `(public)` | `(public)/alertas-inversion/page.tsx` |
 | `/api/alerts` | manejador |  | `api/alerts/route.ts` |
 | `/api/audit-logs` | manejador |  | `api/audit-logs/route.ts` |
 | `/api/audit-logs/depurar` | manejador |  | `api/audit-logs/depurar/route.ts` |
@@ -255,11 +253,7 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `/api/security-questions/verify` | manejador |  | `api/security-questions/verify/route.ts` |
 | `/api/users` | manejador |  | `api/users/route.ts` |
 | `/api/users/[id]` | manejador |  | `api/users/[id]/route.ts` |
-| `/clasificacion` | página | `(public)` | `(public)/clasificacion/page.tsx` |
-| `/clasificacion/cno` | página | `(public)` | `(public)/clasificacion/cno/page.tsx` |
-| `/clasificacion/cuoc` | página | `(public)` | `(public)/clasificacion/cuoc/page.tsx` |
 | `/editor/[slug]` | página |  | `editor/[slug]/page.tsx` |
-| `/inicio` | página | `(public)` | `(public)/inicio/page.tsx` |
 | `/login` | página | `(auth)` | `(auth)/login/page.tsx` |
 | `/login/first-login` | página | `(auth)` | `(auth)/login/first-login/page.tsx` |
 | `/login/first-login/change-password` | página | `(auth)` | `(auth)/login/first-login/change-password/page.tsx` |
@@ -269,9 +263,7 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `/login/recovery/reset-success` | página | `(auth)` | `(auth)/login/recovery/reset-success/page.tsx` |
 | `/login/recovery/security-questions` | página | `(auth)` | `(auth)/login/recovery/security-questions/page.tsx` |
 | `/manifest.webmanifest` | metadatos |  | `manifest.ts` |
-| `/politica-de-privacidad` | página | `(public)` | `(public)/politica-de-privacidad/page.tsx` |
 | `/preview/[slug]` | página |  | `preview/[slug]/page.tsx` |
-| `/programas-sobresalientes` | página | `(public)` | `(public)/programas-sobresalientes/page.tsx` |
 
 ### 3001-intranet
 

@@ -106,7 +106,6 @@ no sabes qué poner, esa es la señal de que la carpeta no tiene un lugar claro 
 - `3000-sitio-web/src/features/paginas/secciones/` — crear y eliminar páginas
 - `3000-sitio-web/src/features/sitio-web/` — agrupador de lo público
 - `3000-sitio-web/src/features/sitio-web/buscador-ocupaciones/` — buscador CNO/CUOC (RF-09)
-- `3000-sitio-web/src/features/sitio-web/inicio/` — composición de la portada
 - `3000-sitio-web/src/features/sitio-web/programas-sobresalientes/` — mapa, filtros y tabla del Observatorio
 - `3000-sitio-web/src/features/sitio-web/tendencia-ocupacional/` — tendencia ocupacional (bloque Puck)
 - `3000-sitio-web/src/shared/` — lo transversal del sitio: sistema de diseño y utilidades

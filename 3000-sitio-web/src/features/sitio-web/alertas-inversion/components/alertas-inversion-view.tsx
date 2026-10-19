@@ -36,23 +36,34 @@ function CampoFiltro({
   );
 }
 
+interface AlertasInversionViewProps {
+  titulo?: string;
+  descripcion?: string;
+}
+
 /**
  * Panel público "Alertas de inversión": proyectos de inversión anunciados, agrupados
  * por sector económico (CIIU). El gráfico y el listado comparten los mismos filtros
  * (sector, departamento, año) — clic en una barra filtra la tabla por ese sector.
+ *
+ * Se monta como el bloque `AlertasInversion` de Puck: el título y la descripción los
+ * pone el editor; vacíos, no se pinta su línea.
  */
-export function AlertasInversionView() {
+export function AlertasInversionView({
+  titulo = 'Alertas de inversión',
+  descripcion = 'Proyectos de inversión, nuevos o de expansión, anunciados en Colombia — agrupados por sector económico.',
+}: AlertasInversionViewProps = {}) {
   const { opciones, grafico, listado, anio, departamento, seccion, pagina, cargando, actualizando, error, seleccionarSector, seleccionarDepartamento, seleccionarAnio, irAPagina } =
     useAlertasInversion();
 
   return (
     <div className="mx-auto flex max-w-[1200px] flex-col gap-6 px-4 py-10 sm:px-6 lg:px-8">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-[#001631] sm:text-3xl">Alertas de inversión</h1>
-        <p className="text-base text-[#475467]">
-          Proyectos de inversión, nuevos o de expansión, anunciados en Colombia — agrupados por sector económico.
-        </p>
-      </div>
+      {(titulo || descripcion) && (
+        <div className="flex flex-col gap-2">
+          {titulo && <h1 className="text-2xl font-bold text-[#001631] sm:text-3xl">{titulo}</h1>}
+          {descripcion && <p className="text-base text-[#475467]">{descripcion}</p>}
+        </div>
+      )}
 
       <div className="flex flex-wrap items-end gap-4">
         <CampoFiltro id="filtro-sector" etiqueta="Sector" valor={seccion} onCambio={seleccionarSector} todos="Todos">
