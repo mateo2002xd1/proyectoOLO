@@ -37,7 +37,6 @@ yarn-error.log*
 # olo-app_filesystem), y solo la API los toca: ver
 # 4000-api-backend/src/infrastructure/storage/filesystem.ts. Son datos de cada
 # máquina, no código. Lo mismo los respaldos que deja `deploy.sh backup`.
-/filesystem/
 /archivos_*.tar.gz
 
 # Las carpetas donde vivían antes. Se quedan ignoradas mientras quede alguna copia
