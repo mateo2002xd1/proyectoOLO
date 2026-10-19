@@ -100,7 +100,7 @@ const OPCIONES_TEXTO_EN_LINEA = {
 } as const;
 
 /**
- * Barra de formato del título y el párrafo del carrusel: encabezados H1–H4 para subir o
+ * Barra de formato del párrafo del carrusel: encabezados H1–H4 para subir o
  * bajar el tamaño, viñetas, negrita, cursiva, subrayado y alineación. Sin citas, código,
  * tachado, listas numeradas ni enlaces.
  */
@@ -696,63 +696,88 @@ const puckConfigBase: Config = {
     },
     /**
      * Mini carrusel de infografías del dato semanal (`DatoOloSemana`): pasa solo, sin
-     * flechas, con el ubicador de puntos. Solo imágenes, fondo y redondeo. Reemplazó a
-     * la infografía única con título: una portada guardada así trae `imagenSrc` y se ve
-     * con esa imagen sola hasta que se abra en el editor.
+     * flechas, con el ubicador de puntos. Una sola tarjeta «Imágenes» con la lista (cada
+     * imagen con su color de fondo) y el redondeo; «Espaciado y Ancho» va aparte, sin su
+     * color de fondo (`sinFondo` en `puckConfig`). Reemplazó a la infografía única con
+     * título: una portada guardada así trae `imagenSrc` y se ve con esa imagen sola
+     * hasta que se abra en el editor.
      */
     DatoOloSemana: {
       label: 'Dato OLO de la semana',
       fields: {
-        imagenes: campoListaEnAcordeones(
+        galeria: campoObjetoEnAcordeon(
           'Imágenes',
           {
-            imagen: { ...campoImagen('Imagen'), ayuda: 'La infografía entera, con el dato dibujado. Todas conviene que tengan la misma proporción.' },
-            alt: {
-              type: 'text',
-              label: 'Texto alternativo',
-              placeholder: 'El dato que dice la imagen',
-              ayuda: 'Lo lee el lector de pantalla: escribe el dato completo, porque está dentro de la imagen. Obligatorio para enviar a revisión.',
-            },
+            imagenes: campoListaEnAcordeones(
+              'Infografías',
+              {
+                imagen: { ...campoImagen('Imagen'), ayuda: 'La infografía entera, con el dato dibujado. Todas conviene que tengan la misma proporción.' },
+                alt: {
+                  type: 'text',
+                  label: 'Texto alternativo',
+                  placeholder: 'El dato que dice la imagen',
+                  ayuda: 'Lo lee el lector de pantalla: escribe el dato completo, porque está dentro de la imagen. Obligatorio para enviar a revisión.',
+                },
+                colorFondo: {
+                  type: 'color',
+                  label: 'Color de fondo',
+                  ayuda: 'El de la sección mientras se ve esta imagen; por defecto, blanco. Los puntos de abajo van en azul sobre fondos claros y en blanco sobre oscuros.',
+                },
+              },
+              {
+                elemento: 'Imagen',
+                nuevo: { imagen: '', alt: '', colorFondo: '' },
+                resumen: (d) => d?.alt || (d?.imagen ? 'Sin texto alternativo' : 'Vacía'),
+                ayuda: 'Pasan solas en este orden y, después de la última, vuelven a la primera. Con una sola, no se mueve.',
+              }
+            ),
+            radioEsquinas: campoEnAcordeon({
+              type: 'number',
+              label: 'Esquinas redondeadas',
+              min: 0,
+              max: 100,
+              sufijo: 'px',
+              placeholder: '0',
+              ayuda: 'Redondea las cuatro esquinas de todas las imágenes. Vacío o 0: rectas.',
+            }),
+            segundos: campoEnAcordeon({
+              type: 'number',
+              label: 'Tiempo de cada imagen',
+              min: 3,
+              max: 60,
+              sufijo: 's',
+              placeholder: '6',
+              ayuda: 'Cuántos segundos se ve cada imagen antes de pasar a la siguiente, de 3 a 60. Vacío: 6. Se detiene mientras el cursor está encima.',
+            }),
           },
-          {
-            elemento: 'Imagen',
-            nuevo: { imagen: '', alt: '' },
-            resumen: (d) => d?.alt || (d?.imagen ? 'Sin texto alternativo' : 'Vacía'),
-            ayuda: 'Pasan solas cada 6 segundos, en este orden. Con una sola, no se mueve.',
-          }
+          { abierto: true }
         ),
-        colorFondo: campoEnAcordeon({
-          type: 'color',
-          label: 'Color de fondo',
-          ayuda: 'El de toda la sección. Vacío: blanco. Los puntos de abajo van en azul sobre fondos claros y en blanco sobre oscuros.',
-        }),
-        radioEsquinas: campoEnAcordeon({
-          type: 'number',
-          label: 'Esquinas redondeadas',
-          min: 0,
-          max: 100,
-          sufijo: 'px',
-          placeholder: '0',
-          ayuda: 'Redondea las cuatro esquinas de las imágenes. Vacío o 0: rectas.',
-        }),
       },
       defaultProps: {
         id: 'dato-olo-semana-1',
-        imagenes: [],
-        colorFondo: '',
-        radioEsquinas: '',
+        galeria: { imagenes: [], radioEsquinas: '', segundos: '' },
       },
-      // Una portada guardada antes del rediseño trae una sola imagen en `imagenSrc`: se
-      // pasa a la lista al abrirla, para que se pueda editar.
-      resolveData: ({ props }: { props: Record<string, any> }) =>
-        props.imagenes !== undefined
-          ? { props }
-          : {
-              props: {
-                ...props,
-                imagenes: props.imagenSrc ? [{ imagen: props.imagenSrc, alt: props.imagenAlt ?? '' }] : [],
-              },
+      // Una portada guardada antes del rediseño trae una sola imagen en `imagenSrc`; la
+      // primera versión del carrusel, `imagenes`, `colorFondo` y `radioEsquinas` sueltos.
+      // Se pasan a `galeria` al abrirla, para que se puedan editar.
+      resolveData: ({ props }: { props: Record<string, any> }) => {
+        if (props.galeria !== undefined) return { props };
+        const anteriores: Record<string, any>[] = Array.isArray(props.imagenes)
+          ? props.imagenes
+          : props.imagenSrc
+            ? [{ imagen: props.imagenSrc, alt: props.imagenAlt ?? '' }]
+            : [];
+        return {
+          props: {
+            ...props,
+            galeria: {
+              imagenes: anteriores.map((imagen) => ({ colorFondo: props.colorFondo ?? '', ...imagen })),
+              radioEsquinas: props.radioEsquinas ?? '',
+              segundos: '',
             },
+          },
+        };
+      },
       render: ({
         id,
         puck,
@@ -1326,7 +1351,7 @@ const puckConfigBase: Config = {
       ),
     },
     /**
-     * Carrusel de imágenes a lo ancho, una por vez, con titular y párrafo encima, sobre
+     * Carrusel de imágenes a lo ancho, una por vez, con un párrafo encima, sobre
      * un color de fondo (`CarruselDeImagenes`). Pasa solo y lleva dos flechas de estilo
      * fijo. No es el carrusel de la intranet (`SeccionCarrusel`, varias a la vez).
      */
@@ -1334,14 +1359,8 @@ const puckConfigBase: Config = {
       label: 'Carrusel de imágenes',
       fields: {
         textos: campoObjetoEnAcordeon(
-          'Título y párrafo',
+          'Párrafo',
           {
-            titulo: {
-              type: 'richtext' as const,
-              label: 'Título',
-              contentEditable: true,
-              options: OPCIONES_TEXTO_DEL_CARRUSEL,
-            },
             parrafo: {
               type: 'richtext' as const,
               label: 'Párrafo',
@@ -1378,7 +1397,7 @@ const puckConfigBase: Config = {
             colorFondo: {
               type: 'color',
               label: 'Color de fondo',
-              ayuda: 'El de la franja del banner mientras se ve esta imagen; por defecto, blanco (#FFFFFF). El título y el párrafo tienen el suyo, en «Título y párrafo».',
+              ayuda: 'El de la franja del banner mientras se ve esta imagen; por defecto, blanco (#FFFFFF). El párrafo tiene el suyo, en «Párrafo».',
             },
           },
           {
@@ -1391,7 +1410,6 @@ const puckConfigBase: Config = {
       },
       defaultProps: {
         textos: {
-          titulo: '<h2>Título principal</h2>',
           parrafo: '<p>Agrega una descripción</p>',
           colorFondo: '#FFFFFF',
         },
@@ -2352,7 +2370,7 @@ export const puckConfig: Config = {
   ...puckConfigBase,
   components: conCajaEnTodos(puckConfigBase.components, {
     excepto: BLOQUES_SIN_CAJA,
-    sinFondo: ['ImagenDestacada'],
+    sinFondo: ['ImagenDestacada', 'DatoOloSemana'],
   }),
 };
 

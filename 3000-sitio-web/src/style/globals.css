@@ -1128,9 +1128,9 @@ button.olo-video-embebido__miniatura:focus-visible {
 }
 
 /* --- Carrusel de imágenes (ver carrusel-de-imagenes.tsx) ---
-   Una imagen por vez, en dos franjas con su propio fondo: la del título y el párrafo,
-   y la del banner. Las dos blancas con texto azul por defecto; el componente pone en
-   línea el color de cada una (el de «Título y párrafo» y el de la imagen que se ve,
+   Una imagen por vez, en dos franjas con su propio fondo: la del párrafo y la del
+   banner. Las dos blancas con texto azul por defecto; el componente pone en
+   línea el color de cada una (el de «Párrafo» y el de la imagen que se ve,
    con un fundido) y el texto blanco sobre oscuros. Las imágenes se apilan en la misma
    celda de la rejilla. Sin bordes. Las dos flechas del diseño, grises y sin fondo, y
    debajo el ubicador de puntos. */
@@ -1163,14 +1163,9 @@ button.olo-video-embebido__miniatura:focus-visible {
 }
 
 /* El encabezado lo elige quien edita (H1–H4 en la barra del texto enriquecido). */
-.olo-carrusel__titulo,
 .olo-carrusel__parrafo {
   font-size: clamp(0.9375rem, 0.88rem + 0.3vw, 1.125rem);
   line-height: 1.5;
-}
-
-.olo-carrusel__parrafo {
-  margin-top: 10px;
 }
 
 .olo-carrusel__encabezado :is(h1, h2, h3, h4) {
@@ -1462,8 +1457,8 @@ a.olo-carrusel__boton:focus-visible {
 /* Dato OLO de la semana (ver dato-olo-semana.tsx): mini carrusel de infografías, una
    por vez con un fundido, sin flechas y con el ubicador de puntos del «Carrusel de
    imágenes» debajo. Fondo blanco con texto azul por defecto; el componente pone en
-   línea el color elegido y el texto (los puntos) en blanco sobre oscuros. El redondeo
-   llega en --olo-dato-radio. */
+   línea el color de la imagen que se ve (cambia con un fundido) y el texto (los
+   puntos) en blanco sobre oscuros. El redondeo llega en --olo-dato-radio. */
 .olo-dato-semana {
   display: flex;
   flex-direction: column;
@@ -1471,6 +1466,7 @@ a.olo-carrusel__boton:focus-visible {
   padding: clamp(32px, 5vw, 64px) 16px;
   background: #ffffff;
   color: #001145;
+  transition: background-color 0.6s ease, color 0.6s ease;
 }
 
 .olo-dato-semana__escenario {
@@ -1516,6 +1512,7 @@ a.olo-carrusel__boton:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .olo-dato-semana,
   .olo-dato-semana__diapositiva,
   .olo-dato-semana__diapositiva[data-visible] {
     transition: none;

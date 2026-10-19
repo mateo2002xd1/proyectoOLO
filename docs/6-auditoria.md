@@ -5,18 +5,40 @@
 
 ---
 
-## sesión 18-10-2026 (13.ª parte): «Dato OLO de la semana» como mini carrusel de infografías
+## sesión 18-10-2026 (14.ª parte): el carrusel sin campo de título, solo párrafo
 
-**Qué se pidió:** rediseñar el bloque «Dato OLO de la semana» como en la maqueta (una infografía a lo ancho con el dato dibujado). En el panel, solo adjuntar imágenes, cambiar el fondo y redondear las esquinas. Es un mini carrusel que pasa solo, sin flechas, con el ubicador de puntos; misma simetría que los bloques rediseñados hoy. Después: la imagen la sube el usuario, sin imagen por defecto, y mientras no hay ninguna se ve la vista previa de «Imagen destacada».
+**Qué se pidió:** quitar el título del acordeón «Título y párrafo» del «Carrusel de imágenes» y dejar solo el párrafo.
 
 | Capa | Cambio |
 |---|---|
-| `3000-sitio-web/src/shared/lib/blocks/dato-olo-semana.tsx` | Reescrito, ahora de cliente. Props `imagenes` (`imagen`, `alt`), `colorFondo` y `radioEsquinas` (0–100 px, como «Portales externos»); fuera `tituloResaltado` y `tituloNormal` (el título va dibujado en la infografía). Una por vez con fundido, apiladas en la misma celda de una rejilla (no salta), las ocultas con `inert`. Pasa cada 6 s y se detiene con el cursor o el foco dentro, con «menos movimiento» y en el editor; con una sola imagen no se mueve. Sin imágenes: en el editor, la muestra de «Imagen destacada» (`muestraDeImagen`, «Sube o selecciona una imagen en el panel lateral derecho»); en el sitio, nada. Una portada guardada con la versión anterior (`imagenSrc`) se ve con esa imagen sola. Conserva `id="dato-olo-semana"` |
+| `3000-sitio-web/src/config/puck.config.tsx` (`CarruselDeImagenes`) | El acordeón pasa a llamarse «Párrafo» y solo tiene el `richtext` «Párrafo» (con la misma barra: H1–H4, viñetas, negrita, cursiva, subrayado y alineación) y «Color de fondo». Fuera el campo «Título» y su `<h2>Título principal</h2>` por defecto; queda «Agrega una descripción». La ayuda del color de cada imagen remite a «Párrafo» |
+| `shared/lib/blocks/carrusel-de-imagenes.tsx` | `textos` queda en `{ parrafo, colorFondo }`; la franja del texto se pinta solo si hay párrafo. Un carrusel guardado con `textos.titulo` lo conserva en el JSON sin pintarlo |
+| `style/globals.css` | Fuera `.olo-carrusel__titulo` y el margen de arriba del párrafo, que solo lo separaba del título |
+
+> **Si hace falta un encabezado**, se pone dentro del párrafo con el botón H de la barra: las reglas de H1–H4 del carrusel siguen.
+
+| Verificación | Resultado |
+|---|---|
+| `npx tsc --noEmit` en sitio-web | Sin errores |
+| `eslint` del carrusel y de `puck.config.tsx` | El carrusel, sin avisos; en `puck.config.tsx`, los 6 `no-explicit-any` de `resolveData` de otros bloques, que no son de este cambio |
+| Carrusel montado por CDP (editor y publicado) con un `titulo` viejo en los datos y la franja en #001145 | Solo el párrafo, en blanco; el título viejo no aparece. Flechas, salto a la imagen nueva, botón y puntos como antes |
+| Editor real | Sin verificar |
+
+---
+
+## sesión 18-10-2026 (13.ª parte): «Dato OLO de la semana» como mini carrusel de infografías
+
+**Qué se pidió:** rediseñar el bloque «Dato OLO de la semana» como en la maqueta (una infografía a lo ancho con el dato dibujado). En el panel, solo adjuntar imágenes, cambiar el fondo y redondear las esquinas. Es un mini carrusel que pasa solo, sin flechas, con el ubicador de puntos; misma simetría que los bloques rediseñados hoy. Después: la imagen la sube el usuario, sin imagen por defecto, y mientras no hay ninguna se ve la vista previa de «Imagen destacada». Después: el color de fondo, uno por imagen; «Esquinas redondeadas» fuera de cada imagen pero en la misma tarjeta «Imágenes», en acordeón; y «Espaciado y Ancho» en su grupo aparte. Después: que pase en bucle (de la última vuelve a la primera) y el tiempo de cada imagen debajo de «Esquinas redondeadas».
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/shared/lib/blocks/dato-olo-semana.tsx` | Reescrito, ahora de cliente. Prop `galeria` con `imagenes` (`imagen`, `alt`, `colorFondo`) y `radioEsquinas` (0–100 px, como «Portales externos»); el fondo de la sección es el de la imagen que se ve (vacío: blanco) y cambia con un fundido; fuera `tituloResaltado` y `tituloNormal` (el título va dibujado en la infografía). Una por vez con fundido, apiladas en la misma celda de una rejilla (no salta), las ocultas con `inert`. Pasa cada 6 s y se detiene con el cursor o el foco dentro, con «menos movimiento» y en el editor; con una sola imagen no se mueve. Sin imágenes: en el editor, la muestra de «Imagen destacada» (`muestraDeImagen`, «Sube o selecciona una imagen en el panel lateral derecho»); en el sitio, nada. Una portada guardada con la versión anterior (`imagenSrc`) se ve con esa imagen sola. Conserva `id="dato-olo-semana"` |
 | `shared/lib/blocks/carrusel-de-imagenes.tsx` | Solo se exportan `INTERVALO_MS`, `estiloDeFondo` y `usePrefiereMenosMovimiento`, para no duplicarlos. Su comportamiento no cambia |
-| `config/puck.config.tsx` (`DatoOloSemana`) | «Imágenes» (lista en acordeones: imagen y texto alternativo), «Color de fondo» y «Esquinas redondeadas» (px). `imagenes: []` por defecto. `resolveData` pasa `imagenSrc`/`imagenAlt` de una portada vieja a la lista al abrirla |
-| `style/globals.css` | Fuera `.olo-dato-semana-inner/-title/-frame/-img`. `.olo-dato-semana` con el relleno de «Portales» y «Video» (`clamp(32px, 5vw, 64px) 16px`), fondo blanco y texto azul por defecto; escenario de `--max-width`, fundido de 0,6 s (sin él con menos movimiento), imagen con `border-radius: var(--olo-dato-radio, 0)`. El ubicador usa las clases `.olo-carrusel__ubicador` y `__punto` del carrusel: azul sobre fondos claros, blanco sobre oscuros (`estiloDeFondo`) |
-| `features/paginas/model/home-fallback-data.ts` | La portada de respaldo con `imagenes: []`: sin la API, el bloque no se pinta |
-| `packages/accessibility-policy/src/index.ts` | La regla de `DatoOloSemana` pasa a `alt-array` sobre `imagenes` (`imagen` / `alt`). Reconstruido `dist/` |
+| `config/puck.config.tsx` (`DatoOloSemana`) | Una sola tarjeta «Imágenes» en acordeón (`campoObjetoEnAcordeon`, abierta) con la lista «Infografías» (un acordeón por imagen: imagen, texto alternativo y color de fondo) y, debajo, «Esquinas redondeadas» (px). `galeria: { imagenes: [], radioEsquinas: '' }` por defecto. `resolveData` pasa a `galeria` lo de una portada vieja (`imagenSrc`/`imagenAlt`) y lo de la primera versión del carrusel (`imagenes`, `colorFondo` y `radioEsquinas` sueltos; ese color pasa a cada imagen). «Espaciado y Ancho» sigue aparte (`conCaja`), sin su «Color de fondo»: `DatoOloSemana` va en `sinFondo` junto a `ImagenDestacada`, para que no compita con el de cada imagen |
+| `style/globals.css` | Fuera `.olo-dato-semana-inner/-title/-frame/-img`. `.olo-dato-semana` con el relleno de «Portales» y «Video» (`clamp(32px, 5vw, 64px) 16px`), fondo blanco y texto azul por defecto, con fundido de 0,6 s al cambiar de color; escenario de `--max-width`, fundido de 0,6 s (sin él con menos movimiento), imagen con `border-radius: var(--olo-dato-radio, 0)`. El ubicador usa las clases `.olo-carrusel__ubicador` y `__punto` del carrusel: azul sobre fondos claros, blanco sobre oscuros (`estiloDeFondo`) |
+| Tiempo de cada imagen (pedido después) | `galeria.segundos`: campo «Tiempo de cada imagen» (número, 3–60 s, vacío = 6, `INTERVALO_MS` del carrusel) debajo de «Esquinas redondeadas», en la misma tarjeta. El componente lo acota a 3–60 (`SEGUNDOS_MINIMO`/`SEGUNDOS_MAXIMO`: menos no da para leer el dato) y reinicia el temporizador al cambiarlo. El bucle ya estaba: `(i + 1) % total` vuelve de la última a la primera sin fin; la ayuda de la lista ahora lo dice. `resolveData`, `defaultProps` y la portada de respaldo con `segundos: ''` |
+| `features/paginas/model/home-fallback-data.ts` | La portada de respaldo con `galeria` vacía: sin la API, el bloque no se pinta |
+| `packages/accessibility-policy/src/index.ts` | La regla de `DatoOloSemana` pasa a `alt-array` sobre `galeria.imagenes` (`imagen` / `alt`). `campoArray` acepta ahora una ruta con puntos (`valorEnRuta`) para un array dentro de un objeto; las reglas de una sola clave no cambian. Reconstruido `dist/` |
 
 > **Agregué «Texto alternativo» por imagen** aunque el pedido decía solo adjuntar: el dato va dibujado dentro de la infografía y, sin ese texto, un lector de pantalla no lo puede leer. Es obligatorio para enviar a revisión, como en el «Carrusel de imágenes».
 
@@ -26,6 +48,7 @@
 |---|---|
 | `npx tsc --noEmit` en sitio-web | Sin errores (salvo `shared/lib/accesibilidad/`, que no es de este trabajo) |
 | `eslint` de los dos componentes | Sin avisos |
+| `validarAccesibilidad` (dist) con un «Dato OLO» de tres imágenes (una sin alt, una con alt, una vacía) y un «Carrusel» sin alt | Marca solo `galeria.imagenes[0].alt` y `diapositivas[0].alt` |
 | Bloque en el editor y en la página (subir imágenes, paso automático, puntos, fondo, redondeo, 1440/1024/768/375 px) | Sin verificar |
 
 ---

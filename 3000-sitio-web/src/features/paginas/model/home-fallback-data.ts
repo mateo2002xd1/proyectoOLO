@@ -45,10 +45,8 @@ export const homeFallbackData: Data = {
       type: 'DatoOloSemana',
       props: {
         id: 'dato-olo-semana-static',
-        tituloResaltado: 'Dato OLO',
-        tituloNormal: 'de la semana',
-        imagenSrc: '/assets/img/dato-olo-semana.png',
-        imagenAlt: 'Dato OLO de la semana',
+        // Las infografías las sube quien edita: sin ellas, el bloque no se pinta.
+        galeria: { imagenes: [], radioEsquinas: '', segundos: '' },
       },
     },
     {
@@ -148,38 +146,24 @@ export const homeFallbackData: Data = {
       type: 'ExternalPortals',
       props: {
         id: 'portals-static',
-        title: '<p><strong>Portales externos</strong> de la ciudadanía</p>',
-        subtitle: '',
-        portals: [
+        tarjetas: [
           {
-            id: 'pqrs',
-            label: 'PQRS',
-            description:
-              '<p><strong>Registrar tus peticiones, quejas, reclamos y sugerencias</strong>. Tu participación es fundamental para seguir mejorando.</p>',
-            href: '#',
-            imagen: '/assets/img/pqrs.png',
-            colorInicio: '#0b4ea2',
-            colorFin: '#0a2f6b',
+            icono: '/assets/svg/portales/pqrs.svg',
+            texto: '<p><strong>Molestia referente<br>a PQRS</strong></p>',
+            enlace: '#',
+            colorFondo: '#001145',
           },
           {
-            id: 'denuncias',
-            label: 'Denuncias por corrupción',
-            description:
-              '<p><strong>Reportar actos de corrupción</strong> por un canal seguro. Tu identidad será protegida en todo momento.</p>',
-            href: '#',
-            imagen: '/assets/img/corrupcion.png',
-            colorInicio: '#0d1526',
-            colorFin: '#1a2e50',
+            icono: '/assets/svg/portales/denuncia.svg',
+            texto: '<p><strong>Denuncia por<br>corrupción</strong></p>',
+            enlace: '#',
+            colorFondo: '#85e501',
           },
           {
-            id: 'transparencia',
-            label: 'Transparencia',
-            description:
-              '<p><strong>Consultar información pública</strong> y datos abiertos del observatorio, con rendición de cuentas al día.</p>',
-            href: '#',
-            imagen: '/assets/img/transparencia.png',
-            colorInicio: '#1478c6',
-            colorFin: '#0d4f8b',
+            icono: '/assets/svg/portales/transparencia.svg',
+            texto: '<p><strong>Transparencia</strong></p>',
+            enlace: '#',
+            colorFondo: '#07ecfc',
           },
         ],
       },

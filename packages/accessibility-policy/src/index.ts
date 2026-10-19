@@ -44,6 +44,7 @@ interface ReglaAlt {
 
 interface ReglaAltEnArray {
   tipo: 'alt-array';
+  /** Clave del array en las props; con puntos si va dentro de un objeto ("galeria.imagenes"). */
   campoArray: string;
   campoImagen: string;
   campoAlt: string;
@@ -88,7 +89,7 @@ const MANIFIESTO_SITIO: Manifiesto = {
   },
   DatoOloSemana: {
     etiqueta: 'Dato OLO de la semana',
-    reglas: [{ tipo: 'alt-array', campoArray: 'imagenes', campoImagen: 'imagen', campoAlt: 'alt' }],
+    reglas: [{ tipo: 'alt-array', campoArray: 'galeria.imagenes', campoImagen: 'imagen', campoAlt: 'alt' }],
   },
   RecursosVisualesBloque: {
     etiqueta: 'Recursos Visuales',
@@ -199,6 +200,12 @@ const esNoVacio = (valor: unknown): boolean => typeof valor === 'string' && valo
 const items = (valor: unknown): Record<string, unknown>[] =>
   Array.isArray(valor) ? (valor.filter((v) => v && typeof v === 'object') as Record<string, unknown>[]) : [];
 
+/** El valor de una clave de las props, que puede ir dentro de un objeto: "galeria.imagenes". */
+const valorEnRuta = (props: Record<string, unknown>, ruta: string): unknown =>
+  ruta
+    .split('.')
+    .reduce<unknown>((valor, clave) => (valor && typeof valor === 'object' ? (valor as Record<string, unknown>)[clave] : undefined), props);
+
 function revisarBloque(bloque: BloquePuck, manifiesto: Manifiesto): ViolacionAccesibilidad[] {
   if (typeof bloque.type !== 'string') return [];
   const definicion = manifiesto[bloque.type];
@@ -227,7 +234,7 @@ function revisarBloque(bloque: BloquePuck, manifiesto: Manifiesto): ViolacionAcc
         });
       }
     } else if (regla.tipo === 'alt-array') {
-      items(props[regla.campoArray]).forEach((item, indice) => {
+      items(valorEnRuta(props, regla.campoArray)).forEach((item, indice) => {
         if (esNoVacio(item[regla.campoImagen]) && !esNoVacio(item[regla.campoAlt])) {
           violaciones.push({
             bloque: bloque.type as string,
