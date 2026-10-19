@@ -5,7 +5,7 @@
 
 ---
 
-## sesión 19-10-2026 (3.ª parte): «Últimas publicaciones» pasa a ser una cinta que corre sola, en el sitio web y en la intranet
+## sesión 19-10-2026 (3.ª parte): «Últimas publicaciones» pasa a ser una cinta que corre sola, a todo el ancho, en el sitio web y en la intranet
 
 **Qué se pidió:** cambiar la interfaz del bloque «Últimas publicaciones» según una maqueta: un carrusel que se mueve solo, desde el punto 0, de derecha a izquierda; tarjetas iguales («simétricas»); color de fondo para el bloque; la fecha con texto enriquecido; una URL a la que lleve la flecha; y la miniatura tomada del PDF o de una imagen que se suba. Se preguntó y respondió: **las dos apps**, «simétrico» = **todas las tarjetas miden lo mismo**, el fondo es **el del bloque entero**.
 
@@ -53,9 +53,55 @@ La tarjeta sigue la maqueta: portada 16:10 con esquinas de 24 px, flecha verde l
 - Reutilizar `campoDestinoBoton` para la URL: trae su propia subida de archivo, y aquí el PDF ya tiene campo. Bastó un texto llamado `url`, que la API ya sanea al guardar (`CAMPOS_URL` en `sanitizar-contenido.ts`). Al pintarlo se filtra otra vez, para lo que se ve en el editor antes de guardar.
 - `ayuda` en el campo de miniatura: solo se pinta dentro de los acordeones; la indicación fue a la etiqueta.
 
+**Segunda ronda (mismo día), tras verlo:**
+
+| Pedido | Cómo quedó |
+|---|---|
+| «Quita el fondo, deja un borde de flecha intermitente» | Se leyó como **el fondo de la flecha** (el «Color de fondo» del bloque se pidió en la ronda anterior y se queda). La flecha ya no tiene relleno: borde de 2 px `#84CC16` que parpadea (`olo-flecha-intermitente`, 1,2 s). Al pausar la cinta, pasar el ratón o llegar con el foco, la animación se **quita** (no se congela: congelada a mitad dejaría el borde invisible). Con «reducir movimiento», sin parpadeo |
+| Icono de archivo donde decía #OLOtecuenta | Un icono de documento (`.publicaciones-tarjeta-icono`, `aria-hidden`) sobre el nombre. El campo `etiqueta` sale del editor y del componente; lo que esté guardado se ignora |
+| «Nombre de la publicación» en vez de «Boletín…» | Etiqueta del campo y texto de relleno en el lienzo. La vista previa de ejemplo usa «Nombre de la publicación», «Mes» y «Año». En el sitio, el `defaultProps` deja de sembrar 4 publicaciones reales y queda `publicaciones: []`, como en la intranet, para que un bloque nuevo muestre esa vista previa |
+| «Mar» → mes, el número → año | Campos «Mes (p. ej. ENE - MAR)» y «Año (p. ej. 2026)»; las claves siguen siendo `mes` y `dia` |
+| Tres tarjetas | `width: max(calc((100cqi - 3rem) / 3), min(16rem, 80cqi))`: tres anchos y dos huecos llenan la cinta; en tablet y móvil manda el mínimo |
+| «Que ocupe todo el horizontal» | La cinta sale del contenedor de 1200 px: `width: 100vw; margin-inline: calc(50% - 50vw)`. Lo que sobra (la barra de desplazamiento cuenta en `100vw`) lo recorta el `overflow-x: hidden` que ya tenían `.olo-publicaciones` y `.matriz-section-white` |
+
+| Verificación (2.ª ronda) | Resultado |
+|---|---|
+| `tsc --noEmit` y `eslint` de las dos apps | Sin errores nuevos |
+| Mismo arnés, 360 / 768 / 1024 / 1280 px, las dos apps | La cinta mide justo el ancho de la ventana desde x = 0; 2,94 tarjetas por vista a 1024 y 1280 (tres justas: la cuenta incluye el hueco tras la tercera), 2,74 a 768, 1,29 a 360; un solo ancho y alto de tarjeta; 0 px de scroll horizontal; flecha con fondo transparente, borde de 2 px y `olo-flecha-intermitente`; icono en las 10 tarjetas; pausa, edición y «reducir movimiento» como antes; sin errores en la consola |
+| Con barra de desplazamiento real (Chrome con ventana, Windows) | **No se probó**: el headless no la pinta |
+
+**Tercera ronda: «cada card 400 × 280 con borde».** Primero se respondió «la tarjeta entera» (un recuadro con borde que lo contiene todo) y se llegó a escribir. Al volver a enviar la maqueta se preguntó otra vez, y la respuesta fue **como la maqueta**: la portada mide 400 × 280 con borde de 1 px `#d9dee5` y esquinas de 24 px; la flecha cuelga de su borde, y el nombre y la fecha van debajo, fuera del borde. El ítem mide `min(25rem, 85cqi)` y la portada `aspect-ratio: 400 / 280`: en el móvil se estrecha sin deformarse. El ancho fijo sustituye a la regla de «tres por vista» de la 2.ª ronda; a 1280 px siguen cabiendo tres (3,02).
+
+| Verificación (3.ª ronda) | Resultado |
+|---|---|
+| Arnés, las dos apps | Portada de 400,0 × 280,0 con borde de 1 px a 768, 1024 y 1280 px; 306 × 214,2 a 360 (la misma proporción); 0 px de scroll horizontal; pausa, edición y «reducir movimiento» sin cambios; sin errores en la consola |
+
+**Cuarta ronda (mismo día), pedidos encadenados mientras se trabajaba:**
+
+| Pedido | Cómo quedó |
+|---|---|
+| Quitar el aviso «Vista previa de ejemplo · Añade publicaciones…» | Fuera, con su `import` de `MensajeEstado`. La vista de ejemplo sigue apareciendo con la lista vacía |
+| Cambiar la portada de respaldo («PDF» con el nombre) por la muestra de «Imagen destacada» | `PortadaFallback` pinta el icono de imagen de `muestraDeImagen` en marcado (aquel SVG es de 1200 × 500 y a la proporción de la tarjeta se recortaría). En el editor lleva borde punteado y dos líneas («Miniatura», «Sube una imagen o un PDF…»); en el sitio, solo el icono |
+| Quitar el botón de pausa; que el movimiento se configure en el editor; poder devolver la cinta con clic y arrastre aunque esté andando | Campo **«Se mueve solo» Sí/No** (`movimiento`). La animación CSS se sustituye por `useMovimientoDeCinta`: la posición vive en una ref y se escribe en el `transform` en cada `requestAnimationFrame`. El arrastre con ratón o dedo funciona hacia los dos lados (`touch-action: pan-y` deja al navegador el scroll vertical). Soltar después de arrastrar más de 5 px no abre la tarjeta (`onClickCapture`), y un clic sin arrastre sí. Al tabular a una tarjeta oculta, el navegador desplaza la cinta (`overflow: hidden` también se desplaza): `onScroll` pasa ese desplazamiento a la pista. Se para con el ratón encima y con el foco dentro; con «reducir movimiento» no avanza sola, pero se arrastra |
+| Quitar «Subtítulo» de las opciones | Fuera «Mostrar subtítulo» y «Subtítulo» de los dos editores, y el componente ya no los pinta |
+| Tarjetas y textos más pequeños; el nombre en simetría con los bordes de la tarjeta | Tarjeta de 320 px y portada de 320 × 224 (la proporción 400 × 280); nombre de 12 a 14 px, año de 18 a 24 px. Se leyó «simetría» como **la misma distancia a los dos bordes verticales**: el nombre y la fecha, a 8 px de cada lado |
+| «Al cargar un archivo se llenan todos como miniaturas; que solo salga uno» | La cinta repetía la lista hasta llenar el ancho: con una publicación, su tarjeta salía repetida a lo ancho. Ya no se repite. Si la lista no llena la cinta (`useCinta` → `llena`), no da vueltas ni se arrastra: queda quieta, centrada y sin copia |
+| «El logo verde es una entrada de texto para un detalle» | El icono de archivo se cambia por el campo **«Detalle»** (`detalle`, texto verde sobre el nombre). Clave nueva a propósito: con `etiqueta` habrían vuelto los «#OLOtecuenta» guardados. El renglón se reserva aunque esté vacío, para que todas las tarjetas midan lo mismo |
+| «Quita la flecha; que solo se vea al seleccionar la tarjeta» | La flecha está oculta (`opacity: 0`) y aparece con el ratón encima o con el foco del teclado, con el borde intermitente. En el móvil no se ve; la tarjeta entera sigue siendo el enlace. La regla de «reducir movimiento» repite el selector de `:hover`, porque con solo `.publicaciones-tarjeta-flecha` perdía por especificidad |
+
+| Verificación (4.ª ronda) | Resultado |
+|---|---|
+| `tsc --noEmit` y `eslint` de las dos apps | Sin errores nuevos (en el `puck.config.tsx` del sitio siguen los 6 `no-explicit-any` de antes) |
+| Arnés, las dos apps, a 1280 px | Avanza 45 px/s y se para con el ratón encima. Arrastrar 200 px a la derecha y 300 a la izquierda mueve la pista eso mismo (las cifras salen dadas la vuelta sobre los 1720 px de una copia). Soltar tras arrastrar no navega; un clic sin arrastre sí. Con «No», quieta y arrastrable. El foco en la última tarjeta la deja a la vista (480–800 px) con `scrollLeft` 0 |
+| Tamaños (360 / 768 / 1280 px) | Portada de 288 × 202 / 320 × 224 / 320 × 224; nombre y fecha a 8 px de cada borde; 0 px de scroll horizontal; sin botón de pausa ni subtítulo |
+| 1, 3 y 5 publicaciones a 1280 px | 1 y 3: una tarjeta por publicación, centradas (480 y 136 px a cada lado), sin avance. 5: con copia y avanzando |
+| Flecha | Oculta fuera (`opacity` 0); con el ratón encima de la 1.ª tarjeta, visible, sin fondo y con `olo-flecha-intermitente`; la 2.ª sigue oculta; con «reducir movimiento», sin parpadeo |
+| Detalle | Aparece en verde (`#39A900`) solo en las que lo tienen; todas las tarjetas, 309 px de alto |
+| Sin errores en la consola | Sí |
+
 **Pendiente al cierre:**
 - Que el usuario lo vea en el editor real de las dos apps (`/editor/inicio` en la intranet; en el sitio, la página donde esté el bloque; la portada publicada hoy no lo lleva).
-- `etiqueta` (#OLOtecuenta) se conserva y se pinta sobre el título si está llena; la maqueta no la muestra. Vaciarla en cada publicación o quitar el campo, si se quiere como en la maqueta.
+- La flecha sin relleno se pierde sobre portadas claras o verdes, porque solo tiene el borde y el icono en lima. Si molesta, un fondo blanco translúcido lo arregla sin volver al verde lleno.
 - `3000-sitio-web/public/assets/docs/DE-POL-003-…pdf` y `GOR-POL-001-…pdf` son HTML de 230 bytes, no PDF (salió al usarlos en la prueba). No es de este cambio.
 
 ---
