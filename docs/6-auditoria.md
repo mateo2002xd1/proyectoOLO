@@ -5,6 +5,26 @@
 
 ---
 
+## sesión 18-10-2026 (17.ª parte): el «Color de fondo» de «Espaciado y Ancho» se pinta aunque no se toque nada más
+
+**Qué se pidió:** poder cambiar el fondo del bloque «Espacio en blanco».
+
+**Causa:** el campo ya existía («Color de fondo» en «Espaciado y Ancho», y el borrador v53 de `inicio` lo tiene en #f6f6f6), pero `conCaja` solo envolvía el bloque si algún espaciado o el ancho dejaba de ser el neutro: un color solo no se pintaba nunca, en ningún bloque.
+
+| Capa | Cambio |
+|---|---|
+| `packages/blocks-renderer/src/primitives/controles-de-caja.tsx` | La caja también se pinta si tiene «Color de fondo» y el bloque lo admite (`conFondo`). En los bloques `sinFondo` un color guardado sigue sin efecto. Afecta a los dos sitios (sitio-web e intranet) |
+
+> **Antes de cambiarlo se revisó en Neon (solo lectura)** la versión publicada y la última de cada página: el único bloque con color y sin espaciado es ese «Espacio en blanco» del borrador de `inicio`. Ninguna página publicada cambia de aspecto.
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` de blocks-renderer | Sin errores |
+| `conCaja` con un «Espacio en blanco» y `renderToStaticMarkup` | Solo color (#f6f6f6): `<div class="olo-caja" style="background-color:#f6f6f6">`. Sin color: el bloque sin envoltorio, como antes. Color en un bloque `sinFondo`: sin envoltorio. Color y espacio interior: los dos estilos |
+| Editor real | Sin verificar |
+
+---
+
 ## sesión 18-10-2026 (16.ª parte): el color de fondo de «Imagen destacada» va de borde a borde aunque el bloque sea más estrecho
 
 **Qué se pidió:** en «Imagen destacada», el color de fondo no ocupaba todo el ancho de la pantalla.

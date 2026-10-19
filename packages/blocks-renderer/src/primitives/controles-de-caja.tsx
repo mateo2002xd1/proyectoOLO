@@ -328,14 +328,19 @@ export function conCaja<T extends ConfigDeBloque>(
         conFondo ? props?.caja : { ...props?.caja, fondo: '' }
       );
 
+      // Se envuelve si algún espaciado o el ancho no es el neutro, o si hay «Color de
+      // fondo» (y el bloque lo admite): antes, un color solo no se pintaba nunca.
+      const fondo = (props?.caja as any)?.fondo;
+      const conColor = conFondo && typeof fondo === 'string' && fondo.trim() !== '';
       const aplica =
-        props?.caja &&
-        Object.keys(props.caja).some(
-          (k) =>
-            !['fondo', 'alineacion'].includes(k) &&
-            (props.caja as any)[k] !== 'ninguno' &&
-            (props.caja as any)[k] !== 'completo'
-        );
+        conColor ||
+        (props?.caja &&
+          Object.keys(props.caja).some(
+            (k) =>
+              !['fondo', 'alineacion'].includes(k) &&
+              (props.caja as any)[k] !== 'ninguno' &&
+              (props.caja as any)[k] !== 'completo'
+          ));
 
       if (!aplica) return contenido;
 
