@@ -5,6 +5,32 @@
 
 ---
 
+## sesión 19-10-2026 (5.ª parte): botón «Subir» en el sitio web y en la intranet
+
+**Qué se pidió:** un botón para volver al principio que aparezca al bajar, abajo a la derecha, con el mismo diseño azul de fondo y letras blancas. Se preguntó y se respondió: **sitio web e intranet** (no el panel ni el editor) y **flecha con «Subir»**.
+
+**Cómo quedó:** `BotonSubir` (`shared/ui/atoms/boton-subir.tsx`, uno en cada app, como toda pieza de interfaz) aparece al pasar de 400 px bajados. Al pulsarlo, sube con desplazamiento suave (instantáneo con «reducir movimiento») y lleva el foco al `<main>`: si se quedara en el botón, que se oculta al llegar arriba, el teclado se perdería. Es una píldora azul oscuro (`#001631`, el de la insignia de fecha de «Últimas publicaciones») con flecha y texto blancos, de 44 px de alto. Lleva un anillo blanco de 2 px, añadido tras verlo: sobre las franjas del mismo azul (la del vídeo, el pie) se perdía. Oculto lleva `visibility: hidden`, así que no se tabula. Su nombre accesible es «Subir al inicio de la página», que empieza por el texto visible. Va en `z-index` 45: por encima de la barra del móvil (40) y por debajo de los modales. Se monta solo en `app/(public)/layout.tsx` del sitio y en `app/(secciones)/layout.tsx` de la intranet.
+
+**La esquina ya estaba ocupada a veces:** con sesión de edición, el botón flotante (`.fab-speed-dial`, 3,5rem) vive en el mismo sitio. Con `body:has(.fab-speed-dial)`, el «Subir» se pone a su izquierda, centrado con él. En la intranet, por debajo de `lg`, sube por encima de la navegación móvil (`--navegacion-mobile-alto + 1rem`), igual que el botón flotante. La pestaña de accesibilidad está a media altura del borde y no choca.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Componente | `3000-sitio-web/src/shared/ui/atoms/boton-subir.tsx`, `3001-intranet/src/shared/ui/atoms/boton-subir.tsx` (nuevos) | El botón; los dos iguales salvo el comentario que apunta al gemelo |
+| Layouts | `3000-sitio-web/src/app/(public)/layout.tsx`, `3001-intranet/src/app/(secciones)/layout.tsx` | `<BotonSubir />` |
+| Estilos | Los dos `globals.css` | `.olo-boton-subir`, antes de la sección del botón flotante; en la intranet, el corte de `lg` para la barra del móvil |
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` y `eslint` de los archivos tocados, las dos apps | Sin errores |
+| Sitio en vivo (`next dev`, `/inicio`), Chrome headless a 360, 768 y 1280 px | Oculto arriba; visible tras bajar 1200 px, a 32 px de los bordes (42 a la derecha con la barra de desplazamiento), 93 × 44, `rgb(0, 22, 49)` con texto blanco. Al pulsar: `scrollY` 0, foco en `MAIN`, botón oculto otra vez; sin scroll horizontal |
+| Intranet en el arnés (botón real, CSS compilado de la intranet, barra móvil de 80 px) | 360 y 768 px: a 96 px del borde inferior (encima de la barra), 16 / 26 px a la derecha; 1280 px: 32 / 42. Con el botón flotante: a su izquierda (84 px a 360, 110 px a 1280), sin solaparse. Clic: arriba y foco en `MAIN` |
+| Anillo blanco | Visto en una captura sobre la franja azul del vídeo del sitio; tras añadirlo no se volvió a medir en vivo |
+
+**Pendiente al cierre:**
+- Verlo en la intranet real con sesión (las secciones piden cookie).
+
+---
+
 ## sesión 19-10-2026 (4.ª parte): `deploy.sh importar-paginas` lleva solo las páginas y sus archivos, y `importar` ya no puede borrar las cuentas de un servidor en uso
 
 **Qué se pidió:** «cuando le doy `deploy.sh importar` me borra los usuarios; solo quiero migrar las tablas de las páginas publicadas y sus archivos con el filesystem», conservando los usuarios que ya están en la base del servidor y que no se borren nunca.
