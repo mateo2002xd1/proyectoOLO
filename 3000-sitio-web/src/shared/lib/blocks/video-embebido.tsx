@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { ReproductorDeVideo } from './reproductor-de-video';
+import { CapaDeImagenDeFondo, type ImagenDeFondo } from './imagen-de-fondo';
 
 /** Un ID de video de YouTube: 11 caracteres de letras, números, `-` y `_`. */
 const ID_DE_YOUTUBE = /^[\w-]{11}$/;
@@ -57,6 +58,8 @@ export interface VideoEmbebidoProps {
   /** Imagen que se ve antes de dar play (`ReproductorDeVideo`). Vacía: el video directo. */
   miniatura?: string;
   colorFondo?: string;
+  /** Imagen encima del color de fondo, con su transparencia y repetición. */
+  fondo?: ImagenDeFondo;
   esEdicion?: boolean;
 }
 
@@ -76,6 +79,7 @@ export function VideoEmbebido({
   tituloVideo,
   miniatura,
   colorFondo,
+  fondo,
   esEdicion = false,
 }: VideoEmbebidoProps) {
   const id = idDeVideoDeYoutube(video);
@@ -84,7 +88,8 @@ export function VideoEmbebido({
   const estilo = colorFondo ? ({ '--olo-video-fondo': colorFondo } as CSSProperties) : undefined;
 
   return (
-    <section className="olo-video-embebido" style={estilo} data-block-id={block.id}>
+    <section className="olo-video-embebido olo-con-imagen-de-fondo" style={estilo} data-block-id={block.id}>
+      <CapaDeImagenDeFondo fondo={fondo} />
       {(titulo || subtitulo) && (
         <div className="olo-video-embebido__encabezado">
           {titulo && <h2 className="olo-video-embebido__titulo">{titulo}</h2>}

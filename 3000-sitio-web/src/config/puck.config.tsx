@@ -25,6 +25,7 @@ import {
 import { ExternalPortals, type TarjetaDePortal } from '@/shared/lib/blocks/external-portals';
 import { ICONOS_DE_PORTALES } from '@/shared/lib/blocks/iconos-de-portales';
 import { VideoEmbebido, idDeVideoDeYoutube } from '@/shared/lib/blocks/video-embebido';
+import { REPETICIONES_DE_FONDO } from '@/shared/lib/blocks/imagen-de-fondo';
 import { CampoVideoDeYoutube } from '@/shared/lib/blocks/campo-video-de-youtube';
 import { CarruselDeImagenes } from '@/shared/lib/blocks/carrusel-de-imagenes';
 import { Services } from '@/shared/lib/blocks/services';
@@ -84,6 +85,39 @@ const campoImagen = (label: string) => ({
     <ImageUploaderField value={value} onChange={onChange} />
   ),
 });
+
+/**
+ * La imagen de fondo de una sección, su transparencia y si se repite: lo que lee
+ * `CapaDeImagenDeFondo`. «Video embebido» los agrupa en su tarjeta
+ * (`campoImagenDeFondo`); «Dato OLO de la semana» los pone en cada infografía.
+ */
+const CAMPOS_IMAGEN_DE_FONDO = {
+  imagen: {
+    ...campoImagen('Imagen'),
+    ayuda: 'Va encima del color de fondo y detrás del contenido. Es decorativa: no lleva texto alternativo.',
+  },
+  transparencia: {
+    type: 'number',
+    label: 'Transparencia',
+    min: 0,
+    max: 100,
+    sufijo: '%',
+    placeholder: '0',
+    ayuda: '0 %: la imagen se ve tal cual. 100 %: no se ve y queda solo el color de fondo. Vacío: 0 %.',
+  },
+  repeticion: {
+    type: 'radio',
+    label: 'Repetición',
+    options: Object.entries(REPETICIONES_DE_FONDO).map(([value, { label }]) => ({ label, value })),
+    ayuda: 'No repetir: la imagen cubre toda la sección y se recorta para llenarla. Repetir: la imagen a su tamaño real, repetida a lo ancho y a lo alto como un mosaico.',
+  },
+} satisfies Record<string, CampoDeAcordeon>;
+
+/** Tarjeta «Imagen de fondo» de una sección. Guarda `{ imagen, transparencia, repeticion }`. */
+const campoImagenDeFondo = () =>
+  campoGrupoEnUnAcordeon('Imagen de fondo', CAMPOS_IMAGEN_DE_FONDO, {
+    resumen: (fondo) => (fondo?.imagen ? 'Cargada' : 'Sin imagen'),
+  });
 
 /**
  * Barra de formato de un titular: negrita, cursiva, subrayado, enlaces y saltos de línea,
@@ -699,7 +733,7 @@ const puckConfigBase: Config = {
     /**
      * Mini carrusel de infografías del dato semanal (`DatoOloSemana`): pasa solo, sin
      * flechas, con el ubicador de puntos. Una sola tarjeta «Imágenes» con la lista (cada
-     * imagen con su color de fondo) y el redondeo; «Espaciado y Ancho» va aparte, sin su
+     * imagen con su color e imagen de fondo) y el redondeo; «Espaciado y Ancho» va aparte, sin su
      * color de fondo (`sinFondo` en `puckConfig`). Reemplazó a la infografía única con
      * título: una portada guardada así trae `imagenSrc` y se ve con esa imagen sola
      * hasta que se abra en el editor.
@@ -725,10 +759,18 @@ const puckConfigBase: Config = {
                   label: 'Color de fondo',
                   ayuda: 'El de la sección mientras se ve esta imagen; por defecto, blanco. Los puntos de abajo van en azul sobre fondos claros y en blanco sobre oscuros.',
                 },
+                // Como el color: el de la sección mientras se ve esta infografía.
+                imagenFondo: {
+                  ...CAMPOS_IMAGEN_DE_FONDO.imagen,
+                  label: 'Imagen de fondo',
+                  ayuda: 'La de la sección mientras se ve esta infografía, encima de su color de fondo. Es decorativa: no lleva texto alternativo.',
+                },
+                transparenciaFondo: { ...CAMPOS_IMAGEN_DE_FONDO.transparencia, label: 'Transparencia de la imagen de fondo' },
+                repeticionFondo: { ...CAMPOS_IMAGEN_DE_FONDO.repeticion, label: 'Repetición de la imagen de fondo' },
               },
               {
                 elemento: 'Imagen',
-                nuevo: { imagen: '', alt: '', colorFondo: '' },
+                nuevo: { imagen: '', alt: '', colorFondo: '', imagenFondo: '', transparenciaFondo: '', repeticionFondo: 'no-repeat' },
                 resumen: (d) => d?.alt || (d?.imagen ? 'Sin texto alternativo' : 'Vacía'),
                 ayuda: 'Pasan solas en este orden y, después de la última, vuelven a la primera. Con una sola, no se mueve.',
               }
@@ -1320,6 +1362,7 @@ const puckConfigBase: Config = {
           label: 'Color de fondo',
           ayuda: 'El de toda la sección. Vacío: azul #001145. El título va en blanco.',
         }),
+        fondo: campoImagenDeFondo(),
       },
       defaultProps: {
         titulo: '<p><em>Todo</em> <strong>lo que somos</strong> <em>en un solo video</em></p>',
@@ -1328,6 +1371,7 @@ const puckConfigBase: Config = {
         tituloVideo: 'Todo lo que somos en un solo video',
         miniatura: '',
         colorFondo: '',
+        fondo: { imagen: '', transparencia: '', repeticion: 'no-repeat' },
       },
       render: ({
         id,

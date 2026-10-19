@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState, type CSSProperties } from 'react';
 import { registerOverlayPortal } from '@puckeditor/core';
 import { muestraDeImagen } from '@olo/blocks-renderer';
 import { INTERVALO_MS, estiloDeFondo, usePrefiereMenosMovimiento } from './carrusel-de-imagenes';
+import { CapaDeImagenDeFondo, type RepeticionDeFondo } from './imagen-de-fondo';
 
 export interface ImagenDelDato {
   id?: string;
@@ -11,6 +12,10 @@ export interface ImagenDelDato {
   alt?: string;
   /** Fondo de la sección mientras se ve esta imagen. Vacío: blanco. */
   colorFondo?: string;
+  /** Imagen de la sección mientras se ve esta, encima de `colorFondo` (`CapaDeImagenDeFondo`). */
+  imagenFondo?: string;
+  transparenciaFondo?: number | '';
+  repeticionFondo?: RepeticionDeFondo | '';
 }
 
 interface DatoOloSemanaProps {
@@ -42,7 +47,8 @@ const MUESTRA = muestraDeImagen('Dato OLO de la semana', 'Sube o selecciona una 
 /**
  * Dato OLO de la semana: un mini carrusel de infografías, una por vez. Cada imagen ya
  * trae el dato dibujado, así que el bloque solo pone el fondo de cada una (la sección
- * cambia de color con un fundido), el redondeo y el paso de una a otra.
+ * cambia de color y de imagen de fondo con un fundido), el redondeo y el paso de una a
+ * otra.
  *
  * Pasa sola con un fundido, cada `galeria.segundos` (vacío: los 6 s, `INTERVALO_MS`, del
  * «Carrusel de imágenes»), y después de la última vuelve a la primera, sin fin. Sin
@@ -100,13 +106,29 @@ export function DatoOloSemana({
 
   return (
     <section
-      className="olo-dato-semana"
+      className="olo-dato-semana olo-con-imagen-de-fondo"
       id="dato-olo-semana"
       style={estilo}
       aria-roledescription="carrusel"
       aria-label="Dato OLO de la semana"
       data-block-id={block.id}
     >
+      {/* Una capa por infografía con imagen de fondo, apiladas detrás del contenido: se
+          ve la de la visible y cambian con el mismo fundido que el color. */}
+      {lista.map((dato, i) =>
+        dato.imagenFondo?.trim() ? (
+          <div
+            key={dato.id ?? i}
+            className="olo-dato-semana__fondo"
+            data-visible={i === indice || undefined}
+            aria-hidden="true"
+          >
+            <CapaDeImagenDeFondo
+              fondo={{ imagen: dato.imagenFondo, transparencia: dato.transparenciaFondo, repeticion: dato.repeticionFondo }}
+            />
+          </div>
+        ) : null
+      )}
       {total === 0 ? (
         // eslint-disable-next-line @next/next/no-img-element -- muestra del editor en data: URI
         <img src={MUESTRA} alt="" className="olo-dato-semana__muestra" />

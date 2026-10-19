@@ -1211,6 +1211,23 @@ a.olo-portal:focus-visible {
   }
 }
 
+/* --- Imagen de fondo de una sección (ver imagen-de-fondo.tsx) ---
+   La capa va detrás del contenido y encima del color de la sección: `isolation` le da
+   a la sección su propio apilamiento, así el `z-index: -1` no la manda detrás de la
+   página. La repetición, el tamaño y la transparencia llegan en línea. */
+.olo-con-imagen-de-fondo {
+  position: relative;
+  isolation: isolate;
+}
+
+.olo-capa-imagen-de-fondo {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-position: center;
+  pointer-events: none;
+}
+
 /* --- Video embebido (ver video-embebido.tsx) ---
    Titular en blanco sobre el color de la sección (`--olo-video-fondo`) y el video en un
    marco blanco de esquinas redondeadas. */
@@ -1722,6 +1739,21 @@ a.olo-carrusel__boton:focus-visible {
   border-radius: var(--olo-dato-radio, 0);
 }
 
+/* La imagen de fondo de cada infografía (`.olo-capa-imagen-de-fondo` va dentro): todas
+   apiladas detrás del contenido; la de la visible aparece con el fundido del color. */
+.olo-dato-semana__fondo {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+
+.olo-dato-semana__fondo[data-visible] {
+  opacity: 1;
+}
+
 /* La vista previa de «Imagen destacada» en el editor, sin caja alrededor. */
 .olo-dato-semana__muestra {
   display: block;
@@ -1732,6 +1764,7 @@ a.olo-carrusel__boton:focus-visible {
 
 @media (prefers-reduced-motion: reduce) {
   .olo-dato-semana,
+  .olo-dato-semana__fondo,
   .olo-dato-semana__diapositiva,
   .olo-dato-semana__diapositiva[data-visible] {
     transition: none;
