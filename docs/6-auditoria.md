@@ -5,6 +5,38 @@
 
 ---
 
+## sesión 19-10-2026 (7.ª parte): todas las páginas del sitio web en la base de datos, servidas por un solo comodín `[...puckPath]`
+
+**Qué pasaba:** `3000-sitio-web/src/app/(public)/` tenía una carpeta por página además del comodín `[slug]`: `inicio/`, `politica-de-privacidad/` y `clasificacion/cno|cuoc/` (Puck, pero con metadata propia o URL de dos segmentos, que `[slug]` no admite), y `clasificacion/`, `alertas-inversion/` y `programas-sobresalientes/` (vistas escritas en código, sin pasar por la base). La traducción slug ↔ URL de CNO y CUOC estaba en la tabla `RUTAS_PROPIAS`, duplicada en la API. Además, `alertas-inversion` **existía publicada en `paginas`**, pero no se veía nunca: la carpeta le ganaba al comodín. Y `cuoc` no tenía fila: `/clasificacion/cuoc` daba 404 a los visitantes.
+
+**Cómo quedó:** igual que la intranet. `app/(public)/` tiene solo `layout.tsx` y `[...puckPath]/page.tsx`, que une los segmentos con guion para sacar el slug (`/clasificacion/cno` → `clasificacion-cno`). La vuelta la decide la lista `CARPETAS` (`clasificacion`), la misma regla que la intranet aplica a `encuestas-`. Una URL que no es la canónica (`/clasificacion-cno`) redirige a la buena, y una que no puede ser slug (`/.well-known/...`, reservados como `menu-y-pie`) da 404 sin consultar la API.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Migración | `4000-api-backend/src/infrastructure/db/migrations/046-paginas-del-sitio-en-bd.ts` | Renombra `cno`/`cuoc` → `clasificacion-cno`/`clasificacion-cuoc` (página, permiso con el mismo `id` y candado). Publica `clasificacion` (`BuscadorOcupaciones`), `programas-sobresalientes` (`ProgramasSobresalientes`) y `alertas-inversion` (`AlertasInversion`; su versión anterior pasa a archivada). Las páginas nuevas estrenan su permiso para Superadmin, Administrador y Editor. Es idempotente y tiene `down` |
+| API | `4000-api-backend/src/shared/extraer-textos-puck.ts` | `RUTAS_PROPIAS_SITIO` y los casos de `encuestas-` pasan a `CARPETAS` por ámbito |
+| Comodín | `3000-sitio-web/src/app/(public)/[...puckPath]/page.tsx` | Nuevo. Junta lo que hacían `[slug]`, `PaginaPuckFija` e `inicio/`: `METADATA_POR_SLUG`, respaldo de la portada, entrada al editor si la página está vacía y lectura con caché por etiqueta |
+| Rutas | `3000-sitio-web/src/features/paginas/model/rutas.ts` | `RUTAS_PROPIAS` → `CARPETAS` |
+| Bloques | `3000-sitio-web/src/config/puck.config.tsx` | Nuevos `BuscadorOcupaciones` (texto de ayuda editable) y `AlertasInversion` (título y descripción editables) |
+| Vistas | `alertas-inversion-view.tsx`, `buscador-ocupaciones-view.tsx` | Reciben esos textos por props, con el texto de antes por defecto |
+| Borrado | `app/(public)/{[slug],inicio,politica-de-privacidad,clasificacion,alertas-inversion,programas-sobresalientes}/`, `pagina-puck-fija.tsx`, `features/sitio-web/inicio/` | Ya no hacen falta |
+| Docs | `1-guia-del-proyecto.md` §4.2.1, `8-ciclo-editorial.md`, `13-mapa-del-proyecto.md` | Describen el modelo nuevo |
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` y `eslint` (sitio web) | Sin errores |
+| `tsc --noEmit` (API) | Solo el error previo de `@olo/password-policy`, ajeno a esto |
+| Ensayo de la 046 contra la base, en una transacción revertida al final | `up` deja las cuatro páginas con su bloque y sus permisos; un segundo `up` no cambia nada; `down` vuelve al estado inicial |
+
+**Orden de despliegue:** primero la API con la migración aplicada (`npm run migrate`); después el sitio web. Con el sitio nuevo y la base vieja, `/clasificacion`, `/programas-sobresalientes` y `/clasificacion/cno` darían 404, y `/alertas-inversion` mostraría el texto provisional.
+
+**Pendiente al cierre:**
+- Aplicar la 046 en cada base (local, servidor).
+- `clasificacion-cuoc` sigue sin página: crearla desde «Nueva sección» con ese nombre o slug.
+- Si se quiere que título y descripción SEO también se editen desde Puck, añadir esos campos al `root` de la configuración y retirar `METADATA_POR_SLUG`.
+
+---
+
 ## sesión 19-10-2026 (6.ª parte): la «Lista de videos» del sitio web daba «Error 153» en el servidor
 
 **Qué pasaba:** en el servidor, el reproductor de la «Lista de videos» (`RecursosVisualesBloque`) mostraba el «Error 153» de YouTube, y el «Video embebido» de la misma página sí reproducía. El 153 es el aviso de YouTube cuando el iframe no le dice desde qué sitio se inserta el video (la cabecera `Referer`). El «Video embebido» lleva `referrerPolicy="strict-origin-when-cross-origin"` en el propio iframe; la lista no lo llevaba y dependía de la política de la página, que en el servidor (nginx + túnel) no le llegaba a YouTube. Además la lista usaba `youtube.com/embed` en vez de `youtube-nocookie.com`.

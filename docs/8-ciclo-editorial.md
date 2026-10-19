@@ -114,9 +114,10 @@ romper la invariante del §1.2 gracias a dos decisiones:
   que cualquier otro cambio. Crear una página en blanco y publicarla de una vez habría
   saltado la cola de aprobación para dejar una página vacía en el portal — lo peor de
   las dos opciones.
-- **Crear no genera código.** No hay archivo de ruta nuevo: los comodines (`[...puckPath]`
-  en la intranet, `[slug]` en el sitio) ya pintaban cualquier slug que estuviera en
-  `paginas`. Esta es toda la razón de que la funcionalidad quepa en un caso de uso.
+- **Crear no genera código.** No hay archivo de ruta nuevo: el comodín `[...puckPath]` de
+  cada app (en el sitio desde la migración 046; antes era `[slug]`) ya pinta cualquier
+  slug que esté en `paginas`. Esta es toda la razón de que la funcionalidad quepa en un
+  caso de uso.
 
 Lo que sí crea, en una sola transacción, son tres filas: la página, su clave de permiso
 `editar.{ambito}.{slug}` y la concesión de esa clave **al rol de quien crea** — no a la
@@ -284,7 +285,7 @@ features/paginas/
 │
 ├── model/                          # lo que comparten las etapas
 │   ├── pagina.types.ts             # Pagina, PaginaVersion, Bloque, PuckData, EstadoPagina
-│   ├── rutas.ts                    # RUTAS_PROPIAS, slug ↔ URL, ruta de vuelta del editor
+│   ├── rutas.ts                    # CARPETAS, slug ↔ URL, ruta de vuelta del editor
 │   ├── ambito.ts                   # cabecera X-Ambito: sitio
 │   ├── api-con-sesion.ts           # axios withCredentials — nunca desde publicacion/
 │   ├── eventos.ts                  # notificarRevisionActualizada

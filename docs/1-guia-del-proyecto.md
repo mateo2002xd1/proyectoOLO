@@ -175,49 +175,46 @@ Next.js no tiene un archivo de rutas: **la URL es el camino de carpetas dentro d
 
 | En `src/app/` | Qué significa | Ejemplo |
 |---|---|---|
-| Carpeta normal | Un segmento de la URL | `inicio/` → `/inicio` |
-| `page.tsx` | Lo que hace visitable esa URL; una carpeta sin él no es página | `inicio/page.tsx` |
+| Carpeta normal | Un segmento de la URL | `admin/` → `/admin` |
+| `page.tsx` | Lo que hace visitable esa URL; una carpeta sin él no es página | `admin/dashboard/page.tsx` |
 | Carpeta entre paréntesis | Agrupa (y comparte `layout.tsx`) pero **no** aparece en la URL | `(public)/` |
-| Carpeta entre corchetes | Comodín: atiende cualquier segmento y lo recibe como variable | `[slug]/` |
-| Prioridad | Una carpeta con nombre fijo le gana al comodín | `inicio/` antes que `[slug]/` |
+| Carpeta entre corchetes con `...` | Comodín: atiende cualquier número de segmentos y los recibe como lista | `[...puckPath]/` |
+| Prioridad | Una carpeta con nombre fijo le gana al comodín | `admin/` antes que `[...puckPath]/` |
 
-`/clasificacion/cno` se arma así: `app/` + `(public)/` (no cuenta) + `clasificacion/` +
-`cno/` + `page.tsx`.
+**Todas las páginas públicas viven en la base de datos.** `app/(public)/` tiene solo su
+`layout.tsx` y el comodín `[...puckPath]/page.tsx`, igual que la intranet
+(`app/(secciones)/[...puckPath]`). Desde la migración 046 (2026-10-19) no hay carpetas por
+página: las vistas que antes eran código (el buscador de `/clasificacion`, las alertas de
+inversión, los programas sobresalientes) son bloques de Puck (`BuscadorOcupaciones`,
+`AlertasInversion`, `ProgramasSobresalientes`) dentro de su fila de `paginas`. Crear, mover
+o borrar una página no toca `app/`.
 
-**Hay tres clases de página pública, y cada una se organiza distinto:**
+**El slug no lleva barra; la URL sí.** El slug es la llave de la página en la base: de él
+cuelgan el contenido, el permiso `editar.sitio.{slug}`, el contador de visitas y la
+etiqueta de caché. El comodín lo saca **uniendo los segmentos con guion**:
+`/tendencias` → `tendencias`, `/clasificacion/cno` → `clasificacion-cno`.
 
-| Clase | Ejemplos | Dónde vive | Cómo se crea |
-|---|---|---|---|
-| Puck sin carpeta | `/tendencias`, `/metrica`, `/publicaciones` | Solo en la tabla `paginas`; la sirve `[slug]` | Desde el panel, «Nueva sección». **Un solo nivel**: `[slug]` no atiende `/a/b` |
-| Puck con carpeta propia | `/inicio/politica-de-privacidad`, `/clasificacion/cno`, `/clasificacion/cuoc` | Fila en `paginas` + carpeta con un `page.tsx` que usa `PaginaPuckFija` | En código, cuando hace falta una URL anidada o metadata propia |
-| Solo código | `/clasificacion`, `/programas-sobresalientes` | Carpeta con su `page.tsx` y su feature | En código; no se edita con Puck |
+La vuelta (slug → URL) no se puede deducir del guion solo: `clasificacion-cno` podría ser
+`/clasificacion-cno`. La decide la lista **`CARPETAS`** de `features/paginas/model/rutas.ts`:
+un slug `{carpeta}-{resto}` vive en `/{carpeta}/{resto}`. Hoy solo es `clasificacion`; en
+la intranet es `encuestas`. La API tiene la misma lista (`CARPETAS` en
+`4000-api-backend/src/shared/extraer-textos-puck.ts`) para los enlaces del buscador.
 
-**El slug no es la URL.** El slug es la llave de la página en la base: de él cuelgan el
-contenido, el permiso `editar.sitio.{slug}`, el contador de visitas y la etiqueta de caché.
-Para `[slug]` los dos coinciden (`/tendencias` ↔ `tendencias`), pero una página con
-carpeta propia puede vivir en otra URL sin cambiar su slug: `/clasificacion/cno` sigue
-siendo el slug `cno`. Por eso anidar una página **no toca la base de datos**.
+**Anidar una página:**
 
-**Anidar una página de Puck son cuatro pasos,** y saltarse cualquiera deja algo roto sin
-error visible:
+- **En una carpeta que ya existe** (`/clasificacion/<algo>`): basta con crear la sección con
+  slug `clasificacion-<algo>`. No toca código.
+- **En una carpeta nueva** (`/<padre>/<hija>`): añadir `<padre>` a `CARPETAS` en el sitio
+  **y** en la API, y crear la sección con slug `<padre>-<hija>`. Si solo se actualiza el
+  sitio, el buscador enlaza `/<padre>-<hija>`. El comodín redirige cualquier URL a la buena
+  (`rutaPublicaDeSlug`), así que el síntoma no se ve.
 
-1. **La carpeta:** `app/(public)/<padre>/<hija>/page.tsx` con su `metadata` y
-   `<PaginaPuckFija slug="<slug>" puedeEditar={await puedeEditarPaginas()} />`.
-2. **`RUTAS_PROPIAS`** en `features/paginas/model/rutas.ts`: `'<slug>': '/<padre>/<hija>'`.
-   El botón de editar, el de eliminar, el contador de visitas y el editor de «Menú y pie»
-   sacan el slug de la URL. Fuera de esta tabla usan la regla general (segmentos unidos
-   con guion: `/clasificacion/cno` → `clasificacion-cno`), que apunta a una página que no
-   existe.
-3. **`RUTAS_PROPIAS_SITIO`** en `4000-api-backend/src/shared/extraer-textos-puck.ts`, la copia
-   de la API. Con ella, el buscador enlaza la URL nueva y el análisis de borrado detecta
-   los enlaces a ella.
-4. **El redirect** `/<slug>` → `/<padre>/<hija>` en `next.config.mjs`. Sin él la URL vieja
-   **no da 404**: `[slug]` la encuentra en la base y sirve la misma página por segunda
-   vez, sin su metadata. También cubre los enlaces guardados en contenido ya publicado
-   (el menú, sobre todo), que el código no puede corregir.
+**Metadata.** El comodín lleva `METADATA_POR_SLUG` con el título y la descripción SEO de
+las páginas que la tenían en su carpeta propia (inicio, política de privacidad, CNO, CUOC).
+Las demás usan el título guardado en `paginas`.
 
-> Los pasos 2 y 3 son la misma tabla escrita en dos repositorios. Si solo se actualiza
-> una, el buscador enlaza la URL vieja; el redirect lo tapa y el síntoma no se ve.
+**URLs viejas.** `/cno` y `/cuoc` redirigen a `/clasificacion/cno` y `/clasificacion/cuoc`
+desde `next.config.mjs`: el menú publicado en la base todavía puede enlazarlas.
 
 **Ruta o parámetro.** `/clasificacion/cno` (ruta) y `/clasificacion?tipo=cno`
 (parámetro) no son intercambiables. La ruta es **otra página**: contenido propio
@@ -349,11 +346,10 @@ sección dejó de ser un cambio de código**. Es el mismo movimiento que la §2 
   `encuestas/calidad-de-formacion`, con barra, y el editor se quedaba sin la sección de
   referencia.
 
-**Las rutas de la intranet no necesitan carpetas por sección**, a diferencia del sitio.
-El comodín `[...puckPath]` cubre cualquier profundidad (`/encuestas/seguimiento-laboral`
-llega entero) y une los segmentos con `-` para sacar el slug. En el sitio, `[slug]` solo
-cubre un segmento, y por eso `clasificacion/cno/` necesita su propia carpeta (§4.2.1).
-Aquí, `/menu-y-pie` ya da 404 desde el propio comodín.
+**Las rutas de la intranet no necesitan carpetas por sección**, y desde la migración 046
+las del sitio tampoco (§4.2.1). El comodín `[...puckPath]` cubre cualquier profundidad
+(`/encuestas/seguimiento-laboral` llega entero) y une los segmentos con `-` para sacar el
+slug. Aquí, `/menu-y-pie` ya da 404 desde el propio comodín.
 
 **Lo que sigue desalineado: la intranet no tiene cola de revisión.** Sus cambios se
 aprueban desde `3000-sitio-web/src/app/admin/revision/`, que distingue ámbito y abre
