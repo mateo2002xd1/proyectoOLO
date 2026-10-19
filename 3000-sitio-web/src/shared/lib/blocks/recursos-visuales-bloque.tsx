@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from 'react';
 import { TituloRico } from './titulo-rico';
 import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
+import { ATRIBUTOS_DEL_IFRAME_DE_YOUTUBE, urlDeInsercion } from './reproductor-de-video';
 
 /**
  * Reproductor con lista de videos al lado.
@@ -133,9 +134,8 @@ export function RecursosVisualesBloque({
                   <iframe
                     key={idActivo}
                     className="rv-iframe"
-                    src={`https://www.youtube.com/embed/${idActivo}?autoplay=0`}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
+                    src={urlDeInsercion(idActivo)}
+                    {...ATRIBUTOS_DEL_IFRAME_DE_YOUTUBE}
                     title={typeof activo.titulo === 'string' ? activo.titulo : 'Recurso visual'}
                   />
                 ) : (

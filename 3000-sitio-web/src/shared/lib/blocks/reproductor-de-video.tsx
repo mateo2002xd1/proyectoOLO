@@ -3,8 +3,26 @@
 import { useState } from 'react';
 
 /** youtube-nocookie: no deja cookies de seguimiento hasta que se da play. */
-const urlDeInsercion = (id: string, reproducir: boolean) =>
+export const urlDeInsercion = (id: string, reproducir = false) =>
   `https://www.youtube-nocookie.com/embed/${id}?rel=0${reproducir ? '&autoplay=1' : ''}`;
+
+/**
+ * Los atributos que todo iframe de YouTube del sitio necesita, también la «Lista de
+ * videos» (`RecursosVisualesBloque`).
+ *
+ * `referrerPolicy` es el que importa: YouTube exige saber desde qué sitio se inserta el
+ * video y, si no le llega, muestra el «Error 153». Puesto en el propio iframe no depende
+ * de lo que hagan con esa cabecera el nginx o el túnel del servidor.
+ */
+export const ATRIBUTOS_DEL_IFRAME_DE_YOUTUBE = {
+  loading: 'lazy',
+  referrerPolicy: 'strict-origin-when-cross-origin',
+  // Lo justo para que el reproductor funcione; sin `allow-top-navigation`,
+  // así el video no puede llevarse la página a otro sitio.
+  sandbox: 'allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox',
+  allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share',
+  allowFullScreen: true,
+} as const;
 
 interface ReproductorDeVideoProps {
   /** ID de YouTube ya validado (`idDeVideoDeYoutube`). */
@@ -59,13 +77,7 @@ export function ReproductorDeVideo({ id, titulo, miniatura, esEdicion = false }:
       className="olo-video-embebido__video"
       src={urlDeInsercion(id, reproduciendo)}
       title={titulo}
-      loading="lazy"
-      referrerPolicy="strict-origin-when-cross-origin"
-      // Lo justo para que el reproductor funcione; sin `allow-top-navigation`,
-      // así el video no puede llevarse la página a otro sitio.
-      sandbox="allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-      allowFullScreen
+      {...ATRIBUTOS_DEL_IFRAME_DE_YOUTUBE}
     />
   );
 }
