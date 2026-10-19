@@ -2093,6 +2093,22 @@ a.olo-carrusel__boton:focus-visible {
   font-family: var(--font-body), system-ui, -apple-system, sans-serif;
 }
 
+/* Esquinas en el fondo (`radioEsquinasFondo`): la zona alta queda como fondo del pie y
+   la baja es esta capa redondeada, detrás de la tarjeta (`isolation` la deja dentro). */
+.olo-footer-wrapper--redondeado {
+  position: relative;
+  isolation: isolate;
+}
+
+.olo-footer-wrapper--redondeado::before {
+  content: '';
+  position: absolute;
+  inset: 120px 0 0;
+  z-index: -1;
+  background: var(--olo-pie-fondo, #001631);
+  border-radius: var(--olo-pie-radio, 0);
+}
+
 .olo-footer-card {
   background-color: #ffffff;
   border-radius: 6px;

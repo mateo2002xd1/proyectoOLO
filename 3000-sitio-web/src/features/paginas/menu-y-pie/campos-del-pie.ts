@@ -39,6 +39,29 @@ function gruposDelPie(campoImagen: FabricaImagen): Record<string, { titulo: stri
         colorTarjeta: { type: 'color', label: 'Color de la tarjeta (interior)' },
       },
     },
+    grupoEsquinas: {
+      titulo: 'Esquinas redondeadas',
+      campos: {
+        radioEsquinasTarjeta: {
+          type: 'number',
+          label: 'Tarjeta blanca',
+          min: 0,
+          max: 100,
+          sufijo: 'px',
+          placeholder: '6',
+          ayuda: 'La caja de los logos y la información. Vacío: 6 px, como siempre.',
+        },
+        radioEsquinasFondo: {
+          type: 'number',
+          label: 'Fondo de la zona baja',
+          min: 0,
+          max: 100,
+          sufijo: 'px',
+          placeholder: '0',
+          ayuda: 'El fondo de color (azul por defecto) detrás de la tarjeta. Vacío o 0: rectas.',
+        },
+      },
+    },
     grupoLogos: {
       titulo: 'Logos',
       campos: {
@@ -201,6 +224,7 @@ export function crearCamposDelPie(campoImagen: FabricaImagen) {
 
   return {
     grupoColores: tarjeta('grupoColores'),
+    grupoEsquinas: tarjeta('grupoEsquinas'),
     grupoLogos: tarjeta('grupoLogos'),
     grupoEntidad: tarjeta('grupoEntidad'),
     grupoWhatsapp: tarjeta('grupoWhatsapp'),

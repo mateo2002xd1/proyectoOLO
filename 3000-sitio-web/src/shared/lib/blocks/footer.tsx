@@ -46,6 +46,10 @@ export interface FooterInstitucionalProps {
   colorFondo?: string;
   colorFondoSuperior?: string;
   colorTarjeta?: string;
+  /** Esquinas de la tarjeta blanca en px (0–100); vacío = las 6 px del CSS. */
+  radioEsquinasTarjeta?: number | '';
+  /** Esquinas de la zona baja (el fondo azul) en px (0–100); vacío o 0 = rectas. */
+  radioEsquinasFondo?: number | '';
 }
 
 export interface FooterProps extends FooterLogosProps, FooterInstitucionalProps {
@@ -83,6 +87,8 @@ export const VALORES_PIE_POR_DEFECTO: Required<Omit<FooterProps, 'block'>> = {
   colorFondo: '',
   colorFondoSuperior: '',
   colorTarjeta: '',
+  radioEsquinasTarjeta: '',
+  radioEsquinasFondo: '',
   logoSenaUrl: '/assets/logos/logo-sena.svg',
   logoSenaAlt: 'Logotipo oficial del SENA con la palabra SENA y simbolo institucional en color verde, presentado en la cabecera del pie de pagina de un sitio gubernamental educativo',
   logoOloUrl: '/assets/logos/olo-logo-horizontal.svg',
@@ -225,12 +231,20 @@ function renderIconoRedSocial(red: RedSocialItem['red'], iconoPersonalizado?: st
   }
 }
 
+/** Esquinas en px acotadas a 0–100; vacío (o no numérico) = `undefined`, para dejar el CSS. */
+function radioEnPx(valor: number | '' | undefined): number | undefined {
+  if (valor === '' || valor === undefined || !Number.isFinite(Number(valor))) return undefined;
+  return Math.min(100, Math.max(0, Number(valor)));
+}
+
 export function Footer({
   block,
   footerPersonalizado,
   colorFondo = VALORES_PIE_POR_DEFECTO.colorFondo,
   colorFondoSuperior = VALORES_PIE_POR_DEFECTO.colorFondoSuperior,
   colorTarjeta = VALORES_PIE_POR_DEFECTO.colorTarjeta,
+  radioEsquinasTarjeta = VALORES_PIE_POR_DEFECTO.radioEsquinasTarjeta,
+  radioEsquinasFondo = VALORES_PIE_POR_DEFECTO.radioEsquinasFondo,
   logoSenaUrl = VALORES_PIE_POR_DEFECTO.logoSenaUrl,
   logoSenaAlt = VALORES_PIE_POR_DEFECTO.logoSenaAlt,
   logoOloUrl = VALORES_PIE_POR_DEFECTO.logoOloUrl,
@@ -289,22 +303,36 @@ export function Footer({
   const fondoInferiorAplicar = colorFondo || (footerPersonalizado ? '#ffffff' : undefined);
   const fondoSuperiorAplicar = colorFondoSuperior || (footerPersonalizado ? '#ffffff' : 'transparent');
   
-  const estiloWrapper = fondoInferiorAplicar 
+  // Con esquinas en el fondo, la zona baja deja de ser la mitad de un degradado y pasa a
+  // un `::before` redondeado (ver `.olo-footer-wrapper--redondeado`).
+  const radioFondo = radioEnPx(radioEsquinasFondo) ?? 0;
+  const estiloWrapper: CSSProperties | undefined = radioFondo > 0
+    ? ({
+        background: fondoSuperiorAplicar,
+        '--olo-pie-fondo': fondoInferiorAplicar || '#001631',
+        '--olo-pie-radio': `${radioFondo}px`,
+      } as CSSProperties)
+    : fondoInferiorAplicar 
     ? { background: `linear-gradient(to bottom, ${fondoSuperiorAplicar} 120px, ${fondoInferiorAplicar} 120px)` } 
     : undefined;
 
   const colorTarjetaAplicar = colorTarjeta || (footerPersonalizado ? '#ffffff' : undefined);
+  const radioTarjeta = radioEnPx(radioEsquinasTarjeta);
+  const estiloTarjeta = {
+    ...(colorTarjetaAplicar ? { backgroundColor: colorTarjetaAplicar } : {}),
+    ...(radioTarjeta !== undefined ? { borderRadius: `${radioTarjeta}px` } : {}),
+  };
 
   return (
     <>
       <footer 
-        className="olo-footer-wrapper" 
+        className={radioFondo > 0 ? 'olo-footer-wrapper olo-footer-wrapper--redondeado' : 'olo-footer-wrapper'}
         id="main-footer" 
         role="contentinfo" 
         data-block-id={block?.id || 'main-footer'}
         style={estiloWrapper}
       >
-        <div className="olo-footer-card" style={colorTarjetaAplicar ? { backgroundColor: colorTarjetaAplicar } : undefined}>
+        <div className="olo-footer-card" style={estiloTarjeta}>
           <div className="olo-logos-top">
             <div className="olo-logos-left">
               {logoSenaUrl ? (

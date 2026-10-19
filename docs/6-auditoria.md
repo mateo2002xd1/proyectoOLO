@@ -5,6 +5,28 @@
 
 ---
 
+## sesión 18-10-2026 (15.ª parte): esquinas redondeadas en la tarjeta blanca y en el fondo azul del pie de página
+
+**Qué se pidió:** poder redondear las esquinas de la caja blanca del pie de página (logos, información de contacto, etc.) y también las del fondo azul de detrás. Primero se entendió «borde» y se agregó grosor y color; el usuario aclaró que era *border-radius*, y ese borde se quitó.
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/shared/lib/blocks/footer.tsx` | Props `radioEsquinasTarjeta` y `radioEsquinasFondo` (px, acotadas a 0–100 por `radioEnPx`), vacías en `VALORES_PIE_POR_DEFECTO`. La tarjeta lleva `border-radius` en línea solo si hay valor (vacío: las 6 px del CSS; 0: rectas). Con esquinas en el fondo, el pie toma la clase `olo-footer-wrapper--redondeado`: el color de la zona alta queda como fondo y la zona baja pasa del degradado a una capa redondeada (`--olo-pie-fondo`, `--olo-pie-radio`; sin color elegido, el #001631 de siempre). Sin valores, el pie sale idéntico a antes |
+| `features/paginas/menu-y-pie/campos-del-pie.ts` | Tarjeta «Esquinas redondeadas» en el panel, debajo de «Colores»: «Tarjeta blanca» y «Fondo de la zona baja» (número en px, 0–100). Va en `grupoEsquinas` y `resolverGruposDelPie` la copia a las props sueltas; un pie guardado antes no tiene el grupo y queda como estaba |
+| `config/puck.config.tsx` (`Footer`) | `radioEsquinasTarjeta: ''` y `radioEsquinasFondo: ''` en `defaultProps` |
+| `style/globals.css` | `.olo-footer-wrapper--redondeado` (`position: relative; isolation: isolate`) y su `::before` desde los 120 px de la zona alta hasta abajo, con el color y el radio de las variables, detrás de la tarjeta |
+
+> **El fondo azul va a todo el ancho**, así que sus esquinas redondeadas tocan los bordes de la pantalla. La sombra de la tarjeta no se tocó.
+
+| Verificación | Resultado |
+|---|---|
+| `npx tsc --noEmit` en sitio-web | Sin errores |
+| `eslint` de `footer.tsx` y `campos-del-pie.ts` | Solo el `no-explicit-any` de `resolverGruposDelPie`, que ya estaba |
+| `Footer` con `renderToStaticMarkup` y captura en Chrome con el CSS real del pie (1280 px) | Sin valores: idéntico a antes (sin `style` ni clase nueva). Tarjeta 24 y fondo 40: tarjeta y zona azul redondeadas, la zona alta transparente. Pie personalizado en #001145, tarjeta 0 y fondo 60: tarjeta recta y fondo azul con esquinas de 60 px, zona alta blanca |
+| Panel real del editor y «Menú y pie» publicado | Sin verificar |
+
+---
+
 ## sesión 18-10-2026 (14.ª parte): el carrusel sin campo de título, solo párrafo
 
 **Qué se pidió:** quitar el título del acordeón «Título y párrafo» del «Carrusel de imágenes» y dejar solo el párrafo.

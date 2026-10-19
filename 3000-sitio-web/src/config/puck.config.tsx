@@ -473,6 +473,8 @@ const puckConfigBase: Config = {
         colorFondo: '',
         colorFondoSuperior: '',
         colorTarjeta: '',
+        radioEsquinasTarjeta: '',
+        radioEsquinasFondo: '',
         logoSenaUrl: '',
         logoSenaAlt: '',
         logoOloUrl: '',
