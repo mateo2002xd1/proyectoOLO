@@ -28,6 +28,42 @@
 
 ---
 
+## sesión 18-10-2026 (11.ª parte): carrusel limpio, color por imagen y fuera el «Hashtag decorativo»
+
+**Qué se pidió:** el carrusel recién hecho, limpio: la misma muestra de «Imagen destacada» en el editor, fondo blanco (#FFFFFF) por defecto, título «Título principal» y párrafo «Agrega una descripción», sin el botón de pausa, solo las flechas del SVG que dio el usuario (fondo transparente) y sin bordes. Después: título y párrafo juntos en un acordeón con la barra de formato (H para subir o bajar el tamaño, viñetas, negrita, cursiva, subrayado y alineación); un color de fondo **por imagen** en vez de uno solo; y eliminar del todo el «Hashtag decorativo» de todos los bloques.
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/shared/lib/blocks/carrusel-de-imagenes.tsx` | Sin pausa ni puntos: solo las dos flechas, con los trazos del SVG del usuario en `currentColor` (#C9C9C9 al 75 %, al 100 % al pasar el cursor), sin fondo, en un botón de 44 px. Sigue pasando sola cada 6 s y se detiene con el cursor o el foco dentro y con «menos movimiento». Prop `textos` (`{ titulo, parrafo }`) en vez de `titulo`/`parrafo`, y el título en un `<div>`: el encabezado lo pone el texto enriquecido. Cada diapositiva trae `colorFondo`; la sección toma el de la visible y el texto va azul (#001145) o blanco según `esColorOscuro`. Sin imágenes, en el editor, la muestra de «Imagen destacada» con su texto |
+| `config/puck.config.tsx` (`CarruselDeImagenes`) | «Título y párrafo» en un acordeón (`campoObjetoEnAcordeon`) con dos `richtext` y `OPCIONES_TEXTO_DEL_CARRUSEL`: H1–H4, viñetas, negrita, cursiva, subrayado y alineación; sin citas, código, tachado, listas numeradas ni enlaces. «Color de fondo» dentro de cada imagen (por defecto #FFFFFF); fuera el color único del bloque. Por defecto: `<h2>Título principal</h2>`, «Agrega una descripción» y ninguna imagen |
+| `packages/blocks-renderer/src/primitives/campos-en-acordeon.tsx` | `campoObjetoEnAcordeon(label, objectFields)`: un campo `object` nativo de Puck marcado con `metadata.oloAcordeon`. Hace falta para `richtext`: un `custom` no puede pintar su editor ni Puck convierte su valor a nodos al pintar el bloque; un `object` sí. `ObjetoEnAcordeon`: reemplazo de `overrides.fieldTypes.object` que pliega los marcados en `AcordeonDeCampo` (al `ObjectField` de Puck le cambia solo la etiqueta, para no repetir el título) y deja los demás como siempre |
+| `features/paginas/edicion/components/puck-editor-wrapper.tsx` | `overrides.fieldTypes.object = ObjetoEnAcordeon` |
+| `packages/blocks-renderer/src/blocks/imagen-destacada.tsx` | La muestra del editor pasa a `muestraDeImagen(titulo, ayuda)` (exportada), que también usa el carrusel. «Imagen destacada» se ve igual |
+| `shared/lib/blocks/tinta-de-franja.ts` | `esColorOscuro(color)` exportada (la regla de luminancia de las franjas GOV.CO, sin cambios) |
+| `style/globals.css` | Carrusel: fondo #ffffff y texto #001145 por defecto, transición del fondo, sin bordes, H1–H4 y viñetas en el encabezado (a todo el ancho hasta 800 px, para que se note la alineación), muestra sin caja, flechas transparentes; fuera pausa y puntos |
+| `packages/blocks-renderer/src/primitives/controles-de-caja.tsx` | **Fuera el «Hashtag decorativo»**: `campoHashtag`, `hashtagPorDefecto`, `ValoresHashtag`, su dibujo con el ícono «#» y las opciones `conHashtag`/`sinHashtag`. La caja solo envuelve el bloque si hay espaciado o ancho. Un bloque guardado con `hashtag` lo conserva en el JSON sin efecto. Afecta a todos los bloques de las dos apps |
+| Ubicador del carrusel (pedido después) | Debajo de la imagen, un punto por imagen en el color del texto (azul o blanco según el fondo de la visible); el de la imagen visible se alarga de 8 a 24 px con una transición, y cada punto lleva a su imagen (`aria-current` en el activo; botón de 24 px para el dedo). Sin botón de pausa |
+| Botón por imagen (pedido después) | «Texto del botón (opcional)» bajo «Hipervínculo» en cada imagen (`textoBoton`). Con texto y enlace, un botón redondeado cian con letra azul (los colores de la maqueta) bajo la imagen lleva al enlace, y la imagen deja de ser enlace; sin texto, la imagen sigue siendo el enlace; sin enlace, el botón no se pinta. En el editor se ve pero no navega. La diapositiva pasa a columna y alineada arriba, para que la imagen no suba ni baje entre las que tienen botón y las que no |
+| Cambiar de imagen en el lienzo del editor (pedido después) | Flechas y ubicador registrados con `registerOverlayPortal` de Puck (solo en el editor, `disableDrag`): la capa que Puck pone sobre el bloque ya no se queda con sus clics, así que se pasa de una imagen a otra para personalizarla. Al agregar una imagen en el panel, el carrusel salta a ella (ajuste de estado al cambiar el total). (Hubo una etiqueta «Imagen N de M» en el editor; se quitó a pedido del usuario.) |
+| Texto y banner en franjas separadas (pedido después) | La sección pasa a dos franjas a todo el ancho, cada una con su fondo: `.olo-carrusel__franja-texto` (título y párrafo) con «Color de fondo» dentro del acordeón «Título y párrafo» (`textos.colorFondo`, `campoColor`, por defecto #FFFFFF), y `.olo-carrusel__franja-banner` con el color de la imagen visible y su fundido. Cada franja calcula su tinta (`estiloDeFondo`: blanco sobre oscuros, #001145 sobre claros). Arreglado de paso: la regla que estira el enlace de la imagen alcanzaba también al botón, que en el sitio publicado salía a todo el ancho; ahora es `> a:not(.olo-carrusel__boton)` |
+| `config/puck.config.tsx` | Fuera `sinHashtag: ['ImagenDestacada']` |
+
+> El «hashtag» de las tarjetas de Publicaciones (`.publicaciones-card-hashtag`) es otra cosa —el texto de cada publicación— y no se tocó.
+
+| Verificación | Resultado |
+|---|---|
+| `npx tsc --noEmit` en sitio-web, intranet y blocks-renderer; `eslint` del carrusel y del editor | Sin errores (salvo `shared/lib/accesibilidad/`, que no es de este trabajo) |
+| `ObjetoEnAcordeon` con un `ObjectField` falso que pinta su etiqueta como el de Puck | Marcado: acordeón abierto, sin la etiqueta repetida, con los subcampos y el título en la cabecera. Sin marca: idéntico al original |
+| Carrusel montado con React 19.2.4 (esm.sh) y el CSS real, desde el origen del dev, por CDP, con el intervalo a 1,5 s | Editor sin imágenes: la muestra (1200 × 500) sobre blanco, bordes 0. Sin pausa ni puntos. Con tres imágenes (#FFFFFF, #001145, #85e501): pasa sola y el fondo cambia con cada una; sobre #001145 el texto pasa a blanco, sobre los claros queda azul; las flechas llevan a la siguiente y la anterior; con el cursor encima no avanza. H2 de 40 px, viñetas `disc`, párrafo alineado a la izquierda desde el borde del bloque de 800 px |
+| Ubicador, por CDP con el cursor encima | En la 1.ª: `A24 -8 -8`; clic en el 3.er punto: va a la 3.ª y queda `-8 -8 A24`; la flecha siguiente vuelve a la 1.ª y el ubicador la sigue. Sin ubicador con una sola imagen o en la muestra vacía |
+| 1440, 1024, 768 y 375 px | Sin scroll horizontal |
+| Botón, por CDP | Imagen con solo enlace: la imagen enlazada, sin botón. Con enlace y texto: `<a href="/alertas">` «Consulta más proyectos aquí» y la imagen sin enlace. Con texto sin enlace: nada. Las tres diapositivas del mismo alto |
+| Modo editor, por CDP (con un `registerOverlayPortal` mínimo que pone la misma marca que el de Puck) | Editor: 3 elementos registrados (dos flechas y el ubicador), no pasa sola; la flecha lleva a la 2.ª; al agregar la 3.ª salta a ella, con el botón como `<span>`; el punto 1 vuelve a la 1.ª. Publicado: ningún elemento registrado. La capa real de Puck sin probar |
+| Franjas, por CDP (texto en #0a2540) | La franja del texto queda en rgb(10, 37, 64) con texto blanco en todas las imágenes; la del banner pasa de blanco a #001145 (texto blanco) y a #85e501 (texto azul) según la imagen. Botón del sitio publicado a su tamaño a 1024 y 375 px |
+| Editor real (barra de formato, acordeón, publicar) | Sin verificar |
+
+---
+
 ## sesión 18-10-2026 (10.ª parte): esquinas redondeadas en «Portales externos»
 
 **Qué se pidió:** en el bloque «Portales Externos» del sitio web, una opción para redondear las esquinas con una medida en px escrita a mano.
@@ -45,6 +81,31 @@
 | `npx tsc --noEmit` en sitio-web | Sin errores |
 | Finales de línea de los tres archivos | Siguen todos en CRLF |
 | Bloque en el editor y en la página, a 1440, 1024, 768 y 375 px | Sin verificar |
+
+---
+
+## sesión 18-10-2026 (10.ª parte): bloque «Carrusel de imágenes» en el sitio-web
+
+**Qué se pidió:** un carrusel con el diseño de la maqueta de «Alertas proyectos de inversión»: imágenes cambiables, título y párrafo enriquecidos arriba, color de fondo editable y flechas para desplazar. Respuestas del usuario: **nuevo en el sitio-web** (el «Carrusel de imágenes» de la intranet, `SeccionCarrusel`, queda igual) y **pasa solo, con flechas de estilo fijo**.
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/shared/lib/blocks/carrusel-de-imagenes.tsx` (nuevo) | `CarruselDeImagenes`: una imagen por vez a lo ancho (hasta 1200 px), con fundido de 0,6 s; título y párrafo en blanco sobre `--olo-carrusel-fondo` (vacío = #001145). Pasa sola cada 6 s y se detiene con el cursor o el foco dentro, con el botón de pausa, si el sistema pide menos movimiento o en el editor. Flechas, pausa y puntos en gris translúcido, que se ven sobre fondos claros y oscuros. Imágenes apiladas en la misma celda de una rejilla: el bloque toma el alto de la más alta y no salta. Las ocultas llevan `inert` y `aria-hidden`; patrón de carrusel de WAI-ARIA (`aria-roledescription`, «N de M», `aria-live` en `polite` solo mientras no pasa sola). Hipervínculo opcional por imagen. Sin imágenes no se pinta en el sitio; en el editor deja un aviso |
+| `config/puck.config.tsx` | Bloque `CarruselDeImagenes` en «Contenido Principal», tras «Video embebido»: «Título» y «Párrafo» (`richtext` en el lienzo), «Imágenes» (lista en acordeones con imagen, texto alternativo e hipervínculo) y «Color de fondo» |
+| `style/globals.css` | Sección «Carrusel de imágenes» (`.olo-carrusel*`). Los puntos miden 24 px para el dedo (SC 2.5.8) aunque se vean de 10 |
+| `packages/accessibility-policy/src/index.ts` | `CarruselDeImagenes`: texto alternativo obligatorio en cada imagen (`alt-array` sobre `diapositivas`). Reconstruido `dist/` |
+
+**Decisiones que tomé sin preguntar (revisables):**
+- **El título va en `<h2>`, no en `<h1>`**: el pedido decía h1, pero una página lleva un solo `<h1>` y este bloque puede ir varias veces o debajo de otro titular. Se ve grande igual.
+- **Botón de pausa y puntos debajo**, que la maqueta no tiene: algo que se mueve solo más de 5 s tiene que poder pausarse (WCAG 2.2.2), y los puntos dicen cuántas imágenes hay y en cuál se está.
+- **Carrusel propio, sin reutilizar el de la intranet**: `Carousel` de la intranet muestra varias imágenes a la vez y vive en otra app, que el sitio no puede importar.
+
+| Verificación | Resultado |
+|---|---|
+| Componente montado con React 19.2.4 (esm.sh) y el CSS real, desde el origen del dev, por CDP, con el intervalo a 1,5 s | Pasa sola (0 → 1 → 2); en pausa no avanza y `aria-live` pasa a `polite`; flechas y puntos llevan a la imagen correcta, con vuelta del final al principio; con el cursor encima no avanza y al salir sigue; solo la visible sin `inert` |
+| 1440, 1024, 768 y 375 px | Sin scroll horizontal; flechas de 44 a 36 px fuera de la imagen |
+| `npx tsc --noEmit` y `eslint` en sitio-web | Sin errores (salvo `shared/lib/accesibilidad/`, que no es de este trabajo) |
+| Editor real y publicar | Sin verificar |
 
 ---
 
@@ -169,6 +230,9 @@
 | `style/globals.css` | Sección nueva al final, «Accesibilidad del sitio público»: botón, panel, guía y una regla por preferencia |
 | `docs/9-accesibilidad.md` | Fase 4 (alto contraste) pasa a «en marcha», con el porqué de no haberla hecho con tokens |
 | `scripts/mapa/descripciones.md` | Propósito de la carpeta nueva |
+| Color y tamaño (pedido después) | Todo lo de accesibilidad en **#001145** (antes #001631): la pestaña (al pasar el ratón #0b1f63), el icono de la cabecera, las barras de nivel, las tarjetas elegidas, el botón «Restablecer», el texto del panel (subtítulo al 75 % y «Opciones avanzadas» al 70 %), la sombra, el velo de la guía de lectura y la flecha del cursor grande. La pestaña baja de 56 × 60 a 48 × 51 px (misma proporción del SVG, con `aspect-ratio`; sigue por encima de los 44 px táctiles) |
+| Márgenes y scroll perdidos (reportado después) | No era el código: el `next dev` compiló `globals.css` entre dos ediciones seguidas y se quedó con la regla nueva del panel (sin relleno, `overflow: hidden`) pero sin las de `__cuerpo`. Un `touch` no lo despertó; un cambio real de contenido (un comentario) sí. Medido después en el dev: relleno 12/16/4 px, la rueda baja 87 px a 1280 y 247 a 360 hasta ver «Cursor grande» |
+| Esquinas del panel (pedido después) | Al hacer scroll las tarjetas pasaban por debajo de las esquinas redondeadas y se veían cortadas. Ahora la cabecera y el pie (con «Restablecer») quedan fijos y solo se desplaza el cuerpo (`.olo-a11y-panel__cuerpo`, con `min-height: 0` y relleno para el contorno de foco), y el redondeo baja de 24 a 16 px |
 
 **Cómo funciona.** Cada preferencia es un atributo `data-a11y-*` en el `<html>` (`data-a11y-texto="2"`, `data-a11y-contraste`…) y el CSS hace el resto. Se guardan en `localStorage` (`olo-accesibilidad`), como el tema del panel: el visitante no tiene cuenta. Un script inyectado con `useServerInsertedHTML` (el patrón de `SincronizarTema`) las pone antes del primer pintado, así que quien pidió letra grande no la ve crecer al cargar. Al salir de `(public)` los atributos se quitan.
 
@@ -229,6 +293,7 @@ De dónde sale cada nombre: **del menú de «Menú y pie»**, que manda (si se r
 | Clic en «Clasificaciones» de las migas | Navega a `/clasificacion` sin recargar la página y las migas se actualizan |
 | Alineación con el logo a 360 / 768 / 1280 px | 8/8, 24/24 y 64/64 px; sin scroll horizontal |
 | Migas con alto contraste | Blanco y amarillo sobre negro |
+| Color, tamaño y esquinas (con el `globals.css` compilado aparte inyectado en la página, porque el `next dev` tardaba en recompilar) | Pestaña de 48 × 51 en rgb(0, 17, 69) a 1280 y 360 px; panel con radio de 16 px y texto rgb(0, 17, 69); se desplaza el cuerpo y no el panel; la cabecera y el pie quedan pegados a su borde |
 | Estilo nuevo en el dev por CDP | Enlace: 300, #001145 al 70 %, sin subrayado; actual: 700, rgb(0, 17, 69) |
 | Borde quitado | `globals.css` compilado aparte con su Tailwind: `.migas-de-pan` solo con fondo. El `next dev` siguió sirviendo la regla vieja con borde aun después de `touch` al archivo: hay que recargar sin caché o reiniciar `next dev` para verlo |
 | Con un lector de pantalla real (NVDA) y en Safari/iOS | Sin verificar |
