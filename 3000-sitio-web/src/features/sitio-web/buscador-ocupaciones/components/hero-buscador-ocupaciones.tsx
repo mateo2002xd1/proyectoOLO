@@ -3,28 +3,51 @@
 import { Suspense, useCallback, type ReactNode } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ArrowLeftIcon } from '@heroicons/react/20/solid';
-import { OcupacionSearchBanner } from '@/shared/ui/molecules/ocupacion-search-banner';
 import { useBuscadorOcupaciones } from '../hooks/use-buscador-ocupaciones';
 import { useDetalleOcupacion } from '../hooks/use-detalle-ocupacion';
 import { ModalOcupaciones } from './modal-ocupaciones';
 import { ResultadosOcupaciones } from './resultados-ocupaciones';
 import { DetalleOcupacion } from './detalle-ocupacion';
+import { AZUL_PORTADA, PortadaBuscadorOcupaciones } from './portada-buscador-ocupaciones';
 
 const ETIQUETAS_TIPO: Record<string, string> = {
   cuoc: 'Clasificación Única de Ocupaciones para Colombia',
   cno: 'Clasificación Nacional de Ocupaciones',
 };
 
+/** Título del modal de resultados cuando la búsqueda no viene de una clasificación concreta. */
+const TITULO_RESULTADOS = 'Clasificación Nacional de Ocupaciones - Buscador de Ocupaciones';
+
+/*
+ * Textos del diseño. Puck entrega un campo `richtext` vacío —o ausente, como en una
+ * portada guardada antes de que existieran estos campos— como `null`, así que el
+ * respaldo va en nodos: el HTML de `defaultProps` se vería con sus etiquetas.
+ */
+const TITULO_SECCION_POR_DEFECTO = (
+  <>
+    ¿Sabes qué es una
+    <br />
+    <strong>ocupación?</strong>
+  </>
+);
+const DESCRIPCION_POR_DEFECTO =
+  'Es un conjunto de cargos, empleos u oficios que incluyen categorías homogéneas de funciones, independientemente del lugar o tiempo donde se desarrollen.';
+const TEXTO_RECUADRO_POR_DEFECTO = (
+  <>
+    <em>Explora las ocupaciones clave de los</em> <strong>sectores productivos en Colombia.</strong>
+  </>
+);
+
 export interface HeroBuscadorOcupacionesProps {
+  tituloSeccion?: ReactNode;
+  descripcion?: ReactNode;
+  /** Texto del recuadro sobre el buscador. Se llama `titulo` desde antes del rediseño. */
   titulo?: ReactNode;
   searchPlaceholder?: string;
-  placeholder?: string;
-  imageUrl?: string;
-  logoSrc?: string;
-  imageAlt?: string;
-  logoAlt?: string;
-  modelSrc?: string;
-  modelAlt?: string;
+  imagenFondo?: string;
+  /** 0 (opaca) a 100 (invisible); vacío = 0. */
+  transparenciaFondo?: number | '';
+  /** Color del recuadro del buscador (antes, del banner azul). */
   colorFondo?: string;
   className?: string;
 }
@@ -52,7 +75,7 @@ function TituloModal({
     );
   }
 
-  return <span>{etiquetaTipo || 'Clasificación Nacional de Ocupaciones'}</span>;
+  return <span>{etiquetaTipo || TITULO_RESULTADOS}</span>;
 }
 
 /**
@@ -62,17 +85,14 @@ function TituloModal({
  * consulta de detalles (`useDetalleOcupacion`) y diálogo modal con resultados (`ModalOcupaciones`).
  */
 export function HeroBuscadorOcupaciones({
+  tituloSeccion,
+  descripcion,
   titulo,
   searchPlaceholder,
-  placeholder,
-  imageUrl,
-  logoSrc,
-  imageAlt,
-  logoAlt,
-  modelSrc,
-  modelAlt,
+  imagenFondo,
+  transparenciaFondo,
   colorFondo,
-  className = 'w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6',
+  className = 'w-full',
 }: HeroBuscadorOcupacionesProps) {
   const { resultados, terminoBuscado, loading, consultaRealizada, buscar, limpiar } =
     useBuscadorOcupaciones();
@@ -95,14 +115,14 @@ export function HeroBuscadorOcupaciones({
 
   return (
     <div className={className}>
-      <OcupacionSearchBanner
-        titulo={titulo}
-        placeholder={searchPlaceholder || placeholder || 'Buscar ocupación, código o denominación'}
-        logoSrc={imageUrl || logoSrc || '/assets/img/nos-ocupa-el-pais.png'}
-        logoAlt={imageAlt || logoAlt || 'Nos ocupa el país'}
-        modelSrc={modelSrc || '/assets/img/modelo-uno.png'}
-        modelAlt={modelAlt || 'Modelo'}
-        colorFondo={colorFondo}
+      <PortadaBuscadorOcupaciones
+        tituloSeccion={tituloSeccion ?? TITULO_SECCION_POR_DEFECTO}
+        descripcion={descripcion ?? DESCRIPCION_POR_DEFECTO}
+        textoRecuadro={titulo ?? TEXTO_RECUADRO_POR_DEFECTO}
+        placeholder={searchPlaceholder || 'Buscar ocupación, código o denominación'}
+        imagenFondo={imagenFondo}
+        transparenciaFondo={transparenciaFondo}
+        colorRecuadro={colorFondo}
         onSearch={buscar}
       />
 
@@ -110,9 +130,11 @@ export function HeroBuscadorOcupaciones({
         abierto={consultaRealizada}
         onCerrar={cerrarTodo}
         claveContenido={codigoAbierto ?? 'resultados'}
+        colorAcento={colorFondo || AZUL_PORTADA}
+        pantallaCompleta
         antetitulo={codigoAbierto ? 'Ocupación' : 'Resultados de la búsqueda'}
         titulo={
-          <Suspense fallback={<span>Clasificación Nacional de Ocupaciones</span>}>
+          <Suspense fallback={<span>{TITULO_RESULTADOS}</span>}>
             <TituloModal
               codigoAbierto={codigoAbierto}
               codigoTitulo={codigoTitulo}

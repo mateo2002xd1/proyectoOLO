@@ -404,28 +404,19 @@ export default function RolesView() {
         descripcion="Administra los roles del sistema y configura sus permisos"
         className="mb-8"
         acciones={
-          <Button
-            onClick={async () => {
-              await fetchPermissions();
-              setAperturaModalRol((n) => n + 1);
-              setModalRolAbierto(true);
-            }}
-          >
-            Nuevo Editor
-          </Button>
+          !error ? (
+            <Button
+              onClick={async () => {
+                await fetchPermissions();
+                setAperturaModalRol((n) => n + 1);
+                setModalRolAbierto(true);
+              }}
+            >
+              Nuevo Editor
+            </Button>
+          ) : undefined
         }
       />
-
-      <div className="mb-6">
-        <input
-          type="search"
-          value={busqueda}
-          onChange={(e) => { setBusqueda(e.target.value); setPagina(1); }}
-          placeholder="Buscar roles..."
-          className="w-full max-w-sm rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-brand-interactive focus:outline-none focus:ring-2 focus:ring-brand-interactive/20 dark:border-zinc-700 dark:bg-[#131b2f] dark:text-zinc-100 dark:placeholder:text-zinc-500"
-        />
-      </div>
-
       {/* Cargando, el loader va en lugar de la tabla y no en una de sus filas: así llena el
           espacio de la sección como en las demás (una celda no se puede estirar). */}
       {loading ? (
@@ -436,7 +427,18 @@ export default function RolesView() {
         // misma API; `fetchRoles` solo lo registra (ver `use-usuarios.ts`).
         <AvisoErrorDeCarga titulo="No pudimos cargar los roles" mensaje={error} onReintentar={reintentarCarga} />
       ) : (
-      <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-[#7db828]/30 dark:bg-[#131b2f]">
+        <>
+          <div className="mb-6">
+            <input
+              type="search"
+              value={busqueda}
+              onChange={(e) => { setBusqueda(e.target.value); setPagina(1); }}
+              placeholder="Buscar roles..."
+              className="w-full max-w-sm rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-brand-interactive focus:outline-none focus:ring-2 focus:ring-brand-interactive/20 dark:border-zinc-700 dark:bg-[#131b2f] dark:text-zinc-100 dark:placeholder:text-zinc-500"
+            />
+          </div>
+
+          <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-[#7db828]/30 dark:bg-[#131b2f]">
         {/* En el móvil y la tablet, acordeón, como Usuarios: el encabezado de cada fila es
             solo el nombre del rol y al tocarlo salen la descripción y los permisos, y debajo
             «Editar» y «Eliminar» con su nombre. Piezas en `fila-acordeon.tsx`. */}
@@ -567,6 +569,7 @@ export default function RolesView() {
           className="px-5"
         />
       </div>
+        </>
       )}
 
       <ModalNuevoEditor

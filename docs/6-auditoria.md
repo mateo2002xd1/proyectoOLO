@@ -5,6 +5,626 @@
 
 ---
 
+## sesión 18-10-2026 (18.ª parte): revisión del PR #144 de Mateo al traerlo a `dev`
+
+**Qué se pidió:** auditar lo que trae Mateo (`OLO/dev`, PR #144) al hacer el merge en `dev`: dejar lo que mejora, dejar lo que no toca lo del usuario y conservar lo del usuario donde Mateo deshacía algo que ya estaba arreglado. «Mi perfil» se deja como lo dejó Mateo, por decisión del usuario.
+
+**Qué trae Mateo** (15 archivos; ninguno lo tocó el usuario desde el punto en común `e9ef5590`):
+
+| Parte | Qué hace | Decisión |
+|---|---|---|
+| API, `listar-en-revision.usecase.ts`, `enviar-a-revision.usecase.ts`, modelos `content-audit-log.ts` y `pagina-version.ts` | «Páginas en revisión» muestra la fecha del envío y ordena por la más reciente. Al enviar, pone `creado_en = NOW()` (SQL a mano en el caso de uso) y además lee la fecha de `enviar_revision` en la bitácora | Se deja. El SQL que genera el modelo de la bitácora (con `created_at` declarado dos veces) se comprobó con `sequelize.query` interceptado: el `INSERT` lleva la columna una vez y el `SELECT` ordena bien |
+| Usuarios, Roles, Respaldos, cola de revisión (vista) | Con error de carga se ocultan las acciones, el buscador y los filtros; solo queda el aviso | Se deja |
+| Auditoría (vista) | Lo mismo, pero también escondía la barra de filtros **mientras cargaba**: al cambiar un filtro o de página desaparecía y volvía, y se cerraba el desplegable abierto | **Ajustado:** la vista del usuario con el «Depurar» de Mateo y la barra de filtros envuelta en `!error`: visible mientras carga, oculta solo con error |
+| Cola de revisión (`use-revision-queue.ts`) | Quitaba los reintentos del usuario (`1f935492`, 09-10: dos reintentos si la API no contesta, para el arranque en frío de Neon). Sumaba recarga sin loader tras aprobar, rechazar o eliminar, y escuchar `olo:revision-actualizada` | **Ajustado:** vuelven `ESPERAS_REINTENTO_MS` y `listarConReintentos` (en `cargar` y en la carga inicial); se quedan la recarga silenciosa y el oyente de Mateo |
+| Mi perfil | Nombre, apellidos y correo solo de lectura (con enlace a «Accesos > Usuarios»); el formulario queda solo para la contraseña, que se vacía al cambiarla | Se deja como lo hizo Mateo (decisión del usuario) |
+| Intranet, botón flotante y modal de nueva página | «Eliminar sección» → «Eliminar página» y «No se pudo crear la sección» → «…la página» | Se deja: es lo que pedía `6222bc46` («página» en vez de «sección»), que `6fbfa5bd` había revertido de paso |
+| Intranet, botón flotante | «Editar menú y pie» → «Menú y pie» | **Revertido** a «Editar menú y pie» (texto, `aria-label` y `title`): el lector de pantalla anuncia el botón por ese nombre y conviene que diga la acción |
+| `docs/manual-de-usuario-formato.md`, `docs/plan-de-pruebas.md` | Documentación de Mateo | Se deja |
+
+> **Queda de Mateo, para revisar más adelante:** la fecha del envío se resuelve por dos caminos (`creado_en` pisado al enviar y la bitácora), y la consulta a la bitácora trae todos los registros de las páginas en revisión, autoguardados incluidos. En el servidor la bitácora no se importa (`TABLAS_QUE_NO_VIAJAN`), así que allí solo vale el primero. También, tras aprobar, rechazar o eliminar, la cola recarga dos veces: la recarga propia y la del aviso `olo:revision-actualizada` que ella misma lanza.
+
+| Verificación | Resultado |
+|---|---|
+| `npx tsc --noEmit` en sitio-web, intranet y api-backend con el merge | Sin errores (salvo `shared/lib/accesibilidad/` del sitio, que no es de este trabajo) |
+| `eslint` de la vista de Auditoría y del hook de la cola | Sin avisos |
+| Panel en el navegador (Auditoría con filtros, cola sin API, botón flotante) | Sin verificar |
+
+---
+
+## sesión 18-10-2026 (17.ª parte): el «Color de fondo» de «Espaciado y Ancho» se pinta aunque no se toque nada más
+
+**Qué se pidió:** poder cambiar el fondo del bloque «Espacio en blanco».
+
+**Causa:** el campo ya existía («Color de fondo» en «Espaciado y Ancho», y el borrador v53 de `inicio` lo tiene en #f6f6f6), pero `conCaja` solo envolvía el bloque si algún espaciado o el ancho dejaba de ser el neutro: un color solo no se pintaba nunca, en ningún bloque.
+
+| Capa | Cambio |
+|---|---|
+| `packages/blocks-renderer/src/primitives/controles-de-caja.tsx` | La caja también se pinta si tiene «Color de fondo» y el bloque lo admite (`conFondo`). En los bloques `sinFondo` un color guardado sigue sin efecto. Afecta a los dos sitios (sitio-web e intranet) |
+
+> **Antes de cambiarlo se revisó en Neon (solo lectura)** la versión publicada y la última de cada página: el único bloque con color y sin espaciado es ese «Espacio en blanco» del borrador de `inicio`. Ninguna página publicada cambia de aspecto.
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` de blocks-renderer | Sin errores |
+| `conCaja` con un «Espacio en blanco» y `renderToStaticMarkup` | Solo color (#f6f6f6): `<div class="olo-caja" style="background-color:#f6f6f6">`. Sin color: el bloque sin envoltorio, como antes. Color en un bloque `sinFondo`: sin envoltorio. Color y espacio interior: los dos estilos |
+| Editor real | Sin verificar |
+
+---
+
+## sesión 18-10-2026 (16.ª parte): el color de fondo de «Imagen destacada» va de borde a borde aunque el bloque sea más estrecho
+
+**Qué se pidió:** en «Imagen destacada», el color de fondo no ocupaba todo el ancho de la pantalla.
+
+**Causa:** el bloque «OBSERVA» de la portada tiene en «Espaciado y Ancho» el ancho máximo «Medio (960px)» y espacio interior de 10 px (borrador v53 de `inicio`, leído en Neon, solo lectura). La caja estrecha todo lo que envuelve, así que el «Color de fondo» propio del bloque (#af0e0e en el borrador) se quedaba en esos 960 px. Es el comportamiento documentado de la caja para su propio fondo, pero «Imagen destacada» trae el suyo (`sinFondo`) y ese debe ir de borde a borde.
+
+| Capa | Cambio |
+|---|---|
+| `packages/blocks-renderer/src/primitives/controles-de-caja.tsx` | Opción `anchoDentro` en `conCaja` y en `conCajaEnTodos` (lista de bloques): la caja suma la clase `olo-caja--ancho-dentro` y deja el ancho máximo y el espacio interior en sus variables (`--olo-caja-ancho`, `--olo-caja-interior-x/-y`) para que los aplique el bloque. Solo cambia una clase: el DOM de las páginas guardadas es el mismo. Las separaciones con los bloques de arriba y abajo siguen en la caja |
+| `packages/blocks-renderer/src/blocks/imagen-destacada.tsx` | Clases `olo-imagen-destacada` (la sección con el color) y `olo-imagen-destacada__contenido` (el contenedor de la imagen), en los dos modos (`completo` y `contenido`) |
+| `3000-sitio-web/src/config/puck.config.tsx` | `anchoDentro: ['ImagenDestacada']`. La intranet no pasa la opción y no cambia |
+| `3000-sitio-web/src/style/globals.css` | `.olo-caja.olo-caja--ancho-dentro` sin `max-width` ni relleno (doble clase para ganarle a la regla móvil de `.olo-caja`). El contenedor toma `min(ancho elegido, 1200px)` (1000 px en el «sabías que») y el espacio interior sumado a su relleno de siempre (×0,6 por debajo de 40rem, como la caja). «Posición» izquierda o derecha mueve el contenedor |
+
+| Verificación | Resultado |
+|---|---|
+| `npx tsc --noEmit` en sitio-web, intranet y blocks-renderer | Sin errores |
+| `/inicio` en el dev por CDP, con el fondo del bloque en #af0e0e como en el borrador, a 1440, 768 y 375 px | Bloque «OBSERVA»: fondo de 0 a 1440 (antes 960), contenido de 240 a 1200 (960 px) con 34 px de relleno (24 + 10). A 375: fondo a todo el ancho y 30 px de relleno (24 + 10 × 0,6). El bloque de arriba («Todo el ancho»): contenido de 120 a 1320, igual que antes. Sin scroll horizontal |
+| Editor real | Sin verificar |
+
+---
+
+## sesión 18-10-2026 (15.ª parte): esquinas redondeadas en la tarjeta blanca y en el fondo azul del pie de página
+
+**Qué se pidió:** poder redondear las esquinas de la caja blanca del pie de página (logos, información de contacto, etc.) y también las del fondo azul de detrás. Primero se entendió «borde» y se agregó grosor y color; el usuario aclaró que era *border-radius*, y ese borde se quitó.
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/shared/lib/blocks/footer.tsx` | Props `radioEsquinasTarjeta` y `radioEsquinasFondo` (px, acotadas a 0–100 por `radioEnPx`), vacías en `VALORES_PIE_POR_DEFECTO`. La tarjeta lleva `border-radius` en línea solo si hay valor (vacío: las 6 px del CSS; 0: rectas). Con esquinas en el fondo, el pie toma la clase `olo-footer-wrapper--redondeado`: el color de la zona alta queda como fondo y la zona baja pasa del degradado a una capa redondeada (`--olo-pie-fondo`, `--olo-pie-radio`; sin color elegido, el #001631 de siempre). Sin valores, el pie sale idéntico a antes |
+| `features/paginas/menu-y-pie/campos-del-pie.ts` | Tarjeta «Esquinas redondeadas» en el panel, debajo de «Colores»: «Tarjeta blanca» y «Fondo de la zona baja» (número en px, 0–100). Va en `grupoEsquinas` y `resolverGruposDelPie` la copia a las props sueltas; un pie guardado antes no tiene el grupo y queda como estaba |
+| `config/puck.config.tsx` (`Footer`) | `radioEsquinasTarjeta: ''` y `radioEsquinasFondo: ''` en `defaultProps` |
+| `style/globals.css` | `.olo-footer-wrapper--redondeado` (`position: relative; isolation: isolate`) y su `::before` desde los 120 px de la zona alta hasta abajo, con el color y el radio de las variables, detrás de la tarjeta |
+
+> **El fondo azul va a todo el ancho**, así que sus esquinas redondeadas tocan los bordes de la pantalla. La sombra de la tarjeta no se tocó.
+
+| Verificación | Resultado |
+|---|---|
+| `npx tsc --noEmit` en sitio-web | Sin errores |
+| `eslint` de `footer.tsx` y `campos-del-pie.ts` | Solo el `no-explicit-any` de `resolverGruposDelPie`, que ya estaba |
+| `Footer` con `renderToStaticMarkup` y captura en Chrome con el CSS real del pie (1280 px) | Sin valores: idéntico a antes (sin `style` ni clase nueva). Tarjeta 24 y fondo 40: tarjeta y zona azul redondeadas, la zona alta transparente. Pie personalizado en #001145, tarjeta 0 y fondo 60: tarjeta recta y fondo azul con esquinas de 60 px, zona alta blanca |
+| Panel real del editor y «Menú y pie» publicado | Sin verificar |
+
+---
+
+## sesión 18-10-2026 (14.ª parte): el carrusel sin campo de título, solo párrafo
+
+**Qué se pidió:** quitar el título del acordeón «Título y párrafo» del «Carrusel de imágenes» y dejar solo el párrafo.
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/config/puck.config.tsx` (`CarruselDeImagenes`) | El acordeón pasa a llamarse «Párrafo» y solo tiene el `richtext` «Párrafo» (con la misma barra: H1–H4, viñetas, negrita, cursiva, subrayado y alineación) y «Color de fondo». Fuera el campo «Título» y su `<h2>Título principal</h2>` por defecto; queda «Agrega una descripción». La ayuda del color de cada imagen remite a «Párrafo» |
+| `shared/lib/blocks/carrusel-de-imagenes.tsx` | `textos` queda en `{ parrafo, colorFondo }`; la franja del texto se pinta solo si hay párrafo. Un carrusel guardado con `textos.titulo` lo conserva en el JSON sin pintarlo |
+| `style/globals.css` | Fuera `.olo-carrusel__titulo` y el margen de arriba del párrafo, que solo lo separaba del título |
+
+> **Si hace falta un encabezado**, se pone dentro del párrafo con el botón H de la barra: las reglas de H1–H4 del carrusel siguen.
+
+| Verificación | Resultado |
+|---|---|
+| `npx tsc --noEmit` en sitio-web | Sin errores |
+| `eslint` del carrusel y de `puck.config.tsx` | El carrusel, sin avisos; en `puck.config.tsx`, los 6 `no-explicit-any` de `resolveData` de otros bloques, que no son de este cambio |
+| Carrusel montado por CDP (editor y publicado) con un `titulo` viejo en los datos y la franja en #001145 | Solo el párrafo, en blanco; el título viejo no aparece. Flechas, salto a la imagen nueva, botón y puntos como antes |
+| Editor real | Sin verificar |
+
+---
+
+## sesión 18-10-2026 (13.ª parte): «Dato OLO de la semana» como mini carrusel de infografías
+
+**Qué se pidió:** rediseñar el bloque «Dato OLO de la semana» como en la maqueta (una infografía a lo ancho con el dato dibujado). En el panel, solo adjuntar imágenes, cambiar el fondo y redondear las esquinas. Es un mini carrusel que pasa solo, sin flechas, con el ubicador de puntos; misma simetría que los bloques rediseñados hoy. Después: la imagen la sube el usuario, sin imagen por defecto, y mientras no hay ninguna se ve la vista previa de «Imagen destacada». Después: el color de fondo, uno por imagen; «Esquinas redondeadas» fuera de cada imagen pero en la misma tarjeta «Imágenes», en acordeón; y «Espaciado y Ancho» en su grupo aparte. Después: que pase en bucle (de la última vuelve a la primera) y el tiempo de cada imagen debajo de «Esquinas redondeadas».
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/shared/lib/blocks/dato-olo-semana.tsx` | Reescrito, ahora de cliente. Prop `galeria` con `imagenes` (`imagen`, `alt`, `colorFondo`) y `radioEsquinas` (0–100 px, como «Portales externos»); el fondo de la sección es el de la imagen que se ve (vacío: blanco) y cambia con un fundido; fuera `tituloResaltado` y `tituloNormal` (el título va dibujado en la infografía). Una por vez con fundido, apiladas en la misma celda de una rejilla (no salta), las ocultas con `inert`. Pasa cada 6 s y se detiene con el cursor o el foco dentro, con «menos movimiento» y en el editor; con una sola imagen no se mueve. Sin imágenes: en el editor, la muestra de «Imagen destacada» (`muestraDeImagen`, «Sube o selecciona una imagen en el panel lateral derecho»); en el sitio, nada. Una portada guardada con la versión anterior (`imagenSrc`) se ve con esa imagen sola. Conserva `id="dato-olo-semana"` |
+| `shared/lib/blocks/carrusel-de-imagenes.tsx` | Solo se exportan `INTERVALO_MS`, `estiloDeFondo` y `usePrefiereMenosMovimiento`, para no duplicarlos. Su comportamiento no cambia |
+| `config/puck.config.tsx` (`DatoOloSemana`) | Una sola tarjeta «Imágenes» en acordeón (`campoObjetoEnAcordeon`, abierta) con la lista «Infografías» (un acordeón por imagen: imagen, texto alternativo y color de fondo) y, debajo, «Esquinas redondeadas» (px). `galeria: { imagenes: [], radioEsquinas: '' }` por defecto. `resolveData` pasa a `galeria` lo de una portada vieja (`imagenSrc`/`imagenAlt`) y lo de la primera versión del carrusel (`imagenes`, `colorFondo` y `radioEsquinas` sueltos; ese color pasa a cada imagen). «Espaciado y Ancho» sigue aparte (`conCaja`), sin su «Color de fondo»: `DatoOloSemana` va en `sinFondo` junto a `ImagenDestacada`, para que no compita con el de cada imagen |
+| `style/globals.css` | Fuera `.olo-dato-semana-inner/-title/-frame/-img`. `.olo-dato-semana` con el relleno de «Portales» y «Video» (`clamp(32px, 5vw, 64px) 16px`), fondo blanco y texto azul por defecto, con fundido de 0,6 s al cambiar de color; escenario de `--max-width`, fundido de 0,6 s (sin él con menos movimiento), imagen con `border-radius: var(--olo-dato-radio, 0)`. El ubicador usa las clases `.olo-carrusel__ubicador` y `__punto` del carrusel: azul sobre fondos claros, blanco sobre oscuros (`estiloDeFondo`) |
+| Tiempo de cada imagen (pedido después) | `galeria.segundos`: campo «Tiempo de cada imagen» (número, 3–60 s, vacío = 6, `INTERVALO_MS` del carrusel) debajo de «Esquinas redondeadas», en la misma tarjeta. El componente lo acota a 3–60 (`SEGUNDOS_MINIMO`/`SEGUNDOS_MAXIMO`: menos no da para leer el dato) y reinicia el temporizador al cambiarlo. El bucle ya estaba: `(i + 1) % total` vuelve de la última a la primera sin fin; la ayuda de la lista ahora lo dice. `resolveData`, `defaultProps` y la portada de respaldo con `segundos: ''` |
+| `features/paginas/model/home-fallback-data.ts` | La portada de respaldo con `galeria` vacía: sin la API, el bloque no se pinta |
+| `packages/accessibility-policy/src/index.ts` | La regla de `DatoOloSemana` pasa a `alt-array` sobre `galeria.imagenes` (`imagen` / `alt`). `campoArray` acepta ahora una ruta con puntos (`valorEnRuta`) para un array dentro de un objeto; las reglas de una sola clave no cambian. Reconstruido `dist/` |
+
+> **Agregué «Texto alternativo» por imagen** aunque el pedido decía solo adjuntar: el dato va dibujado dentro de la infografía y, sin ese texto, un lector de pantalla no lo puede leer. Es obligatorio para enviar a revisión, como en el «Carrusel de imágenes».
+
+> **Las semillas de la API** (`scripts/semillas/sembrar-inicio-sitio.ts`, `seed/contenido-inicial.sql`) siguen con `imagenSrc`: se ven con la imagen sola y pasan al formato nuevo al abrirlas en el editor. No se tocaron.
+
+| Verificación | Resultado |
+|---|---|
+| `npx tsc --noEmit` en sitio-web | Sin errores (salvo `shared/lib/accesibilidad/`, que no es de este trabajo) |
+| `eslint` de los dos componentes | Sin avisos |
+| `validarAccesibilidad` (dist) con un «Dato OLO» de tres imágenes (una sin alt, una con alt, una vacía) y un «Carrusel» sin alt | Marca solo `galeria.imagenes[0].alt` y `diapositivas[0].alt` |
+| Bloque en el editor y en la página (subir imágenes, paso automático, puntos, fondo, redondeo, 1440/1024/768/375 px) | Sin verificar |
+
+---
+
+## sesión 18-10-2026 (12.ª parte): miniatura propia en «Video embebido»
+
+**Qué se pidió:** poder ponerle una miniatura (imagen) al video del bloque «Video embebido» del sitio web.
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/shared/lib/blocks/reproductor-de-video.tsx` (nuevo, cliente) | `ReproductorDeVideo`: con miniatura, un `<button>` con la imagen (`object-fit: cover`, `alt=""`) y un círculo de play; nombre accesible «Reproducir video: {nombre del video}». Al pulsarlo se cambia por el iframe con `autoplay=1` (y `autoplay` en `allow`): el clic ya fue la orden de reproducir. En el editor la miniatura es un `div` y no se cambia por el video, porque el clic es para seleccionar el bloque. Sin miniatura, el iframe de siempre. Se llevó aquí `urlDeInsercion` y los atributos del iframe (`sandbox`, `referrerPolicy`, `loading`) |
+| `shared/lib/blocks/video-embebido.tsx` | Prop `miniatura`; el marco usa `ReproductorDeVideo`. El componente sigue sin `'use client'` |
+| `config/puck.config.tsx` (`VideoEmbebido`) | Campo «Miniatura (opcional)» (el subidor de imágenes, en acordeón, después de «Nombre del video»), `miniatura: ''` en `defaultProps` |
+| `style/globals.css` | `.olo-video-embebido__miniatura` con el mismo 16:9 y las mismas esquinas que el iframe; `__play` redondo del color de la sección con un aro blanco, que crece un poco al pasar el ratón (no con movimiento reducido); foco con anillo blanco por dentro y del color de la sección por fuera |
+
+> **YouTube no se carga hasta el clic** cuando hay miniatura: la página no pide el reproductor de nadie que no vaya a ver el video.
+
+> **La miniatura es decorativa (`alt=""`):** lo que hace el botón ya lo dice su nombre, que lleva el «Nombre del video». No hizo falta una regla nueva en `accessibility-policy`.
+
+| Verificación | Resultado |
+|---|---|
+| `npx tsc --noEmit` en sitio-web | Sin errores (salvo `shared/lib/accesibilidad/`, que no es de este trabajo) |
+| `eslint` de los dos componentes | Sin avisos |
+| Bloque en el editor y en la página (subir miniatura, clic para reproducir, 1440/1024/768/375 px) | Sin verificar |
+
+---
+
+## sesión 18-10-2026 (11.ª parte): carrusel limpio, color por imagen y fuera el «Hashtag decorativo»
+
+**Qué se pidió:** el carrusel recién hecho, limpio: la misma muestra de «Imagen destacada» en el editor, fondo blanco (#FFFFFF) por defecto, título «Título principal» y párrafo «Agrega una descripción», sin el botón de pausa, solo las flechas del SVG que dio el usuario (fondo transparente) y sin bordes. Después: título y párrafo juntos en un acordeón con la barra de formato (H para subir o bajar el tamaño, viñetas, negrita, cursiva, subrayado y alineación); un color de fondo **por imagen** en vez de uno solo; y eliminar del todo el «Hashtag decorativo» de todos los bloques.
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/shared/lib/blocks/carrusel-de-imagenes.tsx` | Sin pausa ni puntos: solo las dos flechas, con los trazos del SVG del usuario en `currentColor` (#C9C9C9 al 75 %, al 100 % al pasar el cursor), sin fondo, en un botón de 44 px. Sigue pasando sola cada 6 s y se detiene con el cursor o el foco dentro y con «menos movimiento». Prop `textos` (`{ titulo, parrafo }`) en vez de `titulo`/`parrafo`, y el título en un `<div>`: el encabezado lo pone el texto enriquecido. Cada diapositiva trae `colorFondo`; la sección toma el de la visible y el texto va azul (#001145) o blanco según `esColorOscuro`. Sin imágenes, en el editor, la muestra de «Imagen destacada» con su texto |
+| `config/puck.config.tsx` (`CarruselDeImagenes`) | «Título y párrafo» en un acordeón (`campoObjetoEnAcordeon`) con dos `richtext` y `OPCIONES_TEXTO_DEL_CARRUSEL`: H1–H4, viñetas, negrita, cursiva, subrayado y alineación; sin citas, código, tachado, listas numeradas ni enlaces. «Color de fondo» dentro de cada imagen (por defecto #FFFFFF); fuera el color único del bloque. Por defecto: `<h2>Título principal</h2>`, «Agrega una descripción» y ninguna imagen |
+| `packages/blocks-renderer/src/primitives/campos-en-acordeon.tsx` | `campoObjetoEnAcordeon(label, objectFields)`: un campo `object` nativo de Puck marcado con `metadata.oloAcordeon`. Hace falta para `richtext`: un `custom` no puede pintar su editor ni Puck convierte su valor a nodos al pintar el bloque; un `object` sí. `ObjetoEnAcordeon`: reemplazo de `overrides.fieldTypes.object` que pliega los marcados en `AcordeonDeCampo` (al `ObjectField` de Puck le cambia solo la etiqueta, para no repetir el título) y deja los demás como siempre |
+| `features/paginas/edicion/components/puck-editor-wrapper.tsx` | `overrides.fieldTypes.object = ObjetoEnAcordeon` |
+| `packages/blocks-renderer/src/blocks/imagen-destacada.tsx` | La muestra del editor pasa a `muestraDeImagen(titulo, ayuda)` (exportada), que también usa el carrusel. «Imagen destacada» se ve igual |
+| `shared/lib/blocks/tinta-de-franja.ts` | `esColorOscuro(color)` exportada (la regla de luminancia de las franjas GOV.CO, sin cambios) |
+| `style/globals.css` | Carrusel: fondo #ffffff y texto #001145 por defecto, transición del fondo, sin bordes, H1–H4 y viñetas en el encabezado (a todo el ancho hasta 800 px, para que se note la alineación), muestra sin caja, flechas transparentes; fuera pausa y puntos |
+| `packages/blocks-renderer/src/primitives/controles-de-caja.tsx` | **Fuera el «Hashtag decorativo»**: `campoHashtag`, `hashtagPorDefecto`, `ValoresHashtag`, su dibujo con el ícono «#» y las opciones `conHashtag`/`sinHashtag`. La caja solo envuelve el bloque si hay espaciado o ancho. Un bloque guardado con `hashtag` lo conserva en el JSON sin efecto. Afecta a todos los bloques de las dos apps |
+| Ubicador del carrusel (pedido después) | Debajo de la imagen, un punto por imagen en el color del texto (azul o blanco según el fondo de la visible); el de la imagen visible se alarga de 8 a 24 px con una transición, y cada punto lleva a su imagen (`aria-current` en el activo; botón de 24 px para el dedo). Sin botón de pausa |
+| Botón por imagen (pedido después) | «Texto del botón (opcional)» bajo «Hipervínculo» en cada imagen (`textoBoton`). Con texto y enlace, un botón redondeado cian con letra azul (los colores de la maqueta) bajo la imagen lleva al enlace, y la imagen deja de ser enlace; sin texto, la imagen sigue siendo el enlace; sin enlace, el botón no se pinta. En el editor se ve pero no navega. La diapositiva pasa a columna y alineada arriba, para que la imagen no suba ni baje entre las que tienen botón y las que no |
+| Cambiar de imagen en el lienzo del editor (pedido después) | Flechas y ubicador registrados con `registerOverlayPortal` de Puck (solo en el editor, `disableDrag`): la capa que Puck pone sobre el bloque ya no se queda con sus clics, así que se pasa de una imagen a otra para personalizarla. Al agregar una imagen en el panel, el carrusel salta a ella (ajuste de estado al cambiar el total). (Hubo una etiqueta «Imagen N de M» en el editor; se quitó a pedido del usuario.) |
+| Texto y banner en franjas separadas (pedido después) | La sección pasa a dos franjas a todo el ancho, cada una con su fondo: `.olo-carrusel__franja-texto` (título y párrafo) con «Color de fondo» dentro del acordeón «Título y párrafo» (`textos.colorFondo`, `campoColor`, por defecto #FFFFFF), y `.olo-carrusel__franja-banner` con el color de la imagen visible y su fundido. Cada franja calcula su tinta (`estiloDeFondo`: blanco sobre oscuros, #001145 sobre claros). Arreglado de paso: la regla que estira el enlace de la imagen alcanzaba también al botón, que en el sitio publicado salía a todo el ancho; ahora es `> a:not(.olo-carrusel__boton)` |
+| `config/puck.config.tsx` | Fuera `sinHashtag: ['ImagenDestacada']` |
+
+> El «hashtag» de las tarjetas de Publicaciones (`.publicaciones-card-hashtag`) es otra cosa —el texto de cada publicación— y no se tocó.
+
+| Verificación | Resultado |
+|---|---|
+| `npx tsc --noEmit` en sitio-web, intranet y blocks-renderer; `eslint` del carrusel y del editor | Sin errores (salvo `shared/lib/accesibilidad/`, que no es de este trabajo) |
+| `ObjetoEnAcordeon` con un `ObjectField` falso que pinta su etiqueta como el de Puck | Marcado: acordeón abierto, sin la etiqueta repetida, con los subcampos y el título en la cabecera. Sin marca: idéntico al original |
+| Carrusel montado con React 19.2.4 (esm.sh) y el CSS real, desde el origen del dev, por CDP, con el intervalo a 1,5 s | Editor sin imágenes: la muestra (1200 × 500) sobre blanco, bordes 0. Sin pausa ni puntos. Con tres imágenes (#FFFFFF, #001145, #85e501): pasa sola y el fondo cambia con cada una; sobre #001145 el texto pasa a blanco, sobre los claros queda azul; las flechas llevan a la siguiente y la anterior; con el cursor encima no avanza. H2 de 40 px, viñetas `disc`, párrafo alineado a la izquierda desde el borde del bloque de 800 px |
+| Ubicador, por CDP con el cursor encima | En la 1.ª: `A24 -8 -8`; clic en el 3.er punto: va a la 3.ª y queda `-8 -8 A24`; la flecha siguiente vuelve a la 1.ª y el ubicador la sigue. Sin ubicador con una sola imagen o en la muestra vacía |
+| 1440, 1024, 768 y 375 px | Sin scroll horizontal |
+| Botón, por CDP | Imagen con solo enlace: la imagen enlazada, sin botón. Con enlace y texto: `<a href="/alertas">` «Consulta más proyectos aquí» y la imagen sin enlace. Con texto sin enlace: nada. Las tres diapositivas del mismo alto |
+| Modo editor, por CDP (con un `registerOverlayPortal` mínimo que pone la misma marca que el de Puck) | Editor: 3 elementos registrados (dos flechas y el ubicador), no pasa sola; la flecha lleva a la 2.ª; al agregar la 3.ª salta a ella, con el botón como `<span>`; el punto 1 vuelve a la 1.ª. Publicado: ningún elemento registrado. La capa real de Puck sin probar |
+| Franjas, por CDP (texto en #0a2540) | La franja del texto queda en rgb(10, 37, 64) con texto blanco en todas las imágenes; la del banner pasa de blanco a #001145 (texto blanco) y a #85e501 (texto azul) según la imagen. Botón del sitio publicado a su tamaño a 1024 y 375 px |
+| Editor real (barra de formato, acordeón, publicar) | Sin verificar |
+
+---
+
+## sesión 18-10-2026 (10.ª parte): esquinas redondeadas en «Portales externos»
+
+**Qué se pidió:** en el bloque «Portales Externos» del sitio web, una opción para redondear las esquinas con una medida en px escrita a mano.
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/config/puck.config.tsx` (`ExternalPortals`) | Campo nuevo del bloque «Esquinas redondeadas» (número, 0–100 px, en acordeón, después de «Tarjetas»). `defaultProps` con `radioEsquinas: ''` y el `render` lo pasa al componente |
+| `shared/lib/blocks/external-portals.tsx` | Prop `radioEsquinas`, acotada a 0–100 (`RADIO_MAXIMO`); vacío, 0 o un valor que no es número dejan las esquinas rectas. Va a la fila como variable `--olo-portales-radio` solo si es mayor que 0 |
+| `style/globals.css` | `.olo-portal:first-child`, `:last-child` y `:only-child` redondean las esquinas de afuera con `var(--olo-portales-radio, 0)`: en fila, las de la izquierda de la primera y las de la derecha de la última; apiladas (bajo 40rem), las de arriba de la primera y las de abajo de la última. Una sola tarjeta: las cuatro |
+
+> **Se redondea la fila, no cada tarjeta:** las tarjetas van pegadas y unidas por la flecha, así que redondear cada una dejaría muescas en las uniones. El radio va en las tarjetas de punta y no con `overflow: hidden` en la fila, que recortaría el anillo de foco (su `box-shadow` de afuera ya sigue la curva).
+
+| Verificación | Resultado |
+|---|---|
+| `npx tsc --noEmit` en sitio-web | Sin errores |
+| Finales de línea de los tres archivos | Siguen todos en CRLF |
+| Bloque en el editor y en la página, a 1440, 1024, 768 y 375 px | Sin verificar |
+
+---
+
+## sesión 18-10-2026 (10.ª parte): bloque «Carrusel de imágenes» en el sitio-web
+
+**Qué se pidió:** un carrusel con el diseño de la maqueta de «Alertas proyectos de inversión»: imágenes cambiables, título y párrafo enriquecidos arriba, color de fondo editable y flechas para desplazar. Respuestas del usuario: **nuevo en el sitio-web** (el «Carrusel de imágenes» de la intranet, `SeccionCarrusel`, queda igual) y **pasa solo, con flechas de estilo fijo**.
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/shared/lib/blocks/carrusel-de-imagenes.tsx` (nuevo) | `CarruselDeImagenes`: una imagen por vez a lo ancho (hasta 1200 px), con fundido de 0,6 s; título y párrafo en blanco sobre `--olo-carrusel-fondo` (vacío = #001145). Pasa sola cada 6 s y se detiene con el cursor o el foco dentro, con el botón de pausa, si el sistema pide menos movimiento o en el editor. Flechas, pausa y puntos en gris translúcido, que se ven sobre fondos claros y oscuros. Imágenes apiladas en la misma celda de una rejilla: el bloque toma el alto de la más alta y no salta. Las ocultas llevan `inert` y `aria-hidden`; patrón de carrusel de WAI-ARIA (`aria-roledescription`, «N de M», `aria-live` en `polite` solo mientras no pasa sola). Hipervínculo opcional por imagen. Sin imágenes no se pinta en el sitio; en el editor deja un aviso |
+| `config/puck.config.tsx` | Bloque `CarruselDeImagenes` en «Contenido Principal», tras «Video embebido»: «Título» y «Párrafo» (`richtext` en el lienzo), «Imágenes» (lista en acordeones con imagen, texto alternativo e hipervínculo) y «Color de fondo» |
+| `style/globals.css` | Sección «Carrusel de imágenes» (`.olo-carrusel*`). Los puntos miden 24 px para el dedo (SC 2.5.8) aunque se vean de 10 |
+| `packages/accessibility-policy/src/index.ts` | `CarruselDeImagenes`: texto alternativo obligatorio en cada imagen (`alt-array` sobre `diapositivas`). Reconstruido `dist/` |
+
+**Decisiones que tomé sin preguntar (revisables):**
+- **El título va en `<h2>`, no en `<h1>`**: el pedido decía h1, pero una página lleva un solo `<h1>` y este bloque puede ir varias veces o debajo de otro titular. Se ve grande igual.
+- **Botón de pausa y puntos debajo**, que la maqueta no tiene: algo que se mueve solo más de 5 s tiene que poder pausarse (WCAG 2.2.2), y los puntos dicen cuántas imágenes hay y en cuál se está.
+- **Carrusel propio, sin reutilizar el de la intranet**: `Carousel` de la intranet muestra varias imágenes a la vez y vive en otra app, que el sitio no puede importar.
+
+| Verificación | Resultado |
+|---|---|
+| Componente montado con React 19.2.4 (esm.sh) y el CSS real, desde el origen del dev, por CDP, con el intervalo a 1,5 s | Pasa sola (0 → 1 → 2); en pausa no avanza y `aria-live` pasa a `polite`; flechas y puntos llevan a la imagen correcta, con vuelta del final al principio; con el cursor encima no avanza y al salir sigue; solo la visible sin `inert` |
+| 1440, 1024, 768 y 375 px | Sin scroll horizontal; flechas de 44 a 36 px fuera de la imagen |
+| `npx tsc --noEmit` y `eslint` en sitio-web | Sin errores (salvo `shared/lib/accesibilidad/`, que no es de este trabajo) |
+| Editor real y publicar | Sin verificar |
+
+---
+
+## sesión 18-10-2026 (9.ª parte): bloque «Video embebido» en el sitio-web
+
+**Qué se pidió:** un bloque con un video de YouTube, título arriba y color de fondo editable, como la maqueta; traer el «Video embebido» de la intranet (`TasaVideo`, no Recursos visuales) y reorganizarlo. Que el video solo admita el ID o el enlace, por seguridad.
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/shared/lib/blocks/video-embebido.tsx` (nuevo) | `VideoEmbebido`: título y subtítulo enriquecidos en blanco, el video en un marco blanco de esquinas redondeadas (16:9, hasta 860 px) y el fondo en `--olo-video-fondo` (vacío = #001145). Sin la descarga de `TasaVideo`. Sin video válido no se pinta en el sitio; en el editor deja un aviso |
+| Mismo archivo: `idDeVideoDeYoutube` | Acepta el ID de 11 caracteres o un enlace de `youtube.com`, `www.`/`m.`, `youtu.be` o `youtube-nocookie.com` (`watch?v=`, `/embed/`, `/shorts/`, `/live/`), leído con `new URL` y con el dominio en lista blanca. **El iframe nunca recibe lo que se pegó**: la dirección se arma con el ID, en `youtube-nocookie.com` (sin cookies de seguimiento hasta que se da play). Más estricto que `extraerYoutubeId` de Recursos visuales, que devuelve el texto tal cual si no lo reconoce |
+| Iframe | `sandbox` con lo justo para el reproductor (sin `allow-top-navigation`), `referrerPolicy`, `loading="lazy"` y `title` del campo «Nombre del video» |
+| `shared/lib/blocks/campo-video-de-youtube.tsx` (nuevo) | Campo del editor: el texto, y debajo «Video reconocido (ID …)» o «No es un enlace de YouTube…», con borde rojo si no sirve |
+| `config/puck.config.tsx` | Bloque `VideoEmbebido` en «Contenido Principal», tras Recursos visuales: «Título» y «Subtítulo» (`richtext` en el lienzo, sin encabezados ni listas), y en acordeón «Video de YouTube», «Nombre del video» y «Color de fondo» |
+| `style/globals.css` | Sección «Video embebido» (`.olo-video-embebido*`), con `box-sizing` propio en el marco |
+| `packages/accessibility-policy/src/index.ts` | `VideoEmbebido` en el manifiesto del sitio: «Nombre del video» (`tituloVideo`) obligatorio para enviar a revisión. Reconstruido `dist/` |
+
+| Verificación | Resultado |
+|---|---|
+| `idDeVideoDeYoutube` con 20 entradas | 9 válidas dan el ID (con `&t=`, `?si=`, espacios); otro dominio, `youtube.com.evil.com`, `javascript:`, HTML inyectado, `/embed/ID/../../evil`, `ftp:`, Vimeo e IDs de 10 o 12 caracteres dan `null` |
+| `validarAccesibilidad` | Sin nombre del video: `titulo_faltante` en `tituloVideo`; con nombre, nada |
+| Componente real con el CSS real, desde el origen del dev, a 1440, 1024, 768 y 375 px | Como la maqueta; el iframe apunta a `youtube-nocookie.com/embed/ID?rel=0` y carga; sin scroll horizontal (antes del `box-sizing` se salía 36 px en 768 y 375); en el editor con un enlace de Vimeo, el aviso; fuera del editor un enlace inválido no pinta nada |
+| `npx tsc --noEmit` y `eslint` en sitio-web | Sin errores (salvo `shared/lib/accesibilidad/`, que no es de este trabajo) |
+| Editor real y publicar | Sin verificar |
+
+> **La validación es en el navegador y al pintar, no al guardar**: la API no revisa el campo. No hace falta para la seguridad —lo guardado nunca llega al iframe sin pasar por `idDeVideoDeYoutube`—, pero un valor inválido se puede guardar y el bloque queda oculto en el sitio. Pendiente, si se quiere, la CSP `frame-src` del sitio (§S6 de `3-seguridad-del-proyecto.md`).
+
+---
+
+## sesión 18-10-2026 (8.ª parte): el banner de inicio saltaba al recargar
+
+**Qué se pidió:** al recargar inicio, el banner subía desde abajo y por un momento se separaba de la cabecera dejando ver una línea blanca.
+
+**Causa (medida por CDP con `PerformanceObserver` de `layout-shift`):** la animación de entrada de vista `olo-route-in` bajaba todo el contenido 8 px con `margin-top` y lo subía en 320 ms. El primer bloque arrancaba en y = 138 con `<main>` en 130: esos 8 px eran el fondo blanco entre la cabecera y el banner oscuro. Corría también en la primera carga, aunque no hubiera vista anterior, y contaba como salto de diseño (CLS 0,003 por carga).
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/style/globals.css` | `olo-route-in` queda como fundido de opacidad, sin `margin-top`. Comentario al día: por qué no se mueve ni con `margin-top` ni con `transform` |
+| `shared/ui/atoms/route-transition.tsx` | La clase `olo-route-transition` se pone desde la primera navegación (estado ajustado durante el render al cambiar `pathname`); entrar o recargar no anima. Sirve igual al layout público y al del panel (`panel-general.tsx`) |
+
+| Verificación | Resultado |
+|---|---|
+| Recarga de `/inicio` del dev por CDP, a 1440 y 375 px | Sin `layout-shift`; el banner pegado a la cabecera (y = 130 / 108) desde la primera muestra |
+| Navegación interna a /publicaciones con el enrutador de Next | La clase aparece, la opacidad sube desde 0 y `margin-top` es 0 |
+| `npx tsc --noEmit` y `eslint` del componente | Sin errores |
+| Panel de administración | Sin verificar en el navegador |
+
+> Los enlaces del menú de la cabecera recargan la página entera (son `<a>` normales, no `<Link>`), así que desde el menú ya no se ve ningún fundido. No se tocó.
+
+---
+
+## sesión 18-10-2026 (7.ª parte): «Portales externos» como fila de tarjetas con flecha
+
+**Qué se pidió:** rediseñar el bloque «Portales Externos» como en la maqueta: tarjetas de color unidas por una punta de flecha, cada una con un ícono en un círculo blanco y un texto. En el panel, solo cambiar el ícono (el usuario dejará un paquete de íconos SVG) y el texto enriquecido, una tarjeta por portal con la posibilidad de agregar más; de partida, las tres de la maqueta.
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/shared/lib/blocks/external-portals.tsx` | Reescrito. Prop `tarjetas` (`icono`, `texto` enriquecido, `enlace`, `colorFondo`); fuera título, subtítulo, `portals`, degradados e ilustraciones. Cada tarjeta entera es el enlace; en el editor (`esEdicion`) o sin enlace se pinta como `div`, para que el clic no navegue. Sin `tarjetas` (portada guardada con la versión anterior) se ven las tres del diseño |
+| `shared/lib/blocks/iconos-de-portales.ts` (nuevo) | Catálogo de íconos del bloque, sin imports. Cada ícono es un SVG de una tinta en `public/assets/svg/portales/`, que `IconoRenderer` pinta como máscara en el azul #001145. Para sumar uno: copiar el `.svg` a la carpeta y agregar su fila |
+| `public/assets/svg/portales/` (nuevo) | `pqrs.svg`, `denuncia.svg` y `transparencia.svg`, provisionales: salen de Lucide (ISC) hasta que llegue el paquete propio |
+| `packages/blocks-renderer/src/primitives/icon-selector-field.tsx` | `IconSelectorField` acepta `catalogo` (por defecto `ICONOS_DISPONIBLES`) y `permitirRuta` (por defecto sí). Quien ya lo usaba no cambia. Tipo `IconoDelCatalogo` exportado |
+| `config/puck.config.tsx` (`ExternalPortals`) | Un solo campo «Tarjetas» (lista de Puck con «+»), cada una con «Ícono» (el selector con el catálogo de portales, sin ruta a mano), «Texto» (`richtext` editable en el lienzo, sin encabezados, listas ni enlaces: va dentro del enlace de la tarjeta), «Hipervínculo» y «Color de fondo» (pinta también la flecha). `resolveData` pone las tres del diseño a una portada vieja al abrirla |
+| `style/globals.css` | Fuera `.olo-portals*` y `.olo-portal-card/-bg/-content/-label/-description`. Nuevas `.olo-portales`, `.olo-portal` (fondo en `--olo-portal-fondo`, 182 px de alto), la flecha en `::after` con `clip-path` (20 × 40 px, la última no la lleva), círculo blanco de 74 px, texto de peso normal (la negrita la pone el texto enriquecido). Bajo 40rem se apilan y la flecha apunta hacia abajo. Foco: anillo blanco por dentro y azul por fuera |
+| `features/paginas/model/home-fallback-data.ts` | La portada de respaldo con las tres tarjetas |
+
+> **Agregué «Hipervínculo» y «Color de fondo» por tarjeta** aunque el pedido decía solo ícono y texto: sin enlace un portal no lleva a ningún lado, y sin color una tarjeta nueva no se distingue de la anterior. Colores de la maqueta: #001145, #85e501 y #07ecfc.
+
+> **Contraste:** el texto blanco sobre el verde y el cian de la maqueta no llega al 4,5:1 de WCAG (sobre #07ecfc, cerca de 1,4:1).
+
+| Verificación | Resultado |
+|---|---|
+| `npx tsc --noEmit` en sitio-web, intranet y blocks-renderer | Sin errores (salvo `shared/lib/accesibilidad/`, que no es de este trabajo) |
+| Componente real con el CSS real, servido desde el origen del dev y fotografiado por CDP a 1440, 1024, 768 y 375 px | Las tres tarjetas como la maqueta, con los íconos en azul por máscara; una lista de cuatro con colores propios, una sin ícono y otra sin enlace; sin scroll horizontal; a 375 px apiladas con la flecha hacia abajo |
+| `/inicio` del dev | La portada guardada en Neon no lleva este bloque, así que no se pudo ver ahí |
+| Panel del editor (selector de íconos, texto, agregar tarjeta, publicar) | Sin verificar |
+
+**Pendiente al cierre:** cargar el paquete de íconos SVG del usuario en `public/assets/svg/portales/` y en `ICONOS_DE_PORTALES`; probar el bloque en el editor.
+
+---
+
+## sesión 18-10-2026 (6.ª parte): «Buscador de Ocupaciones» de la portada con el diseño nuevo
+
+**Qué se pidió:** cambiar el banner del buscador de ocupaciones por la maqueta «¿Sabes qué es una ocupación?» (titular, descripción y un recuadro azul con el buscador, sobre una imagen de fondo), reemplazando el bloque que ya se usa desde el editor. Configurable: textos enriquecidos, imagen de fondo y color del recuadro. Después: transparencia de la imagen de fondo.
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/features/sitio-web/buscador-ocupaciones/components/portada-buscador-ocupaciones.tsx` (nuevo) | `PortadaBuscadorOcupaciones`, solo presentación: sección con la imagen de fondo en una capa propia (`absolute`, `-z-10`, `opacity`), contenedor de 852 px, titular en `<h2>` (#001145, 28/36/40 px), descripción (17/20/22 px) y recuadro de esquinas de 16 px con su texto y el buscador (campo blanco de esquinas de 12 px y botón redondo del color del recuadro). Colores tomados de la maqueta (#001145) |
+| `hero-buscador-ocupaciones.tsx` | Usa `PortadaBuscadorOcupaciones` en vez de `OcupacionSearchBanner`. Props nuevas `tituloSeccion`, `descripcion`, `imagenFondo` y `transparenciaFondo`; fuera logo e ilustración. Textos por defecto en nodos, porque Puck entrega un `richtext` vacío o ausente como `null` |
+| `config/puck.config.tsx` (`Hero`) | Mismo tipo y etiqueta, así que la portada guardada sigue sirviendo. Campos: «Titular», «Descripción» y «Texto del recuadro» (`richtext`, editables en el lienzo; los dos de una línea sin encabezados, listas ni citas —`OPCIONES_TEXTO_EN_LINEA`— porque van dentro de un `<h2>`), y en acordeón «Texto de ejemplo del buscador», «Imagen de fondo», «Transparencia de la imagen» (0–100 %, vacío = 0) y «Color del recuadro». `titulo` y `colorFondo` conservan el nombre y pasan a ser el texto y el color del recuadro. `resolveData` completa titular y descripción de una portada vieja al abrirla |
+| `features/paginas/model/home-fallback-data.ts` | La portada de respaldo con las props nuevas |
+| `packages/accessibility-policy/src/index.ts` | Fuera la regla `Hero` (alt de `imageUrl`): el logo ya no se pinta y la imagen de fondo es decorativa. Reconstruido `dist/` |
+| Modales del buscador con el color del recuadro (pedido después) | `ModalOcupaciones` acepta `colorAcento` y lo deja en la variable `--olo-modal-acento` del fondo del modal; el encabezado y las etiquetas de código de `ResultadosOcupaciones` y de las ocupaciones relacionadas de `DetalleOcupacion` usan `var(--olo-modal-acento, #001631)`. El buscador de la portada pasa el color del recuadro (vacío = #001145, `AZUL_PORTADA`). Alertas de inversión, que usa el mismo modal sin pasar color, sigue en #001631 |
+| Modales del buscador a pantalla completa (pedido después) | `ModalOcupaciones` acepta `pantallaCompleta`: el panel ocupa toda la ventana (`h-dvh`, sin márgenes ni esquinas) y sigue siendo diálogo modal (foco encerrado, Escape, fondo bloqueado). Encabezado, cuerpo y pie centran su contenido a 1200 px como máximo, para que en pantallas anchas no se estire. Lo pasa solo el buscador de la portada, para resultados y detalle; Alertas de inversión sigue con el panel centrado |
+| Título del modal de resultados (pedido después) | «Clasificación Nacional de Ocupaciones - Buscador de Ocupaciones» (`TITULO_RESULTADOS` en `hero-buscador-ocupaciones.tsx`), también mientras carga. Si la búsqueda llega con `?tipo=cuoc` o `?tipo=cno`, se sigue mostrando el nombre de esa clasificación |
+
+> **`OcupacionSearchBanner` no se tocó**: lo sigue usando /clasificacion (`BuscadorOcupacionesBanner`) con el diseño de antes.
+
+> **Un titular o una descripción borrados del todo vuelven al texto por defecto**: Puck no distingue «vacío» de «no guardado».
+
+| Verificación | Resultado |
+|---|---|
+| `npx tsc --noEmit` en sitio-web, intranet y api-backend | Sin errores (salvo `shared/lib/accesibilidad/`, que no es de este trabajo) |
+| `/inicio` del dev por CDP a 1440, 1024, 768 y 375 px | La portada guardada se ve con el diseño nuevo y los textos por defecto; sin scroll horizontal; a 375 px el placeholder del buscador se corta |
+| Imagen de fondo con transparencia (capa inyectada por CDP, al 40 %) | Se ve detrás del texto sin aclararlo |
+| Búsqueda «enfermer» en `/inicio` del dev por CDP (solo lectura) | Encabezado del modal en el azul del recuadro; con `--olo-modal-acento: #7a1fa2` el encabezado y los códigos de los resultados pasan a morado, y en el detalle también el código de las ocupaciones relacionadas |
+| Modal a pantalla completa en `/inicio` del dev por CDP, a 1440 y 375 px | El diálogo mide lo mismo que la ventana (1440 × 860 y 375 × 860); a 1440 la tabla de resultados queda en 1198 px centrada. El botón fijo de accesibilidad queda por encima del modal, tapando un poco el contenido en el borde derecho |
+| Editor real (cargar imagen, cambiar color y transparencia, publicar) | Sin verificar |
+
+**Pendiente al cierre:** reiniciar la API para que tome la política de accesibilidad nueva; probar el bloque en el editor y publicar la portada.
+
+---
+
+## sesión 18-10-2026 (5.ª parte): panel de accesibilidad en el sitio público
+
+**Qué se pidió:** incorporar la accesibilidad al sitio web (solo al sitio, no a la intranet) con las opciones de la maqueta: un panel que se abre desde un botón que acompaña el scroll, con el icono que dio el usuario.
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/shared/lib/accesibilidad/` (nuevo) | `Accesibilidad` (botón + panel + filtro del daltonismo + script antes de pintar), `PanelAccesibilidad`, `GuiaDeLectura`, `useLectorEnVozAlta`, `usePreferenciasAccesibilidad`, el icono (`icono-accesibilidad.tsx`, los trazos del SVG del usuario en `currentColor`) y `preferencias.ts` (modelo, almacén, atributos del `<html>` y el script) |
+| `app/(public)/layout.tsx` | Monta `<Accesibilidad />` y pone `lexend.variable` en `.publico-layout`. El panel, el editor y la vista previa no lo llevan |
+| `shared/lib/fonts.ts` | `lexend` (`--font-dislexia`, `preload: false`: solo lo descarga quien activa «Fuente dislexia») |
+| `style/globals.css` | Sección nueva al final, «Accesibilidad del sitio público»: botón, panel, guía y una regla por preferencia |
+| `docs/9-accesibilidad.md` | Fase 4 (alto contraste) pasa a «en marcha», con el porqué de no haberla hecho con tokens |
+| `scripts/mapa/descripciones.md` | Propósito de la carpeta nueva |
+| Color y tamaño (pedido después) | Todo lo de accesibilidad en **#001145** (antes #001631): la pestaña (al pasar el ratón #0b1f63), el icono de la cabecera, las barras de nivel, las tarjetas elegidas, el botón «Restablecer», el texto del panel (subtítulo al 75 % y «Opciones avanzadas» al 70 %), la sombra, el velo de la guía de lectura y la flecha del cursor grande. La pestaña baja de 56 × 60 a 48 × 51 px (misma proporción del SVG, con `aspect-ratio`; sigue por encima de los 44 px táctiles) |
+| Márgenes y scroll perdidos (reportado después) | No era el código: el `next dev` compiló `globals.css` entre dos ediciones seguidas y se quedó con la regla nueva del panel (sin relleno, `overflow: hidden`) pero sin las de `__cuerpo`. Un `touch` no lo despertó; un cambio real de contenido (un comentario) sí. Medido después en el dev: relleno 12/16/4 px, la rueda baja 87 px a 1280 y 247 a 360 hasta ver «Cursor grande» |
+| Esquinas del panel (pedido después) | Al hacer scroll las tarjetas pasaban por debajo de las esquinas redondeadas y se veían cortadas. Ahora la cabecera y el pie (con «Restablecer») quedan fijos y solo se desplaza el cuerpo (`.olo-a11y-panel__cuerpo`, con `min-height: 0` y relleno para el contorno de foco), y el redondeo baja de 24 a 16 px |
+
+**Cómo funciona.** Cada preferencia es un atributo `data-a11y-*` en el `<html>` (`data-a11y-texto="2"`, `data-a11y-contraste`…) y el CSS hace el resto. Se guardan en `localStorage` (`olo-accesibilidad`), como el tema del panel: el visitante no tiene cuenta. Un script inyectado con `useServerInsertedHTML` (el patrón de `SincronizarTema`) las pone antes del primer pintado, así que quien pidió letra grande no la ve crecer al cargar. Al salir de `(public)` los atributos se quitan.
+
+| Opción | Qué hace |
+|---|---|
+| Lector de pantalla | Lee en voz alta (Web Speech API, voz del navegador en `es-CO`) lo que se toca o se enfoca con el teclado, y lo marca con un contorno. No reemplaza a NVDA/JAWS: es para quien ve pero lee con dificultad. Deshabilitado si el navegador no tiene voz |
+| Tamaño del texto | Normal / Grande / Más grande / Máximo: `font-size` del `<html>` al 115/130/150 %. Crece todo lo que mide en `rem` |
+| Alto contraste | Blanco sobre negro (21:1), enlaces en amarillo (19:1), fuera los degradados; se quedan las imágenes y las fotos de fondo en línea |
+| Saturación | Baja (50 %) / Alta (200 %) / Sin color |
+| Pausar animación | El «catch-all» de la intranet: animaciones y transiciones a 0,01 ms; además pausa los `<video>` que suenan |
+| Fuente dislexia | Lexend en todo el sitio |
+| Interlineado / Interletrado | Tres niveles; el 2.º es lo que pide WCAG 1.4.12 (0,12 em entre letras, 0,16 em entre palabras) |
+| Daltonismo | Al encender el interruptor se despliegan tres tarjetas: Protanopia, Deuteranopia (la que queda elegida al encender, por ser la más frecuente) y Tritanopia (pedido después, con su maqueta). Cada una es un filtro SVG «daltonize» con su matriz (`MATRICES_DE_DALTONISMO`, con la simulación de la que sale cada una). En las preferencias, `daltonismo` pasó de sí/no a un número: 0 apagado, 1–3 el tipo, y se aplica como los niveles (`data-a11y-daltonismo="2"`). Las tarjetas son radios nativos: las flechas cambian de tipo. Plegadas, llevan `inert` |
+| Resaltar títulos / enlaces, Texto en negrita, Cursor grande | Contorno en h1–h6; enlaces en amarillo con negro y subrayados; todo a 700; flecha de 48 px con borde blanco (azul sobre lo pulsable) |
+| Guía de lectura | Oscurece por encima y por debajo de una franja que sigue al puntero o al dedo |
+
+> **Los filtros van en el `<html>` y en ningún otro sitio.** Un `filter` en cualquier contenedor lo vuelve el marco de sus hijos `position: fixed` (la misma trampa del `transform` de `.olo-route-transition`): la cabecera, el FAB y el propio botón dejarían de anclarse a la ventana. El elemento raíz es la única excepción. Medido: con saturación + daltonismo y 1.056 px de scroll, el botón sigue en y = 420. Daltonismo y saturación dejan cada uno su parte en una variable (`--olo-filtro-daltonismo`, `--olo-filtro-saturacion`) y una sola regla las encadena, en vez de una regla por cada pareja.
+
+> **El botón, el panel y la guía salen por portal al `<body>`**, fuera de `.publico-layout`, contra el que se escriben las reglas de contraste, negrita y espaciado: si no, el alto contraste pintaba de negro los interruptores con los que se apaga. El filtro SVG del daltonismo sí se pinta en la página, porque tiene que estar en el HTML del servidor cuando el script ya lo pidió.
+
+> **No es un modal**: sin el fondo borroso de los demás ni foco atrapado, porque el visitante tiene que ver la página cambiar mientras elige. Se cierra con la X, Escape o tocando fuera; el foco entra al abrir y vuelve al botón al cerrar. Usa los tiempos `--olo-modal-*` y `useCierreAnimado`, entrando desde la derecha.
+
+**Migas de pan (pedido después: «la accesibilidad también incluye las migas de pan; esto es fijo, no se puede editar»).**
+
+| Capa | Cambio |
+|---|---|
+| `shared/ui/organisms/migas-de-pan.tsx` (nuevo) | `MigasDePan` (cliente, lee la ruta con `usePathname`) y `eslabonesDeLaRuta(ruta, menu)`. Pinta con la molécula `Breadcrumb` que ya existía (patrón WAI-ARIA: `nav` rotulado, lista ordenada, `aria-current="page"` en la última) |
+| `app/(public)/layout.tsx` | `<MigasDePan menu={plantilla.cabecera?.navLinks ?? []} />` entre la cabecera y el `<main>`: en todas las páginas públicas menos Inicio, y fuera de Puck, así que no se edita |
+| `shared/ui/molecules/breadcrumb.tsx` | `Link` en vez de `<a>` (volver a una sección ya no recarga la página). Estilo pedido por el usuario: todo en #001145, sin subrayado; los eslabones anteriores en letra fina (Poppins 300) y más suaves (#001145 al 70 %, unos 7:1 sobre blanco), el separador al 40 % y la página actual en negrita (700) a tono pleno. Al pasar el ratón el enlace toma el tono pleno. `MigasDePan` lleva `poppins.className`: el `'Poppins'` de `--font-body` no es la letra que carga next/font y el 300 caería en la del sistema (medido con `CSS.getPlatformFontsForNode`: Poppins-Light y Poppins-Bold) |
+| `buscador-ocupaciones-view.tsx` | Fuera sus migas propias: salían repetidas en `/clasificacion`. Con ellas se va el tercer eslabón de los enlaces viejos con `?tipo=` |
+| `globals.css` | `.migas-de-pan`: franja blanca sin borde (se quitó a pedido del usuario), alineada con el contenido de la cabecera y con sus mismos rellenos por ancho. No es `sticky` |
+
+De dónde sale cada nombre: **del menú de «Menú y pie»**, que manda (si se renombra una sección en el menú, cambia también aquí); si no está en el menú, de `NOMBRES_FIJOS` (las páginas con carpeta propia: clasificaciones, CNO, CUOC, alertas de inversión, política de privacidad, programas sobresalientes); y si tampoco, el tramo de la URL legible (`tasa-de-empleo` → «Tasa de empleo»). Un tramo intermedio solo es enlace si se sabe que existe, para no mandar a un 404. Si la página es un enlace de un submenú cuya sección no es parte de la URL («Servicios» → `/ape`), la sección entra como eslabón sin enlace.
+
+**Decisiones que tomé sin preguntar (revisables):**
+- **Migas de pan:** no van en Inicio, ni fijas al hacer scroll (la cabecera ya es `sticky`); separador «/», el de la molécula.
+- **Lexend y no OpenDyslexic** para «Fuente dislexia»: OpenDyslexic no está en Google Fonts y habría que meter los archivos de la letra en el repo. Cambiarla es tocar `lexend` en `fonts.ts`.
+- **«Restablecer configuración»**, no «Reestablecer» como en la maqueta (la RAE da la primera).
+- En «Tamaño del texto» la tarjeta muestra el nombre del nivel (como la maqueta muestra «Normal»); en «Saturación» también, porque bajo/alto/sin color no se distinguen solo con las barras. Interlineado e interletrado se quedan con su nombre y las barras.
+- La pestaña mide 56 × 60 px fijos (no `rem`), para que no crezca con «Tamaño del texto».
+
+| Verificación | Resultado |
+|---|---|
+| `npx tsc --noEmit` en sitio-web | Sin errores |
+| `npx eslint` de la carpeta nueva, el layout y `fonts.ts` | Sin avisos |
+| `/inicio` del dev en Chrome headless por CDP, solo GET (el resto bloqueado: ninguna visita ni nada escrito en Neon) | Botón de 56 × 60 a la derecha y centrado; el script está en el `<head>`; al abrir, `aria-expanded="true"`, el foco en el panel y la pestaña escondida tras el borde |
+| Mismo, cambiando opciones | Más grande → `font-size` del `<html>` 20,8 px; contraste → fondo de `main` negro; dislexia → Lexend; se guardan en `localStorage` |
+| Recarga | Los atributos ya están puestos (los puso el script) |
+| Saturación + daltonismo y scroll | `filter: url("#olo-a11y-daltonismo-2") saturate(0.5)`; el botón sigue en la misma posición de la ventana |
+| Tipos de daltonismo | Apagado: tarjetas con alto 0 e `inert`. Encendido: alto 108 px, Deuteranopia elegida, filtro `-2`. Clic en Tritanopia → `-3`; flecha izquierda con el teclado → `-2`. Tras recargar sigue elegido. Apagado de nuevo: se pliega y queda solo la saturación. A 360 px las tres tarjetas miden 90 px sin desbordarse |
+| Cerrar con la X | El panel se desmonta y el foco vuelve al botón |
+| Restablecer | Sin atributos y la clave borrada del almacenamiento |
+| Lector (con `speechSynthesis.speak` espiado) | Dijo «Lector de pantalla activado» y «Título: texto de prueba» en `es-CO`, y marcó un elemento |
+| Pausar animación | La transición del panel queda en 0,01 ms |
+| 360 y 768 px | Sin scroll horizontal; el panel cabe (328 y 336 px de ancho) con su scroll propio |
+| `eslabonesDeLaRuta` real (transpilado) con 10 rutas | `/inicio` y `/` sin migas; `/clasificacion/cuoc` → Inicio › Clasificaciones (enlace) › nombre del menú; `/ape` bajo «Servicios» con `#` → Servicios sin enlace; `/encuestas/tasa-de-empleo` → tramos legibles sin enlace; sin menú → los nombres fijos |
+| Migas en el dev por CDP (5 rutas) | Las de arriba, con `aria-label="Ruta de navegación"` y `aria-current` en la última; empiezan justo debajo de la cabecera |
+| Clic en «Clasificaciones» de las migas | Navega a `/clasificacion` sin recargar la página y las migas se actualizan |
+| Alineación con el logo a 360 / 768 / 1280 px | 8/8, 24/24 y 64/64 px; sin scroll horizontal |
+| Migas con alto contraste | Blanco y amarillo sobre negro |
+| Color, tamaño y esquinas (con el `globals.css` compilado aparte inyectado en la página, porque el `next dev` tardaba en recompilar) | Pestaña de 48 × 51 en rgb(0, 17, 69) a 1280 y 360 px; panel con radio de 16 px y texto rgb(0, 17, 69); se desplaza el cuerpo y no el panel; la cabecera y el pie quedan pegados a su borde |
+| Estilo nuevo en el dev por CDP | Enlace: 300, #001145 al 70 %, sin subrayado; actual: 700, rgb(0, 17, 69) |
+| Borde quitado | `globals.css` compilado aparte con su Tailwind: `.migas-de-pan` solo con fondo. El `next dev` siguió sirviendo la regla vieja con borde aun después de `touch` al archivo: hay que recargar sin caché o reiniciar `next dev` para verlo |
+| Con un lector de pantalla real (NVDA) y en Safari/iOS | Sin verificar |
+
+**Pendiente al cierre:**
+- Lo que está en `px` no crece con «Tamaño del texto»: 19 `font-size` en px en `globals.css` y unos 30 `text-[…px]` en los bloques. Pasarlos a `rem` cuando se toque cada bloque.
+- Con alto contraste, un logo o icono con color fijo oscuro sobre fondo transparente se pierde sobre el negro.
+- «Pausar animación» no detiene lo que se anima con JavaScript (framer-motion, carruseles con temporizador).
+- El cursor grande es la misma flecha en azul sobre lo pulsable, no una mano.
+- Probar con NVDA que la región viva anuncia cada cambio, y el panel en Safari.
+
+---
+
+## sesión 18-10-2026 (4.ª parte): panel del «Pie de página» en tarjetas
+
+**Qué se pidió:** ordenar el panel del pie: acordeones, campos relacionados juntos en tarjetas y los mismos controles con borde y esquinas redondeadas que el resto del editor.
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/features/paginas/menu-y-pie/campos-del-pie.ts` (nuevo) | `crearCamposDelPie(campoImagen)`: los ~30 campos sueltos pasan a 9 tarjetas (`campoGrupoEnUnAcordeon`): Colores, Logos, Entidad y dirección, WhatsApp, Líneas de atención y PQRS, Mesa de ayuda, Horario, Sello de certificación y Franja GOV.CO inferior. Redes sociales y las tres filas de enlaces pasan a `campoListaEnAcordeones` (subir/bajar/eliminar y «+ Agregar»); esas cuatro siguen siendo sus mismas props, así que no cambian de forma. Orden: el del pie, de arriba abajo. Etiquetas más claras («Texto alternativo del logo del SENA», «Hipervínculo…») |
+| Mismo archivo | `resolverGruposDelPie` (el `resolveData` del bloque): un grupo que falta se arma desde las props sueltas, y después las props sueltas se copian de su grupo. **Las props sueltas siguen siendo la fuente** para `Footer`, `obtenerPlantilla` y el pie publicado: no hubo que migrar ni tocar el componente. Es idempotente |
+| `3000-sitio-web/src/config/puck.config.tsx` | `Footer.fields = crearCamposDelPie(campoImagen)` y `resolveData: resolverGruposDelPie`. Va en un módulo aparte que no importa de `@/features/paginas` (el ciclo de `TAMANOS_TEXTO_MENU`) |
+| Franja GOV.CO del pie (pedido después) | `.olo-gov-banner-bottom` con la altura y el borde izquierdo de la de la cabecera: 40 px (36 bajo 40rem), relleno lateral `max(clamp(16px, 4vw, 40px), calc((100% - 1920px) / 2 + 40px))` —lo mismo que `.olo-gov-banner-container`, que se centra con 1920 px de ancho máximo— y la marca GOV.CO a 20 px (18 en móvil). Antes: `padding: 14px 20px` y la marca a 24 px |
+| Color de fondo de las dos franjas (pedido después) | `colorFranjaGov` en `Header` (campo «Color de fondo de la franja GOV.CO», junto a la imagen de la franja) y en `Footer` (dentro de la tarjeta «Franja GOV.CO inferior», que lo copia a la prop suelta). `VALORES_PIE_POR_DEFECTO.colorFranjaGov: ''`. **Sin color, las dos franjas son blancas** (antes azules #0943B5), a pedido del usuario. La marca GOV.CO, el «|» del pie y la hora de la cabecera estaban en blanco y habrían desaparecido: ahora van con `currentColor` (7 trazos en cada SVG) y `estiloDeFranjaGov` (`shared/lib/blocks/tinta-de-franja.ts`, sin imports de la app) elige la tinta por luminancia: azul #0943B5 sobre fondos claros (y el blanco por defecto, desde el CSS), blanca sobre oscuros; un nombre CSS cuenta como oscuro |
+| Franja GOV.CO superior sin marca dibujada (pedido después) | Se quitó el SVG de GOV.CO que la cabecera pintaba cuando no había imagen: ahora solo se ve la imagen que se sube en «Imagen de la franja», dentro del mismo enlace a gov.co (`aria-label` en el enlace, `alt=""` en la imagen). Sin imagen, la franja queda con la fecha y la hora, que se quedan a la derecha con `margin-left: auto` en `.olo-gov-banner-edit` (el contenedor es `space-between`). Fuera las reglas `.olo-gov-banner-brand svg`. Ayuda del campo y resumen («Cargada / Sin imagen») al día. Comprobado en `/inicio` del dev: la franja queda solo con la hora, a la derecha |
+| Franja GOV.CO inferior: imagen subible, cajas y márgenes (pedido después) | Nuevas props `govCoImgUrl`/`govCoImgAlt` (la imagen va dentro del enlace a gov.co, con el nombre del enlace en `aria-label` y `alt=""`) y seis márgenes en px: `rutaCoMargen{Arriba,Abajo,Lados}` y `govCoMargen{Arriba,Abajo,Lados}`, en la tarjeta «Franja GOV.CO inferior». Cada imagen va en `.olo-franja-imagen`: caja del alto de la franja (40/36 px), con el margen como relleno, imagen a `height: 100%` y `object-fit: contain`, `max-width: 45%`: por grande que se suba, no agranda la franja. Margen vacío (`''`, lo que guarda el editor al borrarlo) o sin guardar = el de siempre (Colombia 7/7/0, GOV.CO 10/10/0), que el campo enseña como placeholder; los demás se recortan a 0–40 |
+| Sin SVG en la franja inferior (pedido después) | Fuera la marca GOV.CO dibujada en el código (y sus reglas `.olo-gov-banner-bottom svg`): sin imagen subida no se muestra. El «|» solo aparece si están las dos imágenes. Las dos franjas quedan sin marcas en el código |
+| Franja inferior: alineación y separación (pedido después) | Fuera «Margen a los lados» de cada imagen. Para toda la franja: «Alineación de las imágenes» (Izquierda / Centro / Derecha → `justify-content`) y «Separación entre las imágenes» (`gap`), una escala que acompaña a la pantalla: `SEPARACIONES_FRANJA` en `shared/lib/blocks/disposicion-de-franja.ts`, cada paso un `clamp(mín, vw, máx)` (8–16, 12–32, 16–64, 24–120 px); vacío = los 12 px del CSS. No es un número de px porque no sería responsivo |
+| Franja superior en una sola tarjeta (pedido después) | «Franja superior GOV.CO» (`grupoFranjaGov`, `campoGrupoEnUnAcordeon`) con Franja (mostrar/ocultar), Imagen de GOV.CO, márgenes arriba/abajo (por defecto 4/4 = los 32 px de alto de antes), color de fondo, alineación de la imagen y separación con la fecha. La imagen va en `.olo-franja-imagen` (ya no `.olo-gov-banner-custom-img`, que se borró). Alineación (`posicionDeLaMarca` en header.tsx): a la izquierda como antes; centrada en `position: absolute` respecto a `.olo-gov-banner-container` (ahora `relative`), para quedar en el centro de la franja y no del hueco que deja la fecha; a la derecha, `margin-left: auto` en la imagen y la separación elegida como margen de la fecha. La fecha y la hora se quedan siempre a la derecha |
+| Hipervínculo de la imagen de GOV.CO (pedido después) | Campo «Hipervínculo de la imagen» (`govBannerEnlace`) en la tarjeta de la franja superior; antes el enlace era fijo a gov.co. `enlaceDeGovCo` (`disposicion-de-franja.ts`) solo acepta `https://`, `http://` o una ruta `/…`; vacío, `javascript:`, `//otro-sitio` o `www.…` sin protocolo caen en https://www.gov.co. El enlace de la fecha y la hora (al panel o al acceso) sigue fijo, a propósito. Probado con 10 entradas |
+| `features/paginas/menu-y-pie/grupos-de-props.ts` (nuevo) | `resolverGruposDeProps(props, clavesPorGrupo)`: el mecanismo grupo ⇄ props sueltas del pie, sacado para reutilizarlo; lo usan `resolverGruposDelPie` y el `resolveData` de la cabecera (que además conserva el paso de `intranetText` a `botonIntranet`). `rellenoDeImagenDeFranja` también pasó a `disposicion-de-franja.ts`, compartido por las dos franjas |
+| `campos-en-acordeon.tsx` (número) | Control `number`: `min`, `max`, `sufijo` («px») y `placeholder`; recorta al rango y guarda `''` si se vacía |
+| `campos-en-acordeon.tsx` | Control `textarea` (3 filas, se estira en vertical) para dirección, horarios y teléfonos. Lista vacía: «Todavía está vacía.» (antes «ninguna», que no casaba con «enlace») |
+
+> **Se pierde la edición en el lienzo** de los textos del pie que tenían `contentEditable` (nombre de la entidad, dirección, WhatsApp, líneas, mesa de ayuda, horario): ahora se editan en su tarjeta.
+
+> **Datos duplicados a propósito:** al guardar, el pie lleva cada valor dos veces (`grupoLogos.logoSenaUrl` y `logoSenaUrl`). Es el precio de no migrar; si algún día `Footer` lee los grupos, sobran las sueltas.
+
+> **Descartado:** anidar las props en objetos y aplanarlas al pintar. Obligaba a tocar `Footer`, `obtenerPlantilla` y cualquier pie publicado, para el mismo resultado en el panel.
+
+| Verificación | Resultado |
+|---|---|
+| `resolverGruposDelPie` real (transpilado) con `assert` | Pie viejo: arma los grupos sin tocar las sueltas; cambio en una tarjeta: la suelta lo sigue; segunda pasada: idéntica |
+| Panel pintado en Chrome headless | 9 tarjetas y 4 listas en el orden del pie; resumen de la red social «X (Twitter)» |
+| `/inicio` del dev en Chrome headless | Carga con su `<footer>` y sin errores nuevos |
+| `npx tsc --noEmit` en blocks-renderer, sitio-web e intranet | Sin errores |
+| Las dos franjas en `/inicio` del dev, medidas por CDP a 375, 1440 y 2200 px | Alto 36/40/40 en las dos; el contenido empieza en x = 16/40/175 en las dos; sin color propio, fondo blanco y marca rgb(9, 67, 181) en las dos |
+| `estiloDeFranjaGov` real con varios colores | vacío → nada (CSS); #0943B5, #39a900 y `navy` → tinta blanca; #fff, #f3f4f6 y #13e3f5 → tinta azul |
+| Franja del pie en el dev por CDP, con los márgenes por defecto | 40/36 px de alto como antes; imagen de Colombia de 26 px en computador (22 en celular; antes 18, el `clamp`). Tras quitar el SVG: solo la imagen de Colombia en su caja, sin «|» |
+| Tarjeta «Franja GOV.CO inferior» con los campos de número pintada en Chrome headless | Campos de número con «px», placeholders y ayuda |
+| Franja superior con el CSS real y los estilos en línea de header.tsx, a 900 y 375 px | Izquierda, centro (centrada en la franja, sin pisar la fecha en 375 px) y derecha con 12 px y con la separación «Muy grande» |
+| Pruebas de `resolverGruposDelPie` con el resolver compartido | Los 3 casos siguen bien |
+| `/inicio` del dev tras el cambio | La primera carga dio un error de hidratación entre varias recompilaciones en caliente (había archivos cambiando, entre ellos la carpeta sin versionar `shared/lib/accesibilidad/`, que no es de este trabajo); la segunda, sin errores |
+| Editor real | Sin verificar |
+
+**Pendiente al cierre:** abrir «Menú y pie» en el editor, cambiar algo de una tarjeta y publicar, para ver que el pie publicado lo toma.
+
+---
+
+## sesión 18-10-2026 (3.ª parte): «Espaciado y Ancho» con medidas en px
+
+**Qué se pidió:** que las cuatro medidas de «Espaciado y Ancho» (espacio interior arriba/abajo y a los lados, separación con el bloque de arriba y de abajo) ofrezcan seis valores en px: 10, 12, 14, 20, 26 y 32.
+
+| Capa | Cambio |
+|---|---|
+| `controles-de-caja.tsx` | `ESCALA_ESPACIO` suma `px10` … `px32`; `OPCIONES_ESPACIO` pasa a «Ninguno» + «10 px» … «32 px». «Ninguno» se queda porque es el valor por defecto de la caja: sin él, todo bloque recién soltado tendría espacio. La decisión 3 de la cabecera del archivo se reescribió (antes: «escala con nombres, no píxeles») |
+| `controles-de-caja.tsx` | Las claves de nombre (`minimo` 8, `poco` 16, `medio` 24, `amplio` 40, `maximo` 64) **siguen en la escala**: hay páginas guardadas con ellas y Grid, Flex y Espacio las usan como separación por defecto (`layout-primitives.tsx`). No se ofrecen en la caja; van en `OPCIONES_ESPACIO_ANTERIORES` |
+| `campos-en-acordeon.tsx` | El `select` acepta `anteriores`: si el valor guardado es uno de ellos, el desplegable lo añade («Medio · 24 px (anterior)») y la cabecera lo muestra, en vez de enseñar «Ninguno» con un valor que no es |
+
+> **Choca con el consejo de la 2.ª parte:** las tarjetas de «Imagen destacada» cuelgan 5,5rem (88 px) sobre el bloque siguiente, y ahora la caja llega como mucho a 32 px. «Amplio» y «Muy amplio» ya no se ofrecen, así que ese bloque no puede abrirse hueco solo con la caja.
+
+> En celular la caja sigue multiplicando por 0,6 (`globals.css`, `.olo-caja`): 10 px quedan en 6 px y 32 px en 19 px.
+
+| Verificación | Resultado |
+|---|---|
+| `pixelesDeEspacio` real (transpilado) | px10…px32 = 10, 12, 14, 20, 26, 32; `medio` sigue en 24; `ninguno` 0 |
+| `estiloDeCaja({ interiorY: 'px20', superior: 'medio' })` | `--olo-caja-interior-y: 20px`, `--olo-caja-superior: 24px` |
+| Grupo pintado en Chrome headless con un valor nuevo y uno anterior | «20 px», «32 px» y «Medio · 24 px (anterior)» en las cabeceras |
+| `npx tsc --noEmit` en blocks-renderer, sitio-web e intranet | Sin errores |
+
+**Pendiente al cierre:** ver el panel en el editor; decidir cómo abrir hueco bajo las tarjetas de «Imagen destacada» ahora que la caja llega a 32 px.
+
+---
+
+## sesión 18-10-2026 (2.ª parte): «Imagen destacada» con dos tarjetas sobre el borde de la imagen
+
+**Qué se pidió:** dos tarjetas como las del diseño del inicio («Emprender» y «Buscar empleo»), montadas sobre el borde inferior de la imagen, con sus opciones en el editor para la imagen y el hipervínculo.
+
+| Capa | Cambio |
+|---|---|
+| `packages/blocks-renderer/src/blocks/imagen-destacada.tsx` | Props `tarjeta1` y `tarjeta2` (`TarjetaDestacada`: `imagen`, `titulo`, `enlace`, `nuevaPestana`) y `TarjetasDestacadas` debajo de la imagen, en los dos anchos. Con enlace la tarjeta es un `<a>` (con `target="_blank"` + `rel="noopener noreferrer"` si se pidió pestaña nueva) y lleva la flecha verde; sin enlace es un `<div>` sin flecha. Sin imagen ni título no se pinta; en el editor deja un hueco punteado que dice qué falta |
+| `3000-sitio-web/src/style/globals.css` | `.olo-tarjetas-destacadas` y `.olo-tarjeta-destacada*` junto a los estilos de «Imagen destacada»: 156 × 176 px, esquinas de 12 px, sombra, panel interior gris claro (`::before`), flecha `#39a900`, subida de 4 px al pasar el cursor (sin movimiento con `prefers-reduced-motion`), foco `#001631`. Bajo 40rem: 136 × 152 px y 16 px de separación. Van en CSS y no en Tailwind porque Tailwind del sitio no recorre `packages/` |
+| Tarjetas a caballo con el bloque de abajo (pedido después) | Con tarjetas, la sección lleva `.olo-imagen-destacada--con-tarjetas`: sin relleno inferior, `position: relative; z-index: 2` para pintarse sobre el bloque siguiente, y las tarjetas con `margin-bottom` negativo de media tarjeta (`--olo-tarjetas-desplazamiento`: 5,5rem; 4,75rem bajo 40rem). La decisión de pintarlas se sacó a `hayTarjetas()` para que el componente sepa poner la clase |
+| Sin flecha verde (pedido después) | Se quitó la flecha de las tarjetas y su CSS (`.olo-tarjeta-destacada__flecha`): con hipervínculo, la tarjeta entera es el `<a>` y lleva a su ruta al hacer clic; la subida al pasar el cursor queda como señal. Ayuda del campo: «A dónde lleva la tarjeta al hacer clic en ella. Vacío: la tarjeta no lleva a ningún lado.» Comprobado en el render: las tarjetas siguen siendo `<a href>` y no queda rastro de la flecha |
+| Tarjetas en una sola sección con «+ Agregar tarjeta» (pedido después) | `tarjeta1`/`tarjeta2` pasan a la lista `tarjetas` con `campoListaEnAcordeones` (nuevo en `campos-en-acordeon.tsx`): título «Tarjetas», un acordeón por tarjeta («Tarjeta N» + su título como resumen) con Subir, Bajar y Eliminar, y un botón «+ Agregar tarjeta» que abre la nueva. Cada tarjeta lleva un `id` para que los acordeones no se confundan al mover o borrar. Las tarjetas pasan a otra fila si no caben (`flex-wrap`, 24 px entre filas). `defaultProps.tarjetas: []`. `resolveData` pasa a la lista un bloque guardado con `tarjeta1`/`tarjeta2` (descarta las vacías) y el componente aún las lee si no hay `tarjetas`. Los controles de un grupo se sacaron a `ControlesDeGrupo`, compartido con `campoGrupoEnUnAcordeon` |
+| `3000-sitio-web/src/config/puck.config.tsx` | «Tarjeta 1» y «Tarjeta 2», cada una en un solo acordeón (`campoGrupoEnUnAcordeon`): imagen (el `campoImagen` de siempre), título, hipervínculo y «Abrir en» (misma pestaña / pestaña nueva), con ayudas |
+
+> **`.matriz-section-*` recortaba las tarjetas:** trae `overflow-x: hidden`, y un eje en `hidden` convierte el otro en `auto`, así que todo lo que colgaba bajo la sección se cortaba en el borde. En la sección con tarjetas va `overflow-x: clip` + `overflow-y: visible`: `clip` no arrastra al otro eje.
+
+> **El título no estaba en el pedido** (imagen e hipervínculo); se añadió porque está en el diseño y es el nombre del enlace para un lector de pantalla. Por eso la imagen de la tarjeta lleva `alt=""` cuando hay título.
+
+> **La intranet no ve las tarjetas:** también usa este componente, pero su panel no las ofrece. Si un bloque no trae ninguna de las dos props (la intranet, o un bloque del sitio guardado antes), `TarjetasDestacadas` no pinta nada, ni siquiera los huecos del editor.
+
+> **Descartado:** reutilizar `campoDestinoBoton` para el enlace. Trae su propio selector enlace/archivo/ninguno con otro aspecto; para una tarjeta bastaba un texto con la URL y la opción de pestaña nueva, con los mismos controles del resto del panel.
+
+| Verificación | Resultado |
+|---|---|
+| Componente pintado con `react-dom/server` y el CSS real del sitio, fotografiado en Chrome headless a 1250 px | Igual al diseño: dos tarjetas centradas montadas sobre el borde inferior |
+| Mismo render a 375 y 320 px (en iframes, porque la ventana headless no baja de cierto ancho) | Sin desborde lateral; tarjetas de 136 px |
+| Editor con una tarjeta vacía | Hueco punteado con «Tarjeta 2: añade su imagen y su título en el panel» |
+| `npx tsc --noEmit` en blocks-renderer, sitio-web e intranet | Sin errores |
+| Render con un bloque gris debajo, a 1250 y 375 px | Las tarjetas cruzan el borde con media altura sobre el bloque siguiente; tapan el comienzo de ese bloque si su relleno superior es menor de ~5,5rem |
+| Lista del panel pintada en Chrome headless; bloque con cuatro tarjetas a 1250 y 375 px | Lista con resúmenes y «+ Agregar tarjeta»; cuatro tarjetas en una fila en computador y dos filas en celular. Agregar, subir, bajar y eliminar no se pudieron probar sin el editor |
+| Editor real y página publicada | Sin verificar |
+
+**Pendiente al cierre:** probar en el editor la subida de las imágenes de las tarjetas y una página publicada; en celular, con imágenes bajas, las tarjetas tapan buena parte de la imagen (subida de 40 px): ajustar si molesta. El bloque que vaya debajo necesita relleno superior (en su «Espaciado y Ancho», «Espacio interior · arriba y abajo» en Amplio o Muy amplio) para que las tarjetas no tapen su comienzo.
+
+---
+
+## sesión 18-10-2026: «Cabecera / Menú» del sitio-web, color de fondo y panel en acordeones
+
+**Qué se pidió:** que la cabecera permita cambiar el fondo y que su panel tenga el mismo aspecto que el de «Imagen destacada» (acordeón por opción, controles con borde, mensajes claros).
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/shared/lib/blocks/header.tsx` | Prop `colorFondo`: `style` con `backgroundColor` en el `<header class="olo-header">`. Vacío = el blanco del CSS, como antes |
+| `menu-y-pie/cabecera-por-defecto.ts` | `colorFondo?` en `CabeceraPorDefecto`. No hace falta tocar `obtenerPlantilla`: ya pasa todas las props guardadas del bloque al layout público |
+| `3000-sitio-web/src/config/puck.config.tsx` | Panel de `Header`: franja GOV.CO (Mostrar/Ocultar), imagen de la franja (resumen «Propia/Oficial»), logo («Propio/Por defecto»), color de fondo de la barra y texto del botón de intranet, cada uno con `campoEnAcordeon` y una línea de ayuda. El menú de navegación se queda como la lista de Puck y pasa al final |
+| `campos-en-acordeon.tsx` | Nueva clave `ayuda` en cualquier campo: una línea gris bajo el control |
+| Menú de navegación (cada sección) | Tres campos nuevos en `arrayFields`: «Color del texto», «Color al pasar el cursor» y «Tamaño del texto» (5 tamaños con nombre en `TAMANOS_TEXTO_MENU` de header.tsx: 14, 15 —el de hoy—, 16, 18 y 20 px). Solo los enlaces de primer nivel y solo en computador |
+| Submenú desplegable (pedido después) | Campo «Color de fondo del submenú» en cada sección (`colorFondoSubmenu`, junto a la lista del submenú): `backgroundColor` en línea sobre `.olo-nav-dropdown`; vacío deja el blanco. Comprobado en el dev: `/inicio` carga sin errores nuevos y sin color el desplegable no lleva `style` |
+| Submenú: esquinas y color del texto (pedido después) | `.olo-nav-dropdown` con `border-radius: 0 0 32px 32px` (solo abajo) y 1rem de relleno inferior para que el último enlace no roce la curva. **El color del texto de la sección no llegaba a los enlaces del submenú** (CUOC y CNO seguían en azul con el texto en blanco): las variables `--olo-nav-*` iban en el botón y los enlaces están fuera de él. Ahora, en una sección con submenú, van en su `.olo-nav-item` y las heredan el botón y `.olo-nav-dropdown-link`, que lee `--olo-nav-color` y al pasar el cursor `--olo-nav-hover`, con un fondo `color-mix` del 12 % del propio color del texto (se nota en fondo claro y oscuro). Afecta a todos los submenús. Probado con el CSS real en Chrome headless: enlaces en blanco, hover en cyan, esquinas de 32 px |
+| `globals.css` (`.olo-nav-link`, `.olo-gov-btn`, `.olo-mobile-gov-btn`) | Leen `--olo-nav-color`, `--olo-nav-hover`, `--olo-nav-tamano`, `--olo-intranet-fondo` y `--olo-intranet-texto` con los valores de antes como respaldo. Van como variables porque el `:hover` no se puede en línea. El hover del botón es `color-mix` 85 % con negro del fondo elegido (sin color: #001d2f, casi el #001a2b de antes); el hover del móvil se unió al del computador |
+| Botón de intranet | `intranetText` pasa a `botonIntranet: { texto, colorFondo, colorTexto }`, un solo acordeón (`campoGrupoEnUnAcordeon`, nuevo). `resolveData` del bloque mueve el `intranetText` guardado a `botonIntranet.texto` una vez y lo deja vacío; la cabecera usa `botonIntranet.texto || intranetText || 'Intranet'`, así que una plantilla publicada sin abrir sigue igual |
+| `estilos-de-campos.tsx` (nuevo) + `campos-en-acordeon.tsx` + `color-picker-field.tsx` | Esquinas de 8 px en todos los controles y borde `#001631` con halo suave al enfocarlos; anillo `#001631` con teclado en cabeceras y botones segmentados; la opción elegida lleva borde interior `#001631`. El `:focus` va en una hoja corta con `<style href precedence>` (React 19 la deja una vez en el `<head>`); `!important` para ganarle al borde en línea. **El selector de color cambia en todos los bloques de los dos editores** (40 px, borde #d1d5db) |
+
+> **Import circular (lo encontró el usuario en /inicio):** `TAMANOS_TEXTO_MENU` se exportó primero desde `header.tsx` y daba «Cannot access 'TAMANOS_TEXTO_MENU' before initialization». `header.tsx` importa de `@/features/paginas`, que termina cargando `puck.config.tsx`, y este lo usaba al cargarse (`Object.entries` en `arrayFields`). Ahora vive en `shared/lib/blocks/tamanos-texto-menu.ts`, sin imports. Cualquier constante que `puck.config.tsx` lea al cargarse no puede venir de `header.tsx`.
+
+> **Se perdió la edición en el lienzo del texto del botón de intranet.** Era `text` con `contentEditable: true`; como campo `custom` del acordeón ya no se edita sobre la cabecera, solo en el panel.
+
+> **Las ayudas se comprobaron contra `header.tsx`:** sin imagen de franja se pinta la marca oficial de GOV.CO; sin logo, el SVG del SENA con el del OLO (no solo el del OLO, como decía la primera versión de la ayuda).
+
+| Verificación | Resultado |
+|---|---|
+| Campos de la cabecera pintados con `react-dom/server` y fotografiados en Chrome headless | Acordeones, resúmenes y ayudas correctos |
+| `npx tsc --noEmit` en blocks-renderer, sitio-web e intranet | Sin errores |
+| Reglas reales de `globals.css` en Chrome headless con `getComputedStyle` (`:hover` simulado con clase) | Sin variables: #002237 a 15 px y botón #002237/blanco. Con variables: color, 20 px, hover verde; hover sin color propio = color del texto; fondo del botón oscurecido con `color-mix` |
+| Panel con foco en un input, fotografiado en Chrome headless | Borde #001631, esquinas de 8 px, opción elegida con borde azul |
+| `/inicio` del dev en Chrome headless tras sacar la constante | 200 y sin el error en la consola (queda un aviso de un `<path d>` mal formado que no viene de estos cambios) |
+| Editor y sitio público en navegador | Sin verificar |
+
+**Pendiente al cierre:** ver el panel en «Menú y pie» y una cabecera publicada con colores propios; abrir y guardar «Menú y pie» una vez para que el texto del botón pase a `botonIntranet`; los submenús desplegables y el menú del celular no toman los colores ni el tamaño de cada sección.
+
+---
+
+## sesión 17-10-2026: «Imagen destacada» del sitio-web, el editor solo pide la imagen
+
+**Qué se pidió:** primer paso del rediseño del bloque `ImagenDestacada` en el editor del sitio-web: quitar del panel lateral todas las opciones salvo la carga de la imagen. Los siguientes pasos (el estilo) los irá dando el usuario.
+
+| Capa | Cambio |
+|---|---|
+| `3000-sitio-web/src/config/puck.config.tsx` | `fields` y `defaultProps` de `ImagenDestacada` quedan en `imagenSrc` e `imagenAlt`. Fuera: «Mostrar título», «Título», «Ancho», «Fondo», «Ajuste de la imagen» y «Bordes redondeados» |
+| `packages/blocks-renderer/src/blocks/imagen-destacada.tsx` | La imagen de muestra del editor (SVG de cuando no hay imagen) decía «Imagen Destacada (Vista Previa)»; ahora dice «Imagen Destacada». Después se le quitó el fondo (degradado, cuadrícula y el círculo detrás del icono) y el icono de línea azul se cambió por uno relleno en gris `#9ca3af`; quedan el borde punteado y los dos textos. El SVG ahora se escribe legible y se codifica con `encodeURIComponent` en vez de ir ya codificado a mano. Afecta a los dos editores |
+| `imagen-destacada.tsx` + panel del sitio-web | Nueva prop `colorFondo` (campo «Color de fondo (por defecto blanco)», el `campoColor` de siempre). Se aplica con `style` en la sección y gana sobre la clase `matriz-section-white/gray`, que no lleva `!important`. Vacío = como antes |
+| `controles-de-caja.tsx` | `conCaja(config, { conHashtag, conFondo })` y `conCajaEnTodos(..., { sinHashtag, sinFondo })`: listas de bloques que conservan «Espaciado y Ancho» pero sin «Hashtag decorativo» o sin el «Color de fondo» de la caja. Tampoco se pinta lo que venga guardado. Por defecto todo sigue igual para los demás bloques |
+| `3000-sitio-web/src/config/puck.config.tsx` | `sinHashtag` y `sinFondo` con `ImagenDestacada`: el color de la caja quedaba repetido con el del bloque y, además, la clase de fondo del bloque lo tapaba |
+| `imagen-destacada.tsx` | Sin `shadow-sm` en la `<img>` mientras se ve la imagen de muestra: con `rounded-xl` dibujaba una línea gris fina por fuera del borde punteado. Con imagen real la sombra sigue |
+| `packages/blocks-renderer/src/primitives/campos-en-acordeon.tsx` (nuevo) | `campoEnAcordeon(campo)` y `campoGrupoEnAcordeones(label, campos)`: campos `custom` de Puck que pintan cada opción como acordeón cerrado (cabecera de 44 px con el valor actual: opción elegida, muestra del color, texto recortado con «…») y controles con borde (select, botones segmentados para `radio`, texto, `ColorPickerField`, o el `render` de un `custom`). Estilos en línea como `ColorPickerField`: el paquete no tiene hoja propia |
+| `controles-de-caja.tsx` | «Espaciado y Ancho» pasa de campo `object` de Puck a `campoGrupoEnAcordeones` sobre `CAMPOS_CAJA`; el color de la caja es `{ type: 'color' }`. Mismas claves y valores en `props.caja`: lo guardado sigue igual. **Cambia en todos los bloques de los dos editores** |
+| Panel de «Imagen destacada» (sitio-web) | Imagen (abierta al entrar, resumen «Cargada / Sin imagen»), Texto alternativo y Color de fondo, cada uno en su acordeón. La clave `imagenAlt` no cambia, así que la regla de accesibilidad sigue igual |
+| Intranet | Sin tocar su panel. El componente sigue aceptando todas las props y la intranet conserva su panel completo |
+
+> **Por qué se dejó «Texto alternativo»:** `@olo/accessibility-policy` tiene la regla `alt` para `ImagenDestacada`, y `enviar-a-revision.usecase.ts` rechaza la página si hay imagen sin alt. Sin el campo, cualquier página con este bloque quedaría imposible de enviar a revisión.
+
+> **Descartado:** marcar el bloque con `sinHashtag: true` dentro de su config. El tipo `Config` de Puck rechaza claves desconocidas (TS2353), por eso la lista va como opción de `conCajaEnTodos`, igual que `excepto`.
+
+> **Bloques ya guardados:** el componente sigue leyendo `titulo`, `ancho`, `fondo`, etc. si un bloque viejo los trae guardados, pero ya no se pueden editar desde el sitio-web. Los nuevos usan los valores por defecto del componente (`ancho` completo, fondo blanco, `contain`, redondeado grande, sin título).
+
+| Verificación | Resultado |
+|---|---|
+| `npx tsc --noEmit` en 3000-sitio-web | Sin errores en `puck.config.tsx` |
+| Finales de línea del archivo (medido con node) | Todo CRLF, sin mezcla |
+| SVG de muestra extraído y abierto en Chrome headless | Sin fondo, icono gris centrado sobre los textos, borde punteado |
+| `npx tsc --noEmit` en packages/blocks-renderer | Sin errores |
+| `npx tsc --noEmit` en blocks-renderer, sitio-web e intranet (tras color, hashtag y fondo de caja) | Sin errores |
+| Campos en acordeón pintados con `react-dom/server` y fotografiados en Chrome headless (cerrados y abiertos) | Bordes, resúmenes y botones segmentados correctos; el resumen largo se recorta con «…» tras corregirlo |
+| `npx tsc --noEmit` en blocks-renderer, sitio-web e intranet (tras los acordeones) | Sin errores |
+| Editor en navegador | Sin verificar |
+
+**Pendiente al cierre:** ver el panel en el navegador; decidir qué hacer con los bloques que ya traen título u otras opciones guardadas; seguir con el estilo según indique el usuario.
+
+---
+
 ## sesión 15-10-2026 (39.ª parte): revisión de seguridad, lint, código muerto, espagueti y archivos sin uso (sin cambios)
 
 **Qué se pidió:** revisar errores de seguridad y de ESLint, código muerto, código espagueti, imágenes y repositorios que no se usan. Es solo diagnóstico: no se tocó código. Cada hallazgo de herramienta se comprobó a mano antes de anotarlo.

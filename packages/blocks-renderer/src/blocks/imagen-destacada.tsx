@@ -23,8 +23,38 @@ const CLASES_REDONDEADO: Record<string, string> = {
   circular: 'rounded-full',
 };
 
-const PLACEHOLDER_IMAGEN_DESTACADA =
-  'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%221200%22%20height%3D%22500%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201200%20500%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22bg%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%22100%25%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23f8fafc%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23f1f5f9%22%2F%3E%3C%2FlinearGradient%3E%3Cpattern%20id%3D%22grid%22%20width%3D%2232%22%20height%3D%2232%22%20patternUnits%3D%22userSpaceOnUse%22%3E%3Cpath%20d%3D%22M%2032%200%20L%200%200%200%2032%22%20fill%3D%22none%22%20stroke%3D%22%23cbd5e1%22%20stroke-width%3D%221%22%20opacity%3D%220.5%22%2F%3E%3C%2Fpattern%3E%3C%2Fdefs%3E%3Crect%20width%3D%221200%22%20height%3D%22500%22%20fill%3D%22url(%23bg)%22%20rx%3D%2216%22%2F%3E%3Crect%20width%3D%221200%22%20height%3D%22500%22%20fill%3D%22url(%23grid)%22%20rx%3D%2216%22%2F%3E%3Crect%20x%3D%2216%22%20y%3D%2216%22%20width%3D%221168%22%20height%3D%22468%22%20fill%3D%22none%22%20stroke%3D%22%23041E42%22%20stroke-opacity%3D%220.25%22%20stroke-width%3D%222%22%20stroke-dasharray%3D%228%2C8%22%20rx%3D%2212%22%2F%3E%3Ccircle%20cx%3D%22600%22%20cy%3D%22200%22%20r%3D%2248%22%20fill%3D%22%23041E42%22%20opacity%3D%220.06%22%2F%3E%3Cpath%20d%3D%22M582%20210l12-12a4%204%200%200%201%205.6%200l24%2024m-10-10l6-6a4%204%200%200%201%205.6%200l18%2018M570%20228h60a4%204%200%200%200%204-4V182a4%204%200%200%200-4-4h-60a4%204%200%200%200-4%204v42a4%204%200%200%200%204%204zm10-34a4%204%200%201%201-8%200%204%204%200%200%201%208%200z%22%20stroke%3D%22%23041E42%22%20stroke-width%3D%222.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20fill%3D%22none%22%2F%3E%3Ctext%20x%3D%22600%22%20y%3D%22285%22%20font-family%3D%22system-ui%2C%20-apple-system%2C%20sans-serif%22%20font-size%3D%2220%22%20font-weight%3D%22600%22%20fill%3D%22%23041E42%22%20text-anchor%3D%22middle%22%3EImagen%20Destacada%20(Vista%20Previa)%3C%2Ftext%3E%3Ctext%20x%3D%22600%22%20y%3D%22315%22%20font-family%3D%22system-ui%2C%20-apple-system%2C%20sans-serif%22%20font-size%3D%2214%22%20fill%3D%22%2364748b%22%20text-anchor%3D%22middle%22%3ESube%20o%20selecciona%20una%20imagen%20en%20el%20panel%20lateral%20derecho%3C%2Ftext%3E%3C%2Fsvg%3E';
+const escaparXml = (texto: string) => texto.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/**
+ * Muestra del editor para un bloque que aún no tiene imagen: sin fondo, solo el borde
+ * punteado, el icono en gris (25×19 escalado ×3 y centrado) y dos líneas de texto.
+ * La usan «Imagen destacada» y el «Carrusel de imágenes» del sitio.
+ */
+export function muestraDeImagen(titulo: string, ayuda: string): string {
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(
+    '<svg width="1200" height="500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 500">' +
+      '<rect x="16" y="16" width="1168" height="468" fill="none" stroke="#041E42" stroke-opacity="0.25" stroke-width="2" stroke-dasharray="8,8" rx="12"/>' +
+      '<path transform="translate(562.5 171.5) scale(3)" fill="#9ca3af" d="M22.6562 18.75H2.34375C1.04932 18.75 0 17.7007 0 16.4062V2.34375C0 1.04932 1.04932 0 2.34375 0H22.6562C23.9507 0 25 1.04932 25 2.34375V16.4062C25 17.7007 23.9507 18.75 22.6562 18.75ZM5.46875 2.73438C3.95859 2.73438 2.73438 3.95859 2.73438 5.46875C2.73438 6.97891 3.95859 8.20312 5.46875 8.20312C6.97891 8.20312 8.20312 6.97891 8.20312 5.46875C8.20312 3.95859 6.97891 2.73438 5.46875 2.73438ZM3.125 15.625H21.875V10.1562L17.6018 5.88306C17.373 5.65425 17.002 5.65425 16.7731 5.88306L10.1562 12.5L7.44556 9.78931C7.21675 9.5605 6.84575 9.5605 6.61689 9.78931L3.125 13.2812V15.625Z"/>' +
+      '<text x="600" y="285" font-family="system-ui, -apple-system, sans-serif" font-size="20" font-weight="600" fill="#041E42" text-anchor="middle">' + escaparXml(titulo) + '</text>' +
+      '<text x="600" y="315" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#64748b" text-anchor="middle">' + escaparXml(ayuda) + '</text>' +
+      '</svg>',
+  )}`;
+}
+
+const PLACEHOLDER_IMAGEN_DESTACADA = muestraDeImagen(
+  'Imagen Destacada',
+  'Sube o selecciona una imagen en el panel lateral derecho'
+);
+
+/** Una de las tarjetas que montan sobre el borde inferior de la imagen. */
+export interface TarjetaDestacada {
+  /** Lo pone el editor al agregarla, para que la lista no confunda tarjetas al mover o borrar. */
+  id?: string;
+  imagen?: string;
+  titulo?: string;
+  enlace?: string;
+  nuevaPestana?: boolean;
+}
 
 export interface ImagenDestacadaProps {
   id?: string;
@@ -37,6 +67,12 @@ export interface ImagenDestacadaProps {
   imagenAlt?: string;
   ancho?: 'contenido' | 'completo';
   fondo?: 'blanco' | 'gris';
+  /** Color libre de la sección; si viene, manda sobre `fondo`. */
+  colorFondo?: string;
+  tarjetas?: TarjetaDestacada[];
+  /** Las dos tarjetas fijas de la primera versión; solo se leen si no hay `tarjetas`. */
+  tarjeta1?: TarjetaDestacada;
+  tarjeta2?: TarjetaDestacada;
   ajusteImagen?: 'cover' | 'contain';
   redondeado?: 'ninguno' | 'pequeno' | 'grande' | 'circular';
   className?: string;
@@ -54,6 +90,10 @@ export function ImagenDestacada({
   imagenAlt = '',
   ancho = 'completo',
   fondo = 'blanco',
+  colorFondo,
+  tarjetas: listaTarjetas,
+  tarjeta1,
+  tarjeta2,
   ajusteImagen = 'contain',
   redondeado = 'grande',
   className = '',
@@ -84,11 +124,20 @@ export function ImagenDestacada({
   if (!tieneImagen && !enEdicion) return null;
 
   const clasesFondo = fondo === 'gris' ? 'matriz-section-gray' : 'matriz-section-white';
+  const estiloFondo = colorFondo?.trim() ? { backgroundColor: colorFondo } : undefined;
+  const tarjetas = Array.isArray(listaTarjetas)
+    ? listaTarjetas
+    : [tarjeta1, tarjeta2].filter((t): t is TarjetaDestacada => t !== undefined);
+  const conTarjetas = hayTarjetas(tarjetas, enEdicion);
+  const nodoTarjetas = conTarjetas ? <TarjetasDestacadas tarjetas={tarjetas} enEdicion={enEdicion} /> : null;
+  // Con tarjetas, la sección se queda sin relleno abajo y las tarjetas cuelgan media
+  // altura sobre el bloque siguiente (ver `.olo-imagen-destacada--con-tarjetas`).
+  const claseTarjetas = conTarjetas ? 'olo-imagen-destacada--con-tarjetas' : '';
 
   if (ancho === 'contenido') {
     return (
-      <div className={`${clasesFondo} ${className}`.trim()}>
-        <div className="matriz-sabias-que">
+      <div className={`${clasesFondo} olo-imagen-destacada ${claseTarjetas} ${className}`.trim()} style={estiloFondo}>
+        <div className="matriz-sabias-que olo-imagen-destacada__contenido">
           {esVistaPrevia && (
             <div className="mb-4 inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200 shadow-sm mx-auto w-full text-center">
               <svg className="w-4 h-4 text-amber-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -124,22 +173,15 @@ export function ImagenDestacada({
               }
             }}
           />
+          {nodoTarjetas}
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`${clasesFondo} w-full py-12 ${className}`.trim()}>
-      <div className="max-w-[1200px] w-full mx-auto px-6 text-center flex flex-col items-center">
-        {esVistaPrevia && (
-          <div className="mb-6 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200 shadow-sm mx-auto">
-            <svg className="w-4 h-4 text-amber-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <span>Vista previa · Añade o edita la imagen desde el panel lateral derecho</span>
-          </div>
-        )}
+    <div className={`${clasesFondo} olo-imagen-destacada w-full py-12 ${claseTarjetas} ${className}`.trim()} style={estiloFondo}>
+      <div className="olo-imagen-destacada__contenido max-w-[1200px] w-full mx-auto px-6 text-center flex flex-col items-center">
         {mostrarTitulo && titulo && (
           <h2
             className={`matriz-section-title text-[#041E42] font-bold ${mostrarSubtitulo && subtitulo ? 'mb-3' : 'mb-6'}`}
@@ -156,7 +198,7 @@ export function ImagenDestacada({
           <img
             src={srcEfectiva}
             alt={imagenAlt || (esVistaPrevia ? 'Vista previa de imagen destacada' : '')}
-            className={`w-full max-w-[1200px] mx-auto h-auto shadow-sm ${CLASES_AJUSTE[ajusteImagen] ?? CLASES_AJUSTE.contain} ${CLASES_REDONDEADO[redondeado] ?? ''}`.trim()}
+            className={`w-full max-w-[1200px] mx-auto h-auto ${esVistaPrevia ? '' : 'shadow-sm'} ${CLASES_AJUSTE[ajusteImagen] ?? CLASES_AJUSTE.contain} ${CLASES_REDONDEADO[redondeado] ?? ''}`.trim()}
             onError={() => {
               if (enEdicion && srcEfectiva !== PLACEHOLDER_IMAGEN_DESTACADA) {
                 setSrcEfectiva(PLACEHOLDER_IMAGEN_DESTACADA);
@@ -168,8 +210,83 @@ export function ImagenDestacada({
               }
             }}
           />
+          {nodoTarjetas}
         </div>
       </div>
+    </div>
+  );
+}
+
+function tieneContenido(tarjeta?: TarjetaDestacada): boolean {
+  return Boolean(tarjeta?.imagen?.trim() || tarjeta?.titulo?.trim());
+}
+
+/**
+ * Si se pintan las tarjetas. Una lista vacía —la intranet, que no las ofrece, o un
+ * bloque sin tarjetas agregadas— no pinta nada, ni huecos. En el sitio, solo si
+ * alguna tiene imagen o título; en el editor, también las que aún están vacías.
+ */
+function hayTarjetas(tarjetas: TarjetaDestacada[], enEdicion: boolean): boolean {
+  if (tarjetas.length === 0) return false;
+  return enEdicion || tarjetas.some(tieneContenido);
+}
+
+/**
+ * Las tarjetas que montan sobre el borde inferior de la imagen (diseño del inicio:
+ * «Emprender» y «Buscar empleo»). Son una lista: quien edita agrega las que quiera
+ * y pasan a otra fila si no caben. Sus estilos viven en el `globals.css` del sitio
+ * (`.olo-tarjetas-destacadas`): Tailwind de la app no recorre este paquete.
+ *
+ * Una tarjeta sin imagen ni título no se pinta en el sitio; en el editor deja un
+ * hueco punteado para que se vea dónde va. Con enlace, la tarjeta entera es el
+ * enlace (sin botón aparte); sin enlace es un `<div>`, no un enlace que no lleva a
+ * ningún lado.
+ */
+function TarjetasDestacadas({
+  tarjetas,
+  enEdicion,
+}: {
+  tarjetas: TarjetaDestacada[];
+  enEdicion: boolean;
+}) {
+  return (
+    <div className="olo-tarjetas-destacadas">
+      {tarjetas.map((tarjeta, i) => {
+        if (!tieneContenido(tarjeta)) {
+          return enEdicion ? (
+            <div key={tarjeta.id ?? i} className="olo-tarjeta-destacada olo-tarjeta-destacada--vacia">
+              Tarjeta {i + 1}: añade su imagen y su título en el panel
+            </div>
+          ) : null;
+        }
+
+        const titulo = tarjeta.titulo?.trim();
+        const enlace = tarjeta.enlace?.trim();
+        const contenido = (
+          <>
+            {tarjeta.imagen?.trim() && (
+              // eslint-disable-next-line @next/next/no-img-element -- la imagen la sube quien edita y su tamaño va por CSS
+              <img src={tarjeta.imagen} alt={titulo ? '' : 'Tarjeta sin título'} className="olo-tarjeta-destacada__imagen" />
+            )}
+            {titulo && <span className="olo-tarjeta-destacada__titulo">{titulo}</span>}
+          </>
+        );
+
+        return enlace ? (
+          <a
+            key={tarjeta.id ?? i}
+            href={enlace}
+            className="olo-tarjeta-destacada"
+            {...(tarjeta.nuevaPestana ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+          >
+            {contenido}
+          </a>
+        ) : (
+          <div key={tarjeta.id ?? i} className="olo-tarjeta-destacada">
+            {contenido}
+          </div>
+        );
+      })}
     </div>
   );
 }

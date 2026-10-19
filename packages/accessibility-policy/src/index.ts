@@ -44,6 +44,7 @@ interface ReglaAlt {
 
 interface ReglaAltEnArray {
   tipo: 'alt-array';
+  /** Clave del array en las props; con puntos si va dentro de un objeto ("galeria.imagenes"). */
   campoArray: string;
   campoImagen: string;
   campoAlt: string;
@@ -76,19 +77,19 @@ type Manifiesto = Record<string, DefinicionBloque>;
  * fuera a propósito: hoy no tienen ningún campo de alt editable en Puck (el
  * texto alternativo está fijo en el componente), así que no hay nada que
  * validar todavía. Agregarles un campo de alt editable es una mejora aparte.
+ *
+ * `Hero` (Buscador de Ocupaciones) tampoco está: desde el rediseño del 18-10-2026 su
+ * única imagen es el fondo de la sección, decorativo y pintado como fondo CSS. El logo
+ * que pedía alt (`imageUrl`/`imageAlt`) ya no se pinta.
  */
 const MANIFIESTO_SITIO: Manifiesto = {
-  Hero: {
-    etiqueta: 'Buscador de Ocupaciones (Banner)',
-    reglas: [{ tipo: 'alt', campoImagen: 'imageUrl', campoAlt: 'imageAlt' }],
-  },
   IntranetHero: {
     etiqueta: 'Banner Principal',
     reglas: [{ tipo: 'alt', campoImagen: 'imageSrc', campoAlt: 'imageAlt' }],
   },
   DatoOloSemana: {
     etiqueta: 'Dato OLO de la semana',
-    reglas: [{ tipo: 'alt', campoImagen: 'imagenSrc', campoAlt: 'imagenAlt' }],
+    reglas: [{ tipo: 'alt-array', campoArray: 'galeria.imagenes', campoImagen: 'imagen', campoAlt: 'alt' }],
   },
   RecursosVisualesBloque: {
     etiqueta: 'Recursos Visuales',
@@ -99,6 +100,16 @@ const MANIFIESTO_SITIO: Manifiesto = {
   Publicaciones: {
     etiqueta: 'Últimas publicaciones',
     reglas: [{ tipo: 'alt-array', campoArray: 'publicaciones', campoImagen: 'pdfUrl', campoAlt: 'titulo' }],
+  },
+  CarruselDeImagenes: {
+    etiqueta: 'Carrusel de imágenes',
+    reglas: [{ tipo: 'alt-array', campoArray: 'diapositivas', campoImagen: 'imagen', campoAlt: 'alt' }],
+  },
+  /* El iframe del video lleva `title={tituloVideo}`: sin él, un lector de pantalla
+     lo anuncia como «marco» a secas. */
+  VideoEmbebido: {
+    etiqueta: 'Video embebido',
+    reglas: [{ tipo: 'titulo', campoTitulo: 'tituloVideo' }],
   },
   /* Cada documento pinta un `<iframe title={titulo}>`: sin título el iframe
      queda mudo para un lector de pantalla. */
@@ -189,6 +200,12 @@ const esNoVacio = (valor: unknown): boolean => typeof valor === 'string' && valo
 const items = (valor: unknown): Record<string, unknown>[] =>
   Array.isArray(valor) ? (valor.filter((v) => v && typeof v === 'object') as Record<string, unknown>[]) : [];
 
+/** El valor de una clave de las props, que puede ir dentro de un objeto: "galeria.imagenes". */
+const valorEnRuta = (props: Record<string, unknown>, ruta: string): unknown =>
+  ruta
+    .split('.')
+    .reduce<unknown>((valor, clave) => (valor && typeof valor === 'object' ? (valor as Record<string, unknown>)[clave] : undefined), props);
+
 function revisarBloque(bloque: BloquePuck, manifiesto: Manifiesto): ViolacionAccesibilidad[] {
   if (typeof bloque.type !== 'string') return [];
   const definicion = manifiesto[bloque.type];
@@ -217,7 +234,7 @@ function revisarBloque(bloque: BloquePuck, manifiesto: Manifiesto): ViolacionAcc
         });
       }
     } else if (regla.tipo === 'alt-array') {
-      items(props[regla.campoArray]).forEach((item, indice) => {
+      items(valorEnRuta(props, regla.campoArray)).forEach((item, indice) => {
         if (esNoVacio(item[regla.campoImagen]) && !esNoVacio(item[regla.campoAlt])) {
           violaciones.push({
             bloque: bloque.type as string,

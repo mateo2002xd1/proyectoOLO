@@ -2,13 +2,24 @@
 
 import React from 'react';
 
+export interface IconoDelCatalogo {
+  id: string;
+  nombre: string;
+  ruta?: string;
+  tipo: 'svg-path' | 'archivo';
+}
+
 export interface IconSelectorFieldProps {
   value: string;
   onChange: (value: string) => void;
+  /** Íconos que se ofrecen. Por defecto, `ICONOS_DISPONIBLES`. */
+  catalogo?: IconoDelCatalogo[];
+  /** Muestra el campo para escribir una ruta o URL a mano. Por defecto, sí. */
+  permitirRuta?: boolean;
 }
 
 // Catálogo de íconos disponibles: Mantiene intactos los 4 existentes e incorpora los sectoriales y utilitarios
-export const ICONOS_DISPONIBLES: Array<{ id: string; nombre: string; ruta?: string; tipo: 'svg-path' | 'archivo' }> = [
+export const ICONOS_DISPONIBLES: IconoDelCatalogo[] = [
   { id: '', nombre: 'Ninguno', tipo: 'archivo', ruta: '' },
   // ─── Íconos existentes en /assets/svg/ (100% compatibles) ───
   { id: '/assets/svg/icono-1.svg', nombre: 'Lista', tipo: 'archivo', ruta: '/assets/svg/icono-1.svg' },
@@ -221,15 +232,20 @@ export function IconoRenderer({
   }
 }
 
-export function IconSelectorField({ value, onChange }: IconSelectorFieldProps) {
+export function IconSelectorField({
+  value,
+  onChange,
+  catalogo = ICONOS_DISPONIBLES,
+  permitirRuta = true,
+}: IconSelectorFieldProps) {
   const [personalizado, setPersonalizado] = React.useState(
-    value && !ICONOS_DISPONIBLES.some((i) => i.id === value) ? value : ''
+    value && !catalogo.some((i) => i.id === value) ? value : ''
   );
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', maxHeight: '180px', overflowY: 'auto', padding: '4px', border: '1px solid #e5e7eb', borderRadius: '6px', backgroundColor: '#f9fafb' }}>
-        {ICONOS_DISPONIBLES.map((icono) => {
+        {catalogo.map((icono) => {
           const seleccionado = value === icono.id;
           return (
             <button
@@ -267,47 +283,49 @@ export function IconSelectorField({ value, onChange }: IconSelectorFieldProps) {
       </div>
 
       {/* Opción de ruta o URL personalizada */}
-      <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-        <input
-          type="text"
-          value={personalizado}
-          placeholder="O escribe ruta de ícono (/assets/... o URL)"
-          onChange={(e) => {
-            const val = e.target.value;
-            setPersonalizado(val);
-            onChange(val);
-          }}
-          style={{
-            flex: 1,
-            padding: '6px 10px',
-            fontSize: '12px',
-            border: '1px solid #d1d5db',
-            borderRadius: '4px',
-            outline: 'none',
-          }}
-        />
-        {value && (
-          <button
-            type="button"
-            onClick={() => {
-              onChange('');
-              setPersonalizado('');
+      {permitirRuta && (
+        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+          <input
+            type="text"
+            value={personalizado}
+            placeholder="O escribe ruta de ícono (/assets/... o URL)"
+            onChange={(e) => {
+              const val = e.target.value;
+              setPersonalizado(val);
+              onChange(val);
             }}
-            title="Quitar ícono"
             style={{
-              padding: '4px 8px',
-              fontSize: '11px',
-              background: '#fee2e2',
-              color: '#b91c1c',
-              border: '1px solid #fca5a5',
+              flex: 1,
+              padding: '6px 10px',
+              fontSize: '12px',
+              border: '1px solid #d1d5db',
               borderRadius: '4px',
-              cursor: 'pointer',
+              outline: 'none',
             }}
-          >
-            Quitar
-          </button>
-        )}
-      </div>
+          />
+          {value && (
+            <button
+              type="button"
+              onClick={() => {
+                onChange('');
+                setPersonalizado('');
+              }}
+              title="Quitar ícono"
+              style={{
+                padding: '4px 8px',
+                fontSize: '11px',
+                background: '#fee2e2',
+                color: '#b91c1c',
+                border: '1px solid #fca5a5',
+                borderRadius: '4px',
+                cursor: 'pointer',
+              }}
+            >
+              Quitar
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -45,6 +45,7 @@ PaginaVersion.init(
     revisorId: { type: DataTypes.UUID },
     publicadoPor: { type: DataTypes.UUID },
     publicadoEn: { type: DataTypes.DATE },
+    creadoEn: { type: DataTypes.DATE, field: 'creado_en' },
   },
   { sequelize, tableName: 'paginas_versiones', timestamps: true, underscored: true, createdAt: 'creadoEn', updatedAt: false }
 );

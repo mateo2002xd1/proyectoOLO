@@ -1,4 +1,6 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
+import { estiloDeFranjaGov } from './tinta-de-franja';
+import { ALINEACIONES_FRANJA, SEPARACIONES_FRANJA, rellenoDeImagenDeFranja } from './disposicion-de-franja';
 
 export interface RedSocialItem {
   red: 'x' | 'facebook' | 'instagram' | 'youtube' | 'linkedin' | 'radio' | 'otro';
@@ -44,6 +46,10 @@ export interface FooterInstitucionalProps {
   colorFondo?: string;
   colorFondoSuperior?: string;
   colorTarjeta?: string;
+  /** Esquinas de la tarjeta blanca en px (0–100); vacío = las 6 px del CSS. */
+  radioEsquinasTarjeta?: number | '';
+  /** Esquinas de la zona baja (el fondo azul) en px (0–100); vacío o 0 = rectas. */
+  radioEsquinasFondo?: number | '';
 }
 
 export interface FooterProps extends FooterLogosProps, FooterInstitucionalProps {
@@ -60,6 +66,20 @@ export interface FooterProps extends FooterLogosProps, FooterInstitucionalProps 
   mostrarFranjaGov?: boolean;
   rutaCoImgUrl?: string;
   rutaCoImgAlt?: string;
+  /** Fondo de la franja GOV.CO inferior; vacío la deja blanca con la marca en azul (ver `tinta-de-franja.ts`). */
+  colorFranjaGov?: string;
+  /** Marca GOV.CO subida; vacía, la franja no la muestra (ya no va dibujada en el código). */
+  govCoImgUrl?: string;
+  govCoImgAlt?: string;
+  /** Relleno en px arriba y abajo de la caja de cada imagen: achica la imagen sin agrandar la franja. */
+  rutaCoMargenArriba?: number | '';
+  rutaCoMargenAbajo?: number | '';
+  govCoMargenArriba?: number | '';
+  govCoMargenAbajo?: number | '';
+  /** Clave de `ALINEACIONES_FRANJA`; vacío = izquierda. */
+  alineacionFranjaGov?: string;
+  /** Clave de `SEPARACIONES_FRANJA` (espacio entre las imágenes); vacío = 12 px del CSS. */
+  separacionFranjaGov?: string;
 }
 
 export const VALORES_PIE_POR_DEFECTO: Required<Omit<FooterProps, 'block'>> = {
@@ -67,6 +87,8 @@ export const VALORES_PIE_POR_DEFECTO: Required<Omit<FooterProps, 'block'>> = {
   colorFondo: '',
   colorFondoSuperior: '',
   colorTarjeta: '',
+  radioEsquinasTarjeta: '',
+  radioEsquinasFondo: '',
   logoSenaUrl: '/assets/logos/logo-sena.svg',
   logoSenaAlt: 'Logotipo oficial del SENA con la palabra SENA y simbolo institucional en color verde, presentado en la cabecera del pie de pagina de un sitio gubernamental educativo',
   logoOloUrl: '/assets/logos/olo-logo-horizontal.svg',
@@ -125,7 +147,31 @@ export const VALORES_PIE_POR_DEFECTO: Required<Omit<FooterProps, 'block'>> = {
   mostrarFranjaGov: true,
   rutaCoImgUrl: '/assets/img/ruta-co-colombia.png',
   rutaCoImgAlt: 'Marca pais de Colombia con el texto CO Colombia, ubicada en la franja inferior del sitio junto al distintivo gov para identificar el entorno digital gubernamental',
+  colorFranjaGov: '',
+  govCoImgUrl: '',
+  govCoImgAlt: 'Portal del Estado Colombiano GOV.CO',
+  rutaCoMargenArriba: '',
+  rutaCoMargenAbajo: '',
+  govCoMargenArriba: '',
+  govCoMargenAbajo: '',
+  alineacionFranjaGov: '',
+  separacionFranjaGov: '',
 };
+
+/* Margen arriba/abajo por defecto de cada imagen (`rellenoDeImagenDeFranja`). A los
+   lados no hay: la separación entre imágenes es de la franja entera. */
+const MARGENES_RUTA_CO: [number, number] = [7, 7];
+const MARGENES_GOV_CO: [number, number] = [10, 10];
+
+/** Fondo y tinta (`estiloDeFranjaGov`) más la alineación y la separación elegidas. */
+function estiloDeFranjaInferior(color: string, alineacion: string, separacion: string): CSSProperties | undefined {
+  const estilo: CSSProperties = { ...estiloDeFranjaGov(color) };
+  const justificar = ALINEACIONES_FRANJA[alineacion]?.valor;
+  const espacio = SEPARACIONES_FRANJA[separacion]?.valor;
+  if (justificar) estilo.justifyContent = justificar;
+  if (espacio) estilo.gap = espacio;
+  return Object.keys(estilo).length > 0 ? estilo : undefined;
+}
 
 function renderIconoRedSocial(red: RedSocialItem['red'], iconoPersonalizado?: string): ReactNode {
   if (iconoPersonalizado) {
@@ -185,12 +231,20 @@ function renderIconoRedSocial(red: RedSocialItem['red'], iconoPersonalizado?: st
   }
 }
 
+/** Esquinas en px acotadas a 0–100; vacío (o no numérico) = `undefined`, para dejar el CSS. */
+function radioEnPx(valor: number | '' | undefined): number | undefined {
+  if (valor === '' || valor === undefined || !Number.isFinite(Number(valor))) return undefined;
+  return Math.min(100, Math.max(0, Number(valor)));
+}
+
 export function Footer({
   block,
   footerPersonalizado,
   colorFondo = VALORES_PIE_POR_DEFECTO.colorFondo,
   colorFondoSuperior = VALORES_PIE_POR_DEFECTO.colorFondoSuperior,
   colorTarjeta = VALORES_PIE_POR_DEFECTO.colorTarjeta,
+  radioEsquinasTarjeta = VALORES_PIE_POR_DEFECTO.radioEsquinasTarjeta,
+  radioEsquinasFondo = VALORES_PIE_POR_DEFECTO.radioEsquinasFondo,
   logoSenaUrl = VALORES_PIE_POR_DEFECTO.logoSenaUrl,
   logoSenaAlt = VALORES_PIE_POR_DEFECTO.logoSenaAlt,
   logoOloUrl = VALORES_PIE_POR_DEFECTO.logoOloUrl,
@@ -222,6 +276,15 @@ export function Footer({
   mostrarFranjaGov = VALORES_PIE_POR_DEFECTO.mostrarFranjaGov,
   rutaCoImgUrl = VALORES_PIE_POR_DEFECTO.rutaCoImgUrl,
   rutaCoImgAlt = VALORES_PIE_POR_DEFECTO.rutaCoImgAlt,
+  colorFranjaGov = VALORES_PIE_POR_DEFECTO.colorFranjaGov,
+  govCoImgUrl = VALORES_PIE_POR_DEFECTO.govCoImgUrl,
+  govCoImgAlt = VALORES_PIE_POR_DEFECTO.govCoImgAlt,
+  rutaCoMargenArriba = VALORES_PIE_POR_DEFECTO.rutaCoMargenArriba,
+  rutaCoMargenAbajo = VALORES_PIE_POR_DEFECTO.rutaCoMargenAbajo,
+  govCoMargenArriba = VALORES_PIE_POR_DEFECTO.govCoMargenArriba,
+  govCoMargenAbajo = VALORES_PIE_POR_DEFECTO.govCoMargenAbajo,
+  alineacionFranjaGov = VALORES_PIE_POR_DEFECTO.alineacionFranjaGov,
+  separacionFranjaGov = VALORES_PIE_POR_DEFECTO.separacionFranjaGov,
 }: FooterProps) {
   const redes = footerPersonalizado ? redesSociales : (redesSociales && redesSociales.length > 0 ? redesSociales : VALORES_PIE_POR_DEFECTO.redesSociales);
   const fila1 = footerPersonalizado ? enlacesFila1 : (enlacesFila1 && enlacesFila1.length > 0 ? enlacesFila1 : VALORES_PIE_POR_DEFECTO.enlacesFila1);
@@ -240,22 +303,36 @@ export function Footer({
   const fondoInferiorAplicar = colorFondo || (footerPersonalizado ? '#ffffff' : undefined);
   const fondoSuperiorAplicar = colorFondoSuperior || (footerPersonalizado ? '#ffffff' : 'transparent');
   
-  const estiloWrapper = fondoInferiorAplicar 
+  // Con esquinas en el fondo, la zona baja deja de ser la mitad de un degradado y pasa a
+  // un `::before` redondeado (ver `.olo-footer-wrapper--redondeado`).
+  const radioFondo = radioEnPx(radioEsquinasFondo) ?? 0;
+  const estiloWrapper: CSSProperties | undefined = radioFondo > 0
+    ? ({
+        background: fondoSuperiorAplicar,
+        '--olo-pie-fondo': fondoInferiorAplicar || '#001631',
+        '--olo-pie-radio': `${radioFondo}px`,
+      } as CSSProperties)
+    : fondoInferiorAplicar 
     ? { background: `linear-gradient(to bottom, ${fondoSuperiorAplicar} 120px, ${fondoInferiorAplicar} 120px)` } 
     : undefined;
 
   const colorTarjetaAplicar = colorTarjeta || (footerPersonalizado ? '#ffffff' : undefined);
+  const radioTarjeta = radioEnPx(radioEsquinasTarjeta);
+  const estiloTarjeta = {
+    ...(colorTarjetaAplicar ? { backgroundColor: colorTarjetaAplicar } : {}),
+    ...(radioTarjeta !== undefined ? { borderRadius: `${radioTarjeta}px` } : {}),
+  };
 
   return (
     <>
       <footer 
-        className="olo-footer-wrapper" 
+        className={radioFondo > 0 ? 'olo-footer-wrapper olo-footer-wrapper--redondeado' : 'olo-footer-wrapper'}
         id="main-footer" 
         role="contentinfo" 
         data-block-id={block?.id || 'main-footer'}
         style={estiloWrapper}
       >
-        <div className="olo-footer-card" style={colorTarjetaAplicar ? { backgroundColor: colorTarjetaAplicar } : undefined}>
+        <div className="olo-footer-card" style={estiloTarjeta}>
           <div className="olo-logos-top">
             <div className="olo-logos-left">
               {logoSenaUrl ? (
@@ -395,27 +472,35 @@ export function Footer({
         </div>
       </footer>
       {mostrarFranjaGov && (
-        <div className="olo-gov-banner-bottom">
+        <div
+          className="olo-gov-banner-bottom"
+          style={estiloDeFranjaInferior(colorFranjaGov, alineacionFranjaGov, separacionFranjaGov)}
+        >
+          {/* Cada imagen va en una caja del alto de la franja: por grande que se suba, se
+              ajusta dentro, y el relleno elegido en el editor la achica sin mover la franja. */}
           {rutaCoImgUrl && (
-            // eslint-disable-next-line @next/next/no-img-element -- la imagen la elige el editor (cualquier URL o SVG) y su tamaño va por CSS: next/image exigiría width/height fijos y remotePatterns
-            <img
-              src={rutaCoImgUrl}
-              alt={rutaCoImgAlt || 'Marca país de Colombia'}
-              className="h-[clamp(18px,3vw,26px)] w-auto object-contain"
-            />
+            <span
+              className="olo-franja-imagen"
+              style={rellenoDeImagenDeFranja([rutaCoMargenArriba, rutaCoMargenAbajo], MARGENES_RUTA_CO)}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element -- la imagen la elige el editor y su tamaño va por CSS: next/image exigiría width/height fijos y remotePatterns */}
+              <img src={rutaCoImgUrl} alt={rutaCoImgAlt || 'Marca país de Colombia'} />
+            </span>
           )}
-          <p style={{ color: '#fff' }}>|</p>
-          <svg width="98" height="24" viewBox="0 0 98 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <path d="M27.7168 16.9303C22.9621 16.9303 19.7168 14.0746 19.7168 9.96517C19.7168 5.85572 22.8866 3 27.7168 3C32.547 3 35.7168 5.85572 35.7168 10.0348C35.7168 14.2139 32.547 17 27.7168 17M27.7168 5.22886C24.6979 5.22886 22.6602 7.1791 22.6602 9.96517C22.6602 12.7512 24.6979 14.7015 27.7168 14.7015C30.7357 14.7015 32.7734 12.8209 32.7734 9.96517C32.7734 7.10945 30.7357 5.22886 27.7168 5.22886Z" fill="white" />
-            <path d="M49.9875 3.80208C50.2184 3.29167 50.6801 3.07292 51.2188 3.07292C52.1422 3.07292 53.1426 3.80208 52.527 4.89583L46.8324 16.0521C46.4477 16.7083 45.986 17 45.2934 17C44.6008 17 44.0621 16.7083 43.6774 16.0521L37.9058 4.89583C37.2902 3.875 38.2906 3 39.291 3C40.2914 3 40.2914 3.21875 40.5223 3.72917L44.5238 12.0417C44.8317 12.625 45.0625 13.2812 45.2934 13.9375C45.5242 13.2812 45.7551 12.625 46.0629 12.0417L50.0645 3.72917L49.9875 3.80208Z" fill="white" />
-            <path d="M52.7168 15.5C52.7168 14.6136 53.4145 14 54.2517 14C55.0889 14 55.7168 14.6136 55.7168 15.5C55.7168 16.3864 55.0191 17 54.2517 17C53.4842 17 52.7168 16.4545 52.7168 15.5Z" fill="white" />
-            <path d="M67.0112 3C69.2501 3 71.2724 3.76617 72.2835 4.60199C72.5724 4.8806 72.7168 5.22886 72.7168 5.50746C72.7168 6.27363 71.8501 6.9005 70.9112 6.41294C70.1168 5.85572 69.1779 5.29851 67.1557 5.29851C65.1335 5.29851 62.5335 7.10945 62.5335 10.1045C62.5335 13.0995 64.6279 14.7711 67.1557 14.7711C69.6835 14.7711 69.6112 14.5622 70.9112 13.6567C71.8501 13.1692 72.7168 13.796 72.7168 14.5622C72.7168 15.3284 72.5724 15.1891 72.2835 15.398C70.7668 16.7214 68.6724 17 67.0112 17C62.7501 17 59.7168 14.3532 59.7168 10.0348C59.7168 5.71642 62.7501 3 67.0112 3Z" fill="white" />
-            <path d="M91.7168 9.58C91.4904 5.66 88.3206 3 83.7168 3C79.113 3 75.7168 5.87 75.7168 10C75.7168 14.13 78.8866 17 83.7168 17C88.547 17 91.7168 14.13 91.7168 10C91.7168 5.87 91.7168 9.65 91.7168 9.51M83.7168 14.83C80.6979 14.83 78.6602 12.94 78.6602 10.07C78.6602 7.2 80.6979 5.31 83.7168 5.31C86.7357 5.31 88.4715 7.06 88.6979 9.58C88.6979 9.72 88.6979 9.93 88.6979 10.07C88.6979 12.87 86.6602 14.83 83.6413 14.83" fill="white" />
-            <path d="M15.2002 9.00204C16.0343 9.00204 16.7168 9.63315 16.7168 10.4045C16.7168 10.6149 16.7168 10.7551 16.7168 10.9655V14.8924C16.7168 21.3437 9.13386 23.6578 3.37083 21.6242C2.99168 21.484 2.61253 21.3437 2.38504 21.1334C1.70258 20.5023 1.93007 19.5205 2.84002 19.3102C3.59831 19.1699 4.50827 19.5907 5.19073 19.6608C9.28552 20.2919 13.9111 19.3102 13.9111 14.9625V13.8405C12.7737 15.5235 10.8021 16.4351 8.29974 16.4351C3.90163 16.4351 0.716797 13.7704 0.716797 9.63315C0.716797 5.49588 3.52248 2.76107 7.6931 2.34033C7.76893 2.34033 7.99642 2.34033 8.14808 2.34033C9.20969 2.34033 9.81632 3.53243 9.13386 4.23366C8.90637 4.44403 8.67888 4.58428 8.37556 4.58428C7.92059 4.58428 7.23812 4.72452 6.85898 4.86477C6.55566 5.00502 6.25234 5.07514 5.94902 5.28551C4.5841 6.05686 3.67414 7.45933 3.67414 9.28253C3.67414 12.1576 5.8732 13.9808 8.75471 13.9808C11.6362 13.9808 12.9253 12.7887 13.6078 10.8954C13.6078 10.7551 13.6836 10.5448 13.7595 10.2643C13.8353 9.56303 14.5177 9.07217 15.276 9.07217L15.2002 9.00204Z" fill="white" />
-            <path d="M13.9437 6.039C13.6384 6.039 13.3331 5.96733 13.1041 5.75233C12.5699 5.32231 12.5699 4.60562 13.0278 4.10394L15.8517 1.16552C16.3097 0.663841 17.0729 0.663841 17.6071 1.09385C18.1414 1.52387 18.1414 2.24055 17.6835 2.74224L14.8595 5.68066C14.6306 5.96733 14.249 6.039 13.9437 6.039Z" fill="#C54549" />
-            <path d="M11.6556 8.40293C11.3503 8.40293 11.045 8.33126 10.8161 8.11626C10.2818 7.68624 10.2818 6.96956 10.7397 6.46788L13.182 3.95947C13.64 3.45779 14.4032 3.45779 14.9374 3.8878C15.4717 4.31781 15.4717 5.0345 15.0138 5.53618L12.5715 8.04459C12.3425 8.33126 11.9609 8.40293 11.6556 8.40293Z" fill="#5DB0D2" />
-            <path d="M8.29716 11.844C7.91555 11.844 7.61026 11.7007 7.38129 11.414L5.62588 9.40727C5.16795 8.90559 5.24427 8.1889 5.77853 7.75889C6.31278 7.32888 7.076 7.40055 7.53394 7.90223L8.37348 8.83392L10.5868 6.54052C11.0448 6.03884 11.808 6.03884 12.3422 6.46885C12.8765 6.89887 12.8765 7.61555 12.4186 8.11724L9.21302 11.414C8.98406 11.629 8.67877 11.7723 8.29716 11.7723" fill="white" />
-          </svg>
+          {rutaCoImgUrl && govCoImgUrl && <p aria-hidden="true">|</p>}
+          {govCoImgUrl && (
+            <a
+              href="https://www.gov.co"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="olo-franja-imagen"
+              aria-label={govCoImgAlt || 'Portal del Estado Colombiano GOV.CO'}
+              style={rellenoDeImagenDeFranja([govCoMargenArriba, govCoMargenAbajo], MARGENES_GOV_CO)}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element -- la imagen la elige el editor y su tamaño va por CSS */}
+              <img src={govCoImgUrl} alt="" />
+            </a>
+          )}
         </div>
       )}
     </>

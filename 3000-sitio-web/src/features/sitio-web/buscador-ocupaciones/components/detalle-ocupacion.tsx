@@ -126,7 +126,7 @@ function ListaRelacionadas({ valores }: { valores: OcupacionRelacionada[] }) {
     <ul className="flex flex-col gap-2">
       {valores.map((relacionada) => (
         <li key={relacionada.codigo} className="flex items-start gap-2.5">
-          <span className="mt-0.5 shrink-0 rounded-[8px] bg-[#001631] px-2 py-1 font-mono text-[11px] text-white tabular-nums">
+          <span className="mt-0.5 shrink-0 rounded-[8px] bg-[var(--olo-modal-acento,#001631)] px-2 py-1 font-mono text-[11px] text-white tabular-nums">
             {relacionada.codigo}
           </span>
           <span className="text-sm text-[#344054]">{relacionada.nombre}</span>

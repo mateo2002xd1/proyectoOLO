@@ -111,6 +111,7 @@ no sabes qué poner, esa es la señal de que la carpeta no tiene un lugar claro 
 - `3000-sitio-web/src/features/sitio-web/tendencia-ocupacional/` — tendencia ocupacional (bloque Puck)
 - `3000-sitio-web/src/shared/` — lo transversal del sitio: sistema de diseño y utilidades
 - `3000-sitio-web/src/shared/lib/` — utilidades transversales: cliente HTTP, sesión, bloques
+- `3000-sitio-web/src/shared/lib/accesibilidad/` — botón y panel de accesibilidad del sitio público, y las preferencias del visitante
 - `3000-sitio-web/src/shared/lib/blocks/` — los bloques Puck de esta app
 - `3000-sitio-web/src/shared/lib/inactividad/` — aviso y cierre de sesión por inactividad
 - `3000-sitio-web/src/shared/lib/mobile/` — navegación mobile del panel: barra de abajo con el logo al centro

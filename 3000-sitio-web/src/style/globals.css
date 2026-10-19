@@ -343,8 +343,16 @@
 
 /* Transición de vista, ver route-transition.tsx: qué se anima al pasar de una
    sección a otra. El key={pathname} del componente monta un nodo nuevo por cada
-   ruta, así que esto arranca solo, sin JS de por medio.
-   `margin-top` y no `transform: translateY()` a propósito: cualquier `transform`
+   ruta, así que esto arranca solo, sin JS de por medio. La primera carga no lleva la
+   clase (la pone el componente desde la primera navegación).
+
+   Solo un fundido, sin desplazamiento. Hasta el 18-10-2026 también bajaba 8 px con
+   `margin-top`: era un salto de diseño en cada carga y, mientras duraba, dejaba ver una
+   franja del fondo blanco entre la cabecera y el primer bloque (se notaba sobre el
+   banner oscuro de inicio). Si algún día se quiere volver a mover, que no sea con
+   `margin-top` ni con `transform`:
+
+   Por qué no `transform: translateY()`: cualquier `transform`
    en este contenedor —incluso en reposo, con `animation-fill-mode: both` deja
    `translateY(0)` puesto para siempre, que no es `none`— vuelve a este `<div>` el
    *containing block* de sus descendientes `position: fixed`. Cualquier elemento fijo
@@ -355,16 +363,14 @@
    borrado el 2026-09-18; hoy lo reemplaza `PaginasFabSpeedDial`, que el layout monta
    FUERA de este contenedor): con `transform`, medido en el navegador, acababa 2.578 px
    por debajo del borde inferior en vez de fijo abajo a la derecha. `margin-top`
-   consigue el mismo desplazamiento sin crear ese marco de referencia. */
+   lo evitaba, pero traía el salto de diseño de más arriba. */
 @keyframes olo-route-in {
   from {
     opacity: 0;
-    margin-top: 8px;
   }
 
   to {
     opacity: 1;
-    margin-top: 0;
   }
 }
 
@@ -426,9 +432,12 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
    ============================================ */
 
 /* --- Header (GOV.CO banner & navigation) --- */
+/* Blanca con la marca en azul cuando no se eligió color; con color, `estiloDeFranjaGov`
+   pone fondo y tinta en línea. La marca GOV.CO se dibuja con `currentColor`. */
 .olo-gov-banner {
   width: 100%;
-  background-color: #0943B5;
+  background-color: #ffffff;
+  color: #0943B5;
   height: 40px;
   display: flex;
   align-items: center;
@@ -438,6 +447,8 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
 }
 
 .olo-gov-banner-container {
+  /* Referencia de la imagen de GOV.CO cuando va centrada (`posicionDeLaMarca`). */
+  position: relative;
   width: 100%;
   max-width: 1920px;
   height: 100%;
@@ -461,16 +472,12 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
   opacity: 0.85;
 }
 
-.olo-gov-banner-brand svg {
-  height: 20px;
-  width: auto;
-  display: block;
-}
-
 .olo-gov-banner-edit {
   display: flex;
   align-items: center;
-  color: white;
+  /* A la derecha aunque no haya imagen de GOV.CO a su izquierda. */
+  margin-left: auto;
+  color: inherit;
   text-decoration: none;
   font-size: 13px;
   opacity: 0.9;
@@ -484,12 +491,6 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
   text-decoration: underline;
 }
 
-.olo-gov-banner-custom-img {
-  max-height: 32px;
-  width: auto;
-  object-fit: contain;
-}
-
 @media (width < 40rem) {
   .olo-gov-banner {
     height: 36px;
@@ -499,9 +500,6 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
     font-size: 11px;
   }
 
-  .olo-gov-banner-brand svg {
-    height: 18px;
-  }
 }
 
 .olo-header {
@@ -546,10 +544,11 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
 .olo-nav-link {
   position: relative;
   padding: var(--space-sm) var(--space-md);
-  font-size: 0.9375rem;
-  /* 15px (antes 14px / var(--fs-sm)) */
+  font-size: var(--olo-nav-tamano, 0.9375rem);
+  /* 15px (antes 14px / var(--fs-sm)). Las tres variables `--olo-nav-*` las pone
+     cada sección desde «Cabecera / Menú» (`estiloDelEnlace` en header.tsx). */
   font-weight: var(--fw-medium);
-  color: #002237;
+  color: var(--olo-nav-color, #002237);
   border-radius: var(--radius-md);
   transition: color var(--transition-fast), background var(--transition-fast);
   white-space: nowrap;
@@ -565,12 +564,12 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
 
 .olo-nav-link:hover,
 .olo-nav-item:hover .olo-nav-link-trigger {
-  color: #002237;
+  color: var(--olo-nav-hover, var(--olo-nav-color, #002237));
   background: rgba(0, 0, 0, 0.06);
 }
 
 .olo-nav-link-active {
-  color: #002237;
+  color: var(--olo-nav-color, #002237);
   font-weight: var(--fw-semibold);
 }
 
@@ -614,10 +613,12 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: var(--space-xs);
+  /* Más aire abajo para que el último enlace no roce la curva de 32 px. */
+  padding: var(--space-xs) var(--space-xs) 1rem;
   background: white;
   border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: var(--radius-md);
+  /* Solo las esquinas de abajo: el desplegable cuelga pegado a la barra. */
+  border-radius: 0 0 32px 32px;
   box-shadow: var(--shadow-lg);
   opacity: 0;
   visibility: hidden;
@@ -637,7 +638,8 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
   font-size: 0.9375rem;
   /* 15px (antes 14px / var(--fs-sm)) */
   font-weight: var(--fw-medium);
-  color: #002237;
+  /* El color de su sección (`--olo-nav-color` en el `.olo-nav-item`). */
+  color: var(--olo-nav-color, #002237);
   line-height: 1.4;
   white-space: normal;
   border-radius: var(--radius-sm);
@@ -645,8 +647,9 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
 }
 
 .olo-nav-dropdown-link:hover {
-  color: #002237;
-  background: rgba(0, 0, 0, 0.06);
+  color: var(--olo-nav-hover, var(--olo-nav-color, #002237));
+  /* Tinte del propio color del texto: se nota igual sobre un fondo claro que oscuro. */
+  background: color-mix(in srgb, currentColor 12%, transparent);
 }
 
 .olo-nav-dropdown-link:focus-visible {
@@ -684,8 +687,9 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
   padding: 6px 14px;
   font-size: 16px;
   font-weight: var(--fw-semibold);
-  color: white;
-  background: #002237;
+  /* Las variables `--olo-intranet-*` las pone «Cabecera / Menú» (header.tsx). */
+  color: var(--olo-intranet-texto, white);
+  background: var(--olo-intranet-fondo, #002237);
   border: none;
   border-radius: 10px;
   text-decoration: none;
@@ -695,9 +699,12 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
   flex-shrink: 0;
 }
 
-.olo-gov-btn:hover {
-  background: #001a2b;
-  color: white;
+.olo-gov-btn:hover,
+.olo-mobile-gov-btn:hover {
+  /* Un 15 % más oscuro que el fondo elegido; sin color propio da #001d2f, casi el
+     #001a2b de antes. */
+  background: color-mix(in srgb, var(--olo-intranet-fondo, #002237) 85%, black);
+  color: var(--olo-intranet-texto, white);
 }
 
 .olo-menu-btn {
@@ -791,17 +798,13 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
   padding: 10px 16px;
   font-size: 15px;
   font-weight: var(--fw-semibold);
-  color: white;
-  background: #002237;
+  color: var(--olo-intranet-texto, white);
+  background: var(--olo-intranet-fondo, #002237);
   border-radius: 10px;
   text-decoration: none;
   transition: background var(--transition-fast);
 }
 
-.olo-mobile-gov-btn:hover {
-  background: #001a2b;
-  color: white;
-}
 
 @media (width < 64rem) {
   .olo-nav {
@@ -843,142 +846,530 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
   }
 }
 
-/* --- External Portals --- */
-.olo-portals {
-  padding: var(--space-4xl) var(--space-lg);
-  background: var(--color-gray-50);
+/* --- External Portals ---
+   Fila de tarjetas de color unidas por una punta de flecha (ver external-portals.tsx).
+   El color de cada tarjeta llega en `--olo-portal-fondo`; la flecha lo hereda. */
+.olo-portales {
+  padding: clamp(32px, 5vw, 64px) 16px;
 }
 
-.olo-portals-inner {
+.olo-portales__fila {
+  display: flex;
   max-width: var(--max-width);
   margin: 0 auto;
 }
 
-.olo-portals-header {
-  text-align: center;
-  margin-bottom: var(--space-3xl);
-}
-
-.olo-portals-title {
-  font-family: var(--font-heading);
-  /* Antes se quedaba en 2rem incluso en móvil, aunque la rejilla de abajo sí
-     colapsara a una columna en el mismo punto. El clamp() escala solo con el
-     ancho de la ventana, sin depender de un @media. */
-  font-size: clamp(1.5rem, 1.2rem + 1.5vw, var(--fs-2xl));
-  /* El peso base es el ligero: lo que va entre ** se pone en negrita. */
-  font-weight: var(--fw-regular);
-  color: var(--color-primary-dark);
-  margin-bottom: var(--space-sm);
-}
-
-.olo-portals-title strong {
-  font-weight: var(--fw-bold);
-}
-
-.olo-portals-subtitle {
-  font-size: var(--fs-base);
-  color: var(--color-gray-500);
-}
-
-.olo-portals-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-xl);
-}
-
-/* La tarjeta entera es el enlace: se pulsa en cualquier punto, no solo sobre el
-   texto. Por eso lleva aquí el `display: flex` y el contenido va en un `<span>`
-   por dentro — un `<a>` no puede envolver `<div>` sin marcado inválido. */
-.olo-portal-card {
+.olo-portal {
   position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 182px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  aspect-ratio: 4 / 5;
-  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 24px 28px;
+  background: var(--olo-portal-fondo, #001145);
+  color: var(--color-white);
+  text-align: center;
   text-decoration: none;
-  transition: transform var(--transition-slow), box-shadow var(--transition-slow);
 }
 
-.olo-portal-card:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--shadow-xl);
+/* Esquinas redondeadas («Esquinas redondeadas» del bloque): solo las de afuera de la
+   fila, que van en la primera y la última tarjeta. Las del medio quedan rectas. */
+.olo-portal:first-child {
+  border-radius: var(--olo-portales-radio, 0) 0 0 var(--olo-portales-radio, 0);
 }
 
-/* El foco de teclado tiene que verse sobre el fondo oscuro de la tarjeta, así que
-   el anillo va por fuera del borde (SC 2.4.7 / 1.4.11). */
-.olo-portal-card:focus-visible {
-  outline: 3px solid var(--color-brand-focus);
-  outline-offset: 3px;
+.olo-portal:last-child {
+  border-radius: 0 var(--olo-portales-radio, 0) var(--olo-portales-radio, 0) 0;
 }
 
-/* La ilustración, al 60% sobre el degradado que da el color de la tarjeta. */
-.olo-portal-bg {
+.olo-portal:only-child {
+  border-radius: var(--olo-portales-radio, 0);
+}
+
+/* La punta hacia la tarjeta siguiente: un triángulo del color de esta, montado sobre
+   el borde. La última no la lleva. */
+.olo-portal:not(:last-child)::after {
+  content: '';
   position: absolute;
-  inset: 0;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: cover;
-  opacity: 0.6;
+  z-index: 1;
+  top: 50%;
+  right: -20px;
+  width: 20px;
+  height: 40px;
+  transform: translateY(-50%);
+  background: var(--olo-portal-fondo, #001145);
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+
+.olo-portal__icono {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  background: var(--color-white);
   transition: transform var(--transition-slow);
 }
 
-.olo-portal-card:hover .olo-portal-bg {
-  transform: scale(1.05);
+a.olo-portal:hover .olo-portal__icono {
+  transform: scale(1.08);
 }
 
-/* Vela oscura bajo el texto: la ilustración puede tener zonas claras y el texto
-   es blanco, así que sin esto el contraste depende de qué imagen se suba. */
-.olo-portal-content {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  padding: var(--space-xl);
-  background: linear-gradient(to top, rgba(6, 20, 44, 0.92) 0%, rgba(6, 20, 44, 0.72) 55%, rgba(6, 20, 44, 0) 100%);
+/* El anillo va por dentro en blanco y por fuera en azul: las tarjetas van pegadas y
+   pueden ser claras u oscuras (SC 2.4.7 / 1.4.11). */
+a.olo-portal:focus-visible {
+  z-index: 2;
+  outline: 3px solid var(--color-white);
+  outline-offset: -7px;
+  box-shadow: 0 0 0 3px #001145;
 }
 
-.olo-portal-label {
+/* Peso normal de base: lo que va en negrita lo decide el texto enriquecido. */
+.olo-portal__texto {
+  max-width: 10.5em;
   font-family: var(--font-heading);
-  font-size: clamp(1.125rem, 0.95rem + 1vw, var(--fs-xl));
-  font-weight: var(--fw-bold);
-  color: var(--color-white);
-  margin-bottom: var(--space-sm);
+  font-size: clamp(1.0625rem, 0.95rem + 0.45vw, 1.25rem);
+  font-weight: var(--fw-regular);
+  line-height: 1.25;
 }
 
-.olo-portal-description {
-  font-size: var(--fs-sm);
-  color: var(--color-white);
-  line-height: 1.5;
+.olo-portal__texto p {
+  margin: 0;
 }
 
-.olo-portal-description strong {
+.olo-portal__texto strong {
   font-weight: var(--fw-bold);
 }
 
-@media (width < 64rem) {
-  .olo-portals-grid {
-    grid-template-columns: 1fr;
-    max-width: 500px;
-    margin: 0 auto;
+/* Apiladas: la flecha pasa al borde de abajo y apunta hacia abajo. */
+@media (width < 40rem) {
+  .olo-portales__fila {
+    flex-direction: column;
+  }
+
+  .olo-portal {
+    min-height: 150px;
+  }
+
+  /* Apiladas, las esquinas de afuera son las de arriba de la primera y las de abajo
+     de la última. */
+  .olo-portal:first-child {
+    border-radius: var(--olo-portales-radio, 0) var(--olo-portales-radio, 0) 0 0;
+  }
+
+  .olo-portal:last-child {
+    border-radius: 0 0 var(--olo-portales-radio, 0) var(--olo-portales-radio, 0);
+  }
+
+  .olo-portal:only-child {
+    border-radius: var(--olo-portales-radio, 0);
+  }
+
+  .olo-portal:not(:last-child)::after {
+    top: auto;
+    right: auto;
+    bottom: -20px;
+    left: 50%;
+    width: 40px;
+    height: 20px;
+    transform: translateX(-50%);
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
   }
 }
 
-/* Quien pide menos movimiento no debería recibir el desplazamiento ni el zoom. */
 @media (prefers-reduced-motion: reduce) {
-
-  .olo-portal-card,
-  .olo-portal-bg {
+  .olo-portal__icono {
     transition: none;
   }
 
-  .olo-portal-card:hover {
+  a.olo-portal:hover .olo-portal__icono {
     transform: none;
   }
+}
 
-  .olo-portal-card:hover .olo-portal-bg {
-    transform: none;
+/* --- Video embebido (ver video-embebido.tsx) ---
+   Titular en blanco sobre el color de la sección (`--olo-video-fondo`) y el video en un
+   marco blanco de esquinas redondeadas. */
+.olo-video-embebido {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(20px, 3vw, 32px);
+  padding: clamp(32px, 5vw, 64px) 16px;
+  background: var(--olo-video-fondo, #001145);
+  color: var(--color-white);
+}
+
+.olo-video-embebido__encabezado {
+  max-width: 800px;
+  text-align: center;
+}
+
+.olo-video-embebido__titulo {
+  font-family: var(--font-heading);
+  font-size: clamp(1.125rem, 0.95rem + 0.8vw, 1.625rem);
+  font-weight: var(--fw-regular);
+  line-height: 1.3;
+  color: inherit;
+}
+
+.olo-video-embebido__subtitulo {
+  margin-top: 4px;
+  font-size: clamp(0.9375rem, 0.88rem + 0.3vw, 1.125rem);
+  line-height: 1.4;
+}
+
+.olo-video-embebido__titulo p,
+.olo-video-embebido__subtitulo p {
+  margin: 0;
+}
+
+.olo-video-embebido__titulo strong,
+.olo-video-embebido__subtitulo strong {
+  font-weight: var(--fw-bold);
+}
+
+.olo-video-embebido__marco {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 860px;
+  padding: clamp(8px, 1.4vw, 14px);
+  border-radius: clamp(18px, 3vw, 32px);
+  background: var(--color-white);
+  box-shadow: 0 20px 40px -16px rgba(0, 0, 0, 0.45);
+}
+
+.olo-video-embebido__video,
+.olo-video-embebido__miniatura,
+.olo-video-embebido__vacio {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  border-radius: clamp(10px, 2vw, 20px);
+}
+
+.olo-video-embebido__vacio {
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  border: 2px dashed #9ca3af;
+  color: #4b5563;
+  font-size: 14px;
+  text-align: center;
+  background: #f3f4f6;
+}
+
+/* La miniatura antes de dar play: la imagen recortada al 16:9 del marco y el botón
+   redondo en el centro. Todo el recuadro es el botón. */
+.olo-video-embebido__miniatura {
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+  background: #000;
+  cursor: pointer;
+}
+
+div.olo-video-embebido__miniatura {
+  cursor: default;
+}
+
+.olo-video-embebido__miniatura-imagen {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.olo-video-embebido__play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: clamp(56px, 9vw, 80px);
+  height: clamp(56px, 9vw, 80px);
+  border-radius: 50%;
+  background: var(--olo-video-fondo, #001145);
+  color: var(--color-white);
+  box-shadow: 0 0 0 4px var(--color-white);
+  transform: translate(-50%, -50%);
+  transition: transform var(--transition-slow);
+}
+
+.olo-video-embebido__play svg {
+  width: 45%;
+  height: 45%;
+  margin-left: 8%;
+}
+
+button.olo-video-embebido__miniatura:hover .olo-video-embebido__play {
+  transform: translate(-50%, -50%) scale(1.08);
+}
+
+/* Anillo por dentro en blanco y por fuera del color de la sección: la miniatura puede
+   ser clara u oscura (SC 2.4.7 / 1.4.11). */
+button.olo-video-embebido__miniatura:focus-visible {
+  outline: 3px solid var(--color-white);
+  outline-offset: -7px;
+  box-shadow: 0 0 0 3px var(--olo-video-fondo, #001145);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .olo-video-embebido__play {
+    transition: none;
+  }
+}
+
+/* --- Carrusel de imágenes (ver carrusel-de-imagenes.tsx) ---
+   Una imagen por vez, en dos franjas con su propio fondo: la del párrafo y la del
+   banner. Las dos blancas con texto azul por defecto; el componente pone en
+   línea el color de cada una (el de «Párrafo» y el de la imagen que se ve,
+   con un fundido) y el texto blanco sobre oscuros. Las imágenes se apilan en la misma
+   celda de la rejilla. Sin bordes. Las dos flechas del diseño, grises y sin fondo, y
+   debajo el ubicador de puntos. */
+.olo-carrusel {
+  display: flex;
+  flex-direction: column;
+  border: 0;
+}
+
+.olo-carrusel__franja-texto,
+.olo-carrusel__franja-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(28px, 4vw, 48px) 16px;
+  background: #ffffff;
+  color: #001145;
+}
+
+.olo-carrusel__franja-banner {
+  gap: clamp(14px, 2vw, 20px);
+  transition: background-color 0.6s ease, color 0.6s ease;
+}
+
+/* Todo el ancho (hasta 800 px): así se nota la alineación que se elija en la barra. */
+.olo-carrusel__encabezado {
+  width: 100%;
+  max-width: 800px;
+  text-align: center;
+}
+
+/* El encabezado lo elige quien edita (H1–H4 en la barra del texto enriquecido). */
+.olo-carrusel__parrafo {
+  font-size: clamp(0.9375rem, 0.88rem + 0.3vw, 1.125rem);
+  line-height: 1.5;
+}
+
+.olo-carrusel__encabezado :is(h1, h2, h3, h4) {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: var(--fw-bold);
+  line-height: 1.15;
+  color: inherit;
+}
+
+.olo-carrusel__encabezado h1 { font-size: clamp(1.75rem, 1.2rem + 2.4vw, 3rem); }
+.olo-carrusel__encabezado h2 { font-size: clamp(1.5rem, 1.1rem + 1.8vw, 2.5rem); }
+.olo-carrusel__encabezado h3 { font-size: clamp(1.25rem, 1rem + 1.1vw, 1.875rem); }
+.olo-carrusel__encabezado h4 { font-size: clamp(1.125rem, 0.95rem + 0.7vw, 1.5rem); }
+
+.olo-carrusel__encabezado p {
+  margin: 0;
+}
+
+.olo-carrusel__encabezado strong {
+  font-weight: var(--fw-bold);
+}
+
+/* Viñetas: el reset de Tailwind las quita; aquí vuelven, alineadas con el texto. */
+.olo-carrusel__encabezado ul {
+  margin: 8px 0 0;
+  padding-left: 1.25em;
+  list-style: disc;
+  text-align: left;
+}
+
+/* La misma muestra de «Imagen destacada» en el editor, sin caja alrededor. */
+.olo-carrusel__muestra {
+  display: block;
+  width: 100%;
+  max-width: 1200px;
+  height: auto;
+}
+
+/* Las flechas van en el relleno lateral, fuera de la imagen. */
+.olo-carrusel__escenario {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1200px;
+  padding: 0 clamp(36px, 5vw, 64px);
+}
+
+.olo-carrusel__pista {
+  display: grid;
+}
+
+.olo-carrusel__diapositiva {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Arriba: con o sin botón, la imagen queda en el mismo sitio al cambiar. */
+  justify-content: flex-start;
+  gap: clamp(14px, 2vw, 22px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.6s ease, visibility 0s linear 0.6s;
+}
+
+.olo-carrusel__diapositiva[data-visible] {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.6s ease;
+}
+
+/* El enlace de la imagen (no el del botón, que va a su tamaño). */
+.olo-carrusel__diapositiva > a:not(.olo-carrusel__boton) {
+  display: block;
+  width: 100%;
+}
+
+.olo-carrusel__imagen {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Botón opcional bajo la imagen (texto + hipervínculo de la imagen). Los colores son
+   los del diseño: cian con letra azul, que se leen sobre cualquier fondo. */
+.olo-carrusel__boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 8px 24px;
+  border-radius: 999px;
+  background: #07ecfc;
+  color: #001145;
+  font-size: clamp(0.875rem, 0.82rem + 0.25vw, 1rem);
+  font-weight: var(--fw-semibold, 600);
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  transition: filter 0.2s ease, transform 0.2s ease;
+}
+
+a.olo-carrusel__boton:hover {
+  filter: brightness(0.94);
+  transform: translateY(-1px);
+}
+
+a.olo-carrusel__boton:focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: 3px;
+}
+
+/* El botón mide 44 px para el dedo; el dibujo, 19 × 32 como el SVG del diseño. */
+.olo-carrusel__flecha {
+  position: absolute;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #c9c9c9;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.olo-carrusel__flecha--anterior {
+  left: clamp(-4px, 0.5vw, 8px);
+}
+
+.olo-carrusel__flecha--siguiente {
+  right: clamp(-4px, 0.5vw, 8px);
+}
+
+.olo-carrusel__flecha-icono {
+  stroke-opacity: 0.75;
+  transition: stroke-opacity 0.2s ease;
+}
+
+.olo-carrusel__flecha:hover .olo-carrusel__flecha-icono {
+  stroke-opacity: 1;
+}
+
+.olo-carrusel__flecha:focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* Ubicador: un punto por imagen en el color del texto (azul o blanco según el fondo);
+   el de la imagen visible se alarga y se pone a tono pleno. El botón mide 24 px para
+   el dedo (SC 2.5.8); el punto que se ve, 8. */
+.olo-carrusel__ubicador {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.olo-carrusel__punto {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.olo-carrusel__punto::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: currentColor;
+  opacity: 0.35;
+  transition: width 0.35s ease, opacity 0.35s ease;
+}
+
+.olo-carrusel__punto:hover::before {
+  opacity: 0.6;
+}
+
+.olo-carrusel__punto[data-activo]::before {
+  width: 24px;
+  opacity: 1;
+}
+
+.olo-carrusel__punto:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .olo-carrusel__franja-banner,
+  .olo-carrusel__diapositiva,
+  .olo-carrusel__diapositiva[data-visible],
+  .olo-carrusel__punto::before {
+    transition: none;
   }
 }
 
@@ -1063,47 +1454,68 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
 }
 
 /* --- Dato OLO de la semana --- */
+/* Dato OLO de la semana (ver dato-olo-semana.tsx): mini carrusel de infografías, una
+   por vez con un fundido, sin flechas y con el ubicador de puntos del «Carrusel de
+   imágenes» debajo. Fondo blanco con texto azul por defecto; el componente pone en
+   línea el color de la imagen que se ve (cambia con un fundido) y el texto (los
+   puntos) en blanco sobre oscuros. El redondeo llega en --olo-dato-radio. */
 .olo-dato-semana {
-  padding: var(--space-3xl) var(--space-lg);
-  background: var(--color-white);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(32px, 5vw, 64px) 16px;
+  background: #ffffff;
+  color: #001145;
+  transition: background-color 0.6s ease, color 0.6s ease;
 }
 
-.olo-dato-semana-inner {
+.olo-dato-semana__escenario {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(14px, 2vw, 20px);
+  width: 100%;
   max-width: var(--max-width);
-  margin: 0 auto;
 }
 
-.olo-dato-semana-title {
-  font-family: var(--font-heading);
-  font-size: clamp(1.5rem, 1.2rem + 1.5vw, var(--fs-2xl));
-  font-weight: var(--fw-bold);
-  color: var(--color-primary-dark);
-  text-align: center;
-  margin-bottom: var(--space-2xl);
+.olo-dato-semana__pista {
+  display: grid;
+  width: 100%;
 }
 
-.olo-dato-semana-title-normal {
-  font-weight: var(--fw-regular);
+.olo-dato-semana__diapositiva {
+  grid-area: 1 / 1;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.6s ease, visibility 0s linear 0.6s;
 }
 
-.olo-dato-semana-frame {
-  background: #F5F5F4;
-  border-radius: var(--radius-xl);
-  padding: var(--space-xl);
-  overflow: hidden;
+.olo-dato-semana__diapositiva[data-visible] {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.6s ease;
 }
 
-.olo-dato-semana-img {
+.olo-dato-semana__imagen {
   display: block;
-  max-width: 100%;
+  width: 100%;
   height: auto;
-  margin: 0 auto;
-  border-radius: var(--radius-lg);
+  border-radius: var(--olo-dato-radio, 0);
 }
 
-@media (width < 40rem) {
-  .olo-dato-semana-frame {
-    padding: var(--space-md);
+/* La vista previa de «Imagen destacada» en el editor, sin caja alrededor. */
+.olo-dato-semana__muestra {
+  display: block;
+  width: 100%;
+  max-width: var(--max-width);
+  height: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .olo-dato-semana,
+  .olo-dato-semana__diapositiva,
+  .olo-dato-semana__diapositiva[data-visible] {
+    transition: none;
   }
 }
 
@@ -1681,6 +2093,22 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
   font-family: var(--font-body), system-ui, -apple-system, sans-serif;
 }
 
+/* Esquinas en el fondo (`radioEsquinasFondo`): la zona alta queda como fondo del pie y
+   la baja es esta capa redondeada, detrás de la tarjeta (`isolation` la deja dentro). */
+.olo-footer-wrapper--redondeado {
+  position: relative;
+  isolation: isolate;
+}
+
+.olo-footer-wrapper--redondeado::before {
+  content: '';
+  position: absolute;
+  inset: 120px 0 0;
+  z-index: -1;
+  background: var(--olo-pie-fondo, #001631);
+  border-radius: var(--olo-pie-radio, 0);
+}
+
 .olo-footer-card {
   background-color: #ffffff;
   border-radius: 6px;
@@ -1820,15 +2248,49 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
   text-decoration: underline;
 }
 
+/* Misma altura y mismo borde izquierdo que la franja de la cabecera
+   (`.olo-gov-banner` + `.olo-gov-banner-container`): 40 px de alto (36 en móvil), el
+   relleno lateral `clamp(16px, 4vw, 40px)` y, pasados los 1920 px, el contenido
+   alineado con ese contenedor centrado. Las imágenes van en `.olo-franja-imagen`. */
 .olo-gov-banner-bottom {
   width: 100%;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: flex-start;
   gap: 12px;
-  background-color: #0943B5;
-  padding: 14px 20px;
+  background-color: #ffffff;
+  color: #0943B5;
+  padding: 0 max(clamp(16px, 4vw, 40px), calc((100% - 1920px) / 2 + 40px));
+  box-sizing: border-box;
   overflow: hidden;
+}
+
+/* Caja de cada imagen de la franja (Colombia y GOV.CO): del alto de la franja, con el
+   relleno que se elige en el editor. La imagen ocupa el alto que queda y nunca agranda
+   la franja; un ancho máximo evita que una imagen muy ancha empuje al resto. */
+.olo-franja-imagen {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  max-width: 45%;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.olo-franja-imagen img {
+  display: block;
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+@media (width < 40rem) {
+  .olo-gov-banner-bottom {
+    height: 36px;
+  }
+
 }
 
 @media (width < 64rem) {
@@ -4518,6 +4980,51 @@ button.text-link,
   }
 }
 
+/* `anchoDentro` («Imagen destacada»): la caja no se estrecha ni se rellena; el ancho
+   máximo y el espacio interior los aplica el contenido del bloque, y así su color de
+   fondo va de borde a borde. Doble clase para ganarle a la regla móvil de arriba. */
+.olo-caja.olo-caja--ancho-dentro {
+  max-width: none;
+  padding: 0;
+}
+
+.olo-caja--ancho-dentro .olo-imagen-destacada__contenido {
+  max-width: min(var(--olo-caja-ancho, 1200px), 1200px);
+  padding-top: var(--olo-caja-interior-y, 0px);
+  padding-bottom: var(--olo-caja-interior-y, 0px);
+  padding-left: calc(1.5rem + var(--olo-caja-interior-x, 0px));
+  padding-right: calc(1.5rem + var(--olo-caja-interior-x, 0px));
+}
+
+/* El «sabías que» (`ancho: 'contenido'`) es más estrecho de por sí: 1000 px y 1rem. */
+.olo-caja--ancho-dentro .matriz-sabias-que.olo-imagen-destacada__contenido {
+  max-width: min(var(--olo-caja-ancho, 1000px), 1000px);
+  padding-left: calc(1rem + var(--olo-caja-interior-x, 0px));
+  padding-right: calc(1rem + var(--olo-caja-interior-x, 0px));
+}
+
+.olo-caja--ancho-dentro.olo-caja--izquierda .olo-imagen-destacada__contenido {
+  margin-left: 0;
+}
+
+.olo-caja--ancho-dentro.olo-caja--derecha .olo-imagen-destacada__contenido {
+  margin-right: 0;
+}
+
+@media (width < 40rem) {
+  .olo-caja--ancho-dentro .olo-imagen-destacada__contenido {
+    padding-top: calc(var(--olo-caja-interior-y, 0px) * 0.6);
+    padding-bottom: calc(var(--olo-caja-interior-y, 0px) * 0.6);
+    padding-left: calc(1.5rem + var(--olo-caja-interior-x, 0px) * 0.6);
+    padding-right: calc(1.5rem + var(--olo-caja-interior-x, 0px) * 0.6);
+  }
+
+  .olo-caja--ancho-dentro .matriz-sabias-que.olo-imagen-destacada__contenido {
+    padding-left: calc(1rem + var(--olo-caja-interior-x, 0px) * 0.6);
+    padding-right: calc(1rem + var(--olo-caja-interior-x, 0px) * 0.6);
+  }
+}
+
 /* Columnas (primitivo Grid) */
 .olo-grid {
   display: grid;
@@ -5077,6 +5584,127 @@ button.text-link,
   border-radius: var(--radius-xl, 16px);
 }
 
+/* Las dos tarjetas que montan sobre el borde inferior de la imagen (diseño del
+   inicio: «Emprender» y «Buscar empleo»). El margen negativo las sube sobre la
+   imagen sin sacarlas del flujo: la sección crece con ellas y nada se solapa abajo. */
+.olo-tarjetas-destacadas {
+  /* Cuánto cuelgan las tarjetas sobre el bloque de abajo: media tarjeta. */
+  --olo-tarjetas-desplazamiento: 5.5rem;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem 3.5rem;
+  margin-top: -3.5rem;
+  margin-bottom: calc(-1 * var(--olo-tarjetas-desplazamiento));
+  padding-inline: 1rem;
+}
+
+/* La sección que lleva tarjetas: sin relleno abajo, para que el borde con el bloque
+   siguiente pase por la mitad de las tarjetas, y por encima de ese bloque, que si no
+   las taparía al pintarse después. El `!important` le gana al `py-12` del componente.
+   `.matriz-section-*` trae `overflow-x: hidden`, que obliga al eje vertical a recortar
+   también y cortaba las tarjetas en el borde; `clip` evita igual el desborde lateral
+   sin tocar el vertical. */
+.olo-imagen-destacada--con-tarjetas {
+  position: relative;
+  z-index: 2;
+  padding-bottom: 0 !important;
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
+.olo-tarjeta-destacada {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 9.75rem;
+  min-height: 11rem;
+  padding: 1.25rem 0.75rem;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(0, 22, 49, 0.18);
+  color: #002237;
+  text-decoration: none;
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+/* El panel gris claro de dentro de la tarjeta del diseño. */
+.olo-tarjeta-destacada::before {
+  content: '';
+  position: absolute;
+  inset: 0.625rem;
+  z-index: -1;
+  border-radius: 0.5rem;
+  background: linear-gradient(180deg, #f3f4f6 0%, #ffffff 100%);
+}
+
+a.olo-tarjeta-destacada:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(0, 22, 49, 0.22);
+}
+
+a.olo-tarjeta-destacada:focus-visible {
+  outline: 2px solid #001631;
+  outline-offset: 3px;
+}
+
+.olo-tarjeta-destacada__imagen {
+  max-width: 70%;
+  max-height: 2.75rem;
+  object-fit: contain;
+}
+
+.olo-tarjeta-destacada__titulo {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+}
+
+/* Hueco del editor para una tarjeta todavía sin imagen ni título. */
+.olo-tarjeta-destacada--vacia {
+  border: 2px dashed #cbd5e1;
+  background: #ffffff;
+  box-shadow: none;
+  color: #64748b;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.olo-tarjeta-destacada--vacia::before {
+  display: none;
+}
+
+@media (width < 40rem) {
+  .olo-tarjetas-destacadas {
+    --olo-tarjetas-desplazamiento: 4.75rem;
+    gap: 1rem;
+    margin-top: -2.5rem;
+  }
+
+  .olo-tarjeta-destacada {
+    width: 8.5rem;
+    min-height: 9.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .olo-tarjeta-destacada {
+    transition: none;
+  }
+
+  a.olo-tarjeta-destacada:hover {
+    transform: none;
+  }
+}
+
 .matriz-section-title {
   font-family: var(--font-heading);
   font-size: clamp(1.5rem, 1.2rem + 1vw, 1.75rem);
@@ -5428,4 +6056,412 @@ button.text-link,
       overlay var(--olo-modal-salida) allow-discrete,
       display var(--olo-modal-salida) allow-discrete;
   }
+}
+
+/* --- Migas de pan del sitio público (`MigasDePan`, debajo de la cabecera) ---
+   Alineadas con el contenido de la cabecera (`.olo-header-inner`). No son `sticky`: la
+   cabecera ya lo es y las dos juntas le quitarían demasiada pantalla al móvil. */
+.migas-de-pan {
+  background: #ffffff;
+}
+
+.migas-de-pan__contenido {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0.625rem var(--space-lg);
+}
+
+/* Los mismos cortes y rellenos que `.olo-header-inner`, para empezar donde el logo. */
+@media (width < 48rem) {
+  .migas-de-pan__contenido {
+    padding-inline: var(--space-md);
+  }
+}
+
+@media (width < 25rem) {
+  .migas-de-pan__contenido {
+    padding-inline: var(--space-sm);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ACCESIBILIDAD DEL SITIO PÚBLICO
+   El botón del borde derecho, su panel y lo que hace cada opción
+   (`src/shared/lib/accesibilidad/`). Cada preferencia es un atributo `data-a11y-*` en
+   el `<html>`: lo pone el script de antes de pintar y lo mantiene `Accesibilidad`, que
+   lo quita al salir hacia el panel o el editor.
+
+   - Lo que cambia la letra, el color o el espaciado se escribe contra `.publico-layout`.
+     El botón, el panel y la guía de lectura salen por portal fuera de él, así que no se
+     deforman los controles con los que se deshace el cambio.
+   - El tamaño del texto y los filtros de color van en el `<html>`. El tamaño, porque el
+     sitio mide en `rem` (lo que esté en `px` no crece). Los filtros, porque un `filter`
+     en cualquier otro elemento lo vuelve el marco de sus hijos `position: fixed` (lo
+     mismo que el `transform` de `.olo-route-transition`, más arriba): la cabecera, el
+     FAB y este mismo botón dejarían de anclarse a la ventana. El `<html>` es la única
+     excepción que hace la norma.
+   - `!important` en todas: tienen que ganarle a los estilos en línea que guardan los
+     bloques de Puck (color, tamaño), que es justo lo que el visitante quiere cambiar.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* --- El botón: una pestaña pegada al borde derecho que acompaña el scroll --- */
+
+.olo-a11y-boton {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  z-index: 9990;
+  /* En px y no en rem: con «Tamaño del texto» el `<html>` crece y la pestaña crecería con él.
+     48 px de ancho (el diseño era de 56, se pidió algo más pequeña) con la proporción del
+     SVG; sigue por encima de los 44 px de blanco táctil. */
+  width: 48px;
+  aspect-ratio: 56 / 60;
+  padding: 0;
+  border: 0;
+  border-radius: 0.75rem 0 0 0.75rem;
+  background: none;
+  cursor: pointer;
+  translate: 0 -50%;
+  filter: drop-shadow(0 4px 10px rgb(0 17 69 / 0.25));
+  transition: translate var(--olo-modal-entrada) var(--olo-modal-curva-entrada);
+}
+
+/* Con el panel abierto se esconde tras el borde: asomaba por detrás del panel. Sigue en
+   el orden del teclado (sin `visibility`), porque al cerrar el foco vuelve a él. */
+.olo-a11y-boton[aria-expanded='true'] {
+  translate: 100% -50%;
+}
+
+.olo-a11y-boton svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* #001145 en todo lo de accesibilidad: la pestaña, el panel, la guía y el cursor grande. */
+.olo-a11y-boton__fondo {
+  fill: #001145;
+  transition: fill var(--transition-fast);
+}
+
+.olo-a11y-boton:hover .olo-a11y-boton__fondo {
+  fill: #0b1f63;
+}
+
+.olo-a11y-boton:focus-visible {
+  outline: 3px solid var(--color-brand-focus);
+  outline-offset: 2px;
+}
+
+/* --- El panel --- */
+
+/* La capa ocupa la franja derecha para centrar el panel en vertical, pero deja pasar los
+   clics: solo el panel los recibe. */
+.olo-a11y-capa {
+  position: fixed;
+  inset: 0 0 0 auto;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  pointer-events: none;
+}
+
+/* Cabecera y pie fijos, y solo el cuerpo se desplaza: con todo el panel desplazándose,
+   las tarjetas pasaban por debajo de las esquinas redondeadas y se veían cortadas. El
+   redondeo baja de 24 a 16 px por lo mismo. */
+.olo-a11y-panel {
+  display: flex;
+  flex-direction: column;
+  width: min(21rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  overflow: hidden;
+  border: 1px solid #d6dae1;
+  border-radius: 1rem;
+  background: #ffffff;
+  color: #001145;
+  box-shadow: 0 18px 48px rgb(0 17 69 / 0.18);
+  pointer-events: auto;
+  outline: none;
+  /* Entra desde la derecha, de donde está el botón. Los tiempos son los de los modales
+     (`--olo-modal-*`), y la salida la sostiene `useCierreAnimado` con `data-cerrando`. */
+  transition:
+    opacity var(--olo-modal-entrada) var(--olo-modal-curva-entrada),
+    translate var(--olo-modal-entrada) var(--olo-modal-curva-entrada);
+}
+
+.olo-a11y-panel__cabecera {
+  flex-shrink: 0;
+  margin: 0 1rem;
+  padding: 1rem 0 0.75rem;
+  border-bottom: 1px solid #e3e6eb;
+}
+
+/* `min-height: 0` deja que el cuerpo encoja dentro del flex y aparezca su scroll: sin
+   él, el cuerpo mide lo que su contenido y el panel lo recorta sin dejar bajar. El
+   relleno da los márgenes de las opciones y deja sitio al contorno de foco de las
+   tarjetas, que sale 4 px y el `overflow` cortaría. */
+.olo-a11y-panel__cuerpo {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.75rem 1rem 0.25rem;
+}
+
+.olo-a11y-panel__pie {
+  flex-shrink: 0;
+  padding: 0.75rem 1rem 1rem;
+}
+
+@starting-style {
+  .olo-a11y-panel {
+    opacity: 0;
+    translate: 1.5rem 0;
+  }
+}
+
+.olo-a11y-panel[data-cerrando] {
+  opacity: 0;
+  translate: 1.5rem 0;
+  pointer-events: none;
+  transition-duration: var(--olo-modal-salida);
+  transition-timing-function: var(--olo-modal-curva-salida);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .olo-a11y-boton {
+    transition: none;
+  }
+
+  .olo-a11y-panel,
+  .olo-a11y-panel[data-cerrando] {
+    translate: none;
+  }
+
+  @starting-style {
+    .olo-a11y-panel {
+      translate: none;
+    }
+  }
+}
+
+/* El `<svg>` con el filtro del daltonismo: tiene que estar en la página, no a la vista.
+   Con `display: none` algunos navegadores no aplican el filtro. */
+.olo-a11y-filtros {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+/* --- Lector de pantalla: lo que se está leyendo --- */
+
+[data-a11y-leyendo] {
+  outline: 3px solid var(--color-brand-blue-dark) !important;
+  outline-offset: 3px;
+}
+
+/* --- Guía de lectura: oscurece por encima y por debajo de la franja --- */
+
+.olo-a11y-guia {
+  --olo-guia-y: 50dvh;
+  --olo-guia-alto: 4.5rem;
+  position: fixed;
+  inset: 0;
+  z-index: 9985;
+  pointer-events: none;
+}
+
+.olo-a11y-guia__arriba,
+.olo-a11y-guia__abajo {
+  position: absolute;
+  inset-inline: 0;
+  background: rgb(0 17 69 / 0.55);
+}
+
+.olo-a11y-guia__arriba {
+  top: 0;
+  height: max(0px, calc(var(--olo-guia-y) - var(--olo-guia-alto) / 2));
+  border-bottom: 3px solid var(--color-brand);
+}
+
+.olo-a11y-guia__abajo {
+  top: calc(var(--olo-guia-y) + var(--olo-guia-alto) / 2);
+  bottom: 0;
+  border-top: 3px solid var(--color-brand);
+}
+
+/* --- Tamaño del texto --- */
+
+html[data-a11y-texto='1'] {
+  font-size: 115%;
+}
+
+html[data-a11y-texto='2'] {
+  font-size: 130%;
+}
+
+html[data-a11y-texto='3'] {
+  font-size: 150%;
+}
+
+/* --- Saturación y daltonismo: filtros, en el `<html>` (ver arriba por qué) --- */
+
+/* Cada opción deja su parte del filtro en una variable y una sola regla las encadena: así
+   se combinan los tres tipos de daltonismo con los tres niveles de saturación sin escribir
+   cada pareja. `var(--x,)` vale vacío si la opción está apagada, y la regla solo aplica
+   con al menos una encendida, así que el `filter` nunca queda vacío. Los filtros SVG
+   `#olo-a11y-daltonismo-N` los pinta `FiltroDaltonismo` (accesibilidad.tsx). */
+html[data-a11y-daltonismo='1'] {
+  --olo-filtro-daltonismo: url('#olo-a11y-daltonismo-1');
+}
+
+html[data-a11y-daltonismo='2'] {
+  --olo-filtro-daltonismo: url('#olo-a11y-daltonismo-2');
+}
+
+html[data-a11y-daltonismo='3'] {
+  --olo-filtro-daltonismo: url('#olo-a11y-daltonismo-3');
+}
+
+html[data-a11y-saturacion='1'] {
+  --olo-filtro-saturacion: saturate(0.5);
+}
+
+html[data-a11y-saturacion='2'] {
+  --olo-filtro-saturacion: saturate(2);
+}
+
+html[data-a11y-saturacion='3'] {
+  --olo-filtro-saturacion: grayscale(1);
+}
+
+html[data-a11y-daltonismo],
+html[data-a11y-saturacion] {
+  filter: var(--olo-filtro-daltonismo,) var(--olo-filtro-saturacion,);
+}
+
+/* --- Alto contraste (RF-14, 9-accesibilidad.md fase 4): blanco sobre negro, 21:1 --- */
+
+html[data-a11y-contraste] .publico-layout,
+html[data-a11y-contraste] .publico-layout :not(img, picture, video, canvas, iframe) {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+/* Fuera los degradados y fondos de color con texto encima; se quedan las fotos de fondo
+   que un bloque pone en línea. */
+html[data-a11y-contraste] .publico-layout :not([style*='url(']) {
+  background-image: none !important;
+}
+
+/* Amarillo sobre negro: 19:1, y distingue el enlace del texto sin depender del subrayado. */
+html[data-a11y-contraste] .publico-layout a,
+html[data-a11y-contraste] .publico-layout a * {
+  color: #ffeb3b !important;
+}
+
+html[data-a11y-contraste] .publico-layout ::placeholder {
+  color: #d1d5db !important;
+}
+
+/* --- Pausar animación: el mismo «catch-all» que la intranet usa con reduced-motion --- */
+
+html[data-a11y-pausar-animaciones],
+html[data-a11y-pausar-animaciones] *,
+html[data-a11y-pausar-animaciones] *::before,
+html[data-a11y-pausar-animaciones] *::after {
+  animation-duration: 0.01ms !important;
+  animation-delay: 0s !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  transition-delay: 0s !important;
+  scroll-behavior: auto !important;
+}
+
+/* --- Fuente dislexia: Lexend (`lexend` en `shared/lib/fonts.ts`) --- */
+
+html[data-a11y-dislexia] .publico-layout,
+html[data-a11y-dislexia] .publico-layout * {
+  font-family: var(--font-dislexia), sans-serif !important;
+}
+
+/* --- Interlineado e interletrado: el nivel 2 es lo que pide WCAG 1.4.12 --- */
+
+html[data-a11y-interlineado='1'] .publico-layout * {
+  line-height: 1.8 !important;
+}
+
+html[data-a11y-interlineado='2'] .publico-layout * {
+  line-height: 2.1 !important;
+}
+
+html[data-a11y-interlineado='3'] .publico-layout * {
+  line-height: 2.4 !important;
+}
+
+html[data-a11y-interletrado='1'] .publico-layout * {
+  letter-spacing: 0.06em !important;
+  word-spacing: 0.08em !important;
+}
+
+html[data-a11y-interletrado='2'] .publico-layout * {
+  letter-spacing: 0.12em !important;
+  word-spacing: 0.16em !important;
+}
+
+html[data-a11y-interletrado='3'] .publico-layout * {
+  letter-spacing: 0.18em !important;
+  word-spacing: 0.24em !important;
+}
+
+/* --- Opciones avanzadas --- */
+
+html[data-a11y-negrita] .publico-layout * {
+  font-weight: 700 !important;
+}
+
+/* Solo el contorno, sin fondo: así se lee igual con o sin alto contraste. */
+html[data-a11y-titulos] .publico-layout :is(h1, h2, h3, h4, h5, h6, [role='heading']) {
+  outline: 3px solid var(--color-brand-blue-dark) !important;
+  outline-offset: 4px;
+}
+
+html[data-a11y-contraste][data-a11y-titulos] .publico-layout :is(h1, h2, h3, h4, h5, h6, [role='heading']) {
+  outline-color: #ffeb3b !important;
+}
+
+/* Va después del alto contraste a propósito: con los dos encendidos manda este. */
+html[data-a11y-enlaces] .publico-layout a,
+html[data-a11y-enlaces] .publico-layout a * {
+  background-color: #ffeb3b !important;
+  color: #000000 !important;
+}
+
+html[data-a11y-enlaces] .publico-layout a {
+  text-decoration: underline !important;
+  text-decoration-thickness: 2px !important;
+  text-underline-offset: 3px;
+  outline: 2px solid #000000 !important;
+  outline-offset: 1px;
+}
+
+/* Cursor grande: una flecha de 48 px con borde blanco, que se ve sobre cualquier fondo.
+   Sobre lo que se puede pulsar, la misma flecha en azul, en vez de la mano. */
+html[data-a11y-cursor],
+html[data-a11y-cursor] * {
+  cursor:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M8 4v34l9-8.5 6 13.5 6-2.6-6-13.4h12.5z' fill='%23001145' stroke='%23fff' stroke-width='3' stroke-linejoin='round'/%3E%3C/svg%3E") 8 4,
+    auto !important;
+}
+
+html[data-a11y-cursor] :is(a, button, [role='button'], [role='switch'], [role='tab'], label, select, summary),
+html[data-a11y-cursor] :is(a, button, [role='button'], [role='switch'], [role='tab'], label, select, summary) * {
+  cursor:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M8 4v34l9-8.5 6 13.5 6-2.6-6-13.4h12.5z' fill='%230b6d8f' stroke='%23fff' stroke-width='3' stroke-linejoin='round'/%3E%3C/svg%3E") 8 4,
+    pointer !important;
 }

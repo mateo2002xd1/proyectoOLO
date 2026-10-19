@@ -6,8 +6,11 @@ import { AUTH_ROLE_COOKIE_NAME } from '@/shared/lib/auth-cookies';
 import { desplazarAElemento } from '@olo/blocks-renderer';
 import { obtenerIndiceBusqueda, type PaginaIndiceBusqueda } from '@/features/paginas';
 import { BuscadorSitioModal } from './buscador-sitio-modal';
+import { TAMANOS_TEXTO_MENU } from './tamanos-texto-menu';
+import { estiloDeFranjaGov } from './tinta-de-franja';
+import { SEPARACIONES_FRANJA, enlaceDeGovCo, rellenoDeImagenDeFranja } from './disposicion-de-franja';
 
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 export interface NavItem {
   label: ReactNode;
@@ -15,6 +18,38 @@ export interface NavItem {
   active?: boolean;
   /** Submenú desplegable. Si trae elementos, el enlace se pinta como un dropdown. */
   children?: NavItem[];
+  /** Color del texto de esta sección del menú; vacío = el de `.olo-nav-link`. */
+  colorTexto?: string;
+  /** Color del texto al pasar el cursor; vacío = el mismo de siempre. */
+  colorHover?: string;
+  /** Clave de `TAMANOS_TEXTO_MENU`; vacío = `normal`. */
+  tamanoTexto?: string;
+  /** Fondo del submenú desplegable de esta sección; vacío = el blanco de `.olo-nav-dropdown`. */
+  colorFondoSubmenu?: string;
+}
+
+/* Van como variables CSS y no como `color` en línea porque el color al pasar el
+   cursor necesita `:hover`, que un estilo en línea no tiene. `.olo-nav-link` las lee
+   con los valores de siempre como respaldo. En una sección con submenú se ponen en
+   su `.olo-nav-item` y no en el botón, para que también las hereden los enlaces del
+   desplegable (`.olo-nav-dropdown-link`). */
+function estiloDelEnlace(link: NavItem): CSSProperties | undefined {
+  const estilo: Record<string, string> = {};
+  if (link.colorTexto?.trim()) estilo['--olo-nav-color'] = link.colorTexto;
+  if (link.colorHover?.trim()) estilo['--olo-nav-hover'] = link.colorHover;
+  const tamano = link.tamanoTexto ? TAMANOS_TEXTO_MENU[link.tamanoTexto] : undefined;
+  if (tamano) estilo['--olo-nav-tamano'] = tamano.valor;
+  return Object.keys(estilo).length > 0 ? (estilo as CSSProperties) : undefined;
+}
+
+/* Dónde va la imagen de GOV.CO en su franja; la fecha y la hora se quedan a la derecha
+   (`margin-left: auto` en `.olo-gov-banner-edit`). Centrada va en posición absoluta para
+   quedar en el centro de la franja y no en el del hueco que deja la fecha. A la derecha,
+   el `margin-left: auto` pasa a la imagen y la fecha toma la separación elegida. */
+function posicionDeLaMarca(alineacion?: string): CSSProperties {
+  if (alineacion === 'centro') return { position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)' };
+  if (alineacion === 'derecha') return { marginLeft: 'auto' };
+  return {};
 }
 
 interface HeaderProps {
@@ -24,6 +59,40 @@ interface HeaderProps {
   mainLogoUrl?: string;
   navLinks?: NavItem[];
   intranetText?: ReactNode;
+  /** Fondo de la barra del menú; vacío deja el blanco de `.olo-header`. */
+  colorFondo?: string;
+  /** Fondo de la franja GOV.CO; vacío la deja blanca con la marca en azul (ver `tinta-de-franja.ts`). */
+  colorFranjaGov?: string;
+  /** A dónde lleva la imagen de GOV.CO; vacío o no válido = https://www.gov.co (`enlaceDeGovCo`). */
+  govBannerEnlace?: string;
+  /** Relleno en px arriba y abajo de la imagen de GOV.CO; vacío = 4 px. */
+  govBannerMargenArriba?: number | '';
+  govBannerMargenAbajo?: number | '';
+  /** `izquierda` (vacío), `centro` o `derecha`: dónde va la imagen. La fecha y la hora, siempre a la derecha. */
+  alineacionFranjaGov?: string;
+  /** Clave de `SEPARACIONES_FRANJA`: espacio entre la imagen y la fecha cuando la imagen va a la derecha. */
+  separacionFranjaGov?: string;
+  /**
+   * El botón «Intranet» (computador y menú del celular): texto y colores juntos
+   * porque en el panel van en un solo acordeón. `texto` vacío cae en
+   * `intranetText`, que es donde lo guardaban las cabeceras de antes.
+   */
+  botonIntranet?: BotonIntranet;
+}
+
+export interface BotonIntranet {
+  texto?: string;
+  colorFondo?: string;
+  colorTexto?: string;
+}
+
+/* Mismo motivo que `estiloDelEnlace`: el botón oscurece su fondo con `:hover`, así
+   que el color va en variables y el CSS calcula el tono de hover con `color-mix`. */
+function estiloDelBotonIntranet(boton?: BotonIntranet): CSSProperties | undefined {
+  const estilo: Record<string, string> = {};
+  if (boton?.colorFondo?.trim()) estilo['--olo-intranet-fondo'] = boton.colorFondo;
+  if (boton?.colorTexto?.trim()) estilo['--olo-intranet-texto'] = boton.colorTexto;
+  return Object.keys(estilo).length > 0 ? (estilo as CSSProperties) : undefined;
 }
 
 /* Sale siempre de la variable y nunca de lo guardado en «Menú y pie»: a dónde vive la
@@ -72,7 +141,16 @@ export function Header({
   mainLogoUrl,
   navLinks: customNavLinks,
   intranetText = 'Intranet',
+  colorFondo,
+  colorFranjaGov,
+  govBannerEnlace,
+  govBannerMargenArriba,
+  govBannerMargenAbajo,
+  alineacionFranjaGov,
+  separacionFranjaGov,
+  botonIntranet,
 }: HeaderProps) {
+  const textoIntranet: ReactNode = botonIntranet?.texto?.trim() || intranetText || 'Intranet';
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const dropdownRefs = useRef<Map<string, HTMLDivElement>>(new Map());
@@ -253,36 +331,35 @@ export function Header({
   return (
     <>
       {govBannerEnabled && (
-        <div className="olo-gov-banner">
+        <div className="olo-gov-banner" style={estiloDeFranjaGov(colorFranjaGov)}>
           <div className="olo-gov-banner-container">
-            {govBannerImageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element -- la imagen la elige el editor (cualquier URL o SVG) y su tamaño va por CSS: next/image exigiría width/height fijos y remotePatterns
-              <img src={govBannerImageUrl} alt="Banner Gobierno" className="olo-gov-banner-custom-img" />
-            ) : (
+            {/* Solo la imagen que se sube en «Cabecera / Menú»: la marca ya no va dibujada
+                en el código. Sin imagen, la franja queda con la fecha y la hora. */}
+            {govBannerImageUrl && (
               <a
-                href="https://www.gov.co"
+                href={enlaceDeGovCo(govBannerEnlace)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="olo-gov-banner-brand"
+                className="olo-gov-banner-brand olo-franja-imagen"
                 aria-label="Portal del Estado Colombiano GOV.CO"
+                style={{
+                  ...rellenoDeImagenDeFranja([govBannerMargenArriba, govBannerMargenAbajo], [4, 4]),
+                  ...posicionDeLaMarca(alineacionFranjaGov),
+                }}
               >
-                <svg width="98" height="24" viewBox="0 0 98 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <path d="M27.7168 16.9303C22.9621 16.9303 19.7168 14.0746 19.7168 9.96517C19.7168 5.85572 22.8866 3 27.7168 3C32.547 3 35.7168 5.85572 35.7168 10.0348C35.7168 14.2139 32.547 17 27.7168 17M27.7168 5.22886C24.6979 5.22886 22.6602 7.1791 22.6602 9.96517C22.6602 12.7512 24.6979 14.7015 27.7168 14.7015C30.7357 14.7015 32.7734 12.8209 32.7734 9.96517C32.7734 7.10945 30.7357 5.22886 27.7168 5.22886Z" fill="white" />
-                  <path d="M49.9875 3.80208C50.2184 3.29167 50.6801 3.07292 51.2188 3.07292C52.1422 3.07292 53.1426 3.80208 52.527 4.89583L46.8324 16.0521C46.4477 16.7083 45.986 17 45.2934 17C44.6008 17 44.0621 16.7083 43.6774 16.0521L37.9058 4.89583C37.2902 3.875 38.2906 3 39.291 3C40.2914 3 40.2914 3.21875 40.5223 3.72917L44.5238 12.0417C44.8317 12.625 45.0625 13.2812 45.2934 13.9375C45.5242 13.2812 45.7551 12.625 46.0629 12.0417L50.0645 3.72917L49.9875 3.80208Z" fill="white" />
-                  <path d="M52.7168 15.5C52.7168 14.6136 53.4145 14 54.2517 14C55.0889 14 55.7168 14.6136 55.7168 15.5C55.7168 16.3864 55.0191 17 54.2517 17C53.4842 17 52.7168 16.4545 52.7168 15.5Z" fill="white" />
-                  <path d="M67.0112 3C69.2501 3 71.2724 3.76617 72.2835 4.60199C72.5724 4.8806 72.7168 5.22886 72.7168 5.50746C72.7168 6.27363 71.8501 6.9005 70.9112 6.41294C70.1168 5.85572 69.1779 5.29851 67.1557 5.29851C65.1335 5.29851 62.5335 7.10945 62.5335 10.1045C62.5335 13.0995 64.6279 14.7711 67.1557 14.7711C69.6835 14.7711 69.6112 14.5622 70.9112 13.6567C71.8501 13.1692 72.7168 13.796 72.7168 14.5622C72.7168 15.3284 72.5724 15.1891 72.2835 15.398C70.7668 16.7214 68.6724 17 67.0112 17C62.7501 17 59.7168 14.3532 59.7168 10.0348C59.7168 5.71642 62.7501 3 67.0112 3Z" fill="white" />
-                  <path d="M91.7168 9.58C91.4904 5.66 88.3206 3 83.7168 3C79.113 3 75.7168 5.87 75.7168 10C75.7168 14.13 78.8866 17 83.7168 17C88.547 17 91.7168 14.13 91.7168 10C91.7168 5.87 91.7168 9.65 91.7168 9.51M83.7168 14.83C80.6979 14.83 78.6602 12.94 78.6602 10.07C78.6602 7.2 80.6979 5.31 83.7168 5.31C86.7357 5.31 88.4715 7.06 88.6979 9.58C88.6979 9.72 88.6979 9.93 88.6979 10.07C88.6979 12.87 86.6602 14.83 83.6413 14.83" fill="white" />
-                  <path d="M15.2002 9.00204C16.0343 9.00204 16.7168 9.63315 16.7168 10.4045C16.7168 10.6149 16.7168 10.7551 16.7168 10.9655V14.8924C16.7168 21.3437 9.13386 23.6578 3.37083 21.6242C2.99168 21.484 2.61253 21.3437 2.38504 21.1334C1.70258 20.5023 1.93007 19.5205 2.84002 19.3102C3.59831 19.1699 4.50827 19.5907 5.19073 19.6608C9.28552 20.2919 13.9111 19.3102 13.9111 14.9625V13.8405C12.7737 15.5235 10.8021 16.4351 8.29974 16.4351C3.90163 16.4351 0.716797 13.7704 0.716797 9.63315C0.716797 5.49588 3.52248 2.76107 7.6931 2.34033C7.76893 2.34033 7.99642 2.34033 8.14808 2.34033C9.20969 2.34033 9.81632 3.53243 9.13386 4.23366C8.90637 4.44403 8.67888 4.58428 8.37556 4.58428C7.92059 4.58428 7.23812 4.72452 6.85898 4.86477C6.55566 5.00502 6.25234 5.07514 5.94902 5.28551C4.5841 6.05686 3.67414 7.45933 3.67414 9.28253C3.67414 12.1576 5.8732 13.9808 8.75471 13.9808C11.6362 13.9808 12.9253 12.7887 13.6078 10.8954C13.6078 10.7551 13.6836 10.5448 13.7595 10.2643C13.8353 9.56303 14.5177 9.07217 15.276 9.07217L15.2002 9.00204Z" fill="white" />
-                  <path d="M13.9437 6.039C13.6384 6.039 13.3331 5.96733 13.1041 5.75233C12.5699 5.32231 12.5699 4.60562 13.0278 4.10394L15.8517 1.16552C16.3097 0.663841 17.0729 0.663841 17.6071 1.09385C18.1414 1.52387 18.1414 2.24055 17.6835 2.74224L14.8595 5.68066C14.6306 5.96733 14.249 6.039 13.9437 6.039Z" fill="#C54549" />
-                  <path d="M11.6556 8.40293C11.3503 8.40293 11.045 8.33126 10.8161 8.11626C10.2818 7.68624 10.2818 6.96956 10.7397 6.46788L13.182 3.95947C13.64 3.45779 14.4032 3.45779 14.9374 3.8878C15.4717 4.31781 15.4717 5.0345 15.0138 5.53618L12.5715 8.04459C12.3425 8.33126 11.9609 8.40293 11.6556 8.40293Z" fill="#5DB0D2" />
-                  <path d="M8.29716 11.844C7.91555 11.844 7.61026 11.7007 7.38129 11.414L5.62588 9.40727C5.16795 8.90559 5.24427 8.1889 5.77853 7.75889C6.31278 7.32888 7.076 7.40055 7.53394 7.90223L8.37348 8.83392L10.5868 6.54052C11.0448 6.03884 11.808 6.03884 12.3422 6.46885C12.8765 6.89887 12.8765 7.61555 12.4186 8.11724L9.21302 11.414C8.98406 11.629 8.67877 11.7723 8.29716 11.7723" fill="white" />
-                </svg>
+                {/* eslint-disable-next-line @next/next/no-img-element -- la imagen la elige el editor y su tamaño va por CSS: next/image exigiría width/height fijos y remotePatterns */}
+                <img src={govBannerImageUrl} alt="" />
               </a>
             )}
             <a
               href={editHref}
               className="olo-gov-banner-edit"
               title={editTitle}
+              style={
+                alineacionFranjaGov === 'derecha'
+                  ? { marginLeft: SEPARACIONES_FRANJA[separacionFranjaGov ?? '']?.valor ?? '12px' }
+                  : undefined
+              }
             >
               {firma === 'oculta' ? (
                 <span>{clock}</span>
@@ -300,7 +377,12 @@ export function Header({
           </div>
         </div>
       )}
-      <header className="olo-header" id="main-header" data-block-id={block.id}>
+      <header
+        className="olo-header"
+        id="main-header"
+        data-block-id={block.id}
+        style={colorFondo?.trim() ? { backgroundColor: colorFondo } : undefined}
+      >
         <div className="olo-header-inner">
           <div className="olo-logo-group">
             <a href="/inicio" className="olo-logo-mark" aria-label="Ir al inicio">
@@ -336,6 +418,7 @@ export function Header({
                   <div
                     key={`nav-link-${index}`}
                     className="olo-nav-item"
+                    style={estiloDelEnlace(link)}
                     ref={(node) => {
                       if (node) dropdownRefs.current.set(dropdownKey, node);
                       else dropdownRefs.current.delete(dropdownKey);
@@ -366,7 +449,11 @@ export function Header({
                         <polyline points="6 9 12 15 18 9" />
                       </svg>
                     </button>
-                    <div className={`olo-nav-dropdown ${isOpen ? 'olo-nav-dropdown-open' : ''}`} role="menu">
+                    <div
+                      className={`olo-nav-dropdown ${isOpen ? 'olo-nav-dropdown-open' : ''}`}
+                      role="menu"
+                      style={link.colorFondoSubmenu?.trim() ? { backgroundColor: link.colorFondoSubmenu } : undefined}
+                    >
                       {link.children.map((child, childIndex) => (
                         <a
                           key={`child-${childIndex}`}
@@ -388,6 +475,7 @@ export function Header({
                   key={`nav-link-${index}`}
                   href={link.href}
                   className={`olo-nav-link ${link.active ? 'olo-nav-link-active' : ''}`}
+                  style={estiloDelEnlace(link)}
                 >
                   {link.label}
                 </a>
@@ -415,8 +503,9 @@ export function Header({
               rel="noopener noreferrer"
               className="olo-gov-btn hidden lg:inline-flex"
               id="gov-co-link"
+              style={estiloDelBotonIntranet(botonIntranet)}
             >
-              {intranetText}
+              {textoIntranet}
             </a>
             <button
               className="olo-menu-btn"
@@ -474,9 +563,10 @@ export function Header({
               target="_blank"
               rel="noopener noreferrer"
               className="olo-mobile-gov-btn"
+              style={estiloDelBotonIntranet(botonIntranet)}
               onClick={() => setMobileMenuOpen(false)}
             >
-              <span>{intranetText}</span>
+              <span>{textoIntranet}</span>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                 <polyline points="15 3 21 3 21 9" />
