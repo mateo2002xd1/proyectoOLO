@@ -2023,7 +2023,11 @@ a.olo-carrusel__boton:focus-visible {
    izquierda (ver `publicaciones.tsx`). `--pub-duracion` lo pone el componente según
    lo que mide una copia y la velocidad elegida en el editor. */
 .publicaciones-cinta {
-  width: 100%;
+  /* De borde a borde de la pantalla aunque el bloque viva en un contenedor de 1200px:
+     se sale de él a los dos lados. Lo que sobra (la barra de desplazamiento cuenta en
+     `100vw`) lo recorta el `overflow-x: hidden` de la sección. */
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
   overflow: hidden;
   /* El ancho de las tarjetas sale de aquí (`cqi`), no de la ventana. */
   container-type: inline-size;
@@ -2142,7 +2146,8 @@ a.olo-carrusel__boton:focus-visible {
 .publicaciones-cinta[data-pausada] .publicaciones-tarjeta-flecha,
 .publicaciones-cinta:hover .publicaciones-tarjeta-flecha,
 .publicaciones-cinta:focus-within .publicaciones-tarjeta-flecha {
-  animation-play-state: paused;
+  /* Quitada, no congelada: congelada a mitad de parpadeo dejaría el borde invisible. */
+  animation: none;
 }
 
 .publicaciones-tarjeta:hover .publicaciones-tarjeta-flecha,
