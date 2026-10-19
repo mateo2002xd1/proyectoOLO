@@ -8,7 +8,6 @@ import { EncabezadoPanel } from '@/shared/ui/molecules/encabezado-panel';
 import { Paginador } from '@/shared/ui/molecules/paginador';
 import { DetalleRegistro } from './detalle-registro';
 import { ModalDepurarAuditoria } from './modal-depurar-auditoria';
-import { Trash2 } from 'lucide-react';
 import { BotonOjo } from '@/shared/ui/atoms/boton-ojo';
 import { COLOR_DE_ACCION } from '@/shared/lib/identidad-panel';
 import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
@@ -82,7 +81,7 @@ export function AuditoriaView() {
               }}
               className="flex h-11 shrink-0 items-center gap-2 rounded-[16px] px-4 text-sm font-semibold text-red-600 transition hover:bg-red-50 hover:text-red-700 active:bg-red-100 dark:text-red-400 dark:hover:bg-red-950/40 dark:hover:text-red-300 dark:active:bg-red-950/60"
             >
-              <Trash2 size={16} />
+              <IconoMascara nombre="trash" tamano="h-5 w-5" />
               Depurar
             </button>
           ) : undefined
