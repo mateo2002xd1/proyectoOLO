@@ -223,8 +223,35 @@ Pide correo y contraseña:
 Es la única forma de crear la primera cuenta; las demás se crean desde el panel. En el
 primer ingreso, el sistema pide configurar las preguntas de seguridad.
 
-> `importar` borra también las cuentas de esta instalación. Si lo repites, repite después
-> `crear-admin`.
+> `importar` es **solo para una instalación nueva**: vacía todas las tablas, cuentas
+> incluidas. Por eso se niega a correr si la base ya tiene algún usuario. En un servidor en
+> uso, para llevar las páginas, usa `importar-paginas` (A6b).
+
+### A6b. Llevar solo las páginas a un servidor en uso
+
+Para publicar en el servidor lo que se preparó en el origen **sin tocar las cuentas**:
+
+```bash
+git pull                              # trae también filesystem/: las imágenes y PDF nuevos
+./docker/deploy.sh importar-paginas
+```
+
+Es como cambiar el contenido de las vitrinas sin tocar la lista del personal: se
+reemplazan las páginas (sitio e intranet, con todas sus versiones) y se queda todo lo demás.
+
+| Se reemplaza | Se queda como está |
+|---|---|
+| `paginas` y `paginas_versiones` (las de aquí que no existan en el origen desaparecen) | `usuarios`, `preguntas_seguridad`, `roles`, la bitácora y todas las demás tablas |
+| El permiso de edición de cada página (`editar.{ámbito}.{slug}`) se crea si falta, y se conceden los del origen **por nombre de rol** | Las **visitas** de cada página: son las reales de este servidor |
+| Los archivos de las páginas (`filesystem/sitio`, `filesystem/intranet`) se copian al volumen **sin pisar** ninguno | Los Excel de las cargas (`cargas-datos`) |
+
+- La **autoría** (quién creó, revisó o publicó cada versión) pasa a la cuenta de este
+  servidor **con el mismo correo**; si aquí no hay nadie con ese correo, queda vacía.
+- Si un rol del origen no existe aquí, sale un `WARNING` con su nombre: sus permisos de
+  edición no se copiaron. Créalo en `/admin/roles` y repite el comando.
+- Todo va en una sola transacción, como `importar`: si algo falla, las páginas quedan como
+  estaban. Repetirlo no hace daño.
+- Solo se vacía la caché de respuestas de la API (`cache:*`), no la cola de trabajos.
 
 ### A7. Encender el túnel
 
@@ -649,7 +676,7 @@ OLO/
 ├── docker/
 │   ├── docker-compose.servidor.yml  # La pila: Postgres 18, redis, api, sitio, intranet y nginx
 │   ├── nginx/nginx.servidor.conf    # La recepción: puertas 8080 (sitio) y 8081 (intranet)
-│   ├── sql/importar-*.sql           # Pasos de `deploy.sh importar` antes y después del volcado
+│   ├── sql/importar-*.sql           # Pasos de `deploy.sh importar` e `importar-paginas` antes y después del volcado
 │   ├── deploy.sh                    # El único comando que hace falta usar
 │   └── guia-bash.md                 # Esta guía
 ├── .env.example / .env              # Plantilla / valores reales (el .env NO se sube a git)

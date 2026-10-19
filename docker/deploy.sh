@@ -87,6 +87,9 @@ Comandos:
   migrar    - Aplicar las migraciones de esquema pendientes
   sembrar   - Cargar el contenido inicial (paginas, identidad visual)
   importar  - Copiar los datos de la base de origen (ORIGEN_DATABASE_URL), sin cuentas
+              (solo instalacion nueva: se niega si ya hay usuarios)
+  importar-paginas - Traer del origen SOLO las paginas (y sus archivos de filesystem/),
+              conservando los usuarios y todo lo demas de este servidor
   crear-admin - Crear la primera cuenta de Superadmin (solo instalacion nueva)
   backup    - Backup de la base de datos y de los archivos subidos
   restore   - Restaurar backup de la base (uso: ./docker/deploy.sh restore backup.sql)
@@ -394,6 +397,33 @@ TABLAS_QUE_NO_VIAJAN=(usuarios preguntas_seguridad auditoria_cambios bloqueos_ed
 # mayor. Corre en un contenedor desechable: no hay que instalar nada en el equipo.
 IMAGEN_CLIENTE_PG="postgres:18-alpine"
 
+# Cuantas cuentas tiene la base de esta instalacion (0 si la tabla aun no existe: base
+# recien creada, sin migraciones). `query_to_xml` solo corre si la tabla existe.
+contar_usuarios() {
+    componer up -d --wait db >/dev/null
+    componer exec -T db psql -U "$1" -d "$2" -At -c \
+        "SELECT (xpath('/row/n/text()', query_to_xml('SELECT count(*) AS n FROM public.usuarios', false, true, '')))[1]::text WHERE to_regclass('public.usuarios') IS NOT NULL" |
+        tr -d '\r'
+}
+
+# La conexion al origen tal como la necesita pg_dump/psql dentro del contenedor.
+url_de_origen() {
+    local origen
+    origen=$(leer_env ORIGEN_DATABASE_URL)
+    # A stderr y con `return`, no con `morir`: se llama dentro de `$(...)`, que se
+    # quedaria el mensaje en la variable en vez de mostrarlo.
+    if [ -z "$origen" ]; then
+        rojo "ERROR: Falta ORIGEN_DATABASE_URL en $ENV_FILE: la conexion a la base de donde se copian los datos (ver docker/guia-bash.md)." >&2
+        return 1
+    fi
+    # Con sslmode=verify-* libpq busca el certificado raiz en ~/.postgresql/root.crt, que
+    # el contenedor no tiene; `system` le dice que use los del sistema.
+    if [[ "$origen" == *sslmode=verify-* && "$origen" != *sslrootcert=* ]]; then
+        origen="${origen}&sslrootcert=system"
+    fi
+    printf '%s' "$origen"
+}
+
 SQL_CONTEO_POR_TABLA="SELECT table_name, (xpath('/row/n/text()', query_to_xml(format('SELECT count(*) AS n FROM public.%I', table_name), false, true, '')))[1]::text FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'"
 
 # Reemplaza los datos de esta instalacion por los de la base de origen
@@ -403,15 +433,18 @@ importar() {
     comprobar_entorno
 
     local origen usuario base volcado respuesta tabla
-    origen=$(leer_env ORIGEN_DATABASE_URL)
-    [ -n "$origen" ] || morir "Falta ORIGEN_DATABASE_URL en $ENV_FILE: la conexion a la base de donde se copian los datos (ver docker/guia-bash.md)."
-    # Con sslmode=verify-* libpq busca el certificado raiz en ~/.postgresql/root.crt, que
-    # el contenedor no tiene; `system` le dice que use los del sistema.
-    if [[ "$origen" == *sslmode=verify-* && "$origen" != *sslrootcert=* ]]; then
-        origen="${origen}&sslrootcert=system"
-    fi
+    origen=$(url_de_origen) || exit 1
     usuario=$(leer_env POSTGRES_USER)
     base=$(leer_env POSTGRES_DB)
+
+    # Importar vacia TODAS las tablas, cuentas incluidas: es para una instalacion nueva.
+    # Con cuentas ya creadas se niega, para que un servidor en uso no pierda sus usuarios
+    # por equivocacion de comando. Para traer solo las paginas: importar-paginas.
+    local cuentas
+    cuentas=$(contar_usuarios "$usuario" "$base")
+    if [ "${cuentas:-0}" -gt 0 ]; then
+        morir "Este servidor ya tiene $cuentas usuario(s) e 'importar' los borraria. Para traer las paginas sin tocar las cuentas: ./docker/deploy.sh importar-paginas"
+    fi
 
     echo "=== Importar datos desde la base de origen ==="
     aviso "Esto BORRA todos los datos de la base '$base' de esta instalacion, cuentas incluidas,"
@@ -493,6 +526,115 @@ importar() {
     aviso "Cuando termines de importar, borra ORIGEN_DATABASE_URL del $ENV_FILE: es la clave de la base de origen."
 }
 
+# Trae del origen SOLO las paginas (sitio e intranet, con todas sus versiones) y sus
+# archivos de filesystem/, sin tocar nada mas de esta base: usuarios, roles, bitacora y
+# datos se quedan como estan. Es lo que se usa en un servidor en marcha para llevar lo que
+# se preparo en el origen. Repetirlo no hace dano: cada vez deja las paginas como alli.
+#
+# Lo que no coincide entre las dos bases se traduce en importar-paginas-despues.sql: la
+# autoria pasa a la cuenta de aqui con el mismo correo, y los permisos de edicion se
+# conceden por nombre de rol. Las visitas de cada pagina son las de este servidor.
+importar_paginas() {
+    comprobar_requisitos
+    comprobar_entorno
+
+    local origen usuario base volcado respuesta completo=1
+    origen=$(url_de_origen) || exit 1
+    usuario=$(leer_env POSTGRES_USER)
+    base=$(leer_env POSTGRES_DB)
+
+    echo "=== Importar solo las paginas desde la base de origen ==="
+    aviso "Reemplaza las paginas de '$base' (sitio e intranet, con todas sus versiones) por las del origen."
+    aviso "NO toca usuarios, roles, bitacora ni ninguna otra tabla. Las visitas se conservan."
+    read -r -p "Continuar? (s/n): " -n 1 respuesta
+    echo
+    if [[ ! $respuesta =~ ^[Ss]$ ]]; then
+        echo "Cancelado"
+        return 0
+    fi
+
+    echo ""
+    echo "--- 1/5 Esquema al dia (migraciones) ---"
+    aplicar_migraciones
+
+    echo ""
+    echo "--- 2/5 Leyendo las paginas del origen ---"
+    # Un solo archivo con todo lo que se carga despues, en este orden: los correos de las
+    # cuentas del origen y quien podia editar cada pagina (para traducirlos aqui), y las
+    # dos tablas. Lleva correos: se borra al terminar, y si la carga falla se avisa.
+    volcado="importacion_paginas_$(date +%Y%m%d_%H%M%S).sql"
+    {
+        echo "COPY pg_temp.origen_usuarios (id, email) FROM stdin;"
+        MSYS_NO_PATHCONV=1 docker run --rm "$IMAGEN_CLIENTE_PG" psql "$origen" -v ON_ERROR_STOP=1 -AtXq \
+            -c "COPY (SELECT id, email FROM public.usuarios) TO STDOUT" | tr -d '\r' || completo=0
+        echo '\.'
+        echo "COPY pg_temp.origen_permisos_paginas (clave, rol) FROM stdin;"
+        MSYS_NO_PATHCONV=1 docker run --rm "$IMAGEN_CLIENTE_PG" psql "$origen" -v ON_ERROR_STOP=1 -AtXq \
+            -c "COPY (SELECT p.clave, r.nombre FROM public.permisos p JOIN public.roles_permisos rp ON rp.permiso_id = p.id JOIN public.roles r ON r.id = rp.rol_id WHERE p.clave LIKE 'editar.%') TO STDOUT" |
+            tr -d '\r' || completo=0
+        echo '\.'
+        # --disable-triggers: deja entrar versiones cuyo autor no es una cuenta de aqui, y la
+        # referencia circular paginas <-> paginas_versiones sin importar el orden.
+        MSYS_NO_PATHCONV=1 docker run --rm "$IMAGEN_CLIENTE_PG" pg_dump "$origen" \
+            --data-only --disable-triggers --no-owner --no-privileges \
+            --table=public.paginas --table=public.paginas_versiones || completo=0
+    } > "$volcado"
+    if [ "$completo" -ne 1 ]; then
+        rm -f "$volcado"
+        morir "No se pudo leer la base de origen. Revisa ORIGEN_DATABASE_URL y la conexion a internet."
+    fi
+
+    echo ""
+    echo "--- 3/5 Cargando (una sola transaccion: si algo falla, no cambia nada) ---"
+    # `-o /dev/null`: sin el, psql imprime la fila vacia del `set_config` del volcado. Los
+    # errores y el aviso de roles que faltan van por stderr y se siguen viendo.
+    if ! cat docker/sql/importar-paginas-antes.sql "$volcado" docker/sql/importar-paginas-despues.sql |
+            componer exec -T db psql -q -o /dev/null -v ON_ERROR_STOP=1 --single-transaction -U "$usuario" -d "$base"; then
+        aviso "El volcado sigue en $volcado para revisarlo. Lleva los correos de las cuentas del origen: borralo despues."
+        morir "La carga fallo y se deshizo entera: las paginas quedaron como estaban."
+    fi
+    rm -f "$volcado"
+
+    echo ""
+    echo "--- 4/5 Comparacion: filas en el origen y aqui ---"
+    local sql_conteo="SELECT 'paginas', count(*) FROM public.paginas UNION ALL SELECT 'paginas_versiones', count(*) FROM public.paginas_versiones UNION ALL SELECT 'usuarios', count(*) FROM public.usuarios"
+    local conteo_origen conteo_destino t o d distintas=0
+    conteo_origen=$(MSYS_NO_PATHCONV=1 docker run --rm "$IMAGEN_CLIENTE_PG" \
+        psql "$origen" -AtF ' ' -c "$sql_conteo" | tr -d '\r' | LC_ALL=C sort)
+    conteo_destino=$(componer exec -T db psql -U "$usuario" -d "$base" -AtF ' ' -c "$sql_conteo" |
+        tr -d '\r' | LC_ALL=C sort)
+    printf '  %-20s %8s %8s\n' TABLA ORIGEN AQUI
+    while read -r t o d; do
+        if [ "$t" = usuarios ]; then
+            printf '  %-20s %8s %8s  %s\n' "$t" "$o" "$d" "(no viaja: las cuentas de aqui se conservan)"
+        elif [ "$o" != "$d" ]; then
+            printf '  %-20s %8s %8s  %s\n' "$t" "$o" "$d" "<-- DISTINTO"
+            distintas=$((distintas + 1))
+        else
+            printf '  %-20s %8s %8s\n' "$t" "$o" "$d"
+        fi
+    done < <(LC_ALL=C join -a1 -a2 -e '-' -o '0,1.2,2.2' <(echo "$conteo_origen") <(echo "$conteo_destino"))
+
+    echo ""
+    echo "--- 5/5 Permisos, cache y archivos ---"
+    # sembrar:permisos quita la clave editar.* de las paginas que ya no existen.
+    componer run --rm -T migraciones npm run sembrar:permisos
+    # Solo la cache de respuestas (`cache:*`): un FLUSHALL se llevaria tambien la cola de
+    # trabajos y los contadores de intentos de acceso de un servidor en uso.
+    componer exec -T -e REDISCLI_AUTH="$(leer_env REDIS_PASSWORD)" redis sh -c \
+        'redis-cli --scan --pattern "cache:*" | while IFS= read -r clave; do redis-cli DEL "$clave" >/dev/null; done'
+    copiar_archivos_al_volumen "sitio intranet"
+
+    echo ""
+    if [ "$distintas" -gt 0 ]; then
+        aviso "Hay $distintas tabla(s) de paginas con un numero de filas distinto al del origen: revisalas arriba."
+    else
+        verde "=== Paginas importadas: coinciden con el origen; los usuarios de aqui siguen intactos ==="
+    fi
+    echo "El sitio tiene ademas su propia cache de Next, que caduca sola en un minuto."
+    aviso "Cuando termines, borra ORIGEN_DATABASE_URL del $ENV_FILE: es la clave de la base de origen."
+}
+
 backup() {
     comprobar_requisitos
     comprobar_entorno
@@ -562,7 +704,13 @@ restore_archivos() {
 # API), asi que repetirlo no hace dano: recoge lo que se haya subido entre una vez y otra.
 migrar_archivos() {
     comprobar_requisitos
+    copiar_archivos_al_volumen "sitio intranet cargas-datos"
+}
 
+# El trabajo de migrar-archivos, para las carpetas que se pidan: "sitio intranet" son los
+# archivos de las paginas (lo que usa importar-paginas); cargas-datos, los Excel.
+copiar_archivos_al_volumen() {
+    local carpetas="$1"
     local montajes=() par origen destino
     for par in "filesystem:desarrollo" \
                "3000-sitio-web/public/storage:sitio" "3001-intranet/public/storage:intranet" \
@@ -582,6 +730,7 @@ migrar_archivos() {
     MSYS_NO_PATHCONV=1 docker run --rm \
         --mount "type=volume,source=$VOLUMEN_DE_ARCHIVOS,target=/filesystem" \
         "${montajes[@]}" \
+        -e CARPETAS="$carpetas" \
         "$IMAGEN_UTILIDADES" sh -euc '
             # Archivo por archivo y no `cp -Rn origen/. destino/`: el cp de BusyBox (el de
             # alpine) no copia nada de esa forma si el destino ya existe, sin dar error.
@@ -596,14 +745,16 @@ migrar_archivos() {
             }
             # Primero el de desarrollo, que ya tiene la estructura del volumen. Se copia
             # carpeta por carpeta para dejar fuera sus marcas `.mudado-*` de la raiz.
+            pedida() { case " $CARPETAS " in *" $1 "*) return 0 ;; *) return 1 ;; esac; }
             for d in sitio intranet cargas-datos; do
-                copiar "/origen/desarrollo/$d" "/filesystem/$d"
+                if pedida "$d"; then copiar "/origen/desarrollo/$d" "/filesystem/$d"; fi
             done
             for ambito in sitio intranet; do
+                pedida "$ambito" || continue
                 copiar "/origen/$ambito/uploads" "/filesystem/$ambito/uploads"
                 copiar "/origen/$ambito/backup" "/filesystem/$ambito/backup"
             done
-            if [ -d /origen/cargas-datos ]; then
+            if pedida cargas-datos && [ -d /origen/cargas-datos ]; then
                 mkdir -p /filesystem/cargas-datos
                 for f in /origen/cargas-datos/*; do
                     [ -f "$f" ] || continue
@@ -662,6 +813,7 @@ case "${1:-help}" in
     migrar)  migrar ;;
     sembrar) sembrar ;;
     importar) importar ;;
+    importar-paginas) importar_paginas ;;
     crear-admin) crear_admin ;;
     backup)  backup ;;
     restore) restore "${2:-}" ;;
