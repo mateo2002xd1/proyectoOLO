@@ -16,6 +16,8 @@ export async function proxyToBackend(path: string, request: Request) {
   const headers: Record<string, string> = conCabecerasDeCliente(request, {
     'Content-Type': request.headers.get('Content-Type') || 'application/json',
   });
+  const ambito = request.headers.get('X-Ambito');
+  if (ambito) headers['X-Ambito'] = ambito;
 
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
@@ -24,26 +26,31 @@ export async function proxyToBackend(path: string, request: Request) {
   }
 
   const method = request.method;
-  let body: string | undefined;
-
-  if (method !== 'GET' && method !== 'HEAD') {
-    try {
-      body = await request.text();
-    } catch {
-      body = undefined;
-    }
-  }
 
   try {
     const url = new URL(path, BACKEND_URL);
+    const body =
+      method !== 'GET' && method !== 'HEAD' ? await request.arrayBuffer() : undefined;
     const res = await fetch(url.toString(), {
       method,
       headers,
       body,
     });
 
-    const data = await res.json().catch(() => null);
-    return NextResponse.json(data, { status: res.status });
+    const responseHeaders = new Headers();
+    for (const name of ['cache-control', 'content-disposition', 'content-type']) {
+      const value = res.headers.get(name);
+      if (value) responseHeaders.set(name, value);
+    }
+
+    if ([204, 205, 304].includes(res.status)) {
+      return new NextResponse(null, { status: res.status, headers: responseHeaders });
+    }
+
+    return new NextResponse(await res.arrayBuffer(), {
+      status: res.status,
+      headers: responseHeaders,
+    });
   } catch {
     return NextResponse.json(
       { error: 'Error de conexión con el servidor.' },

@@ -24,8 +24,8 @@ export function useCargasFuentesFuturas() {
   const refrescar = useCallback(async () => {
     try {
       setCargas(await listarCargasFuentesFuturas());
-    } catch {
-      setError('No se pudo cargar el historial de cargas.');
+    } catch (err) {
+      setError(mensajeDeErrorApi(err, 'No se pudo cargar el historial de cargas.'));
     } finally {
       setCargando(false);
     }

@@ -15,16 +15,13 @@ import type {
   ResultadoActualizarSectores,
   SeccionCiiu,
 } from '../types';
-import { URL_DE_LA_API } from '@/shared/lib/url-de-la-api';
 
 /**
- * Cliente autenticado propio de esta feature — mismo patrón que
- * `features/paginas/model/api-con-sesion.ts`: `axios` + `withCredentials`,
- * directo al backend (no por un route handler de Next), igual que
- * `aprobarPagina`/`rechazarPagina`.
+ * Las operaciones autenticadas de Actualizaciones pasan por el proxy de Next para que
+ * la cookie HttpOnly se reenvíe a la API como Bearer, también al descargar formatos.
  */
 const api = axios.create({
-  baseURL: URL_DE_LA_API,
+  baseURL: '/api/backend',
   withCredentials: true,
   timeout: 15000,
 });

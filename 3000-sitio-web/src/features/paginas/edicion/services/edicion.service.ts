@@ -9,7 +9,6 @@ import { apiConSesion as api } from '../../model/api-con-sesion';
 import { CABECERAS_DEL_SITIO } from '../../model/ambito';
 import { notificarRevisionActualizada } from '../../model/eventos';
 import type { Pagina, PaginaVersion, PaginaEditable, Bloque, PuckData } from '../../model/pagina.types';
-import { URL_DE_LA_API } from '@/shared/lib/url-de-la-api';
 
 /**
  * Contenido editable para el editor: última versión (borrador/en_revisión/
@@ -118,8 +117,7 @@ export async function adquirirBloqueo(
  * reservada hasta que el candado caducara solo.
  */
 export async function liberarBloqueo(slug: string): Promise<void> {
-  const base = URL_DE_LA_API;
-  await fetch(`${base}/api/paginas/${slug}/bloqueo`, {
+  await fetch(`/api/backend/api/paginas/${slug}/bloqueo`, {
     method: 'DELETE',
     credentials: 'include',
     keepalive: true,
@@ -132,8 +130,7 @@ export async function liberarBloqueo(slug: string): Promise<void> {
  * la sesión. También usa `keepalive` por si se llama al cerrar la pestaña.
  */
 export async function descartarEdicion(slug: string): Promise<void> {
-  const base = URL_DE_LA_API;
-  await fetch(`${base}/api/paginas/${slug}/descartar-edicion`, {
+  await fetch(`/api/backend/api/paginas/${slug}/descartar-edicion`, {
     method: 'POST',
     credentials: 'include',
     keepalive: true,

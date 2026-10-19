@@ -7,11 +7,22 @@ interface RouteContext {
   params: Promise<{ path: string[] }>;
 }
 
+const RUTAS_PERMITIDAS = [
+  '/api/me',
+  '/api/paginas',
+  '/api/observatorio',
+  '/api/alertas-inversion',
+  '/api/configuracion',
+];
+
 async function reenviar(request: Request, { params }: RouteContext) {
   const { path: segmentos } = await params;
   const ruta = `/${segmentos.join('/')}`;
 
-  if (ruta !== '/api/me' && ruta !== '/api/paginas' && !ruta.startsWith('/api/paginas/')) {
+  const rutaPermitida = RUTAS_PERMITIDAS.some(
+    (prefijo) => ruta === prefijo || ruta.startsWith(`${prefijo}/`)
+  );
+  if (!rutaPermitida) {
     return NextResponse.json({ error: 'Ruta no encontrada' }, { status: 404 });
   }
 

@@ -39,8 +39,8 @@ export function useCargasAlertasInversion() {
       ]);
       setCargas(listaCargas);
       setProyectos(listaProyectos);
-    } catch {
-      setError('No se pudo cargar el historial de cargas.');
+    } catch (err) {
+      setError(mensajeDeErrorApi(err, 'No se pudo cargar el historial de cargas.'));
     } finally {
       setCargando(false);
     }

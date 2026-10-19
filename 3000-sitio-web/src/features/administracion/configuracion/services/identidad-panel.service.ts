@@ -1,9 +1,8 @@
 import axios from 'axios';
-import { URL_DE_LA_API } from '@/shared/lib/url-de-la-api';
 import type { ColoresDeAccion, IdentidadPanel } from '@/shared/lib/identidad-panel';
 
 const api = axios.create({
-  baseURL: URL_DE_LA_API,
+  baseURL: '/api/backend',
   withCredentials: true,
   timeout: 15000,
 });
