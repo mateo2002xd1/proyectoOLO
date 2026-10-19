@@ -20,7 +20,7 @@
 
 Paquetes compartidos: 7 · migraciones: 45 · modelos: 23.
 
-## Carpetas sin descripción (6)
+## Carpetas sin descripción (7)
 
 Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scripts/mapa/descripciones.md` con una línea: `` - `ruta/` — para qué es ``.
 
@@ -30,6 +30,7 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
 - `3000-sitio-web/src/shared/lib/identidad-panel/`
 - `4000-api-backend/src/use-cases/alertas-inversion/`
 - `4000-api-backend/src/use-cases/configuracion/`
+- `auditorias/`
 
 ## Carpetas
 
@@ -159,6 +160,8 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
     │   ├── paginas/                           gobernanza de páginas: borrador, revisión, publicación, bloqueo
     │   └── usuarios/                          usuarios, roles, permisos y caducidad
     └── validators/                            esquemas Zod `.strict()` de entrada
+
+auditorias/                                    ⚠ sin descripción
 
 docker/                                        despliegue en el servidor: compose, nginx, SQL de importación y manual
 ├── nginx/                                     nginx del servidor: una puerta para el sitio y otra para la intranet
