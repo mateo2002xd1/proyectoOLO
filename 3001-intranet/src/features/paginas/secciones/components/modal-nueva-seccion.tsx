@@ -63,7 +63,7 @@ export function ModalNuevaSeccion({ abierto, alCerrar }: ModalNuevaSeccionProps)
         `${enlaceAlEditor(seccion.slug, seccion.ruta)}&nueva=1`
       );
     } catch (fallo) {
-      setError(fallo instanceof Error ? fallo.message : 'No se pudo crear la sección.');
+      setError(fallo instanceof Error ? fallo.message : 'No se pudo crear la página.');
       setCreando(false);
     }
   };

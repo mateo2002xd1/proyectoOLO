@@ -73,90 +73,96 @@ export function AuditoriaView() {
         titulo="Auditoría"
         descripcion="Registro de todo lo que administradores y editores hacen en el sistema: ciclo editorial de las páginas, contenidos, y gestión de usuarios, roles y permisos."
         acciones={
-          <button
-            type="button"
-            onClick={() => {
-              setAperturaDepurar((n) => n + 1);
-              setModalDepurarAbierto(true);
-            }}
-            className="flex h-11 shrink-0 items-center gap-2 rounded-[16px] px-4 text-sm font-semibold text-red-600 transition hover:bg-red-50 hover:text-red-700 active:bg-red-100 dark:text-red-400 dark:hover:bg-red-950/40 dark:hover:text-red-300 dark:active:bg-red-950/60"
-          >
-            <Trash2 size={16} />
-            Depurar
-          </button>
+          !error ? (
+            <button
+              type="button"
+              onClick={() => {
+                setAperturaDepurar((n) => n + 1);
+                setModalDepurarAbierto(true);
+              }}
+              className="flex h-11 shrink-0 items-center gap-2 rounded-[16px] px-4 text-sm font-semibold text-red-600 transition hover:bg-red-50 hover:text-red-700 active:bg-red-100 dark:text-red-400 dark:hover:bg-red-950/40 dark:hover:text-red-300 dark:active:bg-red-950/60"
+            >
+              <Trash2 size={16} />
+              Depurar
+            </button>
+          ) : undefined
         }
       />
 
-      <BarraFiltros
-        activos={Object.values(filtros).filter(Boolean).length}
-      >
-        {/* La categoría va la primera (pedido del usuario, 2026-10-12) y antes que la acción:
-            la segunda depende de la primera (Rechazo es de Administración, Expiró de
-            Seguridad), y ese es el orden en que se piensa — de qué mundo hablo, y qué pasó
-            en él. */}
-        <CampoFiltro etiqueta="Categoría">
-          <CustomSelect
-            ariaLabel="Categoría"
-            value={filtros.categoria}
-            onChange={(valor) => cambiarFiltro('categoria', valor)}
-            options={[
-              { value: '', label: 'Todas' },
-              ...(Object.keys(ETIQUETA_CATEGORIA) as CategoriaAuditoria[]).map((value) => ({
-                value,
-                label: ETIQUETA_CATEGORIA[value],
-              })),
-            ]}
-          />
-        </CampoFiltro>
+      {/* Sin la bitácora no hay nada que filtrar; mientras carga sigue a la vista, para que
+          cambiar un filtro no la haga desaparecer y volver. */}
+      {!error && (
+        <BarraFiltros
+          activos={Object.values(filtros).filter(Boolean).length}
+        >
+          {/* La categoría va la primera (pedido del usuario, 2026-10-12) y antes que la acción:
+              la segunda depende de la primera (Rechazo es de Administración, Expiró de
+              Seguridad), y ese es el orden en que se piensa — de qué mundo hablo, y qué pasó
+              en él. */}
+          <CampoFiltro etiqueta="Categoría">
+            <CustomSelect
+              ariaLabel="Categoría"
+              value={filtros.categoria}
+              onChange={(valor) => cambiarFiltro('categoria', valor)}
+              options={[
+                { value: '', label: 'Todas' },
+                ...(Object.keys(ETIQUETA_CATEGORIA) as CategoriaAuditoria[]).map((value) => ({
+                  value,
+                  label: ETIQUETA_CATEGORIA[value],
+                })),
+              ]}
+            />
+          </CampoFiltro>
 
-        <CampoFiltro etiqueta="Desde">
-          <DatePicker
-            ariaLabel="Desde"
-            value={filtros.desde}
-            max={filtros.hasta || undefined}
-            onChange={(valor) => cambiarFiltro('desde', valor)}
-          />
-        </CampoFiltro>
+          <CampoFiltro etiqueta="Desde">
+            <DatePicker
+              ariaLabel="Desde"
+              value={filtros.desde}
+              max={filtros.hasta || undefined}
+              onChange={(valor) => cambiarFiltro('desde', valor)}
+            />
+          </CampoFiltro>
 
-        <CampoFiltro etiqueta="Hasta">
-          <DatePicker
-            ariaLabel="Hasta"
-            value={filtros.hasta}
-            min={filtros.desde || undefined}
-            onChange={(valor) => cambiarFiltro('hasta', valor)}
-          />
-        </CampoFiltro>
+          <CampoFiltro etiqueta="Hasta">
+            <DatePicker
+              ariaLabel="Hasta"
+              value={filtros.hasta}
+              min={filtros.desde || undefined}
+              onChange={(valor) => cambiarFiltro('hasta', valor)}
+            />
+          </CampoFiltro>
 
-        <CampoFiltro etiqueta="Usuario">
-          <CustomSelect
-            ariaLabel="Usuario"
-            value={filtros.usuarioId}
-            onChange={(valor) => cambiarFiltro('usuarioId', valor)}
-            options={[
-              { value: '', label: 'Todos' },
-              ...usuarios.map((u) => ({ value: u.id, label: u.nombre })),
-            ]}
-          />
-        </CampoFiltro>
+          <CampoFiltro etiqueta="Usuario">
+            <CustomSelect
+              ariaLabel="Usuario"
+              value={filtros.usuarioId}
+              onChange={(valor) => cambiarFiltro('usuarioId', valor)}
+              options={[
+                { value: '', label: 'Todos' },
+                ...usuarios.map((u) => ({ value: u.id, label: u.nombre })),
+              ]}
+            />
+          </CampoFiltro>
 
-        <CampoFiltro etiqueta="Acción">
-          <CustomSelect
-            ariaLabel="Acción"
-            value={filtros.accion}
-            onChange={(valor) => cambiarFiltro('accion', valor)}
-            options={[
-              { value: '', label: 'Todas' },
-              ...opcionesDeAccion(filtros.categoria).map(({ value, label }) => ({ value, label })),
-            ]}
-          />
-        </CampoFiltro>
+          <CampoFiltro etiqueta="Acción">
+            <CustomSelect
+              ariaLabel="Acción"
+              value={filtros.accion}
+              onChange={(valor) => cambiarFiltro('accion', valor)}
+              options={[
+                { value: '', label: 'Todas' },
+                ...opcionesDeAccion(filtros.categoria).map(({ value, label }) => ({ value, label })),
+              ]}
+            />
+          </CampoFiltro>
 
-        {hayFiltros && (
-          <button type="button" onClick={limpiarFiltros} className={CLASE_BOTON}>
-            Limpiar filtros
-          </button>
-        )}
-      </BarraFiltros>
+          {hayFiltros && (
+            <button type="button" onClick={limpiarFiltros} className={CLASE_BOTON}>
+              Limpiar filtros
+            </button>
+          )}
+        </BarraFiltros>
+      )}
 
       {error ? (
         // Qué pasó, qué hacer y «Reintentar», como en «Páginas en revisión» y Respaldos

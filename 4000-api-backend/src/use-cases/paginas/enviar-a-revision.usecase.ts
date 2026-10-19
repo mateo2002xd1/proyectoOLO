@@ -1,4 +1,5 @@
 import { Transaction } from 'sequelize';
+import sequelize from '../../config/database';
 import { PaginaRepository } from '../../repositories/pagina.repository';
 import type { Ambito } from '../../shared/ambito';
 import { errorDeComentario, normalizarComentario } from '../../shared/comentario-cambios';
@@ -58,12 +59,24 @@ export const enviarARevision = async (
   // eso se compara lo que se propone.
   const versionPublicada = await PaginaRepository.findVersionPorEstado(pagina.id, 'publicado', tx);
 
-  const datosActualizacion: any = { estado: 'en_revision', comentarioCambios };
+  const datosActualizacion: any = {
+    estado: 'en_revision',
+    comentarioCambios,
+    creadoEn: new Date(),
+  };
   const autorId = uuidONulo(userId);
   if (autorId && !ultimaVersion.creadoPor) {
     datosActualizacion.creadoPor = autorId;
   }
   await PaginaRepository.actualizarVersion(ultimaVersion, datosActualizacion, tx);
+
+  // Sequelize no actualiza createdAt/creado_en mediante instance.update().
+  // Actualizamos directamente la columna creado_en a NOW() en paginas_versiones
+  await sequelize.query(
+    'UPDATE paginas_versiones SET creado_en = NOW() WHERE id = :id',
+    { replacements: { id: ultimaVersion.id }, transaction: tx }
+  );
+  ultimaVersion.creadoEn = new Date();
 
   // Limpiar huérfanos de la sesión antes de salir de la edición
   limpiarSubidasPendientes({

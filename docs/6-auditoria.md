@@ -5,6 +5,33 @@
 
 ---
 
+## sesión 18-10-2026 (18.ª parte): revisión del PR #144 de Mateo al traerlo a `dev`
+
+**Qué se pidió:** auditar lo que trae Mateo (`OLO/dev`, PR #144) al hacer el merge en `dev`: dejar lo que mejora, dejar lo que no toca lo del usuario y conservar lo del usuario donde Mateo deshacía algo que ya estaba arreglado. «Mi perfil» se deja como lo dejó Mateo, por decisión del usuario.
+
+**Qué trae Mateo** (15 archivos; ninguno lo tocó el usuario desde el punto en común `e9ef5590`):
+
+| Parte | Qué hace | Decisión |
+|---|---|---|
+| API, `listar-en-revision.usecase.ts`, `enviar-a-revision.usecase.ts`, modelos `content-audit-log.ts` y `pagina-version.ts` | «Páginas en revisión» muestra la fecha del envío y ordena por la más reciente. Al enviar, pone `creado_en = NOW()` (SQL a mano en el caso de uso) y además lee la fecha de `enviar_revision` en la bitácora | Se deja. El SQL que genera el modelo de la bitácora (con `created_at` declarado dos veces) se comprobó con `sequelize.query` interceptado: el `INSERT` lleva la columna una vez y el `SELECT` ordena bien |
+| Usuarios, Roles, Respaldos, cola de revisión (vista) | Con error de carga se ocultan las acciones, el buscador y los filtros; solo queda el aviso | Se deja |
+| Auditoría (vista) | Lo mismo, pero también escondía la barra de filtros **mientras cargaba**: al cambiar un filtro o de página desaparecía y volvía, y se cerraba el desplegable abierto | **Ajustado:** la vista del usuario con el «Depurar» de Mateo y la barra de filtros envuelta en `!error`: visible mientras carga, oculta solo con error |
+| Cola de revisión (`use-revision-queue.ts`) | Quitaba los reintentos del usuario (`1f935492`, 09-10: dos reintentos si la API no contesta, para el arranque en frío de Neon). Sumaba recarga sin loader tras aprobar, rechazar o eliminar, y escuchar `olo:revision-actualizada` | **Ajustado:** vuelven `ESPERAS_REINTENTO_MS` y `listarConReintentos` (en `cargar` y en la carga inicial); se quedan la recarga silenciosa y el oyente de Mateo |
+| Mi perfil | Nombre, apellidos y correo solo de lectura (con enlace a «Accesos > Usuarios»); el formulario queda solo para la contraseña, que se vacía al cambiarla | Se deja como lo hizo Mateo (decisión del usuario) |
+| Intranet, botón flotante y modal de nueva página | «Eliminar sección» → «Eliminar página» y «No se pudo crear la sección» → «…la página» | Se deja: es lo que pedía `6222bc46` («página» en vez de «sección»), que `6fbfa5bd` había revertido de paso |
+| Intranet, botón flotante | «Editar menú y pie» → «Menú y pie» | **Revertido** a «Editar menú y pie» (texto, `aria-label` y `title`): el lector de pantalla anuncia el botón por ese nombre y conviene que diga la acción |
+| `docs/manual-de-usuario-formato.md`, `docs/plan-de-pruebas.md` | Documentación de Mateo | Se deja |
+
+> **Queda de Mateo, para revisar más adelante:** la fecha del envío se resuelve por dos caminos (`creado_en` pisado al enviar y la bitácora), y la consulta a la bitácora trae todos los registros de las páginas en revisión, autoguardados incluidos. En el servidor la bitácora no se importa (`TABLAS_QUE_NO_VIAJAN`), así que allí solo vale el primero. También, tras aprobar, rechazar o eliminar, la cola recarga dos veces: la recarga propia y la del aviso `olo:revision-actualizada` que ella misma lanza.
+
+| Verificación | Resultado |
+|---|---|
+| `npx tsc --noEmit` en sitio-web, intranet y api-backend con el merge | Sin errores (salvo `shared/lib/accesibilidad/` del sitio, que no es de este trabajo) |
+| `eslint` de la vista de Auditoría y del hook de la cola | Sin avisos |
+| Panel en el navegador (Auditoría con filtros, cola sin API, botón flotante) | Sin verificar |
+
+---
+
 ## sesión 18-10-2026 (17.ª parte): el «Color de fondo» de «Espaciado y Ancho» se pinta aunque no se toque nada más
 
 **Qué se pidió:** poder cambiar el fondo del bloque «Espacio en blanco».

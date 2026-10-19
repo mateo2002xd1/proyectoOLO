@@ -51,6 +51,7 @@ export class ContentAuditLog extends Model {
   declare campos_modificados: { campo: string; antes: unknown; despues: unknown }[];
   declare ip: string | null;
   declare user_agent: string | null;
+  declare createdAt: Date;
   declare created_at: Date;
 }
 
@@ -73,6 +74,13 @@ ContentAuditLog.init(
     campos_modificados: { type: DataTypes.JSONB, allowNull: false, defaultValue: [] },
     ip: { type: DataTypes.INET },
     user_agent: { type: DataTypes.TEXT },
+    created_at: {
+      type: DataTypes.DATE,
+      field: 'created_at',
+      get() {
+        return this.getDataValue('createdAt') ?? this.getDataValue('created_at');
+      },
+    },
   },
   {
     sequelize,
