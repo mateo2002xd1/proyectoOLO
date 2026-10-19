@@ -83,7 +83,8 @@ Esta sección detalla qué puede hacer cada tipo de usuario dentro del aplicativ
 El Sitio Web Público fue concebido como un portal abierto para toda la sociedad civil, la comunidad académica, el sector productivo y los buscadores de empleo:
 1. **Sin necesidad de rol ni registro:** La ciudadanía no requiere una cuenta de usuario ni la asignación de un rol para interactuar con la plataforma.
 2. **Consulta y descarga libre:** Cualquier persona puede navegar por todas las páginas públicas, realizar búsquedas mediante los componentes interactivos, consultar indicadores, reproducir contenidos en los visores de videos y acceder a documentos mediante los visores de PDFs o botones de descarga libre en formato PDF sin necesidad de iniciar sesión.
-3. **Ámbito del control de accesos:** El inicio de sesión y la asignación de roles aplican de manera exclusiva para los funcionarios del SENA que acceden con cuenta corporativa (`@sena.edu.co`) al Panel Administrativo, al editor visual de páginas o a la Intranet del OLO.
+3. **Herramientas de accesibilidad e inclusión ciudadana:** Cualquier visitante puede activar en todo momento el panel lateral de accesibilidad para adaptar la experiencia visual y auditiva a sus necesidades particulares (aumentar el tamaño de letra, activar modos de alto contraste, filtros para daltonismo o dislexia, guía de lectura, lector de texto en voz alta y cursor ampliado), sin requerir registro previo ni autenticación.
+4. **Ámbito del control de accesos:** El inicio de sesión y la asignación de roles aplican de manera exclusiva para los funcionarios del SENA que acceden con cuenta corporativa (`@sena.edu.co`) al Panel Administrativo, al editor visual de páginas o a la Intranet del OLO.
 
 > **[Captura: Consulta Ciudadana]**
 > *Exploración de contenidos públicos, consulta de indicadores y descarga libre de documentos disponible para la ciudadanía.*
@@ -326,7 +327,7 @@ El sistema se compone de tres portales complementarios, cada uno con propósitos
 
 1. **Panel Administrativo (`/admin`):**
    * **Propósito:** Entorno privado de gestión técnica, auditoría y control editorial de acceso exclusivo para el rol de Administrador.
-   * **Estructura fija del aplicativo:** A diferencia de las páginas de contenido, el Panel Administrativo **no utiliza el editor visual para sus propias pantallas**. Todas sus vistas están programadas como páginas fijas para garantizar la seguridad transaccional y la inmutabilidad de sus funciones de gobierno.
+   * **Estructura fija del aplicativo:** A diferencia de las páginas de contenido, el Panel Administrativo **no utiliza el editor visual para sus propias pantallas**. Todas sus vistas están programadas como páginas fijas para garantizar la estabilidad y la seguridad de sus funciones de control y gobierno.
    * **Elementos fijos estructurales:**
      * *Menú lateral permanente (Sidebar):* Barra vertical izquierda que contiene el logo del OLO (retorno al sitio web público), accesos directos (*Dashboard*, *Páginas en revisión* con indicador numérico de alertas pendientes, *Accesos* para la administración de usuarios y roles, *Auditoría*, *Respaldos* y *Carga Masiva*), ícono de campanita de alertas y menú inferior de perfil (*Mi perfil*, *Configuración* y *Cerrar sesión*).
      * *Vistas fijas programadas:* Tablero con tarjetas de métricas, formularios de configuración, tablas paginadas de bitácora y ventanas modales de confirmación con registro obligatorio de motivos.
@@ -341,7 +342,10 @@ El sistema se compone de tres portales complementarios, cada uno con propósitos
    * **Propósito:** Portal de acceso abierto y consulta libre para la ciudadanía, investigadores y comunidad general, que sirve a su vez como punto de enlace hacia el entorno privado del observatorio.
    * **Controles y páginas fijas del sistema:**
      * *Franja superior GOV.CO (Fecha y hora en vivo):* Barra superior del Estado donde se ubica el texto interactivo de fecha y hora, que sirve como punto de acceso para que el personal administrativo y editorial inicie sesión (`/login`) en el portal.
-     * *Botón de Búsqueda (Buscador Global):* Control fijo e inamovible ubicado en la zona superior, diseñado para consultar en tiempo real ocupaciones, publicaciones y páginas de todo el observatorio sin depender de la maquetación de la página.
+     * *Buscador desplegable en la cabecera:* Control interactivo con ícono de lupa que al pulsarse despliega un campo blanco redondeado de búsqueda hacia la izquierda, corriendo suavemente los enlaces del menú hacia el logo y desplegando una lista de resultados en vivo debajo del campo con navegación por teclado y cierre por tecla Escape o clic exterior.
+     * *Migas de pan fijas (Breadcrumbs):* Franja de navegación jerárquica ubicada debajo de la cabecera que indica dinámicamente la ruta y página activa del usuario con base en la estructura del menú.
+     * *Pestaña fija del Panel de Accesibilidad:* Control interactivo fijado permanentemente en el borde lateral derecho (en color azul institucional) con el ícono universal de accesibilidad, permitiendo abrir el panel de preferencias inclusivas (tamaño de letra, contraste, daltonismo, dislexia, guía de lectura, lector de voz y cursor grande).
+     * *Botón flotante «Subir»:* Botón redondeado azul oscuro con flecha y texto blanco ubicado en la esquina inferior derecha, que aparece de forma automática al bajar más de 400 píxeles por la página para retornar al inicio con desplazamiento suave y trasladar el foco al contenedor principal (`<main>`).
      * *Botón de Acceso a la Intranet:* Enlace fijo permanente ubicado en la esquina superior derecha del menú de navegación hacia el portal privado independiente de la Intranet del OLO.
      * *Páginas fijas del aplicativo:* Interfaces programadas de autenticación (`/login`, `/login/recovery`) y pantallas de primer ingreso (`/login/first-login`), las cuales no forman parte de las páginas dinámicas y no pueden ser alteradas ni eliminadas desde el editor.
    * **Componentes ajustables de Cabecera y Pie de página:**
@@ -358,6 +362,7 @@ El sistema se compone de tres portales complementarios, cada uno con propósitos
    * **Propósito:** Entorno privado y protegido orientado al seguimiento estratégico, consulta de tableros de indicadores y trabajo interno de directivos y funcionarios del SENA.
    * **Elementos y páginas fijas del sistema:**
      * *Pantalla de bloqueo y acceso obligatorio:* Página fija que intercepta cualquier navegación no autenticada, forzando el ingreso exclusivo con cuenta corporativa `@sena.edu.co`.
+     * *Botón flotante «Subir»:* Control interactivo en la esquina inferior derecha que aparece automáticamente al descender más de 400 píxeles para volver al inicio rápidamente con desplazamiento suave (adaptado por encima de la barra de navegación en teléfonos móviles).
      * *Control de salida:* Mecanismo seguro de cierre de sesión adaptado según el rol: visible en la barra superior de navegación para roles de solo consulta (como Director o Subdirector) o mediante el botón flotante inferior con ventana modal de confirmación para funcionarios con permisos de edición.
    * **Componentes ajustables de Cabecera y Pie internos:**
      * Al igual que en el sitio público, el marco superior e inferior de la Intranet está respaldado por componentes configurables que los editores pueden adaptar según las secciones internas del observatorio.
@@ -374,7 +379,7 @@ El sistema se compone de tres portales complementarios, cada uno con propósitos
 Uno de los elementos interactivos más importantes en el Sitio Web y la Intranet es el **Botón Flotante de Edición (Menú de Edición)**. Aunque forma parte de la estructura visual de las páginas, **su visualización en pantalla es estrictamente condicional**: el sistema comprueba en tiempo real si el usuario ha iniciado sesión y cuáles permisos específicos tiene asignados antes de mostrarlo:
 
 * **Caso 1: Usuario no autenticado (Ciudadanía y visitantes anónimos):**
-  * El botón flotante **no se muestra en pantalla** para los visitantes. La página pública se presenta completamente limpia, sin barras ni herramientas de edición, garantizando una lectura despejada y cómoda para la ciudadanía.
+  * El botón flotante de edición **no se muestra en pantalla** para los visitantes. La página pública se presenta completamente limpia, sin barras ni herramientas de edición, garantizando una lectura despejada y cómoda para la ciudadanía (únicamente se desplegará de forma automática el botón flotante «Subir» al descender más de 400 píxeles por el contenido).
 
 > **[Captura: Vista Ciudadana sin Botón Flotante]**
 > *Vista pública y limpia de la página para la ciudadanía y usuarios anónimos, donde el botón flotante de edición no se muestra en pantalla.*
@@ -383,12 +388,13 @@ Uno de los elementos interactivos más importantes en el Sitio Web y la Intranet
 > *Vista pública y limpia de la página para la ciudadanía y usuarios anónimos, donde el botón flotante de edición no se muestra en pantalla. (Móvil).*
 
 * **Caso 2: Usuario autenticado con rol de Administrador o Editor (y roles hijos autorizados):**
-  * Si el funcionario cuenta con sesión activa y permisos administrativos o editoriales, el sistema despliega el botón circular flotante en la esquina inferior de la pantalla. Al hacer clic o pasar el cursor, el botón despliega exclusivamente las opciones para las que el usuario está autorizado:
+  * Si el funcionario cuenta con sesión activa y permisos administrativos o editoriales, el sistema despliega el botón circular flotante en la esquina inferior derecha de la pantalla. Al hacer clic o pasar el cursor, el botón despliega exclusivamente las opciones para las que el usuario está autorizado:
     * **"Editar sección":** Aparece si el usuario es Administrador o tiene asignado el permiso para editar esa página específica (del Sitio Web o de la Intranet).
     * **"Menú y pie":** Se activa si el usuario es Administrador o si el rol posee el permiso explícito para editar la cabecera y el pie de página («Menú y pie de página») en el editor visual.
     * **"Nueva página":** Disponible si el usuario es Administrador o cuenta con la facultad de crear nuevas páginas en el sistema.
     * **"Eliminar página":** Se visualiza exclusivamente en páginas dinámicas creadas por usuarios, siempre que el usuario sea Administrador o que su rol tenga el permiso de borrado y la página no posea enlaces activos que generen enlaces rotos.
-  * **Regla de restricción por página:** Si un editor con un rol personalizado navega por una página para la cual no tiene permisos asignados, las opciones no autorizadas no estarán visibles; si no tiene permisos para ninguna acción en dicha página, el botón flotante completo se oculta automáticamente.
+  * **Regla de restricción por página:** Si un editor con un rol personalizado navega por una página para la cual no tiene permisos asignados, las opciones no autorizadas no estarán visibles; si no tiene permisos para ninguna acción en dicha página, el botón flotante de edición completo se oculta automáticamente.
+  * **Coexistencia y coordinación con el botón «Subir»:** Si el usuario se desplaza verticalmente y se activa el botón «Subir», el sistema detecta la presencia del botón flotante de edición y desplaza automáticamente el botón «Subir» hacia su izquierda, evitando que ambos controles se solapen o interfieran entre sí.
 
 > **[Captura: Botón Flotante de Edición]**
 > *Despliegue condicional del botón flotante de edición en pantalla para un usuario autenticado con permisos activos.*
@@ -1319,7 +1325,7 @@ En este apartado se gestionan las cuentas individuales de los funcionarios que i
 
 En este apartado se gestionan los roles del sistema y se configuran roles a la medida con permisos específicos sobre las páginas y herramientas de la plataforma. La interfaz está compuesta por una cabecera con el botón de creación, una barra de búsqueda en tiempo real, una tabla central de datos y un paginador en la base.
 
-Por motivos de seguridad estructural del sistema, la tabla **oculta** deliberadamente los roles fijos administrativos o gerenciales (`Administrador` y `Director/Subdirector`), puesto que sus facultades son estáticas y están protegidas por código fuente. En este módulo únicamente se visualizan y gestionan el rol base **Editor** y los roles derivados personalizados (hijos de Editor).
+Por motivos de seguridad estructural del sistema, la tabla **oculta** deliberadamente los roles fijos administrativos o gerenciales (`Administrador` y `Director/Subdirector`), puesto que sus facultades son estáticas y están protegidas por el sistema. En este módulo únicamente se visualizan y gestionan el rol base **Editor** y los roles derivados personalizados (hijos de Editor).
 
 1. **Acceso al módulo:** En el menú lateral (o barra inferior de navegación en móviles), bajo "Accesos", hacer clic en **"Roles"** (o "Roles y Permisos").
 
@@ -1384,7 +1390,7 @@ Por motivos de seguridad estructural del sistema, la tabla **oculta** deliberada
      3. **Secciones del sitio web:** Control individual página por página para el portal público (*«Inicio»*, *«Política de privacidad»* y páginas dinámicas creadas). Dispone de los botones de acción rápida **"Todas"** (activa simultáneamente todas las páginas del bloque) y **"Quitar todas"** (desactiva todas las páginas del bloque).
      4. **Secciones de la intranet:** Control individual para maquetar y actualizar las páginas y módulos analíticos internos de la Intranet (*«Inicio»*, *«Tasa de vinculación»*, *«Matriz de tendencias»*, *«Encuestas de calidad de la formación»*, *«Encuestas de seguimiento laboral»* y páginas dinámicas internas). Dispone también de los botones de acción rápida **"Todas"** y **"Quitar todas"**.
      5. **Qué puede hacer dentro del editor:** Facultades de acción estructural dentro del lienzo de trabajo interactivo (crear nuevas páginas o eliminar páginas dinámicas creadas).
-   * **Interruptores (`Switch`) e insignias de cambio en tiempo real:** Cada permiso cuenta con un interruptor individual. Al cambiar el estado de cualquier interruptor, el sistema compara la selección con la configuración original y despliega una insignia visual inmediata:
+   * **Interruptores deslizantes e insignias de cambio en tiempo real:** Cada permiso cuenta con un interruptor individual. Al cambiar el estado de cualquier interruptor, el sistema compara la selección con la configuración original y despliega una insignia visual inmediata:
      * **«se añade»:** Indica que el permiso está siendo incorporado al rol.
      * **«se quita»:** Indica que el permiso está siendo revocado del rol.
      * **«solo interfaz»:** Distintivo visible en permisos cuyo control aplica a la visualización del editor de contenidos.
@@ -1662,13 +1668,13 @@ La interfaz lista de forma automática únicamente aquellas páginas que cuentan
 > *Ventana modal de confirmación de restauración en dispositivo móvil. (Móvil).*
 
 5. **Depuración de versiones anteriores (Ventana modal «Depurar versiones antiguas»):**
-   En la cabecera superior del módulo, al hacer clic en el botón **"Depurar"** (con ícono de papelera), el sistema abre la ventana modal **«Depurar versiones antiguas»** para optimizar el almacenamiento en base de datos bajo un estricto protocolo de seguridad:
+   En la cabecera superior del módulo, al hacer clic en el botón **"Depurar"** (con ícono de papelera), el sistema abre la ventana modal **«Depurar versiones antiguas»** para optimizar el almacenamiento en el sistema bajo un estricto protocolo de seguridad:
    * **Regla de seguridad «Respaldo siempre protegido»:** En la parte superior de la ventana modal se destaca un aviso informativo: el sistema **conserva de forma obligatoria la versión anterior retirada de publicación de cada página**. Esto asegura que ninguna operación de depuración elimine el respaldo, garantizando que siempre se pueda regresar a la versión previa.
    * **Filtros de selección:** Menús desplegables para acotar la limpieza por *Ámbito* (*Todos los ámbitos*, *Sitio web*, *Intranet*) y por *Página* específica (o *Todas las páginas*).
    * **Panel de impacto en vivo:** Muestra en tiempo real las métricas de la depuración: *Total encontradas*, *Páginas afectadas*, *Espacio total* estimado a liberar en disco, y el detalle individual por página con la cantidad de versiones antiguas y espacio correspondiente.
    * **Protección contra ediciones en curso:** El sistema valida que ninguna de las páginas seleccionadas esté siendo editada en ese instante; de detectarse una sesión activa, cancela el proceso protegiendo el trabajo del editor.
    * **Confirmación de seguridad en dos pasos:** Al presionar el botón **"Depurar [N] versiones"**, la modal despliega un recuadro de advertencia (*«¿Estás seguro de que deseas eliminar permanentemente estas [N] versiones?»*). El Administrador debe presionar **"Confirmar y eliminar [N] versiones"** para autorizar la eliminación definitiva.
-   * **Pantalla de éxito y cierre automático:** Al finalizar la operación, la modal presenta la pantalla informativa **«¡Depuración completada!»** confirmando la cantidad de versiones eliminadas y el espacio liberado en la base de datos. Esta ventana se cierra automáticamente tras un breve instante, regresando al usuario a la tabla principal actualizada y registrando el evento en la bitácora de auditoría.
+   * **Pantalla de éxito y cierre automático:** Al finalizar la operación, la modal presenta la pantalla informativa **«¡Depuración completada!»** confirmando la cantidad de versiones eliminadas y el espacio liberado en el sistema. Esta ventana se cierra automáticamente tras un breve instante, regresando al usuario a la tabla principal actualizada y registrando el evento en la bitácora de auditoría.
 
 > **[Captura: Modal de Depuración de Versiones Antiguas]**
 > *Ventana modal «Depurar versiones antiguas» mostrando los filtros por ámbito, panel de impacto en vivo y métricas de espacio a liberar.*
@@ -1686,64 +1692,282 @@ La interfaz lista de forma automática únicamente aquellas páginas que cuentan
 
 #### 3.4.2.8. Actualizaciones y Carga Masiva de Datos en Excel
 
-Disponible en la ruta `/admin/actualizaciones` (accesible desde el menú lateral izquierdo bajo **«Actualizaciones»** en escritorio, o desde la barra inferior móvil dentro de **«Más»**), permite cargar, actualizar y gestionar los conjuntos de datos analíticos en hojas de cálculo `.xlsx` que alimentan las visualizaciones públicas del observatorio.
+Disponible en la ruta `/admin/actualizaciones` (accesible desde el menú lateral izquierdo en **«Actualizaciones»** en computador, o desde la barra inferior dentro de **«Más»** en celular), este módulo permite subir, actualizar y administrar la información en archivos de Excel (`.xlsx`) que se muestra en las gráficas, mapas y consultas del sitio web público del observatorio.
 
-La interfaz organiza los procesos mediante **tres secciones en formato acordeón desplegable**:
-* **Programa + Sobresalientes:** Ingesta de programas académicos y proyectos formativos destacados.
-* **Alertas de inversión:** Carga masiva o registro manual de convocatorias e iniciativas de inversión laboral.
-* **Criterios de clasificación de resultados:** Carga y publicación de percentiles para Tendencia Ocupacional por año y periodo.
+**Estructura General y Permisos de Operación:**
+* **Control de acceso por roles:** Subir archivos, registrar proyectos manualmente, actualizar sectores y publicar o borrar datos son acciones reservadas únicamente para el rol **Administrador**. Los demás roles con acceso al panel administrativo solo pueden ingresar a esta sección a revisar el historial y los datos cargados en modo de lectura.
+* **Organización en tres apartados:** La pantalla organiza las tareas en **tres secciones desplegables** que alimentan directamente bloques específicos en el editor de páginas:
+  1. **Programa + Sobresalientes:** Carga mediante archivo de Excel de programas y egresados del SENA para alimentar el bloque **«Programas Sobresalientes»**.
+  2. **Alertas de inversión:** Carga masiva mediante archivo de Excel y registro individual de proyectos para alimentar el bloque **«Fuentes futuras de empleo»**, junto con la actualización de actividades económicas CIIU.
+  3. **Criterios de clasificación de resultados:** Carga mediante archivo de Excel y publicación por año y periodo de los datos de demanda laboral para alimentar el bloque **«Tendencia Ocupacional»**.
+* **Uso fácil e independiente:** Cada apartado funciona como una tarjeta separada con su título y flecha para abrir o cerrar. Al hacer clic o tocar sobre cualquier título, se muestran u ocultan sus opciones sin cerrar las demás, adaptándose cómodamente tanto a computadores como a pantallas de celulares o tabletas.
 
-Cada sección se presenta como una tarjeta independiente con su título y flecha indicadora. Al hacer clic o pulsar sobre el encabezado, se despliegan sus controles de descarga de formato, carga de archivo e historial, permitiendo alternar cómodamente entre procesos tanto en computadores como en dispositivos móviles.
+---
 
-1. **Carga de "Programa + Sobresalientes":**
-   Permite actualizar la información de programas y proyectos sobresalientes que se proyectan en el portal:
-   * **Descargar formato:** Botón que descarga la plantilla oficial estructurada en formato `.xlsx`. Diligenciar el archivo respetando los nombres de columna y formatos de celda originales.
-   * **Cargar archivo:** Hacer clic en el botón **«Cargar»** para abrir el explorador del equipo y seleccionar la plantilla diligenciada en formato `.xlsx`. Al elegir el archivo, la carga inicia inmediatamente.
-   * **Barra de progreso en tiempo real:** Durante el procesamiento, una barra interactiva muestra el porcentaje de avance, el conteo de filas procesadas sobre el total y la fase activa (*«Leyendo el archivo»* durante la lectura y validación, y *«Guardando en la base de datos»* a partir del 60%).
-   * **Impacto directo:** Al completarse la barra al 100%, los datos se guardan y reflejan de forma automática en el sitio web sin requerir aprobaciones adicionales.
-   * **Historial de cargas:** Grilla inferior que detalla la fecha, nombre de archivo, registros procesados y estado (*Completado*, *Procesando* o *Error*), con botón para eliminar la carga si se requiere revertirla.
+##### 3.4.2.8.1. Apartado «Programa + Sobresalientes»
 
-> **[Captura: Actualizaciones - Programa y Sobresalientes]**
-> *Sección desplegada de Programa + Sobresalientes mostrando los botones de descarga de formato y carga de archivo, la barra de progreso en vivo y el historial de cargas.*
+Este módulo gestiona los datos de los programas y egresados destacados del SENA que alimentan el bloque **«Programas Sobresalientes»** en el editor de páginas. Funciona bajo una regla de reemplazo total: cada nueva carga exitosa reemplaza por completo los datos anteriores, actualizando de inmediato la información que muestra este bloque en el portal público.
+
+###### Descarga y Preparación de la Plantilla Estructurada
+
+1. **Descargar la plantilla:** Hacer clic en el botón **«Descargar formato»** en la parte superior para obtener el archivo oficial `formato-programas-sobresalientes.xlsx`.
+2. **Estructura y diligenciamiento de la plantilla:** Diligenciar la hoja en Excel manteniendo el encabezado original en la primera fila:
+   * **Nombre de la hoja:** Debe llamarse estrictamente **`Superan el margen`**.
+   * **Columnas obligatorias (deben llenarse en cada fila):**
+     * **`Cod. Regional`:** Código numérico institucional de la regional SENA.
+     * **`Regional`:** Nombre de la regional o departamento (por ejemplo: *Antioquia* o *Cundinamarca*).
+     * **`Cod. Centro`:** Código numérico identificador del centro de formación.
+     * **`Centro`:** Nombre completo del centro de formación SENA (por ejemplo: *Centro de Comercio y Servicios*).
+     * **`Cod. Nivel de formación`:** Código numérico correspondiente al nivel académico.
+     * **`Nivel de Formación`:** Nivel educativo del programa (por ejemplo: *Tecnólogo*, *Técnico laboral* o *Especialización Tecnológica*).
+     * **`Cod. Programa`:** Código numérico asignado al programa de formación.
+     * **`Programa`:** Nombre completo del programa académico impartido.
+     * **`Sexo`:** Género de los egresados objeto de la estadística (*Mujer* u *Hombre*).
+     * **`Certificados`:** Cantidad de aprendices graduados y certificados en el periodo analizado.
+     * **`Vinculados`:** Cantidad de egresados vinculados activamente al mercado de trabajo.
+     * **`Tasa de vinculación`:** Porcentaje de inserción laboral alcanzado (puede escribirse con porcentaje o número decimal, por ejemplo: `82,4%` o `82.4`).
+     * **`Salario promedio`:** Ingreso mensual promedio devengado por los egresados vinculados, anotado en pesos colombianos como cifra numérica.
+3. **Guardar el archivo:** Guardar el documento en formato `.xlsx`.
+
+> **[Captura: Descarga de Plantilla de Sobresalientes]**
+> *Botón «Descargar formato» en la cabecera del apartado y aviso de formato admitido .xlsx.*
 >
-> **[Captura: Actualizaciones - Programa y Sobresalientes (Móvil)]**
-> *Sección de Programa + Sobresalientes adaptada a dispositivos móviles. (Móvil).*
+> **[Captura: Descarga de Plantilla de Sobresalientes (Móvil)]**
+> *Control de descarga de plantilla adaptado a pantalla móvil. (Móvil).*
 
-2. **Carga y Registro de "Alertas de inversión":**
-   Reúne las opciones para incorporar proyectos e iniciativas de inversión laboral al observatorio:
-   * **Descarga de formatos oficiales:** Botón **«Descargar formato»** (obtiene `formato-alertas-inversion.xlsx` para proyectos) y botón **«Descargar formato CIIU»** (`formato-actualizar-ciiu.xlsx` para clasificaciones sectoriales).
-   * **Carga masiva por Excel:** Pulsar **«Cargar Excel»** para seleccionar la plantilla diligenciada (`.xlsx`). Muestra la barra de progreso en vivo (*«Leyendo el archivo»* antes del 50% y *«Guardando en la base de datos»* a partir del 50%).
-   * **Registro manual de proyectos:** Pulsar el botón **«Agregar manualmente»** (con ícono de suma) para abrir una ventana modal con formulario completo. Permite registrar un proyecto individual digitando su título, entidad promotora, sector económico, monto de inversión, vigencia y descripción sin necesidad de preparar un archivo Excel.
-   * **Actualización de sectores CIIU:** Botón interactivo para cargar la actualización de la tabla maestra de actividades económicas.
-   * **Historial y gestión de proyectos:** Presenta dos tablas organizadas: el **Historial de cargas** de archivos Excel y la lista de **Proyectos registrados**, que permite consultar los proyectos vigentes, eliminar registros individuales o limpiar el listado completo.
+###### Carga y Procesamiento del Archivo Excel
 
-> **[Captura: Actualizaciones - Alertas de Inversión]**
-> *Sección de Alertas de Inversión con botones de carga masiva, botón de alta manual, barra de progreso y tablas de historial y proyectos registrados.*
+1. **Seleccionar el archivo:** Hacer clic en el botón **«Cargar»** y elegir el archivo de Excel (`.xlsx`) diligenciado.
+2. **Seguimiento del proceso:** El botón cambia su texto a *«Subiendo...»* y luego a *«Procesando...»*. Una barra en pantalla muestra el avance en dos pasos:
+   * **Paso 1 («Leyendo el archivo» - 0% a 59%):** Revisa que las columnas y departamentos estén correctos y reúne los datos repetidos.
+   * **Paso 2 («Guardando en la base de datos» - 60% a 100%):** Guarda la información de los programas y niveles de formación.
+3. **Resultado:** Al llegar al 100%, la barra desaparece y la información queda actualizada de inmediato en el bloque **«Programas Sobresalientes»** del portal público.
+
+> **[Captura: Carga y Procesamiento de Sobresalientes]**
+> *Botón en estado «Procesando...» con la barra de progreso en vivo indicando el avance, conteo de filas y la fase activa.*
 >
-> **[Captura: Actualizaciones - Alertas de Inversión (Móvil)]**
-> *Sección de Alertas de Inversión en pantalla móvil. (Móvil).*
+> **[Captura: Carga y Procesamiento de Sobresalientes (Móvil)]**
+> *Seguimiento de la carga de programas con la barra de progreso en pantalla móvil. (Móvil).*
 
-3. **Carga de "Criterios de clasificación de resultados" (Tendencia Ocupacional):**
-   Gestiona la matriz de percentiles de inscritos y vacantes que alimenta los bloques interactivos de Tendencia Ocupacional a nivel nacional y departamental:
-   * **Descargar formato:** Botón que entrega la plantilla oficial `.xlsx` obligatoria, la cual contiene las hojas predefinidas *«percentiles nacional»* y *«percentiles departamental»*.
-   * **Selección de Año y Periodo:**
-     1. Seleccionar el **Año** en el calendario o escribiendo las cuatro cifras correspondientes.
-     2. Seleccionar el **Periodo** en el menú desplegable (trimestre o semestre).
-     3. *Autodetección inteligente:* Si el nombre del archivo contiene el año y periodo (ej. `percentiles_2025_T1.xlsx`), el sistema los identifica y preselecciona automáticamente.
-   * **Regla de celda libre:** Cada combinación de año y periodo admite una única carga activa. Si el periodo ya tiene datos cargados, el sistema exhibirá la etiqueta de advertencia y bloqueará la subida repetida; para reemplazar los datos de ese periodo, se debe eliminar primero la carga anterior desde el historial.
-   * **Carga y validación en 4 fases:** Al seleccionar el archivo y presionar **«Cargar»**, la barra de progreso avanza por cuatro fases reales:
-     1. *«Leyendo el archivo»* (0% - 39%)
-     2. *«Preparando las filas»* (40% - 59%)
-     3. *«Validando (V1–V9)»* (60% - 84%)
-     4. *«Guardando en la base de datos»* (85% - 100%)
-   * **Estado Borrador y Publicación:** Al finalizar con éxito, los datos quedan inicialmente en estado **Borrador («Sin publicar»)** con un resumen de filas procesadas y un botón de reporte detallado. La sección superior de **Pendientes de publicar** permite pulsar **«Publicar»** en el corte deseado o **«Publicar todos»** para hacer la información visible en el sitio web público.
-   * **Historial y control de cortes:** Tabla especializada con filtros por año y periodo, banderas de estado (`EstadoFlag`: *Libre*, *Borrador*, *Publicado* o *Error*) y botones de acción para **Publicar**, **Despublicar** (volver a borrador) y **Eliminar**.
+###### Consulta y Gestión del Historial de Cargas
 
-> **[Captura: Actualizaciones - Criterios de Clasificación]**
-> *Sección de Criterios de Clasificación mostrando los selectores de año y periodo, barra de validación en 4 fases, panel de pendientes de publicar y el historial de cortes con filtros.*
+1. **Ubicación del historial:** En la parte inferior, revisar la tabla interactiva **«Historial de cargas»**, la cual lista en orden cronológico inverso cada archivo procesado.
+2. **Columnas de trazabilidad:**
+   * **Fecha:** Día y hora exacta en que se procesó el archivo.
+   * **Estado:** Etiqueta visual de estado con contraste accesible:
+     * *Completado:* Fondo verde suave con texto verde oscuro.
+     * *Procesando:* Fondo azul con texto azul y punto animado con el porcentaje en curso.
+     * *Error:* Fondo rojo con texto rojo por fallas de estructura en el archivo.
+   * **Filas:** Cantidad total de registros ingresados al sistema con separador de miles.
+   * **Mensaje:** Resumen descriptivo de la operación o explicación de la causa técnica si ocurrió un error.
+3. **Eliminación de un registro de auditoría:**
+   * Al final de la fila de cada carga, hacer clic en el botón con ícono de papelera.
+   * Se abre una ventana modal de confirmación con la advertencia: *«Se borra del historial y, si ningún otro registro usa el mismo archivo, también el Excel guardado en el servidor. Los datos que ya quedaron en el mapa de formación no se tocan — esto solo borra la auditoría de la carga.»*.
+   * Para confirmar la acción, hacer clic en el botón **«Eliminar»** (o **«Cancelar»** para desistir sin alterar el registro).
+
+> **[Captura: Historial de Cargas de Sobresalientes]**
+> *Tabla del historial de cargas con columnas de fecha, estado, conteo de filas y ventana de confirmación de eliminación.*
 >
-> **[Captura: Actualizaciones - Criterios de Clasificación (Móvil)]**
-> *Sección de Criterios de Clasificación adaptada a dispositivos móviles. (Móvil).*
+> **[Captura: Historial de Cargas de Sobresalientes (Móvil)]**
+> *Historial de cargas adaptado a dispositivos móviles con botón de eliminación. (Móvil).*
+
+---
+
+##### 3.4.2.8.2. Apartado «Alertas de Inversión»
+
+Este apartado reúne las herramientas para registrar y administrar los proyectos e iniciativas de inversión empresarial que alimentan el bloque **«Fuentes futuras de empleo»** en el editor de páginas. Funciona de manera acumulativa: las cargas por archivo de Excel y los registros manuales agregan nuevos proyectos o actualizan los existentes sin borrar la información registrada anteriormente.
+
+###### Descarga de Formatos Oficiales
+
+1. **Botones de descarga:** En la parte superior se presentan dos opciones de descarga:
+   * **Descargar formato:** Plantilla oficial `formato-alertas-inversion.xlsx` para la carga masiva de proyectos de inversión.
+   * **Descargar formato CIIU:** Plantilla oficial `formato-actualizar-ciiu.xlsx` para la actualización de actividades económicas.
+2. **Descarga:** Al hacer clic en cualquiera de ellos, el archivo se descarga en el equipo para su diligenciamiento.
+
+> **[Captura: Botones de Descarga en Alertas de Inversión]**
+> *Controles de descarga en la cabecera mostrando los botones «Descargar formato» y «Descargar formato CIIU».*
+>
+> **[Captura: Botones de Descarga en Alertas de Inversión (Móvil)]**
+> *Botones de descarga de formatos adaptados a pantallas móviles. (Móvil).*
+
+###### Carga Masiva mediante Archivo Excel
+
+1. **Estructura y diligenciamiento de la plantilla:** Diligenciar la plantilla oficial `formato-alertas-inversion.xlsx` en Excel manteniendo los nombres originales de las columnas en la primera fila:
+   * **Columnas obligatorias (deben llenarse en cada fila):**
+     * **`Código`:** Código de la actividad económica según la clasificación CIIU (número de 4 dígitos o letra de sección de la A a la U).
+     * **`Actividad`:** Nombre o descripción del sector o actividad productiva (por ejemplo: *Fabricación de productos farmacéuticos*).
+     * **`Departamento`:** Departamento de Colombia donde se localizará la inversión (debe coincidir con la división territorial oficial).
+     * **`Ciudad`:** Nombre del municipio o ciudad puntual donde se desarrollará el proyecto.
+     * **`Empresa`:** Nombre comercial o razón social de la compañía u organización inversionista.
+     * **`Fecha`:** Fecha en que se anunció la noticia o iniciativa, registrada en formato día/mes/año (ejemplo: `15/03/2025`) o aplicando el formato de fecha estándar de Excel.
+     * **`Fuente`:** Enlace web completo de la noticia, boletín o portal de origen (debe iniciar con `http://` o `https://`).
+     * **`Descripción`:** Resumen explicativo del proyecto, sus objetivos o los productos y servicios vinculados.
+     * **`Tipo`:** Modalidad de la iniciativa; se debe escribir estrictamente **«Nuevo»** (inicio de nuevas operaciones) o **«Expansión»** (ampliación de instalaciones o capacidad instalada).
+   * **Columnas opcionales (pueden dejarse vacías si no se dispone del dato):**
+     * **`Inversión COP`:** Valor monetario estimado de la inversión en pesos colombianos, escribiendo únicamente el número sin letras ni signos de puntuación de moneda (por ejemplo: `5000000000`).
+     * **`Empleos estimados`:** Cantidad proyectada de empleos o vacantes que generará la iniciativa (número entero).
+     * **`Medio`:** Nombre del periódico, emisora o portal informativo que divulgó la noticia (por ejemplo: *Portafolio*, *La República* o boletín oficial).
+2. **Selección del archivo:** Hacer clic en el botón **«Cargar Excel»** y elegir el archivo `.xlsx` diligenciado.
+3. **Seguimiento del proceso:** Una barra en pantalla muestra el avance en dos pasos:
+   * **Paso 1 («Leyendo el archivo» - 0% a 49%):** Comprueba que no falten datos obligatorios, valida los enlaces web y verifica que los municipios existan en el mapa territorial.
+   * **Paso 2 («Guardando en la base de datos» - 50% a 100%):** Registra las empresas y almacena los proyectos.
+4. **Resultado:** Al completarse la barra, los nuevos proyectos se suman a los existentes y quedan visibles de inmediato en las consultas del observatorio.
+
+> **[Captura: Carga Masiva de Alertas de Inversión]**
+> *Botón «Cargar Excel» en ejecución y barra de progreso interactiva detallando el avance del procesamiento.*
+>
+> **[Captura: Carga Masiva de Alertas de Inversión (Móvil)]**
+> *Carga masiva de proyectos con barra de progreso en pantalla móvil. (Móvil).*
+
+###### Registro Manual de Proyectos Individuales
+
+1. **Apertura del formulario:** En la barra superior, hacer clic en el botón **«Agregar manualmente»** para abrir la ventana modal.
+2. **Diligenciar campos obligatorios:**
+   * **Tipo de proyecto:** Seleccionar **«Nuevo»** o **«Expansión»**.
+   * **Empresa y Descripción:** Indicar la razón social y la síntesis de la iniciativa.
+   * **Sección CIIU y Departamento:** Elegir en los menús desplegables correspondientes.
+   * **Fecha del anuncio:** Indicar el día en el calendario interactivo.
+   * **Enlace de la fuente:** Pegar la dirección web (iniciando con `http://` o `https://`).
+3. **Diligenciar campos opcionales:** Indicar clase CIIU (4 dígitos), ciudad/municipio, medio de comunicación, inversión estimada en COP o vacantes estimadas.
+4. **Validación y guardado:** Al presionar **«Guardar»**, si falta algún dato requerido el campo se resalta con borde rojo y aviso explicativo. Con los datos correctos, la ventana se cierra y el proyecto se incorpora de inmediato al catálogo y al historial.
+
+> **[Captura: Formulario de Registro Manual de Inversión]**
+> *Ventana modal «Agregar proyecto de inversión» mostrando la selección de tipo, campos obligatorios, selectores de sector y departamento, y avisos de validación.*
+>
+> **[Captura: Formulario de Registro Manual de Inversión (Móvil)]**
+> *Formulario modal de registro de proyectos adaptado a una sola columna en dispositivo móvil. (Móvil).*
+
+###### Actualización de Sectores Económicos (CIIU)
+
+1. **Selección del archivo:** En la parte superior, hacer clic en el botón **«Actualizar sectores (CIIU)»** y seleccionar el archivo `formato-actualizar-ciiu.xlsx`. El botón mostrará temporalmente *«Actualizando...»*.
+2. **Estructura y requisitos de la hoja:** La hoja debe contener únicamente dos columnas:
+   * **`Código`:** Código numérico de 4 dígitos de la actividad económica (las actividades con cero inicial, como `0111`, deben configurarse con formato de texto en Excel). Los códigos de 2 o 3 dígitos se omiten de forma automática.
+   * **`Nombre`:** Denominación o nombre formal del sector o actividad económica según la clasificación CIIU.
+3. **Resumen de la actualización:** Al terminar de procesar el archivo, el sistema muestra un recuadro con el resultado de la operación:
+   * Cantidad de sectores creados como nuevos.
+   * Cantidad de sectores con nombre actualizado y sectores que se mantuvieron sin cambios.
+   * Conteo de códigos de 2 o 3 dígitos omitidos (si existieron).
+   * Lista de filas con errores (indicando el número de fila en Excel y la causa).
+
+> **[Captura: Resumen de Actualización de Sectores CIIU]**
+> *Recuadro informativo con el balance de sectores creados, actualizados, sin cambios, códigos omitidos y reporte de inconsistencias.*
+>
+> **[Captura: Resumen de Actualización de Sectores CIIU (Móvil)]**
+> *Balance de actualización de sectores CIIU adaptado a pantalla móvil. (Móvil).*
+
+###### Gestión de Proyectos e Historial
+
+1. **Paneles de consulta:**
+   * **Historial de cargas:** Registra las importaciones de Excel con fecha, estado visual, total de filas y botón de papelera para eliminar la auditoría.
+   * **Proyectos registrados:** Lista los proyectos visibles en el portal con empresa, tipo, sector, ubicación y fecha.
+2. **Eliminación individual de un proyecto:**
+   * Hacer clic en el ícono de papelera al final de la fila del proyecto.
+   * En la ventana modal (*«¿Eliminar este proyecto? Se borra el proyecto de [Empresa] y deja de verse en el sitio público. Esta acción no se puede deshacer.»*), hacer clic en el botón **«Eliminar»** (o **«Cancelar»** para mantenerlo).
+3. **Vaciado general («Limpiar todo»):**
+   * En la esquina del listado, hacer clic en el botón **«Limpiar todo»**.
+   * Confirmar la advertencia preventiva en la ventana modal para retirar todos los proyectos del catálogo público en una sola acción.
+
+> **[Captura: Gestión de Proyectos de Inversión e Historial]**
+> *Paneles de historial de importaciones y catálogo de proyectos registrados con opciones de eliminación individual y botón «Limpiar todo».*
+>
+> **[Captura: Gestión de Proyectos de Inversión e Historial (Móvil)]**
+> *Listado de proyectos registrados e historial en formato acordeón para pantallas móviles. (Móvil).*
+
+---
+
+##### 3.4.2.8.3. Apartado «Criterios de Clasificación de Resultados» (Tendencia Ocupacional)
+
+Este apartado permite cargar y publicar los datos de demanda laboral (inscritos frente a vacantes) que alimentan el bloque **«Tendencia Ocupacional»** en el editor de páginas. Funciona mediante un control de cortes por año y periodo, donde cada carga exitosa se guarda inicialmente en borrador hasta su publicación definitiva.
+
+###### Descarga y Estructura de la Plantilla de Percentiles
+
+1. **Descargar la plantilla:** En la esquina superior derecha, hacer clic en el botón **«Descargar formato»** para obtener el archivo oficial `formato-tendencia-ocupacional.xlsx`.
+2. **Estructura y diligenciamiento de la plantilla:** Diligenciar la información respetando estrictamente las dos hojas predefinidas en el libro de Excel, sin alterar sus nombres ni agregar hojas adicionales:
+   * **Hoja `percentiles nacional` (datos consolidados de todo el país):**
+     * **`N.C.`:** Nivel de cualificación ocupacional (cifra numérica del 1 al 5).
+     * **`Código ocupación`:** Código numérico de 4 dígitos que identifica la ocupación en la clasificación nacional.
+     * **`Descripción` (u `Ocupación`):** Denominación o nombre formal de la ocupación analizada.
+     * **`Inscritos`:** Cantidad de personas registradas que buscan empleo en esa ocupación.
+     * **`Vacantes`:** Número de puestos de trabajo requeridos por las empresas.
+     * **`Percentil Inscritos`:** Valor de percentil calculado para la oferta de buscadores de empleo.
+     * **`Percentil Vacantes`:** Valor de percentil calculado para la demanda empresarial.
+     * **Columnas de criterios:** Cuatro columnas que clasifican cada ocupación en los cuadrantes de demanda (más solicitadas y más buscadas, más buscadas y menos solicitadas, más solicitadas y menos buscadas, o menos solicitadas y menos buscadas).
+   * **Hoja `percentiles departamental` (datos desglosados por departamento):**
+     * Contiene las mismas columnas de la hoja nacional, agregando de manera obligatoria la columna **`Departamento`** con el nombre del departamento correspondiente (homologado con el mapa oficial).
+3. **Guardar el archivo:** Guardar el documento en formato `.xlsx`.
+
+> **[Captura: Descarga de Plantilla de Tendencia Ocupacional]**
+> *Cabecera del apartado mostrando la descripción funcional y el botón «Descargar formato» para la matriz de percentiles.*
+>
+> **[Captura: Descarga de Plantilla de Tendencia Ocupacional (Móvil)]**
+> *Control de descarga de plantilla de percentiles adaptado a pantallas móviles. (Móvil).*
+
+###### Selección de Año, Periodo y Autodetección Inteligente
+
+1. **Definir corte:** Seleccionar el año y el periodo en el menú desplegable (Trimestres `T1`–`T4`, Semestres `S1`–`S2`, o corte `ANUAL`). Si un periodo ya tiene datos cargados o en curso, el selector lo indica directamente (*«ya cargado»* o *«en curso»*).
+2. **Autodetección por nombre de archivo:** Al elegir el archivo `.xlsx`, si su nombre contiene el año y periodo (por ejemplo, `percentiles_2025_T1.xlsx`), el sistema los detecta y asigna automáticamente. Si se modifican a un valor diferente, se muestra un texto preventivo en color ámbar.
+
+> **[Captura: Selección de Año, Periodo y Autodetección Inteligente]**
+> *Formulario de corte mostrando los selectores de año y periodo, marcas de estado en el desplegable y mensaje de autodetección por nombre de archivo.*
+>
+> **[Captura: Selección de Año, Periodo y Autodetección Inteligente (Móvil)]**
+> *Selectores de año, periodo y casilla de archivo en pantalla móvil. (Móvil).*
+
+###### Regla de Celda Libre y Control de Reemplazo
+
+* **Una única carga por corte:** Cada combinación de año y periodo admite una sola carga activa en el observatorio.
+* **Bloqueo preventivo:** Si el periodo ya tiene datos vigentes, el botón **«Cargar»** se deshabilita con el aviso: *«Ya tiene datos: para cambiarlos, elimine su carga.»* y el enlace **«Ver en el historial»**.
+* **Liberación de la celda:** Al pulsar **«Ver en el historial»**, la pantalla se desplaza a la tabla inferior y filtra ese corte. El Administrador puede eliminar la carga previa para liberar la celda y habilitar la nueva subida.
+
+> **[Captura: Regla de Celda Libre y Bloqueo de Periodos Existentes]**
+> *Mensaje preventivo de corte ocupado con botón «Cargar» deshabilitado y enlace interactivo «Ver en el historial».*
+>
+> **[Captura: Regla de Celda Libre y Bloqueo de Periodos Existentes (Móvil)]**
+> *Aviso de celda ocupada con enlace de desplazamiento al historial en dispositivo móvil. (Móvil).*
+
+###### Carga y Validación Integral en Cuatro Fases
+
+1. **Iniciar carga:** Con la celda libre y el archivo seleccionado, hacer clic en el botón **«Cargar»**.
+2. **Seguimiento del avance:** La barra de progreso avanza en cuatro etapas:
+   * **Fase 1 («Leyendo el archivo» - 0% al 39%):** Comprueba el libro Excel y la existencia de las dos hojas requeridas.
+   * **Fase 2 («Preparando las filas» - 40% al 59%):** Estandariza registros y homologa departamentos.
+   * **Fase 3 («Validando (V1–V9)» - 60% al 84%):** Aplica validaciones bloqueantes (V1 a V5: cancelan la operación y marcan error ante datos inválidos o descuadres) y advertencias de calidad (V6 a V9: generan reporte de hallazgos sin detener la carga).
+   * **Fase 4 («Guardando en la base de datos» - 85% al 100%):** Almacena el periodo y genera el registro en la auditoría.
+3. **Finalización:** Al completarse el 100%, la casilla de archivo se reinicia y se presenta el recuadro de resultados.
+
+> **[Captura: Barra de Progreso y Validación en Cuatro Fases]**
+> *Barra de avance en tiempo real detallando el porcentaje acumulado, conteo de filas y la fase activa de validación (V1-V9).*
+>
+> **[Captura: Barra de Progreso y Validación en Cuatro Fases (Móvil)]**
+> *Seguimiento de la validación en 4 fases adaptado a pantalla de dispositivo móvil. (Móvil).*
+
+###### Estado Borrador, Reporte de Hallazgos y Publicación
+
+1. **Nacimiento en estado Borrador:** Toda carga exitosa inicia en estado **Borrador («Sin publicar»)** en color ámbar, resguardando los datos sin alterar los tableros públicos.
+2. **Reporte de validación:** El botón **«Reporte»** detalla las observaciones analíticas indicando hoja, fila de Excel, ocupación y valores calculados.
+3. **Publicación en el sitio:** En la bandeja **«Pendientes de publicar»**, hacer clic en **«Publicar»** (corte individual) o **«Publicar todos»** para pasar a estado verde **«Publicado»** y exhibir los datos en el portal.
+
+> **[Captura: Bandeja de Pendientes de Publicar y Reporte de Validación]**
+> *Bandeja superior de cortes pendientes en borrador «Sin publicar», botón «Publicar todos», recuadro de resultado y desglose del reporte de hallazgos.*
+>
+> **[Captura: Bandeja de Pendientes de Publicar y Reporte de Validación (Móvil)]**
+> *Bandeja de pendientes de publicar y botón de reporte de validación en pantalla móvil. (Móvil).*
+
+###### Historial Especializado, Despublicación y Eliminación
+
+1. **Filtros de consulta:** Selectores superiores para filtrar rápidamente por año o periodo con paginación de resultados.
+2. **Columnas de trazabilidad:** Año y periodo, archivo `.xlsx`, cargado por (con fecha y hora exacta), estado visual (*Publicado*, *Borrador*, *En curso*, *Inactiva*, *Error*), resumen de filas y botón de reporte.
+3. **Despublicación:** En cualquier corte *Publicado*, hacer clic en **«Despublicar»** y confirmar en la ventana modal (*«¿Despublicar [Año · Periodo]? El sitio deja de mostrarlo. Los datos quedan en borrador y se pueden volver a publicar.»*). El periodo vuelve a borrador sin borrar los datos del sistema.
+4. **Eliminación:** Hacer clic en el ícono de papelera y confirmar en la ventana modal según su estado:
+   * *En borrador:* Borra la carga, su reporte y el archivo Excel del servidor.
+   * *Publicado:* Deja de mostrar la información en los visores del portal público.
+   * *Con error:* Retira el registro fallido y libera la celda para una nueva subida.
+
+> **[Captura: Historial de Tendencia Ocupacional con Filtros y Opciones de Despublicar]**
+> *Tabla del historial de tendencia con filtros superiores, banderas cromáticas de estado, botón «Despublicar» y diálogo modal de eliminación.*
+>
+> **[Captura: Historial de Tendencia Ocupacional con Filtros y Opciones de Despublicar (Móvil)]**
+> *Historial de cortes de tendencia ocupacional adaptado a pantallas de dispositivos móviles. (Móvil).*
 
 ---
 
@@ -2006,7 +2230,7 @@ Al hacer clic sobre cualquier bloque en el lienzo o al seleccionarlo desde la li
 
 2. **Personalización visual y colores de fondo:**
    * **Esquemas y tonalidades de fondo:** Selectores para escoger el estilo de fondo del bloque (como fondo claro, fondo neutro atenuado o tono institucional destacado), facilitando la separación visual ordenada entre las distintas secciones de la página.
-   * **Alineación y espaciado:** Opciones para definir la orientación de los contenidos (alineación a la izquierda, centrada o justificada) y regular la separación superior e inferior para evitar saturación visual.
+   * **Alineación y espaciado:** Opciones para definir la orientación de los contenidos (alineación a la izquierda, centrada o justificada) y regular la separación superior e inferior mediante controles de «Espaciado y Ancho» configurados directamente en píxeles (`px`) y colores de fondo que cubren el ancho completo de la sección.
 
 3. **Redacción de textos y edición enriquecida:**
    * **Campos de texto directo:** Casillas para escribir títulos, subtítulos, nombres de tarjetas y etiquetas breves.
@@ -2020,7 +2244,7 @@ Al hacer clic sobre cualquier bloque en el lienzo o al seleccionarlo desde la li
    * **Subir imágenes desde el equipo:** Botón de carga directa para incorporar fotografías, gráficos, logotipos o infografías almacenados en el computador del usuario.
    * **Texto alternativo obligatorio:** Para cumplir las normas de accesibilidad y permitir que personas con discapacidad visual o lectores de pantalla comprendan la imagen, el sistema exige ingresar una descripción textual breve en la casilla *«Texto alternativo»*.
    * **Subir documentos adjuntos:** Selector para cargar y asociar archivos descargables en formato PDF o planillas oficiales a los bloques de recursos o boletines.
-   * **Enlaces de videos externos:** Casilla para pegar enlaces de videos de plataformas oficiales (como YouTube), donde el sistema detecta de forma automática el identificador y genera una previsualización de la miniatura en tiempo real.
+   * **Enlaces de videos externos («Video embebido»):** Casilla para registrar videos oficiales de YouTube mediante su identificador único (ID) o enlace validado por la plataforma. Permite asociar una imagen de portada o miniatura propia personalizada y utiliza reproducción diferida al presionar reproducir para optimizar la velocidad de carga de la página.
 
 5. **Configuración de enlaces y botones de destino:**
    * **Texto del botón:** Campo para escribir la frase o llamado a la acción visible para el usuario (por ejemplo: *«Consultar catálogo»*, *«Descargar reporte»*).
@@ -2028,7 +2252,7 @@ Al hacer clic sobre cualquier bloque en el lienzo o al seleccionarlo desde la li
    * **Estilo y presentación del botón:** Selección del aspecto visual (botón de acción principal con fondo resaltado, botón secundario delineado o botón acompañado de un ícono representativo).
 
 6. **Administración de colecciones y listas de elementos:**
-   * En componentes estructurados con múltiples elementos repetitivos (como acordeones de preguntas frecuentes, tarjetas de indicadores, listas de enlaces o pestañas temáticas), el panel lateral incluye controles para:
+   * En componentes estructurados con múltiples elementos repetitivos (como acordeones de preguntas frecuentes, carruseles de imágenes, tarjetas de publicaciones, enlaces o infografías), el panel lateral organiza los ítems dentro de **acordeones desplegables con bordes visuales y textos de ayuda**, incluyendo controles para:
      * **Añadir nuevos elementos:** Botón con ícono de suma (*«Añadir elemento»*) para agregar una nueva tarjeta o fila a la colección.
      * **Reordenar la lista:** Controles para desplazar los ítems hacia arriba o hacia abajo y modificar su orden de presentación en pantalla.
      * **Eliminar elementos individuales:** Botón de papelera para retirar un ítem específico de la colección sin alterar el resto del bloque.
@@ -2206,32 +2430,34 @@ Esta sección describe los procedimientos para la localización de contenidos en
 
 #### 3.4.4.1. Búsquedas y Filtros en el Portal Público
 
-##### 3.4.4.1.1. Uso del Buscador Global
-El sistema cuenta con un motor de búsqueda global accesible desde la cabecera. El proceso para realizar una consulta es el siguiente:
+##### 3.4.4.1.1. Uso del Buscador Global Desplegable
+El sistema cuenta con un motor de búsqueda global accesible directamente desde la cabecera superior del portal público. El proceso para realizar una consulta es el siguiente:
 
-1. **Ubicación de la barra:** En la parte superior de la interfaz, se debe ubicar el campo de texto con el ícono de lupa correspondiente al buscador rápido.
+1. **Despliegue del buscador:** En la barra superior de navegación, el usuario debe hacer clic sobre el botón con ícono de lupa. Al interactuar con él, el campo de búsqueda se despliega de manera fluida hacia la izquierda con bordes redondeados y fondo blanco, corriendo armónicamente los enlaces del menú principal hacia el logotipo institucional para no tapar los textos de navegación.
 
 > **[Captura: Paso 1]**
-> *Buscador global en la cabecera.*
+> *Despliegue interactivo del buscador en la cabecera desde el ícono de lupa.*
 >
 > **[Captura: Paso 1 (Móvil)]**
-> *Buscador global en la cabecera. (Móvil).*
+> *Despliegue interactivo del buscador en la cabecera en dispositivo móvil. (Móvil).*
 
-2. **Ingreso de términos:** Se deben digitar las palabras clave relacionadas con la temática, contenido, boletín o documento que se desea localizar.
+2. **Ingreso de términos:** Digitar las palabras clave relacionadas con la temática, contenido, boletín, indicador o documento que se desea localizar.
 
 > **[Captura: Paso 2]**
-> *Ingreso de términos clave en el campo de texto del buscador.*
+> *Ingreso de términos clave en el campo blanco de búsqueda desplegado.*
 >
 > **[Captura: Paso 2 (Móvil)]**
-> *Ingreso de términos clave en el campo de texto del buscador. (Móvil).*
+> *Ingreso de términos clave en el campo de búsqueda en pantalla móvil. (Móvil).*
 
-3. **Ejecución y resultados:** Al presionar la tecla *Enter* o hacer clic en la lupa, el sistema procesará la solicitud y cargará una página con la lista de resultados organizados por relevancia.
+3. **Exploración de resultados en vivo:** El sistema evalúa la consulta en tiempo real (por frase exacta, frase difusa o coincidencia de palabras significativas) y despliega automáticamente una lista flotante debajo del campo con los resultados coincidentes, resaltando los términos encontrados y el contexto de origen. El usuario puede desplazarse entre los resultados usando las flechas de dirección del teclado (*Arriba* / *Abajo*) y presionar la tecla *Enter*, o bien hacer clic con el ratón sobre cualquier ítem para navegar de inmediato a la sección o página correspondiente.
 
 > **[Captura: Paso 3]**
-> *Página de resultados desplegando las coincidencias encontradas por el sistema.*
+> *Lista flotante de resultados en vivo desplegada debajo del buscador con términos resaltados y acceso directo.*
 >
 > **[Captura: Paso 3 (Móvil)]**
-> *Página de resultados desplegando las coincidencias encontradas por el sistema. (Móvil).*
+> *Lista de resultados desplegada en dispositivo móvil con acceso directo a la página encontrada. (Móvil).*
+
+*(Nota de uso: Para cerrar el buscador sin seleccionar un resultado, el usuario puede presionar la tecla **Escape**, hacer clic en cualquier punto exterior fuera de la lista o volver a pulsar sobre la lupa sin texto ingresado; el foco de navegación regresará de inmediato a la lupa de la cabecera).*
 
 ##### 3.4.4.1.2. Búsqueda con Filtros Avanzados y Consulta de Información
 Para consultas específicas en catálogos y listados, el sistema ofrece herramientas de segmentación y filtrado dinámico:
@@ -2303,6 +2529,76 @@ A través del bloque de recursos visuales, los usuarios pueden reproducir conten
 
 #### 3.4.4.3. Descarga Directa de Archivos y Boletines
 En las distintas páginas del portal y de la Intranet, los documentos cuentan con botones estandarizados de **"Descargar Documento"** o enlaces de descarga directa. Los archivos se suministran en formatos estandarizados (como PDF o planillas), listos para su consulta y archivo fuera de línea.
+
+---
+
+#### 3.4.4.4. Panel de Preferencias de Accesibilidad e Inclusión Ciudadana
+
+Para garantizar el cumplimiento de los lineamientos de accesibilidad web (WCAG 2.1 nivel AA y Resolución 1519 de 2020 de MinTIC) y facilitar una experiencia de navegación inclusiva para personas con baja visión, daltonismo, dislexia o dificultades motoras y cognitivas, el Sitio Web Público integra un **Panel de Accesibilidad («Personaliza tu experiencia»)** interactivo, adaptable y persistente.
+
+##### 3.4.4.4.1. Apertura y Navegación del Panel
+1. **Pestaña lateral fija:** En el margen lateral derecho de todas las páginas del portal público se ubica permanentemente una pestaña azul institucional con el ícono universal de accesibilidad.
+2. **Despliegue del panel:** Al pulsar la pestaña con el ratón o activarla con el teclado, se abre el panel lateral manteniendo visible la página de fondo para que el usuario aprecie en tiempo real los cambios aplicados en pantalla. El foco de navegación ingresa automáticamente al panel para continuar la interacción mediante teclado o lectores de pantalla.
+3. **Mecanismos de cierre:** El panel se cierra haciendo clic sobre el botón con ícono de equis (**X**) en la cabecera, presionando la tecla **Escape** o haciendo clic en cualquier área fuera del panel. Al cerrarse, el foco regresa a la pestaña lateral sin perder la posición de lectura.
+
+##### 3.4.4.4.2. Controles Principales de Personalización (Cuadrícula Superior)
+La zona superior del panel presenta ocho tarjetas interactivas organizadas en dos columnas:
+
+1. **Lector de pantalla:**
+   * **Función:** Activa la síntesis de voz integrada del navegador para leer en voz alta los textos del sitio web y anunciar los cambios de configuración.
+   * **Comportamiento:** Si el navegador no dispone de soporte de voz, el botón se muestra atenuado informando: *«tu navegador no puede leer en voz alta»*. Al encenderlo, anuncia verbalmente *«Lector de pantalla activado»*.
+2. **Tamaño del texto (Escala tipográfica - «AA»):**
+   * **Función:** Incrementa progresivamente el tamaño de las fuentes tipográficas en todo el portal público sin deformar los bloques ni desbordar la pantalla.
+   * **Niveles de ajuste:** Cuenta con un indicador visual de 4 barras. Al hacer clic sobre la tarjeta, el tamaño cicla ordenadamente entre:
+     * *Normal:* 1 barra activa (tamaño base por defecto).
+     * *Grande:* 2 barras activas.
+     * *Más grande:* 3 barras activas.
+     * *Máximo:* 4 barras activas (máxima escala legible).
+3. **Alto contraste:**
+   * **Función:** Invierte la paleta cromática a un fondo negro puro con textos y títulos en blanco de máxima luminosidad y enlaces o elementos destacados en amarillo, garantizando óptima visibilidad para personas con baja visión o fatiga ocular.
+4. **Saturación:**
+   * **Función:** Modifica la intensidad del color de todos los elementos visuales e imágenes de la página.
+   * **Niveles de ajuste:** Indicador de 3 barras que cicla entre:
+     * *Saturación normal:* 0 barras (color estándar).
+     * *Saturación baja:* 1 barra activa (tonalidades suaves).
+     * *Saturación alta:* 2 barras activas (colores intensificados y contrastados).
+     * *Sin color:* 3 barras activas (modo monocromático / escala de grises completa).
+5. **Pausar animación:**
+   * **Función:** Detiene inmediatamente las animaciones CSS, transiciones continuas y desplazamientos automáticos de cintas de publicaciones y carruseles, previniendo mareos, distracciones o malestares vestibulares.
+6. **Fuente dislexia:**
+   * **Función:** Reemplaza la tipografía institucional del portal por la fuente especializada *OpenDyslexic*, diseñada con bases más gruesas y asimétricas en cada carácter para evitar la rotación involuntaria y la confusión de letras similares (como *b*, *d*, *p* y *q*).
+7. **Interlineado:**
+   * **Función:** Regula la distancia vertical entre las líneas de texto en párrafos y bloques informativos para evitar que las líneas se mezclen durante la lectura.
+   * **Niveles de ajuste:** Indicador de 3 barras que alterna entre *Interlineado normal*, *Interlineado amplio*, *Interlineado más amplio* e *Interlineado máximo*.
+8. **Interletrado:**
+   * **Función:** Ajusta la separación horizontal entre caracteres individuales para mejorar la claridad de palabras en personas con dificultades de procesamiento visual.
+   * **Niveles de ajuste:** Indicador de 3 barras que cicla entre *Interletrado normal*, *Interletrado amplio*, *Interletrado más amplio* e *Interletrado máximo*.
+
+##### 3.4.4.4.3. Filtros Especializados de Daltonismo
+Debajo de la cuadrícula principal se encuentra la sección de **Daltonismo**:
+1. **Interruptor general:** Al activar el interruptor deslizante con ícono de ojo, se despliega una cuadrícula interactiva con tres filtros de compensación cromática:
+   * **Protanopía:** Filtro adaptado para personas con deficiencia o ceguera en la percepción de tonos rojos.
+   * **Deuteranopía:** Filtro adaptado para dificultades en la percepción de tonos verdes (la variante más común).
+   * **Tritanopía:** Filtro adaptado para dificultades en la percepción de tonos azules y amarillos.
+2. **Selección y repliegue:** Al seleccionar cualquiera de las tres opciones (mediante botón radial), el filtro SVG se aplica al instante en todo el portal. Al apagar el interruptor general, la corrección se desactiva y el menú se repliega de forma compacta.
+
+##### 3.4.4.4.4. Opciones Avanzadas (Interruptores Deslizantes)
+En la parte inferior del panel se ubica la sección **«Opciones avanzadas»**, compuesta por cinco interruptores independientes para refinar la lectura:
+1. **Resaltar títulos:** Aplica un contorno visual resaltado a todos los encabezados y títulos de la página, facilitando la identificación de la estructura del contenido.
+2. **Resaltar enlaces:** Destaca con color de fondo y subrayado continuo todos los hipervínculos navegables, asegurando que ningún botón o enlace pase desapercibido.
+3. **Texto en negrita:** Convierte todas las fuentes tipográficas del portal a peso en negrita (*bold*), otorgando mayor solidez y grosor a los trazos de lectura.
+4. **Guía de lectura:** Activa una franja o regla horizontal flotante que acompaña el desplazamiento vertical del puntero del ratón, sirviendo de guía visual para leer renglón por renglón sin saltar de línea.
+5. **Cursor grande:** Sustituye el cursor habitual por un puntero ampliado de gran tamaño y contorno contrastado para ubicarlo con facilidad en pantallas amplias o de alta resolución.
+
+##### 3.4.4.4.5. Restablecimiento y Persistencia
+* **Botón «Restablecer configuración»:** Ubicado de manera fija en el pie del panel, permite revertir al instante todas las preferencias activas a su valor predeterminado original con un solo clic.
+* **Persistencia automática sin cookies invasivas:** Todas las preferencias configuradas por el usuario se guardan de manera segura en la memoria de su propio navegador, de modo que al navegar entre diferentes páginas del observatorio o volver en visitas posteriores, sus ajustes de accesibilidad se mantienen aplicados sin necesidad de iniciar sesión ni reconfigurarlos.
+
+> **[Captura: Panel de Accesibilidad]**
+> *Panel de preferencias de accesibilidad desplegado en el portal público mostrando las 8 tarjetas principales, el selector de daltonismo, las opciones avanzadas y el botón de restablecimiento.*
+>
+> **[Captura: Panel de Accesibilidad (Móvil)]**
+> *Panel de preferencias de accesibilidad adaptado a pantalla móvil con cabecera y pie fijos y cuerpo desplazable. (Móvil).*
 
 ---
 
@@ -3050,7 +3346,7 @@ La configuración de roles y la asignación de permisos (cuyo procedimiento oper
 
 ##### 3. Ícono de Basurero Bloqueado en el Rol Base "Editor"
 * **Situación:** En la fila correspondiente al rol *"Editor"*, el botón con ícono de basurero aparece deshabilitado (*cursor-not-allowed*) y no responde al clic.
-* **Causa técnica y operativa:** El rol base `Editor` es el perfil matriz del cual heredan todos los roles derivados de la plataforma. Su existencia es obligatoria para la infraestructura del editor visual y se encuentra protegido por código fuente, por lo que su eliminación está inhabilitada de forma permanente.
+* **Causa técnica y operativa:** El rol base `Editor` es el perfil matriz del cual heredan todos los roles derivados de la plataforma. Su existencia es obligatoria para la infraestructura del editor visual y se encuentra protegido por la configuración base de la plataforma, por lo que su eliminación está inhabilitada de forma permanente.
 * **Acción correctiva:** El rol base Editor no debe ni puede ser suprimido. Si se necesita limitar las facultades de un usuario que posee este rol, se le debe editar desde el módulo de Usuarios para asignarle un rol derivado con permisos restringidos, o bien suspender su acceso apagando su interruptor de Estado.
 
 > **[Captura: Rol Base Editor con Borrado Bloqueado]**
@@ -3372,7 +3668,7 @@ El módulo de Configuración ([Sección 3.4.2.9.2](#34292-sección-configuració
 
 ##### 6. Alcance Local de la Preferencia de Sonido de Avisos
 * **Situación:** El funcionario desactiva el interruptor *«Sonido de los avisos»* en su computador de trabajo, pero al iniciar sesión en un dispositivo móvil o en otro navegador, los avisos emergentes vuelven a emitir sonido audible.
-* **Causa:** La preferencia de sonido se guarda de manera exclusiva en el almacenamiento local (`localStorage`) del navegador específico en uso, permitiendo que cada usuario configure la experiencia auditiva de su equipo de trabajo sin alterar la configuración de los demás usuarios del sistema.
+* **Causa:** La preferencia de sonido se guarda de manera exclusiva en la configuración local del navegador específico en uso, permitiendo que cada usuario configure la experiencia auditiva de su equipo de trabajo sin alterar la configuración de los demás usuarios del sistema.
 * **Acción correctiva:** Configurar el interruptor en cada navegador o terminal desde donde opere el funcionario. Para comprobar el volumen y funcionamiento del sonido sin esperar alertas reales del sistema, hacer clic en cualquiera de los botones de prueba (**«Éxito»**, **«Advertencia»** y **«Error»**).
 
 > **[Captura: Configuración - Preferencia de Sonido de Avisos]**

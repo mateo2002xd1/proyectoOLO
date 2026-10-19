@@ -318,7 +318,7 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 | **Escenario:** | Carga de logotipo/ícono, modo oscuro, contraste accesible y sonido de avisos |
 | **Resultado Esperado:** | Carga de logo e ícono PNG por clic o arrastre directo con guardado inmediato, previsualizaciones en tema claro y oscuro, inversión a blanco en modo oscuro, personalización de colores con validador WCAG (4,5:1) y control de sonido de notificaciones en el navegador. |
 | **Precondición:** | Funcionario autenticado en la ruta `/admin/configuracion`. |
-| **Datos de entrada** | **Usuario:** `admin@sena.edu.co` (Rol Administrador)<br>**Contraseña:** Contraseña definitiva activa<br>**Archivos:** Imagen PNG horizontal (hasta 1 MB) para logotipo y PNG cuadrado (hasta 512 KB, mín. 64x64 px) para favicon<br>**Colores:** Valores hexadecimales para fondo y letra de etiquetas y botones |
+| **Datos de entrada** | **Usuario:** `admin@sena.edu.co` (Rol Administrador)<br>**Contraseña:** Contraseña definitiva activa<br>**Archivos:** Imagen PNG horizontal (hasta 1 MB) para logotipo y PNG cuadrado (hasta 512 KB, mín. 64x64 px) para favicon<br>**Colores:** Selección de colores para fondo y letra de etiquetas y botones |
 
 | Descripción de pasos a realizar | Resultado obtenido |
 | :--- | :--- |
@@ -483,4 +483,32 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 | **3.** Probar instalación en dispositivo móvil iOS (Safari) | Presionar el botón de compartir (recuadro con flecha hacia arriba) en la barra inferior, seleccionar "Agregar a pantalla de inicio" y pulsar "Agregar" |
 | **4.** Abrir la aplicación instalada desde el acceso directo | Ejecuta la plataforma en ventana independiente de aplicación con logotipo del OLO, sin barras de navegación del explorador |
 | **5.** Probar navegación con interrupción de conectividad a internet | Presenta pantalla de cortesía informando la ausencia de conexión a red sin que la aplicación se rompa ni pierda consistencia visual |
+
+---
+
+### Escenario 23: Panel de Preferencias de Accesibilidad e Inclusión Ciudadana (Sitio Web Público)
+
+| **RESULTADO PRUEBA FUNCIONAL Y/O TÉCNICA** | |
+| :--- | :--- |
+| **Escenario:** | Verificación funcional del Panel de Accesibilidad («Personaliza tu experiencia»), controles de inclusión, persistencia y botón «Subir» |
+| **Resultado Esperado:** | Despliegue interactivo desde la pestaña lateral derecha azul institucional, ajuste dinámico de los 8 controles principales (lector de pantalla, tamaño de texto en 4 niveles, alto contraste, saturación en 4 niveles, pausar animación, fuente dislexia, interlineado e interletrado), selector de daltonismo (protanopía, deuteranopía, tritanopía), opciones avanzadas con interruptores, restablecimiento a valores base, conservación de preferencias en el navegador y retorno al inicio con el botón flotante «Subir». |
+| **Precondición:** | Portal público cargado en el navegador (`/` o cualquier página pública) sin requerir inicio de sesión. |
+| **Datos de entrada** | **Interacción:** Clic en pestaña flotante lateral azul institucional o tecla `Enter`/`Espacio`, pulsación de tarjetas de ajuste, alternancia de interruptores (*switches*), botón "Restablecer configuración" y desplazamiento vertical |
+
+| Descripción de pasos a realizar | Resultado obtenido |
+| :--- | :--- |
+| **1.** Desplegar el panel desde la pestaña lateral flotante con ratón y teclado | Abre el panel lateral manteniendo la página visible detrás, traslada el foco automáticamente a la cabecera del panel y permite cerrar con tecla `Escape`, botón `X` o clic fuera |
+| **2.** Probar botón "Lector de pantalla" | Activa la síntesis de voz del navegador emitiendo confirmación hablada; si el navegador no lo soporta, muestra la tarjeta inhabilitada con mensaje explicativo |
+| **3.** Probar tarjeta "Tamaño del texto" (AA) en sus 4 niveles | Cicla sucesivamente entre Normal (1 barra), Grande (2 barras), Más grande (3 barras) y Máximo (4 barras), escalando las fuentes tipográficas en vivo sin romper la maquetación |
+| **4.** Activar "Alto contraste" | Invierte la interfaz a fondo negro con textos en blanco y acentos amarillos de máxima luminosidad |
+| **5.** Probar tarjeta "Saturación" en sus 4 niveles | Cicla entre Normal (0 barras), Baja (1 barra), Alta (2 barras) y Sin color / Monocromático (3 barras), alterando la intensidad de color de imágenes y bloques |
+| **6.** Activar "Pausar animación" | Detiene instantáneamente las animaciones CSS y la marcha automática de carruseles de imágenes y cintas de publicaciones |
+| **7.** Activar "Fuente dislexia" | Sustituye la fuente institucional por la tipografía *OpenDyslexic* en todos los títulos y textos de la página |
+| **8.** Probar niveles de "Interlineado" e "Interletrado" | Incrementa el espaciado vertical entre renglones y la separación horizontal entre caracteres según el nivel seleccionado |
+| **9.** Activar interruptor de "Daltonismo" y probar opciones | Despliega los botones radiales para Protanopía, Deuteranopía y Tritanopía, aplicando el filtro SVG correspondiente en todo el portal; al apagar el interruptor, repliega la sección |
+| **10.** Probar interruptores de "Opciones avanzadas" | Resalta títulos con contorno, resalta enlaces con fondo/subrayado, convierte textos a negrita (*bold*), activa regla de guía de lectura que sigue el cursor y agranda el puntero del ratón |
+| **11.** Probar botón "Restablecer configuración" | Revierte inmediatamente todos los cambios visuales y auditivos a los valores predeterminados originales |
+| **12.** Verificar persistencia en el navegador | Recargar la página (`F5`) o navegar a otra sección pública y comprobar que las preferencias seleccionadas se mantienen activas automáticamente sin parpadeos |
+| **13.** Probar botón flotante «Subir» | Al bajar más de 400 px, aparece la píldora azul abajo a la derecha; al hacer clic, desplaza suavemente la página al inicio y sitúa el foco accesible en `<main>` |
+
 
