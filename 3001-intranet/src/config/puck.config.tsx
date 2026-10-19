@@ -19,7 +19,7 @@ import { TextoRico } from '@/shared/lib/blocks/compartidos/texto-rico';
 import { TextoConImagen } from '@/shared/lib/blocks/compartidos/texto-con-imagen';
 import { DescargasConPresentacion } from '@/shared/lib/blocks/compartidos/descargas-con-presentacion';
 import { RecursosVisualesBloque, extraerYoutubeId } from '@/shared/lib/blocks/inicio/recursos-visuales-bloque';
-import { Publicaciones } from '@/shared/lib/blocks/inicio/publicaciones';
+import { Publicaciones, VELOCIDADES_CINTA } from '@/shared/lib/blocks/inicio/publicaciones';
 import { PreguntasFrecuentes } from '@/shared/lib/blocks/inicio/preguntas-frecuentes';
 import { IconoBloque } from '@/shared/lib/blocks/compartidos/icono-bloque';
 import {
@@ -54,6 +54,19 @@ const campoImagen = (label: string) =>
     <ImageUploaderField value={value} onChange={onChange} />
   ),
 });
+
+/**
+ * Barra de formato de un texto corto: negrita, cursiva, subrayado, enlaces y saltos de
+ * línea, sin encabezados, listas ni citas. La misma que el sitio-web usa en sus titulares.
+ */
+const OPCIONES_TEXTO_EN_LINEA = {
+  heading: false,
+  blockquote: false,
+  bulletList: false,
+  orderedList: false,
+  codeBlock: false,
+  horizontalRule: false,
+} as const;
 
 /**
  * Campo con entrada para enlace o ID de YouTube y vista previa en vivo de la miniatura.
@@ -976,20 +989,23 @@ const puckConfigBase: Config = {
           ],
         },
         titulo: { type: 'richtext', label: 'Título', contentEditable: true },
-        mostrarSubtitulo: {
+        fondo: campoColor('Color de fondo (opcional)'),
+        movimiento: {
           type: 'radio',
-          label: 'Mostrar subtítulo',
+          label: 'Se mueve solo',
           options: [
             { label: 'Sí', value: true },
             { label: 'No', value: false },
           ],
         },
-        subtitulo: { type: 'richtext', label: 'Subtítulo', contentEditable: true },
+        velocidad: { type: 'radio', label: 'Velocidad de la cinta', options: VELOCIDADES_CINTA },
         publicaciones: {
           type: 'array',
           label: 'Publicaciones',
           arrayFields: {
-            titulo: { type: 'text', label: 'Título', contentEditable: true },
+            titulo: { type: 'textarea', label: 'Nombre de la publicación (Enter parte la línea)', contentEditable: true },
+            detalle: { type: 'text', label: 'Detalle (texto verde sobre el nombre, opcional)', contentEditable: true },
+            miniatura: campoImagen('Miniatura (opcional; sin ella, la primera página del PDF)'),
             pdfUrl: {
               type: 'custom',
               label: 'Archivo PDF',
@@ -1003,12 +1019,24 @@ const puckConfigBase: Config = {
               ),
             },
             nombreArchivo: { type: 'text', label: 'Nombre al descargar (opcional)' },
-            etiqueta: { type: 'text', label: 'Etiqueta (#OLOtecuenta)', contentEditable: true },
-            mes: { type: 'text', label: 'Mes', contentEditable: true },
-            dia: { type: 'text', label: 'Día', contentEditable: true },
+            url: { type: 'text', label: 'Enlace de la flecha (/ruta o https://…; vacío: abre el PDF)' },
+            // Siguen llamándose `mes` y `dia` porque así están en el JSON guardado: el mes
+            // (línea pequeña) y el año (línea grande) de la insignia, con formato.
+            mes: {
+              type: 'richtext',
+              label: 'Mes (p. ej. ENE - MAR)',
+              contentEditable: true,
+              options: OPCIONES_TEXTO_EN_LINEA,
+            },
+            dia: {
+              type: 'richtext',
+              label: 'Año (p. ej. 2026)',
+              contentEditable: true,
+              options: OPCIONES_TEXTO_EN_LINEA,
+            },
           },
           getItemSummary: (item: { titulo?: string; pdfUrl?: string }) => {
-            const titulo = typeof item.titulo === 'string' ? item.titulo.trim() : '';
+            const titulo = typeof item.titulo === 'string' ? item.titulo.replace(/\s+/g, ' ').trim() : '';
             if (titulo) return titulo;
             if (item.pdfUrl) {
               const nombre = item.pdfUrl.split('/').pop() || 'Archivo PDF';
@@ -1017,15 +1045,14 @@ const puckConfigBase: Config = {
             return 'Publicación sin configurar';
           },
         },
-        porPagina: { type: 'number', label: 'Tarjetas visibles a la vez', min: 1, max: 6 },
       },
       defaultProps: {
         mostrarTitulo: true,
         titulo: '<p><strong>Ultimas</strong> publicaciones</p>',
-        mostrarSubtitulo: false,
-        subtitulo: '',
+        fondo: '',
+        movimiento: true,
+        velocidad: 45,
         publicaciones: [],
-        porPagina: 4,
       },
       render: ({ puck, ...props }: BlockRender<ComponentProps<typeof Publicaciones> & { puck?: { isEditing?: boolean } }>) => (
         <Publicaciones {...props} esEdicion={Boolean(puck?.isEditing)} />

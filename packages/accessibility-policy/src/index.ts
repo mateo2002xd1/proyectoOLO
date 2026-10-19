@@ -95,11 +95,14 @@ const MANIFIESTO_SITIO: Manifiesto = {
     etiqueta: 'Recursos Visuales',
     reglas: [{ tipo: 'titulo-array', campoArray: 'videos', campoTitulo: 'titulo' }],
   },
-  /* La portada del PDF se dibuja en un `<img>` cuyo `alt` es el título de la
-     publicación, así que un PDF sin título queda además sin texto alternativo. */
+  /* La portada (la miniatura subida o, sin ella, la primera página del PDF) se
+     anuncia por el título de la publicación, así que sin título queda sin texto. */
   Publicaciones: {
     etiqueta: 'Últimas publicaciones',
-    reglas: [{ tipo: 'alt-array', campoArray: 'publicaciones', campoImagen: 'pdfUrl', campoAlt: 'titulo' }],
+    reglas: [
+      { tipo: 'alt-array', campoArray: 'publicaciones', campoImagen: 'pdfUrl', campoAlt: 'titulo' },
+      { tipo: 'alt-array', campoArray: 'publicaciones', campoImagen: 'miniatura', campoAlt: 'titulo' },
+    ],
   },
   CarruselDeImagenes: {
     etiqueta: 'Carrusel de imágenes',
@@ -172,11 +175,14 @@ const MANIFIESTO_INTRANET: Manifiesto = {
     etiqueta: 'Recursos Visuales',
     reglas: [{ tipo: 'titulo-array', campoArray: 'videos', campoTitulo: 'titulo' }],
   },
-  /* La portada del PDF se dibuja en un `<img>` cuyo `alt` es el título de la
-     publicación, así que un PDF sin título queda además sin texto alternativo. */
+  /* La portada (la miniatura subida o, sin ella, la primera página del PDF) se
+     anuncia por el título de la publicación, así que sin título queda sin texto. */
   Publicaciones: {
     etiqueta: 'Últimas publicaciones',
-    reglas: [{ tipo: 'alt-array', campoArray: 'publicaciones', campoImagen: 'pdfUrl', campoAlt: 'titulo' }],
+    reglas: [
+      { tipo: 'alt-array', campoArray: 'publicaciones', campoImagen: 'pdfUrl', campoAlt: 'titulo' },
+      { tipo: 'alt-array', campoArray: 'publicaciones', campoImagen: 'miniatura', campoAlt: 'titulo' },
+    ],
   },
 };
 
@@ -235,11 +241,14 @@ function revisarBloque(bloque: BloquePuck, manifiesto: Manifiesto): ViolacionAcc
       }
     } else if (regla.tipo === 'alt-array') {
       items(valorEnRuta(props, regla.campoArray)).forEach((item, indice) => {
-        if (esNoVacio(item[regla.campoImagen]) && !esNoVacio(item[regla.campoAlt])) {
+        const campo = `${regla.campoArray}[${indice}].${regla.campoAlt}`;
+        // Dos reglas pueden pedir el mismo texto (portada de PDF y miniatura): un aviso basta.
+        const yaAvisado = violaciones.some((v) => v.campo === campo && v.motivo === 'alt_faltante');
+        if (!yaAvisado && esNoVacio(item[regla.campoImagen]) && !esNoVacio(item[regla.campoAlt])) {
           violaciones.push({
             bloque: bloque.type as string,
             bloqueEtiqueta: definicion.etiqueta,
-            campo: `${regla.campoArray}[${indice}].${regla.campoAlt}`,
+            campo,
             motivo: 'alt_faltante',
           });
         }

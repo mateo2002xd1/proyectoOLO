@@ -30,7 +30,7 @@ import { CarruselDeImagenes } from '@/shared/lib/blocks/carrusel-de-imagenes';
 import { Services } from '@/shared/lib/blocks/services';
 import { DatoOloSemana } from '@/shared/lib/blocks/dato-olo-semana';
 import { RecursosVisualesBloque, extraerYoutubeId } from '@/shared/lib/blocks/recursos-visuales-bloque';
-import { Publicaciones } from '@/shared/lib/blocks/publicaciones';
+import { Publicaciones, VELOCIDADES_CINTA, type PublicacionItem } from '@/shared/lib/blocks/publicaciones';
 import { PoliticaPrivacidadEncabezado } from '@/shared/lib/blocks/politica-privacidad-encabezado';
 import { VisorDocumentosNormativos, type DocumentoNormativo } from '@/shared/lib/blocks/visor-documentos-normativos';
 import { CanalesAtencion, type CanalDeAtencion } from '@/shared/lib/blocks/canales-atencion';
@@ -880,20 +880,23 @@ const puckConfigBase: Config = {
           ],
         },
         titulo: { type: 'richtext' as const, label: 'Título', contentEditable: true },
-        mostrarSubtitulo: {
-          type: 'radio',
-          label: 'Mostrar subtítulo',
+        fondo: campoColor('Color de fondo (opcional)'),
+        movimiento: {
+          type: 'radio' as const,
+          label: 'Se mueve solo',
           options: [
             { label: 'Sí', value: true },
             { label: 'No', value: false },
           ],
         },
-        subtitulo: { type: 'richtext' as const, label: 'Subtítulo', contentEditable: true },
+        velocidad: { type: 'radio' as const, label: 'Velocidad de la cinta', options: VELOCIDADES_CINTA },
         publicaciones: {
           type: 'array' as const,
           label: 'Publicaciones',
           arrayFields: {
-            titulo: { type: 'text' as const, label: 'Título', contentEditable: true },
+            titulo: { type: 'textarea' as const, label: 'Nombre de la publicación (Enter parte la línea)', contentEditable: true },
+            detalle: { type: 'text' as const, label: 'Detalle (texto verde sobre el nombre, opcional)', contentEditable: true },
+            miniatura: campoImagen('Miniatura (opcional; sin ella, la primera página del PDF)'),
             pdfUrl: {
               type: 'custom',
               label: 'Archivo PDF',
@@ -907,12 +910,24 @@ const puckConfigBase: Config = {
               ),
             },
             nombreArchivo: { type: 'text' as const, label: 'Nombre al descargar (opcional)' },
-            etiqueta: { type: 'text' as const, label: 'Etiqueta (#OLOtecuenta)', contentEditable: true },
-            mes: { type: 'text' as const, label: 'Mes', contentEditable: true },
-            dia: { type: 'text' as const, label: 'Día', contentEditable: true },
+            url: { type: 'text' as const, label: 'Enlace de la flecha (/ruta o https://…; vacío: abre el PDF)' },
+            // Siguen llamándose `mes` y `dia` porque así están en el JSON guardado: el mes
+            // (línea pequeña) y el año (línea grande) de la insignia, con formato.
+            mes: {
+              type: 'richtext' as const,
+              label: 'Mes (p. ej. ENE - MAR)',
+              contentEditable: true,
+              options: OPCIONES_TEXTO_EN_LINEA,
+            },
+            dia: {
+              type: 'richtext' as const,
+              label: 'Año (p. ej. 2026)',
+              contentEditable: true,
+              options: OPCIONES_TEXTO_EN_LINEA,
+            },
           },
           getItemSummary: (item: { titulo?: string; pdfUrl?: string }) => {
-            const titulo = typeof item.titulo === 'string' ? item.titulo.trim() : '';
+            const titulo = typeof item.titulo === 'string' ? item.titulo.replace(/\s+/g, ' ').trim() : '';
             if (titulo) return titulo;
             if (item.pdfUrl) {
               const nombre = decodeURIComponent(item.pdfUrl.split('/').pop() ?? 'Documento PDF');
@@ -921,72 +936,44 @@ const puckConfigBase: Config = {
             return 'Publicación sin título';
           },
         },
-        porPagina: { type: 'number' as const, label: 'Tarjetas visibles a la vez', min: 1, max: 6 },
       },
       defaultProps: {
         id: 'publicaciones-1',
         mostrarTitulo: true,
         titulo: '<p><strong>Ultimas</strong> publicaciones</p>',
-        mostrarSubtitulo: false,
-        subtitulo: '',
-        publicaciones: [
-          {
-            titulo: 'Boletín Mercado Laboral — Edición 2026',
-            pdfUrl: '/storage/uploads/pdf/1567f705-93ee-4839-88b1-055c0891c69e.pdf',
-            etiqueta: '#OLOtecuenta',
-            mes: 'Mar',
-            dia: '15',
-          },
-          {
-            titulo: 'Catálogo de Ocupaciones Campesina y Familiar',
-            pdfUrl: '/storage/uploads/pdf/4ea611c8-c6a0-47e3-b7ff-3410a2eb01c9.pdf',
-            etiqueta: '#OLOtecuenta',
-            mes: 'Abr',
-            dia: '02',
-          },
-          {
-            titulo: 'Diccionario Ocupacional y Metodologías OLO',
-            pdfUrl: '/storage/uploads/pdf/50a120cc-1171-48c8-a9fc-03f1ddf44a34.pdf',
-            etiqueta: '#OLOtecuenta',
-            mes: 'May',
-            dia: '07',
-          },
-          {
-            titulo: 'Informe Economía Popular y Mercado de Trabajo',
-            pdfUrl: '/storage/uploads/pdf/6baad355-af7b-41de-941f-f9b6cbdd849f.pdf',
-            etiqueta: '#OLOtecuenta',
-            mes: 'Jun',
-            dia: '18',
-          },
-        ],
-        porPagina: 4,
+        fondo: '',
+        movimiento: true,
+        velocidad: 45,
+        // Vacía, como en la intranet: el lienzo enseña la vista previa de ejemplo con el
+        // nombre, el mes y el año por rellenar, en vez de publicaciones reales sembradas.
+        publicaciones: [],
       },
       render: ({
         id,
         titulo,
         mostrarTitulo,
-        subtitulo,
-        mostrarSubtitulo,
         publicaciones,
-        porPagina,
+        fondo,
+        movimiento,
+        velocidad,
         puck,
       }: BlockRender<{
         titulo?: ReactNode;
         mostrarTitulo?: boolean;
-        subtitulo?: ReactNode;
-        mostrarSubtitulo?: boolean;
-        publicaciones?: { titulo?: ReactNode; pdfUrl?: string; etiqueta?: ReactNode; mes?: ReactNode; dia?: ReactNode }[];
-        porPagina?: number;
+        publicaciones?: PublicacionItem[];
+        fondo?: string;
+        movimiento?: boolean;
+        velocidad?: number;
         puck?: { isEditing?: boolean };
       }>) => (
         <Publicaciones
           block={{ id: id || 'publicaciones-preview' }}
           titulo={titulo}
           mostrarTitulo={mostrarTitulo}
-          subtitulo={subtitulo}
-          mostrarSubtitulo={mostrarSubtitulo}
           publicaciones={publicaciones}
-          porPagina={porPagina}
+          fondo={fondo}
+          movimiento={movimiento}
+          velocidad={velocidad}
           esEdicion={Boolean(puck?.isEditing)}
         />
       ),
