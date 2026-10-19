@@ -10,9 +10,9 @@ import {
   Download,
   Info,
   Loader2,
-  Trash2,
   X,
 } from 'lucide-react';
+import { IconoMascara } from '@/shared/ui/atoms/icono-mascara';
 import {
   analizarDepuracionAuditoria,
   ejecutarDepuracionAuditoria,
@@ -324,8 +324,9 @@ export function ModalDepurarAuditoria({
                 </>
               ) : (
                 <>
-                  {/* Sin icono en el móvil: con él, el texto no cabía en una línea a 360 px. */}
-                  <Trash2 size={16} className="hidden sm:block" />
+                  <span className="hidden sm:inline-flex">
+                    <IconoMascara nombre="trash" tamano="h-5 w-5" />
+                  </span>
                   Depurar {totalCandidatos} {totalCandidatos === 1 ? 'registro' : 'registros'}
                 </>
               )}
