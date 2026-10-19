@@ -679,6 +679,225 @@ main:has(.cargando-seccion--relleno) :has(.cargando-seccion--relleno) {
   background: rgba(0, 0, 0, 0.06);
 }
 
+/* --- Buscador de la cabecera (buscador-sitio.tsx) ---
+   Cerrado es solo la lupa. Al abrirse, `.olo-buscador__caja` crece hacia la izquierda
+   desde la lupa (anclada a la derecha) hasta una píldora blanca con el campo, por
+   encima del menú. El hueco de la lupa no cambia; lo que se corre es el menú
+   (`moverMenuAnteElBuscador` en header.tsx), para que ninguna palabra quede cortada
+   bajo la píldora. Los resultados van más anchos que la píldora para poder leerse. */
+.olo-buscador {
+  --olo-buscador-ancho: min(11rem, calc(100vw - 6rem));
+  --olo-buscador-ancho-resultados: min(22rem, calc(100vw - 6rem));
+  --olo-buscador-tinta: #002237;
+  position: relative;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+}
+
+.olo-buscador__caja {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  transition:
+    width 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.olo-buscador[data-abierto] .olo-buscador__caja {
+  /* Con el menú a la vista, la cabecera ajusta el ancho al hueco que deja el menú. */
+  width: var(--olo-buscador-ancho-ajustado, var(--olo-buscador-ancho));
+  background: white;
+  /* Sobre una cabecera blanca la píldora se perdería sin borde. */
+  border-color: color-mix(in srgb, var(--olo-buscador-tinta) 18%, transparent);
+  box-shadow: var(--shadow-lg);
+}
+
+.olo-buscador__campo {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  /* Sin relleno mientras está cerrado: con él no cabría en los 44 px de la lupa. */
+  padding: 0;
+  font: inherit;
+  font-size: 1.0625rem;
+  color: var(--olo-buscador-tinta);
+  background: transparent;
+  border: none;
+  outline: none;
+  /* Solo opacidad, sin `visibility`: con ella el campo seguía oculto durante el
+     retardo de la entrada y `focus()` al abrir no hacía nada. Cerrado no se alcanza
+     igual: mide 0 px y tiene tabIndex -1. */
+  opacity: 0;
+  transition: opacity 150ms ease, color var(--transition-fast);
+}
+
+.olo-buscador__campo::placeholder {
+  color: var(--olo-buscador-tinta);
+  opacity: 1;
+  transition: color var(--transition-fast);
+}
+
+/* La cruz nativa de `type="search"` sobraría: la lupa ya está a la derecha. */
+.olo-buscador__campo::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+.olo-buscador[data-abierto] .olo-buscador__campo {
+  padding-left: 1.125rem;
+  opacity: 1;
+  /* Aparece cuando la píldora ya tiene ancho para él. */
+  transition-delay: 120ms;
+}
+
+.olo-buscador__lupa {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+}
+
+.olo-buscador[data-abierto] .olo-buscador__lupa {
+  color: var(--olo-buscador-tinta);
+  background: transparent;
+}
+
+.olo-buscador[data-abierto] .olo-buscador__lupa:hover {
+  background: color-mix(in srgb, var(--olo-buscador-tinta) 8%, transparent);
+}
+
+/* Cuánto ocupará la píldora abierta, para que la cabecera mida el hueco antes de que
+   empiece a crecer. No se ve ni se toca. */
+.olo-buscador__medida {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: var(--olo-buscador-ancho);
+  height: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.olo-buscador__resultados {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 1;
+  width: var(--olo-buscador-ancho-resultados);
+  max-height: min(60dvh, 28rem);
+  overflow-y: auto;
+  padding: var(--space-xs);
+  background: white;
+  border: 1px solid color-mix(in srgb, var(--olo-buscador-tinta) 12%, transparent);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition: opacity var(--transition-fast), transform var(--transition-fast), visibility var(--transition-fast);
+}
+
+.olo-buscador__resultados[data-visible] {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.olo-buscador__vacio {
+  padding: var(--space-md);
+  font-size: 0.875rem;
+  color: var(--color-gray-500);
+  text-align: center;
+}
+
+.olo-buscador__opcion {
+  border-radius: 12px;
+  transition: background var(--transition-fast);
+}
+
+.olo-buscador__opcion[data-activo='true'] {
+  background: color-mix(in srgb, var(--olo-buscador-tinta) 6%, transparent);
+}
+
+.olo-buscador__opcion a {
+  display: block;
+  padding: var(--space-sm) var(--space-md);
+  color: inherit;
+  text-decoration: none;
+}
+
+.olo-buscador__contexto {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-bottom: 2px;
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-brand-blue-dark);
+}
+
+.olo-buscador__tipo {
+  flex-shrink: 0;
+  padding: 1px 6px;
+  font-size: 0.625rem;
+  color: var(--color-gray-500);
+  background: color-mix(in srgb, var(--olo-buscador-tinta) 6%, transparent);
+  border-radius: 4px;
+}
+
+.olo-buscador__texto {
+  display: block;
+  font-size: 0.9375rem;
+  line-height: 1.35;
+  color: var(--olo-buscador-tinta);
+  transition: color var(--transition-fast);
+}
+
+.olo-buscador__texto--contenido {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-size: 0.875rem;
+  color: var(--color-gray-500);
+}
+
+/* El menú se corre a la izquierda mientras el buscador está abierto, y lo que aun así
+   quedaría bajo la píldora se desvanece entero en vez de verse cortado. */
+.olo-nav {
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.olo-nav > * {
+  transition: opacity 200ms ease, visibility 200ms;
+}
+
+.olo-nav > [data-tapado] {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .olo-nav,
+  .olo-nav > *,
+  .olo-buscador__caja,
+  .olo-buscador__campo,
+  .olo-buscador__resultados {
+    transition: none;
+  }
+}
+
 .olo-gov-btn {
   display: inline-flex;
   align-items: center;
@@ -1744,17 +1963,13 @@ a.olo-carrusel__boton:focus-visible {
 }
 
 /* ============================================
-   ÚLTIMAS PUBLICACIONES — Carrusel de PDF
+   ÚLTIMAS PUBLICACIONES — Cinta de publicaciones
    ============================================
 
-   Portado del global de la intranet (`intranet/src/style/globals.css`, sección
-   «PUBLICACIONES CAROUSEL») con sus valores literales, para que el bloque se vea
-   idéntico en las dos aplicaciones. Las clases `.publicaciones-*` son las mismas.
-
-   Lo que allí eran utilidades de Tailwind escritas en el JSX (cursor de arrastre,
-   zoom al pasar el ratón, `select-none`, `pointer-events`) está aquí como CSS: el
-   componente de este sitio no las lleva en el marcado, así que sin esto el
-   arrastre seleccionaría texto y las tarjetas no reaccionarían al ratón.
+   Las clases `.publicaciones-*` son las mismas, con los mismos valores, que en el
+   global de la intranet (`3001-intranet/src/style/globals.css`, sección
+   «PUBLICACIONES CAROUSEL»), para que el bloque se vea idéntico en las dos
+   aplicaciones. Cambiar una es cambiar las dos.
    ============================================ */
 
 .olo-publicaciones {
@@ -1794,85 +2009,96 @@ a.olo-carrusel__boton:focus-visible {
   font-weight: 700;
 }
 
+/* La cinta va de borde a borde del contenedor; debajo, a la derecha, su pausa. */
 .olo-publicaciones-body {
-  position: relative;
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 1rem;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-@media (width >=48rem) {
-  .olo-publicaciones-body {
-    padding: 0 2rem;
-  }
-}
-
-.publicaciones-container {
-  background-color: #EBEBEB;
-  border-radius: 32px;
-  padding: 1.5rem;
+/* La cinta: la lista dos veces en fila, desplazada de 0 a −50 % de derecha a
+   izquierda (ver `publicaciones.tsx`). `--pub-duracion` lo pone el componente según
+   lo que mide una copia y la velocidad elegida en el editor. */
+.publicaciones-cinta {
   width: 100%;
   overflow: hidden;
-  cursor: grab;
-}
-
-.publicaciones-container:active {
-  cursor: grabbing;
-}
-
-@media (width >=48rem) {
-  .publicaciones-container {
-    padding: 2rem;
-  }
-}
-
-.publicaciones-grid {
-  display: grid;
-  grid-template-columns: repeat(1, 1fr);
-  gap: 1.5rem;
-  /* Sin esto, arrastrar para pasar de página selecciona los títulos. */
+  /* El ancho de las tarjetas sale de aquí (`cqi`), no de la ventana. */
+  container-type: inline-size;
   user-select: none;
 }
 
-@media (width >=40rem) {
-  .publicaciones-grid {
-    grid-template-columns: repeat(2, 1fr);
+.publicaciones-cinta-pista {
+  display: flex;
+  width: max-content;
+  animation: olo-cinta-publicaciones var(--pub-duracion, 40s) linear infinite;
+}
+
+.publicaciones-cinta[data-pausada] .publicaciones-cinta-pista,
+.publicaciones-cinta:hover .publicaciones-cinta-pista,
+.publicaciones-cinta:focus-within .publicaciones-cinta-pista {
+  animation-play-state: paused;
+}
+
+@keyframes olo-cinta-publicaciones {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
   }
 }
 
-@media (width >=48rem) {
-  .publicaciones-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
+.publicaciones-cinta-grupo {
+  display: flex;
+  gap: 1.5rem;
+  /* El mismo hueco tras la última tarjeta: así cada copia mide justo la mitad de
+     la pista y la vuelta no da un salto. */
+  margin: 0;
+  padding: 0 1.5rem 0 0;
+  list-style: none;
 }
 
-.publicaciones-card {
-  background-color: #ffffff;
-  border-radius: 24px;
-  padding: 1rem;
+/* Todas iguales: el ancho no depende del título ni de la portada. Tres por vista
+   (tres anchos y dos huecos llenan el contenedor); donde un tercio no llega a 16rem
+   —tablet, móvil— manda ese mínimo, y en el móvil el 80 %, para que asome la siguiente. */
+.publicaciones-cinta-item {
+  flex: none;
+  width: max(calc((100cqi - 3rem) / 3), min(16rem, 80cqi));
+  padding: 0.25rem 0;
+}
+
+.publicaciones-tarjeta {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  text-align: left;
   height: 100%;
-  width: 100%;
+  border-radius: 1.5rem;
+  text-align: left;
   text-decoration: none;
   color: inherit;
 }
 
+.publicaciones-tarjeta:focus-visible {
+  outline: 3px solid #39A900;
+  outline-offset: 4px;
+}
+
+/* Deja abajo el hueco de la flecha, que cuelga a medias del borde de la portada. */
+.publicaciones-tarjeta-portada {
+  position: relative;
+  padding-bottom: 1.375rem;
+}
+
 .publicaciones-card-img-wrapper {
   width: 100%;
-  aspect-ratio: 1/1;
-  border-radius: 18px;
+  aspect-ratio: 16 / 10;
+  border-radius: 1.5rem;
   overflow: hidden;
-  margin-bottom: 1rem;
   background-color: #f3f4f6;
-  /* La portada no debe interceptar el arrastre: los eventos son del contenedor. */
+  /* La portada no debe interceptar el ratón: el enlace es la tarjeta entera. */
   pointer-events: none;
 }
 
@@ -1883,8 +2109,164 @@ a.olo-carrusel__boton:focus-visible {
   transition: transform 0.3s ease;
 }
 
-.publicaciones-card:hover .publicaciones-card-img {
+.publicaciones-tarjeta:hover .publicaciones-card-img {
   transform: scale(1.05);
+}
+
+/* Sin relleno: solo el borde, que parpadea. Se para con la cinta (pausa, ratón,
+   foco) y con «reducir movimiento»: WCAG 2.2.2 pide poder detener lo que parpadea. */
+.publicaciones-tarjeta-flecha {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 3.5rem;
+  height: 2.75rem;
+  border: 2px solid #84CC16;
+  border-radius: 0.5rem;
+  background-color: transparent;
+  color: #84CC16;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: olo-flecha-intermitente 1.2s ease-in-out infinite;
+  transition: color 0.2s ease;
+}
+
+@keyframes olo-flecha-intermitente {
+  50% {
+    border-color: transparent;
+  }
+}
+
+.publicaciones-cinta[data-pausada] .publicaciones-tarjeta-flecha,
+.publicaciones-cinta:hover .publicaciones-tarjeta-flecha,
+.publicaciones-cinta:focus-within .publicaciones-tarjeta-flecha {
+  animation-play-state: paused;
+}
+
+.publicaciones-tarjeta:hover .publicaciones-tarjeta-flecha,
+.publicaciones-tarjeta:focus-visible .publicaciones-tarjeta-flecha {
+  border-color: #39A900;
+  color: #39A900;
+}
+
+.publicaciones-tarjeta-pie {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.publicaciones-tarjeta-textos {
+  min-width: 0;
+}
+
+.publicaciones-card-title {
+  font-family: var(--font-body);
+  font-weight: 400;
+  color: #001631;
+  font-size: clamp(0.875rem, 0.8rem + 0.3vw, 1rem);
+  line-height: 1.3;
+  margin: 0;
+  /* El salto de línea del editor parte el título; dos renglones siempre, para que
+     todas las tarjetas midan lo mismo de alto. */
+  white-space: pre-line;
+  min-height: 2.6em;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+/* Donde iba la etiqueta (#OLOtecuenta): el icono de archivo. */
+.publicaciones-tarjeta-icono {
+  display: block;
+  color: #39A900;
+  margin-bottom: 0.25rem;
+}
+
+.publicaciones-date-badge {
+  flex: none;
+  background-color: #001631;
+  color: #ffffff;
+  border-radius: 0.625rem;
+  padding: 0.5rem 0.875rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* Las dos líneas son `richtext`: llegan envueltas en `<p>`. */
+.publicaciones-date-badge p {
+  margin: 0;
+}
+
+.publicaciones-date-month {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+}
+
+.publicaciones-date-day {
+  font-size: clamp(1.5rem, 1.3rem + 0.8vw, 2rem);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.publicaciones-cinta-pausa {
+  align-self: flex-end;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9999px;
+  border: 1px solid #e5e7eb;
+  background-color: #ffffff;
+  color: #041E42;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: background-color 0.2s ease, color 0.2s ease;
+  cursor: pointer;
+}
+
+.publicaciones-cinta-pausa:hover {
+  background-color: #39A900;
+  border-color: #39A900;
+  color: #ffffff;
+}
+
+.publicaciones-cinta-pausa:focus-visible {
+  outline: 3px solid #39A900;
+  outline-offset: 2px;
+}
+
+/* Sin movimiento: una sola copia en una fila que se desplaza a mano. */
+@media (prefers-reduced-motion: reduce) {
+  .publicaciones-cinta {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+  }
+
+  .publicaciones-cinta-pista,
+  .publicaciones-tarjeta-flecha {
+    animation: none;
+  }
+
+  .publicaciones-cinta [data-copia],
+  .publicaciones-cinta-pausa {
+    display: none;
+  }
+
+  .publicaciones-cinta-item {
+    scroll-snap-align: start;
+  }
 }
 
 .publicaciones-card-cargando {
@@ -1907,123 +2289,6 @@ a.olo-carrusel__boton:focus-visible {
   width: 2rem;
   height: 2rem;
   animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.publicaciones-card-title {
-  font-family: var(--font-body);
-  font-weight: 700;
-  color: #001631;
-  font-size: clamp(0.875rem, 0.8rem + 0.3vw, 1rem);
-  line-height: 1.25;
-  margin-bottom: 0.5rem;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.publicaciones-card-hashtag {
-  color: #39A900;
-  font-size: 0.75rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-}
-
-.publicaciones-card-footer {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 0.5rem;
-}
-
-.publicaciones-date-badge {
-  background-color: #E5E7EB;
-  border-radius: 16px;
-  padding: 0.375rem 0.75rem;
-  min-width: 54px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.publicaciones-date-month {
-  font-size: 10px;
-  color: #6c757d;
-  font-weight: 500;
-  line-height: 1;
-  margin-bottom: 2px;
-}
-
-.publicaciones-date-day {
-  font-size: 1rem;
-  font-weight: 800;
-  color: #001631;
-  line-height: 1;
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0.4;
-    transform: translateY(5px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fade-in 0.4s ease-out forwards;
-}
-
-.publicaciones-nav-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 10;
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: 9999px;
-  background-color: #ffffff;
-  color: #041E42;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  border: 1px solid #e5e7eb;
-  cursor: pointer;
-}
-
-.publicaciones-nav-btn:hover {
-  background-color: #39A900;
-  color: #ffffff;
-  border-color: #39A900;
-  transform: translateY(-50%) scale(1.08);
-}
-
-.publicaciones-nav-prev {
-  left: -0.5rem;
-}
-
-.publicaciones-nav-next {
-  right: -0.5rem;
-}
-
-@media (width >=48rem) {
-  .publicaciones-nav-prev {
-    left: 0.25rem;
-  }
-
-  .publicaciones-nav-next {
-    right: 0.25rem;
-  }
 }
 
 .publicaciones-card-fallback {
@@ -2081,6 +2346,12 @@ a.olo-carrusel__boton:focus-visible {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 
