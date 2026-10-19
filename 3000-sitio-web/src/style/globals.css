@@ -1127,6 +1127,257 @@ button.olo-video-embebido__miniatura:focus-visible {
   }
 }
 
+/* --- Carrusel de imágenes (ver carrusel-de-imagenes.tsx) ---
+   Una imagen por vez, en dos franjas con su propio fondo: la del título y el párrafo,
+   y la del banner. Las dos blancas con texto azul por defecto; el componente pone en
+   línea el color de cada una (el de «Título y párrafo» y el de la imagen que se ve,
+   con un fundido) y el texto blanco sobre oscuros. Las imágenes se apilan en la misma
+   celda de la rejilla. Sin bordes. Las dos flechas del diseño, grises y sin fondo, y
+   debajo el ubicador de puntos. */
+.olo-carrusel {
+  display: flex;
+  flex-direction: column;
+  border: 0;
+}
+
+.olo-carrusel__franja-texto,
+.olo-carrusel__franja-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(28px, 4vw, 48px) 16px;
+  background: #ffffff;
+  color: #001145;
+}
+
+.olo-carrusel__franja-banner {
+  gap: clamp(14px, 2vw, 20px);
+  transition: background-color 0.6s ease, color 0.6s ease;
+}
+
+/* Todo el ancho (hasta 800 px): así se nota la alineación que se elija en la barra. */
+.olo-carrusel__encabezado {
+  width: 100%;
+  max-width: 800px;
+  text-align: center;
+}
+
+/* El encabezado lo elige quien edita (H1–H4 en la barra del texto enriquecido). */
+.olo-carrusel__titulo,
+.olo-carrusel__parrafo {
+  font-size: clamp(0.9375rem, 0.88rem + 0.3vw, 1.125rem);
+  line-height: 1.5;
+}
+
+.olo-carrusel__parrafo {
+  margin-top: 10px;
+}
+
+.olo-carrusel__encabezado :is(h1, h2, h3, h4) {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: var(--fw-bold);
+  line-height: 1.15;
+  color: inherit;
+}
+
+.olo-carrusel__encabezado h1 { font-size: clamp(1.75rem, 1.2rem + 2.4vw, 3rem); }
+.olo-carrusel__encabezado h2 { font-size: clamp(1.5rem, 1.1rem + 1.8vw, 2.5rem); }
+.olo-carrusel__encabezado h3 { font-size: clamp(1.25rem, 1rem + 1.1vw, 1.875rem); }
+.olo-carrusel__encabezado h4 { font-size: clamp(1.125rem, 0.95rem + 0.7vw, 1.5rem); }
+
+.olo-carrusel__encabezado p {
+  margin: 0;
+}
+
+.olo-carrusel__encabezado strong {
+  font-weight: var(--fw-bold);
+}
+
+/* Viñetas: el reset de Tailwind las quita; aquí vuelven, alineadas con el texto. */
+.olo-carrusel__encabezado ul {
+  margin: 8px 0 0;
+  padding-left: 1.25em;
+  list-style: disc;
+  text-align: left;
+}
+
+/* La misma muestra de «Imagen destacada» en el editor, sin caja alrededor. */
+.olo-carrusel__muestra {
+  display: block;
+  width: 100%;
+  max-width: 1200px;
+  height: auto;
+}
+
+/* Las flechas van en el relleno lateral, fuera de la imagen. */
+.olo-carrusel__escenario {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1200px;
+  padding: 0 clamp(36px, 5vw, 64px);
+}
+
+.olo-carrusel__pista {
+  display: grid;
+}
+
+.olo-carrusel__diapositiva {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Arriba: con o sin botón, la imagen queda en el mismo sitio al cambiar. */
+  justify-content: flex-start;
+  gap: clamp(14px, 2vw, 22px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.6s ease, visibility 0s linear 0.6s;
+}
+
+.olo-carrusel__diapositiva[data-visible] {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.6s ease;
+}
+
+/* El enlace de la imagen (no el del botón, que va a su tamaño). */
+.olo-carrusel__diapositiva > a:not(.olo-carrusel__boton) {
+  display: block;
+  width: 100%;
+}
+
+.olo-carrusel__imagen {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Botón opcional bajo la imagen (texto + hipervínculo de la imagen). Los colores son
+   los del diseño: cian con letra azul, que se leen sobre cualquier fondo. */
+.olo-carrusel__boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 8px 24px;
+  border-radius: 999px;
+  background: #07ecfc;
+  color: #001145;
+  font-size: clamp(0.875rem, 0.82rem + 0.25vw, 1rem);
+  font-weight: var(--fw-semibold, 600);
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  transition: filter 0.2s ease, transform 0.2s ease;
+}
+
+a.olo-carrusel__boton:hover {
+  filter: brightness(0.94);
+  transform: translateY(-1px);
+}
+
+a.olo-carrusel__boton:focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: 3px;
+}
+
+/* El botón mide 44 px para el dedo; el dibujo, 19 × 32 como el SVG del diseño. */
+.olo-carrusel__flecha {
+  position: absolute;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #c9c9c9;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.olo-carrusel__flecha--anterior {
+  left: clamp(-4px, 0.5vw, 8px);
+}
+
+.olo-carrusel__flecha--siguiente {
+  right: clamp(-4px, 0.5vw, 8px);
+}
+
+.olo-carrusel__flecha-icono {
+  stroke-opacity: 0.75;
+  transition: stroke-opacity 0.2s ease;
+}
+
+.olo-carrusel__flecha:hover .olo-carrusel__flecha-icono {
+  stroke-opacity: 1;
+}
+
+.olo-carrusel__flecha:focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* Ubicador: un punto por imagen en el color del texto (azul o blanco según el fondo);
+   el de la imagen visible se alarga y se pone a tono pleno. El botón mide 24 px para
+   el dedo (SC 2.5.8); el punto que se ve, 8. */
+.olo-carrusel__ubicador {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.olo-carrusel__punto {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.olo-carrusel__punto::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: currentColor;
+  opacity: 0.35;
+  transition: width 0.35s ease, opacity 0.35s ease;
+}
+
+.olo-carrusel__punto:hover::before {
+  opacity: 0.6;
+}
+
+.olo-carrusel__punto[data-activo]::before {
+  width: 24px;
+  opacity: 1;
+}
+
+.olo-carrusel__punto:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .olo-carrusel__franja-banner,
+  .olo-carrusel__diapositiva,
+  .olo-carrusel__diapositiva[data-visible],
+  .olo-carrusel__punto::before {
+    transition: none;
+  }
+}
+
 /* --- Services ("¿Qué hacemos?") --- */
 .olo-services {
   padding: var(--space-3xl) var(--space-lg);
@@ -5783,16 +6034,18 @@ a.olo-tarjeta-destacada:focus-visible {
   top: 50%;
   right: 0;
   z-index: 9990;
-  /* En px y no en rem: con «Tamaño del texto» el `<html>` crece y la pestaña crecería con él. */
-  width: 56px;
-  height: 60px;
+  /* En px y no en rem: con «Tamaño del texto» el `<html>` crece y la pestaña crecería con él.
+     48 px de ancho (el diseño era de 56, se pidió algo más pequeña) con la proporción del
+     SVG; sigue por encima de los 44 px de blanco táctil. */
+  width: 48px;
+  aspect-ratio: 56 / 60;
   padding: 0;
   border: 0;
   border-radius: 0.75rem 0 0 0.75rem;
   background: none;
   cursor: pointer;
   translate: 0 -50%;
-  filter: drop-shadow(0 4px 10px rgb(0 22 49 / 0.25));
+  filter: drop-shadow(0 4px 10px rgb(0 17 69 / 0.25));
   transition: translate var(--olo-modal-entrada) var(--olo-modal-curva-entrada);
 }
 
@@ -5808,13 +6061,14 @@ a.olo-tarjeta-destacada:focus-visible {
   height: 100%;
 }
 
+/* #001145 en todo lo de accesibilidad: la pestaña, el panel, la guía y el cursor grande. */
 .olo-a11y-boton__fondo {
-  fill: #001631;
+  fill: #001145;
   transition: fill var(--transition-fast);
 }
 
 .olo-a11y-boton:hover .olo-a11y-boton__fondo {
-  fill: #0a2a52;
+  fill: #0b1f63;
 }
 
 .olo-a11y-boton:focus-visible {
@@ -5836,17 +6090,20 @@ a.olo-tarjeta-destacada:focus-visible {
   pointer-events: none;
 }
 
+/* Cabecera y pie fijos, y solo el cuerpo se desplaza: con todo el panel desplazándose,
+   las tarjetas pasaban por debajo de las esquinas redondeadas y se veían cortadas. El
+   redondeo baja de 24 a 16 px por lo mismo. */
 .olo-a11y-panel {
+  display: flex;
+  flex-direction: column;
   width: min(21rem, calc(100vw - 2rem));
   max-height: calc(100dvh - 2rem);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding: 1rem;
+  overflow: hidden;
   border: 1px solid #d6dae1;
-  border-radius: 1.5rem;
+  border-radius: 1rem;
   background: #ffffff;
-  color: #001631;
-  box-shadow: 0 18px 48px rgb(0 22 49 / 0.18);
+  color: #001145;
+  box-shadow: 0 18px 48px rgb(0 17 69 / 0.18);
   pointer-events: auto;
   outline: none;
   /* Entra desde la derecha, de donde está el botón. Los tiempos son los de los modales
@@ -5854,6 +6111,30 @@ a.olo-tarjeta-destacada:focus-visible {
   transition:
     opacity var(--olo-modal-entrada) var(--olo-modal-curva-entrada),
     translate var(--olo-modal-entrada) var(--olo-modal-curva-entrada);
+}
+
+.olo-a11y-panel__cabecera {
+  flex-shrink: 0;
+  margin: 0 1rem;
+  padding: 1rem 0 0.75rem;
+  border-bottom: 1px solid #e3e6eb;
+}
+
+/* `min-height: 0` deja que el cuerpo encoja dentro del flex y aparezca su scroll: sin
+   él, el cuerpo mide lo que su contenido y el panel lo recorta sin dejar bajar. El
+   relleno da los márgenes de las opciones y deja sitio al contorno de foco de las
+   tarjetas, que sale 4 px y el `overflow` cortaría. */
+.olo-a11y-panel__cuerpo {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.75rem 1rem 0.25rem;
+}
+
+.olo-a11y-panel__pie {
+  flex-shrink: 0;
+  padding: 0.75rem 1rem 1rem;
 }
 
 @starting-style {
@@ -5919,7 +6200,7 @@ a.olo-tarjeta-destacada:focus-visible {
 .olo-a11y-guia__abajo {
   position: absolute;
   inset-inline: 0;
-  background: rgb(0 22 49 / 0.55);
+  background: rgb(0 17 69 / 0.55);
 }
 
 .olo-a11y-guia__arriba {
@@ -6097,7 +6378,7 @@ html[data-a11y-enlaces] .publico-layout a {
 html[data-a11y-cursor],
 html[data-a11y-cursor] * {
   cursor:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M8 4v34l9-8.5 6 13.5 6-2.6-6-13.4h12.5z' fill='%23001631' stroke='%23fff' stroke-width='3' stroke-linejoin='round'/%3E%3C/svg%3E") 8 4,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M8 4v34l9-8.5 6 13.5 6-2.6-6-13.4h12.5z' fill='%23001145' stroke='%23fff' stroke-width='3' stroke-linejoin='round'/%3E%3C/svg%3E") 8 4,
     auto !important;
 }
 
