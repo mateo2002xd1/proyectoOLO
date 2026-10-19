@@ -296,12 +296,18 @@ const campoCajaSinFondo = campoGrupoEnAcordeones('Espaciado y Ancho', camposCaja
  * Con `conFondo: false` la caja pierde su «Color de fondo» (para bloques que ya
  * traen el suyo), y tampoco se pinta el que venga guardado.
  *
+ * Con `anchoDentro: true` la caja suma la clase `olo-caja--ancho-dentro`: no se
+ * estrecha ni se rellena ella, sino que deja el ancho máximo y el espacio interior en
+ * sus variables para que el bloque los aplique por dentro. Así el fondo propio del
+ * bloque va de borde a borde aunque se elija un ancho menor (ver el `globals.css`
+ * de la app). Solo cambia una clase: el DOM es el mismo.
+ *
  * El «Hashtag decorativo» que llevaba la caja se eliminó el 18-10-2026: si un bloque
  * guardado trae `hashtag`, queda en el JSON sin efecto.
  */
 export function conCaja<T extends ConfigDeBloque>(
   config: T,
-  { conFondo = true }: { conFondo?: boolean } = {}
+  { conFondo = true, anchoDentro = false }: { conFondo?: boolean; anchoDentro?: boolean } = {}
 ): T {
   if (config[YA_TIENE_CAJA]) return config;
 
@@ -334,7 +340,11 @@ export function conCaja<T extends ConfigDeBloque>(
       if (!aplica) return contenido;
 
       return (
-        <div id={props?.id || undefined} className={className || undefined} style={style}>
+        <div
+          id={props?.id || undefined}
+          className={`${className}${anchoDentro ? ' olo-caja--ancho-dentro' : ''}`}
+          style={style}
+        >
           {contenido}
         </div>
       );
@@ -352,20 +362,22 @@ export function conCaja<T extends ConfigDeBloque>(
  * no se arrastran por sección, tampoco se pierde nada quitándoles los controles.
  *
  * `sinFondo` conserva la caja pero le quita el «Color de fondo».
+ * `anchoDentro` le pasa al bloque el ancho y el espacio interior (ver `conCaja`).
  */
 export function conCajaEnTodos<T extends Record<string, ConfigDeBloque>>(
   componentes: T,
-  opciones: { excepto?: string[]; sinFondo?: string[] } = {}
+  opciones: { excepto?: string[]; sinFondo?: string[]; anchoDentro?: string[] } = {}
 ): T {
   const excepto = new Set(opciones.excepto ?? []);
   const sinFondo = new Set(opciones.sinFondo ?? []);
+  const anchoDentro = new Set(opciones.anchoDentro ?? []);
 
   return Object.fromEntries(
     Object.entries(componentes).map(([nombre, config]) => [
       nombre,
       excepto.has(nombre)
         ? config
-        : conCaja(config, { conFondo: !sinFondo.has(nombre) }),
+        : conCaja(config, { conFondo: !sinFondo.has(nombre), anchoDentro: anchoDentro.has(nombre) }),
     ])
   ) as T;
 }

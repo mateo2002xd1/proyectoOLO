@@ -2373,6 +2373,8 @@ export const puckConfig: Config = {
   components: conCajaEnTodos(puckConfigBase.components, {
     excepto: BLOQUES_SIN_CAJA,
     sinFondo: ['ImagenDestacada', 'DatoOloSemana'],
+    // Su «Color de fondo» va de borde a borde: el ancho elegido estrecha la imagen.
+    anchoDentro: ['ImagenDestacada'],
   }),
 };
 

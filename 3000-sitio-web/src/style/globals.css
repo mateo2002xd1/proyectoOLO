@@ -4980,6 +4980,51 @@ button.text-link,
   }
 }
 
+/* `anchoDentro` («Imagen destacada»): la caja no se estrecha ni se rellena; el ancho
+   máximo y el espacio interior los aplica el contenido del bloque, y así su color de
+   fondo va de borde a borde. Doble clase para ganarle a la regla móvil de arriba. */
+.olo-caja.olo-caja--ancho-dentro {
+  max-width: none;
+  padding: 0;
+}
+
+.olo-caja--ancho-dentro .olo-imagen-destacada__contenido {
+  max-width: min(var(--olo-caja-ancho, 1200px), 1200px);
+  padding-top: var(--olo-caja-interior-y, 0px);
+  padding-bottom: var(--olo-caja-interior-y, 0px);
+  padding-left: calc(1.5rem + var(--olo-caja-interior-x, 0px));
+  padding-right: calc(1.5rem + var(--olo-caja-interior-x, 0px));
+}
+
+/* El «sabías que» (`ancho: 'contenido'`) es más estrecho de por sí: 1000 px y 1rem. */
+.olo-caja--ancho-dentro .matriz-sabias-que.olo-imagen-destacada__contenido {
+  max-width: min(var(--olo-caja-ancho, 1000px), 1000px);
+  padding-left: calc(1rem + var(--olo-caja-interior-x, 0px));
+  padding-right: calc(1rem + var(--olo-caja-interior-x, 0px));
+}
+
+.olo-caja--ancho-dentro.olo-caja--izquierda .olo-imagen-destacada__contenido {
+  margin-left: 0;
+}
+
+.olo-caja--ancho-dentro.olo-caja--derecha .olo-imagen-destacada__contenido {
+  margin-right: 0;
+}
+
+@media (width < 40rem) {
+  .olo-caja--ancho-dentro .olo-imagen-destacada__contenido {
+    padding-top: calc(var(--olo-caja-interior-y, 0px) * 0.6);
+    padding-bottom: calc(var(--olo-caja-interior-y, 0px) * 0.6);
+    padding-left: calc(1.5rem + var(--olo-caja-interior-x, 0px) * 0.6);
+    padding-right: calc(1.5rem + var(--olo-caja-interior-x, 0px) * 0.6);
+  }
+
+  .olo-caja--ancho-dentro .matriz-sabias-que.olo-imagen-destacada__contenido {
+    padding-left: calc(1rem + var(--olo-caja-interior-x, 0px) * 0.6);
+    padding-right: calc(1rem + var(--olo-caja-interior-x, 0px) * 0.6);
+  }
+}
+
 /* Columnas (primitivo Grid) */
 .olo-grid {
   display: grid;

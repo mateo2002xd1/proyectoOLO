@@ -136,8 +136,8 @@ export function ImagenDestacada({
 
   if (ancho === 'contenido') {
     return (
-      <div className={`${clasesFondo} ${claseTarjetas} ${className}`.trim()} style={estiloFondo}>
-        <div className="matriz-sabias-que">
+      <div className={`${clasesFondo} olo-imagen-destacada ${claseTarjetas} ${className}`.trim()} style={estiloFondo}>
+        <div className="matriz-sabias-que olo-imagen-destacada__contenido">
           {esVistaPrevia && (
             <div className="mb-4 inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200 shadow-sm mx-auto w-full text-center">
               <svg className="w-4 h-4 text-amber-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -180,8 +180,8 @@ export function ImagenDestacada({
   }
 
   return (
-    <div className={`${clasesFondo} w-full py-12 ${claseTarjetas} ${className}`.trim()} style={estiloFondo}>
-      <div className="max-w-[1200px] w-full mx-auto px-6 text-center flex flex-col items-center">
+    <div className={`${clasesFondo} olo-imagen-destacada w-full py-12 ${claseTarjetas} ${className}`.trim()} style={estiloFondo}>
+      <div className="olo-imagen-destacada__contenido max-w-[1200px] w-full mx-auto px-6 text-center flex flex-col items-center">
         {mostrarTitulo && titulo && (
           <h2
             className={`matriz-section-title text-[#041E42] font-bold ${mostrarSubtitulo && subtitulo ? 'mb-3' : 'mb-6'}`}

@@ -5,6 +5,27 @@
 
 ---
 
+## sesión 18-10-2026 (16.ª parte): el color de fondo de «Imagen destacada» va de borde a borde aunque el bloque sea más estrecho
+
+**Qué se pidió:** en «Imagen destacada», el color de fondo no ocupaba todo el ancho de la pantalla.
+
+**Causa:** el bloque «OBSERVA» de la portada tiene en «Espaciado y Ancho» el ancho máximo «Medio (960px)» y espacio interior de 10 px (borrador v53 de `inicio`, leído en Neon, solo lectura). La caja estrecha todo lo que envuelve, así que el «Color de fondo» propio del bloque (#af0e0e en el borrador) se quedaba en esos 960 px. Es el comportamiento documentado de la caja para su propio fondo, pero «Imagen destacada» trae el suyo (`sinFondo`) y ese debe ir de borde a borde.
+
+| Capa | Cambio |
+|---|---|
+| `packages/blocks-renderer/src/primitives/controles-de-caja.tsx` | Opción `anchoDentro` en `conCaja` y en `conCajaEnTodos` (lista de bloques): la caja suma la clase `olo-caja--ancho-dentro` y deja el ancho máximo y el espacio interior en sus variables (`--olo-caja-ancho`, `--olo-caja-interior-x/-y`) para que los aplique el bloque. Solo cambia una clase: el DOM de las páginas guardadas es el mismo. Las separaciones con los bloques de arriba y abajo siguen en la caja |
+| `packages/blocks-renderer/src/blocks/imagen-destacada.tsx` | Clases `olo-imagen-destacada` (la sección con el color) y `olo-imagen-destacada__contenido` (el contenedor de la imagen), en los dos modos (`completo` y `contenido`) |
+| `3000-sitio-web/src/config/puck.config.tsx` | `anchoDentro: ['ImagenDestacada']`. La intranet no pasa la opción y no cambia |
+| `3000-sitio-web/src/style/globals.css` | `.olo-caja.olo-caja--ancho-dentro` sin `max-width` ni relleno (doble clase para ganarle a la regla móvil de `.olo-caja`). El contenedor toma `min(ancho elegido, 1200px)` (1000 px en el «sabías que») y el espacio interior sumado a su relleno de siempre (×0,6 por debajo de 40rem, como la caja). «Posición» izquierda o derecha mueve el contenedor |
+
+| Verificación | Resultado |
+|---|---|
+| `npx tsc --noEmit` en sitio-web, intranet y blocks-renderer | Sin errores |
+| `/inicio` en el dev por CDP, con el fondo del bloque en #af0e0e como en el borrador, a 1440, 768 y 375 px | Bloque «OBSERVA»: fondo de 0 a 1440 (antes 960), contenido de 240 a 1200 (960 px) con 34 px de relleno (24 + 10). A 375: fondo a todo el ancho y 30 px de relleno (24 + 10 × 0,6). El bloque de arriba («Todo el ancho»): contenido de 120 a 1320, igual que antes. Sin scroll horizontal |
+| Editor real | Sin verificar |
+
+---
+
 ## sesión 18-10-2026 (15.ª parte): esquinas redondeadas en la tarjeta blanca y en el fondo azul del pie de página
 
 **Qué se pidió:** poder redondear las esquinas de la caja blanca del pie de página (logos, información de contacto, etc.) y también las del fondo azul de detrás. Primero se entendió «borde» y se agregó grosor y color; el usuario aclaró que era *border-radius*, y ese borde se quitó.
