@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { CABECERAS_DEL_SITIO } from './ambito';
-import { URL_DE_LA_API } from '@/shared/lib/url-de-la-api';
 
 /**
  * El cliente HTTP **con sesión** (`withCredentials`) contra la API de páginas.
@@ -12,7 +11,7 @@ import { URL_DE_LA_API } from '@/shared/lib/url-de-la-api';
  * propio cliente anónimo, en `publicacion/services/publicacion.service.ts`.
  */
 export const apiConSesion = axios.create({
-  baseURL: URL_DE_LA_API,
+  baseURL: '/api/backend',
   withCredentials: true,
   // 15 s y no 5: la cola de revisión y las demás pantallas con sesión encadenan varias
   // consultas a Neon, y con la red lenta pasaban de 5 s sin estar caída la API.
