@@ -20,6 +20,10 @@ export interface NavLink {
   active?: boolean;
   /** Submenú desplegable. Si trae elementos, el enlace se pinta como un dropdown. */
   children?: NavLink[];
+  colorTexto?: string;
+  colorHover?: string;
+  tamanoTexto?: string;
+  colorFondoSubmenu?: string;
 }
 
 export interface CabeceraPorDefecto {
@@ -28,6 +32,17 @@ export interface CabeceraPorDefecto {
   mainLogoUrl?: string;
   intranetText: string;
   navLinks: NavLink[];
+  /** Fondo de la barra del menú. Vacío = el blanco del CSS. */
+  colorFondo?: string;
+  /** Fondo de la franja GOV.CO. Vacío = blanca (ver `tinta-de-franja.ts`). */
+  colorFranjaGov?: string;
+  govBannerEnlace?: string;
+  govBannerMargenArriba?: number | '';
+  govBannerMargenAbajo?: number | '';
+  alineacionFranjaGov?: string;
+  separacionFranjaGov?: string;
+  /** Texto y colores del botón «Intranet». Ver `BotonIntranet` en header.tsx. */
+  botonIntranet?: { texto?: string; colorFondo?: string; colorTexto?: string };
 }
 
 // Sin `intranetUrl`: la cabecera la toma siempre de NEXT_PUBLIC_INTRANET_URL (ver header.tsx).
