@@ -18,7 +18,7 @@
 | `3001-intranet` | 31 | 2 | 14 | — | 27 |
 | `4000-api-backend` | 35 | — | — | 96 | 43 |
 
-Paquetes compartidos: 7 · migraciones: 45 · modelos: 23.
+Paquetes compartidos: 7 · migraciones: 46 · modelos: 23.
 
 ## Carpetas sin descripción (7)
 
@@ -640,6 +640,7 @@ En el orden del manifiesto (`migrations/index.ts`), que es el orden en que corre
 - `043-password-temporal-vence`
 - `044-identidad-del-panel`
 - `045-password-anterior`
+- `046-paginas-del-sitio-en-bd`
 
 ### Modelos
 

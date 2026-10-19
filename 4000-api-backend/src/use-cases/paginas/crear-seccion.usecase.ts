@@ -15,8 +15,8 @@
  * habría saltado la cola de aprobación para dejar una página vacía en el portal, que
  * es lo peor de las dos opciones.
  *
- * No crea el archivo de ruta: no hace falta. El comodín (`[...puckPath]` en intranet,
- * `[slug]` en el sitio) ya pinta cualquier slug que esté en `paginas`, y
+ * No crea el archivo de ruta: no hace falta. El comodín `[...puckPath]` de cada app
+ * ya pinta cualquier slug que esté en `paginas`, y
  * `configDeEdicion()` ya le da el catálogo completo de bloques a un slug que no
  * reconoce. Esta es la razón de que la funcionalidad quepa en un use-case y no en una
  * generación de código.
@@ -36,6 +36,7 @@ import {
 import sequelize from '../../config/database';
 import { Pagina, Permission, Role, RolePermission } from '../../infrastructure/db/models';
 import { claveDeSeccion } from '../../shared/catalogo-permisos';
+import { resolverHref } from '../../shared/extraer-textos-puck';
 import { invalidarPermisosDeRol } from '../../middlewares/require-permission.middleware';
 import type { Ambito } from '../../shared/ambito';
 
@@ -145,7 +146,7 @@ export const crearSeccion = async (
     slug,
     titulo: nombre,
     ambito,
-    ruta: `/${slug}`,
+    ruta: resolverHref(slug, ambito),
     clavePermiso,
     rolesConcedidos: resultado.rolesConcedidos,
   };

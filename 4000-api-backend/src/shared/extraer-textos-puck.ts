@@ -42,29 +42,22 @@ export function limpiarTextoHtml(valor: unknown): string {
 }
 
 /**
- * Páginas del sitio web que no viven en `/{slug}` sino en una subcarpeta propia.
- * Copia de `RUTAS_PROPIAS` en `3000-sitio-web/src/features/paginas/model/rutas.ts`:
- * al mover una página allí, hay que añadirla también aquí o el buscador enlazará la
- * URL vieja (que igual redirige, pero con un salto de más).
+ * Las carpetas de cada app: un slug `{carpeta}-{resto}` vive en `/{carpeta}/{resto}`.
+ *
+ * Copia de `CARPETAS` en `features/paginas/model/rutas.ts` de cada app: las dos resuelven
+ * cualquier URL con un comodín `[...puckPath]` que une los segmentos con guion, y esta es
+ * la vuelta. Si el buscador no la conociera, enlazaría `/clasificacion-cno`, que el sitio
+ * igual redirige, pero con un salto de más.
  */
-const RUTAS_PROPIAS_SITIO: Record<string, string> = {
-  cno: '/clasificacion/cno',
-  cuoc: '/clasificacion/cuoc',
+const CARPETAS: Record<'intranet' | 'sitio', string[]> = {
+  intranet: ['encuestas'],
+  sitio: ['clasificacion'],
 };
 
-/**
- * Resuelve la URL pública según el slug y el ámbito ('intranet' o 'sitio').
- * Los slugs jerárquicos de encuestas en intranet se mapean a su ruta correspondiente.
- */
+/** Resuelve la URL pública de un slug en su ámbito ('intranet' o 'sitio'). */
 export function resolverHref(slug: string, ambito: 'intranet' | 'sitio' = 'sitio'): string {
-  if (ambito === 'intranet') {
-    if (slug === 'encuestas-calidad-de-formacion') return '/encuestas/calidad-de-formacion';
-    if (slug === 'encuestas-seguimiento-laboral') return '/encuestas/seguimiento-laboral';
-    if (slug.startsWith('encuestas-')) return `/encuestas/${slug.replace(/^encuestas-/, '')}`;
-  } else if (RUTAS_PROPIAS_SITIO[slug]) {
-    return RUTAS_PROPIAS_SITIO[slug];
-  }
-  return `/${slug}`;
+  const carpeta = CARPETAS[ambito].find((c) => slug.startsWith(`${c}-`));
+  return carpeta ? `/${carpeta}/${slug.slice(carpeta.length + 1)}` : `/${slug}`;
 }
 
 /**

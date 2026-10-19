@@ -46,6 +46,7 @@ import * as catalogosSinDuplicados from './042-catalogos-sin-duplicados';
 import * as passwordTemporalVence from './043-password-temporal-vence';
 import * as identidadDelPanel from './044-identidad-del-panel';
 import * as passwordAnterior from './045-password-anterior';
+import * as paginasDelSitioEnBd from './046-paginas-del-sitio-en-bd';
 
 export interface Migracion {
   nombre: string;
@@ -102,6 +103,7 @@ const migraciones: Migracion[] = [
   passwordTemporalVence,
   identidadDelPanel,
   passwordAnterior,
+  paginasDelSitioEnBd,
 ];
 
 const TABLA_CONTROL = 'migraciones_aplicadas';
