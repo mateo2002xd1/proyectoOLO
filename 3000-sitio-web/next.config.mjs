@@ -195,8 +195,20 @@ const nextConfig = {
         permanent: false,
       },
       {
+        // «Mi perfil» se eliminó el 2026-10-20: el cambio de la propia contraseña está en
+        // el modal «Editar usuario». Sus URL viejas llevan al dashboard en vez de a un 404.
         source: '/admin/mi-perfil',
-        destination: '/admin-panel/profile',
+        destination: '/admin-panel/dashboard',
+        permanent: false,
+      },
+      {
+        source: '/admin/perfil/:path*',
+        destination: '/admin-panel/dashboard',
+        permanent: false,
+      },
+      {
+        source: '/admin-panel/profile/:path*',
+        destination: '/admin-panel/dashboard',
         permanent: false,
       },
       /**
@@ -212,7 +224,6 @@ const nextConfig = {
         buscar: 'search-section',
         configuracion: 'configuration',
         dashboard: 'dashboard',
-        perfil: 'profile',
         respaldos: 'backup-section',
         revision: 'review-section',
         roles: 'roles-and-permissions',

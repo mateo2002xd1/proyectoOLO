@@ -3,7 +3,7 @@
  *
  * Es una lista escrita a mano y no un recorrido automático de `app/admin/`: las
  * rutas de Next no llevan título ni sinónimos, y lo que hace útil a un buscador es
- * justo eso —que «bitácora» lleve a Auditoría y «contraseña» a Mi perfil—. Añadir
+ * justo eso —que «bitácora» lleve a Auditoría—. Añadir
  * un destino es añadir una entrada aquí.
  *
  * **Solo se indexan rutas que existen y tienen algo que hacer**: ofrecer otra sería
@@ -175,14 +175,6 @@ export const DESTINOS_PANEL: DestinoPanel[] = [
     href: '/admin-panel/update-section',
     grupo: 'Gestión',
     sinonimos: ['excel', 'cargar', 'carga', 'programas sobresalientes', 'datos', 'soporte'],
-  },
-  {
-    id: 'mi-perfil',
-    titulo: 'Mi perfil',
-    descripcion: 'Tus datos de cuenta y el cambio de contraseña.',
-    href: '/admin-panel/profile',
-    grupo: 'Cuenta',
-    sinonimos: ['contrasena', 'clave', 'password', 'mis datos', 'correo', 'cuenta'],
   },
   {
     id: 'configuracion',

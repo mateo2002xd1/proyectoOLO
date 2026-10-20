@@ -44,7 +44,6 @@ import {
   ChevronUpIcon,
   Cog8ToothIcon,
   ShieldCheckIcon,
-  UserIcon,
 } from '@heroicons/react/16/solid';
 import {
   ArchiveBoxIcon,
@@ -602,11 +601,6 @@ export function PanelGeneralLayout({
                 </DropdownButton>
                 {/* Esquinas de arriba rectas: el menú sale pegado a la barra. */}
                 <DropdownMenu className="min-w-56 rounded-t-none" anchor="bottom start">
-                  <DropdownItem href="/admin-panel/profile">
-                    <UserIcon />
-                    <DropdownLabel>Mi perfil</DropdownLabel>
-                  </DropdownItem>
-                  <DropdownDivider />
                   <DropdownItem onClick={handleLogout}>
                     <ArrowRightStartOnRectangleIcon />
                     <DropdownLabel>Cerrar sesión</DropdownLabel>
@@ -759,10 +753,6 @@ export function PanelGeneralLayout({
                   <ChevronUpIcon className="size-4 shrink-0 text-[#001631] dark:text-[#94a3b8]" />
                 </DropdownButton>
                 <DropdownMenu className="min-w-64" anchor="top start">
-                  <DropdownItem href="/admin-panel/profile">
-                    <UserIcon />
-                    <DropdownLabel>Mi perfil</DropdownLabel>
-                  </DropdownItem>
                   <DropdownItem href="/admin-panel/configuration">
                     <Cog8ToothIcon />
                     <DropdownLabel>Configuración</DropdownLabel>

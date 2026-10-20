@@ -152,14 +152,6 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // /admin-panel/profile — requiere acceso al panel. `/admin/mi-perfil` no llega aquí: lo
-  // redirige `next.config.mjs`, que se evalúa antes.
-  if (pathname.startsWith('/admin-panel/profile')) {
-    if (!hasAccesoPanel) {
-      return loginRedirect();
-    }
-  }
-
   // /editor/* — cualquiera con permisos de edición. Vive fuera del panel desde el
   // 2026-09-18; /admin/editor/* redirige aquí desde next.config.mjs.
   if (pathname.startsWith('/editor')) {
@@ -186,7 +178,7 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Protege dashboard, usuarios/users, auditoría, revisión, perfil, editor y
+  // Protege dashboard, usuarios/users, auditoría, revisión, editor y
   // maneja /login y las tres direcciones del primer ingreso.
   //
   // Es una lista explícita, no un prefijo: los pasos de la recuperación
@@ -212,8 +204,6 @@ export const config = {
     '/admin-panel/backup-section',
     '/admin-panel/search-section/:path*',
     '/admin-panel/search-section',
-    '/admin-panel/profile/:path*',
-    '/admin-panel/profile',
     '/editor/:path*',
     '/login',
     '/login/first-login',
