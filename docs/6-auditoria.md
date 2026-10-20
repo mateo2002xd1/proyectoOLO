@@ -5,6 +5,28 @@
 
 ---
 
+## sesión 20-10-2026 (5.ª parte): el pie de las tablas del panel sin «Mostrando X-Y de Z», con las páginas a la izquierda y «Ir a la página» con «Filas por página» a la derecha
+
+**Qué pidió el usuario:** quitar «Mostrando 1-30 de 100 registros» y dejar anterior, números y siguiente a la izquierda, e «Ir a la página» con «Filas por página» a la derecha (primero se pidió «Ir a la página» al centro; en la misma sesión pasó a la derecha).
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Pie | `3000-sitio-web/src/shared/ui/molecules/paginador.tsx` | Con `tono="panel"`: sin «Mostrando»; un `<nav>` con `GrupoDelPanel` a la izquierda e `IrAPagina` + `FilasPorPagina` juntos a la derecha, lado a lado desde `@4xl` (56rem del contenedor). Por debajo, apilados y centrados. Con una sola página solo queda «Filas por página», a la derecha |
+| Paginación | `3000-sitio-web/src/shared/ui/molecules/paginacion.tsx` | `GrupoDelPanel`, `IrAPagina` y `FilasPorPagina` se exportan; las dos últimas reciben `tono` en vez de los colores. En el panel, páginas e «Ir a la página» van en una línea desde `@xl` (antes se partían por debajo de `@6xl`, cuando también tenían que caber «Mostrando» y las filas) |
+| Fuera de alcance | Las tres tablas públicas (`tono="publico"`) | Siguen con «Mostrando» y todo en un grupo, como antes. El historial de cargas usa `Paginacion` directo y nunca tuvo «Mostrando» |
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` y `eslint` del sitio web | Sin errores |
+| `Paginador` renderizado aparte en Chrome sin ventana: 1100 px (4 páginas, 1 página y 90 en oscuro) y 620 px | Páginas a la izquierda e «Ir a la página» + filas a la derecha (también con 184 páginas en oscuro); con una sola página, solo «Filas por página» a la derecha; apilado y centrado a 620 px |
+| Tablas reales del panel | **No se vieron:** el panel pide sesión |
+
+> El cambio de texto a flechas en «Anterior»/«Siguiente» depende del ancho de la **ventana** (`sm`), no del contenedor. Una caja de 343 px dentro de una ventana de escritorio se desborda, pero en el panel no se da: todas las tablas van a ancho completo y desde `sm` tienen más de unos 600 px.
+
+**Pendiente al cierre:** ver el pie en Usuarios, Roles, Auditoría, Revisión y el dashboard con datos reales.
+
+---
+
 ## sesión 20-10-2026 (4.ª parte): paginación del panel con el diseño del mockup y etiquetas finas en «Cambiar contraseña»
 
 **Paginación.** El usuario pasó un mockup para todas las tablas del panel: sin bordes ni casillas unidas, «Anterior» y «Siguiente» en gris, los números en `#001631` y en negrita, la página actual sobre una casilla gris redondeada, y solo la primera, la actual y la última página (`1 … 90`, `1 2`).
