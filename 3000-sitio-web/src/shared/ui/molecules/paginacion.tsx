@@ -156,8 +156,11 @@ const FLECHA_DEL_PANEL =
  * Anterior, números y siguiente del panel (mockup del usuario, 2026-10-20). Sin bordes
  * ni casillas unidas: la página actual se marca con su fondo gris, y el resto son
  * números sueltos que toman ese fondo, más claro, al pasar el puntero.
+ *
+ * Se exporta porque `Paginador` reparte el pie del panel: este grupo a la izquierda,
+ * e «Ir a la página» con «Filas por página» a la derecha.
  */
-function GrupoDelPanel({
+export function GrupoDelPanel({
   pagina,
   totalPaginas,
   onCambiarPagina,
@@ -167,7 +170,7 @@ function GrupoDelPanel({
   onCambiarPagina: (pagina: number) => void;
 }) {
   return (
-    <ul className="flex items-center gap-2 sm:gap-4 @max-6xl:basis-full @max-6xl:justify-center">
+    <ul className="flex items-center gap-2 sm:gap-4 @max-xl:basis-full @max-xl:justify-center">
       <li>
         <button
           type="button"
@@ -229,17 +232,18 @@ function GrupoDelPanel({
  * cercano en vez de ignorarse: quien escribe 99 en una tabla de 12 páginas quiere ir
  * al final.
  */
-function IrAPagina({
+export function IrAPagina({
   pagina,
   totalPaginas,
   onCambiarPagina,
-  colores,
+  tono,
 }: {
   pagina: number;
   totalPaginas: number;
   onCambiarPagina: (pagina: number) => void;
-  colores: (typeof COLORES)[Tono];
+  tono: Tono;
 }) {
+  const colores = COLORES[tono];
   const id = useId();
   const [valor, setValor] = useState('');
 
@@ -282,13 +286,16 @@ function IrAPagina({
  * para que la fila se lea como una sola pieza. Es `CustomSelect` y no un `<select>`:
  * la lista de un `<select>` la dibuja el navegador, sin borde ni esquinas. Se abre
  * hacia arriba porque va al pie de la tabla.
+ *
+ * Se exporta porque en el panel `Paginador` la pone sola, a la derecha del pie.
  */
-function FilasPorPagina({
+export function FilasPorPagina({
   valor,
   opciones,
   onCambiar,
-  colores,
-}: FilasPorPaginaProps & { colores: (typeof COLORES)[Tono] }) {
+  tono,
+}: FilasPorPaginaProps & { tono: Tono }) {
+  const colores = COLORES[tono];
   return (
     <div className="flex items-center gap-2">
       <span aria-hidden="true" className={`shrink-0 text-sm font-medium ${colores.texto}`}>
@@ -335,9 +342,14 @@ export function Paginacion({
     // Dentro de `Paginador` (que es el contenedor), cuando no cabe en una línea: las casillas
     // en su propia fila, centradas, y debajo «Ir a la página» y «Filas por página», también
     // centradas. Antes se partía donde caía y «Filas por página» quedaba sola, descolgada.
+    // En el panel, páginas e «Ir a la página» van en una sola línea mientras quepan
+    // (`@xl`, 36rem del contenedor) y por debajo se parten en dos, centradas. Es el caso
+    // del historial de cargas, que usa `Paginacion` sin `Paginador`.
     <nav
       aria-label={ariaLabel}
-      className={`flex flex-wrap items-center justify-center gap-x-4 gap-y-3 @max-6xl:w-full ${className}`}
+      className={`flex flex-wrap items-center justify-center gap-x-4 gap-y-3 ${
+        tono === 'panel' ? '' : '@max-6xl:w-full'
+      } ${className}`}
     >
       {variasPaginas && tono === 'panel' && (
         <GrupoDelPanel pagina={pagina} totalPaginas={totalPaginas} onCambiarPagina={onCambiarPagina} />
@@ -404,11 +416,11 @@ export function Paginacion({
           pagina={pagina}
           totalPaginas={totalPaginas}
           onCambiarPagina={onCambiarPagina}
-          colores={colores}
+          tono={tono}
         />
       )}
 
-      {porPagina && <FilasPorPagina {...porPagina} colores={colores} />}
+      {porPagina && <FilasPorPagina {...porPagina} tono={tono} />}
     </nav>
   );
 }

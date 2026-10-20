@@ -1,6 +1,6 @@
 'use client';
 
-import { Paginacion } from './paginacion';
+import { FilasPorPagina, GrupoDelPanel, IrAPagina, Paginacion } from './paginacion';
 
 /** Tamaños de página que ofrece el desplegable, en todas las tablas del panel. */
 export const OPCIONES_POR_PAGINA = [15, 30, 60, 100] as const;
@@ -21,10 +21,13 @@ interface PaginadorProps {
   className?: string;
 }
 
-/** Pie de las tablas: «Mostrando X-Y de Z» y `Paginacion` (anterior, números,
- *  siguiente, «Ir a la página» y filas por página). En el panel va dentro de la
- *  tarjeta de la tabla, separado por su línea, no en una caja aparte. Lo usan Roles, Usuarios,
- *  Actividad Reciente, Auditoría, Revisión y las tablas públicas con paginación. */
+/** Pie de las tablas, dentro de la tarjeta de la tabla y separado por su línea, no en
+ *  una caja aparte. Lo usan Roles, Usuarios, Actividad Reciente, Auditoría, Revisión y
+ *  las tablas públicas con paginación.
+ *
+ *  - Panel (pedido del usuario, 2026-10-20): sin «Mostrando X-Y de Z»; anterior, números
+ *    y siguiente a la izquierda, e «Ir a la página» con «Filas por página» a la derecha.
+ *  - Público: «Mostrando X-Y de Z» y `Paginacion` con todo lo demás, como antes. */
 export function Paginador({
   pagina,
   totalPaginas,
@@ -38,6 +41,33 @@ export function Paginador({
   className = '',
 }: PaginadorProps) {
   if (total === 0) return null;
+
+  if (tono === 'panel') {
+    const variasPaginas = totalPaginas > 1;
+    return (
+      // Páginas a la izquierda y, a la derecha, «Ir a la página» con «Filas por página»,
+      // cuando caben (`@4xl`, 56rem del contenedor). Si no, uno debajo del otro y
+      // centrados. Con una sola página, el hueco de la izquierda deja la derecha en su sitio.
+      <div className={`@container border-t border-zinc-100 py-3 dark:border-zinc-800 ${className}`}>
+        <nav
+          aria-label={`Paginación de ${etiqueta}`}
+          className="flex flex-col items-center gap-3 @4xl:flex-row @4xl:justify-between @4xl:gap-4"
+        >
+          {variasPaginas ? (
+            <GrupoDelPanel pagina={pagina} totalPaginas={totalPaginas} onCambiarPagina={onCambiarPagina} />
+          ) : (
+            <span aria-hidden="true" className="hidden @4xl:block" />
+          )}
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-3">
+            {variasPaginas && (
+              <IrAPagina pagina={pagina} totalPaginas={totalPaginas} onCambiarPagina={onCambiarPagina} tono={tono} />
+            )}
+            <FilasPorPagina valor={porPagina} opciones={opciones} onCambiar={onCambiarPorPagina} tono={tono} />
+          </div>
+        </nav>
+      </div>
+    );
+  }
 
   const desde = (pagina - 1) * porPagina + 1;
   const hasta = Math.min(pagina * porPagina, total);
