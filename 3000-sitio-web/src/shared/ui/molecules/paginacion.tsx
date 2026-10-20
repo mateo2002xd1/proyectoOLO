@@ -4,13 +4,17 @@ import { FormEvent, useId, useState } from 'react';
 import { CustomSelect } from './custom-select';
 
 /**
- * De qué zona son los colores. El diseño es uno solo en todas las tablas; lo que
- * cambia es la paleta, que es la que cada zona ya tenía:
- *   - `panel`: grises zinc con tema oscuro, y la página actual en `#001631` (antes el
- *     verde de marca; pedido del usuario, 2026-10-15), en blanco con letra `#001631` en
- *     oscuro, como los demás elementos `#001631` del panel;
- *   - `publico`: los grises de las tablas del sitio (`#344054`, `#d0d5dd`) y la página
- *     actual en el azul institucional `#001631`. El sitio público no tiene tema oscuro.
+ * De qué zona es la paginación:
+ *   - `panel`: el diseño sin bordes del mockup del usuario (2026-10-20): «Anterior» y
+ *     «Siguiente» en gris, los números en `#001631` y en negrita, la página actual
+ *     sobre una casilla gris redondeada, y solo la primera, la actual y la última página
+ *     con `…` entre medias (`1 … 90`). Ver `GrupoDelPanel`;
+ *   - `publico`: el grupo de casillas unidas con borde, con los grises de las tablas
+ *     del sitio (`#344054`, `#d0d5dd`) y la página actual en `#001631`. El sitio
+ *     público no tiene tema oscuro.
+ *
+ * «Ir a la página» y «Filas por página» son iguales en las dos zonas; solo cambia la
+ * paleta.
  */
 type Tono = 'panel' | 'publico';
 
@@ -123,6 +127,103 @@ function posicionesVisibles(actual: number, total: number): Posicion[] {
 }
 
 /**
+ * Qué números muestra el panel: la primera, la actual y la última, con `…` donde se
+ * saltan páginas. Es el mockup del usuario (`1 … 90` en la primera de 90). A
+ * diferencia de `posicionesVisibles`, el grupo no mide siempre lo mismo: va de tres
+ * posiciones (`1 … 90`) a cinco (`1 … 45 … 90`), así que «Siguiente» se corre un
+ * poco al avanzar. Se aceptó a cambio del diseño más limpio.
+ */
+function posicionesDelPanel(actual: number, total: number): Posicion[] {
+  const paginas = [...new Set([1, actual, total])].filter((p) => p >= 1 && p <= total).sort((a, b) => a - b);
+  const posiciones: Posicion[] = [];
+  paginas.forEach((pagina, indice) => {
+    const anterior = paginas[indice - 1];
+    if (anterior !== undefined && pagina - anterior > 1) posiciones.push('…');
+    posiciones.push(pagina);
+  });
+  return posiciones;
+}
+
+/** Casilla de número del panel: cuadrada, del alto del resto del pie (32 px y 36 desde `sm`). */
+const NUMERO_DEL_PANEL =
+  'flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-sm font-bold tabular-nums transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-focus sm:h-9 sm:min-w-10';
+
+/** «Anterior» / «Siguiente» del panel: texto gris, sin casilla. Deshabilitado se queda del mismo gris, como en el mockup: solo deja de responder. */
+const FLECHA_DEL_PANEL =
+  'flex h-8 items-center gap-1 rounded-lg px-1.5 text-sm font-medium text-zinc-400 transition-colors hover:text-[#001631] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-focus disabled:pointer-events-none sm:h-9 dark:text-zinc-500 dark:hover:text-white';
+
+/**
+ * Anterior, números y siguiente del panel (mockup del usuario, 2026-10-20). Sin bordes
+ * ni casillas unidas: la página actual se marca con su fondo gris, y el resto son
+ * números sueltos que toman ese fondo, más claro, al pasar el puntero.
+ */
+function GrupoDelPanel({
+  pagina,
+  totalPaginas,
+  onCambiarPagina,
+}: {
+  pagina: number;
+  totalPaginas: number;
+  onCambiarPagina: (pagina: number) => void;
+}) {
+  return (
+    <ul className="flex items-center gap-2 sm:gap-4 @max-6xl:basis-full @max-6xl:justify-center">
+      <li>
+        <button
+          type="button"
+          onClick={() => onCambiarPagina(pagina - 1)}
+          disabled={pagina === 1}
+          aria-label="Página anterior"
+          className={FLECHA_DEL_PANEL}
+        >
+          <ChevronIcon direccion="izquierda" />
+          <span className="hidden sm:inline">Anterior</span>
+        </button>
+      </li>
+
+      {posicionesDelPanel(pagina, totalPaginas).map((posicion, indice) =>
+        posicion === '…' ? (
+          <li key={`hueco-${indice}`} aria-hidden="true">
+            <span className="flex h-8 select-none items-center px-1 text-sm font-bold text-[#001631] sm:h-9 dark:text-[#f6f6f6]">
+              …
+            </span>
+          </li>
+        ) : (
+          <li key={posicion}>
+            <button
+              type="button"
+              onClick={() => onCambiarPagina(posicion)}
+              aria-label={`Página ${posicion}`}
+              aria-current={posicion === pagina ? 'page' : undefined}
+              className={`${NUMERO_DEL_PANEL} ${
+                posicion === pagina
+                  ? 'bg-[#d9dce1] text-[#001631] dark:bg-zinc-700 dark:text-white'
+                  : 'text-[#001631] hover:bg-zinc-100 dark:text-[#f6f6f6] dark:hover:bg-zinc-800'
+              }`}
+            >
+              {posicion}
+            </button>
+          </li>
+        )
+      )}
+
+      <li>
+        <button
+          type="button"
+          onClick={() => onCambiarPagina(pagina + 1)}
+          disabled={pagina === totalPaginas}
+          aria-label="Página siguiente"
+          className={FLECHA_DEL_PANEL}
+        >
+          <span className="hidden sm:inline">Siguiente</span>
+          <ChevronIcon direccion="derecha" />
+        </button>
+      </li>
+    </ul>
+  );
+}
+
+/**
  * «Ir a la página N»: para tablas largas, donde llegar a la 40 a golpe de flecha no
  * tiene sentido. Se envía con Enter. Un número fuera de rango se lleva al extremo más
  * cercano en vez de ignorarse: quien escribe 99 en una tabla de 12 páginas quiere ir
@@ -209,8 +310,9 @@ function FilasPorPagina({
 }
 
 /**
- * Paginación de todas las tablas: un grupo de casillas unidas (anterior, números,
- * siguiente), el campo «Ir a la página» y, si se pide, «Filas por página». La usan
+ * Paginación de todas las tablas: anterior, números y siguiente (`GrupoDelPanel` en el
+ * panel, casillas unidas en el sitio público), el campo «Ir a la página» y, si se pide,
+ * «Filas por página». La usan
  * el panel, a través de `Paginador`, que le añade el «Mostrando X-Y», y las tablas
  * públicas directamente.
  *
@@ -237,7 +339,11 @@ export function Paginacion({
       aria-label={ariaLabel}
       className={`flex flex-wrap items-center justify-center gap-x-4 gap-y-3 @max-6xl:w-full ${className}`}
     >
-      {variasPaginas && (
+      {variasPaginas && tono === 'panel' && (
+        <GrupoDelPanel pagina={pagina} totalPaginas={totalPaginas} onCambiarPagina={onCambiarPagina} />
+      )}
+
+      {variasPaginas && tono === 'publico' && (
         <ul className="flex -space-x-px text-sm @max-6xl:basis-full @max-6xl:justify-center">
           <li>
             <button
