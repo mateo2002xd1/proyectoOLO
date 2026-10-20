@@ -136,6 +136,10 @@ services:
       NEXT_PUBLIC_INTRANET_URL: ${INTRANET_URL_PUBLICA}
       JWT_SECRET: ${JWT_SECRET}
       REVALIDAR_SECRET: ${REVALIDAR_SECRET}
+      # API pública CNO/CUOC del buscador de ocupaciones (API_PUBLICA_CONSULTA.md).
+      # Solo la leen los route handlers de /api/ocupaciones: no es NEXT_PUBLIC_ a propósito.
+      CNO_API_URL: ${CNO_API_URL:-https://oloserver.tail033823.ts.net}
+      CNO_API_KEY: ${CNO_API_KEY}
     # Sin volúmenes: los archivos subidos los guarda y los sirve la API. nginx le manda
     # directo /uploads/, /backup/ y /api/upload (nginx.servidor.conf).
     depends_on:

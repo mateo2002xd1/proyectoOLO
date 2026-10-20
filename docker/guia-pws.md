@@ -98,6 +98,7 @@ local.
 | `POSTGRES_PASSWORD` | Contraseña de ese usuario | **Genera una** (ver abajo) |
 | `JWT_SECRET` | Firma las sesiones de login | **Genera uno** (ver abajo) |
 | `REVALIDAR_SECRET` | Secreto interno entre la API y el sitio | **Genera uno**, distinto del anterior |
+| `CNO_API_KEY` | Llave del buscador de ocupaciones (API pública CNO/CUOC, ver `API_PUBLICA_CONSULTA.md`) | **No se genera**: la entrega el equipo de la API por un canal aparte. Sin ella el buscador avisa que no puede consultar |
 | `LOCAL_AUTH_EMAIL` / `LOCAL_AUTH_PASSWORD` | Una cuenta de superadmin "de fábrica", solo para desarrollo | Por ejemplo `dev@sena.edu.co` / una contraseña cualquiera de prueba |
 
 **Cómo generar un secreto aleatorio, en Git Bash:**
