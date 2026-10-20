@@ -194,9 +194,11 @@ router.get('/me', requireAuthConConfiguracionPendiente, AuthController.me);
  *     tags: [Autenticación]
  *     summary: Cambiar la propia contraseña
  *     description: |
- *       Cambio voluntario, con la contraseña actual por delante. La nueva pasa por la
- *       política de composición, y el cambio queda registrado en la bitácora con su
- *       motivo (`cambio-voluntario`), como exige la Ley 1581.
+ *       Cambio de la contraseña de la propia sesión. `currentPassword` es obligatoria
+ *       solo con el primer ingreso pendiente; en el cambio voluntario es opcional y, si
+ *       se envía, se comprueba. La nueva pasa por la política de composición, y el
+ *       cambio queda registrado en la bitácora con su motivo (`cambio-voluntario`),
+ *       como exige la Ley 1581.
  *     requestBody:
  *       required: true
  *       content:
@@ -206,7 +208,7 @@ router.get('/me', requireAuthConConfiguracionPendiente, AuthController.me);
  *             properties:
  *               currentPassword: { type: string, format: password }
  *               newPassword: { type: string, format: password }
- *             required: [currentPassword, newPassword]
+ *             required: [newPassword]
  *     responses:
  *       200:
  *         description: Contraseña cambiada.

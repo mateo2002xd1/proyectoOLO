@@ -140,14 +140,24 @@ export const AuthController = {
     }
   },
 
-  /** Cambia la contraseña de la sesión actual tras comprobar la vigente y la política. */
+  /**
+   * Cambia la contraseña de la sesión actual tras comprobar la política.
+   *
+   * La contraseña vigente solo es obligatoria mientras la cuenta tiene el primer
+   * ingreso pendiente (la temporal que emitió un administrador). En el cambio
+   * voluntario —el modal «Editar usuario» sobre la propia cuenta— basta con la
+   * sesión: lo decidió el usuario el 2026-10-20, a sabiendas de que una sesión
+   * abierta y desatendida permite cambiarla. Si se envía, se comprueba igual.
+   */
   async changePassword(req: Request, res: Response, next: NextFunction) {
     try {
       const { currentPassword, newPassword } = req.body;
       const userId = req.user?.id;
 
-      if (!currentPassword || !newPassword)
-        return res.status(400).json({ error: 'Contraseña actual y nueva son obligatorias' });
+      if (!newPassword)
+        return res.status(400).json({ error: 'La contraseña nueva es obligatoria' });
+      if (!currentPassword && tieneConfiguracionPendiente(req.user))
+        return res.status(400).json({ error: 'La contraseña actual es obligatoria' });
       if (req.user?.isLocal)
         return res.status(403).json({ error: 'El usuario local no puede cambiar contraseña' });
 
@@ -159,13 +169,15 @@ export const AuthController = {
       const userWithPw = await UserRepository.findByIdWithPassword(userId!);
       if (!userWithPw) return res.status(404).json({ error: 'Usuario no encontrado' });
 
-      const valid = await compararPassword(currentPassword, (userWithPw as any).password_hash || '');
-      if (!valid) return res.status(401).json({ error: 'Contraseña actual incorrecta' });
+      if (currentPassword) {
+        const valid = await compararPassword(currentPassword, (userWithPw as any).password_hash || '');
+        if (!valid) return res.status(401).json({ error: 'Contraseña actual incorrecta' });
+      }
 
       // Sin actor a propósito: este camino no es «editar una cuenta», es el cambio de
-      // contraseña de la propia sesión, y ya demostró quién es comparando la
-      // contraseña actual doce líneas más arriba. Pasar el actor lo haría chocar
-      // contra la lista blanca de autoservicio, que no admite `password`.
+      // contraseña de la propia sesión (el id sale del token, nunca del cuerpo). Pasar
+      // el actor lo haría chocar contra la lista blanca de autoservicio, que no admite
+      // `password`.
       await updateUser(userId!, { password: newPassword, must_change_password: false });
       await logCambioDePassword(datosDeAuditoria(req), userId!, 'cambio-voluntario');
       res.json({ message: 'Contraseña actualizada correctamente' });

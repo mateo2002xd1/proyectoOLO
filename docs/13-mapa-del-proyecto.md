@@ -14,13 +14,13 @@
 
 | | Carpetas | Features | Rutas de Next | Endpoints | Librerías |
 |---|--:|--:|--:|--:|--:|
-| `3000-sitio-web` | 48 | 3 | 48 | — | 33 |
+| `3000-sitio-web` | 47 | 3 | 47 | — | 33 |
 | `3001-intranet` | 31 | 2 | 14 | — | 27 |
 | `4000-api-backend` | 35 | — | — | 96 | 43 |
 
 Paquetes compartidos: 7 · migraciones: 46 · modelos: 23.
 
-## Carpetas sin descripción (14)
+## Carpetas sin descripción (13)
 
 Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scripts/mapa/descripciones.md` con una línea: `` - `ruta/` — para qué es ``.
 
@@ -30,7 +30,6 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
 - `3000-sitio-web/src/features/admin-panel/buscador/`
 - `3000-sitio-web/src/features/admin-panel/changelog-view/`
 - `3000-sitio-web/src/features/admin-panel/configuration/`
-- `3000-sitio-web/src/features/admin-panel/profile/`
 - `3000-sitio-web/src/features/admin-panel/update-section/`
 - `3000-sitio-web/src/features/sitio-web/alertas-inversion/`
 - `3000-sitio-web/src/features/sitio-web/fuentes-futuras-empleo/`
@@ -67,7 +66,6 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
     │   │   ├── buscador/                      ⚠ sin descripción
     │   │   ├── changelog-view/                ⚠ sin descripción
     │   │   ├── configuration/                 ⚠ sin descripción
-    │   │   ├── profile/                       ⚠ sin descripción
     │   │   └── update-section/                ⚠ sin descripción
     │   ├── paginas/                           páginas editables con Puck, organizadas por etapa del ciclo
     │   │   ├── edicion/                       etapa 1: borrador, editor, subidas y candado
@@ -206,7 +204,7 @@ test/                                          pruebas de carga con k6
 
 | Feature | Para qué | Subcarpetas | `index.ts` | Archivos |
 |---|---|---|:-:|--:|
-| `admin-panel/` | ⚠ sin descripción | `auth/` `backup-section/` `buscador/` `changelog-view/` `configuration/` `profile/` `update-section/` | **no** | 78 |
+| `admin-panel/` | ⚠ sin descripción | `auth/` `backup-section/` `buscador/` `changelog-view/` `configuration/` `update-section/` | **no** | 77 |
 | `paginas/` | páginas editables con Puck, organizadas por etapa del ciclo | `edicion/` `menu-y-pie/` `model/` `publicacion/` `revision/` `secciones/` | sí | 40 |
 | `sitio-web/` | agrupador de lo público | `alertas-inversion/` `buscador-ocupaciones/` `fuentes-futuras-empleo/` `programas-sobresalientes/` `tendencia-ocupacional/` | **no** | 48 |
 
@@ -230,7 +228,6 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | `/admin-panel/changelog-view` | página |  | `admin-panel/changelog-view/page.tsx` |
 | `/admin-panel/configuration` | página |  | `admin-panel/configuration/page.tsx` |
 | `/admin-panel/dashboard` | página |  | `admin-panel/dashboard/page.tsx` |
-| `/admin-panel/profile` | página |  | `admin-panel/profile/page.tsx` |
 | `/admin-panel/review-section` | página |  | `admin-panel/review-section/page.tsx` |
 | `/admin-panel/roles-and-permissions` | página |  | `admin-panel/roles-and-permissions/page.tsx` |
 | `/admin-panel/search-section` | página |  | `admin-panel/search-section/page.tsx` |
