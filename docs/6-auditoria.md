@@ -5,6 +5,67 @@
 
 ---
 
+## sesión 20-10-2026 (4.ª parte): paginación del panel con el diseño del mockup y etiquetas finas en «Cambiar contraseña»
+
+**Paginación.** El usuario pasó un mockup para todas las tablas del panel: sin bordes ni casillas unidas, «Anterior» y «Siguiente» en gris, los números en `#001631` y en negrita, la página actual sobre una casilla gris redondeada, y solo la primera, la actual y la última página (`1 … 90`, `1 2`).
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Componente | `3000-sitio-web/src/shared/ui/molecules/paginacion.tsx` | Nuevo `GrupoDelPanel` y `posicionesDelPanel` (primera, actual y última, con `…` donde se saltan páginas). `Paginacion` lo usa con `tono="panel"`; con `tono="publico"` sigue el grupo de casillas unidas de antes |
+| Alcance | Usuarios, Roles, Auditoría, Revisión, la tarjeta del dashboard (vía `Paginador`) y el historial de cargas de tendencia (`Paginacion` directo) | Todos pasan `tono="panel"` (o lo heredan por defecto), así que cambian sin tocarlos |
+| Fuera de alcance | Las tres tablas públicas (`fuentes-futuras-empleo`, `programas-sobresalientes`, `tendencia-ocupacional`) | No cambian: el pedido fue «todas las tablas del panel» |
+
+Decisiones:
+- **«Siguiente» se corre un poco al avanzar.** El grupo anterior medía siempre siete posiciones a propósito, para que la flecha no se moviera bajo el cursor. El mockup va de tres (`1 … 90`) a cinco (`1 … 45 … 90`), y se siguió el mockup.
+- **Una flecha deshabilitada no se aclara**, como en el mockup («Anterior» en la página 1 tiene el mismo gris que «Siguiente»). Solo deja de responder.
+- **Por debajo de `sm` se mantienen los chevrons** en lugar de «Anterior» / «Siguiente», como antes: con el texto, `1 … 45 … 90` no cabe a 320 px.
+- «Ir a la página», «Filas por página» y «Mostrando X-Y de Z» no cambian; el mockup no los incluía.
+
+**Etiquetas del acordeón «Cambiar contraseña»** (`usuarios-view.tsx`, `CampoClaveDeModal`): «Contraseña nueva» y «Repetir contraseña nueva» en letra fina. Se usó `font-light` (300) y no `font-thin` (100): `shared/lib/fonts.ts` carga Poppins desde 300, y con 100 el navegador mostraría el 300 igualmente. Se sustituye `font-medium` dentro de `etiquetaDeModalClass` en vez de añadir otra clase detrás, porque con dos grosores gana el orden del CSS generado.
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` y `eslint` del sitio web | Sin errores |
+| `Paginacion` renderizado aparte (`react-dom/server` + Tailwind 4 en Chrome sin ventana), páginas 1/90, 2/2, 45/90 y 90/90 | Igual que el mockup, en tema claro y oscuro; a 343 px cabe con chevrons |
+| Tablas reales del panel | **No se vieron:** el panel pide sesión y no se inició |
+
+**Pendiente al cierre:** recorrer Usuarios, Roles, Auditoría, Revisión, el dashboard y el historial de cargas con datos reales para confirmar que el pie se ve como en la prueba.
+
+---
+
+## sesión 20-10-2026 (3.ª parte): se elimina «Mi perfil» y el cambio de la propia contraseña pasa al modal «Editar usuario»
+
+**Qué pedía el usuario:** quitar la pantalla «Mi perfil» (`/admin-panel/profile`) y, en el modal «Editar usuario» de `/admin-panel/users`, debajo de «Restablecer preguntas de seguridad», un acordeón desplegable «Cambiar contraseña» con «Contraseña nueva» y «Repetir contraseña nueva». Solo aparece cuando la fila que se edita es la de la sesión; para las demás cuentas sigue «Restablecer contraseña».
+
+**Dos decisiones del usuario, con sus consecuencias a la vista:**
+
+1. *«Elimina perfil, los otros roles cambian su clave por preguntas de seguridad.»* La lista de Usuarios exige `puedeAdministrarUsuarios`, así que un Editor o un Revisor ya no tiene dónde cambiar su clave dentro del panel: lo hace con «¿Olvidaste tu contraseña?» (`/login/recovery`, preguntas de seguridad).
+2. *«Solo nueva y repetir.»* `POST /api/change-password` exigía la contraseña actual. Ahora solo la exige con el primer ingreso pendiente (la temporal que emitió un administrador); en el cambio voluntario es opcional y, si llega, se comprueba igual. Se le avisó de que, sin ella, una sesión abierta y desatendida basta para cambiarle la clave a alguien.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| API | `4000-api-backend/src/controllers/auth.controller.ts` | `changePassword`: `currentPassword` obligatoria solo si `tieneConfiguracionPendiente(req.user)`; si se envía, se compara como antes. El id sigue saliendo del token, nunca del cuerpo, y la bitácora sigue registrando `cambio-voluntario` |
+| API (docs) | `4000-api-backend/src/routes/auth.routes.ts` | OpenAPI: `required: [newPassword]` y la regla nueva en la descripción |
+| Acción de servidor | `features/admin-panel/profile/profile.actions.ts` → `features/admin-panel/auth/cuenta-propia.actions.ts` (`git mv`) | Quedan `obtenerIdDeMiCuenta()` (id de `/api/me`) y `cambiarMiPassword({ nueva, confirmacion })`. `getProfileData` y `updateProfileInfo` se borran: solo las usaba la pantalla |
+| Modal | `features/admin-panel/auth/components/usuarios-view.tsx` | Acordeón `<details>` «Cambiar contraseña», cerrado al abrir el modal y forzado abierto si uno de sus campos tiene error. Campo local `CampoClaveDeModal` (las clases del modal, con tema oscuro, y el ojo de `PasswordField`) y la lista de `PasswordRequisitos`. Con los dos vacíos no se toca la contraseña. Al guardar, la contraseña va **antes** que los datos: si la API la rechaza (`PASSWORD_REPETIDA`), el aviso sale bajo «Contraseña nueva» y no se ha guardado nada |
+| Borrado | `app/admin-panel/profile/page.tsx`, `features/admin-panel/profile/components/profile.tsx` | Ya no hacen falta |
+| Navegación | `panel-general.tsx` (los dos menús de usuario, escritorio y móvil), `buscador/lib/indice-panel.ts` | Sin la entrada «Mi perfil» |
+| Acceso | `src/proxy.ts` | Fuera la comprobación y el `matcher` de `/admin-panel/profile` |
+| Alias | `next.config.mjs` | `/admin-panel/profile`, `/admin/mi-perfil` y `/admin/perfil` redirigen al dashboard en vez de dar 404 |
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` del sitio web (sin los tipos viejos de `.next/dev`) y de la API | Sin errores |
+| `eslint` de los archivos tocados del sitio web | Sin avisos |
+| `curl` a `/admin-panel/profile`, `/admin/mi-perfil` y `/admin/perfil` | 307 → `/admin-panel/dashboard` |
+| Cambiar la contraseña desde el modal | **No se hizo:** la API de dev usa la base de Neon y cambiaría la clave real de una cuenta. Además la API no recarga sola: hay que reiniciarla para que tome el controlador nuevo |
+
+> Si se marcan «Restablecer contraseña» y se escribe una nueva en la propia cuenta, se aplican las dos en ese orden: primero el cambio, después el restablecimiento, que deja una temporal. No se bloqueó porque el usuario no lo pidió.
+
+**Pendiente al cierre:** reiniciar la API (`4000-api-backend`) y probar con una cuenta de pruebas: el acordeón solo en la fila propia, contraseña que no cumple, que no coincide, que repite la anterior, y cambio correcto. Actualizar `manual-de-usuario-formato.md` §3.4.2.9.1 y §3.5.1.13, y el escenario 14 de `plan-de-pruebas.md`, que todavía describen «Mi perfil» en `/admin/mi-perfil`.
+
+---
+
 ## sesión 20-10-2026 (2.ª parte): el buscador de ocupaciones consulta la API pública CNO/CUOC y se borra `data_temporal/`
 
 **Qué pasaba:** el buscador (`/api/ocupaciones` y `/api/ocupaciones/<código>`) leía los once JSON de `3000-sitio-web/data_temporal/` —el volcado del archivo maestro de la CNO— y resolvía las uniones en memoria. Solo traía CNO, la correlativa CUOC salía siempre vacía y los 6 MB iban copiados dentro de la imagen de Docker. Ahora existe la API pública de consulta (`API_PUBLICA_CONSULTA.md` en la raíz), que sirve CNO y CUOC con su correlativa y pide una llave por sistema en la cabecera `x-api-key`.
