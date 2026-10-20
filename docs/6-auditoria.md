@@ -5,6 +5,41 @@
 
 ---
 
+## sesión 20-10-2026 (2.ª parte): el buscador de ocupaciones consulta la API pública CNO/CUOC y se borra `data_temporal/`
+
+**Qué pasaba:** el buscador (`/api/ocupaciones` y `/api/ocupaciones/<código>`) leía los once JSON de `3000-sitio-web/data_temporal/` —el volcado del archivo maestro de la CNO— y resolvía las uniones en memoria. Solo traía CNO, la correlativa CUOC salía siempre vacía y los 6 MB iban copiados dentro de la imagen de Docker. Ahora existe la API pública de consulta (`API_PUBLICA_CONSULTA.md` en la raíz), que sirve CNO y CUOC con su correlativa y pide una llave por sistema en la cabecera `x-api-key`.
+
+**Cómo quedó:** el navegador sigue llamando a `/api/ocupaciones` del propio sitio (sin llave), y esos route handlers llaman a la API pública añadiendo `CNO_API_KEY` desde el entorno del servidor. Es la arquitectura que pide el documento §3: la llave nunca llega al bundle ni a las peticiones del navegador.
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Origen de datos | `features/sitio-web/buscador-ocupaciones/lib/consulta-cno.ts` | Nuevo. Llama a `/api/public/consulta/buscar` (`limit=50`, `q` recortado a 120) y a `/api/public/consulta/:codigo`; traduce la respuesta a los tipos de la UI; calcula `denominacionesCoincidentes` con el mismo normalizado sin tildes de antes; guarda las fichas una hora en memoria (máx. 500) para no gastar el cupo de 300/min, que es por llave y lo comparten todos los visitantes; un código que no es de 4 o 5 dígitos da 404 sin llamar a la API |
+| Errores | mismo archivo, `respuestaDeErrorCno` | 429 → 429 con `Retry-After`; 404 → «no encontrada»; sin llave, 401, red caída o tiempo agotado (10 s) → 502/503 con mensaje genérico. El 401 y la falta de variables se registran en consola, pero al visitante nunca se le dice nada de la llave |
+| Rutas | `app/api/ocupaciones/route.ts`, `app/api/ocupaciones/[codigo]/route.ts` | Usan `consulta-cno.ts` en vez del catálogo temporal |
+| Contrato | `buscador-ocupaciones/types.ts` | Nuevo `tipo` (`CNO`/`CUOC`) en resultado y ficha; `correlativaCuoc: string[]` pasa a `correlativa: { tipo, ocupaciones }` |
+| Cliente | `services/buscador-ocupaciones.service.ts`, `hooks/use-buscador-ocupaciones.ts`, `hooks/use-detalle-ocupacion.ts` | El service ya no se traga los fallos: lanza el mensaje (vía `mensajeDeErrorApi` de `shared/lib/errores-api.ts`) y los hooks lo guardan en `error`. Antes un fallo se pintaba como «No hay ocupaciones que coincidan», que era falso |
+| Vista | `resultados-ocupaciones.tsx`, `detalle-ocupacion.tsx`, `buscador-ocupaciones-banner.tsx`, `hero-buscador-ocupaciones.tsx` | Muestran el error con `role="alert"`; la ficha distingue «no se encontró» de «no se pudo consultar»; el apartado «Correlativa CUOC» se llena y su rótulo cambia a «Correlativa CNO» en una ficha CUOC; la `key` de cada fila lleva el tipo, porque ahora pueden convivir CNO y CUOC |
+| Configuración | `3000-sitio-web/.env.example`, `docker/docker-compose.servidor.yml`, `docker/guia-pws.md` | `CNO_API_URL` y `CNO_API_KEY` (sin `NEXT_PUBLIC_`, a propósito) |
+| Docker | `3000-sitio-web/Dockerfile` | Se quitan las dos copias de `data_temporal/` |
+| Borrado | `3000-sitio-web/data_temporal/` (12 JSON), `lib/catalogo-cno-temporal.ts` | Ya no los usa nadie |
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` del sitio web (sin los tipos viejos de `.next/dev`) | Sin errores |
+| `eslint` de `buscador-ocupaciones/` y `app/api/ocupaciones/` | Sin avisos |
+| `consulta-cno.ts` sin variables de entorno | 503 con el mensaje genérico y aviso en consola |
+| `consulta-cno.ts` con una llave falsa contra la API real | La API responde 401; el sitio devuelve 502 genérico y registra el 401 |
+| `consulta-cno.ts` con `fetch` simulado con la forma del documento | Búsqueda: denominaciones sin repetidos y coincidentes bien marcadas. Ficha: `null` → `''`, correlativa CUOC llena. 404 → `null`. 429 → 429 con `Retry-After: 42`. La segunda ficha `0211` salió de la caché sin petición nueva. `../x` → `null` sin petición |
+| Búsqueda real con resultados | **No se hizo:** la llave no está en el repositorio ni en `.env.local` (se entrega por canal aparte) |
+
+> **Sin `CNO_API_KEY` el buscador no funciona**, ni en dev ni en el servidor: muestra «No se pudo consultar el catálogo de ocupaciones». La llave va en `3000-sitio-web/.env.local` (dev) y en `docker/.env` (servidor); en Docker hay que recrear el contenedor del sitio web para que la lea.
+
+> La búsqueda no lleva *debounce* porque no se dispara al escribir, solo al enviar el formulario: la recomendación del documento §5 no aplica.
+
+**Pendiente al cierre:** poner la llave en los dos `.env` y hacer una búsqueda real (p. ej. «desarrollador», un código CNO de 4 dígitos y uno CUOC de 5) para confirmar que la forma real de la respuesta coincide con la del documento. `13-mapa-del-proyecto.md` todavía menciona `data_temporal/`; lo regenera el pre-commit.
+
+---
+
 ## sesión 20-10-2026: el panel pasa de `/admin` a `/admin-panel` y se corrigen las rutas que apuntaban a las carpetas viejas
 
 **Qué pasaba:** se renombraron a mano varias carpetas del sitio web y de la intranet, y lo que las usaba seguía apuntando a los nombres viejos. Los imports del login ya estaban corregidos y `tsc` pasaba, pero las URL del panel no: el menú lateral, la barra móvil, el buscador del panel, el proxy, los roles de `session.ts` y el «Volver» de la vista previa seguían enviando a `/admin/...`, que ya no existe, y el proxy protegía esas rutas viejas en lugar de las nuevas.
