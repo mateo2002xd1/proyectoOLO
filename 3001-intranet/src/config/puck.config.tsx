@@ -1262,7 +1262,7 @@ export const puckConfig: Config = {
  * catálogo completo, que es lo razonable cuando no se sabe qué va a contener.
  *
  * `IntranetTopbar` e `IntranetFooter` NO están en ninguna sección: los pinta
- * `app/(secciones)/layout.tsx` a partir de la página `plantilla`, y ofrecerlos
+ * `app/(paginas)/layout.tsx` a partir de la página `plantilla`, y ofrecerlos
  * aquí dejaría volver a tener una barra distinta por sección, que es justo el
  * problema que se acaba de quitar. Siguen registrados en `puckConfig` porque
  * puede quedar contenido guardado que los use.

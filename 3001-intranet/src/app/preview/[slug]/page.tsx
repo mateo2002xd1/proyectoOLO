@@ -25,7 +25,7 @@ export const metadata = {
  * Se entra desde el botón «Ver» de la cola de revisión del panel. No hace falta
  * volver a identificarse: la sesión es la misma para las dos aplicaciones.
  *
- * Vive fuera de `app/(secciones)/` para poder elegir si lleva marco o no. Dentro
+ * Vive fuera de `app/(paginas)/` para poder elegir si lleva marco o no. Dentro
  * del grupo lo llevaba siempre, y previsualizar la plantilla salía con el menú y
  * el pie duplicados: los publicados que ponía el layout, y dentro los del
  * borrador que se estaba revisando.
@@ -42,7 +42,7 @@ export default async function PreviewPage({
   const versionId = query?.versionId;
   // La cola de revisión y Respaldos viven en el panel del sitio: «Volver» cruza de
   // aplicación. Con `versionId` se llega desde Respaldos; sin él, desde la cola.
-  const volverA = `${SITE_URL}${versionId ? '/admin/respaldos' : '/admin/revision'}`;
+  const volverA = `${SITE_URL}${versionId ? '/admin-panel/backup-section' : '/admin-panel/review-section'}`;
 
   // Quien no puede ni editar ni aprobar no tiene por qué ver borradores.
   if (!(await puedeEditarPaginas())) {
@@ -83,7 +83,7 @@ export default async function PreviewPage({
 
       {esPlantilla ? contenido : <MarcoSecciones>{contenido}</MarcoSecciones>}
 
-      {/* La vista previa cuelga fuera de `(secciones)`, así que no hereda su
+      {/* La vista previa cuelga fuera de `(paginas)`, así que no hereda su
           vigilante. Sin `alExpirar`: aquí no hay nada que guardar, solo se mira. */}
       <VigilanteSesion />
     </div>

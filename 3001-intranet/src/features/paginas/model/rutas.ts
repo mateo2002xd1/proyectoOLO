@@ -2,7 +2,7 @@
  * Cómo se corresponden la URL de una sección y su slug, y a dónde vuelve el editor
  * cuando el usuario pulsa "Salir".
  *
- * **URL → slug.** El comodín `app/(secciones)/[...puckPath]` sirve cualquier
+ * **URL → slug.** El comodín `app/(paginas)/[...puckPath]` sirve cualquier
  * profundidad, pero el slug nunca lleva barra: la API expone `/paginas/publica/:slug`
  * y un parámetro de Express no cruza una barra. Por eso los segmentos se unen con
  * `-`: `/encuestas/calidad-de-formacion` es `encuestas-calidad-de-formacion`, que es

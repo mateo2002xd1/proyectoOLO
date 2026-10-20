@@ -2,7 +2,7 @@
  * El marco de las secciones: el menú arriba y el pie abajo, con el contenido en
  * medio.
  *
- * Lo pinta `app/(secciones)/layout.tsx` alrededor de cada sección, pero también
+ * Lo pinta `app/(paginas)/layout.tsx` alrededor de cada sección, pero también
  * lo necesita la vista previa, que vive fuera de ese grupo de rutas para poder
  * decidir cuándo NO llevarlo (ver `app/preview/[slug]/page.tsx`). Está aquí, y no
  * duplicado en los dos sitios, para que el marco de la previsualización sea el
@@ -23,7 +23,7 @@ export async function MarcoSecciones({
 }: Readonly<{
   children: React.ReactNode;
   /** Quita «Cerrar sesión» de la barra porque lo pinta el botón flotante. Solo lo
-   *  activa `app/(secciones)/layout.tsx`, que es donde está ese botón; la vista
+   *  activa `app/(paginas)/layout.tsx`, que es donde está ese botón; la vista
    *  previa no lo tiene y deja la barra como está. */
   cerrarSesionEnFlotante?: boolean;
 }>) {

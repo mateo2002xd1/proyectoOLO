@@ -104,7 +104,7 @@ Cada carpeta de estos niveles tiene que decir para qué es. Se describe en `scri
 └── src/                                       código de la intranet
     ├── app/                                   solo enrutamiento: `(secciones)` (comodín Puck), `(auth)`, `editor`, `preview`
     │   ├── (auth)/
-    │   ├── (secciones)/
+    │   ├── (paginas)/
     │   ├── editor/
     │   └── preview/
     ├── config/                                catálogo de bloques del editor de la intranet
@@ -279,7 +279,7 @@ La URL que ve el navegador y el archivo que la pinta. Los grupos entre paréntes
 | URL | Tipo | Grupo | Archivo |
 |---|---|---|---|
 | `/` | página |  | `page.tsx` |
-| `/[...puckPath]` | página | `(secciones)` | `(secciones)/[...puckPath]/page.tsx` |
+| `/[...puckPath]` | página | `(paginas)` | `(paginas)/[...puckPath]/page.tsx` |
 | `/editor/[slug]` | página |  | `editor/[slug]/page.tsx` |
 | `/login` | página | `(auth)` | `(auth)/login/page.tsx` |
 | `/login/first-login` | página | `(auth)` | `(auth)/login/first-login/page.tsx` |
