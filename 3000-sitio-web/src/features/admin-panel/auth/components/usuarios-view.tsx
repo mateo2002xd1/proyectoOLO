@@ -2,9 +2,13 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { TrashIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon } from '@heroicons/react/20/solid';
 import { GRUPO_TOOLTIP, TOOLTIP_ENCIMA } from '@/shared/ui/atoms/tooltip';
 import { COLOR_DE_ACCION } from '@/shared/lib/identidad-panel';
 import { validarEmail } from '@olo/email-policy';
+import { cumplePolitica, esPasswordRepetida, primerFallo } from '@olo/password-policy';
+import { cambiarMiPassword, obtenerIdDeMiCuenta } from '../cuenta-propia.actions';
+import { PasswordRequisitos } from './auth-ui';
 import {
   useUsuarios,
   mensajeDeError,
@@ -56,7 +60,7 @@ import { MensajeEstado } from '@/shared/ui/molecules/mensaje-estado';
  * de los dos disparó el bloqueo.
  */
 /** Los campos obligatorios del formulario de usuario, para marcar el que falta. */
-type CampoUsuario = 'name' | 'apellidos' | 'email' | 'roleId';
+type CampoUsuario = 'name' | 'apellidos' | 'email' | 'roleId' | 'passwordNueva' | 'passwordConfirmacion';
 type ErroresUsuario = Partial<Record<CampoUsuario, string>>;
 
 function infoBloqueo(user: User, ahora: number): string | null {
@@ -68,6 +72,61 @@ function infoBloqueo(user: User, ahora: number): string | null {
   const segundos = Math.floor((msRestante % 60000) / 1000);
   const tiempo = minutos > 0 ? `${minutos} min` : `${segundos} s`;
   return `Bloqueada · ${tiempo} restantes`;
+}
+
+/**
+ * Campo de contraseña del modal, con el ojo para verla. Es `PasswordField` de
+ * `auth-ui` con las clases del modal (`campoDeModalClass`), que sí tienen tema
+ * oscuro: el de las pantallas de acceso no lo tiene.
+ */
+function CampoClaveDeModal({
+  id,
+  label,
+  value,
+  onChange,
+  error,
+  describedBy,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (valor: string) => void;
+  error?: string;
+  /** `id` de lo que explica el campo además de su error (la lista de requisitos). */
+  describedBy?: string;
+}) {
+  const [visible, setVisible] = useState(false);
+  const descripciones = [describedBy, error ? `${id}-error` : undefined].filter(Boolean).join(' ');
+
+  return (
+    <div>
+      {/* Letra fina (pedido del usuario, 2026-10-20): `font-light`, el grosor más fino de Poppins
+          que carga `fonts.ts`. Se sustituye `font-medium`: con dos grosores en la lista gana el
+          que Tailwind escriba después en su hoja. */}
+      <label htmlFor={id} className={etiquetaDeModalClass.replace('font-medium', 'font-light')}>{label}</label>
+      <div className="relative">
+        <input
+          id={id}
+          type={visible ? 'text' : 'password'}
+          autoComplete="new-password"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          aria-invalid={Boolean(error) || undefined}
+          aria-describedby={descripciones || undefined}
+          className={`${error ? campoDeModalConErrorClass : campoDeModalClass} pr-12`}
+        />
+        <button
+          type="button"
+          onClick={() => setVisible((v) => !v)}
+          aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+          className="absolute right-3 top-1/2 flex -translate-y-1/2 rounded-full p-1.5 text-[#334861] transition-colors hover:text-[#001a39] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#001631] dark:text-[#cbd5e1] dark:hover:text-white dark:focus-visible:ring-white"
+        >
+          <IconoMascara nombre={visible ? 'eye-open' : 'eye-closed'} tamano="h-4 w-4" />
+        </button>
+      </div>
+      {error && <ErrorDeCampo id={`${id}-error`}>{error}</ErrorDeCampo>}
+    </div>
+  );
 }
 
 /** `expiration_date` es una fecha sin hora: se lee a medianoche local para que no se corra un día. */
@@ -102,6 +161,13 @@ export default function UsuariosView() {
   const [expirationDate, setExpirationDate] = useState('');
   const [resetPassword, setResetPassword] = useState(false);
   const [resetSecurityQuestions, setResetSecurityQuestions] = useState(false);
+  // Cambio de la propia contraseña: solo se ofrece cuando la fila que se edita es la
+  // de la sesión. Para las demás cuentas está «Restablecer contraseña».
+  const [miId, setMiId] = useState<string | null>(null);
+  const [passwordNueva, setPasswordNueva] = useState('');
+  const [passwordConfirmacion, setPasswordConfirmacion] = useState('');
+  const [claveAbierta, setClaveAbierta] = useState(false);
+  const esMiCuenta = editingUserId !== null && editingUserId === miId;
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Lo que falta o está mal, campo por campo: se pinta en rojo bajo cada uno al pulsar
   // «Guardar», y se borra el de un campo en cuanto se escribe en él.
@@ -126,6 +192,10 @@ export default function UsuariosView() {
     fetchUsers();
     fetchRoles();
   }, [fetchUsers, fetchRoles]);
+
+  useEffect(() => {
+    void obtenerIdDeMiCuenta().then(setMiId);
+  }, []);
 
   // Refresca la cuenta regresiva del bloqueo sin volver a pedir la lista al servidor.
   const [ahora, setAhora] = useState(() => Date.now());
@@ -156,6 +226,21 @@ export default function UsuariosView() {
       if (falloEmail) nuevos.email = falloEmail;
     }
     if (!roleId) nuevos.roleId = 'Falta el rol.';
+
+    // Las dos vacías: no se cambia la contraseña. En cuanto se escribe en una, cuentan las dos.
+    const cambiaPassword = esMiCuenta && Boolean(passwordNueva || passwordConfirmacion);
+    if (cambiaPassword) {
+      if (!passwordNueva) {
+        nuevos.passwordNueva = 'Falta la nueva contraseña.';
+      } else if (!cumplePolitica(passwordNueva)) {
+        nuevos.passwordNueva = primerFallo(passwordNueva) ?? 'La contraseña no cumple los requisitos.';
+      }
+      if (!passwordConfirmacion) {
+        nuevos.passwordConfirmacion = 'Falta repetir la nueva contraseña.';
+      } else if (passwordNueva !== passwordConfirmacion) {
+        nuevos.passwordConfirmacion = 'Las contraseñas no coinciden.';
+      }
+    }
     setErrores(nuevos);
     if (Object.keys(nuevos).length > 0) return;
 
@@ -163,6 +248,21 @@ export default function UsuariosView() {
     try {
       let response;
       if (editingUserId) {
+        // La contraseña va primero: si la API la rechaza (p. ej. repite la anterior), no
+        // se ha guardado nada todavía y basta con corregir ese campo y volver a pulsar.
+        if (cambiaPassword) {
+          const cambio = await cambiarMiPassword({ nueva: passwordNueva, confirmacion: passwordConfirmacion });
+          if (!cambio.success) {
+            if (esPasswordRepetida(cambio)) {
+              setErrores({ passwordNueva: cambio.error });
+            } else {
+              setNotificationMsg({ title: 'Error', message: cambio.error || 'No se pudo cambiar la contraseña', type: 'error' });
+              setShowNotification(true);
+            }
+            return;
+          }
+        }
+
         // La fecha va siempre, también vacía: `null` es «sin caducidad». Mandarla solo
         // si tenía valor hacía que «Borrar» en el calendario no llegara a la base, y la
         // API —que no recibía el campo— dejaba la fecha anterior.
@@ -176,7 +276,13 @@ export default function UsuariosView() {
         if (resetPassword) data.reset_password = true;
         if (resetSecurityQuestions) data.reset_security_questions = true;
         response = await updateUser(editingUserId, data);
-        setNotificationMsg({ title: 'Usuario actualizado', message: 'El usuario se ha actualizado exitosamente.', type: 'success' });
+        setNotificationMsg({
+          title: 'Usuario actualizado',
+          message: cambiaPassword
+            ? 'El usuario se ha actualizado y tu contraseña se cambió exitosamente.'
+            : 'El usuario se ha actualizado exitosamente.',
+          type: 'success',
+        });
       } else {
         const data: NuevoUsuario = { name, apellidos, email, role_id: roleId };
         if (expirationDate) data.expiration_date = expirationDate;
@@ -254,6 +360,9 @@ export default function UsuariosView() {
     setExpirationDate(user.expiration_date ? user.expiration_date.split('T')[0] : '');
     setResetPassword(false);
     setResetSecurityQuestions(false);
+    setPasswordNueva('');
+    setPasswordConfirmacion('');
+    setClaveAbierta(false);
     setErrores({});
     setIsCreating(true);
   };
@@ -266,6 +375,9 @@ export default function UsuariosView() {
     setExpirationDate('');
     setResetPassword(false);
     setResetSecurityQuestions(false);
+    setPasswordNueva('');
+    setPasswordConfirmacion('');
+    setClaveAbierta(false);
     setErrores({});
   }
 
@@ -420,6 +532,50 @@ export default function UsuariosView() {
                 <label htmlFor="reset_sq" className="text-sm font-medium text-zinc-700 dark:text-[#cbd5e1]">Restablecer preguntas de seguridad</label>
               </div>
             </div>
+          )}
+
+          {esMiCuenta && (
+            // `<details>` nativo: el navegador ya lo anuncia como desplegable. Abierto a la
+            // fuerza mientras alguno de sus campos tenga error, para que el aviso se vea.
+            <details
+              open={claveAbierta || Boolean(errores.passwordNueva || errores.passwordConfirmacion)}
+              onToggle={(e) => setClaveAbierta(e.currentTarget.open)}
+              className="group rounded-xl border border-zinc-200 dark:border-[#7db828]/30"
+            >
+              <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-xl px-4 py-2.5 text-base font-medium text-[#001a39] transition-colors hover:bg-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#001631] dark:text-[#f6f6f6] dark:hover:bg-white/5 dark:focus-visible:ring-white [&::-webkit-details-marker]:hidden">
+                <span className="flex-1">Cambiar contraseña</span>
+                <ChevronDownIcon
+                  aria-hidden="true"
+                  className="size-5 shrink-0 text-zinc-500 transition-transform group-open:rotate-180 dark:text-[#94a3b8]"
+                />
+              </summary>
+              <div className="space-y-4 border-t border-zinc-200 px-4 pt-4 pb-4 dark:border-[#7db828]/30">
+              <div>
+                <CampoClaveDeModal
+                  id="usuario-password-nueva"
+                  label="Contraseña nueva"
+                  value={passwordNueva}
+                  onChange={(valor) => {
+                    setPasswordNueva(valor);
+                    quitarError('passwordNueva');
+                  }}
+                  error={errores.passwordNueva}
+                  describedBy="usuario-password-requisitos"
+                />
+                <PasswordRequisitos id="usuario-password-requisitos" password={passwordNueva} className="mt-2" />
+              </div>
+              <CampoClaveDeModal
+                id="usuario-password-repetir"
+                label="Repetir contraseña nueva"
+                value={passwordConfirmacion}
+                onChange={(valor) => {
+                  setPasswordConfirmacion(valor);
+                  quitarError('passwordConfirmacion');
+                }}
+                error={errores.passwordConfirmacion}
+              />
+              </div>
+            </details>
           )}
 
           <AlertActions>
