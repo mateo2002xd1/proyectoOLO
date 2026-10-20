@@ -5,6 +5,40 @@
 
 ---
 
+## sesión 20-10-2026: el panel pasa de `/admin` a `/admin-panel` y se corrigen las rutas que apuntaban a las carpetas viejas
+
+**Qué pasaba:** se renombraron a mano varias carpetas del sitio web y de la intranet, y lo que las usaba seguía apuntando a los nombres viejos. Los imports del login ya estaban corregidos y `tsc` pasaba, pero las URL del panel no: el menú lateral, la barra móvil, el buscador del panel, el proxy, los roles de `session.ts` y el «Volver» de la vista previa seguían enviando a `/admin/...`, que ya no existe, y el proxy protegía esas rutas viejas en lugar de las nuevas.
+
+| Antes | Ahora |
+|---|---|
+| `3000-sitio-web/src/app/(public)/`, `3001-intranet/src/app/(secciones)/` | `app/(paginas)/` en las dos apps (es un grupo: la URL no cambia) |
+| `features/administracion/{actualizaciones, auditoria, auth, buscador, configuracion, mi-perfil, respaldos}` | `features/admin-panel/{update-section, changelog-view, auth, buscador, configuration, profile, backup-section}` |
+| `/admin/{dashboard, users, roles, revision, auditoria, respaldos, actualizaciones, configuracion, buscar, perfil}` | `/admin-panel/{dashboard, users, roles-and-permissions, review-section, changelog-view, backup-section, update-section, configuration, search-section, profile}` |
+
+| Capa | Archivo | Cambio |
+|---|---|---|
+| Navegación | `panel-general.tsx`, `navegacion-mobile-panel.tsx`, `indice-panel.ts`, `buscador-modal.tsx`, `login-view.tsx`, `header.tsx`, `profile.tsx` | Enlaces y `current`/`activo` con las URL nuevas |
+| Acceso | `proxy.ts`, `session.ts` | Comprobaciones, `matcher` y ruta de entrada de cada rol con las URL nuevas |
+| Alias | `next.config.mjs` | Las diez URL viejas `/admin/<sección>/:path*` redirigen a la nueva (para marcadores y correos ya enviados). Los alias anteriores (`/admin/dashboard/configuracion`, `/admin/mi-perfil`…) apuntan directo a la URL nueva |
+| Tema y caché | `tema.ts`, `profile.actions.ts`, `public/sw.js` | `RUTA_DEL_PANEL = '/admin-panel'` (sin esto el panel perdía el modo oscuro); `revalidatePath('/admin-panel')`; `/admin-panel` entra en `RUTAS_PRIVADAS` del service worker (`/admin` se queda por las redirecciones) |
+| Intranet | `app/preview/[slug]/page.tsx` | El «Volver» lleva a `/admin-panel/backup-section` o `/admin-panel/review-section` del sitio |
+| API | `catalogo-permisos.ts` | La descripción de `acceso.panel` dice `/admin-panel` |
+| Comentarios y docs | Comentarios de las tres apps; `1`, `2`, `4`, `8`, `9`, `11`, manual de usuario y plan de pruebas | Rutas y carpetas nuevas. Se dejaron con el nombre viejo los comentarios que cuentan cómo era antes (p. ej. «hasta la migración 046 era una carpeta propia en `app/(public)/`»), las migraciones y esta bitácora |
+
+| Verificación | Resultado |
+|---|---|
+| `tsc --noEmit` en sitio web, intranet y API (sin los tipos viejos de `.next/`) | Sin errores |
+| `redirects()` de `next.config.mjs` cargado con node | 31 reglas; las diez nuevas apuntan a `/admin-panel/...` |
+| Búsqueda de `features/administracion`, `/admin/<sección>`, `(public)` y `(secciones)` en `src/` | Solo quedan los comentarios históricos |
+| Finales de línea de los archivos tocados | Ninguno mezclado |
+| Probar en el navegador | **No se hizo:** no había servidor de desarrollo levantado |
+
+> `/admin/usuarios` sigue en el `matcher` del proxy tal como estaba: nunca tuvo página y no se le añadió alias.
+
+**Pendiente al cierre:** abrir el panel con `npm run dev` y recorrer el menú (escritorio y móvil), el modo oscuro y una URL vieja (`/admin/auditoria` → `/admin-panel/changelog-view`). La descripción de `acceso.panel` que ya está guardada en la base no cambia hasta volver a sembrar los permisos.
+
+---
+
 ## sesión 19-10-2026 (7.ª parte): todas las páginas del sitio web en la base de datos, servidas por un solo comodín `[...puckPath]`
 
 **Qué pasaba:** `3000-sitio-web/src/app/(public)/` tenía una carpeta por página además del comodín `[slug]`: `inicio/`, `politica-de-privacidad/` y `clasificacion/cno|cuoc/` (Puck, pero con metadata propia o URL de dos segmentos, que `[slug]` no admite), y `clasificacion/`, `alertas-inversion/` y `programas-sobresalientes/` (vistas escritas en código, sin pasar por la base). La traducción slug ↔ URL de CNO y CUOC estaba en la tabla `RUTAS_PROPIAS`, duplicada en la API. Además, `alertas-inversion` **existía publicada en `paginas`**, pero no se veía nunca: la carpeta le ganaba al comodín. Y `cuoc` no tenía fila: `/clasificacion/cuoc` daba 404 a los visitantes.

@@ -213,7 +213,7 @@ lleva el campo `comentario` con un sentido fijo:
 
 La pantalla de auditoría enseña ese comentario en la columna «Cambios» y, en el
 detalle, «Comentario anterior» / «Comentario después» en lugar de la lista de campos
-internos (`lib/cambios.ts` de `features/administracion/auditoria/`).
+internos (`lib/cambios.ts` de `features/admin-panel/changelog-view/`).
 
 ### 1.7 Gestión de archivos huérfanos y subidas pendientes (2026-09-22)
 
@@ -657,7 +657,7 @@ importa por dos motivos:
   de esta fase.
 
 Y la divergencia que la regla buscaba evitar sigue exactamente donde estaba: **la cola de
-revisión existe solo en `sitio-web`** (`app/admin/revision/`, que ya distingue
+revisión existe solo en `sitio-web`** (`app/admin-panel/review-section/`, que ya distingue
 ámbito y abre la vista previa contra la intranet). La intranet no tiene gobernanza
 propia; sus cambios se aprueban desde el panel del sitio.
 
@@ -693,11 +693,11 @@ Revisados uno a uno el 2026-08-21.
 - ~~**`page-renderer.tsx` está deprecado** en las dos apps y aún presente.~~
   **Cerrado:** no queda en ninguna de las dos.
 - **`3000-sitio-web/src/shared/lib/dashboard.ts`** sigue siendo un re-export de
-  `features/administracion/auth/services/dashboard.service.ts` que nadie importa. Su
+  `features/admin-panel/auth/services/dashboard.service.ts` que nadie importa. Su
   propio comentario dice que espera confirmación para borrarse; lleva esperando lo
   suficiente como para que la respuesta sea que sí.
 - **`3000-sitio-web/src/features/auditoria/` es código muerto.** Duplica
-  `features/administracion/auditoria/`, que es la que se usa, y **ningún archivo la
+  `features/admin-panel/changelog-view/`, que es la que se usa, y **ningún archivo la
   importa**. Es la misma clase de residuo que `dashboard.ts` pero de una feature
   entera: `components/` y `services/`. Borrarla es seguro; comprobarlo cuesta un
   `grep`.

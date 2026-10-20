@@ -117,25 +117,25 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 | :--- | :--- |
 | **Escenario:** | Consulta de métricas clave y accesos rápidos |
 | **Resultado Esperado:** | Carga consolidada y actualizada de indicadores de gestión (usuarios, páginas publicadas, borradores pendientes) y navegación directa desde tarjetas operativas. |
-| **Precondición:** | Funcionario autenticado con rol Administrador en la ruta `/admin/dashboard`. |
+| **Precondición:** | Funcionario autenticado con rol Administrador en la ruta `/admin-panel/dashboard`. |
 | **Datos de entrada** | **Usuario:** `admin@sena.edu.co` (Rol Administrador)<br>**Contraseña:** Contraseña definitiva activa |
 
 | Descripción de pasos a realizar | Resultado obtenido |
 | :--- | :--- |
-| **1.** Ingresar a `/admin/dashboard` y revisar métricas | Muestra cifras actualizadas de usuarios, páginas publicadas, borradores pendientes y gráficos de actividad |
+| **1.** Ingresar a `/admin-panel/dashboard` y revisar métricas | Muestra cifras actualizadas de usuarios, páginas publicadas, borradores pendientes y gráficos de actividad |
 | **2.** Probar accesos rápidos en las tarjetas | Redirige de forma directa a cada submódulo administrativo correspondiente |
 
 ---
 
 ## MÓDULO 4: Control de Accesos y Gobierno de Usuarios — RBAC
 
-### Escenario 7: Gestión de Usuarios (`/admin/users`)
+### Escenario 7: Gestión de Usuarios (`/admin-panel/users`)
 
 | **RESULTADO PRUEBA FUNCIONAL Y/O TÉCNICA** | |
 | :--- | :--- |
 | **Escenario:** | Alta, edición, suspensión y restablecimiento de credenciales |
 | **Resultado Esperado:** | Registro exitoso de usuarios con emisión de contraseña temporal, modificación de perfiles, bloqueo preventivo por suspensión y forzado de clave restablecida. |
-| **Precondición:** | Funcionario autenticado con rol Administrador en el submódulo `/admin/users`. |
+| **Precondición:** | Funcionario autenticado con rol Administrador en el submódulo `/admin-panel/users`. |
 | **Datos de entrada** | **Usuario:** `admin@sena.edu.co` (Rol Administrador)<br>**Contraseña:** Contraseña definitiva activa<br>**Datos nuevo usuario:** Nombre completo, correo `@sena.edu.co`, rol asignado y caducidad opcional |
 
 | Descripción de pasos a realizar | Resultado obtenido |
@@ -148,13 +148,13 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 
 ---
 
-### Escenario 8: Gestión de Roles y Permisos (`/admin/roles`)
+### Escenario 8: Gestión de Roles y Permisos (`/admin-panel/roles-and-permissions`)
 
 | **RESULTADO PRUEBA FUNCIONAL Y/O TÉCNICA** | |
 | :--- | :--- |
 | **Escenario:** | Matriz de permisos por roles y protección de perfiles |
 | **Resultado Esperado:** | Creación de nuevos roles configurables, protección para evitar editar o borrar los roles base del sistema y bloqueo de eliminación si el rol aún tiene usuarios asignados. |
-| **Precondición:** | Funcionario autenticado con rol Administrador en la ruta `/admin/roles`. |
+| **Precondición:** | Funcionario autenticado con rol Administrador en la ruta `/admin-panel/roles-and-permissions`. |
 | **Datos de entrada** | **Usuario:** `admin@sena.edu.co` (Rol Administrador)<br>**Contraseña:** Contraseña definitiva activa<br>**Datos nuevo rol:** Nombre del nuevo rol (ej. "Editor Regional"), descripción y selección de permisos asignados |
 
 | Descripción de pasos a realizar | Resultado obtenido |
@@ -162,14 +162,14 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 | **1.** Crear nuevo rol personalizado con permisos | Registra el nuevo rol en la tabla con los permisos asignados |
 | **2.** Comprobar protección de roles base (Admin / Editor) | Botón de eliminar deshabilitado o no visible (los roles principales están protegidos por el sistema para evitar su eliminación) |
 | **3.** Intentar eliminar rol con usuarios asignados | Alerta roja bloquea la acción porque aún hay usuarios con ese rol e indica reasignarlos primero |
-| **4.** Reasignar usuarios vinculados a otro rol en `/admin/users` | Desvincula los usuarios del rol personalizado dejándolo con 0 usuarios asignados |
+| **4.** Reasignar usuarios vinculados a otro rol en `/admin-panel/users` | Desvincula los usuarios del rol personalizado dejándolo con 0 usuarios asignados |
 | **5.** Eliminar rol personalizado ya sin usuarios | Permite confirmación y elimina definitivamente el nuevo rol del sistema |
 
 ---
 
 ## MÓDULO 5: Gobernanza Editorial y Ciclo de Publicación
 
-### Escenario 9: Páginas en Revisión y Control de Permisos de Edición (`/admin/revision` y `/editor`)
+### Escenario 9: Páginas en Revisión y Control de Permisos de Edición (`/admin-panel/review-section` y `/editor`)
 
 | **RESULTADO PRUEBA FUNCIONAL Y/O TÉCNICA** | |
 | :--- | :--- |
@@ -194,18 +194,18 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 
 ## MÓDULO 6: Trazabilidad, Auditoría y Seguridad Forense
 
-### Escenario 10: Auditoría, Bitácora y Trazabilidad Forense (`/admin/auditoria`)
+### Escenario 10: Auditoría, Bitácora y Trazabilidad Forense (`/admin-panel/changelog-view`)
 
 | **RESULTADO PRUEBA FUNCIONAL Y/O TÉCNICA** | |
 | :--- | :--- |
 | **Escenario:** | Bitácora inmutable, filtros combinados por categoría y acción, paginación, modal forense y depuración con respaldo en CSV |
 | **Resultado Esperado:** | Registro inalterable de todos los eventos del sistema, filtrado dinámico por categoría (*Todas*, *Contenido editorial*, *Administración*, *Seguridad*), fechas con bloqueo cruzado (*Desde* / *Hasta*), usuario y acción contextual; paginación configurable; vista adaptada en móviles (acordeón explicativo); modal de detalle con metadatos técnicos y comparativo antes/después; y protocolo de depuración con regla de conservación de 365 días y descarga obligatoria de respaldo en CSV (`respaldo-auditoria-depurada-[FECHA].csv`). |
-| **Precondición:** | Funcionario autenticado con rol Administrador en la ruta `/admin/auditoria`. |
+| **Precondición:** | Funcionario autenticado con rol Administrador en la ruta `/admin-panel/changelog-view`. |
 | **Datos de entrada** | **Usuario:** `admin@sena.edu.co` (Rol Administrador)<br>**Contraseña:** Contraseña definitiva activa<br>**Filtros:** Categoría, selectores de fecha (*Desde* / *Hasta*), Usuario responsable, Acción contextual<br>**Paginador:** Selección de filas por página (15, 25, 50, 100) |
 
 | Descripción de pasos a realizar | Resultado obtenido |
 | :--- | :--- |
-| **1.** Consultar historial cronológico de eventos en `/admin/auditoria` | Despliega tabla de 5 columnas con Fecha/hora (con segundos abajo), Usuario (o *"Sin usuario"* atenuado), etiqueta de Acción con código cromático, Cambios (resumen con tooltip) y botón de Detalle |
+| **1.** Consultar historial cronológico de eventos en `/admin-panel/changelog-view` | Despliega tabla de 5 columnas con Fecha/hora (con segundos abajo), Usuario (o *"Sin usuario"* atenuado), etiqueta de Acción con código cromático, Cambios (resumen con tooltip) y botón de Detalle |
 | **2.** Filtrar por Categoría (*Contenido editorial*, *Administración*, *Seguridad*) | La tabla actualiza los registros y adapta dinámicamente las opciones del selector de Acción según la categoría elegida |
 | **3.** Validar selectores de fecha con calendario (*Desde* / *Hasta*) | Bloquea automáticamente en *Desde* fechas posteriores a *Hasta*, y en *Hasta* fechas anteriores a *Desde* |
 | **4.** Probar botón "Limpiar filtros" | Se hace visible al activar cualquier filtro y restablece los selectores a sus valores predeterminados con un solo clic |
@@ -220,7 +220,7 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 
 ## MÓDULO 7: Versiones, Respaldos y Continuidad Operativa
 
-### Escenario 11: Respaldos de Páginas y Restauración de Versiones (`/admin/respaldos`)
+### Escenario 11: Respaldos de Páginas y Restauración de Versiones (`/admin-panel/backup-section`)
 
 | **RESULTADO PRUEBA FUNCIONAL Y/O TÉCNICA** | |
 | :--- | :--- |
@@ -231,7 +231,7 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 
 | Descripción de pasos a realizar | Resultado obtenido |
 | :--- | :--- |
-| **1.** Consultar listado de respaldos en `/admin/respaldos` y aplicar filtros | Lista únicamente las páginas con versiones previas retiradas de publicación; en escritorio muestra 6 columnas (Página con ámbito arriba y ruta · versión abajo, Autor, Publicado por, Editado el con hora, Publicado el con hora, y botón "Ver versión") |
+| **1.** Consultar listado de respaldos en `/admin-panel/backup-section` y aplicar filtros | Lista únicamente las páginas con versiones previas retiradas de publicación; en escritorio muestra 6 columnas (Página con ámbito arriba y ruta · versión abajo, Autor, Publicado por, Editado el con hora, Publicado el con hora, y botón "Ver versión") |
 | **2.** Probar bloqueo cruzado de fechas en filtros y botón "Limpiar filtros" | El calendario interactivo impide rangos incoherentes y el botón dinámico restablece los filtros activos con un toque |
 | **3.** Consultar adaptabilidad en dispositivos móviles | La tabla se transforma en acordeón interactivo (*«[Nombre] publicó la versión [N] de [Página]...»*) desplegando fechas exactas y botón "Ver versión [N]" |
 | **4.** Pulsar botón de ojo ("Ver versión") en una página | Abre ventana modal detallando la versión archivada, ruta, número de versión previa, fecha y hora exacta de reemplazo, autor y funcionario que aprobó |
@@ -245,13 +245,13 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 
 ## MÓDULO 8: Actualizaciones y Carga Masiva de Datos
 
-### Escenario 12: Ingesta de "Programa + Sobresalientes" y "Alertas de Inversión" (`/admin/actualizaciones`)
+### Escenario 12: Ingesta de "Programa + Sobresalientes" y "Alertas de Inversión" (`/admin-panel/update-section`)
 
 | **RESULTADO PRUEBA FUNCIONAL Y/O TÉCNICA** | |
 | :--- | :--- |
 | **Escenario:** | Carga masiva de programas destacados, gestión de alertas de inversión masivas/manuales y actualización de sectores CIIU |
 | **Resultado Esperado:** | Descarga de plantillas oficiales `.xlsx`, barra de progreso con etapas reales, impacto directo en portal, alta manual de proyectos vía modal, actualización de actividades económicas CIIU y gestión en tablas de proyectos e historial. |
-| **Precondición:** | Funcionario autenticado en `/admin/actualizaciones`. |
+| **Precondición:** | Funcionario autenticado en `/admin-panel/update-section`. |
 | **Datos de entrada** | **Usuario:** `admin@sena.edu.co` (Rol Administrador)<br>**Contraseña:** Contraseña definitiva activa<br>**Archivos:** `formato-programas-sobresalientes.xlsx`, `formato-alertas-inversion.xlsx`, `formato-actualizar-ciiu.xlsx`<br>**Formulario manual:** Título, entidad promotora, sector económico, monto de inversión, vigencia y descripción |
 
 | Descripción de pasos a realizar | Resultado obtenido |
@@ -267,13 +267,13 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 
 ---
 
-### Escenario 13: Matriz de Percentiles y Ciclo de Publicación de Tendencia Ocupacional (`/admin/actualizaciones`)
+### Escenario 13: Matriz de Percentiles y Ciclo de Publicación de Tendencia Ocupacional (`/admin-panel/update-section`)
 
 | **RESULTADO PRUEBA FUNCIONAL Y/O TÉCNICA** | |
 | :--- | :--- |
 | **Escenario:** | Carga de percentiles por año/periodo, regla de celda libre, validación en 4 fases y ciclo de publicación de borradores |
 | **Resultado Esperado:** | Autodetección de año y periodo por nombre de archivo, bloqueo de sobreescritura si la celda está ocupada, barra de avance en 4 fases reales, retención inicial en estado Borrador («Sin publicar») y publicación controlada hacia el sitio web público. |
-| **Precondición:** | Funcionario autenticado en `/admin/actualizaciones` con el acordeón "Criterios de clasificación de resultados" abierto. |
+| **Precondición:** | Funcionario autenticado en `/admin-panel/update-section` con el acordeón "Criterios de clasificación de resultados" abierto. |
 | **Datos de entrada** | **Usuario:** `admin@sena.edu.co` (Rol Administrador)<br>**Contraseña:** Contraseña definitiva activa<br>**Archivos:** Archivo `.xlsx` con hojas obligatorias *«percentiles nacional»* y *«percentiles departamental»* (ej. `percentiles_2025_T1.xlsx`)<br>**Selectores:** Año (`YearPicker`) y Periodo (`CustomSelect`) |
 
 | Descripción de pasos a realizar | Resultado obtenido |
@@ -303,7 +303,7 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 | Descripción de pasos a realizar | Resultado obtenido |
 | :--- | :--- |
 | **1.** Acceder a "Mi Perfil" en escritorio y dispositivo móvil | En escritorio se abre desde el menú de usuario al final de la barra lateral izquierda; en móvil tocando el nombre de usuario en la barra superior |
-| **2.** Consultar datos de cuenta en solo lectura | Muestra Nombre, Apellidos y Correo institucional (`@sena.edu.co`) en campos no editables, con aviso indicando que cualquier modificación se realiza desde *Accesos > Usuarios* (`/admin/users`) |
+| **2.** Consultar datos de cuenta en solo lectura | Muestra Nombre, Apellidos y Correo institucional (`@sena.edu.co`) en campos no editables, con aviso indicando que cualquier modificación se realiza desde *Accesos > Usuarios* (`/admin-panel/users`) |
 | **3.** Digitar contraseña actual y probar botón de visualización | El botón con ícono de ojo conmuta la visibilidad de los caracteres entre texto plano y puntos ocultos |
 | **4.** Digitar nueva contraseña sin cumplir política de seguridad | Panel interactivo en vivo marca en rojo los requisitos no alcanzados (longitud mínima de 12 caracteres, mayúsculas, minúsculas, números o símbolos, sin emojis) y mantiene bloqueado el envío |
 | **5.** Probar discrepancia en confirmación de contraseña | Ingresar confirmación no coincidente; despliega alerta visual de discrepancia e impide pulsar el botón |
@@ -311,13 +311,13 @@ Guía institucional de escenarios y casos de prueba para verificación funcional
 
 ---
 
-### Escenario 15: Configuración de Identidad Visual, Colores y Sonido (`/admin/configuracion`)
+### Escenario 15: Configuración de Identidad Visual, Colores y Sonido (`/admin-panel/configuration`)
 
 | **RESULTADO PRUEBA FUNCIONAL Y/O TÉCNICA** | |
 | :--- | :--- |
 | **Escenario:** | Carga de logotipo/ícono, modo oscuro, contraste accesible y sonido de avisos |
 | **Resultado Esperado:** | Carga de logo e ícono PNG por clic o arrastre directo con guardado inmediato, previsualizaciones en tema claro y oscuro, inversión a blanco en modo oscuro, personalización de colores con validador WCAG (4,5:1) y control de sonido de notificaciones en el navegador. |
-| **Precondición:** | Funcionario autenticado en la ruta `/admin/configuracion`. |
+| **Precondición:** | Funcionario autenticado en la ruta `/admin-panel/configuration`. |
 | **Datos de entrada** | **Usuario:** `admin@sena.edu.co` (Rol Administrador)<br>**Contraseña:** Contraseña definitiva activa<br>**Archivos:** Imagen PNG horizontal (hasta 1 MB) para logotipo y PNG cuadrado (hasta 512 KB, mín. 64x64 px) para favicon<br>**Colores:** Selección de colores para fondo y letra de etiquetas y botones |
 
 | Descripción de pasos a realizar | Resultado obtenido |

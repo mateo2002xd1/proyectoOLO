@@ -180,7 +180,7 @@ Si un componente necesita un `aria-label`, un `role` o un manejo de foco, eso vi
 Desde el 2026-10-09, `Notification` suena con los avisos de éxito, advertencia y error; con `info`, no. El tono sale de `shared/lib/sonido-avisos/` y se genera en el navegador, sin archivos de audio.
 
 - **Nunca es el único canal.** El aviso se sigue viendo con su color y su texto, y lleva `role="alert"`: un lector de pantalla lo lee y quien no oye no pierde nada (SC 1.3.3).
-- **Dura menos de medio segundo.** El control de audio del SC 1.4.2 es para lo que suena más de 3 s. Aun así, cada persona lo silencia en Configuración (`/admin/configuracion`), y esa elección queda guardada en su navegador.
+- **Dura menos de medio segundo.** El control de audio del SC 1.4.2 es para lo que suena más de 3 s. Aun así, cada persona lo silencia en Configuración (`/admin-panel/configuration`), y esa elección queda guardada en su navegador.
 - **Una pieza nueva que quiera sonar usa `Notification` o `reproducirSonidoAviso`.** No trae su propio audio: así respeta el silencio que la persona ya eligió.
 
 ---

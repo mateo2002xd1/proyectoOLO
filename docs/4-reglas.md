@@ -37,14 +37,14 @@ proyecto desde cero. Antes de mover o crear nada, debes auditar lo que ya existe
    (`tabla-usuarios.tsx`, no `TablaUsuarios.tsx`). El identificador exportado
    sigue siendo `PascalCase`. Evita el bug que solo aparece al desplegar en
    Linux, donde el sistema de archivos sí distingue mayúsculas.
-8. **No mezcles zonas de acceso.** `sitio-web` tiene dos zonas: `(public)` —
+8. **No mezcles zonas de acceso.** `sitio-web` tiene dos zonas: `(paginas)` —
    abierto, ISR, sin credenciales — y la protegida por `middleware.ts`:
    `admin/` (el panel, con su `layout.tsx` como marco común), `(auth)/`
    (login, primer ingreso y recuperación: `/login`, `/login/first-login`, `/login/recovery`…,
    sin el marco del panel), `editor/` y `preview/`. Código de la zona protegida no se importa desde
-   `(public)` ni al revés; lo que ambos necesiten
+   `(paginas)` ni al revés; lo que ambos necesiten
    sube a `features/` o `shared/`. La intranet es 100% protegida, así que no hay
-   dos zonas que separar: sus grupos `(secciones)` y `(auth)` solo reparten marcos
+   dos zonas que separar: sus grupos `(paginas)` y `(auth)` solo reparten marcos
    (el menú y el pie de las secciones; la animación de las pantallas de acceso).
 9. **Verifica el nombre y la ubicación de los archivos especiales de Next.js.**
    Un nombre mal escrito hace que Next ignore el archivo silenciosamente, sin
@@ -64,7 +64,7 @@ proyecto desde cero. Antes de mover o crear nada, debes auditar lo que ya existe
 > exigía declarar un `@source` explícito en `globals.css` por cada carpeta con
 > paréntesis. **Es falso y se eliminó.** Ninguno de los dos `globals.css` tiene
 > un solo `@source` y las clases se generan igual: `flex-grow` se usa una única
-> vez en todo `3000-sitio-web/src`, dentro de `app/(public)/layout.tsx`, y aparece en
+> vez en todo `3000-sitio-web/src`, dentro de `app/(paginas)/layout.tsx`, y aparece en
 > el CSS compilado. Tailwind 4.3.2 detecta las fuentes por sí solo. No añadas
 > esas directivas.
 

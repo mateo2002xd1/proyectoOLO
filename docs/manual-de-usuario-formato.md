@@ -250,7 +250,7 @@ El Sitio Web Público no cuenta con un botón directo de "Iniciar Sesión" para 
   * Correo electrónico corporativo con dominio `@sena.edu.co`.
   * Contraseña robusta configurada en la plataforma.
 * **Redirección por rol (Exclusivo para el Sitio Web Público):**
-  * *Administradores:* Al contar con facultades de gobierno y permisos de administración, el sistema los redirige de manera directa al **Panel Administrativo** (`/admin/dashboard`).
+  * *Administradores:* Al contar con facultades de gobierno y permisos de administración, el sistema los redirige de manera directa al **Panel Administrativo** (`/admin-panel/dashboard`).
   * *Editores (y roles derivados de Editor):* Al validar sus credenciales y permisos editoriales, el sistema los redirige de vuelta a la página de **Inicio del Sitio Web Público** (`/inicio`), donde se activa y despliega el botón flotante de edición para maquetar páginas y gestionar cabecera y pie.
   * *Directores y Subdirectores:* Al no contar con permisos de edición ni de acceso al panel administrativo en este portal, el sistema muestra la alerta *"Tu cuenta no tiene permisos de edición ni de acceso al panel."*, orientándolos a ingresar a la Intranet para consultar sus tableros analíticos e indicadores gerenciales.
 * **Enlace de recuperación:** La pantalla de autenticación dispone del acceso directo para el restablecimiento de contraseñas ante olvidos *(¿Olvidaste tu contraseña?)*. *(Para consultar la guía visual paso a paso de este acceso, ver [Sección 3.4.1.2: Flujo de Inicio de Sesión Habitual](#3412-flujo-de-inicio-de-sesión-habitual)).*
@@ -660,7 +660,7 @@ Este procedimiento describe el paso a paso para el funcionario que inicia sesió
 > *Selector de preguntas del catálogo del sistema y registro de respuestas de seguridad en el Sitio Web. (Móvil).*
 
 6. **Confirmación, cierre de sesión y evaluación de permisos (paso 3):** Al procesar las respuestas de seguridad, el sistema guarda la configuración definitiva y muestra el mensaje de confirmación **"¡Configuración completada con éxito! Tu cuenta ya es segura."**, recordando guardar las respuestas en un lugar seguro, ya que son el único método para validar la identidad y cambiar la clave si se olvida. Al presionar el botón **"Iniciar sesión"**, el sistema finaliza la sesión provisional y regresa a la pantalla de inicio de sesión (`/login`). Si se quiere salir antes de terminar, **"Regresar al sitio web del Observatorio"** cierra la sesión temporal sin guardar nada. El funcionario debe iniciar sesión con su contraseña definitiva recién creada, tras lo cual el aplicativo evalúa los permisos específicos de su cuenta:
-   * **Administradores:** El sistema los redirige de forma directa al **Panel Administrativo** (`/admin/dashboard`) para gestionar usuarios, roles, bitácora de auditoría y revisión de contenidos.
+   * **Administradores:** El sistema los redirige de forma directa al **Panel Administrativo** (`/admin-panel/dashboard`) para gestionar usuarios, roles, bitácora de auditoría y revisión de contenidos.
    * **Editores de Contenido (y roles derivados autorizados):** El sistema los redirige a la **página de inicio del Sitio Web Público** (`/inicio`), donde se despliega de inmediato el **botón flotante de edición** en la esquina de la pantalla para maquetar páginas y gestionar contenidos autorizados.
    * **Directores y Subdirectores (cuentas sin permisos para este portal):** Al estar configurados exclusivamente para la consulta analítica en la Intranet y no poseer permisos de edición ni de acceso al panel en el Sitio Web, el sistema detiene el acceso y muestra la alerta: *"Tu cuenta no tiene permisos de edición ni de acceso al panel."*, orientándolos a ingresar a través del portal de la Intranet (ver [Sección 3.5.1.1: Validaciones en el Primer Ingreso](#3511-validaciones-en-el-primer-ingreso)).
 
@@ -801,7 +801,7 @@ El portal web público no requiere inicio de sesión para la consulta de informa
 > *Validación del tipo de usuario en pantalla para dar paso al entorno correspondiente o mostrar la indicación hacia la Intranet. (Móvil).*
 
 6. **Despliegue del entorno de trabajo en pantalla:** Al completarse el ingreso, la pantalla cambia automáticamente según el rol del funcionario:
-   * **Administradores:** La pantalla muestra el **Panel Administrativo** (`/admin/dashboard`), con la barra lateral de navegación a la izquierda (Usuarios, Roles, Auditoría y Revisión) y las tarjetas de resumen informativo en el centro.
+   * **Administradores:** La pantalla muestra el **Panel Administrativo** (`/admin-panel/dashboard`), con la barra lateral de navegación a la izquierda (Usuarios, Roles, Auditoría y Revisión) y las tarjetas de resumen informativo en el centro.
    * **Editores de Contenido:** El navegador regresa a la portada del **Sitio Web Público** (`/inicio`), donde aparece de inmediato en la esquina inferior derecha el **botón flotante circular de edición** (ícono de lápiz) para comenzar a maquetar y modificar páginas autorizadas.
 
 > **[Captura: Redirección y Despliegue de Rol Sitio Web]**
@@ -1168,7 +1168,7 @@ El Panel Administrativo cuenta con un buscador global diseñado para navegar ág
 
 *(Nota: Para consultar las validaciones y solución de problemas relacionados con gráficas que no cargan o tarjetas sin resultados, remitirse a la [Sección 3.5.1.7: Validaciones y Solución de Problemas en el Tablero Principal (Dashboard)](#3517-validaciones-y-solución-de-problemas-en-el-tablero-principal-dashboard)).*
 
-Al ingresar al Panel Administrativo (`/admin/dashboard`), el Administrador visualiza el resumen consolidado de la actividad del observatorio en tres tarjetas principales de gestión:
+Al ingresar al Panel Administrativo (`/admin-panel/dashboard`), el Administrador visualiza el resumen consolidado de la actividad del observatorio en tres tarjetas principales de gestión:
 
 1. **Tarjeta de Páginas Publicadas:** Muestra el total de páginas activas en el observatorio y un diagrama en forma de árbol con dos ramas: **"Sitio web"** e **"Intranet"**, indicando el número de páginas de cada ámbito. Al hacer clic sobre una rama, se despliegan sus páginas asociadas; al pulsarla nuevamente, se repliega. Al pasar el cursor sobre una página, se muestra su título completo y su ruta (por ejemplo, */contacto*), y al hacer clic sobre ella, su vista se abre en una pestaña nueva del navegador para conservar el panel abierto. Una rama sin páginas aparece deshabilitada y no se despliega. Para quienes navegan mediante teclado o lectores de pantalla, las páginas se encuentran igualmente disponibles en una lista accesible de enlaces.
 
@@ -1608,7 +1608,7 @@ Módulo de seguimiento y trazabilidad de eventos del sistema, accesible desde el
 #### 3.4.2.7. Respaldos y Restauración de Páginas
 *(Nota: Para consultar las posibles situaciones de validación, control de página en uso, advertencias de restauración y soporte de depuración, remitirse a la [Sección 3.5.1.12: Validaciones y Solución de Problemas en Respaldos y Restauración de Páginas](#35112-validaciones-y-solución-de-problemas-en-respaldos-y-restauración-de-páginas)).*
 
-El módulo de **Respaldos** (`/admin/respaldos`) permite consultar y gestionar las versiones de respaldo de las páginas publicadas en el Sitio Web y en la Intranet. En la plataforma, el respaldo corresponde siempre a la **versión anterior retirada de publicación** cuando se aprobó una nueva publicación. Su objetivo es permitir al Administrador revisar cómo lucía la página antes de su última modificación y restaurar esa versión previa para que vuelva a estar publicada y visible en la plataforma si se necesita revertir algún cambio.
+El módulo de **Respaldos** (`/admin-panel/backup-section`) permite consultar y gestionar las versiones de respaldo de las páginas publicadas en el Sitio Web y en la Intranet. En la plataforma, el respaldo corresponde siempre a la **versión anterior retirada de publicación** cuando se aprobó una nueva publicación. Su objetivo es permitir al Administrador revisar cómo lucía la página antes de su última modificación y restaurar esa versión previa para que vuelva a estar publicada y visible en la plataforma si se necesita revertir algún cambio.
 
 La interfaz lista de forma automática únicamente aquellas páginas que cuentan con una **versión anterior** (la versión previa retirada de publicación) disponible para restaurar.
 
@@ -1692,7 +1692,7 @@ La interfaz lista de forma automática únicamente aquellas páginas que cuentan
 
 #### 3.4.2.8. Actualizaciones y Carga Masiva de Datos en Excel
 
-Disponible en la ruta `/admin/actualizaciones` (accesible desde el menú lateral izquierdo en **«Actualizaciones»** en computador, o desde la barra inferior dentro de **«Más»** en celular), este módulo permite subir, actualizar y administrar la información en archivos de Excel (`.xlsx`) que se muestra en las gráficas, mapas y consultas del sitio web público del observatorio.
+Disponible en la ruta `/admin-panel/update-section` (accesible desde el menú lateral izquierdo en **«Actualizaciones»** en computador, o desde la barra inferior dentro de **«Más»** en celular), este módulo permite subir, actualizar y administrar la información en archivos de Excel (`.xlsx`) que se muestra en las gráficas, mapas y consultas del sitio web público del observatorio.
 
 **Estructura General y Permisos de Operación:**
 * **Control de acceso por roles:** Subir archivos, registrar proyectos manualmente, actualizar sectores y publicar o borrar datos son acciones reservadas únicamente para el rol **Administrador**. Los demás roles con acceso al panel administrativo solo pueden ingresar a esta sección a revisar el historial y los datos cargados en modo de lectura.
@@ -1984,7 +1984,7 @@ Esta sección permite consultar los datos personales, cambiar la contraseña y a
 
 Disponible en la ruta `/admin/mi-perfil` (accesible desde el menú de usuario en la barra lateral en escritorio o tocando el nombre de usuario en la barra superior móvil), reúne la consulta de la cuenta y la actualización de la contraseña:
 
-1. **Datos del usuario (solo lectura):** Presenta el **Nombre**, **Apellidos** y **Correo Electrónico** (`@sena.edu.co`) asociados a la cuenta. Estos campos son de solo lectura en esta vista; para modificar el nombre, los apellidos o el correo de cualquier funcionario, el cambio se realiza desde el módulo **Accesos > Usuarios** (`/admin/users`), editando el registro correspondiente en la tabla (ver [Sección 3.4.2.4: Gestión de Usuarios y Control de Acceso](#3424-gestión-de-usuarios-y-control-de-acceso)).
+1. **Datos del usuario (solo lectura):** Presenta el **Nombre**, **Apellidos** y **Correo Electrónico** (`@sena.edu.co`) asociados a la cuenta. Estos campos son de solo lectura en esta vista; para modificar el nombre, los apellidos o el correo de cualquier funcionario, el cambio se realiza desde el módulo **Accesos > Usuarios** (`/admin-panel/users`), editando el registro correspondiente en la tabla (ver [Sección 3.4.2.4: Gestión de Usuarios y Control de Acceso](#3424-gestión-de-usuarios-y-control-de-acceso)).
 
 2. **Cambio de contraseña:** Para actualizar la clave de acceso, el usuario sigue estos pasos:
    * **Contraseña actual:** Se digita la clave vigente en la primera casilla (incluye botón con ícono de ojo para ver u ocultar los caracteres).
@@ -2002,7 +2002,7 @@ Disponible en la ruta `/admin/mi-perfil` (accesible desde el menú de usuario en
 
 *(Nota: Para consultar las posibles situaciones de validación, restricciones de formato y peso de imagen, alertas de contraste y persistencia local de sonidos, remitirse a la [Sección 3.5.1.14: Validaciones y Solución de Problemas en Configuración](#35114-validaciones-y-solución-de-problemas-en-configuración)).*
 
-Disponible en la ruta `/admin/configuracion` (accesible desde el menú de usuario en la base de la barra lateral izquierda en escritorio, o desde la barra inferior móvil dentro de **«Más»**), permite personalizar la identidad visual del panel y ajustar las preferencias de sonido:
+Disponible en la ruta `/admin-panel/configuration` (accesible desde el menú de usuario en la base de la barra lateral izquierda en escritorio, o desde la barra inferior móvil dentro de **«Más»**), permite personalizar la identidad visual del panel y ajustar las preferencias de sonido:
 
 1. **Identidad visual (Logotipo, ícono de pestaña y tema oscuro):**
    Permite personalizar los distintivos gráficos de la plataforma en tiempo real:
@@ -3550,7 +3550,7 @@ El módulo de Mi Perfil ([Sección 3.4.2.9.1](#34291-sección-mi-perfil)) gestio
 ##### 1. Campos de Identificación Bloqueados (Modo Solo Lectura)
 * **Situación:** El funcionario intenta hacer clic o escribir en las casillas de **Nombre**, **Apellidos** o **Correo Electrónico**, pero el cursor muestra el símbolo de bloqueo o no permitido, el fondo aparece en gris atenuado y el sistema no permite editar los textos.
 * **Causa:** Regla de integridad de datos maestros. La pantalla de "Mi Perfil" opera en modalidad de solo lectura para los datos personales; la actualización de nombres, apellidos y cuentas de usuario `@sena.edu.co` se encuentra centralizada en el módulo de control de accesos para resguardar la trazabilidad de seguridad y evitar modificaciones no supervisadas.
-* **Acción correctiva:** Si el funcionario requiere corregir o actualizar sus datos de identidad, debe solicitar el ajuste a un usuario con rol de Administrador. Si el funcionario cuenta con el permiso de gestión de usuarios, debe ingresar a la ruta `/admin/users` (**Accesos > Usuarios**) y editar el registro correspondiente en la tabla (ver [Sección 3.4.2.4: Gestión de Usuarios y Control de Acceso](#3424-gestión-de-usuarios-y-control-de-acceso)).
+* **Acción correctiva:** Si el funcionario requiere corregir o actualizar sus datos de identidad, debe solicitar el ajuste a un usuario con rol de Administrador. Si el funcionario cuenta con el permiso de gestión de usuarios, debe ingresar a la ruta `/admin-panel/users` (**Accesos > Usuarios**) y editar el registro correspondiente en la tabla (ver [Sección 3.4.2.4: Gestión de Usuarios y Control de Acceso](#3424-gestión-de-usuarios-y-control-de-acceso)).
 
 > **[Captura: Mi Perfil - Datos en Solo Lectura]**
 > *Campos de Nombre, Apellidos y Correo Electrónico en modo solo lectura con cursor deshabilitado y texto explicativo.*
