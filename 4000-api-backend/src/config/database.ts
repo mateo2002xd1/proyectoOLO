@@ -25,7 +25,7 @@ const sequelize = new Sequelize(config.databaseUrl, {
   // `min: 1`: una conexión siempre abierta. Con `min: 0` el pool cerraba todas a los 10 s
   // sin uso y la siguiente petición pagaba la reconexión a Neon (TLS y autenticación,
   // 1 a 3 s con la red lenta), lo que tumbaba pantallas con límite de 5 s como
-  // /admin/revision. Ojo: si esa conexión no deja dormir a Neon, gasta horas de cómputo.
+  // /admin-panel/review-section. Ojo: si esa conexión no deja dormir a Neon, gasta horas de cómputo.
   pool: { max: 5, min: 1, acquire: 30000, idle: 60000 },
 });
 

@@ -4,7 +4,7 @@
  * `Administrador` y `Director/Subdirector` reciben en `sembrar-permisos-roles.ts`
  * exactamente lo que `4-reglas.md` y las policies (`paginas.policies.ts`,
  * `usuarios.policies.ts`) ya les dan por nombre de rol. Dejar que el panel de
- * `/admin/roles` mueva esos mismos interruptores no añade control: solo permite
+ * `/admin-panel/roles-and-permissions` mueva esos mismos interruptores no añade control: solo permite
  * desincronizar la tabla `roles_permisos` de lo que el propio código ya decidió, y
  * de ahí salía el síntoma real — un Administrador al que le faltaba un `editar.*`
  * porque alguien lo había revocado desde el panel sin saber que las policies seguían

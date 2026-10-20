@@ -9,7 +9,7 @@
  * propiedad de objeto: era que no había ninguna comprobación después del token.
  *
  * `puedeAdministrarSeguridad` incluye a Administrador y no solo a Superadmin porque
- * el panel de usuarios y roles (`/admin/dashboard`) lo abren los dos —lo decide
+ * el panel de usuarios y roles (`/admin-panel/dashboard`) lo abren los dos —lo decide
  * `3000-sitio-web/src/proxy.ts` con el permiso `acceso.panel`— y ahí se asignan permisos a roles.
  * Restringirlo a Superadmin dejaría al Administrador con la pantalla pintada y todas
  * las llamadas en 403. Estrecharlo es cambiar esta lista, no los routers.

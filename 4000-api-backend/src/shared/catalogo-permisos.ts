@@ -139,7 +139,7 @@ const PERMISOS_FIJOS: PermisoDelCatalogo[] = [
   {
     clave: 'acceso.panel',
     etiqueta: 'Panel de administración',
-    descripcion: 'Entrar a /admin: tablero, usuarios, revisión y configuración.',
+    descripcion: 'Entrar a /admin-panel: tablero, usuarios, revisión y configuración.',
     grupo: 'acceso',
     esFrontera: true,
   },
